@@ -55,16 +55,14 @@ explain delete from test where id = 3
     "node": {
       "00": "int                 0      -      0     # 3",
       "01": "push                0      0      0     ",
-      "02": "table_open_lookup   0      0      4     # public.test (primary)",
-      "03": "jmp                 10     0      0     ",
-      "04": "table_readi32       0      0      0     ",
-      "05": "int                 1      -      0     # 3",
-      "06": "equii               2      0      1     ",
-      "07": "jntr                9      2      0     ",
-      "08": "delete              0      0      0     ",
-      "09": "jmp                 3      0      0     ",
-      "10": "table_close         0      0      0     ",
-      "11": "ret                 0      0      0     "
+      "02": "table_open_lookup   0      0      8     # public.test (primary)",
+      "03": "table_readi32       0      0      0     ",
+      "04": "int                 1      -      0     # 3",
+      "05": "equii               2      0      1     ",
+      "06": "jntr                8      2      0     ",
+      "07": "delete              0      0      0     ",
+      "08": "table_close         0      0      0     ",
+      "09": "ret                 0      0      0     "
     }
   }
 }]
@@ -113,24 +111,23 @@ explain delete from test where id > 0 and id < 1
     "node": {
       "00": "int                 0      -      0     # 0",
       "01": "push                0      0      0     ",
-      "02": "table_open          0      0      4     # public.test (primary)",
-      "03": "jmp                 18     0      0     ",
-      "04": "table_readi32       0      0      0     ",
-      "05": "int                 1      -      0     # 1",
-      "06": "ltii                2      0      1     ",
-      "07": "jntr                3      2      0     ",
-      "08": "table_readi32       0      0      0     ",
-      "09": "int                 1      -      0     # 0",
-      "10": "gtii                2      0      1     ",
-      "11": "table_readi32       0      0      0     ",
-      "12": "int                 1      -      0     # 1",
-      "13": "ltii                3      0      1     ",
-      "14": "and                 0      2      3     ",
-      "15": "jntr                17     0      0     ",
-      "16": "delete              0      0      0     ",
-      "17": "table_next          0      4      0     ",
-      "18": "table_close         0      0      0     ",
-      "19": "ret                 0      0      0     "
+      "02": "table_open          0      0      17    # public.test (primary)",
+      "03": "table_readi32       0      0      0     ",
+      "04": "int                 1      -      0     # 1",
+      "05": "ltii                2      0      1     ",
+      "06": "jntr                17     2      0     ",
+      "07": "table_readi32       0      0      0     ",
+      "08": "int                 1      -      0     # 0",
+      "09": "gtii                2      0      1     ",
+      "10": "table_readi32       0      0      0     ",
+      "11": "int                 1      -      0     # 1",
+      "12": "ltii                3      0      1     ",
+      "13": "and                 0      2      3     ",
+      "14": "jntr                16     0      0     ",
+      "15": "delete              0      0      0     ",
+      "16": "table_next          0      3      0     ",
+      "17": "table_close         0      0      0     ",
+      "18": "ret                 0      0      0     "
     }
   }
 }]

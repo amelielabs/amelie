@@ -296,7 +296,7 @@ cset_merge(Vm* self, Op* op)
 hot Op*
 ctable_open(Vm* self, Op* op)
 {
-	// [cursor, name_offset, _where, keys_count]
+	// [cursor, name_offset, _eof, keys_count]
 	auto cursor = cursor_mgr_of(&self->cursor_mgr, op->a);
 
 	// read names
@@ -332,10 +332,12 @@ ctable_open(Vm* self, Op* op)
 		key_ref = NULL;
 	iterator_open(cursor->it, key_ref);
 
-	// jmp if has data
-	if (iterator_has(cursor->it))
-		return code_at(self->code, op->c);
-	return ++op;
+	// jmp to next op if has data
+	if (likely(iterator_has(cursor->it)))
+		return ++op;
+
+	// jmp on eof
+	return code_at(self->code, op->c);
 }
 
 hot void

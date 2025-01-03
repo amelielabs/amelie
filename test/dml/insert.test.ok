@@ -465,23 +465,22 @@ explain select * from test where ts > "1970-01-01 01:12:59.909090"::timestamp;
     },
     "node": {
       "00": "set                 0      2      0     ",
-      "01": "table_open          0      0      3     # public.test (primary)",
-      "02": "jmp                 15     0      0     ",
-      "03": "table_readt         1      0      1     ",
-      "04": "string              2      20     0     # 1970-01-01 01:12:59.909090",
-      "05": "push                2      0      0     ",
-      "06": "call                2      -      1     # public.timestamp()",
-      "07": "gtii                3      1      2     ",
-      "08": "jntr                14     3      0     ",
-      "09": "table_readi32       1      0      0     ",
-      "10": "push                1      0      0     ",
-      "11": "table_readt         1      0      1     ",
-      "12": "push                1      0      0     ",
-      "13": "set_add             0      0      0     ",
-      "14": "table_next          0      3      0     ",
-      "15": "table_close         0      0      0     ",
-      "16": "result              0      0      0     ",
-      "17": "ret                 0      0      0     "
+      "01": "table_open          0      0      14    # public.test (primary)",
+      "02": "table_readt         1      0      1     ",
+      "03": "string              2      20     0     # 1970-01-01 01:12:59.909090",
+      "04": "push                2      0      0     ",
+      "05": "call                2      -      1     # public.timestamp()",
+      "06": "gtii                3      1      2     ",
+      "07": "jntr                13     3      0     ",
+      "08": "table_readi32       1      0      0     ",
+      "09": "push                1      0      0     ",
+      "10": "table_readt         1      0      1     ",
+      "11": "push                1      0      0     ",
+      "12": "set_add             0      0      0     ",
+      "13": "table_next          0      2      0     ",
+      "14": "table_close         0      0      0     ",
+      "15": "result              0      0      0     ",
+      "16": "ret                 0      0      0     "
     }
   }
 }]
@@ -502,21 +501,20 @@ explain select * from test where ts > timestamp "1970-01-01 01:12:59.909090"
     },
     "node": {
       "00": "set                 0      2      0     ",
-      "01": "table_open          0      0      3     # public.test (primary)",
-      "02": "jmp                 13     0      0     ",
-      "03": "table_readt         1      0      1     ",
-      "04": "timestamp           2      -      0     # 4379909090",
-      "05": "gtii                3      1      2     ",
-      "06": "jntr                12     3      0     ",
-      "07": "table_readi32       1      0      0     ",
-      "08": "push                1      0      0     ",
-      "09": "table_readt         1      0      1     ",
-      "10": "push                1      0      0     ",
-      "11": "set_add             0      0      0     ",
-      "12": "table_next          0      3      0     ",
-      "13": "table_close         0      0      0     ",
-      "14": "result              0      0      0     ",
-      "15": "ret                 0      0      0     "
+      "01": "table_open          0      0      12    # public.test (primary)",
+      "02": "table_readt         1      0      1     ",
+      "03": "timestamp           2      -      0     # 4379909090",
+      "04": "gtii                3      1      2     ",
+      "05": "jntr                11     3      0     ",
+      "06": "table_readi32       1      0      0     ",
+      "07": "push                1      0      0     ",
+      "08": "table_readt         1      0      1     ",
+      "09": "push                1      0      0     ",
+      "10": "set_add             0      0      0     ",
+      "11": "table_next          0      2      0     ",
+      "12": "table_close         0      0      0     ",
+      "13": "result              0      0      0     ",
+      "14": "ret                 0      0      0     "
     }
   }
 }]
@@ -558,15 +556,14 @@ explain select * from test
     },
     "node": {
       "00": "set                 0      1      0     ",
-      "01": "table_open          0      0      3     # public.test (primary)",
-      "02": "jmp                 7      0      0     ",
-      "03": "table_readt         1      0      0     ",
-      "04": "push                1      0      0     ",
-      "05": "set_add             0      0      0     ",
-      "06": "table_next          0      3      0     ",
-      "07": "table_close         0      0      0     ",
-      "08": "result              0      0      0     ",
-      "09": "ret                 0      0      0     "
+      "01": "table_open          0      0      6     # public.test (primary)",
+      "02": "table_readt         1      0      0     ",
+      "03": "push                1      0      0     ",
+      "04": "set_add             0      0      0     ",
+      "05": "table_next          0      2      0     ",
+      "06": "table_close         0      0      0     ",
+      "07": "result              0      0      0     ",
+      "08": "ret                 0      0      0     "
     }
   }
 }]
@@ -593,19 +590,18 @@ explain select * from test where id > timestamp '1970-01-01 00:00:01.000002'
       "00": "set                 0      1      0     ",
       "01": "timestamp           1      -      0     # 1000002",
       "02": "push                1      0      0     ",
-      "03": "table_open          0      0      5     # public.test (primary)",
-      "04": "jmp                 13     0      0     ",
-      "05": "table_readt         1      0      0     ",
-      "06": "timestamp           2      -      0     # 1000002",
-      "07": "gtii                3      1      2     ",
-      "08": "jntr                12     3      0     ",
-      "09": "table_readt         1      0      0     ",
-      "10": "push                1      0      0     ",
-      "11": "set_add             0      0      0     ",
-      "12": "table_next          0      5      0     ",
-      "13": "table_close         0      0      0     ",
-      "14": "result              0      0      0     ",
-      "15": "ret                 0      0      0     "
+      "03": "table_open          0      0      12    # public.test (primary)",
+      "04": "table_readt         1      0      0     ",
+      "05": "timestamp           2      -      0     # 1000002",
+      "06": "gtii                3      1      2     ",
+      "07": "jntr                11     3      0     ",
+      "08": "table_readt         1      0      0     ",
+      "09": "push                1      0      0     ",
+      "10": "set_add             0      0      0     ",
+      "11": "table_next          0      4      0     ",
+      "12": "table_close         0      0      0     ",
+      "13": "result              0      0      0     ",
+      "14": "ret                 0      0      0     "
     }
   }
 }]
@@ -628,19 +624,18 @@ explain select * from test where id >= timestamp '1970-01-01 00:00:01.000002'
       "00": "set                 0      1      0     ",
       "01": "timestamp           1      -      0     # 1000002",
       "02": "push                1      0      0     ",
-      "03": "table_open          0      0      5     # public.test (primary)",
-      "04": "jmp                 13     0      0     ",
-      "05": "table_readt         1      0      0     ",
-      "06": "timestamp           2      -      0     # 1000002",
-      "07": "gteii               3      1      2     ",
-      "08": "jntr                12     3      0     ",
-      "09": "table_readt         1      0      0     ",
-      "10": "push                1      0      0     ",
-      "11": "set_add             0      0      0     ",
-      "12": "table_next          0      5      0     ",
-      "13": "table_close         0      0      0     ",
-      "14": "result              0      0      0     ",
-      "15": "ret                 0      0      0     "
+      "03": "table_open          0      0      12    # public.test (primary)",
+      "04": "table_readt         1      0      0     ",
+      "05": "timestamp           2      -      0     # 1000002",
+      "06": "gteii               3      1      2     ",
+      "07": "jntr                11     3      0     ",
+      "08": "table_readt         1      0      0     ",
+      "09": "push                1      0      0     ",
+      "10": "set_add             0      0      0     ",
+      "11": "table_next          0      4      0     ",
+      "12": "table_close         0      0      0     ",
+      "13": "result              0      0      0     ",
+      "14": "ret                 0      0      0     "
     }
   }
 }]
@@ -661,23 +656,22 @@ explain select * from test where id < timestamp '1970-01-01 00:00:01.000003'
     },
     "node": {
       "00": "set                 0      1      0     ",
-      "01": "table_open          0      0      3     # public.test (primary)",
-      "02": "jmp                 15     0      0     ",
-      "03": "table_readt         1      0      0     ",
-      "04": "timestamp           2      -      0     # 1000003",
-      "05": "ltii                3      1      2     ",
-      "06": "jntr                2      3      0     ",
-      "07": "table_readt         1      0      0     ",
-      "08": "timestamp           2      -      0     # 1000003",
-      "09": "ltii                3      1      2     ",
-      "10": "jntr                14     3      0     ",
-      "11": "table_readt         1      0      0     ",
-      "12": "push                1      0      0     ",
-      "13": "set_add             0      0      0     ",
-      "14": "table_next          0      3      0     ",
-      "15": "table_close         0      0      0     ",
-      "16": "result              0      0      0     ",
-      "17": "ret                 0      0      0     "
+      "01": "table_open          0      0      14    # public.test (primary)",
+      "02": "table_readt         1      0      0     ",
+      "03": "timestamp           2      -      0     # 1000003",
+      "04": "ltii                3      1      2     ",
+      "05": "jntr                14     3      0     ",
+      "06": "table_readt         1      0      0     ",
+      "07": "timestamp           2      -      0     # 1000003",
+      "08": "ltii                3      1      2     ",
+      "09": "jntr                13     3      0     ",
+      "10": "table_readt         1      0      0     ",
+      "11": "push                1      0      0     ",
+      "12": "set_add             0      0      0     ",
+      "13": "table_next          0      2      0     ",
+      "14": "table_close         0      0      0     ",
+      "15": "result              0      0      0     ",
+      "16": "ret                 0      0      0     "
     }
   }
 }]
@@ -700,19 +694,17 @@ explain select * from test where id = timestamp '1970-01-01 00:00:01.000003'
       "00": "set                 0      1      0     ",
       "01": "timestamp           1      -      0     # 1000003",
       "02": "push                1      0      0     ",
-      "03": "table_open_lookup   0      0      5     # public.test (primary)",
-      "04": "jmp                 13     0      0     ",
-      "05": "table_readt         1      0      0     ",
-      "06": "timestamp           2      -      0     # 1000003",
-      "07": "equii               3      1      2     ",
-      "08": "jntr                12     3      0     ",
-      "09": "table_readt         1      0      0     ",
-      "10": "push                1      0      0     ",
-      "11": "set_add             0      0      0     ",
-      "12": "jmp                 4      0      0     ",
-      "13": "table_close         0      0      0     ",
-      "14": "result              0      0      0     ",
-      "15": "ret                 0      0      0     "
+      "03": "table_open_lookup   0      0      11    # public.test (primary)",
+      "04": "table_readt         1      0      0     ",
+      "05": "timestamp           2      -      0     # 1000003",
+      "06": "equii               3      1      2     ",
+      "07": "jntr                11     3      0     ",
+      "08": "table_readt         1      0      0     ",
+      "09": "push                1      0      0     ",
+      "10": "set_add             0      0      0     ",
+      "11": "table_close         0      0      0     ",
+      "12": "result              0      0      0     ",
+      "13": "ret                 0      0      0     "
     }
   }
 }]
@@ -741,23 +733,22 @@ explain select * from test where i > "1 year 1 day 10 hour"::interval
     },
     "node": {
       "00": "set                 0      2      0     ",
-      "01": "table_open          0      0      3     # public.test (primary)",
-      "02": "jmp                 15     0      0     ",
-      "03": "table_readl         1      0      1     ",
-      "04": "string              2      20     0     # 1 year 1 day 10 hour",
-      "05": "push                2      0      0     ",
-      "06": "call                2      -      1     # public.interval()",
-      "07": "gtll                3      1      2     ",
-      "08": "jntr                14     3      0     ",
-      "09": "table_readi32       1      0      0     ",
-      "10": "push                1      0      0     ",
-      "11": "table_readl         1      0      1     ",
-      "12": "push                1      0      0     ",
-      "13": "set_add             0      0      0     ",
-      "14": "table_next          0      3      0     ",
-      "15": "table_close         0      0      0     ",
-      "16": "result              0      0      0     ",
-      "17": "ret                 0      0      0     "
+      "01": "table_open          0      0      14    # public.test (primary)",
+      "02": "table_readl         1      0      1     ",
+      "03": "string              2      20     0     # 1 year 1 day 10 hour",
+      "04": "push                2      0      0     ",
+      "05": "call                2      -      1     # public.interval()",
+      "06": "gtll                3      1      2     ",
+      "07": "jntr                13     3      0     ",
+      "08": "table_readi32       1      0      0     ",
+      "09": "push                1      0      0     ",
+      "10": "table_readl         1      0      1     ",
+      "11": "push                1      0      0     ",
+      "12": "set_add             0      0      0     ",
+      "13": "table_next          0      2      0     ",
+      "14": "table_close         0      0      0     ",
+      "15": "result              0      0      0     ",
+      "16": "ret                 0      0      0     "
     }
   }
 }]
@@ -812,17 +803,16 @@ explain select * from test
     },
     "node": {
       "00": "set                 0      2      0     ",
-      "01": "table_open          0      0      3     # public.test (primary)",
-      "02": "jmp                 9      0      0     ",
-      "03": "table_readi32       1      0      0     ",
-      "04": "push                1      0      0     ",
-      "05": "table_readi32       1      0      1     ",
-      "06": "push                1      0      0     ",
-      "07": "set_add             0      0      0     ",
-      "08": "table_next          0      3      0     ",
-      "09": "table_close         0      0      0     ",
-      "10": "result              0      0      0     ",
-      "11": "ret                 0      0      0     "
+      "01": "table_open          0      0      8     # public.test (primary)",
+      "02": "table_readi32       1      0      0     ",
+      "03": "push                1      0      0     ",
+      "04": "table_readi32       1      0      1     ",
+      "05": "push                1      0      0     ",
+      "06": "set_add             0      0      0     ",
+      "07": "table_next          0      2      0     ",
+      "08": "table_close         0      0      0     ",
+      "09": "result              0      0      0     ",
+      "10": "ret                 0      0      0     "
     }
   }
 }]
@@ -843,17 +833,16 @@ explain select * from test use index (i)
     },
     "node": {
       "00": "set                 0      2      0     ",
-      "01": "table_open          0      0      3     # public.test (i)",
-      "02": "jmp                 9      0      0     ",
-      "03": "table_readi32       1      0      0     ",
-      "04": "push                1      0      0     ",
-      "05": "table_readi32       1      0      1     ",
-      "06": "push                1      0      0     ",
-      "07": "set_add             0      0      0     ",
-      "08": "table_next          0      3      0     ",
-      "09": "table_close         0      0      0     ",
-      "10": "result              0      0      0     ",
-      "11": "ret                 0      0      0     "
+      "01": "table_open          0      0      8     # public.test (i)",
+      "02": "table_readi32       1      0      0     ",
+      "03": "push                1      0      0     ",
+      "04": "table_readi32       1      0      1     ",
+      "05": "push                1      0      0     ",
+      "06": "set_add             0      0      0     ",
+      "07": "table_next          0      2      0     ",
+      "08": "table_close         0      0      0     ",
+      "09": "result              0      0      0     ",
+      "10": "ret                 0      0      0     "
     }
   }
 }]
@@ -981,7 +970,7 @@ explain insert into test select * from src
       "04": "union_recv          0      -1     -1    ",
       "05": "cte_set             0      0      0     ",
       "06": "cte_get             0      0      0     ",
-      "07": "send                1      12     -     # public.test",
+      "07": "send                1      11     -     # public.test",
       "08": "recv                1      0      0     ",
       "09": "null                0      0      0     ",
       "10": "cte_set             1      0      0     ",
@@ -989,19 +978,18 @@ explain insert into test select * from src
     },
     "node": {
       "00": "set                 0      2      0     ",
-      "01": "table_open          0      0      3     # public.src (primary)",
-      "02": "jmp                 9      0      0     ",
-      "03": "table_readi32       1      0      0     ",
-      "04": "push                1      0      0     ",
-      "05": "table_readi32       1      0      1     ",
-      "06": "push                1      0      0     ",
-      "07": "set_add             0      0      0     ",
-      "08": "table_next          0      3      0     ",
-      "09": "table_close         0      0      0     ",
-      "10": "result              0      0      0     ",
-      "11": "ret                 0      0      0     ",
-      "12": "insert              -      0      0     # public.test",
-      "13": "ret                 0      0      0     "
+      "01": "table_open          0      0      8     # public.src (primary)",
+      "02": "table_readi32       1      0      0     ",
+      "03": "push                1      0      0     ",
+      "04": "table_readi32       1      0      1     ",
+      "05": "push                1      0      0     ",
+      "06": "set_add             0      0      0     ",
+      "07": "table_next          0      2      0     ",
+      "08": "table_close         0      0      0     ",
+      "09": "result              0      0      0     ",
+      "10": "ret                 0      0      0     ",
+      "11": "insert              -      0      0     # public.test",
+      "12": "ret                 0      0      0     "
     }
   }
 }]

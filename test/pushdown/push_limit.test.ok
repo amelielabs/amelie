@@ -22,16 +22,17 @@ explain select * from test limit 1
     "node": {
       "00": "set                 0      1      0     ",
       "01": "int                 1      -      0     # 1",
-      "02": "table_open          0      0      4     # public.test (primary)",
-      "03": "jmp                 9      0      0     ",
-      "04": "cjltd               1      3      0     ",
-      "05": "table_readi32       2      0      0     ",
-      "06": "push                2      0      0     ",
-      "07": "set_add             0      0      0     ",
-      "08": "table_next          0      4      0     ",
-      "09": "table_close         0      0      0     ",
-      "10": "result              0      0      0     ",
-      "11": "ret                 0      0      0     "
+      "02": "table_open          0      0      10    # public.test (primary)",
+      "03": "jmp                 5      0      0     ",
+      "04": "jmp                 10     0      0     ",
+      "05": "cjltd               1      4      0     ",
+      "06": "table_readi32       2      0      0     ",
+      "07": "push                2      0      0     ",
+      "08": "set_add             0      0      0     ",
+      "09": "table_next          0      5      0     ",
+      "10": "table_close         0      0      0     ",
+      "11": "result              0      0      0     ",
+      "12": "ret                 0      0      0     "
     }
   }
 }]
@@ -70,16 +71,17 @@ explain select * from test limit 0
     "node": {
       "00": "set                 0      1      0     ",
       "01": "int                 1      -      0     # 0",
-      "02": "table_open          0      0      4     # public.test (primary)",
-      "03": "jmp                 9      0      0     ",
-      "04": "cjltd               1      3      0     ",
-      "05": "table_readi32       2      0      0     ",
-      "06": "push                2      0      0     ",
-      "07": "set_add             0      0      0     ",
-      "08": "table_next          0      4      0     ",
-      "09": "table_close         0      0      0     ",
-      "10": "result              0      0      0     ",
-      "11": "ret                 0      0      0     "
+      "02": "table_open          0      0      10    # public.test (primary)",
+      "03": "jmp                 5      0      0     ",
+      "04": "jmp                 10     0      0     ",
+      "05": "cjltd               1      4      0     ",
+      "06": "table_readi32       2      0      0     ",
+      "07": "push                2      0      0     ",
+      "08": "set_add             0      0      0     ",
+      "09": "table_next          0      5      0     ",
+      "10": "table_close         0      0      0     ",
+      "11": "result              0      0      0     ",
+      "12": "ret                 0      0      0     "
     }
   }
 }]
@@ -108,16 +110,17 @@ explain select * from test limit 1 offset 0
       "01": "int                 1      -      0     # 1",
       "02": "int                 2      -      0     # 0",
       "03": "addii               3      1      2     ",
-      "04": "table_open          0      0      6     # public.test (primary)",
-      "05": "jmp                 11     0      0     ",
-      "06": "cjltd               3      5      0     ",
-      "07": "table_readi32       1      0      0     ",
-      "08": "push                1      0      0     ",
-      "09": "set_add             0      0      0     ",
-      "10": "table_next          0      6      0     ",
-      "11": "table_close         0      0      0     ",
-      "12": "result              0      0      0     ",
-      "13": "ret                 0      0      0     "
+      "04": "table_open          0      0      12    # public.test (primary)",
+      "05": "jmp                 7      0      0     ",
+      "06": "jmp                 12     0      0     ",
+      "07": "cjltd               3      6      0     ",
+      "08": "table_readi32       1      0      0     ",
+      "09": "push                1      0      0     ",
+      "10": "set_add             0      0      0     ",
+      "11": "table_next          0      7      0     ",
+      "12": "table_close         0      0      0     ",
+      "13": "result              0      0      0     ",
+      "14": "ret                 0      0      0     "
     }
   }
 }]
@@ -149,16 +152,17 @@ explain select * from test limit 1 offset 1
       "01": "int                 1      -      0     # 1",
       "02": "int                 2      -      0     # 1",
       "03": "addii               3      1      2     ",
-      "04": "table_open          0      0      6     # public.test (primary)",
-      "05": "jmp                 11     0      0     ",
-      "06": "cjltd               3      5      0     ",
-      "07": "table_readi32       1      0      0     ",
-      "08": "push                1      0      0     ",
-      "09": "set_add             0      0      0     ",
-      "10": "table_next          0      6      0     ",
-      "11": "table_close         0      0      0     ",
-      "12": "result              0      0      0     ",
-      "13": "ret                 0      0      0     "
+      "04": "table_open          0      0      12    # public.test (primary)",
+      "05": "jmp                 7      0      0     ",
+      "06": "jmp                 12     0      0     ",
+      "07": "cjltd               3      6      0     ",
+      "08": "table_readi32       1      0      0     ",
+      "09": "push                1      0      0     ",
+      "10": "set_add             0      0      0     ",
+      "11": "table_next          0      7      0     ",
+      "12": "table_close         0      0      0     ",
+      "13": "result              0      0      0     ",
+      "14": "ret                 0      0      0     "
     }
   }
 }]
@@ -210,15 +214,14 @@ explain select * from test offset 1
     },
     "node": {
       "00": "set                 0      1      0     ",
-      "01": "table_open          0      0      3     # public.test (primary)",
-      "02": "jmp                 7      0      0     ",
-      "03": "table_readi32       1      0      0     ",
-      "04": "push                1      0      0     ",
-      "05": "set_add             0      0      0     ",
-      "06": "table_next          0      3      0     ",
-      "07": "table_close         0      0      0     ",
-      "08": "result              0      0      0     ",
-      "09": "ret                 0      0      0     "
+      "01": "table_open          0      0      6     # public.test (primary)",
+      "02": "table_readi32       1      0      0     ",
+      "03": "push                1      0      0     ",
+      "04": "set_add             0      0      0     ",
+      "05": "table_next          0      2      0     ",
+      "06": "table_close         0      0      0     ",
+      "07": "result              0      0      0     ",
+      "08": "ret                 0      0      0     "
     }
   }
 }]
@@ -257,16 +260,17 @@ explain select * from test limit 1
     "node": {
       "00": "set                 0      1      0     ",
       "01": "int                 1      -      0     # 1",
-      "02": "table_open          0      0      4     # public.test (primary)",
-      "03": "jmp                 9      0      0     ",
-      "04": "cjltd               1      3      0     ",
-      "05": "table_readi32       2      0      0     ",
-      "06": "push                2      0      0     ",
-      "07": "set_add             0      0      0     ",
-      "08": "table_next          0      4      0     ",
-      "09": "table_close         0      0      0     ",
-      "10": "result              0      0      0     ",
-      "11": "ret                 0      0      0     "
+      "02": "table_open          0      0      10    # public.test (primary)",
+      "03": "jmp                 5      0      0     ",
+      "04": "jmp                 10     0      0     ",
+      "05": "cjltd               1      4      0     ",
+      "06": "table_readi32       2      0      0     ",
+      "07": "push                2      0      0     ",
+      "08": "set_add             0      0      0     ",
+      "09": "table_next          0      5      0     ",
+      "10": "table_close         0      0      0     ",
+      "11": "result              0      0      0     ",
+      "12": "ret                 0      0      0     "
     }
   }
 }]
@@ -300,16 +304,17 @@ explain select * from test limit 0
     "node": {
       "00": "set                 0      1      0     ",
       "01": "int                 1      -      0     # 0",
-      "02": "table_open          0      0      4     # public.test (primary)",
-      "03": "jmp                 9      0      0     ",
-      "04": "cjltd               1      3      0     ",
-      "05": "table_readi32       2      0      0     ",
-      "06": "push                2      0      0     ",
-      "07": "set_add             0      0      0     ",
-      "08": "table_next          0      4      0     ",
-      "09": "table_close         0      0      0     ",
-      "10": "result              0      0      0     ",
-      "11": "ret                 0      0      0     "
+      "02": "table_open          0      0      10    # public.test (primary)",
+      "03": "jmp                 5      0      0     ",
+      "04": "jmp                 10     0      0     ",
+      "05": "cjltd               1      4      0     ",
+      "06": "table_readi32       2      0      0     ",
+      "07": "push                2      0      0     ",
+      "08": "set_add             0      0      0     ",
+      "09": "table_next          0      5      0     ",
+      "10": "table_close         0      0      0     ",
+      "11": "result              0      0      0     ",
+      "12": "ret                 0      0      0     "
     }
   }
 }]
@@ -338,16 +343,17 @@ explain select * from test limit 1 offset 0
       "01": "int                 1      -      0     # 1",
       "02": "int                 2      -      0     # 0",
       "03": "addii               3      1      2     ",
-      "04": "table_open          0      0      6     # public.test (primary)",
-      "05": "jmp                 11     0      0     ",
-      "06": "cjltd               3      5      0     ",
-      "07": "table_readi32       1      0      0     ",
-      "08": "push                1      0      0     ",
-      "09": "set_add             0      0      0     ",
-      "10": "table_next          0      6      0     ",
-      "11": "table_close         0      0      0     ",
-      "12": "result              0      0      0     ",
-      "13": "ret                 0      0      0     "
+      "04": "table_open          0      0      12    # public.test (primary)",
+      "05": "jmp                 7      0      0     ",
+      "06": "jmp                 12     0      0     ",
+      "07": "cjltd               3      6      0     ",
+      "08": "table_readi32       1      0      0     ",
+      "09": "push                1      0      0     ",
+      "10": "set_add             0      0      0     ",
+      "11": "table_next          0      7      0     ",
+      "12": "table_close         0      0      0     ",
+      "13": "result              0      0      0     ",
+      "14": "ret                 0      0      0     "
     }
   }
 }]
@@ -374,16 +380,17 @@ explain select * from test limit 1 offset 1
       "01": "int                 1      -      0     # 1",
       "02": "int                 2      -      0     # 1",
       "03": "addii               3      1      2     ",
-      "04": "table_open          0      0      6     # public.test (primary)",
-      "05": "jmp                 11     0      0     ",
-      "06": "cjltd               3      5      0     ",
-      "07": "table_readi32       1      0      0     ",
-      "08": "push                1      0      0     ",
-      "09": "set_add             0      0      0     ",
-      "10": "table_next          0      6      0     ",
-      "11": "table_close         0      0      0     ",
-      "12": "result              0      0      0     ",
-      "13": "ret                 0      0      0     "
+      "04": "table_open          0      0      12    # public.test (primary)",
+      "05": "jmp                 7      0      0     ",
+      "06": "jmp                 12     0      0     ",
+      "07": "cjltd               3      6      0     ",
+      "08": "table_readi32       1      0      0     ",
+      "09": "push                1      0      0     ",
+      "10": "set_add             0      0      0     ",
+      "11": "table_next          0      7      0     ",
+      "12": "table_close         0      0      0     ",
+      "13": "result              0      0      0     ",
+      "14": "ret                 0      0      0     "
     }
   }
 }]
@@ -435,15 +442,14 @@ explain select * from test offset 1
     },
     "node": {
       "00": "set                 0      1      0     ",
-      "01": "table_open          0      0      3     # public.test (primary)",
-      "02": "jmp                 7      0      0     ",
-      "03": "table_readi32       1      0      0     ",
-      "04": "push                1      0      0     ",
-      "05": "set_add             0      0      0     ",
-      "06": "table_next          0      3      0     ",
-      "07": "table_close         0      0      0     ",
-      "08": "result              0      0      0     ",
-      "09": "ret                 0      0      0     "
+      "01": "table_open          0      0      6     # public.test (primary)",
+      "02": "table_readi32       1      0      0     ",
+      "03": "push                1      0      0     ",
+      "04": "set_add             0      0      0     ",
+      "05": "table_next          0      2      0     ",
+      "06": "table_close         0      0      0     ",
+      "07": "result              0      0      0     ",
+      "08": "ret                 0      0      0     "
     }
   }
 }]

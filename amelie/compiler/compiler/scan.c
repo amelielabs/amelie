@@ -73,7 +73,7 @@ scan_key(Scan* self, Target* target)
 }
 
 static inline void
-scan_stop(Scan* self, Target* target, int _eof)
+scan_stop(Scan* self, Target* target, int scan_stop_jntr[])
 {
 	auto cp   = self->compiler;
 	auto plan = target->plan;
@@ -90,7 +90,8 @@ scan_stop(Scan* self, Target* target, int _eof)
 		rexpr = emit_expr(cp, self->targets, ref->stop_op);
 
 		// jntr _eof
-		op2(cp, CJNTR, _eof, rexpr);
+		scan_stop_jntr[key->order] = op_pos(cp);
+		op2(cp, CJNTR, 0 /* _eof */, rexpr);
 		runpin(cp, rexpr);
 	}
 }
@@ -103,10 +104,9 @@ scan_table(Scan* self, Target* target)
 {
 	auto cp = self->compiler;
 	auto table = target->from_table;
-
-	auto plan = target->plan;
-	auto point_lookup = (plan->type == PLAN_LOOKUP);
 	auto index = target->from_table_index;
+	auto plan  = target->plan;
+	auto point_lookup = (plan->type == PLAN_LOOKUP);
 
 	// push cursor keys
 	auto keys_count = scan_key(self, target);
@@ -122,23 +122,29 @@ scan_table(Scan* self, Target* target)
 	int  open_op = CTABLE_OPEN;
 	if (point_lookup)
 		open_op = CTABLE_OPEN_LOOKUP;
-	op4(cp, open_op, target->id, name_offset, 0 /* _where */, keys_count);
+	op4(cp, open_op, target->id, name_offset, 0 /* _eof */, keys_count);
 
-	// _where_eof:
-	int _where_eof = op_pos(cp);
-	op1(cp, CJMP, 0 /* _eof */);
+	// handle outer target eof jmp (for limit)
+	if (self->rlimit != -1 && !target->prev)
+	{
+		// jmp to _where
+		int _start = op_pos(cp);
+		op1(cp, CJMP, 0 /* _where */);
 
-	// get outer target eof (for limit)
-	if (self->eof == -1)
-		self->eof = _where_eof;
+		// jmp to _eof
+		self->eof = op_pos(cp);
+		op1(cp, CJMP, 0 /* _eof */);
+
+		code_at(cp->code, _start)->a = op_pos(cp);
+	}
 
 	// _where:
 	int _where = op_pos(cp);
-	code_at(cp->code, _open)->c = _where;
 
 	// generate scan stop conditions for <, <= for tree index
+	int scan_stop_jntr[plan->match_stop];
 	if (index->type == INDEX_TREE)
-		scan_stop(self, target, _where_eof);
+		scan_stop(self, target, scan_stop_jntr);
 
 	if (target->next)
 	{
@@ -183,14 +189,23 @@ scan_table(Scan* self, Target* target)
 	// table_next
 
 	// do not iterate further for point-lookups on unique index
-	if (point_lookup && index->unique)
-		op1(cp, CJMP, _where_eof);
-	else
+	if (! (point_lookup && index->unique))
 		op2(cp, CTABLE_NEXT, target->id, _where);
 
 	// _eof:
 	int _eof = op_pos(cp);
-	code_at(cp->code, _where_eof)->a = _eof;
+
+	// set table_open to _eof
+	code_at(cp->code, _open)->c = _eof;
+
+	// set scan stop jntr to eof
+	for (auto order = 0; order < plan->match_stop; order++)
+		code_at(cp->code, scan_stop_jntr[order])->a = _eof;
+
+	// set outer target eof jmp for limit
+	if (self->rlimit != -1 && !target->prev)
+		code_at(cp->code, self->eof)->a = _eof;
+
 	op1(cp, CTABLE_CLOSE, target->id);
 }
 

@@ -40,12 +40,11 @@ explain delete from test; select error("abort")
       "12": "ret                 0      0      0     "
     },
     "node": {
-      "00": "table_open          0      0      2     # public.test (primary)",
-      "01": "jmp                 4      0      0     ",
-      "02": "delete              0      0      0     ",
-      "03": "table_next          0      2      0     ",
-      "04": "table_close         0      0      0     ",
-      "05": "ret                 0      0      0     "
+      "00": "table_open          0      0      3     # public.test (primary)",
+      "01": "delete              0      0      0     ",
+      "02": "table_next          0      1      0     ",
+      "03": "table_close         0      0      0     ",
+      "04": "ret                 0      0      0     "
     }
   }
 }]
@@ -73,16 +72,15 @@ explain update test set data = id; select error("abort")
       "12": "ret                 0      0      0     "
     },
     "node": {
-      "00": "table_open          0      0      2     # public.test (primary)",
-      "01": "jmp                 8      0      0     ",
-      "02": "int                 0      -      0     # 1",
-      "03": "push                0      0      0     ",
-      "04": "table_readi32       0      0      0     ",
-      "05": "push                0      0      0     ",
-      "06": "update              0      1      0     ",
-      "07": "table_next          0      2      0     ",
-      "08": "table_close         0      0      0     ",
-      "09": "ret                 0      0      0     "
+      "00": "table_open          0      0      7     # public.test (primary)",
+      "01": "int                 0      -      0     # 1",
+      "02": "push                0      0      0     ",
+      "03": "table_readi32       0      0      0     ",
+      "04": "push                0      0      0     ",
+      "05": "update              0      1      0     ",
+      "06": "table_next          0      1      0     ",
+      "07": "table_close         0      0      0     ",
+      "08": "ret                 0      0      0     "
     }
   }
 }]
@@ -169,12 +167,11 @@ explain delete from test; select error("abort")
       "12": "ret                 0      0      0     "
     },
     "node": {
-      "00": "table_open          0      0      2     # public.test (primary)",
-      "01": "jmp                 4      0      0     ",
-      "02": "delete              0      0      0     ",
-      "03": "table_next          0      2      0     ",
-      "04": "table_close         0      0      0     ",
-      "05": "ret                 0      0      0     "
+      "00": "table_open          0      0      3     # public.test (primary)",
+      "01": "delete              0      0      0     ",
+      "02": "table_next          0      1      0     ",
+      "03": "table_close         0      0      0     ",
+      "04": "ret                 0      0      0     "
     }
   }
 }]
@@ -202,16 +199,15 @@ explain update test set data = id; select error("abort")
       "12": "ret                 0      0      0     "
     },
     "node": {
-      "00": "table_open          0      0      2     # public.test (primary)",
-      "01": "jmp                 8      0      0     ",
-      "02": "int                 0      -      0     # 1",
-      "03": "push                0      0      0     ",
-      "04": "table_readi32       0      0      0     ",
-      "05": "push                0      0      0     ",
-      "06": "update              0      1      0     ",
-      "07": "table_next          0      2      0     ",
-      "08": "table_close         0      0      0     ",
-      "09": "ret                 0      0      0     "
+      "00": "table_open          0      0      7     # public.test (primary)",
+      "01": "int                 0      -      0     # 1",
+      "02": "push                0      0      0     ",
+      "03": "table_readi32       0      0      0     ",
+      "04": "push                0      0      0     ",
+      "05": "update              0      1      0     ",
+      "06": "table_next          0      1      0     ",
+      "07": "table_close         0      0      0     ",
+      "08": "ret                 0      0      0     "
     }
   }
 }]
@@ -295,9 +291,9 @@ explain update a set data = id; update b set data = id; select * from a; select 
   "bytecode": {
     "coordinator": {
       "00": "send_all            0      0      -     # public.a",
-      "01": "send_all            1      10     -     # public.b",
-      "02": "send_all            2      20     -     # public.a",
-      "03": "send_all            3      32     -     # public.b",
+      "01": "send_all            1      9      -     # public.b",
+      "02": "send_all            2      18     -     # public.a",
+      "03": "send_all            3      29     -     # public.b",
       "04": "recv                0      0      0     ",
       "05": "null                0      0      0     ",
       "06": "cte_set             0      0      0     ",
@@ -325,50 +321,46 @@ explain update a set data = id; update b set data = id; select * from a; select 
       "28": "ret                 0      0      0     "
     },
     "node": {
-      "00": "table_open          0      0      2     # public.a (primary)",
-      "01": "jmp                 8      0      0     ",
-      "02": "int                 0      -      0     # 1",
-      "03": "push                0      0      0     ",
-      "04": "table_readi32       0      0      0     ",
-      "05": "push                0      0      0     ",
-      "06": "update              0      1      0     ",
-      "07": "table_next          0      2      0     ",
-      "08": "table_close         0      0      0     ",
-      "09": "ret                 0      0      0     ",
-      "10": "table_open          0      17     12    # public.b (primary)",
-      "11": "jmp                 18     0      0     ",
-      "12": "int                 0      -      0     # 1",
+      "00": "table_open          0      0      7     # public.a (primary)",
+      "01": "int                 0      -      0     # 1",
+      "02": "push                0      0      0     ",
+      "03": "table_readi32       0      0      0     ",
+      "04": "push                0      0      0     ",
+      "05": "update              0      1      0     ",
+      "06": "table_next          0      1      0     ",
+      "07": "table_close         0      0      0     ",
+      "08": "ret                 0      0      0     ",
+      "09": "table_open          0      17     16    # public.b (primary)",
+      "10": "int                 0      -      0     # 1",
+      "11": "push                0      0      0     ",
+      "12": "table_readi32       0      0      0     ",
       "13": "push                0      0      0     ",
-      "14": "table_readi32       0      0      0     ",
-      "15": "push                0      0      0     ",
-      "16": "update              0      1      0     ",
-      "17": "table_next          0      12     0     ",
-      "18": "table_close         0      0      0     ",
-      "19": "ret                 0      0      0     ",
-      "20": "set                 0      2      0     ",
-      "21": "table_open          0      34     23    # public.a (primary)",
-      "22": "jmp                 29     0      0     ",
-      "23": "table_readi32       1      0      0     ",
-      "24": "push                1      0      0     ",
-      "25": "table_readi32       1      0      1     ",
-      "26": "push                1      0      0     ",
-      "27": "set_add             0      0      0     ",
-      "28": "table_next          0      23     0     ",
-      "29": "table_close         0      0      0     ",
-      "30": "result              0      0      0     ",
-      "31": "ret                 0      0      0     ",
-      "32": "set                 0      2      0     ",
-      "33": "table_open          0      51     35    # public.b (primary)",
-      "34": "jmp                 41     0      0     ",
-      "35": "table_readi32       1      0      0     ",
-      "36": "push                1      0      0     ",
-      "37": "table_readi32       1      0      1     ",
-      "38": "push                1      0      0     ",
-      "39": "set_add             0      0      0     ",
-      "40": "table_next          0      35     0     ",
-      "41": "table_close         0      0      0     ",
-      "42": "result              0      0      0     ",
-      "43": "ret                 0      0      0     "
+      "14": "update              0      1      0     ",
+      "15": "table_next          0      10     0     ",
+      "16": "table_close         0      0      0     ",
+      "17": "ret                 0      0      0     ",
+      "18": "set                 0      2      0     ",
+      "19": "table_open          0      34     26    # public.a (primary)",
+      "20": "table_readi32       1      0      0     ",
+      "21": "push                1      0      0     ",
+      "22": "table_readi32       1      0      1     ",
+      "23": "push                1      0      0     ",
+      "24": "set_add             0      0      0     ",
+      "25": "table_next          0      20     0     ",
+      "26": "table_close         0      0      0     ",
+      "27": "result              0      0      0     ",
+      "28": "ret                 0      0      0     ",
+      "29": "set                 0      2      0     ",
+      "30": "table_open          0      51     37    # public.b (primary)",
+      "31": "table_readi32       1      0      0     ",
+      "32": "push                1      0      0     ",
+      "33": "table_readi32       1      0      1     ",
+      "34": "push                1      0      0     ",
+      "35": "set_add             0      0      0     ",
+      "36": "table_next          0      31     0     ",
+      "37": "table_close         0      0      0     ",
+      "38": "result              0      0      0     ",
+      "39": "ret                 0      0      0     "
     }
   }
 }]
@@ -386,7 +378,7 @@ explain insert into a values (1, 0), (3, 0) on conflict do update set data = id;
       "00": "set_ptr             0      -      0     ",
       "01": "send                0      0      -     # public.a",
       "02": "send_all            1      10     -     # public.b",
-      "03": "send_all            2      22     -     # public.a",
+      "03": "send_all            2      21     -     # public.a",
       "04": "recv                0      0      0     ",
       "05": "null                0      0      0     ",
       "06": "cte_set             0      0      0     ",
@@ -419,30 +411,28 @@ explain insert into a values (1, 0), (3, 0) on conflict do update set data = id;
       "07": "upsert              0      2      -1    ",
       "08": "table_close         0      0      0     ",
       "09": "ret                 0      0      0     ",
-      "10": "table_open          0      0      12    # public.b (primary)",
-      "11": "jmp                 20     0      0     ",
-      "12": "int                 0      -      0     # 1",
-      "13": "push                0      0      0     ",
-      "14": "table_readi32       0      0      1     ",
-      "15": "int                 1      -      0     # 2",
-      "16": "mulii               2      0      1     ",
-      "17": "push                2      0      0     ",
-      "18": "update              0      1      0     ",
-      "19": "table_next          0      12     0     ",
-      "20": "table_close         0      0      0     ",
-      "21": "ret                 0      0      0     ",
-      "22": "set                 0      2      0     ",
-      "23": "table_open          0      17     25    # public.a (primary)",
-      "24": "jmp                 31     0      0     ",
-      "25": "table_readi32       1      0      0     ",
+      "10": "table_open          0      0      19    # public.b (primary)",
+      "11": "int                 0      -      0     # 1",
+      "12": "push                0      0      0     ",
+      "13": "table_readi32       0      0      1     ",
+      "14": "int                 1      -      0     # 2",
+      "15": "mulii               2      0      1     ",
+      "16": "push                2      0      0     ",
+      "17": "update              0      1      0     ",
+      "18": "table_next          0      11     0     ",
+      "19": "table_close         0      0      0     ",
+      "20": "ret                 0      0      0     ",
+      "21": "set                 0      2      0     ",
+      "22": "table_open          0      17     29    # public.a (primary)",
+      "23": "table_readi32       1      0      0     ",
+      "24": "push                1      0      0     ",
+      "25": "table_readi32       1      0      1     ",
       "26": "push                1      0      0     ",
-      "27": "table_readi32       1      0      1     ",
-      "28": "push                1      0      0     ",
-      "29": "set_add             0      0      0     ",
-      "30": "table_next          0      25     0     ",
-      "31": "table_close         0      0      0     ",
-      "32": "result              0      0      0     ",
-      "33": "ret                 0      0      0     "
+      "27": "set_add             0      0      0     ",
+      "28": "table_next          0      23     0     ",
+      "29": "table_close         0      0      0     ",
+      "30": "result              0      0      0     ",
+      "31": "ret                 0      0      0     "
     }
   }
 }]

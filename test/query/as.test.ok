@@ -57,15 +57,14 @@ explain select t.x from (select z.id as x from (select id from test) z) t
     },
     "node": {
       "00": "set                 0      1      0     ",
-      "01": "table_open          0      0      3     # public.test (primary)",
-      "02": "jmp                 7      0      0     ",
-      "03": "table_readi32       1      0      0     ",
-      "04": "push                1      0      0     ",
-      "05": "set_add             0      0      0     ",
-      "06": "table_next          0      3      0     ",
-      "07": "table_close         0      0      0     ",
-      "08": "result              0      0      0     ",
-      "09": "ret                 0      0      0     "
+      "01": "table_open          0      0      6     # public.test (primary)",
+      "02": "table_readi32       1      0      0     ",
+      "03": "push                1      0      0     ",
+      "04": "set_add             0      0      0     ",
+      "05": "table_next          0      2      0     ",
+      "06": "table_close         0      0      0     ",
+      "07": "result              0      0      0     ",
+      "08": "ret                 0      0      0     "
     }
   }
 }]

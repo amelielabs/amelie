@@ -43,20 +43,19 @@ explain select exists (select true from test where false)
     "node": {
       "00": "set                 0      1      0     ",
       "01": "set                 1      1      0     ",
-      "02": "table_open          0      0      4     # public.test (primary)",
-      "03": "jmp                 10     0      0     ",
-      "04": "bool                2      0      0     ",
-      "05": "jntr                9      2      0     ",
-      "06": "bool                2      1      0     ",
-      "07": "push                2      0      0     ",
-      "08": "set_add             1      0      0     ",
-      "09": "table_next          0      4      0     ",
-      "10": "table_close         0      0      0     ",
-      "11": "exists              2      1      0     ",
-      "12": "push                2      0      0     ",
-      "13": "set_add             0      0      0     ",
-      "14": "result              0      0      0     ",
-      "15": "ret                 0      0      0     "
+      "02": "table_open          0      0      9     # public.test (primary)",
+      "03": "bool                2      0      0     ",
+      "04": "jntr                8      2      0     ",
+      "05": "bool                2      1      0     ",
+      "06": "push                2      0      0     ",
+      "07": "set_add             1      0      0     ",
+      "08": "table_next          0      3      0     ",
+      "09": "table_close         0      0      0     ",
+      "10": "exists              2      1      0     ",
+      "11": "push                2      0      0     ",
+      "12": "set_add             0      0      0     ",
+      "13": "result              0      0      0     ",
+      "14": "ret                 0      0      0     "
     }
   }
 }]

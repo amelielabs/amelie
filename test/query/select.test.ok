@@ -94,15 +94,14 @@ explain select * from test
     },
     "node": {
       "00": "set                 0      1      0     ",
-      "01": "table_open          0      0      3     # public.test (primary)",
-      "02": "jmp                 7      0      0     ",
-      "03": "table_readi32       1      0      0     ",
-      "04": "push                1      0      0     ",
-      "05": "set_add             0      0      0     ",
-      "06": "table_next          0      3      0     ",
-      "07": "table_close         0      0      0     ",
-      "08": "result              0      0      0     ",
-      "09": "ret                 0      0      0     "
+      "01": "table_open          0      0      6     # public.test (primary)",
+      "02": "table_readi32       1      0      0     ",
+      "03": "push                1      0      0     ",
+      "04": "set_add             0      0      0     ",
+      "05": "table_next          0      2      0     ",
+      "06": "table_close         0      0      0     ",
+      "07": "result              0      0      0     ",
+      "08": "ret                 0      0      0     "
     }
   }
 }]
@@ -139,17 +138,16 @@ explain select id, data from test
     },
     "node": {
       "00": "set                 0      2      0     ",
-      "01": "table_open          0      0      3     # public.test (primary)",
-      "02": "jmp                 9      0      0     ",
-      "03": "table_readi32       1      0      0     ",
-      "04": "push                1      0      0     ",
-      "05": "table_readi32       1      0      1     ",
-      "06": "push                1      0      0     ",
-      "07": "set_add             0      0      0     ",
-      "08": "table_next          0      3      0     ",
-      "09": "table_close         0      0      0     ",
-      "10": "result              0      0      0     ",
-      "11": "ret                 0      0      0     "
+      "01": "table_open          0      0      8     # public.test (primary)",
+      "02": "table_readi32       1      0      0     ",
+      "03": "push                1      0      0     ",
+      "04": "table_readi32       1      0      1     ",
+      "05": "push                1      0      0     ",
+      "06": "set_add             0      0      0     ",
+      "07": "table_next          0      2      0     ",
+      "08": "table_close         0      0      0     ",
+      "09": "result              0      0      0     ",
+      "10": "ret                 0      0      0     "
     }
   }
 }]
@@ -184,17 +182,16 @@ explain select data.data from test
     },
     "node": {
       "00": "set                 0      1      0     ",
-      "01": "table_open          0      0      3     # public.test (primary)",
-      "02": "jmp                 9      0      0     ",
-      "03": "table_readj         1      0      1     ",
-      "04": "string              2      20     0     # data",
-      "05": "dotjs               3      1      2     ",
-      "06": "push                3      0      0     ",
-      "07": "set_add             0      0      0     ",
-      "08": "table_next          0      3      0     ",
-      "09": "table_close         0      0      0     ",
-      "10": "result              0      0      0     ",
-      "11": "ret                 0      0      0     "
+      "01": "table_open          0      0      8     # public.test (primary)",
+      "02": "table_readj         1      0      1     ",
+      "03": "string              2      20     0     # data",
+      "04": "dotjs               3      1      2     ",
+      "05": "push                3      0      0     ",
+      "06": "set_add             0      0      0     ",
+      "07": "table_next          0      2      0     ",
+      "08": "table_close         0      0      0     ",
+      "09": "result              0      0      0     ",
+      "10": "ret                 0      0      0     "
     }
   }
 }]
@@ -235,17 +232,16 @@ explain select data.data.data from test
     },
     "node": {
       "00": "set                 0      1      0     ",
-      "01": "table_open          0      0      3     # public.test (primary)",
-      "02": "jmp                 9      0      0     ",
-      "03": "table_readj         1      0      1     ",
-      "04": "string              2      20     0     # data.data",
-      "05": "dotjs               3      1      2     ",
-      "06": "push                3      0      0     ",
-      "07": "set_add             0      0      0     ",
-      "08": "table_next          0      3      0     ",
-      "09": "table_close         0      0      0     ",
-      "10": "result              0      0      0     ",
-      "11": "ret                 0      0      0     "
+      "01": "table_open          0      0      8     # public.test (primary)",
+      "02": "table_readj         1      0      1     ",
+      "03": "string              2      20     0     # data.data",
+      "04": "dotjs               3      1      2     ",
+      "05": "push                3      0      0     ",
+      "06": "set_add             0      0      0     ",
+      "07": "table_next          0      2      0     ",
+      "08": "table_close         0      0      0     ",
+      "09": "result              0      0      0     ",
+      "10": "ret                 0      0      0     "
     }
   }
 }]
@@ -272,17 +268,16 @@ explain select test.id, test.data from test
     },
     "node": {
       "00": "set                 0      2      0     ",
-      "01": "table_open          0      0      3     # public.test (primary)",
-      "02": "jmp                 9      0      0     ",
-      "03": "table_readi32       1      0      0     ",
-      "04": "push                1      0      0     ",
-      "05": "table_readi32       1      0      1     ",
-      "06": "push                1      0      0     ",
-      "07": "set_add             0      0      0     ",
-      "08": "table_next          0      3      0     ",
-      "09": "table_close         0      0      0     ",
-      "10": "result              0      0      0     ",
-      "11": "ret                 0      0      0     "
+      "01": "table_open          0      0      8     # public.test (primary)",
+      "02": "table_readi32       1      0      0     ",
+      "03": "push                1      0      0     ",
+      "04": "table_readi32       1      0      1     ",
+      "05": "push                1      0      0     ",
+      "06": "set_add             0      0      0     ",
+      "07": "table_next          0      2      0     ",
+      "08": "table_close         0      0      0     ",
+      "09": "result              0      0      0     ",
+      "10": "ret                 0      0      0     "
     }
   }
 }]
@@ -309,17 +304,16 @@ explain select test.data.data from test
     },
     "node": {
       "00": "set                 0      1      0     ",
-      "01": "table_open          0      0      3     # public.test (primary)",
-      "02": "jmp                 9      0      0     ",
-      "03": "table_readj         1      0      1     ",
-      "04": "string              2      20     0     # data",
-      "05": "dotjs               3      1      2     ",
-      "06": "push                3      0      0     ",
-      "07": "set_add             0      0      0     ",
-      "08": "table_next          0      3      0     ",
-      "09": "table_close         0      0      0     ",
-      "10": "result              0      0      0     ",
-      "11": "ret                 0      0      0     "
+      "01": "table_open          0      0      8     # public.test (primary)",
+      "02": "table_readj         1      0      1     ",
+      "03": "string              2      20     0     # data",
+      "04": "dotjs               3      1      2     ",
+      "05": "push                3      0      0     ",
+      "06": "set_add             0      0      0     ",
+      "07": "table_next          0      2      0     ",
+      "08": "table_close         0      0      0     ",
+      "09": "result              0      0      0     ",
+      "10": "ret                 0      0      0     "
     }
   }
 }]
@@ -370,17 +364,16 @@ explain select alias.id, alias.data from test alias
     },
     "node": {
       "00": "set                 0      2      0     ",
-      "01": "table_open          0      0      3     # public.test (primary)",
-      "02": "jmp                 9      0      0     ",
-      "03": "table_readi32       1      0      0     ",
-      "04": "push                1      0      0     ",
-      "05": "table_readi32       1      0      1     ",
-      "06": "push                1      0      0     ",
-      "07": "set_add             0      0      0     ",
-      "08": "table_next          0      3      0     ",
-      "09": "table_close         0      0      0     ",
-      "10": "result              0      0      0     ",
-      "11": "ret                 0      0      0     "
+      "01": "table_open          0      0      8     # public.test (primary)",
+      "02": "table_readi32       1      0      0     ",
+      "03": "push                1      0      0     ",
+      "04": "table_readi32       1      0      1     ",
+      "05": "push                1      0      0     ",
+      "06": "set_add             0      0      0     ",
+      "07": "table_next          0      2      0     ",
+      "08": "table_close         0      0      0     ",
+      "09": "result              0      0      0     ",
+      "10": "ret                 0      0      0     "
     }
   }
 }]
@@ -407,17 +400,16 @@ explain select alias.data.data from test alias
     },
     "node": {
       "00": "set                 0      1      0     ",
-      "01": "table_open          0      0      3     # public.test (primary)",
-      "02": "jmp                 9      0      0     ",
-      "03": "table_readj         1      0      1     ",
-      "04": "string              2      20     0     # data",
-      "05": "dotjs               3      1      2     ",
-      "06": "push                3      0      0     ",
-      "07": "set_add             0      0      0     ",
-      "08": "table_next          0      3      0     ",
-      "09": "table_close         0      0      0     ",
-      "10": "result              0      0      0     ",
-      "11": "ret                 0      0      0     "
+      "01": "table_open          0      0      8     # public.test (primary)",
+      "02": "table_readj         1      0      1     ",
+      "03": "string              2      20     0     # data",
+      "04": "dotjs               3      1      2     ",
+      "05": "push                3      0      0     ",
+      "06": "set_add             0      0      0     ",
+      "07": "table_next          0      2      0     ",
+      "08": "table_close         0      0      0     ",
+      "09": "result              0      0      0     ",
+      "10": "ret                 0      0      0     "
     }
   }
 }]
@@ -448,17 +440,16 @@ explain select alias.id, alias.data from test alias
     },
     "node": {
       "00": "set                 0      2      0     ",
-      "01": "table_open          0      0      3     # public.test (primary)",
-      "02": "jmp                 9      0      0     ",
-      "03": "table_readi32       1      0      0     ",
-      "04": "push                1      0      0     ",
-      "05": "table_readi32       1      0      1     ",
-      "06": "push                1      0      0     ",
-      "07": "set_add             0      0      0     ",
-      "08": "table_next          0      3      0     ",
-      "09": "table_close         0      0      0     ",
-      "10": "result              0      0      0     ",
-      "11": "ret                 0      0      0     "
+      "01": "table_open          0      0      8     # public.test (primary)",
+      "02": "table_readi32       1      0      0     ",
+      "03": "push                1      0      0     ",
+      "04": "table_readi32       1      0      1     ",
+      "05": "push                1      0      0     ",
+      "06": "set_add             0      0      0     ",
+      "07": "table_next          0      2      0     ",
+      "08": "table_close         0      0      0     ",
+      "09": "result              0      0      0     ",
+      "10": "ret                 0      0      0     "
     }
   }
 }]
