@@ -37,3 +37,33 @@ ast_group_allocate(int order, Ast* expr)
 	self->column = NULL;
 	return self;
 }
+
+static inline AstGroup*
+ast_group_resolve_column(AstList* list, Str* name)
+{
+	for (auto node = list->list; node; node = node->next)
+	{
+		auto group = ast_group_of(node->ast);
+		if (group->expr->id != KNAME &&
+		    group->expr->id != KNAME_COMPOUND)
+			continue;
+		if (str_compare(&group->expr->string, name))
+			return group;
+	}
+	return NULL;
+}
+
+static inline AstGroup*
+ast_group_resolve_column_prefix(AstList* list, Str* name)
+{
+	// search name.path in group by name (group by expr has prefix of the path)
+	for (auto node = list->list; node; node = node->next)
+	{
+		auto group = ast_group_of(node->ast);
+		if (group->expr->id != KNAME_COMPOUND)
+			continue;
+		if (str_compare_prefix(name, &group->expr->string))
+			return group;
+	}
+	return NULL;
+}

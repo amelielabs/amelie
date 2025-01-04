@@ -342,7 +342,7 @@ emit_select_group_by_scan(Compiler* self, AstSelect* select,
 
 	// scan over created group
 	//
-	// result will be added to set
+	// result will be added to the set
 	//
 	auto target_group = targets_outer(&select->targets_group);
 	target_group->r = rset;

@@ -262,7 +262,8 @@ parse_select(Stmt* self, Targets* outer, bool subquery)
 		auto target = target_allocate(&self->order_targets);
 		target->type = TARGET_GROUP_BY;
 		target->name = targets_outer(&select->targets)->name;
-		target->from_columns = &select->targets_group_columns;
+		target->from_group_by = &select->expr_group_by;
+		target->from_columns  = &select->targets_group_columns;
 		targets_add(&select->targets_group, target);
 
 		// group by target columns will be created
@@ -290,8 +291,6 @@ parse_select_resolve_group_by(AstSelect* select)
 	for (; node; node = node->next)
 	{
 		auto agg = ast_agg_of(node->ast);
-
-		// add group target column
 		auto column = column_allocate();
 		auto name_sz = palloc(8);
 		snprintf(name_sz, 8, "_agg%d", agg->order + 1);
@@ -307,42 +306,11 @@ parse_select_resolve_group_by(AstSelect* select)
 	for (; node; node = node->next)
 	{
 		auto group = ast_group_of(node->ast);
-
-		Str name;
-		if (group->expr->id == KNAME)
-		{
-			auto target  = targets_outer(&select->targets);
-			auto columns = target->from_columns;
-			auto cte     = target->from_cte;
-			auto column  = &group->expr->string;
-
-			// use CTE arguments, if defined
-			if (target->type == TARGET_CTE && cte->cte_args.count > 0)
-				columns = &cte->cte_args;
-
-			bool conflict = false;
-			auto ref = columns_find_noconflict(columns, column, &conflict);
-			if (! ref)
-			{
-				if (conflict)
-					error("<%.*s.%.*s> column name is ambiguous",
-					      str_size(&target->name), str_of(&target->name),
-					      str_size(column), str_of(column));
-				else
-					error("<%.*s.%.*s> column not found",
-					      str_size(&target->name), str_of(&target->name),
-					      str_size(column), str_of(column));
-			}
-			name = *column;
-		} else
-		{
-			// generate name
-			auto name_sz = palloc(8);
-			snprintf(name_sz, 8, "_key%d", group->order + 1);
-			str_set_cstr(&name, name_sz);
-		}
-
 		auto column = column_allocate();
+		auto name_sz = palloc(8);
+		snprintf(name_sz, 8, "_key%d", group->order + 1);
+		Str name;
+		str_set_cstr(&name, name_sz);
 		column_set_name(column, &name);
 		columns_add(&select->targets_group_columns, column);
 		group->column = column;

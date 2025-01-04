@@ -5,7 +5,7 @@ create table test (id int primary key, data int)
 explain select * from test group by id
 {"msg": "<test.data> column must appear in the GROUP BY clause or be used in an aggregate function"}
 explain select data from test group by id
-{"msg": "<test.data> column must appear in the GROUP BY clause or be used in an aggregate function"}
+{"msg": "<data> column must appear in the GROUP BY clause or be used in an aggregate function"}
 drop table test
 # test: select * from table group by (empty)
 create table test (id int primary key)
@@ -91,7 +91,7 @@ select data from test group by data
 [0, 1, 2]
 # test: select from table group by keys only
 select data from test group by id
-{"msg": "<test.data> column must appear in the GROUP BY clause or be used in an aggregate function"}
+{"msg": "<data> column must appear in the GROUP BY clause or be used in an aggregate function"}
 # test: select from table group by column, column
 select id, data from test group by id, data
 [[0, 0], [1, 0], [2, 1], [4, 2], [3, 1]]
@@ -871,7 +871,7 @@ select id from test group by id order by id
 [0, 1, 2, 3, 4]
 # test: select from table group by order by keys only
 select id from test group by id order by data
-{"msg": "<test.data> column must appear in the GROUP BY clause or be used in an aggregate function"}
+{"msg": "<data> column must appear in the GROUP BY clause or be used in an aggregate function"}
 # test: select from table group by order by desc
 explain select id from test group by id order by id desc
 [{
@@ -2180,7 +2180,7 @@ select * from test
 select id from test group by id
 [0, 1, 2, 3, 4]
 select data from test group by id
-{"msg": "<test.data> column must appear in the GROUP BY clause or be used in an aggregate function"}
+{"msg": "<data> column must appear in the GROUP BY clause or be used in an aggregate function"}
 select data from test group by data
 [0, 1, 2]
 select id from test group by 1

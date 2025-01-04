@@ -87,7 +87,32 @@ with a as (select * from test) select * from a, test where test.id = a.id
 explain with a as (select * from test) select * from a, test where test.id = 1
 with a as (select * from test) select * from a, test where test.id = 1
 
+# test: select from table join group by
+select test.id from test, ref group by test.id
+select test.id from test join ref on (test.id = ref.id) group by test.id
+
+select test.id from test join ref on (test.id = ref.id) group by ref.id
+select id from test join ref on (test.id = ref.id) group by ref.id
+select ref.id from test join ref on (test.id = ref.id) group by id
+
+explain select ref.id from test join ref on (test.id = ref.id) group by ref.id
+select ref.id from test join ref on (test.id = ref.id) group by ref.id
+select ref.id, count(*) from test join ref on (test.id = ref.id) group by ref.id
+
+select ref.id, count(test.id) + count(ref.id) from test join ref on (test.id = ref.id) group by ref.id
+
+# test: select from table join group by path
+create shared table ref2 (id int primary key, data json)
+insert into ref2 values (1, {"id": 1}), (2, {"id": 2}), (3, {"id": 3})
+
+select ref2.data from test join ref2 on (test.id = ref2.id) group by ref2.id
+select ref2.data.id, ref2.data.id::type from test join ref2 on (test.id = ref2.id) group by ref2.data.id
+select ref2.data.id, ref2.data.id::type from test join ref2 on (test.id = ref2.id) group by 1
+
+select ref2.data, ref2.data.id from test join ref2 on (test.id = ref2.id) group by ref2.data
+
 drop table ref
+drop table ref2
 drop table test
 
 disconnect S0

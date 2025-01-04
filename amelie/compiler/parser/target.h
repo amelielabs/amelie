@@ -45,6 +45,7 @@ struct Target
 	Table*       from_table;
 	IndexConfig* from_table_index;
 	Ast*         from_select;
+	AstList*     from_group_by;
 	Stmt*        from_cte;
 	Columns*     from_columns;
 	Ast*         from_function;
@@ -70,6 +71,7 @@ target_allocate(int* id_seq)
 	self->from_table       = NULL;
 	self->from_table_index = NULL;
 	self->from_select      = NULL;
+	self->from_group_by    = NULL;
 	self->from_cte         = NULL;
 	self->from_columns     = NULL;
 	self->from_function    = NULL;
