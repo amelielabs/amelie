@@ -25,14 +25,14 @@ set_compare(Set* self, Value* row_a, Value* row_b)
 	return 0;
 }
 
-hot static inline int
+hot static inline bool
 set_compare_keys(Set* self, Value* key_a, Value* key_b)
 {
 	for (int i = 0; i < self->count_keys; i++)
 	{
 		int rc = value_compare(&key_a[i], &key_b[i]);
 		if (rc != 0)
-			return self->ordered[i] ? rc : -rc;
+			return false;
 	}
-	return 0;
+	return true;
 }

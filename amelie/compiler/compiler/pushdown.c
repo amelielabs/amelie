@@ -112,8 +112,10 @@ pushdown_order_by(Compiler* self, AstSelect* select)
 		//       backwards scan support
 	} else
 	{
-		// push limit only if order by matches primary key
-		// (don't do sort in such case)
+		// todo: push limit only if order by matches chosen index keys
+		// on any targets
+		//
+		// (index must be tree, don't do sort in such case)
 
 		/*
 		if (select->expr_limit && select->expr_offset)

@@ -216,7 +216,7 @@ set_match(Set* self, uint32_t hash_value, Value* keys)
 		if (ref->hash == hash_value)
 		{
 			auto keys_src = set_key(self, ref->row, 0);
-			if (! set_compare_keys(self, keys_src, keys))
+			if (set_compare_keys(self, keys_src, keys))
 				break;
 		}
 		pos = (pos + 1) % hash->hash_size;
