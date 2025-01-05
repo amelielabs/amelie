@@ -25,15 +25,11 @@
 #include <amelie_value.h>
 #include <amelie_set.h>
 
-hot static inline void
-agg_merge_row(Set* self, Value* row, int* aggs)
+hot void
+agg_merge(Value* src, Value* row, int columns, int* aggs)
 {
-	// get existing or create new row by key
-	auto src_ref = set_get(self, &row[self->count_columns], true);
-	auto src = set_row(self, src_ref);
-
 	// merge aggregate states
-	for (int col = 0; col < self->count_columns; col++)
+	for (int col = 0; col < columns; col++)
 	{
 		if (src[col].type == TYPE_NULL)
 		{
@@ -81,38 +77,14 @@ agg_merge_row(Set* self, Value* row, int* aggs)
 			error("distributed operation with lambda is not supported");
 			break;
 		}
+
+		value_set_null(&row[col]);
 	}
 
+#if 0
 	for (int key = 0; key < self->count_keys; key++)
 		value_free(&row[self->count_columns + key]);
-}
-
-hot void
-agg_merge(Value** list, int list_count, int* aggs)
-{
-	if (list_count <= 1)
-		return;
-
-	auto self = (Set*)list[0]->store;
-	for (int i = 1; i < list_count; i++)
-	{
-		auto set = (Set*)list[i]->store;
-		if (set->count == 0)
-			continue;
-
-		for (int pos = 0; pos < set->hash.hash_size; pos++)
-		{
-			auto ref = &set->hash.hash[pos];
-			if (ref->row == UINT32_MAX)
-				continue;
-			auto row = set_row(set, ref->row);
-			agg_merge_row(self, row, aggs);
-		}
-		set->count = 0;
-		set->count_rows = 0;
-		store_free(&set->store);
-		value_set_null(list[i]);
-	}
+#endif
 }
 
 static inline int64_t

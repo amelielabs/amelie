@@ -282,11 +282,11 @@ vm_run(Vm*       self,
 		&&cset_get,
 		&&cset_result,
 		&&cset_agg,
-		&&cset_merge,
 		&&cself,
 
 		// union
 		&&cunion,
+		&&cunion_set_aggs,
 		&&cunion_recv,
 
 		// table cursor
@@ -1238,11 +1238,6 @@ cset_agg:
 	stack_popn(stack, set->count_columns);
 	op_next;
 
-cset_merge:
-	// [set, stmt, aggs]
-	cset_merge(self, op);
-	op_next;
-
 cself:
 	// [result, set, row, seed]
 	set = (Set*)r[op->b].store;
@@ -1258,6 +1253,11 @@ cself:
 cunion:
 	// [union, set, limit, offset]
 	cunion(self, op);
+	op_next;
+
+cunion_set_aggs:
+	// [union, aggs]
+	union_set_aggs((Union*)r[op->a].store, (int*)code_data_at(code_data, op->b));
 	op_next;
 
 cunion_recv:

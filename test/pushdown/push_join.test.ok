@@ -822,24 +822,27 @@ explain select ref.id from test join ref on (test.id = ref.id) group by ref.id
     "coordinator": {
       "00": "send_all            0      0      -     # public.test",
       "01": "recv                0      0      0     ",
-      "02": "set_merge           0      0      39    ",
-      "03": "set                 1      1      0     ",
-      "04": "store_open          2      0      9     ",
-      "05": "store_read          2      2      0     ",
-      "06": "push                2      0      0     ",
-      "07": "set_add             1      0      0     ",
-      "08": "store_next          2      5      0     ",
-      "09": "store_close         2      1      0     ",
-      "10": "cte_set             0      1      0     ",
-      "11": "content             0      -      -     ",
-      "12": "ret                 0      0      0     "
+      "02": "bool                0      1      0     ",
+      "03": "push                0      0      0     ",
+      "04": "union_recv          0      -1     -1    ",
+      "05": "union_set_aggs      0      40     0     ",
+      "06": "set                 1      1      0     ",
+      "07": "store_open          2      0      12    ",
+      "08": "store_read          2      2      0     ",
+      "09": "push                2      0      0     ",
+      "10": "set_add             1      0      0     ",
+      "11": "store_next          2      8      0     ",
+      "12": "store_close         2      1      0     ",
+      "13": "cte_set             0      1      0     ",
+      "14": "content             0      -      -     ",
+      "15": "ret                 0      0      0     "
     },
     "node": {
-      "00": "set                 0      0      1     ",
-      "01": "table_open          0      0      14    # public.test (primary)",
+      "00": "set_ordered         0      0      1     ",
+      "01": "table_open          0      1      14    # public.test (primary)",
       "02": "table_readi32       1      0      0     ",
       "03": "push                1      0      0     ",
-      "04": "table_open_lookup   1      20     12    # public.ref (primary)",
+      "04": "table_open_lookup   1      21     12    # public.ref (primary)",
       "05": "table_readi32       1      0      0     ",
       "06": "table_readi32       2      1      0     ",
       "07": "equii               3      1      2     ",
@@ -850,8 +853,9 @@ explain select ref.id from test join ref on (test.id = ref.id) group by ref.id
       "12": "table_close         1      0      0     ",
       "13": "table_next          0      2      0     ",
       "14": "table_close         0      0      0     ",
-      "15": "result              0      0      0     ",
-      "16": "ret                 0      0      0     "
+      "15": "set_sort            0      0      0     ",
+      "16": "result              0      0      0     ",
+      "17": "ret                 0      0      0     "
     }
   }
 }]

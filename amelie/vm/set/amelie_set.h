@@ -18,12 +18,12 @@
 #include "set/set_compare.h"
 #include "set/set_iterator.h"
 
+// aggregate
+#include "set/agg.h"
+
 // union
 #include "set/union.h"
 #include "set/union_iterator.h"
-
-// aggregate
-#include "set/agg.h"
 
 // any/all/in
 #include "set/any.h"

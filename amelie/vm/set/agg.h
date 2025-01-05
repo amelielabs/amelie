@@ -47,5 +47,5 @@ agg_nameof(int id)
 	return NULL;
 }
 
-void agg_merge(Value**, int, int*);
+void agg_merge(Value*, Value*, int, int*);
 void agg_write(Set*, Value*, int, int*);

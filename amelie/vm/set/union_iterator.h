@@ -88,15 +88,46 @@ union_iterator_step(UnionIterator* self)
 	return min;
 }
 
+hot static inline Value*
+union_iterator_next_distinct(UnionIterator* self)
+{
+	Value* first;
+	if (likely(self->current_it))
+		first = self->current_it->current;
+	else
+		first = union_iterator_step(self);
+	if (unlikely(! first))
+		return NULL;
+
+	for (;;)
+	{
+		auto next = union_iterator_step(self);
+		if (unlikely(! next))
+			break;
+		auto set = self->current_it->set;
+		if (! set_compare(set, first, next))
+		{
+			// merge aggregates (merge duplicates)
+			if (self->ref->aggs)
+				agg_merge(first, next, set->count_columns, self->ref->aggs);
+			continue;
+		}
+		break;
+	}
+
+	return first;
+}
+
 hot static inline void
 union_iterator_next(StoreIterator* arg)
 {
 	// apply limit
 	auto self = union_iterator_of(arg);
+	arg->current = NULL;
+
 	if (self->limit-- <= 0)
 	{
 		self->current_it = NULL;
-		arg->current = NULL;
 		return;
 	}
 
@@ -107,27 +138,7 @@ union_iterator_next(StoreIterator* arg)
 	}
 
 	// distinct (skip duplicates)
-	arg->current = NULL;
-
-	Value* first;
-	if (likely(self->current_it))
-		first = self->current_it->current;
-	else
-		first = union_iterator_step(self);
-	if (unlikely(! first))
-		return;
-
-	for (;;)
-	{
-		auto next = union_iterator_step(self);
-		if (unlikely(! next))
-			break;
-		if (! set_compare(self->current_it->set, first, next))
-			continue;
-		break;
-	}
-
-	arg->current = first;
+	arg->current = union_iterator_next_distinct(self);
 }
 
 static inline void
@@ -195,6 +206,9 @@ union_iterator_allocate(Union* ref)
 	self->list_count = 0;
 	self->limit      = INT64_MAX;
 	self->ref        = ref;
+	guard(union_iterator_close, self);
+
 	union_iterator_open(self);
+	unguard();
 	return &self->it;
 }

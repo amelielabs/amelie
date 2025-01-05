@@ -262,37 +262,6 @@ cunion_recv(Vm* self, Op* op)
 	}
 }
 
-hot void
-cset_merge(Vm* self, Op* op)
-{
-	// [set, stmt, aggs]
-	auto stmt = dispatch_stmt(&self->dtr->dispatch, op->b);
-	if (unlikely(! stmt->req_list.list_count))
-		error("unexpected group list return");
-	
-	auto   list_count = stmt->req_list.list_count;
-	Value* list[list_count];
-	
-	// collect a list of returned sets
-	int pos = 0;
-	list_foreach(&stmt->req_list.list)
-	{
-		auto req = list_at(Req, link);
-		auto value = &req->result;
-		assert(value->type == TYPE_STORE);
-		list[pos++] = value;
-	}
-
-	// merge hash sets aggregates into the first set and
-	// free other sets
-	agg_merge(list, list_count, (int*)code_data_at(self->code_data, op->c));
-
-	// return merged set
-	auto value = list[0];
-	value_set_store(reg_at(&self->r, op->a), value->store);
-	value_reset(value);
-}
-
 hot Op*
 ctable_open(Vm* self, Op* op)
 {

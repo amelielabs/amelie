@@ -54,6 +54,7 @@ union_create(bool distinct, int64_t limit, int64_t offset)
 	self->limit          = limit;
 	self->offset         = offset;
 	self->distinct       = distinct;
+	self->aggs           = NULL;
 	list_init(&self->list);
 	return self;
 }

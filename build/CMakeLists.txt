@@ -206,8 +206,8 @@ set(AMELIE_SOURCES_VM
     ${AMELIE_ROOT}/vm/value/row.c
     ${AMELIE_ROOT}/vm/value/like.c
     ${AMELIE_ROOT}/vm/set/set.c
-    ${AMELIE_ROOT}/vm/set/union.c
     ${AMELIE_ROOT}/vm/set/agg.c
+    ${AMELIE_ROOT}/vm/set/union.c
     ${AMELIE_ROOT}/vm/set/any.c
     ${AMELIE_ROOT}/vm/set/all.c
     ${AMELIE_ROOT}/vm/set/in.c

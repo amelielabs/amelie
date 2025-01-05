@@ -19,9 +19,16 @@ struct Union
 	List    list;
 	int     list_count;
 	bool    distinct;
+	int*    aggs;
 	int64_t limit;
 	int64_t offset;
 };
 
 Union* union_create(bool, int64_t, int64_t);
 void   union_add(Union*, Set*);
+
+static inline void
+union_set_aggs(Union* self, int* aggs)
+{
+	self->aggs = aggs;
+}

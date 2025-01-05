@@ -29,25 +29,28 @@ explain select 0 -> id, 0 -> data from test
     "coordinator": {
       "00": "send_first          0      0      0     ",
       "01": "recv                0      0      0     ",
-      "02": "set_merge           0      0      20    ",
-      "03": "set                 1      2      0     ",
-      "04": "store_open          1      0      11    ",
-      "05": "store_read          2      1      0     ",
-      "06": "push                2      0      0     ",
-      "07": "store_read          2      1      1     ",
-      "08": "push                2      0      0     ",
-      "09": "set_add             1      0      0     ",
-      "10": "store_next          1      5      0     ",
-      "11": "store_close         1      1      0     ",
-      "12": "cte_set             0      1      0     ",
-      "13": "content             0      -      -     ",
-      "14": "ret                 0      0      0     "
+      "02": "bool                0      1      0     ",
+      "03": "push                0      0      0     ",
+      "04": "union_recv          0      -1     -1    ",
+      "05": "union_set_aggs      0      21     0     ",
+      "06": "set                 1      2      0     ",
+      "07": "store_open          1      0      14    ",
+      "08": "store_read          2      1      0     ",
+      "09": "push                2      0      0     ",
+      "10": "store_read          2      1      1     ",
+      "11": "push                2      0      0     ",
+      "12": "set_add             1      0      0     ",
+      "13": "store_next          1      8      0     ",
+      "14": "store_close         1      1      0     ",
+      "15": "cte_set             0      1      0     ",
+      "16": "content             0      -      -     ",
+      "17": "ret                 0      0      0     "
     },
     "node": {
-      "00": "set                 0      2      1     ",
+      "00": "set_ordered         0      2      1     ",
       "01": "int                 1      -      0     # 0",
       "02": "int                 2      -      0     # 0",
-      "03": "table_open          0      0      13    # public.test (primary)",
+      "03": "table_open          0      1      13    # public.test (primary)",
       "04": "bool                3      1      0     ",
       "05": "push                3      0      0     ",
       "06": "set_get             3      0      0     ",
@@ -55,7 +58,7 @@ explain select 0 -> id, 0 -> data from test
       "08": "push                4      0      0     ",
       "09": "table_readi32       4      0      1     ",
       "10": "push                4      0      0     ",
-      "11": "set_agg             0      3      20    ",
+      "11": "set_agg             0      3      21    ",
       "12": "table_next          0      4      0     ",
       "13": "table_close         0      0      0     ",
       "14": "free                1      0      0     ",
@@ -67,9 +70,10 @@ explain select 0 -> id, 0 -> data from test
       "20": "push                2      0      0     ",
       "21": "null                2      0      0     ",
       "22": "push                2      0      0     ",
-      "23": "set_agg             0      1      20    ",
-      "24": "result              0      0      0     ",
-      "25": "ret                 0      0      0     "
+      "23": "set_agg             0      1      21    ",
+      "24": "set_sort            0      0      0     ",
+      "25": "result              0      0      0     ",
+      "26": "ret                 0      0      0     "
     }
   }
 }]
@@ -87,22 +91,25 @@ explain select 0 -> self + 1 from test
     "coordinator": {
       "00": "send_first          0      0      0     ",
       "01": "recv                0      0      0     ",
-      "02": "set_merge           0      0      20    ",
-      "03": "set                 1      1      0     ",
-      "04": "store_open          1      0      9     ",
-      "05": "store_read          2      1      0     ",
-      "06": "push                2      0      0     ",
-      "07": "set_add             1      0      0     ",
-      "08": "store_next          1      5      0     ",
-      "09": "store_close         1      1      0     ",
-      "10": "cte_set             0      1      0     ",
-      "11": "content             0      -      -     ",
-      "12": "ret                 0      0      0     "
+      "02": "bool                0      1      0     ",
+      "03": "push                0      0      0     ",
+      "04": "union_recv          0      -1     -1    ",
+      "05": "union_set_aggs      0      21     0     ",
+      "06": "set                 1      1      0     ",
+      "07": "store_open          1      0      12    ",
+      "08": "store_read          2      1      0     ",
+      "09": "push                2      0      0     ",
+      "10": "set_add             1      0      0     ",
+      "11": "store_next          1      8      0     ",
+      "12": "store_close         1      1      0     ",
+      "13": "cte_set             0      1      0     ",
+      "14": "content             0      -      -     ",
+      "15": "ret                 0      0      0     "
     },
     "node": {
-      "00": "set                 0      1      1     ",
+      "00": "set_ordered         0      1      1     ",
       "01": "int                 1      -      0     # 0",
-      "02": "table_open          0      0      14    # public.test (primary)",
+      "02": "table_open          0      1      14    # public.test (primary)",
       "03": "bool                2      1      0     ",
       "04": "push                2      0      0     ",
       "05": "set_get             2      0      0     ",
@@ -112,7 +119,7 @@ explain select 0 -> self + 1 from test
       "09": "int                 4      -      0     # 1",
       "10": "addii               5      3      4     ",
       "11": "push                5      0      0     ",
-      "12": "set_agg             0      2      20    ",
+      "12": "set_agg             0      2      21    ",
       "13": "table_next          0      3      0     ",
       "14": "table_close         0      0      0     ",
       "15": "free                1      0      0     ",
@@ -121,9 +128,10 @@ explain select 0 -> self + 1 from test
       "18": "set_get             1      0      0     ",
       "19": "null                2      0      0     ",
       "20": "push                2      0      0     ",
-      "21": "set_agg             0      1      20    ",
-      "22": "result              0      0      0     ",
-      "23": "ret                 0      0      0     "
+      "21": "set_agg             0      1      21    ",
+      "22": "set_sort            0      0      0     ",
+      "23": "result              0      0      0     ",
+      "24": "ret                 0      0      0     "
     }
   }
 }]
@@ -186,6 +194,56 @@ insert into test values (1, 1)
 insert into test values (2, 2)
 insert into test values (3, 1)
 insert into test values (4, 3)
+explain select 0 -> self + 1 from test
+[{
+  "bytecode": {
+    "coordinator": {
+      "00": "send_all            0      0      -     # public.test",
+      "01": "recv                0      0      0     ",
+      "02": "bool                0      1      0     ",
+      "03": "push                0      0      0     ",
+      "04": "union_recv          0      -1     -1    ",
+      "05": "union_set_aggs      0      21     0     ",
+      "06": "set                 1      1      0     ",
+      "07": "store_open          1      0      12    ",
+      "08": "store_read          2      1      0     ",
+      "09": "push                2      0      0     ",
+      "10": "set_add             1      0      0     ",
+      "11": "store_next          1      8      0     ",
+      "12": "store_close         1      1      0     ",
+      "13": "cte_set             0      1      0     ",
+      "14": "content             0      -      -     ",
+      "15": "ret                 0      0      0     "
+    },
+    "node": {
+      "00": "set_ordered         0      1      1     ",
+      "01": "int                 1      -      0     # 0",
+      "02": "table_open          0      1      14    # public.test (primary)",
+      "03": "bool                2      1      0     ",
+      "04": "push                2      0      0     ",
+      "05": "set_get             2      0      0     ",
+      "06": "int                 3      -      0     # 0",
+      "07": "push                3      0      0     ",
+      "08": "self                3      0      2     ",
+      "09": "int                 4      -      0     # 1",
+      "10": "addii               5      3      4     ",
+      "11": "push                5      0      0     ",
+      "12": "set_agg             0      2      21    ",
+      "13": "table_next          0      3      0     ",
+      "14": "table_close         0      0      0     ",
+      "15": "free                1      0      0     ",
+      "16": "bool                1      1      0     ",
+      "17": "push                1      0      0     ",
+      "18": "set_get             1      0      0     ",
+      "19": "null                2      0      0     ",
+      "20": "push                2      0      0     ",
+      "21": "set_agg             0      1      21    ",
+      "22": "set_sort            0      0      0     ",
+      "23": "result              0      0      0     ",
+      "24": "ret                 0      0      0     "
+    }
+  }
+}]
 select 0 -> self + 1 from test
 {"msg": "distributed operation with lambda is not supported"}
 drop table test

@@ -78,6 +78,7 @@ insert into test values (1, 1)
 insert into test values (2, 2)
 insert into test values (3, 1)
 insert into test values (4, 3)
+explain select 0 -> self + 1 from test
 select 0 -> self + 1 from test
 drop table test
 

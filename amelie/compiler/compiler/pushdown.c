@@ -41,11 +41,13 @@ pushdown_group_by(Compiler* self, AstSelect* select)
 {
 	// SELECT FROM GROUP BY [WHERE] [HAVING] [ORDER BY] [LIMIT/OFFSET]
 
-	// create agg set
+	// create ordered agg set using group by keys
+	int  offset = emit_select_order_by_data(self, select, true, NULL);
 	int rset;
-	rset = op3(self, CSET, rpin(self, TYPE_STORE),
+	rset = op4(self, CSET_ORDERED, rpin(self, TYPE_STORE),
 	           select->expr_aggs.count,
-	           select->expr_group_by.count);
+	           select->expr_group_by.count,
+	           offset);
 	select->rset_agg = rset;
 
 	// emit aggs seed expressions
@@ -85,6 +87,9 @@ pushdown_group_by(Compiler* self, AstSelect* select)
 	if (! select->expr_group_by_has)
 		emit_select_on_match_aggregate_empty(self, &select->targets, select);
 
+	// CSET_SORT
+	op1(self, CSET_SORT, select->rset_agg);
+
 	// CRESULT (return agg set)
 	op1(self, CRESULT, select->rset_agg);
 	runpin(self, select->rset_agg);
@@ -96,7 +101,7 @@ pushdown_order_by(Compiler* self, AstSelect* select)
 {
 	// write order by key types
 	bool desc   = false;
-	int  offset = emit_select_order_by_data(self, select, &desc);
+	int  offset = emit_select_order_by_data(self, select, false, &desc);
 
 	// CSET_ORDERED
 	select->rset = op4(self, CSET_ORDERED, rpin(self, TYPE_STORE),
@@ -228,7 +233,7 @@ static inline int
 pushdown_group_by_recv_order_by(Compiler* self, AstSelect* select)
 {
 	// create ordered data set
-	int offset = emit_select_order_by_data(self, select, NULL);
+	int offset = emit_select_order_by_data(self, select, false, NULL);
 	int rset = op4(self, CSET_ORDERED, rpin(self, TYPE_STORE),
 	               select->ret.count,
 	               select->expr_order_by.count,
@@ -237,7 +242,7 @@ pushdown_group_by_recv_order_by(Compiler* self, AstSelect* select)
 
 	// scan over agg set
 	//
-	// result will be added to set, safe to apply limit/offset
+	// result will be added to the set, safe to apply limit/offset
 	//
 	scan(self,
 	     &select->targets_group,
@@ -269,16 +274,24 @@ pushdown_group_by_recv_order_by(Compiler* self, AstSelect* select)
 static int
 pushdown_group_by_recv(Compiler* self, AstSelect* select)
 {
-	// merge all received agg sets into one
-	//
-	// CSET_MERGE
-	auto rset_agg = op3(self, CSET_MERGE, rpin(self, TYPE_STORE),
-	                    self->current->order,
-	                    select->aggs);
-	select->rset_agg = rset_agg;
+	// recv ordered aggregate sets, enable aggregates states merge
+	// during union iteration
+
+	// distinct
+	int rdistinct = op2(self, CBOOL, rpin(self, TYPE_BOOL), true);
+	op1(self, CPUSH, rdistinct);
+	runpin(self, rdistinct);
+
+	// CUNION_RECV
+	int runion = op4(self, CUNION_RECV, rpin(self, TYPE_STORE), -1, -1,
+	                 self->current->order);
+	select->rset_agg = runion;
+
+	// CUNION_SET_AGGS (enable aggregate merge)
+	op2(self, CUNION_SET_AGGS, runion, select->aggs);
 
 	auto target_group = targets_outer(&select->targets_group);
-	target_group->r = rset_agg;
+	target_group->r = runion;
 
 	// [ORDER BY]
 	if (select->expr_order_by.count > 0)
@@ -288,9 +301,9 @@ pushdown_group_by_recv(Compiler* self, AstSelect* select)
 	int rset = op3(self, CSET, rpin(self, TYPE_STORE), select->ret.count, 0);
 	select->rset = rset;
 
-	// scan over agg set
+	// scan over the agg set
 	//
-	// result will be added to set, safe to apply limit/offset
+	// result will be added to the set, safe to apply limit/offset
 	//
 	scan(self,
 	     &select->targets_group,
@@ -300,7 +313,7 @@ pushdown_group_by_recv(Compiler* self, AstSelect* select)
 	     emit_select_on_match,
 	     select);
 
-	runpin(self, select->rset_agg);
+	runpin(self, runion);
 	select->rset_agg = -1;
 	target_group->r = -1;
 

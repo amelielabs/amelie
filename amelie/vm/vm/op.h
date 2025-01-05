@@ -181,11 +181,11 @@ enum
 	CSET_GET,
 	CSET_RESULT,
 	CSET_AGG,
-	CSET_MERGE,
 	CSELF,
 
 	// union
 	CUNION,
+	CUNION_SET_AGGS,
 	CUNION_RECV,
 
 	// table cursor
