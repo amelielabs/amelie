@@ -242,7 +242,7 @@ pushdown_group_by_recv_order_by(Compiler* self, AstSelect* select)
 
 	// scan over agg set
 	//
-	// result will be added to the set, safe to apply limit/offset
+	// result will be added to the set
 	//
 	scan(self,
 	     &select->targets_group,
@@ -257,13 +257,14 @@ pushdown_group_by_recv_order_by(Compiler* self, AstSelect* select)
 	auto target_group = targets_outer(&select->targets_group);
 	target_group->r = -1;
 
+	// sort select set
+	op1(self, CSET_SORT, select->rset);
+
 	// no distinct/limit/offset (return set)
 	if (select->distinct    == false &&
 	    select->expr_limit  == NULL  &&
 	    select->expr_offset == NULL)
 	{
-		// CSET_SORT
-		op1(self, CSET_SORT, select->rset);
 		return rset;
 	}
 

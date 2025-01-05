@@ -227,7 +227,10 @@ explain select data, count(*) from test group by 1  having count(*) > 1
 select data, count(*) as c from test group by data having c > 1
 
 # test: select distinct from table group by
+explain select data, count(*) from test group by data order by data
 select data, count(*) from test group by data order by data
+
+explain select count(*) from test group by data order by data
 select count(*) from test group by data order by data
 
 select distinct data from test

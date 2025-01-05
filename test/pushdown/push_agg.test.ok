@@ -1516,8 +1516,92 @@ explain select data, count(*) from test group by 1  having count(*) > 1
 select data, count(*) as c from test group by data having c > 1
 {"msg": "<c> column must appear in the GROUP BY clause or be used in an aggregate function"}
 # test: select distinct from table group by
+explain select data, count(*) from test group by data order by data
+[{
+  "bytecode": {
+    "coordinator": {
+      "00": "send_all            0      0      -     # public.test",
+      "01": "recv                0      0      0     ",
+      "02": "bool                0      1      0     ",
+      "03": "push                0      0      0     ",
+      "04": "union_recv          0      -1     -1    ",
+      "05": "union_set_aggs      0      21     0     ",
+      "06": "set_ordered         1      2      1     ",
+      "07": "store_open          1      0      16    ",
+      "08": "store_read          2      1      1     ",
+      "09": "push                2      0      0     ",
+      "10": "count               2      1      0     ",
+      "11": "push                2      0      0     ",
+      "12": "store_read          2      1      1     ",
+      "13": "push                2      0      0     ",
+      "14": "set_add             1      0      0     ",
+      "15": "store_next          1      8      0     ",
+      "16": "store_close         1      1      0     ",
+      "17": "set_sort            1      0      0     ",
+      "18": "cte_set             0      1      0     ",
+      "19": "content             0      -      -     ",
+      "20": "ret                 0      0      0     "
+    },
+    "node": {
+      "00": "set_ordered         0      1      1     ",
+      "01": "table_open          0      1      9     # public.test (primary)",
+      "02": "table_readi32       1      0      1     ",
+      "03": "push                1      0      0     ",
+      "04": "set_get             1      0      0     ",
+      "05": "int                 2      -      0     # 1",
+      "06": "push                2      0      0     ",
+      "07": "set_agg             0      1      21    ",
+      "08": "table_next          0      2      0     ",
+      "09": "table_close         0      0      0     ",
+      "10": "set_sort            0      0      0     ",
+      "11": "result              0      0      0     ",
+      "12": "ret                 0      0      0     "
+    }
+  }
+}]
 select data, count(*) from test group by data order by data
 [[null, 1], [0, 2], [1, 2], [2, 1], [3, 1]]
+explain select count(*) from test group by data order by data
+[{
+  "bytecode": {
+    "coordinator": {
+      "00": "send_all            0      0      -     # public.test",
+      "01": "recv                0      0      0     ",
+      "02": "bool                0      1      0     ",
+      "03": "push                0      0      0     ",
+      "04": "union_recv          0      -1     -1    ",
+      "05": "union_set_aggs      0      21     0     ",
+      "06": "set_ordered         1      1      1     ",
+      "07": "store_open          1      0      14    ",
+      "08": "count               2      1      0     ",
+      "09": "push                2      0      0     ",
+      "10": "store_read          2      1      1     ",
+      "11": "push                2      0      0     ",
+      "12": "set_add             1      0      0     ",
+      "13": "store_next          1      8      0     ",
+      "14": "store_close         1      1      0     ",
+      "15": "set_sort            1      0      0     ",
+      "16": "cte_set             0      1      0     ",
+      "17": "content             0      -      -     ",
+      "18": "ret                 0      0      0     "
+    },
+    "node": {
+      "00": "set_ordered         0      1      1     ",
+      "01": "table_open          0      1      9     # public.test (primary)",
+      "02": "table_readi32       1      0      1     ",
+      "03": "push                1      0      0     ",
+      "04": "set_get             1      0      0     ",
+      "05": "int                 2      -      0     # 1",
+      "06": "push                2      0      0     ",
+      "07": "set_agg             0      1      21    ",
+      "08": "table_next          0      2      0     ",
+      "09": "table_close         0      0      0     ",
+      "10": "set_sort            0      0      0     ",
+      "11": "result              0      0      0     ",
+      "12": "ret                 0      0      0     "
+    }
+  }
+}]
 select count(*) from test group by data order by data
 [1, 2, 2, 1, 1]
 select distinct data from test

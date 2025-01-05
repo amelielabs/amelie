@@ -266,9 +266,6 @@ emit_select_order_by_data(Compiler* self, AstSelect* select,
 hot int
 emit_select_union(Compiler* self, AstSelect* select)
 {
-	// sort select set
-	op1(self, CSET_SORT, select->rset);
-
 	// distinct
 	int rdistinct = op2(self, CBOOL, rpin(self, TYPE_BOOL), select->distinct);
 	op1(self, CPUSH, rdistinct);
@@ -407,6 +404,9 @@ emit_select_group_by(Compiler* self, AstSelect* select)
 		// generate group by scan
 		emit_select_group_by_scan(self, select, NULL, NULL);
 
+		// sort select set
+		op1(self, CSET_SORT, select->rset);
+
 		// create union object and add sorted set, apply limit/offset
 		rresult = emit_select_union(self, select);
 	}
@@ -438,6 +438,9 @@ emit_select_order_by(Compiler* self, AstSelect* select)
 	     select->expr_where,
 	     emit_select_on_match,
 	     select);
+
+	// sort select set
+	op1(self, CSET_SORT, select->rset);
 
 	// create union object and add sorted set
 	return emit_select_union(self, select);
