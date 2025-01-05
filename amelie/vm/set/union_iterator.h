@@ -100,7 +100,6 @@ union_iterator_next(StoreIterator* arg)
 		return;
 	}
 
-	// unordered iteration
 	if (! self->ref->distinct)
 	{
 		arg->current = union_iterator_step(self);
@@ -108,15 +107,27 @@ union_iterator_next(StoreIterator* arg)
 	}
 
 	// distinct (skip duplicates)
-	auto prev = arg->current;
+	arg->current = NULL;
+
+	Value* first;
+	if (likely(self->current_it))
+		first = self->current_it->current;
+	else
+		first = union_iterator_step(self);
+	if (unlikely(! first))
+		return;
+
 	for (;;)
 	{
-		arg->current = union_iterator_step(self);
-		if (unlikely(!arg->current || !prev))
+		auto next = union_iterator_step(self);
+		if (unlikely(! next))
 			break;
-		if (set_compare(self->current_it->set, prev, arg->current) != 0)
-			break;
+		if (! set_compare(self->current_it->set, first, next))
+			continue;
+		break;
 	}
+
+	arg->current = first;
 }
 
 static inline void
