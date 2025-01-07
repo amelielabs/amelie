@@ -11,24 +11,24 @@
 // AGPL-3.0 Licensed.
 //
 
-typedef struct Guard        Guard;
+typedef struct Defer        Defer;
 typedef struct Exception    Exception;
 typedef struct ExceptionMgr ExceptionMgr;
 
-typedef void (*GuardFunction)(void*);
+typedef void (*DeferFunction)(void*);
 
-struct Guard
+struct Defer
 {
-	GuardFunction function;
+	DeferFunction function;
 	void*         function_arg;
-	Guard*        prev;
+	Defer*        prev;
 };
 
 struct Exception
 {
 	Exception* prev;
 	bool       triggered;
-	Guard*     guard_stack;
+	Defer*     defer_stack;
 	jmp_buf    buf;
 };
 
@@ -44,14 +44,14 @@ exception_mgr_init(ExceptionMgr* self)
 }
 
 static inline void
-exception_mgr_execute_guards(Guard* guard)
+exception_mgr_execute_defers(Defer* defer)
 {
-	for (; guard; guard = guard->prev)
+	for (; defer; defer = defer->prev)
 	{
-		if (guard->function == NULL)
+		if (defer->function == NULL)
 			continue;
-		guard->function(guard->function_arg);
-		guard->function = NULL;
+		defer->function(defer->function_arg);
+		defer->function = NULL;
 	}
 }
 
@@ -60,8 +60,8 @@ exception_mgr_throw(ExceptionMgr* self)
 {
 	auto current = self->last;
 	assert(current);
-	exception_mgr_execute_guards(current->guard_stack);
-	current->guard_stack = NULL;
+	exception_mgr_execute_defers(current->defer_stack);
+	current->defer_stack = NULL;
 	current->triggered = true;
 	longjmp(self->last->buf, 1);
 }
@@ -69,8 +69,8 @@ exception_mgr_throw(ExceptionMgr* self)
 #define exception_mgr_enter(self, exception) \
 ({ \
 	(exception)->prev = (self)->last; \
- 	(exception)->triggered = false; \
- 	(exception)->guard_stack = NULL; \
+	(exception)->triggered = false; \
+	(exception)->defer_stack = NULL; \
 	(self)->last = (exception); \
 	setjmp((exception)->buf) == 0; \
 })

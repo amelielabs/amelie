@@ -72,7 +72,7 @@ static inline UserConfig*
 user_config_read(uint8_t** pos)
 {
 	auto self = user_config_allocate();
-	guard(user_config_free, self);
+	defer(user_config_free, self);
 	Decode obj[] =
 	{
 		{ DECODE_STRING, "name",   &self->name   },
@@ -80,7 +80,7 @@ user_config_read(uint8_t** pos)
 		{ 0,              NULL,    NULL          },
 	};
 	decode_obj(obj, "user", pos);
-	return unguard();
+	return undefer();
 }
 
 static inline void

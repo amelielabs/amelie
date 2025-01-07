@@ -17,14 +17,14 @@ unit test_exception1
 # test: test exception2
 unit test_exception2
 
-# test: test guard0
-unit test_guard0
+# test: test defer0
+unit test_defer0
 
-# test: test guard1
-unit test_guard1
+# test: test defer1
+unit test_defer1
 
-# test: test guard2
-unit test_guard2
+# test: test defer2
+unit test_defer2
 
 # test: test palloc
 unit test_palloc
@@ -128,5 +128,5 @@ unit test_sleep
 ## test: test benchmark_buf
 #unit test_benchmark_buf
 
-## test: test benchmark_buf_guard
-#unit test_benchmark_buf_guard
+## test: test benchmark_buf_defer
+#unit test_benchmark_buf_defer

@@ -117,7 +117,7 @@ restore_start(Restore* self)
 	buf_str(&self->state, &text);
 	Json json;
 	json_init(&json);
-	guard(json_free, &json);
+	defer(json_free, &json);
 	json_parse(&json, &text, &self->state_data);
 
 	uint8_t* pos = self->state_data.start;
@@ -191,7 +191,7 @@ restore_copy_file(Restore* self, Str* name, uint64_t size)
 
 	File file;
 	file_init(&file);
-	guard(file_close, &file);
+	defer(file_close, &file);
 	file_open_as(&file, path, O_CREAT|O_EXCL|O_RDWR, 0644);
 
 	// read content into file
@@ -233,7 +233,7 @@ restore_write_config(Restore* self)
 	// convert config to json
 	Buf text;
 	buf_init(&text);
-	guard_buf(&text);
+	defer_buf(&text);
 	uint8_t* pos = self->config;
 	json_export_pretty(&text, global()->timezone, &pos);
 
@@ -244,7 +244,7 @@ restore_write_config(Restore* self)
 
 	File file;
 	file_init(&file);
-	guard(file_close, &file);
+	defer(file_close, &file);
 	file_open_as(&file, path, O_CREAT|O_RDWR, 0600);
 	file_write_buf(&file, &text);
 }
@@ -256,7 +256,7 @@ restore(Remote* remote)
 
 	Restore restore;
 	restore_init(&restore, remote);
-	guard(restore_free, &restore);
+	defer(restore_free, &restore);
 	restore_connect(&restore);
 	restore_start(&restore);
 	restore_copy(&restore);

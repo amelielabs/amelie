@@ -55,14 +55,14 @@ static inline Key*
 key_read(uint8_t** pos)
 {
 	auto self = key_allocate();
-	guard(key_free, self);
+	defer(key_free, self);
 	Decode obj[] =
 	{
 		{ DECODE_INT, "column", &self->ref  },
 		{ 0,           NULL,    NULL        },
 	};
 	decode_obj(obj, "key", pos);
-	return unguard();
+	return undefer();
 }
 
 static inline void

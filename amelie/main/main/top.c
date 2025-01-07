@@ -186,12 +186,12 @@ top_update(Top* self, Client* client)
 
 	// allocate and read stats from the response
 	auto stats = top_stats_allocate();
-	guard(top_stats_free, stats);
+	defer(top_stats_free, stats);
 
 	uint8_t* pos = self->json.buf_data.start;
 	json_read_array(&pos);
 	top_stats_read(stats, &pos);
-	unguard();
+	undefer();
 
 	// push new stats
 	switch (self->stats_count) {
@@ -265,8 +265,8 @@ top_draw(Top* self)
 	auto cpu_be      = top_draw_cpu(stats->cpu_count, cpu_diff, stats->backends,
 	                                &stats->cpu_backends,
 	                                &prev->cpu_backends);
-	guard_buf(cpu_fe);
-	guard_buf(cpu_be);
+	defer_buf(cpu_fe);
+	defer_buf(cpu_be);
 
 	info("uuid:              %.*s" PAD,
 	     str_size(&stats->uuid), str_of(&stats->uuid));

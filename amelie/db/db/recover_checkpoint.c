@@ -30,7 +30,7 @@ recover_partition(Part* self)
 
 	SnapshotCursor cursor;
 	snapshot_cursor_init(&cursor);
-	guard(snapshot_cursor_close, &cursor);
+	defer(snapshot_cursor_close, &cursor);
 
 	snapshot_cursor_open(&cursor, checkpoint, self->config->id);
 	uint64_t count = 0;
@@ -39,7 +39,7 @@ recover_partition(Part* self)
 		auto buf = snapshot_cursor_next(&cursor);
 		if (! buf)
 			break;
-		guard_buf(buf);
+		defer_buf(buf);
 		auto pos = msg_of(buf)->data;
 		auto row = row_copy((Row*)pos);
 		part_ingest(self, row);

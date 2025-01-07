@@ -20,6 +20,6 @@ value_exists(Value* result, Value* value)
 	}
 	assert(value->type == TYPE_STORE);
 	auto it = store_iterator(value->store);
-	guard(store_iterator_close, it);
+	defer(store_iterator_close, it);
 	value_set_bool(result, store_iterator_has(it));
 }

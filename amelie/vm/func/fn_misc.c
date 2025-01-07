@@ -226,7 +226,7 @@ fn_jwt(Call* self)
 	// header
 	Str  header_str;
 	Buf* header = buf_create();
-	guard_buf(header);
+	defer_buf(header);
 	if (argv[0].type == TYPE_JSON)
 	{
 		// obj
@@ -246,7 +246,7 @@ fn_jwt(Call* self)
 	// payload
 	Str  payload_str;
 	Buf* payload = buf_create();
-	guard_buf(payload);
+	defer_buf(payload);
 	if (argv[1].type == TYPE_JSON)
 	{
 		auto pos = argv[1].json;
@@ -265,7 +265,7 @@ fn_jwt(Call* self)
 	// create jwt using supplied data
 	JwtEncode jwt;
 	jwt_encode_init(&jwt);
-	guard(jwt_encode_free, &jwt);
+	defer(jwt_encode_free, &jwt);
 	auto buf = jwt_encode(&jwt, &header_str, &payload_str,
 	                      &argv[2].string);
 	Str string;

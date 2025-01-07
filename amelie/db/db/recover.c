@@ -84,7 +84,7 @@ recover_next(Recover* self, uint8_t** meta, uint8_t** data)
 	case LOG_SCHEMA_CREATE:
 	{
 		auto config = schema_op_create_read(data);
-		guard(schema_config_free, config);
+		defer(schema_config_free, config);
 		schema_mgr_create(&db->schema_mgr, tr, config, false);
 		break;
 	}
@@ -106,7 +106,7 @@ recover_next(Recover* self, uint8_t** meta, uint8_t** data)
 	case LOG_TABLE_CREATE:
 	{
 		auto config = table_op_create_read(data);
-		guard(table_config_free, config);
+		defer(table_config_free, config);
 		table_mgr_create(&db->table_mgr, tr, config, false);
 		break;
 	}
@@ -163,7 +163,7 @@ recover_next(Recover* self, uint8_t** meta, uint8_t** data)
 		Str schema;
 		Str name;
 		auto column = table_op_column_add_read(data, &schema, &name);
-		guard(column_free, column);
+		defer(column_free, column);
 		auto table = table_mgr_find(&db->table_mgr, &schema, &name, true);
 		auto table_new = table_mgr_column_add(&db->table_mgr, tr, &schema, &name,
 		                                      column, true);
@@ -236,7 +236,7 @@ recover_next(Recover* self, uint8_t** meta, uint8_t** data)
 		auto config_pos = table_op_create_index_read(data, &schema, &name);
 		auto table = table_mgr_find(&db->table_mgr, &schema, &name, true);
 		auto config = index_config_read(table_columns(table), &config_pos);
-		guard(index_config_free, config);
+		defer(index_config_free, config);
 		table_index_create(table, tr, config, false);
 		// build index
 		auto index = table_find_index(table, &config->name, true);
@@ -267,7 +267,7 @@ recover_next(Recover* self, uint8_t** meta, uint8_t** data)
 	case LOG_NODE_CREATE:
 	{
 		auto config = node_op_create_read(data);
-		guard(node_config_free, config);
+		defer(node_config_free, config);
 		node_mgr_create(&db->node_mgr, tr, config, false);
 		break;
 	}
@@ -342,7 +342,7 @@ recover_wal(Recover* self)
 
 	WalCursor cursor;
 	wal_cursor_init(&cursor);
-	guard(wal_cursor_close, &cursor);
+	defer(wal_cursor_close, &cursor);
 
 	uint64_t total = 0;
 	uint64_t last  = 0;

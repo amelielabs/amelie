@@ -251,7 +251,7 @@ ddl_alter_table_column_add(Session* self, Tr* tr)
 	build_init(&build, BUILD_COLUMN_ADD, self->share->cluster,
 	            table,
 	            table_new, arg->column, NULL);
-	guard(build_free, &build);
+	defer(build_free, &build);
 	build_run(&build);
 }
 
@@ -281,7 +281,7 @@ ddl_alter_table_column_drop(Session* self, Tr* tr)
 	build_init(&build, BUILD_COLUMN_DROP, self->share->cluster,
 	            table,
 	            table_new, column, NULL);
-	guard(build_free, &build);
+	defer(build_free, &build);
 	build_run(&build);
 }
 
@@ -361,7 +361,7 @@ ddl_create_index(Session* self, Tr* tr)
 	// do parallel indexation per node
 	Build build;
 	build_init(&build, BUILD_INDEX, cluster, table, NULL, NULL, index);
-	guard(build_free, &build);
+	defer(build_free, &build);
 	build_run(&build);
 }
 
@@ -403,7 +403,7 @@ ddl_create_node(Session* self, Tr* tr)
 	auto db   = self->share->db;
 
 	auto config = node_config_allocate();
-	guard(node_config_free, config);
+	defer(node_config_free, config);
 
 	// set or generate node name
 	if (arg->id)

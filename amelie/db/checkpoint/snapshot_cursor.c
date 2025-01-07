@@ -60,7 +60,7 @@ snapshot_cursor_next(SnapshotCursor* self)
 		return NULL;
 
 	auto buf = buf_create();
-	guard_buf(buf);
+	defer_buf(buf);
 
 	// read header
 	uint32_t size_header = sizeof(Msg);
@@ -79,6 +79,6 @@ snapshot_cursor_next(SnapshotCursor* self)
 	file_pread_buf(&self->file, buf, size_data, self->file_offset);
 	self->file_offset += size_data;
 
-	unguard();
+	undefer();
 	return buf;
 }

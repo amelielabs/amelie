@@ -37,7 +37,7 @@ login_mgr_open(LoginMgr* self, const char* path)
 
 	Buf buf;
 	buf_init(&buf);
-	guard_buf(&buf);
+	defer_buf(&buf);
 	file_import(&buf, "%s", path);
 
 	Str text;
@@ -46,7 +46,7 @@ login_mgr_open(LoginMgr* self, const char* path)
 
 	Json json;
 	json_init(&json);
-	guard(json_free, &json);
+	defer(json_free, &json);
 	json_parse(&json, &text, NULL);
 
 	// {}
@@ -72,7 +72,7 @@ login_mgr_sync(LoginMgr* self, const char* path)
 	// write a list of remote login_mgr
 	Buf buf;
 	buf_init(&buf);
-	guard_buf(&buf);
+	defer_buf(&buf);
 
 	// {}
 	encode_obj(&buf);
@@ -87,14 +87,14 @@ login_mgr_sync(LoginMgr* self, const char* path)
 	// convert to json
 	Buf text;
 	buf_init(&text);
-	guard_buf(&text);
+	defer_buf(&text);
 	uint8_t* pos = buf.start;
 	json_export_pretty(&text, NULL, &pos);
 
 	// create file
 	File file;
 	file_init(&file);
-	guard(file_close, &file);
+	defer(file_close, &file);
 	file_open_as(&file, path, O_CREAT|O_RDWR, 0600);
 	file_write_buf(&file, &text);
 
@@ -137,7 +137,7 @@ login_mgr_set_json(Remote* remote, Str* text)
 {
 	Json json;
 	json_init(&json);
-	guard(json_free, &json);
+	defer(json_free, &json);
 	json_parse(&json, text, NULL);
 
 	uint8_t* pos = json.buf->start;
@@ -277,7 +277,7 @@ login_mgr_set(LoginMgr* self, Remote* remote, Vars* vars,
 		timestamp_add(&expire, &iv);
 
 		auto jwt = jwt_create(user, secret, &expire);
-		guard_buf(jwt);
+		defer_buf(jwt);
 		Str jwt_str;
 		buf_str(jwt, &jwt_str);
 		remote_set(remote, REMOTE_TOKEN, &jwt_str);

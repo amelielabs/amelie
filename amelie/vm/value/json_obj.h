@@ -18,7 +18,7 @@ value_obj(Value* result, Timezone* tz, Stack* stack, int count)
 		error("{}: incorrect object size");
 
 	auto buf = buf_create();
-	guard_buf(buf);
+	defer_buf(buf);
 
 	encode_obj(buf);
 	for (int i = 0; i < count ; i++)
@@ -33,7 +33,7 @@ value_obj(Value* result, Timezone* tz, Stack* stack, int count)
 	}
 	encode_obj_end(buf);
 
-	unguard();
+	undefer();
 	value_set_json_buf(result, buf);
 }
 

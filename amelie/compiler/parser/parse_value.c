@@ -139,10 +139,10 @@ parse_value(Lex*    self, Local* local,
 		Str in;
 		str_set(&in, pos, self->end - pos);
 		auto buf = buf_create();
-		guard_buf(buf);
+		defer_buf(buf);
 		json_parse(json, &in, buf);
 		self->pos = json->pos;
-		unguard();
+		undefer();
 		value_set_json_buf(value, buf);
 		return;
 	}
@@ -192,9 +192,9 @@ parse_value(Lex*    self, Local* local,
 			ast = lex_next(self);
 		lex_push(self, ast);
 		auto buf = buf_create();
-		guard_buf(buf);
+		defer_buf(buf);
 		parse_vector(self, buf);
-		unguard();
+		undefer();
 		value_set_vector_buf(value, buf);
 		return;
 	}

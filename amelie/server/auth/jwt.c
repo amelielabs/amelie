@@ -26,7 +26,7 @@ jwt_create(Str* user, Str* secret, Timestamp* expire)
 
 	JwtEncode jwt;
 	jwt_encode_init(&jwt);
-	guard(jwt_encode_free, &jwt);
+	defer(jwt_encode_free, &jwt);
 
 	// header
 	char header[] = "{\"alg\":\"HS256\",\"typ\":\"JWT\"}";
@@ -35,7 +35,7 @@ jwt_create(Str* user, Str* secret, Timestamp* expire)
 
 	// payload
 	auto payload = buf_create();
-	guard(buf_free, payload);
+	defer(buf_free, payload);
 	encode_obj(payload);
 
 	// sub
@@ -58,7 +58,7 @@ jwt_create(Str* user, Str* secret, Timestamp* expire)
 
 	// convert payload to json
 	auto payload_json = buf_create();
-	guard_buf(payload_json);
+	defer_buf(payload_json);
 
 	uint8_t* pos = payload->start;
 	json_export(payload_json, NULL, &pos);

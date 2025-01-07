@@ -183,11 +183,11 @@ test_benchmark_get_buf(void)
 }
 
 static Buf*
-test_benchmark_get_buf_guard(void)
+test_benchmark_get_buf_defer(void)
 {
 	// obj
 	auto buf = buf_create();
-	guard_buf(buf);
+	defer_buf(buf);
 
 	encode_obj(buf);
 
@@ -220,7 +220,7 @@ test_benchmark_get_buf_guard(void)
 	encode_integer(buf, 0);
 
 	encode_obj_end(buf);
-	return unguard();
+	return undefer();
 }
 
 void
@@ -245,7 +245,7 @@ test_benchmark_buf(void* arg)
 }
 
 void
-test_benchmark_buf_guard(void* arg)
+test_benchmark_buf_defer(void* arg)
 {
 	unused(arg);
 	uint64_t time_us;
@@ -255,7 +255,7 @@ test_benchmark_buf_guard(void* arg)
 	int i = 0;
 	for(; i < count; i++)
 	{
-		auto buf = test_benchmark_get_buf_guard();
+		auto buf = test_benchmark_get_buf_defer();
 		buf_free(buf);
 	}
 

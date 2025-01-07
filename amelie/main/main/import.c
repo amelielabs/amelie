@@ -371,7 +371,7 @@ import_file(Import* self, char* path)
 		auto buf = reader_read(reader, &rows);
 		if (! buf)
 			break;
-		guard_buf(buf);
+		defer_buf(buf);
 
 		import_send(self, buf);
 		self->rows += rows;
@@ -408,7 +408,7 @@ import_run(Import* self, int argc, char** argv)
 	auto path = import_path_create(self, argv[0]);
 	if (! path)
 		error("failed to read table name");
-	guard_buf(path);
+	defer_buf(path);
 	buf_str(path, &self->path);
 	argc--;
 	argv++;

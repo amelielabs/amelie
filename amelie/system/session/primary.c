@@ -109,7 +109,7 @@ replay(Session* self, WalWrite* write)
 
 	ReqList req_list;
 	req_list_init(&req_list);
-	guard(req_list_free, &req_list);
+	defer(req_list_free, &req_list);
 
 	Exception e;
 	if (enter(&e))
@@ -134,7 +134,7 @@ on_write(Primary* self, Buf* data)
 
 	// take shared lock
 	session_lock(session, LOCK);
-	guard(session_unlock, session);
+	defer(session_unlock, session);
 
 	// validate request fields and check current replication state
 
@@ -171,7 +171,7 @@ session_primary(Session* self)
 
 	Recover recover;
 	recover_init(&recover, share->db, &build_if, share->cluster);
-	guard(recover_free, &recover);
+	defer(recover_free, &recover);
 
 	Primary primary;
 	primary_init(&primary, &recover, self->client, on_write, self);

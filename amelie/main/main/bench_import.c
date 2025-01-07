@@ -45,7 +45,7 @@ bench_import_main(BenchWorker* self, Client* client)
 	// [[], ...]
 	Buf buf;
 	buf_init(&buf);
-	guard_buf(&buf);
+	defer_buf(&buf);
 	buf_write(&buf, "[", 1);
 	for (uint64_t i = 0; i < batch; i++)
 	{

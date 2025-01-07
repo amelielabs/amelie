@@ -271,7 +271,7 @@ value_any(Value* result, Value* a, Value* b, int op)
 	if (b->type == TYPE_STORE)
 	{
 		auto it = store_iterator(b->store);
-		guard(store_iterator_close, it);
+		defer(store_iterator_close, it);
 		switch (op) {
 		case MATCH_EQU:
 			match = value_any_equ(it, a, &has_null);

@@ -109,7 +109,7 @@ content_json(Content* self, Columns* columns, Value* value)
 		buf_write(buf, "[", 1);
 
 		auto it = store_iterator(value->store);
-		guard(store_iterator_close, it);
+		defer(store_iterator_close, it);
 
 		auto first = true;
 		Value* row;

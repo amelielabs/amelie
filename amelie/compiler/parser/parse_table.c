@@ -680,9 +680,9 @@ parse_table_alter(Stmt* self)
 					      str_of(&stmt->column_name));
 
 				auto value = buf_create();
-				guard_buf(value);
+				defer_buf(value);
 				parse_default(self, column, value);
-				unguard();
+				undefer();
 
 				stmt->value_buf = value;
 				buf_str(value, &stmt->value);
@@ -749,9 +749,9 @@ parse_table_alter(Stmt* self)
 			if (stmt_if(self, KDEFAULT))
 			{
 				auto value = buf_create();
-				guard_buf(value);
+				defer_buf(value);
 				encode_null(value);
-				unguard();
+				undefer();
 				stmt->value_buf = value;
 				buf_str(value, &stmt->value);
 				stmt->type = TABLE_ALTER_COLUMN_UNSET_DEFAULT;

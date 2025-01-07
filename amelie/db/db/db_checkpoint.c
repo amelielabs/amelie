@@ -56,7 +56,7 @@ restore_object(Db* self, int type, uint8_t** pos)
 {
 	Tr tr;
 	tr_init(&tr);
-	guard(tr_free, &tr);
+	defer(tr_free, &tr);
 
 	Exception e;
 	if (enter(&e))
@@ -69,7 +69,7 @@ restore_object(Db* self, int type, uint8_t** pos)
 		{
 			// read node config
 			auto config = node_config_read(pos);
-			guard(node_config_free, config);
+			defer(node_config_free, config);
 
 			// create node
 			node_mgr_create(&self->node_mgr, &tr, config, false);
@@ -79,7 +79,7 @@ restore_object(Db* self, int type, uint8_t** pos)
 		{
 			// read schema config
 			auto config = schema_config_read(pos);
-			guard(schema_config_free, config);
+			defer(schema_config_free, config);
 
 			// create schema
 			schema_mgr_create(&self->schema_mgr, &tr, config, false);
@@ -89,7 +89,7 @@ restore_object(Db* self, int type, uint8_t** pos)
 		{
 			// read table config
 			auto config = table_config_read(pos);
-			guard(table_config_free, config);
+			defer(table_config_free, config);
 
 			// create table
 			table_mgr_create(&self->table_mgr, &tr, config, false);

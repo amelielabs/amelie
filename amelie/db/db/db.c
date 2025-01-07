@@ -53,7 +53,7 @@ db_create_system_schema(Db* self, const char* schema, bool create)
 {
 	Tr tr;
 	tr_init(&tr);
-	guard(tr_free, &tr);
+	defer(tr_free, &tr);
 
 	Exception e;
 	if (enter(&e))
@@ -66,7 +66,7 @@ db_create_system_schema(Db* self, const char* schema, bool create)
 		str_init(&name);
 		str_set_cstr(&name, schema);
 		auto config = schema_config_allocate();
-		guard(schema_config_free, config);
+		defer(schema_config_free, config);
 		schema_config_set_name(config, &name);
 		schema_config_set_system(config, true);
 		schema_config_set_create(config, create);

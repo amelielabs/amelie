@@ -68,9 +68,9 @@
 
 // runtime
 #include "runtime/throw.h"
-#include "runtime/guard.h"
+#include "runtime/defer.h"
 #include "runtime/runtime.h"
-#include "runtime/runtime_guard.h"
+#include "runtime/runtime_defer.h"
 
 // rpc
 #include "runtime/rpc.h"

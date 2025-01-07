@@ -55,7 +55,7 @@ static inline ServerConfig*
 server_config_read(uint8_t** pos)
 {
 	auto self = server_config_allocate();
-	guard(server_config_free, self);
+	defer(server_config_free, self);
 
 	// obj
 	if (! json_is_obj(*pos))
@@ -121,5 +121,5 @@ server_config_read(uint8_t** pos)
 			      str_size(&name), str_of(&name));
 		}
 	}
-	return unguard();
+	return undefer();
 }

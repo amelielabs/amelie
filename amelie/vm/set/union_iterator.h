@@ -206,9 +206,9 @@ union_iterator_allocate(Union* ref)
 	self->list_count = 0;
 	self->limit      = INT64_MAX;
 	self->ref        = ref;
-	guard(union_iterator_close, self);
+	defer(union_iterator_close, self);
 
 	union_iterator_open(self);
-	unguard();
+	undefer();
 	return &self->it;
 }

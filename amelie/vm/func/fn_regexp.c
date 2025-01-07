@@ -124,7 +124,7 @@ fn_regexp_substr(Call* self)
 	auto match_data = pcre2_match_data_create_from_pattern(re, NULL);
 	if (! match_data)
 		error("regexp_substr(): failed to allocate match data");
-	guard(pcre2_match_data_free, match_data);
+	defer(pcre2_match_data_free, match_data);
 
 	auto string = &argv[0].string;
 	auto rc = pcre2_match(re, (PCRE2_SPTR)str_of(string), str_size(string),
@@ -171,7 +171,7 @@ fn_regexp_match(Call* self)
 	auto match_data = pcre2_match_data_create_from_pattern(re, NULL);
 	if (! match_data)
 		error("regexp_match(): failed to allocate match data");
-	guard(pcre2_match_data_free, match_data);
+	defer(pcre2_match_data_free, match_data);
 
 	auto string = &argv[0].string;
 	auto rc = pcre2_match(re, (PCRE2_SPTR)str_of(string), str_size(string),
@@ -221,7 +221,7 @@ fn_regexp_replace(Call* self)
 	auto match_data = pcre2_match_data_create_from_pattern(re, NULL);
 	if (! match_data)
 		error("regexp_match(): failed to allocate match data");
-	guard(pcre2_match_data_free, match_data);
+	defer(pcre2_match_data_free, match_data);
 
 	auto string  = &argv[0].string;
 	auto replace = &argv[2].string;

@@ -34,7 +34,7 @@ user_mgr_save(UserMgr* self)
 {
 	// create dump
 	auto buf = user_cache_dump(&self->cache);
-	guard_buf(buf);
+	defer_buf(buf);
 
 	// update and save state
 	var_json_set_buf(&config()->users, buf);
@@ -56,7 +56,7 @@ user_mgr_open(UserMgr* self)
 	{
 		// value
 		auto config = user_config_read(&pos);
-		guard(user_config_free, config);
+		defer(user_config_free, config);
 
 		auto user = user_allocate(config);
 		user_cache_add(&self->cache, user);

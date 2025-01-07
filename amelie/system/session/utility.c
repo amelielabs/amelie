@@ -117,7 +117,7 @@ ctl_show(Session* self)
 		break;
 	}
 	}
-	guard_buf(buf);
+	defer_buf(buf);
 
 	// write content
 	Str format = config()->format.string;
@@ -250,7 +250,7 @@ ctl_token(Session* self)
 
 	// generate token
 	auto jwt = jwt_create(&user->config->name, &user->config->secret, &expire);
-	guard_buf(jwt);
+	defer_buf(jwt);
 	auto buf = buf_create();
 	encode_buf(buf, jwt);
 
@@ -315,7 +315,7 @@ ctl_replica(Session* self)
 	{
 		auto arg = ast_replica_create_of(stmt->ast);
 		auto config = replica_config_allocate();
-		guard(replica_config_free, config);
+		defer(replica_config_free, config);
 
 		// id
 		Uuid id;

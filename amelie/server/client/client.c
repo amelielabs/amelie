@@ -140,7 +140,7 @@ client_connect_to(Client* self, UriHost* host)
 	// resolve host address
 	struct addrinfo* addr = NULL;
 	resolve(global()->resolver, str_of(&host->host), host->port, &addr);
-	guard(freeaddrinfo, addr);
+	defer(freeaddrinfo, addr);
 
 	// prepare for https connection
 	if (self->uri.proto == URI_HTTPS) {

@@ -104,7 +104,7 @@ frontend_main(void* arg)
 	{
 		auto buf = channel_read(&am_task->channel, -1);
 		auto msg = msg_of(buf);
-		guard_buf(buf);
+		defer_buf(buf);
 
 		switch (msg->id) {
 		case MSG_CLIENT:

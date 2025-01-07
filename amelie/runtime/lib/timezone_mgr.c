@@ -49,7 +49,7 @@ timezone_mgr_read(TimezoneMgr* self, char* location, char* location_nested)
 	DIR* dir = opendir(path);
 	if (unlikely(dir == NULL))
 		return;
-	guard(fs_opendir_guard, dir);
+	defer(fs_opendir_defer, dir);
 	for (;;)
 	{
 		auto entry = readdir(dir);
@@ -99,7 +99,7 @@ timezone_mgr_read_system_timezone(TimezoneMgr* self)
 	// read /etc/timezone content
 	Buf buf;
 	buf_init(&buf);
-	guard(buf_free, &buf);
+	defer(buf_free, &buf);
 	file_import(&buf, "/etc/timezone");
 
 	Str name;

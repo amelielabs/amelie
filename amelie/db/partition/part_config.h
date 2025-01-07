@@ -74,7 +74,7 @@ static inline PartConfig*
 part_config_read(uint8_t** pos)
 {
 	auto self = part_config_allocate();
-	guard(part_config_free, self);
+	defer(part_config_free, self);
 	Decode obj[] =
 	{
 		{ DECODE_INT,  "id",   &self->id   },
@@ -84,7 +84,7 @@ part_config_read(uint8_t** pos)
 		{ 0,            NULL,  NULL        },
 	};
 	decode_obj(obj, "part", pos);
-	return unguard();
+	return undefer();
 }
 
 static inline void

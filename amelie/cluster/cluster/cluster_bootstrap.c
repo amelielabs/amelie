@@ -58,7 +58,7 @@ cluster_bootstrap(Db* db, int backends)
 		while (backends-- > 0)
 		{
 			auto config = node_config_allocate();
-			guard(node_config_free, config);
+			defer(node_config_free, config);
 
 			// set node id
 			Uuid id;

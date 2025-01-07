@@ -211,7 +211,7 @@ executor_commit(Executor* self, Dtr* tr, Buf* error)
 	for (;;)
 	{
 		spinlock_lock(&self->lock);
-		guard(spinlock_unlock, &self->lock);
+		defer(spinlock_unlock, &self->lock);
 
 		switch (tr->state) {
 		case DTR_COMMIT:
@@ -251,7 +251,7 @@ executor_commit(Executor* self, Dtr* tr, Buf* error)
 		if (! list_is_first(&self->list, &tr->link))
 		{
 			// wait to become leader or wakeup by leader
-			unguard();
+			undefer();
 			spinlock_unlock(&self->lock);
 
 			event_wait(&tr->on_commit, -1);
@@ -271,7 +271,7 @@ executor_commit(Executor* self, Dtr* tr, Buf* error)
 		// a list of last executed transactions per node
 		executor_prepare(self, false);
 
-		unguard();
+		undefer();
 		spinlock_unlock(&self->lock);
 
 		// wal write

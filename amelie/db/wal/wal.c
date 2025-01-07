@@ -113,7 +113,7 @@ wal_gc(Wal* self, uint64_t min)
 	// remove wal files < min
 	Buf list;
 	buf_init(&list);
-	guard_buf(&list);
+	defer_buf(&list);
 
 	int list_count;
 	list_count = id_mgr_gc_between(&self->list, &list, min);
@@ -153,7 +153,7 @@ wal_recover(Wal* self, char *path)
 	DIR* dir = opendir(path);
 	if (unlikely(dir == NULL))
 		error("wal: directory '%s' open error", path);
-	guard(fs_opendir_guard, dir);
+	defer(fs_opendir_defer, dir);
 	for (;;)
 	{
 		auto entry = readdir(dir);
@@ -198,7 +198,7 @@ hot void
 wal_write(Wal* self, WalBatch* batch)
 {
 	mutex_lock(&self->lock);
-	guard(mutex_unlock, &self->lock);
+	defer(mutex_unlock, &self->lock);
 
 	// update stats
 	var_int_add(&config()->writes, 1);
@@ -279,10 +279,10 @@ void
 wal_snapshot(Wal* self, WalSlot* slot, Buf* buf)
 {
 	mutex_lock(&self->lock);
-	guard(mutex_unlock, &self->lock);
+	defer(mutex_unlock, &self->lock);
 
 	spinlock_lock(&self->list.lock);
-	guard(spinlock_unlock, &self->list.lock);
+	defer(spinlock_unlock, &self->list.lock);
 
 	// create wal slot to ensure listed files exists
 	wal_slot_set(slot, 0);

@@ -305,7 +305,7 @@ void
 op_dump(Code* self, CodeData* data, Buf* buf)
 {
 	auto output = buf_create();
-	guard_buf(output);
+	defer_buf(output);
 
 	encode_obj(buf);
 	auto op  = (Op*)self->code.start;

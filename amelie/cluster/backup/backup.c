@@ -69,7 +69,7 @@ backup_list(Buf* self, char* name)
 	DIR* dir = opendir(path);
 	if (unlikely(dir == NULL))
 		error_system();
-	guard(fs_opendir_guard, dir);
+	defer(fs_opendir_defer, dir);
 	for (;;)
 	{
 		auto entry = readdir(dir);
@@ -100,7 +100,7 @@ backup_prepare(Backup* self)
 	snprintf(path, sizeof(path), "%s/config.json", config_directory());
 	Buf config_data;
 	buf_init(&config_data);
-	guard_buf(&config_data);
+	defer_buf(&config_data);
 	file_import(&config_data, "%s", path);
 	Str config_str;
 	buf_str(&config_data, &config_str);
@@ -135,7 +135,7 @@ backup_prepare(Backup* self)
 	encode_raw(buf, "config", 6);
 	Json json;
 	json_init(&json);
-	guard(json_free, &json);
+	defer(json_free, &json);
 	json_parse(&json, &config_str, buf);
 
 	encode_obj_end(buf);
@@ -192,7 +192,7 @@ backup_send(Backup* self)
 	         str_of(&hdr_path->value));
 	File file;
 	file_init(&file);
-	guard(file_close, &file);
+	defer(file_close, &file);
 	file_open(&file, path);
 
 	// requested size must be <= to the current file size

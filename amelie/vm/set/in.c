@@ -46,7 +46,7 @@ value_in(Value* result, Value* value, Value* in, int count)
 		if (in[i].type == TYPE_STORE)
 		{
 			auto it = store_iterator(in[i].store);
-			guard(store_iterator_close, it);
+			defer(store_iterator_close, it);
 			Value* at;
 			for (; (at = store_iterator_at(it)); store_iterator_next(it))
 			{

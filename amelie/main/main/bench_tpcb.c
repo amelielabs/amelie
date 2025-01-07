@@ -23,7 +23,7 @@ tpcb_execute(Client* client,
              int     aid, int delta)
 {
 	auto buf = buf_create();
-	guard_buf(buf);
+	defer_buf(buf);
 
 	buf_printf(buf, "UPDATE __bench.accounts SET abalance = abalance + %d WHERE aid = %d;",
 	           delta, aid);
@@ -83,12 +83,12 @@ bench_tpcb_create(Bench* self, Client* client)
 	info("preparing data.");
 
 	auto filler = buf_create();
-	guard_buf(filler);
+	defer_buf(filler);
 	buf_claim(filler, 100);
 	memset(filler->start, ' ', 100);
 
 	auto buf = buf_create();
-	guard_buf(buf);
+	defer_buf(buf);
 
 	int scale = var_int_of(&self->scale);
 	for (auto i = 0; i < tpcb_branches * scale; i++)

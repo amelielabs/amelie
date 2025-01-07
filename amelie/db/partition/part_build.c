@@ -83,7 +83,7 @@ part_build(PartBuild* self)
 {
 	auto id = self->part->config->id;
 	auto it = index_iterator(part_primary(self->part));
-	guard(iterator_close, it);
+	defer(iterator_close, it);
 	iterator_open(it, NULL);
 	switch (self->type) {
 	case PART_BUILD_INDEX:

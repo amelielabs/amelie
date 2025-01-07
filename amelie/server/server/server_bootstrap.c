@@ -28,7 +28,7 @@ server_bootstrap(void)
 	// active network interfaces
 	Buf buf;
 	buf_init(&buf);
-	guard_buf(&buf);
+	defer_buf(&buf);
 
 	// []
 	encode_array(&buf);
@@ -38,7 +38,7 @@ server_bootstrap(void)
 	auto rc = getifaddrs(&ifap);
 	if (rc == -1)
 		error_system();
-	guard(freeifaddrs, ifap);
+	defer(freeifaddrs, ifap);
 
 	for (auto ref = ifap; ref; ref = ref->ifa_next)
 	{
@@ -114,7 +114,7 @@ server_bootstrap(void)
 {
 	Buf buf;
 	buf_init(&buf);
-	guard_buf(&buf);
+	defer_buf(&buf);
 
 	// tls and auto are disabled by default
 

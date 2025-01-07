@@ -17,7 +17,7 @@ void
 os_memusage(uint64_t* virt, uint64_t* resident, uint64_t* shared)
 {
 	auto buf = buf_create();
-	guard_buf(buf);
+	defer_buf(buf);
 	file_import_stream(buf, "/proc/self/statm");
 	buf_write(buf, "\0", 1);
 
@@ -42,7 +42,7 @@ os_cpuusage_system(int* cpus, uint64_t* usage)
 
 	// /proc/stat
 	auto buf = buf_create();
-	guard_buf(buf);
+	defer_buf(buf);
 	file_import_stream(buf, "/proc/stat");
 	buf_write(buf, "\0", 1);
 
@@ -65,7 +65,7 @@ void
 os_cpuusage(int count, int* ids, uint64_t* usage)
 {
 	auto buf = buf_create();
-	guard_buf(buf);
+	defer_buf(buf);
 
 	// /proc/id/stat
 	auto pid = getpid();

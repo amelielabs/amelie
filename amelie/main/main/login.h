@@ -54,7 +54,7 @@ static inline Login*
 login_read(uint8_t** pos)
 {
 	auto self = login_allocate();
-	guard(login_free, self);
+	defer(login_free, self);
 	Decode obj[REMOTE_MAX + 1];
 	for (int id = 0; id < REMOTE_MAX; id++)
 	{
@@ -64,7 +64,7 @@ login_read(uint8_t** pos)
 	}
 	memset(&obj[REMOTE_MAX], 0, sizeof(Decode));
 	decode_obj(obj, "login", pos);
-	return unguard();
+	return undefer();
 }
 
 static inline void

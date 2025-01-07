@@ -71,7 +71,7 @@ csend(Vm* self, Op* op)
 	} else
 	{
 		auto it = store_iterator(store);
-		guard(store_iterator_close, it);
+		defer(store_iterator_close, it);
 		Value* row;
 		for (; (row = store_iterator_at(it)); store_iterator_next(it))
 		{
@@ -286,7 +286,7 @@ ctable_open(Vm* self, Op* op)
 
 	// create cursor key
 	auto key = row_create_key(keys, stack_at(&self->stack, keys_count), keys_count);
-	guard(row_free, key);
+	defer(row_free, key);
 	stack_popn(&self->stack, keys_count);
 
 	// open cursor

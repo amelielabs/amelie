@@ -65,7 +65,7 @@ explain(Explain*  self,
         bool      profile)
 {
 	auto buf = buf_create();
-	guard_buf(buf);
+	defer_buf(buf);
 
 	encode_obj(buf);
 	unused(dtr);

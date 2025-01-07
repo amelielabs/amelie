@@ -115,7 +115,7 @@ hot static void
 snapshot_main(Snapshot* self, Index* index)
 {
 	auto it = index_iterator(index);
-	guard(iterator_close, it);
+	defer(iterator_close, it);
 	iterator_open(it, NULL);
 	while (iterator_has(it))
 	{

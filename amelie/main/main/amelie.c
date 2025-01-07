@@ -162,7 +162,7 @@ amelie_cmd_backup(Amelie* self, int argc, char** argv)
 	// prepare remote
 	Remote remote;
 	remote_init(&remote);
-	guard(remote_free, &remote);
+	defer(remote_free, &remote);
 	login_mgr_set(&self->home.login_mgr, &remote, NULL, argc - 1, argv + 1);
 
 	// disable log output
@@ -222,7 +222,7 @@ amelie_cmd_client_main(Amelie* self, Client* client)
 
 	Separator sep;
 	separator_init(&sep);
-	guard(separator_free, &sep);
+	defer(separator_free, &sep);
 
 	Str* prompt_str;
 	if (! str_empty(name))
@@ -248,7 +248,7 @@ amelie_cmd_client_main(Amelie* self, Client* client)
 		auto prompt = separator_pending(&sep) ? prompt_ms: prompt_ss;
 		if (! cli(prompt, &input))
 			break;
-		guard(str_free, &input);
+		defer(str_free, &input);
 
 		// split commands by \n
 		if (is_terminal)

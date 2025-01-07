@@ -63,7 +63,7 @@ checkpoint_mgr_open_dir(CheckpointMgr* self)
 	DIR* dir = opendir(path);
 	if (unlikely(dir == NULL))
 		error("checkpoint: directory '%s' open error", path);
-	guard(fs_opendir_guard, dir);
+	defer(fs_opendir_defer, dir);
 	for (;;)
 	{
 		auto entry = readdir(dir);
@@ -102,7 +102,7 @@ checkpoint_mgr_open_catalog(CheckpointMgr* self)
 	// read and parse catalog content
 	Buf buf;
 	buf_init(&buf);
-	guard_buf(&buf);
+	defer_buf(&buf);
 	file_import(&buf, "%s/%" PRIu64 "/catalog.json", config_directory(),
 	            checkpoint);
 
@@ -111,7 +111,7 @@ checkpoint_mgr_open_catalog(CheckpointMgr* self)
 
 	Json json;
 	json_init(&json);
-	guard(json_free, &json);
+	defer(json_free, &json);
 	json_parse(&json, &catalog_data, NULL);
 
 	// restore system objects
@@ -140,7 +140,7 @@ checkpoint_mgr_gc(CheckpointMgr* self)
 	// remove checkpoints < min
 	Buf list;
 	buf_init(&list);
-	guard_buf(&list);
+	defer_buf(&list);
 
 	int list_count;
 	list_count = id_mgr_gc_between(&self->list, &list, min);
@@ -186,12 +186,12 @@ checkpoint_mgr_list(CheckpointMgr* self, uint64_t checkpoint, Buf* buf)
 	DIR* dir = opendir(path);
 	if (unlikely(dir == NULL))
 		error_system();
-	guard(fs_opendir_guard, dir);
+	defer(fs_opendir_defer, dir);
 
 	// read partitions to create a sorted list
 	IdMgr list;
 	id_mgr_init(&list);
-	guard(id_mgr_free, &list);
+	defer(id_mgr_free, &list);
 	for (;;)
 	{
 		auto entry = readdir(dir);

@@ -192,14 +192,14 @@ checkpoint_create_catalog(Checkpoint* self)
 	// convert catalog to json
 	Buf text;
 	buf_init(&text);
-	guard_buf(&text);
+	defer_buf(&text);
 	uint8_t* pos = self->catalog->start;
 	json_export_pretty(&text, global()->timezone, &pos);
 
 	// create config file
 	File file;
 	file_init(&file);
-	guard(file_close, &file);
+	defer(file_close, &file);
 	file_open_as(&file, path, O_CREAT|O_RDWR, 0644);
 	file_write_buf(&file, &text);
 }

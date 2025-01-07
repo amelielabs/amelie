@@ -212,7 +212,7 @@ dtr_recv(Dtr* self, int stmt)
 
 	if (unlikely(error))
 	{
-		guard_buf(error);
+		defer_buf(error);
 		msg_error_rethrow(error);
 	}
 }

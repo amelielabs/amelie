@@ -125,7 +125,7 @@ system_on_frontend_connect(Frontend* frontend, Client* client)
 {
 	System* self = frontend->on_connect_arg;
 	auto session = session_create(client, frontend, &self->share);
-	guard(session_free, session);
+	defer(session_free, session);
 	session_main(session);
 }
 
@@ -138,13 +138,13 @@ system_recover(System* self)
 
 	Build build;
 	build_init(&build, BUILD_RECOVER, &self->cluster, NULL, NULL, NULL, NULL);
-	guard(build_free, &build);
+	defer(build_free, &build);
 	build_run(&build);
 
 	// replay wals
 	Recover recover;
 	recover_init(&recover, &self->db, &build_if, &self->cluster);
-	guard(recover_free, &recover);
+	defer(recover_free, &recover);
 	recover_wal(&recover);
 
 	info("recover: complete");
@@ -161,7 +161,7 @@ system_bootstrap(System* self)
 	// information is persisted (if wal is disabled)
 	Checkpoint cp;
 	checkpoint_init(&cp, &self->db.checkpoint_mgr);
-	guard(checkpoint_free, &cp);
+	defer(checkpoint_free, &cp);
 	checkpoint_begin(&cp, 1, 1);
 	checkpoint_run(&cp);
 	checkpoint_wait(&cp);
@@ -329,7 +329,7 @@ system_main(System* self)
 	{
 		auto buf = channel_read(&am_task->channel, -1);
 		auto msg = msg_of(buf);
-		guard_buf(buf);
+		defer_buf(buf);
 
 		if (msg->id == RPC_STOP)
 			break;

@@ -61,7 +61,7 @@ static inline ReplicaConfig*
 replica_config_read(uint8_t** pos)
 {
 	auto self = replica_config_allocate();
-	guard(replica_config_free, self);
+	defer(replica_config_free, self);
 	Decode obj[] =
 	{
 		{ DECODE_UUID,   "id",         &self->id                                   },
@@ -74,7 +74,7 @@ replica_config_read(uint8_t** pos)
 		{ 0,              NULL,        NULL                                        },
 	};
 	decode_obj(obj, "replica", pos);
-	return unguard();
+	return undefer();
 }
 
 static inline void

@@ -146,7 +146,7 @@ static inline TableConfig*
 table_config_read(uint8_t** pos)
 {
 	auto self = table_config_allocate();
-	guard(table_config_free, self);
+	defer(table_config_free, self);
 
 	uint8_t* pos_columns    = NULL;
 	uint8_t* pos_indexes    = NULL;
@@ -183,7 +183,7 @@ table_config_read(uint8_t** pos)
 		table_config_add_partition(self, config);
 	}
 
-	return unguard();
+	return undefer();
 }
 
 static inline void

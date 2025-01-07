@@ -19,7 +19,7 @@ Timezone*
 timezone_create(Str* name, char* path)
 {
 	Timezone* self = am_malloc(sizeof(Timezone));
-	guard(timezone_free, self);
+	defer(timezone_free, self);
 	memset(self, 0, sizeof(Timezone));
 
 	str_init(&self->name);
@@ -43,7 +43,7 @@ timezone_create(Str* name, char* path)
 
 	File file;
 	file_init(&file);
-	guard(file_close, &file);
+	defer(file_close, &file);
 	file_open_as(&file, path, O_RDONLY, 0644);
 	file_read(&file, header, sizeof(TimezoneHeader));
 
@@ -99,8 +99,8 @@ timezone_create(Str* name, char* path)
 	for (uint32_t i = 0; i < header->typecnt; i++)
 		self->times[i].utoff = ntohl(self->times[i].utoff);
 
-	unguard();
-	unguard();
+	undefer();
+	undefer();
 
 	file_close(&file);
 	return self;

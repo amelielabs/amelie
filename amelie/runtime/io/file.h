@@ -261,7 +261,7 @@ file_import(Buf* buf, const char* fmt, ...)
 
 	File file;
 	file_init(&file);
-	guard(file_close, &file);
+	defer(file_close, &file);
 	file_open_rdonly(&file, path);
 	file_pread_buf(&file, buf, file.size, 0);
 }
@@ -277,7 +277,7 @@ file_import_stream(Buf* buf, const char* fmt, ...)
 
 	File file;
 	file_init(&file);
-	guard(file_close, &file);
+	defer(file_close, &file);
 	file_open_rdonly(&file, path);
 	for (;;)
 	{

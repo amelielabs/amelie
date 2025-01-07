@@ -76,7 +76,7 @@ build_run_first(Build* self)
 
 	// wait for completion
 	buf = channel_read(&self->channel, -1);
-	guard_buf(buf);
+	defer_buf(buf);
 
 	auto msg = msg_of(buf);
 	if (msg->id == MSG_ERROR)
@@ -113,7 +113,7 @@ build_run_all(Build* self)
 	}
 	if (error)
 	{
-		guard_buf(error);
+		defer_buf(error);
 		msg_error_throw(error);
 	}
 }
@@ -208,7 +208,7 @@ build_if_index(Recover* self, Table* table, IndexConfig* index)
 	Cluster* cluster = self->iface_arg;
 	Build build;
 	build_init(&build, BUILD_INDEX, cluster, table, NULL, NULL, index);
-	guard(build_free, &build);
+	defer(build_free, &build);
 	build_run(&build);
 }
 
@@ -219,7 +219,7 @@ build_if_column_add(Recover* self, Table* table, Table* table_new, Column* colum
 	Cluster* cluster = self->iface_arg;
 	Build build;
 	build_init(&build, BUILD_COLUMN_ADD, cluster, table, table_new, column, NULL);
-	guard(build_free, &build);
+	defer(build_free, &build);
 	build_run(&build);
 }
 
@@ -230,7 +230,7 @@ build_if_column_drop(Recover* self, Table* table, Table* table_new, Column* colu
 	Cluster* cluster = self->iface_arg;
 	Build build;
 	build_init(&build, BUILD_COLUMN_DROP, cluster, table, table_new, column, NULL);
-	guard(build_free, &build);
+	defer(build_free, &build);
 	build_run(&build);
 }
 

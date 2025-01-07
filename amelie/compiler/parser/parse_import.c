@@ -99,7 +99,7 @@ parse_import_obj(Stmt* self, Endpoint* endpoint)
 	auto row = set_reserve(stmt->values);
 
 	auto buf = buf_create();
-	guard_buf(buf);
+	defer_buf(buf);
 	buf_reserve(buf, sizeof(bool) * columns->count);
 	memset(buf->start, 0, sizeof(bool) * columns->count);
 

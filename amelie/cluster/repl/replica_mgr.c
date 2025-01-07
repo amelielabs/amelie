@@ -62,7 +62,7 @@ replica_mgr_save(ReplicaMgr* self)
 {
 	// create dump
 	auto buf = buf_create();
-	guard_buf(buf);
+	defer_buf(buf);
 
 	encode_array(buf);
 	list_foreach(&self->list)
@@ -90,7 +90,7 @@ replica_mgr_open(ReplicaMgr* self)
 	while (! json_read_array_end(&pos))
 	{
 		auto config = replica_config_read(&pos);
-		guard(replica_config_free, config);
+		defer(replica_config_free, config);
 
 		auto replica = replica_allocate(config, &self->db->wal);
 		list_append(&self->list, &replica->link);

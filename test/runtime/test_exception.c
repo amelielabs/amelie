@@ -67,44 +67,44 @@ test_exception2(void* arg)
 	}
 }
 
-static void on_guard(void* arg)
+static void on_defer(void* arg)
 {
 	*(bool*)arg = true;
 }
 
 void
-test_guard0(void* arg)
+test_defer0(void* arg)
 {
 	unused(arg);
 	// on block exit
 	bool run = false;
 	{
-		guard(on_guard, &run);
+		defer(on_defer, &run);
 	}
 	test(run);
 }
 
 void
-test_guard1(void* arg)
+test_defer1(void* arg)
 {
 	unused(arg);
 	bool run = false;
 	{
-		guard(on_guard, &run);
-		unguard();
+		defer(on_defer, &run);
+		undefer();
 	}
 	test(! run);
 }
 
 void
-test_guard2(void* arg)
+test_defer2(void* arg)
 {
 	unused(arg);
 	// exception
 	bool run = false;
 	Exception e;
 	if (enter(&e)) {
-		guard(on_guard, &run);
+		defer(on_defer, &run);
 		error("test");
 	}
 	if (leave(&e))
@@ -112,19 +112,19 @@ test_guard2(void* arg)
 	test(run);
 }
 
-static void on_guard_int(void* arg)
+static void on_defer_int(void* arg)
 {
 	*(int*)arg += 1;
 }
 
 void
-test_guard3(void* arg)
+test_defer3(void* arg)
 {
 	unused(arg);
 	int run = 0;
 	int i = 0;
 	while (i < 10) {
-		guard(on_guard_int, &run);
+		defer(on_defer_int, &run);
 		i++;
 	}
 	test(run == 10);
@@ -132,8 +132,8 @@ test_guard3(void* arg)
 	run = 0;
 	i = 0;
 	while (i < 10) {
-		guard(on_guard_int, &run);
-		unguard();
+		defer(on_defer_int, &run);
+		undefer();
 		i++;
 	}
 	test(run == 0);

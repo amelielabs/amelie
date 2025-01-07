@@ -173,7 +173,7 @@ system_status(System* self)
 	// db
 	encode_raw(buf, "db", 2);
 	auto db = db_status(&self->db);
-	guard_buf(db);
+	defer_buf(db);
 	buf_write(buf, db->start, buf_size(db));
 
 	// process
@@ -187,13 +187,13 @@ system_status(System* self)
 	// wal
 	encode_raw(buf, "wal", 3);
 	auto wal = wal_status(&self->db.wal);
-	guard_buf(wal);
+	defer_buf(wal);
 	buf_write(buf, wal->start, buf_size(wal));
 
 	// repl
 	encode_raw(buf, "repl", 4);
 	auto repl = repl_status(&self->repl);
-	guard_buf(repl);
+	defer_buf(repl);
 	buf_write(buf, repl->start, buf_size(repl));
 
 	encode_obj_end(buf);

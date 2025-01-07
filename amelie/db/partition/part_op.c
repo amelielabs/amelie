@@ -161,7 +161,7 @@ part_update(Part* self, Tr* tr, Iterator* it, Row* row)
 
 		// find and replace existing secondary row (keys are not updated)
 		auto index_it = index_iterator(index);
-		guard(iterator_close, index_it);
+		defer(iterator_close, index_it);
 		iterator_open(index_it, row);
 		op->row_prev = index_update(index, row, index_it);
 	}
@@ -207,7 +207,7 @@ part_delete_by(Part* self, Tr* tr, Row* row)
 	// since this operation is used for recovery
 	auto primary = part_primary(self);
 	auto it = index_iterator(primary);
-	guard(iterator_close, it);
+	defer(iterator_close, it);
 	if (unlikely(! iterator_open(it, row)))
 		error("delete by key does not match");
 	part_delete(self, tr, it);

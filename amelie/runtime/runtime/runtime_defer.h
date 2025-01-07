@@ -11,4 +11,4 @@
 // AGPL-3.0 Licensed.
 //
 
-#define guard_buf(buf) guard(buf_free, buf)
+#define defer_buf(buf) defer(buf_free, buf)

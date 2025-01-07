@@ -89,7 +89,7 @@ content_write_json(Content* self, Str* spec, Str* name, Buf* buf)
 	// prepare columns
 	Columns columns;
 	columns_init(&columns);
-	guard(columns_free, &columns);
+	defer(columns_free, &columns);
 	auto column = column_allocate();
 	column_set_name(column, name);
 	column_set_type(column, TYPE_JSON, 0);
@@ -104,7 +104,7 @@ content_write_json_error(Content* self, Error* error)
 {
 	// {}
 	auto buf = buf_create();
-	guard_buf(buf);
+	defer_buf(buf);
 	encode_obj(buf);
 	encode_raw(buf, "msg", 3);
 	encode_raw(buf, error->text, error->text_len);
