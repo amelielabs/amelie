@@ -42,7 +42,7 @@ pushdown_group_by(Compiler* self, AstSelect* select)
 	// SELECT FROM GROUP BY [WHERE] [HAVING] [ORDER BY] [LIMIT/OFFSET]
 
 	// create ordered agg set using group by keys
-	int  offset = emit_select_order_by_data(self, select, true, NULL);
+	int offset = emit_select_order_by_data(self, select, true);
 	int rset;
 	rset = op4(self, CSET_ORDERED, rpin(self, TYPE_STORE),
 	           select->expr_aggs.count,
@@ -100,8 +100,7 @@ static inline void
 pushdown_order_by(Compiler* self, AstSelect* select)
 {
 	// write order by key types
-	bool desc   = false;
-	int  offset = emit_select_order_by_data(self, select, false, &desc);
+	int  offset = emit_select_order_by_data(self, select, false);
 
 	// CSET_ORDERED
 	select->rset = op4(self, CSET_ORDERED, rpin(self, TYPE_STORE),
@@ -110,6 +109,7 @@ pushdown_order_by(Compiler* self, AstSelect* select)
 	                   offset);
 
 	// push limit as limit = limit + offset if possible
+#if 0
 	Ast* limit = NULL;
 	if (desc)
 	{
@@ -134,11 +134,12 @@ pushdown_order_by(Compiler* self, AstSelect* select)
 		}
 		*/
 	}
+#endif
 
 	// scan for table/expression and joins
 	scan(self,
 	     &select->targets,
-	     limit,
+	     NULL,
 	     NULL,
 	     select->expr_where,
 	     emit_select_on_match,
@@ -233,7 +234,7 @@ static inline int
 pushdown_group_by_recv_order_by(Compiler* self, AstSelect* select)
 {
 	// create ordered data set
-	int offset = emit_select_order_by_data(self, select, false, NULL);
+	int offset = emit_select_order_by_data(self, select, false);
 	int rset = op4(self, CSET_ORDERED, rpin(self, TYPE_STORE),
 	               select->ret.count,
 	               select->expr_order_by.count,

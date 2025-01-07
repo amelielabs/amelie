@@ -231,21 +231,14 @@ emit_select_on_match_aggregate_empty(Compiler* self, Targets* targets, void* arg
 }
 
 int
-emit_select_order_by_data(Compiler* self, AstSelect* select,
-                          bool            use_group_by,
-                          bool*           desc)
+emit_select_order_by_data(Compiler* self, AstSelect* select, bool use_group_by)
 {
 	int order_offset = code_data_pos(&self->code_data);
 	if (use_group_by)
 	{
-		bool* order = buf_claim(&self->code_data.data, sizeof(bool) * select->expr_group_by.count);
-		auto  node = select->expr_group_by.list;
-		while (node)
-		{
-			auto ref = ast_group_of(node->ast);
-			order[ref->order] = true;
-			node = node->next;
-		}
+		auto  size  = sizeof(bool) * select->expr_group_by.count;
+		bool* order = buf_claim(&self->code_data.data, size);
+		memset(order, true, size);
 	} else
 	{
 		// write order by asc/desc flags
@@ -255,8 +248,6 @@ emit_select_order_by_data(Compiler* self, AstSelect* select,
 		{
 			auto ref = ast_order_of(node->ast);
 			order[ref->order] = ref->asc;
-			if (desc && !ref->asc)
-				*desc = true;
 			node = node->next;
 		}
 	}
@@ -395,7 +386,7 @@ emit_select_group_by(Compiler* self, AstSelect* select)
 	} else
 	{
 		// write order by key types
-		int offset = emit_select_order_by_data(self, select, false, NULL);
+		int offset = emit_select_order_by_data(self, select, false);
 		select->rset = op4(self, CSET_ORDERED, rpin(self, TYPE_STORE),
 		                   select->ret.count,
 		                   select->expr_order_by.count,
@@ -423,7 +414,7 @@ emit_select_order_by(Compiler* self, AstSelect* select)
 	//
 
 	// create ordered set
-	int offset = emit_select_order_by_data(self, select, false, NULL);
+	int offset = emit_select_order_by_data(self, select, false);
 
 	select->rset = op4(self, CSET_ORDERED, rpin(self, TYPE_STORE),
 	                   select->ret.count,
