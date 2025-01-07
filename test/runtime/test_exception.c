@@ -67,9 +67,9 @@ test_exception2(void* arg)
 	}
 }
 
-static void on_defer(void* arg)
+static void on_defer_int(void* arg)
 {
-	*(bool*)arg = true;
+	*(int*)arg += 1;
 }
 
 void
@@ -77,9 +77,9 @@ test_defer0(void* arg)
 {
 	unused(arg);
 	// on block exit
-	bool run = false;
+	int run = 0;
 	{
-		defer(on_defer, &run);
+		defer(on_defer_int, &run);
 	}
 	test(run);
 }
@@ -88,33 +88,29 @@ void
 test_defer1(void* arg)
 {
 	unused(arg);
-	bool run = false;
+	int run = 0;
 	{
-		defer(on_defer, &run);
+		defer(on_defer_int, &run);
 		undefer();
 	}
 	test(! run);
 }
+
+static int _run = 0;
 
 void
 test_defer2(void* arg)
 {
 	unused(arg);
 	// exception
-	bool run = false;
 	Exception e;
 	if (enter(&e)) {
-		defer(on_defer, &run);
+		defer(on_defer_int, &_run);
 		error("test");
 	}
 	if (leave(&e))
 		test(true);
-	test(run);
-}
-
-static void on_defer_int(void* arg)
-{
-	*(int*)arg += 1;
+	test(_run);
 }
 
 void

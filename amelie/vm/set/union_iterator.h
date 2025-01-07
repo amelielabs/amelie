@@ -23,12 +23,13 @@ struct UnionSet
 
 struct UnionIterator
 {
-	StoreIterator it;
-	UnionSet*     current_it;
-	Buf*          list;
-	int           list_count;
-	int64_t       limit;
-	Union*        ref;
+	StoreIterator  it;
+	UnionSet*      current_it;
+	Buf*           list;
+	int            list_count;
+	int64_t        limit;
+	Union*         ref;
+	StoreIterator* child;
 };
 
 always_inline static inline UnionIterator*
@@ -99,12 +100,12 @@ union_iterator_next_distinct(UnionIterator* self)
 	if (unlikely(! first))
 		return NULL;
 
+	auto set = self->current_it->set;
 	for (;;)
 	{
 		auto next = union_iterator_step(self);
 		if (unlikely(! next))
 			break;
-		auto set = self->current_it->set;
 		if (! set_compare(set, first, next))
 		{
 			// merge aggregates (merge duplicates)
@@ -113,6 +114,37 @@ union_iterator_next_distinct(UnionIterator* self)
 			continue;
 		}
 		break;
+	}
+
+	if (! self->child)
+		return first;
+
+	// merge count(distinct) aggregate states
+
+	// do merge join main set with the child set (distinct) to calculate
+	// unique entries for count(distinct) aggs
+
+	// set:       [aggs, keys]
+	// set child: [keys, agg_order, expr]
+	for (;;)
+	{
+		auto* next = self->child->current;
+		if (unlikely(! next))
+			break;
+
+		// compare only group by keys
+		if (! set_compare_keys_n(first + set->count_columns, next, set->count_keys))
+			break;
+
+		// calculate unique count(distinct) values
+		int  agg_order = next[set->count_keys].integer;
+		auto agg = &first[agg_order];
+		if (agg->type == TYPE_INT)
+			agg->integer++;
+		else
+			value_set_int(agg, 1);
+
+		store_iterator_next(self->child);
 	}
 
 	return first;
@@ -145,6 +177,8 @@ static inline void
 union_iterator_close(StoreIterator* arg)
 {
 	auto self = union_iterator_of(arg);
+	if (self->child)
+		store_iterator_close(self->child);
 	if (self->list)
 		buf_free(self->list);
 	am_free(arg);
@@ -195,7 +229,7 @@ union_iterator_open(UnionIterator* self)
 }
 
 static inline StoreIterator*
-union_iterator_allocate(Union* ref)
+union_iterator_allocate(Union* ref, StoreIterator* child)
 {
 	UnionIterator* self = am_malloc(sizeof(*self));
 	self->it.next    = union_iterator_next;
@@ -206,6 +240,7 @@ union_iterator_allocate(Union* ref)
 	self->list_count = 0;
 	self->limit      = INT64_MAX;
 	self->ref        = ref;
+	self->child      = child;
 	defer(union_iterator_close, self);
 
 	union_iterator_open(self);

@@ -175,6 +175,7 @@ enum
 	// set
 	CSET,
 	CSET_ORDERED,
+	CSET_ASSIGN,
 	CSET_PTR,
 	CSET_SORT,
 	CSET_ADD,

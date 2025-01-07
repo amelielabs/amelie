@@ -42,6 +42,20 @@ select count(data) from test_null
 select count('string') from test_null
 select count([]) from test_null
 
+# test: select count(distinct *) from table
+explain select count(distinct *) from test
+
+# test: select count(distinct) from table
+explain select count(distinct id) from test
+
+select count(distinct id) from test
+select count(distinct data) from test
+select count(distinct data2) from test
+select count(distinct data), count(distinct data2) from test
+select count(distinct data), count(distinct data2), count(distinct data) from test
+
+select count(distinct 1), count(1), count(distinct null) from test
+
 # test: select sum(column int) from table empty
 explain select sum(id) from test_empty
 select sum(id) from test_empty
@@ -244,6 +258,13 @@ select distinct count(data), id from test group by id
 
 ## unsupported
 select distinct on (count(data)) data from test group by data
+
+# test: select count(distinct) from table group by
+select id, count(distinct data), count(distinct data2) from test group by id
+select count(data) from test group by data
+select count(distinct data) from test group by data
+
+select count(distinct data), count(distinct data2) from test group by true
 
 drop table test
 drop table test_empty

@@ -16,6 +16,8 @@ unit test_defer0
 unit test_defer1
 # test: test defer2
 unit test_defer2
+# test: test defer3
+unit test_defer3
 # test: test palloc
 unit test_palloc
 # test: test buf

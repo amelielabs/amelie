@@ -42,6 +42,8 @@ pushdown_group_by(Compiler* self, AstSelect* select)
 	// SELECT FROM GROUP BY [WHERE] [HAVING] [ORDER BY] [LIMIT/OFFSET]
 
 	// create ordered agg set using group by keys
+
+	// CSET_ORDERED
 	int offset = emit_select_order_by_data(self, select, true);
 	int rset;
 	rset = op4(self, CSET_ORDERED, rpin(self, TYPE_STORE),
@@ -49,6 +51,24 @@ pushdown_group_by(Compiler* self, AstSelect* select)
 	           select->expr_group_by.count,
 	           offset);
 	select->rset_agg = rset;
+
+	// create second ordered agg set to handle count(distinct)
+	if (ast_agg_has_distinct(&select->expr_aggs))
+	{
+		// set is using following keys [group_by_keys, agg_order, expr]
+		auto  offset = code_data_pos(&self->code_data);
+		auto  count  = select->expr_group_by.count + 1 + 1;
+		bool* order  = buf_claim(&self->code_data.data, sizeof(bool) * count);
+		memset(order, true, sizeof(bool) * count);
+
+		// CSET_ORDERED
+		auto rset_child = op4(self, CSET_ORDERED, rpin(self, TYPE_STORE), 0,
+		                      count, offset);
+
+		// CSET_ASSIGN (set child set)
+		op2(self, CSET_ASSIGN, rset, rset_child);
+		runpin(self, rset_child);
+	}
 
 	// emit aggs seed expressions
 	auto node = select->expr_aggs.list;

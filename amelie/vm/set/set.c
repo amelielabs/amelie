@@ -29,6 +29,8 @@ static void
 set_free(Store* store)
 {
 	auto self = (Set*)store;
+	if (self->child)
+		set_free(&self->child->store);
 	for (auto i = 0; i < self->count; i++)
 		value_free(set_value(self, i));
 	buf_free(&self->set);
@@ -56,6 +58,7 @@ set_create(void)
 	self->count_columns_row = 0;
 	self->count_columns     = 0;
 	self->count_keys        = 0;
+	self->child             = NULL;
 	buf_init(&self->set);
 	buf_init(&self->set_index);
 	set_hash_init(&self->hash);
@@ -89,6 +92,14 @@ set_reset(Set* self)
 	buf_reset(&self->set);
 	buf_reset(&self->set_index);
 	set_hash_reset(&self->hash);
+	assert(! self->child);
+}
+
+void
+set_assign(Set* self, Set* child)
+{
+	assert(!child || !self->child);
+	self->child = child;
 }
 
 hot static int
@@ -98,13 +109,6 @@ set_cmp(const void* p1, const void* p2, void* arg)
 	auto row_a = set_row(self, *(uint32_t*)p1);
 	auto row_b = set_row(self, *(uint32_t*)p2);
 	return set_compare(arg, row_a, row_b);
-}
-
-hot void
-set_sort(Set* self)
-{
-	qsort_r(self->set_index.start, self->count_rows, sizeof(uint32_t),
-	        set_cmp, self);
 }
 
 hot static inline int
@@ -266,4 +270,14 @@ set_reserve(Set* self)
 	self->count += self->count_columns_row;
 	self->count_rows++;
 	return values;
+}
+
+hot void
+set_sort(Set* self)
+{
+	qsort_r(self->set_index.start, self->count_rows, sizeof(uint32_t),
+	        set_cmp, self);
+
+	if (self->child)
+		set_sort(self->child);
 }

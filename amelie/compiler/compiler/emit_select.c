@@ -132,7 +132,10 @@ emit_select_on_match_aggregate(Compiler* self, Targets* targets, void* arg)
 
 		switch (agg->function->id) {
 		case KCOUNT:
-			agg->id = AGG_INT_COUNT;
+			if (agg->distinct)
+				agg->id = AGG_INT_COUNT_DISTINCT;
+			else
+				agg->id = AGG_INT_COUNT;
 			break;
 		case KMIN:
 			if (rt == TYPE_INT || rt == TYPE_NULL)

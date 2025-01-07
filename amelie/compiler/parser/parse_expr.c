@@ -273,6 +273,12 @@ expr_aggregate(Stmt* self, Expr* expr, Ast* function)
 		error("%.*s<(> expected", str_size(&function->string),
 		      str_of(&function->string));
 
+	// [DISTINCT]
+	auto distinct = stmt_if(self, KDISTINCT) != NULL;
+	if (distinct && function->id != KCOUNT)
+		error("%.*s(DISTINCT expr) is not supported", str_size(&function->string),
+		      str_of(&function->string));
+
 	// expr
 	Ast* arg = NULL;
 	if (stmt_if(self, '*'))
@@ -280,6 +286,9 @@ expr_aggregate(Stmt* self, Expr* expr, Ast* function)
 		// count(*)
 		if (function->id == KCOUNT)
 		{
+			if (distinct)
+				error("%.*s(DISTINCT) requires expression", str_size(&function->string),
+				      str_of(&function->string));
 			arg = ast(KINT);
 			arg->integer = 1;
 		} else {
@@ -297,6 +306,7 @@ expr_aggregate(Stmt* self, Expr* expr, Ast* function)
 
 	// create aggregate ast node
 	auto agg = ast_agg_allocate(function, expr->aggs->count, arg, NULL, expr->as);
+	agg->distinct = distinct;
 	ast_list_add(expr->aggs, &agg->ast);
 	return &agg->ast;
 }

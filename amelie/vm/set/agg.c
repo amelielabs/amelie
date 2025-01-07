@@ -43,6 +43,9 @@ agg_merge(Value* src, Value* row, int columns, int* aggs)
 		case AGG_INT_COUNT:
 			src[col].integer += row[col].integer;
 			break;
+		case AGG_INT_COUNT_DISTINCT:
+			// do nothing here
+			break;
 		case AGG_INT_MIN:
 			if (row[col].integer < src[col].integer)
 				src[col].integer = row[col].integer;
@@ -136,6 +139,24 @@ agg_write(Set* self, Value* row, int src_ref, int* aggs)
 				src[col].integer++;
 			else
 				value_set_int(&src[col], 1);
+			break;
+		}
+		case AGG_INT_COUNT_DISTINCT:
+		{
+			// write child set row as [src->keys, col, row_expr]
+			assert(self->child);
+
+			// keys
+			auto crow = set_reserve(self->child);
+			auto keys = self->count_keys;
+			for (int key = 0; key < keys; key++)
+				value_copy(&crow[key], &src[self->count_columns + key]);
+
+			// column (agg order)
+			value_set_int(&crow[keys], col);
+
+			// expr
+			value_copy(&crow[keys + 1], &row[col]);
 			break;
 		}
 		case AGG_INT_MIN:

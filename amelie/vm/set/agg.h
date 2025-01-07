@@ -14,6 +14,7 @@
 enum
 {
 	AGG_INT_COUNT,
+	AGG_INT_COUNT_DISTINCT,
 	AGG_INT_MIN,
 	AGG_INT_MAX,
 	AGG_INT_SUM,
@@ -31,6 +32,8 @@ agg_nameof(int id)
 	switch (id) {
 	case AGG_INT_COUNT:
 		return "count";
+	case AGG_INT_COUNT_DISTINCT:
+		return "count_distinct";
 	case AGG_INT_MIN:
 	case AGG_DOUBLE_MIN:
 		return "min";

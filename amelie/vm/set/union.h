@@ -22,10 +22,18 @@ struct Union
 	int*    aggs;
 	int64_t limit;
 	int64_t offset;
+	Union*  child;
 };
 
 Union* union_create(bool, int64_t, int64_t);
 void   union_add(Union*, Set*);
+
+static inline void
+union_assign(Union* self, Union* child)
+{
+	assert(! self->child);
+	self->child = child;
+}
 
 static inline void
 union_set_aggs(Union* self, int* aggs)

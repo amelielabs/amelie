@@ -276,6 +276,7 @@ vm_run(Vm*       self,
 		// set
 		&&cset,
 		&&cset_ordered,
+		&&cset_assign,
 		&&cset_ptr,
 		&&cset_sort,
 		&&cset_add,
@@ -1189,6 +1190,13 @@ cset_ordered:
 	set = set_create();
 	set_prepare(set, op->b, op->c, (bool*)code_data_at(code_data, op->d));
 	value_set_store(&r[op->a], &set->store);
+	op_next;
+
+cset_assign:
+	// [set, child_set]
+	set = (Set*)r[op->a].store;
+	set_assign(set, (Set*)r[op->b].store);
+	value_reset(&r[op->b]);
 	op_next;
 
 cset_ptr:

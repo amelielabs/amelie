@@ -29,6 +29,8 @@ static void
 union_free(Store* store)
 {
 	auto self = (Union*)store;
+	if (self->child)
+		union_free(&self->child->store);
 	list_foreach_safe(&self->list)
 	{
 		auto set = list_at(Set, link);
@@ -40,7 +42,11 @@ union_free(Store* store)
 static StoreIterator*
 union_iterator(Store* store)
 {
-	return union_iterator_allocate((Union*)store);
+	auto self = (Union*)store;
+	StoreIterator* child = NULL;
+	if (self->child)
+		child = union_iterator_allocate(self->child, NULL);
+	return union_iterator_allocate(self, child);
 }
 
 Union*
@@ -55,6 +61,7 @@ union_create(bool distinct, int64_t limit, int64_t offset)
 	self->offset         = offset;
 	self->distinct       = distinct;
 	self->aggs           = NULL;
+	self->child          = NULL;
 	list_init(&self->list);
 	return self;
 }

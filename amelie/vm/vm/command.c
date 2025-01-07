@@ -248,7 +248,7 @@ cunion_recv(Vm* self, Op* op)
 	auto ref = union_create(distinct, limit, offset);
 	value_set_store(reg_at(&self->r, op->a), &ref->store);
 
-	// add requests results to the union
+	// add result sets to the union
 	auto stmt = dispatch_stmt(&self->dtr->dispatch, op->d);
 	list_foreach(&stmt->req_list.list)
 	{
@@ -256,7 +256,17 @@ cunion_recv(Vm* self, Op* op)
 		auto value = &req->result;
 		if (value->type == TYPE_STORE)
 		{
-			union_add(ref, (Set*)value->store);
+			auto set = (Set*)value->store;
+			// create child union out of set childs
+			if (set->child)
+			{
+				if (! ref->child)
+					union_assign(ref, union_create(true, INT64_MAX, 0));
+				auto child = set->child;
+				set_assign(set, NULL);
+				union_add(ref->child, child);
+			}
+			union_add(ref, set);
 			value_reset(value);
 		}
 	}
