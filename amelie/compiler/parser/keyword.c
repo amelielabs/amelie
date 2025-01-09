@@ -34,8 +34,9 @@
 #include <amelie_vm.h>
 #include <amelie_parser.h>
 
-static Keyword keywords_a[] =
+Keyword keywords[] =
 {
+	// a
 	{ KAND,                   "and",                   3  },
 	{ KADD,                   "add",                   3  },
 	{ KANY,                   "any",                   3  },
@@ -46,20 +47,13 @@ static Keyword keywords_a[] =
 	{ KAS,                    "as",                    2  },
 	{ KAT,                    "at",                    2  },
 	{ KALWAYS,                "always",                6  },
-	{ KAGGREGATE,             "aggregate",             9  },
-	{ 0,                       NULL,                   0  }
-};
 
-static Keyword keywords_b[] =
-{
+	// b
 	{ KBEGIN,                 "begin",                 5  },
 	{ KBETWEEN,               "between",               7  },
 	{ KBY,                    "by",                    2  },
-	{ 0,                       NULL,                   0  }
-};
 
-static Keyword keywords_c[] =
-{
+	// c
 	{ KCURRENT_TIMESTAMP,     "current_timestamp",     17 },
 	{ KCASE,                  "case",                  4  },
 	{ KCONFLICT,              "conflict",              8  },
@@ -70,11 +64,8 @@ static Keyword keywords_c[] =
 	{ KCASCADE,               "cascade",               7  },
 	{ KCOMPUTE,               "compute",               7  },
 	{ KCOLUMN ,               "column",                6  },
-	{ 0,                       NULL,                   0  }
-};
 
-static Keyword keywords_d[] =
-{
+	// d
 	{ KDELETE,                "delete",                6  },
 	{ KDISTINCT,              "distinct",              8  },
 	{ KDO,                    "do",                    2  },
@@ -83,11 +74,8 @@ static Keyword keywords_d[] =
 	{ KDEBUG,                 "debug",                 5  },
 	{ KDISTRIBUTED,           "distributed",           11 },
 	{ KDEFAULT,               "default",               7  },
-	{ 0,                       NULL,                   0  }
-};
 
-static Keyword keywords_e[] =
-{
+	// e
 	{ KEXTRACT,               "extract",               7  },
 	{ KELSE,                  "else",                  4  },
 	{ KEND,                   "end",                   3  },
@@ -96,35 +84,23 @@ static Keyword keywords_e[] =
 	{ KEXISTS,                "exists",                6  },
 	{ KEXPIRE,                "expire",                6  },
 	{ KEXTENDED,              "extended",              8  },
-	{ 0,                       NULL,                   0  }
-};
 
-static Keyword keywords_f[] =
-{
+	// f
 	{ KFALSE,                 "false",                 5  },
 	{ KFROM,                  "from",                  4  },
 	{ KFUNCTION,              "function",              8  },
 	{ KFOR,                   "for",                   3  },
 	{ KFORMAT,                "format",                6  },
-	{ 0,                       NULL,                   0  }
-};
 
-static Keyword keywords_g[] =
-{
+	// g
 	{ KGROUP,                 "group",                 5  },
 	{ KGENERATE,              "generate",              8  },
 	{ KGENERATED,             "generated",             9  },
-	{ 0,                       NULL,                   0  }
-};
 
-static Keyword keywords_h[] =
-{
+	// h
 	{ KHAVING,                "having",                6  },
-	{ 0,                       NULL,                   0  }
-};
 
-static Keyword keywords_i[] =
-{
+	// i
 	{ KIS,                    "is",                    2  },
 	{ KIN,                    "in",                    2  },
 	{ KINSERT,                "insert",                6  },
@@ -134,71 +110,42 @@ static Keyword keywords_i[] =
 	{ KIF,                    "if",                    2  },
 	{ KINDEX,                 "index",                 5  },
 	{ KINCLUDE,               "include",               7  },
-	{ 0,                       NULL,                   0  }
-};
 
-static Keyword keywords_j[] =
-{
+	// j
 	{ KJOIN,                  "join",                  4  },
-	{ 0,                       NULL,                   0  }
-};
 
-static Keyword keywords_k[] =
-{
+	// k
 	{ KKEY,                   "key",                   3  },
-	{ 0,                       NULL,                   0  }
-};
 
-static Keyword keywords_l[] =
-{
+	// l
 	{ KLIKE,                  "like",                  4  },
 	{ KLIMIT,                 "limit",                 5  },
 	{ KLEFT,                  "left",                  4  },
 	{ KLOCAL,                 "local",                 5  },
 	{ KLOGGED,                "logged",                6  },
-	{ 0,                       NULL,                   0  }
-};
 
-static Keyword keywords_m[] =
-{
+	// m
 	{ KMIN,                   "min",                   3  },
 	{ KMAX,                   "max",                   3  },
-	{ 0,                       NULL,                   0  }
-};
 
-static Keyword keywords_n[] =
-{
+	// n
 	{ KNULL,                  "null",                  4  },
 	{ KNOT,                   "not",                   3  },
 	{ KNOTHING,               "nothing",               7  },
 	{ KNODE,                  "node",                  4  },
-	{ 0,                       NULL,                   0  }
-};
 
-static Keyword keywords_o[] =
-{
+	// o
 	{ KOR,                    "or",                    2  },
 	{ KON,                    "on",                    2  },
 	{ KOFFSET,                "offset",                6  },
 	{ KORDER,                 "order",                 5  },
 	{ KOUTER,                 "outer",                 5  },
-	{ 0,                       NULL,                   0  }
-};
 
-static Keyword keywords_p[] =
-{
+	// p
 	{ KPROFILE,               "profile",               7  },
 	{ KPRIMARY,               "primary",               7  },
-	{ 0,                       NULL,                   0  }
-};
 
-static Keyword keywords_q[] =
-{
-	{ 0,                       NULL,                   0  }
-};
-
-static Keyword keywords_r[] =
-{
+	// r
 	{ KRIGHT,                 "right",                 5  },
 	{ KRETURNING,             "returning",             9  },
 	{ KREPLACE,               "replace",               7  },
@@ -209,11 +156,8 @@ static Keyword keywords_r[] =
 	{ KRANDOM,                "random",                6  },
 	{ KRESOLVE,               "resolve",               7  },
 	{ KRESOLVED,              "resolved",              8  },
-	{ 0,                       NULL,                   0  }
-};
 
-static Keyword keywords_s[] =
-{
+	// s
 	{ KSELECT,                "select",                6  },
 	{ KSELF,                  "self",                  4  },
 	{ KSET,                   "set",                   3  },
@@ -228,11 +172,8 @@ static Keyword keywords_s[] =
 	{ KSHARED,                "shared",                6  },
 	{ KSECRET,                "secret",                6  },
 	{ KSTORED,                "stored",                6  },
-	{ 0,                       NULL,                   0  }
-};
 
-static Keyword keywords_t[] =
-{
+	// t
 	{ KTRUE,                  "true",                  4  },
 	{ KTIMESTAMP,             "timestamp",             9  },
 	{ KTIMEZONE,              "timezone",              8  },
@@ -241,11 +182,8 @@ static Keyword keywords_t[] =
 	{ KTABLE,                 "table",                 5  },
 	{ KTRUNCATE,              "truncate",              8  },
 	{ KTOKEN,                 "token",                 5  },
-	{ 0,                       NULL,                   0  }
-};
 
-static Keyword keywords_u[] =
-{
+	// u
 	{ KUPDATE,                "update",                6  },
 	{ KUNSET,                 "unset",                 5  },
 	{ KUSE,                   "use",                   3  },
@@ -255,68 +193,48 @@ static Keyword keywords_u[] =
 	{ KURI,                   "uri",                   3  },
 	{ KUNSUBSCRIBE,           "unsubscribe",           11 },
 	{ KUNLOGGED,              "unlogged",              8  },
-	{ 0,                       NULL,                   0  }
-};
 
-static Keyword keywords_v[] =
-{
+	// v
 	{ KVALUES,                "values",                6  },
 	{ KVECTOR,                "vector",                6  },
 	{ KVIEW,                  "view",                  4  },
-	{ 0,                       NULL,                   0  }
-};
 
-static Keyword keywords_w[] =
-{
+	// w
 	{ KWHEN,                  "when",                  4  },
 	{ KWHERE,                 "where",                 5  },
 	{ KWITH,                  "with",                  4  },
 	{ KWATCH,                 "watch",                 5  },
 	{ KWORKERS,               "workers",               7  },
+
 	{ 0,                       NULL,                   0  }
 };
 
-static Keyword keywords_x[] =
+Keyword* keywords_alpha[26] =
 {
-	{ 0,                       NULL,                   0  }
-};
-
-static Keyword keywords_y[] =
-{
-	{ 0,                       NULL,                   0  }
-};
-
-static Keyword keywords_z[] =
-{
-	{ 0,                       NULL,                   0  }
-};
-
-Keyword* keywords[26] =
-{
-	keywords_a,
-	keywords_b,
-	keywords_c,
-	keywords_d,
-	keywords_e,
-	keywords_f,
-	keywords_g,
-	keywords_h,
-	keywords_i,
-	keywords_j,
-	keywords_k,
-	keywords_l,
-	keywords_m,
-	keywords_n,
-	keywords_o,
-	keywords_p,
-	keywords_q,
-	keywords_r,
-	keywords_s,
-	keywords_t,
-	keywords_u,
-	keywords_v,
-	keywords_w,
-	keywords_x,
-	keywords_y,
-	keywords_z
+	&keywords[0],
+	&keywords[KBEGIN - KKEYWORD - 1],
+	&keywords[KCURRENT_TIMESTAMP - KKEYWORD - 1],
+	&keywords[KDELETE - KKEYWORD - 1],
+	&keywords[KEXTRACT - KKEYWORD - 1],
+	&keywords[KFALSE - KKEYWORD - 1],
+	&keywords[KGROUP - KKEYWORD - 1],
+	&keywords[KHAVING - KKEYWORD - 1],
+	&keywords[KIS - KKEYWORD - 1],
+	&keywords[KJOIN - KKEYWORD - 1],
+	&keywords[KKEY - KKEYWORD - 1],
+	&keywords[KLIKE - KKEYWORD - 1],
+	&keywords[KMIN - KKEYWORD - 1],
+	&keywords[KNULL - KKEYWORD - 1],
+	&keywords[KOR - KKEYWORD - 1],
+	&keywords[KPROFILE - KKEYWORD - 1],
+	NULL,
+	&keywords[KRIGHT - KKEYWORD - 1],
+	&keywords[KSELECT - KKEYWORD - 1],
+	&keywords[KTRUE - KKEYWORD - 1],
+	&keywords[KUPDATE - KKEYWORD - 1],
+	&keywords[KVALUES - KKEYWORD - 1],
+	&keywords[KWHEN - KKEYWORD - 1],
+	NULL,
+	NULL,
+	NULL
 };

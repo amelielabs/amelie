@@ -15,7 +15,8 @@ typedef struct Ast Ast;
 
 struct Ast
 {
-	int id;
+	int     id;
+	uint8_t priority;
 	union {
 		int64_t integer;
 		double  real;
@@ -25,12 +26,12 @@ struct Ast
 			bool string_escape;
 		};
 	};
-	char* pos;
-	int   priority;
-	Ast*  l;
-	Ast*  r;
-	Ast*  next;
-	Ast*  prev;
+	int  pos_start;
+	int  pos_end;
+	Ast* l;
+	Ast* r;
+	Ast* next;
+	Ast* prev;
 };
 
 static inline void*
@@ -39,7 +40,6 @@ ast_allocate(int id, int size)
 	assert(size >= (int)sizeof(Ast));
 	Ast* self = palloc(size);
 	memset(self, 0, size);
-	self->pos = NULL;
 	self->id = id;
 	return self;
 }

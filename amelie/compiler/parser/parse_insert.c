@@ -325,7 +325,7 @@ parse_generated(Stmt* self)
 	// parse generated columns expressions
 	auto lex_origin = self->lex;
 	Lex lex;
-	lex_init(&lex, keywords);
+	lex_init(&lex, keywords_alpha);
 	self->lex = &lex;
 
 	Ast* tail = NULL;
@@ -334,7 +334,7 @@ parse_generated(Stmt* self)
 		auto column = list_at(Column, link);
 		if (str_empty(&column->constraints.as_stored))
 			continue;
-		lex_init(&lex, keywords);
+		lex_init(&lex, keywords_alpha);
 		lex_start(&lex, &column->constraints.as_stored);
 		Expr ctx =
 		{

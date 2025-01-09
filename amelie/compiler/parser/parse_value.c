@@ -132,7 +132,7 @@ parse_value(Lex*    self, Local* local,
 		auto pos = self->pos;
 		while (self->backlog)
 		{
-			pos = self->backlog->pos;
+			pos = self->start + self->backlog->pos_start;
 			self->backlog = self->backlog->prev;
 		}
 		json_reset(json);

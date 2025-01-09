@@ -39,10 +39,10 @@ lex_init(Lex* self, Keyword** keywords)
 {
 	self->pos             = NULL;
 	self->end             = NULL;
+	self->start           = NULL;
 	self->keywords        = keywords;
 	self->keywords_enable = true;
 	self->backlog         = NULL;
-	self->prefix          = NULL;
 }
 
 void
@@ -50,9 +50,9 @@ lex_reset(Lex* self)
 {
 	self->pos             = NULL;
 	self->end             = NULL;
+	self->start           = NULL;
 	self->keywords_enable = true;
 	self->backlog         = NULL;
-	self->prefix          = NULL;
 }
 
 void
@@ -62,39 +62,116 @@ lex_set_keywords(Lex* self, bool keywords)
 }
 
 void
-lex_set_prefix(Lex* self, const char* prefix)
+lex_error(Lex* self, Ast* ast, const char* error)
 {
-	self->prefix = prefix;
+	Str before;
+	str_set(&before, self->start, ast->pos_start);
+	Str tk;
+	str_set(&tk, self->start + ast->pos_start, ast->pos_end - ast->pos_start);
+	error("%.*s<%.*s>: %s", str_size(&before), str_of(&before),
+	      str_size(&tk), str_of(&tk), error);
 }
 
-static inline void
-lex_error(Lex* self, const char* error)
+void
+lex_error_expect(Lex* self, Ast* ast, int id)
 {
-	if (self->prefix)
-		error("%s: %s", self->prefix, error);
-	else
-		error("%s", error);
+	char msg[64];
+	if (id < 128)
+	{
+		snprintf(msg, sizeof(msg), "'%c' expected", id);
+	} else
+	if (id > KKEYWORD)
+	{
+		snprintf(msg, sizeof(msg), "'%s' expected",
+		         keywords[id - KKEYWORD].name);
+	} else
+	{
+		char* ref = "<unknown>";
+		switch (id) {
+		// consts
+		case KREAL:
+			ref = "float";
+			break;
+		case KINT:
+			ref = "int";
+			break;
+		case KSTRING:
+			ref = "string";
+			break;
+		case KARGID:
+			ref = "argument";
+			break;
+		// lexer operations
+		case KSHL:
+			ref = "<<";
+			break;
+		case KSHR:
+			ref = ">>";
+			break;
+		case KLTE:
+			ref = "<=";
+			break;
+		case KGTE:
+			ref = ">=";
+			break;
+		case KNEQU:
+			ref = "<>";
+			break;
+		case KCAT:
+			ref = "||";
+			break;
+		case KARROW:
+			ref = "->";
+			break;
+		case KMETHOD:
+			ref = "::";
+			break;
+		// name/path
+		case KNAME:
+			ref = "name";
+			break;
+		case KNAME_COMPOUND:
+			ref = "name.path";
+			break;
+		case KNAME_COMPOUND_STAR:
+			ref = "target.*";
+			break;
+		case KSTAR:
+			ref = "*";
+			break;
+		case KEOF:
+			ref = "<eof>";
+			break;
+		}
+		snprintf(msg, sizeof(msg), "'%s' expected", ref);
+	}
+	lex_error(self, ast, msg);
 }
 
-static inline Keyword*
+hot static inline Keyword*
 lex_keyword_match(Lex* self, Str* name)
 {
 	if (self->keywords == NULL)
 		return NULL;
-	auto current = self->keywords[tolower(name->pos[0]) - 'a'];
-	for (; current->name; current++)
+	auto ref = tolower(name->pos[0]);
+	auto current = self->keywords[ref - 'a'];
+	for (; current && current->name; current++)
+	{
+		if (*current->name != ref)
+			break;
 		if (str_is_case(name, current->name, current->name_size))
 			return current;
+	}
 	return NULL;
 }
 
 void
 lex_start(Lex* self, Str* text)
 {
-	self->pos     = str_of(text);
-	self->end     = str_of(text) + str_size(text);
+	self->start   = str_of(text);
+	self->pos     = self->start;
+	self->end     = self->start + str_size(text);
 	self->backlog = NULL;
-	self->prefix  = NULL;
 }
 
 void
@@ -103,6 +180,23 @@ lex_push(Lex* self, Ast* ast)
 	ast->next = NULL;
 	ast->prev = self->backlog;
 	self->backlog = ast;
+}
+
+hot always_inline static inline Ast*
+lex_return(Lex* self, Ast* ast, int id, char* start)
+{
+	ast->id        = id;
+	ast->pos_start = start - self->start;
+	ast->pos_end   = self->pos - self->start;
+	return ast;
+}
+
+hot always_inline static inline void
+lex_return_error(Lex* self, Ast* ast, char* start, char* msg)
+{
+	ast->pos_start = start - self->start;
+	ast->pos_end = self->pos - self->start;
+	lex_error(self, ast, msg);
 }
 
 hot Ast*
@@ -115,18 +209,18 @@ lex_next(Lex* self)
 		last->prev = NULL;
 		return last;
 	}
-
 	Ast* ast = ast_allocate(KEOF, sizeof(Ast));
-	ast->pos = self->pos;
 
 	// skip white spaces and comments
 	for (;;)
 	{
 		while (self->pos < self->end && isspace(*self->pos))
 			self->pos++;
+
 		// eof
 		if (unlikely(self->pos == self->end))
-			return ast;
+			return lex_return(self, ast, KEOF, self->end);
+
 		// --
 		if (*self->pos == '-')
 		{
@@ -139,26 +233,21 @@ lex_next(Lex* self)
 		}
 		break;
 	}
+	auto start = self->pos;
 
 	// argument
 	if (*self->pos == '$')
 	{
 		self->pos++;
-		if (unlikely(self->pos == self->end))
-			lex_error(self, "bad argument definition");
-		if (isdigit(*self->pos))
-		{
-			// $<int>
-			ast->id = KARGID;
-			while (self->pos < self->end && isdigit(*self->pos)) {
-				ast->integer = (ast->integer * 10) + *self->pos - '0';
-				self->pos++;
-			}
-		} else
-		{
-			lex_error(self, "bad argument definition");
+		if (unlikely(self->pos == self->end || !isdigit(*self->pos)))
+			lex_return_error(self, ast, start, "bad argument definition");
+
+		// $<int>
+		while (self->pos < self->end && isdigit(*self->pos)) {
+			ast->integer = (ast->integer * 10) + *self->pos - '0';
+			self->pos++;
 		}
-		return ast;
+		return lex_return(self, ast, KARGID, start);
 	}
 
 	// -
@@ -169,8 +258,6 @@ lex_next(Lex* self)
 	// integer or float
 	if (isdigit(*self->pos))
 	{
-		ast->id = KINT;
-		auto start = self->pos;
 		while (self->pos < self->end)
 		{
 			// float
@@ -188,20 +275,19 @@ lex_next(Lex* self)
 		}
 		if (minus)
 			ast->integer = -ast->integer;
-		return ast;
+		return lex_return(self, ast, KINT, start);
 
 reread_as_float:
+		if (minus)
+			self->pos--;
 		errno = 0;
-		ast->id = KREAL;
 		char* end = NULL;
 		errno = 0;
 		ast->real = strtod(start, &end);
 		if (errno == ERANGE)
-			lex_error(self, "bad float number token");
+			lex_return_error(self, ast, start, "bad float number token");
 		self->pos = end;
-		if (minus)
-			ast->real = -ast->real;
-		return ast;
+		return lex_return(self, ast, KREAL, start);
 	}
 
 	// -
@@ -220,67 +306,51 @@ reread_as_float:
 		// ::
 		if (symbol == ':' && symbol_next == ':') {
 			self->pos++;
-			ast->id = KMETHOD;
-			return ast;
+			return lex_return(self, ast, KMETHOD, start);
 		}
 		// ||
 		if (symbol == '|' && symbol_next == '|') {
 			self->pos++;
-			ast->id = KCAT;
-			return ast;
+			return lex_return(self, ast, KCAT, start);
 		}
 		// ->
 		if (symbol == '-' && symbol_next == '>') {
 			self->pos++;
-			ast->id = KARROW;
-			return ast;
+			return lex_return(self, ast, KARROW, start);
 		}
 		// <>
 		if (symbol == '<' && symbol_next == '>') {
 			self->pos++;
-			ast->id = KNEQU;
-			return ast;
+			return lex_return(self, ast, KNEQU, start);
 		}
 		// >=
 		if (symbol == '>' && symbol_next == '=') {
 			self->pos++;
-			ast->id = KGTE;
-			return ast;
+			return lex_return(self, ast, KGTE, start);
 		}
 		// <=
 		if (symbol == '<' && symbol_next == '=') {
 			self->pos++;
-			ast->id = KLTE;
-			return ast;
+			return lex_return(self, ast, KLTE, start);
 		}
 		// <<
 		if (symbol == '<' && symbol_next == '<') {
 			self->pos++;
-			ast->id = KSHL;
-			return ast;
+			return lex_return(self, ast, KSHL, start);
 		}
 		// >>
 		if (symbol == '>' && symbol_next == '>') {
 			self->pos++;
-			ast->id = KSHR;
-			return ast;
-		}
-		// :=
-		if (symbol == ':' && symbol_next == '=') {
-			self->pos++;
-			ast->id = KASSIGN;
-			return ast;
+			return lex_return(self, ast, KSHR, start);
 		}
 symbol:;
-		ast->id = symbol;
 		ast->integer = 0;
-		return ast;
+		return lex_return(self, ast, symbol, start);
 	}
 
 	// keyword or name
 	if (isalpha(*self->pos) || *self->pos == '_')
 	{
-		auto start = self->pos;
 		char* compound_prev = NULL;
 		while (self->pos < self->end &&
 		       (*self->pos == '_' ||
@@ -291,7 +361,7 @@ symbol:;
 		{
 			if (*self->pos == '.') {
 				if (compound_prev == (self->pos - 1))
-					lex_error(self, "bad compound name token");
+					lex_error(self, ast, "bad compound name token");
 				compound_prev = self->pos;
 			}
 			self->pos++;
@@ -307,23 +377,20 @@ symbol:;
 				{
 					self->pos++;
 					ast->string.end++;
-					ast->id = KNAME_COMPOUND_STAR;
-					return ast;
+					return lex_return(self, ast, KNAME_COMPOUND_STAR, start);
 				}
-				lex_error(self, "bad compound name token");
+				lex_error(self, ast, "bad compound name token");
 			}
-			ast->id = KNAME_COMPOUND;
-			return ast;
+			return lex_return(self, ast, KNAME_COMPOUND, start);
 		}
 
-		ast->id = KNAME;
 		if (*ast->string.pos != '_' && self->keywords_enable)
 		{
 			auto keyword = lex_keyword_match(self, &ast->string);
 			if (keyword) 
-				ast->id = keyword->id;
+				return lex_return(self, ast, keyword->id, start);
 		}
-		return ast;
+		return lex_return(self, ast, KNAME, start);
 	}
 
 	// string
@@ -334,7 +401,7 @@ symbol:;
 			end_char = '\'';
 		self->pos++;
 
-		auto start  = self->pos;
+		auto string = self->pos;
 		bool slash  = false;
 		bool escape = false;
 		while (self->pos < self->end)
@@ -356,17 +423,16 @@ symbol:;
 			self->pos++;
 		}
 		if (unlikely(self->pos == self->end))
-			lex_error(self, "unterminated string");
+			lex_return_error(self, ast, start, "unterminated string");
 
-		ast->id = KSTRING;
+		str_set(&ast->string, string, self->pos - string);
 		ast->string_escape = escape;
-		str_set(&ast->string, start, self->pos - start);
 		self->pos++;
-		return ast;
+		return lex_return(self, ast, KSTRING, start);
 	}
 
 	// error
-	lex_error(self, "bad token");
+	lex_return_error(self, ast, start, "bad token");
 	return NULL;
 }
 

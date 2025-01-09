@@ -4,7 +4,7 @@ connect E0 S0 localhost:3485
 select and
 {"msg": "bad expression"}
 select 1 and
-{"msg": "bad expression"}
+{"msg": "select 1 <and>: bad expression"}
 select true and true
 [true]
 explain select true and true
@@ -44,7 +44,7 @@ select false and null
 select or
 {"msg": "bad expression"}
 select 1 or
-{"msg": "bad expression"}
+{"msg": "select 1 <or>: bad expression"}
 select true or true
 [true]
 select false or false

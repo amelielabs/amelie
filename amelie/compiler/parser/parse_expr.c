@@ -114,13 +114,12 @@ priority_map[KEYWORD_MAX] =
 	[KFALSE]                   = priority_value,
 	[KNULL]                    = priority_value,
 	[KARGID]                   = priority_value,
-	[KCTEID]                   = priority_value,
 	[KNAME]                    = priority_value,
 	[KNAME_COMPOUND]           = priority_value
 };
 
 hot static inline void
-expr_pop(AstStack* ops, AstStack* result)
+expr_pop(Stmt* self, AstStack* ops, AstStack* result)
 {
 	// move operation to result as op(l, r)
 	auto head = ast_pop(ops);
@@ -129,19 +128,19 @@ expr_pop(AstStack* ops, AstStack* result)
 		// unary
 		head->l = ast_pop(result);
 		if (unlikely(head->l == NULL))
-			error("bad expression");
+			stmt_error(self, head, "bad expression");
 	} else
 	{
 		head->r = ast_pop(result);
 		head->l = ast_pop(result);
 		if (unlikely(head->r == NULL || head->l == NULL))
-			error("bad expression");
+			stmt_error(self, head, "bad expression");
 	}
 	ast_push(result, head);
 }
 
 hot static inline void
-expr_operator(AstStack* ops, AstStack* result, Ast* op, int prio)
+expr_operator(Stmt* self, AstStack* ops, AstStack* result, Ast* op, int prio)
 {
 	// process last operation if it has lower or equal priority
 	//
@@ -149,7 +148,7 @@ expr_operator(AstStack* ops, AstStack* result, Ast* op, int prio)
 	//
 	auto head = ast_head(ops);
 	if (head && prio <= head->priority)
-		expr_pop(ops, result);
+		expr_pop(self, ops, result);
 	op->priority = prio;
 	ast_push(ops, op);
 }
@@ -212,8 +211,7 @@ parse_expr_args(Stmt* self, Expr* expr, int endtoken, bool obj_separator)
 		// :
 		if (obj_separator && (count % 2) != 0)
 		{
-			if (! stmt_if(self, ':'))
-				error("{}: {name <:>} expected");
+			stmt_expect(self, ':');
 			continue;
 		}
 
@@ -221,8 +219,7 @@ parse_expr_args(Stmt* self, Expr* expr, int endtoken, bool obj_separator)
 		if (stmt_if(self, ','))
 			continue;
 
-		if (! stmt_if(self, endtoken))
-			error("'%c' expected", endtoken);
+		stmt_expect(self, endtoken);
 		break;
 	}
 
@@ -245,14 +242,12 @@ expr_call(Stmt* self, Expr* expr, Ast* path, bool with_args)
 	Str schema;
 	Str name;
 	if (! parse_target_path(path, &schema, &name))
-		error("%.*s(): bad function call", str_size(&path->string),
-		      str_of(&path->string));
+		stmt_error(self, path, "bad function call");
 
 	// find and call function
 	auto func = function_mgr_find(self->function_mgr, &schema, &name);
 	if (! func)
-		error("%.*s(): function not found", str_size(&path->string),
-		      str_of(&path->string));
+		stmt_error(self, path, "function not found");
 
 	auto call = ast_call_allocate();
 	call->fn = func;
@@ -265,44 +260,39 @@ static inline Ast*
 expr_aggregate(Stmt* self, Expr* expr, Ast* function)
 {
 	if (unlikely(!expr || !expr->aggs))
-		error("unexpected aggregate function usage");
+		stmt_error(self, function, "unexpected aggregate function usage");
 
 	// function (expr)
 	// (
-	if (! stmt_if(self, '('))
-		error("%.*s<(> expected", str_size(&function->string),
-		      str_of(&function->string));
+	stmt_expect(self, '(');
 
 	// [DISTINCT]
-	auto distinct = stmt_if(self, KDISTINCT) != NULL;
+	auto distinct = stmt_if(self, KDISTINCT);
 	if (distinct && function->id != KCOUNT)
-		error("%.*s(DISTINCT expr) is not supported", str_size(&function->string),
-		      str_of(&function->string));
+		stmt_error(self, distinct, "is not supported");
 
 	// expr
-	Ast* arg = NULL;
-	if (stmt_if(self, '*'))
+	Ast* arg  = NULL;
+	auto star = stmt_if(self, '*');
+	if (star)
 	{
 		// count(*)
 		if (function->id == KCOUNT)
 		{
 			if (distinct)
-				error("%.*s(DISTINCT) requires expression", str_size(&function->string),
-				      str_of(&function->string));
+				stmt_error(self, star, "'*' cannot be used with DISTINCT");
+
 			arg = ast(KINT);
 			arg->integer = 1;
 		} else {
-			error("%.*s(*) is not supported", str_size(&function->string),
-			       str_of(&function->string));
+			stmt_error(self, star, "'*' is not supported by this aggregate function");
 		}
 	} else {
 		arg = parse_expr(self, NULL);
 	}
 
 	// )
-	if (! stmt_if(self, ')'))
-		error("%.*s(expr<)> expected", str_size(&function->string),
-		      str_of(&function->string));
+	stmt_expect(self, ')');
 
 	// create aggregate ast node
 	auto agg = ast_agg_allocate(function, expr->aggs->count, arg, NULL, expr->as);
@@ -638,16 +628,16 @@ parse_unary(Stmt*     self, Expr* expr,
 		break;
 	case KNOT:
 		// not expr
-		expr_operator(ops, result, ast, 11);
+		expr_operator(self, ops, result, ast, 11);
 		break;
 	case '-':
 		// - expr
 		ast->id = KNEG;
-		expr_operator(ops, result, ast, 11);
+		expr_operator(self, ops, result, ast, 11);
 		break;
 	case '~':
 		// ~ expr
-		expr_operator(ops, result, ast, 11);
+		expr_operator(self, ops, result, ast, 11);
 		break;
 	default:
 		error("bad expression");
@@ -681,7 +671,7 @@ parse_op(Stmt*     self, Expr* expr,
 	}
 
 	// operator
-	expr_operator(ops, result, ast, priority);
+	expr_operator(self, ops, result, ast, priority);
 
 	bool unary = false;
 	switch (ast->id) {
@@ -863,7 +853,7 @@ parse_expr(Stmt* self, Expr* expr)
 	}
 
 	while (ast_head(&ops))
-		expr_pop(&ops, &result);
+		expr_pop(self, &ops, &result);
 
 	// only one result
 	if (! result.list)

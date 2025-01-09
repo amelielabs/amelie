@@ -59,11 +59,11 @@ select '123 %_%_% day' like '%%_%%_%%'
 [true]
 # test: not like
 select not like
-{"msg": "bad expression"}
+{"msg": "select <not>: bad expression"}
 select not
-{"msg": "bad expression"}
+{"msg": "select <not>: bad expression"}
 select not like 20
-{"msg": "bad expression"}
+{"msg": "select <not>: bad expression"}
 select 'abcd' like 'abc%d'
 [true]
 select 'abcd' not like 'abc%d'

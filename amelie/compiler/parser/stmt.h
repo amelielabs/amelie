@@ -131,6 +131,27 @@ stmt_if(Stmt* self, int id)
 }
 
 always_inline static inline void
+stmt_error(Stmt* self, Ast* ast, const char* fmt, ...)
+{
+	va_list args;
+	char msg[256];
+	va_start(args, fmt);
+	vsnprintf(msg, sizeof(msg), fmt, args);
+	va_end(args);
+	lex_error(self->lex, ast, msg);
+}
+
+always_inline static inline Ast*
+stmt_expect(Stmt* self, int id)
+{
+	auto ast = lex_next(self->lex);
+	if (ast->id == id)
+		return ast;
+	lex_error_expect(self->lex, ast, id);
+	return NULL;
+}
+
+always_inline static inline void
 stmt_push(Stmt* self, Ast* ast)
 {
 	lex_push(self->lex, ast);

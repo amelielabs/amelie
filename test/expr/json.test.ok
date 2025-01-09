@@ -99,9 +99,9 @@ select {}
 select {}::type
 ["json"]
 select {"a"}
-{"msg": "{}: {name <:>} expected"}
+{"msg": "select {\"a\"<}>: ':' expected"}
 select {"a"
-{"msg": "{}: {name <:>} expected"}
+{"msg": "select {\"a\"<>: ':' expected"}
 select {"a":
 {"msg": "bad expression"}
 select {"a":}
@@ -113,7 +113,7 @@ select {"a": null}
   "a": null
 }]
 select {"a": 0, "b"}
-{"msg": "{}: {name <:>} expected"}
+{"msg": "select {\"a\": 0, \"b\"<}>: ':' expected"}
 select {"a": 0, "b":}
 {"msg": "bad expression"}
 select {"a": 0, "b": 1}

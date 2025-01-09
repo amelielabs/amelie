@@ -6,11 +6,11 @@ select is
 select is 1
 {"msg": "bad expression"}
 select 1 is
-{"msg": "bad expression"}
+{"msg": "select 1 <is>: bad expression"}
 select 1 is
-{"msg": "bad expression"}
+{"msg": "select 1 <is>: bad expression"}
 select 1 is not
-{"msg": "bad expression"}
+{"msg": "select 1 <is>: bad expression"}
 select 1 is 1
 {"msg": "IS [NOT] <NULL> expected"}
 explain select 1 is null

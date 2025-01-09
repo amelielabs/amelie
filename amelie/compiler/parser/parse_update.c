@@ -129,7 +129,7 @@ parse_update_resolved(Stmt* self, Columns* columns)
 {
 	auto lex_origin = self->lex;
 	Lex lex;
-	lex_init(&lex, keywords);
+	lex_init(&lex, keywords_alpha);
 	self->lex = &lex;
 
 	Ast* expr_prev = NULL;
@@ -148,7 +148,7 @@ parse_update_resolved(Stmt* self, Columns* columns)
 		op->l->string = column->name;
 
 		// parse resolved expression
-		lex_init(&lex, keywords);
+		lex_init(&lex, keywords_alpha);
 		lex_start(&lex, &column->constraints.as_resolved);
 		op->r = parse_expr(self, NULL);
 

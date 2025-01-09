@@ -305,7 +305,7 @@ parse_constraints(Stmt* self, Keys* keys, Column* column)
 				error("AS (expr <)> expected");
 
 			Str as;
-			str_set(&as, lbr->pos, rbr->pos - lbr->pos);
+			str_set(&as, self->lex->start + lbr->pos_start, rbr->pos_end - lbr->pos_start - 1);
 			str_shrink(&as);
 			as.pos++;
 			str_shrink(&as);
@@ -707,7 +707,7 @@ parse_table_alter(Stmt* self)
 					error("AS (expr <)> expected");
 
 				Str as;
-				str_set(&as, lbr->pos, rbr->pos - lbr->pos);
+				str_set(&as, self->lex->start + lbr->pos_start, rbr->pos_end - lbr->pos_start - 1);
 				str_shrink(&as);
 				as.pos++;
 				str_shrink(&as);

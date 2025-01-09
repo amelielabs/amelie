@@ -103,6 +103,9 @@ select 'abc' like null
 
 # test: string LIKE unsupported
 select 'abc' like 1
+select 'abc' like "a" || "b" || "c"
+select 'abc' like "a" || "b" || "c"  and true
+select ('abc' like "a" || "b" || "c")  and true
 
 disconnect S0
 close E0

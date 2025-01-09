@@ -306,5 +306,11 @@ select 'abc' like null
 # test: string LIKE unsupported
 select 'abc' like 1
 {"msg": "unsupported operation: <string> LIKE <int>"}
+select 'abc' like "a" || "b" || "c"
+[true]
+select 'abc' like "a" || "b" || "c"  and true
+{"msg": "unsupported operation: <string> LIKE <bool>"}
+select ('abc' like "a" || "b" || "c")  and true
+[true]
 disconnect S0
 close E0
