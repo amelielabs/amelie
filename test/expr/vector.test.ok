@@ -24,7 +24,7 @@ select vector [1,2,3]::type
 select vector [1,2,3]::length
 [3]
 select vector ""
-{"msg": "invalid vector"}
+{"msg": "select vector ❰\"\"❱ ⟵ [ expected"}
 select vector [1.0]
 [[1]]
 select vector [1.0, 1.1, 1.2]

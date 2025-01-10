@@ -106,7 +106,7 @@ select (select test.*) from test
 select (select t.*) from test t
 [1, 2, 3]
 select (select t.*) from test
-{"msg": "<t> target not found"}
+{"msg": "select (select ❰t.*❱ ⟵ target not found"}
 select (select t) from test t
 {"msg": "<t.t> column not found"}
 # test: select (select target.column) from shared
@@ -254,7 +254,7 @@ insert into test values (1)
 insert into test values (2)
 insert into test values (3)
 select * from (select * from test)
-{"msg": "FROM (SELECT) subquery must have an alias"}
+{"msg": "select * from (select * from test) ⟵ subquery must have an alias"}
 select * from (select * from test) t
 [1, 2, 3]
 explain select * from (select * from test) t
@@ -294,11 +294,11 @@ explain select * from (select * from test) t
 }]
 # test: select target.* from (select from shared)
 select test.* from (select * from test)
-{"msg": "FROM (SELECT) subquery must have an alias"}
+{"msg": "select test.* from (select * from test) ⟵ subquery must have an alias"}
 select test.* from (select * from test) test
 [1, 2, 3]
 select test from (select * from test)
-{"msg": "FROM (SELECT) subquery must have an alias"}
+{"msg": "select test from (select * from test) ⟵ subquery must have an alias"}
 # test: select alias.* from (select from shared)
 select alias from (select * from test) alias
 {"msg": "<alias.alias> column not found"}
@@ -319,7 +319,7 @@ insert into test (obj) values({"data": {"id": 2}})
 insert into test (obj) values({"data": {"id": 3}})
 # test: select target.path from (select from shared)
 select obj from (select * from test)
-{"msg": "FROM (SELECT) subquery must have an alias"}
+{"msg": "select obj from (select * from test) ⟵ subquery must have an alias"}
 select * from (select * from test) alias
 [[0, {
   "data": {

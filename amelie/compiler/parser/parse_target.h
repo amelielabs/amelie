@@ -16,10 +16,8 @@ parse_if_not_exists(Stmt* self)
 {
 	if (! stmt_if(self, KIF))
 		return false;
-	if (! stmt_if(self, KNOT))
-		error("IF <NOT> EXISTS expected");
-	if (! stmt_if(self, KEXISTS))
-		error("IF NOT <EXISTS> expected");
+	stmt_expect(self, KNOT);
+	stmt_expect(self, KEXISTS);
 	return true;
 }
 
@@ -28,8 +26,7 @@ parse_if_exists(Stmt* self)
 {
 	if (! stmt_if(self, KIF))
 		return false;
-	if (! stmt_if(self, KEXISTS))
-		error("IF <EXISTS> expected");
+	stmt_expect(self, KEXISTS);
 	return true;
 }
 

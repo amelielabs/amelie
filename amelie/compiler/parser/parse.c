@@ -163,9 +163,8 @@ parse_stmt(Parser* self, Stmt* stmt)
 		{
 			stmt->id = STMT_START_REPL;
 			parse_repl_start(stmt);
-		} else
-		{
-			error("START <REPL> expected");
+		} else {
+			stmt_error(stmt, ast, "REPL expected");
 		}
 		break;
 
@@ -176,9 +175,8 @@ parse_stmt(Parser* self, Stmt* stmt)
 		{
 			stmt->id = STMT_STOP_REPL;
 			parse_repl_stop(stmt);
-		} else
-		{
-			error("STOP <REPL> expected");
+		} else {
+			stmt_error(stmt, ast, "REPL expected");
 		}
 		break;
 
@@ -224,25 +222,19 @@ parse_stmt(Parser* self, Stmt* stmt)
 
 		if (unique)
 		{
-			auto next = stmt_if(stmt, KINDEX);
-			if (! next)
-				error("CREATE UNIQUE <INDEX> expected");
+			auto next = stmt_expect(stmt, KINDEX);
 			stmt_push(stmt, next);
 		}
 
 		if (compute)
 		{
-			auto next = stmt_if(stmt, KNODE);
-			if (! next)
-				error("CREATE COMPUTE <NODE> expected");
+			auto next = stmt_expect(stmt, KNODE);
 			stmt_push(stmt, next);
 		}
 
 		if (unlogged || shared || distributed)
 		{
-			auto next = stmt_if(stmt, KTABLE);
-			if (! next)
-				error("CREATE [UNLOGGED] [SHARED | DISTRIBUTED] <TABLE> expected");
+			auto next = stmt_expect(stmt, KTABLE);
 			stmt_push(stmt, next);
 		}
 
@@ -282,7 +274,7 @@ parse_stmt(Parser* self, Stmt* stmt)
 			stmt->id = STMT_CREATE_INDEX;
 			parse_index_create(stmt, unique);
 		} else {
-			error("CREATE <USER|REPLICA|NODE|SCHEMA|TABLE|INDEX> expected");
+			stmt_error(stmt, NULL, "'USER|REPLICA|NODE|SCHEMA|TABLE|INDEX' expected");
 		}
 		break;
 	}
@@ -320,7 +312,7 @@ parse_stmt(Parser* self, Stmt* stmt)
 			stmt->id = STMT_DROP_INDEX;
 			parse_index_drop(stmt);
 		} else {
-			error("DROP <USER|REPLICA|NODE|SCHEMA|TABLE|INDEX> expected");
+			stmt_error(stmt, NULL, "'USER|REPLICA|NODE|SCHEMA|TABLE|INDEX' expected");
 		}
 		break;
 	}
@@ -348,7 +340,7 @@ parse_stmt(Parser* self, Stmt* stmt)
 			stmt->id = STMT_ALTER_INDEX;
 			parse_index_alter(stmt);
 		} else {
-			error("ALTER <USER|SCHEMA|TABLE|INDEX> expected");
+			stmt_error(stmt, NULL, "'USER|SCHEMA|TABLE|INDEX' expected");
 		}
 		break;
 	}
@@ -395,11 +387,11 @@ parse_stmt(Parser* self, Stmt* stmt)
 		break;
 
 	case KEOF:
-		error("unexpected end of statement");
+		stmt_error(stmt, NULL, "unexpected end of statement");
 		break;
 
 	default:
-		error("unexpected statement");
+		stmt_error(stmt, NULL, "unexpected statement");
 		break;
 	}
 
@@ -432,19 +424,15 @@ parse_with(Parser* self)
 		// name [(args)]
 		parse_cte(stmt);
 
-		// AS
-		if (! lex_if(lex, KAS))
-			error("WITH name <AS> expected");
-
-		// (
-		if (! lex_if(lex, '('))
-			error("WITH name AS <(> expected");
+		// AS (
+		stmt_expect(stmt, KAS);
+		auto start = stmt_expect(stmt, '(');
 
 		// parse stmt (cannot be a utility statement)
 		parse_stmt(self, stmt);
 
 		// set cte returning columns
-		Returning* ret;
+		Returning* ret = NULL;
 		switch (stmt->id) {
 		case STMT_INSERT:
 			ret = &ast_insert_of(stmt->ast)->ret;
@@ -459,7 +447,7 @@ parse_with(Parser* self)
 			ret = &ast_select_of(stmt->ast)->ret;
 			break;
 		default:
-			error("CTE statement must be DML or SELECT");
+			stmt_error(stmt, start, "CTE statement must be DML or SELECT");
 			break;
 		}
 		stmt->cte_columns = &ret->columns;
@@ -467,11 +455,10 @@ parse_with(Parser* self)
 		// ensure that arguments count match
 		if (stmt->cte_args.count > 0 &&
 		    stmt->cte_args.count != stmt->cte_columns->count)
-			error("CTE arguments count must mismatch the returning arguments count");
+			stmt_error(stmt, start, "CTE arguments count does not match the returning arguments count");
 
 		// )
-		if (! lex_if(lex, ')'))
-			error("WITH name AS (<)> expected");
+		stmt_expect(stmt, ')');
 
 		// ,
 		if (! lex_if(lex, ','))
@@ -489,7 +476,8 @@ parse(Parser* self, Str* str)
 	lex_start(&self->lex, str);
 
 	// [EXPLAIN]
-	if (lex_if(lex, KEXPLAIN))
+	auto explain = lex_if(lex, KEXPLAIN);
+	if (explain)
 	{
 		// EXPLAIN(PROFILE)
 		self->explain = EXPLAIN;
@@ -521,16 +509,21 @@ parse(Parser* self, Str* str)
 			break;
 
 		// BEGIN/COMMIT
-		if (commit)
-			error("unexpected statement after COMMIT");
-		if (lex_if(lex, KBEGIN))
-			error("unexpected BEGIN operation");
-		if (lex_if(lex, KCOMMIT))
-		{
+		auto ast = lex_next(lex);
+		switch (ast->id) {
+		case KBEGIN:
+			lex_error(lex, ast, "unexpected BEGIN operation");
+			break;
+		case KCOMMIT:
 			if (! begin)
-				error("unexpected COMMIT operation");
+				lex_error(lex, ast, "unexpected COMMIT operation");
 			commit = true;
 			continue;
+		default:
+			if (commit)
+				lex_error(lex, ast, "unexpected statement after COMMIT");
+			lex_push(lex, ast);
+			break;
 		}
 
 		// [WITH name AS ( cte )[, name AS (...)]]
@@ -557,17 +550,17 @@ parse(Parser* self, Str* str)
 			break;
 
 		// ;
-		if (! lex_if(lex, ';'))
-			error("unexpected token at the end of statement");
+		stmt_expect(self->stmt, ';');
 	}
 
 	// [COMMIT]
+	auto ast = lex_next(lex);
 	if (begin && !commit)
-		error("COMMIT expected at the end of transaction");
+		lex_error(lex, ast, "COMMIT expected at the end of transaction");
 
 	// EOF
-	if (! lex_if(lex, KEOF))
-		error("unexpected token at the end of statement");
+	if (ast->id != KEOF)
+		lex_error(lex, ast, "unexpected token at the end of transaction");
 
 	// force last statetement as return
 	if (self->stmt)
@@ -575,11 +568,11 @@ parse(Parser* self, Str* str)
 
 	// ensure EXPLAIN has command
 	if (unlikely(self->explain && !self->stmt_list.count))
-		error("EXPLAIN without command");
+		lex_error(lex, explain, "EXPLAIN without command");
 
 	// ensure main stmt is not utility when using CTE
 	if (has_utility && self->stmt_list.count > 1)
-		error("CTE and multi-statement utility commands are not supported");
+		lex_error(lex, ast, "multi-statement utility commands are not supported");
 
 	// set statements order
 	stmt_list_order(&self->stmt_list);

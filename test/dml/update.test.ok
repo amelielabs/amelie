@@ -3,13 +3,13 @@ connect E0 S0 localhost:3485
 # test: update statement parsing
 create table test(id int primary key)
 update
-{"msg": "FROM target name expected"}
+{"msg": "update ⟵ target name expected"}
 update;
-{"msg": "FROM target name expected"}
+{"msg": "update❰;❱ ⟵ target name expected"}
 update 1;
-{"msg": "FROM target name expected"}
+{"msg": "update ❰1❱ ⟵ target name expected"}
 update "name"
-{"msg": "FROM target name expected"}
+{"msg": "update ❰\"name\"❱ ⟵ target name expected"}
 update test
 {"msg": "UPDATE <SET> expected"}
 update test "path"
@@ -23,11 +23,11 @@ update test set path
 update test set path /
 {"msg": "UPDATE name SET column <=> expected"}
 update test set path =
-{"msg": "bad expression"}
+{"msg": "update test set path = ⟵ bad expression"}
 update test set path = expr
 {"msg": "<test.path> column not found"}
 update test set id = id expr
-{"msg": "unexpected token at the end of statement"}
+{"msg": "update test set id = id ❰expr❱ ⟵ ; expected"}
 drop table test
 # test: update
 create table test(id int primary key, data int)

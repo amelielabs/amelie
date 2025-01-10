@@ -35,67 +35,62 @@
 #include <amelie_parser.h>
 
 hot void
-parse_vector(Lex* self, Buf* buf)
+parse_vector(Stmt* self, Buf* buf)
 {
 	// [
-	if (! lex_if(self, '['))
-		error("invalid vector");
-
+	stmt_expect(self, '[');
 	auto offset = buf_size(buf);
 	buf_write_i32(buf, 0);
 
 	// []
-	if (lex_if(self, ']'))
+	if (stmt_if(self, ']'))
 		return;
 
 	// [float [, ...]]
 	int count = 0;
 	for (;;)
 	{
-		auto ast = lex_next(self);
+		auto ast = stmt_next(self);
 
 		// int or float
-		float value;
+		float value = 0;
 		if (likely(ast->id == KINT))
 			value = ast->integer;
 		else
 		if (ast->id == KREAL)
 			value = ast->real;
 		else
-			error("invalid vector value");
+			stmt_error(self, ast, "invalid vector value");
 		buf_write_float(buf, value);
 		count++;
 
 		// ,
-		ast = lex_next(self);
+		ast = stmt_next(self);
 		if (ast->id == ',')
 			continue;
 		if (ast->id == ']')
 			break;
-		error("vector array syntax error");
+		stmt_error(self, ast, "vector array syntax error");
 	}
 
 	*(uint32_t*)(buf->start + offset) = count;
 }
 
-hot void
-parse_value(Lex*    self, Local* local,
-            Json*   json,
-            Column* column,
-            Value*  value)
+hot Ast*
+parse_value(Stmt* self, Column* column, Value* value)
 {
-	auto ast = lex_next(self);
+	auto ast = stmt_next(self);
 	if (ast->id == KNULL)
 	{
 		value_set_null(value);
-		return;
+		return ast;
 	}
 	switch (column->type) {
 	case TYPE_BOOL:
 		if (ast->id != KTRUE && ast->id != KFALSE)
 			break;
 		value_set_bool(value, ast->id == KTRUE);
-		return;
+		return ast;
 	case TYPE_INT:
 	{
 		if (likely(ast->id == KINT))
@@ -105,7 +100,7 @@ parse_value(Lex*    self, Local* local,
 			value_set_int(value, ast->real);
 		else
 			break;
-		return;
+		return ast;
 	}
 	case TYPE_DOUBLE:
 	{
@@ -116,100 +111,105 @@ parse_value(Lex*    self, Local* local,
 			value_set_double(value, ast->real);
 		else
 			break;
-		return;
+		return ast;
 	}
 	case TYPE_STRING:
 	{
 		if (likely(ast->id != KSTRING))
 			break;
 		value_set_string(value, &ast->string, NULL);
-		return;
+		return ast;
 	}
 	case TYPE_JSON:
 	{
 		// parse and encode json value
-		lex_push(self, ast);
-		auto pos = self->pos;
-		while (self->backlog)
+		auto lex = self->lex;
+		lex_push(lex, ast);
+		auto pos = lex->pos;
+		while (lex->backlog)
 		{
-			pos = self->start + self->backlog->pos_start;
-			self->backlog = self->backlog->prev;
+			pos = lex->start + lex->backlog->pos_start;
+			lex->backlog = lex->backlog->prev;
 		}
-		json_reset(json);
+		json_reset(self->json);
 		Str in;
-		str_set(&in, pos, self->end - pos);
+		str_set(&in, pos, lex->end - pos);
 		auto buf = buf_create();
 		defer_buf(buf);
-		json_parse(json, &in, buf);
-		self->pos = json->pos;
+		json_parse(self->json, &in, buf);
+		lex->pos = self->json->pos;
 		undefer();
 		value_set_json_buf(value, buf);
-		return;
+		return ast;
 	}
 	case TYPE_TIMESTAMP:
 	{
 		// current_timestamp
 		if (ast->id == KCURRENT_TIMESTAMP) {
-			value_set_timestamp(value, local->time_us);
-			return;
+			value_set_timestamp(value, self->local->time_us);
+			return ast;
 		}
 
 		// unixtime
 		if (ast->id == KINT) {
 			value_set_timestamp(value, ast->integer);
-			return;
+			return ast;
 		}
 
 		// [TIMESTAMP] string
 		if (ast->id == KTIMESTAMP)
-			ast = lex_next(self);
+			ast = stmt_next(self);
 		if (likely(ast->id != KSTRING))
 			break;
 
 		Timestamp ts;
 		timestamp_init(&ts);
 		timestamp_read(&ts, &ast->string);
-		value_set_timestamp(value, timestamp_of(&ts, local->timezone));
-		return;
+		value_set_timestamp(value, timestamp_of(&ts, self->local->timezone));
+		return ast;
 	}
 	case TYPE_INTERVAL:
 	{
 		// [INTERVAL] string
 		if (ast->id == KINTERVAL)
-			ast = lex_next(self);
+			ast = stmt_next(self);
 		if (likely(ast->id != KSTRING))
 			break;
 		Interval iv;
 		interval_init(&iv);
 		interval_read(&iv, &ast->string);
 		value_set_interval(value, &iv);
-		return;
+		return ast;
 	}
 	case TYPE_VECTOR:
 	{
 		// [VECTOR] [array]
 		if (ast->id == KVECTOR)
-			ast = lex_next(self);
-		lex_push(self, ast);
+			ast = stmt_next(self);
+		stmt_push(self, ast);
 		auto buf = buf_create();
 		defer_buf(buf);
 		parse_vector(self, buf);
 		undefer();
 		value_set_vector_buf(value, buf);
-		return;
+		return ast;
 	}
 	}
 
-	error("column <%.*s> value expected to be '%s'", str_size(&column->name),
-	      str_of(&column->name), type_of(column->type));
+	stmt_error(self, ast, "'%s' expected for column '%.*s'",
+	           type_of(column->type),
+	           str_size(&column->name), str_of(&column->name));
+	return NULL;
 }
 
 hot void
-parse_value_default(Column*  column,
+parse_value_default(Stmt*    self,
+                    Column*  column,
                     Value*   column_value,
                     uint64_t serial)
 {
 	// SERIAL, RANDOM or DEFAULT
+	unused(self);
 	auto cons = &column->constraints;
 	if (cons->serial)
 	{
@@ -226,7 +226,7 @@ parse_value_default(Column*  column,
 }
 
 void
-parse_value_validate(Column* column, Value* column_value)
+parse_value_validate(Stmt* self, Column* column, Value* column_value, Ast* expr)
 {
 	// ensure NOT NULL constraint
 	if (column_value->type == TYPE_NULL)
@@ -236,7 +236,8 @@ parse_value_validate(Column* column, Value* column_value)
 			return;
 
 		if (column->constraints.not_null)
-			error("column <%.*s> value cannot be NULL", str_size(&column->name),
-			      str_of(&column->name));
+			stmt_error(self, expr, "column '%.*s' value cannot be NULL",
+			           str_size(&column->name),
+			           str_of(&column->name));
 	}
 }

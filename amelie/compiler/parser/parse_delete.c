@@ -44,22 +44,21 @@ parse_delete(Stmt* self)
 	self->ast = &stmt->ast;
 
 	// FROM
-	if (! stmt_if(self, KFROM))
-		error("DELETE <FROM> expected");
+	auto from = stmt_expect(self, KFROM);
 
 	// table
 	parse_from(self, &stmt->targets, false);
 	if (targets_empty(&stmt->targets) || targets_is_join(&stmt->targets))
-		error("DELETE FROM <table name> expected");
+		stmt_error(self, from, "table name expected");
 	auto target = targets_outer(&stmt->targets);
 	if (! target_is_table(target))
-		error("DELETE FROM <table name> expected");
+		stmt_error(self, from, "table name expected");
 	stmt->table = target->from_table;
 
 	// ensure primary index is used
 	if (target->from_table_index)
 		if (table_primary(stmt->table) != target->from_table_index)
-			error("DELETE only primary index supported");
+			stmt_error(self, from, "DELETE supports only primary index");
 
 	// [WHERE]
 	if (stmt_if(self, KWHERE))
@@ -75,6 +74,6 @@ parse_delete(Stmt* self)
 	if (stmt_if(self, KRETURNING))
 	{
 		parse_returning(&stmt->ret, self, NULL);
-		parse_returning_resolve(&stmt->ret, &stmt->targets);
+		parse_returning_resolve(&stmt->ret, self, &stmt->targets);
 	}
 }

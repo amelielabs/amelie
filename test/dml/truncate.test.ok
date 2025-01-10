@@ -2,19 +2,19 @@ open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "12
 connect E0 S0 localhost:3485
 # test: truncate parsing
 truncate
-{"msg": "TRUNCATE <name> expected"}
+{"msg": "truncate ⟵ name expected"}
 truncate if
-{"msg": "IF <EXISTS> expected"}
+{"msg": "truncate if ⟵ EXISTS expected"}
 truncate if 1
-{"msg": "IF <EXISTS> expected"}
+{"msg": "truncate if ❰1❱ ⟵ EXISTS expected"}
 truncate if not
-{"msg": "IF <EXISTS> expected"}
+{"msg": "truncate if ❰not❱ ⟵ EXISTS expected"}
 truncate if not not
-{"msg": "IF <EXISTS> expected"}
+{"msg": "truncate if ❰not❱ ⟵ EXISTS expected"}
 truncate if not exists
-{"msg": "IF <EXISTS> expected"}
+{"msg": "truncate if ❰not❱ ⟵ EXISTS expected"}
 truncate if exists
-{"msg": "TRUNCATE <name> expected"}
+{"msg": "truncate if exists ⟵ name expected"}
 # test: truncate
 create table test (id int primary key)
 insert into test values (1),(2),(3),(4),(5)

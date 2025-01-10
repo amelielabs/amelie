@@ -254,7 +254,7 @@ select count([]) from test_null
 [1]
 # test: select count(distinct *) from table
 explain select count(distinct *) from test
-{"msg": "explain select count(distinct <*>: '*' cannot be used with DISTINCT"}
+{"msg": "explain select count(distinct ❰*❱ ⟵ * cannot be used with DISTINCT"}
 # test: select count(distinct) from table
 explain select count(distinct id) from test
 [{
@@ -1128,11 +1128,11 @@ select data, count(*) from test_null group by 1 order by 1
 [[null, 1]]
 # test: select from table having (without group by)
 select * from test having count(id) > 0
-{"msg": "unexpected token at the end of statement"}
+{"msg": "select * from test ❰having❱ ⟵ ; expected"}
 select id from test having count(id) > 0
-{"msg": "unexpected token at the end of statement"}
+{"msg": "select id from test ❰having❱ ⟵ ; expected"}
 select 1 from test having count(id) > 0
-{"msg": "unexpected token at the end of statement"}
+{"msg": "select 1 from test ❰having❱ ⟵ ; expected"}
 # test: select from table group by having
 select id, count(*) from test group by 1
 [[0, 1], [1, 1], [2, 1], [3, 1], [4, 1], [5, 1], [6, 1]]
@@ -1679,7 +1679,7 @@ select distinct count(*), data from test group by data
 select distinct count(data), id from test group by id
 [[0, 5], [1, 0], [1, 1], [1, 2], [1, 3], [1, 4], [1, 6]]
 select distinct on (count(data)) data from test group by data
-{"msg": "select distinct on (<count>: unexpected aggregate function usage"}
+{"msg": "select distinct on (❰count❱ ⟵ unexpected aggregate function usage"}
 # test: select count(distinct) from table group by
 select id, count(distinct data), count(distinct data2) from test group by id
 [[0, 1, 1], [1, 1, 1], [2, 1, 1], [3, 1, 1], [4, 1, 1], [5, 0, 0], [6, 1, 1]]

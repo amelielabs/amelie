@@ -82,9 +82,9 @@ select test.*, ref.* from ref, test
 [[1, 0, 1, 0], [1, 0, 2, 0], [1, 0, 3, 0], [2, 0, 1, 0], [2, 0, 2, 0], [2, 0, 3, 0], [3, 0, 1, 0], [3, 0, 2, 0], [3, 0, 3, 0]]
 # test: select from table, table
 explain select t.* from test, test t
-{"msg": "FROM: only one distributed table can be part of JOIN"}
+{"msg": "explain select t.* from test, test t ⟵ only one distributed table can be part of JOIN"}
 select t.* from test, test t
-{"msg": "FROM: only one distributed table can be part of JOIN"}
+{"msg": "select t.* from test, test t ⟵ only one distributed table can be part of JOIN"}
 # test: select from table join shared
 explain select test.id, ref.id from test join ref on true
 [{
@@ -459,13 +459,13 @@ select test.id, ref.id from test, ref where ref.id >= test.id
 [[1, 1], [1, 2], [1, 3], [2, 2], [2, 3], [3, 3]]
 # test: select from table join using
 explain select test.id, ref.id from test join ref using
-{"msg": "USING <(> expected"}
+{"msg": "explain select test.id, ref.id from test join ref using ⟵ ( expected"}
 explain select test.id, ref.id from test join ref using(
-{"msg": "USING (<column> expected"}
+{"msg": "explain select test.id, ref.id from test join ref using( ⟵ name expected"}
 explain select test.id, ref.id from test join ref using(1
-{"msg": "USING (<column> expected"}
+{"msg": "explain select test.id, ref.id from test join ref using(❰1❱ ⟵ name expected"}
 explain select test.id, ref.id from test join ref using(id
-{"msg": "USING (column <)> expected"}
+{"msg": "explain select test.id, ref.id from test join ref using(id ⟵ ) expected"}
 explain select test.id, ref.id from test join ref using(id)
 [{
   "bytecode": {

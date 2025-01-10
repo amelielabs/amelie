@@ -2,19 +2,19 @@ open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "12
 connect E0 S0 localhost:3485
 # test: delete statement parsing
 delete
-{"msg": "DELETE <FROM> expected"}
+{"msg": "delete ⟵ FROM expected"}
 delete junk
-{"msg": "DELETE <FROM> expected"}
+{"msg": "delete ❰junk❱ ⟵ FROM expected"}
 delete 1
-{"msg": "DELETE <FROM> expected"}
+{"msg": "delete ❰1❱ ⟵ FROM expected"}
 delete from 1
-{"msg": "FROM target name expected"}
+{"msg": "delete from ❰1❱ ⟵ target name expected"}
 delete from "name"
-{"msg": "FROM target name expected"}
+{"msg": "delete from ❰\"name\"❱ ⟵ target name expected"}
 delete from test junk
-{"msg": "<public.test> relation not found"}
+{"msg": "delete from ❰test❱ ⟵ relation not found"}
 delete from test where true limit
-{"msg": "<public.test> relation not found"}
+{"msg": "delete from ❰test❱ ⟵ relation not found"}
 # test: delete
 create table test(id int primary key)
 insert into test values (0)

@@ -2,17 +2,17 @@ open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "12
 connect E0 S0 localhost:3485
 # test: in expr
 select 1 in
-{"msg": "IN <(> expected"}
+{"msg": "select 1 in ⟵ ( expected"}
 select in
-{"msg": "bad expression"}
+{"msg": "select ❰in❱ ⟵ bad expression"}
 select in true
-{"msg": "bad expression"}
+{"msg": "select ❰in❱ ⟵ bad expression"}
 select 1 in true
-{"msg": "IN <(> expected"}
+{"msg": "select 1 in ❰true❱ ⟵ ( expected"}
 select 1 in [
-{"msg": "IN <(> expected"}
+{"msg": "select 1 in ❰[❱ ⟵ ( expected"}
 select 1 in (
-{"msg": "bad expression"}
+{"msg": "select 1 in ( ⟵ bad expression"}
 # test: in (empty set)
 select 1 in ()
 [false]

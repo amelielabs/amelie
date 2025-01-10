@@ -44,15 +44,12 @@ parse_cte_args(Stmt* self)
 	for (;;)
 	{
 		// name
-		auto name = stmt_if(self, KNAME);
-		if (! name)
-			error("WITH name (<name> expected");
+		auto name = stmt_expect(self, KNAME);
 
 		// ensure argument is unique
 		auto arg = columns_find(&self->cte_args, &name->string);
 		if (arg)
-			error("WITH name (<%.*s> argument redefined", str_size(&name->string),
-			      str_of(&name->string));
+			stmt_error(self, name, "argument redefined");
 
 		// add argument to the list
 		arg = column_allocate();
@@ -65,23 +62,19 @@ parse_cte_args(Stmt* self)
 	}
 
 	// )
-	if (! stmt_if(self, ')'))
-		error("WITH name (<)> expected");
+	stmt_expect(self, ')');
 }
 
 void
 parse_cte(Stmt* self)
 {
 	// name [(args)]
-	auto name = stmt_if(self, KNAME);
-	if (! name)
-		error("WITH <name> expected");
+	auto name = stmt_expect(self, KNAME);
 
 	// reuse existing cte variable (columns are not compared)
 	auto cte = stmt_list_find(self->stmt_list, &name->string);
 	if (cte)
-		error("CTE <%.*s> redefined", str_size(&name->string),
-		      str_of(&name->string));
+		stmt_error(self, name, "CTE is redefined");
 	self->cte_name = name;
 
 	// (args)

@@ -2,35 +2,35 @@ open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "12
 connect E0 S0 localhost:3485
 # test: insert statement parsing
 insert
-{"msg": "INSERT <INTO> expected"}
+{"msg": "insert ⟵ INTO expected"}
 insert junk
-{"msg": "INSERT <INTO> expected"}
+{"msg": "insert ❰junk❱ ⟵ INTO expected"}
 insert into
-{"msg": "FROM target name expected"}
+{"msg": "insert into ⟵ target name expected"}
 insert into "name"
-{"msg": "FROM target name expected"}
+{"msg": "insert into ❰\"name\"❱ ⟵ target name expected"}
 insert into 1
-{"msg": "FROM target name expected"}
+{"msg": "insert into ❰1❱ ⟵ target name expected"}
 insert into name
-{"msg": "<public.name> relation not found"}
+{"msg": "insert into ❰name❱ ⟵ relation not found"}
 create table test (id int primary key)
 insert into test
-{"msg": "INSERT INTO <VALUES | SELECT> expected"}
+{"msg": "insert into test ⟵ 'VALUES | SELECT' expected"}
 insert into test values
-{"msg": "expected '('"}
+{"msg": "insert into test values ⟵ ( expected"}
 insert into test values(
-{"msg": "column <id> value expected to be 'int'"}
+{"msg": "insert into test values( ⟵ 'int' expected for column 'id'"}
 insert into test values(,
-{"msg": "column <id> value expected to be 'int'"}
+{"msg": "insert into test values(❰,❱ ⟵ 'int' expected for column 'id'"}
 insert into test values(123
-{"msg": "expected ')'"}
+{"msg": "insert into test values(123 ⟵ ) expected"}
 insert into test values(123,
-{"msg": "row has incorrect number of columns"}
+{"msg": "insert into test values(123, ⟵ row has incorrect number of columns"}
 # test: insert type validate
 insert into test values ("123")
-{"msg": "column <id> value expected to be 'int'"}
+{"msg": "insert into test values (❰\"123\"❱ ⟵ 'int' expected for column 'id'"}
 insert into test values (123, 123)
-{"msg": "row has incorrect number of columns"}
+{"msg": "insert into test values (123, ❰123❱ ⟵ row has incorrect number of columns"}
 select * from test
 []
 # test: insert
@@ -43,10 +43,10 @@ drop table test
 create schema test
 create table test.test (id int primary key)
 insert into test values (123)
-{"msg": "<public.test> relation not found"}
+{"msg": "insert into ❰test❱ ⟵ relation not found"}
 insert into test.test values (123)
 select * from test
-{"msg": "<public.test> relation not found"}
+{"msg": "select * from ❰test❱ ⟵ relation not found"}
 select * from test.test
 [123]
 drop table test.test
@@ -81,9 +81,9 @@ select system.table('test').columns
   }
 }]]
 insert into test values (123)
-{"msg": "column <id2> value expected to be 'int'"}
+{"msg": "insert into test values (123❰)❱ ⟵ 'int' expected for column 'id2'"}
 insert into test values (1, 2, 3)
-{"msg": "row has incorrect number of columns"}
+{"msg": "insert into test values (1, 2, ❰3❱ ⟵ row has incorrect number of columns"}
 insert into test values (1, 2)
 select * from test
 [[1, 2]]
@@ -91,11 +91,11 @@ drop table test
 # test: insert list
 create table test (id int primary key, data int)
 insert into test (id, data) values ()
-{"msg": "column <id> value expected to be 'int'"}
+{"msg": "insert into test (id, data) values (❰)❱ ⟵ 'int' expected for column 'id'"}
 insert into test (id, data) values (123)
-{"msg": "row has incorrect number of columns"}
+{"msg": "insert into test (id, data) values (123❰)❱ ⟵ , expected"}
 insert into test (id, data) values (123, 123, 123)
-{"msg": "expected ')'"}
+{"msg": "insert into test (id, data) values (123, 123❰,❱ ⟵ ) expected"}
 insert into test (id, data) values (123, 123)
 select * from test
 [[123, 123]]
@@ -103,16 +103,16 @@ drop table test
 # test: insert list column order
 create table test (id int primary key, data int)
 insert into test (data, id) values (123, 123)
-{"msg": "column list must be in order"}
+{"msg": "insert into test (data, ❰id❱ ⟵ column list must be in order"}
 insert into test (data, id, data) values (123, 123)
-{"msg": "column list must be in order"}
+{"msg": "insert into test (data, ❰id❱ ⟵ column list must be in order"}
 select * from test
 []
 drop table test
 # test: insert list column reuse
 create table test (id int primary key, data int)
 insert into test (id, id) values (123, 123)
-{"msg": "column list must be in order"}
+{"msg": "insert into test (id, ❰id❱ ⟵ column list must be in order"}
 insert into test (id, data) values (123, 123)
 select * from test
 [[123, 123]]
@@ -122,10 +122,10 @@ create table test (id int primary key, data int)
 insert into test (id) values (1)
 insert into test (id, data) values (2, null)
 insert into test (id, data) values (null, null)
-{"msg": "column <id> value cannot be NULL"}
+{"msg": "insert into test (id, data) values (❰null❱ ⟵ column 'id' value cannot be NULL"}
 insert into test values (3, null)
 insert into test values (null, null)
-{"msg": "column <id> value cannot be NULL"}
+{"msg": "insert into test values (❰null❱ ⟵ column 'id' value cannot be NULL"}
 select * from test
 [[1, null], [2, null], [3, null]]
 drop table test
@@ -138,13 +138,13 @@ drop table test
 # test: insert list not null
 create table test (id int primary key, data int not null)
 insert into test (id) values (1)
-{"msg": "column <data> value cannot be NULL"}
+{"msg": "insert into test (id) values (1❰)❱ ⟵ column 'data' value cannot be NULL"}
 insert into test (id, data) values (2, null)
-{"msg": "column <data> value cannot be NULL"}
+{"msg": "insert into test (id, data) values (2, ❰null❱ ⟵ column 'data' value cannot be NULL"}
 insert into test values (3, null)
-{"msg": "column <data> value cannot be NULL"}
+{"msg": "insert into test values (3, ❰null❱ ⟵ column 'data' value cannot be NULL"}
 insert into test values (null, null)
-{"msg": "column <id> value cannot be NULL"}
+{"msg": "insert into test values (❰null❱ ⟵ column 'id' value cannot be NULL"}
 insert into test (id, data) values (2, 2)
 select * from test
 [[2, 2]]
@@ -152,9 +152,9 @@ drop table test
 # test: insert list not null key
 create table test (id int primary key, data int)
 insert into test (data) values (123)
-{"msg": "column <id> value cannot be NULL"}
+{"msg": "insert into test (data) values (❰123❱ ⟵ column 'id' value cannot be NULL"}
 insert into test values (null, 123)
-{"msg": "column <id> value cannot be NULL"}
+{"msg": "insert into test values (❰null❱ ⟵ column 'id' value cannot be NULL"}
 select * from test
 []
 drop table test
@@ -189,7 +189,7 @@ drop table test
 # test: insert list default (keyword)
 create table test (id int primary key, data int default 123)
 insert into test (id) values (DEFAULT)
-{"msg": "column <id> value cannot be NULL"}
+{"msg": "insert into test (id) values (❰DEFAULT❱ ⟵ column 'id' value cannot be NULL"}
 select * from test
 []
 drop table test
@@ -202,7 +202,7 @@ drop table test
 # test: insert default (keyword)
 create table test (id int primary key, data int default 123)
 insert into test values (DEFAULT, DEFAULT)
-{"msg": "column <id> value cannot be NULL"}
+{"msg": "insert into test values (❰DEFAULT❱ ⟵ column 'id' value cannot be NULL"}
 select * from test
 []
 drop table test
@@ -246,7 +246,7 @@ drop table test
 # test: insert serial null
 create table test (id int serial primary key, data int)
 insert into test (id, data) values (null, 123)
-{"msg": "column <id> value cannot be NULL"}
+{"msg": "insert into test (id, data) values (❰null❱ ⟵ column 'id' value cannot be NULL"}
 select * from test
 []
 drop table test
@@ -279,9 +279,9 @@ drop table test
 # test: insert generate
 create table test (id int primary key serial, data int default 0)
 insert into test generate
-{"msg": "GENERATE <count> expected"}
+{"msg": "insert into test generate ⟵ int expected"}
 insert into test generate "10"
-{"msg": "GENERATE <count> expected"}
+{"msg": "insert into test generate ❰\"10\"❱ ⟵ int expected"}
 insert into test generate 10
 select * from test
 [[0, 0], [1, 0], [2, 0], [3, 0], [4, 0], [5, 0], [6, 0], [7, 0], [8, 0], [9, 0]]
@@ -767,11 +767,11 @@ insert into test values (0, [])
 insert into test values (1, [1.0])
 insert into test values (2, [1])
 insert into test values (3, [1.0, 1.1,])
-{"msg": "invalid vector value"}
+{"msg": "insert into test values (3, [1.0, 1.1,❰]❱ ⟵ invalid vector value"}
 insert into test values (4, [1.0,)
-{"msg": "invalid vector value"}
+{"msg": "insert into test values (4, [1.0,❰)❱ ⟵ invalid vector value"}
 insert into test values (5, [1.0,])
-{"msg": "invalid vector value"}
+{"msg": "insert into test values (5, [1.0,❰]❱ ⟵ invalid vector value"}
 insert into test values (6, [1.0, 1.1])
 insert into test values (7, [1.0, 1.1, -2.2, -8])
 insert into test values (8, vector [1.0, 1.1, -2.2, -8])
@@ -885,7 +885,7 @@ insert into test select 1, '2'
 {"msg": "INSERT SELECT columns do not match the table columns"}
 # test: insert select (columns list unsupported)
 insert into test (id) select 1
-{"msg": "INSERT SELECT using column list is not supported"}
+{"msg": "insert into test (id) ❰select❱ ⟵ SELECT using column list is not supported"}
 # test: insert select expr
 explain insert into test select 1, 0
 [{

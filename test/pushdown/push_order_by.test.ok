@@ -845,11 +845,11 @@ select * from test order by id desc offset -1
 {"msg": "OFFSET: positive integer value expected"}
 # test: select from order by int
 select id from test order by 0
-{"msg": "ORDER BY: column 0 is not in the SELECT expr list"}
+{"msg": "select id from test order by ❰0❱ ⟵ column 0 is not in the SELECT expr list"}
 select id from test order by 1
 [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19]
 select id from test order by 2
-{"msg": "ORDER BY: column 2 is not in the SELECT expr list"}
+{"msg": "select id from test order by ❰2❱ ⟵ column 2 is not in the SELECT expr list"}
 # test: select from order by alias
 select id from test order by id
 [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19]

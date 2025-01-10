@@ -42,13 +42,11 @@ parse_from_target(Stmt* self, Targets* targets, bool subquery)
 	// FROM (SELECT)
 	if (stmt_if(self, '('))
 	{
-		if (! stmt_if(self, KSELECT))
-			error("FROM (<SELECT> expected");
+		stmt_expect(self, KSELECT);
 		if (subquery)
 		{
 			auto select = parse_select(self, targets->outer, true);
-			if (! stmt_if(self, ')'))
-				error("FROM (SELECT ... <)> expected");
+			stmt_expect(self, ')');
 			target->type         = TARGET_SELECT;
 			target->from_select  = &select->ast;
 			target->from_columns = &select->ret.columns;
@@ -66,8 +64,7 @@ parse_from_target(Stmt* self, Targets* targets, bool subquery)
 			stmt_list_insert(self->stmt_list, self, cte);
 
 			auto select = parse_select(cte, NULL, false);
-			if (! stmt_if(self, ')'))
-				error("FROM (SELECT ... <)> expected");
+			stmt_expect(self, ')');
 			cte->ast         = &select->ast;
 			cte->cte_columns = &select->ret.columns;
 			parse_select_resolve(cte);
@@ -85,7 +82,7 @@ parse_from_target(Stmt* self, Targets* targets, bool subquery)
 	Str  name;
 	auto expr = parse_target(self, &schema, &name);
 	if (! expr)
-		error("FROM target name expected");
+		stmt_error(self, NULL, "target name expected");
 
 	// function()
 	if (self->id == STMT_SELECT && stmt_if(self, '('))
@@ -94,20 +91,15 @@ parse_from_target(Stmt* self, Targets* targets, bool subquery)
 		auto call = ast_call_allocate();
 		call->fn = function_mgr_find(self->function_mgr, &schema, &name);
 		if (! call->fn)
-			error("FROM %.*s.%.*s(): function not found",
-			      str_size(&schema), str_of(&schema),
-			      str_size(&name),
-			      str_of(&name));
+			stmt_error(self, expr, "function not found");
+
 		// parse args ()
 		call->ast.r = parse_expr_args(self, NULL, ')', false);
 
 		// ensure function can be used inside FROM
 		if (call->fn->ret != TYPE_STORE &&
 		    call->fn->ret != TYPE_JSON)
-			error("FROM %.*s.%.*s(): function must return result set or JSON",
-			      str_size(&schema), str_of(&schema),
-			      str_size(&name),
-			      str_of(&name));
+			stmt_error(self, expr, "function must return result set or JSON");
 
 		target->type = TARGET_FUNCTION;
 		target->from_function = &call->ast;
@@ -125,8 +117,7 @@ parse_from_target(Stmt* self, Targets* targets, bool subquery)
 	if (cte)
 	{
 		if (cte == self)
-			error("<%.*s> recursive CTE are not supported",
-			      str_size(&name), str_of(&name));
+			stmt_error(self, expr, "recursive CTE are not supported");
 		target->type         = TARGET_CTE;
 		target->from_cte     = cte;
 		target->from_columns = cte->cte_columns;
@@ -139,10 +130,7 @@ parse_from_target(Stmt* self, Targets* targets, bool subquery)
 	if (table)
 	{
 		if (subquery && !table->config->shared)
-			error("distributed table '%.*s.%.*s' cannot be used in subquery",
-			      str_size(&schema), str_of(&schema),
-			      str_size(&name),
-			      str_of(&name));
+			stmt_error(self, expr, "distributed table cannot be used in subquery");
 		if (table->config->shared)
 			target->type = TARGET_TABLE_SHARED;
 		else
@@ -153,12 +141,7 @@ parse_from_target(Stmt* self, Targets* targets, bool subquery)
 		return target;
 	}
 
-	error("<%.*s.%.*s> relation not found",
-	      str_size(&schema), str_of(&schema),
-	      str_size(&name),
-	      str_of(&name));
-
-	// unreach
+	stmt_error(self, expr, "relation not found");
 	return NULL;
 }
 
@@ -175,10 +158,10 @@ parse_from_add(Stmt* self, Targets* targets, bool subquery)
 		str_set_str(&target->name, &alias->string);
 	} else {
 		if (as)
-			error("AS <name> expected ");
+			stmt_error(self, as, "name expected");
 		if ( target->type == TARGET_SELECT ||
 		    (target->type == TARGET_CTE && str_empty(&target->name)))
-			error("FROM (SELECT) subquery must have an alias");
+			stmt_error(self, NULL, "subquery must have an alias");
 	}
 
 	// ensure target does not exists
@@ -186,8 +169,7 @@ parse_from_add(Stmt* self, Targets* targets, bool subquery)
 	{
 		auto match = targets_match(targets, &target->name);
 		if (match)
-			error("<%.*s> target is redefined, please use different alias for the target",
-			      str_size(&target->name), str_of(&target->name));
+			stmt_error(self, NULL, "target is redefined, please use different alias for the target");
 	}
 
 	// generate first column to match the target name for function target
@@ -206,18 +188,15 @@ parse_from_add(Stmt* self, Targets* targets, bool subquery)
 	// [USE INDEX (name)]
 	if (stmt_if(self, KUSE))
 	{
-		if (! stmt_if(self, KINDEX))
-			error("USE <INDEX> expected");
-		if (! stmt_if(self, '('))
-			error("USE INDEX <(> expected");
+		stmt_expect(self, KINDEX);
+		stmt_expect(self, '(');
 		auto name = stmt_next_shadow(self);
 		if (name->id != KNAME)
-			error("USE INDEX (<index name> expected");
-		if (! stmt_if(self, ')'))
-			error("USE INDEX (<)> expected");
+			stmt_error(self, name, "<index name> expected");
+		stmt_expect(self, ')');
 		if (target->type != TARGET_TABLE &&
 		    target->type != TARGET_TABLE_SHARED)
-			error("USE INDEX expected table target");
+			stmt_error(self, NULL, "USE INDEX expects table target");
 		target->from_table_index =
 			table_find_index(target->from_table, &name->string, true);
 	}
@@ -255,24 +234,21 @@ parse_from(Stmt* self, Targets* targets, bool subquery)
 		else
 		if (stmt_if(self, KINNER))
 		{
-			if (! stmt_if(self, KJOIN))
-				error("INNER <JOIN> expected");
+			stmt_expect(self, KJOIN);
 			join = JOIN_INNER;
 		} else
 		if (stmt_if(self, KLEFT))
 		{
 			// [OUTER]
 			stmt_if(self, KOUTER);
-			if (! stmt_if(self, KJOIN))
-				error("LEFT <JOIN> expected");
+			stmt_expect(self, KJOIN);
 			join = JOIN_LEFT;
 		} else
 		if (stmt_if(self, KRIGHT))
 		{
 			// [OUTER]
 			stmt_if(self, KOUTER);
-			if (! stmt_if(self, KJOIN))
-				error("RIGHT <JOIN> expected");
+			stmt_expect(self, KJOIN);
 			join = JOIN_RIGHT;
 		}
 
@@ -280,7 +256,7 @@ parse_from(Stmt* self, Targets* targets, bool subquery)
 		if (join != JOIN_NONE)
 		{
 			if (join == JOIN_LEFT || join == JOIN_RIGHT)
-				error("outer joins currently are not supported");
+				stmt_error(self, NULL, "outer joins currently are not supported");
 
 			// <name|expr>
 			auto target = parse_from_add(self, targets, subquery);
@@ -300,13 +276,9 @@ parse_from(Stmt* self, Targets* targets, bool subquery)
 			// USING (column)
 			if (stmt_if(self, KUSING))
 			{
-				if (! stmt_if(self, '('))
-					error("USING <(> expected");
-				auto name = stmt_if(self, KNAME);
-				if (! name)
-					error("USING (<column> expected");
-				if (! stmt_if(self, ')'))
-					error("USING (column <)> expected");
+				stmt_expect(self, '(');
+				auto name = stmt_expect(self, KNAME);
+				stmt_expect(self, ')');
 
 				// outer.column = target.column
 				auto equ = ast('=');
@@ -320,7 +292,7 @@ parse_from(Stmt* self, Targets* targets, bool subquery)
 				continue;
 			}
 
-			error("JOIN name <ON | USING> expected");
+			stmt_error(self, NULL, "ON or USING expected");
 			continue;
 		}
 
@@ -328,5 +300,5 @@ parse_from(Stmt* self, Targets* targets, bool subquery)
 	}
 
 	if (targets_count(targets, TARGET_TABLE) > 1)
-		error("FROM: only one distributed table can be part of JOIN");
+		stmt_error(self, NULL, "only one distributed table can be part of JOIN");
 }

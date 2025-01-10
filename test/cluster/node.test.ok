@@ -9,16 +9,16 @@ create table test (id int primary key)
 create shared table test (id int primary key)
 {"msg": "system has no nodes"}
 select * from test
-{"msg": "<public.test> relation not found"}
+{"msg": "select * from ❰test❱ ⟵ relation not found"}
 # test: create node statement parsing
 create compute
-{"msg": "CREATE COMPUTE <NODE> expected"}
+{"msg": "create compute ⟵ NODE expected"}
 create node 1
-{"msg": "unexpected token at the end of statement"}
+{"msg": "create node ❰1❱ ⟵ ; expected"}
 create node for
-{"msg": "unexpected token at the end of statement"}
+{"msg": "create node ❰for❱ ⟵ ; expected"}
 create node for 1
-{"msg": "unexpected token at the end of statement"}
+{"msg": "create node ❰for❱ ⟵ ; expected"}
 # test: create node id
 create node ""
 {"msg": "failed to parse uuid"}
@@ -32,13 +32,13 @@ create node "00000000-0000-0000-0000-000000000000"
 {"msg": "node '00000000-0000-0000-0000-000000000000': already exists"}
 # test: create node if not exists
 create node if "00000000-0000-0000-0000-000000000000"
-{"msg": "IF <NOT> EXISTS expected"}
+{"msg": "create node if ❰\"00000000-0000-0000-0000-000000000000\"❱ ⟵ NOT expected"}
 create node if
-{"msg": "IF <NOT> EXISTS expected"}
+{"msg": "create node if ⟵ NOT expected"}
 create node if not
-{"msg": "IF NOT <EXISTS> expected"}
+{"msg": "create node if not ⟵ EXISTS expected"}
 create node if not exists
-{"msg": "CREATE NODE IF NOT EXISTS <ID> expected"}
+{"msg": "create node if not exists ⟵ id expected"}
 create node if not exists "00000000-0000-0000-0000-00000000000Z"
 {"msg": "failed to parse uuid"}
 create node if not exists "  00000000-0000-0000-0000-00000000000  "
@@ -83,9 +83,9 @@ select * from test2
 [4, 5, 6]
 # test: drop node statement parsing
 drop node
-{"msg": "DROP NODE <id> expected"}
+{"msg": "drop node ⟵ string expected"}
 drop node 1
-{"msg": "DROP NODE <id> expected"}
+{"msg": "drop node ❰1❱ ⟵ string expected"}
 drop node ""
 {"msg": "node '': not exists"}
 # test: drop node if exists

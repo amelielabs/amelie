@@ -2,17 +2,17 @@ open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "12
 connect E0 S0 localhost:3485
 # test: any parsing
 select any
-{"msg": "bad expression"}
+{"msg": "select ❰any❱ ⟵ bad expression"}
 select any
-{"msg": "bad expression"}
+{"msg": "select ❰any❱ ⟵ bad expression"}
 select = any
-{"msg": "bad expression"}
+{"msg": "select ❰=❱ ⟵ bad expression"}
 select 1 = any
-{"msg": "ANY|ALL <(> expected"}
+{"msg": "select 1 = any ⟵ ( expected"}
 select 1 = any (
-{"msg": "bad expression"}
+{"msg": "select 1 = any ( ⟵ bad expression"}
 select 1 = any ()
-{"msg": "bad expression"}
+{"msg": "select 1 = any (❰)❱ ⟵ bad expression"}
 # test: = any ([])
 select 1 = any([])
 [false]

@@ -2,19 +2,19 @@ open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "12
 connect E0 S0 localhost:3485
 # test: alter table statement parsing
 alter
-{"msg": "ALTER <USER|SCHEMA|TABLE|INDEX> expected"}
+{"msg": "alter ⟵ 'USER|SCHEMA|TABLE|INDEX' expected"}
 alter table
-{"msg": "ALTER TABLE <name> expected"}
+{"msg": "alter table ⟵ name expected"}
 alter table 123
-{"msg": "ALTER TABLE <name> expected"}
+{"msg": "alter table ❰123❱ ⟵ name expected"}
 alter table if
-{"msg": "IF <EXISTS> expected"}
+{"msg": "alter table if ⟵ EXISTS expected"}
 alter table if ex
-{"msg": "IF <EXISTS> expected"}
+{"msg": "alter table if ❰ex❱ ⟵ EXISTS expected"}
 alter table if exists
-{"msg": "ALTER TABLE <name> expected"}
+{"msg": "alter table if exists ⟵ name expected"}
 alter table if exists 123
-{"msg": "ALTER TABLE <name> expected"}
+{"msg": "alter table if exists ❰123❱ ⟵ name expected"}
 # test: alter table if exists
 alter table test rename test2
 {"msg": "table 'test': not exists"}
@@ -22,14 +22,14 @@ alter table if exists test rename test2
 # test: alter table no command
 create table test (id int primary key)
 alter table test
-{"msg": "ALTER TABLE <RENAME | ADD | DROP | SET | UNSET> expected"}
+{"msg": "alter table test ⟵ 'RENAME | ADD | DROP | SET | UNSET' expected"}
 # test: rename
 alter table test rename
-{"msg": "ALTER TABLE RENAME <name> expected"}
+{"msg": "alter table test rename ⟵ name expected"}
 alter table test rename to
-{"msg": "ALTER TABLE RENAME <name> expected"}
+{"msg": "alter table test rename to ⟵ name expected"}
 alter table test rename asf junk
-{"msg": "unexpected token at the end of statement"}
+{"msg": "alter table test rename asf ❰junk❱ ⟵ ; expected"}
 alter table test rename to abc
 select system.table('abc').name
 ["abc"]
@@ -64,17 +64,17 @@ insert into test () values ()
 select * from test
 [[0, 0], [1, 0], [2, 0]]
 alter table test set
-{"msg": "ALTER TABLE SET <SERIAL> expected"}
+{"msg": "alter table test set ⟵ 'SERIAL | LOGGED | UNLOGGED | COLUMN DEFAULT | COLUMN AS' expected"}
 alter table test set serial
-{"msg": "ALTER TABLE SET SERIAL <TO> expected"}
+{"msg": "alter table test set serial ⟵ TO expected"}
 alter table test set serial 123
-{"msg": "ALTER TABLE SET SERIAL <TO> expected"}
+{"msg": "alter table test set serial ❰123❱ ⟵ TO expected"}
 alter table test set serial =
-{"msg": "ALTER TABLE SET SERIAL <TO> expected"}
+{"msg": "alter table test set serial ❰=❱ ⟵ TO expected"}
 alter table test set serial to
-{"msg": "ALTER TABLE SET SERIAL TO <integer> expected"}
+{"msg": "alter table test set serial to ⟵ int expected"}
 alter table test set serial to "123"
-{"msg": "ALTER TABLE SET SERIAL TO <integer> expected"}
+{"msg": "alter table test set serial to ❰\"123\"❱ ⟵ int expected"}
 alter table test set serial to 0
 insert into test () values ()
 {"msg": "index 'primary': unique key constraint violation"}
@@ -109,21 +109,21 @@ select system.table('test').unlogged
 drop table test
 # test: rename column parsing
 alter table rename
-{"msg": "ALTER TABLE <name> expected"}
+{"msg": "alter table ❰rename❱ ⟵ name expected"}
 alter table test rename
-{"msg": "ALTER TABLE RENAME <name> expected"}
+{"msg": "alter table test rename ⟵ name expected"}
 alter table test rename column
-{"msg": "ALTER TABLE name RENAME COLUMN <name> expected"}
+{"msg": "alter table test rename column ⟵ name expected"}
 alter table test rename column 1
-{"msg": "ALTER TABLE name RENAME COLUMN <name> expected"}
+{"msg": "alter table test rename column ❰1❱ ⟵ name expected"}
 alter table test rename column data
-{"msg": "ALTER TABLE name RENAME COLUMN name TO <name> expected"}
+{"msg": "alter table test rename column data ⟵ name expected"}
 alter table test rename column data
-{"msg": "ALTER TABLE name RENAME COLUMN name TO <name> expected"}
+{"msg": "alter table test rename column data ⟵ name expected"}
 alter table test rename column data to
-{"msg": "ALTER TABLE name RENAME COLUMN name TO <name> expected"}
+{"msg": "alter table test rename column data to ⟵ name expected"}
 alter table test rename column data to 1
-{"msg": "ALTER TABLE name RENAME COLUMN name TO <name> expected"}
+{"msg": "alter table test rename column data to ❰1❱ ⟵ name expected"}
 # test: rename column
 create table test (id int primary key serial, data int default 0)
 select system.table('test').columns
@@ -289,15 +289,15 @@ drop table test
 # test: add column parsing
 create table test (id int primary key)
 alter table
-{"msg": "ALTER TABLE <name> expected"}
+{"msg": "alter table ⟵ name expected"}
 alter table test
-{"msg": "ALTER TABLE <RENAME | ADD | DROP | SET | UNSET> expected"}
+{"msg": "alter table test ⟵ 'RENAME | ADD | DROP | SET | UNSET' expected"}
 alter table test add
-{"msg": "ALTER TABLE name ADD <COLUMN> expected"}
+{"msg": "alter table test add ⟵ COLUMN expected"}
 alter table test add 1
-{"msg": "ALTER TABLE name ADD <COLUMN> expected"}
+{"msg": "alter table test add ❰1❱ ⟵ COLUMN expected"}
 alter table test add column
-{"msg": "(<name> expected"}
+{"msg": "alter table test add column ⟵ name expected"}
 drop table test
 # test: add column already exists
 create table test (id int primary key, data int)
@@ -307,7 +307,7 @@ drop table test
 # test: add column primary key
 create table test (id int primary key)
 alter table test add column data int primary key
-{"msg": "PRIMARY KEY clause is not supported in this command"}
+{"msg": "alter table test add column data int ❰primary❱ ⟵ PRIMARY KEY clause is not supported in this command"}
 drop table test
 # test: add column (empty table)
 create table test (id int primary key)
@@ -401,7 +401,7 @@ drop table test
 create table test (id int primary key)
 insert into test values (1),(2),(3)
 alter table test add column data int not null
-{"msg": "ALTER TABLE ADD NOT NULL currently not supported"}
+{"msg": "alter table test add column data int not null ⟵ NOT NULL currently not supported with ALTER"}
 select system.table('test').columns
 [[{
   "name": "id",
@@ -463,7 +463,7 @@ drop table test
 create table test (id int primary key)
 insert into test values (1),(2),(3)
 alter table test add column data int not null default 123
-{"msg": "ALTER TABLE ADD NOT NULL currently not supported"}
+{"msg": "alter table test add column data int not null default 123 ⟵ NOT NULL currently not supported with ALTER"}
 select system.table('test').columns
 [[{
   "name": "id",
@@ -521,15 +521,15 @@ drop table test
 # test: drop column parsing
 create table test (id int primary key)
 alter table
-{"msg": "ALTER TABLE <name> expected"}
+{"msg": "alter table ⟵ name expected"}
 alter table test
-{"msg": "ALTER TABLE <RENAME | ADD | DROP | SET | UNSET> expected"}
+{"msg": "alter table test ⟵ 'RENAME | ADD | DROP | SET | UNSET' expected"}
 alter table test drop
-{"msg": "ALTER TABLE name DROP <COLUMN> expected"}
+{"msg": "alter table test drop ⟵ COLUMN expected"}
 alter table test drop column
-{"msg": "ALTER TABLE name DROP COLUMN <name> expected"}
+{"msg": "alter table test drop column ⟵ name expected"}
 alter table test drop column 1
-{"msg": "ALTER TABLE name DROP COLUMN <name> expected"}
+{"msg": "alter table test drop column ❰1❱ ⟵ name expected"}
 drop table test
 # test: drop column (not exists)
 create table test (id int primary key)

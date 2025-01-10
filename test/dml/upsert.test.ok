@@ -3,19 +3,19 @@ connect E0 S0 localhost:3485
 # test: on conflict parsing
 create table test (id int primary key, data int)
 insert into test values(1, 0) 123
-{"msg": "unexpected token at the end of statement"}
+{"msg": "insert into test values(1, 0) ❰123❱ ⟵ ; expected"}
 insert into test values(1, 0) ON
-{"msg": "INSERT VALUES ON <CONFLICT> expected"}
+{"msg": "insert into test values(1, 0) ON ⟵ CONFLICT expected"}
 insert into test values(1, 0) ON 123
-{"msg": "INSERT VALUES ON <CONFLICT> expected"}
+{"msg": "insert into test values(1, 0) ON ❰123❱ ⟵ CONFLICT expected"}
 insert into test values(1, 0) on conflict
-{"msg": "INSERT VALUES ON CONFLICT <DO> expected"}
+{"msg": "insert into test values(1, 0) on conflict ⟵ DO expected"}
 insert into test values(1, 0) on conflict 123
-{"msg": "INSERT VALUES ON CONFLICT <DO> expected"}
+{"msg": "insert into test values(1, 0) on conflict ❰123❱ ⟵ DO expected"}
 insert into test values(1, 0) on conflict do
-{"msg": "INSERT VALUES ON CONFLICT DO <NOTHING | ERROR | UPDATE | RESOLVE> expected"}
+{"msg": "insert into test values(1, 0) on conflict do ⟵ 'NOTHING | ERROR | UPDATE | RESOLVE' expected"}
 insert into test values(1, 0) on conflict do 123
-{"msg": "INSERT VALUES ON CONFLICT DO <NOTHING | ERROR | UPDATE | RESOLVE> expected"}
+{"msg": "insert into test values(1, 0) on conflict do ❰123❱ ⟵ 'NOTHING | ERROR | UPDATE | RESOLVE' expected"}
 insert into test values(1, 0) on conflict do update
 {"msg": "UPDATE <SET> expected"}
 insert into test values(1, 0) on conflict do update set
@@ -25,7 +25,7 @@ insert into test values(1, 0) on conflict do update set 123
 insert into test values(1, 0) on conflict do update set path
 {"msg": "UPDATE name SET column <=> expected"}
 insert into test values(1, 0) on conflict do update set path =
-{"msg": "bad expression"}
+{"msg": "insert into test values(1, 0) on conflict do update set path = ⟵ bad expression"}
 drop table test
 # test: on conflict do nothing
 create table test (id int primary key, data int)

@@ -280,12 +280,11 @@ expr_aggregate(Stmt* self, Expr* expr, Ast* function)
 		if (function->id == KCOUNT)
 		{
 			if (distinct)
-				stmt_error(self, star, "'*' cannot be used with DISTINCT");
-
+				stmt_error(self, star, "* cannot be used with DISTINCT");
 			arg = ast(KINT);
 			arg->integer = 1;
 		} else {
-			stmt_error(self, star, "'*' is not supported by this aggregate function");
+			stmt_error(self, star, "* is not supported by this aggregate function");
 		}
 	} else {
 		arg = parse_expr(self, NULL);
@@ -305,7 +304,7 @@ static inline Ast*
 expr_lambda(Stmt* self, Ast* seed, Expr* expr)
 {
 	if (unlikely(!expr || !expr->aggs))
-		error("unexpected lambda usage");
+		stmt_error(self, seed, "unexpected lambda usage");
 
 	// create aggregate ast node
 	auto agg = ast_agg_allocate(NULL, expr->aggs->count, NULL, seed, expr->as);
@@ -337,8 +336,7 @@ expr_case(Stmt* self, Expr* expr)
 			when->l = parse_expr(self, expr);
 
 			// THEN
-			if (! stmt_if(self, KTHEN))
-				error("CASE WHEN expr <THEN> expected");
+			stmt_expect(self, KTHEN);
 
 			// expr
 			when->r = parse_expr(self, expr);
@@ -347,25 +345,27 @@ expr_case(Stmt* self, Expr* expr)
 		}
 
 		// ELSE expr
-		if (stmt_if(self, KELSE))
+		auto _else = stmt_if(self, KELSE);
+		if (_else)
 		{
 			if (ast->expr_else)
-				error("CASE ELSE redefined");
+				stmt_error(self, _else, "ELSE is redefined");
 			ast->expr_else = parse_expr(self, expr);
 			continue;
 		}
 
 		// END
-		if (stmt_if(self, KEND))
+		auto end = stmt_if(self, KEND);
+		if (end)
 		{
 			if (!ast->expr_else && !ast->when.count)
-				error("CASE <WHEN|ELSE> expected");
+				stmt_error(self, end, "WHEN or ELSE expected");
 			break;
 		}
 
 		// CASE expr
 		if (ast->expr || ast->expr_else || ast->when.count > 0)
-			error("CASE <expr> expected");
+			stmt_error(self, NULL, "WHEN, ELSE or END expected");
 		ast->expr = parse_expr(self, expr);
 	}
 	return &ast->ast;
@@ -380,28 +380,25 @@ expr_extract(Stmt* self, Expr* expr, Ast* value)
 	str_set(&value->string, "extract", 7);
 
 	// (
-	if (! stmt_if(self, '('))
-		error("EXTRACT <(> expected");
+	stmt_expect(self, '(');
 	value->id = KNAME;
 	value = expr_call(self, expr, value, false);
 
 	// field
 	auto field = stmt_next_shadow(self);
 	if (field->id != KNAME && field->id != KSTRING)
-		error("EXTRACT (<field> expected");
+		stmt_error(self, field, "name or string expected");
 	field->id = KSTRING;
 
 	// FROM
-	if (! stmt_if(self, KFROM))
-		error("EXTRACT (field <FROM> expected");
+	stmt_expect(self, KFROM);
 
 	// expr
 	auto time = parse_expr(self, expr);
 	field->next = time;
 
 	// )
-	if (! stmt_if(self, ')'))
-		error("EXTRACT (field FROM expr <)> expected");
+	stmt_expect(self, ')');
 
 	// args(list_head, NULL)
 	value->r = &ast_args_allocate()->ast;
@@ -418,8 +415,7 @@ expr_value(Stmt* self, Expr* expr, Ast* value)
 	case '(':
 		// ()
 		value = parse_expr(self, expr);
-		if (! stmt_if(self, ')'))
-			error("(): ')' expected");
+		stmt_expect(self, ')');
 		break;
 
 	// case
@@ -430,16 +426,13 @@ expr_value(Stmt* self, Expr* expr, Ast* value)
 	// exists
 	case KEXISTS:
 	{
-		if (! stmt_if(self, '('))
-			error("EXISTS <(> expected");
-		if (! stmt_if(self, KSELECT))
-			error("EXISTS (<SELECT> expected");
+		stmt_expect(self, '(');
+		auto select = stmt_expect(self, KSELECT);
 		if (!expr || !expr->select)
-			error("unexpected subquery");
+			stmt_error(self, select, "unexpected subquery");
 		assert(expr->targets);
 		value->r = &parse_select(self, expr->targets, true)->ast;
-		if (! stmt_if(self, ')'))
-			error("EXISTS (<)> expected");
+		stmt_expect(self, ')');
 		break;
 	}
 
@@ -457,9 +450,7 @@ expr_value(Stmt* self, Expr* expr, Ast* value)
 	case KREPLACE:
 	case KERROR:
 	{
-		if (! stmt_if(self, '('))
-			error("%.*s<(> expected", str_size(&value->string),
-			      str_of(&value->string));
+		stmt_expect(self, '(');
 		value->id = KNAME;
 		value = expr_call(self, expr, value, true);
 		break;
@@ -474,7 +465,7 @@ expr_value(Stmt* self, Expr* expr, Ast* value)
 	case KSELECT:
 	{
 		if (!expr || !expr->select)
-			error("unexpected subquery");
+			stmt_error(self, value, "unexpected subquery");
 		assert(expr->targets);
 		auto select = parse_select(self, expr->targets, true);
 		value = &select->ast;
@@ -493,7 +484,7 @@ expr_value(Stmt* self, Expr* expr, Ast* value)
 	// lambda
 	case KSELF:
 		if (!expr || !expr->lambda)
-			error("unexpected <SELF> usage without lambda context");
+			stmt_error(self, value, "unexpected SELF usage without lambda context");
 		value->r = expr->lambda;
 		break;
 
@@ -517,9 +508,7 @@ expr_value(Stmt* self, Expr* expr, Ast* value)
 			break;
 		}
 		// interval 'spec'
-		auto spec = stmt_if(self, KSTRING);
-		if (! spec)
-			error("INTERVAL <string> expected");
+		auto spec = stmt_expect(self, KSTRING);
 		value->string = spec->string;
 		break;
 	}
@@ -533,9 +522,7 @@ expr_value(Stmt* self, Expr* expr, Ast* value)
 			break;
 		}
 		// timestamp 'spec'
-		auto spec = stmt_if(self, KSTRING);
-		if (! spec)
-			error("TIMESTAMP <string> expected");
+		auto spec = stmt_expect(self, KSTRING);
 		value->string = spec->string;
 		break;
 	}
@@ -545,7 +532,7 @@ expr_value(Stmt* self, Expr* expr, Ast* value)
 	case KVECTOR:
 		// vector [value, ...]
 		value->integer = code_data_offset(self->data);
-		parse_vector(self->lex, &self->data->data);
+		parse_vector(self, &self->data->data);
 		break;
 
 	// request argument
@@ -591,23 +578,19 @@ expr_value_between(Stmt* self)
 	case KINTERVAL:
 	{
 		// interval 'spec'
-		auto spec = stmt_if(self, KSTRING);
-		if (! spec)
-			error("INTERVAL <string> expected");
+		auto spec = stmt_expect(self, KSTRING);
 		value->string = spec->string;
 		break;
 	}
 	case KTIMESTAMP:
 	{
 		// timestamp 'spec'
-		auto spec = stmt_if(self, KSTRING);
-		if (! spec)
-			error("TIMESTAMP <string> expected");
+		auto spec = stmt_expect(self, KSTRING);
 		value->string = spec->string;
 		break;
 	}
 	default:
-		error("error BETWEEN const value expected");
+		stmt_error(self, value, "const value expected");
 		break;
 	}
 	return value;
@@ -640,7 +623,8 @@ parse_unary(Stmt*     self, Expr* expr,
 		expr_operator(self, ops, result, ast, 11);
 		break;
 	default:
-		error("bad expression");
+		stmt_error(self, ast, "bad expression");
+		break;
 	}
 	return false;
 }
@@ -667,7 +651,7 @@ parse_op(Stmt*     self, Expr* expr,
 		if (stmt_if(self, KLIKE))
 			ast->id = KLIKE;
 		else
-			error("NOT <IN or BETWEEN or LIKE> expected");
+			stmt_error(self, ast, "NOT 'IN or BETWEEN or LIKE' expected");
 	}
 
 	// operator
@@ -692,12 +676,10 @@ parse_op(Stmt*     self, Expr* expr,
 			int op = ast->id;
 			ast->id = r->id;
 			r->id = op;
-			if (! stmt_if(self, '('))
-				error("ANY|ALL <(> expected");
+			stmt_expect(self, '(');
 			r->r = parse_expr(self, expr);
 			ast_push(result, r);
-			if (! stmt_if(self, ')'))
-				error("ANY|ALL (expr<)> expected");
+			stmt_expect(self, ')');
 		} else
 		{
 			stmt_push(self, r);
@@ -710,9 +692,7 @@ parse_op(Stmt*     self, Expr* expr,
 		// expr [NOT] BETWEEN x AND y
 		ast->integer = !not;
 		auto x = expr_value_between(self);
-		auto r = stmt_if(self, KAND);
-		if (! r)
-			error("BETWEEN expr <AND> expected");
+		auto r = stmt_expect(self, KAND);
 		auto y = expr_value_between(self);
 		//
 		//    . BETWEEN .
@@ -743,8 +723,7 @@ parse_op(Stmt*     self, Expr* expr,
 	{
 		// expr [NOT] IN (value, ...)
 		ast->integer = !not;
-		if (! stmt_if(self, '('))
-			error("IN <(> expected");
+		stmt_expect(self, '(');
 		auto r = parse_expr_args(self, expr, ')', false);
 		ast_push(result, r);
 		break;
@@ -752,8 +731,7 @@ parse_op(Stmt*     self, Expr* expr,
 	case KAT:
 	{
 		// expr AT TIMEZONE expr
-		if (! stmt_if(self, KTIMEZONE))
-			error("AT <TIMEZONE> expected");
+		stmt_expect(self, KTIMEZONE);
 		auto r = parse_expr(self, expr);
 		ast_push(result, r);
 		break;
@@ -776,7 +754,7 @@ parse_op(Stmt*     self, Expr* expr,
 			auto with_args = stmt_if(self, '(') != NULL;
 			r = expr_call(self, expr, r, with_args);
 		} else {
-			error("bad '::' expression");
+			stmt_error(self, r, "function name expected");
 		}
 		ast_push(result, r);
 		break;
@@ -786,8 +764,7 @@ parse_op(Stmt*     self, Expr* expr,
 		// expr[idx]
 		auto r = parse_expr(self, expr);
 		ast_push(result, r);
-		if (! stmt_if(self,']'))
-			error("[]: ']' expected");
+		stmt_expect(self, ']');
 		break;
 	}
 	case '.':
@@ -802,7 +779,7 @@ parse_op(Stmt*     self, Expr* expr,
 		if (r->id == KNAME || r->id == KNAME_COMPOUND)
 			r->id = KSTRING;
 		else
-			error("bad '.' expression");
+			stmt_error(self, r, "name expected");
 		ast_push(result, r);
 		break;
 	}
@@ -857,7 +834,7 @@ parse_expr(Stmt* self, Expr* expr)
 
 	// only one result
 	if (! result.list)
-		error("bad expression");
+		stmt_error(self, NULL, "bad expression");
 
 	if (likely(result.list->next == NULL))
 		return result.list;

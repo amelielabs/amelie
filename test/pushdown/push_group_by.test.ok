@@ -2368,7 +2368,7 @@ select abs(-id + data) from test group by 1
 [0, 1, 2]
 # test: select from table group by 1 (agg)
 select count(id) from test group by 1
-{"msg": "GROUP BY: aggregate functions are not allowed"}
+{"msg": "select count(id) from test group by ❰1❱ ⟵ aggregate functions cannot be used in GROUP BY expressions"}
 # test: select from table group by alias
 select id as x, count(*) from test group by x
 [[0, 1], [1, 1], [2, 1], [3, 1], [4, 1]]
@@ -2379,7 +2379,7 @@ select abs(-id + data) as x, count(*) from test group by x
 [[0, 1], [1, 2], [2, 2]]
 # test: select from table group by alias (agg)
 select count(*) as x, abs(-id + data) from test group by x
-{"msg": "GROUP BY: aggregate functions are not allowed"}
+{"msg": "select count(*) as x, abs(-id + data) from test group by ❰x❱ ⟵ aggregate functions cannot be used in GROUP BY expressions"}
 drop table test
 # test: select * from table group by vector/interval
 create table test (id int primary key, vec vector, iv interval)

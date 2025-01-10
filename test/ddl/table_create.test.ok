@@ -2,59 +2,59 @@ open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "12
 connect E0 S0 localhost:3485
 # test: create table statement parsing
 create
-{"msg": "CREATE <USER|REPLICA|NODE|SCHEMA|TABLE|INDEX> expected"}
+{"msg": "create ⟵ 'USER|REPLICA|NODE|SCHEMA|TABLE|INDEX' expected"}
 create junk
-{"msg": "CREATE <USER|REPLICA|NODE|SCHEMA|TABLE|INDEX> expected"}
+{"msg": "create ❰junk❱ ⟵ 'USER|REPLICA|NODE|SCHEMA|TABLE|INDEX' expected"}
 create unique
-{"msg": "CREATE UNIQUE <INDEX> expected"}
+{"msg": "create unique ⟵ INDEX expected"}
 create unique table
-{"msg": "CREATE UNIQUE <INDEX> expected"}
+{"msg": "create unique ❰table❱ ⟵ INDEX expected"}
 create table
-{"msg": "CREATE TABLE <name> expected"}
+{"msg": "create table ⟵ name expected"}
 create table "junk_name"
-{"msg": "CREATE TABLE <name> expected"}
+{"msg": "create table ❰\"junk_name\"❱ ⟵ name expected"}
 create table if
-{"msg": "IF <NOT> EXISTS expected"}
+{"msg": "create table if ⟵ NOT expected"}
 create table if not
-{"msg": "IF NOT <EXISTS> expected"}
+{"msg": "create table if not ⟵ EXISTS expected"}
 create table if not exists
-{"msg": "CREATE TABLE <name> expected"}
+{"msg": "create table if not exists ⟵ name expected"}
 create table 1234
-{"msg": "CREATE TABLE <name> expected"}
+{"msg": "create table ❰1234❱ ⟵ name expected"}
 create table test(
-{"msg": "(<name> expected"}
+{"msg": "create table test( ⟵ name expected"}
 create table test(0
-{"msg": "(<name> expected"}
+{"msg": "create table test(❰0❱ ⟵ name expected"}
 create table test("123"
-{"msg": "(<name> expected"}
+{"msg": "create table test(❰\"123\"❱ ⟵ name expected"}
 create table test(name
-{"msg": "name <> unrecognized column type"}
+{"msg": "create table test(name ⟵ unrecognized data type"}
 create table test(name junk_type
-{"msg": "name <junk_type> unrecognized column type"}
+{"msg": "create table test(name ❰junk_type❱ ⟵ unrecognized data type"}
 create table test(name int
-{"msg": "CREATE TABLE name (name type <,)> expected"}
+{"msg": "create table test(name int ⟵ ) expected"}
 create table test(name int,
-{"msg": "(<name> expected"}
+{"msg": "create table test(name int, ⟵ name expected"}
 create table test(name int,)
-{"msg": "(<name> expected"}
+{"msg": "create table test(name int,❰)❱ ⟵ name expected"}
 create table if not exists 1234
-{"msg": "CREATE TABLE <name> expected"}
+{"msg": "create table if not exists ❰1234❱ ⟵ name expected"}
 create table if not exists test(
-{"msg": "(<name> expected"}
+{"msg": "create table if not exists test( ⟵ name expected"}
 create table if not exists test(0
-{"msg": "(<name> expected"}
+{"msg": "create table if not exists test(❰0❱ ⟵ name expected"}
 create table if not exists test("123"
-{"msg": "(<name> expected"}
+{"msg": "create table if not exists test(❰\"123\"❱ ⟵ name expected"}
 create table if not exists test(name
-{"msg": "name <> unrecognized column type"}
+{"msg": "create table if not exists test(name ⟵ unrecognized data type"}
 create table if not exists test(name junk_type
-{"msg": "name <junk_type> unrecognized column type"}
+{"msg": "create table if not exists test(name ❰junk_type❱ ⟵ unrecognized data type"}
 create table if not exists test(name int
-{"msg": "CREATE TABLE name (name type <,)> expected"}
+{"msg": "create table if not exists test(name int ⟵ ) expected"}
 create table test(name int) junk
-{"msg": "primary key is not defined"}
+{"msg": "create table test(name int❰)❱ ⟵ primary key is not defined"}
 create table test()
-{"msg": "(<name> expected"}
+{"msg": "create table test(❰)❱ ⟵ name expected"}
 # test: column bool/boolean
 create table test(id int primary key, a bool, b boolean)
 select system.table('test').columns
@@ -520,30 +520,30 @@ select system.table('test').columns
 drop table test
 # test: column redefined
 create table test(id int, id int)
-{"msg": "<id> column redefined"}
+{"msg": "create table test(id int, ❰id❱ ⟵ column is redefined"}
 # test: primary key is not defined
 create table test(id int)
-{"msg": "primary key is not defined"}
+{"msg": "create table test(id int❰)❱ ⟵ primary key is not defined"}
 # test: primary key clause parsing
 create table test(primary)
-{"msg": "PRIMARY <KEY> expected"}
+{"msg": "create table test(primary❰)❱ ⟵ KEY expected"}
 create table test(primary key(
-{"msg": "KEY (<name> expected"}
+{"msg": "create table test(primary key( ⟵ name expected"}
 create table test(primary key()
-{"msg": "KEY (<name> expected"}
+{"msg": "create table test(primary key(❰)❱ ⟵ name expected"}
 create table test(primary key())
-{"msg": "KEY (<name> expected"}
+{"msg": "create table test(primary key(❰)❱ ⟵ name expected"}
 create table test(primary key(abc))
-{"msg": "<abc> column does not exists"}
+{"msg": "create table test(primary key(❰abc❱ ⟵ column does not exists"}
 create table test(id int, primary key())
-{"msg": "KEY (<name> expected"}
+{"msg": "create table test(id int, primary key(❰)❱ ⟵ name expected"}
 create table test(id int, primary key(id, ))
-{"msg": "KEY (<name> expected"}
+{"msg": "create table test(id int, primary key(id, ❰)❱ ⟵ name expected"}
 create table test(primary key(id), id int)
-{"msg": "<id> column does not exists"}
+{"msg": "create table test(primary key(❰id❱ ⟵ column does not exists"}
 # test: primary key is not found
 create table test(id int, primary key(idd))
-{"msg": "<idd> column does not exists"}
+{"msg": "create table test(id int, primary key(❰idd❱ ⟵ column does not exists"}
 # test: primary key redefined
 create table test(id int, primary key(id, id))
 create table test(id int primary key, primary key(id))
@@ -567,12 +567,12 @@ select system.table('test').columns
 drop table test
 # test: primary key redefined #2
 create table test(id int primary key primary key)
-{"msg": "PRIMARY KEY defined twice"}
+{"msg": "create table test(id int primary key ❰primary❱ ⟵ PRIMARY KEY defined twice"}
 # test: primary key ensure valid type
 create table test(id json primary key)
-{"msg": "<id> column key can be text, int32, int64 or timestamp"}
+{"msg": "create table test(id json ❰primary❱ ⟵ column key can be text, int32, int64 or timestamp"}
 create table test(id json, primary key(id))
-{"msg": "<id> column key can be text, int32, int64 or timestamp"}
+{"msg": "create table test(id json, primary key(❰id❱ ⟵ column key can be text, int32, int64 or timestamp"}
 create table test (id int primary key)
 create table test (id int primary key)
 {"msg": "table 'test': already exists"}
@@ -723,21 +723,21 @@ select system.table('test').columns
 drop table test
 # test: constraint default expr validate
 create table test (id int primary key, data int default 1 + 1)
-{"msg": "column <data> DEFAULT value must be a const and match the column type <int>"}
+{"msg": "create table test (id int primary key, data int default 1 ❰+❱ ⟵ DEFAULT value must be a const and match the column type"}
 # test: constraint default (type not supported)
 create table test (id int primary key, data vector default 1)
-{"msg": "DEFAULT for column <data> is not supported"}
+{"msg": "create table test (id int primary key, data vector default ❰1❱ ⟵ DEFAULT for this column type is not supported"}
 create table test (id int primary key, data timestamp default 1)
-{"msg": "DEFAULT for column <data> is not supported"}
+{"msg": "create table test (id int primary key, data timestamp default ❰1❱ ⟵ DEFAULT for this column type is not supported"}
 create table test (id int primary key, data interval default 1)
-{"msg": "DEFAULT for column <data> is not supported"}
+{"msg": "create table test (id int primary key, data interval default ❰1❱ ⟵ DEFAULT for this column type is not supported"}
 # test: constraint default (type validate)
 create table test (id int primary key, data int default 'string')
-{"msg": "column <data> DEFAULT value must be a const and match the column type <int>"}
+{"msg": "create table test (id int primary key, data int default ❰'string'❱ ⟵ DEFAULT value must be a const and match the column type"}
 create table test (id int primary key, data int default 3.4)
-{"msg": "column <data> DEFAULT value must be a const and match the column type <int>"}
+{"msg": "create table test (id int primary key, data int default ❰3.4❱ ⟵ DEFAULT value must be a const and match the column type"}
 create table test (id int primary key, data string default 1)
-{"msg": "column <data> DEFAULT value must be a const and match the column type <string>"}
+{"msg": "create table test (id int primary key, data string default ❰1❱ ⟵ DEFAULT value must be a const and match the column type"}
 # test: constraint default (json)
 create table test (id int primary key, data json default {"id": 48, "data": [1,2,3]})
 drop table test
@@ -823,7 +823,7 @@ select system.table('test').columns
 drop table test
 # test: constraint not null
 create shared table test (id int primary key, data int not)
-{"msg": "NOT <NULL> expected"}
+{"msg": "create shared table test (id int primary key, data int not❰)❱ ⟵ NULL expected"}
 create shared table test (id int primary key, data int not null)
 select system.table('test').columns
 [[{
@@ -855,9 +855,9 @@ select system.table('test').columns
 }]]
 insert into test values(1, 1)
 insert into test values(2, null)
-{"msg": "column <data> value cannot be NULL"}
+{"msg": "insert into test values(2, ❰null❱ ⟵ column 'data' value cannot be NULL"}
 insert into test values(null, null)
-{"msg": "column <id> value cannot be NULL"}
+{"msg": "insert into test values(❰null❱ ⟵ column 'id' value cannot be NULL"}
 drop table test
 # test: constraint not null default
 create shared table test (id int primary key, data int not null default 123)
@@ -891,7 +891,7 @@ select system.table('test').columns
 }]]
 insert into test values(1, 1)
 insert into test values(2, null)
-{"msg": "column <data> value cannot be NULL"}
+{"msg": "insert into test values(2, ❰null❱ ⟵ column 'data' value cannot be NULL"}
 insert into test (id) values(3)
 select * from test
 [[1, 1], [3, 123]]
@@ -1016,7 +1016,7 @@ select system.table('test').columns
 drop table test
 # test: constraint serial key type
 create table test (id string serial primary key)
-{"msg": "SERIAL column <id> must be int or int64"}
+{"msg": "create table test (id string ❰serial❱ ⟵ SERIAL column must be int or int64"}
 # test: constraint serial multiple columns
 create table test (id int serial primary key, data int64 serial)
 select system.table('test').columns
@@ -1050,17 +1050,17 @@ select system.table('test').columns
 drop table test
 # test: with parsing
 create table test (id int primary key) with
-{"msg": "WITH <(> expected"}
+{"msg": "create table test (id int primary key) with ⟵ ( expected"}
 create table test (id int primary key) with (
-{"msg": "WITH (<name> expected"}
+{"msg": "create table test (id int primary key) with ( ⟵ name expected"}
 create table test (id int primary key) with (,
-{"msg": "WITH (<name> expected"}
+{"msg": "create table test (id int primary key) with (❰,❱ ⟵ name expected"}
 create table test (id int primary key) with (abc
-{"msg": "WITH: <abc> unrecognized parameter"}
+{"msg": "create table test (id int primary key) with (❰abc❱ ⟵ unrecognized parameter"}
 create table test (id int primary key) with (abc = 10)
-{"msg": "WITH: <abc> unrecognized parameter"}
+{"msg": "create table test (id int primary key) with (❰abc❱ ⟵ unrecognized parameter"}
 create table test (id int primary key) with (abc = "")
-{"msg": "WITH: <abc> unrecognized parameter"}
+{"msg": "create table test (id int primary key) with (❰abc❱ ⟵ unrecognized parameter"}
 # test: with
 create table test (id int primary key) with (type = "hash")
 disconnect S0

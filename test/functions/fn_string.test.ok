@@ -226,6 +226,6 @@ select 'hello, world' like 'hello%world'
 select public.like('hello, world', 'hello%world')
 [true]
 select like('hello, world', 'hello%world')
-{"msg": "bad expression"}
+{"msg": "select ❰like❱ ⟵ bad expression"}
 disconnect S0
 close E0

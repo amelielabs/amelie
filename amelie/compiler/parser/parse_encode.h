@@ -12,7 +12,7 @@
 //
 
 hot static inline void
-ast_encode(Ast* self, Local* local, Buf* buf)
+ast_encode(Ast* self, Lex* lex, Local* local, Buf* buf)
 {
 	switch (self->id) {
 	// const
@@ -65,11 +65,11 @@ ast_encode(Ast* self, Local* local, Buf* buf)
 	case KARRAY:
 	{
 		if (! ast_args_of(self->l)->constable)
-			error("JSON value contains expressions");
+			lex_error(lex, self, "JSON value contains expressions");
 		encode_array(buf);
 		auto current = self->l->l;
 		for (; current; current = current->next)
-			ast_encode(current, local, buf);
+			ast_encode(current, lex, local, buf);
 		encode_array_end(buf);
 		break;
 	}
@@ -77,16 +77,16 @@ ast_encode(Ast* self, Local* local, Buf* buf)
 	case '{':
 	{
 		if (! ast_args_of(self->l)->constable)
-			error("JSON value contains expressions");
+			lex_error(lex, self, "JSON value contains expressions");
 		encode_obj(buf);
 		auto current = self->l->l;
 		for (; current; current = current->next)
-			ast_encode(current, local, buf);
+			ast_encode(current, lex, local, buf);
 		encode_obj_end(buf);
 		break;
 	}
 	default:
-		error("unexpected JSON value");
+		lex_error(lex, self, "unexpected JSON value");
 		break;
 	}
 }

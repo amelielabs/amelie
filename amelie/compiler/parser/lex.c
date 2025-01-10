@@ -68,22 +68,30 @@ lex_error(Lex* self, Ast* ast, const char* error)
 	str_set(&before, self->start, ast->pos_start);
 	Str tk;
 	str_set(&tk, self->start + ast->pos_start, ast->pos_end - ast->pos_start);
-	error("%.*s<%.*s>: %s", str_size(&before), str_of(&before),
+
+	if (ast->id == KEOF)
+		error("%.*s ⟵ %s", str_size(&before), str_of(&before), error);
+
+	error("%.*s❰%.*s❱ ⟵ %s", str_size(&before), str_of(&before),
 	      str_size(&tk), str_of(&tk), error);
 }
 
 void
 lex_error_expect(Lex* self, Ast* ast, int id)
 {
-	char msg[64];
+	char name[64];
 	if (id < 128)
 	{
-		snprintf(msg, sizeof(msg), "'%c' expected", id);
+		snprintf(name, sizeof(name), "%c expected", id);
 	} else
 	if (id > KKEYWORD)
 	{
-		snprintf(msg, sizeof(msg), "'%s' expected",
-		         keywords[id - KKEYWORD].name);
+		auto keyword = &keywords[id - KKEYWORD - 1];
+		assert(keyword->name_size < (int)sizeof(name));
+		for (auto i = 0; i < keyword->name_size; i++)
+			name[i] = toupper(keyword->name[i]);
+		snprintf(name + keyword->name_size, sizeof(name) - keyword->name_size,
+		         " expected");
 	} else
 	{
 		char* ref = "<unknown>";
@@ -143,9 +151,9 @@ lex_error_expect(Lex* self, Ast* ast, int id)
 			ref = "<eof>";
 			break;
 		}
-		snprintf(msg, sizeof(msg), "'%s' expected", ref);
+		snprintf(name, sizeof(name), "%s expected", ref);
 	}
-	lex_error(self, ast, msg);
+	lex_error(self, ast, name);
 }
 
 hot static inline Keyword*
@@ -423,7 +431,7 @@ symbol:;
 			self->pos++;
 		}
 		if (unlikely(self->pos == self->end))
-			lex_return_error(self, ast, start, "unterminated string");
+			lex_return_error(self, ast, string, "unterminated string");
 
 		str_set(&ast->string, string, self->pos - string);
 		ast->string_escape = escape;

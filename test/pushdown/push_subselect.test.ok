@@ -4,21 +4,21 @@ create table test (id int primary key, data int default 0)
 insert into test (id) values (1), (2), (3)
 # test: select (select from table)
 explain select (select * from test)
-{"msg": "distributed table 'public.test' cannot be used in subquery"}
+{"msg": "explain select (select * from ❰test❱ ⟵ distributed table cannot be used in subquery"}
 select (select * from test)
-{"msg": "distributed table 'public.test' cannot be used in subquery"}
+{"msg": "select (select * from ❰test❱ ⟵ distributed table cannot be used in subquery"}
 # test: select (select from table) from shared
 create shared table test2 (id int primary key)
 insert into test2 (id) values (1), (2), (3)
 explain select (select * from test) from test2
-{"msg": "distributed table 'public.test' cannot be used in subquery"}
+{"msg": "explain select (select * from ❰test❱ ⟵ distributed table cannot be used in subquery"}
 select (select * from test) from test2
-{"msg": "distributed table 'public.test' cannot be used in subquery"}
+{"msg": "select (select * from ❰test❱ ⟵ distributed table cannot be used in subquery"}
 # test: select (select from table) from (select from shared)
 explain select (select * from test) from (select * from test2) t
-{"msg": "distributed table 'public.test' cannot be used in subquery"}
+{"msg": "explain select (select * from ❰test❱ ⟵ distributed table cannot be used in subquery"}
 select (select * from test) from (select * from test2) t
-{"msg": "distributed table 'public.test' cannot be used in subquery"}
+{"msg": "select (select * from ❰test❱ ⟵ distributed table cannot be used in subquery"}
 drop table test2
 # test: select from (select from table)
 explain select * from (select * from test) t
@@ -112,9 +112,9 @@ select * from (select (select id from test2) from test) t
 drop table test2
 # test: select from (select (select from table) from table)
 explain select * from (select (select id from test t) from test) g
-{"msg": "distributed table 'public.test' cannot be used in subquery"}
+{"msg": "explain select * from (select (select id from ❰test❱ ⟵ distributed table cannot be used in subquery"}
 select * from (select (select id from test t) from test) g
-{"msg": "distributed table 'public.test' cannot be used in subquery"}
+{"msg": "select * from (select (select id from ❰test❱ ⟵ distributed table cannot be used in subquery"}
 # test: select (select expr) from (select from table)
 select (select t.*) from (select * from test) t
 {"msg": "subquery must return only one column"}
@@ -176,9 +176,9 @@ select (select t.id from test2) from (select * from test) t
 drop table test2
 # test: select (select from table) from (select from table)
 explain select (select t.id from test z) from (select * from test) t
-{"msg": "distributed table 'public.test' cannot be used in subquery"}
+{"msg": "explain select (select t.id from ❰test❱ ⟵ distributed table cannot be used in subquery"}
 select (select t.id from test z) from (select * from test) t
-{"msg": "distributed table 'public.test' cannot be used in subquery"}
+{"msg": "select (select t.id from ❰test❱ ⟵ distributed table cannot be used in subquery"}
 # test: select from (select from table), (select from table)
 select * from (select * from test) a, (select * from test) b
 [[1, 0, 1, 0], [1, 0, 2, 0], [1, 0, 3, 0], [2, 0, 1, 0], [2, 0, 2, 0], [2, 0, 3, 0], [3, 0, 1, 0], [3, 0, 2, 0], [3, 0, 3, 0]]
@@ -248,20 +248,20 @@ explain select * from (select * from test) a, (select * from test) b
 }]
 # test: insert returning (select from table) (unsupported)
 explain insert into test (id) values (4) returning (select * from test t)
-{"msg": "unexpected subquery"}
+{"msg": "explain insert into test (id) values (4) returning (❰select❱ ⟵ unexpected subquery"}
 insert into test (id) values (4) returning (select * from test t)
-{"msg": "unexpected subquery"}
+{"msg": "insert into test (id) values (4) returning (❰select❱ ⟵ unexpected subquery"}
 # test: insert returning (select from shared) (unsupported)
 create shared table test_ (id int primary key)
 insert into test_ values (1),(2),(3)
 insert into test (id) values (5) returning (select * from test_)
-{"msg": "unexpected subquery"}
+{"msg": "insert into test (id) values (5) returning (❰select❱ ⟵ unexpected subquery"}
 drop table test_
 # test: insert returning (select from expr) (unsupported)
 insert into test (id) values (6) returning *, select [1,2,3]
-{"msg": "unexpected subquery"}
+{"msg": "insert into test (id) values (6) returning *, ❰select❱ ⟵ unexpected subquery"}
 insert into test (id) values (7) returning id, select [1,2,3]
-{"msg": "unexpected subquery"}
+{"msg": "insert into test (id) values (7) returning id, ❰select❱ ⟵ unexpected subquery"}
 drop table test
 disconnect S0
 close E0

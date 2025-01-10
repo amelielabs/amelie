@@ -40,8 +40,7 @@ parse_row_list(Stmt* self, AstInsert* stmt, Ast* list)
 	auto table = targets_outer(&stmt->targets)->from_table;
 
 	// (
-	if (! stmt_if(self, '('))
-		error("expected '('");
+	stmt_expect(self, '(');
 
 	// prepare row
 	auto row = set_reserve(stmt->values);
@@ -57,34 +56,29 @@ parse_row_list(Stmt* self, AstInsert* stmt, Ast* list)
 		auto column_value = &row[column->order];
 
 		// DEFAULT | value
-		auto is_default = stmt_if(self, KDEFAULT);
-		if (!is_default && list && list->column->order == column->order)
+		Ast* value = stmt_if(self, KDEFAULT);
+		if (!value && list && list->column->order == column->order)
 		{
 			// parse column value
-			parse_value(self->lex, self->local, self->json,
-			            column,
-			            column_value);
+			value = parse_value(self, column, column_value);
 
 			// ,
 			list = list->next;
-			if (list) {
-				if (! stmt_if(self, ','))
-					error("row has incorrect number of columns");
-			}
+			if (list)
+				stmt_expect(self, ',');
 
 		} else
 		{
 			// SERIAL, RANDOM or DEFAULT
-			parse_value_default(column, column_value, serial);
+			parse_value_default(self, column, column_value, serial);
 		}
 
-		// ensure NOT NULL constraint and hash key
-		parse_value_validate(column, column_value);
+		// ensure NOT NULL constraint
+		parse_value_validate(self, column, column_value, value);
 	}
 
 	// )
-	if (! stmt_if(self, ')'))
-		error("expected ')'");
+	stmt_expect(self, ')');
 }
 
 hot static inline void
@@ -93,8 +87,7 @@ parse_row(Stmt* self, AstInsert* stmt)
 	auto table = targets_outer(&stmt->targets)->from_table;
 
 	// (
-	if (! stmt_if(self, '('))
-		error("expected '('");
+	stmt_expect(self, '(');
 
 	// prepare row
 	auto row = set_reserve(stmt->values);
@@ -109,34 +102,31 @@ parse_row(Stmt* self, AstInsert* stmt)
 		auto column_value = &row[column->order];
 
 		// DEFAULT | value
-		auto is_default = stmt_if(self, KDEFAULT);
-		if (! is_default)
+		Ast* value = stmt_if(self, KDEFAULT);
+		if (! value)
 		{
 			// parse column value
-			parse_value(self->lex, self->local, self->json,
-			            column,
-			            column_value);
+			value = parse_value(self, column, column_value);
 		} else
 		{
 			// SERIAL, RANDOM or DEFAULT
-			parse_value_default(column, column_value, serial);
+			parse_value_default(self, column, column_value, serial);
 		}
 
-		// ensure NOT NULL constraint and hash key
-		parse_value_validate(column, column_value);
+		// ensure NOT NULL constraint
+		parse_value_validate(self, column, column_value, value);
 
 		// ,
 		if (stmt_if(self, ','))
 		{
 			if (list_is_last(&columns->list, &column->link))
-				error("row has incorrect number of columns");
+				stmt_error(self, NULL, "row has incorrect number of columns");
 			continue;
 		}
 	}
 
 	// )
-	if (! stmt_if(self, ')'))
-		error("expected ')'");
+	stmt_expect(self, ')');
 }
 
 hot static inline Ast*
@@ -154,15 +144,12 @@ parse_column_list(Stmt* self, AstInsert* stmt)
 	for (;;)
 	{
 		// name
-		auto name = stmt_if(self, KNAME);
-		if (unlikely(! name))
-			error("INSERT INTO name (<column name> expected");
+		auto name = stmt_expect(self, KNAME);
 
 		// find column and validate order
 		auto column = columns_find(columns, &name->string);
 		if (! column)
-			error("<%.*s> column does not exists", str_size(&name->string),
-			      str_of(&name->string));
+			stmt_error(self, name, "column does not exists");
 
 		if (list == NULL) {
 			list = name;
@@ -170,7 +157,7 @@ parse_column_list(Stmt* self, AstInsert* stmt)
 		{
 			// validate column order
 			if (column->order <= list_last->column->order)
-				error("column list must be in order");
+				stmt_error(self, name, "column list must be in order");
 
 			list_last->next = name;
 		}
@@ -184,9 +171,7 @@ parse_column_list(Stmt* self, AstInsert* stmt)
 			continue;
 
 		// )
-		if (! stmt_if(self, ')'))
-			error("expected ')'");
-
+		stmt_expect(self, ')');
 		break;
 	}
 
@@ -200,9 +185,7 @@ parse_generate(Stmt* self, AstInsert* stmt)
 	auto table = targets_outer(&stmt->targets)->from_table;
 
 	// GENERATE count
-	auto count = stmt_if(self, KINT);
-	if (! count)
-		error("GENERATE <count> expected");
+	auto count = stmt_expect(self, KINT);
 
 	auto columns = table_columns(table);
 	for (auto i = 0; i < count->integer; i++)
@@ -220,10 +203,10 @@ parse_generate(Stmt* self, AstInsert* stmt)
 			auto column_value = &row[column->order];
 
 			// SERIAL, RANDOM or DEFAULT
-			parse_value_default(column, column_value, serial);
+			parse_value_default(self, column, column_value, serial);
 
-			// ensure NOT NULL constraint and hash key
-			parse_value_validate(column, column_value);
+			// ensure NOT NULL constraint
+			parse_value_validate(self, column, column_value, NULL);
 		}
 	}
 }
@@ -258,12 +241,10 @@ parse_on_conflict(Stmt* self, AstInsert* stmt)
 	}
 
 	// CONFLICT
-	if (! stmt_if(self, KCONFLICT))
-		error("INSERT VALUES ON <CONFLICT> expected");
+	stmt_expect(self, KCONFLICT);
 
 	// DO
-	if (! stmt_if(self, KDO))
-		error("INSERT VALUES ON CONFLICT <DO> expected");
+	stmt_expect(self, KDO);
 
 	// NOTHING | ERROR | UPDATE | RESOLVE
 	auto op = stmt_next(self);
@@ -302,7 +283,7 @@ parse_on_conflict(Stmt* self, AstInsert* stmt)
 		stmt->on_conflict = ON_CONFLICT_ERROR;
 		break;
 	default:
-		error("INSERT VALUES ON CONFLICT DO <NOTHING | ERROR | UPDATE | RESOLVE> expected");
+		stmt_error(self, op, "'NOTHING | ERROR | UPDATE | RESOLVE' expected");
 		break;
 	}
 }
@@ -370,16 +351,15 @@ parse_insert(Stmt* self)
 	self->ast = &stmt->ast;
 
 	// INTO
-	if (! stmt_if(self, KINTO))
-		error("INSERT <INTO> expected");
+	auto into = stmt_expect(self, KINTO);
 
 	// table
 	parse_from(self, &stmt->targets, false);
 	if (targets_empty(&stmt->targets) || targets_is_join(&stmt->targets))
-		error("INSERT INTO <table> expected");
+		stmt_error(self, into, "table name expected");
 	auto target = targets_outer(&stmt->targets);
 	if (! target_is_table(target))
-		error("INSERT INTO <table> expected");
+		stmt_error(self, into, "table name expected");
 	auto columns = target->from_columns;
 
 	// prepare values
@@ -398,7 +378,8 @@ parse_insert(Stmt* self)
 		if (list_in_use)
 			list = parse_column_list(self, stmt);
 
-		if (stmt_if(self, KVALUES))
+		auto values = stmt_next(self);
+		if (values->id == KVALUES)
 		{
 			// VALUES (value[, ...])[, ...]
 			for (;;)
@@ -411,10 +392,10 @@ parse_insert(Stmt* self)
 					break;
 			}
 		} else
-		if (stmt_if(self, KSELECT))
+		if (values->id == KSELECT)
 		{
 			if (list_in_use)
-				error("INSERT SELECT using column list is not supported");
+				stmt_error(self, values, "SELECT using column list is not supported");
 
 			// rewrite INSERT INTO SELECT as CTE statement, columns will be
 			// validated during the emit
@@ -433,7 +414,7 @@ parse_insert(Stmt* self)
 			parse_select_resolve(cte);
 			stmt->select = cte;
 		} else {
-			error("INSERT INTO <VALUES | SELECT> expected");
+			stmt_error(self, values, "'VALUES | SELECT' expected");
 		}
 	}
 
@@ -448,7 +429,7 @@ parse_insert(Stmt* self)
 	if (stmt_if(self, KRETURNING))
 	{
 		parse_returning(&stmt->ret, self, NULL);
-		parse_returning_resolve(&stmt->ret, &stmt->targets);
+		parse_returning_resolve(&stmt->ret, self, &stmt->targets);
 
 		// convert insert to upsert ON CONFLICT ERROR to support returning
 		if (stmt->on_conflict == ON_CONFLICT_NONE)

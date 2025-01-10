@@ -2,19 +2,19 @@ open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "12
 connect E0 S0 localhost:3485
 # test: set statement parsing
 set
-{"msg": "SET <name> expected"}
+{"msg": "set ⟵ name expected"}
 set name
-{"msg": "SET name <TO> expected"}
+{"msg": "set name ⟵ TO expected"}
 set "log_enable"
-{"msg": "SET <name> expected"}
+{"msg": "set ❰\"log_enable\"❱ ⟵ name expected"}
 set log_enable
-{"msg": "SET name <TO> expected"}
+{"msg": "set log_enable ⟵ TO expected"}
 set log_enable to
-{"msg": "SET name TO <value> expected string, int, or bool"}
+{"msg": "set log_enable to ⟵ value expected string, int, or bool"}
 set log_enable to 0
 {"msg": "SET 'log_enable': variable is read-only"}
 set query_dump to 0 junk
-{"msg": "unexpected token at the end of statement"}
+{"msg": "set query_dump to 0 ❰junk❱ ⟵ ; expected"}
 # test: set read-only
 set log_enable to 0
 {"msg": "SET 'log_enable': variable is read-only"}

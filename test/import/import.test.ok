@@ -105,21 +105,21 @@ disconnect Sx
 connect E0 S0 http://localhost:3485/public/test
 import application/jsonl [9,0,0] [10, null, 123] [11, null, null]
 import application/jsonl [12,
-{"msg": "column <a> value expected to be 'int'"}
+{"msg": "[12,\n ⟵ 'int' expected for column 'a'"}
 import application/jsonl [12,0,
-{"msg": "column <b> value expected to be 'int'"}
+{"msg": "[12,0,\n ⟵ 'int' expected for column 'b'"}
 import application/jsonl [12,0]
-{"msg": "incorrect number of columns in the row"}
+{"msg": "[12,0❰]❱ ⟵ , expected"}
 import application/jsonl [12,]
-{"msg": "column <a> value expected to be 'int'"}
+{"msg": "[12,❰]❱ ⟵ 'int' expected for column 'a'"}
 import application/jsonl [12,null]
-{"msg": "incorrect number of columns in the row"}
+{"msg": "[12,null❰]❱ ⟵ , expected"}
 import application/jsonl [12,null,]
-{"msg": "column <b> value expected to be 'int'"}
+{"msg": "[12,null,❰]❱ ⟵ 'int' expected for column 'b'"}
 import application/jsonl [12,null,'string']
-{"msg": "column <b> value expected to be 'int'"}
+{"msg": "[12,null,❰'string'❱ ⟵ 'int' expected for column 'b'"}
 import application/jsonl [[12,null,0]]
-{"msg": "column <id> value expected to be 'int'"}
+{"msg": "[❰[❱ ⟵ 'int' expected for column 'id'"}
 disconnect S0
 connect E0 Sx http://localhost:3485/
 select * from test
@@ -148,20 +148,20 @@ disconnect Sx
 connect E0 S0 http://localhost:3485/public/test
 import application/json [[15,0,0]]
 import application/json [[16,0,0]
-{"msg": "] expected"}
+{"msg": "[[16,0,0]\n ⟵ ] expected"}
 import application/json [[16,0,0],
-{"msg": "json object or array expected"}
+{"msg": "[[16,0,0],\n ⟵ json object or array expected"}
 import application/json [[16,0,0],]
-{"msg": "json object or array expected"}
+{"msg": "[[16,0,0],❰]❱ ⟵ json object or array expected"}
 import application/json [[16,0,0], [16,0,7]]
 {"msg": "index 'primary': unique key constraint violation"}
 import application/json [[16,0,0], [17,0,7]] junk
-{"msg": "eof expected"}
+{"msg": "[[16,0,0], [17,0,7]] ❰junk❱ ⟵ eof expected"}
 import application/json 
 import application/json []
-{"msg": "json object or array expected"}
+{"msg": "[❰]❱ ⟵ json object or array expected"}
 import application/json {}
-{"msg": "[ expected"}
+{"msg": "❰{❱ ⟵ [ expected"}
 disconnect S0
 connect E0 Sx http://localhost:3485/
 select * from test
@@ -170,11 +170,11 @@ disconnect Sx
 # test: POST /schema/table (application/json) (array, column list)
 connect E0 S0 http://localhost:3485/public/test?columns=id
 import application/json [[18,0]
-{"msg": "incorrect number of columns in the row"}
+{"msg": "[[18❰,❱ ⟵ ] expected"}
 import application/json [[18,
-{"msg": "incorrect number of columns in the row"}
+{"msg": "[[18❰,❱ ⟵ ] expected"}
 import application/json [[]
-{"msg": "column <id> value expected to be 'int'"}
+{"msg": "[[❰]❱ ⟵ 'int' expected for column 'id'"}
 import application/json [[18], [19]]
 disconnect S0
 connect E0 Sx http://localhost:3485/
@@ -208,34 +208,34 @@ disconnect Sx
 # test: POST /schema/table (application/jsonl) (obj, column list)
 connect E0 S0 http://localhost:3485/public/test5?columns=id,data
 import application/jsonl {"id": 1} {"id": 2} {"id": 3}
-{"msg": "JSON column list must have zero or one value"}
+{"msg": "❰{❱ ⟵ JSON column list must have zero or one value"}
 disconnect S0
 # test: POST /schema/table (application/jsonl) (obj)
 connect E0 S0 http://localhost:3485/public/test
 import application/jsonl {"id": 20}
 import application/jsonl {"id": 20, "a"
-{"msg": "{\"key\"<:> expected"}
+{"msg": "{\"id\": 20, \"a\"\n ⟵ : expected"}
 import application/jsonl {"id": 20,
-{"msg": "incorrect number of columns in the row"}
+{"msg": "{\"id\": 20,\n ⟵ } expected"}
 import application/jsonl {"id": 20, 1
-{"msg": "incorrect number of columns in the row"}
+{"msg": "{\"id\": 20, ❰1❱ ⟵ } expected"}
 import application/jsonl {"id": 20, "a"
-{"msg": "{\"key\"<:> expected"}
+{"msg": "{\"id\": 20, \"a\"\n ⟵ : expected"}
 import application/jsonl {"id": 20, "a":
-{"msg": "column <a> value expected to be 'int'"}
+{"msg": "{\"id\": 20, \"a\":\n ⟵ 'int' expected for column 'a'"}
 import application/jsonl {"id": 20, "a": 0
-{"msg": "incorrect number of columns in the row"}
+{"msg": "{\"id\": 20, \"a\": 0\n ⟵ } expected"}
 import application/jsonl {"id": 20, "a": 0,
-{"msg": "incorrect number of columns in the row"}
+{"msg": "{\"id\": 20, \"a\": 0,\n ⟵ } expected"}
 import application/jsonl {"id": 20, "a": 0, "b"
-{"msg": "{\"key\"<:> expected"}
+{"msg": "{\"id\": 20, \"a\": 0, \"b\"\n ⟵ : expected"}
 import application/jsonl {"id": 20, "a": 0, "b": 0}
 {"msg": "index 'primary': unique key constraint violation"}
 import application/jsonl {"id": 21, "a": 0, "b": 0}
 import application/jsonl {"id": 22, "b": 0}
 import application/jsonl {"id": 23}
 import application/jsonl {"id": 22, "b": 0, "b": 1}
-{"msg": "column <b> value is redefined"}
+{"msg": "{\"id\": 22, \"b\": 0, ❰\"b\"❱ ⟵ column value is redefined"}
 import application/jsonl {"id": 24} {"id": 25} {"id": 26}
 disconnect S0
 connect E0 Sx http://localhost:3485/

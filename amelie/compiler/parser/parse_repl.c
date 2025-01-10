@@ -56,9 +56,7 @@ parse_repl_subscribe(Stmt* self)
 	// SUBSCRIBE id
 	auto stmt = ast_repl_subscribe_allocate();
 	self->ast = &stmt->ast;
-	stmt->id  = stmt_if(self, KSTRING);
-	if (stmt->id == NULL)
-		error("SUBSCRIBE <id> expected");
+	stmt->id  = stmt_expect(self, KSTRING);
 }
 
 void

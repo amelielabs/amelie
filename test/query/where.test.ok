@@ -2,7 +2,7 @@ open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "12
 connect E0 S0 localhost:3485
 # test: select expr where
 select 1 * where false
-{"msg": "select 1 <*>: bad expression"}
+{"msg": "select 1 ❰*❱ ⟵ bad expression"}
 # test: select from table where column
 create table test (id int primary key serial, data int default 0)
 insert into test () values ()
@@ -365,7 +365,7 @@ insert into test () values ()
 insert into test () values ()
 insert into test () values ()
 explain select * from test alias where *
-{"msg": "bad expression"}
+{"msg": "explain select * from test alias where ❰*❱ ⟵ bad expression"}
 drop table test
 # test: select from table where true/false
 create table test (id int primary key)

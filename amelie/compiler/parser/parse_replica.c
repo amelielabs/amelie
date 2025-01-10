@@ -45,9 +45,7 @@ parse_replica_create(Stmt* self)
 	stmt->if_not_exists = parse_if_not_exists(self);
 
 	// id
-	stmt->id = stmt_if(self, KSTRING);
-	if (! stmt->id)
-		error("CREATE REPLICA <id> expected");
+	stmt->id = stmt_expect(self, KSTRING);
 
 	// options
 	for (;;)
@@ -57,16 +55,13 @@ parse_replica_create(Stmt* self)
 		if (name->id == KEOF)
 			break;
 		if (name->id != KNAME)
-			error("CREATE REPLICA id <option name> expected");
+			stmt_error(self, name, "option name expected");
 
 		// [=]
 		stmt_if(self, '=');
 
 		// string
-		auto value = stmt_if(self, KSTRING);
-		if (! stmt->id)
-			error("CREATE REPLICA id name <string> expected");
-
+		auto value = stmt_expect(self, KSTRING);
 		if (str_is_case(&name->string, "uri", 3))
 			remote_set(&stmt->remote, REMOTE_URI, &value->string);
 		else
@@ -85,13 +80,12 @@ parse_replica_create(Stmt* self)
 		if (str_is_case(&name->string, "token", 5))
 			remote_set(&stmt->remote, REMOTE_TOKEN, &value->string);
 		else
-			error("CREATE REPLICA: unknown option <%.*s>",
-			      str_size(&name->string), str_of(&name->string));
+			stmt_error(self, name, "unrecognized option");
 	}
 
 	// validate options
 	if (str_empty(remote_get(&stmt->remote, REMOTE_URI)))
-		error("CREATE REPLICA <uri> is not defined");
+		stmt_error(self, NULL, "URI is not defined");
 }
 
 void
@@ -105,7 +99,5 @@ parse_replica_drop(Stmt* self)
 	stmt->if_exists = parse_if_exists(self);
 
 	// id
-	stmt->id = stmt_if(self, KSTRING);
-	if (! stmt->id)
-		error("DROP REPLICA <id> expected");
+	stmt->id = stmt_expect(self, KSTRING);
 }

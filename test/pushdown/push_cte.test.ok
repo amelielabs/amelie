@@ -2,38 +2,38 @@ open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "12
 connect E0 S0 localhost:3485
 # test: cte parsing
 with
-{"msg": "WITH <name> expected"}
+{"msg": "with ⟵ name expected"}
 with 1
-{"msg": "WITH <name> expected"}
+{"msg": "with ❰1❱ ⟵ name expected"}
 with test
-{"msg": "WITH name <AS> expected"}
+{"msg": "with test ⟵ AS expected"}
 with test 1
-{"msg": "WITH name <AS> expected"}
+{"msg": "with test ❰1❱ ⟵ AS expected"}
 with test as
-{"msg": "WITH name AS <(> expected"}
+{"msg": "with test as ⟵ ( expected"}
 with test as 1
-{"msg": "WITH name AS <(> expected"}
+{"msg": "with test as ❰1❱ ⟵ ( expected"}
 with test (
-{"msg": "WITH name (<name> expected"}
+{"msg": "with test ( ⟵ name expected"}
 with test (1
-{"msg": "WITH name (<name> expected"}
+{"msg": "with test (❰1❱ ⟵ name expected"}
 with test (name
-{"msg": "WITH name (<)> expected"}
+{"msg": "with test (name ⟵ ) expected"}
 with test (name,
-{"msg": "WITH name (<name> expected"}
+{"msg": "with test (name, ⟵ name expected"}
 with test (name,,
-{"msg": "WITH name (<name> expected"}
+{"msg": "with test (name,❰,❱ ⟵ name expected"}
 with test (name,)
-{"msg": "WITH name (<name> expected"}
+{"msg": "with test (name,❰)❱ ⟵ name expected"}
 with test (name,
-{"msg": "WITH name (<name> expected"}
+{"msg": "with test (name, ⟵ name expected"}
 with test (name)
-{"msg": "WITH name <AS> expected"}
+{"msg": "with test (name) ⟵ AS expected"}
 with test as (
-{"msg": "CTE statement must be DML or SELECT"}
+{"msg": "with test as ❰(❱ ⟵ CTE statement must be DML or SELECT"}
 # test: with () (no stmt)
 with test as ()
-{"msg": "unexpected statement"}
+{"msg": "with test as () ⟵ unexpected statement"}
 # test: with(select expr) (no main stmt)
 with test as (select 1)
 [1]
@@ -758,7 +758,7 @@ with z (a,b,c) as (select 4,5,6) select a from z group by a
 [4]
 # test: with (columns) as (select expr), select * from cte (redefined)
 explain with z (a,a) as (select 4,5,6) select * from z
-{"msg": "WITH name (<a> argument redefined"}
+{"msg": "explain with z (a,❰a❱ ⟵ argument redefined"}
 # test: a(table), b(a)
 create table test (id int primary key)
 insert into test values (1),(2),(3)
@@ -1319,7 +1319,7 @@ drop table test
 create table test (id int primary key)
 insert into test values (1),(2),(3)
 with a as (select [4,5,6]); with a as (select * from test); select * from a
-{"msg": "CTE <a> redefined"}
+{"msg": "with a as (select [4,5,6]); with ❰a❱ ⟵ CTE is redefined"}
 drop table test
 # test: with(insert returning), select * from cte
 create shared table test (id int primary key, data int)

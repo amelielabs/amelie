@@ -2,25 +2,25 @@ open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "12
 connect E0 S0 localhost:3485
 # test: select statement parsing
 select
-{"msg": "bad expression"}
+{"msg": "select ⟵ bad expression"}
 select,
-{"msg": "bad expression"}
+{"msg": "select❰,❱ ⟵ bad expression"}
 select null null
-{"msg": "unexpected token at the end of statement"}
+{"msg": "select null ❰null❱ ⟵ ; expected"}
 select null 1
-{"msg": "unexpected token at the end of statement"}
+{"msg": "select null ❰1❱ ⟵ ; expected"}
 select from
-{"msg": "bad expression"}
+{"msg": "select ❰from❱ ⟵ bad expression"}
 select 1 from
-{"msg": "FROM target name expected"}
+{"msg": "select 1 from ⟵ target name expected"}
 select 1 from "test"
-{"msg": "FROM target name expected"}
+{"msg": "select 1 from ❰\"test\"❱ ⟵ target name expected"}
 select 1 from name
-{"msg": "<public.name> relation not found"}
+{"msg": "select 1 from ❰name❱ ⟵ relation not found"}
 select 1 from 1 where
-{"msg": "FROM target name expected"}
+{"msg": "select 1 from ❰1❱ ⟵ target name expected"}
 select 1 from 1 where null
-{"msg": "FROM target name expected"}
+{"msg": "select 1 from ❰1❱ ⟵ target name expected"}
 # test: select expr
 select 1
 [1]
@@ -71,9 +71,9 @@ select name.name.name
 {"msg": "<name> target not found"}
 # test: select *
 select *
-{"msg": "'*': no targets defined"}
+{"msg": "select ❰*❱ ⟵ no targets defined"}
 select *, *
-{"msg": "'*': no targets defined"}
+{"msg": "select ❰*❱ ⟵ no targets defined"}
 # test: select * from table
 create table test (id int primary key serial)
 insert into test () values ()
@@ -458,10 +458,10 @@ select alias.id, alias.* from test alias
 drop table test
 # test: select * from function() (missing)
 select * from unknown()
-{"msg": "FROM public.unknown(): function not found"}
+{"msg": "select * from ❰unknown❱ ⟵ function not found"}
 # test: select * from function() (unsupported type)
 select * from now()
-{"msg": "FROM public.now(): function must return result set or JSON"}
+{"msg": "select * from ❰now❱ ⟵ function must return result set or JSON"}
 # test: select * from function() (unsupported json type)
 select * from system.wal()
 {"msg": "FROM: json array expected"}

@@ -2,17 +2,17 @@ open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "12
 connect E0 S0 localhost:3485
 # test: between parsing
 select 1 between
-{"msg": "error BETWEEN const value expected"}
+{"msg": "select 1 between ⟵ const value expected"}
 select 1 between and
-{"msg": "error BETWEEN const value expected"}
+{"msg": "select 1 between ❰and❱ ⟵ const value expected"}
 select 1 between 0
-{"msg": "BETWEEN expr <AND> expected"}
+{"msg": "select 1 between 0 ⟵ AND expected"}
 select 1 between 0 1
-{"msg": "BETWEEN expr <AND> expected"}
+{"msg": "select 1 between 0 ❰1❱ ⟵ AND expected"}
 select 1 between 0 or
-{"msg": "BETWEEN expr <AND> expected"}
+{"msg": "select 1 between 0 ❰or❱ ⟵ AND expected"}
 select 1 between 0 and
-{"msg": "error BETWEEN const value expected"}
+{"msg": "select 1 between 0 and ⟵ const value expected"}
 select 1 between 0 and '1'
 {"msg": "unsupported operation: <int> <= <string>"}
 # test: between (int)

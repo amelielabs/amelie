@@ -2,13 +2,13 @@ open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "12
 connect E0 S0 localhost:3485
 # test: select ->
 select ->
-{"msg": "bad expression"}
+{"msg": "select ❰->❱ ⟵ bad expression"}
 select -> 1
-{"msg": "bad expression"}
+{"msg": "select ❰->❱ ⟵ bad expression"}
 select 1 ->
-{"msg": "bad expression"}
+{"msg": "select 1 -> ⟵ bad expression"}
 select 1 -> 1
-{"msg": "no targets to use with GROUP BY or aggregates"}
+{"msg": "select 1 -> 1 ⟵ no targets to use with GROUP BY or aggregation"}
 # test: select int -> from table
 create shared table test (id int primary key, data int)
 insert into test values (0, 0)
@@ -17,7 +17,7 @@ insert into test values (2, 2)
 insert into test values (3, 1)
 insert into test values (4, 3)
 select 0 -> id
-{"msg": "no targets to use with GROUP BY or aggregates"}
+{"msg": "select 0 -> id ⟵ no targets to use with GROUP BY or aggregation"}
 select 0 -> id from test
 [4]
 # test: select int ->, int -> from table
@@ -79,7 +79,7 @@ explain select 0 -> id, 0 -> data from test
 }]
 # test: select self
 select self
-{"msg": "unexpected <SELF> usage without lambda context"}
+{"msg": "select ❰self❱ ⟵ unexpected SELF usage without lambda context"}
 # test: select int -> self from table
 select 0 -> self from test
 [0]

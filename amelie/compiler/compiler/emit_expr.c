@@ -57,7 +57,7 @@ emit_json(Compiler* self, Targets* targets, Ast* ast)
 	if (args->constable)
 	{
 		int offset = code_data_offset(&self->code_data);
-		ast_encode(ast, self->parser.local, &self->code_data.data);
+		ast_encode(ast, &self->parser.lex, self->parser.local, &self->code_data.data);
 		return op2(self, CJSON, rpin(self, TYPE_JSON), offset);
 	}
 

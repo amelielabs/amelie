@@ -50,7 +50,7 @@ parse_node_create(Stmt* self, bool compute)
 	stmt->id = stmt_if(self, KSTRING);
 
 	if (stmt->if_not_exists && !stmt->id)
-		error("CREATE NODE IF NOT EXISTS <ID> expected");
+		stmt_error(self, NULL, "id expected");
 }
 
 void
@@ -64,7 +64,5 @@ parse_node_drop(Stmt* self)
 	stmt->if_exists = parse_if_exists(self);
 
 	// id
-	stmt->id = stmt_if(self, KSTRING);
-	if (! stmt->id)
-		error("DROP NODE <id> expected");
+	stmt->id = stmt_expect(self, KSTRING);
 }

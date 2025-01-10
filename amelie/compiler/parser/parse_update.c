@@ -204,6 +204,6 @@ parse_update(Stmt* self)
 	if (stmt_if(self, KRETURNING))
 	{
 		parse_returning(&stmt->ret, self, NULL);
-		parse_returning_resolve(&stmt->ret, &stmt->targets);
+		parse_returning_resolve(&stmt->ret, self, &stmt->targets);
 	}
 }

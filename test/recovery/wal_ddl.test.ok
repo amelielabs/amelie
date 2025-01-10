@@ -773,7 +773,7 @@ connect E0 S0 localhost:3485
 show lsn
 [20]
 select * from test2
-{"msg": "<public.test2> relation not found"}
+{"msg": "select * from ❰test2❱ ⟵ relation not found"}
 show tables
 []
 # test: create schema

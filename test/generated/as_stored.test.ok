@@ -2,29 +2,29 @@ open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "12
 connect E0 S0 localhost:3485
 # test: as (expr) stored parsing
 create table test (id int primary key, data int always
-{"msg": "CREATE TABLE name (name type <,)> expected"}
+{"msg": "create table test (id int primary key, data int ❰always❱ ⟵ ) expected"}
 create table test (id int primary key, data int generated
-{"msg": "GENERATED <ALWAYS> expected"}
+{"msg": "create table test (id int primary key, data int generated ⟵ ALWAYS expected"}
 create table test (id int primary key, data int generated 1
-{"msg": "GENERATED <ALWAYS> expected"}
+{"msg": "create table test (id int primary key, data int generated ❰1❱ ⟵ ALWAYS expected"}
 create table test (id int primary key, data int generated always
-{"msg": "GENERATED ALWAYS <AS> expected"}
+{"msg": "create table test (id int primary key, data int generated always ⟵ AS expected"}
 create table test (id int primary key, data int generated always 1
-{"msg": "GENERATED ALWAYS <AS> expected"}
+{"msg": "create table test (id int primary key, data int generated always ❰1❱ ⟵ AS expected"}
 create table test (id int primary key, data int generated always as
-{"msg": "AS <(> expected"}
+{"msg": "create table test (id int primary key, data int generated always as ⟵ ( expected"}
 create table test (id int primary key, data int as
-{"msg": "AS <(> expected"}
+{"msg": "create table test (id int primary key, data int as ⟵ ( expected"}
 create table test (id int primary key, data int as (
-{"msg": "bad expression"}
+{"msg": "create table test (id int primary key, data int as ( ⟵ bad expression"}
 create table test (id int primary key, data int as ()
-{"msg": "bad expression"}
+{"msg": "create table test (id int primary key, data int as (❰)❱ ⟵ bad expression"}
 create table test (id int primary key, data int as (1)
-{"msg": "AS (expr) <STORED or RESOLVED> expected"}
+{"msg": "create table test (id int primary key, data int as (1) ⟵ STORED or RESOLVED expected"}
 create table test (id int primary key, data int as (1) 1
-{"msg": "AS (expr) <STORED or RESOLVED> expected"}
+{"msg": "create table test (id int primary key, data int as (1) ❰1❱ ⟵ STORED or RESOLVED expected"}
 create table test (id int primary key, data int as (1) stored
-{"msg": "CREATE TABLE name (name type <,)> expected"}
+{"msg": "create table test (id int primary key, data int as (1) stored ⟵ ) expected"}
 # test: insert (expr)
 create table test (id int primary key, data int as (1 + 1) stored)
 select system.table('test').columns[1]
@@ -88,7 +88,7 @@ select * from test
 [[0, 43]]
 # test: insert column list default (expr, reuse column)
 insert into test values (1)
-{"msg": "column <data> value expected to be 'int'"}
+{"msg": "insert into test values (1❰)❱ ⟵ 'int' expected for column 'data'"}
 insert into test (id) values (1), (2)
 select * from test
 [[0, 43], [1, 1], [2, 1]]
@@ -190,7 +190,7 @@ select * from test
 drop table test
 # test: insert (subquery)
 create table test (id int primary key as (select 123) stored)
-{"msg": "unexpected subquery"}
+{"msg": "create table test (id int primary key as (❰select❱ ⟵ unexpected subquery"}
 drop table test
 {"msg": "table 'test': not exists"}
 # test: insert select

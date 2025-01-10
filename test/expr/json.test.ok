@@ -99,23 +99,23 @@ select {}
 select {}::type
 ["json"]
 select {"a"}
-{"msg": "select {\"a\"<}>: ':' expected"}
+{"msg": "select {\"a\"❰}❱ ⟵ : expected"}
 select {"a"
-{"msg": "select {\"a\"<>: ':' expected"}
+{"msg": "select {\"a\" ⟵ : expected"}
 select {"a":
-{"msg": "bad expression"}
+{"msg": "select {\"a\": ⟵ bad expression"}
 select {"a":}
-{"msg": "bad expression"}
+{"msg": "select {\"a\":❰}❱ ⟵ bad expression"}
 select {"a":,}
-{"msg": "bad expression"}
+{"msg": "select {\"a\":❰,❱ ⟵ bad expression"}
 select {"a": null}
 [{
   "a": null
 }]
 select {"a": 0, "b"}
-{"msg": "select {\"a\": 0, \"b\"<}>: ':' expected"}
+{"msg": "select {\"a\": 0, \"b\"❰}❱ ⟵ : expected"}
 select {"a": 0, "b":}
-{"msg": "bad expression"}
+{"msg": "select {\"a\": 0, \"b\":❰}❱ ⟵ bad expression"}
 select {"a": 0, "b": 1}
 [{
   "a": 0,
@@ -1059,13 +1059,13 @@ explain select [1,2,3][-1]
   }
 }]
 select [][]
-{"msg": "bad expression"}
+{"msg": "select [][❰]❱ ⟵ bad expression"}
 select [][0]
 [null]
 select [][1]
 [null]
 select 1[]
-{"msg": "bad expression"}
+{"msg": "select 1[❰]❱ ⟵ bad expression"}
 select 1[0]
 {"msg": "unsupported operation: <int> [] <int>"}
 select [1][0]
@@ -1099,7 +1099,7 @@ explain select [[1,2,3], 5, [7]][1]
   }
 }]
 select [[1,2,3], 5, [7]].0
-{"msg": "bad '.' expression"}
+{"msg": "select [[1,2,3], 5, [7]].❰0❱ ⟵ name expected"}
 select [[1,2,3], 5, [7]].'0'
 {"msg": "[]: object expected"}
 # test: json [] null

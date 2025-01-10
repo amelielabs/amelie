@@ -44,10 +44,8 @@ parse_checkpoint(Stmt* self)
 	// [WORKERS]
 	if (stmt_if(self, KWORKERS))
 	{
-		stmt->workers = stmt_if(self, KINT);
-		if (! stmt->workers)
-			error("CHECKPOINT WORKERS <int> expected");
+		stmt->workers = stmt_expect(self, KINT);
 		if (stmt->workers->integer <= 0)
-			error("CHECKPOINT WORKERS number must be positive");
+			stmt_error(self, stmt->workers, "WORKERS number must be positive");
 	}
 }

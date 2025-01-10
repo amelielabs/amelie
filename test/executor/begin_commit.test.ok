@@ -2,23 +2,23 @@ open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "12
 connect E0 S0 localhost:3485
 # test: begin
 begin
-{"msg": "COMMIT expected at the end of transaction"}
+{"msg": "begin ⟵ COMMIT expected at the end of transaction"}
 begin;
-{"msg": "COMMIT expected at the end of transaction"}
+{"msg": "begin; ⟵ COMMIT expected at the end of transaction"}
 begin;;
-{"msg": "COMMIT expected at the end of transaction"}
+{"msg": "begin;; ⟵ COMMIT expected at the end of transaction"}
 # test: commit
 commit
-{"msg": "unexpected COMMIT operation"}
+{"msg": "❰commit❱ ⟵ unexpected COMMIT operation"}
 # test: begin commit
 begin; select 1
-{"msg": "COMMIT expected at the end of transaction"}
+{"msg": "begin; select 1 ⟵ COMMIT expected at the end of transaction"}
 begin commit
 begin select 1 commit
-{"msg": "unexpected token at the end of statement"}
+{"msg": "begin select 1 ❰commit❱ ⟵ ; expected"}
 begin; commit
 explain begin; commit
-{"msg": "EXPLAIN without command"}
+{"msg": "❰explain❱ ⟵ EXPLAIN without command"}
 explain begin; select 1; commit
 [{
   "bytecode": {
@@ -42,10 +42,10 @@ begin; select 1; commit;;
 begin; select 1; commit;;;
 [1]
 begin; select 1; commit commit
-{"msg": "unexpected statement after COMMIT"}
+[1]
 begin; select 1; commit; begin
-{"msg": "unexpected statement after COMMIT"}
+{"msg": "begin; select 1; commit; ❰begin❱ ⟵ unexpected BEGIN operation"}
 begin; select 1; commit; select 1
-{"msg": "unexpected statement after COMMIT"}
+{"msg": "begin; select 1; commit; ❰select❱ ⟵ unexpected statement after COMMIT"}
 disconnect S0
 close E0

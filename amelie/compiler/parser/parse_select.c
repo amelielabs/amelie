@@ -99,9 +99,7 @@ parse_select_distinct(Stmt* self, AstSelect* select)
 		return;
 
 	// (
-	if (! stmt_if(self, '('))
-		error("DISTINCT <(> expected");
-
+	stmt_expect(self, '(');
 	select->distinct_on = true;
 
 	// (expr, ...)
@@ -121,8 +119,7 @@ parse_select_distinct(Stmt* self, AstSelect* select)
 			continue;
 
 		// )
-		if (! stmt_if(self, ')'))
-			error("DISTINCT (<)> expected");
+		stmt_expect(self, ')');
 		break;
 	}
 }
@@ -210,9 +207,7 @@ parse_select(Stmt* self, Targets* outer, bool subquery)
 	// [GROUP BY]
 	if (stmt_if(self, KGROUP))
 	{
-		if (! stmt_if(self, KBY))
-			error("GROUP <BY> expected");
-
+		stmt_expect(self, KBY);
 		parse_select_group_by(self, select);
 
 		// [HAVING]
@@ -223,13 +218,11 @@ parse_select(Stmt* self, Targets* outer, bool subquery)
 	// [ORDER BY]
 	if (stmt_if(self, KORDER))
 	{
-		if (select->distinct)
-			error("ORDER BY and DISTINCT cannot be combined");
-
-		if (! stmt_if(self, KBY))
-			error("ORDER <BY> expected");
-
+		stmt_expect(self, KBY);
 		parse_select_order_by(self, select);
+
+		if (select->distinct)
+			stmt_error(self, NULL, "ORDER BY and DISTINCT cannot be combined");
 	}
 
 	// [LIMIT]
@@ -244,7 +237,7 @@ parse_select(Stmt* self, Targets* outer, bool subquery)
 	if (select->expr_group_by.count > 0 || select->expr_aggs.count > 0)
 	{
 		if (targets_empty(&select->targets))
-			error("no targets to use with GROUP BY or aggregates");
+			stmt_error(self, NULL, "no targets to use with GROUP BY or aggregation");
 
 		// add at least one group by key
 		auto list = &select->expr_group_by;
@@ -318,7 +311,7 @@ parse_select_resolve_group_by(AstSelect* select)
 }
 
 static void
-parse_select_resolve_group_by_alias(AstSelect* select)
+parse_select_resolve_group_by_alias(Stmt* self, AstSelect* select)
 {
 	auto node = select->expr_group_by.list;
 	for (; node; node = node->next)
@@ -347,12 +340,12 @@ parse_select_resolve_group_by_alias(AstSelect* select)
 		// get the select returning column
 		auto as = returning_find(&select->ret, order);
 		if (! as)
-			error("GROUP BY: column %d is not in the SELECT expr list", order);
+			stmt_error(self, group->expr, "column %d is not in the SELECT expr list", order);
 
 		// ensure expression does not involve aggregates
 		for (auto node = select->expr_aggs.list; node; node = node->next)
 			if (ast_agg_of(node->ast)->as == as)
-				error("GROUP BY: aggregate functions are not allowed");
+				stmt_error(self, group->expr, "aggregate functions cannot be used in GROUP BY expressions");
 
 		// use the returning expression as a group by key
 		group->expr = as->l;
@@ -363,7 +356,7 @@ parse_select_resolve_group_by_alias(AstSelect* select)
 }
 
 static void
-parse_select_resolve_order_by(AstSelect* select)
+parse_select_resolve_order_by(Stmt* self, AstSelect* select)
 {
 	auto node = select->expr_order_by.list;
 	while (node)
@@ -378,7 +371,7 @@ parse_select_resolve_order_by(AstSelect* select)
 			auto pos = order->expr->integer;
 			auto expr = returning_find(&select->ret, pos);
 			if (! expr)
-				error("ORDER BY: column %d is not in the SELECT expr list", pos);
+				stmt_error(self, order->expr, "column %d is not in the SELECT expr list", pos);
 			// replace order by <int> to the select expression
 			order->expr = expr->l;
 		} else
@@ -410,7 +403,7 @@ parse_select_resolve(Stmt* self)
 		auto select = ast_select_of(ref->ast);
 
 		// create select expressions and resolve *
-		parse_returning_resolve(&select->ret, &select->targets);
+		parse_returning_resolve(&select->ret, self, &select->targets);
 
 		// use select expr as distinct expression, if not set
 		if (select->distinct && !select->distinct_on)
@@ -426,12 +419,12 @@ parse_select_resolve(Stmt* self)
 		// resolve GROUP BY alias/int cases and create columns
 		if (! targets_empty(&select->targets_group))
 		{
-			parse_select_resolve_group_by_alias(select);
+			parse_select_resolve_group_by_alias(self, select);
 			parse_select_resolve_group_by(select);
 		}
 
 		// resolve ORDER BY alias/int cases
 		if (select->expr_order_by.count > 0)
-			parse_select_resolve_order_by(select);
+			parse_select_resolve_order_by(self, select);
 	}
 }

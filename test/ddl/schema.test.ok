@@ -11,21 +11,21 @@ show schemas
 }]
 # test: create schema statement parsing
 create
-{"msg": "CREATE <USER|REPLICA|NODE|SCHEMA|TABLE|INDEX> expected"}
+{"msg": "create ⟵ 'USER|REPLICA|NODE|SCHEMA|TABLE|INDEX' expected"}
 create schema
-{"msg": "CREATE SCHEMA <name> expected"}
+{"msg": "create schema ⟵ name expected"}
 create schema 123
-{"msg": "CREATE SCHEMA <name> expected"}
+{"msg": "create schema ❰123❱ ⟵ name expected"}
 create schema if
-{"msg": "IF <NOT> EXISTS expected"}
+{"msg": "create schema if ⟵ NOT expected"}
 create schema if not
-{"msg": "IF NOT <EXISTS> expected"}
+{"msg": "create schema if not ⟵ EXISTS expected"}
 create schema if not 123
-{"msg": "IF NOT <EXISTS> expected"}
+{"msg": "create schema if not ❰123❱ ⟵ EXISTS expected"}
 create schema if not exists
-{"msg": "CREATE SCHEMA <name> expected"}
+{"msg": "create schema if not exists ⟵ name expected"}
 create schema test abc
-{"msg": "unexpected token at the end of statement"}
+{"msg": "create schema test ❰abc❱ ⟵ ; expected"}
 # test: create schema
 create schema test
 show schemas
@@ -70,15 +70,15 @@ show schemas
 }]
 # test: drop schema statement parsing
 drop schema
-{"msg": "DROP SCHEMA <name> expected"}
+{"msg": "drop schema ⟵ name expected"}
 drop schema 123
-{"msg": "DROP SCHEMA <name> expected"}
+{"msg": "drop schema ❰123❱ ⟵ name expected"}
 drop schema if
-{"msg": "IF <EXISTS> expected"}
+{"msg": "drop schema if ⟵ EXISTS expected"}
 drop schema if exists
-{"msg": "DROP SCHEMA <name> expected"}
+{"msg": "drop schema if exists ⟵ name expected"}
 drop schema test abc
-{"msg": "unexpected token at the end of statement"}
+{"msg": "drop schema test ❰abc❱ ⟵ ; expected"}
 # test: drop schema
 drop schema test
 show schemas
@@ -121,17 +121,17 @@ drop table test.test
 drop schema test
 # test: alter schema statment parsing
 alter schema
-{"msg": "ALTER SCHEMA <name> expected"}
+{"msg": "alter schema ⟵ name expected"}
 alter schema 123
-{"msg": "ALTER SCHEMA <name> expected"}
+{"msg": "alter schema ❰123❱ ⟵ name expected"}
 alter schema test
-{"msg": "ALTER SCHEMA <RENAME> expected"}
+{"msg": "alter schema test ⟵ RENAME expected"}
 alter schema test rename
-{"msg": "ALTER SCHEMA RENAME <name> expected"}
+{"msg": "alter schema test rename ⟵ name expected"}
 alter schema test rename to
-{"msg": "ALTER SCHEMA RENAME <name> expected"}
+{"msg": "alter schema test rename to ⟵ name expected"}
 alter schema test rename "hello"
-{"msg": "ALTER SCHEMA RENAME <name> expected"}
+{"msg": "alter schema test rename ❰\"hello\"❱ ⟵ name expected"}
 # test: alter schema rename
 create schema test
 select system.schemas()

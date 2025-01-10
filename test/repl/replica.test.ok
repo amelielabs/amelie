@@ -2,17 +2,17 @@ open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "12
 connect E0 S0 localhost:3480
 # test: create replica statement parsing
 create replica
-{"msg": "CREATE REPLICA <id> expected"}
+{"msg": "create replica ⟵ string expected"}
 create replica 123
-{"msg": "CREATE REPLICA <id> expected"}
+{"msg": "create replica ❰123❱ ⟵ string expected"}
 create replica "00000000-0000-0000-0000-000000000000"
-{"msg": "CREATE REPLICA <uri> is not defined"}
+{"msg": "create replica \"00000000-0000-0000-0000-000000000000\" ⟵ URI is not defined"}
 create replica "00000000-0000-0000-0000-000000000000" 1
-{"msg": "CREATE REPLICA id <option name> expected"}
+{"msg": "create replica \"00000000-0000-0000-0000-000000000000\" ❰1❱ ⟵ option name expected"}
 create replica "00000000-0000-0000-0000-000000000000"
-{"msg": "CREATE REPLICA <uri> is not defined"}
+{"msg": "create replica \"00000000-0000-0000-0000-000000000000\" ⟵ URI is not defined"}
 create replica "00000000-0000-0000-0000-000000000000" "localhost"
-{"msg": "CREATE REPLICA id <option name> expected"}
+{"msg": "create replica \"00000000-0000-0000-0000-000000000000\" ❰\"localhost\"❱ ⟵ option name expected"}
 # test: create replica
 create replica "00000000-0000-0000-0000-000000000000" uri "localhost"
 show replicas
@@ -35,9 +35,9 @@ select system.replicas()
 }]]
 # test: drop replica statement parsing
 drop replica
-{"msg": "DROP REPLICA <id> expected"}
+{"msg": "drop replica ⟵ string expected"}
 drop replica 123
-{"msg": "DROP REPLICA <id> expected"}
+{"msg": "drop replica ❰123❱ ⟵ string expected"}
 drop replica "123"
 {"msg": "failed to parse uuid"}
 # test: drop replica

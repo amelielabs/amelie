@@ -2,21 +2,21 @@ open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "12
 connect E0 S0 localhost:3485
 # test: exists parsing
 select exists
-{"msg": "EXISTS <(> expected"}
+{"msg": "select exists ⟵ ( expected"}
 select exists 1
-{"msg": "EXISTS <(> expected"}
+{"msg": "select exists ❰1❱ ⟵ ( expected"}
 select exists (
-{"msg": "EXISTS (<SELECT> expected"}
+{"msg": "select exists ( ⟵ SELECT expected"}
 select exists ()
-{"msg": "EXISTS (<SELECT> expected"}
+{"msg": "select exists (❰)❱ ⟵ SELECT expected"}
 select exists (1)
-{"msg": "EXISTS (<SELECT> expected"}
+{"msg": "select exists (❰1❱ ⟵ SELECT expected"}
 select exists (null)
-{"msg": "EXISTS (<SELECT> expected"}
+{"msg": "select exists (❰null❱ ⟵ SELECT expected"}
 select exists (false)
-{"msg": "EXISTS (<SELECT> expected"}
+{"msg": "select exists (❰false❱ ⟵ SELECT expected"}
 select exists ([])
-{"msg": "EXISTS (<SELECT> expected"}
+{"msg": "select exists (❰[❱ ⟵ SELECT expected"}
 # test: exists (select)
 create shared table test (id int primary key, data int)
 insert into test values (1, 0), (2, 0)

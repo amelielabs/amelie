@@ -42,26 +42,19 @@ parse_with(Stmt* self, IndexConfig* index_config)
 		return;
 
 	// (
-	if (! stmt_if(self, '('))
-		error("WITH <(> expected");
+	stmt_expect(self, '(');
 
 	for (;;)
 	{
 		// key
-		auto key = stmt_if(self, KNAME);
-		if (! key)
-			error("WITH (<name> expected");
-
+		auto key = stmt_expect(self, KNAME);
 		if (str_is(&key->string, "type", 4))
 		{
 			// =
-			if (! stmt_if(self, '='))
-				error("WITH (type <=> expected");
+			stmt_expect(self, '=');
 
 			// string
-			auto value = stmt_if(self, KSTRING);
-			if (! value)
-				error("WITH (type = <string>) expected");
+			auto value = stmt_expect(self, KSTRING);
 
 			// tree | hash
 			if (str_is_cstr(&value->string, "tree"))
@@ -70,11 +63,10 @@ parse_with(Stmt* self, IndexConfig* index_config)
 			if (str_is_cstr(&value->string, "hash"))
 				index_config_set_type(index_config, INDEX_HASH);
 			else
-				error("WITH: unknown primary index type");
+				stmt_error(self, value, "unrecognized index type");
 
 		} else {
-			error("WITH: <%.*s> unrecognized parameter",
-			      str_size(&key->string), str_of(&key->string));
+			stmt_error(self, key, "unrecognized parameter");
 		}
 
 		// ,
@@ -99,25 +91,25 @@ parse_index_create(Stmt* self, bool unique)
 	stmt->if_not_exists = parse_if_not_exists(self);
 
 	// name
-	auto name = stmt_if(self, KNAME);
-	if (! name)
-		error("CREATE INDEX <name> expected");
+	auto name = stmt_expect(self, KNAME);
 
 	// ON
-	if (! stmt_if(self, KON))
-		error("CREATE INDEX name <ON> expected");
+	stmt_expect(self, KON);
 
 	// [schema.table_name]
-	if (! parse_target(self, &stmt->table_schema, &stmt->table_name))
-		error("CREATE INDEX name ON <name> expected");
+	auto target = parse_target(self, &stmt->table_schema, &stmt->table_name);
+	if (! target)
+		stmt_error(self, NULL, "table name expected");
 
 	// find table
 	auto table = table_mgr_find(&self->db->table_mgr, &stmt->table_schema,
-	                            &stmt->table_name, true);
+	                            &stmt->table_name, false);
+	if (! table)
+		stmt_error(self, target, "table not found");
 
 	// ensure table is shared for unique index
 	if (unique && !table->config->shared)
-		error("CREATE UNIQUE INDEX cannot be created on distributed tables");
+		stmt_error(self, target, "secondary UNIQUE INDEX cannot be created on a distributed table");
 
 	// create index config
 	auto config = index_config_allocate(table_columns(table));
@@ -149,18 +141,15 @@ parse_index_drop(Stmt* self)
 	stmt->if_exists = parse_if_exists(self);
 
 	// name
-	auto name = stmt_if(self, KNAME);
-	if (! name)
-		error("DROP INDEX <name> expected");
+	auto name = stmt_expect(self, KNAME);
 	stmt->name = name->string;
 
 	// ON
-	if (! stmt_if(self, KON))
-		error("DROP INDEX name <ON> expected");
+	stmt_expect(self, KON);
 
 	// [schema.table_name]
 	if (! parse_target(self, &stmt->table_schema, &stmt->table_name))
-		error("DROP INDEX name ON <name> expected");
+		stmt_error(self, NULL, "table name expected");
 }
 
 void
@@ -174,30 +163,23 @@ parse_index_alter(Stmt* self)
 	stmt->if_exists = parse_if_exists(self);
 
 	// name
-	auto name = stmt_if(self, KNAME);
-	if (! name)
-		error("ALTER INDEX <name> expected");
+	auto name = stmt_expect(self, KNAME);
 	stmt->name = name->string;
 
 	// ON
-	if (! stmt_if(self, KON))
-		error("ALTER INDEX name <ON> expected");
+	stmt_expect(self, KON);
 
 	// [schema.table_name]
 	if (! parse_target(self, &stmt->table_schema, &stmt->table_name))
-		error("ALTER INDEX name ON <name> expected");
+		stmt_error(self, NULL, "table name expected");
 
 	// RENAME
-	if (! stmt_if(self, KRENAME))
-		error("ALTER INDEX name ON name <RENAME> expected");
+	stmt_expect(self, KRENAME);
 
 	// TO
-	if (! stmt_if(self, KTO))
-		error("ALTER INDEX name ON name RENAME <TO> expected");
+	stmt_expect(self, KTO);
 
 	// name
-	name = stmt_if(self, KNAME);
-	if (! name)
-		error("ALTER INDEX name ON name RENAME TO <name> expected");
+	name = stmt_expect(self, KNAME);
 	stmt->name_new = name->string;
 }

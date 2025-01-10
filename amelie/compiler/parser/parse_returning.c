@@ -68,14 +68,14 @@ parse_returning(Returning* self, Stmt* stmt, Expr* ctx)
 
 		// [AS name]
 		// [name]
-		auto as_has = stmt_if(stmt, KAS) != NULL;
+		auto as_has = stmt_if(stmt, KAS);
 
 		// set column name
 		auto name = stmt_if(stmt, KNAME);
 		if (unlikely(! name))
 		{
 			if (as_has)
-				error("AS <label> expected");
+				stmt_error(stmt, as_has, "label expected");
 			if (expr->id == KNAME)
 			{
 				name = ast(KNAME);
@@ -85,7 +85,7 @@ parse_returning(Returning* self, Stmt* stmt, Expr* ctx)
 		{
 			// ensure * has no alias
 			if (expr->id == '*')
-				error("<*> cannot have an alias");
+				stmt_error(stmt, name, "* cannot have an alias");
 		}
 
 		// add column to the select expression list
@@ -107,9 +107,7 @@ parse_returning(Returning* self, Stmt* stmt, Expr* ctx)
 	// [FORMAT type]
 	if (stmt_if(stmt, KFORMAT))
 	{
-		auto type = stmt_if(stmt, KSTRING);
-		if (! type)
-			error("FORMAT <string> expected");
+		auto type = stmt_expect(stmt, KSTRING);
 		self->format = type->string;
 	}
 }
@@ -159,7 +157,7 @@ returning_add_target(Returning* self, Target* target)
 }
 
 void
-parse_returning_resolve(Returning* self, Targets* targets)
+parse_returning_resolve(Returning* self, Stmt* stmt, Targets* targets)
 {
 	// rewrite returning list by resolving all * and target.*
 	auto as = self->list;
@@ -177,7 +175,7 @@ parse_returning_resolve(Returning* self, Targets* targets)
 			if (unlikely(targets_empty(targets)))
 			{
 				if (! targets->outer)
-					error("'*': no targets defined");
+					stmt_error(stmt, as->l, "no targets defined");
 				targets_ref = targets->outer;
 			}
 
@@ -199,11 +197,10 @@ parse_returning_resolve(Returning* self, Targets* targets)
 			// find nearest target
 			auto match = targets_match_outer(targets, &name);
 			if (! match)
-				error("<%.*s> target not found", str_size(&name), str_of(&name));
+				stmt_error(stmt, as->l, "target not found");
 
 			if (as->l->string.pos[str_size(&name) + 1] != '*')
-				error("<%.*s> incorrect target column path", str_size(&as->l->string),
-				      str_of(&as->l->string));
+				stmt_error(stmt, as->l,"incorrect target column path");
 
 			returning_add_target(self, match);
 			break;

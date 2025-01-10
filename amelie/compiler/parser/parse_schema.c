@@ -50,9 +50,7 @@ parse_schema_create(Stmt* self)
 	schema_config_set_create(stmt->config, true);
 
 	// name
-	auto name = stmt_if(self, KNAME);
-	if (! name)
-		error("CREATE SCHEMA <name> expected");
+	auto name = stmt_expect(self, KNAME);
 	schema_config_set_name(stmt->config, &name->string);
 }
 
@@ -67,9 +65,7 @@ parse_schema_drop(Stmt* self)
 	stmt->if_exists = parse_if_exists(self);
 
 	// name
-	stmt->name = stmt_if(self, KNAME);
-	if (! stmt->name)
-		error("DROP SCHEMA <name> expected");
+	stmt->name = stmt_expect(self, KNAME);
 
 	// [CASCADE]
 	if (stmt_if(self, KCASCADE))
@@ -87,19 +83,14 @@ parse_schema_alter(Stmt* self)
 	stmt->if_exists = parse_if_exists(self);
 
 	// name
-	stmt->name = stmt_if(self, KNAME);
-	if (! stmt->name)
-		error("ALTER SCHEMA <name> expected");
+	stmt->name = stmt_expect(self, KNAME);
 
 	// RENAME
-	if (! stmt_if(self, KRENAME))
-		error("ALTER SCHEMA <RENAME> expected");
+	stmt_expect(self, KRENAME);
 
 	// [TO]
 	stmt_if(self, KTO);
 
 	// name
-	stmt->name_new = stmt_if(self, KNAME);
-	if (! stmt->name_new)
-		error("ALTER SCHEMA RENAME <name> expected");
+	stmt->name_new = stmt_expect(self, KNAME);
 }

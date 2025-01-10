@@ -95,7 +95,7 @@ parse_show(Stmt* self)
 	// section | option name
 	auto name = stmt_next_shadow(self);
 	if (name->id != KNAME)
-		error("SHOW <name> expected");
+		stmt_error(self, name, "name expected");
 	stmt->section = name->string;
 
 	stmt->type = parse_show_type(&name->string);
@@ -104,12 +104,9 @@ parse_show(Stmt* self)
 	case SHOW_REPLICA:
 	case SHOW_NODE:
 	case SHOW_SCHEMA:
-		name = stmt_if(self, KNAME);
-		if (! name)
-			name = stmt_if(self, KSTRING);
-		if (! name)
-			error("SHOW %.*s <name> expected", str_size(&stmt->section),
-			      str_of(&stmt->section));
+		name = stmt_next_shadow(self);
+		if (name->id != KNAME && name->id != KSTRING)
+			stmt_error(self, name, "name expected");
 		stmt->name = name->string;
 		break;
 	case SHOW_TABLES:
@@ -129,16 +126,14 @@ parse_show(Stmt* self)
 				str_split(&stmt->name, &stmt->schema, '.');
 				str_advance(&stmt->name, str_size(&stmt->schema) + 1);
 			} else {
-				error("SHOW TABLE <name> expected");
+				stmt_error(self, name, "table name expected");
 			}
 		}
 
 		// [IN | FROM schema]
 		if (stmt_if(self, KIN) || stmt_if(self, KFROM))
 		{
-			auto schema = stmt_next(self);
-			if (schema->id != KNAME)
-				error("SHOW TABLE name IN <schema name> expected");
+			auto schema = stmt_expect(self, KNAME);
 			stmt->schema = schema->string;
 		}
 		break;
@@ -156,9 +151,7 @@ parse_show(Stmt* self)
 	// [FORMAT type]
 	if (stmt_if(self, KFORMAT))
 	{
-		auto type = stmt_if(self, KSTRING);
-		if (! type)
-			error("FORMAT <string> expected");
+		auto type = stmt_expect(self, KSTRING);
 		stmt->format = type->string;
 	}
 }
@@ -169,17 +162,16 @@ parse_set(Stmt* self)
 	// SET name TO INT|STRING
 	auto name = stmt_next_shadow(self);
 	if (name->id != KNAME)
-		error("SET <name> expected");
+		stmt_error(self, name, "name expected");
 	// TO
-	if (! stmt_if(self, KTO))
-		error("SET name <TO> expected");
+	stmt_expect(self, KTO);
 	// value
 	auto value = stmt_next(self);
 	if (value->id != KINT    &&
 	    value->id != KSTRING &&
 	    value->id != KTRUE   &&
 	    value->id != KFALSE)
-		error("SET name TO <value> expected string, int, or bool");
+		stmt_error(self, value, "value expected string, int, or bool");
 	auto stmt = ast_set_allocate(name, value);
 	self->ast = &stmt->ast;
 }

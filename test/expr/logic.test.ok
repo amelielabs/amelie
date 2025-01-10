@@ -2,9 +2,9 @@ open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "12
 connect E0 S0 localhost:3485
 # test: and
 select and
-{"msg": "bad expression"}
+{"msg": "select ❰and❱ ⟵ bad expression"}
 select 1 and
-{"msg": "select 1 <and>: bad expression"}
+{"msg": "select 1 ❰and❱ ⟵ bad expression"}
 select true and true
 [true]
 explain select true and true
@@ -42,9 +42,9 @@ select false and null
 [null]
 # test: or
 select or
-{"msg": "bad expression"}
+{"msg": "select ❰or❱ ⟵ bad expression"}
 select 1 or
-{"msg": "select 1 <or>: bad expression"}
+{"msg": "select 1 ❰or❱ ⟵ bad expression"}
 select true or true
 [true]
 select false or false
@@ -82,7 +82,7 @@ select not false
 select not (not false)
 [false]
 select not []
-{"msg": "bad expression"}
+{"msg": "select not [❰]❱ ⟵ bad expression"}
 select not 1
 [false]
 select not 0

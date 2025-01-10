@@ -2,13 +2,13 @@ open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "12
 connect E0 S0 localhost:3485
 # test: like parsing
 select like
-{"msg": "bad expression"}
+{"msg": "select ❰like❱ ⟵ bad expression"}
 select like 1
-{"msg": "bad expression"}
+{"msg": "select ❰like❱ ⟵ bad expression"}
 select like like
-{"msg": "bad expression"}
+{"msg": "select ❰like❱ ⟵ bad expression"}
 select 1 like
-{"msg": "bad expression"}
+{"msg": "select 1 like ⟵ bad expression"}
 # test: like
 select 1 like 1
 {"msg": "unsupported operation: <int> LIKE <int>"}
@@ -59,11 +59,11 @@ select '123 %_%_% day' like '%%_%%_%%'
 [true]
 # test: not like
 select not like
-{"msg": "select <not>: bad expression"}
+{"msg": "select ❰not❱ ⟵ bad expression"}
 select not
-{"msg": "select <not>: bad expression"}
+{"msg": "select ❰not❱ ⟵ bad expression"}
 select not like 20
-{"msg": "select <not>: bad expression"}
+{"msg": "select ❰not❱ ⟵ bad expression"}
 select 'abcd' like 'abc%d'
 [true]
 select 'abcd' not like 'abc%d'
