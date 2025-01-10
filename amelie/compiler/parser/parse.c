@@ -484,9 +484,9 @@ parse(Parser* self, Str* str)
 		if (lex_if(lex, '('))
 		{
 			if (! lex_if(lex, KPROFILE))
-				error("EXPLAIN (<PROFILE>) expected");
+				lex_error_expect(lex, lex_next(lex), KPROFILE);
 			if (! lex_if(lex, ')'))
-				error("EXPLAIN (<)> expected");
+				lex_error_expect(lex, lex_next(lex), ')');
 			self->explain |= EXPLAIN_PROFILE;
 		}
 

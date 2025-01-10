@@ -41,16 +41,12 @@ parse_token_create(Stmt* self)
 	self->ast = &stmt->ast;
 
 	// name
-	stmt->user = stmt_if(self, KNAME);
-	if (! stmt->user)
-		error("CREATE TOKEN <name> expected");
+	stmt->user = stmt_expect(self, KNAME);
 
 	// EXPIRE
 	if (stmt_if(self, KEXPIRE))
 	{
 		// value
-		stmt->expire = stmt_if(self, KSTRING);
-		if (! stmt->expire)
-			error("CREATE TOKEN EXPIRE <value> string expected");
+		stmt->expire = stmt_expect(self, KSTRING);
 	}
 }

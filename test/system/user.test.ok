@@ -2,9 +2,9 @@ open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "12
 connect E0 S0 localhost:3485
 # test: create user statement parsing
 create user
-{"msg": "CREATE USER <name> expected"}
+{"msg": "create user ⟵ name expected"}
 create user 123
-{"msg": "CREATE USER <name> expected"}
+{"msg": "create user ❰123❱ ⟵ name expected"}
 create user if
 {"msg": "create user if ⟵ NOT expected"}
 create user if not
@@ -12,7 +12,7 @@ create user if not
 create user if not 123
 {"msg": "create user if not ❰123❱ ⟵ EXISTS expected"}
 create user if not exists
-{"msg": "CREATE USER <name> expected"}
+{"msg": "create user if not exists ⟵ name expected"}
 create user test abc
 {"msg": "create user test ❰abc❱ ⟵ ; expected"}
 # test: create user
@@ -27,11 +27,11 @@ create user test
 create user if not exists test
 # test: create user secret
 create user test2 secret
-{"msg": "CREATE USER SECRET <value> string expected"}
+{"msg": "create user test2 secret ⟵ string expected"}
 create user test2 secret 123
-{"msg": "CREATE USER SECRET <value> string expected"}
+{"msg": "create user test2 secret ❰123❱ ⟵ string expected"}
 create user test2 secret secret
-{"msg": "CREATE USER SECRET <value> string expected"}
+{"msg": "create user test2 secret ❰secret❱ ⟵ string expected"}
 create user test2 secret "test" abc
 {"msg": "create user test2 secret \"test\" ❰abc❱ ⟵ ; expected"}
 create user test2 secret "test"
@@ -43,15 +43,15 @@ show users
 }]
 # test: drop user statment parsing
 drop user
-{"msg": "DROP USER <name> expected"}
+{"msg": "drop user ⟵ name expected"}
 drop user 123
-{"msg": "DROP USER <name> expected"}
+{"msg": "drop user ❰123❱ ⟵ name expected"}
 drop user if
 {"msg": "drop user if ⟵ EXISTS expected"}
 drop user if exists
-{"msg": "DROP USER <name> expected"}
+{"msg": "drop user if exists ⟵ name expected"}
 drop user if exists 123
-{"msg": "DROP USER <name> expected"}
+{"msg": "drop user if exists ❰123❱ ⟵ name expected"}
 drop user test abc
 {"msg": "drop user test ❰abc❱ ⟵ ; expected"}
 # test: drop user
@@ -66,21 +66,21 @@ drop user test
 drop user if exists test
 # test: alter user statment parsing
 alter user
-{"msg": "ALTER USER <name> expected"}
+{"msg": "alter user ⟵ name expected"}
 alter user 123
-{"msg": "ALTER USER <name> expected"}
+{"msg": "alter user ❰123❱ ⟵ name expected"}
 alter user test
-{"msg": "ALTER USER <SECRET> expected"}
+{"msg": "alter user test ⟵ SECRET expected"}
 alter user test2
-{"msg": "ALTER USER <SECRET> expected"}
+{"msg": "alter user test2 ⟵ SECRET expected"}
 alter user test2 passw
-{"msg": "ALTER USER <SECRET> expected"}
+{"msg": "alter user test2 ❰passw❱ ⟵ SECRET expected"}
 alter user test2 secret
-{"msg": "ALTER USER SECRET <value> string expected"}
+{"msg": "alter user test2 secret ⟵ string expected"}
 alter user test2 secret 123
-{"msg": "ALTER USER SECRET <value> string expected"}
+{"msg": "alter user test2 secret ❰123❱ ⟵ string expected"}
 alter user test2 secret name
-{"msg": "ALTER USER SECRET <value> string expected"}
+{"msg": "alter user test2 secret ❰name❱ ⟵ string expected"}
 alter user test2 secret "abc" abc
 {"msg": "alter user test2 secret \"abc\" ❰abc❱ ⟵ ; expected"}
 # test: alter user

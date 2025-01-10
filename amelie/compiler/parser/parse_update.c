@@ -37,8 +37,7 @@ hot Ast*
 parse_update_expr(Stmt* self)
 {
 	// SET
-	if (! stmt_if(self, KSET))
-		error("UPDATE <SET> expected");
+	stmt_expect(self, KSET);
 
 	// column = expr [, ... ]
 	Ast* expr_prev = NULL;
@@ -50,11 +49,10 @@ parse_update_expr(Stmt* self)
 		// column[.path]
 		op->l = stmt_next(self);
 		if (op->l->id != KNAME && op->l->id != KNAME_COMPOUND)
-			error("UPDATE name SET <name> expected");
+			stmt_error(self, op->l, "column name expected");
 
 		// =
-		if (! stmt_if(self, '='))
-			error("UPDATE name SET column <=> expected");
+		stmt_expect(self, '=');
 
 		// expr
 		auto def = stmt_if(self, KDEFAULT);
@@ -70,7 +68,7 @@ parse_update_expr(Stmt* self)
 		if (op->l->id == KNAME_COMPOUND)
 		{
 			if (def)
-				error("UPDATE DEFAULT cannot be used this way");
+				stmt_error(self, def, "DEFAULT cannot be used this way");
 
 			// exclude path from the column name
 			auto name = ast(KNAME);
@@ -176,16 +174,16 @@ parse_update(Stmt* self)
 	// table
 	parse_from(self, &stmt->targets, false);
 	if (targets_empty(&stmt->targets) || targets_is_join(&stmt->targets))
-		error("UPDATE <table name> expected");
+		stmt_error(self, NULL, "table name expected");
 	auto target = targets_outer(&stmt->targets);
 	if (! target_is_table(target))
-		error("UPDATE <table name> expected");
+		stmt_error(self, NULL, "table name expected");
 	stmt->table = target->from_table;
 
 	// ensure primary index is used
 	if (target->from_table_index)
 		if (table_primary(stmt->table) != target->from_table_index)
-			error("UPDATE only primary index supported");
+			stmt_error(self, NULL, "UPDATE supports only primary index");
 
 	// SET column = expr [, ... ]
 	stmt->expr_update = parse_update_expr(self);

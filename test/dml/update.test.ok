@@ -11,17 +11,17 @@ update 1;
 update "name"
 {"msg": "update ❰\"name\"❱ ⟵ target name expected"}
 update test
-{"msg": "UPDATE <SET> expected"}
+{"msg": "update test ⟵ SET expected"}
 update test "path"
-{"msg": "UPDATE <SET> expected"}
+{"msg": "update test ❰\"path\"❱ ⟵ SET expected"}
 update test 1
-{"msg": "UPDATE <SET> expected"}
+{"msg": "update test ❰1❱ ⟵ SET expected"}
 update test path
-{"msg": "UPDATE <SET> expected"}
+{"msg": "update test path ⟵ SET expected"}
 update test set path
-{"msg": "UPDATE name SET column <=> expected"}
+{"msg": "update test set path ⟵ = expected"}
 update test set path /
-{"msg": "UPDATE name SET column <=> expected"}
+{"msg": "update test set path ❰/❱ ⟵ = expected"}
 update test set path =
 {"msg": "update test set path = ⟵ bad expression"}
 update test set path = expr
@@ -341,7 +341,7 @@ select data from test
 }]
 # test: update json path default (unsupported)
 update test set data.nested.list = default
-{"msg": "UPDATE DEFAULT cannot be used this way"}
+{"msg": "update test set data.nested.list = ❰default❱ ⟵ DEFAULT cannot be used this way"}
 drop table test
 # test: update key
 create table test(id int primary key)

@@ -46,18 +46,14 @@ parse_user_create(Stmt* self)
 	stmt->if_not_exists = parse_if_not_exists(self);
 
 	// name
-	auto name = stmt_if(self, KNAME);
-	if (! name)
-		error("CREATE USER <name> expected");
+	auto name = stmt_expect(self, KNAME);
 	user_config_set_name(stmt->config, &name->string);
 
 	// [SECRET]
 	if (stmt_if(self, KSECRET))
 	{
 		// value
-		auto value = stmt_if(self, KSTRING);
-		if (! value)
-			error("CREATE USER SECRET <value> string expected");
+		auto value = stmt_expect(self, KSTRING);
 		user_config_set_secret(stmt->config, &value->string);
 	}
 }
@@ -73,9 +69,7 @@ parse_user_drop(Stmt* self)
 	stmt->if_exists = parse_if_exists(self);
 
 	// name
-	stmt->name = stmt_if(self, KNAME);
-	if (! stmt->name)
-		error("DROP USER <name> expected");
+	stmt->name = stmt_expect(self, KNAME);
 }
 
 void
@@ -88,18 +82,13 @@ parse_user_alter(Stmt* self)
 	stmt->config = user_config_allocate();
 
 	// name
-	auto name = stmt_if(self, KNAME);
-	if (! name)
-		error("ALTER USER <name> expected");
+	auto name = stmt_expect(self, KNAME);
 	user_config_set_name(stmt->config, &name->string);
 
 	// SECRET
-	if (! stmt_if(self, KSECRET))
-		error("ALTER USER <SECRET> expected");
+	stmt_expect(self, KSECRET);
 
 	// value
-	auto value = stmt_if(self, KSTRING);
-	if (! value)
-		error("ALTER USER SECRET <value> string expected");
+	auto value = stmt_expect(self, KSTRING);
 	user_config_set_secret(stmt->config, &value->string);
 }

@@ -17,13 +17,13 @@ insert into test values(1, 0) on conflict do
 insert into test values(1, 0) on conflict do 123
 {"msg": "insert into test values(1, 0) on conflict do ❰123❱ ⟵ 'NOTHING | ERROR | UPDATE | RESOLVE' expected"}
 insert into test values(1, 0) on conflict do update
-{"msg": "UPDATE <SET> expected"}
+{"msg": "insert into test values(1, 0) on conflict do update ⟵ SET expected"}
 insert into test values(1, 0) on conflict do update set
-{"msg": "UPDATE name SET <name> expected"}
+{"msg": "insert into test values(1, 0) on conflict do update set ⟵ column name expected"}
 insert into test values(1, 0) on conflict do update set 123
-{"msg": "UPDATE name SET <name> expected"}
+{"msg": "insert into test values(1, 0) on conflict do update set ❰123❱ ⟵ column name expected"}
 insert into test values(1, 0) on conflict do update set path
-{"msg": "UPDATE name SET column <=> expected"}
+{"msg": "insert into test values(1, 0) on conflict do update set path ⟵ = expected"}
 insert into test values(1, 0) on conflict do update set path =
 {"msg": "insert into test values(1, 0) on conflict do update set path = ⟵ bad expression"}
 drop table test
