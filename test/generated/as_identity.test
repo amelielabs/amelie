@@ -1,0 +1,32 @@
+#
+
+open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "127.0.0.1", "port": 3485 }]
+connect E0 S0 localhost:3485
+
+# test: as identity parsing
+create table test (id int primary key, data int always
+create table test (id int primary key, data int always generated
+create table test (id int primary key, data int always generated as
+create table test (id int primary key, data int as
+create table test (id int primary key, data int as identity
+
+# test: as identity primary key
+create table test (id int primary key as identity)
+select system.table('test').columns
+insert into test () values ()
+insert into test () values ()
+insert into test () values ()
+select * from test
+drop table test
+
+# test: as identity column
+create table test (id int primary key, data int as identity)
+select system.table('test').columns
+insert into test (id) values (1)
+insert into test (id) values (2)
+insert into test (id) values (3)
+select * from test
+drop table test
+
+disconnect S0
+close E0

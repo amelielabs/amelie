@@ -21,13 +21,13 @@
 #include <amelie_partition.h>
 
 Part*
-part_allocate(PartConfig* config, Serial* serial, bool unlogged)
+part_allocate(PartConfig* config, Sequence* seq, bool unlogged)
 {
 	auto self = (Part*)am_malloc(sizeof(Part));
 	self->route         = NULL;
 	self->config        = part_config_copy(config);
 	self->indexes_count = 0;
-	self->serial        = serial;
+	self->seq           = seq;
 	self->unlogged      = unlogged;
 	list_init(&self->indexes);
 	list_init(&self->link_cp);

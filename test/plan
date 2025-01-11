@@ -70,6 +70,7 @@ test truncate
 # generated
 directory generated
 group generated
+test as_identity
 test as_stored
 test as_resolved
 

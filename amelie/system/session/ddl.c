@@ -164,7 +164,7 @@ ddl_truncate(Session* self, Tr* tr)
 }
 
 static void
-ddl_alter_table_set_serial(Session* self)
+ddl_alter_table_set_identity(Session* self)
 {
 	auto stmt = compiler_stmt(&self->compiler);
 	auto arg  = ast_table_alter_of(stmt->ast);
@@ -175,7 +175,7 @@ ddl_alter_table_set_serial(Session* self)
 	                            !arg->if_exists);
 	if (! table)
 		return;
-	serial_set(&table->serial, arg->serial->integer);
+	sequence_set(&table->seq, arg->identity->integer);
 }
 
 static void
@@ -295,8 +295,8 @@ ddl_alter_table(Session* self, Tr* tr)
 	case TABLE_ALTER_RENAME:
 		ddl_alter_table_rename(self, tr);
 		break;
-	case TABLE_ALTER_SET_SERIAL:
-		ddl_alter_table_set_serial(self);
+	case TABLE_ALTER_SET_IDENTITY:
+		ddl_alter_table_set_identity(self);
 		break;
 	case TABLE_ALTER_SET_UNLOGGED:
 		ddl_alter_table_set_unlogged(self, tr);

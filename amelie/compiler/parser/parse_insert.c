@@ -45,8 +45,8 @@ parse_row_list(Stmt* self, AstInsert* stmt, Ast* list)
 	// prepare row
 	auto row = set_reserve(stmt->values);
 
-	// set next serial value
-	uint64_t serial = serial_next(&table->serial);
+	// set next sequence value for identity columns
+	uint64_t seq = sequence_next(&table->seq);
 
 	// value, ...
 	auto columns = table_columns(table);
@@ -70,7 +70,7 @@ parse_row_list(Stmt* self, AstInsert* stmt, Ast* list)
 		} else
 		{
 			// SERIAL, RANDOM or DEFAULT
-			parse_value_default(self, column, column_value, serial);
+			parse_value_default(self, column, column_value, seq);
 		}
 
 		// ensure NOT NULL constraint
@@ -92,7 +92,7 @@ parse_row(Stmt* self, AstInsert* stmt)
 	// prepare row
 	auto row = set_reserve(stmt->values);
 
-	uint64_t serial = serial_next(&table->serial);
+	uint64_t seq = sequence_next(&table->seq);
 
 	// value, ...
 	auto columns = table_columns(table);
@@ -110,7 +110,7 @@ parse_row(Stmt* self, AstInsert* stmt)
 		} else
 		{
 			// SERIAL, RANDOM or DEFAULT
-			parse_value_default(self, column, column_value, serial);
+			parse_value_default(self, column, column_value, seq);
 		}
 
 		// ensure NOT NULL constraint
@@ -193,8 +193,8 @@ parse_generate(Stmt* self, AstInsert* stmt)
 		// prepare row
 		auto row = set_reserve(stmt->values);
 
-		// set next serial value
-		uint64_t serial = serial_next(&table->serial);
+		// set next sequence value for identity columns
+		uint64_t seq = sequence_next(&table->seq);
 
 		// value, ...
 		list_foreach(&columns->list)
@@ -203,7 +203,7 @@ parse_generate(Stmt* self, AstInsert* stmt)
 			auto column_value = &row[column->order];
 
 			// SERIAL, RANDOM or DEFAULT
-			parse_value_default(self, column, column_value, serial);
+			parse_value_default(self, column, column_value, seq);
 
 			// ensure NOT NULL constraint
 			parse_value_validate(self, column, column_value, NULL);

@@ -120,7 +120,7 @@ drop table test
 create table test (id int primary key serial, data int default 0)
 insert into test generate 10 on conflict do update set data = data + 1
 select * from test
-alter table test set serial to 0
+alter table test set identity to 0
 insert into test generate 10 on conflict do update set data = data + 1
 select * from test
 drop table test

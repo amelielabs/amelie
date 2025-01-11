@@ -42,7 +42,7 @@ struct AstTableTruncate
 enum
 {
 	TABLE_ALTER_RENAME,
-	TABLE_ALTER_SET_SERIAL,
+	TABLE_ALTER_SET_IDENTITY,
 	TABLE_ALTER_SET_UNLOGGED,
 	TABLE_ALTER_COLUMN_ADD,
 	TABLE_ALTER_COLUMN_DROP,
@@ -69,7 +69,7 @@ struct AstTableAlter
 	Buf*    value_buf;
 	Str     value;
 	bool    unlogged;
-	Ast*    serial;
+	Ast*    identity;
 };
 
 static inline AstTableCreate*
@@ -137,7 +137,7 @@ ast_table_alter_allocate(void)
 	self->type       = 0;
 	self->column     = NULL;
 	self->value_buf  = NULL;
-	self->serial     = NULL;
+	self->identity   = NULL;
 	self->unlogged   = false;
 	str_init(&self->schema);
 	str_init(&self->schema_new);

@@ -154,6 +154,19 @@ parse_default(Stmt* self, Column* column, Buf* value)
 }
 
 static void
+parse_as_identity(Stmt* self, Constraints* cons, Column* column, Ast* ast)
+{
+	// ensure the column has type INT64
+	if (column->type != TYPE_INT || column->type_size < 4)
+		stmt_error(self, ast, "identity column must be int or int64");
+
+	constraints_set_as_identity(cons, true);
+
+	if (cons->random)
+		stmt_error(self, ast, "cannot be used with RANDOM");
+}
+
+static void
 parse_constraints(Stmt* self, Keys* keys, Column* column)
 {
 	// constraints
@@ -186,14 +199,7 @@ parse_constraints(Stmt* self, Keys* keys, Column* column)
 		// SERIAL
 		case KSERIAL:
 		{
-			// ensure the column has type INT64
-			if (column->type != TYPE_INT || column->type_size < 4)
-				stmt_error(self, name, "SERIAL column must be int or int64");
-
-			constraints_set_serial(cons, true);
-
-			if (cons->random)
-				stmt_error(self, name, "cannot be used with SERIAL");
+			parse_as_identity(self, cons, column, name);
 			break;
 		}
 
@@ -218,8 +224,8 @@ parse_constraints(Stmt* self, Keys* keys, Column* column)
 				constraints_set_random_modulo(cons, value->integer);
 			}
 
-			if (cons->serial)
-				stmt_error(self, name, "cannot be used with RANDOM");
+			if (cons->as_identity)
+				stmt_error(self, name, "cannot be used with identity column");
 			break;
 		}
 
@@ -268,9 +274,17 @@ parse_constraints(Stmt* self, Keys* keys, Column* column)
 			// fallthrough
 		}
 
+		// AS IDENTITY
 		// AS (expr) STORED | RESOLVED
 		case KAS:
 		{
+			auto identity = stmt_if(self, KIDENTITY);
+			if (identity)
+			{
+				parse_as_identity(self, cons, column, identity);
+				break;
+			}
+
 			// (
 			auto lbr = stmt_expect(self, '(');
 			// expr
@@ -354,7 +368,7 @@ parse_columns(Stmt* self, Columns* columns, Keys* keys)
 		int type = parse_type(self, &type_size);
 		column_set_type(column, type, type_size);
 
-		// [PRIMARY KEY | NOT NULL | DEFAULT | SERIAL | RANDOM | AS]
+		// [PRIMARY KEY | NOT NULL | DEFAULT | RANDOM | AS]
 		parse_constraints(self, keys, column);
 
 		// ,
@@ -479,7 +493,7 @@ parse_table_alter(Stmt* self)
 	// ALTER TABLE [IF EXISTS] [schema.]name ADD COLUMN name type [constraint]
 	// ALTER TABLE [IF EXISTS] [schema.]name DROP COLUMN name
 	// ALTER TABLE [IF EXISTS] [schema.]name RENAME TO [schema.]name
-	// ALTER TABLE [IF EXISTS] [schema.]name SET SERIAL TO value
+	// ALTER TABLE [IF EXISTS] [schema.]name SET IDENTITY TO value
 	// ALTER TABLE [IF EXISTS] [schema.]name RENAME COLUMN name TO name
 	// ALTER TABLE [IF EXISTS] [schema.]name SET COLUMN name DEFAULT const
 	// ALTER TABLE [IF EXISTS] [schema.]name SET COLUMN name AS (expr) <STORED|RESOLVED>
@@ -516,7 +530,7 @@ parse_table_alter(Stmt* self)
 		int type = parse_type(self, &type_size);
 		column_set_type(column, type, type_size);
 
-		// [NOT NULL | DEFAULT | SERIAL | RANDOM | AS]
+		// [NOT NULL | DEFAULT | RANDOM | AS]
 		parse_constraints(self, NULL, column);
 
 		// validate column
@@ -575,15 +589,15 @@ parse_table_alter(Stmt* self)
 	// [SET]
 	if (stmt_if(self, KSET))
 	{
-		// SET SERIAL TO value
-		if (stmt_if(self, KSERIAL))
+		// SET IDENTITY TO value
+		if (stmt_if(self, KIDENTITY))
 		{
 			// TO
 			stmt_expect(self, KTO);
 
 			// int
-			stmt->serial = stmt_expect(self, KINT);
-			stmt->type = TABLE_ALTER_SET_SERIAL;
+			stmt->identity = stmt_expect(self, KINT);
+			stmt->type = TABLE_ALTER_SET_IDENTITY;
 			return;
 		}
 
@@ -667,7 +681,7 @@ parse_table_alter(Stmt* self)
 			}
 		}
 
-		stmt_error(self, NULL, "'SERIAL | LOGGED | UNLOGGED | COLUMN DEFAULT | COLUMN AS' expected");
+		stmt_error(self, NULL, "'IDENTITY | LOGGED | UNLOGGED | COLUMN DEFAULT | COLUMN AS' expected");
 		return;
 	}
 

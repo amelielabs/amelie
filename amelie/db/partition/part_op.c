@@ -76,17 +76,17 @@ static LogIf log_if_secondary =
 };
 
 static inline void
-part_sync_serial(Part* self, Row* row, Columns* columns)
+part_sync_sequence(Part* self, Row* row, Columns* columns)
 {
-	// use first serial column to sync the serial sequence
-	if (! columns->serial)
+	// use first identity column to sync the sequence
+	if (! columns->identity)
 		return;
 	int64_t value;
-	if (columns->serial->type_size == 4)
-		value = *(int32_t*)row_at(row, columns->serial->order);
+	if (columns->identity->type_size == 4)
+		value = *(int32_t*)row_at(row, columns->identity->order);
 	else
-		value = *(int64_t*)row_at(row, columns->serial->order);
-	serial_sync(self->serial, value);
+		value = *(int64_t*)row_at(row, columns->identity->order);
+	sequence_sync(self->seq, value);
 }
 
 hot void
@@ -105,9 +105,9 @@ part_insert(Part* self, Tr* tr, bool recover, Row* row)
 	if (tr->limit)
 		limit_ensure(tr->limit, row);
 
-	// sync last serial column value during recover
+	// sync last identity column value during recover
 	if (recover)
-		part_sync_serial(self, row, keys->columns);
+		part_sync_sequence(self, row, keys->columns);
 
 	// update primary index
 	op->row_prev = index_set(primary, row);
@@ -275,8 +275,8 @@ part_ingest(Part* self, Row* row)
 	auto primary = part_primary(self);
 	auto keys    = index_keys(primary);
 
-	// sync last serial column value during recover
-	part_sync_serial(self, row, keys->columns);
+	// sync last identity column value during recover
+	part_sync_sequence(self, row, keys->columns);
 
 	// update primary index
 	index_ingest(primary, row);

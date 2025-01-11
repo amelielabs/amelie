@@ -52,7 +52,7 @@ void
 part_list_create(PartList* self,
                  bool      shared,
                  bool      unlogged,
-                 Serial*   serial,
+                 Sequence* seq,
                  List*     parts,
                  List*     indexes)
 {
@@ -65,7 +65,7 @@ part_list_create(PartList* self,
 		config_psn_follow(config->id);
 
 		// prepare part
-		auto part = part_allocate(config, serial, unlogged);
+		auto part = part_allocate(config, seq, unlogged);
 		list_append(&self->list, &part->link);
 		self->list_count++;
 	}

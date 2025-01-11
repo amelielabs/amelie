@@ -48,32 +48,32 @@ alter table test.test rename to public.test
 select system.table('test').name
 drop table test
 
-# test: set serial
+# test: set identity
 create table test (id int primary key serial, data int default 0)
 insert into test () values ()
 insert into test () values ()
 insert into test () values ()
 select * from test
 alter table test set
-alter table test set serial
-alter table test set serial 123
-alter table test set serial =
-alter table test set serial to
-alter table test set serial to "123"
-alter table test set serial to 0
+alter table test set identity 
+alter table test set identity 123
+alter table test set identity =
+alter table test set identity to
+alter table test set identity to "123"
+alter table test set identity to 0
 insert into test () values ()
 insert into test () values ()
 insert into test () values ()
 insert into test () values ()
 select * from test
-alter table test set serial to 0
+alter table test set identity to 0
 insert into test () values ()
 select * from test
 drop table test
 
-# test: set serial if exists
-alter table if exists test set serial to 0
-alter table test set serial to 0
+# test: set identity if exists
+alter table if exists test set identity to 0
+alter table test set identity to 0
 
 # test: set unlogged
 create table test (id int primary key)

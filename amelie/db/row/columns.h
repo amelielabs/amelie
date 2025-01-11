@@ -19,7 +19,7 @@ struct Columns
 	int     count;
 	int     count_stored;
 	int     count_resolved;
-	Column* serial;
+	Column* identity;
 };
 
 static inline void
@@ -28,7 +28,7 @@ columns_init(Columns* self)
 	self->count          = 0;
 	self->count_stored   = 0;
 	self->count_resolved = 0;
-	self->serial         = NULL;
+	self->identity       = NULL;
 	list_init(&self->list);
 }
 
@@ -54,9 +54,9 @@ columns_add(Columns* self, Column* column)
 	if (! str_empty(&column->constraints.as_resolved))
 		self->count_resolved++;
 
-	// save order of the first serial column
-	if (column->constraints.serial && !self->serial)
-		self->serial = column;
+	// save order of the first identity column
+	if (column->constraints.as_identity && !self->identity)
+		self->identity = column;
 }
 
 static inline void
@@ -71,8 +71,8 @@ columns_del(Columns* self, Column* column)
 	if (! str_empty(&column->constraints.as_resolved))
 		self->count_resolved--;
 
-	if (self->serial == column)
-		self->serial = NULL;
+	if (self->identity == column)
+		self->identity = NULL;
 
 	// reorder columns
 	int order = 0;
@@ -80,8 +80,8 @@ columns_del(Columns* self, Column* column)
 	{
 		auto column = list_at(Column, link);
 		column->order = order++;
-		if (column->constraints.serial && !self->serial)
-			self->serial = column;
+		if (column->constraints.as_identity && !self->identity)
+			self->identity = column;
 	}
 }
 

@@ -25,7 +25,7 @@ struct PartList
 
 void  part_list_init(PartList*, PartMgr*);
 void  part_list_free(PartList*);
-void  part_list_create(PartList*, bool, bool, Serial*, List*, List*);
+void  part_list_create(PartList*, bool, bool, Sequence*, List*, List*);
 void  part_list_map(PartList*);
 void  part_list_set_unlogged(PartList*, bool);
 void  part_list_truncate(PartList*);

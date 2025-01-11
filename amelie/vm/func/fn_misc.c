@@ -213,7 +213,7 @@ fn_serial(Call* self)
 	auto table = table_mgr_find(&self->vm->db->table_mgr,
 	                            &argv[0].string,
 	                            &argv[1].string, true);
-	value_set_int(self->result, serial_get(&table->serial));
+	value_set_int(self->result, sequence_get(&table->seq));
 }
 
 static void

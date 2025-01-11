@@ -14,8 +14,8 @@
 // data types
 #include "row/type.h"
 
-// serial
-#include "row/serial.h"
+// sequence
+#include "row/sequence.h"
 
 // column
 #include "row/constraints.h"

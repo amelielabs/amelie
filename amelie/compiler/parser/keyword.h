@@ -125,6 +125,7 @@ enum
 	KIF,
 	KINDEX,
 	KINCLUDE,
+	KIDENTITY,
 
 	// j
 	KJOIN,

@@ -110,6 +110,7 @@ Keyword keywords[] =
 	{ KIF,                    "if",                    2  },
 	{ KINDEX,                 "index",                 5  },
 	{ KINCLUDE,               "include",               7  },
+	{ KIDENTITY,              "identity",              8  },
 
 	// j
 	{ KJOIN,                  "join",                  4  },

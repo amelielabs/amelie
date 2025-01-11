@@ -59,12 +59,12 @@ select system.table('test').columns
   "type_size": 4,
   "constraints": {
     "not_null": true,
-    "serial": false,
     "random": false,
     "random_modulo": 9223372036854775807,
+    "default": null,
+    "as_identity": false,
     "as_stored": "",
-    "as_resolved": "",
-    "default": null
+    "as_resolved": ""
   }
 }, {
   "name": "id2",
@@ -72,12 +72,12 @@ select system.table('test').columns
   "type_size": 4,
   "constraints": {
     "not_null": true,
-    "serial": false,
     "random": false,
     "random_modulo": 9223372036854775807,
+    "default": null,
+    "as_identity": false,
     "as_stored": "",
-    "as_resolved": "",
-    "default": null
+    "as_resolved": ""
   }
 }]]
 insert into test values (123)

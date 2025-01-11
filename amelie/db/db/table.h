@@ -17,7 +17,7 @@ struct Table
 {
 	Handle       handle;
 	PartList     part_list;
-	Serial       serial;
+	Sequence     seq;
 	TableConfig* config;
 };
 
@@ -27,7 +27,7 @@ table_free(Table* self)
 	part_list_free(&self->part_list);
 	if (self->config)
 		table_config_free(self->config);
-	serial_free(&self->serial);
+	sequence_free(&self->seq);
 	am_free(self);
 }
 
@@ -36,7 +36,7 @@ table_allocate(TableConfig* config, PartMgr* part_mgr)
 {
 	Table* self = am_malloc(sizeof(Table));
 	self->config = table_config_copy(config);
-	serial_init(&self->serial);
+	sequence_init(&self->seq);
 	part_list_init(&self->part_list, part_mgr);
 	handle_init(&self->handle);
 	handle_set_schema(&self->handle, &self->config->schema);
@@ -51,7 +51,7 @@ table_open(Table* self)
 	part_list_create(&self->part_list,
 	                  self->config->shared,
 	                  self->config->unlogged,
-	                 &self->serial,
+	                 &self->seq,
 	                 &self->config->partitions,
 	                 &self->config->indexes);
 }

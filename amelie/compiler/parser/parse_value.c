@@ -206,14 +206,14 @@ hot void
 parse_value_default(Stmt*    self,
                     Column*  column,
                     Value*   column_value,
-                    uint64_t serial)
+                    uint64_t seq)
 {
 	// SERIAL, RANDOM or DEFAULT
 	unused(self);
 	auto cons = &column->constraints;
-	if (cons->serial)
+	if (cons->as_identity)
 	{
-		value_set_int(column_value, serial);
+		value_set_int(column_value, seq);
 	} else
 	if (cons->random)
 	{
