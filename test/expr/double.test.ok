@@ -122,7 +122,7 @@ explain select 12.3 = null
 }]
 # test: double = unsupported
 select 12.3 = [1,2]
-{"msg": "unsupported operation: <double> = <json>"}
+{"msg": "select 12.3 = ❰[❱ ⟵ operation double = json is not supported"}
 # test: double <> bool
 select 1.0 <> true
 [false]
@@ -221,7 +221,7 @@ explain select 12.3 <> null
 }]
 # test: double <> unsupported
 select 12.3 <> [1,2]
-{"msg": "unsupported operation: <double> = <json>"}
+{"msg": "select 12.3 <> ❰[❱ ⟵ operation double = json is not supported"}
 # test: double >= int
 select 0.11 >= 1
 [false]
@@ -289,7 +289,7 @@ explain select 0.11 >= null
 }]
 # test: double >= unsupported
 select 0.11 >= []
-{"msg": "unsupported operation: <double> >= <json>"}
+{"msg": "select 0.11 >= ❰[❱ ⟵ operation double >= json is not supported"}
 # test: double > int
 select 0.11 > 1
 [false]
@@ -357,7 +357,7 @@ explain select 0.11 > null
 }]
 # test: double > unsupported
 select 0.11 > []
-{"msg": "unsupported operation: <double> > <json>"}
+{"msg": "select 0.11 > ❰[❱ ⟵ operation double > json is not supported"}
 # test: double <= int
 select 0.11 <= 1
 [true]
@@ -425,7 +425,7 @@ explain select 0.11 <= null
 }]
 # test: double <= unsupported
 select 0.11 <= []
-{"msg": "unsupported operation: <double> <= <json>"}
+{"msg": "select 0.11 <= ❰[❱ ⟵ operation double <= json is not supported"}
 # test: double < int
 select 0.11 < 1
 [true]
@@ -493,7 +493,7 @@ explain select 0.11 < null
 }]
 # test: double < unsupported
 select 0.11 < []
-{"msg": "unsupported operation: <double> < <json>"}
+{"msg": "select 0.11 < ❰[❱ ⟵ operation double < json is not supported"}
 # test: double + int
 select 1.5 + 1
 [2.5]
@@ -537,7 +537,7 @@ select 1.5 + null
 [null]
 # test: double + unsupported
 select 1.5 + []
-{"msg": "unsupported operation: <double> + <json>"}
+{"msg": "select 1.5 + ❰[❱ ⟵ operation double + json is not supported"}
 # test: double - int
 select 1.5 - 1
 [0.5]
@@ -581,7 +581,7 @@ select 1.5 - null
 [null]
 # test: double - unsupported
 select 1.5 - []
-{"msg": "unsupported operation: <double> - <json>"}
+{"msg": "select 1.5 - ❰[❱ ⟵ operation double - json is not supported"}
 # test: double * int
 select 1.5 * 2
 [3]
@@ -625,7 +625,7 @@ select 1.5 * null
 [null]
 # test: double * unsupported
 select 1.5 * []
-{"msg": "unsupported operation: <double> * <json>"}
+{"msg": "select 1.5 * ❰[❱ ⟵ operation double * json is not supported"}
 # test: double / int
 select 3.5 / 2
 [1.75]
@@ -673,7 +673,7 @@ select 1.5 / null
 [null]
 # test: double / unsupported
 select 1.5 / []
-{"msg": "unsupported operation: <double> / <json>"}
+{"msg": "select 1.5 / ❰[❱ ⟵ operation double / json is not supported"}
 # test: -double
 select -18.8
 [-18.8]

@@ -468,6 +468,8 @@ expr_value(Stmt* self, Expr* expr, Ast* value)
 			stmt_error(self, value, "unexpected subquery");
 		assert(expr->targets);
 		auto select = parse_select(self, expr->targets, true);
+		select->ast.pos_start = value->pos_start;
+		select->ast.pos_end   = value->pos_end;
 		value = &select->ast;
 		break;
 	}

@@ -331,7 +331,7 @@ drop table test
 create table test (id int primary key)
 insert into test values (1),(2),(3)
 explain with a as (select id as x from test) select id from a
-{"msg": "<a.id> column not found"}
+{"msg": "explain with a as (select id as x from test) select ❰id❱ ⟵ column a.id not found"}
 explain with a as (select id as x from test) select x from a
 [{
   "bytecode": {
@@ -374,7 +374,7 @@ drop table test
 create table test (id int primary key)
 insert into test values (1),(2),(3)
 with a as (select id, id from test) select * from a
-{"msg": "<a.id> column name is ambiguous"}
+{"msg": "with a as (select id, id from test) select ❰*❱ ⟵ column a.id is ambiguous"}
 with a as (select id, id as x from test) select * from a
 [[1, 1], [2, 2], [3, 3]]
 drop table test

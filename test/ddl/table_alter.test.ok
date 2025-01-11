@@ -749,7 +749,7 @@ select system.table('test').columns
 select * from test
 [[1, 1], [2, 2], [3, 3]]
 select a from test
-{"msg": "<test.a> column not found"}
+{"msg": "select ❰a❱ ⟵ column test.a not found"}
 select b from test
 [1, 2, 3]
 select system.table('test').columns
@@ -801,9 +801,9 @@ select * from test
 select id from test
 [1, 2, 3]
 select a from test
-{"msg": "<test.a> column not found"}
+{"msg": "select ❰a❱ ⟵ column test.a not found"}
 select b from test
-{"msg": "<test.b> column not found"}
+{"msg": "select ❰b❱ ⟵ column test.b not found"}
 drop table test
 # test: drop column (key order)
 create table test (a text, b int, id int primary key)
@@ -891,7 +891,7 @@ select * from test
 select id from test
 [1, 2, 3]
 select a from test
-{"msg": "<test.a> column not found"}
+{"msg": "select ❰a❱ ⟵ column test.a not found"}
 select b from test
 [1, 2, 3]
 select system.table('test').columns
@@ -943,9 +943,9 @@ select * from test
 select id from test
 [1, 2, 3]
 select a from test
-{"msg": "<test.a> column not found"}
+{"msg": "select ❰a❱ ⟵ column test.a not found"}
 select b from test
-{"msg": "<test.b> column not found"}
+{"msg": "select ❰b❱ ⟵ column test.b not found"}
 drop table test
 # test: set default
 create table test (id int primary key, data int)

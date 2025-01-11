@@ -212,7 +212,7 @@ explain select  '1 hour'::interval = null
 }]
 # test: interval = unsupported
 select '1 hour'::interval = [1,2,3]
-{"msg": "unsupported operation: <interval> = <json>"}
+{"msg": "select '1 hour'::interval = ❰[❱ ⟵ operation interval = json is not supported"}
 # test: interval <> interval
 select '1 hour'::interval <> '1 hours'::interval
 [false]
@@ -263,7 +263,7 @@ explain select  '1 hour'::interval <> null
 }]
 # test: interval <> unsupported
 select '1 hour'::interval <> [1,2,3]
-{"msg": "unsupported operation: <interval> = <json>"}
+{"msg": "select '1 hour'::interval <> ❰[❱ ⟵ operation interval = json is not supported"}
 # test: interval >= interval
 select '1 hour'::interval >= '1 hour'::interval
 [true]
@@ -535,7 +535,7 @@ select '1 hour'::interval + null
 [null]
 # test: interval + unsupported
 select '1 hour'::interval + []
-{"msg": "unsupported operation: <interval> + <json>"}
+{"msg": "select '1 hour'::interval + ❰[❱ ⟵ operation interval + json is not supported"}
 # test: interval - interval
 select  '1 hour'::interval - '2 hours'::interval
 ["-1 hours"]
@@ -547,6 +547,6 @@ select  '1 year 1 day 10 hour'::interval - '1 year 2 hours'::interval
 ["1 day 8 hours"]
 # test: interval - timestamp
 select '1 hour'::interval - '1970-01-01 00:00:00.000000'::timestamp
-{"msg": "unsupported operation: <interval> - <timestamp>"}
+{"msg": "select '1 hour'::interval - '1970-01-01 00:00:00.000000'❰::❱ ⟵ operation interval - timestamp is not supported"}
 disconnect S0
 close E0

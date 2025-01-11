@@ -92,7 +92,7 @@ select [{}]
 select [ select 123 ]
 [[123]]
 select [ select 1, 2 ]
-{"msg": "subquery must return only one column"}
+{"msg": "select [ ❰select❱ ⟵ subquery must return only one column"}
 # test: object {}
 select {}
 [{}]
@@ -190,7 +190,7 @@ select {"id": select 123 }
   "id": 123
 }]
 select {"id": select 1, 2 }
-{"msg": "subquery must return only one column"}
+{"msg": "select {\"id\": ❰select❱ ⟵ subquery must return only one column"}
 # test: case 1
 explain select {"menu":{"id":"file","value":"File","popup":{"menuitem":[{"value":"New","onclick":"CreateNewDoc()"},{"value":"Open","onclick":"OpenDoc()"},{"value":"Close","onclick":"CloseDoc()"}]}}}
 [{
@@ -886,7 +886,7 @@ explain select [null][0] = null
 }]
 # test: json = unsupported
 select [1,2,3] = [1,2,3]::vector
-{"msg": "unsupported operation: <json> = <vector>"}
+{"msg": "select [1,2,3] = [1,2,3]❰::❱ ⟵ operation json = vector is not supported"}
 # test: json <> json
 select [1,2,3] <> [1,2,3]
 [false]
@@ -956,7 +956,7 @@ explain select [null][0] <> null
 }]
 # test: json <> unsupported
 select [1,2,3] <> [1,2,3]::vector
-{"msg": "unsupported operation: <json> = <vector>"}
+{"msg": "select [1,2,3] <> [1,2,3]❰::❱ ⟵ operation json = vector is not supported"}
 # test: json [] string
 select {"id":48}.id
 [48]
@@ -1024,7 +1024,7 @@ explain select {"a": 0, "b": {"c": 18}}.b.c
 select {"a": 0, "b": {"c": 18}}.b.c::type
 ["json"]
 select {"a": 0, "b": {"c": 18}}.b.c + 1
-{"msg": "unsupported operation: <json> + <int>"}
+{"msg": "select {\"a\": 0, \"b\": {\"c\": 18}}.b.c + ❰1❱ ⟵ operation json + int is not supported"}
 select {"a": 0, "b": {"c": 18}}.b.c::int + 1
 [19]
 select {"a": 0, "b": {"c": 18}}.'b'.c::int + 1
@@ -1067,7 +1067,7 @@ select [][1]
 select 1[]
 {"msg": "select 1[❰]❱ ⟵ bad expression"}
 select 1[0]
-{"msg": "unsupported operation: <int> [] <int>"}
+{"msg": "select 1[❰0❱ ⟵ operation int [] int is not supported"}
 select [1][0]
 [1]
 select [1][1]
@@ -1109,8 +1109,8 @@ select {"id":48}[null]
 [null]
 # test: json [] unsupported
 select {"id":48}[[]]
-{"msg": "unsupported operation: <json> [] <json>"}
+{"msg": "select {\"id\":48}[❰[❱ ⟵ operation json [] json is not supported"}
 select [1,2,3][[]]
-{"msg": "unsupported operation: <json> [] <json>"}
+{"msg": "select [1,2,3][❰[❱ ⟵ operation json [] json is not supported"}
 disconnect S0
 close E0

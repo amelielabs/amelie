@@ -59,7 +59,7 @@ select '1 hour' = null
 [null]
 # test: string = unsupported
 select '1 hour' = [1,2,3]
-{"msg": "unsupported operation: <string> = <json>"}
+{"msg": "select '1 hour' = ❰[❱ ⟵ operation string = json is not supported"}
 # test: string <> string
 select '1 hour' <> '1 hour'
 [false]
@@ -87,7 +87,7 @@ select '1 hour' <> null
 [null]
 # test: string <> unsupported
 select '1 hour' <> [1,2,3]
-{"msg": "unsupported operation: <string> = <json>"}
+{"msg": "select '1 hour' <> ❰[❱ ⟵ operation string = json is not supported"}
 # test: string >= string
 select '1 hour' >= '1 hours'
 [false]
@@ -128,7 +128,7 @@ explain select '1 hour' >= null
 }]
 # test: string >= unsupported
 explain select '1 hour' >= []
-{"msg": "unsupported operation: <string> >= <json>"}
+{"msg": "explain select '1 hour' >= ❰[❱ ⟵ operation string >= json is not supported"}
 # test: string > string
 select '1 hour' > '1 hours'
 [false]
@@ -169,7 +169,7 @@ explain select '1 hour' > null
 }]
 # test: string > unsupported
 explain select '1 hour' > []
-{"msg": "unsupported operation: <string> > <json>"}
+{"msg": "explain select '1 hour' > ❰[❱ ⟵ operation string > json is not supported"}
 # test: string <= string
 select '1 hour' <= '1 hours'
 [true]
@@ -210,7 +210,7 @@ explain select '1 hour' <= null
 }]
 # test: string <= unsupported
 explain select '1 hour' <= []
-{"msg": "unsupported operation: <string> <= <json>"}
+{"msg": "explain select '1 hour' <= ❰[❱ ⟵ operation string <= json is not supported"}
 # test: string < string
 select '1 hour' < '1 hours'
 [true]
@@ -251,7 +251,7 @@ explain select '1 hour' < null
 }]
 # test: string < unsupported
 explain select '1 hour' < []
-{"msg": "unsupported operation: <string> < <json>"}
+{"msg": "explain select '1 hour' < ❰[❱ ⟵ operation string < json is not supported"}
 # test: string || string
 select "hello " || "world"
 ["hello world"]
@@ -276,9 +276,9 @@ select "hello " || null
 [null]
 # test: string || unsupported
 select "hello " || 1
-{"msg": "unsupported operation: <string> || <int>"}
+{"msg": "select \"hello \" || ❰1❱ ⟵ operation string || int is not supported"}
 select "hello " || []
-{"msg": "unsupported operation: <string> || <json>"}
+{"msg": "select \"hello \" || ❰[❱ ⟵ operation string || json is not supported"}
 # test: string LIKE string
 select 'abc' like 'abc'
 [true]
@@ -305,11 +305,11 @@ select 'abc' like null
 [null]
 # test: string LIKE unsupported
 select 'abc' like 1
-{"msg": "unsupported operation: <string> LIKE <int>"}
+{"msg": "select 'abc' like ❰1❱ ⟵ operation string LIKE int is not supported"}
 select 'abc' like "a" || "b" || "c"
 [true]
 select 'abc' like "a" || "b" || "c"  and true
-{"msg": "unsupported operation: <string> LIKE <bool>"}
+{"msg": "select 'abc' like \"a\" || \"b\" || \"c\"  ❰and❱ ⟵ operation string LIKE bool is not supported"}
 select ('abc' like "a" || "b" || "c")  and true
 [true]
 disconnect S0

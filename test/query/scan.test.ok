@@ -195,16 +195,16 @@ drop table test
 # test: key column type mismatch
 create table test (id int primary key, data int default 1)
 explain select * from test where id > "hello"
-{"msg": "unsupported operation: <int> > <string>"}
+{"msg": "explain select * from test where id > ❰\"hello\"❱ ⟵ operation int > string is not supported"}
 select * from test where id > "hello"
-{"msg": "unsupported operation: <int> > <string>"}
+{"msg": "select * from test where id > ❰\"hello\"❱ ⟵ operation int > string is not supported"}
 drop table test
 # test: key column type mismatch #2
 create table test (id string primary key, data int default 1)
 explain select * from test where id > 1
-{"msg": "unsupported operation: <string> > <int>"}
+{"msg": "explain select * from test where id > ❰1❱ ⟵ operation string > int is not supported"}
 select * from test where id > 1
-{"msg": "unsupported operation: <string> > <int>"}
+{"msg": "select * from test where id > ❰1❱ ⟵ operation string > int is not supported"}
 drop table test
 # test: key gt (start condition)
 create table test (id int primary key, data int default 1)

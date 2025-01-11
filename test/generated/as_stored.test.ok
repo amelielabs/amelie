@@ -116,7 +116,7 @@ drop table test
 # test: insert (expr, type mismatch)
 create table test (id int primary key, data int as ("string") stored)
 insert into test values (0, 0)
-{"msg": "<test.data> column generated expression type 'string' does not match column type 'int'"}
+{"msg": "❰insert❱ ⟵ column 'test.data' generated expression type 'string' does not match column type 'int'"}
 select * from test
 []
 drop table test

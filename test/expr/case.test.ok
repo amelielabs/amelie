@@ -77,11 +77,11 @@ explain select case 0 when 1 then 1 when 2 then 2 end
   }
 }]
 select case 0 when 1 then 1 when 2 then 2 else 'else' end
-{"msg": "CASE expr types must match"}
+{"msg": "select case 0 when 1 then 1 when 2 then 2 else ❰'else'❱ ⟵ CASE expression type mismatch"}
 select (case 0 when 1 then 1 when 2 then 2 else 'else' end)::type
-{"msg": "CASE expr types must match"}
+{"msg": "select (case 0 when 1 then 1 when 2 then 2 else ❰'else'❱ ⟵ CASE expression type mismatch"}
 explain select case 0 when 1 then 1 when 2 then 2 else 'else' end
-{"msg": "CASE expr types must match"}
+{"msg": "explain select case 0 when 1 then 1 when 2 then 2 else ❰'else'❱ ⟵ CASE expression type mismatch"}
 select case [1,2,3] when [1,0] then 1 when [1,2,3] then 2 end
 [2]
 select case [1,2,3] when [1,0] then 1 when [1,2,3,4] then 2 end

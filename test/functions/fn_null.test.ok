@@ -20,9 +20,9 @@ select 1::coalesce
 select coalesce('1', null, '2')
 ["1"]
 select coalesce(1, null, 2.5)
-{"msg": "public.coalesce(): arguments types mismatch"}
+{"msg": "select coalesce(1, null, ❰2.5❱ ⟵ argument type must match other arguments"}
 select coalesce('1', null, 2.5)
-{"msg": "public.coalesce(): arguments types mismatch"}
+{"msg": "select coalesce('1', null, ❰2.5❱ ⟵ argument type must match other arguments"}
 # test: nullif()
 select nullif()
 {"msg": "nullif(): expected 2 arguments, but got 0"}
@@ -39,10 +39,10 @@ select nullif(1, 1)
 select 1::nullif(1)
 [null]
 select nullif(1, '1')
-{"msg": "public.nullif(): arguments types mismatch"}
+{"msg": "select nullif(1, ❰'1'❱ ⟵ argument type must match other arguments"}
 select nullif(1, '1')
-{"msg": "public.nullif(): arguments types mismatch"}
+{"msg": "select nullif(1, ❰'1'❱ ⟵ argument type must match other arguments"}
 select nullif(1, 1.5)
-{"msg": "public.nullif(): arguments types mismatch"}
+{"msg": "select nullif(1, ❰1.5❱ ⟵ argument type must match other arguments"}
 disconnect S0
 close E0

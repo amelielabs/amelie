@@ -14,7 +14,7 @@ select 1 between 0 or
 select 1 between 0 and
 {"msg": "select 1 between 0 and ⟵ const value expected"}
 select 1 between 0 and '1'
-{"msg": "unsupported operation: <int> <= <string>"}
+{"msg": "select 1 between 0 and ❰'1'❱ ⟵ operation int <= string is not supported"}
 # test: between (int)
 select 1 between 0 and 0
 [false]

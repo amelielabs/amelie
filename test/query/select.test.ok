@@ -64,11 +64,11 @@ explain select [1, 2, 3]
 }]
 # test: select name
 select name
-{"msg": "<name> column not found"}
+{"msg": "select ❰name❱ ⟵ column not found"}
 select name.name
-{"msg": "<name> target not found"}
+{"msg": "select ❰name.name❱ ⟵ target not found"}
 select name.name.name
-{"msg": "<name> target not found"}
+{"msg": "select ❰name.name.name❱ ⟵ target not found"}
 # test: select *
 select *
 {"msg": "select ❰*❱ ⟵ no targets defined"}

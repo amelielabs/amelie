@@ -879,10 +879,10 @@ drop table test
 # test: insert select (columns count mismatch)
 create shared table test (id int primary key, data int)
 insert into test select 1
-{"msg": "INSERT SELECT columns do not match the table columns"}
+{"msg": "insert into test ❰select❱ ⟵ SELECT columns must match the INSERT table"}
 # test: insert select (columns types mismatch)
 insert into test select 1, '2'
-{"msg": "INSERT SELECT columns do not match the table columns"}
+{"msg": "insert into test ❰select❱ ⟵ SELECT columns must match the INSERT table"}
 # test: insert select (columns list unsupported)
 insert into test (id) select 1
 {"msg": "insert into test (id) ❰select❱ ⟵ SELECT using column list is not supported"}

@@ -10093,7 +10093,7 @@ select count(data) from test
 switch S0
 alter table test drop column data
 select count(data) from test
-{"msg": "<test.data> column not found"}
+{"msg": "select count(❰data❱ ⟵ column test.data not found"}
 select count(id) from test
 [9999]
 # test: wait replica sync
@@ -10113,7 +10113,7 @@ show repl
 }]
 switch S1
 select count(data) from test
-{"msg": "<test.data> column not found"}
+{"msg": "select count(❰data❱ ⟵ column test.data not found"}
 select count(id) from test
 [9999]
 # test: ddl (rename column)

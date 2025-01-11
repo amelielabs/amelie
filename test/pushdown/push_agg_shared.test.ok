@@ -506,9 +506,9 @@ select sum(data2) from test_empty
 [null]
 # test: select sum(any) from table
 explain select sum('string') from test
-{"msg": "sum(): int or double expected"}
+{"msg": "explain select sum(❰'string'❱ ⟵ int or double expected"}
 select sum('string') from test
-{"msg": "sum(): int or double expected"}
+{"msg": "select sum(❰'string'❱ ⟵ int or double expected"}
 # test: select sum(null) from table
 explain select sum(data) from test_null
 [{
@@ -616,9 +616,9 @@ select avg(data2) from test
 [1.16667]
 # test: select avg(any) from table
 explain select avg('string') from test
-{"msg": "avg(): int or double expected"}
+{"msg": "explain select avg(❰'string'❱ ⟵ int or double expected"}
 select avg('string') from test
-{"msg": "avg(): int or double expected"}
+{"msg": "select avg(❰'string'❱ ⟵ int or double expected"}
 # test: select avg(null) from table
 explain select avg(data2) from test_null
 [{
@@ -1013,9 +1013,9 @@ select * from (select data, count(*) from test_null group by data) t
 [[null, 1]]
 # test: select * from table order by count(*)
 select * from test order by count(*)
-{"msg": "<test.id> column must appear in the GROUP BY clause or be used in an aggregate function"}
+{"msg": "select ❰*❱ ⟵ column test.id must appear in the GROUP BY clause or be used by an aggregate function"}
 select id from test order by count(*)
-{"msg": "<id> column must appear in the GROUP BY clause or be used in an aggregate function"}
+{"msg": "select ❰id❱ ⟵ column id must appear in the GROUP BY clause or be used by an aggregate function"}
 select 1 from test order by count(id)
 [1]
 # test: select count(*) from table order by 1
@@ -1071,7 +1071,7 @@ explain select id, count(*) from test group by id order by id
 select id, count(*) from test group by id order by id
 [[0, 1], [1, 1], [2, 1], [3, 1], [4, 1], [5, 1], [6, 1]]
 select id, count(*) from test group by id order by data
-{"msg": "<data> column must appear in the GROUP BY clause or be used in an aggregate function"}
+{"msg": "select id, count(*) from test group by id order by ❰data❱ ⟵ column data must appear in the GROUP BY clause or be used by an aggregate function"}
 # test: select count(*) from table group by 1 order by 1
 explain select id, count(*) from test group by 1 order by 1
 [{
@@ -1576,7 +1576,7 @@ explain select data, count(*) from test group by 1  having count(*) > 1
 }]
 # test: select as from table group by having alias (unsupported)
 select data, count(*) as c from test group by data having c > 1
-{"msg": "<c> column must appear in the GROUP BY clause or be used in an aggregate function"}
+{"msg": "select data, count(*) as c from test group by data having ❰c❱ ⟵ column c must appear in the GROUP BY clause or be used by an aggregate function"}
 # test: select distinct from table group by
 explain select data, count(*) from test group by data order by data
 [{

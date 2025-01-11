@@ -12,7 +12,7 @@ select 1 is
 select 1 is not
 {"msg": "select 1 ❰is❱ ⟵ bad expression"}
 select 1 is 1
-{"msg": "IS [NOT] <NULL> expected"}
+{"msg": "select 1 is ❰1❱ ⟵ NOT or NULL expected"}
 explain select 1 is null
 [{
   "bytecode": {

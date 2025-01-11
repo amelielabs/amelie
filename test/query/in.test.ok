@@ -65,7 +65,7 @@ drop table test
 create shared table test (id int primary key, data int)
 insert into test values (1, 1), (2, 2)
 select 1 in (select * from test)
-{"msg": "IN: subquery must return one column"}
+{"msg": "select 1 in (❰select❱ ⟵ subquery must return one column"}
 select 1 in (select data from test)
 [true]
 select 3 in (select data from test)

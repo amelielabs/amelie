@@ -165,7 +165,7 @@ select data, 0 -> self + 1 from test group by data
 [[0, 1], [1, 2], [2, 1], [3, 1]]
 # test: select column -> from table (unsupported)
 select id -> self + 1 from test
-{"msg": "<id> column not found"}
+{"msg": "select ❰id❱ ⟵ column not found"}
 # test: select expr -> from table
 select (select 1 + 2) -> self + 1 from test
 [8]

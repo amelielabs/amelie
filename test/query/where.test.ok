@@ -59,7 +59,7 @@ select * from test
   "data": 123
 }]]
 explain select * from test where data.data >= 0
-{"msg": "unsupported operation: <json> >= <int>"}
+{"msg": "explain select * from test where data.data >= ❰0❱ ⟵ operation json >= int is not supported"}
 explain select * from test where data.data::int >= 0
 [{
   "bytecode": {

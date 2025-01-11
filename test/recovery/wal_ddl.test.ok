@@ -97,7 +97,7 @@ alter table test2 rename column data to abc
 select * from test2
 [[0, 0, null], [1, 0, null], [2, 0, null]]
 select data from test2
-{"msg": "<test2.data> column not found"}
+{"msg": "select ❰data❱ ⟵ column test2.data not found"}
 select abc from test2
 [0, 0, 0]
 # test: restart
@@ -111,7 +111,7 @@ show lsn
 select serial("public", "test2")
 [0]
 select data from test2
-{"msg": "<test2.data> column not found"}
+{"msg": "select ❰data❱ ⟵ column test2.data not found"}
 select abc from test2
 [0, 0, 0]
 # test: alter table set default
@@ -669,7 +669,7 @@ select system.table('test2').columns
 # test: alter table column drop
 alter table test2 drop column abc
 select abc from test2
-{"msg": "<test2.abc> column not found"}
+{"msg": "select ❰abc❱ ⟵ column test2.abc not found"}
 select * from test2
 [[0, null], [1, null], [2, null]]
 # test: restart

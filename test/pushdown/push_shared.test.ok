@@ -79,7 +79,7 @@ select * from (select * from test) t
 [[1, 0], [2, 0], [3, 0]]
 # test: select (select expr) from shared
 select (select test.*) from test
-{"msg": "subquery must return only one column"}
+{"msg": "select (❰select❱ ⟵ subquery must return only one column"}
 explain select (select test.id) from test
 [{
   "bytecode": {
@@ -114,7 +114,7 @@ select (select test.id) from test
 [1, 2, 3]
 # test: select (select from shared)
 select (select * from test)
-{"msg": "subquery must return only one column"}
+{"msg": "select (❰select❱ ⟵ subquery must return only one column"}
 explain select (select id from test)
 [{
   "bytecode": {
@@ -148,20 +148,20 @@ select (select id from test limit 1)
 [1]
 # test: select (select from shared) from shared
 select (select a.*, id from test) from test a
-{"msg": "subquery must return only one column"}
+{"msg": "select (❰select❱ ⟵ subquery must return only one column"}
 explain select (select a.id, id from test) from test a
-{"msg": "subquery must return only one column"}
+{"msg": "explain select (❰select❱ ⟵ subquery must return only one column"}
 select (select a.id, id from test) from test a
-{"msg": "subquery must return only one column"}
+{"msg": "select (❰select❱ ⟵ subquery must return only one column"}
 select (select a.id from test) from test a
 [1, 2, 3]
 select (select a.id from test limit 1) from test a
 [1, 2, 3]
 # test: select (select from shared) from (select from shared)
 select (select a.*, id from test) from (select * from test t) a
-{"msg": "subquery must return only one column"}
+{"msg": "select (❰select❱ ⟵ subquery must return only one column"}
 explain select (select a.id, id from test) from (select * from test t) a
-{"msg": "subquery must return only one column"}
+{"msg": "explain select (❰select❱ ⟵ subquery must return only one column"}
 select (select a.id from test) from (select * from test t) a
 [1, 2, 3]
 select (select a.id from test limit 1) from (select * from test t) a

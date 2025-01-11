@@ -395,6 +395,12 @@ parse_stmt(Parser* self, Stmt* stmt)
 		break;
 	}
 
+	if (stmt->ast)
+	{
+		stmt->ast->pos_start = ast->pos_start;
+		stmt->ast->pos_end   = ast->pos_end;
+	}
+
 	// resolve select targets
 	parse_select_resolve(stmt);
 }

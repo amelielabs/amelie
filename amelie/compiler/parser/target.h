@@ -41,6 +41,7 @@ struct Target
 	TargetType   type;
 	int          id;
 	Str          name;
+	Ast*         ast;
 	// target
 	Table*       from_table;
 	IndexConfig* from_table_index;

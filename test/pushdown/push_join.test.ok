@@ -506,7 +506,7 @@ select test.id, ref.id from test join ref using(id)
 [[1, 1], [2, 2], [3, 3]]
 # test: select from table join using (not found)
 select test.id, ref.id from test join ref using(unknown)
-{"msg": "<test.unknown> column not found"}
+{"msg": "select test.id, ref.id from test join ref using(❰unknown❱ ⟵ column test.unknown not found"}
 # test: select from table join using #2
 explain select test.id, ref.id from test join ref using (id) join ref ref2 using (id) where test.id > 0
 [{
@@ -561,7 +561,7 @@ explain select test.id, ref.id from test join ref using (id) join ref ref2 using
 select test.id, ref.id from test join ref using (id) join ref ref2 using (id) where test.id > 0
 [[1, 1], [2, 2], [3, 3]]
 select test.id, ref.id from test join ref using (id) join ref ref2 using (id2) where test.id > 0
-{"msg": "<ref.id2> column not found"}
+{"msg": "select test.id, ref.id from test join ref using (id) join ref ref2 using (❰id2❱ ⟵ column ref.id2 not found"}
 # test: with (select from table) select from table, cte
 explain with a as (select * from test) select * from test, a where test.id = a.id
 [{
@@ -811,11 +811,11 @@ select test.id from test, ref group by test.id
 select test.id from test join ref on (test.id = ref.id) group by test.id
 [1, 2, 3]
 select test.id from test join ref on (test.id = ref.id) group by ref.id
-{"msg": "<test.id> column must appear in the GROUP BY clause or be used in an aggregate function"}
+{"msg": "select ❰test.id❱ ⟵ column test.id must appear in the GROUP BY clause or be used by an aggregate function"}
 select id from test join ref on (test.id = ref.id) group by ref.id
-{"msg": "<id> column must appear in the GROUP BY clause or be used in an aggregate function"}
+{"msg": "select ❰id❱ ⟵ column id must appear in the GROUP BY clause or be used by an aggregate function"}
 select ref.id from test join ref on (test.id = ref.id) group by id
-{"msg": "<id> column requires explicit target name"}
+{"msg": "select ref.id from test join ref on (test.id = ref.id) group by ❰id❱ ⟵ column requires explicit target name"}
 explain select ref.id from test join ref on (test.id = ref.id) group by ref.id
 [{
   "bytecode": {
@@ -869,7 +869,7 @@ select ref.id, count(test.id) + count(ref.id) from test join ref on (test.id = r
 create shared table ref2 (id int primary key, data json)
 insert into ref2 values (1, {"id": 1}), (2, {"id": 2}), (3, {"id": 3})
 select ref2.data from test join ref2 on (test.id = ref2.id) group by ref2.id
-{"msg": "<ref2.data> column must appear in the GROUP BY clause or be used in an aggregate function"}
+{"msg": "select ❰ref2.data❱ ⟵ column ref2.data must appear in the GROUP BY clause or be used by an aggregate function"}
 select ref2.data.id, ref2.data.id::type from test join ref2 on (test.id = ref2.id) group by ref2.data.id
 [[1, "json"], [2, "json"], [3, "json"]]
 select ref2.data.id, ref2.data.id::type from test join ref2 on (test.id = ref2.id) group by 1

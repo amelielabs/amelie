@@ -274,6 +274,7 @@ parse_import(Parser* self, Str* str, Str* uri, EndpointType type)
 		target->type = TARGET_TABLE_SHARED;
 	else
 		target->type = TARGET_TABLE;
+	target->ast          = stmt->ast;
 	target->from_table   = table;
 	target->from_columns = columns;
 	str_set_str(&target->name, &table->config->name);

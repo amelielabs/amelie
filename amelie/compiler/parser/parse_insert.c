@@ -299,6 +299,7 @@ parse_generated(Stmt* self)
 	// using the generated columns
 	auto target = target_allocate(&self->order_targets);
 	target->type         = TARGET_VALUES;
+	target->ast          = targets_outer(&stmt->targets)->ast;
 	target->from_columns = targets_outer(&stmt->targets)->from_columns;
 	target->name         = table->config->name;
 	targets_add(&stmt->targets_generated, target);
@@ -409,6 +410,8 @@ parse_insert(Stmt* self)
 			cte->id = STMT_SELECT;
 			stmt_list_insert(self->stmt_list, self, cte);
 			auto select = parse_select(cte, NULL, false);
+			select->ast.pos_start = values->pos_start;
+			select->ast.pos_end   = values->pos_end;
 			cte->ast         = &select->ast;
 			cte->cte_columns = &select->ret.columns;
 			parse_select_resolve(cte);

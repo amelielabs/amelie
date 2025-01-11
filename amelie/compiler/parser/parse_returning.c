@@ -131,7 +131,7 @@ returning_add(Returning* self, Ast* as)
 }
 
 static inline void
-returning_add_target(Returning* self, Target* target)
+returning_add_target(Returning* self, Target* target, Ast* star)
 {
 	// import all available columns into the expression list
 	Columns* columns = target->from_columns;
@@ -147,6 +147,8 @@ returning_add_target(Returning* self, Target* target)
 		auto as = ast(KAS);
 		// target.order AS column, ...
 		as->l = ast(KNAME_COMPOUND);
+		as->l->pos_start = star->pos_start;
+		as->l->pos_end   = star->pos_end;
 		parse_set_target_column(&as->l->string, &target->name, &column->name);
 
 		// as
@@ -183,7 +185,7 @@ parse_returning_resolve(Returning* self, Stmt* stmt, Targets* targets)
 			auto join = targets_ref->list;
 			while (join)
 			{
-				returning_add_target(self, join);
+				returning_add_target(self, join, as->l);
 				join = join->next;
 			}
 			break;
@@ -202,7 +204,7 @@ parse_returning_resolve(Returning* self, Stmt* stmt, Targets* targets)
 			if (as->l->string.pos[str_size(&name) + 1] != '*')
 				stmt_error(stmt, as->l,"incorrect target column path");
 
-			returning_add_target(self, match);
+			returning_add_target(self, match, as->l);
 			break;
 		}
 		default:

@@ -86,9 +86,9 @@ explain select true = null
 }]
 # test: bool = unsupported
 select true = [1,2]
-{"msg": "unsupported operation: <bool> = <json>"}
+{"msg": "select true = ❰[❱ ⟵ operation bool = json is not supported"}
 select true = 1.23
-{"msg": "unsupported operation: <bool> = <double>"}
+{"msg": "select true = ❰1.23❱ ⟵ operation bool = double is not supported"}
 # test: bool <> bool
 select true <> true
 [false]
@@ -157,13 +157,13 @@ explain select true <> null
 }]
 # test: bool <> unsupported
 select true <> [1,2]
-{"msg": "unsupported operation: <bool> = <json>"}
+{"msg": "select true <> ❰[❱ ⟵ operation bool = json is not supported"}
 select true <> 1.23
-{"msg": "unsupported operation: <bool> = <double>"}
+{"msg": "select true <> ❰1.23❱ ⟵ operation bool = double is not supported"}
 explain select true <> 1.23
-{"msg": "unsupported operation: <bool> = <double>"}
+{"msg": "explain select true <> ❰1.23❱ ⟵ operation bool = double is not supported"}
 # test: - bool
 select - true
-{"msg": "'-': unsupported operation type <bool>"}
+{"msg": "select - ❰true❱ ⟵ unsupported operation type bool"}
 disconnect S0
 close E0

@@ -337,7 +337,7 @@ cast_op_names[OP_MAX] =
 };
 
 hot int
-cast_operator(Compiler* self, int operator, int l, int r)
+cast_operator(Compiler* self, Ast* ast, int operator, int l, int r)
 {
 	assert(operator < OP_MAX);
 	auto lt = rtype(self, l);
@@ -353,9 +353,9 @@ cast_operator(Compiler* self, int operator, int l, int r)
 		auto cast = &cast_op[operator][lt][rt];
 		if (unlikely(cast->type == TYPE_NULL))
 		{
-			error("unsupported operation: <%s> %s <%s>",
-			      type_of(lt), cast_op_names[operator],
-			      type_of(rt));
+			stmt_error(self->current, ast, "operation %s %s %s is not supported",
+			           type_of(lt), cast_op_names[operator],
+			           type_of(rt));
 		}
 		op   = cast->op;
 		type = cast->type;

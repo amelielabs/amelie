@@ -42,12 +42,14 @@ parse_from_target(Stmt* self, Targets* targets, bool subquery)
 	// FROM (SELECT)
 	if (stmt_if(self, '('))
 	{
-		stmt_expect(self, KSELECT);
+		auto ast = stmt_expect(self, KSELECT);
+		AstSelect* select;
 		if (subquery)
 		{
-			auto select = parse_select(self, targets->outer, true);
+			select = parse_select(self, targets->outer, true);
 			stmt_expect(self, ')');
 			target->type         = TARGET_SELECT;
+			target->ast          = ast;
 			target->from_select  = &select->ast;
 			target->from_columns = &select->ret.columns;
 		} else
@@ -63,16 +65,19 @@ parse_from_target(Stmt* self, Targets* targets, bool subquery)
 			cte->id = STMT_SELECT;
 			stmt_list_insert(self->stmt_list, self, cte);
 
-			auto select = parse_select(cte, NULL, false);
+			select = parse_select(cte, NULL, false);
 			stmt_expect(self, ')');
 			cte->ast         = &select->ast;
 			cte->cte_columns = &select->ret.columns;
 			parse_select_resolve(cte);
 
 			target->type         = TARGET_CTE;
+			target->ast          = ast;
 			target->from_cte     = cte;
 			target->from_columns = cte->cte_columns;
 		}
+		select->ast.pos_start = ast->pos_start;
+		select->ast.pos_end   = ast->pos_end;
 		return target;
 	}
 
@@ -83,6 +88,7 @@ parse_from_target(Stmt* self, Targets* targets, bool subquery)
 	auto expr = parse_target(self, &schema, &name);
 	if (! expr)
 		stmt_error(self, NULL, "target name expected");
+	target->ast = expr;
 
 	// function()
 	if (self->id == STMT_SELECT && stmt_if(self, '('))
@@ -106,6 +112,8 @@ parse_from_target(Stmt* self, Targets* targets, bool subquery)
 
 		// allocate select to keep returning columns
 		auto select = ast_select_allocate(targets->outer);
+		select->ast.pos_start = target->ast->pos_start;
+		select->ast.pos_end   = target->ast->pos_end;
 		ast_list_add(&self->select_list, &select->ast);
 		target->from_columns = &select->ret.columns;
 		str_set_str(&target->name, &call->fn->name);
@@ -283,7 +291,13 @@ parse_from(Stmt* self, Targets* targets, bool subquery)
 				// outer.column = target.column
 				auto equ = ast('=');
 				equ->l = ast(KNAME_COMPOUND);
+				equ->l->pos_start = name->pos_start;
+				equ->l->pos_end   = name->pos_end;
+
 				equ->r = ast(KNAME_COMPOUND);
+				equ->r->pos_start = name->pos_start;
+				equ->r->pos_end   = name->pos_end;
+
 				parse_set_target_column(&equ->l->string, &target->prev->name, &name->string);
 				parse_set_target_column(&equ->r->string, &target->name, &name->string);
 

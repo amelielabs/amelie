@@ -157,9 +157,9 @@ explain select 1 = null
 }]
 # test: int = unsupported
 select 1 = [1,2,3]
-{"msg": "unsupported operation: <int> = <json>"}
+{"msg": "select 1 = ❰[❱ ⟵ operation int = json is not supported"}
 select 1 = [1,2,3]::vector
-{"msg": "unsupported operation: <int> = <vector>"}
+{"msg": "select 1 = [1,2,3]❰::❱ ⟵ operation int = vector is not supported"}
 # test: int <> bool
 select 1 <> true
 [false]
@@ -276,9 +276,9 @@ explain select 1 <> null
 }]
 # test: int <> unsupported
 select 1 <> [1,2,3]
-{"msg": "unsupported operation: <int> = <json>"}
+{"msg": "select 1 <> ❰[❱ ⟵ operation int = json is not supported"}
 select 1 <> [1,2,3]::vector
-{"msg": "unsupported operation: <int> = <vector>"}
+{"msg": "select 1 <> [1,2,3]❰::❱ ⟵ operation int = vector is not supported"}
 # test: int >= int
 select 1 >= 0
 [true]
@@ -375,7 +375,7 @@ explain select 1 >= null
 }]
 # test: int >= unsupported
 explain select 1 >= []
-{"msg": "unsupported operation: <int> >= <json>"}
+{"msg": "explain select 1 >= ❰[❱ ⟵ operation int >= json is not supported"}
 # test: int > int
 select 1 > 0
 [true]
@@ -472,7 +472,7 @@ explain select 1 > null
 }]
 # test: int > unsupported
 explain select 1 > []
-{"msg": "unsupported operation: <int> > <json>"}
+{"msg": "explain select 1 > ❰[❱ ⟵ operation int > json is not supported"}
 # test: int <= int
 select 1 <= 0
 [false]
@@ -569,7 +569,7 @@ explain select 1 <= null
 }]
 # test: int <= unsupported
 explain select 1 <= []
-{"msg": "unsupported operation: <int> <= <json>"}
+{"msg": "explain select 1 <= ❰[❱ ⟵ operation int <= json is not supported"}
 # test: int < int
 select 1 < 0
 [false]
@@ -666,7 +666,7 @@ explain select 1 < null
 }]
 # test: int < unsupported
 explain select 1 < []
-{"msg": "unsupported operation: <int> < <json>"}
+{"msg": "explain select 1 < ❰[❱ ⟵ operation int < json is not supported"}
 # test: int + int
 select 1 + 1
 [2]
@@ -722,7 +722,7 @@ select 1 + null
 [null]
 # test: int + unsupported
 select 1 + []
-{"msg": "unsupported operation: <int> + <json>"}
+{"msg": "select 1 + ❰[❱ ⟵ operation int + json is not supported"}
 # test: int - int
 select 1 - 1
 [0]
@@ -778,7 +778,7 @@ select 1 - null
 [null]
 # test: int - unsupported
 select 1 - []
-{"msg": "unsupported operation: <int> - <json>"}
+{"msg": "select 1 - ❰[❱ ⟵ operation int - json is not supported"}
 # test: int * int
 select 2 * 2
 [4]
@@ -826,7 +826,7 @@ select 1 * null
 [null]
 # test: int * unsupported
 select 1 * []
-{"msg": "unsupported operation: <int> * <json>"}
+{"msg": "select 1 * ❰[❱ ⟵ operation int * json is not supported"}
 # test: int / int
 select 2 / 2
 [1]
@@ -874,7 +874,7 @@ select 1 * null
 [null]
 # test: int / unsupported
 select 1 * []
-{"msg": "unsupported operation: <int> * <json>"}
+{"msg": "select 1 * ❰[❱ ⟵ operation int * json is not supported"}
 # test: int % int
 select 8 % 3
 [2]
@@ -901,7 +901,7 @@ select 1 % null
 [null]
 # test: int % unsupported
 select 1 % []
-{"msg": "unsupported operation: <int> % <json>"}
+{"msg": "select 1 % ❰[❱ ⟵ operation int % json is not supported"}
 # test: int | int
 select 60 | 13
 [61]
@@ -942,7 +942,7 @@ explain select 60 | null
 }]
 # test: int | unsupported
 select 60 | []
-{"msg": "unsupported operation: <int> | <json>"}
+{"msg": "select 60 | ❰[❱ ⟵ operation int | json is not supported"}
 # test: int & int
 select 60 & 13
 [12]
@@ -983,7 +983,7 @@ explain select 60 & null
 }]
 # test: int & unsupported
 select 60 & []
-{"msg": "unsupported operation: <int> & <json>"}
+{"msg": "select 60 & ❰[❱ ⟵ operation int & json is not supported"}
 # test: int ^ int
 select 60 ^ 13
 [49]
@@ -1024,7 +1024,7 @@ explain select 60 ^ null
 }]
 # test: int ^ unsupported
 select 60 ^ []
-{"msg": "unsupported operation: <int> ^ <json>"}
+{"msg": "select 60 ^ ❰[❱ ⟵ operation int ^ json is not supported"}
 # test: int << int
 select 60 << 2
 [240]
@@ -1049,7 +1049,7 @@ select 60 << null
 [null]
 # test: int << unsupported
 select 60 << []
-{"msg": "unsupported operation: <int> << <json>"}
+{"msg": "select 60 << ❰[❱ ⟵ operation int << json is not supported"}
 # test: int >> int
 select 60 >> 2
 [15]
@@ -1074,7 +1074,7 @@ select 60 >> null
 [null]
 # test: int >> unsupported
 select 60 >> []
-{"msg": "unsupported operation: <int> >> <json>"}
+{"msg": "select 60 >> ❰[❱ ⟵ operation int >> json is not supported"}
 # test: ~int
 select ~10
 [-11]

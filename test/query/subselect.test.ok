@@ -108,7 +108,7 @@ select (select t.*) from test t
 select (select t.*) from test
 {"msg": "select (select ❰t.*❱ ⟵ target not found"}
 select (select t) from test t
-{"msg": "<t.t> column not found"}
+{"msg": "select (select ❰t❱ ⟵ column t.t not found"}
 # test: select (select target.column) from shared
 explain select (select test.id) from test
 [{
@@ -176,7 +176,7 @@ explain select (select t.id) from test t
   }
 }]
 select (select t.id) from test
-{"msg": "<t> target not found"}
+{"msg": "select (select ❰t.id❱ ⟵ target not found"}
 select (select t.id) from test t
 [1, 2, 3]
 drop table test
@@ -186,9 +186,9 @@ insert into test (data) values({"data": {"id": 1}})
 insert into test (data) values({"data": {"id": 2}})
 insert into test (data) values({"data": {"id": 3}})
 select (select *) from test
-{"msg": "subquery must return only one column"}
+{"msg": "select (❰select❱ ⟵ subquery must return only one column"}
 select (select test) from test
-{"msg": "<test.test> column not found"}
+{"msg": "select (select ❰test❱ ⟵ column test.test not found"}
 select (select test.data) from test
 [{
   "data": {
@@ -215,7 +215,7 @@ select (select test.data.data.id) from test
 [1, 2, 3]
 # test: select (select alias.path) from shared
 select (select t) from test t
-{"msg": "<t.t> column not found"}
+{"msg": "select (select ❰t❱ ⟵ column t.t not found"}
 select (select t.data) from test t
 [{
   "data": {
@@ -301,7 +301,7 @@ select test from (select * from test)
 {"msg": "select test from (select * from test) ⟵ subquery must have an alias"}
 # test: select alias.* from (select from shared)
 select alias from (select * from test) alias
-{"msg": "<alias.alias> column not found"}
+{"msg": "select ❰alias❱ ⟵ column alias.alias not found"}
 select alias.* from (select * from test) alias
 [1, 2, 3]
 select alias.* from (select test.* from test) alias
@@ -516,11 +516,11 @@ create shared table b (id int primary key serial, data int default 1)
 insert into a () values (), (), ()
 insert into b () values (), (), ()
 select (select * from b where a.id = b.id) from a
-{"msg": "subquery must return only one column"}
+{"msg": "select (❰select❱ ⟵ subquery must return only one column"}
 select (select a.* from b where a.id = b.id) from a
-{"msg": "subquery must return only one column"}
+{"msg": "select (❰select❱ ⟵ subquery must return only one column"}
 select (select b.* from b where a.id = b.id)::type from a
-{"msg": "subquery must return only one column"}
+{"msg": "select (❰select❱ ⟵ subquery must return only one column"}
 select (select a.id from b where a.id = b.id) from a
 [0, 1, 2]
 select (select b.id from b where a.id = b.id)::type from a

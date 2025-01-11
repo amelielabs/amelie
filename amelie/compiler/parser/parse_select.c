@@ -227,11 +227,23 @@ parse_select(Stmt* self, Targets* outer, bool subquery)
 
 	// [LIMIT]
 	if (stmt_if(self, KLIMIT))
+	{
 		select->expr_limit = parse_expr(self, NULL);
+		if (select->expr_limit->id != KINT)
+			stmt_error(self, select->expr_limit, "integer type expected");
+		if (select->expr_limit->integer < 0)
+			stmt_error(self, select->expr_limit, "positive integer value expected");
+	}
 
 	// [OFFSET]
 	if (stmt_if(self, KOFFSET))
+	{
 		select->expr_offset = parse_expr(self, NULL);
+		if (select->expr_offset->id != KINT)
+			stmt_error(self, select->expr_offset, "integer type expected");
+		if (select->expr_offset->integer < 0)
+			stmt_error(self, select->expr_offset, "positive integer value expected");
+	}
 
 	// add group by target
 	if (select->expr_group_by.count > 0 || select->expr_aggs.count > 0)
@@ -254,6 +266,7 @@ parse_select(Stmt* self, Targets* outer, bool subquery)
 		// create group by target to scan agg set
 		auto target = target_allocate(&self->order_targets);
 		target->type = TARGET_GROUP_BY;
+		target->ast  = targets_outer(&select->targets)->ast;
 		target->name = targets_outer(&select->targets)->name;
 		target->from_group_by = &select->expr_group_by;
 		target->from_columns  = &select->targets_group_columns;

@@ -372,20 +372,12 @@ pushdown_recv(Compiler* self, Ast* ast)
 	// limit
 	int rlimit = -1;
 	if (select->expr_limit)
-	{
 		rlimit = emit_expr(self, &select->targets, select->expr_limit);
-		if (rtype(self, rlimit) != TYPE_INT)
-			error("LIMIT: integer type expected");
-	}
 
 	// offset
 	int roffset = -1;
 	if (select->expr_offset)
-	{
 		roffset = emit_expr(self, &select->targets, select->expr_offset);
-		if (rtype(self, roffset) != TYPE_INT)
-			error("OFFSET: integer type expected");
-	}
 
 	// CUNION_RECV
 	int runion = op4(self, CUNION_RECV, rpin(self, TYPE_STORE), rlimit, roffset,

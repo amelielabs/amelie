@@ -177,7 +177,7 @@ explain select * from test order by id limit 0
 select * from test order by id limit 0
 []
 select * from test order by id limit -1
-{"msg": "LIMIT: positive integer value expected"}
+{"msg": "select * from test order by id limit ❰-1❱ ⟵ positive integer value expected"}
 # test: select from table order by desc limit
 explain select * from test order by id desc limit 1
 [{
@@ -377,7 +377,7 @@ select * from test order by id offset 4
 select * from test order by id offset 0
 [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19]
 select * from test order by id offset -1
-{"msg": "OFFSET: positive integer value expected"}
+{"msg": "select * from test order by id offset ❰-1❱ ⟵ positive integer value expected"}
 # test: select from table order by desc offset
 explain select * from test order by id desc offset 1
 [{
@@ -420,7 +420,7 @@ select * from test order by id desc offset 4
 select * from test order by id desc offset 0
 [19, 18, 17, 16, 15, 14, 13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1, 0]
 select * from test order by id desc offset -1
-{"msg": "OFFSET: positive integer value expected"}
+{"msg": "select * from test order by id desc offset ❰-1❱ ⟵ positive integer value expected"}
 drop table test
 # test: select from shared order by
 create shared table test (id int primary key serial)
@@ -599,7 +599,7 @@ explain select * from test order by id limit 0
 select * from test order by id limit 0
 []
 select * from test order by id limit -1
-{"msg": "LIMIT: positive integer value expected"}
+{"msg": "select * from test order by id limit ❰-1❱ ⟵ positive integer value expected"}
 # test: select from shared order by desc limit
 explain select * from test order by id desc limit 1
 [{
@@ -799,7 +799,7 @@ select * from test order by id offset 4
 select * from test order by id offset 0
 [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19]
 select * from test order by id offset -1
-{"msg": "OFFSET: positive integer value expected"}
+{"msg": "select * from test order by id offset ❰-1❱ ⟵ positive integer value expected"}
 # test: select from shared order by desc offset
 explain select * from test order by id desc offset 1
 [{
@@ -842,7 +842,7 @@ select * from test order by id desc offset 4
 select * from test order by id desc offset 0
 [19, 18, 17, 16, 15, 14, 13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1, 0]
 select * from test order by id desc offset -1
-{"msg": "OFFSET: positive integer value expected"}
+{"msg": "select * from test order by id desc offset ❰-1❱ ⟵ positive integer value expected"}
 # test: select from order by int
 select id from test order by 0
 {"msg": "select id from test order by ❰0❱ ⟵ column 0 is not in the SELECT expr list"}

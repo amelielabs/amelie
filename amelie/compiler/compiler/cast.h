@@ -35,4 +35,4 @@ enum
 	OP_MAX
 };
 
-int cast_operator(Compiler*, int, int, int);
+int cast_operator(Compiler*, Ast*, int, int, int);

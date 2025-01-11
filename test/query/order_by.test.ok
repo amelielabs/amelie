@@ -48,7 +48,7 @@ select * from test order by data desc
 select * from test order by test.data
 [[1, 1], [3, 2], [2, 3]]
 select * from test order by test
-{"msg": "<test.test> column not found"}
+{"msg": "select * from test order by ❰test❱ ⟵ column test.test not found"}
 # test: order by alias.column
 select * from test alias order by alias.data
 [[1, 1], [3, 2], [2, 3]]

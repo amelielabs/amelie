@@ -216,11 +216,12 @@ emit_send_generated_on_match(Compiler* self, Targets* targets, void* arg)
 		// ensure that the expression type is compatible
 		// with the column
 		if (unlikely(type != TYPE_NULL && column->type != type))
-			error("<%.*s.%.*s> column generated expression type '%s' does not match column type '%s'",
-			      str_size(&target->name), str_of(&target->name),
-			      str_size(&column->name), str_of(&column->name),
-			      type_of(type),
-			      type_of(column->type));
+			stmt_error(self->current, &insert->ast,
+			           "column '%.*s.%.*s' generated expression type '%s' does not match column type '%s'",
+			           str_size(&target->name), str_of(&target->name),
+			           str_size(&column->name), str_of(&column->name),
+			           type_of(type),
+			           type_of(column->type));
 
 		op1(self, CPUSH, rexpr);
 		runpin(self, rexpr);
@@ -245,7 +246,7 @@ emit_send_insert(Compiler* self, int start)
 	{
 		auto columns_select = &ast_select_of(insert->select->ast)->ret.columns;
 		if (! columns_compare(columns, columns_select))
-			error("INSERT SELECT columns do not match the table columns");
+			stmt_error(stmt, insert->select->ast, "SELECT columns must match the INSERT table");
 		r = op2(self, CCTE_GET, rpin(self, TYPE_STORE), insert->select->order);
 	} else
 	{

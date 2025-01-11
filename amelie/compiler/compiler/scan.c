@@ -256,8 +256,8 @@ scan_expr(Scan* self, Target* target)
 		op_next  = CJSON_NEXT;
 	} else
 	if (type != TYPE_STORE && type != TYPE_NULL) {
-		error("FROM: unsupported expression type <%s>",
-		      type_of(type));
+		stmt_error(cp->current, target->ast, "unsupported expression type %s",
+		           type_of(type));
 	}
 
 	// open SET, MERGE or JSON cursor
@@ -335,21 +335,13 @@ scan(Compiler*    compiler,
 	// prepare scan plan using where expression per target
 	planner(targets, expr_where);
 
-	// offset
-	if (expr_offset)
-	{
-		self.roffset = emit_expr(compiler, targets, expr_offset);
-		if (rtype(compiler, self.roffset) != TYPE_INT)
-			error("OFFSET: integer type expected");
-	}
-
 	// limit
 	if (expr_limit)
-	{
 		self.rlimit = emit_expr(compiler, targets, expr_limit);
-		if (rtype(compiler, self.rlimit) != TYPE_INT)
-			error("LIMIT: integer type expected");
-	}
+
+	// offset
+	if (expr_offset)
+		self.roffset = emit_expr(compiler, targets, expr_offset);
 
 	scan_target(&self, targets_outer(targets));
 

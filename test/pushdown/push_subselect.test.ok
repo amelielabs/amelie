@@ -117,7 +117,7 @@ select * from (select (select id from test t) from test) g
 {"msg": "select * from (select (select id from ❰test❱ ⟵ distributed table cannot be used in subquery"}
 # test: select (select expr) from (select from table)
 select (select t.*) from (select * from test) t
-{"msg": "subquery must return only one column"}
+{"msg": "select (❰select❱ ⟵ subquery must return only one column"}
 select (select t.id) from (select * from test) t
 [1, 2, 3]
 # test: select (select from shared) from (select from table)

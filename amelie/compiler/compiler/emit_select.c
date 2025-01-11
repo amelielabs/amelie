@@ -124,7 +124,7 @@ emit_select_on_match_aggregate(Compiler* self, Targets* targets, void* arg)
 		if (! agg->function)
 		{
 			if (rt != agg->expr_seed_type)
-				error("lambda expression type mismatch");
+				stmt_error(self->current, agg->expr, "lambda expression type mismatch");
 			agg->id = AGG_LAMBDA;
 			aggs[agg->order] = AGG_LAMBDA;
 			continue;
@@ -144,7 +144,7 @@ emit_select_on_match_aggregate(Compiler* self, Targets* targets, void* arg)
 			if (rt == TYPE_DOUBLE)
 				agg->id = AGG_DOUBLE_MIN;
 			else
-				error("min(): int or double expected");
+				stmt_error(self->current, agg->expr, "int or double expected");
 			break;
 		case KMAX:
 			if (rt == TYPE_INT || rt == TYPE_NULL)
@@ -153,7 +153,7 @@ emit_select_on_match_aggregate(Compiler* self, Targets* targets, void* arg)
 			if (rt == TYPE_DOUBLE)
 				agg->id = AGG_DOUBLE_MAX;
 			else
-				error("max(): int or double expected");
+				stmt_error(self->current, agg->expr, "int or double expected");
 			break;
 		case KSUM:
 			if (rt == TYPE_INT || rt == TYPE_NULL)
@@ -162,7 +162,7 @@ emit_select_on_match_aggregate(Compiler* self, Targets* targets, void* arg)
 			if (rt == TYPE_DOUBLE)
 				agg->id = AGG_DOUBLE_SUM;
 			else
-				error("sum(): int or double expected");
+				stmt_error(self->current, agg->expr, "int or double expected");
 			break;
 		case KAVG:
 			if (rt == TYPE_INT || rt == TYPE_NULL)
@@ -171,7 +171,7 @@ emit_select_on_match_aggregate(Compiler* self, Targets* targets, void* arg)
 			if (rt == TYPE_DOUBLE)
 				agg->id = AGG_DOUBLE_AVG;
 			else
-				error("avg(): int or double expected");
+				stmt_error(self->current, agg->expr, "int or double expected");
 			break;
 		}
 		aggs[agg->order] = agg->id;
@@ -268,20 +268,12 @@ emit_select_union(Compiler* self, AstSelect* select)
 	// limit
 	int rlimit = -1;
 	if (select->expr_limit)
-	{
 		rlimit = emit_expr(self, &select->targets, select->expr_limit);
-		if (rtype(self, rlimit) != TYPE_INT)
-			error("LIMIT: integer type expected");
-	}
 
 	// offset
 	int roffset = -1;
 	if (select->expr_offset)
-	{
 		roffset = emit_expr(self, &select->targets, select->expr_offset);
-		if (rtype(self, roffset) != TYPE_INT)
-			error("OFFSET: integer type expected");
-	}
 
 	// CUNION
 	int runion = op4(self, CUNION, rpin(self, TYPE_STORE), select->rset,
