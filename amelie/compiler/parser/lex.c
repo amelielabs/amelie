@@ -182,14 +182,6 @@ lex_start(Lex* self, Str* text)
 	self->backlog = NULL;
 }
 
-void
-lex_push(Lex* self, Ast* ast)
-{
-	ast->next = NULL;
-	ast->prev = self->backlog;
-	self->backlog = ast;
-}
-
 hot always_inline static inline Ast*
 lex_return(Lex* self, Ast* ast, int id, char* start)
 {
@@ -304,7 +296,9 @@ reread_as_float:
 
 	// symbols
 	if (*self->pos != '\"' &&
-	    *self->pos != '\'' && *self->pos != '_' && ispunct(*self->pos))
+	    *self->pos != '\'' &&
+	    *self->pos != '`'  &&
+	    *self->pos != '_'  && ispunct(*self->pos))
 	{
 		char symbol = *self->pos;
 		self->pos++;
@@ -357,9 +351,15 @@ symbol:;
 	}
 
 	// keyword or name
-	if (isalpha(*self->pos) || *self->pos == '_')
+	if (isalpha(*self->pos) || *self->pos == '_' || *self->pos == '`')
 	{
-		char* compound_prev = NULL;
+		auto id = KNAME;
+		auto wrapped = *self->pos == '`';
+		if (unlikely(wrapped))
+			self->pos++;
+
+		char* string   = self->pos;
+		char* compound = NULL;
 		while (self->pos < self->end &&
 		       (*self->pos == '_' ||
 	 	        *self->pos == '.' ||
@@ -368,45 +368,51 @@ symbol:;
 		         isdigit(*self->pos)))
 		{
 			if (*self->pos == '.') {
-				if (compound_prev == (self->pos - 1))
-					lex_error(self, ast, "bad compound name token");
-				compound_prev = self->pos;
+				if (compound == (self->pos - 1))
+					lex_return_error(self, ast, start, "bad compound name token");
+				compound = self->pos;
 			}
 			self->pos++;
 		}
-		str_set(&ast->string, start, self->pos - start);
+		str_set(&ast->string, string, self->pos - string);
 
-		if (compound_prev)
+		// path.*
+		if (compound)
 	   	{
 			if (unlikely(*(self->pos - 1) == '.'))
 			{
-				// path.*
-				if (self->pos != self->end && *self->pos == '*')
-				{
-					self->pos++;
-					ast->string.end++;
-					return lex_return(self, ast, KNAME_COMPOUND_STAR, start);
-				}
-				lex_error(self, ast, "bad compound name token");
+				if (unlikely(self->pos == self->end || *self->pos != '*'))
+					lex_return_error(self, ast, start, "bad compound name token");
+				self->pos++;
+				ast->string.end++;
+				id = KNAME_COMPOUND_STAR;
+			} else {
+				id = KNAME_COMPOUND;
 			}
-			return lex_return(self, ast, KNAME_COMPOUND, start);
 		}
 
-		if (*ast->string.pos != '_' && self->keywords_enable)
+		// `name[.compound]`
+		if (unlikely(wrapped)) {
+			if (self->pos == self->end || *self->pos != '`')
+				lex_return_error(self, ast, start, "unterminated name definition");
+			self->pos++;
+			return lex_return(self, ast, id, start);
+		}
+
+		// match keyword for the name
+		if (id == KNAME && *ast->string.pos != '_' && self->keywords_enable)
 		{
 			auto keyword = lex_keyword_match(self, &ast->string);
 			if (keyword) 
 				return lex_return(self, ast, keyword->id, start);
 		}
-		return lex_return(self, ast, KNAME, start);
+		return lex_return(self, ast, id, start);
 	}
 
 	// string
 	if (*self->pos == '\"' || *self->pos == '\'')
 	{
-		char end_char = '"';
-		if (*self->pos == '\'')
-			end_char = '\'';
+		char end_char = *self->pos;
 		self->pos++;
 
 		auto string = self->pos;
@@ -441,15 +447,5 @@ symbol:;
 
 	// error
 	lex_return_error(self, ast, start, "bad token");
-	return NULL;
-}
-
-hot Ast*
-lex_if(Lex* self, int id)
-{
-	auto ast = lex_next(self);
-	if (ast->id == id)
-		return ast;
-	lex_push(self, ast);
 	return NULL;
 }

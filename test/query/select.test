@@ -48,6 +48,7 @@ select *, * from test
 # test: select target.* from table
 select test.* from test
 select test.*, *, test.* from test
+select `test.*` from test
 drop table test
 
 # test: select column from table
@@ -58,13 +59,14 @@ insert into test () values ()
 select * from test
 explain select id, data from test
 select id, data from test
+select `id`, data from test
 drop table test
 
 # test: select column.path from table
 create table test (id int primary key serial, data json)
 insert into test (data) values ({"data": 123})
 insert into test (data) values ({"data": 123})
-insert into test (data) values ({"data": 123})
+insert into test (`data`) values ({"data": 123})
 select * from test
 explain select data.data from test
 select data.data from test

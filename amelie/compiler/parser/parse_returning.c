@@ -75,12 +75,20 @@ parse_returning(Returning* self, Stmt* stmt, Expr* ctx)
 		if (unlikely(! name))
 		{
 			if (as_has)
-				stmt_error(stmt, as_has, "label expected");
+				stmt_error(stmt, NULL, "label expected");
 			if (expr->id == KNAME)
 			{
 				name = ast(KNAME);
 				name->string = expr->string;
+			} else
+			if (expr->id == KAGGR)
+			{
+				name = ast(KNAME);
+				auto agg = ast_agg_of(expr);
+				if (agg->function)
+					name->string = agg->function->string;
 			}
+
 		} else
 		{
 			// ensure * has no alias

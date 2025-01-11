@@ -29,6 +29,22 @@ void lex_start(Lex*, Str*);
 void lex_set_keywords(Lex*, bool);
 void lex_error(Lex*, Ast*, const char*);
 void lex_error_expect(Lex*, Ast*, int);
-void lex_push(Lex*, Ast*);
 Ast* lex_next(Lex*);
-Ast* lex_if(Lex*, int);
+
+static inline void
+lex_push(Lex* self, Ast* ast)
+{
+	ast->next = NULL;
+	ast->prev = self->backlog;
+	self->backlog = ast;
+}
+
+hot static inline Ast*
+lex_if(Lex* self, int id)
+{
+	auto ast = lex_next(self);
+	if (ast->id == id)
+		return ast;
+	lex_push(self, ast);
+	return NULL;
+}

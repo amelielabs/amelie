@@ -115,6 +115,8 @@ select test.* from test
 [0, 1, 2]
 select test.*, *, test.* from test
 [[0, 0, 0], [1, 1, 1], [2, 2, 2]]
+select `test.*` from test
+[0, 1, 2]
 drop table test
 # test: select column from table
 create table test (id int primary key serial, data int default 0)
@@ -153,12 +155,14 @@ explain select id, data from test
 }]
 select id, data from test
 [[0, 0], [1, 0], [2, 0]]
+select `id`, data from test
+[[0, 0], [1, 0], [2, 0]]
 drop table test
 # test: select column.path from table
 create table test (id int primary key serial, data json)
 insert into test (data) values ({"data": 123})
 insert into test (data) values ({"data": 123})
-insert into test (data) values ({"data": 123})
+insert into test (`data`) values ({"data": 123})
 select * from test
 [[0, {
   "data": 123

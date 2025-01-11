@@ -245,6 +245,13 @@ parse_select(Stmt* self, Targets* outer, bool subquery)
 			stmt_error(self, select->expr_offset, "positive integer value expected");
 	}
 
+	// [FORMAT type]
+	if (stmt_if(self, KFORMAT))
+	{
+		auto type = stmt_expect(self, KSTRING);
+		select->ret.format = type->string;
+	}
+
 	// add group by target
 	if (select->expr_group_by.count > 0 || select->expr_aggs.count > 0)
 	{
@@ -279,6 +286,7 @@ parse_select(Stmt* self, Targets* outer, bool subquery)
 	// set pushdown strategy for the root query
 	if (! subquery)
 		parse_select_pushdown(self, select);
+
 
 	return select;
 }
