@@ -66,12 +66,12 @@ alter schema test rename "hello"
 create schema test
 select system.schemas()
 
-alter schema test rename test2
+alter schema test rename to test2
 select system.schemas()
 select system.schemas()
 
 # test: alter schema system
-alter schema public rename _public
+alter schema public rename to _public
 
 disconnect S0
 close E0

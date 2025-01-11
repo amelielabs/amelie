@@ -29,7 +29,7 @@ create table test.a(id int primary key)
 create table test.b(id int primary key)
 select system.schemas()
 
-alter schema test rename test2
+alter schema test rename to test2
 select system.schemas()
 select system.table('test2.a').name
 select system.table('test2.b').name

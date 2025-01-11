@@ -16,20 +16,20 @@ alter table if exists
 alter table if exists 123
 {"msg": "alter table if exists ❰123❱ ⟵ name expected"}
 # test: alter table if exists
-alter table test rename test2
+alter table test rename to test2
 {"msg": "table 'test': not exists"}
-alter table if exists test rename test2
+alter table if exists test rename to test2
 # test: alter table no command
 create table test (id int primary key)
 alter table test
 {"msg": "alter table test ⟵ 'RENAME | ADD | DROP | SET | UNSET' expected"}
 # test: rename
 alter table test rename
-{"msg": "alter table test rename ⟵ name expected"}
+{"msg": "alter table test rename ⟵ TO expected"}
 alter table test rename to
 {"msg": "alter table test rename to ⟵ name expected"}
-alter table test rename asf junk
-{"msg": "alter table test rename asf ❰junk❱ ⟵ ; expected"}
+alter table test rename to asf junk
+{"msg": "alter table test rename to asf ❰junk❱ ⟵ ; expected"}
 alter table test rename to abc
 select system.table('abc').name
 ["abc"]
@@ -111,15 +111,15 @@ drop table test
 alter table rename
 {"msg": "alter table ❰rename❱ ⟵ name expected"}
 alter table test rename
-{"msg": "alter table test rename ⟵ name expected"}
+{"msg": "alter table test rename ⟵ TO expected"}
 alter table test rename column
 {"msg": "alter table test rename column ⟵ name expected"}
 alter table test rename column 1
 {"msg": "alter table test rename column ❰1❱ ⟵ name expected"}
 alter table test rename column data
-{"msg": "alter table test rename column data ⟵ name expected"}
+{"msg": "alter table test rename column data ⟵ TO expected"}
 alter table test rename column data
-{"msg": "alter table test rename column data ⟵ name expected"}
+{"msg": "alter table test rename column data ⟵ TO expected"}
 alter table test rename column data to
 {"msg": "alter table test rename column data to ⟵ name expected"}
 alter table test rename column data to 1

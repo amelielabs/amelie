@@ -45,7 +45,7 @@ select system.schemas()
   "system": false,
   "create": true
 }]]
-alter schema test rename test2
+alter schema test rename to test2
 select system.schemas()
 [[{
   "name": "system",

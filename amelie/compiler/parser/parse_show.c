@@ -163,8 +163,10 @@ parse_set(Stmt* self)
 	auto name = stmt_next_shadow(self);
 	if (name->id != KNAME)
 		stmt_error(self, name, "name expected");
+
 	// TO
 	stmt_expect(self, KTO);
+
 	// value
 	auto value = stmt_next(self);
 	if (value->id != KINT    &&

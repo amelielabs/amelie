@@ -553,8 +553,8 @@ parse_table_alter(Stmt* self)
 			auto name = stmt_expect(self, KNAME);
 			str_set_str(&stmt->column_name, &name->string);
 
-			// [TO]
-			stmt_if(self, KTO);
+			// TO
+			stmt_expect(self, KTO);
 
 			// name
 			name = stmt_expect(self, KNAME);
@@ -562,8 +562,8 @@ parse_table_alter(Stmt* self)
 			return;
 		}
 
-		// [TO]
-		stmt_if(self, KTO);
+		// TO
+		stmt_expect(self, KTO);
 
 		// name
 		if (! parse_target(self, &stmt->schema_new, &stmt->name_new))

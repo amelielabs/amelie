@@ -127,11 +127,11 @@ alter schema 123
 alter schema test
 {"msg": "alter schema test ⟵ RENAME expected"}
 alter schema test rename
-{"msg": "alter schema test rename ⟵ name expected"}
+{"msg": "alter schema test rename ⟵ TO expected"}
 alter schema test rename to
 {"msg": "alter schema test rename to ⟵ name expected"}
 alter schema test rename "hello"
-{"msg": "alter schema test rename ❰\"hello\"❱ ⟵ name expected"}
+{"msg": "alter schema test rename ❰\"hello\"❱ ⟵ TO expected"}
 # test: alter schema rename
 create schema test
 select system.schemas()
@@ -148,7 +148,7 @@ select system.schemas()
   "system": false,
   "create": true
 }]]
-alter schema test rename test2
+alter schema test rename to test2
 select system.schemas()
 [[{
   "name": "system",
@@ -178,7 +178,7 @@ select system.schemas()
   "create": true
 }]]
 # test: alter schema system
-alter schema public rename _public
+alter schema public rename to _public
 {"msg": "schema 'public': system schema cannot be altered"}
 disconnect S0
 close E0

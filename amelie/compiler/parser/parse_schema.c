@@ -88,8 +88,8 @@ parse_schema_alter(Stmt* self)
 	// RENAME
 	stmt_expect(self, KRENAME);
 
-	// [TO]
-	stmt_if(self, KTO);
+	// TO
+	stmt_expect(self, KTO);
 
 	// name
 	stmt->name_new = stmt_expect(self, KNAME);

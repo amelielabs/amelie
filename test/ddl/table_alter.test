@@ -13,8 +13,8 @@ alter table if exists
 alter table if exists 123
 
 # test: alter table if exists
-alter table test rename test2
-alter table if exists test rename test2
+alter table test rename to test2
+alter table if exists test rename to test2
 
 # test: alter table no command
 create table test (id int primary key)
@@ -23,7 +23,7 @@ alter table test
 # test: rename
 alter table test rename
 alter table test rename to
-alter table test rename asf junk
+alter table test rename to asf junk
 alter table test rename to abc
 select system.table('abc').name
 
