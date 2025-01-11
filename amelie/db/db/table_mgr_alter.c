@@ -441,6 +441,9 @@ table_mgr_column_set(TableMgr* self,
 	case LOG_TABLE_COLUMN_SET_DEFAULT:
 		constraints_set_default_str(&column->constraints, value);
 		break;
+	case LOG_TABLE_COLUMN_SET_IDENTITY:
+		constraints_set_as_identity(&column->constraints, !str_empty(value));
+		break;
 	case LOG_TABLE_COLUMN_SET_STORED:
 		constraints_set_as_stored(&column->constraints, value);
 		break;
@@ -465,6 +468,19 @@ table_mgr_column_set_default(TableMgr* self,
 {
 	table_mgr_column_set(self, tr, schema, name, name_column, value, if_exists,
 	                     LOG_TABLE_COLUMN_SET_DEFAULT);
+}
+
+void
+table_mgr_column_set_identity(TableMgr* self,
+                              Tr*       tr,
+                              Str*      schema,
+                              Str*      name,
+                              Str*      name_column,
+                              Str*      value,
+                              bool      if_exists)
+{
+	table_mgr_column_set(self, tr, schema, name, name_column, value, if_exists,
+	                     LOG_TABLE_COLUMN_SET_IDENTITY);
 }
 
 void

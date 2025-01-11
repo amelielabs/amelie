@@ -123,6 +123,24 @@ select system.table('test2').columns
 alter table test2 unset column abc default
 select system.table('test2').columns
 
+# test: alter table set identity
+alter table test2 set column abc as identity
+select system.table('test2').columns
+
+# test: restart
+disconnect S0
+close E0
+open E0
+connect E0 S0 localhost:3485
+
+# test: validate state
+show lsn
+select system.table('test2').columns
+
+# test: alter table unset identity
+alter table test2 unset column abc as identity
+select system.table('test2').columns
+
 # test: restart
 disconnect S0
 close E0
@@ -148,7 +166,7 @@ show lsn
 select system.table('test2').columns
 
 # test: alter table unset stored
-alter table test2 unset column abc stored
+alter table test2 unset column abc as stored
 select system.table('test2').columns
 
 # test: restart
@@ -176,7 +194,7 @@ show lsn
 select system.table('test2').columns
 
 # test: alter table unset resolved
-alter table test2 unset column abc resolved
+alter table test2 unset column abc as resolved
 select system.table('test2').columns
 
 # test: restart

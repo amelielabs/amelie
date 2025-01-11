@@ -17,5 +17,6 @@ void   table_mgr_column_rename(TableMgr*, Tr*, Str*, Str*, Str*, Str*, bool);
 Table* table_mgr_column_add(TableMgr*, Tr*, Str*, Str*, Column*, bool);
 Table* table_mgr_column_drop(TableMgr*, Tr*, Str*, Str*, Str*, bool);
 void   table_mgr_column_set_default(TableMgr*, Tr*, Str*, Str*, Str*, Str*, bool);
+void   table_mgr_column_set_identity(TableMgr*, Tr*, Str*, Str*, Str*, Str*, bool);
 void   table_mgr_column_set_stored(TableMgr*, Tr*, Str*, Str*, Str*, Str*, bool);
 void   table_mgr_column_set_resolved(TableMgr*, Tr*, Str*, Str*, Str*, Str*, bool);

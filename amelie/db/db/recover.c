@@ -203,6 +203,19 @@ recover_next(Recover* self, uint8_t** meta, uint8_t** data)
 		                             &name_column, &value, true);
 		break;
 	}
+	case LOG_TABLE_COLUMN_SET_IDENTITY:
+	{
+		Str schema;
+		Str name;
+		Str name_column;
+		Str value_prev;
+		Str value;
+		table_op_column_set_read(data, &schema, &name, &name_column,
+		                         &value_prev, &value);
+		table_mgr_column_set_identity(&db->table_mgr, tr, &schema, &name,
+		                              &name_column, &value, true);
+		break;
+	}
 	case LOG_TABLE_COLUMN_SET_STORED:
 	{
 		Str schema;

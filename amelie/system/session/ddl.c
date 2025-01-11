@@ -319,6 +319,15 @@ ddl_alter_table(Session* self, Tr* tr)
 		                             &arg->value,
 		                              arg->if_exists);
 		break;
+	case TABLE_ALTER_COLUMN_SET_IDENTITY:
+	case TABLE_ALTER_COLUMN_UNSET_IDENTITY:
+		table_mgr_column_set_identity(&db->table_mgr, tr,
+		                              &arg->schema,
+		                              &arg->name,
+		                              &arg->column_name,
+		                              &arg->value,
+		                               arg->if_exists);
+		break;
 	case TABLE_ALTER_COLUMN_SET_STORED:
 	case TABLE_ALTER_COLUMN_UNSET_STORED:
 		table_mgr_column_set_stored(&db->table_mgr, tr,

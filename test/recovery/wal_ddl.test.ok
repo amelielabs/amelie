@@ -249,6 +249,49 @@ select system.table('test2').columns
     "as_resolved": ""
   }
 }]]
+# test: alter table set identity
+alter table test2 set column abc as identity
+select system.table('test2').columns
+[[{
+  "name": "id",
+  "type": 2,
+  "type_size": 4,
+  "constraints": {
+    "not_null": true,
+    "random": false,
+    "random_modulo": 9223372036854775807,
+    "default": null,
+    "as_identity": true,
+    "as_stored": "",
+    "as_resolved": ""
+  }
+}, {
+  "name": "abc",
+  "type": 2,
+  "type_size": 4,
+  "constraints": {
+    "not_null": false,
+    "random": false,
+    "random_modulo": 9223372036854775807,
+    "default": null,
+    "as_identity": true,
+    "as_stored": "",
+    "as_resolved": ""
+  }
+}, {
+  "name": "obj",
+  "type": 5,
+  "type_size": 0,
+  "constraints": {
+    "not_null": false,
+    "random": false,
+    "random_modulo": 9223372036854775807,
+    "default": null,
+    "as_identity": false,
+    "as_stored": "",
+    "as_resolved": ""
+  }
+}]]
 # test: restart
 disconnect S0
 close E0
@@ -256,7 +299,99 @@ open E0
 connect E0 S0 localhost:3485
 # test: validate state
 show lsn
-[10]
+[11]
+select system.table('test2').columns
+[[{
+  "name": "id",
+  "type": 2,
+  "type_size": 4,
+  "constraints": {
+    "not_null": true,
+    "random": false,
+    "random_modulo": 9223372036854775807,
+    "default": null,
+    "as_identity": true,
+    "as_stored": "",
+    "as_resolved": ""
+  }
+}, {
+  "name": "abc",
+  "type": 2,
+  "type_size": 4,
+  "constraints": {
+    "not_null": false,
+    "random": false,
+    "random_modulo": 9223372036854775807,
+    "default": null,
+    "as_identity": true,
+    "as_stored": "",
+    "as_resolved": ""
+  }
+}, {
+  "name": "obj",
+  "type": 5,
+  "type_size": 0,
+  "constraints": {
+    "not_null": false,
+    "random": false,
+    "random_modulo": 9223372036854775807,
+    "default": null,
+    "as_identity": false,
+    "as_stored": "",
+    "as_resolved": ""
+  }
+}]]
+# test: alter table unset identity
+alter table test2 unset column abc as identity
+select system.table('test2').columns
+[[{
+  "name": "id",
+  "type": 2,
+  "type_size": 4,
+  "constraints": {
+    "not_null": true,
+    "random": false,
+    "random_modulo": 9223372036854775807,
+    "default": null,
+    "as_identity": true,
+    "as_stored": "",
+    "as_resolved": ""
+  }
+}, {
+  "name": "abc",
+  "type": 2,
+  "type_size": 4,
+  "constraints": {
+    "not_null": false,
+    "random": false,
+    "random_modulo": 9223372036854775807,
+    "default": null,
+    "as_identity": false,
+    "as_stored": "",
+    "as_resolved": ""
+  }
+}, {
+  "name": "obj",
+  "type": 5,
+  "type_size": 0,
+  "constraints": {
+    "not_null": false,
+    "random": false,
+    "random_modulo": 9223372036854775807,
+    "default": null,
+    "as_identity": false,
+    "as_stored": "",
+    "as_resolved": ""
+  }
+}]]
+# test: restart
+disconnect S0
+close E0
+open E0
+connect E0 S0 localhost:3485
+# test: validate state
+show lsn
+[12]
 select system.table('test2').columns
 [[{
   "name": "id",
@@ -348,7 +483,7 @@ open E0
 connect E0 S0 localhost:3485
 # test: validate state
 show lsn
-[11]
+[13]
 select system.table('test2').columns
 [[{
   "name": "id",
@@ -391,7 +526,7 @@ select system.table('test2').columns
   }
 }]]
 # test: alter table unset stored
-alter table test2 unset column abc stored
+alter table test2 unset column abc as stored
 select system.table('test2').columns
 [[{
   "name": "id",
@@ -440,7 +575,7 @@ open E0
 connect E0 S0 localhost:3485
 # test: validate state
 show lsn
-[12]
+[14]
 select system.table('test2').columns
 [[{
   "name": "id",
@@ -532,7 +667,7 @@ open E0
 connect E0 S0 localhost:3485
 # test: validate state
 show lsn
-[13]
+[15]
 select system.table('test2').columns
 [[{
   "name": "id",
@@ -575,7 +710,7 @@ select system.table('test2').columns
   }
 }]]
 # test: alter table unset resolved
-alter table test2 unset column abc resolved
+alter table test2 unset column abc as resolved
 select system.table('test2').columns
 [[{
   "name": "id",
@@ -624,7 +759,7 @@ open E0
 connect E0 S0 localhost:3485
 # test: validate state
 show lsn
-[14]
+[16]
 select system.table('test2').columns
 [[{
   "name": "id",
@@ -679,7 +814,7 @@ open E0
 connect E0 S0 localhost:3485
 # test: validate state
 show lsn
-[15]
+[17]
 select serial("public", "test2")
 [0]
 select * from test2
@@ -695,7 +830,7 @@ open E0
 connect E0 S0 localhost:3485
 # test: validate state
 show lsn
-[16]
+[18]
 select serial("public", "test2")
 [0]
 select * from test2 use index (i)
@@ -703,7 +838,7 @@ select * from test2 use index (i)
 # test: alter index rename
 alter index i on test2 rename to i2
 show lsn
-[17]
+[19]
 select * from test2 use index (i2)
 [[0, null], [1, null], [2, null]]
 # test: restart
@@ -713,7 +848,7 @@ open E0
 connect E0 S0 localhost:3485
 # test: validate state
 show lsn
-[17]
+[19]
 select serial("public", "test2")
 [0]
 select * from test2 use index (i2)
@@ -733,7 +868,7 @@ open E0
 connect E0 S0 localhost:3485
 # test: validate state
 show lsn
-[18]
+[20]
 select serial("public", "test2")
 [0]
 select * from test2 use index (i)
@@ -753,7 +888,7 @@ open E0
 connect E0 S0 localhost:3485
 # test: validate state
 show lsn
-[19]
+[21]
 select serial("public", "test2")
 [0]
 select * from test2
@@ -761,7 +896,7 @@ select * from test2
 # test: drop table
 drop table test2
 show lsn
-[20]
+[22]
 select serial("public", "test2")
 {"msg": "table 'test2': not exists"}
 # test: restart
@@ -771,7 +906,7 @@ open E0
 connect E0 S0 localhost:3485
 # test: validate state
 show lsn
-[20]
+[22]
 select * from test2
 {"msg": "select * from ❰test2❱ ⟵ relation not found"}
 show tables
@@ -790,7 +925,7 @@ show schemas
   "system": false
 }]
 show lsn
-[21]
+[23]
 # test: restart
 disconnect S0
 close E0
@@ -798,7 +933,7 @@ open E0
 connect E0 S0 localhost:3485
 # test: validate state
 show lsn
-[21]
+[23]
 show schemas
 [{
   "name": "system",
@@ -824,7 +959,7 @@ show schemas
   "system": false
 }]
 show lsn
-[22]
+[24]
 # test: restart
 disconnect S0
 close E0
@@ -832,7 +967,7 @@ open E0
 connect E0 S0 localhost:3485
 # test: validate state
 show lsn
-[22]
+[24]
 show schemas
 [{
   "name": "system",
@@ -847,7 +982,7 @@ show schemas
 # test: drop schema
 drop schema test2
 show lsn
-[23]
+[25]
 show schemas
 [{
   "name": "system",
@@ -863,7 +998,7 @@ open E0
 connect E0 S0 localhost:3485
 # test: validate state
 show lsn
-[23]
+[25]
 show schemas
 [{
   "name": "system",

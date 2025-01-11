@@ -498,7 +498,7 @@ parse_table_alter(Stmt* self)
 	// ALTER TABLE [IF EXISTS] [schema.]name SET COLUMN name DEFAULT const
 	// ALTER TABLE [IF EXISTS] [schema.]name SET COLUMN name AS (expr) <STORED|RESOLVED>
 	// ALTER TABLE [IF EXISTS] [schema.]name UNSET COLUMN name DEFAULT
-	// ALTER TABLE [IF EXISTS] [schema.]name UNSET COLUMN name <STORED|RESOLVED>
+	// ALTER TABLE [IF EXISTS] [schema.]name UNSET COLUMN name AS <IDENTITY|STORED|RESOLVED>
 	auto stmt = ast_table_alter_allocate();
 	self->ast = &stmt->ast;
 
@@ -649,9 +649,17 @@ parse_table_alter(Stmt* self)
 				return;
 			}
 
+			// AS IDENTITY
 			// AS (expr) <STORED | RESOLVED>
 			if (stmt_if(self, KAS))
 			{
+				if (stmt_if(self, KIDENTITY))
+				{
+					stmt->type = TABLE_ALTER_COLUMN_SET_IDENTITY;
+					str_set(&stmt->value, "1", 1);
+					return;
+				}
+
 				// (
 				auto lbr = stmt_expect(self, '(');
 				// expr
@@ -689,15 +697,16 @@ parse_table_alter(Stmt* self)
 	if (stmt_if(self, KUNSET))
 	{
 		// UNSET COLUMN DEFAULT
-		// UNSET COLUMN STORED
-		// UNSET COLUMN RESOLVED
+		// UNSET COLUMN AS IDENTITY
+		// UNSET COLUMN AS STORED
+		// UNSET COLUMN AS RESOLVED
 		if (stmt_if(self, KCOLUMN))
 		{
 			// name
 			auto name = stmt_expect(self, KNAME);
 			str_set_str(&stmt->column_name, &name->string);
 
-			// DEFAULT | STORED | RESOLVED
+			// DEFAULT
 			if (stmt_if(self, KDEFAULT))
 			{
 				auto value = buf_create();
@@ -707,14 +716,23 @@ parse_table_alter(Stmt* self)
 				stmt->value_buf = value;
 				buf_str(value, &stmt->value);
 				stmt->type = TABLE_ALTER_COLUMN_UNSET_DEFAULT;
-			} else
+				return;
+			}
+
+			// AS
+			stmt_expect(self, KAS);
+
+			// IDENTITY | STORED | RESOLVED
+			if (stmt_if(self, KIDENTITY))
+				stmt->type = TABLE_ALTER_COLUMN_UNSET_IDENTITY;
+			else
 			if (stmt_if(self, KSTORED))
-				stmt->type = TABLE_ALTER_COLUMN_SET_STORED;
+				stmt->type = TABLE_ALTER_COLUMN_UNSET_STORED;
 			else
 			if (stmt_if(self, KRESOLVED))
-				stmt->type = TABLE_ALTER_COLUMN_SET_RESOLVED;
+				stmt->type = TABLE_ALTER_COLUMN_UNSET_RESOLVED;
 			else
-				stmt_error(self, name, "'DEFAULT, STORED or RESOLVED' expected");
+				stmt_error(self, NULL, "'IDENTITY, STORED or RESOLVED' expected");
 			return;
 		}
 
