@@ -12,19 +12,19 @@ set log_enable
 set log_enable to
 {"msg": "set log_enable to ⟵ value expected string, int, or bool"}
 set log_enable to 0
-{"msg": "SET 'log_enable': variable is read-only"}
+{"msg": "set ❰log_enable❱ ⟵ variable is read-only"}
 set query_dump to 0 junk
 {"msg": "set query_dump to 0 ❰junk❱ ⟵ ; expected"}
 # test: set read-only
 set log_enable to 0
-{"msg": "SET 'log_enable': variable is read-only"}
+{"msg": "set ❰log_enable❱ ⟵ variable is read-only"}
 # test: set bool
 show test_bool
 [false]
 set test_bool to "test"
-{"msg": "SET 'test_bool': bool value expected"}
+{"msg": "set test_bool to ❰\"test\"❱ ⟵ bool expected"}
 set test_bool to 1
-{"msg": "SET 'test_bool': bool value expected"}
+{"msg": "set test_bool to ❰1❱ ⟵ bool expected"}
 set test_bool to true
 show test_bool
 [true]
@@ -32,7 +32,7 @@ show test_bool
 show test_int
 [0]
 set test_int to "test"
-{"msg": "SET 'test_int': integer value expected"}
+{"msg": "set test_int to ❰\"test\"❱ ⟵ integer expected"}
 show test_int
 [0]
 set test_int to 1234
@@ -60,7 +60,7 @@ show test_int
 show test_string
 [""]
 set test_string to 1234
-{"msg": "SET 'test_string': string value expected"}
+{"msg": "set test_string to ❰1234❱ ⟵ string expected"}
 show test_string
 [""]
 set test_string to "hello"
@@ -76,7 +76,7 @@ show test_string
 show test_json
 [null]
 set test_json to 1234
-{"msg": "SET 'test_json': variable cannot be changed"}
+{"msg": "set ❰test_json❱ ⟵ variable cannot be changed"}
 show test_json
 [null]
 disconnect S0

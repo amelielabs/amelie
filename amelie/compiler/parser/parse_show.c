@@ -107,6 +107,7 @@ parse_show(Stmt* self)
 		name = stmt_next_shadow(self);
 		if (name->id != KNAME && name->id != KSTRING)
 			stmt_error(self, name, "name expected");
+		stmt->name_ast = name;
 		stmt->name = name->string;
 		break;
 	case SHOW_TABLES:
@@ -117,11 +118,13 @@ parse_show(Stmt* self)
 		{
 			name = stmt_next(self);
 			if (name->id == KNAME) {
+				stmt->name_ast = name;
 				stmt->name = name->string;
 				str_set(&stmt->schema, "public", 6);
 			} else
 			if (name->id == KNAME_COMPOUND)
 			{
+				stmt->name_ast = name;
 				stmt->name = name->string;
 				str_split(&stmt->name, &stmt->schema, '.');
 				str_advance(&stmt->name, str_size(&stmt->schema) + 1);
@@ -139,6 +142,7 @@ parse_show(Stmt* self)
 		break;
 	}
 	case SHOW_CONFIG:
+		stmt->name_ast = name;
 		stmt->name = name->string;
 		break;
 	default:

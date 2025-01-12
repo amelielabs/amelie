@@ -7,7 +7,7 @@ show timezone_default
 ["UTC"]
 # test: set unknown timezone
 set timezone to 'mars'
-{"msg": "set 'timezone': unable to find timezone 'mars'"}
+{"msg": "set timezone to ❰'mars'❱ ⟵ unable to find timezone"}
 show timezone
 ["UTC"]
 select system.config().timezone

@@ -37,6 +37,7 @@ struct AstShow
 {
 	Ast  ast;
 	Str  section;
+	Ast* name_ast;
 	Str  name;
 	Str  schema;
 	Str  format;

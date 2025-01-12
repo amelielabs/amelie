@@ -108,8 +108,7 @@ ctl_show(Session* self)
 		if (var && var_is(var, VAR_S))
 			var = NULL;
 		if (unlikely(var == NULL))
-			error("SHOW name: '%.*s' not found", str_size(&arg->name),
-			      str_of(&arg->name));
+			stmt_error(stmt, arg->name_ast, "variable not found");
 		if (var_is(var, VAR_L))
 			var = vars_find(&self->local.config.vars, &arg->name);
 		buf = buf_create();
@@ -138,11 +137,9 @@ ctl_set(Session* self)
 	if (var && var_is(var, VAR_S))
 		var = NULL;
 	if (unlikely(var == NULL))
-		error("SET '%.*s': variable not found", str_size(name),
-		      str_of(name));
+		stmt_error(stmt, arg->name, "variable not found");
 	if (unlikely(! var_is(var, VAR_R)))
-		error("SET '%.*s': variable is read-only", str_size(name),
-		      str_of(name));
+		stmt_error(stmt, arg->name, "variable is read-only");
 
 	// upgrade to exclusive lock, if var requires config update
 	if (! var_is(var, VAR_E))
@@ -160,13 +157,10 @@ ctl_set(Session* self)
 		if (var == &local->config.timezone)
 		{
 			if (value->id != KSTRING)
-				error("set '%.*s': string value expected", str_size(name),
-				      str_of(name));
+				stmt_error(stmt, value, "string expected");
 			auto timezone = timezone_mgr_find(global()->timezone_mgr, &value->string);
 			if (! timezone)
-				error("set '%.*s': unable to find timezone '%.*s'", str_size(name),
-				      str_of(name), str_size(&value->string),
-				      str_of(&value->string));
+				stmt_error(stmt, value, "unable to find timezone");
 
 			// set new timezone
 			local->timezone = timezone;
@@ -178,8 +172,7 @@ ctl_set(Session* self)
 	case VAR_BOOL:
 	{
 		if (value->id != KTRUE && value->id != KFALSE)
-			error("SET '%.*s': bool value expected", str_size(name),
-			      str_of(name));
+			stmt_error(stmt, value, "bool expected");
 		bool is_true = value->id == KTRUE;
 		var_int_set(var, is_true);
 		break;
@@ -187,23 +180,20 @@ ctl_set(Session* self)
 	case VAR_INT:
 	{
 		if (value->id != KINT)
-			error("SET '%.*s': integer value expected", str_size(name),
-			      str_of(name));
+			stmt_error(stmt, value, "integer expected");
 		var_int_set(var, value->integer);
 		break;
 	}
 	case VAR_STRING:
 	{
 		if (value->id != KSTRING)
-			error("SET '%.*s': string value expected", str_size(name),
-			      str_of(name));
+			stmt_error(stmt, value, "string expected");
 		var_string_set(var, &value->string);
 		break;
 	}
 	case VAR_JSON:
 	{
-		error("SET '%.*s': variable cannot be changed", str_size(name),
-		      str_of(name));
+		stmt_error(stmt, arg->name, "variable cannot be changed");
 		break;
 	}
 	}
@@ -223,13 +213,11 @@ ctl_token(Session* self)
 	// find user
 	auto user = user_cache_find(&user_mgr->cache, &arg->user->string);
 	if (! user)
-		error("%.*s: user not found", str_size(&arg->user->string),
-		      str_of(&arg->user->string));
+		stmt_error(stmt, arg->user, "user not found");
 
 	// ensure user has a secret
 	if (str_empty(&user->config->secret))
-		error("%.*s: user has no secret", str_size(&arg->user->string),
-		      str_of(&arg->user->string));
+		stmt_error(stmt, arg->user, "user has no secret");
 
 	// set expire timestamp
 	Timestamp expire;

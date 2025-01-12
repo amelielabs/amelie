@@ -63,5 +63,8 @@ select system.config(123)
 show log_enable
 show "log_enable"
 
+# test: show unknown
+show asdf
+
 disconnect S0
 close E0
