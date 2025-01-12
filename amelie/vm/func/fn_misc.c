@@ -204,7 +204,7 @@ fn_decode(Call* self)
 }
 
 static void
-fn_serial(Call* self)
+fn_identity_of(Call* self)
 {
 	auto argv = self->argv;
 	call_validate(self, 2);
@@ -283,7 +283,7 @@ FunctionDef fn_misc_def[] =
 	{ "public", "sha1",         TYPE_STRING, fn_sha1,         FN_NONE },
 	{ "public", "encode",       TYPE_STRING, fn_encode,       FN_NONE },
 	{ "public", "decode",       TYPE_STRING, fn_decode,       FN_NONE },
-	{ "public", "serial",       TYPE_INT,    fn_serial,       FN_NONE },
+	{ "public", "identity_of",  TYPE_INT,    fn_identity_of,  FN_NONE },
 	{ "public", "jwt",          TYPE_STRING, fn_jwt,          FN_NONE },
 	{  NULL,     NULL,          TYPE_NULL,   NULL,            FN_NONE }
 };

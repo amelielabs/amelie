@@ -6,7 +6,7 @@ connect E0 S0 localhost:3485
 # test: create table
 create table test (id serial primary key, data int default 0)
 show lsn
-select serial("public", "test")
+select identity_of("public", "test")
 
 # test: restart
 disconnect S0
@@ -16,13 +16,13 @@ connect E0 S0 localhost:3485
 
 # test: validate state
 show lsn
-select serial("public", "test")
+select identity_of("public", "test")
 
 # test: alter table rename
 alter table test rename to test2
 show lsn
-select serial("public", "test")
-select serial("public", "test2")
+select identity_of("public", "test")
+select identity_of("public", "test2")
 
 # test: restart
 disconnect S0
@@ -32,8 +32,8 @@ connect E0 S0 localhost:3485
 
 # test: validate state
 show lsn
-select serial("public", "test")
-select serial("public", "test2")
+select identity_of("public", "test")
+select identity_of("public", "test2")
 
 # test: alter table set unlogged
 alter table test2 set unlogged
@@ -71,7 +71,7 @@ select * from test2
 insert into test2() values (), (), ()
 select * from test2
 show lsn
-select serial("public", "test2")
+select identity_of("public", "test2")
 alter table test2 add column obj json
 select * from test2
 select obj from test2
@@ -84,7 +84,7 @@ connect E0 S0 localhost:3485
 
 # test: validate state
 show lsn
-select serial("public", "test2")
+select identity_of("public", "test2")
 select * from test2
 
 # test: alter table column rename
@@ -101,7 +101,7 @@ connect E0 S0 localhost:3485
 
 # test: validate state
 show lsn
-select serial("public", "test2")
+select identity_of("public", "test2")
 select data from test2
 select abc from test2
 
@@ -220,7 +220,7 @@ connect E0 S0 localhost:3485
 
 # test: validate state
 show lsn
-select serial("public", "test2")
+select identity_of("public", "test2")
 select * from test2
 
 # test: create index
@@ -235,7 +235,7 @@ connect E0 S0 localhost:3485
 
 # test: validate state
 show lsn
-select serial("public", "test2")
+select identity_of("public", "test2")
 select * from test2 use index (i)
 
 # test: alter index rename
@@ -251,7 +251,7 @@ connect E0 S0 localhost:3485
 
 # test: validate state
 show lsn
-select serial("public", "test2")
+select identity_of("public", "test2")
 select * from test2 use index (i2)
 
 # test: drop index
@@ -268,7 +268,7 @@ connect E0 S0 localhost:3485
 
 # test: validate state
 show lsn
-select serial("public", "test2")
+select identity_of("public", "test2")
 select * from test2 use index (i)
 select * from test2 use index (i2)
 select * from test2
@@ -285,13 +285,13 @@ connect E0 S0 localhost:3485
 
 # test: validate state
 show lsn
-select serial("public", "test2")
+select identity_of("public", "test2")
 select * from test2
 
 # test: drop table
 drop table test2
 show lsn
-select serial("public", "test2")
+select identity_of("public", "test2")
 
 # test: restart
 disconnect S0

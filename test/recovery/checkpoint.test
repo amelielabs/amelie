@@ -30,7 +30,7 @@ select * from test
 
 # test: insert
 insert into test () values (), (), ()
-select serial("public", "test")
+select identity_of("public", "test")
 
 # test: restart/recover (checkpoint + wal)
 disconnect S0
@@ -40,7 +40,7 @@ connect E0 S0 localhost:3485
 
 show lsn
 show checkpoint
-select serial("public", "test")
+select identity_of("public", "test")
 select * from test
 
 # test: checkpoint
@@ -56,7 +56,7 @@ connect E0 S0 localhost:3485
 
 show lsn
 show checkpoint
-select serial("public", "test")
+select identity_of("public", "test")
 select * from test
 
 # test: create schema
@@ -73,7 +73,7 @@ connect E0 S0 localhost:3485
 show lsn
 show checkpoint
 show schemas
-select serial("test", "test")
+select identity_of("test", "test")
 select * from test.test
 
 # test: checkpoint
@@ -90,7 +90,7 @@ connect E0 S0 localhost:3485
 show lsn
 show checkpoint
 show schemas
-select serial("test", "test")
+select identity_of("test", "test")
 select * from test.test
 
 disconnect S0

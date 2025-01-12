@@ -4,7 +4,7 @@ connect E0 S0 localhost:3485
 create table test (id serial primary key, data int default 0)
 show lsn
 [2]
-select serial("public", "test")
+select identity_of("public", "test")
 [0]
 # test: restart
 disconnect S0
@@ -14,15 +14,15 @@ connect E0 S0 localhost:3485
 # test: validate state
 show lsn
 [2]
-select serial("public", "test")
+select identity_of("public", "test")
 [0]
 # test: alter table rename
 alter table test rename to test2
 show lsn
 [3]
-select serial("public", "test")
+select identity_of("public", "test")
 {"msg": "table 'test': not exists"}
-select serial("public", "test2")
+select identity_of("public", "test2")
 [0]
 # test: restart
 disconnect S0
@@ -32,9 +32,9 @@ connect E0 S0 localhost:3485
 # test: validate state
 show lsn
 [3]
-select serial("public", "test")
+select identity_of("public", "test")
 {"msg": "table 'test': not exists"}
-select serial("public", "test2")
+select identity_of("public", "test2")
 [0]
 # test: alter table set unlogged
 alter table test2 set unlogged
@@ -73,7 +73,7 @@ select * from test2
 [[0, 0], [1, 0], [2, 0]]
 show lsn
 [6]
-select serial("public", "test2")
+select identity_of("public", "test2")
 [3]
 alter table test2 add column obj json
 select * from test2
@@ -88,7 +88,7 @@ connect E0 S0 localhost:3485
 # test: validate state
 show lsn
 [7]
-select serial("public", "test2")
+select identity_of("public", "test2")
 [0]
 select * from test2
 [[0, 0, null], [1, 0, null], [2, 0, null]]
@@ -108,7 +108,7 @@ connect E0 S0 localhost:3485
 # test: validate state
 show lsn
 [8]
-select serial("public", "test2")
+select identity_of("public", "test2")
 [0]
 select data from test2
 {"msg": "select ❰data❱ ⟵ column test2.data not found"}
@@ -815,7 +815,7 @@ connect E0 S0 localhost:3485
 # test: validate state
 show lsn
 [17]
-select serial("public", "test2")
+select identity_of("public", "test2")
 [0]
 select * from test2
 [[0, null], [1, null], [2, null]]
@@ -831,7 +831,7 @@ connect E0 S0 localhost:3485
 # test: validate state
 show lsn
 [18]
-select serial("public", "test2")
+select identity_of("public", "test2")
 [0]
 select * from test2 use index (i)
 [[0, null], [1, null], [2, null]]
@@ -849,7 +849,7 @@ connect E0 S0 localhost:3485
 # test: validate state
 show lsn
 [19]
-select serial("public", "test2")
+select identity_of("public", "test2")
 [0]
 select * from test2 use index (i2)
 [[0, null], [1, null], [2, null]]
@@ -869,7 +869,7 @@ connect E0 S0 localhost:3485
 # test: validate state
 show lsn
 [20]
-select serial("public", "test2")
+select identity_of("public", "test2")
 [0]
 select * from test2 use index (i)
 {"msg": "index 'i': not exists"}
@@ -889,7 +889,7 @@ connect E0 S0 localhost:3485
 # test: validate state
 show lsn
 [21]
-select serial("public", "test2")
+select identity_of("public", "test2")
 [0]
 select * from test2
 []
@@ -897,7 +897,7 @@ select * from test2
 drop table test2
 show lsn
 [22]
-select serial("public", "test2")
+select identity_of("public", "test2")
 {"msg": "table 'test2': not exists"}
 # test: restart
 disconnect S0

@@ -10117,14 +10117,14 @@ select count(id2) from test
 switch S0
 create table test2 (id serial primary key)
 insert into test2 () values (), (), (), ()
-select serial("public", "test2")
+select identity_of("public", "test2")
 
 # test: wait replica sync
 watch system.replica("00000000-0000-0000-0000-000000000001").lsn = system.config().lsn
 show repl
 
 switch S1
-select serial("public", "test2")
+select identity_of("public", "test2")
 
 # test: create node
 switch S0

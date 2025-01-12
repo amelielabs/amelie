@@ -23,7 +23,7 @@ show all
 # test: create table
 create table test (id serial primary key, data int default 0)
 show lsn
-select serial("public", "test")
+select identity_of("public", "test")
 
 # test: restart
 disconnect S0
@@ -33,12 +33,12 @@ connect E0 S0 localhost:3485
 
 # test: validate state
 show lsn
-select serial("public", "test")
+select identity_of("public", "test")
 
 # test: insert
 insert into test () values (), (), ()
 show lsn
-select serial("public", "test")
+select identity_of("public", "test")
 select * from test
 
 # test: restart
@@ -49,13 +49,13 @@ connect E0 S0 localhost:3485
 
 # test: validate state
 show lsn
-select serial("public", "test")
+select identity_of("public", "test")
 select * from test
 
 # test: update
 update test set data = id
 show lsn
-select serial("public", "test")
+select identity_of("public", "test")
 select * from test
 
 # test: restart
@@ -66,13 +66,13 @@ connect E0 S0 localhost:3485
 
 # test: validate state
 show lsn
-select serial("public", "test")
+select identity_of("public", "test")
 select * from test
 
 # test: upsert
 insert into test values (2, 0) on conflict do update set data = data + 1
 show lsn
-select serial("public", "test")
+select identity_of("public", "test")
 select * from test
 
 # test: restart
@@ -83,13 +83,13 @@ connect E0 S0 localhost:3485
 
 # test: validate state
 show lsn
-select serial("public", "test")
+select identity_of("public", "test")
 select * from test
 
 # test: delete
 delete from test where id in (0, 1)
 show lsn
-select serial("public", "test")
+select identity_of("public", "test")
 select * from test
 
 # test: restart
@@ -100,7 +100,7 @@ connect E0 S0 localhost:3485
 
 # test: validate state
 show lsn
-select serial("public", "test")
+select identity_of("public", "test")
 select * from test
 
 disconnect S0

@@ -140,7 +140,7 @@ show all
 create table test (id serial primary key, data int default 0)
 show lsn
 [2]
-select serial("public", "test")
+select identity_of("public", "test")
 [0]
 # test: restart
 disconnect S0
@@ -150,13 +150,13 @@ connect E0 S0 localhost:3485
 # test: validate state
 show lsn
 [2]
-select serial("public", "test")
+select identity_of("public", "test")
 [0]
 # test: insert
 insert into test () values (), (), ()
 show lsn
 [3]
-select serial("public", "test")
+select identity_of("public", "test")
 [3]
 select * from test
 [[0, 0], [1, 0], [2, 0]]
@@ -168,7 +168,7 @@ connect E0 S0 localhost:3485
 # test: validate state
 show lsn
 [3]
-select serial("public", "test")
+select identity_of("public", "test")
 [3]
 select * from test
 [[0, 0], [1, 0], [2, 0]]
@@ -176,7 +176,7 @@ select * from test
 update test set data = id
 show lsn
 [4]
-select serial("public", "test")
+select identity_of("public", "test")
 [3]
 select * from test
 [[0, 0], [1, 1], [2, 2]]
@@ -188,7 +188,7 @@ connect E0 S0 localhost:3485
 # test: validate state
 show lsn
 [4]
-select serial("public", "test")
+select identity_of("public", "test")
 [3]
 select * from test
 [[0, 0], [1, 1], [2, 2]]
@@ -196,7 +196,7 @@ select * from test
 insert into test values (2, 0) on conflict do update set data = data + 1
 show lsn
 [5]
-select serial("public", "test")
+select identity_of("public", "test")
 [4]
 select * from test
 [[0, 0], [1, 1], [2, 3]]
@@ -208,7 +208,7 @@ connect E0 S0 localhost:3485
 # test: validate state
 show lsn
 [5]
-select serial("public", "test")
+select identity_of("public", "test")
 [3]
 select * from test
 [[0, 0], [1, 1], [2, 3]]
@@ -216,7 +216,7 @@ select * from test
 delete from test where id in (0, 1)
 show lsn
 [6]
-select serial("public", "test")
+select identity_of("public", "test")
 [3]
 select * from test
 [[2, 3]]
@@ -228,7 +228,7 @@ connect E0 S0 localhost:3485
 # test: validate state
 show lsn
 [6]
-select serial("public", "test")
+select identity_of("public", "test")
 [3]
 select * from test
 [[2, 3]]
