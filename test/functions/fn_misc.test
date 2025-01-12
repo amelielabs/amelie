@@ -51,10 +51,10 @@ select {"id":"2489660418","type":"PushEvent","actor":{"id":250019,"login":"tarek
 
 # test: serial()
 select serial("public", "abc")
-#create table test (id int primary key serial)
-#insert into test () values (), (), ()
-#select serial("public", "test")
-#drop table test
+create table test (id serial primary key)
+insert into test () values (), (), ()
+select serial("public", "test")
+drop table test
 
 # test: jwt()
 select jwt({"alg": "HS256", "typ": "JWT"}, {}, "123")

@@ -7,7 +7,7 @@ connect E0 S0 localhost:3485
 select 1 * where false
 
 # test: select from table where column
-create table test (id int primary key serial, data int default 0)
+create table test (id serial primary key, data int default 0)
 insert into test () values ()
 insert into test () values ()
 insert into test () values ()
@@ -16,7 +16,7 @@ select * from test where id >= 0
 drop table test
 
 # test: select from table where column.path
-create table test (id int primary key serial, data json)
+create table test (id serial primary key, data json)
 insert into test (data) values ({"data": 123})
 insert into test (data) values ({"data": 123})
 insert into test (data) values ({"data": 123})
@@ -27,7 +27,7 @@ select * from test where data.data::int >= 0
 drop table test
 
 # test: select from table where column.path #2
-create table test (id int primary key serial, data json)
+create table test (id serial primary key, data json)
 insert into test (data) values ({"data": {"data": 123}})
 insert into test (data) values ({"data": {"data": 123}})
 insert into test (data) values ({"data": {"data": 123}})
@@ -37,7 +37,7 @@ select * from test where data.data.data::int >= 0
 drop table test
 
 # test: select from table where target.column
-create table test (id int primary key serial, data int default 0)
+create table test (id serial primary key, data int default 0)
 insert into test () values ()
 insert into test () values ()
 insert into test () values ()
@@ -46,7 +46,7 @@ select * from test where test.id >= 0
 drop table test
 
 # test: select from table where target.column.path
-create table test (id int primary key serial, data json)
+create table test (id serial primary key, data json)
 insert into test (data) values ({"data": 123})
 insert into test (data) values ({"data": 123})
 insert into test (data) values ({"data": 123})
@@ -55,7 +55,7 @@ select * from test where test.data.data::int >= 0
 drop table test
 
 # test: select from table where alias.column
-create table test (id int primary key serial, data int default 0)
+create table test (id serial primary key, data int default 0)
 insert into test () values ()
 insert into test () values ()
 insert into test () values ()
@@ -64,7 +64,7 @@ select * from test alias where alias.id >= 0
 drop table test
 
 # test: select from table where alias.column.path
-create table test (id int primary key serial, data json)
+create table test (id serial primary key, data json)
 insert into test (data) values ({"data": 123})
 insert into test (data) values ({"data": 123})
 insert into test (data) values ({"data": 123})
@@ -73,7 +73,7 @@ select * from test alias where alias.data.data::int >= 0
 drop table test
 
 # test: select from table where *
-create table test (id int primary key serial, data int default 0)
+create table test (id serial primary key, data int default 0)
 insert into test () values ()
 insert into test () values ()
 insert into test () values ()

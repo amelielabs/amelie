@@ -94,7 +94,6 @@ priority_map[KEYWORD_MAX] =
 	[KSET]                     = priority_value,
 	[KUNSET]                   = priority_value,
 	[KEXTRACT]                 = priority_value,
-	[KSERIAL]                  = priority_value,
 	[KSELECT]                  = priority_value,
 	[KCOUNT]                   = priority_value,
 	[KSELF]                    = priority_value,
@@ -446,7 +445,6 @@ expr_value(Stmt* self, Expr* expr, Ast* value)
 	case KSET:
 	case KUNSET:
 	case KRANDOM:
-	case KSERIAL:
 	case KREPLACE:
 	case KERROR:
 	{

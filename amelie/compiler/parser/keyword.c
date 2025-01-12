@@ -169,7 +169,6 @@ Keyword keywords[] =
 	{ KSUBSCRIBE,             "subscribe",             9  },
 	{ KSWITCH,                "switch",                6  },
 	{ KSCHEMA,                "schema",                6  },
-	{ KSERIAL,                "serial",                6  },
 	{ KSHARED,                "shared",                6  },
 	{ KSECRET,                "secret",                6  },
 	{ KSTORED,                "stored",                6  },

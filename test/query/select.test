@@ -35,7 +35,7 @@ select *
 select *, *
 
 # test: select * from table
-create table test (id int primary key serial)
+create table test (id serial primary key)
 insert into test () values ()
 insert into test () values ()
 insert into test () values ()
@@ -52,7 +52,7 @@ select `test.*` from test
 drop table test
 
 # test: select column from table
-create table test (id int primary key serial, data int default 0)
+create table test (id serial primary key, data int default 0)
 insert into test () values ()
 insert into test () values ()
 insert into test () values ()
@@ -63,7 +63,7 @@ select `id`, data from test
 drop table test
 
 # test: select column.path from table
-create table test (id int primary key serial, data json)
+create table test (id serial primary key, data json)
 insert into test (data) values ({"data": 123})
 insert into test (data) values ({"data": 123})
 insert into test (`data`) values ({"data": 123})
@@ -73,7 +73,7 @@ select data.data from test
 drop table test
 
 # test: select column.path from table #2
-create table test (id int primary key serial, data json)
+create table test (id serial primary key, data json)
 insert into test (data) values ({"data": {"data": 123}})
 insert into test (data) values ({"data": {"data": 123}})
 insert into test (data) values ({"data": {"data": 123}})
@@ -83,7 +83,7 @@ select data.data.data from test
 drop table test
 
 # test: select target.column from table
-create table test (id int primary key serial, data int default 0)
+create table test (id serial primary key, data int default 0)
 insert into test () values ()
 insert into test () values ()
 insert into test () values ()
@@ -92,7 +92,7 @@ select test.id, test.data from test
 drop table test
 
 # test: select target.column.path from table
-create table test (id int primary key serial, data json)
+create table test (id serial primary key, data json)
 insert into test (data) values ({"data": 123})
 insert into test (data) values ({"data": 123})
 insert into test (data) values ({"data": 123})
@@ -103,7 +103,7 @@ select test.data.data, *, test.* from test
 drop table test
 
 # test: select alias.column from table
-create table test (id int primary key serial, data int default 0)
+create table test (id serial primary key, data int default 0)
 insert into test () values ()
 insert into test () values ()
 insert into test () values ()
@@ -113,7 +113,7 @@ select alias.id, alias.data from test alias
 drop table test
 
 # test: select alias.column.path from table
-create table test (id int primary key serial, data json)
+create table test (id serial primary key, data json)
 insert into test (data) values ({"data": 123})
 insert into test (data) values ({"data": 123})
 insert into test (data) values ({"data": 123})
@@ -123,7 +123,7 @@ select alias.data['data'] from test alias
 drop table test
 
 # test: select alias.* from table
-create table test (id int primary key serial, data int default 0)
+create table test (id serial primary key, data int default 0)
 insert into test () values ()
 insert into test () values ()
 insert into test () values ()
@@ -159,7 +159,7 @@ select t.name from system.users() t
 drop user test
 
 # test: select target.column.path from function()
-create table test (id int primary key serial)
+create table test (id serial primary key)
 select indexes[0].type from system.tables()
 select tables.indexes[0].type from system.tables()
 select t.indexes[0].type from system.tables() t

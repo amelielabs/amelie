@@ -1,7 +1,7 @@
 open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "127.0.0.1", "port": 3485 }], "backends": 3
 connect E0 S0 localhost:3485
 # test: select distinct * from table empty
-create table test (id int primary key serial, data int default 0)
+create table test (id serial primary key, data int default 0)
 explain select distinct * from test
 [{
   "bytecode": {
@@ -18,11 +18,11 @@ explain select distinct * from test
     "node": {
       "00": "set_ordered         0      2      2     ",
       "01": "table_open          0      2      12    # public.test (primary)",
-      "02": "table_readi32       1      0      0     ",
+      "02": "table_readi64       1      0      0     ",
       "03": "push                1      0      0     ",
       "04": "table_readi32       1      0      1     ",
       "05": "push                1      0      0     ",
-      "06": "table_readi32       1      0      0     ",
+      "06": "table_readi64       1      0      0     ",
       "07": "push                1      0      0     ",
       "08": "table_readi32       1      0      1     ",
       "09": "push                1      0      0     ",
@@ -60,11 +60,11 @@ explain select distinct * from test
     "node": {
       "00": "set_ordered         0      2      2     ",
       "01": "table_open          0      2      12    # public.test (primary)",
-      "02": "table_readi32       1      0      0     ",
+      "02": "table_readi64       1      0      0     ",
       "03": "push                1      0      0     ",
       "04": "table_readi32       1      0      1     ",
       "05": "push                1      0      0     ",
-      "06": "table_readi32       1      0      0     ",
+      "06": "table_readi64       1      0      0     ",
       "07": "push                1      0      0     ",
       "08": "table_readi32       1      0      1     ",
       "09": "push                1      0      0     ",
@@ -96,9 +96,9 @@ explain select distinct id from test
     "node": {
       "00": "set_ordered         0      1      1     ",
       "01": "table_open          0      1      8     # public.test (primary)",
-      "02": "table_readi32       1      0      0     ",
+      "02": "table_readi64       1      0      0     ",
       "03": "push                1      0      0     ",
-      "04": "table_readi32       1      0      0     ",
+      "04": "table_readi64       1      0      0     ",
       "05": "push                1      0      0     ",
       "06": "set_add             0      0      0     ",
       "07": "table_next          0      2      0     ",
@@ -130,11 +130,11 @@ explain select distinct id, data from test
     "node": {
       "00": "set_ordered         0      2      2     ",
       "01": "table_open          0      2      12    # public.test (primary)",
-      "02": "table_readi32       1      0      0     ",
+      "02": "table_readi64       1      0      0     ",
       "03": "push                1      0      0     ",
       "04": "table_readi32       1      0      1     ",
       "05": "push                1      0      0     ",
-      "06": "table_readi32       1      0      0     ",
+      "06": "table_readi64       1      0      0     ",
       "07": "push                1      0      0     ",
       "08": "table_readi32       1      0      1     ",
       "09": "push                1      0      0     ",
@@ -332,7 +332,7 @@ explain select * from test order by data
     "node": {
       "00": "set_ordered         0      2      1     ",
       "01": "table_open          0      1      10    # public.test (primary)",
-      "02": "table_readi32       1      0      0     ",
+      "02": "table_readi64       1      0      0     ",
       "03": "push                1      0      0     ",
       "04": "table_readi32       1      0      1     ",
       "05": "push                1      0      0     ",
@@ -363,7 +363,7 @@ explain select distinct on (data) * from test
     "node": {
       "00": "set_ordered         0      2      1     ",
       "01": "table_open          0      1      10    # public.test (primary)",
-      "02": "table_readi32       1      0      0     ",
+      "02": "table_readi64       1      0      0     ",
       "03": "push                1      0      0     ",
       "04": "table_readi32       1      0      1     ",
       "05": "push                1      0      0     ",
@@ -387,7 +387,7 @@ explain select distinct on (data) * from test order by data, id
 {"msg": "explain select distinct on (data) * from test order by data, id ⟵ ORDER BY and DISTINCT cannot be combined"}
 drop table test
 # test: select distinct * from shared empty
-create shared table test (id int primary key serial, data int default 0)
+create shared table test (id serial primary key, data int default 0)
 explain select distinct * from test
 [{
   "bytecode": {
@@ -404,11 +404,11 @@ explain select distinct * from test
     "node": {
       "00": "set_ordered         0      2      2     ",
       "01": "table_open          0      2      12    # public.test (primary)",
-      "02": "table_readi32       1      0      0     ",
+      "02": "table_readi64       1      0      0     ",
       "03": "push                1      0      0     ",
       "04": "table_readi32       1      0      1     ",
       "05": "push                1      0      0     ",
-      "06": "table_readi32       1      0      0     ",
+      "06": "table_readi64       1      0      0     ",
       "07": "push                1      0      0     ",
       "08": "table_readi32       1      0      1     ",
       "09": "push                1      0      0     ",
@@ -446,11 +446,11 @@ explain select distinct * from test
     "node": {
       "00": "set_ordered         0      2      2     ",
       "01": "table_open          0      2      12    # public.test (primary)",
-      "02": "table_readi32       1      0      0     ",
+      "02": "table_readi64       1      0      0     ",
       "03": "push                1      0      0     ",
       "04": "table_readi32       1      0      1     ",
       "05": "push                1      0      0     ",
-      "06": "table_readi32       1      0      0     ",
+      "06": "table_readi64       1      0      0     ",
       "07": "push                1      0      0     ",
       "08": "table_readi32       1      0      1     ",
       "09": "push                1      0      0     ",
@@ -482,9 +482,9 @@ explain select distinct id from test
     "node": {
       "00": "set_ordered         0      1      1     ",
       "01": "table_open          0      1      8     # public.test (primary)",
-      "02": "table_readi32       1      0      0     ",
+      "02": "table_readi64       1      0      0     ",
       "03": "push                1      0      0     ",
-      "04": "table_readi32       1      0      0     ",
+      "04": "table_readi64       1      0      0     ",
       "05": "push                1      0      0     ",
       "06": "set_add             0      0      0     ",
       "07": "table_next          0      2      0     ",
@@ -516,11 +516,11 @@ explain select distinct id, data from test
     "node": {
       "00": "set_ordered         0      2      2     ",
       "01": "table_open          0      2      12    # public.test (primary)",
-      "02": "table_readi32       1      0      0     ",
+      "02": "table_readi64       1      0      0     ",
       "03": "push                1      0      0     ",
       "04": "table_readi32       1      0      1     ",
       "05": "push                1      0      0     ",
-      "06": "table_readi32       1      0      0     ",
+      "06": "table_readi64       1      0      0     ",
       "07": "push                1      0      0     ",
       "08": "table_readi32       1      0      1     ",
       "09": "push                1      0      0     ",
@@ -701,7 +701,7 @@ explain select * from test order by data
     "node": {
       "00": "set_ordered         0      2      1     ",
       "01": "table_open          0      1      10    # public.test (primary)",
-      "02": "table_readi32       1      0      0     ",
+      "02": "table_readi64       1      0      0     ",
       "03": "push                1      0      0     ",
       "04": "table_readi32       1      0      1     ",
       "05": "push                1      0      0     ",
@@ -732,7 +732,7 @@ explain select distinct on (data) * from test
     "node": {
       "00": "set_ordered         0      2      1     ",
       "01": "table_open          0      1      10    # public.test (primary)",
-      "02": "table_readi32       1      0      0     ",
+      "02": "table_readi64       1      0      0     ",
       "03": "push                1      0      0     ",
       "04": "table_readi32       1      0      1     ",
       "05": "push                1      0      0     ",

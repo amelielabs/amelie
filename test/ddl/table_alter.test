@@ -49,7 +49,7 @@ select system.table('test').name
 drop table test
 
 # test: set identity
-create table test (id int primary key serial, data int default 0)
+create table test (id serial primary key, data int default 0)
 insert into test () values ()
 insert into test () values ()
 insert into test () values ()
@@ -98,7 +98,7 @@ alter table test rename column data to
 alter table test rename column data to 1
 
 # test: rename column
-create table test (id int primary key serial, data int default 0)
+create table test (id serial primary key, data int default 0)
 select system.table('test').columns
 alter table test rename column data to data2
 select system.table('test').columns
@@ -116,7 +116,7 @@ select id2 from test
 drop table test
 
 # test: rename column (already exists)
-create table test (id int primary key serial, data int default 0)
+create table test (id serial primary key, data int default 0)
 select system.table('test').columns
 alter table test rename column data to data
 select system.table('test').columns
@@ -189,7 +189,7 @@ drop table test
 # test: add column (serial)
 create table test (id int primary key)
 insert into test values (1),(2),(3)
-alter table test add column data int serial
+alter table test add column data serial
 select system.table('test').columns
 select data from test
 insert into test (id) values (4), (5), (6)

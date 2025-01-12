@@ -10115,7 +10115,7 @@ select count(id2) from test
 
 # test: create table (serial)
 switch S0
-create table test2 (id int primary key serial)
+create table test2 (id serial primary key)
 insert into test2 () values (), (), (), ()
 select serial("public", "test2")
 

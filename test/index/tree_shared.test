@@ -3107,7 +3107,7 @@ select * from test
 drop table test
 
 # test: tree insert/abort
-create shared table test (id int primary key serial) with (type = 'tree')
+create shared table test (id serial primary key) with (type = 'tree')
 create index i on test (id)
 insert into test generate 1025; select error("abort")
 select * from test
@@ -3115,7 +3115,7 @@ select count(*) from test use index (i)
 drop table test
 
 # test: tree insert random
-create shared table test (id int primary key serial) with (type = 'tree')
+create shared table test (id serial primary key) with (type = 'tree')
 insert into test values (8162)
 insert into test values (6536)
 insert into test values (3556)

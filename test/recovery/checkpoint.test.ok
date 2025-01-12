@@ -8,7 +8,7 @@ checkpoint
 show checkpoint
 [1]
 # test: create table
-create distributed table test (id int primary key serial)
+create distributed table test (id serial primary key)
 show lsn
 [2]
 # test: checkpoint

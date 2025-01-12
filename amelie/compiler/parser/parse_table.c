@@ -34,21 +34,18 @@
 #include <amelie_vm.h>
 #include <amelie_parser.h>
 
-int
-parse_type(Stmt* self, int* type_size)
+static inline bool
+parse_type(Stmt* self, int* type, int* type_size)
 {
 	auto ast = stmt_next_shadow(self);
 	if (ast->id != KNAME)
-		goto error;
+		stmt_error(self, ast, "unrecognized data type");
 
-	auto type = type_read(&ast->string, type_size);
-	if (type == -1)
-		goto error;
-	return type;
+	*type = type_read(&ast->string, type_size);
+	if (*type == -1)
+		stmt_error(self, ast, "unrecognized data type");
 
-error:
-	stmt_error(self, ast, "unrecognized data type");
-	return -1;
+	return str_is_case(&ast->string, "serial", 6);
 }
 
 void
@@ -154,19 +151,6 @@ parse_default(Stmt* self, Column* column, Buf* value)
 }
 
 static void
-parse_as_identity(Stmt* self, Constraints* cons, Column* column, Ast* ast)
-{
-	// ensure the column has type INT64
-	if (column->type != TYPE_INT || column->type_size < 4)
-		stmt_error(self, ast, "identity column must be int or int64");
-
-	constraints_set_as_identity(cons, true);
-
-	if (cons->random)
-		stmt_error(self, ast, "cannot be used with RANDOM");
-}
-
-static void
 parse_constraints(Stmt* self, Keys* keys, Column* column)
 {
 	// constraints
@@ -193,13 +177,6 @@ parse_constraints(Stmt* self, Keys* keys, Column* column)
 		{
 			parse_default(self, column, &cons->value);
 			has_default = true;
-			break;
-		}
-
-		// SERIAL
-		case KSERIAL:
-		{
-			parse_as_identity(self, cons, column, name);
 			break;
 		}
 
@@ -281,7 +258,14 @@ parse_constraints(Stmt* self, Keys* keys, Column* column)
 			auto identity = stmt_if(self, KIDENTITY);
 			if (identity)
 			{
-				parse_as_identity(self, cons, column, identity);
+				// ensure the column has type INT64
+				if (column->type != TYPE_INT || column->type_size < 4)
+					stmt_error(self, identity, "identity column must be int or int64");
+
+				constraints_set_as_identity(cons, true);
+
+				if (cons->random)
+					stmt_error(self, identity, "cannot be used with RANDOM");
 				break;
 			}
 
@@ -331,8 +315,7 @@ parse_constraints(Stmt* self, Keys* keys, Column* column)
 static void
 parse_columns(Stmt* self, Columns* columns, Keys* keys)
 {
-	// (name type [not null | default | serial | primary key | as], ...,
-	//  primary key())
+	// (name type [constraints], ..., primary key())
 
 	// (
 	stmt_expect(self, '(');
@@ -363,9 +346,11 @@ parse_columns(Stmt* self, Columns* columns, Keys* keys)
 		column_set_name(column, &name->string);
 		columns_add(columns, column);
 
-		// type
-		int type_size = 0;
-		int type = parse_type(self, &type_size);
+		// type | SERIAL
+		int type_size;
+		int type;
+		if (parse_type(self, &type, &type_size))
+			constraints_set_as_identity(&column->constraints, true);
 		column_set_type(column, type, type_size);
 
 		// [PRIMARY KEY | NOT NULL | DEFAULT | RANDOM | AS]
@@ -525,9 +510,11 @@ parse_table_alter(Stmt* self)
 		auto column = stmt->column;
 		column_set_name(column, &name->string);
 
-		// type
-		int type_size = 0;
-		int type = parse_type(self, &type_size);
+		// type | SERIAL
+		int type_size;
+		int type;
+		if (parse_type(self, &type, &type_size))
+			constraints_set_as_identity(&column->constraints, true);
 		column_set_type(column, type, type_size);
 
 		// [NOT NULL | DEFAULT | RANDOM | AS]

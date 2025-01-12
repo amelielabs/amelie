@@ -4,7 +4,7 @@ connect E0 S0 localhost:3485
 select 1 * where false
 {"msg": "select 1 ❰*❱ ⟵ bad expression"}
 # test: select from table where column
-create table test (id int primary key serial, data int default 0)
+create table test (id serial primary key, data int default 0)
 insert into test () values ()
 insert into test () values ()
 insert into test () values ()
@@ -26,11 +26,11 @@ explain select * from test where id >= 0
       "01": "int                 1      -      0     # 0",
       "02": "push                1      0      0     ",
       "03": "table_open          0      0      14    # public.test (primary)",
-      "04": "table_readi32       1      0      0     ",
+      "04": "table_readi64       1      0      0     ",
       "05": "int                 2      -      0     # 0",
       "06": "gteii               3      1      2     ",
       "07": "jntr                13     3      0     ",
-      "08": "table_readi32       1      0      0     ",
+      "08": "table_readi64       1      0      0     ",
       "09": "push                1      0      0     ",
       "10": "table_readi32       1      0      1     ",
       "11": "push                1      0      0     ",
@@ -46,7 +46,7 @@ select * from test where id >= 0
 [[0, 0], [1, 0], [2, 0]]
 drop table test
 # test: select from table where column.path
-create table test (id int primary key serial, data json)
+create table test (id serial primary key, data json)
 insert into test (data) values ({"data": 123})
 insert into test (data) values ({"data": 123})
 insert into test (data) values ({"data": 123})
@@ -84,7 +84,7 @@ explain select * from test where data.data::int >= 0
       "07": "int                 2      -      0     # 0",
       "08": "gteii               3      1      2     ",
       "09": "jntr                15     3      0     ",
-      "10": "table_readi32       1      0      0     ",
+      "10": "table_readi64       1      0      0     ",
       "11": "push                1      0      0     ",
       "12": "table_readj         1      0      1     ",
       "13": "push                1      0      0     ",
@@ -106,7 +106,7 @@ select * from test where data.data::int >= 0
 }]]
 drop table test
 # test: select from table where column.path #2
-create table test (id int primary key serial, data json)
+create table test (id serial primary key, data json)
 insert into test (data) values ({"data": {"data": 123}})
 insert into test (data) values ({"data": {"data": 123}})
 insert into test (data) values ({"data": {"data": 123}})
@@ -148,7 +148,7 @@ explain select * from test where data.data.data::int >= 0
       "07": "int                 2      -      0     # 0",
       "08": "gteii               3      1      2     ",
       "09": "jntr                15     3      0     ",
-      "10": "table_readi32       1      0      0     ",
+      "10": "table_readi64       1      0      0     ",
       "11": "push                1      0      0     ",
       "12": "table_readj         1      0      1     ",
       "13": "push                1      0      0     ",
@@ -176,7 +176,7 @@ select * from test where data.data.data::int >= 0
 }]]
 drop table test
 # test: select from table where target.column
-create table test (id int primary key serial, data int default 0)
+create table test (id serial primary key, data int default 0)
 insert into test () values ()
 insert into test () values ()
 insert into test () values ()
@@ -198,11 +198,11 @@ explain select * from test where test.id >= 0
       "01": "int                 1      -      0     # 0",
       "02": "push                1      0      0     ",
       "03": "table_open          0      0      14    # public.test (primary)",
-      "04": "table_readi32       1      0      0     ",
+      "04": "table_readi64       1      0      0     ",
       "05": "int                 2      -      0     # 0",
       "06": "gteii               3      1      2     ",
       "07": "jntr                13     3      0     ",
-      "08": "table_readi32       1      0      0     ",
+      "08": "table_readi64       1      0      0     ",
       "09": "push                1      0      0     ",
       "10": "table_readi32       1      0      1     ",
       "11": "push                1      0      0     ",
@@ -218,7 +218,7 @@ select * from test where test.id >= 0
 [[0, 0], [1, 0], [2, 0]]
 drop table test
 # test: select from table where target.column.path
-create table test (id int primary key serial, data json)
+create table test (id serial primary key, data json)
 insert into test (data) values ({"data": 123})
 insert into test (data) values ({"data": 123})
 insert into test (data) values ({"data": 123})
@@ -246,7 +246,7 @@ explain select * from test where test.data.data::int >= 0
       "07": "int                 2      -      0     # 0",
       "08": "gteii               3      1      2     ",
       "09": "jntr                15     3      0     ",
-      "10": "table_readi32       1      0      0     ",
+      "10": "table_readi64       1      0      0     ",
       "11": "push                1      0      0     ",
       "12": "table_readj         1      0      1     ",
       "13": "push                1      0      0     ",
@@ -268,7 +268,7 @@ select * from test where test.data.data::int >= 0
 }]]
 drop table test
 # test: select from table where alias.column
-create table test (id int primary key serial, data int default 0)
+create table test (id serial primary key, data int default 0)
 insert into test () values ()
 insert into test () values ()
 insert into test () values ()
@@ -290,11 +290,11 @@ explain select * from test alias where alias.id >= 0
       "01": "int                 1      -      0     # 0",
       "02": "push                1      0      0     ",
       "03": "table_open          0      0      14    # public.test (primary)",
-      "04": "table_readi32       1      0      0     ",
+      "04": "table_readi64       1      0      0     ",
       "05": "int                 2      -      0     # 0",
       "06": "gteii               3      1      2     ",
       "07": "jntr                13     3      0     ",
-      "08": "table_readi32       1      0      0     ",
+      "08": "table_readi64       1      0      0     ",
       "09": "push                1      0      0     ",
       "10": "table_readi32       1      0      1     ",
       "11": "push                1      0      0     ",
@@ -310,7 +310,7 @@ select * from test alias where alias.id >= 0
 [[0, 0], [1, 0], [2, 0]]
 drop table test
 # test: select from table where alias.column.path
-create table test (id int primary key serial, data json)
+create table test (id serial primary key, data json)
 insert into test (data) values ({"data": 123})
 insert into test (data) values ({"data": 123})
 insert into test (data) values ({"data": 123})
@@ -338,7 +338,7 @@ explain select * from test alias where alias.data.data::int >= 0
       "07": "int                 2      -      0     # 0",
       "08": "gteii               3      1      2     ",
       "09": "jntr                15     3      0     ",
-      "10": "table_readi32       1      0      0     ",
+      "10": "table_readi64       1      0      0     ",
       "11": "push                1      0      0     ",
       "12": "table_readj         1      0      1     ",
       "13": "push                1      0      0     ",
@@ -360,7 +360,7 @@ select * from test alias where alias.data.data::int >= 0
 }]]
 drop table test
 # test: select from table where *
-create table test (id int primary key serial, data int default 0)
+create table test (id serial primary key, data int default 0)
 insert into test () values ()
 insert into test () values ()
 insert into test () values ()

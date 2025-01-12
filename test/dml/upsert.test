@@ -117,7 +117,7 @@ select * from test
 drop table test
 
 # test: upsert generate
-create table test (id int primary key serial, data int default 0)
+create table test (id serial primary key, data int default 0)
 insert into test generate 10 on conflict do update set data = data + 1
 select * from test
 alter table test set identity to 0

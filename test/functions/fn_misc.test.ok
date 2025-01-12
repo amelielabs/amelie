@@ -60,6 +60,11 @@ select {"id":"2489660418","type":"PushEvent","actor":{"id":250019,"login":"tarek
 # test: serial()
 select serial("public", "abc")
 {"msg": "table 'abc': not exists"}
+create table test (id serial primary key)
+insert into test () values (), (), ()
+select serial("public", "test")
+[3]
+drop table test
 # test: jwt()
 select jwt({"alg": "HS256", "typ": "JWT"}, {}, "123")
 ["eyJhbGciOiAiSFMyNTYiLCAidHlwIjogIkpXVCJ9.e30.5gvar2OmXQKJ9rWze2UEo8BZidZjK5B4lMiCnvwZk_4"]

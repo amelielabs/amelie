@@ -65,7 +65,7 @@ parse_import_row(Stmt* self, Endpoint* endpoint)
 				column_separator = list != NULL;
 			} else
 			{
-				// default value, write SERIAL, RANDOM or DEFAULT
+				// default value, write IDENTITY, RANDOM or DEFAULT
 				parse_value_default(self, column, column_value, seq);
 				column_separator = false;
 			}
@@ -140,7 +140,7 @@ parse_import_obj(Stmt* self, Endpoint* endpoint)
 	// set next sequence value
 	uint64_t seq = sequence_next(&table->seq);
 
-	// default value, write SERIAL, RANDOM or DEFAULT
+	// default value, write IDENTITY, RANDOM or DEFAULT
 	list_foreach(&columns->list)
 	{
 		auto column = list_at(Column, link);

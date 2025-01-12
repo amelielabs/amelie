@@ -4,7 +4,7 @@ open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "12
 connect E0 S0 localhost:3485
 
 # test: select distinct * from table empty
-create table test (id int primary key serial, data int default 0)
+create table test (id serial primary key, data int default 0)
 explain select distinct * from test
 select distinct * from test
 
@@ -73,7 +73,7 @@ explain select distinct on (data) * from test order by data, id
 drop table test
 
 # test: select distinct * from shared empty
-create shared table test (id int primary key serial, data int default 0)
+create shared table test (id serial primary key, data int default 0)
 explain select distinct * from test
 select distinct * from test
 

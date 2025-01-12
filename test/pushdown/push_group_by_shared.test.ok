@@ -2209,7 +2209,7 @@ select * from (select data from test where data > 0 group by data having data >=
 [2]
 drop table test
 # test: select from table group by (large table)
-create shared table test (id int primary key serial)
+create shared table test (id serial primary key)
 insert into test generate 10000
 explain select * from (select count(*), sum(2 * id) from test group by id) t
 [{
@@ -2248,13 +2248,13 @@ explain select * from (select count(*), sum(2 * id) from test group by id) t
     "node": {
       "00": "set_ordered         0      2      1     ",
       "01": "table_open          0      1      13    # public.test (primary)",
-      "02": "table_readi32       1      0      0     ",
+      "02": "table_readi64       1      0      0     ",
       "03": "push                1      0      0     ",
       "04": "set_get             1      0      0     ",
       "05": "int                 2      -      0     # 1",
       "06": "push                2      0      0     ",
       "07": "int                 2      -      0     # 2",
-      "08": "table_readi32       3      0      0     ",
+      "08": "table_readi64       3      0      0     ",
       "09": "mulii               4      2      3     ",
       "10": "push                4      0      0     ",
       "11": "set_agg             0      1      21    ",
@@ -2323,7 +2323,7 @@ explain select count(*) from (select count(*) from test group by id) t
     "node": {
       "00": "set_ordered         0      1      1     ",
       "01": "table_open          0      1      9     # public.test (primary)",
-      "02": "table_readi32       1      0      0     ",
+      "02": "table_readi64       1      0      0     ",
       "03": "push                1      0      0     ",
       "04": "set_get             1      0      0     ",
       "05": "int                 2      -      0     # 1",

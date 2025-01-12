@@ -3107,7 +3107,7 @@ select * from test
 drop table test
 
 # test: hash insert/abort
-create table test (id int primary key serial) with (type = 'hash')
+create table test (id serial primary key) with (type = 'hash')
 create index i on test (id)
 insert into test generate 1025; select error("abort")
 select * from test

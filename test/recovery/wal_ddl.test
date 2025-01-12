@@ -4,7 +4,7 @@ open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "12
 connect E0 S0 localhost:3485
 
 # test: create table
-create table test (id int serial primary key, data int default 0)
+create table test (id serial primary key, data int default 0)
 show lsn
 select serial("public", "test")
 

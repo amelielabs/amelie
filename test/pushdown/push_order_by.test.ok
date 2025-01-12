@@ -1,7 +1,7 @@
 open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "127.0.0.1", "port": 3485 }], "backends": 3
 connect E0 S0 localhost:3485
 # test: select from table order by
-create table test (id int primary key serial)
+create table test (id serial primary key)
 insert into test generate 20
 select * from test
 [0, 1, 6, 7, 8, 14, 15, 17, 2, 9, 10, 12, 18, 19, 3, 4, 5, 11, 13, 16]
@@ -21,9 +21,9 @@ explain select * from test order by id
     "node": {
       "00": "set_ordered         0      1      1     ",
       "01": "table_open          0      1      8     # public.test (primary)",
-      "02": "table_readi32       1      0      0     ",
+      "02": "table_readi64       1      0      0     ",
       "03": "push                1      0      0     ",
-      "04": "table_readi32       1      0      0     ",
+      "04": "table_readi64       1      0      0     ",
       "05": "push                1      0      0     ",
       "06": "set_add             0      0      0     ",
       "07": "table_next          0      2      0     ",
@@ -53,9 +53,9 @@ explain select * from test order by id asc
     "node": {
       "00": "set_ordered         0      1      1     ",
       "01": "table_open          0      1      8     # public.test (primary)",
-      "02": "table_readi32       1      0      0     ",
+      "02": "table_readi64       1      0      0     ",
       "03": "push                1      0      0     ",
-      "04": "table_readi32       1      0      0     ",
+      "04": "table_readi64       1      0      0     ",
       "05": "push                1      0      0     ",
       "06": "set_add             0      0      0     ",
       "07": "table_next          0      2      0     ",
@@ -85,9 +85,9 @@ explain select * from test order by id desc
     "node": {
       "00": "set_ordered         0      1      1     ",
       "01": "table_open          0      1      8     # public.test (primary)",
-      "02": "table_readi32       1      0      0     ",
+      "02": "table_readi64       1      0      0     ",
       "03": "push                1      0      0     ",
-      "04": "table_readi32       1      0      0     ",
+      "04": "table_readi64       1      0      0     ",
       "05": "push                1      0      0     ",
       "06": "set_add             0      0      0     ",
       "07": "table_next          0      2      0     ",
@@ -118,9 +118,9 @@ explain select * from test order by id limit 1
     "node": {
       "00": "set_ordered         0      1      1     ",
       "01": "table_open          0      1      8     # public.test (primary)",
-      "02": "table_readi32       1      0      0     ",
+      "02": "table_readi64       1      0      0     ",
       "03": "push                1      0      0     ",
-      "04": "table_readi32       1      0      0     ",
+      "04": "table_readi64       1      0      0     ",
       "05": "push                1      0      0     ",
       "06": "set_add             0      0      0     ",
       "07": "table_next          0      2      0     ",
@@ -161,9 +161,9 @@ explain select * from test order by id limit 0
     "node": {
       "00": "set_ordered         0      1      1     ",
       "01": "table_open          0      1      8     # public.test (primary)",
-      "02": "table_readi32       1      0      0     ",
+      "02": "table_readi64       1      0      0     ",
       "03": "push                1      0      0     ",
-      "04": "table_readi32       1      0      0     ",
+      "04": "table_readi64       1      0      0     ",
       "05": "push                1      0      0     ",
       "06": "set_add             0      0      0     ",
       "07": "table_next          0      2      0     ",
@@ -196,9 +196,9 @@ explain select * from test order by id desc limit 1
     "node": {
       "00": "set_ordered         0      1      1     ",
       "01": "table_open          0      1      8     # public.test (primary)",
-      "02": "table_readi32       1      0      0     ",
+      "02": "table_readi64       1      0      0     ",
       "03": "push                1      0      0     ",
-      "04": "table_readi32       1      0      0     ",
+      "04": "table_readi64       1      0      0     ",
       "05": "push                1      0      0     ",
       "06": "set_add             0      0      0     ",
       "07": "table_next          0      2      0     ",
@@ -240,9 +240,9 @@ explain select * from test order by id limit 1 offset 0
     "node": {
       "00": "set_ordered         0      1      1     ",
       "01": "table_open          0      1      8     # public.test (primary)",
-      "02": "table_readi32       1      0      0     ",
+      "02": "table_readi64       1      0      0     ",
       "03": "push                1      0      0     ",
-      "04": "table_readi32       1      0      0     ",
+      "04": "table_readi64       1      0      0     ",
       "05": "push                1      0      0     ",
       "06": "set_add             0      0      0     ",
       "07": "table_next          0      2      0     ",
@@ -274,9 +274,9 @@ explain select * from test order by id limit 1 offset 1
     "node": {
       "00": "set_ordered         0      1      1     ",
       "01": "table_open          0      1      8     # public.test (primary)",
-      "02": "table_readi32       1      0      0     ",
+      "02": "table_readi64       1      0      0     ",
       "03": "push                1      0      0     ",
-      "04": "table_readi32       1      0      0     ",
+      "04": "table_readi64       1      0      0     ",
       "05": "push                1      0      0     ",
       "06": "set_add             0      0      0     ",
       "07": "table_next          0      2      0     ",
@@ -314,9 +314,9 @@ explain select * from test order by id desc limit 1 offset 1
     "node": {
       "00": "set_ordered         0      1      1     ",
       "01": "table_open          0      1      8     # public.test (primary)",
-      "02": "table_readi32       1      0      0     ",
+      "02": "table_readi64       1      0      0     ",
       "03": "push                1      0      0     ",
-      "04": "table_readi32       1      0      0     ",
+      "04": "table_readi64       1      0      0     ",
       "05": "push                1      0      0     ",
       "06": "set_add             0      0      0     ",
       "07": "table_next          0      2      0     ",
@@ -353,9 +353,9 @@ explain select * from test order by id offset 1
     "node": {
       "00": "set_ordered         0      1      1     ",
       "01": "table_open          0      1      8     # public.test (primary)",
-      "02": "table_readi32       1      0      0     ",
+      "02": "table_readi64       1      0      0     ",
       "03": "push                1      0      0     ",
-      "04": "table_readi32       1      0      0     ",
+      "04": "table_readi64       1      0      0     ",
       "05": "push                1      0      0     ",
       "06": "set_add             0      0      0     ",
       "07": "table_next          0      2      0     ",
@@ -396,9 +396,9 @@ explain select * from test order by id desc offset 1
     "node": {
       "00": "set_ordered         0      1      1     ",
       "01": "table_open          0      1      8     # public.test (primary)",
-      "02": "table_readi32       1      0      0     ",
+      "02": "table_readi64       1      0      0     ",
       "03": "push                1      0      0     ",
-      "04": "table_readi32       1      0      0     ",
+      "04": "table_readi64       1      0      0     ",
       "05": "push                1      0      0     ",
       "06": "set_add             0      0      0     ",
       "07": "table_next          0      2      0     ",
@@ -423,7 +423,7 @@ select * from test order by id desc offset -1
 {"msg": "select * from test order by id desc offset ❰-1❱ ⟵ positive integer value expected"}
 drop table test
 # test: select from shared order by
-create shared table test (id int primary key serial)
+create shared table test (id serial primary key)
 insert into test generate 20
 select * from test
 [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19]
@@ -443,9 +443,9 @@ explain select * from test order by id
     "node": {
       "00": "set_ordered         0      1      1     ",
       "01": "table_open          0      1      8     # public.test (primary)",
-      "02": "table_readi32       1      0      0     ",
+      "02": "table_readi64       1      0      0     ",
       "03": "push                1      0      0     ",
-      "04": "table_readi32       1      0      0     ",
+      "04": "table_readi64       1      0      0     ",
       "05": "push                1      0      0     ",
       "06": "set_add             0      0      0     ",
       "07": "table_next          0      2      0     ",
@@ -475,9 +475,9 @@ explain select * from test order by id asc
     "node": {
       "00": "set_ordered         0      1      1     ",
       "01": "table_open          0      1      8     # public.test (primary)",
-      "02": "table_readi32       1      0      0     ",
+      "02": "table_readi64       1      0      0     ",
       "03": "push                1      0      0     ",
-      "04": "table_readi32       1      0      0     ",
+      "04": "table_readi64       1      0      0     ",
       "05": "push                1      0      0     ",
       "06": "set_add             0      0      0     ",
       "07": "table_next          0      2      0     ",
@@ -507,9 +507,9 @@ explain select * from test order by id desc
     "node": {
       "00": "set_ordered         0      1      1     ",
       "01": "table_open          0      1      8     # public.test (primary)",
-      "02": "table_readi32       1      0      0     ",
+      "02": "table_readi64       1      0      0     ",
       "03": "push                1      0      0     ",
-      "04": "table_readi32       1      0      0     ",
+      "04": "table_readi64       1      0      0     ",
       "05": "push                1      0      0     ",
       "06": "set_add             0      0      0     ",
       "07": "table_next          0      2      0     ",
@@ -540,9 +540,9 @@ explain select * from test order by id limit 1
     "node": {
       "00": "set_ordered         0      1      1     ",
       "01": "table_open          0      1      8     # public.test (primary)",
-      "02": "table_readi32       1      0      0     ",
+      "02": "table_readi64       1      0      0     ",
       "03": "push                1      0      0     ",
-      "04": "table_readi32       1      0      0     ",
+      "04": "table_readi64       1      0      0     ",
       "05": "push                1      0      0     ",
       "06": "set_add             0      0      0     ",
       "07": "table_next          0      2      0     ",
@@ -583,9 +583,9 @@ explain select * from test order by id limit 0
     "node": {
       "00": "set_ordered         0      1      1     ",
       "01": "table_open          0      1      8     # public.test (primary)",
-      "02": "table_readi32       1      0      0     ",
+      "02": "table_readi64       1      0      0     ",
       "03": "push                1      0      0     ",
-      "04": "table_readi32       1      0      0     ",
+      "04": "table_readi64       1      0      0     ",
       "05": "push                1      0      0     ",
       "06": "set_add             0      0      0     ",
       "07": "table_next          0      2      0     ",
@@ -618,9 +618,9 @@ explain select * from test order by id desc limit 1
     "node": {
       "00": "set_ordered         0      1      1     ",
       "01": "table_open          0      1      8     # public.test (primary)",
-      "02": "table_readi32       1      0      0     ",
+      "02": "table_readi64       1      0      0     ",
       "03": "push                1      0      0     ",
-      "04": "table_readi32       1      0      0     ",
+      "04": "table_readi64       1      0      0     ",
       "05": "push                1      0      0     ",
       "06": "set_add             0      0      0     ",
       "07": "table_next          0      2      0     ",
@@ -662,9 +662,9 @@ explain select * from test order by id limit 1 offset 0
     "node": {
       "00": "set_ordered         0      1      1     ",
       "01": "table_open          0      1      8     # public.test (primary)",
-      "02": "table_readi32       1      0      0     ",
+      "02": "table_readi64       1      0      0     ",
       "03": "push                1      0      0     ",
-      "04": "table_readi32       1      0      0     ",
+      "04": "table_readi64       1      0      0     ",
       "05": "push                1      0      0     ",
       "06": "set_add             0      0      0     ",
       "07": "table_next          0      2      0     ",
@@ -696,9 +696,9 @@ explain select * from test order by id limit 1 offset 1
     "node": {
       "00": "set_ordered         0      1      1     ",
       "01": "table_open          0      1      8     # public.test (primary)",
-      "02": "table_readi32       1      0      0     ",
+      "02": "table_readi64       1      0      0     ",
       "03": "push                1      0      0     ",
-      "04": "table_readi32       1      0      0     ",
+      "04": "table_readi64       1      0      0     ",
       "05": "push                1      0      0     ",
       "06": "set_add             0      0      0     ",
       "07": "table_next          0      2      0     ",
@@ -736,9 +736,9 @@ explain select * from test order by id desc limit 1 offset 1
     "node": {
       "00": "set_ordered         0      1      1     ",
       "01": "table_open          0      1      8     # public.test (primary)",
-      "02": "table_readi32       1      0      0     ",
+      "02": "table_readi64       1      0      0     ",
       "03": "push                1      0      0     ",
-      "04": "table_readi32       1      0      0     ",
+      "04": "table_readi64       1      0      0     ",
       "05": "push                1      0      0     ",
       "06": "set_add             0      0      0     ",
       "07": "table_next          0      2      0     ",
@@ -775,9 +775,9 @@ explain select * from test order by id offset 1
     "node": {
       "00": "set_ordered         0      1      1     ",
       "01": "table_open          0      1      8     # public.test (primary)",
-      "02": "table_readi32       1      0      0     ",
+      "02": "table_readi64       1      0      0     ",
       "03": "push                1      0      0     ",
-      "04": "table_readi32       1      0      0     ",
+      "04": "table_readi64       1      0      0     ",
       "05": "push                1      0      0     ",
       "06": "set_add             0      0      0     ",
       "07": "table_next          0      2      0     ",
@@ -818,9 +818,9 @@ explain select * from test order by id desc offset 1
     "node": {
       "00": "set_ordered         0      1      1     ",
       "01": "table_open          0      1      8     # public.test (primary)",
-      "02": "table_readi32       1      0      0     ",
+      "02": "table_readi64       1      0      0     ",
       "03": "push                1      0      0     ",
-      "04": "table_readi32       1      0      0     ",
+      "04": "table_readi64       1      0      0     ",
       "05": "push                1      0      0     ",
       "06": "set_add             0      0      0     ",
       "07": "table_next          0      2      0     ",

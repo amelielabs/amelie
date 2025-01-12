@@ -1,7 +1,7 @@
 open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "127.0.0.1", "port": 3485 }], "backends": 3
 connect E0 S0 localhost:3485
 # test: create table
-create table test (id int serial primary key, data int default 0)
+create table test (id serial primary key, data int default 0)
 show lsn
 [2]
 select serial("public", "test")
@@ -120,7 +120,7 @@ select system.table('test2').columns
 [[{
   "name": "id",
   "type": 2,
-  "type_size": 4,
+  "type_size": 8,
   "constraints": {
     "not_null": true,
     "random": false,
@@ -169,7 +169,7 @@ select system.table('test2').columns
 [[{
   "name": "id",
   "type": 2,
-  "type_size": 4,
+  "type_size": 8,
   "constraints": {
     "not_null": true,
     "random": false,
@@ -212,7 +212,7 @@ select system.table('test2').columns
 [[{
   "name": "id",
   "type": 2,
-  "type_size": 4,
+  "type_size": 8,
   "constraints": {
     "not_null": true,
     "random": false,
@@ -255,7 +255,7 @@ select system.table('test2').columns
 [[{
   "name": "id",
   "type": 2,
-  "type_size": 4,
+  "type_size": 8,
   "constraints": {
     "not_null": true,
     "random": false,
@@ -304,7 +304,7 @@ select system.table('test2').columns
 [[{
   "name": "id",
   "type": 2,
-  "type_size": 4,
+  "type_size": 8,
   "constraints": {
     "not_null": true,
     "random": false,
@@ -347,7 +347,7 @@ select system.table('test2').columns
 [[{
   "name": "id",
   "type": 2,
-  "type_size": 4,
+  "type_size": 8,
   "constraints": {
     "not_null": true,
     "random": false,
@@ -396,7 +396,7 @@ select system.table('test2').columns
 [[{
   "name": "id",
   "type": 2,
-  "type_size": 4,
+  "type_size": 8,
   "constraints": {
     "not_null": true,
     "random": false,
@@ -439,7 +439,7 @@ select system.table('test2').columns
 [[{
   "name": "id",
   "type": 2,
-  "type_size": 4,
+  "type_size": 8,
   "constraints": {
     "not_null": true,
     "random": false,
@@ -488,7 +488,7 @@ select system.table('test2').columns
 [[{
   "name": "id",
   "type": 2,
-  "type_size": 4,
+  "type_size": 8,
   "constraints": {
     "not_null": true,
     "random": false,
@@ -531,7 +531,7 @@ select system.table('test2').columns
 [[{
   "name": "id",
   "type": 2,
-  "type_size": 4,
+  "type_size": 8,
   "constraints": {
     "not_null": true,
     "random": false,
@@ -580,7 +580,7 @@ select system.table('test2').columns
 [[{
   "name": "id",
   "type": 2,
-  "type_size": 4,
+  "type_size": 8,
   "constraints": {
     "not_null": true,
     "random": false,
@@ -623,7 +623,7 @@ select system.table('test2').columns
 [[{
   "name": "id",
   "type": 2,
-  "type_size": 4,
+  "type_size": 8,
   "constraints": {
     "not_null": true,
     "random": false,
@@ -672,7 +672,7 @@ select system.table('test2').columns
 [[{
   "name": "id",
   "type": 2,
-  "type_size": 4,
+  "type_size": 8,
   "constraints": {
     "not_null": true,
     "random": false,
@@ -715,7 +715,7 @@ select system.table('test2').columns
 [[{
   "name": "id",
   "type": 2,
-  "type_size": 4,
+  "type_size": 8,
   "constraints": {
     "not_null": true,
     "random": false,
@@ -764,7 +764,7 @@ select system.table('test2').columns
 [[{
   "name": "id",
   "type": 2,
-  "type_size": 4,
+  "type_size": 8,
   "constraints": {
     "not_null": true,
     "random": false,

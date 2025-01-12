@@ -213,7 +213,7 @@ select * from test
 [[1, 123]]
 drop table test
 # test: insert serial
-create table test (id int serial primary key)
+create table test (id serial primary key)
 insert into test () values ()
 insert into test () values ()
 insert into test () values ()
@@ -221,14 +221,14 @@ select * from test
 [0, 1, 2]
 drop table test
 # test: insert serial #2
-create table test (id int serial primary key, data int)
+create table test (id serial primary key, data int)
 insert into test (data) values (123)
 insert into test () values ()
 select * from test
 [[0, 123], [1, null]]
 drop table test
 # test: insert serial alias
-create table test (id int primary key serial)
+create table test (id serial primary key)
 insert into test () values ()
 insert into test () values ()
 insert into test () values ()
@@ -236,7 +236,7 @@ select * from test
 [0, 1, 2]
 drop table test
 # test: insert serial directly
-create table test (id int serial primary key, data int)
+create table test (id serial primary key, data int)
 insert into test (data) values (123)
 insert into test (id, data) values (1, 123)
 insert into test () values ()
@@ -244,14 +244,14 @@ select * from test
 [[0, 123], [1, 123], [2, null]]
 drop table test
 # test: insert serial null
-create table test (id int serial primary key, data int)
+create table test (id serial primary key, data int)
 insert into test (id, data) values (null, 123)
 {"msg": "insert into test (id, data) values (❰null❱ ⟵ column 'id' value cannot be NULL"}
 select * from test
 []
 drop table test
 # test: insert serial multiple column
-create table test (id int serial primary key, data int serial)
+create table test (id serial primary key, data serial)
 insert into test () values ()
 insert into test () values ()
 insert into test () values ()
@@ -277,7 +277,7 @@ select * from test
 [-100, -10, -1, 0, 1, 10, 100]
 drop table test
 # test: insert generate
-create table test (id int primary key serial, data int default 0)
+create table test (id serial primary key, data int default 0)
 insert into test generate
 {"msg": "insert into test generate ⟵ int expected"}
 insert into test generate "10"
@@ -325,7 +325,7 @@ insert into test values (1),(2),(3) returning *
 {"msg": "unique key constraint violation"}
 drop table test
 # test: insert returning (serial)
-create table test (id int primary key serial)
+create table test (id serial primary key)
 explain insert into test () values (), (), () returning *
 [{
   "bytecode": {
@@ -347,7 +347,7 @@ explain insert into test () values (), (), () returning *
       "03": "string              1      0      0     # unique key constraint violation",
       "04": "push                1      0      0     ",
       "05": "call                1      -      1     # public.error()",
-      "06": "table_readi32       1      0      0     ",
+      "06": "table_readi64       1      0      0     ",
       "07": "push                1      0      0     ",
       "08": "set_add             0      0      0     ",
       "09": "upsert              0      3      6     ",

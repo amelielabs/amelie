@@ -125,9 +125,10 @@ type_read(Str* name, int* type_size)
 		type = TYPE_INT;
 		*type_size = sizeof(int32_t);
 	} else
-	if (str_is_case(name, "int64", 5) ||
-	    str_is_case(name, "i64", 3)   ||
-	    str_is_case(name, "bigint", 6))
+	if (str_is_case(name, "int64", 5)  ||
+	    str_is_case(name, "i64", 3)    ||
+	    str_is_case(name, "bigint", 6) ||
+	    str_is_case(name, "serial", 6))
 	{
 		type = TYPE_INT;
 		*type_size = sizeof(int64_t);

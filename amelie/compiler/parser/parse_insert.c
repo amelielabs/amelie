@@ -69,7 +69,7 @@ parse_row_list(Stmt* self, AstInsert* stmt, Ast* list)
 
 		} else
 		{
-			// SERIAL, RANDOM or DEFAULT
+			// IDENTITY, RANDOM or DEFAULT
 			parse_value_default(self, column, column_value, seq);
 		}
 
@@ -109,7 +109,7 @@ parse_row(Stmt* self, AstInsert* stmt)
 			value = parse_value(self, column, column_value);
 		} else
 		{
-			// SERIAL, RANDOM or DEFAULT
+			// IDENTITY, RANDOM or DEFAULT
 			parse_value_default(self, column, column_value, seq);
 		}
 
@@ -202,7 +202,7 @@ parse_generate(Stmt* self, AstInsert* stmt)
 			auto column = list_at(Column, link);
 			auto column_value = &row[column->order];
 
-			// SERIAL, RANDOM or DEFAULT
+			// IDENTITY, RANDOM or DEFAULT
 			parse_value_default(self, column, column_value, seq);
 
 			// ensure NOT NULL constraint

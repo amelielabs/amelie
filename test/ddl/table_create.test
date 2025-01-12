@@ -265,29 +265,17 @@ select * from test
 drop table test
 
 # test: constraint serial
-create table test (id int primary key, data int serial)
-select system.table('test').columns
-drop table test
-
-create table test (id int primary key, data int64 serial)
+create table test (id int primary key, data serial)
 select system.table('test').columns
 drop table test
 
 # test: constraint serial key
-create table test (id int serial primary key)
+create table test (id serial primary key)
 select system.table('test').columns
 drop table test
-
-# test: constraint serial key #2
-create table test (id int64 serial, primary key(id))
-select system.table('test').columns
-drop table test
-
-# test: constraint serial key type
-create table test (id string serial primary key)
 
 # test: constraint serial multiple columns
-create table test (id int serial primary key, data int64 serial)
+create table test (id serial primary key, data serial)
 select system.table('test').columns
 drop table test
 

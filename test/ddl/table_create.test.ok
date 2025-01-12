@@ -918,37 +918,7 @@ select * from test
 }]]
 drop table test
 # test: constraint serial
-create table test (id int primary key, data int serial)
-select system.table('test').columns
-[[{
-  "name": "id",
-  "type": 2,
-  "type_size": 4,
-  "constraints": {
-    "not_null": true,
-    "random": false,
-    "random_modulo": 9223372036854775807,
-    "default": null,
-    "as_identity": false,
-    "as_stored": "",
-    "as_resolved": ""
-  }
-}, {
-  "name": "data",
-  "type": 2,
-  "type_size": 4,
-  "constraints": {
-    "not_null": false,
-    "random": false,
-    "random_modulo": 9223372036854775807,
-    "default": null,
-    "as_identity": true,
-    "as_stored": "",
-    "as_resolved": ""
-  }
-}]]
-drop table test
-create table test (id int primary key, data int64 serial)
+create table test (id int primary key, data serial)
 select system.table('test').columns
 [[{
   "name": "id",
@@ -979,25 +949,7 @@ select system.table('test').columns
 }]]
 drop table test
 # test: constraint serial key
-create table test (id int serial primary key)
-select system.table('test').columns
-[[{
-  "name": "id",
-  "type": 2,
-  "type_size": 4,
-  "constraints": {
-    "not_null": true,
-    "random": false,
-    "random_modulo": 9223372036854775807,
-    "default": null,
-    "as_identity": true,
-    "as_stored": "",
-    "as_resolved": ""
-  }
-}]]
-drop table test
-# test: constraint serial key #2
-create table test (id int64 serial, primary key(id))
+create table test (id serial primary key)
 select system.table('test').columns
 [[{
   "name": "id",
@@ -1014,16 +966,13 @@ select system.table('test').columns
   }
 }]]
 drop table test
-# test: constraint serial key type
-create table test (id string serial primary key)
-{"msg": "create table test (id string ❰serial❱ ⟵ identity column must be int or int64"}
 # test: constraint serial multiple columns
-create table test (id int serial primary key, data int64 serial)
+create table test (id serial primary key, data serial)
 select system.table('test').columns
 [[{
   "name": "id",
   "type": 2,
-  "type_size": 4,
+  "type_size": 8,
   "constraints": {
     "not_null": true,
     "random": false,

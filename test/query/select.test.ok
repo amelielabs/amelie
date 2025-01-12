@@ -75,7 +75,7 @@ select *
 select *, *
 {"msg": "select ❰*❱ ⟵ no targets defined"}
 # test: select * from table
-create table test (id int primary key serial)
+create table test (id serial primary key)
 insert into test () values ()
 insert into test () values ()
 insert into test () values ()
@@ -95,7 +95,7 @@ explain select * from test
     "node": {
       "00": "set                 0      1      0     ",
       "01": "table_open          0      0      6     # public.test (primary)",
-      "02": "table_readi32       1      0      0     ",
+      "02": "table_readi64       1      0      0     ",
       "03": "push                1      0      0     ",
       "04": "set_add             0      0      0     ",
       "05": "table_next          0      2      0     ",
@@ -119,7 +119,7 @@ select `test.*` from test
 [0, 1, 2]
 drop table test
 # test: select column from table
-create table test (id int primary key serial, data int default 0)
+create table test (id serial primary key, data int default 0)
 insert into test () values ()
 insert into test () values ()
 insert into test () values ()
@@ -141,7 +141,7 @@ explain select id, data from test
     "node": {
       "00": "set                 0      2      0     ",
       "01": "table_open          0      0      8     # public.test (primary)",
-      "02": "table_readi32       1      0      0     ",
+      "02": "table_readi64       1      0      0     ",
       "03": "push                1      0      0     ",
       "04": "table_readi32       1      0      1     ",
       "05": "push                1      0      0     ",
@@ -159,7 +159,7 @@ select `id`, data from test
 [[0, 0], [1, 0], [2, 0]]
 drop table test
 # test: select column.path from table
-create table test (id int primary key serial, data json)
+create table test (id serial primary key, data json)
 insert into test (data) values ({"data": 123})
 insert into test (data) values ({"data": 123})
 insert into test (`data`) values ({"data": 123})
@@ -203,7 +203,7 @@ select data.data from test
 [123, 123, 123]
 drop table test
 # test: select column.path from table #2
-create table test (id int primary key serial, data json)
+create table test (id serial primary key, data json)
 insert into test (data) values ({"data": {"data": 123}})
 insert into test (data) values ({"data": {"data": 123}})
 insert into test (data) values ({"data": {"data": 123}})
@@ -253,7 +253,7 @@ select data.data.data from test
 [123, 123, 123]
 drop table test
 # test: select target.column from table
-create table test (id int primary key serial, data int default 0)
+create table test (id serial primary key, data int default 0)
 insert into test () values ()
 insert into test () values ()
 insert into test () values ()
@@ -273,7 +273,7 @@ explain select test.id, test.data from test
     "node": {
       "00": "set                 0      2      0     ",
       "01": "table_open          0      0      8     # public.test (primary)",
-      "02": "table_readi32       1      0      0     ",
+      "02": "table_readi64       1      0      0     ",
       "03": "push                1      0      0     ",
       "04": "table_readi32       1      0      1     ",
       "05": "push                1      0      0     ",
@@ -289,7 +289,7 @@ select test.id, test.data from test
 [[0, 0], [1, 0], [2, 0]]
 drop table test
 # test: select target.column.path from table
-create table test (id int primary key serial, data json)
+create table test (id serial primary key, data json)
 insert into test (data) values ({"data": 123})
 insert into test (data) values ({"data": 123})
 insert into test (data) values ({"data": 123})
@@ -347,7 +347,7 @@ select test.data.data, *, test.* from test
 }]]
 drop table test
 # test: select alias.column from table
-create table test (id int primary key serial, data int default 0)
+create table test (id serial primary key, data int default 0)
 insert into test () values ()
 insert into test () values ()
 insert into test () values ()
@@ -369,7 +369,7 @@ explain select alias.id, alias.data from test alias
     "node": {
       "00": "set                 0      2      0     ",
       "01": "table_open          0      0      8     # public.test (primary)",
-      "02": "table_readi32       1      0      0     ",
+      "02": "table_readi64       1      0      0     ",
       "03": "push                1      0      0     ",
       "04": "table_readi32       1      0      1     ",
       "05": "push                1      0      0     ",
@@ -385,7 +385,7 @@ select alias.id, alias.data from test alias
 [[0, 0], [1, 0], [2, 0]]
 drop table test
 # test: select alias.column.path from table
-create table test (id int primary key serial, data json)
+create table test (id serial primary key, data json)
 insert into test (data) values ({"data": 123})
 insert into test (data) values ({"data": 123})
 insert into test (data) values ({"data": 123})
@@ -423,7 +423,7 @@ select alias.data['data'] from test alias
 [123, 123, 123]
 drop table test
 # test: select alias.* from table
-create table test (id int primary key serial, data int default 0)
+create table test (id serial primary key, data int default 0)
 insert into test () values ()
 insert into test () values ()
 insert into test () values ()
@@ -445,7 +445,7 @@ explain select alias.id, alias.data from test alias
     "node": {
       "00": "set                 0      2      0     ",
       "01": "table_open          0      0      8     # public.test (primary)",
-      "02": "table_readi32       1      0      0     ",
+      "02": "table_readi64       1      0      0     ",
       "03": "push                1      0      0     ",
       "04": "table_readi32       1      0      1     ",
       "05": "push                1      0      0     ",
@@ -525,7 +525,7 @@ select t.name from system.users() t
 ["test"]
 drop user test
 # test: select target.column.path from function()
-create table test (id int primary key serial)
+create table test (id serial primary key)
 select indexes[0].type from system.tables()
 [2]
 select tables.indexes[0].type from system.tables()

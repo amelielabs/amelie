@@ -1,7 +1,7 @@
 open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "127.0.0.1", "port": 3485 }], "backends": 3
 connect E0 S0 localhost:3485
 # test: select from table limit
-create table test (id int primary key serial)
+create table test (id serial primary key)
 insert into test generate 20
 select * from test limit 100
 [0, 1, 6, 7, 8, 14, 15, 17, 2, 9, 10, 12, 18, 19, 3, 4, 5, 11, 13, 16]
@@ -26,7 +26,7 @@ explain select * from test limit 1
       "03": "jmp                 5      0      0     ",
       "04": "jmp                 10     0      0     ",
       "05": "cjltd               1      4      0     ",
-      "06": "table_readi32       2      0      0     ",
+      "06": "table_readi64       2      0      0     ",
       "07": "push                2      0      0     ",
       "08": "set_add             0      0      0     ",
       "09": "table_next          0      5      0     ",
@@ -75,7 +75,7 @@ explain select * from test limit 0
       "03": "jmp                 5      0      0     ",
       "04": "jmp                 10     0      0     ",
       "05": "cjltd               1      4      0     ",
-      "06": "table_readi32       2      0      0     ",
+      "06": "table_readi64       2      0      0     ",
       "07": "push                2      0      0     ",
       "08": "set_add             0      0      0     ",
       "09": "table_next          0      5      0     ",
@@ -114,7 +114,7 @@ explain select * from test limit 1 offset 0
       "05": "jmp                 7      0      0     ",
       "06": "jmp                 12     0      0     ",
       "07": "cjltd               3      6      0     ",
-      "08": "table_readi32       1      0      0     ",
+      "08": "table_readi64       1      0      0     ",
       "09": "push                1      0      0     ",
       "10": "set_add             0      0      0     ",
       "11": "table_next          0      7      0     ",
@@ -156,7 +156,7 @@ explain select * from test limit 1 offset 1
       "05": "jmp                 7      0      0     ",
       "06": "jmp                 12     0      0     ",
       "07": "cjltd               3      6      0     ",
-      "08": "table_readi32       1      0      0     ",
+      "08": "table_readi64       1      0      0     ",
       "09": "push                1      0      0     ",
       "10": "set_add             0      0      0     ",
       "11": "table_next          0      7      0     ",
@@ -215,7 +215,7 @@ explain select * from test offset 1
     "node": {
       "00": "set                 0      1      0     ",
       "01": "table_open          0      0      6     # public.test (primary)",
-      "02": "table_readi32       1      0      0     ",
+      "02": "table_readi64       1      0      0     ",
       "03": "push                1      0      0     ",
       "04": "set_add             0      0      0     ",
       "05": "table_next          0      2      0     ",
@@ -239,7 +239,7 @@ select * from test offset -1
 {"msg": "select * from test offset ❰-1❱ ⟵ positive integer value expected"}
 drop table test
 # test: select from shared limit
-create shared table test (id int primary key serial)
+create shared table test (id serial primary key)
 insert into test generate 20
 select * from test limit 100
 [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19]
@@ -264,7 +264,7 @@ explain select * from test limit 1
       "03": "jmp                 5      0      0     ",
       "04": "jmp                 10     0      0     ",
       "05": "cjltd               1      4      0     ",
-      "06": "table_readi32       2      0      0     ",
+      "06": "table_readi64       2      0      0     ",
       "07": "push                2      0      0     ",
       "08": "set_add             0      0      0     ",
       "09": "table_next          0      5      0     ",
@@ -308,7 +308,7 @@ explain select * from test limit 0
       "03": "jmp                 5      0      0     ",
       "04": "jmp                 10     0      0     ",
       "05": "cjltd               1      4      0     ",
-      "06": "table_readi32       2      0      0     ",
+      "06": "table_readi64       2      0      0     ",
       "07": "push                2      0      0     ",
       "08": "set_add             0      0      0     ",
       "09": "table_next          0      5      0     ",
@@ -347,7 +347,7 @@ explain select * from test limit 1 offset 0
       "05": "jmp                 7      0      0     ",
       "06": "jmp                 12     0      0     ",
       "07": "cjltd               3      6      0     ",
-      "08": "table_readi32       1      0      0     ",
+      "08": "table_readi64       1      0      0     ",
       "09": "push                1      0      0     ",
       "10": "set_add             0      0      0     ",
       "11": "table_next          0      7      0     ",
@@ -384,7 +384,7 @@ explain select * from test limit 1 offset 1
       "05": "jmp                 7      0      0     ",
       "06": "jmp                 12     0      0     ",
       "07": "cjltd               3      6      0     ",
-      "08": "table_readi32       1      0      0     ",
+      "08": "table_readi64       1      0      0     ",
       "09": "push                1      0      0     ",
       "10": "set_add             0      0      0     ",
       "11": "table_next          0      7      0     ",
@@ -443,7 +443,7 @@ explain select * from test offset 1
     "node": {
       "00": "set                 0      1      0     ",
       "01": "table_open          0      0      6     # public.test (primary)",
-      "02": "table_readi32       1      0      0     ",
+      "02": "table_readi64       1      0      0     ",
       "03": "push                1      0      0     ",
       "04": "set_add             0      0      0     ",
       "05": "table_next          0      2      0     ",

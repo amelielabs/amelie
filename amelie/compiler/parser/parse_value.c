@@ -208,7 +208,7 @@ parse_value_default(Stmt*    self,
                     Value*   column_value,
                     uint64_t seq)
 {
-	// SERIAL, RANDOM or DEFAULT
+	// IDENTITY, RANDOM or DEFAULT
 	unused(self);
 	auto cons = &column->constraints;
 	if (cons->as_identity)

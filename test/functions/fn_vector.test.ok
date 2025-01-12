@@ -46,7 +46,7 @@ explain select vector [1.0, 2.1, 3] * vector [1.5, 1.5, 1.5];
   }
 }]
 # test: cos_distance() (similarity search)
-create table test (id int primary key serial, embedding vector);
+create table test (id serial primary key, embedding vector);
 insert into test (embedding) values ([3,2,0,1,4]);
 insert into test (embedding) values ([2,2,0,1,3]);
 insert into test (embedding) values ([1,3,0,1,4]);
@@ -70,7 +70,7 @@ explain select id, embedding::cos_distance(vector [1,3,1,2,0]) from test order b
     "node": {
       "00": "set_ordered         0      2      1     ",
       "01": "table_open          0      25     18    # public.test (primary)",
-      "02": "table_readi32       1      0      0     ",
+      "02": "table_readi64       1      0      0     ",
       "03": "push                1      0      0     ",
       "04": "table_readv         1      0      1     ",
       "05": "push                1      0      0     ",
@@ -112,7 +112,7 @@ explain select id from test order by embedding::cos_distance(vector [1,3,1,2,0])
     "node": {
       "00": "set_ordered         0      1      1     ",
       "01": "table_open          0      25     12    # public.test (primary)",
-      "02": "table_readi32       1      0      0     ",
+      "02": "table_readi64       1      0      0     ",
       "03": "push                1      0      0     ",
       "04": "table_readv         1      0      1     ",
       "05": "push                1      0      0     ",

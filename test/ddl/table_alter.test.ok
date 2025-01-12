@@ -57,7 +57,7 @@ select system.table('test').name
 ["test"]
 drop table test
 # test: set identity
-create table test (id int primary key serial, data int default 0)
+create table test (id serial primary key, data int default 0)
 insert into test () values ()
 insert into test () values ()
 insert into test () values ()
@@ -125,12 +125,12 @@ alter table test rename column data to
 alter table test rename column data to 1
 {"msg": "alter table test rename column data to ❰1❱ ⟵ name expected"}
 # test: rename column
-create table test (id int primary key serial, data int default 0)
+create table test (id serial primary key, data int default 0)
 select system.table('test').columns
 [[{
   "name": "id",
   "type": 2,
-  "type_size": 4,
+  "type_size": 8,
   "constraints": {
     "not_null": true,
     "random": false,
@@ -159,7 +159,7 @@ select system.table('test').columns
 [[{
   "name": "id",
   "type": 2,
-  "type_size": 4,
+  "type_size": 8,
   "constraints": {
     "not_null": true,
     "random": false,
@@ -226,12 +226,12 @@ select id2 from test
 [1, 2, 3]
 drop table test
 # test: rename column (already exists)
-create table test (id int primary key serial, data int default 0)
+create table test (id serial primary key, data int default 0)
 select system.table('test').columns
 [[{
   "name": "id",
   "type": 2,
-  "type_size": 4,
+  "type_size": 8,
   "constraints": {
     "not_null": true,
     "random": false,
@@ -261,7 +261,7 @@ select system.table('test').columns
 [[{
   "name": "id",
   "type": 2,
-  "type_size": 4,
+  "type_size": 8,
   "constraints": {
     "not_null": true,
     "random": false,
@@ -483,7 +483,7 @@ drop table test
 # test: add column (serial)
 create table test (id int primary key)
 insert into test values (1),(2),(3)
-alter table test add column data int serial
+alter table test add column data serial
 select system.table('test').columns
 [[{
   "name": "id",
@@ -501,7 +501,7 @@ select system.table('test').columns
 }, {
   "name": "data",
   "type": 2,
-  "type_size": 4,
+  "type_size": 8,
   "constraints": {
     "not_null": false,
     "random": false,

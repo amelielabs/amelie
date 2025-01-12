@@ -137,7 +137,7 @@ show all
   "psn": 0
 }]
 # test: create table
-create table test (id int serial primary key, data int default 0)
+create table test (id serial primary key, data int default 0)
 show lsn
 [2]
 select serial("public", "test")

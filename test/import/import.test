@@ -33,8 +33,8 @@ connect E0 S0 http://localhost:3485
 create table test (id int primary key, a int, b int)
 create table test2 (id int primary key, a int as (id * 2) stored)
 create table test3 (id int primary key, a int as (a + 1) resolved)
-create table test4 (id int primary key serial, a int default 777)
-create table test5 (id int primary key serial, data json not null)
+create table test4 (id serial primary key, a int default 777)
+create table test5 (id serial primary key, data json not null)
 create table test6 (id int primary key as (data.id::int) stored, data json not null)
 disconnect S0
 

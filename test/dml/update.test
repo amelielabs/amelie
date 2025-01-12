@@ -90,7 +90,7 @@ select * from test
 drop table test
 
 # test: update json rewrite
-create table test(id int primary key serial, data json)
+create table test(id serial primary key, data json)
 insert into test (data) values ({"id": 48})
 insert into test (data) values ({"id": 49})
 insert into test (data) values ({"id": 50})
@@ -99,7 +99,7 @@ select * from test
 drop table test
 
 # test: update json rewrite #2
-create table test(id int primary key serial, data json)
+create table test(id serial primary key, data json)
 insert into test (data) values ({"id": 48})
 insert into test (data) values ({"id": 49})
 insert into test (data) values ({"id": 50})

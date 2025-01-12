@@ -265,7 +265,7 @@ select * from (select data from test where data > 0 group by data having data >=
 drop table test
 
 # test: select from table group by (large table)
-create shared table test (id int primary key serial)
+create shared table test (id serial primary key)
 insert into test generate 10000
 explain select * from (select count(*), sum(2 * id) from test group by id) t
 select * from (select count(*), sum(2 * id) from test group by id) t

@@ -3107,7 +3107,7 @@ select * from test
 drop table test
 
 # test: tree insert/abort
-create table test (id int primary key serial) with (type = 'tree')
+create table test (id serial primary key) with (type = 'tree')
 create index i on test (id)
 insert into test generate 1025; select error("abort")
 select * from test
