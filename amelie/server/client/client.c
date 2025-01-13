@@ -177,11 +177,7 @@ client_connect(Client* self)
 	{
 		auto host = list_at(UriHost, link);
 
-		Exception e;
-		if (enter(&e))
-			client_connect_to(self, host);
-
-		if (leave(&e))
+		if (error_catch( client_connect_to(self, host) ))
 		{
 			// reset and try next host
 			client_close(self);
@@ -190,6 +186,7 @@ client_connect(Client* self)
 			if (self->uri.hosts_count == 1)
 				rethrow();
 		}
+
 		if (self->host)
 			break;
 	}

@@ -45,18 +45,13 @@ client_main(void* arg)
 
 	client_mgr_add(&self->client_mgr, client);
 
-	Exception e;
-	if (enter(&e))
-	{
+	// process client connection
+	error_catch
+	(
 		client_attach(client);
 		client_accept(client);
-
-		// process client connection
 		self->on_connect(self, client);
-	}
-
-	if (leave(&e))
-	{ }
+	);
 
 	client_mgr_del(&self->client_mgr, client);
 

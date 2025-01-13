@@ -132,18 +132,19 @@ snapshot_main(Snapshot* self, Index* index)
 hot void
 snapshot_create(Snapshot* self, Part* part, uint64_t lsn)
 {
+	snapshot_reset(self);
+
 	self->partition = part->config->id;
 	self->lsn       = lsn;
 
-	Exception e;
-	if (enter(&e))
-	{
+	auto on_error = error_catch
+	(
 		// create <base>/<lsn>.incomplete/<partition_id>.part
 		snapshot_begin(self);
 		snapshot_main(self, part_primary(part));
 		snapshot_end(self);
-	}
-	if (leave(&e))
+	);
+	if (on_error)
 	{
 		file_close(&self->file);
 		rethrow();

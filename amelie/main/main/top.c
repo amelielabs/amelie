@@ -297,40 +297,41 @@ top_draw(Top* self)
 	info("");
 }
 
+static void
+top_main(Top* self, Client* client)
+{
+	top_update(self, client);
+	coroutine_sleep(500);
+
+	// clean screen
+	write(STDOUT_FILENO, "\x1b[H\x1b[2J", 7);
+
+	for (;;)
+	{
+		// request new stats
+		top_update(self, client);
+
+		// update screen with diff
+		top_draw(self);
+
+		// 1sec
+		coroutine_sleep(1000);
+	}
+}
+
 void
 top_run(Top* self)
 {
+	// create client and connect
 	Client* client = NULL;
-
-	Exception e;
-	if (enter(&e))
-	{
-		// create client and connect
+	error_catch
+	(
 		client = client_create();
 		client_set_remote(client, self->remote);
 		client_connect(client);
 
-		top_update(self, client);
-		coroutine_sleep(500);
-
-		// clean screen
-		write(STDOUT_FILENO, "\x1b[H\x1b[2J", 7);
-
-		for (;;)
-		{
-			// request new stats
-			top_update(self, client);
-
-			// update screen with diff
-			top_draw(self);
-
-			// 1sec
-			coroutine_sleep(1000);
-		}
-	}
-
-	if (leave(&e))
-	{ }
+		top_main(self, client);
+	);
 
 	if (client)
 	{

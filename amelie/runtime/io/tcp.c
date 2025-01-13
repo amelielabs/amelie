@@ -155,6 +155,28 @@ tcp_connect_fd(Tcp* self)
 }
 
 static inline void
+tcp_connect_begin_try(Tcp* self, struct sockaddr* addr)
+{
+	// set socket options
+	tcp_socket_init(self->fd.fd, addr->sa_family);
+
+	// start async connection
+	int rc;
+	rc = socket_connect(self->fd.fd, addr);
+	if (rc == 0)
+	{
+		self->connected = true;
+		tcp_attach(self);
+	} else
+	{
+		assert(rc == -1);
+		if (errno != EINPROGRESS)
+			error("connect(): %s", strerror(errno));
+		tcp_attach(self);
+	}
+}
+
+static inline void
 tcp_connect_begin(Tcp* self, struct sockaddr* addr)
 {
 	assert(self->poller == NULL);
@@ -165,29 +187,7 @@ tcp_connect_begin(Tcp* self, struct sockaddr* addr)
 		error("socket(): %s", strerror(errno));
 	self->connected = false;
 
-	Exception e;
-	if (enter(&e))
-	{
-		// set socket options
-		tcp_socket_init(self->fd.fd, addr->sa_family);
-
-		// start async connection
-		int rc;
-		rc = socket_connect(self->fd.fd, addr);
-		if (rc == 0)
-		{
-			self->connected = true;
-			tcp_attach(self);
-		} else
-		{
-			assert(rc == -1);
-			if (errno != EINPROGRESS)
-				error("connect(): %s", strerror(errno));
-			tcp_attach(self);
-		}
-	}
-
-	if (leave(&e))
+	if (error_catch ( tcp_connect_begin_try(self, addr) ))
 	{
 		tcp_close(self);
 		rethrow();

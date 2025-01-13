@@ -130,7 +130,7 @@ stmt_if(Stmt* self, int id)
 	return lex_if(self->lex, id);
 }
 
-always_inline static inline void
+static inline void
 stmt_error(Stmt* self, Ast* ast, const char* fmt, ...)
 {
 	va_list args;

@@ -446,6 +446,64 @@ ddl_drop_node(Session* self, Tr* tr)
 	node_mgr_drop(&db->node_mgr, tr, &arg->id->string, arg->if_exists);
 }
 
+static inline void
+session_execute_ddl_stmt(Session* self, Tr* tr)
+{
+	auto stmt = compiler_stmt(&self->compiler);
+	switch (stmt->id) {
+	case STMT_CREATE_SCHEMA:
+		ddl_create_schema(self, tr);
+		break;
+	case STMT_DROP_SCHEMA:
+		ddl_drop_schema(self, tr);
+		break;
+	case STMT_ALTER_SCHEMA:
+		ddl_alter_schema(self, tr);
+		break;
+	case STMT_CREATE_TABLE:
+		ddl_create_table(self, tr);
+		break;
+	case STMT_DROP_TABLE:
+		ddl_drop_table(self, tr);
+		break;
+	case STMT_ALTER_TABLE:
+		ddl_alter_table(self, tr);
+		break;
+	case STMT_CREATE_INDEX:
+		ddl_create_index(self, tr);
+		break;
+	case STMT_DROP_INDEX:
+		ddl_drop_index(self, tr);
+		break;
+	case STMT_ALTER_INDEX:
+		ddl_alter_index(self, tr);
+		break;
+	case STMT_CREATE_NODE:
+		ddl_create_node(self, tr);
+		break;
+	case STMT_DROP_NODE:
+		ddl_drop_node(self, tr);
+		break;
+	case STMT_TRUNCATE:
+		ddl_truncate(self, tr);
+		break;
+	default:
+		assert(0);
+		break;
+	}
+
+	// wal write
+	if (tr_read_only(tr))
+		return;
+
+	WalBatch batch;
+	wal_batch_init(&batch);
+	defer(wal_batch_free, &batch);
+	wal_batch_begin(&batch, WAL_UTILITY);
+	wal_batch_add(&batch, &tr->log.log_set);
+	wal_write(&self->share->db->wal, &batch);
+}
+
 void
 session_execute_ddl(Session* self)
 {
@@ -458,78 +516,20 @@ session_execute_ddl(Session* self)
 
 	Tr tr;
 	tr_init(&tr);
-
-	WalBatch wal_batch;
-	wal_batch_init(&wal_batch);
-
-	Exception e;
-	if (enter(&e))
-	{
+	defer(tr_free, &tr);
+	auto on_error = error_catch
+	(
 		// begin
 		tr_begin(&tr);
 
-		auto stmt = compiler_stmt(&self->compiler);
-		switch (stmt->id) {
-		case STMT_CREATE_SCHEMA:
-			ddl_create_schema(self, &tr);
-			break;
-		case STMT_DROP_SCHEMA:
-			ddl_drop_schema(self, &tr);
-			break;
-		case STMT_ALTER_SCHEMA:
-			ddl_alter_schema(self, &tr);
-			break;
-		case STMT_CREATE_TABLE:
-			ddl_create_table(self, &tr);
-			break;
-		case STMT_DROP_TABLE:
-			ddl_drop_table(self, &tr);
-			break;
-		case STMT_ALTER_TABLE:
-			ddl_alter_table(self, &tr);
-			break;
-		case STMT_CREATE_INDEX:
-			ddl_create_index(self, &tr);
-			break;
-		case STMT_DROP_INDEX:
-			ddl_drop_index(self, &tr);
-			break;
-		case STMT_ALTER_INDEX:
-			ddl_alter_index(self, &tr);
-			break;
-		case STMT_CREATE_NODE:
-			ddl_create_node(self, &tr);
-			break;
-		case STMT_DROP_NODE:
-			ddl_drop_node(self, &tr);
-			break;
-		case STMT_TRUNCATE:
-			ddl_truncate(self, &tr);
-			break;
-		default:
-			assert(0);
-			break;
-		}
-
-		// wal write
-		if (! tr_read_only(&tr))
-		{
-			wal_batch_begin(&wal_batch, WAL_UTILITY);
-			wal_batch_add(&wal_batch, &tr.log.log_set);
-			wal_write(&self->share->db->wal, &wal_batch);
-		}
+		session_execute_ddl_stmt(self, &tr);
 
 		// commit
 		tr_commit(&tr);
-		tr_free(&tr);
-		wal_batch_free(&wal_batch);
-	}
-
-	if (leave(&e))
+	);
+	if (unlikely(on_error))
 	{
 		tr_abort(&tr);
-		tr_free(&tr);
-		wal_batch_free(&wal_batch);
 		rethrow();
 	}
 }

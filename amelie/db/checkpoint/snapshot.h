@@ -26,5 +26,4 @@ struct Snapshot
 
 void snapshot_init(Snapshot*);
 void snapshot_free(Snapshot*);
-void snapshot_reset(Snapshot*);
 void snapshot_create(Snapshot*, Part*, uint64_t);

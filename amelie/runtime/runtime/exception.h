@@ -65,19 +65,3 @@ exception_mgr_throw(ExceptionMgr* self)
 	current->triggered = true;
 	longjmp(self->last->buf, 1);
 }
-
-#define exception_mgr_enter(self, exception) \
-({ \
-	(exception)->prev = (self)->last; \
-	(exception)->triggered = false; \
-	(exception)->defer_stack = NULL; \
-	(self)->last = (exception); \
-	setjmp((exception)->buf) == 0; \
-})
-
-always_inline static inline bool
-exception_mgr_leave(ExceptionMgr* self, Exception* exception)
-{
-	self->last = exception->prev;
-	return exception->triggered;
-}

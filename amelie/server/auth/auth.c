@@ -107,10 +107,8 @@ hot User*
 auth(Auth* self, Str* token)
 {
 	User* user = NULL;
-	Exception e;
-	if (enter(&e))
-		user = auth_run(self, token);
-	if (leave(&e))
-	{ }
+	error_catch(
+		user = auth_run(self, token)
+	);
 	return user;
 }

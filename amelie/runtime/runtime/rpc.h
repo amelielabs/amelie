@@ -54,11 +54,7 @@ rpc_execute(Rpc* self,
             void (*callback)(Rpc*, void*),
             void  *callback_arg)
 {
-	Exception e;
-	if (enter(&e))
-		callback(self, callback_arg);
-	leave(&e);
-	if (unlikely(e.triggered))
+	if (error_catch( callback(self, callback_arg) ))
 		*self->error = am_self()->error;
 	rpc_done(self);
 }

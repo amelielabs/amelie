@@ -38,9 +38,8 @@ checkpointer_run(Rpc* rpc, void* arg)
 	Checkpoint cp;
 	checkpoint_init(&cp, self->mgr);
 
-	Exception e;
-	if (enter(&e))
-	{
+	auto on_error = error_catch
+	(
 		// prepare checkpoint
 		int workers = rpc_arg(rpc, 0);
 		checkpoint_begin(&cp, lsn, workers);
@@ -54,10 +53,11 @@ checkpointer_run(Rpc* rpc, void* arg)
 
 		// wait for completion
 		checkpoint_wait(&cp);
-	}
+	);
 
 	checkpoint_free(&cp);
-	if (leave(&e))
+
+	if (on_error)
 	{
 		if (locked)
 			control_unlock();

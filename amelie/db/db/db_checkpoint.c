@@ -52,60 +52,61 @@ enum
 };
 
 static void
+restore_replay(Db* self, Tr* tr, int type, uint8_t** pos)
+{
+	switch (type) {
+	case RESTORE_NODE:
+	{
+		// read node config
+		auto config = node_config_read(pos);
+		defer(node_config_free, config);
+
+		// create node
+		node_mgr_create(&self->node_mgr, tr, config, false);
+		break;
+	}
+	case RESTORE_SCHEMA:
+	{
+		// read schema config
+		auto config = schema_config_read(pos);
+		defer(schema_config_free, config);
+
+		// create schema
+		schema_mgr_create(&self->schema_mgr, tr, config, false);
+		break;
+	}
+	case RESTORE_TABLE:
+	{
+		// read table config
+		auto config = table_config_read(pos);
+		defer(table_config_free, config);
+
+		// create table
+		table_mgr_create(&self->table_mgr, tr, config, false);
+		break;
+	}
+	}
+}
+
+static void
 restore_object(Db* self, int type, uint8_t** pos)
 {
 	Tr tr;
 	tr_init(&tr);
 	defer(tr_free, &tr);
-
-	Exception e;
-	if (enter(&e))
-	{
+	if (error_catch
+	(
 		// start transaction
 		tr_begin(&tr);
 
-		switch (type) {
-		case RESTORE_NODE:
-		{
-			// read node config
-			auto config = node_config_read(pos);
-			defer(node_config_free, config);
+		restore_replay(self, &tr, type, pos);
 
-			// create node
-			node_mgr_create(&self->node_mgr, &tr, config, false);
-			break;
-		}
-		case RESTORE_SCHEMA:
-		{
-			// read schema config
-			auto config = schema_config_read(pos);
-			defer(schema_config_free, config);
-
-			// create schema
-			schema_mgr_create(&self->schema_mgr, &tr, config, false);
-			break;
-		}
-		case RESTORE_TABLE:
-		{
-			// read table config
-			auto config = table_config_read(pos);
-			defer(table_config_free, config);
-
-			// create table
-			table_mgr_create(&self->table_mgr, &tr, config, false);
-			break;
-		}
-		}
-	}
-
-	if (leave(&e))
-	{
+		// commit
+		tr_commit(&tr);
+	)) {
 		tr_abort(&tr);
 		rethrow();
 	}
-
-	// commit
-	tr_commit(&tr);
 }
 
 static void

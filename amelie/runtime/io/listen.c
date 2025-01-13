@@ -66,9 +66,8 @@ listen_start(Listen* self, int backlog, struct sockaddr* addr)
 
 	self->poller = poller;
 
-	Exception e;
-	if (enter(&e))
-	{
+	auto on_error = error_catch
+	(
 		// set socket options
 		listen_socket_init(self->fd.fd, addr);
 
@@ -87,9 +86,9 @@ listen_start(Listen* self, int backlog, struct sockaddr* addr)
 		rc = poller_add(poller, &self->fd);
 		if (unlikely(rc == -1))
 			error_system();
-	}
+	);
 
-	if (leave(&e))
+	if (on_error)
 	{
 		socket_close(self->fd.fd);
 		self->fd.fd = -1;

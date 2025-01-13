@@ -212,9 +212,8 @@ tls_verify_common_name(Tls* self, const char* name)
 	if (cert == NULL)
 		tls_error(self, 0, "SSL_get_peer_certificate()");
 
-	Exception e;
-	if (enter(&e))
-	{
+	auto on_error = error_catch
+	(
 		X509_NAME* subject_name;
 		subject_name = X509_get_subject_name(cert);
 		if (subject_name == NULL)
@@ -225,10 +224,10 @@ tls_verify_common_name(Tls* self, const char* name)
 		if (! tls_verify_name(common_name, name))
 			tls_error(self, 0, "bad common name: %s (expected %s)",
 			          common_name, name);
-	}
+	);
 	X509_free(cert);
 
-	if (leave(&e))
+	if (on_error)
 		rethrow();
 }
 

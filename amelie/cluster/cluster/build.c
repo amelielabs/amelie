@@ -130,71 +130,74 @@ build_run(Build* self)
 		build_run_all(self);
 }
 
+static void
+build_execute_op(Build* self, Uuid* node)
+{
+	switch (self->type) {
+	case BUILD_RECOVER:
+		// restore last checkpoint partitions related to the node
+		recover_checkpoint(self->cluster->db, node);
+		break;
+	case BUILD_INDEX:
+	{
+		auto part = part_list_match(&self->table->part_list, node);
+		if (! part)
+			break;
+		// build new index content for current node
+		auto config = self->table->config;
+		PartBuild pb;
+		part_build_init(&pb, PART_BUILD_INDEX, part, NULL, NULL,
+		                self->index,
+		                &config->schema, &config->name);
+		part_build(&pb);
+		break;
+	}
+	case BUILD_COLUMN_ADD:
+	{
+		auto part = part_list_match(&self->table->part_list, node);
+		if (! part)
+			break;
+		auto part_dest = part_list_match(&self->table_new->part_list, node);
+		assert(part_dest);
+		// build new table with new column for current node
+		auto config = self->table->config;
+		PartBuild pb;
+		part_build_init(&pb, PART_BUILD_COLUMN_ADD, part, part_dest, self->column,
+		                NULL,
+		                &config->schema, &config->name);
+		part_build(&pb);
+		break;
+	}
+	case BUILD_COLUMN_DROP:
+	{
+		auto part = part_list_match(&self->table->part_list, node);
+		if (! part)
+			break;
+		auto part_dest = part_list_match(&self->table_new->part_list, node);
+		assert(part_dest);
+		// build new table without column for current node
+		auto config = self->table->config;
+		PartBuild pb;
+		part_build_init(&pb, PART_BUILD_COLUMN_DROP, part, part_dest, self->column,
+		                NULL,
+		                &config->schema, &config->name);
+		part_build(&pb);
+		break;
+	}
+	case BUILD_NONE:
+		break;
+	}
+}
+
 void
 build_execute(Build* self, Uuid* node)
 {
-	Exception e;
-	if (enter(&e))
-	{
-		switch (self->type) {
-		case BUILD_RECOVER:
-			// restore last checkpoint partitions related to the node
-			recover_checkpoint(self->cluster->db, node);
-			break;
-		case BUILD_INDEX:
-		{
-			auto part = part_list_match(&self->table->part_list, node);
-			if (! part)
-				break;
-			// build new index content for current node
-			auto config = self->table->config;
-			PartBuild pb;
-			part_build_init(&pb, PART_BUILD_INDEX, part, NULL, NULL,
-			                self->index,
-			                &config->schema, &config->name);
-			part_build(&pb);
-			break;
-		}
-		case BUILD_COLUMN_ADD:
-		{
-			auto part = part_list_match(&self->table->part_list, node);
-			if (! part)
-				break;
-			auto part_dest = part_list_match(&self->table_new->part_list, node);
-			assert(part_dest);
-			// build new table with new column for current node
-			auto config = self->table->config;
-			PartBuild pb;
-			part_build_init(&pb, PART_BUILD_COLUMN_ADD, part, part_dest, self->column,
-			                NULL,
-			                &config->schema, &config->name);
-			part_build(&pb);
-			break;
-		}
-		case BUILD_COLUMN_DROP:
-		{
-			auto part = part_list_match(&self->table->part_list, node);
-			if (! part)
-				break;
-			auto part_dest = part_list_match(&self->table_new->part_list, node);
-			assert(part_dest);
-			// build new table without column for current node
-			auto config = self->table->config;
-			PartBuild pb;
-			part_build_init(&pb, PART_BUILD_COLUMN_DROP, part, part_dest, self->column,
-			                NULL,
-			                &config->schema, &config->name);
-			part_build(&pb);
-			break;
-		}
-		case BUILD_NONE:
-			break;
-		}
-	}
 	Buf* buf;
-	if (leave(&e)) {
+	if (error_catch( build_execute_op(self, node) ))
+	{
 		buf = msg_error(&am_self()->error);
-	} else {
+	} else
+	{
 		buf = msg_create(MSG_OK);
 		msg_end(buf);
 	}

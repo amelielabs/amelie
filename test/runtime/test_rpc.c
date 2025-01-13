@@ -102,14 +102,8 @@ test_rpc_execute_error(void* arg)
 	task_init(&task);
 	task_create(&task, "test", test_rpc_execute_error_main, NULL);
 
-	Exception e;
-	if (enter(&e))
-		rpc(&task.channel, 0, 0);
-
-	bool error = false;
-	if (leave(&e))
-		error = true;
-	test(error);
+	auto on_error = error_catch( rpc(&task.channel, 0, 0) );
+	test(on_error);
 
 	task_wait(&task);
 	task_free(&task);

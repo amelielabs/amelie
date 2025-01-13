@@ -121,6 +121,26 @@ compute_execute(Compute* self, Tr* tr, Req* req)
 	        req->start);
 }
 
+hot static inline void
+compute_req(Compute* self, Tr* tr, Req* req)
+{
+	switch (req->type) {
+	case REQ_EXECUTE:
+		compute_execute(self, tr, req);
+		break;
+	case REQ_LOAD:
+		compute_load(self, tr, req);
+		break;
+	case REQ_REPLAY:
+		compute_replay(self, tr, req);
+		break;
+	case REQ_SHUTDOWN:
+		break;
+	default:
+		break;
+	}
+}
+
 hot static void
 compute_process(Compute* self, Pipe* pipe)
 {
@@ -135,33 +155,14 @@ compute_process(Compute* self, Pipe* pipe)
 		assert(req);
 
 		// execute request
-		Exception e;
-		if (enter(&e))
-		{
-			switch (req->type) {
-			case REQ_EXECUTE:
-				compute_execute(self, tr, req);
-				break;
-			case REQ_LOAD:
-				compute_load(self, tr, req);
-				break;
-			case REQ_REPLAY:
-				compute_replay(self, tr, req);
-				break;
-			case REQ_SHUTDOWN:
-				// force shutdown
-				break;
-			default:
-				break;
-			}
-		}
+		auto on_error = error_catch( compute_req(self, tr, req) );
 
 		// MSG_READY on pipe completion
 		// MSG_ERROR on pipe completion with error
 		// MSG_OK on execution
 		auto is_last = req->shutdown;
 		Buf* buf;
-		if (leave(&e)) {
+		if (on_error) {
 			buf = msg_error(&am_self()->error);
 		} else
 		{
@@ -175,7 +176,7 @@ compute_process(Compute* self, Pipe* pipe)
 		}
 		channel_write(&pipe->src, buf);
 
-		if (is_last || e.triggered)
+		if (is_last || on_error)
 			break;
 	}
 

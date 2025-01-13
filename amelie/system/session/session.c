@@ -170,9 +170,8 @@ session_execute_distributed(Session* self)
 		explain_start(&explain->time_run_us);
 
 	// execute coordinator
-	Exception e;
-	if (enter(&e))
-	{
+	auto on_error = error_catch
+	(
 		vm_run(&self->vm, &self->local,
 		       NULL,
 		       program->code,
@@ -182,10 +181,10 @@ session_execute_distributed(Session* self)
 		       &dtr->cte,
 		       NULL,
 		       &self->content, 0);
-	}
+	);
 
 	Buf* error = NULL;
-	if (leave(&e))
+	if (on_error)
 		error = msg_error(&am_self()->error);
 
 	if (profile)
@@ -342,9 +341,8 @@ session_main(Session* self)
 		cancel_pause();
 
 		// execute request based on the content-type
-		Exception e;
-		if (enter(&e))
-		{
+		auto on_error = error_catch
+		(
 			// prepare session state for execution
 			session_reset(self);
 
@@ -359,10 +357,10 @@ session_main(Session* self)
 
 			// done
 			session_unlock(self);
-		}
+		);
 
 		// reply
-		if (leave(&e))
+		if (on_error)
 		{
 			content_reset(content);
 			content_write_json_error(content, &am_self()->error);

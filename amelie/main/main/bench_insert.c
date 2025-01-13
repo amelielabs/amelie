@@ -17,7 +17,7 @@ bench_insert_create(Bench* self, Client* client)
 {
 	unused(self);
 	Str str;
-	str_set_cstr(&str, "create table __bench.test (id int primary key serial)");
+	str_set_cstr(&str, "create table __bench.test (id serial primary key)");
 	client_execute(client, &str);
 	if (var_int_of(&self->unlogged))
 	{

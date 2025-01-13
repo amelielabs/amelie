@@ -16,11 +16,10 @@ static void
 bench_connection(void* arg)
 {
 	BenchWorker* self = arg;
-	Client* client = NULL;
 
-	Exception e;
-	if (enter(&e))
-	{
+	Client* client = NULL;
+	error_catch
+	(
 		// create client and connect
 		client = client_create();
 		client_set_remote(client, self->bench->remote);
@@ -28,10 +27,7 @@ bench_connection(void* arg)
 
 		// process
 		self->bench->iface->main(self, client);
-	}
-
-	if (leave(&e))
-	{ }
+	);
 
 	if (client)
 	{
@@ -138,35 +134,36 @@ bench_free(Bench* self)
 }
 
 static void
+bench_service_execute(Bench* self, Client* client, bool create)
+{
+	// drop test schema if exists
+	Str str;
+	str_set_cstr(&str, "drop schema if exists __bench cascade");
+	client_execute(client, &str);
+
+	if (create)
+	{
+		// create test schema and run benchmark
+		str_set_cstr(&str, "create schema __bench");
+		client_execute(client, &str);
+
+		self->iface->create(self, client);
+	}
+}
+
+static void
 bench_service(Bench* self, bool create)
 {
 	Client* client = NULL;
-
-	Exception e;
-	if (enter(&e))
-	{
+	error_catch
+	(
 		// create client and connect
 		client = client_create();
 		client_set_remote(client, self->remote);
 		client_connect(client);
 
-		// drop test schema if exists
-		Str str;
-		str_set_cstr(&str, "drop schema if exists __bench cascade");
-		client_execute(client, &str);
-
-		if (create)
-		{
-			// create test schema and run benchmark
-			str_set_cstr(&str, "create schema __bench");
-			client_execute(client, &str);
-
-			self->iface->create(self, client);
-		}
-	}
-
-	if (leave(&e))
-	{ }
+		bench_service_execute(self, client, create);
+	);
 
 	if (client)
 	{

@@ -111,17 +111,15 @@ replay(Session* self, WalWrite* write)
 	req_list_init(&req_list);
 	defer(req_list_free, &req_list);
 
-	Exception e;
-	if (enter(&e))
-	{
+	auto on_error = error_catch
+	(
 		replay_read(self, write, &req_list);
 
 		executor_send(executor, dtr, 0, &req_list);
 		executor_recv(executor, dtr, 0);
-	}
-
+	);
 	Buf* error = NULL;
-	if (leave(&e))
+	if (on_error)
 		error = msg_error(&am_self()->error);
 
 	executor_commit(executor, dtr, error);

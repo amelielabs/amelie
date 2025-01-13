@@ -20,52 +20,52 @@
 #include <amelie_client.h>
 #include <amelie_server.h>
 
+static inline void
+server_accept_client(Server* self, ServerListen* listen)
+{
+	ServerConfig* config = listen->config;
+
+	// cancellation point
+	int fd = listen_accept(&listen->listen);
+
+	Client* client = NULL;
+	auto on_error = error_catch
+	(
+		// create new client
+		client = client_create();
+		client_set_auth(client, config->auth);
+		if (config->tls)
+			tcp_set_tls(&client->tcp, &self->tls);
+		tcp_set_fd(&client->tcp, fd);
+		fd = -1;
+
+		// process client
+		self->on_connect(self, client);
+	);
+
+	if (on_error)
+	{
+		if (client)
+			client_free(client);
+		if (fd != -1)
+			socket_close(fd);
+	}
+}
+
 static void
 server_accept_main(void* arg)
 {
 	ServerListen* listen = arg;
-	ServerConfig* config = listen->config;
 	Server*       self   = listen->arg;
 
 	coroutine_set_name(am_self(), "accept %s", str_of(&listen->addr_name));
 
-	Exception e;
-	if (enter(&e))
-	{
-		// process incoming connection
+	// process incoming connection
+	error_catch
+	(
 		for (;;)
-		{
-			// cancellation point
-			int fd = listen_accept(&listen->listen);
-
-			Client* client = NULL;
-			Exception e;
-			if (enter(&e))
-			{
-				// create new client
-				client = client_create();
-				client_set_auth(client, config->auth);
-				if (config->tls)
-					tcp_set_tls(&client->tcp, &self->tls);
-				tcp_set_fd(&client->tcp, fd);
-				fd = -1;
-
-				// process client
-				self->on_connect(self, client);
-			}
-
-			if (leave(&e))
-			{
-				if (client)
-					client_free(client);
-				if (fd != -1)
-					socket_close(fd);
-			}
-		}
-	}
-
-	if (leave(&e))
-	{ }
+			server_accept_client(self, listen);
+	);
 
 	// remove unix socket after use
 	if (! listen->addr)

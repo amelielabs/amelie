@@ -54,17 +54,16 @@ streamer_collect(Streamer* self)
 		event_set_parent(&on_disconnect, &on_event);
 		event_set_parent(&self->wal_slot->on_write, &on_event);
 
-		Exception e;
-		if (enter(&e))
-		{
+		auto on_error = error_catch
+		(
 			poll_read_start(&self->client->tcp.fd, &on_disconnect);
 			event_wait(&on_event, -1);
-		}
+		);
 
 		event_set_parent(&self->wal_slot->on_write, NULL);
 		poll_read_stop(&self->client->tcp.fd);
 
-		if (leave(&e))
+		if (on_error)
 			rethrow();
 
 		if (on_disconnect.signal)
@@ -183,28 +182,28 @@ streamer_next(Streamer* self)
 }
 
 static void
+streamer_client(Streamer* self)
+{
+	streamer_connect(self);
+	for (;;)
+	{
+		// collect and send wal records, read replica reply
+		if (! streamer_collect(self))
+			break;
+		streamer_write(self, &self->wal_cursor.buf);
+		streamer_next(self);
+	}
+}
+
+static void
 streamer_process(Streamer* self)
 {
 	for (;;)
 	{
-		Exception e;
-		if (enter(&e))
-		{
-			streamer_connect(self);
-			for (;;)
-			{
-				// collect and send wal records, read replica reply
-				if (! streamer_collect(self))
-					break;
-				streamer_write(self, &self->wal_cursor.buf);
-				streamer_next(self);
-			}
-		}
-
-		if (leave(&e))
-		{ }
-
+		// connect
+		error_catch( streamer_client(self) );
 		streamer_close(self);
+
 		cancellation_point();
 
 		// reconnect
@@ -220,17 +219,13 @@ streamer_main(void* arg)
 	Streamer* self = arg;
 	info("start");
 
-	Exception e;
-	if (enter(&e))
-	{
-		// create client, set node uri
+	// create client, set node uri
+	error_catch
+	(
 		self->client = client_create();
 		client_set_remote(self->client, self->remote);
 		streamer_process(self);
-	}
-
-	if (leave(&e))
-	{ }
+	);
 
 	if (self->client)
 	{

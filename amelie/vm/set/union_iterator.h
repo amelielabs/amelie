@@ -128,7 +128,7 @@ union_iterator_next_distinct(UnionIterator* self)
 	// set child: [keys, agg_order, expr]
 	for (;;)
 	{
-		auto* next = self->child->current;
+		auto next = self->child->current;
 		if (unlikely(! next))
 			break;
 

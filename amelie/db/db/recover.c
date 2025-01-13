@@ -297,44 +297,48 @@ recover_next(Recover* self, uint8_t** meta, uint8_t** data)
 	}
 }
 
+static inline void
+recover_next_log(Recover* self, Tr* tr, WalWrite* write, bool write_wal, int flags)
+{
+	// replay transaction log
+
+	// [header][meta][data]
+	auto meta = (uint8_t*)write + sizeof(*write);
+	auto data = meta + write->offset;
+	for (auto i = write->count; i > 0; i--)
+		recover_next(self, &meta, &data);
+
+	// wal write, if necessary
+	if (write_wal)
+	{
+		auto batch = &self->batch;
+		wal_batch_reset(batch);
+		wal_batch_begin(batch, flags);
+		wal_batch_add(batch, &tr->log.log_set);
+		wal_write(&self->db->wal, batch);
+	} else
+	{
+		config_lsn_follow(write->lsn);
+	}
+}
+
 void
 recover_next_write(Recover* self, WalWrite* write, bool write_wal, int flags)
 {
 	auto tr = &self->tr;
 	tr_reset(tr);
-
-	Exception e;
-	if (enter(&e))
-	{
+	auto on_error = error_catch
+	(
 		// begin
 		tr_begin(tr);
 
-		// replay transaction log
-
-		// [header][meta][data]
-		auto meta = (uint8_t*)write + sizeof(*write);
-		auto data = meta + write->offset;
-		for (auto i = write->count; i > 0; i--)
-			recover_next(self, &meta, &data);
-
-		// wal write, if necessary
-		if (write_wal)
-		{
-			auto batch = &self->batch;
-			wal_batch_reset(batch);
-			wal_batch_begin(batch, flags);
-			wal_batch_add(batch, &tr->log.log_set);
-			wal_write(&self->db->wal, batch);
-		} else
-		{
-			config_lsn_follow(write->lsn);
-		}
+		// replay
+		recover_next_log(self, tr, write, write_wal, flags);
 
 		// commit
 		tr_commit(tr);
-	}
-
-	if (leave(&e))
+	);
+	if (unlikely(on_error))
 	{
 		info("recover: wal lsn %" PRIu64 ": replay error", write->lsn);
 		tr_abort(tr);

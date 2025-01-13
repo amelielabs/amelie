@@ -54,10 +54,8 @@ db_create_system_schema(Db* self, const char* schema, bool create)
 	Tr tr;
 	tr_init(&tr);
 	defer(tr_free, &tr);
-
-	Exception e;
-	if (enter(&e))
-	{
+	auto on_error = error_catch
+	(
 		// begin
 		tr_begin(&tr);
 
@@ -74,9 +72,8 @@ db_create_system_schema(Db* self, const char* schema, bool create)
 
 		// commit
 		tr_commit(&tr);
-	}
-
-	if (leave(&e))
+	);
+	if (on_error)
 	{
 		tr_abort(&tr);
 		rethrow();

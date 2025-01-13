@@ -17,54 +17,39 @@ void
 test_exception0(void* arg)
 {
 	unused(arg);
-	Exception e;
-	if (enter(&e)) {
-	} else
-	{
-		test(0);
-	}
-	test(! leave(&e));
+	bool on_error = error_catch( true );
+	test(! on_error);
 }
 
 void
 test_exception1(void* arg)
 {
 	unused(arg);
-	Exception e;
-	if (enter(&e)) {
-		error("test");
-	} else
-	{
-		test(1);
-	}
-	if(leave(&e)) {
-		test(1);
-	}
+	bool on_error = error_catch( error("test") );
+	test(on_error);
+
+	on_error = error_catch( error_catch( error("test") ) );
+	test(! on_error);
+
+	on_error = error_catch( error_catch( error_catch( error("test") ) ) );
+	test(! on_error);
 }
 
 static void
 nested(void)
 {
-	Exception e;
-	if (enter(&e)) {
-		error("test");
-	}
-	if(leave(&e)) {
+	bool on_error = error_catch( error("test") );
+	test(on_error);
+	if (on_error)
 		rethrow();
-	}
 }
 
 void
 test_exception2(void* arg)
 {
 	unused(arg);
-	Exception e;
-	if (enter(&e)) {
-		nested();
-	}
-	if(leave(&e)) {
-		test(1);
-	}
+	bool on_error = error_catch( nested() );
+	test(on_error);
 }
 
 static void on_defer_int(void* arg)
@@ -102,13 +87,12 @@ void
 test_defer2(void* arg)
 {
 	unused(arg);
-	// exception
-	Exception e;
-	if (enter(&e)) {
+	auto on_error = error_catch
+	(
 		defer(on_defer_int, &_run);
 		error("test");
-	}
-	if (leave(&e))
+	);
+	if (on_error)
 		test(true);
 	test(_run);
 }

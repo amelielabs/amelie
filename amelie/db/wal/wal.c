@@ -59,13 +59,12 @@ wal_swap(Wal* self)
 
 	// create new wal file
 	WalFile* file = NULL;
-	Exception e;
-	if (enter(&e))
-	{
+	auto on_error = error_catch
+	(
 		file = wal_file_allocate(next_lsn);
 		wal_file_create(file);
-	}
-	if (leave(&e))
+	);
+	if (on_error)
 	{
 		if (file)
 		{

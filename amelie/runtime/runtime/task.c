@@ -39,14 +39,13 @@ task_coroutine_main(void* arg)
 	CoroutineMgr* mgr = coro->mgr;
 
 	// main
-	Exception e;
-	if (enter(&e))
-	{
+	auto on_error = error_catch
+	(
 		cancellation_point();
 		coro->main(coro->main_arg);
-	}
+	);
 
-	if (unlikely(leave(&e)))
+	if (unlikely(on_error))
 	{
 		auto error = &coro->error;
 		if (error->code != CANCEL) {
@@ -59,7 +58,7 @@ task_coroutine_main(void* arg)
 	// main exit
 	if (coro == am_task->main_coroutine)
 	{
-		if (e.triggered)
+		if (on_error)
 			cond_signal(&am_task->status, -1);
 
 		// cancel all coroutines, except current one

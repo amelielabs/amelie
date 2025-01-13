@@ -102,26 +102,15 @@ checkpoint_add(Checkpoint* self, Part* part)
 hot static bool
 checkpoint_worker_main(Checkpoint* self, CheckpointWorker* worker)
 {
+	// create primary index snapshot per partition
 	Snapshot snapshot;
 	snapshot_init(&snapshot);
-
-	Exception e;
-	if (enter(&e))
-	{
-		// create primary index snapshot per partition
+	auto on_error = error_catch(
 		list_foreach(&worker->list)
-		{
-			auto part = list_at(Part, link_cp);
-			snapshot_reset(&snapshot);
-			snapshot_create(&snapshot, part, self->lsn);
-		}
-	}
+			snapshot_create(&snapshot, list_at(Part, link_cp), self->lsn);
+	);
 	snapshot_free(&snapshot);
-
-	if (leave(&e))
-	{ }
-
-	return e.triggered;
+	return on_error;
 }
 
 static void

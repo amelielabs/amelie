@@ -275,12 +275,7 @@ executor_commit(Executor* self, Dtr* tr, Buf* error)
 		spinlock_unlock(&self->lock);
 
 		// wal write
-		Exception e;
-		if (enter(&e))
-		{
-			executor_wal_write(self);
-		}
-		if (leave(&e))
+		if (unlikely(error_catch( executor_wal_write(self) )))
 		{
 			// ABORT
 			executor_end_lock(self, DTR_ABORT);

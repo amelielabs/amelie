@@ -92,15 +92,11 @@ amelie_cmd_init(Amelie* self, int argc, char** argv)
 
 	// start, bootstrap and quick exit
 	System* system = NULL;
-	Exception e;
-	if (enter(&e))
-	{
+	error_catch
+	(
 		system = system_create();
 		system_start(system, bootstrap);
-	}
-
-	if (leave(&e))
-	{ }
+	);
 
 	if (system)
 	{
@@ -116,9 +112,8 @@ amelie_cmd_start(Amelie* self, int argc, char** argv)
 	auto bootstrap = main_open(&self->main, argv[0], argc - 1, argv + 1);
 
 	System* system = NULL;
-	Exception e;
-	if (enter(&e))
-	{
+	error_catch
+	(
 		system = system_create();
 		system_start(system, bootstrap);
 
@@ -127,12 +122,8 @@ amelie_cmd_start(Amelie* self, int argc, char** argv)
 
 		// handle system requests
 		system_main(system);
-	}
+	);
 
-	if (leave(&e))
-	{ }
-
-	// shutdown
 	if (system)
 	{
 		system_stop(system);
@@ -281,12 +272,11 @@ amelie_cmd_client(Amelie* self, int argc, char** argv)
 
 	Remote remote;
 	remote_init(&remote);
+	defer(remote_free, &remote);
 
 	Client* client = NULL;
-
-	Exception e;
-	if (enter(&e))
-	{
+	error_catch
+	(
 		// prepare remote
 		login_mgr_set(&self->home.login_mgr, &remote, NULL, argc, argv);
 
@@ -297,18 +287,13 @@ amelie_cmd_client(Amelie* self, int argc, char** argv)
 
 		// process cli
 		amelie_cmd_client_main(self, client);
-	}
-
-	if (leave(&e))
-	{ }
+	);
 
 	if (client)
 	{
 		client_close(client);
 		client_free(client);
 	}
-
-	remote_free(&remote);
 }
 
 static void
@@ -321,13 +306,14 @@ amelie_cmd_import(Amelie* self, int argc, char** argv)
 
 	Remote remote;
 	remote_init(&remote);
+	defer(remote_free, &remote);
 
 	Import import;
 	import_init(&import, &remote);
+	defer(import_free, &import);
 
-	Exception e;
-	if (enter(&e))
-	{
+	error_catch
+	(
 		// read arguments
 		auto last = login_mgr_set(&self->home.login_mgr, &remote,
 		                          &import.vars,
@@ -336,13 +322,7 @@ amelie_cmd_import(Amelie* self, int argc, char** argv)
 		argc -= last;
 		argv += last;
 		import_run(&import, argc, argv);
-	}
-
-	if (leave(&e))
-	{ }
-
-	import_free(&import);
-	remote_free(&remote);
+	);
 }
 
 static void
@@ -389,23 +369,18 @@ amelie_cmd_bench(Amelie* self, int argc, char** argv)
 
 	Remote remote;
 	remote_init(&remote);
+	defer(remote_free, &remote);
 
 	Bench bench;
 	bench_init(&bench, &remote);
+	defer(bench_free, &bench);
 
-	Exception e;
-	if (enter(&e))
-	{
-		// prepare remote
+	// prepare remote
+	error_catch
+	(
 		login_mgr_set(&self->home.login_mgr, &remote, &bench.vars, argc, argv);
 		bench_run(&bench);
-	}
-
-	if (leave(&e))
-	{ }
-
-	bench_free(&bench);
-	remote_free(&remote);
+	);
 }
 
 static void
@@ -418,23 +393,18 @@ amelie_cmd_top(Amelie* self, int argc, char** argv)
 
 	Remote remote;
 	remote_init(&remote);
+	defer(remote_free, &remote);
 
 	Top top;
 	top_init(&top, &remote);
+	defer(top_free, &top);
 
-	Exception e;
-	if (enter(&e))
-	{
-		// prepare remote
+	// prepare remote
+	error_catch
+	(
 		login_mgr_set(&self->home.login_mgr, &remote, NULL, argc, argv);
 		top_run(&top);
-	}
-
-	if (leave(&e))
-	{ }
-
-	top_free(&top);
-	remote_free(&remote);
+	);
 }
 
 static void
@@ -549,20 +519,16 @@ amelie_runner(void* arg)
 	AmelieArgs* args = arg;
 	Amelie* self = args->self;
 
-	Exception e;
-	if (enter(&e))
-	{
+	auto on_error = error_catch
+	(
 		main_start(&self->main);
 		amelie_main(self, args->argc, args->argv);
-	}
-	if (leave(&e))
-	{ }
-
+	);
 	main_stop(&self->main);
 
 	// complete
 	AmelieRc rc = AMELIE_COMPLETE;
-	if (e.triggered)
+	if (on_error)
 		rc = AMELIE_ERROR;
 	cond_signal(&self->task.status, rc);
 }

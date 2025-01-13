@@ -51,7 +51,7 @@ bench_tpcb_create(Bench* self, Client* client)
 		"create table __bench.branches (bid int primary key, bbalance int, filler text) with (type = \"hash\")",
 		"create table __bench.tellers (tid int primary key, bid int, tbalance int, filler text) with (type = \"hash\")",
 		"create table __bench.accounts (aid int primary key, bid int, abalance int, filler text) with (type = \"hash\")",
-		"create table __bench.history (tid int, bid int, aid int, delta int, time timestamp, seq int primary key serial, filler text)",
+		"create table __bench.history (tid int, bid int, aid int, delta int, time timestamp, seq serial primary key, filler text)",
 		 NULL
 	};
 

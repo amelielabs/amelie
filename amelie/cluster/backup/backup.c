@@ -147,13 +147,11 @@ backup_join(Backup* self)
 	// create backup state
 	control_lock();
 
-	Exception e;
-	if (enter(&e))
-		backup_prepare(self);
+	error_catch(
+		backup_prepare(self)
+	);
 
 	control_unlock();
-	if (leave(&e))
-	{ }
 
 	auto client = self->client;
 	auto reply = &client->reply;
@@ -226,6 +224,26 @@ backup_send(Backup* self)
 	}
 }
 
+static inline void
+backup_process(Backup* self, Client* client)
+{
+	// create and send backup state
+	backup_join(self);
+
+	// process file copy requests (till disconnect)
+	auto request = &client->request;
+	auto readahead = &client->readahead;
+	for (;;)
+	{
+		http_reset(request);
+		auto eof = http_read(request, readahead, true);
+		if (eof)
+			break;
+		http_read_content(request, readahead, &request->content);
+		backup_send(self);
+	}
+}
+
 static void
 backup_main(void* arg)
 {
@@ -235,33 +253,15 @@ backup_main(void* arg)
 
 	info("begin");
 
-	Exception e;
-	if (enter(&e))
-	{
+	error_catch
+	(
 		tcp_attach(tcp);
-
-		// create and send backup state
-		backup_join(self);
-
-		// process file copy requests (till disconnect)
-		auto request = &client->request;
-		auto readahead = &client->readahead;
-		for (;;)
-		{
-			http_reset(request);
-			auto eof = http_read(request, readahead, true);
-			if (eof)
-				break;
-			http_read_content(request, readahead, &request->content);
-			backup_send(self);
-		}
-	}
-
+		backup_process(self, client);
+	);
 	tcp_detach(tcp);
-	if (leave(&e))
-	{ }
 
 	event_signal(&self->on_complete);
+
 	info("complete");
 }
 
@@ -293,11 +293,8 @@ backup(Db* db, Client* client)
 	// processs backup and wait for completion
 	Backup backup;
 	backup_init(&backup, db);
-	Exception e;
-	if (enter(&e)) {
+	error_catch(
 		backup_run(&backup, client);
-	}
-	if (leave(&e))
-	{ }
+	);
 	backup_free(&backup);
 }

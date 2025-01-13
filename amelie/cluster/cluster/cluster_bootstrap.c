@@ -39,6 +39,31 @@
 #include <amelie_repl.h>
 #include <amelie_cluster.h>
 
+static inline void
+cluster_bootstrap_nodes(Db* db, Tr* tr, int backends)
+{
+	// precreate compute nodes
+	while (backends-- > 0)
+	{
+		auto config = node_config_allocate();
+		defer(node_config_free, config);
+
+		// set node id
+		Uuid id;
+		uuid_generate(&id, global()->random);
+
+		char uuid[UUID_SZ];
+		uuid_to_string(&id, uuid, sizeof(uuid));
+
+		Str uuid_str;
+		str_set_cstr(&uuid_str, uuid);
+		node_config_set_id(config, &uuid_str);
+
+		// create node
+		node_mgr_create(&db->node_mgr, tr, config, false);
+	}
+}
+
 void
 cluster_bootstrap(Db* db, int backends)
 {
@@ -47,43 +72,22 @@ cluster_bootstrap(Db* db, int backends)
 
 	Tr tr;
 	tr_init(&tr);
-
-	Exception e;
-	if (enter(&e))
-	{
+	defer(tr_free, &tr);
+	auto on_error = error_catch
+	(
 		// begin
 		tr_begin(&tr);
 
 		// precreate compute nodes
-		while (backends-- > 0)
-		{
-			auto config = node_config_allocate();
-			defer(node_config_free, config);
-
-			// set node id
-			Uuid id;
-			uuid_generate(&id, global()->random);
-
-			char uuid[UUID_SZ];
-			uuid_to_string(&id, uuid, sizeof(uuid));
-
-			Str uuid_str;
-			str_set_cstr(&uuid_str, uuid);
-			node_config_set_id(config, &uuid_str);
-
-			// create node
-			node_mgr_create(&db->node_mgr, &tr, config, false);
-		}
+		cluster_bootstrap_nodes(db, &tr, backends);
 
 		// commit
 		tr_commit(&tr);
-		tr_free(&tr);
-	}
+	);
 
-	if (leave(&e))
+	if (on_error)
 	{
 		tr_abort(&tr);
-		tr_free(&tr);
 		rethrow();
 	}
 }

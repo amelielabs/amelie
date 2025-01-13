@@ -394,6 +394,30 @@ import_file(Import* self, char* path)
 	reader_close(reader);
 }
 
+static void
+import_main(Import* self, int argc, char** argv)
+{
+	// create clients and connect
+	import_connect(self);
+
+	self->report_time = time_us();
+
+	// import files or stdin
+	if (argc > 0)
+	{
+		while (argc > 0)
+		{
+			self->report_processed = 0;
+
+			import_file(self, argv[0]);
+			argc--;
+			argv++;
+		}
+	} else {
+		import_file(self, NULL);
+	}
+}
+
 void
 import_run(Import* self, int argc, char** argv)
 {
@@ -416,32 +440,10 @@ import_run(Import* self, int argc, char** argv)
 	// guess format and set content type
 	import_set_format(self, argc, argv);
 
-	Exception e;
-	if (enter(&e))
-	{
-		// create clients and connect
-		import_connect(self);
-
-		self->report_time = time_us();
-
-		// import files or stdin
-		if (argc > 0)
-		{
-			while (argc > 0)
-			{
-				self->report_processed = 0;
-
-				import_file(self, argv[0]);
-				argc--;
-				argv++;
-			}
-		} else {
-			import_file(self, NULL);
-		}
-	}
-
-	if (leave(&e))
-	{ }
+	//connect and import files
+	error_catch(
+		import_main(self, argc, argv);
+	);
 
 	// disconnect clients
 	import_disconnect(self);
