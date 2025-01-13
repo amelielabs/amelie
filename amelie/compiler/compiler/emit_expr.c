@@ -843,7 +843,8 @@ emit_expr(Compiler* self, Targets* targets, Ast* ast)
 	{
 		Timestamp ts;
 		timestamp_init(&ts);
-		timestamp_read(&ts, &ast->string);
+		if (unlikely(error_catch( timestamp_read(&ts, &ast->string) )))
+			stmt_error(self->current, ast, "invalid timestamp value");
 		return op2(self, CTIMESTAMP, rpin(self, TYPE_TIMESTAMP),
 		           timestamp_of(&ts, self->parser.local->timezone));
 	}
@@ -852,7 +853,8 @@ emit_expr(Compiler* self, Targets* targets, Ast* ast)
 		int offset = code_data_offset(&self->code_data);
 		auto iv = (Interval*)buf_claim(&self->code_data.data, sizeof(Interval));
 		interval_init(iv);
-		interval_read(iv, &ast->string);
+		if (unlikely(error_catch( interval_read(iv, &ast->string) )))
+			stmt_error(self->current, ast, "invalid interval value");
 		return op2(self, CINTERVAL, rpin(self, TYPE_INTERVAL), offset);
 	}
 	case KCURRENT_TIMESTAMP:
@@ -871,7 +873,7 @@ emit_expr(Compiler* self, Targets* targets, Ast* ast)
 		auto uuid = (Uuid*)buf_claim(&self->code_data.data, sizeof(Uuid));
 		uuid_init(uuid);
 		if (uuid_from_string_nothrow(uuid, &ast->string) == -1)
-			stmt_error(self->current, ast, "failed to read uuid");
+			stmt_error(self->current, ast, "invalid uuid value");
 		return op2(self, CUUID, rpin(self, TYPE_UUID), offset);
 	}
 

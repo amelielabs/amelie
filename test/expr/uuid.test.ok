@@ -11,7 +11,7 @@ select "00000000-0000-0000-0000-000000000001"::uuid::type
 ["uuid"]
 # test: uuid invalid
 select uuid "00000000-0000-0000-0000-00000000000_"
-{"msg": "select uuid ❰\"00000000-0000-0000-0000-00000000000_\"❱ ⟵ failed to read uuid"}
+{"msg": "select uuid ❰\"00000000-0000-0000-0000-00000000000_\"❱ ⟵ invalid uuid value"}
 # test: uuid = uuid
 select "00000000-0000-0000-0000-000000000001"::uuid = "00000000-0000-0000-0000-000000000001"::uuid
 [true]
