@@ -202,6 +202,7 @@ enum
 
 	// u
 	KUPDATE,
+	KUUID,
 	KUNSET,
 	KUSE,
 	KUSER,

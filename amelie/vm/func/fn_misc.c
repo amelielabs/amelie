@@ -67,23 +67,10 @@ static void
 fn_random_uuid(Call* self)
 {
 	call_validate(self, 0);
-
 	Uuid id;
 	uuid_init(&id);
 	uuid_generate(&id, global()->random);
-
-	char id_sz[UUID_SZ];
-	uuid_to_string(&id, id_sz, sizeof(id_sz));
-
-	Str string;
-	str_set(&string, id_sz, sizeof(id_sz) - 1);
-
-	auto buf = buf_create();
-	encode_string(buf, &string);
-	str_init(&string);
-	uint8_t* pos_str = buf->start;
-	json_read_string(&pos_str, &string);
-	value_set_string(self->result, &string, buf);
+	value_set_uuid(self->result, &id);
 }
 
 static inline void
@@ -278,7 +265,7 @@ FunctionDef fn_misc_def[] =
 	{ "public", "error",        TYPE_NULL,   fn_error,        FN_NONE },
 	{ "public", "sleep",        TYPE_NULL,   fn_sleep,        FN_NONE },
 	{ "public", "random",       TYPE_INT,    fn_random,       FN_NONE },
-	{ "public", "random_uuid",  TYPE_STRING, fn_random_uuid,  FN_NONE },
+	{ "public", "random_uuid",  TYPE_UUID,   fn_random_uuid,  FN_NONE },
 	{ "public", "md5",          TYPE_STRING, fn_md5,          FN_NONE },
 	{ "public", "sha1",         TYPE_STRING, fn_sha1,         FN_NONE },
 	{ "public", "encode",       TYPE_STRING, fn_encode,       FN_NONE },

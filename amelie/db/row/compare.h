@@ -30,6 +30,12 @@ compare(Keys* self, Row* a, Row* b)
 			rc = compare_int64(*(int64_t*)row_at(a, column->order),
 			                   *(int64_t*)row_at(b, column->order));
 		} else
+		if (column->type_size == sizeof(Uuid))
+		{
+			// uuid
+			rc = uuid_compare(row_at(a, column->order),
+			                  row_at(b, column->order));
+		} else
 		{
 			// string
 			rc = json_compare_string(row_at(a, column->order),

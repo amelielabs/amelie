@@ -104,6 +104,9 @@ select '2024-07-29 18:40:19'::timestamp::string
 # test: string(json)
 select {"id": 42, "data": [1,2,3]}::string
 
+# test: string(uuid)
+select "00000000-0000-0000-0000-000000000001"::uuid::string
+
 # test: json_import(string)
 select '{"id": 42, "data": [1,2,3]}'::json_import
 select '{"id": 42, "data": [1,2,3]}'::json_import::string
@@ -170,6 +173,18 @@ select [1, 2.0, null]::vector
 select [1,2,3]::vector
 select [1,2,3]::vector::type
 select [1,2,3]::vector::length
+
+# test: uuid(string)
+select "00000000-0000-0000-0000-000000000001"::uuid
+
+# test: uuid(uuid)
+select "00000000-0000-0000-0000-000000000001"::uuid::uuid
+
+# test: uuid(null)
+select null::uuid
+
+# test: uuid(unsupported)
+select 1::uuid
 
 disconnect S0
 close E0

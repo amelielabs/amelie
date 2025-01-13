@@ -143,8 +143,7 @@ part_list_match(PartList* self, Uuid* node)
 	{
 		auto part = list_at(Part, link);
 		if (! uuid_compare(&part->config->node, node))
-			continue;
-		return part;
+			return part;
 	}
 	return NULL;
 }

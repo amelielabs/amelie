@@ -24,17 +24,6 @@ bench_resolved_create(Bench* self, Client* client)
 	             "    hits int default 0 as ( hits + 1 ) resolved,"
 	             "    primary key(ts, id)"
 	             ") with (type = 'hash')");
-#if 0
-	str_set_cstr(&str,
-	             "create table __bench.test ("
-	             "    id int primary key random (100000),"
-	             "    a int as ( a + 1 ) resolved default 0,"
-	             "    b int as ( b + 1 ) resolved default 0,"
-	             "    c int as ( c + 1 ) resolved default 0,"
-	             "    d int as ( d + 1 ) resolved default 0,"
-	             "    e int as ( e + 1 ) resolved default 0"
-	             ") with (type = 'hash')");
-#endif
 	client_execute(client, &str);
 	if (var_int_of(&self->unlogged))
 	{

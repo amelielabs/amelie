@@ -9,8 +9,8 @@ select random()::type
 select public.random()::type
 ["int"]
 # test: random_uuid()
-select random_uuid()::size
-[36]
+select random_uuid()::type
+["uuid"]
 # test: md5()
 select md5("hello world")
 ["5eb63bbbe01eeed093cb22bb8f5acdc3"]

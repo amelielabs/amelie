@@ -73,7 +73,7 @@ cluster_find(Cluster* self, Uuid* id)
 	list_foreach(&self->list)
 	{
 		auto compute = list_at(Compute, link);
-		if (uuid_compare(&compute->node->id, id))
+		if (! uuid_compare(&compute->node->id, id))
 			return compute;
 	}
 	return NULL;

@@ -22,6 +22,7 @@ typedef enum
 	TYPE_TIMESTAMP,
 	TYPE_INTERVAL,
 	TYPE_VECTOR,
+	TYPE_UUID,
 	TYPE_AVG,
 	TYPE_STORE,
 	TYPE_MAX
@@ -59,6 +60,9 @@ type_of(Type type)
 	case TYPE_VECTOR:
 		name = "vector";
 		break;
+	case TYPE_UUID:
+		name = "uuid";
+		break;
 	case TYPE_AVG:
 		name = "avg";
 		break;
@@ -85,6 +89,8 @@ type_sizeof(Type type)
 		return sizeof(double);
 	case TYPE_INTERVAL:
 		return sizeof(Interval);
+	case TYPE_UUID:
+		return sizeof(Uuid);
 	default:
 		// variable
 		break;
@@ -165,6 +171,11 @@ type_read(Str* name, int* type_size)
 	if (str_is_case(name, "vector", 6))
 	{
 		type = TYPE_VECTOR;
+	} else
+	if (str_is_case(name, "uuid", 4))
+	{
+		type = TYPE_UUID;
+		*type_size = sizeof(Uuid);
 	}
 	return type;
 }

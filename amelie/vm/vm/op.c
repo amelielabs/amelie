@@ -65,6 +65,7 @@ OpDesc ops[] =
 	{ CINTERVAL, "interval" },
 	{ CTIMESTAMP, "timestamp" },
 	{ CVECTOR, "vector" },
+	{ CUUID, "uuid" },
 
 	// argument
 	{ CARG, "arg" },
@@ -96,6 +97,7 @@ OpDesc ops[] =
 	{ CEQUSS, "equss" },
 	{ CEQUJJ, "equjj" },
 	{ CEQUVV, "equvv" },
+	{ CEQUUU, "equuu" },
 
 	// gte
 	{ CGTEII, "gteii" },
@@ -105,6 +107,7 @@ OpDesc ops[] =
 	{ CGTELL, "gtell" },
 	{ CGTESS, "gtess" },
 	{ CGTEVV, "gtevv" },
+	{ CGTEUU, "gteuu" },
 
 	// gt
 	{ CGTII, "gtii" },
@@ -114,6 +117,7 @@ OpDesc ops[] =
 	{ CGTLL, "gtll" },
 	{ CGTSS, "gtss" },
 	{ CGTVV, "gtvv" },
+	{ CGTUU, "gtuu" },
 
 	// lte
 	{ CLTEII, "lteii" },
@@ -123,6 +127,7 @@ OpDesc ops[] =
 	{ CLTELL, "ltell" },
 	{ CLTESS, "ltess" },
 	{ CLTEVV, "ltevv" },
+	{ CLTEUU, "lteuu" },
 
 	// lt
 	{ CLTII, "ltii" },
@@ -132,6 +137,7 @@ OpDesc ops[] =
 	{ CLTLL, "ltll" },
 	{ CLTSS, "ltss" },
 	{ CLTVV, "ltvv" },
+	{ CLTUU, "ltuu" },
 
 	// add
 	{ CADDII, "addii" },
@@ -226,6 +232,7 @@ OpDesc ops[] =
 	{ CTABLE_READS, "table_reads" },
 	{ CTABLE_READJ, "table_readj" },
 	{ CTABLE_READV, "table_readv" },
+	{ CTABLE_READU, "table_readu" },
 
 	// store cursor
 	{ CSTORE_OPEN, "store_open" },

@@ -185,6 +185,7 @@ Keyword keywords[] =
 
 	// u
 	{ KUPDATE,                "update",                6  },
+	{ KUUID,                  "uuid",                  4  },
 	{ KUNSET,                 "unset",                 5  },
 	{ KUSE,                   "use",                   3  },
 	{ KUSER,                  "user",                  4  },

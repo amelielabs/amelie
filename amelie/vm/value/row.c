@@ -151,6 +151,10 @@ row_create(Columns* columns, Value* values)
 			memcpy(pos, value->vector, vector_size(value->vector));
 			pos += vector_size(value->vector);
 			break;
+		case TYPE_UUID:
+			*(Uuid*)pos = value->uuid;
+			pos += sizeof(Uuid);
+			break;
 		}
 	}
 
@@ -165,7 +169,7 @@ row_create_key(Keys* self, Value* values, int count)
 	{
 		auto key = list_at(Key, link);
 
-		// int, timestamp
+		// int, timestamp, uuid
 		auto column = key->column;
 		if (column->type_size > 0)
 		{
@@ -220,7 +224,7 @@ row_create_key(Keys* self, Value* values, int count)
 			continue;
 		}
 
-		// int, timestamp
+		// int, timestamp, uuid
 		switch (column->type_size) {
 		case 4:
 		{
@@ -252,6 +256,18 @@ row_create_key(Keys* self, Value* values, int count)
 					*(int64_t*)pos = INT64_MIN;
 			}
 			pos += sizeof(int64_t);
+			break;
+		}
+		case sizeof(Uuid):
+		{
+			if (key->order < count)
+			{
+				auto ref = &values[key->order];
+				*(Uuid*)pos = ref->uuid;
+			} else {
+				uuid_init((Uuid*)pos);
+			}
+			pos += sizeof(Uuid);
 			break;
 		}
 		default:
@@ -442,6 +458,10 @@ row_update(Row* self, Columns* columns, Value* values, int count)
 			case TYPE_VECTOR:
 				memcpy(pos, value->vector, vector_size(value->vector));
 				pos += vector_size(value->vector);
+				break;
+			case TYPE_UUID:
+				*(Uuid*)pos = value->uuid;
+				pos += sizeof(Uuid);
 				break;
 			}
 

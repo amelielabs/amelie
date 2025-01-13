@@ -92,6 +92,11 @@ create table test(id int primary key, a vector)
 select system.table('test').columns
 drop table test
 
+# test: column uuid
+create table test(id int primary key, a uuid)
+select system.table('test').columns
+drop table test
+
 # test: column redefined
 create table test(id int, id int)
 
@@ -211,6 +216,7 @@ create table test (id int primary key, data int default 1 + 1)
 create table test (id int primary key, data vector default 1)
 create table test (id int primary key, data timestamp default 1)
 create table test (id int primary key, data interval default 1)
+create table test (id int primary key, data uuid default '')
 
 # test: constraint default (type validate)
 create table test (id int primary key, data int default 'string')

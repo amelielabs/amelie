@@ -124,6 +124,9 @@ select '2024-07-29 18:40:19'::timestamp::string
 # test: string(json)
 select {"id": 42, "data": [1,2,3]}::string
 ["{\"id\": 42, \"data\": [1, 2, 3]}"]
+# test: string(uuid)
+select "00000000-0000-0000-0000-000000000001"::uuid::string
+["00000000-0000-0000-0000-000000000001"]
 # test: json_import(string)
 select '{"id": 42, "data": [1,2,3]}'::json_import
 [{
@@ -221,5 +224,17 @@ select [1,2,3]::vector::type
 ["vector"]
 select [1,2,3]::vector::length
 [3]
+# test: uuid(string)
+select "00000000-0000-0000-0000-000000000001"::uuid
+["00000000-0000-0000-0000-000000000001"]
+# test: uuid(uuid)
+select "00000000-0000-0000-0000-000000000001"::uuid::uuid
+["00000000-0000-0000-0000-000000000001"]
+# test: uuid(null)
+select null::uuid
+[null]
+# test: uuid(unsupported)
+select 1::uuid
+{"msg": "uuid(int): operation type is not supported"}
 disconnect S0
 close E0

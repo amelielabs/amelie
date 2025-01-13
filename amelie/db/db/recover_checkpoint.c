@@ -61,8 +61,7 @@ recover_checkpoint(Db* self, Uuid* node)
 		{
 			auto part = list_at(Part, link);
 			if (! uuid_compare(&part->config->node, node))
-				continue;
-			recover_partition(part);
+				recover_partition(part);
 		}
 	}
 }

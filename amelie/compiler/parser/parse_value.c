@@ -194,6 +194,20 @@ parse_value(Stmt* self, Column* column, Value* value)
 		value_set_vector_buf(value, buf);
 		return ast;
 	}
+	case TYPE_UUID:
+	{
+		// [UUID] string
+		if (ast->id == KUUID)
+			ast = stmt_next(self);
+		if (likely(ast->id != KSTRING))
+			break;
+		Uuid uuid;
+		uuid_init(&uuid);
+		if (uuid_from_string_nothrow(&uuid, &ast->string) == -1)
+			break;
+		value_set_uuid(value, &uuid);
+		return ast;
+	}
 	}
 
 	stmt_error(self, ast, "'%s' expected for column '%.*s'",

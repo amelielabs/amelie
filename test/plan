@@ -18,6 +18,7 @@ test timestamp
 test timestamp_timezone
 test interval
 test vector
+test uuid
 test logic
 test is
 test method

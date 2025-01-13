@@ -518,6 +518,37 @@ select system.table('test').columns
   }
 }]]
 drop table test
+# test: column uuid
+create table test(id int primary key, a uuid)
+select system.table('test').columns
+[[{
+  "name": "id",
+  "type": 2,
+  "type_size": 4,
+  "constraints": {
+    "not_null": true,
+    "random": false,
+    "random_modulo": 9223372036854775807,
+    "default": null,
+    "as_identity": false,
+    "as_stored": "",
+    "as_resolved": ""
+  }
+}, {
+  "name": "a",
+  "type": 9,
+  "type_size": 16,
+  "constraints": {
+    "not_null": false,
+    "random": false,
+    "random_modulo": 9223372036854775807,
+    "default": null,
+    "as_identity": false,
+    "as_stored": "",
+    "as_resolved": ""
+  }
+}]]
+drop table test
 # test: column redefined
 create table test(id int, id int)
 {"msg": "create table test(id int, ❰id❱ ⟵ column is redefined"}
@@ -570,9 +601,9 @@ create table test(id int primary key primary key)
 {"msg": "create table test(id int primary key ❰primary❱ ⟵ PRIMARY KEY defined twice"}
 # test: primary key ensure valid type
 create table test(id json primary key)
-{"msg": "create table test(id json ❰primary❱ ⟵ column key can be text, int32, int64 or timestamp"}
+{"msg": "create table test(id json ❰primary❱ ⟵ supported key types are int32, int64, uuid, timestamp or text"}
 create table test(id json, primary key(id))
-{"msg": "create table test(id json, primary key(❰id❱ ⟵ column key can be text, int32, int64 or timestamp"}
+{"msg": "create table test(id json, primary key(❰id❱ ⟵ supported key types are int32, int64, uuid, timestamp or text"}
 create table test (id int primary key)
 create table test (id int primary key)
 {"msg": "table 'test': already exists"}
@@ -731,6 +762,8 @@ create table test (id int primary key, data timestamp default 1)
 {"msg": "create table test (id int primary key, data timestamp default ❰1❱ ⟵ DEFAULT for this column type is not supported"}
 create table test (id int primary key, data interval default 1)
 {"msg": "create table test (id int primary key, data interval default ❰1❱ ⟵ DEFAULT for this column type is not supported"}
+create table test (id int primary key, data uuid default '')
+{"msg": "create table test (id int primary key, data uuid default ❰''❱ ⟵ DEFAULT for this column type is not supported"}
 # test: constraint default (type validate)
 create table test (id int primary key, data int default 'string')
 {"msg": "create table test (id int primary key, data int default ❰'string'❱ ⟵ DEFAULT value must be a const and match the column type"}

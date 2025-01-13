@@ -69,6 +69,13 @@ plan_ast_compare(Ast* a, Ast* b)
 		return (a->integer > b->integer) ? 1 : -1;
 	case KSTRING:
 		return str_compare_fn(&a->string, &b->string);
+	case KUUID:
+	{
+		Uuid l, r;
+		uuid_from_string(&l, &a->string);
+		uuid_from_string(&r, &b->string);
+		return uuid_compare(&l, &r);
+	}
 	// KNAME
 	// KNAME_COMPOUND
 	}
@@ -225,6 +232,10 @@ plan_key(Plan* self, PlanKey* key, AstList* ops)
 			if (unlikely(column->type != TYPE_TIMESTAMP))
 				continue;
 			break;
+		case KUUID:
+			if (unlikely(column->type != TYPE_UUID))
+				continue;
+			break;
 		case KNAME:
 			continue;
 		case KNAME_COMPOUND:
@@ -301,21 +312,29 @@ uint32_t
 plan_create_hash(Plan* self)
 {
 	assert(self->type == PLAN_LOOKUP);
+	Uuid     uuid;
 	uint32_t hash = 0;
 	for (auto i = 0; i < self->match_start; i++)
 	{
-		auto value = self->keys[i].start;
-		if (value->id == KSTRING) {
-			hash = hash_murmur3_32(str_u8(&value->string),
-			                       str_size(&value->string),
-			                       0);
+		auto  value = self->keys[i].start;
+		void* data;
+		int   data_size;
+		if (value->id == KINT || value->id == KTIMESTAMP)
+		{
+			data = &value->integer;
+			data_size = sizeof(value->integer);
+		} else
+		if (value->id == KUUID)
+		{
+			uuid_from_string(&uuid, &value->string);
+			data = &uuid;
+			data_size = sizeof(uuid);
 		} else
 		{
-			assert(value->id == KINT || value->id == KTIMESTAMP);
-			hash = hash_murmur3_32((uint8_t*)&value->integer,
-			                       sizeof(value->integer),
-			                       0);
+			data = str_u8(&value->string);
+			data_size = str_size(&value->string);
 		}
+		hash = hash_murmur3_32(data, data_size, hash);
 	}
 	return hash;
 }

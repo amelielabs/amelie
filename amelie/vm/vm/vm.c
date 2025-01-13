@@ -146,6 +146,7 @@ vm_run(Vm*       self,
 		&&cinterval,
 		&&ctimestamp,
 		&&cvector,
+		&&cuuid,
 
 		// argument
 		&&carg,
@@ -177,6 +178,7 @@ vm_run(Vm*       self,
 		&&cequss,
 		&&cequjj,
 		&&cequvv,
+		&&cequuu,
 
 		// gte
 		&&cgteii,
@@ -186,6 +188,7 @@ vm_run(Vm*       self,
 		&&cgtell,
 		&&cgtess,
 		&&cgtevv,
+		&&cgteuu,
 
 		// gt
 		&&cgtii,
@@ -195,6 +198,7 @@ vm_run(Vm*       self,
 		&&cgtll,
 		&&cgtss,
 		&&cgtvv,
+		&&cgtuu,
 
 		// lte
 		&&clteii,
@@ -204,6 +208,7 @@ vm_run(Vm*       self,
 		&&cltell,
 		&&cltess,
 		&&cltevv,
+		&&clteuu,
 
 		// lt
 		&&cltii,
@@ -213,6 +218,7 @@ vm_run(Vm*       self,
 		&&cltll,
 		&&cltss,
 		&&cltvv,
+		&&cltuu,
 
 		// add
 		&&caddii,
@@ -308,6 +314,7 @@ vm_run(Vm*       self,
 		&&ctable_reads,
 		&&ctable_readj,
 		&&ctable_readv,
+		&&ctable_readu,
 
 		// store cursor
 		&&cstore_open,
@@ -495,6 +502,10 @@ cvector:
 	value_set_vector(&r[op->a], (Vector*)code_data_at(code_data, op->b), NULL);
 	op_next;
 
+cuuid:
+	value_set_uuid(&r[op->a], (Uuid*)code_data_at(code_data, op->b));
+	op_next;
+
 carg:
 	// [result, order]
 	// todo: read array
@@ -634,6 +645,11 @@ cequvv:
 	}
 	op_next;
 
+cequuu:
+	if (likely(value_is(&r[op->a], &r[op->b], &r[op->c])))
+		value_set_bool(&r[op->a], !uuid_compare(&r[op->b].uuid, &r[op->c].uuid));
+	op_next;
+
 // gte
 cgteii:
 	if (likely(value_is(&r[op->a], &r[op->b], &r[op->c])))
@@ -676,6 +692,11 @@ cgtevv:
 		value_free(&r[op->b]);
 		value_free(&r[op->c]);
 	}
+	op_next;
+
+cgteuu:
+	if (likely(value_is(&r[op->a], &r[op->b], &r[op->c])))
+		value_set_bool(&r[op->a], uuid_compare(&r[op->b].uuid, &r[op->c].uuid) >= 0);
 	op_next;
 
 // gt
@@ -722,6 +743,11 @@ cgtvv:
 	}
 	op_next;
 
+cgtuu:
+	if (likely(value_is(&r[op->a], &r[op->b], &r[op->c])))
+		value_set_bool(&r[op->a], uuid_compare(&r[op->b].uuid, &r[op->c].uuid) > 0);
+	op_next;
+
 // lte
 clteii:
 	if (likely(value_is(&r[op->a], &r[op->b], &r[op->c])))
@@ -766,6 +792,11 @@ cltevv:
 	}
 	op_next;
 
+clteuu:
+	if (likely(value_is(&r[op->a], &r[op->b], &r[op->c])))
+		value_set_bool(&r[op->a], uuid_compare(&r[op->b].uuid, &r[op->c].uuid) <= 0);
+	op_next;
+
 // lt
 cltii:
 	if (likely(value_is(&r[op->a], &r[op->b], &r[op->c])))
@@ -808,6 +839,11 @@ cltvv:
 		value_free(&r[op->b]);
 		value_free(&r[op->c]);
 	}
+	op_next;
+
+cltuu:
+	if (likely(value_is(&r[op->a], &r[op->b], &r[op->c])))
+		value_set_bool(&r[op->a], uuid_compare(&r[op->b].uuid, &r[op->c].uuid) < 0);
 	op_next;
 
 // add
@@ -1396,6 +1432,14 @@ ctable_readv:
 	ptr = row_at(iterator_at(cursor_mgr_of(cursor_mgr, op->b)->it), op->c);
 	if (likely(ptr))
 		value_set_vector(&r[op->a], (Vector*)ptr, NULL);
+	else
+		value_set_null(&r[op->a]);
+	op_next;
+
+ctable_readu:
+	ptr = row_at(iterator_at(cursor_mgr_of(cursor_mgr, op->b)->it), op->c);
+	if (likely(ptr))
+		value_set_uuid(&r[op->a], (Uuid*)ptr);
 	else
 		value_set_null(&r[op->a]);
 	op_next;

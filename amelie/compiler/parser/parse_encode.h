@@ -43,6 +43,9 @@ ast_encode(Ast* self, Lex* lex, Local* local, Buf* buf)
 		else
 			encode_real(buf, -self->l->real);
 		break;
+	case KUUID:
+		encode_string(buf, &self->string);
+		break;
 	// time-related values
 	case KINTERVAL:
 		encode_string(buf, &self->string);

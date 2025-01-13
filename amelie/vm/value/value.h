@@ -23,6 +23,7 @@ struct Value
 		Str       string;
 		Interval  interval;
 		Vector*   vector;
+		Uuid      uuid;
 		Avg       avg;
 		Store*    store;
 		struct {
@@ -145,6 +146,13 @@ value_set_vector(Value* self, Vector* value, Buf* buf)
 }
 
 always_inline hot static inline void
+value_set_uuid(Value* self, Uuid* value)
+{
+	self->type = TYPE_UUID;
+	self->uuid = *value;
+}
+
+always_inline hot static inline void
 value_set_avg(Value* self, Avg* value)
 {
 	self->type = TYPE_AVG;
@@ -196,6 +204,9 @@ value_copy(Value* self, Value* src)
 	case TYPE_INTERVAL:
 		value_set_interval(self, &src->interval);
 		break;
+	case TYPE_UUID:
+		value_set_uuid(self, &src->uuid);
+		break;
 	case TYPE_VECTOR:
 		value_set_vector(self, src->vector, src->buf);
 		if (src->buf)
@@ -217,19 +228,22 @@ value_copy(Value* self, Value* src)
 static inline uint32_t
 value_hash(Value* self, uint32_t hash)
 {
-	uint8_t* data;
-	int      data_size;
-	if (self->type == TYPE_STRING)
+	void* data;
+	int   data_size;
+	if (self->type == TYPE_INT || self->type == TYPE_TIMESTAMP)
 	{
-		data = str_u8(&self->string);
-		data_size = str_size(&self->string);
+		data = &self->integer;
+		data_size = sizeof(self->integer);
+	} else
+	if (self->type == TYPE_UUID)
+	{
+		data = &self->uuid;
+		data_size = sizeof(self->uuid);
 	} else
 	{
-		assert(self->type == TYPE_INT ||
-		       self->type == TYPE_STRING ||
-		       self->type == TYPE_TIMESTAMP);
-		data = (uint8_t*)&self->integer;
-		data_size = sizeof(self->integer);
+		assert(self->type == TYPE_STRING);
+		data = str_u8(&self->string);
+		data_size = str_size(&self->string);
 	}
 	return hash_murmur3_32(data, data_size, hash);
 }

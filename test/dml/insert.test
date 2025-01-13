@@ -392,6 +392,38 @@ select * from test
 select vec::type from test
 drop table test
 
+# test: insert column (uuid)
+create table test (id int primary key, uid uuid)
+insert into test values (0, uuid "00000000-0000-0000-0000-000000000000")
+insert into test values (1, uuid "00000000-0000-0000-0000-000000000001")
+insert into test values (2, uuid "00000000-0000-0000-0000-000000000002")
+select uid, uid::type  from test
+drop table test
+
+# test: insert column (uuid auto cast)
+create table test (id int primary key, uid uuid)
+insert into test values (0, "00000000-0000-0000-0000-000000000000")
+insert into test values (1, "00000000-0000-0000-0000-000000000001")
+insert into test values (2, "00000000-0000-0000-0000-000000000002")
+select uid, uid::type  from test
+drop table test
+
+# test: insert column (uuid key)
+create table test (id uuid primary key)
+insert into test values (uuid "00000000-0000-0000-0000-000000000000")
+insert into test values (uuid "00000000-0000-0000-0000-000000000001")
+insert into test values (uuid "00000000-0000-0000-0000-000000000002")
+select id, id::type  from test
+
+select id from test where id >= uuid "00000000-0000-0000-0000-000000000000";
+select id from test where id >= uuid "00000000-0000-0000-0000-000000000001";
+select id from test where id >= uuid "00000000-0000-0000-0000-000000000002";
+select id from test where id > uuid "00000000-0000-0000-0000-000000000002";
+
+select id from test where id = uuid "00000000-0000-0000-0000-000000000002";
+explain select id from test where id = uuid "00000000-0000-0000-0000-000000000002";
+drop table test
+
 # test: insert secondary index
 create table test (id int primary key, data int)
 create index i on test (data)

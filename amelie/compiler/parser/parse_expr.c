@@ -109,6 +109,7 @@ priority_map[KEYWORD_MAX] =
 	[KTIMESTAMP]               = priority_value,
 	[KCURRENT_TIMESTAMP]       = priority_value,
 	[KVECTOR]                  = priority_value,
+	[KUUID]                    = priority_value,
 	[KTRUE]                    = priority_value,
 	[KFALSE]                   = priority_value,
 	[KNULL]                    = priority_value,
@@ -168,6 +169,8 @@ expr_is_constable(Ast* self)
 		if (self->l->id == KINT || self->l->id == KREAL)
 			return true;
 		break;
+	case KUUID:
+		return true;
 	// time-related consts
 	case KINTERVAL:
 	case KTIMESTAMP:
@@ -509,7 +512,9 @@ expr_value(Stmt* self, Expr* expr, Ast* value)
 		}
 		// interval 'spec'
 		auto spec = stmt_expect(self, KSTRING);
-		value->string = spec->string;
+		value->string    = spec->string;
+		value->pos_start = spec->pos_start;
+		value->pos_end   = spec->pos_end;
 		break;
 	}
 	case KTIMESTAMP:
@@ -523,7 +528,9 @@ expr_value(Stmt* self, Expr* expr, Ast* value)
 		}
 		// timestamp 'spec'
 		auto spec = stmt_expect(self, KSTRING);
-		value->string = spec->string;
+		value->string    = spec->string;
+		value->pos_start = spec->pos_start;
+		value->pos_end   = spec->pos_end;
 		break;
 	}
 	case KCURRENT_TIMESTAMP:
@@ -534,6 +541,24 @@ expr_value(Stmt* self, Expr* expr, Ast* value)
 		value->integer = code_data_offset(self->data);
 		parse_vector(self, &self->data->data);
 		break;
+
+	// uuid
+	case KUUID:
+	{
+		// uuid()
+		if (stmt_if(self, '('))
+		{
+			value->id = KNAME;
+			value = expr_call(self, expr, value, true);
+			break;
+		}
+		// uuid 'spec'
+		auto spec = stmt_expect(self, KSTRING);
+		value->string    = spec->string;
+		value->pos_start = spec->pos_start;
+		value->pos_end   = spec->pos_end;
+		break;
+	}
 
 	// request argument
 	case KARGID:

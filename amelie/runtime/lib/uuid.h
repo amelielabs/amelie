@@ -33,8 +33,11 @@ uuid_empty(Uuid* self)
 	return self->a == 0 && self->b == 0;
 }
 
-static inline bool
-uuid_compare(Uuid *l, Uuid *r)
+hot static inline int
+uuid_compare(Uuid* l, Uuid* r)
 {
-	return l->a == r->a && l->b == r->b;
+	auto rc = compare_uint64(l->a, r->a);
+	if (rc != 0)
+		return rc;
+	return compare_uint64(l->b, r->b);
 }

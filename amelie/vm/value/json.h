@@ -63,6 +63,11 @@ value_encode(Value* self, Timezone* tz, Buf* buf)
 		encode_array_end(buf);
 		break;
 	}
+	case TYPE_UUID:
+	{
+		encode_uuid(buf, &self->uuid);
+		break;
+	}
 	// TYPE_STORE
 	default:
 		error("operation unsupported");
@@ -189,6 +194,15 @@ value_export(Value* self, Timezone* tz, bool pretty, Buf* buf)
 			buf_write(buf, val, val_len);
 		}
 		buf_write(buf, "]", 1);
+		break;
+	}
+	case TYPE_UUID:
+	{
+		buf_write(buf, "\"", 1);
+		buf_reserve(buf, UUID_SZ);
+		uuid_to_string(&self->uuid, (char*)buf->position, UUID_SZ);
+		buf_advance(buf, UUID_SZ - 1);
+		buf_write(buf, "\"", 1);
 		break;
 	}
 	// TYPE_STORE

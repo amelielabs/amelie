@@ -205,7 +205,7 @@ replica_mgr_find(ReplicaMgr* self, Uuid* id)
 	list_foreach(&self->list)
 	{
 		auto replica = list_at(Replica, link);
-		if (uuid_compare(&replica->config->id, id))
+		if (! uuid_compare(&replica->config->id, id))
 			return replica;
 	}
 	return NULL;

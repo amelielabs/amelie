@@ -194,6 +194,10 @@ set_hash(Set* self, Value* keys)
 			data = value->vector;
 			data_size = vector_size(value->vector);
 			break;
+		case TYPE_UUID:
+			data = &value->uuid;
+			data_size = sizeof(&value->uuid);
+			break;
 		case TYPE_NULL:
 			break;
 		default:

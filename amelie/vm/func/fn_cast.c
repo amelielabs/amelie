@@ -171,7 +171,7 @@ fn_string(Call* self)
 		int size = interval_write(&arg->interval, (char*)data->position, 512);
 		buf_advance(data, size);
 		break;
-
+	}
 	case TYPE_TIMESTAMP:
 	{
 		buf_reserve(data, 128);
@@ -179,8 +179,24 @@ fn_string(Call* self)
 		buf_advance(data, size);
 		break;
 	}
+	case TYPE_UUID:
+	{
+		buf_reserve(data, UUID_SZ);
+		uuid_to_string(&arg->uuid, (char*)data->position, UUID_SZ);
+		int size = UUID_SZ - 1;
+		buf_advance(data, size);
+		break;
 	}
 	default:
+		// json string without quotes
+		if (arg->type == TYPE_JSON && json_is_string(arg->json))
+		{
+			auto pos = arg->json;
+			Str str;
+			json_read_string(&pos, &str);
+			buf_write_str(data, &str);
+			break;
+		}
 		value_export(arg, self->vm->local->timezone, false, data);
 		break;
 	}
@@ -369,6 +385,30 @@ fn_vector(Call* self)
 	value_set_vector_buf(self->result, buf);
 }
 
+hot static void
+fn_uuid(Call* self)
+{
+	call_validate(self, 1);
+	auto arg = &self->argv[0];
+	if (unlikely(arg->type == TYPE_NULL))
+	{
+		value_set_null(self->result);
+		return;
+	}
+	if (unlikely(arg->type == TYPE_UUID))
+	{
+		value_copy(self->result, arg);
+		return;
+	}
+	if (unlikely(arg->type != TYPE_STRING))
+		error("uuid(%s): operation type is not supported",
+		      type_of(arg->type));
+	Uuid uuid;
+	uuid_init(&uuid);
+	uuid_from_string(&uuid, &arg->string);
+	value_set_uuid(self->result, &uuid);
+}
+
 FunctionDef fn_cast_def[] =
 {
 	{ "public", "type",        TYPE_STRING,    fn_type,        FN_NONE },
@@ -381,5 +421,6 @@ FunctionDef fn_cast_def[] =
 	{ "public", "interval",    TYPE_INTERVAL,  fn_interval,    FN_NONE },
 	{ "public", "timestamp",   TYPE_TIMESTAMP, fn_timestamp,   FN_NONE },
 	{ "public", "vector",      TYPE_VECTOR,    fn_vector,      FN_NONE },
+	{ "public", "uuid",        TYPE_UUID,      fn_uuid,        FN_NONE },
 	{  NULL,     NULL,         TYPE_NULL,      NULL,           FN_NONE }
 };

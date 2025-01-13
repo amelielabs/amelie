@@ -41,11 +41,12 @@ ops_extract(AstList* self, Ast* expr)
 			value = expr->l;
 		else
 			break;
-		if (value->id == KINT ||
-			value->id == KSTRING ||
-			value->id == KTIMESTAMP ||
-			value->id == KNAME ||
-			value->id == KNAME_COMPOUND)
+		if (value->id == KINT       ||
+		    value->id == KSTRING    ||
+		    value->id == KTIMESTAMP ||
+		    value->id == KUUID      ||
+		    value->id == KNAME      ||
+		    value->id == KNAME_COMPOUND)
 		{
 			ast_list_add(self, expr);
 		}

@@ -64,11 +64,12 @@ parse_key(Stmt* self, Keys* keys)
 			stmt_error(self, name, "column does not exists");
 
 		// validate key type
-		if ((column->type != TYPE_INT &&
+		if ((column->type != TYPE_INT    &&
 		     column->type != TYPE_STRING &&
+		     column->type != TYPE_UUID   &&
 		     column->type != TYPE_TIMESTAMP) ||
 		    (column->type == TYPE_INT && column->type_size < 4))
-			stmt_error(self, name, "column key can be text, int32, int64 or timestamp");
+			stmt_error(self, name, "supported key types are int32, int64, uuid, timestamp or text");
 
 		// force column not_null constraint
 		constraints_set_not_null(&column->constraints, true);
@@ -143,6 +144,7 @@ parse_default(Stmt* self, Column* column, Buf* value)
 	case TYPE_TIMESTAMP:
 	case TYPE_INTERVAL:
 	case TYPE_VECTOR:
+	case TYPE_UUID:
 		stmt_error(self, expr, "DEFAULT for this column type is not supported");
 		break;
 	}
@@ -221,11 +223,12 @@ parse_constraints(Stmt* self, Keys* keys, Column* column)
 			constraints_set_not_null(&column->constraints, true);
 
 			// validate key type
-			if ((column->type != TYPE_INT &&
+			if ((column->type != TYPE_INT    &&
 			     column->type != TYPE_STRING &&
+			     column->type != TYPE_UUID   &&
 			     column->type != TYPE_TIMESTAMP) ||
 			    (column->type == TYPE_INT && column->type_size < 4))
-				stmt_error(self, name, "column key can be text, int32, int64 or timestamp");
+				stmt_error(self, name, "supported key types are int32, int64, uuid, timestamp or text");
 
 			// create key
 			auto key = key_allocate();

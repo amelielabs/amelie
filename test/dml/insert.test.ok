@@ -780,6 +780,71 @@ select * from test
 select vec::type from test
 ["vector", "vector", "vector", "vector", "vector", "vector"]
 drop table test
+# test: insert column (uuid)
+create table test (id int primary key, uid uuid)
+insert into test values (0, uuid "00000000-0000-0000-0000-000000000000")
+insert into test values (1, uuid "00000000-0000-0000-0000-000000000001")
+insert into test values (2, uuid "00000000-0000-0000-0000-000000000002")
+select uid, uid::type  from test
+[["00000000-0000-0000-0000-000000000000", "uuid"], ["00000000-0000-0000-0000-000000000001", "uuid"], ["00000000-0000-0000-0000-000000000002", "uuid"]]
+drop table test
+# test: insert column (uuid auto cast)
+create table test (id int primary key, uid uuid)
+insert into test values (0, "00000000-0000-0000-0000-000000000000")
+insert into test values (1, "00000000-0000-0000-0000-000000000001")
+insert into test values (2, "00000000-0000-0000-0000-000000000002")
+select uid, uid::type  from test
+[["00000000-0000-0000-0000-000000000000", "uuid"], ["00000000-0000-0000-0000-000000000001", "uuid"], ["00000000-0000-0000-0000-000000000002", "uuid"]]
+drop table test
+# test: insert column (uuid key)
+create table test (id uuid primary key)
+insert into test values (uuid "00000000-0000-0000-0000-000000000000")
+insert into test values (uuid "00000000-0000-0000-0000-000000000001")
+insert into test values (uuid "00000000-0000-0000-0000-000000000002")
+select id, id::type  from test
+[["00000000-0000-0000-0000-000000000000", "uuid"], ["00000000-0000-0000-0000-000000000001", "uuid"], ["00000000-0000-0000-0000-000000000002", "uuid"]]
+select id from test where id >= uuid "00000000-0000-0000-0000-000000000000";
+["00000000-0000-0000-0000-000000000000", "00000000-0000-0000-0000-000000000001", "00000000-0000-0000-0000-000000000002"]
+select id from test where id >= uuid "00000000-0000-0000-0000-000000000001";
+["00000000-0000-0000-0000-000000000001", "00000000-0000-0000-0000-000000000002"]
+select id from test where id >= uuid "00000000-0000-0000-0000-000000000002";
+["00000000-0000-0000-0000-000000000002"]
+select id from test where id > uuid "00000000-0000-0000-0000-000000000002";
+[]
+select id from test where id = uuid "00000000-0000-0000-0000-000000000002";
+["00000000-0000-0000-0000-000000000002"]
+explain select id from test where id = uuid "00000000-0000-0000-0000-000000000002";
+[{
+  "bytecode": {
+    "coordinator": {
+      "00": "send_lookup         0      0      -     # public.test",
+      "01": "recv                0      0      0     ",
+      "02": "bool                0      0      0     ",
+      "03": "push                0      0      0     ",
+      "04": "union_recv          0      -1     -1    ",
+      "05": "cte_set             0      0      0     ",
+      "06": "content             0      -      -     ",
+      "07": "ret                 0      0      0     "
+    },
+    "node": {
+      "00": "set                 0      1      0     ",
+      "01": "uuid                1      20     0     ",
+      "02": "push                1      0      0     ",
+      "03": "table_open_lookup   0      0      11    # public.test (primary)",
+      "04": "table_readu         1      0      0     ",
+      "05": "uuid                2      36     0     ",
+      "06": "equuu               3      1      2     ",
+      "07": "jntr                11     3      0     ",
+      "08": "table_readu         1      0      0     ",
+      "09": "push                1      0      0     ",
+      "10": "set_add             0      0      0     ",
+      "11": "table_close         0      0      0     ",
+      "12": "result              0      0      0     ",
+      "13": "ret                 0      0      0     "
+    }
+  }
+}]
+drop table test
 # test: insert secondary index
 create table test (id int primary key, data int)
 create index i on test (data)

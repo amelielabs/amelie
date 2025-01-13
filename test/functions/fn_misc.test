@@ -11,7 +11,7 @@ select random()::type
 select public.random()::type
 
 # test: random_uuid()
-select random_uuid()::size
+select random_uuid()::type
 
 # test: md5()
 select md5("hello world")

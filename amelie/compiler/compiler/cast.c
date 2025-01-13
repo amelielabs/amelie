@@ -79,6 +79,9 @@ cast_op[OP_MAX][TYPE_MAX][TYPE_MAX] =
 
 		// vector
 		[TYPE_VECTOR][TYPE_VECTOR]       = { TYPE_BOOL, CEQUVV },
+
+		// uuid
+		[TYPE_UUID][TYPE_UUID]           = { TYPE_BOOL, CEQUUU },
 	},
 
 	[OP_GTE] =
@@ -104,6 +107,9 @@ cast_op[OP_MAX][TYPE_MAX][TYPE_MAX] =
 
 		// vector
 		[TYPE_VECTOR][TYPE_VECTOR]       = { TYPE_BOOL, CGTEVV },
+
+		// uuid
+		[TYPE_UUID][TYPE_UUID]           = { TYPE_BOOL, CGTEUU }
 	},
 
 	[OP_GT] =
@@ -128,7 +134,10 @@ cast_op[OP_MAX][TYPE_MAX][TYPE_MAX] =
 		[TYPE_STRING][TYPE_STRING]       = { TYPE_BOOL, CGTSS },
 
 		// vector
-		[TYPE_VECTOR][TYPE_VECTOR]       = { TYPE_BOOL, CGTVV }
+		[TYPE_VECTOR][TYPE_VECTOR]       = { TYPE_BOOL, CGTVV },
+
+		// uuid
+		[TYPE_UUID][TYPE_UUID]           = { TYPE_BOOL, CGTUU }
 	},
 
 	[OP_LTE] =
@@ -154,6 +163,9 @@ cast_op[OP_MAX][TYPE_MAX][TYPE_MAX] =
 
 		// vector
 		[TYPE_VECTOR][TYPE_VECTOR]       = { TYPE_BOOL, CLTEVV },
+
+		// uuid
+		[TYPE_UUID][TYPE_UUID]           = { TYPE_BOOL, CLTEUU }
 	},
 
 	[OP_LT] =
@@ -179,6 +191,9 @@ cast_op[OP_MAX][TYPE_MAX][TYPE_MAX] =
 
 		// vector
 		[TYPE_VECTOR][TYPE_VECTOR]       = { TYPE_BOOL, CLTVV },
+
+		// uuid
+		[TYPE_UUID][TYPE_UUID]           = { TYPE_BOOL, CLTUU }
 	},
 
 	[OP_ADD] =

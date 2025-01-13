@@ -45,6 +45,7 @@ enum
 	CINTERVAL,
 	CTIMESTAMP,
 	CVECTOR,
+	CUUID,
 
 	// argument
 	CARG,
@@ -76,6 +77,7 @@ enum
 	CEQUSS,
 	CEQUJJ,
 	CEQUVV,
+	CEQUUU,
 
 	// gte
 	CGTEII,
@@ -85,6 +87,7 @@ enum
 	CGTELL,
 	CGTESS,
 	CGTEVV,
+	CGTEUU,
 
 	// gt
 	CGTII,
@@ -94,6 +97,7 @@ enum
 	CGTLL,
 	CGTSS,
 	CGTVV,
+	CGTUU,
 
 	// lte
 	CLTEII,
@@ -103,6 +107,7 @@ enum
 	CLTELL,
 	CLTESS,
 	CLTEVV,
+	CLTEUU,
 
 	// lt
 	CLTII,
@@ -112,6 +117,7 @@ enum
 	CLTLL,
 	CLTSS,
 	CLTVV,
+	CLTUU,
 
 	// add
 	CADDII,
@@ -207,6 +213,7 @@ enum
 	CTABLE_READS,
 	CTABLE_READJ,
 	CTABLE_READV,
+	CTABLE_READU,
 
 	// store cursor
 	CSTORE_OPEN,

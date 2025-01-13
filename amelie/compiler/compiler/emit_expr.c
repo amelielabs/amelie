@@ -177,6 +177,9 @@ emit_column(Compiler* self, Target* target, Ast* ast,
 		case TYPE_VECTOR:
 			op = CTABLE_READV;
 			break;
+		case TYPE_UUID:
+			op = CTABLE_READU;
+			break;
 		default:
 			abort();
 			break;
@@ -860,6 +863,17 @@ emit_expr(Compiler* self, Targets* targets, Ast* ast)
 	case KVECTOR:
 		return op2(self, CVECTOR, rpin(self, TYPE_VECTOR),
 		           ast->integer);
+
+	// uuid
+	case KUUID:
+	{
+		int offset = code_data_offset(&self->code_data);
+		auto uuid = (Uuid*)buf_claim(&self->code_data.data, sizeof(Uuid));
+		uuid_init(uuid);
+		if (uuid_from_string_nothrow(uuid, &ast->string) == -1)
+			stmt_error(self->current, ast, "failed to read uuid");
+		return op2(self, CUUID, rpin(self, TYPE_UUID), offset);
+	}
 
 	// json
 	case '{':
