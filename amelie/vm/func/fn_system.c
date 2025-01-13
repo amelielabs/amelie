@@ -73,15 +73,26 @@ fn_replicas(Call* self)
 static void
 fn_replica(Call* self)
 {
+	auto argv = self->argv;
 	call_validate(self, 1);
-	call_validate_arg(self, 0, TYPE_STRING);
-
-	Uuid id;
-	uuid_from_string(&id, &self->argv[0].string);
-
-	Buf* buf;
-	rpc(global()->control->system, RPC_SHOW_REPLICAS, 2, &buf, &id);
-	value_set_json_buf(self->result, buf);
+	if (argv[0].type == TYPE_STRING)
+	{
+		Uuid id;
+		uuid_from_string(&id, &argv[0].string);
+		Buf* buf;
+		rpc(global()->control->system, RPC_SHOW_REPLICAS, 2, &buf, &id);
+		value_set_json_buf(self->result, buf);
+	} else
+	if (argv[0].type == TYPE_UUID)
+	{
+		Buf* buf;
+		rpc(global()->control->system, RPC_SHOW_REPLICAS, 2, &buf, &argv[0].uuid);
+		value_set_json_buf(self->result, buf);
+	} else
+	{
+		error("replica(%s): operation type is not supported",
+		      type_of(argv[0].type));
+	}
 }
 
 static void
@@ -104,10 +115,26 @@ fn_nodes(Call* self)
 static void
 fn_node(Call* self)
 {
+	auto argv = self->argv;
 	call_validate(self, 1);
-	call_validate_arg(self, 0, TYPE_STRING);
-	auto buf = node_mgr_list(&self->vm->db->node_mgr, &self->argv[0].string);
-	value_set_json_buf(self->result, buf);
+	if (argv[0].type == TYPE_STRING)
+	{
+		auto buf = node_mgr_list(&self->vm->db->node_mgr, &self->argv[0].string);
+		value_set_json_buf(self->result, buf);
+	} else
+	if (argv[0].type == TYPE_UUID)
+	{
+		char uuid_sz[UUID_SZ];
+		uuid_to_string(&argv[0].uuid, uuid_sz, sizeof(uuid_sz));
+		Str str;
+		str_set(&str, uuid_sz, UUID_SZ - 1);
+		auto buf = node_mgr_list(&self->vm->db->node_mgr, &str);
+		value_set_json_buf(self->result, buf);
+	} else
+	{
+		error("node(%s): operation type is not supported",
+		      type_of(argv[0].type));
+	}
 }
 
 static void
