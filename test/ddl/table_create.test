@@ -57,13 +57,13 @@ create table test(id int64 primary key, id2 i64)
 select system.table('test').columns
 drop table test
 
-# test: column float
-create table test(id int primary key, a float)
+# test: column float/f32
+create table test(id int primary key, a float, b f32)
 select system.table('test').columns
 drop table test
 
-# test: column double
-create table test(id int primary key, a double)
+# test: column double/f64
+create table test(id int primary key, a double, b f64)
 select system.table('test').columns
 drop table test
 

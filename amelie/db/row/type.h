@@ -139,12 +139,14 @@ type_read(Str* name, int* type_size)
 		type = TYPE_INT;
 		*type_size = sizeof(int64_t);
 	} else
-	if (str_is_case(name, "float", 5))
+	if (str_is_case(name, "float", 5) ||
+	    str_is_case(name, "f32", 3))
 	{
 		type = TYPE_DOUBLE;
 		*type_size = sizeof(float);
 	} else
-	if (str_is_case(name, "double", 6))
+	if (str_is_case(name, "double", 6) ||
+	    str_is_case(name, "f64", 3))
 	{
 		type = TYPE_DOUBLE;
 		*type_size = sizeof(double);

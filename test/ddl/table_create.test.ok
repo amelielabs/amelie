@@ -275,8 +275,8 @@ select system.table('test').columns
   }
 }]]
 drop table test
-# test: column float
-create table test(id int primary key, a float)
+# test: column float/f32
+create table test(id int primary key, a float, b f32)
 select system.table('test').columns
 [[{
   "name": "id",
@@ -304,10 +304,23 @@ select system.table('test').columns
     "as_stored": "",
     "as_resolved": ""
   }
+}, {
+  "name": "b",
+  "type": 3,
+  "type_size": 4,
+  "constraints": {
+    "not_null": false,
+    "random": false,
+    "random_modulo": 9223372036854775807,
+    "default": null,
+    "as_identity": false,
+    "as_stored": "",
+    "as_resolved": ""
+  }
 }]]
 drop table test
-# test: column double
-create table test(id int primary key, a double)
+# test: column double/f64
+create table test(id int primary key, a double, b f64)
 select system.table('test').columns
 [[{
   "name": "id",
@@ -324,6 +337,19 @@ select system.table('test').columns
   }
 }, {
   "name": "a",
+  "type": 3,
+  "type_size": 8,
+  "constraints": {
+    "not_null": false,
+    "random": false,
+    "random_modulo": 9223372036854775807,
+    "default": null,
+    "as_identity": false,
+    "as_stored": "",
+    "as_resolved": ""
+  }
+}, {
+  "name": "b",
   "type": 3,
   "type_size": 8,
   "constraints": {
