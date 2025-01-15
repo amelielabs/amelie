@@ -77,7 +77,7 @@ static inline Column*
 column_read(uint8_t** pos)
 {
 	auto self = column_allocate();
-	defer(column_free, self);
+	errdefer(column_free, self);
 	Str type;
 	str_init(&type);
 	uint8_t* constraints = NULL;
@@ -91,7 +91,7 @@ column_read(uint8_t** pos)
 	};
 	decode_obj(obj, "columns", pos);
 	constraints_read(&self->constraints, &constraints);
-	return undefer();
+	return self;
 }
 
 static inline void

@@ -186,12 +186,11 @@ top_update(Top* self, Client* client)
 
 	// allocate and read stats from the response
 	auto stats = top_stats_allocate();
-	defer(top_stats_free, stats);
+	errdefer(top_stats_free, stats);
 
 	uint8_t* pos = self->json.buf_data.start;
 	json_read_array(&pos);
 	top_stats_read(stats, &pos);
-	undefer();
 
 	// push new stats
 	switch (self->stats_count) {

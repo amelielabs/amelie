@@ -241,9 +241,8 @@ union_iterator_allocate(Union* ref, StoreIterator* child)
 	self->limit      = INT64_MAX;
 	self->ref        = ref;
 	self->child      = child;
-	defer(union_iterator_close, self);
+	errdefer(union_iterator_close, self);
 
 	union_iterator_open(self);
-	undefer();
 	return &self->it;
 }

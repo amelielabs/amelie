@@ -22,6 +22,7 @@ struct Defer
 	DeferFunction function;
 	void*         function_arg;
 	Defer*        prev;
+	bool          error_only;
 };
 
 struct Exception
@@ -43,24 +44,17 @@ exception_mgr_init(ExceptionMgr* self)
 	self->last = NULL;
 }
 
-static inline void
-exception_mgr_execute_defers(Defer* defer)
-{
-	for (; defer; defer = defer->prev)
-	{
-		if (defer->function == NULL)
-			continue;
-		defer->function(defer->function_arg);
-		defer->function = NULL;
-	}
-}
-
 static inline void no_return
 exception_mgr_throw(ExceptionMgr* self)
 {
 	auto current = self->last;
 	assert(current);
-	exception_mgr_execute_defers(current->defer_stack);
+	for (auto defer = current->defer_stack; defer;
+	     defer = defer->prev)
+	{
+		defer->function(defer->function_arg);
+		defer->function = NULL;
+	}
 	current->defer_stack = NULL;
 	current->triggered = true;
 	longjmp(self->last->buf, 1);

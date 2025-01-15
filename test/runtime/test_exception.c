@@ -75,8 +75,7 @@ test_defer1(void* arg)
 	unused(arg);
 	int run = 0;
 	{
-		defer(on_defer_int, &run);
-		undefer();
+		errdefer(on_defer_int, &run);
 	}
 	test(! run);
 }
@@ -112,8 +111,7 @@ test_defer3(void* arg)
 	run = 0;
 	i = 0;
 	while (i < 10) {
-		defer(on_defer_int, &run);
-		undefer();
+		errdefer(on_defer_int, &run);
 		i++;
 	}
 	test(run == 0);

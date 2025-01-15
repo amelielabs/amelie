@@ -629,9 +629,8 @@ parse_table_alter(Stmt* self)
 					stmt_error(self, name, "column does not exists");
 
 				auto value = buf_create();
-				defer_buf(value);
+				errdefer_buf(value);
 				parse_default(self, column, value);
-				undefer();
 
 				stmt->value_buf = value;
 				buf_str(value, &stmt->value);
@@ -700,9 +699,8 @@ parse_table_alter(Stmt* self)
 			if (stmt_if(self, KDEFAULT))
 			{
 				auto value = buf_create();
-				defer_buf(value);
+				errdefer_buf(value);
 				encode_null(value);
-				undefer();
 				stmt->value_buf = value;
 				buf_str(value, &stmt->value);
 				stmt->type = TABLE_ALTER_COLUMN_UNSET_DEFAULT;

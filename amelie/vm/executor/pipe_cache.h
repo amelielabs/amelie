@@ -62,9 +62,8 @@ pipe_create(PipeCache* self, Route* route)
 	if (unlikely(! pipe))
 	{
 		pipe = pipe_allocate();
-		defer(pipe_free, pipe);
+		errdefer(pipe_free, pipe);
 		channel_attach(&pipe->src);
-		undefer();
 	}
 	pipe->route = route;
 	return pipe;

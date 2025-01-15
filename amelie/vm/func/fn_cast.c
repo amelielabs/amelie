@@ -241,14 +241,13 @@ fn_json_import(Call* self)
 		      type_of(arg->type));
 
 	auto buf = buf_create();
-	defer_buf(buf);
+	errdefer_buf(buf);
+
 	Json json;
 	json_init(&json);
 	defer(json_free, &json);
 	json_parse(&json, &arg->string, buf);
-	undefer();
-	undefer();
-	json_free(&json);
+
 	value_set_json_buf(self->result, buf);
 }
 
@@ -354,7 +353,7 @@ fn_vector(Call* self)
 		error("vector(): json array expected");
 
 	auto buf = buf_create();
-	defer_buf(buf);
+	errdefer_buf(buf);
 	buf_write_i32(buf, 0);
 
 	json_read_array(&pos);
@@ -381,7 +380,6 @@ fn_vector(Call* self)
 	}
 	*buf_u32(buf) = count;
 
-	undefer();
 	value_set_vector_buf(self->result, buf);
 }
 

@@ -187,7 +187,7 @@ test_benchmark_get_buf_defer(void)
 {
 	// obj
 	auto buf = buf_create();
-	defer_buf(buf);
+	errdefer_buf(buf);
 
 	encode_obj(buf);
 
@@ -220,7 +220,7 @@ test_benchmark_get_buf_defer(void)
 	encode_integer(buf, 0);
 
 	encode_obj_end(buf);
-	return undefer();
+	return buf;
 }
 
 void

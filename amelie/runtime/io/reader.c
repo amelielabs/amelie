@@ -90,7 +90,7 @@ reader_read(Reader* self, int* count)
 {
 	auto readahead = &self->readahead;
 	auto buf = buf_create();
-	defer_buf(buf);
+	errdefer_buf(buf);
 
 	*count = 0;
 	for (;;)
@@ -163,6 +163,5 @@ reader_read(Reader* self, int* count)
 		error("incomplete JSON value");
 	}
 
-	undefer();
 	return buf;
 }

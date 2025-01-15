@@ -71,7 +71,7 @@ static inline SchemaConfig*
 schema_config_read(uint8_t** pos)
 {
 	auto self = schema_config_allocate();
-	defer(schema_config_free, self);
+	errdefer(schema_config_free, self);
 	Decode obj[] =
 	{
 		{ DECODE_STRING, "name",       &self->name   },
@@ -80,7 +80,7 @@ schema_config_read(uint8_t** pos)
 		{ 0,              NULL,        NULL          },
 	};
 	decode_obj(obj, "schema", pos);
-	return undefer();
+	return self;
 }
 
 static inline void

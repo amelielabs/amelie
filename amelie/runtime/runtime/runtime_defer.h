@@ -11,4 +11,5 @@
 // AGPL-3.0 Licensed.
 //
 
-#define defer_buf(buf) defer(buf_free, buf)
+#define defer_buf(buf)    defer(buf_free, buf)
+#define errdefer_buf(buf) errdefer(buf_free, buf)

@@ -184,11 +184,10 @@ hot void
 update_set(Value* result, Timezone* tz, uint8_t* json, Str* path, Value* value)
 {
 	auto buf = buf_create();
-	defer_buf(buf);
+	errdefer_buf(buf);
 	Update self;
 	update_init(&self, tz, json, path, buf, value);
 	update_set_next(&self);
-	undefer();
 	value_set_json_buf(result, buf);
 }
 
@@ -196,10 +195,9 @@ hot void
 update_unset(Value* result, uint8_t* json, Str* path)
 {
 	auto buf = buf_create();
-	defer_buf(buf);
+	errdefer_buf(buf);
 	Update self;
 	update_init(&self, NULL, json, path, buf, NULL);
 	update_unset_next(&self);
-	undefer();
 	value_set_json_buf(result, buf);
 }

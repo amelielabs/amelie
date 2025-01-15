@@ -19,7 +19,7 @@ Timezone*
 timezone_create(Str* name, char* path)
 {
 	Timezone* self = am_malloc(sizeof(Timezone));
-	defer(timezone_free, self);
+	errdefer(timezone_free, self);
 	memset(self, 0, sizeof(Timezone));
 
 	str_init(&self->name);
@@ -49,7 +49,10 @@ timezone_create(Str* name, char* path)
 
 	// check magic and version
 	if (memcmp(header->magic, "TZif", 4) != 0)
+	{
+		timezone_free(self);
 		return NULL;
+	}
 
 	// convert to host format
 	header->isutcnt  = ntohl(header->isutcnt);
@@ -99,10 +102,6 @@ timezone_create(Str* name, char* path)
 	for (uint32_t i = 0; i < header->typecnt; i++)
 		self->times[i].utoff = ntohl(self->times[i].utoff);
 
-	undefer();
-	undefer();
-
-	file_close(&file);
 	return self;
 }
 

@@ -55,14 +55,14 @@ static inline NodeConfig*
 node_config_read(uint8_t** pos)
 {
 	auto self = node_config_allocate();
-	defer(node_config_free, self);
+	errdefer(node_config_free, self);
 	Decode obj[] =
 	{
 		{ DECODE_STRING, "id",  &self->id      },
 		{ 0,              NULL,  NULL          },
 	};
 	decode_obj(obj, "node", pos);
-	return undefer();
+	return self;
 }
 
 static inline void

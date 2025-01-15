@@ -93,8 +93,7 @@ static inline IndexConfig*
 index_config_read(Columns* columns, uint8_t** pos)
 {
 	auto self = index_config_allocate(columns);
-	defer(index_config_free, self);
-
+	errdefer(index_config_free, self);
 	uint8_t* keys = NULL;
 	Decode obj[] =
 	{
@@ -107,7 +106,7 @@ index_config_read(Columns* columns, uint8_t** pos)
 	};
 	decode_obj(obj, "index", pos);
 	keys_read(&self->keys, &keys);
-	return undefer();
+	return self;
 }
 
 static inline void

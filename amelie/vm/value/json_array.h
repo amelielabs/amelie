@@ -91,7 +91,7 @@ value_array_put(Value*   result, Timezone* tz,
 	json_read_array(&json);
 
 	auto buf = buf_create();
-	defer_buf(buf);
+	errdefer_buf(buf);
 
 	encode_array(buf);
 	int i = 0;
@@ -112,7 +112,6 @@ value_array_put(Value*   result, Timezone* tz,
 		error("put: array index %d is out of bounds", idx);
 	encode_array_end(buf);
 
-	undefer();
 	value_set_json_buf(result, buf);
 }
 
@@ -122,7 +121,7 @@ value_array_remove(Value* result, uint8_t* json, int idx)
 	json_read_array(&json);
 
 	auto buf = buf_create();
-	defer_buf(buf);
+	errdefer_buf(buf);
 
 	encode_array(buf);
 	int i = 0;
@@ -138,6 +137,5 @@ value_array_remove(Value* result, uint8_t* json, int idx)
 		error("remove: array index %d is out of bounds", idx);
 	encode_array_end(buf);
 
-	undefer();
 	value_set_json_buf(result, buf);
 }

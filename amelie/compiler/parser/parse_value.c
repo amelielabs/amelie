@@ -135,10 +135,9 @@ parse_value(Stmt* self, Column* column, Value* value)
 		Str in;
 		str_set(&in, pos, lex->end - pos);
 		auto buf = buf_create();
-		defer_buf(buf);
+		errdefer_buf(buf);
 		json_parse(self->json, &in, buf);
 		lex->pos = self->json->pos;
-		undefer();
 		value_set_json_buf(value, buf);
 		return ast;
 	}
@@ -190,9 +189,8 @@ parse_value(Stmt* self, Column* column, Value* value)
 			ast = stmt_next(self);
 		stmt_push(self, ast);
 		auto buf = buf_create();
-		defer_buf(buf);
+		errdefer_buf(buf);
 		parse_vector(self, buf);
-		undefer();
 		value_set_vector_buf(value, buf);
 		return ast;
 	}

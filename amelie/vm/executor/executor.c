@@ -211,18 +211,20 @@ executor_commit(Executor* self, Dtr* tr, Buf* error)
 	for (;;)
 	{
 		spinlock_lock(&self->lock);
-		defer(spinlock_unlock, &self->lock);
 
 		switch (tr->state) {
 		case DTR_COMMIT:
 			// commited by leader
+			spinlock_unlock(&self->lock);
 			return;
 		case DTR_ABORT:
 			// aborted by leader
+			spinlock_unlock(&self->lock);
 			error("transaction conflict, abort");
 			return;
 		case DTR_NONE:
 			// non-distributed transaction
+			spinlock_unlock(&self->lock);
 			if (error)
 			{
 				dtr_set_error(tr, error);
@@ -251,28 +253,29 @@ executor_commit(Executor* self, Dtr* tr, Buf* error)
 		if (! list_is_first(&self->list, &tr->link))
 		{
 			// wait to become leader or wakeup by leader
-			undefer();
 			spinlock_unlock(&self->lock);
 
 			event_wait(&tr->on_commit, -1);
 			continue;
 		}
 
-		// leader error
-		if (tr->state == DTR_ERROR)
+		// unlock on error and after prepare
 		{
-			executor_end(self, DTR_ABORT);
-			msg_error_throw(tr->error);
+			defer(spinlock_unlock, &self->lock);
+
+			// handle leader error
+			if (tr->state == DTR_ERROR)
+			{
+				executor_end(self, DTR_ABORT);
+				msg_error_throw(tr->error);
+			}
+
+			// prepare for group commit and wal write
+
+			// get a list of completed distributed transactions (one or more) and
+			// a list of last executed transactions per node
+			executor_prepare(self, false);
 		}
-
-		// wal write and group commit
-
-		// get a list of completed distributed transactionn (one or more) and
-		// a list of last executed transactions per node
-		executor_prepare(self, false);
-
-		undefer();
-		spinlock_unlock(&self->lock);
 
 		// wal write
 		if (unlikely(error_catch( executor_wal_write(self) )))
