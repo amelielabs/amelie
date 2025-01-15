@@ -83,43 +83,6 @@ agg_merge(Value* src, Value* row, int columns, int* aggs)
 
 		value_set_null(&row[col]);
 	}
-
-#if 0
-	for (int key = 0; key < self->count_keys; key++)
-		value_free(&row[self->count_columns + key]);
-#endif
-}
-
-static inline int64_t
-agg_int_of(Value* row, int col, const char* func)
-{
-	int64_t value;
-	if (likely(row[col].type == TYPE_INT ||
-			   row[col].type == TYPE_TIMESTAMP ||
-			   row[col].type == TYPE_BOOL))
-		value = row[col].integer;
-	else
-	if (row[col].type == TYPE_DOUBLE)
-		value = row[col].dbl;
-	else
-		error("%s(): unexpected value type", func);
-	return value;
-}
-
-static inline double
-agg_double_of(Value* row, int col, const char* func)
-{
-	double value;
-	if (likely(row[col].type == TYPE_DOUBLE))
-		value = row[col].dbl;
-	else
-	if (row[col].type == TYPE_INT ||
-	    row[col].type == TYPE_TIMESTAMP ||
-	    row[col].type == TYPE_BOOL)
-		value = row[col].integer;
-	else
-		error("%s(): unexpected value type", func);
-	return value;
 }
 
 hot void
@@ -161,7 +124,7 @@ agg_write(Set* self, Value* row, int src_ref, int* aggs)
 		}
 		case AGG_INT_MIN:
 		{
-			int64_t value = agg_int_of(row, col, "min");
+			int64_t value = row[col].integer;
 			if (likely(src[col].type == TYPE_INT))
 			{
 				if (value < src[col].integer)
@@ -173,7 +136,7 @@ agg_write(Set* self, Value* row, int src_ref, int* aggs)
 		}
 		case AGG_INT_MAX:
 		{
-			int64_t value = agg_int_of(row, col, "max");
+			int64_t value = row[col].integer;
 			if (likely(src[col].type == TYPE_INT))
 			{
 				if (value > src[col].integer)
@@ -185,7 +148,7 @@ agg_write(Set* self, Value* row, int src_ref, int* aggs)
 		}
 		case AGG_INT_SUM:
 		{
-			int64_t value = agg_int_of(row, col, "sum");
+			int64_t value = row[col].integer;
 			if (likely(src[col].type == TYPE_INT))
 				src[col].integer += value;
 			else
@@ -194,7 +157,7 @@ agg_write(Set* self, Value* row, int src_ref, int* aggs)
 		}
 		case AGG_INT_AVG:
 		{
-			int64_t value = agg_int_of(row, col, "avg");
+			int64_t value = row[col].integer;
 			if (unlikely(src[col].type == TYPE_NULL))
 			{
 				src[col].type = TYPE_AVG;
@@ -205,7 +168,7 @@ agg_write(Set* self, Value* row, int src_ref, int* aggs)
 		}
 		case AGG_DOUBLE_MIN:
 		{
-			double value = agg_double_of(row, col, "min");
+			double value = row[col].dbl;
 			if (likely(src[col].type == TYPE_DOUBLE))
 			{
 				if (value < src[col].dbl)
@@ -217,7 +180,7 @@ agg_write(Set* self, Value* row, int src_ref, int* aggs)
 		}
 		case AGG_DOUBLE_MAX:
 		{
-			double value = agg_double_of(row, col, "max");
+			double value = row[col].dbl;
 			if (likely(src[col].type == TYPE_DOUBLE))
 			{
 				if (value > src[col].dbl)
@@ -229,7 +192,7 @@ agg_write(Set* self, Value* row, int src_ref, int* aggs)
 		}
 		case AGG_DOUBLE_SUM:
 		{
-			double value = agg_double_of(row, col, "sum");
+			double value = row[col].dbl;
 			if (likely(src[col].type == TYPE_DOUBLE))
 				src[col].dbl += value;
 			else
@@ -238,7 +201,7 @@ agg_write(Set* self, Value* row, int src_ref, int* aggs)
 		}
 		case AGG_DOUBLE_AVG:
 		{
-			double value = agg_int_of(row, col, "avg");
+			double value = row[col].dbl;
 			if (unlikely(src[col].type == TYPE_NULL))
 			{
 				src[col].type = TYPE_AVG;

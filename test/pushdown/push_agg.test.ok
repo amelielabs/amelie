@@ -613,7 +613,7 @@ select avg(data2) from test_empty
 [null]
 # test: select avg(column int) from table
 select avg(data2) from test
-[1.16667]
+[1.18333]
 # test: select avg(any) from table
 explain select avg('string') from test
 {"msg": "explain select avg(❰'string'❱ ⟵ int or double expected"}
