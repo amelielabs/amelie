@@ -155,6 +155,7 @@ OpDesc ops[] =
 	{ CSUBDI, "subdi" },
 	{ CSUBDD, "subdd" },
 	{ CSUBTL, "subtl" },
+	{ CSUBTT, "subtt" },
 	{ CSUBLL, "subll" },
 	{ CSUBVV, "subvv" },
 

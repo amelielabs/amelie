@@ -594,6 +594,21 @@ explain select '1980-01-01 00:00:00.000000'::timestamp - '-1 year'::interval - '
     }
   }
 }]
+# test: timestamp - timestamp
+select '1970-01-01 01:12:59.909090'::timestamp -'1970-01-01 01:12:59.909090'::timestamp
+[""]
+select '1970-01-01 01:12:59.909090'::timestamp -'1970-01-01 00:12:59.909090'::timestamp
+["1 hour"]
+select '1970-01-01 01:12:59.909090'::timestamp -'1970-01-01 00:00:00.909090'::timestamp
+["1 hour 12 minutes 59 seconds"]
+select '1970-01-01 01:12:59.909090'::timestamp -'1970-01-01 00:00:00'::timestamp
+["1 hour 12 minutes 59 seconds 909 ms 90 us"]
+select '1970-01-01 00:12:59.909090'::timestamp - '1970-01-01 01:12:59.909090'::timestamp
+["-1 hours"]
+select '1970-01-01 00:00:00.909090'::timestamp - '1970-01-01 01:12:59.909090'::timestamp
+["-1 hours -12 minutes -59 seconds"]
+select '1970-01-01 00:00:00'::timestamp - '1970-01-01 01:12:59.909090'::timestamp
+["-1 hours -12 minutes -59 seconds -909 ms -90 us"]
 # test: timestamp - null
 select '1970-01-01 01:12:59.909090'::timestamp - null
 [null]

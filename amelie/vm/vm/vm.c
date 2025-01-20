@@ -236,6 +236,7 @@ vm_run(Vm*       self,
 		&&csubdi,
 		&&csubdd,
 		&&csubtl,
+		&&csubtt,
 		&&csubll,
 		&&csubvv,
 
@@ -938,6 +939,15 @@ csubtl:
 		timestamp_read_value(&ts, r[op->b].integer);
 		timestamp_sub(&ts, &r[op->c].interval);
 		value_set_timestamp(&r[op->a], timestamp_of(&ts, NULL));
+	}
+	op_next;
+
+csubtt:
+	if (likely(value_is(&r[op->a], &r[op->b], &r[op->c])))
+	{
+		interval_init(&iv);
+		iv.us = r[op->b].integer - r[op->c].integer;
+		value_set_interval(&r[op->a], &iv);
 	}
 	op_next;
 
