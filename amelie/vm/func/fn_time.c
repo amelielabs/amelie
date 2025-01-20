@@ -62,8 +62,7 @@ fn_at_timezone(Call* self)
 
 	auto data = buf_create();
 	buf_reserve(data, 128);
-	int size = timestamp_write(argv[0].integer, timezone,
-	                           (char*)data->position, 128);
+	int size = timestamp_get(argv[0].integer, timezone, (char*)data->position, 128);
 	buf_advance(data, size);
 
 	Str string;
@@ -157,9 +156,9 @@ fn_date_trunc(Call* self)
 		{
 			Timestamp ts;
 			timestamp_init(&ts);
-			timestamp_read_value(&ts, self->argv[1].integer);
+			timestamp_set_unixtime(&ts, self->argv[1].integer);
 			timestamp_trunc(&ts, &argv[0].string);
-			auto time = timestamp_of(&ts, timezone);
+			auto time = timestamp_get_unixtime(&ts, timezone);
 			value_set_timestamp(self->result, time);
 		} else {
 			error("date_trunc(): invalid arguments");
@@ -170,9 +169,9 @@ fn_date_trunc(Call* self)
 		call_validate_arg(self, 1, TYPE_STRING);
 		Timestamp ts;
 		timestamp_init(&ts);
-		timestamp_read_value(&ts, self->argv[0].integer);
+		timestamp_set_unixtime(&ts, self->argv[0].integer);
 		timestamp_trunc(&ts, &argv[1].string);
-		auto time = timestamp_of(&ts, timezone);
+		auto time = timestamp_get_unixtime(&ts, timezone);
 		value_set_timestamp(self->result, time);
 	} else
 	{

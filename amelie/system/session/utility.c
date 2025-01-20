@@ -222,7 +222,7 @@ ctl_token(Session* self)
 	// set expire timestamp
 	Timestamp expire;
 	timestamp_init(&expire);
-	timestamp_read_value(&expire, time_us());
+	timestamp_set_unixtime(&expire, time_us());
 
 	Interval iv;
 	interval_init(&iv);

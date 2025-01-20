@@ -96,7 +96,7 @@ logger_write(void*       arg,
 	{
 		timer_mgr_reset(&am_task->timer_mgr);
 		auto time = time_us();
-		buf_len = timestamp_write(time, self->timezone, buf, sizeof(buf));
+		buf_len = timestamp_get(time, self->timezone, buf, sizeof(buf));
 		buf[buf_len++] = ' ';
 	}
 

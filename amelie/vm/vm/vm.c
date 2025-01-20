@@ -873,9 +873,9 @@ caddtl:
 	if (likely(value_is(&r[op->a], &r[op->b], &r[op->c])))
 	{
 		timestamp_init(&ts);
-		timestamp_read_value(&ts, r[op->b].integer);
+		timestamp_set_unixtime(&ts, r[op->b].integer);
 		timestamp_add(&ts, &r[op->c].interval);
-		value_set_timestamp(&r[op->a], timestamp_of(&ts, NULL));
+		value_set_timestamp(&r[op->a], timestamp_get_unixtime(&ts, NULL));
 	}
 	op_next;
 
@@ -891,9 +891,9 @@ caddlt:
 	if (likely(value_is(&r[op->a], &r[op->b], &r[op->c])))
 	{
 		timestamp_init(&ts);
-		timestamp_read_value(&ts, r[op->c].integer);
+		timestamp_set_unixtime(&ts, r[op->c].integer);
 		timestamp_add(&ts, &r[op->b].interval);
-		value_set_timestamp(&r[op->a], timestamp_of(&ts, NULL));
+		value_set_timestamp(&r[op->a], timestamp_get_unixtime(&ts, NULL));
 	}
 	op_next;
 
@@ -937,9 +937,9 @@ csubtl:
 	if (likely(value_is(&r[op->a], &r[op->b], &r[op->c])))
 	{
 		timestamp_init(&ts);
-		timestamp_read_value(&ts, r[op->b].integer);
+		timestamp_set_unixtime(&ts, r[op->b].integer);
 		timestamp_sub(&ts, &r[op->c].interval);
-		value_set_timestamp(&r[op->a], timestamp_of(&ts, NULL));
+		value_set_timestamp(&r[op->a], timestamp_get_unixtime(&ts, NULL));
 	}
 	op_next;
 

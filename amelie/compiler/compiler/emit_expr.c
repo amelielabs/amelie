@@ -843,10 +843,10 @@ emit_expr(Compiler* self, Targets* targets, Ast* ast)
 	{
 		Timestamp ts;
 		timestamp_init(&ts);
-		if (unlikely(error_catch( timestamp_read(&ts, &ast->string) )))
+		if (unlikely(error_catch( timestamp_set(&ts, &ast->string) )))
 			stmt_error(self->current, ast, "invalid timestamp value");
 		return op2(self, CTIMESTAMP, rpin(self, TYPE_TIMESTAMP),
-		           timestamp_of(&ts, self->parser.local->timezone));
+		           timestamp_get_unixtime(&ts, self->parser.local->timezone));
 	}
 	case KINTERVAL:
 	{

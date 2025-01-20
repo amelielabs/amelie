@@ -163,9 +163,9 @@ parse_value(Stmt* self, Column* column, Value* value)
 
 		Timestamp ts;
 		timestamp_init(&ts);
-		if (unlikely(error_catch( timestamp_read(&ts, &ast->string) )))
+		if (unlikely(error_catch( timestamp_set(&ts, &ast->string) )))
 			stmt_error(self, ast, "invalid timestamp value");
-		value_set_timestamp(value, timestamp_of(&ts, self->local->timezone));
+		value_set_timestamp(value, timestamp_get_unixtime(&ts, self->local->timezone));
 		return ast;
 	}
 	case TYPE_INTERVAL:

@@ -14,13 +14,13 @@
 #include <amelie_io.h>
 #include <amelie_lib.h>
 
-always_inline static inline void
+static inline void
 timestamp_error_str(Str* str)
 {
 	error("invalid timestamp '%.*s'", str_size(str), str_of(str));
 }
 
-always_inline static inline void
+static inline void
 timestamp_error(void)
 {
 	error("invalid timestamp");
@@ -229,7 +229,7 @@ timestamp_validate_overflow(int64_t value)
 }
 
 hot void
-timestamp_read(Timestamp* self, Str* str)
+timestamp_set(Timestamp* self, Str* str)
 {
 	// parse iso8601 with microsends
 	timestamp_parse(self, str);
@@ -243,7 +243,7 @@ timestamp_read(Timestamp* self, Str* str)
 }
 
 hot void
-timestamp_read_value(Timestamp* self, int64_t value)
+timestamp_set_unixtime(Timestamp* self, int64_t value)
 {
 	timestamp_validate_overflow(value);
 	// UTC time in seconds
@@ -254,7 +254,7 @@ timestamp_read_value(Timestamp* self, int64_t value)
 }
 
 hot int64_t
-timestamp_of(Timestamp* self, Timezone* timezone)
+timestamp_get_unixtime(Timestamp* self, Timezone* timezone)
 {
 	// mktime
 	self->time.tm_isdst = -1;	
@@ -291,7 +291,7 @@ timestamp_of(Timestamp* self, Timezone* timezone)
 }
 
 hot int
-timestamp_write(int64_t value, Timezone* timezone, char* str, int str_size)
+timestamp_get(int64_t value, Timezone* timezone, char* str, int str_size)
 {
 	// UTC time in seconds
 	timestamp_validate_overflow(value);

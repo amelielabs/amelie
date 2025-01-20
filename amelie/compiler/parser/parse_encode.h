@@ -58,7 +58,7 @@ ast_encode(Ast* self, Lex* lex, Local* local, Buf* buf)
 		auto offset = buf_size(buf);
 		encode_string32(buf, 0);
 		buf_reserve(buf, 128);
-		int size = timestamp_write(self->integer, local->timezone, (char*)buf->position, 128);
+		int size = timestamp_get(self->integer, local->timezone, (char*)buf->position, 128);
 		buf_advance(buf, size);
 		uint8_t* pos = buf->start + offset;
 		json_write_string32(&pos, size);

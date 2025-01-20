@@ -175,7 +175,7 @@ fn_string(Call* self)
 	case TYPE_TIMESTAMP:
 	{
 		buf_reserve(data, 128);
-		int size = timestamp_write(arg->integer, self->vm->local->timezone, (char*)data->position, 128);
+		int size = timestamp_get(arg->integer, self->vm->local->timezone, (char*)data->position, 128);
 		buf_advance(data, size);
 		break;
 	}
@@ -303,8 +303,8 @@ fn_timestamp(Call* self)
 		}
 		Timestamp ts;
 		timestamp_init(&ts);
-		timestamp_read(&ts, &self->argv[0].string);
-		auto time = timestamp_of(&ts, timezone);
+		timestamp_set(&ts, &self->argv[0].string);
+		auto time = timestamp_get_unixtime(&ts, timezone);
 		value_set_timestamp(self->result, time);
 		break;
 	}
@@ -314,8 +314,8 @@ fn_timestamp(Call* self)
 			error("timestamp(): unexpected argument");
 		Timestamp ts;
 		timestamp_init(&ts);
-		timestamp_read_value(&ts, self->argv[0].integer);
-		value_set_timestamp(self->result, timestamp_of(&ts, NULL));
+		timestamp_set_unixtime(&ts, self->argv[0].integer);
+		value_set_timestamp(self->result, timestamp_get_unixtime(&ts, NULL));
 		break;
 	}
 	case TYPE_NULL:

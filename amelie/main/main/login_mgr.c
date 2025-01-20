@@ -268,7 +268,7 @@ login_mgr_set(LoginMgr* self, Remote* remote, Vars* vars,
 		// set expire timestamp to 1 year
 		Timestamp expire;
 		timestamp_init(&expire);
-		timestamp_read_value(&expire, time_us());
+		timestamp_set_unixtime(&expire, time_us());
 		Interval iv;
 		interval_init(&iv);
 		Str str;
