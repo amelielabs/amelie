@@ -71,9 +71,9 @@ enum
 
 	// equ
 	CEQUII,
-	CEQUID,
-	CEQUDI,
-	CEQUDD,
+	CEQUIF,
+	CEQUFI,
+	CEQUFF,
 	CEQULL,
 	CEQUSS,
 	CEQUJJ,
@@ -82,9 +82,9 @@ enum
 
 	// gte
 	CGTEII,
-	CGTEID,
-	CGTEDI,
-	CGTEDD,
+	CGTEIF,
+	CGTEFI,
+	CGTEFF,
 	CGTELL,
 	CGTESS,
 	CGTEVV,
@@ -92,9 +92,9 @@ enum
 
 	// gt
 	CGTII,
-	CGTID,
-	CGTDI,
-	CGTDD,
+	CGTIF,
+	CGTFI,
+	CGTFF,
 	CGTLL,
 	CGTSS,
 	CGTVV,
@@ -102,9 +102,9 @@ enum
 
 	// lte
 	CLTEII,
-	CLTEID,
-	CLTEDI,
-	CLTEDD,
+	CLTEIF,
+	CLTEFI,
+	CLTEFF,
 	CLTELL,
 	CLTESS,
 	CLTEVV,
@@ -112,9 +112,9 @@ enum
 
 	// lt
 	CLTII,
-	CLTID,
-	CLTDI,
-	CLTDD,
+	CLTIF,
+	CLTFI,
+	CLTFF,
 	CLTLL,
 	CLTSS,
 	CLTVV,
@@ -122,9 +122,9 @@ enum
 
 	// add
 	CADDII,
-	CADDID,
-	CADDDI,
-	CADDDD,
+	CADDIF,
+	CADDFI,
+	CADDFF,
 	CADDTL,
 	CADDLL,
 	CADDLT,
@@ -132,9 +132,9 @@ enum
 
 	// sub
 	CSUBII,
-	CSUBID,
-	CSUBDI,
-	CSUBDD,
+	CSUBIF,
+	CSUBFI,
+	CSUBFF,
 	CSUBTL,
 	CSUBTT,
 	CSUBLL,
@@ -142,23 +142,23 @@ enum
 
 	// mul
 	CMULII,
-	CMULID,
-	CMULDI,
-	CMULDD,
+	CMULIF,
+	CMULFI,
+	CMULFF,
 	CMULVV,
 
 	// div
 	CDIVII,
-	CDIVID,
-	CDIVDI,
-	CDIVDD,
+	CDIVIF,
+	CDIVFI,
+	CDIVFF,
 
 	// mod
 	CMODII,
 
 	// neg
 	CNEGI,
-	CNEGD,
+	CNEGF,
 	CNEGL,
 
 	// cat
@@ -209,8 +209,8 @@ enum
 	CTABLE_READI16,
 	CTABLE_READI32,
 	CTABLE_READI64,
-	CTABLE_READF,
-	CTABLE_READD,
+	CTABLE_READF32,
+	CTABLE_READF64,
 	CTABLE_READT,
 	CTABLE_READL,
 	CTABLE_READS,
@@ -234,7 +234,7 @@ enum
 	CAGG,
 	CCOUNT,
 	CAVGI,
-	CAVGD,
+	CAVGF,
 
 	// functions
 	CCALL,

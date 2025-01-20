@@ -152,9 +152,9 @@ emit_column(Compiler* self, Target* target, Ast* ast,
 		case TYPE_DOUBLE:
 		{
 			switch (column->type_size) {
-			case 4: op = CTABLE_READF;
+			case 4: op = CTABLE_READF32;
 				break;
-			case 8: op = CTABLE_READD;
+			case 8: op = CTABLE_READF64;
 				break;
 			default:
 				abort();
@@ -388,7 +388,7 @@ emit_aggregate(Compiler* self, Targets* targets, Ast* ast)
 		agg_type = TYPE_INT;
 		break;
 	case AGG_DOUBLE_AVG:
-		agg_op   = CAVGD;
+		agg_op   = CAVGF;
 		agg_type = TYPE_DOUBLE;
 		break;
 	default:
@@ -996,7 +996,7 @@ emit_expr(Compiler* self, Targets* targets, Ast* ast)
 			rneg = op2(self, CNEGI, rpin(self, TYPE_INT), r);
 		else
 		if (rt == TYPE_DOUBLE)
-			rneg = op2(self, CNEGD, rpin(self, TYPE_DOUBLE), r);
+			rneg = op2(self, CNEGF, rpin(self, TYPE_DOUBLE), r);
 		else
 		if (rt == TYPE_INTERVAL)
 			rneg = op2(self, CNEGL, rpin(self, TYPE_INTERVAL), r);

@@ -91,9 +91,9 @@ OpDesc ops[] =
 
 	// equ
 	{ CEQUII, "equii" },
-	{ CEQUID, "equid" },
-	{ CEQUDI, "equdi" },
-	{ CEQUDD, "equdd" },
+	{ CEQUIF, "equif" },
+	{ CEQUFI, "equfi" },
+	{ CEQUFF, "equff" },
 	{ CEQULL, "equll" },
 	{ CEQUSS, "equss" },
 	{ CEQUJJ, "equjj" },
@@ -102,9 +102,9 @@ OpDesc ops[] =
 
 	// gte
 	{ CGTEII, "gteii" },
-	{ CGTEID, "gteid" },
-	{ CGTEDI, "gtedi" },
-	{ CGTEDD, "gtedd" },
+	{ CGTEIF, "gteif" },
+	{ CGTEFI, "gtefi" },
+	{ CGTEFF, "gteff" },
 	{ CGTELL, "gtell" },
 	{ CGTESS, "gtess" },
 	{ CGTEVV, "gtevv" },
@@ -112,9 +112,9 @@ OpDesc ops[] =
 
 	// gt
 	{ CGTII, "gtii" },
-	{ CGTID, "gtid" },
-	{ CGTDI, "gtdi" },
-	{ CGTDD, "gtdd" },
+	{ CGTIF, "gtif" },
+	{ CGTFI, "gtfi" },
+	{ CGTFF, "gtff" },
 	{ CGTLL, "gtll" },
 	{ CGTSS, "gtss" },
 	{ CGTVV, "gtvv" },
@@ -122,9 +122,9 @@ OpDesc ops[] =
 
 	// lte
 	{ CLTEII, "lteii" },
-	{ CLTEID, "lteid" },
-	{ CLTEDI, "ltedi" },
-	{ CLTEDD, "ltedd" },
+	{ CLTEIF, "lteif" },
+	{ CLTEFI, "ltefi" },
+	{ CLTEFF, "lteff" },
 	{ CLTELL, "ltell" },
 	{ CLTESS, "ltess" },
 	{ CLTEVV, "ltevv" },
@@ -132,9 +132,9 @@ OpDesc ops[] =
 
 	// lt
 	{ CLTII, "ltii" },
-	{ CLTID, "ltid" },
-	{ CLTDI, "ltdi" },
-	{ CLTDD, "ltdd" },
+	{ CLTIF, "ltif" },
+	{ CLTFI, "ltfi" },
+	{ CLTFF, "ltff" },
 	{ CLTLL, "ltll" },
 	{ CLTSS, "ltss" },
 	{ CLTVV, "ltvv" },
@@ -142,9 +142,9 @@ OpDesc ops[] =
 
 	// add
 	{ CADDII, "addii" },
-	{ CADDID, "addid" },
-	{ CADDDI, "adddi" },
-	{ CADDDD, "adddd" },
+	{ CADDIF, "addif" },
+	{ CADDFI, "addfi" },
+	{ CADDFF, "addff" },
 	{ CADDTL, "addtl" },
 	{ CADDLL, "addll" },
 	{ CADDLT, "addlt" },
@@ -152,9 +152,9 @@ OpDesc ops[] =
 
 	// sub
 	{ CSUBII, "subii" },
-	{ CSUBID, "subid" },
-	{ CSUBDI, "subdi" },
-	{ CSUBDD, "subdd" },
+	{ CSUBIF, "subif" },
+	{ CSUBFI, "subfi" },
+	{ CSUBFF, "subff" },
 	{ CSUBTL, "subtl" },
 	{ CSUBTT, "subtt" },
 	{ CSUBLL, "subll" },
@@ -162,23 +162,23 @@ OpDesc ops[] =
 
 	// mul
 	{ CMULII, "mulii" },
-	{ CMULID, "mulid" },
-	{ CMULDI, "muldi" },
-	{ CMULDD, "muldd" },
+	{ CMULIF, "mulif" },
+	{ CMULFI, "mulfi" },
+	{ CMULFF, "mulff" },
 	{ CMULVV, "mulvv" },
 
 	// div
 	{ CDIVII, "divii" },
-	{ CDIVID, "divid" },
-	{ CDIVDI, "divdi" },
-	{ CDIVDD, "divdd" },
+	{ CDIVIF, "divif" },
+	{ CDIVFI, "divfi" },
+	{ CDIVFF, "divff" },
 
 	// mod
 	{ CMODII, "modii" },
 
 	// neg
 	{ CNEGI, "negi" },
-	{ CNEGD, "negd" },
+	{ CNEGF, "negf" },
 	{ CNEGL, "negl" },
 
 	// cat
@@ -228,8 +228,8 @@ OpDesc ops[] =
 	{ CTABLE_READI16, "table_readi16" },
 	{ CTABLE_READI32, "table_readi32" },
 	{ CTABLE_READI64, "table_readi64" },
-	{ CTABLE_READF, "table_readf" },
-	{ CTABLE_READD, "table_readd" },
+	{ CTABLE_READF32, "table_readf32" },
+	{ CTABLE_READF64, "table_readf64" },
 	{ CTABLE_READT, "table_readt" },
 	{ CTABLE_READL, "table_readl" },
 	{ CTABLE_READS, "table_reads" },
@@ -253,7 +253,7 @@ OpDesc ops[] =
 	{ CAGG, "agg" },
 	{ CCOUNT, "count" },
 	{ CAVGI, "avgi" },
-	{ CAVGD, "avgd" },
+	{ CAVGF, "avgf" },
 
 	// functions
 	{ CCALL, "call" },

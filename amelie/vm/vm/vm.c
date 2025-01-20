@@ -172,9 +172,9 @@ vm_run(Vm*       self,
 
 		// equ
 		&&cequii,
-		&&cequid,
-		&&cequdi,
-		&&cequdd,
+		&&cequif,
+		&&cequfi,
+		&&cequff,
 		&&cequll,
 		&&cequss,
 		&&cequjj,
@@ -183,9 +183,9 @@ vm_run(Vm*       self,
 
 		// gte
 		&&cgteii,
-		&&cgteid,
-		&&cgtedi,
-		&&cgtedd,
+		&&cgteif,
+		&&cgtefi,
+		&&cgteff,
 		&&cgtell,
 		&&cgtess,
 		&&cgtevv,
@@ -193,9 +193,9 @@ vm_run(Vm*       self,
 
 		// gt
 		&&cgtii,
-		&&cgtid,
-		&&cgtdi,
-		&&cgtdd,
+		&&cgtif,
+		&&cgtfi,
+		&&cgtff,
 		&&cgtll,
 		&&cgtss,
 		&&cgtvv,
@@ -203,9 +203,9 @@ vm_run(Vm*       self,
 
 		// lte
 		&&clteii,
-		&&clteid,
-		&&cltedi,
-		&&cltedd,
+		&&clteif,
+		&&cltefi,
+		&&clteff,
 		&&cltell,
 		&&cltess,
 		&&cltevv,
@@ -213,9 +213,9 @@ vm_run(Vm*       self,
 
 		// lt
 		&&cltii,
-		&&cltid,
-		&&cltdi,
-		&&cltdd,
+		&&cltif,
+		&&cltfi,
+		&&cltff,
 		&&cltll,
 		&&cltss,
 		&&cltvv,
@@ -223,9 +223,9 @@ vm_run(Vm*       self,
 
 		// add
 		&&caddii,
-		&&caddid,
-		&&cadddi,
-		&&cadddd,
+		&&caddif,
+		&&caddfi,
+		&&caddff,
 		&&caddtl,
 		&&caddll,
 		&&caddlt,
@@ -233,9 +233,9 @@ vm_run(Vm*       self,
 
 		// sub
 		&&csubii,
-		&&csubid,
-		&&csubdi,
-		&&csubdd,
+		&&csubif,
+		&&csubfi,
+		&&csubff,
 		&&csubtl,
 		&&csubtt,
 		&&csubll,
@@ -243,23 +243,23 @@ vm_run(Vm*       self,
 
 		// mul
 		&&cmulii,
-		&&cmulid,
-		&&cmuldi,
-		&&cmuldd,
+		&&cmulif,
+		&&cmulfi,
+		&&cmulff,
 		&&cmulvv,
 
 		// div
 		&&cdivii,
-		&&cdivid,
-		&&cdivdi,
-		&&cdivdd,
+		&&cdivif,
+		&&cdivfi,
+		&&cdivff,
 
 		// mod
 		&&cmodii,
 
 		// neg
 		&&cnegi,
-		&&cnegd,
+		&&cnegf,
 		&&cnegl,
 
 		// cat
@@ -310,8 +310,8 @@ vm_run(Vm*       self,
 		&&ctable_readi16,
 		&&ctable_readi32,
 		&&ctable_readi64,
-		&&ctable_readf,
-		&&ctable_readd,
+		&&ctable_readf32,
+		&&ctable_readf64,
 		&&ctable_readt,
 		&&ctable_readl,
 		&&ctable_reads,
@@ -335,7 +335,7 @@ vm_run(Vm*       self,
 		&&cagg,
 		&&ccount,
 		&&cavgi,
-		&&cavgd,
+		&&cavgf,
 
 		// function call
 		&&ccall,
@@ -605,17 +605,17 @@ cequii:
 		value_set_bool(&r[op->a], r[op->b].integer == r[op->c].integer);
 	op_next;
 
-cequid:
+cequif:
 	if (likely(value_is(&r[op->a], &r[op->b], &r[op->c])))
 		value_set_bool(&r[op->a], r[op->b].integer == r[op->c].dbl);
 	op_next;
 
-cequdi:
+cequfi:
 	if (likely(value_is(&r[op->a], &r[op->b], &r[op->c])))
 		value_set_bool(&r[op->a], r[op->b].dbl == r[op->c].integer);
 	op_next;
 
-cequdd:
+cequff:
 	if (likely(value_is(&r[op->a], &r[op->b], &r[op->c])))
 		value_set_bool(&r[op->a], r[op->b].dbl == r[op->c].dbl);
 	op_next;
@@ -663,17 +663,17 @@ cgteii:
 		value_set_bool(&r[op->a], r[op->b].integer >= r[op->c].integer);
 	op_next;
 
-cgteid:
+cgteif:
 	if (likely(value_is(&r[op->a], &r[op->b], &r[op->c])))
 		value_set_bool(&r[op->a], r[op->b].integer >= r[op->c].dbl);
 	op_next;
 
-cgtedi:
+cgtefi:
 	if (likely(value_is(&r[op->a], &r[op->b], &r[op->c])))
 		value_set_bool(&r[op->a], r[op->b].dbl >= r[op->c].integer);
 	op_next;
 
-cgtedd:
+cgteff:
 	if (likely(value_is(&r[op->a], &r[op->b], &r[op->c])))
 		value_set_bool(&r[op->a], r[op->b].dbl >= r[op->c].dbl);
 	op_next;
@@ -712,17 +712,17 @@ cgtii:
 		value_set_bool(&r[op->a], r[op->b].integer > r[op->c].integer);
 	op_next;
 
-cgtid:
+cgtif:
 	if (likely(value_is(&r[op->a], &r[op->b], &r[op->c])))
 		value_set_bool(&r[op->a], r[op->b].integer > r[op->c].dbl);
 	op_next;
 
-cgtdi:
+cgtfi:
 	if (likely(value_is(&r[op->a], &r[op->b], &r[op->c])))
 		value_set_bool(&r[op->a], r[op->b].dbl > r[op->c].integer);
 	op_next;
 
-cgtdd:
+cgtff:
 	if (likely(value_is(&r[op->a], &r[op->b], &r[op->c])))
 		value_set_bool(&r[op->a], r[op->b].dbl > r[op->c].dbl);
 	op_next;
@@ -761,17 +761,17 @@ clteii:
 		value_set_bool(&r[op->a], r[op->b].integer <= r[op->c].integer);
 	op_next;
 
-clteid:
+clteif:
 	if (likely(value_is(&r[op->a], &r[op->b], &r[op->c])))
 		value_set_bool(&r[op->a], r[op->b].integer <= r[op->c].dbl);
 	op_next;
 
-cltedi:
+cltefi:
 	if (likely(value_is(&r[op->a], &r[op->b], &r[op->c])))
 		value_set_bool(&r[op->a], r[op->b].dbl <= r[op->c].integer);
 	op_next;
 
-cltedd:
+clteff:
 	if (likely(value_is(&r[op->a], &r[op->b], &r[op->c])))
 		value_set_bool(&r[op->a], r[op->b].dbl <= r[op->c].dbl);
 	op_next;
@@ -810,17 +810,17 @@ cltii:
 		value_set_bool(&r[op->a], r[op->b].integer < r[op->c].integer);
 	op_next;
 
-cltid:
+cltif:
 	if (likely(value_is(&r[op->a], &r[op->b], &r[op->c])))
 		value_set_bool(&r[op->a], r[op->b].integer < r[op->c].dbl);
 	op_next;
 
-cltdi:
+cltfi:
 	if (likely(value_is(&r[op->a], &r[op->b], &r[op->c])))
 		value_set_bool(&r[op->a], r[op->b].dbl < r[op->c].integer);
 	op_next;
 
-cltdd:
+cltff:
 	if (likely(value_is(&r[op->a], &r[op->b], &r[op->c])))
 		value_set_bool(&r[op->a], r[op->b].dbl < r[op->c].dbl);
 	op_next;
@@ -859,17 +859,17 @@ caddii:
 		value_set_int(&r[op->a], r[op->b].integer + r[op->c].integer);
 	op_next;
 
-caddid:
+caddif:
 	if (likely(value_is(&r[op->a], &r[op->b], &r[op->c])))
 		value_set_double(&r[op->a], r[op->b].integer + r[op->c].dbl);
 	op_next;
 
-cadddi:
+caddfi:
 	if (likely(value_is(&r[op->a], &r[op->b], &r[op->c])))
 		value_set_double(&r[op->a], r[op->b].dbl + r[op->c].integer);
 	op_next;
 
-cadddd:
+caddff:
 	if (likely(value_is(&r[op->a], &r[op->b], &r[op->c])))
 		value_set_double(&r[op->a], r[op->b].dbl + r[op->c].dbl);
 	op_next;
@@ -923,17 +923,17 @@ csubii:
 		value_set_int(&r[op->a], r[op->b].integer - r[op->c].integer);
 	op_next;
 
-csubid:
+csubif:
 	if (likely(value_is(&r[op->a], &r[op->b], &r[op->c])))
 		value_set_double(&r[op->a], r[op->b].integer - r[op->c].dbl);
 	op_next;
 
-csubdi:
+csubfi:
 	if (likely(value_is(&r[op->a], &r[op->b], &r[op->c])))
 		value_set_double(&r[op->a], r[op->b].dbl - r[op->c].integer);
 	op_next;
 
-csubdd:
+csubff:
 	if (likely(value_is(&r[op->a], &r[op->b], &r[op->c])))
 		value_set_double(&r[op->a], r[op->b].dbl - r[op->c].dbl);
 	op_next;
@@ -986,17 +986,17 @@ cmulii:
 		value_set_int(&r[op->a], r[op->b].integer * r[op->c].integer);
 	op_next;
 
-cmulid:
+cmulif:
 	if (likely(value_is(&r[op->a], &r[op->b], &r[op->c])))
 		value_set_double(&r[op->a], r[op->b].integer * r[op->c].dbl);
 	op_next;
 
-cmuldi:
+cmulfi:
 	if (likely(value_is(&r[op->a], &r[op->b], &r[op->c])))
 		value_set_double(&r[op->a], r[op->b].dbl * r[op->c].integer);
 	op_next;
 
-cmuldd:
+cmulff:
 	if (likely(value_is(&r[op->a], &r[op->b], &r[op->c])))
 		value_set_double(&r[op->a], r[op->b].dbl * r[op->c].dbl);
 	op_next;
@@ -1026,7 +1026,7 @@ cdivii:
 	}
 	op_next;
 
-cdivid:
+cdivif:
 	if (likely(value_is(&r[op->a], &r[op->b], &r[op->c])))
 	{
 		if (unlikely(r[op->c].dbl == 0))
@@ -1035,7 +1035,7 @@ cdivid:
 	}
 	op_next;
 
-cdivdi:
+cdivfi:
 	if (likely(value_is(&r[op->a], &r[op->b], &r[op->c])))
 	{
 		if (unlikely(r[op->c].integer == 0))
@@ -1044,7 +1044,7 @@ cdivdi:
 	}
 	op_next;
 
-cdivdd:
+cdivff:
 	if (likely(value_is(&r[op->a], &r[op->b], &r[op->c])))
 	{
 		if (unlikely(r[op->c].dbl == 0))
@@ -1069,7 +1069,7 @@ cnegi:
 		value_set_int(&r[op->a], -r[op->b].integer);
 	op_next;
 
-cnegd:
+cnegf:
 	if (likely(value_is_unary(&r[op->a], &r[op->b])))
 		value_set_double(&r[op->a], -r[op->b].dbl);
 	op_next;
@@ -1400,7 +1400,7 @@ ctable_readi64:
 		value_set_null(&r[op->a]);
 	op_next;
 
-ctable_readf:
+ctable_readf32:
 	ptr = row_at(iterator_at(cursor_mgr_of(cursor_mgr, op->b)->it), op->c);
 	if (likely(ptr))
 		value_set_double(&r[op->a], *(float*)ptr);
@@ -1408,7 +1408,7 @@ ctable_readf:
 		value_set_null(&r[op->a]);
 	op_next;
 
-ctable_readd:
+ctable_readf64:
 	ptr = row_at(iterator_at(cursor_mgr_of(cursor_mgr, op->b)->it), op->c);
 	if (likely(ptr))
 		value_set_double(&r[op->a], *(double*)ptr);
@@ -1585,7 +1585,7 @@ cavgi:
 		value_set_null(&r[op->a]);
 	op_next;
 
-cavgd:
+cavgf:
 	// [result, cursor, column]
 	c = &store_iterator_at(cursor_mgr_of(&self->cursor_mgr, op->b)->it_store)[op->c];
 	if (likely(c->type == TYPE_AVG))
