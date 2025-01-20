@@ -224,9 +224,11 @@ fn_extract(Call* self)
 
 	// (string, interval)
 	// (string, timestamp [, timezone])
+	// (string, date)
 	//
 	// (interval, string)
 	// (timestamp, string [, timezone])
+	// (date, string)
 	Timezone* timezone = self->vm->local->timezone;
 	if (self->argc == 3)
 	{
@@ -247,6 +249,9 @@ fn_extract(Call* self)
 		if (argv[1].type == TYPE_TIMESTAMP)
 			value = timestamp_extract(argv[1].integer, timezone, &argv[0].string);
 		else
+		if (argv[1].type == TYPE_DATE)
+			value = date_extract(argv[1].integer, &argv[0].string);
+		else
 			error("extract(): invalid arguments");
 	} else
 	if (argv[0].type == TYPE_INTERVAL)
@@ -258,6 +263,11 @@ fn_extract(Call* self)
 	{
 		call_validate_arg(self, 1, TYPE_STRING);
 		value = timestamp_extract(argv[0].integer, timezone, &argv[1].string);
+	} else
+	if (argv[0].type == TYPE_DATE)
+	{
+		call_validate_arg(self, 1, TYPE_STRING);
+		value = date_extract(argv[0].integer, &argv[1].string);
 	} else
 	{
 		error("extract(): invalid arguments");

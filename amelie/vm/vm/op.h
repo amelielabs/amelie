@@ -128,6 +128,10 @@ enum
 	CADDTL,
 	CADDLL,
 	CADDLT,
+	CADDDI,
+	CADDID,
+	CADDDL,
+	CADDLD,
 	CADDVV,
 
 	// sub
@@ -138,6 +142,8 @@ enum
 	CSUBTL,
 	CSUBTT,
 	CSUBLL,
+	CSUBDI,
+	CSUBDL,
 	CSUBVV,
 
 	// mul

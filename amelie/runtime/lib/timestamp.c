@@ -229,6 +229,20 @@ timestamp_validate_overflow(int64_t value)
 }
 
 hot void
+timestamp_set_date(Timestamp* self, int64_t julian)
+{
+	int year, month, day;
+	date_get_gregorian(julian, &year, &month, &day);
+
+	// set time with corrections for mktime, this might
+	// overflow on get if timestamp becomes
+	// out of range
+	self->time.tm_year = year  - 1900;
+	self->time.tm_mon  = month - 1;
+	self->time.tm_mday = day;
+}
+
+hot void
 timestamp_set(Timestamp* self, Str* str)
 {
 	// parse iso8601 with microsends

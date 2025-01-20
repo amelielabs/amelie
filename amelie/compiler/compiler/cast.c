@@ -58,6 +58,7 @@ cast_op[OP_MAX][TYPE_MAX][TYPE_MAX] =
 		[TYPE_INT][TYPE_INT]             = { TYPE_BOOL, CEQUII },
 		[TYPE_INT][TYPE_DOUBLE]          = { TYPE_BOOL, CEQUIF },
 		[TYPE_INT][TYPE_TIMESTAMP]       = { TYPE_BOOL, CEQUII },
+		[TYPE_INT][TYPE_DATE]            = { TYPE_BOOL, CEQUII },
 
 		// double
 		[TYPE_DOUBLE][TYPE_BOOL]         = { TYPE_BOOL, CEQUFI },
@@ -70,6 +71,10 @@ cast_op[OP_MAX][TYPE_MAX][TYPE_MAX] =
 
 		// interval
 		[TYPE_INTERVAL][TYPE_INTERVAL]   = { TYPE_BOOL, CEQULL },
+
+		// date
+		[TYPE_DATE][TYPE_INT]            = { TYPE_BOOL, CEQUII },
+		[TYPE_DATE][TYPE_DATE]           = { TYPE_BOOL, CEQUII },
 
 		// string
 		[TYPE_STRING][TYPE_STRING]       = { TYPE_BOOL, CEQUSS },
@@ -102,6 +107,10 @@ cast_op[OP_MAX][TYPE_MAX][TYPE_MAX] =
 		// interval
 		[TYPE_INTERVAL][TYPE_INTERVAL]   = { TYPE_BOOL, CGTELL },
 
+		// date
+		[TYPE_DATE][TYPE_INT]            = { TYPE_BOOL, CGTEII },
+		[TYPE_DATE][TYPE_DATE]           = { TYPE_BOOL, CGTEII },
+
 		// string
 		[TYPE_STRING][TYPE_STRING]       = { TYPE_BOOL, CGTESS },
 
@@ -129,6 +138,10 @@ cast_op[OP_MAX][TYPE_MAX][TYPE_MAX] =
 
 		// interval
 		[TYPE_INTERVAL][TYPE_INTERVAL]   = { TYPE_BOOL, CGTLL },
+
+		// date
+		[TYPE_DATE][TYPE_INT]            = { TYPE_BOOL, CGTII },
+		[TYPE_DATE][TYPE_DATE]           = { TYPE_BOOL, CGTII },
 
 		// string
 		[TYPE_STRING][TYPE_STRING]       = { TYPE_BOOL, CGTSS },
@@ -158,6 +171,10 @@ cast_op[OP_MAX][TYPE_MAX][TYPE_MAX] =
 		// interval
 		[TYPE_INTERVAL][TYPE_INTERVAL]   = { TYPE_BOOL, CLTELL },
 
+		// date
+		[TYPE_DATE][TYPE_INT]            = { TYPE_BOOL, CLTEII },
+		[TYPE_DATE][TYPE_DATE]           = { TYPE_BOOL, CLTEII },
+
 		// string
 		[TYPE_STRING][TYPE_STRING]       = { TYPE_BOOL, CLTESS },
 
@@ -186,6 +203,10 @@ cast_op[OP_MAX][TYPE_MAX][TYPE_MAX] =
 		// interval
 		[TYPE_INTERVAL][TYPE_INTERVAL]   = { TYPE_BOOL, CLTLL },
 
+		// date
+		[TYPE_DATE][TYPE_INT]            = { TYPE_BOOL, CLTII },
+		[TYPE_DATE][TYPE_DATE]           = { TYPE_BOOL, CLTII },
+
 		// string
 		[TYPE_STRING][TYPE_STRING]       = { TYPE_BOOL, CLTSS },
 
@@ -201,6 +222,7 @@ cast_op[OP_MAX][TYPE_MAX][TYPE_MAX] =
 		// int
 		[TYPE_INT][TYPE_INT]             = { TYPE_INT,       CADDII },
 		[TYPE_INT][TYPE_DOUBLE]          = { TYPE_DOUBLE,    CADDIF },
+		[TYPE_INT][TYPE_DATE]            = { TYPE_DATE,      CADDID },
 
 		// double
 		[TYPE_DOUBLE][TYPE_INT]          = { TYPE_DOUBLE,    CADDFI },
@@ -212,6 +234,11 @@ cast_op[OP_MAX][TYPE_MAX][TYPE_MAX] =
 		// interval
 		[TYPE_INTERVAL][TYPE_INTERVAL]   = { TYPE_INTERVAL,  CADDLL },
 		[TYPE_INTERVAL][TYPE_TIMESTAMP]  = { TYPE_TIMESTAMP, CADDLT },
+		[TYPE_INTERVAL][TYPE_DATE]       = { TYPE_TIMESTAMP, CADDLD },
+
+		// date
+		[TYPE_DATE][TYPE_INT]            = { TYPE_DATE,      CADDDI },
+		[TYPE_DATE][TYPE_INTERVAL]       = { TYPE_TIMESTAMP, CADDDL },
 
 		// vector
 		[TYPE_VECTOR][TYPE_VECTOR]       = { TYPE_VECTOR,    CADDVV },
@@ -233,6 +260,11 @@ cast_op[OP_MAX][TYPE_MAX][TYPE_MAX] =
 
 		// interval
 		[TYPE_INTERVAL][TYPE_INTERVAL]   = { TYPE_INTERVAL,  CSUBLL },
+
+		// date
+		[TYPE_DATE][TYPE_INT]            = { TYPE_DATE,      CSUBDI },
+		[TYPE_DATE][TYPE_INTERVAL]       = { TYPE_TIMESTAMP, CSUBDL },
+		[TYPE_DATE][TYPE_DATE]           = { TYPE_INT,       CSUBII },
 
 		// vector
 		[TYPE_VECTOR][TYPE_VECTOR]       = { TYPE_VECTOR,    CSUBVV },

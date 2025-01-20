@@ -229,6 +229,10 @@ vm_run(Vm*       self,
 		&&caddtl,
 		&&caddll,
 		&&caddlt,
+		&&cadddi,
+		&&caddid,
+		&&cadddl,
+		&&caddld,
 		&&caddvv,
 
 		// sub
@@ -239,6 +243,8 @@ vm_run(Vm*       self,
 		&&csubtl,
 		&&csubtt,
 		&&csubll,
+		&&csubdi,
+		&&csubdl,
 		&&csubvv,
 
 		// mul
@@ -902,6 +908,37 @@ caddlt:
 	}
 	op_next;
 
+cadddi:
+	if (likely(value_is(&r[op->a], &r[op->b], &r[op->c])))
+		value_set_date(&r[op->a], date_add(r[op->b].integer, r[op->c].integer));
+	op_next;
+
+caddid:
+	if (likely(value_is(&r[op->a], &r[op->b], &r[op->c])))
+		value_set_date(&r[op->a], date_add(r[op->c].integer, r[op->b].integer));
+	op_next;
+
+cadddl:
+	if (likely(value_is(&r[op->a], &r[op->b], &r[op->c])))
+	{
+		// convert julian to timestamp add interval and convert to unixtime
+		timestamp_init(&ts);
+		timestamp_set_date(&ts, r[op->b].integer);
+		timestamp_add(&ts, &r[op->c].interval);
+		value_set_timestamp(&r[op->a], timestamp_get_unixtime(&ts, NULL));
+	}
+	op_next;
+
+caddld:
+	if (likely(value_is(&r[op->a], &r[op->b], &r[op->c])))
+	{
+		timestamp_init(&ts);
+		timestamp_set_date(&ts, r[op->c].integer);
+		timestamp_add(&ts, &r[op->b].interval);
+		value_set_timestamp(&r[op->a], timestamp_get_unixtime(&ts, NULL));
+	}
+	op_next;
+
 caddvv:
 	if (likely(value_is(&r[op->a], &r[op->b], &r[op->c])))
 	{
@@ -962,6 +999,22 @@ csubll:
 	{
 		interval_sub(&iv, &r[op->b].interval, &r[op->c].interval);
 		value_set_interval(&r[op->a], &iv);
+	}
+	op_next;
+
+csubdi:
+	if (likely(value_is(&r[op->a], &r[op->b], &r[op->c])))
+		value_set_date(&r[op->a], date_sub(r[op->b].integer, r[op->c].integer));
+	op_next;
+
+csubdl:
+	if (likely(value_is(&r[op->a], &r[op->b], &r[op->c])))
+	{
+		// convert julian to timestamp sub interval and convert to unixtime
+		timestamp_init(&ts);
+		timestamp_set_date(&ts, r[op->b].integer);
+		timestamp_sub(&ts, &r[op->c].interval);
+		value_set_timestamp(&r[op->a], timestamp_get_unixtime(&ts, NULL));
 	}
 	op_next;
 

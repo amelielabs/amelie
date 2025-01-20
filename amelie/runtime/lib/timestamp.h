@@ -34,6 +34,7 @@ timestamp_init(Timestamp* self)
 };
 
 void    timestamp_set(Timestamp*, Str*);
+void    timestamp_set_date(Timestamp*, int64_t);
 void    timestamp_set_unixtime(Timestamp*, int64_t);
 int64_t timestamp_get_unixtime(Timestamp*, Timezone*);
 int     timestamp_get(int64_t, Timezone*, char*, int);

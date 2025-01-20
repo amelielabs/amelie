@@ -635,6 +635,13 @@ expr_value_between(Stmt* self)
 		value->string = spec->string;
 		break;
 	}
+	case KDATE:
+	{
+		// date 'spec'
+		auto spec = stmt_expect(self, KSTRING);
+		value->string = spec->string;
+		break;
+	}
 	default:
 		stmt_error(self, value, "const value expected");
 		break;

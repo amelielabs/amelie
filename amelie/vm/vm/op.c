@@ -148,6 +148,10 @@ OpDesc ops[] =
 	{ CADDTL, "addtl" },
 	{ CADDLL, "addll" },
 	{ CADDLT, "addlt" },
+	{ CADDDI, "adddi" },
+	{ CADDID, "addid" },
+	{ CADDDL, "adddl" },
+	{ CADDLD, "addld" },
 	{ CADDVV, "addvv" },
 
 	// sub
@@ -158,6 +162,8 @@ OpDesc ops[] =
 	{ CSUBTL, "subtl" },
 	{ CSUBTT, "subtt" },
 	{ CSUBLL, "subll" },
+	{ CSUBDI, "subdi" },
+	{ CSUBDL, "subdl" },
 	{ CSUBVV, "subvv" },
 
 	// mul

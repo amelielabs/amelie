@@ -141,3 +141,26 @@ date_sub(int64_t julian_day, int days)
 	date_validate(result);
 	return result;
 }
+
+int
+date_extract(int64_t julian_day, Str* field)
+{
+	date_validate(julian_day);
+	int year;
+	int month;
+	int day;
+	date_get_gregorian(julian_day, &year, &month, &day);
+
+	if (str_is(field, "year", 4))
+		return year;
+
+	if (str_is(field, "month", 5))
+		return month;
+
+	if (str_is(field, "day", 3))
+		return day;
+
+	error("invalid date field '%.*s'", str_size(field),
+	      str_of(field));
+	return -1;
+}

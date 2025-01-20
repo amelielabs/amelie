@@ -293,6 +293,7 @@ fn_timestamp(Call* self)
 	// timestamp(string, timezone)
 	// timestamp(string)
 	// timestamp(int)
+	// timestamp(date)
 	switch (self->argv[0].type) {
 	case TYPE_STRING:
 	{
@@ -325,6 +326,14 @@ fn_timestamp(Call* self)
 		Timestamp ts;
 		timestamp_init(&ts);
 		timestamp_set_unixtime(&ts, self->argv[0].integer);
+		value_set_timestamp(self->result, timestamp_get_unixtime(&ts, NULL));
+		break;
+	}
+	case TYPE_DATE:
+	{
+		Timestamp ts;
+		timestamp_init(&ts);
+		timestamp_set_date(&ts, self->argv[0].integer);
 		value_set_timestamp(self->result, timestamp_get_unixtime(&ts, NULL));
 		break;
 	}
