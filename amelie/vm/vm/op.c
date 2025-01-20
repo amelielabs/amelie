@@ -178,6 +178,7 @@ OpDesc ops[] =
 	// neg
 	{ CNEGI, "negi" },
 	{ CNEGD, "negd" },
+	{ CNEGL, "negl" },
 
 	// cat
 	{ CCATSS, "catss" },

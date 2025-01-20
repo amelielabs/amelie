@@ -988,6 +988,9 @@ emit_expr(Compiler* self, Targets* targets, Ast* ast)
 		if (rt == TYPE_DOUBLE)
 			rneg = op2(self, CNEGD, rpin(self, TYPE_DOUBLE), r);
 		else
+		if (rt == TYPE_INTERVAL)
+			rneg = op2(self, CNEGL, rpin(self, TYPE_INTERVAL), r);
+		else
 			stmt_error(self->current, ast->l, "unsupported operation type %s", type_of(rt));
 		runpin(self, r);
 		return rneg;

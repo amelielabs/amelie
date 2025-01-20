@@ -295,6 +295,14 @@ interval_sub(Interval* result, Interval* a, Interval* b)
 	result->us = a->us - b->us;
 }
 
+void
+interval_neg(Interval* result, Interval* a)
+{
+	result->m  = -a->m;
+	result->d  = -a->d;
+	result->us = -a->us;
+}
+
 typedef enum
 {
 	INTERVAL_YEAR,

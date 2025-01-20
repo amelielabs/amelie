@@ -158,6 +158,7 @@ enum
 	// neg
 	CNEGI,
 	CNEGD,
+	CNEGL,
 
 	// cat
 	CCATSS,

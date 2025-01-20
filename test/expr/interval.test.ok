@@ -548,5 +548,14 @@ select  '1 year 1 day 10 hour'::interval - '1 year 2 hours'::interval
 # test: interval - timestamp
 select '1 hour'::interval - '1970-01-01 00:00:00.000000'::timestamp
 {"msg": "select '1 hour'::interval - '1970-01-01 00:00:00.000000'❰::❱ ⟵ operation interval - timestamp is not supported"}
+# test: -interval
+select '1 hour 5 minutes 6 seconds'::interval
+["1 hour 5 minutes 6 seconds"]
+select - '1 hour 5 minutes 6 seconds'::interval
+["-1 hours -5 minutes -6 seconds"]
+select interval '1 hour 5 minutes 6 seconds'
+["1 hour 5 minutes 6 seconds"]
+select - interval '1 hour 5 minutes 6 seconds'
+["-1 hours -5 minutes -6 seconds"]
 disconnect S0
 close E0

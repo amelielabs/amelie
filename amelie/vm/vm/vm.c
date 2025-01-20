@@ -259,6 +259,7 @@ vm_run(Vm*       self,
 		// neg
 		&&cnegi,
 		&&cnegd,
+		&&cnegl,
 
 		// cat
 		&&ccatss,
@@ -1066,6 +1067,14 @@ cnegi:
 cnegd:
 	if (likely(value_is_unary(&r[op->a], &r[op->b])))
 		value_set_double(&r[op->a], -r[op->b].dbl);
+	op_next;
+
+cnegl:
+	if (likely(value_is_unary(&r[op->a], &r[op->b])))
+	{
+		interval_neg(&iv, &r[op->b].interval);
+		value_set_interval(&r[op->a], &iv);
+	}
 	op_next;
 
 // cat
