@@ -117,7 +117,7 @@ checkpointer_start(Checkpointer* self)
 	// prepare periodic interval
 	Interval interval;
 	interval_init(&interval);
-	interval_read(&interval, &config()->checkpoint_interval.string);
+	interval_set(&interval, &config()->checkpoint_interval.string);
 	if (interval.m > 0 || interval.d > 0)
 		error("checkpoint: interval cannot include day or month");
 

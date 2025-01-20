@@ -152,7 +152,7 @@ interval_read_type(Interval* self, Str* type, int64_t value)
 }
 
 void
-interval_read(Interval* self, Str* str)
+interval_set(Interval* self, Str* str)
 {
 	// <ws> [sign] <cardinal> <ws> <type> [ws ...]
 	auto pos = str->pos;
@@ -209,7 +209,7 @@ error:
 }
 
 int
-interval_write(Interval* self, char* str, int str_size)
+interval_get(Interval* self, char* str, int str_size)
 {
 	// years/months
 	const char* span;

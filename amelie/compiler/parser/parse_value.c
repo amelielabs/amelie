@@ -177,7 +177,7 @@ parse_value(Stmt* self, Column* column, Value* value)
 			break;
 		Interval iv;
 		interval_init(&iv);
-		if (unlikely(error_catch( interval_read(&iv, &ast->string) )))
+		if (unlikely(error_catch( interval_set(&iv, &ast->string) )))
 			stmt_error(self, ast, "invalid interval value");
 		value_set_interval(value, &iv);
 		return ast;

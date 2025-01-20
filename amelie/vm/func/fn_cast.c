@@ -168,7 +168,7 @@ fn_string(Call* self)
 	case TYPE_INTERVAL:
 	{
 		buf_reserve(data, 512);
-		int size = interval_write(&arg->interval, (char*)data->position, 512);
+		int size = interval_get(&arg->interval, (char*)data->position, 512);
 		buf_advance(data, size);
 		break;
 	}
@@ -271,7 +271,7 @@ fn_interval(Call* self)
 		      type_of(arg->type));
 	Interval iv;
 	interval_init(&iv);
-	interval_read(&iv, &arg->string);
+	interval_set(&iv, &arg->string);
 	value_set_interval(self->result, &iv);
 }
 

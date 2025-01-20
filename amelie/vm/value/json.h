@@ -49,7 +49,7 @@ value_encode(Value* self, Timezone* tz, Buf* buf)
 		auto offset = buf_size(buf);
 		encode_string32(buf, 0);
 		buf_reserve(buf, 256);
-		int size = interval_write(&self->interval, (char*)buf->position, 256);
+		int size = interval_get(&self->interval, (char*)buf->position, 256);
 		buf_advance(buf, size);
 		uint8_t* pos = buf->start + offset;
 		json_write_string32(&pos, size);
@@ -178,7 +178,7 @@ value_export(Value* self, Timezone* tz, bool pretty, Buf* buf)
 	{
 		buf_write(buf, "\"", 1);
 		buf_reserve(buf, 512);
-		int size = interval_write(&self->interval, (char*)buf->position, 512);
+		int size = interval_get(&self->interval, (char*)buf->position, 512);
 		buf_advance(buf, size);
 		buf_write(buf, "\"", 1);
 		break;

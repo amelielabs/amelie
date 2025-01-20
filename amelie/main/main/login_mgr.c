@@ -273,7 +273,7 @@ login_mgr_set(LoginMgr* self, Remote* remote, Vars* vars,
 		interval_init(&iv);
 		Str str;
 		str_set_cstr(&str, "1 year");
-		interval_read(&iv, &str);
+		interval_set(&iv, &str);
 		timestamp_add(&expire, &iv);
 
 		auto jwt = jwt_create(user, secret, &expire);

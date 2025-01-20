@@ -227,12 +227,12 @@ ctl_token(Session* self)
 	Interval iv;
 	interval_init(&iv);
 	if (arg->expire) {
-		interval_read(&iv, &arg->expire->string);
+		interval_set(&iv, &arg->expire->string);
 	} else
 	{
 		Str str;
 		str_set_cstr(&str, "1 year");
-		interval_read(&iv, &str);
+		interval_set(&iv, &str);
 	}
 	timestamp_add(&expire, &iv);
 

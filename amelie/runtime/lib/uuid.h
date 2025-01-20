@@ -19,7 +19,7 @@ struct Uuid
 {
 	uint64_t a;
 	uint64_t b;
-};
+} packed;
 
 static inline void
 uuid_init(Uuid* self)

@@ -853,7 +853,7 @@ emit_expr(Compiler* self, Targets* targets, Ast* ast)
 		int offset = code_data_offset(&self->code_data);
 		auto iv = (Interval*)buf_claim(&self->code_data.data, sizeof(Interval));
 		interval_init(iv);
-		if (unlikely(error_catch( interval_read(iv, &ast->string) )))
+		if (unlikely(error_catch( interval_set(iv, &ast->string) )))
 			stmt_error(self->current, ast, "invalid interval value");
 		return op2(self, CINTERVAL, rpin(self, TYPE_INTERVAL), offset);
 	}
