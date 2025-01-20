@@ -64,6 +64,7 @@ OpDesc ops[] =
 	{ CJSON_ARRAY, "json_array" },
 	{ CINTERVAL, "interval" },
 	{ CTIMESTAMP, "timestamp" },
+	{ CDATE, "date" },
 	{ CVECTOR, "vector" },
 	{ CUUID, "uuid" },
 

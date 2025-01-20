@@ -147,6 +147,7 @@ set(AMELIE_SOURCES_RUNTIME
     ${AMELIE_ROOT}/runtime/lib/base64url.c
     ${AMELIE_ROOT}/runtime/lib/timezone.c
     ${AMELIE_ROOT}/runtime/lib/timezone_mgr.c
+    ${AMELIE_ROOT}/runtime/lib/date.c
     ${AMELIE_ROOT}/runtime/lib/interval.c
     ${AMELIE_ROOT}/runtime/lib/timestamp.c
     ${AMELIE_ROOT}/runtime/lib/vector.c

@@ -36,6 +36,7 @@
 // time
 #include "lib/timezone.h"
 #include "lib/timezone_mgr.h"
+#include "lib/date.h"
 #include "lib/interval.h"
 #include "lib/timestamp.h"
 

@@ -36,6 +36,7 @@ value_compare(Value* a, Value* b)
 		return 0;
 	case TYPE_BOOL:
 	case TYPE_INT:
+	case TYPE_DATE:
 	case TYPE_TIMESTAMP:
 	{
 		if (a->integer == b->integer)
@@ -76,6 +77,7 @@ value_is_true(Value* a)
 		return false;
 	case TYPE_INT:
 	case TYPE_BOOL:
+	case TYPE_DATE:
 	case TYPE_TIMESTAMP:
 		return a->integer > 0;
 	case TYPE_DOUBLE:

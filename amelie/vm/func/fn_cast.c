@@ -63,6 +63,7 @@ fn_int(Call* self)
 	case TYPE_BOOL:
 	case TYPE_INT:
 	case TYPE_TIMESTAMP:
+	case TYPE_DATE:
 		value = arg->integer;
 		break;
 	case TYPE_STRING:
@@ -99,6 +100,7 @@ fn_bool(Call* self)
 	case TYPE_BOOL:
 	case TYPE_INT:
 	case TYPE_TIMESTAMP:
+	case TYPE_DATE:
 		value = arg->integer > 0;
 		break;
 	case TYPE_INTERVAL:
@@ -137,6 +139,7 @@ fn_double(Call* self)
 	case TYPE_BOOL:
 	case TYPE_INT:
 	case TYPE_TIMESTAMP:
+	case TYPE_DATE:
 		value = arg->integer;
 		break;
 	case TYPE_NULL:
@@ -165,6 +168,13 @@ fn_string(Call* self)
 	case TYPE_STRING:
 		buf_printf(data, "%.*s", str_size(&arg->string), str_of(&arg->string));
 		break;
+	case TYPE_DATE:
+	{
+		buf_reserve(data, 512);
+		int size = date_get(arg->integer, (char*)data->position, 512);
+		buf_advance(data, size);
+		break;
+	}
 	case TYPE_INTERVAL:
 	{
 		buf_reserve(data, 512);
@@ -330,6 +340,42 @@ fn_timestamp(Call* self)
 }
 
 hot static void
+fn_date(Call* self)
+{
+	call_validate(self, 1);
+	// date(string)
+	// date(timestamp)
+	// date(int)
+	switch (self->argv[0].type) {
+	case TYPE_STRING:
+	{
+		auto julian = date_set(&self->argv[0].string);
+		value_set_date(self->result, julian);
+		break;
+	}
+	case TYPE_TIMESTAMP:
+	{
+		value_set_date(self->result, timestamp_date(self->argv[0].integer));
+		break;
+	}
+	case TYPE_INT:
+	{
+		auto julian = date_set_julian(self->argv[0].integer);
+		value_set_date(self->result, julian);
+		break;
+	}
+	case TYPE_NULL:
+	{
+		value_set_null(self->result);
+		break;
+	}
+	default:
+		error("date(%s): operation type is not supported",
+		      type_of(self->argv[0].type));
+	}
+}
+
+hot static void
 fn_vector(Call* self)
 {
 	call_validate(self, 1);
@@ -418,6 +464,7 @@ FunctionDef fn_cast_def[] =
 	{ "public", "json_import", TYPE_JSON,      fn_json_import, FN_NONE },
 	{ "public", "interval",    TYPE_INTERVAL,  fn_interval,    FN_NONE },
 	{ "public", "timestamp",   TYPE_TIMESTAMP, fn_timestamp,   FN_NONE },
+	{ "public", "date",        TYPE_DATE,      fn_date,        FN_NONE },
 	{ "public", "vector",      TYPE_VECTOR,    fn_vector,      FN_NONE },
 	{ "public", "uuid",        TYPE_UUID,      fn_uuid,        FN_NONE },
 	{  NULL,     NULL,         TYPE_NULL,      NULL,           FN_NONE }

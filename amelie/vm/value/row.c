@@ -95,6 +95,7 @@ row_create(Columns* columns, Value* values)
 		case TYPE_BOOL:
 		case TYPE_INT:
 		case TYPE_TIMESTAMP:
+		case TYPE_DATE:
 		{
 			switch (column->type_size) {
 			case 1:
@@ -232,12 +233,8 @@ row_create_key(Keys* self, Value* values, int count)
 			{
 				auto ref = &values[key->order];
 				*(int32_t*)pos = ref->integer;
-			} else
-			{
-				if (column->type == TYPE_TIMESTAMP)
-					*(int32_t*)pos = 0;
-				else
-					*(int32_t*)pos = INT32_MIN;
+			} else {
+				*(int32_t*)pos = INT32_MIN;
 			}
 			pos += sizeof(int32_t);
 			break;
@@ -403,6 +400,7 @@ row_update(Row* self, Columns* columns, Value* values, int count)
 			case TYPE_BOOL:
 			case TYPE_INT:
 			case TYPE_TIMESTAMP:
+			case TYPE_DATE:
 			{
 				switch (column->type_size) {
 				case 1:

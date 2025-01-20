@@ -609,3 +609,14 @@ timestamp_extract(int64_t value, Timezone* timezone, Str* field)
 	}
 	return result;
 }
+
+int
+timestamp_date(int64_t value)
+{
+	Timestamp ts;
+	timestamp_init(&ts);
+	timestamp_set_unixtime(&ts, value);
+	return date_set_gregorian(ts.time.tm_year + 1900,
+	                          ts.time.tm_mon + 1,
+	                          ts.time.tm_mday);
+}

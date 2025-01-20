@@ -171,6 +171,7 @@ set_hash(Set* self, Value* keys)
 		case TYPE_INT:
 		case TYPE_BOOL:
 		case TYPE_TIMESTAMP:
+		case TYPE_DATE:
 			data = &value->integer;
 			data_size = sizeof(value->integer);
 			break;

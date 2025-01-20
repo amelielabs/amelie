@@ -118,6 +118,13 @@ value_set_json(Value* self, uint8_t* json, int json_size, Buf* buf)
 }
 
 always_inline hot static inline void
+value_set_date(Value* self, int value)
+{
+	self->type    = TYPE_DATE;
+	self->integer = value;
+}
+
+always_inline hot static inline void
 value_set_timestamp(Value* self, uint64_t value)
 {
 	self->type    = TYPE_TIMESTAMP;
@@ -197,6 +204,9 @@ value_copy(Value* self, Value* src)
 		value_set_json(self, src->json, src->json_size, src->buf);
 		if (src->buf)
 			buf_ref(src->buf);
+		break;
+	case TYPE_DATE:
+		value_set_date(self, src->integer);
 		break;
 	case TYPE_TIMESTAMP:
 		value_set_timestamp(self, src->integer);

@@ -145,6 +145,7 @@ vm_run(Vm*       self,
 		&&cjson_array,
 		&&cinterval,
 		&&ctimestamp,
+		&&cdate,
 		&&cvector,
 		&&cuuid,
 
@@ -498,6 +499,10 @@ cinterval:
 
 ctimestamp:
 	value_set_timestamp(&r[op->a], op->b);
+	op_next;
+
+cdate:
+	value_set_date(&r[op->a], op->b);
 	op_next;
 
 cvector:

@@ -107,7 +107,9 @@ priority_map[KEYWORD_MAX] =
 	[KSTRING]                  = priority_value,
 	[KINTERVAL]                = priority_value,
 	[KTIMESTAMP]               = priority_value,
+	[KDATE]                    = priority_value,
 	[KCURRENT_TIMESTAMP]       = priority_value,
+	[KCURRENT_DATE]            = priority_value,
 	[KVECTOR]                  = priority_value,
 	[KUUID]                    = priority_value,
 	[KTRUE]                    = priority_value,
@@ -174,7 +176,9 @@ expr_is_constable(Ast* self)
 	// time-related consts
 	case KINTERVAL:
 	case KTIMESTAMP:
+	case KDATE:
 	case KCURRENT_TIMESTAMP:
+	case KCURRENT_DATE:
 		return true;
 	// nested
 	case '{':
@@ -533,7 +537,24 @@ expr_value(Stmt* self, Expr* expr, Ast* value)
 		value->pos_end   = spec->pos_end;
 		break;
 	}
+	case KDATE:
+	{
+		// ()
+		if (stmt_if(self, '('))
+		{
+			value->id = KNAME;
+			value = expr_call(self, expr, value, true);
+			break;
+		}
+		// date 'spec'
+		auto spec = stmt_expect(self, KSTRING);
+		value->string    = spec->string;
+		value->pos_start = spec->pos_start;
+		value->pos_end   = spec->pos_end;
+		break;
+	}
 	case KCURRENT_TIMESTAMP:
+	case KCURRENT_DATE:
 		break;
 
 	case KVECTOR:

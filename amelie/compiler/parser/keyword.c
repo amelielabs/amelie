@@ -55,6 +55,7 @@ Keyword keywords[] =
 
 	// c
 	{ KCURRENT_TIMESTAMP,     "current_timestamp",     17 },
+	{ KCURRENT_DATE,          "current_date",          12 },
 	{ KCASE,                  "case",                  4  },
 	{ KCONFLICT,              "conflict",              8  },
 	{ KCOUNT,                 "count",                 5  },
@@ -74,6 +75,7 @@ Keyword keywords[] =
 	{ KDEBUG,                 "debug",                 5  },
 	{ KDISTRIBUTED,           "distributed",           11 },
 	{ KDEFAULT,               "default",               7  },
+	{ KDATE,                  "date",                  4  },
 
 	// e
 	{ KEXTRACT,               "extract",               7  },

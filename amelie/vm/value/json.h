@@ -33,6 +33,17 @@ value_encode(Value* self, Timezone* tz, Buf* buf)
 	case TYPE_JSON:
 		buf_write(buf, self->json, json_sizeof(self->json));
 		break;
+	case TYPE_DATE:
+	{
+		auto offset = buf_size(buf);
+		encode_string32(buf, 0);
+		buf_reserve(buf, 32);
+		int size = date_get(self->integer, (char*)buf->position, 128);
+		buf_advance(buf, size);
+		uint8_t* pos = buf->start + offset;
+		json_write_string32(&pos, size);
+		break;
+	}
 	case TYPE_TIMESTAMP:
 	{
 		auto offset = buf_size(buf);
@@ -163,6 +174,15 @@ value_export(Value* self, Timezone* tz, bool pretty, Buf* buf)
 			json_export_pretty(buf, tz, &pos);
 		else
 			json_export(buf, tz, &pos);
+		break;
+	}
+	case TYPE_DATE:
+	{
+		buf_write(buf, "\"", 1);
+		buf_reserve(buf, 128);
+		int size = date_get(self->integer, (char*)buf->position, 128);
+		buf_advance(buf, size);
+		buf_write(buf, "\"", 1);
 		break;
 	}
 	case TYPE_TIMESTAMP:

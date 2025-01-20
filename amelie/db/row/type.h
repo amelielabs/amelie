@@ -19,6 +19,7 @@ typedef enum
 	TYPE_DOUBLE,
 	TYPE_STRING,
 	TYPE_JSON,
+	TYPE_DATE,
 	TYPE_TIMESTAMP,
 	TYPE_INTERVAL,
 	TYPE_VECTOR,
@@ -51,6 +52,9 @@ type_of(Type type)
 	case TYPE_JSON:
 		name = "json";
 		break;
+	case TYPE_DATE:
+		name = "date";
+		break;
 	case TYPE_TIMESTAMP:
 		name = "timestamp";
 		break;
@@ -82,6 +86,8 @@ type_sizeof(Type type)
 	switch (type) {
 	case TYPE_BOOL:
 		return sizeof(int8_t);
+	case TYPE_DATE:
+		return sizeof(int32_t);
 	case TYPE_INT:
 	case TYPE_TIMESTAMP:
 		return sizeof(int64_t);
@@ -155,6 +161,11 @@ type_read(Str* name, int* type_size)
 	    str_is_case(name, "string", 6))
 	{
 		type = TYPE_STRING;
+	} else
+	if (str_is_case(name, "date", 4))
+	{
+		type = TYPE_DATE;
+		*type_size = sizeof(int32_t);
 	} else
 	if (str_is_case(name, "json", 4))
 	{

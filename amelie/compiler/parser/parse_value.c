@@ -182,6 +182,26 @@ parse_value(Stmt* self, Column* column, Value* value)
 		value_set_interval(value, &iv);
 		return ast;
 	}
+	case TYPE_DATE:
+	{
+		// current_date
+		if (ast->id == KCURRENT_DATE) {
+			value_set_date(value, timestamp_date(self->local->time_us));
+			return ast;
+		}
+
+		// [DATE] string
+		if (ast->id == KDATE)
+			ast = stmt_next(self);
+		if (likely(ast->id != KSTRING))
+			break;
+
+		int julian;
+		if (unlikely(error_catch( julian = date_set(&ast->string) )))
+			stmt_error(self, ast, "invalid date value");
+		value_set_date(value, julian);
+		return ast;
+	}
 	case TYPE_VECTOR:
 	{
 		// [VECTOR] [array]

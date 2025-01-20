@@ -857,9 +857,19 @@ emit_expr(Compiler* self, Targets* targets, Ast* ast)
 			stmt_error(self->current, ast, "invalid interval value");
 		return op2(self, CINTERVAL, rpin(self, TYPE_INTERVAL), offset);
 	}
+	case KDATE:
+	{
+		int julian;
+		if (unlikely(error_catch( julian = date_set(&ast->string) )))
+			stmt_error(self->current, ast, "invalid date value");
+		return op2(self, CDATE, rpin(self, TYPE_DATE), julian);
+	}
 	case KCURRENT_TIMESTAMP:
 		return op2(self, CTIMESTAMP, rpin(self, TYPE_TIMESTAMP),
 		           self->parser.local->time_us);
+	case KCURRENT_DATE:
+		return op2(self, CDATE, rpin(self, TYPE_DATE),
+		           timestamp_date(self->parser.local->time_us));
 
 	// vector
 	case KVECTOR:

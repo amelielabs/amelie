@@ -41,3 +41,4 @@ void    timestamp_add(Timestamp*, Interval*);
 void    timestamp_sub(Timestamp*, Interval*);
 void    timestamp_trunc(Timestamp*, Str*);
 int64_t timestamp_extract(int64_t, Timezone*, Str*);
+int     timestamp_date(int64_t);

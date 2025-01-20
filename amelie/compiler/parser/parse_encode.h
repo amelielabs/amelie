@@ -48,9 +48,8 @@ ast_encode(Ast* self, Lex* lex, Local* local, Buf* buf)
 		break;
 	// time-related values
 	case KINTERVAL:
-		encode_string(buf, &self->string);
-		break;
 	case KTIMESTAMP:
+	case KDATE:
 		encode_string(buf, &self->string);
 		break;
 	case KCURRENT_TIMESTAMP:
@@ -58,7 +57,19 @@ ast_encode(Ast* self, Lex* lex, Local* local, Buf* buf)
 		auto offset = buf_size(buf);
 		encode_string32(buf, 0);
 		buf_reserve(buf, 128);
-		int size = timestamp_get(self->integer, local->timezone, (char*)buf->position, 128);
+		int size = timestamp_get(local->time_us, local->timezone, (char*)buf->position, 128);
+		buf_advance(buf, size);
+		uint8_t* pos = buf->start + offset;
+		json_write_string32(&pos, size);
+		break;
+	}
+	case KCURRENT_DATE:
+	{
+		auto offset = buf_size(buf);
+		encode_string32(buf, 0);
+		buf_reserve(buf, 128);
+		auto julian = timestamp_date(local->time_us);
+		int size = date_get(julian, (char*)buf->position, 128);
 		buf_advance(buf, size);
 		uint8_t* pos = buf->start + offset;
 		json_write_string32(&pos, size);

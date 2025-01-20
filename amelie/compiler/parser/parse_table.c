@@ -143,6 +143,7 @@ parse_default(Stmt* self, Column* column, Buf* value)
 		break;
 	case TYPE_TIMESTAMP:
 	case TYPE_INTERVAL:
+	case TYPE_DATE:
 	case TYPE_VECTOR:
 	case TYPE_UUID:
 		stmt_error(self, expr, "DEFAULT for this column type is not supported");

@@ -469,7 +469,7 @@ select system.table('test').columns
   }
 }, {
   "name": "a",
-  "type": 6,
+  "type": 7,
   "type_size": 8,
   "constraints": {
     "not_null": false,
@@ -500,7 +500,7 @@ select system.table('test').columns
   }
 }, {
   "name": "a",
-  "type": 7,
+  "type": 8,
   "type_size": 16,
   "constraints": {
     "not_null": false,
@@ -531,7 +531,7 @@ select system.table('test').columns
   }
 }, {
   "name": "a",
-  "type": 8,
+  "type": 9,
   "type_size": 0,
   "constraints": {
     "not_null": false,
@@ -562,7 +562,7 @@ select system.table('test').columns
   }
 }, {
   "name": "a",
-  "type": 9,
+  "type": 10,
   "type_size": 16,
   "constraints": {
     "not_null": false,
