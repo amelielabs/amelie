@@ -15,6 +15,24 @@
 #include <amelie_lib.h>
 
 static inline void
+interval_error(Str* str)
+{
+	error("invalid interval '%.*s'", str_size(str), str_of(str));
+}
+
+static inline void
+interval_error_type(Str* str)
+{
+	error("invalid interval type '%.*s'", str_size(str), str_of(str));
+}
+
+static inline void
+interval_error_field(Str* str)
+{
+	error("invalid interval field '%.*s'", str_size(str), str_of(str));
+}
+
+static inline void
 interval_read_type(Interval* self, Str* type, int64_t value)
 {
 	switch (*str_of(type)) {
@@ -130,7 +148,7 @@ interval_read_type(Interval* self, Str* type, int64_t value)
 	default:
 		break;
 	}
-	error("malformed interval string");
+	interval_error_type(type);
 }
 
 void
@@ -187,7 +205,7 @@ interval_read(Interval* self, Str* str)
 	return;
 
 error:
-	error("malformed interval string");
+	interval_error(str);
 }
 
 int
@@ -202,13 +220,13 @@ interval_write(Interval* self, char* str, int str_size)
 		int y = m / 12;
 		if (y != 0)
 		{
-			span = y != 1? "years": "year";
+			span = abs(y) != 1? "years": "year";
 			size += snprintf(str + size, str_size - size, "%d %s ", y, span);
 			m = m % 12;
 		}
 		if (m != 0)
 		{
-			span = m != 1? "months": "month";
+			span = abs(m) != 1? "months": "month";
 			size += snprintf(str + size, str_size - size, "%d %s ", m, span);
 		}
 	}
@@ -217,7 +235,7 @@ interval_write(Interval* self, char* str, int str_size)
 	if (self->d != 0)
 	{
 		int d = self->d;
-		span = d != 1? "days": "day";
+		span = abs(d) != 1? "days": "day";
 		size += snprintf(str + size, str_size - size, "%d %s ", d, span);
 	}
 
@@ -226,7 +244,7 @@ interval_write(Interval* self, char* str, int str_size)
 	int64_t hours = us / (60LL * 60 * 1000 * 1000);
 	if (hours != 0)
 	{
-		span = hours != 1? "hours": "hour";
+		span = llabs(hours) != 1? "hours": "hour";
 		size += snprintf(str + size, str_size - size, "%" PRIi64 " %s ", hours, span);
 		us = us % (60LL * 60 * 1000 * 1000);
 	}
@@ -235,7 +253,7 @@ interval_write(Interval* self, char* str, int str_size)
 	int64_t minutes = us / (60LL * 1000 * 1000);
 	if (minutes != 0)
 	{
-		span = minutes != 1? "minutes": "minute";
+		span = llabs(minutes) != 1? "minutes": "minute";
 		size += snprintf(str + size, str_size - size, "%" PRIi64 " %s ", minutes, span);
 		us = us % (60LL * 1000 * 1000);
 	}
@@ -244,7 +262,7 @@ interval_write(Interval* self, char* str, int str_size)
 	int64_t seconds = us / (1000LL * 1000);
 	if (seconds != 0)
 	{
-		span = seconds != 1? "seconds": "second";
+		span = llabs(seconds) != 1? "seconds": "second";
 		size += snprintf(str + size, str_size - size, "%" PRIi64 " %s ", seconds, span);
 		us = us % (1000LL * 1000);
 	}
@@ -383,7 +401,7 @@ interval_trunc(Interval* self, Str* field)
 {
 	int rc = interval_read_field(field);
 	if (rc == -1)
-		error("unknown interval truncate field");
+		interval_error_field(field);
 
 	switch (rc) {
 	case INTERVAL_YEAR:
@@ -437,7 +455,7 @@ interval_extract(Interval* self, Str* field)
 {
 	int rc = interval_read_field(field);
 	if (rc == -1)
-		error("unknown interval field");
+		interval_error_field(field);
 
 	uint64_t result;
 	switch (rc) {

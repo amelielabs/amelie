@@ -57,7 +57,7 @@ select interval_trunc(INTERVAL '12 years 5 month 3 days 2 hr 47 min 33 sec', 'mo
 ["12 years 5 months"]
 # test: interval_trunc(interval week)
 select interval_trunc(INTERVAL '12 years 5 month 3 days 2 hr 47 min 33 sec', 'week')
-{"msg": "unknown interval truncate field"}
+{"msg": "invalid interval field 'week'"}
 # test: interval_trunc(interval day)
 select interval_trunc(INTERVAL '12 years 5 month 3 days 2 hr 47 min 33 sec', 'day')
 ["12 years 5 months 3 days"]
