@@ -60,7 +60,7 @@ decode_obj(Decode* self, const char* context, uint8_t** pos)
 				auto value = (Uuid*)ref->value;
 				Str uuid;
 				json_read_string(pos, &uuid);
-				uuid_from_string(value, &uuid);
+				uuid_set(value, &uuid);
 				break;
 			}
 			case DECODE_STRING:

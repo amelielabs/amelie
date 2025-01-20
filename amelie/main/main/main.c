@@ -112,7 +112,7 @@ main_bootstrap(Main* self)
 		Uuid uuid;
 		uuid_generate(&uuid, global()->random);
 		char uuid_sz[UUID_SZ];
-		uuid_to_string(&uuid, uuid_sz, sizeof(uuid_sz));
+		uuid_get(&uuid, uuid_sz, sizeof(uuid_sz));
 		var_string_set_raw(&config->uuid, uuid_sz, sizeof(uuid_sz) - 1);
 	}
 

@@ -200,7 +200,7 @@ value_export(Value* self, Timezone* tz, bool pretty, Buf* buf)
 	{
 		buf_write(buf, "\"", 1);
 		buf_reserve(buf, UUID_SZ);
-		uuid_to_string(&self->uuid, (char*)buf->position, UUID_SZ);
+		uuid_get(&self->uuid, (char*)buf->position, UUID_SZ);
 		buf_advance(buf, UUID_SZ - 1);
 		buf_write(buf, "\"", 1);
 		break;

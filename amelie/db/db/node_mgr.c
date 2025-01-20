@@ -55,7 +55,7 @@ node_mgr_create(NodeMgr*    self,
 
 	Uuid id;
 	uuid_init(&id);
-	uuid_from_string(&id, &config->id);
+	uuid_set(&id, &config->id);
 
 	// allocate node and init
 	auto node = node_allocate(config, &id, self->iface, self->iface_arg);

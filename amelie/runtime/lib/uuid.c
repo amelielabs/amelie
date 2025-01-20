@@ -26,33 +26,8 @@ struct uuid_bits
 	uint32_t f;
 } packed;
 
-void
-uuid_init(Uuid* self)
-{
-	self->a = 0;
-	self->b = 0;
-}
-
-void
-uuid_generate(Uuid* self, Random* random)
-{
-	self->a = random_generate(random);
-	self->b = random_generate(random);
-}
-
-void
-uuid_to_string(Uuid* self, char* string, int size)
-{
-	assert(size >= UUID_SZ);
-
-	auto bits = (uuid_bits_t*)self;
-	snprintf(string, size, "%08x-%04x-%04x-%04x-%04x%08x",
-	         bits->a, bits->b, bits->c,
-	         bits->d, bits->e, bits->f);
-}
-
 int
-uuid_from_string_nothrow(Uuid* self, Str* src)
+uuid_set_nothrow(Uuid* self, Str* src)
 {
 	if (unlikely(str_size(src) < (UUID_SZ - 1)))
 		return -1;
@@ -117,9 +92,20 @@ uuid_from_string_nothrow(Uuid* self, Str* src)
 }
 
 void
-uuid_from_string(Uuid* self, Str* src)
+uuid_set(Uuid* self, Str* src)
 {
-	int rc = uuid_from_string_nothrow(self, src);
+	int rc = uuid_set_nothrow(self, src);
 	if (unlikely(rc == -1))
 		error("%s", "failed to parse uuid");
+}
+
+void
+uuid_get(Uuid* self, char* string, int size)
+{
+	assert(size >= UUID_SZ);
+
+	auto bits = (uuid_bits_t*)self;
+	snprintf(string, size, "%08x-%04x-%04x-%04x-%04x%08x",
+	         bits->a, bits->b, bits->c,
+	         bits->d, bits->e, bits->f);
 }

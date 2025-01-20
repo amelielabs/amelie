@@ -182,7 +182,7 @@ fn_string(Call* self)
 	case TYPE_UUID:
 	{
 		buf_reserve(data, UUID_SZ);
-		uuid_to_string(&arg->uuid, (char*)data->position, UUID_SZ);
+		uuid_get(&arg->uuid, (char*)data->position, UUID_SZ);
 		int size = UUID_SZ - 1;
 		buf_advance(data, size);
 		break;
@@ -403,7 +403,7 @@ fn_uuid(Call* self)
 		      type_of(arg->type));
 	Uuid uuid;
 	uuid_init(&uuid);
-	uuid_from_string(&uuid, &arg->string);
+	uuid_set(&uuid, &arg->string);
 	value_set_uuid(self->result, &uuid);
 }
 

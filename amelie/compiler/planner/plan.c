@@ -72,8 +72,8 @@ plan_ast_compare(Ast* a, Ast* b)
 	case KUUID:
 	{
 		Uuid l, r;
-		uuid_from_string(&l, &a->string);
-		uuid_from_string(&r, &b->string);
+		uuid_set(&l, &a->string);
+		uuid_set(&r, &b->string);
 		return uuid_compare(&l, &r);
 	}
 	// KNAME
@@ -326,7 +326,7 @@ plan_create_hash(Plan* self)
 		} else
 		if (value->id == KUUID)
 		{
-			uuid_from_string(&uuid, &value->string);
+			uuid_set(&uuid, &value->string);
 			data = &uuid;
 			data_size = sizeof(uuid);
 		} else

@@ -424,7 +424,7 @@ ddl_create_node(Session* self, Tr* tr)
 		uuid_generate(&id, global()->random);
 
 		char uuid[UUID_SZ];
-		uuid_to_string(&id, uuid, sizeof(uuid));
+		uuid_get(&id, uuid, sizeof(uuid));
 
 		Str uuid_str;
 		str_set_cstr(&uuid_str, uuid);

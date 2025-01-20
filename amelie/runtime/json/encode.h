@@ -121,6 +121,6 @@ always_inline hot static inline void
 encode_uuid(Buf* self, Uuid* uuid)
 {
 	char uuid_sz[UUID_SZ];
-	uuid_to_string(uuid, uuid_sz, sizeof(uuid_sz));
+	uuid_get(uuid, uuid_sz, sizeof(uuid_sz));
 	encode_raw(self, uuid_sz, sizeof(uuid_sz) - 1);
 }

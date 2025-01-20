@@ -78,7 +78,7 @@ fn_replica(Call* self)
 	if (argv[0].type == TYPE_STRING)
 	{
 		Uuid id;
-		uuid_from_string(&id, &argv[0].string);
+		uuid_set(&id, &argv[0].string);
 		Buf* buf;
 		rpc(global()->control->system, RPC_SHOW_REPLICAS, 2, &buf, &id);
 		value_set_json_buf(self->result, buf);
@@ -125,7 +125,7 @@ fn_node(Call* self)
 	if (argv[0].type == TYPE_UUID)
 	{
 		char uuid_sz[UUID_SZ];
-		uuid_to_string(&argv[0].uuid, uuid_sz, sizeof(uuid_sz));
+		uuid_get(&argv[0].uuid, uuid_sz, sizeof(uuid_sz));
 		Str str;
 		str_set(&str, uuid_sz, UUID_SZ - 1);
 		auto buf = node_mgr_list(&self->vm->db->node_mgr, &str);

@@ -203,7 +203,7 @@ parse_value(Stmt* self, Column* column, Value* value)
 			break;
 		Uuid uuid;
 		uuid_init(&uuid);
-		if (uuid_from_string_nothrow(&uuid, &ast->string) == -1)
+		if (uuid_set_nothrow(&uuid, &ast->string) == -1)
 			stmt_error(self, ast, "invalid uuid value");
 		value_set_uuid(value, &uuid);
 		return ast;

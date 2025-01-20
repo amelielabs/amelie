@@ -21,11 +21,12 @@ struct Uuid
 	uint64_t b;
 };
 
-void uuid_init(Uuid*);
-void uuid_generate(Uuid*, Random*);
-void uuid_to_string(Uuid*, char*, int);
-void uuid_from_string(Uuid*, Str*);
-int  uuid_from_string_nothrow(Uuid*, Str*);
+static inline void
+uuid_init(Uuid* self)
+{
+	self->a = 0;
+	self->b = 0;
+}
 
 static inline bool
 uuid_empty(Uuid* self)
@@ -41,3 +42,14 @@ uuid_compare(Uuid* l, Uuid* r)
 		return rc;
 	return compare_uint64(l->b, r->b);
 }
+
+static inline void
+uuid_generate(Uuid* self, Random* random)
+{
+	self->a = random_generate(random);
+	self->b = random_generate(random);
+}
+
+int  uuid_set_nothrow(Uuid*, Str*);
+void uuid_set(Uuid*, Str*);
+void uuid_get(Uuid*, char*, int);

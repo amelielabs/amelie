@@ -284,7 +284,7 @@ streamer_free(Streamer* self)
 void
 streamer_start(Streamer* self, Uuid* id, Remote* remote)
 {
-	uuid_to_string(id, self->replica_id, sizeof(self->replica_id));
+	uuid_get(id, self->replica_id, sizeof(self->replica_id));
 	self->remote = remote;
 	task_create(&self->task, "streamer", streamer_task_main, self);
 }

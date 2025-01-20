@@ -62,7 +62,7 @@ ctl_show(Session* self)
 	case SHOW_REPLICA:
 	{
 		Uuid id;
-		uuid_from_string(&id, &arg->name);
+		uuid_set(&id, &arg->name);
 		buf = replica_mgr_list(&share->repl->replica_mgr, &id);
 		break;
 	}
@@ -307,7 +307,7 @@ ctl_replica(Session* self)
 
 		// id
 		Uuid id;
-		uuid_from_string(&id, &arg->id->string);
+		uuid_set(&id, &arg->id->string);
 		replica_config_set_id(config, &id);
 
 		// remote
@@ -319,7 +319,7 @@ ctl_replica(Session* self)
 	{
 		auto arg = ast_replica_drop_of(stmt->ast);
 		Uuid id;
-		uuid_from_string(&id, &arg->id->string);
+		uuid_set(&id, &arg->id->string);
 		replica_mgr_drop(replica_mgr, &id, arg->if_exists);
 		break;
 	}
