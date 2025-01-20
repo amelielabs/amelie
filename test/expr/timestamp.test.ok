@@ -2,33 +2,33 @@ open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "12
 connect E0 S0 localhost:3485
 # test: timestamp parsing
 select '2'::timestamp
-{"msg": "malformed timestamp string"}
+{"msg": "invalid timestamp '2'"}
 select '2a'::timestamp
-{"msg": "malformed timestamp string"}
+{"msg": "invalid timestamp '2a'"}
 select 'a'::timestamp
-{"msg": "malformed timestamp string"}
+{"msg": "invalid timestamp 'a'"}
 select '_a'::timestamp
-{"msg": "malformed timestamp string"}
+{"msg": "invalid timestamp '_a'"}
 select '_'::timestamp
-{"msg": "malformed timestamp string"}
+{"msg": "invalid timestamp '_'"}
 select '-'::timestamp
-{"msg": "malformed timestamp string"}
+{"msg": "invalid timestamp '-'"}
 select '--'::timestamp
-{"msg": "malformed timestamp string"}
+{"msg": "invalid timestamp '--'"}
 select '-- ::'::timestamp
-{"msg": "malformed timestamp string"}
+{"msg": "invalid timestamp '-- ::'"}
 select '1969-0-0'::timestamp
-{"msg": "malformed timestamp string"}
+{"msg": "invalid timestamp '1969-0-0'"}
 select '1969-0-0 0:0:0'::timestamp
-{"msg": "malformed timestamp string"}
+{"msg": "invalid timestamp '1969-0-0 0:0:0'"}
 select '1970-0-0 00:00:00'::timestamp
-{"msg": "malformed timestamp string"}
+{"msg": "invalid timestamp '1970-0-0 00:00:00'"}
 select '1970-00-00 00:00:00'::timestamp
-{"msg": "malformed timestamp string"}
+{"msg": "invalid timestamp '1970-00-00 00:00:00'"}
 select timestamp '1970-00-00 00:00:00'
 {"msg": "select timestamp ❰'1970-00-00 00:00:00'❱ ⟵ invalid timestamp value"}
 select timestamp('1970-00-00 00:00:00')
-{"msg": "malformed timestamp string"}
+{"msg": "invalid timestamp '1970-00-00 00:00:00'"}
 # test: epoch
 select '1970-01-01 00:00:00'::timestamp
 ["1970-01-01 00:00:00+00"]
@@ -38,10 +38,10 @@ select timestamp('1970-01-01 00:00:00')
 ["1970-01-01 00:00:00+00"]
 # test: day overflow
 select '1970-01-33 00:00:00'::timestamp
-{"msg": "malformed timestamp string"}
+{"msg": "invalid timestamp '1970-01-33 00:00:00'"}
 # test: month overflow
 select '1970-13-01 00:00:00'::timestamp
-{"msg": "malformed timestamp string"}
+{"msg": "invalid timestamp '1970-13-01 00:00:00'"}
 # test: second overflow
 select '1970-01-01 00:00:70'::timestamp
 ["1970-01-01 00:01:10+00"]
@@ -56,7 +56,7 @@ select '1970-01-01 24:00:00'::timestamp
 ["1970-01-02 00:00:00+00"]
 # test: ms
 select '1970-01-01 00:00:00.'::timestamp
-{"msg": "malformed timestamp string"}
+{"msg": "invalid timestamp '1970-01-01 00:00:00.'"}
 select '1970-01-01 00:00:00.0'::timestamp
 ["1970-01-01 00:00:00+00"]
 select '1970-01-01 00:00:00.00'::timestamp
@@ -120,25 +120,25 @@ select '1970-01-01 00:00:00.000010'::timestamp
 select '1970-01-01 00:00:00.000001'::timestamp
 ["1970-01-01 00:00:00.000001+00"]
 select '1970-01-01 00:00:00.0000001'::timestamp
-{"msg": "malformed timestamp string"}
+{"msg": "invalid timestamp '1970-01-01 00:00:00.0000001'"}
 # test: zulu
 select '1970-01-01 00:00:00.999999Z'::timestamp
 ["1970-01-01 00:00:00.999999+00"]
 select '1970-01-01 00:00:00.999999Zjunk'::timestamp
-{"msg": "malformed timestamp string"}
+{"msg": "invalid timestamp '1970-01-01 00:00:00.999999Zjunk'"}
 select timestamp '1970-01-01 00:00:00.999999Zjunk'
 {"msg": "select timestamp ❰'1970-01-01 00:00:00.999999Zjunk'❱ ⟵ invalid timestamp value"}
 # test: timezone (hh)
 select '1970-01-01 00:00:00.999999+'::timestamp
-{"msg": "malformed timestamp string"}
+{"msg": "invalid timestamp '1970-01-01 00:00:00.999999+'"}
 select '1970-01-01 00:00:00.999999+0'::timestamp
-{"msg": "malformed timestamp string"}
+{"msg": "invalid timestamp '1970-01-01 00:00:00.999999+0'"}
 select '1970-01-01 00:00:00.999999+00'::timestamp
 ["1970-01-01 00:00:00.999999+00"]
 select '1970-01-01 00:00:00.999999-00'::timestamp
 ["1970-01-01 00:00:00.999999+00"]
 select '1970-01-01 00:00:00.999999-000'::timestamp
-{"msg": "malformed timestamp string"}
+{"msg": "invalid timestamp '1970-01-01 00:00:00.999999-000'"}
 # test: timezone (hhmm)
 select '1970-01-01 00:00:00.999999+0000'::timestamp
 ["1970-01-01 00:00:00.999999+00"]
@@ -149,7 +149,7 @@ select '1970-01-01 00:00:00.999999+0030'::timestamp
 select '1970-01-01 00:00:00.999999+1030'::timestamp
 {"msg": "timestamp overflow"}
 select '1970-01-01 00:00:00.999999+9930'::timestamp
-{"msg": "malformed timestamp string"}
+{"msg": "invalid timestamp '1970-01-01 00:00:00.999999+9930'"}
 # test: timezone (hh:mm)
 select '1970-01-01 00:00:00.999999+00:00'::timestamp
 ["1970-01-01 00:00:00.999999+00"]
@@ -160,7 +160,7 @@ select '1970-01-01 00:00:00.999999+00:30'::timestamp
 select '1970-01-01 00:00:00.999999+10:30'::timestamp
 {"msg": "timestamp overflow"}
 select '1970-01-01 00:00:00.999999+99:30'::timestamp
-{"msg": "malformed timestamp string"}
+{"msg": "invalid timestamp '1970-01-01 00:00:00.999999+99:30'"}
 # test: timezone (ignore)
 select '1970-01-01 00:00:00.999999+00'::timestamp
 ["1970-01-01 00:00:00.999999+00"]
@@ -555,7 +555,7 @@ select '1970-01-01 01:12:59.909090'::timestamp + null
 # test: timestamp + unsupported
 select '1970-01-01 01:12:59.909090'::timestamp + []
 {"msg": "select '1970-01-01 01:12:59.909090'::timestamp + ❰[❱ ⟵ operation timestamp + json is not supported"}
-# test: timestamp - timestamp
+# test: timestamp - interval
 select '1970-01-01 01:12:59.909090'::timestamp + 1
 {"msg": "select '1970-01-01 01:12:59.909090'::timestamp + ❰1❱ ⟵ operation timestamp + int is not supported"}
 select '1970-01-01 01:12:59.909090'::timestamp - '1 hour'
@@ -600,5 +600,107 @@ select '1970-01-01 01:12:59.909090'::timestamp - null
 # test: timestamp - unsupported
 select '1970-01-01 01:12:59.909090'::timestamp - []
 {"msg": "select '1970-01-01 01:12:59.909090'::timestamp - ❰[❱ ⟵ operation timestamp - json is not supported"}
+# test: timestamp min (overflow)
+select '1970-01-01 00:00:00'::timestamp
+["1970-01-01 00:00:00+00"]
+select '1970-01-01 00:00:00.999'::timestamp
+["1970-01-01 00:00:00.999+00"]
+select '1970-01-01 00:00:00.999999'::timestamp + interval '1 us'
+["1970-01-01 00:00:01+00"]
+select '1969-01-01 00:00:00'::timestamp + interval '1 year'
+{"msg": "invalid timestamp '1969-01-01 00:00:00'"}
+select '1970-01-01 00:00:00'::timestamp - interval '1 us'
+{"msg": "timestamp overflow"}
+select '1980-01-01 00:00:00'::timestamp - interval '1 us'
+["1979-12-31 23:59:59.999999+00"]
+select '1990-01-01 00:00:00'::timestamp - interval '1 us'
+["1989-12-31 23:59:59.999999+00"]
+select '1999-01-01 00:00:00'::timestamp - interval '1 us'
+["1998-12-31 23:59:59.999999+00"]
+select '2000-01-01 00:00:00'::timestamp - interval '1 us'
+["1999-12-31 23:59:59.999999+00"]
+select '2001-01-01 00:00:00'::timestamp - interval '1 us'
+["2000-12-31 23:59:59.999999+00"]
+select '2010-01-01 00:00:00'::timestamp - interval '1 us'
+["2009-12-31 23:59:59.999999+00"]
+select '2020-01-01 00:00:00'::timestamp - interval '1 us'
+["2019-12-31 23:59:59.999999+00"]
+select '2021-01-01 00:00:00'::timestamp - interval '1 us'
+["2020-12-31 23:59:59.999999+00"]
+select '2022-01-01 00:00:00'::timestamp - interval '1 us'
+["2021-12-31 23:59:59.999999+00"]
+select '2023-01-01 00:00:00'::timestamp - interval '1 us'
+["2022-12-31 23:59:59.999999+00"]
+select '2024-01-01 00:00:00'::timestamp - interval '1 us'
+["2023-12-31 23:59:59.999999+00"]
+select '2025-01-01 00:00:00'::timestamp - interval '1 us'
+["2024-12-31 23:59:59.999999+00"]
+select '2026-01-01 00:00:00'::timestamp - interval '1 us'
+["2025-12-31 23:59:59.999999+00"]
+select '2027-01-01 00:00:00'::timestamp - interval '1 us'
+["2026-12-31 23:59:59.999999+00"]
+select '2028-01-01 00:00:00'::timestamp - interval '1 us'
+["2027-12-31 23:59:59.999999+00"]
+select '2029-01-01 00:00:00'::timestamp - interval '1 us'
+["2028-12-31 23:59:59.999999+00"]
+select '2030-01-01 00:00:00'::timestamp - interval '1 us'
+["2029-12-31 23:59:59.999999+00"]
+select '2200-01-01 00:00:00'::timestamp - interval '1 us'
+["2199-12-31 23:59:59.999999+00"]
+# test: timestamp max (overflow)
+select '1970-12-31 23:59:59.999999'::timestamp
+["1970-12-31 23:59:59.999999+00"]
+select '1970-12-31 23:59:59.999999'::timestamp + interval '1 us'
+["1971-01-01 00:00:00+00"]
+select '1979-12-31 23:59:59.999999+00'::timestamp + interval '1 us'
+["1980-01-01 00:00:00+00"]
+select '1989-12-31 23:59:59.999999+00'::timestamp + interval '1 us'
+["1990-01-01 00:00:00+00"]
+select '1999-12-31 23:59:59.999999+00'::timestamp + interval '1 us'
+["2000-01-01 00:00:00+00"]
+select '2000-12-31 23:59:59.999999+00'::timestamp + interval '1 us'
+["2001-01-01 00:00:00+00"]
+select '2001-12-31 23:59:59.999999+00'::timestamp + interval '1 us'
+["2002-01-01 00:00:00+00"]
+select '2019-12-31 23:59:59.999999+00'::timestamp + interval '1 us'
+["2020-01-01 00:00:00+00"]
+select '2020-12-31 23:59:59.999999+00'::timestamp + interval '1 us'
+["2021-01-01 00:00:00+00"]
+select '2021-12-31 23:59:59.999999+00'::timestamp + interval '1 us'
+["2022-01-01 00:00:00+00"]
+select '2022-12-31 23:59:59.999999+00'::timestamp + interval '1 us'
+["2023-01-01 00:00:00+00"]
+select '2023-12-31 23:59:59.999999+00'::timestamp + interval '1 us'
+["2024-01-01 00:00:00+00"]
+select '2024-12-31 23:59:59.999999+00'::timestamp + interval '1 us'
+["2025-01-01 00:00:00+00"]
+select '2025-12-31 23:59:59.999999+00'::timestamp + interval '1 us'
+["2026-01-01 00:00:00+00"]
+select '2026-12-31 23:59:59.999999+00'::timestamp + interval '1 us'
+["2027-01-01 00:00:00+00"]
+select '2027-12-31 23:59:59.999999+00'::timestamp + interval '1 us'
+["2028-01-01 00:00:00+00"]
+select '2028-12-31 23:59:59.999999+00'::timestamp + interval '1 us'
+["2029-01-01 00:00:00+00"]
+select '2029-12-31 23:59:59.999999+00'::timestamp + interval '1 us'
+["2030-01-01 00:00:00+00"]
+select '2200-12-31 23:59:59.999999+00'::timestamp + interval '1 us'
+["2201-01-01 00:00:00+00"]
+select '3200-12-31 23:59:59.999999+00'::timestamp + interval '1 us'
+["3201-01-01 00:00:00+00"]
+select '8200-12-31 23:59:59.999999+00'::timestamp + interval '1 us'
+["8201-01-01 00:00:00+00"]
+select '9200-12-31 23:59:59.999999+00'::timestamp + interval '1 us'
+["9201-01-01 00:00:00+00"]
+select 0::timestamp
+["1970-01-01 00:00:00+00"]
+select -1::timestamp
+{"msg": "timestamp overflow"}
+select '9999-12-31 23:59:59.999999+00'::timestamp + interval '1 us'
+{"msg": "timestamp overflow"}
+select 253402300799999999::timestamp
+["9999-12-31 23:59:59.999999+00"]
+select (253402300799999999 + 1)::timestamp
+{"msg": "timestamp overflow"}
 disconnect S0
 close E0

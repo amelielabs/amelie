@@ -15,13 +15,19 @@
 #include <amelie_lib.h>
 
 always_inline static inline void
+timestamp_error_str(Str* str)
+{
+	error("invalid timestamp '%.*s'", str_size(str), str_of(str));
+}
+
+always_inline static inline void
 timestamp_error(void)
 {
-	error("malformed timestamp string");
+	error("invalid timestamp");
 }
 
 hot static inline int
-timestamp_parse_part(char* pos, char* pos_end)
+timestamp_parse_part(Str* str, char* pos, char* pos_end)
 {
 	int value = 0;
 	while (pos < pos_end && isdigit(*pos))
@@ -30,7 +36,7 @@ timestamp_parse_part(char* pos, char* pos_end)
 		pos++;
 	}
 	if (pos != pos_end)
-		timestamp_error();
+		timestamp_error_str(str);
 	return value;
 }
 
@@ -55,40 +61,40 @@ timestamp_parse(Timestamp* self, Str* str)
 	auto pos_end = pos + 4;
 	if (unlikely(*pos_end != '-'))
 		goto error;
-	self->time.tm_year = timestamp_parse_part(pos, pos_end);
+	self->time.tm_year = timestamp_parse_part(str, pos, pos_end);
 	pos += 5;
 
 	// month
 	pos_end = pos + 2;
 	if (unlikely(*pos_end != '-'))
 		goto error;
-	self->time.tm_mon = timestamp_parse_part(pos, pos_end);
+	self->time.tm_mon = timestamp_parse_part(str, pos, pos_end);
 	pos += 3;
 
 	// day
 	pos_end = pos + 2;
 	if (unlikely(*pos_end != ' ' && *pos_end != 'T'))
 		goto error;
-	self->time.tm_mday = timestamp_parse_part(pos, pos_end);
+	self->time.tm_mday = timestamp_parse_part(str, pos, pos_end);
 	pos += 3;
 
 	// hour
 	pos_end = pos + 2;
 	if (unlikely(*pos_end != ':'))
 		goto error;
-	self->time.tm_hour = timestamp_parse_part(pos, pos_end);
+	self->time.tm_hour = timestamp_parse_part(str, pos, pos_end);
 	pos += 3;
 
 	// mm
 	pos_end = pos + 2;
 	if (unlikely(*pos_end != ':'))
 		goto error;
-	self->time.tm_min = timestamp_parse_part(pos, pos_end);
+	self->time.tm_min = timestamp_parse_part(str, pos, pos_end);
 	pos += 3;
 
 	// ss
 	pos_end = pos + 2;
-	self->time.tm_sec = timestamp_parse_part(pos, pos_end);
+	self->time.tm_sec = timestamp_parse_part(str, pos, pos_end);
 	pos += 2;
 
 	// [.ssssss]
@@ -152,7 +158,7 @@ timestamp_parse(Timestamp* self, Str* str)
 	pos++;
 
 	// hh
-	int hh = timestamp_parse_part(pos, pos_end);
+	int hh = timestamp_parse_part(str, pos, pos_end);
 	pos += 2;
 
 	// [:]mm
@@ -164,7 +170,7 @@ timestamp_parse(Timestamp* self, Str* str)
 		pos_end = pos + 2;
 		if (unlikely(pos_end != end))
 			goto error;
-		mm = timestamp_parse_part(pos, pos_end);
+		mm = timestamp_parse_part(str, pos, pos_end);
 	}
 
 	// store timezone offset in seconds
@@ -176,16 +182,16 @@ timestamp_parse(Timestamp* self, Str* str)
 	return;
 
 error:
-	timestamp_error();
+	timestamp_error_str(str);
 }
 
 hot static inline void
-timestamp_validate(Timestamp* self)
+timestamp_validate(Timestamp* self, Str* str)
 {
 	// validate fields
 
 	// year (starting from unix time)
-	if (self->time.tm_year < 1970)
+	if (! (self->time.tm_year >= 1970 && self->time.tm_year <= 9999))
 		goto error;
 
 	// month
@@ -210,8 +216,16 @@ timestamp_validate(Timestamp* self)
 		}
 	}
 	return;
+
 error:
-	timestamp_error();
+	timestamp_error_str(str);
+}
+
+hot static inline void
+timestamp_validate_overflow(int64_t value)
+{
+	if (unlikely(value < TIMESTAMP_MIN || value > TIMESTAMP_MAX))
+		error("timestamp overflow");
 }
 
 hot void
@@ -221,7 +235,7 @@ timestamp_read(Timestamp* self, Str* str)
 	timestamp_parse(self, str);
 
 	// validate result
-	timestamp_validate(self);
+	timestamp_validate(self, str);
 
 	// do corrections to support mktime
 	self->time.tm_year -= 1900;
@@ -229,8 +243,9 @@ timestamp_read(Timestamp* self, Str* str)
 }
 
 hot void
-timestamp_read_value(Timestamp* self, uint64_t value)
+timestamp_read_value(Timestamp* self, int64_t value)
 {
+	timestamp_validate_overflow(value);
 	// UTC time in seconds
 	time_t time = value / 1000000ULL;
 	self->us = value % 1000000ULL;
@@ -238,7 +253,7 @@ timestamp_read_value(Timestamp* self, uint64_t value)
 		timestamp_error();
 }
 
-hot uint64_t
+hot int64_t
 timestamp_of(Timestamp* self, Timezone* timezone)
 {
 	// mktime
@@ -269,16 +284,17 @@ timestamp_of(Timestamp* self, Timezone* timezone)
 	if (unlikely(time < 0))
 		error("timestamp overflow");
 
-	uint64_t value;
-	value  = time * 1000000ULL; // convert to us
+	int64_t value = time * 1000000ULL; // convert to us
 	value += self->us;
+	timestamp_validate_overflow(value);
 	return value;
 }
 
 hot int
-timestamp_write(uint64_t value, Timezone* timezone, char* str, int str_size)
+timestamp_write(int64_t value, Timezone* timezone, char* str, int str_size)
 {
 	// UTC time in seconds
+	timestamp_validate_overflow(value);
 	time_t time = value / 1000000ULL;
 
 	// do timezone adjustment
@@ -322,7 +338,7 @@ timestamp_write(uint64_t value, Timezone* timezone, char* str, int str_size)
 		snprintf(fraction_sz, sizeof(fraction_sz), ".%06d", ts.us);
 
 	int len;
-	len = snprintf(str, str_size, "%d-%02d-%02d %02d:%02d:%02d%s%s",
+	len = snprintf(str, str_size, "%04d-%02d-%02d %02d:%02d:%02d%s%s",
 	               ts.time.tm_year + 1900,
 	               ts.time.tm_mon  + 1,
 	               ts.time.tm_mday,
@@ -541,8 +557,8 @@ timestamp_trunc(Timestamp* self, Str* field)
 	}
 }
 
-uint64_t
-timestamp_extract(uint64_t value, Timezone* timezone, Str* field)
+int64_t
+timestamp_extract(int64_t value, Timezone* timezone, Str* field)
 {
 	// timestamp is in utc
 	int rc = timestamp_read_field(field);
@@ -563,7 +579,7 @@ timestamp_extract(uint64_t value, Timezone* timezone, Str* field)
 	if (! gmtime_r(&time, &ts.time))
 		timestamp_error();
 
-	uint64_t result;
+	int64_t result;
 	auto tm = &ts.time;
 	switch (rc) {
 	case TIMESTAMP_YEAR:

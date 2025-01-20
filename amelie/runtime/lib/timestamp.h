@@ -13,6 +13,12 @@
 
 typedef struct Timestamp Timestamp;
 
+// 1970-01-01 00:00:00.000000
+#define TIMESTAMP_MIN (0LL)
+
+// 9999-12-31 23:59:59.999999
+#define TIMESTAMP_MAX (253402300799999999LL)
+
 struct Timestamp
 {
 	struct tm time;
@@ -27,11 +33,11 @@ timestamp_init(Timestamp* self)
 	memset(self, 0, sizeof(*self));
 };
 
-void     timestamp_read_value(Timestamp*, uint64_t);
-void     timestamp_read(Timestamp*, Str*);
-uint64_t timestamp_of(Timestamp*, Timezone*);
-int      timestamp_write(uint64_t, Timezone*, char*, int);
-void     timestamp_add(Timestamp*, Interval*);
-void     timestamp_sub(Timestamp*, Interval*);
-void     timestamp_trunc(Timestamp*, Str*);
-uint64_t timestamp_extract(uint64_t, Timezone*, Str*);
+void    timestamp_read_value(Timestamp*, int64_t);
+void    timestamp_read(Timestamp*, Str*);
+int64_t timestamp_of(Timestamp*, Timezone*);
+int     timestamp_write(int64_t, Timezone*, char*, int);
+void    timestamp_add(Timestamp*, Interval*);
+void    timestamp_sub(Timestamp*, Interval*);
+void    timestamp_trunc(Timestamp*, Str*);
+int64_t timestamp_extract(int64_t, Timezone*, Str*);
