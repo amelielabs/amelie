@@ -44,8 +44,13 @@ select 9223372036854775807
 [9223372036854775807]
 select -9223372036854775807
 [-9223372036854775807]
+# test: int overflow
+select -92233720368547758077
+{"msg": "select  ⟵ int overflow"}
 select 18446744073709551615
-[-1]
+{"msg": "select  ⟵ int overflow"}
+select 184467440737095516155
+{"msg": "select  ⟵ int overflow"}
 # test: int = bool
 select 1 = true
 [true]
@@ -686,18 +691,15 @@ explain select 1 + 1
     }
   }
 }]
+# test: int + int (overflow)
 select 1 + 4294967295
 [4294967296]
 select 1 + -4294967295
 [-4294967294]
 select 1 + 9223372036854775807
-[-9223372036854775808]
+{"msg": "int + int overflow"}
 select 1 + -9223372036854775807
 [-9223372036854775806]
-select 1 + 18446744073709551615
-[0]
-select 1 + -18446744073709551615
-[2]
 # test: int + double
 select 1 + 1.5
 [2.5]
@@ -742,6 +744,7 @@ explain select 1 - 1
     }
   }
 }]
+# test: int - int (overflow)
 select 1 - 4294967295
 [-4294967294]
 select 1 - -4294967295
@@ -749,11 +752,7 @@ select 1 - -4294967295
 select 1 - 9223372036854775807
 [-9223372036854775806]
 select 1 - -9223372036854775807
-[-9223372036854775808]
-select 1 - 18446744073709551615
-[2]
-select 1 - -18446744073709551615
-[0]
+{"msg": "int - int overflow"}
 # test: int - double
 select 1 - 1.5
 [-0.5]
@@ -798,10 +797,15 @@ explain select 2 * 2
     }
   }
 }]
+# test: int * int (overflow)
 select 4 * 4294967295
 [17179869180]
 select 4 * -4294967295
 [-17179869180]
+select 10 * 9223372036854775807
+{"msg": "int * int overflow"}
+select 10 * -9223372036854775807
+{"msg": "int * int overflow"}
 # test: int * double
 select 2 * 1.5
 [3]

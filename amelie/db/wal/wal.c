@@ -134,12 +134,13 @@ wal_gc(Wal* self, uint64_t min)
 static inline int64_t
 wal_file_id_of(const char* path)
 {
-	uint64_t id = 0;
+	int64_t id = 0;
 	while (*path && *path != '.')
 	{
 		if (unlikely(! isdigit(*path)))
 			return -1;
-		id = (id * 10) + *path - '0';
+		if (unlikely(int64_mul_add_overflow(&id, id, 10, *path - '0')))
+			return -1;
 		path++;
 	}
 	return id;

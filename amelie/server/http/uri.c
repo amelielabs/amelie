@@ -170,15 +170,18 @@ uri_parse_host(Uri* self)
 		if (*self->pos == ':')
 		{
 			self->pos++;
-			host->port = 0;
-			char *start = self->pos;
+			int32_t port = 0;
+			auto start = self->pos;
 			while (*self->pos && isdigit(*self->pos))
 			{
-				host->port = (host->port * 10) + (*self->pos - '0');
+				if (unlikely(int32_mul_add_overflow(&port, port, 10, *self->pos - '0')))
+					uri_error();
 				self->pos++;
 			}
 			if (start == self->pos)
 				uri_error();
+
+			host->port = port;
 		}
 
 		// /

@@ -154,7 +154,8 @@ json_integer_read(Json* self, int64_t* value, double* real)
 		}
 		if (! isdigit(*self->pos))
 			break;
-		*value = (*value * 10) + *self->pos - '0';
+		if (unlikely(int64_mul_add_overflow(value, *value, 10, *self->pos - '0')))
+			error("JSON int overflow");
 		self->pos++;
 	}
 	if (minus)

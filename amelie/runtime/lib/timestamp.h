@@ -22,7 +22,7 @@ typedef struct Timestamp Timestamp;
 struct Timestamp
 {
 	struct tm time;
-	int       us;
+	int32_t   us;
 	bool      zone_set;
 	int       zone;
 };

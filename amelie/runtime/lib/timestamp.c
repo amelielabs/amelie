@@ -29,10 +29,11 @@ timestamp_error(void)
 hot static inline int
 timestamp_parse_part(Str* str, char* pos, char* pos_end)
 {
-	int value = 0;
+	int32_t value = 0;
 	while (pos < pos_end && isdigit(*pos))
 	{
-		value = (value * 10) + (*pos - '0');
+		if (unlikely(int32_mul_add_overflow(&value, value, 10, *pos - '0')))
+			timestamp_error_str(str);
 		pos++;
 	}
 	if (pos != pos_end)
@@ -104,7 +105,8 @@ timestamp_parse(Timestamp* self, Str* str)
 		int resolution = 0;
 		while (pos < end && isdigit(*pos))
 		{
-			self->us = (self->us * 10) + (*pos - '0');
+			if (unlikely(int32_mul_add_overflow(&self->us, self->us, 10, *pos - '0')))
+				goto error;
 			resolution++;
 			pos++;
 		}

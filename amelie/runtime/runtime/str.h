@@ -223,7 +223,8 @@ str_toint(Str* self, int64_t* value)
 	{
 		if (unlikely(! isdigit(*pos)))
 			return -1;
-		*value = (*value * 10) + *pos - '0';
+		if (unlikely(int64_mul_add_overflow(value, *value, 10, *pos - '0')))
+			return -1;
 		pos++;
 	}
 	return 0;

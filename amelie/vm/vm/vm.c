@@ -863,7 +863,11 @@ cltuu:
 // add
 caddii:
 	if (likely(value_is(&r[op->a], &r[op->b], &r[op->c])))
-		value_set_int(&r[op->a], r[op->b].integer + r[op->c].integer);
+	{
+		if (unlikely(int64_add_overflow(&rc, r[op->b].integer, r[op->c].integer)))
+			error("int + int overflow");
+		value_set_int(&r[op->a], rc);
+	}
 	op_next;
 
 caddif:
@@ -958,7 +962,11 @@ caddvv:
 // sub
 csubii:
 	if (likely(value_is(&r[op->a], &r[op->b], &r[op->c])))
-		value_set_int(&r[op->a], r[op->b].integer - r[op->c].integer);
+	{
+		if (unlikely(int64_sub_overflow(&rc, r[op->b].integer, r[op->c].integer)))
+			error("int - int overflow");
+		value_set_int(&r[op->a], rc);
+	}
 	op_next;
 
 csubif:
@@ -1037,7 +1045,11 @@ csubvv:
 // mul
 cmulii:
 	if (likely(value_is(&r[op->a], &r[op->b], &r[op->c])))
-		value_set_int(&r[op->a], r[op->b].integer * r[op->c].integer);
+	{
+		if (unlikely(int64_mul_overflow(&rc, r[op->b].integer, r[op->c].integer)))
+			error("int * int overflow");
+		value_set_int(&r[op->a], rc);
+	}
 	op_next;
 
 cmulif:

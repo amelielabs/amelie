@@ -51,11 +51,13 @@ set test_int to 9223372036854775807
 show test_int
 [9223372036854775807]
 set test_int to 18446744073709551615
+{"msg": "set test_int to  ⟵ int overflow"}
 show test_int
-[-1]
+[9223372036854775807]
 set test_int to 18446744073709551616
+{"msg": "set test_int to  ⟵ int overflow"}
 show test_int
-[0]
+[9223372036854775807]
 # test: set string
 show test_string
 [""]

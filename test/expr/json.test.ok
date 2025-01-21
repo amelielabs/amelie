@@ -1,5 +1,10 @@
 open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "127.0.0.1", "port": 3485 }]
 connect E0 S0 localhost:3485
+# test: int (overflow)
+select '123'::json_import
+[123]
+select '184467440737095516155'::json_import
+{"msg": "JSON int overflow"}
 # test: array []
 select []
 [[]]

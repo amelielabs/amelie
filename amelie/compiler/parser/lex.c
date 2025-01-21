@@ -270,7 +270,10 @@ lex_next(Lex* self)
 			}
 			if (! isdigit(*self->pos))
 				break;
-			ast->integer = (ast->integer * 10) + *self->pos - '0';
+
+			if (int64_mul_add_overflow(&ast->integer, ast->integer, 10, *self->pos - '0'))
+				lex_return_error(self, ast, start, "int overflow");
+
 			self->pos++;
 		}
 		if (minus)

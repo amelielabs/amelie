@@ -30,10 +30,11 @@ date_validate(int64_t value)
 hot static inline int
 date_parse_part(Str* str, char* pos, char* pos_end)
 {
-	int value = 0;
+	int32_t value = 0;
 	while (pos < pos_end && isdigit(*pos))
 	{
-		value = (value * 10) + (*pos - '0');
+		if (unlikely(int32_mul_add_overflow(&value, value, 10, *pos - '0')))
+			date_error_str(str);
 		pos++;
 	}
 	if (pos != pos_end)

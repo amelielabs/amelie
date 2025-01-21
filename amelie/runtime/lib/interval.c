@@ -177,7 +177,8 @@ interval_set(Interval* self, Str* str)
 		int64_t cardinal = 0;
 		while (pos < end && isdigit(*pos))
 		{
-			cardinal = (cardinal * 10) + (*pos - '0');
+			if (unlikely(int64_mul_add_overflow(&cardinal, cardinal, 10, *pos - '0')))
+				goto error;
 			pos++;
 		}
 		if (pos == end || !isspace(*pos))

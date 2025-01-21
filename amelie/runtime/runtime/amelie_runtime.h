@@ -14,6 +14,7 @@
 // compiler
 #include "runtime/c.h"
 #include "runtime/macro.h"
+#include "runtime/overflow.h"
 
 // os
 #include "runtime/atomic.h"

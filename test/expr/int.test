@@ -15,7 +15,13 @@ select 4294967295
 select -4294967295
 select 9223372036854775807
 select -9223372036854775807
+
+# test: int overflow
+select -92233720368547758077
+
+# UINT64_MAX
 select 18446744073709551615
+select 184467440737095516155
 
 # test: int = bool
 select 1 = true
@@ -189,12 +195,11 @@ explain select 1 < []
 select 1 + 1
 explain select 1 + 1
 
+# test: int + int (overflow)
 select 1 + 4294967295
 select 1 + -4294967295
 select 1 + 9223372036854775807
 select 1 + -9223372036854775807
-select 1 + 18446744073709551615
-select 1 + -18446744073709551615
 
 # test: int + double
 select 1 + 1.5
@@ -210,12 +215,11 @@ select 1 + []
 select 1 - 1
 explain select 1 - 1
 
+# test: int - int (overflow)
 select 1 - 4294967295
 select 1 - -4294967295
 select 1 - 9223372036854775807
 select 1 - -9223372036854775807
-select 1 - 18446744073709551615
-select 1 - -18446744073709551615
 
 # test: int - double
 select 1 - 1.5
@@ -231,8 +235,12 @@ select 1 - []
 select 2 * 2
 explain select 2 * 2
 
+# test: int * int (overflow)
 select 4 * 4294967295
 select 4 * -4294967295
+
+select 10 * 9223372036854775807
+select 10 * -9223372036854775807
 
 # test: int * double
 select 2 * 1.5

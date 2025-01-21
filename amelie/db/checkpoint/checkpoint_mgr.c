@@ -43,12 +43,13 @@ static inline int64_t
 checkpoint_id_of(const char* name, bool* incomplete)
 {
 	// <lsn>[.incomplete]
-	uint64_t lsn = 0;
+	int64_t lsn = 0;
 	while (*name && *name != '.')
 	{
 		if (unlikely(! isdigit(*name)))
 			return -1;
-		lsn = (lsn * 10) + *name - '0';
+		if (unlikely(int64_mul_add_overflow(&lsn, lsn, 10, *name - '0')))
+			return -1;
 		name++;
 	}
 	*incomplete = (*name == '.') && !strcmp(name, ".incomplete");
@@ -167,7 +168,8 @@ part_id_of(const char* name)
 	{
 		if (unlikely(! isdigit(*name)))
 			return -1;
-		id = (id * 10) + *name - '0';
+		if (unlikely(int64_mul_add_overflow(&id, id, 10, *name - '0')))
+			return -1;
 		name++;
 	}
 	if (*name != '.')
