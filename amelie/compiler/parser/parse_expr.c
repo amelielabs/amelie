@@ -94,6 +94,7 @@ priority_map[KEYWORD_MAX] =
 	[KSET]                     = priority_value,
 	[KUNSET]                   = priority_value,
 	[KEXTRACT]                 = priority_value,
+	[KCAST]                    = priority_value,
 	[KSELECT]                  = priority_value,
 	[KCOUNT]                   = priority_value,
 	[KSELF]                    = priority_value,
@@ -414,6 +415,74 @@ expr_extract(Stmt* self, Expr* expr, Ast* value)
 }
 
 hot static inline Ast*
+expr_cast(Stmt* self, Expr* expr)
+{
+	// CAST (
+	stmt_expect(self, '(');
+
+	// expr (prepare args for call)
+	auto args = &ast_args_allocate()->ast;
+	args->l       = parse_expr(self, expr);
+	args->integer = 1;
+
+	// AS
+	stmt_expect(self, KAS);
+
+	// type
+	auto name = stmt_next_shadow(self);
+	if (name->id != KNAME)
+		stmt_error(self, name, "type name expected");
+
+	int type_size;
+	int type = type_read(&name->string, &type_size);
+	if (type == -1)
+		stmt_error(self, name, "unsupported data type");
+	switch (type) {
+	case TYPE_BOOL:
+		str_set(&name->string, "bool", 4);
+		break;
+	case TYPE_INT:
+		str_set(&name->string, "int", 3);
+		break;
+	case TYPE_DOUBLE:
+		str_set(&name->string, "double", 6);
+		break;
+	case TYPE_STRING:
+		str_set(&name->string, "string", 6);
+		break;
+	case TYPE_JSON:
+		str_set(&name->string, "json", 4);
+		break;
+	case TYPE_DATE:
+		str_set(&name->string, "date", 4);
+		break;
+	case TYPE_TIMESTAMP:
+		str_set(&name->string, "timestamp", 9);
+		break;
+	case TYPE_INTERVAL:
+		str_set(&name->string, "interval", 8);
+		break;
+	case TYPE_VECTOR:
+		str_set(&name->string, "vector", 6);
+		break;
+	case TYPE_UUID:
+		str_set(&name->string, "uuid", 4);
+		break;
+	// TYPE_NULL:
+	default:
+		abort();
+		break;
+	}
+
+	// )
+	stmt_expect(self, ')');
+
+	auto call = expr_call(self, expr, name, false);
+	call->r = args;
+	return call;
+}
+
+hot static inline Ast*
 expr_value(Stmt* self, Expr* expr, Ast* value)
 {
 	switch (value->id) {
@@ -464,6 +533,11 @@ expr_value(Stmt* self, Expr* expr, Ast* value)
 	// EXTRACT (field FROM expr)
 	case KEXTRACT:
 		value = expr_extract(self, expr, value);
+		break;
+
+	// CAST (expr AS type)
+	case KCAST:
+		value = expr_cast(self, expr);
 		break;
 
 	// sub-query

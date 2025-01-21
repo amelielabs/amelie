@@ -76,10 +76,10 @@ select true::json::bool
 select false::json::bool
 [false]
 select '1'::json::bool
-[true]
+{"msg": "failed to cast string to bool"}
 # test: bool(timestamp)
 select 1722517792056945::timestamp::bool
-[true]
+{"msg": "bool(timestamp): operation type is not supported"}
 # test: bool(interval)
 select '1 hour'::interval::bool
 [true]

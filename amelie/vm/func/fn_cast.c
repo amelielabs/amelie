@@ -99,15 +99,19 @@ fn_bool(Call* self)
 		break;
 	case TYPE_BOOL:
 	case TYPE_INT:
-	case TYPE_TIMESTAMP:
-	case TYPE_DATE:
 		value = arg->integer > 0;
 		break;
 	case TYPE_INTERVAL:
 		value = (arg->interval.us + arg->interval.d + arg->interval.m) > 0;
 		break;
 	case TYPE_STRING:
-		value = str_size(&arg->string) > 0;
+		if (str_is_case(&arg->string, "true", 4))
+			value = true;
+		else
+		if (str_is_case(&arg->string, "false", 5))
+			value = false;
+		else
+			error("failed to cast string to bool");
 		break;
 	case TYPE_NULL:
 		value_set_null(self->result);
@@ -266,6 +270,12 @@ fn_interval(Call* self)
 {
 	call_validate(self, 1);
 	auto arg = &self->argv[0];
+	if (arg->type == TYPE_JSON)
+	{
+		value_decode(self->result, arg->json, NULL);
+		arg = self->result;
+	}
+
 	if (unlikely(arg->type == TYPE_NULL))
 	{
 		value_set_null(self->result);
@@ -290,11 +300,17 @@ fn_timestamp(Call* self)
 {
 	if (self->argc < 1 || self->argc > 2)
 		error("timestamp(): unexpected number of arguments");
+	auto arg = &self->argv[0];
+	if (arg->type == TYPE_JSON)
+	{
+		value_decode(self->result, arg->json, NULL);
+		arg = self->result;
+	}
 	// timestamp(string, timezone)
 	// timestamp(string)
 	// timestamp(int)
 	// timestamp(date)
-	switch (self->argv[0].type) {
+	switch (arg->type) {
 	case TYPE_STRING:
 	{
 		Timezone* timezone = self->vm->local->timezone;
@@ -314,7 +330,7 @@ fn_timestamp(Call* self)
 		}
 		Timestamp ts;
 		timestamp_init(&ts);
-		timestamp_set(&ts, &self->argv[0].string);
+		timestamp_set(&ts, &arg->string);
 		auto time = timestamp_get_unixtime(&ts, timezone);
 		value_set_timestamp(self->result, time);
 		break;
@@ -325,15 +341,20 @@ fn_timestamp(Call* self)
 			error("timestamp(): unexpected argument");
 		Timestamp ts;
 		timestamp_init(&ts);
-		timestamp_set_unixtime(&ts, self->argv[0].integer);
+		timestamp_set_unixtime(&ts, arg->integer);
 		value_set_timestamp(self->result, timestamp_get_unixtime(&ts, NULL));
+		break;
+	}
+	case TYPE_TIMESTAMP:
+	{
+		value_set_timestamp(self->result, arg->integer);
 		break;
 	}
 	case TYPE_DATE:
 	{
 		Timestamp ts;
 		timestamp_init(&ts);
-		timestamp_set_date(&ts, self->argv[0].integer);
+		timestamp_set_date(&ts, arg->integer);
 		value_set_timestamp(self->result, timestamp_get_unixtime(&ts, NULL));
 		break;
 	}
@@ -344,7 +365,7 @@ fn_timestamp(Call* self)
 	}
 	default:
 		error("timestamp(%s): operation type is not supported",
-		      type_of(self->argv[0].type));
+		      type_of(arg->type));
 	}
 }
 
@@ -352,24 +373,36 @@ hot static void
 fn_date(Call* self)
 {
 	call_validate(self, 1);
+	auto arg = &self->argv[0];
+	if (arg->type == TYPE_JSON)
+	{
+		value_decode(self->result, arg->json, NULL);
+		arg = self->result;
+	}
+
 	// date(string)
 	// date(timestamp)
 	// date(int)
-	switch (self->argv[0].type) {
+	switch (arg->type) {
 	case TYPE_STRING:
 	{
-		auto julian = date_set(&self->argv[0].string);
+		auto julian = date_set(&arg->string);
 		value_set_date(self->result, julian);
+		break;
+	}
+	case TYPE_DATE:
+	{
+		value_set_date(self->result, arg->integer);
 		break;
 	}
 	case TYPE_TIMESTAMP:
 	{
-		value_set_date(self->result, timestamp_date(self->argv[0].integer));
+		value_set_date(self->result, timestamp_date(arg->integer));
 		break;
 	}
 	case TYPE_INT:
 	{
-		auto julian = date_set_julian(self->argv[0].integer);
+		auto julian = date_set_julian(arg->integer);
 		value_set_date(self->result, julian);
 		break;
 	}
@@ -380,7 +413,7 @@ fn_date(Call* self)
 	}
 	default:
 		error("date(%s): operation type is not supported",
-		      type_of(self->argv[0].type));
+		      type_of(arg->type));
 	}
 }
 
@@ -443,6 +476,12 @@ fn_uuid(Call* self)
 {
 	call_validate(self, 1);
 	auto arg = &self->argv[0];
+	if (arg->type == TYPE_JSON)
+	{
+		value_decode(self->result, arg->json, NULL);
+		arg = self->result;
+	}
+
 	if (unlikely(arg->type == TYPE_NULL))
 	{
 		value_set_null(self->result);
