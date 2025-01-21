@@ -288,7 +288,7 @@ reread_as_float:
 		errno = 0;
 		ast->real = strtod(start, &end);
 		if (errno == ERANGE)
-			lex_return_error(self, ast, start, "bad float number token");
+			lex_return_error(self, ast, start, "float overflow");
 		self->pos = end;
 		return lex_return(self, ast, KREAL, start);
 	}

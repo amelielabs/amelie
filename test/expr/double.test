@@ -19,9 +19,15 @@ select 3.40282e+38
 
 # dbl_min
 select 2.2250738585072014e-308
+select 1e-307
 
 # dbl_max
 select 1.79769e+308
+select 1e+308
+
+# test: double overflow
+select 1.79770e+308
+select 2.2250738585072014e-309
 
 select 1e1
 select 1e2
@@ -190,6 +196,9 @@ select 1.5 - []
 # test: double * int
 select 1.5 * 2
 explain select 1.5 * 2
+
+# test: double * int (overflow)
+select 1e+308 * 2
 
 # test: double * double
 select 1.5 * 1.5

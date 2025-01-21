@@ -376,6 +376,7 @@ vm_run(Vm*       self,
 	Cursor* cursor;
 
 	int64_t   rc;
+	double    dbl;
 	Str       string;
 	Value*    a;
 	Value*    b;
@@ -872,17 +873,29 @@ caddii:
 
 caddif:
 	if (likely(value_is(&r[op->a], &r[op->b], &r[op->c])))
-		value_set_double(&r[op->a], r[op->b].integer + r[op->c].dbl);
+	{
+		if (unlikely(double_add_overflow(&dbl, r[op->b].integer, r[op->c].dbl)))
+			error("int + double overflow");
+		value_set_double(&r[op->a], dbl);
+	}
 	op_next;
 
 caddfi:
 	if (likely(value_is(&r[op->a], &r[op->b], &r[op->c])))
-		value_set_double(&r[op->a], r[op->b].dbl + r[op->c].integer);
+	{
+		if (unlikely(double_add_overflow(&dbl, r[op->b].dbl, r[op->c].integer)))
+			error("double + int overflow");
+		value_set_double(&r[op->a], dbl);
+	}
 	op_next;
 
 caddff:
 	if (likely(value_is(&r[op->a], &r[op->b], &r[op->c])))
-		value_set_double(&r[op->a], r[op->b].dbl + r[op->c].dbl);
+	{
+		if (unlikely(double_add_overflow(&dbl, r[op->b].dbl, r[op->c].dbl)))
+			error("double + double overflow");
+		value_set_double(&r[op->a], dbl);
+	}
 	op_next;
 
 caddtl:
@@ -971,17 +984,29 @@ csubii:
 
 csubif:
 	if (likely(value_is(&r[op->a], &r[op->b], &r[op->c])))
-		value_set_double(&r[op->a], r[op->b].integer - r[op->c].dbl);
+	{
+		if (unlikely(double_sub_overflow(&dbl, r[op->b].integer, r[op->c].dbl)))
+			error("int - double overflow");
+		value_set_double(&r[op->a], dbl);
+	}
 	op_next;
 
 csubfi:
 	if (likely(value_is(&r[op->a], &r[op->b], &r[op->c])))
-		value_set_double(&r[op->a], r[op->b].dbl - r[op->c].integer);
+	{
+		if (unlikely(double_sub_overflow(&dbl, r[op->b].dbl, r[op->c].integer)))
+			error("double - int overflow");
+		value_set_double(&r[op->a], dbl);
+	}
 	op_next;
 
 csubff:
 	if (likely(value_is(&r[op->a], &r[op->b], &r[op->c])))
-		value_set_double(&r[op->a], r[op->b].dbl - r[op->c].dbl);
+	{
+		if (unlikely(double_sub_overflow(&dbl, r[op->b].dbl, r[op->c].dbl)))
+			error("double - double overflow");
+		value_set_double(&r[op->a], dbl);
+	}
 	op_next;
 
 csubtl:
@@ -1054,17 +1079,29 @@ cmulii:
 
 cmulif:
 	if (likely(value_is(&r[op->a], &r[op->b], &r[op->c])))
-		value_set_double(&r[op->a], r[op->b].integer * r[op->c].dbl);
+	{
+		if (unlikely(double_mul_overflow(&dbl, r[op->b].integer, r[op->c].dbl)))
+			error("int * double overflow");
+		value_set_double(&r[op->a], dbl);
+	}
 	op_next;
 
 cmulfi:
 	if (likely(value_is(&r[op->a], &r[op->b], &r[op->c])))
-		value_set_double(&r[op->a], r[op->b].dbl * r[op->c].integer);
+	{
+		if (unlikely(double_mul_overflow(&dbl, r[op->b].dbl, r[op->c].integer)))
+			error("double * int overflow");
+		value_set_double(&r[op->a], dbl);
+	}
 	op_next;
 
 cmulff:
 	if (likely(value_is(&r[op->a], &r[op->b], &r[op->c])))
-		value_set_double(&r[op->a], r[op->b].dbl * r[op->c].dbl);
+	{
+		if (unlikely(double_mul_overflow(&dbl, r[op->b].dbl, r[op->c].dbl)))
+			error("double * double overflow");
+		value_set_double(&r[op->a], dbl);
+	}
 	op_next;
 
 cmulvv:
@@ -1097,7 +1134,9 @@ cdivif:
 	{
 		if (unlikely(r[op->c].dbl == 0))
 			error("zero division");
-		value_set_double(&r[op->a], r[op->b].integer / r[op->c].dbl);
+		if (unlikely(double_div_overflow(&dbl, r[op->b].integer, r[op->c].dbl)))
+			error("int / double overflow");
+		value_set_double(&r[op->a], dbl);
 	}
 	op_next;
 
@@ -1106,7 +1145,9 @@ cdivfi:
 	{
 		if (unlikely(r[op->c].integer == 0))
 			error("zero division");
-		value_set_double(&r[op->a], r[op->b].dbl / r[op->c].integer);
+		if (unlikely(double_div_overflow(&dbl, r[op->b].dbl, r[op->c].integer)))
+			error("double / int overflow");
+		value_set_double(&r[op->a], dbl);
 	}
 	op_next;
 
@@ -1115,7 +1156,9 @@ cdivff:
 	{
 		if (unlikely(r[op->c].dbl == 0))
 			error("zero division");
-		value_set_double(&r[op->a], r[op->b].dbl / r[op->c].dbl);
+		if (unlikely(double_div_overflow(&dbl, r[op->b].dbl, r[op->c].dbl)))
+			error("double / double overflow");
+		value_set_double(&r[op->a], dbl);
 	}
 	op_next;
 
