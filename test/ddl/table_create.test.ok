@@ -513,6 +513,37 @@ select system.table('test').columns
   }
 }]]
 drop table test
+# test: column date
+create table test(id int primary key, a date)
+select system.table('test').columns
+[[{
+  "name": "id",
+  "type": 2,
+  "type_size": 4,
+  "constraints": {
+    "not_null": true,
+    "random": false,
+    "random_modulo": 9223372036854775807,
+    "default": null,
+    "as_identity": false,
+    "as_stored": "",
+    "as_resolved": ""
+  }
+}, {
+  "name": "a",
+  "type": 6,
+  "type_size": 4,
+  "constraints": {
+    "not_null": false,
+    "random": false,
+    "random_modulo": 9223372036854775807,
+    "default": null,
+    "as_identity": false,
+    "as_stored": "",
+    "as_resolved": ""
+  }
+}]]
+drop table test
 # test: column vector
 create table test(id int primary key, a vector)
 select system.table('test').columns
@@ -788,6 +819,8 @@ create table test (id int primary key, data timestamp default 1)
 {"msg": "create table test (id int primary key, data timestamp default ❰1❱ ⟵ DEFAULT for this column type is not supported"}
 create table test (id int primary key, data interval default 1)
 {"msg": "create table test (id int primary key, data interval default ❰1❱ ⟵ DEFAULT for this column type is not supported"}
+create table test (id int primary key, data date default 1)
+{"msg": "create table test (id int primary key, data date default ❰1❱ ⟵ DEFAULT for this column type is not supported"}
 create table test (id int primary key, data uuid default '')
 {"msg": "create table test (id int primary key, data uuid default ❰''❱ ⟵ DEFAULT for this column type is not supported"}
 # test: constraint default (type validate)

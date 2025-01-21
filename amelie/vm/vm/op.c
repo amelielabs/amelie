@@ -238,6 +238,7 @@ OpDesc ops[] =
 	{ CTABLE_READF64, "table_readf64" },
 	{ CTABLE_READT, "table_readt" },
 	{ CTABLE_READL, "table_readl" },
+	{ CTABLE_READD, "table_readd" },
 	{ CTABLE_READS, "table_reads" },
 	{ CTABLE_READJ, "table_readj" },
 	{ CTABLE_READV, "table_readv" },

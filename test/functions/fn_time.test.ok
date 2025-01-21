@@ -256,6 +256,24 @@ select public.extract('us', INTERVAL '12 years 5 month 3 days 2 hr 47 min 33 sec
 [400]
 select INTERVAL '12 years 5 month 3 days 2 hr 47 min 33 sec 500 ms'::extract('us')
 [0]
+# test: extract(date year)
+select public.extract('year', DATE '2001-01-16')
+[2001]
+select '2001-01-16'::date::extract('year')
+[2001]
+# test: extract(date month)
+select public.extract('month', DATE '2001-01-16')
+[1]
+select '2001-01-16'::date::extract('month')
+[1]
+# test: extract(date day)
+select public.extract('day', DATE '2001-01-16')
+[16]
+select '2001-01-16'::date::extract('day')
+[16]
+# test: extract(date unsupported)
+select public.extract('sec', DATE '2001-01-16')
+{"msg": "invalid date field 'sec'"}
 # test: extract from interval
 select extract(min FROM INTERVAL '12 years 5 month 3 days 2 hr 47 min 33 sec 500 ms')
 [47]
@@ -268,5 +286,10 @@ select extract(us FROM TIMESTAMP '2001-01-16 20:38:40.123456')
 [123456]
 select EXTRACT(ms FROM TIMESTAMP '2001-01-16 20:38:40.123456')
 [123]
+# test: extract from date
+select extract(year FROM DATE '2001-01-16')
+[2001]
+select EXTRACT(day FROM '2001-01-16'::date)
+[16]
 disconnect S0
 close E0

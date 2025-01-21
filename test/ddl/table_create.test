@@ -87,6 +87,11 @@ create table test(id int primary key, a interval)
 select system.table('test').columns
 drop table test
 
+# test: column date
+create table test(id int primary key, a date)
+select system.table('test').columns
+drop table test
+
 # test: column vector
 create table test(id int primary key, a vector)
 select system.table('test').columns
@@ -216,6 +221,7 @@ create table test (id int primary key, data int default 1 + 1)
 create table test (id int primary key, data vector default 1)
 create table test (id int primary key, data timestamp default 1)
 create table test (id int primary key, data interval default 1)
+create table test (id int primary key, data date default 1)
 create table test (id int primary key, data uuid default '')
 
 # test: constraint default (type validate)

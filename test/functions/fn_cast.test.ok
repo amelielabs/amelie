@@ -50,6 +50,9 @@ select 1722517792056945::timestamp::int::timestamp
 ["2024-08-01 13:09:52.056945+00"]
 select '1 hour'::interval::int
 {"msg": "int(interval): operation type is not supported"}
+# test: int(date)
+select '2025-01-01'::date::int
+[2460677]
 # test: bool(null)
 select null::bool
 [null]
@@ -121,6 +124,9 @@ select '1 hour'::interval::string
 # test: string(timestamp)
 select '2024-07-29 18:40:19'::timestamp::string
 ["2024-07-29 18:40:19+00"]
+# test: string(date)
+select '2024-07-29'::date::string
+["2024-07-29"]
 # test: string(json)
 select {"id": 42, "data": [1,2,3]}::string
 ["{\"id\": 42, \"data\": [1, 2, 3]}"]
@@ -181,6 +187,9 @@ select '2024-07-29 18:40:19'::timestamp::json
 # test: json(interval)
 select '1 hour 55 minutes 5 secs'::interval::json
 ["1 hour 55 minutes 5 seconds"]
+# test: json(date)
+select '2025-01-01'::date::json
+["2025-01-01"]
 # test: json(vector)
 select [1,2,3]::vector::json
 [[1, 2, 3]]
@@ -198,6 +207,18 @@ select null::timestamp
 # test: timestamp(string)
 select '2024-07-29 18:40:19'::timestamp
 ["2024-07-29 18:40:19+00"]
+# test: timestamp(date)
+select '2024-07-29'::date::timestamp
+["2024-07-29 00:00:00+00"]
+# test: date(null)
+select null::date
+[null]
+# test: date(timestamp)
+select '2024-07-29 18:40:19'::timestamp::date
+["2024-07-29"]
+# test: date(int)
+select '2024-07-29'::date::int::date
+["2024-07-29"]
 # test: vector(null)
 select null::vector
 [null]

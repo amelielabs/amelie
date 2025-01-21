@@ -174,6 +174,9 @@ emit_column(Compiler* self, Target* target, Ast* ast,
 		case TYPE_INTERVAL:
 			op = CTABLE_READL;
 			break;
+		case TYPE_DATE:
+			op = CTABLE_READD;
+			break;
 		case TYPE_VECTOR:
 			op = CTABLE_READV;
 			break;

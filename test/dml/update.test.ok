@@ -594,6 +594,13 @@ update test set i = i + interval '5 days'
 select * from test
 [[0, "1 year 6 days 10 hours"]]
 drop table test
+# test: update column (date)
+create table test (id int primary key, d date)
+insert into test values (0, "1970-01-01")
+update test set d = d + 5
+select * from test
+[[0, "1970-01-06"]]
+drop table test
 # test: update column (vector)
 create table test (id int primary key, vec vector)
 insert into test values (3, [1.0, 1.1])

@@ -761,6 +761,72 @@ insert into test values (0, "1 year 1 day 10 hour")
 select * from test
 [[0, "1 year 1 day 10 hours"]]
 drop table test
+# test: insert column (date)
+create table test (id int primary key, d date)
+insert into test values (0, date "2025-01-01")
+insert into test values (1, date "1970-01-01")
+insert into test values (2, date "9999-12-31")
+insert into test values (3, date "0001-01-01")
+select * from test
+[[0, "2025-01-01"], [1, "1970-01-01"], [2, "9999-12-31"], [3, "0001-01-01"]]
+insert into test values (4, date "0001-01-00")
+{"msg": "insert into test values (4, date ❰\"0001-01-00\"❱ ⟵ invalid date value"}
+select * from test where d > date '2000-01-01'
+[[0, "2025-01-01"], [2, "9999-12-31"]]
+select * from test where d > date '1970-01-01'
+[[0, "2025-01-01"], [2, "9999-12-31"]]
+select * from test where d >= date '1970-01-01'
+[[0, "2025-01-01"], [1, "1970-01-01"], [2, "9999-12-31"]]
+explain select * from test where d >= date '1970-01-01'
+[{
+  "bytecode": {
+    "coordinator": {
+      "00": "send_all            0      0      -     # public.test",
+      "01": "recv                0      0      0     ",
+      "02": "bool                0      0      0     ",
+      "03": "push                0      0      0     ",
+      "04": "union_recv          0      -1     -1    ",
+      "05": "cte_set             0      0      0     ",
+      "06": "content             0      -      -     ",
+      "07": "ret                 0      0      0     "
+    },
+    "node": {
+      "00": "set                 0      2      0     ",
+      "01": "table_open          0      0      12    # public.test (primary)",
+      "02": "table_readd         1      0      1     ",
+      "03": "date                2      2440588 0     ",
+      "04": "gteii               3      1      2     ",
+      "05": "jntr                11     3      0     ",
+      "06": "table_readi32       1      0      0     ",
+      "07": "push                1      0      0     ",
+      "08": "table_readd         1      0      1     ",
+      "09": "push                1      0      0     ",
+      "10": "set_add             0      0      0     ",
+      "11": "table_next          0      2      0     ",
+      "12": "table_close         0      0      0     ",
+      "13": "result              0      0      0     ",
+      "14": "ret                 0      0      0     "
+    }
+  }
+}]
+drop table test
+# test: insert column (date auto cast)
+create table test (id int primary key, d date)
+insert into test values (0, "2025-01-01")
+insert into test values (1, "1970-01-01")
+insert into test values (2, "9999-12-31")
+insert into test values (3, "0001-01-01")
+select * from test
+[[0, "2025-01-01"], [1, "1970-01-01"], [2, "9999-12-31"], [3, "0001-01-01"]]
+insert into test values (4, "0001-01-00")
+{"msg": "insert into test values (4, ❰\"0001-01-00\"❱ ⟵ invalid date value"}
+drop table test
+# test: insert column (date current_date)
+create table test (id int primary key, d date)
+insert into test values (0, current_date)
+select count(d) from test
+[1]
+drop table test
 # test: insert column (vector)
 create table test (id int primary key, vec vector)
 insert into test values (0, [])

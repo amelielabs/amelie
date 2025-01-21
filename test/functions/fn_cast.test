@@ -40,6 +40,9 @@ select 1722517792056945::timestamp::int
 select 1722517792056945::timestamp::int::timestamp
 select '1 hour'::interval::int
 
+# test: int(date)
+select '2025-01-01'::date::int
+
 # test: bool(null)
 select null::bool
 
@@ -101,6 +104,9 @@ select '1 hour'::interval::string
 # test: string(timestamp)
 select '2024-07-29 18:40:19'::timestamp::string
 
+# test: string(date)
+select '2024-07-29'::date::string
+
 # test: string(json)
 select {"id": 42, "data": [1,2,3]}::string
 
@@ -142,6 +148,9 @@ select '2024-07-29 18:40:19'::timestamp::json
 # test: json(interval)
 select '1 hour 55 minutes 5 secs'::interval::json
 
+# test: json(date)
+select '2025-01-01'::date::json
+
 # test: json(vector)
 select [1,2,3]::vector::json
 
@@ -157,6 +166,18 @@ select null::timestamp
 
 # test: timestamp(string)
 select '2024-07-29 18:40:19'::timestamp
+
+# test: timestamp(date)
+select '2024-07-29'::date::timestamp
+
+# test: date(null)
+select null::date
+
+# test: date(timestamp)
+select '2024-07-29 18:40:19'::timestamp::date
+
+# test: date(int)
+select '2024-07-29'::date::int::date
 
 # test: vector(null)
 select null::vector

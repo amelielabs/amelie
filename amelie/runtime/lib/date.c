@@ -48,6 +48,9 @@ date_set(Str* str)
 	auto pos = str->pos;
 	auto end = str->end;
 
+	if (unlikely(str_size(str) != 10))
+		goto error;
+
 	// year
 	auto pos_end = pos + 4;
 	if (unlikely(*pos_end != '-'))

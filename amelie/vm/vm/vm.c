@@ -320,6 +320,7 @@ vm_run(Vm*       self,
 		&&ctable_readf64,
 		&&ctable_readt,
 		&&ctable_readl,
+		&&ctable_readd,
 		&&ctable_reads,
 		&&ctable_readj,
 		&&ctable_readv,
@@ -1481,6 +1482,14 @@ ctable_readl:
 	ptr = row_at(iterator_at(cursor_mgr_of(cursor_mgr, op->b)->it), op->c);
 	if (likely(ptr))
 		value_set_interval(&r[op->a], (Interval*)ptr);
+	else
+		value_set_null(&r[op->a]);
+	op_next;
+
+ctable_readd:
+	ptr = row_at(iterator_at(cursor_mgr_of(cursor_mgr, op->b)->it), op->c);
+	if (likely(ptr))
+		value_set_date(&r[op->a], *(int32_t*)ptr);
 	else
 		value_set_null(&r[op->a]);
 	op_next;
