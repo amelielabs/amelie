@@ -56,6 +56,10 @@ select concat("a", null, "b", 3)
 {"msg": "concat(): string argument expected"}
 select concat("a", null, "b", 3::string)
 ["ab3"]
+select "привет"::concat("мир")
+["приветмир"]
+select "привет"::concat("мир")::size
+[9]
 # test: lower()
 select null::lower
 [null]
@@ -105,6 +109,28 @@ select "hello"::substr(2, 4)
 ["ello"]
 select "hello"::substr(2, 5)
 {"msg": "substr(): position is out of bounds"}
+select "привет"::substr(2)
+["ривет"]
+select "привет"::substr(2, 0)
+[""]
+select "привет"::substr(2, 1)
+["р"]
+select "привет"::substr(2, 2)
+["ри"]
+select "привет"::substr(2, 3)
+["рив"]
+select "привет"::substr(2, 4)
+["риве"]
+select "привет"::substr(2, 5)
+["ривет"]
+select "привет"::substr(2, 10)
+{"msg": "substr(): position is out of bounds"}
+select "привет"::substr(5, 1)
+["е"]
+select "привет"::substr(6, 1)
+["т"]
+select "привет"::substr(7, 1)
+{"msg": "substr(): position is out of bounds"}
 # test: strpos()
 select null::strpos("")
 [null]
@@ -126,6 +152,22 @@ select "hello"::strpos("lo")
 [4]
 select "hello"::strpos("o")
 [5]
+select "привет"::strpos("п")
+[1]
+select "привет"::strpos("р")
+[2]
+select "привет"::strpos("и")
+[3]
+select "привет"::strpos("ив")
+[3]
+select "привет"::strpos("иве")
+[3]
+select "привет"::strpos("ивее")
+[0]
+select "привет"::strpos("ет")
+[5]
+select "привет"::strpos("т")
+[6]
 select substr("hello", "hello"::strpos("lo"), 2)
 ["lo"]
 # test: replace()
@@ -165,6 +207,24 @@ select "hhi"::replace("hello", "X")
 ["hhi"]
 select "hhi"::replace("", "X")
 {"msg": "replace(): invalid from argument"}
+select "приветпривет"::replace("привет", "й")
+["йй"]
+select "приветпривет"::replace("привет", "")
+[""]
+select "приветпривет"::replace("привет", "")::size
+[0]
+select "приветпри"::replace("привет", "й")
+["йпри"]
+select "приприветпри"::replace("привет", "й")
+["прийпри"]
+select "при"::replace("привет", "й")
+["при"]
+select "вет"::replace("привет", "й")
+["вет"]
+select "__привет-"::replace("привет", "й")
+["__й-"]
+select "привет"::replace("привет", "й")
+["й"]
 # test: ltrim()
 select null::ltrim()
 [null]
@@ -184,6 +244,8 @@ select "$$123"::ltrim("$")
 ["123"]
 select "$$"::ltrim("$")
 [""]
+select "  привет  "::ltrim(" пр")
+["ивет  "]
 # test: rtrim()
 select null::rtrim()
 [null]
@@ -209,6 +271,8 @@ select "$"::rtrim("$")
 [""]
 select ""::rtrim("$")
 [""]
+select "  привет  "::rtrim(" пр")
+["  привет"]
 # test: trim()
 select null::trim()
 [null]
@@ -234,6 +298,12 @@ select "$"::trim("$")
 [""]
 select ""::trim("$")
 [""]
+select "  привет  "::trim(" пр")
+["ивет"]
+select "  привет  "::trim(" прет")
+["ив"]
+select "  привет  "::trim(" привет")
+[""]
 # test: like()
 select null::like('hello%world')
 [null]
@@ -245,5 +315,15 @@ select public.like('hello, world', 'hello%world')
 [true]
 select like('hello, world', 'hello%world')
 {"msg": "select ❰like❱ ⟵ bad expression"}
+select public.like('привет, мир', 'привет%мир')
+[true]
+select public.like('привет', 'п%т')
+[true]
+select public.like('привет, мий', 'прив____ми_')
+[true]
+select public.like('привет, мHй', 'прив____ми_')
+[false]
+select public.like("こんにちは世界", "%にちは%")
+[true]
 disconnect S0
 close E0

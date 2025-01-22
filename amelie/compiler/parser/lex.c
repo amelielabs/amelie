@@ -438,7 +438,7 @@ symbol:;
 			} else {
 				slash = false;
 			}
-			if (unlikely(! utf8_next(&self->pos, self->end)))
+			if (unlikely(utf8_next(&self->pos, self->end) == -1))
 				lex_return_error(self, ast, string, "invalid string UTF8 encoding");
 		}
 		if (unlikely(self->pos == self->end))

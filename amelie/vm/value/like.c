@@ -43,7 +43,7 @@ value_like(Value* result, Value* str, Value* pattern)
 		{
 			if (pos_str == end_str)
 				return;
-			pos_str++;
+			utf8_forward(&pos_str);
 			pos++;
 			continue;
 		}
@@ -65,19 +65,19 @@ value_like(Value* result, Value* str, Value* pattern)
 			if (pos == end)
 				return;
 
+			auto pos_size = utf8_sizeof(*pos);
 			bool match = false;
-			for (; pos_str < end_str; pos_str++)
+			while (pos_str < end_str)
 			{
-				if (*pos_str == *pos)
-				{
-					match = true;
+				auto pos_str_size = utf8_sizeof(*pos_str);
+				match = pos_str_size == pos_size && !memcmp(pos, pos_str, pos_size);
+				pos_str += pos_str_size;
+				if (match)
 					break;
-				}
 			}
 			if (! match)
 				return;
-			pos_str++;
-			pos++;
+			pos += pos_size;
 			continue;
 		}
 
@@ -88,10 +88,13 @@ value_like(Value* result, Value* str, Value* pattern)
 		// match exact single character
 		if (pos_str == end_str)
 			return;
-		if (*pos_str != *pos)
+
+		auto pos_str_size = utf8_sizeof(*pos_str);
+		auto pos_size = utf8_sizeof(*pos);
+		if (! (pos_str_size == pos_size && !memcmp(pos, pos_str, pos_size)))
 			return;
-		pos_str++;
-		pos++;
+		pos_str += pos_str_size;
+		pos += pos_size;
 	}
 
 	if (pos_str != end_str)

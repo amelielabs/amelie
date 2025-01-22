@@ -280,6 +280,12 @@ explain select "hello " || "world"
     }
   }
 }]
+select "为云" || "は世界"
+["为云は世界"]
+select ("为云" || "は世界")::length
+[5]
+select "привет " || "мир"
+["привет мир"]
 # test: string || null
 select "hello " || null
 [null]

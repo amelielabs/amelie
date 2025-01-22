@@ -108,32 +108,21 @@ fn_octet_length(Call* self)
 static void
 fn_concat(Call* self)
 {
+	auto buf = buf_create();
+	errdefer_buf(buf);
+
 	auto argv = self->argv;
-	int  size = 0;
 	for (int i = 0; i < self->argc; i++)
 	{
 		if (argv[i].type == TYPE_NULL)
 			continue;
 		if (argv[i].type != TYPE_STRING)
 			error("concat(): string argument expected");
-		size += str_size(&argv[i].string);
-	}
-
-	auto buf = buf_create();
-	auto pos = buf_reserve(buf, json_size_string(size));
-	json_write_raw(pos, NULL, size);
-	for (int i = 0; i < self->argc; i++)
-	{
-		if (argv[i].type == TYPE_NULL)
-			continue;
-		auto at_size = str_size(&argv[i].string);
-		memcpy(*pos, str_of(&argv[i].string), at_size);
-		*pos += at_size;
+		buf_write_str(buf, &argv[i].string);
 	}
 
 	Str string;
-	uint8_t* pos_str = buf->start;
-	json_read_string(&pos_str, &string);
+	buf_str(buf, &string);
 	value_set_string(self->result, &string, buf);
 }
 
@@ -150,19 +139,17 @@ fn_lower(Call* self)
 	call_validate_arg(self, 0, TYPE_STRING);
 
 	auto src = str_of(&arg->string);
-	int  src_size = str_size(&arg->string);
-
+	auto src_size = str_size(&arg->string);
 	auto buf = buf_create();
-	auto pos = buf_reserve(buf, json_size_string(src_size));
-	json_write_raw(pos, NULL, src_size);
-	auto dst = *pos;
+	buf_reserve(buf, src_size);
+
+	auto dst = buf->position;
 	for (int i = 0; i < src_size; i++)
 		dst[i] = tolower(src[i]);
-	*pos += src_size;
+	buf_advance(buf, src_size);
 
 	Str string;
-	uint8_t* pos_str = buf->start;
-	json_read_string(&pos_str, &string);
+	buf_str(buf, &string);
 	value_set_string(self->result, &string, buf);
 }
 
@@ -179,19 +166,17 @@ fn_upper(Call* self)
 	call_validate_arg(self, 0, TYPE_STRING);
 
 	auto src = str_of(&arg->string);
-	int  src_size = str_size(&arg->string);
-
+	auto src_size = str_size(&arg->string);
 	auto buf = buf_create();
-	auto pos = buf_reserve(buf, json_size_string(src_size));
-	json_write_raw(pos, NULL, src_size);
-	auto dst = *pos;
+	buf_reserve(buf, src_size);
+
+	auto dst = buf->position;
 	for (int i = 0; i < src_size; i++)
 		dst[i] = toupper(src[i]);
-	*pos += src_size;
+	buf_advance(buf, src_size);
 
 	Str string;
-	uint8_t* pos_str = buf->start;
-	json_read_string(&pos_str, &string);
+	buf_str(buf, &string);
 	value_set_string(self->result, &string, buf);
 }
 
@@ -219,27 +204,30 @@ fn_substr(Call* self)
 		error("substr(): position is out of bounds");
 	pos--;
 
-	if (pos >= str_size(src))
+	int size = utf8_strlen(src);
+	if (pos >= size)
 		error("substr(): position is out of bounds");
 
 	// (string, pos, count)
-	int count = str_size(src) - pos;
+	int count = size - pos;
 	if (self->argc == 3)
 	{
 		call_validate_arg(self, 2, TYPE_INT);
 		count = argv[2].integer;
-		if ((pos + count) > str_size(src))
+		if ((pos + count) > size)
 			error("substr(): position is out of bounds");
 	}
 
-	Str string;
-	str_set(&string, str_of(src) + pos, count);
-	auto buf = buf_create();
-	encode_string(buf, &string);
-
 	Str result;
-	uint8_t* pos_str = buf->start;
-	json_read_string(&pos_str, &result);
+	result.allocated = false;
+	result.pos = utf8_at(src->pos, pos);
+	result.end = result.pos;
+	while (count-- > 0)
+		utf8_forward(&result.end);
+
+	auto buf = buf_create();
+	buf_write_str(buf, &result);
+	buf_str(buf, &result);
 	value_set_string(self->result, &result, buf);
 }
 
@@ -267,6 +255,7 @@ fn_strpos(Call* self)
 
 	auto pos = src->pos;
 	auto end = src->end;
+	auto n   = 1;
 	while (pos < end)
 	{
 		if ((end - pos) < str_size(substr))
@@ -275,11 +264,12 @@ fn_strpos(Call* self)
 		{
 			if (str_is(substr, pos, str_size(substr)))
 			{
-				value_set_int(self->result, (pos - src->pos) + 1);
+				value_set_int(self->result, n);
 				return;
 			}
 		}
-		pos++;
+		utf8_forward(&pos);
+		n++;
 	}
 
 	value_set_int(self->result, 0);
@@ -310,8 +300,6 @@ fn_replace(Call* self)
 	}
 
 	auto buf = buf_create();
-	encode_string32(buf, 0);
-
 	auto pos = src->pos;
 	auto end = src->end;
 	while (pos < end)
@@ -333,18 +321,13 @@ fn_replace(Call* self)
 			}
 		}
 
-		buf_write(buf, pos, 1);
-		pos++;
+		auto pos_size = utf8_sizeof(*pos);
+		buf_write(buf, pos, pos_size);
+		pos += pos_size;
 	}
 
-	// update string size
-	int size = buf_size(buf) - json_size_string32();
-	uint8_t* pos_str = buf->start;
-	json_write_string32(&pos_str, size);
-
 	Str string;
-	pos_str = buf->start;
-	json_read_string(&pos_str, &string);
+	buf_str(buf, &string);
 	value_set_string(self->result, &string, buf);
 }
 
@@ -355,19 +338,22 @@ str_ltrim(Str* self, char* filter, char* filter_end)
 	auto end = self->end;
 	while (pos < end)
 	{
+		auto pos_size = utf8_sizeof(*pos);
 		auto match = false;
-		for (auto at = filter; at < filter_end; at++)
+		for (auto at = filter; at < filter_end; )
 		{
-			if (*pos == *at)
+			auto at_size = utf8_sizeof(*at);
+			if (pos_size == at_size && !memcmp(pos, at, at_size))
 			{
 				match = true;
 				break;
 			}
+			at += at_size;
 		}
 		if (! match)
 			break;
-		self->pos++;
-		pos++;
+		self->pos += pos_size;
+		pos += pos_size;
 	}
 }
 
@@ -376,22 +362,26 @@ str_rtrim(Str* self, char* filter, char* filter_end)
 {
 	if (str_size(self) == 0)
 		return;
-	auto pos = self->end - 1;
+	auto pos   = self->end - 1;
 	auto start = self->pos;
 	while (pos >= start)
 	{
+		utf8_backward(&pos);
+		auto pos_size = utf8_sizeof(*pos);
 		auto match = false;
-		for (auto at = filter; at < filter_end; at++)
+		for (auto at = filter; at < filter_end; )
 		{
-			if (*pos == *at)
+			auto at_size = utf8_sizeof(*at);
+			if (pos_size == at_size && !memcmp(pos, at, at_size))
 			{
 				match = true;
 				break;
 			}
+			at += at_size;
 		}
 		if (! match)
 			break;
-		self->end--;
+		self->end -= pos_size;
 		pos--;
 	}
 }
@@ -430,11 +420,9 @@ trim(Call* self, bool left, bool right)
 		str_rtrim(&string, filter, filter_end);
 
 	auto buf = buf_create();
-	encode_string(buf, &string);
-	Str result;
-	uint8_t* pos_str = buf->start;
-	json_read_string(&pos_str, &result);
-	value_set_string(self->result, &result, buf);
+	buf_write_str(buf, &string);
+	buf_str(buf, &string);
+	value_set_string(self->result, &string, buf);
 }
 
 static void

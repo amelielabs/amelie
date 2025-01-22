@@ -93,6 +93,10 @@ explain select '1 hour' < []
 select "hello " || "world"
 explain select "hello " || "world"
 
+select "为云" || "は世界"
+select ("为云" || "は世界")::length
+select "привет " || "мир"
+
 # test: string || null
 select "hello " || null
 
