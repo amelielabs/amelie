@@ -825,6 +825,13 @@ select {"id":"2489660418","type":"PushEvent","actor":{"id":250019,"login":"tarek
   "public": true,
   "created_at": "2015-01-01T15:20:29Z"
 }]
+# test: case 7
+select '"привет, мир!"'::json_import
+["привет, мир!"]
+select '"こんにちは世界"'::json_import
+["こんにちは世界"]
+select '"հểɬľ𝜊 ѡ૦ŗɬď"'::json_import
+["հểɬľ𝜊 ѡ૦ŗɬď"]
 # test: json = json
 select [1,2,3] = [1,2,3]
 [true]

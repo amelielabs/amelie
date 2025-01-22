@@ -3,7 +3,7 @@
 open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "127.0.0.1", "port": 3485 }]
 connect E0 S0 localhost:3485
 
-# test: length/size()
+# test: length()
 select ""::length
 select ""::size
 select "hello"::length
@@ -16,6 +16,19 @@ select [1,2,3]::size
 select {}::size
 select {"a": null}::size
 select {"a": null, "b": null}::size
+
+# test: length(utf8)
+select "hello"::length
+select "привет"::length
+select "こんにちは世界"::length
+
+# test: octet_length()
+select "hello"::octet_length
+select "привет"::octet_length
+select "こんにちは世界"::octet_length
+
+select {"a": null, "b": null}::length
+select {"a": null, "b": null}::octet_length
 
 # test: concat()
 select concat()

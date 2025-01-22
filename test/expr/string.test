@@ -16,6 +16,13 @@ select length("")
 select "hello world"::length
 select "hello world"::length()
 
+# test: string utf8
+select "привет, мир!"
+select "こんにちは世界"
+select "հểɬľ𝜊 ѡ૦ŗɬď"
+
+select "��OX�&amp;amp;�.~`�Y�{߆�~�&amp;amp;�5�聾����."
+
 # test: string = string
 select '1 hour' = '1 hour'
 select '1 hour' = '1 hours'

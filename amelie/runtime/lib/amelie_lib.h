@@ -11,10 +11,6 @@
 // AGPL-3.0 Licensed.
 //
 
-// locking
-#include "lib/lock.h"
-#include "lib/resource.h"
-
 // data structures
 #include "lib/rbtree.h"
 #include "lib/hash_table.h"
@@ -29,6 +25,9 @@
 #include "lib/crc.h"
 #include "lib/base64.h"
 #include "lib/base64url.h"
+
+// utf8
+#include "lib/utf8.h"
 
 // id manager
 #include "lib/id_mgr.h"
@@ -51,3 +50,7 @@
 #include "lib/arg.h"
 #include "lib/separator.h"
 #include "lib/cli.h"
+
+// locking
+#include "lib/lock.h"
+#include "lib/resource.h"

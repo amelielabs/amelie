@@ -114,7 +114,8 @@ json_string_read(Json* self, Str* str, int string_end)
 		} else {
 			slash = false;
 		}
-		self->pos++;
+		if (unlikely(! utf8_next(&self->pos, self->end)))
+			error("invalid JSON string UTF8 encoding");
 	}
 	if (unlikely(self->pos == self->end))
 		error("unterminated JSON string");

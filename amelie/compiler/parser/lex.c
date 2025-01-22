@@ -298,10 +298,11 @@ reread_as_float:
 		self->pos--;
 
 	// symbols
-	if (*self->pos != '\"' &&
-	    *self->pos != '\'' &&
-	    *self->pos != '`'  &&
-	    *self->pos != '_'  && ispunct(*self->pos))
+	if (ispunct(*self->pos) &&
+	    *self->pos != '\"'  &&
+	    *self->pos != '\''  &&
+	    *self->pos != '`'   &&
+	    *self->pos != '_')
 	{
 		char symbol = *self->pos;
 		self->pos++;
@@ -437,7 +438,8 @@ symbol:;
 			} else {
 				slash = false;
 			}
-			self->pos++;
+			if (unlikely(! utf8_next(&self->pos, self->end)))
+				lex_return_error(self, ast, string, "invalid string UTF8 encoding");
 		}
 		if (unlikely(self->pos == self->end))
 			lex_return_error(self, ast, string, "unterminated string");

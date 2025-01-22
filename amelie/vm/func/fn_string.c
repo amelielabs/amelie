@@ -47,7 +47,7 @@ fn_length(Call* self)
 	int64_t rc = 0;
 	switch (arg->type) {
 	case TYPE_STRING:
-		rc = str_size(&arg->string);
+		rc = utf8_strlen(&arg->string);
 		break;
 	case TYPE_JSON:
 		if (json_is_array(arg->json))
@@ -61,7 +61,7 @@ fn_length(Call* self)
 			uint8_t* pos = arg->json;
 			Str str;
 			json_read_string(&pos, &str);
-			rc = str_size(&str);
+			rc = utf8_strlen(&str);
 		} else
 			error("length(): unsupport json argument type");
 		break;
@@ -70,6 +70,35 @@ fn_length(Call* self)
 		break;
 	default:
 		error("length(%s): operation type is not supported",
+		      type_of(arg->type));
+		break;
+	}
+	value_set_int(self->result, rc);
+}
+
+hot static void
+fn_octet_length(Call* self)
+{
+	auto arg = &self->argv[0];
+	call_validate(self, 1);
+	if (unlikely(arg->type == TYPE_NULL))
+	{
+		value_set_null(self->result);
+		return;
+	}
+	int64_t rc = 0;
+	switch (arg->type) {
+	case TYPE_STRING:
+		rc = str_size(&arg->string);
+		break;
+	case TYPE_JSON:
+		rc = arg->json_size;
+		break;
+	case TYPE_VECTOR:
+		rc = vector_size(arg->vector);
+		break;
+	default:
+		error("octet_length(%s): operation type is not supported",
 		      type_of(arg->type));
 		break;
 	}
@@ -443,17 +472,18 @@ fn_like(Call* self)
 
 FunctionDef fn_string_def[] =
 {
-	{ "public", "length",  TYPE_INT,    fn_length,  FN_NONE },
-	{ "public", "size",    TYPE_INT,    fn_length,  FN_NONE },
-	{ "public", "concat",  TYPE_STRING, fn_concat,  FN_NONE },
-	{ "public", "lower",   TYPE_STRING, fn_lower,   FN_NONE },
-	{ "public", "upper",   TYPE_STRING, fn_upper,   FN_NONE },
-	{ "public", "substr",  TYPE_STRING, fn_substr,  FN_NONE },
-	{ "public", "strpos",  TYPE_INT,    fn_strpos,  FN_NONE },
-	{ "public", "replace", TYPE_STRING, fn_replace, FN_NONE },
-	{ "public", "ltrim",   TYPE_STRING, fn_ltrim,   FN_NONE },
-	{ "public", "rtrim",   TYPE_STRING, fn_rtrim,   FN_NONE },
-	{ "public", "trim",    TYPE_STRING, fn_trim,    FN_NONE },
-	{ "public", "like",    TYPE_BOOL,   fn_like,    FN_NONE },
-	{  NULL,     NULL,     TYPE_NULL,   NULL,       FN_NONE }
+	{ "public", "size",         TYPE_INT,    fn_length,       FN_NONE },
+	{ "public", "length",       TYPE_INT,    fn_length,       FN_NONE },
+	{ "public", "octet_length", TYPE_INT,    fn_octet_length, FN_NONE },
+	{ "public", "concat",       TYPE_STRING, fn_concat,       FN_NONE },
+	{ "public", "lower",        TYPE_STRING, fn_lower,        FN_NONE },
+	{ "public", "upper",        TYPE_STRING, fn_upper,        FN_NONE },
+	{ "public", "substr",       TYPE_STRING, fn_substr,       FN_NONE },
+	{ "public", "strpos",       TYPE_INT,    fn_strpos,       FN_NONE },
+	{ "public", "replace",      TYPE_STRING, fn_replace,      FN_NONE },
+	{ "public", "ltrim",        TYPE_STRING, fn_ltrim,        FN_NONE },
+	{ "public", "rtrim",        TYPE_STRING, fn_rtrim,        FN_NONE },
+	{ "public", "trim",         TYPE_STRING, fn_trim,         FN_NONE },
+	{ "public", "like",         TYPE_BOOL,   fn_like,         FN_NONE },
+	{  NULL,     NULL,          TYPE_NULL,   NULL,            FN_NONE }
 };
