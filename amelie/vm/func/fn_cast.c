@@ -38,7 +38,7 @@ static void
 fn_type(Call* self)
 {
 	auto arg = &self->argv[0];
-	call_validate(self, 1);
+	call_expect(self, 1);
 	Str string;
 	str_set_cstr(&string, type_of(arg->type));
 	value_set_string(self->result, &string, NULL);
@@ -47,7 +47,7 @@ fn_type(Call* self)
 hot static void
 fn_int(Call* self)
 {
-	call_validate(self, 1);
+	call_expect(self, 1);
 	auto arg = &self->argv[0];
 	if (arg->type == TYPE_JSON)
 	{
@@ -68,14 +68,13 @@ fn_int(Call* self)
 		break;
 	case TYPE_STRING:
 		if (str_toint(&arg->string, &value) == -1)
-			error("int(): failed to cast string");
+			call_error_arg(self, 0, "failed to cast string");
 		break;
 	case TYPE_NULL:
 		value_set_null(self->result);
 		return;
 	default:
-		error("int(%s): operation type is not supported",
-		      type_of(arg->type));
+		call_unsupported(self, 0);
 		break;
 	}
 	value_set_int(self->result, value);
@@ -84,7 +83,7 @@ fn_int(Call* self)
 hot static void
 fn_bool(Call* self)
 {
-	call_validate(self, 1);
+	call_expect(self, 1);
 	auto arg = &self->argv[0];
 	if (arg->type == TYPE_JSON)
 	{
@@ -111,14 +110,13 @@ fn_bool(Call* self)
 		if (str_is_case(&arg->string, "false", 5))
 			value = false;
 		else
-			error("failed to cast string to bool");
+			call_error_arg(self, 0, "failed to cast string to bool");
 		break;
 	case TYPE_NULL:
 		value_set_null(self->result);
 		return;
 	default:
-		error("bool(%s): operation type is not supported",
-		      type_of(arg->type));
+		call_unsupported(self, 0);
 		break;
 	}
 	value_set_bool(self->result, value);
@@ -127,7 +125,7 @@ fn_bool(Call* self)
 hot static void
 fn_double(Call* self)
 {
-	call_validate(self, 1);
+	call_expect(self, 1);
 	auto arg = &self->argv[0];
 	if (arg->type == TYPE_JSON)
 	{
@@ -150,8 +148,7 @@ fn_double(Call* self)
 		value_set_null(self->result);
 		return;
 	default:
-		error("double(%s): operation type is not supported",
-		      type_of(arg->type));
+		call_unsupported(self, 0);
 		break;
 	}
 	value_set_double(self->result, value);
@@ -160,7 +157,7 @@ fn_double(Call* self)
 hot static void
 fn_string(Call* self)
 {
-	call_validate(self, 1);
+	call_expect(self, 1);
 	auto arg = &self->argv[0];
 	if (unlikely(arg->type == TYPE_NULL))
 	{
@@ -223,7 +220,7 @@ fn_string(Call* self)
 hot static void
 fn_json(Call* self)
 {
-	call_validate(self, 1);
+	call_expect(self, 1);
 	auto arg = &self->argv[0];
 	if (unlikely(arg->type == TYPE_JSON))
 	{
@@ -238,7 +235,7 @@ fn_json(Call* self)
 hot static void
 fn_json_import(Call* self)
 {
-	call_validate(self, 1);
+	call_expect(self, 1);
 	auto arg = &self->argv[0];
 	if (unlikely(arg->type == TYPE_NULL))
 	{
@@ -251,8 +248,7 @@ fn_json_import(Call* self)
 		return;
 	}
 	if (unlikely(arg->type != TYPE_STRING))
-		error("json_import(%s): operation type is not supported",
-		      type_of(arg->type));
+		call_unsupported(self, 0);
 
 	auto buf = buf_create();
 	errdefer_buf(buf);
@@ -268,7 +264,7 @@ fn_json_import(Call* self)
 hot static void
 fn_interval(Call* self)
 {
-	call_validate(self, 1);
+	call_expect(self, 1);
 	auto arg = &self->argv[0];
 	if (arg->type == TYPE_JSON)
 	{
@@ -287,8 +283,7 @@ fn_interval(Call* self)
 		return;
 	}
 	if (unlikely(arg->type != TYPE_STRING))
-		error("interval(%s): operation type is not supported",
-		      type_of(arg->type));
+		call_unsupported(self, 0);
 	Interval iv;
 	interval_init(&iv);
 	interval_set(&iv, &arg->string);
@@ -299,7 +294,7 @@ hot static void
 fn_timestamp(Call* self)
 {
 	if (self->argc < 1 || self->argc > 2)
-		error("timestamp(): unexpected number of arguments");
+		call_error(self, "unexpected number of arguments");
 	auto arg = &self->argv[0];
 	if (arg->type == TYPE_JSON)
 	{
@@ -321,12 +316,12 @@ fn_timestamp(Call* self)
 				value_set_null(self->result);
 				return;
 			}
-			call_validate_arg(self, 1, TYPE_STRING);
+			call_expect_arg(self, 1, TYPE_STRING);
 			auto name = &self->argv[1].string;
 			timezone = timezone_mgr_find(global()->timezone_mgr, name);
 			if (! timezone)
-				error("timestamp(): failed to find timezone '%.*s'",
-				      str_size(name), str_of(name));
+				call_error_arg(self, 1, "failed to find timezone '%.*s'",
+				               str_size(name), str_of(name));
 		}
 		Timestamp ts;
 		timestamp_init(&ts);
@@ -338,7 +333,7 @@ fn_timestamp(Call* self)
 	case TYPE_INT:
 	{
 		if (self->argc == 2)
-			error("timestamp(): unexpected argument");
+			call_error_arg(self, 1, "unexpected argument");
 		Timestamp ts;
 		timestamp_init(&ts);
 		timestamp_set_unixtime(&ts, arg->integer);
@@ -364,15 +359,14 @@ fn_timestamp(Call* self)
 		break;
 	}
 	default:
-		error("timestamp(%s): operation type is not supported",
-		      type_of(arg->type));
+		call_unsupported(self, 0);
 	}
 }
 
 hot static void
 fn_date(Call* self)
 {
-	call_validate(self, 1);
+	call_expect(self, 1);
 	auto arg = &self->argv[0];
 	if (arg->type == TYPE_JSON)
 	{
@@ -412,15 +406,14 @@ fn_date(Call* self)
 		break;
 	}
 	default:
-		error("date(%s): operation type is not supported",
-		      type_of(arg->type));
+		call_unsupported(self, 0);
 	}
 }
 
 hot static void
 fn_vector(Call* self)
 {
-	call_validate(self, 1);
+	call_expect(self, 1);
 	auto arg = &self->argv[0];
 	if (unlikely(arg->type == TYPE_NULL))
 	{
@@ -433,12 +426,11 @@ fn_vector(Call* self)
 		return;
 	}
 	if (unlikely(arg->type != TYPE_JSON))
-		error("vector(%s): operation type is not supported",
-		      type_of(arg->type));
+		call_unsupported(self, 0);
 
 	uint8_t* pos = arg->json;
 	if (! json_is_array(pos))
-		error("vector(): json array expected");
+		call_error_arg(self, 0, "json array expected");
 
 	auto buf = buf_create();
 	errdefer_buf(buf);
@@ -461,7 +453,7 @@ fn_vector(Call* self)
 			json_read_integer(&pos, &value);
 			value_flt = value;
 		} else {
-			error("vector(): json array int or real values expected");
+			call_error_arg(self, 0, "json array values must be int or float");
 		}
 		buf_write_float(buf, value_flt);
 		count++;
@@ -474,7 +466,7 @@ fn_vector(Call* self)
 hot static void
 fn_uuid(Call* self)
 {
-	call_validate(self, 1);
+	call_expect(self, 1);
 	auto arg = &self->argv[0];
 	if (arg->type == TYPE_JSON)
 	{
@@ -493,8 +485,7 @@ fn_uuid(Call* self)
 		return;
 	}
 	if (unlikely(arg->type != TYPE_STRING))
-		error("uuid(%s): operation type is not supported",
-		      type_of(arg->type));
+		call_unsupported(self, 0);
 	Uuid uuid;
 	uuid_init(&uuid);
 	uuid_set(&uuid, &arg->string);

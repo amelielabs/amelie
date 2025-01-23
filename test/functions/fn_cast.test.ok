@@ -20,7 +20,7 @@ select null::int
 select 1::int
 [1]
 select 1::int(123)
-{"msg": "int(): expected 1 arguments, but got 2"}
+{"msg": "int(int, int) ⟵ expected 1 argument"}
 # test: int(double)
 select 3.14::int
 [3]
@@ -35,12 +35,12 @@ select '123'::int
 select '1423423423'::int
 [1423423423]
 select '1423abc'::int
-{"msg": "int(): failed to cast string"}
+{"msg": "int(❰string❱ ⟵ failed to cast string"}
 # test: int(json)
 select 123::json::int
 [123]
 select 'hi'::json::int
-{"msg": "int(): failed to cast string"}
+{"msg": "int(❰json❱ ⟵ failed to cast string"}
 # test: int(timestamp)
 select 1722517792056945::timestamp
 ["2024-08-01 13:09:52.056945+00"]
@@ -49,7 +49,7 @@ select 1722517792056945::timestamp::int
 select 1722517792056945::timestamp::int::timestamp
 ["2024-08-01 13:09:52.056945+00"]
 select '1 hour'::interval::int
-{"msg": "int(interval): operation type is not supported"}
+{"msg": "int(❰interval❱ ⟵ unsupported argument type"}
 # test: int(date)
 select '2025-01-01'::date::int
 [2460677]
@@ -76,10 +76,10 @@ select true::json::bool
 select false::json::bool
 [false]
 select '1'::json::bool
-{"msg": "failed to cast string to bool"}
+{"msg": "bool(❰json❱ ⟵ failed to cast string to bool"}
 # test: bool(timestamp)
 select 1722517792056945::timestamp::bool
-{"msg": "bool(timestamp): operation type is not supported"}
+{"msg": "bool(❰timestamp❱ ⟵ unsupported argument type"}
 # test: bool(interval)
 select '1 hour'::interval::bool
 [true]
@@ -108,7 +108,7 @@ select 1722517792056945::timestamp
 select 1722517792056945::timestamp::double
 [1.72252e+15]
 select 1722517792056945::timestamp::double::timestamp
-{"msg": "timestamp(double): operation type is not supported"}
+{"msg": "timestamp(❰double❱ ⟵ unsupported argument type"}
 # test: string(null)
 select null::string
 [null]
@@ -147,7 +147,7 @@ select '{"id": 42, "data": [1,2,3]}'::json_import::string::json_import
   "data": [1, 2, 3]
 }]
 select 123::json_import
-{"msg": "json_import(int): operation type is not supported"}
+{"msg": "json_import(❰int❱ ⟵ unsupported argument type"}
 # test: json(null)
 select null::json
 [null]
@@ -232,13 +232,13 @@ select [1.0]::vector
 select [1]::vector
 [[1]]
 select [1, 2.0, "test"]::vector
-{"msg": "vector(): json array int or real values expected"}
+{"msg": "vector(❰json❱ ⟵ json array values must be int or float"}
 select [1, 2.0, "test"]::vector
-{"msg": "vector(): json array int or real values expected"}
+{"msg": "vector(❰json❱ ⟵ json array values must be int or float"}
 select [1, 2.0, {}]::vector
-{"msg": "vector(): json array int or real values expected"}
+{"msg": "vector(❰json❱ ⟵ json array values must be int or float"}
 select [1, 2.0, null]::vector
-{"msg": "vector(): json array int or real values expected"}
+{"msg": "vector(❰json❱ ⟵ json array values must be int or float"}
 select [1,2,3]::vector
 [[1, 2, 3]]
 select [1,2,3]::vector::type
@@ -256,6 +256,6 @@ select null::uuid
 [null]
 # test: uuid(unsupported)
 select 1::uuid
-{"msg": "uuid(int): operation type is not supported"}
+{"msg": "uuid(❰int❱ ⟵ unsupported argument type"}
 disconnect S0
 close E0

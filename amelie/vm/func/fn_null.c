@@ -51,7 +51,7 @@ fn_coalesce(Call* self)
 hot static void
 fn_nullif(Call* self)
 {
-	call_validate(self, 2);
+	call_expect(self, 2);
 	if (! value_compare(&self->argv[0], &self->argv[1]))
 	{
 		value_set_null(self->result);

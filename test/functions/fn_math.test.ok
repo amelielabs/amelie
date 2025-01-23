@@ -24,7 +24,7 @@ select -10::sign
 [-1]
 # test: ceil()
 select 42::ceil
-{"msg": "ceil(): expected double for argument 0, but got int"}
+{"msg": "ceil(❰int❱ ⟵ expected double"}
 select 42.2::ceil
 [43]
 select ceil(-42.8)
@@ -36,7 +36,7 @@ select floor(-42.8)
 [-43]
 # test: exp()
 select exp(1)
-{"msg": "exp(): expected double for argument 0, but got int"}
+{"msg": "exp(❰int❱ ⟵ expected double"}
 select exp(1.0)
 [2.71828]
 select 1.0::exp
@@ -69,7 +69,7 @@ select sqrt(2.0)
 select sqrt(2.3)
 [1.51658]
 select sqrt(-2.3)
-{"msg": "sqrt(): operation failed"}
+{"msg": "sqrt(double) ⟵ operation failed"}
 # test: acos()
 select acos(1)
 [0]

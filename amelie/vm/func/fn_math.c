@@ -38,8 +38,8 @@ static void
 fn_abs(Call* self)
 {
 	auto arg = &self->argv[0];
-	call_validate(self, 1);
-	call_validate_arg(self, 0, TYPE_INT);
+	call_expect(self, 1);
+	call_expect_arg(self, 0, TYPE_INT);
 	value_set_int(self->result, llabs(arg->integer));
 }
 
@@ -47,8 +47,8 @@ static void
 fn_fabs(Call* self)
 {
 	auto arg = &self->argv[0];
-	call_validate(self, 1);
-	call_validate_arg(self, 0, TYPE_DOUBLE);
+	call_expect(self, 1);
+	call_expect_arg(self, 0, TYPE_DOUBLE);
 	value_set_double(self->result, fabs(arg->dbl));
 }
 
@@ -56,8 +56,8 @@ static void
 fn_round(Call* self)
 {
 	auto arg = &self->argv[0];
-	call_validate(self, 1);
-	call_validate_arg(self, 0, TYPE_DOUBLE);
+	call_expect(self, 1);
+	call_expect_arg(self, 0, TYPE_DOUBLE);
 	value_set_int(self->result, llround(arg->dbl));
 }
 
@@ -66,7 +66,7 @@ fn_sign(Call* self)
 {
 	auto arg = &self->argv[0];
 	int sign = 0;
-	call_validate(self, 1);
+	call_expect(self, 1);
 	if (arg->type == TYPE_INT)
 	{
 		if (arg->integer > 0)
@@ -83,7 +83,7 @@ fn_sign(Call* self)
 		if (arg->dbl < 0.0)
 			sign = -1;
 	} else {
-		error("round(): int or double argument expected");
+		call_unsupported(self, 0);
 	}
 	value_set_int(self->result, sign);
 }
@@ -92,8 +92,8 @@ static void
 fn_ceil(Call* self)
 {
 	auto arg = &self->argv[0];
-	call_validate(self, 1);
-	call_validate_arg(self, 0, TYPE_DOUBLE);
+	call_expect(self, 1);
+	call_expect_arg(self, 0, TYPE_DOUBLE);
 	value_set_double(self->result, ceil(arg->dbl));
 }
 
@@ -101,12 +101,12 @@ static void
 fn_exp(Call* self)
 {
 	auto arg = &self->argv[0];
-	call_validate(self, 1);
-	call_validate_arg(self, 0, TYPE_DOUBLE);
+	call_expect(self, 1);
+	call_expect_arg(self, 0, TYPE_DOUBLE);
 	errno = 0;
 	double result = exp(arg->dbl);
 	if (errno != 0)
-		error("exp(): operation failed");
+		call_error(self, "operation failed");
 	value_set_double(self->result, result);
 }
 
@@ -114,8 +114,8 @@ static void
 fn_floor(Call* self)
 {
 	auto arg = &self->argv[0];
-	call_validate(self, 1);
-	call_validate_arg(self, 0, TYPE_DOUBLE);
+	call_expect(self, 1);
+	call_expect_arg(self, 0, TYPE_DOUBLE);
 	value_set_double(self->result, floor(arg->dbl));
 }
 
@@ -123,11 +123,11 @@ static void
 fn_mod(Call* self)
 {
 	auto argv = self->argv;
-	call_validate(self, 2);
-	call_validate_arg(self, 0, TYPE_INT);
-	call_validate_arg(self, 1, TYPE_INT);
+	call_expect(self, 2);
+	call_expect_arg(self, 0, TYPE_INT);
+	call_expect_arg(self, 1, TYPE_INT);
 	if (argv[1].integer == 0)
-		error("mod(): zero division");
+		call_error_arg(self, 1, "zero division");
 	int64_t result = argv[0].integer % argv[1].integer;
 	value_set_int(self->result, result);
 }
@@ -136,11 +136,11 @@ static void
 fn_fmod(Call* self)
 {
 	auto argv = self->argv;
-	call_validate(self, 2);
-	call_validate_arg(self, 0, TYPE_DOUBLE);
-	call_validate_arg(self, 1, TYPE_DOUBLE);
+	call_expect(self, 2);
+	call_expect_arg(self, 0, TYPE_DOUBLE);
+	call_expect_arg(self, 1, TYPE_DOUBLE);
 	if (argv[1].integer == 0)
-		error("fmod(): zero division");
+		call_error_arg(self, 1, "zero division");
 	double result = fmod(argv[0].dbl, argv[1].dbl);
 	value_set_double(self->result, result);
 }
@@ -149,13 +149,13 @@ static void
 fn_pow(Call* self)
 {
 	auto argv = self->argv;
-	call_validate(self, 2);
-	call_validate_arg(self, 0, TYPE_INT);
-	call_validate_arg(self, 1, TYPE_INT);
+	call_expect(self, 2);
+	call_expect_arg(self, 0, TYPE_INT);
+	call_expect_arg(self, 1, TYPE_INT);
 	errno = 0;
 	double result = pow(argv[0].integer, argv[1].integer);
 	if (errno != 0)
-		error("pow(): operation failed");
+		call_error(self, "operation failed");
 	value_set_int(self->result, (int64_t)result);
 }
 
@@ -163,13 +163,13 @@ static void
 fn_fpow(Call* self)
 {
 	auto argv = self->argv;
-	call_validate(self, 2);
-	call_validate_arg(self, 0, TYPE_DOUBLE);
-	call_validate_arg(self, 1, TYPE_DOUBLE);
+	call_expect(self, 2);
+	call_expect_arg(self, 0, TYPE_DOUBLE);
+	call_expect_arg(self, 1, TYPE_DOUBLE);
 	errno = 0;
 	double result = pow(argv[0].dbl, argv[1].dbl);
 	if (errno != 0)
-		error("fpow(): operation failed");
+		call_error(self, "operation failed");
 	value_set_double(self->result, result);
 }
 
@@ -177,15 +177,15 @@ static void
 fn_trunc(Call* self)
 {
 	auto arg = &self->argv[0];
-	call_validate(self, 1);
-	call_validate_arg(self, 0, TYPE_DOUBLE);
+	call_expect(self, 1);
+	call_expect_arg(self, 0, TYPE_DOUBLE);
 	value_set_double(self->result, trunc(arg->dbl));
 }
 
 static void
 fn_pi(Call* self)
 {
-	call_validate(self, 0);
+	call_expect(self, 0);
 	value_set_double(self->result, 3.141592653589793);
 }
 
@@ -193,7 +193,7 @@ static void
 fn_sqrt(Call* self)
 {
 	auto arg = &self->argv[0];
-	call_validate(self, 1);
+	call_expect(self, 1);
 	double value;
 	if (arg->type == TYPE_INT)
 		value = arg->integer;
@@ -201,11 +201,11 @@ fn_sqrt(Call* self)
 	if (arg->type == TYPE_DOUBLE)
 		value = arg->dbl;
 	else
-		error("sqrt(): int or double arguments expected");
+		call_unsupported(self, 0);
 	errno = 0;
 	double result = sqrt(value);
 	if (errno != 0)
-		error("sqrt(): operation failed");
+		call_error(self, "operation failed");
 	value_set_double(self->result, result);
 }
 
@@ -213,7 +213,7 @@ static void
 fn_acos(Call* self)
 {
 	auto arg = &self->argv[0];
-	call_validate(self, 1);
+	call_expect(self, 1);
 	double value;
 	if (arg->type == TYPE_INT)
 		value = arg->integer;
@@ -221,11 +221,11 @@ fn_acos(Call* self)
 	if (arg->type == TYPE_DOUBLE)
 		value = arg->dbl;
 	else
-		error("acos(): int or double arguments expected");
+		call_unsupported(self, 0);
 	errno = 0;
 	double result = acos(value);
 	if (errno != 0)
-		error("acos(): operation failed");
+		call_error(self, "operation failed");
 	value_set_double(self->result, result);
 }
 
@@ -233,7 +233,7 @@ static void
 fn_acosh(Call* self)
 {
 	auto arg = &self->argv[0];
-	call_validate(self, 1);
+	call_expect(self, 1);
 	double value;
 	if (arg->type == TYPE_INT)
 		value = arg->integer;
@@ -241,11 +241,11 @@ fn_acosh(Call* self)
 	if (arg->type == TYPE_DOUBLE)
 		value = arg->dbl;
 	else
-		error("acosh(): int or double arguments expected");
+		call_unsupported(self, 0);
 	errno = 0;
 	double result = acosh(value);
 	if (errno != 0)
-		error("acosh(): operation failed");
+		call_error(self, "operation failed");
 	value_set_double(self->result, result);
 }
 
@@ -253,7 +253,7 @@ static void
 fn_asin(Call* self)
 {
 	auto arg = &self->argv[0];
-	call_validate(self, 1);
+	call_expect(self, 1);
 	double value;
 	if (arg->type == TYPE_INT)
 		value = arg->integer;
@@ -261,11 +261,11 @@ fn_asin(Call* self)
 	if (arg->type == TYPE_DOUBLE)
 		value = arg->dbl;
 	else
-		error("asin(): int or double arguments expected");
+		call_unsupported(self, 0);
 	errno = 0;
 	double result = asin(value);
 	if (errno != 0)
-		error("asin(): operation failed");
+		call_error(self, "operation failed");
 	value_set_double(self->result, result);
 }
 
@@ -273,7 +273,7 @@ static void
 fn_asinh(Call* self)
 {
 	auto arg = &self->argv[0];
-	call_validate(self, 1);
+	call_expect(self, 1);
 	double value;
 	if (arg->type == TYPE_INT)
 		value = arg->integer;
@@ -281,11 +281,11 @@ fn_asinh(Call* self)
 	if (arg->type == TYPE_DOUBLE)
 		value = arg->dbl;
 	else
-		error("asinh(): int or double arguments expected");
+		call_unsupported(self, 0);
 	errno = 0;
 	double result = asinh(value);
 	if (errno != 0)
-		error("asinh(): operation failed");
+		call_error(self, "operation failed");
 	value_set_double(self->result, result);
 }
 
@@ -293,7 +293,7 @@ static void
 fn_atan(Call* self)
 {
 	auto arg = &self->argv[0];
-	call_validate(self, 1);
+	call_expect(self, 1);
 	double value;
 	if (arg->type == TYPE_INT)
 		value = arg->integer;
@@ -301,11 +301,11 @@ fn_atan(Call* self)
 	if (arg->type == TYPE_DOUBLE)
 		value = arg->dbl;
 	else
-		error("atan(): int or double arguments expected");
+		call_unsupported(self, 0);
 	errno = 0;
 	double result = atan(value);
 	if (errno != 0)
-		error("atan(): operation failed");
+		call_error(self, "operation failed");
 	value_set_double(self->result, result);
 }
 
@@ -313,7 +313,7 @@ static void
 fn_atanh(Call* self)
 {
 	auto arg = &self->argv[0];
-	call_validate(self, 1);
+	call_expect(self, 1);
 	double value;
 	if (arg->type == TYPE_INT)
 		value = arg->integer;
@@ -321,11 +321,11 @@ fn_atanh(Call* self)
 	if (arg->type == TYPE_DOUBLE)
 		value = arg->dbl;
 	else
-		error("atanh(): int or double arguments expected");
+		call_unsupported(self, 0);
 	errno = 0;
 	double result = atanh(value);
 	if (errno != 0)
-		error("atanh(): operation failed");
+		call_error(self, "operation failed");
 	value_set_double(self->result, result);
 }
 
@@ -333,7 +333,7 @@ static void
 fn_atan2(Call* self)
 {
 	auto argv = self->argv;
-	call_validate(self, 2);
+	call_expect(self, 2);
 
 	double arg1;
 	if (argv[0].type == TYPE_INT)
@@ -342,7 +342,7 @@ fn_atan2(Call* self)
 	if (argv[0].type == TYPE_DOUBLE)
 		arg1 = argv[0].dbl;
 	else
-		error("atan2(): int or double arguments expected");
+		call_unsupported(self, 0);
 
 	double arg2;
 	if (argv[1].type == TYPE_INT)
@@ -351,12 +351,12 @@ fn_atan2(Call* self)
 	if (argv[1].type == TYPE_DOUBLE)
 		arg2 = argv[1].dbl;
 	else
-		error("atan2(): int or double arguments expected");
+		call_unsupported(self, 0);
 
 	errno = 0;
 	double result = atan2(arg1, arg2);
 	if (errno != 0)
-		error("atan2(): operation failed");
+		call_error(self, "operation failed");
 	value_set_double(self->result, result);
 }
 
@@ -364,7 +364,7 @@ static void
 fn_cos(Call* self)
 {
 	auto arg = &self->argv[0];
-	call_validate(self, 1);
+	call_expect(self, 1);
 	double value;
 	if (arg->type == TYPE_INT)
 		value = arg->integer;
@@ -372,11 +372,11 @@ fn_cos(Call* self)
 	if (arg->type == TYPE_DOUBLE)
 		value = arg->dbl;
 	else
-		error("cos(): int or double arguments expected");
+		call_unsupported(self, 0);
 	errno = 0;
 	double result = cos(value);
 	if (errno != 0)
-		error("cos(): operation failed");
+		call_error(self, "operation failed");
 	value_set_double(self->result, result);
 }
 
@@ -384,7 +384,7 @@ static void
 fn_cosh(Call* self)
 {
 	auto arg = &self->argv[0];
-	call_validate(self, 1);
+	call_expect(self, 1);
 	double value;
 	if (arg->type == TYPE_INT)
 		value = arg->integer;
@@ -392,11 +392,11 @@ fn_cosh(Call* self)
 	if (arg->type == TYPE_DOUBLE)
 		value = arg->dbl;
 	else
-		error("cosh(): int or double arguments expected");
+		call_unsupported(self, 0);
 	errno = 0;
 	double result = cosh(value);
 	if (errno != 0)
-		error("cosh(): operation failed");
+		call_error(self, "operation failed");
 	value_set_double(self->result, result);
 }
 
@@ -404,7 +404,7 @@ static void
 fn_sin(Call* self)
 {
 	auto arg = &self->argv[0];
-	call_validate(self, 1);
+	call_expect(self, 1);
 	double value;
 	if (arg->type == TYPE_INT)
 		value = arg->integer;
@@ -412,11 +412,11 @@ fn_sin(Call* self)
 	if (arg->type == TYPE_DOUBLE)
 		value = arg->dbl;
 	else
-		error("sin(): int or double arguments expected");
+		call_unsupported(self, 0);
 	errno = 0;
 	double result = sin(value);
 	if (errno != 0)
-		error("sin(): operation failed");
+		call_error(self, "operation failed");
 	value_set_double(self->result, result);
 }
 
@@ -424,7 +424,7 @@ static void
 fn_sinh(Call* self)
 {
 	auto arg = &self->argv[0];
-	call_validate(self, 1);
+	call_expect(self, 1);
 	double value;
 	if (arg->type == TYPE_INT)
 		value = arg->integer;
@@ -432,11 +432,11 @@ fn_sinh(Call* self)
 	if (arg->type == TYPE_DOUBLE)
 		value = arg->dbl;
 	else
-		error("sinh(): int or double arguments expected");
+		call_unsupported(self, 0);
 	errno = 0;
 	double result = sinh(value);
 	if (errno != 0)
-		error("sinh(): operation failed");
+		call_error(self, "operation failed");
 	value_set_double(self->result, result);
 }
 
@@ -444,7 +444,7 @@ static void
 fn_tan(Call* self)
 {
 	auto arg = &self->argv[0];
-	call_validate(self, 1);
+	call_expect(self, 1);
 	double value;
 	if (arg->type == TYPE_INT)
 		value = arg->integer;
@@ -452,11 +452,11 @@ fn_tan(Call* self)
 	if (arg->type == TYPE_DOUBLE)
 		value = arg->dbl;
 	else
-		error("tan(): int or double arguments expected");
+		call_unsupported(self, 0);
 	errno = 0;
 	double result = tan(value);
 	if (errno != 0)
-		error("tan(): operation failed");
+		call_error(self, "operation failed");
 	value_set_double(self->result, result);
 }
 
@@ -464,7 +464,7 @@ static void
 fn_tanh(Call* self)
 {
 	auto arg = &self->argv[0];
-	call_validate(self, 1);
+	call_expect(self, 1);
 	double value;
 	if (arg->type == TYPE_INT)
 		value = arg->integer;
@@ -472,11 +472,11 @@ fn_tanh(Call* self)
 	if (arg->type == TYPE_DOUBLE)
 		value = arg->dbl;
 	else
-		error("tanh(): int or double arguments expected");
+		call_unsupported(self, 0);
 	errno = 0;
 	double result = tanh(value);
 	if (errno != 0)
-		error("tanh(): operation failed");
+		call_error(self, "operation failed");
 	value_set_double(self->result, result);
 }
 
@@ -484,7 +484,7 @@ static void
 fn_ln(Call* self)
 {
 	auto arg = &self->argv[0];
-	call_validate(self, 1);
+	call_expect(self, 1);
 	double value;
 	if (arg->type == TYPE_INT)
 		value = arg->integer;
@@ -492,11 +492,11 @@ fn_ln(Call* self)
 	if (arg->type == TYPE_DOUBLE)
 		value = arg->dbl;
 	else
-		error("ln(): int or double arguments expected");
+		call_unsupported(self, 0);
 	errno = 0;
 	double result = log(value);
 	if (errno != 0)
-		error("ln(): operation failed");
+		call_error(self, "operation failed");
 	value_set_double(self->result, result);
 }
 
@@ -504,7 +504,7 @@ static void
 fn_log(Call* self)
 {
 	auto arg = &self->argv[0];
-	call_validate(self, 1);
+	call_expect(self, 1);
 	double value;
 	if (arg->type == TYPE_INT)
 		value = arg->integer;
@@ -512,11 +512,11 @@ fn_log(Call* self)
 	if (arg->type == TYPE_DOUBLE)
 		value = arg->dbl;
 	else
-		error("log(): int or double arguments expected");
+		call_unsupported(self, 0);
 	errno = 0;
 	double result = log10(value);
 	if (errno != 0)
-		error("log(): operation failed");
+		call_error(self, "operation failed");
 	value_set_double(self->result, result);
 }
 
@@ -524,7 +524,7 @@ static void
 fn_log2(Call* self)
 {
 	auto arg = &self->argv[0];
-	call_validate(self, 1);
+	call_expect(self, 1);
 	double value;
 	if (arg->type == TYPE_INT)
 		value = arg->integer;
@@ -532,11 +532,11 @@ fn_log2(Call* self)
 	if (arg->type == TYPE_DOUBLE)
 		value = arg->dbl;
 	else
-		error("log2(): int or double arguments expected");
+		call_unsupported(self, 0);
 	errno = 0;
 	double result = log2(value);
 	if (errno != 0)
-		error("log2(): operation failed");
+		call_error(self, "operation failed");
 	value_set_double(self->result, result);
 }
 

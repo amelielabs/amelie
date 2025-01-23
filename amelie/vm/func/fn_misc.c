@@ -40,8 +40,8 @@ static void
 fn_error(Call* self)
 {
 	auto argv = self->argv;
-	call_validate(self, 1);
-	call_validate_arg(self, 0, TYPE_STRING);
+	call_expect(self, 1);
+	call_expect_arg(self, 0, TYPE_STRING);
 	error("%.*s", str_size(&argv[0].string), str_of(&argv[0].string));
 }
 
@@ -49,8 +49,8 @@ static void
 fn_sleep(Call* self)
 {
 	auto argv = self->argv;
-	call_validate(self, 1);
-	call_validate_arg(self, 0, TYPE_INT);
+	call_expect(self, 1);
+	call_expect_arg(self, 0, TYPE_INT);
 	coroutine_sleep(argv[0].integer);
 	value_set_null(self->result);
 }
@@ -58,7 +58,7 @@ fn_sleep(Call* self)
 static void
 fn_random(Call* self)
 {
-	call_validate(self, 0);
+	call_expect(self, 0);
 	int64_t value = random_generate(global()->random);
 	value_set_int(self->result, llabs(value));
 }
@@ -66,7 +66,7 @@ fn_random(Call* self)
 static void
 fn_random_uuid(Call* self)
 {
-	call_validate(self, 0);
+	call_expect(self, 0);
 	Uuid id;
 	uuid_init(&id);
 	uuid_generate(&id, global()->random);
@@ -95,8 +95,8 @@ static void
 fn_md5(Call* self)
 {
 	auto argv = self->argv;
-	call_validate(self, 1);
-	call_validate_arg(self, 0, TYPE_STRING);
+	call_expect(self, 1);
+	call_expect_arg(self, 0, TYPE_STRING);
 
 	char digest[32];
 	create_digest(EVP_md5(), &argv[0].string, digest);
@@ -116,8 +116,8 @@ static void
 fn_sha1(Call* self)
 {
 	auto argv = self->argv;
-	call_validate(self, 1);
-	call_validate_arg(self, 0, TYPE_STRING);
+	call_expect(self, 1);
+	call_expect_arg(self, 0, TYPE_STRING);
 
 	char digest[40];
 	create_digest(EVP_sha1(), &argv[0].string, digest);
@@ -137,9 +137,9 @@ static void
 fn_encode(Call* self)
 {
 	auto argv = self->argv;
-	call_validate(self, 2);
-	call_validate_arg(self, 0, TYPE_STRING);
-	call_validate_arg(self, 1, TYPE_STRING);
+	call_expect(self, 2);
+	call_expect_arg(self, 0, TYPE_STRING);
+	call_expect_arg(self, 1, TYPE_STRING);
 
 	if (str_is_cstr(&argv[1].string, "base64"))
 	{
@@ -157,7 +157,7 @@ fn_encode(Call* self)
 		str_set_u8(&string, buf->start, buf_size(buf));
 		value_set_string(self->result, &string, buf);
 	} else {
-		error("encode(): unsupported format");
+		call_error_arg(self, 1, "unsupported format");
 	}
 
 }
@@ -166,9 +166,9 @@ static void
 fn_decode(Call* self)
 {
 	auto argv = self->argv;
-	call_validate(self, 2);
-	call_validate_arg(self, 0, TYPE_STRING);
-	call_validate_arg(self, 1, TYPE_STRING);
+	call_expect(self, 2);
+	call_expect_arg(self, 0, TYPE_STRING);
+	call_expect_arg(self, 1, TYPE_STRING);
 
 	if (str_is_cstr(&argv[1].string, "base64"))
 	{
@@ -186,7 +186,7 @@ fn_decode(Call* self)
 		str_set_u8(&string, buf->start, buf_size(buf));
 		value_set_string(self->result, &string, buf);
 	} else {
-		error("decode(): unsupported format");
+		call_error_arg(self, 1, "unsupported format");
 	}
 }
 
@@ -194,9 +194,9 @@ static void
 fn_identity_of(Call* self)
 {
 	auto argv = self->argv;
-	call_validate(self, 2);
-	call_validate_arg(self, 0, TYPE_STRING);
-	call_validate_arg(self, 0, TYPE_STRING);
+	call_expect(self, 2);
+	call_expect_arg(self, 0, TYPE_STRING);
+	call_expect_arg(self, 0, TYPE_STRING);
 	auto table = table_mgr_find(&self->vm->db->table_mgr,
 	                            &argv[0].string,
 	                            &argv[1].string, true);
@@ -207,8 +207,8 @@ static void
 fn_jwt(Call* self)
 {
 	auto argv = self->argv;
-	call_validate(self, 3);
-	call_validate_arg(self, 2, TYPE_STRING);
+	call_expect(self, 3);
+	call_expect_arg(self, 2, TYPE_STRING);
 
 	// header
 	Str  header_str;
@@ -219,7 +219,7 @@ fn_jwt(Call* self)
 		// obj
 		auto pos = argv[0].json;
 		if (! json_is_obj(pos))
-			error("jwt(): string or JSON object expected");
+			call_error_arg(self, 0, "string or JSON object expected");
 		json_export(header, self->vm->local->timezone, &pos);
 		buf_str(header, &header_str);
 	} else
@@ -227,7 +227,7 @@ fn_jwt(Call* self)
 	{
 		header_str = argv[0].string;
 	} else {
-		error("jwt(): string or JSON object expected");
+		call_error_arg(self, 0, "string or JSON object expected");
 	}
 
 	// payload
@@ -238,7 +238,7 @@ fn_jwt(Call* self)
 	{
 		auto pos = argv[1].json;
 		if (! json_is_obj(pos))
-			error("jwt(): string or JSON object expected");
+		call_error_arg(self, 1, "string or JSON object expected");
 		json_export(payload, self->vm->local->timezone, &pos);
 		buf_str(payload, &payload_str);
 	} else
@@ -246,7 +246,7 @@ fn_jwt(Call* self)
 	{
 		payload_str = argv[1].string;
 	} else {
-		error("jwt(): string or JSON object expected");
+		call_error_arg(self, 1, "string or JSON object expected");
 	}
 
 	// create jwt using supplied data

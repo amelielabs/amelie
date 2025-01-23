@@ -37,7 +37,7 @@
 static void
 fn_config(Call* self)
 {
-	call_validate(self, 0);
+	call_expect(self, 0);
 	auto buf = vars_list(&config()->vars, &self->vm->local->config.vars);
 	value_set_json_buf(self->result, buf);
 }
@@ -45,7 +45,7 @@ fn_config(Call* self)
 static void
 fn_users(Call* self)
 {
-	call_validate(self, 0);
+	call_expect(self, 0);
 	Buf* buf;
 	rpc(global()->control->system, RPC_SHOW_USERS, 1, &buf);
 	value_set_json_buf(self->result, buf);
@@ -54,8 +54,8 @@ fn_users(Call* self)
 static void
 fn_user(Call* self)
 {
-	call_validate(self, 1);
-	call_validate_arg(self, 0, TYPE_STRING);
+	call_expect(self, 1);
+	call_expect_arg(self, 0, TYPE_STRING);
 	Buf* buf;
 	rpc(global()->control->system, RPC_SHOW_USERS, 2, &buf, &self->argv[0].string);
 	value_set_json_buf(self->result, buf);
@@ -64,7 +64,7 @@ fn_user(Call* self)
 static void
 fn_replicas(Call* self)
 {
-	call_validate(self, 0);
+	call_expect(self, 0);
 	Buf* buf;
 	rpc(global()->control->system, RPC_SHOW_REPLICAS, 1, &buf);
 	value_set_json_buf(self->result, buf);
@@ -74,7 +74,7 @@ static void
 fn_replica(Call* self)
 {
 	auto argv = self->argv;
-	call_validate(self, 1);
+	call_expect(self, 1);
 	if (argv[0].type == TYPE_STRING)
 	{
 		Uuid id;
@@ -88,17 +88,15 @@ fn_replica(Call* self)
 		Buf* buf;
 		rpc(global()->control->system, RPC_SHOW_REPLICAS, 2, &buf, &argv[0].uuid);
 		value_set_json_buf(self->result, buf);
-	} else
-	{
-		error("replica(%s): operation type is not supported",
-		      type_of(argv[0].type));
+	} else {
+		call_unsupported(self, 0);
 	}
 }
 
 static void
 fn_repl(Call* self)
 {
-	call_validate(self, 0);
+	call_expect(self, 0);
 	Buf* buf;
 	rpc(global()->control->system, RPC_SHOW_REPL, 1, &buf);
 	value_set_json_buf(self->result, buf);
@@ -107,7 +105,7 @@ fn_repl(Call* self)
 static void
 fn_nodes(Call* self)
 {
-	call_validate(self, 0);
+	call_expect(self, 0);
 	auto buf = node_mgr_list(&self->vm->db->node_mgr, NULL);
 	value_set_json_buf(self->result, buf);
 }
@@ -116,7 +114,7 @@ static void
 fn_node(Call* self)
 {
 	auto argv = self->argv;
-	call_validate(self, 1);
+	call_expect(self, 1);
 	if (argv[0].type == TYPE_STRING)
 	{
 		auto buf = node_mgr_list(&self->vm->db->node_mgr, &self->argv[0].string);
@@ -130,17 +128,15 @@ fn_node(Call* self)
 		str_set(&str, uuid_sz, UUID_SZ - 1);
 		auto buf = node_mgr_list(&self->vm->db->node_mgr, &str);
 		value_set_json_buf(self->result, buf);
-	} else
-	{
-		error("node(%s): operation type is not supported",
-		      type_of(argv[0].type));
+	} else {
+		call_unsupported(self, 0);
 	}
 }
 
 static void
 fn_schemas(Call* self)
 {
-	call_validate(self, 0);
+	call_expect(self, 0);
 	auto buf = schema_mgr_list(&self->vm->db->schema_mgr, NULL, true);
 	value_set_json_buf(self->result, buf);
 }
@@ -148,8 +144,8 @@ fn_schemas(Call* self)
 static void
 fn_schema(Call* self)
 {
-	call_validate(self, 1);
-	call_validate_arg(self, 0, TYPE_STRING);
+	call_expect(self, 1);
+	call_expect_arg(self, 0, TYPE_STRING);
 	auto buf = schema_mgr_list(&self->vm->db->schema_mgr, &self->argv[0].string, true);
 	value_set_json_buf(self->result, buf);
 }
@@ -157,7 +153,7 @@ fn_schema(Call* self)
 static void
 fn_tables(Call* self)
 {
-	call_validate(self, 0);
+	call_expect(self, 0);
 	auto buf = table_mgr_list(&self->vm->db->table_mgr, NULL, NULL, true);
 	value_set_json_buf(self->result, buf);
 }
@@ -165,8 +161,8 @@ fn_tables(Call* self)
 static void
 fn_table(Call* self)
 {
-	call_validate(self, 1);
-	call_validate_arg(self, 0, TYPE_STRING);
+	call_expect(self, 1);
+	call_expect_arg(self, 0, TYPE_STRING);
 	Str name = self->argv[0].string;
 	Str schema;
 	str_init(&schema);
@@ -181,7 +177,7 @@ fn_table(Call* self)
 static void
 fn_wal(Call* self)
 {
-	call_validate(self, 0);
+	call_expect(self, 0);
 	auto buf = wal_status(&self->vm->db->wal);
 	value_set_json_buf(self->result, buf);
 }
@@ -189,7 +185,7 @@ fn_wal(Call* self)
 static void
 fn_status(Call* self)
 {
-	call_validate(self, 0);
+	call_expect(self, 0);
 	Buf* buf;
 	rpc(global()->control->system, RPC_SHOW_STATUS, 1, &buf);
 	value_set_json_buf(self->result, buf);

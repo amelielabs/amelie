@@ -2,7 +2,7 @@ open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "12
 connect E0 S0 localhost:3485
 # test: append()
 select append(null)
-{"msg": "append(): expected two or more arguments"}
+{"msg": "append(null) ⟵ expected two or more arguments"}
 select append(null, 1)
 [null]
 select []::append(1)
@@ -26,13 +26,13 @@ select []::append(1)::append(2)::push_back(3)
 [[1, 2, 3]]
 # test: push()
 select push(null)
-{"msg": "push(): expected two or more arguments"}
+{"msg": "push(null) ⟵ expected two or more arguments"}
 select push(null, 0)
 [null]
 select push([], 0)
 [[0]]
 select []::push()
-{"msg": "push(): expected two or more arguments"}
+{"msg": "push(json) ⟵ expected two or more arguments"}
 select []::push(1)
 [[1]]
 select []::push(2)::push(1)
@@ -45,7 +45,7 @@ select [3]::push(1, 2)
 [[1, 2, 3]]
 # test: pop()
 select pop()
-{"msg": "pop(): expected 1 arguments, but got 0"}
+{"msg": "pop() ⟵ expected 1 argument"}
 select pop(null)
 [null]
 select pop([])
@@ -66,7 +66,7 @@ select [1,2,3]::pop::pop::pop::pop
 [[]]
 # test: pop_back()
 select pop_back()
-{"msg": "pop_back(): expected 1 arguments, but got 0"}
+{"msg": "pop_back() ⟵ expected 1 argument"}
 select pop_back(null)
 [null]
 select pop_back([])
@@ -87,9 +87,9 @@ select [1,2,3]::pop_back::pop_back::pop_back::pop_back
 [[]]
 # test: put()
 select put(null)
-{"msg": "put(): expected 3 arguments, but got 1"}
+{"msg": "put(null) ⟵ expected 3 arguments"}
 select put(null, 0)
-{"msg": "put(): expected 3 arguments, but got 2"}
+{"msg": "put(null, int) ⟵ expected 3 arguments"}
 select put([], 0, 0)
 {"msg": "put: array index 0 is out of bounds"}
 select put([1], 0, 0)
@@ -108,7 +108,7 @@ select [1,2,3]::put(0, '0')::put(-1, '1')
 {"msg": "put: array index -1 is out of bounds"}
 # test: remove()
 select remove(null)
-{"msg": "remove(): expected 2 arguments, but got 1"}
+{"msg": "remove(null) ⟵ expected 2 arguments"}
 select remove(null, 0)
 [null]
 select remove([], 0)
@@ -234,7 +234,7 @@ select set({"a": {"b": 22}, "c": 88}, "a.b", 34)
 select set({"a": {"b": 22}, "c": 88}, "a.b", 34)::size
 [2]
 select set([], 0, 1)
-{"msg": "set(): json object expected"}
+{"msg": "set(❰json❱ ⟵ json object expected"}
 # test: unset()
 select {"a": 1, "b": 2, "c": 3}::unset("a")
 [{
@@ -309,7 +309,7 @@ select unset({"a": {"b": {"c": {"d": 0, "v": 77}}}}, "a.b.c.d")
   }
 }]
 select unset([1], 0)
-{"msg": "unset(): json object expected"}
+{"msg": "unset(❰json❱ ⟵ json object expected"}
 # test: has()
 select {}::has("id")
 [false]

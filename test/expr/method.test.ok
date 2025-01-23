@@ -15,7 +15,7 @@ select 1::()
 select 1::[]()
 {"msg": "select 1::❰[❱ ⟵ function name expected"}
 select 1::length()
-{"msg": "length(int): operation type is not supported"}
+{"msg": "length(❰int❱ ⟵ unsupported argument type"}
 select "hello"::length()
 [5]
 explain select system.config().directory::length()

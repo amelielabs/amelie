@@ -218,7 +218,7 @@ select system.config().directory
 select system.config()["directory"]
 ["_output/E0"]
 select system.config(123)
-{"msg": "config(): expected 0 arguments, but got 1"}
+{"msg": "config(❰int❱ ⟵ function has no arguments"}
 # test: show name
 show log_enable
 [true]

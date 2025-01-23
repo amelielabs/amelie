@@ -50,19 +50,19 @@ select cast (false as json)
 [false]
 # test: cast (bool as date)
 select cast (true as date)
-{"msg": "date(bool): operation type is not supported"}
+{"msg": "date(❰bool❱ ⟵ unsupported argument type"}
 # test: cast (bool as timestamp)
 select cast (true as timestamp)
-{"msg": "timestamp(bool): operation type is not supported"}
+{"msg": "timestamp(❰bool❱ ⟵ unsupported argument type"}
 # test: cast (bool as interval)
 select cast (true as interval)
-{"msg": "interval(bool): operation type is not supported"}
+{"msg": "interval(❰bool❱ ⟵ unsupported argument type"}
 # test: cast (bool as vector)
 select cast (true as vector)
-{"msg": "vector(bool): operation type is not supported"}
+{"msg": "vector(❰bool❱ ⟵ unsupported argument type"}
 # test: cast (bool as uuid)
 select cast (true as uuid)
-{"msg": "uuid(bool): operation type is not supported"}
+{"msg": "uuid(❰bool❱ ⟵ unsupported argument type"}
 # test: cast (int as bool)
 select cast (123 as bool)::type
 ["bool"]
@@ -96,13 +96,13 @@ select cast (123 as timestamp)
 ["1970-01-01 00:00:00.000123+00"]
 # test: cast (int as interval)
 select cast (123 as interval)
-{"msg": "interval(int): operation type is not supported"}
+{"msg": "interval(❰int❱ ⟵ unsupported argument type"}
 # test: cast (int as vector)
 select cast (123 as vector)
-{"msg": "vector(int): operation type is not supported"}
+{"msg": "vector(❰int❱ ⟵ unsupported argument type"}
 # test: cast (int as uuid)
 select cast (123 as uuid)
-{"msg": "uuid(int): operation type is not supported"}
+{"msg": "uuid(❰int❱ ⟵ unsupported argument type"}
 # test: cast (double as bool)
 select cast (123.321 as bool)::type
 ["bool"]
@@ -130,42 +130,42 @@ select cast (123.321 as json)
 [123.321]
 # test: cast (double as date)
 select cast (123.321 as date)
-{"msg": "date(double): operation type is not supported"}
+{"msg": "date(❰double❱ ⟵ unsupported argument type"}
 # test: cast (double as timestamp)
 select cast (123.321 as timestamp)
-{"msg": "timestamp(double): operation type is not supported"}
+{"msg": "timestamp(❰double❱ ⟵ unsupported argument type"}
 # test: cast (double as interval)
 select cast (123.321 as interval)
-{"msg": "interval(double): operation type is not supported"}
+{"msg": "interval(❰double❱ ⟵ unsupported argument type"}
 # test: cast (double as vector)
 select cast (123.321 as vector)
-{"msg": "vector(double): operation type is not supported"}
+{"msg": "vector(❰double❱ ⟵ unsupported argument type"}
 # test: cast (double as uuid)
 select cast (123.321 as uuid)
-{"msg": "uuid(double): operation type is not supported"}
+{"msg": "uuid(❰double❱ ⟵ unsupported argument type"}
 # test: cast (string as bool)
 select cast ('string' as bool)::type
-{"msg": "failed to cast string to bool"}
+{"msg": "bool(❰string❱ ⟵ failed to cast string to bool"}
 select cast ('string' as bool)
-{"msg": "failed to cast string to bool"}
+{"msg": "bool(❰string❱ ⟵ failed to cast string to bool"}
 select cast ('true' as bool)
 [true]
 select cast ('false' as bool)
 [false]
 # test: cast (string as int)
 select cast ('string' as int)::type
-{"msg": "int(): failed to cast string"}
+{"msg": "int(❰string❱ ⟵ failed to cast string"}
 select cast ('string' as int)
-{"msg": "int(): failed to cast string"}
+{"msg": "int(❰string❱ ⟵ failed to cast string"}
 select cast ('123' as int)
 [123]
 # test: cast (string as double)
 select cast ('string' as double)::type
-{"msg": "double(string): operation type is not supported"}
+{"msg": "double(❰string❱ ⟵ unsupported argument type"}
 select cast ('string' as double)
-{"msg": "double(string): operation type is not supported"}
+{"msg": "double(❰string❱ ⟵ unsupported argument type"}
 select cast ('123.321' as double)
-{"msg": "double(string): operation type is not supported"}
+{"msg": "double(❰string❱ ⟵ unsupported argument type"}
 # test: cast (string as string)
 select cast ('string' as string)::type
 ["string"]
@@ -193,9 +193,9 @@ select cast ('1 days 5 hours' as interval)
 ["1 day 5 hours"]
 # test: cast (string as vector)
 select cast ('string' as vector)
-{"msg": "vector(string): operation type is not supported"}
+{"msg": "vector(❰string❱ ⟵ unsupported argument type"}
 select cast ('[1,2,3]' as vector)
-{"msg": "vector(string): operation type is not supported"}
+{"msg": "vector(❰string❱ ⟵ unsupported argument type"}
 # test: cast (string as uuid)
 select cast ('string' as uuid)
 {"msg": "failed to parse uuid"}
@@ -243,9 +243,9 @@ select cast ('00000000-0000-0000-0000-000000000000'::json as uuid)
 ["00000000-0000-0000-0000-000000000000"]
 # test: cast (date as bool)
 select cast (date '1970-01-01' as bool)::type
-{"msg": "bool(date): operation type is not supported"}
+{"msg": "bool(❰date❱ ⟵ unsupported argument type"}
 select cast (date '1970-01-01' as bool)
-{"msg": "bool(date): operation type is not supported"}
+{"msg": "bool(❰date❱ ⟵ unsupported argument type"}
 # test: cast (date as int)
 select cast (date '1970-01-01' as int)::type
 ["int"]
@@ -274,18 +274,18 @@ select cast (date '1970-01-01' as timestamp)
 ["1970-01-01 00:00:00+00"]
 # test: cast (date as interval)
 select cast (date '1970-01-01' as interval)
-{"msg": "interval(date): operation type is not supported"}
+{"msg": "interval(❰date❱ ⟵ unsupported argument type"}
 # test: cast (date as vector)
 select cast (date '1970-01-01' as vector)
-{"msg": "vector(date): operation type is not supported"}
+{"msg": "vector(❰date❱ ⟵ unsupported argument type"}
 # test: cast (date as uuid)
 select cast (date '1970-01-01' as uuid)
-{"msg": "uuid(date): operation type is not supported"}
+{"msg": "uuid(❰date❱ ⟵ unsupported argument type"}
 # test: cast (timestamp as bool)
 select cast (timestamp '1970-01-01 00:00:00.99' as bool)::type
-{"msg": "bool(timestamp): operation type is not supported"}
+{"msg": "bool(❰timestamp❱ ⟵ unsupported argument type"}
 select cast (timestamp '1970-01-01 00:00:00.99' as bool)
-{"msg": "bool(timestamp): operation type is not supported"}
+{"msg": "bool(❰timestamp❱ ⟵ unsupported argument type"}
 # test: cast (timestamp as int)
 select cast (timestamp '1970-01-01 00:00:00.99' as int)::type
 ["int"]
@@ -314,13 +314,13 @@ select cast (timestamp '1970-01-01 00:00:00.99' as timestamp)
 ["1970-01-01 00:00:00.990+00"]
 # test: cast (timestamp as interval)
 select cast (timestamp '1970-01-01 00:00:00.99' as interval)
-{"msg": "interval(timestamp): operation type is not supported"}
+{"msg": "interval(❰timestamp❱ ⟵ unsupported argument type"}
 # test: cast (timestamp as vector)
 select cast (timestamp '1970-01-01 00:00:00.99' as vector)
-{"msg": "vector(timestamp): operation type is not supported"}
+{"msg": "vector(❰timestamp❱ ⟵ unsupported argument type"}
 # test: cast (timestamp as uuid)
 select cast (timestamp '1970-01-01 00:00:00.99' as uuid)
-{"msg": "uuid(timestamp): operation type is not supported"}
+{"msg": "uuid(❰timestamp❱ ⟵ unsupported argument type"}
 # test: cast (interval as bool)
 select cast (interval '5 days 5 hours' as bool)::type
 ["bool"]
@@ -328,14 +328,14 @@ select cast (interval '5 days 5 hours' as bool)
 [true]
 # test: cast (interval as int)
 select cast (interval '5 days 5 hours' as int)::type
-{"msg": "int(interval): operation type is not supported"}
+{"msg": "int(❰interval❱ ⟵ unsupported argument type"}
 select cast (interval '5 days 5 hours' as int)
-{"msg": "int(interval): operation type is not supported"}
+{"msg": "int(❰interval❱ ⟵ unsupported argument type"}
 # test: cast (interval as double)
 select cast (interval '5 days 5 hours' as double)::type
-{"msg": "double(interval): operation type is not supported"}
+{"msg": "double(❰interval❱ ⟵ unsupported argument type"}
 select cast (interval '5 days 5 hours' as double)
-{"msg": "double(interval): operation type is not supported"}
+{"msg": "double(❰interval❱ ⟵ unsupported argument type"}
 # test: cast (interval as string)
 select cast (interval '5 days 5 hours' as string)::type
 ["string"]
@@ -348,34 +348,34 @@ select cast (interval '5 days 5 hours' as json)
 ["5 days 5 hours"]
 # test: cast (interval as date)
 select cast (interval '5 days 5 hours' as date)
-{"msg": "date(interval): operation type is not supported"}
+{"msg": "date(❰interval❱ ⟵ unsupported argument type"}
 # test: cast (interval as timestamp)
 select cast (interval '5 days 5 hours' as timestamp)
-{"msg": "timestamp(interval): operation type is not supported"}
+{"msg": "timestamp(❰interval❱ ⟵ unsupported argument type"}
 # test: cast (interval as interval)
 select cast (interval '5 days 5 hours' as interval)
 ["5 days 5 hours"]
 # test: cast (interval as vector)
 select cast (interval '5 days 5 hours' as vector)
-{"msg": "vector(interval): operation type is not supported"}
+{"msg": "vector(❰interval❱ ⟵ unsupported argument type"}
 # test: cast (interval as uuid)
 select cast (interval '5 days 5 hours' as uuid)
-{"msg": "uuid(interval): operation type is not supported"}
+{"msg": "uuid(❰interval❱ ⟵ unsupported argument type"}
 # test: cast (vector as bool)
 select cast (vector [1,2,3] as bool)::type
-{"msg": "bool(vector): operation type is not supported"}
+{"msg": "bool(❰vector❱ ⟵ unsupported argument type"}
 select cast (vector [1,2,3] as bool)
-{"msg": "bool(vector): operation type is not supported"}
+{"msg": "bool(❰vector❱ ⟵ unsupported argument type"}
 # test: cast (vector as int)
 select cast (vector [1,2,3] as int)::type
-{"msg": "int(vector): operation type is not supported"}
+{"msg": "int(❰vector❱ ⟵ unsupported argument type"}
 select cast (vector [1,2,3] as int)
-{"msg": "int(vector): operation type is not supported"}
+{"msg": "int(❰vector❱ ⟵ unsupported argument type"}
 # test: cast (vector as double)
 select cast (vector [1,2,3] as double)::type
-{"msg": "double(vector): operation type is not supported"}
+{"msg": "double(❰vector❱ ⟵ unsupported argument type"}
 select cast (vector [1,2,3] as double)
-{"msg": "double(vector): operation type is not supported"}
+{"msg": "double(❰vector❱ ⟵ unsupported argument type"}
 # test: cast (vector as string)
 select cast (vector [1,2,3] as string)::type
 ["string"]
@@ -388,34 +388,34 @@ select cast (vector [1,2,3] as json)
 [[1, 2, 3]]
 # test: cast (vector as date)
 select cast (vector [1,2,3] as date)
-{"msg": "date(vector): operation type is not supported"}
+{"msg": "date(❰vector❱ ⟵ unsupported argument type"}
 # test: cast (vector as timestamp)
 select cast (vector [1,2,3] as timestamp)
-{"msg": "timestamp(vector): operation type is not supported"}
+{"msg": "timestamp(❰vector❱ ⟵ unsupported argument type"}
 # test: cast (vector as interval)
 select cast (vector [1,2,3] as interval)
-{"msg": "interval(vector): operation type is not supported"}
+{"msg": "interval(❰vector❱ ⟵ unsupported argument type"}
 # test: cast (vector as vector)
 select cast (vector [1,2,3] as vector)
 [[1, 2, 3]]
 # test: cast (vector as uuid)
 select cast (vector [1,2,3] as uuid)
-{"msg": "uuid(vector): operation type is not supported"}
+{"msg": "uuid(❰vector❱ ⟵ unsupported argument type"}
 # test: cast (uuid as bool)
 select cast (uuid '00000000-0000-0000-0000-000000000000' as bool)::type
-{"msg": "bool(uuid): operation type is not supported"}
+{"msg": "bool(❰uuid❱ ⟵ unsupported argument type"}
 select cast (uuid '00000000-0000-0000-0000-000000000000' as bool)
-{"msg": "bool(uuid): operation type is not supported"}
+{"msg": "bool(❰uuid❱ ⟵ unsupported argument type"}
 # test: cast (uuid as int)
 select cast (uuid '00000000-0000-0000-0000-000000000000' as int)::type
-{"msg": "int(uuid): operation type is not supported"}
+{"msg": "int(❰uuid❱ ⟵ unsupported argument type"}
 select cast (uuid '00000000-0000-0000-0000-000000000000' as int)
-{"msg": "int(uuid): operation type is not supported"}
+{"msg": "int(❰uuid❱ ⟵ unsupported argument type"}
 # test: cast (uuid as double)
 select cast (uuid '00000000-0000-0000-0000-000000000000' as double)::type
-{"msg": "double(uuid): operation type is not supported"}
+{"msg": "double(❰uuid❱ ⟵ unsupported argument type"}
 select cast (uuid '00000000-0000-0000-0000-000000000000' as double)
-{"msg": "double(uuid): operation type is not supported"}
+{"msg": "double(❰uuid❱ ⟵ unsupported argument type"}
 # test: cast (uuid as string)
 select cast (uuid '00000000-0000-0000-0000-000000000000' as string)::type
 ["string"]
@@ -428,16 +428,16 @@ select cast (uuid '00000000-0000-0000-0000-000000000000' as json)
 ["00000000-0000-0000-0000-000000000000"]
 # test: cast (uuid as date)
 select cast (uuid '00000000-0000-0000-0000-000000000000' as date)
-{"msg": "date(uuid): operation type is not supported"}
+{"msg": "date(❰uuid❱ ⟵ unsupported argument type"}
 # test: cast (uuid as timestamp)
 select cast (uuid '00000000-0000-0000-0000-000000000000' as timestamp)
-{"msg": "timestamp(uuid): operation type is not supported"}
+{"msg": "timestamp(❰uuid❱ ⟵ unsupported argument type"}
 # test: cast (uuid as interval)
 select cast (uuid '00000000-0000-0000-0000-000000000000' as interval)
-{"msg": "interval(uuid): operation type is not supported"}
+{"msg": "interval(❰uuid❱ ⟵ unsupported argument type"}
 # test: cast (uuid as vector)
 select cast (uuid '00000000-0000-0000-0000-000000000000' as vector)
-{"msg": "vector(uuid): operation type is not supported"}
+{"msg": "vector(❰uuid❱ ⟵ unsupported argument type"}
 # test: cast (uuid as uuid)
 select cast (uuid '00000000-0000-0000-0000-000000000000' as uuid)
 ["00000000-0000-0000-0000-000000000000"]

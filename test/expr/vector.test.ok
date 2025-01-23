@@ -8,7 +8,7 @@ select [1,2,3]::vector::type
 select [1,2,3]::vector::length
 [3]
 select ""::vector
-{"msg": "vector(string): operation type is not supported"}
+{"msg": "vector(❰string❱ ⟵ unsupported argument type"}
 select [1.0]::vector
 [[1]]
 select [1.0, 1.1, 1.2]::vector

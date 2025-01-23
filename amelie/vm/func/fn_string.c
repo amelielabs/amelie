@@ -38,7 +38,7 @@ hot static void
 fn_length(Call* self)
 {
 	auto arg = &self->argv[0];
-	call_validate(self, 1);
+	call_expect(self, 1);
 	if (unlikely(arg->type == TYPE_NULL))
 	{
 		value_set_null(self->result);
@@ -63,14 +63,13 @@ fn_length(Call* self)
 			json_read_string(&pos, &str);
 			rc = utf8_strlen(&str);
 		} else
-			error("length(): unsupport json argument type");
+			call_error_arg(self, 0, "unsupported json value");
 		break;
 	case TYPE_VECTOR:
 		rc = arg->vector->size;
 		break;
 	default:
-		error("length(%s): operation type is not supported",
-		      type_of(arg->type));
+		call_unsupported(self, 0);
 		break;
 	}
 	value_set_int(self->result, rc);
@@ -80,7 +79,7 @@ hot static void
 fn_octet_length(Call* self)
 {
 	auto arg = &self->argv[0];
-	call_validate(self, 1);
+	call_expect(self, 1);
 	if (unlikely(arg->type == TYPE_NULL))
 	{
 		value_set_null(self->result);
@@ -98,8 +97,7 @@ fn_octet_length(Call* self)
 		rc = vector_size(arg->vector);
 		break;
 	default:
-		error("octet_length(%s): operation type is not supported",
-		      type_of(arg->type));
+		call_unsupported(self, 0);
 		break;
 	}
 	value_set_int(self->result, rc);
@@ -117,7 +115,7 @@ fn_concat(Call* self)
 		if (argv[i].type == TYPE_NULL)
 			continue;
 		if (argv[i].type != TYPE_STRING)
-			error("concat(): string argument expected");
+			call_error_arg(self, i, "string expected");
 		buf_write_str(buf, &argv[i].string);
 	}
 
@@ -130,13 +128,13 @@ static void
 fn_lower(Call* self)
 {
 	auto arg = &self->argv[0];
-	call_validate(self, 1);
+	call_expect(self, 1);
 	if (unlikely(arg->type == TYPE_NULL))
 	{
 		value_set_null(self->result);
 		return;
 	}
-	call_validate_arg(self, 0, TYPE_STRING);
+	call_expect_arg(self, 0, TYPE_STRING);
 
 	auto src = str_of(&arg->string);
 	auto src_size = str_size(&arg->string);
@@ -157,13 +155,13 @@ static void
 fn_upper(Call* self)
 {
 	auto arg = &self->argv[0];
-	call_validate(self, 1);
+	call_expect(self, 1);
 	if (unlikely(arg->type == TYPE_NULL))
 	{
 		value_set_null(self->result);
 		return;
 	}
-	call_validate_arg(self, 0, TYPE_STRING);
+	call_expect_arg(self, 0, TYPE_STRING);
 
 	auto src = str_of(&arg->string);
 	auto src_size = str_size(&arg->string);
@@ -185,7 +183,7 @@ fn_substr(Call* self)
 {
 	auto argv = self->argv;
 	if (self->argc < 2 || self->argc > 3)
-		error("substr(): unexpected number of arguments");
+		call_error(self, "unexpected number of arguments");
 
 	if (unlikely(argv[0].type == TYPE_NULL))
 	{
@@ -194,28 +192,28 @@ fn_substr(Call* self)
 	}
 
 	// (string, pos)
-	call_validate_arg(self, 0, TYPE_STRING);
-	call_validate_arg(self, 1, TYPE_INT);
+	call_expect_arg(self, 0, TYPE_STRING);
+	call_expect_arg(self, 1, TYPE_INT);
 	auto src = &argv[0].string;
 	auto pos = argv[1].integer;
 
 	// position starts from 1
 	if (pos == 0)
-		error("substr(): position is out of bounds");
+		call_error_arg(self, 1, "position is out of bounds");
 	pos--;
 
 	int size = utf8_strlen(src);
 	if (pos >= size)
-		error("substr(): position is out of bounds");
+		call_error_arg(self, 1, "position is out of bounds");
 
 	// (string, pos, count)
 	int count = size - pos;
 	if (self->argc == 3)
 	{
-		call_validate_arg(self, 2, TYPE_INT);
+		call_expect_arg(self, 2, TYPE_INT);
 		count = argv[2].integer;
 		if ((pos + count) > size)
-			error("substr(): position is out of bounds");
+			call_error_arg(self, 2, "position is out of bounds");
 	}
 
 	Str result;
@@ -236,14 +234,14 @@ fn_strpos(Call* self)
 {
 	// (string, substring)
 	auto argv = self->argv;
-	call_validate(self, 2);
+	call_expect(self, 2);
 	if (unlikely(argv[0].type == TYPE_NULL))
 	{
 		value_set_null(self->result);
 		return;
 	}
-	call_validate_arg(self, 0, TYPE_STRING);
-	call_validate_arg(self, 1, TYPE_STRING);
+	call_expect_arg(self, 0, TYPE_STRING);
+	call_expect_arg(self, 1, TYPE_STRING);
 
 	auto src = &argv[0].string;
 	auto substr = &argv[1].string;
@@ -280,22 +278,22 @@ fn_replace(Call* self)
 {
 	// (string, from, to)
 	auto argv = self->argv;
-	call_validate(self, 3);
+	call_expect(self, 3);
 	if (unlikely(argv[0].type == TYPE_NULL))
 	{
 		value_set_null(self->result);
 		return;
 	}
-	call_validate_arg(self, 0, TYPE_STRING);
-	call_validate_arg(self, 1, TYPE_STRING);
-	call_validate_arg(self, 2, TYPE_STRING);
+	call_expect_arg(self, 0, TYPE_STRING);
+	call_expect_arg(self, 1, TYPE_STRING);
+	call_expect_arg(self, 2, TYPE_STRING);
 
 	auto src  = &argv[0].string;
 	auto from = &argv[1].string;
 	auto to   = &argv[2].string;
 	if (str_size(from) == 0)
 	{
-		error("replace(): invalid from argument");
+		call_error_arg(self, 1, "invalid argument");
 		return;
 	}
 
@@ -391,20 +389,20 @@ trim(Call* self, bool left, bool right)
 {
 	auto argv = self->argv;
 	if (self->argc < 1 || self->argc > 2)
-		error("trim(): unexpected number of arguments");
+		call_error(self, "unexpected number of arguments");
 	if (unlikely(argv[0].type == TYPE_NULL))
 	{
 		value_set_null(self->result);
 		return;
 	}
-	call_validate_arg(self, 0, TYPE_STRING);
+	call_expect_arg(self, 0, TYPE_STRING);
 
 	// (string [, filter])
 	char* filter = " \t\v\n\f";
 	char* filter_end;
 	if (self->argc == 2)
 	{
-		call_validate_arg(self, 1, TYPE_STRING);
+		call_expect_arg(self, 1, TYPE_STRING);
 		filter = str_of(&argv[1].string);
 		filter_end = filter + str_size(&argv[1].string);
 	} else {
@@ -447,14 +445,14 @@ static void
 fn_like(Call* self)
 {
 	auto argv = self->argv;
-	call_validate(self, 2);
+	call_expect(self, 2);
 	if (unlikely(argv[0].type == TYPE_NULL))
 	{
 		value_set_null(self->result);
 		return;
 	}
-	call_validate_arg(self, 0, TYPE_STRING);
-	call_validate_arg(self, 1, TYPE_STRING);
+	call_expect_arg(self, 0, TYPE_STRING);
+	call_expect_arg(self, 1, TYPE_STRING);
 	value_like(self->result, &argv[0], &argv[1]);
 }
 

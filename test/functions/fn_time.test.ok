@@ -33,13 +33,13 @@ select '2020-02-11 15:44:17'::timestamp::date_bin('250 us'::interval)
 ["2020-02-11 15:44:17+00"]
 # test: date_bin(negative interval)
 select date_bin(INTERVAL '-15 minutes', TIMESTAMP '2020-02-11 15:44:17', TIMESTAMP '2001-01-01 00:00:00');
-{"msg": "date_bin(): invalid argument"}
+{"msg": "date_bin(interval, timestamp, timestamp) ⟵ invalid interval"}
 # test: date_bin(month)
 select date_bin(INTERVAL '1 month 15 minutes', TIMESTAMP '2020-02-11 15:44:17', TIMESTAMP '2001-01-01 00:00:00');
-{"msg": "date_bin(): month and year intervals are not supported"}
+{"msg": "date_bin(interval, timestamp, timestamp) ⟵ month and year intervals are not supported"}
 # test: date_bin(year)
 select date_bin(INTERVAL '1 year 15 minutes', TIMESTAMP '2020-02-11 15:44:17', TIMESTAMP '2001-01-01 00:00:00');
-{"msg": "date_bin(): month and year intervals are not supported"}
+{"msg": "date_bin(interval, timestamp, timestamp) ⟵ month and year intervals are not supported"}
 # test: date_bin(timezone)
 set timezone to 'Asia/Famagusta'
 select date_bin(INTERVAL '15 minutes', TIMESTAMP '2020-02-11 15:44:17', TIMESTAMP '2001-01-01 00:00:00');
@@ -181,7 +181,7 @@ select '2001-02-16 20:38:40Z'::timestamp::date_trunc('day');
 select '2001-02-16 20:38:40'::timestamp::date_trunc('day');
 ["2001-02-16 00:00:00+02"]
 select '2001-02-16 20:38:40'::timestamp::date_trunc('1 day'::interval);
-{"msg": "date_trunc(): expected string for argument 1, but got interval"}
+{"msg": "date_trunc(timestamp, ❰interval❱ ⟵ expected string"}
 # test: extract(timestamp year)
 select public.extract('year', TIMESTAMP '2001-01-16 20:38:40');
 [2001]

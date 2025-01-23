@@ -53,7 +53,7 @@ select concat("a", null, "b")
 select concat("a", null, "b")
 ["ab"]
 select concat("a", null, "b", 3)
-{"msg": "concat(): string argument expected"}
+{"msg": "concat(string, null, string, ❰int❱ ⟵ string expected"}
 select concat("a", null, "b", 3::string)
 ["ab3"]
 select "привет"::concat("мир")
@@ -80,15 +80,15 @@ select "Hello World"::upper
 select substr(null, 0)
 [null]
 select substr("")
-{"msg": "substr(): unexpected number of arguments"}
+{"msg": "substr(string) ⟵ unexpected number of arguments"}
 select substr("hi", 0)
-{"msg": "substr(): position is out of bounds"}
+{"msg": "substr(string, ❰int❱ ⟵ position is out of bounds"}
 select substr("hi", 1)
 ["hi"]
 select substr("hi", 2)
 ["i"]
 select substr("hi", 3)
-{"msg": "substr(): position is out of bounds"}
+{"msg": "substr(string, ❰int❱ ⟵ position is out of bounds"}
 select substr("hi", 1, 0)
 [""]
 select substr("hi", 1, 1)
@@ -96,7 +96,7 @@ select substr("hi", 1, 1)
 select substr("hi", 1, 2)
 ["hi"]
 select substr("hi", 1, 3)
-{"msg": "substr(): position is out of bounds"}
+{"msg": "substr(string, int, ❰int❱ ⟵ position is out of bounds"}
 select "hello"::substr(2)
 ["ello"]
 select "hello"::substr(2, 1)
@@ -108,7 +108,7 @@ select "hello"::substr(2, 3)
 select "hello"::substr(2, 4)
 ["ello"]
 select "hello"::substr(2, 5)
-{"msg": "substr(): position is out of bounds"}
+{"msg": "substr(string, int, ❰int❱ ⟵ position is out of bounds"}
 select "привет"::substr(2)
 ["ривет"]
 select "привет"::substr(2, 0)
@@ -124,13 +124,13 @@ select "привет"::substr(2, 4)
 select "привет"::substr(2, 5)
 ["ривет"]
 select "привет"::substr(2, 10)
-{"msg": "substr(): position is out of bounds"}
+{"msg": "substr(string, int, ❰int❱ ⟵ position is out of bounds"}
 select "привет"::substr(5, 1)
 ["е"]
 select "привет"::substr(6, 1)
 ["т"]
 select "привет"::substr(7, 1)
-{"msg": "substr(): position is out of bounds"}
+{"msg": "substr(string, ❰int❱ ⟵ position is out of bounds"}
 # test: strpos()
 select null::strpos("")
 [null]
@@ -206,7 +206,7 @@ select "hehi"::replace("hello", "X")
 select "hhi"::replace("hello", "X")
 ["hhi"]
 select "hhi"::replace("", "X")
-{"msg": "replace(): invalid from argument"}
+{"msg": "replace(string, ❰string❱ ⟵ invalid argument"}
 select "приветпривет"::replace("привет", "й")
 ["йй"]
 select "приветпривет"::replace("привет", "")
@@ -233,7 +233,7 @@ select ""::ltrim()
 select ""::ltrim("")
 [""]
 select ""::ltrim(null)
-{"msg": "ltrim(): expected string for argument 1, but got null"}
+{"msg": "ltrim(string, ❰null❱ ⟵ expected string"}
 select "  	 123"::ltrim()
 ["123"]
 select "  123"::ltrim(" ")
@@ -254,7 +254,7 @@ select ""::rtrim()
 select ""::rtrim("")
 [""]
 select ""::rtrim(null)
-{"msg": "rtrim(): expected string for argument 1, but got null"}
+{"msg": "rtrim(string, ❰null❱ ⟵ expected string"}
 select "  	 123"::rtrim()
 ["  \t 123"]
 select "  123  "::rtrim(" ")
@@ -281,7 +281,7 @@ select ""::trim()
 select ""::trim("")
 [""]
 select ""::trim(null)
-{"msg": "trim(): expected string for argument 1, but got null"}
+{"msg": "trim(string, ❰null❱ ⟵ expected string"}
 select "  	 123"::trim()
 ["123"]
 select "  123  "::trim(" ")

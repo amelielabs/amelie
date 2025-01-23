@@ -96,7 +96,7 @@ utf8_strlen(Str* self)
 	size_t len = 0;
 	for (auto pos = self->pos; pos < self->end; pos++)
 		if ((*(uint8_t*)pos & 0xC0) != 0x80)
-			len++ ;
+			len++;
 	return len;
 }
 

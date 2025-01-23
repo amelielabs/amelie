@@ -25,9 +25,9 @@ select coalesce('1', null, 2.5)
 {"msg": "select coalesce('1', null, ❰2.5❱ ⟵ argument type must match other arguments"}
 # test: nullif()
 select nullif()
-{"msg": "nullif(): expected 2 arguments, but got 0"}
+{"msg": "nullif() ⟵ expected 2 arguments"}
 select nullif(1)
-{"msg": "nullif(): expected 2 arguments, but got 1"}
+{"msg": "nullif(int) ⟵ expected 2 arguments"}
 select nullif(1, 2)
 [1]
 select nullif(1, null)

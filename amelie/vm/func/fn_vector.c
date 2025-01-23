@@ -38,16 +38,16 @@ hot static void
 fn_cos_distance(Call* self)
 {
 	auto argv = self->argv;
-	call_validate(self, 2);
+	call_expect(self, 2);
 	if (unlikely(argv[0].type == TYPE_NULL))
 	{
 		value_set_null(self->result);
 		return;
 	}
-	call_validate_arg(self, 0, TYPE_VECTOR);
-	call_validate_arg(self, 1, TYPE_VECTOR);
+	call_expect_arg(self, 0, TYPE_VECTOR);
+	call_expect_arg(self, 1, TYPE_VECTOR);
 	if (argv[0].vector->size != argv[1].vector->size)
-		error("cos_distance(): vector sizes does not match");
+		call_error(self, "vector sizes do not match");
 	auto distance = vector_distance(argv[0].vector, argv[1].vector);
 	value_set_double(self->result, distance);
 }
