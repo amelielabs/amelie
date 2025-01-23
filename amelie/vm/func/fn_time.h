@@ -11,4 +11,4 @@
 // AGPL-3.0 Licensed.
 //
 
-extern FunctionDef fn_time_def[];
+void fn_time_register(FunctionMgr*);

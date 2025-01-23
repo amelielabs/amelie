@@ -31,7 +31,6 @@
 #include <amelie_set.h>
 #include <amelie_content.h>
 #include <amelie_executor.h>
-#include <amelie_vm.h>
 #include <amelie_func.h>
 
 #define PCRE2_CODE_UNIT_WIDTH 8
@@ -253,11 +252,27 @@ fn_regexp_replace(Call* self)
 	value_set_string(self->result, &result, buf);
 }
 
-FunctionDef fn_regexp_def[] =
+void
+fn_regexp_register(FunctionMgr* self)
 {
-	{ "public", "regexp_like",    TYPE_BOOL,   fn_regexp_like,     FN_CONTEXT },
-	{ "public", "regexp_substr",  TYPE_STRING, fn_regexp_substr,   FN_CONTEXT },
-	{ "public", "regexp_match",   TYPE_JSON,   fn_regexp_match,    FN_CONTEXT },
-	{ "public", "regexp_replace", TYPE_STRING, fn_regexp_replace,  FN_CONTEXT },
-	{  NULL,     NULL,            TYPE_NULL,   NULL,               FN_NONE    }
-};
+	// public.regexp_like()
+	Function* func;
+	func = function_allocate(TYPE_BOOL, "public", "regexp_like", fn_regexp_like);
+	function_set(func, FN_CONTEXT);
+	function_mgr_add(self, func);
+
+	// public.regexp_substr()
+	func = function_allocate(TYPE_STRING, "public", "regexp_substr", fn_regexp_substr);
+	function_set(func, FN_CONTEXT);
+	function_mgr_add(self, func);
+
+	// public.regexp_match()
+	func = function_allocate(TYPE_JSON, "public", "regexp_match", fn_regexp_match);
+	function_set(func, FN_CONTEXT);
+	function_mgr_add(self, func);
+
+	// public.regexp_replace()
+	func = function_allocate(TYPE_STRING, "public", "regexp_replace", fn_regexp_replace);
+	function_set(func, FN_CONTEXT);
+	function_mgr_add(self, func);
+}

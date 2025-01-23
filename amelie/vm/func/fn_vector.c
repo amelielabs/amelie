@@ -31,7 +31,6 @@
 #include <amelie_set.h>
 #include <amelie_content.h>
 #include <amelie_executor.h>
-#include <amelie_vm.h>
 #include <amelie_func.h>
 
 hot static void
@@ -52,8 +51,11 @@ fn_cos_distance(Call* self)
 	value_set_double(self->result, distance);
 }
 
-FunctionDef fn_vector_def[] =
+void
+fn_vector_register(FunctionMgr* self)
 {
-	{ "public", "cos_distance", TYPE_DOUBLE, fn_cos_distance, FN_NONE },
-	{  NULL,     NULL,          TYPE_NULL,   NULL,            FN_NONE }
-};
+	// public.cos_distance()
+	Function* func;
+	func = function_allocate(TYPE_DOUBLE, "public", "cos_distance", fn_cos_distance);
+	function_mgr_add(self, func);
+}

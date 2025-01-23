@@ -31,6 +31,7 @@
 #include <amelie_set.h>
 #include <amelie_content.h>
 #include <amelie_executor.h>
+#include <amelie_func.h>
 #include <amelie_vm.h>
 #include <amelie_parser.h>
 #include <amelie_planner.h>
@@ -471,13 +472,13 @@ emit_call(Compiler* self, Targets* targets, Ast* ast)
 
 	// push arguments
 	auto fn = call->fn;
-	auto fn_type = fn->ret;
+	auto fn_type = fn->type;
 	auto current = args->l;
 	while (current)
 	{
 		int r = emit_expr(self, targets, current);
 		// ensure that the function has identical types, if type is derived
-		if (fn->flags & FN_TYPE_DERIVE)
+		if (fn->flags & FN_DERIVE)
 			if (! emit_call_typederive(self, r, &fn_type))
 				stmt_error(self->current, current, "argument type must match other arguments");
 		op1(self, CPUSH, r);
@@ -504,11 +505,11 @@ emit_call_method(Compiler* self, Targets* targets, Ast* ast)
 	auto args = call->ast.r;
 
 	auto fn = call->fn;
-	auto fn_type = fn->ret;
+	auto fn_type = fn->type;
 
 	// use expression as the first argument to the call
 	int r = emit_expr(self, targets, expr);
-	if (fn->flags & FN_TYPE_DERIVE)
+	if (fn->flags & FN_DERIVE)
 		emit_call_typederive(self, r, &fn_type);
 	op1(self, CPUSH, r);
 	runpin(self, r);
@@ -522,7 +523,7 @@ emit_call_method(Compiler* self, Targets* targets, Ast* ast)
 		{
 			r = emit_expr(self, targets, current);
 			// ensure that the function has identical types, if type is derived
-			if (fn->flags & FN_TYPE_DERIVE)
+			if (fn->flags & FN_DERIVE)
 				if (! emit_call_typederive(self, r, &fn_type))
 					stmt_error(self->current, current, "argument type must match other arguments");
 			op1(self, CPUSH, r);
@@ -819,7 +820,7 @@ emit_at_timezone(Compiler* self, Targets* targets, Ast* ast)
 	runpin(self, r);
 
 	// CALL
-	return op4(self, CCALL, rpin(self, fn->ret), (intptr_t)fn, 2, -1);
+	return op4(self, CCALL, rpin(self, fn->type), (intptr_t)fn, 2, -1);
 }
 
 hot int

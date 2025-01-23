@@ -31,7 +31,6 @@
 #include <amelie_set.h>
 #include <amelie_content.h>
 #include <amelie_executor.h>
-#include <amelie_vm.h>
 #include <amelie_func.h>
 
 hot static void
@@ -49,7 +48,7 @@ fn_append(Call* self)
 		call_error_arg(self, 0, "json array expected");
 	if (unlikely(! json_is_array(argv[0].json)))
 		call_error_arg(self, 0, "json array expected");
-	auto tz = self->vm->local->timezone;
+	auto tz = self->mgr->local->timezone;
 	value_array_append(self->result, tz, argv[0].json, argv[0].json_size,
 	                   self->argc - 1, &argv[1]);
 }
@@ -69,7 +68,7 @@ fn_push(Call* self)
 		call_error_arg(self, 0, "json array expected");
 	if (unlikely(! json_is_array(argv[0].json)))
 		call_error_arg(self, 0, "json array expected");
-	auto tz = self->vm->local->timezone;
+	auto tz = self->mgr->local->timezone;
 	value_array_push(self->result, tz, argv[0].json, argv[0].json_size,
 	                 self->argc - 1, &argv[1]);
 }
@@ -122,7 +121,7 @@ fn_put(Call* self)
 	if (unlikely(! json_is_array(argv[0].json)))
 		call_error_arg(self, 0, "json array expected");
 	call_expect_arg(self, 1, TYPE_INT);
-	auto tz = self->vm->local->timezone;
+	auto tz = self->mgr->local->timezone;
 	value_array_put(self->result, tz, argv[0].json, argv[1].integer, &argv[2]);
 }
 
@@ -158,7 +157,7 @@ fn_set(Call* self)
 	if (unlikely(! json_is_obj(argv[0].json)))
 		call_error_arg(self, 0, "json object expected");
 	call_expect_arg(self, 1, TYPE_STRING);
-	auto tz = self->vm->local->timezone;
+	auto tz = self->mgr->local->timezone;
 	update_set(self->result, tz, argv[0].json, &argv[1].string, &argv[2]);
 }
 
@@ -198,19 +197,47 @@ fn_has(Call* self)
 	value_obj_has(self->result, argv[0].json, &argv[1].string);
 }
 
-FunctionDef fn_json_def[] =
+void
+fn_json_register(FunctionMgr* self)
 {
-	// array
-	{ "public", "append",    TYPE_JSON, fn_append,   FN_NONE },
-	{ "public", "push_back", TYPE_JSON, fn_append,   FN_NONE },
-	{ "public", "push",      TYPE_JSON, fn_push,     FN_NONE },
-	{ "public", "pop",       TYPE_JSON, fn_pop,      FN_NONE },
-	{ "public", "pop_back",  TYPE_JSON, fn_pop_back, FN_NONE },
-	{ "public", "put",       TYPE_JSON, fn_put,      FN_NONE },
-	{ "public", "remove",    TYPE_JSON, fn_remove,   FN_NONE },
-	// object
-	{ "public", "set",       TYPE_JSON, fn_set,      FN_NONE },
-	{ "public", "unset",     TYPE_JSON, fn_unset,    FN_NONE },
-	{ "public", "has",       TYPE_BOOL, fn_has,      FN_NONE },
-	{  NULL,     NULL,       TYPE_NULL, NULL,        FN_NONE }
-};
+	// public.append()
+	Function* func;
+	func = function_allocate(TYPE_JSON, "public", "append", fn_append);
+	function_mgr_add(self, func);
+
+	// public.push_back()
+	func = function_allocate(TYPE_JSON, "public", "push_back", fn_append);
+	function_mgr_add(self, func);
+
+	// public.push()
+	func = function_allocate(TYPE_JSON, "public", "push", fn_push);
+	function_mgr_add(self, func);
+
+	// public.pop()
+	func = function_allocate(TYPE_JSON, "public", "pop", fn_pop);
+	function_mgr_add(self, func);
+
+	// public.pop_back()
+	func = function_allocate(TYPE_JSON, "public", "pop_back", fn_pop_back);
+	function_mgr_add(self, func);
+
+	// public.put()
+	func = function_allocate(TYPE_JSON, "public", "put", fn_put);
+	function_mgr_add(self, func);
+
+	// public.remove()
+	func = function_allocate(TYPE_JSON, "public", "remove", fn_remove);
+	function_mgr_add(self, func);
+
+	// public.set()
+	func = function_allocate(TYPE_JSON, "public", "set", fn_set);
+	function_mgr_add(self, func);
+
+	// public.unset()
+	func = function_allocate(TYPE_JSON, "public", "unset", fn_unset);
+	function_mgr_add(self, func);
+
+	// public.has()
+	func = function_allocate(TYPE_BOOL, "public", "has", fn_has);
+	function_mgr_add(self, func);
+}

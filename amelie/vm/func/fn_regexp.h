@@ -11,4 +11,4 @@
 // AGPL-3.0 Licensed.
 //
 
-extern FunctionDef fn_regexp_def[];
+void fn_regexp_register(FunctionMgr*);

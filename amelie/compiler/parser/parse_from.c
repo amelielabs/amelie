@@ -31,6 +31,7 @@
 #include <amelie_set.h>
 #include <amelie_content.h>
 #include <amelie_executor.h>
+#include <amelie_func.h>
 #include <amelie_vm.h>
 #include <amelie_parser.h>
 
@@ -103,8 +104,8 @@ parse_from_target(Stmt* self, Targets* targets, bool subquery)
 		call->ast.r = parse_expr_args(self, NULL, ')', false);
 
 		// ensure function can be used inside FROM
-		if (call->fn->ret != TYPE_STORE &&
-		    call->fn->ret != TYPE_JSON)
+		if (call->fn->type != TYPE_STORE &&
+		    call->fn->type != TYPE_JSON)
 			stmt_error(self, expr, "function must return result set or JSON");
 
 		target->type = TARGET_FUNCTION;
@@ -186,7 +187,7 @@ parse_from_add(Stmt* self, Targets* targets, bool subquery)
 		auto fn = ast_call_of(target->from_function)->fn;
 		auto column = column_allocate();
 		column_set_name(column, &target->name);
-		column_set_type(column, fn->ret, type_sizeof(fn->ret));
+		column_set_type(column, fn->type, type_sizeof(fn->type));
 		columns_add(target->from_columns, column);
 	}
 

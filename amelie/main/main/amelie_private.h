@@ -32,8 +32,8 @@
 #include <amelie_set.h>
 #include <amelie_content.h>
 #include <amelie_executor.h>
-#include <amelie_vm.h>
 #include <amelie_func.h>
+#include <amelie_vm.h>
 #include <amelie_parser.h>
 #include <amelie_planner.h>
 #include <amelie_compiler.h>

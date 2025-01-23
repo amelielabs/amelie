@@ -31,14 +31,13 @@
 #include <amelie_set.h>
 #include <amelie_content.h>
 #include <amelie_executor.h>
-#include <amelie_vm.h>
 #include <amelie_func.h>
 
 static void
 fn_config(Call* self)
 {
 	call_expect(self, 0);
-	auto buf = vars_list(&config()->vars, &self->vm->local->config.vars);
+	auto buf = vars_list(&config()->vars, &self->mgr->local->config.vars);
 	value_set_json_buf(self->result, buf);
 }
 
@@ -106,7 +105,7 @@ static void
 fn_nodes(Call* self)
 {
 	call_expect(self, 0);
-	auto buf = node_mgr_list(&self->vm->db->node_mgr, NULL);
+	auto buf = node_mgr_list(&self->mgr->db->node_mgr, NULL);
 	value_set_json_buf(self->result, buf);
 }
 
@@ -117,7 +116,7 @@ fn_node(Call* self)
 	call_expect(self, 1);
 	if (argv[0].type == TYPE_STRING)
 	{
-		auto buf = node_mgr_list(&self->vm->db->node_mgr, &self->argv[0].string);
+		auto buf = node_mgr_list(&self->mgr->db->node_mgr, &self->argv[0].string);
 		value_set_json_buf(self->result, buf);
 	} else
 	if (argv[0].type == TYPE_UUID)
@@ -126,7 +125,7 @@ fn_node(Call* self)
 		uuid_get(&argv[0].uuid, uuid_sz, sizeof(uuid_sz));
 		Str str;
 		str_set(&str, uuid_sz, UUID_SZ - 1);
-		auto buf = node_mgr_list(&self->vm->db->node_mgr, &str);
+		auto buf = node_mgr_list(&self->mgr->db->node_mgr, &str);
 		value_set_json_buf(self->result, buf);
 	} else {
 		call_unsupported(self, 0);
@@ -137,7 +136,7 @@ static void
 fn_schemas(Call* self)
 {
 	call_expect(self, 0);
-	auto buf = schema_mgr_list(&self->vm->db->schema_mgr, NULL, true);
+	auto buf = schema_mgr_list(&self->mgr->db->schema_mgr, NULL, true);
 	value_set_json_buf(self->result, buf);
 }
 
@@ -146,7 +145,7 @@ fn_schema(Call* self)
 {
 	call_expect(self, 1);
 	call_expect_arg(self, 0, TYPE_STRING);
-	auto buf = schema_mgr_list(&self->vm->db->schema_mgr, &self->argv[0].string, true);
+	auto buf = schema_mgr_list(&self->mgr->db->schema_mgr, &self->argv[0].string, true);
 	value_set_json_buf(self->result, buf);
 }
 
@@ -154,7 +153,7 @@ static void
 fn_tables(Call* self)
 {
 	call_expect(self, 0);
-	auto buf = table_mgr_list(&self->vm->db->table_mgr, NULL, NULL, true);
+	auto buf = table_mgr_list(&self->mgr->db->table_mgr, NULL, NULL, true);
 	value_set_json_buf(self->result, buf);
 }
 
@@ -170,7 +169,7 @@ fn_table(Call* self)
 		str_advance(&name, str_size(&schema) + 1);
 	else
 		str_set(&schema, "public", 6);
-	auto buf = table_mgr_list(&self->vm->db->table_mgr, &schema, &name, true);
+	auto buf = table_mgr_list(&self->mgr->db->table_mgr, &schema, &name, true);
 	value_set_json_buf(self->result, buf);
 }
 
@@ -178,7 +177,7 @@ static void
 fn_wal(Call* self)
 {
 	call_expect(self, 0);
-	auto buf = wal_status(&self->vm->db->wal);
+	auto buf = wal_status(&self->mgr->db->wal);
 	value_set_json_buf(self->result, buf);
 }
 
@@ -191,22 +190,71 @@ fn_status(Call* self)
 	value_set_json_buf(self->result, buf);
 }
 
-FunctionDef fn_system_def[] =
+void
+fn_system_register(FunctionMgr* self)
 {
-	{ "system", "config",      TYPE_JSON, fn_config,    FN_NONE },
-	{ "system", "users",       TYPE_JSON, fn_users,     FN_NONE },
-	{ "system", "user",        TYPE_JSON, fn_user,      FN_NONE },
-	{ "system", "replicas",    TYPE_JSON, fn_replicas,  FN_NONE },
-	{ "system", "replica",     TYPE_JSON, fn_replica,   FN_NONE },
-	{ "system", "repl",        TYPE_JSON, fn_repl,      FN_NONE },
-	{ "system", "replication", TYPE_JSON, fn_repl,      FN_NONE },
-	{ "system", "nodes",       TYPE_JSON, fn_nodes,     FN_NONE },
-	{ "system", "node",        TYPE_JSON, fn_node,      FN_NONE },
-	{ "system", "schemas",     TYPE_JSON, fn_schemas,   FN_NONE },
-	{ "system", "schema",      TYPE_JSON, fn_schema,    FN_NONE },
-	{ "system", "tables",      TYPE_JSON, fn_tables,    FN_NONE },
-	{ "system", "table",       TYPE_JSON, fn_table,     FN_NONE },
-	{ "system", "wal",         TYPE_JSON, fn_wal,       FN_NONE },
-	{ "system", "status",      TYPE_JSON, fn_status,    FN_NONE },
-	{  NULL,     NULL,         TYPE_NULL, NULL,         FN_NONE }
-};
+	// system.config()
+	Function* func;
+	func = function_allocate(TYPE_JSON, "system", "config", fn_config);
+	function_mgr_add(self, func);
+
+	// system.users()
+	func = function_allocate(TYPE_JSON, "system", "users", fn_users);
+	function_mgr_add(self, func);
+
+	// system.user()
+	func = function_allocate(TYPE_JSON, "system", "user", fn_user);
+	function_mgr_add(self, func);
+
+	// system.replicas()
+	func = function_allocate(TYPE_JSON, "system", "replicas", fn_replicas);
+	function_mgr_add(self, func);
+
+	// system.replica()
+	func = function_allocate(TYPE_JSON, "system", "replica", fn_replica);
+	function_mgr_add(self, func);
+
+	// system.replica(uuid)
+	func = function_allocate(TYPE_JSON, "system", "replica", fn_replica);
+	function_mgr_add(self, func);
+
+	// system.repl()
+	func = function_allocate(TYPE_JSON, "system", "repl", fn_repl);
+	function_mgr_add(self, func);
+
+	// system.replication()
+	func = function_allocate(TYPE_JSON, "system", "replication", fn_repl);
+	function_mgr_add(self, func);
+
+	// system.nodes()
+	func = function_allocate(TYPE_JSON, "system", "nodes", fn_nodes);
+	function_mgr_add(self, func);
+
+	// system.node()
+	func = function_allocate(TYPE_JSON, "system", "node", fn_node);
+	function_mgr_add(self, func);
+
+	// system.schemas()
+	func = function_allocate(TYPE_JSON, "system", "schemas", fn_schemas);
+	function_mgr_add(self, func);
+
+	// system.schema()
+	func = function_allocate(TYPE_JSON, "system", "schema", fn_schema);
+	function_mgr_add(self, func);
+
+	// system.tables()
+	func = function_allocate(TYPE_JSON, "system", "tables", fn_tables);
+	function_mgr_add(self, func);
+
+	// system.table()
+	func = function_allocate(TYPE_JSON, "system", "table", fn_table);
+	function_mgr_add(self, func);
+
+	// system.wal()
+	func = function_allocate(TYPE_JSON, "system", "wal", fn_wal);
+	function_mgr_add(self, func);
+
+	// system.status()
+	func = function_allocate(TYPE_JSON, "system", "status", fn_status);
+	function_mgr_add(self, func);
+}

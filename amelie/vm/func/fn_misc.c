@@ -31,7 +31,6 @@
 #include <amelie_set.h>
 #include <amelie_content.h>
 #include <amelie_executor.h>
-#include <amelie_vm.h>
 #include <amelie_func.h>
 
 #include <openssl/evp.h>
@@ -197,7 +196,7 @@ fn_identity_of(Call* self)
 	call_expect(self, 2);
 	call_expect_arg(self, 0, TYPE_STRING);
 	call_expect_arg(self, 0, TYPE_STRING);
-	auto table = table_mgr_find(&self->vm->db->table_mgr,
+	auto table = table_mgr_find(&self->mgr->db->table_mgr,
 	                            &argv[0].string,
 	                            &argv[1].string, true);
 	value_set_int(self->result, sequence_get(&table->seq));
@@ -220,7 +219,7 @@ fn_jwt(Call* self)
 		auto pos = argv[0].json;
 		if (! json_is_obj(pos))
 			call_error_arg(self, 0, "string or JSON object expected");
-		json_export(header, self->vm->local->timezone, &pos);
+		json_export(header, self->mgr->local->timezone, &pos);
 		buf_str(header, &header_str);
 	} else
 	if (argv[0].type == TYPE_STRING)
@@ -239,7 +238,7 @@ fn_jwt(Call* self)
 		auto pos = argv[1].json;
 		if (! json_is_obj(pos))
 		call_error_arg(self, 1, "string or JSON object expected");
-		json_export(payload, self->vm->local->timezone, &pos);
+		json_export(payload, self->mgr->local->timezone, &pos);
 		buf_str(payload, &payload_str);
 	} else
 	if (argv[1].type == TYPE_STRING)
@@ -260,17 +259,47 @@ fn_jwt(Call* self)
 	value_set_string(self->result, &string, buf);
 }
 
-FunctionDef fn_misc_def[] =
+void
+fn_misc_register(FunctionMgr* self)
 {
-	{ "public", "error",        TYPE_NULL,   fn_error,        FN_NONE },
-	{ "public", "sleep",        TYPE_NULL,   fn_sleep,        FN_NONE },
-	{ "public", "random",       TYPE_INT,    fn_random,       FN_NONE },
-	{ "public", "random_uuid",  TYPE_UUID,   fn_random_uuid,  FN_NONE },
-	{ "public", "md5",          TYPE_STRING, fn_md5,          FN_NONE },
-	{ "public", "sha1",         TYPE_STRING, fn_sha1,         FN_NONE },
-	{ "public", "encode",       TYPE_STRING, fn_encode,       FN_NONE },
-	{ "public", "decode",       TYPE_STRING, fn_decode,       FN_NONE },
-	{ "public", "identity_of",  TYPE_INT,    fn_identity_of,  FN_NONE },
-	{ "public", "jwt",          TYPE_STRING, fn_jwt,          FN_NONE },
-	{  NULL,     NULL,          TYPE_NULL,   NULL,            FN_NONE }
-};
+	// public.error()
+	Function* func;
+	func = function_allocate(TYPE_NULL, "public", "error", fn_error);
+	function_mgr_add(self, func);
+
+	// public.sleep()
+	func = function_allocate(TYPE_NULL, "public", "sleep", fn_sleep);
+	function_mgr_add(self, func);
+
+	// public.random()
+	func = function_allocate(TYPE_INT, "public", "random", fn_random);
+	function_mgr_add(self, func);
+
+	// public.random_uuid()
+	func = function_allocate(TYPE_UUID, "public", "random_uuid", fn_random_uuid);
+	function_mgr_add(self, func);
+
+	// public.md5()
+	func = function_allocate(TYPE_STRING, "public", "md5", fn_md5);
+	function_mgr_add(self, func);
+
+	// public.sha1()
+	func = function_allocate(TYPE_STRING, "public", "sha1", fn_sha1);
+	function_mgr_add(self, func);
+
+	// public.encode()
+	func = function_allocate(TYPE_STRING, "public", "encode", fn_encode);
+	function_mgr_add(self, func);
+
+	// public.decode()
+	func = function_allocate(TYPE_STRING, "public", "decode", fn_decode);
+	function_mgr_add(self, func);
+
+	// public.identity_of()
+	func = function_allocate(TYPE_INT, "public", "identity_of", fn_identity_of);
+	function_mgr_add(self, func);
+
+	// public.jwt()
+	func = function_allocate(TYPE_STRING, "public", "jwt", fn_jwt);
+	function_mgr_add(self, func);
+}

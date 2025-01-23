@@ -31,6 +31,7 @@
 #include <amelie_set.h>
 #include <amelie_content.h>
 #include <amelie_executor.h>
+#include <amelie_func.h>
 #include <amelie_vm.h>
 
 void
@@ -75,7 +76,7 @@ void
 vm_reset(Vm* self)
 {
 	if (self->code_data)
-		call_mgr_reset(&self->call_mgr, self->code_data, self);
+		call_mgr_reset(&self->call_mgr);
 	reg_reset(&self->r);
 	stack_reset(&self->stack);
 	cursor_mgr_reset(&self->cursor_mgr);
@@ -112,7 +113,7 @@ vm_run(Vm*       self,
 	self->result    = result;
 	self->content   = content;
 	reg_prepare(&self->r);
-	call_mgr_prepare(&self->call_mgr, code_data);
+	call_mgr_prepare(&self->call_mgr, self->db, local, code_data);
 
 	const void* ops[] =
 	{
@@ -1716,13 +1717,13 @@ ccall:
 	call.argc     = op->c;
 	call.argv     = stack_at(stack, op->c);
 	call.result   = &r[op->a];
-	call.vm       = self;
 	call.type     = CALL_EXECUTE;
 	call.function = (Function*)op->b;
+	call.mgr      = &self->call_mgr;
 	call.context  = NULL;
 	if (op->d != -1)
 		call.context = call_mgr_at(&self->call_mgr, op->d);
-	call.function->main(&call);
+	call.function->function(&call);
 	stack_popn(&self->stack, op->c);
 	op_next;
 

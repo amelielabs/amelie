@@ -31,7 +31,6 @@
 #include <amelie_set.h>
 #include <amelie_content.h>
 #include <amelie_executor.h>
-#include <amelie_vm.h>
 #include <amelie_func.h>
 
 hot static void
@@ -472,20 +471,59 @@ fn_like(Call* self)
 	value_like(self->result, &argv[0], &argv[1]);
 }
 
-FunctionDef fn_string_def[] =
+void
+fn_string_register(FunctionMgr* self)
 {
-	{ "public", "size",         TYPE_INT,    fn_length,       FN_NONE },
-	{ "public", "length",       TYPE_INT,    fn_length,       FN_NONE },
-	{ "public", "octet_length", TYPE_INT,    fn_octet_length, FN_NONE },
-	{ "public", "concat",       TYPE_STRING, fn_concat,       FN_NONE },
-	{ "public", "lower",        TYPE_STRING, fn_lower,        FN_NONE },
-	{ "public", "upper",        TYPE_STRING, fn_upper,        FN_NONE },
-	{ "public", "substr",       TYPE_STRING, fn_substr,       FN_NONE },
-	{ "public", "strpos",       TYPE_INT,    fn_strpos,       FN_NONE },
-	{ "public", "replace",      TYPE_STRING, fn_replace,      FN_NONE },
-	{ "public", "ltrim",        TYPE_STRING, fn_ltrim,        FN_NONE },
-	{ "public", "rtrim",        TYPE_STRING, fn_rtrim,        FN_NONE },
-	{ "public", "trim",         TYPE_STRING, fn_trim,         FN_NONE },
-	{ "public", "like",         TYPE_BOOL,   fn_like,         FN_NONE },
-	{  NULL,     NULL,          TYPE_NULL,   NULL,            FN_NONE }
-};
+	// public.size()
+	Function* func;
+	func = function_allocate(TYPE_INT, "public", "size", fn_length);
+	function_mgr_add(self, func);
+
+	// public.length()
+	func = function_allocate(TYPE_INT, "public", "length", fn_length);
+	function_mgr_add(self, func);
+
+	// public.octet_length()
+	func = function_allocate(TYPE_INT, "public", "octet_length", fn_octet_length);
+	function_mgr_add(self, func);
+
+	// public.concat()
+	func = function_allocate(TYPE_STRING, "public", "concat", fn_concat);
+	function_mgr_add(self, func);
+
+	// public.lower()
+	func = function_allocate(TYPE_STRING, "public", "lower", fn_lower);
+	function_mgr_add(self, func);
+
+	// public.upper()
+	func = function_allocate(TYPE_STRING, "public", "upper", fn_upper);
+	function_mgr_add(self, func);
+
+	// public.substr()
+	func = function_allocate(TYPE_STRING, "public", "substr", fn_substr);
+	function_mgr_add(self, func);
+
+	// public.strpos()
+	func = function_allocate(TYPE_INT, "public", "strpos", fn_strpos);
+	function_mgr_add(self, func);
+
+	// public.replace()
+	func = function_allocate(TYPE_STRING, "public", "replace", fn_replace);
+	function_mgr_add(self, func);
+
+	// public.ltrim()
+	func = function_allocate(TYPE_STRING, "public", "ltrim", fn_ltrim);
+	function_mgr_add(self, func);
+
+	// public.rtrim()
+	func = function_allocate(TYPE_STRING, "public", "rtrim", fn_rtrim);
+	function_mgr_add(self, func);
+
+	// public.trim()
+	func = function_allocate(TYPE_STRING, "public", "trim", fn_trim);
+	function_mgr_add(self, func);
+
+	// public.like()
+	func = function_allocate(TYPE_BOOL, "public", "like", fn_like);
+	function_mgr_add(self, func);
+}

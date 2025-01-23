@@ -11,6 +11,13 @@
 // AGPL-3.0 Licensed.
 //
 
+// function manager
+#include "func/function.h"
+#include "func/function_mgr.h"
+#include "func/call.h"
+#include "func/call_mgr.h"
+
+// functions
 #include "func/fn_system.h"
 #include "func/fn_cast.h"
 #include "func/fn_null.h"

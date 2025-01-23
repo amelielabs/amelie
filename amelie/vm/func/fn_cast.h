@@ -11,4 +11,4 @@
 // AGPL-3.0 Licensed.
 //
 
-extern FunctionDef fn_cast_def[];
+void fn_cast_register(FunctionMgr*);

@@ -31,7 +31,7 @@
 #include <amelie_set.h>
 #include <amelie_content.h>
 #include <amelie_executor.h>
-#include <amelie_vm.h>
+#include <amelie_func.h>
 
 void no_return
 call_error(Call* self, char* fmt, ...)

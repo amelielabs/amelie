@@ -31,6 +31,7 @@
 #include <amelie_set.h>
 #include <amelie_content.h>
 #include <amelie_executor.h>
+#include <amelie_func.h>
 #include <amelie_vm.h>
 #include <amelie_parser.h>
 #include <amelie_planner.h>
@@ -68,7 +69,7 @@ emit_watch(Compiler* self, Ast* ast)
 	runpin(self, r);
 
 	// CALL
-	r = op4(self, CCALL, rpin(self, func->ret), (intptr_t)func, 1, -1);
+	r = op4(self, CCALL, rpin(self, func->type), (intptr_t)func, 1, -1);
 
 	// jmp _start
 	op1(self, CJMP, _start);

@@ -11,8 +11,8 @@
 // AGPL-3.0 Licensed.
 //
 
-typedef struct Call Call;
-typedef struct Vm   Vm;
+typedef struct CallMgr CallMgr;
+typedef struct Call    Call;
 
 typedef enum
 {
@@ -25,9 +25,9 @@ struct Call
 	int       argc;
 	Value*    argv;
 	Value*    result;
-	Vm*       vm;
-	CallType  type;
 	Function* function;
+	CallType  type;
+	CallMgr*  mgr;
 	void**    context;
 };
 

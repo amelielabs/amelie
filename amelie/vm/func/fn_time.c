@@ -31,14 +31,13 @@
 #include <amelie_set.h>
 #include <amelie_content.h>
 #include <amelie_executor.h>
-#include <amelie_vm.h>
 #include <amelie_func.h>
 
 hot static void
 fn_now(Call* self)
 {
 	call_expect(self, 0);
-	value_set_timestamp(self->result, self->vm->local->time_us);
+	value_set_timestamp(self->result, self->mgr->local->time_us);
 }
 
 hot static void
@@ -139,7 +138,7 @@ fn_date_trunc(Call* self)
 
 	// (string, timestamp [, timezone])
 	// (timestamp, string [, timezone])
-	Timezone* timezone = self->vm->local->timezone;
+	Timezone* timezone = self->mgr->local->timezone;
 	if (self->argc == 3)
 	{
 		call_expect_arg(self, 2, TYPE_STRING);
@@ -229,7 +228,7 @@ fn_extract(Call* self)
 	// (interval, string)
 	// (timestamp, string [, timezone])
 	// (date, string)
-	Timezone* timezone = self->vm->local->timezone;
+	Timezone* timezone = self->mgr->local->timezone;
 	if (self->argc == 3)
 	{
 		call_expect_arg(self, 2, TYPE_STRING);
@@ -311,13 +310,31 @@ fn_generate_series(Call* self)
 
 #endif
 
-FunctionDef fn_time_def[] =
+void
+fn_time_register(FunctionMgr* self)
 {
-	{ "public", "now",             TYPE_TIMESTAMP, fn_now,             FN_NONE },
-	{ "public", "at_timezone",     TYPE_STRING,    fn_at_timezone,     FN_NONE },
-	{ "public", "date_bin",        TYPE_TIMESTAMP, fn_date_bin,        FN_NONE },
-	{ "public", "date_trunc",      TYPE_TIMESTAMP, fn_date_trunc,      FN_NONE },
-	{ "public", "interval_trunc",  TYPE_INTERVAL,  fn_interval_trunc,  FN_NONE },
-	{ "public", "extract",         TYPE_INT,       fn_extract,         FN_NONE },
-	{  NULL,     NULL,             TYPE_NULL,      NULL,               FN_NONE }
-};
+	// public.now()
+	Function* func;
+	func = function_allocate(TYPE_TIMESTAMP, "public", "now", fn_now);
+	function_mgr_add(self, func);
+
+	// public.at_timezone()
+	func = function_allocate(TYPE_STRING, "public", "at_timezone", fn_at_timezone);
+	function_mgr_add(self, func);
+
+	// public.date_bin()
+	func = function_allocate(TYPE_TIMESTAMP, "public", "date_bin", fn_date_bin);
+	function_mgr_add(self, func);
+
+	// public.date_trunc()
+	func = function_allocate(TYPE_TIMESTAMP, "public", "date_trunc", fn_date_trunc);
+	function_mgr_add(self, func);
+
+	// public.interval_trunc()
+	func = function_allocate(TYPE_INTERVAL, "public", "interval_trunc", fn_interval_trunc);
+	function_mgr_add(self, func);
+
+	// public.extract()
+	func = function_allocate(TYPE_INT, "public", "extract", fn_extract);
+	function_mgr_add(self, func);
+}

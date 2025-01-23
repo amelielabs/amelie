@@ -11,4 +11,4 @@
 // AGPL-3.0 Licensed.
 //
 
-extern FunctionDef fn_vector_def[];
+void fn_vector_register(FunctionMgr*);

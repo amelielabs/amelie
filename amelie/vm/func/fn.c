@@ -31,20 +31,19 @@
 #include <amelie_set.h>
 #include <amelie_content.h>
 #include <amelie_executor.h>
-#include <amelie_vm.h>
 #include <amelie_func.h>
 
 void
 fn_register(FunctionMgr* mgr)
 {
-	function_mgr_register(mgr, fn_system_def);
-	function_mgr_register(mgr, fn_cast_def);
-	function_mgr_register(mgr, fn_null_def);
-	function_mgr_register(mgr, fn_json_def);
-	function_mgr_register(mgr, fn_string_def);
-	function_mgr_register(mgr, fn_regexp_def);
-	function_mgr_register(mgr, fn_math_def);
-	function_mgr_register(mgr, fn_misc_def);
-	function_mgr_register(mgr, fn_time_def);
-	function_mgr_register(mgr, fn_vector_def);
+	fn_system_register(mgr);
+	fn_cast_register(mgr);
+	fn_null_register(mgr);
+	fn_json_register(mgr);
+	fn_string_register(mgr);
+	fn_regexp_register(mgr);
+	fn_math_register(mgr);
+	fn_misc_register(mgr);
+	fn_time_register(mgr);
+	fn_vector_register(mgr);
 }

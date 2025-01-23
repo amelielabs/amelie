@@ -11,4 +11,4 @@
 // AGPL-3.0 Licensed.
 //
 
-extern FunctionDef fn_null_def[];
+void fn_null_register(FunctionMgr*);

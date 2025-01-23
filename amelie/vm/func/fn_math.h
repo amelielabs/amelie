@@ -11,4 +11,4 @@
 // AGPL-3.0 Licensed.
 //
 
-extern FunctionDef fn_math_def[];
+void fn_math_register(FunctionMgr*);

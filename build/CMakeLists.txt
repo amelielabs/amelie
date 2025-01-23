@@ -89,8 +89,8 @@ include_directories("${AMELIE_ROOT}/vm/value")
 include_directories("${AMELIE_ROOT}/vm/set")
 include_directories("${AMELIE_ROOT}/vm/content")
 include_directories("${AMELIE_ROOT}/vm/executor")
-include_directories("${AMELIE_ROOT}/vm/vm")
 include_directories("${AMELIE_ROOT}/vm/func")
+include_directories("${AMELIE_ROOT}/vm/vm")
 
 # compiler
 include_directories("${AMELIE_ROOT}/compiler")
@@ -215,10 +215,9 @@ set(AMELIE_SOURCES_VM
     ${AMELIE_ROOT}/vm/content/content.c
     ${AMELIE_ROOT}/vm/content/content_json.c
     ${AMELIE_ROOT}/vm/executor/executor.c
-    ${AMELIE_ROOT}/vm/vm/op.c
-    ${AMELIE_ROOT}/vm/vm/call.c
-    ${AMELIE_ROOT}/vm/vm/vm.c
-    ${AMELIE_ROOT}/vm/vm/command.c
+    ${AMELIE_ROOT}/vm/func/function_mgr.c
+    ${AMELIE_ROOT}/vm/func/call.c
+    ${AMELIE_ROOT}/vm/func/call_mgr.c
     ${AMELIE_ROOT}/vm/func/fn_system.c
     ${AMELIE_ROOT}/vm/func/fn_cast.c
     ${AMELIE_ROOT}/vm/func/fn_null.c
@@ -229,7 +228,10 @@ set(AMELIE_SOURCES_VM
     ${AMELIE_ROOT}/vm/func/fn_misc.c
     ${AMELIE_ROOT}/vm/func/fn_time.c
     ${AMELIE_ROOT}/vm/func/fn_vector.c
-    ${AMELIE_ROOT}/vm/func/fn.c)
+    ${AMELIE_ROOT}/vm/func/fn.c
+    ${AMELIE_ROOT}/vm/vm/op.c
+    ${AMELIE_ROOT}/vm/vm/vm.c
+    ${AMELIE_ROOT}/vm/vm/command.c)
 
 set(AMELIE_SOURCES_COMPILER
     ${AMELIE_ROOT}/compiler/parser/keyword.c

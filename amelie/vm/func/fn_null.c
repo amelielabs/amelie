@@ -31,7 +31,6 @@
 #include <amelie_set.h>
 #include <amelie_content.h>
 #include <amelie_executor.h>
-#include <amelie_vm.h>
 #include <amelie_func.h>
 
 hot static void
@@ -60,9 +59,17 @@ fn_nullif(Call* self)
 	value_copy(self->result, &self->argv[0]);
 }
 
-FunctionDef fn_null_def[] =
+void
+fn_null_register(FunctionMgr* self)
 {
-	{ "public", "coalesce", TYPE_NULL, fn_coalesce, FN_TYPE_DERIVE },
-	{ "public", "nullif",   TYPE_NULL, fn_nullif,   FN_TYPE_DERIVE },
-	{  NULL,     NULL,      TYPE_NULL, NULL,        FN_NONE        }
-};
+	// public.coalesce()
+	Function* func;
+	func = function_allocate(TYPE_NULL, "public", "coalesce", fn_coalesce);
+	function_set(func, FN_DERIVE);
+	function_mgr_add(self, func);
+
+	// public.nullif()
+	func = function_allocate(TYPE_NULL, "public", "nullif", fn_nullif);
+	function_set(func, FN_DERIVE);
+	function_mgr_add(self, func);
+}

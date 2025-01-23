@@ -31,7 +31,6 @@
 #include <amelie_set.h>
 #include <amelie_content.h>
 #include <amelie_executor.h>
-#include <amelie_vm.h>
 #include <amelie_func.h>
 
 static void
@@ -186,7 +185,7 @@ fn_string(Call* self)
 	case TYPE_TIMESTAMP:
 	{
 		buf_reserve(data, 128);
-		int size = timestamp_get(arg->integer, self->vm->local->timezone, (char*)data->position, 128);
+		int size = timestamp_get(arg->integer, self->mgr->local->timezone, (char*)data->position, 128);
 		buf_advance(data, size);
 		break;
 	}
@@ -208,7 +207,7 @@ fn_string(Call* self)
 			buf_write_str(data, &str);
 			break;
 		}
-		value_export(arg, self->vm->local->timezone, false, data);
+		value_export(arg, self->mgr->local->timezone, false, data);
 		break;
 	}
 	Str string;
@@ -228,7 +227,7 @@ fn_json(Call* self)
 		return;
 	}
 	auto buf = buf_create();
-	value_encode(arg, self->vm->local->timezone, buf);
+	value_encode(arg, self->mgr->local->timezone, buf);
 	value_set_json_buf(self->result, buf);
 }
 
@@ -308,7 +307,7 @@ fn_timestamp(Call* self)
 	switch (arg->type) {
 	case TYPE_STRING:
 	{
-		Timezone* timezone = self->vm->local->timezone;
+		Timezone* timezone = self->mgr->local->timezone;
 		if (self->argc == 2)
 		{
 			if (unlikely(self->argv[1].type == TYPE_NULL))
@@ -492,19 +491,55 @@ fn_uuid(Call* self)
 	value_set_uuid(self->result, &uuid);
 }
 
-FunctionDef fn_cast_def[] =
+void
+fn_cast_register(FunctionMgr* self)
 {
-	{ "public", "type",        TYPE_STRING,    fn_type,        FN_NONE },
-	{ "public", "int",         TYPE_INT,       fn_int,         FN_NONE },
-	{ "public", "bool",        TYPE_BOOL,      fn_bool,        FN_NONE },
-	{ "public", "double",      TYPE_DOUBLE,    fn_double,      FN_NONE },
-	{ "public", "string",      TYPE_STRING,    fn_string,      FN_NONE },
-	{ "public", "json",        TYPE_JSON,      fn_json,        FN_NONE },
-	{ "public", "json_import", TYPE_JSON,      fn_json_import, FN_NONE },
-	{ "public", "interval",    TYPE_INTERVAL,  fn_interval,    FN_NONE },
-	{ "public", "timestamp",   TYPE_TIMESTAMP, fn_timestamp,   FN_NONE },
-	{ "public", "date",        TYPE_DATE,      fn_date,        FN_NONE },
-	{ "public", "vector",      TYPE_VECTOR,    fn_vector,      FN_NONE },
-	{ "public", "uuid",        TYPE_UUID,      fn_uuid,        FN_NONE },
-	{  NULL,     NULL,         TYPE_NULL,      NULL,           FN_NONE }
-};
+	// public.type()
+	Function* func;
+	func = function_allocate(TYPE_STRING, "public", "type", fn_type);
+	function_mgr_add(self, func);
+
+	// public.int()
+	func = function_allocate(TYPE_INT, "public", "int", fn_int);
+	function_mgr_add(self, func);
+
+	// public.bool()
+	func = function_allocate(TYPE_BOOL, "public", "bool", fn_bool);
+	function_mgr_add(self, func);
+
+	// public.double()
+	func = function_allocate(TYPE_DOUBLE, "public", "double", fn_double);
+	function_mgr_add(self, func);
+
+	// public.string()
+	func = function_allocate(TYPE_STRING, "public", "string", fn_string);
+	function_mgr_add(self, func);
+
+	// public.json()
+	func = function_allocate(TYPE_JSON, "public", "json", fn_json);
+	function_mgr_add(self, func);
+
+	// public.json_import()
+	func = function_allocate(TYPE_JSON, "public", "json_import", fn_json_import);
+	function_mgr_add(self, func);
+
+	// public.interval()
+	func = function_allocate(TYPE_INTERVAL, "public", "interval", fn_interval);
+	function_mgr_add(self, func);
+
+	// public.timestamp()
+	func = function_allocate(TYPE_TIMESTAMP, "public", "timestamp", fn_timestamp);
+	function_mgr_add(self, func);
+
+	// public.date()
+	func = function_allocate(TYPE_DATE, "public", "date", fn_date);
+	function_mgr_add(self, func);
+
+	// public.vector()
+	func = function_allocate(TYPE_VECTOR, "public", "vector", fn_vector);
+	function_mgr_add(self, func);
+
+	// public.uuid()
+	func = function_allocate(TYPE_UUID, "public", "uuid", fn_uuid);
+	function_mgr_add(self, func);
+}

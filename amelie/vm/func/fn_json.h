@@ -11,4 +11,4 @@
 // AGPL-3.0 Licensed.
 //
 
-extern FunctionDef fn_json_def[];
+void fn_json_register(FunctionMgr*);
