@@ -97,7 +97,7 @@ show replica '00000000-0000-0000-0000-000000000000'
 # test: show config
 show config
 [{
-  "version": "1.0.0",
+  "version": "0.9.0",
   "uuid": "00000000-0000-0000-0000-000000000000",
   "directory": "_output/E0",
   "timezone": "UTC",
@@ -137,7 +137,7 @@ show config
 # test: show all
 show all
 [{
-  "version": "1.0.0",
+  "version": "0.9.0",
   "uuid": "00000000-0000-0000-0000-000000000000",
   "directory": "_output/E0",
   "timezone": "UTC",
@@ -176,7 +176,7 @@ show all
 }]
 select system.config()
 [{
-  "version": "1.0.0",
+  "version": "0.9.0",
   "uuid": "00000000-0000-0000-0000-000000000000",
   "directory": "_output/E0",
   "timezone": "UTC",

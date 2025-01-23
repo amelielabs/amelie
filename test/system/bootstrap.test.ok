@@ -3,7 +3,7 @@ connect E0 S0 localhost:3485
 # test: ensure custom instance uuid
 show all
 [{
-  "version": "1.0.0",
+  "version": "0.9.0",
   "uuid": "abc00000-0000-0000-0000-000000000000",
   "directory": "_output/E0",
   "timezone": "UTC",
@@ -47,7 +47,7 @@ open E0
 connect E0 S0 localhost:3485
 show all
 [{
-  "version": "1.0.0",
+  "version": "0.9.0",
   "uuid": "abc00000-0000-0000-0000-000000000000",
   "directory": "_output/E0",
   "timezone": "UTC",

@@ -40,7 +40,7 @@ config_prepare(Config* self)
 
 	VarDef defs[] =
 	{
-		{ "version",                 VAR_STRING, VAR_E,                   &self->version,                 "1.0.0",       0                   },
+		{ "version",                 VAR_STRING, VAR_E,                   &self->version,                 "0.9.0",       0                   },
 		{ "uuid",                    VAR_STRING, VAR_C,                   &self->uuid,                    NULL,          0                   },
 		{ "directory",               VAR_STRING, VAR_E,                   &self->directory,               NULL,          0                   },
 		{ "timezone",                VAR_STRING, VAR_E|VAR_R|VAR_L,       &self->timezone,                NULL,          0                   },
