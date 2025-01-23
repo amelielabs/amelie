@@ -216,6 +216,7 @@ set(AMELIE_SOURCES_VM
     ${AMELIE_ROOT}/vm/content/content_json.c
     ${AMELIE_ROOT}/vm/executor/executor.c
     ${AMELIE_ROOT}/vm/vm/op.c
+    ${AMELIE_ROOT}/vm/vm/call.c
     ${AMELIE_ROOT}/vm/vm/vm.c
     ${AMELIE_ROOT}/vm/vm/command.c
     ${AMELIE_ROOT}/vm/func/fn_system.c

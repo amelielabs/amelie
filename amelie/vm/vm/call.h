@@ -31,54 +31,8 @@ struct Call
 	void**    context;
 };
 
-static inline void no_return
-call_error(Call* self, char* fmt, ...)
-{
-	auto buf = buf_create();
-	errdefer_buf(buf);
-	buf_printf(buf, "%.*s(", str_size(&self->function->name),
-	           str_of(&self->function->name));
-	for (auto i = 0; i < self->argc; i++)
-	{
-		if (i > 0)
-			buf_printf(buf, ", ");
-		buf_printf(buf, "%s", type_of(self->argv[i].type));
-	}
-	buf_printf(buf, ")");
-
-	va_list args;
-	char msg[256];
-	va_start(args, fmt);
-	vsnprintf(msg, sizeof(msg), fmt, args);
-	va_end(args);
-	error("%.*s ⟵ %s", buf_size(buf), buf->start, msg);
-}
-
-static inline void no_return
-call_error_arg(Call* self, int arg, char* fmt, ...)
-{
-	auto buf = buf_create();
-	errdefer_buf(buf);
-	buf_printf(buf, "%.*s(", str_size(&self->function->name),
-	           str_of(&self->function->name));
-	for (auto i = 0; i < self->argc; i++)
-	{
-		if (i > 0)
-			buf_printf(buf, ", ");
-		if (i == arg) {
-			buf_printf(buf, "❰%s❱", type_of(self->argv[i].type));
-			break;
-		}
-		buf_printf(buf, "%s", type_of(self->argv[i].type));
-	}
-
-	va_list args;
-	char msg[256];
-	va_start(args, fmt);
-	vsnprintf(msg, sizeof(msg), fmt, args);
-	va_end(args);
-	error("%.*s ⟵ %s", buf_size(buf), buf->start, msg);
-}
+no_return void call_error(Call*, char*, ...);
+no_return void call_error_arg(Call*, int, char*, ...);
 
 static inline void
 call_expect(Call* self, int argc)
@@ -87,9 +41,8 @@ call_expect(Call* self, int argc)
 	{
 		if (argc == 0)
 			call_error_arg(self, 0, "function has no arguments");
-		else
-			call_error(self, "expected %d argument%s", argc,
-			           argc > 1 ? "s": "");
+		call_error(self, "expected %d argument%s", argc,
+		           argc > 1 ? "s": "");
 	}
 }
 
