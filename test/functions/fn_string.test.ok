@@ -69,6 +69,8 @@ select "Hello World"::lower
 ["hello world"]
 select null::lower
 [null]
+select "приHeветllo миWрorld"::lower
+["приheветllo миwрorld"]
 # test: upper()
 select null::upper
 [null]
@@ -76,6 +78,8 @@ select ""::upper
 [""]
 select "Hello World"::upper
 ["HELLO WORLD"]
+select "приHeветllo миWрorld"::upper
+["приHEветLLO миWрORLD"]
 # test: substr()
 select substr(null, 0)
 [null]

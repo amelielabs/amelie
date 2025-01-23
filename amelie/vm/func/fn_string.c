@@ -136,15 +136,23 @@ fn_lower(Call* self)
 	}
 	call_expect_arg(self, 0, TYPE_STRING);
 
-	auto src = str_of(&arg->string);
-	auto src_size = str_size(&arg->string);
 	auto buf = buf_create();
-	buf_reserve(buf, src_size);
+	buf_reserve(buf, str_size(&arg->string));
 
-	auto dst = buf->position;
-	for (int i = 0; i < src_size; i++)
-		dst[i] = tolower(src[i]);
-	buf_advance(buf, src_size);
+	auto pos = arg->string.pos;
+	auto end = arg->string.end;
+	while (pos < end)
+	{
+		auto pos_size = utf8_sizeof(*pos);
+		if (pos_size == 1)
+		{
+			uint8_t chr = tolower(*pos);
+			buf_append_u8(buf, chr);
+		} else {
+			buf_append(buf, pos, pos_size);
+		}
+		pos += pos_size;
+	}
 
 	Str string;
 	buf_str(buf, &string);
@@ -163,15 +171,23 @@ fn_upper(Call* self)
 	}
 	call_expect_arg(self, 0, TYPE_STRING);
 
-	auto src = str_of(&arg->string);
-	auto src_size = str_size(&arg->string);
 	auto buf = buf_create();
-	buf_reserve(buf, src_size);
+	buf_reserve(buf, str_size(&arg->string));
 
-	auto dst = buf->position;
-	for (int i = 0; i < src_size; i++)
-		dst[i] = toupper(src[i]);
-	buf_advance(buf, src_size);
+	auto pos = arg->string.pos;
+	auto end = arg->string.end;
+	while (pos < end)
+	{
+		auto pos_size = utf8_sizeof(*pos);
+		if (pos_size == 1)
+		{
+			uint8_t chr = toupper(*pos);
+			buf_append_u8(buf, chr);
+		} else {
+			buf_append(buf, pos, pos_size);
+		}
+		pos += pos_size;
+	}
 
 	Str string;
 	buf_str(buf, &string);

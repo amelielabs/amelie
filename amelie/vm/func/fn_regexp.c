@@ -45,7 +45,7 @@ fn_regexp_init(Call* self, Str* pattern)
 		return re;
 	int        error_number = 0;
 	PCRE2_SIZE error_offset = 0;
-	re = pcre2_compile((PCRE2_SPTR)str_of(pattern), str_size(pattern), 0,
+	re = pcre2_compile((PCRE2_SPTR)str_of(pattern), str_size(pattern), PCRE2_UTF,
 	                   &error_number,
 	                   &error_offset, NULL);
 	if (! re)
@@ -140,11 +140,9 @@ fn_regexp_substr(Call* self)
 	str_set(&first, str_of(string) + ovector[0], ovector[1] - ovector[0]);
 
 	auto buf = buf_create();
-	encode_string(buf, &first);
-	Str result;
-	uint8_t* pos_str = buf->start;
-	json_read_string(&pos_str, &result);
-	value_set_string(self->result, &result, buf);
+	buf_write_str(buf, &first);
+	buf_str(buf, &first);
+	value_set_string(self->result, &first, buf);
 }
 
 hot static void
@@ -227,7 +225,6 @@ fn_regexp_replace(Call* self)
 	auto replace = &argv[2].string;
 
 	auto buf = buf_create();
-	encode_string32(buf, 0);
 	buf_reserve(buf, str_size(string) + str_size(string) / 3);
 	for (;;)
 	{
@@ -251,14 +248,8 @@ fn_regexp_replace(Call* self)
 		break;
 	}
 
-	// update string size
-	int size = buf_size(buf) - json_size_string32();
-	uint8_t* pos_str = buf->start;
-	json_write_string32(&pos_str, size);
-
 	Str result;
-	pos_str = buf->start;
-	json_read_string(&pos_str, &result);
+	buf_str(buf, &result);
 	value_set_string(self->result, &result, buf);
 }
 

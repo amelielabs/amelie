@@ -49,10 +49,13 @@ select ""::lower
 select "Hello World"::lower
 select null::lower
 
+select "приHeветllo миWрorld"::lower
+
 # test: upper()
 select null::upper
 select ""::upper
 select "Hello World"::upper
+select "приHeветllo миWрorld"::upper
 
 # test: substr()
 select substr(null, 0)

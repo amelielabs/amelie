@@ -43,6 +43,8 @@ select regexp_match('ABCAB', 'A');
 [["A"]]
 select regexp_match('ABCAB', '(A)');
 [["A", "A"]]
+select regexp_match('приветкакделапривет', '(привет)(как)');
+[["приветкак", "привет", "как"]]
 # test: regexp_replace()
 select regexp_replace(null, '(A)', '_');
 [null]
@@ -52,5 +54,7 @@ select regexp_replace('ABCAB', '(A)', '|YYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYY|');
 ["|YYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYY|BC|YYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYY|B"]
 select regexp_replace('/* Comment1 */ i+= 1; /* Comment2 */', '/[*].*?[*]/', '')
 [" i+= 1; "]
+select regexp_replace('приветкакделапривет', 'привет', '');
+["какдела"]
 disconnect S0
 close E0
