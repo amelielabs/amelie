@@ -19,6 +19,8 @@ void  linenoiseSetMultiLine(int ml);
 int   linenoiseHistorySave(const char *filename);
 int   linenoiseHistoryLoad(const char *filename);
 int   linenoiseHistoryAdd(const char *line);
+void  linenoiseSetEncodingUtf8(void);
+void  linenoiseAtExit(void);
 
 bool
 cli_is_terminal(void)
@@ -31,6 +33,13 @@ cli_open(char* path)
 {
 	linenoiseHistoryLoad(path);
 	linenoiseSetMultiLine(true);
+	linenoiseSetEncodingUtf8();
+}
+
+void
+cli_close()
+{
+	linenoiseAtExit();
 }
 
 void

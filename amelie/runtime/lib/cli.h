@@ -13,5 +13,6 @@
 
 bool cli_is_terminal(void);
 void cli_open(char*);
+void cli_close();
 void cli_sync(char*);
 bool cli(char*, Str*);

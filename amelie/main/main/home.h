@@ -28,6 +28,7 @@ static inline void
 home_free(Home* self)
 {
 	login_mgr_free(&self->login_mgr);
+	cli_close();
 }
 
 static inline void
