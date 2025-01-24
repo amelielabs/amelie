@@ -17,7 +17,6 @@ typedef enum
 {
 	REQ_UNDEF,
 	REQ_EXECUTE,
-	REQ_LOAD,
 	REQ_REPLAY,
 	REQ_SHUTDOWN
 } ReqType;
