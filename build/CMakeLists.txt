@@ -83,6 +83,11 @@ include_directories("${AMELIE_ROOT}/db/checkpoint")
 include_directories("${AMELIE_ROOT}/db/wal")
 include_directories("${AMELIE_ROOT}/db/db")
 
+# repl
+include_directories("${AMELIE_ROOT}/repl")
+include_directories("${AMELIE_ROOT}/repl/backup")
+include_directories("${AMELIE_ROOT}/repl/repl")
+
 # vm
 include_directories("${AMELIE_ROOT}/vm")
 include_directories("${AMELIE_ROOT}/vm/value")
@@ -100,8 +105,6 @@ include_directories("${AMELIE_ROOT}/compiler/compiler")
 
 # cluster
 include_directories("${AMELIE_ROOT}/cluster")
-include_directories("${AMELIE_ROOT}/cluster/backup")
-include_directories("${AMELIE_ROOT}/cluster/repl")
 include_directories("${AMELIE_ROOT}/cluster/cluster")
 
 # system
@@ -202,6 +205,14 @@ set(AMELIE_SOURCES_DB
     ${AMELIE_ROOT}/db/db/recover.c
     ${AMELIE_ROOT}/db/db/cascade.c)
 
+set(AMELIE_SOURCES_REPL
+    ${AMELIE_ROOT}/repl/backup/backup.c
+    ${AMELIE_ROOT}/repl/backup/restore.c
+    ${AMELIE_ROOT}/repl/repl/streamer.c
+    ${AMELIE_ROOT}/repl/repl/replica_mgr.c
+    ${AMELIE_ROOT}/repl/repl/primary.c
+    ${AMELIE_ROOT}/repl/repl/repl.c)
+
 set(AMELIE_SOURCES_VM
     ${AMELIE_ROOT}/vm/value/update.c
     ${AMELIE_ROOT}/vm/value/row.c
@@ -275,12 +286,6 @@ set(AMELIE_SOURCES_COMPILER
     ${AMELIE_ROOT}/compiler/compiler/pushdown.c)
 
 set(AMELIE_SOURCES_CLUSTER
-    ${AMELIE_ROOT}/cluster/backup/backup.c
-    ${AMELIE_ROOT}/cluster/backup/restore.c
-    ${AMELIE_ROOT}/cluster/repl/streamer.c
-    ${AMELIE_ROOT}/cluster/repl/replica_mgr.c
-    ${AMELIE_ROOT}/cluster/repl/primary.c
-    ${AMELIE_ROOT}/cluster/repl/repl.c
     ${AMELIE_ROOT}/cluster/cluster/compute.c
     ${AMELIE_ROOT}/cluster/cluster/cluster.c
     ${AMELIE_ROOT}/cluster/cluster/cluster_bootstrap.c
@@ -314,6 +319,7 @@ set(AMELIE_SOURCES
     ${AMELIE_SOURCES_RUNTIME}
     ${AMELIE_SOURCES_SERVER}
     ${AMELIE_SOURCES_DB}
+    ${AMELIE_SOURCES_REPL}
     ${AMELIE_SOURCES_VM}
     ${AMELIE_SOURCES_COMPILER}
     ${AMELIE_SOURCES_CLUSTER}
