@@ -4,7 +4,7 @@ connect E0 S0 localhost:3485
 explain select null
 [{
   "bytecode": {
-    "coordinator": {
+    "main": {
       "00": "set                 0      1      0     ",
       "01": "null                1      0      0     ",
       "02": "push                1      0      0     ",

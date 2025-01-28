@@ -45,7 +45,7 @@ insert into test values (2)
 explain delete from test where id = 3
 [{
   "bytecode": {
-    "coordinator": {
+    "main": {
       "00": "send_lookup         0      0      -     # public.test",
       "01": "recv                0      0      0     ",
       "02": "null                0      0      0     ",
@@ -101,7 +101,7 @@ select * from test
 explain delete from test where id > 0 and id < 1
 [{
   "bytecode": {
-    "coordinator": {
+    "main": {
       "00": "send_all            0      0      -     # public.test",
       "01": "recv                0      0      0     ",
       "02": "null                0      0      0     ",

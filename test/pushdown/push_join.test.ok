@@ -8,7 +8,7 @@ insert into test (id) values (1), (2), (3)
 explain select test.*, ref.* from test, ref
 [{
   "bytecode": {
-    "coordinator": {
+    "main": {
       "00": "send_all            0      0      -     # public.test",
       "01": "recv                0      0      0     ",
       "02": "bool                0      0      0     ",
@@ -46,7 +46,7 @@ select test.*, ref.* from test, ref
 explain select test.*, ref.* from ref, test
 [{
   "bytecode": {
-    "coordinator": {
+    "main": {
       "00": "send_all            0      0      -     # public.test",
       "01": "recv                0      0      0     ",
       "02": "bool                0      0      0     ",
@@ -89,7 +89,7 @@ select t.* from test, test t
 explain select test.id, ref.id from test join ref on true
 [{
   "bytecode": {
-    "coordinator": {
+    "main": {
       "00": "send_all            0      0      -     # public.test",
       "01": "recv                0      0      0     ",
       "02": "bool                0      0      0     ",
@@ -125,7 +125,7 @@ select test.id, ref.id from test join ref on true
 explain select test.id, ref.id from test join ref on test.id = ref.id
 [{
   "bytecode": {
-    "coordinator": {
+    "main": {
       "00": "send_all            0      0      -     # public.test",
       "01": "recv                0      0      0     ",
       "02": "bool                0      0      0     ",
@@ -164,7 +164,7 @@ select test.id, ref.id from test join ref on test.id = ref.id
 explain select test.id, ref.id from test join ref on test.id = ref.id join ref ref2 on test.id = ref2.id
 [{
   "bytecode": {
-    "coordinator": {
+    "main": {
       "00": "send_all            0      0      -     # public.test",
       "01": "recv                0      0      0     ",
       "02": "bool                0      0      0     ",
@@ -211,7 +211,7 @@ select test.id, ref.id from test join ref on test.id = ref.id join ref ref2 on t
 explain select test.id, ref.id from test join ref on test.id = ref.id join ref ref2 on test.id = ref2.id where test.id > 0
 [{
   "bytecode": {
-    "coordinator": {
+    "main": {
       "00": "send_all            0      0      -     # public.test",
       "01": "recv                0      0      0     ",
       "02": "bool                0      0      0     ",
@@ -264,7 +264,7 @@ select test.id, ref.id from test join ref on test.id = ref.id join ref ref2 on t
 explain select test.id, ref.id from test, ref where test.id = ref.id
 [{
   "bytecode": {
-    "coordinator": {
+    "main": {
       "00": "send_all            0      0      -     # public.test",
       "01": "recv                0      0      0     ",
       "02": "bool                0      0      0     ",
@@ -302,7 +302,7 @@ select test.id, ref.id from test, ref where test.id = ref.id
 explain select test.id, ref.id from test, ref where ref.id = test.id
 [{
   "bytecode": {
-    "coordinator": {
+    "main": {
       "00": "send_all            0      0      -     # public.test",
       "01": "recv                0      0      0     ",
       "02": "bool                0      0      0     ",
@@ -340,7 +340,7 @@ select test.id, ref.id from test, ref where ref.id = test.id
 explain select test.id, ref.id from test, ref where ref.id = 1
 [{
   "bytecode": {
-    "coordinator": {
+    "main": {
       "00": "send_all            0      0      -     # public.test",
       "01": "recv                0      0      0     ",
       "02": "bool                0      0      0     ",
@@ -378,7 +378,7 @@ select test.id, ref.id from test, ref where ref.id = 1
 explain select test.id, ref.id from test, ref where ref.id = 1 and test.id = 1
 [{
   "bytecode": {
-    "coordinator": {
+    "main": {
       "00": "send_lookup         0      0      -     # public.test",
       "01": "recv                0      0      0     ",
       "02": "bool                0      0      0     ",
@@ -421,7 +421,7 @@ select test.id, ref.id from test, ref where ref.id = 1 and test.id = 1
 explain select test.id, ref.id from test, ref where ref.id >= test.id
 [{
   "bytecode": {
-    "coordinator": {
+    "main": {
       "00": "send_all            0      0      -     # public.test",
       "01": "recv                0      0      0     ",
       "02": "bool                0      0      0     ",
@@ -469,7 +469,7 @@ explain select test.id, ref.id from test join ref using(id
 explain select test.id, ref.id from test join ref using(id)
 [{
   "bytecode": {
-    "coordinator": {
+    "main": {
       "00": "send_all            0      0      -     # public.test",
       "01": "recv                0      0      0     ",
       "02": "bool                0      0      0     ",
@@ -511,7 +511,7 @@ select test.id, ref.id from test join ref using(unknown)
 explain select test.id, ref.id from test join ref using (id) join ref ref2 using (id) where test.id > 0
 [{
   "bytecode": {
-    "coordinator": {
+    "main": {
       "00": "send_all            0      0      -     # public.test",
       "01": "recv                0      0      0     ",
       "02": "bool                0      0      0     ",
@@ -566,7 +566,7 @@ select test.id, ref.id from test join ref using (id) join ref ref2 using (id2) w
 explain with a as (select * from test) select * from test, a where test.id = a.id
 [{
   "bytecode": {
-    "coordinator": {
+    "main": {
       "00": "send_all            0      0      -     # public.test",
       "01": "recv                0      0      0     ",
       "02": "bool                0      0      0     ",
@@ -626,7 +626,7 @@ with a as (select * from test) select * from test, a where test.id = a.id
 explain with a as (select * from test) select * from test, a where test.id = 1
 [{
   "bytecode": {
-    "coordinator": {
+    "main": {
       "00": "send_all            0      0      -     # public.test",
       "01": "recv                0      0      0     ",
       "02": "bool                0      0      0     ",
@@ -687,7 +687,7 @@ with a as (select * from test) select * from test, a where test.id = 1
 explain with a as (select * from test) select * from a, test where test.id = a.id
 [{
   "bytecode": {
-    "coordinator": {
+    "main": {
       "00": "send_all            0      0      -     # public.test",
       "01": "recv                0      0      0     ",
       "02": "bool                0      0      0     ",
@@ -748,7 +748,7 @@ with a as (select * from test) select * from a, test where test.id = a.id
 explain with a as (select * from test) select * from a, test where test.id = 1
 [{
   "bytecode": {
-    "coordinator": {
+    "main": {
       "00": "send_all            0      0      -     # public.test",
       "01": "recv                0      0      0     ",
       "02": "bool                0      0      0     ",
@@ -819,7 +819,7 @@ select ref.id from test join ref on (test.id = ref.id) group by id
 explain select ref.id from test join ref on (test.id = ref.id) group by ref.id
 [{
   "bytecode": {
-    "coordinator": {
+    "main": {
       "00": "send_all            0      0      -     # public.test",
       "01": "recv                0      0      0     ",
       "02": "bool                0      1      0     ",

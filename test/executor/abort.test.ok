@@ -24,7 +24,7 @@ select * from test
 explain delete from test; select error("abort")
 [{
   "bytecode": {
-    "coordinator": {
+    "main": {
       "00": "send_all            0      0      -     # public.test",
       "01": "recv                0      0      0     ",
       "02": "null                0      0      0     ",
@@ -56,7 +56,7 @@ select * from test
 explain update test set data = id; select error("abort")
 [{
   "bytecode": {
-    "coordinator": {
+    "main": {
       "00": "send_all            0      0      -     # public.test",
       "01": "recv                0      0      0     ",
       "02": "null                0      0      0     ",
@@ -92,7 +92,7 @@ select * from test
 explain insert into test values(1, 0) on conflict do update set data = id; select error("abort")
 [{
   "bytecode": {
-    "coordinator": {
+    "main": {
       "00": "set_ptr             0      -      0     ",
       "01": "send                0      0      -     # public.test",
       "02": "recv                0      0      0     ",
@@ -151,7 +151,7 @@ select * from test
 explain delete from test; select error("abort")
 [{
   "bytecode": {
-    "coordinator": {
+    "main": {
       "00": "send_first          0      0      0     ",
       "01": "recv                0      0      0     ",
       "02": "null                0      0      0     ",
@@ -183,7 +183,7 @@ select * from test
 explain update test set data = id; select error("abort")
 [{
   "bytecode": {
-    "coordinator": {
+    "main": {
       "00": "send_first          0      0      0     ",
       "01": "recv                0      0      0     ",
       "02": "null                0      0      0     ",
@@ -219,7 +219,7 @@ select * from test
 explain insert into test values(1, 0) on conflict do update set data = id; select error("abort")
 [{
   "bytecode": {
-    "coordinator": {
+    "main": {
       "00": "set_ptr             0      -      0     ",
       "01": "send                0      0      -     # public.test",
       "02": "recv                0      0      0     ",
@@ -265,7 +265,7 @@ insert into a (id) values (0), (1), (2), (3); select * from a
 explain insert into b (id) values (10), (20), (30)
 [{
   "bytecode": {
-    "coordinator": {
+    "main": {
       "00": "set_ptr             0      -      0     ",
       "01": "send                0      0      -     # public.b",
       "02": "recv                0      0      0     ",
@@ -289,7 +289,7 @@ update a set data = 0
 explain update a set data = id; update b set data = id; select * from a; select * from b; select error("abort")
 [{
   "bytecode": {
-    "coordinator": {
+    "main": {
       "00": "send_all            0      0      -     # public.a",
       "01": "send_all            1      9      -     # public.b",
       "02": "send_all            2      18     -     # public.a",
@@ -374,7 +374,7 @@ select * from b
 explain insert into a values (1, 0), (3, 0) on conflict do update set data = id; update b set data = data * 2; select * from a; select error("abort")
 [{
   "bytecode": {
-    "coordinator": {
+    "main": {
       "00": "set_ptr             0      -      0     ",
       "01": "send                0      0      -     # public.a",
       "02": "send_all            1      10     -     # public.b",

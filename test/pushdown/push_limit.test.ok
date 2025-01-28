@@ -8,7 +8,7 @@ select * from test limit 100
 explain select * from test limit 1
 [{
   "bytecode": {
-    "coordinator": {
+    "main": {
       "00": "send_all            0      0      -     # public.test",
       "01": "recv                0      0      0     ",
       "02": "bool                0      0      0     ",
@@ -57,7 +57,7 @@ select * from test limit null
 explain select * from test limit 0
 [{
   "bytecode": {
-    "coordinator": {
+    "main": {
       "00": "send_all            0      0      -     # public.test",
       "01": "recv                0      0      0     ",
       "02": "bool                0      0      0     ",
@@ -93,7 +93,7 @@ select * from test limit -1
 explain select * from test limit 1 offset 0
 [{
   "bytecode": {
-    "coordinator": {
+    "main": {
       "00": "send_all            0      0      -     # public.test",
       "01": "recv                0      0      0     ",
       "02": "bool                0      0      0     ",
@@ -135,7 +135,7 @@ select * from test limit 1 offset null
 explain select * from test limit 1 offset 1
 [{
   "bytecode": {
-    "coordinator": {
+    "main": {
       "00": "send_all            0      0      -     # public.test",
       "01": "recv                0      0      0     ",
       "02": "bool                0      0      0     ",
@@ -201,7 +201,7 @@ select * from test limit 0 offset 4
 explain select * from test offset 1
 [{
   "bytecode": {
-    "coordinator": {
+    "main": {
       "00": "send_all            0      0      -     # public.test",
       "01": "recv                0      0      0     ",
       "02": "bool                0      0      0     ",
@@ -246,7 +246,7 @@ select * from test limit 100
 explain select * from test limit 1
 [{
   "bytecode": {
-    "coordinator": {
+    "main": {
       "00": "send_first          0      0      0     ",
       "01": "recv                0      0      0     ",
       "02": "bool                0      0      0     ",
@@ -290,7 +290,7 @@ select * from test limit 20
 explain select * from test limit 0
 [{
   "bytecode": {
-    "coordinator": {
+    "main": {
       "00": "send_first          0      0      0     ",
       "01": "recv                0      0      0     ",
       "02": "bool                0      0      0     ",
@@ -326,7 +326,7 @@ select * from test limit -1
 explain select * from test limit 1 offset 0
 [{
   "bytecode": {
-    "coordinator": {
+    "main": {
       "00": "send_first          0      0      0     ",
       "01": "recv                0      0      0     ",
       "02": "bool                0      0      0     ",
@@ -363,7 +363,7 @@ select * from test limit 1 offset 0
 explain select * from test limit 1 offset 1
 [{
   "bytecode": {
-    "coordinator": {
+    "main": {
       "00": "send_first          0      0      0     ",
       "01": "recv                0      0      0     ",
       "02": "bool                0      0      0     ",
@@ -429,7 +429,7 @@ select * from test limit 0 offset 4
 explain select * from test offset 1
 [{
   "bytecode": {
-    "coordinator": {
+    "main": {
       "00": "send_first          0      0      0     ",
       "01": "recv                0      0      0     ",
       "02": "bool                0      0      0     ",

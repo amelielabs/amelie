@@ -51,7 +51,7 @@ select 0.0 = false
 explain select 0.0 = false
 [{
   "bytecode": {
-    "coordinator": {
+    "main": {
       "00": "set                 0      1      0     ",
       "01": "double              1      0      0     # 0",
       "02": "bool                2      0      0     ",
@@ -74,7 +74,7 @@ select 0.14 = 1
 explain select 1.0000 = 1
 [{
   "bytecode": {
-    "coordinator": {
+    "main": {
       "00": "set                 0      1      0     ",
       "01": "double              1      0      0     # 1",
       "02": "int                 2      -      0     # 1",
@@ -97,7 +97,7 @@ select 12.3 = 12.4
 explain select 12.3 = 12.4
 [{
   "bytecode": {
-    "coordinator": {
+    "main": {
       "00": "set                 0      1      0     ",
       "01": "double              1      0      0     # 12.3",
       "02": "double              2      8      0     # 12.4",
@@ -116,7 +116,7 @@ select 12.3 = null
 explain select 12.3 = null
 [{
   "bytecode": {
-    "coordinator": {
+    "main": {
       "00": "set                 0      1      0     ",
       "01": "double              1      0      0     # 12.3",
       "02": "null                2      0      0     ",
@@ -146,7 +146,7 @@ select 0.0 <> false
 explain select 0.0 <> false
 [{
   "bytecode": {
-    "coordinator": {
+    "main": {
       "00": "set                 0      1      0     ",
       "01": "double              1      0      0     # 0",
       "02": "bool                2      0      0     ",
@@ -170,7 +170,7 @@ select 0.14 <> 1
 explain select 1.0000 <> 1
 [{
   "bytecode": {
-    "coordinator": {
+    "main": {
       "00": "set                 0      1      0     ",
       "01": "double              1      0      0     # 1",
       "02": "int                 2      -      0     # 1",
@@ -194,7 +194,7 @@ select 12.3 <> 12.4
 explain select 12.3 <> 12.4
 [{
   "bytecode": {
-    "coordinator": {
+    "main": {
       "00": "set                 0      1      0     ",
       "01": "double              1      0      0     # 12.3",
       "02": "double              2      8      0     # 12.4",
@@ -214,7 +214,7 @@ select 12.3 <> null
 explain select 12.3 <> null
 [{
   "bytecode": {
-    "coordinator": {
+    "main": {
       "00": "set                 0      1      0     ",
       "01": "double              1      0      0     # 12.3",
       "02": "null                2      0      0     ",
@@ -241,7 +241,7 @@ select 1.0 >= 1
 explain select 11.1 >= 1
 [{
   "bytecode": {
-    "coordinator": {
+    "main": {
       "00": "set                 0      1      0     ",
       "01": "double              1      0      0     # 11.1",
       "02": "int                 2      -      0     # 1",
@@ -264,7 +264,7 @@ select 1.13 >= 1.13
 explain select 1.11 >= 1.13
 [{
   "bytecode": {
-    "coordinator": {
+    "main": {
       "00": "set                 0      1      0     ",
       "01": "double              1      0      0     # 1.11",
       "02": "double              2      8      0     # 1.13",
@@ -283,7 +283,7 @@ select 0.11 >= null
 explain select 0.11 >= null
 [{
   "bytecode": {
-    "coordinator": {
+    "main": {
       "00": "set                 0      1      0     ",
       "01": "double              1      0      0     # 0.11",
       "02": "null                2      0      0     ",
@@ -309,7 +309,7 @@ select 1.0 > 1
 explain select 11.1 > 1
 [{
   "bytecode": {
-    "coordinator": {
+    "main": {
       "00": "set                 0      1      0     ",
       "01": "double              1      0      0     # 11.1",
       "02": "int                 2      -      0     # 1",
@@ -332,7 +332,7 @@ select 1.13 > 1.13
 explain select 1.11 > 1.13
 [{
   "bytecode": {
-    "coordinator": {
+    "main": {
       "00": "set                 0      1      0     ",
       "01": "double              1      0      0     # 1.11",
       "02": "double              2      8      0     # 1.13",
@@ -351,7 +351,7 @@ select 0.11 > null
 explain select 0.11 > null
 [{
   "bytecode": {
-    "coordinator": {
+    "main": {
       "00": "set                 0      1      0     ",
       "01": "double              1      0      0     # 0.11",
       "02": "null                2      0      0     ",
@@ -377,7 +377,7 @@ select 1.0 <= 1
 explain select 11.1 <= 1
 [{
   "bytecode": {
-    "coordinator": {
+    "main": {
       "00": "set                 0      1      0     ",
       "01": "double              1      0      0     # 11.1",
       "02": "int                 2      -      0     # 1",
@@ -400,7 +400,7 @@ select 1.13 <= 1.13
 explain select 1.11 <= 1.13
 [{
   "bytecode": {
-    "coordinator": {
+    "main": {
       "00": "set                 0      1      0     ",
       "01": "double              1      0      0     # 1.11",
       "02": "double              2      8      0     # 1.13",
@@ -419,7 +419,7 @@ select 0.11 <= null
 explain select 0.11 <= null
 [{
   "bytecode": {
-    "coordinator": {
+    "main": {
       "00": "set                 0      1      0     ",
       "01": "double              1      0      0     # 0.11",
       "02": "null                2      0      0     ",
@@ -445,7 +445,7 @@ select 1.0 < 1
 explain select 11.1 < 1
 [{
   "bytecode": {
-    "coordinator": {
+    "main": {
       "00": "set                 0      1      0     ",
       "01": "double              1      0      0     # 11.1",
       "02": "int                 2      -      0     # 1",
@@ -468,7 +468,7 @@ select 1.13 < 1.13
 explain select 1.11 < 1.13
 [{
   "bytecode": {
-    "coordinator": {
+    "main": {
       "00": "set                 0      1      0     ",
       "01": "double              1      0      0     # 1.11",
       "02": "double              2      8      0     # 1.13",
@@ -487,7 +487,7 @@ select 0.11 < null
 explain select 0.11 < null
 [{
   "bytecode": {
-    "coordinator": {
+    "main": {
       "00": "set                 0      1      0     ",
       "01": "double              1      0      0     # 0.11",
       "02": "null                2      0      0     ",
@@ -509,7 +509,7 @@ select 1.5 + 1
 explain select 1.5 + 1
 [{
   "bytecode": {
-    "coordinator": {
+    "main": {
       "00": "set                 0      1      0     ",
       "01": "double              1      0      0     # 1.5",
       "02": "int                 2      -      0     # 1",
@@ -528,7 +528,7 @@ select 1.5 + 1.5
 explain select 1.5 + 1.5
 [{
   "bytecode": {
-    "coordinator": {
+    "main": {
       "00": "set                 0      1      0     ",
       "01": "double              1      0      0     # 1.5",
       "02": "double              2      8      0     # 1.5",
@@ -553,7 +553,7 @@ select 1.5 - 1
 explain select 1.5 - 1
 [{
   "bytecode": {
-    "coordinator": {
+    "main": {
       "00": "set                 0      1      0     ",
       "01": "double              1      0      0     # 1.5",
       "02": "int                 2      -      0     # 1",
@@ -572,7 +572,7 @@ select 1.5 - 1.5
 explain select 1.5 - 1.5
 [{
   "bytecode": {
-    "coordinator": {
+    "main": {
       "00": "set                 0      1      0     ",
       "01": "double              1      0      0     # 1.5",
       "02": "double              2      8      0     # 1.5",
@@ -597,7 +597,7 @@ select 1.5 * 2
 explain select 1.5 * 2
 [{
   "bytecode": {
-    "coordinator": {
+    "main": {
       "00": "set                 0      1      0     ",
       "01": "double              1      0      0     # 1.5",
       "02": "int                 2      -      0     # 2",
@@ -619,7 +619,7 @@ select 1.5 * 1.5
 explain select 1.5 * 1.5
 [{
   "bytecode": {
-    "coordinator": {
+    "main": {
       "00": "set                 0      1      0     ",
       "01": "double              1      0      0     # 1.5",
       "02": "double              2      8      0     # 1.5",
@@ -644,7 +644,7 @@ select 3.5 / 2
 explain select 3.5 / 2
 [{
   "bytecode": {
-    "coordinator": {
+    "main": {
       "00": "set                 0      1      0     ",
       "01": "double              1      0      0     # 3.5",
       "02": "int                 2      -      0     # 2",
@@ -665,7 +665,7 @@ select 3.5 / 1.5
 explain select 3.5 / 1.5
 [{
   "bytecode": {
-    "coordinator": {
+    "main": {
       "00": "set                 0      1      0     ",
       "01": "double              1      0      0     # 3.5",
       "02": "double              2      8      0     # 1.5",
@@ -692,7 +692,7 @@ select -18.8
 explain select -18.8
 [{
   "bytecode": {
-    "coordinator": {
+    "main": {
       "00": "set                 0      1      0     ",
       "01": "double              1      0      0     # -18.8",
       "02": "push                1      0      0     ",

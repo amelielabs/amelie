@@ -45,7 +45,7 @@ select system.table('test').columns[1]
 explain insert into test values (0, null)
 [{
   "bytecode": {
-    "coordinator": {
+    "main": {
       "00": "set_ptr             0      -      0     ",
       "01": "dup                 1      0      0     ",
       "02": "store_open          1      1      11    ",
@@ -133,7 +133,7 @@ insert into test values (0, 0)
 explain insert into test (id) values (0) on conflict do update set data = data + 1
 [{
   "bytecode": {
-    "coordinator": {
+    "main": {
       "00": "set_ptr             0      -      0     ",
       "01": "dup                 1      0      0     ",
       "02": "store_open          1      1      11    ",
@@ -204,7 +204,7 @@ insert into src values (1, 0), (2, 0)
 explain insert into test select * from src
 [{
   "bytecode": {
-    "coordinator": {
+    "main": {
       "00": "send_all            0      0      -     # public.src",
       "01": "recv                0      0      0     ",
       "02": "bool                0      0      0     ",

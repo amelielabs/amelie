@@ -9,7 +9,7 @@ show lsn
 explain watch system.config().lsn::int = 1
 [{
   "bytecode": {
-    "coordinator": {
+    "main": {
       "00": "call                0      -      0     # system.config()",
       "01": "string              1      0      0     # lsn",
       "02": "dotjs               2      0      1     ",

@@ -8,7 +8,7 @@ insert into test (id) values (1), (2), (3)
 explain select * from test
 [{
   "bytecode": {
-    "coordinator": {
+    "main": {
       "00": "send_first          0      0      0     ",
       "01": "recv                0      0      0     ",
       "02": "bool                0      0      0     ",
@@ -39,7 +39,7 @@ select * from test
 explain select * from (select * from test) t
 [{
   "bytecode": {
-    "coordinator": {
+    "main": {
       "00": "send_first          0      0      0     ",
       "01": "recv                0      0      0     ",
       "02": "bool                0      0      0     ",
@@ -83,7 +83,7 @@ select (select test.*) from test
 explain select (select test.id) from test
 [{
   "bytecode": {
-    "coordinator": {
+    "main": {
       "00": "send_first          0      0      0     ",
       "01": "recv                0      0      0     ",
       "02": "bool                0      0      0     ",
@@ -118,7 +118,7 @@ select (select * from test)
 explain select (select id from test)
 [{
   "bytecode": {
-    "coordinator": {
+    "main": {
       "00": "send_first          0      0      0     ",
       "01": "recv_to             0      0      0     ",
       "02": "cte_set             0      0      0     ",
@@ -172,7 +172,7 @@ select test.*, t.* from test, test t
 explain select test.id, t.id from test, test t
 [{
   "bytecode": {
-    "coordinator": {
+    "main": {
       "00": "send_first          0      0      0     ",
       "01": "recv                0      0      0     ",
       "02": "bool                0      0      0     ",

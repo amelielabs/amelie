@@ -25,7 +25,7 @@ select t.x from (select z.id as x from (select id from test) z) t
 explain select t.x from (select z.id as x from (select id from test) z) t
 [{
   "bytecode": {
-    "coordinator": {
+    "main": {
       "00": "send_first          0      0      0     ",
       "01": "recv                0      0      0     ",
       "02": "bool                0      0      0     ",

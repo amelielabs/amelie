@@ -5,7 +5,7 @@ create table test (id serial primary key, data int default 0)
 explain select distinct * from test
 [{
   "bytecode": {
-    "coordinator": {
+    "main": {
       "00": "send_all            0      0      -     # public.test",
       "01": "recv                0      0      0     ",
       "02": "bool                0      1      0     ",
@@ -47,7 +47,7 @@ select * from test order by id
 explain select distinct * from test
 [{
   "bytecode": {
-    "coordinator": {
+    "main": {
       "00": "send_all            0      0      -     # public.test",
       "01": "recv                0      0      0     ",
       "02": "bool                0      1      0     ",
@@ -83,7 +83,7 @@ select distinct * from test
 explain select distinct id from test
 [{
   "bytecode": {
-    "coordinator": {
+    "main": {
       "00": "send_all            0      0      -     # public.test",
       "01": "recv                0      0      0     ",
       "02": "bool                0      1      0     ",
@@ -117,7 +117,7 @@ select distinct data from test
 explain select distinct id, data from test
 [{
   "bytecode": {
-    "coordinator": {
+    "main": {
       "00": "send_all            0      0      -     # public.test",
       "01": "recv                0      0      0     ",
       "02": "bool                0      1      0     ",
@@ -153,7 +153,7 @@ select distinct id, data from test
 explain select distinct data from test limit 4
 [{
   "bytecode": {
-    "coordinator": {
+    "main": {
       "00": "send_all            0      0      -     # public.test",
       "01": "recv                0      0      0     ",
       "02": "bool                0      1      0     ",
@@ -186,7 +186,7 @@ select distinct data from test limit 4
 explain select distinct data from test limit 0
 [{
   "bytecode": {
-    "coordinator": {
+    "main": {
       "00": "send_all            0      0      -     # public.test",
       "01": "recv                0      0      0     ",
       "02": "bool                0      1      0     ",
@@ -219,7 +219,7 @@ select distinct data from test limit 0
 explain select distinct data from test limit 1 offset 1
 [{
   "bytecode": {
-    "coordinator": {
+    "main": {
       "00": "send_all            0      0      -     # public.test",
       "01": "recv                0      0      0     ",
       "02": "bool                0      1      0     ",
@@ -259,7 +259,7 @@ select distinct data from test limit 1 offset 3
 explain select distinct data from test offset 1
 [{
   "bytecode": {
-    "coordinator": {
+    "main": {
       "00": "send_all            0      0      -     # public.test",
       "01": "recv                0      0      0     ",
       "02": "bool                0      1      0     ",
@@ -319,7 +319,7 @@ select distinct on (123,)
 explain select * from test order by data
 [{
   "bytecode": {
-    "coordinator": {
+    "main": {
       "00": "send_all            0      0      -     # public.test",
       "01": "recv                0      0      0     ",
       "02": "bool                0      0      0     ",
@@ -350,7 +350,7 @@ explain select * from test order by data
 explain select distinct on (data) * from test
 [{
   "bytecode": {
-    "coordinator": {
+    "main": {
       "00": "send_all            0      0      -     # public.test",
       "01": "recv                0      0      0     ",
       "02": "bool                0      1      0     ",
@@ -391,7 +391,7 @@ create shared table test (id serial primary key, data int default 0)
 explain select distinct * from test
 [{
   "bytecode": {
-    "coordinator": {
+    "main": {
       "00": "send_first          0      0      0     ",
       "01": "recv                0      0      0     ",
       "02": "bool                0      1      0     ",
@@ -433,7 +433,7 @@ select * from test order by id
 explain select distinct * from test
 [{
   "bytecode": {
-    "coordinator": {
+    "main": {
       "00": "send_first          0      0      0     ",
       "01": "recv                0      0      0     ",
       "02": "bool                0      1      0     ",
@@ -469,7 +469,7 @@ select distinct * from test
 explain select distinct id from test
 [{
   "bytecode": {
-    "coordinator": {
+    "main": {
       "00": "send_first          0      0      0     ",
       "01": "recv                0      0      0     ",
       "02": "bool                0      1      0     ",
@@ -503,7 +503,7 @@ select distinct data from test
 explain select distinct id, data from test
 [{
   "bytecode": {
-    "coordinator": {
+    "main": {
       "00": "send_first          0      0      0     ",
       "01": "recv                0      0      0     ",
       "02": "bool                0      1      0     ",
@@ -539,7 +539,7 @@ select distinct id, data from test
 explain select distinct data from test limit 4
 [{
   "bytecode": {
-    "coordinator": {
+    "main": {
       "00": "send_first          0      0      0     ",
       "01": "recv                0      0      0     ",
       "02": "bool                0      1      0     ",
@@ -572,7 +572,7 @@ select distinct data from test limit 4
 explain select distinct data from test limit 0
 [{
   "bytecode": {
-    "coordinator": {
+    "main": {
       "00": "send_first          0      0      0     ",
       "01": "recv                0      0      0     ",
       "02": "bool                0      1      0     ",
@@ -605,7 +605,7 @@ select distinct data from test limit 0
 explain select distinct data from test limit 1 offset 1
 [{
   "bytecode": {
-    "coordinator": {
+    "main": {
       "00": "send_first          0      0      0     ",
       "01": "recv                0      0      0     ",
       "02": "bool                0      1      0     ",
@@ -645,7 +645,7 @@ select distinct data from test limit 1 offset 3
 explain select distinct data from test offset 1
 [{
   "bytecode": {
-    "coordinator": {
+    "main": {
       "00": "send_first          0      0      0     ",
       "01": "recv                0      0      0     ",
       "02": "bool                0      1      0     ",
@@ -688,7 +688,7 @@ select distinct data from test order by data
 explain select * from test order by data
 [{
   "bytecode": {
-    "coordinator": {
+    "main": {
       "00": "send_first          0      0      0     ",
       "01": "recv                0      0      0     ",
       "02": "bool                0      0      0     ",
@@ -719,7 +719,7 @@ explain select * from test order by data
 explain select distinct on (data) * from test
 [{
   "bytecode": {
-    "coordinator": {
+    "main": {
       "00": "send_first          0      0      0     ",
       "01": "recv                0      0      0     ",
       "02": "bool                0      1      0     ",

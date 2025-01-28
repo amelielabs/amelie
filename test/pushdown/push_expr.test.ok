@@ -4,7 +4,7 @@ connect E0 S0 localhost:3485
 explain select * from (select 1) t
 [{
   "bytecode": {
-    "coordinator": {
+    "main": {
       "00": "set                 0      1      0     ",
       "01": "int                 1      -      0     # 1",
       "02": "push                1      0      0     ",
@@ -29,7 +29,7 @@ select * from (select 1) t
 explain select * from (select 1, 2) t
 [{
   "bytecode": {
-    "coordinator": {
+    "main": {
       "00": "set                 0      2      0     ",
       "01": "int                 1      -      0     # 1",
       "02": "push                1      0      0     ",
@@ -59,7 +59,7 @@ select * from (select 1, 2) t
 explain select x from (select 1 as x) t
 [{
   "bytecode": {
-    "coordinator": {
+    "main": {
       "00": "set                 0      1      0     ",
       "01": "int                 1      -      0     # 1",
       "02": "push                1      0      0     ",
@@ -84,7 +84,7 @@ select x from (select 1 as x) t
 explain select a, b from (select 1 as a, 2 as b) t
 [{
   "bytecode": {
-    "coordinator": {
+    "main": {
       "00": "set                 0      2      0     ",
       "01": "int                 1      -      0     # 1",
       "02": "push                1      0      0     ",

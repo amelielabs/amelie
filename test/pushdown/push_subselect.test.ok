@@ -24,7 +24,7 @@ drop table test2
 explain select * from (select * from test) t
 [{
   "bytecode": {
-    "coordinator": {
+    "main": {
       "00": "send_all            0      0      -     # public.test",
       "01": "recv                0      0      0     ",
       "02": "bool                0      0      0     ",
@@ -68,7 +68,7 @@ insert into test2 (id) values (1), (2), (3)
 explain select * from (select (select id from test2) from test) t
 [{
   "bytecode": {
-    "coordinator": {
+    "main": {
       "00": "send_all            0      0      -     # public.test",
       "01": "recv                0      0      0     ",
       "02": "bool                0      0      0     ",
@@ -126,7 +126,7 @@ insert into test2 (id) values (1), (2), (3)
 explain select (select t.id from test2) from (select * from test) t
 [{
   "bytecode": {
-    "coordinator": {
+    "main": {
       "00": "send_all            0      0      -     # public.test",
       "01": "recv                0      0      0     ",
       "02": "bool                0      0      0     ",
@@ -185,7 +185,7 @@ select * from (select * from test) a, (select * from test) b
 explain select * from (select * from test) a, (select * from test) b
 [{
   "bytecode": {
-    "coordinator": {
+    "main": {
       "00": "send_all            0      0      -     # public.test",
       "01": "send_all            1      11     -     # public.test",
       "02": "recv                0      0      0     ",

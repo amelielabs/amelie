@@ -37,7 +37,7 @@ select null, null
 explain select 1
 [{
   "bytecode": {
-    "coordinator": {
+    "main": {
       "00": "set                 0      1      0     ",
       "01": "int                 1      -      0     # 1",
       "02": "push                1      0      0     ",
@@ -51,7 +51,7 @@ explain select 1
 explain select [1, 2, 3]
 [{
   "bytecode": {
-    "coordinator": {
+    "main": {
       "00": "set                 0      1      0     ",
       "01": "json                1      0      0     ",
       "02": "push                1      0      0     ",
@@ -82,7 +82,7 @@ insert into test () values ()
 explain select * from test
 [{
   "bytecode": {
-    "coordinator": {
+    "main": {
       "00": "send_all            0      0      -     # public.test",
       "01": "recv                0      0      0     ",
       "02": "bool                0      0      0     ",
@@ -128,7 +128,7 @@ select * from test
 explain select id, data from test
 [{
   "bytecode": {
-    "coordinator": {
+    "main": {
       "00": "send_all            0      0      -     # public.test",
       "01": "recv                0      0      0     ",
       "02": "bool                0      0      0     ",
@@ -174,7 +174,7 @@ select * from test
 explain select data.data from test
 [{
   "bytecode": {
-    "coordinator": {
+    "main": {
       "00": "send_all            0      0      -     # public.test",
       "01": "recv                0      0      0     ",
       "02": "bool                0      0      0     ",
@@ -224,7 +224,7 @@ select * from test
 explain select data.data.data from test
 [{
   "bytecode": {
-    "coordinator": {
+    "main": {
       "00": "send_all            0      0      -     # public.test",
       "01": "recv                0      0      0     ",
       "02": "bool                0      0      0     ",
@@ -260,7 +260,7 @@ insert into test () values ()
 explain select test.id, test.data from test
 [{
   "bytecode": {
-    "coordinator": {
+    "main": {
       "00": "send_all            0      0      -     # public.test",
       "01": "recv                0      0      0     ",
       "02": "bool                0      0      0     ",
@@ -296,7 +296,7 @@ insert into test (data) values ({"data": 123})
 explain select test.data.data from test
 [{
   "bytecode": {
-    "coordinator": {
+    "main": {
       "00": "send_all            0      0      -     # public.test",
       "01": "recv                0      0      0     ",
       "02": "bool                0      0      0     ",
@@ -356,7 +356,7 @@ select * from test
 explain select alias.id, alias.data from test alias
 [{
   "bytecode": {
-    "coordinator": {
+    "main": {
       "00": "send_all            0      0      -     # public.test",
       "01": "recv                0      0      0     ",
       "02": "bool                0      0      0     ",
@@ -392,7 +392,7 @@ insert into test (data) values ({"data": 123})
 explain select alias.data.data from test alias
 [{
   "bytecode": {
-    "coordinator": {
+    "main": {
       "00": "send_all            0      0      -     # public.test",
       "01": "recv                0      0      0     ",
       "02": "bool                0      0      0     ",
@@ -432,7 +432,7 @@ select * from test
 explain select alias.id, alias.data from test alias
 [{
   "bytecode": {
-    "coordinator": {
+    "main": {
       "00": "send_all            0      0      -     # public.test",
       "01": "recv                0      0      0     ",
       "02": "bool                0      0      0     ",
@@ -477,7 +477,7 @@ select * from system.users()
 explain select * from system.users()
 [{
   "bytecode": {
-    "coordinator": {
+    "main": {
       "00": "set                 0      1      0     ",
       "01": "call                1      -      0     # system.users()",
       "02": "json_open           0      1      7     ",
@@ -498,7 +498,7 @@ select name from system.users()
 explain select name from system.users()
 [{
   "bytecode": {
-    "coordinator": {
+    "main": {
       "00": "set                 0      1      0     ",
       "01": "call                1      -      0     # system.users()",
       "02": "json_open           0      1      9     ",

@@ -291,7 +291,7 @@ create table test (id int primary key)
 explain insert into test values (1),(2),(3) returning *
 [{
   "bytecode": {
-    "coordinator": {
+    "main": {
       "00": "set_ptr             0      -      0     ",
       "01": "send                0      0      -     # public.test",
       "02": "recv                0      0      0     ",
@@ -329,7 +329,7 @@ create table test (id serial primary key)
 explain insert into test () values (), (), () returning *
 [{
   "bytecode": {
-    "coordinator": {
+    "main": {
       "00": "set_ptr             0      -      0     ",
       "01": "send                0      0      -     # public.test",
       "02": "recv                0      0      0     ",
@@ -453,7 +453,7 @@ select * from test where ts > "1970-01-01 01:12:59.909090"::timestamp;
 explain select * from test where ts > "1970-01-01 01:12:59.909090"::timestamp;
 [{
   "bytecode": {
-    "coordinator": {
+    "main": {
       "00": "send_all            0      0      -     # public.test",
       "01": "recv                0      0      0     ",
       "02": "bool                0      0      0     ",
@@ -489,7 +489,7 @@ select * from test where ts > timestamp "1970-01-01 01:12:59.909090"
 explain select * from test where ts > timestamp "1970-01-01 01:12:59.909090"
 [{
   "bytecode": {
-    "coordinator": {
+    "main": {
       "00": "send_all            0      0      -     # public.test",
       "01": "recv                0      0      0     ",
       "02": "bool                0      0      0     ",
@@ -544,7 +544,7 @@ insert into test values ("1970-01-01 00:00:04.000000")
 explain select * from test
 [{
   "bytecode": {
-    "coordinator": {
+    "main": {
       "00": "send_all            0      0      -     # public.test",
       "01": "recv                0      0      0     ",
       "02": "bool                0      0      0     ",
@@ -576,7 +576,7 @@ select * from test where id > timestamp '1970-01-01 00:00:01.000002'
 explain select * from test where id > timestamp '1970-01-01 00:00:01.000002'
 [{
   "bytecode": {
-    "coordinator": {
+    "main": {
       "00": "send_all            0      0      -     # public.test",
       "01": "recv                0      0      0     ",
       "02": "bool                0      0      0     ",
@@ -610,7 +610,7 @@ select * from test where id >= timestamp '1970-01-01 00:00:01.000002'
 explain select * from test where id >= timestamp '1970-01-01 00:00:01.000002'
 [{
   "bytecode": {
-    "coordinator": {
+    "main": {
       "00": "send_all            0      0      -     # public.test",
       "01": "recv                0      0      0     ",
       "02": "bool                0      0      0     ",
@@ -644,7 +644,7 @@ select * from test where id < timestamp '1970-01-01 00:00:01.000003'
 explain select * from test where id < timestamp '1970-01-01 00:00:01.000003'
 [{
   "bytecode": {
-    "coordinator": {
+    "main": {
       "00": "send_all            0      0      -     # public.test",
       "01": "recv                0      0      0     ",
       "02": "bool                0      0      0     ",
@@ -680,7 +680,7 @@ select * from test where id = timestamp '1970-01-01 00:00:01.000003'
 explain select * from test where id = timestamp '1970-01-01 00:00:01.000003'
 [{
   "bytecode": {
-    "coordinator": {
+    "main": {
       "00": "send_lookup         0      0      -     # public.test",
       "01": "recv                0      0      0     ",
       "02": "bool                0      0      0     ",
@@ -721,7 +721,7 @@ select * from test where i > "1 year 1 day 10 hour"::interval
 explain select * from test where i > "1 year 1 day 10 hour"::interval
 [{
   "bytecode": {
-    "coordinator": {
+    "main": {
       "00": "send_all            0      0      -     # public.test",
       "01": "recv                0      0      0     ",
       "02": "bool                0      0      0     ",
@@ -780,7 +780,7 @@ select * from test where d >= date '1970-01-01'
 explain select * from test where d >= date '1970-01-01'
 [{
   "bytecode": {
-    "coordinator": {
+    "main": {
       "00": "send_all            0      0      -     # public.test",
       "01": "recv                0      0      0     ",
       "02": "bool                0      0      0     ",
@@ -882,7 +882,7 @@ select id from test where id = uuid "00000000-0000-0000-0000-000000000002";
 explain select id from test where id = uuid "00000000-0000-0000-0000-000000000002";
 [{
   "bytecode": {
-    "coordinator": {
+    "main": {
       "00": "send_lookup         0      0      -     # public.test",
       "01": "recv                0      0      0     ",
       "02": "bool                0      0      0     ",
@@ -922,7 +922,7 @@ insert into test values (4, 0)
 explain select * from test
 [{
   "bytecode": {
-    "coordinator": {
+    "main": {
       "00": "send_all            0      0      -     # public.test",
       "01": "recv                0      0      0     ",
       "02": "bool                0      0      0     ",
@@ -952,7 +952,7 @@ select * from test
 explain select * from test use index (i)
 [{
   "bytecode": {
-    "coordinator": {
+    "main": {
       "00": "send_all            0      0      -     # public.test",
       "01": "recv                0      0      0     ",
       "02": "bool                0      0      0     ",
@@ -1021,7 +1021,7 @@ insert into test (id) select 1
 explain insert into test select 1, 0
 [{
   "bytecode": {
-    "coordinator": {
+    "main": {
       "00": "set                 0      2      0     ",
       "01": "int                 1      -      0     # 1",
       "02": "push                1      0      0     ",
@@ -1051,7 +1051,7 @@ insert into test select 1, 0
 explain insert into test select * from (select 2, 0) t
 [{
   "bytecode": {
-    "coordinator": {
+    "main": {
       "00": "set                 0      2      0     ",
       "01": "int                 1      -      0     # 2",
       "02": "push                1      0      0     ",
@@ -1092,7 +1092,7 @@ insert into src values (3, 0), (4, 0), (5, 0)
 explain insert into test select * from src
 [{
   "bytecode": {
-    "coordinator": {
+    "main": {
       "00": "send_all            0      0      -     # public.src",
       "01": "recv                0      0      0     ",
       "02": "bool                0      0      0     ",

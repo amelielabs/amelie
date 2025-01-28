@@ -4,7 +4,7 @@ connect E0 S0 localhost:3485
 explain select true
 [{
   "bytecode": {
-    "coordinator": {
+    "main": {
       "00": "set                 0      1      0     ",
       "01": "bool                1      1      0     ",
       "02": "push                1      0      0     ",
@@ -29,7 +29,7 @@ select true = false
 explain select true = false
 [{
   "bytecode": {
-    "coordinator": {
+    "main": {
       "00": "set                 0      1      0     ",
       "01": "bool                1      1      0     ",
       "02": "bool                2      0      0     ",
@@ -50,7 +50,7 @@ select true = 0
 explain select true = 1
 [{
   "bytecode": {
-    "coordinator": {
+    "main": {
       "00": "set                 0      1      0     ",
       "01": "bool                1      1      0     ",
       "02": "int                 2      -      0     # 1",
@@ -71,7 +71,7 @@ select false = null
 explain select true = null
 [{
   "bytecode": {
-    "coordinator": {
+    "main": {
       "00": "set                 0      1      0     ",
       "01": "bool                1      1      0     ",
       "02": "null                2      0      0     ",
@@ -97,7 +97,7 @@ select true <> false
 explain select true <> false
 [{
   "bytecode": {
-    "coordinator": {
+    "main": {
       "00": "set                 0      1      0     ",
       "01": "bool                1      1      0     ",
       "02": "bool                2      0      0     ",
@@ -119,7 +119,7 @@ select true <> 0
 explain select true <> 1
 [{
   "bytecode": {
-    "coordinator": {
+    "main": {
       "00": "set                 0      1      0     ",
       "01": "bool                1      1      0     ",
       "02": "int                 2      -      0     # 1",
@@ -141,7 +141,7 @@ select false <> null
 explain select true <> null
 [{
   "bytecode": {
-    "coordinator": {
+    "main": {
       "00": "set                 0      1      0     ",
       "01": "bool                1      1      0     ",
       "02": "null                2      0      0     ",

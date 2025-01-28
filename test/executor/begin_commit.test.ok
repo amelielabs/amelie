@@ -22,7 +22,7 @@ explain begin; commit
 explain begin; select 1; commit
 [{
   "bytecode": {
-    "coordinator": {
+    "main": {
       "00": "set                 0      1      0     ",
       "01": "int                 1      -      0     # 1",
       "02": "push                1      0      0     ",

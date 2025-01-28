@@ -19,7 +19,7 @@ select 1 in ()
 explain select 1 in ()
 [{
   "bytecode": {
-    "coordinator": {
+    "main": {
       "00": "set                 0      1      0     ",
       "01": "int                 1      -      0     # 1",
       "02": "in                  2      1      0     ",
@@ -90,7 +90,7 @@ select 0 in (3,5, (select * from test), 0)
 explain select 0 in (3,5, (select * from test), 0)
 [{
   "bytecode": {
-    "coordinator": {
+    "main": {
       "00": "send_first          0      0      0     ",
       "01": "recv_to             0      0      0     ",
       "02": "cte_set             0      0      0     ",

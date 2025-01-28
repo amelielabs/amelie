@@ -75,11 +75,11 @@ explain(Explain*  self,
 	encode_raw(buf, "bytecode", 8);
 	encode_obj(buf);
 
-	// coordinator code
-	encode_raw(buf, "coordinator", 11);
+	// main section (coordinator)
+	encode_raw(buf, "main", 4);
 	op_dump(coordinator, data, buf);
 
-	// node code
+	// node section
 	if (code_count(node) > 0)
 	{
 		encode_raw(buf, "node", 4);

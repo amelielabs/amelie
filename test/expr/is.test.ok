@@ -16,7 +16,7 @@ select 1 is 1
 explain select 1 is null
 [{
   "bytecode": {
-    "coordinator": {
+    "main": {
       "00": "set                 0      1      0     ",
       "01": "int                 1      -      0     # 1",
       "02": "is                  2      1      0     ",
@@ -36,7 +36,7 @@ select null is null
 explain select 1 is not null
 [{
   "bytecode": {
-    "coordinator": {
+    "main": {
       "00": "set                 0      1      0     ",
       "01": "int                 1      -      0     # 1",
       "02": "is                  2      1      0     ",

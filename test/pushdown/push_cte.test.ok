@@ -40,7 +40,7 @@ with test as (select 1)
 explain with test as (select 1)
 [{
   "bytecode": {
-    "coordinator": {
+    "main": {
       "00": "set                 0      1      0     ",
       "01": "int                 1      -      0     # 1",
       "02": "push                1      0      0     ",
@@ -56,7 +56,7 @@ with test as (select 1,2,3)
 explain with test as (select 1,2,3)
 [{
   "bytecode": {
-    "coordinator": {
+    "main": {
       "00": "set                 0      3      0     ",
       "01": "int                 1      -      0     # 1",
       "02": "push                1      0      0     ",
@@ -100,7 +100,7 @@ insert into test values (1),(2),(3)
 explain with a as (select * from test)
 [{
   "bytecode": {
-    "coordinator": {
+    "main": {
       "00": "send_all            0      0      -     # public.test",
       "01": "recv                0      0      0     ",
       "02": "bool                0      0      0     ",
@@ -132,7 +132,7 @@ insert into test values (1),(2),(3)
 explain with a as (select * from test) select 2
 [{
   "bytecode": {
-    "coordinator": {
+    "main": {
       "00": "send_all            0      0      -     # public.test",
       "01": "recv                0      0      0     ",
       "02": "bool                0      0      0     ",
@@ -169,7 +169,7 @@ insert into test values (1),(2),(3)
 explain with a as (select * from test) select * from a
 [{
   "bytecode": {
-    "coordinator": {
+    "main": {
       "00": "send_all            0      0      -     # public.test",
       "01": "recv                0      0      0     ",
       "02": "bool                0      0      0     ",
@@ -210,7 +210,7 @@ insert into test values (1),(2),(3)
 explain with a as (select * from test) select id from a
 [{
   "bytecode": {
-    "coordinator": {
+    "main": {
       "00": "send_all            0      0      -     # public.test",
       "01": "recv                0      0      0     ",
       "02": "bool                0      0      0     ",
@@ -251,7 +251,7 @@ insert into test values (1),(2),(3)
 explain with a as (select * from test) select a.id from a
 [{
   "bytecode": {
-    "coordinator": {
+    "main": {
       "00": "send_all            0      0      -     # public.test",
       "01": "recv                0      0      0     ",
       "02": "bool                0      0      0     ",
@@ -292,7 +292,7 @@ insert into test values (1),(2),(3)
 explain with a as (select id from test) select id from a
 [{
   "bytecode": {
-    "coordinator": {
+    "main": {
       "00": "send_all            0      0      -     # public.test",
       "01": "recv                0      0      0     ",
       "02": "bool                0      0      0     ",
@@ -335,7 +335,7 @@ explain with a as (select id as x from test) select id from a
 explain with a as (select id as x from test) select x from a
 [{
   "bytecode": {
-    "coordinator": {
+    "main": {
       "00": "send_all            0      0      -     # public.test",
       "01": "recv                0      0      0     ",
       "02": "bool                0      0      0     ",
@@ -386,7 +386,7 @@ with a as (select * from test) select * from a
 explain with a as (select * from test) select * from a
 [{
   "bytecode": {
-    "coordinator": {
+    "main": {
       "00": "send_first          0      0      0     ",
       "01": "recv                0      0      0     ",
       "02": "bool                0      0      0     ",
@@ -427,7 +427,7 @@ with a as (select * from test) select * from test
 explain with a as (select * from test) select * from test
 [{
   "bytecode": {
-    "coordinator": {
+    "main": {
       "00": "send_first          0      0      0     ",
       "01": "send_first          1      9      0     ",
       "02": "recv                0      0      0     ",
@@ -474,7 +474,7 @@ with a as (select * from test) select * from test
 explain with a as (select * from test) select * from test
 [{
   "bytecode": {
-    "coordinator": {
+    "main": {
       "00": "send_all            0      0      -     # public.test",
       "01": "send_all            1      9      -     # public.test",
       "02": "recv                0      0      0     ",
@@ -519,7 +519,7 @@ insert into test values (1),(2),(3)
 explain with a as (select [4,5,6]) select test.*, a.* from test, a
 [{
   "bytecode": {
-    "coordinator": {
+    "main": {
       "00": "set                 0      1      0     ",
       "01": "json                1      0      0     ",
       "02": "push                1      0      0     ",
@@ -562,7 +562,7 @@ insert into test values (1),(2),(3)
 explain with a as (select [4,5,6]) select test.*, a.* from test, a
 [{
   "bytecode": {
-    "coordinator": {
+    "main": {
       "00": "set                 0      1      0     ",
       "01": "json                1      0      0     ",
       "02": "push                1      0      0     ",
@@ -605,7 +605,7 @@ insert into test values (1),(2),(3)
 explain with a as (select * from test) select test.* from test join a on test.id = a.id
 [{
   "bytecode": {
-    "coordinator": {
+    "main": {
       "00": "send_all            0      0      -     # public.test",
       "01": "recv                0      0      0     ",
       "02": "bool                0      0      0     ",
@@ -660,7 +660,7 @@ insert into test values (1, '1'),(2, '2'),(3, '3')
 explain with a as (select data from test) select test.* from test join a on test.data = a.data
 [{
   "bytecode": {
-    "coordinator": {
+    "main": {
       "00": "send_all            0      0      -     # public.test",
       "01": "recv                0      0      0     ",
       "02": "bool                0      0      0     ",
@@ -715,7 +715,7 @@ drop table test
 explain with z (a,b,c) as (select 4,5,6) select * from z
 [{
   "bytecode": {
-    "coordinator": {
+    "main": {
       "00": "set                 0      3      0     ",
       "01": "int                 1      -      0     # 4",
       "02": "push                1      0      0     ",
@@ -767,7 +767,7 @@ with a as (select * from test), b as (select * from a) select * from b
 explain with a as (select * from test), b as (select * from a) select * from b
 [{
   "bytecode": {
-    "coordinator": {
+    "main": {
       "00": "send_all            0      0      -     # public.test",
       "01": "recv                0      0      0     ",
       "02": "bool                0      0      0     ",
@@ -817,7 +817,7 @@ with a as (select * from test), b as (select [1,2,3]), c as (select * from a) se
 explain with a as (select * from test), b as (select [1,2,3]), c as (select * from a) select * from c
 [{
   "bytecode": {
-    "coordinator": {
+    "main": {
       "00": "send_all            0      0      -     # public.test",
       "01": "recv                0      0      0     ",
       "02": "bool                0      0      0     ",
@@ -872,7 +872,7 @@ with a as (select * from test), b as (select [1,2,3]), c as (select * from test)
 explain with a as (select * from test), b as (select [1,2,3]), c as (select * from test) select * from c
 [{
   "bytecode": {
-    "coordinator": {
+    "main": {
       "00": "send_all            0      0      -     # public.test",
       "01": "recv                0      0      0     ",
       "02": "bool                0      0      0     ",
@@ -933,7 +933,7 @@ with a as (select * from test), b as (select * from test), c as (select [1,2,3])
 explain with a as (select * from test), b as (select * from test), c as (select [1,2,3]) select * from c
 [{
   "bytecode": {
-    "coordinator": {
+    "main": {
       "00": "send_all            0      0      -     # public.test",
       "01": "send_all            1      9      -     # public.test",
       "02": "recv                0      0      0     ",
@@ -994,7 +994,7 @@ with a as (select * from test), b as (select * from test), c as (select [1,2,3])
 explain with a as (select * from test), b as (select * from test), c as (select [1,2,3]), d as (select * from test) select * from d
 [{
   "bytecode": {
-    "coordinator": {
+    "main": {
       "00": "send_all            0      0      -     # public.test",
       "01": "send_all            1      9      -     # public.test",
       "02": "recv                0      0      0     ",
@@ -1070,7 +1070,7 @@ with a as (select [1,2,3]), b as (select * from test), c as (select [1,2,3]) sel
 explain with a as (select [1,2,3]), b as (select * from test), c as (select [1,2,3]) select b.*, c.* from b,c
 [{
   "bytecode": {
-    "coordinator": {
+    "main": {
       "00": "set                 0      1      0     ",
       "01": "json                1      0      0     ",
       "02": "push                1      0      0     ",
@@ -1127,7 +1127,7 @@ with a as (select [1,2,3]), b as (select * from test), c as (select * from test)
 explain with a as (select [1,2,3]), b as (select * from test), c as (select * from test) select * from c
 [{
   "bytecode": {
-    "coordinator": {
+    "main": {
       "00": "set                 0      1      0     ",
       "01": "json                1      0      0     ",
       "02": "push                1      0      0     ",
@@ -1188,7 +1188,7 @@ with a as (select * from test), b as (select * from a), c as (select * from test
 explain with a as (select * from test), b as (select * from a), c as (select * from test) select * from c
 [{
   "bytecode": {
-    "coordinator": {
+    "main": {
       "00": "send_all            0      0      -     # public.test",
       "01": "recv                0      0      0     ",
       "02": "bool                0      0      0     ",
@@ -1252,7 +1252,7 @@ with a as (select * from test), b as (select * from a), c as (select * from test
 explain with a as (select * from test), b as (select * from a), c as (select * from test) select * from c
 [{
   "bytecode": {
-    "coordinator": {
+    "main": {
       "00": "send_first          0      0      0     ",
       "01": "recv                0      0      0     ",
       "02": "bool                0      0      0     ",
@@ -1328,7 +1328,7 @@ with a as (insert into test values (2, 0) returning *); select * from a
 explain with a as (insert into test values (2, 0) returning *); select * from a
 [{
   "bytecode": {
-    "coordinator": {
+    "main": {
       "00": "set_ptr             0      -      0     ",
       "01": "send                0      0      -     # public.test",
       "02": "recv                0      0      0     ",
@@ -1380,7 +1380,7 @@ with a as (update test set data = data + 1 returning *) select * from a
 explain with a as (update test set data = data + 1 returning *) select * from a
 [{
   "bytecode": {
-    "coordinator": {
+    "main": {
       "00": "send_first          0      0      0     ",
       "01": "recv                0      0      0     ",
       "02": "bool                0      0      0     ",
@@ -1434,7 +1434,7 @@ with a as (delete from test returning *) select * from a
 explain with a as (delete from test returning *) select * from a
 [{
   "bytecode": {
-    "coordinator": {
+    "main": {
       "00": "send_first          0      0      0     ",
       "01": "recv                0      0      0     ",
       "02": "bool                0      0      0     ",

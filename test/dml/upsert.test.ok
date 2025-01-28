@@ -35,7 +35,7 @@ insert into test values(1, 0) on conflict do nothing
 explain insert into test values(1, 0), (2, 0), (1, 0) on conflict do nothing
 [{
   "bytecode": {
-    "coordinator": {
+    "main": {
       "00": "set_ptr             0      -      0     ",
       "01": "send                0      0      -     # public.test",
       "02": "recv                0      0      0     ",
@@ -67,7 +67,7 @@ create table test (id int primary key, data int)
 explain insert into test values(1, 0) on conflict do nothing
 [{
   "bytecode": {
-    "coordinator": {
+    "main": {
       "00": "set_ptr             0      -      0     ",
       "01": "send                0      0      -     # public.test",
       "02": "recv                0      0      0     ",
@@ -87,7 +87,7 @@ explain insert into test values(1, 0) on conflict do nothing
 explain insert into test values(1, 0) on conflict do resolve
 [{
   "bytecode": {
-    "coordinator": {
+    "main": {
       "00": "set_ptr             0      -      0     ",
       "01": "send                0      0      -     # public.test",
       "02": "recv                0      0      0     ",
@@ -118,7 +118,7 @@ create table test (id int primary key, data int)
 explain insert into test values(1, 0) on conflict do update set data = data + 1
 [{
   "bytecode": {
-    "coordinator": {
+    "main": {
       "00": "set_ptr             0      -      0     ",
       "01": "send                0      0      -     # public.test",
       "02": "recv                0      0      0     ",
@@ -163,7 +163,7 @@ create table test (id int primary key, data int)
 explain insert into test values (1, 0), (1, 0), (1, 0) on conflict do update set data = data + 1
 [{
   "bytecode": {
-    "coordinator": {
+    "main": {
       "00": "set_ptr             0      -      0     ",
       "01": "send                0      0      -     # public.test",
       "02": "recv                0      0      0     ",
@@ -203,7 +203,7 @@ select * from test
 explain insert into test values (1, 0) on conflict do update set data = data + 1 where true
 [{
   "bytecode": {
-    "coordinator": {
+    "main": {
       "00": "set_ptr             0      -      0     ",
       "01": "send                0      0      -     # public.test",
       "02": "recv                0      0      0     ",
@@ -246,7 +246,7 @@ insert into test values (1, 123) on conflict do update set data = data + exclude
 explain insert into test values (1, 123) on conflict do update set data = data + excluded.data
 [{
   "bytecode": {
-    "coordinator": {
+    "main": {
       "00": "set_ptr             0      -      0     ",
       "01": "send                0      0      -     # public.test",
       "02": "recv                0      0      0     ",
@@ -280,7 +280,7 @@ insert into test values (1, null, {"id": 48}) on conflict do update set data = d
 explain insert into test values (1, null, {"id": 48}) on conflict do update set data = data + excluded.data2.id::int
 [{
   "bytecode": {
-    "coordinator": {
+    "main": {
       "00": "set_ptr             0      -      0     ",
       "01": "send                0      0      -     # public.test",
       "02": "recv                0      0      0     ",
@@ -344,7 +344,7 @@ insert into test values (1, 0)
 explain insert into test values(1, 0) on conflict do update set data = data + 1 returning *
 [{
   "bytecode": {
-    "coordinator": {
+    "main": {
       "00": "set_ptr             0      -      0     ",
       "01": "send                0      0      -     # public.test",
       "02": "recv                0      0      0     ",
@@ -393,7 +393,7 @@ insert into test values (1, 0)
 explain insert into test values(1, 0) on conflict do nothing returning *
 [{
   "bytecode": {
-    "coordinator": {
+    "main": {
       "00": "set_ptr             0      -      0     ",
       "01": "send                0      0      -     # public.test",
       "02": "recv                0      0      0     ",
@@ -434,7 +434,7 @@ create table test (id int primary key, data int)
 explain insert into test values(1, 0) on conflict do update set data = data + 1 returning *
 [{
   "bytecode": {
-    "coordinator": {
+    "main": {
       "00": "set_ptr             0      -      0     ",
       "01": "send                0      0      -     # public.test",
       "02": "recv                0      0      0     ",
@@ -482,7 +482,7 @@ create table test (id int primary key, data int)
 explain insert into test values(1, 0) on conflict do nothing returning *
 [{
   "bytecode": {
-    "coordinator": {
+    "main": {
       "00": "set_ptr             0      -      0     ",
       "01": "send                0      0      -     # public.test",
       "02": "recv                0      0      0     ",
@@ -557,7 +557,7 @@ insert into src values (0, 0), (1, 0)
 explain insert into test select * from src on conflict do update set data = data + 1 returning *
 [{
   "bytecode": {
-    "coordinator": {
+    "main": {
       "00": "send_all            0      0      -     # public.src",
       "01": "recv                0      0      0     ",
       "02": "bool                0      0      0     ",

@@ -10,7 +10,7 @@ select true and true
 explain select true and true
 [{
   "bytecode": {
-    "coordinator": {
+    "main": {
       "00": "set                 0      1      0     ",
       "01": "bool                1      1      0     ",
       "02": "bool                2      1      0     ",
@@ -54,7 +54,7 @@ select false or true
 explain select false or true
 [{
   "bytecode": {
-    "coordinator": {
+    "main": {
       "00": "set                 0      1      0     ",
       "01": "bool                1      0      0     ",
       "02": "bool                2      1      0     ",

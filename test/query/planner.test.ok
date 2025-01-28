@@ -9,7 +9,7 @@ insert into test values (2, 0)
 explain select * from test
 [{
   "bytecode": {
-    "coordinator": {
+    "main": {
       "00": "send_all            0      0      -     # public.test",
       "01": "recv                0      0      0     ",
       "02": "bool                0      0      0     ",
@@ -51,7 +51,7 @@ select * from test use index (123
 explain select * from test use index (i)
 [{
   "bytecode": {
-    "coordinator": {
+    "main": {
       "00": "send_all            0      0      -     # public.test",
       "01": "recv                0      0      0     ",
       "02": "bool                0      0      0     ",
@@ -90,7 +90,7 @@ insert into test values (2, 0)
 explain select * from test
 [{
   "bytecode": {
-    "coordinator": {
+    "main": {
       "00": "send_first          0      0      0     ",
       "01": "recv                0      0      0     ",
       "02": "bool                0      0      0     ",
@@ -121,7 +121,7 @@ select * from test
 explain select * from test where data = 2
 [{
   "bytecode": {
-    "coordinator": {
+    "main": {
       "00": "send_first          0      0      0     ",
       "01": "recv                0      0      0     ",
       "02": "bool                0      0      0     ",
@@ -156,7 +156,7 @@ select * from test where data = 2
 explain select * from test where id = 1
 [{
   "bytecode": {
-    "coordinator": {
+    "main": {
       "00": "send_first          0      0      0     ",
       "01": "recv                0      0      0     ",
       "02": "bool                0      0      0     ",
@@ -192,7 +192,7 @@ select * from test where id = 1
 explain select * from test where id = 1 and data = 1
 [{
   "bytecode": {
-    "coordinator": {
+    "main": {
       "00": "send_first          0      0      0     ",
       "01": "recv                0      0      0     ",
       "02": "bool                0      0      0     ",
@@ -233,7 +233,7 @@ select * from test where id = 1 and data = 1
 explain select * from test where data = 1 and id = 1
 [{
   "bytecode": {
-    "coordinator": {
+    "main": {
       "00": "send_first          0      0      0     ",
       "01": "recv                0      0      0     ",
       "02": "bool                0      0      0     ",
@@ -281,7 +281,7 @@ insert into test values (2, 0)
 explain select * from test where id = 1
 [{
   "bytecode": {
-    "coordinator": {
+    "main": {
       "00": "send_lookup         0      0      -     # public.test",
       "01": "recv                0      0      0     ",
       "02": "bool                0      0      0     ",
@@ -316,7 +316,7 @@ select * from test where id = 1
 explain select * from test where id > 1
 [{
   "bytecode": {
-    "coordinator": {
+    "main": {
       "00": "send_all            0      0      -     # public.test",
       "01": "recv                0      0      0     ",
       "02": "bool                0      0      0     ",
@@ -352,7 +352,7 @@ select * from test where id > 1
 explain select * from test where data > 1
 [{
   "bytecode": {
-    "coordinator": {
+    "main": {
       "00": "send_all            0      0      -     # public.test",
       "01": "recv                0      0      0     ",
       "02": "bool                0      0      0     ",
@@ -387,7 +387,7 @@ select * from test where data > 1
 explain select * from test where data = 1
 [{
   "bytecode": {
-    "coordinator": {
+    "main": {
       "00": "send_all            0      0      -     # public.test",
       "01": "recv                0      0      0     ",
       "02": "bool                0      0      0     ",
@@ -441,7 +441,7 @@ select system.table('test').indexes
 explain select * from test where data = 1 and id = 1
 [{
   "bytecode": {
-    "coordinator": {
+    "main": {
       "00": "send_lookup         0      0      -     # public.test",
       "01": "recv                0      0      0     ",
       "02": "bool                0      0      0     ",
@@ -484,7 +484,7 @@ select * from test where data = 1 and id = 1
 explain select * from test where id = 1 and data = 1
 [{
   "bytecode": {
-    "coordinator": {
+    "main": {
       "00": "send_lookup         0      0      -     # public.test",
       "01": "recv                0      0      0     ",
       "02": "bool                0      0      0     ",
@@ -534,7 +534,7 @@ insert into test values (2, 0)
 explain select * from test where id > 1
 [{
   "bytecode": {
-    "coordinator": {
+    "main": {
       "00": "send_all            0      0      -     # public.test",
       "01": "recv                0      0      0     ",
       "02": "bool                0      0      0     ",
@@ -570,7 +570,7 @@ select * from test where id > 1
 explain select * from test where data > 1
 [{
   "bytecode": {
-    "coordinator": {
+    "main": {
       "00": "send_all            0      0      -     # public.test",
       "01": "recv                0      0      0     ",
       "02": "bool                0      0      0     ",
@@ -607,7 +607,7 @@ select * from test where data > 1
 explain select * from test where data < 1
 [{
   "bytecode": {
-    "coordinator": {
+    "main": {
       "00": "send_all            0      0      -     # public.test",
       "01": "recv                0      0      0     ",
       "02": "bool                0      0      0     ",
@@ -645,7 +645,7 @@ select * from test where data < 1
 explain select * from test where id < 1
 [{
   "bytecode": {
-    "coordinator": {
+    "main": {
       "00": "send_all            0      0      -     # public.test",
       "01": "recv                0      0      0     ",
       "02": "bool                0      0      0     ",
@@ -683,7 +683,7 @@ select * from test where id < 1
 explain select * from test where id < 1 and data < 2
 [{
   "bytecode": {
-    "coordinator": {
+    "main": {
       "00": "send_all            0      0      -     # public.test",
       "01": "recv                0      0      0     ",
       "02": "bool                0      0      0     ",
