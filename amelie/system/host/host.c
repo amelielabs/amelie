@@ -36,13 +36,13 @@
 #include <amelie_func.h>
 #include <amelie_vm.h>
 #include <amelie_compute.h>
-#include <amelie_frontend.h>
+#include <amelie_host.h>
 
 hot static void
 client_main(void* arg)
 {
 	auto client = (Client*)arg;
-	auto self   = (Frontend*)client->arg;
+	auto self   = (Host*)client->arg;
 
 	client_mgr_add(&self->client_mgr, client);
 
@@ -61,9 +61,9 @@ client_main(void* arg)
 }
 
 static void
-frontend_rpc(Rpc* rpc, void* arg)
+host_rpc(Rpc* rpc, void* arg)
 {
-	Frontend* self = arg;
+	Host* self = arg;
 	switch (rpc->id) {
 	case RPC_SYNC_USERS:
 	{
@@ -92,9 +92,9 @@ frontend_rpc(Rpc* rpc, void* arg)
 }
 
 static void
-frontend_main(void* arg)
+host_main(void* arg)
 {
-	Frontend* self = arg;
+	Host* self = arg;
 	bool stop = false;
 	while (! stop)
 	{
@@ -116,7 +116,7 @@ frontend_main(void* arg)
 			// command
 			stop = msg->id == RPC_STOP;
 			auto rpc = rpc_of(buf);
-			rpc_execute(rpc, frontend_rpc, self);
+			rpc_execute(rpc, host_rpc, self);
 			break;
 		}
 		}
@@ -124,9 +124,9 @@ frontend_main(void* arg)
 }
 
 void
-frontend_init(Frontend*     self,
-              FrontendEvent on_connect,
-              void*         on_connect_arg)
+host_init(Host*     self,
+          HostEvent on_connect,
+          void*     on_connect_arg)
 {
 	self->on_connect     = on_connect;
 	self->on_connect_arg = on_connect_arg;
@@ -137,7 +137,7 @@ frontend_init(Frontend*     self,
 }
 
 void
-frontend_free(Frontend* self)
+host_free(Host* self)
 {
 	client_mgr_free(&self->client_mgr);
 	lock_mgr_free(&self->lock_mgr);
@@ -145,13 +145,13 @@ frontend_free(Frontend* self)
 }
 
 void
-frontend_start(Frontend* self)
+host_start(Host* self)
 {
-	task_create(&self->task, "frontend", frontend_main, self);
+	task_create(&self->task, "host", host_main, self);
 }
 
 void
-frontend_stop(Frontend* self)
+host_stop(Host* self)
 {
 	// send stop request
 	if (task_active(&self->task))
@@ -164,7 +164,7 @@ frontend_stop(Frontend* self)
 }
 
 void
-frontend_add(Frontend* self, Buf* buf)
+host_add(Host* self, Buf* buf)
 {
 	channel_write(&self->task.channel, buf);
 }

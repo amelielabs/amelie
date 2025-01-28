@@ -11,6 +11,6 @@
 // AGPL-3.0 Licensed.
 //
 
-#include "frontend/lock_mgr.h"
-#include "frontend/frontend.h"
-#include "frontend/frontend_mgr.h"
+#include "host/lock_mgr.h"
+#include "host/host.h"
+#include "host/host_mgr.h"

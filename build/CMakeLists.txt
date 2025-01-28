@@ -106,7 +106,7 @@ include_directories("${AMELIE_ROOT}/compiler/compiler")
 # system
 include_directories("${AMELIE_ROOT}/system")
 include_directories("${AMELIE_ROOT}/system/compute")
-include_directories("${AMELIE_ROOT}/system/frontend")
+include_directories("${AMELIE_ROOT}/system/host")
 include_directories("${AMELIE_ROOT}/system/session")
 include_directories("${AMELIE_ROOT}/system/system")
 
@@ -287,7 +287,7 @@ set(AMELIE_SOURCES_SYSTEM
     ${AMELIE_ROOT}/system/compute/compute_mgr.c
     ${AMELIE_ROOT}/system/compute/compute_bootstrap.c
     ${AMELIE_ROOT}/system/compute/build.c
-    ${AMELIE_ROOT}/system/frontend/frontend.c
+    ${AMELIE_ROOT}/system/host/host.c
     ${AMELIE_ROOT}/system/session/explain.c
     ${AMELIE_ROOT}/system/session/session.c
     ${AMELIE_ROOT}/system/session/utility.c

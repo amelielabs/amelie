@@ -40,7 +40,7 @@
 #include <amelie_planner.h>
 #include <amelie_compiler.h>
 #include <amelie_compute.h>
-#include <amelie_frontend.h>
+#include <amelie_host.h>
 #include <amelie_session.h>
 #include <amelie_system.h>
 #include <amelie_main.h>

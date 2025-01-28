@@ -39,18 +39,18 @@
 #include <amelie_planner.h>
 #include <amelie_compiler.h>
 #include <amelie_compute.h>
-#include <amelie_frontend.h>
+#include <amelie_host.h>
 #include <amelie_session.h>
 
 Session*
-session_create(Client* client, Frontend* frontend, Share* share)
+session_create(Client* client, Host* host, Share* share)
 {
 	auto self = (Session*)am_malloc(sizeof(Session));
 	self->client    = client;
-	self->frontend  = frontend;
 	self->lock_type = LOCK_NONE;
 	self->lock      = NULL;
 	self->lock_ref  = NULL;
+	self->host      = host;
 	self->share     = share;
 	local_init(&self->local, global());
 	explain_init(&self->explain);
@@ -99,8 +99,8 @@ session_lock(Session* self, int type)
 
 	switch (type) {
 	case LOCK:
-		// take shared frontend lock
-		self->lock = lock_mgr_lock(&self->frontend->lock_mgr, type);
+		// take shared host lock
+		self->lock = lock_mgr_lock(&self->host->lock_mgr, type);
 		break;
 	case LOCK_EXCLUSIVE:
 		control_lock();
@@ -117,7 +117,7 @@ session_unlock(Session* self)
 {
 	switch (self->lock_type) {
 	case LOCK:
-		lock_mgr_unlock(&self->frontend->lock_mgr, self->lock_type, self->lock);
+		lock_mgr_unlock(&self->host->lock_mgr, self->lock_type, self->lock);
 		break;
 	case LOCK_EXCLUSIVE:
 		control_unlock();
@@ -296,7 +296,7 @@ session_auth(Session* self)
 			return true;
 	} else
 	{
-		auto user = auth(&self->frontend->auth, &auth_header->value);
+		auto user = auth(&self->host->auth, &auth_header->value);
 		if (likely(user))
 			return true;
 	}

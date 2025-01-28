@@ -22,8 +22,8 @@ struct System
 	Repl        repl;
 	// executor
 	Executor    executor;
+	HostMgr     host_mgr;
 	ComputeMgr  compute_mgr;
-	FrontendMgr frontend_mgr;
 	bool        lock;
 	RpcQueue    lock_queue;
 	// db

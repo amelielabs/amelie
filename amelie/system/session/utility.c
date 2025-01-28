@@ -39,7 +39,7 @@
 #include <amelie_planner.h>
 #include <amelie_compiler.h>
 #include <amelie_compute.h>
-#include <amelie_frontend.h>
+#include <amelie_host.h>
 #include <amelie_session.h>
 
 static void
@@ -286,8 +286,8 @@ ctl_user(Session* self)
 	// downgrade back to shared lock to avoid deadlocking
 	session_lock(self, LOCK);
 
-	// sync frontends user caches
-	frontend_mgr_sync_users(self->share->frontend_mgr, &user_mgr->cache);
+	// sync hosts user caches
+	host_mgr_sync_users(self->share->host_mgr, &user_mgr->cache);
 }
 
 static void

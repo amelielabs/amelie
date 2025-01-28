@@ -39,7 +39,7 @@
 #include <amelie_planner.h>
 #include <amelie_compiler.h>
 #include <amelie_compute.h>
-#include <amelie_frontend.h>
+#include <amelie_host.h>
 #include <amelie_session.h>
 #include <amelie_system.h>
 
@@ -80,7 +80,7 @@ system_status_process(System* self, Buf* buf)
 	os_cpuusage_system(&cpu_count, &cpu_usage);
 
 	// get cpu usage per worker
-	auto  fe = &self->frontend_mgr;
+	auto  fe = &self->host_mgr;
 	auto  be = &self->compute_mgr;
 
 	int      workers = fe->workers_count + be->list_count;

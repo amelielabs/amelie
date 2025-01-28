@@ -39,7 +39,7 @@
 #include <amelie_planner.h>
 #include <amelie_compiler.h>
 #include <amelie_compute.h>
-#include <amelie_frontend.h>
+#include <amelie_host.h>
 #include <amelie_session.h>
 #include <amelie_system.h>
 
@@ -70,7 +70,7 @@ system_create(void)
 	server_init(&self->server);
 
 	// compute_mgr
-	frontend_mgr_init(&self->frontend_mgr);
+	host_mgr_init(&self->host_mgr);
 	compute_mgr_init(&self->compute_mgr, &self->db, &self->function_mgr);
 	executor_init(&self->executor, &self->db, &self->compute_mgr.router);
 	rpc_queue_init(&self->lock_queue);
@@ -85,12 +85,12 @@ system_create(void)
 	// replication
 	repl_init(&self->repl, &self->db);
 
-	// prepare shared context (shared between frontends)
+	// prepare shared context (shared between hosts)
 	auto share = &self->share;
 	share->executor     = &self->executor;
 	share->repl         = &self->repl;
+	share->host_mgr     = &self->host_mgr;
 	share->compute_mgr  = &self->compute_mgr;
-	share->frontend_mgr = &self->frontend_mgr;
 	share->function_mgr = &self->function_mgr;
 	share->user_mgr     = &self->user_mgr;
 	share->db           = &self->db;
@@ -117,14 +117,14 @@ system_on_server_connect(Server* server, Client* client)
 	buf_write(buf, &client, sizeof(void**));
 	msg_end(buf);
 	System* self = server->on_connect_arg;
-	frontend_mgr_forward(&self->frontend_mgr, buf);
+	host_mgr_forward(&self->host_mgr, buf);
 }
 
 static void
-system_on_frontend_connect(Frontend* frontend, Client* client)
+system_on_host_connect(Host* host, Client* client)
 {
-	System* self = frontend->on_connect_arg;
-	auto session = session_create(client, frontend, &self->share);
+	System* self = host->on_connect_arg;
+	auto session = session_create(client, host, &self->share);
 	defer(session_free, session);
 	session_main(session);
 }
@@ -195,15 +195,15 @@ system_start(System* self, bool bootstrap)
 	// start checkpointer service
 	checkpointer_start(&self->db.checkpointer);
 
-	// start frontends
+	// start hosts
 	auto workers = var_int_of(&config()->frontends);
-	frontend_mgr_start(&self->frontend_mgr,
-	                   system_on_frontend_connect,
-	                   self,
-	                   workers);
+	host_mgr_start(&self->host_mgr,
+	               system_on_host_connect,
+	               self,
+	               workers);
 
 	// synchronize caches
-	frontend_mgr_sync_users(&self->frontend_mgr, &self->user_mgr.cache);
+	host_mgr_sync_users(&self->host_mgr, &self->user_mgr.cache);
 
 	// prepare replication manager
 	repl_open(&self->repl);
@@ -236,8 +236,8 @@ system_stop(System* self)
 	// stop replication
 	repl_stop(&self->repl);
 
-	// stop frontends
-	frontend_mgr_stop(&self->frontend_mgr);
+	// stop hosts
+	host_mgr_stop(&self->host_mgr);
 
 	// close db
 	db_close(&self->db);
@@ -291,10 +291,10 @@ system_lock(System* self, Rpc* rpc)
 		rpc_queue_add(&self->lock_queue, rpc);
 	} else
 	{
-		// request exclusive lock for each frontend worker
-		frontend_mgr_lock(&self->frontend_mgr);
+		// request exclusive lock for each host worker
+		host_mgr_lock(&self->host_mgr);
 
-		// sync to make last operation copleted on nodes
+		// sync to make last operation completed on nodes
 		//
 		// even with exclusive lock, there is a chance that
 		// last abort did not not finished yet on nodes
@@ -309,12 +309,12 @@ static void
 system_unlock(System* self, Rpc* rpc)
 {
 	assert(self->lock);
-	frontend_mgr_unlock(&self->frontend_mgr);
+	host_mgr_unlock(&self->host_mgr);
 
 	auto pending = rpc_queue_pop(&self->lock_queue);
 	if (pending)
 	{
-		frontend_mgr_lock(&self->frontend_mgr);
+		host_mgr_lock(&self->host_mgr);
 		rpc_done(pending);
 	} else {
 		self->lock = false;
