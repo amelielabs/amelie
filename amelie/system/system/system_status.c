@@ -128,16 +128,16 @@ system_status_process(System* self, Buf* buf)
 	encode_raw(buf, "cpu", 3);
 	encode_integer(buf, cpu_usage);
 
-	// cpu_frontends
-	encode_raw(buf, "cpu_frontends", 13);
+	// cpu_hosts
+	encode_raw(buf, "cpu_hosts", 9);
 	encode_array(buf);
 	i = 0;
 	for (; i < fe->workers_count; i++)
 		encode_integer(buf, workers_usage[i]);
 	encode_array_end(buf);
 
-	// cpu_backends
-	encode_raw(buf, "cpu_backends", 12);
+	// cpu_nodes
+	encode_raw(buf, "cpu_nodes", 9);
 	encode_array(buf);
 	list_foreach(&be->list)
 		encode_integer(buf, workers_usage[i]);
@@ -162,13 +162,13 @@ system_status(System* self)
 	encode_raw(buf, "version", 7);
 	encode_string(buf, &config()->version.string);
 
-	// frontends
-	encode_raw(buf, "frontends", 9);
-	encode_integer(buf, var_int_of(&config()->frontends));
+	// hosts
+	encode_raw(buf, "hosts", 5);
+	encode_integer(buf, var_int_of(&config()->hosts));
 
-	// backends
-	encode_raw(buf, "backends", 8);
-	encode_integer(buf, var_int_of(&config()->backends));
+	// nodes
+	encode_raw(buf, "nodes", 5);
+	encode_integer(buf, var_int_of(&config()->nodes));
 
 	// db
 	encode_raw(buf, "db", 2);

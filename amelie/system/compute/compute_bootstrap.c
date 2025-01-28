@@ -41,10 +41,10 @@
 #include <amelie_compute.h>
 
 static inline void
-compute_bootstrap_nodes(Db* db, Tr* tr, int backends)
+compute_bootstrap_nodes(Db* db, Tr* tr, int nodes)
 {
 	// precreate compute nodes
-	while (backends-- > 0)
+	while (nodes-- > 0)
 	{
 		auto config = node_config_allocate();
 		defer(node_config_free, config);
@@ -66,9 +66,9 @@ compute_bootstrap_nodes(Db* db, Tr* tr, int backends)
 }
 
 void
-compute_bootstrap(Db* db, int backends)
+compute_bootstrap(Db* db, int nodes)
 {
-	if (! backends)
+	if (! nodes)
 		return;
 
 	Tr tr;
@@ -80,7 +80,7 @@ compute_bootstrap(Db* db, int backends)
 		tr_begin(&tr);
 
 		// precreate compute nodes
-		compute_bootstrap_nodes(db, &tr, backends);
+		compute_bootstrap_nodes(db, &tr, nodes);
 
 		// commit
 		tr_commit(&tr);

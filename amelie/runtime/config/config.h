@@ -39,8 +39,8 @@ struct Config
 	Var  limit_recv;
 	Var  limit_write;
 	// cluster
-	Var  frontends;
-	Var  backends;
+	Var  hosts;
+	Var  nodes;
 	// wal
 	Var  wal_rotate_wm;
 	Var  wal_sync_on_rotate;

@@ -33,10 +33,10 @@ void
 config_prepare(Config* self)
 {
 	auto cpus = get_nprocs();
-	auto default_fe = cpus / 3;
-	auto default_be = cpus - default_fe;
-	if (default_fe == 0)
-		default_fe = 1;
+	auto default_hosts = cpus / 3;
+	auto default_nodes = cpus - default_hosts;
+	if (default_hosts == 0)
+		default_hosts = 1;
 
 	VarDef defs[] =
 	{
@@ -63,8 +63,8 @@ config_prepare(Config* self)
 		{ "limit_recv",              VAR_INT,    VAR_C|VAR_R,             &self->limit_recv,              NULL,          1 * 1024 * 1024     },
 		{ "limit_write",             VAR_INT,    VAR_C|VAR_R,             &self->limit_write,             NULL,          0                   },
 		// cluster
-		{ "frontends",               VAR_INT,    VAR_C|VAR_Z,             &self->frontends,               NULL,          default_fe          },
-		{ "backends",                VAR_INT,    VAR_C|VAR_E,             &self->backends,                NULL,          default_be          },
+		{ "hosts",                   VAR_INT,    VAR_C|VAR_Z,             &self->hosts,                   NULL,          default_hosts       },
+		{ "nodes",                   VAR_INT,    VAR_C|VAR_E,             &self->nodes,                   NULL,          default_nodes       },
 		// wal
 		{ "wal_rotate_wm",           VAR_INT,    VAR_C|VAR_R,             &self->wal_rotate_wm,           NULL,          104857600           },
 		{ "wal_sync_on_rotate",      VAR_BOOL,   VAR_C,                   &self->wal_sync_on_rotate,      NULL,          true                },

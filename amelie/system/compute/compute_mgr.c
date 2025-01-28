@@ -112,7 +112,7 @@ compute_mgr_if_create(Node* node)
 	auto compute = compute_allocate(node, self->db, self->function_mgr);
 	list_append(&self->list, &compute->link);
 	self->list_count++;
-	var_int_set(&config()->backends, self->list_count);
+	var_int_set(&config()->nodes, self->list_count);
 	node->context = compute;
 
 	route_init(&node->route, &compute->task.channel);
@@ -133,7 +133,7 @@ compute_mgr_if_free(Node* node)
 
 	list_unlink(&compute->link);
 	self->list_count--;
-	var_int_set(&config()->backends, self->list_count);
+	var_int_set(&config()->nodes, self->list_count);
 	router_del(&self->router, &node->route);
 
 	compute_free(compute);

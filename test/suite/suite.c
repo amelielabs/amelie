@@ -343,8 +343,8 @@ test_suite_open(TestSuite* self, char* arg)
 		"--timezone_default=UTC",
 		"--wal_sync_on_rotate=false",
 		"--wal_sync_on_write=false",
-		"--frontends=1",
-		"--backends=1"
+		"--hosts=1",
+		"--nodes=1"
 	};
 
 	char options_test[1024];

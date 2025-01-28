@@ -154,7 +154,7 @@ static void
 system_bootstrap(System* self)
 {
 	// create compute nodes
-	compute_bootstrap(&self->db, var_int_of(&config()->backends));
+	compute_bootstrap(&self->db, var_int_of(&config()->nodes));
 	config_lsn_set(1);
 
 	// create initial checkpoint, mostly to ensure that node
@@ -196,7 +196,7 @@ system_start(System* self, bool bootstrap)
 	checkpointer_start(&self->db.checkpointer);
 
 	// start hosts
-	auto workers = var_int_of(&config()->frontends);
+	auto workers = var_int_of(&config()->hosts);
 	host_mgr_start(&self->host_mgr,
 	               system_on_host_connect,
 	               self,
