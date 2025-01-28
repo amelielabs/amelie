@@ -103,13 +103,10 @@ include_directories("${AMELIE_ROOT}/compiler/parser")
 include_directories("${AMELIE_ROOT}/compiler/planner")
 include_directories("${AMELIE_ROOT}/compiler/compiler")
 
-# cluster
-include_directories("${AMELIE_ROOT}/cluster")
-include_directories("${AMELIE_ROOT}/cluster/cluster")
-include_directories("${AMELIE_ROOT}/cluster/frontend")
-
 # system
 include_directories("${AMELIE_ROOT}/system")
+include_directories("${AMELIE_ROOT}/system/cluster")
+include_directories("${AMELIE_ROOT}/system/frontend")
 include_directories("${AMELIE_ROOT}/system/session")
 include_directories("${AMELIE_ROOT}/system/system")
 
@@ -285,14 +282,12 @@ set(AMELIE_SOURCES_COMPILER
     ${AMELIE_ROOT}/compiler/compiler/emit_watch.c
     ${AMELIE_ROOT}/compiler/compiler/pushdown.c)
 
-set(AMELIE_SOURCES_CLUSTER
-    ${AMELIE_ROOT}/cluster/cluster/compute.c
-    ${AMELIE_ROOT}/cluster/cluster/cluster.c
-    ${AMELIE_ROOT}/cluster/cluster/cluster_bootstrap.c
-    ${AMELIE_ROOT}/cluster/cluster/build.c
-    ${AMELIE_ROOT}/cluster/frontend/frontend.c)
-
 set(AMELIE_SOURCES_SYSTEM
+    ${AMELIE_ROOT}/system/cluster/compute.c
+    ${AMELIE_ROOT}/system/cluster/cluster.c
+    ${AMELIE_ROOT}/system/cluster/cluster_bootstrap.c
+    ${AMELIE_ROOT}/system/cluster/build.c
+    ${AMELIE_ROOT}/system/frontend/frontend.c
     ${AMELIE_ROOT}/system/session/explain.c
     ${AMELIE_ROOT}/system/session/session.c
     ${AMELIE_ROOT}/system/session/utility.c
@@ -322,7 +317,6 @@ set(AMELIE_SOURCES
     ${AMELIE_SOURCES_REPL}
     ${AMELIE_SOURCES_VM}
     ${AMELIE_SOURCES_COMPILER}
-    ${AMELIE_SOURCES_CLUSTER}
     ${AMELIE_SOURCES_SYSTEM}
     ${AMELIE_SOURCES_MAIN})
 
