@@ -16,7 +16,7 @@ open E1
 connect E1 S0 localhost:3480
 
 show uuid
-select system.nodes()::length
+select system.compute()::length
 
 disconnect S0
 close E1

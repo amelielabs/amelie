@@ -10212,9 +10212,9 @@ show repl
 switch S1
 select identity_of("public", "test2")
 [4]
-# test: create node
+# test: alter compute add
 switch S0
-create node "00000000-0000-0000-0000-00000000000f"
+alter compute add "00000000-0000-0000-0000-00000000000f"
 # test: wait replica sync
 watch system.replica("00000000-0000-0000-0000-000000000001").lsn = system.config().lsn
 show repl

@@ -1,7 +1,7 @@
 open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "127.0.0.1", "port": 3480 }], "nodes": 0
 connect E0 S0 localhost:3480
 # test: bootstrap (no nodes)
-show nodes
+show compute
 []
 # test: ddl (without nodes)
 create table test (id int primary key)
@@ -10,44 +10,30 @@ create shared table test (id int primary key)
 {"msg": "system has no nodes"}
 select * from test
 {"msg": "select * from ❰test❱ ⟵ relation not found"}
-# test: create node statement parsing
-create compute
-{"msg": "create compute ⟵ NODE expected"}
-create node 1
-{"msg": "create node ❰1❱ ⟵ ; expected"}
-create node for
-{"msg": "create node ❰for❱ ⟵ ; expected"}
-create node for 1
-{"msg": "create node ❰for❱ ⟵ ; expected"}
-# test: create node id
-create node ""
+# test: alter compute add statement parsing
+alter compute
+{"msg": "alter compute ⟵ ADD or DROP expected"}
+alter compute 1
+{"msg": "alter compute ❰1❱ ⟵ ADD or DROP expected"}
+alter compute pool
+{"msg": "alter compute pool ⟵ ADD or DROP expected"}
+# test: alter compute add
+alter compute add ""
 {"msg": "failed to parse uuid"}
-create compute node "00000000-0000-0000-0000-000000000000"
+alter compute add node ""
+{"msg": "failed to parse uuid"}
+alter compute add "00000000-0000-0000-0000-000000000000"
 show nodes
+[1]
+show compute
 [{
   "id": "00000000-0000-0000-0000-000000000000"
 }]
-# test: create node already exists
-create node "00000000-0000-0000-0000-000000000000"
+# test: alter compute add (already exists)
+alter compute add node "00000000-0000-0000-0000-000000000000"
 {"msg": "node '00000000-0000-0000-0000-000000000000': already exists"}
-# test: create node if not exists
-create node if "00000000-0000-0000-0000-000000000000"
-{"msg": "create node if ❰\"00000000-0000-0000-0000-000000000000\"❱ ⟵ NOT expected"}
-create node if
-{"msg": "create node if ⟵ NOT expected"}
-create node if not
-{"msg": "create node if not ⟵ EXISTS expected"}
-create node if not exists
-{"msg": "create node if not exists ⟵ id expected"}
-create node if not exists "00000000-0000-0000-0000-00000000000Z"
-{"msg": "failed to parse uuid"}
-create node if not exists "  00000000-0000-0000-0000-00000000000  "
-{"msg": "failed to parse uuid"}
-create node if not exists "00000000-0000-0000-0000-000000000000"
 show nodes
-[{
-  "id": "00000000-0000-0000-0000-000000000000"
-}]
+[1]
 # test: ddl/dml (with one node)
 create table test1 (id int primary key)
 create shared table test2 (id int primary key)
@@ -73,7 +59,7 @@ disconnect S0
 close E0
 open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "127.0.0.1", "port": 3480 }], "nodes": 0
 connect E0 S0 localhost:3480
-show nodes
+show compute
 [{
   "id": "00000000-0000-0000-0000-000000000000"
 }]
@@ -81,28 +67,24 @@ select * from test1
 [1, 2, 3]
 select * from test2
 [4, 5, 6]
-# test: drop node statement parsing
-drop node
-{"msg": "drop node ⟵ string expected"}
-drop node 1
-{"msg": "drop node ❰1❱ ⟵ string expected"}
-drop node ""
+# test: alter compute drop node statement parsing
+alter compute drop
+{"msg": "alter compute drop ⟵ id is expected for the DROP command"}
+alter compute drop 1
+{"msg": "alter compute drop ❰1❱ ⟵ id is expected for the DROP command"}
+alter compute drop node
+{"msg": "alter compute drop node ⟵ id is expected for the DROP command"}
+alter compute drop node 1
+{"msg": "alter compute drop node ❰1❱ ⟵ id is expected for the DROP command"}
+alter compute drop node ""
 {"msg": "node '': not exists"}
-# test: drop node if exists
-drop node "00000000-0000-0000-0000-000000000001"
-{"msg": "node '00000000-0000-0000-0000-000000000001': not exists"}
-drop node if exists "00000000-0000-0000-0000-000000000001"
-show nodes
-[{
-  "id": "00000000-0000-0000-0000-000000000000"
-}]
-# test: drop node with dependency
-drop node "00000000-0000-0000-0000-000000000000"
+# test: alter compute drop node (with dependency)
+alter compute drop node "00000000-0000-0000-0000-000000000000"
 {"msg": "node '00000000-0000-0000-0000-000000000000': has dependencies"}
 # test: drop node without dependency
-create compute node "00000000-0000-0000-0000-000000000001"
-create node "00000000-0000-0000-0000-000000000002"
-show nodes
+alter compute add "00000000-0000-0000-0000-000000000001"
+alter compute add "00000000-0000-0000-0000-000000000002"
+show compute
 [{
   "id": "00000000-0000-0000-0000-000000000000"
 }, {
@@ -110,16 +92,15 @@ show nodes
 }, {
   "id": "00000000-0000-0000-0000-000000000002"
 }]
-drop node "00000000-0000-0000-0000-000000000001"
-show nodes
+alter compute drop node "00000000-0000-0000-0000-000000000001"
+show compute
 [{
   "id": "00000000-0000-0000-0000-000000000000"
 }, {
   "id": "00000000-0000-0000-0000-000000000002"
 }]
-drop node "00000000-0000-0000-0000-000000000001"
+alter compute drop node "00000000-0000-0000-0000-000000000001"
 {"msg": "node '00000000-0000-0000-0000-000000000001': not exists"}
-drop node if exists "00000000-0000-0000-0000-000000000001"
 # test: ddl (two nodes partitioning)
 create table test3 (id int primary key)
 show tables
@@ -139,25 +120,25 @@ show tables
   "shared": false,
   "unlogged": false
 }]
-# test: drop node (after table drop)
-drop node "00000000-0000-0000-0000-000000000002"
+# test: alter compute drop node (after table drop)
+alter compute drop node "00000000-0000-0000-0000-000000000002"
 {"msg": "node '00000000-0000-0000-0000-000000000002': has dependencies"}
 drop table test3
-drop node "00000000-0000-0000-0000-000000000002"
-show nodes
+alter compute drop node "00000000-0000-0000-0000-000000000002"
+show compute
 [{
   "id": "00000000-0000-0000-0000-000000000000"
 }]
 # test: create table/create node/select
 create table test4(id int primary key)
 insert into test4 values (1), (2), (3)
-create node "00000000-0000-0000-0000-000000000003"
-create node "00000000-0000-0000-0000-000000000004"
+alter compute add "00000000-0000-0000-0000-000000000003"
+alter compute add "00000000-0000-0000-0000-000000000004"
 select * from test4
 [1, 2, 3]
 drop table test4
 # test: create table/create node/add column
-show nodes
+show compute
 [{
   "id": "00000000-0000-0000-0000-000000000000"
 }, {
@@ -184,9 +165,9 @@ show tables
   "unlogged": false
 }]
 insert into test values (1), (2), (3)
-create node "00000000-0000-0000-0000-000000000005"
-create node "00000000-0000-0000-0000-000000000006"
-show nodes
+alter compute add "00000000-0000-0000-0000-000000000005"
+alter compute add "00000000-0000-0000-0000-000000000006"
+show compute
 [{
   "id": "00000000-0000-0000-0000-000000000000"
 }, {

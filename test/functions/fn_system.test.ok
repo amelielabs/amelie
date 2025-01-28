@@ -70,14 +70,9 @@ select system.replication()
   "primary": null,
   "replicas": []
 }]
-# test: nodes()
-select system.nodes()::size
+# test: compute()
+select system.compute()::size
 [1]
-# test: node()
-select system.node('00000000-0000-0000-0000-000000000000')
-[null]
-select system.node(uuid '00000000-0000-0000-0000-000000000000')
-[null]
 # test: schemas()
 select system.schemas()
 [[{

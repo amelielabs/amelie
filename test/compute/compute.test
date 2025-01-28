@@ -1,0 +1,106 @@
+#
+
+open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "127.0.0.1", "port": 3480 }], "nodes": 0
+connect E0 S0 localhost:3480
+
+# test: bootstrap (no nodes)
+show compute
+
+# test: ddl (without nodes)
+create table test (id int primary key)
+create shared table test (id int primary key)
+select * from test
+
+# test: alter compute add statement parsing
+alter compute
+alter compute 1
+alter compute pool
+
+# test: alter compute add
+alter compute add ""
+alter compute add node ""
+alter compute add "00000000-0000-0000-0000-000000000000"
+show nodes
+show compute
+
+# test: alter compute add (already exists)
+alter compute add node "00000000-0000-0000-0000-000000000000"
+show nodes
+
+# test: ddl/dml (with one node)
+create table test1 (id int primary key)
+create shared table test2 (id int primary key)
+show tables
+
+insert into test1 values (1), (2), (3); insert into test2 values (4),(5),(6)
+select * from test1
+select * from test2
+
+# test: restart
+disconnect S0
+close E0
+
+open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "127.0.0.1", "port": 3480 }], "nodes": 0
+connect E0 S0 localhost:3480
+
+show compute
+select * from test1
+select * from test2
+
+# test: alter compute drop node statement parsing
+alter compute drop
+alter compute drop 1
+alter compute drop node
+alter compute drop node 1
+alter compute drop node ""
+
+# test: alter compute drop node (with dependency)
+alter compute drop node "00000000-0000-0000-0000-000000000000"
+
+# test: drop node without dependency
+alter compute add "00000000-0000-0000-0000-000000000001"
+alter compute add "00000000-0000-0000-0000-000000000002"
+
+show compute
+alter compute drop node "00000000-0000-0000-0000-000000000001"
+show compute
+
+alter compute drop node "00000000-0000-0000-0000-000000000001"
+
+# test: ddl (two nodes partitioning)
+create table test3 (id int primary key)
+show tables
+
+# test: alter compute drop node (after table drop)
+alter compute drop node "00000000-0000-0000-0000-000000000002"
+drop table test3
+alter compute drop node "00000000-0000-0000-0000-000000000002"
+show compute
+
+# test: create table/create node/select
+create table test4(id int primary key)
+insert into test4 values (1), (2), (3)
+alter compute add "00000000-0000-0000-0000-000000000003"
+alter compute add "00000000-0000-0000-0000-000000000004"
+select * from test4
+drop table test4
+
+# test: create table/create node/add column
+show compute
+create table test(id int primary key)
+show tables
+
+insert into test values (1), (2), (3)
+alter compute add "00000000-0000-0000-0000-000000000005"
+alter compute add "00000000-0000-0000-0000-000000000006"
+show compute
+
+# table partitions must not change
+alter table test add column data int
+show tables
+
+select * from test
+drop table test
+
+disconnect S0
+close E0

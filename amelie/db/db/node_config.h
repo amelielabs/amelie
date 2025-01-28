@@ -15,8 +15,7 @@ typedef struct NodeConfig NodeConfig;
 
 struct NodeConfig
 {
-	Str  id;
-	bool compute;
+	Str id;
 };
 
 static inline NodeConfig*
@@ -24,7 +23,6 @@ node_config_allocate(void)
 {
 	NodeConfig* self;
 	self = am_malloc(sizeof(*self));
-	self->compute = true;
 	str_init(&self->id);
 	return self;
 }

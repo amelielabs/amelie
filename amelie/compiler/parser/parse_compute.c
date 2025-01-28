@@ -38,34 +38,30 @@
 #include <amelie_parser.h>
 
 void
-parse_node_create(Stmt* self, bool compute)
+parse_compute_alter(Stmt* self)
 {
-	// CREATE [COMPUTE] NODE [IF NOT EXISTS] [id]
-	auto stmt = ast_node_create_allocate();
+	// ALTER COMPUTE [POOL] ADD/DROP [NODE] [ID]
+	auto stmt = ast_compute_alter_allocate();
 	self->ast = &stmt->ast;
 
-	unused(compute);
+	// [POOL]
+	stmt_if(self, KPOOL);
 
-	// if not exists
-	stmt->if_not_exists = parse_if_not_exists(self);
+	// ADD / DROP
+	if (stmt_if(self, KADD))
+		stmt->add = true;
+	else
+	if (stmt_if(self, KDROP))
+		stmt->add = false;
+	else
+		stmt_error(self, NULL, "ADD or DROP expected");
 
-	// id
+	// [NODE]
+	stmt_if(self, KNODE);
+
+	// [id]
 	stmt->id = stmt_if(self, KSTRING);
 
-	if (stmt->if_not_exists && !stmt->id)
-		stmt_error(self, NULL, "id expected");
-}
-
-void
-parse_node_drop(Stmt* self)
-{
-	// DROP NODE [IF EXISTS] id
-	auto stmt = ast_node_drop_allocate();
-	self->ast = &stmt->ast;
-
-	// if exists
-	stmt->if_exists = parse_if_exists(self);
-
-	// id
-	stmt->id = stmt_expect(self, KSTRING);
+	if (!stmt->add && !stmt->id)
+		stmt_error(self, NULL, "id is expected for the DROP command");
 }

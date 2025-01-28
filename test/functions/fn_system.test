@@ -25,12 +25,8 @@ select system.repl()
 # test: replication()
 select system.replication()
 
-# test: nodes()
-select system.nodes()::size
-
-# test: node()
-select system.node('00000000-0000-0000-0000-000000000000')
-select system.node(uuid '00000000-0000-0000-0000-000000000000')
+# test: compute()
+select system.compute()::size
 
 # test: schemas()
 select system.schemas()

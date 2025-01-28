@@ -162,6 +162,7 @@ enum
 
 	// p
 	KPROFILE,
+	KPOOL,
 	KPRIMARY,
 
 	// q

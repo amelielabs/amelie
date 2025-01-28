@@ -150,6 +150,7 @@ Keyword keywords[] =
 
 	// p
 	{ KPROFILE,               "profile",               7  },
+	{ KPOOL,                  "pool",                  4  },
 	{ KPRIMARY,               "primary",               7  },
 
 	// r

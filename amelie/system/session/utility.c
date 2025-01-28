@@ -67,11 +67,8 @@ ctl_show(Session* self)
 		buf = replica_mgr_list(&share->repl->replica_mgr, &id);
 		break;
 	}
-	case SHOW_NODES:
+	case SHOW_COMPUTE:
 		buf = node_mgr_list(&share->db->node_mgr, NULL);
-		break;
-	case SHOW_NODE:
-		buf = node_mgr_list(&share->db->node_mgr, &arg->name);
 		break;
 	case SHOW_REPL:
 		buf = repl_status(share->repl);

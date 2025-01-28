@@ -406,45 +406,41 @@ ddl_alter_index(Session* self, Tr* tr)
 }
 
 static void
-ddl_create_node(Session* self, Tr* tr)
+ddl_alter_compute(Session* self, Tr* tr)
 {
 	auto stmt = compiler_stmt(&self->compiler);
-	auto arg  = ast_node_create_of(stmt->ast);
+	auto arg  = ast_compute_alter_of(stmt->ast);
 	auto db   = self->share->db;
 
-	auto config = node_config_allocate();
-	defer(node_config_free, config);
-
-	// set or generate node name
-	if (arg->id)
+	if (arg->add)
 	{
-		node_config_set_id(config, &arg->id->string);
-	} else
-	{
-		Uuid id;
-		uuid_generate(&id, global()->random);
+		auto config = node_config_allocate();
+		defer(node_config_free, config);
 
-		char uuid[UUID_SZ];
-		uuid_get(&id, uuid, sizeof(uuid));
+		// set or generate node name
+		if (arg->id)
+		{
+			node_config_set_id(config, &arg->id->string);
+		} else
+		{
+			Uuid id;
+			uuid_generate(&id, global()->random);
 
-		Str uuid_str;
-		str_set_cstr(&uuid_str, uuid);
-		node_config_set_id(config, &uuid_str);
+			char uuid[UUID_SZ];
+			uuid_get(&id, uuid, sizeof(uuid));
+
+			Str uuid_str;
+			str_set_cstr(&uuid_str, uuid);
+			node_config_set_id(config, &uuid_str);
+		}
+
+		// create node
+		node_mgr_create(&db->node_mgr, tr, config, false);
+		return;
 	}
 
-	// create node
-	node_mgr_create(&db->node_mgr, tr, config, arg->if_not_exists);
-}
-
-static void
-ddl_drop_node(Session* self, Tr* tr)
-{
-	auto stmt = compiler_stmt(&self->compiler);
-	auto arg  = ast_node_drop_of(stmt->ast);
-	auto db   = self->share->db;
-
 	// drop node
-	node_mgr_drop(&db->node_mgr, tr, &arg->id->string, arg->if_exists);
+	node_mgr_drop(&db->node_mgr, tr, &arg->id->string, false);
 }
 
 static inline void
@@ -479,11 +475,8 @@ session_execute_ddl_stmt(Session* self, Tr* tr)
 	case STMT_ALTER_INDEX:
 		ddl_alter_index(self, tr);
 		break;
-	case STMT_CREATE_NODE:
-		ddl_create_node(self, tr);
-		break;
-	case STMT_DROP_NODE:
-		ddl_drop_node(self, tr);
+	case STMT_ALTER_COMPUTE:
+		ddl_alter_compute(self, tr);
 		break;
 	case STMT_TRUNCATE:
 		ddl_truncate(self, tr);

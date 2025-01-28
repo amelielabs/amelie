@@ -53,7 +53,7 @@
 #include "parser/parse_token.h"
 #include "parser/parse_replica.h"
 #include "parser/parse_repl.h"
-#include "parser/parse_node.h"
+#include "parser/parse_compute.h"
 #include "parser/parse_watch.h"
 
 // ddl

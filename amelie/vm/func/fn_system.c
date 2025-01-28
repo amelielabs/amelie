@@ -104,34 +104,11 @@ fn_repl(Call* self)
 }
 
 static void
-fn_nodes(Call* self)
+fn_compute(Call* self)
 {
 	call_expect(self, 0);
 	auto buf = node_mgr_list(&self->mgr->db->node_mgr, NULL);
 	value_set_json_buf(self->result, buf);
-}
-
-static void
-fn_node(Call* self)
-{
-	auto argv = self->argv;
-	call_expect(self, 1);
-	if (argv[0].type == TYPE_STRING)
-	{
-		auto buf = node_mgr_list(&self->mgr->db->node_mgr, &self->argv[0].string);
-		value_set_json_buf(self->result, buf);
-	} else
-	if (argv[0].type == TYPE_UUID)
-	{
-		char uuid_sz[UUID_SZ];
-		uuid_get(&argv[0].uuid, uuid_sz, sizeof(uuid_sz));
-		Str str;
-		str_set(&str, uuid_sz, UUID_SZ - 1);
-		auto buf = node_mgr_list(&self->mgr->db->node_mgr, &str);
-		value_set_json_buf(self->result, buf);
-	} else {
-		call_unsupported(self, 0);
-	}
 }
 
 static void
@@ -228,12 +205,8 @@ fn_system_register(FunctionMgr* self)
 	func = function_allocate(TYPE_JSON, "system", "replication", fn_repl);
 	function_mgr_add(self, func);
 
-	// system.nodes()
-	func = function_allocate(TYPE_JSON, "system", "nodes", fn_nodes);
-	function_mgr_add(self, func);
-
-	// system.node()
-	func = function_allocate(TYPE_JSON, "system", "node", fn_node);
+	// system.compute()
+	func = function_allocate(TYPE_JSON, "system", "compute", fn_compute);
 	function_mgr_add(self, func);
 
 	// system.schemas()

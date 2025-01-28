@@ -191,12 +191,11 @@ parse_stmt(Parser* self, Stmt* stmt)
 
 	case KCREATE:
 	{
-		// [UNIQUE | UNLOGGED | SHARED | DISTRIBUTED | COMPUTE]
+		// [UNIQUE | UNLOGGED | SHARED | DISTRIBUTED]
 		bool unique      = false;
 		bool unlogged    = false;
 		bool shared      = false;
 		bool distributed = false;
-		bool compute     = false;
 		for (auto stop = false; !stop ;)
 		{
 			auto mod = lex_next(lex);
@@ -213,9 +212,6 @@ parse_stmt(Parser* self, Stmt* stmt)
 			case KDISTRIBUTED:
 				distributed = true;
 				break;
-			case KCOMPUTE:
-				compute = true;
-				break;
 			default:
 				stmt_push(stmt, mod);
 				stop = true;
@@ -229,19 +225,13 @@ parse_stmt(Parser* self, Stmt* stmt)
 			stmt_push(stmt, next);
 		}
 
-		if (compute)
-		{
-			auto next = stmt_expect(stmt, KNODE);
-			stmt_push(stmt, next);
-		}
-
 		if (unlogged || shared || distributed)
 		{
 			auto next = stmt_expect(stmt, KTABLE);
 			stmt_push(stmt, next);
 		}
 
-		// CREATE USER | TOKEN | REPLICA | NODE | SCHEMA | TABLE | INDEX
+		// CREATE USER | TOKEN | REPLICA | SCHEMA | TABLE | INDEX
 		if (lex_if(lex, KUSER))
 		{
 			stmt->id = STMT_CREATE_USER;
@@ -256,11 +246,6 @@ parse_stmt(Parser* self, Stmt* stmt)
 		{
 			stmt->id = STMT_CREATE_REPLICA;
 			parse_replica_create(stmt);
-		} else
-		if (lex_if(lex, KNODE))
-		{
-			stmt->id = STMT_CREATE_NODE;
-			parse_node_create(stmt, compute);
 		} else
 		if (lex_if(lex, KSCHEMA))
 		{
@@ -277,14 +262,14 @@ parse_stmt(Parser* self, Stmt* stmt)
 			stmt->id = STMT_CREATE_INDEX;
 			parse_index_create(stmt, unique);
 		} else {
-			stmt_error(stmt, NULL, "'USER|REPLICA|NODE|SCHEMA|TABLE|INDEX' expected");
+			stmt_error(stmt, NULL, "'USER|REPLICA|SCHEMA|TABLE|INDEX' expected");
 		}
 		break;
 	}
 
 	case KDROP:
 	{
-		// DROP USER | REPLICA | NODE | SCHEMA | TABLE | INDEX
+		// DROP USER | REPLICA | SCHEMA | TABLE | INDEX
 		if (lex_if(lex, KUSER))
 		{
 			stmt->id = STMT_DROP_USER;
@@ -294,11 +279,6 @@ parse_stmt(Parser* self, Stmt* stmt)
 		{
 			stmt->id = STMT_DROP_REPLICA;
 			parse_replica_drop(stmt);
-		} else
-		if (lex_if(lex, KNODE))
-		{
-			stmt->id = STMT_DROP_NODE;
-			parse_node_drop(stmt);
 		} else
 		if (lex_if(lex, KSCHEMA))
 		{
@@ -315,14 +295,14 @@ parse_stmt(Parser* self, Stmt* stmt)
 			stmt->id = STMT_DROP_INDEX;
 			parse_index_drop(stmt);
 		} else {
-			stmt_error(stmt, NULL, "'USER|REPLICA|NODE|SCHEMA|TABLE|INDEX' expected");
+			stmt_error(stmt, NULL, "'USER|REPLICA|SCHEMA|TABLE|INDEX' expected");
 		}
 		break;
 	}
 
 	case KALTER:
 	{
-		// ALTER USER | SCHEMA | TABLE | INDEX
+		// ALTER USER | SCHEMA | TABLE | INDEX | COMPUTE
 		if (lex_if(lex, KUSER))
 		{
 			stmt->id = STMT_ALTER_USER;
@@ -342,8 +322,13 @@ parse_stmt(Parser* self, Stmt* stmt)
 		{
 			stmt->id = STMT_ALTER_INDEX;
 			parse_index_alter(stmt);
+		} else
+		if (lex_if(lex, KCOMPUTE))
+		{
+			stmt->id = STMT_ALTER_COMPUTE;
+			parse_compute_alter(stmt);
 		} else {
-			stmt_error(stmt, NULL, "'USER|SCHEMA|TABLE|INDEX' expected");
+			stmt_error(stmt, NULL, "'USER|SCHEMA|TABLE|INDEX|COMPUTE' expected");
 		}
 		break;
 	}

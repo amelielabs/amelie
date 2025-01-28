@@ -52,12 +52,8 @@ parse_show_type(Str* name)
 	if (str_is(name, "replica", 7))
 		return SHOW_REPLICA;
 
-	if (str_is(name, "nodes", 5) ||
-	    str_is(name, "cluster", 7))
-		return SHOW_NODES;
-
-	if (str_is(name, "node", 4))
-		return SHOW_NODE;
+	if (str_is(name, "compute", 7))
+		return SHOW_COMPUTE;
 
 	if (str_is(name, "repl", 4) ||
 	    str_is(name, "replication", 11))
@@ -105,7 +101,6 @@ parse_show(Stmt* self)
 	switch (stmt->type) {
 	case SHOW_USER:
 	case SHOW_REPLICA:
-	case SHOW_NODE:
 	case SHOW_SCHEMA:
 		name = stmt_next_shadow(self);
 		if (name->id != KNAME && name->id != KSTRING)
@@ -144,6 +139,10 @@ parse_show(Stmt* self)
 		}
 		break;
 	}
+	case SHOW_COMPUTE:
+		// [POOL]
+		stmt_if(self, KPOOL);
+		break;
 	case SHOW_CONFIG:
 		stmt->name_ast = name;
 		stmt->name = name->string;

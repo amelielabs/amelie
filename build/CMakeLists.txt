@@ -252,7 +252,7 @@ set(AMELIE_SOURCES_COMPILER
     ${AMELIE_ROOT}/compiler/parser/parse_token.c
     ${AMELIE_ROOT}/compiler/parser/parse_replica.c
     ${AMELIE_ROOT}/compiler/parser/parse_repl.c
-    ${AMELIE_ROOT}/compiler/parser/parse_node.c
+    ${AMELIE_ROOT}/compiler/parser/parse_compute.c
     ${AMELIE_ROOT}/compiler/parser/parse_watch.c
     ${AMELIE_ROOT}/compiler/parser/parse_schema.c
     ${AMELIE_ROOT}/compiler/parser/parse_table.c
