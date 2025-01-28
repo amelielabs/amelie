@@ -22,7 +22,7 @@ struct System
 	Repl        repl;
 	// executor
 	Executor    executor;
-	Cluster     cluster;
+	ComputeMgr  compute_mgr;
 	FrontendMgr frontend_mgr;
 	bool        lock;
 	RpcQueue    lock_queue;

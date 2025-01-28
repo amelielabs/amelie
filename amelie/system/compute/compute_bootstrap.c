@@ -38,10 +38,10 @@
 #include <amelie_parser.h>
 #include <amelie_planner.h>
 #include <amelie_compiler.h>
-#include <amelie_cluster.h>
+#include <amelie_compute.h>
 
 static inline void
-cluster_bootstrap_nodes(Db* db, Tr* tr, int backends)
+compute_bootstrap_nodes(Db* db, Tr* tr, int backends)
 {
 	// precreate compute nodes
 	while (backends-- > 0)
@@ -66,7 +66,7 @@ cluster_bootstrap_nodes(Db* db, Tr* tr, int backends)
 }
 
 void
-cluster_bootstrap(Db* db, int backends)
+compute_bootstrap(Db* db, int backends)
 {
 	if (! backends)
 		return;
@@ -80,7 +80,7 @@ cluster_bootstrap(Db* db, int backends)
 		tr_begin(&tr);
 
 		// precreate compute nodes
-		cluster_bootstrap_nodes(db, &tr, backends);
+		compute_bootstrap_nodes(db, &tr, backends);
 
 		// commit
 		tr_commit(&tr);

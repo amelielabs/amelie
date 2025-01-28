@@ -38,23 +38,23 @@
 #include <amelie_parser.h>
 #include <amelie_planner.h>
 #include <amelie_compiler.h>
-#include <amelie_cluster.h>
+#include <amelie_compute.h>
 
 void
 build_init(Build*       self,
            BuildType    type,
-           Cluster*     cluster,
+           ComputeMgr*  compute_mgr,
            Table*       table,
            Table*       table_new,
            Column*      column,
            IndexConfig* index)
 {
-	self->type      = type;
-	self->table     = table;
-	self->table_new = table_new;
-	self->column    = column;
-	self->index     = index;
-	self->cluster   = cluster;
+	self->type        = type;
+	self->table       = table;
+	self->table_new   = table_new;
+	self->column      = column;
+	self->index       = index;
+	self->compute_mgr = compute_mgr;
 	channel_init(&self->channel);
 }
 
@@ -69,7 +69,7 @@ static inline void
 build_run_first(Build* self)
 {
 	// ask first node to build related partition
-	auto route = router_first(&self->cluster->router);
+	auto route = router_first(&self->compute_mgr->router);
 	auto buf = msg_create(RPC_BUILD);
 	buf_write(buf, &self, sizeof(Build**));
 	msg_end(buf);
@@ -88,7 +88,7 @@ static inline void
 build_run_all(Build* self)
 {
 	// ask each node to build related partition
-	list_foreach(&self->cluster->list)
+	list_foreach(&self->compute_mgr->list)
 	{
 		auto compute = list_at(Compute, link);
 		auto buf = msg_create(RPC_BUILD);
@@ -100,7 +100,7 @@ build_run_all(Build* self)
 	// wait for completion
 	Buf* error = NULL;
 	int  complete;
-	for (complete = 0; complete < self->cluster->list_count;
+	for (complete = 0; complete < self->compute_mgr->list_count;
 	     complete++)
 	{
 		auto buf = channel_read(&self->channel, -1);
@@ -124,7 +124,7 @@ build_run(Build* self)
 {
 	channel_attach(&self->channel);
 
-	// run on first node (for shared table) or use whole cluster
+	// run on first node (for shared table) or use whole compute_mgr
 	if (self->table && self->table->config->shared)
 		build_run_first(self);
 	else
@@ -137,7 +137,7 @@ build_execute_op(Build* self, Uuid* node)
 	switch (self->type) {
 	case BUILD_RECOVER:
 		// restore last checkpoint partitions related to the node
-		recover_checkpoint(self->cluster->db, node);
+		recover_checkpoint(self->compute_mgr->db, node);
 		break;
 	case BUILD_INDEX:
 	{
@@ -209,9 +209,9 @@ static void
 build_if_index(Recover* self, Table* table, IndexConfig* index)
 {
 	// do parallel indexation per node
-	Cluster* cluster = self->iface_arg;
+	ComputeMgr* compute_mgr = self->iface_arg;
 	Build build;
-	build_init(&build, BUILD_INDEX, cluster, table, NULL, NULL, index);
+	build_init(&build, BUILD_INDEX, compute_mgr, table, NULL, NULL, index);
 	defer(build_free, &build);
 	build_run(&build);
 }
@@ -220,9 +220,9 @@ static void
 build_if_column_add(Recover* self, Table* table, Table* table_new, Column* column)
 {
 	// rebuild new table with new column in parallel per node
-	Cluster* cluster = self->iface_arg;
+	ComputeMgr* compute_mgr = self->iface_arg;
 	Build build;
-	build_init(&build, BUILD_COLUMN_ADD, cluster, table, table_new, column, NULL);
+	build_init(&build, BUILD_COLUMN_ADD, compute_mgr, table, table_new, column, NULL);
 	defer(build_free, &build);
 	build_run(&build);
 }
@@ -231,9 +231,9 @@ static void
 build_if_column_drop(Recover* self, Table* table, Table* table_new, Column* column)
 {
 	// rebuild new table without column in parallel per node
-	Cluster* cluster = self->iface_arg;
+	ComputeMgr* compute_mgr = self->iface_arg;
 	Build build;
-	build_init(&build, BUILD_COLUMN_DROP, cluster, table, table_new, column, NULL);
+	build_init(&build, BUILD_COLUMN_DROP, compute_mgr, table, table_new, column, NULL);
 	defer(build_free, &build);
 	build_run(&build);
 }

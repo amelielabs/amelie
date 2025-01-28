@@ -38,7 +38,7 @@
 #include <amelie_parser.h>
 #include <amelie_planner.h>
 #include <amelie_compiler.h>
-#include <amelie_cluster.h>
+#include <amelie_compute.h>
 
 static void
 compute_replay(Compute* self, Tr* tr, Req* req)

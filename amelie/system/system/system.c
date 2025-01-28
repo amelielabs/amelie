@@ -38,7 +38,7 @@
 #include <amelie_parser.h>
 #include <amelie_planner.h>
 #include <amelie_compiler.h>
-#include <amelie_cluster.h>
+#include <amelie_compute.h>
 #include <amelie_frontend.h>
 #include <amelie_session.h>
 #include <amelie_system.h>
@@ -69,18 +69,18 @@ system_create(void)
 	user_mgr_init(&self->user_mgr);
 	server_init(&self->server);
 
-	// cluster
+	// compute_mgr
 	frontend_mgr_init(&self->frontend_mgr);
-	cluster_init(&self->cluster, &self->db, &self->function_mgr);
-	executor_init(&self->executor, &self->db, &self->cluster.router);
+	compute_mgr_init(&self->compute_mgr, &self->db, &self->function_mgr);
+	executor_init(&self->executor, &self->db, &self->compute_mgr.router);
 	rpc_queue_init(&self->lock_queue);
 
 	// vm
 	function_mgr_init(&self->function_mgr);
 
 	// db
-	db_init(&self->db, (PartMapper)cluster_map, &self->cluster,
-	        &cluster_if, &self->cluster);
+	db_init(&self->db, (PartMapper)compute_mgr_map, &self->compute_mgr,
+	        &compute_mgr_if, &self->compute_mgr);
 
 	// replication
 	repl_init(&self->repl, &self->db);
@@ -89,7 +89,7 @@ system_create(void)
 	auto share = &self->share;
 	share->executor     = &self->executor;
 	share->repl         = &self->repl;
-	share->cluster      = &self->cluster;
+	share->compute_mgr  = &self->compute_mgr;
 	share->frontend_mgr = &self->frontend_mgr;
 	share->function_mgr = &self->function_mgr;
 	share->user_mgr     = &self->user_mgr;
@@ -103,7 +103,7 @@ system_free(System* self)
 	repl_free(&self->repl);
 	executor_free(&self->executor);
 	db_free(&self->db);
-	cluster_free(&self->cluster);
+	compute_mgr_free(&self->compute_mgr);
 	function_mgr_free(&self->function_mgr);
 	server_free(&self->server);
 	user_mgr_free(&self->user_mgr);
@@ -137,13 +137,13 @@ system_recover(System* self)
 	info("recover: using checkpoint %" PRIu64, config_checkpoint());
 
 	Build build;
-	build_init(&build, BUILD_RECOVER, &self->cluster, NULL, NULL, NULL, NULL);
+	build_init(&build, BUILD_RECOVER, &self->compute_mgr, NULL, NULL, NULL, NULL);
 	defer(build_free, &build);
 	build_run(&build);
 
 	// replay wals
 	Recover recover;
-	recover_init(&recover, &self->db, &build_if, &self->cluster);
+	recover_init(&recover, &self->db, &build_if, &self->compute_mgr);
 	defer(recover_free, &recover);
 	recover_wal(&recover);
 
@@ -154,7 +154,7 @@ static void
 system_bootstrap(System* self)
 {
 	// create compute nodes
-	cluster_bootstrap(&self->db, var_int_of(&config()->backends));
+	compute_bootstrap(&self->db, var_int_of(&config()->backends));
 	config_lsn_set(1);
 
 	// create initial checkpoint, mostly to ensure that node
@@ -298,7 +298,7 @@ system_lock(System* self, Rpc* rpc)
 		//
 		// even with exclusive lock, there is a chance that
 		// last abort did not not finished yet on nodes
-		cluster_sync(&self->cluster);
+		compute_mgr_sync(&self->compute_mgr);
 
 		rpc_done(rpc);
 		self->lock = true;

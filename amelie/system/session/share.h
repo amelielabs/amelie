@@ -17,7 +17,7 @@ struct Share
 {
 	Executor*    executor;
 	Repl*        repl;
-	Cluster*     cluster;
+	ComputeMgr*  compute_mgr;
 	FrontendMgr* frontend_mgr;
 	FunctionMgr* function_mgr;
 	UserMgr*     user_mgr;

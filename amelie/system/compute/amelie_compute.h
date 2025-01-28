@@ -11,4 +11,10 @@
 // AGPL-3.0 Licensed.
 //
 
-void cluster_bootstrap(Db*, int);
+// compute
+#include "compute/compute.h"
+#include "compute/compute_mgr.h"
+#include "compute/compute_bootstrap.h"
+
+// build
+#include "compute/build.h"

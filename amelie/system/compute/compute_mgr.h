@@ -11,9 +11,9 @@
 // AGPL-3.0 Licensed.
 //
 
-typedef struct Cluster Cluster;
+typedef struct ComputeMgr ComputeMgr;
 
-struct Cluster
+struct ComputeMgr
 {
 	List         list;
 	int          list_count;
@@ -22,9 +22,9 @@ struct Cluster
 	Db*          db;
 };
 
-void cluster_init(Cluster*, Db*, FunctionMgr*);
-void cluster_free(Cluster*);
-void cluster_sync(Cluster*);
-void cluster_map(Cluster*, PartMap*, Part*);
+void compute_mgr_init(ComputeMgr*, Db*, FunctionMgr*);
+void compute_mgr_free(ComputeMgr*);
+void compute_mgr_sync(ComputeMgr*);
+void compute_mgr_map(ComputeMgr*, PartMap*, Part*);
 
-extern NodeIf cluster_if;
+extern NodeIf compute_mgr_if;

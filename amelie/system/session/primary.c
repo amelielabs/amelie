@@ -38,14 +38,14 @@
 #include <amelie_parser.h>
 #include <amelie_planner.h>
 #include <amelie_compiler.h>
-#include <amelie_cluster.h>
+#include <amelie_compute.h>
 #include <amelie_frontend.h>
 #include <amelie_session.h>
 
 static void
 replay_read(Session* self, WalWrite* write, ReqList* req_list)
 {
-	auto router = &self->share->cluster->router;
+	auto router = &self->share->compute_mgr->router;
 
 	// redistribute DML operations/rows between nodes
 	Req* map[router->list_count];
@@ -169,7 +169,7 @@ session_primary(Session* self)
 	auto share = self->share;
 
 	Recover recover;
-	recover_init(&recover, share->db, &build_if, share->cluster);
+	recover_init(&recover, share->db, &build_if, share->compute_mgr);
 	defer(recover_free, &recover);
 
 	Primary primary;

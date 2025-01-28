@@ -38,7 +38,7 @@
 #include <amelie_parser.h>
 #include <amelie_planner.h>
 #include <amelie_compiler.h>
-#include <amelie_cluster.h>
+#include <amelie_compute.h>
 #include <amelie_frontend.h>
 #include <amelie_session.h>
 #include <amelie_system.h>
@@ -81,7 +81,7 @@ system_status_process(System* self, Buf* buf)
 
 	// get cpu usage per worker
 	auto  fe = &self->frontend_mgr;
-	auto  be = &self->cluster;
+	auto  be = &self->compute_mgr;
 
 	int      workers = fe->workers_count + be->list_count;
 	int      workers_id[workers];

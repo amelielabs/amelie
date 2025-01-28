@@ -38,10 +38,10 @@
 #include <amelie_parser.h>
 #include <amelie_planner.h>
 #include <amelie_compiler.h>
-#include <amelie_cluster.h>
+#include <amelie_compute.h>
 
 void
-cluster_init(Cluster* self, Db* db, FunctionMgr* function_mgr)
+compute_mgr_init(ComputeMgr* self, Db* db, FunctionMgr* function_mgr)
 {
 	self->list_count   = 0;
 	self->function_mgr = function_mgr;
@@ -51,7 +51,7 @@ cluster_init(Cluster* self, Db* db, FunctionMgr* function_mgr)
 }
 
 void
-cluster_free(Cluster* self)
+compute_mgr_free(ComputeMgr* self)
 {
 	// freed by node_mgr
 	unused(self);
@@ -59,7 +59,7 @@ cluster_free(Cluster* self)
 }
 
 void
-cluster_sync(Cluster* self)
+compute_mgr_sync(ComputeMgr* self)
 {
 	list_foreach(&self->list)
 	{
@@ -69,7 +69,7 @@ cluster_sync(Cluster* self)
 }
 
 static inline Compute*
-cluster_find(Cluster* self, Uuid* id)
+compute_mgr_find(ComputeMgr* self, Uuid* id)
 {
 	list_foreach(&self->list)
 	{
@@ -81,10 +81,10 @@ cluster_find(Cluster* self, Uuid* id)
 }
 
 void
-cluster_map(Cluster* self, PartMap* map, Part* part)
+compute_mgr_map(ComputeMgr* self, PartMap* map, Part* part)
 {
 	// find partition by uuid
-	auto compute = cluster_find(self, &part->config->node);
+	auto compute = compute_mgr_find(self, &part->config->node);
 	if (! compute)
 		error("partition node cannot be found");
 
@@ -104,9 +104,9 @@ cluster_map(Cluster* self, PartMap* map, Part* part)
 }
 
 static void
-cluster_if_create(Node* node)
+compute_mgr_if_create(Node* node)
 {
-	Cluster* self = node->iface_arg;
+	ComputeMgr* self = node->iface_arg;
 
 	// create and register compute node
 	auto compute = compute_allocate(node, self->db, self->function_mgr);
@@ -122,9 +122,9 @@ cluster_if_create(Node* node)
 }
 
 static void
-cluster_if_free(Node* node)
+compute_mgr_if_free(Node* node)
 {
-	Cluster* self = node->iface_arg;
+	ComputeMgr* self = node->iface_arg;
 	Compute* compute = node->context;
 	if (! compute)
 		return;
@@ -140,8 +140,8 @@ cluster_if_free(Node* node)
 	node->context = NULL;
 }
 
-NodeIf cluster_if =
+NodeIf compute_mgr_if =
 {
-	.create = cluster_if_create,
-	.free   = cluster_if_free
+	.create = compute_mgr_if_create,
+	.free   = compute_mgr_if_free
 };

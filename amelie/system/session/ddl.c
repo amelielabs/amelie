@@ -38,7 +38,7 @@
 #include <amelie_parser.h>
 #include <amelie_planner.h>
 #include <amelie_compiler.h>
-#include <amelie_cluster.h>
+#include <amelie_compute.h>
 #include <amelie_frontend.h>
 #include <amelie_session.h>
 
@@ -101,14 +101,14 @@ ddl_create_table(Session* self, Tr* tr)
 	// todo: ensure view with the same name does not exists
 
 	// create table partitions
-	auto cluster = self->share->cluster;
-	if (! cluster->list_count)
+	auto compute_mgr = self->share->compute_mgr;
+	if (! compute_mgr->list_count)
 		error("system has no nodes");
 
 	if (config->shared)
 	{
 		// shared table require only one partition
-		auto compute = container_of(list_first(&cluster->list), Compute, link);
+		auto compute = container_of(list_first(&compute_mgr->list), Compute, link);
 		ddl_create_partition(config, compute->node, 0, PARTITION_MAX);
 	} else
 	{
@@ -116,16 +116,16 @@ ddl_create_table(Session* self, Tr* tr)
 
 		// partition_max / nodes_count
 		int range_max      = PARTITION_MAX;
-		int range_interval = range_max / cluster->list_count;
+		int range_interval = range_max / compute_mgr->list_count;
 		int range_start    = 0;
 
-		list_foreach(&cluster->list)
+		list_foreach(&compute_mgr->list)
 		{
 			auto compute = list_at(Compute, link);
 
 			// set partition range
 			int range_step;
-			if (list_is_last(&cluster->list, &compute->link))
+			if (list_is_last(&compute_mgr->list, &compute->link))
 				range_step = range_max - range_start;
 			else
 				range_step = range_interval;
@@ -249,7 +249,7 @@ ddl_alter_table_column_add(Session* self, Tr* tr)
 
 	// rebuild new table with new column in parallel per node
 	Build build;
-	build_init(&build, BUILD_COLUMN_ADD, self->share->cluster,
+	build_init(&build, BUILD_COLUMN_ADD, self->share->compute_mgr,
 	            table,
 	            table_new, arg->column, NULL);
 	defer(build_free, &build);
@@ -279,7 +279,7 @@ ddl_alter_table_column_drop(Session* self, Tr* tr)
 
 	// rebuild new table with new column in parallel per node
 	Build build;
-	build_init(&build, BUILD_COLUMN_DROP, self->share->cluster,
+	build_init(&build, BUILD_COLUMN_DROP, self->share->compute_mgr,
 	            table,
 	            table_new, column, NULL);
 	defer(build_free, &build);
@@ -353,10 +353,10 @@ ddl_alter_table(Session* self, Tr* tr)
 static void
 ddl_create_index(Session* self, Tr* tr)
 {
-	auto stmt    = compiler_stmt(&self->compiler);
-	auto arg     = ast_index_create_of(stmt->ast);
-	auto db      = self->share->db;
-	auto cluster = self->share->cluster;
+	auto stmt        = compiler_stmt(&self->compiler);
+	auto arg         = ast_index_create_of(stmt->ast);
+	auto db          = self->share->db;
+	auto compute_mgr = self->share->compute_mgr;
 
 	// find table
 	auto table = table_mgr_find(&db->table_mgr, &arg->table_schema,
@@ -370,7 +370,7 @@ ddl_create_index(Session* self, Tr* tr)
 
 	// do parallel indexation per node
 	Build build;
-	build_init(&build, BUILD_INDEX, cluster, table, NULL, NULL, index);
+	build_init(&build, BUILD_INDEX, compute_mgr, table, NULL, NULL, index);
 	defer(build_free, &build);
 	build_run(&build);
 }

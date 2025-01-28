@@ -38,7 +38,7 @@
 #include <amelie_parser.h>
 #include <amelie_planner.h>
 #include <amelie_compiler.h>
-#include <amelie_cluster.h>
+#include <amelie_compute.h>
 #include <amelie_frontend.h>
 #include <amelie_session.h>
 
@@ -60,7 +60,7 @@ session_create(Client* client, Frontend* frontend, Share* share)
 	        &self->dtr,
 	        share->function_mgr);
 	compiler_init(&self->compiler, share->db, &self->local, share->function_mgr);
-	dtr_init(&self->dtr, &share->cluster->router, &self->local);
+	dtr_init(&self->dtr, &share->compute_mgr->router, &self->local);
 	return self;
 }
 
