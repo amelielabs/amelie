@@ -106,10 +106,10 @@ include_directories("${AMELIE_ROOT}/compiler/compiler")
 # cluster
 include_directories("${AMELIE_ROOT}/cluster")
 include_directories("${AMELIE_ROOT}/cluster/cluster")
+include_directories("${AMELIE_ROOT}/cluster/frontend")
 
 # system
 include_directories("${AMELIE_ROOT}/system")
-include_directories("${AMELIE_ROOT}/system/frontend")
 include_directories("${AMELIE_ROOT}/system/session")
 include_directories("${AMELIE_ROOT}/system/system")
 
@@ -289,10 +289,10 @@ set(AMELIE_SOURCES_CLUSTER
     ${AMELIE_ROOT}/cluster/cluster/compute.c
     ${AMELIE_ROOT}/cluster/cluster/cluster.c
     ${AMELIE_ROOT}/cluster/cluster/cluster_bootstrap.c
-    ${AMELIE_ROOT}/cluster/cluster/build.c)
+    ${AMELIE_ROOT}/cluster/cluster/build.c
+    ${AMELIE_ROOT}/cluster/frontend/frontend.c)
 
 set(AMELIE_SOURCES_SYSTEM
-    ${AMELIE_ROOT}/system/frontend/frontend.c
     ${AMELIE_ROOT}/system/session/explain.c
     ${AMELIE_ROOT}/system/session/session.c
     ${AMELIE_ROOT}/system/session/utility.c

@@ -11,6 +11,7 @@
 // AGPL-3.0 Licensed.
 //
 
+#include "session/share.h"
 #include "session/explain.h"
 #include "session/session.h"
 #include "session/utility.h"
