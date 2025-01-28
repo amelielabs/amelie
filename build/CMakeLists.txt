@@ -108,10 +108,13 @@ include_directories("${AMELIE_ROOT}/cluster")
 include_directories("${AMELIE_ROOT}/cluster/cluster")
 include_directories("${AMELIE_ROOT}/cluster/frontend")
 
+# system
+include_directories("${AMELIE_ROOT}/system")
+include_directories("${AMELIE_ROOT}/system/session")
+include_directories("${AMELIE_ROOT}/system/system")
+
 # main
 include_directories("${AMELIE_ROOT}/main")
-include_directories("${AMELIE_ROOT}/main/session")
-include_directories("${AMELIE_ROOT}/main/system")
 include_directories("${AMELIE_ROOT}/main/main")
 
 # test suite
@@ -289,14 +292,16 @@ set(AMELIE_SOURCES_CLUSTER
     ${AMELIE_ROOT}/cluster/cluster/build.c
     ${AMELIE_ROOT}/cluster/frontend/frontend.c)
 
+set(AMELIE_SOURCES_SYSTEM
+    ${AMELIE_ROOT}/system/session/explain.c
+    ${AMELIE_ROOT}/system/session/session.c
+    ${AMELIE_ROOT}/system/session/utility.c
+    ${AMELIE_ROOT}/system/session/ddl.c
+    ${AMELIE_ROOT}/system/session/primary.c
+    ${AMELIE_ROOT}/system/system/system.c
+    ${AMELIE_ROOT}/system/system/system_status.c)
+
 set(AMELIE_SOURCES_MAIN
-    ${AMELIE_ROOT}/main/session/explain.c
-    ${AMELIE_ROOT}/main/session/session.c
-    ${AMELIE_ROOT}/main/session/utility.c
-    ${AMELIE_ROOT}/main/session/ddl.c
-    ${AMELIE_ROOT}/main/session/primary.c
-    ${AMELIE_ROOT}/main/system/system.c
-    ${AMELIE_ROOT}/main/system/system_status.c
     ${AMELIE_ROOT}/main/main/login_mgr.c
     ${AMELIE_ROOT}/main/main/main.c
     ${AMELIE_ROOT}/main/main/amelie.c
@@ -318,6 +323,7 @@ set(AMELIE_SOURCES
     ${AMELIE_SOURCES_VM}
     ${AMELIE_SOURCES_COMPILER}
     ${AMELIE_SOURCES_CLUSTER}
+    ${AMELIE_SOURCES_SYSTEM}
     ${AMELIE_SOURCES_MAIN})
 
 set(AMELIE_SOURCES_CLI
