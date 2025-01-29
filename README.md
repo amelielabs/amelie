@@ -1,42 +1,21 @@
 
 ![image description](.github/logo.png)
 
-### About
+### Full Parallelization of IO and Compute
 
-Amelie is a new lightweight OLTP SQL document database with a focus on performance and throughput for short ACID transactions and real-time analytics.
+Amelie is a lightweight, full-featured, in-memory OLTP SQL relational database that
+allows full parallelization and lockless transaction processing.
 
-It was designed as a modern alternative to in-memory NoSQL databases.
-
-### Full Parallelization
-
-Amelie has a unique architecture designed for full parallelization and lock-less transaction execution. It treats local machine CPU cores as if they were distributed system nodes, automatically partitioning, and generating parallel group plans for all types of queries.
-
-### Separate Storage and Compute
-
-Amelie is designed as an in-memory SQL database with optional storage for large volumes of aggregated historical data (which we plan to introduce in future releases).
-
-### JSON/HTTP Native
-
-Amelie implements close to standard SQL dialect with seamless JSON integration. It works over HTTP and does not require any additional client libraries or compatibility with other databases.
+It scales linearly with the number of CPU cores both for IO and Compute separately,
+performs automatic partitioning, and generates parallel group plans for
+all types of queries.
 
 ### Asynchronous Replication
 
-Amelie has support for Hot Backup and Async Replication which allows to create fault tolerant Primary-Replica setups.
+Amelie has support for Hot Backup and Async Logical Replication, which allows
+fault-tolerant primary-replica setups to be created.
 
-### Features
+### Easy to use
 
-The database has a modern set of standard and unique features, which we continuously improve.
-
-- Serializable ACID Multi-statement transactions 
-- CTE with DML RETURNING
-- Secondary indexes (Tree/Hash)
-- Parallel partitioned DML including UPSERT
-- Parallel JOINs
-- Parallel GROUP BY and ORDER BY
-- Aggregates, Partials, Lambda aggregates
-- Relational and Schemaless tables
-- Parallel snapshotting and recovery
-- Native Vector support
-- Hot Backup
-- Asynchronous Replication
-- JSON-Native and RESTfull
+Amelie has support for Hot Backup and Async Logical Replication, which allows
+fault-tolerant primary-replica setups to be created.
