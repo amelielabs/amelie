@@ -20,3 +20,27 @@ fault-tolerant primary-replica setups to be created.
 It works over HTTP and does not require additional client libraries. Any modern programming language or
 tooling that supports HTTP and JSON can be used directly.
 Compiles and distributes as a single binary.
+
+### Development and Features
+
+Amelie was built from scratch, and its research and development took over six years. Dozens of prototypes explored different
+ideas and approaches until the first public release.
+
+The SQL dialect is based on ANSI SQL, PostgreSQL and extended with unique features, such as native JSON support and Lambda aggregates.
+
+The short list of features:
+
+* Serializable ACID Multi-statement transactions 
+* Secondary indexes (Tree/Hash)
+* CTE with DML RETURNING
+* Parallel partitioned DML including UPSERT
+* Parallel JOINs
+* Parallel GROUP BY and ORDER BY
+* Parallel VECTOR operations
+* Partitioned Generated Columns
+* Native VECTOR support
+* Native JSON support
+* Parallel snapshotting and recovery
+* Hot Remote Backup
+* Asynchronous Logical Replication
+* HTTP API
