@@ -46,8 +46,6 @@ struct Config
 	Var  wal_sync_on_rotate;
 	Var  wal_sync_on_write;
 	// replication
-	Var  repl;
-	Var  repl_primary;
 	Var  repl_reconnect_ms;
 	// checkpoint
 	Var  checkpoint_interval;
@@ -58,6 +56,8 @@ struct Config
 	Var  lsn;
 	Var  psn;
 	// state persistent
+	Var  repl;
+	Var  repl_primary;
 	Var  replicas;
 	Var  users;
 	// stats

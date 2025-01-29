@@ -10032,7 +10032,7 @@ show repl
 show lsn
 select count(*) from test
 switch S1
-show config
+show repl
 show lsn
 select count(*) from test
 

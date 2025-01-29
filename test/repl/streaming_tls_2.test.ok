@@ -10054,45 +10054,12 @@ select count(*) from test
 [9999]
 # test: validate replica 1
 switch S1
-show config
+show repl
 [{
-  "version": "0.9.0",
-  "uuid": "00000000-0000-0000-0000-000000000001",
-  "directory": "_output/E1",
-  "timezone": "UTC",
-  "timezone_default": "UTC",
-  "format": "json-pretty",
-  "log_enable": true,
-  "log_to_file": true,
-  "log_to_stdout": false,
-  "log_connections": true,
-  "log_options": true,
-  "tls_capath": "",
-  "tls_ca": "",
-  "tls_cert": "./tls/server.crt",
-  "tls_key": "./tls/server.key",
-  "listen": [{
-    "host": "127.0.0.1",
-    "port": 3481,
-    "tls": true
-  }],
-  "limit_send": 3145728,
-  "limit_recv": 1048576,
-  "limit_write": 0,
-  "hosts": 1,
-  "nodes": 3,
-  "wal_rotate_wm": 104857600,
-  "wal_sync_on_rotate": false,
-  "wal_sync_on_write": false,
-  "repl": true,
-  "repl_primary": "00000000-0000-0000-0000-000000000000",
-  "repl_reconnect_ms": 10,
-  "checkpoint_interval": "5 min",
-  "checkpoint_workers": 3,
-  "checkpoint": 1,
-  "read_only": true,
-  "lsn": 10001,
-  "psn": 3
+  "active": true,
+  "role": "replica",
+  "primary": "00000000-0000-0000-0000-000000000000",
+  "replicas": []
 }]
 show lsn
 [10001]
@@ -10100,45 +10067,12 @@ select count(*) from test
 [9999]
 # test: validate replica 2
 switch S2
-show config
+show repl
 [{
-  "version": "0.9.0",
-  "uuid": "00000000-0000-0000-0000-000000000002",
-  "directory": "_output/E2",
-  "timezone": "UTC",
-  "timezone_default": "UTC",
-  "format": "json-pretty",
-  "log_enable": true,
-  "log_to_file": true,
-  "log_to_stdout": false,
-  "log_connections": true,
-  "log_options": true,
-  "tls_capath": "",
-  "tls_ca": "",
-  "tls_cert": "./tls/server.crt",
-  "tls_key": "./tls/server.key",
-  "listen": [{
-    "host": "127.0.0.1",
-    "port": 3482,
-    "tls": true
-  }],
-  "limit_send": 3145728,
-  "limit_recv": 1048576,
-  "limit_write": 0,
-  "hosts": 1,
-  "nodes": 3,
-  "wal_rotate_wm": 104857600,
-  "wal_sync_on_rotate": false,
-  "wal_sync_on_write": false,
-  "repl": true,
-  "repl_primary": "00000000-0000-0000-0000-000000000000",
-  "repl_reconnect_ms": 10,
-  "checkpoint_interval": "5 min",
-  "checkpoint_workers": 3,
-  "checkpoint": 1,
-  "read_only": true,
-  "lsn": 10001,
-  "psn": 3
+  "active": true,
+  "role": "replica",
+  "primary": "00000000-0000-0000-0000-000000000000",
+  "replicas": []
 }]
 show lsn
 [10001]

@@ -30,8 +30,6 @@ select system.config()
   "wal_rotate_wm": 104857600,
   "wal_sync_on_rotate": false,
   "wal_sync_on_write": false,
-  "repl": false,
-  "repl_primary": "",
   "repl_reconnect_ms": 3000,
   "checkpoint_interval": "5 min",
   "checkpoint_workers": 3,

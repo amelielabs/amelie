@@ -10050,13 +10050,13 @@ select count(*) from test
 
 # test: validate replica 1
 switch S1
-show config
+show repl
 show lsn
 select count(*) from test
 
 # test: validate replica 2
 switch S2
-show config
+show repl
 show lsn
 select count(*) from test
 
