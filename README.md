@@ -17,5 +17,6 @@ fault-tolerant primary-replica setups to be created.
 
 ### Easy to use
 
-Amelie has support for Hot Backup and Async Logical Replication, which allows
-fault-tolerant primary-replica setups to be created.
+It works over HTTP and does not require additional client libraries. Any modern programming language or
+tooling that supports HTTP and JSON can be used directly.
+Compiles and distributes as a single binary.
