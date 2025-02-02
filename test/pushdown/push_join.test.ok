@@ -82,9 +82,9 @@ select test.*, ref.* from ref, test
 [[1, 0, 1, 0], [1, 0, 2, 0], [1, 0, 3, 0], [2, 0, 1, 0], [2, 0, 2, 0], [2, 0, 3, 0], [3, 0, 1, 0], [3, 0, 2, 0], [3, 0, 3, 0]]
 # test: select from table, table
 explain select t.* from test, test t
-{"msg": "explain select t.* from test, test t ⟵ only one distributed table can be part of JOIN"}
+{"msg": "explain select t.* from test, test t ⟵ only one partitioned table can be part of JOIN"}
 select t.* from test, test t
-{"msg": "select t.* from test, test t ⟵ only one distributed table can be part of JOIN"}
+{"msg": "select t.* from test, test t ⟵ only one partitioned table can be part of JOIN"}
 # test: select from table join shared
 explain select test.id, ref.id from test join ref on true
 [{

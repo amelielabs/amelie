@@ -125,7 +125,7 @@ select system.table('test').indexes
 drop index i on test
 # test: create index (unique)
 create unique index i on test (a)
-{"msg": "create unique index i on ❰test❱ ⟵ secondary UNIQUE INDEX cannot be created on a distributed table"}
+{"msg": "create unique index i on ❰test❱ ⟵ secondary UNIQUE INDEX cannot be created on a partitioned table"}
 # test: create index (unique shared)
 drop table test
 create shared table test (id int primary key, a int, b int)

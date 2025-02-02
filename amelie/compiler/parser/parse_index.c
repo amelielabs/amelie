@@ -112,7 +112,7 @@ parse_index_create(Stmt* self, bool unique)
 
 	// ensure table is shared for unique index
 	if (unique && !table->config->shared)
-		stmt_error(self, target, "secondary UNIQUE INDEX cannot be created on a distributed table");
+		stmt_error(self, target, "secondary UNIQUE INDEX cannot be created on a partitioned table");
 
 	// create index config
 	auto config = index_config_allocate(table_columns(table));

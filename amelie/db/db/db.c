@@ -112,8 +112,8 @@ db_status(Db* self)
 	auto buf = buf_create();
 	encode_obj(buf);
 
+	int tables = 0;
 	int tables_shared = 0;
-	int tables_distributed = 0;
 	int tables_secondary_indexes = 0;
 	list_foreach(&self->table_mgr.mgr.list)
 	{
@@ -121,7 +121,7 @@ db_status(Db* self)
 		if (table->config->shared)
 			tables_shared++;
 		else
-			tables_distributed++;
+			tables++;
 		tables_secondary_indexes += (table->config->indexes_count - 1);
 	}
 
@@ -129,9 +129,9 @@ db_status(Db* self)
 	encode_raw(buf, "schemas", 7);
 	encode_integer(buf, self->schema_mgr.mgr.list_count);
 
-	// distributed_tables
+	// tables
 	encode_raw(buf, "tables", 6);
-	encode_integer(buf, tables_distributed);
+	encode_integer(buf, tables);
 
 	// shared_tables
 	encode_raw(buf, "tables_shared", 13);

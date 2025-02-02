@@ -32,7 +32,7 @@ insert into test values (0, 0) on conflict do resolve
 select * from test
 [[0, 780]]
 drop table test
-# test: insert distributed (with resolved columns)
+# test: insert partitioned (with resolved columns)
 create table test (id int primary key, hits int default 1 as (hits + 1) resolved)
 insert into test (id) values (0), (1), (2)
 insert into test (id) values (0), (1), (2)

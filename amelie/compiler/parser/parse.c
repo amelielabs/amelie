@@ -191,11 +191,10 @@ parse_stmt(Parser* self, Stmt* stmt)
 
 	case KCREATE:
 	{
-		// [UNIQUE | UNLOGGED | SHARED | DISTRIBUTED]
-		bool unique      = false;
-		bool unlogged    = false;
-		bool shared      = false;
-		bool distributed = false;
+		// [UNIQUE | UNLOGGED | SHARED]
+		bool unique   = false;
+		bool unlogged = false;
+		bool shared   = false;
 		for (auto stop = false; !stop ;)
 		{
 			auto mod = lex_next(lex);
@@ -208,9 +207,6 @@ parse_stmt(Parser* self, Stmt* stmt)
 				break;
 			case KSHARED:
 				shared = true;
-				break;
-			case KDISTRIBUTED:
-				distributed = true;
 				break;
 			default:
 				stmt_push(stmt, mod);
@@ -225,7 +221,7 @@ parse_stmt(Parser* self, Stmt* stmt)
 			stmt_push(stmt, next);
 		}
 
-		if (unlogged || shared || distributed)
+		if (unlogged || shared)
 		{
 			auto next = stmt_expect(stmt, KTABLE);
 			stmt_push(stmt, next);

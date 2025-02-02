@@ -130,7 +130,7 @@ parse_select_distinct(Stmt* self, AstSelect* select)
 static inline void
 parse_select_pushdown(Stmt* self, AstSelect* select)
 {
-	// find distributed or shared table in the outer SELECT FROM targets
+	// find partitioned or shared table in the outer SELECT FROM targets
 	//
 	// the table partitions will be used during execution, the query will be executed
 	// on one or more nodes

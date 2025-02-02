@@ -187,7 +187,7 @@ select (select o.id -> self + 1 from test) from test as o
 select (0.0 -> self + id) / (0 -> self + 1) from test;
 [2]
 drop table test
-# test: select int -> self from distributed table (unsupported)
+# test: select int -> self from partitioned table (unsupported)
 create table test (id int primary key, data int)
 insert into test values (0, 0)
 insert into test values (1, 1)

@@ -4,21 +4,21 @@ create table test (id int primary key, data int default 0)
 insert into test (id) values (1), (2), (3)
 # test: select (select from table)
 explain select (select * from test)
-{"msg": "explain select (select * from ❰test❱ ⟵ distributed table cannot be used in subquery"}
+{"msg": "explain select (select * from ❰test❱ ⟵ partitioned table cannot be used in subquery"}
 select (select * from test)
-{"msg": "select (select * from ❰test❱ ⟵ distributed table cannot be used in subquery"}
+{"msg": "select (select * from ❰test❱ ⟵ partitioned table cannot be used in subquery"}
 # test: select (select from table) from shared
 create shared table test2 (id int primary key)
 insert into test2 (id) values (1), (2), (3)
 explain select (select * from test) from test2
-{"msg": "explain select (select * from ❰test❱ ⟵ distributed table cannot be used in subquery"}
+{"msg": "explain select (select * from ❰test❱ ⟵ partitioned table cannot be used in subquery"}
 select (select * from test) from test2
-{"msg": "select (select * from ❰test❱ ⟵ distributed table cannot be used in subquery"}
+{"msg": "select (select * from ❰test❱ ⟵ partitioned table cannot be used in subquery"}
 # test: select (select from table) from (select from shared)
 explain select (select * from test) from (select * from test2) t
-{"msg": "explain select (select * from ❰test❱ ⟵ distributed table cannot be used in subquery"}
+{"msg": "explain select (select * from ❰test❱ ⟵ partitioned table cannot be used in subquery"}
 select (select * from test) from (select * from test2) t
-{"msg": "select (select * from ❰test❱ ⟵ distributed table cannot be used in subquery"}
+{"msg": "select (select * from ❰test❱ ⟵ partitioned table cannot be used in subquery"}
 drop table test2
 # test: select from (select from table)
 explain select * from (select * from test) t
@@ -112,9 +112,9 @@ select * from (select (select id from test2) from test) t
 drop table test2
 # test: select from (select (select from table) from table)
 explain select * from (select (select id from test t) from test) g
-{"msg": "explain select * from (select (select id from ❰test❱ ⟵ distributed table cannot be used in subquery"}
+{"msg": "explain select * from (select (select id from ❰test❱ ⟵ partitioned table cannot be used in subquery"}
 select * from (select (select id from test t) from test) g
-{"msg": "select * from (select (select id from ❰test❱ ⟵ distributed table cannot be used in subquery"}
+{"msg": "select * from (select (select id from ❰test❱ ⟵ partitioned table cannot be used in subquery"}
 # test: select (select expr) from (select from table)
 select (select t.*) from (select * from test) t
 {"msg": "select (❰select❱ ⟵ subquery must return only one column"}
@@ -176,9 +176,9 @@ select (select t.id from test2) from (select * from test) t
 drop table test2
 # test: select (select from table) from (select from table)
 explain select (select t.id from test z) from (select * from test) t
-{"msg": "explain select (select t.id from ❰test❱ ⟵ distributed table cannot be used in subquery"}
+{"msg": "explain select (select t.id from ❰test❱ ⟵ partitioned table cannot be used in subquery"}
 select (select t.id from test z) from (select * from test) t
-{"msg": "select (select t.id from ❰test❱ ⟵ distributed table cannot be used in subquery"}
+{"msg": "select (select t.id from ❰test❱ ⟵ partitioned table cannot be used in subquery"}
 # test: select from (select from table), (select from table)
 select * from (select * from test) a, (select * from test) b
 [[1, 0, 1, 0], [1, 0, 2, 0], [1, 0, 3, 0], [2, 0, 1, 0], [2, 0, 2, 0], [2, 0, 3, 0], [3, 0, 1, 0], [3, 0, 2, 0], [3, 0, 3, 0]]

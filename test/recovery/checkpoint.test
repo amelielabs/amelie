@@ -11,7 +11,7 @@ checkpoint
 show checkpoint
 
 # test: create table
-create distributed table test (id serial primary key)
+create table test (id serial primary key)
 show lsn
 
 # test: checkpoint

@@ -140,7 +140,7 @@ emit_stmt(Compiler* self)
 		auto select = ast_select_of(stmt->ast);
 		if (select->pushdown == PUSHDOWN_TARGET)
 		{
-			// distributed or shared table direct scan or join
+			// partitioned or shared table direct scan or join
 			//
 			// execute on one or more nodes, process the result on coordinator
 			//

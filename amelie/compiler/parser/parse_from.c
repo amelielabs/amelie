@@ -141,7 +141,7 @@ parse_from_target(Stmt* self, Targets* targets, bool subquery)
 	if (table)
 	{
 		if (subquery && !table->config->shared)
-			stmt_error(self, expr, "distributed table cannot be used in subquery");
+			stmt_error(self, expr, "partitioned table cannot be used in subquery");
 		if (table->config->shared)
 			target->type = TARGET_TABLE_SHARED;
 		else
@@ -317,5 +317,5 @@ parse_from(Stmt* self, Targets* targets, bool subquery)
 	}
 
 	if (targets_count(targets, TARGET_TABLE) > 1)
-		stmt_error(self, NULL, "only one distributed table can be part of JOIN");
+		stmt_error(self, NULL, "only one partitioned table can be part of JOIN");
 }

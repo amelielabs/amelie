@@ -425,7 +425,7 @@ parse_with(Stmt* self, AstTableCreate* stmt, IndexConfig* index_config)
 void
 parse_table_create(Stmt* self, bool unlogged, bool shared)
 {
-	// CREATE [UNLOGGED] [SHARED|DISTRIBUTED] TABLE [IF NOT EXISTS] name (key)
+	// CREATE [UNLOGGED] [SHARED] TABLE [IF NOT EXISTS] name (key)
 	// [WITH()]
 	auto stmt = ast_table_create_allocate();
 	self->ast = &stmt->ast;

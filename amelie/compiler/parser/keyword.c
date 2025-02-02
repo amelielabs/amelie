@@ -77,7 +77,6 @@ Keyword keywords[] =
 	{ KDROP,                  "drop",                  4  },
 	{ KDESC,                  "desc",                  4  },
 	{ KDEBUG,                 "debug",                 5  },
-	{ KDISTRIBUTED,           "distributed",           11 },
 	{ KDEFAULT,               "default",               7  },
 	{ KDATE,                  "date",                  4  },
 
