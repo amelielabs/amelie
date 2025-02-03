@@ -48,7 +48,7 @@ system_save_config(void* arg)
 {
 	unused(arg);
 	char path[PATH_MAX];
-	snprintf(path, sizeof(path), "%s/config.json", config_directory());
+	snprintf(path, sizeof(path), "%s/amelie.json", config_directory());
 	config_save(global()->config, path);
 }
 

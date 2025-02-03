@@ -70,9 +70,10 @@ amelie_usage(void)
 	info("    --threads=int");
 	info("    --clients=int");
 	info("    --time=int");
-	info("    --batch=int");
 	info("    --scale=int");
+	info("    --batch=int");
 	info("    --init=bool");
+	info("    --unlogged=bool");
 	info("");
 	info("  import options:");
 	info("");
