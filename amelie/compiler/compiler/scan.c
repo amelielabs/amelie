@@ -229,6 +229,16 @@ scan_expr(Scan* self, Target* target)
 			target->r = emit_select(cp, target->from_select);
 		break;
 	}
+	case TARGET_EXPR:
+	{
+		if (target->r == -1)
+			target->r = emit_expr(cp, self->targets, target->ast);
+		assert(target->from_columns->count == 1);
+		// set expression type
+		int rt = rtype(cp, target->r);
+		column_set_type(columns_first(target->from_columns), rt, type_sizeof(rt));
+		break;
+	}
 	case TARGET_CTE:
 	{
 		auto cte = target->from_cte;

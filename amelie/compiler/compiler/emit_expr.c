@@ -193,7 +193,8 @@ emit_column(Compiler* self, Target* target, Ast* ast,
 		r = op3(self, op, rpin(self, column->type),
 		        target->id, column->order);
 	} else
-	if (target->type == TARGET_FUNCTION)
+	if (target->type == TARGET_EXPR ||
+	    target->type == TARGET_FUNCTION)
 	{
 		assert(target->r != -1);
 		r = op2(self, CJSON_READ, rpin(self, TYPE_JSON), target->id);

@@ -41,46 +41,70 @@ static inline Target*
 parse_from_target(Stmt* self, Targets* targets, bool subquery)
 {
 	auto target = target_allocate(&self->order_targets);
-
-	// FROM (SELECT)
+	// FROM (expr | SELECT)
 	if (stmt_if(self, '('))
 	{
-		auto ast = stmt_expect(self, KSELECT);
-		AstSelect* select;
-		if (subquery)
+		auto ast = stmt_next(self);
+		if (ast->id == KSELECT)
 		{
-			select = parse_select(self, targets->outer, true);
-			stmt_expect(self, ')');
-			target->type         = TARGET_SELECT;
-			target->ast          = ast;
-			target->from_select  = &select->ast;
-			target->from_columns = &select->ret.columns;
+			AstSelect* select;
+			if (subquery)
+			{
+				select = parse_select(self, targets->outer, true);
+				stmt_expect(self, ')');
+				target->type         = TARGET_SELECT;
+				target->ast          = ast;
+				target->from_select  = &select->ast;
+				target->from_columns = &select->ret.columns;
+			} else
+			{
+				// rewrite FROM (SELECT) as CTE statement (this can recurse)
+				auto cte = stmt_allocate(self->db, self->function_mgr, self->local,
+				                         self->lex,
+				                         self->data,
+				                         self->values_cache,
+				                         self->json,
+				                         self->stmt_list,
+				                         self->args);
+				cte->id = STMT_SELECT;
+				stmt_list_insert(self->stmt_list, self, cte);
+
+				select = parse_select(cte, NULL, false);
+				stmt_expect(self, ')');
+				cte->ast         = &select->ast;
+				cte->cte_columns = &select->ret.columns;
+				parse_select_resolve(cte);
+
+				target->type         = TARGET_CTE;
+				target->ast          = ast;
+				target->from_cte     = cte;
+				target->from_columns = cte->cte_columns;
+			}
+			select->ast.pos_start = ast->pos_start;
+			select->ast.pos_end   = ast->pos_end;
 		} else
 		{
-			// rewrite FROM (SELECT) as CTE statement (this can recurse)
-			auto cte = stmt_allocate(self->db, self->function_mgr, self->local,
-			                         self->lex,
-			                         self->data,
-			                         self->values_cache,
-			                         self->json,
-			                         self->stmt_list,
-			                         self->args);
-			cte->id = STMT_SELECT;
-			stmt_list_insert(self->stmt_list, self, cte);
+			stmt_push(self, ast);
 
-			select = parse_select(cte, NULL, false);
+			// FROM(expr)
+			Expr ctx;
+			expr_init(&ctx);
+			ctx.select = true;
+			ctx.aggs = NULL;
+			ctx.targets = targets->outer;
+			ast = parse_expr(self, &ctx);
 			stmt_expect(self, ')');
-			cte->ast         = &select->ast;
-			cte->cte_columns = &select->ret.columns;
-			parse_select_resolve(cte);
 
-			target->type         = TARGET_CTE;
-			target->ast          = ast;
-			target->from_cte     = cte;
-			target->from_columns = cte->cte_columns;
+			target->type = TARGET_EXPR;
+			target->ast  = ast;
+
+			// allocate select to keep returning columns
+			auto select = ast_select_allocate(targets->outer);
+			select->ast.pos_start = target->ast->pos_start;
+			select->ast.pos_end   = target->ast->pos_end;
+			ast_list_add(&self->select_list, &select->ast);
+			target->from_columns = &select->ret.columns;
 		}
-		select->ast.pos_start = ast->pos_start;
-		select->ast.pos_end   = ast->pos_end;
 		return target;
 	}
 
@@ -171,6 +195,7 @@ parse_from_add(Stmt* self, Targets* targets, bool subquery)
 		if (as)
 			stmt_error(self, as, "name expected");
 		if ( target->type == TARGET_SELECT ||
+		     target->type == TARGET_EXPR   ||
 		    (target->type == TARGET_CTE && str_empty(&target->name)))
 			stmt_error(self, NULL, "subquery must have an alias");
 	}
@@ -190,6 +215,12 @@ parse_from_add(Stmt* self, Targets* targets, bool subquery)
 		auto column = column_allocate();
 		column_set_name(column, &target->name);
 		column_set_type(column, fn->type, type_sizeof(fn->type));
+		columns_add(target->from_columns, column);
+	} else
+	if (target->type == TARGET_EXPR)
+	{
+		auto column = column_allocate();
+		column_set_name(column, &target->name);
 		columns_add(target->from_columns, column);
 	}
 

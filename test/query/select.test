@@ -165,5 +165,25 @@ select tables.indexes[0].type from system.tables()
 select t.indexes[0].type from system.tables() t
 drop table test
 
+# test: select * from (expr)
+select * from (
+select * from (1
+select * from (1)
+
+# test: select * from (unsupported type)
+select * from (1) t
+
+# test: select * from ({})
+select * from ({}) t
+
+# test: select * from ([])
+explain select * from ([]) t
+select * from ([]) t
+
+# test: select target from ([])
+select t from ([]) t
+select t.t from ([]) t
+select t.x from ([]) t
+
 disconnect S0
 close E0

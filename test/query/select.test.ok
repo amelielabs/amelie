@@ -533,5 +533,46 @@ select tables.indexes[0].type from system.tables()
 select t.indexes[0].type from system.tables() t
 [2]
 drop table test
+# test: select * from (expr)
+select * from (
+{"msg": "select * from ( ⟵ bad expression"}
+select * from (1
+{"msg": "select * from (1 ⟵ ) expected"}
+select * from (1)
+{"msg": "select * from (1) ⟵ subquery must have an alias"}
+# test: select * from (unsupported type)
+select * from (1) t
+{"msg": "select * from (❰1❱ ⟵ unsupported expression type int"}
+# test: select * from ({})
+select * from ({}) t
+{"msg": "FROM: json array expected"}
+# test: select * from ([])
+explain select * from ([]) t
+[{
+  "bytecode": {
+    "main": {
+      "00": "set                 0      1      0     ",
+      "01": "json                1      0      0     ",
+      "02": "json_open           0      1      7     ",
+      "03": "json_read           2      0      0     ",
+      "04": "push                2      0      0     ",
+      "05": "set_add             0      0      0     ",
+      "06": "json_next           0      3      0     ",
+      "07": "json_close          0      1      0     ",
+      "08": "cte_set             0      0      0     ",
+      "09": "content             0      -      -     ",
+      "10": "ret                 0      0      0     "
+    }
+  }
+}]
+select * from ([]) t
+[]
+# test: select target from ([])
+select t from ([]) t
+[]
+select t.t from ([]) t
+[]
+select t.x from ([]) t
+{"msg": "select ❰t.x❱ ⟵ column t.x not found"}
 disconnect S0
 close E0

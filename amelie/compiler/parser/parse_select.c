@@ -290,7 +290,6 @@ parse_select(Stmt* self, Targets* outer, bool subquery)
 	if (! subquery)
 		parse_select_pushdown(self, select);
 
-
 	return select;
 }
 

@@ -82,5 +82,18 @@ explain select 0 -> self + 1 from test
 select 0 -> self + 1 from test
 drop table test
 
+# test: select expr -> from []
+select 0 -> self + value::int from ([1,2,3]) value
+
+# test: select (expr -> from column) from table
+create shared table test (id int primary key, data json)
+insert into test values (0, [1,2,3])
+insert into test values (1, [4,5,6])
+insert into test values (2, [7,8,9])
+
+select id, (select 0 -> self + value::int from (test.data) value) from test
+
+drop table test
+
 disconnect S0
 close E0
