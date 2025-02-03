@@ -129,8 +129,8 @@ restore_start(Restore* self)
 		fs_mkdir(0755, "%s/%" PRIi64, config_directory(),
 		         self->checkpoint);
 
-	// create wal directory
-	fs_mkdir(0755, "%s/wal", config_directory());
+	// create wals directory
+	fs_mkdir(0755, "%s/wals", config_directory());
 }
 
 static void

@@ -244,7 +244,6 @@ backup_main(void* arg)
 	auto    tcp    = &client->tcp;
 
 	info("begin");
-
 	error_catch
 	(
 		tcp_attach(tcp);
@@ -253,7 +252,6 @@ backup_main(void* arg)
 	tcp_detach(tcp);
 
 	event_signal(&self->on_complete);
-
 	info("complete");
 }
 

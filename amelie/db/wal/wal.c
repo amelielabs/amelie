@@ -122,10 +122,10 @@ wal_gc(Wal* self, uint64_t min)
 		for (int i = 0; i < list_count; i++)
 		{
 			char path[PATH_MAX];
-			snprintf(path, sizeof(path), "%s/wal/%020" PRIu64 ".wal",
+			snprintf(path, sizeof(path), "%s/wals/%020" PRIu64 ".wal",
 			         config_directory(),
 			         id_list[i]);
-			info("wal: removing wal/%020" PRIu64 ".wal", id_list[i]);
+			info("wal: removing wals/%020" PRIu64 ".wal", id_list[i]);
 			fs_unlink("%s", path);
 		}
 	}
@@ -147,7 +147,7 @@ wal_file_id_of(const char* path)
 }
 
 static void
-wal_recover(Wal* self, char *path)
+wal_recover(Wal* self, char* path)
 {
 	// open and read log directory
 	DIR* dir = opendir(path);
@@ -171,10 +171,9 @@ wal_recover(Wal* self, char *path)
 void
 wal_open(Wal* self)
 {
+	// create directory
 	char path[PATH_MAX];
-	snprintf(path, sizeof(path), "%s/wal", config_directory());
-
-	// create log directory
+	snprintf(path, sizeof(path), "%s/wals", config_directory());
 	if (! fs_exists("%s", path))
 		fs_mkdir(0755, "%s", path);
 
@@ -297,7 +296,7 @@ wal_snapshot(Wal* self, WalSlot* slot, Buf* buf)
 
 		// path
 		char path[PATH_MAX];
-		snprintf(path, sizeof(path), "wal/%020" PRIu64 ".wal", id);
+		snprintf(path, sizeof(path), "wals/%020" PRIu64 ".wal", id);
 		encode_cstr(buf, path);
 
 		// size
@@ -306,7 +305,7 @@ wal_snapshot(Wal* self, WalSlot* slot, Buf* buf)
 			size = self->current->file.size;
 		} else
 		{
-			size = fs_size("%s/wal/%020" PRIu64 ".wal", config_directory(), id);
+			size = fs_size("%s/wals/%020" PRIu64 ".wal", config_directory(), id);
 			if (size == -1)
 				error_system();
 		}
