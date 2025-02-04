@@ -82,8 +82,6 @@ replay_read(Session* self, WalWrite* write, ReqList* req_list)
 			map[route->order] = req;
 		}
 
-		// todo: serial recover?
-
 		// [meta offset, data offset]
 		encode_integer(&req->arg, (intptr_t)(meta_start - start));
 		encode_integer(&req->arg, (intptr_t)(data - start));

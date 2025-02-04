@@ -133,8 +133,7 @@ static void
 system_recover(System* self)
 {
 	// ask each node to recover last checkpoint partitions in parallel
-	info("recover: begin");
-	info("recover: using checkpoint %" PRIu64, config_checkpoint());
+	info("recover: begin (checkpoint %" PRIu64 ")", config_checkpoint());
 
 	Build build;
 	build_init(&build, BUILD_RECOVER, &self->compute_mgr, NULL, NULL, NULL, NULL);

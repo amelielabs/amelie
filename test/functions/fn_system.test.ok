@@ -27,7 +27,7 @@ select system.config()
   "limit_write": 0,
   "hosts": 1,
   "nodes": 1,
-  "wal_rotate_wm": 104857600,
+  "wal_size": 67108864,
   "wal_sync_on_rotate": false,
   "wal_sync_on_write": false,
   "repl_reconnect_ms": 3000,

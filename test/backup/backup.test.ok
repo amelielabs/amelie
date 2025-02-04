@@ -42,7 +42,7 @@ show lsn
 disconnect S0
 close E2
 # test: backup wal #2
-open E0 "wal_rotate_wm": 0
+open E0 "wal_size": 0
 connect E0 S0 localhost:3480
 show lsn
 [3]
@@ -76,7 +76,7 @@ close E3
 disconnect S0
 close E0
 # test: restore wal #2
-open E3 "wal_rotate_wm": 104857600
+open E3 "wal_size": 104857600
 connect E3 S0 localhost:3480
 show uuid
 ["00000000-0000-0000-0000-000000000000"]

@@ -142,7 +142,7 @@ streamer_connect(Streamer* self)
 	wal_attach(self->wal, self->wal_slot);
 
 	// open cursor to the next record
-	wal_cursor_open(&self->wal_cursor, self->wal, lsn + 1);
+	wal_cursor_open(&self->wal_cursor, self->wal, lsn + 1, true);
 
 	// update streamer status
 	atomic_u32_set(&self->connected, true);

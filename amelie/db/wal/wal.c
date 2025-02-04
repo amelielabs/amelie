@@ -47,9 +47,9 @@ wal_free(Wal* self)
 }
 
 static inline bool
-wal_rotate_ready(Wal* self, uint64_t wm)
+wal_rotate_ready(Wal* self, uint64_t size)
 {
-	return !self->current || self->current->file.size >= wm;
+	return !self->current || self->current->file.size >= size;
 }
 
 static void
@@ -209,7 +209,7 @@ wal_write(Wal* self, WalBatch* batch)
 	// todo: crc
 
 	// create new wal file if needed
-	if (wal_rotate_ready(self, var_int_of(&config()->wal_rotate_wm)))
+	if (wal_rotate_ready(self, var_int_of(&config()->wal_size)))
 		wal_swap(self);
 
 	// write wal file

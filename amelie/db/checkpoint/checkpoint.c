@@ -205,7 +205,7 @@ checkpoint_run(Checkpoint* self)
 
 	fs_mkdir(0755, "%s", path);
 
-	// create <base>/<lsn>.incomplete/catalog
+	// create <base>/<lsn>.incomplete/catalog.json
 	checkpoint_create_catalog(self);
 
 	// run workers

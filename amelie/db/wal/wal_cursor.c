@@ -27,15 +27,17 @@ wal_cursor_init(WalCursor* self)
 {
 	self->file_offset = 0;
 	self->file        = NULL;
+	self->file_next   = true;
 	self->wal         = NULL;
 	buf_init(&self->buf);
 }
 
 void
-wal_cursor_open(WalCursor* self, Wal* wal, uint64_t lsn)
+wal_cursor_open(WalCursor* self, Wal* wal, uint64_t lsn, bool file_next)
 {
 	self->file        = NULL;
 	self->file_offset = 0;
+	self->file_next   = file_next;
 	self->wal         = wal;
 
 	// find nearest file with id <= lsn
@@ -110,6 +112,9 @@ wal_cursor_read(WalCursor* self)
 		// retry read if file size has changed
 		if (file_update_size(&file->file))
 			continue;
+
+		if (! self->file_next)
+			break;
 
 		// get to the next file id
 		uint64_t id;

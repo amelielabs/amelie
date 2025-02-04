@@ -354,30 +354,31 @@ recover_wal(Recover* self)
 	wal_open(wal);
 
 	// start wal recover from the last checkpoint
-	auto checkpoint = config_checkpoint() + 1;
-	info("recover: wal");
-
-	WalCursor cursor;
-	wal_cursor_init(&cursor);
-	defer(wal_cursor_close, &cursor);
-
-	uint64_t total = 0;
-	uint64_t last  = 0;
-	wal_cursor_open(&cursor, wal, checkpoint);
+	auto id = config_checkpoint() + 1;
 	for (;;)
 	{
-		if (! wal_cursor_next(&cursor))
-			break;
-		auto write = wal_cursor_at(&cursor);
-		recover_next_write(self, write, false, 0);
-
-		total += write->count;
-		auto processed = total / 1000000;
-		if (processed > 0 && last < processed)
+		WalCursor cursor;
+		wal_cursor_init(&cursor);
+		defer(wal_cursor_close, &cursor);
+		wal_cursor_open(&cursor, wal, id, false);
+		uint64_t count = 0;
+		for (;;)
 		{
-			info("recover: %" PRIu64 " million records processed",
-			     total / 1000000);
-			last = processed;
+			if (! wal_cursor_next(&cursor))
+				break;
+			auto write = wal_cursor_at(&cursor);
+			recover_next_write(self, write, false, 0);
+			count += write->count;
 		}
+		if (! wal_cursor_active(&cursor))
+			break;
+
+		double size = cursor.file->file.size / 1024 / 1024;
+		info("recover: wals/%020" PRIu64 ".wal (%.2f MiB, %" PRIu64 " rows)",
+		     size, id, count);
+
+		id = id_mgr_next(&wal->list, cursor.file->id);
+		if (id == UINT64_MAX)
+			break;
 	}
 }

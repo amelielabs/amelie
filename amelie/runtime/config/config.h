@@ -42,7 +42,7 @@ struct Config
 	Var  hosts;
 	Var  nodes;
 	// wal
-	Var  wal_rotate_wm;
+	Var  wal_size;
 	Var  wal_sync_on_rotate;
 	Var  wal_sync_on_write;
 	// replication
