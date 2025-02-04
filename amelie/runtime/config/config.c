@@ -33,7 +33,7 @@ void
 config_prepare(Config* self)
 {
 	auto cpus = get_nprocs();
-	auto default_hosts = cpus / 3;
+	auto default_hosts = cpus / 2;
 	auto default_nodes = cpus - default_hosts;
 	if (default_hosts == 0)
 		default_hosts = 1;
@@ -123,9 +123,6 @@ config_save_to(Config* self, const char* path)
 	defer(file_close, &file);
 	file_open_as(&file, path, O_CREAT|O_RDWR, 0600);
 	file_write_buf(&file, &text);
-
-	// sync
-	file_sync(&file);
 }
 
 void

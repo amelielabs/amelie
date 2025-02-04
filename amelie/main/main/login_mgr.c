@@ -97,9 +97,6 @@ login_mgr_sync(LoginMgr* self, const char* path)
 	defer(file_close, &file);
 	file_open_as(&file, path, O_CREAT|O_RDWR, 0600);
 	file_write_buf(&file, &text);
-
-	// sync
-	file_sync(&file);
 }
 
 void
