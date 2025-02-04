@@ -11,8 +11,4 @@
 // AGPL-3.0 Licensed.
 //
 
-#include "session/explain.h"
-#include "session/session.h"
-#include "session/utility.h"
-#include "session/ddl.h"
-#include "session/primary.h"
+void replay(Share*, Dtr*, WalWrite*);

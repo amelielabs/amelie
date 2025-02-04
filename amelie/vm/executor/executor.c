@@ -165,7 +165,7 @@ executor_end_lock(Executor* self, DtrState state)
 	spinlock_unlock(&self->lock);
 }
 
-hot void
+hot static void
 executor_wal_write(Executor* self)
 {
 	auto commit = &self->commit;

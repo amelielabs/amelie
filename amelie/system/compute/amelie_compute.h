@@ -15,6 +15,10 @@
 #include "compute/compute.h"
 #include "compute/compute_mgr.h"
 #include "compute/compute_bootstrap.h"
+#include "compute/share.h"
 
 // build
 #include "compute/build.h"
+
+// replay
+#include "compute/replay.h"

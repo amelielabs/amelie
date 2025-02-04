@@ -35,7 +35,6 @@
 #include <amelie_executor.h>
 #include <amelie_func.h>
 #include <amelie_vm.h>
-#include <amelie_compute.h>
 #include <amelie_host.h>
 
 hot static void
