@@ -97,6 +97,9 @@ amelie_cmd_init(Amelie* self, int argc, char** argv)
 	(
 		system = system_create();
 		system_start(system, bootstrap);
+
+		// start pending coroutines before stop
+		coroutine_sleep(0);
 	);
 
 	if (system)
