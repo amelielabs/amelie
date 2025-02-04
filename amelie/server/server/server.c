@@ -59,6 +59,8 @@ server_accept_main(void* arg)
 	Server*       self   = listen->arg;
 
 	coroutine_set_name(am_self(), "accept");
+	coroutine_set_cancel_log(am_self(), false);
+
 	info("listen at '%s'", str_of(&listen->addr_name));
 
 	// process incoming connection

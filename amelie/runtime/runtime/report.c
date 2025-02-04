@@ -47,16 +47,22 @@ report_throw(const char* file,
 	va_end(args);
 
 	const char* prefix = "error: ";
-	if (code == CANCEL)
+	bool log = true;
+
+	auto self = am_self();
+	if (unlikely(code == CANCEL))
+	{
 		prefix = "";
-	if (am_task->log_write)
+		log = self->cancel_log;
+	}
+
+	if (likely(am_task->log_write && log))
 		am_task->log_write(am_task->log_write_arg,
 		                   file,
 		                   function,
 		                   line,
 		                   prefix, text);
 
-	auto self = am_self();
 	error_throw(&self->error,
 	            &self->exception_mgr,
 	            file,

@@ -24,6 +24,7 @@ struct Coroutine
 	bool         cancel;
 	int          cancel_pause;
 	int          cancel_pause_recv;
+	bool         cancel_log;
 	char         name[32];
 	MainFunction main;
 	void*        main_arg;
@@ -40,6 +41,7 @@ coroutine_init(Coroutine* self, void* mgr)
 	self->cancel            = false;
 	self->cancel_pause      = 0;
 	self->cancel_pause_recv = 0;
+	self->cancel_log        = true;
 	self->name[0]           = 0;
 	self->main              = NULL;
 	self->main_arg          = NULL;
@@ -69,6 +71,12 @@ coroutine_set_name(Coroutine* self, const char* fmt, ...)
 	va_start(args, fmt);
 	vsnprintf(self->name, sizeof(self->name), fmt, args);
 	va_end(args);
+}
+
+static inline void
+coroutine_set_cancel_log(Coroutine* self, bool value)
+{
+	self->cancel_log = value;
 }
 
 hot static inline bool

@@ -231,9 +231,8 @@ system_stop(System* self)
 {
 	auto shutdown = &config()->shutdown.string;
 	info("");
-	info("shutdown (%.*s).", str_size(shutdown),
+	info("shutdown (using '%.*s' mode).", str_size(shutdown),
 	     str_of(shutdown));
-	info("");
 
 	// stop server
 	server_stop(&self->server);
