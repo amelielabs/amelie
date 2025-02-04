@@ -78,11 +78,9 @@ table_find_index(Table* self, Str* name, bool error_if_not_exists)
 		if (str_compare(&config->name, name))
 			return config;
 	}
-
 	if (error_if_not_exists)
 		error("index '%.*s': not exists", str_size(name),
 		       str_of(name));
-
 	return NULL;
 }
 

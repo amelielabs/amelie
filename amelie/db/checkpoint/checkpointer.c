@@ -72,7 +72,7 @@ static void
 checkpointer_main(void* arg)
 {
 	Checkpointer* self = arg;
-	coroutine_set_name(am_self(), "checkpointer");
+	coroutine_set_name(am_self(), "checkpoint");
 	for (;;)
 	{
 		auto rpc = rpc_queue_pop(&self->req_queue);
@@ -89,7 +89,7 @@ static void
 checkpointer_periodic_main(void* arg)
 {
 	Checkpointer* self = arg;
-	coroutine_set_name(am_self(), "checkpointer_periodic");
+	coroutine_set_name(am_self(), "periodic");
 	for (;;)
 	{
 		int workers = var_int_of(&config()->checkpoint_workers);

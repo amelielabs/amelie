@@ -229,6 +229,10 @@ system_start(System* self, bool bootstrap)
 void
 system_stop(System* self)
 {
+	info("");
+	info("shutdown.");
+	info("");
+
 	// stop server
 	server_stop(&self->server);
 

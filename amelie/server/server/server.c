@@ -58,7 +58,8 @@ server_accept_main(void* arg)
 	ServerListen* listen = arg;
 	Server*       self   = listen->arg;
 
-	coroutine_set_name(am_self(), "accept %s", str_of(&listen->addr_name));
+	coroutine_set_name(am_self(), "accept");
+	info("listen at '%s'", str_of(&listen->addr_name));
 
 	// process incoming connection
 	error_catch
@@ -121,8 +122,6 @@ server_listen(ServerListen* listen)
 
 	// set address name
 	str_dup_cstr(&listen->addr_name, addr_name);
-
-	info("server: listen %s", addr_name);
 
 	// bind
 	listen_start(&listen->listen, 4096, addr);
