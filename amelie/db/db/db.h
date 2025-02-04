@@ -26,5 +26,5 @@ struct Db
 void db_init(Db*, PartMapper, void*, NodeIf*, void*);
 void db_free(Db*);
 void db_open(Db*);
-void db_close(Db*);
+void db_close(Db*, bool);
 Buf* db_status(Db*);

@@ -229,8 +229,10 @@ system_start(System* self, bool bootstrap)
 void
 system_stop(System* self)
 {
+	auto shutdown = &config()->shutdown.string;
 	info("");
-	info("shutdown.");
+	info("shutdown (%.*s).", str_size(shutdown),
+	     str_of(shutdown));
 	info("");
 
 	// stop server
@@ -243,7 +245,8 @@ system_stop(System* self)
 	host_mgr_stop(&self->host_mgr);
 
 	// close db
-	db_close(&self->db);
+	auto fast = str_is_cstr(shutdown, "fast");
+	db_close(&self->db, fast);
 }
 
 static void

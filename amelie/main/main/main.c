@@ -163,6 +163,13 @@ main_open(Main* self, char* directory, int argc, char** argv)
 			config_save(config, path);
 	}
 
+	// validate shutdown mode
+	auto shutdown = &config()->shutdown.string;
+	if (!str_is_cstr(shutdown, "fast") &&
+	    !str_is_cstr(shutdown, "graceful"))
+		error("unrecognized shutdown mode %.*s", str_size(shutdown),
+		      str_of(shutdown));
+
 	// set system timezone
 	auto name = &config()->timezone_default.string;
 	global()->timezone = timezone_mgr_find(global()->timezone_mgr, name);
