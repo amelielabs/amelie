@@ -102,11 +102,11 @@ logger_write(void*       arg,
 
 	// message
 	if (am_self()->name[0])
-		buf_len += snprintf(buf + buf_len, sizeof(buf) - buf_len, "%s  %s%s\n",
+		buf_len += snprintf(buf + buf_len, sizeof(buf) - buf_len, "%-8s  %s%s\n",
 		                    am_self()->name,
 		                    prefix, text);
 	else
-		buf_len += snprintf(buf + buf_len, sizeof(buf) - buf_len, "%s  %s%s\n",
+		buf_len += snprintf(buf + buf_len, sizeof(buf) - buf_len, "%-8s  %s%s\n",
 		                    am_task->name,
 		                    prefix, text);
 

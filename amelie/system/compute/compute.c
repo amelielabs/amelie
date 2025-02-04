@@ -249,7 +249,12 @@ compute_free(Compute* self)
 void
 compute_start(Compute* self)
 {
-	task_create(&self->task, "node", compute_main, self);
+	Uuid id;
+	uuid_set(&id, &self->node->config->id);
+	char name[9];
+	uuid_get_short(&id, name, sizeof(name));
+
+	task_create(&self->task, name, compute_main, self);
 }
 
 void

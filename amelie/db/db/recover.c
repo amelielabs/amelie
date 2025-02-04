@@ -362,6 +362,7 @@ recover_wal(Recover* self)
 		defer(wal_cursor_close, &cursor);
 		wal_cursor_open(&cursor, wal, id, false);
 		uint64_t count = 0;
+		uint64_t size  = 0;
 		for (;;)
 		{
 			if (! wal_cursor_next(&cursor))
@@ -369,13 +370,13 @@ recover_wal(Recover* self)
 			auto write = wal_cursor_at(&cursor);
 			recover_next_write(self, write, false, 0);
 			count += write->count;
+			size  += write->size;
 		}
 		if (! wal_cursor_active(&cursor))
 			break;
 
-		double size = cursor.file->file.size / 1024 / 1024;
 		info("recover: wals/%020" PRIu64 ".wal (%.2f MiB, %" PRIu64 " rows)",
-		     size, id, count);
+		     (double)size / 1024 / 1024, id, count);
 
 		id = id_mgr_next(&wal->list, cursor.file->id);
 		if (id == UINT64_MAX)

@@ -170,7 +170,7 @@ task_init(Task* self)
 	self->main_coroutine  = NULL;
 	self->log_write       = NULL;
 	self->log_write_arg   = NULL;
-	self->name            = NULL;
+	self->name[0]         = 0;
 	coroutine_mgr_init(&self->coroutine_mgr, 4096 * 32); // 128kb
 	timer_mgr_init(&self->timer_mgr);
 	poller_init(&self->poller);
@@ -210,13 +210,13 @@ task_create_nothrow(Task*        self,
                     BufMgr*      buf_mgr)
 {
 	// set arguments
-	self->name            = name;
 	self->main            = main;
 	self->main_arg        = main_arg;
 	self->main_arg_global = main_arg_global;
 	self->log_write       = log;
 	self->log_write_arg   = log_arg;
 	self->buf_mgr         = buf_mgr;
+	snprintf(self->name, sizeof(self->name), "%s", name);
 
 	// prepare poller
 	int rc = poller_create(&self->poller);

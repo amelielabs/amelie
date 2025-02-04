@@ -200,9 +200,9 @@ checkpoint_run(Checkpoint* self)
 	char path[PATH_MAX];
 	snprintf(path, sizeof(path), "%s/%" PRIu64 ".incomplete",
 	         config_directory(), self->lsn);
-	info("begin (%d workers)", self->workers_count);
-	info("using checkpoint %" PRIu64, self->lsn);
 
+	info("begin (checkpoint %" PRIu64 ", workers %d)",
+	     self->lsn, self->workers_count);
 	fs_mkdir(0755, "%s", path);
 
 	// create <base>/<lsn>.incomplete/catalog.json
