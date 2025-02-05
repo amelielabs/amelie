@@ -4,13 +4,20 @@ connect E0 S0 localhost:3485
 watch
 {"msg": "watch ⟵ bad expression"}
 # test: watch
-show lsn
-[1]
-explain watch system.config().lsn::int = 1
+show state
+[{
+  "version": "0.9.0",
+  "directory": "_output/E0",
+  "checkpoint": 1,
+  "lsn": 1,
+  "psn": 0,
+  "read_only": false
+}]
+explain watch system.state().lsn::int = 1
 [{
   "bytecode": {
     "main": {
-      "00": "call                0      -      0     # system.config()",
+      "00": "call                0      -      0     # system.state()",
       "01": "string              1      0      0     # lsn",
       "02": "dotjs               2      0      1     ",
       "03": "push                2      0      0     ",
@@ -29,6 +36,6 @@ explain watch system.config().lsn::int = 1
     }
   }
 }]
-watch system.config().lsn::int = 1
+watch system.state().lsn::int = 1
 disconnect S0
 close E0

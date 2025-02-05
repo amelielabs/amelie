@@ -40,9 +40,7 @@ config_prepare(Config* self)
 
 	VarDef defs[] =
 	{
-		{ "version",                 VAR_STRING, VAR_E,                   &self->version,                 "0.9.0",       0                   },
 		{ "uuid",                    VAR_STRING, VAR_C,                   &self->uuid,                    NULL,          0                   },
-		{ "directory",               VAR_STRING, VAR_E,                   &self->directory,               NULL,          0                   },
 		{ "timezone",                VAR_STRING, VAR_C,                   &self->timezone,                NULL,          0                   },
 		{ "format",                  VAR_STRING, VAR_C,                   &self->format,                  "json-pretty", 0                   },
 		{ "shutdown",                VAR_STRING, VAR_C,                   &self->shutdown,                "fast",        0                   },
@@ -62,7 +60,7 @@ config_prepare(Config* self)
 		{ "limit_send",              VAR_INT,    VAR_C,                   &self->limit_send,              NULL,          3 * 1024 * 1024     },
 		{ "limit_recv",              VAR_INT,    VAR_C,                   &self->limit_recv,              NULL,          1 * 1024 * 1024     },
 		{ "limit_write",             VAR_INT,    VAR_C,                   &self->limit_write,             NULL,          0                   },
-		// cluster
+		// io and compute
 		{ "hosts",                   VAR_INT,    VAR_C|VAR_Z,             &self->hosts,                   NULL,          default_hosts       },
 		{ "nodes",                   VAR_INT,    VAR_C|VAR_E,             &self->nodes,                   NULL,          default_nodes       },
 		// wal
@@ -74,14 +72,8 @@ config_prepare(Config* self)
 		// checkpoint
 		{ "checkpoint_interval",     VAR_STRING, VAR_C,                   &self->checkpoint_interval,     "5 min",       0                   },
 		{ "checkpoint_workers",      VAR_INT,    VAR_C,                   &self->checkpoint_workers,      NULL,          3                   },
-		{ "checkpoint",              VAR_INT,    VAR_E,                   &self->checkpoint,              NULL,          0                   },
-		// system
-		{ "read_only",               VAR_BOOL,   VAR_E,                   &self->read_only,               NULL,          false               },
-		{ "lsn",                     VAR_INT,    VAR_E,                   &self->lsn,                     NULL,          0                   },
-		{ "psn",                     VAR_INT,    VAR_E,                   &self->psn,                     NULL,          0                   },
 		{  NULL,                     0,          0,                       NULL,                           NULL,          0                   },
 	};
-
 	vars_define(&self->vars, defs);
 }
 

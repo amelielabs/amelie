@@ -4,28 +4,28 @@ open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "12
 connect E0 S0 localhost:3485
 
 # test: default checkpoint
-show checkpoint
+select system.state().checkpoint
 
 # test: checkpoint (no data)
 checkpoint
-show checkpoint
+select system.state().checkpoint
 
 # test: create table
 create table test (id serial primary key)
-show lsn
+select system.state().lsn
 
 # test: checkpoint
 checkpoint
-show lsn
-show checkpoint
+select system.state().lsn
+select system.state().checkpoint
 
 # test: restart/recover
 disconnect S0
 close E0
 open E0
 connect E0 S0 localhost:3485
-show lsn
-show checkpoint
+select system.state().lsn
+select system.state().checkpoint
 select * from test
 
 # test: insert
@@ -38,15 +38,15 @@ close E0
 open E0
 connect E0 S0 localhost:3485
 
-show lsn
-show checkpoint
+select system.state().lsn
+select system.state().checkpoint
 select identity_of("public", "test")
 select * from test
 
 # test: checkpoint
 checkpoint
-show lsn
-show checkpoint
+select system.state().lsn
+select system.state().checkpoint
 
 # test: restart/recover (checkpoint)
 disconnect S0
@@ -54,15 +54,15 @@ close E0
 open E0
 connect E0 S0 localhost:3485
 
-show lsn
-show checkpoint
+select system.state().lsn
+select system.state().checkpoint
 select identity_of("public", "test")
 select * from test
 
 # test: create schema
 create schema test
 alter table public.test rename to test.test
-show lsn
+select system.state().lsn
 
 # test: restart/recover (checkpoint + wal)
 disconnect S0
@@ -70,16 +70,16 @@ close E0
 open E0
 connect E0 S0 localhost:3485
 
-show lsn
-show checkpoint
+select system.state().lsn
+select system.state().checkpoint
 show schemas
 select identity_of("test", "test")
 select * from test.test
 
 # test: checkpoint
 checkpoint
-show lsn
-show checkpoint
+select system.state().lsn
+select system.state().checkpoint
 
 # test: restart/recover (checkpoint)
 disconnect S0
@@ -87,8 +87,8 @@ close E0
 open E0
 connect E0 S0 localhost:3485
 
-show lsn
-show checkpoint
+select system.state().lsn
+select system.state().checkpoint
 show schemas
 select identity_of("test", "test")
 select * from test.test

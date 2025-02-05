@@ -34,19 +34,26 @@ state_prepare(State* self)
 {
 	VarDef defs[] =
 	{
-		// state persistent
-		{ "repl",                    VAR_BOOL,   VAR_C, &self->repl,         0,    false },
-		{ "repl_primary",            VAR_STRING, VAR_C, &self->repl_primary, NULL, 0     },
-		{ "replicas",                VAR_JSON,   VAR_C, &self->replicas,     NULL, 0     },
-		{ "users",                   VAR_JSON,   VAR_C, &self->users,        NULL, 0     },
+		// system
+		{ "version",       VAR_STRING, VAR_E, &self->version,      "0.9.0", 0     },
+		{ "directory",     VAR_STRING, VAR_E, &self->directory,     NULL,   0     },
+		{ "checkpoint",    VAR_INT,    VAR_E, &self->checkpoint,    NULL,   0     },
+		{ "lsn",           VAR_INT,    VAR_E, &self->lsn,           NULL,   0     },
+		{ "psn",           VAR_INT,    VAR_E, &self->psn,           NULL,   0     },
+		{ "read_only",     VAR_BOOL,   VAR_E, &self->read_only,     NULL,   false },
+		// persistent
+		{ "repl",          VAR_BOOL,   VAR_C, &self->repl,          0,      false },
+		{ "repl_primary",  VAR_STRING, VAR_C, &self->repl_primary,  NULL,   0     },
+		{ "replicas",      VAR_JSON,   VAR_C, &self->replicas,      NULL,   0     },
+		{ "users",         VAR_JSON,   VAR_C, &self->users,         NULL,   0     },
 		// stats
-		{ "connections",             VAR_INT,    VAR_E, &self->connections,  NULL, 0     },
-		{ "sent_bytes",              VAR_INT,    VAR_E, &self->sent_bytes,   NULL, 0     },
-		{ "recv_bytes",              VAR_INT,    VAR_E, &self->recv_bytes,   NULL, 0     },
-		{ "writes",                  VAR_INT,    VAR_E, &self->writes,       NULL, 0     },
-		{ "writes_bytes",            VAR_INT,    VAR_E, &self->writes_bytes, NULL, 0     },
-		{ "ops",                     VAR_INT,    VAR_E, &self->ops,          NULL, 0     },
-		{  NULL,                     0,          0,      NULL,               NULL, 0     },
+		{ "connections",   VAR_INT,    VAR_E, &self->connections,   NULL,   0     },
+		{ "sent_bytes",    VAR_INT,    VAR_E, &self->sent_bytes,    NULL,   0     },
+		{ "recv_bytes",    VAR_INT,    VAR_E, &self->recv_bytes,    NULL,   0     },
+		{ "writes",        VAR_INT,    VAR_E, &self->writes,        NULL,   0     },
+		{ "writes_bytes",  VAR_INT,    VAR_E, &self->writes_bytes,  NULL,   0     },
+		{ "ops",           VAR_INT,    VAR_E, &self->ops,           NULL,   0     },
+		{  NULL,           0,          0,      NULL,                NULL,   0     },
 	};
 	vars_define(&self->vars, defs);
 }

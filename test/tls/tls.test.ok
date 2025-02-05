@@ -13,9 +13,7 @@ disconnect S0
 connect_tls E0 S0 https://localhost:3485 ./tls/ca.crt
 show all
 [{
-  "version": "0.9.0",
   "uuid": "00000000-0000-0000-0000-000000000000",
-  "directory": "_output/E0",
   "timezone": "UTC",
   "format": "json-pretty",
   "shutdown": "graceful",
@@ -43,11 +41,7 @@ show all
   "wal_sync_on_write": false,
   "repl_reconnect_ms": 3000,
   "checkpoint_interval": "5 min",
-  "checkpoint_workers": 3,
-  "checkpoint": 1,
-  "read_only": false,
-  "lsn": 1,
-  "psn": 0
+  "checkpoint_workers": 3
 }]
 # test: streaming
 create table test (id int primary key)

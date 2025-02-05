@@ -100,6 +100,9 @@ ctl_show(Session* self)
 	case SHOW_CONFIG_ALL:
 		buf = vars_list(&global()->config->vars, &self->local.config.vars);
 		break;
+	case SHOW_STATE:
+		buf = db_state(share->db);
+		break;
 	case SHOW_CONFIG:
 	{
 		// find local variable first

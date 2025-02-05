@@ -16,9 +16,7 @@ typedef struct Config Config;
 struct Config
 {
 	// main
-	Var  version;
 	Var  uuid;
-	Var  directory;
 	Var  timezone;
 	Var  format;
 	Var  shutdown;
@@ -38,7 +36,7 @@ struct Config
 	Var  limit_send;
 	Var  limit_recv;
 	Var  limit_write;
-	// cluster
+	// io and compute
 	Var  hosts;
 	Var  nodes;
 	// wal
@@ -50,11 +48,6 @@ struct Config
 	// checkpoint
 	Var  checkpoint_interval;
 	Var  checkpoint_workers;
-	Var  checkpoint;
-	// system
-	Var  read_only;
-	Var  lsn;
-	Var  psn;
 	Vars vars;
 };
 

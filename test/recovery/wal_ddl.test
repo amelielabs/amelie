@@ -5,7 +5,7 @@ connect E0 S0 localhost:3485
 
 # test: create table
 create table test (id serial primary key, data int default 0)
-show lsn
+select system.state().lsn
 select identity_of("public", "test")
 
 # test: restart
@@ -15,12 +15,12 @@ open E0
 connect E0 S0 localhost:3485
 
 # test: validate state
-show lsn
+select system.state().lsn
 select identity_of("public", "test")
 
 # test: alter table rename
 alter table test rename to test2
-show lsn
+select system.state().lsn
 select identity_of("public", "test")
 select identity_of("public", "test2")
 
@@ -31,7 +31,7 @@ open E0
 connect E0 S0 localhost:3485
 
 # test: validate state
-show lsn
+select system.state().lsn
 select identity_of("public", "test")
 select identity_of("public", "test2")
 
@@ -47,7 +47,7 @@ connect E0 S0 localhost:3485
 
 # test: validate state
 select system.table('test2').unlogged
-show lsn
+select system.state().lsn
 
 insert into test2 () values ()
 insert into test2 () values ()
@@ -64,13 +64,13 @@ open E0
 connect E0 S0 localhost:3485
 
 # test: validate state
-show lsn
+select system.state().lsn
 select * from test2
 
 # test: alter table column add
 insert into test2() values (), (), ()
 select * from test2
-show lsn
+select system.state().lsn
 select identity_of("public", "test2")
 alter table test2 add column obj json
 select * from test2
@@ -83,7 +83,7 @@ open E0
 connect E0 S0 localhost:3485
 
 # test: validate state
-show lsn
+select system.state().lsn
 select identity_of("public", "test2")
 select * from test2
 
@@ -100,7 +100,7 @@ open E0
 connect E0 S0 localhost:3485
 
 # test: validate state
-show lsn
+select system.state().lsn
 select identity_of("public", "test2")
 select data from test2
 select abc from test2
@@ -116,7 +116,7 @@ open E0
 connect E0 S0 localhost:3485
 
 # test: validate state
-show lsn
+select system.state().lsn
 select system.table('test2').columns
 
 # test: alter table unset default
@@ -134,7 +134,7 @@ open E0
 connect E0 S0 localhost:3485
 
 # test: validate state
-show lsn
+select system.state().lsn
 select system.table('test2').columns
 
 # test: alter table unset identity
@@ -148,7 +148,7 @@ open E0
 connect E0 S0 localhost:3485
 
 # test: validate state
-show lsn
+select system.state().lsn
 select system.table('test2').columns
 
 # test: alter table set stored
@@ -162,7 +162,7 @@ open E0
 connect E0 S0 localhost:3485
 
 # test: validate state
-show lsn
+select system.state().lsn
 select system.table('test2').columns
 
 # test: alter table unset stored
@@ -176,7 +176,7 @@ open E0
 connect E0 S0 localhost:3485
 
 # test: validate state
-show lsn
+select system.state().lsn
 select system.table('test2').columns
 
 # test: alter table set resolved
@@ -190,7 +190,7 @@ open E0
 connect E0 S0 localhost:3485
 
 # test: validate state
-show lsn
+select system.state().lsn
 select system.table('test2').columns
 
 # test: alter table unset resolved
@@ -204,7 +204,7 @@ open E0
 connect E0 S0 localhost:3485
 
 # test: validate state
-show lsn
+select system.state().lsn
 select system.table('test2').columns
 
 # test: alter table column drop
@@ -219,7 +219,7 @@ open E0
 connect E0 S0 localhost:3485
 
 # test: validate state
-show lsn
+select system.state().lsn
 select identity_of("public", "test2")
 select * from test2
 
@@ -234,13 +234,13 @@ open E0
 connect E0 S0 localhost:3485
 
 # test: validate state
-show lsn
+select system.state().lsn
 select identity_of("public", "test2")
 select * from test2 use index (i)
 
 # test: alter index rename
 alter index i on test2 rename to i2
-show lsn
+select system.state().lsn
 select * from test2 use index (i2)
 
 # test: restart
@@ -250,7 +250,7 @@ open E0
 connect E0 S0 localhost:3485
 
 # test: validate state
-show lsn
+select system.state().lsn
 select identity_of("public", "test2")
 select * from test2 use index (i2)
 
@@ -267,7 +267,7 @@ open E0
 connect E0 S0 localhost:3485
 
 # test: validate state
-show lsn
+select system.state().lsn
 select identity_of("public", "test2")
 select * from test2 use index (i)
 select * from test2 use index (i2)
@@ -284,13 +284,13 @@ open E0
 connect E0 S0 localhost:3485
 
 # test: validate state
-show lsn
+select system.state().lsn
 select identity_of("public", "test2")
 select * from test2
 
 # test: drop table
 drop table test2
-show lsn
+select system.state().lsn
 select identity_of("public", "test2")
 
 # test: restart
@@ -300,14 +300,14 @@ open E0
 connect E0 S0 localhost:3485
 
 # test: validate state
-show lsn
+select system.state().lsn
 select * from test2
 show tables
 
 # test: create schema
 create schema test
 show schemas
-show lsn
+select system.state().lsn
 
 # test: restart
 disconnect S0
@@ -316,13 +316,13 @@ open E0
 connect E0 S0 localhost:3485
 
 # test: validate state
-show lsn
+select system.state().lsn
 show schemas
 
 # test: alter schema rename
 alter schema test rename to test2
 show schemas
-show lsn
+select system.state().lsn
 
 # test: restart
 disconnect S0
@@ -331,12 +331,12 @@ open E0
 connect E0 S0 localhost:3485
 
 # test: validate state
-show lsn
+select system.state().lsn
 show schemas
 
 # test: drop schema
 drop schema test2
-show lsn
+select system.state().lsn
 show schemas
 
 # test: restart
@@ -346,7 +346,7 @@ open E0
 connect E0 S0 localhost:3485
 
 # test: validate state
-show lsn
+select system.state().lsn
 show schemas
 
 disconnect S0

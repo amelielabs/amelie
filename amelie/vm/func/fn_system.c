@@ -44,6 +44,14 @@ fn_config(Call* self)
 }
 
 static void
+fn_state(Call* self)
+{
+	call_expect(self, 0);
+	auto buf = db_state(self->mgr->db);
+	value_set_json_buf(self->result, buf);
+}
+
+static void
 fn_users(Call* self)
 {
 	call_expect(self, 0);
@@ -175,6 +183,10 @@ fn_system_register(FunctionMgr* self)
 	// system.config()
 	Function* func;
 	func = function_allocate(TYPE_JSON, "system", "config", fn_config);
+	function_mgr_add(self, func);
+
+	// system.state()
+	func = function_allocate(TYPE_JSON, "system", "state", fn_state);
 	function_mgr_add(self, func);
 
 	// system.users()

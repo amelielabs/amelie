@@ -77,6 +77,9 @@ parse_show_type(Str* name)
 	if (str_is(name, "table", 5))
 		return SHOW_TABLE;
 
+	if (str_is(name, "state", 5))
+		return SHOW_STATE;
+
 	if (str_is(name, "config", 6) ||
 	    str_is(name, "all", 3))
 		return SHOW_CONFIG_ALL;

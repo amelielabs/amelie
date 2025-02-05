@@ -48,15 +48,19 @@ show replica abc
 show replica 'abc'
 show replica '00000000-0000-0000-0000-000000000000'
 
+# test: show state
+select system.state()
+select system.state().directory
+select system.state()["directory"]
+select system.state(123)
+
 # test: show config
 show config
 
 # test: show all
 show all
 
-select system.config()
-select system.config().directory
-select system.config()["directory"]
+select system.config().uuid
 select system.config(123)
 
 # test: show name

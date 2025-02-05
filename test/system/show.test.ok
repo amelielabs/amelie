@@ -94,12 +94,26 @@ show replica 'abc'
 {"msg": "failed to parse uuid"}
 show replica '00000000-0000-0000-0000-000000000000'
 [null]
+# test: show state
+select system.state()
+[{
+  "version": "0.9.0",
+  "directory": "_output/E0",
+  "checkpoint": 1,
+  "lsn": 3,
+  "psn": 1,
+  "read_only": false
+}]
+select system.state().directory
+["_output/E0"]
+select system.state()["directory"]
+["_output/E0"]
+select system.state(123)
+{"msg": "state(❰int❱ ⟵ function has no arguments"}
 # test: show config
 show config
 [{
-  "version": "0.9.0",
   "uuid": "00000000-0000-0000-0000-000000000000",
-  "directory": "_output/E0",
   "timezone": "UTC",
   "format": "json-pretty",
   "shutdown": "graceful",
@@ -126,18 +140,12 @@ show config
   "wal_sync_on_write": false,
   "repl_reconnect_ms": 3000,
   "checkpoint_interval": "5 min",
-  "checkpoint_workers": 3,
-  "checkpoint": 1,
-  "read_only": false,
-  "lsn": 3,
-  "psn": 1
+  "checkpoint_workers": 3
 }]
 # test: show all
 show all
 [{
-  "version": "0.9.0",
   "uuid": "00000000-0000-0000-0000-000000000000",
-  "directory": "_output/E0",
   "timezone": "UTC",
   "format": "json-pretty",
   "shutdown": "graceful",
@@ -164,53 +172,10 @@ show all
   "wal_sync_on_write": false,
   "repl_reconnect_ms": 3000,
   "checkpoint_interval": "5 min",
-  "checkpoint_workers": 3,
-  "checkpoint": 1,
-  "read_only": false,
-  "lsn": 3,
-  "psn": 1
+  "checkpoint_workers": 3
 }]
-select system.config()
-[{
-  "version": "0.9.0",
-  "uuid": "00000000-0000-0000-0000-000000000000",
-  "directory": "_output/E0",
-  "timezone": "UTC",
-  "format": "json-pretty",
-  "shutdown": "graceful",
-  "log_enable": true,
-  "log_to_file": true,
-  "log_to_stdout": false,
-  "log_connections": true,
-  "log_options": true,
-  "tls_capath": "",
-  "tls_ca": "",
-  "tls_cert": "",
-  "tls_key": "",
-  "listen": [{
-    "host": "127.0.0.1",
-    "port": 3485
-  }],
-  "limit_send": 3145728,
-  "limit_recv": 1048576,
-  "limit_write": 0,
-  "hosts": 1,
-  "nodes": 1,
-  "wal_size": 67108864,
-  "wal_sync_on_rotate": false,
-  "wal_sync_on_write": false,
-  "repl_reconnect_ms": 3000,
-  "checkpoint_interval": "5 min",
-  "checkpoint_workers": 3,
-  "checkpoint": 1,
-  "read_only": false,
-  "lsn": 3,
-  "psn": 1
-}]
-select system.config().directory
-["_output/E0"]
-select system.config()["directory"]
-["_output/E0"]
+select system.config().uuid
+["00000000-0000-0000-0000-000000000000"]
 select system.config(123)
 {"msg": "config(❰int❱ ⟵ function has no arguments"}
 # test: show name

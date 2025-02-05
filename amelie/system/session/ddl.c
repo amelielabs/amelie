@@ -502,7 +502,7 @@ void
 session_execute_ddl(Session* self)
 {
 	// respect system read-only state
-	if (var_int_of(&config()->read_only))
+	if (var_int_of(&state()->read_only))
 		error("system is in read-only mode");
 
 	// upgrade to exclusive lock

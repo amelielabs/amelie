@@ -24,6 +24,7 @@ close E0
 open E1
 connect_tls E1 S1 https://localhost:3480 ./tls/ca.crt
 show all
+show state
 select count(*) from test
 
 disconnect S1

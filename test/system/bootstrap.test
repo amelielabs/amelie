@@ -5,6 +5,7 @@ connect E0 S0 localhost:3485
 
 # test: ensure custom instance uuid
 show all
+show state
 
 # test: ensure uuid recover
 disconnect S0
@@ -14,6 +15,7 @@ open E0
 connect E0 S0 localhost:3485
 
 show all
+show state
 
 disconnect S0
 close E0

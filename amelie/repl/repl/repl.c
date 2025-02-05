@@ -76,7 +76,7 @@ repl_open(Repl* self)
 		self->role = REPL_REPLICA;
 
 		// set to read-only, even if replication is not enabled
-		var_int_set(&config()->read_only, true);
+		var_int_set(&state()->read_only, true);
 	}
 }
 
@@ -120,7 +120,7 @@ repl_subscribe(Repl* self, Str* primary_id)
 		self->role = REPL_REPLICA;
 
 		// set to read-only, even if replication is not enabled
-		var_int_set(&config()->read_only, true);
+		var_int_set(&state()->read_only, true);
 
 		// set new primary id
 		var_string_set(&state()->repl_primary, primary_id);
@@ -133,7 +133,7 @@ repl_subscribe(Repl* self, Str* primary_id)
 	// switch to primary
 
 	// set to read-write
-	var_int_set(&config()->read_only, false);
+	var_int_set(&state()->read_only, false);
 
 	// remove primary id
 	Str empty;

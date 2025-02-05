@@ -7,9 +7,9 @@ connect E0 S0 localhost:3485
 watch
 
 # test: watch
-show lsn
-explain watch system.config().lsn::int = 1
-watch system.config().lsn::int = 1
+show state
+explain watch system.state().lsn::int = 1
+watch system.state().lsn::int = 1
 
 disconnect S0
 close E0

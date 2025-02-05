@@ -1,30 +1,30 @@
 open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "127.0.0.1", "port": 3485 }], "nodes": 3
 connect E0 S0 localhost:3485
 # test: default checkpoint
-show checkpoint
+select system.state().checkpoint
 [1]
 # test: checkpoint (no data)
 checkpoint
-show checkpoint
+select system.state().checkpoint
 [1]
 # test: create table
 create table test (id serial primary key)
-show lsn
+select system.state().lsn
 [2]
 # test: checkpoint
 checkpoint
-show lsn
+select system.state().lsn
 [2]
-show checkpoint
+select system.state().checkpoint
 [2]
 # test: restart/recover
 disconnect S0
 close E0
 open E0
 connect E0 S0 localhost:3485
-show lsn
+select system.state().lsn
 [2]
-show checkpoint
+select system.state().checkpoint
 [2]
 select * from test
 []
@@ -37,9 +37,9 @@ disconnect S0
 close E0
 open E0
 connect E0 S0 localhost:3485
-show lsn
+select system.state().lsn
 [3]
-show checkpoint
+select system.state().checkpoint
 [2]
 select identity_of("public", "test")
 [3]
@@ -47,18 +47,18 @@ select * from test
 [0, 1, 2]
 # test: checkpoint
 checkpoint
-show lsn
+select system.state().lsn
 [3]
-show checkpoint
+select system.state().checkpoint
 [3]
 # test: restart/recover (checkpoint)
 disconnect S0
 close E0
 open E0
 connect E0 S0 localhost:3485
-show lsn
+select system.state().lsn
 [3]
-show checkpoint
+select system.state().checkpoint
 [3]
 select identity_of("public", "test")
 [3]
@@ -67,16 +67,16 @@ select * from test
 # test: create schema
 create schema test
 alter table public.test rename to test.test
-show lsn
+select system.state().lsn
 [5]
 # test: restart/recover (checkpoint + wal)
 disconnect S0
 close E0
 open E0
 connect E0 S0 localhost:3485
-show lsn
+select system.state().lsn
 [5]
-show checkpoint
+select system.state().checkpoint
 [3]
 show schemas
 [{
@@ -95,18 +95,18 @@ select * from test.test
 [0, 1, 2]
 # test: checkpoint
 checkpoint
-show lsn
+select system.state().lsn
 [5]
-show checkpoint
+select system.state().checkpoint
 [5]
 # test: restart/recover (checkpoint)
 disconnect S0
 close E0
 open E0
 connect E0 S0 localhost:3485
-show lsn
+select system.state().lsn
 [5]
-show checkpoint
+select system.state().checkpoint
 [5]
 show schemas
 [{

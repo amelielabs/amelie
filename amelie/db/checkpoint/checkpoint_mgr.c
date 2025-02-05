@@ -90,7 +90,7 @@ checkpoint_mgr_open_dir(CheckpointMgr* self)
 	// set last checkpoint
 	auto last = id_mgr_max(&self->list);
 	if (last != UINT64_MAX)
-		var_int_set(&config()->checkpoint, last);
+		var_int_set(&state()->checkpoint, last);
 }
 
 static void

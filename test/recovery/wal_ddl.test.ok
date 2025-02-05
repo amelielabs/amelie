@@ -2,7 +2,7 @@ open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "12
 connect E0 S0 localhost:3485
 # test: create table
 create table test (id serial primary key, data int default 0)
-show lsn
+select system.state().lsn
 [2]
 select identity_of("public", "test")
 [0]
@@ -12,13 +12,13 @@ close E0
 open E0
 connect E0 S0 localhost:3485
 # test: validate state
-show lsn
+select system.state().lsn
 [2]
 select identity_of("public", "test")
 [0]
 # test: alter table rename
 alter table test rename to test2
-show lsn
+select system.state().lsn
 [3]
 select identity_of("public", "test")
 {"msg": "table 'test': not exists"}
@@ -30,7 +30,7 @@ close E0
 open E0
 connect E0 S0 localhost:3485
 # test: validate state
-show lsn
+select system.state().lsn
 [3]
 select identity_of("public", "test")
 {"msg": "table 'test': not exists"}
@@ -48,7 +48,7 @@ connect E0 S0 localhost:3485
 # test: validate state
 select system.table('test2').unlogged
 [true]
-show lsn
+select system.state().lsn
 [4]
 insert into test2 () values ()
 insert into test2 () values ()
@@ -63,7 +63,7 @@ close E0
 open E0
 connect E0 S0 localhost:3485
 # test: validate state
-show lsn
+select system.state().lsn
 [5]
 select * from test2
 []
@@ -71,7 +71,7 @@ select * from test2
 insert into test2() values (), (), ()
 select * from test2
 [[0, 0], [1, 0], [2, 0]]
-show lsn
+select system.state().lsn
 [6]
 select identity_of("public", "test2")
 [3]
@@ -86,7 +86,7 @@ close E0
 open E0
 connect E0 S0 localhost:3485
 # test: validate state
-show lsn
+select system.state().lsn
 [7]
 select identity_of("public", "test2")
 [0]
@@ -106,7 +106,7 @@ close E0
 open E0
 connect E0 S0 localhost:3485
 # test: validate state
-show lsn
+select system.state().lsn
 [8]
 select identity_of("public", "test2")
 [0]
@@ -163,7 +163,7 @@ close E0
 open E0
 connect E0 S0 localhost:3485
 # test: validate state
-show lsn
+select system.state().lsn
 [9]
 select system.table('test2').columns
 [[{
@@ -298,7 +298,7 @@ close E0
 open E0
 connect E0 S0 localhost:3485
 # test: validate state
-show lsn
+select system.state().lsn
 [11]
 select system.table('test2').columns
 [[{
@@ -390,7 +390,7 @@ close E0
 open E0
 connect E0 S0 localhost:3485
 # test: validate state
-show lsn
+select system.state().lsn
 [12]
 select system.table('test2').columns
 [[{
@@ -482,7 +482,7 @@ close E0
 open E0
 connect E0 S0 localhost:3485
 # test: validate state
-show lsn
+select system.state().lsn
 [13]
 select system.table('test2').columns
 [[{
@@ -574,7 +574,7 @@ close E0
 open E0
 connect E0 S0 localhost:3485
 # test: validate state
-show lsn
+select system.state().lsn
 [14]
 select system.table('test2').columns
 [[{
@@ -666,7 +666,7 @@ close E0
 open E0
 connect E0 S0 localhost:3485
 # test: validate state
-show lsn
+select system.state().lsn
 [15]
 select system.table('test2').columns
 [[{
@@ -758,7 +758,7 @@ close E0
 open E0
 connect E0 S0 localhost:3485
 # test: validate state
-show lsn
+select system.state().lsn
 [16]
 select system.table('test2').columns
 [[{
@@ -813,7 +813,7 @@ close E0
 open E0
 connect E0 S0 localhost:3485
 # test: validate state
-show lsn
+select system.state().lsn
 [17]
 select identity_of("public", "test2")
 [0]
@@ -829,7 +829,7 @@ close E0
 open E0
 connect E0 S0 localhost:3485
 # test: validate state
-show lsn
+select system.state().lsn
 [18]
 select identity_of("public", "test2")
 [0]
@@ -837,7 +837,7 @@ select * from test2 use index (i)
 [[0, null], [1, null], [2, null]]
 # test: alter index rename
 alter index i on test2 rename to i2
-show lsn
+select system.state().lsn
 [19]
 select * from test2 use index (i2)
 [[0, null], [1, null], [2, null]]
@@ -847,7 +847,7 @@ close E0
 open E0
 connect E0 S0 localhost:3485
 # test: validate state
-show lsn
+select system.state().lsn
 [19]
 select identity_of("public", "test2")
 [0]
@@ -867,7 +867,7 @@ close E0
 open E0
 connect E0 S0 localhost:3485
 # test: validate state
-show lsn
+select system.state().lsn
 [20]
 select identity_of("public", "test2")
 [0]
@@ -887,7 +887,7 @@ close E0
 open E0
 connect E0 S0 localhost:3485
 # test: validate state
-show lsn
+select system.state().lsn
 [21]
 select identity_of("public", "test2")
 [0]
@@ -895,7 +895,7 @@ select * from test2
 []
 # test: drop table
 drop table test2
-show lsn
+select system.state().lsn
 [22]
 select identity_of("public", "test2")
 {"msg": "table 'test2': not exists"}
@@ -905,7 +905,7 @@ close E0
 open E0
 connect E0 S0 localhost:3485
 # test: validate state
-show lsn
+select system.state().lsn
 [22]
 select * from test2
 {"msg": "select * from ❰test2❱ ⟵ relation not found"}
@@ -924,7 +924,7 @@ show schemas
   "name": "test",
   "system": false
 }]
-show lsn
+select system.state().lsn
 [23]
 # test: restart
 disconnect S0
@@ -932,7 +932,7 @@ close E0
 open E0
 connect E0 S0 localhost:3485
 # test: validate state
-show lsn
+select system.state().lsn
 [23]
 show schemas
 [{
@@ -958,7 +958,7 @@ show schemas
   "name": "test2",
   "system": false
 }]
-show lsn
+select system.state().lsn
 [24]
 # test: restart
 disconnect S0
@@ -966,7 +966,7 @@ close E0
 open E0
 connect E0 S0 localhost:3485
 # test: validate state
-show lsn
+select system.state().lsn
 [24]
 show schemas
 [{
@@ -981,7 +981,7 @@ show schemas
 }]
 # test: drop schema
 drop schema test2
-show lsn
+select system.state().lsn
 [25]
 show schemas
 [{
@@ -997,7 +997,7 @@ close E0
 open E0
 connect E0 S0 localhost:3485
 # test: validate state
-show lsn
+select system.state().lsn
 [25]
 show schemas
 [{

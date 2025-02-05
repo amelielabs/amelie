@@ -147,3 +147,40 @@ db_status(Db* self)
 	encode_obj_end(buf);
 	return buf;
 }
+
+Buf*
+db_state(Db* self)
+{
+	unused(self);
+
+	// {}
+	auto buf = buf_create();
+	encode_obj(buf);
+
+	// version
+	encode_raw(buf, "version", 7);
+	encode_string(buf, &state()->version.string);
+
+	// directory
+	encode_raw(buf, "directory", 9);
+	encode_string(buf, &state()->directory.string);
+
+	// checkpoint
+	encode_raw(buf, "checkpoint", 10);
+	encode_integer(buf, config_checkpoint());
+
+	// lsn
+	encode_raw(buf, "lsn", 3);
+	encode_integer(buf, config_lsn());
+
+	// psn
+	encode_raw(buf, "psn", 3);
+	encode_integer(buf, config_psn());
+
+	// read_only
+	encode_raw(buf, "read_only", 9);
+	encode_bool(buf, var_int_of(&state()->read_only));
+
+	encode_obj_end(buf);
+	return buf;
+}

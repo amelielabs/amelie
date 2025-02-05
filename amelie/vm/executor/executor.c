@@ -193,7 +193,7 @@ executor_wal_write(Executor* self)
 		{
 			// unless transaction is used for replication writer, respect
 			// system read-only state
-			if (!tr->program->repl && var_int_of(&config()->read_only))
+			if (!tr->program->repl && var_int_of(&state()->read_only))
 				error("system is in read-only mode");
 			wal_write(wal, wal_batch);
 		}

@@ -251,6 +251,6 @@ checkpoint_wait(Checkpoint* self)
 
 	// register checkpoint
 	checkpoint_mgr_add(self->mgr, self->lsn);
-	var_int_set(&config()->checkpoint, self->lsn);
+	var_int_set(&state()->checkpoint, self->lsn);
 	info("complete");
 }

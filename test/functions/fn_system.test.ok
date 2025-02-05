@@ -3,9 +3,7 @@ connect E0 S0 localhost:3485
 # test: config()
 select system.config()
 [{
-  "version": "0.9.0",
   "uuid": "00000000-0000-0000-0000-000000000000",
-  "directory": "_output/E0",
   "timezone": "UTC",
   "format": "json-pretty",
   "shutdown": "graceful",
@@ -32,11 +30,17 @@ select system.config()
   "wal_sync_on_write": false,
   "repl_reconnect_ms": 3000,
   "checkpoint_interval": "5 min",
-  "checkpoint_workers": 3,
+  "checkpoint_workers": 3
+}]
+# test: state()
+select system.state()
+[{
+  "version": "0.9.0",
+  "directory": "_output/E0",
   "checkpoint": 1,
-  "read_only": false,
   "lsn": 1,
-  "psn": 0
+  "psn": 0,
+  "read_only": false
 }]
 # test: users()
 select system.users()

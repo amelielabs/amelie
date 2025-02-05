@@ -37,7 +37,7 @@ show repl
   "primary": "00000000-0000-0000-0000-000000000000",
   "replicas": []
 }]
-show read_only
+select system.state().read_only
 [true]
 # test: create replica
 switch S0
@@ -59,10 +59,10 @@ watch system.replica('00000000-0000-0000-0000-000000000001').connected::bool = t
 # test: write
 create table test (id int primary key)
 insert into test values (1),(2),(3)
-show lsn
+select system.state().lsn
 [3]
 # test: wait replica sync
-watch system.replica('00000000-0000-0000-0000-000000000001').lsn = system.config().lsn
+watch system.replica('00000000-0000-0000-0000-000000000001').lsn = system.state().lsn
 # test: stop replica
 disconnect S1
 close E1
@@ -70,7 +70,7 @@ close E1
 insert into test values (4)
 insert into test values (5)
 insert into test values (6)
-show lsn
+select system.state().lsn
 [6]
 # test: replica lag
 show replicas
@@ -91,7 +91,7 @@ connect E1 S1 localhost:3481
 switch S0
 watch system.replica('00000000-0000-0000-0000-000000000001').connected::bool = true
 # test: wait replica sync
-watch system.replica('00000000-0000-0000-0000-000000000001').lsn = system.config().lsn
+watch system.replica('00000000-0000-0000-0000-000000000001').lsn = system.state().lsn
 show replicas
 [{
   "id": "00000000-0000-0000-0000-000000000001",
@@ -113,7 +113,7 @@ insert into test values (7)
 insert into test values (8)
 insert into test values (9)
 # test: wait replica sync
-watch system.replica('00000000-0000-0000-0000-000000000001').lsn = system.config().lsn
+watch system.replica('00000000-0000-0000-0000-000000000001').lsn = system.state().lsn
 show replicas
 [{
   "id": "00000000-0000-0000-0000-000000000001",
@@ -124,21 +124,21 @@ show replicas
 }]
 # test: ensure replica is read-only
 switch S1
-show read_only
+select system.state().read_only
 [true]
-show lsn
+select system.state().lsn
 [9]
 insert into test values (10)
 {"msg": "system is in read-only mode"}
-show lsn
+select system.state().lsn
 [9]
-show psn
+select system.state().psn
 [3]
 create table test2 (id int primary key)
 {"msg": "system is in read-only mode"}
-show lsn
+select system.state().lsn
 [9]
-show psn
+select system.state().psn
 [3]
 # test: replica read
 select * from test
@@ -150,7 +150,7 @@ show repl
   "primary": "00000000-0000-0000-0000-000000000000",
   "replicas": []
 }]
-show lsn
+select system.state().lsn
 [9]
 # test: failover (unsubscribe, switch to primary)
 show repl
@@ -188,13 +188,13 @@ switch S1
 create replica "00000000-0000-0000-0000-000000000000" uri "127.0.0.1:3480"
 # test: wait for primary connect
 watch system.replica('00000000-0000-0000-0000-000000000000').connected::bool = true
-watch system.replica('00000000-0000-0000-0000-000000000000').lsn = system.config().lsn
+watch system.replica('00000000-0000-0000-0000-000000000000').lsn = system.state().lsn
 # test: write
 insert into test values (10)
 insert into test values (11)
 insert into test values (12)
 # test: wait replica sync
-watch system.replica('00000000-0000-0000-0000-000000000000').lsn = system.config().lsn
+watch system.replica('00000000-0000-0000-0000-000000000000').lsn = system.state().lsn
 show replicas
 [{
   "id": "00000000-0000-0000-0000-000000000000",

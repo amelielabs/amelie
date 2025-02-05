@@ -10038,26 +10038,26 @@ insert into test values ( 9998 )
 insert into test values ( 9999 )
 
 # test: wait replica 1 sync
-watch system.replica("00000000-0000-0000-0000-000000000001").lsn = system.config().lsn
+watch system.replica("00000000-0000-0000-0000-000000000001").lsn = system.state().lsn
 
 # test: wait replica 2 sync
-watch system.replica("00000000-0000-0000-0000-000000000001").lsn = system.config().lsn
+watch system.replica("00000000-0000-0000-0000-000000000001").lsn = system.state().lsn
 
 show repl
 
-show lsn
+select system.state().lsn
 select count(*) from test
 
 # test: validate replica 1
 switch S1
 show repl
-show lsn
+select system.state().lsn
 select count(*) from test
 
 # test: validate replica 2
 switch S2
 show repl
-show lsn
+select system.state().lsn
 select count(*) from test
 
 disconnect S1

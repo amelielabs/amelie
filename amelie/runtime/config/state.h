@@ -15,6 +15,18 @@ typedef struct State State;
 
 struct State
 {
+	// system
+	Var  version;
+	Var  directory;
+	Var  checkpoint;
+	Var  lsn;
+	Var  psn;
+	Var  read_only;
+	// persistent
+	Var  repl;
+	Var  repl_primary;
+	Var  replicas;
+	Var  users;
 	// stats
 	Var  connections;
 	Var  sent_bytes;
@@ -22,11 +34,6 @@ struct State
 	Var  writes;
 	Var  writes_bytes;
 	Var  ops;
-	// state persistent
-	Var  repl;
-	Var  repl_primary;
-	Var  replicas;
-	Var  users;
 	Vars vars;
 };
 

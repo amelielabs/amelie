@@ -6,6 +6,9 @@ connect E0 S0 localhost:3485
 # test: config()
 select system.config()
 
+# test: state()
+select system.state()
+
 # test: users()
 select system.users()
 

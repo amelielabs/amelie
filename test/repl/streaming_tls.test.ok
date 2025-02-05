@@ -10015,7 +10015,7 @@ insert into test values ( 9997 )
 insert into test values ( 9998 )
 insert into test values ( 9999 )
 # test: wait replica sync
-watch system.replica("00000000-0000-0000-0000-000000000001").lsn = system.config().lsn
+watch system.replica("00000000-0000-0000-0000-000000000001").lsn = system.state().lsn
 show repl
 [{
   "active": true,
@@ -10030,7 +10030,7 @@ show repl
   }]
 }]
 # test: validate
-show lsn
+select system.state().lsn
 [10001]
 select count(*) from test
 [9999]
@@ -10042,7 +10042,7 @@ show repl
   "primary": "00000000-0000-0000-0000-000000000000",
   "replicas": []
 }]
-show lsn
+select system.state().lsn
 [10001]
 select count(*) from test
 [9999]

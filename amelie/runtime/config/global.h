@@ -52,62 +52,62 @@ control_save_state(void)
 static inline const char*
 config_directory(void)
 {
-	return str_of(var_string_of(&config()->directory));
+	return str_of(var_string_of(&state()->directory));
 }
 
 // checkpoint
 static inline uint64_t
 config_checkpoint(void)
 {
-	return var_int_of(&config()->checkpoint);
+	return var_int_of(&state()->checkpoint);
 }
 
 // lsn
 static inline uint64_t
 config_lsn(void)
 {
-	return var_int_of(&config()->lsn);
+	return var_int_of(&state()->lsn);
 }
 
 static inline void
 config_lsn_set(uint64_t value)
 {
-	return var_int_set(&config()->lsn, value);
+	return var_int_set(&state()->lsn, value);
 }
 
 static inline uint64_t
 config_lsn_next(void)
 {
-	return var_int_set_next(&config()->lsn);
+	return var_int_set_next(&state()->lsn);
 }
 
 static inline void
 config_lsn_follow(uint64_t value)
 {
-	return var_int_follow(&config()->lsn, value);
+	return var_int_follow(&state()->lsn, value);
 }
 
 // psn
 static inline uint64_t
 config_psn(void)
 {
-	return var_int_of(&config()->psn);
+	return var_int_of(&state()->psn);
 }
 
 static inline void
 config_psn_set(uint64_t value)
 {
-	return var_int_set(&config()->psn, value);
+	return var_int_set(&state()->psn, value);
 }
 
 static inline uint64_t
 config_psn_next(void)
 {
-	return var_int_set_next(&config()->psn);
+	return var_int_set_next(&state()->psn);
 }
 
 static inline void
 config_psn_follow(uint64_t value)
 {
-	return var_int_follow(&config()->psn, value);
+	return var_int_follow(&state()->psn, value);
 }

@@ -160,7 +160,7 @@ system_metrics(System* self)
 
 	// version
 	encode_raw(buf, "version", 7);
-	encode_string(buf, &config()->version.string);
+	encode_string(buf, &state()->version.string);
 
 	// hosts
 	encode_raw(buf, "hosts", 5);

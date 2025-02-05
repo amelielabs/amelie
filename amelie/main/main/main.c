@@ -93,7 +93,7 @@ main_create(Main* self, char* directory)
 	unused(self);
 
 	// set directory
-	var_string_set_raw(&config()->directory, directory, strlen(directory));
+	var_string_set_raw(&state()->directory, directory, strlen(directory));
 
 	// create directory if not exists
 	auto bootstrap = !fs_exists("%s", config_directory());

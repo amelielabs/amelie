@@ -171,7 +171,7 @@ void
 system_start(System* self, bool bootstrap)
 {
 	// hello
-	auto version = &config()->version.string;
+	auto version = &state()->version.string;
 	info("amelie ｢%.*s｣", str_size(version), str_of(version));
 	info("");
 

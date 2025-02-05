@@ -25,13 +25,11 @@ select system.wal()
   "ops": 0,
   "checkpoint": 1
 }]
-show lsn
+select system.state().lsn
 [1]
 show all
 [{
-  "version": "0.9.0",
   "uuid": "00000000-0000-0000-0000-000000000000",
-  "directory": "_output/E0",
   "timezone": "UTC",
   "format": "json-pretty",
   "shutdown": "graceful",
@@ -58,11 +56,7 @@ show all
   "wal_sync_on_write": false,
   "repl_reconnect_ms": 3000,
   "checkpoint_interval": "5 min",
-  "checkpoint_workers": 3,
-  "checkpoint": 1,
-  "read_only": false,
-  "lsn": 1,
-  "psn": 0
+  "checkpoint_workers": 3
 }]
 # test: restart
 disconnect S0
@@ -93,13 +87,11 @@ select system.wal()
   "ops": 0,
   "checkpoint": 1
 }]
-show lsn
+select system.state().lsn
 [1]
 show all
 [{
-  "version": "0.9.0",
   "uuid": "00000000-0000-0000-0000-000000000000",
-  "directory": "_output/E0",
   "timezone": "UTC",
   "format": "json-pretty",
   "shutdown": "graceful",
@@ -126,15 +118,11 @@ show all
   "wal_sync_on_write": false,
   "repl_reconnect_ms": 3000,
   "checkpoint_interval": "5 min",
-  "checkpoint_workers": 3,
-  "checkpoint": 1,
-  "read_only": false,
-  "lsn": 1,
-  "psn": 0
+  "checkpoint_workers": 3
 }]
 # test: create table
 create table test (id serial primary key, data int default 0)
-show lsn
+select system.state().lsn
 [2]
 select identity_of("public", "test")
 [0]
@@ -144,13 +132,13 @@ close E0
 open E0
 connect E0 S0 localhost:3485
 # test: validate state
-show lsn
+select system.state().lsn
 [2]
 select identity_of("public", "test")
 [0]
 # test: insert
 insert into test () values (), (), ()
-show lsn
+select system.state().lsn
 [3]
 select identity_of("public", "test")
 [3]
@@ -162,7 +150,7 @@ close E0
 open E0
 connect E0 S0 localhost:3485
 # test: validate state
-show lsn
+select system.state().lsn
 [3]
 select identity_of("public", "test")
 [3]
@@ -170,7 +158,7 @@ select * from test
 [[0, 0], [1, 0], [2, 0]]
 # test: update
 update test set data = id
-show lsn
+select system.state().lsn
 [4]
 select identity_of("public", "test")
 [3]
@@ -182,7 +170,7 @@ close E0
 open E0
 connect E0 S0 localhost:3485
 # test: validate state
-show lsn
+select system.state().lsn
 [4]
 select identity_of("public", "test")
 [3]
@@ -190,7 +178,7 @@ select * from test
 [[0, 0], [1, 1], [2, 2]]
 # test: upsert
 insert into test values (2, 0) on conflict do update set data = data + 1
-show lsn
+select system.state().lsn
 [5]
 select identity_of("public", "test")
 [4]
@@ -202,7 +190,7 @@ close E0
 open E0
 connect E0 S0 localhost:3485
 # test: validate state
-show lsn
+select system.state().lsn
 [5]
 select identity_of("public", "test")
 [3]
@@ -210,7 +198,7 @@ select * from test
 [[0, 0], [1, 1], [2, 3]]
 # test: delete
 delete from test where id in (0, 1)
-show lsn
+select system.state().lsn
 [6]
 select identity_of("public", "test")
 [3]
@@ -222,7 +210,7 @@ close E0
 open E0
 connect E0 S0 localhost:3485
 # test: validate state
-show lsn
+select system.state().lsn
 [6]
 select identity_of("public", "test")
 [3]

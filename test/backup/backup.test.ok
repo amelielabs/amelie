@@ -24,7 +24,7 @@ open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "12
 connect E0 S0 localhost:3480
 create table test (id int primary key)
 insert into test values (1),(2),(3)
-show lsn
+select system.state().lsn
 [3]
 backup E2 "uri": "127.0.0.1:3480"
 close E2
@@ -37,14 +37,14 @@ show uuid
 ["00000000-0000-0000-0000-000000000000"]
 select * from test
 [1, 2, 3]
-show lsn
+select system.state().lsn
 [3]
 disconnect S0
 close E2
 # test: backup wal #2
 open E0 "wal_size": 0
 connect E0 S0 localhost:3480
-show lsn
+select system.state().lsn
 [3]
 show wal
 [{
@@ -82,7 +82,7 @@ show uuid
 ["00000000-0000-0000-0000-000000000000"]
 select * from test
 [1, 2, 3, 4]
-show lsn
+select system.state().lsn
 [4]
 show wal
 [{
@@ -101,14 +101,14 @@ close E3
 # test: backup checkpoint
 open E0
 connect E0 S0 localhost:3480
-show lsn
+select system.state().lsn
 [4]
-show checkpoint
+select system.state().checkpoint
 [1]
 checkpoint
-show lsn
+select system.state().lsn
 [4]
-show checkpoint
+select system.state().checkpoint
 [4]
 backup E4 "uri": "127.0.0.1:3480"
 close E4
@@ -117,9 +117,9 @@ close E0
 # test: restore checkpoint
 open E4
 connect E4 S0 localhost:3480
-show lsn
+select system.state().lsn
 [4]
-show checkpoint
+select system.state().checkpoint
 [4]
 select * from test
 [1, 2, 3, 4]
@@ -129,9 +129,9 @@ close E4
 open E0
 connect E0 S0 localhost:3480
 insert into test values (5),(6),(7)
-show lsn
+select system.state().lsn
 [5]
-show checkpoint
+select system.state().checkpoint
 [4]
 backup E5 "uri": "127.0.0.1:3480"
 close E5
@@ -140,9 +140,9 @@ close E0
 # test: restore checkpoint and wal
 open E5
 connect E5 S0 localhost:3480
-show lsn
+select system.state().lsn
 [5]
-show checkpoint
+select system.state().checkpoint
 [4]
 select * from test
 [1, 6, 7, 2, 3, 4, 5]

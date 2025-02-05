@@ -3,9 +3,7 @@ connect E0 S0 localhost:3485
 # test: default limits
 select system.config()
 [{
-  "version": "0.9.0",
   "uuid": "00000000-0000-0000-0000-000000000000",
-  "directory": "_output/E0",
   "timezone": "UTC",
   "format": "json-pretty",
   "shutdown": "graceful",
@@ -32,11 +30,7 @@ select system.config()
   "wal_sync_on_write": false,
   "repl_reconnect_ms": 3000,
   "checkpoint_interval": "5 min",
-  "checkpoint_workers": 3,
-  "checkpoint": 1,
-  "read_only": false,
-  "lsn": 1,
-  "psn": 0
+  "checkpoint_workers": 3
 }]
 # test: limit_write
 create table test (id int primary key)
@@ -64,9 +58,7 @@ open E0
 connect E0 S0 localhost:3485
 select system.config()
 [{
-  "version": "0.9.0",
   "uuid": "00000000-0000-0000-0000-000000000000",
-  "directory": "_output/E0",
   "timezone": "UTC",
   "format": "json-pretty",
   "shutdown": "graceful",
@@ -93,11 +85,7 @@ select system.config()
   "wal_sync_on_write": false,
   "repl_reconnect_ms": 3000,
   "checkpoint_interval": "5 min",
-  "checkpoint_workers": 3,
-  "checkpoint": 1,
-  "read_only": false,
-  "lsn": 3,
-  "psn": 1
+  "checkpoint_workers": 3
 }]
 # test: limit_recv
 disconnect S0

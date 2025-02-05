@@ -15,7 +15,7 @@
 static void
 amelie_usage(void)
 {
-	auto version = &config()->version.string;
+	auto version = &state()->version.string;
 	info("amelie (version: %.*s)", str_size(version), str_of(version));
 	info("");
 	info("usage: amelie [command | login] [options]");
@@ -424,7 +424,7 @@ amelie_main(Amelie* self, int argc, char** argv)
 	if (!strcmp(argv[1], "-v") ||
 	    !strcmp(argv[1], "--version"))
 	{
-		auto version = &config()->version.string;
+		auto version = &state()->version.string;
 		info("%.*s", str_size(version), str_of(version));
 		return;	
 	}
