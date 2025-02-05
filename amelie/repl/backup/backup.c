@@ -114,8 +114,26 @@ backup_prepare(Backup* self)
 	uint64_t checkpoint = checkpoint_mgr_snapshot(&db->checkpoint_mgr);
 	self->snapshot = true;
 
+	// checkpoint
 	encode_raw(buf, "checkpoint", 10);
 	encode_integer(buf, checkpoint);
+
+	// version
+	encode_raw(buf, "version", 7);
+	Json json;
+	json_init(&json);
+	defer(json_free, &json);
+	json_parse(&json, &version_str, buf);
+
+	// state
+	encode_raw(buf, "state", 5);
+	json_reset(&json);
+	json_parse(&json, &state_str, buf);
+
+	// config
+	encode_raw(buf, "config", 6);
+	json_reset(&json);
+	json_parse(&json, &config_str, buf);
 
 	// files
 	encode_raw(buf, "files", 5);
@@ -130,23 +148,6 @@ backup_prepare(Backup* self)
 	// certs
 	backup_list(buf, "certs");
 	encode_array_end(buf);
-
-	// version
-	encode_raw(buf, "version", 7);
-	Json json;
-	json_init(&json);
-	defer(json_free, &json);
-	json_parse(&json, &version_str, buf);
-
-	// config
-	encode_raw(buf, "config", 6);
-	json_reset(&json);
-	json_parse(&json, &config_str, buf);
-
-	// state
-	encode_raw(buf, "state", 5);
-	json_reset(&json);
-	json_parse(&json, &state_str, buf);
 
 	encode_obj_end(buf);
 }

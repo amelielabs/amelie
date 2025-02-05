@@ -34,10 +34,10 @@ typedef struct Restore Restore;
 struct Restore
 {
 	int64_t  checkpoint;
-	uint8_t* in_files;
 	uint8_t* in_version;
-	uint8_t* in_config;
 	uint8_t* in_state;
+	uint8_t* in_config;
+	uint8_t* in_files;
 	int      count_total;
 	int      count;
 	Client*  client;
@@ -51,10 +51,10 @@ static void
 restore_init(Restore* self, Remote* remote)
 {
 	self->checkpoint  = 0;
-	self->in_files    = NULL;
 	self->in_version  = NULL;
-	self->in_config   = NULL;
 	self->in_state    = NULL;
+	self->in_config   = NULL;
+	self->in_files    = NULL;
 	self->count       = 0;
 	self->count_total = 0;
 	self->remote      = remote;
@@ -120,10 +120,10 @@ restore_start(Restore* self)
 	Decode obj[] =
 	{
 		{ DECODE_INT,   "checkpoint", &self->checkpoint },
-		{ DECODE_ARRAY, "files",      &self->in_files   },
 		{ DECODE_OBJ,   "version",    &self->in_version },
-		{ DECODE_OBJ,   "config",     &self->in_config  },
 		{ DECODE_OBJ,   "state",      &self->in_state   },
+		{ DECODE_OBJ,   "config",     &self->in_config  },
+		{ DECODE_ARRAY, "files",      &self->in_files   },
 		{ 0,             NULL,        NULL              }
 	};
 	decode_obj(obj, "restore", &pos);
@@ -226,68 +226,20 @@ restore_copy(Restore* self)
 }
 
 static void
-restore_write_version(Restore* self)
+restore_file(uint8_t* pos, const char* name, int mode)
 {
-	// convert version to json
+	// convert to json
 	Buf text;
 	buf_init(&text);
 	defer_buf(&text);
-	uint8_t* pos = self->in_version;
 	json_export_pretty(&text, global()->timezone, &pos);
 
-	// create version file
 	char path[PATH_MAX];
-	snprintf(path, sizeof(path), "%s/version.json",
-	         config_directory());
-
+	snprintf(path, sizeof(path), "%s/%s", config_directory(), name);
 	File file;
 	file_init(&file);
 	defer(file_close, &file);
-	file_open_as(&file, path, O_CREAT|O_RDWR, 0644);
-	file_write_buf(&file, &text);
-}
-
-static void
-restore_write_config(Restore* self)
-{
-	// convert config to json
-	Buf text;
-	buf_init(&text);
-	defer_buf(&text);
-	uint8_t* pos = self->in_config;
-	json_export_pretty(&text, global()->timezone, &pos);
-
-	// create config file
-	char path[PATH_MAX];
-	snprintf(path, sizeof(path), "%s/config.json",
-	         config_directory());
-
-	File file;
-	file_init(&file);
-	defer(file_close, &file);
-	file_open_as(&file, path, O_CREAT|O_RDWR, 0644);
-	file_write_buf(&file, &text);
-}
-
-static void
-restore_write_state(Restore* self)
-{
-	// convert state to json
-	Buf text;
-	buf_init(&text);
-	defer_buf(&text);
-	uint8_t* pos = self->in_state;
-	json_export_pretty(&text, global()->timezone, &pos);
-
-	// create state file
-	char path[PATH_MAX];
-	snprintf(path, sizeof(path), "%s/state.json",
-	         config_directory());
-
-	File file;
-	file_init(&file);
-	defer(file_close, &file);
-	file_open_as(&file, path, O_CREAT|O_RDWR, 0600);
+	file_open_as(&file, path, O_CREAT|O_RDWR, mode);
 	file_write_buf(&file, &text);
 }
 
@@ -302,9 +254,8 @@ restore(Remote* remote)
 	restore_connect(&restore);
 	restore_start(&restore);
 	restore_copy(&restore);
-	restore_write_version(&restore);
-	restore_write_config(&restore);
-	restore_write_state(&restore);
-
+	restore_file(restore.in_version, "version.json", 0644);
+	restore_file(restore.in_state, "state.json", 0600);
+	restore_file(restore.in_config, "config.json", 0644);
 	info("complete");
 }
