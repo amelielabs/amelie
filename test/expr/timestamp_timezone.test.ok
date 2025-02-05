@@ -3,8 +3,6 @@ connect E0 S0 localhost:3485
 # test: utc by default
 show timezone
 ["UTC"]
-show timezone_default
-["UTC"]
 # test: set unknown timezone
 set timezone to 'mars'
 {"msg": "set timezone to ❰'mars'❱ ⟵ unable to find timezone"}

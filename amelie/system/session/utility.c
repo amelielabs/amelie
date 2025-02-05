@@ -102,13 +102,14 @@ ctl_show(Session* self)
 		break;
 	case SHOW_CONFIG:
 	{
-		auto var = vars_find(&global()->config->vars, &arg->name);
+		// find local variable first
+		auto var = vars_find(&self->local.config.vars, &arg->name);
+		if (! var)
+			var = vars_find(&global()->config->vars, &arg->name);
 		if (var && var_is(var, VAR_S))
 			var = NULL;
 		if (unlikely(var == NULL))
 			stmt_error(stmt, arg->name_ast, "variable not found");
-		if (var_is(var, VAR_L))
-			var = vars_find(&self->local.config.vars, &arg->name);
 		buf = buf_create();
 		var_encode(var, buf);
 		break;
@@ -126,43 +127,40 @@ ctl_show(Session* self)
 static void
 ctl_set(Session* self)
 {
-	auto stmt = compiler_stmt(&self->compiler);
-	auto arg  = ast_set_of(stmt->ast);
-	auto name = &arg->name->string;
+	auto stmt  = compiler_stmt(&self->compiler);
+	auto arg   = ast_set_of(stmt->ast);
+	auto name  = &arg->name->string;
+	auto local = &self->local;
 
-	// find variable
-	auto var = vars_find(&global()->config->vars, name);
+	// find local variable first
+	auto var = vars_find(&local->config.vars, name);
+	if (! var)
+		var = vars_find(&global()->config->vars, name);
 	if (var && var_is(var, VAR_S))
 		var = NULL;
 	if (unlikely(var == NULL))
 		stmt_error(stmt, arg->name, "variable not found");
+
+	// ensure the variable can be changed in runtime
 	if (unlikely(! var_is(var, VAR_R)))
-		stmt_error(stmt, arg->name, "variable is read-only");
+		stmt_error(stmt, arg->name, "variable cannot be changed during runtime");
 
 	// upgrade to exclusive lock, if var requires config update
 	if (! var_is(var, VAR_E))
 		session_lock(self, LOCK_EXCLUSIVE);
 
-	// local variable
+	// validate and set timezone first
 	auto value = arg->value;
-	if (var_is(var, VAR_L))
+	if (var == &local->config.timezone)
 	{
-		auto local = &self->local;
-		var = vars_find(&local->config.vars, name);
-		assert(var);
+		if (value->id != KSTRING)
+			stmt_error(stmt, value, "string expected");
+		auto timezone = timezone_mgr_find(global()->timezone_mgr, &value->string);
+		if (! timezone)
+			stmt_error(stmt, value, "unable to find timezone");
 
-		// validate and set timezone first
-		if (var == &local->config.timezone)
-		{
-			if (value->id != KSTRING)
-				stmt_error(stmt, value, "string expected");
-			auto timezone = timezone_mgr_find(global()->timezone_mgr, &value->string);
-			if (! timezone)
-				stmt_error(stmt, value, "unable to find timezone");
-
-			// set new timezone
-			local->timezone = timezone;
-		}
+		// set new timezone
+		local->timezone = timezone;
 	}
 
 	// set value

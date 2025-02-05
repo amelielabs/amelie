@@ -340,7 +340,7 @@ test_suite_open(TestSuite* self, char* arg)
 		"--log_enable=true",
 		"--log_to_stdout=false",
 		"--log_options=true",
-		"--timezone_default=UTC",
+		"--timezone=UTC",
 		"--shutdown=graceful",
 		"--wal_sync_on_rotate=false",
 		"--wal_sync_on_write=false",

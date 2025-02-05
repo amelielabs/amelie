@@ -43,10 +43,9 @@ config_prepare(Config* self)
 		{ "version",                 VAR_STRING, VAR_E,                   &self->version,                 "0.9.0",       0                   },
 		{ "uuid",                    VAR_STRING, VAR_C,                   &self->uuid,                    NULL,          0                   },
 		{ "directory",               VAR_STRING, VAR_E,                   &self->directory,               NULL,          0                   },
-		{ "timezone",                VAR_STRING, VAR_E|VAR_R|VAR_L,       &self->timezone,                NULL,          0                   },
-		{ "timezone_default",        VAR_STRING, VAR_C,                   &self->timezone_default,        NULL,          0                   },
-		{ "shutdown",                VAR_STRING, VAR_C,                   &self->shutdown,                "fast",        0                   },
+		{ "timezone",                VAR_STRING, VAR_C|VAR_R|VAR_L,       &self->timezone,                NULL,          0                   },
 		{ "format",                  VAR_STRING, VAR_C|VAR_R,             &self->format,                  "json-pretty", 0                   },
+		{ "shutdown",                VAR_STRING, VAR_C,                   &self->shutdown,                "fast",        0                   },
 		// log
 		{ "log_enable",              VAR_BOOL,   VAR_C,                   &self->log_enable,              NULL,          true                },
 		{ "log_to_file",             VAR_BOOL,   VAR_C,                   &self->log_to_file,             NULL,          true                },

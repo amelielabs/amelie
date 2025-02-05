@@ -117,8 +117,8 @@ main_bootstrap(Main* self)
 	}
 
 	// set default timezone using system timezone
-	if (! var_string_is_set(&config->timezone_default))
-		var_string_set(&config->timezone_default, &self->timezone_mgr.system->name);
+	if (! var_string_is_set(&config->timezone))
+		var_string_set(&config->timezone, &self->timezone_mgr.system->name);
 
 	// set default server listen
 	if (! var_json_is_set(&config->listen))
@@ -171,7 +171,7 @@ main_open(Main* self, char* directory, int argc, char** argv)
 		      str_of(shutdown));
 
 	// set system timezone
-	auto name = &config()->timezone_default.string;
+	auto name = &config()->timezone.string;
 	global()->timezone = timezone_mgr_find(global()->timezone_mgr, name);
 	if (! global()->timezone)
 		error("failed to find timezone %.*s", str_size(name), str_of(name));

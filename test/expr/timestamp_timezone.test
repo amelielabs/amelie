@@ -5,7 +5,6 @@ connect E0 S0 localhost:3485
 
 # test: utc by default
 show timezone
-show timezone_default
 
 # test: set unknown timezone
 set timezone to 'mars'

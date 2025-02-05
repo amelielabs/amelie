@@ -34,8 +34,8 @@ config_local_prepare(ConfigLocal* self)
 {
 	VarDef defs[] =
 	{
-		{ "timezone", VAR_STRING, VAR_L, &self->timezone, NULL, 0 },
-		{ NULL,       0,          0,     NULL,            NULL, 0 }
+		{ "timezone", VAR_STRING, VAR_C|VAR_R|VAR_L, &self->timezone, NULL, 0 },
+		{  NULL,      0,          0,                  NULL,           NULL, 0 }
 	};
 	vars_define(&self->vars, defs);
 }
