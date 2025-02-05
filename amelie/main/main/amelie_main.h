@@ -17,6 +17,7 @@
 #include "main/home.h"
 
 // main
+#include "main/version.h"
 #include "main/main.h"
 #include "main/amelie.h"
 

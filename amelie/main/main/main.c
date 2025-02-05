@@ -148,7 +148,19 @@ main_open(Main* self, char* directory, int argc, char** argv)
 	snprintf(path, sizeof(path), "%s/log", config_directory());
 	logger_open(logger, path);
 
-	// read config
+	// read version file
+	snprintf(path, sizeof(path), "%s/version.json", config_directory());
+	if (bootstrap)
+	{
+		// create version file
+		version_save(path);
+	} else
+	{
+		// read and validate version file
+		version_open(path);
+	}
+
+	// read config file
 	snprintf(path, sizeof(path), "%s/config.json", config_directory());
 	if (bootstrap)
 	{
@@ -169,7 +181,7 @@ main_open(Main* self, char* directory, int argc, char** argv)
 		vars_set_argv(&config->vars, argc, argv);
 	}
 
-	// read state
+	// read state file
 	snprintf(path, sizeof(path), "%s/state.json", config_directory());
 	if (bootstrap)
 	{

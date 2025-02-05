@@ -148,6 +148,7 @@ system_recover(System* self)
 	recover_wal(&recover);
 
 	info("recover: complete");
+	info("");
 }
 
 static void
@@ -165,6 +166,7 @@ system_bootstrap(System* self)
 	checkpoint_begin(&cp, 1, 1);
 	checkpoint_run(&cp);
 	checkpoint_wait(&cp);
+	info("");
 }
 
 void
@@ -173,7 +175,14 @@ system_start(System* self, bool bootstrap)
 	// hello
 	auto version = &state()->version.string;
 	info("amelie ｢%.*s｣", str_size(version), str_of(version));
+
+	// show system options
 	info("");
+	if (bootstrap || var_int_of(&config()->log_options))
+	{
+		vars_print(&config()->vars);
+		info("");
+	}
 
 	// register builtin functions
 	fn_register(&self->function_mgr);
@@ -206,14 +215,6 @@ system_start(System* self, bool bootstrap)
 
 	// prepare replication manager
 	repl_open(&self->repl);
-
-	// show system options
-	info("");
-	if (bootstrap || var_int_of(&config()->log_options))
-	{
-		vars_print(&config()->vars);
-		info("");
-	}
 
 	// start server
 	server_start(&self->server, system_on_server_connect, self);

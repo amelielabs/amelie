@@ -35,6 +35,7 @@ struct Restore
 {
 	int64_t  checkpoint;
 	uint8_t* in_files;
+	uint8_t* in_version;
 	uint8_t* in_config;
 	uint8_t* in_state;
 	int      count_total;
@@ -51,6 +52,7 @@ restore_init(Restore* self, Remote* remote)
 {
 	self->checkpoint  = 0;
 	self->in_files    = NULL;
+	self->in_version  = NULL;
 	self->in_config   = NULL;
 	self->in_state    = NULL;
 	self->count       = 0;
@@ -119,6 +121,7 @@ restore_start(Restore* self)
 	{
 		{ DECODE_INT,   "checkpoint", &self->checkpoint },
 		{ DECODE_ARRAY, "files",      &self->in_files   },
+		{ DECODE_OBJ,   "version",    &self->in_version },
 		{ DECODE_OBJ,   "config",     &self->in_config  },
 		{ DECODE_OBJ,   "state",      &self->in_state   },
 		{ 0,             NULL,        NULL              }
@@ -223,6 +226,28 @@ restore_copy(Restore* self)
 }
 
 static void
+restore_write_version(Restore* self)
+{
+	// convert version to json
+	Buf text;
+	buf_init(&text);
+	defer_buf(&text);
+	uint8_t* pos = self->in_version;
+	json_export_pretty(&text, global()->timezone, &pos);
+
+	// create version file
+	char path[PATH_MAX];
+	snprintf(path, sizeof(path), "%s/version.json",
+	         config_directory());
+
+	File file;
+	file_init(&file);
+	defer(file_close, &file);
+	file_open_as(&file, path, O_CREAT|O_RDWR, 0644);
+	file_write_buf(&file, &text);
+}
+
+static void
 restore_write_config(Restore* self)
 {
 	// convert config to json
@@ -277,6 +302,7 @@ restore(Remote* remote)
 	restore_connect(&restore);
 	restore_start(&restore);
 	restore_copy(&restore);
+	restore_write_version(&restore);
 	restore_write_config(&restore);
 	restore_write_state(&restore);
 

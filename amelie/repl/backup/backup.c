@@ -87,8 +87,17 @@ backup_list(Buf* self, char* name)
 static void
 backup_prepare(Backup* self)
 {
-	// read state file
+	// read version file
 	char path[PATH_MAX];
+	snprintf(path, sizeof(path), "%s/version.json", config_directory());
+	Buf version_data;
+	buf_init(&version_data);
+	defer_buf(&version_data);
+	file_import(&version_data, "%s", path);
+	Str version_str;
+	buf_str(&version_data, &version_str);
+
+	// read state file
 	snprintf(path, sizeof(path), "%s/state.json", config_directory());
 	Buf state_data;
 	buf_init(&state_data);
@@ -132,11 +141,16 @@ backup_prepare(Backup* self)
 	backup_list(buf, "certs");
 	encode_array_end(buf);
 
-	// config
-	encode_raw(buf, "config", 6);
+	// version
+	encode_raw(buf, "version", 7);
 	Json json;
 	json_init(&json);
 	defer(json_free, &json);
+	json_parse(&json, &version_str, buf);
+
+	// config
+	encode_raw(buf, "config", 6);
+	json_reset(&json);
 	json_parse(&json, &config_str, buf);
 
 	// state

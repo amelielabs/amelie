@@ -299,8 +299,9 @@ set(AMELIE_SOURCES_SYSTEM
     ${AMELIE_ROOT}/system/system/system_metrics.c)
 
 set(AMELIE_SOURCES_MAIN
-    ${AMELIE_ROOT}/main/main/login_mgr.c
+    ${AMELIE_ROOT}/main/main/version.c
     ${AMELIE_ROOT}/main/main/main.c
+    ${AMELIE_ROOT}/main/main/login_mgr.c
     ${AMELIE_ROOT}/main/main/amelie.c
     ${AMELIE_ROOT}/main/main/import.c
     ${AMELIE_ROOT}/main/main/bench.c
