@@ -35,14 +35,12 @@ login_mgr_open(LoginMgr* self, const char* path)
 	if (! fs_exists("%s", path))
 		return;
 
-	Buf buf;
-	buf_init(&buf);
-	defer_buf(&buf);
-	file_import(&buf, "%s", path);
+	auto buf = file_import("%s", path);
+	defer_buf(buf);
 
 	Str text;
 	str_init(&text);
-	buf_str(&buf, &text);
+	buf_str(buf, &text);
 
 	Json json;
 	json_init(&json);

@@ -52,14 +52,12 @@ void
 version_open(const char* path)
 {
 	// read version file
-	Buf buf;
-	buf_init(&buf);
-	defer_buf(&buf);
-	file_import(&buf, "%s", path);
+	auto version_buf = file_import("%s", path);
+	defer_buf(version_buf);
 
 	Str text;
 	str_init(&text);
-	buf_str(&buf, &text);
+	buf_str(version_buf, &text);
 
 	// parse json
 	Json json;

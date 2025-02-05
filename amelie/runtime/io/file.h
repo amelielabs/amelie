@@ -250,9 +250,12 @@ file_pread_buf(File* self, Buf* buf, int size, uint64_t offset)
 	buf_advance(buf, size);
 }
 
-static inline void
-file_import(Buf* buf, const char* fmt, ...)
+static inline Buf*
+file_import(const char* fmt, ...)
 {
+	auto buf = buf_create();
+	errdefer_buf(buf);
+
 	va_list args;
 	va_start(args, fmt);
 	char path[PATH_MAX];
@@ -264,6 +267,7 @@ file_import(Buf* buf, const char* fmt, ...)
 	defer(file_close, &file);
 	file_open_rdonly(&file, path);
 	file_pread_buf(&file, buf, file.size, 0);
+	return buf;
 }
 
 static inline void

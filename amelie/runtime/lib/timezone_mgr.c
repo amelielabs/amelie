@@ -97,14 +97,12 @@ static void
 timezone_mgr_read_system_timezone(TimezoneMgr* self)
 {
 	// read /etc/timezone content
-	Buf buf;
-	buf_init(&buf);
-	defer(buf_free, &buf);
-	file_import(&buf, "/etc/timezone");
+	auto buf = file_import("/etc/timezone");
+	defer(buf_free, buf);
 
 	Str name;
 	str_init(&name);
-	buf_str(&buf, &name);
+	buf_str(buf, &name);
 	str_chomp(&name);
 
 	// set as system timezone in timezone mgr

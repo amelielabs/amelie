@@ -88,32 +88,22 @@ static void
 backup_prepare(Backup* self)
 {
 	// read version file
-	char path[PATH_MAX];
-	snprintf(path, sizeof(path), "%s/version.json", config_directory());
-	Buf version_data;
-	buf_init(&version_data);
-	defer_buf(&version_data);
-	file_import(&version_data, "%s", path);
+	auto version_buf = file_import("%s/version.json", config_directory());
 	Str version_str;
-	buf_str(&version_data, &version_str);
+	buf_str(version_buf, &version_str);
+	defer_buf(version_buf);
 
 	// read state file
-	snprintf(path, sizeof(path), "%s/state.json", config_directory());
-	Buf state_data;
-	buf_init(&state_data);
-	defer_buf(&state_data);
-	file_import(&state_data, "%s", path);
+	auto state_buf = file_import("%s/state.json", config_directory());
 	Str state_str;
-	buf_str(&state_data, &state_str);
+	buf_str(state_buf, &state_str);
+	defer_buf(state_buf);
 
 	// read config file
-	snprintf(path, sizeof(path), "%s/config.json", config_directory());
-	Buf config_data;
-	buf_init(&config_data);
-	defer_buf(&config_data);
-	file_import(&config_data, "%s", path);
+	auto config_buf = file_import("%s/config.json", config_directory());
 	Str config_str;
-	buf_str(&config_data, &config_str);
+	buf_str(config_buf, &config_str);
+	defer_buf(config_buf);
 
 	// prepare backup state
 	auto buf = &self->state;

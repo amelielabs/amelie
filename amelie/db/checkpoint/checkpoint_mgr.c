@@ -101,14 +101,12 @@ checkpoint_mgr_open_catalog(CheckpointMgr* self)
 		return;
 
 	// read and parse catalog content
-	Buf buf;
-	buf_init(&buf);
-	defer_buf(&buf);
-	file_import(&buf, "%s/%" PRIu64 "/catalog.json", config_directory(),
-	            checkpoint);
+	auto buf = file_import("%s/%" PRIu64 "/catalog.json", config_directory(),
+	                       checkpoint);
+	defer_buf(buf);
 
 	Str catalog_data;
-	str_set_u8(&catalog_data, buf.start, buf_size(&buf));
+	buf_str(buf, &catalog_data);
 
 	Json json;
 	json_init(&json);

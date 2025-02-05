@@ -102,12 +102,10 @@ config_save(Config* self, const char* path)
 void
 config_open(Config* self, const char* path)
 {
-	Buf buf;
-	buf_init(&buf);
-	defer_buf(&buf);
-	file_import(&buf, "%s", path);
+	auto buf = file_import("%s", path);
+	defer_buf(buf);
 	Str options;
 	str_init(&options);
-	buf_str(&buf, &options);
+	buf_str(buf, &options);
 	vars_set(&self->vars, &options);
 }
