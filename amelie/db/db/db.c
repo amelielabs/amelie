@@ -98,11 +98,11 @@ db_close(Db* self, bool fast)
 	// stop checkpointer service
 	checkpointer_stop(&self->checkpointer);
 
-	if (fast)
-		return;
-
 	// free tables
-	table_mgr_free(&self->table_mgr);
+	if (! fast)
+		table_mgr_free(&self->table_mgr);
+	else
+		handle_mgr_init(&self->table_mgr.mgr);
 
 	// free nodes
 	node_mgr_free(&self->node_mgr);
