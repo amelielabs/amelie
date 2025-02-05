@@ -89,7 +89,7 @@ backup_prepare(Backup* self)
 {
 	// read config file
 	char path[PATH_MAX];
-	snprintf(path, sizeof(path), "%s/amelie.json", config_directory());
+	snprintf(path, sizeof(path), "%s/config.json", config_directory());
 	Buf config_data;
 	buf_init(&config_data);
 	defer_buf(&config_data);

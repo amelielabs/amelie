@@ -231,7 +231,7 @@ restore_write_config(Restore* self)
 
 	// create config file
 	char path[PATH_MAX];
-	snprintf(path, sizeof(path), "%s/amelie.json",
+	snprintf(path, sizeof(path), "%s/config.json",
 	         config_directory());
 
 	File file;

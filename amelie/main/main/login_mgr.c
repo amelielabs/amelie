@@ -181,7 +181,7 @@ login_mgr_set(LoginMgr* self, Remote* remote, Vars* vars,
 	{
 		// directory path
 		char path[PATH_MAX];
-		snprintf(path, sizeof(path), "%s/amelie.sock", argv[0]);
+		snprintf(path, sizeof(path), "%s/socket", argv[0]);
 		Str str;
 		str_set_cstr(&str, path);
 		remote_set(remote, REMOTE_PATH, &str);

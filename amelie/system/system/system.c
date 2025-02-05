@@ -48,7 +48,7 @@ system_save_config(void* arg)
 {
 	unused(arg);
 	char path[PATH_MAX];
-	snprintf(path, sizeof(path), "%s/amelie.json", config_directory());
+	snprintf(path, sizeof(path), "%s/config.json", config_directory());
 	config_save(global()->config, path);
 }
 
@@ -133,7 +133,8 @@ static void
 system_recover(System* self)
 {
 	// ask each node to recover last checkpoint partitions in parallel
-	info("recover: begin (checkpoint %" PRIu64 ")", config_checkpoint());
+	info("recover: begin (checkpoint %" PRIu64 ")",
+	     config_checkpoint());
 
 	Build build;
 	build_init(&build, BUILD_RECOVER, &self->compute_mgr, NULL, NULL, NULL, NULL);
@@ -171,8 +172,7 @@ system_start(System* self, bool bootstrap)
 {
 	// hello
 	auto version = &config()->version.string;
-	info("");
-	info("amelie. (%.*s)", str_size(version), str_of(version));
+	info("amelie ｢%.*s｣", str_size(version), str_of(version));
 	info("");
 
 	// register builtin functions

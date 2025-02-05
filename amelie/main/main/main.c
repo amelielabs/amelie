@@ -138,11 +138,11 @@ main_open(Main* self, char* directory, int argc, char** argv)
 	logger_set_enable(logger, true);
 	logger_set_cli(logger, false);
 	char path[PATH_MAX];
-	snprintf(path, sizeof(path), "%s/amelie.log", config_directory());
+	snprintf(path, sizeof(path), "%s/log", config_directory());
 	logger_open(logger, path);
 
 	// read config
-	snprintf(path, sizeof(path), "%s/amelie.json", config_directory());
+	snprintf(path, sizeof(path), "%s/config.json", config_directory());
 	if (bootstrap)
 	{
 		// set options first, to properly generate config

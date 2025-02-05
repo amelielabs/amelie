@@ -180,7 +180,7 @@ server_configure_unixsocket(Server* self)
 {
 	// add default unix socket to the repository
 	auto config = server_config_allocate();
-	str_dup_cstr(&config->path, "amelie.sock");
+	str_dup_cstr(&config->path, "socket");
 	config->path_mode = 0700;
 	list_append(&self->config, &config->link);
 	self->config_count++;

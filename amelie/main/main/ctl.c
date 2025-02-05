@@ -75,7 +75,7 @@ static int
 ctl_read_pidfile(Ctl* self)
 {
 	char path[PATH_MAX];
-	snprintf(path, sizeof(path), "%s/amelie.pid", self->directory);
+	snprintf(path, sizeof(path), "%s/pid", self->directory);
 	auto fd = vfs_open(path, O_RDONLY, 0644);
 	if (fd == -1)
 	{
@@ -112,7 +112,7 @@ static int
 ctl_write_pidfile(Ctl* self, pid_t pid)
 {
 	char path[PATH_MAX];
-	snprintf(path, sizeof(path), "%s/amelie.pid", self->directory);
+	snprintf(path, sizeof(path), "%s/pid", self->directory);
 	auto fd = vfs_open(path, O_TRUNC|O_CREAT|O_WRONLY, 0644);
 	if (fd == -1)
 	{
