@@ -16,20 +16,18 @@ typedef struct VarDef VarDef;
 
 enum
 {
-	// can be set in config or start option
+	// can be set in config or command line
 	VAR_C = 1 << 0,
-	// can be set in runtime
-	VAR_R = 1 << 1,
 	// hidden
-	VAR_H = 1 << 2,
+	VAR_H = 1 << 1,
 	// secret
-	VAR_S = 1 << 3,
+	VAR_S = 1 << 2,
 	// system
-	VAR_Y = 1 << 4,
+	VAR_Y = 1 << 3,
 	// excluded from config
-	VAR_E = 1 << 5,
+	VAR_E = 1 << 4,
 	// cannot be zero
-	VAR_Z = 1 << 6
+	VAR_Z = 1 << 5
 };
 
 typedef enum

@@ -16,6 +16,7 @@ typedef struct ConfigLocal ConfigLocal;
 struct ConfigLocal
 {
 	Var  timezone;
+	Var  format;
 	// testing
 	Var  test_bool;
 	Var  test_int;

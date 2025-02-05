@@ -2,16 +2,28 @@ open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "12
 connect E0 S0 localhost:3485
 # test: limit_write
 create table test (id int primary key)
-set limit_write to 1
+disconnect S0
+close E0
+open E0 "limit_write": 1
+connect E0 S0 localhost:3485
 insert into test values (123)
 {"msg": "transaction log limit reached"}
-set limit_write to 10000
+disconnect S0
+close E0
+open E0 "limit_write": 10000
+connect E0 S0 localhost:3485
 drop table test
 # test: limit_send
-set limit_send to 0
+disconnect S0
+close E0
+open E0 "limit_send": 0
+connect E0 S0 localhost:3485
 select system.config()
 {"msg": "reply limit reached"}
-set limit_send to 1000000
+disconnect S0
+close E0
+open E0 "limit_send": 1000000
+connect E0 S0 localhost:3485
 select system.config()
 [{
   "version": "0.9.0",
@@ -50,7 +62,10 @@ select system.config()
   "psn": 1
 }]
 # test: limit_recv
-set limit_recv to 0
+disconnect S0
+close E0
+open E0 "limit_recv": 0
+connect E0 S0 localhost:3485
 select 1
 {"msg": "http request limit reached"}
 disconnect S0

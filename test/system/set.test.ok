@@ -12,12 +12,12 @@ set log_enable
 set log_enable to
 {"msg": "set log_enable to ⟵ value expected string, int, or bool"}
 set log_enable to 0
-{"msg": "set ❰log_enable❱ ⟵ variable cannot be changed during runtime"}
+{"msg": "set ❰log_enable❱ ⟵ variable cannot be changed online"}
 set query_dump to 0 junk
 {"msg": "set query_dump to 0 ❰junk❱ ⟵ ; expected"}
 # test: set read-only
 set log_enable to 0
-{"msg": "set ❰log_enable❱ ⟵ variable cannot be changed during runtime"}
+{"msg": "set ❰log_enable❱ ⟵ variable cannot be changed online"}
 # test: set bool
 show test_bool
 [false]

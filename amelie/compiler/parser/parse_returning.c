@@ -41,7 +41,7 @@ void
 parse_returning(Returning* self, Stmt* stmt, Expr* ctx)
 {
 	// set returning format
-	self->format = config()->format.string;
+	self->format = *stmt->local->format;
 
 	// * | target.* | expr [AS] [name], ...
 	for (;;)

@@ -43,15 +43,15 @@ config_prepare(Config* self)
 		{ "version",                 VAR_STRING, VAR_E,                   &self->version,                 "0.9.0",       0                   },
 		{ "uuid",                    VAR_STRING, VAR_C,                   &self->uuid,                    NULL,          0                   },
 		{ "directory",               VAR_STRING, VAR_E,                   &self->directory,               NULL,          0                   },
-		{ "timezone",                VAR_STRING, VAR_C|VAR_R,             &self->timezone,                NULL,          0                   },
-		{ "format",                  VAR_STRING, VAR_C|VAR_R,             &self->format,                  "json-pretty", 0                   },
+		{ "timezone",                VAR_STRING, VAR_C,                   &self->timezone,                NULL,          0                   },
+		{ "format",                  VAR_STRING, VAR_C,                   &self->format,                  "json-pretty", 0                   },
 		{ "shutdown",                VAR_STRING, VAR_C,                   &self->shutdown,                "fast",        0                   },
 		// log
 		{ "log_enable",              VAR_BOOL,   VAR_C,                   &self->log_enable,              NULL,          true                },
 		{ "log_to_file",             VAR_BOOL,   VAR_C,                   &self->log_to_file,             NULL,          true                },
 		{ "log_to_stdout",           VAR_BOOL,   VAR_C,                   &self->log_to_stdout,           NULL,          true                },
-		{ "log_connections",         VAR_BOOL,   VAR_C|VAR_R,             &self->log_connections,         NULL,          true                },
-		{ "log_options",             VAR_BOOL,   VAR_C|VAR_R,             &self->log_options,             NULL,          false               },
+		{ "log_connections",         VAR_BOOL,   VAR_C,                   &self->log_connections,         NULL,          true                },
+		{ "log_options",             VAR_BOOL,   VAR_C,                   &self->log_options,             NULL,          false               },
 		// server
 		{ "tls_capath",              VAR_STRING, VAR_C,                   &self->tls_capath,              NULL,          0                   },
 		{ "tls_ca",                  VAR_STRING, VAR_C,                   &self->tls_ca,                  NULL,          0                   },
@@ -59,18 +59,18 @@ config_prepare(Config* self)
 		{ "tls_key",                 VAR_STRING, VAR_C,                   &self->tls_key,                 NULL,          0                   },
 		{ "listen",                  VAR_JSON,   VAR_C,                   &self->listen,                  NULL,          0                   },
 		// limits
-		{ "limit_send",              VAR_INT,    VAR_C|VAR_R,             &self->limit_send,              NULL,          3 * 1024 * 1024     },
-		{ "limit_recv",              VAR_INT,    VAR_C|VAR_R,             &self->limit_recv,              NULL,          1 * 1024 * 1024     },
-		{ "limit_write",             VAR_INT,    VAR_C|VAR_R,             &self->limit_write,             NULL,          0                   },
+		{ "limit_send",              VAR_INT,    VAR_C,                   &self->limit_send,              NULL,          3 * 1024 * 1024     },
+		{ "limit_recv",              VAR_INT,    VAR_C,                   &self->limit_recv,              NULL,          1 * 1024 * 1024     },
+		{ "limit_write",             VAR_INT,    VAR_C,                   &self->limit_write,             NULL,          0                   },
 		// cluster
 		{ "hosts",                   VAR_INT,    VAR_C|VAR_Z,             &self->hosts,                   NULL,          default_hosts       },
 		{ "nodes",                   VAR_INT,    VAR_C|VAR_E,             &self->nodes,                   NULL,          default_nodes       },
 		// wal
-		{ "wal_size",                VAR_INT,    VAR_C|VAR_R,             &self->wal_size,                NULL,          67108864            },
+		{ "wal_size",                VAR_INT,    VAR_C,                   &self->wal_size,                NULL,          67108864            },
 		{ "wal_sync_on_rotate",      VAR_BOOL,   VAR_C,                   &self->wal_sync_on_rotate,      NULL,          true                },
 		{ "wal_sync_on_write",       VAR_BOOL,   VAR_C,                   &self->wal_sync_on_write,       NULL,          false               },
 		// replication
-		{ "repl_reconnect_ms",       VAR_INT,    VAR_C|VAR_R,             &self->repl_reconnect_ms,       NULL,          3000                },
+		{ "repl_reconnect_ms",       VAR_INT,    VAR_C,                   &self->repl_reconnect_ms,       NULL,          3000                },
 		// checkpoint
 		{ "checkpoint_interval",     VAR_STRING, VAR_C,                   &self->checkpoint_interval,     "5 min",       0                   },
 		{ "checkpoint_workers",      VAR_INT,    VAR_C,                   &self->checkpoint_workers,      NULL,          3                   },

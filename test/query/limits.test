@@ -5,22 +5,42 @@ connect E0 S0 localhost:3485
 
 # test: limit_write
 create table test (id int primary key)
-set limit_write to 1
+
+disconnect S0
+close E0
+open E0 "limit_write": 1
+connect E0 S0 localhost:3485
+
 insert into test values (123)
-set limit_write to 10000
+
+disconnect S0
+close E0
+open E0 "limit_write": 10000
+connect E0 S0 localhost:3485
+
 drop table test
 
 # test: limit_send
-set limit_send to 0
+disconnect S0
+close E0
+open E0 "limit_send": 0
+connect E0 S0 localhost:3485
+
 select system.config()
 
-set limit_send to 1000000
+disconnect S0
+close E0
+open E0 "limit_send": 1000000
+connect E0 S0 localhost:3485
+
 select system.config()
 
 # test: limit_recv
+disconnect S0
+close E0
+open E0 "limit_recv": 0
+connect E0 S0 localhost:3485
 
-# this will fail all queries after it
-set limit_recv to 0
 select 1
 
 disconnect S0

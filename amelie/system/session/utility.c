@@ -118,10 +118,10 @@ ctl_show(Session* self)
 	defer_buf(buf);
 
 	// write content
-	Str format = config()->format.string;
+	auto format = self->local.format;
 	if (! str_empty(&arg->format))
-		format = arg->format;
-	content_write_json(&self->content, &format, &arg->section, buf);
+		format = &arg->format;
+	content_write_json(&self->content, format, &arg->section, buf);
 }
 
 static void
@@ -133,21 +133,26 @@ ctl_set(Session* self)
 	auto local = &self->local;
 
 	// find local variable first
+	auto var_global = false;
 	auto var = vars_find(&local->config.vars, name);
 	if (! var)
+	{
 		var = vars_find(&global()->config->vars, name);
+		var_global = true;
+	}
 	if (var && var_is(var, VAR_S))
 		var = NULL;
+
 	if (unlikely(var == NULL))
 		stmt_error(stmt, arg->name, "variable not found");
 
-	// ensure the variable can be changed in runtime
-	if (unlikely(! var_is(var, VAR_R)))
-		stmt_error(stmt, arg->name, "variable cannot be changed during runtime");
+	// ensure the variable can be changed online
+	if (unlikely(! var_is(var, VAR_C)))
+		stmt_error(stmt, arg->name, "variable cannot be changed");
 
-	// upgrade to exclusive lock, if var requires config update
-	if (! var_is(var, VAR_E))
-		session_lock(self, LOCK_EXCLUSIVE);
+	// allow to change only local variables
+	if (var_global)
+		stmt_error(stmt, arg->name, "variable cannot be changed online");
 
 	// validate and set timezone first
 	auto value = arg->value;
@@ -193,10 +198,6 @@ ctl_set(Session* self)
 		break;
 	}
 	}
-
-	// save state for persistent vars
-	if (! var_is(var, VAR_E))
-		control_save_config();
 }
 
 static void
@@ -241,8 +242,7 @@ ctl_token(Session* self)
 	// write content
 	Str name;
 	str_set(&name, "token", 5);
-	content_write_json(&self->content, &config()->format.string,
-	                   &name, buf);
+	content_write_json(&self->content, self->local.format, &name, buf);
 }
 
 static void
