@@ -19,6 +19,7 @@ struct Main
 	Random      random;
 	Resolver    resolver;
 	Config      config;
+	State       state;
 	TimezoneMgr timezone_mgr;
 	BufMgr      buf_mgr;
 	Global      global;

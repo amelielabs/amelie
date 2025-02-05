@@ -75,30 +75,18 @@ config_prepare(Config* self)
 		{ "checkpoint_interval",     VAR_STRING, VAR_C,                   &self->checkpoint_interval,     "5 min",       0                   },
 		{ "checkpoint_workers",      VAR_INT,    VAR_C,                   &self->checkpoint_workers,      NULL,          3                   },
 		{ "checkpoint",              VAR_INT,    VAR_E,                   &self->checkpoint,              NULL,          0                   },
-		// state
+		// system
 		{ "read_only",               VAR_BOOL,   VAR_E,                   &self->read_only,               NULL,          false               },
 		{ "lsn",                     VAR_INT,    VAR_E,                   &self->lsn,                     NULL,          0                   },
 		{ "psn",                     VAR_INT,    VAR_E,                   &self->psn,                     NULL,          0                   },
-		// state persistent
-		{ "repl",                    VAR_BOOL,   VAR_Y|VAR_C|VAR_H,       &self->repl,                    0,             false               },
-		{ "repl_primary",            VAR_STRING, VAR_Y|VAR_C|VAR_H,       &self->repl_primary,            NULL,          0                   },
-		{ "replicas",                VAR_JSON,   VAR_Y|VAR_C|VAR_H|VAR_S, &self->replicas,                NULL,          0                   },
-		{ "users",                   VAR_JSON,   VAR_Y|VAR_C|VAR_H|VAR_S, &self->users,                   NULL,          0                   },
-		// stats
-		{ "connections",             VAR_INT,    VAR_E|VAR_H,             &self->connections,             NULL,          0                   },
-		{ "sent_bytes",              VAR_INT,    VAR_E|VAR_H,             &self->sent_bytes,              NULL,          0                   },
-		{ "recv_bytes",              VAR_INT,    VAR_E|VAR_H,             &self->recv_bytes,              NULL,          0                   },
-		{ "writes",                  VAR_INT,    VAR_E|VAR_H,             &self->writes,                  NULL,          0                   },
-		{ "writes_bytes",            VAR_INT,    VAR_E|VAR_H,             &self->writes_bytes,            NULL,          0                   },
-		{ "ops",                     VAR_INT,    VAR_E|VAR_H,             &self->ops,                     NULL,          0                   },
 		{  NULL,                     0,          0,                       NULL,                           NULL,          0                   },
 	};
 
 	vars_define(&self->vars, defs);
 }
 
-static void
-config_save_to(Config* self, const char* path)
+void
+config_save(Config* self, const char* path)
 {
 	// get a list of variables
 	auto buf = vars_list_persistent(&self->vars);
@@ -115,46 +103,19 @@ config_save_to(Config* self, const char* path)
 	File file;
 	file_init(&file);
 	defer(file_close, &file);
-	file_open_as(&file, path, O_CREAT|O_RDWR, 0600);
+	file_open_as(&file, path, O_CREAT|O_RDWR, 0644);
 	file_write_buf(&file, &text);
-}
-
-void
-config_save(Config* self, const char* path)
-{
-	// remove old saved config, if exists
-	Buf buf;
-	buf_init(&buf);
-	defer_buf(&buf);
-	if (fs_exists("%s.old", path))
-		fs_unlink("%s.old", path);
-
-	// save existing config as a old
-	fs_rename(path,  "%s.old", path);
-
-	// create config file
-	config_save_to(self, path);
-
-	// remove old config file
-	fs_unlink("%s.old", path);
 }
 
 void
 config_open(Config* self, const char* path)
 {
-	if (fs_exists("%s", path))
-	{
-		Buf buf;
-		buf_init(&buf);
-		defer_buf(&buf);
-		file_import(&buf, "%s", path);
-		Str options;
-		str_init(&options);
-		buf_str(&buf, &options);
-		vars_set(&self->vars, &options, true);
-		return;
-	}
-
-	// create config file
-	config_save_to(self, path);
+	Buf buf;
+	buf_init(&buf);
+	defer_buf(&buf);
+	file_import(&buf, "%s", path);
+	Str options;
+	str_init(&options);
+	buf_str(&buf, &options);
+	vars_set(&self->vars, &options);
 }

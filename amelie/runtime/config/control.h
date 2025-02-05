@@ -16,7 +16,7 @@ typedef struct Control Control;
 struct Control
 {
 	Channel*  system;
-	void    (*save_config)(void*);
+	void    (*save_state)(void*);
 	void*     arg;
 };
 

@@ -19,11 +19,13 @@ main_init(Main* self)
 	random_init(&self->random);
 	resolver_init(&self->resolver);
 	config_init(&self->config);
+	state_init(&self->state);
 	timezone_mgr_init(&self->timezone_mgr);
 	buf_mgr_init(&self->buf_mgr);
 
 	auto global = &self->global;
 	global->config       = &self->config;
+	global->state        = &self->state;
 	global->timezone     = NULL;
 	global->timezone_mgr = &self->timezone_mgr;
 	global->control      = NULL;
@@ -36,6 +38,7 @@ void
 main_free(Main* self)
 {
 	config_free(&self->config);
+	state_free(&self->state);
 	timezone_mgr_free(&self->timezone_mgr);
 	buf_mgr_free(&self->buf_mgr);
 	logger_close(&self->logger);
@@ -72,6 +75,9 @@ main_start(Main* self)
 
 	// prepare default configuration
 	config_prepare(config());
+
+	// prepare state
+	state_prepare(state());
 }
 
 void
@@ -129,6 +135,7 @@ bool
 main_open(Main* self, char* directory, int argc, char** argv)
 {
 	auto config = config();
+	auto state  = state();
 
 	// create base directory, if not exists
 	auto bootstrap = main_create(self, directory);
@@ -152,15 +159,26 @@ main_open(Main* self, char* directory, int argc, char** argv)
 		main_bootstrap(self);
 
 		// create config file
-		config_open(config, path);
+		config_save(config, path);
 	} else
 	{
 		// open config file
 		config_open(config, path);
 
 		// redefine options and update config if necessary
-		if (vars_set_argv(&config->vars, argc, argv))
-			config_save(config, path);
+		vars_set_argv(&config->vars, argc, argv);
+	}
+
+	// read state
+	snprintf(path, sizeof(path), "%s/state.json", config_directory());
+	if (bootstrap)
+	{
+		// create state file
+		state_save(state, path);
+	} else
+	{
+		// open state file
+		state_open(state, path);
 	}
 
 	// validate shutdown mode

@@ -34,8 +34,9 @@ typedef struct Restore Restore;
 struct Restore
 {
 	int64_t  checkpoint;
-	uint8_t* files;
-	uint8_t* config;
+	uint8_t* in_files;
+	uint8_t* in_config;
+	uint8_t* in_state;
 	int      count_total;
 	int      count;
 	Client*  client;
@@ -49,8 +50,9 @@ static void
 restore_init(Restore* self, Remote* remote)
 {
 	self->checkpoint  = 0;
-	self->files       = NULL;
-	self->config      = NULL;
+	self->in_files    = NULL;
+	self->in_config   = NULL;
+	self->in_state    = NULL;
 	self->count       = 0;
 	self->count_total = 0;
 	self->remote      = remote;
@@ -116,13 +118,14 @@ restore_start(Restore* self)
 	Decode obj[] =
 	{
 		{ DECODE_INT,   "checkpoint", &self->checkpoint },
-		{ DECODE_ARRAY, "files",      &self->files      },
-		{ DECODE_OBJ,   "config",     &self->config     },
+		{ DECODE_ARRAY, "files",      &self->in_files   },
+		{ DECODE_OBJ,   "config",     &self->in_config  },
+		{ DECODE_OBJ,   "state",      &self->in_state   },
 		{ 0,             NULL,        NULL              }
 	};
 	decode_obj(obj, "restore", &pos);
 
-	self->count_total = json_array_size(self->files);
+	self->count_total = json_array_size(self->in_files);
 
 	// create checkpoint directory
 	if (self->checkpoint > 0)
@@ -204,7 +207,7 @@ restore_copy_file(Restore* self, Str* name, uint64_t size)
 static void
 restore_copy(Restore* self)
 {
-	uint8_t* pos = self->files;
+	uint8_t* pos = self->in_files;
 	json_read_array(&pos);
 	while (! json_read_array_end(&pos))
 	{
@@ -226,12 +229,34 @@ restore_write_config(Restore* self)
 	Buf text;
 	buf_init(&text);
 	defer_buf(&text);
-	uint8_t* pos = self->config;
+	uint8_t* pos = self->in_config;
 	json_export_pretty(&text, global()->timezone, &pos);
 
 	// create config file
 	char path[PATH_MAX];
 	snprintf(path, sizeof(path), "%s/config.json",
+	         config_directory());
+
+	File file;
+	file_init(&file);
+	defer(file_close, &file);
+	file_open_as(&file, path, O_CREAT|O_RDWR, 0644);
+	file_write_buf(&file, &text);
+}
+
+static void
+restore_write_state(Restore* self)
+{
+	// convert state to json
+	Buf text;
+	buf_init(&text);
+	defer_buf(&text);
+	uint8_t* pos = self->in_state;
+	json_export_pretty(&text, global()->timezone, &pos);
+
+	// create state file
+	char path[PATH_MAX];
+	snprintf(path, sizeof(path), "%s/state.json",
 	         config_directory());
 
 	File file;
@@ -253,6 +278,7 @@ restore(Remote* remote)
 	restore_start(&restore);
 	restore_copy(&restore);
 	restore_write_config(&restore);
+	restore_write_state(&restore);
 
 	info("complete");
 }

@@ -87,8 +87,17 @@ backup_list(Buf* self, char* name)
 static void
 backup_prepare(Backup* self)
 {
-	// read config file
+	// read state file
 	char path[PATH_MAX];
+	snprintf(path, sizeof(path), "%s/state.json", config_directory());
+	Buf state_data;
+	buf_init(&state_data);
+	defer_buf(&state_data);
+	file_import(&state_data, "%s", path);
+	Str state_str;
+	buf_str(&state_data, &state_str);
+
+	// read config file
 	snprintf(path, sizeof(path), "%s/config.json", config_directory());
 	Buf config_data;
 	buf_init(&config_data);
@@ -129,6 +138,11 @@ backup_prepare(Backup* self)
 	json_init(&json);
 	defer(json_free, &json);
 	json_parse(&json, &config_str, buf);
+
+	// state
+	encode_raw(buf, "state", 5);
+	json_reset(&json);
+	json_parse(&json, &state_str, buf);
 
 	encode_obj_end(buf);
 }

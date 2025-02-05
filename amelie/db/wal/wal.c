@@ -200,9 +200,9 @@ wal_write(Wal* self, WalBatch* batch)
 	defer(mutex_unlock, &self->lock);
 
 	// update stats
-	var_int_add(&config()->writes, 1);
-	var_int_add(&config()->writes_bytes, batch->header.size);
-	var_int_add(&config()->ops, batch->header.count);
+	var_int_add(&state()->writes, 1);
+	var_int_add(&state()->writes_bytes, batch->header.size);
+	var_int_add(&state()->ops, batch->header.count);
 
 	uint64_t next_lsn = config_lsn() + 1;
 	batch->header.lsn = next_lsn;
@@ -360,15 +360,15 @@ wal_status(Wal* self)
 
 	// writes
 	encode_raw(buf, "writes", 6);
-	encode_integer(buf, var_int_of(&config()->writes));
+	encode_integer(buf, var_int_of(&state()->writes));
 
 	// writes_bytes
 	encode_raw(buf, "writes_bytes", 12);
-	encode_integer(buf, var_int_of(&config()->writes_bytes));
+	encode_integer(buf, var_int_of(&state()->writes_bytes));
 
 	// ops
 	encode_raw(buf, "ops", 3);
-	encode_integer(buf, var_int_of(&config()->ops));
+	encode_integer(buf, var_int_of(&state()->ops));
 
 	// checkpoint
 	encode_raw(buf, "checkpoint", 10);

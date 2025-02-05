@@ -37,14 +37,14 @@ user_mgr_save(UserMgr* self)
 	defer_buf(buf);
 
 	// update and save state
-	var_json_set_buf(&config()->users, buf);
-	control_save_config();
+	var_json_set_buf(&state()->users, buf);
+	control_save_state();
 }
 
 void
 user_mgr_open(UserMgr* self)
 {
-	auto users = &config()->users;
+	auto users = &state()->users;
 	if (! var_json_is_set(users))
 		return;
 	auto pos = var_json_of(users);

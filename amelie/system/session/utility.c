@@ -324,7 +324,7 @@ ctl_replica(Session* self)
 		break;
 	}
 
-	control_save_config();
+	control_save_state();
 }
 
 static void
@@ -362,7 +362,7 @@ ctl_repl(Session* self)
 		break;
 	}
 
-	control_save_config();
+	control_save_state();
 }
 
 static void

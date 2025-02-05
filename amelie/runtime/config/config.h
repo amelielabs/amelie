@@ -51,22 +51,10 @@ struct Config
 	Var  checkpoint_interval;
 	Var  checkpoint_workers;
 	Var  checkpoint;
-	// state
+	// system
 	Var  read_only;
 	Var  lsn;
 	Var  psn;
-	// state persistent
-	Var  repl;
-	Var  repl_primary;
-	Var  replicas;
-	Var  users;
-	// stats
-	Var  connections;
-	Var  sent_bytes;
-	Var  recv_bytes;
-	Var  writes;
-	Var  writes_bytes;
-	Var  ops;
 	Vars vars;
 };
 

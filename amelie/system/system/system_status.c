@@ -52,15 +52,15 @@ system_status_net(System* self, Buf* buf)
 
 	// connections
 	encode_raw(buf, "connections", 11);
-	encode_integer(buf, var_int_of(&config()->connections));
+	encode_integer(buf, var_int_of(&state()->connections));
 
 	// sent
 	encode_raw(buf, "sent_bytes", 10);
-	encode_integer(buf, var_int_of(&config()->sent_bytes));
+	encode_integer(buf, var_int_of(&state()->sent_bytes));
 
 	// recv
 	encode_raw(buf, "recv_bytes", 10);
-	encode_integer(buf, var_int_of(&config()->recv_bytes));
+	encode_integer(buf, var_int_of(&state()->recv_bytes));
 
 	encode_obj_end(buf);
 }

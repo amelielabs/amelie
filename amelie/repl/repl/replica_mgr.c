@@ -65,13 +65,13 @@ replica_mgr_save(ReplicaMgr* self)
 	encode_array_end(buf);
 
 	// update and save state
-	var_json_set_buf(&config()->replicas, buf);
+	var_json_set_buf(&state()->replicas, buf);
 }
 
 void
 replica_mgr_open(ReplicaMgr* self)
 {
-	auto replicas = &config()->replicas;
+	auto replicas = &state()->replicas;
 	if (! var_json_is_set(replicas))
 		return;
 	auto pos = var_json_of(replicas);
@@ -136,7 +136,7 @@ replica_mgr_create(ReplicaMgr* self, ReplicaConfig* config, bool if_not_exists)
 	wal_add(&self->db->wal, &replica->wal_slot);
 
 	// start streamer
-	if (var_int_of(&config()->repl))
+	if (var_int_of(&state()->repl))
 		replica_start(replica);
 }
 
@@ -159,7 +159,7 @@ replica_mgr_drop(ReplicaMgr* self, Uuid* id, bool if_exists)
 	replica_mgr_save(self);
 
 	// stop streamer
-	if (var_int_of(&config()->repl))
+	if (var_int_of(&state()->repl))
 		replica_stop(replica);
 
 	// unregister wal slot

@@ -17,9 +17,12 @@
 #include "config/config.h"
 #include "config/config_local.h"
 
-// constrol
+// state
+#include "config/state.h"
+
+// control
 #include "config/control.h"
 
-// global
+// global/local
 #include "config/global.h"
 #include "config/local.h"

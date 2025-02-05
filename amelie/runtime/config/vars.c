@@ -77,7 +77,7 @@ vars_find(Vars* self, Str* name)
 }
 
 bool
-vars_set_json(Vars* self, uint8_t** pos, bool system)
+vars_set_json(Vars* self, uint8_t** pos)
 {
 	bool update = false;
 	json_read_obj(pos);
@@ -94,13 +94,8 @@ vars_set_json(Vars* self, uint8_t** pos, bool system)
 
 		// ensure variable can be changed
 		if (unlikely(! var_is(var, VAR_C)))
-			error("option '%.*s': cannot be changed",
-			      str_size(&name), str_of(&name));
-
-		// system state var (can be changed only during config read)
-		if (unlikely(var_is(var, VAR_Y) && !system))
-			error("option '%.*s': cannot be changed",
-			      str_size(&name), str_of(&name));
+			error("option '%.*s': cannot be changed", str_size(&name),
+			      str_of(&name));
 
 		// if config update will be required
 		if (! var_is(var, VAR_E))
@@ -113,14 +108,14 @@ vars_set_json(Vars* self, uint8_t** pos, bool system)
 }
 
 bool
-vars_set(Vars* self, Str* options, bool system)
+vars_set(Vars* self, Str* options)
 {
 	Json json;
 	json_init(&json);
 	defer(json_free, &json);
 	json_parse(&json, options, NULL);
 	uint8_t* pos = json.buf->start;
-	return vars_set_json(self, &pos, system);
+	return vars_set_json(self, &pos);
 }
 
 bool
@@ -139,7 +134,7 @@ vars_set_argv(Vars* self, int argc, char** argv)
 		{
 			if (str_empty(&value))
 				error("option 'json': value is not defined");
-			if (vars_set(self, &value, false))
+			if (vars_set(self, &value))
 				update = true;
 			continue;
 		}
@@ -155,9 +150,9 @@ vars_set_argv(Vars* self, int argc, char** argv)
 			error("option '%.*s': not found", str_size(&name), str_of(&name));
 
 		// ensure variable can be changed
-		if (unlikely(!var_is(var, VAR_C) || var_is(var, VAR_Y)))
-			error("option '%.*s': cannot be changed",
-			      str_size(&name), str_of(&name));
+		if (unlikely(! var_is(var, VAR_C)))
+			error("option '%.*s': cannot be changed", str_size(&name),
+			      str_of(&name));
 
 		// if config update will be required
 		if (! var_is(var, VAR_E))

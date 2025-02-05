@@ -106,11 +106,11 @@ primary_next(Primary* self)
 	auto request = &self->client->request;
 
 	// check replication state
-	if (! var_int_of(&config()->repl))
+	if (! var_int_of(&state()->repl))
 		error("replication is disabled");
 
 	// validate primary id
-	auto primary_id = &config()->repl_primary.string;
+	auto primary_id = &state()->repl_primary.string;
 	if (str_empty(primary_id))
 		error("server is not a replica");
 	auto hdr_id = http_find(request, "Am-Id", 5);

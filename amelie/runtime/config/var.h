@@ -22,12 +22,10 @@ enum
 	VAR_H = 1 << 1,
 	// secret
 	VAR_S = 1 << 2,
-	// system
-	VAR_Y = 1 << 3,
 	// excluded from config
-	VAR_E = 1 << 4,
+	VAR_E = 1 << 3,
 	// cannot be zero
-	VAR_Z = 1 << 5
+	VAR_Z = 1 << 4
 };
 
 typedef enum
@@ -338,15 +336,15 @@ var_print(Var* self)
 {
 	switch (self->type) {
 	case VAR_BOOL:
-		info("%-32s%s", str_of(&self->name),
+		info("%-24s%s", str_of(&self->name),
 		     var_int_of(self) ? "true" : "false");
 		break;
 	case VAR_INT:
-		info("%-32s%" PRIu64, str_of(&self->name),
+		info("%-24s%" PRIu64, str_of(&self->name),
 		     var_int_of(self));
 		break;
 	case VAR_STRING:
-		info("%-32s%.*s", str_of(&self->name),
+		info("%-24s%.*s", str_of(&self->name),
 		     str_size(&self->string), str_of(&self->string));
 		break;
 	case VAR_JSON:

@@ -67,7 +67,7 @@ repl_open(Repl* self)
 	replica_mgr_open(&self->replica_mgr);
 
 	// current server is replica
-	auto primary_id = &config()->repl_primary.string;
+	auto primary_id = &state()->repl_primary.string;
 	if (! str_empty(primary_id))
 	{
 		// validate id
@@ -83,11 +83,11 @@ repl_open(Repl* self)
 void
 repl_start(Repl* self)
 {
-	if (var_int_of(&config()->repl))
+	if (var_int_of(&state()->repl))
 		return;
 
 	info("replication: start as '%s'", repl_role_of(self->role));
-	var_int_set(&config()->repl, true);
+	var_int_set(&state()->repl, true);
 
 	// start replicas
 	replica_mgr_start(&self->replica_mgr);
@@ -96,11 +96,11 @@ repl_start(Repl* self)
 void
 repl_stop(Repl* self)
 {
-	if (! var_int_of(&config()->repl))
+	if (! var_int_of(&state()->repl))
 		return;
 
 	info("replication: stop");
-	var_int_set(&config()->repl, false);
+	var_int_set(&state()->repl, false);
 
 	// stop replicas
 	replica_mgr_stop(&self->replica_mgr);
@@ -109,7 +109,7 @@ repl_stop(Repl* self)
 void
 repl_subscribe(Repl* self, Str* primary_id)
 {
-	if (! var_int_of(&config()->repl))
+	if (! var_int_of(&state()->repl))
 		error("replication: is disabled");
 
 	// switch to replica
@@ -123,7 +123,7 @@ repl_subscribe(Repl* self, Str* primary_id)
 		var_int_set(&config()->read_only, true);
 
 		// set new primary id
-		var_string_set(&config()->repl_primary, primary_id);
+		var_string_set(&state()->repl_primary, primary_id);
 
 		info("replication: switch to replica, new primary is '%.*s'", str_size(primary_id),
 		     str_of(primary_id));
@@ -138,7 +138,7 @@ repl_subscribe(Repl* self, Str* primary_id)
 	// remove primary id
 	Str empty;
 	str_init(&empty);
-	var_string_set(&config()->repl_primary, &empty);
+	var_string_set(&state()->repl_primary, &empty);
 
 	self->role = REPL_PRIMARY;
 	info("replication: switch to primary");
@@ -153,7 +153,7 @@ repl_status(Repl* self)
 
 	// active
 	encode_raw(buf, "active", 6);
-	encode_bool(buf, var_int_of(&config()->repl));
+	encode_bool(buf, var_int_of(&state()->repl));
 
 	// role
 	encode_raw(buf, "role", 4);
@@ -161,10 +161,10 @@ repl_status(Repl* self)
 
 	// primary
 	encode_raw(buf, "primary", 7);
-	if (str_empty(&config()->repl_primary.string))
+	if (str_empty(&state()->repl_primary.string))
 		encode_null(buf);
 	else
-		encode_string(buf, &config()->repl_primary.string);
+		encode_string(buf, &state()->repl_primary.string);
 
 	encode_raw(buf, "replicas", 8);
 	auto replicas = replica_mgr_list(&self->replica_mgr, NULL);

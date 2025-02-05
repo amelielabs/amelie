@@ -16,6 +16,7 @@ typedef struct Global Global;
 struct Global
 {
 	Config*      config;
+	State*       state;
 	Control*     control;
 	Timezone*    timezone;
 	TimezoneMgr* timezone_mgr;
@@ -26,6 +27,7 @@ struct Global
 
 #define global() ((Global*)am_task->main_arg_global)
 #define config()  global()->config
+#define state()   global()->state
 
 // control
 static inline void
@@ -41,9 +43,9 @@ control_unlock(void)
 }
 
 static inline void
-control_save_config(void)
+control_save_state(void)
 {
-	global()->control->save_config(global()->control->arg);
+	global()->control->save_state(global()->control->arg);
 }
 
 // directory

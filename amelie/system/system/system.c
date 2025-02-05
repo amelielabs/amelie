@@ -44,12 +44,12 @@
 #include <amelie_system.h>
 
 static void
-system_save_config(void* arg)
+system_save_state(void* arg)
 {
 	unused(arg);
 	char path[PATH_MAX];
-	snprintf(path, sizeof(path), "%s/config.json", config_directory());
-	config_save(global()->config, path);
+	snprintf(path, sizeof(path), "%s/state.json", config_directory());
+	state_save(state(), path);
 }
 
 System*
@@ -60,10 +60,10 @@ system_create(void)
 
 	// set control
 	auto control = &self->control;
-	control->system      = &am_task->channel;
-	control->save_config = system_save_config;
-	control->arg         = self;
-	global()->control    = control;
+	control->system     = &am_task->channel;
+	control->save_state = system_save_state;
+	control->arg        = self;
+	global()->control   = control;
 
 	// server
 	user_mgr_init(&self->user_mgr);
@@ -219,9 +219,9 @@ system_start(System* self, bool bootstrap)
 	server_start(&self->server, system_on_server_connect, self);
 
 	// start replication
-	if (var_int_of(&config()->repl))
+	if (var_int_of(&state()->repl))
 	{
-		var_int_set(&config()->repl, false);
+		var_int_set(&state()->repl, false);
 		repl_start(&self->repl);
 	}
 }

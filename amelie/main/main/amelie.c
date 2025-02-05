@@ -45,8 +45,7 @@ amelie_usage(void)
 	list_foreach(&config()->vars.list)
 	{
 		auto var = list_at(Var, link);
-		if (!var_is(var, VAR_C) || var_is(var, VAR_Y) ||
-		     var_is(var, VAR_S))
+		if (!var_is(var, VAR_C) || var_is(var, VAR_S))
 			continue;
 		char* type;
 		switch (var->type) {
