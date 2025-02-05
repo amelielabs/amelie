@@ -67,11 +67,6 @@ struct Config
 	Var  writes;
 	Var  writes_bytes;
 	Var  ops;
-	// testing
-	Var  test_bool;
-	Var  test_int;
-	Var  test_string;
-	Var  test_json;
 	Vars vars;
 };
 

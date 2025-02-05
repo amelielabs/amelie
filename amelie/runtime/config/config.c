@@ -91,11 +91,6 @@ config_prepare(Config* self)
 		{ "writes",                  VAR_INT,    VAR_E|VAR_H,             &self->writes,                  NULL,          0                   },
 		{ "writes_bytes",            VAR_INT,    VAR_E|VAR_H,             &self->writes_bytes,            NULL,          0                   },
 		{ "ops",                     VAR_INT,    VAR_E|VAR_H,             &self->ops,                     NULL,          0                   },
-		// testing
-		{ "test_bool",               VAR_BOOL,   VAR_E|VAR_H|VAR_R,       &self->test_bool,               NULL,          false               },
-		{ "test_int",                VAR_INT,    VAR_E|VAR_H|VAR_R,       &self->test_int,                NULL,          0                   },
-		{ "test_string",             VAR_STRING, VAR_E|VAR_H|VAR_R,       &self->test_string,             NULL,          0                   },
-		{ "test_json",               VAR_JSON,   VAR_E|VAR_H|VAR_R,       &self->test_json,               NULL,          0                   },
 		{  NULL,                     0,          0,                       NULL,                           NULL,          0                   },
 	};
 
