@@ -24,7 +24,6 @@ select system.config()
   "limit_recv": 1048576,
   "limit_write": 0,
   "hosts": 1,
-  "nodes": 1,
   "wal_size": 67108864,
   "wal_sync_on_rotate": false,
   "wal_sync_on_write": false,
@@ -37,6 +36,9 @@ select system.state()
 [{
   "version": "0.9.0",
   "directory": "_output/E0",
+  "uuid": "00000000-0000-0000-0000-000000000000",
+  "hosts": 1,
+  "nodes": 1,
   "checkpoint": 1,
   "lsn": 1,
   "psn": 0,

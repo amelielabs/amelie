@@ -62,7 +62,7 @@ config_prepare(Config* self)
 		{ "limit_write",             VAR_INT,    VAR_C,                   &self->limit_write,             NULL,          0                   },
 		// io and compute
 		{ "hosts",                   VAR_INT,    VAR_C|VAR_Z,             &self->hosts,                   NULL,          default_hosts       },
-		{ "nodes",                   VAR_INT,    VAR_C|VAR_E,             &self->nodes,                   NULL,          default_nodes       },
+		{ "nodes",                   VAR_INT,    VAR_C|VAR_H|VAR_E,       &self->nodes,                   NULL,          default_nodes       },
 		// wal
 		{ "wal_size",                VAR_INT,    VAR_C,                   &self->wal_size,                NULL,          67108864            },
 		{ "wal_sync_on_rotate",      VAR_BOOL,   VAR_C,                   &self->wal_sync_on_rotate,      NULL,          true                },

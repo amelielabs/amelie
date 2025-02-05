@@ -165,6 +165,18 @@ db_state(Db* self)
 	encode_raw(buf, "directory", 9);
 	encode_string(buf, &state()->directory.string);
 
+	// uuid
+	encode_raw(buf, "uuid", 4);
+	encode_string(buf, &config()->uuid.string);
+
+	// hosts
+	encode_raw(buf, "hosts", 5);
+	encode_integer(buf, var_int_of(&config()->hosts));
+
+	// nodes
+	encode_raw(buf, "nodes", 5);
+	encode_integer(buf, var_int_of(&config()->nodes));
+
 	// checkpoint
 	encode_raw(buf, "checkpoint", 10);
 	encode_integer(buf, config_checkpoint());

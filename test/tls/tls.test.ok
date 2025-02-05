@@ -35,7 +35,6 @@ show all
   "limit_recv": 1048576,
   "limit_write": 0,
   "hosts": 1,
-  "nodes": 3,
   "wal_size": 67108864,
   "wal_sync_on_rotate": false,
   "wal_sync_on_write": false,

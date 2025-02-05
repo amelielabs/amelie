@@ -10231,7 +10231,7 @@ show repl
   }]
 }]
 switch S1
-select system.config().nodes::int = 4
+select system.state().nodes::int = 4
 [true]
 disconnect S1
 close E1
