@@ -45,8 +45,8 @@ select system.table('test.a')
 # test: wal()
 select system.wal()
 
-# test: status()
-select system.status()::size
+# test: metrics()
+select system.metrics()::size
 
 disconnect S0
 close E0

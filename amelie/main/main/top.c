@@ -174,9 +174,9 @@ top_request(Client* client, Str* content)
 static inline void
 top_update(Top* self, Client* client)
 {
-	// execute show status
+	// execute show metrics
 	Str req;
-	str_set_cstr(&req, "show status");
+	str_set_cstr(&req, "show metrics");
 	top_request(client, &req);
 
 	Str data;

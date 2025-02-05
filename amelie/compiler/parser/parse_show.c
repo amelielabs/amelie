@@ -62,8 +62,8 @@ parse_show_type(Str* name)
 	if (str_is(name, "wal", 3))
 		return SHOW_WAL;
 
-	if (str_is(name, "status", 6))
-		return SHOW_STATUS;
+	if (str_is(name, "metrics", 7))
+		return SHOW_METRICS;
 
 	if (str_is(name, "schemas", 7))
 		return SHOW_SCHEMAS;

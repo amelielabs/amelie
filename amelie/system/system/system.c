@@ -277,10 +277,10 @@ system_rpc(Rpc* rpc, void* arg)
 		*buf = repl_status(&self->repl);
 		break;
 	}
-	case RPC_SHOW_STATUS:
+	case RPC_SHOW_METRICS:
 	{
 		Buf** buf = rpc_arg_ptr(rpc, 0);
-		*buf = system_status(self);
+		*buf = system_metrics(self);
 		break;
 	}
 	default:

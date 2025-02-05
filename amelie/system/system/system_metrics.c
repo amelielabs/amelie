@@ -44,7 +44,7 @@
 #include <amelie_system.h>
 
 static inline void
-system_status_net(System* self, Buf* buf)
+system_metrics_net(System* self, Buf* buf)
 {
 	// {}
 	unused(self);
@@ -66,7 +66,7 @@ system_status_net(System* self, Buf* buf)
 }
 
 static inline void
-system_status_process(System* self, Buf* buf)
+system_metrics_process(System* self, Buf* buf)
 {
 	// get memory usage
 	uint64_t mem_virt     = 0;
@@ -147,7 +147,7 @@ system_status_process(System* self, Buf* buf)
 }
 
 Buf*
-system_status(System* self)
+system_metrics(System* self)
 {
 	auto buf = buf_create();
 
@@ -178,11 +178,11 @@ system_status(System* self)
 
 	// process
 	encode_raw(buf, "process", 7);
-	system_status_process(self, buf);
+	system_metrics_process(self, buf);
 
 	// net
 	encode_raw(buf, "net", 3);
-	system_status_net(self, buf);
+	system_metrics_net(self, buf);
 
 	// wal
 	encode_raw(buf, "wal", 3);

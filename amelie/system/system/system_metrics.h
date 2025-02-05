@@ -11,4 +11,4 @@
 // AGPL-3.0 Licensed.
 //
 
-Buf* system_status(System*);
+Buf* system_metrics(System*);

@@ -76,8 +76,8 @@ ctl_show(Session* self)
 	case SHOW_WAL:
 		buf = wal_status(&share->db->wal);
 		break;
-	case SHOW_STATUS:
-		rpc(global()->control->system, RPC_SHOW_STATUS, 1, &buf);
+	case SHOW_METRICS:
+		rpc(global()->control->system, RPC_SHOW_METRICS, 1, &buf);
 		break;
 	case SHOW_SCHEMAS:
 		buf = schema_mgr_list(&share->db->schema_mgr, NULL, arg->extended);

@@ -296,7 +296,7 @@ set(AMELIE_SOURCES_SYSTEM
     ${AMELIE_ROOT}/system/session/ddl.c
     ${AMELIE_ROOT}/system/session/primary.c
     ${AMELIE_ROOT}/system/system/system.c
-    ${AMELIE_ROOT}/system/system/system_status.c)
+    ${AMELIE_ROOT}/system/system/system_metrics.c)
 
 set(AMELIE_SOURCES_MAIN
     ${AMELIE_ROOT}/main/main/login_mgr.c

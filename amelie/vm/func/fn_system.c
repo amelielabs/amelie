@@ -161,11 +161,11 @@ fn_wal(Call* self)
 }
 
 static void
-fn_status(Call* self)
+fn_metrics(Call* self)
 {
 	call_expect(self, 0);
 	Buf* buf;
-	rpc(global()->control->system, RPC_SHOW_STATUS, 1, &buf);
+	rpc(global()->control->system, RPC_SHOW_METRICS, 1, &buf);
 	value_set_json_buf(self->result, buf);
 }
 
@@ -229,7 +229,7 @@ fn_system_register(FunctionMgr* self)
 	func = function_allocate(TYPE_JSON, "system", "wal", fn_wal);
 	function_mgr_add(self, func);
 
-	// system.status()
-	func = function_allocate(TYPE_JSON, "system", "status", fn_status);
+	// system.metrics()
+	func = function_allocate(TYPE_JSON, "system", "metrics", fn_metrics);
 	function_mgr_add(self, func);
 }
