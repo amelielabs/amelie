@@ -43,7 +43,7 @@ config_prepare(Config* self)
 		{ "version",                 VAR_STRING, VAR_E,                   &self->version,                 "0.9.0",       0                   },
 		{ "uuid",                    VAR_STRING, VAR_C,                   &self->uuid,                    NULL,          0                   },
 		{ "directory",               VAR_STRING, VAR_E,                   &self->directory,               NULL,          0                   },
-		{ "timezone",                VAR_STRING, VAR_C|VAR_R|VAR_L,       &self->timezone,                NULL,          0                   },
+		{ "timezone",                VAR_STRING, VAR_C|VAR_R,             &self->timezone,                NULL,          0                   },
 		{ "format",                  VAR_STRING, VAR_C|VAR_R,             &self->format,                  "json-pretty", 0                   },
 		{ "shutdown",                VAR_STRING, VAR_C,                   &self->shutdown,                "fast",        0                   },
 		// log

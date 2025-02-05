@@ -29,9 +29,7 @@ enum
 	// excluded from config
 	VAR_E = 1 << 5,
 	// cannot be zero
-	VAR_Z = 1 << 6,
-	// local
-	VAR_L = 1 << 7
+	VAR_Z = 1 << 6
 };
 
 typedef enum
