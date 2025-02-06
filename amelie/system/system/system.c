@@ -232,7 +232,7 @@ system_stop(System* self)
 {
 	auto shutdown = &config()->shutdown.string;
 	info("");
-	info("shutdown (using '%.*s' mode).", str_size(shutdown),
+	info("received '%.*s' shutdown request", str_size(shutdown),
 	     str_of(shutdown));
 
 	// stop server
