@@ -61,8 +61,6 @@ server_accept_main(void* arg)
 	coroutine_set_name(am_self(), "accept");
 	coroutine_set_cancel_log(am_self(), false);
 
-	info("listen at '%s'", str_of(&listen->addr_name));
-
 	// process incoming connection
 	error_catch
 	(
@@ -124,6 +122,9 @@ server_listen(ServerListen* listen)
 
 	// set address name
 	str_dup_cstr(&listen->addr_name, addr_name);
+
+	info("listening on \"%.*s\"", str_size(&listen->addr_name),
+	     str_of(&listen->addr_name));
 
 	// bind
 	listen_start(&listen->listen, 4096, addr);
@@ -280,11 +281,11 @@ server_start(Server*     self,
 	// read certificates
 	server_configure_tls(self);
 
-	// listen for unixsocket in the repository
-	server_configure_unixsocket(self);
-
 	// read listen configuration
 	server_configure(self);
+
+	// listen for unixsocket in the repository
+	server_configure_unixsocket(self);
 
 	if (! self->config_count)
 		error("server: <listen> is not defined");
