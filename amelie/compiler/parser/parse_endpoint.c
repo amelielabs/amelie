@@ -40,17 +40,17 @@
 static inline bool
 parse_endpoint_path(Str* self, Str* schema, Str* name)
 {
+	// /v1/db/schema/table
 	if (unlikely(str_empty(self)))
 		return false;
 
-	// /schema/table
 	auto pos = self->pos;
 	auto end = self->end;
 
-	// /
-	if (unlikely(*pos != '/'))
+	// /v1/db/
+	if (unlikely(! str_is_prefix(self, "/v1/db/", 7)))
 		return false;
-	pos++;
+	pos += 7;
 
 	// schema
 	auto start = pos;
@@ -124,7 +124,7 @@ parse_endpoint_columns(Endpoint* endpoint, Str* value)
 void
 parse_endpoint(Endpoint* endpoint, Db* db)
 {
-	// POST /schema/table <?columns=...>
+	// POST /v1/db/schema/table <?columns=...>
 	auto uri = endpoint->uri;
 
 	// get target name

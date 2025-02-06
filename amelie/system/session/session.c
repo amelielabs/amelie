@@ -226,7 +226,8 @@ session_execute(Session* self)
 	if (str_is(&type->value, "text/plain", 10) ||
 	    str_is(&type->value, "application/sql", 15))
 	{
-		if (unlikely(! str_is(url, "/", 1)))
+		if (unlikely(!str_is(url, "/", 1) &&
+		             !str_is(url, "/v1/execute", 11)))
 			error("unsupported API operation");
 
 		// parse SQL

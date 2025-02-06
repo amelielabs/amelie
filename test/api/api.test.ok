@@ -15,13 +15,16 @@ connect E0 S0 http://localhost:3485/abc
 import text/plain select 1
 {"msg": "unsupported API operation"}
 disconnect S0
-# test: POST /schema/table (text/plain)
-connect E0 S0 http://localhost:3485/abc/cba/abc
+# test: POST /v1/execute (text/plain)
+connect E0 S0 http://localhost:3485/v1/execute
 import text/plain select 1
-{"msg": "unsupported API operation"}
+[1]
+# test: POST /v1/execute (application/sql)
+import application/sql select 1
+[1]
 disconnect S0
-# test: POST /schema/table (text/plain) not exists
-connect E0 S0 http://localhost:3485/public/test
+# test: POST /v1/db/schema/table (text/plain) not exists
+connect E0 S0 http://localhost:3485/v1/db/public/test
 import text/plain select 1
 {"msg": "unsupported API operation"}
 disconnect S0
@@ -33,13 +36,13 @@ create table test4 (id serial primary key, a int default 777)
 create table test5 (id serial primary key, data json not null)
 create table test6 (id int primary key as (data.id::int) stored, data json not null)
 disconnect S0
-# test: POST /schema/table (text/plain) unsupported
-connect E0 S0 http://localhost:3485/public/test
+# test: POST /v1/db/schema/table (text/plain) unsupported
+connect E0 S0 http://localhost:3485/v1/db/public/test
 import text/plain select 1
 {"msg": "unsupported API operation"}
 disconnect S0
-# test: POST /schema/table (text/csv)
-connect E0 S0 http://localhost:3485/public/test
+# test: POST /v1/db/schema/table (text/csv)
+connect E0 S0 http://localhost:3485/v1/db/public/test
 import text/csv 0,0,0
 import text/csv 1,0,0
 import text/csv 2,0,0
@@ -48,25 +51,25 @@ connect E0 Sx http://localhost:3485/
 select * from test
 [[0, 0, 0], [1, 0, 0], [2, 0, 0]]
 disconnect Sx
-# test: POST /schema/table (text/csv) column list
-connect E0 S0 http://localhost:3485/public/test?columns=id
+# test: POST /v1/db/schema/table (text/csv) column list
+connect E0 S0 http://localhost:3485/v1/db/public/test?columns=id
 import text/csv 3
 import text/csv 4
 import text/csv 5
 disconnect S0
-connect E0 S0 http://localhost:3485/public/test?columns=id,a
+connect E0 S0 http://localhost:3485/v1/db/public/test?columns=id,a
 import text/csv 6,0
 disconnect S0
-connect E0 S0 http://localhost:3485/public/test?columns=id,a,b
+connect E0 S0 http://localhost:3485/v1/db/public/test?columns=id,a,b
 import text/csv 7,0,0
 disconnect S0
-# test: POST /schema/table (text/csv) column list (duplicate)
-connect E0 S0 http://localhost:3485/public/test?columns=id,a,a
+# test: POST /v1/db/schema/table (text/csv) column list (duplicate)
+connect E0 S0 http://localhost:3485/v1/db/public/test?columns=id,a,a
 import text/csv 8,0,0
 {"msg": "column list must be ordered"}
 disconnect S0
-# test: POST /schema/table (text/csv) column list (unordered)
-connect E0 S0 http://localhost:3485/public/test?columns=id,b,a
+# test: POST /v1/db/schema/table (text/csv) column list (unordered)
+connect E0 S0 http://localhost:3485/v1/db/public/test?columns=id,b,a
 import text/csv 8,0,0
 {"msg": "column list must be ordered"}
 disconnect S0
@@ -74,13 +77,13 @@ connect E0 Sx http://localhost:3485/
 select * from test
 [[0, 0, 0], [1, 0, 0], [2, 0, 0], [3, null, null], [4, null, null], [5, null, null], [6, 0, null], [7, 0, 0]]
 disconnect Sx
-# test: POST /schema/table (text/csv) (empty column list)
-connect E0 S0 http://localhost:3485/public/test4?columns=
+# test: POST /v1/db/schema/table (text/csv) (empty column list)
+connect E0 S0 http://localhost:3485/v1/db/public/test4?columns=
 import text/csv 
 import text/csv     
 disconnect S0
-# test: POST /schema/table (text/csv) (generated columns)
-connect E0 S0 http://localhost:3485/public/test2
+# test: POST /v1/db/schema/table (text/csv) (generated columns)
+connect E0 S0 http://localhost:3485/v1/db/public/test2
 import text/csv 0,null
 import text/csv 1,null
 import text/csv 2,null
@@ -89,8 +92,8 @@ connect E0 Sx http://localhost:3485/
 select * from test2
 [[0, 0], [1, 2], [2, 4]]
 disconnect Sx
-# test: POST /schema/table (text/csv) (resolved columns)
-connect E0 S0 http://localhost:3485/public/test3
+# test: POST /v1/db/schema/table (text/csv) (resolved columns)
+connect E0 S0 http://localhost:3485/v1/db/public/test3
 import text/csv 0,0
 import text/csv 0,0
 import text/csv 0,0
@@ -101,8 +104,8 @@ connect E0 Sx http://localhost:3485/
 select * from test3
 [[0, 2], [1, 1]]
 disconnect Sx
-# test: POST /schema/table (application/jsonl) (array)
-connect E0 S0 http://localhost:3485/public/test
+# test: POST /v1/db/schema/table (application/jsonl) (array)
+connect E0 S0 http://localhost:3485/v1/db/public/test
 import application/jsonl [9,0,0] [10, null, 123] [11, null, null]
 import application/jsonl [12,
 {"msg": "[12,\n ⟵ 'int' expected for column 'a'"}
@@ -125,27 +128,27 @@ connect E0 Sx http://localhost:3485/
 select * from test
 [[0, 0, 0], [1, 0, 0], [2, 0, 0], [3, null, null], [4, null, null], [5, null, null], [6, 0, null], [7, 0, 0], [9, 0, 0], [10, null, 123], [11, null, null]]
 disconnect Sx
-# test: POST /schema/table (application/jsonl) (array, column list)
-connect E0 S0 http://localhost:3485/public/test?columns=id
+# test: POST /v1/db/schema/table (application/jsonl) (array, column list)
+connect E0 S0 http://localhost:3485/v1/db/public/test?columns=id
 import application/jsonl [13]
 disconnect S0
-connect E0 S0 http://localhost:3485/public/test?columns=id,a
+connect E0 S0 http://localhost:3485/v1/db/public/test?columns=id,a
 import application/jsonl [14,null]
 disconnect S0
 connect E0 Sx http://localhost:3485/
 select * from test
 [[0, 0, 0], [1, 0, 0], [2, 0, 0], [3, null, null], [4, null, null], [5, null, null], [6, 0, null], [7, 0, 0], [9, 0, 0], [10, null, 123], [11, null, null], [13, null, null], [14, null, null]]
 disconnect Sx
-# test: POST /schema/table (application/jsonl) (array, empty column list)
-connect E0 S0 http://localhost:3485/public/test4?columns=
+# test: POST /v1/db/schema/table (application/jsonl) (array, empty column list)
+connect E0 S0 http://localhost:3485/v1/db/public/test4?columns=
 import application/jsonl []
 disconnect S0
 connect E0 Sx http://localhost:3485/
 select * from test4
 [[0, 777]]
 disconnect Sx
-# test: POST /schema/table (application/json) (array)
-connect E0 S0 http://localhost:3485/public/test
+# test: POST /v1/db/schema/table (application/json) (array)
+connect E0 S0 http://localhost:3485/v1/db/public/test
 import application/json [[15,0,0]]
 import application/json [[16,0,0]
 {"msg": "[[16,0,0]\n ⟵ ] expected"}
@@ -167,8 +170,8 @@ connect E0 Sx http://localhost:3485/
 select * from test
 [[0, 0, 0], [1, 0, 0], [2, 0, 0], [3, null, null], [4, null, null], [5, null, null], [6, 0, null], [7, 0, 0], [9, 0, 0], [10, null, 123], [11, null, null], [13, null, null], [14, null, null], [15, 0, 0]]
 disconnect Sx
-# test: POST /schema/table (application/json) (array, column list)
-connect E0 S0 http://localhost:3485/public/test?columns=id
+# test: POST /v1/db/schema/table (application/json) (array, column list)
+connect E0 S0 http://localhost:3485/v1/db/public/test?columns=id
 import application/json [[18,0]
 {"msg": "[[18❰,❱ ⟵ ] expected"}
 import application/json [[18,
@@ -181,37 +184,37 @@ connect E0 Sx http://localhost:3485/
 select * from test
 [[0, 0, 0], [1, 0, 0], [2, 0, 0], [3, null, null], [4, null, null], [5, null, null], [6, 0, null], [7, 0, 0], [9, 0, 0], [10, null, 123], [11, null, null], [13, null, null], [14, null, null], [15, 0, 0], [18, null, null], [19, null, null]]
 disconnect Sx
-# test: POST /schema/table (application/json) (array, empty column list)
-connect E0 S0 http://localhost:3485/public/test4?columns=
+# test: POST /v1/db/schema/table (application/json) (array, empty column list)
+connect E0 S0 http://localhost:3485/v1/db/public/test4?columns=
 import application/json [[], [], []]
 disconnect S0
 connect E0 Sx http://localhost:3485/
 select * from test4
 [[0, 777], [1, 777], [2, 777], [3, 777]]
 disconnect Sx
-# test: POST /schema/table (application/jsonl) (obj, empty column list)
-connect E0 S0 http://localhost:3485/public/test4?columns=
+# test: POST /v1/db/schema/table (application/jsonl) (obj, empty column list)
+connect E0 S0 http://localhost:3485/v1/db/public/test4?columns=
 import application/jsonl {}
 disconnect S0
 connect E0 Sx http://localhost:3485/
 select * from test4
 [[0, 777], [1, 777], [2, 777], [3, 777], [4, 777]]
 disconnect Sx
-# test: POST /schema/table (application/jsonl) (obj, one column)
-connect E0 S0 http://localhost:3485/public/test5?columns=data
+# test: POST /v1/db/schema/table (application/jsonl) (obj, one column)
+connect E0 S0 http://localhost:3485/v1/db/public/test5?columns=data
 import application/jsonl {"id": 1} {"id": 2} {"id": 3}
 disconnect S0
 connect E0 Sx http://localhost:3485/
 select * format 'json' from test5
 [[0, {"id": 1}], [1, {"id": 2}], [2, {"id": 3}]]
 disconnect Sx
-# test: POST /schema/table (application/jsonl) (obj, column list)
-connect E0 S0 http://localhost:3485/public/test5?columns=id,data
+# test: POST /v1/db/schema/table (application/jsonl) (obj, column list)
+connect E0 S0 http://localhost:3485/v1/db/public/test5?columns=id,data
 import application/jsonl {"id": 1} {"id": 2} {"id": 3}
 {"msg": "❰{❱ ⟵ JSON column list must have zero or one value"}
 disconnect S0
-# test: POST /schema/table (application/jsonl) (obj)
-connect E0 S0 http://localhost:3485/public/test
+# test: POST /v1/db/schema/table (application/jsonl) (obj)
+connect E0 S0 http://localhost:3485/v1/db/public/test
 import application/jsonl {"id": 20}
 import application/jsonl {"id": 20, "a"
 {"msg": "{\"id\": 20, \"a\"\n ⟵ : expected"}
@@ -242,24 +245,24 @@ connect E0 Sx http://localhost:3485/
 select * format 'json' from test
 [[0, 0, 0], [1, 0, 0], [2, 0, 0], [3, null, null], [4, null, null], [5, null, null], [6, 0, null], [7, 0, 0], [9, 0, 0], [10, null, 123], [11, null, null], [13, null, null], [14, null, null], [15, 0, 0], [18, null, null], [19, null, null], [20, null, null], [21, 0, 0], [22, null, 0], [23, null, null], [24, null, null], [25, null, null], [26, null, null]]
 disconnect Sx
-# test: POST /schema/table (application/json) (obj)
-connect E0 S0 http://localhost:3485/public/test
+# test: POST /v1/db/schema/table (application/json) (obj)
+connect E0 S0 http://localhost:3485/v1/db/public/test
 import application/json [{"id": 27}, {"id": 28}]
 disconnect S0
 connect E0 Sx http://localhost:3485/
 select * format 'json' from test
 [[0, 0, 0], [1, 0, 0], [2, 0, 0], [3, null, null], [4, null, null], [5, null, null], [6, 0, null], [7, 0, 0], [9, 0, 0], [10, null, 123], [11, null, null], [13, null, null], [14, null, null], [15, 0, 0], [18, null, null], [19, null, null], [20, null, null], [21, 0, 0], [22, null, 0], [23, null, null], [24, null, null], [25, null, null], [26, null, null], [27, null, null], [28, null, null]]
 disconnect Sx
-# test: POST /schema/table (application/json) (obj, one column)
-connect E0 S0 http://localhost:3485/public/test5?columns=data
+# test: POST /v1/db/schema/table (application/json) (obj, one column)
+connect E0 S0 http://localhost:3485/v1/db/public/test5?columns=data
 import application/json [{"id": 4}, {"id": 5}]
 disconnect S0
 connect E0 Sx http://localhost:3485/
 select * format 'json' from test5
 [[0, {"id": 1}], [1, {"id": 2}], [2, {"id": 3}], [3, {"id": 4}], [4, {"id": 5}]]
 disconnect Sx
-# test: POST /schema/table (application/json) (obj, one column, generated)
-connect E0 S0 http://localhost:3485/public/test6?columns=data
+# test: POST /v1/db/schema/table (application/json) (obj, one column, generated)
+connect E0 S0 http://localhost:3485/v1/db/public/test6?columns=data
 import application/json [{"id": 1}, {"id": 2, "data": [1,2,3]}]
 disconnect S0
 connect E0 Sx http://localhost:3485/
