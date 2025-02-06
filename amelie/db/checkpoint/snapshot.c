@@ -76,10 +76,7 @@ snapshot_end(Snapshot* self)
 	file_close(&self->file);
 
 	char path[PATH_MAX];
-	snprintf(path, sizeof(path),
-	         "%" PRIu64"/%010" PRIu64 ".part",
-	         self->lsn,
-	         self->partition);
+	snprintf(path, sizeof(path), "%010" PRIu64 ".part", self->partition);
 
 	double size = self->file.size / 1024 / 1024;
 	info("%s (%.2f MiB)", path, size);
