@@ -166,9 +166,8 @@ checkpoint_mgr_add(CheckpointMgr* self, uint64_t id)
 static inline int64_t
 part_id_of(const char* name)
 {
-	// <part>.part
 	int64_t id = 0;
-	while (*name && *name != '.')
+	while (*name)
 	{
 		if (unlikely(! isdigit(*name)))
 			return -1;
@@ -176,10 +175,6 @@ part_id_of(const char* name)
 			return -1;
 		name++;
 	}
-	if (*name != '.')
-		return -1;
-	if (strcmp(name, ".part") != 0)
-		return -1;
 	return id;
 }
 
@@ -221,13 +216,11 @@ checkpoint_mgr_list(CheckpointMgr* self, uint64_t checkpoint, Buf* buf)
 		auto id = buf_u64(&list.list)[i];
 		encode_array(buf);
 		// path
-		snprintf(path, sizeof(path),
-		         "checkpoints/%" PRIu64 "/%" PRIu64 ".part",
+		snprintf(path, sizeof(path), "checkpoints/%" PRIu64 "/%" PRIu64,
 		         checkpoint, id);
 		encode_cstr(buf, path);
 		// size
-		auto size = fs_size("%s/checkpoints/%" PRIu64 "/%" PRIu64 ".part",
-		                    config_directory(),
+		auto size = fs_size("%s/checkpoints/%" PRIu64 "/%" PRIu64, config_directory(),
 		                    checkpoint, id);
 		if (size == -1)
 			error_system();

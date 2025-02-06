@@ -54,10 +54,10 @@ snapshot_reset(Snapshot* self)
 static void
 snapshot_begin(Snapshot* self)
 {
-	// <base>/<lsn>.incomplete/<partition_id>.part
+	// <base>/<lsn>.incomplete/<partition_id>
 	char path[PATH_MAX];
 	snprintf(path, sizeof(path),
-	         "%s/checkpoints/%" PRIu64 ".incomplete/%" PRIu64 ".part",
+	         "%s/checkpoints/%" PRIu64 ".incomplete/%" PRIu64,
 	         config_directory(),
 	         self->lsn,
 	         self->partition);
@@ -76,7 +76,7 @@ snapshot_end(Snapshot* self)
 	file_close(&self->file);
 
 	double size = (double)self->file.size / 1024 / 1024;
-	info("checkpoints/%" PRIu64 "/%" PRIu64 ".part (%.2f MiB)",
+	info("checkpoints/%" PRIu64 "/%" PRIu64 " (%.2f MiB)",
 	     self->lsn,
 	     self->partition,
 	     size);
@@ -134,7 +134,7 @@ snapshot_create(Snapshot* self, Part* part, uint64_t lsn)
 	self->partition = part->config->id;
 	self->lsn       = lsn;
 
-	// create <base>/checkpoints/<lsn>.incomplete/<partition_id>.part
+	// create <base>/checkpoints/<lsn>.incomplete/<partition_id>
 	auto on_error = error_catch
 	(
 		snapshot_begin(self);

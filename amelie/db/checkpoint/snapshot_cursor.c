@@ -31,10 +31,10 @@ snapshot_cursor_init(SnapshotCursor* self)
 void
 snapshot_cursor_open(SnapshotCursor* self, uint64_t lsn, uint64_t partition)
 {
-	// <base>/checkpoints/<lsn>/<partition>.part
+	// <base>/checkpoints/<lsn>/<partition>
 	char path[PATH_MAX];
 	snprintf(path, sizeof(path),
-	         "%s/checkpoints/%" PRIu64 "/%" PRIu64 ".part",
+	         "%s/checkpoints/%" PRIu64 "/%" PRIu64,
 	         config_directory(),
 	         lsn,
 	         partition);
