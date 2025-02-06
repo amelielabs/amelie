@@ -214,8 +214,9 @@ session_execute(Session* self)
 	// set transaction time
 	local_update_time(&self->local);
 
-	// POST /schema/table <?columns=...>
 	// POST /
+	// POST /v1/execute
+	// POST /v1/db/schema/relation
 	auto type = http_find(request, "Content-Type", 12);
 	if (unlikely(! type))
 		error("Content-Type is missing");
@@ -283,8 +284,6 @@ session_auth(Session* self)
 	auto client  = self->client;
 	auto request = &client->request;
 
-	// POST /schema/table
-	// POST /
 	auto method = &request->options[HTTP_METHOD];
 	if (unlikely(! str_is(method, "POST", 4)))
 		goto forbidden;

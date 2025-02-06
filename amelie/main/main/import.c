@@ -35,7 +35,7 @@ import_client_send(ImportClient* self, Str* path, Str* content_type, Str* conten
 	auto client  = self->client;
 	auto request = &client->request;
 
-	// POST /schema/table
+	// POST /v1/db/schema/table
 	http_write_request(request, "POST %.*s", str_size(path), str_of(path));
 	auto token = remote_get(client->remote, REMOTE_TOKEN);
 	if (! str_empty(token))
@@ -177,9 +177,9 @@ import_path_create(Import* self, char* target_path)
 	if (! import_path_read(&target, &schema, &name))
 		return NULL;
 
-	// /schema/name
+	// /v1/db/schema/name
 	auto path = buf_create();
-	buf_write(path, "/", 1);
+	buf_write(path, "/v1/db/", 7);
 	buf_write_str(path, &schema);
 	buf_write(path, "/", 1);
 	buf_write_str(path, &name);
