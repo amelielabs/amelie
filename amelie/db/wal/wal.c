@@ -118,6 +118,7 @@ wal_gc(Wal* self, uint64_t min)
 	list_count = id_mgr_gc_between(&self->list, &list, min);
 	if (list_count > 0)
 	{
+		size_t size  = 0;
 		auto id_list = buf_u64(&list);
 		for (int i = 0; i < list_count; i++)
 		{
@@ -125,9 +126,11 @@ wal_gc(Wal* self, uint64_t min)
 			snprintf(path, sizeof(path), "%s/wals/%020" PRIu64 ".wal",
 			         config_directory(),
 			         id_list[i]);
-			info("wal: removing wals/%020" PRIu64 ".wal", id_list[i]);
+			size += fs_size("%s", path);
 			fs_unlink("%s", path);
 		}
+		info("wal: %d files removed (%.2f MiB)", list_count,
+		     (double)size / 1024 / 1024);
 	}
 }
 
