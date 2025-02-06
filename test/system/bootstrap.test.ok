@@ -33,7 +33,7 @@ show all
 }]
 show state
 [{
-  "version": "0.9.0",
+  "version": "0.1.0",
   "directory": "_output/E0",
   "uuid": "abc00000-0000-0000-0000-000000000000",
   "hosts": 1,
@@ -80,7 +80,7 @@ show all
 }]
 show state
 [{
-  "version": "0.9.0",
+  "version": "0.1.0",
   "directory": "_output/E0",
   "uuid": "abc00000-0000-0000-0000-000000000000",
   "hosts": 1,

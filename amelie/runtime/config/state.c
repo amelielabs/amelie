@@ -35,7 +35,7 @@ state_prepare(State* self)
 	VarDef defs[] =
 	{
 		// system
-		{ "version",       VAR_STRING, VAR_E, &self->version,      "0.9.0", 0     },
+		{ "version",       VAR_STRING, VAR_E, &self->version,      "0.1.0", 0     },
 		{ "directory",     VAR_STRING, VAR_E, &self->directory,     NULL,   0     },
 		{ "checkpoint",    VAR_INT,    VAR_E, &self->checkpoint,    NULL,   0     },
 		{ "lsn",           VAR_INT,    VAR_E, &self->lsn,           NULL,   0     },
