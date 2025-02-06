@@ -38,7 +38,7 @@ static inline void
 wal_file_open(WalFile* self)
 {
 	char path[PATH_MAX];
-	snprintf(path, sizeof(path), "%s/wals/%020" PRIu64 ".wal",
+	snprintf(path, sizeof(path), "%s/wals/%" PRIu64 ".wal",
 	         config_directory(),
 	         self->id);
 	file_open(&self->file, path);
@@ -48,7 +48,7 @@ static inline void
 wal_file_create(WalFile* self)
 {
 	char path[PATH_MAX];
-	snprintf(path, sizeof(path), "%s/wals/%020" PRIu64 ".wal",
+	snprintf(path, sizeof(path), "%s/wals/%" PRIu64 ".wal",
 	         config_directory(),
 	         self->id);
 	file_create(&self->file, path);

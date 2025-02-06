@@ -375,7 +375,7 @@ recover_wal(Recover* self)
 		if (! wal_cursor_active(&cursor))
 			break;
 
-		info("recover: %020" PRIu64 ".wal  (%.2f MiB, %" PRIu64 " rows)",
+		info("wals/%" PRIu64 ".wal (%.2f MiB, %" PRIu64 " rows)",
 		     (double)size / 1024 / 1024, id, count);
 
 		id = id_mgr_next(&wal->list, cursor.file->id);

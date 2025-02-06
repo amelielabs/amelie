@@ -57,7 +57,7 @@ snapshot_begin(Snapshot* self)
 	// <base>/<lsn>.incomplete/<partition_id>.part
 	char path[PATH_MAX];
 	snprintf(path, sizeof(path),
-	         "%s/checkpoints/%" PRIu64 ".incomplete/%020" PRIu64 ".part",
+	         "%s/checkpoints/%" PRIu64 ".incomplete/%" PRIu64 ".part",
 	         config_directory(),
 	         self->lsn,
 	         self->partition);
@@ -75,11 +75,11 @@ snapshot_end(Snapshot* self)
 {
 	file_close(&self->file);
 
-	char path[PATH_MAX];
-	snprintf(path, sizeof(path), "%020" PRIu64 ".part", self->partition);
-
-	double size = self->file.size / 1024 / 1024;
-	info("%s (%.2f MiB)", path, size);
+	double size = (double)self->file.size / 1024 / 1024;
+	info("checkpoints/%" PRIu64 "/%" PRIu64 ".part (%.2f MiB)",
+	     self->lsn,
+	     self->partition,
+	     size);
 }
 
 hot static inline void

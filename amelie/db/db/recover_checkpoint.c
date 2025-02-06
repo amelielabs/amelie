@@ -47,8 +47,8 @@ recover_partition(Part* self)
 	}
 
 	double size = (double)cursor.file.size / 1024 / 1024;
-	info("recover: %020" PRIu64 ".part (%.2f MiB, %" PRIu64 " rows)",
-	     self->config->id, size, count);
+	info("checkpoints/%" PRIu64 "/%" PRIu64 ".part (%.2f MiB, %" PRIu64 " rows)",
+	     checkpoint, self->config->id, size, count);
 }
 
 hot void

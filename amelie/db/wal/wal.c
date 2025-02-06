@@ -123,7 +123,7 @@ wal_gc(Wal* self, uint64_t min)
 		for (int i = 0; i < list_count; i++)
 		{
 			char path[PATH_MAX];
-			snprintf(path, sizeof(path), "%s/wals/%020" PRIu64 ".wal",
+			snprintf(path, sizeof(path), "%s/wals/%" PRIu64 ".wal",
 			         config_directory(),
 			         id_list[i]);
 			size += fs_size("%s", path);
@@ -299,7 +299,7 @@ wal_snapshot(Wal* self, WalSlot* slot, Buf* buf)
 
 		// path
 		char path[PATH_MAX];
-		snprintf(path, sizeof(path), "wals/%020" PRIu64 ".wal", id);
+		snprintf(path, sizeof(path), "wals/%" PRIu64 ".wal", id);
 		encode_cstr(buf, path);
 
 		// size
@@ -308,7 +308,7 @@ wal_snapshot(Wal* self, WalSlot* slot, Buf* buf)
 			size = self->current->file.size;
 		} else
 		{
-			size = fs_size("%s/wals/%020" PRIu64 ".wal", config_directory(), id);
+			size = fs_size("%s/wals/%" PRIu64 ".wal", config_directory(), id);
 			if (size == -1)
 				error_system();
 		}
