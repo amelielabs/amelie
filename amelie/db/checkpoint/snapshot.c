@@ -57,7 +57,7 @@ snapshot_begin(Snapshot* self)
 	// <base>/<lsn>.incomplete/<partition_id>.part
 	char path[PATH_MAX];
 	snprintf(path, sizeof(path),
-	         "%s/%" PRIu64 ".incomplete/%010" PRIu64 ".part",
+	         "%s/checkpoints/%" PRIu64 ".incomplete/%010" PRIu64 ".part",
 	         config_directory(),
 	         self->lsn,
 	         self->partition);
@@ -137,9 +137,9 @@ snapshot_create(Snapshot* self, Part* part, uint64_t lsn)
 	self->partition = part->config->id;
 	self->lsn       = lsn;
 
+	// create <base>/checkpoints/<lsn>.incomplete/<partition_id>.part
 	auto on_error = error_catch
 	(
-		// create <base>/<lsn>.incomplete/<partition_id>.part
 		snapshot_begin(self);
 		snapshot_main(self, part_primary(part));
 		snapshot_end(self);

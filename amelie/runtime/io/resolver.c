@@ -65,7 +65,7 @@ void
 resolve(Resolver*         self,
         const char*       addr,
         int               port,
-        struct addrinfo **result)
+        struct addrinfo** result)
 {
 	char service[16];
 	snprintf(service, sizeof(service), "%d", port);

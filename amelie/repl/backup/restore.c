@@ -130,9 +130,10 @@ restore_start(Restore* self)
 
 	self->count_total = json_array_size(self->in_files);
 
-	// create checkpoint directory
+	// create checkpoints directory
+	fs_mkdir(0755, "%s/checkpoints", config_directory());
 	if (self->checkpoint > 0)
-		fs_mkdir(0755, "%s/%" PRIi64, config_directory(),
+		fs_mkdir(0755, "%s/checkpoints/%" PRIi64, config_directory(),
 		         self->checkpoint);
 
 	// create wals directory
