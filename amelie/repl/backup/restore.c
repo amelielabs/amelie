@@ -95,6 +95,8 @@ restore_start(Restore* self)
 	auto eof = http_read(reply, readahead, false);
 	if (eof)
 		error("unexpected eof");
+	if (! str_is(&reply->options[HTTP_CODE], "200", 3))
+		error("unexpected reply code");
 	http_read_content(reply, readahead, &reply->content);
 
 	// Am-Service
@@ -165,6 +167,8 @@ restore_next(Restore* self)
 	auto eof = http_read(reply, readahead, false);
 	if (eof)
 		error("unexpected eof");
+	if (! str_is(&reply->options[HTTP_CODE], "200", 3))
+		error("unexpected reply code");
 
 	// Am-Service
 	auto am_service = http_find(reply, "Am-Service", 10);

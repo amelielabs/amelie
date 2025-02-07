@@ -102,7 +102,7 @@ streamer_read(Streamer* self)
 	if (eof)
 		error("unexpected eof");
 	if (! str_is(&reply->options[HTTP_CODE], "200", 3))
-		error("unexpected replica reply code");
+		error("unexpected reply code");
 	http_read_content(reply, &client->readahead, &reply->content);
 
 	// Am-Service
