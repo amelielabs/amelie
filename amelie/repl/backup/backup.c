@@ -32,9 +32,13 @@
 void
 backup_init(Backup* self, Db* db)
 {
-	self->snapshot = false;
-	self->client   = NULL;
-	self->db       = db;
+	self->state_step       = 0;
+	self->state_step_total = 0;
+	self->state_pos        = NULL;
+	self->state_file       = NULL;
+	self->snapshot         = false;
+	self->client           = NULL;
+	self->db               = db;
 	event_init(&self->on_complete);
 	wal_slot_init(&self->wal_slot);
 	buf_init(&self->state);
@@ -49,8 +53,24 @@ backup_free(Backup* self)
 	if (self->snapshot)
 		id_mgr_delete(&db->checkpoint_mgr.list_snapshot, 0);
 	event_detach(&self->on_complete);
+	if (self->state_file)
+		buf_free(self->state_file);
 	buf_free(&self->state);
 	task_free(&self->task);
+}
+
+static inline void
+backup_add(Buf* self, char* path)
+{
+	encode_array(self);
+	// relative path
+	encode_cstr(self, path);
+	// size
+	auto size = fs_size("%s/%s", config_directory(), path);
+	if (size == -1)
+		error_system();
+	encode_integer(self, size);
+	encode_array_end(self);
 }
 
 static inline void
@@ -58,7 +78,7 @@ backup_list(Buf* self, char* name)
 {
 	char path[PATH_MAX];
 	snprintf(path, sizeof(path), "%s/%s", config_directory(), name);
-	DIR* dir = opendir(path);
+	auto dir = opendir(path);
 	if (unlikely(dir == NULL))
 		error_system();
 	defer(fs_opendir_defer, dir);
@@ -72,156 +92,148 @@ backup_list(Buf* self, char* name)
 		if (! strcmp(entry->d_name, ".."))
 			continue;
 		snprintf(path, sizeof(path), "%s/%s", name, entry->d_name);
-		encode_array(self);
-		// path
-		encode_cstr(self, path);
-		// size
-		auto size = fs_size("%s/%s/%s", config_directory(), name, entry->d_name);
-		if (size == -1)
-			error_system();
-		encode_integer(self, size);
-		encode_array_end(self);
+		backup_add(self, path);
 	}
 }
 
-static void
-backup_prepare(Backup* self)
+static int
+backup_prepare_files(Backup* self, uint64_t checkpoint)
 {
-	// read version file
-	auto version_buf = file_import("%s/version.json", config_directory());
-	Str version_str;
-	buf_str(version_buf, &version_str);
-	defer_buf(version_buf);
-
-	// read state file
-	auto state_buf = file_import("%s/state.json", config_directory());
-	Str state_str;
-	buf_str(state_buf, &state_str);
-	defer_buf(state_buf);
-
-	// read config file
-	auto config_buf = file_import("%s/config.json", config_directory());
-	Str config_str;
-	buf_str(config_buf, &config_str);
-	defer_buf(config_buf);
-
-	// prepare backup state
+	auto db  = self->db;
 	auto buf = &self->state;
-	encode_obj(buf);
 
-	// add checkpoint snapshot
-	auto db = self->db;
-	uint64_t checkpoint = checkpoint_mgr_snapshot(&db->checkpoint_mgr);
-	self->snapshot = true;
-
-	// checkpoint
-	encode_raw(buf, "checkpoint", 10);
-	encode_integer(buf, checkpoint);
-
-	// version
-	encode_raw(buf, "version", 7);
-	Json json;
-	json_init(&json);
-	defer(json_free, &json);
-	json_parse(&json, &version_str, buf);
-
-	// state
-	encode_raw(buf, "state", 5);
-	json_reset(&json);
-	json_parse(&json, &state_str, buf);
-
-	// config
-	encode_raw(buf, "config", 6);
-	json_reset(&json);
-	json_parse(&json, &config_str, buf);
-
-	// files
-	encode_raw(buf, "files", 5);
 	encode_array(buf);
 
-	// checkpoint files
+	// include checkpoint files
 	checkpoint_mgr_list(&db->checkpoint_mgr, checkpoint, buf);
 
 	// create wal snapshot and include wal files
 	wal_snapshot(&db->wal, &self->wal_slot, buf);
 
-	// certs
+	// include certs files
 	backup_list(buf, "certs");
-	encode_array_end(buf);
 
-	encode_obj_end(buf);
+	// include files
+	backup_add(buf, "version.json");
+	backup_add(buf, "config.json");
+	backup_add(buf, "state.json");
+
+	// read state file into memory
+	self->state_file = file_import("%s/state.json", config_directory());
+
+	encode_array_end(buf);
+	return json_array_size(self->state.start);
+}
+
+static uint64_t
+backup_prepare(Backup* self)
+{
+	// add checkpoint snapshot
+	auto db  = self->db;
+	auto checkpoint = checkpoint_mgr_snapshot(&db->checkpoint_mgr);
+	self->snapshot = true;
+
+	// create wal snapshot and prepare files
+	self->state_step_total = backup_prepare_files(self, checkpoint);
+	self->state_step       = 0;
+	self->state_pos        = self->state.start;
+	json_read_array(&self->state_pos);
+	return checkpoint;
 }
 
 static void
 backup_join(Backup* self)
 {
 	// create backup state
+	uint64_t checkpoint;
 	control_lock();
-
-	error_catch(
-		backup_prepare(self)
+	auto on_error = error_catch(
+		checkpoint = backup_prepare(self)
 	);
-
 	control_unlock();
+	if (on_error)
+		rethrow();
 
+	// prepare backup state reply
+	auto buf = buf_create();
+	defer_buf(buf);
+	encode_obj(buf);
+	// checkpoint
+	encode_raw(buf, "checkpoint", 10);
+	encode_integer(buf, checkpoint);
+	// steps
+	encode_raw(buf, "steps", 5);
+	encode_integer(buf, self->state_step_total);
+	encode_obj_end(buf);
+
+	// send reply
 	auto client = self->client;
 	auto reply = &client->reply;
-	uint8_t* pos = self->state.start;
+	uint8_t* pos = buf->start;
 	json_export_pretty(&reply->content, global()->timezone, &pos);
 	http_write_reply(reply, 200, "OK");
 	http_write(reply, "Content-Length", "%d", buf_size(&reply->content));
 	http_write(reply, "Content-Type", "application/json");
+	http_write(reply, "Am-Service", "backup");
+	http_write(reply, "Am-Version", "1");
 	http_write_end(reply);
 	tcp_write_pair(&client->tcp, &reply->raw, &reply->content);
 }
 
-static void
-backup_send(Backup* self)
+static inline void
+backup_validate_headers(Client* client)
 {
-	auto client = self->client;
 	auto request = &client->request;
 
-	// Am-File
-	auto hdr_path = http_find(request, "Am-File", 7);
-	if (unlikely(! hdr_path))
-		error("Am-File field is missing");
+	// Am-Service
+	auto am_service = http_find(request, "Am-Service", 10);
+	if (unlikely(! am_service))
+		error("backup Am-Service field is missing");
+	if (unlikely(! str_is(&am_service->value, "backup", 6)))
+		error("backup Am-Service is invalid");
 
-	// Am-File-Size
-	auto hdr_size = http_find(request, "Am-File-Size", 12);
-	if (unlikely(! hdr_size))
-		error("Am-File-Size field is missing");
-	int64_t size;
-	if (str_toint(&hdr_size->value, &size) == -1)
-		error("Am-File-Size field is invalid");
+	// Am-Version
+	auto am_version = http_find(request, "Am-Version", 10);
+	if (unlikely(! am_version))
+		error("backup Am-Version field is missing");
+	if (unlikely(! str_is(&am_version->value, "1", 1)))
+		error("backup Am-Version is invalid");
+}
 
-	// todo: validate path
+static void
+backup_send_file(Backup* self, Str* name, int64_t size, Buf* data)
+{
 	char path[PATH_MAX];
 	snprintf(path, sizeof(path), "%s/%.*s", config_directory(),
-	         str_size(&hdr_path->value),
-	         str_of(&hdr_path->value));
+	         str_size(name), str_of(name));
+
+	// prepare and send header
+	auto client = self->client;
+	auto reply  = &client->reply;
+	auto tcp    = &client->tcp;
+	http_write_reply(reply, 200, "OK");
+	http_write(reply, "Content-Length", "%" PRIu64, size);
+	http_write(reply, "Content-Type", "application/octet-stream");
+	http_write(reply, "Am-Service", "backup");
+	http_write(reply, "Am-Version", "1");
+	http_write(reply, "Am-Step", "%d", self->state_step);
+	http_write(reply, "Am-File", "%.*s", str_size(name), str_of(name));
+	http_write_end(reply);
+	tcp_write_buf(tcp, &reply->raw);
+
+	// send preloaded data, if provided
+	if (data)
+	{
+		tcp_write_buf(tcp, data);
+		return;
+	}
+
+	// transfer file content
+	auto buf = &reply->content;
 	File file;
 	file_init(&file);
 	defer(file_close, &file);
 	file_open(&file, path);
-
-	// requested size must be <= to the current file size
-	if ((int64_t)file.size < size)
-		error("Am-File-Size field is invalid (file size mismatch)");
-
-	info("%.*s (%" PRIu64 " bytes)", str_size(&hdr_path->value),
-	     str_of(&hdr_path->value), size);
-
-	// prepare and send header
-	auto reply = &client->reply;
-	auto tcp   = &client->tcp;
-	http_write_reply(reply, 200, "OK");
-	http_write(reply, "Content-Length", "%" PRIu64, size);
-	http_write(reply, "Content-Type", "application/octet-stream");
-	http_write_end(reply);
-	tcp_write_buf(tcp, &reply->raw);
-
-	// transfer file content
-	auto buf = &reply->content;
 	while (size > 0)
 	{
 		buf_reset(buf);
@@ -235,9 +247,53 @@ backup_send(Backup* self)
 	}
 }
 
+static void
+backup_next(Backup* self)
+{
+	auto client = self->client;
+	auto request = &client->request;
+
+	// Am-Step
+	auto am_step = http_find(request, "Am-Step", 7);
+	if (unlikely(! am_step))
+		error("backup Am-Step field is missing");
+	int64_t step;
+	if (str_toint(&am_step->value, &step) == -1)
+		error("backup Am-Step is invalid");
+
+	// expect correct next step order (starting from 0)
+	if (step != self->state_step || step >= self->state_step_total )
+		error("backup Am-Step order is invalid");
+
+	// [path, size]
+	uint8_t** pos = &self->state_pos;
+	json_read_array(pos);
+	Str name;
+	json_read_string(pos, &name);
+	int64_t size;
+	json_read_integer(pos, &size);
+	json_read_array_end(pos);
+	info("%.*s (%" PRIu64 " bytes)", str_size(&name),
+	     str_of(&name), size);
+
+	// on the last state, send preloaded state file content
+	Buf* buf = NULL;
+	if (step == self->state_step_total - 1)
+		buf = self->state_file;
+
+	// transmit file
+	backup_send_file(self, &name, size, buf);
+
+	// advance step
+	self->state_step++;
+}
+
 static inline void
 backup_process(Backup* self, Client* client)
 {
+	// validate headers
+	backup_validate_headers(client);
+
 	// create and send backup state
 	backup_join(self);
 
@@ -251,7 +307,8 @@ backup_process(Backup* self, Client* client)
 		if (eof)
 			break;
 		http_read_content(request, readahead, &request->content);
-		backup_send(self);
+		backup_validate_headers(client);
+		backup_next(self);
 	}
 }
 

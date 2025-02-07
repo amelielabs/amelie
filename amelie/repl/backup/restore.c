@@ -33,34 +33,22 @@ typedef struct Restore Restore;
 
 struct Restore
 {
-	int64_t  checkpoint;
-	uint8_t* in_version;
-	uint8_t* in_state;
-	uint8_t* in_config;
-	uint8_t* in_files;
-	int      count_total;
-	int      count;
-	Client*  client;
-	Remote*  remote;
-	Buf      buf;
-	Buf      state_data;
-	Buf      state;
+	int64_t checkpoint;
+	int64_t step;
+	int64_t step_total;
+	Client* client;
+	Remote* remote;
+	Buf     state;
 };
 
 static void
 restore_init(Restore* self, Remote* remote)
 {
 	self->checkpoint  = 0;
-	self->in_version  = NULL;
-	self->in_state    = NULL;
-	self->in_config   = NULL;
-	self->in_files    = NULL;
-	self->count       = 0;
-	self->count_total = 0;
+	self->step        = 0;
+	self->step_total  = 0;
 	self->remote      = remote;
-	buf_init(&self->state_data);
 	buf_init(&self->state);
-	buf_init(&self->buf);
 }
 
 static void
@@ -68,9 +56,7 @@ restore_free(Restore* self)
 {
 	if (self->client)
 		client_free(self->client);
-	buf_free(&self->state_data);
 	buf_free(&self->state);
-	buf_free(&self->buf);
 }
 
 static void
@@ -91,12 +77,15 @@ restore_start(Restore* self)
 	auto readahead = &client->readahead;
 	auto token     = remote_get(self->remote, REMOTE_TOKEN);
 
+	// begin backup
+
 	// POST /
 	auto request = &client->request;
 	http_write_request(request, "POST /");
 	if (! str_empty(token))
 		http_write(request, "Authorization", "Bearer %.*s", str_size(token), str_of(token));
 	http_write(request, "Am-Service", "backup");
+	http_write(request, "Am-Version", "1");
 	http_write_end(request);
 	tcp_write_buf(tcp, &request->raw);
 
@@ -106,29 +95,38 @@ restore_start(Restore* self)
 	auto eof = http_read(reply, readahead, false);
 	if (eof)
 		error("unexpected eof");
-	http_read_content(reply, readahead, &self->state);
+	http_read_content(reply, readahead, &reply->content);
+
+	// Am-Service
+	auto am_service = http_find(reply, "Am-Service", 10);
+	if (unlikely(! am_service))
+		error("backup Am-Service field is missing");
+	if (unlikely(! str_is(&am_service->value, "backup", 6)))
+		error("backup Am-Service is invalid");
+
+	// Am-Version
+	auto am_version = http_find(reply, "Am-Version", 10);
+	if (unlikely(! am_version))
+		error("backup Am-Version field is missing");
+	if (unlikely(! str_is(&am_version->value, "1", 1)))
+		error("backup Am-Version is invalid");
 
 	// parse state
 	Str text;
-	buf_str(&self->state, &text);
+	buf_str(&reply->content, &text);
 	Json json;
 	json_init(&json);
 	defer(json_free, &json);
-	json_parse(&json, &text, &self->state_data);
+	json_parse(&json, &text, &self->state);
 
-	uint8_t* pos = self->state_data.start;
+	uint8_t* pos = self->state.start;
 	Decode obj[] =
 	{
-		{ DECODE_INT,   "checkpoint", &self->checkpoint },
-		{ DECODE_OBJ,   "version",    &self->in_version },
-		{ DECODE_OBJ,   "state",      &self->in_state   },
-		{ DECODE_OBJ,   "config",     &self->in_config  },
-		{ DECODE_ARRAY, "files",      &self->in_files   },
-		{ 0,             NULL,        NULL              }
+		{ DECODE_INT, "checkpoint", &self->checkpoint },
+		{ DECODE_INT, "steps",      &self->step_total },
+		{ 0,           NULL,        NULL              }
 	};
 	decode_obj(obj, "restore", &pos);
-
-	self->count_total = json_array_size(self->in_files);
 
 	// create checkpoints directory
 	fs_mkdir(0755, "%s/checkpoints", config_directory());
@@ -141,12 +139,14 @@ restore_start(Restore* self)
 }
 
 static void
-restore_copy_file(Restore* self, Str* name, uint64_t size)
+restore_next(Restore* self)
 {
 	auto client    = self->client;
 	auto tcp       = &client->tcp;
 	auto readahead = &client->readahead;
 	auto token     = remote_get(self->remote, REMOTE_TOKEN);
+
+	// request next step
 
 	// POST /
 	auto request = &client->request;
@@ -154,8 +154,8 @@ restore_copy_file(Restore* self, Str* name, uint64_t size)
 	if (! str_empty(token))
 		http_write(request, "Authorization", "Bearer %.*s", str_size(token), str_of(token));
 	http_write(request, "Am-Service", "backup");
-	http_write(request, "Am-File", "%.*s", str_size(name), str_of(name));
-	http_write(request, "Am-FIle-Size", "%" PRIu64, size);
+	http_write(request, "Am-Version", "1");
+	http_write(request, "Am-Step", "%" PRIi64, self->step);
 	http_write_end(request);
 	tcp_write_buf(tcp, &request->raw);
 
@@ -166,6 +166,33 @@ restore_copy_file(Restore* self, Str* name, uint64_t size)
 	if (eof)
 		error("unexpected eof");
 
+	// Am-Service
+	auto am_service = http_find(reply, "Am-Service", 10);
+	if (unlikely(! am_service))
+		error("backup Am-Service field is missing");
+	if (unlikely(! str_is(&am_service->value, "backup", 6)))
+		error("backup Am-Service is invalid");
+
+	// Am-Version
+	auto am_version = http_find(reply, "Am-Version", 10);
+	if (unlikely(! am_version))
+		error("backup Am-Version field is missing");
+	if (unlikely(! str_is(&am_version->value, "1", 1)))
+		error("backup Am-Version is invalid");
+
+	// Am-Step
+	auto am_step = http_find(reply, "Am-Step", 7);
+	if (unlikely(! am_step))
+		error("backup Am-Step field is missing");
+	int64_t step;
+	if (str_toint(&am_step->value, &step) == -1)
+		error("backup Am-Step is invalid");
+
+	// Am-File
+	auto am_file = http_find(reply, "Am-File", 7);
+	if (unlikely(! am_file))
+		error("backup Am-File field is missing");
+
 	// read content header
 	auto content_len = http_find(reply, "Content-Length", 14);
 	if (! content_len)
@@ -173,27 +200,27 @@ restore_copy_file(Restore* self, Str* name, uint64_t size)
 	int64_t len;
 	if (str_toint(&content_len->value, &len) == -1)
 		error("failed to parse Content-Length");
-	if (size != (uint64_t)len)
-		error("response Content-Length is invalid (size mismatch)");
 
-	// create file
+	// expect correct step
+	if (step != self->step || step >= self->step_total )
+		error("backup Am-Step order is invalid");
+
+	info("[%3" PRIi64 "/%3" PRIi64 "] %.*s (%" PRIu64 " bytes)",
+	     self->step + 1,
+	     self->step_total,
+	     str_size(&am_file->value),
+	     str_of(&am_file->value),
+	     len);
+
+	// create and transfer file
 	char path[PATH_MAX];
 	snprintf(path, sizeof(path), "%s/%.*s", config_directory(),
-	         str_size(name), str_of(name));
-
-	self->count++;
-	info("[%3d/%3d] %.*s (%" PRIu64 " bytes)",
-	     self->count,
-	     self->count_total,
-	     str_size(name),
-	     str_of(name), len);
-
+	         str_size(&am_file->value),
+	         str_of(&am_file->value));
 	File file;
 	file_init(&file);
 	defer(file_close, &file);
 	file_open_as(&file, path, O_CREAT|O_EXCL|O_RDWR, 0644);
-
-	// read content into file
 	while (len > 0)
 	{
 		int to_read = readahead->readahead;
@@ -208,42 +235,6 @@ restore_copy_file(Restore* self, Str* name, uint64_t size)
 	}
 }
 
-static void
-restore_copy(Restore* self)
-{
-	uint8_t* pos = self->in_files;
-	json_read_array(&pos);
-	while (! json_read_array_end(&pos))
-	{
-		// [path, size]
-		json_read_array(&pos);
-		Str name;
-		json_read_string(&pos, &name);
-		int64_t size;
-		json_read_integer(&pos, &size);
-		json_read_array_end(&pos);
-		restore_copy_file(self, &name, size);
-	}
-}
-
-static void
-restore_file(uint8_t* pos, const char* name, int mode)
-{
-	// convert to json
-	Buf text;
-	buf_init(&text);
-	defer_buf(&text);
-	json_export_pretty(&text, global()->timezone, &pos);
-
-	char path[PATH_MAX];
-	snprintf(path, sizeof(path), "%s/%s", config_directory(), name);
-	File file;
-	file_init(&file);
-	defer(file_close, &file);
-	file_open_as(&file, path, O_CREAT|O_RDWR, mode);
-	file_write_buf(&file, &text);
-}
-
 void
 restore(Remote* remote)
 {
@@ -254,9 +245,7 @@ restore(Remote* remote)
 	defer(restore_free, &restore);
 	restore_connect(&restore);
 	restore_start(&restore);
-	restore_copy(&restore);
-	restore_file(restore.in_version, "version.json", 0644);
-	restore_file(restore.in_state, "state.json", 0600);
-	restore_file(restore.in_config, "config.json", 0644);
+	for (; restore.step < restore.step_total; restore.step++)
+		restore_next(&restore);
 	info("complete");
 }
