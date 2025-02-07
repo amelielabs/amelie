@@ -78,6 +78,7 @@ streamer_write(Streamer* self, Buf* content)
 	http_write(request, "Content-Length", "%d", content ? buf_size(content) : 0);
 	http_write(request, "Content-Type", "application/octet-stream");
 	http_write(request, "Am-Service", "repl");
+	http_write(request, "Am-Version", "1");
 	http_write(request, "Am-Id", "%.*s", str_size(id), str_of(id));
 	if (content)
 		http_write(request, "Am-Lsn", "%" PRIu64, self->wal_slot->lsn);
@@ -100,23 +101,39 @@ streamer_read(Streamer* self)
 	auto eof = http_read(reply, &client->readahead, false);
 	if (eof)
 		error("unexpected eof");
+	if (! str_is(&reply->options[HTTP_CODE], "200", 3))
+		error("unexpected replica reply code");
 	http_read_content(reply, &client->readahead, &reply->content);
 
-	// validate replica id
-	auto hdr_id = http_find(reply, "Am-Id", 5);
-	if (unlikely(! hdr_id))
+	// Am-Service
+	auto am_service = http_find(reply, "Am-Service", 10);
+	if (unlikely(! am_service))
+		error("replica Am-Service field is missing");
+	if (unlikely(! str_is(&am_service->value, "repl", 4)))
+		error("replica Am-Service is invalid");
+
+	// Am-Version
+	auto am_version = http_find(reply, "Am-Version", 10);
+	if (unlikely(! am_version))
+		error("replica Am-Version field is missing");
+	if (unlikely(! str_is(&am_version->value, "1", 1)))
+		error("replica Am-Version is invalid");
+
+	// Am-Id
+	auto am_id = http_find(reply, "Am-Id", 5);
+	if (unlikely(! am_id))
 		error("replica Am-Id field is missing");
-	if (unlikely(! str_is(&hdr_id->value, self->replica_id,
+	if (unlikely(! str_is(&am_id->value, self->replica_id,
 	             sizeof(self->replica_id) - 1)))
 		error("replica Am-Id mismatch");
 
-	// validate lsn
-	auto hdr_lsn = http_find(reply, "Am-Lsn", 6);
-	if (unlikely(! hdr_lsn))
+	// Am-Lsn
+	auto am_lsn = http_find(reply, "Am-Lsn", 6);
+	if (unlikely(! am_lsn))
 		error("replica Am-Lsn field is missing");
 	int64_t lsn;
-	if (unlikely(str_toint(&hdr_lsn->value, &lsn) == -1))
-		error("malformed replica Am-Lsn field");
+	if (unlikely(str_toint(&am_lsn->value, &lsn) == -1))
+		error("replica Am-Lsn is invalid");
 
 	return lsn;
 }

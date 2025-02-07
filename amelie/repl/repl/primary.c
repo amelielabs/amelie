@@ -50,6 +50,8 @@ primary_write(Primary* self)
 	auto reply  = &client->reply;
 	auto id = &config()->uuid.string;
 	http_write_reply(reply, 200, "OK");
+	http_write(reply, "Am-Service", "repl");
+	http_write(reply, "Am-Version", "1");
 	http_write(reply, "Am-Id", "%.*s", str_size(id), str_of(id));
 	http_write(reply, "Am-Lsn", "%" PRIu64, config_lsn());
 	http_write_end(reply);
@@ -113,25 +115,43 @@ primary_next(Primary* self)
 	auto primary_id = &state()->repl_primary.string;
 	if (str_empty(primary_id))
 		error("server is not a replica");
-	auto hdr_id = http_find(request, "Am-Id", 5);
-	if (unlikely(! hdr_id))
-		error("Am-Id field is missing");
-	if (unlikely(! str_compare(&hdr_id->value, primary_id)))
+
+	// Am-Service
+	auto am_service = http_find(request, "Am-Service", 10);
+	if (unlikely(! am_service))
+		error("primary Am-Service field is missing");
+	if (unlikely(! str_is(&am_service->value, "repl", 4)))
+		error("primary Am-Service is invalid");
+
+	// Am-Version
+	auto am_version = http_find(request, "Am-Version", 10);
+	if (unlikely(! am_version))
+		error("primary Am-Version field is missing");
+	if (unlikely(! str_is(&am_version->value, "1", 1)))
+		error("primary Am-Version is invalid");
+
+	// Am-Id
+	auto am_id = http_find(request, "Am-Id", 5);
+	if (unlikely(! am_id))
+		error("primary Am-Id field is missing");
+
+	// validate primary id
+	if (unlikely(! str_compare(&am_id->value, primary_id)))
 		error("primary id mismatch");
 
 	// first join request will have no data and no lsn field
 	if (buf_empty(&request->content))
 		return false;
 
-	// validate lsn
-	auto hdr_lsn = http_find(request, "Am-Lsn", 6);
-	if (unlikely(! hdr_lsn))
+	// Am-Lsn
+	auto am_lsn = http_find(request, "Am-Lsn", 6);
+	if (unlikely(! am_lsn))
 		error("primary Am-Lsn field is missing");
 	int64_t lsn;
-	if (unlikely(str_toint(&hdr_lsn->value, &lsn) == -1))
-		error("malformed replica Am-Lsn field");
+	if (unlikely(str_toint(&am_lsn->value, &lsn) == -1))
+		error("primary Am-Lsn is invalid");
 
-	// lsn must much current state
+	// lsn must much the current state
 	if ((uint64_t)lsn != config_lsn())
 		error("primary lsn does not match this server lsn");
 
