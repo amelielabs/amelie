@@ -24,7 +24,7 @@ select [-123]
 explain select [-123]
 [{
   "bytecode": {
-    "main": {
+    "frontend": {
       "00": "set                 0      1      0     ",
       "01": "json                1      0      0     ",
       "02": "push                1      0      0     ",
@@ -43,7 +43,7 @@ select [-123.321]
 explain select [-123.321]
 [{
   "bytecode": {
-    "main": {
+    "frontend": {
       "00": "set                 0      1      0     ",
       "01": "json                1      0      0     ",
       "02": "push                1      0      0     ",
@@ -78,7 +78,7 @@ select [[1,2,3], 5, [7]]
 explain select [[1,2,3], 5, [7]]
 [{
   "bytecode": {
-    "main": {
+    "frontend": {
       "00": "set                 0      1      0     ",
       "01": "json                1      0      0     ",
       "02": "push                1      0      0     ",
@@ -129,7 +129,7 @@ select {"a": 0, "b": 1}
 explain select {"a": 0, "b": 1}
 [{
   "bytecode": {
-    "main": {
+    "frontend": {
       "00": "set                 0      1      0     ",
       "01": "json                1      0      0     ",
       "02": "push                1      0      0     ",
@@ -200,7 +200,7 @@ select {"id": select 1, 2 }
 explain select {"menu":{"id":"file","value":"File","popup":{"menuitem":[{"value":"New","onclick":"CreateNewDoc()"},{"value":"Open","onclick":"OpenDoc()"},{"value":"Close","onclick":"CloseDoc()"}]}}}
 [{
   "bytecode": {
-    "main": {
+    "frontend": {
       "00": "set                 0      1      0     ",
       "01": "json                1      0      0     ",
       "02": "push                1      0      0     ",
@@ -260,7 +260,7 @@ select public.json_import( public.string( {"menu":{"id":"file","value":"File","p
 explain select {"glossary":{"title":"example glossary","GlossDiv":{"title":"S","GlossList":{"GlossEntry":{"ID":"SGML","SortAs":"SGML","GlossTerm":"Standard Generalized Markup Language","Acronym":"SGML","Abbrev":"ISO 8879:1986","GlossDef":{"para":"A meta-markup language, used to create markup languages such as DocBook.","GlossSeeAlso":["GML","XML"]},"GlossSee":"markup"}}}}}
 [{
   "bytecode": {
-    "main": {
+    "frontend": {
       "00": "set                 0      1      0     ",
       "01": "json                1      0      0     ",
       "02": "push                1      0      0     ",
@@ -323,7 +323,7 @@ select {"glossary":{"title":"example glossary","GlossDiv":{"title":"S","GlossLis
 explain select {"web-app":{"servlet":[{"servlet-name":"cofaxCDS","servlet-class":"org.cofax.cds.CDSServlet","init-param":{"configGlossary:installationAt":"Philadelphia, PA","configGlossary:adminEmail":"ksm@pobox.com","configGlossary:poweredBy":"Cofax","configGlossary:poweredByIcon":"/images/cofax.gif","configGlossary:staticPath":"/content/static","templateProcessorClass":"org.cofax.WysiwygTemplate","templateLoaderClass":"org.cofax.FilesTemplateLoader","templatePath":"templates","templateOverridePath":"","defaultListTemplate":"listTemplate.htm","defaultFileTemplate":"articleTemplate.htm","useJSP":false,"jspListTemplate":"listTemplate.jsp","jspFileTemplate":"articleTemplate.jsp","cachePackageTagsTrack":2,"cachePackageTagsStore":200.32,"cachePackageTagsRefresh":-2147483648,"cacheTemplatesTrack":100,"cacheTemplatesStore":50,"cacheTemplatesRefresh":15,"cachePagesTrack":0.20,"cachePagesStore":-100,"cachePagesRefresh":-0.10,"cachePagesDirtyRead":10,"searchEngineListTemplate":"forSearchEnginesList.htm","searchEngineFileTemplate":"forSearchEngines.htm","searchEngineRobotsDb":"WEB-INF/robots.db","useDataStore":true,"dataStoreClass":"org.cofax.SqlDataStore","redirectionClass":"org.cofax.SqlRedirection","dataStoreName":"cofax","dataStoreDriver":"com.microsoft.jdbc.sqlserver.SQLServerDriver","dataStoreUrl":"jdbc:microsoft:sqlserver://LOCALHOST:1433;DatabaseName=goon","dataStoreUser":"sa","dataStorePassword":"dataStoreTestQuery","dataStoreTestQuery":"SET NOCOUNT ON;select test='test';","dataStoreLogFile":"/usr/local/tomcat/logs/datastore.log","dataStoreInitConns":10,"dataStoreMaxConns":100,"dataStoreConnUsageLimit":100,"dataStoreLogLevel":"debug","maxUrlLength":500}},{"servlet-name":"cofaxEmail","servlet-class":"org.cofax.cds.EmailServlet","init-param":{"mailHost":"mail1","mailHostOverride":"mail2"}},{"servlet-name":"cofaxAdmin","servlet-class":"org.cofax.cds.AdminServlet"},{"servlet-name":"fileServlet","servlet-class":"org.cofax.cds.FileServlet"},{"servlet-name":"cofaxTools","servlet-class":"org.cofax.cms.CofaxToolsServlet","init-param":{"templatePath":"toolstemplates/","log":1,"logLocation":"/usr/local/tomcat/logs/CofaxTools.log","logMaxSize":"","dataLog":1,"dataLogLocation":"/usr/local/tomcat/logs/dataLog.log","dataLogMaxSize":"","removePageCache":"/content/admin/remove?cache=pages&id=","removeTemplateCache":"/content/admin/remove?cache=templates&id=","fileTransferFolder":"/usr/local/tomcat/webapps/content/fileTransferFolder","lookInContext":1,"adminGroupID":4,"betaServer":true}}],"servlet-mapping":{"cofaxCDS":"/","cofaxEmail":"/cofaxutil/aemail/*","cofaxAdmin":"/admin/*","fileServlet":"/static/*","cofaxTools":"/tools/*"},"taglib":{"taglib-uri":"cofax.tld","taglib-location":"/WEB-INF/tlds/cofax.tld"}}}
 [{
   "bytecode": {
-    "main": {
+    "frontend": {
       "00": "set                 0      1      0     ",
       "01": "json                1      0      0     ",
       "02": "push                1      0      0     ",
@@ -530,7 +530,7 @@ select {"web-app":{"servlet":[{"servlet-name":"cofaxCDS","servlet-class":"org.co
 explain select {"id":"2489651045","type":"CreateEvent","actor":{"id":665991,"login":"petroav","gravatar_id":"","url":"https://api.github.com/users/petroav","avatar_url":"https://avatars.githubusercontent.com/u/665991?"},"repo":{"id":28688495,"name":"petroav/6.828","url":"https://api.github.com/repos/petroav/6.828"},"payload":{"ref":"master","ref_type":"branch","master_branch":"master","description":"Solution to homework and assignments from MIT's 6.828 (Operating Systems Engineering). Done in my spare time.","pusher_type":"user"},"public":true,"created_at":"2015-01-01T15:00:00Z"}
 [{
   "bytecode": {
-    "main": {
+    "frontend": {
       "00": "set                 0      1      0     ",
       "01": "json                1      0      0     ",
       "02": "push                1      0      0     ",
@@ -599,7 +599,7 @@ select {"id":"2489651045","type":"CreateEvent","actor":{"id":665991,"login":"pet
 explain select {"id":"2489651126","type":"IssuesEvent","actor":{"id":10162972,"login":"s3408669","gravatar_id":"","url":"https://api.github.com/users/s3408669","avatar_url":"https://avatars.githubusercontent.com/u/10162972?"},"repo":{"id":12382547,"name":"sheimi/SGit","url":"https://api.github.com/repos/sheimi/SGit"},"payload":{"action":"opened","issue":{"url":"https://api.github.com/repos/sheimi/SGit/issues/131","labels_url":"https://api.github.com/repos/sheimi/SGit/issues/131/labels{/name}","comments_url":"https://api.github.com/repos/sheimi/SGit/issues/131/comments","events_url":"https://api.github.com/repos/sheimi/SGit/issues/131/events","html_url":"https://github.com/sheimi/SGit/issues/131","id":53221336,"number":131,"title":"Directly delete a repository from Android/data/me.scheimi/files/repo but that repository still shows in the user interface of SGit","user":{"login":"s3408669","id":10162972,"avatar_url":"https://avatars.githubusercontent.com/u/10162972?v=3","gravatar_id":"","url":"https://api.github.com/users/s3408669","html_url":"https://github.com/s3408669","followers_url":"https://api.github.com/users/s3408669/followers","following_url":"https://api.github.com/users/s3408669/following{/other_user}","gists_url":"https://api.github.com/users/s3408669/gists{/gist_id}","starred_url":"https://api.github.com/users/s3408669/starred{/owner}{/repo}","subscriptions_url":"https://api.github.com/users/s3408669/subscriptions","organizations_url":"https://api.github.com/users/s3408669/orgs","repos_url":"https://api.github.com/users/s3408669/repos","events_url":"https://api.github.com/users/s3408669/events{/privacy}","received_events_url":"https://api.github.com/users/s3408669/received_events","type":"User","site_admin":false},"labels":[],"state":"open","locked":false,"assignee":null,"milestone":null,"comments":0,"created_at":"2015-01-01T15:00:09Z","updated_at":"2015-01-01T15:00:09Z","closed_at":null,"body":"Steps to reproduce:\r\n- Go to Android/data/me.scheimi.sgit/files/repo.\r\n- Remove a repository.\r\n- Go back to SGit\r\n\r\nOutput:\r\n- SGit cannot detect that the repo has been deleted and still show the repo in the user interface. \r\n- When choose that repo, the toast message shows that \r\n\"Repositoy not found (there may be something wrong with this repo)."}},"public":true,"created_at":"2015-01-01T15:00:10Z"}
 [{
   "bytecode": {
-    "main": {
+    "frontend": {
       "00": "set                 0      1      0     ",
       "01": "json                1      0      0     ",
       "02": "push                1      0      0     ",
@@ -738,7 +738,7 @@ select {"id":"2489651126","type":"IssuesEvent","actor":{"id":10162972,"login":"s
 explain select {"id":"2489660418","type":"PushEvent","actor":{"id":250019,"login":"tarekziade","gravatar_id":"","url":"https://api.github.com/users/tarekziade","avatar_url":"https://avatars.githubusercontent.com/u/250019?"},"repo":{"id":24676502,"name":"tarekziade/foule.es","url":"https://api.github.com/repos/tarekziade/foule.es"},"payload":{"push_id":536868213,"size":1,"distinct_size":1,"ref":"refs/heads/master","head":"966cd52661b707db6d8753a016afcce9d788013a","before":"84ef2e3eed79b953f533d34831de322758d8af07","commits":[{"sha":"966cd52661b707db6d8753a016afcce9d788013a","author":{"email":"da0b52b0ab43721cda3399320ca940a5a0e571ee@ziade.org","name":"Tarek Ziade"},"message":"simpler non-flash version\\","distinct":true,"url":"https://api.github.com/repos/tarekziade/foule.es/commits/966cd52661b707db6d8753a016afcce9d788013a"}]},"public":true,"created_at":"2015-01-01T15:20:29Z"}
 [{
   "bytecode": {
-    "main": {
+    "frontend": {
       "00": "set                 0      1      0     ",
       "01": "json                1      0      0     ",
       "02": "push                1      0      0     ",
@@ -840,7 +840,7 @@ select [1,2,3] = [1,2,3,4]
 explain select [1,2,3] = [1,2,3,4]
 [{
   "bytecode": {
-    "main": {
+    "frontend": {
       "00": "set                 0      1      0     ",
       "01": "json                1      0      0     ",
       "02": "json                2      5      0     ",
@@ -858,7 +858,7 @@ select {"id": 48, "data": 55} = {"id": 48, "data": 55}
 explain select {"id": 48, "data": 55} = {"id": 48, "data": 55}
 [{
   "bytecode": {
-    "main": {
+    "frontend": {
       "00": "set                 0      1      0     ",
       "01": "json                1      0      0     ",
       "02": "json                2      14     0     ",
@@ -881,7 +881,7 @@ select [null][0] = null
 explain select [null][0] = null
 [{
   "bytecode": {
-    "main": {
+    "frontend": {
       "00": "set                 0      1      0     ",
       "01": "json                1      0      0     ",
       "02": "int                 2      -      0     # 0",
@@ -907,7 +907,7 @@ select [1,2,3] <> [1,2,3,4]
 explain select [1,2,3] <> [1,2,3,4]
 [{
   "bytecode": {
-    "main": {
+    "frontend": {
       "00": "set                 0      1      0     ",
       "01": "json                1      0      0     ",
       "02": "json                2      5      0     ",
@@ -926,7 +926,7 @@ select {"id": 48, "data": 55} <> {"id": 48, "data": 55}
 explain select {"id": 48, "data": 55} <> {"id": 48, "data": 55}
 [{
   "bytecode": {
-    "main": {
+    "frontend": {
       "00": "set                 0      1      0     ",
       "01": "json                1      0      0     ",
       "02": "json                2      14     0     ",
@@ -950,7 +950,7 @@ select [null][0] <> null
 explain select [null][0] <> null
 [{
   "bytecode": {
-    "main": {
+    "frontend": {
       "00": "set                 0      1      0     ",
       "01": "json                1      0      0     ",
       "02": "int                 2      -      0     # 0",
@@ -977,7 +977,7 @@ select {"id":48}["id"]
 explain select {"id":48}.id
 [{
   "bytecode": {
-    "main": {
+    "frontend": {
       "00": "set                 0      1      0     ",
       "01": "json                1      0      0     ",
       "02": "string              2      7      0     # id",
@@ -993,7 +993,7 @@ explain select {"id":48}.id
 explain select {"id":48}["id"]
 [{
   "bytecode": {
-    "main": {
+    "frontend": {
       "00": "set                 0      1      0     ",
       "01": "json                1      0      0     ",
       "02": "string              2      7      0     # id",
@@ -1020,7 +1020,7 @@ select {"a": 0, "b": {"c": 18}}.b.c
 explain select {"a": 0, "b": {"c": 18}}.b.c
 [{
   "bytecode": {
-    "main": {
+    "frontend": {
       "00": "set                 0      1      0     ",
       "01": "json                1      0      0     ",
       "02": "string              2      12     0     # b.c",
@@ -1057,7 +1057,7 @@ select [1,2,3][3]
 explain select [1,2,3][-1]
 [{
   "bytecode": {
-    "main": {
+    "frontend": {
       "00": "set                 0      1      0     ",
       "01": "json                1      0      0     ",
       "02": "int                 2      -      0     # -1",
@@ -1097,7 +1097,7 @@ select [[1,2,3], 5, [7]][3]
 explain select [[1,2,3], 5, [7]][1]
 [{
   "bytecode": {
-    "main": {
+    "frontend": {
       "00": "set                 0      1      0     ",
       "01": "json                1      0      0     ",
       "02": "int                 2      -      0     # 1",

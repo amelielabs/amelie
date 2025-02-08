@@ -1,0 +1,102 @@
+#
+
+open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "127.0.0.1", "port": 3480 }], "backends": 0
+connect E0 S0 localhost:3480
+
+# test: bootstrap (no backends)
+show workers
+
+# test: ddl (without backends)
+create table test (id int primary key)
+create shared table test (id int primary key)
+select * from test
+
+# test: create worker
+create worker ""
+create worker add "00000000-0000-0000-0000-000000000000"
+create worker "00000000-0000-0000-0000-000000000000"
+show workers
+
+# test: create worker (already exists)
+create worker "00000000-0000-0000-0000-000000000000"
+show workers
+
+# test: create worker if not exists
+create worker if not exists "00000000-0000-0000-0000-000000000000"
+show workers
+
+# test: ddl/dml (with one backend)
+create table test1 (id int primary key)
+create shared table test2 (id int primary key)
+show tables
+
+insert into test1 values (1), (2), (3); insert into test2 values (4),(5),(6)
+select * from test1
+select * from test2
+
+# test: restart
+disconnect S0
+close E0
+
+open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "127.0.0.1", "port": 3480 }], "backends": 0
+connect E0 S0 localhost:3480
+
+show workers
+select * from test1
+select * from test2
+
+# test: drop worker (with dependency)
+drop worker
+drop worker "00000000-0000-0000-0000-000000000000"
+
+# test: drop worker without dependency
+create worker "00000000-0000-0000-0000-000000000001"
+create worker "00000000-0000-0000-0000-000000000002"
+show workers
+
+drop worker "00000000-0000-0000-0000-000000000001"
+show workers
+
+# test: drop worker (not exists)
+drop worker "00000000-0000-0000-0000-000000000001"
+
+# test: drop worker if exists
+drop worker if exists "00000000-0000-0000-0000-000000000001"
+
+# test: ddl (two backends partitioning)
+create table test3 (id int primary key)
+show tables
+
+# test: drop worker (after table drop)
+drop worker "00000000-0000-0000-0000-000000000002"
+drop table test3
+drop worker "00000000-0000-0000-0000-000000000002"
+show workers
+
+# test: create table/create worker/select
+create table test4(id int primary key)
+insert into test4 values (1), (2), (3)
+create worker "00000000-0000-0000-0000-000000000003"
+create worker "00000000-0000-0000-0000-000000000004"
+select * from test4
+drop table test4
+
+# test: create table/create worker/add column
+show workers
+create table test(id int primary key)
+show tables
+
+insert into test values (1), (2), (3)
+create worker "00000000-0000-0000-0000-000000000005"
+create worker "00000000-0000-0000-0000-000000000006"
+show workers
+
+# table partitions must not change
+alter table test add column data int
+show tables
+
+select * from test
+drop table test
+
+disconnect S0
+close E0

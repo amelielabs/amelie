@@ -38,19 +38,19 @@
 #include <amelie_parser.h>
 #include <amelie_planner.h>
 #include <amelie_compiler.h>
-#include <amelie_host.h>
-#include <amelie_compute.h>
+#include <amelie_frontend.h>
+#include <amelie_backend.h>
 
 static inline void
-compute_bootstrap_nodes(Db* db, Tr* tr, int nodes)
+backend_bootstrap_workers(Db* db, Tr* tr, int workers)
 {
-	// precreate compute nodes
-	while (nodes-- > 0)
+	// precreate backend workers
+	while (workers-- > 0)
 	{
-		auto config = node_config_allocate();
-		defer(node_config_free, config);
+		auto config = worker_config_allocate();
+		defer(worker_config_free, config);
 
-		// set node id
+		// set worker id
 		Uuid id;
 		uuid_generate(&id, global()->random);
 
@@ -59,17 +59,21 @@ compute_bootstrap_nodes(Db* db, Tr* tr, int nodes)
 
 		Str uuid_str;
 		str_set_cstr(&uuid_str, uuid);
-		node_config_set_id(config, &uuid_str);
+		worker_config_set_id(config, &uuid_str);
 
-		// create node
-		node_mgr_create(&db->node_mgr, tr, config, false);
+		Str type;
+		str_set_cstr(&type, "backend");
+		worker_config_set_type(config, &type);
+
+		// create worker
+		worker_mgr_create(&db->worker_mgr, tr, config, false);
 	}
 }
 
 void
-compute_bootstrap(Db* db, int nodes)
+backend_bootstrap(Db* db, int workers)
 {
-	if (! nodes)
+	if (! workers)
 		return;
 
 	Tr tr;
@@ -80,8 +84,8 @@ compute_bootstrap(Db* db, int nodes)
 		// begin
 		tr_begin(&tr);
 
-		// precreate compute nodes
-		compute_bootstrap_nodes(db, &tr, nodes);
+		// precreate backend workers
+		backend_bootstrap_workers(db, &tr, workers);
 
 		// commit
 		tr_commit(&tr);

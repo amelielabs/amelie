@@ -67,7 +67,6 @@ Keyword keywords[] =
 	{ KCREATE,                "create",                6  },
 	{ KCHECKPOINT,            "checkpoint",            10 },
 	{ KCASCADE,               "cascade",               7  },
-	{ KCOMPUTE,               "compute",               7  },
 	{ KCOLUMN ,               "column",                6  },
 
 	// d
@@ -138,7 +137,6 @@ Keyword keywords[] =
 	{ KNULL,                  "null",                  4  },
 	{ KNOT,                   "not",                   3  },
 	{ KNOTHING,               "nothing",               7  },
-	{ KNODE,                  "node",                  4  },
 
 	// o
 	{ KOR,                    "or",                    2  },
@@ -212,6 +210,7 @@ Keyword keywords[] =
 	{ KWITH,                  "with",                  4  },
 	{ KWATCH,                 "watch",                 5  },
 	{ KWORKERS,               "workers",               7  },
+	{ KWORKER,                "worker",                6  },
 
 	{ 0,                       NULL,                   0  }
 };

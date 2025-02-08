@@ -277,18 +277,18 @@ recover_next(Recover* self, uint8_t** meta, uint8_t** data)
 		table_index_rename(table, tr, &name, &name_new, false);
 		break;
 	}
-	case LOG_NODE_CREATE:
+	case LOG_WORKER_CREATE:
 	{
-		auto config = node_op_create_read(data);
-		defer(node_config_free, config);
-		node_mgr_create(&db->node_mgr, tr, config, false);
+		auto config = worker_op_create_read(data);
+		defer(worker_config_free, config);
+		worker_mgr_create(&db->worker_mgr, tr, config, false);
 		break;
 	}
-	case LOG_NODE_DROP:
+	case LOG_WORKER_DROP:
 	{
 		Str name;
-		node_op_drop_read(data, &name);
-		node_mgr_drop(&db->node_mgr, tr, &name, true);
+		worker_op_drop_read(data, &name);
+		worker_mgr_drop(&db->worker_mgr, tr, &name, true);
 		break;
 	}
 	default:

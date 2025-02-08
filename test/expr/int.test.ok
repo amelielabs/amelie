@@ -4,7 +4,7 @@ connect E0 S0 localhost:3485
 explain select 0
 [{
   "bytecode": {
-    "main": {
+    "frontend": {
       "00": "set                 0      1      0     ",
       "01": "int                 1      -      0     # 0",
       "02": "push                1      0      0     ",
@@ -22,7 +22,7 @@ select 1234
 explain select -1234
 [{
   "bytecode": {
-    "main": {
+    "frontend": {
       "00": "set                 0      1      0     ",
       "01": "int                 1      -      0     # -1234",
       "02": "push                1      0      0     ",
@@ -59,7 +59,7 @@ select 1 = false
 explain select 1 = true
 [{
   "bytecode": {
-    "main": {
+    "frontend": {
       "00": "set                 0      1      0     ",
       "01": "int                 1      -      0     # 1",
       "02": "bool                2      1      0     ",
@@ -82,7 +82,7 @@ select 1 = 0
 explain select 1 = 18
 [{
   "bytecode": {
-    "main": {
+    "frontend": {
       "00": "set                 0      1      0     ",
       "01": "int                 1      -      0     # 1",
       "02": "int                 2      -      0     # 18",
@@ -105,7 +105,7 @@ select 1 = 0.14
 explain select 1 = 1.0000
 [{
   "bytecode": {
-    "main": {
+    "frontend": {
       "00": "set                 0      1      0     ",
       "01": "int                 1      -      0     # 1",
       "02": "double              2      0      0     # 1",
@@ -124,7 +124,7 @@ select 0 = '1970-01-01 00:00:00'::timestamp
 explain select 0 = '1970-01-01 00:00:00'::timestamp
 [{
   "bytecode": {
-    "main": {
+    "frontend": {
       "00": "set                 0      1      0     ",
       "01": "int                 1      -      0     # 0",
       "02": "string              2      0      0     # 1970-01-01 00:00:00",
@@ -147,7 +147,7 @@ select 1 = null
 explain select 1 = null
 [{
   "bytecode": {
-    "main": {
+    "frontend": {
       "00": "set                 0      1      0     ",
       "01": "int                 1      -      0     # 1",
       "02": "null                2      0      0     ",
@@ -173,7 +173,7 @@ select 1 <> false
 explain select 1 <> true
 [{
   "bytecode": {
-    "main": {
+    "frontend": {
       "00": "set                 0      1      0     ",
       "01": "int                 1      -      0     # 1",
       "02": "bool                2      1      0     ",
@@ -197,7 +197,7 @@ select 1 <> 0
 explain select 1 <> 18
 [{
   "bytecode": {
-    "main": {
+    "frontend": {
       "00": "set                 0      1      0     ",
       "01": "int                 1      -      0     # 1",
       "02": "int                 2      -      0     # 18",
@@ -221,7 +221,7 @@ select 1 <> 0.14
 explain select 1 <> 1.0000
 [{
   "bytecode": {
-    "main": {
+    "frontend": {
       "00": "set                 0      1      0     ",
       "01": "int                 1      -      0     # 1",
       "02": "double              2      0      0     # 1",
@@ -241,7 +241,7 @@ select 0 <> '1970-01-01 00:00:00'::timestamp
 explain select 0 <> '1970-01-01 00:00:00'::timestamp
 [{
   "bytecode": {
-    "main": {
+    "frontend": {
       "00": "set                 0      1      0     ",
       "01": "int                 1      -      0     # 0",
       "02": "string              2      0      0     # 1970-01-01 00:00:00",
@@ -265,7 +265,7 @@ select 1 <> null
 explain select 1 <> null
 [{
   "bytecode": {
-    "main": {
+    "frontend": {
       "00": "set                 0      1      0     ",
       "01": "int                 1      -      0     # 1",
       "02": "null                2      0      0     ",
@@ -302,7 +302,7 @@ select -11 >= -10
 explain select -1 >= -10
 [{
   "bytecode": {
-    "main": {
+    "frontend": {
       "00": "set                 0      1      0     ",
       "01": "int                 1      -      0     # -1",
       "02": "int                 2      -      0     # -10",
@@ -323,7 +323,7 @@ select 1 >= 1.11
 explain select 1 >= 1.11
 [{
   "bytecode": {
-    "main": {
+    "frontend": {
       "00": "set                 0      1      0     ",
       "01": "int                 1      -      0     # 1",
       "02": "double              2      0      0     # 1.11",
@@ -344,7 +344,7 @@ select 0 >= '1970-01-01 00:00:00'::timestamp
 explain select 0 >= '1970-01-01 00:00:00'::timestamp
 [{
   "bytecode": {
-    "main": {
+    "frontend": {
       "00": "set                 0      1      0     ",
       "01": "int                 1      -      0     # 0",
       "02": "string              2      0      0     # 1970-01-01 00:00:00",
@@ -365,7 +365,7 @@ select 1 >= null
 explain select 1 >= null
 [{
   "bytecode": {
-    "main": {
+    "frontend": {
       "00": "set                 0      1      0     ",
       "01": "int                 1      -      0     # 1",
       "02": "null                2      0      0     ",
@@ -399,7 +399,7 @@ select -11 > -10
 explain select -1 > -10
 [{
   "bytecode": {
-    "main": {
+    "frontend": {
       "00": "set                 0      1      0     ",
       "01": "int                 1      -      0     # -1",
       "02": "int                 2      -      0     # -10",
@@ -420,7 +420,7 @@ select 1 > 1.11
 explain select 1 > 1.11
 [{
   "bytecode": {
-    "main": {
+    "frontend": {
       "00": "set                 0      1      0     ",
       "01": "int                 1      -      0     # 1",
       "02": "double              2      0      0     # 1.11",
@@ -441,7 +441,7 @@ select 0 > '1970-01-01 00:00:00'::timestamp
 explain select 0 > '1970-01-01 00:00:00'::timestamp
 [{
   "bytecode": {
-    "main": {
+    "frontend": {
       "00": "set                 0      1      0     ",
       "01": "int                 1      -      0     # 0",
       "02": "string              2      0      0     # 1970-01-01 00:00:00",
@@ -462,7 +462,7 @@ select 1 > null
 explain select 1 > null
 [{
   "bytecode": {
-    "main": {
+    "frontend": {
       "00": "set                 0      1      0     ",
       "01": "int                 1      -      0     # 1",
       "02": "null                2      0      0     ",
@@ -496,7 +496,7 @@ select -11 <= -10
 explain select -1 <= -10
 [{
   "bytecode": {
-    "main": {
+    "frontend": {
       "00": "set                 0      1      0     ",
       "01": "int                 1      -      0     # -1",
       "02": "int                 2      -      0     # -10",
@@ -517,7 +517,7 @@ select 1 <= 1.11
 explain select 1 <= 1.11
 [{
   "bytecode": {
-    "main": {
+    "frontend": {
       "00": "set                 0      1      0     ",
       "01": "int                 1      -      0     # 1",
       "02": "double              2      0      0     # 1.11",
@@ -538,7 +538,7 @@ select 0 <= '1970-01-01 00:00:00'::timestamp
 explain select 0 <= '1970-01-01 00:00:00'::timestamp
 [{
   "bytecode": {
-    "main": {
+    "frontend": {
       "00": "set                 0      1      0     ",
       "01": "int                 1      -      0     # 0",
       "02": "string              2      0      0     # 1970-01-01 00:00:00",
@@ -559,7 +559,7 @@ select 1 <= null
 explain select 1 <= null
 [{
   "bytecode": {
-    "main": {
+    "frontend": {
       "00": "set                 0      1      0     ",
       "01": "int                 1      -      0     # 1",
       "02": "null                2      0      0     ",
@@ -593,7 +593,7 @@ select -11 < -10
 explain select -1 < -10
 [{
   "bytecode": {
-    "main": {
+    "frontend": {
       "00": "set                 0      1      0     ",
       "01": "int                 1      -      0     # -1",
       "02": "int                 2      -      0     # -10",
@@ -614,7 +614,7 @@ select 1 < 1.11
 explain select 1 < 1.11
 [{
   "bytecode": {
-    "main": {
+    "frontend": {
       "00": "set                 0      1      0     ",
       "01": "int                 1      -      0     # 1",
       "02": "double              2      0      0     # 1.11",
@@ -635,7 +635,7 @@ select 0 < '1970-01-01 00:00:00'::timestamp
 explain select 0 < '1970-01-01 00:00:00'::timestamp
 [{
   "bytecode": {
-    "main": {
+    "frontend": {
       "00": "set                 0      1      0     ",
       "01": "int                 1      -      0     # 0",
       "02": "string              2      0      0     # 1970-01-01 00:00:00",
@@ -656,7 +656,7 @@ select 1 < null
 explain select 1 < null
 [{
   "bytecode": {
-    "main": {
+    "frontend": {
       "00": "set                 0      1      0     ",
       "01": "int                 1      -      0     # 1",
       "02": "null                2      0      0     ",
@@ -678,7 +678,7 @@ select 1 + 1
 explain select 1 + 1
 [{
   "bytecode": {
-    "main": {
+    "frontend": {
       "00": "set                 0      1      0     ",
       "01": "int                 1      -      0     # 1",
       "02": "int                 2      -      0     # 1",
@@ -706,7 +706,7 @@ select 1 + 1.5
 explain select 1 + 1.5
 [{
   "bytecode": {
-    "main": {
+    "frontend": {
       "00": "set                 0      1      0     ",
       "01": "int                 1      -      0     # 1",
       "02": "double              2      0      0     # 1.5",
@@ -731,7 +731,7 @@ select 1 - 1
 explain select 1 - 1
 [{
   "bytecode": {
-    "main": {
+    "frontend": {
       "00": "set                 0      1      0     ",
       "01": "int                 1      -      0     # 1",
       "02": "int                 2      -      0     # 1",
@@ -759,7 +759,7 @@ select 1 - 1.5
 explain select 1 - 1.5
 [{
   "bytecode": {
-    "main": {
+    "frontend": {
       "00": "set                 0      1      0     ",
       "01": "int                 1      -      0     # 1",
       "02": "double              2      0      0     # 1.5",
@@ -784,7 +784,7 @@ select 2 * 2
 explain select 2 * 2
 [{
   "bytecode": {
-    "main": {
+    "frontend": {
       "00": "set                 0      1      0     ",
       "01": "int                 1      -      0     # 2",
       "02": "int                 2      -      0     # 2",
@@ -812,7 +812,7 @@ select 2 * 1.5
 explain select 2 * 1.5
 [{
   "bytecode": {
-    "main": {
+    "frontend": {
       "00": "set                 0      1      0     ",
       "01": "int                 1      -      0     # 2",
       "02": "double              2      0      0     # 1.5",
@@ -837,7 +837,7 @@ select 2 / 2
 explain select 2 / 2
 [{
   "bytecode": {
-    "main": {
+    "frontend": {
       "00": "set                 0      1      0     ",
       "01": "int                 1      -      0     # 2",
       "02": "int                 2      -      0     # 2",
@@ -860,7 +860,7 @@ select 35 / 1.5
 explain select 35 / 1.5
 [{
   "bytecode": {
-    "main": {
+    "frontend": {
       "00": "set                 0      1      0     ",
       "01": "int                 1      -      0     # 35",
       "02": "double              2      0      0     # 1.5",
@@ -885,7 +885,7 @@ select 8 % 3
 explain select 8 % 3
 [{
   "bytecode": {
-    "main": {
+    "frontend": {
       "00": "set                 0      1      0     ",
       "01": "int                 1      -      0     # 8",
       "02": "int                 2      -      0     # 3",
@@ -912,7 +912,7 @@ select 60 | 13
 explain select 60 | 13
 [{
   "bytecode": {
-    "main": {
+    "frontend": {
       "00": "set                 0      1      0     ",
       "01": "int                 1      -      0     # 60",
       "02": "int                 2      -      0     # 13",
@@ -931,7 +931,7 @@ select 60 | null
 explain select 60 | null
 [{
   "bytecode": {
-    "main": {
+    "frontend": {
       "00": "set                 0      1      0     ",
       "01": "int                 1      -      0     # 60",
       "02": "null                2      0      0     ",
@@ -953,7 +953,7 @@ select 60 & 13
 explain select 60 & 13
 [{
   "bytecode": {
-    "main": {
+    "frontend": {
       "00": "set                 0      1      0     ",
       "01": "int                 1      -      0     # 60",
       "02": "int                 2      -      0     # 13",
@@ -972,7 +972,7 @@ select 60 & null
 explain select 60 & null
 [{
   "bytecode": {
-    "main": {
+    "frontend": {
       "00": "set                 0      1      0     ",
       "01": "int                 1      -      0     # 60",
       "02": "null                2      0      0     ",
@@ -994,7 +994,7 @@ select 60 ^ 13
 explain select 60 ^ 13
 [{
   "bytecode": {
-    "main": {
+    "frontend": {
       "00": "set                 0      1      0     ",
       "01": "int                 1      -      0     # 60",
       "02": "int                 2      -      0     # 13",
@@ -1013,7 +1013,7 @@ select 60 ^ null
 explain select 60 ^ null
 [{
   "bytecode": {
-    "main": {
+    "frontend": {
       "00": "set                 0      1      0     ",
       "01": "int                 1      -      0     # 60",
       "02": "null                2      0      0     ",
@@ -1035,7 +1035,7 @@ select 60 << 2
 explain select 60 << 2
 [{
   "bytecode": {
-    "main": {
+    "frontend": {
       "00": "set                 0      1      0     ",
       "01": "int                 1      -      0     # 60",
       "02": "int                 2      -      0     # 2",
@@ -1060,7 +1060,7 @@ select 60 >> 2
 explain select 60 >> 2
 [{
   "bytecode": {
-    "main": {
+    "frontend": {
       "00": "set                 0      1      0     ",
       "01": "int                 1      -      0     # 60",
       "02": "int                 2      -      0     # 2",
@@ -1088,7 +1088,7 @@ select -18
 explain select -18
 [{
   "bytecode": {
-    "main": {
+    "frontend": {
       "00": "set                 0      1      0     ",
       "01": "int                 1      -      0     # -18",
       "02": "push                1      0      0     ",

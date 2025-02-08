@@ -2,7 +2,7 @@ open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "12
 connect E0 S0 localhost:3485
 # test: alter table statement parsing
 alter
-{"msg": "alter ⟵ 'USER|SCHEMA|TABLE|INDEX|COMPUTE' expected"}
+{"msg": "alter ⟵ 'USER|SCHEMA|TABLE|INDEX' expected"}
 alter table
 {"msg": "alter table ⟵ name expected"}
 alter table 123

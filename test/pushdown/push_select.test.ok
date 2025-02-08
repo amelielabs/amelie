@@ -1,4 +1,4 @@
-open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "127.0.0.1", "port": 3485 }], "nodes": 3
+open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "127.0.0.1", "port": 3485 }], "backends": 3
 connect E0 S0 localhost:3485
 # test: select from table
 create table test (id int primary key, data int default 0)
@@ -6,7 +6,7 @@ insert into test (id) values (1), (2), (3)
 explain select * from test
 [{
   "bytecode": {
-    "main": {
+    "frontend": {
       "00": "send_all            0      0      -     # public.test",
       "01": "recv                0      0      0     ",
       "02": "bool                0      0      0     ",
@@ -16,7 +16,7 @@ explain select * from test
       "06": "content             0      -      -     ",
       "07": "ret                 0      0      0     "
     },
-    "node": {
+    "backend": {
       "00": "set                 0      2      0     ",
       "01": "table_open          0      0      8     # public.test (primary)",
       "02": "table_readi32       1      0      0     ",
@@ -37,7 +37,7 @@ select * from test
 explain select * from test where id > 1
 [{
   "bytecode": {
-    "main": {
+    "frontend": {
       "00": "send_all            0      0      -     # public.test",
       "01": "recv                0      0      0     ",
       "02": "bool                0      0      0     ",
@@ -47,7 +47,7 @@ explain select * from test where id > 1
       "06": "content             0      -      -     ",
       "07": "ret                 0      0      0     "
     },
-    "node": {
+    "backend": {
       "00": "set                 0      2      0     ",
       "01": "int                 1      -      0     # 1",
       "02": "push                1      0      0     ",
@@ -78,7 +78,7 @@ select * from test where id > 3
 explain select * from test where id = 1
 [{
   "bytecode": {
-    "main": {
+    "frontend": {
       "00": "send_lookup         0      0      -     # public.test",
       "01": "recv                0      0      0     ",
       "02": "bool                0      0      0     ",
@@ -88,7 +88,7 @@ explain select * from test where id = 1
       "06": "content             0      -      -     ",
       "07": "ret                 0      0      0     "
     },
-    "node": {
+    "backend": {
       "00": "set                 0      2      0     ",
       "01": "int                 1      -      0     # 1",
       "02": "push                1      0      0     ",
@@ -125,7 +125,7 @@ select (select test.id) from test
 explain select (select (select (test.id))) from test
 [{
   "bytecode": {
-    "main": {
+    "frontend": {
       "00": "send_all            0      0      -     # public.test",
       "01": "recv                0      0      0     ",
       "02": "bool                0      0      0     ",
@@ -135,7 +135,7 @@ explain select (select (select (test.id))) from test
       "06": "content             0      -      -     ",
       "07": "ret                 0      0      0     "
     },
-    "node": {
+    "backend": {
       "00": "set                 0      1      0     ",
       "01": "table_open          0      0      14    # public.test (primary)",
       "02": "set                 1      1      0     ",
@@ -161,7 +161,7 @@ select (select (select (test.id))) from test
 explain select (select (select test.id)) from test
 [{
   "bytecode": {
-    "main": {
+    "frontend": {
       "00": "send_all            0      0      -     # public.test",
       "01": "recv                0      0      0     ",
       "02": "bool                0      0      0     ",
@@ -171,7 +171,7 @@ explain select (select (select test.id)) from test
       "06": "content             0      -      -     ",
       "07": "ret                 0      0      0     "
     },
-    "node": {
+    "backend": {
       "00": "set                 0      1      0     ",
       "01": "table_open          0      0      14    # public.test (primary)",
       "02": "set                 1      1      0     ",
@@ -203,7 +203,7 @@ insert into ref (id) values (1), (2), (3)
 explain select (select (select id from ref)) from test
 [{
   "bytecode": {
-    "main": {
+    "frontend": {
       "00": "send_all            0      0      -     # public.test",
       "01": "recv                0      0      0     ",
       "02": "bool                0      0      0     ",
@@ -213,7 +213,7 @@ explain select (select (select id from ref)) from test
       "06": "content             0      -      -     ",
       "07": "ret                 0      0      0     "
     },
-    "node": {
+    "backend": {
       "00": "set                 0      1      0     ",
       "01": "table_open          1      0      17    # public.test (primary)",
       "02": "set                 1      1      0     ",
@@ -248,7 +248,7 @@ explain select * from test where (select id from test t)
 explain select * from test where (select id from ref)
 [{
   "bytecode": {
-    "main": {
+    "frontend": {
       "00": "send_all            0      0      -     # public.test",
       "01": "recv                0      0      0     ",
       "02": "bool                0      0      0     ",
@@ -258,7 +258,7 @@ explain select * from test where (select id from ref)
       "06": "content             0      -      -     ",
       "07": "ret                 0      0      0     "
     },
-    "node": {
+    "backend": {
       "00": "set                 0      2      0     ",
       "01": "table_open          0      0      17    # public.test (primary)",
       "02": "set                 1      1      0     ",

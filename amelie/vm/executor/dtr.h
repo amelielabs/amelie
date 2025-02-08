@@ -129,7 +129,7 @@ dtr_send(Dtr* self, int stmt, ReqList* list)
 	// first send with snapshot
 	if (self->program->snapshot && !self->dispatch.sent)
 	{
-		// create pipes for all nodes
+		// create pipes for all backends
 		list_foreach(&self->router->list)
 		{
 			auto route = list_at(Route, link);
@@ -153,7 +153,7 @@ dtr_send(Dtr* self, int stmt, ReqList* list)
 		req_set(req, self->local, self->program, self->args,
 		        &self->cte, &self->limit);
 
-		// set pipe per statement node order and add request to the
+		// set pipe per statement backend order and add request to the
 		// statement list
 		auto ref = dispatch_pipe_set(dispatch, stmt, route->order, pipe);
 		req_list_move(list, &ref->req_list, req);

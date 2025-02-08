@@ -112,10 +112,10 @@ fn_repl(Call* self)
 }
 
 static void
-fn_compute(Call* self)
+fn_workers(Call* self)
 {
 	call_expect(self, 0);
-	auto buf = node_mgr_list(&self->mgr->db->node_mgr, NULL);
+	auto buf = worker_mgr_list(&self->mgr->db->worker_mgr, NULL);
 	value_set_json_buf(self->result, buf);
 }
 
@@ -217,8 +217,8 @@ fn_system_register(FunctionMgr* self)
 	func = function_allocate(TYPE_JSON, "system", "replication", fn_repl);
 	function_mgr_add(self, func);
 
-	// system.compute()
-	func = function_allocate(TYPE_JSON, "system", "compute", fn_compute);
+	// system.workers()
+	func = function_allocate(TYPE_JSON, "system", "workers", fn_workers);
 	function_mgr_add(self, func);
 
 	// system.schemas()

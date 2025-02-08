@@ -22,7 +22,7 @@ struct Vm
 	Buf*         code_arg;
 	Buf*         args;
 	CursorMgr    cursor_mgr;
-	Uuid*        node;
+	Uuid*        backend;
 	Executor*    executor;
 	Dtr*         dtr;
 	Result*      cte;

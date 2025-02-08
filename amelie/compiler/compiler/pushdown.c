@@ -245,7 +245,7 @@ pushdown(Compiler* self, Ast* ast)
 void
 pushdown_first(Compiler* self, Ast* ast)
 {
-	// emit select query as is and pushdown to the first node
+	// emit select query as is and pushdown to the first backend
 	int r = emit_select(self, ast);
 
 	// CRESULT (return set)
@@ -349,7 +349,7 @@ pushdown_group_by_recv(Compiler* self, AstSelect* select)
 int
 pushdown_recv(Compiler* self, Ast* ast)
 {
-	// all functions below return UNION/SET on coordinator
+	// all functions below return UNION/SET on frontend
 	AstSelect* select = ast_select_of(ast);
 
 	// CRECV

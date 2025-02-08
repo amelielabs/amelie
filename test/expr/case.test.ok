@@ -18,7 +18,7 @@ select (case 1 when 1 then 1 end)::type
 explain select case 1 when 1 then 1 end
 [{
   "bytecode": {
-    "main": {
+    "frontend": {
       "00": "set                 0      1      0     ",
       "01": "jmp                 3      0      0     ",
       "02": "jmp                 12     0      0     ",
@@ -47,7 +47,7 @@ select (case 0 when 1 then 1 when 2 then 2 end)::type
 explain select case 0 when 1 then 1 when 2 then 2 end
 [{
   "bytecode": {
-    "main": {
+    "frontend": {
       "00": "set                 0      1      0     ",
       "01": "jmp                 3      0      0     ",
       "02": "jmp                 19     0      0     ",
@@ -99,7 +99,7 @@ select case null when [1,0] then 1 when [1,2,3,4] then 2 else 3 when null then n
 explain select case null when [1,0] then 1 when [1,2,3,4] then 2 else 3 when null then null end
 [{
   "bytecode": {
-    "main": {
+    "frontend": {
       "00": "set                 0      1      0     ",
       "01": "jmp                 3      0      0     ",
       "02": "jmp                 26     0      0     ",
@@ -155,7 +155,7 @@ select case when 1 then 1 end
 explain select case when 1 then 1 end
 [{
   "bytecode": {
-    "main": {
+    "frontend": {
       "00": "set                 0      1      0     ",
       "01": "jmp                 3      0      0     ",
       "02": "jmp                 10     0      0     ",

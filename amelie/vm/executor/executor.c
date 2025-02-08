@@ -54,7 +54,7 @@ executor_send(Executor* self, Dtr* tr, int stmt, ReqList* list)
 {
 	auto first = !tr->dispatch.sent;
 
-	// put requests into pipes per nodes
+	// put requests into pipes per backend
 	dtr_send(tr, stmt, list);
 
 	// register transaction and begin execution
@@ -67,7 +67,7 @@ executor_send(Executor* self, Dtr* tr, int stmt, ReqList* list)
 		list_append(&self->list, &tr->link);
 		self->list_count++;
 
-		// send BEGIN to the related nodes
+		// send BEGIN to the related backends
 		pipe_set_begin(&tr->set);
 		spinlock_unlock(&self->lock);
 	}
@@ -88,7 +88,7 @@ executor_prepare(Executor* self, bool abort)
 	commit_reset(commit);
 	commit_prepare(commit, self->router->list_count);
 
-	// get a list of last completed local transactions per node
+	// get a list of last completed local transactions per backend
 	if (unlikely(abort))
 	{
 		// abort all currently active transactions
@@ -115,7 +115,7 @@ executor_end(Executor* self, DtrState state)
 {
 	auto commit = &self->commit;
 
-	// for each node, send last prepared Trx*
+	// for each backend, send last prepared Trx*
 	if (state == DTR_COMMIT)
 	{
 		// RPC_COMMIT
@@ -273,7 +273,7 @@ executor_commit(Executor* self, Dtr* tr, Buf* error)
 			// prepare for group commit and wal write
 
 			// get a list of completed distributed transactions (one or more) and
-			// a list of last executed transactions per node
+			// a list of last executed transactions per backend
 			executor_prepare(self, false);
 		}
 

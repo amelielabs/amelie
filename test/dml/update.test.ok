@@ -37,14 +37,14 @@ insert into test values (2, 1)
 explain update test set data = data + 1
 [{
   "bytecode": {
-    "main": {
+    "frontend": {
       "00": "send_all            0      0      -     # public.test",
       "01": "recv                0      0      0     ",
       "02": "null                0      0      0     ",
       "03": "cte_set             0      0      0     ",
       "04": "ret                 0      0      0     "
     },
-    "node": {
+    "backend": {
       "00": "table_open          0      0      9     # public.test (primary)",
       "01": "int                 0      -      0     # 1",
       "02": "push                0      0      0     ",
@@ -90,14 +90,14 @@ insert into test.test values (2, 1)
 explain update test.test set data = data + 1
 [{
   "bytecode": {
-    "main": {
+    "frontend": {
       "00": "send_all            0      0      -     # test.test",
       "01": "recv                0      0      0     ",
       "02": "null                0      0      0     ",
       "03": "cte_set             0      0      0     ",
       "04": "ret                 0      0      0     "
     },
-    "node": {
+    "backend": {
       "00": "table_open          0      0      9     # test.test (primary)",
       "01": "int                 0      -      0     # 1",
       "02": "push                0      0      0     ",
@@ -125,14 +125,14 @@ insert into test values (2, 1, 1)
 explain update test set a = a + 1, b = b - 1
 [{
   "bytecode": {
-    "main": {
+    "frontend": {
       "00": "send_all            0      0      -     # public.test",
       "01": "recv                0      0      0     ",
       "02": "null                0      0      0     ",
       "03": "cte_set             0      0      0     ",
       "04": "ret                 0      0      0     "
     },
-    "node": {
+    "backend": {
       "00": "table_open          0      0      15    # public.test (primary)",
       "01": "int                 0      -      0     # 1",
       "02": "push                0      0      0     ",
@@ -176,14 +176,14 @@ update test set data = {"id": data.id::int + 1}
 explain update test set data = {"id": data.id::int + 1}
 [{
   "bytecode": {
-    "main": {
+    "frontend": {
       "00": "send_all            0      0      -     # public.test",
       "01": "recv                0      0      0     ",
       "02": "null                0      0      0     ",
       "03": "cte_set             0      0      0     ",
       "04": "ret                 0      0      0     "
     },
-    "node": {
+    "backend": {
       "00": "table_open          0      0      17    # public.test (primary)",
       "01": "int                 0      -      0     # 1",
       "02": "push                0      0      0     ",
@@ -249,14 +249,14 @@ update test set id.path = 0
 explain update test set data.id = data.id::int + 1
 [{
   "bytecode": {
-    "main": {
+    "frontend": {
       "00": "send_all            0      0      -     # public.test",
       "01": "recv                0      0      0     ",
       "02": "null                0      0      0     ",
       "03": "cte_set             0      0      0     ",
       "04": "ret                 0      0      0     "
     },
-    "node": {
+    "backend": {
       "00": "table_open          0      0      19    # public.test (primary)",
       "01": "int                 0      -      0     # 1",
       "02": "push                0      0      0     ",
@@ -361,14 +361,14 @@ insert into test values (2, 1)
 explain update test set data = data + 1 where id = 0
 [{
   "bytecode": {
-    "main": {
+    "frontend": {
       "00": "send_lookup         0      0      -     # public.test",
       "01": "recv                0      0      0     ",
       "02": "null                0      0      0     ",
       "03": "cte_set             0      0      0     ",
       "04": "ret                 0      0      0     "
     },
-    "node": {
+    "backend": {
       "00": "int                 0      -      0     # 0",
       "01": "push                0      0      0     ",
       "02": "table_open_lookup   0      0      14    # public.test (primary)",
@@ -402,14 +402,14 @@ insert into test values (2, 1)
 explain update test set data = data + 1 where id >= 1
 [{
   "bytecode": {
-    "main": {
+    "frontend": {
       "00": "send_all            0      0      -     # public.test",
       "01": "recv                0      0      0     ",
       "02": "null                0      0      0     ",
       "03": "cte_set             0      0      0     ",
       "04": "ret                 0      0      0     "
     },
-    "node": {
+    "backend": {
       "00": "int                 0      -      0     # 1",
       "01": "push                0      0      0     ",
       "02": "table_open          0      0      15    # public.test (primary)",
@@ -481,7 +481,7 @@ insert into test values (2, 0)
 explain update test set data = data + 1 returning *
 [{
   "bytecode": {
-    "main": {
+    "frontend": {
       "00": "send_all            0      0      -     # public.test",
       "01": "recv                0      0      0     ",
       "02": "bool                0      0      0     ",
@@ -491,7 +491,7 @@ explain update test set data = data + 1 returning *
       "06": "content             0      -      -     ",
       "07": "ret                 0      0      0     "
     },
-    "node": {
+    "backend": {
       "00": "set                 0      2      0     ",
       "01": "table_open          0      0      15    # public.test (primary)",
       "02": "int                 1      -      0     # 1",

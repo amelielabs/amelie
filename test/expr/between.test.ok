@@ -45,7 +45,7 @@ select 0.058 between 0.010 and 0.053
 explain select 0.058 between 0.010 and 0.053
 [{
   "bytecode": {
-    "main": {
+    "frontend": {
       "00": "set                 0      1      0     ",
       "01": "double              1      0      0     # 0.058",
       "02": "double              2      8      0     # 0.01",
@@ -67,7 +67,7 @@ select 0.058 not between 0.010 and 0.053
 explain select 0.058 not between 0.010 and 0.053
 [{
   "bytecode": {
-    "main": {
+    "frontend": {
       "00": "set                 0      1      0     ",
       "01": "double              1      0      0     # 0.058",
       "02": "double              2      8      0     # 0.01",

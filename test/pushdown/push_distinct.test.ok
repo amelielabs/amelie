@@ -1,11 +1,11 @@
-open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "127.0.0.1", "port": 3485 }], "nodes": 3
+open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "127.0.0.1", "port": 3485 }], "backends": 3
 connect E0 S0 localhost:3485
 # test: select distinct * from table empty
 create table test (id serial primary key, data int default 0)
 explain select distinct * from test
 [{
   "bytecode": {
-    "main": {
+    "frontend": {
       "00": "send_all            0      0      -     # public.test",
       "01": "recv                0      0      0     ",
       "02": "bool                0      1      0     ",
@@ -15,7 +15,7 @@ explain select distinct * from test
       "06": "content             0      -      -     ",
       "07": "ret                 0      0      0     "
     },
-    "node": {
+    "backend": {
       "00": "set_ordered         0      2      2     ",
       "01": "table_open          0      2      12    # public.test (primary)",
       "02": "table_readi64       1      0      0     ",
@@ -47,7 +47,7 @@ select * from test order by id
 explain select distinct * from test
 [{
   "bytecode": {
-    "main": {
+    "frontend": {
       "00": "send_all            0      0      -     # public.test",
       "01": "recv                0      0      0     ",
       "02": "bool                0      1      0     ",
@@ -57,7 +57,7 @@ explain select distinct * from test
       "06": "content             0      -      -     ",
       "07": "ret                 0      0      0     "
     },
-    "node": {
+    "backend": {
       "00": "set_ordered         0      2      2     ",
       "01": "table_open          0      2      12    # public.test (primary)",
       "02": "table_readi64       1      0      0     ",
@@ -83,7 +83,7 @@ select distinct * from test
 explain select distinct id from test
 [{
   "bytecode": {
-    "main": {
+    "frontend": {
       "00": "send_all            0      0      -     # public.test",
       "01": "recv                0      0      0     ",
       "02": "bool                0      1      0     ",
@@ -93,7 +93,7 @@ explain select distinct id from test
       "06": "content             0      -      -     ",
       "07": "ret                 0      0      0     "
     },
-    "node": {
+    "backend": {
       "00": "set_ordered         0      1      1     ",
       "01": "table_open          0      1      8     # public.test (primary)",
       "02": "table_readi64       1      0      0     ",
@@ -117,7 +117,7 @@ select distinct data from test
 explain select distinct id, data from test
 [{
   "bytecode": {
-    "main": {
+    "frontend": {
       "00": "send_all            0      0      -     # public.test",
       "01": "recv                0      0      0     ",
       "02": "bool                0      1      0     ",
@@ -127,7 +127,7 @@ explain select distinct id, data from test
       "06": "content             0      -      -     ",
       "07": "ret                 0      0      0     "
     },
-    "node": {
+    "backend": {
       "00": "set_ordered         0      2      2     ",
       "01": "table_open          0      2      12    # public.test (primary)",
       "02": "table_readi64       1      0      0     ",
@@ -153,7 +153,7 @@ select distinct id, data from test
 explain select distinct data from test limit 4
 [{
   "bytecode": {
-    "main": {
+    "frontend": {
       "00": "send_all            0      0      -     # public.test",
       "01": "recv                0      0      0     ",
       "02": "bool                0      1      0     ",
@@ -164,7 +164,7 @@ explain select distinct data from test limit 4
       "07": "content             0      -      -     ",
       "08": "ret                 0      0      0     "
     },
-    "node": {
+    "backend": {
       "00": "set_ordered         0      1      1     ",
       "01": "table_open          0      1      8     # public.test (primary)",
       "02": "table_readi32       1      0      1     ",
@@ -186,7 +186,7 @@ select distinct data from test limit 4
 explain select distinct data from test limit 0
 [{
   "bytecode": {
-    "main": {
+    "frontend": {
       "00": "send_all            0      0      -     # public.test",
       "01": "recv                0      0      0     ",
       "02": "bool                0      1      0     ",
@@ -197,7 +197,7 @@ explain select distinct data from test limit 0
       "07": "content             0      -      -     ",
       "08": "ret                 0      0      0     "
     },
-    "node": {
+    "backend": {
       "00": "set_ordered         0      1      1     ",
       "01": "table_open          0      1      8     # public.test (primary)",
       "02": "table_readi32       1      0      1     ",
@@ -219,7 +219,7 @@ select distinct data from test limit 0
 explain select distinct data from test limit 1 offset 1
 [{
   "bytecode": {
-    "main": {
+    "frontend": {
       "00": "send_all            0      0      -     # public.test",
       "01": "recv                0      0      0     ",
       "02": "bool                0      1      0     ",
@@ -231,7 +231,7 @@ explain select distinct data from test limit 1 offset 1
       "08": "content             0      -      -     ",
       "09": "ret                 0      0      0     "
     },
-    "node": {
+    "backend": {
       "00": "set_ordered         0      1      1     ",
       "01": "table_open          0      1      8     # public.test (primary)",
       "02": "table_readi32       1      0      1     ",
@@ -259,7 +259,7 @@ select distinct data from test limit 1 offset 3
 explain select distinct data from test offset 1
 [{
   "bytecode": {
-    "main": {
+    "frontend": {
       "00": "send_all            0      0      -     # public.test",
       "01": "recv                0      0      0     ",
       "02": "bool                0      1      0     ",
@@ -270,7 +270,7 @@ explain select distinct data from test offset 1
       "07": "content             0      -      -     ",
       "08": "ret                 0      0      0     "
     },
-    "node": {
+    "backend": {
       "00": "set_ordered         0      1      1     ",
       "01": "table_open          0      1      8     # public.test (primary)",
       "02": "table_readi32       1      0      1     ",
@@ -319,7 +319,7 @@ select distinct on (123,)
 explain select * from test order by data
 [{
   "bytecode": {
-    "main": {
+    "frontend": {
       "00": "send_all            0      0      -     # public.test",
       "01": "recv                0      0      0     ",
       "02": "bool                0      0      0     ",
@@ -329,7 +329,7 @@ explain select * from test order by data
       "06": "content             0      -      -     ",
       "07": "ret                 0      0      0     "
     },
-    "node": {
+    "backend": {
       "00": "set_ordered         0      2      1     ",
       "01": "table_open          0      1      10    # public.test (primary)",
       "02": "table_readi64       1      0      0     ",
@@ -350,7 +350,7 @@ explain select * from test order by data
 explain select distinct on (data) * from test
 [{
   "bytecode": {
-    "main": {
+    "frontend": {
       "00": "send_all            0      0      -     # public.test",
       "01": "recv                0      0      0     ",
       "02": "bool                0      1      0     ",
@@ -360,7 +360,7 @@ explain select distinct on (data) * from test
       "06": "content             0      -      -     ",
       "07": "ret                 0      0      0     "
     },
-    "node": {
+    "backend": {
       "00": "set_ordered         0      2      1     ",
       "01": "table_open          0      1      10    # public.test (primary)",
       "02": "table_readi64       1      0      0     ",
@@ -391,7 +391,7 @@ create shared table test (id serial primary key, data int default 0)
 explain select distinct * from test
 [{
   "bytecode": {
-    "main": {
+    "frontend": {
       "00": "send_first          0      0      0     ",
       "01": "recv                0      0      0     ",
       "02": "bool                0      1      0     ",
@@ -401,7 +401,7 @@ explain select distinct * from test
       "06": "content             0      -      -     ",
       "07": "ret                 0      0      0     "
     },
-    "node": {
+    "backend": {
       "00": "set_ordered         0      2      2     ",
       "01": "table_open          0      2      12    # public.test (primary)",
       "02": "table_readi64       1      0      0     ",
@@ -433,7 +433,7 @@ select * from test order by id
 explain select distinct * from test
 [{
   "bytecode": {
-    "main": {
+    "frontend": {
       "00": "send_first          0      0      0     ",
       "01": "recv                0      0      0     ",
       "02": "bool                0      1      0     ",
@@ -443,7 +443,7 @@ explain select distinct * from test
       "06": "content             0      -      -     ",
       "07": "ret                 0      0      0     "
     },
-    "node": {
+    "backend": {
       "00": "set_ordered         0      2      2     ",
       "01": "table_open          0      2      12    # public.test (primary)",
       "02": "table_readi64       1      0      0     ",
@@ -469,7 +469,7 @@ select distinct * from test
 explain select distinct id from test
 [{
   "bytecode": {
-    "main": {
+    "frontend": {
       "00": "send_first          0      0      0     ",
       "01": "recv                0      0      0     ",
       "02": "bool                0      1      0     ",
@@ -479,7 +479,7 @@ explain select distinct id from test
       "06": "content             0      -      -     ",
       "07": "ret                 0      0      0     "
     },
-    "node": {
+    "backend": {
       "00": "set_ordered         0      1      1     ",
       "01": "table_open          0      1      8     # public.test (primary)",
       "02": "table_readi64       1      0      0     ",
@@ -503,7 +503,7 @@ select distinct data from test
 explain select distinct id, data from test
 [{
   "bytecode": {
-    "main": {
+    "frontend": {
       "00": "send_first          0      0      0     ",
       "01": "recv                0      0      0     ",
       "02": "bool                0      1      0     ",
@@ -513,7 +513,7 @@ explain select distinct id, data from test
       "06": "content             0      -      -     ",
       "07": "ret                 0      0      0     "
     },
-    "node": {
+    "backend": {
       "00": "set_ordered         0      2      2     ",
       "01": "table_open          0      2      12    # public.test (primary)",
       "02": "table_readi64       1      0      0     ",
@@ -539,7 +539,7 @@ select distinct id, data from test
 explain select distinct data from test limit 4
 [{
   "bytecode": {
-    "main": {
+    "frontend": {
       "00": "send_first          0      0      0     ",
       "01": "recv                0      0      0     ",
       "02": "bool                0      1      0     ",
@@ -550,7 +550,7 @@ explain select distinct data from test limit 4
       "07": "content             0      -      -     ",
       "08": "ret                 0      0      0     "
     },
-    "node": {
+    "backend": {
       "00": "set_ordered         0      1      1     ",
       "01": "table_open          0      1      8     # public.test (primary)",
       "02": "table_readi32       1      0      1     ",
@@ -572,7 +572,7 @@ select distinct data from test limit 4
 explain select distinct data from test limit 0
 [{
   "bytecode": {
-    "main": {
+    "frontend": {
       "00": "send_first          0      0      0     ",
       "01": "recv                0      0      0     ",
       "02": "bool                0      1      0     ",
@@ -583,7 +583,7 @@ explain select distinct data from test limit 0
       "07": "content             0      -      -     ",
       "08": "ret                 0      0      0     "
     },
-    "node": {
+    "backend": {
       "00": "set_ordered         0      1      1     ",
       "01": "table_open          0      1      8     # public.test (primary)",
       "02": "table_readi32       1      0      1     ",
@@ -605,7 +605,7 @@ select distinct data from test limit 0
 explain select distinct data from test limit 1 offset 1
 [{
   "bytecode": {
-    "main": {
+    "frontend": {
       "00": "send_first          0      0      0     ",
       "01": "recv                0      0      0     ",
       "02": "bool                0      1      0     ",
@@ -617,7 +617,7 @@ explain select distinct data from test limit 1 offset 1
       "08": "content             0      -      -     ",
       "09": "ret                 0      0      0     "
     },
-    "node": {
+    "backend": {
       "00": "set_ordered         0      1      1     ",
       "01": "table_open          0      1      8     # public.test (primary)",
       "02": "table_readi32       1      0      1     ",
@@ -645,7 +645,7 @@ select distinct data from test limit 1 offset 3
 explain select distinct data from test offset 1
 [{
   "bytecode": {
-    "main": {
+    "frontend": {
       "00": "send_first          0      0      0     ",
       "01": "recv                0      0      0     ",
       "02": "bool                0      1      0     ",
@@ -656,7 +656,7 @@ explain select distinct data from test offset 1
       "07": "content             0      -      -     ",
       "08": "ret                 0      0      0     "
     },
-    "node": {
+    "backend": {
       "00": "set_ordered         0      1      1     ",
       "01": "table_open          0      1      8     # public.test (primary)",
       "02": "table_readi32       1      0      1     ",
@@ -688,7 +688,7 @@ select distinct data from test order by data
 explain select * from test order by data
 [{
   "bytecode": {
-    "main": {
+    "frontend": {
       "00": "send_first          0      0      0     ",
       "01": "recv                0      0      0     ",
       "02": "bool                0      0      0     ",
@@ -698,7 +698,7 @@ explain select * from test order by data
       "06": "content             0      -      -     ",
       "07": "ret                 0      0      0     "
     },
-    "node": {
+    "backend": {
       "00": "set_ordered         0      2      1     ",
       "01": "table_open          0      1      10    # public.test (primary)",
       "02": "table_readi64       1      0      0     ",
@@ -719,7 +719,7 @@ explain select * from test order by data
 explain select distinct on (data) * from test
 [{
   "bytecode": {
-    "main": {
+    "frontend": {
       "00": "send_first          0      0      0     ",
       "01": "recv                0      0      0     ",
       "02": "bool                0      1      0     ",
@@ -729,7 +729,7 @@ explain select distinct on (data) * from test
       "06": "content             0      -      -     ",
       "07": "ret                 0      0      0     "
     },
-    "node": {
+    "backend": {
       "00": "set_ordered         0      2      1     ",
       "01": "table_open          0      1      10    # public.test (primary)",
       "02": "table_readi64       1      0      0     ",

@@ -21,7 +21,7 @@ select "hello"::length()
 explain select system.state().directory::length()
 [{
   "bytecode": {
-    "main": {
+    "frontend": {
       "00": "set                 0      1      0     ",
       "01": "call                1      -      0     # system.state()",
       "02": "string              2      0      0     # directory",
@@ -65,7 +65,7 @@ select 1::schema.name.name
 explain select system.state().directory::length
 [{
   "bytecode": {
-    "main": {
+    "frontend": {
       "00": "set                 0      1      0     ",
       "01": "call                1      -      0     # system.state()",
       "02": "string              2      0      0     # directory",

@@ -33,14 +33,14 @@ select exists (select true from test)
 explain select exists (select true from test where false)
 [{
   "bytecode": {
-    "main": {
+    "frontend": {
       "00": "send_first          0      0      0     ",
       "01": "recv_to             0      0      0     ",
       "02": "cte_set             0      0      0     ",
       "03": "content             0      -      -     ",
       "04": "ret                 0      0      0     "
     },
-    "node": {
+    "backend": {
       "00": "set                 0      1      0     ",
       "01": "set                 1      1      0     ",
       "02": "table_open          0      0      9     # public.test (primary)",

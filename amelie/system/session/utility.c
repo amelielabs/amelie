@@ -38,8 +38,8 @@
 #include <amelie_parser.h>
 #include <amelie_planner.h>
 #include <amelie_compiler.h>
-#include <amelie_host.h>
-#include <amelie_compute.h>
+#include <amelie_frontend.h>
+#include <amelie_backend.h>
 #include <amelie_session.h>
 
 static void
@@ -67,8 +67,8 @@ ctl_show(Session* self)
 		buf = replica_mgr_list(&share->repl->replica_mgr, &id);
 		break;
 	}
-	case SHOW_COMPUTE:
-		buf = node_mgr_list(&share->db->node_mgr, NULL);
+	case SHOW_WORKERS:
+		buf = worker_mgr_list(&share->db->worker_mgr, NULL);
 		break;
 	case SHOW_REPL:
 		buf = repl_status(share->repl);
@@ -284,8 +284,8 @@ ctl_user(Session* self)
 	// downgrade back to shared lock to avoid deadlocking
 	session_lock(self, LOCK);
 
-	// sync hosts user caches
-	host_mgr_sync_users(self->share->host_mgr, &user_mgr->cache);
+	// sync frontends user caches
+	frontend_mgr_sync_users(self->share->frontend_mgr, &user_mgr->cache);
 }
 
 static void

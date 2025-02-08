@@ -128,10 +128,10 @@ group executor
 test begin_commit
 test abort
 
-# compute
-directory compute
-group compute
-test compute
+# backend
+directory backend
+group backend
+test backend
 test indexate
 
 # recovery

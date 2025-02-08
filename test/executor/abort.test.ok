@@ -1,4 +1,4 @@
-open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "127.0.0.1", "port": 3485 }], "nodes": 3
+open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "127.0.0.1", "port": 3485 }], "backends": 3
 connect E0 S0 localhost:3485
 # test: insert abort by error
 create table test (id int primary key, data int default 0)
@@ -24,7 +24,7 @@ select * from test
 explain delete from test; select error("abort")
 [{
   "bytecode": {
-    "main": {
+    "frontend": {
       "00": "send_all            0      0      -     # public.test",
       "01": "recv                0      0      0     ",
       "02": "null                0      0      0     ",
@@ -39,7 +39,7 @@ explain delete from test; select error("abort")
       "11": "content             1      -      -     ",
       "12": "ret                 0      0      0     "
     },
-    "node": {
+    "backend": {
       "00": "table_open          0      0      3     # public.test (primary)",
       "01": "delete              0      0      0     ",
       "02": "table_next          0      1      0     ",
@@ -56,7 +56,7 @@ select * from test
 explain update test set data = id; select error("abort")
 [{
   "bytecode": {
-    "main": {
+    "frontend": {
       "00": "send_all            0      0      -     # public.test",
       "01": "recv                0      0      0     ",
       "02": "null                0      0      0     ",
@@ -71,7 +71,7 @@ explain update test set data = id; select error("abort")
       "11": "content             1      -      -     ",
       "12": "ret                 0      0      0     "
     },
-    "node": {
+    "backend": {
       "00": "table_open          0      0      7     # public.test (primary)",
       "01": "int                 0      -      0     # 1",
       "02": "push                0      0      0     ",
@@ -92,7 +92,7 @@ select * from test
 explain insert into test values(1, 0) on conflict do update set data = id; select error("abort")
 [{
   "bytecode": {
-    "main": {
+    "frontend": {
       "00": "set_ptr             0      -      0     ",
       "01": "send                0      0      -     # public.test",
       "02": "recv                0      0      0     ",
@@ -108,7 +108,7 @@ explain insert into test values(1, 0) on conflict do update set data = id; selec
       "12": "content             1      -      -     ",
       "13": "ret                 0      0      0     "
     },
-    "node": {
+    "backend": {
       "00": "table_prepare       0      -      0     # public.test",
       "01": "jmp                 7      0      0     ",
       "02": "int                 0      -      0     # 1",
@@ -151,7 +151,7 @@ select * from test
 explain delete from test; select error("abort")
 [{
   "bytecode": {
-    "main": {
+    "frontend": {
       "00": "send_first          0      0      0     ",
       "01": "recv                0      0      0     ",
       "02": "null                0      0      0     ",
@@ -166,7 +166,7 @@ explain delete from test; select error("abort")
       "11": "content             1      -      -     ",
       "12": "ret                 0      0      0     "
     },
-    "node": {
+    "backend": {
       "00": "table_open          0      0      3     # public.test (primary)",
       "01": "delete              0      0      0     ",
       "02": "table_next          0      1      0     ",
@@ -183,7 +183,7 @@ select * from test
 explain update test set data = id; select error("abort")
 [{
   "bytecode": {
-    "main": {
+    "frontend": {
       "00": "send_first          0      0      0     ",
       "01": "recv                0      0      0     ",
       "02": "null                0      0      0     ",
@@ -198,7 +198,7 @@ explain update test set data = id; select error("abort")
       "11": "content             1      -      -     ",
       "12": "ret                 0      0      0     "
     },
-    "node": {
+    "backend": {
       "00": "table_open          0      0      7     # public.test (primary)",
       "01": "int                 0      -      0     # 1",
       "02": "push                0      0      0     ",
@@ -219,7 +219,7 @@ select * from test
 explain insert into test values(1, 0) on conflict do update set data = id; select error("abort")
 [{
   "bytecode": {
-    "main": {
+    "frontend": {
       "00": "set_ptr             0      -      0     ",
       "01": "send                0      0      -     # public.test",
       "02": "recv                0      0      0     ",
@@ -235,7 +235,7 @@ explain insert into test values(1, 0) on conflict do update set data = id; selec
       "12": "content             1      -      -     ",
       "13": "ret                 0      0      0     "
     },
-    "node": {
+    "backend": {
       "00": "table_prepare       0      -      0     # public.test",
       "01": "jmp                 7      0      0     ",
       "02": "int                 0      -      0     # 1",
@@ -265,7 +265,7 @@ insert into a (id) values (0), (1), (2), (3); select * from a
 explain insert into b (id) values (10), (20), (30)
 [{
   "bytecode": {
-    "main": {
+    "frontend": {
       "00": "set_ptr             0      -      0     ",
       "01": "send                0      0      -     # public.b",
       "02": "recv                0      0      0     ",
@@ -273,7 +273,7 @@ explain insert into b (id) values (10), (20), (30)
       "04": "cte_set             0      0      0     ",
       "05": "ret                 0      0      0     "
     },
-    "node": {
+    "backend": {
       "00": "insert              -      0      0     # public.b",
       "01": "ret                 0      0      0     "
     }
@@ -289,7 +289,7 @@ update a set data = 0
 explain update a set data = id; update b set data = id; select * from a; select * from b; select error("abort")
 [{
   "bytecode": {
-    "main": {
+    "frontend": {
       "00": "send_all            0      0      -     # public.a",
       "01": "send_all            1      9      -     # public.b",
       "02": "send_all            2      18     -     # public.a",
@@ -320,7 +320,7 @@ explain update a set data = id; update b set data = id; select * from a; select 
       "27": "content             4      -      -     ",
       "28": "ret                 0      0      0     "
     },
-    "node": {
+    "backend": {
       "00": "table_open          0      0      7     # public.a (primary)",
       "01": "int                 0      -      0     # 1",
       "02": "push                0      0      0     ",
@@ -374,7 +374,7 @@ select * from b
 explain insert into a values (1, 0), (3, 0) on conflict do update set data = id; update b set data = data * 2; select * from a; select error("abort")
 [{
   "bytecode": {
-    "main": {
+    "frontend": {
       "00": "set_ptr             0      -      0     ",
       "01": "send                0      0      -     # public.a",
       "02": "send_all            1      10     -     # public.b",
@@ -400,7 +400,7 @@ explain insert into a values (1, 0), (3, 0) on conflict do update set data = id;
       "22": "content             3      -      -     ",
       "23": "ret                 0      0      0     "
     },
-    "node": {
+    "backend": {
       "00": "table_prepare       0      -      0     # public.a",
       "01": "jmp                 7      0      0     ",
       "02": "int                 0      -      0     # 1",

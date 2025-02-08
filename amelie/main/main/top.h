@@ -20,8 +20,8 @@ struct TopStats
 
 	Str      uuid;
 	Str      version; 
-	int64_t  hosts;
-	int64_t  nodes;
+	int64_t  frontends;
+	int64_t  backends;
 
 	// db
 	int64_t  schemas;
@@ -37,8 +37,8 @@ struct TopStats
 	int64_t  mem_shared;
 	int64_t  cpu_count;
 	int64_t  cpu;
-	Buf      cpu_hosts;
-	Buf      cpu_nodes;
+	Buf      cpu_frontends;
+	Buf      cpu_backends;
 
 	// net
 	int64_t  connections;

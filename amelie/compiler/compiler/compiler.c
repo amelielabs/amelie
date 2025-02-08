@@ -49,10 +49,10 @@ compiler_init(Compiler*    self,
 	self->current  = NULL;
 	self->last     = NULL;
 	self->db       = db;
-	self->code     = &self->code_node;
+	self->code     = &self->code_backend;
 	self->args     = NULL;
-	code_init(&self->code_coordinator);
-	code_init(&self->code_node);
+	code_init(&self->code_frontend);
+	code_init(&self->code_backend);
 	code_data_init(&self->code_data);
 	set_cache_init(&self->values_cache);
 	parser_init(&self->parser, db, local, function_mgr, &self->code_data,
@@ -64,8 +64,8 @@ void
 compiler_free(Compiler* self)
 {
 	parser_free(&self->parser);
-	code_free(&self->code_coordinator);
-	code_free(&self->code_node);
+	code_free(&self->code_frontend);
+	code_free(&self->code_backend);
 	code_data_free(&self->code_data);
 	set_cache_free(&self->values_cache);
 	rmap_free(&self->map);
@@ -74,13 +74,13 @@ compiler_free(Compiler* self)
 void
 compiler_reset(Compiler* self)
 {
-	self->code     = &self->code_node;
+	self->code     = &self->code_backend;
 	self->args     = NULL;
 	self->snapshot = false;
 	self->current  = NULL;
 	self->last     = NULL;
-	code_reset(&self->code_coordinator);
-	code_reset(&self->code_node);
+	code_reset(&self->code_frontend);
+	code_reset(&self->code_backend);
 	code_data_reset(&self->code_data);
 	parser_reset(&self->parser);
 	rmap_reset(&self->map);
@@ -102,7 +102,7 @@ compiler_parse_import(Compiler*    self, Str* text, Str* uri,
 static void
 emit_stmt(Compiler* self)
 {
-	// generate node code (pushdown)
+	// generate backend code (pushdown)
 	auto     stmt = self->current;
 	Targets* dml = NULL;
 	auto     table_in_use = false;
@@ -142,7 +142,7 @@ emit_stmt(Compiler* self)
 		{
 			// partitioned or shared table direct scan or join
 			//
-			// execute on one or more nodes, process the result on coordinator
+			// execute on one or more backends, process the result on frontend
 			//
 			pushdown(self, stmt->ast);
 			table_in_use = true;
@@ -154,7 +154,7 @@ emit_stmt(Compiler* self)
 		{
 			// shared table being involved in a subquery
 			//
-			// execute the whole query on the first node, coordinator will
+			// execute the whole query on the first backend, frontend will
 			// receive the result
 			//
 			pushdown_first(self, stmt->ast);
@@ -164,12 +164,12 @@ emit_stmt(Compiler* self)
 
 		// no targets or all targets are expressions
 		//
-		// do nothing (coordinator only)
+		// do nothing (frontend only)
 		return;
 	}
 
 	case STMT_WATCH:
-		// do nothing (coordinator only)
+		// do nothing (frontend only)
 		return;
 
 	default:
@@ -280,7 +280,7 @@ emit_send_insert(Compiler* self, int start)
 static inline void
 emit_send(Compiler* self, int start)
 {
-	// generate coordinator send code
+	// generate frontend send code
 	Target* target = NULL;
 	auto stmt = self->current;
 	switch (stmt->id) {
@@ -340,7 +340,7 @@ emit_send(Compiler* self, int start)
 	auto table = target->from_table;
 	if (table->config->shared)
 	{
-		// send to the first node
+		// send to the first backend
 
 		// CSEND_FIRST
 		op2(self, CSEND_FIRST, stmt->order, start);
@@ -350,14 +350,14 @@ emit_send(Compiler* self, int start)
 		auto plan = target->plan_primary;
 		if (plan->type == PLAN_LOOKUP && !plan->match_start_columns)
 		{
-			// send to one node using the point lookup key hash
+			// send to one backend using the point lookup key hash
 			uint32_t hash = plan_create_hash(plan);
 
 			// CSEND_LOOKUP
 			op4(self, CSEND_LOOKUP, stmt->order, start, (intptr_t)table, hash);
 		} else
 		{
-			// send to all table nodes
+			// send to all table backends
 
 			// CSEND_ALL
 			op3(self, CSEND_ALL, stmt->order, start, (intptr_t)table);
@@ -403,7 +403,7 @@ emit_recv(Compiler* self)
 
 		if (select->pushdown == PUSHDOWN_TARGET)
 		{
-			// process the result from one or more nodes
+			// process the result from one or more backends
 			r = pushdown_recv(self, stmt->ast);
 			break;
 		}
@@ -411,7 +411,7 @@ emit_recv(Compiler* self)
 		// select (select from table)
 		if (select->pushdown == PUSHDOWN_FIRST)
 		{
-			// recv whole query result from the first node
+			// recv whole query result from the first backend
 
 			// CRECV_TO (note: set or union received)
 			r = op2(self, CRECV_TO, rpin(self, TYPE_STORE), stmt->order);
@@ -424,7 +424,7 @@ emit_recv(Compiler* self)
 	}
 
 	case STMT_WATCH:
-		// no targets (coordinator only)
+		// no targets (frontend only)
 		r = emit_watch(self, stmt->ast);
 		break;
 
@@ -514,17 +514,17 @@ compiler_emit(Compiler* self)
 	auto stmt = self->parser.stmt_list.list;
 	for (; stmt; stmt = stmt->next)
 	{
-		// generate node code (pushdown)
-		auto stmt_start = code_count(&self->code_node);
-		compiler_switch_node(self);
+		// generate backend code (pushdown)
+		auto stmt_start = code_count(&self->code_backend);
+		compiler_switch_backend(self);
 		self->current = stmt;
 		emit_stmt(self);
 
-		// generate coordinator code
-		compiler_switch_coordinator(self);
+		// generate frontend code
+		compiler_switch_frontend(self);
 
 		// generate recv up to the max dependable statement order, including
-		// coordinator only expressions
+		// frontend only expressions
 		auto is_expr = stmt_is_expr(stmt);
 		auto recv = -1;
 		if (is_expr)
@@ -566,13 +566,13 @@ compiler_emit(Compiler* self)
 void
 compiler_program(Compiler* self, Program* program)
 {
-	program->code       = &self->code_coordinator;
-	program->code_node  = &self->code_node;
-	program->code_data  = &self->code_data;
-	program->stmts      = self->parser.stmt_list.count;
-	program->stmts_last = -1;
-	program->snapshot   = self->snapshot;
-	program->repl       = false;
+	program->code         = &self->code_frontend;
+	program->code_backend = &self->code_backend;
+	program->code_data    = &self->code_data;
+	program->stmts        = self->parser.stmt_list.count;
+	program->stmts_last   = -1;
+	program->snapshot     = self->snapshot;
+	program->repl         = false;
 	if (self->last)
 		program->stmts_last = self->last->order;
 }

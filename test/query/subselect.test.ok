@@ -73,7 +73,7 @@ select (select *) from test
 explain select (select test.*) from test
 [{
   "bytecode": {
-    "main": {
+    "frontend": {
       "00": "send_first          0      0      0     ",
       "01": "recv                0      0      0     ",
       "02": "bool                0      0      0     ",
@@ -83,7 +83,7 @@ explain select (select test.*) from test
       "06": "content             0      -      -     ",
       "07": "ret                 0      0      0     "
     },
-    "node": {
+    "backend": {
       "00": "set                 0      1      0     ",
       "01": "table_open          0      0      10    # public.test (primary)",
       "02": "set                 1      1      0     ",
@@ -113,7 +113,7 @@ select (select t) from test t
 explain select (select test.id) from test
 [{
   "bytecode": {
-    "main": {
+    "frontend": {
       "00": "send_first          0      0      0     ",
       "01": "recv                0      0      0     ",
       "02": "bool                0      0      0     ",
@@ -123,7 +123,7 @@ explain select (select test.id) from test
       "06": "content             0      -      -     ",
       "07": "ret                 0      0      0     "
     },
-    "node": {
+    "backend": {
       "00": "set                 0      1      0     ",
       "01": "table_open          0      0      10    # public.test (primary)",
       "02": "set                 1      1      0     ",
@@ -148,7 +148,7 @@ select (select id) from test
 explain select (select t.id) from test t
 [{
   "bytecode": {
-    "main": {
+    "frontend": {
       "00": "send_first          0      0      0     ",
       "01": "recv                0      0      0     ",
       "02": "bool                0      0      0     ",
@@ -158,7 +158,7 @@ explain select (select t.id) from test t
       "06": "content             0      -      -     ",
       "07": "ret                 0      0      0     "
     },
-    "node": {
+    "backend": {
       "00": "set                 0      1      0     ",
       "01": "table_open          0      0      10    # public.test (primary)",
       "02": "set                 1      1      0     ",
@@ -260,7 +260,7 @@ select * from (select * from test) t
 explain select * from (select * from test) t
 [{
   "bytecode": {
-    "main": {
+    "frontend": {
       "00": "send_first          0      0      0     ",
       "01": "recv                0      0      0     ",
       "02": "bool                0      0      0     ",
@@ -279,7 +279,7 @@ explain select * from (select * from test) t
       "15": "content             1      -      -     ",
       "16": "ret                 0      0      0     "
     },
-    "node": {
+    "backend": {
       "00": "set                 0      1      0     ",
       "01": "table_open          0      0      6     # public.test (primary)",
       "02": "table_readi32       1      0      0     ",
@@ -395,14 +395,14 @@ insert into test values (3)
 explain select (select * from test)
 [{
   "bytecode": {
-    "main": {
+    "frontend": {
       "00": "send_first          0      0      0     ",
       "01": "recv_to             0      0      0     ",
       "02": "cte_set             0      0      0     ",
       "03": "content             0      -      -     ",
       "04": "ret                 0      0      0     "
     },
-    "node": {
+    "backend": {
       "00": "set                 0      1      0     ",
       "01": "set                 1      1      0     ",
       "02": "table_open          0      0      7     # public.test (primary)",
@@ -435,7 +435,7 @@ select (select * from test t limit 1) from test
 explain select (select i.* from test i limit 1) from test
 [{
   "bytecode": {
-    "main": {
+    "frontend": {
       "00": "send_first          0      0      0     ",
       "01": "recv                0      0      0     ",
       "02": "bool                0      0      0     ",
@@ -445,7 +445,7 @@ explain select (select i.* from test i limit 1) from test
       "06": "content             0      -      -     ",
       "07": "ret                 0      0      0     "
     },
-    "node": {
+    "backend": {
       "00": "set                 0      1      0     ",
       "01": "table_open          1      0      17    # public.test (primary)",
       "02": "set                 1      1      0     ",
@@ -473,7 +473,7 @@ explain select (select i.* from test i limit 1) from test
 explain select (select i.* from test i where test.id = i.id) from test
 [{
   "bytecode": {
-    "main": {
+    "frontend": {
       "00": "send_first          0      0      0     ",
       "01": "recv                0      0      0     ",
       "02": "bool                0      0      0     ",
@@ -483,7 +483,7 @@ explain select (select i.* from test i where test.id = i.id) from test
       "06": "content             0      -      -     ",
       "07": "ret                 0      0      0     "
     },
-    "node": {
+    "backend": {
       "00": "set                 0      1      0     ",
       "01": "table_open          1      0      18    # public.test (primary)",
       "02": "set                 1      1      0     ",
@@ -529,7 +529,7 @@ select (select b.id from b where a.id = b.id)::type from a
 explain select * from a where (select true from b where a.id = b.id)
 [{
   "bytecode": {
-    "main": {
+    "frontend": {
       "00": "send_first          0      0      0     ",
       "01": "recv                0      0      0     ",
       "02": "bool                0      0      0     ",
@@ -539,7 +539,7 @@ explain select * from a where (select true from b where a.id = b.id)
       "06": "content             0      -      -     ",
       "07": "ret                 0      0      0     "
     },
-    "node": {
+    "backend": {
       "00": "set                 0      2      0     ",
       "01": "table_open          0      0      22    # public.a (primary)",
       "02": "set                 1      1      0     ",
@@ -576,7 +576,7 @@ select t.x from (select z.id as x from (select id from test) z) t
 explain select t.x from (select z.id as x from (select id from test) z) t
 [{
   "bytecode": {
-    "main": {
+    "frontend": {
       "00": "send_first          0      0      0     ",
       "01": "recv                0      0      0     ",
       "02": "bool                0      0      0     ",
@@ -604,7 +604,7 @@ explain select t.x from (select z.id as x from (select id from test) z) t
       "24": "content             2      -      -     ",
       "25": "ret                 0      0      0     "
     },
-    "node": {
+    "backend": {
       "00": "set                 0      1      0     ",
       "01": "table_open          0      0      6     # public.test (primary)",
       "02": "table_readi32       1      0      0     ",

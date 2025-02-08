@@ -44,7 +44,7 @@ csend(Vm* self, Op* op)
 	auto table = (Table*)op->c;
 	auto keys  = table_keys(table);
 
-	// redistribute rows between nodes
+	// redistribute rows between backends
 	Req* map[dtr->set.set_size];
 	memset(map, 0, sizeof(map));
 
@@ -123,7 +123,7 @@ csend_first(Vm* self, Op* op)
 	ReqList list;
 	req_list_init(&list);
 
-	// send to the first node
+	// send to the first backend
 	auto dtr = self->dtr;
 	auto req = req_create(&dtr->req_cache, REQ_EXECUTE);
 	req->route = router_first(dtr->router);
@@ -142,7 +142,7 @@ csend_all(Vm* self, Op* op)
 	ReqList list;
 	req_list_init(&list);
 
-	// send to all table nodes
+	// send to all table backends
 	auto dtr = self->dtr;
 	auto map = &table->part_list.map;
 	for (auto i = 0; i < map->list_count; i++)
@@ -292,7 +292,7 @@ ctable_open(Vm* self, Op* op)
 
 	// find table, partition and index
 	auto table = table_mgr_find(&self->db->table_mgr, &name_schema, &name_table, true);
-	auto part  = part_list_match(&table->part_list, self->node);
+	auto part  = part_list_match(&table->part_list, self->backend);
 	auto index = part_find(part, &name_index, true);
 	auto keys  = index_keys(index);
 	auto keys_count = op->d;
@@ -334,7 +334,7 @@ ctable_prepare(Vm* self, Op* op)
 	// prepare cursor and primary index iterator for related partition
 	cursor->type  = CURSOR_TABLE;
 	cursor->table = table;
-	cursor->part  = part_list_match(&table->part_list, self->node);
+	cursor->part  = part_list_match(&table->part_list, self->backend);
 	cursor->it    = index_iterator(part_primary(cursor->part));
 }
 
@@ -345,7 +345,7 @@ cinsert(Vm* self, Op* op)
 
 	// find related table partition
 	auto table   = (Table*)op->a;
-	auto part    = part_list_match(&table->part_list, self->node);
+	auto part    = part_list_match(&table->part_list, self->backend);
 	auto columns = table_columns(table);
 
 	// insert

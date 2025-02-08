@@ -26,13 +26,13 @@
 static Buf*
 db_checkpoint_catalog_dump(void* arg)
 {
-	// { nodes, schemas, tables }
+	// { workers, schemas, tables }
 	Db* self = arg;
 	auto buf = buf_create();
 	encode_obj(buf);
 
-	encode_raw(buf, "nodes", 5);
-	node_mgr_dump(&self->node_mgr, buf);
+	encode_raw(buf, "workers", 7);
+	worker_mgr_dump(&self->worker_mgr, buf);
 
 	encode_raw(buf, "schemas", 7);
 	schema_mgr_dump(&self->schema_mgr, buf);
@@ -46,7 +46,7 @@ db_checkpoint_catalog_dump(void* arg)
 
 enum
 {
-	RESTORE_NODE,
+	RESTORE_WORKER,
 	RESTORE_SCHEMA,
 	RESTORE_TABLE
 };
@@ -55,14 +55,14 @@ static void
 restore_replay(Db* self, Tr* tr, int type, uint8_t** pos)
 {
 	switch (type) {
-	case RESTORE_NODE:
+	case RESTORE_WORKER:
 	{
-		// read node config
-		auto config = node_config_read(pos);
-		defer(node_config_free, config);
+		// read worker config
+		auto config = worker_config_read(pos);
+		defer(worker_config_free, config);
 
-		// create node
-		node_mgr_create(&self->node_mgr, tr, config, false);
+		// create worker
+		worker_mgr_create(&self->worker_mgr, tr, config, false);
 		break;
 	}
 	case RESTORE_SCHEMA:
@@ -112,25 +112,25 @@ restore_object(Db* self, int type, uint8_t** pos)
 static void
 db_checkpoint_catalog_restore(uint8_t** pos, void* arg)
 {
-	// { nodes, schemas, tables }
+	// { workers, schemas, tables }
 	Db* self = arg;
 
-	uint8_t* pos_nodes   = NULL;
+	uint8_t* pos_workers = NULL;
 	uint8_t* pos_schemas = NULL;
 	uint8_t* pos_tables  = NULL;
 	Decode obj[] =
 	{
-		{ DECODE_ARRAY, "nodes",   &pos_nodes   },
+		{ DECODE_ARRAY, "workers", &pos_workers },
 		{ DECODE_ARRAY, "schemas", &pos_schemas },
 		{ DECODE_ARRAY, "tables",  &pos_tables  },
 		{ 0,             NULL,      NULL        },
 	};
 	decode_obj(obj, "catalog", pos);
 
-	// nodes
-	json_read_array(&pos_nodes);
-	while (! json_read_array_end(&pos_nodes))
-		restore_object(self, RESTORE_NODE, &pos_nodes);
+	// workers
+	json_read_array(&pos_workers);
+	while (! json_read_array_end(&pos_workers))
+		restore_object(self, RESTORE_WORKER, &pos_workers);
 
 	// schemas
 	json_read_array(&pos_schemas);

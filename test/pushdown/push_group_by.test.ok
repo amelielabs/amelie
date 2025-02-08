@@ -1,4 +1,4 @@
-open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "127.0.0.1", "port": 3485 }], "nodes": 3
+open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "127.0.0.1", "port": 3485 }], "backends": 3
 connect E0 S0 localhost:3485
 # test: select * from table group by (column not defined)
 create table test (id int primary key, data int)
@@ -12,7 +12,7 @@ create table test (id int primary key)
 explain select * from test group by id
 [{
   "bytecode": {
-    "main": {
+    "frontend": {
       "00": "send_all            0      0      -     # public.test",
       "01": "recv                0      0      0     ",
       "02": "bool                0      1      0     ",
@@ -30,7 +30,7 @@ explain select * from test group by id
       "14": "content             0      -      -     ",
       "15": "ret                 0      0      0     "
     },
-    "node": {
+    "backend": {
       "00": "set_ordered         0      0      1     ",
       "01": "table_open          0      1      6     # public.test (primary)",
       "02": "table_readi32       1      0      0     ",
@@ -61,7 +61,7 @@ select * from test
 explain select id from test group by id
 [{
   "bytecode": {
-    "main": {
+    "frontend": {
       "00": "send_all            0      0      -     # public.test",
       "01": "recv                0      0      0     ",
       "02": "bool                0      1      0     ",
@@ -79,7 +79,7 @@ explain select id from test group by id
       "14": "content             0      -      -     ",
       "15": "ret                 0      0      0     "
     },
-    "node": {
+    "backend": {
       "00": "set_ordered         0      0      1     ",
       "01": "table_open          0      1      6     # public.test (primary)",
       "02": "table_readi32       1      0      0     ",
@@ -112,7 +112,7 @@ select id, 100 + id from test group by id
 explain select * from (select id from test group by id) t
 [{
   "bytecode": {
-    "main": {
+    "frontend": {
       "00": "send_all            0      0      -     # public.test",
       "01": "recv                0      0      0     ",
       "02": "bool                0      1      0     ",
@@ -139,7 +139,7 @@ explain select * from (select id from test group by id) t
       "23": "content             1      -      -     ",
       "24": "ret                 0      0      0     "
     },
-    "node": {
+    "backend": {
       "00": "set_ordered         0      0      1     ",
       "01": "table_open          0      1      6     # public.test (primary)",
       "02": "table_readi32       1      0      0     ",
@@ -161,7 +161,7 @@ select x from (select id, 100 + id as x from test group by id) t
 explain select id from test group by id limit 1
 [{
   "bytecode": {
-    "main": {
+    "frontend": {
       "00": "send_all            0      0      -     # public.test",
       "01": "recv                0      0      0     ",
       "02": "bool                0      1      0     ",
@@ -183,7 +183,7 @@ explain select id from test group by id limit 1
       "18": "content             0      -      -     ",
       "19": "ret                 0      0      0     "
     },
-    "node": {
+    "backend": {
       "00": "set_ordered         0      0      1     ",
       "01": "table_open          0      1      6     # public.test (primary)",
       "02": "table_readi32       1      0      0     ",
@@ -207,7 +207,7 @@ select id from test group by id limit 4
 explain select id from test group by id limit 1 offset 1
 [{
   "bytecode": {
-    "main": {
+    "frontend": {
       "00": "send_all            0      0      -     # public.test",
       "01": "recv                0      0      0     ",
       "02": "bool                0      1      0     ",
@@ -231,7 +231,7 @@ explain select id from test group by id limit 1 offset 1
       "20": "content             0      -      -     ",
       "21": "ret                 0      0      0     "
     },
-    "node": {
+    "backend": {
       "00": "set_ordered         0      0      1     ",
       "01": "table_open          0      1      6     # public.test (primary)",
       "02": "table_readi32       1      0      0     ",
@@ -257,7 +257,7 @@ select id from test group by id limit 1 offset 4
 explain select id from test group by id offset 1
 [{
   "bytecode": {
-    "main": {
+    "frontend": {
       "00": "send_all            0      0      -     # public.test",
       "01": "recv                0      0      0     ",
       "02": "bool                0      1      0     ",
@@ -277,7 +277,7 @@ explain select id from test group by id offset 1
       "16": "content             0      -      -     ",
       "17": "ret                 0      0      0     "
     },
-    "node": {
+    "backend": {
       "00": "set_ordered         0      0      1     ",
       "01": "table_open          0      1      6     # public.test (primary)",
       "02": "table_readi32       1      0      0     ",
@@ -303,7 +303,7 @@ select id from test group by id offset 4
 explain select * from (select id from test group by id limit 1) t
 [{
   "bytecode": {
-    "main": {
+    "frontend": {
       "00": "send_all            0      0      -     # public.test",
       "01": "recv                0      0      0     ",
       "02": "bool                0      1      0     ",
@@ -334,7 +334,7 @@ explain select * from (select id from test group by id limit 1) t
       "27": "content             1      -      -     ",
       "28": "ret                 0      0      0     "
     },
-    "node": {
+    "backend": {
       "00": "set_ordered         0      0      1     ",
       "01": "table_open          0      1      6     # public.test (primary)",
       "02": "table_readi32       1      0      0     ",
@@ -360,7 +360,7 @@ select * from (select id from test group by id limit 4) t
 explain select * from (select id from test group by id limit 1 offset 1) t
 [{
   "bytecode": {
-    "main": {
+    "frontend": {
       "00": "send_all            0      0      -     # public.test",
       "01": "recv                0      0      0     ",
       "02": "bool                0      1      0     ",
@@ -393,7 +393,7 @@ explain select * from (select id from test group by id limit 1 offset 1) t
       "29": "content             1      -      -     ",
       "30": "ret                 0      0      0     "
     },
-    "node": {
+    "backend": {
       "00": "set_ordered         0      0      1     ",
       "01": "table_open          0      1      6     # public.test (primary)",
       "02": "table_readi32       1      0      0     ",
@@ -419,7 +419,7 @@ select * from (select id from test group by id limit 1 offset 4) t
 explain select * from (select id from test group by id offset 1) t
 [{
   "bytecode": {
-    "main": {
+    "frontend": {
       "00": "send_all            0      0      -     # public.test",
       "01": "recv                0      0      0     ",
       "02": "bool                0      1      0     ",
@@ -448,7 +448,7 @@ explain select * from (select id from test group by id offset 1) t
       "25": "content             1      -      -     ",
       "26": "ret                 0      0      0     "
     },
-    "node": {
+    "backend": {
       "00": "set_ordered         0      0      1     ",
       "01": "table_open          0      1      6     # public.test (primary)",
       "02": "table_readi32       1      0      0     ",
@@ -474,7 +474,7 @@ select * from (select id from test group by id offset 4) t
 explain select id from test group by id having id >= 3
 [{
   "bytecode": {
-    "main": {
+    "frontend": {
       "00": "send_all            0      0      -     # public.test",
       "01": "recv                0      0      0     ",
       "02": "bool                0      1      0     ",
@@ -496,7 +496,7 @@ explain select id from test group by id having id >= 3
       "18": "content             0      -      -     ",
       "19": "ret                 0      0      0     "
     },
-    "node": {
+    "backend": {
       "00": "set_ordered         0      0      1     ",
       "01": "table_open          0      1      6     # public.test (primary)",
       "02": "table_readi32       1      0      0     ",
@@ -530,7 +530,7 @@ select id from test group by id having id >= 1 and id <= 3
 explain select id from test group by id having id >= 1 limit 1
 [{
   "bytecode": {
-    "main": {
+    "frontend": {
       "00": "send_all            0      0      -     # public.test",
       "01": "recv                0      0      0     ",
       "02": "bool                0      1      0     ",
@@ -556,7 +556,7 @@ explain select id from test group by id having id >= 1 limit 1
       "22": "content             0      -      -     ",
       "23": "ret                 0      0      0     "
     },
-    "node": {
+    "backend": {
       "00": "set_ordered         0      0      1     ",
       "01": "table_open          0      1      6     # public.test (primary)",
       "02": "table_readi32       1      0      0     ",
@@ -578,7 +578,7 @@ select id from test group by id having id >= 1 limit 2
 explain select id from test group by id having id >= 1 limit 1 offset 1
 [{
   "bytecode": {
-    "main": {
+    "frontend": {
       "00": "send_all            0      0      -     # public.test",
       "01": "recv                0      0      0     ",
       "02": "bool                0      1      0     ",
@@ -606,7 +606,7 @@ explain select id from test group by id having id >= 1 limit 1 offset 1
       "24": "content             0      -      -     ",
       "25": "ret                 0      0      0     "
     },
-    "node": {
+    "backend": {
       "00": "set_ordered         0      0      1     ",
       "01": "table_open          0      1      6     # public.test (primary)",
       "02": "table_readi32       1      0      0     ",
@@ -630,7 +630,7 @@ select id from test group by id having id >= 1 limit 1 offset 3
 explain select id from test group by id having id >= 1 offset 1
 [{
   "bytecode": {
-    "main": {
+    "frontend": {
       "00": "send_all            0      0      -     # public.test",
       "01": "recv                0      0      0     ",
       "02": "bool                0      1      0     ",
@@ -654,7 +654,7 @@ explain select id from test group by id having id >= 1 offset 1
       "20": "content             0      -      -     ",
       "21": "ret                 0      0      0     "
     },
-    "node": {
+    "backend": {
       "00": "set_ordered         0      0      1     ",
       "01": "table_open          0      1      6     # public.test (primary)",
       "02": "table_readi32       1      0      0     ",
@@ -678,7 +678,7 @@ select id from test group by id having id >= 1 offset 3
 explain select * from (select id from test group by id having id >= 3) t
 [{
   "bytecode": {
-    "main": {
+    "frontend": {
       "00": "send_all            0      0      -     # public.test",
       "01": "recv                0      0      0     ",
       "02": "bool                0      1      0     ",
@@ -709,7 +709,7 @@ explain select * from (select id from test group by id having id >= 3) t
       "27": "content             1      -      -     ",
       "28": "ret                 0      0      0     "
     },
-    "node": {
+    "backend": {
       "00": "set_ordered         0      0      1     ",
       "01": "table_open          0      1      6     # public.test (primary)",
       "02": "table_readi32       1      0      0     ",
@@ -729,7 +729,7 @@ select * from (select id from test group by id having id >= 3) t
 explain select * from (select id from test group by id having id >= 1 limit 1) t
 [{
   "bytecode": {
-    "main": {
+    "frontend": {
       "00": "send_all            0      0      -     # public.test",
       "01": "recv                0      0      0     ",
       "02": "bool                0      1      0     ",
@@ -764,7 +764,7 @@ explain select * from (select id from test group by id having id >= 1 limit 1) t
       "31": "content             1      -      -     ",
       "32": "ret                 0      0      0     "
     },
-    "node": {
+    "backend": {
       "00": "set_ordered         0      0      1     ",
       "01": "table_open          0      1      6     # public.test (primary)",
       "02": "table_readi32       1      0      0     ",
@@ -786,7 +786,7 @@ select * from (select id from test group by id having id >= 1 limit 2) t
 explain select * from (select id from test group by id having id >= 1 limit 1 offset 1) t
 [{
   "bytecode": {
-    "main": {
+    "frontend": {
       "00": "send_all            0      0      -     # public.test",
       "01": "recv                0      0      0     ",
       "02": "bool                0      1      0     ",
@@ -823,7 +823,7 @@ explain select * from (select id from test group by id having id >= 1 limit 1 of
       "33": "content             1      -      -     ",
       "34": "ret                 0      0      0     "
     },
-    "node": {
+    "backend": {
       "00": "set_ordered         0      0      1     ",
       "01": "table_open          0      1      6     # public.test (primary)",
       "02": "table_readi32       1      0      0     ",
@@ -847,7 +847,7 @@ select * from (select id from test group by id having id >= 1 limit 1 offset 3) 
 explain select * from (select id from test group by id having id >= 1 offset 1) t
 [{
   "bytecode": {
-    "main": {
+    "frontend": {
       "00": "send_all            0      0      -     # public.test",
       "01": "recv                0      0      0     ",
       "02": "bool                0      1      0     ",
@@ -880,7 +880,7 @@ explain select * from (select id from test group by id having id >= 1 offset 1) 
       "29": "content             1      -      -     ",
       "30": "ret                 0      0      0     "
     },
-    "node": {
+    "backend": {
       "00": "set_ordered         0      0      1     ",
       "01": "table_open          0      1      6     # public.test (primary)",
       "02": "table_readi32       1      0      0     ",
@@ -904,7 +904,7 @@ select * from (select id from test group by id having id >= 1 offset 3) t
 explain select id from test group by id order by id
 [{
   "bytecode": {
-    "main": {
+    "frontend": {
       "00": "send_all            0      0      -     # public.test",
       "01": "recv                0      0      0     ",
       "02": "bool                0      1      0     ",
@@ -925,7 +925,7 @@ explain select id from test group by id order by id
       "17": "content             0      -      -     ",
       "18": "ret                 0      0      0     "
     },
-    "node": {
+    "backend": {
       "00": "set_ordered         0      0      1     ",
       "01": "table_open          0      1      6     # public.test (primary)",
       "02": "table_readi32       1      0      0     ",
@@ -948,7 +948,7 @@ select id from test group by id order by data
 explain select id from test group by id order by id desc
 [{
   "bytecode": {
-    "main": {
+    "frontend": {
       "00": "send_all            0      0      -     # public.test",
       "01": "recv                0      0      0     ",
       "02": "bool                0      1      0     ",
@@ -969,7 +969,7 @@ explain select id from test group by id order by id desc
       "17": "content             0      -      -     ",
       "18": "ret                 0      0      0     "
     },
-    "node": {
+    "backend": {
       "00": "set_ordered         0      0      1     ",
       "01": "table_open          0      1      6     # public.test (primary)",
       "02": "table_readi32       1      0      0     ",
@@ -989,7 +989,7 @@ select id from test group by id order by id desc
 explain select * from (select id from test group by id order by id desc) t
 [{
   "bytecode": {
-    "main": {
+    "frontend": {
       "00": "send_all            0      0      -     # public.test",
       "01": "recv                0      0      0     ",
       "02": "bool                0      1      0     ",
@@ -1019,7 +1019,7 @@ explain select * from (select id from test group by id order by id desc) t
       "26": "content             1      -      -     ",
       "27": "ret                 0      0      0     "
     },
-    "node": {
+    "backend": {
       "00": "set_ordered         0      0      1     ",
       "01": "table_open          0      1      6     # public.test (primary)",
       "02": "table_readi32       1      0      0     ",
@@ -1039,7 +1039,7 @@ select * from (select id from test group by id order by id desc) t
 explain select id from test group by id order by id asc limit 1
 [{
   "bytecode": {
-    "main": {
+    "frontend": {
       "00": "send_all            0      0      -     # public.test",
       "01": "recv                0      0      0     ",
       "02": "bool                0      1      0     ",
@@ -1064,7 +1064,7 @@ explain select id from test group by id order by id asc limit 1
       "21": "content             0      -      -     ",
       "22": "ret                 0      0      0     "
     },
-    "node": {
+    "backend": {
       "00": "set_ordered         0      0      1     ",
       "01": "table_open          0      1      6     # public.test (primary)",
       "02": "table_readi32       1      0      0     ",
@@ -1088,7 +1088,7 @@ select id from test group by id order by id asc limit 3
 explain select id from test group by id order by id asc limit 1 offset 1
 [{
   "bytecode": {
-    "main": {
+    "frontend": {
       "00": "send_all            0      0      -     # public.test",
       "01": "recv                0      0      0     ",
       "02": "bool                0      1      0     ",
@@ -1114,7 +1114,7 @@ explain select id from test group by id order by id asc limit 1 offset 1
       "22": "content             0      -      -     ",
       "23": "ret                 0      0      0     "
     },
-    "node": {
+    "backend": {
       "00": "set_ordered         0      0      1     ",
       "01": "table_open          0      1      6     # public.test (primary)",
       "02": "table_readi32       1      0      0     ",
@@ -1138,7 +1138,7 @@ select id from test group by id order by id asc limit 1 offset 3
 explain select id from test group by id order by id asc offset 1
 [{
   "bytecode": {
-    "main": {
+    "frontend": {
       "00": "send_all            0      0      -     # public.test",
       "01": "recv                0      0      0     ",
       "02": "bool                0      1      0     ",
@@ -1163,7 +1163,7 @@ explain select id from test group by id order by id asc offset 1
       "21": "content             0      -      -     ",
       "22": "ret                 0      0      0     "
     },
-    "node": {
+    "backend": {
       "00": "set_ordered         0      0      1     ",
       "01": "table_open          0      1      6     # public.test (primary)",
       "02": "table_readi32       1      0      0     ",
@@ -1187,7 +1187,7 @@ select id from test group by id order by id asc offset 3
 explain select id from test group by id order by id desc limit 1
 [{
   "bytecode": {
-    "main": {
+    "frontend": {
       "00": "send_all            0      0      -     # public.test",
       "01": "recv                0      0      0     ",
       "02": "bool                0      1      0     ",
@@ -1212,7 +1212,7 @@ explain select id from test group by id order by id desc limit 1
       "21": "content             0      -      -     ",
       "22": "ret                 0      0      0     "
     },
-    "node": {
+    "backend": {
       "00": "set_ordered         0      0      1     ",
       "01": "table_open          0      1      6     # public.test (primary)",
       "02": "table_readi32       1      0      0     ",
@@ -1236,7 +1236,7 @@ select id from test group by id order by id desc limit 3
 explain select id from test group by id order by id desc limit 1 offset 1
 [{
   "bytecode": {
-    "main": {
+    "frontend": {
       "00": "send_all            0      0      -     # public.test",
       "01": "recv                0      0      0     ",
       "02": "bool                0      1      0     ",
@@ -1262,7 +1262,7 @@ explain select id from test group by id order by id desc limit 1 offset 1
       "22": "content             0      -      -     ",
       "23": "ret                 0      0      0     "
     },
-    "node": {
+    "backend": {
       "00": "set_ordered         0      0      1     ",
       "01": "table_open          0      1      6     # public.test (primary)",
       "02": "table_readi32       1      0      0     ",
@@ -1286,7 +1286,7 @@ select id from test group by id order by id desc limit 1 offset 3
 explain select id from test group by id order by id desc offset 1
 [{
   "bytecode": {
-    "main": {
+    "frontend": {
       "00": "send_all            0      0      -     # public.test",
       "01": "recv                0      0      0     ",
       "02": "bool                0      1      0     ",
@@ -1311,7 +1311,7 @@ explain select id from test group by id order by id desc offset 1
       "21": "content             0      -      -     ",
       "22": "ret                 0      0      0     "
     },
-    "node": {
+    "backend": {
       "00": "set_ordered         0      0      1     ",
       "01": "table_open          0      1      6     # public.test (primary)",
       "02": "table_readi32       1      0      0     ",
@@ -1337,7 +1337,7 @@ select id from test group by id order by id desc offset 3
 explain select * from (select id from test group by id order by id asc limit 1) t
 [{
   "bytecode": {
-    "main": {
+    "frontend": {
       "00": "send_all            0      0      -     # public.test",
       "01": "recv                0      0      0     ",
       "02": "bool                0      1      0     ",
@@ -1371,7 +1371,7 @@ explain select * from (select id from test group by id order by id asc limit 1) 
       "30": "content             1      -      -     ",
       "31": "ret                 0      0      0     "
     },
-    "node": {
+    "backend": {
       "00": "set_ordered         0      0      1     ",
       "01": "table_open          0      1      6     # public.test (primary)",
       "02": "table_readi32       1      0      0     ",
@@ -1397,7 +1397,7 @@ select * from (select id from test group by id order by id asc limit 3) t
 explain select * from (select id from test group by id order by id asc limit 1 offset 1) t
 [{
   "bytecode": {
-    "main": {
+    "frontend": {
       "00": "send_all            0      0      -     # public.test",
       "01": "recv                0      0      0     ",
       "02": "bool                0      1      0     ",
@@ -1432,7 +1432,7 @@ explain select * from (select id from test group by id order by id asc limit 1 o
       "31": "content             1      -      -     ",
       "32": "ret                 0      0      0     "
     },
-    "node": {
+    "backend": {
       "00": "set_ordered         0      0      1     ",
       "01": "table_open          0      1      6     # public.test (primary)",
       "02": "table_readi32       1      0      0     ",
@@ -1456,7 +1456,7 @@ select * from (select id from test group by id order by id asc limit 1 offset 3)
 explain select * from (select id from test group by id order by id asc offset 1) t
 [{
   "bytecode": {
-    "main": {
+    "frontend": {
       "00": "send_all            0      0      -     # public.test",
       "01": "recv                0      0      0     ",
       "02": "bool                0      1      0     ",
@@ -1490,7 +1490,7 @@ explain select * from (select id from test group by id order by id asc offset 1)
       "30": "content             1      -      -     ",
       "31": "ret                 0      0      0     "
     },
-    "node": {
+    "backend": {
       "00": "set_ordered         0      0      1     ",
       "01": "table_open          0      1      6     # public.test (primary)",
       "02": "table_readi32       1      0      0     ",
@@ -1516,7 +1516,7 @@ select * from (select id from test group by id order by id asc offset 3) t
 explain select * from (select id from test group by id order by id desc limit 1) t
 [{
   "bytecode": {
-    "main": {
+    "frontend": {
       "00": "send_all            0      0      -     # public.test",
       "01": "recv                0      0      0     ",
       "02": "bool                0      1      0     ",
@@ -1550,7 +1550,7 @@ explain select * from (select id from test group by id order by id desc limit 1)
       "30": "content             1      -      -     ",
       "31": "ret                 0      0      0     "
     },
-    "node": {
+    "backend": {
       "00": "set_ordered         0      0      1     ",
       "01": "table_open          0      1      6     # public.test (primary)",
       "02": "table_readi32       1      0      0     ",
@@ -1576,7 +1576,7 @@ select * from (select id from test group by id order by id desc limit 3) t
 explain select * from (select id from test group by id order by id desc limit 1 offset 1) t
 [{
   "bytecode": {
-    "main": {
+    "frontend": {
       "00": "send_all            0      0      -     # public.test",
       "01": "recv                0      0      0     ",
       "02": "bool                0      1      0     ",
@@ -1611,7 +1611,7 @@ explain select * from (select id from test group by id order by id desc limit 1 
       "31": "content             1      -      -     ",
       "32": "ret                 0      0      0     "
     },
-    "node": {
+    "backend": {
       "00": "set_ordered         0      0      1     ",
       "01": "table_open          0      1      6     # public.test (primary)",
       "02": "table_readi32       1      0      0     ",
@@ -1635,7 +1635,7 @@ select * from (select id from test group by id order by id desc limit 1 offset 3
 explain select * from (select id from test group by id order by id desc offset 1) t
 [{
   "bytecode": {
-    "main": {
+    "frontend": {
       "00": "send_all            0      0      -     # public.test",
       "01": "recv                0      0      0     ",
       "02": "bool                0      1      0     ",
@@ -1669,7 +1669,7 @@ explain select * from (select id from test group by id order by id desc offset 1
       "30": "content             1      -      -     ",
       "31": "ret                 0      0      0     "
     },
-    "node": {
+    "backend": {
       "00": "set_ordered         0      0      1     ",
       "01": "table_open          0      1      6     # public.test (primary)",
       "02": "table_readi32       1      0      0     ",
@@ -1695,7 +1695,7 @@ select * from (select id from test group by id order by id desc offset 3) t
 explain select data from test where data > 0 group by data having data >= 1 order by data
 [{
   "bytecode": {
-    "main": {
+    "frontend": {
       "00": "send_all            0      0      -     # public.test",
       "01": "recv                0      0      0     ",
       "02": "bool                0      1      0     ",
@@ -1720,7 +1720,7 @@ explain select data from test where data > 0 group by data having data >= 1 orde
       "21": "content             0      -      -     ",
       "22": "ret                 0      0      0     "
     },
-    "node": {
+    "backend": {
       "00": "set_ordered         0      0      1     ",
       "01": "table_open          0      1      10    # public.test (primary)",
       "02": "table_readi32       1      0      1     ",
@@ -1744,7 +1744,7 @@ select data from test where data > 0 group by data having data >= 1 order by dat
 explain select data from test where data > 0 group by data having data >= 1 order by data limit 1
 [{
   "bytecode": {
-    "main": {
+    "frontend": {
       "00": "send_all            0      0      -     # public.test",
       "01": "recv                0      0      0     ",
       "02": "bool                0      1      0     ",
@@ -1773,7 +1773,7 @@ explain select data from test where data > 0 group by data having data >= 1 orde
       "25": "content             0      -      -     ",
       "26": "ret                 0      0      0     "
     },
-    "node": {
+    "backend": {
       "00": "set_ordered         0      0      1     ",
       "01": "table_open          0      1      10    # public.test (primary)",
       "02": "table_readi32       1      0      1     ",
@@ -1797,7 +1797,7 @@ select data from test where data > 0 group by data having data >= 1 order by dat
 explain select data from test where data > 0 group by data having data >= 1 order by data limit 1 offset 1
 [{
   "bytecode": {
-    "main": {
+    "frontend": {
       "00": "send_all            0      0      -     # public.test",
       "01": "recv                0      0      0     ",
       "02": "bool                0      1      0     ",
@@ -1827,7 +1827,7 @@ explain select data from test where data > 0 group by data having data >= 1 orde
       "26": "content             0      -      -     ",
       "27": "ret                 0      0      0     "
     },
-    "node": {
+    "backend": {
       "00": "set_ordered         0      0      1     ",
       "01": "table_open          0      1      10    # public.test (primary)",
       "02": "table_readi32       1      0      1     ",
@@ -1851,7 +1851,7 @@ select data from test where data > 0 group by data having data >= 1 order by dat
 explain select data from test where data > 0 group by data having data >= 1 order by data offset 1
 [{
   "bytecode": {
-    "main": {
+    "frontend": {
       "00": "send_all            0      0      -     # public.test",
       "01": "recv                0      0      0     ",
       "02": "bool                0      1      0     ",
@@ -1880,7 +1880,7 @@ explain select data from test where data > 0 group by data having data >= 1 orde
       "25": "content             0      -      -     ",
       "26": "ret                 0      0      0     "
     },
-    "node": {
+    "backend": {
       "00": "set_ordered         0      0      1     ",
       "01": "table_open          0      1      10    # public.test (primary)",
       "02": "table_readi32       1      0      1     ",
@@ -1904,7 +1904,7 @@ select data from test where data > 0 group by data having data >= 1 order by dat
 explain select * from (select data from test where data > 0 group by data having data >= 1 order by data) t
 [{
   "bytecode": {
-    "main": {
+    "frontend": {
       "00": "send_all            0      0      -     # public.test",
       "01": "recv                0      0      0     ",
       "02": "bool                0      1      0     ",
@@ -1938,7 +1938,7 @@ explain select * from (select data from test where data > 0 group by data having
       "30": "content             1      -      -     ",
       "31": "ret                 0      0      0     "
     },
-    "node": {
+    "backend": {
       "00": "set_ordered         0      0      1     ",
       "01": "table_open          0      1      10    # public.test (primary)",
       "02": "table_readi32       1      0      1     ",
@@ -1962,7 +1962,7 @@ select * from (select data from test where data > 0 group by data having data >=
 explain select * from (select data from test where data > 0 group by data having data >= 1 order by data limit 1) t
 [{
   "bytecode": {
-    "main": {
+    "frontend": {
       "00": "send_all            0      0      -     # public.test",
       "01": "recv                0      0      0     ",
       "02": "bool                0      1      0     ",
@@ -2000,7 +2000,7 @@ explain select * from (select data from test where data > 0 group by data having
       "34": "content             1      -      -     ",
       "35": "ret                 0      0      0     "
     },
-    "node": {
+    "backend": {
       "00": "set_ordered         0      0      1     ",
       "01": "table_open          0      1      10    # public.test (primary)",
       "02": "table_readi32       1      0      1     ",
@@ -2024,7 +2024,7 @@ select * from (select data from test where data > 0 group by data having data >=
 explain select * from (select data from test where data > 0 group by data having data >= 1 order by data desc limit 1) t
 [{
   "bytecode": {
-    "main": {
+    "frontend": {
       "00": "send_all            0      0      -     # public.test",
       "01": "recv                0      0      0     ",
       "02": "bool                0      1      0     ",
@@ -2062,7 +2062,7 @@ explain select * from (select data from test where data > 0 group by data having
       "34": "content             1      -      -     ",
       "35": "ret                 0      0      0     "
     },
-    "node": {
+    "backend": {
       "00": "set_ordered         0      0      1     ",
       "01": "table_open          0      1      10    # public.test (primary)",
       "02": "table_readi32       1      0      1     ",
@@ -2086,7 +2086,7 @@ select * from (select data from test where data > 0 group by data having data >=
 explain select * from (select data from test where data > 0 group by data having data >= 1 order by data limit 1 offset 1) t
 [{
   "bytecode": {
-    "main": {
+    "frontend": {
       "00": "send_all            0      0      -     # public.test",
       "01": "recv                0      0      0     ",
       "02": "bool                0      1      0     ",
@@ -2125,7 +2125,7 @@ explain select * from (select data from test where data > 0 group by data having
       "35": "content             1      -      -     ",
       "36": "ret                 0      0      0     "
     },
-    "node": {
+    "backend": {
       "00": "set_ordered         0      0      1     ",
       "01": "table_open          0      1      10    # public.test (primary)",
       "02": "table_readi32       1      0      1     ",
@@ -2149,7 +2149,7 @@ select * from (select data from test where data > 0 group by data having data >=
 explain select * from (select data from test where data > 0 group by data having data >= 1 order by data offset 1) t
 [{
   "bytecode": {
-    "main": {
+    "frontend": {
       "00": "send_all            0      0      -     # public.test",
       "01": "recv                0      0      0     ",
       "02": "bool                0      1      0     ",
@@ -2187,7 +2187,7 @@ explain select * from (select data from test where data > 0 group by data having
       "34": "content             1      -      -     ",
       "35": "ret                 0      0      0     "
     },
-    "node": {
+    "backend": {
       "00": "set_ordered         0      0      1     ",
       "01": "table_open          0      1      10    # public.test (primary)",
       "02": "table_readi32       1      0      1     ",
@@ -2214,7 +2214,7 @@ insert into test generate 10000
 explain select * from (select count(*), sum(2 * id) from test group by id) t
 [{
   "bytecode": {
-    "main": {
+    "frontend": {
       "00": "send_all            0      0      -     # public.test",
       "01": "recv                0      0      0     ",
       "02": "bool                0      1      0     ",
@@ -2245,7 +2245,7 @@ explain select * from (select count(*), sum(2 * id) from test group by id) t
       "27": "content             1      -      -     ",
       "28": "ret                 0      0      0     "
     },
-    "node": {
+    "backend": {
       "00": "set_ordered         0      2      1     ",
       "01": "table_open          0      1      13    # public.test (primary)",
       "02": "table_readi64       1      0      0     ",
@@ -2277,7 +2277,7 @@ select * from (select count(*), sum(2 * id) from test group by id) t
 explain select count(*) from (select count(*) from test group by id) t
 [{
   "bytecode": {
-    "main": {
+    "frontend": {
       "00": "send_all            0      0      -     # public.test",
       "01": "recv                0      0      0     ",
       "02": "bool                0      1      0     ",
@@ -2320,7 +2320,7 @@ explain select count(*) from (select count(*) from test group by id) t
       "39": "content             1      -      -     ",
       "40": "ret                 0      0      0     "
     },
-    "node": {
+    "backend": {
       "00": "set_ordered         0      1      1     ",
       "01": "table_open          0      1      9     # public.test (primary)",
       "02": "table_readi64       1      0      0     ",

@@ -27,11 +27,11 @@
 // index
 #include "db/table_index.h"
 
-// node
-#include "db/node_config.h"
-#include "db/node.h"
-#include "db/node_op.h"
-#include "db/node_mgr.h"
+// worker
+#include "db/worker_config.h"
+#include "db/worker.h"
+#include "db/worker_op.h"
+#include "db/worker_mgr.h"
 
 // db
 #include "db/db.h"

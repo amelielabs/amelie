@@ -28,8 +28,8 @@ select system.repl()
 # test: replication()
 select system.replication()
 
-# test: compute()
-select system.compute()::size
+# test: workers()
+select system.workers()::size
 
 # test: schemas()
 select system.schemas()

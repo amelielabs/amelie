@@ -38,8 +38,8 @@
 #include <amelie_parser.h>
 #include <amelie_planner.h>
 #include <amelie_compiler.h>
-#include <amelie_host.h>
-#include <amelie_compute.h>
+#include <amelie_frontend.h>
+#include <amelie_backend.h>
 #include <amelie_session.h>
 #include <amelie_system.h>
 
@@ -69,28 +69,28 @@ system_create(void)
 	user_mgr_init(&self->user_mgr);
 	server_init(&self->server);
 
-	// compute_mgr
-	host_mgr_init(&self->host_mgr);
-	compute_mgr_init(&self->compute_mgr, &self->db, &self->function_mgr);
-	executor_init(&self->executor, &self->db, &self->compute_mgr.router);
+	// frontend/backend mgr
+	frontend_mgr_init(&self->frontend_mgr);
+	backend_mgr_init(&self->backend_mgr, &self->db, &self->function_mgr);
+	executor_init(&self->executor, &self->db, &self->backend_mgr.router);
 	rpc_queue_init(&self->lock_queue);
 
 	// vm
 	function_mgr_init(&self->function_mgr);
 
 	// db
-	db_init(&self->db, (PartMapper)compute_mgr_map, &self->compute_mgr,
-	        &compute_mgr_if, &self->compute_mgr);
+	db_init(&self->db, (PartMapper)backend_mgr_map, &self->backend_mgr,
+	        &backend_mgr_if, &self->backend_mgr);
 
 	// replication
 	repl_init(&self->repl, &self->db);
 
-	// prepare shared context (shared between hosts)
+	// prepare shared context (shared between frontends)
 	auto share = &self->share;
 	share->executor     = &self->executor;
 	share->repl         = &self->repl;
-	share->host_mgr     = &self->host_mgr;
-	share->compute_mgr  = &self->compute_mgr;
+	share->frontend_mgr = &self->frontend_mgr;
+	share->backend_mgr  = &self->backend_mgr;
 	share->function_mgr = &self->function_mgr;
 	share->user_mgr     = &self->user_mgr;
 	share->db           = &self->db;
@@ -103,7 +103,7 @@ system_free(System* self)
 	repl_free(&self->repl);
 	executor_free(&self->executor);
 	db_free(&self->db);
-	compute_mgr_free(&self->compute_mgr);
+	backend_mgr_free(&self->backend_mgr);
 	function_mgr_free(&self->function_mgr);
 	server_free(&self->server);
 	user_mgr_free(&self->user_mgr);
@@ -117,14 +117,14 @@ system_on_server_connect(Server* server, Client* client)
 	buf_write(buf, &client, sizeof(void**));
 	msg_end(buf);
 	System* self = server->on_connect_arg;
-	host_mgr_forward(&self->host_mgr, buf);
+	frontend_mgr_forward(&self->frontend_mgr, buf);
 }
 
 static void
-system_on_host_connect(Host* host, Client* client)
+system_on_frontend_connect(Frontend* frontend, Client* client)
 {
-	System* self = host->on_connect_arg;
-	auto session = session_create(client, host, &self->share);
+	System* self = frontend->on_connect_arg;
+	auto session = session_create(client, frontend, &self->share);
 	defer(session_free, session);
 	session_main(session);
 }
@@ -132,18 +132,18 @@ system_on_host_connect(Host* host, Client* client)
 static void
 system_recover(System* self)
 {
-	// ask each node to recover last checkpoint partitions in parallel
+	// ask each backend to recover last checkpoint partitions in parallel
 	info("recover (checkpoint %" PRIu64 ")",
 	     config_checkpoint());
 
 	Build build;
-	build_init(&build, BUILD_RECOVER, &self->compute_mgr, NULL, NULL, NULL, NULL);
+	build_init(&build, BUILD_RECOVER, &self->backend_mgr, NULL, NULL, NULL, NULL);
 	defer(build_free, &build);
 	build_run(&build);
 
 	// replay wals
 	Recover recover;
-	recover_init(&recover, &self->db, &build_if, &self->compute_mgr);
+	recover_init(&recover, &self->db, &build_if, &self->backend_mgr);
 	defer(recover_free, &recover);
 	recover_wal(&recover);
 
@@ -154,12 +154,12 @@ system_recover(System* self)
 static void
 system_bootstrap(System* self)
 {
-	// create compute nodes
-	compute_bootstrap(&self->db, var_int_of(&config()->nodes));
+	// create backend workers
+	backend_bootstrap(&self->db, var_int_of(&config()->backends));
 	config_lsn_set(1);
 
-	// create initial checkpoint, mostly to ensure that node
-	// information is persisted (if wal is disabled)
+	// create initial checkpoint, mostly to ensure that backend
+	// information is persisted
 	Checkpoint cp;
 	checkpoint_init(&cp, &self->db.checkpoint_mgr);
 	defer(checkpoint_free, &cp);
@@ -190,7 +190,7 @@ system_start(System* self, bool bootstrap)
 	// open user manager
 	user_mgr_open(&self->user_mgr);
 
-	// create system object and objects from last snapshot (including nodes)
+	// create system object and objects from last snapshot (including backends)
 	db_open(&self->db);
 
 	// do parallel recover of snapshots and wal
@@ -203,15 +203,15 @@ system_start(System* self, bool bootstrap)
 	// start checkpointer service
 	checkpointer_start(&self->db.checkpointer);
 
-	// start hosts
-	auto workers = var_int_of(&config()->hosts);
-	host_mgr_start(&self->host_mgr,
-	               system_on_host_connect,
-	               self,
-	               workers);
+	// start frontends
+	auto workers = var_int_of(&config()->frontends);
+	frontend_mgr_start(&self->frontend_mgr,
+	                   system_on_frontend_connect,
+	                   self,
+	                   workers);
 
 	// synchronize caches
-	host_mgr_sync_users(&self->host_mgr, &self->user_mgr.cache);
+	frontend_mgr_sync_users(&self->frontend_mgr, &self->user_mgr.cache);
 
 	// prepare replication manager
 	repl_open(&self->repl);
@@ -241,8 +241,8 @@ system_stop(System* self)
 	// stop replication
 	repl_stop(&self->repl);
 
-	// stop hosts
-	host_mgr_stop(&self->host_mgr);
+	// stop frontends
+	frontend_mgr_stop(&self->frontend_mgr);
 
 	// close db
 	auto fast = str_is_cstr(shutdown, "fast");
@@ -297,14 +297,14 @@ system_lock(System* self, Rpc* rpc)
 		rpc_queue_add(&self->lock_queue, rpc);
 	} else
 	{
-		// request exclusive lock for each host worker
-		host_mgr_lock(&self->host_mgr);
+		// request exclusive lock for each frontend worker
+		frontend_mgr_lock(&self->frontend_mgr);
 
-		// sync to make last operation completed on nodes
+		// sync to make last operation completed on backends
 		//
 		// even with exclusive lock, there is a chance that
-		// last abort did not not finished yet on nodes
-		compute_mgr_sync(&self->compute_mgr);
+		// last abort did not not finished yet
+		backend_mgr_sync(&self->backend_mgr);
 
 		rpc_done(rpc);
 		self->lock = true;
@@ -315,12 +315,12 @@ static void
 system_unlock(System* self, Rpc* rpc)
 {
 	assert(self->lock);
-	host_mgr_unlock(&self->host_mgr);
+	frontend_mgr_unlock(&self->frontend_mgr);
 
 	auto pending = rpc_queue_pop(&self->lock_queue);
 	if (pending)
 	{
-		host_mgr_lock(&self->host_mgr);
+		frontend_mgr_lock(&self->frontend_mgr);
 		rpc_done(pending);
 	} else {
 		self->lock = false;

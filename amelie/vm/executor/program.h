@@ -16,7 +16,7 @@ typedef struct Program Program;
 struct Program
 {
 	Code*     code;
-	Code*     code_node;
+	Code*     code_backend;
 	CodeData* code_data;
 	int       stmts;
 	int       stmts_last;

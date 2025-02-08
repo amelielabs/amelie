@@ -79,7 +79,6 @@ enum
 	KCREATE,
 	KCHECKPOINT,
 	KCASCADE,
-	KCOMPUTE,
 	KCOLUMN,
 
 	// d
@@ -150,7 +149,6 @@ enum
 	KNULL,
 	KNOT,
 	KNOTHING,
-	KNODE,
 
 	// o
 	KOR,
@@ -226,6 +224,7 @@ enum
 	KWITH,
 	KWATCH,
 	KWORKERS,
+	KWORKER,
 
 	// x
 	// y

@@ -11,6 +11,4 @@
 // AGPL-3.0 Licensed.
 //
 
-#include "host/lock_mgr.h"
-#include "host/host.h"
-#include "host/host_mgr.h"
+void backend_bootstrap(Db*, int);

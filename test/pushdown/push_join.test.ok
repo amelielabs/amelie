@@ -1,4 +1,4 @@
-open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "127.0.0.1", "port": 3485 }], "nodes": 3
+open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "127.0.0.1", "port": 3485 }], "backends": 3
 connect E0 S0 localhost:3485
 create shared table ref (id int primary key, data int default 0)
 insert into ref (id) values (1), (2), (3)
@@ -8,7 +8,7 @@ insert into test (id) values (1), (2), (3)
 explain select test.*, ref.* from test, ref
 [{
   "bytecode": {
-    "main": {
+    "frontend": {
       "00": "send_all            0      0      -     # public.test",
       "01": "recv                0      0      0     ",
       "02": "bool                0      0      0     ",
@@ -18,7 +18,7 @@ explain select test.*, ref.* from test, ref
       "06": "content             0      -      -     ",
       "07": "ret                 0      0      0     "
     },
-    "node": {
+    "backend": {
       "00": "set                 0      4      0     ",
       "01": "table_open          0      0      15    # public.test (primary)",
       "02": "table_open          1      20     13    # public.ref (primary)",
@@ -46,7 +46,7 @@ select test.*, ref.* from test, ref
 explain select test.*, ref.* from ref, test
 [{
   "bytecode": {
-    "main": {
+    "frontend": {
       "00": "send_all            0      0      -     # public.test",
       "01": "recv                0      0      0     ",
       "02": "bool                0      0      0     ",
@@ -56,7 +56,7 @@ explain select test.*, ref.* from ref, test
       "06": "content             0      -      -     ",
       "07": "ret                 0      0      0     "
     },
-    "node": {
+    "backend": {
       "00": "set                 0      4      0     ",
       "01": "table_open          0      0      15    # public.ref (primary)",
       "02": "table_open          1      19     13    # public.test (primary)",
@@ -89,7 +89,7 @@ select t.* from test, test t
 explain select test.id, ref.id from test join ref on true
 [{
   "bytecode": {
-    "main": {
+    "frontend": {
       "00": "send_all            0      0      -     # public.test",
       "01": "recv                0      0      0     ",
       "02": "bool                0      0      0     ",
@@ -99,7 +99,7 @@ explain select test.id, ref.id from test join ref on true
       "06": "content             0      -      -     ",
       "07": "ret                 0      0      0     "
     },
-    "node": {
+    "backend": {
       "00": "set                 0      2      0     ",
       "01": "table_open          0      0      13    # public.test (primary)",
       "02": "table_open          1      20     11    # public.ref (primary)",
@@ -125,7 +125,7 @@ select test.id, ref.id from test join ref on true
 explain select test.id, ref.id from test join ref on test.id = ref.id
 [{
   "bytecode": {
-    "main": {
+    "frontend": {
       "00": "send_all            0      0      -     # public.test",
       "01": "recv                0      0      0     ",
       "02": "bool                0      0      0     ",
@@ -135,7 +135,7 @@ explain select test.id, ref.id from test join ref on test.id = ref.id
       "06": "content             0      -      -     ",
       "07": "ret                 0      0      0     "
     },
-    "node": {
+    "backend": {
       "00": "set                 0      2      0     ",
       "01": "table_open          0      0      16    # public.test (primary)",
       "02": "table_readi32       1      0      0     ",
@@ -164,7 +164,7 @@ select test.id, ref.id from test join ref on test.id = ref.id
 explain select test.id, ref.id from test join ref on test.id = ref.id join ref ref2 on test.id = ref2.id
 [{
   "bytecode": {
-    "main": {
+    "frontend": {
       "00": "send_all            0      0      -     # public.test",
       "01": "recv                0      0      0     ",
       "02": "bool                0      0      0     ",
@@ -174,7 +174,7 @@ explain select test.id, ref.id from test join ref on test.id = ref.id join ref r
       "06": "content             0      -      -     ",
       "07": "ret                 0      0      0     "
     },
-    "node": {
+    "backend": {
       "00": "set                 0      2      0     ",
       "01": "table_open          0      0      24    # public.test (primary)",
       "02": "table_readi32       1      0      0     ",
@@ -211,7 +211,7 @@ select test.id, ref.id from test join ref on test.id = ref.id join ref ref2 on t
 explain select test.id, ref.id from test join ref on test.id = ref.id join ref ref2 on test.id = ref2.id where test.id > 0
 [{
   "bytecode": {
-    "main": {
+    "frontend": {
       "00": "send_all            0      0      -     # public.test",
       "01": "recv                0      0      0     ",
       "02": "bool                0      0      0     ",
@@ -221,7 +221,7 @@ explain select test.id, ref.id from test join ref on test.id = ref.id join ref r
       "06": "content             0      -      -     ",
       "07": "ret                 0      0      0     "
     },
-    "node": {
+    "backend": {
       "00": "set                 0      2      0     ",
       "01": "int                 1      -      0     # 0",
       "02": "push                1      0      0     ",
@@ -264,7 +264,7 @@ select test.id, ref.id from test join ref on test.id = ref.id join ref ref2 on t
 explain select test.id, ref.id from test, ref where test.id = ref.id
 [{
   "bytecode": {
-    "main": {
+    "frontend": {
       "00": "send_all            0      0      -     # public.test",
       "01": "recv                0      0      0     ",
       "02": "bool                0      0      0     ",
@@ -274,7 +274,7 @@ explain select test.id, ref.id from test, ref where test.id = ref.id
       "06": "content             0      -      -     ",
       "07": "ret                 0      0      0     "
     },
-    "node": {
+    "backend": {
       "00": "set                 0      2      0     ",
       "01": "table_open          0      0      16    # public.test (primary)",
       "02": "table_readi32       1      0      0     ",
@@ -302,7 +302,7 @@ select test.id, ref.id from test, ref where test.id = ref.id
 explain select test.id, ref.id from test, ref where ref.id = test.id
 [{
   "bytecode": {
-    "main": {
+    "frontend": {
       "00": "send_all            0      0      -     # public.test",
       "01": "recv                0      0      0     ",
       "02": "bool                0      0      0     ",
@@ -312,7 +312,7 @@ explain select test.id, ref.id from test, ref where ref.id = test.id
       "06": "content             0      -      -     ",
       "07": "ret                 0      0      0     "
     },
-    "node": {
+    "backend": {
       "00": "set                 0      2      0     ",
       "01": "table_open          0      0      16    # public.test (primary)",
       "02": "table_readi32       1      0      0     ",
@@ -340,7 +340,7 @@ select test.id, ref.id from test, ref where ref.id = test.id
 explain select test.id, ref.id from test, ref where ref.id = 1
 [{
   "bytecode": {
-    "main": {
+    "frontend": {
       "00": "send_all            0      0      -     # public.test",
       "01": "recv                0      0      0     ",
       "02": "bool                0      0      0     ",
@@ -350,7 +350,7 @@ explain select test.id, ref.id from test, ref where ref.id = 1
       "06": "content             0      -      -     ",
       "07": "ret                 0      0      0     "
     },
-    "node": {
+    "backend": {
       "00": "set                 0      2      0     ",
       "01": "table_open          0      0      16    # public.test (primary)",
       "02": "int                 1      -      0     # 1",
@@ -378,7 +378,7 @@ select test.id, ref.id from test, ref where ref.id = 1
 explain select test.id, ref.id from test, ref where ref.id = 1 and test.id = 1
 [{
   "bytecode": {
-    "main": {
+    "frontend": {
       "00": "send_lookup         0      0      -     # public.test",
       "01": "recv                0      0      0     ",
       "02": "bool                0      0      0     ",
@@ -388,7 +388,7 @@ explain select test.id, ref.id from test, ref where ref.id = 1 and test.id = 1
       "06": "content             0      -      -     ",
       "07": "ret                 0      0      0     "
     },
-    "node": {
+    "backend": {
       "00": "set                 0      2      0     ",
       "01": "int                 1      -      0     # 1",
       "02": "push                1      0      0     ",
@@ -421,7 +421,7 @@ select test.id, ref.id from test, ref where ref.id = 1 and test.id = 1
 explain select test.id, ref.id from test, ref where ref.id >= test.id
 [{
   "bytecode": {
-    "main": {
+    "frontend": {
       "00": "send_all            0      0      -     # public.test",
       "01": "recv                0      0      0     ",
       "02": "bool                0      0      0     ",
@@ -431,7 +431,7 @@ explain select test.id, ref.id from test, ref where ref.id >= test.id
       "06": "content             0      -      -     ",
       "07": "ret                 0      0      0     "
     },
-    "node": {
+    "backend": {
       "00": "set                 0      2      0     ",
       "01": "table_open          0      0      17    # public.test (primary)",
       "02": "table_readi32       1      0      0     ",
@@ -469,7 +469,7 @@ explain select test.id, ref.id from test join ref using(id
 explain select test.id, ref.id from test join ref using(id)
 [{
   "bytecode": {
-    "main": {
+    "frontend": {
       "00": "send_all            0      0      -     # public.test",
       "01": "recv                0      0      0     ",
       "02": "bool                0      0      0     ",
@@ -479,7 +479,7 @@ explain select test.id, ref.id from test join ref using(id)
       "06": "content             0      -      -     ",
       "07": "ret                 0      0      0     "
     },
-    "node": {
+    "backend": {
       "00": "set                 0      2      0     ",
       "01": "table_open          0      0      16    # public.test (primary)",
       "02": "table_readi32       1      0      0     ",
@@ -511,7 +511,7 @@ select test.id, ref.id from test join ref using(unknown)
 explain select test.id, ref.id from test join ref using (id) join ref ref2 using (id) where test.id > 0
 [{
   "bytecode": {
-    "main": {
+    "frontend": {
       "00": "send_all            0      0      -     # public.test",
       "01": "recv                0      0      0     ",
       "02": "bool                0      0      0     ",
@@ -521,7 +521,7 @@ explain select test.id, ref.id from test join ref using (id) join ref ref2 using
       "06": "content             0      -      -     ",
       "07": "ret                 0      0      0     "
     },
-    "node": {
+    "backend": {
       "00": "set                 0      2      0     ",
       "01": "int                 1      -      0     # 0",
       "02": "push                1      0      0     ",
@@ -566,7 +566,7 @@ select test.id, ref.id from test join ref using (id) join ref ref2 using (id2) w
 explain with a as (select * from test) select * from test, a where test.id = a.id
 [{
   "bytecode": {
-    "main": {
+    "frontend": {
       "00": "send_all            0      0      -     # public.test",
       "01": "recv                0      0      0     ",
       "02": "bool                0      0      0     ",
@@ -582,7 +582,7 @@ explain with a as (select * from test) select * from test, a where test.id = a.i
       "12": "content             1      -      -     ",
       "13": "ret                 0      0      0     "
     },
-    "node": {
+    "backend": {
       "00": "set                 0      2      0     ",
       "01": "table_open          0      0      8     # public.test (primary)",
       "02": "table_readi32       1      0      0     ",
@@ -626,7 +626,7 @@ with a as (select * from test) select * from test, a where test.id = a.id
 explain with a as (select * from test) select * from test, a where test.id = 1
 [{
   "bytecode": {
-    "main": {
+    "frontend": {
       "00": "send_all            0      0      -     # public.test",
       "01": "recv                0      0      0     ",
       "02": "bool                0      0      0     ",
@@ -642,7 +642,7 @@ explain with a as (select * from test) select * from test, a where test.id = 1
       "12": "content             1      -      -     ",
       "13": "ret                 0      0      0     "
     },
-    "node": {
+    "backend": {
       "00": "set                 0      2      0     ",
       "01": "table_open          0      0      8     # public.test (primary)",
       "02": "table_readi32       1      0      0     ",
@@ -687,7 +687,7 @@ with a as (select * from test) select * from test, a where test.id = 1
 explain with a as (select * from test) select * from a, test where test.id = a.id
 [{
   "bytecode": {
-    "main": {
+    "frontend": {
       "00": "send_all            0      0      -     # public.test",
       "01": "recv                0      0      0     ",
       "02": "bool                0      0      0     ",
@@ -703,7 +703,7 @@ explain with a as (select * from test) select * from a, test where test.id = a.i
       "12": "content             1      -      -     ",
       "13": "ret                 0      0      0     "
     },
-    "node": {
+    "backend": {
       "00": "set                 0      2      0     ",
       "01": "table_open          0      0      8     # public.test (primary)",
       "02": "table_readi32       1      0      0     ",
@@ -748,7 +748,7 @@ with a as (select * from test) select * from a, test where test.id = a.id
 explain with a as (select * from test) select * from a, test where test.id = 1
 [{
   "bytecode": {
-    "main": {
+    "frontend": {
       "00": "send_all            0      0      -     # public.test",
       "01": "recv                0      0      0     ",
       "02": "bool                0      0      0     ",
@@ -764,7 +764,7 @@ explain with a as (select * from test) select * from a, test where test.id = 1
       "12": "content             1      -      -     ",
       "13": "ret                 0      0      0     "
     },
-    "node": {
+    "backend": {
       "00": "set                 0      2      0     ",
       "01": "table_open          0      0      8     # public.test (primary)",
       "02": "table_readi32       1      0      0     ",
@@ -819,7 +819,7 @@ select ref.id from test join ref on (test.id = ref.id) group by id
 explain select ref.id from test join ref on (test.id = ref.id) group by ref.id
 [{
   "bytecode": {
-    "main": {
+    "frontend": {
       "00": "send_all            0      0      -     # public.test",
       "01": "recv                0      0      0     ",
       "02": "bool                0      1      0     ",
@@ -837,7 +837,7 @@ explain select ref.id from test join ref on (test.id = ref.id) group by ref.id
       "14": "content             0      -      -     ",
       "15": "ret                 0      0      0     "
     },
-    "node": {
+    "backend": {
       "00": "set_ordered         0      0      1     ",
       "01": "table_open          0      1      14    # public.test (primary)",
       "02": "table_readi32       1      0      0     ",

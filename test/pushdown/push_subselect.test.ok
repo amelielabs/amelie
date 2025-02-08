@@ -1,4 +1,4 @@
-open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "127.0.0.1", "port": 3485 }], "nodes": 3
+open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "127.0.0.1", "port": 3485 }], "backends": 3
 connect E0 S0 localhost:3485
 create table test (id int primary key, data int default 0)
 insert into test (id) values (1), (2), (3)
@@ -24,7 +24,7 @@ drop table test2
 explain select * from (select * from test) t
 [{
   "bytecode": {
-    "main": {
+    "frontend": {
       "00": "send_all            0      0      -     # public.test",
       "01": "recv                0      0      0     ",
       "02": "bool                0      0      0     ",
@@ -45,7 +45,7 @@ explain select * from (select * from test) t
       "17": "content             1      -      -     ",
       "18": "ret                 0      0      0     "
     },
-    "node": {
+    "backend": {
       "00": "set                 0      2      0     ",
       "01": "table_open          0      0      8     # public.test (primary)",
       "02": "table_readi32       1      0      0     ",
@@ -68,7 +68,7 @@ insert into test2 (id) values (1), (2), (3)
 explain select * from (select (select id from test2) from test) t
 [{
   "bytecode": {
-    "main": {
+    "frontend": {
       "00": "send_all            0      0      -     # public.test",
       "01": "recv                0      0      0     ",
       "02": "bool                0      0      0     ",
@@ -87,7 +87,7 @@ explain select * from (select (select id from test2) from test) t
       "15": "content             1      -      -     ",
       "16": "ret                 0      0      0     "
     },
-    "node": {
+    "backend": {
       "00": "set                 0      1      0     ",
       "01": "table_open          1      0      13    # public.test (primary)",
       "02": "set                 1      1      0     ",
@@ -126,7 +126,7 @@ insert into test2 (id) values (1), (2), (3)
 explain select (select t.id from test2) from (select * from test) t
 [{
   "bytecode": {
-    "main": {
+    "frontend": {
       "00": "send_all            0      0      -     # public.test",
       "01": "recv                0      0      0     ",
       "02": "bool                0      0      0     ",
@@ -139,7 +139,7 @@ explain select (select t.id from test2) from (select * from test) t
       "09": "content             1      -      -     ",
       "10": "ret                 0      0      0     "
     },
-    "node": {
+    "backend": {
       "00": "set                 0      2      0     ",
       "01": "table_open          0      0      8     # public.test (primary)",
       "02": "table_readi32       1      0      0     ",
@@ -185,7 +185,7 @@ select * from (select * from test) a, (select * from test) b
 explain select * from (select * from test) a, (select * from test) b
 [{
   "bytecode": {
-    "main": {
+    "frontend": {
       "00": "send_all            0      0      -     # public.test",
       "01": "send_all            1      11     -     # public.test",
       "02": "recv                0      0      0     ",
@@ -220,7 +220,7 @@ explain select * from (select * from test) a, (select * from test) b
       "31": "content             2      -      -     ",
       "32": "ret                 0      0      0     "
     },
-    "node": {
+    "backend": {
       "00": "set                 0      2      0     ",
       "01": "table_open          0      0      8     # public.test (primary)",
       "02": "table_readi32       1      0      0     ",

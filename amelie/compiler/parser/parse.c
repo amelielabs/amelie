@@ -227,7 +227,7 @@ parse_stmt(Parser* self, Stmt* stmt)
 			stmt_push(stmt, next);
 		}
 
-		// CREATE USER | TOKEN | REPLICA | SCHEMA | TABLE | INDEX
+		// CREATE USER | TOKEN | REPLICA | WORKER | SCHEMA | TABLE | INDEX
 		if (lex_if(lex, KUSER))
 		{
 			stmt->id = STMT_CREATE_USER;
@@ -242,6 +242,11 @@ parse_stmt(Parser* self, Stmt* stmt)
 		{
 			stmt->id = STMT_CREATE_REPLICA;
 			parse_replica_create(stmt);
+		} else
+		if (lex_if(lex, KWORKER))
+		{
+			stmt->id = STMT_CREATE_WORKER;
+			parse_worker_create(stmt);
 		} else
 		if (lex_if(lex, KSCHEMA))
 		{
@@ -258,14 +263,14 @@ parse_stmt(Parser* self, Stmt* stmt)
 			stmt->id = STMT_CREATE_INDEX;
 			parse_index_create(stmt, unique);
 		} else {
-			stmt_error(stmt, NULL, "'USER|REPLICA|SCHEMA|TABLE|INDEX' expected");
+			stmt_error(stmt, NULL, "'USER|REPLICA|WORKER|SCHEMA|TABLE|INDEX' expected");
 		}
 		break;
 	}
 
 	case KDROP:
 	{
-		// DROP USER | REPLICA | SCHEMA | TABLE | INDEX
+		// DROP USER | REPLICA | WORKER | SCHEMA | TABLE | INDEX
 		if (lex_if(lex, KUSER))
 		{
 			stmt->id = STMT_DROP_USER;
@@ -275,6 +280,11 @@ parse_stmt(Parser* self, Stmt* stmt)
 		{
 			stmt->id = STMT_DROP_REPLICA;
 			parse_replica_drop(stmt);
+		} else
+		if (lex_if(lex, KWORKER))
+		{
+			stmt->id = STMT_DROP_WORKER;
+			parse_worker_drop(stmt);
 		} else
 		if (lex_if(lex, KSCHEMA))
 		{
@@ -291,7 +301,7 @@ parse_stmt(Parser* self, Stmt* stmt)
 			stmt->id = STMT_DROP_INDEX;
 			parse_index_drop(stmt);
 		} else {
-			stmt_error(stmt, NULL, "'USER|REPLICA|SCHEMA|TABLE|INDEX' expected");
+			stmt_error(stmt, NULL, "'USER|REPLICA|WORKER|SCHEMA|TABLE|INDEX' expected");
 		}
 		break;
 	}
@@ -318,16 +328,12 @@ parse_stmt(Parser* self, Stmt* stmt)
 		{
 			stmt->id = STMT_ALTER_INDEX;
 			parse_index_alter(stmt);
-		} else
-		if (lex_if(lex, KCOMPUTE))
-		{
-			stmt->id = STMT_ALTER_COMPUTE;
-			parse_compute_alter(stmt);
 		} else {
-			stmt_error(stmt, NULL, "'USER|SCHEMA|TABLE|INDEX|COMPUTE' expected");
+			stmt_error(stmt, NULL, "'USER|SCHEMA|TABLE|INDEX' expected");
 		}
 		break;
 	}
+
 	case KTRUNCATE:
 	{
 		stmt->id = STMT_TRUNCATE;

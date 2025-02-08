@@ -1,0 +1,215 @@
+open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "127.0.0.1", "port": 3480 }], "backends": 0
+connect E0 S0 localhost:3480
+# test: bootstrap (no backends)
+show workers
+[]
+# test: ddl (without backends)
+create table test (id int primary key)
+{"msg": "system has no backend workers"}
+create shared table test (id int primary key)
+{"msg": "system has no backend workers"}
+select * from test
+{"msg": "select * from ❰test❱ ⟵ relation not found"}
+# test: create worker
+create worker ""
+{"msg": "failed to parse uuid"}
+create worker add "00000000-0000-0000-0000-000000000000"
+{"msg": "create worker ❰add❱ ⟵ ; expected"}
+create worker "00000000-0000-0000-0000-000000000000"
+show workers
+[{
+  "id": "00000000-0000-0000-0000-000000000000",
+  "type": "backend"
+}]
+# test: create worker (already exists)
+create worker "00000000-0000-0000-0000-000000000000"
+{"msg": "worker '00000000-0000-0000-0000-000000000000': already exists"}
+show workers
+[{
+  "id": "00000000-0000-0000-0000-000000000000",
+  "type": "backend"
+}]
+# test: create worker if not exists
+create worker if not exists "00000000-0000-0000-0000-000000000000"
+show workers
+[{
+  "id": "00000000-0000-0000-0000-000000000000",
+  "type": "backend"
+}]
+# test: ddl/dml (with one backend)
+create table test1 (id int primary key)
+create shared table test2 (id int primary key)
+show tables
+[{
+  "schema": "public",
+  "name": "test1",
+  "shared": false,
+  "unlogged": false
+}, {
+  "schema": "public",
+  "name": "test2",
+  "shared": true,
+  "unlogged": false
+}]
+insert into test1 values (1), (2), (3); insert into test2 values (4),(5),(6)
+select * from test1
+[1, 2, 3]
+select * from test2
+[4, 5, 6]
+# test: restart
+disconnect S0
+close E0
+open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "127.0.0.1", "port": 3480 }], "backends": 0
+connect E0 S0 localhost:3480
+show workers
+[{
+  "id": "00000000-0000-0000-0000-000000000000",
+  "type": "backend"
+}]
+select * from test1
+[1, 2, 3]
+select * from test2
+[4, 5, 6]
+# test: drop worker (with dependency)
+drop worker
+{"msg": "drop worker ⟵ string expected"}
+drop worker "00000000-0000-0000-0000-000000000000"
+{"msg": "worker '00000000-0000-0000-0000-000000000000': has dependencies"}
+# test: drop worker without dependency
+create worker "00000000-0000-0000-0000-000000000001"
+create worker "00000000-0000-0000-0000-000000000002"
+show workers
+[{
+  "id": "00000000-0000-0000-0000-000000000000",
+  "type": "backend"
+}, {
+  "id": "00000000-0000-0000-0000-000000000001",
+  "type": "backend"
+}, {
+  "id": "00000000-0000-0000-0000-000000000002",
+  "type": "backend"
+}]
+drop worker "00000000-0000-0000-0000-000000000001"
+show workers
+[{
+  "id": "00000000-0000-0000-0000-000000000000",
+  "type": "backend"
+}, {
+  "id": "00000000-0000-0000-0000-000000000002",
+  "type": "backend"
+}]
+# test: drop worker (not exists)
+drop worker "00000000-0000-0000-0000-000000000001"
+{"msg": "worker '00000000-0000-0000-0000-000000000001': not exists"}
+# test: drop worker if exists
+drop worker if exists "00000000-0000-0000-0000-000000000001"
+# test: ddl (two backends partitioning)
+create table test3 (id int primary key)
+show tables
+[{
+  "schema": "public",
+  "name": "test1",
+  "shared": false,
+  "unlogged": false
+}, {
+  "schema": "public",
+  "name": "test2",
+  "shared": true,
+  "unlogged": false
+}, {
+  "schema": "public",
+  "name": "test3",
+  "shared": false,
+  "unlogged": false
+}]
+# test: drop worker (after table drop)
+drop worker "00000000-0000-0000-0000-000000000002"
+{"msg": "worker '00000000-0000-0000-0000-000000000002': has dependencies"}
+drop table test3
+drop worker "00000000-0000-0000-0000-000000000002"
+show workers
+[{
+  "id": "00000000-0000-0000-0000-000000000000",
+  "type": "backend"
+}]
+# test: create table/create worker/select
+create table test4(id int primary key)
+insert into test4 values (1), (2), (3)
+create worker "00000000-0000-0000-0000-000000000003"
+create worker "00000000-0000-0000-0000-000000000004"
+select * from test4
+[1, 2, 3]
+drop table test4
+# test: create table/create worker/add column
+show workers
+[{
+  "id": "00000000-0000-0000-0000-000000000000",
+  "type": "backend"
+}, {
+  "id": "00000000-0000-0000-0000-000000000003",
+  "type": "backend"
+}, {
+  "id": "00000000-0000-0000-0000-000000000004",
+  "type": "backend"
+}]
+create table test(id int primary key)
+show tables
+[{
+  "schema": "public",
+  "name": "test1",
+  "shared": false,
+  "unlogged": false
+}, {
+  "schema": "public",
+  "name": "test2",
+  "shared": true,
+  "unlogged": false
+}, {
+  "schema": "public",
+  "name": "test",
+  "shared": false,
+  "unlogged": false
+}]
+insert into test values (1), (2), (3)
+create worker "00000000-0000-0000-0000-000000000005"
+create worker "00000000-0000-0000-0000-000000000006"
+show workers
+[{
+  "id": "00000000-0000-0000-0000-000000000000",
+  "type": "backend"
+}, {
+  "id": "00000000-0000-0000-0000-000000000003",
+  "type": "backend"
+}, {
+  "id": "00000000-0000-0000-0000-000000000004",
+  "type": "backend"
+}, {
+  "id": "00000000-0000-0000-0000-000000000005",
+  "type": "backend"
+}, {
+  "id": "00000000-0000-0000-0000-000000000006",
+  "type": "backend"
+}]
+alter table test add column data int
+show tables
+[{
+  "schema": "public",
+  "name": "test1",
+  "shared": false,
+  "unlogged": false
+}, {
+  "schema": "public",
+  "name": "test2",
+  "shared": true,
+  "unlogged": false
+}, {
+  "schema": "public",
+  "name": "test",
+  "shared": false,
+  "unlogged": false
+}]
+select * from test
+[[1, null], [2, null], [3, null]]
+drop table test
+disconnect S0
+close E0

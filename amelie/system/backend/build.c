@@ -38,13 +38,13 @@
 #include <amelie_parser.h>
 #include <amelie_planner.h>
 #include <amelie_compiler.h>
-#include <amelie_host.h>
-#include <amelie_compute.h>
+#include <amelie_frontend.h>
+#include <amelie_backend.h>
 
 void
 build_init(Build*       self,
            BuildType    type,
-           ComputeMgr*  compute_mgr,
+           BackendMgr*  backend_mgr,
            Table*       table,
            Table*       table_new,
            Column*      column,
@@ -55,7 +55,7 @@ build_init(Build*       self,
 	self->table_new   = table_new;
 	self->column      = column;
 	self->index       = index;
-	self->compute_mgr = compute_mgr;
+	self->backend_mgr = backend_mgr;
 	channel_init(&self->channel);
 }
 
@@ -69,8 +69,8 @@ build_free(Build* self)
 static inline void
 build_run_first(Build* self)
 {
-	// ask first node to build related partition
-	auto route = router_first(&self->compute_mgr->router);
+	// ask first worker to build related partition
+	auto route = router_first(&self->backend_mgr->router);
 	auto buf = msg_create(RPC_BUILD);
 	buf_write(buf, &self, sizeof(Build**));
 	msg_end(buf);
@@ -88,20 +88,20 @@ build_run_first(Build* self)
 static inline void
 build_run_all(Build* self)
 {
-	// ask each node to build related partition
-	list_foreach(&self->compute_mgr->list)
+	// ask each worker to build related partition
+	list_foreach(&self->backend_mgr->list)
 	{
-		auto compute = list_at(Compute, link);
+		auto backend = list_at(Backend, link);
 		auto buf = msg_create(RPC_BUILD);
 		buf_write(buf, &self, sizeof(Build**));
 		msg_end(buf);
-		channel_write(&compute->task.channel, buf);
+		channel_write(&backend->task.channel, buf);
 	}
 
 	// wait for completion
 	Buf* error = NULL;
 	int  complete;
-	for (complete = 0; complete < self->compute_mgr->list_count;
+	for (complete = 0; complete < self->backend_mgr->list_count;
 	     complete++)
 	{
 		auto buf = channel_read(&self->channel, -1);
@@ -125,7 +125,7 @@ build_run(Build* self)
 {
 	channel_attach(&self->channel);
 
-	// run on first node (for shared table) or use whole compute_mgr
+	// run on first worker (for shared table) or all workers
 	if (self->table && self->table->config->shared)
 		build_run_first(self);
 	else
@@ -133,19 +133,19 @@ build_run(Build* self)
 }
 
 static void
-build_execute_op(Build* self, Uuid* node)
+build_execute_op(Build* self, Uuid* worker)
 {
 	switch (self->type) {
 	case BUILD_RECOVER:
-		// restore last checkpoint partitions related to the node
-		recover_checkpoint(self->compute_mgr->db, node);
+		// restore last checkpoint partitions related to the worker
+		recover_checkpoint(self->backend_mgr->db, worker);
 		break;
 	case BUILD_INDEX:
 	{
-		auto part = part_list_match(&self->table->part_list, node);
+		auto part = part_list_match(&self->table->part_list, worker);
 		if (! part)
 			break;
-		// build new index content for current node
+		// build new index content for current worker
 		auto config = self->table->config;
 		PartBuild pb;
 		part_build_init(&pb, PART_BUILD_INDEX, part, NULL, NULL,
@@ -156,12 +156,12 @@ build_execute_op(Build* self, Uuid* node)
 	}
 	case BUILD_COLUMN_ADD:
 	{
-		auto part = part_list_match(&self->table->part_list, node);
+		auto part = part_list_match(&self->table->part_list, worker);
 		if (! part)
 			break;
-		auto part_dest = part_list_match(&self->table_new->part_list, node);
+		auto part_dest = part_list_match(&self->table_new->part_list, worker);
 		assert(part_dest);
-		// build new table with new column for current node
+		// build new table with new column for current worker
 		auto config = self->table->config;
 		PartBuild pb;
 		part_build_init(&pb, PART_BUILD_COLUMN_ADD, part, part_dest, self->column,
@@ -172,12 +172,12 @@ build_execute_op(Build* self, Uuid* node)
 	}
 	case BUILD_COLUMN_DROP:
 	{
-		auto part = part_list_match(&self->table->part_list, node);
+		auto part = part_list_match(&self->table->part_list, worker);
 		if (! part)
 			break;
-		auto part_dest = part_list_match(&self->table_new->part_list, node);
+		auto part_dest = part_list_match(&self->table_new->part_list, worker);
 		assert(part_dest);
-		// build new table without column for current node
+		// build new table without column for current worker
 		auto config = self->table->config;
 		PartBuild pb;
 		part_build_init(&pb, PART_BUILD_COLUMN_DROP, part, part_dest, self->column,
@@ -192,10 +192,10 @@ build_execute_op(Build* self, Uuid* node)
 }
 
 void
-build_execute(Build* self, Uuid* node)
+build_execute(Build* self, Uuid* worker)
 {
 	Buf* buf;
-	if (error_catch( build_execute_op(self, node) ))
+	if (error_catch( build_execute_op(self, worker) ))
 	{
 		buf = msg_error(&am_self()->error);
 	} else
@@ -209,10 +209,10 @@ build_execute(Build* self, Uuid* node)
 static void
 build_if_index(Recover* self, Table* table, IndexConfig* index)
 {
-	// do parallel indexation per node
-	ComputeMgr* compute_mgr = self->iface_arg;
+	// do parallel indexation per worker
+	BackendMgr* backend_mgr = self->iface_arg;
 	Build build;
-	build_init(&build, BUILD_INDEX, compute_mgr, table, NULL, NULL, index);
+	build_init(&build, BUILD_INDEX, backend_mgr, table, NULL, NULL, index);
 	defer(build_free, &build);
 	build_run(&build);
 }
@@ -220,10 +220,10 @@ build_if_index(Recover* self, Table* table, IndexConfig* index)
 static void
 build_if_column_add(Recover* self, Table* table, Table* table_new, Column* column)
 {
-	// rebuild new table with new column in parallel per node
-	ComputeMgr* compute_mgr = self->iface_arg;
+	// rebuild new table with new column in parallel per worker
+	BackendMgr* backend_mgr = self->iface_arg;
 	Build build;
-	build_init(&build, BUILD_COLUMN_ADD, compute_mgr, table, table_new, column, NULL);
+	build_init(&build, BUILD_COLUMN_ADD, backend_mgr, table, table_new, column, NULL);
 	defer(build_free, &build);
 	build_run(&build);
 }
@@ -231,10 +231,10 @@ build_if_column_add(Recover* self, Table* table, Table* table_new, Column* colum
 static void
 build_if_column_drop(Recover* self, Table* table, Table* table_new, Column* column)
 {
-	// rebuild new table without column in parallel per node
-	ComputeMgr* compute_mgr = self->iface_arg;
+	// rebuild new table without column in parallel per worker
+	BackendMgr* backend_mgr = self->iface_arg;
 	Build build;
-	build_init(&build, BUILD_COLUMN_DROP, compute_mgr, table, table_new, column, NULL);
+	build_init(&build, BUILD_COLUMN_DROP, backend_mgr, table, table_new, column, NULL);
 	defer(build_free, &build);
 	build_run(&build);
 }

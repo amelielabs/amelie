@@ -52,8 +52,8 @@ parse_show_type(Str* name)
 	if (str_is(name, "replica", 7))
 		return SHOW_REPLICA;
 
-	if (str_is(name, "compute", 7))
-		return SHOW_COMPUTE;
+	if (str_is(name, "workers", 7))
+		return SHOW_WORKERS;
 
 	if (str_is(name, "repl", 4) ||
 	    str_is(name, "replication", 11))
@@ -142,10 +142,6 @@ parse_show(Stmt* self)
 		}
 		break;
 	}
-	case SHOW_COMPUTE:
-		// [POOL]
-		stmt_if(self, KPOOL);
-		break;
 	case SHOW_CONFIG:
 		stmt->name_ast = name;
 		stmt->name = name->string;

@@ -344,8 +344,8 @@ test_suite_open(TestSuite* self, char* arg)
 		"--shutdown=graceful",
 		"--wal_sync_on_rotate=false",
 		"--wal_sync_on_write=false",
-		"--hosts=1",
-		"--nodes=1"
+		"--frontends=1",
+		"--backends=1"
 	};
 
 	char options_test[1024];

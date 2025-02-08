@@ -25,7 +25,7 @@ select t.x from (select z.id as x from (select id from test) z) t
 explain select t.x from (select z.id as x from (select id from test) z) t
 [{
   "bytecode": {
-    "main": {
+    "frontend": {
       "00": "send_first          0      0      0     ",
       "01": "recv                0      0      0     ",
       "02": "bool                0      0      0     ",
@@ -53,7 +53,7 @@ explain select t.x from (select z.id as x from (select id from test) z) t
       "24": "content             2      -      -     ",
       "25": "ret                 0      0      0     "
     },
-    "node": {
+    "backend": {
       "00": "set                 0      1      0     ",
       "01": "table_open          0      0      6     # public.test (primary)",
       "02": "table_readi32       1      0      0     ",

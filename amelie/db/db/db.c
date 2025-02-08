@@ -27,12 +27,12 @@ void
 db_init(Db*        self,
         PartMapper mapper,
         void*      mapper_arg,
-        NodeIf*    node_iface,
-        void*      node_iface_arg)
+        WorkerIf*  worker_iface,
+        void*      worker_iface_arg)
 {
 	schema_mgr_init(&self->schema_mgr);
 	table_mgr_init(&self->table_mgr, mapper, mapper_arg);
-	node_mgr_init(&self->node_mgr, node_iface, node_iface_arg);
+	worker_mgr_init(&self->worker_mgr, worker_iface, worker_iface_arg);
 	checkpoint_mgr_init(&self->checkpoint_mgr, &db_checkpoint_if, self);
 	checkpointer_init(&self->checkpointer, &self->checkpoint_mgr);
 	wal_init(&self->wal);
@@ -42,7 +42,7 @@ void
 db_free(Db* self)
 {
 	table_mgr_free(&self->table_mgr);
-	node_mgr_free(&self->node_mgr);
+	worker_mgr_free(&self->worker_mgr);
 	schema_mgr_free(&self->schema_mgr);
 	checkpoint_mgr_free(&self->checkpoint_mgr);
 	wal_free(&self->wal);
@@ -104,8 +104,8 @@ db_close(Db* self, bool fast)
 	else
 		handle_mgr_init(&self->table_mgr.mgr);
 
-	// free nodes
-	node_mgr_free(&self->node_mgr);
+	// free workers
+	worker_mgr_free(&self->worker_mgr);
 }
 
 Buf*
@@ -169,13 +169,13 @@ db_state(Db* self)
 	encode_raw(buf, "uuid", 4);
 	encode_string(buf, &config()->uuid.string);
 
-	// hosts
-	encode_raw(buf, "hosts", 5);
-	encode_integer(buf, var_int_of(&config()->hosts));
+	// frontends
+	encode_raw(buf, "frontends", 9);
+	encode_integer(buf, var_int_of(&config()->frontends));
 
-	// nodes
-	encode_raw(buf, "nodes", 5);
-	encode_integer(buf, var_int_of(&config()->nodes));
+	// backends
+	encode_raw(buf, "backends", 8);
+	encode_integer(buf, var_int_of(&config()->backends));
 
 	// checkpoint
 	encode_raw(buf, "checkpoint", 10);

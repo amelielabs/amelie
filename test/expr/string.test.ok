@@ -6,7 +6,7 @@ select "hello world"
 explain select "hello world"
 [{
   "bytecode": {
-    "main": {
+    "frontend": {
       "00": "set                 0      1      0     ",
       "01": "string              1      0      0     # hello world",
       "02": "push                1      0      0     ",
@@ -50,7 +50,7 @@ select '1 hour' = '1 hours'
 explain select '1 hour' = '1 hours'
 [{
   "bytecode": {
-    "main": {
+    "frontend": {
       "00": "set                 0      1      0     ",
       "01": "string              1      0      0     # 1 hour",
       "02": "string              2      7      0     # 1 hours",
@@ -77,7 +77,7 @@ select '1 hour' <> '1 hours'
 explain select '1 hour' <> '1 hours'
 [{
   "bytecode": {
-    "main": {
+    "frontend": {
       "00": "set                 0      1      0     ",
       "01": "string              1      0      0     # 1 hour",
       "02": "string              2      7      0     # 1 hours",
@@ -105,7 +105,7 @@ select '1 hour' >= '1 hour'
 explain select '1 hour' >= '1 hour'
 [{
   "bytecode": {
-    "main": {
+    "frontend": {
       "00": "set                 0      1      0     ",
       "01": "string              1      0      0     # 1 hour",
       "02": "string              2      7      0     # 1 hour",
@@ -122,7 +122,7 @@ explain select '1 hour' >= '1 hour'
 explain select '1 hour' >= null
 [{
   "bytecode": {
-    "main": {
+    "frontend": {
       "00": "set                 0      1      0     ",
       "01": "string              1      0      0     # 1 hour",
       "02": "null                2      0      0     ",
@@ -146,7 +146,7 @@ select '1 hour' > '1 hour'
 explain select '1 hour' > '1 hour'
 [{
   "bytecode": {
-    "main": {
+    "frontend": {
       "00": "set                 0      1      0     ",
       "01": "string              1      0      0     # 1 hour",
       "02": "string              2      7      0     # 1 hour",
@@ -163,7 +163,7 @@ explain select '1 hour' > '1 hour'
 explain select '1 hour' > null
 [{
   "bytecode": {
-    "main": {
+    "frontend": {
       "00": "set                 0      1      0     ",
       "01": "string              1      0      0     # 1 hour",
       "02": "null                2      0      0     ",
@@ -187,7 +187,7 @@ select '1 hour' <= '1 hour'
 explain select '1 hour' <= '1 hour'
 [{
   "bytecode": {
-    "main": {
+    "frontend": {
       "00": "set                 0      1      0     ",
       "01": "string              1      0      0     # 1 hour",
       "02": "string              2      7      0     # 1 hour",
@@ -204,7 +204,7 @@ explain select '1 hour' <= '1 hour'
 explain select '1 hour' <= null
 [{
   "bytecode": {
-    "main": {
+    "frontend": {
       "00": "set                 0      1      0     ",
       "01": "string              1      0      0     # 1 hour",
       "02": "null                2      0      0     ",
@@ -228,7 +228,7 @@ select '1 hour' < '1 hour'
 explain select '1 hour' < '1 hour'
 [{
   "bytecode": {
-    "main": {
+    "frontend": {
       "00": "set                 0      1      0     ",
       "01": "string              1      0      0     # 1 hour",
       "02": "string              2      7      0     # 1 hour",
@@ -245,7 +245,7 @@ explain select '1 hour' < '1 hour'
 explain select '1 hour' < null
 [{
   "bytecode": {
-    "main": {
+    "frontend": {
       "00": "set                 0      1      0     ",
       "01": "string              1      0      0     # 1 hour",
       "02": "null                2      0      0     ",
@@ -267,7 +267,7 @@ select "hello " || "world"
 explain select "hello " || "world"
 [{
   "bytecode": {
-    "main": {
+    "frontend": {
       "00": "set                 0      1      0     ",
       "01": "string              1      0      0     # hello ",
       "02": "string              2      7      0     # world",
@@ -302,7 +302,7 @@ select 'abc' like 'abcc'
 explain select 'abc' like 'abc'
 [{
   "bytecode": {
-    "main": {
+    "frontend": {
       "00": "set                 0      1      0     ",
       "01": "string              1      0      0     # abc",
       "02": "string              2      4      0     # abc",

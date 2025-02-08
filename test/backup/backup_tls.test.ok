@@ -1,5 +1,5 @@
 # test: prepare server
-open E0 "uuid": "00000000-0000-0000-0000-000000000000", "tls_cert": "./tls/server.crt", "tls_key": "./tls/server.key", "listen": [{ "host": "127.0.0.1", "port": 3480, "tls": true }], "nodes": 3
+open E0 "uuid": "00000000-0000-0000-0000-000000000000", "tls_cert": "./tls/server.crt", "tls_key": "./tls/server.key", "listen": [{ "host": "127.0.0.1", "port": 3480, "tls": true }], "backends": 3
 connect_tls E0 S0 https://localhost:3480 ./tls/ca.crt
 create table test (id serial primary key)
 insert into test generate 500
@@ -35,7 +35,7 @@ show all
   "limit_send": 3145728,
   "limit_recv": 1048576,
   "limit_write": 0,
-  "hosts": 1,
+  "frontends": 1,
   "wal_size": 67108864,
   "wal_sync_on_rotate": false,
   "wal_sync_on_write": false,
@@ -48,8 +48,8 @@ show state
   "version": "0.1.0",
   "directory": "_output/E1",
   "uuid": "00000000-0000-0000-0000-000000000000",
-  "hosts": 1,
-  "nodes": 3,
+  "frontends": 1,
+  "backends": 3,
   "checkpoint": 1,
   "lsn": 3,
   "psn": 3,

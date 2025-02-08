@@ -206,7 +206,7 @@ select '1970-01-01 00:00:00'::timestamp = 0
 explain select '1970-01-01 00:00:00'::timestamp = 0
 [{
   "bytecode": {
-    "main": {
+    "frontend": {
       "00": "set                 0      1      0     ",
       "01": "string              1      0      0     # 1970-01-01 00:00:00",
       "02": "push                1      0      0     ",
@@ -231,7 +231,7 @@ select '1970-01-01 01:12:59.909090'::timestamp = '1970-01-01 01:12:59.909099'::t
 explain select '1970-01-01 01:12:59.909090'::timestamp = '1970-01-01 01:12:59.909099'::timestamp
 [{
   "bytecode": {
-    "main": {
+    "frontend": {
       "00": "set                 0      1      0     ",
       "01": "string              1      0      0     # 1970-01-01 01:12:59.909090",
       "02": "push                1      0      0     ",
@@ -254,7 +254,7 @@ select '1970-01-01 01:12:59.909090'::timestamp = null
 explain select '1970-01-01 01:12:59.909090'::timestamp = null
 [{
   "bytecode": {
-    "main": {
+    "frontend": {
       "00": "set                 0      1      0     ",
       "01": "string              1      0      0     # 1970-01-01 01:12:59.909090",
       "02": "push                1      0      0     ",
@@ -278,7 +278,7 @@ select '1970-01-01 00:00:00'::timestamp <> 0
 explain select '1970-01-01 00:00:00'::timestamp <> 0
 [{
   "bytecode": {
-    "main": {
+    "frontend": {
       "00": "set                 0      1      0     ",
       "01": "string              1      0      0     # 1970-01-01 00:00:00",
       "02": "push                1      0      0     ",
@@ -304,7 +304,7 @@ select '1970-01-01 01:12:59.909090'::timestamp <> '1970-01-01 01:12:59.909099'::
 explain select '1970-01-01 01:12:59.909090'::timestamp <> '1970-01-01 01:12:59.909099'::timestamp
 [{
   "bytecode": {
-    "main": {
+    "frontend": {
       "00": "set                 0      1      0     ",
       "01": "string              1      0      0     # 1970-01-01 01:12:59.909090",
       "02": "push                1      0      0     ",
@@ -328,7 +328,7 @@ select '1970-01-01 01:12:59.909090'::timestamp <> null
 explain select '1970-01-01 01:12:59.909090'::timestamp <> null
 [{
   "bytecode": {
-    "main": {
+    "frontend": {
       "00": "set                 0      1      0     ",
       "01": "string              1      0      0     # 1970-01-01 01:12:59.909090",
       "02": "push                1      0      0     ",
@@ -353,7 +353,7 @@ select '1970-01-01 00:00:00'::timestamp >= 0
 explain select '1970-01-01 00:00:00'::timestamp >= 0
 [{
   "bytecode": {
-    "main": {
+    "frontend": {
       "00": "set                 0      1      0     ",
       "01": "string              1      0      0     # 1970-01-01 00:00:00",
       "02": "push                1      0      0     ",
@@ -382,7 +382,7 @@ select '1970-01-01 01:12:59.909090'::timestamp >= '1970-01-01 01:12:59.909099'::
 explain select '1970-01-01 01:12:59.909090'::timestamp >= '1970-01-01 01:12:59.909099'::timestamp
 [{
   "bytecode": {
-    "main": {
+    "frontend": {
       "00": "set                 0      1      0     ",
       "01": "string              1      0      0     # 1970-01-01 01:12:59.909090",
       "02": "push                1      0      0     ",
@@ -417,7 +417,7 @@ select '1970-01-01 01:12:59.909090'::timestamp > '1970-01-01 01:12:59.909099'::t
 explain select '1970-01-01 01:12:59.909090'::timestamp > '1970-01-01 01:12:59.909099'::timestamp
 [{
   "bytecode": {
-    "main": {
+    "frontend": {
       "00": "set                 0      1      0     ",
       "01": "string              1      0      0     # 1970-01-01 01:12:59.909090",
       "02": "push                1      0      0     ",
@@ -452,7 +452,7 @@ select '1970-01-01 01:12:59.909090'::timestamp <= '1970-01-01 01:12:59.909099'::
 explain select '1970-01-01 01:12:59.909090'::timestamp <= '1970-01-01 01:12:59.909099'::timestamp
 [{
   "bytecode": {
-    "main": {
+    "frontend": {
       "00": "set                 0      1      0     ",
       "01": "string              1      0      0     # 1970-01-01 01:12:59.909090",
       "02": "push                1      0      0     ",
@@ -487,7 +487,7 @@ select '1970-01-01 01:12:59.909090'::timestamp < '1970-01-01 01:12:59.909099'::t
 explain select '1970-01-01 01:12:59.909090'::timestamp < '1970-01-01 01:12:59.909099'::timestamp
 [{
   "bytecode": {
-    "main": {
+    "frontend": {
       "00": "set                 0      1      0     ",
       "01": "string              1      0      0     # 1970-01-01 01:12:59.909090",
       "02": "push                1      0      0     ",
@@ -528,7 +528,7 @@ select '1970-01-01 00:00:00.000000'::timestamp + '1 year'::interval + '1 year'::
 explain select '1970-01-01 00:00:00.000000'::timestamp + '1 year'::interval + '1 year'::interval
 [{
   "bytecode": {
-    "main": {
+    "frontend": {
       "00": "set                 0      1      0     ",
       "01": "string              1      0      0     # 1970-01-01 00:00:00.000000",
       "02": "push                1      0      0     ",
@@ -573,7 +573,7 @@ select '1980-01-01 00:00:00.000000'::timestamp - '-1 year'::interval - '-1 year'
 explain select '1980-01-01 00:00:00.000000'::timestamp - '-1 year'::interval - '-1 year'::interval
 [{
   "bytecode": {
-    "main": {
+    "frontend": {
       "00": "set                 0      1      0     ",
       "01": "string              1      0      0     # 1980-01-01 00:00:00.000000",
       "02": "push                1      0      0     ",

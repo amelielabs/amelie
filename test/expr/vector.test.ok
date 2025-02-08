@@ -45,7 +45,7 @@ select [1.0, 1.1]::vector = []::vector
 explain select []::vector = []::vector
 [{
   "bytecode": {
-    "main": {
+    "frontend": {
       "00": "set                 0      1      0     ",
       "01": "json                1      0      0     ",
       "02": "push                1      0      0     ",
@@ -73,7 +73,7 @@ select vector [1.0, 1.1] = vector []
 explain select vector [] = vector []
 [{
   "bytecode": {
-    "main": {
+    "frontend": {
       "00": "set                 0      1      0     ",
       "01": "vector              1      0      0     ",
       "02": "vector              2      4      0     ",
@@ -92,7 +92,7 @@ select [1.0, 1.1]::vector = null
 explain select [1.0, 1.1]::vector = null
 [{
   "bytecode": {
-    "main": {
+    "frontend": {
       "00": "set                 0      1      0     ",
       "01": "json                1      0      0     ",
       "02": "push                1      0      0     ",
@@ -122,7 +122,7 @@ select [1.0, 1.1]::vector <> []::vector
 explain select []::vector <> []::vector
 [{
   "bytecode": {
-    "main": {
+    "frontend": {
       "00": "set                 0      1      0     ",
       "01": "json                1      0      0     ",
       "02": "push                1      0      0     ",
@@ -146,7 +146,7 @@ select [1.0, 1.1]::vector <> null
 explain select [1.0, 1.1]::vector <> null
 [{
   "bytecode": {
-    "main": {
+    "frontend": {
       "00": "set                 0      1      0     ",
       "01": "json                1      0      0     ",
       "02": "push                1      0      0     ",
@@ -175,7 +175,7 @@ select [1.0, 1.1]::vector >= [1.0]::vector
 explain select [1.0, 1.1]::vector >= [1.0]::vector
 [{
   "bytecode": {
-    "main": {
+    "frontend": {
       "00": "set                 0      1      0     ",
       "01": "json                1      0      0     ",
       "02": "push                1      0      0     ",
@@ -208,7 +208,7 @@ select [1.0, 1.1]::vector > [1.0]::vector
 explain select [1.0, 1.1]::vector > [1.0]::vector
 [{
   "bytecode": {
-    "main": {
+    "frontend": {
       "00": "set                 0      1      0     ",
       "01": "json                1      0      0     ",
       "02": "push                1      0      0     ",
@@ -241,7 +241,7 @@ select [1.0, 1.3]::vector <= [1.0, 1.2]::vector
 explain select [1.0, 1.3]::vector <= [1.0, 1.2]::vector
 [{
   "bytecode": {
-    "main": {
+    "frontend": {
       "00": "set                 0      1      0     ",
       "01": "json                1      0      0     ",
       "02": "push                1      0      0     ",
@@ -287,7 +287,7 @@ select [1.0, 2.1, 3]::vector + [1, 1]::vector
 explain select [1.0, 2.1, 3]::vector + [1, 1]::vector
 [{
   "bytecode": {
-    "main": {
+    "frontend": {
       "00": "set                 0      1      0     ",
       "01": "json                1      0      0     ",
       "02": "push                1      0      0     ",
@@ -318,7 +318,7 @@ select [1.0, 2.1, 3]::vector - [1, 1]::vector
 explain select [1.0, 2.1, 3]::vector - [1, 1]::vector
 [{
   "bytecode": {
-    "main": {
+    "frontend": {
       "00": "set                 0      1      0     ",
       "01": "json                1      0      0     ",
       "02": "push                1      0      0     ",
@@ -341,7 +341,7 @@ select [1.0, 2.1, 3]::vector - null
 explain select [1.0, 2.1, 3]::vector - null
 [{
   "bytecode": {
-    "main": {
+    "frontend": {
       "00": "set                 0      1      0     ",
       "01": "json                1      0      0     ",
       "02": "push                1      0      0     ",
@@ -367,7 +367,7 @@ select [1.0, 2.1, 3]::vector * [1.5, 1.5]::vector
 explain select [1.0, 2.1, 3]::vector * [1.5, 1.5]::vector
 [{
   "bytecode": {
-    "main": {
+    "frontend": {
       "00": "set                 0      1      0     ",
       "01": "json                1      0      0     ",
       "02": "push                1      0      0     ",
@@ -404,7 +404,7 @@ select [1.0, 1.1, 1.2]::vector[-10]
 explain select [1.0, 1.1, 1.2]::vector[-10]
 [{
   "bytecode": {
-    "main": {
+    "frontend": {
       "00": "set                 0      1      0     ",
       "01": "json                1      0      0     ",
       "02": "push                1      0      0     ",

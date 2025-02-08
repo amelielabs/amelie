@@ -11,9 +11,9 @@
 // AGPL-3.0 Licensed.
 //
 
-typedef struct ComputeMgr ComputeMgr;
+typedef struct BackendMgr BackendMgr;
 
-struct ComputeMgr
+struct BackendMgr
 {
 	List         list;
 	int          list_count;
@@ -22,9 +22,9 @@ struct ComputeMgr
 	Db*          db;
 };
 
-void compute_mgr_init(ComputeMgr*, Db*, FunctionMgr*);
-void compute_mgr_free(ComputeMgr*);
-void compute_mgr_sync(ComputeMgr*);
-void compute_mgr_map(ComputeMgr*, PartMap*, Part*);
+void backend_mgr_init(BackendMgr*, Db*, FunctionMgr*);
+void backend_mgr_free(BackendMgr*);
+void backend_mgr_sync(BackendMgr*);
+void backend_mgr_map(BackendMgr*, PartMap*, Part*);
 
-extern NodeIf compute_mgr_if;
+extern WorkerIf backend_mgr_if;

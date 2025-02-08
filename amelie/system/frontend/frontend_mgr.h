@@ -11,17 +11,17 @@
 // AGPL-3.0 Licensed.
 //
 
-typedef struct HostMgr HostMgr;
+typedef struct FrontendMgr FrontendMgr;
 
-struct HostMgr
+struct FrontendMgr
 {
-	int   rr;
-	int   workers_count;
-	Host* workers;
+	int       rr;
+	int       workers_count;
+	Frontend* workers;
 };
 
 static inline void
-host_mgr_init(HostMgr* self)
+frontend_mgr_init(FrontendMgr* self)
 {
 	self->rr            = 0;
 	self->workers_count = 0;
@@ -29,38 +29,38 @@ host_mgr_init(HostMgr* self)
 }
 
 static inline void
-host_mgr_start(HostMgr*  self,
-               HostEvent on_connect,
-               void*     on_connect_arg,
-               int       count)
+frontend_mgr_start(FrontendMgr*  self,
+                   FrontendEvent on_connect,
+                   void*         on_connect_arg,
+                   int           count)
 {
 	if (count == 0)
 		return;
 	self->workers_count = count;
-	self->workers = am_malloc(sizeof(Host) * count);
+	self->workers = am_malloc(sizeof(Frontend) * count);
 	int i = 0;
 	for (; i < count; i++)
-		host_init(&self->workers[i], on_connect, on_connect_arg);
+		frontend_init(&self->workers[i], on_connect, on_connect_arg);
 	for (i = 0; i < count; i++)
-		host_start(&self->workers[i]);
+		frontend_start(&self->workers[i]);
 }
 
 static inline void
-host_mgr_stop(HostMgr* self)
+frontend_mgr_stop(FrontendMgr* self)
 {
 	if (self->workers == NULL)
 		return;
 	for (int i = 0; i < self->workers_count; i++)
    	{
-		host_stop(&self->workers[i]);
-		host_free(&self->workers[i]);
+		frontend_stop(&self->workers[i]);
+		frontend_free(&self->workers[i]);
 	}
 	am_free(self->workers);
 	self->workers = NULL;
 }
 
 static inline int
-host_mgr_next(HostMgr* self)
+frontend_mgr_next(FrontendMgr* self)
 {
 	assert(self->workers_count > 0);
 	if (self->rr == self->workers_count)
@@ -69,15 +69,15 @@ host_mgr_next(HostMgr* self)
 }
 
 static inline void
-host_mgr_forward(HostMgr* self, Buf* buf)
+frontend_mgr_forward(FrontendMgr* self, Buf* buf)
 {
 	assert(self->workers_count > 0);
-	int pos = host_mgr_next(self);
-	host_add(&self->workers[pos], buf);
+	int pos = frontend_mgr_next(self);
+	frontend_add(&self->workers[pos], buf);
 }
 
 static inline void
-host_mgr_lock(HostMgr* self)
+frontend_mgr_lock(FrontendMgr* self)
 {
 	for (int i = 0; i < self->workers_count; i++)
 	{
@@ -87,7 +87,7 @@ host_mgr_lock(HostMgr* self)
 }
 
 static inline void
-host_mgr_unlock(HostMgr* self)
+frontend_mgr_unlock(FrontendMgr* self)
 {
 	for (int i = 0; i < self->workers_count; i++)
 	{
@@ -97,7 +97,7 @@ host_mgr_unlock(HostMgr* self)
 }
 
 static inline void
-host_mgr_sync_users(HostMgr* self, UserCache* user_cache)
+frontend_mgr_sync_users(FrontendMgr* self, UserCache* user_cache)
 {
 	for (int i = 0; i < self->workers_count; i++)
 	{

@@ -25,8 +25,8 @@ top_stats_free(TopStats* self)
 {
 	str_free(&self->uuid);
 	str_free(&self->version);
-	buf_free(&self->cpu_hosts);
-	buf_free(&self->cpu_nodes);
+	buf_free(&self->cpu_frontends);
+	buf_free(&self->cpu_backends);
 	buf_free(&self->repl);
 	am_free(self);
 }
@@ -45,8 +45,8 @@ top_stats_read(TopStats* self, uint8_t** pos)
 	{
 		{ DECODE_STRING, "uuid",              &self->uuid      },
 		{ DECODE_STRING, "version",           &self->version   },
-		{ DECODE_INT,    "hosts",             &self->hosts     },
-		{ DECODE_INT,    "nodes",             &self->nodes     },
+		{ DECODE_INT,    "frontends",         &self->frontends },
+		{ DECODE_INT,    "backends",          &self->backends  },
 		{ DECODE_OBJ,    "db",                &pos_db          },
 		{ DECODE_OBJ,    "process",           &pos_process     },
 		{ DECODE_OBJ,    "net",               &pos_net         },
@@ -68,8 +68,8 @@ top_stats_read(TopStats* self, uint8_t** pos)
 	decode_obj(obj_db, "db", &pos_db);
 
 	// process
-	uint8_t* pos_cpu_hosts = NULL;
-	uint8_t* pos_cpu_nodes = NULL;
+	uint8_t* pos_cpu_frontends = NULL;
+	uint8_t* pos_cpu_backends  = NULL;
 	Decode obj_process[] =
 	{
 		{ DECODE_INT,    "uptime",            &self->uptime       },
@@ -78,26 +78,26 @@ top_stats_read(TopStats* self, uint8_t** pos)
 		{ DECODE_INT,    "mem_shared",        &self->mem_shared   },
 		{ DECODE_INT,    "cpu_count",         &self->cpu_count    },
 		{ DECODE_INT,    "cpu",               &self->cpu          },
-		{ DECODE_ARRAY,  "cpu_hosts",         &pos_cpu_hosts      },
-		{ DECODE_ARRAY,  "cpu_nodes",         &pos_cpu_nodes      },
+		{ DECODE_ARRAY,  "cpu_frontends",     &pos_cpu_frontends  },
+		{ DECODE_ARRAY,  "cpu_backends",      &pos_cpu_backends   },
 		{ 0,              NULL,               NULL                },
 	};
 	decode_obj(obj_process, "process", &pos_process);
 
-	json_read_array(&pos_cpu_hosts);
-	while (! json_read_array_end(&pos_cpu_hosts))
+	json_read_array(&pos_cpu_frontends);
+	while (! json_read_array_end(&pos_cpu_frontends))
 	{
 		int64_t value;
-		json_read_integer(&pos_cpu_hosts, &value);
-		buf_write(&self->cpu_hosts, &value, sizeof(int64_t));
+		json_read_integer(&pos_cpu_frontends, &value);
+		buf_write(&self->cpu_frontends, &value, sizeof(int64_t));
 	}
 
-	json_read_array(&pos_cpu_nodes);
-	while (! json_read_array_end(&pos_cpu_nodes))
+	json_read_array(&pos_cpu_backends);
+	while (! json_read_array_end(&pos_cpu_backends))
 	{
 		int64_t value;
-		json_read_integer(&pos_cpu_nodes, &value);
-		buf_write(&self->cpu_nodes, &value, sizeof(int64_t));
+		json_read_integer(&pos_cpu_backends, &value);
+		buf_write(&self->cpu_backends, &value, sizeof(int64_t));
 	}
 
 	// net
@@ -258,25 +258,25 @@ top_draw(Top* self)
 	auto ops_diff    = stats->ops - prev->ops;
 	auto ops         = (double)ops_diff / time_diff / 1000000.0;
 	auto cpu_diff    = stats->cpu - prev->cpu;
-	auto cpu_hosts   = top_draw_cpu(stats->cpu_count, cpu_diff, stats->hosts,
-	                                &stats->cpu_hosts,
-	                                &prev->cpu_hosts);
-	auto cpu_nodes   = top_draw_cpu(stats->cpu_count, cpu_diff, stats->nodes,
-	                                &stats->cpu_nodes,
-	                                &prev->cpu_nodes);
-	defer_buf(cpu_hosts);
-	defer_buf(cpu_nodes);
+	auto cpu_fe      = top_draw_cpu(stats->cpu_count, cpu_diff, stats->frontends,
+	                                &stats->cpu_frontends,
+	                                &prev->cpu_frontends);
+	auto cpu_be      = top_draw_cpu(stats->cpu_count, cpu_diff, stats->backends,
+	                                &stats->cpu_backends,
+	                                &prev->cpu_backends);
+	defer_buf(cpu_fe);
+	defer_buf(cpu_be);
 
 	info("uuid:              %.*s" PAD,
 	     str_size(&stats->uuid), str_of(&stats->uuid));
 	info("version:           %.*s" PAD,
 	     str_size(&stats->version), str_of(&stats->version));
-	info("hosts:             %-2" PRIi64 " %.*s" PAD PAD,
-	     stats->hosts,
-	     buf_size(cpu_hosts), cpu_hosts->start);
-	info("nodes:             %-2" PRIi64 " %.*s" PAD PAD,
-	     stats->nodes,
-	     buf_size(cpu_nodes), cpu_nodes->start);
+	info("frontends:         %-2" PRIi64 " %.*s" PAD PAD,
+	     stats->frontends,
+	     buf_size(cpu_fe), cpu_fe->start);
+	info("backends:          %-2" PRIi64 " %.*s" PAD PAD,
+	     stats->backends,
+	     buf_size(cpu_be), cpu_be->start);
 	info("memory:            %d MiB virt / %d Mib res" PAD,
 	     (int)(stats->mem_virt / 1024 / 1024),
 	     (int)(stats->mem_resident / 1024 / 1024));

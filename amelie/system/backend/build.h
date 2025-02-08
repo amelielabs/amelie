@@ -29,11 +29,11 @@ struct Build
 	Table*       table_new;
 	Column*      column;
 	IndexConfig* index;
-	ComputeMgr*  compute_mgr;
+	BackendMgr*  backend_mgr;
 	Channel      channel;
 };
 
-void build_init(Build*, BuildType, ComputeMgr*, Table*, Table*,
+void build_init(Build*, BuildType, BackendMgr*, Table*, Table*,
                 Column*, IndexConfig*);
 void build_free(Build*);
 void build_run(Build*);

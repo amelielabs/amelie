@@ -18,8 +18,8 @@ struct Compiler
 	Parser   parser;
 	Rmap     map;
 	Code*    code;
-	Code     code_coordinator;
-	Code     code_node;
+	Code     code_frontend;
+	Code     code_backend;
 	CodeData code_data;
 	SetCache values_cache;
 	Columns* args;
@@ -44,13 +44,13 @@ compiler_stmt(Compiler* self)
 }
 
 static inline void
-compiler_switch_coordinator(Compiler* self)
+compiler_switch_frontend(Compiler* self)
 {
-	self->code = &self->code_coordinator;
+	self->code = &self->code_frontend;
 }
 
 static inline void
-compiler_switch_node(Compiler* self)
+compiler_switch_backend(Compiler* self)
 {
-	self->code = &self->code_node;
+	self->code = &self->code_backend;
 }

@@ -1,6 +1,6 @@
 #
 
-open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "127.0.0.1", "port": 3485 }], "nodes": 3
+open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "127.0.0.1", "port": 3485 }], "backends": 3
 connect E0 S0 localhost:3485
 
 # test: insert abort by error
@@ -1134,7 +1134,7 @@ insert into test (id) values ( 1 )
 update test set data = null; select error("abort")
 
 # drop will require abort to be sync on each
-# data node to proceed
+# worker to proceed
 drop table test
 
 disconnect S0

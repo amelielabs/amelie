@@ -38,15 +38,15 @@
 #include <amelie_parser.h>
 #include <amelie_planner.h>
 #include <amelie_compiler.h>
-#include <amelie_host.h>
-#include <amelie_compute.h>
+#include <amelie_frontend.h>
+#include <amelie_backend.h>
 
 static void
 replay_read(Share* share, Dtr* dtr, ReqList* req_list, WalWrite* write)
 {
-	auto router = &share->compute_mgr->router;
+	auto router = &share->backend_mgr->router;
 
-	// redistribute DML operations/rows between nodes
+	// redistribute rows between backends
 	Req* map[router->list_count];
 	memset(map, 0, sizeof(map));
 

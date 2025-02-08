@@ -11,21 +11,21 @@
 // AGPL-3.0 Licensed.
 //
 
-typedef struct Compute Compute;
+typedef struct Backend Backend;
 
-struct Compute
+struct Backend
 {
 	Vm      vm;
 	TrList  prepared;
 	TrCache cache;
-	Node*   node;
+	Worker* worker;
 	Task    task;
 	List    link;
 };
 
-Compute*
-compute_allocate(Node*, Db*, FunctionMgr*);
-void compute_free(Compute*);
-void compute_start(Compute*);
-void compute_stop(Compute*);
-void compute_sync(Compute*);
+Backend*
+backend_allocate(Worker*, Db*, FunctionMgr*);
+void backend_free(Backend*);
+void backend_start(Backend*);
+void backend_stop(Backend*);
+void backend_sync(Backend*);

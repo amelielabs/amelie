@@ -38,8 +38,8 @@
 #include <amelie_parser.h>
 #include <amelie_planner.h>
 #include <amelie_compiler.h>
-#include <amelie_host.h>
-#include <amelie_compute.h>
+#include <amelie_frontend.h>
+#include <amelie_backend.h>
 #include <amelie_session.h>
 
 void
@@ -58,8 +58,8 @@ explain_reset(Explain* self)
 
 void
 explain(Explain*  self,
-        Code*     coordinator,
-        Code*     node,
+        Code*     code_frontend,
+        Code*     code_backend,
         CodeData* data,
         Dtr*      dtr,
         Content*  content,
@@ -75,15 +75,15 @@ explain(Explain*  self,
 	encode_raw(buf, "bytecode", 8);
 	encode_obj(buf);
 
-	// main section (coordinator)
-	encode_raw(buf, "main", 4);
-	op_dump(coordinator, data, buf);
+	// frontend section
+	encode_raw(buf, "frontend", 8);
+	op_dump(code_frontend, data, buf);
 
-	// node section
-	if (code_count(node) > 0)
+	// backend section
+	if (code_count(code_backend) > 0)
 	{
-		encode_raw(buf, "node", 4);
-		op_dump(node, data, buf);
+		encode_raw(buf, "backend", 7);
+		op_dump(code_backend, data, buf);
 	}
 	encode_obj_end(buf);
 

@@ -1,6 +1,6 @@
 #
 
-open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "127.0.0.1", "port": 3480 }], "nodes": 3, "repl_reconnect_ms": 10
+open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "127.0.0.1", "port": 3480 }], "backends": 3, "repl_reconnect_ms": 10
 connect E0 S0 localhost:3480
 
 # test: create replica
@@ -10126,16 +10126,16 @@ show repl
 switch S1
 select identity_of("public", "test2")
 
-# test: alter compute add
+# test: create worker
 switch S0
-alter compute add "00000000-0000-0000-0000-00000000000f"
+create worker "00000000-0000-0000-0000-00000000000f"
 
 # test: wait replica sync
 watch system.replica("00000000-0000-0000-0000-000000000001").lsn = system.state().lsn
 show repl
 
 switch S1
-select system.state().nodes::int = 4
+select system.state().backends::int = 4
 
 disconnect S1
 close E1

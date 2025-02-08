@@ -1,10 +1,10 @@
-open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "127.0.0.1", "port": 3485 }], "nodes": 3
+open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "127.0.0.1", "port": 3485 }], "backends": 3
 connect E0 S0 localhost:3485
 # test: select * from (select expr)
 explain select * from (select 1) t
 [{
   "bytecode": {
-    "main": {
+    "frontend": {
       "00": "set                 0      1      0     ",
       "01": "int                 1      -      0     # 1",
       "02": "push                1      0      0     ",
@@ -29,7 +29,7 @@ select * from (select 1) t
 explain select * from (select 1, 2) t
 [{
   "bytecode": {
-    "main": {
+    "frontend": {
       "00": "set                 0      2      0     ",
       "01": "int                 1      -      0     # 1",
       "02": "push                1      0      0     ",
@@ -59,7 +59,7 @@ select * from (select 1, 2) t
 explain select x from (select 1 as x) t
 [{
   "bytecode": {
-    "main": {
+    "frontend": {
       "00": "set                 0      1      0     ",
       "01": "int                 1      -      0     # 1",
       "02": "push                1      0      0     ",
@@ -84,7 +84,7 @@ select x from (select 1 as x) t
 explain select a, b from (select 1 as a, 2 as b) t
 [{
   "bytecode": {
-    "main": {
+    "frontend": {
       "00": "set                 0      2      0     ",
       "01": "int                 1      -      0     # 1",
       "02": "push                1      0      0     ",

@@ -60,7 +60,7 @@ select current_date = now()::date
 explain select [current_date]
 [{
   "bytecode": {
-    "main": {
+    "frontend": {
       "00": "set                 0      1      0     ",
       "01": "json                1      0      0     ",
       "02": "push                1      0      0     ",
@@ -74,7 +74,7 @@ explain select [current_date]
 explain select [date '1970-01-01']
 [{
   "bytecode": {
-    "main": {
+    "frontend": {
       "00": "set                 0      1      0     ",
       "01": "json                1      0      0     ",
       "02": "push                1      0      0     ",
@@ -93,7 +93,7 @@ select now()::date between date '0001-01-01' and date '9999-12-31'
 explain select now()::date between date '0001-01-01' and date '9999-12-31'
 [{
   "bytecode": {
-    "main": {
+    "frontend": {
       "00": "set                 0      1      0     ",
       "01": "call                1      -      0     # public.now()",
       "02": "push                1      0      0     ",
@@ -117,7 +117,7 @@ explain select now()::date between date '0001-01-01' and date '9999-12-31'
 explain select date '1970-01-01' between date '1970-01-01' and date '1970-01-01'
 [{
   "bytecode": {
-    "main": {
+    "frontend": {
       "00": "set                 0      1      0     ",
       "01": "date                1      2440588 0     ",
       "02": "date                2      2440588 0     ",

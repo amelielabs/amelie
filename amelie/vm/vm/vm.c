@@ -39,7 +39,7 @@
 void
 vm_init(Vm*          self,
         Db*          db,
-        Uuid*        node,
+        Uuid*        backend,
         Executor*    executor,
         Dtr*         dtr,
         FunctionMgr* function_mgr)
@@ -48,7 +48,7 @@ vm_init(Vm*          self,
 	self->code_data    = NULL;
 	self->code_arg     = NULL;
 	self->args         = NULL;
-	self->node         = node;
+	self->backend      = backend;
 	self->executor     = executor;
 	self->dtr          = dtr;
 	self->cte          = NULL;

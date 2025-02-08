@@ -38,13 +38,12 @@
 #include <amelie_parser.h>
 #include <amelie_planner.h>
 #include <amelie_compiler.h>
-#include <amelie_host.h>
-#include <amelie_compute.h>
+#include <amelie_frontend.h>
+#include <amelie_backend.h>
 
 static void
-compute_replay(Compute* self, Tr* tr, Req* req)
+backend_replay(Backend* self, Tr* tr, Req* req)
 {
-	// execute DML operations
 	auto db = self->vm.db;
 	for (auto pos = req->arg.start; pos < req->arg.position;)
 	{
@@ -86,13 +85,13 @@ compute_replay(Compute* self, Tr* tr, Req* req)
 }
 
 hot static inline void
-compute_execute(Compute* self, Tr* tr, Req* req)
+backend_execute(Backend* self, Tr* tr, Req* req)
 {
 	tr_set_limit(tr, req->limit);
 	vm_reset(&self->vm);
 	vm_run(&self->vm, req->local,
 	        tr,
-	        req->program->code_node,
+	        req->program->code_backend,
 	        req->program->code_data,
 	       &req->arg,
 	        req->args,
@@ -103,14 +102,14 @@ compute_execute(Compute* self, Tr* tr, Req* req)
 }
 
 hot static inline void
-compute_req(Compute* self, Tr* tr, Req* req)
+backend_req(Backend* self, Tr* tr, Req* req)
 {
 	switch (req->type) {
 	case REQ_EXECUTE:
-		compute_execute(self, tr, req);
+		backend_execute(self, tr, req);
 		break;
 	case REQ_REPLAY:
-		compute_replay(self, tr, req);
+		backend_replay(self, tr, req);
 		break;
 	case REQ_SHUTDOWN:
 		break;
@@ -120,7 +119,7 @@ compute_req(Compute* self, Tr* tr, Req* req)
 }
 
 hot static void
-compute_process(Compute* self, Pipe* pipe)
+backend_process(Backend* self, Pipe* pipe)
 {
 	auto tr = tr_create(&self->cache);
 	tr_begin(tr);
@@ -133,7 +132,7 @@ compute_process(Compute* self, Pipe* pipe)
 		assert(req);
 
 		// execute request
-		auto on_error = error_catch( compute_req(self, tr, req) );
+		auto on_error = error_catch( backend_req(self, tr, req) );
 
 		// MSG_READY on pipe completion
 		// MSG_ERROR on pipe completion with error
@@ -163,9 +162,9 @@ compute_process(Compute* self, Pipe* pipe)
 }
 
 static void
-compute_rpc(Rpc* rpc, void* arg)
+backend_rpc(Rpc* rpc, void* arg)
 {
-	Compute* self = arg;
+	Backend* self = arg;
 	switch (rpc->id) {
 	case RPC_SYNC:
 		// do nothing, just respond
@@ -180,9 +179,9 @@ compute_rpc(Rpc* rpc, void* arg)
 }
 
 static void
-compute_main(void* arg)
+backend_main(void* arg)
 {
-	Compute* self = arg;
+	Backend* self = arg;
 	for (;;)
 	{
 		auto buf = channel_read(&am_task->channel, -1);
@@ -191,7 +190,7 @@ compute_main(void* arg)
 
 		switch (msg->id) {
 		case RPC_BEGIN:
-			compute_process(self, pipe_of(buf));
+			backend_process(self, pipe_of(buf));
 			break;
 		case RPC_COMMIT:
 		{
@@ -208,13 +207,13 @@ compute_main(void* arg)
 		case RPC_BUILD:
 		{
 			auto build = *(Build**)msg->data;
-			build_execute(build, &self->node->id);
+			build_execute(build, &self->worker->id);
 			break;
 		}
 		default:
 		{
 			auto rpc = rpc_of(buf);
-			rpc_execute(rpc, compute_rpc, self);
+			rpc_execute(rpc, backend_rpc, self);
 			break;
 		}
 		}
@@ -224,22 +223,22 @@ compute_main(void* arg)
 	}
 }
 
-Compute*
-compute_allocate(Node* node, Db* db, FunctionMgr* function_mgr)
+Backend*
+backend_allocate(Worker* worker, Db* db, FunctionMgr* function_mgr)
 {
-	auto self = (Compute*)am_malloc(sizeof(Compute));
-	self->node = node;
+	auto self = (Backend*)am_malloc(sizeof(Backend));
+	self->worker = worker;
 	tr_list_init(&self->prepared);
 	tr_cache_init(&self->cache);
 	list_init(&self->link);
 	vm_init(&self->vm, db, NULL, NULL, NULL, function_mgr);
-	self->vm.node = &node->id;
+	self->vm.backend = &worker->id;
 	task_init(&self->task);
 	return self;
 }
 
 void
-compute_free(Compute* self)
+backend_free(Backend* self)
 {
 	vm_free(&self->vm);
 	tr_cache_free(&self->cache);
@@ -247,18 +246,18 @@ compute_free(Compute* self)
 }
 
 void
-compute_start(Compute* self)
+backend_start(Backend* self)
 {
 	Uuid id;
-	uuid_set(&id, &self->node->config->id);
+	uuid_set(&id, &self->worker->config->id);
 	char name[9];
 	uuid_get_short(&id, name, sizeof(name));
 
-	task_create(&self->task, name, compute_main, self);
+	task_create(&self->task, name, backend_main, self);
 }
 
 void
-compute_stop(Compute* self)
+backend_stop(Backend* self)
 {
 	// send stop request
 	if (task_active(&self->task))
@@ -271,7 +270,7 @@ compute_stop(Compute* self)
 }
 
 void
-compute_sync(Compute* self)
+backend_sync(Backend* self)
 {
 	rpc(&self->task.channel, RPC_SYNC, 0);
 }

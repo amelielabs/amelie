@@ -38,30 +38,29 @@
 #include <amelie_parser.h>
 
 void
-parse_compute_alter(Stmt* self)
+parse_worker_create(Stmt* self)
 {
-	// ALTER COMPUTE [POOL] ADD/DROP [NODE] [ID]
-	auto stmt = ast_compute_alter_allocate();
+	// CREATE WORKER [IF NOT EXISTS] [id]
+	auto stmt = ast_worker_create_allocate();
 	self->ast = &stmt->ast;
 
-	// [POOL]
-	stmt_if(self, KPOOL);
-
-	// ADD / DROP
-	if (stmt_if(self, KADD))
-		stmt->add = true;
-	else
-	if (stmt_if(self, KDROP))
-		stmt->add = false;
-	else
-		stmt_error(self, NULL, "ADD or DROP expected");
-
-	// [NODE]
-	stmt_if(self, KNODE);
+	// if not exists
+	stmt->if_not_exists = parse_if_not_exists(self);
 
 	// [id]
 	stmt->id = stmt_if(self, KSTRING);
+}
 
-	if (!stmt->add && !stmt->id)
-		stmt_error(self, NULL, "id is expected for the DROP command");
+void
+parse_worker_drop(Stmt* self)
+{
+	// DROP WORKER [IF EXISTS] id
+	auto stmt = ast_worker_drop_allocate();
+	self->ast = &stmt->ast;
+
+	// if exists
+	stmt->if_exists = parse_if_exists(self);
+
+	// id
+	stmt->id = stmt_expect(self, KSTRING);
 }

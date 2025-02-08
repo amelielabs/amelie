@@ -131,9 +131,9 @@ part_list_index_drop(PartList* self, IndexConfig* config)
 }
 
 hot Part*
-part_list_match(PartList* self, Uuid* node)
+part_list_match(PartList* self, Uuid* id)
 {
-	// get first part if shared or find by node id
+	// get first part if shared or find by backend id
 	if (self->shared)
 	{
 		auto first = list_first(&self->list);
@@ -142,7 +142,7 @@ part_list_match(PartList* self, Uuid* node)
 	list_foreach(&self->list)
 	{
 		auto part = list_at(Part, link);
-		if (! uuid_compare(&part->config->node, node))
+		if (! uuid_compare(&part->config->backend, id))
 			return part;
 	}
 	return NULL;

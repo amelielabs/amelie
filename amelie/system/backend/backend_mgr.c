@@ -38,11 +38,11 @@
 #include <amelie_parser.h>
 #include <amelie_planner.h>
 #include <amelie_compiler.h>
-#include <amelie_host.h>
-#include <amelie_compute.h>
+#include <amelie_frontend.h>
+#include <amelie_backend.h>
 
 void
-compute_mgr_init(ComputeMgr* self, Db* db, FunctionMgr* function_mgr)
+backend_mgr_init(BackendMgr* self, Db* db, FunctionMgr* function_mgr)
 {
 	self->list_count   = 0;
 	self->function_mgr = function_mgr;
@@ -52,52 +52,52 @@ compute_mgr_init(ComputeMgr* self, Db* db, FunctionMgr* function_mgr)
 }
 
 void
-compute_mgr_free(ComputeMgr* self)
+backend_mgr_free(BackendMgr* self)
 {
-	// freed by node_mgr
+	// freed by worker_mgr
 	unused(self);
 	assert(! self->list_count);
 }
 
 void
-compute_mgr_sync(ComputeMgr* self)
+backend_mgr_sync(BackendMgr* self)
 {
 	list_foreach(&self->list)
 	{
-		auto compute = list_at(Compute, link);
-		compute_sync(compute);
+		auto backend = list_at(Backend, link);
+		backend_sync(backend);
 	}
 }
 
-static inline Compute*
-compute_mgr_find(ComputeMgr* self, Uuid* id)
+static inline Backend*
+backend_mgr_find(BackendMgr* self, Uuid* id)
 {
 	list_foreach(&self->list)
 	{
-		auto compute = list_at(Compute, link);
-		if (! uuid_compare(&compute->node->id, id))
-			return compute;
+		auto backend = list_at(Backend, link);
+		if (! uuid_compare(&backend->worker->id, id))
+			return backend;
 	}
 	return NULL;
 }
 
 void
-compute_mgr_map(ComputeMgr* self, PartMap* map, Part* part)
+backend_mgr_map(BackendMgr* self, PartMap* map, Part* part)
 {
 	// find partition by uuid
-	auto compute = compute_mgr_find(self, &part->config->node);
-	if (! compute)
-		error("partition node cannot be found");
+	auto backend = backend_mgr_find(self, &part->config->backend);
+	if (! backend)
+		error("partition worker cannot be found");
 
 	// prepare partition mapping
 	if (! part_map_created(map))
 		part_map_create(map);
 
 	// add route to the mapping if not exists
-	auto route = &compute->node->route;
+	auto route = &backend->worker->route;
 	part_map_add(map, route);
 
-	// map partition range to the node order
+	// map partition range to the worker order
 	part->route = route;
 	int i = part->config->min;
 	for (; i < part->config->max; i++)
@@ -105,44 +105,44 @@ compute_mgr_map(ComputeMgr* self, PartMap* map, Part* part)
 }
 
 static void
-compute_mgr_if_create(Node* node)
+backend_mgr_if_create(Worker* worker)
 {
-	ComputeMgr* self = node->iface_arg;
+	BackendMgr* self = worker->iface_arg;
 
-	// create and register compute node
-	auto compute = compute_allocate(node, self->db, self->function_mgr);
-	list_append(&self->list, &compute->link);
+	// create and register backend worker
+	auto backend = backend_allocate(worker, self->db, self->function_mgr);
+	list_append(&self->list, &backend->link);
 	self->list_count++;
-	var_int_set(&config()->nodes, self->list_count);
-	node->context = compute;
+	var_int_set(&config()->backends, self->list_count);
+	worker->context = backend;
 
-	route_init(&node->route, &compute->task.channel);
-	router_add(&self->router, &node->route);
+	route_init(&worker->route, &backend->task.channel);
+	router_add(&self->router, &worker->route);
 
-	compute_start(compute);
+	backend_start(backend);
 }
 
 static void
-compute_mgr_if_free(Node* node)
+backend_mgr_if_free(Worker* worker)
 {
-	ComputeMgr* self = node->iface_arg;
-	Compute* compute = node->context;
-	if (! compute)
+	BackendMgr* self = worker->iface_arg;
+	Backend* backend = worker->context;
+	if (! backend)
 		return;
 
-	compute_stop(compute);
+	backend_stop(backend);
 
-	list_unlink(&compute->link);
+	list_unlink(&backend->link);
 	self->list_count--;
-	var_int_set(&config()->nodes, self->list_count);
-	router_del(&self->router, &node->route);
+	var_int_set(&config()->backends, self->list_count);
+	router_del(&self->router, &worker->route);
 
-	compute_free(compute);
-	node->context = NULL;
+	backend_free(backend);
+	worker->context = NULL;
 }
 
-NodeIf compute_mgr_if =
+WorkerIf backend_mgr_if =
 {
-	.create = compute_mgr_if_create,
-	.free   = compute_mgr_if_free
+	.create = backend_mgr_if_create,
+	.free   = backend_mgr_if_free
 };
