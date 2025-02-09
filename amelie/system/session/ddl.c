@@ -432,11 +432,6 @@ ddl_create_backend(Session* self, Tr* tr)
 		worker_config_set_id(config, &uuid_str);
 	}
 
-	// set type
-	Str type;
-	str_set_cstr(&type, "backend");
-	worker_config_set_type(config, &type);
-
 	// create worker
 	worker_mgr_create(&db->worker_mgr, tr, config, arg->if_not_exists);
 }

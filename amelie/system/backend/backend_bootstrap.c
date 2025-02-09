@@ -61,10 +61,6 @@ backend_bootstrap_workers(Db* db, Tr* tr, int workers)
 		str_set_cstr(&uuid_str, uuid);
 		worker_config_set_id(config, &uuid_str);
 
-		Str type;
-		str_set_cstr(&type, "backend");
-		worker_config_set_type(config, &type);
-
 		// create worker
 		worker_mgr_create(&db->worker_mgr, tr, config, false);
 	}
