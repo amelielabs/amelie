@@ -227,7 +227,7 @@ parse_stmt(Parser* self, Stmt* stmt)
 			stmt_push(stmt, next);
 		}
 
-		// CREATE USER | TOKEN | REPLICA | WORKER | SCHEMA | TABLE | INDEX
+		// CREATE USER | TOKEN | REPLICA | BACKEND | SCHEMA | TABLE | INDEX
 		if (lex_if(lex, KUSER))
 		{
 			stmt->id = STMT_CREATE_USER;
@@ -243,10 +243,10 @@ parse_stmt(Parser* self, Stmt* stmt)
 			stmt->id = STMT_CREATE_REPLICA;
 			parse_replica_create(stmt);
 		} else
-		if (lex_if(lex, KWORKER))
+		if (lex_if(lex, KBACKEND))
 		{
-			stmt->id = STMT_CREATE_WORKER;
-			parse_worker_create(stmt);
+			stmt->id = STMT_CREATE_BACKEND;
+			parse_backend_create(stmt);
 		} else
 		if (lex_if(lex, KSCHEMA))
 		{
@@ -263,14 +263,14 @@ parse_stmt(Parser* self, Stmt* stmt)
 			stmt->id = STMT_CREATE_INDEX;
 			parse_index_create(stmt, unique);
 		} else {
-			stmt_error(stmt, NULL, "'USER|REPLICA|WORKER|SCHEMA|TABLE|INDEX' expected");
+			stmt_error(stmt, NULL, "'USER|REPLICA|BACKEND|SCHEMA|TABLE|INDEX' expected");
 		}
 		break;
 	}
 
 	case KDROP:
 	{
-		// DROP USER | REPLICA | WORKER | SCHEMA | TABLE | INDEX
+		// DROP USER | REPLICA | BACKEND | SCHEMA | TABLE | INDEX
 		if (lex_if(lex, KUSER))
 		{
 			stmt->id = STMT_DROP_USER;
@@ -281,10 +281,10 @@ parse_stmt(Parser* self, Stmt* stmt)
 			stmt->id = STMT_DROP_REPLICA;
 			parse_replica_drop(stmt);
 		} else
-		if (lex_if(lex, KWORKER))
+		if (lex_if(lex, KBACKEND))
 		{
-			stmt->id = STMT_DROP_WORKER;
-			parse_worker_drop(stmt);
+			stmt->id = STMT_DROP_BACKEND;
+			parse_backend_drop(stmt);
 		} else
 		if (lex_if(lex, KSCHEMA))
 		{
@@ -301,7 +301,7 @@ parse_stmt(Parser* self, Stmt* stmt)
 			stmt->id = STMT_DROP_INDEX;
 			parse_index_drop(stmt);
 		} else {
-			stmt_error(stmt, NULL, "'USER|REPLICA|WORKER|SCHEMA|TABLE|INDEX' expected");
+			stmt_error(stmt, NULL, "'USER|REPLICA|BACKEND|SCHEMA|TABLE|INDEX' expected");
 		}
 		break;
 	}

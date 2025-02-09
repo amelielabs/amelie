@@ -74,8 +74,8 @@ select system.replication()
   "primary": null,
   "replicas": []
 }]
-# test: workers()
-select system.workers()::size
+# test: backends()
+select system.backends()::size
 [1]
 # test: schemas()
 select system.schemas()

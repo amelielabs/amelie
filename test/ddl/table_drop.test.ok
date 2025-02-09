@@ -2,9 +2,9 @@ open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "12
 connect E0 S0 localhost:3485
 # test: drop table statement parsing
 drop
-{"msg": "drop ⟵ 'USER|REPLICA|WORKER|SCHEMA|TABLE|INDEX' expected"}
+{"msg": "drop ⟵ 'USER|REPLICA|BACKEND|SCHEMA|TABLE|INDEX' expected"}
 drop 1
-{"msg": "drop ❰1❱ ⟵ 'USER|REPLICA|WORKER|SCHEMA|TABLE|INDEX' expected"}
+{"msg": "drop ❰1❱ ⟵ 'USER|REPLICA|BACKEND|SCHEMA|TABLE|INDEX' expected"}
 drop table "name"
 {"msg": "drop table ❰\"name\"❱ ⟵ name expected"}
 drop table name junk

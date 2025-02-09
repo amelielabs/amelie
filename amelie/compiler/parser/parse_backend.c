@@ -38,10 +38,10 @@
 #include <amelie_parser.h>
 
 void
-parse_worker_create(Stmt* self)
+parse_backend_create(Stmt* self)
 {
-	// CREATE WORKER [IF NOT EXISTS] [id]
-	auto stmt = ast_worker_create_allocate();
+	// CREATE BACKEND [IF NOT EXISTS] [id]
+	auto stmt = ast_backend_create_allocate();
 	self->ast = &stmt->ast;
 
 	// if not exists
@@ -52,10 +52,10 @@ parse_worker_create(Stmt* self)
 }
 
 void
-parse_worker_drop(Stmt* self)
+parse_backend_drop(Stmt* self)
 {
-	// DROP WORKER [IF EXISTS] id
-	auto stmt = ast_worker_drop_allocate();
+	// DROP BACKEND [IF EXISTS] id
+	auto stmt = ast_backend_drop_allocate();
 	self->ast = &stmt->ast;
 
 	// if exists

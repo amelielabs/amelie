@@ -1,7 +1,7 @@
 open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "127.0.0.1", "port": 3480 }], "backends": 0
 connect E0 S0 localhost:3480
 # test: bootstrap (no backends)
-show workers
+show backends
 []
 # test: ddl (without backends)
 create table test (id int primary key)
@@ -10,28 +10,28 @@ create shared table test (id int primary key)
 {"msg": "system has no backend workers"}
 select * from test
 {"msg": "select * from ❰test❱ ⟵ relation not found"}
-# test: create worker
-create worker ""
+# test: create backend
+create backend ""
 {"msg": "failed to parse uuid"}
-create worker add "00000000-0000-0000-0000-000000000000"
-{"msg": "create worker ❰add❱ ⟵ ; expected"}
-create worker "00000000-0000-0000-0000-000000000000"
-show workers
+create backend add "00000000-0000-0000-0000-000000000000"
+{"msg": "create backend ❰add❱ ⟵ ; expected"}
+create backend "00000000-0000-0000-0000-000000000000"
+show backends
 [{
   "id": "00000000-0000-0000-0000-000000000000",
   "type": "backend"
 }]
-# test: create worker (already exists)
-create worker "00000000-0000-0000-0000-000000000000"
+# test: create backend (already exists)
+create backend "00000000-0000-0000-0000-000000000000"
 {"msg": "worker '00000000-0000-0000-0000-000000000000': already exists"}
-show workers
+show backends
 [{
   "id": "00000000-0000-0000-0000-000000000000",
   "type": "backend"
 }]
-# test: create worker if not exists
-create worker if not exists "00000000-0000-0000-0000-000000000000"
-show workers
+# test: create backend if not exists
+create backend if not exists "00000000-0000-0000-0000-000000000000"
+show backends
 [{
   "id": "00000000-0000-0000-0000-000000000000",
   "type": "backend"
@@ -61,7 +61,7 @@ disconnect S0
 close E0
 open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "127.0.0.1", "port": 3480 }], "backends": 0
 connect E0 S0 localhost:3480
-show workers
+show backends
 [{
   "id": "00000000-0000-0000-0000-000000000000",
   "type": "backend"
@@ -70,15 +70,15 @@ select * from test1
 [1, 2, 3]
 select * from test2
 [4, 5, 6]
-# test: drop worker (with dependency)
-drop worker
-{"msg": "drop worker ⟵ string expected"}
-drop worker "00000000-0000-0000-0000-000000000000"
+# test: drop backend (with dependency)
+drop backend
+{"msg": "drop backend ⟵ string expected"}
+drop backend "00000000-0000-0000-0000-000000000000"
 {"msg": "worker '00000000-0000-0000-0000-000000000000': has dependencies"}
-# test: drop worker without dependency
-create worker "00000000-0000-0000-0000-000000000001"
-create worker "00000000-0000-0000-0000-000000000002"
-show workers
+# test: drop backend without dependency
+create backend "00000000-0000-0000-0000-000000000001"
+create backend "00000000-0000-0000-0000-000000000002"
+show backends
 [{
   "id": "00000000-0000-0000-0000-000000000000",
   "type": "backend"
@@ -89,8 +89,8 @@ show workers
   "id": "00000000-0000-0000-0000-000000000002",
   "type": "backend"
 }]
-drop worker "00000000-0000-0000-0000-000000000001"
-show workers
+drop backend "00000000-0000-0000-0000-000000000001"
+show backends
 [{
   "id": "00000000-0000-0000-0000-000000000000",
   "type": "backend"
@@ -98,11 +98,11 @@ show workers
   "id": "00000000-0000-0000-0000-000000000002",
   "type": "backend"
 }]
-# test: drop worker (not exists)
-drop worker "00000000-0000-0000-0000-000000000001"
+# test: drop backend (not exists)
+drop backend "00000000-0000-0000-0000-000000000001"
 {"msg": "worker '00000000-0000-0000-0000-000000000001': not exists"}
-# test: drop worker if exists
-drop worker if exists "00000000-0000-0000-0000-000000000001"
+# test: drop backend if exists
+drop backend if exists "00000000-0000-0000-0000-000000000001"
 # test: ddl (two backends partitioning)
 create table test3 (id int primary key)
 show tables
@@ -122,26 +122,26 @@ show tables
   "shared": false,
   "unlogged": false
 }]
-# test: drop worker (after table drop)
-drop worker "00000000-0000-0000-0000-000000000002"
+# test: drop backend (after table drop)
+drop backend "00000000-0000-0000-0000-000000000002"
 {"msg": "worker '00000000-0000-0000-0000-000000000002': has dependencies"}
 drop table test3
-drop worker "00000000-0000-0000-0000-000000000002"
-show workers
+drop backend "00000000-0000-0000-0000-000000000002"
+show backends
 [{
   "id": "00000000-0000-0000-0000-000000000000",
   "type": "backend"
 }]
-# test: create table/create worker/select
+# test: create table/create backend/select
 create table test4(id int primary key)
 insert into test4 values (1), (2), (3)
-create worker "00000000-0000-0000-0000-000000000003"
-create worker "00000000-0000-0000-0000-000000000004"
+create backend "00000000-0000-0000-0000-000000000003"
+create backend "00000000-0000-0000-0000-000000000004"
 select * from test4
 [1, 2, 3]
 drop table test4
-# test: create table/create worker/add column
-show workers
+# test: create table/create backend/add column
+show backends
 [{
   "id": "00000000-0000-0000-0000-000000000000",
   "type": "backend"
@@ -171,9 +171,9 @@ show tables
   "unlogged": false
 }]
 insert into test values (1), (2), (3)
-create worker "00000000-0000-0000-0000-000000000005"
-create worker "00000000-0000-0000-0000-000000000006"
-show workers
+create backend "00000000-0000-0000-0000-000000000005"
+create backend "00000000-0000-0000-0000-000000000006"
+show backends
 [{
   "id": "00000000-0000-0000-0000-000000000000",
   "type": "backend"

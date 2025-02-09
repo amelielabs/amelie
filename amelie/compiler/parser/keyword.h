@@ -67,6 +67,7 @@ enum
 	KBEGIN,
 	KBETWEEN,
 	KBY,
+	KBACKEND,
 
 	// c
 	KCURRENT_TIMESTAMP,
@@ -224,7 +225,6 @@ enum
 	KWITH,
 	KWATCH,
 	KWORKERS,
-	KWORKER,
 
 	// x
 	// y

@@ -406,10 +406,10 @@ ddl_alter_index(Session* self, Tr* tr)
 }
 
 static void
-ddl_create_worker(Session* self, Tr* tr)
+ddl_create_backend(Session* self, Tr* tr)
 {
 	auto stmt = compiler_stmt(&self->compiler);
-	auto arg  = ast_worker_create_of(stmt->ast);
+	auto arg  = ast_backend_create_of(stmt->ast);
 	auto db   = self->share->db;
 
 	auto config = worker_config_allocate();
@@ -442,10 +442,10 @@ ddl_create_worker(Session* self, Tr* tr)
 }
 
 static void
-ddl_drop_worker(Session* self, Tr* tr)
+ddl_drop_backend(Session* self, Tr* tr)
 {
 	auto stmt = compiler_stmt(&self->compiler);
-	auto arg  = ast_worker_drop_of(stmt->ast);
+	auto arg  = ast_backend_drop_of(stmt->ast);
 	auto db   = self->share->db;
 
 	// drop worker
@@ -484,11 +484,11 @@ session_execute_ddl_stmt(Session* self, Tr* tr)
 	case STMT_ALTER_INDEX:
 		ddl_alter_index(self, tr);
 		break;
-	case STMT_CREATE_WORKER:
-		ddl_create_worker(self, tr);
+	case STMT_CREATE_BACKEND:
+		ddl_create_backend(self, tr);
 		break;
-	case STMT_DROP_WORKER:
-		ddl_drop_worker(self, tr);
+	case STMT_DROP_BACKEND:
+		ddl_drop_backend(self, tr);
 		break;
 	case STMT_TRUNCATE:
 		ddl_truncate(self, tr);
