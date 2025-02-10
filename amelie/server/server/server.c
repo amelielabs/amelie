@@ -123,7 +123,7 @@ server_listen(ServerListen* listen)
 	// set address name
 	str_dup_cstr(&listen->addr_name, addr_name);
 
-	info("listening on \"%.*s\"", str_size(&listen->addr_name),
+	info("listening on '%.*s'", str_size(&listen->addr_name),
 	     str_of(&listen->addr_name));
 
 	// bind

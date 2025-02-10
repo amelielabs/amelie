@@ -354,8 +354,6 @@ backup_run(Backup* self, Client* client)
 void
 backup(Db* db, Client* client)
 {
-	info("begin backup");
-
 	// processs backup and wait for completion
 	Backup backup;
 	backup_init(&backup, db);

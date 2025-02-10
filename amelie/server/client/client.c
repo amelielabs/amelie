@@ -104,13 +104,15 @@ client_accept(Client* self)
 	bool log_connections = var_int_of(&config()->log_connections);
 	if (log_connections)
 	{
+		char addr[128];
+		tcp_getpeername(&self->tcp, addr, sizeof(addr));
 		if (tls_is_set(&self->tcp.tls))
 		{
 			char tls_string[128];
 			tls_explain(&self->tcp.tls, tls_string, sizeof(tls_string));
-			info("connected (%s)", tls_string);
+			info("connected from %s (%s)", addr, tls_string);
 		} else {
-			info("connected");
+			info("connected from %s", addr);
 		}
 	}
 }
@@ -202,10 +204,16 @@ client_close(Client* self)
 	if (log_connections && tcp_connected(&self->tcp))
 	{
 		if (self->host != NULL)
+		{
 			info("disconnected from %s:%d", str_of(&self->host->host),
 			     self->host->port);
+		}
 		else
-			info("disconnected");
+		{
+			char addr[128];
+			tcp_getpeername(&self->tcp, addr, sizeof(addr));
+			info("disconnected from %s", addr);
+		}
 	}
 	self->host = NULL;
 	tcp_close(&self->tcp);

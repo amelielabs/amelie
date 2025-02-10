@@ -133,8 +133,9 @@ static void
 system_recover(System* self)
 {
 	// ask each backend to recover last checkpoint partitions in parallel
-	info("recover (checkpoint %" PRIu64 ")",
-	     config_checkpoint());
+	int workers = var_int_of(&config()->backends);
+	info("recover checkpoint %" PRIu64 " (using %d backends)",
+	     config_checkpoint(), workers);
 
 	Build build;
 	build_init(&build, BUILD_RECOVER, &self->backend_mgr, NULL, NULL, NULL, NULL);
@@ -204,7 +205,7 @@ system_start(System* self, bool bootstrap)
 	checkpointer_start(&self->db.checkpointer);
 
 	// start frontends
-	auto workers = var_int_of(&config()->frontends);
+	int workers = var_int_of(&config()->frontends);
 	frontend_mgr_start(&self->frontend_mgr,
 	                   system_on_frontend_connect,
 	                   self,
