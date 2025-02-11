@@ -10,6 +10,10 @@ It scales linearly with the number of CPU cores both for IO and Compute separate
 performs automatic partitioning, and generates parallel group plans for
 all types of queries.
 
+Learn more about [How It Works](https://amelielabs.io/overview.html) and [Get Started](https://amelielabs.io/docs/).
+
+Official Docker image is coming soon.
+
 ### Asynchronous Replication
 
 Amelie has support for Hot Backup and Async Logical Replication, which allows
@@ -23,7 +27,7 @@ Compiles and distributes as a single binary.
 
 ### Development and Features
 
-Amelie was built from scratch, and its research and development took over six years. Dozens of prototypes explored different
+Amelie was built from scratch, and its research and development took over seven years. Dozens of prototypes explored different
 ideas and approaches until the first public release.
 
 The SQL dialect is based on ANSI SQL, PostgreSQL and extended with unique features, such as native JSON support and Lambda aggregates.
