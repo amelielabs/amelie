@@ -202,7 +202,7 @@ checkpoint_run(Checkpoint* self)
 	snprintf(path, sizeof(path), "%s/checkpoints/%" PRIu64 ".incomplete",
 	         config_directory(), self->lsn);
 
-	info("begin checkpoint %" PRIu64 " (using %d workers)",
+	info("⟶ begin checkpoint %" PRIu64 " (using %d workers)",
 	     self->lsn, self->workers_count);
 	fs_mkdir(0755, "%s", path);
 
