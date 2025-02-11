@@ -12,7 +12,9 @@ all types of queries.
 
 Learn more about [How It Works](https://amelielabs.io/overview.html) and [Get Started](https://amelielabs.io/docs/).
 
-Official Docker image is coming soon.
+Join us on [Slack](https://amelielabs.io/slack.html).
+
+(Official Docker image is coming soon)
 
 ### Asynchronous Replication
 
