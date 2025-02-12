@@ -61,10 +61,15 @@ wal_file_close(WalFile* self)
 }
 
 static inline void
+wal_file_sync(WalFile* self)
+{
+	file_sync(&self->file);
+}
+
+static inline void
 wal_file_write(WalFile* self, struct iovec* iov, int iovc)
 {
 	file_writev(&self->file, iov, iovc);
-	// todo: sync
 }
 
 static inline bool

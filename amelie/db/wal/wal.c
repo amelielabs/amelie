@@ -82,7 +82,8 @@ wal_swap(Wal* self)
 	// sync and close prev file
 	if (file_prev)
 	{
-		// todo: sync
+		if (var_int_of(&config()->wal_sync_on_rotate))
+			wal_file_sync(file_prev);
 		wal_file_close(file_prev);
 		wal_file_free(file_prev);
 	}
@@ -226,6 +227,8 @@ wal_write(Wal* self, WalBatch* batch)
 		wal_file_write(self->current, iov_pointer(&log_set->iov),
 		               log_set->iov.iov_count);
 	}
+	if (var_int_of(&config()->wal_sync_on_write))
+		wal_file_sync(self->current);
 
 	// update lsn globally
 	config_lsn_set(next_lsn);
