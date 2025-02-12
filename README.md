@@ -50,3 +50,53 @@ The short list of features:
 * Hot Remote Backup
 * Asynchronous Logical Replication
 * HTTP API
+
+---
+
+### Build and Install
+
+#### OS
+
+Currently only Linux environments are supported.
+
+#### Dependencies
+
+- cmake
+- clang or gcc
+- openssl
+- libpcre
+- libcurl (for test suite)
+
+#### Build Release
+
+```sh
+git clone https://github.com/amelielabs/amelie
+cd amelie
+make release
+```
+
+#### Build Release (pass cmake options directly)
+
+```sh
+git clone https://github.com/amelielabs/amelie
+cd amelie
+cd build
+cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=<install_path> .
+make
+```
+
+#### Build Debug
+
+```sh
+git clone https://github.com/amelielabs/amelie
+cd amelie
+make debug
+```
+
+#### Running tests
+
+```sh
+make
+cd test
+./amelie-test
+```
