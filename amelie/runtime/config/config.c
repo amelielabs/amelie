@@ -66,6 +66,7 @@ config_prepare(Config* self)
 		// wal
 		{ "wal_size",                VAR_INT,    VAR_C,                   &self->wal_size,                NULL,          67108864            },
 		{ "wal_sync_on_rotate",      VAR_BOOL,   VAR_C,                   &self->wal_sync_on_rotate,      NULL,          false               },
+		{ "wal_sync_on_shutdown",    VAR_BOOL,   VAR_C,                   &self->wal_sync_on_shutdown,    NULL,          false               },
 		{ "wal_sync_on_write",       VAR_BOOL,   VAR_C,                   &self->wal_sync_on_write,       NULL,          false               },
 		// replication
 		{ "repl_reconnect_ms",       VAR_INT,    VAR_C,                   &self->repl_reconnect_ms,       NULL,          3000                },

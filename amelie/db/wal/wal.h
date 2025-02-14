@@ -25,6 +25,7 @@ struct Wal
 void wal_init(Wal*);
 void wal_free(Wal*);
 void wal_open(Wal*);
+void wal_close(Wal*);
 void wal_gc(Wal*, uint64_t);
 void wal_write(Wal*, WalBatch*);
 void wal_add(Wal*, WalSlot*);

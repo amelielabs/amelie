@@ -35,13 +35,7 @@ wal_init(Wal* self)
 void
 wal_free(Wal* self)
 {
-	if (self->current)
-	{
-		auto file = self->current;
-		wal_file_close(file);
-		wal_file_free(file);
-		self->current = NULL;
-	}
+	assert(! self->current);
 	id_mgr_free(&self->list);
 	mutex_free(&self->lock);
 }
@@ -195,6 +189,22 @@ wal_open(Wal* self)
 	{
 		wal_swap(self);
 	}
+}
+
+void
+wal_close(Wal* self)
+{
+	if (! self->current)
+		return;
+	auto file = self->current;
+	error_catch
+	(
+		if (var_int_of(&config()->wal_sync_on_shutdown))
+			wal_file_sync(file);
+		wal_file_close(file);
+	);
+	wal_file_free(file);
+	self->current = NULL;
 }
 
 hot void

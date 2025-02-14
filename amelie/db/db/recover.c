@@ -349,9 +349,7 @@ recover_next_write(Recover* self, WalWrite* write, bool write_wal, int flags)
 void
 recover_wal(Recover* self)
 {
-	// prepare wal mgr
 	auto wal = &self->db->wal;
-	wal_open(wal);
 
 	// start wal recover from the last checkpoint
 	auto id = config_checkpoint() + 1;

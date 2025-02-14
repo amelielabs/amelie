@@ -42,6 +42,7 @@ struct Config
 	// wal
 	Var  wal_size;
 	Var  wal_sync_on_rotate;
+	Var  wal_sync_on_shutdown;
 	Var  wal_sync_on_write;
 	// replication
 	Var  repl_reconnect_ms;
