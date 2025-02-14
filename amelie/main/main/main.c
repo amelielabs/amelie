@@ -96,11 +96,11 @@ main_create(Main* self, char* directory)
 	var_string_set_raw(&state()->directory, directory, strlen(directory));
 
 	// create directory if not exists
-	auto bootstrap = !fs_exists("%s", config_directory());
+	auto bootstrap = !fs_exists("%s", state_directory());
 	if (bootstrap)
 	{
-		fs_mkdir(0755, "%s", config_directory());
-		fs_mkdir(0755, "%s/certs", config_directory());
+		fs_mkdir(0755, "%s", state_directory());
+		fs_mkdir(0755, "%s/certs", state_directory());
 	}
 
 	return bootstrap;
@@ -145,11 +145,11 @@ main_open(Main* self, char* directory, int argc, char** argv)
 	logger_set_enable(logger, true);
 	logger_set_cli(logger, false);
 	char path[PATH_MAX];
-	snprintf(path, sizeof(path), "%s/log", config_directory());
+	snprintf(path, sizeof(path), "%s/log", state_directory());
 	logger_open(logger, path);
 
 	// read version file
-	snprintf(path, sizeof(path), "%s/version.json", config_directory());
+	snprintf(path, sizeof(path), "%s/version.json", state_directory());
 	if (bootstrap)
 	{
 		// create version file
@@ -161,7 +161,7 @@ main_open(Main* self, char* directory, int argc, char** argv)
 	}
 
 	// read config file
-	snprintf(path, sizeof(path), "%s/config.json", config_directory());
+	snprintf(path, sizeof(path), "%s/config.json", state_directory());
 	if (bootstrap)
 	{
 		// set options first, to properly generate config
@@ -182,7 +182,7 @@ main_open(Main* self, char* directory, int argc, char** argv)
 	}
 
 	// read state file
-	snprintf(path, sizeof(path), "%s/state.json", config_directory());
+	snprintf(path, sizeof(path), "%s/state.json", state_directory());
 	if (bootstrap)
 	{
 		// create state file

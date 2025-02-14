@@ -131,13 +131,13 @@ restore_start(Restore* self)
 	decode_obj(obj, "restore", &pos);
 
 	// create checkpoints directory
-	fs_mkdir(0755, "%s/checkpoints", config_directory());
+	fs_mkdir(0755, "%s/checkpoints", state_directory());
 	if (self->checkpoint > 0)
-		fs_mkdir(0755, "%s/checkpoints/%" PRIi64, config_directory(),
+		fs_mkdir(0755, "%s/checkpoints/%" PRIi64, state_directory(),
 		         self->checkpoint);
 
 	// create wals directory
-	fs_mkdir(0755, "%s/wals", config_directory());
+	fs_mkdir(0755, "%s/wals", state_directory());
 }
 
 static void
@@ -218,7 +218,7 @@ restore_next(Restore* self)
 
 	// create and transfer file
 	char path[PATH_MAX];
-	snprintf(path, sizeof(path), "%s/%.*s", config_directory(),
+	snprintf(path, sizeof(path), "%s/%.*s", state_directory(),
 	         str_size(&am_file->value),
 	         str_of(&am_file->value));
 	File file;

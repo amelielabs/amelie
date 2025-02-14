@@ -61,7 +61,7 @@ checkpoint_mgr_open_dir(CheckpointMgr* self)
 {
 	// create directory
 	char path[PATH_MAX];
-	snprintf(path, sizeof(path), "%s/checkpoints", config_directory());
+	snprintf(path, sizeof(path), "%s/checkpoints", state_directory());
 	if (! fs_exists("%s", path))
 		fs_mkdir(0755, "%s", path);
 
@@ -89,7 +89,7 @@ checkpoint_mgr_open_dir(CheckpointMgr* self)
 			continue;
 		}
 		checkpoint_mgr_add(self, lsn);
-		config_lsn_follow(lsn);
+		state_lsn_follow(lsn);
 	}
 
 	// set last checkpoint
@@ -101,13 +101,13 @@ checkpoint_mgr_open_dir(CheckpointMgr* self)
 static void
 checkpoint_mgr_open_catalog(CheckpointMgr* self)
 {
-	auto checkpoint = config_checkpoint();
+	auto checkpoint = state_checkpoint();
 	if (! checkpoint)
 		return;
 
 	// read and parse catalog content
 	auto buf = file_import("%s/checkpoints/%" PRIu64 "/catalog.json",
-	                       config_directory(),
+	                       state_directory(),
 	                       checkpoint);
 	defer_buf(buf);
 
@@ -137,7 +137,7 @@ checkpoint_mgr_open(CheckpointMgr* self)
 void
 checkpoint_mgr_gc(CheckpointMgr* self)
 {
-	uint64_t min = config_checkpoint();
+	uint64_t min = state_checkpoint();
 	uint64_t snapshot_min = id_mgr_min(&self->list_snapshot);
 	if (snapshot_min < min)
 		min = snapshot_min;
@@ -153,7 +153,7 @@ checkpoint_mgr_gc(CheckpointMgr* self)
 	{
 		auto lsns = buf_u64(&list);
 		for (int i = 0; i < list_count; i++)
-			fs_rmdir("%s/checkpoints/%" PRIu64, config_directory(), lsns[i]);
+			fs_rmdir("%s/checkpoints/%" PRIu64, state_directory(), lsns[i]);
 	}
 }
 
@@ -184,7 +184,7 @@ checkpoint_mgr_list(CheckpointMgr* self, uint64_t checkpoint, Buf* buf)
 	unused(self);
 	char path[PATH_MAX];
 	snprintf(path, sizeof(path), "%s/checkpoints/%" PRIu64,
-	         config_directory(), checkpoint);
+	         state_directory(), checkpoint);
 
 	auto dir = opendir(path);
 	if (unlikely(dir == NULL))
@@ -220,7 +220,7 @@ checkpoint_mgr_list(CheckpointMgr* self, uint64_t checkpoint, Buf* buf)
 		         checkpoint, id);
 		encode_cstr(buf, path);
 		// size
-		auto size = fs_size("%s/checkpoints/%" PRIu64 "/%" PRIu64, config_directory(),
+		auto size = fs_size("%s/checkpoints/%" PRIu64 "/%" PRIu64, state_directory(),
 		                    checkpoint, id);
 		if (size == -1)
 			error_system();
@@ -235,7 +235,7 @@ checkpoint_mgr_list(CheckpointMgr* self, uint64_t checkpoint, Buf* buf)
 	encode_cstr(buf, path);
 	// size
 	auto size = fs_size("%s/checkpoints/%" PRIu64 "/catalog.json",
-	                    config_directory(),
+	                    state_directory(),
 	                    checkpoint);
 	if (size == -1)
 		error_system();

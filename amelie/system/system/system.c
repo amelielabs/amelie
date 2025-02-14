@@ -48,7 +48,7 @@ system_save_state(void* arg)
 {
 	unused(arg);
 	char path[PATH_MAX];
-	snprintf(path, sizeof(path), "%s/state.json", config_directory());
+	snprintf(path, sizeof(path), "%s/state.json", state_directory());
 	state_save(state(), path);
 }
 
@@ -135,7 +135,7 @@ system_recover(System* self)
 	// ask each backend to recover last checkpoint partitions in parallel
 	int workers = var_int_of(&config()->backends);
 	info("⟶ recover checkpoint %" PRIu64 " (using %d backends)",
-	     config_checkpoint(), workers);
+	     state_checkpoint(), workers);
 
 	Build build;
 	build_init(&build, BUILD_RECOVER, &self->backend_mgr, NULL, NULL, NULL, NULL);
@@ -157,7 +157,7 @@ system_bootstrap(System* self)
 {
 	// create backend workers
 	backend_bootstrap(&self->db, var_int_of(&config()->backends));
-	config_lsn_set(1);
+	state_lsn_set(1);
 
 	// create initial checkpoint, mostly to ensure that backend
 	// information is persisted

@@ -58,7 +58,7 @@ snapshot_begin(Snapshot* self)
 	char path[PATH_MAX];
 	snprintf(path, sizeof(path),
 	         "%s/checkpoints/%" PRIu64 ".incomplete/%" PRIu64,
-	         config_directory(),
+	         state_directory(),
 	         self->lsn,
 	         self->partition);
 

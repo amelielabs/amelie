@@ -76,7 +76,7 @@ ddl_create_partition(TableConfig* table_config, Worker* worker,
 {
 	// create partition config
 	auto config = part_config_allocate();
-	auto psn = config_psn_next();
+	auto psn = state_psn_next();
 	part_config_set_id(config, psn);
 	part_config_set_backend(config, &worker->id);
 	part_config_set_range(config, min, max);

@@ -35,7 +35,7 @@ snapshot_cursor_open(SnapshotCursor* self, uint64_t lsn, uint64_t partition)
 	char path[PATH_MAX];
 	snprintf(path, sizeof(path),
 	         "%s/checkpoints/%" PRIu64 "/%" PRIu64,
-	         config_directory(),
+	         state_directory(),
 	         lsn,
 	         partition);
 	file_open(&self->file, path);

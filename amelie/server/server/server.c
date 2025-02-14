@@ -109,7 +109,7 @@ server_listen(ServerListen* listen)
 			         str_size(path), str_of(path));
 		else
 			snprintf(addr_name, sizeof(addr_name), "%s/%.*s",
-			         config_directory(),
+			         state_directory(),
 			         str_size(path), str_of(path));
 		snprintf(addr_un.sun_path, sizeof(addr_un.sun_path) - 1, "%s", addr_name);
 		vfs_unlink(addr_name);
@@ -217,22 +217,22 @@ server_configure_tls(Server* self)
 
 	// tls_capath
 	if (var_string_is_set(&config()->tls_capath))
-		remote_set_path(remote, REMOTE_PATH_CA, config_directory(),
+		remote_set_path(remote, REMOTE_PATH_CA, state_directory(),
 		                &config()->tls_capath.string);
 
 	// tls_ca
 	if (var_string_is_set(&config()->tls_ca))
-		remote_set_path(remote, REMOTE_FILE_CA, config_directory(),
+		remote_set_path(remote, REMOTE_FILE_CA, state_directory(),
 		                &config()->tls_ca.string);
 
 	// tls_cert
 	if (var_string_is_set(&config()->tls_cert))
-		remote_set_path(remote, REMOTE_FILE_CERT, config_directory(),
+		remote_set_path(remote, REMOTE_FILE_CERT, state_directory(),
 		                &config()->tls_cert.string);
 
 	// tls_key
 	if (var_string_is_set(&config()->tls_key))
-		remote_set_path(remote, REMOTE_FILE_KEY, config_directory(),
+		remote_set_path(remote, REMOTE_FILE_KEY, state_directory(),
 		                &config()->tls_key.string);
 
 	// create tls context

@@ -49,7 +49,7 @@ wal_rotate_ready(Wal* self, uint64_t size)
 static void
 wal_swap(Wal* self)
 {
-	uint64_t next_lsn = config_lsn() + 1;
+	uint64_t next_lsn = state_lsn() + 1;
 
 	// create new wal file
 	WalFile* file = NULL;
@@ -119,7 +119,7 @@ wal_gc(Wal* self, uint64_t min)
 		{
 			char path[PATH_MAX];
 			snprintf(path, sizeof(path), "%s/wals/%" PRIu64,
-			         config_directory(),
+			         state_directory(),
 			         id_list[i]);
 			size += fs_size("%s", path);
 			fs_unlink("%s", path);
@@ -171,7 +171,7 @@ wal_open(Wal* self)
 {
 	// create directory
 	char path[PATH_MAX];
-	snprintf(path, sizeof(path), "%s/wals", config_directory());
+	snprintf(path, sizeof(path), "%s/wals", state_directory());
 	if (! fs_exists("%s", path))
 		fs_mkdir(0755, "%s", path);
 
@@ -218,7 +218,7 @@ wal_write(Wal* self, WalBatch* batch)
 	var_int_add(&state()->writes_bytes, batch->header.size);
 	var_int_add(&state()->ops, batch->header.count);
 
-	uint64_t next_lsn = config_lsn() + 1;
+	uint64_t next_lsn = state_lsn() + 1;
 	batch->header.lsn = next_lsn;
 	// todo: crc
 
@@ -239,7 +239,7 @@ wal_write(Wal* self, WalBatch* batch)
 	}
 
 	// update lsn globally
-	config_lsn_set(next_lsn);
+	state_lsn_set(next_lsn);
 
 	// notify pending slots
 	list_foreach(&self->slots)
@@ -328,7 +328,7 @@ wal_snapshot(Wal* self, WalSlot* slot, Buf* buf)
 			size = self->current->file.size;
 		} else
 		{
-			size = fs_size("%s/wals/%" PRIu64, config_directory(), id);
+			size = fs_size("%s/wals/%" PRIu64, state_directory(), id);
 			if (size == -1)
 				error_system();
 		}
@@ -363,7 +363,7 @@ wal_status(Wal* self)
 
 	// lsn
 	encode_raw(buf, "lsn", 3);
-	encode_integer(buf, config_lsn());
+	encode_integer(buf, state_lsn());
 
 	// lsn_min
 	encode_raw(buf, "lsn_min", 7);
@@ -395,7 +395,7 @@ wal_status(Wal* self)
 
 	// checkpoint
 	encode_raw(buf, "checkpoint", 10);
-	encode_integer(buf, config_checkpoint());
+	encode_integer(buf, state_checkpoint());
 
 	encode_obj_end(buf);
 	return buf;

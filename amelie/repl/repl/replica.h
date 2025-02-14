@@ -77,7 +77,7 @@ replica_status(Replica* self, Buf* buf)
 
 	// lag
 	encode_raw(buf, "lag", 3);
-	encode_integer(buf, config_lsn() - lsn);
+	encode_integer(buf, state_lsn() - lsn);
 
 	encode_obj_end(buf);
 }

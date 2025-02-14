@@ -66,7 +66,7 @@ backup_add(Buf* self, char* path)
 	// relative path
 	encode_cstr(self, path);
 	// size
-	auto size = fs_size("%s/%s", config_directory(), path);
+	auto size = fs_size("%s/%s", state_directory(), path);
 	if (size == -1)
 		error_system();
 	encode_integer(self, size);
@@ -77,7 +77,7 @@ static inline void
 backup_list(Buf* self, char* name)
 {
 	char path[PATH_MAX];
-	snprintf(path, sizeof(path), "%s/%s", config_directory(), name);
+	snprintf(path, sizeof(path), "%s/%s", state_directory(), name);
 	auto dir = opendir(path);
 	if (unlikely(dir == NULL))
 		error_system();
@@ -119,7 +119,7 @@ backup_prepare_files(Backup* self, uint64_t checkpoint)
 	backup_add(buf, "state.json");
 
 	// read state file into memory
-	self->state_file = file_import("%s/state.json", config_directory());
+	self->state_file = file_import("%s/state.json", state_directory());
 
 	encode_array_end(buf);
 	return json_array_size(self->state.start);
@@ -204,7 +204,7 @@ static void
 backup_send_file(Backup* self, Str* name, int64_t size, Buf* data)
 {
 	char path[PATH_MAX];
-	snprintf(path, sizeof(path), "%s/%.*s", config_directory(),
+	snprintf(path, sizeof(path), "%s/%.*s", state_directory(),
 	         str_size(name), str_of(name));
 
 	// prepare and send header

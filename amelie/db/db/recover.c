@@ -318,7 +318,7 @@ recover_next_log(Recover* self, Tr* tr, WalWrite* write, bool write_wal, int fla
 		wal_write(&self->db->wal, batch);
 	} else
 	{
-		config_lsn_follow(write->lsn);
+		state_lsn_follow(write->lsn);
 	}
 }
 
@@ -352,7 +352,7 @@ recover_wal(Recover* self)
 	auto wal = &self->db->wal;
 
 	// start wal recover from the last checkpoint
-	auto id = config_checkpoint() + 1;
+	auto id = state_checkpoint() + 1;
 	for (;;)
 	{
 		WalCursor cursor;

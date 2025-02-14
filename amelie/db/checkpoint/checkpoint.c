@@ -177,7 +177,7 @@ checkpoint_create_catalog(Checkpoint* self)
 	char path[PATH_MAX];
 	snprintf(path, sizeof(path),
 	         "%s/checkpoints/%" PRIu64 ".incomplete/catalog.json",
-	         config_directory(), self->lsn);
+	         state_directory(), self->lsn);
 
 	// convert catalog to json
 	Buf text;
@@ -200,7 +200,7 @@ checkpoint_run(Checkpoint* self)
 	// create <base>/<lsn>.incomplete
 	char path[PATH_MAX];
 	snprintf(path, sizeof(path), "%s/checkpoints/%" PRIu64 ".incomplete",
-	         config_directory(), self->lsn);
+	         state_directory(), self->lsn);
 
 	info("⟶ begin checkpoint %" PRIu64 " (using %d workers)",
 	     self->lsn, self->workers_count);
@@ -238,15 +238,16 @@ checkpoint_wait(Checkpoint* self)
 	}
 	if (errors > 0)
 	{
-		fs_rmdir("%s/checkpoints/%" PRIu64 ".incomplete", config_directory(), self->lsn);
+		fs_rmdir("%s/checkpoints/%" PRIu64 ".incomplete",
+		         state_directory(), self->lsn);
 		error("%" PRIu64 " failed", self->lsn);
 	}
 
 	// rename as completed
 	char path[PATH_MAX];
 	snprintf(path, sizeof(path), "%s/checkpoints/%" PRIu64 ".incomplete",
-	         config_directory(), self->lsn);
-	fs_rename(path, "%s/checkpoints/%" PRIu64, config_directory(), self->lsn);
+	         state_directory(), self->lsn);
+	fs_rename(path, "%s/checkpoints/%" PRIu64, state_directory(), self->lsn);
 
 	// done
 

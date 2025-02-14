@@ -26,7 +26,7 @@
 hot static void
 recover_partition(Part* self)
 {
-	auto checkpoint = config_checkpoint();
+	auto checkpoint = state_checkpoint();
 
 	SnapshotCursor cursor;
 	snapshot_cursor_init(&cursor);

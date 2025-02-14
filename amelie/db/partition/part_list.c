@@ -62,7 +62,7 @@ part_list_create(PartList* self,
 	list_foreach(parts)
 	{
 		auto config = list_at(PartConfig, link);
-		config_psn_follow(config->id);
+		state_psn_follow(config->id);
 
 		// prepare part
 		auto part = part_allocate(config, seq, unlogged);

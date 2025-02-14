@@ -27,8 +27,8 @@ checkpointer_run(Rpc* rpc, void* arg)
 	Checkpointer* self = arg;
 
 	// prepare checkpoint
-	uint64_t lsn = config_lsn();
-	if (lsn == config_checkpoint())
+	uint64_t lsn = state_lsn();
+	if (lsn == state_checkpoint())
 		return;
 
 	// take exclusive system lock

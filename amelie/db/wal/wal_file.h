@@ -39,7 +39,7 @@ wal_file_open(WalFile* self)
 {
 	char path[PATH_MAX];
 	snprintf(path, sizeof(path), "%s/wals/%" PRIu64,
-	         config_directory(),
+	         state_directory(),
 	         self->id);
 	file_open(&self->file, path);
 }
@@ -49,7 +49,7 @@ wal_file_create(WalFile* self)
 {
 	char path[PATH_MAX];
 	snprintf(path, sizeof(path), "%s/wals/%" PRIu64,
-	         config_directory(),
+	         state_directory(),
 	         self->id);
 	file_create(&self->file, path);
 }

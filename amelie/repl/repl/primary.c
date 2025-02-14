@@ -53,7 +53,7 @@ primary_write(Primary* self)
 	http_write(reply, "Am-Service", "repl");
 	http_write(reply, "Am-Version", "1");
 	http_write(reply, "Am-Id", "%.*s", str_size(id), str_of(id));
-	http_write(reply, "Am-Lsn", "%" PRIu64, config_lsn());
+	http_write(reply, "Am-Lsn", "%" PRIu64, state_lsn());
 	http_write_end(reply);
 	tcp_write_buf(&client->tcp, &reply->raw);
 }
@@ -152,7 +152,7 @@ primary_next(Primary* self)
 		error("primary Am-Lsn is invalid");
 
 	// lsn must much the current state
-	if ((uint64_t)lsn != config_lsn())
+	if ((uint64_t)lsn != state_lsn())
 		error("primary lsn does not match this server lsn");
 
 	return true;
