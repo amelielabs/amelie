@@ -171,7 +171,7 @@ executor_wal_write(Executor* self)
 	auto commit = &self->commit;
 	auto wal_batch = &commit->wal_batch;
 	auto wal = &self->db->wal;
-
+	auto wal_updated = false;
 	list_foreach(&commit->list)
 	{
 		auto tr  = list_at(Dtr, link_commit);
@@ -196,8 +196,11 @@ executor_wal_write(Executor* self)
 			if (!tr->program->repl && var_int_of(&state()->read_only))
 				error("system is in read-only mode");
 			wal_write(wal, wal_batch);
+			wal_updated = true;
 		}
 	}
+	if (wal_updated)
+		wal_sync(wal);
 }
 
 hot void

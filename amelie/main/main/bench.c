@@ -178,6 +178,7 @@ bench_run(Bench* self)
 	// validate options
 	auto type               = var_string_of(&self->type);
 	auto scale              = var_int_of(&self->scale);
+	auto batch              = var_int_of(&self->batch);
 	auto time               = var_int_of(&self->time);
 	auto workers            = var_int_of(&self->threads);
 	auto clients            = var_int_of(&self->clients);
@@ -211,6 +212,7 @@ bench_run(Bench* self)
 	info("time:     %" PRIu64 " sec", time);
 	info("threads:  %" PRIu64, workers);
 	info("clients:  %" PRIu64 " (%" PRIu64 " per thread)", clients, clients_per_worker);
+	info("batch:    %" PRIu64, batch);
 	info("scale:    %" PRIu64, scale);
 	info("init:     %" PRIu64, init);
 	info("unlogged: %" PRIu64, unlogged);

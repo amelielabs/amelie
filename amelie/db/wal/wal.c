@@ -237,8 +237,6 @@ wal_write(Wal* self, WalBatch* batch)
 		wal_file_write(self->current, iov_pointer(&log_set->iov),
 		               log_set->iov.iov_count);
 	}
-	if (var_int_of(&config()->wal_sync_on_write))
-		wal_file_sync(self->current);
 
 	// update lsn globally
 	config_lsn_set(next_lsn);
@@ -249,6 +247,15 @@ wal_write(Wal* self, WalBatch* batch)
 		auto slot = list_at(WalSlot, link);
 		wal_slot_signal(slot, batch->header.lsn);
 	}
+}
+
+hot void
+wal_sync(Wal* self)
+{
+	mutex_lock(&self->lock);
+	defer(mutex_unlock, &self->lock);
+	if (var_int_of(&config()->wal_sync_on_write))
+		wal_file_sync(self->current);
 }
 
 void

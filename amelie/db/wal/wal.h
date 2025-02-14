@@ -28,6 +28,7 @@ void wal_open(Wal*);
 void wal_close(Wal*);
 void wal_gc(Wal*, uint64_t);
 void wal_write(Wal*, WalBatch*);
+void wal_sync(Wal*);
 void wal_add(Wal*, WalSlot*);
 void wal_del(Wal*, WalSlot*);
 void wal_attach(Wal*, WalSlot*);
