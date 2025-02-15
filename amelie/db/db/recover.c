@@ -311,11 +311,15 @@ recover_next_log(Recover* self, Tr* tr, WalWrite* write, bool write_wal, int fla
 	// wal write, if necessary
 	if (write_wal)
 	{
+		auto wal = &self->db->wal;
 		auto batch = &self->batch;
 		wal_batch_reset(batch);
 		wal_batch_begin(batch, flags);
 		wal_batch_add(batch, &tr->log.log_set);
-		wal_write(&self->db->wal, batch);
+		auto wal_rotate = wal_write(wal, batch);
+		wal_sync(wal);
+		if (wal_rotate)
+			wal_create(wal, state_lsn() + 1);
 	} else
 	{
 		state_lsn_follow(write->lsn);

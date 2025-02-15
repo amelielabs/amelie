@@ -46,43 +46,6 @@ wal_rotate_ready(Wal* self, uint64_t size)
 	return !self->current || self->current->file.size >= size;
 }
 
-static void
-wal_swap(Wal* self)
-{
-	uint64_t next_lsn = state_lsn() + 1;
-
-	// create new wal file
-	WalFile* file = NULL;
-	auto on_error = error_catch
-	(
-		file = wal_file_allocate(next_lsn);
-		wal_file_create(file);
-	);
-	if (on_error)
-	{
-		if (file)
-		{
-			wal_file_close(file);
-			wal_file_free(file);
-		}
-		rethrow();
-	}
-
-	// add to the list and set as current
-	auto file_prev = self->current;
-	self->current = file;
-	id_mgr_add(&self->list, next_lsn);
-
-	// sync and close prev file
-	if (file_prev)
-	{
-		if (var_int_of(&config()->wal_sync_on_rotate))
-			wal_file_sync(file_prev);
-		wal_file_close(file_prev);
-		wal_file_free(file_prev);
-	}
-}
-
 static int
 wal_slots(Wal* self, uint64_t* min)
 {
@@ -97,6 +60,42 @@ wal_slots(Wal* self, uint64_t* min)
 	}
 	mutex_unlock(&self->lock);
 	return count;
+}
+
+void
+wal_create(Wal* self, uint64_t lsn)
+{
+	// create new wal file
+	WalFile* file = NULL;
+	auto on_error = error_catch
+	(
+		file = wal_file_allocate(lsn);
+		wal_file_create(file);
+	);
+	if (on_error)
+	{
+		if (file)
+		{
+			wal_file_close(file);
+			wal_file_free(file);
+		}
+		rethrow();
+	}
+	id_mgr_add(&self->list, lsn);
+
+	// add to the list and set as current
+	mutex_lock(&self->lock);
+	auto file_prev = self->current;
+	self->current = file;
+	mutex_unlock(&self->lock);
+
+	// sync and close prev file
+	if (! file_prev)
+		return;
+	if (var_int_of(&config()->wal_sync_on_rotate))
+		wal_file_sync(file_prev);
+	wal_file_close(file_prev);
+	wal_file_free(file_prev);
 }
 
 void
@@ -187,7 +186,7 @@ wal_open(Wal* self)
 		file_seek_to_end(&self->current->file);
 	} else
 	{
-		wal_swap(self);
+		wal_create(self, 1);
 	}
 }
 
@@ -207,7 +206,7 @@ wal_close(Wal* self)
 	self->current = NULL;
 }
 
-hot void
+hot bool
 wal_write(Wal* self, WalBatch* batch)
 {
 	mutex_lock(&self->lock);
@@ -220,14 +219,8 @@ wal_write(Wal* self, WalBatch* batch)
 
 	uint64_t next_lsn = state_lsn() + 1;
 	batch->header.lsn = next_lsn;
-	// todo: crc
-
-	// create new wal file if needed
-	if (wal_rotate_ready(self, var_int_of(&config()->wal_size)))
-		wal_swap(self);
 
 	// write wal file
-	// todo: truncate on error
 
 	// [header][rows meta][rows]
 	wal_file_write(self->current, iov_pointer(&batch->iov), batch->iov.iov_count);
@@ -247,15 +240,18 @@ wal_write(Wal* self, WalBatch* batch)
 		auto slot = list_at(WalSlot, link);
 		wal_slot_signal(slot, batch->header.lsn);
 	}
+
+	return wal_rotate_ready(self, var_int_of(&config()->wal_size));
 }
 
 hot void
 wal_sync(Wal* self)
 {
+	if (! var_int_of(&config()->wal_sync_on_write))
+		return;
 	mutex_lock(&self->lock);
 	defer(mutex_unlock, &self->lock);
-	if (var_int_of(&config()->wal_sync_on_write))
-		wal_file_sync(self->current);
+	wal_file_sync(self->current);
 }
 
 void
