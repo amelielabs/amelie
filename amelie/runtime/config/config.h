@@ -40,10 +40,11 @@ struct Config
 	Var  frontends;
 	Var  backends;
 	// wal
-	Var  wal_size;
+	Var  wal_worker;
 	Var  wal_sync_on_rotate;
 	Var  wal_sync_on_shutdown;
 	Var  wal_sync_on_write;
+	Var  wal_size;
 	// replication
 	Var  repl_reconnect_ms;
 	// checkpoint

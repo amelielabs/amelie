@@ -16,3 +16,5 @@
 #include "wal/wal_slot.h"
 #include "wal/wal.h"
 #include "wal/wal_cursor.h"
+#include "wal/wal_worker.h"
+#include "wal/wal_mgr.h"

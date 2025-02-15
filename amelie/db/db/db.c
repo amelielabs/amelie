@@ -35,7 +35,7 @@ db_init(Db*        self,
 	worker_mgr_init(&self->worker_mgr, worker_iface, worker_iface_arg);
 	checkpoint_mgr_init(&self->checkpoint_mgr, &db_checkpoint_if, self);
 	checkpointer_init(&self->checkpointer, &self->checkpoint_mgr);
-	wal_init(&self->wal);
+	wal_mgr_init(&self->wal_mgr);
 }
 
 void
@@ -45,7 +45,7 @@ db_free(Db* self)
 	worker_mgr_free(&self->worker_mgr);
 	schema_mgr_free(&self->schema_mgr);
 	checkpoint_mgr_free(&self->checkpoint_mgr);
-	wal_free(&self->wal);
+	wal_mgr_free(&self->wal_mgr);
 }
 
 static void
@@ -91,8 +91,8 @@ db_open(Db* self)
 	// (schemas, tables)
 	checkpoint_mgr_open(&self->checkpoint_mgr);
 
-	// open wal directory
-	wal_open(&self->wal);
+	// start wal mgr
+	wal_mgr_start(&self->wal_mgr);
 }
 
 void
@@ -110,8 +110,8 @@ db_close(Db* self, bool fast)
 	// free workers
 	worker_mgr_free(&self->worker_mgr);
 
-	// shutdown wal mgr
-	wal_close(&self->wal);
+	// stop wal mgr
+	wal_mgr_stop(&self->wal_mgr);
 }
 
 Buf*

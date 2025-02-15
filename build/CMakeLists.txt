@@ -192,6 +192,8 @@ set(AMELIE_SOURCES_DB
     ${AMELIE_ROOT}/db/checkpoint/checkpointer.c
     ${AMELIE_ROOT}/db/wal/wal.c
     ${AMELIE_ROOT}/db/wal/wal_cursor.c
+    ${AMELIE_ROOT}/db/wal/wal_worker.c
+    ${AMELIE_ROOT}/db/wal/wal_mgr.c
     ${AMELIE_ROOT}/db/db/schema_mgr.c
     ${AMELIE_ROOT}/db/db/table_mgr.c
     ${AMELIE_ROOT}/db/db/table_mgr_alter.c

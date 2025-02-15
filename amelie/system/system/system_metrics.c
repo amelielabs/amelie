@@ -186,7 +186,7 @@ system_metrics(System* self)
 
 	// wal
 	encode_raw(buf, "wal", 3);
-	auto wal = wal_status(&self->db.wal);
+	auto wal = wal_status(&self->db.wal_mgr.wal);
 	defer_buf(wal);
 	buf_write(buf, wal->start, buf_size(wal));
 

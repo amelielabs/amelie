@@ -49,7 +49,7 @@ void
 backup_free(Backup* self)
 {
 	auto db = self->db;
-	wal_del(&db->wal, &self->wal_slot);
+	wal_del(&db->wal_mgr.wal, &self->wal_slot);
 	if (self->snapshot)
 		id_mgr_delete(&db->checkpoint_mgr.list_snapshot, 0);
 	event_detach(&self->on_complete);
@@ -108,7 +108,7 @@ backup_prepare_files(Backup* self, uint64_t checkpoint)
 	checkpoint_mgr_list(&db->checkpoint_mgr, checkpoint, buf);
 
 	// create wal snapshot and include wal files
-	wal_snapshot(&db->wal, &self->wal_slot, buf);
+	wal_snapshot(&db->wal_mgr.wal, &self->wal_slot, buf);
 
 	// include certs files
 	backup_list(buf, "certs");

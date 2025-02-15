@@ -502,11 +502,7 @@ session_execute_ddl_stmt(Session* self, Tr* tr)
 	defer(wal_batch_free, &batch);
 	wal_batch_begin(&batch, WAL_UTILITY);
 	wal_batch_add(&batch, &tr->log.log_set);
-	auto wal = &self->share->db->wal;
-	auto wal_rotate = wal_write(wal, &batch);
-	wal_sync(wal);
-	if (wal_rotate)
-		wal_create(wal, state_lsn() + 1);
+	wal_mgr_write(&self->share->db->wal_mgr, &batch);
 }
 
 void

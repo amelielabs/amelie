@@ -35,10 +35,11 @@ show all
   "limit_recv": 1048576,
   "limit_write": 0,
   "frontends": 1,
-  "wal_size": 67108864,
+  "wal_worker": false,
   "wal_sync_on_rotate": false,
   "wal_sync_on_shutdown": false,
   "wal_sync_on_write": false,
+  "wal_size": 67108864,
   "repl_reconnect_ms": 3000,
   "checkpoint_interval": "5 min",
   "checkpoint_workers": 3

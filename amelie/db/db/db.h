@@ -20,7 +20,7 @@ struct Db
 	WorkerMgr     worker_mgr;
 	Checkpointer  checkpointer;
 	CheckpointMgr checkpoint_mgr;
-	Wal           wal;
+	WalMgr        wal_mgr;
 };
 
 void db_init(Db*, PartMapper, void*, WorkerIf*, void*);

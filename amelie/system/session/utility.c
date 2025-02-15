@@ -74,7 +74,7 @@ ctl_show(Session* self)
 		buf = repl_status(share->repl);
 		break;
 	case SHOW_WAL:
-		buf = wal_status(&share->db->wal);
+		buf = wal_status(&share->db->wal_mgr.wal);
 		break;
 	case SHOW_METRICS:
 		rpc(global()->control->system, RPC_SHOW_METRICS, 1, &buf);

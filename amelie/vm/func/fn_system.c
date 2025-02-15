@@ -164,7 +164,7 @@ static void
 fn_wal(Call* self)
 {
 	call_expect(self, 0);
-	auto buf = wal_status(&self->mgr->db->wal);
+	auto buf = wal_status(&self->mgr->db->wal_mgr.wal);
 	value_set_json_buf(self->result, buf);
 }
 

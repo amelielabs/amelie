@@ -40,12 +40,6 @@ wal_free(Wal* self)
 	mutex_free(&self->lock);
 }
 
-static inline bool
-wal_rotate_ready(Wal* self, uint64_t size)
-{
-	return !self->current || self->current->file.size >= size;
-}
-
 static int
 wal_slots(Wal* self, uint64_t* min)
 {
@@ -62,8 +56,18 @@ wal_slots(Wal* self, uint64_t* min)
 	return count;
 }
 
+bool
+wal_rotate_ready(Wal* self)
+{
+	mutex_lock(&self->lock);
+	defer(mutex_unlock, &self->lock);
+	if (! self->current)
+		return true;
+	return self->current->file.size >= var_int_of(&config()->wal_size);
+}
+
 void
-wal_create(Wal* self, uint64_t lsn)
+wal_rotate(Wal* self, uint64_t lsn)
 {
 	// create new wal file
 	WalFile* file = NULL;
@@ -89,12 +93,12 @@ wal_create(Wal* self, uint64_t lsn)
 	self->current = file;
 	mutex_unlock(&self->lock);
 
-	// sync and close prev file
+	// close prev file
 	if (! file_prev)
 		return;
-	if (var_int_of(&config()->wal_sync_on_rotate))
-		wal_file_sync(file_prev);
-	wal_file_close(file_prev);
+	error_catch (
+		wal_file_close(file_prev);
+	);
 	wal_file_free(file_prev);
 }
 
@@ -186,7 +190,7 @@ wal_open(Wal* self)
 		file_seek_to_end(&self->current->file);
 	} else
 	{
-		wal_create(self, 1);
+		wal_rotate(self, 1);
 	}
 }
 
@@ -196,10 +200,7 @@ wal_close(Wal* self)
 	if (! self->current)
 		return;
 	auto file = self->current;
-	error_catch
-	(
-		if (var_int_of(&config()->wal_sync_on_shutdown))
-			wal_file_sync(file);
+	error_catch (
 		wal_file_close(file);
 	);
 	wal_file_free(file);
@@ -241,16 +242,12 @@ wal_write(Wal* self, WalBatch* batch)
 		wal_slot_signal(slot, batch->header.lsn);
 	}
 
-	return wal_rotate_ready(self, var_int_of(&config()->wal_size));
+	return self->current->file.size >= var_int_of(&config()->wal_size);
 }
 
 hot void
 wal_sync(Wal* self)
 {
-	if (! var_int_of(&config()->wal_sync_on_write))
-		return;
-	mutex_lock(&self->lock);
-	defer(mutex_unlock, &self->lock);
 	wal_file_sync(self->current);
 }
 

@@ -170,7 +170,7 @@ executor_wal_write(Executor* self)
 {
 	auto commit = &self->commit;
 	auto wal_batch = &commit->wal_batch;
-	auto wal = &self->db->wal;
+	auto wal_mgr = &self->db->wal_mgr;
 	auto wal_updated = false;
 	auto wal_rotate  = false;
 	list_foreach(&commit->list)
@@ -196,15 +196,15 @@ executor_wal_write(Executor* self)
 			// system read-only state
 			if (!tr->program->repl && var_int_of(&state()->read_only))
 				error("system is in read-only mode");
-			if (wal_write(wal, wal_batch))
+			if (wal_write(&wal_mgr->wal, wal_batch))
 				wal_rotate = true;
 			wal_updated = true;
 		}
 	}
-	if (wal_updated)
-		wal_sync(wal);
+	if (wal_updated && var_int_of(&config()->wal_sync_on_write))
+		wal_sync(&wal_mgr->wal);
 	if (wal_rotate)
-		wal_create(wal, state_lsn() + 1);
+		wal_mgr_rotate(wal_mgr);
 }
 
 hot void

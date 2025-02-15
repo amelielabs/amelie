@@ -164,7 +164,7 @@ db_checkpoint_complete(void* arg)
 	Db* self = arg;
 	// gc
 	checkpoint_mgr_gc(&self->checkpoint_mgr);
-	wal_gc(&self->wal, state_checkpoint());
+	wal_mgr_gc(&self->wal_mgr);
 }
 
 CheckpointIf db_checkpoint_if =
