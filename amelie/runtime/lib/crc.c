@@ -323,8 +323,8 @@ struct align32
 
 #define align32(ptr) ((align32*)(ptr))->value
 
-hot static inline uint32_t
-crc32_sw(uint32_t crc, const void* buf, int len)
+hot uint32_t
+crc32(uint32_t crc, const void* buf, int len)
 {
 	const char* p_buf = (const char*)buf;
 
@@ -372,15 +372,14 @@ crc32_sw(uint32_t crc, const void* buf, int len)
  * Volume 2A: Instruction Set Reference, A-M
 */
 
-#if defined (__x86_64__) || defined (__i386__)
 #if defined (__x86_64__)
-	#define REX_PRE "0x48, "
-#elif defined (__i386__)
-	#define REX_PRE
+#define REX_PRE "0x48, "
+#else 
+#define REX_PRE
 #endif
 
 static inline uint32_t
-crc32_hw_byte(uint32_t crc, unsigned char const* data, unsigned int len)
+crc32_sse_byte(uint32_t crc, unsigned char const* data, unsigned int len)
 {
 	while (len--)
 	{
@@ -394,8 +393,17 @@ crc32_hw_byte(uint32_t crc, unsigned char const* data, unsigned int len)
 	return crc;
 }
 
-static inline uint32_t
-crc32_hw(uint32_t crc, const void* buf, int len)
+bool
+crc32_sse_supported(void)
+{
+	unsigned int ax, bx, cx, dx;
+	if (__get_cpuid(1, &ax, &bx, &cx, &dx) == 0)
+		return false;
+	return (cx & (1 << 20)) != 0;
+}
+
+hot uint32_t
+crc32_sse(uint32_t crc, const void* buf, int len)
 {
 	unsigned int iquotient = len / sizeof(unsigned long);
 	unsigned int iremainder = len % sizeof(unsigned long);
@@ -410,27 +418,6 @@ crc32_hw(uint32_t crc, const void* buf, int len)
 		ptmp++;
 	}
 	if (iremainder)
-		crc = crc32_hw_byte(crc, (unsigned char const*)ptmp, iremainder);
+		crc = crc32_sse_byte(crc, (unsigned char const*)ptmp, iremainder);
 	return crc;
-}
-
-static inline bool
-crc32_hw_enabled(void)
-{
-	unsigned int ax, bx, cx, dx;
-	if (__get_cpuid(1, &ax, &bx, &cx, &dx) == 0)
-		return false;
-	return (cx & (1 << 20)) != 0;
-}
-
-#endif
-
-hot uint32_t
-crc32(uint32_t crc, const void* buf, int len)
-{
-#if defined (__x86_64__) || defined (__i386__)
-	if (crc32_hw_enabled())
-		return crc32_hw(crc, buf, len);
-#endif
-	return crc32_sw(crc, buf, len);
 }

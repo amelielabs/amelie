@@ -23,6 +23,7 @@ struct Global
 	Random*      random;
 	Logger*      logger;
 	Resolver*    resolver;
+	CrcFunction  crc;
 };
 
 #define global() ((Global*)am_task->main_arg_global)

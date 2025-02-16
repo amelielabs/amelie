@@ -32,6 +32,10 @@ main_init(Main* self)
 	global->random       = &self->random;
 	global->logger       = &self->logger;
 	global->resolver     = &self->resolver;
+	if (crc32_sse_supported())
+		global->crc = crc32_sse;
+	else
+		global->crc = crc32;
 }
 
 void
