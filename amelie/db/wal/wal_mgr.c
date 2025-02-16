@@ -61,7 +61,7 @@ wal_mgr_stop(WalMgr* self)
 	} else
 	{
 		if (var_int_of(&config()->wal_sync_on_close))
-			wal_sync(&self->wal);
+			wal_sync(&self->wal, false);
 	}
 
 	// shutdown wal mgr
@@ -75,19 +75,23 @@ wal_mgr_gc(WalMgr* self)
 }
 
 void
-wal_mgr_rotate(WalMgr* self)
+wal_mgr_create(WalMgr* self)
 {
 	if (var_int_of(&config()->wal_worker))
 	{
-		int flags = WAL_ROTATE;
+		int flags = WAL_CREATE;
 		if (var_int_of(&config()->wal_sync_on_close))
 			flags |= WAL_SYNC;
+		if (var_int_of(&config()->wal_sync_on_create))
+			flags |= WAL_SYNC_CREATE;
 		wal_worker_schedule(&self->wal_worker, flags);
 	} else
 	{
 		if (var_int_of(&config()->wal_sync_on_close))
-			wal_sync(&self->wal);
-		wal_rotate(&self->wal, state_lsn() + 1);
+			wal_sync(&self->wal, false);
+		wal_create(&self->wal, state_lsn() + 1);
+		if (var_int_of(&config()->wal_sync_on_create))
+			wal_sync(&self->wal, true);
 	}
 }
 
@@ -96,7 +100,7 @@ wal_mgr_write(WalMgr* self, WalBatch* batch)
 {
 	auto wal_rotate = wal_write(&self->wal, batch);
 	if (var_int_of(&config()->wal_sync_on_write))
-		wal_sync(&self->wal);
+		wal_sync(&self->wal, false);
 	if (wal_rotate)
-		wal_mgr_rotate(self);
+		wal_mgr_create(self);
 }

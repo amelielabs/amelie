@@ -202,9 +202,9 @@ executor_wal_write(Executor* self)
 		}
 	}
 	if (wal_updated && var_int_of(&config()->wal_sync_on_write))
-		wal_sync(&wal_mgr->wal);
+		wal_sync(&wal_mgr->wal, false);
 	if (wal_rotate)
-		wal_mgr_rotate(wal_mgr);
+		wal_mgr_create(wal_mgr);
 }
 
 hot void

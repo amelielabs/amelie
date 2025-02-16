@@ -24,5 +24,5 @@ void wal_mgr_free(WalMgr*);
 void wal_mgr_start(WalMgr*);
 void wal_mgr_stop(WalMgr*);
 void wal_mgr_gc(WalMgr*);
-void wal_mgr_rotate(WalMgr*);
+void wal_mgr_create(WalMgr*);
 void wal_mgr_write(WalMgr*, WalBatch*);

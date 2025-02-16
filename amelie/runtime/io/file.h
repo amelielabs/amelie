@@ -115,7 +115,7 @@ static inline void
 file_sync(File* self)
 {
 	int rc;
-	rc = vfs_sync(self->fd);
+	rc = vfs_fdatasync(self->fd);
 	if (unlikely(rc == -1))
 		file_error(self, "sync");
 }

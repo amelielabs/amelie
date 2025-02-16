@@ -35,20 +35,24 @@ wal_worker_main(void* arg)
 		self->pending = 0;
 		mutex_unlock(&self->lock);
 
-		if (events & WAL_ROTATE)
-			if (! wal_rotate_ready(self->wal))
+		if (events & WAL_CREATE)
+			if (! wal_overflow(self->wal))
 				continue;
 
 		// process events
 		error_catch
 		(
-			// sync wal
+			// sync current wal
 			if (events & WAL_SYNC)
-				wal_sync(self->wal);
+				wal_sync(self->wal, false);
 
-			// create wal
-			if (events & WAL_ROTATE)
-				wal_rotate(self->wal, state_lsn() + 1);
+			// create new wal
+			if (events & WAL_CREATE)
+				wal_create(self->wal, state_lsn() + 1);
+
+			// sync new wal and the directory
+			if (events & WAL_SYNC_CREATE)
+				wal_sync(self->wal, true);
 		);
 
 		// stop

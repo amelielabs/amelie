@@ -65,6 +65,7 @@ config_prepare(Config* self)
 		{ "backends",                VAR_INT,    VAR_C|VAR_H|VAR_E,       &self->backends,                NULL,          default_be          },
 		// wal
 		{ "wal_worker",              VAR_BOOL,   VAR_C,                   &self->wal_worker,              NULL,          true                },
+		{ "wal_sync_on_create",      VAR_BOOL,   VAR_C,                   &self->wal_sync_on_create,      NULL,          true                },
 		{ "wal_sync_on_close",       VAR_BOOL,   VAR_C,                   &self->wal_sync_on_close,       NULL,          true                },
 		{ "wal_sync_on_write",       VAR_BOOL,   VAR_C,                   &self->wal_sync_on_write,       NULL,          false               },
 		{ "wal_size",                VAR_INT,    VAR_C,                   &self->wal_size,                NULL,          67108864            },

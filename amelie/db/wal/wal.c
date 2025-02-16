@@ -25,7 +25,8 @@
 void
 wal_init(Wal* self)
 {
-	self->current = NULL;
+	self->dirfd       = -1;
+	self->current     = NULL;
 	self->slots_count = 0;
 	mutex_init(&self->lock);
 	id_mgr_init(&self->list);
@@ -57,7 +58,7 @@ wal_slots(Wal* self, uint64_t* min)
 }
 
 bool
-wal_rotate_ready(Wal* self)
+wal_overflow(Wal* self)
 {
 	mutex_lock(&self->lock);
 	defer(mutex_unlock, &self->lock);
@@ -67,7 +68,7 @@ wal_rotate_ready(Wal* self)
 }
 
 void
-wal_rotate(Wal* self, uint64_t lsn)
+wal_create(Wal* self, uint64_t lsn)
 {
 	// create new wal file
 	WalFile* file = NULL;
@@ -178,6 +179,11 @@ wal_open(Wal* self)
 	if (! fs_exists("%s", path))
 		fs_mkdir(0755, "%s", path);
 
+	// open and keep directory fd to support sync
+	self->dirfd = vfs_open(path, O_RDONLY, 0);
+	if (self->dirfd == -1)
+		error_system();
+
 	// read file list
 	wal_recover(self, path);
 
@@ -190,7 +196,9 @@ wal_open(Wal* self)
 		file_seek_to_end(&self->current->file);
 	} else
 	{
-		wal_rotate(self, 1);
+		wal_create(self, 1);
+		if (var_int_of(&config()->wal_sync_on_create))
+			wal_sync(self, true);
 	}
 }
 
@@ -199,6 +207,11 @@ wal_close(Wal* self)
 {
 	if (! self->current)
 		return;
+	if (self->dirfd != -1)
+	{
+		close(self->dirfd);
+		self->dirfd = -1;
+	}
 	auto file = self->current;
 	error_catch (
 		wal_file_close(file);
@@ -246,9 +259,14 @@ wal_write(Wal* self, WalBatch* batch)
 }
 
 hot void
-wal_sync(Wal* self)
+wal_sync(Wal* self, bool sync_dir)
 {
 	wal_file_sync(self->current);
+	if (! sync_dir)
+		return;
+	auto rc = vfs_fsync(self->dirfd);
+	if (rc == -1)
+		error_system();
 }
 
 void

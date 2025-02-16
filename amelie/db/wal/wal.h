@@ -20,17 +20,18 @@ struct Wal
 	List     slots;
 	int      slots_count;
 	WalFile* current;
+	int      dirfd;
 };
 
 void wal_init(Wal*);
 void wal_free(Wal*);
 void wal_open(Wal*);
 void wal_close(Wal*);
-bool wal_rotate_ready(Wal*);
-void wal_rotate(Wal*, uint64_t);
+bool wal_overflow(Wal*);
+void wal_create(Wal*, uint64_t);
 void wal_gc(Wal*, uint64_t);
 bool wal_write(Wal*, WalBatch*);
-void wal_sync(Wal*);
+void wal_sync(Wal*, bool);
 void wal_add(Wal*, WalSlot*);
 void wal_del(Wal*, WalSlot*);
 void wal_attach(Wal*, WalSlot*);

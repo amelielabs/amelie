@@ -36,6 +36,7 @@ show all
   "limit_write": 0,
   "frontends": 1,
   "wal_worker": false,
+  "wal_sync_on_create": false,
   "wal_sync_on_close": false,
   "wal_sync_on_write": false,
   "wal_size": 67108864,

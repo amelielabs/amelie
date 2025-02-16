@@ -68,7 +68,7 @@ vfs_flock_unlock(int fd)
 }
 
 int
-vfs_sync(int fd)
+vfs_fdatasync(int fd)
 {
 #if defined(__APPLE__)
 	return fcntl(fd, F_FULLFSYNC);
@@ -76,6 +76,16 @@ vfs_sync(int fd)
 	return fsync(fd);
 #else
 	return fdatasync(fd);
+#endif
+}
+
+int
+vfs_fsync(int fd)
+{
+#if defined(__APPLE__)
+	return fcntl(fd, F_FULLFSYNC);
+#else
+	return fsync(fd);
 #endif
 }
 

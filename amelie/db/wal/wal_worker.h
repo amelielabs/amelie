@@ -15,9 +15,10 @@ typedef struct WalWorker WalWorker;
 
 enum
 {
-	WAL_SHUTDOWN = 1 << 0,
-	WAL_SYNC     = 1 << 1,
-	WAL_ROTATE   = 1 << 2
+	WAL_SHUTDOWN    = 1 << 0,
+	WAL_SYNC        = 1 << 1,
+	WAL_SYNC_CREATE = 1 << 2,
+	WAL_CREATE      = 1 << 3
 };
 
 struct WalWorker
