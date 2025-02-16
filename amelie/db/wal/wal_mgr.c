@@ -54,10 +54,14 @@ wal_mgr_stop(WalMgr* self)
 	if (var_int_of(&config()->wal_worker))
 	{
 		int flags = WAL_SHUTDOWN;
-		if (var_int_of(&config()->wal_sync_on_shutdown))
+		if (var_int_of(&config()->wal_sync_on_close))
 			flags |= WAL_SYNC;
 		wal_worker_schedule(&self->wal_worker, flags);
 		wal_worker_stop(&self->wal_worker);
+	} else
+	{
+		if (var_int_of(&config()->wal_sync_on_close))
+			wal_sync(&self->wal);
 	}
 
 	// shutdown wal mgr
@@ -76,11 +80,13 @@ wal_mgr_rotate(WalMgr* self)
 	if (var_int_of(&config()->wal_worker))
 	{
 		int flags = WAL_ROTATE;
-		if (var_int_of(&config()->wal_sync_on_rotate))
+		if (var_int_of(&config()->wal_sync_on_close))
 			flags |= WAL_SYNC;
 		wal_worker_schedule(&self->wal_worker, flags);
 	} else
 	{
+		if (var_int_of(&config()->wal_sync_on_close))
+			wal_sync(&self->wal);
 		wal_rotate(&self->wal, state_lsn() + 1);
 	}
 }

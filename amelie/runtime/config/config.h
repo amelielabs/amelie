@@ -41,8 +41,7 @@ struct Config
 	Var  backends;
 	// wal
 	Var  wal_worker;
-	Var  wal_sync_on_rotate;
-	Var  wal_sync_on_shutdown;
+	Var  wal_sync_on_close;
 	Var  wal_sync_on_write;
 	Var  wal_size;
 	// replication
