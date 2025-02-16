@@ -204,6 +204,9 @@ system_start(System* self, bool bootstrap)
 	// start checkpointer service
 	checkpointer_start(&self->db.checkpointer);
 
+	// start periodic async wal fsync
+	wal_periodic_start(&self->db.wal_mgr.wal_periodic);
+
 	// start frontends
 	int workers = var_int_of(&config()->frontends);
 	frontend_mgr_start(&self->frontend_mgr,

@@ -27,6 +27,7 @@ wal_mgr_init(WalMgr* self)
 {
 	wal_init(&self->wal);
 	wal_worker_init(&self->wal_worker, &self->wal);
+	wal_periodic_init(&self->wal_periodic, &self->wal_worker);
 }
 
 void
@@ -50,13 +51,16 @@ wal_mgr_start(WalMgr* self)
 void
 wal_mgr_stop(WalMgr* self)
 {
+	// stop periodic sync
+	wal_periodic_stop(&self->wal_periodic);
+
 	// stop wal worker
 	if (var_int_of(&config()->wal_worker))
 	{
 		int flags = WAL_SHUTDOWN;
 		if (var_int_of(&config()->wal_sync_on_close))
 			flags |= WAL_SYNC;
-		wal_worker_schedule(&self->wal_worker, flags);
+		wal_worker_request(&self->wal_worker, flags);
 		wal_worker_stop(&self->wal_worker);
 	} else
 	{
@@ -64,7 +68,7 @@ wal_mgr_stop(WalMgr* self)
 			wal_sync(&self->wal, false);
 	}
 
-	// shutdown wal mgr
+	// shutdown wal
 	wal_close(&self->wal);
 }
 
@@ -84,7 +88,7 @@ wal_mgr_create(WalMgr* self)
 			flags |= WAL_SYNC;
 		if (var_int_of(&config()->wal_sync_on_create))
 			flags |= WAL_SYNC_CREATE;
-		wal_worker_schedule(&self->wal_worker, flags);
+		wal_worker_request(&self->wal_worker, flags);
 	} else
 	{
 		if (var_int_of(&config()->wal_sync_on_close))

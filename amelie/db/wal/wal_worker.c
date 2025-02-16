@@ -91,7 +91,7 @@ wal_worker_stop(WalWorker* self)
 }
 
 void
-wal_worker_schedule(WalWorker* self, int actions)
+wal_worker_request(WalWorker* self, int actions)
 {
 	mutex_lock(&self->lock);
 	self->pending |= actions;

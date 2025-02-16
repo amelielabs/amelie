@@ -34,4 +34,4 @@ void wal_worker_init(WalWorker*, Wal*);
 void wal_worker_free(WalWorker*);
 void wal_worker_start(WalWorker*);
 void wal_worker_stop(WalWorker*);
-void wal_worker_schedule(WalWorker*, int);
+void wal_worker_request(WalWorker*, int);
