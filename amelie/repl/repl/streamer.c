@@ -35,7 +35,7 @@ streamer_collect(Streamer* self)
 {
 	for (;;)
 	{
-		if (wal_cursor_collect(&self->wal_cursor, 256 * 1024, &self->lsn))
+		if (! wal_cursor_readahead(&self->wal_cursor, 256 * 1024, &self->lsn))
 			break;
 
 		// wait for new wal write, client disconnect or cancel

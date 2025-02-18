@@ -146,8 +146,8 @@ wal_cursor_next(WalCursor* self)
 	return false;
 }
 
-bool
-wal_cursor_collect(WalCursor* self, int size, uint64_t* lsn)
+int
+wal_cursor_readahead(WalCursor* self, int size, uint64_t* lsn)
 {
 	buf_reset(&self->buf);
 	int collected = 0;
@@ -159,5 +159,5 @@ wal_cursor_collect(WalCursor* self, int size, uint64_t* lsn)
 		*lsn = write->lsn;
 		collected += write->size;
 	}
-	return collected > 0;
+	return collected;
 }
