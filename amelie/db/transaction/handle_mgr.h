@@ -23,5 +23,5 @@ void    handle_mgr_init(HandleMgr*);
 void    handle_mgr_free(HandleMgr*);
 Handle* handle_mgr_get(HandleMgr*, Str*, Str*);
 void    handle_mgr_replace(HandleMgr*, Handle*, Handle*);
-void    handle_mgr_create(HandleMgr*, Tr*, LogCmd, Handle*, Buf*);
-void    handle_mgr_drop(HandleMgr*, Tr*, LogCmd, Handle*, Buf*);
+void    handle_mgr_create(HandleMgr*, Tr*, Cmd, Handle*, Buf*);
+void    handle_mgr_drop(HandleMgr*, Tr*, Cmd, Handle*, Buf*);

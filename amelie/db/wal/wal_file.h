@@ -67,9 +67,16 @@ wal_file_sync(WalFile* self)
 }
 
 static inline void
-wal_file_write(WalFile* self, struct iovec* iov, int iovc)
+wal_file_write(WalFile* self, Write* write)
 {
-	file_writev(&self->file, iov, iovc);
+	// [header][commands][rows or ops]
+	file_writev(&self->file, iov_pointer(&write->iov), write->iov.iov_count);
+	list_foreach(&write->list)
+	{
+		auto log_write = list_at(LogWrite, link);
+		file_writev(&self->file, iov_pointer(&log_write->iov),
+		            log_write->iov.iov_count);
+	}
 }
 
 static inline bool
@@ -79,17 +86,17 @@ wal_file_eof(WalFile* self, uint32_t offset, uint32_t size)
 }
 
 static inline bool
-wal_file_pread(WalFile* self, uint64_t offset, Buf* buf)
+wal_file_pread(WalFile* self, uint64_t offset, bool crc, Buf* buf)
 {
 	// check for eof
-	if (wal_file_eof(self, offset, sizeof(WalWrite)))
+	if (wal_file_eof(self, offset, sizeof(Record)))
 		return false;
 
 	// read header
-	uint32_t size_header = sizeof(WalWrite);
+	uint32_t size_header = sizeof(Record);
 	int start = buf_size(buf);
 	file_pread_buf(&self->file, buf, size_header, offset);
-	uint32_t size = ((WalWrite*)(buf->start + start))->size;
+	uint32_t size = ((Record*)(buf->start + start))->size;
 
 	// check for eof
 	if (wal_file_eof(self, offset, size))
@@ -103,6 +110,13 @@ wal_file_pread(WalFile* self, uint64_t offset, Buf* buf)
 	size_data = size - size_header;
 	file_pread_buf(&self->file, buf, size_data, offset + size_header);
 
-	// todo: crc
+	// validate crc (header + commands)
+	if (crc)
+	{
+		auto record = (Record*)(buf->start + start);
+		if (unlikely(! record_validate(record)))
+			error("wal: lsn %" PRIu64 ": crc mismatch", state_lsn() + 1);
+	}
+
 	return true;
 }

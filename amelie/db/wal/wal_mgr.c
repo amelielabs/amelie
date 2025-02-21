@@ -100,9 +100,9 @@ wal_mgr_create(WalMgr* self)
 }
 
 void
-wal_mgr_write(WalMgr* self, WalBatch* batch)
+wal_mgr_write(WalMgr* self, Write* write)
 {
-	auto wal_rotate = wal_write(&self->wal, batch);
+	auto wal_rotate = wal_write(&self->wal, write);
 	if (var_int_of(&config()->wal_sync_on_write))
 		wal_sync(&self->wal, false);
 	if (wal_rotate)

@@ -30,7 +30,7 @@ void wal_close(Wal*);
 bool wal_overflow(Wal*);
 void wal_create(Wal*, uint64_t);
 void wal_gc(Wal*, uint64_t);
-bool wal_write(Wal*, WalBatch*);
+bool wal_write(Wal*, Write*);
 void wal_sync(Wal*, bool);
 void wal_add(Wal*, WalSlot*);
 void wal_del(Wal*, WalSlot*);

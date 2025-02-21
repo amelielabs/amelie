@@ -17,34 +17,6 @@ typedef struct LogRow    LogRow;
 typedef struct LogHandle LogHandle;
 typedef struct Log       Log;
 
-typedef enum
-{
-	// dml (row)
-	LOG_REPLACE,
-	LOG_DELETE,
-	// ddl (handle)
-	LOG_SCHEMA_CREATE,
-	LOG_SCHEMA_DROP,
-	LOG_SCHEMA_RENAME,
-	LOG_TABLE_CREATE,
-	LOG_TABLE_DROP,
-	LOG_TABLE_RENAME,
-	LOG_TABLE_TRUNCATE,
-	LOG_TABLE_SET_UNLOGGED,
-	LOG_TABLE_COLUMN_RENAME,
-	LOG_TABLE_COLUMN_ADD,
-	LOG_TABLE_COLUMN_DROP,
-	LOG_TABLE_COLUMN_SET_DEFAULT,
-	LOG_TABLE_COLUMN_SET_IDENTITY,
-	LOG_TABLE_COLUMN_SET_STORED,
-	LOG_TABLE_COLUMN_SET_RESOLVED,
-	LOG_INDEX_CREATE,
-	LOG_INDEX_DROP,
-	LOG_INDEX_RENAME,
-	LOG_WORKER_CREATE,
-	LOG_WORKER_DROP,
-} LogCmd;
-
 struct LogIf
 {
 	void (*commit)(Log*, LogOp*);
@@ -53,7 +25,7 @@ struct LogIf
 
 struct LogOp
 {
-	LogCmd cmd;
+	Cmd    cmd;
 	LogIf* iface;
 	void*  iface_arg;
 	int    pos;
@@ -75,12 +47,12 @@ struct LogHandle
 
 struct Log
 {
-	Buf    op;
-	Buf    data;
-	int    count;
-	int    count_handle;
-	LogSet log_set;
-	List   link;
+	Buf      op;
+	Buf      data;
+	int      count;
+	int      count_handle;
+	LogWrite log_write;
+	List     link;
 };
 
 always_inline static inline LogOp*
@@ -114,7 +86,7 @@ log_init(Log* self)
 	self->count_handle = 0;
 	buf_init(&self->op);
 	buf_init(&self->data);
-	log_set_init(&self->log_set);
+	log_write_init(&self->log_write);
 	list_init(&self->link);
 }
 
@@ -123,7 +95,7 @@ log_free(Log* self)
 {
 	buf_free(&self->op);
 	buf_free(&self->data);
-	log_set_free(&self->log_set);
+	log_write_free(&self->log_write);
 }
 
 static inline void
@@ -133,7 +105,7 @@ log_reset(Log* self)
 	self->count_handle = 0;
 	buf_reset(&self->op);
 	buf_reset(&self->data);
-	log_set_reset(&self->log_set);
+	log_write_reset(&self->log_write);
 	list_init(&self->link);
 }
 
@@ -148,7 +120,7 @@ log_truncate(Log* self)
 
 hot static inline LogRow*
 log_row(Log*   self,
-        LogCmd cmd,
+        Cmd    cmd,
         LogIf* iface,
         void*  iface_arg,
         Keys*  keys,
@@ -177,12 +149,12 @@ log_persist(Log* self, uint64_t partition)
 	auto op = log_of(self, self->count - 1);
 	// [cmd, partition, row]
 	auto ref = log_row_of(self, op);
-	log_set_add(&self->log_set, op->cmd, partition, ref->row);
+	log_write_add(&self->log_write, op->cmd, partition, ref->row);
 }
 
 static inline void
 log_handle(Log*   self,
-           LogCmd cmd,
+           Cmd    cmd,
            LogIf* iface,
            void*  iface_arg,
            void*  handle,
@@ -205,5 +177,5 @@ log_handle(Log*   self,
 	ref->data   = data;
 
 	// [cmd, data]
-	log_set_add_op(&self->log_set, cmd, data);
+	log_write_add_op(&self->log_write, cmd, data);
 }

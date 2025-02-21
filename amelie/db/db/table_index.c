@@ -87,7 +87,7 @@ table_index_create(Table*       self,
 	                                 config);
 
 	// update table
-	log_handle(&tr->log, LOG_INDEX_CREATE, &create_if,
+	log_handle(&tr->log, CMD_INDEX_CREATE, &create_if,
 	           index,
 	           &self->handle, NULL, op);
 
@@ -140,7 +140,7 @@ table_index_drop(Table* self,
 	auto op = table_op_drop_index(&self->config->schema, &self->config->name, name);
 
 	// update table
-	log_handle(&tr->log, LOG_INDEX_DROP, &drop_if,
+	log_handle(&tr->log, CMD_INDEX_DROP, &drop_if,
 	           index,
 	           &self->handle, NULL, op);
 }
@@ -205,7 +205,7 @@ table_index_rename(Table* self,
 	                                name_new);
 
 	// update table
-	log_handle(&tr->log, LOG_INDEX_RENAME, &rename_if,
+	log_handle(&tr->log, CMD_INDEX_RENAME, &rename_if,
 	           index,
 	           &self->handle, NULL, op);
 

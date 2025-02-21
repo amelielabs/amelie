@@ -42,7 +42,7 @@
 #include <amelie_backend.h>
 
 static void
-replay_read(Share* share, Dtr* dtr, ReqList* req_list, WalWrite* write)
+replay_read(Share* share, Dtr* dtr, ReqList* req_list, Record* record)
 {
 	auto router = &share->backend_mgr->router;
 
@@ -50,46 +50,37 @@ replay_read(Share* share, Dtr* dtr, ReqList* req_list, WalWrite* write)
 	Req* map[router->list_count];
 	memset(map, 0, sizeof(map));
 
-	// [header][meta][data]
-	auto start = (uint8_t*)write;
-	auto meta  = start + sizeof(*write);
-	auto data  = meta + write->offset;
-	for (auto i = write->count; i > 0; i--)
+	// replay transaction log record
+	auto cmd = record_cmd(record);
+	auto pos = record_data(record);
+	for (auto i = record->count; i > 0; i--)
 	{
-		auto meta_start = meta;
-
-		// type
-		json_skip(&meta);
-
-		// partition id
-		int64_t partition_id;
-		json_read_integer(&meta, &partition_id);
-
 		// map each write to route
 		auto table_mgr = &share->db->table_mgr;
-		auto part = table_mgr_find_partition(table_mgr, partition_id);
+		auto part = table_mgr_find_partition(table_mgr, cmd->partition);
 		if (! part)
-			error("failed to find partition %" PRIu64, partition_id);
+			error("failed to find partition %" PRIu64, cmd->partition);
 		auto route = part->route;
 		auto req = map[route->order];
 		if (req == NULL)
 		{
 			req = req_create(&dtr->req_cache, REQ_REPLAY);
-			req->arg_start = start;
-			req->route     = route;
+			req->route = route;
 			req_list_add(req_list, req);
 			map[route->order] = req;
 		}
 
-		// [meta offset, data offset]
-		encode_integer(&req->arg, (intptr_t)(meta_start - start));
-		encode_integer(&req->arg, (intptr_t)(data - start));
-		data += row_size((Row*)data);
+		// [cmd, pos]
+		buf_write(&req->arg, (uint8_t*)&cmd, sizeof(uint8_t**));
+		buf_write(&req->arg, (uint8_t*)&pos, sizeof(uint8_t**));
+
+		pos += cmd->size;
+		cmd++;
 	}
 }
 
 void
-replay(Share* share, Dtr* dtr, WalWrite* write)
+replay(Share* share, Dtr* dtr, Record* record)
 {
 	// switch distributed transaction to replication state to write wal
 	// while in read-only mode
@@ -109,7 +100,7 @@ replay(Share* share, Dtr* dtr, WalWrite* write)
 	auto executor = share->executor;
 	auto on_error = error_catch
 	(
-		replay_read(share, dtr, &req_list, write);
+		replay_read(share, dtr, &req_list, record);
 
 		executor_send(executor, dtr, 0, &req_list);
 		executor_recv(executor, dtr, 0);

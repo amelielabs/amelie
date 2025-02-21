@@ -144,7 +144,7 @@ system_recover(System* self)
 
 	// replay wals
 	Recover recover;
-	recover_init(&recover, &self->db, &build_if, &self->backend_mgr);
+	recover_init(&recover, &self->db, false, &build_if, &self->backend_mgr);
 	defer(recover_free, &recover);
 	recover_wal(&recover);
 

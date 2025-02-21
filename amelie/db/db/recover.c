@@ -25,144 +25,152 @@
 
 void
 recover_init(Recover*   self, Db* db,
+             bool       write_wal,
              RecoverIf* iface,
              void*      iface_arg)
 {
 	self->iface     = iface;
 	self->iface_arg = iface_arg;
+	self->ops       = 0;
+	self->size      = 0;
+	self->write_wal = write_wal;
 	self->db        = db;
 	tr_init(&self->tr);
-	wal_batch_init(&self->batch);
+	write_init(&self->write);
 }
 
 void
 recover_free(Recover* self)
 {
 	tr_free(&self->tr);
-	wal_batch_free(&self->batch);
+	write_free(&self->write);
 }
 
-hot void
-recover_next(Recover* self, uint8_t** meta, uint8_t** data)
+static inline void
+recover_reset_stats(Recover* self)
+{
+	self->ops  = 0;
+	self->size = 0;
+}
+
+hot static void
+recover_cmd(Recover* self, RecordCmd* cmd, uint8_t** pos)
 {
 	auto db = self->db;
 	auto tr = &self->tr;
-
-	// [dml, partition]
-	// [ddl]
-
-	// type
-	int64_t type;
-	json_read_integer(meta, &type);
-
-	// DML operations
-	if (type == LOG_REPLACE || type == LOG_DELETE)
+	switch (cmd->cmd) {
+	case CMD_REPLACE:
 	{
-		int64_t partition_id;
-		json_read_integer(meta, &partition_id);
-
 		// find partition by id
-		auto part = table_mgr_find_partition(&db->table_mgr, partition_id);
+		auto part = table_mgr_find_partition(&db->table_mgr, cmd->partition);
 		if (! part)
-			error("failed to find partition %" PRIu64, partition_id);
-
-		// replay write
-		auto row = (Row*)(*data);
-		if (type == LOG_REPLACE)
+			error("failed to find partition %" PRIu64, cmd->partition);
+		auto end = *pos + cmd->size;
+		while (*pos < end)
 		{
-			auto copy = row_copy(row);
-			part_insert(part, tr, true, copy);
-		} else {
-			part_delete_by(part, tr, row);
+			auto row = row_copy((Row*)*pos);
+			part_insert(part, tr, true, row);
+			*pos += row_size(row);
 		}
-		*data += row_size(row);
-		return;
+		break;
 	}
-
-	// DDL operations
-	switch (type) {
-	case LOG_SCHEMA_CREATE:
+	case CMD_DELETE:
 	{
-		auto config = schema_op_create_read(data);
+		// find partition by id
+		auto part = table_mgr_find_partition(&db->table_mgr, cmd->partition);
+		if (! part)
+			error("failed to find partition %" PRIu64, cmd->partition);
+		auto end = *pos + cmd->size;
+		while (*pos < end)
+		{
+			auto row = (Row*)(*pos);
+			part_delete_by(part, tr, row);
+			*pos += row_size(row);
+		}
+		break;
+	}
+	case CMD_SCHEMA_CREATE:
+	{
+		auto config = schema_op_create_read(pos);
 		defer(schema_config_free, config);
 		schema_mgr_create(&db->schema_mgr, tr, config, false);
 		break;
 	}
-	case LOG_SCHEMA_DROP:
+	case CMD_SCHEMA_DROP:
 	{
 		Str name;
-		schema_op_drop_read(data, &name);
+		schema_op_drop_read(pos, &name);
 		schema_mgr_drop(&db->schema_mgr, tr, &name, true);
 		break;
 	}
-	case LOG_SCHEMA_RENAME:
+	case CMD_SCHEMA_RENAME:
 	{
 		Str name;
 		Str name_new;
-		schema_op_rename_read(data, &name, &name_new);
+		schema_op_rename_read(pos, &name, &name_new);
 		schema_mgr_rename(&db->schema_mgr, tr, &name, &name_new, true);
 		break;
 	}
-	case LOG_TABLE_CREATE:
+	case CMD_TABLE_CREATE:
 	{
-		auto config = table_op_create_read(data);
+		auto config = table_op_create_read(pos);
 		defer(table_config_free, config);
 		table_mgr_create(&db->table_mgr, tr, config, false);
 		break;
 	}
-	case LOG_TABLE_DROP:
+	case CMD_TABLE_DROP:
 	{
 		Str schema;
 		Str name;
-		table_op_drop_read(data, &schema, &name);
+		table_op_drop_read(pos, &schema, &name);
 		table_mgr_drop(&db->table_mgr, tr, &schema, &name, true);
 		break;
 	}
-	case LOG_TABLE_RENAME:
+	case CMD_TABLE_RENAME:
 	{
 		Str schema;
 		Str name;
 		Str schema_new;
 		Str name_new;
-		table_op_rename_read(data, &schema, &name, &schema_new, &name_new);
+		table_op_rename_read(pos, &schema, &name, &schema_new, &name_new);
 		table_mgr_rename(&db->table_mgr, tr, &schema, &name,
 		                 &schema_new, &name_new, true);
 		break;
 	}
-	case LOG_TABLE_SET_UNLOGGED:
+	case CMD_TABLE_SET_UNLOGGED:
 	{
 		Str  schema;
 		Str  name;
 		bool value;
-		table_op_set_unlogged_read(data, &schema, &name, &value);
+		table_op_set_unlogged_read(pos, &schema, &name, &value);
 		table_mgr_set_unlogged(&db->table_mgr, tr, &schema, &name, value, true);
 		break;
 	}
-	case LOG_TABLE_TRUNCATE:
+	case CMD_TABLE_TRUNCATE:
 	{
 		Str schema;
 		Str name;
-		table_op_truncate_read(data, &schema, &name);
+		table_op_truncate_read(pos, &schema, &name);
 		table_mgr_truncate(&db->table_mgr, tr, &schema, &name, true);
 		break;
 	}
-	case LOG_TABLE_COLUMN_RENAME:
+	case CMD_TABLE_COLUMN_RENAME:
 	{
 		Str schema;
 		Str name;
 		Str name_column;
 		Str name_column_new;
-		table_op_column_rename_read(data, &schema, &name, &name_column, &name_column_new);
+		table_op_column_rename_read(pos, &schema, &name, &name_column, &name_column_new);
 		table_mgr_column_rename(&db->table_mgr, tr, &schema, &name,
 		                        &name_column,
 		                        &name_column_new, true);
 		break;
 	}
-	case LOG_TABLE_COLUMN_ADD:
+	case CMD_TABLE_COLUMN_ADD:
 	{
 		Str schema;
 		Str name;
-		auto column = table_op_column_add_read(data, &schema, &name);
+		auto column = table_op_column_add_read(pos, &schema, &name);
 		defer(column_free, column);
 		auto table = table_mgr_find(&db->table_mgr, &schema, &name, true);
 		auto table_new = table_mgr_column_add(&db->table_mgr, tr, &schema, &name,
@@ -173,12 +181,12 @@ recover_next(Recover* self, uint8_t** meta, uint8_t** data)
 		self->iface->build_column_add(self, table, table_new, column);
 		break;
 	}
-	case LOG_TABLE_COLUMN_DROP:
+	case CMD_TABLE_COLUMN_DROP:
 	{
 		Str schema;
 		Str name;
 		Str name_column;
-		table_op_column_drop_read(data, &schema, &name, &name_column);
+		table_op_column_drop_read(pos, &schema, &name, &name_column);
 		auto table = table_mgr_find(&db->table_mgr, &schema, &name, true);
 		auto table_new = table_mgr_column_drop(&db->table_mgr, tr, &schema, &name,
 		                                       &name_column, true);
@@ -190,63 +198,63 @@ recover_next(Recover* self, uint8_t** meta, uint8_t** data)
 		self->iface->build_column_drop(self, table, table_new, column);
 		break;
 	}
-	case LOG_TABLE_COLUMN_SET_DEFAULT:
+	case CMD_TABLE_COLUMN_SET_DEFAULT:
 	{
 		Str schema;
 		Str name;
 		Str name_column;
 		Str value_prev;
 		Str value;
-		table_op_column_set_read(data, &schema, &name, &name_column,
+		table_op_column_set_read(pos, &schema, &name, &name_column,
 		                         &value_prev, &value);
 		table_mgr_column_set_default(&db->table_mgr, tr, &schema, &name,
 		                             &name_column, &value, true);
 		break;
 	}
-	case LOG_TABLE_COLUMN_SET_IDENTITY:
+	case CMD_TABLE_COLUMN_SET_IDENTITY:
 	{
 		Str schema;
 		Str name;
 		Str name_column;
 		Str value_prev;
 		Str value;
-		table_op_column_set_read(data, &schema, &name, &name_column,
+		table_op_column_set_read(pos, &schema, &name, &name_column,
 		                         &value_prev, &value);
 		table_mgr_column_set_identity(&db->table_mgr, tr, &schema, &name,
 		                              &name_column, &value, true);
 		break;
 	}
-	case LOG_TABLE_COLUMN_SET_STORED:
+	case CMD_TABLE_COLUMN_SET_STORED:
 	{
 		Str schema;
 		Str name;
 		Str name_column;
 		Str value_prev;
 		Str value;
-		table_op_column_set_read(data, &schema, &name, &name_column,
+		table_op_column_set_read(pos, &schema, &name, &name_column,
 		                         &value_prev, &value);
 		table_mgr_column_set_stored(&db->table_mgr, tr, &schema, &name,
 		                            &name_column, &value, true);
 		break;
 	}
-	case LOG_TABLE_COLUMN_SET_RESOLVED:
+	case CMD_TABLE_COLUMN_SET_RESOLVED:
 	{
 		Str schema;
 		Str name;
 		Str name_column;
 		Str value_prev;
 		Str value;
-		table_op_column_set_read(data, &schema, &name, &name_column,
+		table_op_column_set_read(pos, &schema, &name, &name_column,
 		                         &value_prev, &value);
 		table_mgr_column_set_resolved(&db->table_mgr, tr, &schema, &name,
 		                              &name_column, &value, true);
 		break;
 	}
-	case LOG_INDEX_CREATE:
+	case CMD_INDEX_CREATE:
 	{
 		Str schema;
 		Str name;
-		auto config_pos = table_op_create_index_read(data, &schema, &name);
+		auto config_pos = table_op_create_index_read(pos, &schema, &name);
 		auto table = table_mgr_find(&db->table_mgr, &schema, &name, true);
 		auto config = index_config_read(table_columns(table), &config_pos);
 		defer(index_config_free, config);
@@ -256,74 +264,80 @@ recover_next(Recover* self, uint8_t** meta, uint8_t** data)
 		self->iface->build_index(self, table, index);
 		break;
 	}
-	case LOG_INDEX_DROP:
+	case CMD_INDEX_DROP:
 	{
 		Str table_schema;
 		Str table_name;
 		Str name;
-		table_op_drop_index_read(data, &table_schema, &table_name, &name);
+		table_op_drop_index_read(pos, &table_schema, &table_name, &name);
 		auto table = table_mgr_find(&db->table_mgr, &table_schema, &table_name, true);
 		table_index_drop(table, tr, &name, false);
 		break;
 	}
-	case LOG_INDEX_RENAME:
+	case CMD_INDEX_RENAME:
 	{
 		Str table_schema;
 		Str table_name;
 		Str name;
 		Str name_new;
-		table_op_rename_index_read(data, &table_schema, &table_name, &name, &name_new);
+		table_op_rename_index_read(pos, &table_schema, &table_name, &name, &name_new);
 		auto table = table_mgr_find(&db->table_mgr, &table_schema, &table_name, true);
 		table_index_rename(table, tr, &name, &name_new, false);
 		break;
 	}
-	case LOG_WORKER_CREATE:
+	case CMD_WORKER_CREATE:
 	{
-		auto config = worker_op_create_read(data);
+		auto config = worker_op_create_read(pos);
 		defer(worker_config_free, config);
 		worker_mgr_create(&db->worker_mgr, tr, config, false);
 		break;
 	}
-	case LOG_WORKER_DROP:
+	case CMD_WORKER_DROP:
 	{
 		Str name;
-		worker_op_drop_read(data, &name);
+		worker_op_drop_read(pos, &name);
 		worker_mgr_drop(&db->worker_mgr, tr, &name, true);
 		break;
 	}
 	default:
-		error("recover: unrecognized operation id: %d", type);
+		error("recover: unrecognized command id: %d", cmd->cmd);
 		break;
 	}
 }
 
-static inline void
-recover_next_log(Recover* self, Tr* tr, WalWrite* write, bool write_wal, int flags)
+static void
+recover_next_record(Recover* self, Record* record)
 {
-	// replay transaction log
-
-	// [header][meta][data]
-	auto meta = (uint8_t*)write + sizeof(*write);
-	auto data = meta + write->offset;
-	for (auto i = write->count; i > 0; i--)
-		recover_next(self, &meta, &data);
+	// replay transaction log record
+	auto cmd = record_cmd(record);
+	auto pos = record_data(record);
+	for (auto i = record->count; i > 0; i--)
+	{
+		if (var_int_of(&config()->wal_crc))
+			if (unlikely(! record_validate_cmd(cmd, pos)))
+				error("recover: record command mismatch");
+		recover_cmd(self, cmd, &pos);
+		cmd++;
+	}
+	self->ops  += record->ops;
+	self->size += record->size;
 
 	// wal write, if necessary
-	if (write_wal)
+	if (self->write_wal)
 	{
-		auto batch = &self->batch;
-		wal_batch_reset(batch);
-		wal_batch_begin(batch, flags);
-		wal_batch_add(batch, &tr->log.log_set);
-		wal_mgr_write(&self->db->wal_mgr, batch);
+		auto write = &self->write;
+		write_reset(write);
+		write_begin(write);
+		write_add(write, &self->tr.log.log_write);
+		wal_mgr_write(&self->db->wal_mgr, write);
 	} else
 	{
-		state_lsn_follow(write->lsn);
+		state_lsn_follow(record->lsn);
 	}
 }
 
 void
-recover_next_write(Recover* self, WalWrite* write, bool write_wal, int flags)
+recover_next(Recover* self, Record* record)
 {
 	auto tr = &self->tr;
 	tr_reset(tr);
@@ -333,14 +347,14 @@ recover_next_write(Recover* self, WalWrite* write, bool write_wal, int flags)
 		tr_begin(tr);
 
 		// replay
-		recover_next_log(self, tr, write, write_wal, flags);
+		recover_next_record(self, record);
 
 		// commit
 		tr_commit(tr);
 	);
 	if (unlikely(on_error))
 	{
-		info("recover: wal lsn %" PRIu64 ": replay error", write->lsn);
+		info("recover: wal lsn %" PRIu64 ": replay error", record->lsn);
 		tr_abort(tr);
 		rethrow();
 	}
@@ -354,26 +368,26 @@ recover_wal(Recover* self)
 	auto id = state_checkpoint() + 1;
 	for (;;)
 	{
+		recover_reset_stats(self);
+
 		WalCursor cursor;
 		wal_cursor_init(&cursor);
 		defer(wal_cursor_close, &cursor);
-		wal_cursor_open(&cursor, wal, id, false);
-		uint64_t count = 0;
-		uint64_t size  = 0;
+
+		auto wal_crc = var_int_of(&config()->wal_crc);
+		wal_cursor_open(&cursor, wal, id, false, wal_crc);
 		for (;;)
 		{
 			if (! wal_cursor_next(&cursor))
 				break;
-			auto write = wal_cursor_at(&cursor);
-			recover_next_write(self, write, false, 0);
-			count += write->count;
-			size  += write->size;
+			auto record = wal_cursor_at(&cursor);
+			recover_next(self, record);
 		}
 		if (! wal_cursor_active(&cursor))
 			break;
 
 		info("wals/%" PRIu64 " (%.2f MiB, %" PRIu64 " rows)",
-		     (double)size / 1024 / 1024, id, count);
+		     id, (double)self->size / 1024 / 1024, self->ops);
 
 		id = id_mgr_next(&wal->list, cursor.file->id);
 		if (id == UINT64_MAX)

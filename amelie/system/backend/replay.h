@@ -11,4 +11,4 @@
 // AGPL-3.0 Licensed.
 //
 
-void replay(Share*, Dtr*, WalWrite*);
+void replay(Share*, Dtr*, Record*);

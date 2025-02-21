@@ -29,7 +29,6 @@ struct Req
 	Buf*     args;
 	Buf      arg;
 	Table*   arg_table;
-	uint8_t* arg_start;
 	Value    result;
 	Result*  cte;
 	bool     shutdown;
@@ -48,7 +47,6 @@ req_allocate(void)
 	self->start     = 0;
 	self->program   = NULL;
 	self->args      = NULL;
-	self->arg_start = NULL;
 	self->arg_table = NULL;
 	self->cte       = NULL;
 	self->shutdown  = false;
@@ -77,7 +75,6 @@ req_reset(Req* self)
 	self->start     = 0;
 	self->program   = NULL;
 	self->args      = NULL;
-	self->arg_start = NULL;
 	self->arg_table = NULL;
 	self->cte       = NULL;
 	self->shutdown  = false;

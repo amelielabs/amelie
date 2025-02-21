@@ -78,7 +78,7 @@ table_mgr_rename(TableMgr* self,
 	auto op = table_op_rename(schema, name, schema_new, name_new);
 
 	// update table
-	log_handle(&tr->log, LOG_TABLE_RENAME, &rename_if,
+	log_handle(&tr->log, CMD_TABLE_RENAME, &rename_if,
 	           NULL,
 	           &table->handle, NULL, op);
 
@@ -134,7 +134,7 @@ table_mgr_set_unlogged(TableMgr* self,
 	auto op = table_op_set_unlogged(schema, name, value);
 
 	// update table
-	log_handle(&tr->log, LOG_TABLE_SET_UNLOGGED, &set_unlogged_if,
+	log_handle(&tr->log, CMD_TABLE_SET_UNLOGGED, &set_unlogged_if,
 	           NULL,
 	           &table->handle, NULL, op);
 
@@ -213,7 +213,7 @@ table_mgr_column_rename(TableMgr* self,
 	auto op = table_op_column_rename(schema, name, name_column, name_column_new);
 
 	// update table
-	log_handle(&tr->log, LOG_TABLE_COLUMN_RENAME, &column_rename_if,
+	log_handle(&tr->log, CMD_TABLE_COLUMN_RENAME, &column_rename_if,
 	           column,
 	           &table->handle, NULL, op);
 
@@ -290,7 +290,7 @@ table_mgr_column_add(TableMgr* self,
 	auto op = table_op_column_add(&table->config->schema, &table->config->name, column);
 
 	// update log (old table is still present)
-	log_handle(&tr->log, LOG_TABLE_COLUMN_ADD, &column_add_if, self,
+	log_handle(&tr->log, CMD_TABLE_COLUMN_ADD, &column_add_if, self,
 	           &table_new->handle, NULL, op);
 
 	table_open(table_new);
@@ -346,7 +346,7 @@ table_mgr_column_drop(TableMgr* self,
 	                               &column->name);
 
 	// update log (old table is still present)
-	log_handle(&tr->log, LOG_TABLE_COLUMN_DROP, &column_add_if, self,
+	log_handle(&tr->log, CMD_TABLE_COLUMN_DROP, &column_add_if, self,
 	           &table_new->handle, NULL, op);
 
 	table_open(table_new);
@@ -374,13 +374,13 @@ column_set_if_abort(Log* self, LogOp* op)
 	                         &value_prev,
 	                         &value);
 	switch (op->cmd) {
-	case LOG_TABLE_COLUMN_SET_DEFAULT:
+	case CMD_TABLE_COLUMN_SET_DEFAULT:
 		constraints_set_default_str(&column->constraints, &value_prev);
 		break;
-	case LOG_TABLE_COLUMN_SET_STORED:
+	case CMD_TABLE_COLUMN_SET_STORED:
 		constraints_set_as_stored(&column->constraints, &value_prev);
 		break;
-	case LOG_TABLE_COLUMN_SET_RESOLVED:
+	case CMD_TABLE_COLUMN_SET_RESOLVED:
 		constraints_set_as_resolved(&column->constraints, &value_prev);
 		break;
 	default:
@@ -405,7 +405,7 @@ table_mgr_column_set(TableMgr* self,
                      Str*      name_column,
                      Str*      value,
                      bool      if_exists,
-                     LogCmd    cmd)
+                     Cmd       cmd)
 {
 	// find table
 	auto table = table_mgr_find(self, schema, name, false);
@@ -438,16 +438,16 @@ table_mgr_column_set(TableMgr* self,
 	           &table->handle, NULL, op);
 
 	switch (cmd) {
-	case LOG_TABLE_COLUMN_SET_DEFAULT:
+	case CMD_TABLE_COLUMN_SET_DEFAULT:
 		constraints_set_default_str(&column->constraints, value);
 		break;
-	case LOG_TABLE_COLUMN_SET_IDENTITY:
+	case CMD_TABLE_COLUMN_SET_IDENTITY:
 		constraints_set_as_identity(&column->constraints, !str_empty(value));
 		break;
-	case LOG_TABLE_COLUMN_SET_STORED:
+	case CMD_TABLE_COLUMN_SET_STORED:
 		constraints_set_as_stored(&column->constraints, value);
 		break;
-	case LOG_TABLE_COLUMN_SET_RESOLVED:
+	case CMD_TABLE_COLUMN_SET_RESOLVED:
 		constraints_set_as_resolved(&column->constraints, value);
 		break;
 	default:
@@ -467,7 +467,7 @@ table_mgr_column_set_default(TableMgr* self,
                              bool      if_exists)
 {
 	table_mgr_column_set(self, tr, schema, name, name_column, value, if_exists,
-	                     LOG_TABLE_COLUMN_SET_DEFAULT);
+	                     CMD_TABLE_COLUMN_SET_DEFAULT);
 }
 
 void
@@ -480,7 +480,7 @@ table_mgr_column_set_identity(TableMgr* self,
                               bool      if_exists)
 {
 	table_mgr_column_set(self, tr, schema, name, name_column, value, if_exists,
-	                     LOG_TABLE_COLUMN_SET_IDENTITY);
+	                     CMD_TABLE_COLUMN_SET_IDENTITY);
 }
 
 void
@@ -493,7 +493,7 @@ table_mgr_column_set_stored(TableMgr* self,
                             bool      if_exists)
 {
 	table_mgr_column_set(self, tr, schema, name, name_column, value, if_exists,
-	                     LOG_TABLE_COLUMN_SET_STORED);
+	                     CMD_TABLE_COLUMN_SET_STORED);
 }
 
 void
@@ -506,5 +506,5 @@ table_mgr_column_set_resolved(TableMgr* self,
                               bool      if_exists)
 {
 	table_mgr_column_set(self, tr, schema, name, name_column, value, if_exists,
-	                     LOG_TABLE_COLUMN_SET_RESOLVED);
+	                     CMD_TABLE_COLUMN_SET_RESOLVED);
 }

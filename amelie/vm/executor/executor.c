@@ -169,7 +169,7 @@ hot static void
 executor_wal_write(Executor* self)
 {
 	auto commit = &self->commit;
-	auto wal_batch = &commit->wal_batch;
+	auto write = &commit->write;
 	auto wal_mgr = &self->db->wal_mgr;
 	auto wal_updated = false;
 	auto wal_rotate  = false;
@@ -179,8 +179,8 @@ executor_wal_write(Executor* self)
 		auto set = &tr->set;
 
 		// wal write (disabled during recovery)
-		wal_batch_reset(wal_batch);
-		wal_batch_begin(wal_batch, 0);
+		write_reset(write);
+		write_begin(write);
 		for (int i = 0; i < set->set_size; i++)
 		{
 			auto pipe = pipe_set_get(set, i);
@@ -188,15 +188,15 @@ executor_wal_write(Executor* self)
 				continue;
 			assert(pipe->state == PIPE_CLOSE);
 			assert(pipe->tr);
-			wal_batch_add(wal_batch, &pipe->tr->log.log_set);
+			write_add(write, &pipe->tr->log.log_write);
 		}
-		if (wal_batch->header.count > 0)
+		if (write->header.count > 0)
 		{
 			// unless transaction is used for replication writer, respect
 			// system read-only state
 			if (!tr->program->repl && var_int_of(&state()->read_only))
 				error("system is in read-only mode");
-			if (wal_write(&wal_mgr->wal, wal_batch))
+			if (wal_write(&wal_mgr->wal, write))
 				wal_rotate = true;
 			wal_updated = true;
 		}

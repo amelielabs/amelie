@@ -99,7 +99,7 @@ static LogIf create_if =
 void
 handle_mgr_create(HandleMgr* self,
                   Tr*        tr,
-                  LogCmd     cmd,
+                  Cmd        cmd,
                   Handle*    handle,
                   Buf*       data)
 {
@@ -136,7 +136,7 @@ static LogIf drop_if =
 void
 handle_mgr_drop(HandleMgr* self,
                 Tr*        tr,
-                LogCmd     cmd,
+                Cmd        cmd,
                 Handle*    handle,
                 Buf*       data)
 {

@@ -45,7 +45,7 @@ static void
 log_if_abort(Log* self, LogOp* op)
 {
 	auto row = log_if_rollback(self, op);
-	if (op->cmd != LOG_DELETE && row)
+	if (op->cmd != CMD_DELETE && row)
 		row_free(row);
 }
 
@@ -97,7 +97,7 @@ part_insert(Part* self, Tr* tr, bool recover, Row* row)
 	auto replace = recover;
 
 	// add log record
-	auto op = log_row(&tr->log, LOG_REPLACE, &log_if, primary, keys, row, NULL);
+	auto op = log_row(&tr->log, CMD_REPLACE, &log_if, primary, keys, row, NULL);
 	if (! self->unlogged)
 		log_persist(&tr->log, self->config->id);
 
@@ -123,7 +123,7 @@ part_insert(Part* self, Tr* tr, bool recover, Row* row)
 		auto keys = index_keys(index);
 
 		// add log record
-		op = log_row(&tr->log, LOG_REPLACE, &log_if_secondary, index, keys, row, NULL);
+		op = log_row(&tr->log, CMD_REPLACE, &log_if_secondary, index, keys, row, NULL);
 		op->row_prev = index_set(index, row);
 		if (unlikely(op->row_prev && !replace))
 			error("index '%.*s': unique key constraint violation",
@@ -139,7 +139,7 @@ part_update(Part* self, Tr* tr, Iterator* it, Row* row)
 	auto keys = index_keys(primary);
 
 	// add log record
-	auto op = log_row(&tr->log, LOG_REPLACE, &log_if, primary, keys, row, NULL);
+	auto op = log_row(&tr->log, CMD_REPLACE, &log_if, primary, keys, row, NULL);
 	if (! self->unlogged)
 		log_persist(&tr->log, self->config->id);
 
@@ -157,7 +157,7 @@ part_update(Part* self, Tr* tr, Iterator* it, Row* row)
 		auto keys = index_keys(index);
 
 		// add log record
-		op = log_row(&tr->log, LOG_REPLACE, &log_if_secondary, index, keys, row, NULL);
+		op = log_row(&tr->log, CMD_REPLACE, &log_if_secondary, index, keys, row, NULL);
 
 		// find and replace existing secondary row (keys are not updated)
 		auto index_it = index_iterator(index);
@@ -175,7 +175,7 @@ part_delete(Part* self, Tr* tr, Iterator* it)
 	auto row = iterator_at(it);
 
 	// add log record
-	auto op = log_row(&tr->log, LOG_DELETE, &log_if, primary, keys, row, NULL);
+	auto op = log_row(&tr->log, CMD_DELETE, &log_if, primary, keys, row, NULL);
 
 	// update primary index
 	op->row_prev = index_delete(primary, it);
@@ -193,7 +193,7 @@ part_delete(Part* self, Tr* tr, Iterator* it)
 		auto keys = index_keys(index);
 
 		// add log record
-		op = log_row(&tr->log, LOG_DELETE, &log_if_secondary, index, keys, row, NULL);
+		op = log_row(&tr->log, CMD_DELETE, &log_if_secondary, index, keys, row, NULL);
 
 		// delete by key
 		op->row_prev = index_delete_by(index, row);
@@ -220,7 +220,7 @@ part_upsert(Part* self, Tr* tr, Iterator* it, Row* row)
 	auto keys = index_keys(primary);
 
 	// add log record
-	auto op = log_row(&tr->log, LOG_REPLACE, &log_if, primary, keys, row, NULL);
+	auto op = log_row(&tr->log, CMD_REPLACE, &log_if, primary, keys, row, NULL);
 
 	// ensure transaction log limit
 	if (tr->limit)
@@ -246,7 +246,7 @@ part_upsert(Part* self, Tr* tr, Iterator* it, Row* row)
 		auto keys = index_keys(index);
 
 		// add log record
-		op = log_row(&tr->log, LOG_REPLACE, &log_if_secondary, index, keys, row, NULL);
+		op = log_row(&tr->log, CMD_REPLACE, &log_if_secondary, index, keys, row, NULL);
 		op->row_prev = index_set(index, row);
 		if (unlikely(op->row_prev))
 			error("index '%.*s': unique key constraint violation",

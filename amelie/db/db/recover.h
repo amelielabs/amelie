@@ -24,14 +24,16 @@ struct RecoverIf
 struct Recover
 {
 	Tr         tr;
-	WalBatch   batch;
+	Write      write;
+	bool       write_wal;
+	uint64_t   ops;
+	uint64_t   size;
 	RecoverIf* iface;
 	void*      iface_arg;
 	Db*        db;
 };
 
-void recover_init(Recover*, Db*, RecoverIf*, void*);
+void recover_init(Recover*, Db*, bool, RecoverIf*, void*);
 void recover_free(Recover*);
-void recover_next(Recover*, uint8_t**, uint8_t**);
-void recover_next_write(Recover*, WalWrite*, bool, int);
+void recover_next(Recover*, Record*);
 void recover_wal(Recover*);

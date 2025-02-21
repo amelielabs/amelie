@@ -62,20 +62,24 @@ on_write(Primary* self, Buf* data)
 	auto end = data->position;
 	while (pos < end)
 	{
-		auto write = (WalWrite*)pos;
-		if ((write->flags & WAL_UTILITY) > 0)
+		auto record = (Record*)pos;
+		if (var_int_of(&config()->wal_crc))
+			if (unlikely(record_validate(record)))
+				info("repl: lsn %" PRIu64 ": crc mismatch", state_lsn() + 1);
+
+		if (likely(record_cmd_is_dml(record_cmd(record))))
+		{
+			// execute DML
+			replay(session->share, &session->dtr, record);
+		} else
 		{
 			// upgrade to exclusive lock
 			session_lock(session, LOCK_EXCLUSIVE);
 
-			// read and execute ddl command
-			recover_next_write(self->recover, write, true, WAL_UTILITY);	
-		} else
-		{
-			// execute dml commands
-			replay(session->share, &session->dtr, write);
+			// execute DDL
+			recover_next(self->recover, record);
 		}
-		pos += write->size;
+		pos += record->size;
 	}
 }
 
@@ -85,7 +89,7 @@ session_primary(Session* self)
 	auto share = self->share;
 
 	Recover recover;
-	recover_init(&recover, share->db, &build_if, share->backend_mgr);
+	recover_init(&recover, share->db, true, &build_if, share->backend_mgr);
 	defer(recover_free, &recover);
 
 	Primary primary;

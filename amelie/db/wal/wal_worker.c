@@ -64,7 +64,8 @@ wal_worker_main(void* arg)
 void
 wal_worker_init(WalWorker* self, Wal* wal)
 {
-	self->wal = wal;
+	self->pending = 0;
+	self->wal     = wal;
 	mutex_init(&self->lock);
 	cond_var_init(&self->cond_var);
 	task_init(&self->task);

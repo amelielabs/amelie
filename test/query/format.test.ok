@@ -14,7 +14,7 @@ select {"id": 48}
 select [{"id": 48}, {"id": 49}, [1,2,3]]
 [[{"id": 48}, {"id": 49}, [1, 2, 3]]]
 show all
-[{"uuid": "00000000-0000-0000-0000-000000000000", "timezone": "UTC", "format": "json", "shutdown": "graceful", "log_enable": true, "log_to_file": true, "log_to_stdout": false, "log_connections": true, "log_options": true, "tls_capath": "", "tls_ca": "", "tls_cert": "", "tls_key": "", "listen": [{"host": "127.0.0.1", "port": 3485}], "limit_send": 3145728, "limit_recv": 1048576, "limit_write": 0, "frontends": 1, "wal_worker": false, "wal_sync_on_create": false, "wal_sync_on_close": false, "wal_sync_on_write": false, "wal_sync_interval": "1 sec", "wal_size": 67108864, "repl_reconnect_ms": 3000, "checkpoint_interval": "5 min", "checkpoint_workers": 3}]
+[{"uuid": "00000000-0000-0000-0000-000000000000", "timezone": "UTC", "format": "json", "shutdown": "graceful", "log_enable": true, "log_to_file": true, "log_to_stdout": false, "log_connections": true, "log_options": true, "tls_capath": "", "tls_ca": "", "tls_cert": "", "tls_key": "", "listen": [{"host": "127.0.0.1", "port": 3485}], "limit_send": 3145728, "limit_recv": 1048576, "limit_write": 0, "frontends": 1, "wal_worker": false, "wal_crc": true, "wal_sync_on_create": false, "wal_sync_on_close": false, "wal_sync_on_write": false, "wal_sync_interval": "1 sec", "wal_size": 67108864, "repl_reconnect_ms": 3000, "checkpoint_interval": "5 min", "checkpoint_workers": 3}]
 show uuid
 ["00000000-0000-0000-0000-000000000000"]
 # test: json-array
@@ -28,7 +28,7 @@ select {"id": 48}
 select [{"id": 48}, {"id": 49}, [1,2,3]]
 [[{"id": 48}, {"id": 49}, [1, 2, 3]]]
 show all
-[{"uuid": "00000000-0000-0000-0000-000000000000", "timezone": "UTC", "format": "json-array", "shutdown": "graceful", "log_enable": true, "log_to_file": true, "log_to_stdout": false, "log_connections": true, "log_options": true, "tls_capath": "", "tls_ca": "", "tls_cert": "", "tls_key": "", "listen": [{"host": "127.0.0.1", "port": 3485}], "limit_send": 3145728, "limit_recv": 1048576, "limit_write": 0, "frontends": 1, "wal_worker": false, "wal_sync_on_create": false, "wal_sync_on_close": false, "wal_sync_on_write": false, "wal_sync_interval": "1 sec", "wal_size": 67108864, "repl_reconnect_ms": 3000, "checkpoint_interval": "5 min", "checkpoint_workers": 3}]
+[{"uuid": "00000000-0000-0000-0000-000000000000", "timezone": "UTC", "format": "json-array", "shutdown": "graceful", "log_enable": true, "log_to_file": true, "log_to_stdout": false, "log_connections": true, "log_options": true, "tls_capath": "", "tls_ca": "", "tls_cert": "", "tls_key": "", "listen": [{"host": "127.0.0.1", "port": 3485}], "limit_send": 3145728, "limit_recv": 1048576, "limit_write": 0, "frontends": 1, "wal_worker": false, "wal_crc": true, "wal_sync_on_create": false, "wal_sync_on_close": false, "wal_sync_on_write": false, "wal_sync_interval": "1 sec", "wal_size": 67108864, "repl_reconnect_ms": 3000, "checkpoint_interval": "5 min", "checkpoint_workers": 3}]
 show uuid
 ["00000000-0000-0000-0000-000000000000"]
 # test: json-array-pretty
@@ -71,6 +71,7 @@ show all
   "limit_write": 0,
   "frontends": 1,
   "wal_worker": false,
+  "wal_crc": true,
   "wal_sync_on_create": false,
   "wal_sync_on_close": false,
   "wal_sync_on_write": false,
@@ -95,7 +96,7 @@ select {"id": 48} as json
 select [{"id": 48}, {"id": 49}, [1,2,3]]
 [{"col1": [{"id": 48}, {"id": 49}, [1, 2, 3]]}]
 show all
-[{"all": {"uuid": "00000000-0000-0000-0000-000000000000", "timezone": "UTC", "format": "json-obj", "shutdown": "graceful", "log_enable": true, "log_to_file": true, "log_to_stdout": false, "log_connections": true, "log_options": true, "tls_capath": "", "tls_ca": "", "tls_cert": "", "tls_key": "", "listen": [{"host": "127.0.0.1", "port": 3485}], "limit_send": 3145728, "limit_recv": 1048576, "limit_write": 0, "frontends": 1, "wal_worker": false, "wal_sync_on_create": false, "wal_sync_on_close": false, "wal_sync_on_write": false, "wal_sync_interval": "1 sec", "wal_size": 67108864, "repl_reconnect_ms": 3000, "checkpoint_interval": "5 min", "checkpoint_workers": 3}}]
+[{"all": {"uuid": "00000000-0000-0000-0000-000000000000", "timezone": "UTC", "format": "json-obj", "shutdown": "graceful", "log_enable": true, "log_to_file": true, "log_to_stdout": false, "log_connections": true, "log_options": true, "tls_capath": "", "tls_ca": "", "tls_cert": "", "tls_key": "", "listen": [{"host": "127.0.0.1", "port": 3485}], "limit_send": 3145728, "limit_recv": 1048576, "limit_write": 0, "frontends": 1, "wal_worker": false, "wal_crc": true, "wal_sync_on_create": false, "wal_sync_on_close": false, "wal_sync_on_write": false, "wal_sync_interval": "1 sec", "wal_size": 67108864, "repl_reconnect_ms": 3000, "checkpoint_interval": "5 min", "checkpoint_workers": 3}}]
 show uuid
 [{"uuid": "00000000-0000-0000-0000-000000000000"}]
 # test: json-obj-pretty
@@ -151,6 +152,7 @@ show all
     "limit_write": 0,
     "frontends": 1,
     "wal_worker": false,
+    "wal_crc": true,
     "wal_sync_on_create": false,
     "wal_sync_on_close": false,
     "wal_sync_on_write": false,

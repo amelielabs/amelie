@@ -15,10 +15,10 @@ typedef struct Commit Commit;
 
 struct Commit
 {
-	PipeSet  set;
-	int      list_count;
-	List     list;
-	WalBatch wal_batch;
+	PipeSet set;
+	int     list_count;
+	List    list;
+	Write   write;
 };
 
 static inline void
@@ -27,14 +27,14 @@ commit_init(Commit* self)
 	self->list_count = 0;
 	list_init(&self->list);
 	pipe_set_init(&self->set);
-	wal_batch_init(&self->wal_batch);
+	write_init(&self->write);
 }
 
 static inline void
 commit_free(Commit* self)
 {
 	pipe_set_free(&self->set);
-	wal_batch_free(&self->wal_batch);
+	write_free(&self->write);
 }
 
 static inline void
@@ -43,7 +43,7 @@ commit_reset(Commit* self)
 	self->list_count = 0;
 	list_init(&self->list);
 	pipe_set_reset(&self->set, NULL);
-	wal_batch_reset(&self->wal_batch);
+	write_reset(&self->write);
 }
 
 static inline void

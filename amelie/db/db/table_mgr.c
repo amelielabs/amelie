@@ -60,7 +60,7 @@ table_mgr_create(TableMgr*    self,
 	auto op = table_op_create(config);
 
 	// update tables
-	handle_mgr_create(&self->mgr, tr, LOG_TABLE_CREATE, &table->handle, op);
+	handle_mgr_create(&self->mgr, tr, CMD_TABLE_CREATE, &table->handle, op);
 
 	// prepare partitions
 	table_open(table);
@@ -77,7 +77,7 @@ table_mgr_drop_of(TableMgr* self, Tr* tr, Table* table)
 	auto op = table_op_drop(&table->config->schema, &table->config->name);
 
 	// drop table by object
-	handle_mgr_drop(&self->mgr, tr, LOG_TABLE_DROP, &table->handle, op);
+	handle_mgr_drop(&self->mgr, tr, CMD_TABLE_DROP, &table->handle, op);
 }
 
 void
@@ -138,7 +138,7 @@ table_mgr_truncate(TableMgr* self,
 	auto op = table_op_truncate(schema, name);
 
 	// update table
-	log_handle(&tr->log, LOG_TABLE_TRUNCATE, &truncate_if,
+	log_handle(&tr->log, CMD_TABLE_TRUNCATE, &truncate_if,
 	           NULL,
 	           &table->handle, NULL, op);
 

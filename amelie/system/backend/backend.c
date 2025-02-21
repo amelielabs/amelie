@@ -47,39 +47,42 @@ backend_replay(Backend* self, Tr* tr, Req* req)
 	auto db = self->vm.db;
 	for (auto pos = req->arg.start; pos < req->arg.position;)
 	{
-		// [meta offset, data offset]
+		// command
+		auto cmd = *(RecordCmd**)pos;
+		pos += sizeof(uint8_t**);
 
-		// meta_offset
-		int64_t meta_offset;
-		json_read_integer(&pos, &meta_offset);
+		// data
+		auto data = *(uint8_t**)pos;
+		pos += sizeof(uint8_t**);
 
-		// data_offset
-		int64_t data_offset;
-		json_read_integer(&pos, &data_offset);
-
-		uint8_t* meta = req->arg_start + meta_offset;
-		uint8_t* data = req->arg_start + data_offset;
-
-		// type
-		int64_t type;
-		json_read_integer(&meta, &type);
+		// validate command crc
+		if (var_int_of(&config()->wal_crc))
+			if (unlikely(record_validate_cmd(cmd, data)))
+				info("replay: command crc mismatch");
 
 		// partition
-		int64_t partition_id;
-		json_read_integer(&meta, &partition_id);
-		auto part = table_mgr_find_partition(&db->table_mgr, partition_id);
+		auto part = table_mgr_find_partition(&db->table_mgr, cmd->partition);
 		if (! part)
-			error("failed to find partition %" PRIu64, partition_id);
+			error("failed to find partition %" PRIu64, cmd->partition);
 
-		// replay write
-		auto row = (Row*)data;
-		if (type == LOG_REPLACE)
+		// replay writes
+		auto end = data + cmd->size;
+		if (cmd->cmd == CMD_REPLACE)
 		{
-			auto copy = row_copy(row);
-			part_insert(part, tr, true, copy);
-		} else
-		{
-			part_delete_by(part, tr, row);
+			while (data < end)
+			{
+				auto row = row_copy((Row*)data);
+				part_insert(part, tr, true, row);
+				data += row_size(row);
+			}
+		} else {
+			while (data < end)
+			{
+				auto row = (Row*)(data);
+				part_delete_by(part, tr, row);
+				data += row_size(row);
+			}
+
 		}
 	}
 }

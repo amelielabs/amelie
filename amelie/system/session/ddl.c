@@ -497,12 +497,12 @@ session_execute_ddl_stmt(Session* self, Tr* tr)
 	if (tr_read_only(tr))
 		return;
 
-	WalBatch batch;
-	wal_batch_init(&batch);
-	defer(wal_batch_free, &batch);
-	wal_batch_begin(&batch, WAL_UTILITY);
-	wal_batch_add(&batch, &tr->log.log_set);
-	wal_mgr_write(&self->share->db->wal_mgr, &batch);
+	Write write;;
+	write_init(&write);
+	defer(write_free, &write);
+	write_begin(&write);
+	write_add(&write, &tr->log.log_write);
+	wal_mgr_write(&self->share->db->wal_mgr, &write);
 }
 
 void

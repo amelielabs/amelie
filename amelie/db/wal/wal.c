@@ -221,38 +221,30 @@ wal_close(Wal* self)
 }
 
 hot bool
-wal_write(Wal* self, WalBatch* batch)
+wal_write(Wal* self, Write* write)
 {
 	mutex_lock(&self->lock);
 	defer(mutex_unlock, &self->lock);
 
 	// update stats
 	var_int_add(&state()->writes, 1);
-	var_int_add(&state()->writes_bytes, batch->header.size);
-	var_int_add(&state()->ops, batch->header.count);
+	var_int_add(&state()->writes_bytes, write->header.size);
+	var_int_add(&state()->ops, write->header.ops);
 
-	uint64_t next_lsn = state_lsn() + 1;
-	batch->header.lsn = next_lsn;
+	uint64_t lsn = state_lsn() + 1;
+	write_end(write, lsn);
 
 	// write wal file
-
-	// [header][rows meta][rows]
-	wal_file_write(self->current, iov_pointer(&batch->iov), batch->iov.iov_count);
-	list_foreach(&batch->list)
-	{
-		auto log_set = list_at(LogSet, link);
-		wal_file_write(self->current, iov_pointer(&log_set->iov),
-		               log_set->iov.iov_count);
-	}
+	wal_file_write(self->current, write);
 
 	// update lsn globally
-	state_lsn_set(next_lsn);
+	state_lsn_set(lsn);
 
 	// notify pending slots
 	list_foreach(&self->slots)
 	{
 		auto slot = list_at(WalSlot, link);
-		wal_slot_signal(slot, batch->header.lsn);
+		wal_slot_signal(slot, lsn);
 	}
 
 	return self->current->file.size >= var_int_of(&config()->wal_size);

@@ -28,16 +28,20 @@ wal_cursor_init(WalCursor* self)
 	self->file_offset = 0;
 	self->file        = NULL;
 	self->file_next   = true;
+	self->crc         = false;
 	self->wal         = NULL;
 	buf_init(&self->buf);
 }
 
 void
-wal_cursor_open(WalCursor* self, Wal* wal, uint64_t lsn, bool file_next)
+wal_cursor_open(WalCursor* self, Wal* wal, uint64_t lsn,
+                bool       file_next,
+                bool       crc)
 {
 	self->file        = NULL;
 	self->file_offset = 0;
 	self->file_next   = file_next;
+	self->crc         = crc;
 	self->wal         = wal;
 
 	// find nearest file with id <= lsn
@@ -56,11 +60,11 @@ wal_cursor_open(WalCursor* self, Wal* wal, uint64_t lsn, bool file_next)
 	{
 		if (! wal_cursor_next(self))
 			break;
-		auto write = wal_cursor_at(self);
-		if (write->lsn >= lsn)
+		auto record = wal_cursor_at(self);
+		if (record->lsn >= lsn)
 		{
 			// rewind
-			self->file_offset -= write->size;
+			self->file_offset -= record->size;
 			break;
 		}
 	}
@@ -85,13 +89,13 @@ wal_cursor_active(WalCursor* self)
 	return self->file != NULL;
 }
 
-WalWrite*
+Record*
 wal_cursor_at(WalCursor* self)
 {
-	return (WalWrite*)self->buf.start;
+	return (Record*)self->buf.start;
 }
 
-hot static WalWrite*
+hot static Record*
 wal_cursor_read(WalCursor* self)
 {
 	if (unlikely(self->file == NULL))
@@ -102,11 +106,11 @@ wal_cursor_read(WalCursor* self)
 	{
 		auto buf_offset = buf_size(&self->buf);
 		auto file = self->file;
-		if (wal_file_pread(file, self->file_offset, &self->buf))
+		if (wal_file_pread(file, self->file_offset, self->crc, &self->buf))
 		{
-			auto write = (WalWrite*)(self->buf.start + buf_offset);
-			self->file_offset += write->size;
-			return write;
+			auto record = (Record*)(self->buf.start + buf_offset);
+			self->file_offset += record->size;
+			return record;
 		}
 
 		// retry read if file size has changed
@@ -140,10 +144,7 @@ bool
 wal_cursor_next(WalCursor* self)
 {
 	buf_reset(&self->buf);
-	auto write = wal_cursor_read(self);
-	if (write)
-		return true;
-	return false;
+	return wal_cursor_read(self) != NULL;
 }
 
 int
@@ -153,11 +154,11 @@ wal_cursor_readahead(WalCursor* self, int size, uint64_t* lsn)
 	int collected = 0;
 	while (collected < size)
 	{
-		auto write = wal_cursor_read(self);
-		if (! write)
+		auto record = wal_cursor_read(self);
+		if (! record)
 			break;
-		*lsn = write->lsn;
-		collected += write->size;
+		*lsn = record->lsn;
+		collected += record->size;
 	}
 	return collected;
 }

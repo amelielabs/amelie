@@ -64,7 +64,7 @@ worker_mgr_create(WorkerMgr*    self,
 	auto op = worker_op_create(config);
 
 	// update workers
-	handle_mgr_create(&self->mgr, tr, LOG_WORKER_CREATE, &worker->handle, op);
+	handle_mgr_create(&self->mgr, tr, CMD_WORKER_CREATE, &worker->handle, op);
 
 	// create worker context
 	worker_create(worker);
@@ -94,7 +94,7 @@ worker_mgr_drop(WorkerMgr* self,
 	auto op = worker_op_drop(&worker->config->id);
 
 	// update mgr
-	handle_mgr_drop(&self->mgr, tr, LOG_WORKER_DROP, &worker->handle, op);
+	handle_mgr_drop(&self->mgr, tr, CMD_WORKER_DROP, &worker->handle, op);
 }
 
 void

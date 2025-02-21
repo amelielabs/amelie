@@ -58,7 +58,7 @@ schema_mgr_create(SchemaMgr*    self,
 	auto op = schema_op_create(config);
 
 	// update schemas
-	handle_mgr_create(&self->mgr, tr, LOG_SCHEMA_CREATE,
+	handle_mgr_create(&self->mgr, tr, CMD_SCHEMA_CREATE,
 	                  &schema->handle, op);
 }
 
@@ -85,7 +85,7 @@ schema_mgr_drop(SchemaMgr* self,
 	auto op = schema_op_drop(&schema->config->name);
 
 	// drop schema by object
-	handle_mgr_drop(&self->mgr, tr, LOG_SCHEMA_DROP, &schema->handle, op);
+	handle_mgr_drop(&self->mgr, tr, CMD_SCHEMA_DROP, &schema->handle, op);
 }
 
 static void
@@ -143,7 +143,7 @@ schema_mgr_rename(SchemaMgr* self,
 	auto op = schema_op_rename(name, name_new);
 
 	// update schema
-	log_handle(&tr->log, LOG_SCHEMA_RENAME, &rename_if,
+	log_handle(&tr->log, CMD_SCHEMA_RENAME, &rename_if,
 	           NULL,
 	           &schema->handle, NULL, op);
 
