@@ -57,8 +57,8 @@ backend_replay(Backend* self, Tr* tr, Req* req)
 
 		// validate command crc
 		if (var_int_of(&config()->wal_crc))
-			if (unlikely(record_validate_cmd(cmd, data)))
-				info("replay: command crc mismatch");
+			if (unlikely(! record_validate_cmd(cmd, data)))
+				error("replay: record command crc mismatch");
 
 		// partition
 		auto part = table_mgr_find_partition(&db->table_mgr, cmd->partition);

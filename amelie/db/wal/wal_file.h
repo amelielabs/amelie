@@ -86,7 +86,7 @@ wal_file_eof(WalFile* self, uint32_t offset, uint32_t size)
 }
 
 static inline bool
-wal_file_pread(WalFile* self, uint64_t offset, bool crc, Buf* buf)
+wal_file_pread(WalFile* self, uint64_t offset, Buf* buf)
 {
 	// check for eof
 	if (wal_file_eof(self, offset, sizeof(Record)))
@@ -109,14 +109,5 @@ wal_file_pread(WalFile* self, uint64_t offset, bool crc, Buf* buf)
 	uint32_t size_data;
 	size_data = size - size_header;
 	file_pread_buf(&self->file, buf, size_data, offset + size_header);
-
-	// validate crc (header + commands)
-	if (crc)
-	{
-		auto record = (Record*)(buf->start + start);
-		if (unlikely(! record_validate(record)))
-			error("wal: lsn %" PRIu64 ": crc mismatch", state_lsn() + 1);
-	}
-
 	return true;
 }

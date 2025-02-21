@@ -64,8 +64,9 @@ on_write(Primary* self, Buf* data)
 	{
 		auto record = (Record*)pos;
 		if (var_int_of(&config()->wal_crc))
-			if (unlikely(record_validate(record)))
-				info("repl: lsn %" PRIu64 ": crc mismatch", state_lsn() + 1);
+			if (unlikely(! record_validate(record)))
+				error("repl: record crc mismatch, system LSN is: %" PRIu64,
+				      state_lsn());
 
 		if (likely(record_cmd_is_dml(record_cmd(record))))
 		{

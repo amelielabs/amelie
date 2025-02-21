@@ -106,9 +106,15 @@ wal_cursor_read(WalCursor* self)
 	{
 		auto buf_offset = buf_size(&self->buf);
 		auto file = self->file;
-		if (wal_file_pread(file, self->file_offset, self->crc, &self->buf))
+		if (wal_file_pread(file, self->file_offset, &self->buf))
 		{
+			// validate crc (header + commands)
 			auto record = (Record*)(self->buf.start + buf_offset);
+			if (self->crc)
+			{
+				if (unlikely(! record_validate(record)))
+					error("wal: record crc mismatch");
+			}
 			self->file_offset += record->size;
 			return record;
 		}
@@ -132,7 +138,6 @@ wal_cursor_read(WalCursor* self)
 
 		// open next file
 		self->file_offset = 0;
-		self->file        = NULL;
 		self->file        = wal_file_allocate(id);
 		wal_file_open(self->file);
 	}

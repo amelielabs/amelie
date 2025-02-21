@@ -354,14 +354,13 @@ recover_next(Recover* self, Record* record)
 	);
 	if (unlikely(on_error))
 	{
-		info("recover: wal lsn %" PRIu64 ": replay error", record->lsn);
 		tr_abort(tr);
 		rethrow();
 	}
 }
 
-void
-recover_wal(Recover* self)
+static void
+recover_wal_main(Recover* self)
 {
 	// start wal recover from the last checkpoint
 	auto wal = &self->db->wal_mgr.wal;
@@ -392,5 +391,16 @@ recover_wal(Recover* self)
 		id = id_mgr_next(&wal->list, cursor.file->id);
 		if (id == UINT64_MAX)
 			break;
+	}
+}
+
+void
+recover_wal(Recover* self)
+{
+	if (error_catch( recover_wal_main(self)) )
+	{
+		info("recover: wal replay error, last valid LSN is: %" PRIu64,
+		     state_lsn());
+		rethrow();
 	}
 }
