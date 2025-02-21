@@ -48,6 +48,7 @@ struct Config
 	Var  wal_sync_interval;
 	Var  wal_size;
 	// replication
+	Var  repl_readahead;
 	Var  repl_reconnect_ms;
 	// checkpoint
 	Var  checkpoint_interval;

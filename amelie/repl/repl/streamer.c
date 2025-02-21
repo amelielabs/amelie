@@ -33,9 +33,10 @@
 static inline bool
 streamer_collect(Streamer* self)
 {
+	auto size = var_int_of(&config()->repl_readahead);
 	for (;;)
 	{
-		if (wal_cursor_readahead(&self->wal_cursor, 256 * 1024, &self->lsn) > 0)
+		if (wal_cursor_readahead(&self->wal_cursor, size, &self->lsn) > 0)
 			break;
 
 		// wait for new wal write, client disconnect or cancel
