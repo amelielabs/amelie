@@ -47,6 +47,7 @@ struct Config
 	Var  wal_sync_on_write;
 	Var  wal_sync_interval;
 	Var  wal_size;
+	Var  wal_truncate;
 	// replication
 	Var  repl_readahead;
 	Var  repl_reconnect_ms;

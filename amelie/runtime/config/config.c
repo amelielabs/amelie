@@ -71,6 +71,7 @@ config_prepare(Config* self)
 		{ "wal_sync_on_write",       VAR_BOOL,   VAR_C,                   &self->wal_sync_on_write,       NULL,          false               },
 		{ "wal_sync_interval",       VAR_STRING, VAR_C,                   &self->wal_sync_interval,       "1 sec",       0                   },
 		{ "wal_size",                VAR_INT,    VAR_C,                   &self->wal_size,                NULL,          67108864            },
+		{ "wal_truncate",            VAR_INT,    VAR_C,                   &self->wal_truncate,            NULL,          0                   },
 		// replication
 		{ "repl_readahead",          VAR_INT,    VAR_C|VAR_Z,             &self->repl_readahead,          NULL,          256 * 1024          },
 		{ "repl_reconnect_ms",       VAR_INT,    VAR_C,                   &self->repl_reconnect_ms,       NULL,          3000                },

@@ -149,8 +149,19 @@ wal_file_id_of(const char* path)
 }
 
 static void
-wal_recover(Wal* self, char* path)
+wal_open_directory(Wal* self)
 {
+	// create directory
+	char path[PATH_MAX];
+	snprintf(path, sizeof(path), "%s/wals", state_directory());
+	if (! fs_exists("%s", path))
+		fs_mkdir(0755, "%s", path);
+
+	// open and keep directory fd to support sync
+	self->dirfd = vfs_open(path, O_RDONLY, 0);
+	if (self->dirfd == -1)
+		error_system();
+
 	// open and read log directory
 	DIR* dir = opendir(path);
 	if (unlikely(dir == NULL))
@@ -170,54 +181,124 @@ wal_recover(Wal* self, char* path)
 	}
 }
 
+static void
+wal_truncate(Wal* self, uint64_t lsn)
+{
+	// if set, truncate logs by lsn
+	if (lsn == 0)
+		return;
+
+	// find nearest file with id <= lsn
+	auto id = id_mgr_find(&self->list, lsn);
+	if (id == UINT64_MAX)
+		id = id_mgr_min(&self->list);
+
+	info("truncate wals (%" PRIu64 " lsn)", lsn);
+
+	auto file = wal_file_allocate(id);
+	defer(wal_file_close, file);
+	wal_file_open(file);
+
+	Buf buf;
+	buf_init(&buf);
+	defer_buf(&buf);
+
+	// rewind to the lsn
+	auto crc = var_int_of(&config()->wal_crc);
+	uint64_t offset = 0;
+	for (;;)
+	{
+		buf_reset(&buf);
+		if (! wal_file_pread(file, offset, &buf))
+			break;
+
+		// validate crc (header + commands)
+		auto record = (Record*)(buf.start);
+		if (crc)
+		{
+			if (unlikely(! record_validate(record)))
+				error("wals/%" PRIu64 " (record crc mismatch)", id);
+		}
+		if (record->lsn > lsn)
+			break;
+		offset += record->size;
+		if (record->lsn == lsn)
+			break;
+	}
+
+	// truncate matched wal file to the record offset
+	if (offset != file->file.size)
+	{
+		wal_file_truncate(file, offset);
+		info("wals/%" PRIu64 " (truncated to %" PRIu64 " bytes)",
+		     id, offset);
+	}
+
+	// remove all wal files after it
+	for (;;)
+	{
+		id = id_mgr_next(&self->list, id);
+		if (id == UINT64_MAX)
+			break;
+		char path[PATH_MAX];
+		snprintf(path, sizeof(path), "%s/wals/%" PRIu64,
+		         state_directory(), id);
+		fs_unlink("%s", path);
+		info("wals/%" PRIu64 " (file removed)", id);
+	}
+
+	info("complete");
+}
+
 void
 wal_open(Wal* self)
 {
-	// create directory
-	char path[PATH_MAX];
-	snprintf(path, sizeof(path), "%s/wals", state_directory());
-	if (! fs_exists("%s", path))
-		fs_mkdir(0755, "%s", path);
+	// open or create directory and add existing files
+reopen:
+	wal_open_directory(self);
 
-	// open and keep directory fd to support sync
-	self->dirfd = vfs_open(path, O_RDONLY, 0);
-	if (self->dirfd == -1)
-		error_system();
-
-	// read file list
-	wal_recover(self, path);
-
-	// open last log file and set it as current
-	if (self->list.list_count > 0)
-	{
-		uint64_t last = id_mgr_max(&self->list);
-		self->current = wal_file_allocate(last);
-		wal_file_open(self->current);
-		file_seek_to_end(&self->current->file);
-	} else
+	// create new wal file
+	if (! self->list.list_count)
 	{
 		wal_create(self, 1);
 		if (var_int_of(&config()->wal_sync_on_create))
 			wal_sync(self, true);
+		return;
 	}
+
+	// truncate wals to the specified lsn, if set
+	uint64_t lsn = var_int_of(&config()->wal_truncate);
+	if (lsn != 0)
+	{
+		wal_truncate(self, lsn);
+		wal_close(self);
+		var_int_set(&config()->wal_truncate, 0);
+		goto reopen;
+	}
+
+	// open last log file and set it as current
+	uint64_t last = id_mgr_max(&self->list);
+	self->current = wal_file_allocate(last);
+	wal_file_open(self->current);
+	file_seek_to_end(&self->current->file);
 }
 
 void
 wal_close(Wal* self)
 {
-	if (! self->current)
-		return;
 	if (self->dirfd != -1)
 	{
 		close(self->dirfd);
 		self->dirfd = -1;
 	}
-	auto file = self->current;
-	error_catch (
-		wal_file_close(file);
-	);
-	wal_file_free(file);
-	self->current = NULL;
+	if (self->current)
+	{
+		auto file = self->current;
+		error_catch( wal_file_close(file) );
+		wal_file_free(file);
+		self->current = NULL;
+	}
+	id_mgr_reset(&self->list);
 }
 
 hot bool

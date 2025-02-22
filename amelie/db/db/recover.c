@@ -362,8 +362,12 @@ recover_next(Recover* self, Record* record)
 static void
 recover_wal_main(Recover* self)
 {
-	// start wal recover from the last checkpoint
-	auto wal = &self->db->wal_mgr.wal;
+	// open wal files and maybe truncate wal files according
+	// to the wal_truncate option
+	auto wal_mgr = &self->db->wal_mgr;
+	wal_mgr_start(wal_mgr);
+
+	// replay wals starting from the last checkpoint
 	auto id = state_checkpoint() + 1;
 	for (;;)
 	{
@@ -374,7 +378,7 @@ recover_wal_main(Recover* self)
 		defer(wal_cursor_close, &cursor);
 
 		auto wal_crc = var_int_of(&config()->wal_crc);
-		wal_cursor_open(&cursor, wal, id, false, wal_crc);
+		wal_cursor_open(&cursor, &wal_mgr->wal, id, false, wal_crc);
 		for (;;)
 		{
 			if (! wal_cursor_next(&cursor))
@@ -388,7 +392,7 @@ recover_wal_main(Recover* self)
 		info("wals/%" PRIu64 " (%.2f MiB, %" PRIu64 " rows)",
 		     id, (double)self->size / 1024 / 1024, self->ops);
 
-		id = id_mgr_next(&wal->list, cursor.file->id);
+		id = id_mgr_next(&wal_mgr->wal.list, cursor.file->id);
 		if (id == UINT64_MAX)
 			break;
 	}
@@ -399,7 +403,7 @@ recover_wal(Recover* self)
 {
 	if (error_catch( recover_wal_main(self)) )
 	{
-		info("recover: wal replay error, last valid LSN is: %" PRIu64,
+		info("recover: wal replay error, last valid lsn is: %" PRIu64,
 		     state_lsn());
 		rethrow();
 	}

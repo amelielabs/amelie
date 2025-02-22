@@ -43,6 +43,7 @@ show all
   "wal_sync_on_write": false,
   "wal_sync_interval": "1 sec",
   "wal_size": 67108864,
+  "wal_truncate": 0,
   "repl_readahead": 262144,
   "repl_reconnect_ms": 3000,
   "checkpoint_interval": "5 min",

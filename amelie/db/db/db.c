@@ -90,9 +90,6 @@ db_open(Db* self)
 	// read directory and restore last checkpoint catalog
 	// (schemas, tables)
 	checkpoint_mgr_open(&self->checkpoint_mgr);
-
-	// start wal mgr
-	wal_mgr_start(&self->wal_mgr);
 }
 
 void

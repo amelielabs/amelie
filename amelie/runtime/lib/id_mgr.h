@@ -36,6 +36,15 @@ id_mgr_free(IdMgr* self)
 }
 
 static inline void
+id_mgr_reset(IdMgr* self)
+{
+	spinlock_lock(&self->lock);
+	self->list_count = 0;
+	buf_reset(&self->list);
+	spinlock_unlock(&self->lock);
+}
+
+static inline void
 id_mgr_add(IdMgr* self, uint64_t id)
 {
 	spinlock_lock(&self->lock);
