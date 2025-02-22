@@ -28,6 +28,6 @@ void wal_cursor_open(WalCursor*, Wal*, uint64_t, bool, bool);
 void wal_cursor_close(WalCursor*);
 bool wal_cursor_active(WalCursor*);
 bool wal_cursor_next(WalCursor*);
-int  wal_cursor_readahead(WalCursor*, int, uint64_t*);
+int  wal_cursor_readahead(WalCursor*, int, uint64_t*, uint64_t);
 Record*
 wal_cursor_at(WalCursor*);

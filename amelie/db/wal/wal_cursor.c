@@ -153,7 +153,9 @@ wal_cursor_next(WalCursor* self)
 }
 
 int
-wal_cursor_readahead(WalCursor* self, int size, uint64_t* lsn)
+wal_cursor_readahead(WalCursor* self, int size,
+                     uint64_t*  lsn,
+                     uint64_t   lsn_max)
 {
 	buf_reset(&self->buf);
 	int collected = 0;
@@ -164,6 +166,8 @@ wal_cursor_readahead(WalCursor* self, int size, uint64_t* lsn)
 			break;
 		*lsn = record->lsn;
 		collected += record->size;
+		if (record->lsn == lsn_max)
+			break;
 	}
 	return collected;
 }

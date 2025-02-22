@@ -36,7 +36,8 @@ streamer_collect(Streamer* self)
 	auto size = var_int_of(&config()->repl_readahead);
 	for (;;)
 	{
-		if (wal_cursor_readahead(&self->wal_cursor, size, &self->lsn) > 0)
+		auto lsn_max = state_lsn();
+		if (wal_cursor_readahead(&self->wal_cursor, size, &self->lsn, lsn_max) > 0)
 			break;
 
 		// wait for new wal write, client disconnect or cancel
