@@ -301,14 +301,11 @@ wal_close(Wal* self)
 	id_mgr_reset(&self->list);
 }
 
-hot bool
-wal_write(Wal* self, WriteList* list)
+hot static inline uint64_t
+wal_write_list(Wal* self, WriteList* list)
 {
-	mutex_lock(&self->lock);
-	defer(mutex_unlock, &self->lock);
-
-	// todo: begin
-	uint64_t lsn = state_lsn();
+	auto current = self->current;
+	auto lsn = state_lsn();
 	list_foreach(&list->list)
 	{
 		auto write = list_at(Write, link);
@@ -318,13 +315,42 @@ wal_write(Wal* self, WriteList* list)
 		var_int_add(&state()->writes_bytes, write->header.size);
 		var_int_add(&state()->ops, write->header.ops);
 
+		// finilize wal record
 		lsn++;
 		write_end(write, lsn);
 
 		// write wal file
-		wal_file_write(self->current, write);
+
+		// [header][commands][rows or ops]
+		wal_file_write(current, &write->iov);
+		list_foreach(&write->list)
+		{
+			auto write_log = list_at(WriteLog, link);
+			wal_file_write(current, &write_log->iov);
+		}
 	}
-	// todo: truncate on error
+
+	return lsn;
+}
+
+hot bool
+wal_write(Wal* self, WriteList* list)
+{
+	mutex_lock(&self->lock);
+	defer(mutex_unlock, &self->lock);
+
+	// do atomical write of a list of wal records
+	uint64_t lsn;
+	auto current = self->current;
+	auto current_offset = current->file.size;
+	auto on_error = error_catch(
+		lsn = wal_write_list(self, list)
+	);
+	if (unlikely(on_error)) {
+		if (error_catch(wal_file_truncate(current, current_offset)))
+			panic("wal: failed to truncate wal file after failed write");
+		rethrow();
+	}
 
 	// update lsn globally
 	state_lsn_set(lsn);

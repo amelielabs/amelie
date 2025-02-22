@@ -73,16 +73,9 @@ wal_file_truncate(WalFile* self, uint64_t size)
 }
 
 static inline void
-wal_file_write(WalFile* self, Write* write)
+wal_file_write(WalFile* self, Iov* iov)
 {
-	// [header][commands][rows or ops]
-	file_writev(&self->file, iov_pointer(&write->iov), write->iov.iov_count);
-	list_foreach(&write->list)
-	{
-		auto write_log = list_at(WriteLog, link);
-		file_writev(&self->file, iov_pointer(&write_log->iov),
-		            write_log->iov.iov_count);
-	}
+	file_writev(&self->file, iov_pointer(iov), iov->iov_count);
 }
 
 static inline bool
