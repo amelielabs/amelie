@@ -23,6 +23,7 @@ struct Wal
 	int      dirfd;
 };
 
+// main
 void wal_init(Wal*);
 void wal_free(Wal*);
 void wal_open(Wal*);
@@ -31,7 +32,11 @@ bool wal_overflow(Wal*);
 void wal_create(Wal*, uint64_t);
 void wal_gc(Wal*, uint64_t);
 void wal_sync(Wal*, bool);
-bool wal_write(Wal*, Write*);
+
+// wal write
+bool wal_write(Wal*, WriteList*);
+
+// slots and snapthots
 void wal_add(Wal*, WalSlot*);
 void wal_del(Wal*, WalSlot*);
 void wal_attach(Wal*, WalSlot*);

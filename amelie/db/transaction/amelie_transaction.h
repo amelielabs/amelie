@@ -18,6 +18,7 @@
 #include "transaction/record.h"
 #include "transaction/write_log.h"
 #include "transaction/write.h"
+#include "transaction/write_list.h"
 
 // transaction log
 #include "transaction/log.h"

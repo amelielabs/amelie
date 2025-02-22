@@ -37,6 +37,7 @@ recover_init(Recover*   self, Db* db,
 	self->db        = db;
 	tr_init(&self->tr);
 	write_init(&self->write);
+	write_list_init(&self->write_list);
 }
 
 void
@@ -326,10 +327,13 @@ recover_next_record(Recover* self, Record* record)
 	if (self->write_wal)
 	{
 		auto write = &self->write;
+		auto write_list = &self->write_list;
 		write_reset(write);
 		write_begin(write);
 		write_add(write, &self->tr.log.write_log);
-		wal_mgr_write(&self->db->wal_mgr, write);
+		write_list_reset(write_list);
+		write_list_add(write_list, write);
+		wal_mgr_write(&self->db->wal_mgr, write_list);
 	} else
 	{
 		state_lsn_follow(record->lsn);

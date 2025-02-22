@@ -168,17 +168,14 @@ executor_end_lock(Executor* self, DtrState state)
 hot static void
 executor_wal_write(Executor* self)
 {
+	// prepare a list of a finilized wal records
 	auto commit = &self->commit;
-	auto write = &commit->write;
-	auto wal_mgr = &self->db->wal_mgr;
-	auto wal_updated = false;
-	auto wal_rotate  = false;
+	auto write_list = &commit->write_list;
 	list_foreach(&commit->list)
 	{
-		auto tr  = list_at(Dtr, link_commit);
-		auto set = &tr->set;
-
-		// wal write (disabled during recovery)
+		auto tr    = list_at(Dtr, link_commit);
+		auto set   = &tr->set;
+		auto write = &tr->write;
 		write_reset(write);
 		write_begin(write);
 		for (int i = 0; i < set->set_size; i++)
@@ -196,15 +193,12 @@ executor_wal_write(Executor* self)
 			// system read-only state
 			if (!tr->program->repl && var_int_of(&state()->read_only))
 				error("system is in read-only mode");
-			if (wal_write(&wal_mgr->wal, write))
-				wal_rotate = true;
-			wal_updated = true;
+			write_list_add(write_list, write);
 		}
 	}
-	if (wal_updated && var_int_of(&config()->wal_sync_on_write))
-		wal_sync(&wal_mgr->wal, false);
-	if (wal_rotate)
-		wal_mgr_create(wal_mgr);
+
+	// do atomical wal write
+	wal_mgr_write(&self->db->wal_mgr, write_list);
 }
 
 hot void

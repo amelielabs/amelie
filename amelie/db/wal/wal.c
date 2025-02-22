@@ -302,21 +302,29 @@ wal_close(Wal* self)
 }
 
 hot bool
-wal_write(Wal* self, Write* write)
+wal_write(Wal* self, WriteList* list)
 {
 	mutex_lock(&self->lock);
 	defer(mutex_unlock, &self->lock);
 
-	// update stats
-	var_int_add(&state()->writes, 1);
-	var_int_add(&state()->writes_bytes, write->header.size);
-	var_int_add(&state()->ops, write->header.ops);
+	// todo: begin
+	uint64_t lsn = state_lsn();
+	list_foreach(&list->list)
+	{
+		auto write = list_at(Write, link);
 
-	uint64_t lsn = state_lsn() + 1;
-	write_end(write, lsn);
+		// update stats
+		var_int_add(&state()->writes, 1);
+		var_int_add(&state()->writes_bytes, write->header.size);
+		var_int_add(&state()->ops, write->header.ops);
 
-	// write wal file
-	wal_file_write(self->current, write);
+		lsn++;
+		write_end(write, lsn);
+
+		// write wal file
+		wal_file_write(self->current, write);
+	}
+	// todo: truncate on error
 
 	// update lsn globally
 	state_lsn_set(lsn);

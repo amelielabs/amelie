@@ -25,6 +25,7 @@ struct Recover
 {
 	Tr         tr;
 	Write      write;
+	WriteList  write_list;
 	bool       write_wal;
 	uint64_t   ops;
 	uint64_t   size;

@@ -497,12 +497,16 @@ session_execute_ddl_stmt(Session* self, Tr* tr)
 	if (tr_read_only(tr))
 		return;
 
-	Write write;;
+	Write write;
 	write_init(&write);
 	defer(write_free, &write);
 	write_begin(&write);
 	write_add(&write, &tr->log.write_log);
-	wal_mgr_write(&self->share->db->wal_mgr, &write);
+
+	WriteList write_list;
+	write_list_init(&write_list);
+	write_list_add(&write_list, &write);
+	wal_mgr_write(&self->share->db->wal_mgr, &write_list);
 }
 
 void

@@ -32,6 +32,7 @@ struct Dtr
 	Buf*      args;
 	Result    cte;
 	Buf*      error;
+	Write     write;
 	Event     on_commit;
 	Limit     limit;
 	PipeCache pipe_cache;
@@ -56,6 +57,7 @@ dtr_init(Dtr* self, Router* router, Local* local)
 	result_init(&self->cte);
 	event_init(&self->on_commit);
 	limit_init(&self->limit, var_int_of(&config()->limit_write));
+	write_init(&self->write);
 	pipe_cache_init(&self->pipe_cache);
 	req_cache_init(&self->req_cache);
 	list_init(&self->link_commit);
@@ -69,6 +71,7 @@ dtr_reset(Dtr* self)
 	pipe_set_reset(&self->set, &self->pipe_cache);
 	result_reset(&self->cte);
 	limit_reset(&self->limit, var_int_of(&config()->limit_write));
+	write_reset(&self->write);
 	if (self->error)
 	{
 		buf_free(self->error);
@@ -91,6 +94,7 @@ dtr_free(Dtr* self)
 	req_cache_free(&self->req_cache);
 	result_free(&self->cte);
 	event_detach(&self->on_commit);
+	write_free(&self->write);
 }
 
 static inline void

@@ -19,6 +19,7 @@ struct Write
 	Iov    iov;
 	int    list_count;
 	List   list;
+	List   link;
 };
 
 static inline void
@@ -28,6 +29,7 @@ write_init(Write* self)
 	self->list_count = 0;
 	list_init(&self->list);
 	iov_init(&self->iov);
+	list_init(&self->link);
 }
 
 static inline void
