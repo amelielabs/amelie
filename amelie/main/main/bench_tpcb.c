@@ -16,6 +16,148 @@ static const int tpcb_branches = 1;
 static const int tpcb_tellers  = 10;
 static const int tpcb_accounts = 100000;
 
+typedef struct Loader Loader;
+
+struct Loader
+{
+	int       from;
+	int       to;
+	int       batch;
+	uint64_t* transactions;
+	uint64_t* writes;
+	int*      complete;
+	Bench*    bench;
+};
+
+static inline void
+loader_init(Loader*   self, Bench* bench,
+            int       from,
+            int       to,
+            int       batch,
+            uint64_t* transactions,
+            uint64_t* writes,
+            int*      complete)
+{
+	self->from         = from;
+	self->to           = to;
+	self->batch        = batch;
+	self->transactions = transactions;
+	self->writes       = writes;
+	self->complete     = complete;
+	self->bench        = bench;
+}
+
+static void
+loader_client_main(Loader* self, Client* client)
+{
+	auto filler = buf_create();
+	defer_buf(filler);
+	buf_claim(filler, 100);
+	memset(filler->start, ' ', 100);
+
+	Buf buf;
+	buf_init(&buf);
+	defer_buf(&buf);
+	for (auto seq = self->from; seq < self->to;)
+	{
+		auto batch = 0ul;
+		if (self->to - seq >= self->batch)
+			batch = self->batch;
+		else
+			batch = self->to - seq;
+
+		buf_reset(&buf);
+		buf_printf(&buf, "INSERT INTO __bench.accounts VALUES ");
+		for (auto i = 0ul; i < batch; i++)
+		{
+			buf_printf(&buf, "%s(%d, %d, 0, \"%.*s\")",
+			           i > 0 ? "," : "",
+			           seq, seq / tpcb_accounts,
+			           buf_size(filler), filler->start);
+			seq++;
+		}
+		Str str;
+		buf_str(&buf, &str);
+		client_execute(client, &str);
+
+		(*self->writes) += batch;
+		(*self->transactions)++;
+	}
+}
+
+static void
+loader_main(void* arg)
+{
+	auto self = (Loader*)arg;
+
+	Client* client = NULL;
+	error_catch
+	(
+		// create client and connect
+		client = client_create();
+		client_set_remote(client, self->bench->remote);
+		client_connect(client);
+
+		// process
+		loader_client_main(self, client);
+	);
+
+	if (client)
+	{
+		client_close(client);
+		client_free(client);
+	}
+
+	(*self->complete)++;
+}
+
+static void
+bench_tpcb_load(Bench* self, int scale, int batch, int clients)
+{
+	int     loaders_complete = 0;
+	int     loaders_count = clients;
+	Loader* loaders = am_malloc(sizeof(Loader) * loaders_count);
+	defer(am_free, loaders);
+
+	// prepare client connections
+	uint64_t transactions = 0;
+	uint64_t writes       = 0;
+	auto     accounts     = tpcb_accounts * scale;
+	auto     step         = accounts / loaders_count;
+	auto     from         = 0ul;
+	for (auto i = 0; i < loaders_count; i++)
+	{
+		auto next = 0ul;
+		if ((i + 1) < loaders_count)
+			next = step;
+		else
+			next = accounts - from;
+		auto loader = &loaders[i];
+		loader_init(loader, self, from, from + next, batch,
+		            &transactions,
+		            &writes,
+		            &loaders_complete);
+		coroutine_create(loader_main, loader);
+		from += next;
+	}
+
+	// wait for completion and report
+	uint64_t prev_tx = 0;
+	uint64_t prev_wr = 0;
+	while (loaders_complete != loaders_count)
+	{
+		coroutine_sleep(1000);
+		auto tx = transactions;
+		auto wr = writes;
+		info("%" PRIu64 " transactions/sec, %.2f millions writes/sec %" PRIu64 "%%",
+		     tx - prev_tx,
+		     (float)(wr - prev_wr) / 1000000.0,
+		     (wr * 100ull) / accounts);
+		prev_tx = tx;
+		prev_wr = wr;
+	}
+}
+
 hot static inline void
 tpcb_execute(Client* client,
              int     bid,
@@ -87,11 +229,12 @@ bench_tpcb_create(Bench* self, Client* client)
 	buf_claim(filler, 100);
 	memset(filler->start, ' ', 100);
 
+	auto batch = var_int_of(&self->batch);
+	auto scale = var_int_of(&self->scale);
 	auto buf = buf_create();
 	defer_buf(buf);
 
-	int scale = var_int_of(&self->scale);
-	for (auto i = 0; i < tpcb_branches * scale; i++)
+	for (auto i = 0ul; i < tpcb_branches * scale; i++)
 	{
 		buf_reset(buf);
 		buf_printf(buf, "INSERT INTO __bench.branches VALUES (%d, 0, \"%.*s\")",
@@ -101,7 +244,7 @@ bench_tpcb_create(Bench* self, Client* client)
 		client_execute(client, &str);
 	}
 
-	for (auto i = 0; i < tpcb_tellers * scale; i++)
+	for (auto i = 0ul; i < tpcb_tellers * scale; i++)
 	{
 		buf_reset(buf);
 		buf_printf(buf, "INSERT INTO __bench.tellers VALUES (%d, %d, 0, \"%.*s\")",
@@ -111,14 +254,20 @@ bench_tpcb_create(Bench* self, Client* client)
 		client_execute(client, &str);
 	}
 
-	for (auto i = 0; i < tpcb_accounts * scale; i++)
+	if (scale == 1)
 	{
-		buf_reset(buf);
-		buf_printf(buf, "INSERT INTO __bench.accounts VALUES (%d, %d, 0, \"%.*s\")",
-		           i, i / tpcb_accounts,
-		           buf_size(filler), filler->start);
-		buf_str(buf, &str);
-		client_execute(client, &str);
+		for (auto i = 0ul; i < tpcb_accounts * scale; i++)
+		{
+			buf_reset(buf);
+			buf_printf(buf, "INSERT INTO __bench.accounts VALUES (%d, %d, 0, \"%.*s\")",
+			           i, i / tpcb_accounts,
+			           buf_size(filler), filler->start);
+			buf_str(buf, &str);
+			client_execute(client, &str);
+		}
+	} else {
+		auto clients = var_int_of(&self->clients);
+		bench_tpcb_load(self, scale, batch, clients);
 	}
 
 	// add 100 to account 1 by teller 1 at branch 1

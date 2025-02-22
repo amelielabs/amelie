@@ -109,15 +109,15 @@ bench_init(Bench* self, Remote* remote)
 	list_init(&self->list);
 	VarDef defs[] =
 	{
-		{ "type",     VAR_STRING, VAR_C, &self->type,    "tpcb", 0     },
-		{ "threads",  VAR_INT,    VAR_C, &self->threads,  NULL,  4     },
-		{ "clients",  VAR_INT,    VAR_C, &self->clients,  NULL,  12    },
-		{ "time",     VAR_INT,    VAR_C, &self->time,     NULL,  10    },
-		{ "scale",    VAR_INT,    VAR_C, &self->scale,    NULL,  1     },
-		{ "batch",    VAR_INT,    VAR_C, &self->batch,    NULL,  500   },
-		{ "init",     VAR_BOOL,   VAR_C, &self->init,     NULL,  true  },
-		{ "unlogged", VAR_BOOL,   VAR_C, &self->unlogged, NULL,  false },
-		{  NULL,      0,          0,     NULL,            NULL,  0     }
+		{ "type",     VAR_STRING, VAR_C,       &self->type,    "tpcb", 0     },
+		{ "threads",  VAR_INT,    VAR_C|VAR_Z, &self->threads,  NULL,  4     },
+		{ "clients",  VAR_INT,    VAR_C|VAR_Z, &self->clients,  NULL,  12    },
+		{ "time",     VAR_INT,    VAR_C|VAR_Z, &self->time,     NULL,  10    },
+		{ "scale",    VAR_INT,    VAR_C|VAR_Z, &self->scale,    NULL,  1     },
+		{ "batch",    VAR_INT,    VAR_C|VAR_Z, &self->batch,    NULL,  500   },
+		{ "init",     VAR_BOOL,   VAR_C,       &self->init,     NULL,  true  },
+		{ "unlogged", VAR_BOOL,   VAR_C,       &self->unlogged, NULL,  false },
+		{  NULL,      0,          0,            NULL,           NULL,  0     }
 	};
 	vars_define(&self->vars, defs);
 }
