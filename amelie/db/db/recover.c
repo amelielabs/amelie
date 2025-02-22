@@ -328,7 +328,7 @@ recover_next_record(Recover* self, Record* record)
 		auto write = &self->write;
 		write_reset(write);
 		write_begin(write);
-		write_add(write, &self->tr.log.log_write);
+		write_add(write, &self->tr.log.write_log);
 		wal_mgr_write(&self->db->wal_mgr, write);
 	} else
 	{

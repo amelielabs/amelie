@@ -11,9 +11,9 @@
 // AGPL-3.0 Licensed.
 //
 
-typedef struct LogWrite LogWrite;
+typedef struct WriteLog WriteLog;
 
-struct LogWrite
+struct WriteLog
 {
 	Buf  meta;
 	Iov  iov;
@@ -21,7 +21,7 @@ struct LogWrite
 };
 
 static inline void
-log_write_init(LogWrite* self)
+write_log_init(WriteLog* self)
 {
 	buf_init(&self->meta);
 	iov_init(&self->iov);
@@ -29,14 +29,14 @@ log_write_init(LogWrite* self)
 }
 
 static inline void
-log_write_free(LogWrite* self)
+write_log_free(WriteLog* self)
 {
 	buf_free(&self->meta);
 	iov_free(&self->iov);
 }
 
 static inline void
-log_write_reset(LogWrite* self)
+write_log_reset(WriteLog* self)
 {
 	buf_reset(&self->meta);
 	iov_reset(&self->iov);
@@ -44,7 +44,7 @@ log_write_reset(LogWrite* self)
 }
 
 hot static inline void
-log_write_add(LogWrite* self, int cmd, uint64_t partition, Row* row)
+write_log_add(WriteLog* self, int cmd, uint64_t partition, Row* row)
 {
 	// prepare and reuse last command header
 	RecordCmd* hdr = NULL;
@@ -73,7 +73,7 @@ log_write_add(LogWrite* self, int cmd, uint64_t partition, Row* row)
 }
 
 hot static inline void
-log_write_add_op(LogWrite* self, int cmd, Buf* op)
+write_log_add_op(WriteLog* self, int cmd, Buf* op)
 {
 	// prepare command header
 	auto hdr = (RecordCmd*)buf_claim(&self->meta, sizeof(RecordCmd));

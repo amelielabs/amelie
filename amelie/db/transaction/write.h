@@ -70,23 +70,23 @@ write_end(Write* self, uint64_t lsn)
 }
 
 static inline void
-write_add(Write* self, LogWrite* log_write)
+write_add(Write* self, WriteLog* write_log)
 {
 	// [header][commands][rows or ops]
-	list_append(&self->list, &log_write->link);
+	list_append(&self->list, &write_log->link);
 	self->list_count++;
 
 	// append commands
-	iov_add_buf(&self->iov, &log_write->meta);
+	iov_add_buf(&self->iov, &write_log->meta);
 
 	auto header = &self->header;
-	header->size  += buf_size(&log_write->meta) + log_write->iov.size;
-	header->count += buf_size(&log_write->meta) / sizeof(RecordCmd);
-	header->ops   += log_write->iov.iov_count;
+	header->size  += buf_size(&write_log->meta) + write_log->iov.size;
+	header->count += buf_size(&write_log->meta) / sizeof(RecordCmd);
+	header->ops   += write_log->iov.iov_count;
 
 	// calculate crc
 	if (var_int_of(&config()->wal_crc))
 		header->crc = global()->crc(header->crc,
-		                            log_write->meta.start,
-		                            buf_size(&log_write->meta));
+		                            write_log->meta.start,
+		                            buf_size(&write_log->meta));
 }

@@ -79,9 +79,9 @@ wal_file_write(WalFile* self, Write* write)
 	file_writev(&self->file, iov_pointer(&write->iov), write->iov.iov_count);
 	list_foreach(&write->list)
 	{
-		auto log_write = list_at(LogWrite, link);
-		file_writev(&self->file, iov_pointer(&log_write->iov),
-		            log_write->iov.iov_count);
+		auto write_log = list_at(WriteLog, link);
+		file_writev(&self->file, iov_pointer(&write_log->iov),
+		            write_log->iov.iov_count);
 	}
 }
 

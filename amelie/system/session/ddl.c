@@ -501,7 +501,7 @@ session_execute_ddl_stmt(Session* self, Tr* tr)
 	write_init(&write);
 	defer(write_free, &write);
 	write_begin(&write);
-	write_add(&write, &tr->log.log_write);
+	write_add(&write, &tr->log.write_log);
 	wal_mgr_write(&self->share->db->wal_mgr, &write);
 }
 

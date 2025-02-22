@@ -188,7 +188,7 @@ executor_wal_write(Executor* self)
 				continue;
 			assert(pipe->state == PIPE_CLOSE);
 			assert(pipe->tr);
-			write_add(write, &pipe->tr->log.log_write);
+			write_add(write, &pipe->tr->log.write_log);
 		}
 		if (write->header.count > 0)
 		{

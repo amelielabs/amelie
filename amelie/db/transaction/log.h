@@ -51,7 +51,7 @@ struct Log
 	Buf      data;
 	int      count;
 	int      count_handle;
-	LogWrite log_write;
+	WriteLog write_log;
 	List     link;
 };
 
@@ -86,7 +86,7 @@ log_init(Log* self)
 	self->count_handle = 0;
 	buf_init(&self->op);
 	buf_init(&self->data);
-	log_write_init(&self->log_write);
+	write_log_init(&self->write_log);
 	list_init(&self->link);
 }
 
@@ -95,7 +95,7 @@ log_free(Log* self)
 {
 	buf_free(&self->op);
 	buf_free(&self->data);
-	log_write_free(&self->log_write);
+	write_log_free(&self->write_log);
 }
 
 static inline void
@@ -105,7 +105,7 @@ log_reset(Log* self)
 	self->count_handle = 0;
 	buf_reset(&self->op);
 	buf_reset(&self->data);
-	log_write_reset(&self->log_write);
+	write_log_reset(&self->write_log);
 	list_init(&self->link);
 }
 
@@ -149,7 +149,7 @@ log_persist(Log* self, uint64_t partition)
 	auto op = log_of(self, self->count - 1);
 	// [cmd, partition, row]
 	auto ref = log_row_of(self, op);
-	log_write_add(&self->log_write, op->cmd, partition, ref->row);
+	write_log_add(&self->write_log, op->cmd, partition, ref->row);
 }
 
 static inline void
@@ -177,5 +177,5 @@ log_handle(Log*   self,
 	ref->data   = data;
 
 	// [cmd, data]
-	log_write_add_op(&self->log_write, cmd, data);
+	write_log_add_op(&self->write_log, cmd, data);
 }
