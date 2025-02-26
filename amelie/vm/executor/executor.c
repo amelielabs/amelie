@@ -19,7 +19,8 @@
 #include <amelie_http.h>
 #include <amelie_client.h>
 #include <amelie_server.h>
-#include <amelie_row.h>
+#include <amelie_column.h>
+#include <amelie_heap.h>
 #include <amelie_transaction.h>
 #include <amelie_index.h>
 #include <amelie_partition.h>

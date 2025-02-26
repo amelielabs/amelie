@@ -15,7 +15,8 @@
 #include <amelie_lib.h>
 #include <amelie_json.h>
 #include <amelie_config.h>
-#include <amelie_row.h>
+#include <amelie_column.h>
+#include <amelie_heap.h>
 #include <amelie_transaction.h>
 #include <amelie_index.h>
 #include <amelie_partition.h>
