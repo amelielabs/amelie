@@ -11,6 +11,9 @@
 // AGPL-3.0 Licensed.
 //
 
-// heap
-#include "heap/page_mgr.h"
-#include "heap/heap.h"
+typedef struct Heap Heap;
+
+struct Heap
+{
+	PageMgr page_mgr;
+};

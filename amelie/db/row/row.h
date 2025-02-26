@@ -20,49 +20,6 @@ struct Row
 	uint8_t data[];
 } packed;
 
-hot static inline Row*
-row_allocate(int columns, int data_size)
-{
-	// [row_header][size + index][data]
-
-	// calculate total size
-	int      size_factor = 0;
-	uint32_t total_base = sizeof(Row) + data_size;
-	uint32_t total = total_base + sizeof(uint8_t) * (1 + columns);
-	if (total > UINT8_MAX)
-	{
-		total = total_base + sizeof(uint16_t) * (1 + columns);
-		if (total > UINT16_MAX)
-		{
-			total = total_base + sizeof(uint32_t) * (1 + columns);
-			size_factor = 3;
-		} else {
-			size_factor = 1;
-		}
-	}
-
-	// allocate row
-	Row* self = am_malloc(total);
-	self->size_factor = size_factor;
-	self->unused      = 0;
-
-	// set size
-	if (self->size_factor == 0)
-		*self->data = total;
-	else
-	if (self->size_factor == 1)
-		*(uint16_t*)self->data = total;
-	else
-		*(uint32_t*)self->data = total;
-	return self;
-}
-
-always_inline static inline void
-row_free(Row* self)
-{
-	am_free(self);
-}
-
 always_inline hot static inline uint32_t
 row_size(Row* self)
 {
@@ -138,13 +95,4 @@ row_hash(Row* self, Keys* keys)
 		}
 	}
 	return hash;
-}
-
-hot static inline Row*
-row_copy(Row* self)
-{
-	auto size = row_size(self);
-	auto row  = am_malloc(size);
-	memcpy(row, self, size);
-	return row;
 }
