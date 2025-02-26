@@ -75,7 +75,8 @@ include_directories("${AMELIE_ROOT}/server/server")
 
 # db
 include_directories("${AMELIE_ROOT}/db")
-include_directories("${AMELIE_ROOT}/db/row")
+include_directories("${AMELIE_ROOT}/db/column")
+include_directories("${AMELIE_ROOT}/db/heap")
 include_directories("${AMELIE_ROOT}/db/transaction")
 include_directories("${AMELIE_ROOT}/db/index")
 include_directories("${AMELIE_ROOT}/db/partition")
@@ -175,7 +176,7 @@ set(AMELIE_SOURCES_SERVER
     ${AMELIE_ROOT}/server/server/server_bootstrap.c)
 
 set(AMELIE_SOURCES_DB
-    ${AMELIE_ROOT}/db/row/row_alter.c
+    ${AMELIE_ROOT}/db/heap/row_alter.c
     ${AMELIE_ROOT}/db/transaction/handle_mgr.c
     ${AMELIE_ROOT}/db/transaction/commit.c
     ${AMELIE_ROOT}/db/index/tree.c
