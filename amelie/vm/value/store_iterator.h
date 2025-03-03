@@ -16,9 +16,9 @@ typedef struct Value         Value;
 
 struct StoreIterator
 {
-	Value* current;
-	void (*next)(StoreIterator*);
-	void (*close)(StoreIterator*);
+	Value*  current;
+	void  (*next)(StoreIterator*);
+	void  (*close)(StoreIterator*);
 };
 
 always_inline static inline bool
