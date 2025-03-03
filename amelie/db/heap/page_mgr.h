@@ -11,7 +11,14 @@
 // AGPL-3.0 Licensed.
 //
 
+typedef struct Page    Page;
 typedef struct PageMgr PageMgr;
+
+struct Page
+{
+	uint8_t* pointer;
+	int      pos;
+};
 
 struct PageMgr
 {
@@ -28,51 +35,39 @@ page_mgr_init(PageMgr* self)
 	buf_init(&self->list);
 }
 
-static inline void*
+always_inline static inline Page*
 page_mgr_at(PageMgr* self, int pos)
 {
-	return ((void**)self->list.start)[pos];
+	return &((Page*)self->list.start)[pos];
 }
 
 static inline void
 page_mgr_free(PageMgr* self)
 {
 	for (int i = 0; i < self->list_count; i++)
-		vfs_munmap(page_mgr_at(self, i), self->page_size);
+	{
+		auto page = page_mgr_at(self, i);
+		vfs_munmap(page->pointer, self->page_size);
+	}
 	self->list_count = 0;
 	buf_free(&self->list);
 }
 
-static inline uint8_t*
+static inline Page*
 page_mgr_allocate(PageMgr* self)
 {
-	buf_reserve(&self->list, sizeof(void*));
-	uint8_t* page = vfs_mmap(-1, self->page_size);
-	if (unlikely(page == NULL))
+	uint8_t* pointer = vfs_mmap(-1, self->page_size);
+	if (unlikely(pointer == NULL))
 		error_system();
-	buf_append(&self->list, &page, sizeof(void*));
-	self->list_count++;;
+	Page* page = buf_claim(&self->list, sizeof(Page));
+	page->pointer = pointer;
+	page->pos     = 0;
+	self->list_count++;
 	return page;
 }
 
-hot static inline void*
-page_mgr_pointer_of(PageMgr* self, uint64_t addr)
+always_inline static inline void*
+page_mgr_pointer_of(PageMgr* self, int page, int offset)
 {
-	int pos = addr / self->page_size;
-	int offset = addr % self->page_size;
-	return (uint8_t*)page_mgr_at(self, pos) + offset;
-}
-
-hot static inline uint64_t
-page_mgr_address_of(PageMgr* self, void* pointer)
-{
-	uintptr_t ptr = (uintptr_t)pointer;
-	for (int i = 0; i < self->list_count; i++)
-	{
-		uintptr_t start = (uintptr_t)page_mgr_at(self, i);
-		if (start <= ptr && ptr < start + self->page_size)
-			return i * self->page_size + (ptr - start);
-	}
-	abort();
-	return 0;
+	return page_mgr_at(self, page)->pointer + offset;
 }

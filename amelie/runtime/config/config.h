@@ -19,7 +19,6 @@ struct Config
 	Var  uuid;
 	Var  timezone;
 	Var  format;
-	Var  shutdown;
 	// log
 	Var  log_enable;
 	Var  log_to_file;

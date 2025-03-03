@@ -19,4 +19,4 @@ struct IndexTree
 	Tree  tree;
 };
 
-Index* index_tree_allocate(IndexConfig*);
+Index* index_tree_allocate(IndexConfig*, Heap*);

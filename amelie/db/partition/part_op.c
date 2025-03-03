@@ -39,7 +39,10 @@ log_if_commit(Log* self, LogOp* op)
 {
 	auto ref = log_row_of(self, op);
 	if (ref->row_prev)
-		row_free(ref->row_prev);
+	{
+		auto index = (Index*)op->iface_arg;
+		row_free(index->heap, ref->row_prev);
+	}
 }
 
 static void
@@ -47,7 +50,10 @@ log_if_abort(Log* self, LogOp* op)
 {
 	auto row = log_if_rollback(self, op);
 	if (op->cmd != CMD_DELETE && row)
-		row_free(row);
+	{
+		auto index = (Index*)op->iface_arg;
+		row_free(index->heap, row);
+	}
 }
 
 hot static void
@@ -231,7 +237,7 @@ part_upsert(Part* self, Tr* tr, Iterator* it, Row* row)
 	auto exists = index_upsert(primary, row, it);
 	if (exists)
 	{
-		row_free(row);
+		row_free(&self->heap, row);
 		log_truncate(&tr->log);
 		return true;
 	}

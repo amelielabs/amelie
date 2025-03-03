@@ -70,7 +70,7 @@ recover_cmd(Recover* self, RecordCmd* cmd, uint8_t** pos)
 		auto end = *pos + cmd->size;
 		while (*pos < end)
 		{
-			auto row = row_copy((Row*)*pos);
+			auto row = row_copy(&part->heap, (Row*)*pos);
 			part_insert(part, tr, true, row);
 			*pos += row_size(row);
 		}

@@ -27,3 +27,6 @@
 
 #define container_of(ptr, type, field) \
 	((type*)((char*)(ptr) - __builtin_offsetof(type, field)))
+
+#define align_of(ptr) \
+	(((~(uintptr_t)(ptr)) + 1) & (sizeof(void*) - 1))

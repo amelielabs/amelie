@@ -17,7 +17,6 @@ show all
   "uuid": "00000000-0000-0000-0000-000000000000",
   "timezone": "UTC",
   "format": "json-pretty",
-  "shutdown": "graceful",
   "log_enable": true,
   "log_to_file": true,
   "log_to_stdout": false,

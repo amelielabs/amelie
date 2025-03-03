@@ -20,6 +20,7 @@ struct Part
 	Route*        route;
 	Sequence*     seq;
 	bool          unlogged;
+	Heap          heap;
 	PartConfig*   config;
 	List          link_cp;
 	List          link;

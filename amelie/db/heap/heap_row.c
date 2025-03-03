@@ -19,11 +19,11 @@
 #include <amelie_heap.h>
 
 Row*
-row_alter_add(Row* row, Columns* columns)
+row_alter_add(Heap* heap, Row* row, Columns* columns)
 {
 	// allocate new row (row index size might change)
 	auto columns_count = columns->count + 1;
-	auto self = row_allocate(columns_count, row_data_size(row, columns->count));
+	auto self = row_allocate(heap, columns_count, row_data_size(row, columns->count));
 
 	// copy original columns
 	uint8_t* pos = row_data(self, columns_count);
@@ -65,7 +65,7 @@ row_alter_add(Row* row, Columns* columns)
 }
 
 Row*
-row_alter_drop(Row* row, Columns* columns, Column* ref)
+row_alter_drop(Heap* heap, Row* row, Columns* columns, Column* ref)
 {
 	// calculate row data size without the column data
 	auto size = row_data_size(row, columns->count);
@@ -91,7 +91,7 @@ row_alter_drop(Row* row, Columns* columns, Column* ref)
 	}
 
 	// allocate new row
-	auto self = row_allocate(columns->count - 1, size);
+	auto self = row_allocate(heap, columns->count - 1, size);
 
 	// copy original columns
 	uint8_t* pos = row_data(self, columns->count - 1);

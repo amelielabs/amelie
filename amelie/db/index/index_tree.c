@@ -98,10 +98,10 @@ index_tree_free(Index* arg)
 }
 
 Index*
-index_tree_allocate(IndexConfig* config)
+index_tree_allocate(IndexConfig* config, Heap* heap)
 {
 	auto self = (IndexTree*)am_malloc(sizeof(IndexTree));
-	index_init(&self->index, config);
+	index_init(&self->index, config, heap);
 	tree_init(&self->tree, 512, 256, &config->keys);
 
 	auto iface = &self->index.iface;

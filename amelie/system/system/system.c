@@ -235,10 +235,8 @@ system_start(System* self, bool bootstrap)
 void
 system_stop(System* self)
 {
-	auto shutdown = &config()->shutdown.string;
 	info("");
-	info("received '%.*s' shutdown request", str_size(shutdown),
-	     str_of(shutdown));
+	info("received shutdown request");
 
 	// stop server
 	server_stop(&self->server);
@@ -250,8 +248,7 @@ system_stop(System* self)
 	frontend_mgr_stop(&self->frontend_mgr);
 
 	// close db
-	auto fast = str_is_cstr(shutdown, "fast");
-	db_close(&self->db, fast);
+	db_close(&self->db);
 }
 
 static void
