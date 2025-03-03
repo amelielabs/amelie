@@ -42,7 +42,7 @@ recover_partition(Part* self)
 			break;
 		defer_buf(buf);
 		auto pos = msg_of(buf)->data;
-		auto row = row_copy((Row*)pos);
+		auto row = row_copy(&self->heap, (Row*)pos);
 		part_ingest(self, row);
 		count++;
 	}

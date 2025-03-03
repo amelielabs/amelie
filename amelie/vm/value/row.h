@@ -11,9 +11,9 @@
 // AGPL-3.0 Licensed.
 //
 
-Row* row_create(Columns*, Value*);
-Row* row_create_key(Keys*, Value*, int);
-Row* row_update(Row*, Columns*, Value*, int);
+Row* row_create(Heap*, Columns*, Value*);
+Row* row_create_key(Buf*, Keys*, Value*, int);
+Row* row_update(Heap*, Row*, Columns*, Value*, int);
 
 static inline uint32_t
 row_value_hash(Keys* keys, Value* row)

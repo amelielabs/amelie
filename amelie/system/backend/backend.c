@@ -72,7 +72,7 @@ backend_replay(Backend* self, Tr* tr, Req* req)
 		{
 			while (data < end)
 			{
-				auto row = row_copy((Row*)data);
+				auto row = row_copy(&part->heap, (Row*)data);
 				part_insert(part, tr, true, row);
 				data += row_size(row);
 			}
@@ -83,7 +83,6 @@ backend_replay(Backend* self, Tr* tr, Req* req)
 				part_delete_by(part, tr, row);
 				data += row_size(row);
 			}
-
 		}
 	}
 }

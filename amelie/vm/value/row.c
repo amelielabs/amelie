@@ -81,10 +81,10 @@ row_create_prepare(Columns* columns, Value* values)
 }
 
 hot Row*
-row_create(Columns* columns, Value* values)
+row_create(Heap* heap, Columns* columns, Value* values)
 {
 	auto     row_size = row_create_prepare(columns, values);
-	auto     row = row_allocate(columns->count, row_size);
+	auto     row = row_allocate(heap, columns->count, row_size);
 	uint8_t* pos = row_data(row, columns->count);
 	list_foreach(&columns->list)
 	{
@@ -171,7 +171,7 @@ row_create(Columns* columns, Value* values)
 }
 
 hot Row*
-row_create_key(Keys* self, Value* values, int count)
+row_create_key(Buf* buf, Keys* self, Value* values, int count)
 {
 	int size = 0;
 	list_foreach(&self->list)
@@ -199,7 +199,7 @@ row_create_key(Keys* self, Value* values, int count)
 	}
 
 	auto columns_count = self->columns->count;
-	auto row = row_allocate(columns_count, size);
+	auto row = row_allocate_buf(buf, columns_count, size);
 	uint8_t* pos = row_data(row, columns_count);
 	list_foreach(&self->columns->list)
 	{
@@ -373,14 +373,14 @@ row_update_prepare(Row* self, Columns* columns, Value* values, int count)
 }
 
 hot Row*
-row_update(Row* self, Columns* columns, Value* values, int count)
+row_update(Heap* heap, Row* self, Columns* columns, Value* values, int count)
 {
 	// merge source row columns data with updated values
 	//
 	// [order, value, order, value, ...]
 	//
 	auto     row_size = row_update_prepare(self, columns, values, count);
-	auto     row      = row_allocate(columns->count, row_size);
+	auto     row      = row_allocate(heap, columns->count, row_size);
 	uint8_t* pos      = row_data(row, columns->count);
 
 	auto order = 0;

@@ -177,37 +177,36 @@ set(AMELIE_SOURCES_SERVER
 
 set(AMELIE_SOURCES_DB
     ${AMELIE_ROOT}/db/heap/heap.c
-    #${AMELIE_ROOT}/db/heap/row_alter.c
-    #${AMELIE_ROOT}/db/transaction/handle_mgr.c
-    #${AMELIE_ROOT}/db/transaction/commit.c
-    #${AMELIE_ROOT}/db/index/tree.c
-    #${AMELIE_ROOT}/db/index/index_tree.c
-    #${AMELIE_ROOT}/db/index/index_hash.c
-    #${AMELIE_ROOT}/db/partition/part.c
-    #${AMELIE_ROOT}/db/partition/part_build.c
-    #${AMELIE_ROOT}/db/partition/part_op.c
-    #${AMELIE_ROOT}/db/partition/part_list.c
-    #${AMELIE_ROOT}/db/checkpoint/snapshot.c
-    #${AMELIE_ROOT}/db/checkpoint/snapshot_cursor.c
-    #${AMELIE_ROOT}/db/checkpoint/checkpoint_mgr.c
-    #${AMELIE_ROOT}/db/checkpoint/checkpoint.c
-    #${AMELIE_ROOT}/db/checkpoint/checkpointer.c
-    #${AMELIE_ROOT}/db/wal/wal.c
-    #${AMELIE_ROOT}/db/wal/wal_cursor.c
-    #${AMELIE_ROOT}/db/wal/wal_worker.c
-    #${AMELIE_ROOT}/db/wal/wal_periodic.c
-    #${AMELIE_ROOT}/db/wal/wal_mgr.c
-    #${AMELIE_ROOT}/db/db/schema_mgr.c
-    #${AMELIE_ROOT}/db/db/table_mgr.c
-    #${AMELIE_ROOT}/db/db/table_mgr_alter.c
-    #${AMELIE_ROOT}/db/db/table_index.c
-    #${AMELIE_ROOT}/db/db/worker_mgr.c
-    #${AMELIE_ROOT}/db/db/db.c
-    #${AMELIE_ROOT}/db/db/db_checkpoint.c
-    #${AMELIE_ROOT}/db/db/recover_checkpoint.c
-    #${AMELIE_ROOT}/db/db/recover.c
-    #${AMELIE_ROOT}/db/db/cascade.c)
-	)
+    ${AMELIE_ROOT}/db/heap/heap_row.c
+    ${AMELIE_ROOT}/db/transaction/handle_mgr.c
+    ${AMELIE_ROOT}/db/transaction/commit.c
+    ${AMELIE_ROOT}/db/index/tree.c
+    ${AMELIE_ROOT}/db/index/index_tree.c
+    ${AMELIE_ROOT}/db/index/index_hash.c
+    ${AMELIE_ROOT}/db/partition/part.c
+    ${AMELIE_ROOT}/db/partition/part_build.c
+    ${AMELIE_ROOT}/db/partition/part_op.c
+    ${AMELIE_ROOT}/db/partition/part_list.c
+    ${AMELIE_ROOT}/db/checkpoint/snapshot.c
+    ${AMELIE_ROOT}/db/checkpoint/snapshot_cursor.c
+    ${AMELIE_ROOT}/db/checkpoint/checkpoint_mgr.c
+    ${AMELIE_ROOT}/db/checkpoint/checkpoint.c
+    ${AMELIE_ROOT}/db/checkpoint/checkpointer.c
+    ${AMELIE_ROOT}/db/wal/wal.c
+    ${AMELIE_ROOT}/db/wal/wal_cursor.c
+    ${AMELIE_ROOT}/db/wal/wal_worker.c
+    ${AMELIE_ROOT}/db/wal/wal_periodic.c
+    ${AMELIE_ROOT}/db/wal/wal_mgr.c
+    ${AMELIE_ROOT}/db/db/schema_mgr.c
+    ${AMELIE_ROOT}/db/db/table_mgr.c
+    ${AMELIE_ROOT}/db/db/table_mgr_alter.c
+    ${AMELIE_ROOT}/db/db/table_index.c
+    ${AMELIE_ROOT}/db/db/worker_mgr.c
+    ${AMELIE_ROOT}/db/db/db.c
+    ${AMELIE_ROOT}/db/db/db_checkpoint.c
+    ${AMELIE_ROOT}/db/db/recover_checkpoint.c
+    ${AMELIE_ROOT}/db/db/recover.c
+    ${AMELIE_ROOT}/db/db/cascade.c)
 
 set(AMELIE_SOURCES_REPL
     ${AMELIE_ROOT}/repl/backup/backup.c
@@ -323,12 +322,11 @@ set(AMELIE_SOURCES
     ${AMELIE_SOURCES_RUNTIME}
     ${AMELIE_SOURCES_SERVER}
     ${AMELIE_SOURCES_DB}
-    #${AMELIE_SOURCES_REPL}
-    #${AMELIE_SOURCES_VM}
-    #${AMELIE_SOURCES_COMPILER}
-    #${AMELIE_SOURCES_SYSTEM}
-    #${AMELIE_SOURCES_MAIN})
-	)
+    ${AMELIE_SOURCES_REPL}
+    ${AMELIE_SOURCES_VM}
+    ${AMELIE_SOURCES_COMPILER}
+    ${AMELIE_SOURCES_SYSTEM}
+    ${AMELIE_SOURCES_MAIN})
 
 set(AMELIE_SOURCES_CLI
     ${CMAKE_SOURCE_DIR}/cli/amelie.c)
@@ -348,6 +346,7 @@ set(AMELIE_SOURCES_TEST_SUITE
     ${CMAKE_SOURCE_DIR}/test/runtime/test_lock.c
     ${CMAKE_SOURCE_DIR}/test/runtime/test_sleep.c
     ${CMAKE_SOURCE_DIR}/test/runtime/test_benchmark.c
+    ${CMAKE_SOURCE_DIR}/test/runtime/test_heap.c
     ${CMAKE_SOURCE_DIR}/test/suite/suite.c
     ${CMAKE_SOURCE_DIR}/test/suite/session.c
     ${CMAKE_SOURCE_DIR}/test/amelie-test.c)
@@ -357,14 +356,14 @@ add_library(amelie_static STATIC ${AMELIE_SOURCES})
 set_target_properties(amelie_static PROPERTIES OUTPUT_NAME amelie)
 set(AMELIE_STATIC_LINK "$<LINK_LIBRARY:WHOLE_ARCHIVE,amelie_static>")
 
-## amelie
-#add_executable(amelie_cli ${AMELIE_SOURCES_CLI})
-#target_link_libraries(amelie_cli ${AMELIE_STATIC_LINK})
-#target_link_libraries(amelie_cli ${AMELIE_LIBRARIES})
-#set_target_properties(amelie_cli PROPERTIES ENABLE_EXPORTS ON OUTPUT_NAME amelie)
+# amelie
+add_executable(amelie_cli ${AMELIE_SOURCES_CLI})
+target_link_libraries(amelie_cli ${AMELIE_STATIC_LINK})
+target_link_libraries(amelie_cli ${AMELIE_LIBRARIES})
+set_target_properties(amelie_cli PROPERTIES ENABLE_EXPORTS ON OUTPUT_NAME amelie)
 
-## amelie-test
-#add_executable(amelie_test ${AMELIE_SOURCES_TEST_SUITE})
-#target_link_libraries(amelie_test ${AMELIE_STATIC_LINK})
-#target_link_libraries(amelie_test ${AMELIE_LIBRARIES} ${CURL_LIBRARIES})
-#set_target_properties(amelie_test PROPERTIES ENABLE_EXPORTS ON OUTPUT_NAME amelie-test)
+# amelie-test
+add_executable(amelie_test ${AMELIE_SOURCES_TEST_SUITE})
+target_link_libraries(amelie_test ${AMELIE_STATIC_LINK})
+target_link_libraries(amelie_test ${AMELIE_LIBRARIES} ${CURL_LIBRARIES})
+set_target_properties(amelie_test PROPERTIES ENABLE_EXPORTS ON OUTPUT_NAME amelie-test)

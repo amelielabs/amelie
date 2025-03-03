@@ -30,6 +30,8 @@ part_allocate(PartConfig* config, Sequence* seq, bool unlogged)
 	self->indexes_count = 0;
 	self->seq           = seq;
 	self->unlogged      = unlogged;
+	heap_init(&self->heap);
+	heap_create(&self->heap);
 	list_init(&self->indexes);
 	list_init(&self->link_cp);
 	list_init(&self->link);
@@ -45,6 +47,7 @@ part_free(Part* self)
 		auto index = list_at(Index, link);
 		index_free(index);
 	}
+	heap_free(&self->heap);
 	part_config_free(self->config);
 	am_free(self);
 }
@@ -54,10 +57,10 @@ part_index_create(Part* self, IndexConfig* config)
 {
 	Index* index;
 	if (config->type == INDEX_TREE)
-		index = index_tree_allocate(config);
+		index = index_tree_allocate(config, &self->heap);
 	else
 	if (config->type == INDEX_HASH)
-		index = index_hash_allocate(config);
+		index = index_hash_allocate(config, &self->heap);
 	else
 		error("unrecognized index type");
 	list_append(&self->indexes, &index->link);

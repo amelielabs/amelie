@@ -80,3 +80,5 @@ unit test_lock_read0
 unit test_lock_read1
 # test: test sleep
 unit test_sleep
+# test: test heap
+unit test_heap

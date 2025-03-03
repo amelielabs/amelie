@@ -43,7 +43,6 @@ config_prepare(Config* self)
 		{ "uuid",                    VAR_STRING, VAR_C,                   &self->uuid,                    NULL,          0                   },
 		{ "timezone",                VAR_STRING, VAR_C,                   &self->timezone,                NULL,          0                   },
 		{ "format",                  VAR_STRING, VAR_C,                   &self->format,                  "json-pretty", 0                   },
-		{ "shutdown",                VAR_STRING, VAR_C,                   &self->shutdown,                "fast",        0                   },
 		// log
 		{ "log_enable",              VAR_BOOL,   VAR_C,                   &self->log_enable,              NULL,          true                },
 		{ "log_to_file",             VAR_BOOL,   VAR_C,                   &self->log_to_file,             NULL,          true                },

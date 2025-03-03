@@ -33,28 +33,10 @@ hash_store_init(HashStore* self)
 }
 
 static inline void
-hash_store_free_rows(HashStore* self)
-{
-	if (self->count == 0)
-		return;
-	for (uint64_t pos = 0; pos < self->size; pos++)
-	{
-		auto row = self->rows[pos];
-		if (!row || row == HT_DELETED)
-			continue;
-		row_free(row);
-	}
-}
-
-static inline void
 hash_store_free(HashStore* self)
 {
 	if (self->rows)
-	{
-		if (self->keys->primary)
-			hash_store_free_rows(self);
 		am_free(self->rows);
-	}
 	self->rows  = NULL;
 	self->count = 0;
 	self->size  = 0;

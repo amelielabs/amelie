@@ -20,6 +20,20 @@ struct Row
 	uint8_t data[];
 } packed;
 
+always_inline hot static inline void
+row_init(Row* self, int size_factor, int size)
+{
+	self->size_factor = size_factor;
+	self->unused      = 0;
+	if (size_factor == 0)
+		*self->data = size;
+	else
+	if (size_factor == 1)
+		*(uint16_t*)self->data = size;
+	else
+		*(uint32_t*)self->data = size;
+}
+
 always_inline hot static inline uint32_t
 row_size(Row* self)
 {
@@ -95,4 +109,26 @@ row_hash(Row* self, Keys* keys)
 		}
 	}
 	return hash;
+}
+
+always_inline hot static inline int
+row_measure(int columns, int data_size, int* size_factor)
+{
+	// [row_header][size + index][data]
+	int size_base = sizeof(Row) + data_size;
+	int size = size_base + sizeof(uint8_t) * (1 + columns);
+	if (size > UINT8_MAX)
+	{
+		size = size_base + sizeof(uint16_t) * (1 + columns);
+		if (size > UINT16_MAX)
+		{
+			size = size_base + sizeof(uint32_t) * (1 + columns);
+			*size_factor = 3;
+		} else {
+			*size_factor = 1;
+		}
+	} else {
+		*size_factor = 0;
+	}
+	return size;
 }

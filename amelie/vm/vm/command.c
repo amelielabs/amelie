@@ -299,8 +299,9 @@ ctable_open(Vm* self, Op* op)
 	auto keys_count = op->d;
 
 	// create cursor key
-	auto key = row_create_key(keys, stack_at(&self->stack, keys_count), keys_count);
-	defer(row_free, key);
+	auto buf = buf_create();
+	defer_buf(buf);
+	auto key = row_create_key(buf, keys, stack_at(&self->stack, keys_count), keys_count);
 	stack_popn(&self->stack, keys_count);
 
 	// open cursor
@@ -354,7 +355,7 @@ cinsert(Vm* self, Op* op)
 	int  list_count = buf_size(self->code_arg) / sizeof(Value*);
 	for (int i = 0; i < list_count; i++)
 	{
-		auto row = row_create(columns, list[i]);
+		auto row = row_create(&part->heap, columns, list[i]);
 		part_insert(part, self->tr, false, row);
 	}
 }
@@ -378,7 +379,7 @@ cupsert(Vm* self, Op* op)
 		cursor->ref = list[cursor->ref_pos];
 		cursor->ref_pos++;
 
-		auto row = row_create(columns, cursor->ref);
+		auto row = row_create(&cursor->part->heap, columns, cursor->ref);
 
 		// insert or get (open iterator in both cases)
 		auto exists = part_upsert(cursor->part, self->tr, cursor->it, row);
@@ -417,7 +418,8 @@ cupdate(Vm* self, Op* op)
 	auto cursor = cursor_mgr_of(&self->cursor_mgr, op->a);
 	auto row_src = iterator_at(cursor->it);
 	auto row_values = stack_at(&self->stack, op->b * 2);
-	auto row = row_update(row_src, table_columns(cursor->table), row_values, op->b);
+	auto row = row_update(&cursor->part->heap, row_src, table_columns(cursor->table),
+	                      row_values, op->b);
 	part_update(cursor->part, self->tr, cursor->it, row);
 	stack_popn(&self->stack, op->b * 2);
 }

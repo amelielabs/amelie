@@ -31,14 +31,16 @@ struct Index
 {
 	IndexIf      iface;
 	IndexConfig* config;
+	Heap*        heap;
 	List         link;
 };
 
 static inline void
-index_init(Index* self, IndexConfig* config)
+index_init(Index* self, IndexConfig* config, Heap* heap)
 {
 	memset(&self->iface, 0, sizeof(*self));
 	self->config = config;
+	self->heap   = heap;
 	list_init(&self->link);
 }
 

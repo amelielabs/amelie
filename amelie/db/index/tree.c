@@ -62,11 +62,7 @@ tree_allocate(Tree* self)
 static inline void
 tree_free_page(Tree* self, TreePage* page)
 {
-	if (self->keys->primary)
-	{
-		for (int i = 0; i < page->keys_count; i++)
-			row_free(page->rows[i]);
-	}
+	unused(self);
 	am_free(page);
 }
 

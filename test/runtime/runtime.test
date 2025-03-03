@@ -133,3 +133,6 @@ unit test_sleep
 
 ## test: test benchmark_buf_defer
 #unit test_benchmark_buf_defer
+
+# test: test heap
+unit test_heap

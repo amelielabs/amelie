@@ -47,7 +47,7 @@ part_build_column_add(PartBuild* self, Iterator* it)
 		auto origin = iterator_at(it);
 
 		// allocate row based on original row with a new column
-		auto row = row_alter_add(origin, primary_columns);
+		auto row = row_alter_add(&self->part_dest->heap, origin, primary_columns);
 
 		// update primary index
 		index_ingest(primary_dest, row);
@@ -69,7 +69,7 @@ part_build_column_drop(PartBuild* self, Iterator* it)
 		auto origin = iterator_at(it);
 
 		// allocate row based on original row without a column
-		auto row = row_alter_drop(origin, primary_columns, self->column);
+		auto row = row_alter_drop(&self->part_dest->heap, origin, primary_columns, self->column);
 
 		// update primary index
 		index_ingest(primary_dest, row);

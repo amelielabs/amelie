@@ -94,16 +94,13 @@ db_open(Db* self)
 }
 
 void
-db_close(Db* self, bool fast)
+db_close(Db* self)
 {
 	// stop checkpointer service
 	checkpointer_stop(&self->checkpointer);
 
 	// free tables
-	if (! fast)
-		table_mgr_free(&self->table_mgr);
-	else
-		handle_mgr_init(&self->table_mgr.mgr);
+	table_mgr_free(&self->table_mgr);
 
 	// free workers
 	worker_mgr_free(&self->worker_mgr);
