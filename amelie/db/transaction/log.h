@@ -33,9 +33,8 @@ struct LogOp
 
 struct LogRow
 {
-	Row*  row;
-	Row*  row_prev;
-	Keys* keys;
+	Row* row;
+	Row* row_prev;
 };
 
 struct LogHandle
@@ -123,7 +122,6 @@ log_row(Log*   self,
         Cmd    cmd,
         LogIf* iface,
         void*  iface_arg,
-        Keys*  keys,
         Row*   row,
         Row*   row_prev)
 {
@@ -137,7 +135,6 @@ log_row(Log*   self,
 
 	// row data
 	LogRow* ref = buf_claim(&self->data, sizeof(LogRow));
-	ref->keys     = keys;
 	ref->row      = row;
 	ref->row_prev = row_prev;
 	return ref;

@@ -100,11 +100,10 @@ hot void
 part_insert(Part* self, Tr* tr, bool recover, Row* row)
 {
 	auto primary = part_primary(self);
-	auto keys    = index_keys(primary);
 	auto replace = recover;
 
 	// add log record
-	auto op = log_row(&tr->log, CMD_REPLACE, &log_if, primary, keys, row, NULL);
+	auto op = log_row(&tr->log, CMD_REPLACE, &log_if, primary, row, NULL);
 	if (! self->unlogged)
 		log_persist(&tr->log, self->config->id);
 
@@ -114,7 +113,7 @@ part_insert(Part* self, Tr* tr, bool recover, Row* row)
 
 	// sync last identity column value during recover
 	if (recover)
-		part_sync_sequence(self, row, keys->columns);
+		part_sync_sequence(self, row, index_keys(primary)->columns);
 
 	// update primary index
 	op->row_prev = index_set(primary, row);
@@ -127,10 +126,8 @@ part_insert(Part* self, Tr* tr, bool recover, Row* row)
 	list_foreach_after(&self->indexes, &primary->link)
 	{
 		auto index = list_at(Index, link);
-		auto keys = index_keys(index);
-
 		// add log record
-		op = log_row(&tr->log, CMD_REPLACE, &log_if_secondary, index, keys, row, NULL);
+		op = log_row(&tr->log, CMD_REPLACE, &log_if_secondary, index, row, NULL);
 		op->row_prev = index_set(index, row);
 		if (unlikely(op->row_prev && !replace))
 			error("index '%.*s': unique key constraint violation",
@@ -143,10 +140,9 @@ hot void
 part_update(Part* self, Tr* tr, Iterator* it, Row* row)
 {
 	auto primary = part_primary(self);
-	auto keys = index_keys(primary);
 
 	// add log record
-	auto op = log_row(&tr->log, CMD_REPLACE, &log_if, primary, keys, row, NULL);
+	auto op = log_row(&tr->log, CMD_REPLACE, &log_if, primary, row, NULL);
 	if (! self->unlogged)
 		log_persist(&tr->log, self->config->id);
 
@@ -161,10 +157,9 @@ part_update(Part* self, Tr* tr, Iterator* it, Row* row)
 	list_foreach_after(&self->indexes, &primary->link)
 	{
 		auto index = list_at(Index, link);
-		auto keys = index_keys(index);
 
 		// add log record
-		op = log_row(&tr->log, CMD_REPLACE, &log_if_secondary, index, keys, row, NULL);
+		op = log_row(&tr->log, CMD_REPLACE, &log_if_secondary, index, row, NULL);
 
 		// find and replace existing secondary row (keys are not updated)
 		auto index_it = index_iterator(index);
@@ -178,11 +173,10 @@ hot void
 part_delete(Part* self, Tr* tr, Iterator* it)
 {
 	auto primary = part_primary(self);
-	auto keys = index_keys(primary);
 	auto row = iterator_at(it);
 
 	// add log record
-	auto op = log_row(&tr->log, CMD_DELETE, &log_if, primary, keys, row, NULL);
+	auto op = log_row(&tr->log, CMD_DELETE, &log_if, primary, row, NULL);
 
 	// update primary index
 	op->row_prev = index_delete(primary, it);
@@ -197,10 +191,9 @@ part_delete(Part* self, Tr* tr, Iterator* it)
 	list_foreach_after(&self->indexes, &primary->link)
 	{
 		auto index = list_at(Index, link);
-		auto keys = index_keys(index);
 
 		// add log record
-		op = log_row(&tr->log, CMD_DELETE, &log_if_secondary, index, keys, row, NULL);
+		op = log_row(&tr->log, CMD_DELETE, &log_if_secondary, index, row, NULL);
 
 		// delete by key
 		op->row_prev = index_delete_by(index, row);
@@ -224,10 +217,9 @@ hot bool
 part_upsert(Part* self, Tr* tr, Iterator* it, Row* row)
 {
 	auto primary = part_primary(self);
-	auto keys = index_keys(primary);
 
 	// add log record
-	auto op = log_row(&tr->log, CMD_REPLACE, &log_if, primary, keys, row, NULL);
+	auto op = log_row(&tr->log, CMD_REPLACE, &log_if, primary, row, NULL);
 
 	// ensure transaction log limit
 	if (tr->limit)
@@ -250,10 +242,9 @@ part_upsert(Part* self, Tr* tr, Iterator* it, Row* row)
 	list_foreach_after(&self->indexes, &primary->link)
 	{
 		auto index = list_at(Index, link);
-		auto keys = index_keys(index);
 
 		// add log record
-		op = log_row(&tr->log, CMD_REPLACE, &log_if_secondary, index, keys, row, NULL);
+		op = log_row(&tr->log, CMD_REPLACE, &log_if_secondary, index, row, NULL);
 		op->row_prev = index_set(index, row);
 		if (unlikely(op->row_prev))
 			error("index '%.*s': unique key constraint violation",
@@ -280,10 +271,9 @@ hot void
 part_ingest(Part* self, Row* row)
 {
 	auto primary = part_primary(self);
-	auto keys    = index_keys(primary);
 
 	// sync last identity column value during recover
-	part_sync_sequence(self, row, keys->columns);
+	part_sync_sequence(self, row, index_keys(primary)->columns);
 
 	// update primary index
 	index_ingest(primary, row);
