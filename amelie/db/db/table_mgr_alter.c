@@ -81,7 +81,7 @@ table_mgr_rename(TableMgr* self,
 	// update table
 	log_handle(&tr->log, CMD_TABLE_RENAME, &rename_if,
 	           NULL,
-	           &table->handle, NULL, op);
+	           &table->handle, op);
 
 	// set new table name
 	if (! str_compare(&table->config->schema, schema_new))
@@ -137,7 +137,7 @@ table_mgr_set_unlogged(TableMgr* self,
 	// update table
 	log_handle(&tr->log, CMD_TABLE_SET_UNLOGGED, &set_unlogged_if,
 	           NULL,
-	           &table->handle, NULL, op);
+	           &table->handle, op);
 
 	// set table and partitions as unlogged
 	table_set_unlogged(table, value);
@@ -216,7 +216,7 @@ table_mgr_column_rename(TableMgr* self,
 	// update table
 	log_handle(&tr->log, CMD_TABLE_COLUMN_RENAME, &column_rename_if,
 	           column,
-	           &table->handle, NULL, op);
+	           &table->handle, op);
 
 	// set column name
 	column_set_name(column, name_column_new);
@@ -292,7 +292,7 @@ table_mgr_column_add(TableMgr* self,
 
 	// update log (old table is still present)
 	log_handle(&tr->log, CMD_TABLE_COLUMN_ADD, &column_add_if, self,
-	           &table_new->handle, NULL, op);
+	           &table_new->handle, op);
 
 	table_open(table_new);
 	return table_new;
@@ -348,7 +348,7 @@ table_mgr_column_drop(TableMgr* self,
 
 	// update log (old table is still present)
 	log_handle(&tr->log, CMD_TABLE_COLUMN_DROP, &column_add_if, self,
-	           &table_new->handle, NULL, op);
+	           &table_new->handle, op);
 
 	table_open(table_new);
 	return table_new;
@@ -436,7 +436,7 @@ table_mgr_column_set(TableMgr* self,
 	// update table
 	log_handle(&tr->log, cmd, &column_set_if,
 	           column,
-	           &table->handle, NULL, op);
+	           &table->handle, op);
 
 	switch (cmd) {
 	case CMD_TABLE_COLUMN_SET_DEFAULT:

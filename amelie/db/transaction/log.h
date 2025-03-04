@@ -40,7 +40,6 @@ struct LogRow
 struct LogHandle
 {
 	void* handle;
-	void* arg;
 	Buf*  data;
 };
 
@@ -155,7 +154,6 @@ log_handle(Log*   self,
            LogIf* iface,
            void*  iface_arg,
            void*  handle,
-           void*  arg,
            Buf*   data)
 {
 	// op
@@ -170,7 +168,6 @@ log_handle(Log*   self,
 	// handle data
 	LogHandle* ref = buf_claim(&self->data, sizeof(LogHandle));
 	ref->handle = handle;
-	ref->arg    = arg;
 	ref->data   = data;
 
 	// [cmd, data]

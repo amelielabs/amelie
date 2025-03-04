@@ -141,7 +141,7 @@ table_mgr_truncate(TableMgr* self,
 	// update table
 	log_handle(&tr->log, CMD_TABLE_TRUNCATE, &truncate_if,
 	           NULL,
-	           &table->handle, NULL, op);
+	           &table->handle, op);
 
 	// do nothing (actual truncate will happen on commit)
 }

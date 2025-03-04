@@ -146,7 +146,7 @@ schema_mgr_rename(SchemaMgr* self,
 	// update schema
 	log_handle(&tr->log, CMD_SCHEMA_RENAME, &rename_if,
 	           NULL,
-	           &schema->handle, NULL, op);
+	           &schema->handle, op);
 
 	// set new name
 	schema_config_set_name(schema->config, name_new);
