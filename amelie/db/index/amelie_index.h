@@ -12,7 +12,6 @@
 //
 
 // index
-#include "index/iterator.h"
 #include "index/index_config.h"
 #include "index/index.h"
 

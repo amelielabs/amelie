@@ -37,9 +37,9 @@ explain select * from test
 select * from test
 [[0, 2], [1, 1], [2, 0]]
 select * from test use
-{"msg": "select * from test use ⟵ INDEX expected"}
+{"msg": "select * from test use ⟵ USE INDEX or HEAP expected"}
 select * from test use 1
-{"msg": "select * from test use ❰1❱ ⟵ INDEX expected"}
+{"msg": "select * from test use ❰1❱ ⟵ USE INDEX or HEAP expected"}
 select * from test use index
 {"msg": "select * from test use index ⟵ ( expected"}
 select * from test use index 1
@@ -79,6 +79,70 @@ explain select * from test use index (i)
 select * from test use index (i)
 [[2, 0], [1, 1], [0, 2]]
 drop index i on test
+drop table test
+# test: from use heap
+create table test (id int primary key, data int)
+insert into test values (0, 2)
+insert into test values (1, 1)
+insert into test values (2, 0)
+explain select * from test
+[{
+  "bytecode": {
+    "frontend": {
+      "00": "send_all            0      0      -     # public.test",
+      "01": "recv                0      0      0     ",
+      "02": "bool                0      0      0     ",
+      "03": "push                0      0      0     ",
+      "04": "union_recv          0      -1     -1    ",
+      "05": "cte_set             0      0      0     ",
+      "06": "content             0      -      -     ",
+      "07": "ret                 0      0      0     "
+    },
+    "backend": {
+      "00": "set                 0      2      0     ",
+      "01": "table_open          0      0      8     # public.test (primary)",
+      "02": "table_readi32       1      0      0     ",
+      "03": "push                1      0      0     ",
+      "04": "table_readi32       1      0      1     ",
+      "05": "push                1      0      0     ",
+      "06": "set_add             0      0      0     ",
+      "07": "table_next          0      2      0     ",
+      "08": "table_close         0      0      0     ",
+      "09": "result              0      0      0     ",
+      "10": "ret                 0      0      0     "
+    }
+  }
+}]
+explain select * from test use heap
+[{
+  "bytecode": {
+    "frontend": {
+      "00": "send_all            0      0      -     # public.test",
+      "01": "recv                0      0      0     ",
+      "02": "bool                0      0      0     ",
+      "03": "push                0      0      0     ",
+      "04": "union_recv          0      -1     -1    ",
+      "05": "cte_set             0      0      0     ",
+      "06": "content             0      -      -     ",
+      "07": "ret                 0      0      0     "
+    },
+    "backend": {
+      "00": "set                 0      2      0     ",
+      "01": "table_open_heap     0      0      8     # public.test",
+      "02": "table_readi32       1      0      0     ",
+      "03": "push                1      0      0     ",
+      "04": "table_readi32       1      0      1     ",
+      "05": "push                1      0      0     ",
+      "06": "set_add             0      0      0     ",
+      "07": "table_next          0      2      0     ",
+      "08": "table_close         0      0      0     ",
+      "09": "result              0      0      0     ",
+      "10": "ret                 0      0      0     "
+    }
+  }
+}]
+select * from test use heap
+[[0, 2], [1, 1], [2, 0]]
 drop table test
 # test: hash/hash
 create shared table test (id int, data int, primary key (id, data)) with (type = 'hash')

@@ -116,6 +116,7 @@ enum
 
 	// h
 	KHAVING,
+	KHEAP,
 
 	// i
 	KIS,

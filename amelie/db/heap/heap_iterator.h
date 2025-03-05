@@ -15,86 +15,64 @@ typedef struct HeapIterator HeapIterator;
 
 struct HeapIterator
 {
-	Chunk*   current;
-	Page*    page;
-	int      page_order;
-	PageMgr* page_mgr;
-	Heap*    heap;
+	Iterator   it;
+	HeapCursor cursor;
+	Heap*      heap;
 };
 
-hot static inline void
-heap_iterator_next_chunk(HeapIterator* self)
+always_inline static inline HeapIterator*
+heap_iterator_of(Iterator* self)
 {
-	if (unlikely(! self->current))
-		return;
-	auto next = (uintptr_t)self->current + self->current->size;
-	auto page_end = (uintptr_t)self->page->pointer + self->page->pos;
-	if (likely(next < page_end))
-	{
-		self->current = (Chunk*)next;
-		return;
-	}
-	self->current = NULL;
-	self->page_order++;
-	if (unlikely(self->page_order >= self->page_mgr->list_count))
-		return;
-	self->page = page_mgr_at(self->page_mgr, self->page_order);
-	if (self->page->pos > 0)
-		self->current = (Chunk*)self->page->pointer;
+	return (HeapIterator*)self;
 }
 
-hot static inline void
-heap_iterator_next_allocated(HeapIterator* self)
+static inline bool
+heap_iterator_open(Iterator* arg, Row* key)
 {
-	while (self->current && self->current->is_free)
-		heap_iterator_next_chunk(self);
+	unused(key);
+	auto self = heap_iterator_of(arg);
+	return heap_cursor_open(&self->cursor, self->heap);
 }
 
-static inline void
-heap_iterator_open(HeapIterator* self, Heap* heap)
+static inline bool
+heap_iterator_has(Iterator* arg)
 {
-	if (unlikely(! heap->page_mgr.list_count))
-		return;
-	self->page       = page_mgr_at(self->page_mgr, 0);
-	self->page_order = 0;
-	self->page_mgr   = &heap->page_mgr;
-	self->heap       = heap;
-	if (self->page->pos > 0)
-		self->current = (Chunk*)self->page->pointer;
-	heap_iterator_next_allocated(self);
+	auto self = heap_iterator_of(arg);
+	return heap_cursor_has(&self->cursor);
+}
+
+static inline Row*
+heap_iterator_at(Iterator* arg)
+{
+	auto self = heap_iterator_of(arg);
+	return (Row*)heap_cursor_at(&self->cursor)->data;
 }
 
 static inline void
-heap_iterator_close(HeapIterator* self)
+heap_iterator_next(Iterator* arg)
 {
-	unused(self);
-}
-
-always_inline static inline bool
-heap_iterator_has(HeapIterator* self)
-{
-	return self->current != NULL;
-}
-
-always_inline static inline Chunk*
-heap_iterator_at(HeapIterator* self)
-{
-	return self->current;
+	auto self = heap_iterator_of(arg);
+	heap_cursor_next(&self->cursor);
 }
 
 static inline void
-heap_iterator_init(HeapIterator* self)
+heap_iterator_close(Iterator* arg)
 {
-	self->current    = NULL;
-	self->page       = NULL;
-	self->page_order = 0;
-	self->page_mgr   = NULL;
-	self->heap       = NULL;
+	auto self = heap_iterator_of(arg);
+	heap_cursor_close(&self->cursor);
+	am_free(arg);
 }
 
-always_inline static inline void
-heap_iterator_next(HeapIterator* self)
+static inline Iterator*
+heap_iterator_allocate(Heap* heap)
 {
-	heap_iterator_next_chunk(self);
-	heap_iterator_next_allocated(self);
+	HeapIterator* self = am_malloc(sizeof(*self));
+	self->it.open  = heap_iterator_open;
+	self->it.has   = heap_iterator_has;
+	self->it.at    = heap_iterator_at;
+	self->it.next  = heap_iterator_next;
+	self->it.close = heap_iterator_close;
+	self->heap     = heap;
+	heap_cursor_init(&self->cursor);
+	return &self->it;
 }

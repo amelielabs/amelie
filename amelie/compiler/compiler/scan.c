@@ -59,7 +59,7 @@ scan_key(Scan* self, Target* target)
 	auto plan  = target->plan;
 	auto count = 0;
 
-	list_foreach(&target->from_table_index->keys.list)
+	list_foreach(&target->from_index->keys.list)
 	{
 		auto key = list_at(Key, link);
 		auto ref = &plan->keys[key->order];
@@ -83,7 +83,7 @@ scan_stop(Scan* self, Target* target, int scan_stop_jntr[])
 	auto cp   = self->compiler;
 	auto plan = target->plan;
 
-	list_foreach(&target->from_table_index->keys.list)
+	list_foreach(&target->from_index->keys.list)
 	{
 		auto key = list_at(Key, link);
 		auto ref = &plan->keys[key->order];
@@ -147,7 +147,7 @@ scan_table(Scan* self, Target* target)
 {
 	auto cp = self->compiler;
 	auto table = target->from_table;
-	auto index = target->from_table_index;
+	auto index = target->from_index;
 	auto plan  = target->plan;
 	auto point_lookup = (plan->type == PLAN_LOOKUP);
 
@@ -209,6 +209,58 @@ scan_table(Scan* self, Target* target)
 	// set scan stop jntr to eof
 	for (auto order = 0; order < plan->match_stop; order++)
 		code_at(cp->code, scan_stop_jntr[order])->a = _eof;
+
+	// set outer target eof jmp for limit
+	if (self->rlimit != -1 && !target->prev)
+		code_at(cp->code, self->eof)->a = _eof;
+
+	op1(cp, CTABLE_CLOSE, target->id);
+}
+
+static inline void
+scan_table_heap(Scan* self, Target* target)
+{
+	auto cp    = self->compiler;
+	auto table = target->from_table;
+
+	// save schema, table (no index)
+	int name_offset = code_data_offset(&cp->code_data);
+	encode_string(&cp->code_data.data, &table->config->schema);
+	encode_string(&cp->code_data.data, &table->config->name);
+
+	// table_open
+	int _open = op_pos(cp);
+	op4(cp, CTABLE_OPEN_HEAP, target->id, name_offset, 0 /* _eof */, 0);
+
+	// handle outer target eof jmp (for limit)
+	if (self->rlimit != -1 && !target->prev)
+	{
+		// jmp to _where
+		int _start = op_pos(cp);
+		op1(cp, CJMP, 0 /* _where */);
+
+		// jmp to _eof
+		self->eof = op_pos(cp);
+		op1(cp, CJMP, 0 /* _eof */);
+
+		code_at(cp->code, _start)->a = op_pos(cp);
+	}
+
+	// _where:
+	int _where = op_pos(cp);
+	if (target->next)
+		scan_target(self, target->next);
+	else
+		scan_on_match(self);
+
+	// table_next
+	op2(cp, CTABLE_NEXT, target->id, _where);
+
+	// _eof:
+	int _eof = op_pos(cp);
+
+	// set table_open to _eof
+	code_at(cp->code, _open)->c = _eof;
 
 	// set outer target eof jmp for limit
 	if (self->rlimit != -1 && !target->prev)
@@ -320,9 +372,14 @@ static inline void
 scan_target(Scan* self, Target* target)
 {
 	if (target_is_table(target))
-		scan_table(self, target);
-	else
+	{
+		if (target->from_heap)
+			scan_table_heap(self, target);
+		else
+			scan_table(self, target);
+	} else {
 		scan_expr(self, target);
+	}
 }
 
 void

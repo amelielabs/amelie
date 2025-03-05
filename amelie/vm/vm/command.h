@@ -22,6 +22,7 @@ void cunion(Vm*, Op*);
 void cunion_recv(Vm*, Op*);
 
 Op*  ctable_open(Vm*, Op*);
+Op*  ctable_open_heap(Vm*, Op*);
 void ctable_prepare(Vm*, Op*);
 
 void cinsert(Vm*, Op*);

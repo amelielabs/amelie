@@ -324,6 +324,38 @@ ctable_open(Vm* self, Op* op)
 	return code_at(self->code, op->c);
 }
 
+hot Op*
+ctable_open_heap(Vm* self, Op* op)
+{
+	// [cursor, name_offset, _eof]
+	auto cursor = cursor_mgr_of(&self->cursor_mgr, op->a);
+
+	// read names
+	uint8_t* pos = code_data_at(self->code_data, op->b);
+	Str name_schema;
+	Str name_table;
+	json_read_string(&pos, &name_schema);
+	json_read_string(&pos, &name_table);
+
+	// find table and partition
+	auto table = table_mgr_find(&self->db->table_mgr, &name_schema, &name_table, true);
+	auto part  = part_list_match(&table->part_list, self->backend);
+
+	// open cursor
+	cursor->type  = CURSOR_TABLE;
+	cursor->table = table;
+	cursor->part  = part;
+	cursor->it    = heap_iterator_allocate(&part->heap);
+	iterator_open(cursor->it, NULL);
+
+	// jmp to next op if has data
+	if (likely(iterator_has(cursor->it)))
+		return ++op;
+
+	// jmp on eof
+	return code_at(self->code, op->c);
+}
+
 hot void
 ctable_prepare(Vm* self, Op* op)
 {

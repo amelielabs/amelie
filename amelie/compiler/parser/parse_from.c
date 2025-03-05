@@ -228,20 +228,27 @@ parse_from_add(Stmt* self, Targets* targets, bool subquery)
 	// add target
 	targets_add(targets, target);
 
-	// [USE INDEX (name)]
+	// [USE INDEX (name) | HEAP]
 	if (stmt_if(self, KUSE))
 	{
-		stmt_expect(self, KINDEX);
-		stmt_expect(self, '(');
-		auto name = stmt_next_shadow(self);
-		if (name->id != KNAME)
-			stmt_error(self, name, "<index name> expected");
-		stmt_expect(self, ')');
-		if (target->type != TARGET_TABLE &&
-		    target->type != TARGET_TABLE_SHARED)
-			stmt_error(self, NULL, "USE INDEX expects table target");
-		target->from_table_index =
-			table_find_index(target->from_table, &name->string, true);
+		if (stmt_if(self, KINDEX))
+		{
+			stmt_expect(self, '(');
+			auto name = stmt_next_shadow(self);
+			if (name->id != KNAME)
+				stmt_error(self, name, "<index name> expected");
+			stmt_expect(self, ')');
+			if (target->type != TARGET_TABLE &&
+				target->type != TARGET_TABLE_SHARED)
+				stmt_error(self, NULL, "USE INDEX expects table target");
+			target->from_index = table_find_index(target->from_table, &name->string, true);
+		} else
+		if (stmt_if(self, KHEAP))
+		{
+			target->from_heap = true;
+		} else {
+			stmt_error(self, NULL, "USE INDEX or HEAP expected");
+		}
 	}
 
 	return target;

@@ -80,13 +80,13 @@ planner_target(Target* target, AstList* ops)
 	assert(table);
 
 	// FROM USE INDEX (use predefined index)
-	if (target->from_table_index)
+	if (target->from_index)
 	{
-		auto keys = &target->from_table_index->keys;
+		auto keys = &target->from_index->keys;
 		target->plan = plan_create(target, keys, ops);
 
 		auto primary = table_primary(target->from_table);
-		if (target->from_table_index != primary)
+		if (target->from_index != primary)
 			target->plan_primary = plan_create(target, &primary->keys, ops);
 		else
 			target->plan_primary = target->plan;
@@ -121,7 +121,7 @@ planner_target(Target* target, AstList* ops)
 	}
 
 	// set index and plan
-	target->from_table_index = match;
+	target->from_index = match;
 	target->plan_primary = match_plan_primary;
 	target->plan = match_plan;
 }

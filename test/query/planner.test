@@ -27,6 +27,16 @@ select * from test use index (i)
 drop index i on test
 drop table test
 
+# test: from use heap
+create table test (id int primary key, data int)
+insert into test values (0, 2)
+insert into test values (1, 1)
+insert into test values (2, 0)
+explain select * from test
+explain select * from test use heap
+select * from test use heap
+drop table test
+
 # test: hash/hash
 create shared table test (id int, data int, primary key (id, data)) with (type = 'hash')
 create unique index i on test (data) with (type = 'hash')

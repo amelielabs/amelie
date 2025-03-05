@@ -29,3 +29,4 @@
 // row
 #include "row/row.h"
 #include "row/compare.h"
+#include "row/iterator.h"

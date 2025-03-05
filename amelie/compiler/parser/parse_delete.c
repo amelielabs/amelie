@@ -60,9 +60,13 @@ parse_delete(Stmt* self)
 	stmt->table = target->from_table;
 
 	// ensure primary index is used
-	if (target->from_table_index)
-		if (table_primary(stmt->table) != target->from_table_index)
+	if (target->from_index)
+		if (table_primary(stmt->table) != target->from_index)
 			stmt_error(self, from, "DELETE supports only primary index");
+
+	// prevent from using heap
+	if (target->from_heap)
+		stmt_error(self, from, "DELETE supports only primary index");
 
 	// [WHERE]
 	if (stmt_if(self, KWHERE))

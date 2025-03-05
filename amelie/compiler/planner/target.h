@@ -15,7 +15,7 @@ static inline uint32_t
 target_lookup_hash(Target* target)
 {
 	uint32_t hash = 0;
-	list_foreach(&target->from_table_index->keys.list)
+	list_foreach(&target->from_index->keys.list)
 	{
 		auto key    = list_at(Key, link);
 		auto column = key->column;

@@ -312,6 +312,7 @@ vm_run(Vm*       self,
 		// table cursor
 		&&ctable_open,
 		&&ctable_open_lookup,
+		&&ctable_open_heap,
 		&&ctable_prepare,
 		&&ctable_close,
 		&&ctable_next,
@@ -1453,6 +1454,10 @@ ctable_open:
 
 ctable_open_lookup:
 	op = ctable_open(self, op);
+	op_jmp;
+
+ctable_open_heap:
+	op = ctable_open_heap(self, op);
 	op_jmp;
 
 ctable_prepare:

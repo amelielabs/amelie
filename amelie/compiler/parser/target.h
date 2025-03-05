@@ -45,7 +45,8 @@ struct Target
 	Ast*         ast;
 	// target
 	Table*       from_table;
-	IndexConfig* from_table_index;
+	IndexConfig* from_index;
+	bool         from_heap;
 	Ast*         from_select;
 	AstList*     from_group_by;
 	Stmt*        from_cte;
@@ -68,23 +69,24 @@ static inline Target*
 target_allocate(int* id_seq)
 {
 	Target* self = palloc(sizeof(Target));
-	self->type             = TARGET_NONE;
-	self->id               = *id_seq;
-	self->from_table       = NULL;
-	self->from_table_index = NULL;
-	self->from_select      = NULL;
-	self->from_group_by    = NULL;
-	self->from_cte         = NULL;
-	self->from_columns     = NULL;
-	self->from_function    = NULL;
-	self->r                = -1;
-	self->plan             = NULL;
-	self->plan_primary     = NULL;
-	self->join             = JOIN_NONE;
-	self->join_on          = NULL;
-	self->next             = NULL;
-	self->prev             = NULL;
-	self->targets          = NULL;
+	self->type            = TARGET_NONE;
+	self->id              = *id_seq;
+	self->from_table      = NULL;
+	self->from_index      = NULL;
+	self->from_heap       = false;
+	self->from_select     = NULL;
+	self->from_group_by   = NULL;
+	self->from_cte        = NULL;
+	self->from_columns    = NULL;
+	self->from_function   = NULL;
+	self->r               = -1;
+	self->plan            = NULL;
+	self->plan_primary    = NULL;
+	self->join            = JOIN_NONE;
+	self->join_on         = NULL;
+	self->next            = NULL;
+	self->prev            = NULL;
+	self->targets         = NULL;
 	str_init(&self->name);
 	(*id_seq)++;
 	return self;
