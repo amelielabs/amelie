@@ -27,10 +27,9 @@ heap_cursor_next_chunk(HeapCursor* self)
 {
 	if (unlikely(! self->current))
 		return;
-	auto next = (uintptr_t)self->current + self->current->size;
-	auto page_end = (uintptr_t)self->page->pointer + self->page->pos;
-	if (likely(next < page_end))
+	if (likely(! self->current->last))
 	{
+		auto next = (uintptr_t)self->current + self->current->size;
 		self->current = (Chunk*)next;
 		return;
 	}
@@ -39,8 +38,7 @@ heap_cursor_next_chunk(HeapCursor* self)
 	if (unlikely(self->page_order >= self->page_mgr->list_count))
 		return;
 	self->page = page_mgr_at(self->page_mgr, self->page_order);
-	if (self->page->pos > 0)
-		self->current = (Chunk*)self->page->pointer;
+	self->current = (Chunk*)self->page->pointer;
 }
 
 hot static inline void
@@ -59,8 +57,7 @@ heap_cursor_open(HeapCursor* self, Heap* heap)
 	self->page_mgr   = &heap->page_mgr;
 	self->page       = page_mgr_at(self->page_mgr, 0);
 	self->page_order = 0;
-	if (self->page->pos > 0)
-		self->current = (Chunk*)self->page->pointer;
+	self->current    = (Chunk*)self->page->pointer;
 	heap_cursor_next_allocated(self);
 	return self->current != NULL;
 }

@@ -17,7 +17,6 @@ typedef struct PageMgr PageMgr;
 struct Page
 {
 	uint8_t* pointer;
-	int      pos;
 };
 
 struct PageMgr
@@ -61,7 +60,6 @@ page_mgr_allocate(PageMgr* self)
 		error_system();
 	Page* page = buf_claim(&self->list, sizeof(Page));
 	page->pointer = pointer;
-	page->pos     = 0;
 	self->list_count++;
 	return page;
 }

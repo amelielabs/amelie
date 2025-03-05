@@ -22,8 +22,10 @@
 void
 heap_init(Heap* self)
 {
-	self->buckets = NULL;
-	self->page    = NULL;
+	self->buckets  = NULL;
+	self->page     = NULL;
+	self->page_pos = 0;
+	self->last     = NULL;
 	page_mgr_init(&self->page_mgr);
 }
 
@@ -151,7 +153,7 @@ hot void*
 heap_allocate(Heap* self, int size)
 {
 	// match bucket by size
-	auto bucket = heap_bucket_of(self, sizeof(Chunk) + size + sizeof(ChunkEnd));
+	auto bucket = heap_bucket_of(self, sizeof(Chunk) + size);
 
 	// get chunk from the free list
 	Chunk* chunk;
@@ -165,30 +167,39 @@ heap_allocate(Heap* self, int size)
 		bucket->list        = chunk->next;
 		bucket->list_offset = chunk->next_offset;
 		bucket->list_count--;
-		// set the reference link to self
+		// set the next to self
 		chunk->next        = page;
 		chunk->next_offset = page_offset;
 	} else
 	{
 		// use current or create new page
-		if (unlikely((uint32_t)(self->page_mgr.page_size - self->page->pos) < bucket->size))
-			self->page = page_mgr_allocate(&self->page_mgr);
+		if (unlikely((uint32_t)(self->page_mgr.page_size - self->page_pos) < bucket->size))
+		{
+			self->page     = page_mgr_allocate(&self->page_mgr);
+			self->page_pos = 0;
+			self->last     = NULL;
+		}
 		auto page = self->page;
-		chunk = (Chunk*)(page->pointer + page->pos);
+		chunk = (Chunk*)(page->pointer + self->page_pos);
 		chunk->next        = self->page_mgr.list_count - 1;
-		chunk->next_offset = page->pos;
+		chunk->next_offset = self->page_pos;
 		chunk->prev        = 0;
 		chunk->prev_offset = 0;
 		chunk->size        = bucket->size;
+		chunk->bucket      = bucket->id;
+		chunk->last        = true;
 		chunk->unused      = 0;
-		page->pos += bucket->size;
+		if (likely(self->last))
+		{
+			chunk->bucket_left = self->last->bucket;
+			self->last->last   = false;
+		} else {
+			chunk->bucket_left = 0;
+		}
+		self->last = chunk;
+		self->page_pos += bucket->size;
 	}
-	chunk->bucket = bucket->id;
-	chunk->free   = false;
-
-	auto chunk_end = chunk_end_of(chunk, bucket);
-	chunk_end->bucket = bucket->id;
-	chunk_end->free   = false;
+	chunk->free = false;
 
 	assert(align_of(chunk->data) == 0);
 	return chunk->data;
@@ -203,7 +214,6 @@ heap_release(Heap* self, void* pointer)
 
 	auto bucket      = &self->buckets[chunk->bucket];
 	auto head        = (int)chunk->next;
-
 	auto head_offset = (int)chunk->next_offset;
 	chunk->next         = bucket->list;
 	chunk->next_offset  = bucket->list_offset;
@@ -212,10 +222,8 @@ heap_release(Heap* self, void* pointer)
 	bucket->list_offset = head_offset;
 	bucket->list_count++;
 
-	auto chunk_end = chunk_end_of(chunk, bucket);
-	assert(! chunk_end->free);
-	assert(chunk_end->bucket == chunk->bucket);
-	chunk_end->free = true;
+	// if not first, merge left  if left->free (use chunk->bucket_left to match)
+	// if not last,  merge right if right->free
 
 	// todo: bitmap
 }
