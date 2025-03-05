@@ -26,14 +26,13 @@ heap_init(Heap* self)
 	self->page     = NULL;
 	self->page_pos = 0;
 	self->last     = NULL;
+	self->header   = NULL;
 	page_mgr_init(&self->page_mgr);
 }
 
 void
 heap_free(Heap* self)
 {
-	if (self->buckets)
-		am_free(self->buckets);
 	page_mgr_free(&self->page_mgr);
 }
 
@@ -58,8 +57,16 @@ heap_create(Heap* self)
 {
 	self->page = page_mgr_allocate(&self->page_mgr);
 
-	// init buckets
-	self->buckets = am_malloc(sizeof(HeapBucket) * 385);
+	// prepare heap header
+
+	// header + buckets[]
+	self->header = (HeapHeader*)self->page->pointer;
+	self->header->crc = 0;
+	self->header->unused = 0;
+	self->buckets = self->header->buckets;
+	self->page_pos += sizeof(HeapHeader) + sizeof(HeapBucket) * 385;
+
+	// prepare buckets
 
 	//
 	// bucket  log    start     step

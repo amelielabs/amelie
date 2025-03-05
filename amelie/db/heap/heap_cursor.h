@@ -51,13 +51,13 @@ heap_cursor_next_allocated(HeapCursor* self)
 static inline bool
 heap_cursor_open(HeapCursor* self, Heap* heap)
 {
-	if (unlikely(! heap->page_mgr.list_count))
+	if (unlikely(!heap->page_mgr.list_count || !heap->last))
 		return false;
 	self->heap       = heap;
 	self->page_mgr   = &heap->page_mgr;
 	self->page       = page_mgr_at(self->page_mgr, 0);
 	self->page_order = 0;
-	self->current    = (Chunk*)self->page->pointer;
+	self->current    = heap_first(heap);
 	heap_cursor_next_allocated(self);
 	return self->current != NULL;
 }
