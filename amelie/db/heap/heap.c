@@ -161,7 +161,7 @@ heap_allocate(Heap* self, int size)
 		auto page_offset = (int)bucket->list_offset;
 		chunk = page_mgr_pointer_of(&self->page_mgr, page, page_offset);
 		assert(chunk->bucket == bucket->id);
-		assert(chunk->is_free);
+		assert(chunk->free);
 		bucket->list        = chunk->next;
 		bucket->list_offset = chunk->next_offset;
 		bucket->list_count--;
@@ -183,12 +183,12 @@ heap_allocate(Heap* self, int size)
 		chunk->unused      = 0;
 		page->pos += bucket->size;
 	}
-	chunk->bucket  = bucket->id;
-	chunk->is_free = false;
+	chunk->bucket = bucket->id;
+	chunk->free   = false;
 
 	auto chunk_end = chunk_end_of(chunk, bucket);
-	chunk_end->bucket  = bucket->id;
-	chunk_end->is_free = false;
+	chunk_end->bucket = bucket->id;
+	chunk_end->free   = false;
 
 	assert(align_of(chunk->data) == 0);
 	return chunk->data;
@@ -199,7 +199,7 @@ heap_release(Heap* self, void* pointer)
 {
 	auto chunk = chunk_of(pointer);
 	assert(chunk == page_mgr_pointer_of(&self->page_mgr, chunk->next, chunk->next_offset));
-	assert(! chunk->is_free);
+	assert(! chunk->free);
 
 	auto bucket      = &self->buckets[chunk->bucket];
 	auto head        = (int)chunk->next;
@@ -207,15 +207,15 @@ heap_release(Heap* self, void* pointer)
 	auto head_offset = (int)chunk->next_offset;
 	chunk->next         = bucket->list;
 	chunk->next_offset  = bucket->list_offset;
-	chunk->is_free      = true;
+	chunk->free         = true;
 	bucket->list        = head;
 	bucket->list_offset = head_offset;
 	bucket->list_count++;
 
 	auto chunk_end = chunk_end_of(chunk, bucket);
-	assert(! chunk_end->is_free);
+	assert(! chunk_end->free);
 	assert(chunk_end->bucket == chunk->bucket);
-	chunk_end->is_free = true;
+	chunk_end->free = true;
 
 	// todo: bitmap
 }

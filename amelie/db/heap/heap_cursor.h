@@ -46,7 +46,7 @@ heap_cursor_next_chunk(HeapCursor* self)
 hot static inline void
 heap_cursor_next_allocated(HeapCursor* self)
 {
-	while (self->current && self->current->is_free)
+	while (self->current && self->current->free)
 		heap_cursor_next_chunk(self);
 }
 

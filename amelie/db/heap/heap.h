@@ -25,7 +25,7 @@ struct Chunk
 	uint64_t prev_offset: 21;
 	uint64_t size: 20;
 	uint64_t bucket: 9;
-	uint64_t is_free: 1;
+	uint64_t free: 1;
 	uint64_t unused: 18;
 	uint8_t  data[];
 } packed;
@@ -33,7 +33,7 @@ struct Chunk
 struct ChunkEnd
 {
 	uint16_t bucket: 9;
-	uint16_t is_free: 1;
+	uint16_t free: 1;
 	uint16_t unused: 6;
 } packed;
 
