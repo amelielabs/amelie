@@ -51,7 +51,7 @@ heap_cursor_next_allocated(HeapCursor* self)
 static inline bool
 heap_cursor_open(HeapCursor* self, Heap* heap)
 {
-	if (unlikely(!heap->page_mgr.list_count || !heap->last))
+	if (unlikely(! heap->last))
 		return false;
 	self->heap       = heap;
 	self->page_mgr   = &heap->page_mgr;

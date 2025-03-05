@@ -84,6 +84,5 @@ heap_first(Heap* self)
 {
 	if (unlikely(! self->last))
 		return NULL;
-	return (Chunk*)(self->page->pointer + sizeof(HeapHeader) +
-	                sizeof(HeapBucket) * 385);
+	return (Chunk*)(self->page->pointer);
 }

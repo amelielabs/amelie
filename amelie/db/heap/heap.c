@@ -33,6 +33,8 @@ heap_init(Heap* self)
 void
 heap_free(Heap* self)
 {
+	if (self->header)
+		am_free(self->header);
 	page_mgr_free(&self->page_mgr);
 }
 
@@ -55,16 +57,15 @@ heap_prepare(Heap* self, int id, int id_end, int size, int step)
 void
 heap_create(Heap* self)
 {
-	self->page = page_mgr_allocate(&self->page_mgr);
-
 	// prepare heap header
 
 	// header + buckets[]
-	self->header = (HeapHeader*)self->page->pointer;
-	self->header->crc = 0;
-	self->header->unused = 0;
-	self->buckets = self->header->buckets;
-	self->page_pos += sizeof(HeapHeader) + sizeof(HeapBucket) * 385;
+	auto size = sizeof(HeapHeader) + sizeof(HeapBucket) * 385;
+	auto header = (HeapHeader*)am_malloc(size);
+	header->crc = 0;
+	header->unused = 0;
+	self->header  = header;
+	self->buckets = header->buckets;
 
 	// prepare buckets
 
@@ -180,7 +181,9 @@ heap_allocate(Heap* self, int size)
 	} else
 	{
 		// use current or create new page
-		if (unlikely((uint32_t)(self->page_mgr.page_size - self->page_pos) < bucket->size))
+		if (unlikely(!self->page ||
+		             (uint32_t)(self->page_mgr.page_size - self->page_pos) <
+		                        bucket->size))
 		{
 			self->page     = page_mgr_allocate(&self->page_mgr);
 			self->page_pos = 0;
