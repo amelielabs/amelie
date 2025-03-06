@@ -178,6 +178,7 @@ set(AMELIE_SOURCES_SERVER
 set(AMELIE_SOURCES_DB
     ${AMELIE_ROOT}/db/heap/heap.c
     ${AMELIE_ROOT}/db/heap/heap_row.c
+    ${AMELIE_ROOT}/db/heap/heap_file.c
     ${AMELIE_ROOT}/db/transaction/handle_mgr.c
     ${AMELIE_ROOT}/db/transaction/commit.c
     ${AMELIE_ROOT}/db/index/tree.c
@@ -187,8 +188,6 @@ set(AMELIE_SOURCES_DB
     ${AMELIE_ROOT}/db/partition/part_build.c
     ${AMELIE_ROOT}/db/partition/part_op.c
     ${AMELIE_ROOT}/db/partition/part_list.c
-    ${AMELIE_ROOT}/db/checkpoint/snapshot.c
-    ${AMELIE_ROOT}/db/checkpoint/snapshot_cursor.c
     ${AMELIE_ROOT}/db/checkpoint/checkpoint_mgr.c
     ${AMELIE_ROOT}/db/checkpoint/checkpoint.c
     ${AMELIE_ROOT}/db/checkpoint/checkpointer.c

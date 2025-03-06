@@ -29,27 +29,33 @@ recover_partition(Part* self)
 {
 	auto checkpoint = state_checkpoint();
 
-	SnapshotCursor cursor;
-	snapshot_cursor_init(&cursor);
-	defer(snapshot_cursor_close, &cursor);
+	// <base>/checkpoints/<lsn>/<partition>
+	char path[PATH_MAX];
+	snprintf(path, sizeof(path),
+	         "%s/checkpoints/%" PRIu64 "/%" PRIu64,
+	         state_directory(),
+	         checkpoint,
+	         self->config->id);
 
-	snapshot_cursor_open(&cursor, checkpoint, self->config->id);
+	// read heap file
+	auto size = heap_file_read(&self->heap, path);
+
+	// rebuild indexes
+	HeapCursor cursor;
+	heap_cursor_init(&cursor);
+	heap_cursor_open(&cursor, &self->heap);
 	uint64_t count = 0;
-	for (;;)
+	while (heap_cursor_has(&cursor))
 	{
-		auto buf = snapshot_cursor_next(&cursor);
-		if (! buf)
-			break;
-		defer_buf(buf);
-		auto pos = msg_of(buf)->data;
-		auto row = row_copy(&self->heap, (Row*)pos);
+		auto row = (Row*)heap_cursor_at(&cursor)->data;
 		part_ingest(self, row);
 		count++;
+		heap_cursor_next(&cursor);
 	}
 
-	double size = (double)cursor.file.size / 1024 / 1024;
+	double total = (double)size / 1024 / 1024;
 	info("checkpoints/%" PRIu64 "/%" PRIu64 " (%.2f MiB, %" PRIu64 " rows)",
-	     checkpoint, self->config->id, size, count);
+	     checkpoint, self->config->id, total, count);
 }
 
 hot void

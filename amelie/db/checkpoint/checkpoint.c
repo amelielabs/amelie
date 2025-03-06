@@ -100,18 +100,21 @@ checkpoint_add(Checkpoint* self, Part* part)
 	worker->list_count++;
 }
 
-hot static bool
-checkpoint_worker_main(Checkpoint* self, CheckpointWorker* worker)
+hot static void
+checkpoint_part(Checkpoint* self, Part* part)
 {
-	// create primary index snapshot per partition
-	Snapshot snapshot;
-	snapshot_init(&snapshot);
-	auto on_error = error_catch(
-		list_foreach(&worker->list)
-			snapshot_create(&snapshot, list_at(Part, link_cp), self->lsn);
-	);
-	snapshot_free(&snapshot);
-	return on_error;
+	// <base>/<lsn>.incomplete/<partition_id>
+	char path[PATH_MAX];
+	snprintf(path, sizeof(path),
+	         "%s/checkpoints/%" PRIu64 ".incomplete/%" PRIu64,
+	         state_directory(),
+	         self->lsn,
+	         part->config->id);
+	auto size = heap_file_write(&part->heap, path);
+	info("checkpoints/%" PRIu64 "/%" PRIu64 " (%.2f MiB)",
+	     self->lsn,
+	     part->config->id,
+	     (double)size / 1024 / 1024);
 }
 
 static void
@@ -129,7 +132,10 @@ checkpoint_worker_run(Checkpoint* self, CheckpointWorker* worker)
 	}
 
 	// create snapshots
-	auto error = checkpoint_worker_main(self, worker);
+	auto error = error_catch(
+		list_foreach(&worker->list)
+			checkpoint_part(self, list_at(Part, link_cp));
+	);
 
 	// signal waiter process
 	notify_signal(&worker->notify);

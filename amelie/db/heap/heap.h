@@ -47,7 +47,8 @@ struct HeapBucket
 struct HeapHeader
 {
 	uint32_t   crc;
-	uint32_t   unused;
+	uint64_t   lsn;
+	uint32_t   count;
 	HeapBucket buckets[];
 } packed;
 
@@ -60,8 +61,7 @@ struct HeapGroup
 struct Heap
 {
 	HeapBucket* buckets;
-	Page*       page;
-	int         page_pos;
+	PageHeader* page_header;
 	Chunk*      last;
 	HeapHeader* header;
 	PageMgr     page_mgr;
@@ -84,5 +84,5 @@ heap_first(Heap* self)
 {
 	if (unlikely(! self->last))
 		return NULL;
-	return (Chunk*)(self->page->pointer);
+	return (Chunk*)((uintptr_t)self->page_header + sizeof(PageHeader));
 }

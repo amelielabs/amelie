@@ -38,7 +38,7 @@ heap_cursor_next_chunk(HeapCursor* self)
 	if (unlikely(self->page_order >= self->page_mgr->list_count))
 		return;
 	self->page = page_mgr_at(self->page_mgr, self->page_order);
-	self->current = (Chunk*)self->page->pointer;
+	self->current = (Chunk*)(self->page->pointer + sizeof(PageHeader));
 }
 
 hot static inline void

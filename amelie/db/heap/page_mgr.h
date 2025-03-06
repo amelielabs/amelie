@@ -11,8 +11,15 @@
 // AGPL-3.0 Licensed.
 //
 
-typedef struct Page    Page;
-typedef struct PageMgr PageMgr;
+typedef struct PageHeader PageHeader;
+typedef struct Page       Page;
+typedef struct PageMgr    PageMgr;
+
+struct PageHeader
+{
+	uint32_t size;
+	uint32_t last;
+} packed;
 
 struct Page
 {

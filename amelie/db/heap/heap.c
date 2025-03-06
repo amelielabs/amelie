@@ -22,11 +22,10 @@
 void
 heap_init(Heap* self)
 {
-	self->buckets  = NULL;
-	self->page     = NULL;
-	self->page_pos = 0;
-	self->last     = NULL;
-	self->header   = NULL;
+	self->buckets     = NULL;
+	self->page_header = NULL;
+	self->last        = NULL;
+	self->header      = NULL;
 	page_mgr_init(&self->page_mgr);
 }
 
@@ -62,8 +61,9 @@ heap_create(Heap* self)
 	// header + buckets[]
 	auto size = sizeof(HeapHeader) + sizeof(HeapBucket) * 385;
 	auto header = (HeapHeader*)am_malloc(size);
-	header->crc = 0;
-	header->unused = 0;
+	header->crc   = 0;
+	header->lsn   = 0;
+	header->count = 0;
 	self->header  = header;
 	self->buckets = header->buckets;
 
@@ -94,8 +94,9 @@ heap_create(Heap* self)
 	heap_prepare(self, 160, 192, 8192,    256);
 	heap_prepare(self, 192, 224, 16384,   512);
 	heap_prepare(self, 224, 256, 32768,   1024);
-	heap_prepare(self, 256, 288, 131072,  4096);
-	heap_prepare(self, 288, 320, 262144,  8192);
+	heap_prepare(self, 256, 288, 65536,   2048);
+	heap_prepare(self, 288, 320, 131072,  4096);
+	heap_prepare(self, 320, 352, 262144,  8192);
 	heap_prepare(self, 352, 384, 524288,  16384);
 	heap_prepare(self, 384, 385, 1048576, 0);     // max
 }
@@ -181,18 +182,22 @@ heap_allocate(Heap* self, int size)
 	} else
 	{
 		// use current or create new page
-		if (unlikely(!self->page ||
-		             (uint32_t)(self->page_mgr.page_size - self->page_pos) <
+		auto page_header = self->page_header;
+		if (unlikely(!self->last ||
+		             (uint32_t)(self->page_mgr.page_size - page_header->size) <
 		                        bucket->size))
 		{
-			self->page     = page_mgr_allocate(&self->page_mgr);
-			self->page_pos = 0;
-			self->last     = NULL;
+			auto page = page_mgr_allocate(&self->page_mgr);
+			page_header = (PageHeader*)page->pointer;
+			page_header->size = sizeof(PageHeader);
+			page_header->last = 0;
+			self->page_header = page_header;
+			self->last = NULL;
+			self->header->count++;
 		}
-		auto page = self->page;
-		chunk = (Chunk*)(page->pointer + self->page_pos);
+		chunk = (Chunk*)((uintptr_t)page_header + page_header->size);
 		chunk->next        = self->page_mgr.list_count - 1;
-		chunk->next_offset = self->page_pos;
+		chunk->next_offset = page_header->size;
 		chunk->prev        = 0;
 		chunk->prev_offset = 0;
 		chunk->size        = bucket->size;
@@ -207,7 +212,8 @@ heap_allocate(Heap* self, int size)
 			chunk->bucket_left = 0;
 		}
 		self->last = chunk;
-		self->page_pos += bucket->size;
+		page_header->last = page_header->size;
+		page_header->size += bucket->size;
 	}
 	chunk->free = false;
 
