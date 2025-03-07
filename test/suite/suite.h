@@ -37,7 +37,7 @@ struct TestGroup
 struct TestEnv
 {
 	char*  name;
-	Amelie main;
+	Main   main;
 	int    sessions;
 	List   link;
 };

@@ -17,7 +17,7 @@
 #include "main/home.h"
 
 // main
-#include "main/amelie.h"
+#include "main/main.h"
 
 // import
 #include "main/import.h"

@@ -11,23 +11,23 @@
 // AGPL-3.0 Licensed.
 //
 
-typedef struct Amelie Amelie;
+typedef struct Main Main;
 
 typedef enum
 {
-	AMELIE_ERROR,
-	AMELIE_RUN,
-	AMELIE_COMPLETE
-} AmelieRc;
+	MAIN_ERROR,
+	MAIN_RUN,
+	MAIN_COMPLETE
+} MainRc;
 
-struct Amelie
+struct Main
 {
 	Home     home;
 	Instance instance;
 	Task     task;
 };
 
-void     amelie_init(Amelie*);
-void     amelie_free(Amelie*);
-AmelieRc amelie_start(Amelie*, int, char**);
-void     amelie_stop(Amelie*);
+void   main_init(Main*);
+void   main_free(Main*);
+MainRc main_start(Main*, int, char**);
+void   main_stop(Main*);

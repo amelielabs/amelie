@@ -23,12 +23,12 @@ main(int argc, char* argv[])
 	if (daemon.cmd == DAEMON_STOP)
 		return EXIT_SUCCESS;
 
-	Amelie amelie;
-	amelie_init(&amelie);
-	auto status = amelie_start(&amelie, argc, argv);
-	if (status == AMELIE_RUN)
+	Main main;
+	main_init(&main);
+	auto status = main_start(&main, argc, argv);
+	if (status == MAIN_RUN)
 		daemon_wait_for_signal();
-	amelie_stop(&amelie);
-	amelie_free(&amelie);
-	return status == AMELIE_ERROR? EXIT_FAILURE: EXIT_SUCCESS;
+	main_stop(&main);
+	main_free(&main);
+	return status == MAIN_ERROR? EXIT_FAILURE: EXIT_SUCCESS;
 }

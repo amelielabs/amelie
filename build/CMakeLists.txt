@@ -306,7 +306,7 @@ set(AMELIE_SOURCES_SYSTEM
 
 set(AMELIE_SOURCES_MAIN
     ${AMELIE_ROOT}/main/main/login_mgr.c
-    ${AMELIE_ROOT}/main/main/amelie.c
+    ${AMELIE_ROOT}/main/main/main.c
     ${AMELIE_ROOT}/main/main/import.c
     ${AMELIE_ROOT}/main/main/bench.c
     ${AMELIE_ROOT}/main/main/bench_insert.c

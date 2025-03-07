@@ -13,7 +13,7 @@
 #include <amelie_private.h>
 
 static void
-amelie_usage(void)
+main_usage(void)
 {
 	auto version = &state()->version.string;
 	info("amelie (version: %.*s)", str_size(version), str_of(version));
@@ -83,7 +83,7 @@ amelie_usage(void)
 }
 
 static void
-amelie_cmd_init(Amelie* self, int argc, char** argv)
+main_cmd_init(Main* self, int argc, char** argv)
 {
 	// amelie init path [server options]
 	auto bootstrap = instance_open(&self->instance, argv[0], argc - 1, argv + 1);
@@ -109,7 +109,7 @@ amelie_cmd_init(Amelie* self, int argc, char** argv)
 }
 
 static void
-amelie_cmd_start(Amelie* self, int argc, char** argv)
+main_cmd_start(Main* self, int argc, char** argv)
 {
 	// amelie start path [server options]
 	auto bootstrap = instance_open(&self->instance, argv[0], argc - 1, argv + 1);
@@ -120,8 +120,8 @@ amelie_cmd_start(Amelie* self, int argc, char** argv)
 		system = system_create();
 		system_start(system, bootstrap);
 
-		// notify amelie_start about start completion
-		cond_signal(&self->task.status, AMELIE_RUN);
+		// notify main_start about start completion
+		cond_signal(&self->task.status, MAIN_RUN);
 
 		// handle system requests
 		system_main(system);
@@ -135,7 +135,7 @@ amelie_cmd_start(Amelie* self, int argc, char** argv)
 }
 
 static void
-amelie_cmd_stop(Amelie* self, int argc, char** argv)
+main_cmd_stop(Main* self, int argc, char** argv)
 {
 	// amelie stop path
 	(void)self;
@@ -144,7 +144,7 @@ amelie_cmd_stop(Amelie* self, int argc, char** argv)
 }
 
 static void
-amelie_cmd_backup(Amelie* self, int argc, char** argv)
+main_cmd_backup(Main* self, int argc, char** argv)
 {
 	home_open(&self->home);
 
@@ -167,7 +167,7 @@ amelie_cmd_backup(Amelie* self, int argc, char** argv)
 }
 
 static void
-amelie_cmd_client_execute(Client* client, Str* content)
+main_cmd_client_execute(Client* client, Str* content)
 {
 	auto request = &client->request;
 	auto reply   = &client->reply;
@@ -208,7 +208,7 @@ amelie_cmd_client_execute(Client* client, Str* content)
 }
 
 static void
-amelie_cmd_client_main(Amelie* self, Client* client)
+main_cmd_client_main(Main* self, Client* client)
 {
 	auto name = remote_get(client->remote, REMOTE_NAME);
 	auto uri  = remote_get(client->remote, REMOTE_URI);
@@ -247,7 +247,7 @@ amelie_cmd_client_main(Amelie* self, Client* client)
 		// split commands by \n
 		if (is_terminal)
 		{
-			amelie_cmd_client_execute(client, &input);
+			main_cmd_client_execute(client, &input);
 			continue;
 		}
 
@@ -258,7 +258,7 @@ amelie_cmd_client_main(Amelie* self, Client* client)
 		separator_write(&sep, &input);
 		while (separator_read(&sep, &content))
 		{
-			amelie_cmd_client_execute(client, &content);
+			main_cmd_client_execute(client, &content);
 			separator_advance(&sep);
 		}
 	}
@@ -267,7 +267,7 @@ amelie_cmd_client_main(Amelie* self, Client* client)
 }
 
 static void
-amelie_cmd_client(Amelie* self, int argc, char** argv)
+main_cmd_client(Main* self, int argc, char** argv)
 {
 	// amelie client [remote options]
 	home_open(&self->home);
@@ -289,7 +289,7 @@ amelie_cmd_client(Amelie* self, int argc, char** argv)
 		client_connect(client);
 
 		// process cli
-		amelie_cmd_client_main(self, client);
+		main_cmd_client_main(self, client);
 	);
 
 	if (client)
@@ -300,7 +300,7 @@ amelie_cmd_client(Amelie* self, int argc, char** argv)
 }
 
 static void
-amelie_cmd_import(Amelie* self, int argc, char** argv)
+main_cmd_import(Main* self, int argc, char** argv)
 {
 	// amelie import name
 	auto home = &self->home;
@@ -329,7 +329,7 @@ amelie_cmd_import(Amelie* self, int argc, char** argv)
 }
 
 static void
-amelie_cmd_login(Amelie* self, int argc, char** argv)
+main_cmd_login(Main* self, int argc, char** argv)
 {
 	// amelie login name [remote options]
 	auto home = &self->home;
@@ -350,7 +350,7 @@ amelie_cmd_login(Amelie* self, int argc, char** argv)
 }
 
 static void
-amelie_cmd_logout(Amelie* self, int argc, char** argv)
+main_cmd_logout(Main* self, int argc, char** argv)
 {
 	// amelie logout name
 	auto home = &self->home;
@@ -363,7 +363,7 @@ amelie_cmd_logout(Amelie* self, int argc, char** argv)
 }
 
 static void
-amelie_cmd_bench(Amelie* self, int argc, char** argv)
+main_cmd_bench(Main* self, int argc, char** argv)
 {
 	// amelie bench name
 	auto home = &self->home;
@@ -387,7 +387,7 @@ amelie_cmd_bench(Amelie* self, int argc, char** argv)
 }
 
 static void
-amelie_cmd_top(Amelie* self, int argc, char** argv)
+main_cmd_top(Main* self, int argc, char** argv)
 {
 	// amelie top name
 	auto home = &self->home;
@@ -411,7 +411,7 @@ amelie_cmd_top(Amelie* self, int argc, char** argv)
 }
 
 static void
-amelie_main(Amelie* self, int argc, char** argv)
+main_main(Main* self, int argc, char** argv)
 {
 	// amelie [command] [options]
 	if (argc <= 1)
@@ -434,110 +434,110 @@ amelie_main(Amelie* self, int argc, char** argv)
 		// init
 		if (argc <= 2)
 			goto usage;
-		amelie_cmd_init(self, argc - 2, argv + 2);
+		main_cmd_init(self, argc - 2, argv + 2);
 	} else
 	if (! strcmp(argv[1], "start"))
 	{
 		// start
 		if (argc <= 2)
 			goto usage;
-		amelie_cmd_start(self, argc - 2, argv + 2);
+		main_cmd_start(self, argc - 2, argv + 2);
 	} else
 	if (! strcmp(argv[1], "stop"))
 	{
 		// stop
 		if (argc <= 2)
 			goto usage;
-		amelie_cmd_stop(self, argc - 2, argv + 2);
+		main_cmd_stop(self, argc - 2, argv + 2);
 	} else
 	if (! strcmp(argv[1], "backup"))
 	{
 		// backup
 		if (argc <= 2)
 			goto usage;
-		amelie_cmd_backup(self, argc - 2, argv + 2);
+		main_cmd_backup(self, argc - 2, argv + 2);
 	} else
 	if (! strcmp(argv[1], "client"))
 	{
 		// client
 		if (argc <= 2)
 			goto usage;
-		amelie_cmd_client(self, argc - 2, argv + 2);
+		main_cmd_client(self, argc - 2, argv + 2);
 	} else
 	if (! strcmp(argv[1], "import"))
 	{
 		// import
 		if (argc <= 2)
 			goto usage;
-		amelie_cmd_import(self, argc - 2, argv + 2);
+		main_cmd_import(self, argc - 2, argv + 2);
 	} else
 	if (! strcmp(argv[1], "login"))
 	{
 		// login
 		if (argc <= 2)
 			goto usage;
-		amelie_cmd_login(self, argc - 2, argv + 2);
+		main_cmd_login(self, argc - 2, argv + 2);
 	} else
 	if (! strcmp(argv[1], "logout"))
 	{
 		// logout
 		if (argc != 3)
 			goto usage;
-		amelie_cmd_logout(self, argc - 2, argv + 2);
+		main_cmd_logout(self, argc - 2, argv + 2);
 	} else
 	if (! strcmp(argv[1], "bench"))
 	{
 		// benchmark
 		if (argc <= 2)
 			goto usage;
-		amelie_cmd_bench(self, argc - 2, argv + 2);
+		main_cmd_bench(self, argc - 2, argv + 2);
 	} else
 	if (! strcmp(argv[1], "top"))
 	{
 		// top
 		if (argc <= 2)
 			goto usage;
-		amelie_cmd_top(self, argc - 2, argv + 2);
+		main_cmd_top(self, argc - 2, argv + 2);
 	} else
 	{
 		// client by default
-		amelie_cmd_client(self, argc - 1, argv + 1);
+		main_cmd_client(self, argc - 1, argv + 1);
 	}
 	return;
 
 usage:
-	amelie_usage();
+	main_usage();
 }
 
 typedef struct
 {
-	int     argc;
-	char**  argv;
-	Amelie* self;
-} AmelieArgs;
+	int    argc;
+	char** argv;
+	Main*  self;
+} MainArgs;
 
 static void
-amelie_runner(void* arg)
+main_runner(void* arg)
 {
-	AmelieArgs* args = arg;
-	Amelie* self = args->self;
+	MainArgs* args = arg;
+	Main* self = args->self;
 
 	auto on_error = error_catch
 	(
 		instance_start(&self->instance);
-		amelie_main(self, args->argc, args->argv);
+		main_main(self, args->argc, args->argv);
 	);
 	instance_stop(&self->instance);
 
 	// complete
-	AmelieRc rc = AMELIE_COMPLETE;
+	MainRc rc = MAIN_COMPLETE;
 	if (on_error)
-		rc = AMELIE_ERROR;
+		rc = MAIN_ERROR;
 	cond_signal(&self->task.status, rc);
 }
 
 void
-amelie_init(Amelie* self)
+main_init(Main* self)
 {
 	home_init(&self->home);
 	instance_init(&self->instance);
@@ -545,30 +545,30 @@ amelie_init(Amelie* self)
 }
 
 void
-amelie_free(Amelie* self)
+main_free(Main* self)
 {
 	task_free(&self->task);
 	home_free(&self->home);
 	instance_free(&self->instance);
 }
 
-AmelieRc
-amelie_start(Amelie* self, int argc, char** argv)
+MainRc
+main_start(Main* self, int argc, char** argv)
 {
 	// start cli task
-	AmelieArgs args =
+	MainArgs args =
 	{
 		.argc = argc,
 		.argv = argv,
 		.self = self
 	};
 	int rc;
-	rc = task_create_nothrow(&self->task, "main", amelie_runner, &args,
+	rc = task_create_nothrow(&self->task, "main", main_runner, &args,
 	                         &self->instance.global,
 	                         logger_write, &self->instance.logger,
 	                         &self->instance.buf_mgr);
 	if (unlikely(rc == -1))
-		return AMELIE_ERROR;
+		return MAIN_ERROR;
 
 	// wait for cli task to start
 	rc = cond_wait(&self->task.status);
@@ -576,7 +576,7 @@ amelie_start(Amelie* self, int argc, char** argv)
 }
 
 void
-amelie_stop(Amelie* self)
+main_stop(Main* self)
 {
 	auto buf = msg_create_as(&self->instance.buf_mgr, RPC_STOP, 0);
 	channel_write(&self->task.channel, buf);

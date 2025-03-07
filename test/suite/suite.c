@@ -127,7 +127,7 @@ test_env_new(TestSuite* self, const char* name)
 		return NULL;
 	}
 	env->sessions = 0;
-	amelie_init(&env->main);
+	main_init(&env->main);
 	list_init(&env->link);
 	list_append(&self->list_env, &env->link);
 	return env;
@@ -138,8 +138,8 @@ test_env_free(TestSuite* self, TestEnv* env)
 {
 	(void)self;
 	list_unlink(&env->link);
-	amelie_stop(&env->main);
-	amelie_free(&env->main);
+	main_stop(&env->main);
+	main_free(&env->main);
 	free(env->name);
 	free(env);
 }
@@ -367,7 +367,7 @@ test_suite_open(TestSuite* self, char* arg)
 		argc++;
 	}
 
-	int rc = amelie_start(&env->main, argc, argv);
+	int rc = main_start(&env->main, argc, argv);
 	if (rc == -1)
 	{
 		test_error(self, "line %d: start failed", self->current_line);
@@ -428,7 +428,7 @@ test_suite_backup(TestSuite* self, char* arg)
 		argc++;
 	}
 
-	int rc = amelie_start(&env->main, argc, argv);
+	int rc = main_start(&env->main, argc, argv);
 	if (rc == -1)
 	{
 		test_error(self, "line %d: start failed", self->current_line);
