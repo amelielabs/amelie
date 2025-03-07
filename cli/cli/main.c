@@ -11,6 +11,7 @@
 //
 
 #include <amelie.h>
+#include <amelie_cli.h>
 
 int
 main(int argc, char* argv[])
@@ -23,12 +24,12 @@ main(int argc, char* argv[])
 	if (daemon.cmd == DAEMON_STOP)
 		return EXIT_SUCCESS;
 
-	Main main;
-	main_init(&main);
-	auto status = main_start(&main, argc, argv);
-	if (status == MAIN_RUN)
+	Cli cli;
+	cli_init(&cli);
+	auto status = cli_start(&cli, argc, argv);
+	if (status == CLI_RUN)
 		daemon_wait_for_signal();
-	main_stop(&main);
-	main_free(&main);
-	return status == MAIN_ERROR? EXIT_FAILURE: EXIT_SUCCESS;
+	cli_stop(&cli);
+	cli_free(&cli);
+	return status == CLI_ERROR? EXIT_FAILURE: EXIT_SUCCESS;
 }

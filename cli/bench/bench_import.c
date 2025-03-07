@@ -11,6 +11,8 @@
 //
 
 #include <amelie.h>
+#include <amelie_cli.h>
+#include <amelie_cli_bench.h>
 
 static void
 bench_import_create(Bench* self, Client* client)

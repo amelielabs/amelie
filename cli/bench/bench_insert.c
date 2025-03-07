@@ -11,13 +11,15 @@
 //
 
 #include <amelie.h>
+#include <amelie_cli.h>
+#include <amelie_cli_bench.h>
 
 static void
-bench_upsert_create(Bench* self, Client* client)
+bench_insert_create(Bench* self, Client* client)
 {
 	unused(self);
 	Str str;
-	str_set_cstr(&str, "create table __bench.test (id int primary key random (100000), data int default 0) with (type = 'hash')");
+	str_set_cstr(&str, "create table __bench.test (id serial primary key)");
 	client_execute(client, &str);
 	if (var_int_of(&self->unlogged))
 	{
@@ -27,17 +29,13 @@ bench_upsert_create(Bench* self, Client* client)
 }
 
 hot static void
-bench_upsert_main(BenchWorker* self, Client* client)
+bench_insert_main(BenchWorker* self, Client* client)
 {
 	auto bench = self->bench;
 	auto batch = var_int_of(&bench->batch);
 
 	char text[256];
-	snprintf(text, sizeof(text),
-	         "insert into __bench.test "
-	         "generate %" PRIu64 " "
-	         "on conflict do update set data = data + 1",
-	         batch);
+	snprintf(text, sizeof(text), "insert into __bench.test generate %" PRIu64, batch);
 	Str cmd;
 	str_set_cstr(&cmd, text);
 
@@ -49,8 +47,8 @@ bench_upsert_main(BenchWorker* self, Client* client)
 	}
 }
 
-BenchIf bench_upsert =
+BenchIf bench_insert =
 {
-	.create = bench_upsert_create,
-	.main   = bench_upsert_main
+	.create = bench_insert_create,
+	.main   = bench_insert_main
 };

@@ -28,7 +28,6 @@ static inline void
 home_free(Home* self)
 {
 	login_mgr_free(&self->login_mgr);
-	cli_close();
 }
 
 static inline void
@@ -65,10 +64,6 @@ home_open(Home* self)
 	// read $AMELIE_HOME/login
 	home_set_path(path, sizeof(path), "login");
 	login_mgr_open(&self->login_mgr, path);
-
-	// prepare cli, read history file
-	home_set_path(path, sizeof(path), "history");
-	cli_open(path);
 }
 
 static inline void
@@ -78,8 +73,4 @@ home_sync(Home* self)
 	char path[PATH_MAX];
 	home_set_path(path, sizeof(path), "login");
 	login_mgr_sync(&self->login_mgr, path);
-
-	// save history
-	home_set_path(path, sizeof(path), "history");
-	cli_sync(path);
 }

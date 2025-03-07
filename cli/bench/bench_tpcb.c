@@ -11,6 +11,8 @@
 //
 
 #include <amelie.h>
+#include <amelie_cli.h>
+#include <amelie_cli_bench.h>
 
 static const int tpcb_branches = 1;
 static const int tpcb_tellers  = 10;

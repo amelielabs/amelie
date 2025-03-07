@@ -20,7 +20,7 @@ if [ -z "$path_compile" ]; then
 	echo "$1 -o $path_output"
 else
 	# shorten path to <parent_dir>/<file>
-	path_rel=`echo ${path_compile} | awk -F "/" '{ print $(NF-1) "/" $NF }'`
+	path_rel=`echo ${path_compile} | awk -F "/" '{ print $(NF-2) "/" $(NF-1) "/" $NF }'`
 	echo "$1 -c ${path_rel}"
 fi
 

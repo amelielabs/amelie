@@ -11,6 +11,8 @@
 //
 
 #include <amelie.h>
+#include <amelie_cli.h>
+#include <amelie_cli_client.h>
 
 static ImportClient*
 import_client_allocate(void)

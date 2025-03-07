@@ -11,6 +11,7 @@
 //
 
 #include <amelie.h>
+#include <amelie_cli.h>
 
 void
 daemon_init(Daemon* self)

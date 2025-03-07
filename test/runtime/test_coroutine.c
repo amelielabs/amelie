@@ -11,6 +11,7 @@
 //
 
 #include <amelie.h>
+#include <amelie_cli.h>
 #include <amelie_test.h>
 
 static uint64_t coroutine_called = -1;

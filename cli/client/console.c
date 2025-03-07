@@ -1998,3 +1998,41 @@ int linenoiseHistoryLoad(const char *filename) {
     fclose(fp);
     return 0;
 }
+
+bool
+console_is_terminal(void)
+{
+	return isatty(STDIN_FILENO);
+}
+
+void
+console_open(char* path)
+{
+	linenoiseHistoryLoad(path);
+	linenoiseSetMultiLine(true);
+	linenoiseSetEncodingUtf8();
+}
+
+void
+console_close()
+{
+	linenoiseAtExit();
+}
+
+void
+console_sync(char* path)
+{
+	linenoiseHistorySave(path);
+}
+
+bool
+console(char* prompt, Str* input)
+{
+	auto line = linenoise(prompt);
+	if (! line)
+		return false;
+	if (console_is_terminal())
+		linenoiseHistoryAdd(line);
+	str_set_allocated(input, line, strlen(line));
+	return true;
+}

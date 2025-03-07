@@ -11,6 +11,7 @@
 //
 
 #include <amelie.h>
+#include <amelie_cli.h>
 #include <amelie_test.h>
 #include <dlfcn.h>
 
@@ -127,7 +128,7 @@ test_env_new(TestSuite* self, const char* name)
 		return NULL;
 	}
 	env->sessions = 0;
-	main_init(&env->main);
+	cli_init(&env->cli);
 	list_init(&env->link);
 	list_append(&self->list_env, &env->link);
 	return env;
@@ -138,8 +139,8 @@ test_env_free(TestSuite* self, TestEnv* env)
 {
 	(void)self;
 	list_unlink(&env->link);
-	main_stop(&env->main);
-	main_free(&env->main);
+	cli_stop(&env->cli);
+	cli_free(&env->cli);
 	free(env->name);
 	free(env);
 }
@@ -367,7 +368,7 @@ test_suite_open(TestSuite* self, char* arg)
 		argc++;
 	}
 
-	int rc = main_start(&env->main, argc, argv);
+	int rc = cli_start(&env->cli, argc, argv);
 	if (rc == -1)
 	{
 		test_error(self, "line %d: start failed", self->current_line);
@@ -428,7 +429,7 @@ test_suite_backup(TestSuite* self, char* arg)
 		argc++;
 	}
 
-	int rc = main_start(&env->main, argc, argv);
+	int rc = cli_start(&env->cli, argc, argv);
 	if (rc == -1)
 	{
 		test_error(self, "line %d: start failed", self->current_line);

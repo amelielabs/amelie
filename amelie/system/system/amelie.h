@@ -44,4 +44,3 @@
 #include <amelie_backend.h>
 #include <amelie_session.h>
 #include <amelie_system.h>
-#include <amelie_main.h>
