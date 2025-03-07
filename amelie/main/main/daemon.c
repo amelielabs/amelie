@@ -13,9 +13,9 @@
 #include <amelie_private.h>
 
 void
-ctl_init(Ctl* self)
+daemon_init(Daemon* self)
 {
-	self->type         = CTL_COMMON;
+	self->cmd          = DAEMON_OTHER;
 	self->daemon       = false;
 	self->directory    = NULL;
 	self->directory_fd = -1;
@@ -24,14 +24,14 @@ ctl_init(Ctl* self)
 }
 
 static int
-ctl_prepare(Ctl* self, int argc, char** argv)
+daemon_prepare(Daemon* self, int argc, char** argv)
 {
 	self->argc = argc;
 	self->argv = argv;
 
 	if (argc >= 2 && !strcmp(argv[1], "start"))
 	{
-		self->type = CTL_START;
+		self->cmd = DAEMON_START;
 		if (argc < 3)
 		{
 			printf("error: start <path> expected\n");
@@ -54,7 +54,7 @@ ctl_prepare(Ctl* self, int argc, char** argv)
 	} else
 	if (argc >= 2 && !strcmp(argv[1], "stop"))
 	{
-		self->type = CTL_STOP;
+		self->cmd = DAEMON_STOP;
 		if (argc < 3)
 		{
 			printf("error: stop <path> expected\n");
@@ -65,14 +65,14 @@ ctl_prepare(Ctl* self, int argc, char** argv)
 		self->directory = argv[2];
 	} else
 	{
-		self->type = CTL_COMMON;
+		self->cmd = DAEMON_OTHER;
 	}
 
 	return 0;
 }
 
 static int
-ctl_read_pidfile(Ctl* self)
+daemon_read_pidfile(Daemon* self)
 {
 	char path[PATH_MAX];
 	snprintf(path, sizeof(path), "%s/pid", self->directory);
@@ -109,7 +109,7 @@ ctl_read_pidfile(Ctl* self)
 }
 
 static int
-ctl_write_pidfile(Ctl* self, pid_t pid)
+daemon_write_pidfile(Daemon* self, pid_t pid)
 {
 	char path[PATH_MAX];
 	snprintf(path, sizeof(path), "%s/pid", self->directory);
@@ -135,7 +135,7 @@ ctl_write_pidfile(Ctl* self, pid_t pid)
 }
 
 static int
-ctl_open(Ctl* self)
+daemon_open(Daemon* self)
 {
 	// ensure directory exists
 	struct stat st;
@@ -160,7 +160,7 @@ ctl_open(Ctl* self)
 }
 
 static inline int
-ctl_start_daemon(Ctl* self)
+daemon_fork(Daemon* self)
 {
 	pid_t pid = fork();
 	if (pid == -1)
@@ -173,7 +173,7 @@ ctl_start_daemon(Ctl* self)
 	if (pid > 0)
 	{
 		// create pid file by parent before exit
-		ctl_write_pidfile(self, pid);
+		daemon_write_pidfile(self, pid);
 		_exit(EXIT_SUCCESS);
 	}
 
@@ -195,10 +195,10 @@ ctl_start_daemon(Ctl* self)
 }
 
 static inline int
-ctl_start(Ctl* self)
+daemon_start(Daemon* self)
 {
 	// open directory
-	auto rc = ctl_open(self);
+	auto rc = daemon_open(self);
 	if (rc == -1)
 		return -1;
 
@@ -216,16 +216,16 @@ ctl_start(Ctl* self)
 
 	// daemonize
 	if (self->daemon)
-		return ctl_start_daemon(self);
+		return daemon_fork(self);
 
-	return ctl_write_pidfile(self, getpid());
+	return daemon_write_pidfile(self, getpid());
 }
 
 static inline int
-ctl_stop(Ctl* self)
+daemon_stop(Daemon* self)
 {
 	// open directory
-	auto rc = ctl_open(self);
+	auto rc = daemon_open(self);
 	if (rc == -1)
 		return -1;
 
@@ -244,7 +244,7 @@ ctl_stop(Ctl* self)
 	}
 
 	// read pidfile
-	auto pid = ctl_read_pidfile(self);
+	auto pid = daemon_read_pidfile(self);
 	if (pid == -1)
 		return -1;
 
@@ -256,24 +256,24 @@ ctl_stop(Ctl* self)
 }
 
 int
-ctl_main(Ctl* self, int argc, char** argv)
+daemon_main(Daemon* self, int argc, char** argv)
 {
-	auto rc = ctl_prepare(self, argc, argv);
+	auto rc = daemon_prepare(self, argc, argv);
 	if (rc == -1)
 		return -1;
-	switch (self->type) {
-	case CTL_START:
-		return ctl_start(self);
-	case CTL_STOP:
-		return ctl_stop(self);
-	case CTL_COMMON:
+	switch (self->cmd) {
+	case DAEMON_START:
+		return daemon_start(self);
+	case DAEMON_STOP:
+		return daemon_stop(self);
+	case DAEMON_OTHER:
 		break;
 	}
 	return 0;
 }
 
 void
-ctl_wait_for_signal(void)
+daemon_wait_for_signal(void)
 {
 	// wait signal for completion
 	sigset_t mask;

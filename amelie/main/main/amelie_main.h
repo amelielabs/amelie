@@ -35,5 +35,5 @@
 // top
 #include "main/top.h"
 
-// ctl
-#include "main/ctl.h"
+// daemon
+#include "main/daemon.h"
