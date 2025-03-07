@@ -13,3 +13,4 @@
 
 #include "system/system.h"
 #include "system/system_metrics.h"
+#include "system/instance.h"

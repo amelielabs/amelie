@@ -110,6 +110,7 @@ include_directories("${AMELIE_ROOT}/system/frontend")
 include_directories("${AMELIE_ROOT}/system/backend")
 include_directories("${AMELIE_ROOT}/system/session")
 include_directories("${AMELIE_ROOT}/system/system")
+include_directories("${AMELIE_ROOT}/system/instance")
 
 # main
 include_directories("${AMELIE_ROOT}/main")
@@ -300,11 +301,10 @@ set(AMELIE_SOURCES_SYSTEM
     ${AMELIE_ROOT}/system/session/ddl.c
     ${AMELIE_ROOT}/system/session/primary.c
     ${AMELIE_ROOT}/system/system/system.c
-    ${AMELIE_ROOT}/system/system/system_metrics.c)
+    ${AMELIE_ROOT}/system/system/system_metrics.c
+    ${AMELIE_ROOT}/system/system/instance.c)
 
 set(AMELIE_SOURCES_MAIN
-    ${AMELIE_ROOT}/main/main/version.c
-    ${AMELIE_ROOT}/main/main/main.c
     ${AMELIE_ROOT}/main/main/login_mgr.c
     ${AMELIE_ROOT}/main/main/amelie.c
     ${AMELIE_ROOT}/main/main/import.c

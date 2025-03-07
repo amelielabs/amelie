@@ -11,9 +11,9 @@
 // AGPL-3.0 Licensed.
 //
 
-typedef struct Main Main;
+typedef struct Instance Instance;
 
-struct Main
+struct Instance
 {
 	Logger      logger;
 	Random      random;
@@ -25,9 +25,9 @@ struct Main
 	Global      global;
 };
 
-void main_init(Main*);
-void main_free(Main*);
-void main_start(Main*);
-void main_stop(Main*);
-bool main_create(Main*, char*);
-bool main_open(Main*, char*, int, char**);
+void instance_init(Instance*);
+void instance_free(Instance*);
+void instance_start(Instance*);
+void instance_stop(Instance*);
+bool instance_create(Instance*, char*);
+bool instance_open(Instance*, char*, int, char**);

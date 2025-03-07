@@ -86,7 +86,7 @@ static void
 amelie_cmd_init(Amelie* self, int argc, char** argv)
 {
 	// amelie init path [server options]
-	auto bootstrap = main_open(&self->main, argv[0], argc - 1, argv + 1);
+	auto bootstrap = instance_open(&self->instance, argv[0], argc - 1, argv + 1);
 	if (! bootstrap)
 		error("directory already exists");
 
@@ -112,7 +112,7 @@ static void
 amelie_cmd_start(Amelie* self, int argc, char** argv)
 {
 	// amelie start path [server options]
-	auto bootstrap = main_open(&self->main, argv[0], argc - 1, argv + 1);
+	auto bootstrap = instance_open(&self->instance, argv[0], argc - 1, argv + 1);
 
 	System* system = NULL;
 	error_catch
@@ -149,7 +149,7 @@ amelie_cmd_backup(Amelie* self, int argc, char** argv)
 	home_open(&self->home);
 
 	// amelie backup path [remote options]
-	auto bootstrap = main_create(&self->main, argv[0]);
+	auto bootstrap = instance_create(&self->instance, argv[0]);
 	if (! bootstrap)
 		error("directory already exists");
 
@@ -161,7 +161,7 @@ amelie_cmd_backup(Amelie* self, int argc, char** argv)
 
 	// disable log output
 	if (str_is_cstr(remote_get(&remote, REMOTE_DEBUG), "0"))
-		logger_set_to_stdout(&self->main.logger, false);
+		logger_set_to_stdout(&self->instance.logger, false);
 
 	restore(&remote);
 }
@@ -524,10 +524,10 @@ amelie_runner(void* arg)
 
 	auto on_error = error_catch
 	(
-		main_start(&self->main);
+		instance_start(&self->instance);
 		amelie_main(self, args->argc, args->argv);
 	);
-	main_stop(&self->main);
+	instance_stop(&self->instance);
 
 	// complete
 	AmelieRc rc = AMELIE_COMPLETE;
@@ -540,7 +540,7 @@ void
 amelie_init(Amelie* self)
 {
 	home_init(&self->home);
-	main_init(&self->main);
+	instance_init(&self->instance);
 	task_init(&self->task);
 }
 
@@ -549,7 +549,7 @@ amelie_free(Amelie* self)
 {
 	task_free(&self->task);
 	home_free(&self->home);
-	main_free(&self->main);
+	instance_free(&self->instance);
 }
 
 AmelieRc
@@ -564,9 +564,9 @@ amelie_start(Amelie* self, int argc, char** argv)
 	};
 	int rc;
 	rc = task_create_nothrow(&self->task, "main", amelie_runner, &args,
-	                         &self->main.global,
-	                         logger_write, &self->main.logger,
-	                         &self->main.buf_mgr);
+	                         &self->instance.global,
+	                         logger_write, &self->instance.logger,
+	                         &self->instance.buf_mgr);
 	if (unlikely(rc == -1))
 		return AMELIE_ERROR;
 
@@ -578,7 +578,7 @@ amelie_start(Amelie* self, int argc, char** argv)
 void
 amelie_stop(Amelie* self)
 {
-	auto buf = msg_create_as(&self->main.buf_mgr, RPC_STOP, 0);
+	auto buf = msg_create_as(&self->instance.buf_mgr, RPC_STOP, 0);
 	channel_write(&self->task.channel, buf);
 	task_wait(&self->task);
 }

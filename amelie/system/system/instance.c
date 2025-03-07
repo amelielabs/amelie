@@ -10,10 +10,42 @@
 // AGPL-3.0 Licensed.
 //
 
-#include <amelie_private.h>
+#include <amelie_runtime.h>
+#include <amelie_io.h>
+#include <amelie_lib.h>
+#include <amelie_json.h>
+#include <amelie_config.h>
+#include <amelie_user.h>
+#include <amelie_auth.h>
+#include <amelie_http.h>
+#include <amelie_client.h>
+#include <amelie_server.h>
+#include <amelie_row.h>
+#include <amelie_heap.h>
+#include <amelie_transaction.h>
+#include <amelie_index.h>
+#include <amelie_partition.h>
+#include <amelie_checkpoint.h>
+#include <amelie_wal.h>
+#include <amelie_db.h>
+#include <amelie_backup.h>
+#include <amelie_repl.h>
+#include <amelie_value.h>
+#include <amelie_set.h>
+#include <amelie_content.h>
+#include <amelie_executor.h>
+#include <amelie_func.h>
+#include <amelie_vm.h>
+#include <amelie_parser.h>
+#include <amelie_planner.h>
+#include <amelie_compiler.h>
+#include <amelie_frontend.h>
+#include <amelie_backend.h>
+#include <amelie_session.h>
+#include <amelie_system.h>
 
 void
-main_init(Main* self)
+instance_init(Instance* self)
 {
 	logger_init(&self->logger);
 	random_init(&self->random);
@@ -39,7 +71,7 @@ main_init(Main* self)
 }
 
 void
-main_free(Main* self)
+instance_free(Instance* self)
 {
 	config_free(&self->config);
 	state_free(&self->state);
@@ -50,7 +82,7 @@ main_free(Main* self)
 }
 
 void
-main_start(Main* self)
+instance_start(Instance* self)
 {
 	// prepare default logger settings
 	auto logger = &self->logger;
@@ -85,14 +117,14 @@ main_start(Main* self)
 }
 
 void
-main_stop(Main* self)
+instance_stop(Instance* self)
 {
 	// stop resolver
 	resolver_stop(&self->resolver);
 }
 
 bool
-main_create(Main* self, char* directory)
+instance_create(Instance* self, char* directory)
 {
 	unused(self);
 
@@ -110,8 +142,81 @@ main_create(Main* self, char* directory)
 	return bootstrap;
 }
 
+static Buf*
+instance_version_create(void)
+{
+	// {}
+	auto buf = buf_create();
+	encode_obj(buf);
+
+	// version
+	encode_raw(buf, "version", 7);
+	encode_string(buf, &state()->version.string);
+
+	encode_obj_end(buf);
+	return buf;
+}
+
 static void
-main_bootstrap(Main* self)
+instance_version_save(const char* path)
+{
+	auto buf = instance_version_create();
+	defer_buf(buf);
+
+	// convert to json
+	Buf text;
+	buf_init(&text);
+	defer_buf(&text);
+	uint8_t* pos = buf->start;
+	json_export_pretty(&text, NULL, &pos);
+
+	// create config file
+	File file;
+	file_init(&file);
+	defer(file_close, &file);
+	file_open_as(&file, path, O_CREAT|O_RDWR, 0644);
+	file_write_buf(&file, &text);
+}
+
+static void
+instance_version_open(const char* path)
+{
+	// read version file
+	auto version_buf = file_import("%s", path);
+	defer_buf(version_buf);
+
+	Str text;
+	str_init(&text);
+	buf_str(version_buf, &text);
+
+	// parse json
+	Json json;
+	json_init(&json);
+	defer(json_free, &json);
+	json_parse(&json, &text, NULL);
+	uint8_t* pos = json.buf->start;
+
+	Str version;
+	str_init(&version);
+	Decode obj[] =
+	{
+		{ DECODE_STRING_READ, "version", &version },
+		{ 0,                   NULL,      NULL    },
+	};
+	decode_obj(obj, "version", &pos);
+
+	// compare versions
+	auto version_current = &state()->version.string;
+	if (! str_compare(&version, version_current))
+		error("current version '%.*s' does not match repository version '%.*s'",
+		      str_size(version_current),
+		      str_of(version_current),
+		      str_size(&version),
+		      str_of(&version));
+}
+
+static void
+instance_bootstrap(Instance* self)
 {
 	auto config = config();
 	unused(self);
@@ -136,13 +241,13 @@ main_bootstrap(Main* self)
 }
 
 bool
-main_open(Main* self, char* directory, int argc, char** argv)
+instance_open(Instance* self, char* directory, int argc, char** argv)
 {
 	auto config = config();
 	auto state  = state();
 
 	// create base directory, if not exists
-	auto bootstrap = main_create(self, directory);
+	auto bootstrap = instance_create(self, directory);
 
 	// open log with default settings
 	auto logger = &self->logger;
@@ -157,11 +262,11 @@ main_open(Main* self, char* directory, int argc, char** argv)
 	if (bootstrap)
 	{
 		// create version file
-		version_save(path);
+		instance_version_save(path);
 	} else
 	{
 		// read and validate version file
-		version_open(path);
+		instance_version_open(path);
 	}
 
 	// read config file
@@ -172,7 +277,7 @@ main_open(Main* self, char* directory, int argc, char** argv)
 		vars_set_argv(&config->vars, argc, argv);
 
 		// set default settings
-		main_bootstrap(self);
+		instance_bootstrap(self);
 
 		// create config file
 		config_save(config, path);

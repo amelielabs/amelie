@@ -22,9 +22,9 @@ typedef enum
 
 struct Amelie
 {
-	Home home;
-	Main main;
-	Task task;
+	Home     home;
+	Instance instance;
+	Task     task;
 };
 
 void     amelie_init(Amelie*);
