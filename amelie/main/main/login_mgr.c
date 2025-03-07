@@ -10,7 +10,7 @@
 // AGPL-3.0 Licensed.
 //
 
-#include <amelie_private.h>
+#include <amelie.h>
 
 void
 login_mgr_init(LoginMgr* self)

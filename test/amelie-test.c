@@ -10,7 +10,7 @@
 // AGPL-3.0 Licensed.
 //
 
-#include <amelie_private.h>
+#include <amelie.h>
 #include <amelie_test.h>
 
 int

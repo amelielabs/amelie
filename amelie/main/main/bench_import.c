@@ -10,7 +10,7 @@
 // AGPL-3.0 Licensed.
 //
 
-#include <amelie_private.h>
+#include <amelie.h>
 
 static void
 bench_import_create(Bench* self, Client* client)

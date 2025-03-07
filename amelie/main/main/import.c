@@ -10,7 +10,7 @@
 // AGPL-3.0 Licensed.
 //
 
-#include <amelie_private.h>
+#include <amelie.h>
 
 static ImportClient*
 import_client_allocate(void)

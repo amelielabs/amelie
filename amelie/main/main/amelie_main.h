@@ -11,6 +11,9 @@
 // AGPL-3.0 Licensed.
 //
 
+// daemon
+#include "main/daemon.h"
+
 // home
 #include "main/login.h"
 #include "main/login_mgr.h"
@@ -32,6 +35,3 @@
 
 // top
 #include "main/top.h"
-
-// daemon
-#include "main/daemon.h"

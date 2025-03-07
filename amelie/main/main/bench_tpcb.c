@@ -10,7 +10,7 @@
 // AGPL-3.0 Licensed.
 //
 
-#include <amelie_private.h>
+#include <amelie.h>
 
 static const int tpcb_branches = 1;
 static const int tpcb_tellers  = 10;
