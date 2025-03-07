@@ -159,7 +159,7 @@ wal_open_directory(Wal* self)
 		fs_mkdir(0755, "%s", path);
 
 	// open and keep directory fd to support sync
-	self->dirfd = vfs_open(path, O_RDONLY, 0);
+	self->dirfd = vfs_open(path, O_DIRECTORY|O_RDONLY, 0);
 	if (self->dirfd == -1)
 		error_system();
 
