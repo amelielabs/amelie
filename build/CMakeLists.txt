@@ -113,11 +113,11 @@ include_directories("${AMELIE_ROOT}/system/system")
 include_directories("${AMELIE_ROOT}/system/instance")
 
 # cli
-include_directories("${CMAKE_SOURCE_DIR}/cli")
-include_directories("${CMAKE_SOURCE_DIR}/cli/cli")
-include_directories("${CMAKE_SOURCE_DIR}/cli/server")
-include_directories("${CMAKE_SOURCE_DIR}/cli/client")
-include_directories("${CMAKE_SOURCE_DIR}/cli/bench")
+include_directories("${AMELIE_ROOT}/cli")
+include_directories("${AMELIE_ROOT}/cli/cli")
+include_directories("${AMELIE_ROOT}/cli/server")
+include_directories("${AMELIE_ROOT}/cli/client")
+include_directories("${AMELIE_ROOT}/cli/bench")
 
 # test suite
 include_directories("${CMAKE_SOURCE_DIR}/test")
@@ -305,6 +305,26 @@ set(AMELIE_SOURCES_SYSTEM
     ${AMELIE_ROOT}/system/system/system_metrics.c
     ${AMELIE_ROOT}/system/system/instance.c)
 
+set(AMELIE_SOURCES_CLI
+    ${AMELIE_ROOT}/cli/cli/daemon.c
+    ${AMELIE_ROOT}/cli/cli/login_mgr.c
+    ${AMELIE_ROOT}/cli/cli/cli.c
+    ${AMELIE_ROOT}/cli/server/server.c
+    ${AMELIE_ROOT}/cli/client/console.c
+    ${AMELIE_ROOT}/cli/client/import.c
+    ${AMELIE_ROOT}/cli/client/client.c
+    ${AMELIE_ROOT}/cli/client/top.c
+    ${AMELIE_ROOT}/cli/bench/bench.c
+    ${AMELIE_ROOT}/cli/bench/bench_insert.c
+    ${AMELIE_ROOT}/cli/bench/bench_upsert.c
+    ${AMELIE_ROOT}/cli/bench/bench_resolved.c
+    ${AMELIE_ROOT}/cli/bench/bench_tpcb.c
+    ${AMELIE_ROOT}/cli/bench/bench_import.c
+    ${AMELIE_ROOT}/cli/bench/bench_main.c)
+
+set(AMELIE_SOURCES_MAIN
+    ${AMELIE_ROOT}/cli/cli/main.c)
+
 set(AMELIE_SOURCES
     ${AMELIE_SOURCES_RUNTIME}
     ${AMELIE_SOURCES_SERVER}
@@ -312,25 +332,8 @@ set(AMELIE_SOURCES
     ${AMELIE_SOURCES_REPL}
     ${AMELIE_SOURCES_VM}
     ${AMELIE_SOURCES_COMPILER}
-    ${AMELIE_SOURCES_SYSTEM})
-
-set(AMELIE_SOURCES_CLI
-    ${CMAKE_SOURCE_DIR}/cli/cli/daemon.c
-    ${CMAKE_SOURCE_DIR}/cli/cli/login_mgr.c
-    ${CMAKE_SOURCE_DIR}/cli/cli/cli.c
-    ${CMAKE_SOURCE_DIR}/cli/cli/main.c
-    ${CMAKE_SOURCE_DIR}/cli/server/server.c
-    ${CMAKE_SOURCE_DIR}/cli/client/console.c
-    ${CMAKE_SOURCE_DIR}/cli/client/import.c
-    ${CMAKE_SOURCE_DIR}/cli/client/client.c
-    ${CMAKE_SOURCE_DIR}/cli/client/top.c
-    ${CMAKE_SOURCE_DIR}/cli/bench/bench.c
-    ${CMAKE_SOURCE_DIR}/cli/bench/bench_insert.c
-    ${CMAKE_SOURCE_DIR}/cli/bench/bench_upsert.c
-    ${CMAKE_SOURCE_DIR}/cli/bench/bench_resolved.c
-    ${CMAKE_SOURCE_DIR}/cli/bench/bench_tpcb.c
-    ${CMAKE_SOURCE_DIR}/cli/bench/bench_import.c
-    ${CMAKE_SOURCE_DIR}/cli/bench/bench_main.c)
+    ${AMELIE_SOURCES_SYSTEM}
+    ${AMELIE_SOURCES_CLI})
 
 set(AMELIE_SOURCES_TEST_SUITE
     ${CMAKE_SOURCE_DIR}/test/runtime/test_task.c
@@ -358,7 +361,7 @@ set_target_properties(amelie_static PROPERTIES OUTPUT_NAME amelie)
 set(AMELIE_STATIC_LINK "$<LINK_LIBRARY:WHOLE_ARCHIVE,amelie_static>")
 
 # amelie
-add_executable(amelie_cli ${AMELIE_SOURCES_CLI})
+add_executable(amelie_cli ${AMELIE_SOURCES_MAIN})
 target_link_libraries(amelie_cli ${AMELIE_STATIC_LINK})
 target_link_libraries(amelie_cli ${AMELIE_LIBRARIES})
 set_target_properties(amelie_cli PROPERTIES ENABLE_EXPORTS ON OUTPUT_NAME amelie)
