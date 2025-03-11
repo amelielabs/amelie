@@ -1,5 +1,5 @@
 open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "127.0.0.1", "port": 3480 }], "backends": 3
-connect E0 S0 localhost:3480
+connect E0 S0 127.0.0.1:3480
 show listen
 [{
   "host": "127.0.0.1",
@@ -12,7 +12,7 @@ disconnect S0
 close E0
 # test: restore empty
 open E1
-connect E1 S0 localhost:3480
+connect E1 S0 127.0.0.1:3480
 show uuid
 ["00000000-0000-0000-0000-000000000000"]
 select system.backends()::length
@@ -21,7 +21,7 @@ disconnect S0
 close E1
 # test: backup wal
 open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "127.0.0.1", "port": 3480 }], "backends": 3
-connect E0 S0 localhost:3480
+connect E0 S0 127.0.0.1:3480
 create table test (id int primary key)
 insert into test values (1),(2),(3)
 select system.state().lsn
@@ -32,7 +32,7 @@ disconnect S0
 close E0
 # test: restore wal
 open E2
-connect E2 S0 localhost:3480
+connect E2 S0 127.0.0.1:3480
 show uuid
 ["00000000-0000-0000-0000-000000000000"]
 select * from test
@@ -43,7 +43,7 @@ disconnect S0
 close E2
 # test: backup wal #2
 open E0 "wal_size": 0
-connect E0 S0 localhost:3480
+connect E0 S0 127.0.0.1:3480
 select system.state().lsn
 [3]
 show wal
@@ -77,7 +77,7 @@ disconnect S0
 close E0
 # test: restore wal #2
 open E3 "wal_size": 104857600
-connect E3 S0 localhost:3480
+connect E3 S0 127.0.0.1:3480
 show uuid
 ["00000000-0000-0000-0000-000000000000"]
 select * from test
@@ -100,7 +100,7 @@ disconnect S0
 close E3
 # test: backup checkpoint
 open E0
-connect E0 S0 localhost:3480
+connect E0 S0 127.0.0.1:3480
 select system.state().lsn
 [4]
 select system.state().checkpoint
@@ -116,7 +116,7 @@ disconnect S0
 close E0
 # test: restore checkpoint
 open E4
-connect E4 S0 localhost:3480
+connect E4 S0 127.0.0.1:3480
 select system.state().lsn
 [4]
 select system.state().checkpoint
@@ -127,7 +127,7 @@ disconnect S0
 close E4
 # test: backup checkpoint with wal
 open E0
-connect E0 S0 localhost:3480
+connect E0 S0 127.0.0.1:3480
 insert into test values (5),(6),(7)
 select system.state().lsn
 [5]
@@ -139,7 +139,7 @@ disconnect S0
 close E0
 # test: restore checkpoint and wal
 open E5
-connect E5 S0 localhost:3480
+connect E5 S0 127.0.0.1:3480
 select system.state().lsn
 [5]
 select system.state().checkpoint

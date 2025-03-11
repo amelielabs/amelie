@@ -250,10 +250,6 @@ parse_import(Parser* self, Str* str, Str* uri, EndpointType type)
 	endpoint_init(&endpoint, &self->uri, type);
 	parse_endpoint(&endpoint, self->db);
 
-	// eof
-	if (unlikely(lex_if(&self->lex, KEOF)))
-		return;
-
 	// prepare insert stmt
 	auto stmt = stmt_allocate(self->db, self->function_mgr,
 	                          self->local,

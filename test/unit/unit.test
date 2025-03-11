@@ -1,12 +1,12 @@
 
 # test: test task
-unit_function test_task_create
+unit test_task_create
 
 # test: test task args
-unit_function test_task_args
+unit test_task_args
 
 # test: test task status
-unit_function test_task_status
+unit test_task_status
 
 # test: test exception0
 unit test_exception0

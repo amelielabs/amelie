@@ -18,6 +18,7 @@ struct Logger
 	bool      enable;
 	bool      to_stdout;
 	bool      cli;
+	bool      cli_lf;
 	int       fd;
 	Timezone* timezone;
 };
@@ -25,7 +26,7 @@ struct Logger
 void logger_init(Logger*);
 void logger_open(Logger*, const char*);
 void logger_set_enable(Logger*, bool);
-void logger_set_cli(Logger*, bool);
+void logger_set_cli(Logger*, bool, bool);
 void logger_set_to_stdout(Logger*, bool);
 void logger_set_timezone(Logger*, Timezone*);
 void logger_close(Logger*);

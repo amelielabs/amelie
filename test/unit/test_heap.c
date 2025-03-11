@@ -11,8 +11,6 @@
 // AGPL-3.0 Licensed.
 //
 
-#include <amelie.h>
-#include <amelie_cli.h>
 #include <amelie_test.h>
 
 void

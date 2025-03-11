@@ -11,7 +11,6 @@
 // AGPL-3.0 Licensed.
 //
 
-#include <curl/curl.h>
-
-#include "suite/suite.h"
-#include "suite/session.h"
+#include <amelie.h>
+#include <amelie_cli.h>
+#include <amelie_cli_test.h>

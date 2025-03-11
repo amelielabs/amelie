@@ -43,11 +43,9 @@ set(CMAKE_THREAD_PREFER_PTHREAD true)
 find_package(Threads REQUIRED)
 find_package(OpenSSL REQUIRED)
 find_package(PCRE REQUIRED)
-find_package(CURL REQUIRED)
 
 include_directories(${OPENSSL_INCLUDE_DIR})
 include_directories(${PCRE_INCLUDE_DIR})
-include_directories(${CURL_INCLUDE_DIR})
 
 set(AMELIE_LIBRARIES m
     ${CMAKE_THREAD_LIBS_INIT}
@@ -118,10 +116,7 @@ include_directories("${AMELIE_ROOT}/cli/cli")
 include_directories("${AMELIE_ROOT}/cli/server")
 include_directories("${AMELIE_ROOT}/cli/client")
 include_directories("${AMELIE_ROOT}/cli/bench")
-
-# test suite
-include_directories("${CMAKE_SOURCE_DIR}/test")
-include_directories("${CMAKE_SOURCE_DIR}/test/suite")
+include_directories("${AMELIE_ROOT}/cli/test")
 
 # sources
 set(AMELIE_SOURCES_RUNTIME
@@ -320,7 +315,11 @@ set(AMELIE_SOURCES_CLI
     ${AMELIE_ROOT}/cli/bench/bench_resolved.c
     ${AMELIE_ROOT}/cli/bench/bench_tpcb.c
     ${AMELIE_ROOT}/cli/bench/bench_import.c
-    ${AMELIE_ROOT}/cli/bench/bench_main.c)
+    ${AMELIE_ROOT}/cli/bench/bench_main.c
+    ${AMELIE_ROOT}/cli/test/test_plan.c
+    ${AMELIE_ROOT}/cli/test/test_suite.c
+    ${AMELIE_ROOT}/cli/test/test_command.c
+    ${AMELIE_ROOT}/cli/test/test_main.c)
 
 set(AMELIE_SOURCES_MAIN
     ${AMELIE_ROOT}/cli/cli/main.c)
@@ -335,39 +334,36 @@ set(AMELIE_SOURCES
     ${AMELIE_SOURCES_SYSTEM}
     ${AMELIE_SOURCES_CLI})
 
-set(AMELIE_SOURCES_TEST_SUITE
-    ${CMAKE_SOURCE_DIR}/test/runtime/test_task.c
-    ${CMAKE_SOURCE_DIR}/test/runtime/test_exception.c
-    ${CMAKE_SOURCE_DIR}/test/runtime/test_palloc.c
-    ${CMAKE_SOURCE_DIR}/test/runtime/test_buf.c
-    ${CMAKE_SOURCE_DIR}/test/runtime/test_msg.c
-    ${CMAKE_SOURCE_DIR}/test/runtime/test_coroutine.c
-    ${CMAKE_SOURCE_DIR}/test/runtime/test_event.c
-    ${CMAKE_SOURCE_DIR}/test/runtime/test_condition.c
-    ${CMAKE_SOURCE_DIR}/test/runtime/test_channel.c
-    ${CMAKE_SOURCE_DIR}/test/runtime/test_rpc.c
-    ${CMAKE_SOURCE_DIR}/test/runtime/test_cancel.c
-    ${CMAKE_SOURCE_DIR}/test/runtime/test_lock.c
-    ${CMAKE_SOURCE_DIR}/test/runtime/test_sleep.c
-    ${CMAKE_SOURCE_DIR}/test/runtime/test_benchmark.c
-    ${CMAKE_SOURCE_DIR}/test/runtime/test_heap.c
-    ${CMAKE_SOURCE_DIR}/test/suite/suite.c
-    ${CMAKE_SOURCE_DIR}/test/suite/session.c
-    ${CMAKE_SOURCE_DIR}/test/amelie-test.c)
+set(AMELIE_SOURCES_UNIT
+    ${CMAKE_SOURCE_DIR}/test/unit/test_task.c
+    ${CMAKE_SOURCE_DIR}/test/unit/test_exception.c
+    ${CMAKE_SOURCE_DIR}/test/unit/test_palloc.c
+    ${CMAKE_SOURCE_DIR}/test/unit/test_buf.c
+    ${CMAKE_SOURCE_DIR}/test/unit/test_msg.c
+    ${CMAKE_SOURCE_DIR}/test/unit/test_coroutine.c
+    ${CMAKE_SOURCE_DIR}/test/unit/test_event.c
+    ${CMAKE_SOURCE_DIR}/test/unit/test_condition.c
+    ${CMAKE_SOURCE_DIR}/test/unit/test_channel.c
+    ${CMAKE_SOURCE_DIR}/test/unit/test_rpc.c
+    ${CMAKE_SOURCE_DIR}/test/unit/test_cancel.c
+    ${CMAKE_SOURCE_DIR}/test/unit/test_lock.c
+    ${CMAKE_SOURCE_DIR}/test/unit/test_sleep.c
+    ${CMAKE_SOURCE_DIR}/test/unit/test_benchmark.c
+    ${CMAKE_SOURCE_DIR}/test/unit/test_heap.c)
 
 # libamelie.a
 add_library(amelie_static STATIC ${AMELIE_SOURCES})
 set_target_properties(amelie_static PROPERTIES OUTPUT_NAME amelie)
 set(AMELIE_STATIC_LINK "$<LINK_LIBRARY:WHOLE_ARCHIVE,amelie_static>")
 
+# libamelie-unit.a
+add_library(amelie_unit_static STATIC ${AMELIE_SOURCES_UNIT})
+set_target_properties(amelie_unit_static PROPERTIES OUTPUT_NAME amelie_unit)
+set(AMELIE_UNIT_STATIC_LINK "$<LINK_LIBRARY:WHOLE_ARCHIVE,amelie_unit_static>")
+
 # amelie
 add_executable(amelie_cli ${AMELIE_SOURCES_MAIN})
 target_link_libraries(amelie_cli ${AMELIE_STATIC_LINK})
+target_link_libraries(amelie_cli ${AMELIE_UNIT_STATIC_LINK})
 target_link_libraries(amelie_cli ${AMELIE_LIBRARIES})
 set_target_properties(amelie_cli PROPERTIES ENABLE_EXPORTS ON OUTPUT_NAME amelie)
-
-## amelie-test
-#add_executable(amelie_test ${AMELIE_SOURCES_TEST_SUITE})
-#target_link_libraries(amelie_test ${AMELIE_STATIC_LINK})
-#target_link_libraries(amelie_test ${AMELIE_LIBRARIES} ${CURL_LIBRARIES})
-#set_target_properties(amelie_test PROPERTIES ENABLE_EXPORTS ON OUTPUT_NAME amelie-test)

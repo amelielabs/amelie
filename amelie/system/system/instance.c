@@ -87,7 +87,7 @@ instance_start(Instance* self)
 	// prepare default logger settings
 	auto logger = &self->logger;
 	logger_set_enable(logger, true);
-	logger_set_cli(logger, true);
+	logger_set_cli(logger, true, true);
 	logger_set_to_stdout(logger, true);
 
 	// init ssl library
@@ -252,7 +252,7 @@ instance_open(Instance* self, char* directory, int argc, char** argv)
 	// open log with default settings
 	auto logger = &self->logger;
 	logger_set_enable(logger, true);
-	logger_set_cli(logger, false);
+	logger_set_cli(logger, false, false);
 	char path[PATH_MAX];
 	snprintf(path, sizeof(path), "%s/log", state_directory());
 	logger_open(logger, path);

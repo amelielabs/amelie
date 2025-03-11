@@ -1,5 +1,5 @@
 open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "127.0.0.1", "port": 3485 }], "backends": 3
-connect E0 S0 localhost:3485
+connect E0 S0 127.0.0.1:3485
 # test: default checkpoint
 select system.state().checkpoint
 [1]
@@ -21,7 +21,7 @@ select system.state().checkpoint
 disconnect S0
 close E0
 open E0
-connect E0 S0 localhost:3485
+connect E0 S0 127.0.0.1:3485
 select system.state().lsn
 [2]
 select system.state().checkpoint
@@ -36,7 +36,7 @@ select identity_of("public", "test")
 disconnect S0
 close E0
 open E0
-connect E0 S0 localhost:3485
+connect E0 S0 127.0.0.1:3485
 select system.state().lsn
 [3]
 select system.state().checkpoint
@@ -55,7 +55,7 @@ select system.state().checkpoint
 disconnect S0
 close E0
 open E0
-connect E0 S0 localhost:3485
+connect E0 S0 127.0.0.1:3485
 select system.state().lsn
 [3]
 select system.state().checkpoint
@@ -73,7 +73,7 @@ select system.state().lsn
 disconnect S0
 close E0
 open E0
-connect E0 S0 localhost:3485
+connect E0 S0 127.0.0.1:3485
 select system.state().lsn
 [5]
 select system.state().checkpoint
@@ -103,7 +103,7 @@ select system.state().checkpoint
 disconnect S0
 close E0
 open E0
-connect E0 S0 localhost:3485
+connect E0 S0 127.0.0.1:3485
 select system.state().lsn
 [5]
 select system.state().checkpoint

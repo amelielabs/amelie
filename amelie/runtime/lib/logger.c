@@ -20,6 +20,7 @@ logger_init(Logger* self)
 	self->enable    = true;
 	self->to_stdout = false;
 	self->cli       = false;
+	self->cli_lf    = true;
 	self->fd        = -1;
 	self->timezone  = NULL;
 }
@@ -51,9 +52,10 @@ logger_set_enable(Logger* self, bool enable)
 }
 
 void
-logger_set_cli(Logger* self, bool enable)
+logger_set_cli(Logger* self, bool enable, bool lf)
 {
 	self->cli = enable;
+	self->cli_lf = lf;
 }
 
 void
@@ -112,7 +114,8 @@ logger_write(void*       arg,
 print_stdout:
 	// cli print (simplified output)
 	if (self->cli)
-		buf_len = snprintf(buf, sizeof(buf), "%s%s\n", prefix, text);
+		buf_len = snprintf(buf, sizeof(buf), "%s%s%s", prefix, text,
+		                   self->cli_lf ? "\n" : "");
 
 	// print
 	if (self->to_stdout)

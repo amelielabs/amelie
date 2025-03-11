@@ -194,10 +194,26 @@ str_split(Str* self, Str* chunk, char token)
 }
 
 static inline void
+str_arg(Str* self, Str* arg)
+{
+	str_init(arg);
+	while (!str_empty(self) && isspace(*self->pos))
+		str_advance(self, 1);
+	if (str_empty(self))
+		return;
+	arg->pos = self->pos;
+	while (!str_empty(self) && !isspace(*self->pos))
+		str_advance(self, 1);
+	arg->end = self->pos;
+}
+
+static inline void
 str_shrink(Str* self)
 {
 	// remove whitespaces from start and end
 	// of the string
+	if (str_empty(self))
+		return;
 	while (self->pos < self->end && isspace(*self->pos))
 		self->pos++;
 	while ((self->end - 1) > self->pos && isspace(*(self->end - 1)))

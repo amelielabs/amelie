@@ -3,271 +3,164 @@
 open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "127.0.0.1", "port": 3485 }]
 
 # test: POST / (text/plain)
-connect E0 S0 localhost:3485
-import text/plain select 1
+connect E0 S0 127.0.0.1:3485
+post / text/plain select 1
 
 # test: POST / (application/sql)
-import application/sql select 1
+post / application/sql select 1
 
 # test: POST / (application/json) unsupported
-import application/json [1]
-disconnect S0
+post / application/json [1]
 
 # test: POST /invalid
-connect E0 S0 http://localhost:3485/abc
-import text/plain select 1
-disconnect S0
+post /abc text/plain select 1
 
 # test: POST /v1/execute (text/plain)
-connect E0 S0 http://localhost:3485/v1/execute
-import text/plain select 1
+post /v1/execute text/plain select 1
 
 # test: POST /v1/execute (application/sql)
-import application/sql select 1
-disconnect S0
+post /v1/execute application/sql select 1
 
 # test: POST /v1/db/schema/table (text/plain) not exists
-connect E0 S0 http://localhost:3485/v1/db/public/test
-import text/plain select 1
-disconnect S0
+post /v1/db/public/test text/plain select 1
 
 # create table
-connect E0 S0 http://localhost:3485
 create table test (id int primary key, a int, b int)
 create table test2 (id int primary key, a int as (id * 2) stored)
 create table test3 (id int primary key, a int as (a + 1) resolved)
 create table test4 (id serial primary key, a int default 777)
 create table test5 (id serial primary key, data json not null)
 create table test6 (id int primary key as (data.id::int) stored, data json not null)
-disconnect S0
 
 # test: POST /v1/db/schema/table (text/plain) unsupported
-connect E0 S0 http://localhost:3485/v1/db/public/test
-import text/plain select 1
-disconnect S0
+post /v1/db/public/test text/plain select 1
 
 # test: POST /v1/db/schema/table (text/csv)
-connect E0 S0 http://localhost:3485/v1/db/public/test
-import text/csv 0,0,0
-import text/csv 1,0,0
-import text/csv 2,0,0
-disconnect S0
-
-connect E0 Sx http://localhost:3485/
+post /v1/db/public/test text/csv 0,0,0
+post /v1/db/public/test text/csv 1,0,0
+post /v1/db/public/test text/csv 2,0,0
 select * from test
-disconnect Sx
 
 # test: POST /v1/db/schema/table (text/csv) column list
-connect E0 S0 http://localhost:3485/v1/db/public/test?columns=id
-import text/csv 3
-import text/csv 4
-import text/csv 5
-disconnect S0
+post /v1/db/public/test?columns=id text/csv 3
+post /v1/db/public/test?columns=id text/csv 4
+post /v1/db/public/test?columns=id text/csv 5
 
-connect E0 S0 http://localhost:3485/v1/db/public/test?columns=id,a
-import text/csv 6,0
-disconnect S0
-
-connect E0 S0 http://localhost:3485/v1/db/public/test?columns=id,a,b
-import text/csv 7,0,0
-disconnect S0
+post /v1/db/public/test?columns=id,a text/csv 6,0
+post /v1/db/public/test?columns=id,a,b text/csv 7,0,0
 
 # test: POST /v1/db/schema/table (text/csv) column list (duplicate)
-connect E0 S0 http://localhost:3485/v1/db/public/test?columns=id,a,a
-import text/csv 8,0,0
-disconnect S0
+post /v1/db/public/test?columns=id,a,a text/csv 8,0,0
 
 # test: POST /v1/db/schema/table (text/csv) column list (unordered)
-connect E0 S0 http://localhost:3485/v1/db/public/test?columns=id,b,a
-import text/csv 8,0,0
-disconnect S0
-
-connect E0 Sx http://localhost:3485/
+post /v1/db/public/test?columns=id,b,a text/csv 8,0,0
 select * from test
-disconnect Sx
 
 # test: POST /v1/db/schema/table (text/csv) (empty column list)
-connect E0 S0 http://localhost:3485/v1/db/public/test4?columns=
-import text/csv 
-import text/csv     
-disconnect S0
+post /v1/db/public/test4?columns= text/csv
+post /v1/db/public/test4?columns= text/csv
+select * from test4
 
 # test: POST /v1/db/schema/table (text/csv) (generated columns)
-connect E0 S0 http://localhost:3485/v1/db/public/test2
-import text/csv 0,null
-import text/csv 1,null
-import text/csv 2,null
-disconnect S0
-
-connect E0 Sx http://localhost:3485/
+post /v1/db/public/test2 text/csv 0,null
+post /v1/db/public/test2 text/csv 1,null
+post /v1/db/public/test2 text/csv 2,null
 select * from test2
-disconnect Sx
 
 # test: POST /v1/db/schema/table (text/csv) (resolved columns)
-connect E0 S0 http://localhost:3485/v1/db/public/test3
-import text/csv 0,0
-import text/csv 0,0
-import text/csv 0,0
-import text/csv 1,0
-import text/csv 1,0
-disconnect S0
-
-connect E0 Sx http://localhost:3485/
+post /v1/db/public/test3 text/csv 0,0
+post /v1/db/public/test3 text/csv 0,0
+post /v1/db/public/test3 text/csv 0,0
+post /v1/db/public/test3 text/csv 1,0
+post /v1/db/public/test3 text/csv 1,0
+post /v1/db/public/test3 text/csv 1,0
 select * from test3
-disconnect Sx
 
 # test: POST /v1/db/schema/table (application/jsonl) (array)
-connect E0 S0 http://localhost:3485/v1/db/public/test
-import application/jsonl [9,0,0] [10, null, 123] [11, null, null]
-import application/jsonl [12,
-import application/jsonl [12,0,
-import application/jsonl [12,0]
-import application/jsonl [12,]
-import application/jsonl [12,null]
-import application/jsonl [12,null,]
-import application/jsonl [12,null,'string']
-import application/jsonl [[12,null,0]]
-disconnect S0
-
-connect E0 Sx http://localhost:3485/
+post /v1/db/public/test application/jsonl [9,0,0] [10, null, 123] [11, null, null]
+post /v1/db/public/test application/jsonl [12,
+post /v1/db/public/test application/jsonl [12,0,
+post /v1/db/public/test application/jsonl [12,0]
+post /v1/db/public/test application/jsonl [12,]
+post /v1/db/public/test application/jsonl [12,null]
+post /v1/db/public/test application/jsonl [12,null,]
+post /v1/db/public/test application/jsonl [12,null,'string']
+post /v1/db/public/test application/jsonl [[12,null,0]]
 select * from test
-disconnect Sx
 
 # test: POST /v1/db/schema/table (application/jsonl) (array, column list)
-connect E0 S0 http://localhost:3485/v1/db/public/test?columns=id
-import application/jsonl [13]
-disconnect S0
-
-connect E0 S0 http://localhost:3485/v1/db/public/test?columns=id,a
-import application/jsonl [14,null]
-disconnect S0
-
-connect E0 Sx http://localhost:3485/
+post /v1/db/public/test?columns=id application/jsonl [13]
+post /v1/db/public/test?columns=id,a application/jsonl [14,null]
 select * from test
-disconnect Sx
 
 # test: POST /v1/db/schema/table (application/jsonl) (array, empty column list)
-connect E0 S0 http://localhost:3485/v1/db/public/test4?columns=
-import application/jsonl []
-disconnect S0
-
-connect E0 Sx http://localhost:3485/
+post /v1/db/public/test4?columns= application/jsonl []
 select * from test4
-disconnect Sx
 
 # test: POST /v1/db/schema/table (application/json) (array)
-connect E0 S0 http://localhost:3485/v1/db/public/test
-import application/json [[15,0,0]]
-
-import application/json [[16,0,0]
-import application/json [[16,0,0],
-import application/json [[16,0,0],]
-import application/json [[16,0,0], [16,0,7]]
-import application/json [[16,0,0], [17,0,7]] junk
-import application/json 
-import application/json []
-import application/json {}
-disconnect S0
-
-connect E0 Sx http://localhost:3485/
+post /v1/db/public/test application/json [[15,0,0]]
+post /v1/db/public/test application/json [[16,0,0]
+post /v1/db/public/test application/json [[16,0,0],
+post /v1/db/public/test application/json [[16,0,0],]
+post /v1/db/public/test application/json [[16,0,0], [16,0,7]]
+post /v1/db/public/test application/json [[16,0,0], [17,0,7]] junk
+post /v1/db/public/test application/json 
+post /v1/db/public/test application/json []
+post /v1/db/public/test application/json {}
 select * from test
-disconnect Sx
 
 # test: POST /v1/db/schema/table (application/json) (array, column list)
-connect E0 S0 http://localhost:3485/v1/db/public/test?columns=id
-import application/json [[18,0]
-import application/json [[18,
-import application/json [[]
-import application/json [[18], [19]]
-disconnect S0
-
-connect E0 Sx http://localhost:3485/
+post /v1/db/public/test?columns=id application/json [[18,0]
+post /v1/db/public/test?columns=id application/json [[18,
+post /v1/db/public/test?columns=id application/json [[]
+post /v1/db/public/test?columns=id application/json [[18], [19]]
 select * from test
-disconnect Sx
 
 # test: POST /v1/db/schema/table (application/json) (array, empty column list)
-connect E0 S0 http://localhost:3485/v1/db/public/test4?columns=
-import application/json [[], [], []]
-disconnect S0
-
-connect E0 Sx http://localhost:3485/
+post /v1/db/public/test4?columns= application/json [[], [], []]
 select * from test4
-disconnect Sx
 
 # test: POST /v1/db/schema/table (application/jsonl) (obj, empty column list)
-connect E0 S0 http://localhost:3485/v1/db/public/test4?columns=
-import application/jsonl {}
-disconnect S0
-
-connect E0 Sx http://localhost:3485/
+post /v1/db/public/test4?columns= application/jsonl {}
 select * from test4
-disconnect Sx
 
 # test: POST /v1/db/schema/table (application/jsonl) (obj, one column)
-connect E0 S0 http://localhost:3485/v1/db/public/test5?columns=data
-import application/jsonl {"id": 1} {"id": 2} {"id": 3}
-disconnect S0
-
-connect E0 Sx http://localhost:3485/
+post /v1/db/public/test5?columns=data application/jsonl {"id": 1} {"id": 2} {"id": 3}
 select * format 'json' from test5
-disconnect Sx
 
 # test: POST /v1/db/schema/table (application/jsonl) (obj, column list)
-connect E0 S0 http://localhost:3485/v1/db/public/test5?columns=id,data
-import application/jsonl {"id": 1} {"id": 2} {"id": 3}
-disconnect S0
+post /v1/db/public/test5?columns=id,data application/jsonl {"id": 1} {"id": 2} {"id": 3}
+select * from test5
 
 # test: POST /v1/db/schema/table (application/jsonl) (obj)
-connect E0 S0 http://localhost:3485/v1/db/public/test
-import application/jsonl {"id": 20}
-import application/jsonl {"id": 20, "a"
-import application/jsonl {"id": 20,
-import application/jsonl {"id": 20, 1
-import application/jsonl {"id": 20, "a"
-import application/jsonl {"id": 20, "a":
-import application/jsonl {"id": 20, "a": 0
-import application/jsonl {"id": 20, "a": 0,
-import application/jsonl {"id": 20, "a": 0, "b"
-
-import application/jsonl {"id": 20, "a": 0, "b": 0}
-import application/jsonl {"id": 21, "a": 0, "b": 0}
-import application/jsonl {"id": 22, "b": 0}
-import application/jsonl {"id": 23}
-
-import application/jsonl {"id": 22, "b": 0, "b": 1}
-
-import application/jsonl {"id": 24} {"id": 25} {"id": 26}
-disconnect S0
-
-connect E0 Sx http://localhost:3485/
+post /v1/db/public/test application/jsonl {"id": 20}
+post /v1/db/public/test application/jsonl {"id": 20, "a"
+post /v1/db/public/test application/jsonl {"id": 20,
+post /v1/db/public/test application/jsonl {"id": 20, 1
+post /v1/db/public/test application/jsonl {"id": 20, "a"
+post /v1/db/public/test application/jsonl {"id": 20, "a":
+post /v1/db/public/test application/jsonl {"id": 20, "a": 0
+post /v1/db/public/test application/jsonl {"id": 20, "a": 0,
+post /v1/db/public/test application/jsonl {"id": 20, "a": 0, "b"
+post /v1/db/public/test application/jsonl {"id": 20, "a": 0, "b": 0}
+post /v1/db/public/test application/jsonl {"id": 21, "a": 0, "b": 0}
+post /v1/db/public/test application/jsonl {"id": 22, "b": 0}
+post /v1/db/public/test application/jsonl {"id": 23}
+post /v1/db/public/test application/jsonl {"id": 22, "b": 0, "b": 1}
+post /v1/db/public/test application/jsonl {"id": 24} {"id": 25} {"id": 26}
 select * format 'json' from test
-disconnect Sx
 
 # test: POST /v1/db/schema/table (application/json) (obj)
-connect E0 S0 http://localhost:3485/v1/db/public/test
-import application/json [{"id": 27}, {"id": 28}]
-disconnect S0
-
-connect E0 Sx http://localhost:3485/
+post /v1/db/public/test application/json [{"id": 27}, {"id": 28}]
 select * format 'json' from test
-disconnect Sx
 
 # test: POST /v1/db/schema/table (application/json) (obj, one column)
-connect E0 S0 http://localhost:3485/v1/db/public/test5?columns=data
-import application/json [{"id": 4}, {"id": 5}]
-disconnect S0
-
-connect E0 Sx http://localhost:3485/
+post /v1/db/public/test5?columns=data application/json [{"id": 4}, {"id": 5}]
 select * format 'json' from test5
-disconnect Sx
 
 # test: POST /v1/db/schema/table (application/json) (obj, one column, generated)
-connect E0 S0 http://localhost:3485/v1/db/public/test6?columns=data
-import application/json [{"id": 1}, {"id": 2, "data": [1,2,3]}]
-disconnect S0
-
-connect E0 Sx http://localhost:3485/
+post /v1/db/public/test6?columns=data application/json [{"id": 1}, {"id": 2, "data": [1,2,3]}]
 select * format 'json' from test6
-disconnect Sx
 
+disconnect S0
 close E0

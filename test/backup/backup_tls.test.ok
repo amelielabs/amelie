@@ -1,6 +1,6 @@
 # test: prepare server
 open E0 "uuid": "00000000-0000-0000-0000-000000000000", "tls_cert": "./tls/server.crt", "tls_key": "./tls/server.key", "listen": [{ "host": "127.0.0.1", "port": 3480, "tls": true }], "backends": 3
-connect_tls E0 S0 https://localhost:3480 ./tls/ca.crt
+connect E0 S0 https://127.0.0.1:3480 ./tls/ca.crt
 create table test (id serial primary key)
 insert into test generate 500
 # test: backup (using https)
@@ -11,7 +11,7 @@ disconnect S0
 close E0
 # test: restore and validate
 open E1
-connect_tls E1 S1 https://localhost:3480 ./tls/ca.crt
+connect E1 S1 https://127.0.0.1:3480 ./tls/ca.crt
 show all
 [{
   "uuid": "00000000-0000-0000-0000-000000000000",

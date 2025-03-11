@@ -1,7 +1,7 @@
 #
 
 open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "127.0.0.1", "port": 3480 }], "backends": 3, "repl_reconnect_ms": 10
-connect E0 S0 localhost:3480
+connect E0 S0 127.0.0.1:3480
 
 # test: primary by default
 show repl
@@ -11,7 +11,7 @@ backup E1 "uri": "127.0.0.1:3480"
 close E1
 
 open E1 "uuid": "00000000-0000-0000-0000-000000000001", "listen": [{ "host": "127.0.0.1", "port": 3481 }]
-connect E1 S1 localhost:3481
+connect E1 S1 127.0.0.1:3481
 switch S1
 
 show uuid
@@ -70,7 +70,7 @@ watch system.replica('00000000-0000-0000-0000-000000000001').connected::bool = f
 
 # test: restart replica
 open E1 "uuid": "00000000-0000-0000-0000-000000000001", "listen": [{ "host": "127.0.0.1", "port": 3481 }]
-connect E1 S1 localhost:3481
+connect E1 S1 127.0.0.1:3481
 
 # test: wait for primary reconnect
 switch S0
@@ -85,7 +85,7 @@ disconnect S0
 close E0
 
 open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "127.0.0.1", "port": 3480 }], "backends": 3, "repl_reconnect_ms": 10
-connect E0 S0 localhost:3480
+connect E0 S0 127.0.0.1:3480
 
 # test: wait for primary reconnect
 switch S0

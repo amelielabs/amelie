@@ -1,9 +1,9 @@
 #
 
 # runtime
-directory runtime
-group runtime
-test runtime
+directory unit
+group unit
+test unit
 
 # data types and expressions
 directory expr

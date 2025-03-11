@@ -1,7 +1,7 @@
 #
 
 open E0 "uuid": "abc00000-0000-0000-0000-000000000000", "listen": [{ "host": "127.0.0.1", "port": 3485 }]
-connect E0 S0 localhost:3485
+connect E0 S0 127.0.0.1:3485
 
 # test: ensure custom instance uuid
 show all
@@ -12,7 +12,7 @@ disconnect S0
 close E0
 
 open E0
-connect E0 S0 localhost:3485
+connect E0 S0 127.0.0.1:3485
 
 show all
 show state

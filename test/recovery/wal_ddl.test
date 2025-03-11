@@ -1,7 +1,7 @@
 #
 
 open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "127.0.0.1", "port": 3485 }], "backends": 3
-connect E0 S0 localhost:3485
+connect E0 S0 127.0.0.1:3485
 
 # test: create table
 create table test (id serial primary key, data int default 0)
@@ -12,7 +12,7 @@ select identity_of("public", "test")
 disconnect S0
 close E0
 open E0
-connect E0 S0 localhost:3485
+connect E0 S0 127.0.0.1:3485
 
 # test: validate state
 select system.state().lsn
@@ -28,7 +28,7 @@ select identity_of("public", "test2")
 disconnect S0
 close E0
 open E0
-connect E0 S0 localhost:3485
+connect E0 S0 127.0.0.1:3485
 
 # test: validate state
 select system.state().lsn
@@ -43,7 +43,7 @@ select system.table('test2').unlogged
 disconnect S0
 close E0
 open E0
-connect E0 S0 localhost:3485
+connect E0 S0 127.0.0.1:3485
 
 # test: validate state
 select system.table('test2').unlogged
@@ -61,7 +61,7 @@ select system.table('test2').unlogged
 disconnect S0
 close E0
 open E0
-connect E0 S0 localhost:3485
+connect E0 S0 127.0.0.1:3485
 
 # test: validate state
 select system.state().lsn
@@ -80,7 +80,7 @@ select obj from test2
 disconnect S0
 close E0
 open E0
-connect E0 S0 localhost:3485
+connect E0 S0 127.0.0.1:3485
 
 # test: validate state
 select system.state().lsn
@@ -97,7 +97,7 @@ select abc from test2
 disconnect S0
 close E0
 open E0
-connect E0 S0 localhost:3485
+connect E0 S0 127.0.0.1:3485
 
 # test: validate state
 select system.state().lsn
@@ -113,7 +113,7 @@ select system.table('test2').columns
 disconnect S0
 close E0
 open E0
-connect E0 S0 localhost:3485
+connect E0 S0 127.0.0.1:3485
 
 # test: validate state
 select system.state().lsn
@@ -131,7 +131,7 @@ select system.table('test2').columns
 disconnect S0
 close E0
 open E0
-connect E0 S0 localhost:3485
+connect E0 S0 127.0.0.1:3485
 
 # test: validate state
 select system.state().lsn
@@ -145,7 +145,7 @@ select system.table('test2').columns
 disconnect S0
 close E0
 open E0
-connect E0 S0 localhost:3485
+connect E0 S0 127.0.0.1:3485
 
 # test: validate state
 select system.state().lsn
@@ -159,7 +159,7 @@ select system.table('test2').columns
 disconnect S0
 close E0
 open E0
-connect E0 S0 localhost:3485
+connect E0 S0 127.0.0.1:3485
 
 # test: validate state
 select system.state().lsn
@@ -173,7 +173,7 @@ select system.table('test2').columns
 disconnect S0
 close E0
 open E0
-connect E0 S0 localhost:3485
+connect E0 S0 127.0.0.1:3485
 
 # test: validate state
 select system.state().lsn
@@ -187,7 +187,7 @@ select system.table('test2').columns
 disconnect S0
 close E0
 open E0
-connect E0 S0 localhost:3485
+connect E0 S0 127.0.0.1:3485
 
 # test: validate state
 select system.state().lsn
@@ -201,7 +201,7 @@ select system.table('test2').columns
 disconnect S0
 close E0
 open E0
-connect E0 S0 localhost:3485
+connect E0 S0 127.0.0.1:3485
 
 # test: validate state
 select system.state().lsn
@@ -216,7 +216,7 @@ select * from test2
 disconnect S0
 close E0
 open E0
-connect E0 S0 localhost:3485
+connect E0 S0 127.0.0.1:3485
 
 # test: validate state
 select system.state().lsn
@@ -231,7 +231,7 @@ select * from test2 use index (i)
 disconnect S0
 close E0
 open E0
-connect E0 S0 localhost:3485
+connect E0 S0 127.0.0.1:3485
 
 # test: validate state
 select system.state().lsn
@@ -247,7 +247,7 @@ select * from test2 use index (i2)
 disconnect S0
 close E0
 open E0
-connect E0 S0 localhost:3485
+connect E0 S0 127.0.0.1:3485
 
 # test: validate state
 select system.state().lsn
@@ -264,7 +264,7 @@ select * from test2
 disconnect S0
 close E0
 open E0
-connect E0 S0 localhost:3485
+connect E0 S0 127.0.0.1:3485
 
 # test: validate state
 select system.state().lsn
@@ -281,7 +281,7 @@ select * from test2
 disconnect S0
 close E0
 open E0
-connect E0 S0 localhost:3485
+connect E0 S0 127.0.0.1:3485
 
 # test: validate state
 select system.state().lsn
@@ -297,7 +297,7 @@ select identity_of("public", "test2")
 disconnect S0
 close E0
 open E0
-connect E0 S0 localhost:3485
+connect E0 S0 127.0.0.1:3485
 
 # test: validate state
 select system.state().lsn
@@ -313,7 +313,7 @@ select system.state().lsn
 disconnect S0
 close E0
 open E0
-connect E0 S0 localhost:3485
+connect E0 S0 127.0.0.1:3485
 
 # test: validate state
 select system.state().lsn
@@ -328,7 +328,7 @@ select system.state().lsn
 disconnect S0
 close E0
 open E0
-connect E0 S0 localhost:3485
+connect E0 S0 127.0.0.1:3485
 
 # test: validate state
 select system.state().lsn
@@ -343,7 +343,7 @@ show schemas
 disconnect S0
 close E0
 open E0
-connect E0 S0 localhost:3485
+connect E0 S0 127.0.0.1:3485
 
 # test: validate state
 select system.state().lsn
