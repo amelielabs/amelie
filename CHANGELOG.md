@@ -1,5 +1,29 @@
 # Amelie Changelog.
 
+## 0.2.0 (11-03-2025)
+
+This release introduces Heap - a custom memory allocator to replace malloc() for Rows.
+
+Heap is designed to work in parallel, shared-nothing environments and is associated with each table partition.
+
+Related improvements:
+
+* About 20-30% less memory usage
+* Ability to have zero fragmentation for tables which has fixed column types only
+* No multi-thread contention-related issues associated with malloc()
+* Instant DROP TABLE of large tables, it is no longer required to free each row individually
+* Allows to use Linux Huge Pages (coming soon)
+* Allows to implement Copy-On-Write individually for partitions (coming soon)
+* Allows to do SELECT FROM USE HEAP to return rows directly from the memory allocator without involving indexes
+
+Heap content replaces the snapshot file format for partitions. Each partition can be saved and restored by
+dumping its memory pages directly without involving indexes and iterating through tables. It improves the time
+to checkpoint completion by more than 50% for large tables.
+
+This release also introduces a reworked test suite, which is now part of the console application and available
+under the amelie test command. This will simplify the development and testing of third-party extensions in
+the future. Also, Amelie no longer depends on libcurl for its test suite.
+
 ## 0.1.0 (26-02-2025)
 
 We are happy to present the first public release of Amelie - a new Relational SQL Database for High-intensity OLTP workloads.

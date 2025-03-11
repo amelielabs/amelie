@@ -65,7 +65,6 @@ Currently only Linux environments are supported.
 - clang or gcc
 - openssl
 - libpcre
-- libcurl (for test suite)
 
 #### Build Release
 
@@ -98,5 +97,5 @@ make debug
 ```sh
 make
 cd test
-./amelie-test
+../build/amelie test
 ```
