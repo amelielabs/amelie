@@ -96,7 +96,7 @@ logger_write(void*       arg,
 	// timestamp
 	if (self->timezone)
 	{
-		timer_mgr_reset(&am_task->timer_mgr);
+		clock_reset(&am_self->clock);
 		auto time = time_us();
 		buf_len = timestamp_get(time, self->timezone, buf, sizeof(buf));
 		buf[buf_len++] = ' ';
@@ -104,7 +104,7 @@ logger_write(void*       arg,
 
 	// message
 	buf_len += snprintf(buf + buf_len, sizeof(buf) - buf_len, "%-8s  %s%s\n",
-	                    am_task->name,
+	                    am_self->name,
 	                    prefix, text);
 
 	// write to the log file
