@@ -38,5 +38,5 @@
 #include "io/readahead.h"
 #include "io/listen.h"
 
-// resolver
-#include "io/resolver.h"
+// dns
+#include "io/dns.h"

@@ -58,7 +58,7 @@ listen_socket_init(int fd, struct sockaddr* addr)
 void
 listen_start(Listen* self, int backlog, struct sockaddr* addr)
 {
-	auto poller = &am_task->poller;
+	auto poller = &am_self->poller;
 
 	self->fd.fd = socket_for(addr);
 	if (unlikely(self->fd.fd == -1))
@@ -84,6 +84,10 @@ listen_start(Listen* self, int backlog, struct sockaddr* addr)
 
 		// add socket to the task poller
 		rc = poller_add(poller, &self->fd);
+		if (unlikely(rc == -1))
+			error_system();
+
+		rc = poller_start_read(poller, &self->fd);
 		if (unlikely(rc == -1))
 			error_system();
 	);
@@ -113,14 +117,5 @@ listen_stop(Listen* self)
 int
 listen_accept(Listen* self)
 {
-	int client_fd = -1;
-	for (;;)
-	{
-		poll_read(&self->fd, -1);
-		client_fd = socket_accept(self->fd.fd, NULL, NULL);
-		if (unlikely(client_fd == -1))
-			continue;
-		break;
-	}
-	return client_fd;
+	return socket_accept(self->fd.fd, NULL, NULL);
 }

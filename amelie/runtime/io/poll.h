@@ -11,64 +11,36 @@
 // AGPL-3.0 Licensed.
 //
 
-static inline void
-poll_on_read_event(Fd* fd)
-{
-	Event* on_read = fd->on_read_arg;
-	event_signal(on_read);
-}
-
-static inline void
-poll_read_start(Fd* fd, Event* on_read)
-{
-	auto poller = &am_task->poller;
-	auto rc = poller_read(poller, fd, poll_on_read_event, on_read);
-	if (unlikely(rc == -1))
-		error_system();
-}
-
-static inline void
-poll_read_stop(Fd* fd)
-{
-	auto poller = &am_task->poller;
-	poller_read(poller, fd, NULL, NULL);
-}
-
 hot static inline void
 poll_read(Fd* fd, int time_ms)
 {
 	cancellation_point();
-
-	Event on_read;
-	event_init(&on_read);
-	poll_read_start(fd, &on_read);
-	event_wait(&on_read, time_ms);
-	poll_read_stop(fd);
-
-	cancellation_point();
+	auto poller = &am_self->poller;
+	fd_reset(fd);
+	while (! fd->on_read)
+	{
+		auto rc = poller_step(poller, NULL, NULL, time_ms);
+		cancellation_point();
+		if (unlikely(rc == -1 && errno != EINTR))
+			error_system();
+	}
 }
 
-static inline void
-poll_on_write_event(Fd* fd)
-{
-	Event *on_write = fd->on_write_arg;
-	event_signal(on_write);
-}
-
-static inline void
+hot static inline void
 poll_write(Fd* fd, int time_ms)
 {
 	cancellation_point();
-
-	auto poller = &am_task->poller;
-	Event on_write;
-	event_init(&on_write);
-	int rc;
-	rc = poller_write(poller, fd, poll_on_write_event, &on_write);
+	auto poller = &am_self->poller;
+	fd_reset(fd);
+	auto rc = poller_start_write(poller, fd);
 	if (unlikely(rc == -1))
 		error_system();
-	event_wait(&on_write, time_ms);
-	poller_write(poller, fd, NULL, NULL);
-
-	cancellation_point();
+	while (! fd->on_write)
+	{
+		rc = poller_step(poller, NULL, NULL, time_ms);
+		cancellation_point();
+		if (unlikely(rc == -1 && errno != EINTR))
+			error_system();
+	}
+	poller_stop_write(poller, fd);
 }
