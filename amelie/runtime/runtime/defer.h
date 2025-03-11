@@ -16,7 +16,7 @@ defer_runner(Defer* self)
 {
 	if (! self->function)
 		return;
-	am_self()->exception_mgr.last->defer_stack = self->prev;
+	am_self->exception_mgr.last->defer_stack = self->prev;
 	if (! self->error_only)
 		self->function(self->function_arg);
 }
@@ -27,7 +27,7 @@ defer_runner(Defer* self)
 		.function_arg = func_arg, \
 		.error_only = on_error, \
 		.prev = ({ \
-			auto exception = am_self()->exception_mgr.last; \
+			auto exception = am_sel->exception_mgr.last; \
 			auto prev = exception->defer_stack; \
 			exception->defer_stack = &self; \
 			prev; \

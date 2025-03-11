@@ -18,7 +18,7 @@ report(const char* file,
        const char* prefix,
        const char* fmt, ...)
 {
-	if (! am_task->log_write)
+	if (! am_self->log_write)
 		return;
 
 	va_list args;
@@ -27,7 +27,7 @@ report(const char* file,
 	vsnprintf(text, sizeof(text), fmt, args);
 	va_end(args);
 
-	am_task->log_write(am_task->log_write_arg,
+	am_self->log_write(am_self->log_write_arg,
 	                   file,
 	                   function,
 	                   line,
@@ -49,22 +49,21 @@ report_throw(const char* file,
 	const char* prefix = "error: ";
 	bool log = true;
 
-	auto self = am_self();
 	if (unlikely(code == CANCEL))
 	{
 		prefix = "";
-		log = self->cancel_log;
+		log = am_self->log_cancel;
 	}
 
-	if (likely(am_task->log_write && log))
-		am_task->log_write(am_task->log_write_arg,
+	if (likely(am_self->log_write && log))
+		am_self->log_write(am_self->log_write_arg,
 		                   file,
 		                   function,
 		                   line,
 		                   prefix, text);
 
-	error_throw(&self->error,
-	            &self->exception_mgr,
+	error_throw(&am_self->error,
+	            &am_self->exception_mgr,
 	            file,
 	            function,
 	            line,
@@ -82,11 +81,11 @@ report_panic(const char* file,
 	vsnprintf(text, sizeof(text), fmt, args);
 	va_end(args);
 
-	if (am_task && am_task->log_write)
+	if (am_self && am_self->log_write)
 	{
 		const char* prefix = "panic: ";
-		if (am_task->log_write)
-			am_task->log_write(am_task->log_write_arg,
+		if (am_self->log_write)
+			am_self->log_write(am_self->log_write_arg,
 			                   file,
 			                   function,
 			                   line,

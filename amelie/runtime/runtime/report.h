@@ -11,6 +11,12 @@
 // AGPL-3.0 Licensed.
 //
 
+typedef void (*LogFunction)(void* arg,
+                            const char* file,
+                            const char* function, int line,
+                            const char* prefix,
+                            const char* text);
+
 void
 report(const char* file,
        const char* function, int line,

@@ -13,38 +13,36 @@
 
 typedef struct Task Task;
 
+typedef void (*TaskFunction)(void*);
+
 struct Task
 {
-	CoroutineMgr   coroutine_mgr;
-	TimerMgr       timer_mgr;
-	Poller         poller;
-	Bus            bus;
-	Channel        channel;
-	BufMgr*        buf_mgr;
-	MainFunction   main;
-	void*          main_arg;
-	void*          main_arg_global;
-	Coroutine*     main_coroutine;
-	LogFunction    log_write;
-	void*          log_write_arg;
-	char           name[9];
-	Cond           status;
-	Thread         thread;
+	ExceptionMgr exception_mgr;
+	Error        error;
+	Channel      channel;
+	Clock        clock;
+	Poller       poller;
+	Arena        arena;
+	BufMgr*      buf_mgr;
+	TaskFunction main;
+	void*        main_arg;
+	void*        main_arg_global;
+	LogFunction  log_write;
+	void*        log_write_arg;
+	bool         log_cancel;
+	char         name[9];
+	Cond         status;
+	Thread       thread;
 };
 
-extern __thread Task* am_task;
-
-static inline Coroutine*
-am_self(void)
-{
-	return am_task->coroutine_mgr.current;
-}
+extern __thread Task*      am_self;
+extern __thread atomic_u32 am_cancelled;
 
 void task_init(Task*);
 void task_free(Task*);
-bool task_active(Task*);
-int  task_create_nothrow(Task*, char*, MainFunction, void*, void*,
+bool task_created(Task*);
+int  task_create_nothrow(Task*, char*, TaskFunction, void*, void*,
                          LogFunction, void*,
                          BufMgr*);
+void task_cancel(Task*);
 void task_wait(Task*);
-void task_coroutine_main(void*);

@@ -15,8 +15,8 @@ typedef struct Msg Msg;
 
 struct Msg
 {
-	uint32_t size:24;
-	uint32_t id:8;
+	uint32_t size: 24;
+	uint32_t id: 8;
 	uint8_t  data[];
 } packed;
 

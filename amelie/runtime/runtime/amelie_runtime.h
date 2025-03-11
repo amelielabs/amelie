@@ -29,7 +29,6 @@
 
 // exception
 #include "runtime/exception.h"
-#include "runtime/log.h"
 #include "runtime/error.h"
 #include "runtime/report.h"
 
@@ -47,21 +46,12 @@
 #include "runtime/buf_mgr.h"
 
 // event loop
-#include "runtime/timer_mgr.h"
+#include "runtime/clock.h"
 #include "runtime/fd.h"
 #include "runtime/poller.h"
 #include "runtime/notify.h"
 
-// cooperative multitasking
-#include "runtime/event.h"
-#include "runtime/context_stack.h"
-#include "runtime/context.h"
-#include "runtime/coroutine.h"
-#include "runtime/coroutine_mgr.h"
-
 // ipc
-#include "runtime/wait.h"
-#include "runtime/bus.h"
 #include "runtime/msg_id.h"
 #include "runtime/msg.h"
 #include "runtime/channel.h"
@@ -72,7 +62,3 @@
 #include "runtime/defer.h"
 #include "runtime/runtime.h"
 #include "runtime/runtime_defer.h"
-
-// rpc
-#include "runtime/rpc.h"
-#include "runtime/rpc_queue.h"

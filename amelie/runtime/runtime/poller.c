@@ -44,7 +44,7 @@ poller_create(Poller* self)
 	memset(self->list, 0, size);
 
 	// create context
-	self->fd = epoll_create(1024 /* ignored */);
+	self->fd = epoll_create(1024);
 	if (self->fd == -1)
 		return -1;
 
@@ -52,40 +52,39 @@ poller_create(Poller* self)
 }
 
 hot int
-poller_step(Poller* self, int time_ms)
+poller_step(Poller* self, List* read, List* write, int time_ms)
 {
 	if (self->list_count == 0)
 		return 0;
 
 	struct epoll_event* event_list = self->list;
-	int count;
-	count = epoll_wait(self->fd, event_list, self->list_count, time_ms);
+	auto count = epoll_wait(self->fd, event_list, self->list_count, time_ms);
 	if (count <= 0)
-		return 0;
+		return count;
 
-	int i = 0;
-	while (i < count)
+	int total = 0;
+	for (int i = 0; i < count; i++)
 	{
 		struct epoll_event* event = &event_list[i];
 		Fd* fd = event->data.ptr;
-		if (fd->on_read)
+		if (event->events & EPOLLIN)
 		{
-			if (event->events & EPOLLIN)
-				fd->on_read(fd);
+			if (read)
+				list_append(read, &fd->link);
+			fd->on_read = true;
+			total++;
 		}
-		if (fd->on_write)
+		if (event->events & EPOLLOUT ||
+		    event->events & EPOLLERR ||
+		    event->events & EPOLLHUP)
 		{
-			if (event->events & EPOLLOUT ||
-				event->events & EPOLLERR ||
-				event->events & EPOLLHUP)
-			{
-				fd->on_write(fd);
-			}
+			if (write)
+				list_append(write, &fd->link);
+			fd->on_write = true;
+			total++;
 		}
-		i++;
 	}
-
-	return count;
+	return total;
 }
 
 int
@@ -136,37 +135,37 @@ poller_mod(Poller* self, Fd* fd, int mask)
 }
 
 int
-poller_read(Poller*    self,
-            Fd*        fd,
-            FdFunction on_read,
-            void*      arg)
+poller_start_read(Poller* self, Fd* fd)
 {
-	int mask = fd->mask;
-	if (on_read)
-		mask |= EPOLLIN;
-	else
-		mask &= ~EPOLLIN;
+	int mask = fd->mask | EPOLLIN;
 	if (mask == fd->mask)
 		return 0;
-	fd->on_read     = on_read;
-	fd->on_read_arg = arg;
 	return poller_mod(self, fd, mask);
 }
 
 int
-poller_write(Poller*    self,
-             Fd*        fd,
-             FdFunction on_write,
-             void*      arg)
+poller_stop_read(Poller* self, Fd* fd)
 {
-	int mask = fd->mask;
-	if (on_write)
-		mask |= EPOLLOUT;
-	else
-		mask &= ~EPOLLOUT;
+	int mask = fd->mask & ~EPOLLIN;
 	if (mask == fd->mask)
 		return 0;
-	fd->on_write     = on_write;
-	fd->on_write_arg = arg;
+	return poller_mod(self, fd, mask);
+}
+
+int
+poller_start_write(Poller* self, Fd* fd)
+{
+	int mask = fd->mask | EPOLLOUT;
+	if (mask == fd->mask)
+		return 0;
+	return poller_mod(self, fd, mask);
+}
+
+int
+poller_stop_write(Poller* self, Fd* fd)
+{
+	int mask = fd->mask & ~EPOLLOUT;
+	if (mask == fd->mask)
+		return 0;
 	return poller_mod(self, fd, mask);
 }

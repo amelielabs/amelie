@@ -15,21 +15,21 @@
 #define error_catch(executable) \
 ({ \
 	Exception __exception = { \
-		.prev = am_self()->exception_mgr.last, \
+		.prev = am_self->exception_mgr.last, \
 		.triggered = false, \
 		.defer_stack = NULL \
 	}; \
-	am_self()->exception_mgr.last = &__exception; \
+	am_self->exception_mgr.last = &__exception; \
 	if ( setjmp(__exception.buf) == 0 ) { \
 		executable; \
 	} \
-	am_self()->exception_mgr.last = __exception.prev; \
+	am_self->exception_mgr.last = __exception.prev; \
 	__exception.triggered; \
 })
 
 // throw
 #define rethrow() \
-	exception_mgr_throw(&am_self()->exception_mgr)
+	exception_mgr_throw(&am_self->exception_mgr)
 
 // error
 #define error_as(code, fmt, ...) \
@@ -47,6 +47,6 @@
 // cancel
 #define cancellation_point() \
 ({ \
-	if (unlikely(am_self()->cancel)) \
+	if (unlikely(atomic_u32_of(&am_cancelled))) \
 		error_as(CANCEL, "cancelled"); \
 })
