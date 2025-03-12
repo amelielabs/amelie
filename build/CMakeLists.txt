@@ -121,13 +121,7 @@ include_directories("${AMELIE_ROOT}/cli/test")
 # sources
 set(AMELIE_SOURCES_RUNTIME
     ${AMELIE_ROOT}/runtime/runtime/report.c
-    ${AMELIE_ROOT}/runtime/runtime/timer_mgr.c
     ${AMELIE_ROOT}/runtime/runtime/poller.c
-    ${AMELIE_ROOT}/runtime/runtime/notify.c
-    ${AMELIE_ROOT}/runtime/runtime/context_stack.c
-    ${AMELIE_ROOT}/runtime/runtime/context.c
-    ${AMELIE_ROOT}/runtime/runtime/bus.c
-    ${AMELIE_ROOT}/runtime/runtime/channel.c
     ${AMELIE_ROOT}/runtime/runtime/task.c
     ${AMELIE_ROOT}/runtime/io/vfs.c
     ${AMELIE_ROOT}/runtime/io/reader.c
@@ -138,7 +132,8 @@ set(AMELIE_SOURCES_RUNTIME
     ${AMELIE_ROOT}/runtime/io/socket.c
     ${AMELIE_ROOT}/runtime/io/tcp.c
     ${AMELIE_ROOT}/runtime/io/listen.c
-    ${AMELIE_ROOT}/runtime/io/resolver.c
+    ${AMELIE_ROOT}/runtime/io/notify.c
+    ${AMELIE_ROOT}/runtime/io/dns.c
     ${AMELIE_ROOT}/runtime/lib/rbtree.c
     ${AMELIE_ROOT}/runtime/lib/random.c
     ${AMELIE_ROOT}/runtime/lib/uuid.c
@@ -168,9 +163,7 @@ set(AMELIE_SOURCES_SERVER
     ${AMELIE_ROOT}/server/auth/auth.c
     ${AMELIE_ROOT}/server/http/http.c
     ${AMELIE_ROOT}/server/http/uri.c
-    ${AMELIE_ROOT}/server/client/client.c
-    ${AMELIE_ROOT}/server/server/server.c
-    ${AMELIE_ROOT}/server/server/server_bootstrap.c)
+    ${AMELIE_ROOT}/server/client/client.c)
 
 set(AMELIE_SOURCES_DB
     ${AMELIE_ROOT}/db/heap/heap.c
@@ -327,12 +320,13 @@ set(AMELIE_SOURCES_MAIN
 set(AMELIE_SOURCES
     ${AMELIE_SOURCES_RUNTIME}
     ${AMELIE_SOURCES_SERVER}
-    ${AMELIE_SOURCES_DB}
-    ${AMELIE_SOURCES_REPL}
-    ${AMELIE_SOURCES_VM}
-    ${AMELIE_SOURCES_COMPILER}
-    ${AMELIE_SOURCES_SYSTEM}
-    ${AMELIE_SOURCES_CLI})
+    #${AMELIE_SOURCES_DB}
+    #${AMELIE_SOURCES_REPL}
+    #${AMELIE_SOURCES_VM}
+    #${AMELIE_SOURCES_COMPILER}
+    #${AMELIE_SOURCES_SYSTEM}
+    #${AMELIE_SOURCES_CLI})
+	)
 
 set(AMELIE_SOURCES_UNIT
     ${CMAKE_SOURCE_DIR}/test/unit/test_task.c
@@ -356,14 +350,14 @@ add_library(amelie_static STATIC ${AMELIE_SOURCES})
 set_target_properties(amelie_static PROPERTIES OUTPUT_NAME amelie)
 set(AMELIE_STATIC_LINK "$<LINK_LIBRARY:WHOLE_ARCHIVE,amelie_static>")
 
-# libamelie-unit.a
-add_library(amelie_unit_static STATIC ${AMELIE_SOURCES_UNIT})
-set_target_properties(amelie_unit_static PROPERTIES OUTPUT_NAME amelie_unit)
-set(AMELIE_UNIT_STATIC_LINK "$<LINK_LIBRARY:WHOLE_ARCHIVE,amelie_unit_static>")
+## libamelie-unit.a
+#add_library(amelie_unit_static STATIC ${AMELIE_SOURCES_UNIT})
+#set_target_properties(amelie_unit_static PROPERTIES OUTPUT_NAME amelie_unit)
+#set(AMELIE_UNIT_STATIC_LINK "$<LINK_LIBRARY:WHOLE_ARCHIVE,amelie_unit_static>")
 
-# amelie
-add_executable(amelie_cli ${AMELIE_SOURCES_MAIN})
-target_link_libraries(amelie_cli ${AMELIE_STATIC_LINK})
-target_link_libraries(amelie_cli ${AMELIE_UNIT_STATIC_LINK})
-target_link_libraries(amelie_cli ${AMELIE_LIBRARIES})
-set_target_properties(amelie_cli PROPERTIES ENABLE_EXPORTS ON OUTPUT_NAME amelie)
+## amelie
+#add_executable(amelie_cli ${AMELIE_SOURCES_MAIN})
+#target_link_libraries(amelie_cli ${AMELIE_STATIC_LINK})
+#target_link_libraries(amelie_cli ${AMELIE_UNIT_STATIC_LINK})
+#target_link_libraries(amelie_cli ${AMELIE_LIBRARIES})
+#set_target_properties(amelie_cli PROPERTIES ENABLE_EXPORTS ON OUTPUT_NAME amelie)
