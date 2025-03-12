@@ -22,11 +22,10 @@ struct Global
 	TimezoneMgr* timezone_mgr;
 	Random*      random;
 	Logger*      logger;
-	Resolver*    resolver;
 	CrcFunction  crc;
 };
 
-#define global() ((Global*)am_task->main_arg_global)
+#define global() ((Global*)am_self->main_arg_global)
 #define config()  global()->config
 #define state()   global()->state
 
@@ -34,13 +33,13 @@ struct Global
 static inline void
 control_lock(void)
 {
-	rpc(global()->control->system, RPC_LOCK, 0);
+	// todo:
 }
 
 static inline void
 control_unlock(void)
 {
-	rpc(global()->control->system, RPC_UNLOCK, 0);
+	// todo:
 }
 
 static inline void

@@ -37,6 +37,7 @@
 #include "io/tcp.h"
 #include "io/readahead.h"
 #include "io/listen.h"
+#include "io/notify.h"
 
 // dns
 #include "io/dns.h"

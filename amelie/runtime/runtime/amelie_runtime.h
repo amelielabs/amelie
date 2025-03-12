@@ -49,7 +49,6 @@
 #include "runtime/clock.h"
 #include "runtime/fd.h"
 #include "runtime/poller.h"
-#include "runtime/notify.h"
 
 // ipc
 #include "runtime/msg_id.h"

@@ -11,6 +11,7 @@
 //
 
 #include <amelie_runtime.h>
+#include <amelie_io.h>
 
 void
 notify_init(Notify* self)
