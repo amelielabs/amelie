@@ -24,12 +24,9 @@ client_create(void)
 {
 	Client* self;
 	self = am_malloc(sizeof(Client));
-	self->coroutine_id = UINT64_MAX;
-	self->host         = NULL;
-	self->auth         = false;
-	self->arg          = NULL;
-	http_init(&self->request);
-	http_init(&self->reply);
+	self->host = NULL;
+	self->auth = false;
+	self->arg  = NULL;
 	tls_context_init(&self->tls_context);
 	readahead_init(&self->readahead, &self->tcp, 16 * 1024);
 	uri_init(&self->uri);
@@ -42,22 +39,12 @@ client_create(void)
 void
 client_free(Client* self)
 {
-	http_free(&self->request);
-	http_free(&self->reply);
 	readahead_free(&self->readahead);
 	client_close(self);
 	tls_context_free(&self->tls_context);
 	uri_free(&self->uri);
 	tcp_free(&self->tcp);
 	am_free(self);
-}
-
-void
-client_set_coroutine_name(Client* self)
-{
-	char addr[128];
-	tcp_getpeername(&self->tcp, addr, sizeof(addr));
-	coroutine_set_name(am_self(), "client %s", addr);
 }
 
 void
@@ -80,7 +67,6 @@ client_attach(Client* self)
 {
 	assert(self->tcp.fd.fd != -1);
 	tcp_attach(&self->tcp);
-	self->coroutine_id = am_self()->id;
 }
 
 void
@@ -88,14 +74,12 @@ client_detach(Client* self)
 {
 	if (tcp_connected(&self->tcp))
 		tcp_detach(&self->tcp);
-	self->coroutine_id = UINT64_MAX;
 }
 
 void
 client_accept(Client* self)
 {
-	// new client
-	client_set_coroutine_name(self);
+	// new client connection
 
 	// handshake
 	tcp_connect_fd(&self->tcp);
@@ -141,7 +125,7 @@ client_connect_to(Client* self, UriHost* host)
 {
 	// resolve host address
 	struct addrinfo* addr = NULL;
-	resolve(global()->resolver, str_of(&host->host), host->port, &addr);
+	resolve(str_of(&host->host), host->port, &addr);
 	defer(freeaddrinfo, addr);
 
 	// prepare for https connection
@@ -217,55 +201,5 @@ client_close(Client* self)
 	}
 	self->host = NULL;
 	tcp_close(&self->tcp);
-	http_reset(&self->request);
-	http_reset(&self->reply);
 	readahead_reset(&self->readahead);
-}
-
-hot void
-client_execute(Client* self, Str* command)
-{
-	auto request = &self->request;
-	auto reply   = &self->reply;
-
-	// request
-	http_write_request(request, "POST /");
-	auto token = remote_get(self->remote, REMOTE_TOKEN);
-	if (! str_empty(token))
-		http_write(request, "Authorization", "Bearer %.*s", str_size(token), str_of(token));
-	http_write(request, "Content-Length", "%d", str_size(command));
-	http_write(request, "Content-Type", "text/plain");
-	http_write_end(request);
-	tcp_write_pair_str(&self->tcp, &request->raw, command);
-
-	// reply
-	http_reset(reply);
-	auto eof = http_read(reply, &self->readahead, false);
-	if (eof)
-		error("unexpected eof");
-	http_read_content(reply, &self->readahead, &reply->content);
-}
-
-hot void
-client_import(Client* self, Str* path, Str* content_type, Str* content)
-{
-	auto request = &self->request;
-	auto reply   = &self->reply;
-
-	// request
-	http_write_request(request, "POST %.*s", str_size(path), str_of(path));
-	auto token = remote_get(self->remote, REMOTE_TOKEN);
-	if (! str_empty(token))
-		http_write(request, "Authorization", "Bearer %.*s", str_size(token), str_of(token));
-	http_write(request, "Content-Type", "%.*s", str_size(content_type), str_of(content_type));
-	http_write(request, "Content-Length", "%d", str_size(content));
-	http_write_end(request);
-	tcp_write_pair_str(&self->tcp, &request->raw, content);
-
-	// reply
-	http_reset(reply);
-	auto eof = http_read(reply, &self->readahead, false);
-	if (eof)
-		error("unexpected eof");
-	http_read_content(reply, &self->readahead, &reply->content);
 }

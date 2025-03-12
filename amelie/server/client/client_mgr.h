@@ -48,13 +48,3 @@ client_mgr_del(ClientMgr* self, Client* conn)
 	self->list_count--;
 	var_int_sub(&state()->connections, 1);
 }
-
-static inline void
-client_mgr_shutdown(ClientMgr* self)
-{
-	while (self->list_count > 0)
-	{
-		auto conn = container_of(self->list.next, Client, link);
-		coroutine_kill(conn->coroutine_id);
-	}
-}

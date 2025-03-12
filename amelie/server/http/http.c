@@ -102,7 +102,7 @@ http_read_header(Http* self, Readahead* readahead)
 		}
 		buf_write(&self->raw, pos, size);
 
-		// match header end marker
+		// match the header end marker
 		auto start = self->raw.start;
 		uint8_t* end = memmem(start, buf_size(&self->raw), "\r\n\r\n", 4);
 		if (end)
