@@ -24,7 +24,7 @@
 #include <amelie_wal.h>
 #include <amelie_db.h>
 
-hot static void
+hot void
 recover_partition(Part* self)
 {
 	auto checkpoint = state_checkpoint();
@@ -56,19 +56,4 @@ recover_partition(Part* self)
 	double total = (double)size / 1024 / 1024;
 	info("checkpoints/%" PRIu64 "/%" PRIu64 " (%.2f MiB, %" PRIu64 " rows)",
 	     checkpoint, self->config->id, total, count);
-}
-
-hot void
-recover_checkpoint(Db* self, Uuid* id)
-{
-	list_foreach(&self->table_mgr.mgr.list)
-	{
-		auto table = table_of(list_at(Handle, link));
-		list_foreach(&table->part_list.list)
-		{
-			auto part = list_at(Part, link);
-			if (! uuid_compare(&part->config->backend, id))
-				recover_partition(part);
-		}
-	}
 }
