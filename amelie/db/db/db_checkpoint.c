@@ -27,13 +27,10 @@
 static Buf*
 db_checkpoint_catalog_dump(void* arg)
 {
-	// { workers, schemas, tables }
+	// { schemas, tables }
 	Db* self = arg;
 	auto buf = buf_create();
 	encode_obj(buf);
-
-	encode_raw(buf, "workers", 7);
-	worker_mgr_dump(&self->worker_mgr, buf);
 
 	encode_raw(buf, "schemas", 7);
 	schema_mgr_dump(&self->schema_mgr, buf);
@@ -47,7 +44,6 @@ db_checkpoint_catalog_dump(void* arg)
 
 enum
 {
-	RESTORE_WORKER,
 	RESTORE_SCHEMA,
 	RESTORE_TABLE
 };
@@ -56,16 +52,6 @@ static void
 restore_replay(Db* self, Tr* tr, int type, uint8_t** pos)
 {
 	switch (type) {
-	case RESTORE_WORKER:
-	{
-		// read worker config
-		auto config = worker_config_read(pos);
-		defer(worker_config_free, config);
-
-		// create worker
-		worker_mgr_create(&self->worker_mgr, tr, config, false);
-		break;
-	}
 	case RESTORE_SCHEMA:
 	{
 		// read schema config
@@ -113,25 +99,18 @@ restore_object(Db* self, int type, uint8_t** pos)
 static void
 db_checkpoint_catalog_restore(uint8_t** pos, void* arg)
 {
-	// { workers, schemas, tables }
+	// { schemas, tables }
 	Db* self = arg;
 
-	uint8_t* pos_workers = NULL;
 	uint8_t* pos_schemas = NULL;
 	uint8_t* pos_tables  = NULL;
 	Decode obj[] =
 	{
-		{ DECODE_ARRAY, "workers", &pos_workers },
 		{ DECODE_ARRAY, "schemas", &pos_schemas },
 		{ DECODE_ARRAY, "tables",  &pos_tables  },
 		{ 0,             NULL,      NULL        },
 	};
 	decode_obj(obj, "catalog", pos);
-
-	// workers
-	json_read_array(&pos_workers);
-	while (! json_read_array_end(&pos_workers))
-		restore_object(self, RESTORE_WORKER, &pos_workers);
 
 	// schemas
 	json_read_array(&pos_schemas);

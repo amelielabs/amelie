@@ -287,20 +287,6 @@ recover_cmd(Recover* self, RecordCmd* cmd, uint8_t** pos)
 		table_index_rename(table, tr, &name, &name_new, false);
 		break;
 	}
-	case CMD_WORKER_CREATE:
-	{
-		auto config = worker_op_create_read(pos);
-		defer(worker_config_free, config);
-		worker_mgr_create(&db->worker_mgr, tr, config, false);
-		break;
-	}
-	case CMD_WORKER_DROP:
-	{
-		Str name;
-		worker_op_drop_read(pos, &name);
-		worker_mgr_drop(&db->worker_mgr, tr, &name, true);
-		break;
-	}
 	default:
 		error("recover: unrecognized command id: %d", cmd->cmd);
 		break;
