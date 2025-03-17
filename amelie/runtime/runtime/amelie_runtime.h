@@ -29,7 +29,6 @@
 
 // exception
 #include "runtime/exception.h"
-#include "runtime/log.h"
 #include "runtime/error.h"
 #include "runtime/report.h"
 
