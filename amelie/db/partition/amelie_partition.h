@@ -12,7 +12,6 @@
 //
 
 // partition mapping
-#include "partition/router.h"
 #include "partition/part_map.h"
 
 // partition

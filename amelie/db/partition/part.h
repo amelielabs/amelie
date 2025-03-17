@@ -17,7 +17,6 @@ struct Part
 {
 	List          indexes;
 	int           indexes_count;
-	Route*        route;
 	Sequence*     seq;
 	bool          unlogged;
 	Heap          heap;

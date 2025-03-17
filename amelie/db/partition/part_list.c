@@ -35,13 +35,13 @@ part_list_init(PartList* self, PartMgr* mgr)
 void
 part_list_free(PartList* self)
 {
-	// unref routes and free mapping
+	// free mapping
 	part_map_free(&self->map);
 
+	// unregister and free partitions
 	list_foreach_safe(&self->list)
 	{
 		auto part = list_at(Part, link);
-		// unregister partition
 		part_mgr_del(self->mgr, part);
 		part_free(part);
 	}
@@ -129,22 +129,4 @@ part_list_index_drop(PartList* self, IndexConfig* config)
 		auto part = list_at(Part, link);
 		part_index_drop(part, config);
 	}
-}
-
-hot Part*
-part_list_match(PartList* self, Uuid* id)
-{
-	// get first part if shared or find by backend id
-	if (self->shared)
-	{
-		auto first = list_first(&self->list);
-		return container_of(first, Part, link);
-	}
-	list_foreach(&self->list)
-	{
-		auto part = list_at(Part, link);
-		if (! uuid_compare(&part->config->backend, id))
-			return part;
-	}
-	return NULL;
 }
