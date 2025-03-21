@@ -18,13 +18,12 @@ struct Executor
 	Spinlock lock;
 	int      list_count;
 	List     list;
-	Commit   commit;
-	Router*  router;
+	/*Commit   commit;*/
 	Db*      db;
 };
 
-void executor_init(Executor*, Db*, Router*);
+void executor_init(Executor*, Db*);
 void executor_free(Executor*);
-void executor_send(Executor*, Dtr*, int, ReqList*);
+void executor_send(Executor*, Dtr*, int, JobList*);
 void executor_recv(Executor*, Dtr*, int);
 void executor_commit(Executor*, Dtr*, Buf*);

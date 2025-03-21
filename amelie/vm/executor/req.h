@@ -13,97 +13,67 @@
 
 typedef struct Req Req;
 
-typedef enum
+enum
 {
 	REQ_UNDEF,
 	REQ_EXECUTE,
 	REQ_REPLAY,
 	REQ_SHUTDOWN
-} ReqType;
+};
 
 struct Req
 {
-	ReqType  type;
 	int      start;
 	Program* program;
-	Buf*     args;
-	Buf      arg;
+	Buf*     arg;
 	Table*   arg_table;
 	Value    result;
 	Result*  cte;
-	bool     shutdown;
-	Route*   route;
 	Limit*   limit;
 	Local*   local;
-	List     link_queue;
-	List     link;
 };
 
 static inline Req*
-req_allocate(void)
+req_of(Job* job)
 {
-	auto self = (Req*)am_malloc(sizeof(Req));
-	self->type      = REQ_UNDEF;
+	return (Req*)job->data.start;
+}
+
+static inline void
+req_allocate(Job* job)
+{
+	auto self = (Req*)buf_claim(&job->data, sizeof(Req));
 	self->start     = 0;
 	self->program   = NULL;
-	self->args      = NULL;
+	self->arg       = NULL;
 	self->arg_table = NULL;
 	self->cte       = NULL;
-	self->shutdown  = false;
-	self->route     = NULL;
 	self->limit     = NULL;
 	self->local     = NULL;
-	buf_init(&self->arg);
 	value_init(&self->result);
-	list_init(&self->link_queue);
-	list_init(&self->link);
-	return self;
 }
 
 static inline void
-req_free(Req* self)
+req_free(Job* job)
 {
-	buf_free(&self->arg);
+	auto self = req_of(job);
+	if (self->arg)
+	{
+		buf_free(self->arg);
+		self->arg = NULL;
+	}
 	value_free(&self->result);
-	am_free(self);
-}
-
-static inline void
-req_reset(Req* self)
-{
-	self->type      = REQ_UNDEF;
-	self->start     = 0;
-	self->program   = NULL;
-	self->args      = NULL;
-	self->arg_table = NULL;
-	self->cte       = NULL;
-	self->shutdown  = false;
-	self->route     = NULL;
-	self->limit     = NULL;
-	self->local     = NULL;
-	buf_reset(&self->arg);
-	value_free(&self->result);
-	list_init(&self->link_queue);
-	list_init(&self->link);
 }
 
 static inline void
 req_set(Req*     self,
         Local*   local,
         Program* program,
-        Buf*     args,
         Result*  cte,
         Limit*   limit)
 {
 	self->local   = local;
 	self->program = program;
-	self->args    = args;
 	self->cte     = cte;
 	self->limit   = limit;
-}
-
-always_inline static inline Req*
-req_of(Buf* buf)
-{
-	return *(Req**)msg_of(buf)->data;
 }

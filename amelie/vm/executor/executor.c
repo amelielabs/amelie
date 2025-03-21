@@ -33,6 +33,7 @@
 #include <amelie_content.h>
 #include <amelie_executor.h>
 
+#if 0
 void
 executor_init(Executor* self, Db* db, Router* router)
 {
@@ -293,3 +294,4 @@ executor_commit(Executor* self, Dtr* tr, Buf* error)
 		break;
 	}
 }
+#endif
