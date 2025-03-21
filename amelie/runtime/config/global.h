@@ -20,6 +20,8 @@ struct Global
 	Control*     control;
 	Timezone*    timezone;
 	TimezoneMgr* timezone_mgr;
+	JobMgr       job_mgr;
+	Scheduler*   scheduler;
 	Random*      random;
 	Logger*      logger;
 	Resolver*    resolver;

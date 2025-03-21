@@ -15,6 +15,7 @@ typedef struct Part Part;
 
 struct Part
 {
+	Queue         queue;
 	List          indexes;
 	int           indexes_count;
 	Sequence*     seq;

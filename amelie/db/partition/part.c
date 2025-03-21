@@ -14,6 +14,7 @@
 #include <amelie_io.h>
 #include <amelie_lib.h>
 #include <amelie_json.h>
+#include <amelie_scheduler.h>
 #include <amelie_config.h>
 #include <amelie_row.h>
 #include <amelie_heap.h>
@@ -29,6 +30,7 @@ part_allocate(PartConfig* config, Sequence* seq, bool unlogged)
 	self->indexes_count = 0;
 	self->seq           = seq;
 	self->unlogged      = unlogged;
+	queue_init(&self->queue);
 	heap_init(&self->heap);
 	heap_create(&self->heap);
 	list_init(&self->indexes);
