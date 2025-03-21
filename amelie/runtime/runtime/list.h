@@ -66,6 +66,15 @@ list_append(List* self, List* link)
 }
 
 static inline void
+list_insert_after(List* after, List* link)
+{
+	link->next = after->next;
+	link->prev = after;
+	after->next->prev = link;
+	after->next = link;
+}
+
+static inline void
 list_unlink(List* link)
 {
 	link->prev->next = link->next;
