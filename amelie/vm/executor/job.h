@@ -13,22 +13,29 @@
 
 typedef struct Job      Job;
 typedef struct JobCache JobCache;
-typedef struct Dispatch Dispatch;
-typedef struct Queue    Queue;
+typedef struct Dtr      Dtr;
+
+enum
+{
+	JOB_EXECUTE,
+	JOB_PREPARE,
+	JOB_COMMIT,
+	JOB_ABORT
+};
 
 struct Job
 {
 	int       type;
-	uint64_t  id;
-	int       id_step;
-	bool      last;
-	Buf       data;
+	int       start;
+	Buf       arg;
+	Value     result;
+	Tr*       tr;
+	Dtr*      dtr;
 	Buf*      error;
-	Dispatch* dispatch;
-	Queue*    queue;
 	JobCache* cache;
-	List      link_queue;
-	List      link_scheduler;
+	Queue*    queue;
+	QueueNode queue_node;
+	List      link_executor;
 	List      link;
 };
 
@@ -36,17 +43,17 @@ static inline Job*
 job_allocate(void)
 {
 	auto self = (Job*)am_malloc(sizeof(Job));
-	self->type     = 0;
-	self->id       = 0;
-	self->id_step  = 0;
-	self->last     = false;
-	self->error    = NULL;
-	self->dispatch = NULL;
-	self->queue    = NULL;
-	self->cache    = NULL;
-	buf_init(&self->data);
-	list_init(&self->link_queue);
-	list_init(&self->link_scheduler);
+	self->type  = 0;
+	self->start = 0;
+	self->tr    = NULL;
+	self->dtr   = NULL;
+	self->error = NULL;
+	self->cache = NULL;
+	self->queue = NULL;
+	buf_init(&self->arg);
+	value_init(&self->result);
+	queue_node_init(&self->queue_node);
+	list_init(&self->link_executor);
 	list_init(&self->link);
 	return self;
 }
@@ -54,6 +61,8 @@ job_allocate(void)
 static inline void
 job_free_memory(Job* self)
 {
+	value_free(&self->result);
+	buf_free(&self->arg);
 	if (self->error)
 		buf_free(self->error);
 	am_free(self);
@@ -67,10 +76,19 @@ job_reset(Job* self)
 		buf_free(self->error);
 		self->error = NULL;
 	}
-	self->type     = 0;
-	self->id       = 0;
-	self->id_step  = 0;
-	self->dispatch = NULL;
-	self->queue    = NULL;
-	buf_reset(&self->data);
+	self->type  = 0;
+	self->start = 0;
+	self->tr    = NULL;
+	self->dtr   = NULL;
+	self->cache = NULL;
+	self->queue = NULL;
+	value_free(&self->result);
+	buf_reset(&self->arg);
+	queue_node_reset(&self->queue_node);
+}
+
+always_inline static inline Job*
+job_of(QueueNode* node)
+{
+	return container_of(node, Job, queue_node);
 }

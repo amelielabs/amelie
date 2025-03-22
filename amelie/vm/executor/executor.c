@@ -14,7 +14,6 @@
 #include <amelie_io.h>
 #include <amelie_lib.h>
 #include <amelie_json.h>
-#include <amelie_scheduler.h>
 #include <amelie_config.h>
 #include <amelie_user.h>
 #include <amelie_http.h>
@@ -33,63 +32,96 @@
 #include <amelie_content.h>
 #include <amelie_executor.h>
 
-#if 0
 void
 executor_init(Executor* self, Db* db)
 {
-	self->db         = db;
-	self->list_count = 0;
-	list_init(&self->list);
+	self->db             = db;
+	self->seq            = 0;
+	self->list_count     = 0;
+	self->list_job_count = 0;
 	commit_init(&self->commit);
-	spinlock_init(&self->lock);
+	list_init(&self->list);
+	list_init(&self->list_job);
+	mutex_init(&self->lock);
+	cond_var_init(&self->cond_var);
 }
 
 void
 executor_free(Executor* self)
 {
 	commit_free(&self->commit);
-	spinlock_free(&self->lock);
+	mutex_free(&self->lock);
+	cond_var_free(&self->cond_var);
+	job_mgr_free(&self->job_mgr);
+}
+
+hot static inline bool
+executor_schedule(Executor* self, Queue* queue)
+{
+	auto next = queue_begin(queue);
+	if (! next)
+		return false;
+
+	// add job to the execution list
+	auto job = job_of(next);
+	list_append(&self->list_job, &job->link_executor);
+	self->list_job_count++;
+	return true;
 }
 
 hot void
-executor_send(Executor* self, Dtr* tr, int stmt, JobList* list)
+executor_send(Executor* self, Dtr* dtr, int step, JobList* list)
 {
-	// register transaction and begin execution
-	if (stmt == 0)
+	mutex_lock(&self->lock);
+
+	// add transaction to the executor list
+	if (step == 0)
 	{
-		spinlock_lock(&self->lock);
-		dtr_set_state(tr, DTR_BEGIN);
+		// assign job/dispatch id
+		dtr_set_state(dtr, DTR_BEGIN);
+		dtr->dispatch.id = ++self->seq;
 
-		// add transaction to the executor list
-		list_append(&self->list, &tr->link);
+		list_append(&self->list, &dtr->link);
 		self->list_count++;
-
-		// send requests
-		dtr_send(tr, stmt, list);
-
-		spinlock_unlock(&self->lock);
-		return;
 	}
 
-	// send requests
-	dtr_send(tr, stmt, list);
+	bool wakeup = false;
+	list_foreach_safe(&list->list)
+	{
+		auto job = list_at(Job, link);
+
+		// move job to the dispatch step list
+		job_list_del(list, job);
+		dispatch_add(&dtr->dispatch, step, job);
+
+		// add job to the queue (ordered by id)
+		queue_add(job->queue, &job->queue_node);
+
+		// schedule next job from the queue (if any)
+		if (executor_schedule(self, job->queue))
+			wakeup = true;
+	}
+
+	// wakeup next worker
+	if (wakeup)
+		cond_var_signal(&self->cond_var);
+
+	mutex_unlock(&self->lock);
 }
 
 hot void
-executor_recv(Executor* self, Dtr* tr, int stmt)
+executor_recv(Executor* self, Dtr* dtr, int step)
 {
 	unused(self);
 	// OK or ABORT
-	dtr_recv(tr, stmt);
+	dispatch_wait(&dtr->dispatch, step);
 }
 
-#if 0
 hot static void
 executor_prepare(Executor* self, bool abort)
 {
 	auto commit = &self->commit;
 	commit_reset(commit);
-	commit_prepare(commit, self->router->list_count);
 
 	// get a list of last completed local transactions per backend
 	if (unlikely(abort))
@@ -97,18 +129,18 @@ executor_prepare(Executor* self, bool abort)
 		// abort all currently active transactions
 		list_foreach(&self->list)
 		{
-			auto tr = list_at(Dtr, link);
-			commit_add(commit, tr);
+			auto dtr = list_at(Dtr, link);
+			commit_add(commit, dtr);
 		}
 	} else
 	{
 		// collect a list of prepared distributed transactions
 		list_foreach(&self->list)
 		{
-			auto tr = list_at(Dtr, link);
-			if (tr->state != DTR_PREPARE)
+			auto dtr = list_at(Dtr, link);
+			if (dtr->state != DTR_PREPARE)
 				break;
-			commit_add(commit, tr);
+			commit_add(commit, dtr);
 		}
 	}
 }
@@ -121,33 +153,35 @@ executor_end(Executor* self, DtrState state)
 	// for each backend, send last prepared Trx*
 	if (state == DTR_COMMIT)
 	{
-		// RPC_COMMIT
-		pipe_set_commit(&commit->set);
+		// todo: send COMMIT for each included partition
+		// pipe_set_commit(&commit->set);
 	} else
 	{
 		executor_prepare(self, true);
 
-		// RPC_ABORT
-		pipe_set_abort(&commit->set);
+		// todo: send ABORT for each partition, this will
+		// abort other ongoing transactions
+		//
+		// pipe_set_abort(&commit->set);
 	}
 
 	// finilize transactions
 	list_foreach(&commit->list)
 	{
-		auto tr = list_at(Dtr, link_commit);
+		auto dtr = list_at(Dtr, link_commit);
 
 		// update state
-		auto tr_state = tr->state;
-		dtr_set_state(tr, state);
+		auto tr_state = dtr->state;
+		dtr_set_state(dtr, state);
 
 		// remove transaction from the executor
-		list_unlink(&tr->link);
+		list_unlink(&dtr->link);
 		self->list_count--;
 
 		// wakeup
 		if (tr_state == DTR_PREPARE ||
 		    tr_state == DTR_ERROR)
-			event_signal(&tr->on_commit);
+			event_signal(&dtr->on_commit);
 	}
 
 	// wakeup next commit leader, if any
@@ -161,14 +195,6 @@ executor_end(Executor* self, DtrState state)
 }
 
 hot static void
-executor_end_lock(Executor* self, DtrState state)
-{
-	spinlock_lock(&self->lock);
-	executor_end(self, state);
-	spinlock_unlock(&self->lock);
-}
-
-hot static void
 executor_wal_write(Executor* self)
 {
 	// prepare a list of a finilized wal records
@@ -176,11 +202,11 @@ executor_wal_write(Executor* self)
 	auto write_list = &commit->write_list;
 	list_foreach(&commit->list)
 	{
-		auto tr    = list_at(Dtr, link_commit);
-		auto set   = &tr->set;
-		auto write = &tr->write;
+		auto dtr   = list_at(Dtr, link_commit);
+		auto write = &dtr->write;
 		write_reset(write);
 		write_begin(write);
+#if 0
 		for (int i = 0; i < set->set_size; i++)
 		{
 			auto pipe = pipe_set_get(set, i);
@@ -198,6 +224,7 @@ executor_wal_write(Executor* self)
 				error("system is in read-only mode");
 			write_list_add(write_list, write);
 		}
+#endif
 	}
 
 	// do atomical wal write
@@ -205,43 +232,40 @@ executor_wal_write(Executor* self)
 }
 
 hot void
-executor_commit(Executor* self, Dtr* tr, Buf* error)
+executor_commit(Executor* self, Dtr* dtr, Buf* error)
 {
-	// shutdown pipes if there are any left open,
-	// this can happen because of error or by premature
-	// return statement
-	dtr_shutdown(tr);
+	// todo: shutdown
 
 	for (;;)
 	{
-		spinlock_lock(&self->lock);
+		mutex_lock(&self->lock);
 
-		switch (tr->state) {
+		switch (dtr->state) {
 		case DTR_COMMIT:
 			// commited by leader
-			spinlock_unlock(&self->lock);
+			mutex_unlock(&self->lock);
 			return;
 		case DTR_ABORT:
 			// aborted by leader
-			spinlock_unlock(&self->lock);
+			mutex_unlock(&self->lock);
 			error("transaction conflict, abort");
 			return;
 		case DTR_NONE:
 			// non-distributed transaction
-			spinlock_unlock(&self->lock);
+			mutex_unlock(&self->lock);
 			if (error)
 			{
-				dtr_set_error(tr, error);
+				dtr_set_error(dtr, error);
 				msg_error_rethrow(error);
 			}
 			return;
 		case DTR_BEGIN:
 			if (unlikely(error))
 			{
-				dtr_set_state(tr, DTR_ERROR);
-				dtr_set_error(tr, error);
+				dtr_set_state(dtr, DTR_ERROR);
+				dtr_set_error(dtr, error);
 			} else {
-				dtr_set_state(tr, DTR_PREPARE);
+				dtr_set_state(dtr, DTR_PREPARE);
 			}
 			break;
 		case DTR_PREPARE:
@@ -253,46 +277,43 @@ executor_commit(Executor* self, Dtr* tr, Buf* error)
 			break;
 		}
 
-		// if current tr is commit leader (first tr in the list)
-		if (! list_is_first(&self->list, &tr->link))
+		// commit leader is the first transaction in the list
+		if (! list_is_first(&self->list, &dtr->link))
 		{
 			// wait to become leader or wakeup by leader
-			spinlock_unlock(&self->lock);
+			mutex_unlock(&self->lock);
 
-			event_wait(&tr->on_commit, -1);
+			event_wait(&dtr->on_commit, -1);
 			continue;
 		}
 
-		// unlock on error and after prepare
+		// handle leader error
+		if (dtr->state == DTR_ERROR)
 		{
-			defer(spinlock_unlock, &self->lock);
-
-			// handle leader error
-			if (tr->state == DTR_ERROR)
-			{
-				executor_end(self, DTR_ABORT);
-				msg_error_throw(tr->error);
-			}
-
-			// prepare for group commit and wal write
-
-			// get a list of completed distributed transactions (one or more) and
-			// a list of last executed transactions per backend
-			executor_prepare(self, false);
+			executor_end(self, DTR_ABORT);
+			mutex_unlock(&self->lock);
+			msg_error_throw(dtr->error);
 		}
+
+		// prepare for group commit and wal write
+
+		// get a list of completed distributed transactions (one or more) and
+		// a list of last executed transactions per backend
+		executor_prepare(self, false);
+		mutex_unlock(&self->lock);
 
 		// wal write
+		DtrState state = DTR_COMMIT;
 		if (unlikely(error_catch( executor_wal_write(self) )))
-		{
-			// ABORT
-			executor_end_lock(self, DTR_ABORT);
-			rethrow();
-		}
+			state = DTR_ABORT;
 
-		// COMMIT
-		executor_end_lock(self, DTR_COMMIT);
+		// process COMMIT or ABORT
+		mutex_lock(&self->lock);
+		executor_end(self, state);
+		mutex_unlock(&self->lock);
+		if (state == DTR_ABORT)
+			rethrow();
+
 		break;
 	}
 }
-#endif
-#endif

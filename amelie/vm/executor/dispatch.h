@@ -86,9 +86,9 @@ hot static inline void
 dispatch_add(Dispatch* self, int order, Job* job)
 {
 	auto step = dispatch_at(self, order);
-	job->id       = self->id;
-	job->id_step  = order;
-	job->dispatch = self;
+	job->queue_node.id      = self->id;
+	job->queue_node.id_step = order;
+	// todo: last?
 	job_list_add(&step->list, job);
 }
 
