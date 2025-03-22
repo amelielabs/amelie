@@ -35,10 +35,9 @@
 
 #if 0
 void
-executor_init(Executor* self, Db* db, Router* router)
+executor_init(Executor* self, Db* db)
 {
 	self->db         = db;
-	self->router     = router;
 	self->list_count = 0;
 	list_init(&self->list);
 	commit_init(&self->commit);
@@ -53,15 +52,10 @@ executor_free(Executor* self)
 }
 
 hot void
-executor_send(Executor* self, Dtr* tr, int stmt, ReqList* list)
+executor_send(Executor* self, Dtr* tr, int stmt, JobList* list)
 {
-	auto first = !tr->dispatch.sent;
-
-	// put requests into pipes per backend
-	dtr_send(tr, stmt, list);
-
 	// register transaction and begin execution
-	if (first)
+	if (stmt == 0)
 	{
 		spinlock_lock(&self->lock);
 		dtr_set_state(tr, DTR_BEGIN);
@@ -70,10 +64,15 @@ executor_send(Executor* self, Dtr* tr, int stmt, ReqList* list)
 		list_append(&self->list, &tr->link);
 		self->list_count++;
 
-		// send BEGIN to the related backends
-		pipe_set_begin(&tr->set);
+		// send requests
+		dtr_send(tr, stmt, list);
+
 		spinlock_unlock(&self->lock);
+		return;
 	}
+
+	// send requests
+	dtr_send(tr, stmt, list);
 }
 
 hot void
@@ -84,6 +83,7 @@ executor_recv(Executor* self, Dtr* tr, int stmt)
 	dtr_recv(tr, stmt);
 }
 
+#if 0
 hot static void
 executor_prepare(Executor* self, bool abort)
 {
@@ -294,4 +294,5 @@ executor_commit(Executor* self, Dtr* tr, Buf* error)
 		break;
 	}
 }
+#endif
 #endif

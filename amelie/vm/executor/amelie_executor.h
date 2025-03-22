@@ -16,12 +16,3 @@
 #include "executor/code.h"
 #include "executor/program.h"
 
-// request
-#include "executor/req.h"
-
-// executor
-#include "executor/dtr.h"
-#if 0
-#include "executor/commit.h"
-#endif
-#include "executor/executor.h"
