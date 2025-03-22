@@ -14,7 +14,6 @@
 #include <amelie_io.h>
 #include <amelie_lib.h>
 #include <amelie_json.h>
-#include <amelie_scheduler.h>
 #include <amelie_config.h>
 #include <amelie_user.h>
 #include <amelie_http.h>
