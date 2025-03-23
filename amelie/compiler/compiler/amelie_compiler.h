@@ -18,6 +18,10 @@
 #include "compiler/compiler.h"
 #include "compiler/compiler_op.h"
 
+// plan
+#include "compiler/plan.h"
+#include "compiler/planner.h"
+
 // scan
 #include "compiler/scan.h"
 
