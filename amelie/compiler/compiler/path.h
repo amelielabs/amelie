@@ -11,20 +11,20 @@
 // AGPL-3.0 Licensed.
 //
 
-typedef struct PlanKey PlanKey;
-typedef struct Plan    Plan;
+typedef struct PathKey PathKey;
+typedef struct Path    Path;
 
 enum
 {
 	// scan operation with or without key
 	// gt, gte, lt, lte
-	PLAN_SCAN,
+	PATH_SCAN,
 
 	// point lookup with all keys set
-	PLAN_LOOKUP
+	PATH_LOOKUP
 };
 
-struct PlanKey
+struct PathKey
 {
 	Key* key;
 	Ast* start_op;
@@ -33,15 +33,15 @@ struct PlanKey
 	Ast* stop;
 };
 
-struct Plan
+struct Path
 {
 	int      type;
 	Target*  target;
 	int      match_start;
 	int      match_start_columns;
 	int      match_stop;
-	PlanKey  keys[];
+	PathKey  keys[];
 };
 
-Plan*    plan_create(Target*, Keys*, AstList*);
-uint32_t plan_create_hash(Plan*);
+Path*    path_create(Target*, Keys*, AstList*);
+uint32_t path_create_hash(Path*);

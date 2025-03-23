@@ -39,12 +39,12 @@
 #include <amelie_parser.h>
 #include <amelie_compiler.h>
 
-static Plan*
-plan_allocate(Target* target, Keys* keys)
+static Path*
+path_allocate(Target* target, Keys* keys)
 {
-	Plan* self;
-	self = palloc(sizeof(Plan) + sizeof(PlanKey) * keys->list_count);
-	self->type                = PLAN_SCAN;
+	Path* self;
+	self = palloc(sizeof(Path) + sizeof(PathKey) * keys->list_count);
+	self->type                = PATH_SCAN;
 	self->target              = target;
 	self->match_start         = 0;
 	self->match_start_columns = 0;
@@ -63,7 +63,7 @@ plan_allocate(Target* target, Keys* keys)
 }
 
 hot static inline int
-plan_ast_compare(Ast* a, Ast* b)
+path_ast_compare(Ast* a, Ast* b)
 {
 	switch (a->id) {
 	case KINT:
@@ -87,7 +87,7 @@ plan_ast_compare(Ast* a, Ast* b)
 }
 
 static inline bool
-plan_key_compare(Plan* self, PlanKey* key, Ast* ast)
+path_key_compare(Path* self, PathKey* key, Ast* ast)
 {
 	// column
 	auto column = key->key->column;
@@ -115,7 +115,7 @@ plan_key_compare(Plan* self, PlanKey* key, Ast* ast)
 }
 
 static inline bool
-plan_start(PlanKey* self, Ast* op, Ast* value)
+path_start(PathKey* self, Ast* op, Ast* value)
 {
 	if (! self->start)
 		return true;
@@ -129,14 +129,14 @@ plan_start(PlanKey* self, Ast* op, Ast* value)
 		return true;
 
 	// update key if it is > then the previous one
-	if (plan_ast_compare(self->start, value) == -1)
+	if (path_ast_compare(self->start, value) == -1)
 		return true;
 
 	return false;
 }
 
 static inline bool
-plan_stop(PlanKey* self, Ast* op, Ast* value)
+path_stop(PathKey* self, Ast* op, Ast* value)
 {
 	// match stop conditions only for outer keys
 	if (self->key->order > 0)
@@ -147,14 +147,14 @@ plan_stop(PlanKey* self, Ast* op, Ast* value)
 		return true;
 
 	// update key if it is < then the previous one
-	if (plan_ast_compare(self->stop, value) > 0)
+	if (path_ast_compare(self->stop, value) > 0)
 		return true;
 
 	return false;
 }
 
 static inline Column*
-plan_column(Plan* self, Str* string)
+path_column(Path* self, Str* string)
 {
 	// match outer target [target.]name and find the column
 	Str name;
@@ -205,7 +205,7 @@ plan_column(Plan* self, Str* string)
 }
 
 static inline void
-plan_key(Plan* self, PlanKey* key, AstList* ops)
+path_key(Path* self, PathKey* key, AstList* ops)
 {
 	auto node = ops->list;
 	for (; node; node = node->next)
@@ -213,10 +213,10 @@ plan_key(Plan* self, PlanKey* key, AstList* ops)
 		// match the key against the expression
 		auto op = node->ast;
 		Ast* value;
-		if (plan_key_compare(self, key, op->l))
+		if (path_key_compare(self, key, op->l))
 			value = op->r;
 		else
-		if (plan_key_compare(self, key, op->r))
+		if (path_key_compare(self, key, op->r))
 			value = op->l;
 		else
 			continue;
@@ -245,7 +245,7 @@ plan_key(Plan* self, PlanKey* key, AstList* ops)
 		case KNAME_COMPOUND:
 		{
 			// match outer target [target.]column and find the column
-			auto match = plan_column(self, &value->string);
+			auto match = path_column(self, &value->string);
 			if (! match)
 				continue;
 			if (column->type != match->type)
@@ -259,14 +259,14 @@ plan_key(Plan* self, PlanKey* key, AstList* ops)
 		case '>':
 		case KGTE:
 		case '=':
-			if (! plan_start(key, op, value))
+			if (! path_start(key, op, value))
 				break;
 			key->start_op = op;
 			key->start = value;
 			break;
 		case '<':
 		case KLTE:
-			if (! plan_stop(key, op, value))
+			if (! path_stop(key, op, value))
 				break;
 			key->stop_op = op;
 			key->stop = value;
@@ -275,30 +275,30 @@ plan_key(Plan* self, PlanKey* key, AstList* ops)
 	}
 }
 
-Plan*
-plan_create(Target* target, Keys* keys, AstList* ops)
+Path*
+path_create(Target* target, Keys* keys, AstList* ops)
 {
-	auto self = plan_allocate(target, keys);
+	auto self = path_allocate(target, keys);
 	auto match_eq = 0;
 	auto match_last_start = -1;
 	auto match_last_stop  = -1;
 	list_foreach(&keys->list)
 	{
 		auto key = list_at(Key, link);
-		auto key_plan = &self->keys[key->order];
-		plan_key(self, key_plan, ops);
+		auto key_path = &self->keys[key->order];
+		path_key(self, key_path, ops);
 
 		// count sequential number of matches from start
-		if (key_plan->start && (match_last_start == (key->order - 1)))
+		if (key_path->start && (match_last_start == (key->order - 1)))
 		{
 			match_last_start = key->order;
 			self->match_start++;
-			if (key_plan->start->id == KNAME_COMPOUND)
+			if (key_path->start->id == KNAME_COMPOUND)
 				self->match_start_columns++;
-			if (key_plan->start_op->id == '=')
+			if (key_path->start_op->id == '=')
 				match_eq++;
 		}
-		if (key_plan->stop && (match_last_stop == (key->order - 1)))
+		if (key_path->stop && (match_last_stop == (key->order - 1)))
 		{
 			match_last_stop = key->order;
 			self->match_stop++;
@@ -307,15 +307,15 @@ plan_create(Target* target, Keys* keys, AstList* ops)
 
 	// point lookup
 	if (match_eq == keys->list_count)
-		self->type = PLAN_LOOKUP;
+		self->type = PATH_LOOKUP;
 
 	return self;
 }
 
 uint32_t
-plan_create_hash(Plan* self)
+path_create_hash(Path* self)
 {
-	assert(self->type == PLAN_LOOKUP);
+	assert(self->type == PATH_LOOKUP);
 	Uuid     uuid;
 	uint32_t hash = 0;
 	for (auto i = 0; i < self->match_start; i++)

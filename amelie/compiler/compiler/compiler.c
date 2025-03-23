@@ -347,11 +347,11 @@ emit_send(Compiler* self, int start)
 	} else
 	{
 		// point-lookup or range scan
-		auto plan = target->plan_primary;
-		if (plan->type == PLAN_LOOKUP && !plan->match_start_columns)
+		auto path = target->path_primary;
+		if (path->type == PATH_LOOKUP && !path->match_start_columns)
 		{
 			// send to one backend using the point lookup key hash
-			uint32_t hash = plan_create_hash(plan);
+			uint32_t hash = path_create_hash(path);
 
 			// CSEND_LOOKUP
 			op4(self, CSEND_LOOKUP, stmt->order, start, (intptr_t)table, hash);

@@ -271,8 +271,8 @@ set(AMELIE_SOURCES_COMPILER
     ${AMELIE_ROOT}/compiler/parser/parser.c
     ${AMELIE_ROOT}/compiler/compiler/compiler.c
     ${AMELIE_ROOT}/compiler/compiler/cast.c
-    ${AMELIE_ROOT}/compiler/compiler/plan.c
-    ${AMELIE_ROOT}/compiler/compiler/planner.c
+    ${AMELIE_ROOT}/compiler/compiler/path.c
+    ${AMELIE_ROOT}/compiler/compiler/path_prepare.c
     ${AMELIE_ROOT}/compiler/compiler/scan.c
     ${AMELIE_ROOT}/compiler/compiler/emit_expr.c
     ${AMELIE_ROOT}/compiler/compiler/emit_insert.c

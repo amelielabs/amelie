@@ -11,4 +11,4 @@
 // AGPL-3.0 Licensed.
 //
 
-void planner(Targets*, Ast*);
+void path_prepare(Targets*, Ast*);

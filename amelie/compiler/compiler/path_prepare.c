@@ -109,18 +109,18 @@ ops_extract(AstList* self, Ast* expr)
 }
 
 static bool
-planner_match(Plan*        prev_plan,
-              IndexConfig* prev,
-              Plan*        next_plan,
-              IndexConfig* next)
+path_prepare_match(Path*        prev_path,
+                   IndexConfig* prev,
+                   Path*        next_path,
+                   IndexConfig* next)
 {
 	// tree
 	if (prev->type == INDEX_TREE && next->type == INDEX_TREE)
 	{
 		// choose index with max number of key matches from start
-		if (next_plan->match_start > prev_plan->match_start)
+		if (next_path->match_start > prev_path->match_start)
 			return true;
-		if (next_plan->match_stop > prev_plan->match_stop)
+		if (next_path->match_stop > prev_path->match_stop)
 			return true;
 		return false;
 	}
@@ -129,21 +129,21 @@ planner_match(Plan*        prev_plan,
 	if (prev->type == INDEX_HASH && next->type == INDEX_HASH)
 	{
 		// choose next only if it is point lookup, unless prev one is
-		if (prev_plan->type == PLAN_LOOKUP)
+		if (prev_path->type == PATH_LOOKUP)
 			return false;
-		return next_plan->type == PLAN_LOOKUP;
+		return next_path->type == PATH_LOOKUP;
 	}
 	// tree/hash
 
 	// choose hash over tree only in case if it is a point lookup
 	if (prev->type == INDEX_HASH)
-		return prev_plan->type == PLAN_LOOKUP;
+		return prev_path->type == PATH_LOOKUP;
 
-	return next_plan->type == PLAN_LOOKUP;
+	return next_path->type == PATH_LOOKUP;
 }
 
 static void
-planner_target(Target* target, AstList* ops)
+path_prepare_target(Target* target, AstList* ops)
 {
 	auto table = target->from_table;
 	assert(table);
@@ -152,19 +152,19 @@ planner_target(Target* target, AstList* ops)
 	if (target->from_index)
 	{
 		auto keys = &target->from_index->keys;
-		target->plan = plan_create(target, keys, ops);
+		target->path = path_create(target, keys, ops);
 
 		auto primary = table_primary(target->from_table);
 		if (target->from_index != primary)
-			target->plan_primary = plan_create(target, &primary->keys, ops);
+			target->path_primary = path_create(target, &primary->keys, ops);
 		else
-			target->plan_primary = target->plan;
+			target->path_primary = target->path;
 		return;
 	}
 
 	// match the most optimal index to use
-	Plan*        match_plan_primary = NULL;
-	Plan*        match_plan = NULL;
+	Path*        match_path_primary = NULL;
+	Path*        match_path = NULL;
 	IndexConfig* match = NULL;
 	list_foreach(&table->config->indexes)
 	{
@@ -172,31 +172,31 @@ planner_target(Target* target, AstList* ops)
 		auto keys = &index->keys;
 
 		// primary
-		auto plan = plan_create(target, keys, ops);
+		auto path = path_create(target, keys, ops);
 		if (! match)
 		{
-			match_plan_primary = plan;
-			match_plan = plan;
+			match_path_primary = path;
+			match_path = path;
 			match = index;
 			continue;
 		}
 
 		// secondary
-		if (planner_match(match_plan, match, plan, index))
+		if (path_prepare_match(match_path, match, path, index))
 		{
-			match_plan = plan;
+			match_path = path;
 			match = index;
 		}
 	}
 
-	// set index and plan
+	// set index and path
 	target->from_index = match;
-	target->plan_primary = match_plan_primary;
-	target->plan = match_plan;
+	target->path_primary = match_path_primary;
+	target->path = match_path;
 }
 
 void
-planner(Targets* targets, Ast* expr)
+path_prepare(Targets* targets, Ast* expr)
 {
 	// get a list of conditions
 	AstList ops;
@@ -204,8 +204,8 @@ planner(Targets* targets, Ast* expr)
 	if (expr)
 		ops_extract(&ops, expr);
 
-	// create plans for table scans
+	// create paths for table scans
 	for (auto target = targets->list; target; target = target->next)
 		if (target_is_table(target))
-			planner_target(target, &ops);
+			path_prepare_target(target, &ops);
 }

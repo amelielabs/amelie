@@ -18,11 +18,9 @@
 #include "compiler/compiler.h"
 #include "compiler/compiler_op.h"
 
-// plan
-#include "compiler/plan.h"
-#include "compiler/planner.h"
-
 // scan
+#include "compiler/path.h"
+#include "compiler/path_prepare.h"
 #include "compiler/scan.h"
 
 // emit

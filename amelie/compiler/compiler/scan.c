@@ -55,13 +55,13 @@ static inline int
 scan_key(Scan* self, Target* target)
 {
 	auto cp    = self->compiler;
-	auto plan  = target->plan;
+	auto path  = target->path;
 	auto count = 0;
 
 	list_foreach(&target->from_index->keys.list)
 	{
 		auto key = list_at(Key, link);
-		auto ref = &plan->keys[key->order];
+		auto ref = &path->keys[key->order];
 
 		// use value from >, >=, = expression as a key
 		if (! ref->start)
@@ -80,12 +80,12 @@ static inline void
 scan_stop(Scan* self, Target* target, int scan_stop_jntr[])
 {
 	auto cp   = self->compiler;
-	auto plan = target->plan;
+	auto path = target->path;
 
 	list_foreach(&target->from_index->keys.list)
 	{
 		auto key = list_at(Key, link);
-		auto ref = &plan->keys[key->order];
+		auto ref = &path->keys[key->order];
 		if (! ref->stop)
 			break;
 
@@ -147,8 +147,8 @@ scan_table(Scan* self, Target* target)
 	auto cp = self->compiler;
 	auto table = target->from_table;
 	auto index = target->from_index;
-	auto plan  = target->plan;
-	auto point_lookup = (plan->type == PLAN_LOOKUP);
+	auto path  = target->path;
+	auto point_lookup = (path->type == PATH_LOOKUP);
 
 	// save schema, table and index name
 	int name_offset = code_data_offset(&cp->code_data);
@@ -184,7 +184,7 @@ scan_table(Scan* self, Target* target)
 	int _where = op_pos(cp);
 
 	// generate scan stop conditions for <, <= for tree index
-	int scan_stop_jntr[plan->match_stop];
+	int scan_stop_jntr[path->match_stop];
 	if (index->type == INDEX_TREE)
 		scan_stop(self, target, scan_stop_jntr);
 
@@ -206,7 +206,7 @@ scan_table(Scan* self, Target* target)
 	code_at(cp->code, _open)->c = _eof;
 
 	// set scan stop jntr to eof
-	for (auto order = 0; order < plan->match_stop; order++)
+	for (auto order = 0; order < path->match_stop; order++)
 		code_at(cp->code, scan_stop_jntr[order])->a = _eof;
 
 	// set outer target eof jmp for limit
@@ -402,8 +402,8 @@ scan(Compiler*    compiler,
 		.compiler     = compiler
 	};
 
-	// prepare scan plan using where expression per target
-	planner(targets, expr_where);
+	// prepare scan path using where expression per target
+	path_prepare(targets, expr_where);
 
 	// limit
 	if (expr_limit)
