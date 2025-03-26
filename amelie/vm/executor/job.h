@@ -41,9 +41,10 @@ struct Job
 	JobArg        arg;
 	JobCache*     cache;
 	HashtableNode node;
-	List          queue;
-	List          link_queue;
-	List          link_executor;
+	Job*          queue;
+	Job*          queue_tail;
+	Job*          next;
+	List          link_mgr;
 	List          link;
 };
 
@@ -90,13 +91,14 @@ static inline Job*
 job_allocate(void)
 {
 	auto self = (Job*)am_malloc(sizeof(Job));
-	self->id    = UINT64_MAX;
-	self->cache = NULL;
+	self->id         = UINT64_MAX;
+	self->cache      = NULL;
+	self->queue      = NULL;
+	self->queue_tail = NULL;
+	self->next       = NULL;
 	job_arg_init(&self->arg);
 	hashtable_node_init(&self->node);
-	list_init(&self->queue);
-	list_init(&self->link_queue);
-	list_init(&self->link_executor);
+	list_init(&self->link_mgr);
 	list_init(&self->link);
 	return self;
 }
@@ -111,5 +113,8 @@ job_free_memory(Job* self)
 static inline void
 job_reset(Job* self)
 {
+	self->queue      = NULL;
+	self->queue_tail = NULL;
+	self->next       = NULL;
 	job_arg_reset(&self->arg);
 }

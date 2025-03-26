@@ -22,3 +22,8 @@
 #include "executor/job_list.h"
 #include "executor/job_cache.h"
 #include "executor/job_cache_mgr.h"
+#include "executor/job_mgr.h"
+
+// executor
+#include "executor/dispatch.h"
+#include "executor/dtr.h"

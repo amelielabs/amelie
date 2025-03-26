@@ -52,3 +52,14 @@ job_free(Job* self)
 	}
 	job_free_memory(self);
 }
+
+static inline void
+job_free_list(JobList* self)
+{
+	list_foreach_safe(&self->list)
+	{
+		auto job = list_at(Job, link);
+		job_free(job);
+	}
+	job_list_init(self);
+}
