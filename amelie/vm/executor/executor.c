@@ -238,7 +238,8 @@ executor_wal_write(Executor* self)
 hot void
 executor_commit(Executor* self, Dtr* dtr, Buf* error)
 {
-	// todo: (drain dispatch)
+	// read all pending replies
+	dispatch_drain(&dtr->dispatch);
 
 	for (;;)
 	{

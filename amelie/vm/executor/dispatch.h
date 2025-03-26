@@ -25,6 +25,7 @@ struct Dispatch
 {
 	Buf steps_data;
 	int steps;
+	int steps_recv;
 };
 
 hot static inline DispatchStep*
@@ -37,12 +38,14 @@ static inline void
 dispatch_init(Dispatch* self)
 {
 	self->steps = 0;
+	self->steps_recv = 0;
 	buf_init(&self->steps_data);
 }
 
 static inline void
 dispatch_reset(Dispatch* self)
 {
+	self->steps_recv = 0;
 	self->steps = 0;
 	for (auto i = 0; i < self->steps; i++)
 	{
@@ -87,11 +90,9 @@ dispatch_add(Dispatch* self, int order, Job* job)
 }
 
 hot static inline void
-dispatch_wait(Dispatch* self, int order)
+dispatch_wait_step(Dispatch* self, int order)
 {
 	auto step = dispatch_at(self, order);
-
-	// read all replies from the jobs in the list
 	for (auto n = step->list.list_count; n > 0; n--)
 	{
 		auto buf = channel_read(&step->src, -1);
@@ -100,8 +101,17 @@ dispatch_wait(Dispatch* self, int order)
 			step->errors++;
 		buf_free(buf);
 	}
+	self->steps_recv = order;
+}
+
+hot static inline void
+dispatch_wait(Dispatch* self, int order)
+{
+	// read all replies from the jobs in the list
+	dispatch_wait_step(self, order);
 
 	// find first job error and rethrow
+	auto step = dispatch_at(self, order);
 	if (unlikely(step->errors > 0))
 	{
 		list_foreach(&step->list.list)
@@ -111,4 +121,11 @@ dispatch_wait(Dispatch* self, int order)
 				msg_error_rethrow(job->arg.error);
 		}
 	}
+}
+
+hot static inline void
+dispatch_drain(Dispatch* self)
+{
+	while (self->steps_recv < self->steps - 1)
+		dispatch_wait_step(self, self->steps_recv);
 }
