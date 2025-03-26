@@ -33,6 +33,7 @@ part_allocate(PartConfig* config, Sequence* seq, bool unlogged)
 	heap_create(&self->heap);
 	list_init(&self->indexes);
 	list_init(&self->link_cp);
+	list_init(&self->link_commit);
 	list_init(&self->link);
 	hashtable_node_init(&self->link_ht);
 	return self;

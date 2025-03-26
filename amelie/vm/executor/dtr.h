@@ -25,6 +25,7 @@ typedef enum
 
 struct Dtr
 {
+	uint64_t id;
 	DtrState state;
 	Dispatch dispatch;
 	Program* program;
@@ -42,6 +43,7 @@ static inline void
 dtr_init(Dtr* self, Local* local)
 {
 	self->state   = DTR_NONE;
+	self->id      = 0;
 	self->program = NULL;
 	self->error   = NULL;
 	self->local   = local;
@@ -58,6 +60,7 @@ static inline void
 dtr_reset(Dtr* self)
 {
 	self->state   = DTR_NONE;
+	self->id      = 0;
 	self->program = NULL;
 	if (self->error)
 	{

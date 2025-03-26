@@ -22,6 +22,7 @@ struct Part
 	Heap          heap;
 	PartConfig*   config;
 	List          link_cp;
+	List          link_commit;
 	List          link;
 	HashtableNode link_ht;
 };
