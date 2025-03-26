@@ -26,6 +26,7 @@ enum
 struct JobArg
 {
 	int   type;
+	int   step;
 	Buf   arg;
 	Value result;
 	Buf*  error;
@@ -52,6 +53,7 @@ static inline void
 job_arg_init(JobArg* self)
 {
 	self->type  = 0;
+	self->step  = 0;
 	self->error = NULL;
 	self->dtr   = NULL;
 	self->tr    = NULL;
@@ -79,6 +81,7 @@ job_arg_reset(JobArg* self)
 		self->error = NULL;
 	}
 	self->type  = 0;
+	self->step  = 0;
 	self->dtr   = NULL;
 	self->tr    = NULL;
 	self->start = 0;

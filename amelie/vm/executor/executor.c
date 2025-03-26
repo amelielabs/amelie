@@ -75,7 +75,8 @@ executor_send(Executor* self, Dtr* dtr, int step, JobList* list)
 	list_foreach_safe(&list->list)
 	{
 		auto job = list_at(Job, link);
-		job->arg.dtr = dtr;
+		job->arg.dtr  = dtr;
+		job->arg.step = step;
 
 		// move job to the dispatch step list
 		job_list_del(list, job);
@@ -319,4 +320,47 @@ executor_commit(Executor* self, Dtr* dtr, Buf* error)
 
 		break;
 	}
+}
+
+Job*
+executor_next(Executor* self)
+{
+	Job* job = NULL;
+	mutex_lock(&self->lock);
+	for (;;)
+	{
+		// todo: shutdown
+		job = job_mgr_begin(&self->job_mgr);
+		if (job)
+			break;
+		cond_var_wait(&self->cond_var, &self->lock);
+	}
+	mutex_unlock(&self->lock);
+	return job;
+}
+
+void
+executor_complete(Executor* self, Job* job)
+{
+	// send OK or ERROR based on the job result
+	if (job->arg.dtr)
+	{
+		int id;
+		if (job->arg.error)
+			id = MSG_ERROR;
+		else
+			id = MSG_OK;
+		auto buf = msg_create(id);
+		msg_end(buf);
+		auto step = dispatch_at(&job->arg.dtr->dispatch, job->arg.step);
+		channel_write(&step->src, buf);
+	}
+
+	// finilize job and reschedule next job
+	mutex_lock(&self->lock);
+
+	if (job_mgr_end(&self->job_mgr, job))
+		cond_var_wait(&self->cond_var, &self->lock);
+
+	mutex_unlock(&self->lock);
 }

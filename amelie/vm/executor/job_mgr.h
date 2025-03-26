@@ -97,7 +97,11 @@ hot static inline bool
 job_mgr_end(JobMgr* self, Job* job)
 {
 	if (job->id == UINT64_MAX)
+	{
+		// job without dispatch (like commit/abort)
+		job_free(job);
 		return false;
+	}
 
 	// completed job is always first
 	hashtable_delete(&self->ht, &job->node);

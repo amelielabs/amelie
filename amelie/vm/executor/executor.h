@@ -30,3 +30,5 @@ void executor_free(Executor*);
 void executor_send(Executor*, Dtr*, int, JobList*);
 void executor_recv(Executor*, Dtr*, int);
 void executor_commit(Executor*, Dtr*, Buf*);
+Job* executor_next(Executor*);
+void executor_complete(Executor*, Job*);
