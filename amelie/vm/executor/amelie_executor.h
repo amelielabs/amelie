@@ -15,4 +15,10 @@
 #include "executor/code_data.h"
 #include "executor/code.h"
 #include "executor/program.h"
+#include "executor/error.h"
 
+// job
+#include "executor/job.h"
+#include "executor/job_cache.h"
+#include "executor/job_mgr.h"
+#include "executor/job_list.h"
