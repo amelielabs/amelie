@@ -16,27 +16,25 @@ typedef struct JobCache JobCache;
 struct JobCache
 {
 	Spinlock lock;
-	int      list_count;
-	List     list;
+	JobList  list;
 };
 
 static inline void
 job_cache_init(JobCache* self)
 {
-	self->list_count = 0;
 	spinlock_init(&self->lock);
-	list_init(&self->list);
+	job_list_init(&self->list);
 }
 
 static inline void
 job_cache_free(JobCache* self)
 {
-	list_foreach_safe(&self->list)
+	list_foreach_safe(&self->list.list)
 	{
 		auto job = list_at(Job, link);
 		job_free_memory(job);
 	}
-	list_init(&self->list);
+	job_list_init(&self->list);
 	spinlock_free(&self->lock);
 }
 
@@ -44,13 +42,7 @@ static inline Job*
 job_cache_pop(JobCache* self)
 {
 	spinlock_lock(&self->lock);
-	Job* job = NULL;
-	if (likely(self->list_count > 0))
-	{
-		auto first = list_pop(&self->list);
-		job = container_of(first, Job, link);
-		self->list_count--;
-	}
+	auto job = job_list_pop(&self->list);
 	spinlock_unlock(&self->lock);
 	return job;
 }
@@ -60,8 +52,7 @@ job_cache_push(JobCache* self, Job* job)
 {
 	job_reset(job);
 	spinlock_lock(&self->lock);
-	list_append(&self->list, &job->link);
-	self->list_count++;
+	job_list_add(&self->list, job);
 	spinlock_unlock(&self->lock);
 }
 

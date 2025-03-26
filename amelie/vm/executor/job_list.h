@@ -26,18 +26,8 @@ job_list_init(JobList* self)
 	list_init(&self->list);
 }
 
-static inline void
-job_list_free(JobList* self)
-{
-	list_foreach_safe(&self->list)
-	{
-		auto job = list_at(Job, link);
-		job_free(job);
-	}
-}
-
-static inline Job*
-job_list_get(JobList* self)
+hot static inline Job*
+job_list_pop(JobList* self)
 {
 	if (self->list_count == 0)
 		return NULL;

@@ -11,16 +11,16 @@
 // AGPL-3.0 Licensed.
 //
 
-typedef struct JobMgr JobMgr;
+typedef struct JobCacheMgr JobCacheMgr;
 
-struct JobMgr
+struct JobCacheMgr
 {
 	atomic_u64 seq;
 	JobCache   cache[8];
 };
 
 static inline void
-job_mgr_init(JobMgr* self)
+job_cache_mgr_init(JobCacheMgr* self)
 {
 	self->seq = 0;
 	for (int i = 0; i < 8; i++)
@@ -28,7 +28,7 @@ job_mgr_init(JobMgr* self)
 }
 
 static inline void
-job_mgr_free(JobMgr* self)
+job_cache_mgr_free(JobCacheMgr* self)
 {
 	self->seq = 0;
 	for (int i = 0; i < 8; i++)
@@ -36,7 +36,7 @@ job_mgr_free(JobMgr* self)
 }
 
 static inline Job*
-job_create(JobMgr* self)
+job_create(JobCacheMgr* self)
 {
 	int next = atomic_u64_inc(&self->seq) % 8;
 	return job_cache_create(&self->cache[next]);
