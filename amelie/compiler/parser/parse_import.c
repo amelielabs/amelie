@@ -217,23 +217,77 @@ parse_import_json(Stmt* self, Endpoint* endpoint)
 		stmt_expect(self, ']');
 		break;
 	}
+
+	// ensure there are no data left
+	if (! stmt_if(self, KEOF))
+		stmt_error(self, NULL, "eof expected");
 }
 
 hot static inline void
-parse_import_csv(Stmt* self, Endpoint* endpoint)
+parse_import_csv_row(Stmt* self, Endpoint* endpoint, Csv* csv)
+{
+	auto stmt    = ast_insert_of(self->ast);
+	auto table   = endpoint->table;
+	auto columns = table_columns(table);
+
+	// prepare row
+	auto row = set_reserve(stmt->values);
+
+	// set next sequence value
+	uint64_t seq = sequence_next(&table->seq);
+
+	auto list = endpoint->columns;
+	list_foreach(&columns->list)
+	{
+		auto column = list_at(Column, link);
+		auto column_value = &row[column->order];
+
+		if (endpoint->columns_has)
+		{
+			if (list && list->column == column)
+			{
+				auto field = csv_next(csv);
+				if (! field)
+					error("csv: column value expected");
+
+				// parse column value
+				parse_value_raw(self, column, column_value, field);
+				list  = list->next;
+			} else
+			{
+				// default value, write IDENTITY, RANDOM or DEFAULT
+				parse_value_default(self, column, column_value, seq);
+			}
+		} else
+		{
+			auto field = csv_next(csv);
+			if (! field)
+				error("csv: column value expected");
+
+			// parse column value
+			parse_value_raw(self, column, column_value, field);
+		}
+
+		// ensure NOT NULL constraint and hash key
+		parse_value_validate(self, column, column_value, NULL);
+	}
+}
+
+hot static inline void
+parse_import_csv(Stmt* self, Endpoint* endpoint, Str* text)
 {
 	// ensure column list is not empty for CSV import
 	if (endpoint->columns_has &&
 	    endpoint->columns_count == 0)
 		error("CSV import with empty column list is not supported");
 
-	// value, ...
-	for (;;)
-	{
-		parse_import_row(self, endpoint);
-		if (stmt_if(self, KEOF))
-			break;
-	}
+	Csv csv;
+	csv_init(&csv);
+	csv_set(&csv, text);
+
+	// value, ... crlf
+	while (! csv_eof(&csv))
+		parse_import_csv_row(self, endpoint, &csv);
 }
 
 hot void
@@ -287,7 +341,7 @@ parse_import(Parser* self, Str* str, Str* uri, EndpointType type)
 	// parse rows according to the content type
 	switch (endpoint.type) {
 	case ENDPOINT_CSV:
-		parse_import_csv(stmt, &endpoint);
+		parse_import_csv(stmt, &endpoint, str);
 		break;
 	case ENDPOINT_JSONL:
 		parse_import_jsonl(stmt, &endpoint);
@@ -296,10 +350,6 @@ parse_import(Parser* self, Str* str, Str* uri, EndpointType type)
 		parse_import_json(stmt, &endpoint);
 		break;
 	}
-
-	// ensure there are no data left
-	if (! stmt_if(stmt, KEOF))
-		stmt_error(stmt, NULL, "eof expected");
 
 	// create a list of generated columns expressions
 	if (columns->count_stored > 0)

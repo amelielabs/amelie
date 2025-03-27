@@ -287,7 +287,6 @@ lex_next(Lex* self)
 reread_as_float:
 		if (minus)
 			self->pos--;
-		errno = 0;
 		char* end = NULL;
 		errno = 0;
 		ast->real = strtod(start, &end);

@@ -58,9 +58,9 @@ post /v1/db/public/test4?columns= text/csv
 select * from test4
 []
 # test: POST /v1/db/schema/table (text/csv) (generated columns)
-post /v1/db/public/test2 text/csv 0,null
-post /v1/db/public/test2 text/csv 1,null
-post /v1/db/public/test2 text/csv 2,null
+post /v1/db/public/test2 text/csv 0,,
+post /v1/db/public/test2 text/csv 1,,
+post /v1/db/public/test2 text/csv 2,,
 select * from test2
 [[0, 0], [1, 2], [2, 4]]
 # test: POST /v1/db/schema/table (text/csv) (resolved columns)

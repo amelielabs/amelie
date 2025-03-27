@@ -39,6 +39,15 @@
 #include <amelie_parser.h>
 
 hot void
+parse_vector_raw(Stmt* self, Buf* buf, Str* field)
+{
+	(void)self;
+	(void)buf;
+	(void)field;
+	// todo:
+}
+
+hot void
 parse_vector(Stmt* self, Buf* buf)
 {
 	// [
@@ -78,6 +87,125 @@ parse_vector(Stmt* self, Buf* buf)
 	}
 
 	*(uint32_t*)(buf->start + offset) = count;
+}
+
+hot void
+parse_value_raw(Stmt* self, Column* column, Value* value, Buf* text)
+{
+	Str field;
+	buf_str(text, &field);
+	if (column->type == TYPE_STRING)
+	{
+		value_set_string(value, &field, text);
+		return;
+	}
+	defer_buf(text);
+
+	if (buf_empty(text))
+	{
+		value_set_null(value);
+		return;
+	}
+
+	str_shrink(&field);
+	switch (column->type) {
+	case TYPE_BOOL:
+	{
+		if (str_is_case(&field, "true", 4)) {
+			value_set_bool(value, true);
+			return;
+		}
+		if (str_is_case(&field, "false", 5)) {
+			value_set_bool(value, false);
+			return;
+		}
+		break;
+	}
+	case TYPE_INT:
+	{
+		// -
+		auto minus = *str_of(&field) == '-';
+		if (minus)
+			field.pos++;
+		int64_t val;
+		if (str_toint(&field, &val) == -1)
+			break;
+		if (minus)
+			val = -val;
+		value_set_int(value, val);
+		return;
+	}
+	case TYPE_DOUBLE:
+	{
+		// -
+		auto minus = *str_of(&field) == '-';
+		if (minus)
+			field.pos++;
+		double val;
+		if (str_todouble(&field, &val) == -1)
+			break;
+		if (minus)
+			val = -val;
+		value_set_double(value, val);
+		return;
+	}
+	case TYPE_JSON:
+	{
+		// parse and encode json value
+		auto buf = buf_create();
+		errdefer_buf(buf);
+		json_parse(self->json, &field, buf);
+		value_set_json_buf(value, buf);
+		return;
+	}
+	case TYPE_TIMESTAMP:
+	{
+		Timestamp ts;
+		timestamp_init(&ts);
+		if (unlikely(error_catch( timestamp_set(&ts, &field) )))
+			stmt_error(self, NULL, "invalid timestamp value");
+		value_set_timestamp(value, timestamp_get_unixtime(&ts, self->local->timezone));
+		return;
+	}
+	case TYPE_INTERVAL:
+	{
+		Interval iv;
+		interval_init(&iv);
+		if (unlikely(error_catch( interval_set(&iv, &field) )))
+			stmt_error(self, NULL, "invalid interval value");
+		value_set_interval(value, &iv);
+		return;
+	}
+	case TYPE_DATE:
+	{
+		int julian;
+		if (unlikely(error_catch( julian = date_set(&field) )))
+			stmt_error(self, NULL, "invalid date value");
+		value_set_date(value, julian);
+		return;
+	}
+	case TYPE_VECTOR:
+	{
+		auto buf = buf_create();
+		errdefer_buf(buf);
+		parse_vector_raw(self, buf, &field);
+		value_set_vector_buf(value, buf);
+		return;
+	}
+	case TYPE_UUID:
+	{
+		Uuid uuid;
+		uuid_init(&uuid);
+		if (uuid_set_nothrow(&uuid, &field) == -1)
+			stmt_error(self, NULL, "invalid uuid value");
+		value_set_uuid(value, &uuid);
+		return;
+	}
+	}
+
+	stmt_error(self, NULL, "'%s' expected for column '%.*s'",
+	           type_of(column->type),
+	           str_size(&column->name), str_of(&column->name));
 }
 
 hot Ast*

@@ -246,6 +246,17 @@ str_toint(Str* self, int64_t* value)
 	return 0;
 }
 
+static inline int
+str_todouble(Str* self, double* value)
+{
+	errno = 0;
+	char* end = NULL;
+	*value = strtod(self->pos, &end);
+	if (errno == ERANGE)
+		return -1;
+	return 0;
+}
+
 static inline void
 str_dup(Str* self, const void* string, int size)
 {

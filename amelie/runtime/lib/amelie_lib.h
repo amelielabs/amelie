@@ -50,6 +50,9 @@
 #include "lib/arg.h"
 #include "lib/separator.h"
 
+// csv
+#include "lib/csv.h"
+
 // locking
 #include "lib/lock.h"
 #include "lib/resource.h"
