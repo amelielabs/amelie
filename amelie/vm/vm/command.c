@@ -45,7 +45,7 @@ csend_shard(Vm* self, Op* op)
 	auto table = (Table*)op->c;
 	auto keys  = table_keys(table);
 
-	// redistribute rows between backends
+	// redistribute rows between partitions
 	Req* map[table->config->partitions_count];
 	memset(map, 0, sizeof(map));
 

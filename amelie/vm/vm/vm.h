@@ -21,7 +21,6 @@ struct Vm
 	CodeData*    code_data;
 	Buf*         code_arg;
 	CursorMgr    cursor_mgr;
-	Uuid*        backend;
 	Executor*    executor;
 	Part*        part;
 	Dtr*         dtr;
