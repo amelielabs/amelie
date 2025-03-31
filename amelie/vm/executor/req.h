@@ -41,7 +41,6 @@ struct ReqArg
 
 struct Req
 {
-	uint64_t  id;
 	ReqArg    arg;
 	ReqCache* cache;
 	List      link;
@@ -94,7 +93,6 @@ static inline Req*
 req_allocate(void)
 {
 	auto self = (Req*)am_malloc(sizeof(Req));
-	self->id    = UINT64_MAX;
 	self->cache = NULL;
 	req_arg_init(&self->arg);
 	list_init(&self->link);

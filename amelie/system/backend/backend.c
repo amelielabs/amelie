@@ -83,6 +83,8 @@ backend_replay(Part* part, Tr* tr, Buf* arg)
 hot static void
 backend_process(Backend* self, Req* req)
 {
+	info("%d", req->arg.type);
+
 	auto backlog = req->arg.backlog;	
 	switch (req->arg.type) {
 	case REQ_EXECUTE:
@@ -173,7 +175,6 @@ void
 backend_free(Backend* self)
 {
 	vm_free(&self->vm);
-	am_free(self);
 }
 
 void
@@ -185,10 +186,8 @@ backend_start(Backend* self)
 void
 backend_stop(Backend* self)
 {
-	// send stop request
 	if (task_active(&self->task))
 	{
-		rpc(&self->task.channel, RPC_STOP, 0);
 		task_wait(&self->task);
 		task_free(&self->task);
 		task_init(&self->task);

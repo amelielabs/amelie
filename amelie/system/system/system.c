@@ -245,6 +245,9 @@ system_stop(System* self)
 	// stop frontends
 	frontend_mgr_stop(&self->frontend_mgr);
 
+	// stop executor
+	executor_shutdown(&self->executor);
+
 	// stop backends
 	backend_mgr_stop(&self->backend_mgr);
 

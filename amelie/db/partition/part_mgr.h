@@ -43,6 +43,8 @@ part_mgr_add(PartMgr* self, PartMap* map, Part* part)
 	hashtable_set(&self->ht, &part->link_ht);
 
 	// map partition
+	if (! part_map_created(map))
+		part_map_create(map);
 	int i = part->config->min;
 	for (; i < part->config->max; i++)
 		part_map_set(map, i, part);

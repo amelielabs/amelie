@@ -65,6 +65,19 @@ executor_shutdown(Executor* self)
 	mutex_unlock(&self->lock);
 }
 
+static inline bool
+executor_add(Executor* self, Req* req)
+{
+	// add req to the backlog and schedule backlog
+	auto wakeup = backlog_add(req->arg.backlog, &req->arg.backlog_req);
+	if (wakeup)
+	{
+		list_append(&self->pending, &req->arg.backlog->link);
+		self->pending_count++;
+	}
+	return wakeup;
+}
+
 hot void
 executor_send(Executor* self, Dtr* dtr, int step, ReqList* list)
 {
@@ -95,12 +108,8 @@ executor_send(Executor* self, Dtr* dtr, int step, ReqList* list)
 		dispatch_add(&dtr->dispatch, step, req);
 
 		// add req to the backlog and schedule backlog
-		if (backlog_add(req->arg.backlog, &req->arg.backlog_req))
-		{
-			list_append(&self->pending, &req->arg.backlog->link);
-			self->pending_count++;
+		if (executor_add(self, req))
 			wakeup = true;
-		}
 	}
 
 	// wakeup next worker
@@ -164,14 +173,14 @@ executor_end(Executor* self, DtrState state)
 	list_foreach_safe(&commit->list_backlogs)
 	{
 		auto backlog = list_at(Backlog, link_commit);
-		auto req  = req_create(&self->req_mgr);
+		auto req = req_create(&self->req_mgr);
 		req->arg.type = type;
 		req->arg.backlog = backlog;
 		buf_write(&req->arg.arg, &commit->list_max, sizeof(commit->list_max));
 		list_init(&backlog->link_commit);
 
 		// add req to the backlog
-		if (backlog_add(req->arg.backlog, &req->arg.backlog_req))
+		if (executor_add(self, req))
 			wakeup = true;
 	}
 
