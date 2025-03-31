@@ -73,7 +73,7 @@ tr_abort(Tr* self)
 }
 
 hot void
-tr_commit_list(TrList* self, TrCache* cache, Tr* last)
+tr_commit_list(TrList* self, TrCache* cache, uint64_t last_id)
 {
 	// commit till the last transaction
 	list_foreach_safe(&self->list)
@@ -85,7 +85,7 @@ tr_commit_list(TrList* self, TrCache* cache, Tr* last)
 		self->list_count--;
 
 		tr_cache_push(cache, tr);
-		if (tr == last)
+		if (tr->id == last_id)
 			break;
 	}
 }

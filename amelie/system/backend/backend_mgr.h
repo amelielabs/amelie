@@ -15,16 +15,51 @@ typedef struct BackendMgr BackendMgr;
 
 struct BackendMgr
 {
-	List         list;
-	int          list_count;
-	Router       router;
+	Backend*     workers;
+	int          workers_count;
+	Executor*    executor;
 	FunctionMgr* function_mgr;
 	Db*          db;
 };
 
-void backend_mgr_init(BackendMgr*, Db*, FunctionMgr*);
-void backend_mgr_free(BackendMgr*);
-void backend_mgr_sync(BackendMgr*);
-void backend_mgr_map(BackendMgr*, PartMap*, Part*);
+static inline void
+backend_mgr_init(BackendMgr*  self,
+                 Db*          db,
+                 Executor*    executor,
+                 FunctionMgr* function_mgr)
+{
+	self->workers       = NULL;
+	self->workers_count = 0;
+	self->executor      = executor;
+	self->function_mgr  = function_mgr;
+	self->db            = db;
+}
 
-extern WorkerIf backend_mgr_if;
+static inline void
+backend_mgr_start(BackendMgr* self, int count)
+{
+	if (count == 0)
+		return;
+	self->workers_count = count;
+	self->workers = am_malloc(sizeof(Backend) * count);
+	int i = 0;
+	for (; i < count; i++)
+		backend_init(&self->workers[i], self->db, self->executor,
+		              self->function_mgr);
+	for (i = 0; i < count; i++)
+		backend_start(&self->workers[i]);
+}
+
+static inline void
+backend_mgr_stop(BackendMgr* self)
+{
+	if (self->workers == NULL)
+		return;
+	for (int i = 0; i < self->workers_count; i++)
+   	{
+		backend_stop(&self->workers[i]);
+		backend_free(&self->workers[i]);
+	}
+	am_free(self->workers);
+	self->workers = NULL;
+}

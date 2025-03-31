@@ -41,11 +41,10 @@
 #include <amelie_frontend.h>
 #include <amelie_backend.h>
 
-static void
-backend_replay(Backend* self, Tr* tr, Req* req)
+hot static void
+backend_replay(Part* part, Tr* tr, Buf* arg)
 {
-	auto db = self->vm.db;
-	for (auto pos = req->arg.start; pos < req->arg.position;)
+	for (auto pos = arg->start; pos < arg->position;)
 	{
 		// command
 		auto cmd = *(RecordCmd**)pos;
@@ -59,11 +58,6 @@ backend_replay(Backend* self, Tr* tr, Req* req)
 		if (var_int_of(&config()->wal_crc))
 			if (unlikely(! record_validate_cmd(cmd, data)))
 				error("replay: record command crc mismatch");
-
-		// partition
-		auto part = table_mgr_find_partition(&db->table_mgr, cmd->partition);
-		if (! part)
-			error("failed to find partition %" PRIu64, cmd->partition);
 
 		// replay writes
 		auto end = data + cmd->size;
@@ -86,96 +80,66 @@ backend_replay(Backend* self, Tr* tr, Req* req)
 	}
 }
 
-hot static inline void
-backend_execute(Backend* self, Tr* tr, Req* req)
-{
-	tr_set_limit(tr, req->limit);
-	vm_reset(&self->vm);
-	vm_run(&self->vm, req->local,
-	        tr,
-	        req->program->code_backend,
-	        req->program->code_data,
-	       &req->arg,
-	        req->args,
-	        req->cte,
-	       &req->result,
-	        NULL,
-	        req->start);
-}
-
-hot static inline void
-backend_req(Backend* self, Tr* tr, Req* req)
-{
-	switch (req->type) {
-	case REQ_EXECUTE:
-		backend_execute(self, tr, req);
-		break;
-	case REQ_REPLAY:
-		backend_replay(self, tr, req);
-		break;
-	case REQ_SHUTDOWN:
-		break;
-	default:
-		break;
-	}
-}
-
 hot static void
-backend_process(Backend* self, Pipe* pipe)
+backend_process(Backend* self, Req* req)
 {
-	auto tr = tr_create(&self->cache);
-	tr_begin(tr);
-
-	// read pipe and execute requests
-	pipe->tr = tr;
-	for (;;)
+	auto backlog = req->arg.backlog;	
+	switch (req->arg.type) {
+	case REQ_EXECUTE:
 	{
-		auto req = req_queue_pop(&pipe->queue);
-		assert(req);
+		auto arg = &req->arg;
+		auto dtr = req->arg.dtr;
+
+		// create and add transaction to the prepared list (even on error)
+		auto tr  = tr_create(&backlog->cache);
+		tr_begin(tr);
+		tr_set_id(tr, dtr->id);
+		tr_set_limit(tr, &dtr->limit);
+		tr_list_add(&backlog->prepared, tr);
+		arg->tr = tr;
 
 		// execute request
-		auto on_error = error_catch( backend_req(self, tr, req) );
-
-		// MSG_READY on pipe completion
-		// MSG_ERROR on pipe completion with error
-		// MSG_OK on execution
-		auto is_last = req->shutdown;
-		Buf* buf;
-		if (on_error) {
-			buf = msg_error(&am_self()->error);
-		} else
-		{
-			int id;
-			if (is_last)
-				id = MSG_READY;
-			else
-				id = MSG_OK;
-			buf = msg_create(id);
-			msg_end(buf);
-		}
-		channel_write(&pipe->src, buf);
-
-		if (is_last || on_error)
-			break;
-	}
-
-	// add transaction to the prepared list (even on error)
-	tr_list_add(&self->prepared, tr);
-}
-
-static void
-backend_rpc(Rpc* rpc, void* arg)
-{
-	Backend* self = arg;
-	switch (rpc->id) {
-	case RPC_SYNC:
-		// do nothing, just respond
-		break;
-	case RPC_STOP:
-		unused(self);
 		vm_reset(&self->vm);
+		vm_run(&self->vm, dtr->local,
+		        arg->backlog->part,
+		        dtr,
+		        tr,
+		        dtr->program->code_backend,
+		        dtr->program->code_data,
+		       &arg->arg,
+		       &dtr->cte,
+		       &arg->result,
+		        NULL,
+		        arg->start);
 		break;
-	default:
+	}
+	case REQ_REPLAY:
+	{
+		auto tr = tr_create(&backlog->cache);
+		tr_begin(tr);
+
+		// add transaction to the prepared list (even on error)
+		tr_list_add(&backlog->prepared, tr);
+		req->arg.tr = tr;
+
+		// replay commands to the partition
+		backend_replay(req->arg.backlog->part, tr, &req->arg.arg);
+		break;
+	}
+	case REQ_COMMIT:
+	{
+		// commit all prepared transaction till the last one by id
+		auto id = *buf_u64(&req->arg.arg);
+		tr_commit_list(&backlog->prepared, &backlog->cache, id);
+		break;
+	}
+	case REQ_ABORT:
+		// abort all prepared transactions
+		tr_abort_list(&backlog->prepared, &backlog->cache);
+		break;
+	case REQ_BUILD:
+		//auto build = *(Build**)msg->data;
+		//build_execute(build, &self->worker->id);
 		break;
 	}
 }
@@ -184,78 +148,38 @@ static void
 backend_main(void* arg)
 {
 	Backend* self = arg;
+	auto executor = self->executor;
 	for (;;)
 	{
-		auto buf = channel_read(&am_task->channel, -1);
-		auto msg = msg_of(buf);
-		defer_buf(buf);
-
-		switch (msg->id) {
-		case RPC_BEGIN:
-			backend_process(self, pipe_of(buf));
+		auto req = executor_next(executor);
+		if (! req)
 			break;
-		case RPC_COMMIT:
-		{
-			// commit all prepared transaction till the last one
-			tr_commit_list(&self->prepared, &self->cache, tr_of(buf));
-			break;
-		}
-		case RPC_ABORT:
-		{
-			// abort all prepared transactions
-			tr_abort_list(&self->prepared, &self->cache);
-			break;
-		}
-		case RPC_BUILD:
-		{
-			auto build = *(Build**)msg->data;
-			build_execute(build, &self->worker->id);
-			break;
-		}
-		default:
-		{
-			auto rpc = rpc_of(buf);
-			rpc_execute(rpc, backend_rpc, self);
-			break;
-		}
-		}
-
-		if (msg->id == RPC_STOP)
-			break;
+		if (error_catch(backend_process(self, req)))
+			req->arg.error = msg_error(&am_self()->error);
+		executor_complete(executor, req);
 	}
 }
 
-Backend*
-backend_allocate(Worker* worker, Db* db, FunctionMgr* function_mgr)
+void
+backend_init(Backend* self, Db* db, Executor* executor, FunctionMgr* function_mgr)
 {
-	auto self = (Backend*)am_malloc(sizeof(Backend));
-	self->worker = worker;
-	tr_list_init(&self->prepared);
-	tr_cache_init(&self->cache);
-	list_init(&self->link);
-	vm_init(&self->vm, db, NULL, NULL, NULL, function_mgr);
-	self->vm.backend = &worker->id;
+	self->executor = executor;
+	vm_init(&self->vm, db, executor, function_mgr);
 	task_init(&self->task);
-	return self;
+	list_init(&self->link);
 }
 
 void
 backend_free(Backend* self)
 {
 	vm_free(&self->vm);
-	tr_cache_free(&self->cache);
 	am_free(self);
 }
 
 void
 backend_start(Backend* self)
 {
-	Uuid id;
-	uuid_set(&id, &self->worker->config->id);
-	char name[9];
-	uuid_get_short(&id, name, sizeof(name));
-
-	task_create(&self->task, name, backend_main, self);
+	task_create(&self->task, "backend", backend_main, self);
 }
 
 void
@@ -269,10 +193,4 @@ backend_stop(Backend* self)
 		task_free(&self->task);
 		task_init(&self->task);
 	}
-}
-
-void
-backend_sync(Backend* self)
-{
-	rpc(&self->task.channel, RPC_SYNC, 0);
 }

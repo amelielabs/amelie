@@ -41,16 +41,12 @@
 #include <amelie_frontend.h>
 #include <amelie_backend.h>
 
-static void
-replay_read(Share* share, Dtr* dtr, ReqList* req_list, Record* record)
+hot static void
+replay_read(Share* share, ReqList* req_list, Record* record)
 {
-	auto router = &share->backend_mgr->router;
+	Req* last = NULL;
 
-	// redistribute rows between backends
-	Req* map[router->list_count];
-	memset(map, 0, sizeof(map));
-
-	// replay transaction log record
+	// redistribute log records between partitions
 	auto cmd = record_cmd(record);
 	auto pos = record_data(record);
 	for (auto i = record->count; i > 0; i--)
@@ -60,19 +56,35 @@ replay_read(Share* share, Dtr* dtr, ReqList* req_list, Record* record)
 		auto part = table_mgr_find_partition(table_mgr, cmd->partition);
 		if (! part)
 			error("failed to find partition %" PRIu64, cmd->partition);
-		auto route = part->route;
-		auto req = map[route->order];
-		if (req == NULL)
+
+		// find existing request to the partition
+		Req* req = NULL;
+		if (last && last->arg.backlog->part == part) {
+			req = last;
+		} else
 		{
-			req = req_create(&dtr->req_cache, REQ_REPLAY);
-			req->route = route;
-			req_list_add(req_list, req);
-			map[route->order] = req;
+			list_foreach(&req_list->list)
+			{
+				auto ref = list_at(Req, link);
+				if (ref->arg.backlog->part == part)
+				{
+					req = ref;
+					break;
+				}
+			}
 		}
+		if (! req)
+		{
+			req = req_create(&share->executor->req_mgr);
+			req->arg.type = REQ_REPLAY;
+			req->arg.backlog = &part->backlog;
+			req_list_add(req_list, req);
+		}
+		last = req;
 
 		// [cmd, pos]
-		buf_write(&req->arg, (uint8_t*)&cmd, sizeof(uint8_t**));
-		buf_write(&req->arg, (uint8_t*)&pos, sizeof(uint8_t**));
+		buf_write(&req->arg.arg, (uint8_t*)&cmd, sizeof(uint8_t**));
+		buf_write(&req->arg.arg, (uint8_t*)&pos, sizeof(uint8_t**));
 
 		pos += cmd->size;
 		cmd++;
@@ -91,16 +103,16 @@ replay(Share* share, Dtr* dtr, Record* record)
 	program.repl       = true;
 
 	dtr_reset(dtr);
-	dtr_create(dtr, &program, NULL);
+	dtr_create(dtr, &program);
 
 	ReqList req_list;
 	req_list_init(&req_list);
-	defer(req_list_free, &req_list);
+	errdefer(req_free_list, &req_list);
 
 	auto executor = share->executor;
 	auto on_error = error_catch
 	(
-		replay_read(share, dtr, &req_list, record);
+		replay_read(share, &req_list, record);
 
 		executor_send(executor, dtr, 0, &req_list);
 		executor_recv(executor, dtr, 0);

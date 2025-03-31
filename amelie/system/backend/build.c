@@ -41,6 +41,7 @@
 #include <amelie_frontend.h>
 #include <amelie_backend.h>
 
+#if 0
 void
 build_init(Build*       self,
            BuildType    type,
@@ -245,3 +246,4 @@ RecoverIf build_if =
 	.build_column_add  = build_if_column_add,
 	.build_column_drop = build_if_column_drop
 };
+#endif

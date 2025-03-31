@@ -15,17 +15,13 @@ typedef struct Backend Backend;
 
 struct Backend
 {
-	Vm      vm;
-	TrList  prepared;
-	TrCache cache;
-	Worker* worker;
-	Task    task;
-	List    link;
+	Vm        vm;
+	Executor* executor;
+	Task      task;
+	List      link;
 };
 
-Backend*
-backend_allocate(Worker*, Db*, FunctionMgr*);
+void backend_init(Backend*, Db*, Executor*, FunctionMgr*);
 void backend_free(Backend*);
 void backend_start(Backend*);
 void backend_stop(Backend*);
-void backend_sync(Backend*);
