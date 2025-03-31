@@ -67,9 +67,6 @@ ctl_show(Session* self)
 		buf = replica_mgr_list(&share->repl->replica_mgr, &id);
 		break;
 	}
-	case SHOW_BACKENDS:
-		buf = worker_mgr_list(&share->db->worker_mgr, NULL);
-		break;
 	case SHOW_REPL:
 		buf = repl_status(share->repl);
 		break;
