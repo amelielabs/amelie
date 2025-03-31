@@ -133,8 +133,7 @@ parse_select_pushdown(Stmt* self, AstSelect* select)
 {
 	// find partitioned or shared table in the outer SELECT FROM targets
 	//
-	// the table partitions will be used during execution, the query will be executed
-	// on one or more backends
+	// the table partitions will be used during execution
 	//
 	select->pushdown_target = targets_match_by(&select->targets, TARGET_TABLE);
 	if (! select->pushdown_target)
@@ -147,14 +146,15 @@ parse_select_pushdown(Stmt* self, AstSelect* select)
 
 	// analyze subqueries to match any shared tables being used
 	//
-	// the query will be executed on first backend (without using partition target)
+	// the full query will be executed on first shared table partition
+	// (without using partition target)
 	//
 	for (auto ref = self->select_list.list->next; ref; ref = ref->next)
 	{
 		auto query = ast_select_of(ref->ast);
 		if (targets_match_by(&query->targets, TARGET_TABLE_SHARED))
 		{
-			select->pushdown = PUSHDOWN_FIRST;
+			select->pushdown = PUSHDOWN_FULL;
 			return;
 		}
 	}
