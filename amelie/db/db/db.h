@@ -22,7 +22,7 @@ struct Db
 	WalMgr        wal_mgr;
 };
 
-void db_init(Db*, PartMapper, void*);
+void db_init(Db*);
 void db_free(Db*);
 void db_open(Db*);
 void db_close(Db*);

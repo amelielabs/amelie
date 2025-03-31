@@ -19,7 +19,7 @@ struct TableMgr
 	PartMgr   part_mgr;
 };
 
-void   table_mgr_init(TableMgr*, PartMapper, void*);
+void   table_mgr_init(TableMgr*);
 void   table_mgr_free(TableMgr*);
 bool   table_mgr_create(TableMgr*, Tr*, TableConfig*, bool);
 void   table_mgr_drop(TableMgr*, Tr*, Str*, Str*, bool);

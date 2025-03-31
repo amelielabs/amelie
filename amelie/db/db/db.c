@@ -25,12 +25,10 @@
 #include <amelie_db.h>
 
 void
-db_init(Db*        self,
-        PartMapper mapper,
-        void*      mapper_arg)
+db_init(Db* self)
 {
 	schema_mgr_init(&self->schema_mgr);
-	table_mgr_init(&self->table_mgr, mapper, mapper_arg);
+	table_mgr_init(&self->table_mgr);
 	checkpoint_mgr_init(&self->checkpoint_mgr, &db_checkpoint_if, self);
 	checkpointer_init(&self->checkpointer, &self->checkpoint_mgr);
 	wal_mgr_init(&self->wal_mgr);

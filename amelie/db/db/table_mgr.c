@@ -25,10 +25,10 @@
 #include <amelie_db.h>
 
 void
-table_mgr_init(TableMgr* self, PartMapper mapper, void* mapper_arg)
+table_mgr_init(TableMgr* self)
 {
 	handle_mgr_init(&self->mgr);
-	part_mgr_init(&self->part_mgr, mapper, mapper_arg);
+	part_mgr_init(&self->part_mgr);
 }
 
 void

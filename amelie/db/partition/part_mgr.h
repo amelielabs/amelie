@@ -13,20 +13,14 @@
 
 typedef struct PartMgr PartMgr;
 
-typedef void (*PartMapper)(void*, PartMap*, Part*);
-
 struct PartMgr
 {
-	Hashtable  ht;
-	PartMapper mapper;
-	void*      mapper_arg;
+	Hashtable ht;
 };
 
 static inline void
-part_mgr_init(PartMgr* self, PartMapper mapper, void* mapper_arg)
+part_mgr_init(PartMgr* self)
 {
-	self->mapper = mapper;
-	self->mapper_arg = mapper_arg;
 	hashtable_init(&self->ht);
 }
 
@@ -49,7 +43,9 @@ part_mgr_add(PartMgr* self, PartMap* map, Part* part)
 	hashtable_set(&self->ht, &part->link_ht);
 
 	// map partition
-	self->mapper(self->mapper_arg, map, part);
+	int i = part->config->min;
+	for (; i < part->config->max; i++)
+		part_map_set(map, i, part);
 }
 
 static inline void
