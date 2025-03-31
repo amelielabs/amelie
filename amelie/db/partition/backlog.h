@@ -17,7 +17,6 @@ typedef struct Part       Part;
 
 struct BacklogReq
 {
-	Tr*  tr;
 	List link;
 };
 
@@ -35,7 +34,6 @@ struct Backlog
 static inline void
 backlog_req_init(BacklogReq* self)
 {
-	self->tr = NULL;
 	list_init(&self->link);
 }
 
