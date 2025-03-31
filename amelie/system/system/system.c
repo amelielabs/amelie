@@ -71,16 +71,16 @@ system_create(void)
 
 	// frontend/backend mgr
 	frontend_mgr_init(&self->frontend_mgr);
-	backend_mgr_init(&self->backend_mgr, &self->db, &self->function_mgr);
-	executor_init(&self->executor, &self->db, &self->backend_mgr.router);
+	backend_mgr_init(&self->backend_mgr, &self->db, &self->executor,
+	                 &self->function_mgr);
+	executor_init(&self->executor, &self->db);
 	rpc_queue_init(&self->lock_queue);
 
 	// vm
 	function_mgr_init(&self->function_mgr);
 
 	// db
-	db_init(&self->db, (PartMapper)backend_mgr_map, &self->backend_mgr,
-	        &backend_mgr_if, &self->backend_mgr);
+	db_init(&self->db);
 
 	// replication
 	repl_init(&self->repl, &self->db);
@@ -103,7 +103,6 @@ system_free(System* self)
 	repl_free(&self->repl);
 	executor_free(&self->executor);
 	db_free(&self->db);
-	backend_mgr_free(&self->backend_mgr);
 	function_mgr_free(&self->function_mgr);
 	server_free(&self->server);
 	user_mgr_free(&self->user_mgr);
@@ -132,7 +131,7 @@ system_on_frontend_connect(Frontend* frontend, Client* client)
 static void
 system_recover(System* self)
 {
-	// ask each backend to recover last checkpoint partitions in parallel
+	// ask each partition to recover last checkpoint
 	int workers = var_int_of(&config()->backends);
 	info("⟶ recover checkpoint %" PRIu64 " (using %d backends)",
 	     state_checkpoint(), workers);
@@ -155,8 +154,6 @@ system_recover(System* self)
 static void
 system_bootstrap(System* self)
 {
-	// create backend workers
-	backend_bootstrap(&self->db, var_int_of(&config()->backends));
 	state_lsn_set(1);
 
 	// create initial checkpoint, mostly to ensure that backend
@@ -191,8 +188,11 @@ system_start(System* self, bool bootstrap)
 	// open user manager
 	user_mgr_open(&self->user_mgr);
 
-	// create system object and objects from last snapshot (including backends)
+	// create system object and objects from last snapshot
 	db_open(&self->db);
+
+	// start backends
+	backend_mgr_start(&self->backend_mgr, var_int_of(&config()->backends));
 
 	// do parallel recover of snapshots and wal
 	system_recover(self);
@@ -208,11 +208,10 @@ system_start(System* self, bool bootstrap)
 	wal_periodic_start(&self->db.wal_mgr.wal_periodic);
 
 	// start frontends
-	int workers = var_int_of(&config()->frontends);
 	frontend_mgr_start(&self->frontend_mgr,
 	                   system_on_frontend_connect,
 	                   self,
-	                   workers);
+	                   var_int_of(&config()->frontends));
 
 	// synchronize caches
 	frontend_mgr_sync_users(&self->frontend_mgr, &self->user_mgr.cache);
@@ -245,6 +244,9 @@ system_stop(System* self)
 
 	// stop frontends
 	frontend_mgr_stop(&self->frontend_mgr);
+
+	// stop backends
+	backend_mgr_stop(&self->backend_mgr);
 
 	// close db
 	db_close(&self->db);
@@ -305,7 +307,9 @@ system_lock(System* self, Rpc* rpc)
 		//
 		// even with exclusive lock, there is a chance that
 		// last abort did not not finished yet
-		backend_mgr_sync(&self->backend_mgr);
+
+		//backend_mgr_sync(&self->backend_mgr);
+		// TODO
 
 		rpc_done(rpc);
 		self->lock = true;

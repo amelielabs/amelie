@@ -83,22 +83,23 @@ system_metrics_process(System* self, Buf* buf)
 	auto  fe = &self->frontend_mgr;
 	auto  be = &self->backend_mgr;
 
-	int      workers = fe->workers_count + be->list_count;
+	int      workers = fe->workers_count + be->workers_count;
 	int      workers_id[workers];
 	uint64_t workers_usage[workers];
-	int i = 0;
-	for (; i < fe->workers_count; i++)
+	auto pos = 0;
+	for (auto i = 0; i < fe->workers_count; i++)
 	{
 		workers_id[i] = fe->workers[i].task.thread.tid;
 		workers_usage[i] = 0;
 	}
-	list_foreach(&be->list)
+	pos = fe->workers_count;
+	for (auto i = 0; i < be->workers_count; i++)
 	{
-		auto backend = list_at(Backend, link);
-		workers_id[i] = backend->task.thread.tid;
-		workers_usage[i] = 0;
-		i++;
+		workers_id[pos] = be->workers[i].task.thread.tid;
+		workers_usage[pos] = 0;
+		pos++;
 	}
+
 	os_cpuusage(workers, workers_id, workers_usage);
 
 	// {}
@@ -131,16 +132,19 @@ system_metrics_process(System* self, Buf* buf)
 	// cpu_frontends
 	encode_raw(buf, "cpu_frontends", 13);
 	encode_array(buf);
-	i = 0;
-	for (; i < fe->workers_count; i++)
+	for (auto i = 0; i < fe->workers_count; i++)
 		encode_integer(buf, workers_usage[i]);
 	encode_array_end(buf);
 
 	// cpu_backends
 	encode_raw(buf, "cpu_backends", 12);
 	encode_array(buf);
-	list_foreach(&be->list)
-		encode_integer(buf, workers_usage[i]);
+	pos = fe->workers_count;
+	for (auto i = 0; i < be->workers_count; i++)
+	{
+		encode_integer(buf, workers_usage[pos]);
+		pos++;
+	}
 	encode_array_end(buf);
 
 	encode_obj_end(buf);

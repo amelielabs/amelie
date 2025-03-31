@@ -37,6 +37,8 @@ config_prepare(Config* self)
 	auto default_be = cpus - default_fe;
 	if (default_fe == 0)
 		default_fe = 1;
+	if (default_be == 0)
+		default_be = 1;
 
 	VarDef defs[] =
 	{
@@ -61,7 +63,7 @@ config_prepare(Config* self)
 		{ "limit_write",             VAR_INT,    VAR_C,                   &self->limit_write,             NULL,          0                   },
 		// io and compute
 		{ "frontends",               VAR_INT,    VAR_C|VAR_Z,             &self->frontends,               NULL,          default_fe          },
-		{ "backends",                VAR_INT,    VAR_C|VAR_H|VAR_E,       &self->backends,                NULL,          default_be          },
+		{ "backends",                VAR_INT,    VAR_C|VAR_Z,             &self->backends,                NULL,          default_be          },
 		// wal
 		{ "wal_worker",              VAR_BOOL,   VAR_C,                   &self->wal_worker,              NULL,          true                },
 		{ "wal_crc",                 VAR_BOOL,   VAR_C,                   &self->wal_crc,                 NULL,          true                },
