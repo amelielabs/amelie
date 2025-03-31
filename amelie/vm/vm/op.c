@@ -278,10 +278,9 @@ OpDesc ops[] =
 	{ CUPDATE_STORE, "update_store" },
 
 	// result
-	{ CSEND, "send" },
+	{ CSEND_SHARD, "send_shard" },
 	{ CSEND_LOOKUP, "send_lookup" },
 	{ CSEND_ALL, "send_all" },
-	{ CSEND_FIRST, "send_first" },
 	{ CRECV, "recv" },
 	{ CRECV_TO, "recv_to" },
 
@@ -365,7 +364,7 @@ op_dump(Code* self, CodeData* data, Buf* buf)
 		case CSET_PTR:
 			op_write(output, op, true, false, true, NULL);
 			break;
-		case CSEND:
+		case CSEND_SHARD:
 		case CSEND_LOOKUP:
 		case CSEND_ALL:
 		{

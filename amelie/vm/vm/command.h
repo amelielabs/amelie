@@ -11,9 +11,8 @@
 // AGPL-3.0 Licensed.
 //
 
-void csend(Vm*, Op*);
+void csend_shard(Vm*, Op*);
 void csend_lookup(Vm*, Op*);
-void csend_first(Vm*, Op*);
 void csend_all(Vm*, Op*);
 void crecv(Vm*, Op*);
 void crecv_to(Vm*, Op*);

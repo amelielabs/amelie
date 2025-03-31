@@ -40,22 +40,19 @@
 void
 vm_init(Vm*          self,
         Db*          db,
-        Uuid*        backend,
         Executor*    executor,
-        Dtr*         dtr,
         FunctionMgr* function_mgr)
 {
 	self->code         = NULL;
 	self->code_data    = NULL;
 	self->code_arg     = NULL;
-	self->args         = NULL;
-	self->backend      = backend;
 	self->executor     = executor;
-	self->dtr          = dtr;
+	self->part         = NULL;
+	self->dtr          = NULL;
+	self->tr           = NULL;
 	self->cte          = NULL;
 	self->result       = NULL;
 	self->content      = NULL;
-	self->tr           = NULL;
 	self->local        = NULL;
 	self->function_mgr = function_mgr;
 	self->db           = db;
@@ -86,7 +83,7 @@ vm_reset(Vm* self)
 	self->code      = NULL;
 	self->code_data = NULL;
 	self->code_arg  = NULL;
-	self->args      = NULL;
+	self->part      = NULL;
 }
 
 #define op_start goto *ops[(op)->op]
@@ -96,22 +93,24 @@ vm_reset(Vm* self)
 hot void
 vm_run(Vm*       self,
        Local*    local,
+       Part*     part,
+       Dtr*      dtr,
        Tr*       tr,
        Code*     code,
        CodeData* code_data,
        Buf*      code_arg,
-       Buf*      args,
        Result*   cte,
        Value*    result,
        Content*  content,
        int       start)
 {
 	self->local     = local;
+	self->part      = part;
+	self->dtr       = dtr;
 	self->tr        = tr;
 	self->code      = code;
 	self->code_data = code_data;
 	self->code_arg  = code_arg;
-	self->args      = args;
 	self->cte       = cte;
 	self->result    = result;
 	self->content   = content;
@@ -360,10 +359,9 @@ vm_run(Vm*       self,
 		&&cupdate_store,
 
 		// executor
-		&&csend,
+		&&csend_shard,
 		&&csend_lookup,
 		&&csend_all,
-		&&csend_first,
 		&&crecv,
 		&&crecv_to,
 
@@ -1755,8 +1753,8 @@ cupdate_store:
 	cupdate_store(self, op);
 	op_next;
 
-csend:
-	csend(self, op);
+csend_shard:
+	csend_shard(self, op);
 	op_next;
 
 csend_lookup:
@@ -1765,10 +1763,6 @@ csend_lookup:
 
 csend_all:
 	csend_all(self, op);
-	op_next;
-
-csend_first:
-	csend_first(self, op);
 	op_next;
 
 crecv:
