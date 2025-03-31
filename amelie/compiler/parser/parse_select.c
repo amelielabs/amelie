@@ -147,14 +147,15 @@ parse_select_pushdown(Stmt* self, AstSelect* select)
 	// analyze subqueries to match any shared tables being used
 	//
 	// the full query will be executed on first shared table partition
-	// (without using partition target)
 	//
 	for (auto ref = self->select_list.list->next; ref; ref = ref->next)
 	{
-		auto query = ast_select_of(ref->ast);
-		if (targets_match_by(&query->targets, TARGET_TABLE_SHARED))
+		auto query  = ast_select_of(ref->ast);
+		auto target = targets_match_by(&query->targets, TARGET_TABLE_SHARED);
+		if (target)
 		{
 			select->pushdown = PUSHDOWN_FULL;
+			select->pushdown_target = target;
 			return;
 		}
 	}

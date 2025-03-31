@@ -23,7 +23,7 @@ struct Compiler
 	CodeData code_data;
 	SetCache values_cache;
 	Columns* args;
-	bool     snapshot;
+	bool     exclusive;
 	Stmt*    current;
 	Stmt*    last;
 	Db*      db;

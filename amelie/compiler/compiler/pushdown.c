@@ -243,9 +243,9 @@ pushdown(Compiler* self, Ast* ast)
 }
 
 void
-pushdown_first(Compiler* self, Ast* ast)
+pushdown_full(Compiler* self, Ast* ast)
 {
-	// emit select query as is and pushdown to the first backend
+	// emit full query
 	int r = emit_select(self, ast);
 
 	// CRESULT (return set)
