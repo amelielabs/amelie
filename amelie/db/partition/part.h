@@ -17,9 +17,11 @@ struct Part
 {
 	List          indexes;
 	int           indexes_count;
+	int           order;
 	Sequence*     seq;
 	bool          unlogged;
 	Heap          heap;
+	Backlog       backlog;
 	PartConfig*   config;
 	List          link_cp;
 	List          link;

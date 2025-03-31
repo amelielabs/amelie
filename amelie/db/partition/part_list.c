@@ -67,6 +67,7 @@ part_list_create(PartList* self,
 
 		// prepare part
 		auto part = part_allocate(config, seq, unlogged);
+		part->order = self->list_count;
 		list_append(&self->list, &part->link);
 		self->list_count++;
 	}
