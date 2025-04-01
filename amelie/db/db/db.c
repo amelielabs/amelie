@@ -25,10 +25,11 @@
 #include <amelie_db.h>
 
 void
-db_init(Db* self)
+db_init(Db* self, PartRouteFn route_fn, void* route_fn_arg)
 {
 	schema_mgr_init(&self->schema_mgr);
-	table_mgr_init(&self->table_mgr);
+	table_mgr_init(&self->table_mgr, &self->part_mgr);
+	part_mgr_init(&self->part_mgr, route_fn, route_fn_arg);
 	checkpoint_mgr_init(&self->checkpoint_mgr, &db_checkpoint_if, self);
 	checkpointer_init(&self->checkpointer, &self->checkpoint_mgr);
 	wal_mgr_init(&self->wal_mgr);
@@ -38,6 +39,7 @@ void
 db_free(Db* self)
 {
 	table_mgr_free(&self->table_mgr);
+	part_mgr_free(&self->part_mgr);
 	schema_mgr_free(&self->schema_mgr);
 	checkpoint_mgr_free(&self->checkpoint_mgr);
 	wal_mgr_free(&self->wal_mgr);

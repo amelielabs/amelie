@@ -22,12 +22,11 @@
 #include <amelie_partition.h>
 
 void
-part_list_init(PartList* self, PartMgr* mgr)
+part_list_init(PartList* self)
 {
 	self->shared     = false;
 	self->unlogged   = false;
 	self->list_count = 0;
-	self->mgr        = mgr;
 	list_init(&self->list);
 	part_map_init(&self->map);
 }
@@ -35,14 +34,10 @@ part_list_init(PartList* self, PartMgr* mgr)
 void
 part_list_free(PartList* self)
 {
-	// free mapping
 	part_map_free(&self->map);
-
-	// unregister and free partitions
 	list_foreach_safe(&self->list)
 	{
 		auto part = list_at(Part, link);
-		part_mgr_del(self->mgr, part);
 		part_free(part);
 	}
 	self->list_count = 0;
@@ -82,11 +77,15 @@ part_list_create(PartList* self,
 void
 part_list_map(PartList* self)
 {
-	// register and create partitions mappings
+	// create partition mapping
 	list_foreach(&self->list)
 	{
 		auto part = list_at(Part, link);
-		part_mgr_add(self->mgr, &self->map, part);
+		if (! part_map_created(&self->map))
+			part_map_create(&self->map);
+		int i = part->config->min;
+		for (; i < part->config->max; i++)
+			part_map_set(&self->map, i, part);
 	}
 }
 

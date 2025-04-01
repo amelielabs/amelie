@@ -15,15 +15,14 @@ typedef struct PartList PartList;
 
 struct PartList
 {
-	bool     shared;
-	bool     unlogged;
-	List     list;
-	int      list_count;
-	PartMap  map;
-	PartMgr* mgr;
+	bool    shared;
+	bool    unlogged;
+	List    list;
+	int     list_count;
+	PartMap map;
 };
 
-void  part_list_init(PartList*, PartMgr*);
+void  part_list_init(PartList*);
 void  part_list_free(PartList*);
 void  part_list_create(PartList*, bool, bool, Sequence*, List*, List*);
 void  part_list_map(PartList*);

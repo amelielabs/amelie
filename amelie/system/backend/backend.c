@@ -61,7 +61,7 @@ backend_replay(Backend* self, Tr* tr, Buf* arg)
 				error("replay: record command crc mismatch");
 
 		// partition
-		auto part = table_mgr_find_partition(&db->table_mgr, cmd->partition);
+		auto part = part_mgr_find(&db->part_mgr, cmd->partition);
 		if (! part)
 			error("failed to find partition %" PRIu64, cmd->partition);
 

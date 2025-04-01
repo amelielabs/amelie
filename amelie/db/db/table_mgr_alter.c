@@ -239,6 +239,8 @@ column_add_if_commit(Log* self, LogOp* op)
 
 	// remap new table partitions (partitions has same ids)
 	part_list_map(&table->part_list);
+	part_mgr_attach(table->part_mgr, &table->part_list);
+
 	buf_free(handle->data);
 }
 
@@ -281,7 +283,7 @@ table_mgr_column_add(TableMgr* self,
 	// physical column require a new table
 
 	// allocate new table
-	auto table_new = table_allocate(table->config, &self->part_mgr);
+	auto table_new = table_allocate(table->config, self->part_mgr);
 
 	// add new column
 	auto column_new = column_copy(column);
@@ -329,7 +331,7 @@ table_mgr_column_drop(TableMgr* self,
 	// physical column require new table rebuild
 
 	// allocate new table
-	auto table_new = table_allocate(table->config, &self->part_mgr);
+	auto table_new = table_allocate(table->config, self->part_mgr);
 
 	// delete and reorder columns and update keys
 	auto column_new = columns_find(&table_new->config->columns, &column->name);

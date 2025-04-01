@@ -64,7 +64,7 @@ recover_cmd(Recover* self, RecordCmd* cmd, uint8_t** pos)
 	case CMD_REPLACE:
 	{
 		// find partition by id
-		auto part = table_mgr_find_partition(&db->table_mgr, cmd->partition);
+		auto part = part_mgr_find(&db->part_mgr, cmd->partition);
 		if (! part)
 			error("failed to find partition %" PRIu64, cmd->partition);
 		auto end = *pos + cmd->size;
@@ -79,7 +79,7 @@ recover_cmd(Recover* self, RecordCmd* cmd, uint8_t** pos)
 	case CMD_DELETE:
 	{
 		// find partition by id
-		auto part = table_mgr_find_partition(&db->table_mgr, cmd->partition);
+		auto part = part_mgr_find(&db->part_mgr, cmd->partition);
 		if (! part)
 			error("failed to find partition %" PRIu64, cmd->partition);
 		auto end = *pos + cmd->size;

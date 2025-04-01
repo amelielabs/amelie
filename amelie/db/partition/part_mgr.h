@@ -13,14 +13,20 @@
 
 typedef struct PartMgr PartMgr;
 
+typedef void (*PartRouteFn)(PartList*, void*);
+
 struct PartMgr
 {
-	Hashtable ht;
+	Hashtable   ht;
+	PartRouteFn route_fn;
+	void*       route_fn_arg;
 };
 
 static inline void
-part_mgr_init(PartMgr* self)
+part_mgr_init(PartMgr* self, PartRouteFn route_fn, void* route_fn_arg)
 {
+	self->route_fn     = route_fn;
+	self->route_fn_arg = route_fn_arg;
 	hashtable_init(&self->ht);
 }
 
@@ -31,29 +37,34 @@ part_mgr_free(PartMgr* self)
 }
 
 static inline void
-part_mgr_add(PartMgr* self, PartMap* map, Part* part)
+part_mgr_attach(PartMgr* self, PartList* list)
 {
+	// register partitions by id
 	if (unlikely(! hashtable_created(&self->ht)))
 		hashtable_create(&self->ht, 256);
-	hashtable_reserve(&self->ht);
 
-	// register partition by id
-	uint32_t id = part->config->id;
-	part->link_ht.hash = hash_murmur3_32((uint8_t*)&id, sizeof(id), 0);
-	hashtable_set(&self->ht, &part->link_ht);
+	list_foreach(&list->list)
+	{
+		auto part = list_at(Part, link);
 
-	// map partition
-	if (! part_map_created(map))
-		part_map_create(map);
-	int i = part->config->min;
-	for (; i < part->config->max; i++)
-		part_map_set(map, i, part);
+		hashtable_reserve(&self->ht);
+		uint32_t id = part->config->id;
+		part->link_ht.hash = hash_murmur3_32((uint8_t*)&id, sizeof(id), 0);
+		hashtable_set(&self->ht, &part->link_ht);
+	}
+
+	// assign routes to partitions
+	self->route_fn(list, self->route_fn_arg);
 }
 
 static inline void
-part_mgr_del(PartMgr* self, Part* part)
+part_mgr_detach(PartMgr* self, PartList* list)
 {
-	hashtable_delete(&self->ht, &part->link_ht);
+	list_foreach(&list->list)
+	{
+		auto part = list_at(Part, link);
+		hashtable_delete(&self->ht, &part->link_ht);
+	}
 }
 
 hot static inline bool

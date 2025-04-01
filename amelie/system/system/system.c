@@ -52,6 +52,23 @@ system_save_state(void* arg)
 	state_save(state(), path);
 }
 
+static void
+system_route(PartList* list, void* arg)
+{
+	// redistribute partitions across backends
+	System* self = arg;
+	auto backend_mgr = &self->backend_mgr;
+	auto order = 0;
+	list_foreach(&list->list)
+	{
+		auto part = list_at(Part, link);
+		if (order == backend_mgr->workers_count)
+			order = 0;
+		part->route = &backend_mgr->workers[order].route;
+		order++;
+	}
+}
+
 System*
 system_create(void)
 {
@@ -80,7 +97,7 @@ system_create(void)
 	function_mgr_init(&self->function_mgr);
 
 	// db
-	db_init(&self->db);
+	db_init(&self->db, system_route, self);
 
 	// replication
 	repl_init(&self->repl, &self->db);
