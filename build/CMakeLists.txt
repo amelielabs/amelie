@@ -196,7 +196,6 @@ set(AMELIE_SOURCES_DB
     ${AMELIE_ROOT}/db/db/table_mgr.c
     ${AMELIE_ROOT}/db/db/table_mgr_alter.c
     ${AMELIE_ROOT}/db/db/table_index.c
-    ${AMELIE_ROOT}/db/db/worker_mgr.c
     ${AMELIE_ROOT}/db/db/db.c
     ${AMELIE_ROOT}/db/db/db_checkpoint.c
     ${AMELIE_ROOT}/db/db/recover_checkpoint.c
@@ -253,7 +252,6 @@ set(AMELIE_SOURCES_COMPILER
     ${AMELIE_ROOT}/compiler/parser/parse_token.c
     ${AMELIE_ROOT}/compiler/parser/parse_replica.c
     ${AMELIE_ROOT}/compiler/parser/parse_repl.c
-    ${AMELIE_ROOT}/compiler/parser/parse_backend.c
     ${AMELIE_ROOT}/compiler/parser/parse_watch.c
     ${AMELIE_ROOT}/compiler/parser/parse_schema.c
     ${AMELIE_ROOT}/compiler/parser/parse_table.c
@@ -286,8 +284,6 @@ set(AMELIE_SOURCES_COMPILER
 set(AMELIE_SOURCES_SYSTEM
     ${AMELIE_ROOT}/system/frontend/frontend.c
     ${AMELIE_ROOT}/system/backend/backend.c
-    ${AMELIE_ROOT}/system/backend/backend_mgr.c
-    ${AMELIE_ROOT}/system/backend/backend_bootstrap.c
     ${AMELIE_ROOT}/system/backend/build.c
     ${AMELIE_ROOT}/system/backend/replay.c
     ${AMELIE_ROOT}/system/session/explain.c
