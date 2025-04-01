@@ -26,6 +26,7 @@ struct Dispatch
 	Buf      steps_data;
 	int      steps;
 	int      steps_recv;
+	int      routes;
 	ReqCache req_cache;
 };
 
@@ -38,8 +39,9 @@ dispatch_at(Dispatch* self, int order)
 static inline void
 dispatch_init(Dispatch* self)
 {
-	self->steps = 0;
+	self->steps      = 0;
 	self->steps_recv = 0;
+	self->routes     = 0;
 	buf_init(&self->steps_data);
 	req_cache_init(&self->req_cache);
 }
@@ -56,7 +58,8 @@ dispatch_reset(Dispatch* self)
 	}
 	buf_reset(&self->steps_data);
 	self->steps_recv = 0;
-	self->steps = 0;
+	self->steps      = 0;
+	self->routes     = 0;
 }
 
 static inline void
@@ -83,6 +86,8 @@ dispatch_create(Dispatch* self, int steps)
 		channel_init(&step->src);
 		channel_attach(&step->src);
 	}
+
+	self->routes = var_int_of(&config()->backends);
 }
 
 hot static inline void

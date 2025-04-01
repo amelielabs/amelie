@@ -22,7 +22,7 @@ struct Vm
 	Buf*         code_arg;
 	CursorMgr    cursor_mgr;
 	Executor*    executor;
-	Part*        part;
+	Route*       route;
 	Dtr*         dtr;
 	Tr*          tr;
 	Result*      cte;
@@ -37,5 +37,5 @@ struct Vm
 void vm_init(Vm*, Db*, Executor*, FunctionMgr*);
 void vm_free(Vm*);
 void vm_reset(Vm*);
-void vm_run(Vm*, Local*, Part*, Dtr*, Tr*, Code*, CodeData*, Buf*,
+void vm_run(Vm*, Local*, Route*, Dtr*, Tr*, Code*, CodeData*, Buf*,
             Result*, Value*, Content*, int);

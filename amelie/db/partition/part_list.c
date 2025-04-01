@@ -130,3 +130,15 @@ part_list_index_drop(PartList* self, IndexConfig* config)
 		part_index_drop(part, config);
 	}
 }
+
+hot Part*
+part_list_match(PartList* self, Route* route)
+{
+	list_foreach(&self->list)
+	{
+		auto part = list_at(Part, link);
+		if (part->route == route)
+			return part;
+	}
+	return NULL;
+}
