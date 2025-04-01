@@ -22,13 +22,14 @@ struct BacklogReq
 
 struct Backlog
 {
-	List    list;
-	int     list_count;
-	TrList  prepared;
-	TrCache cache;
-	Part*   part;
-	List    link_commit;
-	List    link;
+	List     list;
+	int      list_count;
+	TrList   prepared;
+	TrCache  cache;
+	Part*    part;
+	bool     commit;
+	Backlog* commit_next;
+	List     link;
 };
 
 static inline void
@@ -40,12 +41,13 @@ backlog_req_init(BacklogReq* self)
 static inline void
 backlog_init(Backlog* self, Part* part)
 {
-	self->list_count = 0;
-	self->part       = part;
+	self->list_count  = 0;
+	self->commit      = false;
+	self->commit_next = NULL;
+	self->part        = part;
 	list_init(&self->list);
 	tr_list_init(&self->prepared);
 	tr_cache_init(&self->cache);
-	list_init(&self->link_commit);
 	list_init(&self->link);
 }
 
@@ -81,6 +83,8 @@ backlog_end(Backlog* self, BacklogReq* req)
 {
 	auto first = list_pop(&self->list);
 	assert(first == &req->link);
+	unused(first);
+	unused(req);
 	self->list_count--;
 	return self->list_count > 0;
 }

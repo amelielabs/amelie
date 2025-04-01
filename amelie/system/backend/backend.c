@@ -83,8 +83,6 @@ backend_replay(Part* part, Tr* tr, Buf* arg)
 hot static void
 backend_process(Backend* self, Req* req)
 {
-	info("%d", req->arg.type);
-
 	auto backlog = req->arg.backlog;	
 	switch (req->arg.type) {
 	case REQ_EXECUTE:

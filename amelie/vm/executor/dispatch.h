@@ -45,8 +45,6 @@ dispatch_init(Dispatch* self)
 static inline void
 dispatch_reset(Dispatch* self)
 {
-	self->steps_recv = 0;
-	self->steps = 0;
 	for (auto i = 0; i < self->steps; i++)
 	{
 		auto step = dispatch_at(self, i);
@@ -55,6 +53,8 @@ dispatch_reset(Dispatch* self)
 		channel_free(&step->src);
 	}
 	buf_reset(&self->steps_data);
+	self->steps_recv = 0;
+	self->steps = 0;
 }
 
 static inline void

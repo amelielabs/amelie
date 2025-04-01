@@ -41,7 +41,6 @@
 #include <amelie_frontend.h>
 #include <amelie_backend.h>
 
-#if 0
 void
 build_init(Build*       self,
            BuildType    type,
@@ -67,6 +66,7 @@ build_free(Build* self)
 	channel_free(&self->channel);
 }
 
+#if 0
 static inline void
 build_run_first(Build* self)
 {
@@ -247,3 +247,20 @@ RecoverIf build_if =
 	.build_column_drop = build_if_column_drop
 };
 #endif
+
+void
+build_execute(Build* self, Uuid* worker)
+{
+	(void)self;
+	(void)worker;
+}
+
+void
+build_run(Build* self)
+{
+	(void)self;
+}
+
+RecoverIf build_if =
+{
+};

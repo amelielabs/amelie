@@ -18,7 +18,7 @@ struct Commit
 	uint64_t  list_max;
 	int       list_count;
 	List      list;
-	List      list_backlogs;
+	Backlog*  backlogs;
 	WriteList write;
 };
 
@@ -27,23 +27,26 @@ commit_init(Commit* self)
 {
 	self->list_max   = 0;
 	self->list_count = 0;
+	self->backlogs   = NULL;
 	list_init(&self->list);
-	list_init(&self->list_backlogs);
 	write_list_init(&self->write);
 }
 
 static inline void
 commit_reset(Commit* self)
 {
-	list_foreach_safe(&self->list_backlogs)
+	auto backlog = self->backlogs;
+	while (backlog)
 	{
-		auto backlog = list_at(Backlog, link_commit);
-		list_init(&backlog->link_commit);
+		auto next = backlog->commit_next;
+		backlog->commit = false;
+		backlog->commit_next = NULL;
+		backlog = next;
 	}
+	self->backlogs = NULL;
 	self->list_max   = 0;
 	self->list_count = 0;
 	list_init(&self->list);
-	list_init(&self->list_backlogs);
 	write_list_reset(&self->write);
 }
 
@@ -66,8 +69,12 @@ commit_add(Commit* self, Dtr* dtr)
 		list_foreach(&step->list.list)
 		{
 			auto req = list_at(Req, link);
-			if (list_empty(&req->arg.backlog->link_commit))
-				list_append(&self->list_backlogs, &req->arg.backlog->link_commit);
+			auto backlog = req->arg.backlog;
+			if (backlog->commit)
+				continue;
+			backlog->commit = true;
+			backlog->commit_next = self->backlogs;
+			self->backlogs = backlog;
 		}
 	}
 }

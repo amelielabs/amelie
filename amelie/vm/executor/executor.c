@@ -114,7 +114,7 @@ executor_send(Executor* self, Dtr* dtr, int step, ReqList* list)
 
 	// wakeup next worker
 	if (wakeup)
-		cond_var_signal(&self->cond_var);
+		cond_var_broadcast(&self->cond_var);
 
 	mutex_unlock(&self->lock);
 
@@ -169,24 +169,30 @@ executor_end(Executor* self, DtrState state)
 		executor_prepare(self, true);
 		type = REQ_ABORT;
 	}
-	auto wakeup = false;
-	list_foreach_safe(&commit->list_backlogs)
+
+	auto wakeup  = false;
+	auto backlog = commit->backlogs;
+	while (backlog)
 	{
-		auto backlog = list_at(Backlog, link_commit);
 		auto req = req_create(&self->req_mgr);
 		req->arg.type = type;
 		req->arg.backlog = backlog;
 		buf_write(&req->arg.arg, &commit->list_max, sizeof(commit->list_max));
-		list_init(&backlog->link_commit);
 
 		// add req to the backlog
 		if (executor_add(self, req))
 			wakeup = true;
+
+		auto next = backlog->commit_next;
+		backlog->commit = false;
+		backlog->commit_next = NULL;
+		backlog = next;
 	}
+	commit->backlogs = NULL;
 
 	// wakeup next worker
 	if (wakeup)
-		cond_var_signal(&self->cond_var);
+		cond_var_broadcast(&self->cond_var);
 
 	// finilize distributed transactions
 	list_foreach(&commit->list)
@@ -372,20 +378,6 @@ executor_next(Executor* self)
 void
 executor_complete(Executor* self, Req* req)
 {
-	// send OK or ERROR based on the req result
-	if (req->arg.dtr)
-	{
-		int id;
-		if (req->arg.error)
-			id = MSG_ERROR;
-		else
-			id = MSG_OK;
-		auto buf = msg_create(id);
-		msg_end(buf);
-		auto step = dispatch_at(&req->arg.dtr->dispatch, req->arg.step);
-		channel_write(&step->src, buf);
-	}
-
 	// finilize req and reschedule backlog
 	mutex_lock(&self->lock);
 
@@ -397,4 +389,23 @@ executor_complete(Executor* self, Req* req)
 	}
 
 	mutex_unlock(&self->lock);
+
+	// send OK or ERROR based on the req result
+	auto dtr = req->arg.dtr;
+	if (dtr)
+	{
+		int id;
+		if (req->arg.error)
+			id = MSG_ERROR;
+		else
+			id = MSG_OK;
+		auto buf = msg_create(id);
+		msg_end(buf);
+		auto step = dispatch_at(&dtr->dispatch, req->arg.step);
+		channel_write(&step->src, buf);
+	} else
+	{
+		// commit/abort (async)
+		req_free(req);
+	}
 }
