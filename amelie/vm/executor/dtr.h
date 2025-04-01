@@ -107,3 +107,26 @@ dtr_set_error(Dtr* self, Buf* buf)
 	assert(! self->error);
 	self->error = buf;
 }
+
+hot static inline void
+req_complete(Req* self)
+{
+	// send OK or ERROR based on the req result
+	auto dtr = self->arg.dtr;
+	if (dtr)
+	{
+		int id;
+		if (self->arg.error)
+			id = MSG_ERROR;
+		else
+			id = MSG_OK;
+		auto buf = msg_create(id);
+		msg_end(buf);
+		auto step = dispatch_at(&dtr->dispatch, self->arg.step);
+		channel_write(&step->src, buf);
+	} else
+	{
+		// commit/abort (async)
+		req_free(self);
+	}
+}

@@ -57,7 +57,7 @@ req_cache_push(ReqCache* self, Req* req)
 }
 
 hot static inline Req*
-req_cache_create(ReqCache* self)
+req_create(ReqCache* self)
 {
 	auto req = req_cache_pop(self);
 	if (req) {
@@ -68,4 +68,26 @@ req_cache_create(ReqCache* self)
 		req->cache = self;
 	}
 	return req;
+}
+
+static inline void
+req_free(Req* self)
+{
+	if (likely(self->cache))
+	{
+		req_cache_push(self->cache, self);
+		return;
+	}
+	req_free_memory(self);
+}
+
+static inline void
+req_free_list(ReqList* self)
+{
+	list_foreach_safe(&self->list)
+	{
+		auto req = list_at(Req, link);
+		req_free(req);
+	}
+	req_list_init(self);
 }

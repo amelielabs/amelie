@@ -15,18 +15,21 @@ typedef struct Route Route;
 
 struct Route
 {
-	Mutex   lock;
-	CondVar cond_var;
-	bool    shutdown;
-	List    list;
-	int     list_count;
-	TrList  prepared;
-	TrCache cache;
+	Mutex    lock;
+	CondVar  cond_var;
+	int      id;
+	bool     shutdown;
+	List     list;
+	int      list_count;
+	TrList   prepared;
+	TrCache  cache;
+	ReqCache cache_req;
 };
 
 static inline void
 route_init(Route* self)
 {
+	self->id         = 0;
 	self->list_count = 0;
 	self->shutdown   = true;
 	mutex_init(&self->lock);
@@ -34,6 +37,7 @@ route_init(Route* self)
 	list_init(&self->list);
 	tr_list_init(&self->prepared);
 	tr_cache_init(&self->cache);
+	req_cache_init(&self->cache_req);
 }
 
 static inline void
@@ -43,6 +47,7 @@ route_free(Route* self)
 	mutex_free(&self->lock);
 	cond_var_init(&self->cond_var);
 	tr_cache_free(&self->cache);
+	req_cache_free(&self->cache_req);
 }
 
 static inline void

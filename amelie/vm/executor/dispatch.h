@@ -23,9 +23,10 @@ struct DispatchStep
 
 struct Dispatch
 {
-	Buf steps_data;
-	int steps;
-	int steps_recv;
+	Buf      steps_data;
+	int      steps;
+	int      steps_recv;
+	ReqCache req_cache;
 };
 
 hot static inline DispatchStep*
@@ -40,6 +41,7 @@ dispatch_init(Dispatch* self)
 	self->steps = 0;
 	self->steps_recv = 0;
 	buf_init(&self->steps_data);
+	req_cache_init(&self->req_cache);
 }
 
 static inline void
@@ -62,6 +64,7 @@ dispatch_free(Dispatch* self)
 {
 	assert(! self->steps);
 	buf_free(&self->steps_data);
+	req_cache_free(&self->req_cache);
 }
 
 static inline void

@@ -32,19 +32,14 @@
 #include <amelie_content.h>
 #include <amelie_executor.h>
 
-#if 0
 void
 executor_init(Executor* self, Db* db)
 {
-	self->seq           = 0;
-	self->shutdown      = false;
-	self->db            = db;
-	self->list_count    = 0;
-	self->pending_count = 0;
+	self->seq        = 0;
+	self->list_count = 0;
+	self->db         = db;
 	commit_init(&self->commit);
-	req_mgr_init(&self->req_mgr);
 	list_init(&self->list);
-	list_init(&self->pending);
 	mutex_init(&self->lock);
 	cond_var_init(&self->cond_var);
 }
@@ -54,29 +49,6 @@ executor_free(Executor* self)
 {
 	mutex_free(&self->lock);
 	cond_var_free(&self->cond_var);
-	req_mgr_free(&self->req_mgr);
-}
-
-void
-executor_shutdown(Executor* self)
-{
-	mutex_lock(&self->lock);
-	self->shutdown = true;
-	cond_var_broadcast(&self->cond_var);
-	mutex_unlock(&self->lock);
-}
-
-static inline bool
-executor_add(Executor* self, Req* req)
-{
-	// add req to the backlog and schedule backlog
-	auto wakeup = backlog_add(req->arg.backlog, &req->arg.backlog_req);
-	if (wakeup)
-	{
-		list_append(&self->pending, &req->arg.backlog->link);
-		self->pending_count++;
-	}
-	return wakeup;
 }
 
 hot void
@@ -97,7 +69,6 @@ executor_send(Executor* self, Dtr* dtr, int step, ReqList* list)
 		// TODO wait for exclusive lock
 	}
 
-	bool wakeup = false;
 	list_foreach_safe(&list->list)
 	{
 		auto req = list_at(Req, link);
@@ -108,14 +79,9 @@ executor_send(Executor* self, Dtr* dtr, int step, ReqList* list)
 		req_list_del(list, req);
 		dispatch_add(&dtr->dispatch, step, req);
 
-		// add req to the backlog and schedule backlog
-		if (executor_add(self, req))
-			wakeup = true;
+		// add request to the route queue
+		route_add(req->arg.route, req);
 	}
-
-	// wakeup next worker
-	if (wakeup)
-		cond_var_broadcast(&self->cond_var);
 
 	mutex_unlock(&self->lock);
 
@@ -171,29 +137,16 @@ executor_end(Executor* self, DtrState state)
 		type = REQ_ABORT;
 	}
 
-	auto wakeup  = false;
-	auto backlog = commit->backlogs;
-	while (backlog)
+	auto routes = (Route**)commit->routes.start;
+	for (auto order = 0; order < commit->routes_count; order++)
 	{
-		auto req = req_create(&self->req_mgr);
-		req->arg.type = type;
-		req->arg.backlog = backlog;
+		auto route = routes[order];
+		auto req = req_create(&route->cache_req);
+		req->arg.type  = type;
+		req->arg.route = route;
 		buf_write(&req->arg.arg, &commit->list_max, sizeof(commit->list_max));
-
-		// add req to the backlog
-		if (executor_add(self, req))
-			wakeup = true;
-
-		auto next = backlog->commit_next;
-		backlog->commit = false;
-		backlog->commit_next = NULL;
-		backlog = next;
+		route_add(route, req);
 	}
-	commit->backlogs = NULL;
-
-	// wakeup next worker
-	if (wakeup)
-		cond_var_broadcast(&self->cond_var);
 
 	// finilize distributed transactions
 	list_foreach(&commit->list)
@@ -350,64 +303,3 @@ executor_commit(Executor* self, Dtr* dtr, Buf* error)
 		break;
 	}
 }
-
-Req*
-executor_next(Executor* self)
-{
-	Req* req = NULL;
-	mutex_lock(&self->lock);
-	for (;;)
-	{
-		if (self->pending_count > 0)
-		{
-			auto first = list_pop(&self->pending);
-			self->pending_count--;
-			auto backlog = container_of(first, Backlog, link);
-			auto backlog_req = backlog_begin(backlog);
-			assert(backlog_req);
-			req = container_of(backlog_req, Req, arg.backlog_req);
-			break;
-		}
-		if (self->shutdown)
-			break;
-		cond_var_wait(&self->cond_var, &self->lock);
-	}
-	mutex_unlock(&self->lock);
-	return req;
-}
-
-void
-executor_complete(Executor* self, Req* req)
-{
-	// finilize req and reschedule backlog
-	mutex_lock(&self->lock);
-
-	if (backlog_end(req->arg.backlog, &req->arg.backlog_req))
-	{
-		list_append(&self->pending, &req->arg.backlog->link);
-		self->pending_count++;
-		cond_var_signal(&self->cond_var);
-	}
-
-	mutex_unlock(&self->lock);
-
-	// send OK or ERROR based on the req result
-	auto dtr = req->arg.dtr;
-	if (dtr)
-	{
-		int id;
-		if (req->arg.error)
-			id = MSG_ERROR;
-		else
-			id = MSG_OK;
-		auto buf = msg_create(id);
-		msg_end(buf);
-		auto step = dispatch_at(&dtr->dispatch, req->arg.step);
-		channel_write(&step->src, buf);
-	} else
-	{
-		// commit/abort (async)
-		req_free(req);
-	}
-}
-#endif

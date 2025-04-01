@@ -18,32 +18,31 @@ struct Commit
 	uint64_t  list_max;
 	int       list_count;
 	List      list;
-	Backlog*  backlogs;
+	Buf       routes;
+	int       routes_count;
 	WriteList write;
 };
 
 static inline void
 commit_init(Commit* self)
 {
-	self->list_max   = 0;
-	self->list_count = 0;
-	self->backlogs   = NULL;
+	self->list_max     = 0;
+	self->list_count   = 0;
+	self->routes_count = 0;
 	list_init(&self->list);
+	buf_init(&self->routes);
 	write_list_init(&self->write);
 }
 
 static inline void
 commit_reset(Commit* self)
 {
-	auto backlog = self->backlogs;
-	while (backlog)
-	{
-		auto next = backlog->commit_next;
-		backlog->commit = false;
-		backlog->commit_next = NULL;
-		backlog = next;
-	}
-	self->backlogs = NULL;
+	self->routes_count = var_int_of(&config()->backends);
+	buf_reset(&self->routes);
+	auto size = sizeof(Route*) * self->routes_count;
+	auto routes = buf_claim(&self->routes, size);
+	memset(routes, 0, size);
+
 	self->list_max   = 0;
 	self->list_count = 0;
 	list_init(&self->list);
@@ -61,7 +60,8 @@ commit_add(Commit* self, Dtr* dtr)
 	if (dtr->id > self->list_max)
 		self->list_max = dtr->id;
 
-	// create a unique list of all partitions
+	// create a unique list of all routes
+	auto routes = (Route**)self->routes.start;
 	auto dispatch = &dtr->dispatch;
 	for (auto i = 0; i < dispatch->steps; i++)
 	{
@@ -69,12 +69,9 @@ commit_add(Commit* self, Dtr* dtr)
 		list_foreach(&step->list.list)
 		{
 			auto req = list_at(Req, link);
-			auto backlog = req->arg.backlog;
-			if (backlog->commit)
-				continue;
-			backlog->commit = true;
-			backlog->commit_next = self->backlogs;
-			self->backlogs = backlog;
+			auto route = req->arg.route;
+			if (! routes[route->id])
+				routes[route->id] = route;
 		}
 	}
 }
