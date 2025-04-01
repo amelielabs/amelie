@@ -14,6 +14,7 @@
 typedef struct Req      Req;
 typedef struct ReqArg   ReqArg;
 typedef struct ReqCache ReqCache;
+typedef struct Route    Route;
 typedef struct Dtr      Dtr;
 
 enum
@@ -27,38 +28,37 @@ enum
 
 struct ReqArg
 {
-	int        type;
-	int        step;
-	int        start;
-	Buf        arg;
-	Value      result;
-	Buf*       error;
-	Dtr*       dtr;
-	Tr*        tr;
-	Backlog*   backlog;
-	BacklogReq backlog_req;
+	int    type;
+	int    step;
+	int    start;
+	Buf    arg;
+	Value  result;
+	Buf*   error;
+	Dtr*   dtr;
+	Tr*    tr;
+	Route* route;
 };
 
 struct Req
 {
 	ReqArg    arg;
 	ReqCache* cache;
+	List      link_route;
 	List      link;
 };
 
 static inline void
 req_arg_init(ReqArg* self)
 {
-	self->type    = 0;
-	self->step    = 0;
-	self->start   = 0;
-	self->error   = NULL;
-	self->dtr     = NULL;
-	self->tr      = NULL;
-	self->backlog = NULL;
+	self->type  = 0;
+	self->step  = 0;
+	self->start = 0;
+	self->error = NULL;
+	self->dtr   = NULL;
+	self->tr    = NULL;
+	self->route = NULL;
 	buf_init(&self->arg);
 	value_init(&self->result);
-	backlog_req_init(&self->backlog_req);
 }
 
 static inline void
@@ -78,15 +78,14 @@ req_arg_reset(ReqArg* self)
 		buf_free(self->error);
 		self->error = NULL;
 	}
-	self->type    = 0;
-	self->step    = 0;
-	self->start   = 0;
-	self->dtr     = NULL;
-	self->tr      = NULL;
-	self->backlog = NULL;
+	self->type  = 0;
+	self->step  = 0;
+	self->start = 0;
+	self->dtr   = NULL;
+	self->tr    = NULL;
+	self->route = NULL;
 	buf_reset(&self->arg);
 	value_free(&self->result);
-	backlog_req_init(&self->backlog_req);
 }
 
 static inline Req*
@@ -95,6 +94,7 @@ req_allocate(void)
 	auto self = (Req*)am_malloc(sizeof(Req));
 	self->cache = NULL;
 	req_arg_init(&self->arg);
+	list_init(&self->link_route);
 	list_init(&self->link);
 	return self;
 }

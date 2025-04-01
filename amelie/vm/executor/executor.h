@@ -11,6 +11,7 @@
 // AGPL-3.0 Licensed.
 //
 
+#if 0
 typedef struct Executor Executor;
 
 struct Executor
@@ -36,3 +37,4 @@ void executor_recv(Executor*, Dtr*, int);
 void executor_commit(Executor*, Dtr*, Buf*);
 Req* executor_next(Executor*);
 void executor_complete(Executor*, Req*);
+#endif

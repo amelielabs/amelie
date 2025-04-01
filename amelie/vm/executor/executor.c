@@ -32,6 +32,7 @@
 #include <amelie_content.h>
 #include <amelie_executor.h>
 
+#if 0
 void
 executor_init(Executor* self, Db* db)
 {
@@ -409,3 +410,4 @@ executor_complete(Executor* self, Req* req)
 		req_free(req);
 	}
 }
+#endif
