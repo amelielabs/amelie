@@ -11,17 +11,17 @@
 // AGPL-3.0 Licensed.
 //
 
-typedef struct Part Part;
+typedef struct Part  Part;
+typedef struct Route Route;
 
 struct Part
 {
 	List          indexes;
 	int           indexes_count;
-	int           order;
 	Sequence*     seq;
 	bool          unlogged;
 	Heap          heap;
-	Backlog       backlog;
+	Route*        route;
 	PartConfig*   config;
 	List          link_cp;
 	List          link;

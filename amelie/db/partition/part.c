@@ -29,9 +29,9 @@ part_allocate(PartConfig* config, Sequence* seq, bool unlogged)
 	self->indexes_count = 0;
 	self->seq           = seq;
 	self->unlogged      = unlogged;
+	self->route         = NULL;
 	heap_init(&self->heap);
 	heap_create(&self->heap);
-	backlog_init(&self->backlog, self);
 	list_init(&self->indexes);
 	list_init(&self->link_cp);
 	list_init(&self->link);
@@ -48,7 +48,6 @@ part_free(Part* self)
 		index_free(index);
 	}
 	heap_free(&self->heap);
-	backlog_free(&self->backlog);
 	part_config_free(self->config);
 	am_free(self);
 }

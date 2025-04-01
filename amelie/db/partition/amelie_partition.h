@@ -14,9 +14,6 @@
 // partition mapping
 #include "partition/part_map.h"
 
-// backlog
-#include "partition/backlog.h"
-
 // partition
 #include "partition/part_config.h"
 #include "partition/part.h"
