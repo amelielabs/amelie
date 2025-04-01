@@ -309,6 +309,7 @@ set(AMELIE_SOURCES_CLI
     ${AMELIE_ROOT}/cli/bench/bench_upsert.c
     ${AMELIE_ROOT}/cli/bench/bench_resolved.c
     ${AMELIE_ROOT}/cli/bench/bench_tpcb.c
+    ${AMELIE_ROOT}/cli/bench/bench_decre.c
     ${AMELIE_ROOT}/cli/bench/bench_import.c
     ${AMELIE_ROOT}/cli/bench/bench_main.c
     ${AMELIE_ROOT}/cli/test/test_plan.c
