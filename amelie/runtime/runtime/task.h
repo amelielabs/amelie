@@ -28,6 +28,7 @@ struct Task
 	LogFunction    log_write;
 	void*          log_write_arg;
 	char           name[9];
+	int            cpu;
 	Cond           status;
 	Thread         thread;
 };
@@ -43,7 +44,7 @@ am_self(void)
 void task_init(Task*);
 void task_free(Task*);
 bool task_active(Task*);
-int  task_create_nothrow(Task*, char*, MainFunction, void*, void*,
+int  task_create_nothrow(Task*, char*, int, MainFunction, void*, void*,
                          LogFunction, void*,
                          BufMgr*);
 void task_wait(Task*);

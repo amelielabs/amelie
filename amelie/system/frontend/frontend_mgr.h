@@ -42,7 +42,7 @@ frontend_mgr_start(FrontendMgr*  self,
 	for (; i < count; i++)
 		frontend_init(&self->workers[i], on_connect, on_connect_arg);
 	for (i = 0; i < count; i++)
-		frontend_start(&self->workers[i]);
+		frontend_start(&self->workers[i], -1);
 }
 
 static inline void

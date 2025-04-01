@@ -209,7 +209,7 @@ system_start(System* self, bool bootstrap)
 	db_open(&self->db);
 
 	// start backends
-	backend_mgr_start(&self->backend_mgr, var_int_of(&config()->backends));
+	backend_mgr_start(&self->backend_mgr, var_int_of(&config()->backends), -1);
 
 	// do parallel recover of snapshots and wal
 	system_recover(self);

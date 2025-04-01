@@ -83,7 +83,7 @@ wal_worker_free(WalWorker* self)
 void
 wal_worker_start(WalWorker* self)
 {
-	task_create(&self->task, "wal", wal_worker_main, self);
+	task_create(&self->task, "wal", wal_worker_main, self, -1);
 }
 
 void

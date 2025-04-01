@@ -32,7 +32,7 @@ test_rpc(void* arg)
 	unused(arg);
 	Task task;
 	task_init(&task);
-	task_create(&task, "test", test_rpc_main, NULL);
+	task_create(&task, "test", test_rpc_main, NULL, -1);
 
 	int rc;
 	rc = rpc(&task.channel, 0, 1, "hello");
@@ -66,7 +66,7 @@ test_rpc_execute(void* arg)
 	unused(arg);
 	Task task;
 	task_init(&task);
-	task_create(&task, "test", test_rpc_execute_main, NULL);
+	task_create(&task, "test", test_rpc_execute_main, NULL, -1);
 
 	int rc;
 	rc = rpc(&task.channel, 0, 1, "hello");
@@ -99,7 +99,7 @@ test_rpc_execute_error(void* arg)
 	unused(arg);
 	Task task;
 	task_init(&task);
-	task_create(&task, "test", test_rpc_execute_error_main, NULL);
+	task_create(&task, "test", test_rpc_execute_error_main, NULL, -1);
 
 	auto on_error = error_catch( rpc(&task.channel, 0, 0) );
 	test(on_error);

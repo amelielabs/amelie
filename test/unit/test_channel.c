@@ -68,7 +68,7 @@ test_channel_task(void* arg)
 
 	Task task;
 	task_init(&task);
-	task_create(&task, "test", test_channel_main, &channel);
+	task_create(&task, "test", test_channel_main, &channel, -1);
 
 	auto buf = channel_read(&channel, -1);
 	test(buf);
@@ -99,7 +99,7 @@ test_channel_task_timeout(void* arg)
 
 	Task task;
 	task_init(&task);
-	task_create(&task, "test", test_channel_timeout_main, &channel);
+	task_create(&task, "test", test_channel_timeout_main, &channel, -1);
 
 	auto buf = channel_read(&channel, 10);
 	test(buf == NULL);
@@ -179,11 +179,11 @@ test_channel_producer_consumer(void* arg)
 
 	Task consumer;
 	task_init(&consumer);
-	task_create(&consumer, "consumer", test_channel_consumer, &event);
+	task_create(&consumer, "consumer", test_channel_consumer, &event, -1);
 
 	Task producer;
 	task_init(&producer);
-	task_create(&producer, "producer", test_channel_producer, &consumer.channel);
+	task_create(&producer, "producer", test_channel_producer, &consumer.channel, -1);
 
 	bool timeout = event_wait(&event, -1);
 	test(! timeout);

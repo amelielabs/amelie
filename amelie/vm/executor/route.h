@@ -27,11 +27,11 @@ struct Route
 };
 
 static inline void
-route_init(Route* self)
+route_init(Route* self, int id)
 {
-	self->id         = 0;
+	self->id         = id;
 	self->list_count = 0;
-	self->shutdown   = true;
+	self->shutdown   = false;
 	mutex_init(&self->lock);
 	cond_var_init(&self->cond_var);
 	list_init(&self->list);

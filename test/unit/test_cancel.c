@@ -156,7 +156,7 @@ test_cancel_channel_pause(void* arg)
 
 	Task task;
 	task_init(&task);
-	task_create(&task, "test", test_cancel_channel_pause_main, &channel);
+	task_create(&task, "test", test_cancel_channel_pause_main, &channel, -1);
 
 	uint64_t self = am_self()->id;
 	uint64_t id;

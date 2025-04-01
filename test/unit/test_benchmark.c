@@ -33,7 +33,7 @@ test_benchmark(void* arg)
 	unused(arg);
 	Task task;
 	task_init(&task);
-	task_create(&task, "test", test_benchmark_main, NULL);
+	task_create(&task, "test", test_benchmark_main, NULL, -1);
 
 	uint64_t time_us;
 	time_start(&time_us);
@@ -87,7 +87,7 @@ test_benchmark_mutex(void* arg)
 	unused(arg);
 	Task task;
 	task_init(&task);
-	task_create(&task, "test", test_benchmark_mutex_main, NULL);
+	task_create(&task, "test", test_benchmark_mutex_main, NULL, -1);
 
 	mutex_init(&bench_mutex);
 	mutex_init(&bench_mutex2);

@@ -148,6 +148,10 @@ task_main(void* arg)
 	// set task name
 	thread_set_name(&self->thread, self->name);
 
+	// set task affinity
+	if (self->cpu != -1)
+		thread_set_affinity(&self->thread, self->cpu);
+
 	// create task main coroutine
 	Coroutine* main;
 	main = coroutine_mgr_create(&self->coroutine_mgr, task_coroutine_main,
@@ -171,6 +175,7 @@ task_init(Task* self)
 	self->log_write       = NULL;
 	self->log_write_arg   = NULL;
 	self->name[0]         = 0;
+	self->cpu             = -1;
 	coroutine_mgr_init(&self->coroutine_mgr, 4096 * 32); // 128kb
 	timer_mgr_init(&self->timer_mgr);
 	poller_init(&self->poller);
@@ -202,6 +207,7 @@ task_active(Task* self)
 int
 task_create_nothrow(Task*        self,
                     char*        name,
+                    int          cpu,
                     MainFunction main,
                     void*        main_arg,
                     void*        main_arg_global,
@@ -216,6 +222,7 @@ task_create_nothrow(Task*        self,
 	self->log_write       = log;
 	self->log_write_arg   = log_arg;
 	self->buf_mgr         = buf_mgr;
+	self->cpu             = cpu;
 	snprintf(self->name, sizeof(self->name), "%s", name);
 
 	// prepare poller

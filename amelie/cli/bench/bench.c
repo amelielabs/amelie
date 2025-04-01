@@ -86,7 +86,7 @@ bench_worker_free(BenchWorker* self)
 static void
 bench_worker_start(BenchWorker* self)
 {
-	task_create(&self->task, "bench", bench_worker_main, self);
+	task_create(&self->task, "bench", bench_worker_main, self, -1);
 }
 
 static void

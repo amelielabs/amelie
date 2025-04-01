@@ -167,10 +167,12 @@ static inline void
 task_create(Task*        self,
             char*        name,
             MainFunction main,
-            void*        main_arg)
+            void*        main_arg,
+            int          cpu)
 {
 	int rc;
-	rc = task_create_nothrow(self, name, main, main_arg,
+	rc = task_create_nothrow(self, name, cpu,
+	                         main, main_arg,
 	                         am_task->main_arg_global,
 	                         am_task->log_write,
 	                         am_task->log_write_arg,

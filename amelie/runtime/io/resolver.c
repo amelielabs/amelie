@@ -49,7 +49,7 @@ resolver_init(Resolver* self)
 void
 resolver_start(Resolver* self)
 {
-	task_create(&self->task, "resolver", resolver_main, self);
+	task_create(&self->task, "resolver", resolver_main, self, -1);
 }
 
 void

@@ -149,7 +149,7 @@ cli_start(Cli* self, int argc, char** argv)
 		.self = self
 	};
 	int rc;
-	rc = task_create_nothrow(&self->task, "main", cli_runner, &args,
+	rc = task_create_nothrow(&self->task, "main", -1, cli_runner, &args,
 	                         &self->instance.global,
 	                         logger_write, &self->instance.logger,
 	                         &self->instance.buf_mgr);

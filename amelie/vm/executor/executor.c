@@ -49,6 +49,7 @@ executor_free(Executor* self)
 {
 	mutex_free(&self->lock);
 	cond_var_free(&self->cond_var);
+	commit_free(&self->commit);
 }
 
 hot void
@@ -141,6 +142,8 @@ executor_end(Executor* self, DtrState state)
 	for (auto order = 0; order < commit->routes_count; order++)
 	{
 		auto route = routes[order];
+		if (! route)
+			continue;
 		auto req = req_create(&route->cache_req);
 		req->arg.type  = type;
 		req->arg.route = route;

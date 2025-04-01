@@ -145,9 +145,9 @@ frontend_free(Frontend* self)
 }
 
 void
-frontend_start(Frontend* self)
+frontend_start(Frontend* self, int cpu)
 {
-	task_create(&self->task, "frontend", frontend_main, self);
+	task_create(&self->task, "frontend", frontend_main, self, cpu);
 }
 
 void

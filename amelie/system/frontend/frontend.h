@@ -27,6 +27,6 @@ struct Frontend
 
 void frontend_init(Frontend*, FrontendEvent, void*);
 void frontend_free(Frontend*);
-void frontend_start(Frontend*);
+void frontend_start(Frontend*, int);
 void frontend_stop(Frontend*);
 void frontend_add(Frontend*, Buf*);

@@ -64,6 +64,17 @@ thread_set_name(Thread* self, const char* name)
 	return rc;
 }
 
+static inline int
+thread_set_affinity(Thread* self, int cpu)
+{
+	cpu_set_t set;
+	CPU_ZERO(&set);
+	CPU_SET(cpu, &set);
+	int rc;
+	rc = pthread_setaffinity_np(self->id, sizeof(set), &set);
+	return rc;
+}
+
 static inline void
 thread_set_sigmask_default(void)
 {

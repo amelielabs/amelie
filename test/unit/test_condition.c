@@ -54,7 +54,7 @@ test_condition_task(void* arg)
 
 	Task task;
 	task_init(&task);
-	task_create(&task, "test", test_condition_main, &cond);
+	task_create(&task, "test", test_condition_main, &cond, -1);
 
 	bool timeout = event_wait(&cond, -1);
 	test(! timeout);
@@ -87,7 +87,7 @@ test_condition_task_timeout(void* arg)
 
 	Task task;
 	task_init(&task);
-	task_create(&task, "test", test_condition_timeout_main, &cond);
+	task_create(&task, "test", test_condition_timeout_main, &cond, -1);
 
 	bool timeout = event_wait(&cond, 10);
 	test(timeout);

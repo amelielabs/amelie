@@ -35,6 +35,12 @@ commit_init(Commit* self)
 }
 
 static inline void
+commit_free(Commit* self)
+{
+	buf_free(&self->routes);
+}
+
+static inline void
 commit_reset(Commit* self)
 {
 	self->routes_count = var_int_of(&config()->backends);

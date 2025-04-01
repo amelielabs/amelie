@@ -36,7 +36,7 @@ backend_mgr_init(BackendMgr*  self,
 }
 
 static inline void
-backend_mgr_start(BackendMgr* self, int count)
+backend_mgr_start(BackendMgr* self, int count, int cpu_from)
 {
 	if (count == 0)
 		return;
@@ -45,9 +45,16 @@ backend_mgr_start(BackendMgr* self, int count)
 	int i = 0;
 	for (; i < count; i++)
 		backend_init(&self->workers[i], self->db, self->executor,
-		              self->function_mgr);
-	for (i = 0; i < count; i++)
-		backend_start(&self->workers[i]);
+		              self->function_mgr, i);
+	if (cpu_from != -1)
+	{
+		for (i = 0; i < count; i++)
+			backend_start(&self->workers[i], cpu_from + i);
+	} else
+	{
+		for (i = 0; i < count; i++)
+			backend_start(&self->workers[i], -1);
+	}
 }
 
 static inline void

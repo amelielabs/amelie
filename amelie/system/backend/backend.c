@@ -173,9 +173,10 @@ void
 backend_init(Backend*     self,
              Db*          db,
              Executor*    executor,
-             FunctionMgr* function_mgr)
+             FunctionMgr* function_mgr,
+             int          id)
 {
-	route_init(&self->route);
+	route_init(&self->route, id);
 	vm_init(&self->vm, db, executor, function_mgr);
 	task_init(&self->task);
 	list_init(&self->link);
@@ -189,9 +190,9 @@ backend_free(Backend* self)
 }
 
 void
-backend_start(Backend* self)
+backend_start(Backend* self, int cpu)
 {
-	task_create(&self->task, "backend", backend_main, self);
+	task_create(&self->task, "backend", backend_main, self, cpu);
 }
 
 void

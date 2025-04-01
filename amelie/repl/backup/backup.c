@@ -343,7 +343,7 @@ backup_run(Backup* self, Client* client)
 	event_attach(&self->on_complete);
 
 	// create backup worker
-	task_create(&self->task, "backup", backup_main, self);
+	task_create(&self->task, "backup", backup_main, self, -1);
 
 	// wait for backup completion
 	cancel_pause();

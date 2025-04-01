@@ -21,7 +21,7 @@ struct Backend
 	List  link;
 };
 
-void backend_init(Backend*, Db*, Executor*, FunctionMgr*);
+void backend_init(Backend*, Db*, Executor*, FunctionMgr*, int);
 void backend_free(Backend*);
-void backend_start(Backend*);
+void backend_start(Backend*, int);
 void backend_stop(Backend*);
