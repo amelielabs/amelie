@@ -41,12 +41,14 @@
 #include <amelie_frontend.h>
 #include <amelie_backend.h>
 
-hot static void
-replay_read(Share* share, ReqList* req_list, Record* record)
+static void
+replay_read(Share* share, Dtr* dtr, ReqList* req_list, Record* record)
 {
-	Req* last = NULL;
+	// redistribute rows between backends
+	Req* map[dtr->dispatch.routes];
+	memset(map, 0, sizeof(map));
 
-	// redistribute log records between partitions
+	// replay transaction log record
 	auto cmd = record_cmd(record);
 	auto pos = record_data(record);
 	for (auto i = record->count; i > 0; i--)
@@ -56,31 +58,17 @@ replay_read(Share* share, ReqList* req_list, Record* record)
 		auto part = table_mgr_find_partition(table_mgr, cmd->partition);
 		if (! part)
 			error("failed to find partition %" PRIu64, cmd->partition);
+		auto route = part->route;
 
-		// find existing request to the partition
-		Req* req = NULL;
-		if (last && last->arg.backlog->part == part) {
-			req = last;
-		} else
+		auto req = map[route->id];
+		if (req == NULL)
 		{
-			list_foreach(&req_list->list)
-			{
-				auto ref = list_at(Req, link);
-				if (ref->arg.backlog->part == part)
-				{
-					req = ref;
-					break;
-				}
-			}
-		}
-		if (! req)
-		{
-			req = req_create(&share->executor->req_mgr);
+			req = req_create(&dtr->dispatch.req_cache);
 			req->arg.type = REQ_REPLAY;
-			req->arg.backlog = &part->backlog;
+			req->arg.route = route;
 			req_list_add(req_list, req);
+			map[route->id] = req;
 		}
-		last = req;
 
 		// [cmd, pos]
 		buf_write(&req->arg.arg, (uint8_t*)&cmd, sizeof(uint8_t**));
@@ -112,7 +100,7 @@ replay(Share* share, Dtr* dtr, Record* record)
 	auto executor = share->executor;
 	auto on_error = error_catch
 	(
-		replay_read(share, &req_list, record);
+		replay_read(share, dtr, &req_list, record);
 
 		executor_send(executor, dtr, 0, &req_list);
 		executor_recv(executor, dtr, 0);

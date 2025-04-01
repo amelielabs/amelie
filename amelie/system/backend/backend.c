@@ -42,8 +42,9 @@
 #include <amelie_backend.h>
 
 hot static void
-backend_replay(Part* part, Tr* tr, Buf* arg)
+backend_replay(Backend* self, Tr* tr, Buf* arg)
 {
+	auto db = self->vm.db;
 	for (auto pos = arg->start; pos < arg->position;)
 	{
 		// command
@@ -58,6 +59,11 @@ backend_replay(Part* part, Tr* tr, Buf* arg)
 		if (var_int_of(&config()->wal_crc))
 			if (unlikely(! record_validate_cmd(cmd, data)))
 				error("replay: record command crc mismatch");
+
+		// partition
+		auto part = table_mgr_find_partition(&db->table_mgr, cmd->partition);
+		if (! part)
+			error("failed to find partition %" PRIu64, cmd->partition);
 
 		// replay writes
 		auto end = data + cmd->size;
@@ -83,7 +89,7 @@ backend_replay(Part* part, Tr* tr, Buf* arg)
 hot static void
 backend_process(Backend* self, Req* req)
 {
-	auto backlog = req->arg.backlog;	
+	auto route = &self->route;
 	switch (req->arg.type) {
 	case REQ_EXECUTE:
 	{
@@ -91,17 +97,17 @@ backend_process(Backend* self, Req* req)
 		auto dtr = req->arg.dtr;
 
 		// create and add transaction to the prepared list (even on error)
-		auto tr  = tr_create(&backlog->cache);
+		auto tr = tr_create(&route->cache);
 		tr_begin(tr);
 		tr_set_id(tr, dtr->id);
 		tr_set_limit(tr, &dtr->limit);
-		tr_list_add(&backlog->prepared, tr);
+		tr_list_add(&route->prepared, tr);
 		arg->tr = tr;
 
 		// execute request
 		vm_reset(&self->vm);
 		vm_run(&self->vm, dtr->local,
-		        arg->backlog->part,
+		        route,
 		        dtr,
 		        tr,
 		        dtr->program->code_backend,
@@ -115,27 +121,30 @@ backend_process(Backend* self, Req* req)
 	}
 	case REQ_REPLAY:
 	{
-		auto tr = tr_create(&backlog->cache);
+		auto arg = &req->arg;
+		auto dtr = req->arg.dtr;
+
+		// create and add transaction to the prepared list (even on error)
+		auto tr = tr_create(&route->cache);
 		tr_begin(tr);
+		tr_set_id(tr, dtr->id);
+		tr_list_add(&route->prepared, tr);
+		arg->tr = tr;
 
-		// add transaction to the prepared list (even on error)
-		tr_list_add(&backlog->prepared, tr);
-		req->arg.tr = tr;
-
-		// replay commands to the partition
-		backend_replay(req->arg.backlog->part, tr, &req->arg.arg);
+		// replay commands
+		backend_replay(self, tr, &arg->arg);
 		break;
 	}
 	case REQ_COMMIT:
 	{
 		// commit all prepared transaction till the last one by id
 		auto id = *buf_u64(&req->arg.arg);
-		tr_commit_list(&backlog->prepared, &backlog->cache, id);
+		tr_commit_list(&route->prepared, &route->cache, id);
 		break;
 	}
 	case REQ_ABORT:
 		// abort all prepared transactions
-		tr_abort_list(&backlog->prepared, &backlog->cache);
+		tr_abort_list(&route->prepared, &route->cache);
 		break;
 	case REQ_BUILD:
 		//auto build = *(Build**)msg->data;
@@ -148,22 +157,25 @@ static void
 backend_main(void* arg)
 {
 	Backend* self = arg;
-	auto executor = self->executor;
+	auto route = &self->route;
 	for (;;)
 	{
-		auto req = executor_next(executor);
+		auto req = route_get(route);
 		if (! req)
 			break;
 		if (error_catch(backend_process(self, req)))
 			req->arg.error = msg_error(&am_self()->error);
-		executor_complete(executor, req);
+		req_complete(req);
 	}
 }
 
 void
-backend_init(Backend* self, Db* db, Executor* executor, FunctionMgr* function_mgr)
+backend_init(Backend*     self,
+             Db*          db,
+             Executor*    executor,
+             FunctionMgr* function_mgr)
 {
-	self->executor = executor;
+	route_init(&self->route);
 	vm_init(&self->vm, db, executor, function_mgr);
 	task_init(&self->task);
 	list_init(&self->link);
@@ -173,6 +185,7 @@ void
 backend_free(Backend* self)
 {
 	vm_free(&self->vm);
+	route_free(&self->route);
 }
 
 void
@@ -186,6 +199,7 @@ backend_stop(Backend* self)
 {
 	if (task_active(&self->task))
 	{
+		route_shutdown(&self->route);
 		task_wait(&self->task);
 		task_free(&self->task);
 		task_init(&self->task);
