@@ -40,34 +40,71 @@ executor_init(Executor* self, Db* db)
 	self->db         = db;
 	commit_init(&self->commit);
 	list_init(&self->list);
-	mutex_init(&self->lock);
-	cond_var_init(&self->cond_var);
+	spinlock_init(&self->lock);
 }
 
 void
 executor_free(Executor* self)
 {
-	mutex_free(&self->lock);
-	cond_var_free(&self->cond_var);
+	spinlock_free(&self->lock);
 	commit_free(&self->commit);
+}
+
+hot static inline void
+executor_lock(Executor* self, Dtr* dtr)
+{
+	// wait for the lock event, if there are any exclusive transactions
+	// before in the list
+retry:
+	list_foreach(&self->list)
+	{
+		auto ref = list_at(Dtr, link);
+		if (ref == dtr)
+			break;
+		if (ref->exclusive)
+		{
+			spinlock_unlock(&self->lock);
+
+			event_wait(&dtr->on_lock, -1);
+
+			spinlock_lock(&self->lock);
+			goto retry;
+		}
+	}
+}
+
+hot static inline void
+executor_unlock(Executor* self, Dtr* dtr)
+{
+	dtr->exclusive = false;
+
+	// wakeup next waiter
+	if (list_is_last(&self->list, &dtr->link))
+		return;
+	auto next = container_of(dtr->link.next, Dtr, link);
+	assert(next->state == DTR_LOCK);
+	event_signal(&next->on_lock);
 }
 
 hot void
 executor_send(Executor* self, Dtr* dtr, int step, ReqList* list)
 {
-	mutex_lock(&self->lock);
+	spinlock_lock(&self->lock);
 
 	// add transaction to the executor list
 	if (step == 0)
 	{
 		// assign transaction id
-		dtr_set_state(dtr, DTR_BEGIN);
 		dtr->id = ++self->seq;
 
 		list_append(&self->list, &dtr->link);
 		self->list_count++;
 
-		// TODO wait for exclusive lock
+		// wait for exclusive lock
+		dtr_set_state(dtr, DTR_LOCK);
+		executor_lock(self, dtr);
+
+		dtr_set_state(dtr, DTR_BEGIN);
 	}
 
 	list_foreach_safe(&list->list)
@@ -84,9 +121,11 @@ executor_send(Executor* self, Dtr* dtr, int step, ReqList* list)
 		route_add(req->arg.route, req);
 	}
 
-	mutex_unlock(&self->lock);
+	// exclusive unlock waiters on last stmt
+	if (dtr->exclusive && dtr->program->stmts_last == step)
+		executor_unlock(self, dtr);
 
-	// TODO: unlock waiters?
+	spinlock_unlock(&self->lock);
 }
 
 hot void
@@ -109,6 +148,8 @@ executor_prepare(Executor* self, bool abort)
 		list_foreach(&self->list)
 		{
 			auto dtr = list_at(Dtr, link);
+			if (dtr->state == DTR_LOCK)
+				continue;
 			commit_add(commit, dtr);
 		}
 	} else
@@ -117,6 +158,8 @@ executor_prepare(Executor* self, bool abort)
 		list_foreach(&self->list)
 		{
 			auto dtr = list_at(Dtr, link);
+			if (dtr->state == DTR_LOCK)
+				continue;
 			if (dtr->state != DTR_PREPARE)
 				break;
 			commit_add(commit, dtr);
@@ -227,21 +270,21 @@ executor_commit(Executor* self, Dtr* dtr, Buf* error)
 
 	for (;;)
 	{
-		mutex_lock(&self->lock);
+		spinlock_lock(&self->lock);
 
 		switch (dtr->state) {
 		case DTR_COMMIT:
 			// commited by leader
-			mutex_unlock(&self->lock);
+			spinlock_unlock(&self->lock);
 			return;
 		case DTR_ABORT:
 			// aborted by leader
-			mutex_unlock(&self->lock);
+			spinlock_unlock(&self->lock);
 			error("transaction conflict, abort");
 			return;
 		case DTR_NONE:
 			// non-distributed transaction
-			mutex_unlock(&self->lock);
+			spinlock_unlock(&self->lock);
 			if (error)
 			{
 				dtr_set_error(dtr, error);
@@ -270,7 +313,7 @@ executor_commit(Executor* self, Dtr* dtr, Buf* error)
 		if (! list_is_first(&self->list, &dtr->link))
 		{
 			// wait to become leader or wakeup by leader
-			mutex_unlock(&self->lock);
+			spinlock_unlock(&self->lock);
 
 			event_wait(&dtr->on_commit, -1);
 			continue;
@@ -280,7 +323,7 @@ executor_commit(Executor* self, Dtr* dtr, Buf* error)
 		if (dtr->state == DTR_ERROR)
 		{
 			executor_end(self, DTR_ABORT);
-			mutex_unlock(&self->lock);
+			spinlock_unlock(&self->lock);
 			msg_error_throw(dtr->error);
 		}
 
@@ -289,7 +332,7 @@ executor_commit(Executor* self, Dtr* dtr, Buf* error)
 		// get a list of completed distributed transactions (one or more) and
 		// a list of last executed transactions per partition
 		executor_prepare(self, false);
-		mutex_unlock(&self->lock);
+		spinlock_unlock(&self->lock);
 
 		// wal write
 		DtrState state = DTR_COMMIT;
@@ -297,9 +340,9 @@ executor_commit(Executor* self, Dtr* dtr, Buf* error)
 			state = DTR_ABORT;
 
 		// process COMMIT or ABORT
-		mutex_lock(&self->lock);
+		spinlock_lock(&self->lock);
 		executor_end(self, state);
-		mutex_unlock(&self->lock);
+		spinlock_unlock(&self->lock);
 		if (state == DTR_ABORT)
 			rethrow();
 

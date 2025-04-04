@@ -16,6 +16,7 @@ typedef struct Dtr Dtr;
 typedef enum
 {
 	DTR_NONE,
+	DTR_LOCK,
 	DTR_BEGIN,
 	DTR_PREPARE,
 	DTR_ERROR,
@@ -26,12 +27,14 @@ typedef enum
 struct Dtr
 {
 	uint64_t id;
+	bool     exclusive;
 	DtrState state;
 	Dispatch dispatch;
 	Program* program;
 	Result   cte;
 	Buf*     error;
 	Write    write;
+	Event    on_lock;
 	Event    on_commit;
 	Limit    limit;
 	Local*   local;
@@ -42,13 +45,15 @@ struct Dtr
 static inline void
 dtr_init(Dtr* self, Local* local)
 {
-	self->state   = DTR_NONE;
-	self->id      = 0;
-	self->program = NULL;
-	self->error   = NULL;
-	self->local   = local;
+	self->state     = DTR_NONE;
+	self->exclusive = false;
+	self->id        = 0;
+	self->program   = NULL;
+	self->error     = NULL;
+	self->local     = local;
 	dispatch_init(&self->dispatch);
 	result_init(&self->cte);
+	event_init(&self->on_lock);
 	event_init(&self->on_commit);
 	limit_init(&self->limit, var_int_of(&config()->limit_write));
 	write_init(&self->write);
@@ -59,9 +64,10 @@ dtr_init(Dtr* self, Local* local)
 static inline void
 dtr_reset(Dtr* self)
 {
-	self->state   = DTR_NONE;
-	self->id      = 0;
-	self->program = NULL;
+	self->state     = DTR_NONE;
+	self->id        = 0;
+	self->program   = NULL;
+	self->exclusive = false;
 	if (self->error)
 	{
 		buf_free(self->error);
@@ -81,6 +87,7 @@ dtr_free(Dtr* self)
 	dtr_reset(self);
 	dispatch_free(&self->dispatch);
 	result_free(&self->cte);
+	event_detach(&self->on_lock);
 	event_detach(&self->on_commit);
 	write_free(&self->write);
 }
@@ -89,8 +96,11 @@ static inline void
 dtr_create(Dtr* self, Program* program)
 {
 	self->program = program;
+	self->exclusive = program->exclusive;
 	dispatch_create(&self->dispatch, program->stmts);
 	result_create(&self->cte, program->stmts);
+	if (! event_attached(&self->on_lock))
+		event_attach(&self->on_lock);
 	if (! event_attached(&self->on_commit))
 		event_attach(&self->on_commit);
 }
@@ -115,15 +125,11 @@ req_complete(Req* self)
 	auto dtr = self->arg.dtr;
 	if (dtr)
 	{
-		int id;
-		if (self->arg.error)
-			id = MSG_ERROR;
-		else
-			id = MSG_OK;
-		auto buf = msg_create(id);
-		msg_end(buf);
 		auto step = dispatch_at(&dtr->dispatch, self->arg.step);
-		channel_write(&step->src, buf);
+		if (self->arg.error)
+			atomic_u32_inc(&step->errors);
+		atomic_u32_inc(&step->complete);
+		event_signal(&dtr->dispatch.on_complete);
 	} else
 	{
 		// commit/abort (async)

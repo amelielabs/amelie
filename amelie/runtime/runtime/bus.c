@@ -15,8 +15,9 @@
 void
 bus_init(Bus* self)
 {
+	self->ready = NULL;
+	self->ready_tail = NULL;
 	spinlock_init(&self->lock);
-	list_init(&self->list_ready);
 	list_init(&self->list);
 	notify_init(&self->notify);
 }
@@ -68,38 +69,47 @@ bus_detach(Event* event)
 		return;
 	Bus* self = event->bus;
 	spinlock_lock(&self->lock);
+	assert(! event->bus_ready);
 	event->bus = NULL;
 	list_unlink(&event->link);
-	list_unlink(&event->link_ready);
 	spinlock_unlock(&self->lock);
 }
 
-void
+hot void
 bus_signal(Event* event)
 {
-	Bus* self = event->bus;
+	Bus* self = event->bus; // FIXME
 	spinlock_lock(&self->lock);
-	if (! list_empty(&event->link_ready))
+	if (event->bus_ready)
 	{
 		spinlock_unlock(&self->lock);
 		return;
 	}
-	list_append(&self->list_ready, &event->link_ready);
+	event->bus_ready = true;
+	if (self->ready_tail)
+		self->ready_tail->bus_ready_next = event;
+	else
+		self->ready = event;
+	self->ready_tail = event;
 	spinlock_unlock(&self->lock);
 
 	notify_signal(&self->notify);
 }
 
-void
+hot void
 bus_step(Bus* self)
 {
 	spinlock_lock(&self->lock);
-	list_foreach_safe(&self->list_ready)
+	auto ready = self->ready;
+	while (ready)
 	{
-		auto event = list_at(Event, link_ready);
-		event_signal_direct(event);
-		list_init(&event->link_ready);
+		event_signal_direct(ready);
+		auto next = ready->bus_ready_next;
+		ready->bus_ready = false;
+		ready->bus_ready_next = NULL;
+		ready = next;
 	}
-	list_init(&self->list_ready);
+	self->ready = NULL;
+	self->ready_tail = NULL;
 	spinlock_unlock(&self->lock);
 }

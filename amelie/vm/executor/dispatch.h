@@ -16,9 +16,9 @@ typedef struct Dispatch     Dispatch;
 
 struct DispatchStep
 {
-	ReqList list;
-	int     errors;
-	Channel src;
+	atomic_u32 complete;
+	atomic_u32 errors;
+	ReqList    list;
 };
 
 struct Dispatch
@@ -27,6 +27,7 @@ struct Dispatch
 	int      steps;
 	int      steps_recv;
 	int      routes;
+	Event    on_complete;
 	ReqCache req_cache;
 };
 
@@ -43,6 +44,7 @@ dispatch_init(Dispatch* self)
 	self->steps_recv = 0;
 	self->routes     = 0;
 	buf_init(&self->steps_data);
+	event_init(&self->on_complete);
 	req_cache_init(&self->req_cache);
 }
 
@@ -53,8 +55,6 @@ dispatch_reset(Dispatch* self)
 	{
 		auto step = dispatch_at(self, i);
 		req_free_list(&step->list);
-		channel_detach(&step->src);
-		channel_free(&step->src);
 	}
 	buf_reset(&self->steps_data);
 	self->steps_recv = 0;
@@ -66,6 +66,7 @@ static inline void
 dispatch_free(Dispatch* self)
 {
 	assert(! self->steps);
+	event_detach(&self->on_complete);
 	buf_free(&self->steps_data);
 	req_cache_free(&self->req_cache);
 }
@@ -81,13 +82,15 @@ dispatch_create(Dispatch* self, int steps)
 	for (auto i = 0; i < self->steps; i++)
 	{
 		auto step = dispatch_at(self, i);
-		step->errors = 0;
+		step->complete = 0;
+		step->errors   = 0;
 		req_list_init(&step->list);
-		channel_init(&step->src);
-		channel_attach(&step->src);
 	}
 
 	self->routes = var_int_of(&config()->backends);
+
+	if (! event_attached(&self->on_complete))
+		event_attach(&self->on_complete);
 }
 
 hot static inline void
@@ -101,14 +104,8 @@ hot static inline void
 dispatch_wait_step(Dispatch* self, int order)
 {
 	auto step = dispatch_at(self, order);
-	for (auto n = step->list.list_count; n > 0; n--)
-	{
-		auto buf = channel_read(&step->src, -1);
-		auto msg = msg_of(buf);
-		if (msg->id == MSG_ERROR)
-			step->errors++;
-		buf_free(buf);
-	}
+	while (atomic_u32_of(&step->complete) < (uint32_t)step->list.list_count)
+		event_wait(&self->on_complete, -1);
 	self->steps_recv = order;
 }
 

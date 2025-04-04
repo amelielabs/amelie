@@ -20,19 +20,21 @@ struct Event
 	Event* parent_signal;
 	bool   signal;
 	void*  bus;
-	List   link_ready;
+	bool   bus_ready;
+	Event* bus_ready_next;
 	List   link;
 };
 
 static inline void
 event_init(Event* self)
 {
-	self->wait          = NULL;
-	self->parent        = NULL;
-	self->parent_signal = NULL;
-	self->signal        = false;
-	self->bus           = NULL;
-	list_init(&self->link_ready);
+	self->wait           = NULL;
+	self->parent         = NULL;
+	self->parent_signal  = NULL;
+	self->signal         = false;
+	self->bus            = NULL;
+	self->bus_ready      = false;
+	self->bus_ready_next = NULL;
 	list_init(&self->link);
 }
 

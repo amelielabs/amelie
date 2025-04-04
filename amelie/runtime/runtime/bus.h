@@ -16,7 +16,8 @@ typedef struct Bus Bus;
 struct Bus
 {
 	Spinlock lock;
-	List     list_ready;
+	Event*   ready;
+	Event*   ready_tail;
 	List     list;
 	Notify   notify;
 };

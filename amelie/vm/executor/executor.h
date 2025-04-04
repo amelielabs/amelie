@@ -15,8 +15,7 @@ typedef struct Executor Executor;
 
 struct Executor
 {
-	Mutex    lock;
-	CondVar  cond_var;
+	Spinlock lock;
 	uint64_t seq;
 	int      list_count;
 	List     list;
