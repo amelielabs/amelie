@@ -29,7 +29,7 @@ part_allocate(PartConfig* config, Sequence* seq, bool unlogged)
 	self->indexes_count = 0;
 	self->seq           = seq;
 	self->unlogged      = unlogged;
-	self->route         = NULL;
+	self->core          = NULL;
 	heap_init(&self->heap);
 	heap_create(&self->heap);
 	list_init(&self->indexes);

@@ -11,8 +11,8 @@
 // AGPL-3.0 Licensed.
 //
 
-typedef struct Part  Part;
-typedef struct Route Route;
+typedef struct Part Part;
+typedef struct Core Core;
 
 struct Part
 {
@@ -21,7 +21,7 @@ struct Part
 	Sequence*     seq;
 	bool          unlogged;
 	Heap          heap;
-	Route*        route;
+	Core*         core;
 	PartConfig*   config;
 	List          link_cp;
 	List          link;

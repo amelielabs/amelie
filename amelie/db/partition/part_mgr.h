@@ -13,20 +13,20 @@
 
 typedef struct PartMgr PartMgr;
 
-typedef void (*PartRouteFn)(PartList*, void*);
+typedef void (*DistributeFn)(PartList*, void*);
 
 struct PartMgr
 {
-	Hashtable   ht;
-	PartRouteFn route_fn;
-	void*       route_fn_arg;
+	Hashtable    ht;
+	DistributeFn distribute;
+	void*        distribute_arg;
 };
 
 static inline void
-part_mgr_init(PartMgr* self, PartRouteFn route_fn, void* route_fn_arg)
+part_mgr_init(PartMgr* self, DistributeFn distribute, void* distribute_arg)
 {
-	self->route_fn     = route_fn;
-	self->route_fn_arg = route_fn_arg;
+	self->distribute = distribute;
+	self->distribute_arg = distribute_arg;
 	hashtable_init(&self->ht);
 }
 
@@ -54,7 +54,7 @@ part_mgr_attach(PartMgr* self, PartList* list)
 	}
 
 	// assign routes to partitions
-	self->route_fn(list, self->route_fn_arg);
+	self->distribute(list, self->distribute_arg);
 }
 
 static inline void

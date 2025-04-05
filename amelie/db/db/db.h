@@ -23,7 +23,7 @@ struct Db
 	WalMgr        wal_mgr;
 };
 
-void db_init(Db*, PartRouteFn, void*);
+void db_init(Db*, DistributeFn, void*);
 void db_free(Db*);
 void db_open(Db*);
 void db_close(Db*);
