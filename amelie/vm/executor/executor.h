@@ -16,10 +16,11 @@ typedef struct Executor Executor;
 struct Executor
 {
 	Spinlock lock;
-	uint64_t seq;
+	uint64_t id;
+	uint64_t id_commit;
 	int      list_count;
 	List     list;
-	Commit   commit;
+	Prepare  prepare;
 	Db*      db;
 };
 

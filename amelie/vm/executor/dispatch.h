@@ -13,124 +13,209 @@
 
 typedef struct DispatchStep DispatchStep;
 typedef struct Dispatch     Dispatch;
+typedef struct Dtr          Dtr;
 
 struct DispatchStep
 {
-	atomic_u32 complete;
-	atomic_u32 errors;
-	ReqList    list;
+	ReqList list;
+	Ctr*    cores[];
 };
 
 struct Dispatch
 {
-	Buf      steps_data;
-	int      steps;
-	int      steps_recv;
-	int      routes;
-	Event    on_complete;
+	Buf      steps;
+	int      steps_count;
+	int      steps_complete;
+	Ctr*     cores;
+	CoreMgr* core_mgr;
 	ReqCache req_cache;
 };
 
-hot static inline DispatchStep*
-dispatch_at(Dispatch* self, int order)
+hot always_inline static inline DispatchStep*
+dispatch_at(Dispatch* self, int step)
 {
-	return &((DispatchStep*)self->steps_data.start)[order];
+	auto step_offset = (sizeof(DispatchStep) +
+	                    sizeof(Ctr*) * self->core_mgr->cores_count) * step;
+	return (DispatchStep*)(self->steps.start + step_offset);
+}
+
+hot always_inline static inline Ctr*
+dispatch_at_core(Dispatch* self, int core)
+{
+	return &self->cores[core];
 }
 
 static inline void
-dispatch_init(Dispatch* self)
+dispatch_init(Dispatch* self, CoreMgr* core_mgr)
 {
-	self->steps      = 0;
-	self->steps_recv = 0;
-	self->routes     = 0;
-	buf_init(&self->steps_data);
-	event_init(&self->on_complete);
+	self->steps_count    = 0;
+	self->steps_complete = 0;
+	self->cores          = NULL;
+	self->core_mgr       = core_mgr;
+	buf_init(&self->steps);
 	req_cache_init(&self->req_cache);
 }
 
 static inline void
 dispatch_reset(Dispatch* self)
 {
-	for (auto i = 0; i < self->steps; i++)
+	for (auto i = 0; i < self->steps_count; i++)
 	{
 		auto step = dispatch_at(self, i);
-		req_free_list(&step->list);
+		req_cache_push_list(&self->req_cache, &step->list);
 	}
-	buf_reset(&self->steps_data);
-	self->steps_recv = 0;
-	self->steps      = 0;
-	self->routes     = 0;
+	for (auto i = 0; i < self->core_mgr->cores_count; i++)
+	{
+		auto ctr = dispatch_at_core(self, i);
+		ctr_reset(ctr);
+	}
+	buf_reset(&self->steps);
+	self->steps_complete = 0;
+	self->steps_count    = 0;
 }
 
 static inline void
 dispatch_free(Dispatch* self)
 {
-	assert(! self->steps);
-	event_detach(&self->on_complete);
-	buf_free(&self->steps_data);
+	assert(! self->steps_count);
+	for (auto i = 0; i < self->core_mgr->cores_count; i++)
+	{
+		auto ctr = dispatch_at_core(self, i);
+		req_queue_detach(&ctr->queue);
+		ctr_free(ctr);
+	}
+	if (self->cores)
+		am_free(self->cores);
+	buf_free(&self->steps);
 	req_cache_free(&self->req_cache);
 }
 
 static inline void
-dispatch_create(Dispatch* self, int steps)
+dispatch_create(Dispatch* self, Dtr* dtr, int steps)
 {
-	auto size = sizeof(DispatchStep) * steps;
-	buf_reserve(&self->steps_data, size);
-	memset(self->steps_data.start, 0, size);
-
-	self->steps = steps;
-	for (auto i = 0; i < self->steps; i++)
+	// prepare a list of core transactions on first call
+	auto cores = self->core_mgr->cores_count;
+	if (unlikely(! self->cores))
 	{
-		auto step = dispatch_at(self, i);
-		step->complete = 0;
-		step->errors   = 0;
-		req_list_init(&step->list);
+		self->cores = am_malloc(sizeof(Ctr) * cores);
+		for (auto i = 0; i < cores; i++)
+		{
+			auto ctr = dispatch_at_core(self, i);
+			ctr_init(ctr, dtr, self->core_mgr->cores[i]);
+			req_queue_attach(&ctr->queue);
+		}
 	}
 
-	self->routes = var_int_of(&config()->backends);
-
-	if (! event_attached(&self->on_complete))
-		event_attach(&self->on_complete);
+	// create an array of dispatch steps
+	auto size = (sizeof(DispatchStep) + sizeof(Ctr*) * cores) * steps;
+	buf_reserve(&self->steps, size);
+	memset(self->steps.start, 0, size);
+	self->steps_count = steps;
+	for (auto i = 0; i < self->steps_count; i++)
+	{
+		auto step = dispatch_at(self, i);
+		req_list_init(&step->list);
+		memset(step->cores, 0, sizeof(Ctr*) * cores);
+	}
 }
 
 hot static inline void
 dispatch_add(Dispatch* self, int order, Req* req)
 {
+	// add request to the dispatch step
 	auto step = dispatch_at(self, order);
 	req_list_add(&step->list, req);
+
+	// activate transaction for the core
+	auto ctr = &self->cores[req->core->order];
+	if (ctr->state == CTR_NONE)
+		ctr_begin(ctr);
+	step->cores[req->core->order] = ctr;
+
+	// add request to the core transaction queue
+	auto close = (order == (self->steps_count - 1));
+	req_queue_send(&ctr->queue, req, close);
 }
 
 hot static inline void
-dispatch_wait_step(Dispatch* self, int order)
+dispatch_add_snapshot(Dispatch* self)
 {
-	auto step = dispatch_at(self, order);
-	while (atomic_u32_of(&step->complete) < (uint32_t)step->list.list_count)
-		event_wait(&self->on_complete, -1);
-	self->steps_recv = order;
+	// start transactions for all cores
+	for (auto i = 0; i < self->core_mgr->cores_count; i++)
+	{
+		auto ctr = dispatch_at_core(self, i);
+		ctr_begin(ctr);
+	}
+}
+
+hot static inline void
+dispatch_close(Dispatch* self)
+{
+	// finilize the last step for transactions that were not
+	// involved in it but still active
+	auto step_last = self->steps_count - 1;
+	auto step = dispatch_at(self, step_last);
+
+	auto cores = self->core_mgr->cores_count;
+	if (likely(step->list.list_count == cores))
+		return;
+	for (auto order = 0; order < cores; order++)
+	{
+		auto ctr = &self->cores[order];
+		if (ctr->state == CTR_NONE)
+			continue;
+		if (step->cores[order])
+			continue;
+		req_queue_close(&ctr->queue);
+	}
 }
 
 hot static inline void
 dispatch_wait(Dispatch* self, int order)
 {
-	// read all replies from the reqs in the list
-	dispatch_wait_step(self, order);
-
-	// find first req error and rethrow
+	// read all replies from the reqs in the step
 	auto step = dispatch_at(self, order);
-	if (unlikely(step->errors > 0))
+	auto step_errors = 0;
+	for (auto order = 0; order < self->core_mgr->cores_count; order++)
+	{
+		auto ctr = step->cores[order];
+		if (! ctr)
+			continue;
+		auto error = req_queue_recv(&ctr->queue);
+		if (error)
+			step_errors++;
+	}
+
+	// mark last completed step
+	self->steps_complete = order;
+
+	// rethow first error
+	if (unlikely(step_errors > 0))
 	{
 		list_foreach(&step->list.list)
 		{
 			auto req = list_at(Req, link);
-			if (req->arg.error)
-				msg_error_rethrow(req->arg.error);
+			if (req->error)
+				msg_error_rethrow(req->error);
 		}
 	}
 }
 
 hot static inline void
-dispatch_drain(Dispatch* self)
+dispatch_shutdown(Dispatch* self)
 {
-	while (self->steps_recv < self->steps - 1)
-		dispatch_wait_step(self, self->steps_recv);
+	// not all steps were completed, force close active
+	// transactions
+	if (self->steps_complete != (self->steps_count - 1))
+		dispatch_close(self);
+
+	// make sure all transactions complete execution
+	for (auto order = 0; order < self->core_mgr->cores_count; order++)
+	{
+		auto ctr = &self->cores[order];
+		if (ctr->state == CTR_NONE)
+			continue;
+		req_queue_recv_exit(&ctr->queue);
+		ctr_complete(ctr);
+	}
 }

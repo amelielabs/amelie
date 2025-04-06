@@ -35,10 +35,11 @@
 void
 executor_init(Executor* self, Db* db)
 {
-	self->seq        = 0;
+	self->id         = 0;
+	self->id_commit  = 0;
 	self->list_count = 0;
 	self->db         = db;
-	commit_init(&self->commit);
+	prepare_init(&self->prepare);
 	list_init(&self->list);
 	spinlock_init(&self->lock);
 }
@@ -47,110 +48,60 @@ void
 executor_free(Executor* self)
 {
 	spinlock_free(&self->lock);
-	commit_free(&self->commit);
-}
-
-hot static inline void
-executor_lock(Executor* self, Dtr* dtr)
-{
-	// wait for the lock event, if there are any exclusive transactions
-	// before in the list
-retry:
-	list_foreach(&self->list)
-	{
-		auto ref = list_at(Dtr, link);
-		if (ref == dtr)
-			break;
-		if (ref->exclusive)
-		{
-			spinlock_unlock(&self->lock);
-
-			event_wait(&dtr->on_lock, -1);
-
-			spinlock_lock(&self->lock);
-			goto retry;
-		}
-	}
-}
-
-hot static inline void
-executor_unlock(Executor* self, Dtr* dtr)
-{
-	dtr->exclusive = false;
-
-	// wakeup next waiter
-	if (list_is_last(&self->list, &dtr->link))
-		return;
-	auto next = container_of(dtr->link.next, Dtr, link);
-	assert(next->state == DTR_LOCK);
-	event_signal(&next->on_lock);
 }
 
 hot void
 executor_send(Executor* self, Dtr* dtr, int step, ReqList* list)
 {
-	spinlock_lock(&self->lock);
+	// add requests to the dispatch step,
+	// start local transactions and queue requests for execution
+	dtr_send(dtr, step, list);
 
-	// add transaction to the executor list
 	if (step == 0)
 	{
-		// assign transaction id
-		dtr->id = ++self->seq;
+		spinlock_lock(&self->lock);
+
+		// register transaction
+		dtr_set_state(dtr, DTR_BEGIN);
+		dtr->id = self->id++;
+		dtr->id_commit = self->id_commit;
 
 		list_append(&self->list, &dtr->link);
 		self->list_count++;
 
-		// wait for exclusive lock
-		dtr_set_state(dtr, DTR_LOCK);
-		executor_lock(self, dtr);
+		// send for execution
+		auto dispatch = &dtr->dispatch;
+		for (auto order = 0; order < dispatch->core_mgr->cores_count; order++)
+		{
+			auto ctr = &dispatch->cores[order];
+			if (ctr->state == CTR_ACTIVE)
+				core_add(ctr->core, ctr);
+		}
 
-		dtr_set_state(dtr, DTR_BEGIN);
+		spinlock_unlock(&self->lock);
 	}
-
-	list_foreach_safe(&list->list)
-	{
-		auto req = list_at(Req, link);
-		req->arg.dtr  = dtr;
-		req->arg.step = step;
-
-		// move req to the dispatch step list
-		req_list_del(list, req);
-		dispatch_add(&dtr->dispatch, step, req);
-
-		// add request to the route queue
-		route_add(req->arg.route, req);
-	}
-
-	// exclusive unlock waiters on last stmt
-	if (dtr->exclusive && dtr->program->stmts_last == step)
-		executor_unlock(self, dtr);
-
-	spinlock_unlock(&self->lock);
 }
 
 hot void
 executor_recv(Executor* self, Dtr* dtr, int step)
 {
 	unused(self);
-	// OK or ABORT
-	dispatch_wait(&dtr->dispatch, step);
+	dtr_recv(dtr, step);
 }
 
 hot static void
 executor_prepare(Executor* self, bool abort)
 {
-	auto commit = &self->commit;
-	commit_reset(commit);
+	auto prepare = &self->prepare;
+	prepare_reset(prepare);
 
 	if (unlikely(abort))
 	{
-		// abort all currently active transactions
+		// add all currently active transactions for abort
 		list_foreach(&self->list)
 		{
 			auto dtr = list_at(Dtr, link);
-			if (dtr->state == DTR_LOCK)
-				continue;
-			commit_add(commit, dtr);
+			prepare_add(prepare, dtr);
 		}
 	} else
 	{
@@ -158,11 +109,9 @@ executor_prepare(Executor* self, bool abort)
 		list_foreach(&self->list)
 		{
 			auto dtr = list_at(Dtr, link);
-			if (dtr->state == DTR_LOCK)
-				continue;
 			if (dtr->state != DTR_PREPARE)
 				break;
-			commit_add(commit, dtr);
+			prepare_add(prepare, dtr);
 		}
 	}
 }
@@ -170,34 +119,37 @@ executor_prepare(Executor* self, bool abort)
 hot static void
 executor_end(Executor* self, DtrState state)
 {
-	auto commit = &self->commit;
-
-	// send COMMIT/ABORT (max prepared transaction id) for each
-	// involved partition
-	auto type = REQ_COMMIT;
-	if (likely(state == DTR_ABORT))
+	auto prepare = &self->prepare;
+	if (unlikely(state == DTR_ABORT))
 	{
 		executor_prepare(self, true);
-		type = REQ_ABORT;
-	}
-
-	auto routes = (Route**)commit->routes.start;
-	for (auto order = 0; order < commit->routes_count; order++)
+		//
+		// ABORT
+		//
+		// reset current id as min active transaction, this will
+		// force to abort prepared transaction by a next
+		// transaction.
+		//
+		self->id = prepare->id_min;
+	} else
 	{
-		auto route = routes[order];
-		if (! route)
-			continue;
-		auto req = req_create(&route->cache_req);
-		req->arg.type  = type;
-		req->arg.route = route;
-		buf_write(&req->arg.arg, &commit->list_max, sizeof(commit->list_max));
-		route_add(route, req);
+		//
+		// COMMIT
+		//
+		// set current id (id for a next transaction) higher than current one,
+		// this will prevent abort by a next transaction.
+		//
+		// set current commit id as a current id, this will commit prepared
+		// transactions by a next transaction.
+		//
+		self->id        = prepare->id_max + 1;
+		self->id_commit = prepare->id_max;
 	}
 
 	// finilize distributed transactions
-	list_foreach(&commit->list)
+	list_foreach(&prepare->list)
 	{
-		auto dtr = list_at(Dtr, link_commit);
+		auto dtr = list_at(Dtr, link_prepare);
 
 		// update state
 		auto tr_state = dtr->state;
@@ -226,36 +178,32 @@ executor_end(Executor* self, DtrState state)
 hot static void
 executor_wal_write(Executor* self)
 {
-	// prepare a list of a finilized wal records
-	auto commit = &self->commit;
-	auto write_list = &commit->write;
-	list_foreach(&commit->list)
+	// prepare a list of a prepared wal records
+	auto prepare = &self->prepare;
+	auto write_list = &prepare->write;
+	list_foreach(&prepare->list)
 	{
-		auto dtr   = list_at(Dtr, link_commit);
-		auto write = &dtr->write;
+		auto dtr      = list_at(Dtr, link_prepare);
+		auto dispatch = &dtr->dispatch;
+		auto write    = &dtr->write;
 		write_reset(write);
 		write_begin(write);
-
-		// TODO
-#if 0
-		for (int i = 0; i < set->set_size; i++)
+		for (int i = 0; i < dispatch->core_mgr->cores_count; i++)
 		{
-			auto pipe = pipe_set_get(set, i);
-			if (pipe == NULL)
+			auto ctr = &dispatch->cores[i];
+			if (ctr->state == CTR_NONE)
 				continue;
-			assert(pipe->state == PIPE_CLOSE);
-			assert(pipe->tr);
-			write_add(write, &pipe->tr->log.write_log);
+			assert(ctr->tr);
+			write_add(write, &ctr->tr->log.write_log);
 		}
 		if (write->header.count > 0)
 		{
 			// unless transaction is used for replication writer, respect
 			// system read-only state
-			if (!tr->program->repl && var_int_of(&state()->read_only))
+			if (!dtr->program->repl && var_int_of(&state()->read_only))
 				error("system is in read-only mode");
 			write_list_add(write_list, write);
 		}
-#endif
 	}
 
 	// do atomical wal write
@@ -265,8 +213,8 @@ executor_wal_write(Executor* self)
 hot void
 executor_commit(Executor* self, Dtr* dtr, Buf* error)
 {
-	// read all pending replies
-	dispatch_drain(&dtr->dispatch);
+	// finilize dispatch state after error
+	dispatch_shutdown(&dtr->dispatch);
 
 	for (;;)
 	{

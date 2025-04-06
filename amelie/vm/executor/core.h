@@ -11,47 +11,46 @@
 // AGPL-3.0 Licensed.
 //
 
-typedef struct Route Route;
+typedef struct Core Core;
 
-struct Route
+struct Core
 {
 	Mutex    lock;
 	CondVar  cond_var;
-	int      id;
 	bool     shutdown;
+	int      order;
 	List     list;
 	int      list_count;
+	uint64_t commit;
 	TrList   prepared;
 	TrCache  cache;
-	ReqCache cache_req;
 };
 
 static inline void
-route_init(Route* self, int id)
+core_init(Core* self, int order)
 {
-	self->id         = id;
+	self->order      = order;
 	self->list_count = 0;
 	self->shutdown   = false;
+	self->commit     = 0;
 	mutex_init(&self->lock);
 	cond_var_init(&self->cond_var);
 	list_init(&self->list);
 	tr_list_init(&self->prepared);
 	tr_cache_init(&self->cache);
-	req_cache_init(&self->cache_req);
 }
 
 static inline void
-route_free(Route* self)
+core_free(Core* self)
 {
 	assert(! self->list_count);
 	mutex_free(&self->lock);
-	cond_var_init(&self->cond_var);
+	cond_var_free(&self->cond_var);
 	tr_cache_free(&self->cache);
-	req_cache_free(&self->cache_req);
 }
 
 static inline void
-route_shutdown(Route* self)
+core_shutdown(Core* self)
 {
 	mutex_lock(&self->lock);
 	self->shutdown = true;
@@ -60,27 +59,27 @@ route_shutdown(Route* self)
 }
 
 static inline void
-route_add(Route* self, Req* req)
+core_add(Core* self, Ctr* ctr)
 {
 	mutex_lock(&self->lock);
 	self->list_count++;
-	list_append(&self->list, &req->link_route);
+	list_append(&self->list, &ctr->link);
 	cond_var_signal(&self->cond_var);
 	mutex_unlock(&self->lock);
 }
 
-static inline Req*
-route_get(Route* self)
+static inline Ctr*
+core_accept(Core* self)
 {
 	mutex_lock(&self->lock);
-	Req* next = NULL;
+	Ctr* next = NULL;
 	for (;;)
 	{
 		if (self->list_count > 0)
 		{
 			auto ref = list_pop(&self->list);
 			self->list_count--;
-			next = container_of(ref, Req, link_route);
+			next = container_of(ref, Ctr, link);
 			break;
 		}
 		if (self->shutdown)

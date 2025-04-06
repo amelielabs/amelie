@@ -16,7 +16,6 @@ typedef struct Dtr Dtr;
 typedef enum
 {
 	DTR_NONE,
-	DTR_LOCK,
 	DTR_BEGIN,
 	DTR_PREPARE,
 	DTR_ERROR,
@@ -27,6 +26,7 @@ typedef enum
 struct Dtr
 {
 	uint64_t id;
+	uint64_t id_commit;
 	bool     exclusive;
 	DtrState state;
 	Dispatch dispatch;
@@ -34,30 +34,29 @@ struct Dtr
 	Result   cte;
 	Buf*     error;
 	Write    write;
-	Event    on_lock;
 	Event    on_commit;
 	Limit    limit;
 	Local*   local;
-	List     link_commit;
+	List     link_prepare;
 	List     link;
 };
 
 static inline void
-dtr_init(Dtr* self, Local* local)
+dtr_init(Dtr* self, Local* local, CoreMgr* core_mgr)
 {
 	self->state     = DTR_NONE;
 	self->exclusive = false;
 	self->id        = 0;
+	self->id_commit = 0;
 	self->program   = NULL;
 	self->error     = NULL;
 	self->local     = local;
-	dispatch_init(&self->dispatch);
+	dispatch_init(&self->dispatch, core_mgr);
 	result_init(&self->cte);
-	event_init(&self->on_lock);
 	event_init(&self->on_commit);
 	limit_init(&self->limit, var_int_of(&config()->limit_write));
 	write_init(&self->write);
-	list_init(&self->link_commit);
+	list_init(&self->link_prepare);
 	list_init(&self->link);
 }
 
@@ -66,6 +65,7 @@ dtr_reset(Dtr* self)
 {
 	self->state     = DTR_NONE;
 	self->id        = 0;
+	self->id_commit = 0;
 	self->program   = NULL;
 	self->exclusive = false;
 	if (self->error)
@@ -77,7 +77,7 @@ dtr_reset(Dtr* self)
 	result_reset(&self->cte);
 	limit_reset(&self->limit, var_int_of(&config()->limit_write));
 	write_reset(&self->write);
-	list_init(&self->link_commit);
+	list_init(&self->link_prepare);
 	list_init(&self->link);
 }
 
@@ -87,7 +87,6 @@ dtr_free(Dtr* self)
 	dtr_reset(self);
 	dispatch_free(&self->dispatch);
 	result_free(&self->cte);
-	event_detach(&self->on_lock);
 	event_detach(&self->on_commit);
 	write_free(&self->write);
 }
@@ -97,10 +96,8 @@ dtr_create(Dtr* self, Program* program)
 {
 	self->program = program;
 	self->exclusive = program->exclusive;
-	dispatch_create(&self->dispatch, program->stmts);
+	dispatch_create(&self->dispatch, self, program->stmts);
 	result_create(&self->cte, program->stmts);
-	if (! event_attached(&self->on_lock))
-		event_attach(&self->on_lock);
 	if (! event_attached(&self->on_commit))
 		event_attach(&self->on_commit);
 }
@@ -119,20 +116,30 @@ dtr_set_error(Dtr* self, Buf* buf)
 }
 
 hot static inline void
-req_complete(Req* self)
+dtr_send(Dtr* self, int step, ReqList* list)
 {
-	// send OK or ERROR based on the req result
-	auto dtr = self->arg.dtr;
-	if (dtr)
+	// begin local transactions for each route to handle
+	// exclusive access
+	if (step == 0 && self->program->exclusive)
+		dispatch_add_snapshot(&self->dispatch);
+
+	// add requests to the dispatch step,
+	// start local transactions and queue requests for execution
+	list_foreach_safe(&list->list)
 	{
-		auto step = dispatch_at(&dtr->dispatch, self->arg.step);
-		if (self->arg.error)
-			atomic_u32_inc(&step->errors);
-		atomic_u32_inc(&step->complete);
-		event_signal(&dtr->dispatch.on_complete);
-	} else
-	{
-		// commit/abort (async)
-		req_free(self);
+		auto req = list_at(Req, link);
+		req_list_del(list, req);
+		dispatch_add(&self->dispatch, step, req);
 	}
+
+	// finilize the last step for transactions that were not
+	// involved in it but still active
+	if (step == self->program->stmts_last)
+		dispatch_close(&self->dispatch);
+}
+
+hot static inline void
+dtr_recv(Dtr* self, int step)
+{
+	dispatch_wait(&self->dispatch, step);
 }
