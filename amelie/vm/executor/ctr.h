@@ -28,6 +28,7 @@ struct Ctr
 	Tr*      tr;
 	Core*    core;
 	ReqQueue queue;
+	Event    complete;
 	List     link;
 };
 
@@ -39,6 +40,7 @@ ctr_init(Ctr* self, Dtr* dtr, Core* core)
 	self->tr    = NULL;
 	self->core  = core;
 	req_queue_init(&self->queue);
+	event_init(&self->complete);
 	list_init(&self->link);
 }
 
@@ -52,22 +54,25 @@ static inline void
 ctr_reset(Ctr* self)
 {
 	self->state = CTR_NONE;
-	self->dtr   = NULL;
 	self->tr    = NULL;
 	req_queue_reset(&self->queue);
 	list_init(&self->link);
 }
 
 static inline void
-ctr_begin(Ctr* self)
+ctr_attach(Ctr* self)
 {
-	assert(self->state == CTR_NONE);
-	self->state = CTR_ACTIVE;
+	event_attach(&self->complete);
+}
+
+static inline void
+ctr_detach(Ctr* self)
+{
+	event_detach(&self->complete);
 }
 
 static inline void
 ctr_complete(Ctr* self)
 {
-	assert(self->state == CTR_ACTIVE);
-	self->state = CTR_COMPLETE;
+	event_signal(&self->complete);
 }

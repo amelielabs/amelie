@@ -33,11 +33,11 @@
 #include <amelie_executor.h>
 
 void
-executor_init(Executor* self, Db* db)
+executor_init(Executor* self, Db* db, CoreMgr* core_mgr)
 {
 	self->id         = 0;
-	self->id_commit  = 0;
 	self->list_count = 0;
+	self->core_mgr   = core_mgr;
 	self->db         = db;
 	prepare_init(&self->prepare);
 	list_init(&self->list);
@@ -48,6 +48,7 @@ void
 executor_free(Executor* self)
 {
 	spinlock_free(&self->lock);
+	prepare_free(&self->prepare);
 }
 
 hot void
@@ -64,7 +65,6 @@ executor_send(Executor* self, Dtr* dtr, int step, ReqList* list)
 		// register transaction
 		dtr_set_state(dtr, DTR_BEGIN);
 		dtr->id = self->id++;
-		dtr->id_commit = self->id_commit;
 
 		list_append(&self->list, &dtr->link);
 		self->list_count++;
@@ -93,7 +93,7 @@ hot static void
 executor_prepare(Executor* self, bool abort)
 {
 	auto prepare = &self->prepare;
-	prepare_reset(prepare);
+	prepare_reset(prepare, self->core_mgr);
 
 	if (unlikely(abort))
 	{
@@ -123,27 +123,20 @@ executor_end(Executor* self, DtrState state)
 	if (unlikely(state == DTR_ABORT))
 	{
 		executor_prepare(self, true);
-		//
-		// ABORT
-		//
-		// reset current id as min active transaction, this will
-		// force to abort prepared transaction by a next
-		// transaction.
-		//
-		self->id = prepare->id_min;
+
+		// abort each involved core
+		auto cores = (Core**)prepare->cores.start;
+		for (auto order = 0; order < self->core_mgr->cores_count; order++)
+			if (cores[order])
+				core_abort(cores[order]);
+
 	} else
 	{
-		//
-		// COMMIT
-		//
-		// set current id (id for a next transaction) higher than current one,
-		// this will prevent abort by a next transaction.
-		//
-		// set current commit id as a current id, this will commit prepared
-		// transactions by a next transaction.
-		//
-		self->id        = prepare->id_max + 1;
-		self->id_commit = prepare->id_max;
+		// commit each involved core
+		auto cores = (Core**)prepare->cores.start;
+		for (auto order = 0; order < self->core_mgr->cores_count; order++)
+			if (cores[order])
+				core_commit(cores[order], prepare->id_max);
 	}
 
 	// finilize distributed transactions
@@ -193,7 +186,8 @@ executor_wal_write(Executor* self)
 			auto ctr = &dispatch->cores[i];
 			if (ctr->state == CTR_NONE)
 				continue;
-			assert(ctr->tr);
+			if (ctr->tr == NULL)
+				continue;
 			write_add(write, &ctr->tr->log.write_log);
 		}
 		if (write->header.count > 0)

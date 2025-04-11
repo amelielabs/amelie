@@ -15,27 +15,37 @@ typedef struct Prepare Prepare;
 
 struct Prepare
 {
-	uint64_t  id_min;
 	uint64_t  id_max;
 	int       list_count;
 	List      list;
+	Buf       cores;
 	WriteList write;
 };
 
 static inline void
 prepare_init(Prepare* self)
 {
-	self->id_min      = 0;
-	self->id_max      = 0;
-	self->list_count  = 0;
+	self->id_max     = 0;
+	self->list_count = 0;
+	buf_init(&self->cores);
 	list_init(&self->list);
 	write_list_init(&self->write);
 }
 
 static inline void
-prepare_reset(Prepare* self)
+prepare_free(Prepare* self)
 {
-	self->id_min     = 0;
+	buf_free(&self->cores);
+}
+
+static inline void
+prepare_reset(Prepare* self, CoreMgr* core_mgr)
+{
+	buf_reset(&self->cores);
+	auto size = sizeof(Core*) * core_mgr->cores_count;
+	buf_claim(&self->cores, size);
+	memset(self->cores.start, 0, size);
+
 	self->id_max     = 0;
 	self->list_count = 0;
 	list_init(&self->list);
@@ -49,9 +59,18 @@ prepare_add(Prepare* self, Dtr* dtr)
 	list_append(&self->list, &dtr->link_prepare);
 	self->list_count++;
 
-	// track min/max transaction id
-	if (dtr->id < self->id_min)
-		self->id_min = dtr->id;
+	// track max transaction id
 	if (dtr->id > self->id_max)
 		self->id_max = dtr->id;
+
+	// create a list of active cores
+	auto cores = (Core**)self->cores.start;
+	auto dispatch = &dtr->dispatch;
+	for (auto order = 0; order < dispatch->core_mgr->cores_count; order++)
+	{
+		auto ctr = &dispatch->cores[order];
+		if (ctr->state == CTR_NONE)
+			continue;
+		cores[order] = ctr->core;
+	}
 }

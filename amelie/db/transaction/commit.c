@@ -73,35 +73,33 @@ tr_abort(Tr* self)
 }
 
 hot void
-tr_commit_list(TrList* self, TrCache* cache, uint64_t last_id)
+tr_commit_list(TrList* self, TrCache* cache, uint64_t id)
 {
-	// commit till the last transaction
+	// commit all transactions <= id
 	list_foreach_safe(&self->list)
 	{
 		auto tr = list_at(Tr, link);
-		tr_commit(tr);
-
+		if (tr->id > id)
+			break;
 		list_unlink(&tr->link);
 		self->list_count--;
-
+		tr_commit(tr);
 		tr_cache_push(cache, tr);
-		if (tr->id == last_id)
-			break;
 	}
 }
 
 void
 tr_abort_list(TrList* self, TrCache* cache)
 {
-	// abort transactions in the list in reverse
+	// abort all transaction
 	list_foreach_reverse_safe(&self->list)
 	{
 		auto tr = list_at(Tr, link);
-		tr_abort(tr);
-
 		list_unlink(&tr->link);
 		self->list_count--;
-
+		tr_abort(tr);
 		tr_cache_push(cache, tr);
 	}
+
+	tr_list_init(self);
 }

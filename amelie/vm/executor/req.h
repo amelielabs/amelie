@@ -30,6 +30,7 @@ struct Req
 	Buf   arg;
 	Value result;
 	Buf*  error;
+	Event complete;
 	Core* core;
 	List  link_queue;
 	List  link;
@@ -43,6 +44,7 @@ req_allocate(void)
 	self->start = 0;
 	self->error = NULL;
 	self->core  = NULL;
+	event_init(&self->complete);
 	buf_init(&self->arg);
 	value_init(&self->result);
 	list_init(&self->link_queue);
@@ -73,4 +75,22 @@ req_reset(Req* self)
 	self->core  = NULL;
 	buf_reset(&self->arg);
 	value_free(&self->result);
+}
+
+static inline void
+req_attach(Req* self)
+{
+	event_attach(&self->complete);
+}
+
+static inline void
+req_detach(Req* self)
+{
+	event_detach(&self->complete);
+}
+
+static inline void
+req_complete(Req* self)
+{
+	event_signal(&self->complete);
 }

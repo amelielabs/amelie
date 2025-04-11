@@ -47,7 +47,7 @@ vm_init(Vm*          self,
 	self->code_data    = NULL;
 	self->code_arg     = NULL;
 	self->executor     = executor;
-	self->route        = NULL;
+	self->core         = NULL;
 	self->dtr          = NULL;
 	self->tr           = NULL;
 	self->cte          = NULL;
@@ -83,7 +83,7 @@ vm_reset(Vm* self)
 	self->code      = NULL;
 	self->code_data = NULL;
 	self->code_arg  = NULL;
-	self->route     = NULL;
+	self->core      = NULL;
 }
 
 #define op_start goto *ops[(op)->op]
@@ -93,7 +93,7 @@ vm_reset(Vm* self)
 hot void
 vm_run(Vm*       self,
        Local*    local,
-       Route*    route,
+       Core*     core,
        Dtr*      dtr,
        Tr*       tr,
        Code*     code,
@@ -105,7 +105,7 @@ vm_run(Vm*       self,
        int       start)
 {
 	self->local     = local;
-	self->route     = route;
+	self->core      = core;
 	self->dtr       = dtr;
 	self->tr        = tr;
 	self->code      = code;

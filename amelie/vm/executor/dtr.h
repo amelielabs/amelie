@@ -26,8 +26,6 @@ typedef enum
 struct Dtr
 {
 	uint64_t id;
-	uint64_t id_commit;
-	bool     exclusive;
 	DtrState state;
 	Dispatch dispatch;
 	Program* program;
@@ -37,6 +35,7 @@ struct Dtr
 	Event    on_commit;
 	Limit    limit;
 	Local*   local;
+	CoreMgr* core_mgr;
 	List     link_prepare;
 	List     link;
 };
@@ -44,13 +43,12 @@ struct Dtr
 static inline void
 dtr_init(Dtr* self, Local* local, CoreMgr* core_mgr)
 {
-	self->state     = DTR_NONE;
-	self->exclusive = false;
-	self->id        = 0;
-	self->id_commit = 0;
-	self->program   = NULL;
-	self->error     = NULL;
-	self->local     = local;
+	self->id       = 0;
+	self->state    = DTR_NONE;
+	self->program  = NULL;
+	self->error    = NULL;
+	self->local    = local;
+	self->core_mgr = core_mgr;
 	dispatch_init(&self->dispatch, core_mgr);
 	result_init(&self->cte);
 	event_init(&self->on_commit);
@@ -63,11 +61,9 @@ dtr_init(Dtr* self, Local* local, CoreMgr* core_mgr)
 static inline void
 dtr_reset(Dtr* self)
 {
-	self->state     = DTR_NONE;
-	self->id        = 0;
-	self->id_commit = 0;
-	self->program   = NULL;
-	self->exclusive = false;
+	self->id      = 0;
+	self->state   = DTR_NONE;
+	self->program = NULL;
 	if (self->error)
 	{
 		buf_free(self->error);
@@ -95,7 +91,6 @@ static inline void
 dtr_create(Dtr* self, Program* program)
 {
 	self->program = program;
-	self->exclusive = program->exclusive;
 	dispatch_create(&self->dispatch, self, program->stmts);
 	result_create(&self->cte, program->stmts);
 	if (! event_attached(&self->on_commit))
@@ -118,8 +113,7 @@ dtr_set_error(Dtr* self, Buf* buf)
 hot static inline void
 dtr_send(Dtr* self, int step, ReqList* list)
 {
-	// begin local transactions for each route to handle
-	// exclusive access
+	// begin local transactions for each core to handle
 	if (step == 0 && self->program->exclusive)
 		dispatch_add_snapshot(&self->dispatch);
 
@@ -132,8 +126,7 @@ dtr_send(Dtr* self, int step, ReqList* list)
 		dispatch_add(&self->dispatch, step, req);
 	}
 
-	// finilize the last step for transactions that were not
-	// involved in it but still active
+	// finilize still active transactions on the last step
 	if (step == self->program->stmts_last)
 		dispatch_close(&self->dispatch);
 }

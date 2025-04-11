@@ -46,7 +46,7 @@ csend_shard(Vm* self, Op* op)
 	auto keys  = table_keys(table);
 
 	// redistribute rows between routes
-	Req* map[dtr->dispatch.routes];
+	Req* map[dtr->dispatch.core_mgr->cores_count];
 	memset(map, 0, sizeof(map));
 
 	ReqList list;
@@ -58,21 +58,21 @@ csend_shard(Vm* self, Op* op)
 		auto set = (Set*)store;
 		for (auto order = 0; order < set->count_rows; order++)
 		{
-			auto row   = set_row(set, order);
-			auto hash  = row_value_hash(keys, row);
-			auto part  = part_map_get(&table->part_list.map, hash);
-			auto route = part->route;
-			auto req   = map[route->id];
+			auto row  = set_row(set, order);
+			auto hash = row_value_hash(keys, row);
+			auto part = part_map_get(&table->part_list.map, hash);
+			auto core = part->core;
+			auto req  = map[core->order];
 			if (! req)
 			{
 				req = req_create(&dtr->dispatch.req_cache);
-				req->arg.type  = REQ_EXECUTE;
-				req->arg.start = op->b;
-				req->arg.route = route;
+				req->type  = REQ_EXECUTE;
+				req->start = op->b;
+				req->core  = core;
 				req_list_add(&list, req);
-				map[route->id] = req;
+				map[core->order] = req;
 			}
-			buf_write(&req->arg.arg, &row, sizeof(Value*));
+			buf_write(&req->arg, &row, sizeof(Value*));
 		}
 	} else
 	{
@@ -81,20 +81,20 @@ csend_shard(Vm* self, Op* op)
 		Value* row;
 		for (; (row = store_iterator_at(it)); store_iterator_next(it))
 		{
-			auto hash  = row_value_hash(keys, row);
-			auto part  = part_map_get(&table->part_list.map, hash);
-			auto route = part->route;
-			auto req   = map[route->id];
+			auto hash = row_value_hash(keys, row);
+			auto part = part_map_get(&table->part_list.map, hash);
+			auto core = part->core;
+			auto req  = map[core->order];
 			if (! req)
 			{
 				req = req_create(&dtr->dispatch.req_cache);
-				req->arg.type  = REQ_EXECUTE;
-				req->arg.start = op->b;
-				req->arg.route = route;
+				req->type  = REQ_EXECUTE;
+				req->start = op->b;
+				req->core  = core;
 				req_list_add(&list, req);
-				map[route->id] = req;
+				map[core->order] = req;
 			}
-			buf_write(&req->arg.arg, &row, sizeof(Value*));
+			buf_write(&req->arg, &row, sizeof(Value*));
 		}
 	}
 
@@ -114,9 +114,9 @@ csend_lookup(Vm* self, Op* op)
 	req_list_init(&list);
 	auto part = part_map_get(&table->part_list.map, op->d);
 	auto req = req_create(&dtr->dispatch.req_cache);
-	req->arg.type  = REQ_EXECUTE;
-	req->arg.start = op->b;
-	req->arg.route = part->route;
+	req->type  = REQ_EXECUTE;
+	req->start = op->b;
+	req->core  = part->core;
 	req_list_add(&list, req);
 
 	executor_send(self->executor, dtr, op->a, &list);
@@ -136,9 +136,9 @@ csend_all(Vm* self, Op* op)
 	{
 		auto part = list_at(Part, link);
 		auto req = req_create(&dtr->dispatch.req_cache);
-		req->arg.type  = REQ_EXECUTE;
-		req->arg.start = op->b;
-		req->arg.route = part->route;
+		req->type  = REQ_EXECUTE;
+		req->start = op->b;
+		req->core  = part->core;
 		req_list_add(&list, req);
 	}
 
@@ -160,7 +160,7 @@ crecv_to(Vm* self, Op* op)
 
 	auto step = dispatch_at(&self->dtr->dispatch, op->b);
 	auto req  = container_of(list_first(&step->list.list), Req, link);
-	value_move(reg_at(&self->r, op->a), &req->arg.result);
+	value_move(reg_at(&self->r, op->a), &req->result);
 }
 
 hot void
@@ -244,7 +244,7 @@ cunion_recv(Vm* self, Op* op)
 	list_foreach(&step->list.list)
 	{
 		auto req = list_at(Req, link);
-		auto value = &req->arg.result;
+		auto value = &req->result;
 		if (value->type == TYPE_STORE)
 		{
 			auto set = (Set*)value->store;
@@ -280,7 +280,7 @@ ctable_open(Vm* self, Op* op)
 
 	// find table, partition and index
 	auto table = table_mgr_find(&self->db->table_mgr, &name_schema, &name_table, true);
-	auto part  = part_list_match(&table->part_list, self->route);
+	auto part  = part_list_match(&table->part_list, self->core);
 	auto index = part_find(part, &name_index, true);
 	auto keys  = index_keys(index);
 	auto keys_count = op->d;
@@ -326,7 +326,7 @@ ctable_open_heap(Vm* self, Op* op)
 
 	// find table and partition
 	auto table = table_mgr_find(&self->db->table_mgr, &name_schema, &name_table, true);
-	auto part  = part_list_match(&table->part_list, self->route);
+	auto part  = part_list_match(&table->part_list, self->core);
 
 	// open cursor
 	cursor->type  = CURSOR_TABLE;
@@ -351,7 +351,7 @@ ctable_prepare(Vm* self, Op* op)
 
 	// find partition
 	Table* table = (Table*)op->b;
-	auto part = part_list_match(&table->part_list, self->route);
+	auto part = part_list_match(&table->part_list, self->core);
 
 	// prepare cursor and primary index iterator for related partition
 	cursor->type  = CURSOR_TABLE;
@@ -367,7 +367,7 @@ cinsert(Vm* self, Op* op)
 
 	// find related table partition
 	auto table   = (Table*)op->a;
-	auto part    = part_list_match(&table->part_list, self->route);
+	auto part    = part_list_match(&table->part_list, self->core);
 	auto columns = table_columns(table);
 
 	// insert

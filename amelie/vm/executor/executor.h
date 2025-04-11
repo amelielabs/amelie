@@ -17,14 +17,14 @@ struct Executor
 {
 	Spinlock lock;
 	uint64_t id;
-	uint64_t id_commit;
 	int      list_count;
 	List     list;
 	Prepare  prepare;
+	CoreMgr* core_mgr;
 	Db*      db;
 };
 
-void executor_init(Executor*, Db*);
+void executor_init(Executor*, Db*, CoreMgr*);
 void executor_free(Executor*);
 void executor_send(Executor*, Dtr*, int, ReqList*);
 void executor_recv(Executor*, Dtr*, int);
