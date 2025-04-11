@@ -53,7 +53,7 @@ system_save_state(void* arg)
 }
 
 static void
-system_route(PartList* list, void* arg)
+system_distribute(PartList* list, void* arg)
 {
 	// redistribute partitions across backends
 	System* self = arg;
@@ -64,7 +64,7 @@ system_route(PartList* list, void* arg)
 		auto part = list_at(Part, link);
 		if (order == backend_mgr->workers_count)
 			order = 0;
-		part->route = &backend_mgr->workers[order].route;
+		part->core = &backend_mgr->workers[order].core;
 		order++;
 	}
 }
@@ -90,14 +90,14 @@ system_create(void)
 	frontend_mgr_init(&self->frontend_mgr);
 	backend_mgr_init(&self->backend_mgr, &self->db, &self->executor,
 	                 &self->function_mgr);
-	executor_init(&self->executor, &self->db);
+	executor_init(&self->executor, &self->db, &self->backend_mgr.core_mgr);
 	rpc_queue_init(&self->lock_queue);
 
 	// vm
 	function_mgr_init(&self->function_mgr);
 
 	// db
-	db_init(&self->db, system_route, self);
+	db_init(&self->db, system_distribute, self);
 
 	// replication
 	repl_init(&self->repl, &self->db);

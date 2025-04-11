@@ -57,7 +57,7 @@ session_create(Client* client, Frontend* frontend, Share* share)
 	content_init(&self->content, &self->local, &client->reply.content);
 	vm_init(&self->vm, share->db, share->executor, share->function_mgr);
 	compiler_init(&self->compiler, share->db, &self->local, share->function_mgr);
-	dtr_init(&self->dtr, &self->local);
+	dtr_init(&self->dtr, &self->local, &share->backend_mgr->core_mgr);
 	return self;
 }
 

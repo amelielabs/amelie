@@ -87,85 +87,109 @@ backend_replay(Backend* self, Tr* tr, Buf* arg)
 }
 
 hot static void
-backend_process(Backend* self, Req* req)
+backend_run(Backend* self, Ctr* ctr, Req* req)
 {
-	auto route = &self->route;
-	switch (req->arg.type) {
+	auto dtr = ctr->dtr;
+	switch (req->type) {
 	case REQ_EXECUTE:
 	{
-		auto arg = &req->arg;
-		auto dtr = req->arg.dtr;
-
 		// create and add transaction to the prepared list (even on error)
-		auto tr = tr_create(&route->cache);
-		tr_begin(tr);
-		tr_set_id(tr, dtr->id);
-		tr_set_limit(tr, &dtr->limit);
-		tr_list_add(&route->prepared, tr);
-		arg->tr = tr;
+		if (ctr->tr == NULL)
+		{
+			auto tr = tr_create(&self->core.cache);
+			tr_begin(tr);
+			tr_set_id(tr, dtr->id);
+			tr_set_limit(tr, &dtr->limit);
+			tr_list_add(&self->core.prepared, tr);
+			ctr->tr = tr;
+		}
 
 		// execute request
 		vm_reset(&self->vm);
 		vm_run(&self->vm, dtr->local,
-		        route,
+		        &self->core,
 		        dtr,
-		        tr,
+		        ctr->tr,
 		        dtr->program->code_backend,
 		        dtr->program->code_data,
-		       &arg->arg,
+		       &req->arg,
 		       &dtr->cte,
-		       &arg->result,
+		       &req->result,
 		        NULL,
-		        arg->start);
+		        req->start);
 		break;
 	}
 	case REQ_REPLAY:
 	{
-		auto arg = &req->arg;
-		auto dtr = req->arg.dtr;
-
 		// create and add transaction to the prepared list (even on error)
-		auto tr = tr_create(&route->cache);
-		tr_begin(tr);
-		tr_set_id(tr, dtr->id);
-		tr_list_add(&route->prepared, tr);
-		arg->tr = tr;
+		if (ctr->tr == NULL)
+		{
+			auto tr = tr_create(&self->core.cache);
+			tr_begin(tr);
+			tr_set_id(tr, dtr->id);
+			tr_set_limit(tr, &dtr->limit);
+			tr_list_add(&self->core.prepared, tr);
+			ctr->tr = tr;
+		}
 
 		// replay commands
-		backend_replay(self, tr, &arg->arg);
+		backend_replay(self, ctr->tr, &req->arg);
 		break;
 	}
-	case REQ_COMMIT:
-	{
-		// commit all prepared transaction till the last one by id
-		auto id = *buf_u64(&req->arg.arg);
-		tr_commit_list(&route->prepared, &route->cache, id);
-		break;
-	}
-	case REQ_ABORT:
-		// abort all prepared transactions
-		tr_abort_list(&route->prepared, &route->cache);
+	case REQ_SYNC:
+		// do nothing, used to process commit/abort
 		break;
 	case REQ_BUILD:
+	{
+		// todo
 		//auto build = *(Build**)msg->data;
 		//build_execute(build, &self->worker->id);
 		break;
 	}
+	}
+}
+
+hot static void
+backend_process(Backend* self, Ctr* ctr)
+{
+	auto queue = &ctr->queue;
+	for (;;)
+	{
+		auto req = req_queue_pop(queue);
+		if (! req)
+			break;
+		if (error_catch(backend_run(self, ctr, req)))
+			req->error = msg_error(&am_self()->error);
+		req_complete(req);
+	}
+	ctr_complete(ctr);
 }
 
 static void
 backend_main(void* arg)
 {
 	Backend* self = arg;
-	auto route = &self->route;
-	for (;;)
+	auto core = &self->core;
+	for (auto active = true; active;)
 	{
-		auto req = route_get(route);
-		if (! req)
+		CoreEvent core_event;
+		switch (core_next(core, &core_event)) {
+		case CORE_SHUTDOWN:
+			active = false;
 			break;
-		if (error_catch(backend_process(self, req)))
-			req->arg.error = msg_error(&am_self()->error);
-		req_complete(req);
+		case CORE_RUN:
+			// accept and process incoming core transaction
+			backend_process(self, core_event.ctr);
+			break;
+		case CORE_COMMIT:
+			// commit all transaction <= commit id
+			tr_commit_list(&core->prepared, &core->cache, core_event.commit);
+			break;
+		case CORE_ABORT:
+			// abort all prepared transactions
+			tr_abort_list(&core->prepared, &core->cache);
+			break;
+		}
 	}
 }
 
@@ -176,7 +200,7 @@ backend_init(Backend*     self,
              FunctionMgr* function_mgr,
              int          id)
 {
-	route_init(&self->route, id);
+	core_init(&self->core, id);
 	vm_init(&self->vm, db, executor, function_mgr);
 	task_init(&self->task);
 	list_init(&self->link);
@@ -186,7 +210,7 @@ void
 backend_free(Backend* self)
 {
 	vm_free(&self->vm);
-	route_free(&self->route);
+	core_free(&self->core);
 }
 
 void
@@ -200,7 +224,7 @@ backend_stop(Backend* self)
 {
 	if (task_active(&self->task))
 	{
-		route_shutdown(&self->route);
+		core_shutdown(&self->core);
 		task_wait(&self->task);
 		task_free(&self->task);
 		task_init(&self->task);

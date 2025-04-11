@@ -15,10 +15,10 @@ typedef struct Backend Backend;
 
 struct Backend
 {
-	Vm    vm;
-	Route route;
-	Task  task;
-	List  link;
+	Vm   vm;
+	Core core;
+	Task task;
+	List link;
 };
 
 void backend_init(Backend*, Db*, Executor*, FunctionMgr*, int);

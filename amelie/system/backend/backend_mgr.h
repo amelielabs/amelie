@@ -17,6 +17,7 @@ struct BackendMgr
 {
 	Backend*     workers;
 	int          workers_count;
+	CoreMgr      core_mgr;
 	Executor*    executor;
 	FunctionMgr* function_mgr;
 	Db*          db;
@@ -33,6 +34,7 @@ backend_mgr_init(BackendMgr*  self,
 	self->executor      = executor;
 	self->function_mgr  = function_mgr;
 	self->db            = db;
+	core_mgr_init(&self->core_mgr);
 }
 
 static inline void
@@ -40,12 +42,17 @@ backend_mgr_start(BackendMgr* self, int count, int cpu_from)
 {
 	if (count == 0)
 		return;
+	core_mgr_allocate(&self->core_mgr, count);
+
 	self->workers_count = count;
 	self->workers = am_malloc(sizeof(Backend) * count);
 	int i = 0;
 	for (; i < count; i++)
+	{
+		self->core_mgr.cores[i] = &self->workers[i].core;
 		backend_init(&self->workers[i], self->db, self->executor,
 		              self->function_mgr, i);
+	}
 	if (cpu_from != -1)
 	{
 		for (i = 0; i < count; i++)
@@ -55,6 +62,7 @@ backend_mgr_start(BackendMgr* self, int count, int cpu_from)
 		for (i = 0; i < count; i++)
 			backend_start(&self->workers[i], -1);
 	}
+
 }
 
 static inline void
@@ -69,4 +77,5 @@ backend_mgr_stop(BackendMgr* self)
 	}
 	am_free(self->workers);
 	self->workers = NULL;
+	core_mgr_free(&self->core_mgr);
 }
