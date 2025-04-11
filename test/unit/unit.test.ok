@@ -46,6 +46,10 @@ unit test_condition
 unit test_condition_task
 # test: test condition task timeout
 unit test_condition_task_timeout
+# test: test condition n task
+unit test_condition_n_task
+# test: test condition n task 2
+unit test_condition_n_task2
 # test: test channel
 unit test_channel
 # test: test channel task
