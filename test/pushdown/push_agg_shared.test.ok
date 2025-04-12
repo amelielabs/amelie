@@ -16,7 +16,7 @@ explain select count(*) from test_empty
 [{
   "bytecode": {
     "frontend": {
-      "00": "send_first          0      0      0     ",
+      "00": "send_all            0      0      -     # public.test_empty",
       "01": "recv                0      0      0     ",
       "02": "bool                0      1      0     ",
       "03": "push                0      0      0     ",
@@ -65,7 +65,7 @@ explain select count(*) from test
 [{
   "bytecode": {
     "frontend": {
-      "00": "send_first          0      0      0     ",
+      "00": "send_all            0      0      -     # public.test",
       "01": "recv                0      0      0     ",
       "02": "bool                0      1      0     ",
       "03": "push                0      0      0     ",
@@ -112,7 +112,7 @@ explain select count(id) from test
 [{
   "bytecode": {
     "frontend": {
-      "00": "send_first          0      0      0     ",
+      "00": "send_all            0      0      -     # public.test",
       "01": "recv                0      0      0     ",
       "02": "bool                0      1      0     ",
       "03": "push                0      0      0     ",
@@ -159,7 +159,7 @@ explain select count(data) from test
 [{
   "bytecode": {
     "frontend": {
-      "00": "send_first          0      0      0     ",
+      "00": "send_all            0      0      -     # public.test",
       "01": "recv                0      0      0     ",
       "02": "bool                0      1      0     ",
       "03": "push                0      0      0     ",
@@ -205,7 +205,7 @@ explain select count(data) from test_null
 [{
   "bytecode": {
     "frontend": {
-      "00": "send_first          0      0      0     ",
+      "00": "send_all            0      0      -     # public.test_null",
       "01": "recv                0      0      0     ",
       "02": "bool                0      1      0     ",
       "03": "push                0      0      0     ",
@@ -260,7 +260,7 @@ explain select count(distinct id) from test
 [{
   "bytecode": {
     "frontend": {
-      "00": "send_first          0      0      0     ",
+      "00": "send_all            0      0      -     # public.test",
       "01": "recv                0      0      0     ",
       "02": "bool                0      1      0     ",
       "03": "push                0      0      0     ",
@@ -319,7 +319,7 @@ explain select sum(id) from test_empty
 [{
   "bytecode": {
     "frontend": {
-      "00": "send_first          0      0      0     ",
+      "00": "send_all            0      0      -     # public.test_empty",
       "01": "recv                0      0      0     ",
       "02": "bool                0      1      0     ",
       "03": "push                0      0      0     ",
@@ -366,7 +366,7 @@ explain select sum(id) from test
 [{
   "bytecode": {
     "frontend": {
-      "00": "send_first          0      0      0     ",
+      "00": "send_all            0      0      -     # public.test",
       "01": "recv                0      0      0     ",
       "02": "bool                0      1      0     ",
       "03": "push                0      0      0     ",
@@ -415,7 +415,7 @@ explain select sum(data2) from test_empty
 [{
   "bytecode": {
     "frontend": {
-      "00": "send_first          0      0      0     ",
+      "00": "send_all            0      0      -     # public.test_empty",
       "01": "recv                0      0      0     ",
       "02": "bool                0      1      0     ",
       "03": "push                0      0      0     ",
@@ -462,7 +462,7 @@ explain select sum(data2) from test
 [{
   "bytecode": {
     "frontend": {
-      "00": "send_first          0      0      0     ",
+      "00": "send_all            0      0      -     # public.test",
       "01": "recv                0      0      0     ",
       "02": "bool                0      1      0     ",
       "03": "push                0      0      0     ",
@@ -514,7 +514,7 @@ explain select sum(data) from test_null
 [{
   "bytecode": {
     "frontend": {
-      "00": "send_first          0      0      0     ",
+      "00": "send_all            0      0      -     # public.test_null",
       "01": "recv                0      0      0     ",
       "02": "bool                0      1      0     ",
       "03": "push                0      0      0     ",
@@ -564,7 +564,7 @@ explain select avg(id) from test
 [{
   "bytecode": {
     "frontend": {
-      "00": "send_first          0      0      0     ",
+      "00": "send_all            0      0      -     # public.test",
       "01": "recv                0      0      0     ",
       "02": "bool                0      1      0     ",
       "03": "push                0      0      0     ",
@@ -624,7 +624,7 @@ explain select avg(data2) from test_null
 [{
   "bytecode": {
     "frontend": {
-      "00": "send_first          0      0      0     ",
+      "00": "send_all            0      0      -     # public.test_null",
       "01": "recv                0      0      0     ",
       "02": "bool                0      1      0     ",
       "03": "push                0      0      0     ",
@@ -685,7 +685,7 @@ explain select min(data2) from test_null
 [{
   "bytecode": {
     "frontend": {
-      "00": "send_first          0      0      0     ",
+      "00": "send_all            0      0      -     # public.test_null",
       "01": "recv                0      0      0     ",
       "02": "bool                0      1      0     ",
       "03": "push                0      0      0     ",
@@ -746,7 +746,7 @@ explain select max(data2) from test_null
 [{
   "bytecode": {
     "frontend": {
-      "00": "send_first          0      0      0     ",
+      "00": "send_all            0      0      -     # public.test_null",
       "01": "recv                0      0      0     ",
       "02": "bool                0      1      0     ",
       "03": "push                0      0      0     ",
@@ -798,7 +798,7 @@ explain select id, count(*) from test group by id
 [{
   "bytecode": {
     "frontend": {
-      "00": "send_first          0      0      0     ",
+      "00": "send_all            0      0      -     # public.test",
       "01": "recv                0      0      0     ",
       "02": "bool                0      1      0     ",
       "03": "push                0      0      0     ",
@@ -849,7 +849,7 @@ explain select id, count(*) from test group by 1
 [{
   "bytecode": {
     "frontend": {
-      "00": "send_first          0      0      0     ",
+      "00": "send_all            0      0      -     # public.test",
       "01": "recv                0      0      0     ",
       "02": "bool                0      1      0     ",
       "03": "push                0      0      0     ",
@@ -900,7 +900,7 @@ explain select * from (select count(*) from test) t
 [{
   "bytecode": {
     "frontend": {
-      "00": "send_first          0      0      0     ",
+      "00": "send_all            0      0      -     # public.test",
       "01": "recv                0      0      0     ",
       "02": "bool                0      1      0     ",
       "03": "push                0      0      0     ",
@@ -956,7 +956,7 @@ explain select * from (select id, count(*) from test group by id) t
 [{
   "bytecode": {
     "frontend": {
-      "00": "send_first          0      0      0     ",
+      "00": "send_all            0      0      -     # public.test",
       "01": "recv                0      0      0     ",
       "02": "bool                0      1      0     ",
       "03": "push                0      0      0     ",
@@ -1029,7 +1029,7 @@ explain select id, count(*) from test group by id order by id
 [{
   "bytecode": {
     "frontend": {
-      "00": "send_first          0      0      0     ",
+      "00": "send_all            0      0      -     # public.test",
       "01": "recv                0      0      0     ",
       "02": "bool                0      1      0     ",
       "03": "push                0      0      0     ",
@@ -1077,7 +1077,7 @@ explain select id, count(*) from test group by 1 order by 1
 [{
   "bytecode": {
     "frontend": {
-      "00": "send_first          0      0      0     ",
+      "00": "send_all            0      0      -     # public.test",
       "01": "recv                0      0      0     ",
       "02": "bool                0      1      0     ",
       "03": "push                0      0      0     ",
@@ -1144,7 +1144,7 @@ explain select id, count(*) from test group by 1 having id > 5
 [{
   "bytecode": {
     "frontend": {
-      "00": "send_first          0      0      0     ",
+      "00": "send_all            0      0      -     # public.test",
       "01": "recv                0      0      0     ",
       "02": "bool                0      1      0     ",
       "03": "push                0      0      0     ",
@@ -1201,7 +1201,7 @@ explain select id from test group by id having count(id) > 0
 [{
   "bytecode": {
     "frontend": {
-      "00": "send_first          0      0      0     ",
+      "00": "send_all            0      0      -     # public.test",
       "01": "recv                0      0      0     ",
       "02": "bool                0      1      0     ",
       "03": "push                0      0      0     ",
@@ -1252,7 +1252,7 @@ explain select id from test group by id having count(*) > 0
 [{
   "bytecode": {
     "frontend": {
-      "00": "send_first          0      0      0     ",
+      "00": "send_all            0      0      -     # public.test",
       "01": "recv                0      0      0     ",
       "02": "bool                0      1      0     ",
       "03": "push                0      0      0     ",
@@ -1296,7 +1296,7 @@ explain select id, count(*) from test group by id having count(*) > 0
 [{
   "bytecode": {
     "frontend": {
-      "00": "send_first          0      0      0     ",
+      "00": "send_all            0      0      -     # public.test",
       "01": "recv                0      0      0     ",
       "02": "bool                0      1      0     ",
       "03": "push                0      0      0     ",
@@ -1344,7 +1344,7 @@ explain select id, count(*) from test group by 1 having count(*) > 0
 [{
   "bytecode": {
     "frontend": {
-      "00": "send_first          0      0      0     ",
+      "00": "send_all            0      0      -     # public.test",
       "01": "recv                0      0      0     ",
       "02": "bool                0      1      0     ",
       "03": "push                0      0      0     ",
@@ -1390,7 +1390,7 @@ explain select data, count(*) from test group by data having count(*) > 0
 [{
   "bytecode": {
     "frontend": {
-      "00": "send_first          0      0      0     ",
+      "00": "send_all            0      0      -     # public.test",
       "01": "recv                0      0      0     ",
       "02": "bool                0      1      0     ",
       "03": "push                0      0      0     ",
@@ -1438,7 +1438,7 @@ explain select data, count(*) from test group by 1 having count(*) > 0
 [{
   "bytecode": {
     "frontend": {
-      "00": "send_first          0      0      0     ",
+      "00": "send_all            0      0      -     # public.test",
       "01": "recv                0      0      0     ",
       "02": "bool                0      1      0     ",
       "03": "push                0      0      0     ",
@@ -1484,7 +1484,7 @@ explain select data, count(*) from test group by data having count(*) > 1
 [{
   "bytecode": {
     "frontend": {
-      "00": "send_first          0      0      0     ",
+      "00": "send_all            0      0      -     # public.test",
       "01": "recv                0      0      0     ",
       "02": "bool                0      1      0     ",
       "03": "push                0      0      0     ",
@@ -1532,7 +1532,7 @@ explain select data, count(*) from test group by 1  having count(*) > 1
 [{
   "bytecode": {
     "frontend": {
-      "00": "send_first          0      0      0     ",
+      "00": "send_all            0      0      -     # public.test",
       "01": "recv                0      0      0     ",
       "02": "bool                0      1      0     ",
       "03": "push                0      0      0     ",
@@ -1582,7 +1582,7 @@ explain select data, count(*) from test group by data order by data
 [{
   "bytecode": {
     "frontend": {
-      "00": "send_first          0      0      0     ",
+      "00": "send_all            0      0      -     # public.test",
       "01": "recv                0      0      0     ",
       "02": "bool                0      1      0     ",
       "03": "push                0      0      0     ",
@@ -1627,7 +1627,7 @@ explain select count(*) from test group by data order by data
 [{
   "bytecode": {
     "frontend": {
-      "00": "send_first          0      0      0     ",
+      "00": "send_all            0      0      -     # public.test",
       "01": "recv                0      0      0     ",
       "02": "bool                0      1      0     ",
       "03": "push                0      0      0     ",

@@ -153,14 +153,13 @@ emit_stmt(Compiler* self)
 		}
 
 		// select (select from table)
-		if (select->pushdown == PUSHDOWN_FIRST)
+		if (select->pushdown == PUSHDOWN_FULL)
 		{
 			// shared table being involved in a subquery
 			//
-			// execute the whole query on the first backend, frontend will
-			// receive the result
+			// pushdown whole query, frontend will receive the result
 			//
-			pushdown_first(self, stmt->ast);
+			pushdown_full(self, stmt->ast);
 			table_in_use = true;
 			break;
 		}
@@ -275,8 +274,8 @@ emit_send_insert(Compiler* self, int start)
 		runpin(self, values_dup);
 	}
 
-	// CSEND
-	op4(self, CSEND, stmt->order, start, (intptr_t)table, r);
+	// CSEND_SHARD
+	op4(self, CSEND_SHARD, stmt->order, start, (intptr_t)table, r);
 	runpin(self, r);
 }
 
@@ -316,10 +315,11 @@ emit_send(Compiler* self, int start)
 		}
 
 		// select (select from table)
-		if (select->pushdown == PUSHDOWN_FIRST)
+		if (select->pushdown == PUSHDOWN_FULL)
 		{
-			// CSEND_FIRST
-			op2(self, CSEND_FIRST, stmt->order, start);
+			// execute on the first partition of a shared table
+			// using in the subquery
+			target = select->pushdown_target;
 			break;
 		}
 
@@ -341,30 +341,22 @@ emit_send(Compiler* self, int start)
 		return;
 
 	auto table = target->from_table;
-	if (table->config->shared)
-	{
-		// send to the first backend
 
-		// CSEND_FIRST
-		op2(self, CSEND_FIRST, stmt->order, start);
+	// point-lookup or range scan
+	auto path = target->path_primary;
+	if (path->type == PATH_LOOKUP && !path->match_start_columns)
+	{
+		// match exact partition using the point lookup key hash
+		uint32_t hash = path_create_hash(path);
+
+		// CSEND_LOOKUP
+		op4(self, CSEND_LOOKUP, stmt->order, start, (intptr_t)table, hash);
 	} else
 	{
-		// point-lookup or range scan
-		auto path = target->path_primary;
-		if (path->type == PATH_LOOKUP && !path->match_start_columns)
-		{
-			// send to one backend using the point lookup key hash
-			uint32_t hash = path_create_hash(path);
+		// send to all table partitions (one or more)
 
-			// CSEND_LOOKUP
-			op4(self, CSEND_LOOKUP, stmt->order, start, (intptr_t)table, hash);
-		} else
-		{
-			// send to all table backends
-
-			// CSEND_ALL
-			op3(self, CSEND_ALL, stmt->order, start, (intptr_t)table);
-		}
+		// CSEND_ALL
+		op3(self, CSEND_ALL, stmt->order, start, (intptr_t)table);
 	}
 }
 
@@ -412,9 +404,9 @@ emit_recv(Compiler* self)
 		}
 
 		// select (select from table)
-		if (select->pushdown == PUSHDOWN_FIRST)
+		if (select->pushdown == PUSHDOWN_FULL)
 		{
-			// recv whole query result from the first backend
+			// recv whole query result
 
 			// CRECV_TO (note: set or union received)
 			r = op2(self, CRECV_TO, rpin(self, TYPE_STORE), stmt->order);

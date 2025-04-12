@@ -13,7 +13,7 @@ explain select * from test group by id
 [{
   "bytecode": {
     "frontend": {
-      "00": "send_first          0      0      0     ",
+      "00": "send_all            0      0      -     # public.test",
       "01": "recv                0      0      0     ",
       "02": "bool                0      1      0     ",
       "03": "push                0      0      0     ",
@@ -62,7 +62,7 @@ explain select id from test group by id
 [{
   "bytecode": {
     "frontend": {
-      "00": "send_first          0      0      0     ",
+      "00": "send_all            0      0      -     # public.test",
       "01": "recv                0      0      0     ",
       "02": "bool                0      1      0     ",
       "03": "push                0      0      0     ",
@@ -113,7 +113,7 @@ explain select * from (select id from test group by id) t
 [{
   "bytecode": {
     "frontend": {
-      "00": "send_first          0      0      0     ",
+      "00": "send_all            0      0      -     # public.test",
       "01": "recv                0      0      0     ",
       "02": "bool                0      1      0     ",
       "03": "push                0      0      0     ",
@@ -162,7 +162,7 @@ explain select id from test group by id limit 1
 [{
   "bytecode": {
     "frontend": {
-      "00": "send_first          0      0      0     ",
+      "00": "send_all            0      0      -     # public.test",
       "01": "recv                0      0      0     ",
       "02": "bool                0      1      0     ",
       "03": "push                0      0      0     ",
@@ -208,7 +208,7 @@ explain select id from test group by id limit 1 offset 1
 [{
   "bytecode": {
     "frontend": {
-      "00": "send_first          0      0      0     ",
+      "00": "send_all            0      0      -     # public.test",
       "01": "recv                0      0      0     ",
       "02": "bool                0      1      0     ",
       "03": "push                0      0      0     ",
@@ -258,7 +258,7 @@ explain select id from test group by id offset 1
 [{
   "bytecode": {
     "frontend": {
-      "00": "send_first          0      0      0     ",
+      "00": "send_all            0      0      -     # public.test",
       "01": "recv                0      0      0     ",
       "02": "bool                0      1      0     ",
       "03": "push                0      0      0     ",
@@ -304,7 +304,7 @@ explain select * from (select id from test group by id limit 1) t
 [{
   "bytecode": {
     "frontend": {
-      "00": "send_first          0      0      0     ",
+      "00": "send_all            0      0      -     # public.test",
       "01": "recv                0      0      0     ",
       "02": "bool                0      1      0     ",
       "03": "push                0      0      0     ",
@@ -361,7 +361,7 @@ explain select * from (select id from test group by id limit 1 offset 1) t
 [{
   "bytecode": {
     "frontend": {
-      "00": "send_first          0      0      0     ",
+      "00": "send_all            0      0      -     # public.test",
       "01": "recv                0      0      0     ",
       "02": "bool                0      1      0     ",
       "03": "push                0      0      0     ",
@@ -420,7 +420,7 @@ explain select * from (select id from test group by id offset 1) t
 [{
   "bytecode": {
     "frontend": {
-      "00": "send_first          0      0      0     ",
+      "00": "send_all            0      0      -     # public.test",
       "01": "recv                0      0      0     ",
       "02": "bool                0      1      0     ",
       "03": "push                0      0      0     ",
@@ -475,7 +475,7 @@ explain select id from test group by id having id >= 3
 [{
   "bytecode": {
     "frontend": {
-      "00": "send_first          0      0      0     ",
+      "00": "send_all            0      0      -     # public.test",
       "01": "recv                0      0      0     ",
       "02": "bool                0      1      0     ",
       "03": "push                0      0      0     ",
@@ -531,7 +531,7 @@ explain select id from test group by id having id >= 1 limit 1
 [{
   "bytecode": {
     "frontend": {
-      "00": "send_first          0      0      0     ",
+      "00": "send_all            0      0      -     # public.test",
       "01": "recv                0      0      0     ",
       "02": "bool                0      1      0     ",
       "03": "push                0      0      0     ",
@@ -579,7 +579,7 @@ explain select id from test group by id having id >= 1 limit 1 offset 1
 [{
   "bytecode": {
     "frontend": {
-      "00": "send_first          0      0      0     ",
+      "00": "send_all            0      0      -     # public.test",
       "01": "recv                0      0      0     ",
       "02": "bool                0      1      0     ",
       "03": "push                0      0      0     ",
@@ -631,7 +631,7 @@ explain select id from test group by id having id >= 1 offset 1
 [{
   "bytecode": {
     "frontend": {
-      "00": "send_first          0      0      0     ",
+      "00": "send_all            0      0      -     # public.test",
       "01": "recv                0      0      0     ",
       "02": "bool                0      1      0     ",
       "03": "push                0      0      0     ",
@@ -679,7 +679,7 @@ explain select * from (select id from test group by id having id >= 3) t
 [{
   "bytecode": {
     "frontend": {
-      "00": "send_first          0      0      0     ",
+      "00": "send_all            0      0      -     # public.test",
       "01": "recv                0      0      0     ",
       "02": "bool                0      1      0     ",
       "03": "push                0      0      0     ",
@@ -730,7 +730,7 @@ explain select * from (select id from test group by id having id >= 1 limit 1) t
 [{
   "bytecode": {
     "frontend": {
-      "00": "send_first          0      0      0     ",
+      "00": "send_all            0      0      -     # public.test",
       "01": "recv                0      0      0     ",
       "02": "bool                0      1      0     ",
       "03": "push                0      0      0     ",
@@ -787,7 +787,7 @@ explain select * from (select id from test group by id having id >= 1 limit 1 of
 [{
   "bytecode": {
     "frontend": {
-      "00": "send_first          0      0      0     ",
+      "00": "send_all            0      0      -     # public.test",
       "01": "recv                0      0      0     ",
       "02": "bool                0      1      0     ",
       "03": "push                0      0      0     ",
@@ -848,7 +848,7 @@ explain select * from (select id from test group by id having id >= 1 offset 1) 
 [{
   "bytecode": {
     "frontend": {
-      "00": "send_first          0      0      0     ",
+      "00": "send_all            0      0      -     # public.test",
       "01": "recv                0      0      0     ",
       "02": "bool                0      1      0     ",
       "03": "push                0      0      0     ",
@@ -905,7 +905,7 @@ explain select id from test group by id order by id
 [{
   "bytecode": {
     "frontend": {
-      "00": "send_first          0      0      0     ",
+      "00": "send_all            0      0      -     # public.test",
       "01": "recv                0      0      0     ",
       "02": "bool                0      1      0     ",
       "03": "push                0      0      0     ",
@@ -949,7 +949,7 @@ explain select id from test group by id order by id desc
 [{
   "bytecode": {
     "frontend": {
-      "00": "send_first          0      0      0     ",
+      "00": "send_all            0      0      -     # public.test",
       "01": "recv                0      0      0     ",
       "02": "bool                0      1      0     ",
       "03": "push                0      0      0     ",
@@ -990,7 +990,7 @@ explain select * from (select id from test group by id order by id desc) t
 [{
   "bytecode": {
     "frontend": {
-      "00": "send_first          0      0      0     ",
+      "00": "send_all            0      0      -     # public.test",
       "01": "recv                0      0      0     ",
       "02": "bool                0      1      0     ",
       "03": "push                0      0      0     ",
@@ -1040,7 +1040,7 @@ explain select id from test group by id order by id asc limit 1
 [{
   "bytecode": {
     "frontend": {
-      "00": "send_first          0      0      0     ",
+      "00": "send_all            0      0      -     # public.test",
       "01": "recv                0      0      0     ",
       "02": "bool                0      1      0     ",
       "03": "push                0      0      0     ",
@@ -1089,7 +1089,7 @@ explain select id from test group by id order by id asc limit 1 offset 1
 [{
   "bytecode": {
     "frontend": {
-      "00": "send_first          0      0      0     ",
+      "00": "send_all            0      0      -     # public.test",
       "01": "recv                0      0      0     ",
       "02": "bool                0      1      0     ",
       "03": "push                0      0      0     ",
@@ -1139,7 +1139,7 @@ explain select id from test group by id order by id asc offset 1
 [{
   "bytecode": {
     "frontend": {
-      "00": "send_first          0      0      0     ",
+      "00": "send_all            0      0      -     # public.test",
       "01": "recv                0      0      0     ",
       "02": "bool                0      1      0     ",
       "03": "push                0      0      0     ",
@@ -1188,7 +1188,7 @@ explain select id from test group by id order by id desc limit 1
 [{
   "bytecode": {
     "frontend": {
-      "00": "send_first          0      0      0     ",
+      "00": "send_all            0      0      -     # public.test",
       "01": "recv                0      0      0     ",
       "02": "bool                0      1      0     ",
       "03": "push                0      0      0     ",
@@ -1237,7 +1237,7 @@ explain select id from test group by id order by id desc limit 1 offset 1
 [{
   "bytecode": {
     "frontend": {
-      "00": "send_first          0      0      0     ",
+      "00": "send_all            0      0      -     # public.test",
       "01": "recv                0      0      0     ",
       "02": "bool                0      1      0     ",
       "03": "push                0      0      0     ",
@@ -1287,7 +1287,7 @@ explain select id from test group by id order by id desc offset 1
 [{
   "bytecode": {
     "frontend": {
-      "00": "send_first          0      0      0     ",
+      "00": "send_all            0      0      -     # public.test",
       "01": "recv                0      0      0     ",
       "02": "bool                0      1      0     ",
       "03": "push                0      0      0     ",
@@ -1338,7 +1338,7 @@ explain select * from (select id from test group by id order by id asc limit 1) 
 [{
   "bytecode": {
     "frontend": {
-      "00": "send_first          0      0      0     ",
+      "00": "send_all            0      0      -     # public.test",
       "01": "recv                0      0      0     ",
       "02": "bool                0      1      0     ",
       "03": "push                0      0      0     ",
@@ -1398,7 +1398,7 @@ explain select * from (select id from test group by id order by id asc limit 1 o
 [{
   "bytecode": {
     "frontend": {
-      "00": "send_first          0      0      0     ",
+      "00": "send_all            0      0      -     # public.test",
       "01": "recv                0      0      0     ",
       "02": "bool                0      1      0     ",
       "03": "push                0      0      0     ",
@@ -1457,7 +1457,7 @@ explain select * from (select id from test group by id order by id asc offset 1)
 [{
   "bytecode": {
     "frontend": {
-      "00": "send_first          0      0      0     ",
+      "00": "send_all            0      0      -     # public.test",
       "01": "recv                0      0      0     ",
       "02": "bool                0      1      0     ",
       "03": "push                0      0      0     ",
@@ -1517,7 +1517,7 @@ explain select * from (select id from test group by id order by id desc limit 1)
 [{
   "bytecode": {
     "frontend": {
-      "00": "send_first          0      0      0     ",
+      "00": "send_all            0      0      -     # public.test",
       "01": "recv                0      0      0     ",
       "02": "bool                0      1      0     ",
       "03": "push                0      0      0     ",
@@ -1577,7 +1577,7 @@ explain select * from (select id from test group by id order by id desc limit 1 
 [{
   "bytecode": {
     "frontend": {
-      "00": "send_first          0      0      0     ",
+      "00": "send_all            0      0      -     # public.test",
       "01": "recv                0      0      0     ",
       "02": "bool                0      1      0     ",
       "03": "push                0      0      0     ",
@@ -1636,7 +1636,7 @@ explain select * from (select id from test group by id order by id desc offset 1
 [{
   "bytecode": {
     "frontend": {
-      "00": "send_first          0      0      0     ",
+      "00": "send_all            0      0      -     # public.test",
       "01": "recv                0      0      0     ",
       "02": "bool                0      1      0     ",
       "03": "push                0      0      0     ",
@@ -1696,7 +1696,7 @@ explain select data from test where data > 0 group by data having data >= 1 orde
 [{
   "bytecode": {
     "frontend": {
-      "00": "send_first          0      0      0     ",
+      "00": "send_all            0      0      -     # public.test",
       "01": "recv                0      0      0     ",
       "02": "bool                0      1      0     ",
       "03": "push                0      0      0     ",
@@ -1745,7 +1745,7 @@ explain select data from test where data > 0 group by data having data >= 1 orde
 [{
   "bytecode": {
     "frontend": {
-      "00": "send_first          0      0      0     ",
+      "00": "send_all            0      0      -     # public.test",
       "01": "recv                0      0      0     ",
       "02": "bool                0      1      0     ",
       "03": "push                0      0      0     ",
@@ -1798,7 +1798,7 @@ explain select data from test where data > 0 group by data having data >= 1 orde
 [{
   "bytecode": {
     "frontend": {
-      "00": "send_first          0      0      0     ",
+      "00": "send_all            0      0      -     # public.test",
       "01": "recv                0      0      0     ",
       "02": "bool                0      1      0     ",
       "03": "push                0      0      0     ",
@@ -1852,7 +1852,7 @@ explain select data from test where data > 0 group by data having data >= 1 orde
 [{
   "bytecode": {
     "frontend": {
-      "00": "send_first          0      0      0     ",
+      "00": "send_all            0      0      -     # public.test",
       "01": "recv                0      0      0     ",
       "02": "bool                0      1      0     ",
       "03": "push                0      0      0     ",
@@ -1905,7 +1905,7 @@ explain select * from (select data from test where data > 0 group by data having
 [{
   "bytecode": {
     "frontend": {
-      "00": "send_first          0      0      0     ",
+      "00": "send_all            0      0      -     # public.test",
       "01": "recv                0      0      0     ",
       "02": "bool                0      1      0     ",
       "03": "push                0      0      0     ",
@@ -1963,7 +1963,7 @@ explain select * from (select data from test where data > 0 group by data having
 [{
   "bytecode": {
     "frontend": {
-      "00": "send_first          0      0      0     ",
+      "00": "send_all            0      0      -     # public.test",
       "01": "recv                0      0      0     ",
       "02": "bool                0      1      0     ",
       "03": "push                0      0      0     ",
@@ -2025,7 +2025,7 @@ explain select * from (select data from test where data > 0 group by data having
 [{
   "bytecode": {
     "frontend": {
-      "00": "send_first          0      0      0     ",
+      "00": "send_all            0      0      -     # public.test",
       "01": "recv                0      0      0     ",
       "02": "bool                0      1      0     ",
       "03": "push                0      0      0     ",
@@ -2087,7 +2087,7 @@ explain select * from (select data from test where data > 0 group by data having
 [{
   "bytecode": {
     "frontend": {
-      "00": "send_first          0      0      0     ",
+      "00": "send_all            0      0      -     # public.test",
       "01": "recv                0      0      0     ",
       "02": "bool                0      1      0     ",
       "03": "push                0      0      0     ",
@@ -2150,7 +2150,7 @@ explain select * from (select data from test where data > 0 group by data having
 [{
   "bytecode": {
     "frontend": {
-      "00": "send_first          0      0      0     ",
+      "00": "send_all            0      0      -     # public.test",
       "01": "recv                0      0      0     ",
       "02": "bool                0      1      0     ",
       "03": "push                0      0      0     ",
@@ -2215,7 +2215,7 @@ explain select * from (select count(*), sum(2 * id) from test group by id) t
 [{
   "bytecode": {
     "frontend": {
-      "00": "send_first          0      0      0     ",
+      "00": "send_all            0      0      -     # public.test",
       "01": "recv                0      0      0     ",
       "02": "bool                0      1      0     ",
       "03": "push                0      0      0     ",
@@ -2272,7 +2272,7 @@ explain select count(*) from (select count(*) from test group by id) t
 [{
   "bytecode": {
     "frontend": {
-      "00": "send_first          0      0      0     ",
+      "00": "send_all            0      0      -     # public.test",
       "01": "recv                0      0      0     ",
       "02": "bool                0      1      0     ",
       "03": "push                0      0      0     ",

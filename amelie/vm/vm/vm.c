@@ -360,10 +360,9 @@ vm_run(Vm*       self,
 		&&cupdate_store,
 
 		// executor
-		&&csend,
+		&&csend_shard,
 		&&csend_lookup,
 		&&csend_all,
-		&&csend_first,
 		&&crecv,
 		&&crecv_to,
 
@@ -1755,8 +1754,8 @@ cupdate_store:
 	cupdate_store(self, op);
 	op_next;
 
-csend:
-	csend(self, op);
+csend_shard:
+	csend_shard(self, op);
 	op_next;
 
 csend_lookup:
@@ -1765,10 +1764,6 @@ csend_lookup:
 
 csend_all:
 	csend_all(self, op);
-	op_next;
-
-csend_first:
-	csend_first(self, op);
 	op_next;
 
 crecv:

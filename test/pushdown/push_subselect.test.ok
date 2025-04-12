@@ -133,7 +133,7 @@ explain select (select t.id from test2) from (select * from test) t
       "03": "push                0      0      0     ",
       "04": "union_recv          0      -1     -1    ",
       "05": "cte_set             0      0      0     ",
-      "06": "send_first          1      11     0     ",
+      "06": "send_all            1      11     -     # public.test2",
       "07": "recv_to             0      1      0     ",
       "08": "cte_set             1      0      0     ",
       "09": "content             1      -      -     ",

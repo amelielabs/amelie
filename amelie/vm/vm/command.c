@@ -38,7 +38,7 @@
 #include <amelie_vm.h>
 
 hot void
-csend(Vm* self, Op* op)
+csend_shard(Vm* self, Op* op)
 {
 	// [stmt, start, table, store]
 	auto dtr   = self->dtr;
@@ -112,23 +112,6 @@ csend_lookup(Vm* self, Op* op)
 	auto req = req_create(&dtr->req_cache, REQ_EXECUTE);
 	req->start = op->b;
 	req->route = route;
-	req_list_add(&list, req);
-
-	executor_send(self->executor, dtr, op->a, &list);
-}
-
-hot void
-csend_first(Vm* self, Op* op)
-{
-	// [stmt, start]
-	ReqList list;
-	req_list_init(&list);
-
-	// send to the first backend
-	auto dtr = self->dtr;
-	auto req = req_create(&dtr->req_cache, REQ_EXECUTE);
-	req->route = router_first(dtr->router);
-	req->start = op->b;
 	req_list_add(&list, req);
 
 	executor_send(self->executor, dtr, op->a, &list);

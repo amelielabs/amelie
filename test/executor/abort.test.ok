@@ -94,7 +94,7 @@ explain insert into test values(1, 0) on conflict do update set data = id; selec
   "bytecode": {
     "frontend": {
       "00": "set_ptr             0      -      0     ",
-      "01": "send                0      0      -     # public.test",
+      "01": "send_shard          0      0      -     # public.test",
       "02": "recv                0      0      0     ",
       "03": "null                0      0      0     ",
       "04": "cte_set             0      0      0     ",
@@ -152,7 +152,7 @@ explain delete from test; select error("abort")
 [{
   "bytecode": {
     "frontend": {
-      "00": "send_first          0      0      0     ",
+      "00": "send_all            0      0      -     # public.test",
       "01": "recv                0      0      0     ",
       "02": "null                0      0      0     ",
       "03": "cte_set             0      0      0     ",
@@ -184,7 +184,7 @@ explain update test set data = id; select error("abort")
 [{
   "bytecode": {
     "frontend": {
-      "00": "send_first          0      0      0     ",
+      "00": "send_all            0      0      -     # public.test",
       "01": "recv                0      0      0     ",
       "02": "null                0      0      0     ",
       "03": "cte_set             0      0      0     ",
@@ -221,7 +221,7 @@ explain insert into test values(1, 0) on conflict do update set data = id; selec
   "bytecode": {
     "frontend": {
       "00": "set_ptr             0      -      0     ",
-      "01": "send                0      0      -     # public.test",
+      "01": "send_shard          0      0      -     # public.test",
       "02": "recv                0      0      0     ",
       "03": "null                0      0      0     ",
       "04": "cte_set             0      0      0     ",
@@ -267,7 +267,7 @@ explain insert into b (id) values (10), (20), (30)
   "bytecode": {
     "frontend": {
       "00": "set_ptr             0      -      0     ",
-      "01": "send                0      0      -     # public.b",
+      "01": "send_shard          0      0      -     # public.b",
       "02": "recv                0      0      0     ",
       "03": "null                0      0      0     ",
       "04": "cte_set             0      0      0     ",
@@ -376,7 +376,7 @@ explain insert into a values (1, 0), (3, 0) on conflict do update set data = id;
   "bytecode": {
     "frontend": {
       "00": "set_ptr             0      -      0     ",
-      "01": "send                0      0      -     # public.a",
+      "01": "send_shard          0      0      -     # public.a",
       "02": "send_all            1      10     -     # public.b",
       "03": "send_all            2      21     -     # public.a",
       "04": "recv                0      0      0     ",

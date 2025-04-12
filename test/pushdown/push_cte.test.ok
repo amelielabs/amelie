@@ -387,7 +387,7 @@ explain with a as (select * from test) select * from a
 [{
   "bytecode": {
     "frontend": {
-      "00": "send_first          0      0      0     ",
+      "00": "send_all            0      0      -     # public.test",
       "01": "recv                0      0      0     ",
       "02": "bool                0      0      0     ",
       "03": "push                0      0      0     ",
@@ -428,8 +428,8 @@ explain with a as (select * from test) select * from test
 [{
   "bytecode": {
     "frontend": {
-      "00": "send_first          0      0      0     ",
-      "01": "send_first          1      9      0     ",
+      "00": "send_all            0      0      -     # public.test",
+      "01": "send_all            1      9      -     # public.test",
       "02": "recv                0      0      0     ",
       "03": "bool                0      0      0     ",
       "04": "push                0      0      0     ",
@@ -568,7 +568,7 @@ explain with a as (select [4,5,6]) select test.*, a.* from test, a
       "02": "push                1      0      0     ",
       "03": "set_add             0      0      0     ",
       "04": "cte_set             0      0      0     ",
-      "05": "send_first          1      0      0     ",
+      "05": "send_all            1      0      -     # public.test",
       "06": "recv                1      0      0     ",
       "07": "bool                0      0      0     ",
       "08": "push                0      0      0     ",
@@ -1253,7 +1253,7 @@ explain with a as (select * from test), b as (select * from a), c as (select * f
 [{
   "bytecode": {
     "frontend": {
-      "00": "send_first          0      0      0     ",
+      "00": "send_all            0      0      -     # public.test",
       "01": "recv                0      0      0     ",
       "02": "bool                0      0      0     ",
       "03": "push                0      0      0     ",
@@ -1268,7 +1268,7 @@ explain with a as (select * from test), b as (select * from a), c as (select * f
       "12": "store_next          0      9      0     ",
       "13": "store_close         0      1      0     ",
       "14": "cte_set             1      0      0     ",
-      "15": "send_first          2      9      0     ",
+      "15": "send_all            2      9      -     # public.test",
       "16": "recv                2      0      0     ",
       "17": "bool                0      0      0     ",
       "18": "push                0      0      0     ",
@@ -1330,7 +1330,7 @@ explain with a as (insert into test values (2, 0) returning *); select * from a
   "bytecode": {
     "frontend": {
       "00": "set_ptr             0      -      0     ",
-      "01": "send                0      0      -     # public.test",
+      "01": "send_shard          0      0      -     # public.test",
       "02": "recv                0      0      0     ",
       "03": "bool                0      0      0     ",
       "04": "push                0      0      0     ",
@@ -1381,7 +1381,7 @@ explain with a as (update test set data = data + 1 returning *) select * from a
 [{
   "bytecode": {
     "frontend": {
-      "00": "send_first          0      0      0     ",
+      "00": "send_all            0      0      -     # public.test",
       "01": "recv                0      0      0     ",
       "02": "bool                0      0      0     ",
       "03": "push                0      0      0     ",
@@ -1435,7 +1435,7 @@ explain with a as (delete from test returning *) select * from a
 [{
   "bytecode": {
     "frontend": {
-      "00": "send_first          0      0      0     ",
+      "00": "send_all            0      0      -     # public.test",
       "01": "recv                0      0      0     ",
       "02": "bool                0      0      0     ",
       "03": "push                0      0      0     ",

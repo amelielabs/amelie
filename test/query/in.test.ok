@@ -91,7 +91,7 @@ explain select 0 in (3,5, (select * from test), 0)
 [{
   "bytecode": {
     "frontend": {
-      "00": "send_first          0      0      0     ",
+      "00": "send_all            0      0      -     # public.test",
       "01": "recv_to             0      0      0     ",
       "02": "cte_set             0      0      0     ",
       "03": "content             0      -      -     ",

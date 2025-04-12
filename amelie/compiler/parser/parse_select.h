@@ -17,7 +17,7 @@ typedef enum
 {
 	PUSHDOWN_NONE,
 	PUSHDOWN_TARGET,
-	PUSHDOWN_FIRST
+	PUSHDOWN_FULL
 } Pushdown;
 
 struct AstSelect
