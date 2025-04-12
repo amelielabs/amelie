@@ -39,7 +39,7 @@ struct Dtr
 	ReqCache  req_cache;
 	Router*   router;
 	Local*    local;
-	List      link_commit;
+	List      link_prepare;
 	List      link;
 };
 
@@ -60,7 +60,7 @@ dtr_init(Dtr* self, Router* router, Local* local)
 	write_init(&self->write);
 	pipe_cache_init(&self->pipe_cache);
 	req_cache_init(&self->req_cache);
-	list_init(&self->link_commit);
+	list_init(&self->link_prepare);
 	list_init(&self->link);
 }
 
@@ -80,7 +80,7 @@ dtr_reset(Dtr* self)
 	self->state   = DTR_NONE;
 	self->program = NULL;
 	self->args    = NULL;
-	list_init(&self->link_commit);
+	list_init(&self->link_prepare);
 	list_init(&self->link);
 }
 

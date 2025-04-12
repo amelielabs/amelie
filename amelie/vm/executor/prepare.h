@@ -11,9 +11,9 @@
 // AGPL-3.0 Licensed.
 //
 
-typedef struct Commit Commit;
+typedef struct Prepare Prepare;
 
-struct Commit
+struct Prepare
 {
 	PipeSet   set;
 	int       list_count;
@@ -22,7 +22,7 @@ struct Commit
 };
 
 static inline void
-commit_init(Commit* self)
+prepare_init(Prepare* self)
 {
 	self->list_count = 0;
 	list_init(&self->list);
@@ -31,13 +31,13 @@ commit_init(Commit* self)
 }
 
 static inline void
-commit_free(Commit* self)
+prepare_free(Prepare* self)
 {
 	pipe_set_free(&self->set);
 }
 
 static inline void
-commit_reset(Commit* self)
+prepare_reset(Prepare* self)
 {
 	self->list_count = 0;
 	list_init(&self->list);
@@ -46,17 +46,17 @@ commit_reset(Commit* self)
 }
 
 static inline void
-commit_prepare(Commit* self, int set_size)
+prepare_prepare(Prepare* self, int set_size)
 {
 	pipe_set_create(&self->set, set_size);
 }
 
 static inline void
-commit_add(Commit* self, Dtr* tr)
+prepare_add(Prepare* self, Dtr* tr)
 {
 	// collect a list of last completed transactions per route
 	pipe_set_resolve(&tr->set, &self->set);
 
-	list_append(&self->list, &tr->link_commit);
+	list_append(&self->list, &tr->link_prepare);
 	self->list_count++;
 }

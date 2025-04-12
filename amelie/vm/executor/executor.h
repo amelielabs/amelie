@@ -18,7 +18,7 @@ struct Executor
 	Spinlock lock;
 	int      list_count;
 	List     list;
-	Commit   commit;
+	Prepare  prepare;
 	Router*  router;
 	Db*      db;
 };

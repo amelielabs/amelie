@@ -39,14 +39,14 @@ executor_init(Executor* self, Db* db, Router* router)
 	self->router     = router;
 	self->list_count = 0;
 	list_init(&self->list);
-	commit_init(&self->commit);
+	prepare_init(&self->prepare);
 	spinlock_init(&self->lock);
 }
 
 void
 executor_free(Executor* self)
 {
-	commit_free(&self->commit);
+	prepare_free(&self->prepare);
 	spinlock_free(&self->lock);
 }
 
@@ -85,9 +85,9 @@ executor_recv(Executor* self, Dtr* tr, int stmt)
 hot static void
 executor_prepare(Executor* self, bool abort)
 {
-	auto commit = &self->commit;
-	commit_reset(commit);
-	commit_prepare(commit, self->router->list_count);
+	auto prepare = &self->prepare;
+	prepare_reset(prepare);
+	prepare_prepare(prepare, self->router->list_count);
 
 	// get a list of last completed local transactions per backend
 	if (unlikely(abort))
@@ -96,7 +96,7 @@ executor_prepare(Executor* self, bool abort)
 		list_foreach(&self->list)
 		{
 			auto tr = list_at(Dtr, link);
-			commit_add(commit, tr);
+			prepare_add(prepare, tr);
 		}
 	} else
 	{
@@ -106,7 +106,7 @@ executor_prepare(Executor* self, bool abort)
 			auto tr = list_at(Dtr, link);
 			if (tr->state != DTR_PREPARE)
 				break;
-			commit_add(commit, tr);
+			prepare_add(prepare, tr);
 		}
 	}
 }
@@ -114,25 +114,24 @@ executor_prepare(Executor* self, bool abort)
 hot static void
 executor_end(Executor* self, DtrState state)
 {
-	auto commit = &self->commit;
-
 	// for each backend, send last prepared Trx*
+	auto prepare = &self->prepare;
 	if (state == DTR_COMMIT)
 	{
 		// RPC_COMMIT
-		pipe_set_commit(&commit->set);
+		pipe_set_commit(&prepare->set);
 	} else
 	{
 		executor_prepare(self, true);
 
 		// RPC_ABORT
-		pipe_set_abort(&commit->set);
+		pipe_set_abort(&prepare->set);
 	}
 
 	// finilize transactions
-	list_foreach(&commit->list)
+	list_foreach(&prepare->list)
 	{
-		auto tr = list_at(Dtr, link_commit);
+		auto tr = list_at(Dtr, link_prepare);
 
 		// update state
 		auto tr_state = tr->state;
@@ -170,11 +169,11 @@ hot static void
 executor_wal_write(Executor* self)
 {
 	// prepare a list of a finilized wal records
-	auto commit = &self->commit;
-	auto write_list = &commit->write_list;
-	list_foreach(&commit->list)
+	auto prepare = &self->prepare;
+	auto write_list = &prepare->write_list;
+	list_foreach(&prepare->list)
 	{
-		auto tr    = list_at(Dtr, link_commit);
+		auto tr    = list_at(Dtr, link_prepare);
 		auto set   = &tr->set;
 		auto write = &tr->write;
 		write_reset(write);
