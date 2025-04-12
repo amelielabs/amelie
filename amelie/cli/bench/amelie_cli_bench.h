@@ -18,3 +18,4 @@
 #include "bench/bench_resolved.h"
 #include "bench/bench_tpcb.h"
 #include "bench/bench_import.h"
+#include "bench/bench_decre.h"
