@@ -41,6 +41,7 @@
 #include <amelie_frontend.h>
 #include <amelie_backend.h>
 
+#if 0
 void
 build_init(Build*       self,
            BuildType    type,
@@ -132,18 +133,19 @@ build_run(Build* self)
 	else
 		build_run_all(self);
 }
+#endif
 
 static void
-build_execute_op(Build* self, Uuid* worker)
+build_execute_op(Build* self, Core* core)
 {
 	switch (self->type) {
 	case BUILD_RECOVER:
 		// restore last checkpoint partitions related to the worker
-		recover_checkpoint(self->backend_mgr->db, worker);
+		recover_checkpoint(self->backend_mgr->db, core);
 		break;
 	case BUILD_INDEX:
 	{
-		auto part = part_list_match(&self->table->part_list, worker);
+		auto part = part_list_match(&self->table->part_list, core);
 		if (! part)
 			break;
 		// build new index content for current worker
@@ -157,10 +159,10 @@ build_execute_op(Build* self, Uuid* worker)
 	}
 	case BUILD_COLUMN_ADD:
 	{
-		auto part = part_list_match(&self->table->part_list, worker);
+		auto part = part_list_match(&self->table->part_list, core);
 		if (! part)
 			break;
-		auto part_dest = part_list_match(&self->table_new->part_list, worker);
+		auto part_dest = part_list_match(&self->table_new->part_list, core);
 		assert(part_dest);
 		// build new table with new column for current worker
 		auto config = self->table->config;
@@ -173,10 +175,10 @@ build_execute_op(Build* self, Uuid* worker)
 	}
 	case BUILD_COLUMN_DROP:
 	{
-		auto part = part_list_match(&self->table->part_list, worker);
+		auto part = part_list_match(&self->table->part_list, core);
 		if (! part)
 			break;
-		auto part_dest = part_list_match(&self->table_new->part_list, worker);
+		auto part_dest = part_list_match(&self->table_new->part_list, core);
 		assert(part_dest);
 		// build new table without column for current worker
 		auto config = self->table->config;
@@ -249,10 +251,10 @@ RecoverIf build_if =
 #endif
 
 void
-build_execute(Build* self, Uuid* worker)
+build_execute(Build* self, Core* core)
 {
 	(void)self;
-	(void)worker;
+	(void)core;
 }
 
 void

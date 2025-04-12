@@ -69,7 +69,7 @@ bus_detach(Event* event)
 		return;
 	Bus* self = event->bus;
 	spinlock_lock(&self->lock);
-	assert(! event->bus_ready);
+	/*assert(! event->bus_ready);*/
 	event->bus = NULL;
 	list_unlink(&event->link);
 	spinlock_unlock(&self->lock);

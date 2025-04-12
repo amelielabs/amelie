@@ -35,7 +35,7 @@
 void
 executor_init(Executor* self, Db* db, CoreMgr* core_mgr)
 {
-	self->id         = 0;
+	self->id         = 1;
 	self->list_count = 0;
 	self->core_mgr   = core_mgr;
 	self->db         = db;
@@ -186,7 +186,7 @@ executor_wal_write(Executor* self)
 			auto ctr = &dispatch->cores[i];
 			if (ctr->state == CTR_NONE)
 				continue;
-			if (ctr->tr == NULL)
+			if (ctr->tr == NULL || tr_read_only(ctr->tr))
 				continue;
 			write_add(write, &ctr->tr->log.write_log);
 		}

@@ -11,4 +11,4 @@
 // AGPL-3.0 Licensed.
 //
 
-void recover_partition(Part*);
+void recover_checkpoint(Db*, Core*);
