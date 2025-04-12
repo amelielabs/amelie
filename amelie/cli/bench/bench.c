@@ -112,7 +112,7 @@ bench_init(Bench* self, Remote* remote)
 	VarDef defs[] =
 	{
 		{ "type",     VAR_STRING, VAR_C,       &self->type,    "tpcb", 0     },
-		{ "threads",  VAR_INT,    VAR_C|VAR_Z, &self->threads,  NULL,  4     },
+		{ "threads",  VAR_INT,    VAR_C|VAR_Z, &self->threads,  NULL,  1     },
 		{ "clients",  VAR_INT,    VAR_C|VAR_Z, &self->clients,  NULL,  12    },
 		{ "time",     VAR_INT,    VAR_C|VAR_Z, &self->time,     NULL,  10    },
 		{ "scale",    VAR_INT,    VAR_C|VAR_Z, &self->scale,    NULL,  1     },
