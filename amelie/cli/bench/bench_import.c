@@ -36,7 +36,7 @@ bench_import_main(BenchWorker* self, Client* client)
 
 	// path
 	Str path;
-	str_set_cstr(&path, "/__bench/test?columns=");
+	str_set_cstr(&path, "/v1/db/__bench/test?columns=");
 
 	// content type
 	Str content_type;
