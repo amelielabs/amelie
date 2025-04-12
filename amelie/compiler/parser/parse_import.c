@@ -255,6 +255,7 @@ parse_import(Parser* self, Str* str, Str* uri, EndpointType type)
 	                          self->local,
 	                          &self->lex,
 	                           self->data,
+	                           self->access,
 	                           self->values_cache,
 	                          &self->json,
 	                          &self->stmt_list,

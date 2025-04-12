@@ -407,6 +407,7 @@ parse_insert(Stmt* self)
 			auto cte = stmt_allocate(self->db, self->function_mgr, self->local,
 			                         self->lex,
 			                         self->data,
+			                         self->access,
 			                         self->values_cache,
 			                         self->json,
 			                         self->stmt_list,

@@ -21,6 +21,7 @@ struct Compiler
 	Code     code_frontend;
 	Code     code_backend;
 	CodeData code_data;
+	Access   access;
 	SetCache values_cache;
 	Columns* args;
 	bool     snapshot;

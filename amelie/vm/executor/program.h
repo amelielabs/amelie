@@ -18,6 +18,7 @@ struct Program
 	Code*     code;
 	Code*     code_backend;
 	CodeData* code_data;
+	Access*   access;
 	int       stmts;
 	int       stmts_last;
 	bool      snapshot;

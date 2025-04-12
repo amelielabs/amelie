@@ -14,6 +14,7 @@
 // bytecode
 #include "executor/code_data.h"
 #include "executor/code.h"
+#include "executor/access.h"
 #include "executor/program.h"
 
 // request

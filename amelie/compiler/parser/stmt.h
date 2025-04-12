@@ -64,6 +64,7 @@ struct Stmt
 	StmtList*    stmt_list;
 	Columns*     args;
 	CodeData*    data;
+	Access*      access;
 	SetCache*    values_cache;
 	Json*        json;
 	Lex*         lex;
@@ -80,6 +81,7 @@ stmt_allocate(Db*          db,
               Local*       local,
               Lex*         lex,
               CodeData*    data,
+              Access*      access,
               SetCache*    values_cache,
               Json*        json,
               StmtList*    stmt_list,
@@ -96,6 +98,7 @@ stmt_allocate(Db*          db,
 	self->args          = args;
 	self->stmt_list     = stmt_list;
 	self->data          = data;
+	self->access        = access;
 	self->values_cache  = values_cache;
 	self->json          = json;
 	self->lex           = lex;

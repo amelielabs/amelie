@@ -54,9 +54,10 @@ compiler_init(Compiler*    self,
 	code_init(&self->code_frontend);
 	code_init(&self->code_backend);
 	code_data_init(&self->code_data);
+	access_init(&self->access);
 	set_cache_init(&self->values_cache);
 	parser_init(&self->parser, db, local, function_mgr, &self->code_data,
-	            &self->values_cache);
+	            &self->access, &self->values_cache);
 	rmap_init(&self->map);
 }
 
@@ -67,6 +68,7 @@ compiler_free(Compiler* self)
 	code_free(&self->code_frontend);
 	code_free(&self->code_backend);
 	code_data_free(&self->code_data);
+	access_free(&self->access);
 	set_cache_free(&self->values_cache);
 	rmap_free(&self->map);
 }
@@ -82,6 +84,7 @@ compiler_reset(Compiler* self)
 	code_reset(&self->code_frontend);
 	code_reset(&self->code_backend);
 	code_data_reset(&self->code_data);
+	access_reset(&self->access);
 	parser_reset(&self->parser);
 	rmap_reset(&self->map);
 }
