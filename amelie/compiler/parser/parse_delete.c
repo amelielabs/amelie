@@ -51,7 +51,7 @@ parse_delete(Stmt* self)
 	auto from = stmt_expect(self, KFROM);
 
 	// table
-	parse_from(self, &stmt->targets, false);
+	parse_from(self, &stmt->targets, ACCESS_RW, false);
 	if (targets_empty(&stmt->targets) || targets_is_join(&stmt->targets))
 		stmt_error(self, from, "table name expected");
 	auto target = targets_outer(&stmt->targets);

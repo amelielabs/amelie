@@ -39,7 +39,7 @@
 #include <amelie_parser.h>
 
 static inline Target*
-parse_from_target(Stmt* self, Targets* targets, bool subquery)
+parse_from_target(Stmt* self, Targets* targets, AccessType access, bool subquery)
 {
 	auto target = target_allocate(&self->order_targets);
 	// FROM (expr | SELECT)
@@ -175,6 +175,8 @@ parse_from_target(Stmt* self, Targets* targets, bool subquery)
 		target->from_table   = table;
 		target->from_columns = &table->config->columns;
 		str_set_str(&target->name, &table->config->name);
+
+		access_add(self->access, table, access);
 		return target;
 	}
 
@@ -183,10 +185,10 @@ parse_from_target(Stmt* self, Targets* targets, bool subquery)
 }
 
 static inline Target*
-parse_from_add(Stmt* self, Targets* targets, bool subquery)
+parse_from_add(Stmt* self, Targets* targets, AccessType access, bool subquery)
 {
 	// FROM [schema.]name | (SELECT) [AS] [alias] [USE INDEX (name)]
-	auto target = parse_from_target(self, targets, subquery);
+	auto target = parse_from_target(self, targets, access, subquery);
 
 	// [AS] [alias]
 	auto as = stmt_if(self, KAS);
@@ -256,13 +258,13 @@ parse_from_add(Stmt* self, Targets* targets, bool subquery)
 }
 
 void
-parse_from(Stmt* self, Targets* targets, bool subquery)
+parse_from(Stmt* self, Targets* targets, AccessType access, bool subquery)
 {
 	// FROM <[schema.]name | (SELECT)> [AS] [alias]> [, ...]
 	// FROM <[schema.]name | (SELECT)> [AS] [alias]> [JOIN <..> ON (expr) ...]
 
 	// FROM name | expr
-	parse_from_add(self, targets, subquery);
+	parse_from_add(self, targets, access, subquery);
 
 	for (;;)
 	{
@@ -270,7 +272,7 @@ parse_from(Stmt* self, Targets* targets, bool subquery)
 		if (stmt_if(self, ','))
 		{
 			// name | expr
-			parse_from_add(self, targets, subquery);
+			parse_from_add(self, targets, ACCESS_RO_EXCLUSIVE, subquery);
 			continue;
 		}
 
@@ -310,7 +312,7 @@ parse_from(Stmt* self, Targets* targets, bool subquery)
 				stmt_error(self, NULL, "outer joins currently are not supported");
 
 			// <name|expr>
-			auto target = parse_from_add(self, targets, subquery);
+			auto target = parse_from_add(self, targets, ACCESS_RO_EXCLUSIVE, subquery);
 
 			// ON
 			if (stmt_if(self, KON))

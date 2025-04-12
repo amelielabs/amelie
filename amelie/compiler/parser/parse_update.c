@@ -177,7 +177,7 @@ parse_update(Stmt* self)
 	self->ast = &stmt->ast;
 
 	// table
-	parse_from(self, &stmt->targets, false);
+	parse_from(self, &stmt->targets, ACCESS_RW, false);
 	if (targets_empty(&stmt->targets) || targets_is_join(&stmt->targets))
 		stmt_error(self, NULL, "table name expected");
 	auto target = targets_outer(&stmt->targets);

@@ -192,7 +192,11 @@ parse_select(Stmt* self, Targets* outer, bool subquery)
 
 	// [FROM]
 	if (stmt_if(self, KFROM))
-		parse_from(self, &select->targets, subquery);
+	{
+		parse_from(self, &select->targets,
+		           subquery ? ACCESS_RO_EXCLUSIVE : ACCESS_RO,
+		           subquery);
+	}
 
 	// [WHERE]
 	if (stmt_if(self, KWHERE))

@@ -564,6 +564,7 @@ compiler_program(Compiler* self, Program* program)
 	program->code         = &self->code_frontend;
 	program->code_backend = &self->code_backend;
 	program->code_data    = &self->code_data;
+	program->access       = &self->access;
 	program->stmts        = self->parser.stmt_list.count;
 	program->stmts_last   = -1;
 	program->snapshot     = self->snapshot;
