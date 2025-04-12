@@ -35,10 +35,12 @@
 void
 executor_init(Executor* self, Db* db, Router* router)
 {
-	self->db         = db;
-	self->router     = router;
-	self->list_count = 0;
+	self->db              = db;
+	self->router          = router;
+	self->list_count      = 0;
+	self->list_wait_count = 0;
 	list_init(&self->list);
+	list_init(&self->list_wait);
 	prepare_init(&self->prepare);
 	spinlock_init(&self->lock);
 }
@@ -48,6 +50,30 @@ executor_free(Executor* self)
 {
 	prepare_free(&self->prepare);
 	spinlock_free(&self->lock);
+}
+
+hot static inline void
+executor_lock(Executor* self, Dtr* dtr)
+{
+restart:
+	list_foreach(&self->list)
+	{
+		auto ref = list_at(Dtr, link);
+		if (access_try(ref->program->access, dtr->program->access))
+			continue;
+
+		// wait for conflicting transaction last send
+		list_append(&self->list_wait, &dtr->link_access);
+		self->list_wait_count++;
+		spinlock_unlock(&self->lock);
+
+		event_wait(&dtr->on_access, -1);
+
+		spinlock_lock(&self->lock);
+		list_unlink(&dtr->link_access);
+		self->list_wait_count--;
+		goto restart;
+	}
 }
 
 hot void
@@ -62,6 +88,10 @@ executor_send(Executor* self, Dtr* dtr, int stmt, ReqList* list)
 	if (first)
 	{
 		spinlock_lock(&self->lock);
+
+		// process transaction locking
+		executor_lock(self, dtr);
+
 		dtr_set_state(dtr, DTR_BEGIN);
 
 		// add transaction to the executor list
@@ -154,6 +184,16 @@ executor_end(Executor* self, DtrState state)
 		if (leader->state == DTR_PREPARE ||
 		    leader->state == DTR_ERROR)
 			event_signal(&leader->on_commit);
+	}
+
+	// wakeup access waiters
+	if (self->list_wait_count > 0)
+	{
+		list_foreach_safe(&self->list_wait)
+		{
+			auto dtr = list_at(Dtr, link_access);
+			event_signal(&dtr->on_access);
+		}
 	}
 }
 

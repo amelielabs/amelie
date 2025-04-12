@@ -78,3 +78,37 @@ access_add(Access* self, Table* table, AccessType type)
 	record->table = table;
 	record->type  = type;
 }
+
+hot static inline bool
+access_try(Access* self, Access* with)
+{
+	for (auto i = 0; i < self->list_count; i++)
+	{
+		auto record = access_at(self, i);
+		for (auto j = 0; j < with->list_count; j++)
+		{
+			auto record_with = access_at(self, j);
+			if (record->table != record_with->table)
+				continue;
+			switch (record->type) {
+			case ACCESS_RO:
+				// pass all
+				break;
+			case ACCESS_RW:
+				// rw block only ro_exclusive
+				if (record_with->type == ACCESS_RO_EXCLUSIVE)
+					return false;
+				break;
+			case ACCESS_RO_EXCLUSIVE:
+				// rw block only ro_exclusive
+				if (record_with->type == ACCESS_RW)
+					return false;
+				break;
+			default:
+				abort();
+			}
+		}
+	}
+
+	return true;
+}

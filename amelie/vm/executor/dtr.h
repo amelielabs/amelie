@@ -33,6 +33,7 @@ struct Dtr
 	Result    cte;
 	Buf*      error;
 	Write     write;
+	Event     on_access;
 	Event     on_commit;
 	Limit     limit;
 	PipeCache pipe_cache;
@@ -40,6 +41,7 @@ struct Dtr
 	Router*   router;
 	Local*    local;
 	List      link_prepare;
+	List      link_access;
 	List      link;
 };
 
@@ -55,12 +57,14 @@ dtr_init(Dtr* self, Router* router, Local* local)
 	pipe_set_init(&self->set);
 	dispatch_init(&self->dispatch);
 	result_init(&self->cte);
+	event_init(&self->on_access);
 	event_init(&self->on_commit);
 	limit_init(&self->limit, var_int_of(&config()->limit_write));
 	write_init(&self->write);
 	pipe_cache_init(&self->pipe_cache);
 	req_cache_init(&self->req_cache);
 	list_init(&self->link_prepare);
+	list_init(&self->link_access);
 	list_init(&self->link);
 }
 
@@ -81,6 +85,7 @@ dtr_reset(Dtr* self)
 	self->program = NULL;
 	self->args    = NULL;
 	list_init(&self->link_prepare);
+	list_init(&self->link_access);
 	list_init(&self->link);
 }
 
@@ -93,6 +98,7 @@ dtr_free(Dtr* self)
 	pipe_cache_free(&self->pipe_cache);
 	req_cache_free(&self->req_cache);
 	result_free(&self->cte);
+	event_detach(&self->on_access);
 	event_detach(&self->on_commit);
 	write_free(&self->write);
 }
@@ -107,6 +113,8 @@ dtr_create(Dtr* self, Program* program, Buf* args)
 	dispatch_create(&self->dispatch, set_size, program->stmts,
 	                program->stmts_last);
 	result_create(&self->cte, program->stmts);
+	if (! event_attached(&self->on_access))
+		event_attach(&self->on_access);
 	if (! event_attached(&self->on_commit))
 		event_attach(&self->on_commit);
 }

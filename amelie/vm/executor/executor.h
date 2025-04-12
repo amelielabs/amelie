@@ -18,6 +18,8 @@ struct Executor
 	Spinlock lock;
 	int      list_count;
 	List     list;
+	int      list_wait_count;
+	List     list_wait;
 	Prepare  prepare;
 	Router*  router;
 	Db*      db;
