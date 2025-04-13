@@ -20,6 +20,7 @@
 #include "index/tree_iterator.h"
 #include "index/index_tree.h"
 #include "index/index_tree_iterator.h"
+#include "index/index_tree_merge.h"
 
 // hash
 #include "index/hash_store.h"

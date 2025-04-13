@@ -63,7 +63,7 @@ index_tree_upsert(Index* arg, Row* key, Iterator* it)
 	TreePos pos;
 	auto exists = tree_set_or_get(&self->tree, key, &pos);
 	auto tree_it = index_tree_iterator_of(it);
-	tree_iterator_open_at(&tree_it->iterator, &self->tree, &pos);
+	tree_iterator_open_at(&tree_it->iterator, &pos);
 	return exists;
 }
 
@@ -80,6 +80,16 @@ index_tree_iterator(Index* arg)
 {
 	auto self = index_tree_of(arg);
 	return index_tree_iterator_allocate(self);
+}
+
+hot static Iterator*
+index_tree_iterator_merge(Index* arg, Iterator* it)
+{
+	auto self = index_tree_of(arg);
+	if (! it)
+		it = index_tree_merge_allocate();
+	index_tree_merge_add(index_tree_merge_of(it), self);
+	return it;
 }
 
 static void
@@ -105,14 +115,15 @@ index_tree_allocate(IndexConfig* config, Heap* heap)
 	tree_init(&self->tree, 512, 256, &config->keys);
 
 	auto iface = &self->index.iface;
-	iface->set       = index_tree_set;
-	iface->update    = index_tree_update;
-	iface->delete    = index_tree_delete;
-	iface->delete_by = index_tree_delete_by;
-	iface->upsert    = index_tree_upsert;
-	iface->ingest    = index_tree_ingest;
-	iface->iterator  = index_tree_iterator;
-	iface->truncate  = index_tree_truncate;
-	iface->free      = index_tree_free;
+	iface->set            = index_tree_set;
+	iface->update         = index_tree_update;
+	iface->delete         = index_tree_delete;
+	iface->delete_by      = index_tree_delete_by;
+	iface->upsert         = index_tree_upsert;
+	iface->ingest         = index_tree_ingest;
+	iface->iterator       = index_tree_iterator;
+	iface->iterator_merge = index_tree_iterator_merge;
+	iface->truncate       = index_tree_truncate;
+	iface->free           = index_tree_free;
 	return &self->index;
 }

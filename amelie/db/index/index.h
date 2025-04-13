@@ -23,6 +23,7 @@ struct IndexIf
 	bool      (*upsert)(Index*, Row*, Iterator*);
 	bool      (*ingest)(Index*, Row*);
 	Iterator* (*iterator)(Index*);
+	Iterator* (*iterator_merge)(Index*, Iterator*);
 	void      (*truncate)(Index*);
 	void      (*free)(Index*);
 };
@@ -96,6 +97,12 @@ static inline Iterator*
 index_iterator(Index* self)
 {
 	return self->iface.iterator(self);
+}
+
+static inline Iterator*
+index_iterator_merge(Index* self, Iterator* it)
+{
+	return self->iface.iterator_merge(self, it);
 }
 
 static inline Keys*

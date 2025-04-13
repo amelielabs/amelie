@@ -23,18 +23,17 @@ struct TreeIterator
 };
 
 static inline bool
-tree_iterator_open(TreeIterator* self, Tree* tree, Row* key)
+tree_iterator_open(TreeIterator* self, Row* key)
 {
 	self->current      = NULL;
 	self->page         = NULL;
 	self->page_pos     = 0;
 	self->repositioned = false;
-	self->tree        = tree;
 	if (unlikely(self->tree->count == 0))
 		return false;
 
 	TreePos pos;
-	bool match = tree_seek(tree, key, &pos);
+	bool match = tree_seek(self->tree, key, &pos);
 	self->page = pos.page;
 	self->page_pos = pos.page_pos;
 	if (self->page_pos >= self->page->keys_count)
@@ -48,12 +47,11 @@ tree_iterator_open(TreeIterator* self, Tree* tree, Row* key)
 }
 
 static inline void
-tree_iterator_open_at(TreeIterator* self, Tree* tree, TreePos* pos)
+tree_iterator_open_at(TreeIterator* self, TreePos* pos)
 {
 	self->current  = NULL;
 	self->page     = pos->page;
 	self->page_pos = pos->page_pos;
-	self->tree     = tree;
 	self->current  = self->page->rows[self->page_pos];
 }
 
@@ -161,11 +159,11 @@ tree_iterator_close(TreeIterator* self)
 }
 
 static inline void
-tree_iterator_init(TreeIterator* self)
+tree_iterator_init(TreeIterator* self, Tree* tree)
 {
 	self->current      = NULL;
 	self->page         = NULL;
 	self->page_pos     = 0;
 	self->repositioned = false;
-	self->tree         = NULL;
+	self->tree         = tree;
 }
