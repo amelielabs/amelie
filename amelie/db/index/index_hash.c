@@ -57,7 +57,7 @@ index_hash_upsert(Index* arg, Row* key, Iterator* it)
 	uint64_t pos = 0;	
 	auto exists = hash_get_or_set(&self->hash, key, &pos);
 	auto hash_it = index_hash_iterator_of(it);
-	hash_iterator_open_at(&hash_it->iterator, &self->hash, pos);
+	hash_iterator_open_at(&hash_it->iterator, pos);
 	return exists;
 }
 
@@ -74,6 +74,16 @@ index_hash_iterator(Index* arg)
 {
 	auto self = index_hash_of(arg);
 	return index_hash_iterator_allocate(self);
+}
+
+hot static Iterator*
+index_hash_iterator_merge(Index* arg, Iterator* it)
+{
+	auto self = index_hash_of(arg);
+	if (! it)
+		it = index_hash_merge_allocate();
+	index_hash_merge_add(index_hash_merge_of(it), self);
+	return it;
 }
 
 static void
@@ -100,15 +110,16 @@ index_hash_allocate(IndexConfig* config, Heap* heap)
 	hash_init(&self->hash);
 
 	auto iface = &self->index.iface;
-	iface->set       = index_hash_set;
-	iface->update    = index_hash_update;
-	iface->delete    = index_hash_delete;
-	iface->delete_by = index_hash_delete_by;
-	iface->upsert    = index_hash_upsert;
-	iface->ingest    = index_hash_ingest;
-	iface->iterator  = index_hash_iterator;
-	iface->truncate  = index_hash_truncate;
-	iface->free      = index_hash_free;
+	iface->set            = index_hash_set;
+	iface->update         = index_hash_update;
+	iface->delete         = index_hash_delete;
+	iface->delete_by      = index_hash_delete_by;
+	iface->upsert         = index_hash_upsert;
+	iface->ingest         = index_hash_ingest;
+	iface->iterator       = index_hash_iterator;
+	iface->iterator_merge = index_hash_iterator_merge;
+	iface->truncate       = index_hash_truncate;
+	iface->free           = index_hash_free;
 
 	hash_create(&self->hash, &config->keys);
 	return &self->index;

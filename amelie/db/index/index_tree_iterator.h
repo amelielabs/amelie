@@ -62,9 +62,10 @@ index_tree_iterator_close(Iterator* arg)
 	am_free(arg);
 }
 
-static inline void
-index_tree_iterator_init(IndexTreeIterator* self, IndexTree* index)
+static inline Iterator*
+index_tree_iterator_allocate(IndexTree* index)
 {
+	IndexTreeIterator* self = am_malloc(sizeof(*self));
 	self->it.open  = index_tree_iterator_open;
 	self->it.has   = index_tree_iterator_has;
 	self->it.at    = index_tree_iterator_at;
@@ -72,12 +73,5 @@ index_tree_iterator_init(IndexTreeIterator* self, IndexTree* index)
 	self->it.close = index_tree_iterator_close;
 	self->index    = index;
 	tree_iterator_init(&self->iterator, &index->tree);
-}
-
-static inline Iterator*
-index_tree_iterator_allocate(IndexTree* index)
-{
-	IndexTreeIterator* self = am_malloc(sizeof(*self));
-	index_tree_iterator_init(self, index);
 	return &self->it;
 }

@@ -28,3 +28,4 @@
 #include "index/hash_iterator.h"
 #include "index/index_hash.h"
 #include "index/index_hash_iterator.h"
+#include "index/index_hash_merge.h"

@@ -22,14 +22,14 @@ struct HashIterator
 };
 
 static inline bool
-hash_iterator_open(HashIterator* self, Hash* hash, Row* key)
+hash_iterator_open(HashIterator* self, Row* key)
 {
 	self->current       = NULL;
 	self->current_store = NULL;
 	self->pos           = 0;
-	self->hash          = hash;
 
 	// point-lookup
+	auto hash = self->hash;
 	if (key)
 	{
 		self->current_store = hash->current;
@@ -70,12 +70,12 @@ hash_iterator_open(HashIterator* self, Hash* hash, Row* key)
 }
 
 static inline void
-hash_iterator_open_at(HashIterator* self, Hash* hash, uint64_t pos)
+hash_iterator_open_at(HashIterator* self, uint64_t pos)
 {
+	auto hash = self->hash;
 	self->current       = hash->current->rows[pos];
 	self->current_store = hash->current;
 	self->pos           = pos;
-	self->hash          = hash;
 }
 
 static inline bool
@@ -150,10 +150,10 @@ hash_iterator_close(HashIterator* self)
 }
 
 static inline void
-hash_iterator_init(HashIterator* self)
+hash_iterator_init(HashIterator* self, Hash* hash)
 {
 	self->current       = NULL;
 	self->current_store = NULL;
 	self->pos           = 0;
-	self->hash          = NULL;
+	self->hash          = hash;
 }

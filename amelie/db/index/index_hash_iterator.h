@@ -29,9 +29,8 @@ index_hash_iterator_of(Iterator* self)
 static inline bool
 index_hash_iterator_open(Iterator* arg, Row* key)
 {
-	auto self  = index_hash_iterator_of(arg);
-	auto index = self->index;
-	return hash_iterator_open(&self->iterator, &index->hash, key);
+	auto self = index_hash_iterator_of(arg);
+	return hash_iterator_open(&self->iterator, key);
 }
 
 static inline bool
@@ -73,6 +72,6 @@ index_hash_iterator_allocate(IndexHash* index)
 	self->it.next  = index_hash_iterator_next;
 	self->it.close = index_hash_iterator_close;
 	self->index    = index;
-	hash_iterator_init(&self->iterator);
+	hash_iterator_init(&self->iterator, &index->hash);
 	return &self->it;
 }
