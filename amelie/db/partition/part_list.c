@@ -148,3 +148,48 @@ part_list_match(PartList* self, Uuid* id)
 	}
 	return NULL;
 }
+
+Iterator*
+part_list_iterator(PartList* self, Part* part, IndexConfig* config, Row* key)
+{
+	// single partition iteration
+	if (part)
+	{
+		auto index = part_find(part, &config->name, true);
+		auto it = index_iterator(index);
+		iterator_open(it, key);
+		return it;
+	}
+
+	// hash index point lookup
+	if (config->type == INDEX_HASH && key)
+	{
+		auto hash  = row_hash(key, &config->keys);
+		auto route = part_map_get(&self->map, hash);
+		list_foreach(&self->list)
+		{
+			auto part = list_at(Part, link);
+			if (part->route == route)
+			{
+				auto index = part_find(part, &config->name, true);
+				auto it = index_iterator(index);
+				iterator_open(it, key);
+				return it;
+			}
+		}
+		abort();
+	}
+
+	// merge all hash partitions (without key)
+	// merge all tree partitions (without key, ordered)
+	// merge all tree partitions (with key, ordered/point lookup)
+	Iterator* it = NULL;
+	list_foreach(&self->list)
+	{
+		auto part = list_at(Part, link);
+		auto index = part_find(part, &config->name, true);
+		it = index_iterator_merge(index, it);
+	}
+	iterator_open(it, key);
+	return it;
+}

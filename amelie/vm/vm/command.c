@@ -260,7 +260,7 @@ cunion_recv(Vm* self, Op* op)
 }
 
 hot Op*
-ctable_open(Vm* self, Op* op)
+ctable_open(Vm* self, Op* op, bool open_part)
 {
 	// [cursor, name_offset, _eof, keys_count]
 	auto cursor = cursor_mgr_of(&self->cursor_mgr, op->a);
@@ -276,9 +276,8 @@ ctable_open(Vm* self, Op* op)
 
 	// find table, partition and index
 	auto table = table_mgr_find(&self->db->table_mgr, &name_schema, &name_table, true);
-	auto part  = part_list_match(&table->part_list, self->backend);
-	auto index = part_find(part, &name_index, true);
-	auto keys  = index_keys(index);
+	auto index = table_find_index(table, &name_index, true);
+	auto keys  = &index->keys;
 	auto keys_count = op->d;
 
 	// create cursor key
@@ -287,17 +286,19 @@ ctable_open(Vm* self, Op* op)
 	auto key = row_create_key(buf, keys, stack_at(&self->stack, keys_count), keys_count);
 	stack_popn(&self->stack, keys_count);
 
-	// open cursor
-	cursor->type  = CURSOR_TABLE;
-	cursor->table = table;
-	cursor->part  = part;
-
 	// in case of hash index, use key only for point-lookup
-	cursor->it = index_iterator(index);
 	auto key_ref = key;
-	if (index->config->type == INDEX_HASH && keys_count != keys->list_count)
+	if (index->type == INDEX_HASH && keys_count != keys->list_count)
 		key_ref = NULL;
-	iterator_open(cursor->it, key_ref);
+
+	// open cursor
+	if (open_part)
+		cursor->part = part_list_match(&table->part_list, self->backend);
+	else
+		cursor->part = NULL;
+	cursor->it    = part_list_iterator(&table->part_list, cursor->part, index, key_ref);
+	cursor->table = table;
+	cursor->type  = CURSOR_TABLE;
 
 	// jmp to next op if has data
 	if (likely(iterator_has(cursor->it)))

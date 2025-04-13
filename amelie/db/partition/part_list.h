@@ -32,3 +32,5 @@ void  part_list_truncate(PartList*);
 void  part_list_index_create(PartList*, IndexConfig*);
 void  part_list_index_drop(PartList*, IndexConfig*);
 Part* part_list_match(PartList*, Uuid*);
+Iterator*
+part_list_iterator(PartList*, Part*, IndexConfig*, Row*);
