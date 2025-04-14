@@ -24,7 +24,6 @@
 void
 part_list_init(PartList* self, PartMgr* mgr)
 {
-	self->shared     = false;
 	self->unlogged   = false;
 	self->list_count = 0;
 	self->mgr        = mgr;
@@ -51,13 +50,11 @@ part_list_free(PartList* self)
 
 void
 part_list_create(PartList* self,
-                 bool      shared,
                  bool      unlogged,
                  Sequence* seq,
                  List*     parts,
                  List*     indexes)
 {
-	self->shared = shared;
 	self->unlogged = unlogged;
 
 	list_foreach(parts)
@@ -134,12 +131,6 @@ part_list_index_drop(PartList* self, IndexConfig* config)
 hot Part*
 part_list_match(PartList* self, Uuid* id)
 {
-	// get first part if shared or find by backend id
-	if (self->shared)
-	{
-		auto first = list_first(&self->list);
-		return container_of(first, Part, link);
-	}
 	list_foreach(&self->list)
 	{
 		auto part = list_at(Part, link);

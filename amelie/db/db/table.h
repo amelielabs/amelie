@@ -49,7 +49,6 @@ static inline void
 table_open(Table* self)
 {
 	part_list_create(&self->part_list,
-	                  self->config->shared,
 	                  self->config->unlogged,
 	                 &self->seq,
 	                 &self->config->partitions,
