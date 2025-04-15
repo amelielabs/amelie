@@ -317,7 +317,8 @@ explain insert into test values (1),(2),(3) returning *
       "11": "result              0      0      0     ",
       "12": "ret                 0      0      0     "
     }
-  }
+  },
+  "access": [["public.test", "rw"]]
 }]
 insert into test values (1),(2),(3) returning *
 [1, 2, 3]
@@ -355,7 +356,8 @@ explain insert into test () values (), (), () returning *
       "11": "result              0      0      0     ",
       "12": "ret                 0      0      0     "
     }
-  }
+  },
+  "access": [["public.test", "rw"]]
 }]
 insert into test () values (), (), () returning *
 [3, 4, 5]
@@ -465,7 +467,7 @@ explain select * from test where ts > "1970-01-01 01:12:59.909090"::timestamp;
     },
     "backend": {
       "00": "set                 0      2      0     ",
-      "01": "table_open          0      0      14    # public.test (primary)",
+      "01": "table_open_part     0      0      14    # public.test (primary)",
       "02": "table_readt         1      0      1     ",
       "03": "string              2      20     0     # 1970-01-01 01:12:59.909090",
       "04": "push                2      0      0     ",
@@ -482,7 +484,8 @@ explain select * from test where ts > "1970-01-01 01:12:59.909090"::timestamp;
       "15": "result              0      0      0     ",
       "16": "ret                 0      0      0     "
     }
-  }
+  },
+  "access": [["public.test", "ro"]]
 }]
 select * from test where ts > timestamp "1970-01-01 01:12:59.909090"
 [[1, "1970-01-01 01:13:00+00"], [2, "1970-01-01 01:13:01+00"], [3, "1970-01-01 01:13:01+00"]]
@@ -501,7 +504,7 @@ explain select * from test where ts > timestamp "1970-01-01 01:12:59.909090"
     },
     "backend": {
       "00": "set                 0      2      0     ",
-      "01": "table_open          0      0      12    # public.test (primary)",
+      "01": "table_open_part     0      0      12    # public.test (primary)",
       "02": "table_readt         1      0      1     ",
       "03": "timestamp           2      -      0     # 4379909090",
       "04": "gtii                3      1      2     ",
@@ -516,7 +519,8 @@ explain select * from test where ts > timestamp "1970-01-01 01:12:59.909090"
       "13": "result              0      0      0     ",
       "14": "ret                 0      0      0     "
     }
-  }
+  },
+  "access": [["public.test", "ro"]]
 }]
 select * from test where ts = "1970-01-01 01:13:01"::timestamp;
 [[2, "1970-01-01 01:13:01+00"], [3, "1970-01-01 01:13:01+00"]]
@@ -556,7 +560,7 @@ explain select * from test
     },
     "backend": {
       "00": "set                 0      1      0     ",
-      "01": "table_open          0      0      6     # public.test (primary)",
+      "01": "table_open_part     0      0      6     # public.test (primary)",
       "02": "table_readt         1      0      0     ",
       "03": "push                1      0      0     ",
       "04": "set_add             0      0      0     ",
@@ -565,7 +569,8 @@ explain select * from test
       "07": "result              0      0      0     ",
       "08": "ret                 0      0      0     "
     }
-  }
+  },
+  "access": [["public.test", "ro"]]
 }]
 select * from test
 ["1970-01-01 00:00:01.000001+00", "1970-01-01 00:00:01.000002+00", "1970-01-01 00:00:01.000003+00", "1970-01-01 00:00:02+00", "1970-01-01 00:00:03+00", "1970-01-01 00:00:04+00"]
@@ -590,7 +595,7 @@ explain select * from test where id > timestamp '1970-01-01 00:00:01.000002'
       "00": "set                 0      1      0     ",
       "01": "timestamp           1      -      0     # 1000002",
       "02": "push                1      0      0     ",
-      "03": "table_open          0      0      12    # public.test (primary)",
+      "03": "table_open_part     0      0      12    # public.test (primary)",
       "04": "table_readt         1      0      0     ",
       "05": "timestamp           2      -      0     # 1000002",
       "06": "gtii                3      1      2     ",
@@ -603,7 +608,8 @@ explain select * from test where id > timestamp '1970-01-01 00:00:01.000002'
       "13": "result              0      0      0     ",
       "14": "ret                 0      0      0     "
     }
-  }
+  },
+  "access": [["public.test", "ro"]]
 }]
 select * from test where id >= timestamp '1970-01-01 00:00:01.000002'
 ["1970-01-01 00:00:01.000002+00", "1970-01-01 00:00:01.000003+00", "1970-01-01 00:00:02+00", "1970-01-01 00:00:03+00", "1970-01-01 00:00:04+00"]
@@ -624,7 +630,7 @@ explain select * from test where id >= timestamp '1970-01-01 00:00:01.000002'
       "00": "set                 0      1      0     ",
       "01": "timestamp           1      -      0     # 1000002",
       "02": "push                1      0      0     ",
-      "03": "table_open          0      0      12    # public.test (primary)",
+      "03": "table_open_part     0      0      12    # public.test (primary)",
       "04": "table_readt         1      0      0     ",
       "05": "timestamp           2      -      0     # 1000002",
       "06": "gteii               3      1      2     ",
@@ -637,7 +643,8 @@ explain select * from test where id >= timestamp '1970-01-01 00:00:01.000002'
       "13": "result              0      0      0     ",
       "14": "ret                 0      0      0     "
     }
-  }
+  },
+  "access": [["public.test", "ro"]]
 }]
 select * from test where id < timestamp '1970-01-01 00:00:01.000003'
 ["1970-01-01 00:00:01.000001+00", "1970-01-01 00:00:01.000002+00"]
@@ -656,7 +663,7 @@ explain select * from test where id < timestamp '1970-01-01 00:00:01.000003'
     },
     "backend": {
       "00": "set                 0      1      0     ",
-      "01": "table_open          0      0      14    # public.test (primary)",
+      "01": "table_open_part     0      0      14    # public.test (primary)",
       "02": "table_readt         1      0      0     ",
       "03": "timestamp           2      -      0     # 1000003",
       "04": "ltii                3      1      2     ",
@@ -673,7 +680,8 @@ explain select * from test where id < timestamp '1970-01-01 00:00:01.000003'
       "15": "result              0      0      0     ",
       "16": "ret                 0      0      0     "
     }
-  }
+  },
+  "access": [["public.test", "ro"]]
 }]
 select * from test where id = timestamp '1970-01-01 00:00:01.000003'
 ["1970-01-01 00:00:01.000003+00"]
@@ -694,7 +702,7 @@ explain select * from test where id = timestamp '1970-01-01 00:00:01.000003'
       "00": "set                 0      1      0     ",
       "01": "timestamp           1      -      0     # 1000003",
       "02": "push                1      0      0     ",
-      "03": "table_open_lookup   0      0      11    # public.test (primary)",
+      "03": "table_open_partl    0      0      11    # public.test (primary)",
       "04": "table_readt         1      0      0     ",
       "05": "timestamp           2      -      0     # 1000003",
       "06": "equii               3      1      2     ",
@@ -706,7 +714,8 @@ explain select * from test where id = timestamp '1970-01-01 00:00:01.000003'
       "12": "result              0      0      0     ",
       "13": "ret                 0      0      0     "
     }
-  }
+  },
+  "access": [["public.test", "ro"]]
 }]
 drop table test
 # test: insert column (interval)
@@ -733,7 +742,7 @@ explain select * from test where i > "1 year 1 day 10 hour"::interval
     },
     "backend": {
       "00": "set                 0      2      0     ",
-      "01": "table_open          0      0      14    # public.test (primary)",
+      "01": "table_open_part     0      0      14    # public.test (primary)",
       "02": "table_readl         1      0      1     ",
       "03": "string              2      20     0     # 1 year 1 day 10 hour",
       "04": "push                2      0      0     ",
@@ -750,7 +759,8 @@ explain select * from test where i > "1 year 1 day 10 hour"::interval
       "15": "result              0      0      0     ",
       "16": "ret                 0      0      0     "
     }
-  }
+  },
+  "access": [["public.test", "ro"]]
 }]
 select * from test where i = "1 year 1 day 12 hours 500 us"::interval
 [[2, "1 year 1 day 12 hours 500 us"]]
@@ -792,7 +802,7 @@ explain select * from test where d >= date '1970-01-01'
     },
     "backend": {
       "00": "set                 0      2      0     ",
-      "01": "table_open          0      0      12    # public.test (primary)",
+      "01": "table_open_part     0      0      12    # public.test (primary)",
       "02": "table_readd         1      0      1     ",
       "03": "date                2      2440588 0     ",
       "04": "gteii               3      1      2     ",
@@ -807,7 +817,8 @@ explain select * from test where d >= date '1970-01-01'
       "13": "result              0      0      0     ",
       "14": "ret                 0      0      0     "
     }
-  }
+  },
+  "access": [["public.test", "ro"]]
 }]
 drop table test
 # test: insert column (date auto cast)
@@ -896,7 +907,7 @@ explain select id from test where id = uuid "00000000-0000-0000-0000-00000000000
       "00": "set                 0      1      0     ",
       "01": "uuid                1      20     0     ",
       "02": "push                1      0      0     ",
-      "03": "table_open_lookup   0      0      11    # public.test (primary)",
+      "03": "table_open_partl    0      0      11    # public.test (primary)",
       "04": "table_readu         1      0      0     ",
       "05": "uuid                2      36     0     ",
       "06": "equuu               3      1      2     ",
@@ -908,7 +919,8 @@ explain select id from test where id = uuid "00000000-0000-0000-0000-00000000000
       "12": "result              0      0      0     ",
       "13": "ret                 0      0      0     "
     }
-  }
+  },
+  "access": [["public.test", "ro"]]
 }]
 drop table test
 # test: insert secondary index
@@ -934,7 +946,7 @@ explain select * from test
     },
     "backend": {
       "00": "set                 0      2      0     ",
-      "01": "table_open          0      0      8     # public.test (primary)",
+      "01": "table_open_part     0      0      8     # public.test (primary)",
       "02": "table_readi32       1      0      0     ",
       "03": "push                1      0      0     ",
       "04": "table_readi32       1      0      1     ",
@@ -945,7 +957,8 @@ explain select * from test
       "09": "result              0      0      0     ",
       "10": "ret                 0      0      0     "
     }
-  }
+  },
+  "access": [["public.test", "ro"]]
 }]
 select * from test
 [[0, 2], [1, 1], [2, 0], [3, 0], [4, 0]]
@@ -964,7 +977,7 @@ explain select * from test use index (i)
     },
     "backend": {
       "00": "set                 0      2      0     ",
-      "01": "table_open          0      0      8     # public.test (i)",
+      "01": "table_open_part     0      0      8     # public.test (i)",
       "02": "table_readi32       1      0      0     ",
       "03": "push                1      0      0     ",
       "04": "table_readi32       1      0      1     ",
@@ -975,32 +988,20 @@ explain select * from test use index (i)
       "09": "result              0      0      0     ",
       "10": "ret                 0      0      0     "
     }
-  }
+  },
+  "access": [["public.test", "ro"]]
 }]
 select * from test use index (i)
 [[2, 0], [3, 0], [4, 0], [1, 1], [0, 2]]
 drop index i on test
 drop table test
 # test: insert secondary index (unique)
-create shared table test (id int primary key, data int)
+create table test (id int primary key, data int)
 create unique index i on test (data)
-insert into test values (0, 2)
-insert into test values (1, 1)
-insert into test values (2, 0)
-select * from test
-[[0, 2], [1, 1], [2, 0]]
-select * from test use index (i)
-[[2, 0], [1, 1], [0, 2]]
-insert into test values (3, 0)
-{"msg": "index 'i': unique key constraint violation"}
-insert into test values (3, -1)
-select * from test
-[[0, 2], [1, 1], [2, 0], [3, -1]]
-select * from test use index (i)
-[[3, -1], [2, 0], [1, 1], [0, 2]]
+{"msg": "create unique index i on ❰test❱ ⟵ secondary UNIQUE INDEX is not supported"}
 drop table test
-# test: insert unlogged shared
-create unlogged shared table test (id int primary key, data int)
+# test: insert unlogged
+create unlogged table test (id int primary key, data int)
 insert into test values (0, 2)
 insert into test values (1, 1)
 insert into test values (2, 0)
@@ -1008,7 +1009,7 @@ select * from test
 [[0, 2], [1, 1], [2, 0]]
 drop table test
 # test: insert select (columns count mismatch)
-create shared table test (id int primary key, data int)
+create table test (id int primary key, data int)
 insert into test select 1
 {"msg": "insert into test ❰select❱ ⟵ SELECT columns must match the INSERT table"}
 # test: insert select (columns types mismatch)
@@ -1040,7 +1041,8 @@ explain insert into test select 1, 0
       "00": "insert              -      0      0     # public.test",
       "01": "ret                 0      0      0     "
     }
-  }
+  },
+  "access": [["public.test", "rw"]]
 }]
 insert into test select 1, 0
 select * from test
@@ -1081,7 +1083,8 @@ explain insert into test select * from (select 2, 0) t
       "00": "insert              -      0      0     # public.test",
       "01": "ret                 0      0      0     "
     }
-  }
+  },
+  "access": [["public.test", "rw"]]
 }]
 insert into test select * from (select 2, 0) t
 select * from test
@@ -1108,7 +1111,7 @@ explain insert into test select * from src
     },
     "backend": {
       "00": "set                 0      2      0     ",
-      "01": "table_open          0      0      8     # public.src (primary)",
+      "01": "table_open_part     0      0      8     # public.src (primary)",
       "02": "table_readi32       1      0      0     ",
       "03": "push                1      0      0     ",
       "04": "table_readi32       1      0      1     ",
@@ -1121,7 +1124,8 @@ explain insert into test select * from src
       "11": "insert              -      0      0     # public.test",
       "12": "ret                 0      0      0     "
     }
-  }
+  },
+  "access": [["public.test", "rw"], ["public.src", "ro"]]
 }]
 insert into test select * from src returning *
 [[3, 0], [4, 0], [5, 0]]

@@ -14,9 +14,10 @@ select exists (false)
 select exists ([])
 
 # test: exists (select)
-create shared table test (id int primary key, data int)
+create table test (id int primary key, data int)
 insert into test values (1, 0), (2, 0)
 
+explain select exists (select true from test limit 1)
 select exists (select true from test limit 1)
 select exists (select true from test where false)
 

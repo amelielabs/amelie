@@ -1,10 +1,10 @@
 open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "127.0.0.1", "port": 3485 }], "backends": 3
 connect E0 S0 127.0.0.1:3485
-create shared table ref (id int primary key, data int default 0)
+create table ref (id int primary key, data int default 0)
 insert into ref (id) values (1), (2), (3)
 create table test (id int primary key, data int default 0)
 insert into test (id) values (1), (2), (3)
-# test: select from table, shared
+# test: select from table, ref
 explain select test.*, ref.* from test, ref
 [{
   "bytecode": {
@@ -20,7 +20,7 @@ explain select test.*, ref.* from test, ref
     },
     "backend": {
       "00": "set                 0      4      0     ",
-      "01": "table_open          0      0      15    # public.test (primary)",
+      "01": "table_open_part     0      0      15    # public.test (primary)",
       "02": "table_open          1      20     13    # public.ref (primary)",
       "03": "table_readi32       1      0      0     ",
       "04": "push                1      0      0     ",
@@ -38,16 +38,17 @@ explain select test.*, ref.* from test, ref
       "16": "result              0      0      0     ",
       "17": "ret                 0      0      0     "
     }
-  }
+  },
+  "access": [["public.test", "ro"], ["public.ref", "ro_exclusive"]]
 }]
 select test.*, ref.* from test, ref
 [[1, 0, 1, 0], [1, 0, 2, 0], [1, 0, 3, 0], [2, 0, 1, 0], [2, 0, 2, 0], [2, 0, 3, 0], [3, 0, 1, 0], [3, 0, 2, 0], [3, 0, 3, 0]]
-# test: select from shared, table
+# test: select from ref, table
 explain select test.*, ref.* from ref, test
 [{
   "bytecode": {
     "frontend": {
-      "00": "send_all            0      0      -     # public.test",
+      "00": "send_all            0      0      -     # public.ref",
       "01": "recv                0      0      0     ",
       "02": "bool                0      0      0     ",
       "03": "push                0      0      0     ",
@@ -58,7 +59,7 @@ explain select test.*, ref.* from ref, test
     },
     "backend": {
       "00": "set                 0      4      0     ",
-      "01": "table_open          0      0      15    # public.ref (primary)",
+      "01": "table_open_part     0      0      15    # public.ref (primary)",
       "02": "table_open          1      19     13    # public.test (primary)",
       "03": "table_readi32       1      1      0     ",
       "04": "push                1      0      0     ",
@@ -76,16 +77,47 @@ explain select test.*, ref.* from ref, test
       "16": "result              0      0      0     ",
       "17": "ret                 0      0      0     "
     }
-  }
+  },
+  "access": [["public.ref", "ro"], ["public.test", "ro_exclusive"]]
 }]
 select test.*, ref.* from ref, test
-[[1, 0, 1, 0], [1, 0, 2, 0], [1, 0, 3, 0], [2, 0, 1, 0], [2, 0, 2, 0], [2, 0, 3, 0], [3, 0, 1, 0], [3, 0, 2, 0], [3, 0, 3, 0]]
+[[1, 0, 1, 0], [2, 0, 1, 0], [3, 0, 1, 0], [1, 0, 2, 0], [2, 0, 2, 0], [3, 0, 2, 0], [1, 0, 3, 0], [2, 0, 3, 0], [3, 0, 3, 0]]
 # test: select from table, table
 explain select t.* from test, test t
-{"msg": "explain select t.* from test, test t ⟵ only one partitioned table can be part of JOIN"}
+[{
+  "bytecode": {
+    "frontend": {
+      "00": "send_all            0      0      -     # public.test",
+      "01": "recv                0      0      0     ",
+      "02": "bool                0      0      0     ",
+      "03": "push                0      0      0     ",
+      "04": "union_recv          0      -1     -1    ",
+      "05": "cte_set             0      0      0     ",
+      "06": "content             0      -      -     ",
+      "07": "ret                 0      0      0     "
+    },
+    "backend": {
+      "00": "set                 0      2      0     ",
+      "01": "table_open_part     0      0      11    # public.test (primary)",
+      "02": "table_open          1      20     9     # public.test (primary)",
+      "03": "table_readi32       1      1      0     ",
+      "04": "push                1      0      0     ",
+      "05": "table_readi32       1      1      1     ",
+      "06": "push                1      0      0     ",
+      "07": "set_add             0      0      0     ",
+      "08": "table_next          1      3      0     ",
+      "09": "table_close         1      0      0     ",
+      "10": "table_next          0      2      0     ",
+      "11": "table_close         0      0      0     ",
+      "12": "result              0      0      0     ",
+      "13": "ret                 0      0      0     "
+    }
+  },
+  "access": [["public.test", "ro_exclusive"]]
+}]
 select t.* from test, test t
-{"msg": "select t.* from test, test t ⟵ only one partitioned table can be part of JOIN"}
-# test: select from table join shared
+[[1, 0], [2, 0], [3, 0], [1, 0], [2, 0], [3, 0], [1, 0], [2, 0], [3, 0]]
+# test: select from table join table
 explain select test.id, ref.id from test join ref on true
 [{
   "bytecode": {
@@ -101,7 +133,7 @@ explain select test.id, ref.id from test join ref on true
     },
     "backend": {
       "00": "set                 0      2      0     ",
-      "01": "table_open          0      0      13    # public.test (primary)",
+      "01": "table_open_part     0      0      13    # public.test (primary)",
       "02": "table_open          1      20     11    # public.ref (primary)",
       "03": "bool                1      1      0     ",
       "04": "jntr                10     1      0     ",
@@ -117,11 +149,12 @@ explain select test.id, ref.id from test join ref on true
       "14": "result              0      0      0     ",
       "15": "ret                 0      0      0     "
     }
-  }
+  },
+  "access": [["public.test", "ro"], ["public.ref", "ro_exclusive"]]
 }]
 select test.id, ref.id from test join ref on true
 [[1, 1], [1, 2], [1, 3], [2, 1], [2, 2], [2, 3], [3, 1], [3, 2], [3, 3]]
-# test: select from table join shared on
+# test: select from table join table on
 explain select test.id, ref.id from test join ref on test.id = ref.id
 [{
   "bytecode": {
@@ -137,10 +170,10 @@ explain select test.id, ref.id from test join ref on test.id = ref.id
     },
     "backend": {
       "00": "set                 0      2      0     ",
-      "01": "table_open          0      0      16    # public.test (primary)",
+      "01": "table_open_part     0      0      16    # public.test (primary)",
       "02": "table_readi32       1      0      0     ",
       "03": "push                1      0      0     ",
-      "04": "table_open_lookup   1      20     14    # public.ref (primary)",
+      "04": "table_openl         1      20     14    # public.ref (primary)",
       "05": "table_readi32       1      0      0     ",
       "06": "table_readi32       2      1      0     ",
       "07": "equii               3      1      2     ",
@@ -156,11 +189,12 @@ explain select test.id, ref.id from test join ref on test.id = ref.id
       "17": "result              0      0      0     ",
       "18": "ret                 0      0      0     "
     }
-  }
+  },
+  "access": [["public.test", "ro"], ["public.ref", "ro_exclusive"]]
 }]
 select test.id, ref.id from test join ref on test.id = ref.id
 [[1, 1], [2, 2], [3, 3]]
-# test: select from table join shared on #2
+# test: select from table join table on #2
 explain select test.id, ref.id from test join ref on test.id = ref.id join ref ref2 on test.id = ref2.id
 [{
   "bytecode": {
@@ -176,13 +210,13 @@ explain select test.id, ref.id from test join ref on test.id = ref.id join ref r
     },
     "backend": {
       "00": "set                 0      2      0     ",
-      "01": "table_open          0      0      24    # public.test (primary)",
+      "01": "table_open_part     0      0      24    # public.test (primary)",
       "02": "table_readi32       1      0      0     ",
       "03": "push                1      0      0     ",
-      "04": "table_open_lookup   1      20     22    # public.ref (primary)",
+      "04": "table_openl         1      20     22    # public.ref (primary)",
       "05": "table_readi32       1      0      0     ",
       "06": "push                1      0      0     ",
-      "07": "table_open_lookup   2      39     21    # public.ref (primary)",
+      "07": "table_openl         2      39     21    # public.ref (primary)",
       "08": "table_readi32       1      0      0     ",
       "09": "table_readi32       2      1      0     ",
       "10": "equii               3      1      2     ",
@@ -203,11 +237,12 @@ explain select test.id, ref.id from test join ref on test.id = ref.id join ref r
       "25": "result              0      0      0     ",
       "26": "ret                 0      0      0     "
     }
-  }
+  },
+  "access": [["public.test", "ro"], ["public.ref", "ro_exclusive"]]
 }]
 select test.id, ref.id from test join ref on test.id = ref.id join ref ref2 on test.id = ref2.id
 [[1, 1], [2, 2], [3, 3]]
-# test: select from table join shared on #3
+# test: select from table join table on #3
 explain select test.id, ref.id from test join ref on test.id = ref.id join ref ref2 on test.id = ref2.id where test.id > 0
 [{
   "bytecode": {
@@ -225,13 +260,13 @@ explain select test.id, ref.id from test join ref on test.id = ref.id join ref r
       "00": "set                 0      2      0     ",
       "01": "int                 1      -      0     # 0",
       "02": "push                1      0      0     ",
-      "03": "table_open          0      0      30    # public.test (primary)",
+      "03": "table_open_part     0      0      30    # public.test (primary)",
       "04": "table_readi32       1      0      0     ",
       "05": "push                1      0      0     ",
-      "06": "table_open_lookup   1      20     28    # public.ref (primary)",
+      "06": "table_openl         1      20     28    # public.ref (primary)",
       "07": "table_readi32       1      0      0     ",
       "08": "push                1      0      0     ",
-      "09": "table_open_lookup   2      39     27    # public.ref (primary)",
+      "09": "table_openl         2      39     27    # public.ref (primary)",
       "10": "table_readi32       1      0      0     ",
       "11": "int                 2      -      0     # 0",
       "12": "gtii                3      1      2     ",
@@ -256,11 +291,12 @@ explain select test.id, ref.id from test join ref on test.id = ref.id join ref r
       "31": "result              0      0      0     ",
       "32": "ret                 0      0      0     "
     }
-  }
+  },
+  "access": [["public.test", "ro"], ["public.ref", "ro_exclusive"]]
 }]
 select test.id, ref.id from test join ref on test.id = ref.id join ref ref2 on test.id = ref2.id where test.id > 0
 [[1, 1], [2, 2], [3, 3]]
-# test: select from table join shared on #4
+# test: select from table join table on #4
 explain select test.id, ref.id from test, ref where test.id = ref.id
 [{
   "bytecode": {
@@ -276,10 +312,10 @@ explain select test.id, ref.id from test, ref where test.id = ref.id
     },
     "backend": {
       "00": "set                 0      2      0     ",
-      "01": "table_open          0      0      16    # public.test (primary)",
+      "01": "table_open_part     0      0      16    # public.test (primary)",
       "02": "table_readi32       1      0      0     ",
       "03": "push                1      0      0     ",
-      "04": "table_open_lookup   1      20     14    # public.ref (primary)",
+      "04": "table_openl         1      20     14    # public.ref (primary)",
       "05": "table_readi32       1      0      0     ",
       "06": "table_readi32       2      1      0     ",
       "07": "equii               3      1      2     ",
@@ -295,7 +331,8 @@ explain select test.id, ref.id from test, ref where test.id = ref.id
       "17": "result              0      0      0     ",
       "18": "ret                 0      0      0     "
     }
-  }
+  },
+  "access": [["public.test", "ro"], ["public.ref", "ro_exclusive"]]
 }]
 select test.id, ref.id from test, ref where test.id = ref.id
 [[1, 1], [2, 2], [3, 3]]
@@ -314,10 +351,10 @@ explain select test.id, ref.id from test, ref where ref.id = test.id
     },
     "backend": {
       "00": "set                 0      2      0     ",
-      "01": "table_open          0      0      16    # public.test (primary)",
+      "01": "table_open_part     0      0      16    # public.test (primary)",
       "02": "table_readi32       1      0      0     ",
       "03": "push                1      0      0     ",
-      "04": "table_open_lookup   1      20     14    # public.ref (primary)",
+      "04": "table_openl         1      20     14    # public.ref (primary)",
       "05": "table_readi32       1      1      0     ",
       "06": "table_readi32       2      0      0     ",
       "07": "equii               3      1      2     ",
@@ -333,7 +370,8 @@ explain select test.id, ref.id from test, ref where ref.id = test.id
       "17": "result              0      0      0     ",
       "18": "ret                 0      0      0     "
     }
-  }
+  },
+  "access": [["public.test", "ro"], ["public.ref", "ro_exclusive"]]
 }]
 select test.id, ref.id from test, ref where ref.id = test.id
 [[1, 1], [2, 2], [3, 3]]
@@ -352,10 +390,10 @@ explain select test.id, ref.id from test, ref where ref.id = 1
     },
     "backend": {
       "00": "set                 0      2      0     ",
-      "01": "table_open          0      0      16    # public.test (primary)",
+      "01": "table_open_part     0      0      16    # public.test (primary)",
       "02": "int                 1      -      0     # 1",
       "03": "push                1      0      0     ",
-      "04": "table_open_lookup   1      20     14    # public.ref (primary)",
+      "04": "table_openl         1      20     14    # public.ref (primary)",
       "05": "table_readi32       1      1      0     ",
       "06": "int                 2      -      0     # 1",
       "07": "equii               3      1      2     ",
@@ -371,7 +409,8 @@ explain select test.id, ref.id from test, ref where ref.id = 1
       "17": "result              0      0      0     ",
       "18": "ret                 0      0      0     "
     }
-  }
+  },
+  "access": [["public.test", "ro"], ["public.ref", "ro_exclusive"]]
 }]
 select test.id, ref.id from test, ref where ref.id = 1
 [[1, 1], [2, 1], [3, 1]]
@@ -392,10 +431,10 @@ explain select test.id, ref.id from test, ref where ref.id = 1 and test.id = 1
       "00": "set                 0      2      0     ",
       "01": "int                 1      -      0     # 1",
       "02": "push                1      0      0     ",
-      "03": "table_open_lookup   0      0      21    # public.test (primary)",
+      "03": "table_open_partl    0      0      21    # public.test (primary)",
       "04": "int                 1      -      0     # 1",
       "05": "push                1      0      0     ",
-      "06": "table_open_lookup   1      20     20    # public.ref (primary)",
+      "06": "table_openl         1      20     20    # public.ref (primary)",
       "07": "table_readi32       1      1      0     ",
       "08": "int                 2      -      0     # 1",
       "09": "equii               3      1      2     ",
@@ -414,7 +453,8 @@ explain select test.id, ref.id from test, ref where ref.id = 1 and test.id = 1
       "22": "result              0      0      0     ",
       "23": "ret                 0      0      0     "
     }
-  }
+  },
+  "access": [["public.test", "ro"], ["public.ref", "ro_exclusive"]]
 }]
 select test.id, ref.id from test, ref where ref.id = 1 and test.id = 1
 [[1, 1]]
@@ -433,7 +473,7 @@ explain select test.id, ref.id from test, ref where ref.id >= test.id
     },
     "backend": {
       "00": "set                 0      2      0     ",
-      "01": "table_open          0      0      17    # public.test (primary)",
+      "01": "table_open_part     0      0      17    # public.test (primary)",
       "02": "table_readi32       1      0      0     ",
       "03": "push                1      0      0     ",
       "04": "table_open          1      20     15    # public.ref (primary)",
@@ -453,7 +493,8 @@ explain select test.id, ref.id from test, ref where ref.id >= test.id
       "18": "result              0      0      0     ",
       "19": "ret                 0      0      0     "
     }
-  }
+  },
+  "access": [["public.test", "ro"], ["public.ref", "ro_exclusive"]]
 }]
 select test.id, ref.id from test, ref where ref.id >= test.id
 [[1, 1], [1, 2], [1, 3], [2, 2], [2, 3], [3, 3]]
@@ -481,10 +522,10 @@ explain select test.id, ref.id from test join ref using(id)
     },
     "backend": {
       "00": "set                 0      2      0     ",
-      "01": "table_open          0      0      16    # public.test (primary)",
+      "01": "table_open_part     0      0      16    # public.test (primary)",
       "02": "table_readi32       1      0      0     ",
       "03": "push                1      0      0     ",
-      "04": "table_open_lookup   1      20     14    # public.ref (primary)",
+      "04": "table_openl         1      20     14    # public.ref (primary)",
       "05": "table_readi32       1      0      0     ",
       "06": "table_readi32       2      1      0     ",
       "07": "equii               3      1      2     ",
@@ -500,7 +541,8 @@ explain select test.id, ref.id from test join ref using(id)
       "17": "result              0      0      0     ",
       "18": "ret                 0      0      0     "
     }
-  }
+  },
+  "access": [["public.test", "ro"], ["public.ref", "ro_exclusive"]]
 }]
 select test.id, ref.id from test join ref using(id)
 [[1, 1], [2, 2], [3, 3]]
@@ -525,13 +567,13 @@ explain select test.id, ref.id from test join ref using (id) join ref ref2 using
       "00": "set                 0      2      0     ",
       "01": "int                 1      -      0     # 0",
       "02": "push                1      0      0     ",
-      "03": "table_open          0      0      30    # public.test (primary)",
+      "03": "table_open_part     0      0      30    # public.test (primary)",
       "04": "table_readi32       1      0      0     ",
       "05": "push                1      0      0     ",
-      "06": "table_open_lookup   1      20     28    # public.ref (primary)",
+      "06": "table_openl         1      20     28    # public.ref (primary)",
       "07": "table_readi32       1      1      0     ",
       "08": "push                1      0      0     ",
-      "09": "table_open_lookup   2      39     27    # public.ref (primary)",
+      "09": "table_openl         2      39     27    # public.ref (primary)",
       "10": "table_readi32       1      0      0     ",
       "11": "int                 2      -      0     # 0",
       "12": "gtii                3      1      2     ",
@@ -556,7 +598,8 @@ explain select test.id, ref.id from test join ref using (id) join ref ref2 using
       "31": "result              0      0      0     ",
       "32": "ret                 0      0      0     "
     }
-  }
+  },
+  "access": [["public.test", "ro"], ["public.ref", "ro_exclusive"]]
 }]
 select test.id, ref.id from test join ref using (id) join ref ref2 using (id) where test.id > 0
 [[1, 1], [2, 2], [3, 3]]
@@ -584,7 +627,7 @@ explain with a as (select * from test) select * from test, a where test.id = a.i
     },
     "backend": {
       "00": "set                 0      2      0     ",
-      "01": "table_open          0      0      8     # public.test (primary)",
+      "01": "table_open_part     0      0      8     # public.test (primary)",
       "02": "table_readi32       1      0      0     ",
       "03": "push                1      0      0     ",
       "04": "table_readi32       1      0      1     ",
@@ -595,7 +638,7 @@ explain with a as (select * from test) select * from test, a where test.id = a.i
       "09": "result              0      0      0     ",
       "10": "ret                 0      0      0     ",
       "11": "set                 0      4      0     ",
-      "12": "table_open          0      20     31    # public.test (primary)",
+      "12": "table_open_part     0      20     31    # public.test (primary)",
       "13": "cte_get             1      0      0     ",
       "14": "store_open          1      1      29    ",
       "15": "table_readi32       2      0      0     ",
@@ -618,7 +661,8 @@ explain with a as (select * from test) select * from test, a where test.id = a.i
       "32": "result              0      0      0     ",
       "33": "ret                 0      0      0     "
     }
-  }
+  },
+  "access": [["public.test", "ro"]]
 }]
 with a as (select * from test) select * from test, a where test.id = a.id
 [[1, 0, 1, 0], [2, 0, 2, 0], [3, 0, 3, 0]]
@@ -644,7 +688,7 @@ explain with a as (select * from test) select * from test, a where test.id = 1
     },
     "backend": {
       "00": "set                 0      2      0     ",
-      "01": "table_open          0      0      8     # public.test (primary)",
+      "01": "table_open_part     0      0      8     # public.test (primary)",
       "02": "table_readi32       1      0      0     ",
       "03": "push                1      0      0     ",
       "04": "table_readi32       1      0      1     ",
@@ -657,7 +701,7 @@ explain with a as (select * from test) select * from test, a where test.id = 1
       "11": "set                 0      4      0     ",
       "12": "int                 1      -      0     # 1",
       "13": "push                1      0      0     ",
-      "14": "table_open_lookup   0      20     32    # public.test (primary)",
+      "14": "table_open_partl    0      20     32    # public.test (primary)",
       "15": "cte_get             1      0      0     ",
       "16": "store_open          1      1      31    ",
       "17": "table_readi32       2      0      0     ",
@@ -679,7 +723,8 @@ explain with a as (select * from test) select * from test, a where test.id = 1
       "33": "result              0      0      0     ",
       "34": "ret                 0      0      0     "
     }
-  }
+  },
+  "access": [["public.test", "ro"]]
 }]
 with a as (select * from test) select * from test, a where test.id = 1
 [[1, 0, 1, 0], [1, 0, 2, 0], [1, 0, 3, 0]]
@@ -694,18 +739,35 @@ explain with a as (select * from test) select * from a, test where test.id = a.i
       "03": "push                0      0      0     ",
       "04": "union_recv          0      -1     -1    ",
       "05": "cte_set             0      0      0     ",
-      "06": "send_all            1      11     -     # public.test",
-      "07": "recv                1      0      0     ",
-      "08": "bool                0      0      0     ",
-      "09": "push                0      0      0     ",
-      "10": "union_recv          0      -1     -1    ",
-      "11": "cte_set             1      0      0     ",
-      "12": "content             1      -      -     ",
-      "13": "ret                 0      0      0     "
+      "06": "set                 0      4      0     ",
+      "07": "cte_get             1      0      0     ",
+      "08": "store_open          0      1      27    ",
+      "09": "store_read          2      0      0     ",
+      "10": "push                2      0      0     ",
+      "11": "table_openl         1      20     25    # public.test (primary)",
+      "12": "table_readi32       2      1      0     ",
+      "13": "store_read          3      0      0     ",
+      "14": "equii               4      2      3     ",
+      "15": "jntr                25     4      0     ",
+      "16": "store_read          2      0      0     ",
+      "17": "push                2      0      0     ",
+      "18": "store_read          2      0      1     ",
+      "19": "push                2      0      0     ",
+      "20": "table_readi32       2      1      0     ",
+      "21": "push                2      0      0     ",
+      "22": "table_readi32       2      1      1     ",
+      "23": "push                2      0      0     ",
+      "24": "set_add             0      0      0     ",
+      "25": "table_close         1      0      0     ",
+      "26": "store_next          0      9      0     ",
+      "27": "store_close         0      1      0     ",
+      "28": "cte_set             1      0      0     ",
+      "29": "content             1      -      -     ",
+      "30": "ret                 0      0      0     "
     },
     "backend": {
       "00": "set                 0      2      0     ",
-      "01": "table_open          0      0      8     # public.test (primary)",
+      "01": "table_open_part     0      0      8     # public.test (primary)",
       "02": "table_readi32       1      0      0     ",
       "03": "push                1      0      0     ",
       "04": "table_readi32       1      0      1     ",
@@ -714,33 +776,10 @@ explain with a as (select * from test) select * from a, test where test.id = a.i
       "07": "table_next          0      2      0     ",
       "08": "table_close         0      0      0     ",
       "09": "result              0      0      0     ",
-      "10": "ret                 0      0      0     ",
-      "11": "set                 0      4      0     ",
-      "12": "cte_get             1      0      0     ",
-      "13": "store_open          0      1      32    ",
-      "14": "store_read          2      0      0     ",
-      "15": "push                2      0      0     ",
-      "16": "table_open_lookup   1      20     30    # public.test (primary)",
-      "17": "table_readi32       2      1      0     ",
-      "18": "store_read          3      0      0     ",
-      "19": "equii               4      2      3     ",
-      "20": "jntr                30     4      0     ",
-      "21": "store_read          2      0      0     ",
-      "22": "push                2      0      0     ",
-      "23": "store_read          2      0      1     ",
-      "24": "push                2      0      0     ",
-      "25": "table_readi32       2      1      0     ",
-      "26": "push                2      0      0     ",
-      "27": "table_readi32       2      1      1     ",
-      "28": "push                2      0      0     ",
-      "29": "set_add             0      0      0     ",
-      "30": "table_close         1      0      0     ",
-      "31": "store_next          0      14     0     ",
-      "32": "store_close         0      1      0     ",
-      "33": "result              0      0      0     ",
-      "34": "ret                 0      0      0     "
+      "10": "ret                 0      0      0     "
     }
-  }
+  },
+  "access": [["public.test", "ro_exclusive"]]
 }]
 with a as (select * from test) select * from a, test where test.id = a.id
 [[1, 0, 1, 0], [2, 0, 2, 0], [3, 0, 3, 0]]
@@ -755,18 +794,35 @@ explain with a as (select * from test) select * from a, test where test.id = 1
       "03": "push                0      0      0     ",
       "04": "union_recv          0      -1     -1    ",
       "05": "cte_set             0      0      0     ",
-      "06": "send_lookup         1      11     -     # public.test",
-      "07": "recv                1      0      0     ",
-      "08": "bool                0      0      0     ",
-      "09": "push                0      0      0     ",
-      "10": "union_recv          0      -1     -1    ",
-      "11": "cte_set             1      0      0     ",
-      "12": "content             1      -      -     ",
-      "13": "ret                 0      0      0     "
+      "06": "set                 0      4      0     ",
+      "07": "cte_get             1      0      0     ",
+      "08": "store_open          0      1      27    ",
+      "09": "int                 2      -      0     # 1",
+      "10": "push                2      0      0     ",
+      "11": "table_openl         1      20     25    # public.test (primary)",
+      "12": "table_readi32       2      1      0     ",
+      "13": "int                 3      -      0     # 1",
+      "14": "equii               4      2      3     ",
+      "15": "jntr                25     4      0     ",
+      "16": "store_read          2      0      0     ",
+      "17": "push                2      0      0     ",
+      "18": "store_read          2      0      1     ",
+      "19": "push                2      0      0     ",
+      "20": "table_readi32       2      1      0     ",
+      "21": "push                2      0      0     ",
+      "22": "table_readi32       2      1      1     ",
+      "23": "push                2      0      0     ",
+      "24": "set_add             0      0      0     ",
+      "25": "table_close         1      0      0     ",
+      "26": "store_next          0      9      0     ",
+      "27": "store_close         0      1      0     ",
+      "28": "cte_set             1      0      0     ",
+      "29": "content             1      -      -     ",
+      "30": "ret                 0      0      0     "
     },
     "backend": {
       "00": "set                 0      2      0     ",
-      "01": "table_open          0      0      8     # public.test (primary)",
+      "01": "table_open_part     0      0      8     # public.test (primary)",
       "02": "table_readi32       1      0      0     ",
       "03": "push                1      0      0     ",
       "04": "table_readi32       1      0      1     ",
@@ -775,33 +831,10 @@ explain with a as (select * from test) select * from a, test where test.id = 1
       "07": "table_next          0      2      0     ",
       "08": "table_close         0      0      0     ",
       "09": "result              0      0      0     ",
-      "10": "ret                 0      0      0     ",
-      "11": "set                 0      4      0     ",
-      "12": "cte_get             1      0      0     ",
-      "13": "store_open          0      1      32    ",
-      "14": "int                 2      -      0     # 1",
-      "15": "push                2      0      0     ",
-      "16": "table_open_lookup   1      20     30    # public.test (primary)",
-      "17": "table_readi32       2      1      0     ",
-      "18": "int                 3      -      0     # 1",
-      "19": "equii               4      2      3     ",
-      "20": "jntr                30     4      0     ",
-      "21": "store_read          2      0      0     ",
-      "22": "push                2      0      0     ",
-      "23": "store_read          2      0      1     ",
-      "24": "push                2      0      0     ",
-      "25": "table_readi32       2      1      0     ",
-      "26": "push                2      0      0     ",
-      "27": "table_readi32       2      1      1     ",
-      "28": "push                2      0      0     ",
-      "29": "set_add             0      0      0     ",
-      "30": "table_close         1      0      0     ",
-      "31": "store_next          0      14     0     ",
-      "32": "store_close         0      1      0     ",
-      "33": "result              0      0      0     ",
-      "34": "ret                 0      0      0     "
+      "10": "ret                 0      0      0     "
     }
-  }
+  },
+  "access": [["public.test", "ro_exclusive"]]
 }]
 with a as (select * from test) select * from a, test where test.id = 1
 [[1, 0, 1, 0], [2, 0, 1, 0], [3, 0, 1, 0]]
@@ -839,10 +872,10 @@ explain select ref.id from test join ref on (test.id = ref.id) group by ref.id
     },
     "backend": {
       "00": "set_ordered         0      0      1     ",
-      "01": "table_open          0      1      14    # public.test (primary)",
+      "01": "table_open_part     0      1      14    # public.test (primary)",
       "02": "table_readi32       1      0      0     ",
       "03": "push                1      0      0     ",
-      "04": "table_open_lookup   1      21     12    # public.ref (primary)",
+      "04": "table_openl         1      21     12    # public.ref (primary)",
       "05": "table_readi32       1      0      0     ",
       "06": "table_readi32       2      1      0     ",
       "07": "equii               3      1      2     ",
@@ -857,7 +890,8 @@ explain select ref.id from test join ref on (test.id = ref.id) group by ref.id
       "16": "result              0      0      0     ",
       "17": "ret                 0      0      0     "
     }
-  }
+  },
+  "access": [["public.test", "ro"], ["public.ref", "ro_exclusive"]]
 }]
 select ref.id from test join ref on (test.id = ref.id) group by ref.id
 [1, 2, 3]
@@ -866,7 +900,7 @@ select ref.id, count(*) from test join ref on (test.id = ref.id) group by ref.id
 select ref.id, count(test.id) + count(ref.id) from test join ref on (test.id = ref.id) group by ref.id
 [[1, 2], [2, 2], [3, 2]]
 # test: select from table join group by path
-create shared table ref2 (id int primary key, data json)
+create table ref2 (id int primary key, data json)
 insert into ref2 values (1, {"id": 1}), (2, {"id": 2}), (3, {"id": 3})
 select ref2.data from test join ref2 on (test.id = ref2.id) group by ref2.id
 {"msg": "select ❰ref2.data❱ ⟵ column ref2.data must appear in the GROUP BY clause or be used by an aggregate function"}

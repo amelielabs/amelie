@@ -476,24 +476,12 @@ drop index i on test
 drop table test
 
 # test: insert secondary index (unique)
-create shared table test (id int primary key, data int)
+create table test (id int primary key, data int)
 create unique index i on test (data)
-insert into test values (0, 2)
-insert into test values (1, 1)
-insert into test values (2, 0)
-
-select * from test
-select * from test use index (i)
-
-insert into test values (3, 0)
-insert into test values (3, -1)
-
-select * from test
-select * from test use index (i)
 drop table test
 
-# test: insert unlogged shared
-create unlogged shared table test (id int primary key, data int)
+# test: insert unlogged
+create unlogged table test (id int primary key, data int)
 insert into test values (0, 2)
 insert into test values (1, 1)
 insert into test values (2, 0)
@@ -501,7 +489,7 @@ select * from test
 drop table test
 
 # test: insert select (columns count mismatch)
-create shared table test (id int primary key, data int)
+create table test (id int primary key, data int)
 
 insert into test select 1
 

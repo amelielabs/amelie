@@ -172,25 +172,9 @@ drop table test
 drop table test.test
 drop schema test
 
-# test: partitioned
-create table test (id int primary key)
-select system.table('test').shared
-drop table test
-
-# test: partitioned unlogged
+# test: unlogged
 create unlogged table test (id int primary key)
 select system.table('test').unlogged
-drop table test
-
-# test: shared
-create shared table test (id int primary key)
-select system.table('test').shared
-drop table test
-
-# test: unlogged shared
-create unlogged shared table test (id int primary key)
-select system.table('test').unlogged
-select system.table('test').shared
 drop table test
 
 # test: constraint default
@@ -243,8 +227,8 @@ select system.table('test').columns
 drop table test
 
 # test: constraint not null
-create shared table test (id int primary key, data int not)
-create shared table test (id int primary key, data int not null)
+create table test (id int primary key, data int not)
+create table test (id int primary key, data int not null)
 select system.table('test').columns
 insert into test values(1, 1)
 insert into test values(2, null)
@@ -252,7 +236,7 @@ insert into test values(null, null)
 drop table test
 
 # test: constraint not null default
-create shared table test (id int primary key, data int not null default 123)
+create table test (id int primary key, data int not null default 123)
 select system.table('test').columns
 insert into test values(1, 1)
 insert into test values(2, null)

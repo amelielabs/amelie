@@ -31,37 +31,37 @@ select (select {})
 select (select {"a": 1})
 select (select {"a": 1, "b": null})
 
-# test: select (select *) from shared
-create shared table test (id int primary key)
+# test: select (select *) from table
+create table test (id int primary key)
 insert into test values (1)
 insert into test values (2)
 insert into test values (3)
 
 select (select *) from test
 
-# test: select (select target.*) from shared
+# test: select (select target.*) from table
 explain select (select test.*) from test
 select (select test.*) from test
 
-# test: select (select alias.*) from shared
+# test: select (select alias.*) from table
 select (select t.*) from test t
 select (select t.*) from test
 select (select t) from test t
 
-# test: select (select target.column) from shared
+# test: select (select target.column) from table
 explain select (select test.id) from test
 select (select test.id) from test
 select (select id) from test
 
-# test: select (select alias.column) from shared
+# test: select (select alias.column) from table
 explain select (select t.id) from test t
 select (select t.id) from test
 select (select t.id) from test t
 
 drop table test
 
-# test: select (select target.path) from shared
-create shared table test (id serial primary key, data json)
+# test: select (select target.path) from table
+create table test (id serial primary key, data json)
 insert into test (data) values({"data": {"id": 1}})
 insert into test (data) values({"data": {"id": 2}})
 insert into test (data) values({"data": {"id": 3}})
@@ -72,7 +72,7 @@ select (select test.data) from test
 select (select test.data.data) from test
 select (select test.data.data.id) from test
 
-# test: select (select alias.path) from shared
+# test: select (select alias.path) from table
 select (select t) from test t
 select (select t.data) from test t
 select (select t.data.data) from test t
@@ -84,8 +84,8 @@ select * from (select 0) t
 select * from (select null) t
 select * from (select 1, 2) t
 
-# test: select * from (select from shared)
-create shared table test (id int primary key)
+# test: select * from (select from table)
+create table test (id int primary key)
 insert into test values (1)
 insert into test values (2)
 insert into test values (3)
@@ -94,12 +94,12 @@ select * from (select * from test)
 select * from (select * from test) t
 explain select * from (select * from test) t
 
-# test: select target.* from (select from shared)
+# test: select target.* from (select from table)
 select test.* from (select * from test)
 select test.* from (select * from test) test
 select test from (select * from test)
 
-# test: select alias.* from (select from shared)
+# test: select alias.* from (select from table)
 select alias from (select * from test) alias
 select alias.* from (select * from test) alias
 
@@ -109,12 +109,12 @@ select alias.* from (select alias.* from test alias) alias
 select alias.* from (select * from test) alias
 drop table test
 
-create shared table test (id serial primary key, obj json)
+create table test (id serial primary key, obj json)
 insert into test (obj) values({"data": {"id": 1}})
 insert into test (obj) values({"data": {"id": 2}})
 insert into test (obj) values({"data": {"id": 3}})
 
-# test: select target.path from (select from shared)
+# test: select target.path from (select from table)
 select obj from (select * from test)
 select * from (select * from test) alias
 
@@ -125,8 +125,8 @@ select alias.obj.data from (select * from test) alias
 select alias.obj.data.id from (select * from test) alias
 drop table test
 
-# test: select (select from shared)
-create shared table test (id int primary key)
+# test: select (select from table)
+create table test (id int primary key)
 insert into test values (1)
 insert into test values (2)
 insert into test values (3)
@@ -134,24 +134,25 @@ insert into test values (3)
 explain select (select * from test)
 select (select * from test)
 
-# test: select (select from shared) no result
+# test: select (select from table) no result
 select (select * from test where false)
 
-# test: select (select from shared) from shared (more then one result)
+# test: select (select from table) from table (more then one result)
+explain select (select * from test) from test
 select (select * from test) from test
 select (select * from test t) from test
 
-# test: select (select from shared) from shared (one result)
+# test: select (select from table) from table (one result)
 select (select * from test t limit 1) from test
 explain select (select i.* from test i limit 1) from test
 
-# test: select (select from shared) from shared #2
+# test: select (select from table) from table #2
 explain select (select i.* from test i where test.id = i.id) from test
 select (select i.* from test i where test.id = i.id) from test
 
-# test: select (select from shared) from shared #3
-create shared table a (id serial primary key, data int default 0)
-create shared table b (id serial primary key, data int default 1)
+# test: select (select from table) from table #3
+create table a (id serial primary key, data int default 0)
+create table b (id serial primary key, data int default 1)
 
 insert into a () values (), (), ()
 insert into b () values (), (), ()
@@ -163,11 +164,11 @@ select (select b.* from b where a.id = b.id)::type from a
 select (select a.id from b where a.id = b.id) from a
 select (select b.id from b where a.id = b.id)::type from a
 
-# test: select from shared where (select from shared)
+# test: select from table where (select from table)
 explain select * from a where (select true from b where a.id = b.id)
 select * from a where (select true from b where a.id = b.id)
 
-# test: select from (select from (select from shared))
+# test: select from (select from (select from table))
 select t.x from (select z.id as x from (select id from test) z) t
 explain select t.x from (select z.id as x from (select id from test) z) t
 

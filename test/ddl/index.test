@@ -41,18 +41,10 @@ drop index i on test
 
 # test: create index (unique)
 create unique index i on test (a)
-
-# test: create index (unique shared)
 drop table test
-create shared table test (id int primary key, a int, b int)
-create unique index i on test (a)
-select system.table('test').indexes
-drop index i on test
-
-drop table test
-create table test (id int primary key, a int, b int)
 
 # test: create index with parsing
+create table test (id int primary key, a int, b int)
 create index i on test (a) 1
 create index i on test (a) with
 create index i on test (a) with 1
@@ -75,13 +67,6 @@ select system.table('test').indexes
 drop index i on test
 
 create index i on test (a) with (type = 'unknown')
-
-# test: create index (shared)
-drop table test
-create shared table test (id int primary key, a int, b int)
-create index i on test (a)
-select system.table('test').indexes
-drop index i on test
 
 # test: drop index parsing
 drop index

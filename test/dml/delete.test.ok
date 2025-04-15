@@ -55,7 +55,7 @@ explain delete from test where id = 3
     "backend": {
       "00": "int                 0      -      0     # 3",
       "01": "push                0      0      0     ",
-      "02": "table_open_lookup   0      0      8     # public.test (primary)",
+      "02": "table_open_partl    0      0      8     # public.test (primary)",
       "03": "table_readi32       0      0      0     ",
       "04": "int                 1      -      0     # 3",
       "05": "equii               2      0      1     ",
@@ -64,7 +64,8 @@ explain delete from test where id = 3
       "08": "table_close         0      0      0     ",
       "09": "ret                 0      0      0     "
     }
-  }
+  },
+  "access": [["public.test", "rw"]]
 }]
 delete from test where id = 3
 select * from test
@@ -111,7 +112,7 @@ explain delete from test where id > 0 and id < 1
     "backend": {
       "00": "int                 0      -      0     # 0",
       "01": "push                0      0      0     ",
-      "02": "table_open          0      0      17    # public.test (primary)",
+      "02": "table_open_part     0      0      17    # public.test (primary)",
       "03": "table_readi32       0      0      0     ",
       "04": "int                 1      -      0     # 1",
       "05": "ltii                2      0      1     ",
@@ -129,7 +130,8 @@ explain delete from test where id > 0 and id < 1
       "17": "table_close         0      0      0     ",
       "18": "ret                 0      0      0     "
     }
-  }
+  },
+  "access": [["public.test", "rw"]]
 }]
 delete from test where id > 0 and id < 1
 select * from test

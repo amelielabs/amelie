@@ -1,6 +1,6 @@
 open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "127.0.0.1", "port": 3485 }]
 connect E0 S0 127.0.0.1:3485
-create shared table test (id int primary key, data int default 1)
+create table test (id int primary key, data int default 1)
 insert into test (id) values (1), (2), (3)
 # test: select label
 select 1 name
@@ -55,7 +55,7 @@ explain select t.x from (select z.id as x from (select id from test) z) t
     },
     "backend": {
       "00": "set                 0      1      0     ",
-      "01": "table_open          0      0      6     # public.test (primary)",
+      "01": "table_open_part     0      0      6     # public.test (primary)",
       "02": "table_readi32       1      0      0     ",
       "03": "push                1      0      0     ",
       "04": "set_add             0      0      0     ",
@@ -64,7 +64,8 @@ explain select t.x from (select z.id as x from (select id from test) z) t
       "07": "result              0      0      0     ",
       "08": "ret                 0      0      0     "
     }
-  }
+  },
+  "access": [["public.test", "ro"]]
 }]
 drop table test
 disconnect S0

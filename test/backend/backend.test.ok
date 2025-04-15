@@ -6,8 +6,6 @@ show backends
 # test: ddl (without backends)
 create table test (id int primary key)
 {"msg": "system has no backend workers"}
-create shared table test (id int primary key)
-{"msg": "system has no backend workers"}
 select * from test
 {"msg": "select * from ❰test❱ ⟵ relation not found"}
 # test: create backend
@@ -35,17 +33,15 @@ show backends
 }]
 # test: ddl/dml (with one backend)
 create table test1 (id int primary key)
-create shared table test2 (id int primary key)
+create table test2 (id int primary key)
 show tables
 [{
   "schema": "public",
   "name": "test1",
-  "shared": false,
   "unlogged": false
 }, {
   "schema": "public",
   "name": "test2",
-  "shared": true,
   "unlogged": false
 }]
 insert into test1 values (1), (2), (3); insert into test2 values (4),(5),(6)
@@ -100,17 +96,14 @@ show tables
 [{
   "schema": "public",
   "name": "test1",
-  "shared": false,
   "unlogged": false
 }, {
   "schema": "public",
   "name": "test2",
-  "shared": true,
   "unlogged": false
 }, {
   "schema": "public",
   "name": "test3",
-  "shared": false,
   "unlogged": false
 }]
 # test: drop backend (after table drop)
@@ -144,17 +137,14 @@ show tables
 [{
   "schema": "public",
   "name": "test1",
-  "shared": false,
   "unlogged": false
 }, {
   "schema": "public",
   "name": "test2",
-  "shared": true,
   "unlogged": false
 }, {
   "schema": "public",
   "name": "test",
-  "shared": false,
   "unlogged": false
 }]
 insert into test values (1), (2), (3)
@@ -177,17 +167,14 @@ show tables
 [{
   "schema": "public",
   "name": "test1",
-  "shared": false,
   "unlogged": false
 }, {
   "schema": "public",
   "name": "test2",
-  "shared": true,
   "unlogged": false
 }, {
   "schema": "public",
   "name": "test",
-  "shared": false,
   "unlogged": false
 }]
 select * from test

@@ -13,7 +13,8 @@ explain select true
       "05": "content             0      -      -     ",
       "06": "ret                 0      0      0     "
     }
-  }
+  },
+  "access": []
 }]
 select true
 [true]
@@ -40,7 +41,8 @@ explain select true = false
       "07": "content             0      -      -     ",
       "08": "ret                 0      0      0     "
     }
-  }
+  },
+  "access": []
 }]
 # test: bool = int
 select true = 1
@@ -61,7 +63,8 @@ explain select true = 1
       "07": "content             0      -      -     ",
       "08": "ret                 0      0      0     "
     }
-  }
+  },
+  "access": []
 }]
 # test: bool = null
 select true = null
@@ -82,7 +85,8 @@ explain select true = null
       "07": "content             0      -      -     ",
       "08": "ret                 0      0      0     "
     }
-  }
+  },
+  "access": []
 }]
 # test: bool = unsupported
 select true = [1,2]
@@ -109,7 +113,8 @@ explain select true <> false
       "08": "content             0      -      -     ",
       "09": "ret                 0      0      0     "
     }
-  }
+  },
+  "access": []
 }]
 # test: bool <> int
 select true <> 1
@@ -131,7 +136,8 @@ explain select true <> 1
       "08": "content             0      -      -     ",
       "09": "ret                 0      0      0     "
     }
-  }
+  },
+  "access": []
 }]
 # test: bool <> null
 select true <> null
@@ -153,7 +159,8 @@ explain select true <> null
       "08": "content             0      -      -     ",
       "09": "ret                 0      0      0     "
     }
-  }
+  },
+  "access": []
 }]
 # test: bool <> unsupported
 select true <> [1,2]

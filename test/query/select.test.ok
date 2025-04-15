@@ -46,7 +46,8 @@ explain select 1
       "05": "content             0      -      -     ",
       "06": "ret                 0      0      0     "
     }
-  }
+  },
+  "access": []
 }]
 explain select [1, 2, 3]
 [{
@@ -60,7 +61,8 @@ explain select [1, 2, 3]
       "05": "content             0      -      -     ",
       "06": "ret                 0      0      0     "
     }
-  }
+  },
+  "access": []
 }]
 # test: select name
 select name
@@ -94,7 +96,7 @@ explain select * from test
     },
     "backend": {
       "00": "set                 0      1      0     ",
-      "01": "table_open          0      0      6     # public.test (primary)",
+      "01": "table_open_part     0      0      6     # public.test (primary)",
       "02": "table_readi64       1      0      0     ",
       "03": "push                1      0      0     ",
       "04": "set_add             0      0      0     ",
@@ -103,7 +105,8 @@ explain select * from test
       "07": "result              0      0      0     ",
       "08": "ret                 0      0      0     "
     }
-  }
+  },
+  "access": [["public.test", "ro"]]
 }]
 select * from test
 [0, 1, 2]
@@ -140,7 +143,7 @@ explain select id, data from test
     },
     "backend": {
       "00": "set                 0      2      0     ",
-      "01": "table_open          0      0      8     # public.test (primary)",
+      "01": "table_open_part     0      0      8     # public.test (primary)",
       "02": "table_readi64       1      0      0     ",
       "03": "push                1      0      0     ",
       "04": "table_readi32       1      0      1     ",
@@ -151,7 +154,8 @@ explain select id, data from test
       "09": "result              0      0      0     ",
       "10": "ret                 0      0      0     "
     }
-  }
+  },
+  "access": [["public.test", "ro"]]
 }]
 select id, data from test
 [[0, 0], [1, 0], [2, 0]]
@@ -186,7 +190,7 @@ explain select data.data from test
     },
     "backend": {
       "00": "set                 0      1      0     ",
-      "01": "table_open          0      0      8     # public.test (primary)",
+      "01": "table_open_part     0      0      8     # public.test (primary)",
       "02": "table_readj         1      0      1     ",
       "03": "string              2      20     0     # data",
       "04": "dotjs               3      1      2     ",
@@ -197,7 +201,8 @@ explain select data.data from test
       "09": "result              0      0      0     ",
       "10": "ret                 0      0      0     "
     }
-  }
+  },
+  "access": [["public.test", "ro"]]
 }]
 select data.data from test
 [123, 123, 123]
@@ -236,7 +241,7 @@ explain select data.data.data from test
     },
     "backend": {
       "00": "set                 0      1      0     ",
-      "01": "table_open          0      0      8     # public.test (primary)",
+      "01": "table_open_part     0      0      8     # public.test (primary)",
       "02": "table_readj         1      0      1     ",
       "03": "string              2      20     0     # data.data",
       "04": "dotjs               3      1      2     ",
@@ -247,7 +252,8 @@ explain select data.data.data from test
       "09": "result              0      0      0     ",
       "10": "ret                 0      0      0     "
     }
-  }
+  },
+  "access": [["public.test", "ro"]]
 }]
 select data.data.data from test
 [123, 123, 123]
@@ -272,7 +278,7 @@ explain select test.id, test.data from test
     },
     "backend": {
       "00": "set                 0      2      0     ",
-      "01": "table_open          0      0      8     # public.test (primary)",
+      "01": "table_open_part     0      0      8     # public.test (primary)",
       "02": "table_readi64       1      0      0     ",
       "03": "push                1      0      0     ",
       "04": "table_readi32       1      0      1     ",
@@ -283,7 +289,8 @@ explain select test.id, test.data from test
       "09": "result              0      0      0     ",
       "10": "ret                 0      0      0     "
     }
-  }
+  },
+  "access": [["public.test", "ro"]]
 }]
 select test.id, test.data from test
 [[0, 0], [1, 0], [2, 0]]
@@ -308,7 +315,7 @@ explain select test.data.data from test
     },
     "backend": {
       "00": "set                 0      1      0     ",
-      "01": "table_open          0      0      8     # public.test (primary)",
+      "01": "table_open_part     0      0      8     # public.test (primary)",
       "02": "table_readj         1      0      1     ",
       "03": "string              2      20     0     # data",
       "04": "dotjs               3      1      2     ",
@@ -319,7 +326,8 @@ explain select test.data.data from test
       "09": "result              0      0      0     ",
       "10": "ret                 0      0      0     "
     }
-  }
+  },
+  "access": [["public.test", "ro"]]
 }]
 select test.data.data from test
 [123, 123, 123]
@@ -368,7 +376,7 @@ explain select alias.id, alias.data from test alias
     },
     "backend": {
       "00": "set                 0      2      0     ",
-      "01": "table_open          0      0      8     # public.test (primary)",
+      "01": "table_open_part     0      0      8     # public.test (primary)",
       "02": "table_readi64       1      0      0     ",
       "03": "push                1      0      0     ",
       "04": "table_readi32       1      0      1     ",
@@ -379,7 +387,8 @@ explain select alias.id, alias.data from test alias
       "09": "result              0      0      0     ",
       "10": "ret                 0      0      0     "
     }
-  }
+  },
+  "access": [["public.test", "ro"]]
 }]
 select alias.id, alias.data from test alias
 [[0, 0], [1, 0], [2, 0]]
@@ -404,7 +413,7 @@ explain select alias.data.data from test alias
     },
     "backend": {
       "00": "set                 0      1      0     ",
-      "01": "table_open          0      0      8     # public.test (primary)",
+      "01": "table_open_part     0      0      8     # public.test (primary)",
       "02": "table_readj         1      0      1     ",
       "03": "string              2      20     0     # data",
       "04": "dotjs               3      1      2     ",
@@ -415,7 +424,8 @@ explain select alias.data.data from test alias
       "09": "result              0      0      0     ",
       "10": "ret                 0      0      0     "
     }
-  }
+  },
+  "access": [["public.test", "ro"]]
 }]
 select alias.data.data from test alias
 [123, 123, 123]
@@ -444,7 +454,7 @@ explain select alias.id, alias.data from test alias
     },
     "backend": {
       "00": "set                 0      2      0     ",
-      "01": "table_open          0      0      8     # public.test (primary)",
+      "01": "table_open_part     0      0      8     # public.test (primary)",
       "02": "table_readi64       1      0      0     ",
       "03": "push                1      0      0     ",
       "04": "table_readi32       1      0      1     ",
@@ -455,7 +465,8 @@ explain select alias.id, alias.data from test alias
       "09": "result              0      0      0     ",
       "10": "ret                 0      0      0     "
     }
-  }
+  },
+  "access": [["public.test", "ro"]]
 }]
 select alias.id, alias.* from test alias
 [[0, 0, 0], [1, 1, 0], [2, 2, 0]]
@@ -490,7 +501,8 @@ explain select * from system.users()
       "09": "content             0      -      -     ",
       "10": "ret                 0      0      0     "
     }
-  }
+  },
+  "access": []
 }]
 # test: select column from function()
 select name from system.users()
@@ -513,7 +525,8 @@ explain select name from system.users()
       "11": "content             0      -      -     ",
       "12": "ret                 0      0      0     "
     }
-  }
+  },
+  "access": []
 }]
 select non_exists_column from system.users()
 [null]
@@ -563,7 +576,8 @@ explain select * from ([]) t
       "09": "content             0      -      -     ",
       "10": "ret                 0      0      0     "
     }
-  }
+  },
+  "access": []
 }]
 select * from ([]) t
 []

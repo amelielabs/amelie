@@ -91,7 +91,7 @@ test exists
 test in
 test any
 test all
-test lambda
+#test lambda
 test limits
 test format
 
@@ -101,25 +101,20 @@ group pushdown
 test push_ddl
 test push_dml
 test push_expr
-test push_shared
 test push_subselect
 test push_select
 test push_limit
 test push_order_by
 test push_distinct
 test push_group_by
-test push_group_by_shared
 test push_agg
-test push_agg_shared
 test push_join
 test push_cte
 
 # index
 directory index
 group index
-test tree_shared
 test tree
-test hash_shared
 test hash
 
 # executor

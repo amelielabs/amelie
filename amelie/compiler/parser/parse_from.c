@@ -166,12 +166,8 @@ parse_from_target(Stmt* self, Targets* targets, AccessType access, bool subquery
 	auto table = table_mgr_find(&self->db->table_mgr, &schema, &name, false);
 	if (table)
 	{
-		if (subquery && !table->config->shared)
-			stmt_error(self, expr, "partitioned table cannot be used in subquery");
-		if (table->config->shared)
-			target->type = TARGET_TABLE_SHARED;
-		else
-			target->type = TARGET_TABLE;
+		target->type = TARGET_TABLE;
+		target->from_access  = access;
 		target->from_table   = table;
 		target->from_columns = &table->config->columns;
 		str_set_str(&target->name, &table->config->name);
@@ -241,8 +237,7 @@ parse_from_add(Stmt* self, Targets* targets, AccessType access, bool subquery)
 			if (name->id != KNAME)
 				stmt_error(self, name, "<index name> expected");
 			stmt_expect(self, ')');
-			if (target->type != TARGET_TABLE &&
-				target->type != TARGET_TABLE_SHARED)
+			if (target->type != TARGET_TABLE)
 				stmt_error(self, NULL, "USE INDEX expects table target");
 			target->from_index = table_find_index(target->from_table, &name->string, true);
 		} else
@@ -357,7 +352,4 @@ parse_from(Stmt* self, Targets* targets, AccessType access, bool subquery)
 
 		break;
 	}
-
-	if (targets_count(targets, TARGET_TABLE) > 1)
-		stmt_error(self, NULL, "only one partitioned table can be part of JOIN");
 }

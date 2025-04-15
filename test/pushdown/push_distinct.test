@@ -70,71 +70,14 @@ select distinct on (id) * from test
 # test: select distinct on from table order by
 explain select distinct on (data) * from test order by data, id
 
-drop table test
-
-# test: select distinct * from shared empty
-create shared table test (id serial primary key, data int default 0)
-explain select distinct * from test
-select distinct * from test
-
-insert into test generate 20
-update test set data = id / 2
-select * from test
-select * from test order by id
-
-# test: select distinct * from shared
-explain select distinct * from test
-select distinct * from test
-
-# test: select distinct from shared
-explain select distinct id from test
-select distinct id from test
-select distinct data from test
-
-# test: select distinct from shared #2
-explain select distinct id, data from test
-select distinct id, data from test
-
-# test: select distinct from shared limit
-explain select distinct data from test limit 4
-select distinct data from test limit 4
-
-# test: select distinct from shared limit 0
-explain select distinct data from test limit 0
-select distinct data from test limit 0
-
-# test: select distinct from shared limit/offset
-explain select distinct data from test limit 1 offset 1
-select distinct data from test limit 1 offset 0
-select distinct data from test limit 1 offset 1
-select distinct data from test limit 1 offset 2
-select distinct data from test limit 1 offset 3
-
-# test: select distinct from shared offset
-explain select distinct data from test offset 1
-select distinct data from test offset 0
-select distinct data from test offset 1
-select distinct data from test offset 2
-select distinct data from test offset 3
-
-# test: select distinct from shared order by
-explain select distinct data from test order by data
-select distinct data from test order by data
-
-explain select * from test order by data
-explain select distinct on (data) * from test
-select distinct on (data) * from test
-select distinct on (id) * from test
-
-# test: select distinct on from shared order by
-explain select distinct on (data) * from test order by data, id
-
-# test: select distinct * from shared table #3
+# test: select distinct * from table table #3
 delete from test
 insert into test values (1, 0), (2, 0), (3, 1), (4, 2), (5, 2)
 select distinct * from test
 select distinct id from test
 select distinct data from test
+
+drop table test
 
 disconnect S0
 close E0

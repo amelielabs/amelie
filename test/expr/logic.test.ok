@@ -21,7 +21,8 @@ explain select true and true
       "07": "content             0      -      -     ",
       "08": "ret                 0      0      0     "
     }
-  }
+  },
+  "access": []
 }]
 select true and false
 [false]
@@ -65,7 +66,8 @@ explain select false or true
       "07": "content             0      -      -     ",
       "08": "ret                 0      0      0     "
     }
-  }
+  },
+  "access": []
 }]
 # test: or null
 select null or null

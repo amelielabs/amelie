@@ -713,26 +713,9 @@ select system.table('test').schema
 drop table test
 drop table test.test
 drop schema test
-# test: partitioned
-create table test (id int primary key)
-select system.table('test').shared
-[false]
-drop table test
-# test: partitioned unlogged
+# test: unlogged
 create unlogged table test (id int primary key)
 select system.table('test').unlogged
-[true]
-drop table test
-# test: shared
-create shared table test (id int primary key)
-select system.table('test').shared
-[true]
-drop table test
-# test: unlogged shared
-create unlogged shared table test (id int primary key)
-select system.table('test').unlogged
-[true]
-select system.table('test').shared
 [true]
 drop table test
 # test: constraint default
@@ -907,9 +890,9 @@ select system.table('test').columns
 }]]
 drop table test
 # test: constraint not null
-create shared table test (id int primary key, data int not)
-{"msg": "create shared table test (id int primary key, data int not❰)❱ ⟵ NULL expected"}
-create shared table test (id int primary key, data int not null)
+create table test (id int primary key, data int not)
+{"msg": "create table test (id int primary key, data int not❰)❱ ⟵ NULL expected"}
+create table test (id int primary key, data int not null)
 select system.table('test').columns
 [[{
   "name": "id",
@@ -945,7 +928,7 @@ insert into test values(null, null)
 {"msg": "insert into test values(❰null❱ ⟵ column 'id' value cannot be NULL"}
 drop table test
 # test: constraint not null default
-create shared table test (id int primary key, data int not null default 123)
+create table test (id int primary key, data int not null default 123)
 select system.table('test').columns
 [[{
   "name": "id",

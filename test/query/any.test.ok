@@ -71,7 +71,7 @@ select 1 < any([1,2, null])
 select 3 < any([1,2, null])
 [null]
 # test: = any
-create shared table test (id int primary key, data int)
+create table test (id int primary key, data int)
 select 1 = any(select id from test)
 [false]
 insert into test values (1, 1)

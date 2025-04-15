@@ -29,7 +29,8 @@ explain select 1 in ()
       "06": "content             0      -      -     ",
       "07": "ret                 0      0      0     "
     }
-  }
+  },
+  "access": []
 }]
 # test: in
 select 1 in (3, 1, 2)
@@ -52,7 +53,7 @@ select 1 in (3, null, 2)
 select 1 in (3, 1, null)
 [true]
 # test: in (select from table)
-create shared table test (id int primary key)
+create table test (id int primary key)
 insert into test values (1), (2), (3)
 select 1 in (select * from test)
 [true]
@@ -62,7 +63,7 @@ select 0 in (select id from test)
 [false]
 drop table test
 # test: in (select null from table)
-create shared table test (id int primary key, data int)
+create table test (id int primary key, data int)
 insert into test values (1, 1), (2, 2)
 select 1 in (select * from test)
 {"msg": "select 1 in (❰select❱ ⟵ subquery must return one column"}
@@ -77,7 +78,7 @@ select 3 in (select data from test)
 [null]
 drop table test
 # test: in (value, select from table, ...)
-create shared table test (id int primary key)
+create table test (id int primary key)
 insert into test values (1), (2), (3)
 select 1 in (0, select * from test)
 [true]
@@ -91,13 +92,6 @@ explain select 0 in (3,5, (select * from test), 0)
 [{
   "bytecode": {
     "frontend": {
-      "00": "send_all            0      0      -     # public.test",
-      "01": "recv_to             0      0      0     ",
-      "02": "cte_set             0      0      0     ",
-      "03": "content             0      -      -     ",
-      "04": "ret                 0      0      0     "
-    },
-    "backend": {
       "00": "set                 0      1      0     ",
       "01": "int                 1      -      0     # 0",
       "02": "int                 2      -      0     # 3",
@@ -117,10 +111,12 @@ explain select 0 in (3,5, (select * from test), 0)
       "16": "in                  2      1      4     ",
       "17": "push                2      0      0     ",
       "18": "set_add             0      0      0     ",
-      "19": "result              0      0      0     ",
-      "20": "ret                 0      0      0     "
+      "19": "cte_set             0      0      0     ",
+      "20": "content             0      -      -     ",
+      "21": "ret                 0      0      0     "
     }
-  }
+  },
+  "access": [["public.test", "ro_exclusive"]]
 }]
 select 0 in (3,5, (select * from test))
 [false]

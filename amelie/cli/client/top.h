@@ -26,7 +26,6 @@ struct TopStats
 	// db
 	int64_t  schemas;
 	int64_t  tables;
-	int64_t  tables_shared;
 	int64_t  secondary_indexes;
 	int64_t  views; 
 

@@ -19,7 +19,6 @@ typedef struct Path    Path;
 typedef enum
 {
 	TARGET_NONE,
-	TARGET_TABLE_SHARED,
 	TARGET_TABLE,
 	TARGET_SELECT,
 	TARGET_EXPR,
@@ -44,6 +43,7 @@ struct Target
 	Str          name;
 	Ast*         ast;
 	// target
+	AccessType   from_access;
 	Table*       from_table;
 	IndexConfig* from_index;
 	bool         from_heap;
@@ -71,6 +71,7 @@ target_allocate(int* id_seq)
 	Target* self = palloc(sizeof(Target));
 	self->type            = TARGET_NONE;
 	self->id              = *id_seq;
+	self->from_access     = ACCESS_UNDEF;
 	self->from_table      = NULL;
 	self->from_index      = NULL;
 	self->from_heap       = false;
@@ -95,6 +96,5 @@ target_allocate(int* id_seq)
 static inline bool
 target_is_table(Target* self)
 {
-	return self->type == TARGET_TABLE ||
-	       self->type == TARGET_TABLE_SHARED;
+	return self->type == TARGET_TABLE;
 }

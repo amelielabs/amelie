@@ -18,7 +18,7 @@ explain select * from test
     },
     "backend": {
       "00": "set                 0      2      0     ",
-      "01": "table_open          0      0      8     # public.test (primary)",
+      "01": "table_open_part     0      0      8     # public.test (primary)",
       "02": "table_readi32       1      0      0     ",
       "03": "push                1      0      0     ",
       "04": "table_readi32       1      0      1     ",
@@ -29,7 +29,8 @@ explain select * from test
       "09": "result              0      0      0     ",
       "10": "ret                 0      0      0     "
     }
-  }
+  },
+  "access": [["public.test", "ro"]]
 }]
 select * from test
 [[1, 0], [2, 0], [3, 0]]
@@ -51,7 +52,7 @@ explain select * from test where id > 1
       "00": "set                 0      2      0     ",
       "01": "int                 1      -      0     # 1",
       "02": "push                1      0      0     ",
-      "03": "table_open          0      0      14    # public.test (primary)",
+      "03": "table_open_part     0      0      14    # public.test (primary)",
       "04": "table_readi32       1      0      0     ",
       "05": "int                 2      -      0     # 1",
       "06": "gtii                3      1      2     ",
@@ -66,7 +67,8 @@ explain select * from test where id > 1
       "15": "result              0      0      0     ",
       "16": "ret                 0      0      0     "
     }
-  }
+  },
+  "access": [["public.test", "ro"]]
 }]
 select * from test where id > 1
 [[2, 0], [3, 0]]
@@ -92,7 +94,7 @@ explain select * from test where id = 1
       "00": "set                 0      2      0     ",
       "01": "int                 1      -      0     # 1",
       "02": "push                1      0      0     ",
-      "03": "table_open_lookup   0      0      13    # public.test (primary)",
+      "03": "table_open_partl    0      0      13    # public.test (primary)",
       "04": "table_readi32       1      0      0     ",
       "05": "int                 2      -      0     # 1",
       "06": "equii               3      1      2     ",
@@ -106,7 +108,8 @@ explain select * from test where id = 1
       "14": "result              0      0      0     ",
       "15": "ret                 0      0      0     "
     }
-  }
+  },
+  "access": [["public.test", "ro"]]
 }]
 select * from test where id = 1
 [[1, 0]]
@@ -137,7 +140,7 @@ explain select (select (select (test.id))) from test
     },
     "backend": {
       "00": "set                 0      1      0     ",
-      "01": "table_open          0      0      14    # public.test (primary)",
+      "01": "table_open_part     0      0      14    # public.test (primary)",
       "02": "set                 1      1      0     ",
       "03": "set                 2      1      0     ",
       "04": "table_readi32       3      0      0     ",
@@ -154,7 +157,8 @@ explain select (select (select (test.id))) from test
       "15": "result              0      0      0     ",
       "16": "ret                 0      0      0     "
     }
-  }
+  },
+  "access": [["public.test", "ro"]]
 }]
 select (select (select (test.id))) from test
 [1, 2, 3]
@@ -173,7 +177,7 @@ explain select (select (select test.id)) from test
     },
     "backend": {
       "00": "set                 0      1      0     ",
-      "01": "table_open          0      0      14    # public.test (primary)",
+      "01": "table_open_part     0      0      14    # public.test (primary)",
       "02": "set                 1      1      0     ",
       "03": "set                 2      1      0     ",
       "04": "table_readi32       3      0      0     ",
@@ -190,15 +194,52 @@ explain select (select (select test.id)) from test
       "15": "result              0      0      0     ",
       "16": "ret                 0      0      0     "
     }
-  }
+  },
+  "access": [["public.test", "ro"]]
 }]
 select (select (select test.id)) from test
 [1, 2, 3]
 # test: select (select (select from table)) from table
 explain select (select (select id from test t)) from test
-{"msg": "explain select (select (select id from ❰test❱ ⟵ partitioned table cannot be used in subquery"}
-# test: select (select (select from shared)) from table
-create shared table ref (id int primary key, data int default 0)
+[{
+  "bytecode": {
+    "frontend": {
+      "00": "send_all            0      0      -     # public.test",
+      "01": "recv                0      0      0     ",
+      "02": "bool                0      0      0     ",
+      "03": "push                0      0      0     ",
+      "04": "union_recv          0      -1     -1    ",
+      "05": "cte_set             0      0      0     ",
+      "06": "content             0      -      -     ",
+      "07": "ret                 0      0      0     "
+    },
+    "backend": {
+      "00": "set                 0      1      0     ",
+      "01": "table_open_part     1      0      17    # public.test (primary)",
+      "02": "set                 1      1      0     ",
+      "03": "set                 2      1      0     ",
+      "04": "table_open          0      20     9     # public.test (primary)",
+      "05": "table_readi32       3      0      0     ",
+      "06": "push                3      0      0     ",
+      "07": "set_add             2      0      0     ",
+      "08": "table_next          0      5      0     ",
+      "09": "table_close         0      0      0     ",
+      "10": "set_result          3      2      0     ",
+      "11": "push                3      0      0     ",
+      "12": "set_add             1      0      0     ",
+      "13": "set_result          2      1      0     ",
+      "14": "push                2      0      0     ",
+      "15": "set_add             0      0      0     ",
+      "16": "table_next          1      2      0     ",
+      "17": "table_close         1      0      0     ",
+      "18": "result              0      0      0     ",
+      "19": "ret                 0      0      0     "
+    }
+  },
+  "access": [["public.test", "ro_exclusive"]]
+}]
+# test: select (select (select from table)) from table
+create table ref (id int primary key, data int default 0)
 insert into ref (id) values (1), (2), (3)
 explain select (select (select id from ref)) from test
 [{
@@ -215,7 +256,7 @@ explain select (select (select id from ref)) from test
     },
     "backend": {
       "00": "set                 0      1      0     ",
-      "01": "table_open          1      0      17    # public.test (primary)",
+      "01": "table_open_part     1      0      17    # public.test (primary)",
       "02": "set                 1      1      0     ",
       "03": "set                 2      1      0     ",
       "04": "table_open          0      20     9     # public.ref (primary)",
@@ -235,16 +276,53 @@ explain select (select (select id from ref)) from test
       "18": "result              0      0      0     ",
       "19": "ret                 0      0      0     "
     }
-  }
+  },
+  "access": [["public.ref", "ro_exclusive"], ["public.test", "ro"]]
 }]
 select (select (select id from ref)) from test
 [1, 1, 1]
 # test: select from table where (select from table)
 explain select * from test where (select * from test t)
-{"msg": "explain select * from test where (select * from ❰test❱ ⟵ partitioned table cannot be used in subquery"}
+{"msg": "explain select * from test where (❰select❱ ⟵ subquery must return only one column"}
 explain select * from test where (select id from test t)
-{"msg": "explain select * from test where (select id from ❰test❱ ⟵ partitioned table cannot be used in subquery"}
-# test: select from table where (select from shared)
+[{
+  "bytecode": {
+    "frontend": {
+      "00": "send_all            0      0      -     # public.test",
+      "01": "recv                0      0      0     ",
+      "02": "bool                0      0      0     ",
+      "03": "push                0      0      0     ",
+      "04": "union_recv          0      -1     -1    ",
+      "05": "cte_set             0      0      0     ",
+      "06": "content             0      -      -     ",
+      "07": "ret                 0      0      0     "
+    },
+    "backend": {
+      "00": "set                 0      2      0     ",
+      "01": "table_open_part     0      0      17    # public.test (primary)",
+      "02": "set                 1      1      0     ",
+      "03": "table_open          1      20     8     # public.test (primary)",
+      "04": "table_readi32       2      1      0     ",
+      "05": "push                2      0      0     ",
+      "06": "set_add             1      0      0     ",
+      "07": "table_next          1      4      0     ",
+      "08": "table_close         1      0      0     ",
+      "09": "set_result          2      1      0     ",
+      "10": "jntr                16     2      0     ",
+      "11": "table_readi32       1      0      0     ",
+      "12": "push                1      0      0     ",
+      "13": "table_readi32       1      0      1     ",
+      "14": "push                1      0      0     ",
+      "15": "set_add             0      0      0     ",
+      "16": "table_next          0      2      0     ",
+      "17": "table_close         0      0      0     ",
+      "18": "result              0      0      0     ",
+      "19": "ret                 0      0      0     "
+    }
+  },
+  "access": [["public.test", "ro_exclusive"]]
+}]
+# test: select from table where (select from table)
 explain select * from test where (select id from ref)
 [{
   "bytecode": {
@@ -260,7 +338,7 @@ explain select * from test where (select id from ref)
     },
     "backend": {
       "00": "set                 0      2      0     ",
-      "01": "table_open          0      0      17    # public.test (primary)",
+      "01": "table_open_part     0      0      17    # public.test (primary)",
       "02": "set                 1      1      0     ",
       "03": "table_open          1      20     8     # public.ref (primary)",
       "04": "table_readi32       2      1      0     ",
@@ -280,11 +358,12 @@ explain select * from test where (select id from ref)
       "18": "result              0      0      0     ",
       "19": "ret                 0      0      0     "
     }
-  }
+  },
+  "access": [["public.test", "ro"], ["public.ref", "ro_exclusive"]]
 }]
 select * from test where (select id from ref)
 [[1, 0], [2, 0], [3, 0]]
-# test: select from table where exists (select from shared)
+# test: select from table where exists (select from table)
 select * from test where exists (select 1 from ref where test.id = ref.id)
 [[1, 0], [2, 0], [3, 0]]
 drop table ref

@@ -10010,23 +10010,5 @@ select count(*) from test use index (primary)
 select count(*) from test use index (i)
 [9999]
 drop table test
-# test: indexate (unique conflict)
-create shared table test (id int primary key, data int)
-insert into test values (1, 1)
-insert into test values (2, 2)
-insert into test values (3, 3)
-insert into test values (4, 4)
-insert into test values (5, 5)
-insert into test values (6, 6)
-insert into test values (7, 7)
-insert into test values (8, 8)
-insert into test values (9, 9)
-insert into test values (10, 10)
-create index i on test (data)
-insert into test values (11, 10)
-create unique index j on test (data)
-{"msg": "index unique constraint violation"}
-insert into test values (12, 10)
-drop table test
 disconnect S0
 close E0

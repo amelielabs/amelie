@@ -159,11 +159,23 @@ scan_table(Scan* self, Target* target)
 	// push cursor keys
 	auto keys_count = scan_key(self, target);
 
-	// table_open
+	// table_open (open a single partition or do table scan)
 	int _open = op_pos(cp);
-	int  open_op = CTABLE_OPEN;
-	if (point_lookup)
-		open_op = CTABLE_OPEN_LOOKUP;
+	int  open_op;
+	if (target->from_access == ACCESS_RO_EXCLUSIVE)
+	{
+		// subquery or inner join target
+		if (point_lookup)
+			open_op = CTABLE_OPENL;
+		else
+			open_op = CTABLE_OPEN;
+	} else
+	{
+		if (point_lookup)
+			open_op = CTABLE_OPEN_PARTL;
+		else
+			open_op = CTABLE_OPEN_PART;
+	}
 	op4(cp, open_op, target->id, name_offset, 0 /* _eof */, keys_count);
 
 	// handle outer target eof jmp (for limit)

@@ -187,7 +187,8 @@ explain select  '1 hour'::interval = '1 hours 10 seconds'::interval
       "11": "content             0      -      -     ",
       "12": "ret                 0      0      0     "
     }
-  }
+  },
+  "access": []
 }]
 # test: interval = null
 select '1 hour'::interval = null
@@ -208,7 +209,8 @@ explain select  '1 hour'::interval = null
       "09": "content             0      -      -     ",
       "10": "ret                 0      0      0     "
     }
-  }
+  },
+  "access": []
 }]
 # test: interval = unsupported
 select '1 hour'::interval = [1,2,3]
@@ -237,7 +239,8 @@ explain select  '1 hour'::interval <> '1 hours 10 seconds'::interval
       "12": "content             0      -      -     ",
       "13": "ret                 0      0      0     "
     }
-  }
+  },
+  "access": []
 }]
 # test: interval <> null
 select '1 hour'::interval <> null
@@ -259,7 +262,8 @@ explain select  '1 hour'::interval <> null
       "10": "content             0      -      -     ",
       "11": "ret                 0      0      0     "
     }
-  }
+  },
+  "access": []
 }]
 # test: interval <> unsupported
 select '1 hour'::interval <> [1,2,3]
@@ -291,7 +295,8 @@ explain select '61 minutes'::interval >= '1 hour'::interval
       "11": "content             0      -      -     ",
       "12": "ret                 0      0      0     "
     }
-  }
+  },
+  "access": []
 }]
 # test: interval >= null
 select '1 hour'::interval >= null
@@ -312,7 +317,8 @@ explain select '1 hour'::interval >= null
       "09": "content             0      -      -     ",
       "10": "ret                 0      0      0     "
     }
-  }
+  },
+  "access": []
 }]
 # test: interval >= unsupported
 select '1 hour'::interval >= null
@@ -344,7 +350,8 @@ explain select '61 minutes'::interval > '1 hour'::interval
       "11": "content             0      -      -     ",
       "12": "ret                 0      0      0     "
     }
-  }
+  },
+  "access": []
 }]
 # test: interval > null
 select '1 hour'::interval > null
@@ -365,7 +372,8 @@ explain select '1 hour'::interval > null
       "09": "content             0      -      -     ",
       "10": "ret                 0      0      0     "
     }
-  }
+  },
+  "access": []
 }]
 # test: interval > unsupported
 select '1 hour'::interval > null
@@ -397,7 +405,8 @@ explain select '61 minutes'::interval <= '1 hour'::interval
       "11": "content             0      -      -     ",
       "12": "ret                 0      0      0     "
     }
-  }
+  },
+  "access": []
 }]
 # test: interval <= null
 select '1 hour'::interval <= null
@@ -418,7 +427,8 @@ explain select '1 hour'::interval <= null
       "09": "content             0      -      -     ",
       "10": "ret                 0      0      0     "
     }
-  }
+  },
+  "access": []
 }]
 # test: interval <= unsupported
 select '1 hour'::interval <= null
@@ -450,7 +460,8 @@ explain select '61 minutes'::interval < '1 hour'::interval
       "11": "content             0      -      -     ",
       "12": "ret                 0      0      0     "
     }
-  }
+  },
+  "access": []
 }]
 # test: interval < null
 select '1 hour'::interval < null
@@ -471,7 +482,8 @@ explain select '1 hour'::interval < null
       "09": "content             0      -      -     ",
       "10": "ret                 0      0      0     "
     }
-  }
+  },
+  "access": []
 }]
 # test: interval < unsupported
 select '1 hour'::interval < null
@@ -505,7 +517,8 @@ explain select  '5 days 1 hour'::interval + '-2 hours'::interval
       "11": "content             0      -      -     ",
       "12": "ret                 0      0      0     "
     }
-  }
+  },
+  "access": []
 }]
 # test: interval + timestamp
 select '1 hour'::interval + '1970-01-01 00:00:00.000000'::timestamp
@@ -528,7 +541,8 @@ explain select '1 hour'::interval + '1970-01-01 00:00:00.000000'::timestamp
       "11": "content             0      -      -     ",
       "12": "ret                 0      0      0     "
     }
-  }
+  },
+  "access": []
 }]
 # test: interval + null
 select '1 hour'::interval + null

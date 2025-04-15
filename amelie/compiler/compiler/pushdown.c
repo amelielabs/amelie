@@ -242,17 +242,6 @@ pushdown(Compiler* self, Ast* ast)
 	pushdown_limit(self, select);
 }
 
-void
-pushdown_full(Compiler* self, Ast* ast)
-{
-	// emit full query
-	int r = emit_select(self, ast);
-
-	// CRESULT (return set)
-	op1(self, CRESULT, r);
-	runpin(self, r);
-}
-
 static inline int
 pushdown_group_by_recv_order_by(Compiler* self, AstSelect* select)
 {

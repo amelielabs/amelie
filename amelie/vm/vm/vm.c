@@ -312,6 +312,8 @@ vm_run(Vm*       self,
 		// table cursor
 		&&ctable_open,
 		&&ctable_open_lookup,
+		&&ctable_open_part,
+		&&ctable_open_part_lookup,
 		&&ctable_open_heap,
 		&&ctable_prepare,
 		&&ctable_close,
@@ -364,7 +366,6 @@ vm_run(Vm*       self,
 		&&csend_lookup,
 		&&csend_all,
 		&&crecv,
-		&&crecv_to,
 
 		// result
 		&&cresult,
@@ -1448,10 +1449,18 @@ cunion_recv:
 
 // table cursor
 ctable_open:
-	op = ctable_open(self, op, true);
+	op = ctable_open(self, op, false);
 	op_jmp;
 
 ctable_open_lookup:
+	op = ctable_open(self, op, false);
+	op_jmp;
+
+ctable_open_part:
+	op = ctable_open(self, op, true);
+	op_jmp;
+
+ctable_open_part_lookup:
 	op = ctable_open(self, op, true);
 	op_jmp;
 
@@ -1768,10 +1777,6 @@ csend_all:
 
 crecv:
 	crecv(self, op);
-	op_next;
-
-crecv_to:
-	crecv_to(self, op);
 	op_next;
 
 cresult:

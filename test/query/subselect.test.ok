@@ -62,14 +62,14 @@ select (select {"a": 1, "b": null})
   "a": 1,
   "b": null
 }]
-# test: select (select *) from shared
-create shared table test (id int primary key)
+# test: select (select *) from table
+create table test (id int primary key)
 insert into test values (1)
 insert into test values (2)
 insert into test values (3)
 select (select *) from test
 [1, 2, 3]
-# test: select (select target.*) from shared
+# test: select (select target.*) from table
 explain select (select test.*) from test
 [{
   "bytecode": {
@@ -85,7 +85,7 @@ explain select (select test.*) from test
     },
     "backend": {
       "00": "set                 0      1      0     ",
-      "01": "table_open          0      0      10    # public.test (primary)",
+      "01": "table_open_part     0      0      10    # public.test (primary)",
       "02": "set                 1      1      0     ",
       "03": "table_readi32       2      0      0     ",
       "04": "push                2      0      0     ",
@@ -98,18 +98,19 @@ explain select (select test.*) from test
       "11": "result              0      0      0     ",
       "12": "ret                 0      0      0     "
     }
-  }
+  },
+  "access": [["public.test", "ro"]]
 }]
 select (select test.*) from test
 [1, 2, 3]
-# test: select (select alias.*) from shared
+# test: select (select alias.*) from table
 select (select t.*) from test t
 [1, 2, 3]
 select (select t.*) from test
 {"msg": "select (select ❰t.*❱ ⟵ target not found"}
 select (select t) from test t
 {"msg": "select (select ❰t❱ ⟵ column t.t not found"}
-# test: select (select target.column) from shared
+# test: select (select target.column) from table
 explain select (select test.id) from test
 [{
   "bytecode": {
@@ -125,7 +126,7 @@ explain select (select test.id) from test
     },
     "backend": {
       "00": "set                 0      1      0     ",
-      "01": "table_open          0      0      10    # public.test (primary)",
+      "01": "table_open_part     0      0      10    # public.test (primary)",
       "02": "set                 1      1      0     ",
       "03": "table_readi32       2      0      0     ",
       "04": "push                2      0      0     ",
@@ -138,13 +139,14 @@ explain select (select test.id) from test
       "11": "result              0      0      0     ",
       "12": "ret                 0      0      0     "
     }
-  }
+  },
+  "access": [["public.test", "ro"]]
 }]
 select (select test.id) from test
 [1, 2, 3]
 select (select id) from test
 [1, 2, 3]
-# test: select (select alias.column) from shared
+# test: select (select alias.column) from table
 explain select (select t.id) from test t
 [{
   "bytecode": {
@@ -160,7 +162,7 @@ explain select (select t.id) from test t
     },
     "backend": {
       "00": "set                 0      1      0     ",
-      "01": "table_open          0      0      10    # public.test (primary)",
+      "01": "table_open_part     0      0      10    # public.test (primary)",
       "02": "set                 1      1      0     ",
       "03": "table_readi32       2      0      0     ",
       "04": "push                2      0      0     ",
@@ -173,15 +175,16 @@ explain select (select t.id) from test t
       "11": "result              0      0      0     ",
       "12": "ret                 0      0      0     "
     }
-  }
+  },
+  "access": [["public.test", "ro"]]
 }]
 select (select t.id) from test
 {"msg": "select (select ❰t.id❱ ⟵ target not found"}
 select (select t.id) from test t
 [1, 2, 3]
 drop table test
-# test: select (select target.path) from shared
-create shared table test (id serial primary key, data json)
+# test: select (select target.path) from table
+create table test (id serial primary key, data json)
 insert into test (data) values({"data": {"id": 1}})
 insert into test (data) values({"data": {"id": 2}})
 insert into test (data) values({"data": {"id": 3}})
@@ -213,7 +216,7 @@ select (select test.data.data) from test
 }]
 select (select test.data.data.id) from test
 [1, 2, 3]
-# test: select (select alias.path) from shared
+# test: select (select alias.path) from table
 select (select t) from test t
 {"msg": "select (select ❰t❱ ⟵ column t.t not found"}
 select (select t.data) from test t
@@ -248,8 +251,8 @@ select * from (select null) t
 [null]
 select * from (select 1, 2) t
 [[1, 2]]
-# test: select * from (select from shared)
-create shared table test (id int primary key)
+# test: select * from (select from table)
+create table test (id int primary key)
 insert into test values (1)
 insert into test values (2)
 insert into test values (3)
@@ -281,7 +284,7 @@ explain select * from (select * from test) t
     },
     "backend": {
       "00": "set                 0      1      0     ",
-      "01": "table_open          0      0      6     # public.test (primary)",
+      "01": "table_open_part     0      0      6     # public.test (primary)",
       "02": "table_readi32       1      0      0     ",
       "03": "push                1      0      0     ",
       "04": "set_add             0      0      0     ",
@@ -290,16 +293,17 @@ explain select * from (select * from test) t
       "07": "result              0      0      0     ",
       "08": "ret                 0      0      0     "
     }
-  }
+  },
+  "access": [["public.test", "ro"]]
 }]
-# test: select target.* from (select from shared)
+# test: select target.* from (select from table)
 select test.* from (select * from test)
 {"msg": "select test.* from (select * from test) ⟵ subquery must have an alias"}
 select test.* from (select * from test) test
 [1, 2, 3]
 select test from (select * from test)
 {"msg": "select test from (select * from test) ⟵ subquery must have an alias"}
-# test: select alias.* from (select from shared)
+# test: select alias.* from (select from table)
 select alias from (select * from test) alias
 {"msg": "select ❰alias❱ ⟵ column alias.alias not found"}
 select alias.* from (select * from test) alias
@@ -313,11 +317,11 @@ select alias.* from (select alias.* from test alias) alias
 select alias.* from (select * from test) alias
 [1, 2, 3]
 drop table test
-create shared table test (id serial primary key, obj json)
+create table test (id serial primary key, obj json)
 insert into test (obj) values({"data": {"id": 1}})
 insert into test (obj) values({"data": {"id": 2}})
 insert into test (obj) values({"data": {"id": 3}})
-# test: select target.path from (select from shared)
+# test: select target.path from (select from table)
 select obj from (select * from test)
 {"msg": "select obj from (select * from test) ⟵ subquery must have an alias"}
 select * from (select * from test) alias
@@ -387,8 +391,8 @@ select alias.obj.data from (select * from test) alias
 select alias.obj.data.id from (select * from test) alias
 [1, 2, 3]
 drop table test
-# test: select (select from shared)
-create shared table test (id int primary key)
+# test: select (select from table)
+create table test (id int primary key)
 insert into test values (1)
 insert into test values (2)
 insert into test values (3)
@@ -396,13 +400,6 @@ explain select (select * from test)
 [{
   "bytecode": {
     "frontend": {
-      "00": "send_all            0      0      -     # public.test",
-      "01": "recv_to             0      0      0     ",
-      "02": "cte_set             0      0      0     ",
-      "03": "content             0      -      -     ",
-      "04": "ret                 0      0      0     "
-    },
-    "backend": {
       "00": "set                 0      1      0     ",
       "01": "set                 1      1      0     ",
       "02": "table_open          0      0      7     # public.test (primary)",
@@ -414,22 +411,58 @@ explain select (select * from test)
       "08": "set_result          2      1      0     ",
       "09": "push                2      0      0     ",
       "10": "set_add             0      0      0     ",
-      "11": "result              0      0      0     ",
-      "12": "ret                 0      0      0     "
+      "11": "cte_set             0      0      0     ",
+      "12": "content             0      -      -     ",
+      "13": "ret                 0      0      0     "
     }
-  }
+  },
+  "access": [["public.test", "ro_exclusive"]]
 }]
 select (select * from test)
 [1]
-# test: select (select from shared) no result
+# test: select (select from table) no result
 select (select * from test where false)
 [null]
-# test: select (select from shared) from shared (more then one result)
+# test: select (select from table) from table (more then one result)
+explain select (select * from test) from test
+[{
+  "bytecode": {
+    "frontend": {
+      "00": "send_all            0      0      -     # public.test",
+      "01": "recv                0      0      0     ",
+      "02": "bool                0      0      0     ",
+      "03": "push                0      0      0     ",
+      "04": "union_recv          0      -1     -1    ",
+      "05": "cte_set             0      0      0     ",
+      "06": "content             0      -      -     ",
+      "07": "ret                 0      0      0     "
+    },
+    "backend": {
+      "00": "set                 0      1      0     ",
+      "01": "table_open_part     1      0      13    # public.test (primary)",
+      "02": "set                 1      1      0     ",
+      "03": "table_open          0      20     8     # public.test (primary)",
+      "04": "table_readi32       2      0      0     ",
+      "05": "push                2      0      0     ",
+      "06": "set_add             1      0      0     ",
+      "07": "table_next          0      4      0     ",
+      "08": "table_close         0      0      0     ",
+      "09": "set_result          2      1      0     ",
+      "10": "push                2      0      0     ",
+      "11": "set_add             0      0      0     ",
+      "12": "table_next          1      2      0     ",
+      "13": "table_close         1      0      0     ",
+      "14": "result              0      0      0     ",
+      "15": "ret                 0      0      0     "
+    }
+  },
+  "access": [["public.test", "ro_exclusive"]]
+}]
 select (select * from test) from test
 [1, 1, 1]
 select (select * from test t) from test
 [1, 1, 1]
-# test: select (select from shared) from shared (one result)
+# test: select (select from table) from table (one result)
 select (select * from test t limit 1) from test
 [1, 1, 1]
 explain select (select i.* from test i limit 1) from test
@@ -447,7 +480,7 @@ explain select (select i.* from test i limit 1) from test
     },
     "backend": {
       "00": "set                 0      1      0     ",
-      "01": "table_open          1      0      17    # public.test (primary)",
+      "01": "table_open_part     1      0      17    # public.test (primary)",
       "02": "set                 1      1      0     ",
       "03": "int                 2      -      0     # 1",
       "04": "table_open          0      20     12    # public.test (primary)",
@@ -467,9 +500,10 @@ explain select (select i.* from test i limit 1) from test
       "18": "result              0      0      0     ",
       "19": "ret                 0      0      0     "
     }
-  }
+  },
+  "access": [["public.test", "ro_exclusive"]]
 }]
-# test: select (select from shared) from shared #2
+# test: select (select from table) from table #2
 explain select (select i.* from test i where test.id = i.id) from test
 [{
   "bytecode": {
@@ -485,11 +519,11 @@ explain select (select i.* from test i where test.id = i.id) from test
     },
     "backend": {
       "00": "set                 0      1      0     ",
-      "01": "table_open          1      0      18    # public.test (primary)",
+      "01": "table_open_part     1      0      18    # public.test (primary)",
       "02": "set                 1      1      0     ",
       "03": "table_readi32       2      1      0     ",
       "04": "push                2      0      0     ",
-      "05": "table_open_lookup   0      20     13    # public.test (primary)",
+      "05": "table_openl         0      20     13    # public.test (primary)",
       "06": "table_readi32       2      1      0     ",
       "07": "table_readi32       3      0      0     ",
       "08": "equii               4      2      3     ",
@@ -506,13 +540,14 @@ explain select (select i.* from test i where test.id = i.id) from test
       "19": "result              0      0      0     ",
       "20": "ret                 0      0      0     "
     }
-  }
+  },
+  "access": [["public.test", "ro_exclusive"]]
 }]
 select (select i.* from test i where test.id = i.id) from test
 [1, 2, 3]
-# test: select (select from shared) from shared #3
-create shared table a (id serial primary key, data int default 0)
-create shared table b (id serial primary key, data int default 1)
+# test: select (select from table) from table #3
+create table a (id serial primary key, data int default 0)
+create table b (id serial primary key, data int default 1)
 insert into a () values (), (), ()
 insert into b () values (), (), ()
 select (select * from b where a.id = b.id) from a
@@ -525,7 +560,7 @@ select (select a.id from b where a.id = b.id) from a
 [0, 1, 2]
 select (select b.id from b where a.id = b.id)::type from a
 ["int", "int", "int"]
-# test: select from shared where (select from shared)
+# test: select from table where (select from table)
 explain select * from a where (select true from b where a.id = b.id)
 [{
   "bytecode": {
@@ -541,11 +576,11 @@ explain select * from a where (select true from b where a.id = b.id)
     },
     "backend": {
       "00": "set                 0      2      0     ",
-      "01": "table_open          0      0      22    # public.a (primary)",
+      "01": "table_open_part     0      0      22    # public.a (primary)",
       "02": "set                 1      1      0     ",
       "03": "table_readi64       2      0      0     ",
       "04": "push                2      0      0     ",
-      "05": "table_open_lookup   1      17     13    # public.b (primary)",
+      "05": "table_openl         1      17     13    # public.b (primary)",
       "06": "table_readi64       2      0      0     ",
       "07": "table_readi64       3      1      0     ",
       "08": "equii               4      2      3     ",
@@ -566,11 +601,12 @@ explain select * from a where (select true from b where a.id = b.id)
       "23": "result              0      0      0     ",
       "24": "ret                 0      0      0     "
     }
-  }
+  },
+  "access": [["public.a", "ro"], ["public.b", "ro_exclusive"]]
 }]
 select * from a where (select true from b where a.id = b.id)
 [[0, 0], [1, 0], [2, 0]]
-# test: select from (select from (select from shared))
+# test: select from (select from (select from table))
 select t.x from (select z.id as x from (select id from test) z) t
 [1, 2, 3]
 explain select t.x from (select z.id as x from (select id from test) z) t
@@ -606,7 +642,7 @@ explain select t.x from (select z.id as x from (select id from test) z) t
     },
     "backend": {
       "00": "set                 0      1      0     ",
-      "01": "table_open          0      0      6     # public.test (primary)",
+      "01": "table_open_part     0      0      6     # public.test (primary)",
       "02": "table_readi32       1      0      0     ",
       "03": "push                1      0      0     ",
       "04": "set_add             0      0      0     ",
@@ -615,7 +651,8 @@ explain select t.x from (select z.id as x from (select id from test) z) t
       "07": "result              0      0      0     ",
       "08": "ret                 0      0      0     "
     }
-  }
+  },
+  "access": [["public.test", "ro"]]
 }]
 # test: select from (select from), (select from)
 select * from (select * from a) a, (select * from a) b

@@ -38,7 +38,8 @@ explain select case 1 when 1 then 1 end
       "16": "content             0      -      -     ",
       "17": "ret                 0      0      0     "
     }
-  }
+  },
+  "access": []
 }]
 select case 0 when 1 then 1 when 2 then 2 end
 [null]
@@ -74,7 +75,8 @@ explain select case 0 when 1 then 1 when 2 then 2 end
       "23": "content             0      -      -     ",
       "24": "ret                 0      0      0     "
     }
-  }
+  },
+  "access": []
 }]
 select case 0 when 1 then 1 when 2 then 2 else 'else' end
 {"msg": "select case 0 when 1 then 1 when 2 then 2 else ❰'else'❱ ⟵ CASE expression type mismatch"}
@@ -133,7 +135,8 @@ explain select case null when [1,0] then 1 when [1,2,3,4] then 2 else 3 when nul
       "30": "content             0      -      -     ",
       "31": "ret                 0      0      0     "
     }
-  }
+  },
+  "access": []
 }]
 select case end
 {"msg": "select case ❰end❱ ⟵ WHEN or ELSE expected"}
@@ -173,7 +176,8 @@ explain select case when 1 then 1 end
       "14": "content             0      -      -     ",
       "15": "ret                 0      0      0     "
     }
-  }
+  },
+  "access": []
 }]
 select case else
 {"msg": "select case else ⟵ bad expression"}

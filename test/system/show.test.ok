@@ -56,7 +56,6 @@ show tables
 [{
   "schema": "public",
   "name": "test",
-  "shared": false,
   "unlogged": false
 }]
 # test: show table
@@ -66,11 +65,10 @@ show table test
 [{
   "schema": "public",
   "name": "test",
-  "shared": false,
   "unlogged": false
 }]
 show table test format 'json'
-[{"schema": "public", "name": "test", "shared": false, "unlogged": false}]
+[{"schema": "public", "name": "test", "unlogged": false}]
 # test: show wal
 show wal
 [{
@@ -80,7 +78,7 @@ show wal
   "slots": 0,
   "slots_min": -1,
   "writes": 2,
-  "writes_bytes": 430,
+  "writes_bytes": 422,
   "ops": 2,
   "checkpoint": 1
 }]

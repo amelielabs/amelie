@@ -424,7 +424,7 @@ parse_with(Stmt* self, AstTableCreate* stmt, IndexConfig* index_config)
 }
 
 void
-parse_table_create(Stmt* self, bool unlogged, bool shared)
+parse_table_create(Stmt* self, bool unlogged)
 {
 	// CREATE [UNLOGGED] [SHARED] TABLE [IF NOT EXISTS] name (key)
 	// [WITH()]
@@ -443,7 +443,6 @@ parse_table_create(Stmt* self, bool unlogged, bool shared)
 	// create table config
 	stmt->config = table_config_allocate();
 	table_config_set_unlogged(stmt->config, unlogged);
-	table_config_set_shared(stmt->config, shared);
 	table_config_set_schema(stmt->config, &schema);
 	table_config_set_name(stmt->config, &name);
 

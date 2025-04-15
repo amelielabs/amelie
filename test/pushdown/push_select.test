@@ -37,8 +37,8 @@ select (select (select test.id)) from test
 # test: select (select (select from table)) from table
 explain select (select (select id from test t)) from test
 
-# test: select (select (select from shared)) from table
-create shared table ref (id int primary key, data int default 0)
+# test: select (select (select from table)) from table
+create table ref (id int primary key, data int default 0)
 insert into ref (id) values (1), (2), (3)
 explain select (select (select id from ref)) from test
 select (select (select id from ref)) from test
@@ -47,11 +47,11 @@ select (select (select id from ref)) from test
 explain select * from test where (select * from test t)
 explain select * from test where (select id from test t)
 
-# test: select from table where (select from shared)
+# test: select from table where (select from table)
 explain select * from test where (select id from ref)
 select * from test where (select id from ref)
 
-# test: select from table where exists (select from shared)
+# test: select from table where exists (select from table)
 select * from test where exists (select 1 from ref where test.id = ref.id)
 
 drop table ref

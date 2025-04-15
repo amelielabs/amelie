@@ -45,7 +45,7 @@ explain update test set data = data + 1
       "04": "ret                 0      0      0     "
     },
     "backend": {
-      "00": "table_open          0      0      9     # public.test (primary)",
+      "00": "table_open_part     0      0      9     # public.test (primary)",
       "01": "int                 0      -      0     # 1",
       "02": "push                0      0      0     ",
       "03": "table_readi32       0      0      1     ",
@@ -57,7 +57,8 @@ explain update test set data = data + 1
       "09": "table_close         0      0      0     ",
       "10": "ret                 0      0      0     "
     }
-  }
+  },
+  "access": [["public.test", "rw"]]
 }]
 update test set data = data + 1
 select * from test
@@ -98,7 +99,7 @@ explain update test.test set data = data + 1
       "04": "ret                 0      0      0     "
     },
     "backend": {
-      "00": "table_open          0      0      9     # test.test (primary)",
+      "00": "table_open_part     0      0      9     # test.test (primary)",
       "01": "int                 0      -      0     # 1",
       "02": "push                0      0      0     ",
       "03": "table_readi32       0      0      1     ",
@@ -110,7 +111,8 @@ explain update test.test set data = data + 1
       "09": "table_close         0      0      0     ",
       "10": "ret                 0      0      0     "
     }
-  }
+  },
+  "access": [["test.test", "rw"]]
 }]
 update test.test set data = data + 1
 select * from test.test
@@ -133,7 +135,7 @@ explain update test set a = a + 1, b = b - 1
       "04": "ret                 0      0      0     "
     },
     "backend": {
-      "00": "table_open          0      0      15    # public.test (primary)",
+      "00": "table_open_part     0      0      15    # public.test (primary)",
       "01": "int                 0      -      0     # 1",
       "02": "push                0      0      0     ",
       "03": "table_readi32       0      0      1     ",
@@ -151,7 +153,8 @@ explain update test set a = a + 1, b = b - 1
       "15": "table_close         0      0      0     ",
       "16": "ret                 0      0      0     "
     }
-  }
+  },
+  "access": [["public.test", "rw"]]
 }]
 update test set a = a + 1, b = b - 1
 select * from test
@@ -184,7 +187,7 @@ explain update test set data = {"id": data.id::int + 1}
       "04": "ret                 0      0      0     "
     },
     "backend": {
-      "00": "table_open          0      0      17    # public.test (primary)",
+      "00": "table_open_part     0      0      17    # public.test (primary)",
       "01": "int                 0      -      0     # 1",
       "02": "push                0      0      0     ",
       "03": "string              0      20     0     # id",
@@ -204,7 +207,8 @@ explain update test set data = {"id": data.id::int + 1}
       "17": "table_close         0      0      0     ",
       "18": "ret                 0      0      0     "
     }
-  }
+  },
+  "access": [["public.test", "rw"]]
 }]
 select * from test
 [[0, {
@@ -257,7 +261,7 @@ explain update test set data.id = data.id::int + 1
       "04": "ret                 0      0      0     "
     },
     "backend": {
-      "00": "table_open          0      0      19    # public.test (primary)",
+      "00": "table_open_part     0      0      19    # public.test (primary)",
       "01": "int                 0      -      0     # 1",
       "02": "push                0      0      0     ",
       "03": "table_readj         0      0      1     ",
@@ -279,7 +283,8 @@ explain update test set data.id = data.id::int + 1
       "19": "table_close         0      0      0     ",
       "20": "ret                 0      0      0     "
     }
-  }
+  },
+  "access": [["public.test", "rw"]]
 }]
 update test set data.id = data.id::int + 1
 select * from test
@@ -371,7 +376,7 @@ explain update test set data = data + 1 where id = 0
     "backend": {
       "00": "int                 0      -      0     # 0",
       "01": "push                0      0      0     ",
-      "02": "table_open_lookup   0      0      14    # public.test (primary)",
+      "02": "table_open_partl    0      0      14    # public.test (primary)",
       "03": "table_readi32       0      0      0     ",
       "04": "int                 1      -      0     # 0",
       "05": "equii               2      0      1     ",
@@ -386,7 +391,8 @@ explain update test set data = data + 1 where id = 0
       "14": "table_close         0      0      0     ",
       "15": "ret                 0      0      0     "
     }
-  }
+  },
+  "access": [["public.test", "rw"]]
 }]
 update test set data = data + 1 where id = 0
 update test set data = data + 1 where id = 1
@@ -412,7 +418,7 @@ explain update test set data = data + 1 where id >= 1
     "backend": {
       "00": "int                 0      -      0     # 1",
       "01": "push                0      0      0     ",
-      "02": "table_open          0      0      15    # public.test (primary)",
+      "02": "table_open_part     0      0      15    # public.test (primary)",
       "03": "table_readi32       0      0      0     ",
       "04": "int                 1      -      0     # 1",
       "05": "gteii               2      0      1     ",
@@ -428,7 +434,8 @@ explain update test set data = data + 1 where id >= 1
       "15": "table_close         0      0      0     ",
       "16": "ret                 0      0      0     "
     }
-  }
+  },
+  "access": [["public.test", "rw"]]
 }]
 update test set data = data + 1 where id > 2
 select * from test
@@ -493,7 +500,7 @@ explain update test set data = data + 1 returning *
     },
     "backend": {
       "00": "set                 0      2      0     ",
-      "01": "table_open          0      0      15    # public.test (primary)",
+      "01": "table_open_part     0      0      15    # public.test (primary)",
       "02": "int                 1      -      0     # 1",
       "03": "push                1      0      0     ",
       "04": "table_readi32       1      0      1     ",
@@ -511,7 +518,8 @@ explain update test set data = data + 1 returning *
       "16": "result              0      0      0     ",
       "17": "ret                 0      0      0     "
     }
-  }
+  },
+  "access": [["public.test", "rw"]]
 }]
 update test set data = data + 1 returning *
 [[0, 1], [1, 1], [2, 1]]

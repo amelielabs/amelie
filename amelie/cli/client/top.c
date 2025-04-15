@@ -63,7 +63,6 @@ top_stats_read(TopStats* self, uint8_t** pos)
 	{
 		{ DECODE_INT,    "schemas",           &self->schemas           },
 		{ DECODE_INT,    "tables",            &self->tables            },
-		{ DECODE_INT,    "tables_shared",     &self->tables_shared     },
 		{ DECODE_INT,    "secondary_indexes", &self->secondary_indexes },
 		{ 0,              NULL,               NULL                     },
 	};
@@ -293,7 +292,6 @@ top_draw(Top* self)
 	info("lsn:               %" PRIi64 PAD, stats->lsn);
 	info("schemas:           %" PRIi64 PAD, stats->schemas);
 	info("tables:            %" PRIi64 PAD, stats->tables);
-	info("tables_shared:     %" PRIi64 PAD, stats->tables_shared);
 	info("secondary indexes: %" PRIi64 PAD, stats->secondary_indexes);
 	info("");
 }

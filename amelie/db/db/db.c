@@ -117,15 +117,11 @@ db_status(Db* self)
 	encode_obj(buf);
 
 	int tables = 0;
-	int tables_shared = 0;
 	int tables_secondary_indexes = 0;
 	list_foreach(&self->table_mgr.mgr.list)
 	{
 		auto table = table_of(list_at(Handle, link));
-		if (table->config->shared)
-			tables_shared++;
-		else
-			tables++;
+		tables++;
 		tables_secondary_indexes += (table->config->indexes_count - 1);
 	}
 
@@ -136,10 +132,6 @@ db_status(Db* self)
 	// tables
 	encode_raw(buf, "tables", 6);
 	encode_integer(buf, tables);
-
-	// shared_tables
-	encode_raw(buf, "tables_shared", 13);
-	encode_integer(buf, tables_shared);
 
 	// indexes
 	encode_raw(buf, "secondary_indexes", 17);

@@ -31,7 +31,8 @@ explain begin; select 1; commit
       "05": "content             0      -      -     ",
       "06": "ret                 0      0      0     "
     }
-  }
+  },
+  "access": []
 }]
 begin; select error("abort"); commit
 {"msg": "abort"}

@@ -15,7 +15,8 @@ explain select "hello world"
       "05": "content             0      -      -     ",
       "06": "ret                 0      0      0     "
     }
-  }
+  },
+  "access": []
 }]
 select 'hello world'
 ["hello world"]
@@ -61,7 +62,8 @@ explain select '1 hour' = '1 hours'
       "07": "content             0      -      -     ",
       "08": "ret                 0      0      0     "
     }
-  }
+  },
+  "access": []
 }]
 # test: string = null
 select '1 hour' = null
@@ -89,7 +91,8 @@ explain select '1 hour' <> '1 hours'
       "08": "content             0      -      -     ",
       "09": "ret                 0      0      0     "
     }
-  }
+  },
+  "access": []
 }]
 # test: string <> null
 select '1 hour' <> null
@@ -116,7 +119,8 @@ explain select '1 hour' >= '1 hour'
       "07": "content             0      -      -     ",
       "08": "ret                 0      0      0     "
     }
-  }
+  },
+  "access": []
 }]
 # test: string >= null
 explain select '1 hour' >= null
@@ -133,7 +137,8 @@ explain select '1 hour' >= null
       "07": "content             0      -      -     ",
       "08": "ret                 0      0      0     "
     }
-  }
+  },
+  "access": []
 }]
 # test: string >= unsupported
 explain select '1 hour' >= []
@@ -157,7 +162,8 @@ explain select '1 hour' > '1 hour'
       "07": "content             0      -      -     ",
       "08": "ret                 0      0      0     "
     }
-  }
+  },
+  "access": []
 }]
 # test: string > null
 explain select '1 hour' > null
@@ -174,7 +180,8 @@ explain select '1 hour' > null
       "07": "content             0      -      -     ",
       "08": "ret                 0      0      0     "
     }
-  }
+  },
+  "access": []
 }]
 # test: string > unsupported
 explain select '1 hour' > []
@@ -198,7 +205,8 @@ explain select '1 hour' <= '1 hour'
       "07": "content             0      -      -     ",
       "08": "ret                 0      0      0     "
     }
-  }
+  },
+  "access": []
 }]
 # test: string <= null
 explain select '1 hour' <= null
@@ -215,7 +223,8 @@ explain select '1 hour' <= null
       "07": "content             0      -      -     ",
       "08": "ret                 0      0      0     "
     }
-  }
+  },
+  "access": []
 }]
 # test: string <= unsupported
 explain select '1 hour' <= []
@@ -239,7 +248,8 @@ explain select '1 hour' < '1 hour'
       "07": "content             0      -      -     ",
       "08": "ret                 0      0      0     "
     }
-  }
+  },
+  "access": []
 }]
 # test: string < null
 explain select '1 hour' < null
@@ -256,7 +266,8 @@ explain select '1 hour' < null
       "07": "content             0      -      -     ",
       "08": "ret                 0      0      0     "
     }
-  }
+  },
+  "access": []
 }]
 # test: string < unsupported
 explain select '1 hour' < []
@@ -278,7 +289,8 @@ explain select "hello " || "world"
       "07": "content             0      -      -     ",
       "08": "ret                 0      0      0     "
     }
-  }
+  },
+  "access": []
 }]
 select "为云" || "は世界"
 ["为云は世界"]
@@ -313,7 +325,8 @@ explain select 'abc' like 'abc'
       "07": "content             0      -      -     ",
       "08": "ret                 0      0      0     "
     }
-  }
+  },
+  "access": []
 }]
 # test: string LIKE null
 select 'abc' like null

@@ -38,8 +38,8 @@ select * from test use heap
 drop table test
 
 # test: hash/hash
-create shared table test (id int, data int, primary key (id, data)) with (type = 'hash')
-create unique index i on test (data) with (type = 'hash')
+create table test (id int, data int, primary key (id, data)) with (type = 'hash')
+create index i on test (data) with (type = 'hash')
 
 insert into test values (0, 2)
 insert into test values (1, 1)
@@ -48,20 +48,22 @@ insert into test values (2, 0)
 # test: hash/hash (scan)
 explain select * from test
 select * from test
-
-# test: hash/hash (unique point lookup)
-explain select * from test where data = 2
-select * from test where data = 2
-
-explain select * from test where id = 1
-select * from test where id = 1
-
-explain select * from test where id = 1 and data = 1
-select * from test where id = 1 and data = 1
-
-explain select * from test where data = 1 and id = 1
-select * from test where data = 1 and id = 1
 drop table test
+
+## test: hash/hash (unique point lookup)
+#create unique index i on test (data) with (type = 'hash')
+#explain select * from test where data = 2
+#select * from test where data = 2
+
+#explain select * from test where id = 1
+#select * from test where id = 1
+
+#explain select * from test where id = 1 and data = 1
+#select * from test where id = 1 and data = 1
+
+#explain select * from test where data = 1 and id = 1
+#select * from test where data = 1 and id = 1
+#drop table test
 
 # test: tree/hash
 create table test (id int primary key, data int)

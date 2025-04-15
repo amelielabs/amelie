@@ -106,15 +106,15 @@ with a as (select id, id from test) select * from a
 with a as (select id, id as x from test) select * from a
 drop table test
 
-# test: with(select * from shared table), select * from cte
-create shared table test (id int primary key)
+# test: with(select * from table), select * from cte
+create table test (id int primary key)
 insert into test values (1),(2),(3)
 with a as (select * from test) select * from a
 explain with a as (select * from test) select * from a
 drop table test
 
-# test: with(select * from shared table), select * from shared table
-create shared table test (id int primary key)
+# test: with(select * from table), select * from table
+create table test (id int primary key)
 insert into test values (1),(2),(3)
 with a as (select * from test) select * from test
 explain with a as (select * from test) select * from test
@@ -134,8 +134,8 @@ explain with a as (select [4,5,6]) select test.*, a.* from test, a
 with a as (select [4,5,6]) select test.*, a.* from test, a
 drop table test
 
-# test: with(select expr), select * from shared table join
-create shared table test (id int primary key)
+# test: with(select expr), select * from table join
+create table test (id int primary key)
 insert into test values (1),(2),(3)
 explain with a as (select [4,5,6]) select test.*, a.* from test, a
 with a as (select [4,5,6]) select test.*, a.* from test, a
@@ -228,7 +228,7 @@ with a as (select * from test), b as (select * from a), c as (select * from test
 explain with a as (select * from test), b as (select * from a), c as (select * from test) select * from c
 drop table test
 
-create shared table test (id int primary key)
+create table test (id int primary key)
 insert into test values (1),(2),(3)
 with a as (select * from test), b as (select * from a), c as (select * from test) select * from c
 explain with a as (select * from test), b as (select * from a), c as (select * from test) select * from c
@@ -247,13 +247,13 @@ with a as (select [4,5,6]); with a as (select * from test); select * from a
 drop table test
 
 # test: with(insert returning), select * from cte
-create shared table test (id int primary key, data int)
+create table test (id int primary key, data int)
 with a as (insert into test values (2, 0) returning *); select * from a
 explain with a as (insert into test values (2, 0) returning *); select * from a
 drop table test
 
 # test: with(update returning), select * from cte
-create shared table test (id int primary key, data int)
+create table test (id int primary key, data int)
 insert into test values (0, 0)
 insert into test values (1, 0)
 insert into test values (2, 0)
@@ -262,7 +262,7 @@ explain with a as (update test set data = data + 1 returning *) select * from a
 drop table test
 
 # test: with(delete returning), select * from cte
-create shared table test (id int primary key, data int)
+create table test (id int primary key, data int)
 insert into test values (0, 0)
 insert into test values (1, 0)
 insert into test values (2, 0)

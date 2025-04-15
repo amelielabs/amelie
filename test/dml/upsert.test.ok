@@ -50,7 +50,8 @@ explain insert into test values(1, 0), (2, 0), (1, 0) on conflict do nothing
       "03": "table_close         0      0      0     ",
       "04": "ret                 0      0      0     "
     }
-  }
+  },
+  "access": [["public.test", "rw"]]
 }]
 insert into test values(1, 0), (2, 0), (1, 0) on conflict do nothing
 select * from test
@@ -82,7 +83,8 @@ explain insert into test values(1, 0) on conflict do nothing
       "03": "table_close         0      0      0     ",
       "04": "ret                 0      0      0     "
     }
-  }
+  },
+  "access": [["public.test", "rw"]]
 }]
 explain insert into test values(1, 0) on conflict do resolve
 [{
@@ -105,7 +107,8 @@ explain insert into test values(1, 0) on conflict do resolve
       "06": "table_close         0      0      0     ",
       "07": "ret                 0      0      0     "
     }
-  }
+  },
+  "access": [["public.test", "rw"]]
 }]
 insert into test values(1, 0) on conflict do resolve
 insert into test values(1, 0) on conflict do resolve
@@ -140,7 +143,8 @@ explain insert into test values(1, 0) on conflict do update set data = data + 1
       "10": "table_close         0      0      0     ",
       "11": "ret                 0      0      0     "
     }
-  }
+  },
+  "access": [["public.test", "rw"]]
 }]
 insert into test values(1, 0) on conflict do update set data = data + 1
 select * from test
@@ -185,7 +189,8 @@ explain insert into test values (1, 0), (1, 0), (1, 0) on conflict do update set
       "10": "table_close         0      0      0     ",
       "11": "ret                 0      0      0     "
     }
-  }
+  },
+  "access": [["public.test", "rw"]]
 }]
 insert into test values (1, 0), (1, 0), (1, 0) on conflict do update set data = data + 1
 insert into test values (1, 0), (1, 0), (1, 0) on conflict do update set data = data + 1
@@ -227,7 +232,8 @@ explain insert into test values (1, 0) on conflict do update set data = data + 1
       "12": "table_close         0      0      0     ",
       "13": "ret                 0      0      0     "
     }
-  }
+  },
+  "access": [["public.test", "rw"]]
 }]
 insert into test values (1, 0) on conflict do update set data = data + 1 where true
 select * from test
@@ -268,7 +274,8 @@ explain insert into test values (1, 123) on conflict do update set data = data +
       "10": "table_close         0      0      0     ",
       "11": "ret                 0      0      0     "
     }
-  }
+  },
+  "access": [["public.test", "rw"]]
 }]
 select * from test
 [[1, 123]]
@@ -306,7 +313,8 @@ explain insert into test values (1, null, {"id": 48}) on conflict do update set 
       "14": "table_close         0      0      0     ",
       "15": "ret                 0      0      0     "
     }
-  }
+  },
+  "access": [["public.test", "rw"]]
 }]
 select * from test
 [[1, 48, null]]
@@ -376,7 +384,8 @@ explain insert into test values(1, 0) on conflict do update set data = data + 1 
       "17": "result              0      0      0     ",
       "18": "ret                 0      0      0     "
     }
-  }
+  },
+  "access": [["public.test", "rw"]]
 }]
 insert into test values(1, 0) on conflict do update set data = data + 1 returning *
 [[1, 1]]
@@ -418,7 +427,8 @@ explain insert into test values(1, 0) on conflict do nothing returning *
       "10": "result              0      0      0     ",
       "11": "ret                 0      0      0     "
     }
-  }
+  },
+  "access": [["public.test", "rw"]]
 }]
 insert into test values(1, 0) on conflict do nothing returning *
 [[1, 0]]
@@ -466,7 +476,8 @@ explain insert into test values(1, 0) on conflict do update set data = data + 1 
       "17": "result              0      0      0     ",
       "18": "ret                 0      0      0     "
     }
-  }
+  },
+  "access": [["public.test", "rw"]]
 }]
 insert into test values(1, 0) on conflict do update set data = data + 1 returning *
 [[1, 0]]
@@ -507,7 +518,8 @@ explain insert into test values(1, 0) on conflict do nothing returning *
       "10": "result              0      0      0     ",
       "11": "ret                 0      0      0     "
     }
-  }
+  },
+  "access": [["public.test", "rw"]]
 }]
 insert into test values(1, 0) on conflict do nothing returning *
 [[1, 0]]
@@ -538,7 +550,7 @@ select * from test use index (i)
 [[2, 0, 0], [1, 1, 0], [0, 2, 1], [3, 2, 0]]
 drop table test
 # test: upsert select
-create shared table test (id int primary key, data int)
+create table test (id int primary key, data int)
 insert into test select 0, 0
 insert into test select 0, 0 on conflict do error
 {"msg": "unique key constraint violation"}
@@ -576,7 +588,7 @@ explain insert into test select * from src on conflict do update set data = data
     },
     "backend": {
       "00": "set                 0      2      0     ",
-      "01": "table_open          0      0      8     # public.src (primary)",
+      "01": "table_open_part     0      0      8     # public.src (primary)",
       "02": "table_readi32       1      0      0     ",
       "03": "push                1      0      0     ",
       "04": "table_readi32       1      0      1     ",
@@ -606,7 +618,8 @@ explain insert into test select * from src on conflict do update set data = data
       "28": "result              0      0      0     ",
       "29": "ret                 0      0      0     "
     }
-  }
+  },
+  "access": [["public.test", "rw"], ["public.src", "ro"]]
 }]
 insert into test select * from src on conflict do update set data = data + 1 returning *
 [[0, 6], [1, 0]]

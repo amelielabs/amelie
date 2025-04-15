@@ -13,7 +13,8 @@ explain select null
       "05": "content             0      -      -     ",
       "06": "ret                 0      0      0     "
     }
-  }
+  },
+  "access": []
 }]
 select null
 [null]

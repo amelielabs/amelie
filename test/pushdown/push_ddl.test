@@ -3,18 +3,8 @@
 open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "127.0.0.1", "port": 3485 }], "backends": 3
 connect E0 S0 127.0.0.1:3485
 
-# test: shared table create
-create shared table test (id int primary key, data int default 0)
-select system.table('test').shared
-
-# test: shared has single partition
-select system.table('test').partitions::length = 1
-
-drop table test
-
 # test: table create
 create table test (id int primary key, data int default 0)
-select system.table('test').shared
 
 # test: table partitions created on each shard
 select system.table('test').partitions::length = 3

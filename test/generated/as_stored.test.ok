@@ -68,7 +68,8 @@ explain insert into test values (0, null)
       "00": "insert              -      0      0     # public.test",
       "01": "ret                 0      0      0     "
     }
-  }
+  },
+  "access": [["public.test", "rw"]]
 }]
 insert into test values (0, null)
 insert into test values (1, null), (2, 42), (3, 43)
@@ -166,7 +167,8 @@ explain insert into test (id) values (0) on conflict do update set data = data +
       "10": "table_close         0      0      0     ",
       "11": "ret                 0      0      0     "
     }
-  }
+  },
+  "access": [["public.test", "rw"]]
 }]
 insert into test (id) values (0) on conflict do update set data = data + 1
 select * from test
@@ -231,7 +233,7 @@ explain insert into test select * from src
     },
     "backend": {
       "00": "set                 0      2      0     ",
-      "01": "table_open          0      0      8     # public.src (primary)",
+      "01": "table_open_part     0      0      8     # public.src (primary)",
       "02": "table_readi32       1      0      0     ",
       "03": "push                1      0      0     ",
       "04": "table_readi32       1      0      1     ",
@@ -244,7 +246,8 @@ explain insert into test select * from src
       "11": "insert              -      0      0     # public.test",
       "12": "ret                 0      0      0     "
     }
-  }
+  },
+  "access": [["public.test", "rw"], ["public.src", "ro"]]
 }]
 insert into test select * from src returning *
 [[1, 2], [2, 2]]

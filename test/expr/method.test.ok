@@ -34,7 +34,8 @@ explain select system.state().directory::length()
       "09": "content             0      -      -     ",
       "10": "ret                 0      0      0     "
     }
-  }
+  },
+  "access": []
 }]
 select system.state().directory::length()
 [10]
@@ -78,7 +79,8 @@ explain select system.state().directory::length
       "09": "content             0      -      -     ",
       "10": "ret                 0      0      0     "
     }
-  }
+  },
+  "access": []
 }]
 select system.state().directory::length
 [10]

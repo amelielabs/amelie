@@ -1,108 +1,5 @@
 open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "127.0.0.1", "port": 3485 }], "backends": 3
 connect E0 S0 127.0.0.1:3485
-# test: shared insert
-create shared table test (id int primary key, data int default 0)
-explain insert into test (id) values (1), (2), (3)
-[{
-  "bytecode": {
-    "frontend": {
-      "00": "set_ptr             0      -      0     ",
-      "01": "send_shard          0      0      -     # public.test",
-      "02": "recv                0      0      0     ",
-      "03": "null                0      0      0     ",
-      "04": "cte_set             0      0      0     ",
-      "05": "ret                 0      0      0     "
-    },
-    "backend": {
-      "00": "insert              -      0      0     # public.test",
-      "01": "ret                 0      0      0     "
-    }
-  }
-}]
-insert into test (id) values (1), (2), (3)
-# test: shared delete
-explain delete from test
-[{
-  "bytecode": {
-    "frontend": {
-      "00": "send_all            0      0      -     # public.test",
-      "01": "recv                0      0      0     ",
-      "02": "null                0      0      0     ",
-      "03": "cte_set             0      0      0     ",
-      "04": "ret                 0      0      0     "
-    },
-    "backend": {
-      "00": "table_open          0      0      3     # public.test (primary)",
-      "01": "delete              0      0      0     ",
-      "02": "table_next          0      1      0     ",
-      "03": "table_close         0      0      0     ",
-      "04": "ret                 0      0      0     "
-    }
-  }
-}]
-delete from test
-select * from test
-[]
-# test: shared update
-insert into test (id) values (1), (2), (3)
-explain update test set data = id
-[{
-  "bytecode": {
-    "frontend": {
-      "00": "send_all            0      0      -     # public.test",
-      "01": "recv                0      0      0     ",
-      "02": "null                0      0      0     ",
-      "03": "cte_set             0      0      0     ",
-      "04": "ret                 0      0      0     "
-    },
-    "backend": {
-      "00": "table_open          0      0      7     # public.test (primary)",
-      "01": "int                 0      -      0     # 1",
-      "02": "push                0      0      0     ",
-      "03": "table_readi32       0      0      0     ",
-      "04": "push                0      0      0     ",
-      "05": "update              0      1      0     ",
-      "06": "table_next          0      1      0     ",
-      "07": "table_close         0      0      0     ",
-      "08": "ret                 0      0      0     "
-    }
-  }
-}]
-update test set data = id
-select * from test
-[[1, 1], [2, 2], [3, 3]]
-# test: shared upsert
-explain insert into test (id) values (1), (2), (3) on conflict do update set data = data + 1
-[{
-  "bytecode": {
-    "frontend": {
-      "00": "set_ptr             0      -      0     ",
-      "01": "send_shard          0      0      -     # public.test",
-      "02": "recv                0      0      0     ",
-      "03": "null                0      0      0     ",
-      "04": "cte_set             0      0      0     ",
-      "05": "ret                 0      0      0     "
-    },
-    "backend": {
-      "00": "table_prepare       0      -      0     # public.test",
-      "01": "jmp                 9      0      0     ",
-      "02": "int                 0      -      0     # 1",
-      "03": "push                0      0      0     ",
-      "04": "table_readi32       0      0      1     ",
-      "05": "int                 1      -      0     # 1",
-      "06": "addii               2      0      1     ",
-      "07": "push                2      0      0     ",
-      "08": "update              0      1      0     ",
-      "09": "upsert              0      2      -1    ",
-      "10": "table_close         0      0      0     ",
-      "11": "ret                 0      0      0     "
-    }
-  }
-}]
-insert into test (id) values (1), (2), (3) on conflict do update set data = data + 1
-select * from test
-[[1, 2], [2, 3], [3, 4]]
-drop table test
 # test: table insert
 create table test (id int primary key, data int default 0)
 explain insert into test (id) values (1), (2), (3)
@@ -120,7 +17,8 @@ explain insert into test (id) values (1), (2), (3)
       "00": "insert              -      0      0     # public.test",
       "01": "ret                 0      0      0     "
     }
-  }
+  },
+  "access": [["public.test", "rw"]]
 }]
 insert into test (id) values (1), (2), (3)
 select * from test
@@ -137,13 +35,14 @@ explain delete from test
       "04": "ret                 0      0      0     "
     },
     "backend": {
-      "00": "table_open          0      0      3     # public.test (primary)",
+      "00": "table_open_part     0      0      3     # public.test (primary)",
       "01": "delete              0      0      0     ",
       "02": "table_next          0      1      0     ",
       "03": "table_close         0      0      0     ",
       "04": "ret                 0      0      0     "
     }
-  }
+  },
+  "access": [["public.test", "rw"]]
 }]
 delete from test
 select * from test
@@ -161,7 +60,7 @@ explain update test set data = id
       "04": "ret                 0      0      0     "
     },
     "backend": {
-      "00": "table_open          0      0      7     # public.test (primary)",
+      "00": "table_open_part     0      0      7     # public.test (primary)",
       "01": "int                 0      -      0     # 1",
       "02": "push                0      0      0     ",
       "03": "table_readi32       0      0      0     ",
@@ -171,7 +70,8 @@ explain update test set data = id
       "07": "table_close         0      0      0     ",
       "08": "ret                 0      0      0     "
     }
-  }
+  },
+  "access": [["public.test", "rw"]]
 }]
 update test set data = id
 select * from test
@@ -202,7 +102,8 @@ explain insert into test (id) values (1), (2), (3) on conflict do update set dat
       "10": "table_close         0      0      0     ",
       "11": "ret                 0      0      0     "
     }
-  }
+  },
+  "access": [["public.test", "rw"]]
 }]
 insert into test (id) values (1), (2), (3) on conflict do update set data = data + 1
 select * from test

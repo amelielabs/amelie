@@ -3,22 +3,115 @@ connect E0 S0 127.0.0.1:3485
 create table test (id int primary key, data int default 0)
 insert into test (id) values (1), (2), (3)
 # test: select (select from table)
-explain select (select * from test)
-{"msg": "explain select (select * from ❰test❱ ⟵ partitioned table cannot be used in subquery"}
-select (select * from test)
-{"msg": "select (select * from ❰test❱ ⟵ partitioned table cannot be used in subquery"}
-# test: select (select from table) from shared
-create shared table test2 (id int primary key)
+explain select (select id from test)
+[{
+  "bytecode": {
+    "frontend": {
+      "00": "set                 0      1      0     ",
+      "01": "set                 1      1      0     ",
+      "02": "table_open          0      0      7     # public.test (primary)",
+      "03": "table_readi32       2      0      0     ",
+      "04": "push                2      0      0     ",
+      "05": "set_add             1      0      0     ",
+      "06": "table_next          0      3      0     ",
+      "07": "table_close         0      0      0     ",
+      "08": "set_result          2      1      0     ",
+      "09": "push                2      0      0     ",
+      "10": "set_add             0      0      0     ",
+      "11": "cte_set             0      0      0     ",
+      "12": "content             0      -      -     ",
+      "13": "ret                 0      0      0     "
+    }
+  },
+  "access": [["public.test", "ro_exclusive"]]
+}]
+select (select id from test)
+[1]
+# test: select (select from table) from table
+create table test2 (id int primary key)
 insert into test2 (id) values (1), (2), (3)
-explain select (select * from test) from test2
-{"msg": "explain select (select * from ❰test❱ ⟵ partitioned table cannot be used in subquery"}
-select (select * from test) from test2
-{"msg": "select (select * from ❰test❱ ⟵ partitioned table cannot be used in subquery"}
-# test: select (select from table) from (select from shared)
-explain select (select * from test) from (select * from test2) t
-{"msg": "explain select (select * from ❰test❱ ⟵ partitioned table cannot be used in subquery"}
-select (select * from test) from (select * from test2) t
-{"msg": "select (select * from ❰test❱ ⟵ partitioned table cannot be used in subquery"}
+explain select (select id from test) from test2
+[{
+  "bytecode": {
+    "frontend": {
+      "00": "send_all            0      0      -     # public.test2",
+      "01": "recv                0      0      0     ",
+      "02": "bool                0      0      0     ",
+      "03": "push                0      0      0     ",
+      "04": "union_recv          0      -1     -1    ",
+      "05": "cte_set             0      0      0     ",
+      "06": "content             0      -      -     ",
+      "07": "ret                 0      0      0     "
+    },
+    "backend": {
+      "00": "set                 0      1      0     ",
+      "01": "table_open_part     1      0      13    # public.test2 (primary)",
+      "02": "set                 1      1      0     ",
+      "03": "table_open          0      21     8     # public.test (primary)",
+      "04": "table_readi32       2      0      0     ",
+      "05": "push                2      0      0     ",
+      "06": "set_add             1      0      0     ",
+      "07": "table_next          0      4      0     ",
+      "08": "table_close         0      0      0     ",
+      "09": "set_result          2      1      0     ",
+      "10": "push                2      0      0     ",
+      "11": "set_add             0      0      0     ",
+      "12": "table_next          1      2      0     ",
+      "13": "table_close         1      0      0     ",
+      "14": "result              0      0      0     ",
+      "15": "ret                 0      0      0     "
+    }
+  },
+  "access": [["public.test", "ro_exclusive"], ["public.test2", "ro"]]
+}]
+select (select id from test) from test2
+[1, 1, 1]
+# test: select (select from table) from (select from table)
+explain select (select id from test) from (select * from test2) t
+[{
+  "bytecode": {
+    "frontend": {
+      "00": "send_all            0      0      -     # public.test2",
+      "01": "recv                0      0      0     ",
+      "02": "bool                0      0      0     ",
+      "03": "push                0      0      0     ",
+      "04": "union_recv          0      -1     -1    ",
+      "05": "cte_set             0      0      0     ",
+      "06": "set                 0      1      0     ",
+      "07": "cte_get             1      0      0     ",
+      "08": "store_open          1      1      20    ",
+      "09": "set                 2      1      0     ",
+      "10": "table_open          0      21     15    # public.test (primary)",
+      "11": "table_readi32       3      0      0     ",
+      "12": "push                3      0      0     ",
+      "13": "set_add             2      0      0     ",
+      "14": "table_next          0      11     0     ",
+      "15": "table_close         0      0      0     ",
+      "16": "set_result          3      2      0     ",
+      "17": "push                3      0      0     ",
+      "18": "set_add             0      0      0     ",
+      "19": "store_next          1      9      0     ",
+      "20": "store_close         1      1      0     ",
+      "21": "cte_set             1      0      0     ",
+      "22": "content             1      -      -     ",
+      "23": "ret                 0      0      0     "
+    },
+    "backend": {
+      "00": "set                 0      1      0     ",
+      "01": "table_open_part     0      0      6     # public.test2 (primary)",
+      "02": "table_readi32       1      0      0     ",
+      "03": "push                1      0      0     ",
+      "04": "set_add             0      0      0     ",
+      "05": "table_next          0      2      0     ",
+      "06": "table_close         0      0      0     ",
+      "07": "result              0      0      0     ",
+      "08": "ret                 0      0      0     "
+    }
+  },
+  "access": [["public.test", "ro_exclusive"], ["public.test2", "ro"]]
+}]
+select (select id from test) from (select * from test2) t
+[1, 1, 1]
 drop table test2
 # test: select from (select from table)
 explain select * from (select * from test) t
@@ -47,7 +140,7 @@ explain select * from (select * from test) t
     },
     "backend": {
       "00": "set                 0      2      0     ",
-      "01": "table_open          0      0      8     # public.test (primary)",
+      "01": "table_open_part     0      0      8     # public.test (primary)",
       "02": "table_readi32       1      0      0     ",
       "03": "push                1      0      0     ",
       "04": "table_readi32       1      0      1     ",
@@ -58,12 +151,13 @@ explain select * from (select * from test) t
       "09": "result              0      0      0     ",
       "10": "ret                 0      0      0     "
     }
-  }
+  },
+  "access": [["public.test", "ro"]]
 }]
 select * from (select * from test) t
 [[1, 0], [2, 0], [3, 0]]
-# test: select from (select (select from shared) from table)
-create shared table test2 (id int primary key)
+# test: select from (select (select from table) from table)
+create table test2 (id int primary key)
 insert into test2 (id) values (1), (2), (3)
 explain select * from (select (select id from test2) from test) t
 [{
@@ -89,7 +183,7 @@ explain select * from (select (select id from test2) from test) t
     },
     "backend": {
       "00": "set                 0      1      0     ",
-      "01": "table_open          1      0      13    # public.test (primary)",
+      "01": "table_open_part     1      0      13    # public.test (primary)",
       "02": "set                 1      1      0     ",
       "03": "table_open          0      20     8     # public.test2 (primary)",
       "04": "table_readi32       2      0      0     ",
@@ -105,23 +199,65 @@ explain select * from (select (select id from test2) from test) t
       "14": "result              0      0      0     ",
       "15": "ret                 0      0      0     "
     }
-  }
+  },
+  "access": [["public.test2", "ro_exclusive"], ["public.test", "ro"]]
 }]
 select * from (select (select id from test2) from test) t
 [1, 1, 1]
 drop table test2
 # test: select from (select (select from table) from table)
 explain select * from (select (select id from test t) from test) g
-{"msg": "explain select * from (select (select id from ❰test❱ ⟵ partitioned table cannot be used in subquery"}
+[{
+  "bytecode": {
+    "frontend": {
+      "00": "send_all            0      0      -     # public.test",
+      "01": "recv                0      0      0     ",
+      "02": "bool                0      0      0     ",
+      "03": "push                0      0      0     ",
+      "04": "union_recv          0      -1     -1    ",
+      "05": "cte_set             0      0      0     ",
+      "06": "set                 0      1      0     ",
+      "07": "cte_get             1      0      0     ",
+      "08": "store_open          0      1      13    ",
+      "09": "store_read          2      0      0     ",
+      "10": "push                2      0      0     ",
+      "11": "set_add             0      0      0     ",
+      "12": "store_next          0      9      0     ",
+      "13": "store_close         0      1      0     ",
+      "14": "cte_set             1      0      0     ",
+      "15": "content             1      -      -     ",
+      "16": "ret                 0      0      0     "
+    },
+    "backend": {
+      "00": "set                 0      1      0     ",
+      "01": "table_open_part     1      0      13    # public.test (primary)",
+      "02": "set                 1      1      0     ",
+      "03": "table_open          0      20     8     # public.test (primary)",
+      "04": "table_readi32       2      0      0     ",
+      "05": "push                2      0      0     ",
+      "06": "set_add             1      0      0     ",
+      "07": "table_next          0      4      0     ",
+      "08": "table_close         0      0      0     ",
+      "09": "set_result          2      1      0     ",
+      "10": "push                2      0      0     ",
+      "11": "set_add             0      0      0     ",
+      "12": "table_next          1      2      0     ",
+      "13": "table_close         1      0      0     ",
+      "14": "result              0      0      0     ",
+      "15": "ret                 0      0      0     "
+    }
+  },
+  "access": [["public.test", "ro_exclusive"]]
+}]
 select * from (select (select id from test t) from test) g
-{"msg": "select * from (select (select id from ❰test❱ ⟵ partitioned table cannot be used in subquery"}
+[1, 1, 1]
 # test: select (select expr) from (select from table)
 select (select t.*) from (select * from test) t
 {"msg": "select (❰select❱ ⟵ subquery must return only one column"}
 select (select t.id) from (select * from test) t
 [1, 2, 3]
-# test: select (select from shared) from (select from table)
-create shared table test2 (id int primary key)
+# test: select (select from table) from (select from table)
+create table test2 (id int primary key)
 insert into test2 (id) values (1), (2), (3)
 explain select (select t.id from test2) from (select * from test) t
 [{
@@ -133,15 +269,28 @@ explain select (select t.id from test2) from (select * from test) t
       "03": "push                0      0      0     ",
       "04": "union_recv          0      -1     -1    ",
       "05": "cte_set             0      0      0     ",
-      "06": "send_all            1      11     -     # public.test2",
-      "07": "recv_to             0      1      0     ",
-      "08": "cte_set             1      0      0     ",
-      "09": "content             1      -      -     ",
-      "10": "ret                 0      0      0     "
+      "06": "set                 0      1      0     ",
+      "07": "cte_get             1      0      0     ",
+      "08": "store_open          1      1      20    ",
+      "09": "set                 2      1      0     ",
+      "10": "table_open          0      20     15    # public.test2 (primary)",
+      "11": "store_read          3      1      0     ",
+      "12": "push                3      0      0     ",
+      "13": "set_add             2      0      0     ",
+      "14": "table_next          0      11     0     ",
+      "15": "table_close         0      0      0     ",
+      "16": "set_result          3      2      0     ",
+      "17": "push                3      0      0     ",
+      "18": "set_add             0      0      0     ",
+      "19": "store_next          1      9      0     ",
+      "20": "store_close         1      1      0     ",
+      "21": "cte_set             1      0      0     ",
+      "22": "content             1      -      -     ",
+      "23": "ret                 0      0      0     "
     },
     "backend": {
       "00": "set                 0      2      0     ",
-      "01": "table_open          0      0      8     # public.test (primary)",
+      "01": "table_open_part     0      0      8     # public.test (primary)",
       "02": "table_readi32       1      0      0     ",
       "03": "push                1      0      0     ",
       "04": "table_readi32       1      0      1     ",
@@ -150,38 +299,65 @@ explain select (select t.id from test2) from (select * from test) t
       "07": "table_next          0      2      0     ",
       "08": "table_close         0      0      0     ",
       "09": "result              0      0      0     ",
-      "10": "ret                 0      0      0     ",
-      "11": "set                 0      1      0     ",
-      "12": "cte_get             1      0      0     ",
-      "13": "store_open          1      1      25    ",
-      "14": "set                 2      1      0     ",
-      "15": "table_open          0      20     20    # public.test2 (primary)",
-      "16": "store_read          3      1      0     ",
-      "17": "push                3      0      0     ",
-      "18": "set_add             2      0      0     ",
-      "19": "table_next          0      16     0     ",
-      "20": "table_close         0      0      0     ",
-      "21": "set_result          3      2      0     ",
-      "22": "push                3      0      0     ",
-      "23": "set_add             0      0      0     ",
-      "24": "store_next          1      14     0     ",
-      "25": "store_close         1      1      0     ",
-      "26": "result              0      0      0     ",
-      "27": "ret                 0      0      0     "
+      "10": "ret                 0      0      0     "
     }
-  }
+  },
+  "access": [["public.test2", "ro_exclusive"], ["public.test", "ro"]]
 }]
 select (select t.id from test2) from (select * from test) t
 [1, 2, 3]
 drop table test2
 # test: select (select from table) from (select from table)
 explain select (select t.id from test z) from (select * from test) t
-{"msg": "explain select (select t.id from ❰test❱ ⟵ partitioned table cannot be used in subquery"}
+[{
+  "bytecode": {
+    "frontend": {
+      "00": "send_all            0      0      -     # public.test",
+      "01": "recv                0      0      0     ",
+      "02": "bool                0      0      0     ",
+      "03": "push                0      0      0     ",
+      "04": "union_recv          0      -1     -1    ",
+      "05": "cte_set             0      0      0     ",
+      "06": "set                 0      1      0     ",
+      "07": "cte_get             1      0      0     ",
+      "08": "store_open          1      1      20    ",
+      "09": "set                 2      1      0     ",
+      "10": "table_open          0      20     15    # public.test (primary)",
+      "11": "store_read          3      1      0     ",
+      "12": "push                3      0      0     ",
+      "13": "set_add             2      0      0     ",
+      "14": "table_next          0      11     0     ",
+      "15": "table_close         0      0      0     ",
+      "16": "set_result          3      2      0     ",
+      "17": "push                3      0      0     ",
+      "18": "set_add             0      0      0     ",
+      "19": "store_next          1      9      0     ",
+      "20": "store_close         1      1      0     ",
+      "21": "cte_set             1      0      0     ",
+      "22": "content             1      -      -     ",
+      "23": "ret                 0      0      0     "
+    },
+    "backend": {
+      "00": "set                 0      2      0     ",
+      "01": "table_open_part     0      0      8     # public.test (primary)",
+      "02": "table_readi32       1      0      0     ",
+      "03": "push                1      0      0     ",
+      "04": "table_readi32       1      0      1     ",
+      "05": "push                1      0      0     ",
+      "06": "set_add             0      0      0     ",
+      "07": "table_next          0      2      0     ",
+      "08": "table_close         0      0      0     ",
+      "09": "result              0      0      0     ",
+      "10": "ret                 0      0      0     "
+    }
+  },
+  "access": [["public.test", "ro_exclusive"]]
+}]
 select (select t.id from test z) from (select * from test) t
-{"msg": "select (select t.id from ❰test❱ ⟵ partitioned table cannot be used in subquery"}
+[1, 2, 3]
 # test: select from (select from table), (select from table)
-select * from (select * from test) a, (select * from test) b
-[[1, 0, 1, 0], [1, 0, 2, 0], [1, 0, 3, 0], [2, 0, 1, 0], [2, 0, 2, 0], [2, 0, 3, 0], [3, 0, 1, 0], [3, 0, 2, 0], [3, 0, 3, 0]]
+select * from (select id from test) a, (select * from test) b
+[[1, 1, 0], [1, 2, 0], [1, 3, 0], [2, 1, 0], [2, 2, 0], [2, 3, 0], [3, 1, 0], [3, 2, 0], [3, 3, 0]]
 explain select * from (select * from test) a, (select * from test) b
 [{
   "bytecode": {
@@ -222,7 +398,7 @@ explain select * from (select * from test) a, (select * from test) b
     },
     "backend": {
       "00": "set                 0      2      0     ",
-      "01": "table_open          0      0      8     # public.test (primary)",
+      "01": "table_open_part     0      0      8     # public.test (primary)",
       "02": "table_readi32       1      0      0     ",
       "03": "push                1      0      0     ",
       "04": "table_readi32       1      0      1     ",
@@ -233,7 +409,7 @@ explain select * from (select * from test) a, (select * from test) b
       "09": "result              0      0      0     ",
       "10": "ret                 0      0      0     ",
       "11": "set                 0      2      0     ",
-      "12": "table_open          0      20     19    # public.test (primary)",
+      "12": "table_open_part     0      20     19    # public.test (primary)",
       "13": "table_readi32       1      0      0     ",
       "14": "push                1      0      0     ",
       "15": "table_readi32       1      0      1     ",
@@ -244,15 +420,16 @@ explain select * from (select * from test) a, (select * from test) b
       "20": "result              0      0      0     ",
       "21": "ret                 0      0      0     "
     }
-  }
+  },
+  "access": [["public.test", "ro"]]
 }]
 # test: insert returning (select from table) (unsupported)
 explain insert into test (id) values (4) returning (select * from test t)
 {"msg": "explain insert into test (id) values (4) returning (❰select❱ ⟵ unexpected subquery"}
 insert into test (id) values (4) returning (select * from test t)
 {"msg": "insert into test (id) values (4) returning (❰select❱ ⟵ unexpected subquery"}
-# test: insert returning (select from shared) (unsupported)
-create shared table test_ (id int primary key)
+# test: insert returning (select from table) (unsupported)
+create table test_ (id int primary key)
 insert into test_ values (1),(2),(3)
 insert into test (id) values (5) returning (select * from test_)
 {"msg": "insert into test (id) values (5) returning (❰select❱ ⟵ unexpected subquery"}

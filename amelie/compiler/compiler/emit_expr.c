@@ -127,8 +127,7 @@ emit_column(Compiler* self, Target* target, Ast* ast,
 
 	// generate cursor read based on the target
 	int r;
-	if (target->type == TARGET_TABLE ||
-	    target->type == TARGET_TABLE_SHARED)
+	if (target->type == TARGET_TABLE)
 	{
 		int op;
 		switch (column->type) {

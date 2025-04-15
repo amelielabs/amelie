@@ -20,7 +20,7 @@ explain select * from test order by data
     },
     "backend": {
       "00": "set_ordered         0      2      1     ",
-      "01": "table_open          0      1      10    # public.test (primary)",
+      "01": "table_open_part     0      1      10    # public.test (primary)",
       "02": "table_readi32       1      0      0     ",
       "03": "push                1      0      0     ",
       "04": "table_readi32       1      0      1     ",
@@ -34,7 +34,8 @@ explain select * from test order by data
       "12": "result              0      0      0     ",
       "13": "ret                 0      0      0     "
     }
-  }
+  },
+  "access": [["public.test", "ro"]]
 }]
 select * from test order by data
 [[1, 1], [3, 2], [2, 3]]

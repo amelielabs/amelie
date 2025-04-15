@@ -135,6 +135,7 @@ session_explain(Session* self, Program* program, bool profile)
 	        program->code,
 	        program->code_backend,
 	        program->code_data,
+	        program->access,
 	        &self->dtr,
 	        &self->content,
 	        profile);

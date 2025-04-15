@@ -61,6 +61,7 @@ explain(Explain*  self,
         Code*     code_frontend,
         Code*     code_backend,
         CodeData* data,
+        Access*   access,
         Dtr*      dtr,
         Content*  content,
         bool      profile)
@@ -86,6 +87,10 @@ explain(Explain*  self,
 		op_dump(code_backend, data, buf);
 	}
 	encode_obj_end(buf);
+
+	// access
+	encode_raw(buf, "access", 6);
+	access_encode(access, buf);
 
 	// profiler
 	if (profile)

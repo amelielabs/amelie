@@ -29,7 +29,7 @@ select 1 in (3, null, 2)
 select 1 in (3, 1, null)
 
 # test: in (select from table)
-create shared table test (id int primary key)
+create table test (id int primary key)
 insert into test values (1), (2), (3)
 select 1 in (select * from test)
 select 1 in (select id from test)
@@ -37,7 +37,7 @@ select 0 in (select id from test)
 drop table test
 
 # test: in (select null from table)
-create shared table test (id int primary key, data int)
+create table test (id int primary key, data int)
 insert into test values (1, 1), (2, 2)
 select 1 in (select * from test)
 select 1 in (select data from test)
@@ -48,7 +48,7 @@ select 3 in (select data from test)
 drop table test
 
 # test: in (value, select from table, ...)
-create shared table test (id int primary key)
+create table test (id int primary key)
 insert into test values (1), (2), (3)
 select 1 in (0, select * from test)
 select 1 in (1, select * from test)

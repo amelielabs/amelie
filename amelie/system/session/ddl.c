@@ -105,39 +105,31 @@ ddl_create_table(Session* self, Tr* tr)
 	if (! backend_mgr->list_count)
 		error("system has no backend workers");
 
-	if (config->shared)
+	// create partition for each backend
+
+	// partition_max / backends_count
+	int range_max      = PARTITION_MAX;
+	int range_interval = range_max / backend_mgr->list_count;
+	int range_start    = 0;
+
+	list_foreach(&backend_mgr->list)
 	{
-		// shared table require only one partition
-		auto backend = container_of(list_first(&backend_mgr->list), Backend, link);
-		ddl_create_partition(config, backend->worker, 0, PARTITION_MAX);
-	} else
-	{
-		// create partition for each backend
+		auto backend = list_at(Backend, link);
 
-		// partition_max / backends_count
-		int range_max      = PARTITION_MAX;
-		int range_interval = range_max / backend_mgr->list_count;
-		int range_start    = 0;
+		// set partition range
+		int range_step;
+		if (list_is_last(&backend_mgr->list, &backend->link))
+			range_step = range_max - range_start;
+		else
+			range_step = range_interval;
+		if ((range_start + range_step) > range_max)
+			range_step = range_max - range_start;
 
-		list_foreach(&backend_mgr->list)
-		{
-			auto backend = list_at(Backend, link);
+		ddl_create_partition(config, backend->worker,
+		                     range_start,
+		                     range_start + range_step);
 
-			// set partition range
-			int range_step;
-			if (list_is_last(&backend_mgr->list, &backend->link))
-				range_step = range_max - range_start;
-			else
-				range_step = range_interval;
-			if ((range_start + range_step) > range_max)
-				range_step = range_max - range_start;
-
-			ddl_create_partition(config, backend->worker,
-			                     range_start,
-			                     range_start + range_step);
-
-			range_start += range_step;
-		}
+		range_start += range_step;
 	}
 
 	// create table

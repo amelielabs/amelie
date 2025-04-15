@@ -25,7 +25,7 @@ explain select * from test where id >= 0
       "00": "set                 0      2      0     ",
       "01": "int                 1      -      0     # 0",
       "02": "push                1      0      0     ",
-      "03": "table_open          0      0      14    # public.test (primary)",
+      "03": "table_open_part     0      0      14    # public.test (primary)",
       "04": "table_readi64       1      0      0     ",
       "05": "int                 2      -      0     # 0",
       "06": "gteii               3      1      2     ",
@@ -40,7 +40,8 @@ explain select * from test where id >= 0
       "15": "result              0      0      0     ",
       "16": "ret                 0      0      0     "
     }
-  }
+  },
+  "access": [["public.test", "ro"]]
 }]
 select * from test where id >= 0
 [[0, 0], [1, 0], [2, 0]]
@@ -75,7 +76,7 @@ explain select * from test where data.data::int >= 0
     },
     "backend": {
       "00": "set                 0      2      0     ",
-      "01": "table_open          0      0      16    # public.test (primary)",
+      "01": "table_open_part     0      0      16    # public.test (primary)",
       "02": "table_readj         1      0      1     ",
       "03": "string              2      20     0     # data",
       "04": "dotjs               3      1      2     ",
@@ -94,7 +95,8 @@ explain select * from test where data.data::int >= 0
       "17": "result              0      0      0     ",
       "18": "ret                 0      0      0     "
     }
-  }
+  },
+  "access": [["public.test", "ro"]]
 }]
 select * from test where data.data::int >= 0
 [[0, {
@@ -139,7 +141,7 @@ explain select * from test where data.data.data::int >= 0
     },
     "backend": {
       "00": "set                 0      2      0     ",
-      "01": "table_open          0      0      16    # public.test (primary)",
+      "01": "table_open_part     0      0      16    # public.test (primary)",
       "02": "table_readj         1      0      1     ",
       "03": "string              2      20     0     # data.data",
       "04": "dotjs               3      1      2     ",
@@ -158,7 +160,8 @@ explain select * from test where data.data.data::int >= 0
       "17": "result              0      0      0     ",
       "18": "ret                 0      0      0     "
     }
-  }
+  },
+  "access": [["public.test", "ro"]]
 }]
 select * from test where data.data.data::int >= 0
 [[0, {
@@ -197,7 +200,7 @@ explain select * from test where test.id >= 0
       "00": "set                 0      2      0     ",
       "01": "int                 1      -      0     # 0",
       "02": "push                1      0      0     ",
-      "03": "table_open          0      0      14    # public.test (primary)",
+      "03": "table_open_part     0      0      14    # public.test (primary)",
       "04": "table_readi64       1      0      0     ",
       "05": "int                 2      -      0     # 0",
       "06": "gteii               3      1      2     ",
@@ -212,7 +215,8 @@ explain select * from test where test.id >= 0
       "15": "result              0      0      0     ",
       "16": "ret                 0      0      0     "
     }
-  }
+  },
+  "access": [["public.test", "ro"]]
 }]
 select * from test where test.id >= 0
 [[0, 0], [1, 0], [2, 0]]
@@ -237,7 +241,7 @@ explain select * from test where test.data.data::int >= 0
     },
     "backend": {
       "00": "set                 0      2      0     ",
-      "01": "table_open          0      0      16    # public.test (primary)",
+      "01": "table_open_part     0      0      16    # public.test (primary)",
       "02": "table_readj         1      0      1     ",
       "03": "string              2      20     0     # data",
       "04": "dotjs               3      1      2     ",
@@ -256,7 +260,8 @@ explain select * from test where test.data.data::int >= 0
       "17": "result              0      0      0     ",
       "18": "ret                 0      0      0     "
     }
-  }
+  },
+  "access": [["public.test", "ro"]]
 }]
 select * from test where test.data.data::int >= 0
 [[0, {
@@ -289,7 +294,7 @@ explain select * from test alias where alias.id >= 0
       "00": "set                 0      2      0     ",
       "01": "int                 1      -      0     # 0",
       "02": "push                1      0      0     ",
-      "03": "table_open          0      0      14    # public.test (primary)",
+      "03": "table_open_part     0      0      14    # public.test (primary)",
       "04": "table_readi64       1      0      0     ",
       "05": "int                 2      -      0     # 0",
       "06": "gteii               3      1      2     ",
@@ -304,7 +309,8 @@ explain select * from test alias where alias.id >= 0
       "15": "result              0      0      0     ",
       "16": "ret                 0      0      0     "
     }
-  }
+  },
+  "access": [["public.test", "ro"]]
 }]
 select * from test alias where alias.id >= 0
 [[0, 0], [1, 0], [2, 0]]
@@ -329,7 +335,7 @@ explain select * from test alias where alias.data.data::int >= 0
     },
     "backend": {
       "00": "set                 0      2      0     ",
-      "01": "table_open          0      0      16    # public.test (primary)",
+      "01": "table_open_part     0      0      16    # public.test (primary)",
       "02": "table_readj         1      0      1     ",
       "03": "string              2      20     0     # data",
       "04": "dotjs               3      1      2     ",
@@ -348,7 +354,8 @@ explain select * from test alias where alias.data.data::int >= 0
       "17": "result              0      0      0     ",
       "18": "ret                 0      0      0     "
     }
-  }
+  },
+  "access": [["public.test", "ro"]]
 }]
 select * from test alias where alias.data.data::int >= 0
 [[0, {
@@ -385,7 +392,7 @@ explain select * from test where true
     },
     "backend": {
       "00": "set                 0      1      0     ",
-      "01": "table_open          0      0      8     # public.test (primary)",
+      "01": "table_open_part     0      0      8     # public.test (primary)",
       "02": "bool                1      1      0     ",
       "03": "jntr                7      1      0     ",
       "04": "table_readi32       1      0      0     ",
@@ -396,7 +403,8 @@ explain select * from test where true
       "09": "result              0      0      0     ",
       "10": "ret                 0      0      0     "
     }
-  }
+  },
+  "access": [["public.test", "ro"]]
 }]
 select * from test where true
 [1, 2, 3]
@@ -423,7 +431,7 @@ explain select * from test where id >= 0
       "00": "set                 0      1      0     ",
       "01": "int                 1      -      0     # 0",
       "02": "push                1      0      0     ",
-      "03": "table_open          0      0      12    # public.test (primary)",
+      "03": "table_open_part     0      0      12    # public.test (primary)",
       "04": "table_readi32       1      0      0     ",
       "05": "int                 2      -      0     # 0",
       "06": "gteii               3      1      2     ",
@@ -436,7 +444,8 @@ explain select * from test where id >= 0
       "13": "result              0      0      0     ",
       "14": "ret                 0      0      0     "
     }
-  }
+  },
+  "access": [["public.test", "ro"]]
 }]
 select * from test where id >= 0
 [1, 2, 3]
@@ -475,7 +484,7 @@ explain select * from test where id <= 0
     },
     "backend": {
       "00": "set                 0      1      0     ",
-      "01": "table_open          0      0      14    # public.test (primary)",
+      "01": "table_open_part     0      0      14    # public.test (primary)",
       "02": "table_readi32       1      0      0     ",
       "03": "int                 2      -      0     # 0",
       "04": "lteii               3      1      2     ",
@@ -492,7 +501,8 @@ explain select * from test where id <= 0
       "15": "result              0      0      0     ",
       "16": "ret                 0      0      0     "
     }
-  }
+  },
+  "access": [["public.test", "ro"]]
 }]
 select * from test where id <= 0
 []
@@ -520,7 +530,7 @@ explain select * from test where id < 0
     },
     "backend": {
       "00": "set                 0      1      0     ",
-      "01": "table_open          0      0      14    # public.test (primary)",
+      "01": "table_open_part     0      0      14    # public.test (primary)",
       "02": "table_readi32       1      0      0     ",
       "03": "int                 2      -      0     # 0",
       "04": "ltii                3      1      2     ",
@@ -537,7 +547,8 @@ explain select * from test where id < 0
       "15": "result              0      0      0     ",
       "16": "ret                 0      0      0     "
     }
-  }
+  },
+  "access": [["public.test", "ro"]]
 }]
 select * from test where id < 0
 []
@@ -570,7 +581,7 @@ explain select * from test where id = 2
       "00": "set                 0      1      0     ",
       "01": "int                 1      -      0     # 2",
       "02": "push                1      0      0     ",
-      "03": "table_open_lookup   0      0      11    # public.test (primary)",
+      "03": "table_open_partl    0      0      11    # public.test (primary)",
       "04": "table_readi32       1      0      0     ",
       "05": "int                 2      -      0     # 2",
       "06": "equii               3      1      2     ",
@@ -582,7 +593,8 @@ explain select * from test where id = 2
       "12": "result              0      0      0     ",
       "13": "ret                 0      0      0     "
     }
-  }
+  },
+  "access": [["public.test", "ro"]]
 }]
 select * from test where id = 2
 [2]

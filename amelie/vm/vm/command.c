@@ -149,17 +149,6 @@ crecv(Vm* self, Op* op)
 }
 
 hot void
-crecv_to(Vm* self, Op* op)
-{
-	// [result, stmt]
-	executor_recv(self->executor, self->dtr, op->b);
-
-	auto stmt = dispatch_stmt(&self->dtr->dispatch, op->b);
-	auto req  = container_of(list_first(&stmt->req_list.list), Req, link);
-	value_move(reg_at(&self->r, op->a), &req->result);
-}
-
-hot void
 cunion(Vm* self, Op* op)
 {
 	// [union, set, limit, offset]

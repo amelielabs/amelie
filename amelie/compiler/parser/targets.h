@@ -65,8 +65,7 @@ static inline bool
 targets_is_expr(Targets* self)
 {
 	for (auto target = self->list; target; target = target->next)
-		if (target->type == TARGET_TABLE ||
-		    target->type == TARGET_TABLE_SHARED)
+		if (target->type == TARGET_TABLE)
 			return false;
 	return false;
 }

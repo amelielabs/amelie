@@ -77,95 +77,19 @@ select * from test order by id desc offset 3
 select * from test order by id desc offset 4
 select * from test order by id desc offset 0
 select * from test order by id desc offset -1
-drop table test
 
-# test: select from shared order by
-create shared table test (id serial primary key)
-insert into test generate 20
-select * from test
-
-explain select * from test order by id
-select * from test order by id
-
-# test: select from shared order by asc
-explain select * from test order by id asc
-select * from test order by id asc
-
-# test: select from shared order by desc
-explain select * from test order by id desc
-select * from test order by id desc
-
-# test: select from shared order by limit
-explain select * from test order by id limit 1
-select * from test order by id limit 1
-select * from test order by id limit 2
-select * from test order by id limit 3
-select * from test order by id limit 4
-select * from test order by id limit 10
-select * from test order by id limit 20
-
-# test: select from shared order by limit 0
-explain select * from test order by id limit 0
-select * from test order by id limit 0
-select * from test order by id limit -1
-
-# test: select from shared order by desc limit
-explain select * from test order by id desc limit 1
-select * from test order by id desc limit 1
-select * from test order by id desc limit 2
-select * from test order by id desc limit 3
-select * from test order by id desc limit 4
-select * from test order by id desc limit 10
-select * from test order by id desc limit 20
-
-# test: select from shared order by limit offset
-explain select * from test order by id limit 1 offset 0
-select * from test order by id limit 1 offset 0
-
-# test: select from shared order by limit offset #2
-explain select * from test order by id limit 1 offset 1
-select * from test order by id limit 1 offset 1
-select * from test order by id limit 1 offset 2
-select * from test order by id limit 1 offset 3
-select * from test order by id limit 1 offset 4
-
-# test: select from shared order by desc limit offset
-explain select * from test order by id desc limit 1 offset 1
-select * from test order by id desc limit 1 offset 1
-select * from test order by id desc limit 1 offset 2
-select * from test order by id desc limit 1 offset 3
-select * from test order by id desc limit 1 offset 4
-
-# test: select from shared order by offset
-explain select * from test order by id offset 1
-select * from test order by id offset 1
-select * from test order by id offset 2
-select * from test order by id offset 3
-select * from test order by id offset 4
-select * from test order by id offset 0
-select * from test order by id offset -1
-
-# test: select from shared order by desc offset
-explain select * from test order by id desc offset 1
-select * from test order by id desc offset 1
-select * from test order by id desc offset 2
-select * from test order by id desc offset 3
-select * from test order by id desc offset 4
-select * from test order by id desc offset 0
-select * from test order by id desc offset -1
-
-# test: select from order by int
+# test: select from table order by int
 select id from test order by 0
 select id from test order by 1
 select id from test order by 2
 
-# test: select from order by alias
+# test: select from table order by alias
 select id from test order by id
 select id as c from test order by c
 select (id + id) as c from test order by c
 select (id + id) as c from test order by c desc
 
-# test: select from order by alias (conflict)
+# test: select from table order by alias (conflict)
 select id, id from test order by id
 select id, 123 as id from test order by id
 

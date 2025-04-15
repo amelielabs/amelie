@@ -17,7 +17,7 @@ explain select distinct * from test
     },
     "backend": {
       "00": "set_ordered         0      2      2     ",
-      "01": "table_open          0      2      12    # public.test (primary)",
+      "01": "table_open_part     0      2      12    # public.test (primary)",
       "02": "table_readi64       1      0      0     ",
       "03": "push                1      0      0     ",
       "04": "table_readi32       1      0      1     ",
@@ -33,7 +33,8 @@ explain select distinct * from test
       "14": "result              0      0      0     ",
       "15": "ret                 0      0      0     "
     }
-  }
+  },
+  "access": [["public.test", "ro"]]
 }]
 select distinct * from test
 []
@@ -59,7 +60,7 @@ explain select distinct * from test
     },
     "backend": {
       "00": "set_ordered         0      2      2     ",
-      "01": "table_open          0      2      12    # public.test (primary)",
+      "01": "table_open_part     0      2      12    # public.test (primary)",
       "02": "table_readi64       1      0      0     ",
       "03": "push                1      0      0     ",
       "04": "table_readi32       1      0      1     ",
@@ -75,7 +76,8 @@ explain select distinct * from test
       "14": "result              0      0      0     ",
       "15": "ret                 0      0      0     "
     }
-  }
+  },
+  "access": [["public.test", "ro"]]
 }]
 select distinct * from test
 [[0, 0], [1, 0], [2, 1], [3, 1], [4, 2], [5, 2], [6, 3], [7, 3], [8, 4], [9, 4], [10, 5], [11, 5], [12, 6], [13, 6], [14, 7], [15, 7], [16, 8], [17, 8], [18, 9], [19, 9]]
@@ -95,7 +97,7 @@ explain select distinct id from test
     },
     "backend": {
       "00": "set_ordered         0      1      1     ",
-      "01": "table_open          0      1      8     # public.test (primary)",
+      "01": "table_open_part     0      1      8     # public.test (primary)",
       "02": "table_readi64       1      0      0     ",
       "03": "push                1      0      0     ",
       "04": "table_readi64       1      0      0     ",
@@ -107,7 +109,8 @@ explain select distinct id from test
       "10": "result              0      0      0     ",
       "11": "ret                 0      0      0     "
     }
-  }
+  },
+  "access": [["public.test", "ro"]]
 }]
 select distinct id from test
 [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19]
@@ -129,7 +132,7 @@ explain select distinct id, data from test
     },
     "backend": {
       "00": "set_ordered         0      2      2     ",
-      "01": "table_open          0      2      12    # public.test (primary)",
+      "01": "table_open_part     0      2      12    # public.test (primary)",
       "02": "table_readi64       1      0      0     ",
       "03": "push                1      0      0     ",
       "04": "table_readi32       1      0      1     ",
@@ -145,7 +148,8 @@ explain select distinct id, data from test
       "14": "result              0      0      0     ",
       "15": "ret                 0      0      0     "
     }
-  }
+  },
+  "access": [["public.test", "ro"]]
 }]
 select distinct id, data from test
 [[0, 0], [1, 0], [2, 1], [3, 1], [4, 2], [5, 2], [6, 3], [7, 3], [8, 4], [9, 4], [10, 5], [11, 5], [12, 6], [13, 6], [14, 7], [15, 7], [16, 8], [17, 8], [18, 9], [19, 9]]
@@ -166,7 +170,7 @@ explain select distinct data from test limit 4
     },
     "backend": {
       "00": "set_ordered         0      1      1     ",
-      "01": "table_open          0      1      8     # public.test (primary)",
+      "01": "table_open_part     0      1      8     # public.test (primary)",
       "02": "table_readi32       1      0      1     ",
       "03": "push                1      0      0     ",
       "04": "table_readi32       1      0      1     ",
@@ -178,7 +182,8 @@ explain select distinct data from test limit 4
       "10": "result              0      0      0     ",
       "11": "ret                 0      0      0     "
     }
-  }
+  },
+  "access": [["public.test", "ro"]]
 }]
 select distinct data from test limit 4
 [0, 1, 2, 3]
@@ -199,7 +204,7 @@ explain select distinct data from test limit 0
     },
     "backend": {
       "00": "set_ordered         0      1      1     ",
-      "01": "table_open          0      1      8     # public.test (primary)",
+      "01": "table_open_part     0      1      8     # public.test (primary)",
       "02": "table_readi32       1      0      1     ",
       "03": "push                1      0      0     ",
       "04": "table_readi32       1      0      1     ",
@@ -211,7 +216,8 @@ explain select distinct data from test limit 0
       "10": "result              0      0      0     ",
       "11": "ret                 0      0      0     "
     }
-  }
+  },
+  "access": [["public.test", "ro"]]
 }]
 select distinct data from test limit 0
 []
@@ -233,7 +239,7 @@ explain select distinct data from test limit 1 offset 1
     },
     "backend": {
       "00": "set_ordered         0      1      1     ",
-      "01": "table_open          0      1      8     # public.test (primary)",
+      "01": "table_open_part     0      1      8     # public.test (primary)",
       "02": "table_readi32       1      0      1     ",
       "03": "push                1      0      0     ",
       "04": "table_readi32       1      0      1     ",
@@ -245,7 +251,8 @@ explain select distinct data from test limit 1 offset 1
       "10": "result              0      0      0     ",
       "11": "ret                 0      0      0     "
     }
-  }
+  },
+  "access": [["public.test", "ro"]]
 }]
 select distinct data from test limit 1 offset 0
 [0]
@@ -272,7 +279,7 @@ explain select distinct data from test offset 1
     },
     "backend": {
       "00": "set_ordered         0      1      1     ",
-      "01": "table_open          0      1      8     # public.test (primary)",
+      "01": "table_open_part     0      1      8     # public.test (primary)",
       "02": "table_readi32       1      0      1     ",
       "03": "push                1      0      0     ",
       "04": "table_readi32       1      0      1     ",
@@ -284,7 +291,8 @@ explain select distinct data from test offset 1
       "10": "result              0      0      0     ",
       "11": "ret                 0      0      0     "
     }
-  }
+  },
+  "access": [["public.test", "ro"]]
 }]
 select distinct data from test offset 0
 [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
@@ -331,7 +339,7 @@ explain select * from test order by data
     },
     "backend": {
       "00": "set_ordered         0      2      1     ",
-      "01": "table_open          0      1      10    # public.test (primary)",
+      "01": "table_open_part     0      1      10    # public.test (primary)",
       "02": "table_readi64       1      0      0     ",
       "03": "push                1      0      0     ",
       "04": "table_readi32       1      0      1     ",
@@ -345,7 +353,8 @@ explain select * from test order by data
       "12": "result              0      0      0     ",
       "13": "ret                 0      0      0     "
     }
-  }
+  },
+  "access": [["public.test", "ro"]]
 }]
 explain select distinct on (data) * from test
 [{
@@ -362,7 +371,7 @@ explain select distinct on (data) * from test
     },
     "backend": {
       "00": "set_ordered         0      2      1     ",
-      "01": "table_open          0      1      10    # public.test (primary)",
+      "01": "table_open_part     0      1      10    # public.test (primary)",
       "02": "table_readi64       1      0      0     ",
       "03": "push                1      0      0     ",
       "04": "table_readi32       1      0      1     ",
@@ -376,7 +385,8 @@ explain select distinct on (data) * from test
       "12": "result              0      0      0     ",
       "13": "ret                 0      0      0     "
     }
-  }
+  },
+  "access": [["public.test", "ro"]]
 }]
 select distinct on (data) * from test
 [[0, 0], [2, 1], [4, 2], [6, 3], [8, 4], [10, 5], [12, 6], [14, 7], [17, 8], [18, 9]]
@@ -385,376 +395,7 @@ select distinct on (id) * from test
 # test: select distinct on from table order by
 explain select distinct on (data) * from test order by data, id
 {"msg": "explain select distinct on (data) * from test order by data, id ⟵ ORDER BY and DISTINCT cannot be combined"}
-drop table test
-# test: select distinct * from shared empty
-create shared table test (id serial primary key, data int default 0)
-explain select distinct * from test
-[{
-  "bytecode": {
-    "frontend": {
-      "00": "send_all            0      0      -     # public.test",
-      "01": "recv                0      0      0     ",
-      "02": "bool                0      1      0     ",
-      "03": "push                0      0      0     ",
-      "04": "union_recv          0      -1     -1    ",
-      "05": "cte_set             0      0      0     ",
-      "06": "content             0      -      -     ",
-      "07": "ret                 0      0      0     "
-    },
-    "backend": {
-      "00": "set_ordered         0      2      2     ",
-      "01": "table_open          0      2      12    # public.test (primary)",
-      "02": "table_readi64       1      0      0     ",
-      "03": "push                1      0      0     ",
-      "04": "table_readi32       1      0      1     ",
-      "05": "push                1      0      0     ",
-      "06": "table_readi64       1      0      0     ",
-      "07": "push                1      0      0     ",
-      "08": "table_readi32       1      0      1     ",
-      "09": "push                1      0      0     ",
-      "10": "set_add             0      0      0     ",
-      "11": "table_next          0      2      0     ",
-      "12": "table_close         0      0      0     ",
-      "13": "set_sort            0      0      0     ",
-      "14": "result              0      0      0     ",
-      "15": "ret                 0      0      0     "
-    }
-  }
-}]
-select distinct * from test
-[]
-insert into test generate 20
-update test set data = id / 2
-select * from test
-[[0, 0], [1, 0], [2, 1], [3, 1], [4, 2], [5, 2], [6, 3], [7, 3], [8, 4], [9, 4], [10, 5], [11, 5], [12, 6], [13, 6], [14, 7], [15, 7], [16, 8], [17, 8], [18, 9], [19, 9]]
-select * from test order by id
-[[0, 0], [1, 0], [2, 1], [3, 1], [4, 2], [5, 2], [6, 3], [7, 3], [8, 4], [9, 4], [10, 5], [11, 5], [12, 6], [13, 6], [14, 7], [15, 7], [16, 8], [17, 8], [18, 9], [19, 9]]
-# test: select distinct * from shared
-explain select distinct * from test
-[{
-  "bytecode": {
-    "frontend": {
-      "00": "send_all            0      0      -     # public.test",
-      "01": "recv                0      0      0     ",
-      "02": "bool                0      1      0     ",
-      "03": "push                0      0      0     ",
-      "04": "union_recv          0      -1     -1    ",
-      "05": "cte_set             0      0      0     ",
-      "06": "content             0      -      -     ",
-      "07": "ret                 0      0      0     "
-    },
-    "backend": {
-      "00": "set_ordered         0      2      2     ",
-      "01": "table_open          0      2      12    # public.test (primary)",
-      "02": "table_readi64       1      0      0     ",
-      "03": "push                1      0      0     ",
-      "04": "table_readi32       1      0      1     ",
-      "05": "push                1      0      0     ",
-      "06": "table_readi64       1      0      0     ",
-      "07": "push                1      0      0     ",
-      "08": "table_readi32       1      0      1     ",
-      "09": "push                1      0      0     ",
-      "10": "set_add             0      0      0     ",
-      "11": "table_next          0      2      0     ",
-      "12": "table_close         0      0      0     ",
-      "13": "set_sort            0      0      0     ",
-      "14": "result              0      0      0     ",
-      "15": "ret                 0      0      0     "
-    }
-  }
-}]
-select distinct * from test
-[[0, 0], [1, 0], [2, 1], [3, 1], [4, 2], [5, 2], [6, 3], [7, 3], [8, 4], [9, 4], [10, 5], [11, 5], [12, 6], [13, 6], [14, 7], [15, 7], [16, 8], [17, 8], [18, 9], [19, 9]]
-# test: select distinct from shared
-explain select distinct id from test
-[{
-  "bytecode": {
-    "frontend": {
-      "00": "send_all            0      0      -     # public.test",
-      "01": "recv                0      0      0     ",
-      "02": "bool                0      1      0     ",
-      "03": "push                0      0      0     ",
-      "04": "union_recv          0      -1     -1    ",
-      "05": "cte_set             0      0      0     ",
-      "06": "content             0      -      -     ",
-      "07": "ret                 0      0      0     "
-    },
-    "backend": {
-      "00": "set_ordered         0      1      1     ",
-      "01": "table_open          0      1      8     # public.test (primary)",
-      "02": "table_readi64       1      0      0     ",
-      "03": "push                1      0      0     ",
-      "04": "table_readi64       1      0      0     ",
-      "05": "push                1      0      0     ",
-      "06": "set_add             0      0      0     ",
-      "07": "table_next          0      2      0     ",
-      "08": "table_close         0      0      0     ",
-      "09": "set_sort            0      0      0     ",
-      "10": "result              0      0      0     ",
-      "11": "ret                 0      0      0     "
-    }
-  }
-}]
-select distinct id from test
-[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19]
-select distinct data from test
-[0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
-# test: select distinct from shared #2
-explain select distinct id, data from test
-[{
-  "bytecode": {
-    "frontend": {
-      "00": "send_all            0      0      -     # public.test",
-      "01": "recv                0      0      0     ",
-      "02": "bool                0      1      0     ",
-      "03": "push                0      0      0     ",
-      "04": "union_recv          0      -1     -1    ",
-      "05": "cte_set             0      0      0     ",
-      "06": "content             0      -      -     ",
-      "07": "ret                 0      0      0     "
-    },
-    "backend": {
-      "00": "set_ordered         0      2      2     ",
-      "01": "table_open          0      2      12    # public.test (primary)",
-      "02": "table_readi64       1      0      0     ",
-      "03": "push                1      0      0     ",
-      "04": "table_readi32       1      0      1     ",
-      "05": "push                1      0      0     ",
-      "06": "table_readi64       1      0      0     ",
-      "07": "push                1      0      0     ",
-      "08": "table_readi32       1      0      1     ",
-      "09": "push                1      0      0     ",
-      "10": "set_add             0      0      0     ",
-      "11": "table_next          0      2      0     ",
-      "12": "table_close         0      0      0     ",
-      "13": "set_sort            0      0      0     ",
-      "14": "result              0      0      0     ",
-      "15": "ret                 0      0      0     "
-    }
-  }
-}]
-select distinct id, data from test
-[[0, 0], [1, 0], [2, 1], [3, 1], [4, 2], [5, 2], [6, 3], [7, 3], [8, 4], [9, 4], [10, 5], [11, 5], [12, 6], [13, 6], [14, 7], [15, 7], [16, 8], [17, 8], [18, 9], [19, 9]]
-# test: select distinct from shared limit
-explain select distinct data from test limit 4
-[{
-  "bytecode": {
-    "frontend": {
-      "00": "send_all            0      0      -     # public.test",
-      "01": "recv                0      0      0     ",
-      "02": "bool                0      1      0     ",
-      "03": "push                0      0      0     ",
-      "04": "int                 0      -      0     # 4",
-      "05": "union_recv          1      0      -1    ",
-      "06": "cte_set             0      1      0     ",
-      "07": "content             0      -      -     ",
-      "08": "ret                 0      0      0     "
-    },
-    "backend": {
-      "00": "set_ordered         0      1      1     ",
-      "01": "table_open          0      1      8     # public.test (primary)",
-      "02": "table_readi32       1      0      1     ",
-      "03": "push                1      0      0     ",
-      "04": "table_readi32       1      0      1     ",
-      "05": "push                1      0      0     ",
-      "06": "set_add             0      0      0     ",
-      "07": "table_next          0      2      0     ",
-      "08": "table_close         0      0      0     ",
-      "09": "set_sort            0      0      0     ",
-      "10": "result              0      0      0     ",
-      "11": "ret                 0      0      0     "
-    }
-  }
-}]
-select distinct data from test limit 4
-[0, 1, 2, 3]
-# test: select distinct from shared limit 0
-explain select distinct data from test limit 0
-[{
-  "bytecode": {
-    "frontend": {
-      "00": "send_all            0      0      -     # public.test",
-      "01": "recv                0      0      0     ",
-      "02": "bool                0      1      0     ",
-      "03": "push                0      0      0     ",
-      "04": "int                 0      -      0     # 0",
-      "05": "union_recv          1      0      -1    ",
-      "06": "cte_set             0      1      0     ",
-      "07": "content             0      -      -     ",
-      "08": "ret                 0      0      0     "
-    },
-    "backend": {
-      "00": "set_ordered         0      1      1     ",
-      "01": "table_open          0      1      8     # public.test (primary)",
-      "02": "table_readi32       1      0      1     ",
-      "03": "push                1      0      0     ",
-      "04": "table_readi32       1      0      1     ",
-      "05": "push                1      0      0     ",
-      "06": "set_add             0      0      0     ",
-      "07": "table_next          0      2      0     ",
-      "08": "table_close         0      0      0     ",
-      "09": "set_sort            0      0      0     ",
-      "10": "result              0      0      0     ",
-      "11": "ret                 0      0      0     "
-    }
-  }
-}]
-select distinct data from test limit 0
-[]
-# test: select distinct from shared limit/offset
-explain select distinct data from test limit 1 offset 1
-[{
-  "bytecode": {
-    "frontend": {
-      "00": "send_all            0      0      -     # public.test",
-      "01": "recv                0      0      0     ",
-      "02": "bool                0      1      0     ",
-      "03": "push                0      0      0     ",
-      "04": "int                 0      -      0     # 1",
-      "05": "int                 1      -      0     # 1",
-      "06": "union_recv          2      0      1     ",
-      "07": "cte_set             0      2      0     ",
-      "08": "content             0      -      -     ",
-      "09": "ret                 0      0      0     "
-    },
-    "backend": {
-      "00": "set_ordered         0      1      1     ",
-      "01": "table_open          0      1      8     # public.test (primary)",
-      "02": "table_readi32       1      0      1     ",
-      "03": "push                1      0      0     ",
-      "04": "table_readi32       1      0      1     ",
-      "05": "push                1      0      0     ",
-      "06": "set_add             0      0      0     ",
-      "07": "table_next          0      2      0     ",
-      "08": "table_close         0      0      0     ",
-      "09": "set_sort            0      0      0     ",
-      "10": "result              0      0      0     ",
-      "11": "ret                 0      0      0     "
-    }
-  }
-}]
-select distinct data from test limit 1 offset 0
-[0]
-select distinct data from test limit 1 offset 1
-[1]
-select distinct data from test limit 1 offset 2
-[2]
-select distinct data from test limit 1 offset 3
-[3]
-# test: select distinct from shared offset
-explain select distinct data from test offset 1
-[{
-  "bytecode": {
-    "frontend": {
-      "00": "send_all            0      0      -     # public.test",
-      "01": "recv                0      0      0     ",
-      "02": "bool                0      1      0     ",
-      "03": "push                0      0      0     ",
-      "04": "int                 0      -      0     # 1",
-      "05": "union_recv          1      -1     0     ",
-      "06": "cte_set             0      1      0     ",
-      "07": "content             0      -      -     ",
-      "08": "ret                 0      0      0     "
-    },
-    "backend": {
-      "00": "set_ordered         0      1      1     ",
-      "01": "table_open          0      1      8     # public.test (primary)",
-      "02": "table_readi32       1      0      1     ",
-      "03": "push                1      0      0     ",
-      "04": "table_readi32       1      0      1     ",
-      "05": "push                1      0      0     ",
-      "06": "set_add             0      0      0     ",
-      "07": "table_next          0      2      0     ",
-      "08": "table_close         0      0      0     ",
-      "09": "set_sort            0      0      0     ",
-      "10": "result              0      0      0     ",
-      "11": "ret                 0      0      0     "
-    }
-  }
-}]
-select distinct data from test offset 0
-[0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
-select distinct data from test offset 1
-[1, 2, 3, 4, 5, 6, 7, 8, 9]
-select distinct data from test offset 2
-[2, 3, 4, 5, 6, 7, 8, 9]
-select distinct data from test offset 3
-[3, 4, 5, 6, 7, 8, 9]
-# test: select distinct from shared order by
-explain select distinct data from test order by data
-{"msg": "explain select distinct data from test order by data ⟵ ORDER BY and DISTINCT cannot be combined"}
-select distinct data from test order by data
-{"msg": "select distinct data from test order by data ⟵ ORDER BY and DISTINCT cannot be combined"}
-explain select * from test order by data
-[{
-  "bytecode": {
-    "frontend": {
-      "00": "send_all            0      0      -     # public.test",
-      "01": "recv                0      0      0     ",
-      "02": "bool                0      0      0     ",
-      "03": "push                0      0      0     ",
-      "04": "union_recv          0      -1     -1    ",
-      "05": "cte_set             0      0      0     ",
-      "06": "content             0      -      -     ",
-      "07": "ret                 0      0      0     "
-    },
-    "backend": {
-      "00": "set_ordered         0      2      1     ",
-      "01": "table_open          0      1      10    # public.test (primary)",
-      "02": "table_readi64       1      0      0     ",
-      "03": "push                1      0      0     ",
-      "04": "table_readi32       1      0      1     ",
-      "05": "push                1      0      0     ",
-      "06": "table_readi32       1      0      1     ",
-      "07": "push                1      0      0     ",
-      "08": "set_add             0      0      0     ",
-      "09": "table_next          0      2      0     ",
-      "10": "table_close         0      0      0     ",
-      "11": "set_sort            0      0      0     ",
-      "12": "result              0      0      0     ",
-      "13": "ret                 0      0      0     "
-    }
-  }
-}]
-explain select distinct on (data) * from test
-[{
-  "bytecode": {
-    "frontend": {
-      "00": "send_all            0      0      -     # public.test",
-      "01": "recv                0      0      0     ",
-      "02": "bool                0      1      0     ",
-      "03": "push                0      0      0     ",
-      "04": "union_recv          0      -1     -1    ",
-      "05": "cte_set             0      0      0     ",
-      "06": "content             0      -      -     ",
-      "07": "ret                 0      0      0     "
-    },
-    "backend": {
-      "00": "set_ordered         0      2      1     ",
-      "01": "table_open          0      1      10    # public.test (primary)",
-      "02": "table_readi64       1      0      0     ",
-      "03": "push                1      0      0     ",
-      "04": "table_readi32       1      0      1     ",
-      "05": "push                1      0      0     ",
-      "06": "table_readi32       1      0      1     ",
-      "07": "push                1      0      0     ",
-      "08": "set_add             0      0      0     ",
-      "09": "table_next          0      2      0     ",
-      "10": "table_close         0      0      0     ",
-      "11": "set_sort            0      0      0     ",
-      "12": "result              0      0      0     ",
-      "13": "ret                 0      0      0     "
-    }
-  }
-}]
-select distinct on (data) * from test
-[[0, 0], [2, 1], [4, 2], [6, 3], [8, 4], [10, 5], [12, 6], [14, 7], [16, 8], [18, 9]]
-select distinct on (id) * from test
-[[0, 0], [1, 0], [2, 1], [3, 1], [4, 2], [5, 2], [6, 3], [7, 3], [8, 4], [9, 4], [10, 5], [11, 5], [12, 6], [13, 6], [14, 7], [15, 7], [16, 8], [17, 8], [18, 9], [19, 9]]
-# test: select distinct on from shared order by
-explain select distinct on (data) * from test order by data, id
-{"msg": "explain select distinct on (data) * from test order by data, id ⟵ ORDER BY and DISTINCT cannot be combined"}
-# test: select distinct * from shared table #3
+# test: select distinct * from table table #3
 delete from test
 insert into test values (1, 0), (2, 0), (3, 1), (4, 2), (5, 2)
 select distinct * from test
@@ -763,5 +404,6 @@ select distinct id from test
 [1, 2, 3, 4, 5]
 select distinct data from test
 [0, 1, 2]
+drop table test
 disconnect S0
 close E0

@@ -81,7 +81,7 @@ select 1 < all([1,2, null])
 select 3 < all([1,2, null])
 [false]
 # test: = all
-create shared table test (id int primary key, data int)
+create table test (id int primary key, data int)
 select 1 = all(select id from test)
 [true]
 insert into test values (1, 1)

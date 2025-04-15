@@ -3,17 +3,17 @@
 open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "127.0.0.1", "port": 3485 }], "backends": 3
 connect E0 S0 127.0.0.1:3485
 
-create shared table ref (id int primary key, data int default 0)
+create table ref (id int primary key, data int default 0)
 insert into ref (id) values (1), (2), (3)
 
 create table test (id int primary key, data int default 0)
 insert into test (id) values (1), (2), (3)
 
-# test: select from table, shared
+# test: select from table, ref
 explain select test.*, ref.* from test, ref
 select test.*, ref.* from test, ref
 
-# test: select from shared, table
+# test: select from ref, table
 explain select test.*, ref.* from ref, test
 select test.*, ref.* from ref, test
 
@@ -21,23 +21,23 @@ select test.*, ref.* from ref, test
 explain select t.* from test, test t
 select t.* from test, test t
 
-# test: select from table join shared
+# test: select from table join table
 explain select test.id, ref.id from test join ref on true
 select test.id, ref.id from test join ref on true
 
-# test: select from table join shared on
+# test: select from table join table on
 explain select test.id, ref.id from test join ref on test.id = ref.id
 select test.id, ref.id from test join ref on test.id = ref.id
 
-# test: select from table join shared on #2
+# test: select from table join table on #2
 explain select test.id, ref.id from test join ref on test.id = ref.id join ref ref2 on test.id = ref2.id
 select test.id, ref.id from test join ref on test.id = ref.id join ref ref2 on test.id = ref2.id
 
-# test: select from table join shared on #3
+# test: select from table join table on #3
 explain select test.id, ref.id from test join ref on test.id = ref.id join ref ref2 on test.id = ref2.id where test.id > 0
 select test.id, ref.id from test join ref on test.id = ref.id join ref ref2 on test.id = ref2.id where test.id > 0
 
-# test: select from table join shared on #4
+# test: select from table join table on #4
 explain select test.id, ref.id from test, ref where test.id = ref.id
 select test.id, ref.id from test, ref where test.id = ref.id
 
@@ -102,7 +102,7 @@ select ref.id, count(*) from test join ref on (test.id = ref.id) group by ref.id
 select ref.id, count(test.id) + count(ref.id) from test join ref on (test.id = ref.id) group by ref.id
 
 # test: select from table join group by path
-create shared table ref2 (id int primary key, data json)
+create table ref2 (id int primary key, data json)
 insert into ref2 values (1, {"id": 1}), (2, {"id": 2}), (3, {"id": 3})
 
 select ref2.data from test join ref2 on (test.id = ref2.id) group by ref2.id

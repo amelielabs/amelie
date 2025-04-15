@@ -20,7 +20,7 @@ explain select * from test order by id
     },
     "backend": {
       "00": "set_ordered         0      1      1     ",
-      "01": "table_open          0      1      8     # public.test (primary)",
+      "01": "table_open_part     0      1      8     # public.test (primary)",
       "02": "table_readi64       1      0      0     ",
       "03": "push                1      0      0     ",
       "04": "table_readi64       1      0      0     ",
@@ -32,7 +32,8 @@ explain select * from test order by id
       "10": "result              0      0      0     ",
       "11": "ret                 0      0      0     "
     }
-  }
+  },
+  "access": [["public.test", "ro"]]
 }]
 select * from test order by id
 [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19]
@@ -52,7 +53,7 @@ explain select * from test order by id asc
     },
     "backend": {
       "00": "set_ordered         0      1      1     ",
-      "01": "table_open          0      1      8     # public.test (primary)",
+      "01": "table_open_part     0      1      8     # public.test (primary)",
       "02": "table_readi64       1      0      0     ",
       "03": "push                1      0      0     ",
       "04": "table_readi64       1      0      0     ",
@@ -64,7 +65,8 @@ explain select * from test order by id asc
       "10": "result              0      0      0     ",
       "11": "ret                 0      0      0     "
     }
-  }
+  },
+  "access": [["public.test", "ro"]]
 }]
 select * from test order by id asc
 [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19]
@@ -84,7 +86,7 @@ explain select * from test order by id desc
     },
     "backend": {
       "00": "set_ordered         0      1      1     ",
-      "01": "table_open          0      1      8     # public.test (primary)",
+      "01": "table_open_part     0      1      8     # public.test (primary)",
       "02": "table_readi64       1      0      0     ",
       "03": "push                1      0      0     ",
       "04": "table_readi64       1      0      0     ",
@@ -96,7 +98,8 @@ explain select * from test order by id desc
       "10": "result              0      0      0     ",
       "11": "ret                 0      0      0     "
     }
-  }
+  },
+  "access": [["public.test", "ro"]]
 }]
 select * from test order by id desc
 [19, 18, 17, 16, 15, 14, 13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1, 0]
@@ -117,7 +120,7 @@ explain select * from test order by id limit 1
     },
     "backend": {
       "00": "set_ordered         0      1      1     ",
-      "01": "table_open          0      1      8     # public.test (primary)",
+      "01": "table_open_part     0      1      8     # public.test (primary)",
       "02": "table_readi64       1      0      0     ",
       "03": "push                1      0      0     ",
       "04": "table_readi64       1      0      0     ",
@@ -129,7 +132,8 @@ explain select * from test order by id limit 1
       "10": "result              0      0      0     ",
       "11": "ret                 0      0      0     "
     }
-  }
+  },
+  "access": [["public.test", "ro"]]
 }]
 select * from test order by id limit 1
 [0]
@@ -160,7 +164,7 @@ explain select * from test order by id limit 0
     },
     "backend": {
       "00": "set_ordered         0      1      1     ",
-      "01": "table_open          0      1      8     # public.test (primary)",
+      "01": "table_open_part     0      1      8     # public.test (primary)",
       "02": "table_readi64       1      0      0     ",
       "03": "push                1      0      0     ",
       "04": "table_readi64       1      0      0     ",
@@ -172,7 +176,8 @@ explain select * from test order by id limit 0
       "10": "result              0      0      0     ",
       "11": "ret                 0      0      0     "
     }
-  }
+  },
+  "access": [["public.test", "ro"]]
 }]
 select * from test order by id limit 0
 []
@@ -195,7 +200,7 @@ explain select * from test order by id desc limit 1
     },
     "backend": {
       "00": "set_ordered         0      1      1     ",
-      "01": "table_open          0      1      8     # public.test (primary)",
+      "01": "table_open_part     0      1      8     # public.test (primary)",
       "02": "table_readi64       1      0      0     ",
       "03": "push                1      0      0     ",
       "04": "table_readi64       1      0      0     ",
@@ -207,7 +212,8 @@ explain select * from test order by id desc limit 1
       "10": "result              0      0      0     ",
       "11": "ret                 0      0      0     "
     }
-  }
+  },
+  "access": [["public.test", "ro"]]
 }]
 select * from test order by id desc limit 1
 [19]
@@ -239,7 +245,7 @@ explain select * from test order by id limit 1 offset 0
     },
     "backend": {
       "00": "set_ordered         0      1      1     ",
-      "01": "table_open          0      1      8     # public.test (primary)",
+      "01": "table_open_part     0      1      8     # public.test (primary)",
       "02": "table_readi64       1      0      0     ",
       "03": "push                1      0      0     ",
       "04": "table_readi64       1      0      0     ",
@@ -251,7 +257,8 @@ explain select * from test order by id limit 1 offset 0
       "10": "result              0      0      0     ",
       "11": "ret                 0      0      0     "
     }
-  }
+  },
+  "access": [["public.test", "ro"]]
 }]
 select * from test order by id limit 1 offset 0
 [0]
@@ -273,7 +280,7 @@ explain select * from test order by id limit 1 offset 1
     },
     "backend": {
       "00": "set_ordered         0      1      1     ",
-      "01": "table_open          0      1      8     # public.test (primary)",
+      "01": "table_open_part     0      1      8     # public.test (primary)",
       "02": "table_readi64       1      0      0     ",
       "03": "push                1      0      0     ",
       "04": "table_readi64       1      0      0     ",
@@ -285,7 +292,8 @@ explain select * from test order by id limit 1 offset 1
       "10": "result              0      0      0     ",
       "11": "ret                 0      0      0     "
     }
-  }
+  },
+  "access": [["public.test", "ro"]]
 }]
 select * from test order by id limit 1 offset 1
 [1]
@@ -313,7 +321,7 @@ explain select * from test order by id desc limit 1 offset 1
     },
     "backend": {
       "00": "set_ordered         0      1      1     ",
-      "01": "table_open          0      1      8     # public.test (primary)",
+      "01": "table_open_part     0      1      8     # public.test (primary)",
       "02": "table_readi64       1      0      0     ",
       "03": "push                1      0      0     ",
       "04": "table_readi64       1      0      0     ",
@@ -325,7 +333,8 @@ explain select * from test order by id desc limit 1 offset 1
       "10": "result              0      0      0     ",
       "11": "ret                 0      0      0     "
     }
-  }
+  },
+  "access": [["public.test", "ro"]]
 }]
 select * from test order by id desc limit 1 offset 1
 [18]
@@ -352,7 +361,7 @@ explain select * from test order by id offset 1
     },
     "backend": {
       "00": "set_ordered         0      1      1     ",
-      "01": "table_open          0      1      8     # public.test (primary)",
+      "01": "table_open_part     0      1      8     # public.test (primary)",
       "02": "table_readi64       1      0      0     ",
       "03": "push                1      0      0     ",
       "04": "table_readi64       1      0      0     ",
@@ -364,7 +373,8 @@ explain select * from test order by id offset 1
       "10": "result              0      0      0     ",
       "11": "ret                 0      0      0     "
     }
-  }
+  },
+  "access": [["public.test", "ro"]]
 }]
 select * from test order by id offset 1
 [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19]
@@ -395,7 +405,7 @@ explain select * from test order by id desc offset 1
     },
     "backend": {
       "00": "set_ordered         0      1      1     ",
-      "01": "table_open          0      1      8     # public.test (primary)",
+      "01": "table_open_part     0      1      8     # public.test (primary)",
       "02": "table_readi64       1      0      0     ",
       "03": "push                1      0      0     ",
       "04": "table_readi64       1      0      0     ",
@@ -407,7 +417,8 @@ explain select * from test order by id desc offset 1
       "10": "result              0      0      0     ",
       "11": "ret                 0      0      0     "
     }
-  }
+  },
+  "access": [["public.test", "ro"]]
 }]
 select * from test order by id desc offset 1
 [18, 17, 16, 15, 14, 13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1, 0]
@@ -421,436 +432,14 @@ select * from test order by id desc offset 0
 [19, 18, 17, 16, 15, 14, 13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1, 0]
 select * from test order by id desc offset -1
 {"msg": "select * from test order by id desc offset ❰-1❱ ⟵ positive integer value expected"}
-drop table test
-# test: select from shared order by
-create shared table test (id serial primary key)
-insert into test generate 20
-select * from test
-[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19]
-explain select * from test order by id
-[{
-  "bytecode": {
-    "frontend": {
-      "00": "send_all            0      0      -     # public.test",
-      "01": "recv                0      0      0     ",
-      "02": "bool                0      0      0     ",
-      "03": "push                0      0      0     ",
-      "04": "union_recv          0      -1     -1    ",
-      "05": "cte_set             0      0      0     ",
-      "06": "content             0      -      -     ",
-      "07": "ret                 0      0      0     "
-    },
-    "backend": {
-      "00": "set_ordered         0      1      1     ",
-      "01": "table_open          0      1      8     # public.test (primary)",
-      "02": "table_readi64       1      0      0     ",
-      "03": "push                1      0      0     ",
-      "04": "table_readi64       1      0      0     ",
-      "05": "push                1      0      0     ",
-      "06": "set_add             0      0      0     ",
-      "07": "table_next          0      2      0     ",
-      "08": "table_close         0      0      0     ",
-      "09": "set_sort            0      0      0     ",
-      "10": "result              0      0      0     ",
-      "11": "ret                 0      0      0     "
-    }
-  }
-}]
-select * from test order by id
-[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19]
-# test: select from shared order by asc
-explain select * from test order by id asc
-[{
-  "bytecode": {
-    "frontend": {
-      "00": "send_all            0      0      -     # public.test",
-      "01": "recv                0      0      0     ",
-      "02": "bool                0      0      0     ",
-      "03": "push                0      0      0     ",
-      "04": "union_recv          0      -1     -1    ",
-      "05": "cte_set             0      0      0     ",
-      "06": "content             0      -      -     ",
-      "07": "ret                 0      0      0     "
-    },
-    "backend": {
-      "00": "set_ordered         0      1      1     ",
-      "01": "table_open          0      1      8     # public.test (primary)",
-      "02": "table_readi64       1      0      0     ",
-      "03": "push                1      0      0     ",
-      "04": "table_readi64       1      0      0     ",
-      "05": "push                1      0      0     ",
-      "06": "set_add             0      0      0     ",
-      "07": "table_next          0      2      0     ",
-      "08": "table_close         0      0      0     ",
-      "09": "set_sort            0      0      0     ",
-      "10": "result              0      0      0     ",
-      "11": "ret                 0      0      0     "
-    }
-  }
-}]
-select * from test order by id asc
-[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19]
-# test: select from shared order by desc
-explain select * from test order by id desc
-[{
-  "bytecode": {
-    "frontend": {
-      "00": "send_all            0      0      -     # public.test",
-      "01": "recv                0      0      0     ",
-      "02": "bool                0      0      0     ",
-      "03": "push                0      0      0     ",
-      "04": "union_recv          0      -1     -1    ",
-      "05": "cte_set             0      0      0     ",
-      "06": "content             0      -      -     ",
-      "07": "ret                 0      0      0     "
-    },
-    "backend": {
-      "00": "set_ordered         0      1      1     ",
-      "01": "table_open          0      1      8     # public.test (primary)",
-      "02": "table_readi64       1      0      0     ",
-      "03": "push                1      0      0     ",
-      "04": "table_readi64       1      0      0     ",
-      "05": "push                1      0      0     ",
-      "06": "set_add             0      0      0     ",
-      "07": "table_next          0      2      0     ",
-      "08": "table_close         0      0      0     ",
-      "09": "set_sort            0      0      0     ",
-      "10": "result              0      0      0     ",
-      "11": "ret                 0      0      0     "
-    }
-  }
-}]
-select * from test order by id desc
-[19, 18, 17, 16, 15, 14, 13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1, 0]
-# test: select from shared order by limit
-explain select * from test order by id limit 1
-[{
-  "bytecode": {
-    "frontend": {
-      "00": "send_all            0      0      -     # public.test",
-      "01": "recv                0      0      0     ",
-      "02": "bool                0      0      0     ",
-      "03": "push                0      0      0     ",
-      "04": "int                 0      -      0     # 1",
-      "05": "union_recv          1      0      -1    ",
-      "06": "cte_set             0      1      0     ",
-      "07": "content             0      -      -     ",
-      "08": "ret                 0      0      0     "
-    },
-    "backend": {
-      "00": "set_ordered         0      1      1     ",
-      "01": "table_open          0      1      8     # public.test (primary)",
-      "02": "table_readi64       1      0      0     ",
-      "03": "push                1      0      0     ",
-      "04": "table_readi64       1      0      0     ",
-      "05": "push                1      0      0     ",
-      "06": "set_add             0      0      0     ",
-      "07": "table_next          0      2      0     ",
-      "08": "table_close         0      0      0     ",
-      "09": "set_sort            0      0      0     ",
-      "10": "result              0      0      0     ",
-      "11": "ret                 0      0      0     "
-    }
-  }
-}]
-select * from test order by id limit 1
-[0]
-select * from test order by id limit 2
-[0, 1]
-select * from test order by id limit 3
-[0, 1, 2]
-select * from test order by id limit 4
-[0, 1, 2, 3]
-select * from test order by id limit 10
-[0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
-select * from test order by id limit 20
-[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19]
-# test: select from shared order by limit 0
-explain select * from test order by id limit 0
-[{
-  "bytecode": {
-    "frontend": {
-      "00": "send_all            0      0      -     # public.test",
-      "01": "recv                0      0      0     ",
-      "02": "bool                0      0      0     ",
-      "03": "push                0      0      0     ",
-      "04": "int                 0      -      0     # 0",
-      "05": "union_recv          1      0      -1    ",
-      "06": "cte_set             0      1      0     ",
-      "07": "content             0      -      -     ",
-      "08": "ret                 0      0      0     "
-    },
-    "backend": {
-      "00": "set_ordered         0      1      1     ",
-      "01": "table_open          0      1      8     # public.test (primary)",
-      "02": "table_readi64       1      0      0     ",
-      "03": "push                1      0      0     ",
-      "04": "table_readi64       1      0      0     ",
-      "05": "push                1      0      0     ",
-      "06": "set_add             0      0      0     ",
-      "07": "table_next          0      2      0     ",
-      "08": "table_close         0      0      0     ",
-      "09": "set_sort            0      0      0     ",
-      "10": "result              0      0      0     ",
-      "11": "ret                 0      0      0     "
-    }
-  }
-}]
-select * from test order by id limit 0
-[]
-select * from test order by id limit -1
-{"msg": "select * from test order by id limit ❰-1❱ ⟵ positive integer value expected"}
-# test: select from shared order by desc limit
-explain select * from test order by id desc limit 1
-[{
-  "bytecode": {
-    "frontend": {
-      "00": "send_all            0      0      -     # public.test",
-      "01": "recv                0      0      0     ",
-      "02": "bool                0      0      0     ",
-      "03": "push                0      0      0     ",
-      "04": "int                 0      -      0     # 1",
-      "05": "union_recv          1      0      -1    ",
-      "06": "cte_set             0      1      0     ",
-      "07": "content             0      -      -     ",
-      "08": "ret                 0      0      0     "
-    },
-    "backend": {
-      "00": "set_ordered         0      1      1     ",
-      "01": "table_open          0      1      8     # public.test (primary)",
-      "02": "table_readi64       1      0      0     ",
-      "03": "push                1      0      0     ",
-      "04": "table_readi64       1      0      0     ",
-      "05": "push                1      0      0     ",
-      "06": "set_add             0      0      0     ",
-      "07": "table_next          0      2      0     ",
-      "08": "table_close         0      0      0     ",
-      "09": "set_sort            0      0      0     ",
-      "10": "result              0      0      0     ",
-      "11": "ret                 0      0      0     "
-    }
-  }
-}]
-select * from test order by id desc limit 1
-[19]
-select * from test order by id desc limit 2
-[19, 18]
-select * from test order by id desc limit 3
-[19, 18, 17]
-select * from test order by id desc limit 4
-[19, 18, 17, 16]
-select * from test order by id desc limit 10
-[19, 18, 17, 16, 15, 14, 13, 12, 11, 10]
-select * from test order by id desc limit 20
-[19, 18, 17, 16, 15, 14, 13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1, 0]
-# test: select from shared order by limit offset
-explain select * from test order by id limit 1 offset 0
-[{
-  "bytecode": {
-    "frontend": {
-      "00": "send_all            0      0      -     # public.test",
-      "01": "recv                0      0      0     ",
-      "02": "bool                0      0      0     ",
-      "03": "push                0      0      0     ",
-      "04": "int                 0      -      0     # 1",
-      "05": "int                 1      -      0     # 0",
-      "06": "union_recv          2      0      1     ",
-      "07": "cte_set             0      2      0     ",
-      "08": "content             0      -      -     ",
-      "09": "ret                 0      0      0     "
-    },
-    "backend": {
-      "00": "set_ordered         0      1      1     ",
-      "01": "table_open          0      1      8     # public.test (primary)",
-      "02": "table_readi64       1      0      0     ",
-      "03": "push                1      0      0     ",
-      "04": "table_readi64       1      0      0     ",
-      "05": "push                1      0      0     ",
-      "06": "set_add             0      0      0     ",
-      "07": "table_next          0      2      0     ",
-      "08": "table_close         0      0      0     ",
-      "09": "set_sort            0      0      0     ",
-      "10": "result              0      0      0     ",
-      "11": "ret                 0      0      0     "
-    }
-  }
-}]
-select * from test order by id limit 1 offset 0
-[0]
-# test: select from shared order by limit offset #2
-explain select * from test order by id limit 1 offset 1
-[{
-  "bytecode": {
-    "frontend": {
-      "00": "send_all            0      0      -     # public.test",
-      "01": "recv                0      0      0     ",
-      "02": "bool                0      0      0     ",
-      "03": "push                0      0      0     ",
-      "04": "int                 0      -      0     # 1",
-      "05": "int                 1      -      0     # 1",
-      "06": "union_recv          2      0      1     ",
-      "07": "cte_set             0      2      0     ",
-      "08": "content             0      -      -     ",
-      "09": "ret                 0      0      0     "
-    },
-    "backend": {
-      "00": "set_ordered         0      1      1     ",
-      "01": "table_open          0      1      8     # public.test (primary)",
-      "02": "table_readi64       1      0      0     ",
-      "03": "push                1      0      0     ",
-      "04": "table_readi64       1      0      0     ",
-      "05": "push                1      0      0     ",
-      "06": "set_add             0      0      0     ",
-      "07": "table_next          0      2      0     ",
-      "08": "table_close         0      0      0     ",
-      "09": "set_sort            0      0      0     ",
-      "10": "result              0      0      0     ",
-      "11": "ret                 0      0      0     "
-    }
-  }
-}]
-select * from test order by id limit 1 offset 1
-[1]
-select * from test order by id limit 1 offset 2
-[2]
-select * from test order by id limit 1 offset 3
-[3]
-select * from test order by id limit 1 offset 4
-[4]
-# test: select from shared order by desc limit offset
-explain select * from test order by id desc limit 1 offset 1
-[{
-  "bytecode": {
-    "frontend": {
-      "00": "send_all            0      0      -     # public.test",
-      "01": "recv                0      0      0     ",
-      "02": "bool                0      0      0     ",
-      "03": "push                0      0      0     ",
-      "04": "int                 0      -      0     # 1",
-      "05": "int                 1      -      0     # 1",
-      "06": "union_recv          2      0      1     ",
-      "07": "cte_set             0      2      0     ",
-      "08": "content             0      -      -     ",
-      "09": "ret                 0      0      0     "
-    },
-    "backend": {
-      "00": "set_ordered         0      1      1     ",
-      "01": "table_open          0      1      8     # public.test (primary)",
-      "02": "table_readi64       1      0      0     ",
-      "03": "push                1      0      0     ",
-      "04": "table_readi64       1      0      0     ",
-      "05": "push                1      0      0     ",
-      "06": "set_add             0      0      0     ",
-      "07": "table_next          0      2      0     ",
-      "08": "table_close         0      0      0     ",
-      "09": "set_sort            0      0      0     ",
-      "10": "result              0      0      0     ",
-      "11": "ret                 0      0      0     "
-    }
-  }
-}]
-select * from test order by id desc limit 1 offset 1
-[18]
-select * from test order by id desc limit 1 offset 2
-[17]
-select * from test order by id desc limit 1 offset 3
-[16]
-select * from test order by id desc limit 1 offset 4
-[15]
-# test: select from shared order by offset
-explain select * from test order by id offset 1
-[{
-  "bytecode": {
-    "frontend": {
-      "00": "send_all            0      0      -     # public.test",
-      "01": "recv                0      0      0     ",
-      "02": "bool                0      0      0     ",
-      "03": "push                0      0      0     ",
-      "04": "int                 0      -      0     # 1",
-      "05": "union_recv          1      -1     0     ",
-      "06": "cte_set             0      1      0     ",
-      "07": "content             0      -      -     ",
-      "08": "ret                 0      0      0     "
-    },
-    "backend": {
-      "00": "set_ordered         0      1      1     ",
-      "01": "table_open          0      1      8     # public.test (primary)",
-      "02": "table_readi64       1      0      0     ",
-      "03": "push                1      0      0     ",
-      "04": "table_readi64       1      0      0     ",
-      "05": "push                1      0      0     ",
-      "06": "set_add             0      0      0     ",
-      "07": "table_next          0      2      0     ",
-      "08": "table_close         0      0      0     ",
-      "09": "set_sort            0      0      0     ",
-      "10": "result              0      0      0     ",
-      "11": "ret                 0      0      0     "
-    }
-  }
-}]
-select * from test order by id offset 1
-[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19]
-select * from test order by id offset 2
-[2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19]
-select * from test order by id offset 3
-[3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19]
-select * from test order by id offset 4
-[4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19]
-select * from test order by id offset 0
-[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19]
-select * from test order by id offset -1
-{"msg": "select * from test order by id offset ❰-1❱ ⟵ positive integer value expected"}
-# test: select from shared order by desc offset
-explain select * from test order by id desc offset 1
-[{
-  "bytecode": {
-    "frontend": {
-      "00": "send_all            0      0      -     # public.test",
-      "01": "recv                0      0      0     ",
-      "02": "bool                0      0      0     ",
-      "03": "push                0      0      0     ",
-      "04": "int                 0      -      0     # 1",
-      "05": "union_recv          1      -1     0     ",
-      "06": "cte_set             0      1      0     ",
-      "07": "content             0      -      -     ",
-      "08": "ret                 0      0      0     "
-    },
-    "backend": {
-      "00": "set_ordered         0      1      1     ",
-      "01": "table_open          0      1      8     # public.test (primary)",
-      "02": "table_readi64       1      0      0     ",
-      "03": "push                1      0      0     ",
-      "04": "table_readi64       1      0      0     ",
-      "05": "push                1      0      0     ",
-      "06": "set_add             0      0      0     ",
-      "07": "table_next          0      2      0     ",
-      "08": "table_close         0      0      0     ",
-      "09": "set_sort            0      0      0     ",
-      "10": "result              0      0      0     ",
-      "11": "ret                 0      0      0     "
-    }
-  }
-}]
-select * from test order by id desc offset 1
-[18, 17, 16, 15, 14, 13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1, 0]
-select * from test order by id desc offset 2
-[17, 16, 15, 14, 13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1, 0]
-select * from test order by id desc offset 3
-[16, 15, 14, 13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1, 0]
-select * from test order by id desc offset 4
-[15, 14, 13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1, 0]
-select * from test order by id desc offset 0
-[19, 18, 17, 16, 15, 14, 13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1, 0]
-select * from test order by id desc offset -1
-{"msg": "select * from test order by id desc offset ❰-1❱ ⟵ positive integer value expected"}
-# test: select from order by int
+# test: select from table order by int
 select id from test order by 0
 {"msg": "select id from test order by ❰0❱ ⟵ column 0 is not in the SELECT expr list"}
 select id from test order by 1
 [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19]
 select id from test order by 2
 {"msg": "select id from test order by ❰2❱ ⟵ column 2 is not in the SELECT expr list"}
-# test: select from order by alias
+# test: select from table order by alias
 select id from test order by id
 [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19]
 select id as c from test order by c
@@ -859,7 +448,7 @@ select (id + id) as c from test order by c
 [0, 2, 4, 6, 8, 10, 12, 14, 16, 18, 20, 22, 24, 26, 28, 30, 32, 34, 36, 38]
 select (id + id) as c from test order by c desc
 [38, 36, 34, 32, 30, 28, 26, 24, 22, 20, 18, 16, 14, 12, 10, 8, 6, 4, 2, 0]
-# test: select from order by alias (conflict)
+# test: select from table order by alias (conflict)
 select id, id from test order by id
 [[0, 0], [1, 1], [2, 2], [3, 3], [4, 4], [5, 5], [6, 6], [7, 7], [8, 8], [9, 9], [10, 10], [11, 11], [12, 12], [13, 13], [14, 14], [15, 15], [16, 16], [17, 17], [18, 18], [19, 19]]
 select id, 123 as id from test order by id

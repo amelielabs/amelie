@@ -128,43 +128,6 @@ parse_select_distinct(Stmt* self, AstSelect* select)
 	}
 }
 
-static inline void
-parse_select_pushdown(Stmt* self, AstSelect* select)
-{
-	// find partitioned or shared table in the outer SELECT FROM targets
-	//
-	// the table partitions will be used during execution, the query will be executed
-	// on one or more backends
-	//
-	select->pushdown_target = targets_match_by(&select->targets, TARGET_TABLE);
-	if (! select->pushdown_target)
-		select->pushdown_target = targets_match_by(&select->targets, TARGET_TABLE_SHARED);
-	if (select->pushdown_target)
-	{
-		select->pushdown = PUSHDOWN_TARGET;
-		return;
-	}
-
-	// analyze subqueries to match any shared tables being used
-	//
-	// the full query will be executed on first shared table partition
-	//
-	for (auto ref = self->select_list.list->next; ref; ref = ref->next)
-	{
-		auto query = ast_select_of(ref->ast);
-		auto target = targets_match_by(&query->targets, TARGET_TABLE_SHARED);
-		if (target)
-		{
-			select->pushdown = PUSHDOWN_FULL;
-			select->pushdown_target = target;
-			return;
-		}
-	}
-
-	// expressions only (local execution)
-	select->pushdown = PUSHDOWN_NONE;
-}
-
 hot AstSelect*
 parse_select(Stmt* self, Targets* outer, bool subquery)
 {
@@ -295,7 +258,11 @@ parse_select(Stmt* self, Targets* outer, bool subquery)
 
 	// set pushdown strategy for the root query
 	if (! subquery)
-		parse_select_pushdown(self, select);
+	{
+		auto outer = select->targets.list;
+		if (outer && target_is_table(select->targets.list))
+			select->pushdown = outer;
+	}
 
 	return select;
 }

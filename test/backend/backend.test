@@ -8,7 +8,6 @@ show backends
 
 # test: ddl (without backends)
 create table test (id int primary key)
-create shared table test (id int primary key)
 select * from test
 
 # test: create backend
@@ -27,7 +26,7 @@ show backends
 
 # test: ddl/dml (with one backend)
 create table test1 (id int primary key)
-create shared table test2 (id int primary key)
+create table test2 (id int primary key)
 show tables
 
 insert into test1 values (1), (2), (3); insert into test2 values (4),(5),(6)

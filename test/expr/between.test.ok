@@ -60,7 +60,8 @@ explain select 0.058 between 0.010 and 0.053
       "11": "content             0      -      -     ",
       "12": "ret                 0      0      0     "
     }
-  }
+  },
+  "access": []
 }]
 select 0.058 not between 0.010 and 0.053
 [true]
@@ -83,7 +84,8 @@ explain select 0.058 not between 0.010 and 0.053
       "12": "content             0      -      -     ",
       "13": "ret                 0      0      0     "
     }
-  }
+  },
+  "access": []
 }]
 disconnect S0
 close E0

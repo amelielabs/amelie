@@ -37,7 +37,8 @@ explain watch system.state().lsn::int = 1
       "14": "cte_set             0      1      0     ",
       "15": "ret                 0      0      0     "
     }
-  }
+  },
+  "access": []
 }]
 watch system.state().lsn::int = 1
 disconnect S0

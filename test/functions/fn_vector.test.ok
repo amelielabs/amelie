@@ -25,7 +25,8 @@ explain select [1.0, 2.1, 3]::vector * [1.5, 1.5, 1.5]::vector;
       "11": "content             0      -      -     ",
       "12": "ret                 0      0      0     "
     }
-  }
+  },
+  "access": []
 }]
 select vector [1.0, 2.1, 3] * vector [1.5, 1.5, 1.5];
 [[1.5, 3.15, 4.5]]
@@ -43,7 +44,8 @@ explain select vector [1.0, 2.1, 3] * vector [1.5, 1.5, 1.5];
       "07": "content             0      -      -     ",
       "08": "ret                 0      0      0     "
     }
-  }
+  },
+  "access": []
 }]
 # test: cos_distance() (similarity search)
 create table test (id serial primary key, embedding vector);
@@ -69,7 +71,7 @@ explain select id, embedding::cos_distance(vector [1,3,1,2,0]) from test order b
     },
     "backend": {
       "00": "set_ordered         0      2      1     ",
-      "01": "table_open          0      25     18    # public.test (primary)",
+      "01": "table_open_part     0      25     18    # public.test (primary)",
       "02": "table_readi64       1      0      0     ",
       "03": "push                1      0      0     ",
       "04": "table_readv         1      0      1     ",
@@ -91,7 +93,8 @@ explain select id, embedding::cos_distance(vector [1,3,1,2,0]) from test order b
       "20": "result              0      0      0     ",
       "21": "ret                 0      0      0     "
     }
-  }
+  },
+  "access": [["public.test", "ro"]]
 }]
 select id from test order by embedding::cos_distance(vector [1,3,1,2,0]) desc limit 1;
 [0]
@@ -111,7 +114,7 @@ explain select id from test order by embedding::cos_distance(vector [1,3,1,2,0])
     },
     "backend": {
       "00": "set_ordered         0      1      1     ",
-      "01": "table_open          0      25     12    # public.test (primary)",
+      "01": "table_open_part     0      25     12    # public.test (primary)",
       "02": "table_readi64       1      0      0     ",
       "03": "push                1      0      0     ",
       "04": "table_readv         1      0      1     ",
@@ -127,7 +130,8 @@ explain select id from test order by embedding::cos_distance(vector [1,3,1,2,0])
       "14": "result              0      0      0     ",
       "15": "ret                 0      0      0     "
     }
-  }
+  },
+  "access": [["public.test", "ro"]]
 }]
 disconnect S0
 close E0

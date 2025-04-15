@@ -35,7 +35,7 @@ explain select count(*) from test_empty
     },
     "backend": {
       "00": "set_ordered         0      1      1     ",
-      "01": "table_open          0      1      9     # public.test_empty (primary)",
+      "01": "table_open_part     0      1      9     # public.test_empty (primary)",
       "02": "bool                1      1      0     ",
       "03": "push                1      0      0     ",
       "04": "set_get             1      0      0     ",
@@ -54,7 +54,8 @@ explain select count(*) from test_empty
       "17": "result              0      0      0     ",
       "18": "ret                 0      0      0     "
     }
-  }
+  },
+  "access": [["public.test_empty", "ro"]]
 }]
 select count(*) from test_empty
 [0]
@@ -84,7 +85,7 @@ explain select count(*) from test
     },
     "backend": {
       "00": "set_ordered         0      1      1     ",
-      "01": "table_open          0      1      9     # public.test (primary)",
+      "01": "table_open_part     0      1      9     # public.test (primary)",
       "02": "bool                1      1      0     ",
       "03": "push                1      0      0     ",
       "04": "set_get             1      0      0     ",
@@ -103,7 +104,8 @@ explain select count(*) from test
       "17": "result              0      0      0     ",
       "18": "ret                 0      0      0     "
     }
-  }
+  },
+  "access": [["public.test", "ro"]]
 }]
 select count(*) from test
 [7]
@@ -131,7 +133,7 @@ explain select count(id) from test
     },
     "backend": {
       "00": "set_ordered         0      1      1     ",
-      "01": "table_open          0      1      9     # public.test (primary)",
+      "01": "table_open_part     0      1      9     # public.test (primary)",
       "02": "bool                1      1      0     ",
       "03": "push                1      0      0     ",
       "04": "set_get             1      0      0     ",
@@ -150,7 +152,8 @@ explain select count(id) from test
       "17": "result              0      0      0     ",
       "18": "ret                 0      0      0     "
     }
-  }
+  },
+  "access": [["public.test", "ro"]]
 }]
 select count(id) from test
 [7]
@@ -178,7 +181,7 @@ explain select count(data) from test
     },
     "backend": {
       "00": "set_ordered         0      1      1     ",
-      "01": "table_open          0      1      9     # public.test (primary)",
+      "01": "table_open_part     0      1      9     # public.test (primary)",
       "02": "bool                1      1      0     ",
       "03": "push                1      0      0     ",
       "04": "set_get             1      0      0     ",
@@ -197,7 +200,8 @@ explain select count(data) from test
       "17": "result              0      0      0     ",
       "18": "ret                 0      0      0     "
     }
-  }
+  },
+  "access": [["public.test", "ro"]]
 }]
 select count(data) from test
 [6]
@@ -224,7 +228,7 @@ explain select count(data) from test_null
     },
     "backend": {
       "00": "set_ordered         0      1      1     ",
-      "01": "table_open          0      1      9     # public.test_null (primary)",
+      "01": "table_open_part     0      1      9     # public.test_null (primary)",
       "02": "bool                1      1      0     ",
       "03": "push                1      0      0     ",
       "04": "set_get             1      0      0     ",
@@ -243,7 +247,8 @@ explain select count(data) from test_null
       "17": "result              0      0      0     ",
       "18": "ret                 0      0      0     "
     }
-  }
+  },
+  "access": [["public.test_null", "ro"]]
 }]
 select count(data) from test_null
 [0]
@@ -281,7 +286,7 @@ explain select count(distinct id) from test
       "00": "set_ordered         0      1      1     ",
       "01": "set_ordered         1      0      3     ",
       "02": "set_assign          0      1      0     ",
-      "03": "table_open          0      4      11    # public.test (primary)",
+      "03": "table_open_part     0      4      11    # public.test (primary)",
       "04": "bool                1      1      0     ",
       "05": "push                1      0      0     ",
       "06": "set_get             1      0      0     ",
@@ -300,7 +305,8 @@ explain select count(distinct id) from test
       "19": "result              0      0      0     ",
       "20": "ret                 0      0      0     "
     }
-  }
+  },
+  "access": [["public.test", "ro"]]
 }]
 select count(distinct id) from test
 [7]
@@ -338,7 +344,7 @@ explain select sum(id) from test_empty
     },
     "backend": {
       "00": "set_ordered         0      1      1     ",
-      "01": "table_open          0      1      9     # public.test_empty (primary)",
+      "01": "table_open_part     0      1      9     # public.test_empty (primary)",
       "02": "bool                1      1      0     ",
       "03": "push                1      0      0     ",
       "04": "set_get             1      0      0     ",
@@ -357,7 +363,8 @@ explain select sum(id) from test_empty
       "17": "result              0      0      0     ",
       "18": "ret                 0      0      0     "
     }
-  }
+  },
+  "access": [["public.test_empty", "ro"]]
 }]
 select sum(id) from test_empty
 [null]
@@ -385,7 +392,7 @@ explain select sum(id) from test
     },
     "backend": {
       "00": "set_ordered         0      1      1     ",
-      "01": "table_open          0      1      9     # public.test (primary)",
+      "01": "table_open_part     0      1      9     # public.test (primary)",
       "02": "bool                1      1      0     ",
       "03": "push                1      0      0     ",
       "04": "set_get             1      0      0     ",
@@ -404,7 +411,8 @@ explain select sum(id) from test
       "17": "result              0      0      0     ",
       "18": "ret                 0      0      0     "
     }
-  }
+  },
+  "access": [["public.test", "ro"]]
 }]
 select sum(id) from test
 [21]
@@ -434,7 +442,7 @@ explain select sum(data2) from test_empty
     },
     "backend": {
       "00": "set_ordered         0      1      1     ",
-      "01": "table_open          0      1      9     # public.test_empty (primary)",
+      "01": "table_open_part     0      1      9     # public.test_empty (primary)",
       "02": "bool                1      1      0     ",
       "03": "push                1      0      0     ",
       "04": "set_get             1      0      0     ",
@@ -453,7 +461,8 @@ explain select sum(data2) from test_empty
       "17": "result              0      0      0     ",
       "18": "ret                 0      0      0     "
     }
-  }
+  },
+  "access": [["public.test_empty", "ro"]]
 }]
 select sum(data2) from test_empty
 [null]
@@ -481,7 +490,7 @@ explain select sum(data2) from test
     },
     "backend": {
       "00": "set_ordered         0      1      1     ",
-      "01": "table_open          0      1      9     # public.test (primary)",
+      "01": "table_open_part     0      1      9     # public.test (primary)",
       "02": "bool                1      1      0     ",
       "03": "push                1      0      0     ",
       "04": "set_get             1      0      0     ",
@@ -500,7 +509,8 @@ explain select sum(data2) from test
       "17": "result              0      0      0     ",
       "18": "ret                 0      0      0     "
     }
-  }
+  },
+  "access": [["public.test", "ro"]]
 }]
 select sum(data2) from test_empty
 [null]
@@ -533,7 +543,7 @@ explain select sum(data) from test_null
     },
     "backend": {
       "00": "set_ordered         0      1      1     ",
-      "01": "table_open          0      1      9     # public.test_null (primary)",
+      "01": "table_open_part     0      1      9     # public.test_null (primary)",
       "02": "bool                1      1      0     ",
       "03": "push                1      0      0     ",
       "04": "set_get             1      0      0     ",
@@ -552,7 +562,8 @@ explain select sum(data) from test_null
       "17": "result              0      0      0     ",
       "18": "ret                 0      0      0     "
     }
-  }
+  },
+  "access": [["public.test_null", "ro"]]
 }]
 select sum(data) from test_null
 [null]
@@ -583,7 +594,7 @@ explain select avg(id) from test
     },
     "backend": {
       "00": "set_ordered         0      1      1     ",
-      "01": "table_open          0      1      9     # public.test (primary)",
+      "01": "table_open_part     0      1      9     # public.test (primary)",
       "02": "bool                1      1      0     ",
       "03": "push                1      0      0     ",
       "04": "set_get             1      0      0     ",
@@ -602,7 +613,8 @@ explain select avg(id) from test
       "17": "result              0      0      0     ",
       "18": "ret                 0      0      0     "
     }
-  }
+  },
+  "access": [["public.test", "ro"]]
 }]
 select avg(id) from test
 [3]
@@ -643,7 +655,7 @@ explain select avg(data2) from test_null
     },
     "backend": {
       "00": "set_ordered         0      1      1     ",
-      "01": "table_open          0      1      9     # public.test_null (primary)",
+      "01": "table_open_part     0      1      9     # public.test_null (primary)",
       "02": "bool                1      1      0     ",
       "03": "push                1      0      0     ",
       "04": "set_get             1      0      0     ",
@@ -662,7 +674,8 @@ explain select avg(data2) from test_null
       "17": "result              0      0      0     ",
       "18": "ret                 0      0      0     "
     }
-  }
+  },
+  "access": [["public.test_null", "ro"]]
 }]
 select avg(data2) from test_null
 [null]
@@ -704,7 +717,7 @@ explain select min(data2) from test_null
     },
     "backend": {
       "00": "set_ordered         0      1      1     ",
-      "01": "table_open          0      1      9     # public.test_null (primary)",
+      "01": "table_open_part     0      1      9     # public.test_null (primary)",
       "02": "bool                1      1      0     ",
       "03": "push                1      0      0     ",
       "04": "set_get             1      0      0     ",
@@ -723,7 +736,8 @@ explain select min(data2) from test_null
       "17": "result              0      0      0     ",
       "18": "ret                 0      0      0     "
     }
-  }
+  },
+  "access": [["public.test_null", "ro"]]
 }]
 select min(data2) from test_null
 [null]
@@ -765,7 +779,7 @@ explain select max(data2) from test_null
     },
     "backend": {
       "00": "set_ordered         0      1      1     ",
-      "01": "table_open          0      1      9     # public.test_null (primary)",
+      "01": "table_open_part     0      1      9     # public.test_null (primary)",
       "02": "bool                1      1      0     ",
       "03": "push                1      0      0     ",
       "04": "set_get             1      0      0     ",
@@ -784,7 +798,8 @@ explain select max(data2) from test_null
       "17": "result              0      0      0     ",
       "18": "ret                 0      0      0     "
     }
-  }
+  },
+  "access": [["public.test_null", "ro"]]
 }]
 select max(data2) from test_null
 [null]
@@ -819,7 +834,7 @@ explain select id, count(*) from test group by id
     },
     "backend": {
       "00": "set_ordered         0      1      1     ",
-      "01": "table_open          0      1      9     # public.test (primary)",
+      "01": "table_open_part     0      1      9     # public.test (primary)",
       "02": "table_readi32       1      0      0     ",
       "03": "push                1      0      0     ",
       "04": "set_get             1      0      0     ",
@@ -832,7 +847,8 @@ explain select id, count(*) from test group by id
       "11": "result              0      0      0     ",
       "12": "ret                 0      0      0     "
     }
-  }
+  },
+  "access": [["public.test", "ro"]]
 }]
 select id, count(*) from test group by id
 [[0, 1], [1, 1], [2, 1], [3, 1], [4, 1], [5, 1], [6, 1]]
@@ -870,7 +886,7 @@ explain select id, count(*) from test group by 1
     },
     "backend": {
       "00": "set_ordered         0      1      1     ",
-      "01": "table_open          0      1      9     # public.test (primary)",
+      "01": "table_open_part     0      1      9     # public.test (primary)",
       "02": "table_readi32       1      0      0     ",
       "03": "push                1      0      0     ",
       "04": "set_get             1      0      0     ",
@@ -883,7 +899,8 @@ explain select id, count(*) from test group by 1
       "11": "result              0      0      0     ",
       "12": "ret                 0      0      0     "
     }
-  }
+  },
+  "access": [["public.test", "ro"]]
 }]
 select id, count(*) from test group by 1
 [[0, 1], [1, 1], [2, 1], [3, 1], [4, 1], [5, 1], [6, 1]]
@@ -928,7 +945,7 @@ explain select * from (select count(*) from test) t
     },
     "backend": {
       "00": "set_ordered         0      1      1     ",
-      "01": "table_open          0      1      9     # public.test (primary)",
+      "01": "table_open_part     0      1      9     # public.test (primary)",
       "02": "bool                1      1      0     ",
       "03": "push                1      0      0     ",
       "04": "set_get             1      0      0     ",
@@ -947,7 +964,8 @@ explain select * from (select count(*) from test) t
       "17": "result              0      0      0     ",
       "18": "ret                 0      0      0     "
     }
-  }
+  },
+  "access": [["public.test", "ro"]]
 }]
 select * from (select count(*) from test) t
 [7]
@@ -988,7 +1006,7 @@ explain select * from (select id, count(*) from test group by id) t
     },
     "backend": {
       "00": "set_ordered         0      1      1     ",
-      "01": "table_open          0      1      9     # public.test (primary)",
+      "01": "table_open_part     0      1      9     # public.test (primary)",
       "02": "table_readi32       1      0      0     ",
       "03": "push                1      0      0     ",
       "04": "set_get             1      0      0     ",
@@ -1001,7 +1019,8 @@ explain select * from (select id, count(*) from test group by id) t
       "11": "result              0      0      0     ",
       "12": "ret                 0      0      0     "
     }
-  }
+  },
+  "access": [["public.test", "ro"]]
 }]
 select * from (select id, count(*) from test group by id) t
 [[0, 1], [1, 1], [2, 1], [3, 1], [4, 1], [5, 1], [6, 1]]
@@ -1053,7 +1072,7 @@ explain select id, count(*) from test group by id order by id
     },
     "backend": {
       "00": "set_ordered         0      1      1     ",
-      "01": "table_open          0      1      9     # public.test (primary)",
+      "01": "table_open_part     0      1      9     # public.test (primary)",
       "02": "table_readi32       1      0      0     ",
       "03": "push                1      0      0     ",
       "04": "set_get             1      0      0     ",
@@ -1066,7 +1085,8 @@ explain select id, count(*) from test group by id order by id
       "11": "result              0      0      0     ",
       "12": "ret                 0      0      0     "
     }
-  }
+  },
+  "access": [["public.test", "ro"]]
 }]
 select id, count(*) from test group by id order by id
 [[0, 1], [1, 1], [2, 1], [3, 1], [4, 1], [5, 1], [6, 1]]
@@ -1101,7 +1121,7 @@ explain select id, count(*) from test group by 1 order by 1
     },
     "backend": {
       "00": "set_ordered         0      1      1     ",
-      "01": "table_open          0      1      9     # public.test (primary)",
+      "01": "table_open_part     0      1      9     # public.test (primary)",
       "02": "table_readi32       1      0      0     ",
       "03": "push                1      0      0     ",
       "04": "set_get             1      0      0     ",
@@ -1114,7 +1134,8 @@ explain select id, count(*) from test group by 1 order by 1
       "11": "result              0      0      0     ",
       "12": "ret                 0      0      0     "
     }
-  }
+  },
+  "access": [["public.test", "ro"]]
 }]
 select id, count(*) from test group by 1 order by 1
 [[0, 1], [1, 1], [2, 1], [3, 1], [4, 1], [5, 1], [6, 1]]
@@ -1169,7 +1190,7 @@ explain select id, count(*) from test group by 1 having id > 5
     },
     "backend": {
       "00": "set_ordered         0      1      1     ",
-      "01": "table_open          0      1      9     # public.test (primary)",
+      "01": "table_open_part     0      1      9     # public.test (primary)",
       "02": "table_readi32       1      0      0     ",
       "03": "push                1      0      0     ",
       "04": "set_get             1      0      0     ",
@@ -1182,7 +1203,8 @@ explain select id, count(*) from test group by 1 having id > 5
       "11": "result              0      0      0     ",
       "12": "ret                 0      0      0     "
     }
-  }
+  },
+  "access": [["public.test", "ro"]]
 }]
 # test: select from table group by order by having
 select id, count(*) from test group by 1 order by 1
@@ -1224,7 +1246,7 @@ explain select id from test group by id having count(id) > 0
     },
     "backend": {
       "00": "set_ordered         0      1      1     ",
-      "01": "table_open          0      1      9     # public.test (primary)",
+      "01": "table_open_part     0      1      9     # public.test (primary)",
       "02": "table_readi32       1      0      0     ",
       "03": "push                1      0      0     ",
       "04": "set_get             1      0      0     ",
@@ -1237,7 +1259,8 @@ explain select id from test group by id having count(id) > 0
       "11": "result              0      0      0     ",
       "12": "ret                 0      0      0     "
     }
-  }
+  },
+  "access": [["public.test", "ro"]]
 }]
 select id from test group by id having count(id) > 0
 [0, 1, 2, 3, 4, 5, 6]
@@ -1275,7 +1298,7 @@ explain select id from test group by id having count(*) > 0
     },
     "backend": {
       "00": "set_ordered         0      1      1     ",
-      "01": "table_open          0      1      9     # public.test (primary)",
+      "01": "table_open_part     0      1      9     # public.test (primary)",
       "02": "table_readi32       1      0      0     ",
       "03": "push                1      0      0     ",
       "04": "set_get             1      0      0     ",
@@ -1288,7 +1311,8 @@ explain select id from test group by id having count(*) > 0
       "11": "result              0      0      0     ",
       "12": "ret                 0      0      0     "
     }
-  }
+  },
+  "access": [["public.test", "ro"]]
 }]
 select id from test group by id having count(*) > 0
 [0, 1, 2, 3, 4, 5, 6]
@@ -1321,7 +1345,7 @@ explain select id, count(*) from test group by id having count(*) > 0
     },
     "backend": {
       "00": "set_ordered         0      2      1     ",
-      "01": "table_open          0      1      11    # public.test (primary)",
+      "01": "table_open_part     0      1      11    # public.test (primary)",
       "02": "table_readi32       1      0      0     ",
       "03": "push                1      0      0     ",
       "04": "set_get             1      0      0     ",
@@ -1336,7 +1360,8 @@ explain select id, count(*) from test group by id having count(*) > 0
       "13": "result              0      0      0     ",
       "14": "ret                 0      0      0     "
     }
-  }
+  },
+  "access": [["public.test", "ro"]]
 }]
 select id, count(*) from test group by id having count(*) > 0
 [[0, 1], [1, 1], [2, 1], [3, 1], [4, 1], [5, 1], [6, 1]]
@@ -1369,7 +1394,7 @@ explain select id, count(*) from test group by 1 having count(*) > 0
     },
     "backend": {
       "00": "set_ordered         0      2      1     ",
-      "01": "table_open          0      1      11    # public.test (primary)",
+      "01": "table_open_part     0      1      11    # public.test (primary)",
       "02": "table_readi32       1      0      0     ",
       "03": "push                1      0      0     ",
       "04": "set_get             1      0      0     ",
@@ -1384,7 +1409,8 @@ explain select id, count(*) from test group by 1 having count(*) > 0
       "13": "result              0      0      0     ",
       "14": "ret                 0      0      0     "
     }
-  }
+  },
+  "access": [["public.test", "ro"]]
 }]
 explain select data, count(*) from test group by data having count(*) > 0
 [{
@@ -1415,7 +1441,7 @@ explain select data, count(*) from test group by data having count(*) > 0
     },
     "backend": {
       "00": "set_ordered         0      2      1     ",
-      "01": "table_open          0      1      11    # public.test (primary)",
+      "01": "table_open_part     0      1      11    # public.test (primary)",
       "02": "table_readi32       1      0      1     ",
       "03": "push                1      0      0     ",
       "04": "set_get             1      0      0     ",
@@ -1430,7 +1456,8 @@ explain select data, count(*) from test group by data having count(*) > 0
       "13": "result              0      0      0     ",
       "14": "ret                 0      0      0     "
     }
-  }
+  },
+  "access": [["public.test", "ro"]]
 }]
 select data, count(*) from test group by data having count(*) > 0
 [[null, 1], [0, 2], [1, 2], [2, 1], [3, 1]]
@@ -1463,7 +1490,7 @@ explain select data, count(*) from test group by 1 having count(*) > 0
     },
     "backend": {
       "00": "set_ordered         0      2      1     ",
-      "01": "table_open          0      1      11    # public.test (primary)",
+      "01": "table_open_part     0      1      11    # public.test (primary)",
       "02": "table_readi32       1      0      1     ",
       "03": "push                1      0      0     ",
       "04": "set_get             1      0      0     ",
@@ -1478,7 +1505,8 @@ explain select data, count(*) from test group by 1 having count(*) > 0
       "13": "result              0      0      0     ",
       "14": "ret                 0      0      0     "
     }
-  }
+  },
+  "access": [["public.test", "ro"]]
 }]
 explain select data, count(*) from test group by data having count(*) > 1
 [{
@@ -1509,7 +1537,7 @@ explain select data, count(*) from test group by data having count(*) > 1
     },
     "backend": {
       "00": "set_ordered         0      2      1     ",
-      "01": "table_open          0      1      11    # public.test (primary)",
+      "01": "table_open_part     0      1      11    # public.test (primary)",
       "02": "table_readi32       1      0      1     ",
       "03": "push                1      0      0     ",
       "04": "set_get             1      0      0     ",
@@ -1524,7 +1552,8 @@ explain select data, count(*) from test group by data having count(*) > 1
       "13": "result              0      0      0     ",
       "14": "ret                 0      0      0     "
     }
-  }
+  },
+  "access": [["public.test", "ro"]]
 }]
 select data, count(*) from test group by data having count(*) > 1
 [[0, 2], [1, 2]]
@@ -1557,7 +1586,7 @@ explain select data, count(*) from test group by 1  having count(*) > 1
     },
     "backend": {
       "00": "set_ordered         0      2      1     ",
-      "01": "table_open          0      1      11    # public.test (primary)",
+      "01": "table_open_part     0      1      11    # public.test (primary)",
       "02": "table_readi32       1      0      1     ",
       "03": "push                1      0      0     ",
       "04": "set_get             1      0      0     ",
@@ -1572,7 +1601,8 @@ explain select data, count(*) from test group by 1  having count(*) > 1
       "13": "result              0      0      0     ",
       "14": "ret                 0      0      0     "
     }
-  }
+  },
+  "access": [["public.test", "ro"]]
 }]
 # test: select as from table group by having alias (unsupported)
 select data, count(*) as c from test group by data having c > 1
@@ -1606,7 +1636,7 @@ explain select data, count(*) from test group by data order by data
     },
     "backend": {
       "00": "set_ordered         0      1      1     ",
-      "01": "table_open          0      1      9     # public.test (primary)",
+      "01": "table_open_part     0      1      9     # public.test (primary)",
       "02": "table_readi32       1      0      1     ",
       "03": "push                1      0      0     ",
       "04": "set_get             1      0      0     ",
@@ -1619,7 +1649,8 @@ explain select data, count(*) from test group by data order by data
       "11": "result              0      0      0     ",
       "12": "ret                 0      0      0     "
     }
-  }
+  },
+  "access": [["public.test", "ro"]]
 }]
 select data, count(*) from test group by data order by data
 [[null, 1], [0, 2], [1, 2], [2, 1], [3, 1]]
@@ -1649,7 +1680,7 @@ explain select count(*) from test group by data order by data
     },
     "backend": {
       "00": "set_ordered         0      1      1     ",
-      "01": "table_open          0      1      9     # public.test (primary)",
+      "01": "table_open_part     0      1      9     # public.test (primary)",
       "02": "table_readi32       1      0      1     ",
       "03": "push                1      0      0     ",
       "04": "set_get             1      0      0     ",
@@ -1662,7 +1693,8 @@ explain select count(*) from test group by data order by data
       "11": "result              0      0      0     ",
       "12": "ret                 0      0      0     "
     }
-  }
+  },
+  "access": [["public.test", "ro"]]
 }]
 select count(*) from test group by data order by data
 [1, 2, 2, 1, 1]

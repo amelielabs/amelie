@@ -17,7 +17,6 @@ struct TableConfig
 {
 	Str     schema;
 	Str     name;
-	bool    shared;
 	bool    unlogged;
 	Columns columns;
 	List    indexes;
@@ -31,7 +30,6 @@ table_config_allocate(void)
 {
 	TableConfig* self;
 	self = am_malloc(sizeof(TableConfig));
-	self->shared           = false;
 	self->unlogged         = false;
 	self->indexes_count    = 0;
 	self->partitions_count = 0;
@@ -80,12 +78,6 @@ table_config_set_name(TableConfig* self, Str* name)
 }
 
 static inline void
-table_config_set_shared(TableConfig* self, bool value)
-{
-	self->shared = value;
-}
-
-static inline void
 table_config_set_unlogged(TableConfig* self, bool value)
 {
 	self->unlogged = value;
@@ -118,7 +110,6 @@ table_config_copy(TableConfig* self)
 	auto copy = table_config_allocate();
 	table_config_set_schema(copy, &self->schema);
 	table_config_set_name(copy, &self->name);
-	table_config_set_shared(copy, self->shared);
 	table_config_set_unlogged(copy, self->unlogged);
 	columns_copy(&copy->columns, &self->columns);
 
@@ -156,7 +147,6 @@ table_config_read(uint8_t** pos)
 		{ DECODE_STRING, "schema",     &self->schema     },
 		{ DECODE_STRING, "name",       &self->name       },
 		{ DECODE_ARRAY,  "columns",    &pos_columns      },
-		{ DECODE_BOOL,   "shared",     &self->shared     },
 		{ DECODE_BOOL,   "unlogged",   &self->unlogged   },
 		{ DECODE_ARRAY,  "indexes",    &pos_indexes      },
 		{ DECODE_ARRAY,  "partitions", &pos_partitions   },
@@ -199,10 +189,6 @@ table_config_write(TableConfig* self, Buf* buf)
 	// name
 	encode_raw(buf, "name", 4);
 	encode_string(buf, &self->name);
-
-	// shared
-	encode_raw(buf, "shared", 6);
-	encode_bool(buf, self->shared);
 
 	// unlogged
 	encode_raw(buf, "unlogged", 8);
@@ -247,10 +233,6 @@ table_config_write_compact(TableConfig* self, Buf* buf)
 	// name
 	encode_raw(buf, "name", 4);
 	encode_string(buf, &self->name);
-
-	// shared
-	encode_raw(buf, "shared", 6);
-	encode_bool(buf, self->shared);
 
 	// unlogged
 	encode_raw(buf, "unlogged", 8);

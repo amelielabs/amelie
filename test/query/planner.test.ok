@@ -21,7 +21,7 @@ explain select * from test
     },
     "backend": {
       "00": "set                 0      2      0     ",
-      "01": "table_open          0      0      8     # public.test (primary)",
+      "01": "table_open_part     0      0      8     # public.test (primary)",
       "02": "table_readi32       1      0      0     ",
       "03": "push                1      0      0     ",
       "04": "table_readi32       1      0      1     ",
@@ -32,7 +32,8 @@ explain select * from test
       "09": "result              0      0      0     ",
       "10": "ret                 0      0      0     "
     }
-  }
+  },
+  "access": [["public.test", "ro"]]
 }]
 select * from test
 [[0, 2], [1, 1], [2, 0]]
@@ -63,7 +64,7 @@ explain select * from test use index (i)
     },
     "backend": {
       "00": "set                 0      2      0     ",
-      "01": "table_open          0      0      8     # public.test (i)",
+      "01": "table_open_part     0      0      8     # public.test (i)",
       "02": "table_readi32       1      0      0     ",
       "03": "push                1      0      0     ",
       "04": "table_readi32       1      0      1     ",
@@ -74,7 +75,8 @@ explain select * from test use index (i)
       "09": "result              0      0      0     ",
       "10": "ret                 0      0      0     "
     }
-  }
+  },
+  "access": [["public.test", "ro"]]
 }]
 select * from test use index (i)
 [[2, 0], [1, 1], [0, 2]]
@@ -100,7 +102,7 @@ explain select * from test
     },
     "backend": {
       "00": "set                 0      2      0     ",
-      "01": "table_open          0      0      8     # public.test (primary)",
+      "01": "table_open_part     0      0      8     # public.test (primary)",
       "02": "table_readi32       1      0      0     ",
       "03": "push                1      0      0     ",
       "04": "table_readi32       1      0      1     ",
@@ -111,7 +113,8 @@ explain select * from test
       "09": "result              0      0      0     ",
       "10": "ret                 0      0      0     "
     }
-  }
+  },
+  "access": [["public.test", "ro"]]
 }]
 explain select * from test use heap
 [{
@@ -139,14 +142,15 @@ explain select * from test use heap
       "09": "result              0      0      0     ",
       "10": "ret                 0      0      0     "
     }
-  }
+  },
+  "access": [["public.test", "ro"]]
 }]
 select * from test use heap
 [[0, 2], [1, 1], [2, 0]]
 drop table test
 # test: hash/hash
-create shared table test (id int, data int, primary key (id, data)) with (type = 'hash')
-create unique index i on test (data) with (type = 'hash')
+create table test (id int, data int, primary key (id, data)) with (type = 'hash')
+create index i on test (data) with (type = 'hash')
 insert into test values (0, 2)
 insert into test values (1, 1)
 insert into test values (2, 0)
@@ -166,7 +170,7 @@ explain select * from test
     },
     "backend": {
       "00": "set                 0      2      0     ",
-      "01": "table_open          0      0      8     # public.test (primary)",
+      "01": "table_open_part     0      0      8     # public.test (primary)",
       "02": "table_readi32       1      0      0     ",
       "03": "push                1      0      0     ",
       "04": "table_readi32       1      0      1     ",
@@ -177,164 +181,11 @@ explain select * from test
       "09": "result              0      0      0     ",
       "10": "ret                 0      0      0     "
     }
-  }
+  },
+  "access": [["public.test", "ro"]]
 }]
 select * from test
 [[1, 1], [0, 2], [2, 0]]
-# test: hash/hash (unique point lookup)
-explain select * from test where data = 2
-[{
-  "bytecode": {
-    "frontend": {
-      "00": "send_all            0      0      -     # public.test",
-      "01": "recv                0      0      0     ",
-      "02": "bool                0      0      0     ",
-      "03": "push                0      0      0     ",
-      "04": "union_recv          0      -1     -1    ",
-      "05": "cte_set             0      0      0     ",
-      "06": "content             0      -      -     ",
-      "07": "ret                 0      0      0     "
-    },
-    "backend": {
-      "00": "set                 0      2      0     ",
-      "01": "int                 1      -      0     # 2",
-      "02": "push                1      0      0     ",
-      "03": "table_open_lookup   0      0      13    # public.test (i)",
-      "04": "table_readi32       1      0      1     ",
-      "05": "int                 2      -      0     # 2",
-      "06": "equii               3      1      2     ",
-      "07": "jntr                13     3      0     ",
-      "08": "table_readi32       1      0      0     ",
-      "09": "push                1      0      0     ",
-      "10": "table_readi32       1      0      1     ",
-      "11": "push                1      0      0     ",
-      "12": "set_add             0      0      0     ",
-      "13": "table_close         0      0      0     ",
-      "14": "result              0      0      0     ",
-      "15": "ret                 0      0      0     "
-    }
-  }
-}]
-select * from test where data = 2
-[[0, 2]]
-explain select * from test where id = 1
-[{
-  "bytecode": {
-    "frontend": {
-      "00": "send_all            0      0      -     # public.test",
-      "01": "recv                0      0      0     ",
-      "02": "bool                0      0      0     ",
-      "03": "push                0      0      0     ",
-      "04": "union_recv          0      -1     -1    ",
-      "05": "cte_set             0      0      0     ",
-      "06": "content             0      -      -     ",
-      "07": "ret                 0      0      0     "
-    },
-    "backend": {
-      "00": "set                 0      2      0     ",
-      "01": "int                 1      -      0     # 1",
-      "02": "push                1      0      0     ",
-      "03": "table_open          0      0      14    # public.test (primary)",
-      "04": "table_readi32       1      0      0     ",
-      "05": "int                 2      -      0     # 1",
-      "06": "equii               3      1      2     ",
-      "07": "jntr                13     3      0     ",
-      "08": "table_readi32       1      0      0     ",
-      "09": "push                1      0      0     ",
-      "10": "table_readi32       1      0      1     ",
-      "11": "push                1      0      0     ",
-      "12": "set_add             0      0      0     ",
-      "13": "table_next          0      4      0     ",
-      "14": "table_close         0      0      0     ",
-      "15": "result              0      0      0     ",
-      "16": "ret                 0      0      0     "
-    }
-  }
-}]
-select * from test where id = 1
-[[1, 1]]
-explain select * from test where id = 1 and data = 1
-[{
-  "bytecode": {
-    "frontend": {
-      "00": "send_lookup         0      0      -     # public.test",
-      "01": "recv                0      0      0     ",
-      "02": "bool                0      0      0     ",
-      "03": "push                0      0      0     ",
-      "04": "union_recv          0      -1     -1    ",
-      "05": "cte_set             0      0      0     ",
-      "06": "content             0      -      -     ",
-      "07": "ret                 0      0      0     "
-    },
-    "backend": {
-      "00": "set                 0      2      0     ",
-      "01": "int                 1      -      0     # 1",
-      "02": "push                1      0      0     ",
-      "03": "int                 1      -      0     # 1",
-      "04": "push                1      0      0     ",
-      "05": "table_open_lookup   0      0      19    # public.test (primary)",
-      "06": "table_readi32       1      0      0     ",
-      "07": "int                 2      -      0     # 1",
-      "08": "equii               3      1      2     ",
-      "09": "table_readi32       1      0      1     ",
-      "10": "int                 2      -      0     # 1",
-      "11": "equii               4      1      2     ",
-      "12": "and                 1      3      4     ",
-      "13": "jntr                19     1      0     ",
-      "14": "table_readi32       1      0      0     ",
-      "15": "push                1      0      0     ",
-      "16": "table_readi32       1      0      1     ",
-      "17": "push                1      0      0     ",
-      "18": "set_add             0      0      0     ",
-      "19": "table_close         0      0      0     ",
-      "20": "result              0      0      0     ",
-      "21": "ret                 0      0      0     "
-    }
-  }
-}]
-select * from test where id = 1 and data = 1
-[[1, 1]]
-explain select * from test where data = 1 and id = 1
-[{
-  "bytecode": {
-    "frontend": {
-      "00": "send_lookup         0      0      -     # public.test",
-      "01": "recv                0      0      0     ",
-      "02": "bool                0      0      0     ",
-      "03": "push                0      0      0     ",
-      "04": "union_recv          0      -1     -1    ",
-      "05": "cte_set             0      0      0     ",
-      "06": "content             0      -      -     ",
-      "07": "ret                 0      0      0     "
-    },
-    "backend": {
-      "00": "set                 0      2      0     ",
-      "01": "int                 1      -      0     # 1",
-      "02": "push                1      0      0     ",
-      "03": "int                 1      -      0     # 1",
-      "04": "push                1      0      0     ",
-      "05": "table_open_lookup   0      0      19    # public.test (primary)",
-      "06": "table_readi32       1      0      1     ",
-      "07": "int                 2      -      0     # 1",
-      "08": "equii               3      1      2     ",
-      "09": "table_readi32       1      0      0     ",
-      "10": "int                 2      -      0     # 1",
-      "11": "equii               4      1      2     ",
-      "12": "and                 1      3      4     ",
-      "13": "jntr                19     1      0     ",
-      "14": "table_readi32       1      0      0     ",
-      "15": "push                1      0      0     ",
-      "16": "table_readi32       1      0      1     ",
-      "17": "push                1      0      0     ",
-      "18": "set_add             0      0      0     ",
-      "19": "table_close         0      0      0     ",
-      "20": "result              0      0      0     ",
-      "21": "ret                 0      0      0     "
-    }
-  }
-}]
-select * from test where data = 1 and id = 1
-[[1, 1]]
 drop table test
 # test: tree/hash
 create table test (id int primary key, data int)
@@ -359,7 +210,7 @@ explain select * from test where id = 1
       "00": "set                 0      2      0     ",
       "01": "int                 1      -      0     # 1",
       "02": "push                1      0      0     ",
-      "03": "table_open_lookup   0      0      13    # public.test (primary)",
+      "03": "table_open_partl    0      0      13    # public.test (primary)",
       "04": "table_readi32       1      0      0     ",
       "05": "int                 2      -      0     # 1",
       "06": "equii               3      1      2     ",
@@ -373,7 +224,8 @@ explain select * from test where id = 1
       "14": "result              0      0      0     ",
       "15": "ret                 0      0      0     "
     }
-  }
+  },
+  "access": [["public.test", "ro"]]
 }]
 select * from test where id = 1
 [[1, 1]]
@@ -394,7 +246,7 @@ explain select * from test where id > 1
       "00": "set                 0      2      0     ",
       "01": "int                 1      -      0     # 1",
       "02": "push                1      0      0     ",
-      "03": "table_open          0      0      14    # public.test (primary)",
+      "03": "table_open_part     0      0      14    # public.test (primary)",
       "04": "table_readi32       1      0      0     ",
       "05": "int                 2      -      0     # 1",
       "06": "gtii                3      1      2     ",
@@ -409,7 +261,8 @@ explain select * from test where id > 1
       "15": "result              0      0      0     ",
       "16": "ret                 0      0      0     "
     }
-  }
+  },
+  "access": [["public.test", "ro"]]
 }]
 select * from test where id > 1
 [[2, 0]]
@@ -428,7 +281,7 @@ explain select * from test where data > 1
     },
     "backend": {
       "00": "set                 0      2      0     ",
-      "01": "table_open          0      0      12    # public.test (primary)",
+      "01": "table_open_part     0      0      12    # public.test (primary)",
       "02": "table_readi32       1      0      1     ",
       "03": "int                 2      -      0     # 1",
       "04": "gtii                3      1      2     ",
@@ -443,7 +296,8 @@ explain select * from test where data > 1
       "13": "result              0      0      0     ",
       "14": "ret                 0      0      0     "
     }
-  }
+  },
+  "access": [["public.test", "ro"]]
 }]
 select * from test where data > 1
 [[0, 2]]
@@ -463,7 +317,7 @@ explain select * from test where data = 1
     },
     "backend": {
       "00": "set                 0      2      0     ",
-      "01": "table_open          0      0      12    # public.test (primary)",
+      "01": "table_open_part     0      0      12    # public.test (primary)",
       "02": "table_readi32       1      0      1     ",
       "03": "int                 2      -      0     # 1",
       "04": "equii               3      1      2     ",
@@ -478,7 +332,8 @@ explain select * from test where data = 1
       "13": "result              0      0      0     ",
       "14": "ret                 0      0      0     "
     }
-  }
+  },
+  "access": [["public.test", "ro"]]
 }]
 select * from test where data = 1
 [[1, 1]]
@@ -521,7 +376,7 @@ explain select * from test where data = 1 and id = 1
       "02": "push                1      0      0     ",
       "03": "int                 1      -      0     # 1",
       "04": "push                1      0      0     ",
-      "05": "table_open_lookup   0      0      20    # public.test (i)",
+      "05": "table_open_partl    0      0      20    # public.test (i)",
       "06": "table_readi32       1      0      1     ",
       "07": "int                 2      -      0     # 1",
       "08": "equii               3      1      2     ",
@@ -540,7 +395,8 @@ explain select * from test where data = 1 and id = 1
       "21": "result              0      0      0     ",
       "22": "ret                 0      0      0     "
     }
-  }
+  },
+  "access": [["public.test", "ro"]]
 }]
 select * from test where data = 1 and id = 1
 [[1, 1]]
@@ -564,7 +420,7 @@ explain select * from test where id = 1 and data = 1
       "02": "push                1      0      0     ",
       "03": "int                 1      -      0     # 1",
       "04": "push                1      0      0     ",
-      "05": "table_open_lookup   0      0      20    # public.test (i)",
+      "05": "table_open_partl    0      0      20    # public.test (i)",
       "06": "table_readi32       1      0      0     ",
       "07": "int                 2      -      0     # 1",
       "08": "equii               3      1      2     ",
@@ -583,7 +439,8 @@ explain select * from test where id = 1 and data = 1
       "21": "result              0      0      0     ",
       "22": "ret                 0      0      0     "
     }
-  }
+  },
+  "access": [["public.test", "ro"]]
 }]
 select * from test where id = 1 and data = 1
 [[1, 1]]
@@ -612,7 +469,7 @@ explain select * from test where id > 1
       "00": "set                 0      2      0     ",
       "01": "int                 1      -      0     # 1",
       "02": "push                1      0      0     ",
-      "03": "table_open          0      0      14    # public.test (primary)",
+      "03": "table_open_part     0      0      14    # public.test (primary)",
       "04": "table_readi32       1      0      0     ",
       "05": "int                 2      -      0     # 1",
       "06": "gtii                3      1      2     ",
@@ -627,7 +484,8 @@ explain select * from test where id > 1
       "15": "result              0      0      0     ",
       "16": "ret                 0      0      0     "
     }
-  }
+  },
+  "access": [["public.test", "ro"]]
 }]
 select * from test where id > 1
 [[2, 0]]
@@ -648,7 +506,7 @@ explain select * from test where data > 1
       "00": "set                 0      2      0     ",
       "01": "int                 1      -      0     # 1",
       "02": "push                1      0      0     ",
-      "03": "table_open          0      0      14    # public.test (i)",
+      "03": "table_open_part     0      0      14    # public.test (i)",
       "04": "table_readi32       1      0      1     ",
       "05": "int                 2      -      0     # 1",
       "06": "gtii                3      1      2     ",
@@ -663,7 +521,8 @@ explain select * from test where data > 1
       "15": "result              0      0      0     ",
       "16": "ret                 0      0      0     "
     }
-  }
+  },
+  "access": [["public.test", "ro"]]
 }]
 select * from test where data > 1
 [[0, 2]]
@@ -683,7 +542,7 @@ explain select * from test where data < 1
     },
     "backend": {
       "00": "set                 0      2      0     ",
-      "01": "table_open          0      0      16    # public.test (i)",
+      "01": "table_open_part     0      0      16    # public.test (i)",
       "02": "table_readi32       1      0      1     ",
       "03": "int                 2      -      0     # 1",
       "04": "ltii                3      1      2     ",
@@ -702,7 +561,8 @@ explain select * from test where data < 1
       "17": "result              0      0      0     ",
       "18": "ret                 0      0      0     "
     }
-  }
+  },
+  "access": [["public.test", "ro"]]
 }]
 select * from test where data < 1
 [[2, 0]]
@@ -721,7 +581,7 @@ explain select * from test where id < 1
     },
     "backend": {
       "00": "set                 0      2      0     ",
-      "01": "table_open          0      0      16    # public.test (primary)",
+      "01": "table_open_part     0      0      16    # public.test (primary)",
       "02": "table_readi32       1      0      0     ",
       "03": "int                 2      -      0     # 1",
       "04": "ltii                3      1      2     ",
@@ -740,7 +600,8 @@ explain select * from test where id < 1
       "17": "result              0      0      0     ",
       "18": "ret                 0      0      0     "
     }
-  }
+  },
+  "access": [["public.test", "ro"]]
 }]
 select * from test where id < 1
 [[0, 2]]
@@ -759,7 +620,7 @@ explain select * from test where id < 1 and data < 2
     },
     "backend": {
       "00": "set                 0      2      0     ",
-      "01": "table_open          0      0      20    # public.test (primary)",
+      "01": "table_open_part     0      0      20    # public.test (primary)",
       "02": "table_readi32       1      0      0     ",
       "03": "int                 2      -      0     # 1",
       "04": "ltii                3      1      2     ",
@@ -782,7 +643,8 @@ explain select * from test where id < 1 and data < 2
       "21": "result              0      0      0     ",
       "22": "ret                 0      0      0     "
     }
-  }
+  },
+  "access": [["public.test", "ro"]]
 }]
 select * from test where id < 1 and data < 2
 []

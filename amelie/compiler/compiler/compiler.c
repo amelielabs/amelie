@@ -106,9 +106,7 @@ static void
 emit_stmt(Compiler* self)
 {
 	// generate backend code (pushdown)
-	auto     stmt = self->current;
-	Targets* dml = NULL;
-	auto     table_in_use = false;
+	auto stmt = self->current;
 	switch (stmt->id) {
 	case STMT_INSERT:
 	{
@@ -117,23 +115,17 @@ emit_stmt(Compiler* self)
 			emit_insert(self, stmt->ast);
 		else
 			emit_upsert(self, stmt->ast);
-		dml = &insert->targets;
-		table_in_use = true;
 		break;
 	}
 	case STMT_UPDATE:
 	{
 		emit_update(self, stmt->ast);
-		dml = &ast_update_of(stmt->ast)->targets;
-		table_in_use = true;
 		break;
 	}
 
 	case STMT_DELETE:
 	{
 		emit_delete(self, stmt->ast);
-		dml = &ast_delete_of(stmt->ast)->targets;
-		table_in_use = true;
 		break;
 	}
 
@@ -141,30 +133,18 @@ emit_stmt(Compiler* self)
 	{
 		// select from table, ...
 		auto select = ast_select_of(stmt->ast);
-		if (select->pushdown == PUSHDOWN_TARGET)
+		if (select->pushdown)
 		{
-			// partitioned or shared table direct scan or join
+			// table direct scan or join
 			//
 			// execute on one or more backends, process the result on frontend
 			//
 			pushdown(self, stmt->ast);
-			table_in_use = true;
 			break;
 		}
 
 		// select (select from table)
-		if (select->pushdown == PUSHDOWN_FULL)
-		{
-			// shared table being involved in a subquery
-			//
-			// pushdown whole query, frontend will receive the result
-			//
-			pushdown_full(self, stmt->ast);
-			table_in_use = true;
-			break;
-		}
-
-		// no targets or all targets are expressions
+		// select expr
 		//
 		// do nothing (frontend only)
 		return;
@@ -179,18 +159,11 @@ emit_stmt(Compiler* self)
 		break;
 	}
 
-	if (table_in_use)
-	{
-		// set last statement which uses a table,
-		// set snapshot if two or more stmts are using tables
-		if (self->last)
-			self->snapshot = true;
-		self->last = self->current;
-
-		// set snapshot if at least one dml uses a shared table
-		if (dml && targets_count(dml, TARGET_TABLE_SHARED))
-			self->snapshot = true;
-	}
+	// set last statement which uses a table,
+	// set snapshot if two or more stmts are using tables
+	if (self->last)
+		self->snapshot = true;
+	self->last = self->current;
 
 	// CRET
 	op0(self, CRET);
@@ -289,7 +262,7 @@ emit_send(Compiler* self, int start)
 	case STMT_INSERT:
 	{
 		emit_send_insert(self, start);
-		break;
+		return;
 	}
 
 	case STMT_UPDATE:
@@ -308,38 +281,30 @@ emit_send(Compiler* self, int start)
 	{
 		// select from table, ...
 		auto select = ast_select_of(stmt->ast);
-		if (select->pushdown == PUSHDOWN_TARGET)
+		if (select->pushdown)
 		{
-			target = select->pushdown_target;
+			target = select->pushdown;
 			break;
 		}
 
 		// select (select from table)
-		if (select->pushdown == PUSHDOWN_FULL)
-		{
-			// execute on the first partition of a shared table
-			// using in the subquery
-			target = select->pushdown_target;
-			break;
-		}
-
-		// no targets or all targets are expressions
-		break;
+		// select expr
+		//
+		// do nothing (frontend only)
+		//
+		return;
 	}
 
 	case STMT_WATCH:
 		// no targets
-		break;
+		return;
 
 	default:
 		abort();
 		break;
 	}
 
-	// table target
-	if (! target)
-		return;
-
+	// table target pushdown
 	auto table = target->from_table;
 
 	// point-lookup or range scan
@@ -396,7 +361,7 @@ emit_recv(Compiler* self)
 		auto select = ast_select_of(stmt->ast);
 		ret = &select->ret;
 
-		if (select->pushdown == PUSHDOWN_TARGET)
+		if (select->pushdown)
 		{
 			// process the result from one or more backends
 			r = pushdown_recv(self, stmt->ast);
@@ -404,16 +369,7 @@ emit_recv(Compiler* self)
 		}
 
 		// select (select from table)
-		if (select->pushdown == PUSHDOWN_FULL)
-		{
-			// recv whole query result
-
-			// CRECV_TO (note: set or union received)
-			r = op2(self, CRECV_TO, rpin(self, TYPE_STORE), stmt->order);
-			break;
-		}
-
-		// no targets or all targets are expressions
+		// select expr
 		r = emit_select(self, stmt->ast);
 		break;
 	}
@@ -471,7 +427,7 @@ stmt_is_expr(Stmt* self)
 {
 	if (self->id != STMT_SELECT)
 		return false;
-	return ast_select_of(self->ast)->pushdown == PUSHDOWN_NONE;
+	return !ast_select_of(self->ast)->pushdown;
 }
 
 static inline  int

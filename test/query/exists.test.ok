@@ -18,8 +18,34 @@ select exists (false)
 select exists ([])
 {"msg": "select exists (❰[❱ ⟵ SELECT expected"}
 # test: exists (select)
-create shared table test (id int primary key, data int)
+create table test (id int primary key, data int)
 insert into test values (1, 0), (2, 0)
+explain select exists (select true from test limit 1)
+[{
+  "bytecode": {
+    "frontend": {
+      "00": "set                 0      1      0     ",
+      "01": "set                 1      1      0     ",
+      "02": "int                 2      -      0     # 1",
+      "03": "table_open          0      0      11    # public.test (primary)",
+      "04": "jmp                 6      0      0     ",
+      "05": "jmp                 11     0      0     ",
+      "06": "cjltd               2      5      0     ",
+      "07": "bool                3      1      0     ",
+      "08": "push                3      0      0     ",
+      "09": "set_add             1      0      0     ",
+      "10": "table_next          0      6      0     ",
+      "11": "table_close         0      0      0     ",
+      "12": "exists              2      1      0     ",
+      "13": "push                2      0      0     ",
+      "14": "set_add             0      0      0     ",
+      "15": "cte_set             0      0      0     ",
+      "16": "content             0      -      -     ",
+      "17": "ret                 0      0      0     "
+    }
+  },
+  "access": [["public.test", "ro_exclusive"]]
+}]
 select exists (select true from test limit 1)
 [true]
 select exists (select true from test where false)
@@ -34,13 +60,6 @@ explain select exists (select true from test where false)
 [{
   "bytecode": {
     "frontend": {
-      "00": "send_all            0      0      -     # public.test",
-      "01": "recv_to             0      0      0     ",
-      "02": "cte_set             0      0      0     ",
-      "03": "content             0      -      -     ",
-      "04": "ret                 0      0      0     "
-    },
-    "backend": {
       "00": "set                 0      1      0     ",
       "01": "set                 1      1      0     ",
       "02": "table_open          0      0      9     # public.test (primary)",
@@ -54,10 +73,12 @@ explain select exists (select true from test where false)
       "10": "exists              2      1      0     ",
       "11": "push                2      0      0     ",
       "12": "set_add             0      0      0     ",
-      "13": "result              0      0      0     ",
-      "14": "ret                 0      0      0     "
+      "13": "cte_set             0      0      0     ",
+      "14": "content             0      -      -     ",
+      "15": "ret                 0      0      0     "
     }
-  }
+  },
+  "access": [["public.test", "ro_exclusive"]]
 }]
 # test: exists (select) (more then one column)
 select exists (select * from test)

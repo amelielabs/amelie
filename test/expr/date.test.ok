@@ -69,7 +69,8 @@ explain select [current_date]
       "05": "content             0      -      -     ",
       "06": "ret                 0      0      0     "
     }
-  }
+  },
+  "access": []
 }]
 explain select [date '1970-01-01']
 [{
@@ -83,7 +84,8 @@ explain select [date '1970-01-01']
       "05": "content             0      -      -     ",
       "06": "ret                 0      0      0     "
     }
-  }
+  },
+  "access": []
 }]
 select [date '1970-01-01']
 [["1970-01-01"]]
@@ -112,7 +114,8 @@ explain select now()::date between date '0001-01-01' and date '9999-12-31'
       "15": "content             0      -      -     ",
       "16": "ret                 0      0      0     "
     }
-  }
+  },
+  "access": []
 }]
 explain select date '1970-01-01' between date '1970-01-01' and date '1970-01-01'
 [{
@@ -132,7 +135,8 @@ explain select date '1970-01-01' between date '1970-01-01' and date '1970-01-01'
       "11": "content             0      -      -     ",
       "12": "ret                 0      0      0     "
     }
-  }
+  },
+  "access": []
 }]
 select date '1970-01-01' between date '1970-01-01' and date '1970-01-01'
 [true]

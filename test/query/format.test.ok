@@ -224,7 +224,7 @@ select 1 as id, 2 as id format "json"
 select 1 as id, 2 as id format "json-obj"
 [{"id": 1, "id": 2}]
 # test: returning format
-create shared table test (id int primary key)
+create table test (id int primary key)
 insert into test values (1) returning * format "json-obj"
 [{"id": 1}]
 insert into test values (2) returning id format "json-obj-pretty"

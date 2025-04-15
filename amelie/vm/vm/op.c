@@ -229,7 +229,9 @@ OpDesc ops[] =
 
 	// table cursor
 	{ CTABLE_OPEN, "table_open" },
-	{ CTABLE_OPEN_LOOKUP, "table_open_lookup" },
+	{ CTABLE_OPENL, "table_openl" },
+	{ CTABLE_OPEN_PART, "table_open_part" },
+	{ CTABLE_OPEN_PARTL, "table_open_partl" },
 	{ CTABLE_OPEN_HEAP, "table_open_heap" },
 	{ CTABLE_PREPARE, "table_prepare" },
 	{ CTABLE_CLOSE, "table_close" },
@@ -282,7 +284,6 @@ OpDesc ops[] =
 	{ CSEND_LOOKUP, "send_lookup" },
 	{ CSEND_ALL, "send_all" },
 	{ CRECV, "recv" },
-	{ CRECV_TO, "recv_to" },
 
 	// result
 	{ CRESULT, "result" },
@@ -389,7 +390,9 @@ op_dump(Code* self, CodeData* data, Buf* buf)
 			break;
 		}
 		case CTABLE_OPEN:
-		case CTABLE_OPEN_LOOKUP:
+		case CTABLE_OPENL:
+		case CTABLE_OPEN_PART:
+		case CTABLE_OPEN_PARTL:
 		{
 			Str name_schema;
 			Str name_table;

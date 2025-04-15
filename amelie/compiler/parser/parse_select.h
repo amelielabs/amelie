@@ -13,13 +13,6 @@
 
 typedef struct AstSelect AstSelect;
 
-typedef enum
-{
-	PUSHDOWN_NONE,
-	PUSHDOWN_TARGET,
-	PUSHDOWN_FULL
-} Pushdown;
-
 struct AstSelect
 {
 	Ast         ast;
@@ -37,8 +30,7 @@ struct AstSelect
 	Targets     targets;
 	Targets     targets_group;
 	Columns     targets_group_columns;
-	Pushdown    pushdown;
-	Target*     pushdown_target;
+	Target*     pushdown;
 	int         rset;
 	int         rset_agg;
 	int         rset_agg_row;
@@ -63,8 +55,7 @@ ast_select_allocate(Targets* outer)
 	self->expr_group_by_has = false;
 	self->distinct          = false;
 	self->distinct_on       = false;
-	self->pushdown          = PUSHDOWN_NONE;
-	self->pushdown_target   = NULL;
+	self->pushdown          = NULL;
 	self->rset              = -1;
 	self->rset_agg          = -1;
 	self->rset_agg_row      = -1;

@@ -125,33 +125,10 @@ select system.table('test').indexes
 drop index i on test
 # test: create index (unique)
 create unique index i on test (a)
-{"msg": "create unique index i on ❰test❱ ⟵ secondary UNIQUE INDEX cannot be created on a partitioned table"}
-# test: create index (unique shared)
+{"msg": "create unique index i on ❰test❱ ⟵ secondary UNIQUE INDEX is not supported"}
 drop table test
-create shared table test (id int primary key, a int, b int)
-create unique index i on test (a)
-select system.table('test').indexes
-[[{
-  "name": "primary",
-  "type": 2,
-  "unique": true,
-  "primary": true,
-  "keys": [{
-    "column": 0
-  }]
-}, {
-  "name": "i",
-  "type": 2,
-  "unique": true,
-  "primary": false,
-  "keys": [{
-    "column": 1
-  }]
-}]]
-drop index i on test
-drop table test
-create table test (id int primary key, a int, b int)
 # test: create index with parsing
+create table test (id int primary key, a int, b int)
 create index i on test (a) 1
 {"msg": "create index i on test (a) ❰1❱ ⟵ ; expected"}
 create index i on test (a) with
@@ -221,31 +198,6 @@ select system.table('test').indexes
 drop index i on test
 create index i on test (a) with (type = 'unknown')
 {"msg": "create index i on test (a) with (type = ❰'unknown'❱ ⟵ unrecognized index type"}
-# test: create index (shared)
-drop table test
-create shared table test (id int primary key, a int, b int)
-create index i on test (a)
-select system.table('test').indexes
-[[{
-  "name": "primary",
-  "type": 2,
-  "unique": true,
-  "primary": true,
-  "keys": [{
-    "column": 0
-  }]
-}, {
-  "name": "i",
-  "type": 2,
-  "unique": false,
-  "primary": false,
-  "keys": [{
-    "column": 1
-  }, {
-    "column": 0
-  }]
-}]]
-drop index i on test
 # test: drop index parsing
 drop index
 {"msg": "drop index ⟵ name expected"}

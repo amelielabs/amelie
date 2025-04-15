@@ -66,28 +66,11 @@ build_free(Build* self)
 	channel_free(&self->channel);
 }
 
-static inline void
-build_run_first(Build* self)
+void
+build_run(Build* self)
 {
-	// ask first worker to build related partition
-	auto route = router_first(&self->backend_mgr->router);
-	auto buf = msg_create(RPC_BUILD);
-	buf_write(buf, &self, sizeof(Build**));
-	msg_end(buf);
-	channel_write(route->channel, buf);
+	channel_attach(&self->channel);
 
-	// wait for completion
-	buf = channel_read(&self->channel, -1);
-	defer_buf(buf);
-
-	auto msg = msg_of(buf);
-	if (msg->id == MSG_ERROR)
-		msg_error_throw(buf);
-}
-
-static inline void
-build_run_all(Build* self)
-{
 	// ask each worker to build related partition
 	list_foreach(&self->backend_mgr->list)
 	{
@@ -118,18 +101,6 @@ build_run_all(Build* self)
 		defer_buf(error);
 		msg_error_throw(error);
 	}
-}
-
-void
-build_run(Build* self)
-{
-	channel_attach(&self->channel);
-
-	// run on first worker (for shared table) or all workers
-	if (self->table && self->table->config->shared)
-		build_run_first(self);
-	else
-		build_run_all(self);
 }
 
 static void

@@ -183,7 +183,7 @@ select * from test use index (i)
 drop table test
 
 # test: upsert select
-create shared table test (id int primary key, data int)
+create table test (id int primary key, data int)
 
 insert into test select 0, 0
 insert into test select 0, 0 on conflict do error

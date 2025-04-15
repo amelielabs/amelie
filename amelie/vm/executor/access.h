@@ -77,6 +77,7 @@ access_add(Access* self, Table* table, AccessType type)
 	auto record = (AccessRecord*)buf_claim(&self->list, sizeof(AccessRecord));
 	record->table = table;
 	record->type  = type;
+	self->list_count++;
 }
 
 hot static inline bool
@@ -109,6 +110,32 @@ access_try(Access* self, Access* with)
 			}
 		}
 	}
-
 	return true;
+}
+
+static inline void
+access_encode(Access* self, Buf* buf)
+{
+	encode_array(buf);
+	for (auto i = 0; i < self->list_count; i++)
+	{
+		auto record = access_at(self, i);
+		encode_array(buf);
+		encode_target(buf, &record->table->config->schema, &record->table->config->name);
+		switch (record->type) {
+		case ACCESS_RO:
+			encode_raw(buf, "ro", 2);
+			break;
+		case ACCESS_RW:
+			encode_raw(buf, "rw", 2);
+			break;
+		case ACCESS_RO_EXCLUSIVE:
+			encode_raw(buf, "ro_exclusive", 12);
+			break;
+		default:
+			abort();
+		}
+		encode_array_end(buf);
+	}
+	encode_array_end(buf);
 }
