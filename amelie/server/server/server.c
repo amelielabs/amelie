@@ -298,6 +298,7 @@ server_start(Server*     self,
 	}
 
 	// listen for incoming connections
+	info("");
 	list_foreach(&self->listen)
 	{
 		auto listen = list_at(ServerListen, link);

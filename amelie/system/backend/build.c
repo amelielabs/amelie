@@ -69,6 +69,52 @@ build_free(Build* self)
 void
 build_run(Build* self)
 {
+	switch (self->type) {
+	case BUILD_INDEX:
+	{
+		auto config = self->table->config;
+		info("");
+		info("⟶ create index %.*s on %.*s.%.*s",
+		     str_size(&self->index->name),
+		     str_of(&self->index->name),
+		     str_size(&config->schema),
+		     str_of(&config->schema),
+		     str_size(&config->name),
+		     str_of(&config->name));
+		break;
+	}
+	case BUILD_COLUMN_ADD:
+	{
+		auto config = self->table->config;
+		info("");
+		info("⟶ alter table %.*s.%.*s add column %.*s",
+		     str_size(&config->schema),
+		     str_of(&config->schema),
+		     str_size(&config->name),
+		     str_of(&config->name),
+		     str_size(&self->column->name),
+		     str_of(&self->column->name));
+		break;
+	}
+	case BUILD_COLUMN_DROP:
+	{
+		auto config = self->table->config;
+		info("");
+		info("⟶ alter table %.*s.%.*s drop column %.*s",
+		     str_size(&config->schema),
+		     str_of(&config->schema),
+		     str_size(&config->name),
+		     str_of(&config->name),
+		     str_size(&self->column->name),
+		     str_of(&self->column->name));
+		break;
+	}
+	// BUILD_RECOVER
+	// BUILD_NONE
+	default:
+		break;
+	}
+
 	channel_attach(&self->channel);
 
 	// ask each worker to build related partition
@@ -101,6 +147,8 @@ build_run(Build* self)
 		defer_buf(error);
 		msg_error_throw(error);
 	}
+
+	info("complete");
 }
 
 static void

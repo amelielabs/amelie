@@ -21,10 +21,11 @@
 #include <amelie_index.h>
 #include <amelie_partition.h>
 
-hot static void
+hot static uint64_t
 part_build_index(PartBuild* self, Iterator* it)
 {
 	// build secondary index by iterating and indexating primary keys
+	uint64_t count = 0;
 	auto index = part_find(self->part, &self->index->name, true);
 	for (; iterator_has(it); iterator_next(it))
 	{
@@ -32,13 +33,16 @@ part_build_index(PartBuild* self, Iterator* it)
 		auto prev = index_ingest(index, row);
 		if (unlikely(prev))
 			error("index unique constraint violation");
+		count++;
 	}
+	return count;
 }
 
-hot static void
+hot static uint64_t
 part_build_column_add(PartBuild* self, Iterator* it)
 {
 	// build partition with a new column based on the other partition
+	uint64_t count = 0;
 	auto primary = part_primary(self->part);
 	auto primary_columns = index_keys(primary)->columns;
 	auto primary_dest = part_primary(self->part_dest);
@@ -54,13 +58,16 @@ part_build_column_add(PartBuild* self, Iterator* it)
 
 		// update secondary indexes
 		part_ingest_secondary(self->part_dest, row);
+		count++;
 	}
+	return count;
 }
 
-hot static void
+hot static uint64_t
 part_build_column_drop(PartBuild* self, Iterator* it)
 {
 	// build partition without a column based on the other partition
+	uint64_t count = 0;
 	auto primary = part_primary(self->part);
 	auto primary_columns = index_keys(primary)->columns;
 	auto primary_dest = part_primary(self->part_dest);
@@ -76,7 +83,9 @@ part_build_column_drop(PartBuild* self, Iterator* it)
 
 		// update secondary indexes
 		part_ingest_secondary(self->part_dest, row);
+		count++;
 	}
+	return count;
 }
 
 void
@@ -86,63 +95,18 @@ part_build(PartBuild* self)
 	auto it = index_iterator(part_primary(self->part));
 	defer(iterator_close, it);
 	iterator_open(it, NULL);
+	uint64_t count;
 	switch (self->type) {
 	case PART_BUILD_INDEX:
-		info("build %.*s.%.*s: create index %.*s (partition %" PRIu64 ")",
-		     str_size(self->schema),
-		     str_of(self->schema),
-		     str_size(self->name),
-		     str_of(self->name),
-		     str_size(&self->index->name),
-		     str_of(&self->index->name),
-		     id);
-		part_build_index(self, it);
-		info("build %.*s.%.*s: create index %.*s (partition %" PRIu64 ") complete",
-		     str_size(self->schema),
-		     str_of(self->schema),
-		     str_size(self->name),
-		     str_of(self->name),
-		     str_size(&self->index->name),
-		     str_of(&self->index->name),
-		     id);
+		count = part_build_index(self, it);
 		break;
 	case PART_BUILD_COLUMN_ADD:
-		info("build %.*s.%.*s: add column %.*s (partition %" PRIu64 ")",
-		     str_size(self->schema),
-		     str_of(self->schema),
-		     str_size(self->name),
-		     str_of(self->name),
-		     str_size(&self->column->name),
-		     str_of(&self->column->name),
-		     id);
-		part_build_column_add(self, it);
-		info("build %.*s.%.*s: add column %.*s (partition %" PRIu64 ") complete",
-		     str_size(self->schema),
-		     str_of(self->schema),
-		     str_size(self->name),
-		     str_of(self->name),
-		     str_size(&self->column->name),
-		     str_of(&self->column->name),
-		     id);
+		count = part_build_column_add(self, it);
 		break;
 	case PART_BUILD_COLUMN_DROP:
-		info("build %.*s.%.*s: drop column %.*s (partition %" PRIu64 ")",
-		     str_size(self->schema),
-		     str_of(self->schema),
-		     str_size(self->name),
-		     str_of(self->name),
-		     str_size(&self->column->name),
-		     str_of(&self->column->name),
-		     id);
-		part_build_column_drop(self, it);
-		info("build %.*s.%.*s: drop column %.*s (partition %" PRIu64 ") complete",
-		     str_size(self->schema),
-		     str_of(self->schema),
-		     str_size(self->name),
-		     str_of(self->name),
-		     str_size(&self->column->name),
-		     str_of(&self->column->name),
-		     id);
+		count = part_build_column_drop(self, it);
 		break;
 	}
+	info("partition %" PRIu64 " (%" PRIu64 " rows processed)",
+	     id, count);
 }

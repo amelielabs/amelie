@@ -149,7 +149,6 @@ system_recover(System* self)
 	recover_wal(&recover);
 
 	info("complete");
-	info("");
 }
 
 static void

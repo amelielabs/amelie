@@ -263,5 +263,4 @@ checkpoint_wait(Checkpoint* self)
 	checkpoint_mgr_add(self->mgr, self->lsn);
 	var_int_set(&state()->checkpoint, self->lsn);
 	info("complete");
-	info("");
 }

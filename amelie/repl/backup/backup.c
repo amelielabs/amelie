@@ -331,7 +331,6 @@ backup_main(void* arg)
 
 	event_signal(&self->on_complete);
 	info("complete");
-	info("");
 }
 
 void
