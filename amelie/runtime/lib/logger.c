@@ -103,8 +103,7 @@ logger_write(void*       arg,
 	}
 
 	// message
-	buf_len += snprintf(buf + buf_len, sizeof(buf) - buf_len, "%-8s  %s%s\n",
-	                    am_task->name,
+	buf_len += snprintf(buf + buf_len, sizeof(buf) - buf_len, " %s%s\n",
 	                    prefix, text);
 
 	// write to the log file

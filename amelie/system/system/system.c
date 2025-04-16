@@ -134,7 +134,7 @@ system_recover(System* self)
 {
 	// ask each backend to recover last checkpoint partitions in parallel
 	int workers = var_int_of(&config()->backends);
-	info("⟶ recover checkpoint %" PRIu64 " (using %d backends)",
+	info("⟶ recovery (checkpoint %" PRIu64 ", using %d backends)",
 	     state_checkpoint(), workers);
 
 	Build build;
@@ -175,7 +175,7 @@ system_start(System* self, bool bootstrap)
 {
 	// hello
 	auto version = &state()->version.string;
-	info("amelie ｢%.*s｣", str_size(version), str_of(version));
+	info("amelie %.*s", str_size(version), str_of(version));
 
 	// show system options
 	info("");
