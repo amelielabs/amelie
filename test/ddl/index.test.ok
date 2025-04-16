@@ -125,7 +125,6 @@ select system.table('test').indexes
 drop index i on test
 # test: create index (unique)
 create unique index i on test (a)
-{"msg": "create unique index i on ❰test❱ ⟵ secondary UNIQUE INDEX is not supported"}
 drop table test
 # test: create index with parsing
 create table test (id int primary key, a int, b int)

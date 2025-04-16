@@ -476,8 +476,11 @@ drop index i on test
 drop table test
 
 # test: insert secondary index (unique)
-create table test (id int primary key, data int)
+create table test (id int primary key, data int) partitions 1
 create unique index i on test (data)
+insert into test values (0, 0)
+# conflict
+insert into test values (1, 0)
 drop table test
 
 # test: insert unlogged

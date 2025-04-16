@@ -21,6 +21,7 @@ struct AstTableCreate
 	Ast          ast;
 	bool         if_not_exists;
 	TableConfig* config;
+	int          partitions;
 };
 
 struct AstTableDrop
@@ -87,6 +88,7 @@ ast_table_create_allocate(void)
 	self = ast_allocate(0, sizeof(AstTableCreate));
 	self->if_not_exists = false;
 	self->config        = NULL;
+	self->partitions    = 0;
 	return self;
 }
 

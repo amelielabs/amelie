@@ -426,7 +426,8 @@ parse_with(Stmt* self, AstTableCreate* stmt, IndexConfig* index_config)
 void
 parse_table_create(Stmt* self, bool unlogged)
 {
-	// CREATE [UNLOGGED] [SHARED] TABLE [IF NOT EXISTS] name (key)
+	// CREATE [UNLOGGED] TABLE [IF NOT EXISTS] name (key)
+	// [PARTITIONS n]
 	// [WITH()]
 	auto stmt = ast_table_create_allocate();
 	self->ast = &stmt->ast;
@@ -459,6 +460,15 @@ parse_table_create(Stmt* self, bool unlogged)
 
 	// (columns)
 	parse_columns(self, &stmt->config->columns, &index_config->keys);
+
+	// [PARTITIONS]
+	if (stmt_if(self, KPARTITIONS))
+	{
+		auto n = stmt_expect(self, KINT);
+		stmt->partitions = n->integer;
+	} else {
+		stmt->partitions = var_int_of(&config()->backends);
+	}
 
 	// [WITH]
 	parse_with(self, stmt, index_config);

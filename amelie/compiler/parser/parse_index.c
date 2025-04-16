@@ -112,8 +112,8 @@ parse_index_create(Stmt* self, bool unique)
 		stmt_error(self, target, "table not found");
 
 	// todo: unique indexes can be created only with 1 partition table
-	if (unique)
-		stmt_error(self, target, "secondary UNIQUE INDEX is not supported");
+	if (unique && table->part_list.list_count != 1)
+		stmt_error(self, target, "secondary UNIQUE INDEX allowed only for tables with partition");
 
 	// create index config
 	auto config = index_config_allocate(table_columns(table));

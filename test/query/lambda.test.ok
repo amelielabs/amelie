@@ -9,8 +9,8 @@ select 1 ->
 {"msg": "select 1 -> ⟵ bad expression"}
 select 1 -> 1
 {"msg": "select 1 -> 1 ⟵ no targets to use with GROUP BY or aggregation"}
-# test: select int -> from table
-create shared table test (id int primary key, data int)
+# test: select int -> from table (partitions 1)
+create table test (id int primary key, data int) partitions 1
 insert into test values (0, 0)
 insert into test values (1, 1)
 insert into test values (2, 2)
@@ -50,7 +50,7 @@ explain select 0 -> id, 0 -> data from test
       "00": "set_ordered         0      2      1     ",
       "01": "int                 1      -      0     # 0",
       "02": "int                 2      -      0     # 0",
-      "03": "table_open          0      1      13    # public.test (primary)",
+      "03": "table_open_part     0      1      13    # public.test (primary)",
       "04": "bool                3      1      0     ",
       "05": "push                3      0      0     ",
       "06": "set_get             3      0      0     ",
@@ -75,7 +75,8 @@ explain select 0 -> id, 0 -> data from test
       "25": "result              0      0      0     ",
       "26": "ret                 0      0      0     "
     }
-  }
+  },
+  "access": [["public.test", "ro"]]
 }]
 # test: select self
 select self
@@ -109,7 +110,7 @@ explain select 0 -> self + 1 from test
     "backend": {
       "00": "set_ordered         0      1      1     ",
       "01": "int                 1      -      0     # 0",
-      "02": "table_open          0      1      14    # public.test (primary)",
+      "02": "table_open_part     0      1      14    # public.test (primary)",
       "03": "bool                2      1      0     ",
       "04": "push                2      0      0     ",
       "05": "set_get             2      0      0     ",
@@ -133,7 +134,8 @@ explain select 0 -> self + 1 from test
       "23": "result              0      0      0     ",
       "24": "ret                 0      0      0     "
     }
-  }
+  },
+  "access": [["public.test", "ro"]]
 }]
 select 0 -> (self + 1) + self from test
 [31]
@@ -187,8 +189,8 @@ select (select o.id -> self + 1 from test) from test as o
 select (0.0 -> self + id) / (0 -> self + 1) from test;
 [2]
 drop table test
-# test: select int -> self from partitioned table (unsupported)
-create table test (id int primary key, data int)
+# test: select int -> self from table (partitions N, unsupported)
+create table test (id int primary key, data int) partitions 2
 insert into test values (0, 0)
 insert into test values (1, 1)
 insert into test values (2, 2)
@@ -218,7 +220,7 @@ explain select 0 -> self + 1 from test
     "backend": {
       "00": "set_ordered         0      1      1     ",
       "01": "int                 1      -      0     # 0",
-      "02": "table_open          0      1      14    # public.test (primary)",
+      "02": "table_open_part     0      1      14    # public.test (primary)",
       "03": "bool                2      1      0     ",
       "04": "push                2      0      0     ",
       "05": "set_get             2      0      0     ",
@@ -242,7 +244,8 @@ explain select 0 -> self + 1 from test
       "23": "result              0      0      0     ",
       "24": "ret                 0      0      0     "
     }
-  }
+  },
+  "access": [["public.test", "ro"]]
 }]
 select 0 -> self + 1 from test
 {"msg": "distributed operation with lambda is not supported"}
@@ -251,7 +254,7 @@ drop table test
 select 0 -> self + value::int from ([1,2,3]) value
 [6]
 # test: select (expr -> from column) from table
-create shared table test (id int primary key, data json)
+create table test (id int primary key, data json)
 insert into test values (0, [1,2,3])
 insert into test values (1, [4,5,6])
 insert into test values (2, [7,8,9])

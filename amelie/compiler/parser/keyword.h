@@ -161,6 +161,7 @@ enum
 
 	// p
 	KPROFILE,
+	KPARTITIONS,
 	KPOOL,
 	KPRIMARY,
 

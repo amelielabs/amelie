@@ -3,12 +3,26 @@
 open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "127.0.0.1", "port": 3485 }], "backends": 3
 connect E0 S0 127.0.0.1:3485
 
-# test: table create
+# test: table create partitions default
 create table test (id int primary key, data int default 0)
-
-# test: table partitions created on each shard
 select system.table('test').partitions::length = 3
+drop table test
 
+# test: table create partitions (0)
+create table test (id int primary key) partitions
+create table test (id int primary key) partitions 0
+
+# test: table create partitions (> backends)
+create table test (id int primary key) partitions 4
+
+# test: table create partitions (= backends)
+create table test (id int primary key) partitions 3
+select system.table('test').partitions::length = 3
+drop table test
+
+# test: table create partitions (1)
+create table test (id int primary key) partitions 1
+select system.table('test').partitions::length = 1
 drop table test
 
 disconnect S0

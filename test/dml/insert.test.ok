@@ -996,9 +996,11 @@ select * from test use index (i)
 drop index i on test
 drop table test
 # test: insert secondary index (unique)
-create table test (id int primary key, data int)
+create table test (id int primary key, data int) partitions 1
 create unique index i on test (data)
-{"msg": "create unique index i on ❰test❱ ⟵ secondary UNIQUE INDEX is not supported"}
+insert into test values (0, 0)
+insert into test values (1, 0)
+{"msg": "index 'i': unique key constraint violation"}
 drop table test
 # test: insert unlogged
 create unlogged table test (id int primary key, data int)

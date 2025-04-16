@@ -98,27 +98,29 @@ ddl_create_table(Session* self, Tr* tr)
 		      str_size(&schema->config->name),
 		      str_of(&schema->config->name));
 
-	// todo: ensure view with the same name does not exists
-
 	// create table partitions
 	auto backend_mgr = self->share->backend_mgr;
 	if (! backend_mgr->list_count)
 		error("system has no backend workers");
 
 	// create partition for each backend
+	if (arg->partitions < 1 || arg->partitions > backend_mgr->list_count)
+		error("table has invalid partitions number");
 
-	// partition_max / backends_count
+	// partition_max / table partitions
 	int range_max      = PARTITION_MAX;
-	int range_interval = range_max / backend_mgr->list_count;
+	int range_interval = range_max / arg->partitions;
 	int range_start    = 0;
 
+	auto order = 0;
 	list_foreach(&backend_mgr->list)
 	{
 		auto backend = list_at(Backend, link);
 
 		// set partition range
 		int range_step;
-		if (list_is_last(&backend_mgr->list, &backend->link))
+		auto is_last = (order == arg->partitions - 1);
+		if (is_last)
 			range_step = range_max - range_start;
 		else
 			range_step = range_interval;
@@ -128,8 +130,11 @@ ddl_create_table(Session* self, Tr* tr)
 		ddl_create_partition(config, backend->worker,
 		                     range_start,
 		                     range_start + range_step);
+		if (is_last)
+			break;
 
 		range_start += range_step;
+		order++;
 	}
 
 	// create table
