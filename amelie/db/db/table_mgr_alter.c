@@ -320,7 +320,7 @@ table_mgr_column_drop(TableMgr* self,
 	}
 
 	// ensure column currently not used as a key
-	if (column->key)
+	if (column->refs > 0)
 		error("table '%.*s': column '%.*s' is a key", str_size(name),
 		      str_of(name),
 		      str_size(name_column),

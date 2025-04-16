@@ -204,7 +204,7 @@ row_create_key(Buf* buf, Keys* self, Value* values, int count)
 	list_foreach(&self->columns->list)
 	{
 		auto column = list_at(Column, link);
-		if (! column->key)
+		if (! column->refs)
 		{
 			row_set_null(row, column->order);
 			continue;

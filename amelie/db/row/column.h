@@ -21,7 +21,7 @@ struct Column
 	int64_t     type;
 	int64_t     type_size;
 	Constraints constraints;
-	bool        key;
+	int         refs;
 	List        link_variable;
 	List        link;
 };
@@ -31,7 +31,7 @@ column_allocate(void)
 {
 	Column* self = am_malloc(sizeof(Column));
 	self->order     = 0;
-	self->key       = false;
+	self->refs      = 0;
 	self->type      = -1;
 	self->type_size = 0;
 	list_init(&self->link);

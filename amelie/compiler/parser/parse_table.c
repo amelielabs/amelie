@@ -303,7 +303,7 @@ parse_constraints(Stmt* self, Keys* keys, Column* column)
 			} else {
 				stmt_error(self, type, "STORED or RESOLVED expected");
 			}
-			if (type->id == KRESOLVED && column->key)
+			if (type->id == KRESOLVED && column->refs > 0)
 				stmt_error(self, type, "cannot be used together with PRIMARY KEY");
 			break;
 		}

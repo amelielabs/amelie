@@ -290,6 +290,14 @@ select a from test
 select b from test
 drop table test
 
+# test: drop column (unref keys)
+create table test (id int primary key, b int)
+create index i on test (b)
+alter table test drop column b
+drop index i on test
+alter table test drop column b
+drop table test
+
 # test: set default
 create table test (id int primary key, data int)
 alter table test set column data default 0

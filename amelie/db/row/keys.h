@@ -36,6 +36,7 @@ keys_free(Keys* self)
 	list_foreach_safe(&self->list)
 	{
 		auto key = list_at(Key, link);
+		key->column->refs--;
 		key_free(key);
 	}
 }
@@ -58,7 +59,7 @@ keys_add(Keys* self, Key* key)
 
 	// set column pointer
 	key->column = columns_find_by(self->columns, key->ref);
-	key->column->key = true;
+	key->column->refs++;
 }
 
 static inline void

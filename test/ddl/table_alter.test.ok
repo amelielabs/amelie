@@ -947,6 +947,14 @@ select a from test
 select b from test
 {"msg": "select ❰b❱ ⟵ column test.b not found"}
 drop table test
+# test: drop column (unref keys)
+create table test (id int primary key, b int)
+create index i on test (b)
+alter table test drop column b
+{"msg": "table 'test': column 'b' is a key"}
+drop index i on test
+alter table test drop column b
+drop table test
 # test: set default
 create table test (id int primary key, data int)
 alter table test set column data default 0

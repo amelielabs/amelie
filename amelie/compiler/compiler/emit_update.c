@@ -61,7 +61,7 @@ emit_update_target(Compiler* self, Targets* targets, Ast* expr)
 			           str_size(&target->name), str_of(&target->name),
 			           str_size(name), str_of(name));
 
-		if (unlikely(column->key))
+		if (unlikely(column->refs > 0))
 			stmt_error(self->current, op->l,
 			           "column %.*s.%.*s used as a part of a key",
 			           str_size(&target->name), str_of(&target->name),
