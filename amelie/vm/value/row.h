@@ -22,7 +22,7 @@ row_value_hash(Keys* keys, Value* row)
 	list_foreach(&keys->list)
 	{
 		auto column = list_at(Key, link)->column;
-		hash = value_hash(row + column->order, hash);
+		hash = value_hash(row + column->order, column->type_size, hash);
 	}
 	return hash;
 }

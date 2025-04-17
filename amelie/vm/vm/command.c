@@ -249,7 +249,7 @@ cunion_recv(Vm* self, Op* op)
 }
 
 hot Op*
-ctable_open(Vm* self, Op* op, bool open_part)
+ctable_open(Vm* self, Op* op, bool point_lookup, bool open_part)
 {
 	// [cursor, name_offset, _eof, keys_count]
 	auto cursor = cursor_mgr_of(&self->cursor_mgr, op->a);
@@ -277,7 +277,7 @@ ctable_open(Vm* self, Op* op, bool open_part)
 
 	// in case of hash index, use key only for point-lookup
 	auto key_ref = key;
-	if (index->type == INDEX_HASH && keys_count != keys->list_count)
+	if (index->type == INDEX_HASH && !point_lookup)
 		key_ref = NULL;
 
 	// open cursor
@@ -285,7 +285,7 @@ ctable_open(Vm* self, Op* op, bool open_part)
 		cursor->part = part_list_match(&table->part_list, self->backend);
 	else
 		cursor->part = NULL;
-	cursor->it    = part_list_iterator(&table->part_list, cursor->part, index, key_ref);
+	cursor->it    = part_list_iterator(&table->part_list, cursor->part, index, point_lookup, key_ref);
 	cursor->table = table;
 	cursor->type  = CURSOR_TABLE;
 

@@ -127,7 +127,7 @@ explain with a as (select * from test)
   "access": [["public.test", "ro"]]
 }]
 with a as (select * from test)
-[1, 2, 3]
+[1, 3, 2]
 drop table test
 # test: with(select * from table) select expr (cte not used)
 create table test (id int primary key)
@@ -207,7 +207,7 @@ explain with a as (select * from test) select * from a
   "access": [["public.test", "ro"]]
 }]
 with a as (select * from test) select * from a
-[1, 2, 3]
+[1, 3, 2]
 drop table test
 # test: with(select * from table), select column from cte
 create table test (id int primary key)
@@ -249,7 +249,7 @@ explain with a as (select * from test) select id from a
   "access": [["public.test", "ro"]]
 }]
 with a as (select * from test) select id from a
-[1, 2, 3]
+[1, 3, 2]
 drop table test
 # test: with(select * from table), select target.column from cte
 create table test (id int primary key)
@@ -291,7 +291,7 @@ explain with a as (select * from test) select a.id from a
   "access": [["public.test", "ro"]]
 }]
 with a as (select * from test) select a.id from a
-[1, 2, 3]
+[1, 3, 2]
 drop table test
 # test: with(select column from table), select column from cte
 create table test (id int primary key)
@@ -333,7 +333,7 @@ explain with a as (select id from test) select id from a
   "access": [["public.test", "ro"]]
 }]
 with a as (select id from test) select id from a
-[1, 2, 3]
+[1, 3, 2]
 drop table test
 # test: with(select column as from table), select column from cte
 create table test (id int primary key)
@@ -377,7 +377,7 @@ explain with a as (select id as x from test) select x from a
   "access": [["public.test", "ro"]]
 }]
 with a as (select id as x from test) select x from a
-[1, 2, 3]
+[1, 3, 2]
 drop table test
 # test: with(select column, column from table), select * from cte (conflict)
 create table test (id int primary key)
@@ -385,13 +385,13 @@ insert into test values (1),(2),(3)
 with a as (select id, id from test) select * from a
 {"msg": "with a as (select id, id from test) select ❰*❱ ⟵ column a.id is ambiguous"}
 with a as (select id, id as x from test) select * from a
-[[1, 1], [2, 2], [3, 3]]
+[[1, 1], [3, 3], [2, 2]]
 drop table test
 # test: with(select * from table), select * from cte
 create table test (id int primary key)
 insert into test values (1),(2),(3)
 with a as (select * from test) select * from a
-[1, 2, 3]
+[1, 3, 2]
 explain with a as (select * from test) select * from a
 [{
   "bytecode": {
@@ -433,7 +433,7 @@ drop table test
 create table test (id int primary key)
 insert into test values (1),(2),(3)
 with a as (select * from test) select * from test
-[1, 2, 3]
+[1, 3, 2]
 explain with a as (select * from test) select * from test
 [{
   "bytecode": {
@@ -481,7 +481,7 @@ drop table test
 create table test (id int primary key)
 insert into test values (1),(2),(3)
 with a as (select * from test) select * from test
-[1, 2, 3]
+[1, 3, 2]
 explain with a as (select * from test) select * from test
 [{
   "bytecode": {
@@ -567,7 +567,7 @@ explain with a as (select [4,5,6]) select test.*, a.* from test, a
   "access": [["public.test", "ro"]]
 }]
 with a as (select [4,5,6]) select test.*, a.* from test, a
-[[1, [4, 5, 6]], [2, [4, 5, 6]], [3, [4, 5, 6]]]
+[[1, [4, 5, 6]], [3, [4, 5, 6]], [2, [4, 5, 6]]]
 drop table test
 # test: with(select expr), select * from table join
 create table test (id int primary key)
@@ -611,7 +611,7 @@ explain with a as (select [4,5,6]) select test.*, a.* from test, a
   "access": [["public.test", "ro"]]
 }]
 with a as (select [4,5,6]) select test.*, a.* from test, a
-[[1, [4, 5, 6]], [2, [4, 5, 6]], [3, [4, 5, 6]]]
+[[1, [4, 5, 6]], [3, [4, 5, 6]], [2, [4, 5, 6]]]
 drop table test
 # test: with(select * from table), select from table join
 create table test (id int primary key)
@@ -667,7 +667,7 @@ explain with a as (select * from test) select test.* from test join a on test.id
   "access": [["public.test", "ro"]]
 }]
 with a as (select * from test) select test.* from test join a on test.id = a.id
-[1, 2, 3]
+[1, 3, 2]
 drop table test
 # test: with(select string from table), select from table join
 create table test (id int primary key, data string)
@@ -725,7 +725,7 @@ explain with a as (select data from test) select test.* from test join a on test
   "access": [["public.test", "ro"]]
 }]
 with a as (select data from test) select test.* from test join a on test.data = a.data
-[[1, "1"], [2, "2"], [3, "3"]]
+[[1, "1"], [3, "3"], [2, "2"]]
 drop table test
 # test: with (columns) as (select expr), select * from cte
 explain with z (a,b,c) as (select 4,5,6) select * from z
@@ -780,7 +780,7 @@ explain with z (a,a) as (select 4,5,6) select * from z
 create table test (id int primary key)
 insert into test values (1),(2),(3)
 with a as (select * from test), b as (select * from a) select * from b
-[1, 2, 3]
+[1, 3, 2]
 explain with a as (select * from test), b as (select * from a) select * from b
 [{
   "bytecode": {
@@ -831,7 +831,7 @@ drop table test
 create table test (id int primary key)
 insert into test values (1),(2),(3)
 with a as (select * from test), b as (select [1,2,3]), c as (select * from a) select * from c
-[1, 2, 3]
+[1, 3, 2]
 explain with a as (select * from test), b as (select [1,2,3]), c as (select * from a) select * from c
 [{
   "bytecode": {
@@ -887,7 +887,7 @@ drop table test
 create table test (id int primary key)
 insert into test values (1),(2),(3)
 with a as (select * from test), b as (select [1,2,3]), c as (select * from test) select * from c
-[1, 2, 3]
+[1, 3, 2]
 explain with a as (select * from test), b as (select [1,2,3]), c as (select * from test) select * from c
 [{
   "bytecode": {
@@ -1011,7 +1011,7 @@ drop table test
 create table test (id int primary key)
 insert into test values (1),(2),(3)
 with a as (select * from test), b as (select * from test), c as (select [1,2,3]), d as (select * from test) select * from d
-[1, 2, 3]
+[1, 3, 2]
 explain with a as (select * from test), b as (select * from test), c as (select [1,2,3]), d as (select * from test) select * from d
 [{
   "bytecode": {
@@ -1088,7 +1088,7 @@ drop table test
 create table test (id int primary key)
 insert into test values (1),(2),(3)
 with a as (select [1,2,3]), b as (select * from test), c as (select [1,2,3]) select b.*, c.* from b,c
-[[1, [1, 2, 3]], [2, [1, 2, 3]], [3, [1, 2, 3]]]
+[[1, [1, 2, 3]], [3, [1, 2, 3]], [2, [1, 2, 3]]]
 explain with a as (select [1,2,3]), b as (select * from test), c as (select [1,2,3]) select b.*, c.* from b,c
 [{
   "bytecode": {
@@ -1146,7 +1146,7 @@ drop table test
 create table test (id int primary key)
 insert into test values (1),(2),(3)
 with a as (select [1,2,3]), b as (select * from test), c as (select * from test) select * from c
-[1, 2, 3]
+[1, 3, 2]
 explain with a as (select [1,2,3]), b as (select * from test), c as (select * from test) select * from c
 [{
   "bytecode": {
@@ -1208,7 +1208,7 @@ drop table test
 create table test (id int primary key)
 insert into test values (1),(2),(3)
 with a as (select * from test), b as (select * from a), c as (select * from test) select * from c
-[1, 2, 3]
+[1, 3, 2]
 explain with a as (select * from test), b as (select * from a), c as (select * from test) select * from c
 [{
   "bytecode": {
@@ -1273,7 +1273,7 @@ drop table test
 create table test (id int primary key)
 insert into test values (1),(2),(3)
 with a as (select * from test), b as (select * from a), c as (select * from test) select * from c
-[1, 2, 3]
+[1, 3, 2]
 explain with a as (select * from test), b as (select * from a), c as (select * from test) select * from c
 [{
   "bytecode": {
@@ -1339,7 +1339,7 @@ drop table test
 create table test (id int primary key)
 insert into test values (1),(2),(3)
 with a as (select [1,2,3]); select * from a; with b as (select * from test); select b.*, a.* from b,a
-[[1, [1, 2, 3]], [2, [1, 2, 3]], [3, [1, 2, 3]]]
+[[1, [1, 2, 3]], [3, [1, 2, 3]], [2, [1, 2, 3]]]
 drop table test
 # test: a(expr), a(expr) (cte redefined)
 create table test (id int primary key)

@@ -52,6 +52,7 @@ explain select * from test where (select id from ref)
 select * from test where (select id from ref)
 
 # test: select from table where exists (select from table)
+explain select * from test where exists (select 1 from ref where test.id = ref.id)
 select * from test where exists (select 1 from ref where test.id = ref.id)
 
 drop table ref

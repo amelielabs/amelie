@@ -235,15 +235,24 @@ value_copy(Value* self, Value* src)
 	}
 }
 
-static inline uint32_t
-value_hash(Value* self, uint32_t hash)
+hot static inline uint32_t
+value_hash(Value* self, int type_size, uint32_t hash)
 {
-	void* data;
-	int   data_size;
+	void*   data;
+	int     data_size;
+	int32_t integer_32;
 	if (self->type == TYPE_INT || self->type == TYPE_TIMESTAMP)
 	{
-		data = &self->integer;
-		data_size = sizeof(self->integer);
+		if (type_size == 4)
+		{
+			integer_32 = self->integer;
+			data = &integer_32;
+			data_size = sizeof(integer_32);
+		} else
+		{
+			data = &self->integer;
+			data_size = sizeof(self->integer);
+		}
 	} else
 	if (self->type == TYPE_UUID)
 	{

@@ -320,13 +320,22 @@ path_create_hash(Path* self)
 	uint32_t hash = 0;
 	for (auto i = 0; i < self->match_start; i++)
 	{
-		auto  value = self->keys[i].start;
-		void* data;
-		int   data_size;
+		auto    value = self->keys[i].start;
+		void*   data;
+		int     data_size;
+		int32_t integer_32;
 		if (value->id == KINT || value->id == KTIMESTAMP)
 		{
-			data = &value->integer;
-			data_size = sizeof(value->integer);
+			if (self->keys[i].key->column->type_size == 4)
+			{
+				integer_32 = value->integer;
+				data = &integer_32;
+				data_size = sizeof(integer_32);
+			} else
+			{
+				data = &value->integer;
+				data_size = sizeof(value->integer);
+			}
 		} else
 		if (value->id == KUUID)
 		{

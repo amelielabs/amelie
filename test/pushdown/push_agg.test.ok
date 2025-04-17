@@ -61,7 +61,7 @@ select count(*) from test_empty
 [0]
 # test: select count(*) from table
 select * from test
-[[0, 0, 0], [1, 0, 0], [6, 3, 3.1], [2, 1, 1], [3, 1, 1], [4, 2, 2], [5, null, null]]
+[[0, 0, 0], [1, 0, 0], [3, 1, 1], [4, 2, 2], [5, null, null], [6, 3, 3.1], [2, 1, 1]]
 explain select count(*) from test
 [{
   "bytecode": {
@@ -1267,7 +1267,7 @@ select id from test group by id having count(id) > 0
 select data from test group by data
 [null, 0, 1, 2, 3]
 select data from test
-[0, 0, 3, 1, 1, 2, null]
+[0, 0, 1, 2, null, 3, 1]
 select data from test group by data having count(data) > 1
 [0, 1]
 # test: select from table group by having count(*)
@@ -1703,7 +1703,7 @@ select distinct data from test
 select distinct on (data) data from test
 [null, 0, 1, 2, 3]
 select distinct on (data) id from test
-[5, 0, 2, 4, 6]
+[5, 0, 3, 4, 6]
 select distinct data, count(*) from test group by data
 [[null, 1], [0, 2], [1, 2], [2, 1], [3, 1]]
 select distinct count(*), data from test group by data

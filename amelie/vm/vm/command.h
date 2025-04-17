@@ -19,7 +19,7 @@ void crecv(Vm*, Op*);
 void cunion(Vm*, Op*);
 void cunion_recv(Vm*, Op*);
 
-Op*  ctable_open(Vm*, Op*, bool);
+Op*  ctable_open(Vm*, Op*, bool, bool);
 Op*  ctable_open_heap(Vm*, Op*);
 void ctable_prepare(Vm*, Op*);
 

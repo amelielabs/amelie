@@ -1449,19 +1449,19 @@ cunion_recv:
 
 // table cursor
 ctable_open:
-	op = ctable_open(self, op, false);
+	op = ctable_open(self, op, false, false);
 	op_jmp;
 
 ctable_open_lookup:
-	op = ctable_open(self, op, false);
+	op = ctable_open(self, op, true, false);
 	op_jmp;
 
 ctable_open_part:
-	op = ctable_open(self, op, true);
+	op = ctable_open(self, op, false, true);
 	op_jmp;
 
 ctable_open_part_lookup:
-	op = ctable_open(self, op, true);
+	op = ctable_open(self, op, true, true);
 	op_jmp;
 
 ctable_open_heap:

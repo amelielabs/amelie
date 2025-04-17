@@ -142,7 +142,7 @@ select system.state().psn
 [3]
 # test: replica read
 select * from test
-[1, 6, 7, 8, 2, 9, 3, 4, 5]
+[1, 3, 8, 4, 5, 6, 2, 7, 9]
 show repl
 [{
   "active": true,
@@ -204,7 +204,7 @@ show replicas
   "lag": 0
 }]
 select * from test
-[1, 6, 7, 8, 2, 9, 10, 12, 3, 4, 5, 11]
+[1, 3, 8, 4, 5, 6, 10, 11, 2, 7, 9, 12]
 disconnect S1
 close E1
 disconnect S0
