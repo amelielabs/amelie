@@ -30,25 +30,11 @@ json_compare_integer(uint8_t* a, uint8_t* b)
 always_inline hot static inline int
 json_compare_string_read(uint8_t** a, uint8_t** b)
 {
-	char* a_value;
-	int   a_value_size;
-	char* b_value;
-	int   b_value_size;
-	json_read_raw(a, &a_value, &a_value_size);
-	json_read_raw(b, &b_value, &b_value_size);
-	int size;
-	if (a_value_size < b_value_size)
-		size = a_value_size;
-	else
-		size = b_value_size;
-	int rc;
-	rc = memcmp(a_value, b_value, size);
-	if (rc == 0) {
-		if (likely(a_value_size == b_value_size))
-			return 0;
-		return (a_value_size < b_value_size) ? -1 : 1;
-	}
-	return rc > 0 ? 1 : -1;
+	Str str_a;
+	Str str_b;
+	json_read_string(a, &str_a);
+	json_read_string(b, &str_b);
+	return str_compare_fn(&str_a, &str_b);
 }
 
 always_inline hot static inline int
@@ -96,9 +82,10 @@ json_compare(uint8_t* a, uint8_t* b)
 			double b_value;
 			json_read_real(&a, &a_value);
 			json_read_real(&b, &b_value);
-			if (a_value == b_value)
-				break;
-			return (a_value > b_value) ? 1 : -1;
+			rc = compare_double(a_value, b_value);
+			if (rc != 0)
+				return rc;
+			break;
 		}
 		case JSON_INTV0 ... JSON_INT64:
 		{

@@ -23,16 +23,14 @@ vector_init(Vector* self, int size)
 hot int
 vector_compare(Vector* a, Vector* b)
 {
-	if (a->size < b->size)
-		return -1;
-	if (a->size > b->size)
-		return 1;
+	auto rc = compare_int32(a->size, b->size);
+	if (rc != 0)
+		return rc;
 	for (uint32_t i = 0; i < a->size; i++)
 	{
-		if (a->value[i] < b->value[i])
-			return -1;
-		if (a->value[i] > b->value[i])
-			return 1;
+		rc = compare_float(a->value[i], b->value[i]);
+		if (rc != 0)
+			return rc;
 	}
 	return 0;
 }

@@ -11,26 +11,32 @@
 // AGPL-3.0 Licensed.
 //
 
-hot static inline int
+always_inline static inline int
+compare_int32(int32_t a, int32_t b)
+{
+	return (a > b) - (a < b);
+}
+
+always_inline static inline int
 compare_int64(int64_t a, int64_t b)
 {
-	if (a == b)
-		return 0;
-	return (a > b) ? 1 : -1;
+	return (a > b) - (a < b);
 }
 
-hot static inline int
+always_inline static inline int
 compare_uint64(uint64_t a, uint64_t b)
 {
-	if (a == b)
-		return 0;
-	return (a > b) ? 1 : -1;
+	return (a > b) - (a < b);
 }
 
-hot static inline int
-compare_real(double a, double b)
+always_inline static inline int
+compare_float(float a, float b)
 {
-	if (a == b)
-		return 0;
-	return (a > b) ? 1 : -1;
+	return (a > b) - (a < b);
+}
+
+always_inline static inline int
+compare_double(double a, double b)
+{
+	return (a > b) - (a < b);
 }

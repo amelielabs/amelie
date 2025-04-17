@@ -12,20 +12,6 @@
 //
 
 always_inline hot static inline int
-value_compare_int(Value* a, Value* b)
-{
-	if (a->integer == b->integer)
-		return 0;
-	return (a->integer > b->integer) ? 1 : -1;
-}
-
-always_inline hot static inline int
-value_compare_string(Value* a, Value* b)
-{
-	return str_compare_fn(&a->string, &b->string);
-}
-
-always_inline hot static inline int
 value_compare(Value* a, Value* b)
 {
 	if (a->type != b->type)
@@ -38,17 +24,9 @@ value_compare(Value* a, Value* b)
 	case TYPE_INT:
 	case TYPE_DATE:
 	case TYPE_TIMESTAMP:
-	{
-		if (a->integer == b->integer)
-			return 0;
-		return (a->integer > b->integer) ? 1 : -1;
-	}
+		return compare_int64(a->integer, b->integer);
 	case TYPE_DOUBLE:
-	{
-		if (a->dbl == b->dbl)
-			return 0;
-		return (a->dbl > b->dbl) ? 1 : -1;
-	}
+		return compare_double(a->dbl, b->dbl);
 	case TYPE_STRING:
 		return str_compare_fn(&a->string, &b->string);
 	case TYPE_JSON:

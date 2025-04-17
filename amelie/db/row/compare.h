@@ -21,7 +21,7 @@ compare(Keys* self, Row* a, Row* b)
 		if (column->type_size == 4)
 		{
 			// int
-			rc = compare_int64(*(int32_t*)row_at(a, column->order),
+			rc = compare_int32(*(int32_t*)row_at(a, column->order),
 			                   *(int32_t*)row_at(b, column->order));
 		} else
 		if (column->type_size == 8)

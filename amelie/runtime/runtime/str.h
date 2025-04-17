@@ -149,25 +149,19 @@ str_compare_prefix(Str* self, Str* prefix)
 }
 
 hot static inline int
-str_compare_fn(Str* a, Str* b)
+str_compare_fn(const Str* a, const Str* b)
 {
-	register int a_size = str_size(a);
-	register int b_size = str_size(b);
+	register int a_size = a->end - a->pos;
+	register int b_size = b->end - b->pos;
 	register int size;
 	if (a_size < b_size)
 		size = a_size;
 	else
 		size = b_size;
-
-	int rc;
-	rc = memcmp(a->pos, b->pos, size);
-	if (rc == 0) {
-		if (likely(a_size == b_size))
-			return 0;
-		return (a_size < b_size) ? -1 : 1;
-	}
-
-	return rc > 0 ? 1 : -1;
+	auto rc = memcmp(a->pos, b->pos, size);
+	if (rc != 0)
+		return rc;
+	return (a_size > b_size) - (a_size < b_size);
 }
 
 static inline char*
