@@ -239,6 +239,10 @@ scan_table_heap(Scan* self, Target* target)
 	encode_string(&cp->code_data.data, &table->config->schema);
 	encode_string(&cp->code_data.data, &table->config->name);
 
+	// ensure target does not require full table access
+	if (unlikely(target->from_access == ACCESS_RO_EXCLUSIVE))
+		error("heap only scan for subqueries and inner join targets is not supported");
+
 	// table_open
 	int _open = op_pos(cp);
 	op4(cp, CTABLE_OPEN_HEAP, target->id, name_offset, 0 /* _eof */, 0);

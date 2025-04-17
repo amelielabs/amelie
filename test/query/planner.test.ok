@@ -148,6 +148,16 @@ explain select * from test use heap
 select * from test use heap
 [[0, 2], [1, 1], [2, 0]]
 drop table test
+# test: from use heap (subquery)
+create table test (id int primary key, data int)
+insert into test values (0, 2)
+insert into test values (1, 1)
+insert into test values (2, 0)
+explain select (select id from test use heap)
+{"msg": "heap only scan for subqueries and inner join targets is not supported"}
+select (select id from test use heap)
+{"msg": "heap only scan for subqueries and inner join targets is not supported"}
+drop table test
 # test: hash/hash
 create table test (id int, data int, primary key (id, data)) partitions 1 with (type = 'hash')
 create index i on test (data) with (type = 'hash')
