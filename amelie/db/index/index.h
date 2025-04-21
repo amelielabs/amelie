@@ -16,12 +16,11 @@ typedef struct Index   Index;
 
 struct IndexIf
 {
-	Row*      (*set)(Index*, Row*);
-	Row*      (*update)(Index*, Row*, Iterator*);
-	Row*      (*delete)(Index*, Iterator*);
-	Row*      (*delete_by)(Index*, Row*);
 	bool      (*upsert)(Index*, Row*, Iterator*);
-	bool      (*ingest)(Index*, Row*);
+	Row*      (*replace_by)(Index*, Row*);
+	Row*      (*replace)(Index*, Row*, Iterator*);
+	Row*      (*delete_by)(Index*, Row*);
+	Row*      (*delete)(Index*, Iterator*);
 	Iterator* (*iterator)(Index*);
 	Iterator* (*iterator_merge)(Index*, Iterator*);
 	void      (*truncate)(Index*);
@@ -51,28 +50,22 @@ index_free(Index* self)
 	self->iface.free(self);
 }
 
-static inline void
-index_truncate(Index* self)
+static inline bool
+index_upsert(Index* self, Row* key, Iterator* it)
 {
-	self->iface.truncate(self);
+	return self->iface.upsert(self, key, it);
 }
 
 static inline Row*
-index_set(Index* self, Row* key)
+index_replace_by(Index* self, Row* key)
 {
-	return self->iface.set(self, key);
+	return self->iface.replace_by(self, key);
 }
 
 static inline Row*
-index_update(Index* self, Row* key, Iterator* it)
+index_replace(Index* self, Row* key, Iterator* it)
 {
-	return self->iface.update(self, key, it);
-}
-
-static inline Row*
-index_delete(Index* self, Iterator* it)
-{
-	return self->iface.delete(self, it);
+	return self->iface.replace(self, key, it);
 }
 
 static inline Row*
@@ -81,16 +74,10 @@ index_delete_by(Index* self, Row* key)
 	return self->iface.delete_by(self, key);
 }
 
-static inline bool
-index_upsert(Index* self, Row* key, Iterator* it)
+static inline Row*
+index_delete(Index* self, Iterator* it)
 {
-	return self->iface.upsert(self, key, it);
-}
-
-static inline bool
-index_ingest(Index* self, Row* key)
-{
-	return self->iface.ingest(self, key);
+	return self->iface.delete(self, it);
 }
 
 static inline Iterator*
@@ -103,6 +90,12 @@ static inline Iterator*
 index_iterator_merge(Index* self, Iterator* it)
 {
 	return self->iface.iterator_merge(self, it);
+}
+
+static inline void
+index_truncate(Index* self)
+{
+	self->iface.truncate(self);
 }
 
 static inline Keys*

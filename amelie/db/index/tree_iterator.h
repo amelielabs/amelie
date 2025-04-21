@@ -33,7 +33,7 @@ tree_iterator_open(TreeIterator* self, Row* key)
 		return false;
 
 	TreePos pos;
-	bool match = tree_seek(self->tree, key, &pos);
+	bool match = tree_get(self->tree, &pos, key);
 	self->page = pos.page;
 	self->page_pos = pos.page_pos;
 	if (self->page_pos >= self->page->keys_count)
@@ -131,7 +131,7 @@ tree_iterator_delete(TreeIterator* self)
 		.page_pos = self->page_pos
 	};
 	auto prev = pos.page->rows[pos.page_pos];
-	tree_unset_by(self->tree, &pos);
+	tree_delete(self->tree, &pos);
 	self->page     = pos.page;
 	self->page_pos = pos.page_pos;
 	assert(! self->repositioned);

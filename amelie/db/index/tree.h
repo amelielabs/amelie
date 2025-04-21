@@ -40,8 +40,8 @@ struct Tree
 
 void tree_init(Tree*, int, int, Keys*);
 void tree_free(Tree*);
-Row* tree_set(Tree*, Row*);
-bool tree_set_or_get(Tree*, Row*, TreePos*);
-Row* tree_unset(Tree*, Row*);
-void tree_unset_by(Tree*, TreePos*);
-bool tree_seek(Tree*, Row*, TreePos*);
+bool tree_upsert(Tree*, TreePos*, Row*);
+Row* tree_replace(Tree*, Row*);
+void tree_delete(Tree*, TreePos*);
+Row* tree_delete_by(Tree*, Row*);
+bool tree_get(Tree*, TreePos*, Row*);

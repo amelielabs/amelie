@@ -27,7 +27,7 @@ log_if_rollback(Log* self, LogOp* op)
 	auto index = (Index*)op->iface_arg;
 	auto ref = log_row_of(self, op);
 	if (ref->row_prev)
-		index_set(index, ref->row_prev);
+		index_replace_by(index, ref->row_prev);
 	else
 	if (ref->row)
 		index_delete_by(index, ref->row);
@@ -116,7 +116,7 @@ part_insert(Part* self, Tr* tr, bool recover, Row* row)
 		part_sync_sequence(self, row, index_keys(primary)->columns);
 
 	// update primary index
-	op->row_prev = index_set(primary, row);
+	op->row_prev = index_replace_by(primary, row);
 	if (unlikely(op->row_prev && !replace))
 		error("index '%.*s': unique key constraint violation",
 		      str_size(&primary->config->name),
@@ -128,7 +128,7 @@ part_insert(Part* self, Tr* tr, bool recover, Row* row)
 		auto index = list_at(Index, link);
 		// add log record
 		op = log_row(&tr->log, CMD_REPLACE, &log_if_secondary, index, row, NULL);
-		op->row_prev = index_set(index, row);
+		op->row_prev = index_replace_by(index, row);
 		if (unlikely(op->row_prev && !replace))
 			error("index '%.*s': unique key constraint violation",
 			      str_size(&index->config->name),
@@ -151,7 +151,7 @@ part_update(Part* self, Tr* tr, Iterator* it, Row* row)
 		limit_ensure(tr->limit, row);
 
 	// update primary index
-	op->row_prev = index_update(primary, row, it);
+	op->row_prev = index_replace(primary, row, it);
 
 	// update secondary indexes
 	list_foreach_after(&self->indexes, &primary->link)
@@ -165,7 +165,7 @@ part_update(Part* self, Tr* tr, Iterator* it, Row* row)
 		auto index_it = index_iterator(index);
 		defer(iterator_close, index_it);
 		iterator_open(index_it, row);
-		op->row_prev = index_update(index, row, index_it);
+		op->row_prev = index_replace(index, row, index_it);
 	}
 }
 
@@ -245,7 +245,7 @@ part_upsert(Part* self, Tr* tr, Iterator* it, Row* row)
 
 		// add log record
 		op = log_row(&tr->log, CMD_REPLACE, &log_if_secondary, index, row, NULL);
-		op->row_prev = index_set(index, row);
+		op->row_prev = index_replace_by(index, row);
 		if (unlikely(op->row_prev))
 			error("index '%.*s': unique key constraint violation",
 			      str_size(&index->config->name),
@@ -263,7 +263,7 @@ part_ingest_secondary(Part* self, Row* row)
 	list_foreach_after(&self->indexes, &primary->link)
 	{
 		auto index = list_at(Index, link);
-		index_ingest(index, row);
+		index_replace_by(index, row);
 	}
 }
 
@@ -276,7 +276,7 @@ part_ingest(Part* self, Row* row)
 	part_sync_sequence(self, row, index_keys(primary)->columns);
 
 	// update primary index
-	index_ingest(primary, row);
+	index_replace_by(primary, row);
 
 	// secondary indexes
 	part_ingest_secondary(self, row);

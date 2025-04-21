@@ -30,7 +30,7 @@ part_build_index(PartBuild* self, Iterator* it)
 	for (; iterator_has(it); iterator_next(it))
 	{
 		auto row = iterator_at(it);
-		auto prev = index_ingest(index, row);
+		auto prev = index_replace_by(index, row);
 		if (unlikely(prev))
 			error("index unique constraint violation");
 		count++;
@@ -54,7 +54,7 @@ part_build_column_add(PartBuild* self, Iterator* it)
 		auto row = row_alter_add(&self->part_dest->heap, origin, primary_columns);
 
 		// update primary index
-		index_ingest(primary_dest, row);
+		index_replace_by(primary_dest, row);
 
 		// update secondary indexes
 		part_ingest_secondary(self->part_dest, row);
@@ -79,7 +79,7 @@ part_build_column_drop(PartBuild* self, Iterator* it)
 		auto row = row_alter_drop(&self->part_dest->heap, origin, primary_columns, self->column);
 
 		// update primary index
-		index_ingest(primary_dest, row);
+		index_replace_by(primary_dest, row);
 
 		// update secondary indexes
 		part_ingest_secondary(self->part_dest, row);
