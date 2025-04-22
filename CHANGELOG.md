@@ -1,5 +1,30 @@
 # Amelie Changelog.
 
+## 0.3.0 (22-04-2025)
+
+This release redefines how Amelie works with tables and partitions, solving major cross-compute limitations.
+
+Before this release, Amelie had two types of tables: partitioned tables and shared tables. Partitions are
+created on each backend worker (per CPU core) for parallel access or modification.
+
+Partitioned tables cannot be directly joined with other partitioned tables, and the same limitation applies
+to subqueries. Instead, the transaction must use CTE or Shared tables to achieve the same effect.
+
+Shared tables are not partitioned (single partition) and are available for concurrent direct read access from any
+backend worker. Shared tables support efficient parallel JOIN operations with other partitioned tables,
+where shared tables are used as dictionary tables.
+
+While this approach has its benefits, it is also not common and limits adoption, requiring the design of a
+database schema around it.
+
+This release solves those problems. Support for the shared tables has been removed, and all tables are
+now treated the same (all tables are partitioned).
+
+Amelie now allows cross-partition joins and subqueries from one partitioned table to another
+(from one backend worker to another) by coordinating access across CPU cores for different types of queries.
+
+Additionally, the number of partitions per table can now be provided by using the CREATE TABLE () PARTITIONS clause.
+
 ## 0.2.0 (11-03-2025)
 
 This release introduces Heap - a custom memory allocator to replace malloc() for Rows.
