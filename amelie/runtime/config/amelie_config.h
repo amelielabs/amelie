@@ -15,7 +15,6 @@
 #include "config/var.h"
 #include "config/vars.h"
 #include "config/config.h"
-#include "config/config_local.h"
 
 // state
 #include "config/state.h"

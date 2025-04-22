@@ -154,7 +154,6 @@ set(AMELIE_SOURCES_RUNTIME
     ${AMELIE_ROOT}/runtime/json/json_parser.c
     ${AMELIE_ROOT}/runtime/json/json_export.c
     ${AMELIE_ROOT}/runtime/config/vars.c
-    ${AMELIE_ROOT}/runtime/config/config_local.c
     ${AMELIE_ROOT}/runtime/config/config.c
     ${AMELIE_ROOT}/runtime/config/state.c)
 

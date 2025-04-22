@@ -3,13 +3,6 @@ connect E0 S0 127.0.0.1:3485
 # test: utc by default
 show timezone
 ["UTC"]
-# test: set unknown timezone
-set timezone to 'mars'
-{"msg": "set timezone to ❰'mars'❱ ⟵ unable to find timezone"}
-show timezone
-["UTC"]
-select system.config().timezone
-["UTC"]
 # test: utc
 select '2024-07-29 18:40:19'::timestamp
 ["2024-07-29 18:40:19+00"]
@@ -20,7 +13,10 @@ select '2024-07-29 18:40:19Z'::timestamp
 select '2024-07-29T18:40:19Z'::timestamp
 ["2024-07-29 18:40:19+00"]
 # test: localtime to localtime
-set timezone to 'Asia/Famagusta'
+disconnect S0
+close E0
+open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "127.0.0.1", "port": 3485 }], "timezone": "Asia/Famagusta"
+connect E0 S0 127.0.0.1:3485
 select '2024-07-29 18:40:19'::timestamp
 ["2024-07-29 18:40:19+03"]
 # test: utc to localtime
@@ -56,7 +52,10 @@ select '2024-07-29 18:40:19'::timestamp at timezone 'Japan'
 select '2024-07-29 18:40:19'::timestamp at timezone null
 {"msg": "at_timezone(timestamp, ❰null❱ ⟵ expected string"}
 # test: timestamp object
-set timezone to 'UTC'
+disconnect S0
+close E0
+open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "127.0.0.1", "port": 3485 }], "timezone": "UTC"
+connect E0 S0 127.0.0.1:3485
 select {"time": "2024-07-29 18:40:19"::timestamp}
 [{
   "time": "2024-07-29 18:40:19+00"
@@ -70,7 +69,10 @@ select {"time": "2024-07-29 18:40:19+03"::timestamp}
 [{
   "time": "2024-07-29 15:40:19+00"
 }]
-set timezone to 'Asia/Famagusta'
+disconnect S0
+close E0
+open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "127.0.0.1", "port": 3485 }], "timezone": "Asia/Famagusta"
+connect E0 S0 127.0.0.1:3485
 select {"time": "2024-07-29 18:40:19+03"::timestamp}
 [{
   "time": "2024-07-29 18:40:19+03"
@@ -82,18 +84,6 @@ select {"time": "2024-07-29 18:40:19"::timestamp}
 select {"time": timestamp "2024-07-29 18:40:19"}
 [{
   "time": "2024-07-29 18:40:19"
-}]
-# test: timestamp name case
-set timezone to 'UTC'
-set timezone to 'utc'
-show timezone
-["utc"]
-set timezone to 'asia/famagusta'
-show timezone
-["asia/famagusta"]
-select {"time": "2024-07-29 18:40:19+03"::timestamp}
-[{
-  "time": "2024-07-29 18:40:19+03"
 }]
 disconnect S0
 close E0

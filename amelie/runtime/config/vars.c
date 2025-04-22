@@ -182,7 +182,7 @@ vars_list_persistent(Vars* self)
 }
 
 Buf*
-vars_list(Vars* self, Vars* local)
+vars_list(Vars* self)
 {
 	auto buf = buf_create();
 	encode_obj(buf);
@@ -192,9 +192,6 @@ vars_list(Vars* self, Vars* local)
 		if (var_is(var, VAR_H) || var_is(var, VAR_S))
 			continue;
 		encode_string(buf, &var->name);
-		auto var_local = vars_find(local, &var->name);
-		if (var_local)
-			var = var_local;
 		var_encode(var, buf);
 	}
 	encode_obj_end(buf);

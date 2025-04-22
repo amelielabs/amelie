@@ -40,7 +40,7 @@ static void
 fn_config(Call* self)
 {
 	call_expect(self, 0);
-	auto buf = vars_list(&config()->vars, &self->mgr->local->config.vars);
+	auto buf = vars_list(&config()->vars);
 	value_set_json_buf(self->result, buf);
 }
 

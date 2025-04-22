@@ -46,7 +46,6 @@ test fn_system
 directory system
 group system
 test bootstrap
-test set
 test show
 test user
 test watch

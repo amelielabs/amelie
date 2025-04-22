@@ -98,7 +98,7 @@ ctl_show(Session* self)
 		                     &arg->name, arg->extended);
 		break;
 	case SHOW_CONFIG_ALL:
-		buf = vars_list(&global()->config->vars, &self->local.config.vars);
+		buf = vars_list(&global()->config->vars);
 		break;
 	case SHOW_STATE:
 		buf = db_state(share->db);
@@ -106,9 +106,7 @@ ctl_show(Session* self)
 	case SHOW_CONFIG:
 	{
 		// find local variable first
-		auto var = vars_find(&self->local.config.vars, &arg->name);
-		if (! var)
-			var = vars_find(&global()->config->vars, &arg->name);
+		auto var = vars_find(&global()->config->vars, &arg->name);
 		if (var && var_is(var, VAR_S))
 			var = NULL;
 		if (unlikely(var == NULL))
@@ -125,82 +123,6 @@ ctl_show(Session* self)
 	if (! str_empty(&arg->format))
 		format = &arg->format;
 	content_write_json(&self->content, format, &arg->section, buf);
-}
-
-static void
-ctl_set(Session* self)
-{
-	auto stmt  = compiler_stmt(&self->compiler);
-	auto arg   = ast_set_of(stmt->ast);
-	auto name  = &arg->name->string;
-	auto local = &self->local;
-
-	// find local variable first
-	auto var_global = false;
-	auto var = vars_find(&local->config.vars, name);
-	if (! var)
-	{
-		var = vars_find(&global()->config->vars, name);
-		var_global = true;
-	}
-	if (var && var_is(var, VAR_S))
-		var = NULL;
-
-	if (unlikely(var == NULL))
-		stmt_error(stmt, arg->name, "variable not found");
-
-	// ensure the variable can be changed online
-	if (unlikely(! var_is(var, VAR_C)))
-		stmt_error(stmt, arg->name, "variable cannot be changed");
-
-	// allow to change only local variables
-	if (var_global)
-		stmt_error(stmt, arg->name, "variable cannot be changed online");
-
-	// validate and set timezone first
-	auto value = arg->value;
-	if (var == &local->config.timezone)
-	{
-		if (value->id != KSTRING)
-			stmt_error(stmt, value, "string expected");
-		auto timezone = timezone_mgr_find(global()->timezone_mgr, &value->string);
-		if (! timezone)
-			stmt_error(stmt, value, "unable to find timezone");
-
-		// set new timezone
-		local->timezone = timezone;
-	}
-
-	// set value
-	switch (var->type) {
-	case VAR_BOOL:
-	{
-		if (value->id != KTRUE && value->id != KFALSE)
-			stmt_error(stmt, value, "bool expected");
-		bool is_true = value->id == KTRUE;
-		var_int_set(var, is_true);
-		break;
-	}
-	case VAR_INT:
-	{
-		if (value->id != KINT)
-			stmt_error(stmt, value, "integer expected");
-		var_int_set(var, value->integer);
-		break;
-	}
-	case VAR_STRING:
-	{
-		if (value->id != KSTRING)
-			stmt_error(stmt, value, "string expected");
-		var_string_set(var, &value->string);
-		break;
-	}
-	case VAR_JSON:
-	{
-		stmt_error(stmt, arg->name, "variable cannot be changed");
-		break;
-	}
-	}
 }
 
 static void
@@ -393,9 +315,6 @@ session_execute_utility(Session* self)
 	switch (stmt->id) {
 	case STMT_SHOW:
 		ctl_show(self);
-		break;
-	case STMT_SET:
-		ctl_set(self);
 		break;
 	case STMT_CREATE_TOKEN:
 		ctl_token(self);

@@ -142,12 +142,6 @@ parse_stmt(Parser* self, Stmt* stmt)
 		parse_show(stmt);
 		break;
 
-	case KSET:
-		// SET name TO INT | STRING
-		stmt->id = STMT_SET;
-		parse_set(stmt);
-		break;
-
 	case KSUBSCRIBE:
 		// SUBSCRIBE id
 		stmt->id = STMT_SUBSCRIBE;

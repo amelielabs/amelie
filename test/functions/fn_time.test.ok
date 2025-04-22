@@ -4,7 +4,8 @@ connect E0 S0 127.0.0.1:3485
 select now() = current_timestamp
 [true]
 # test: date_bin()
-set timezone to 'UTC'
+show timezone
+["UTC"]
 select date_bin(null, TIMESTAMP '2001-01-01 00:00:00');
 [null]
 select date_bin(INTERVAL '15 minutes', TIMESTAMP '2020-02-11 15:44:17', TIMESTAMP '2001-01-01 00:00:00');
@@ -41,12 +42,18 @@ select date_bin(INTERVAL '1 month 15 minutes', TIMESTAMP '2020-02-11 15:44:17', 
 select date_bin(INTERVAL '1 year 15 minutes', TIMESTAMP '2020-02-11 15:44:17', TIMESTAMP '2001-01-01 00:00:00');
 {"msg": "date_bin(interval, timestamp, timestamp) ⟵ month and year intervals are not supported"}
 # test: date_bin(timezone)
-set timezone to 'Asia/Famagusta'
+disconnect S0
+close E0
+open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "127.0.0.1", "port": 3485 }], "timezone": "Asia/Famagusta"
+connect E0 S0 127.0.0.1:3485
 select date_bin(INTERVAL '15 minutes', TIMESTAMP '2020-02-11 15:44:17', TIMESTAMP '2001-01-01 00:00:00');
 ["2020-02-11 15:30:00+02"]
 select date_bin(INTERVAL '15 minutes', TIMESTAMP '2020-02-11 15:44:17', TIMESTAMP '2001-01-01 00:02:30');
 ["2020-02-11 15:32:30+02"]
-set timezone to 'UTC'
+disconnect S0
+close E0
+open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "127.0.0.1", "port": 3485 }], "timezone": "utc"
+connect E0 S0 127.0.0.1:3485
 # test: interval_trunc(interval year)
 select interval_trunc(null, 'year')
 [null]
@@ -156,7 +163,6 @@ select date_trunc('ms', TIMESTAMP '2001-02-16 20:38:40.123456');
 select date_trunc('us', TIMESTAMP '2001-02-16 20:38:40.123456');
 ["2001-02-16 20:38:40.123456+00"]
 # test: date_trunc(timestamp day, timezone)
-set timezone to 'UTC'
 select date_trunc('day', TIMESTAMP '2001-02-16 20:38:40', 'UTC');
 ["2001-02-16 00:00:00+00"]
 select date_trunc('day', TIMESTAMP '2001-02-16 20:38:40', 'Asia/Famagusta');
@@ -165,7 +171,10 @@ select date_trunc('day', TIMESTAMP '2001-02-16 20:38:40', 'Japan');
 ["2001-02-15 15:00:00+00"]
 select date_trunc('day', TIMESTAMP '2001-02-16 20:38:40Z', 'Japan');
 ["2001-02-15 15:00:00+00"]
-set timezone to 'Asia/Famagusta'
+disconnect S0
+close E0
+open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "127.0.0.1", "port": 3485 }], "timezone": "Asia/Famagusta"
+connect E0 S0 127.0.0.1:3485
 select date_trunc('day', TIMESTAMP '2001-02-16 20:38:40', 'UTC');
 ["2001-02-16 02:00:00+02"]
 select date_trunc('day', TIMESTAMP '2001-02-16 20:38:40', 'Asia/Famagusta');
@@ -199,7 +208,10 @@ select public.extract('week', TIMESTAMP '2001-01-16 20:38:40');
 select public.extract('day', TIMESTAMP '2001-01-16 20:38:40');
 [16]
 # test: extract(timestamp hour)
-set timezone to 'UTC'
+disconnect S0
+close E0
+open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "127.0.0.1", "port": 3485 }], "timezone": "utc"
+connect E0 S0 127.0.0.1:3485
 select public.extract('hour', TIMESTAMP '2001-01-16 20:38:40');
 [20]
 select public.extract('hour', TIMESTAMP '2001-01-16 20:38:40+00');
@@ -212,10 +224,16 @@ select public.extract('hour', TIMESTAMP '2001-01-16 20:38:40+02', 'UTC');
 [18]
 select public.extract('hour', TIMESTAMP '2001-01-16 20:38:40+02', 'Asia/Famagusta');
 [20]
-set timezone to 'Asia/Famagusta'
+disconnect S0
+close E0
+open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "127.0.0.1", "port": 3485 }], "timezone": "Asia/Famagusta"
+connect E0 S0 127.0.0.1:3485
 select public.extract('hour', TIMESTAMP '2001-01-16 20:38:40+02');
 [20]
-set timezone to 'UTC'
+disconnect S0
+close E0
+open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "127.0.0.1", "port": 3485 }], "timezone": "utc"
+connect E0 S0 127.0.0.1:3485
 # test: extract(timestamp minute)
 select public.extract('min', TIMESTAMP '2001-01-16 20:38:40');
 [38]

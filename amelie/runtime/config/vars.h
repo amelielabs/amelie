@@ -25,7 +25,7 @@ void vars_define(Vars*, VarDef*);
 bool vars_set_json(Vars*, uint8_t**);
 bool vars_set(Vars*, Str*);
 bool vars_set_argv(Vars*, int, char**);
-Buf* vars_list(Vars*, Vars*);
+Buf* vars_list(Vars*);
 Buf* vars_list_persistent(Vars*);
 Var* vars_find(Vars*, Str*);
 void vars_print(Vars*);

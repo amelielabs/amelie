@@ -4,7 +4,10 @@ connect E0 S0 127.0.0.1:3485
 show format
 ["json-pretty"]
 # test: json
-set format to "json"
+disconnect S0
+close E0
+open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "127.0.0.1", "port": 3485 }], "format": "json"
+connect E0 S0 127.0.0.1:3485
 select 123
 [123]
 select [1,2,3]
@@ -18,7 +21,10 @@ show all
 show uuid
 ["00000000-0000-0000-0000-000000000000"]
 # test: json-array
-set format to "json-array"
+disconnect S0
+close E0
+open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "127.0.0.1", "port": 3485 }], "format": "json-array"
+connect E0 S0 127.0.0.1:3485
 select 123
 [123]
 select [1,2,3]
@@ -32,7 +38,10 @@ show all
 show uuid
 ["00000000-0000-0000-0000-000000000000"]
 # test: json-array-pretty
-set format to "json-array-pretty"
+disconnect S0
+close E0
+open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "127.0.0.1", "port": 3485 }], "format": "json-array-pretty"
+connect E0 S0 127.0.0.1:3485
 select 123
 [123]
 select [1,2,3]
@@ -85,7 +94,10 @@ show all
 show uuid
 ["00000000-0000-0000-0000-000000000000"]
 # test: json-obj
-set format to "json-obj"
+disconnect S0
+close E0
+open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "127.0.0.1", "port": 3485 }], "format": "json-obj"
+connect E0 S0 127.0.0.1:3485
 select 123
 [{"col1": 123}]
 select 123 as id
@@ -101,7 +113,10 @@ show all
 show uuid
 [{"uuid": "00000000-0000-0000-0000-000000000000"}]
 # test: json-obj-pretty
-set format to "json-obj-pretty"
+disconnect S0
+close E0
+open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "127.0.0.1", "port": 3485 }], "format": "json-obj-pretty"
+connect E0 S0 127.0.0.1:3485
 select 123
 [{
   "col1": 123
@@ -170,7 +185,10 @@ show uuid
   "uuid": "00000000-0000-0000-0000-000000000000"
 }]
 # test: select format
-set format to "json-pretty"
+disconnect S0
+close E0
+open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "127.0.0.1", "port": 3485 }], "format": "json-pretty"
+connect E0 S0 127.0.0.1:3485
 select 123
 [123]
 select 123 format "json-pretty-obj"

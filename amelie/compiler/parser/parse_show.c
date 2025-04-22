@@ -161,25 +161,3 @@ parse_show(Stmt* self)
 		stmt->format = type->string;
 	}
 }
-
-void
-parse_set(Stmt* self)
-{
-	// SET name TO INT|STRING
-	auto name = stmt_next_shadow(self);
-	if (name->id != KNAME)
-		stmt_error(self, name, "name expected");
-
-	// TO
-	stmt_expect(self, KTO);
-
-	// value
-	auto value = stmt_next(self);
-	if (value->id != KINT    &&
-	    value->id != KSTRING &&
-	    value->id != KTRUE   &&
-	    value->id != KFALSE)
-		stmt_error(self, value, "value expected string, int, or bool");
-	auto stmt = ast_set_allocate(name, value);
-	self->ast = &stmt->ast;
-}
