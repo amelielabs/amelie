@@ -315,7 +315,7 @@ recover_next_record(Recover* self, Record* record)
 	auto pos = record_data(record);
 	for (auto i = record->count; i > 0; i--)
 	{
-		if (var_int_of(&config()->wal_crc))
+		if (opt_int_of(&config()->wal_crc))
 			if (unlikely(! record_validate_cmd(cmd, pos)))
 				error("recover: record command mismatch");
 		recover_cmd(self, cmd, &pos);
@@ -382,7 +382,7 @@ recover_wal_main(Recover* self)
 		wal_cursor_init(&cursor);
 		defer(wal_cursor_close, &cursor);
 
-		auto wal_crc = var_int_of(&config()->wal_crc);
+		auto wal_crc = opt_int_of(&config()->wal_crc);
 		wal_cursor_open(&cursor, &wal_mgr->wal, id, false, wal_crc);
 		for (;;)
 		{

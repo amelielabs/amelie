@@ -52,15 +52,15 @@ system_metrics_net(System* self, Buf* buf)
 
 	// connections
 	encode_raw(buf, "connections", 11);
-	encode_integer(buf, var_int_of(&state()->connections));
+	encode_integer(buf, opt_int_of(&state()->connections));
 
 	// sent
 	encode_raw(buf, "sent_bytes", 10);
-	encode_integer(buf, var_int_of(&state()->sent_bytes));
+	encode_integer(buf, opt_int_of(&state()->sent_bytes));
 
 	// recv
 	encode_raw(buf, "recv_bytes", 10);
-	encode_integer(buf, var_int_of(&state()->recv_bytes));
+	encode_integer(buf, opt_int_of(&state()->recv_bytes));
 
 	encode_obj_end(buf);
 }
@@ -164,11 +164,11 @@ system_metrics(System* self)
 
 	// frontends
 	encode_raw(buf, "frontends", 9);
-	encode_integer(buf, var_int_of(&config()->frontends));
+	encode_integer(buf, opt_int_of(&config()->frontends));
 
 	// backends
 	encode_raw(buf, "backends", 8);
-	encode_integer(buf, var_int_of(&config()->backends));
+	encode_integer(buf, opt_int_of(&config()->backends));
 
 	// db
 	encode_raw(buf, "db", 2);

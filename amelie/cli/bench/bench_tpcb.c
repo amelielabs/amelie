@@ -207,7 +207,7 @@ bench_tpcb_create(Bench* self, Client* client)
 		client_execute(client, &str);
 	}
 
-	if (var_int_of(&self->unlogged))
+	if (opt_int_of(&self->unlogged))
 	{
 		char* ddl_unlogged[] =
 		{
@@ -231,8 +231,8 @@ bench_tpcb_create(Bench* self, Client* client)
 	buf_claim(filler, 100);
 	memset(filler->start, ' ', 100);
 
-	auto batch = var_int_of(&self->batch);
-	auto scale = var_int_of(&self->scale);
+	auto batch = opt_int_of(&self->batch);
+	auto scale = opt_int_of(&self->scale);
 	auto buf = buf_create();
 	defer_buf(buf);
 
@@ -268,7 +268,7 @@ bench_tpcb_create(Bench* self, Client* client)
 			client_execute(client, &str);
 		}
 	} else {
-		auto clients = var_int_of(&self->clients);
+		auto clients = opt_int_of(&self->clients);
 		bench_tpcb_load(self, scale, batch, clients);
 	}
 
@@ -284,7 +284,7 @@ bench_tpcb_main(BenchWorker* self, Client* client)
 {
 	auto bench  = self->bench;
 
-	int  scale    = var_int_of(&bench->scale);
+	int  scale    = opt_int_of(&bench->scale);
 	auto accounts = tpcb_accounts * scale;
 	auto branches = tpcb_branches * scale;
 	auto tellers  = tpcb_tellers  * scale;

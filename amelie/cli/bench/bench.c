@@ -107,21 +107,21 @@ bench_init(Bench* self, Remote* remote)
 {
 	memset(self, 0, sizeof(*self));
 	self->remote = remote;
-	vars_init(&self->vars);
+	opts_init(&self->opts);
 	list_init(&self->list);
-	VarDef defs[] =
+	OptsDef defs[] =
 	{
-		{ "type",     VAR_STRING, VAR_C,       &self->type,    "tpcb", 0     },
-		{ "threads",  VAR_INT,    VAR_C|VAR_Z, &self->threads,  NULL,  1     },
-		{ "clients",  VAR_INT,    VAR_C|VAR_Z, &self->clients,  NULL,  12    },
-		{ "time",     VAR_INT,    VAR_C|VAR_Z, &self->time,     NULL,  10    },
-		{ "scale",    VAR_INT,    VAR_C|VAR_Z, &self->scale,    NULL,  1     },
-		{ "batch",    VAR_INT,    VAR_C|VAR_Z, &self->batch,    NULL,  500   },
-		{ "init",     VAR_BOOL,   VAR_C,       &self->init,     NULL,  true  },
-		{ "unlogged", VAR_BOOL,   VAR_C,       &self->unlogged, NULL,  false },
+		{ "type",     OPT_STRING, OPT_C,       &self->type,    "tpcb", 0     },
+		{ "threads",  OPT_INT,    OPT_C|OPT_Z, &self->threads,  NULL,  1     },
+		{ "clients",  OPT_INT,    OPT_C|OPT_Z, &self->clients,  NULL,  12    },
+		{ "time",     OPT_INT,    OPT_C|OPT_Z, &self->time,     NULL,  10    },
+		{ "scale",    OPT_INT,    OPT_C|OPT_Z, &self->scale,    NULL,  1     },
+		{ "batch",    OPT_INT,    OPT_C|OPT_Z, &self->batch,    NULL,  500   },
+		{ "init",     OPT_BOOL,   OPT_C,       &self->init,     NULL,  true  },
+		{ "unlogged", OPT_BOOL,   OPT_C,       &self->unlogged, NULL,  false },
 		{  NULL,      0,          0,            NULL,           NULL,  0     }
 	};
-	vars_define(&self->vars, defs);
+	opts_define(&self->opts, defs);
 }
 
 void
@@ -132,7 +132,7 @@ bench_free(Bench* self)
 		auto worker = list_at(BenchWorker, link);
 		bench_worker_free(worker);
 	}
-	vars_free(&self->vars);
+	opts_free(&self->opts);
 }
 
 static void
@@ -178,15 +178,15 @@ void
 bench_run(Bench* self)
 {
 	// validate options
-	auto type               = var_string_of(&self->type);
-	auto scale              = var_int_of(&self->scale);
-	auto batch              = var_int_of(&self->batch);
-	auto time               = var_int_of(&self->time);
-	auto workers            = var_int_of(&self->threads);
-	auto clients            = var_int_of(&self->clients);
+	auto type               = opt_string_of(&self->type);
+	auto scale              = opt_int_of(&self->scale);
+	auto batch              = opt_int_of(&self->batch);
+	auto time               = opt_int_of(&self->time);
+	auto workers            = opt_int_of(&self->threads);
+	auto clients            = opt_int_of(&self->clients);
 	auto clients_per_worker = clients / workers;
-	auto init               = var_int_of(&self->init);
-	auto unlogged           = var_int_of(&self->unlogged);
+	auto init               = opt_int_of(&self->init);
+	auto unlogged           = opt_int_of(&self->unlogged);
 
 	// set benchmark
 	if (str_is_cstr(type, "tpcb"))

@@ -133,7 +133,7 @@ static void
 system_recover(System* self)
 {
 	// ask each backend to recover last checkpoint partitions in parallel
-	int workers = var_int_of(&config()->backends);
+	int workers = opt_int_of(&config()->backends);
 	info("⟶ recovery (checkpoint %" PRIu64 ", using %d backends)",
 	     state_checkpoint(), workers);
 
@@ -155,7 +155,7 @@ static void
 system_bootstrap(System* self)
 {
 	// create backend workers
-	backend_bootstrap(&self->db, var_int_of(&config()->backends));
+	backend_bootstrap(&self->db, opt_int_of(&config()->backends));
 	state_lsn_set(1);
 
 	// create initial checkpoint, mostly to ensure that backend
@@ -178,9 +178,9 @@ system_start(System* self, bool bootstrap)
 
 	// show system options
 	info("");
-	if (bootstrap || var_int_of(&config()->log_options))
+	if (bootstrap || opt_int_of(&config()->log_options))
 	{
-		vars_print(&config()->vars);
+		opts_print(&config()->opts);
 		info("");
 	}
 
@@ -207,7 +207,7 @@ system_start(System* self, bool bootstrap)
 	wal_periodic_start(&self->db.wal_mgr.wal_periodic);
 
 	// start frontends
-	int workers = var_int_of(&config()->frontends);
+	int workers = opt_int_of(&config()->frontends);
 	frontend_mgr_start(&self->frontend_mgr,
 	                   system_on_frontend_connect,
 	                   self,
@@ -223,9 +223,9 @@ system_start(System* self, bool bootstrap)
 	server_start(&self->server, system_on_server_connect, self);
 
 	// start replication
-	if (var_int_of(&state()->repl))
+	if (opt_int_of(&state()->repl))
 	{
-		var_int_set(&state()->repl, false);
+		opt_int_set(&state()->repl, false);
 		repl_start(&self->repl);
 	}
 }

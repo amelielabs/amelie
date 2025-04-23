@@ -45,7 +45,7 @@ wal_mgr_start(WalMgr* self)
 	wal_open(&self->wal);
 
 	// start wal worker
-	if (var_int_of(&config()->wal_worker))
+	if (opt_int_of(&config()->wal_worker))
 		wal_worker_start(&self->wal_worker);
 }
 
@@ -56,16 +56,16 @@ wal_mgr_stop(WalMgr* self)
 	wal_periodic_stop(&self->wal_periodic);
 
 	// stop wal worker
-	if (var_int_of(&config()->wal_worker))
+	if (opt_int_of(&config()->wal_worker))
 	{
 		int flags = WAL_SHUTDOWN;
-		if (var_int_of(&config()->wal_sync_on_close))
+		if (opt_int_of(&config()->wal_sync_on_close))
 			flags |= WAL_SYNC;
 		wal_worker_request(&self->wal_worker, flags);
 		wal_worker_stop(&self->wal_worker);
 	} else
 	{
-		if (var_int_of(&config()->wal_sync_on_close))
+		if (opt_int_of(&config()->wal_sync_on_close))
 			wal_sync(&self->wal, false);
 	}
 
@@ -82,20 +82,20 @@ wal_mgr_gc(WalMgr* self)
 void
 wal_mgr_create(WalMgr* self)
 {
-	if (var_int_of(&config()->wal_worker))
+	if (opt_int_of(&config()->wal_worker))
 	{
 		int flags = WAL_CREATE;
-		if (var_int_of(&config()->wal_sync_on_close))
+		if (opt_int_of(&config()->wal_sync_on_close))
 			flags |= WAL_SYNC;
-		if (var_int_of(&config()->wal_sync_on_create))
+		if (opt_int_of(&config()->wal_sync_on_create))
 			flags |= WAL_SYNC_CREATE;
 		wal_worker_request(&self->wal_worker, flags);
 	} else
 	{
-		if (var_int_of(&config()->wal_sync_on_close))
+		if (opt_int_of(&config()->wal_sync_on_close))
 			wal_sync(&self->wal, false);
 		wal_create(&self->wal, state_lsn() + 1);
-		if (var_int_of(&config()->wal_sync_on_create))
+		if (opt_int_of(&config()->wal_sync_on_create))
 			wal_sync(&self->wal, true);
 	}
 }
@@ -106,7 +106,7 @@ wal_mgr_write(WalMgr* self, WriteList* write_list)
 	if (! write_list->list_count)
 		return;
 	auto wal_rotate = wal_write(&self->wal, write_list);
-	if (var_int_of(&config()->wal_sync_on_write))
+	if (opt_int_of(&config()->wal_sync_on_write))
 		wal_sync(&self->wal, false);
 	if (wal_rotate)
 		wal_mgr_create(self);

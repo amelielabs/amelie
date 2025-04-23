@@ -25,6 +25,6 @@ void login_mgr_open(LoginMgr*, const char*);
 void login_mgr_sync(LoginMgr*, const char*);
 void login_mgr_add(LoginMgr*, Login*);
 void login_mgr_delete(LoginMgr*, Str*);
-int  login_mgr_set(LoginMgr*, Remote*, Vars*, int, char**);
+int  login_mgr_set(LoginMgr*, Remote*, Opts*, int, char**);
 Login*
 login_mgr_find(LoginMgr*, Str*);

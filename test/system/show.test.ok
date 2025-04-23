@@ -194,6 +194,6 @@ show "log_enable"
 {"msg": "show ❰\"log_enable\"❱ ⟵ name expected"}
 # test: show unknown
 show asdf
-{"msg": "show ❰asdf❱ ⟵ variable not found"}
+{"msg": "show ❰asdf❱ ⟵ option not found"}
 disconnect S0
 close E0

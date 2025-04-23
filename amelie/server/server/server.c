@@ -192,9 +192,9 @@ server_configure(Server* self)
 {
 	// listen is not defined or null
 	auto listen = &config()->listen;
-	if (! var_json_is_set(listen))
+	if (! opt_json_is_set(listen))
 		return;
-	auto pos = var_json_of(listen);
+	auto pos = opt_json_of(listen);
 	if (json_is_null(pos))
 		return;
 	if (! json_is_array(pos))
@@ -216,27 +216,27 @@ server_configure_tls(Server* self)
 	auto remote = &self->tls_remote;
 
 	// tls_capath
-	if (var_string_is_set(&config()->tls_capath))
+	if (opt_string_is_set(&config()->tls_capath))
 		remote_set_path(remote, REMOTE_PATH_CA, state_directory(),
 		                &config()->tls_capath.string);
 
 	// tls_ca
-	if (var_string_is_set(&config()->tls_ca))
+	if (opt_string_is_set(&config()->tls_ca))
 		remote_set_path(remote, REMOTE_FILE_CA, state_directory(),
 		                &config()->tls_ca.string);
 
 	// tls_cert
-	if (var_string_is_set(&config()->tls_cert))
+	if (opt_string_is_set(&config()->tls_cert))
 		remote_set_path(remote, REMOTE_FILE_CERT, state_directory(),
 		                &config()->tls_cert.string);
 
 	// tls_key
-	if (var_string_is_set(&config()->tls_key))
+	if (opt_string_is_set(&config()->tls_key))
 		remote_set_path(remote, REMOTE_FILE_KEY, state_directory(),
 		                &config()->tls_key.string);
 
 	// create tls context
-	if (var_string_is_set(&config()->tls_cert))
+	if (opt_string_is_set(&config()->tls_cert))
 		tls_context_create(&self->tls, false, remote);
 }
 

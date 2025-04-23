@@ -95,7 +95,7 @@ checkpointer_periodic_main(void* arg)
 	coroutine_set_cancel_log(am_self(), false);
 	for (;;)
 	{
-		int workers = var_int_of(&config()->checkpoint_workers);
+		int workers = opt_int_of(&config()->checkpoint_workers);
 		if (workers == 0)
 			workers = 1;
 		coroutine_sleep(self->interval_us);

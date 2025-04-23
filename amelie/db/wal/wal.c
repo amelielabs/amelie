@@ -65,7 +65,7 @@ wal_overflow(Wal* self)
 	defer(mutex_unlock, &self->lock);
 	if (! self->current)
 		return true;
-	return self->current->file.size >= var_int_of(&config()->wal_size);
+	return self->current->file.size >= opt_int_of(&config()->wal_size);
 }
 
 void
@@ -205,7 +205,7 @@ wal_truncate(Wal* self, uint64_t lsn)
 	defer_buf(&buf);
 
 	// rewind to the lsn
-	auto crc = var_int_of(&config()->wal_crc);
+	auto crc = opt_int_of(&config()->wal_crc);
 	uint64_t offset = 0;
 	for (;;)
 	{
@@ -262,18 +262,18 @@ reopen:
 	if (! self->list.list_count)
 	{
 		wal_create(self, 1);
-		if (var_int_of(&config()->wal_sync_on_create))
+		if (opt_int_of(&config()->wal_sync_on_create))
 			wal_sync(self, true);
 		return;
 	}
 
 	// truncate wals to the specified lsn, if set
-	uint64_t lsn = var_int_of(&config()->wal_truncate);
+	uint64_t lsn = opt_int_of(&config()->wal_truncate);
 	if (lsn != 0)
 	{
 		wal_truncate(self, lsn);
 		wal_close(self);
-		var_int_set(&config()->wal_truncate, 0);
+		opt_int_set(&config()->wal_truncate, 0);
 		goto reopen;
 	}
 
@@ -312,9 +312,9 @@ wal_write_list(Wal* self, WriteList* list)
 		auto write = list_at(Write, link);
 
 		// update stats
-		var_int_add(&state()->writes, 1);
-		var_int_add(&state()->writes_bytes, write->header.size);
-		var_int_add(&state()->ops, write->header.ops);
+		opt_int_add(&state()->writes, 1);
+		opt_int_add(&state()->writes_bytes, write->header.size);
+		opt_int_add(&state()->ops, write->header.ops);
 
 		// finilize wal record
 		lsn++;
@@ -363,7 +363,7 @@ wal_write(Wal* self, WriteList* list)
 		wal_slot_signal(slot, lsn);
 	}
 
-	return self->current->file.size >= var_int_of(&config()->wal_size);
+	return self->current->file.size >= opt_int_of(&config()->wal_size);
 }
 
 hot void
@@ -502,15 +502,15 @@ wal_status(Wal* self)
 
 	// writes
 	encode_raw(buf, "writes", 6);
-	encode_integer(buf, var_int_of(&state()->writes));
+	encode_integer(buf, opt_int_of(&state()->writes));
 
 	// writes_bytes
 	encode_raw(buf, "writes_bytes", 12);
-	encode_integer(buf, var_int_of(&state()->writes_bytes));
+	encode_integer(buf, opt_int_of(&state()->writes_bytes));
 
 	// ops
 	encode_raw(buf, "ops", 3);
-	encode_integer(buf, var_int_of(&state()->ops));
+	encode_integer(buf, opt_int_of(&state()->ops));
 
 	// checkpoint
 	encode_raw(buf, "checkpoint", 10);

@@ -42,7 +42,7 @@ void content_write_json_error(Content*, Error*);
 hot static inline void
 content_ensure_limit(Content* self)
 {
-	auto limit = var_int_of(&config()->limit_send);
+	auto limit = opt_int_of(&config()->limit_send);
 	if (unlikely((uint64_t)buf_size(self->content) >= limit))
 		error("reply limit reached");
 }

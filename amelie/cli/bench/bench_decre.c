@@ -22,7 +22,7 @@ bench_decre_create(Bench* self, Client* client)
 	Str str;
 	str_set_cstr(&str, "create table __bench.test (id serial primary key, money double default 100.0) with (type = 'hash')");
 	client_execute(client, &str);
-	if (var_int_of(&self->unlogged))
+	if (opt_int_of(&self->unlogged))
 	{
 		str_set_cstr(&str, "alter table __bench.test set unlogged");
 		client_execute(client, &str);
@@ -55,7 +55,7 @@ bench_decre_main(BenchWorker* self, Client* client)
 {
 	auto bench = self->bench;
 	auto total = 100000ul;
-	auto batch = var_int_of(&bench->batch);
+	auto batch = opt_int_of(&bench->batch);
 
 	Buf buf;
 	buf_init(&buf);

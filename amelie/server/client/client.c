@@ -101,7 +101,7 @@ client_accept(Client* self)
 	tcp_connect_fd(&self->tcp);
 
 	// hello
-	bool log_connections = var_int_of(&config()->log_connections);
+	bool log_connections = opt_int_of(&config()->log_connections);
 	if (log_connections)
 	{
 		char addr[128];
@@ -131,7 +131,7 @@ client_connect_to_path(Client* self, Str* path)
 	tcp_connect(&self->tcp, addr);
 
 	// connected
-	bool log_connections = var_int_of(&config()->log_connections);
+	bool log_connections = opt_int_of(&config()->log_connections);
 	if (log_connections)
 		info("connected to %.*s", str_size(path), str_of(path));
 }
@@ -158,7 +158,7 @@ client_connect_to(Client* self, UriHost* host)
 
 	// connected
 	self->host = host;
-	bool log_connections = var_int_of(&config()->log_connections);
+	bool log_connections = opt_int_of(&config()->log_connections);
 	if (log_connections)
 		info("connected to %s:%d", str_of(&host->host), host->port);
 }
@@ -200,7 +200,7 @@ client_connect(Client* self)
 void
 client_close(Client* self)
 {
-	bool log_connections = var_int_of(&config()->log_connections);
+	bool log_connections = opt_int_of(&config()->log_connections);
 	if (log_connections && tcp_connected(&self->tcp))
 	{
 		if (self->host != NULL)

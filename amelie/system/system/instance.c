@@ -128,7 +128,7 @@ instance_create(Instance* self, char* directory)
 	unused(self);
 
 	// set directory
-	var_string_set_raw(&state()->directory, directory, strlen(directory));
+	opt_string_set_raw(&state()->directory, directory, strlen(directory));
 
 	// create directory if not exists
 	auto bootstrap = !fs_exists("%s", state_directory());
@@ -221,21 +221,21 @@ instance_bootstrap(Instance* self)
 	unused(self);
 
 	// generate uuid, unless it is set
-	if (! var_string_is_set(&config->uuid))
+	if (! opt_string_is_set(&config->uuid))
 	{
 		Uuid uuid;
 		uuid_generate(&uuid, global()->random);
 		char uuid_sz[UUID_SZ];
 		uuid_get(&uuid, uuid_sz, sizeof(uuid_sz));
-		var_string_set_raw(&config->uuid, uuid_sz, sizeof(uuid_sz) - 1);
+		opt_string_set_raw(&config->uuid, uuid_sz, sizeof(uuid_sz) - 1);
 	}
 
 	// set default timezone using system timezone
-	if (! var_string_is_set(&config->timezone))
-		var_string_set(&config->timezone, &self->timezone_mgr.system->name);
+	if (! opt_string_is_set(&config->timezone))
+		opt_string_set(&config->timezone, &self->timezone_mgr.system->name);
 
 	// set default server listen
-	if (! var_json_is_set(&config->listen))
+	if (! opt_json_is_set(&config->listen))
 		server_bootstrap();
 }
 
@@ -273,7 +273,7 @@ instance_open(Instance* self, char* directory, int argc, char** argv)
 	if (bootstrap)
 	{
 		// set options first, to properly generate config
-		vars_set_argv(&config->vars, argc, argv);
+		opts_set_argv(&config->opts, argc, argv);
 
 		// set default settings
 		instance_bootstrap(self);
@@ -286,7 +286,7 @@ instance_open(Instance* self, char* directory, int argc, char** argv)
 		config_open(config, path);
 
 		// redefine options and update config if necessary
-		vars_set_argv(&config->vars, argc, argv);
+		opts_set_argv(&config->opts, argc, argv);
 	}
 
 	// read state file
@@ -308,10 +308,10 @@ instance_open(Instance* self, char* directory, int argc, char** argv)
 		error("failed to find timezone %.*s", str_size(name), str_of(name));
 
 	// reconfigure logger
-	logger_set_enable(logger, var_int_of(&config->log_enable));
-	logger_set_to_stdout(logger, var_int_of(&config->log_to_stdout));
+	logger_set_enable(logger, opt_int_of(&config->log_enable));
+	logger_set_to_stdout(logger, opt_int_of(&config->log_to_stdout));
 	logger_set_timezone(logger, global()->timezone);
-	if (! var_int_of(&config->log_to_file))
+	if (! opt_int_of(&config->log_to_file))
 		logger_close(logger);
 
 	return bootstrap;

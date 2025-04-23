@@ -269,7 +269,7 @@ hot static inline void
 session_read(Session* self)
 {
 	auto client = self->client;
-	auto limit = var_int_of(&config()->limit_recv);
+	auto limit = opt_int_of(&config()->limit_recv);
 	auto limit_reached =
 		http_read_content_limit(&client->request,
 		                        &client->readahead,

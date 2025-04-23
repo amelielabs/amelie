@@ -164,11 +164,11 @@ db_state(Db* self)
 
 	// frontends
 	encode_raw(buf, "frontends", 9);
-	encode_integer(buf, var_int_of(&config()->frontends));
+	encode_integer(buf, opt_int_of(&config()->frontends));
 
 	// backends
 	encode_raw(buf, "backends", 8);
-	encode_integer(buf, var_int_of(&config()->backends));
+	encode_integer(buf, opt_int_of(&config()->backends));
 
 	// checkpoint
 	encode_raw(buf, "checkpoint", 10);
@@ -184,7 +184,7 @@ db_state(Db* self)
 
 	// read_only
 	encode_raw(buf, "read_only", 9);
-	encode_bool(buf, var_int_of(&state()->read_only));
+	encode_bool(buf, opt_int_of(&state()->read_only));
 
 	encode_obj_end(buf);
 	return buf;

@@ -225,7 +225,7 @@ executor_wal_write(Executor* self)
 		{
 			// unless transaction is used for replication writer, respect
 			// system read-only state
-			if (!dtr->program->repl && var_int_of(&state()->read_only))
+			if (!dtr->program->repl && opt_int_of(&state()->read_only))
 				error("system is in read-only mode");
 			write_list_add(write_list, write);
 		}

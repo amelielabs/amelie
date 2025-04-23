@@ -94,22 +94,22 @@ import_init(Import* self, Remote* remote)
 	list_init(&self->clients_list);
 
 	reader_init(&self->reader);
-	vars_init(&self->vars);
-	VarDef defs[] =
+	opts_init(&self->opts);
+	OptsDef defs[] =
 	{
-		{ "format",  VAR_STRING, VAR_C, &self->format,  "auto", 0   },
-		{ "batch",   VAR_INT,    VAR_C, &self->batch,    NULL,  500 },
-		{ "clients", VAR_INT,    VAR_C, &self->clients,  NULL,  12  },
+		{ "format",  OPT_STRING, OPT_C, &self->format,  "auto", 0   },
+		{ "batch",   OPT_INT,    OPT_C, &self->batch,    NULL,  500 },
+		{ "clients", OPT_INT,    OPT_C, &self->clients,  NULL,  12  },
 		{  NULL,     0,          0,     NULL,            NULL,  0   }
 	};
-	vars_define(&self->vars, defs);
+	opts_define(&self->opts, defs);
 }
 
 void
 import_free(Import* self)
 {
 	reader_free(&self->reader);
-	vars_free(&self->vars);
+	opts_free(&self->opts);
 }
 
 static bool
@@ -193,7 +193,7 @@ static void
 import_set_format(Import* self, int argc, char** argv)
 {
 	// set format
-	auto format = var_string_of(&self->format);
+	auto format = opt_string_of(&self->format);
 	if (argc == 0)
 	{
 		// stdin
@@ -222,7 +222,7 @@ import_set_format(Import* self, int argc, char** argv)
 
 				// ensure files have the same format
 				if (str_is_cstr(format, "auto")) {
-					var_string_set(&self->format, &guess);
+					opt_string_set(&self->format, &guess);
 				} else {
 					if (! str_compare(format, &guess))
 						error("imported files must share the same format");
@@ -246,7 +246,7 @@ static void
 import_connect(Import* self)
 {
 	// create clients and connect
-	int count = var_int_of(&self->clients);
+	int count = opt_int_of(&self->clients);
 	while (count-- > 0)
 	{
 		auto client = import_client_allocate();
@@ -357,7 +357,7 @@ import_report(Import* self, char* path)
 static void
 import_file(Import* self, char* path)
 {
-	int limit = var_int_of(&self->batch);
+	int limit = opt_int_of(&self->batch);
 	int limit_size = 256 * 1024;
 
 	auto reader = &self->reader;
@@ -424,8 +424,8 @@ void
 import_run(Import* self, int argc, char** argv)
 {
 	// validate clients and batch size
-	if (!var_int_of(&self->clients) ||
-	    !var_int_of(&self->batch))
+	if (!opt_int_of(&self->clients) ||
+	    !opt_int_of(&self->batch))
 		error("clients and batch arguments cannot be set to zero");
 
 	// read table name and set path

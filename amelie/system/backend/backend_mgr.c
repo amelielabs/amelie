@@ -113,7 +113,7 @@ backend_mgr_if_create(Worker* worker)
 	auto backend = backend_allocate(worker, self->db, self->function_mgr);
 	list_append(&self->list, &backend->link);
 	self->list_count++;
-	var_int_set(&config()->backends, self->list_count);
+	opt_int_set(&config()->backends, self->list_count);
 	worker->context = backend;
 
 	route_init(&worker->route, &backend->task.channel);
@@ -134,7 +134,7 @@ backend_mgr_if_free(Worker* worker)
 
 	list_unlink(&backend->link);
 	self->list_count--;
-	var_int_set(&config()->backends, self->list_count);
+	opt_int_set(&config()->backends, self->list_count);
 	router_del(&self->router, &worker->route);
 
 	backend_free(backend);

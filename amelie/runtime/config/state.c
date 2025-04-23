@@ -20,49 +20,49 @@ void
 state_init(State* self)
 {
 	memset(self, 0, sizeof(*self));
-	vars_init(&self->vars);
+	opts_init(&self->opts);
 }
 
 void
 state_free(State* self)
 {
-	vars_free(&self->vars);
+	opts_free(&self->opts);
 }
 
 void
 state_prepare(State* self)
 {
-	VarDef defs[] =
+	OptsDef defs[] =
 	{
 		// system
-		{ "version",       VAR_STRING, VAR_E, &self->version,      "0.4.0", 0     },
-		{ "directory",     VAR_STRING, VAR_E, &self->directory,     NULL,   0     },
-		{ "checkpoint",    VAR_INT,    VAR_E, &self->checkpoint,    NULL,   0     },
-		{ "lsn",           VAR_INT,    VAR_E, &self->lsn,           NULL,   0     },
-		{ "psn",           VAR_INT,    VAR_E, &self->psn,           NULL,   0     },
-		{ "read_only",     VAR_BOOL,   VAR_E, &self->read_only,     NULL,   false },
+		{ "version",       OPT_STRING, OPT_E, &self->version,      "0.4.0", 0     },
+		{ "directory",     OPT_STRING, OPT_E, &self->directory,     NULL,   0     },
+		{ "checkpoint",    OPT_INT,    OPT_E, &self->checkpoint,    NULL,   0     },
+		{ "lsn",           OPT_INT,    OPT_E, &self->lsn,           NULL,   0     },
+		{ "psn",           OPT_INT,    OPT_E, &self->psn,           NULL,   0     },
+		{ "read_only",     OPT_BOOL,   OPT_E, &self->read_only,     NULL,   false },
 		// persistent
-		{ "repl",          VAR_BOOL,   VAR_C, &self->repl,          0,      false },
-		{ "repl_primary",  VAR_STRING, VAR_C, &self->repl_primary,  NULL,   0     },
-		{ "replicas",      VAR_JSON,   VAR_C, &self->replicas,      NULL,   0     },
-		{ "users",         VAR_JSON,   VAR_C, &self->users,         NULL,   0     },
+		{ "repl",          OPT_BOOL,   OPT_C, &self->repl,          0,      false },
+		{ "repl_primary",  OPT_STRING, OPT_C, &self->repl_primary,  NULL,   0     },
+		{ "replicas",      OPT_JSON,   OPT_C, &self->replicas,      NULL,   0     },
+		{ "users",         OPT_JSON,   OPT_C, &self->users,         NULL,   0     },
 		// stats
-		{ "connections",   VAR_INT,    VAR_E, &self->connections,   NULL,   0     },
-		{ "sent_bytes",    VAR_INT,    VAR_E, &self->sent_bytes,    NULL,   0     },
-		{ "recv_bytes",    VAR_INT,    VAR_E, &self->recv_bytes,    NULL,   0     },
-		{ "writes",        VAR_INT,    VAR_E, &self->writes,        NULL,   0     },
-		{ "writes_bytes",  VAR_INT,    VAR_E, &self->writes_bytes,  NULL,   0     },
-		{ "ops",           VAR_INT,    VAR_E, &self->ops,           NULL,   0     },
+		{ "connections",   OPT_INT,    OPT_E, &self->connections,   NULL,   0     },
+		{ "sent_bytes",    OPT_INT,    OPT_E, &self->sent_bytes,    NULL,   0     },
+		{ "recv_bytes",    OPT_INT,    OPT_E, &self->recv_bytes,    NULL,   0     },
+		{ "writes",        OPT_INT,    OPT_E, &self->writes,        NULL,   0     },
+		{ "writes_bytes",  OPT_INT,    OPT_E, &self->writes_bytes,  NULL,   0     },
+		{ "ops",           OPT_INT,    OPT_E, &self->ops,           NULL,   0     },
 		{  NULL,           0,          0,      NULL,                NULL,   0     },
 	};
-	vars_define(&self->vars, defs);
+	opts_define(&self->opts, defs);
 }
 
 static void
 state_save_to(State* self, const char* path)
 {
-	// get a list of variables
-	auto buf = vars_list_persistent(&self->vars);
+	// get a list of optiables
+	auto buf = opts_list_persistent(&self->opts);
 	defer_buf(buf);
 
 	// convert to json
@@ -111,5 +111,5 @@ state_open(State* self, const char* path)
 	Str options;
 	str_init(&options);
 	buf_str(buf, &options);
-	vars_set(&self->vars, &options);
+	opts_set(&self->opts, &options);
 }

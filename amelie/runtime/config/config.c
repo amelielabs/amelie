@@ -20,13 +20,13 @@ void
 config_init(Config* self)
 {
 	memset(self, 0, sizeof(*self));
-	vars_init(&self->vars);
+	opts_init(&self->opts);
 }
 
 void
 config_free(Config* self)
 {
-	vars_free(&self->vars);
+	opts_free(&self->opts);
 }
 
 void
@@ -38,55 +38,55 @@ config_prepare(Config* self)
 	if (default_fe == 0)
 		default_fe = 1;
 
-	VarDef defs[] =
+	OptsDef defs[] =
 	{
-		{ "uuid",                    VAR_STRING, VAR_C,                   &self->uuid,                    NULL,          0                   },
-		{ "timezone",                VAR_STRING, VAR_C,                   &self->timezone,                NULL,          0                   },
-		{ "format",                  VAR_STRING, VAR_C,                   &self->format,                  "json-pretty", 0                   },
+		{ "uuid",                    OPT_STRING, OPT_C,                   &self->uuid,                    NULL,          0                   },
+		{ "timezone",                OPT_STRING, OPT_C,                   &self->timezone,                NULL,          0                   },
+		{ "format",                  OPT_STRING, OPT_C,                   &self->format,                  "json-pretty", 0                   },
 		// log
-		{ "log_enable",              VAR_BOOL,   VAR_C,                   &self->log_enable,              NULL,          true                },
-		{ "log_to_file",             VAR_BOOL,   VAR_C,                   &self->log_to_file,             NULL,          true                },
-		{ "log_to_stdout",           VAR_BOOL,   VAR_C,                   &self->log_to_stdout,           NULL,          true                },
-		{ "log_connections",         VAR_BOOL,   VAR_C,                   &self->log_connections,         NULL,          true                },
-		{ "log_options",             VAR_BOOL,   VAR_C,                   &self->log_options,             NULL,          false               },
+		{ "log_enable",              OPT_BOOL,   OPT_C,                   &self->log_enable,              NULL,          true                },
+		{ "log_to_file",             OPT_BOOL,   OPT_C,                   &self->log_to_file,             NULL,          true                },
+		{ "log_to_stdout",           OPT_BOOL,   OPT_C,                   &self->log_to_stdout,           NULL,          true                },
+		{ "log_connections",         OPT_BOOL,   OPT_C,                   &self->log_connections,         NULL,          true                },
+		{ "log_options",             OPT_BOOL,   OPT_C,                   &self->log_options,             NULL,          false               },
 		// server
-		{ "tls_capath",              VAR_STRING, VAR_C,                   &self->tls_capath,              NULL,          0                   },
-		{ "tls_ca",                  VAR_STRING, VAR_C,                   &self->tls_ca,                  NULL,          0                   },
-		{ "tls_cert",                VAR_STRING, VAR_C,                   &self->tls_cert,                NULL,          0                   },
-		{ "tls_key",                 VAR_STRING, VAR_C,                   &self->tls_key,                 NULL,          0                   },
-		{ "listen",                  VAR_JSON,   VAR_C,                   &self->listen,                  NULL,          0                   },
+		{ "tls_capath",              OPT_STRING, OPT_C,                   &self->tls_capath,              NULL,          0                   },
+		{ "tls_ca",                  OPT_STRING, OPT_C,                   &self->tls_ca,                  NULL,          0                   },
+		{ "tls_cert",                OPT_STRING, OPT_C,                   &self->tls_cert,                NULL,          0                   },
+		{ "tls_key",                 OPT_STRING, OPT_C,                   &self->tls_key,                 NULL,          0                   },
+		{ "listen",                  OPT_JSON,   OPT_C,                   &self->listen,                  NULL,          0                   },
 		// limits
-		{ "limit_send",              VAR_INT,    VAR_C,                   &self->limit_send,              NULL,          3 * 1024 * 1024     },
-		{ "limit_recv",              VAR_INT,    VAR_C,                   &self->limit_recv,              NULL,          1 * 1024 * 1024     },
-		{ "limit_write",             VAR_INT,    VAR_C,                   &self->limit_write,             NULL,          0                   },
+		{ "limit_send",              OPT_INT,    OPT_C,                   &self->limit_send,              NULL,          3 * 1024 * 1024     },
+		{ "limit_recv",              OPT_INT,    OPT_C,                   &self->limit_recv,              NULL,          1 * 1024 * 1024     },
+		{ "limit_write",             OPT_INT,    OPT_C,                   &self->limit_write,             NULL,          0                   },
 		// io and compute
-		{ "frontends",               VAR_INT,    VAR_C|VAR_Z,             &self->frontends,               NULL,          default_fe          },
-		{ "backends",                VAR_INT,    VAR_C|VAR_H|VAR_E,       &self->backends,                NULL,          default_be          },
+		{ "frontends",               OPT_INT,    OPT_C|OPT_Z,             &self->frontends,               NULL,          default_fe          },
+		{ "backends",                OPT_INT,    OPT_C|OPT_H|OPT_E,       &self->backends,                NULL,          default_be          },
 		// wal
-		{ "wal_worker",              VAR_BOOL,   VAR_C,                   &self->wal_worker,              NULL,          true                },
-		{ "wal_crc",                 VAR_BOOL,   VAR_C,                   &self->wal_crc,                 NULL,          true                },
-		{ "wal_sync_on_create",      VAR_BOOL,   VAR_C,                   &self->wal_sync_on_create,      NULL,          true                },
-		{ "wal_sync_on_close",       VAR_BOOL,   VAR_C,                   &self->wal_sync_on_close,       NULL,          true                },
-		{ "wal_sync_on_write",       VAR_BOOL,   VAR_C,                   &self->wal_sync_on_write,       NULL,          false               },
-		{ "wal_sync_interval",       VAR_STRING, VAR_C,                   &self->wal_sync_interval,       "1 sec",       0                   },
-		{ "wal_size",                VAR_INT,    VAR_C,                   &self->wal_size,                NULL,          67108864            },
-		{ "wal_truncate",            VAR_INT,    VAR_C,                   &self->wal_truncate,            NULL,          0                   },
+		{ "wal_worker",              OPT_BOOL,   OPT_C,                   &self->wal_worker,              NULL,          true                },
+		{ "wal_crc",                 OPT_BOOL,   OPT_C,                   &self->wal_crc,                 NULL,          true                },
+		{ "wal_sync_on_create",      OPT_BOOL,   OPT_C,                   &self->wal_sync_on_create,      NULL,          true                },
+		{ "wal_sync_on_close",       OPT_BOOL,   OPT_C,                   &self->wal_sync_on_close,       NULL,          true                },
+		{ "wal_sync_on_write",       OPT_BOOL,   OPT_C,                   &self->wal_sync_on_write,       NULL,          false               },
+		{ "wal_sync_interval",       OPT_STRING, OPT_C,                   &self->wal_sync_interval,       "1 sec",       0                   },
+		{ "wal_size",                OPT_INT,    OPT_C,                   &self->wal_size,                NULL,          67108864            },
+		{ "wal_truncate",            OPT_INT,    OPT_C,                   &self->wal_truncate,            NULL,          0                   },
 		// replication
-		{ "repl_readahead",          VAR_INT,    VAR_C|VAR_Z,             &self->repl_readahead,          NULL,          256 * 1024          },
-		{ "repl_reconnect_ms",       VAR_INT,    VAR_C,                   &self->repl_reconnect_ms,       NULL,          3000                },
+		{ "repl_readahead",          OPT_INT,    OPT_C|OPT_Z,             &self->repl_readahead,          NULL,          256 * 1024          },
+		{ "repl_reconnect_ms",       OPT_INT,    OPT_C,                   &self->repl_reconnect_ms,       NULL,          3000                },
 		// checkpoint
-		{ "checkpoint_interval",     VAR_STRING, VAR_C,                   &self->checkpoint_interval,     "5 min",       0                   },
-		{ "checkpoint_workers",      VAR_INT,    VAR_C,                   &self->checkpoint_workers,      NULL,          3                   },
+		{ "checkpoint_interval",     OPT_STRING, OPT_C,                   &self->checkpoint_interval,     "5 min",       0                   },
+		{ "checkpoint_workers",      OPT_INT,    OPT_C,                   &self->checkpoint_workers,      NULL,          3                   },
 		{  NULL,                     0,          0,                       NULL,                           NULL,          0                   },
 	};
-	vars_define(&self->vars, defs);
+	opts_define(&self->opts, defs);
 }
 
 void
 config_save(Config* self, const char* path)
 {
-	// get a list of variables
-	auto buf = vars_list_persistent(&self->vars);
+	// get a list of optiables
+	auto buf = opts_list_persistent(&self->opts);
 	defer_buf(buf);
 
 	// convert to json
@@ -112,5 +112,5 @@ config_open(Config* self, const char* path)
 	Str options;
 	str_init(&options);
 	buf_str(buf, &options);
-	vars_set(&self->vars, &options);
+	opts_set(&self->opts, &options);
 }

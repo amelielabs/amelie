@@ -37,10 +37,10 @@ struct Import
 	Str           path;
 	Str           content_type;
 	// options
-	Var           format;
-	Var           batch;
-	Var           clients;
-	Vars          vars;
+	Opt           format;
+	Opt           batch;
+	Opt           clients;
+	Opts          opts;
 	Remote*       remote;
 };
 

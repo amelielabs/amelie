@@ -47,7 +47,7 @@ cli_cmd_test(Cli* self, int argc, char** argv)
 		}
 	}
 
-	var_int_set(&config()->log_connections, false);
+	opt_int_set(&config()->log_connections, false);
 	error_catch (
 		test_suite_run(&suite);
 	);

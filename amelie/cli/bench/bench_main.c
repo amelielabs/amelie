@@ -20,7 +20,7 @@ cli_cmd_bench(Cli* self, int argc, char** argv)
 	// amelie bench name
 	auto home = &self->home;
 	home_open(home);
-	var_int_set(&config()->log_connections, false);
+	opt_int_set(&config()->log_connections, false);
 
 	Remote remote;
 	remote_init(&remote);
@@ -33,7 +33,7 @@ cli_cmd_bench(Cli* self, int argc, char** argv)
 	// prepare remote
 	error_catch
 	(
-		login_mgr_set(&self->home.login_mgr, &remote, &bench.vars, argc, argv);
+		login_mgr_set(&self->home.login_mgr, &remote, &bench.opts, argc, argv);
 		bench_run(&bench);
 	);
 }

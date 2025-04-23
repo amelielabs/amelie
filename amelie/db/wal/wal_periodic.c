@@ -52,7 +52,7 @@ wal_periodic_init(WalPeriodic* self, WalWorker* worker)
 void
 wal_periodic_start(WalPeriodic* self)
 {
-	if (! var_int_of(&config()->wal_worker))
+	if (! opt_int_of(&config()->wal_worker))
 		return;
 
 	// prepare periodic interval

@@ -467,7 +467,7 @@ parse_table_create(Stmt* self, bool unlogged)
 		auto n = stmt_expect(self, KINT);
 		stmt->partitions = n->integer;
 	} else {
-		stmt->partitions = var_int_of(&config()->backends);
+		stmt->partitions = opt_int_of(&config()->backends);
 	}
 
 	// [WITH]

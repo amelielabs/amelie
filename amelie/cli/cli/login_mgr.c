@@ -166,7 +166,7 @@ login_mgr_set_json(Remote* remote, Str* text)
 }
 
 int
-login_mgr_set(LoginMgr* self, Remote* remote, Vars* vars,
+login_mgr_set(LoginMgr* self, Remote* remote, Opts* opts,
               int       argc,
               char**    argv)
 {
@@ -231,12 +231,12 @@ login_mgr_set(LoginMgr* self, Remote* remote, Vars* vars,
 			continue;
 		}
 
-		if (vars)
+		if (opts)
 		{
-			auto var = vars_find(vars, &name);
-			if (var)
+			auto opt = opts_find(opts, &name);
+			if (opt)
 			{
-				var_set(var, &value);
+				opt_set(opt, &value);
 				continue;
 			}
 		}

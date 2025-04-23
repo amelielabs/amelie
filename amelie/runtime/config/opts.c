@@ -17,67 +17,67 @@
 #include <amelie_config.h>
 
 void
-vars_init(Vars* self)
+opts_init(Opts* self)
 {
 	self->list_count++;
 	list_init(&self->list);
 }
 
 void
-vars_free(Vars* self)
+opts_free(Opts* self)
 {
 	list_foreach_safe(&self->list)
 	{
-		auto var = list_at(Var, link);
-		var_free(var);
+		auto opt = list_at(Opt, link);
+		opt_free(opt);
 	}
 }
 
 static inline void
-vars_add(Vars* self, Var* var)
+opts_add(Opts* self, Opt* opt)
 {
-	list_append(&self->list, &var->link);
+	list_append(&self->list, &opt->link);
 	self->list_count++;
 }
 
 void
-vars_define(Vars* self, VarDef* defs)
+opts_define(Opts* self, OptsDef* defs)
 {
 	for (int i = 0; defs[i].name != NULL; i++)
 	{
 		auto def = &defs[i];
-		auto var = def->var;
-		var_init(var, def->name, def->type, def->flags);
-		vars_add(self, var);
+		auto opt = def->opt;
+		opt_init(opt, def->name, def->type, def->flags);
+		opts_add(self, opt);
 		switch (def->type) {
-		case VAR_BOOL:
-		case VAR_INT:
-			var_int_set(var, def->default_int);
+		case OPT_BOOL:
+		case OPT_INT:
+			opt_int_set(opt, def->default_int);
 			break;
-		case VAR_STRING:
+		case OPT_STRING:
 			if (def->default_string)
-				var_string_set_raw(var, def->default_string, strlen(def->default_string));
+				opt_string_set_raw(opt, def->default_string, strlen(def->default_string));
 			break;
-		case VAR_JSON:
+		case OPT_JSON:
 			break;
 		}
 	}
 }
 
-Var*
-vars_find(Vars* self, Str* name)
+Opt*
+opts_find(Opts* self, Str* name)
 {
 	list_foreach(&self->list)
 	{
-		auto var = list_at(Var, link);
-		if (str_compare(&var->name, name))
-			return var;
+		auto opt = list_at(Opt, link);
+		if (str_compare(&opt->name, name))
+			return opt;
 	}
 	return NULL;
 }
 
 bool
-vars_set_json(Vars* self, uint8_t** pos)
+opts_set_json(Opts* self, uint8_t** pos)
 {
 	bool update = false;
 	json_read_obj(pos);
@@ -87,39 +87,39 @@ vars_set_json(Vars* self, uint8_t** pos)
 		Str name;
 		json_read_string(pos, &name);
 
-		// find variable and set value
-		auto var = vars_find(self, &name);
-		if (unlikely(var == NULL))
+		// find optiable and set value
+		auto opt = opts_find(self, &name);
+		if (unlikely(opt == NULL))
 			error("option '%.*s': not found", str_size(&name), str_of(&name));
 
-		// ensure variable can be changed
-		if (unlikely(! var_is(var, VAR_C)))
+		// ensure optiable can be changed
+		if (unlikely(! opt_is(opt, OPT_C)))
 			error("option '%.*s': cannot be changed", str_size(&name),
 			      str_of(&name));
 
 		// if config update will be required
-		if (! var_is(var, VAR_E))
+		if (! opt_is(opt, OPT_E))
 			update = true;
 
 		// set data value based on type
-		var_set_json(var, pos);
+		opt_set_json(opt, pos);
 	}
 	return update;
 }
 
 bool
-vars_set(Vars* self, Str* options)
+opts_set(Opts* self, Str* options)
 {
 	Json json;
 	json_init(&json);
 	defer(json_free, &json);
 	json_parse(&json, options, NULL);
 	uint8_t* pos = json.buf->start;
-	return vars_set_json(self, &pos);
+	return opts_set_json(self, &pos);
 }
 
 bool
-vars_set_argv(Vars* self, int argc, char** argv)
+opts_set_argv(Opts* self, int argc, char** argv)
 {
 	bool update = false;
 	for (int i = 0; i < argc; i++)
@@ -134,7 +134,7 @@ vars_set_argv(Vars* self, int argc, char** argv)
 		{
 			if (str_empty(&value))
 				error("option 'json': value is not defined");
-			if (vars_set(self, &value))
+			if (opts_set(self, &value))
 				update = true;
 			continue;
 		}
@@ -145,67 +145,67 @@ vars_set_argv(Vars* self, int argc, char** argv)
 		    str_is_cstr(&name, "daemon=false"))
 			continue;
 
-		auto var = vars_find(self, &name);
-		if (unlikely(var == NULL))
+		auto opt = opts_find(self, &name);
+		if (unlikely(opt == NULL))
 			error("option '%.*s': not found", str_size(&name), str_of(&name));
 
-		// ensure variable can be changed
-		if (unlikely(! var_is(var, VAR_C)))
+		// ensure optiable can be changed
+		if (unlikely(! opt_is(opt, OPT_C)))
 			error("option '%.*s': cannot be changed", str_size(&name),
 			      str_of(&name));
 
 		// if config update will be required
-		if (! var_is(var, VAR_E))
+		if (! opt_is(opt, OPT_E))
 			update = true;
 
 		// set value based on type
-		var_set(var, &value);
+		opt_set(opt, &value);
 	}
 	return update;
 }
 
 Buf*
-vars_list_persistent(Vars* self)
+opts_list_persistent(Opts* self)
 {
 	auto buf = buf_create();
 	encode_obj(buf);
 	list_foreach(&self->list)
 	{
-		auto var = list_at(Var, link);
-		if (var_is(var, VAR_E))
+		auto opt = list_at(Opt, link);
+		if (opt_is(opt, OPT_E))
 			continue;
-		encode_string(buf, &var->name);
-		var_encode(var, buf);
+		encode_string(buf, &opt->name);
+		opt_encode(opt, buf);
 	}
 	encode_obj_end(buf);
 	return buf;
 }
 
 Buf*
-vars_list(Vars* self)
+opts_list(Opts* self)
 {
 	auto buf = buf_create();
 	encode_obj(buf);
 	list_foreach(&self->list)
 	{
-		auto var = list_at(Var, link);
-		if (var_is(var, VAR_H) || var_is(var, VAR_S))
+		auto opt = list_at(Opt, link);
+		if (opt_is(opt, OPT_H) || opt_is(opt, OPT_S))
 			continue;
-		encode_string(buf, &var->name);
-		var_encode(var, buf);
+		encode_string(buf, &opt->name);
+		opt_encode(opt, buf);
 	}
 	encode_obj_end(buf);
 	return buf;
 }
 
 void
-vars_print(Vars* self)
+opts_print(Opts* self)
 {
 	list_foreach(&self->list)
 	{
-		auto var = list_at(Var, link);
-		if (var_is(var, VAR_H) || var_is(var, VAR_S))
+		auto opt = list_at(Opt, link);
+		if (opt_is(opt, OPT_H) || opt_is(opt, OPT_S))
 			continue;
-		var_print(var);
+		opt_print(opt);
 	}
 }

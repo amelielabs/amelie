@@ -59,7 +59,7 @@ dtr_init(Dtr* self, Router* router, Local* local)
 	result_init(&self->cte);
 	event_init(&self->on_access);
 	event_init(&self->on_commit);
-	limit_init(&self->limit, var_int_of(&config()->limit_write));
+	limit_init(&self->limit, opt_int_of(&config()->limit_write));
 	write_init(&self->write);
 	pipe_cache_init(&self->pipe_cache);
 	req_cache_init(&self->req_cache);
@@ -74,7 +74,7 @@ dtr_reset(Dtr* self)
 	dispatch_reset(&self->dispatch,& self->req_cache);
 	pipe_set_reset(&self->set, &self->pipe_cache);
 	result_reset(&self->cte);
-	limit_reset(&self->limit, var_int_of(&config()->limit_write));
+	limit_reset(&self->limit, opt_int_of(&config()->limit_write));
 	write_reset(&self->write);
 	if (self->error)
 	{

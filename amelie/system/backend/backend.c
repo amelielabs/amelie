@@ -56,7 +56,7 @@ backend_replay(Backend* self, Tr* tr, Req* req)
 		pos += sizeof(uint8_t**);
 
 		// validate command crc
-		if (var_int_of(&config()->wal_crc))
+		if (opt_int_of(&config()->wal_crc))
 			if (unlikely(! record_validate_cmd(cmd, data)))
 				error("replay: record command crc mismatch");
 

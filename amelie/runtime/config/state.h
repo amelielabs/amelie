@@ -16,25 +16,25 @@ typedef struct State State;
 struct State
 {
 	// system
-	Var  version;
-	Var  directory;
-	Var  checkpoint;
-	Var  lsn;
-	Var  psn;
-	Var  read_only;
+	Opt  version;
+	Opt  directory;
+	Opt  checkpoint;
+	Opt  lsn;
+	Opt  psn;
+	Opt  read_only;
 	// persistent
-	Var  repl;
-	Var  repl_primary;
-	Var  replicas;
-	Var  users;
+	Opt  repl;
+	Opt  repl_primary;
+	Opt  replicas;
+	Opt  users;
 	// stats
-	Var  connections;
-	Var  sent_bytes;
-	Var  recv_bytes;
-	Var  writes;
-	Var  writes_bytes;
-	Var  ops;
-	Vars vars;
+	Opt  connections;
+	Opt  sent_bytes;
+	Opt  recv_bytes;
+	Opt  writes;
+	Opt  writes_bytes;
+	Opt  ops;
+	Opts opts;
 };
 
 void state_init(State*);

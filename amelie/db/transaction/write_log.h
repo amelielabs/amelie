@@ -68,7 +68,7 @@ write_log_add(WriteLog* self, int cmd, uint64_t partition, Row* row)
 	hdr->size += row_size(row);
 
 	// calculate crc
-	if (var_int_of(&config()->wal_crc))
+	if (opt_int_of(&config()->wal_crc))
 		hdr->crc = global()->crc(hdr->crc, row, row_size(row));
 }
 
@@ -86,6 +86,6 @@ write_log_add_op(WriteLog* self, int cmd, Buf* op)
 	iov_add_buf(&self->iov, op);
 
 	// calculate crc
-	if (var_int_of(&config()->wal_crc))
+	if (opt_int_of(&config()->wal_crc))
 		hdr->crc = global()->crc(0, op->start, buf_size(op));
 }

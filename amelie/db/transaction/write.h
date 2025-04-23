@@ -66,7 +66,7 @@ write_end(Write* self, uint64_t lsn)
 	header->lsn = lsn;
 
 	// calculate header crc (header + commands)
-	if (var_int_of(&config()->wal_crc))
+	if (opt_int_of(&config()->wal_crc))
 		header->crc = global()->crc(header->crc, &header->lsn,
 		                            sizeof(Record) - sizeof(uint32_t));
 }
@@ -87,7 +87,7 @@ write_add(Write* self, WriteLog* write_log)
 	header->ops   += write_log->iov.iov_count;
 
 	// calculate crc
-	if (var_int_of(&config()->wal_crc))
+	if (opt_int_of(&config()->wal_crc))
 		header->crc = global()->crc(header->crc,
 		                            write_log->meta.start,
 		                            buf_size(&write_log->meta));

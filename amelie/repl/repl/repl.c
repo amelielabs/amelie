@@ -77,18 +77,18 @@ repl_open(Repl* self)
 		self->role = REPL_REPLICA;
 
 		// set to read-only, even if replication is not enabled
-		var_int_set(&state()->read_only, true);
+		opt_int_set(&state()->read_only, true);
 	}
 }
 
 void
 repl_start(Repl* self)
 {
-	if (var_int_of(&state()->repl))
+	if (opt_int_of(&state()->repl))
 		return;
 
 	info("replication: start as '%s'", repl_role_of(self->role));
-	var_int_set(&state()->repl, true);
+	opt_int_set(&state()->repl, true);
 
 	// start replicas
 	replica_mgr_start(&self->replica_mgr);
@@ -97,11 +97,11 @@ repl_start(Repl* self)
 void
 repl_stop(Repl* self)
 {
-	if (! var_int_of(&state()->repl))
+	if (! opt_int_of(&state()->repl))
 		return;
 
 	info("replication: stop");
-	var_int_set(&state()->repl, false);
+	opt_int_set(&state()->repl, false);
 
 	// stop replicas
 	replica_mgr_stop(&self->replica_mgr);
@@ -110,7 +110,7 @@ repl_stop(Repl* self)
 void
 repl_subscribe(Repl* self, Str* primary_id)
 {
-	if (! var_int_of(&state()->repl))
+	if (! opt_int_of(&state()->repl))
 		error("replication: is disabled");
 
 	// switch to replica
@@ -121,10 +121,10 @@ repl_subscribe(Repl* self, Str* primary_id)
 		self->role = REPL_REPLICA;
 
 		// set to read-only, even if replication is not enabled
-		var_int_set(&state()->read_only, true);
+		opt_int_set(&state()->read_only, true);
 
 		// set new primary id
-		var_string_set(&state()->repl_primary, primary_id);
+		opt_string_set(&state()->repl_primary, primary_id);
 
 		info("replication: switch to replica, new primary is '%.*s'", str_size(primary_id),
 		     str_of(primary_id));
@@ -134,12 +134,12 @@ repl_subscribe(Repl* self, Str* primary_id)
 	// switch to primary
 
 	// set to read-write
-	var_int_set(&state()->read_only, false);
+	opt_int_set(&state()->read_only, false);
 
 	// remove primary id
 	Str empty;
 	str_init(&empty);
-	var_string_set(&state()->repl_primary, &empty);
+	opt_string_set(&state()->repl_primary, &empty);
 
 	self->role = REPL_PRIMARY;
 	info("replication: switch to primary");
@@ -154,7 +154,7 @@ repl_status(Repl* self)
 
 	// active
 	encode_raw(buf, "active", 6);
-	encode_bool(buf, var_int_of(&state()->repl));
+	encode_bool(buf, opt_int_of(&state()->repl));
 
 	// role
 	encode_raw(buf, "role", 4);

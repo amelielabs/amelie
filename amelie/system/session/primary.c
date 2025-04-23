@@ -63,7 +63,7 @@ on_write(Primary* self, Buf* data)
 	while (pos < end)
 	{
 		auto record = (Record*)pos;
-		if (var_int_of(&config()->wal_crc))
+		if (opt_int_of(&config()->wal_crc))
 			if (unlikely(! record_validate(record)))
 				error("repl: record crc mismatch, system LSN is: %" PRIu64,
 				      state_lsn());

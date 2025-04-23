@@ -159,7 +159,7 @@ cli_cmd_client(Cli* self, int argc, char** argv)
 	home_set_path(path, sizeof(path), "history");
 	console_open(path);
 
-	var_int_set(&config()->log_connections, false);
+	opt_int_set(&config()->log_connections, false);
 
 	Remote remote;
 	remote_init(&remote);
@@ -197,7 +197,7 @@ cli_cmd_import(Cli* self, int argc, char** argv)
 	// amelie import name
 	auto home = &self->home;
 	home_open(home);
-	var_int_set(&config()->log_connections, false);
+	opt_int_set(&config()->log_connections, false);
 
 	Remote remote;
 	remote_init(&remote);
@@ -211,7 +211,7 @@ cli_cmd_import(Cli* self, int argc, char** argv)
 	(
 		// read arguments
 		auto last = login_mgr_set(&self->home.login_mgr, &remote,
-		                          &import.vars,
+		                          &import.opts,
 		                           argc,
 		                           argv);
 		argc -= last;
@@ -226,7 +226,7 @@ cli_cmd_top(Cli* self, int argc, char** argv)
 	// amelie top name
 	auto home = &self->home;
 	home_open(home);
-	var_int_set(&config()->log_connections, false);
+	opt_int_set(&config()->log_connections, false);
 
 	Remote remote;
 	remote_init(&remote);

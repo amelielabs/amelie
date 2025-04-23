@@ -16,44 +16,44 @@ typedef struct Config Config;
 struct Config
 {
 	// main
-	Var  uuid;
-	Var  timezone;
-	Var  format;
+	Opt  uuid;
+	Opt  timezone;
+	Opt  format;
 	// log
-	Var  log_enable;
-	Var  log_to_file;
-	Var  log_to_stdout;
-	Var  log_connections;
-	Var  log_options;
+	Opt  log_enable;
+	Opt  log_to_file;
+	Opt  log_to_stdout;
+	Opt  log_connections;
+	Opt  log_options;
 	// server
-	Var  tls_capath;
-	Var  tls_ca;
-	Var  tls_cert;
-	Var  tls_key;
-	Var  listen;
+	Opt  tls_capath;
+	Opt  tls_ca;
+	Opt  tls_cert;
+	Opt  tls_key;
+	Opt  listen;
 	// limits
-	Var  limit_send;
-	Var  limit_recv;
-	Var  limit_write;
+	Opt  limit_send;
+	Opt  limit_recv;
+	Opt  limit_write;
 	// io and compute
-	Var  frontends;
-	Var  backends;
+	Opt  frontends;
+	Opt  backends;
 	// wal
-	Var  wal_worker;
-	Var  wal_crc;
-	Var  wal_sync_on_create;
-	Var  wal_sync_on_close;
-	Var  wal_sync_on_write;
-	Var  wal_sync_interval;
-	Var  wal_size;
-	Var  wal_truncate;
+	Opt  wal_worker;
+	Opt  wal_crc;
+	Opt  wal_sync_on_create;
+	Opt  wal_sync_on_close;
+	Opt  wal_sync_on_write;
+	Opt  wal_sync_interval;
+	Opt  wal_size;
+	Opt  wal_truncate;
 	// replication
-	Var  repl_readahead;
-	Var  repl_reconnect_ms;
+	Opt  repl_readahead;
+	Opt  repl_reconnect_ms;
 	// checkpoint
-	Var  checkpoint_interval;
-	Var  checkpoint_workers;
-	Vars vars;
+	Opt  checkpoint_interval;
+	Opt  checkpoint_workers;
+	Opts opts;
 };
 
 void config_init(Config*);

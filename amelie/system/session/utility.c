@@ -98,21 +98,20 @@ ctl_show(Session* self)
 		                     &arg->name, arg->extended);
 		break;
 	case SHOW_CONFIG_ALL:
-		buf = vars_list(&global()->config->vars);
+		buf = opts_list(&global()->config->opts);
 		break;
 	case SHOW_STATE:
 		buf = db_state(share->db);
 		break;
 	case SHOW_CONFIG:
 	{
-		// find local variable first
-		auto var = vars_find(&global()->config->vars, &arg->name);
-		if (var && var_is(var, VAR_S))
-			var = NULL;
-		if (unlikely(var == NULL))
-			stmt_error(stmt, arg->name_ast, "variable not found");
+		auto opt = opts_find(&global()->config->opts, &arg->name);
+		if (opt && opt_is(opt, OPT_S))
+			opt = NULL;
+		if (unlikely(opt == NULL))
+			stmt_error(stmt, arg->name_ast, "option not found");
 		buf = buf_create();
-		var_encode(var, buf);
+		opt_encode(opt, buf);
 		break;
 	}
 	}
@@ -301,7 +300,7 @@ ctl_checkpoint(Session* self)
 	if (arg->workers) {
 		workers = arg->workers->integer;
 	} else {
-		workers = var_int_of(&config()->checkpoint_workers);
+		workers = opt_int_of(&config()->checkpoint_workers);
 		if (workers == 0)
 			workers = 1;
 	}

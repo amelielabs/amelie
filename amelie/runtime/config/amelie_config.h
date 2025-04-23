@@ -12,8 +12,8 @@
 //
 
 // config
-#include "config/var.h"
-#include "config/vars.h"
+#include "config/opt.h"
+#include "config/opts.h"
 #include "config/config.h"
 
 // state

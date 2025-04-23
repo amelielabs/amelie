@@ -21,7 +21,7 @@ bench_upsert_create(Bench* self, Client* client)
 	Str str;
 	str_set_cstr(&str, "create table __bench.test (id int primary key random (100000), data int default 0) with (type = 'hash')");
 	client_execute(client, &str);
-	if (var_int_of(&self->unlogged))
+	if (opt_int_of(&self->unlogged))
 	{
 		str_set_cstr(&str, "alter table __bench.test set unlogged");
 		client_execute(client, &str);
@@ -32,7 +32,7 @@ hot static void
 bench_upsert_main(BenchWorker* self, Client* client)
 {
 	auto bench = self->bench;
-	auto batch = var_int_of(&bench->batch);
+	auto batch = opt_int_of(&bench->batch);
 
 	char text[256];
 	snprintf(text, sizeof(text),

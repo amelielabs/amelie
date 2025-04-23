@@ -109,7 +109,7 @@ primary_next(Primary* self)
 	auto request = &self->client->request;
 
 	// check replication state
-	if (! var_int_of(&state()->repl))
+	if (! opt_int_of(&state()->repl))
 		error("replication is disabled");
 
 	// validate primary id
