@@ -101,7 +101,7 @@ vm_run(Vm*       self,
        CodeData* code_data,
        Buf*      code_arg,
        Buf*      args,
-       Result*   cte,
+       Values*   cte,
        Value*    result,
        Content*  content,
        int       start)
@@ -1787,16 +1787,16 @@ cresult:
 ccontent:
 	// [cte, columns*, format*]
 	content_write(self->content, (Str*)op->c, (Columns*)op->b,
-	              result_at(cte, op->a));
+	              values_at(cte, op->a));
 	op_next;
 
 ccte_set:
 	// [cte_order, result]
-	value_move(result_at(cte, op->a), &r[op->b]);
+	value_move(values_at(cte, op->a), &r[op->b]);
 	op_next;
 
 ccte_get:
 	// [result, cte_order]
-	value_copy(&r[op->a], result_at(cte, op->b));
+	value_copy(&r[op->a], values_at(cte, op->b));
 	op_next;
 }

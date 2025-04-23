@@ -385,12 +385,12 @@ emit_recv(Compiler* self)
 	}
 
 	auto has_result = r != -1;
-	if (! has_result)
-		r = op1(self, CNULL, rpin(self, TYPE_NULL));
-
-	// CCTE_SET
-	op2(self, CCTE_SET, stmt->order, r);
-	runpin(self, r);
+	if (has_result)
+	{
+		// CCTE_SET
+		op2(self, CCTE_SET, stmt->order, r);
+		runpin(self, r);
+	}
 
 	// statement returns
 	if (stmt->ret)

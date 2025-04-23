@@ -1035,9 +1035,7 @@ explain insert into test select 1, 0
       "07": "cte_get             0      0      0     ",
       "08": "send_shard          1      0      -     # public.test",
       "09": "recv                1      0      0     ",
-      "10": "null                0      0      0     ",
-      "11": "cte_set             1      0      0     ",
-      "12": "ret                 0      0      0     "
+      "10": "ret                 0      0      0     "
     },
     "backend": {
       "00": "insert              -      0      0     # public.test",
@@ -1077,9 +1075,7 @@ explain insert into test select * from (select 2, 0) t
       "18": "cte_get             0      1      0     ",
       "19": "send_shard          2      0      -     # public.test",
       "20": "recv                2      0      0     ",
-      "21": "null                0      0      0     ",
-      "22": "cte_set             2      0      0     ",
-      "23": "ret                 0      0      0     "
+      "21": "ret                 0      0      0     "
     },
     "backend": {
       "00": "insert              -      0      0     # public.test",
@@ -1107,9 +1103,7 @@ explain insert into test select * from src
       "06": "cte_get             0      0      0     ",
       "07": "send_shard          1      11     -     # public.test",
       "08": "recv                1      0      0     ",
-      "09": "null                0      0      0     ",
-      "10": "cte_set             1      0      0     ",
-      "11": "ret                 0      0      0     "
+      "09": "ret                 0      0      0     "
     },
     "backend": {
       "00": "set                 0      2      0     ",

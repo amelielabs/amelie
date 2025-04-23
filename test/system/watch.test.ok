@@ -33,9 +33,7 @@ explain watch system.state().lsn::int = 1
       "10": "call                0      -      1     # public.sleep()",
       "11": "jmp                 0      0      0     ",
       "12": "nop                 0      0      0     ",
-      "13": "null                1      0      0     ",
-      "14": "cte_set             0      1      0     ",
-      "15": "ret                 0      0      0     "
+      "13": "ret                 0      0      0     "
     }
   },
   "access": []

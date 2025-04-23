@@ -40,9 +40,7 @@ explain update test set data = data + 1
     "frontend": {
       "00": "send_all            0      0      -     # public.test",
       "01": "recv                0      0      0     ",
-      "02": "null                0      0      0     ",
-      "03": "cte_set             0      0      0     ",
-      "04": "ret                 0      0      0     "
+      "02": "ret                 0      0      0     "
     },
     "backend": {
       "00": "table_open_part     0      0      9     # public.test (primary)",
@@ -94,9 +92,7 @@ explain update test.test set data = data + 1
     "frontend": {
       "00": "send_all            0      0      -     # test.test",
       "01": "recv                0      0      0     ",
-      "02": "null                0      0      0     ",
-      "03": "cte_set             0      0      0     ",
-      "04": "ret                 0      0      0     "
+      "02": "ret                 0      0      0     "
     },
     "backend": {
       "00": "table_open_part     0      0      9     # test.test (primary)",
@@ -130,9 +126,7 @@ explain update test set a = a + 1, b = b - 1
     "frontend": {
       "00": "send_all            0      0      -     # public.test",
       "01": "recv                0      0      0     ",
-      "02": "null                0      0      0     ",
-      "03": "cte_set             0      0      0     ",
-      "04": "ret                 0      0      0     "
+      "02": "ret                 0      0      0     "
     },
     "backend": {
       "00": "table_open_part     0      0      15    # public.test (primary)",
@@ -182,9 +176,7 @@ explain update test set data = {"id": data.id::int + 1}
     "frontend": {
       "00": "send_all            0      0      -     # public.test",
       "01": "recv                0      0      0     ",
-      "02": "null                0      0      0     ",
-      "03": "cte_set             0      0      0     ",
-      "04": "ret                 0      0      0     "
+      "02": "ret                 0      0      0     "
     },
     "backend": {
       "00": "table_open_part     0      0      17    # public.test (primary)",
@@ -256,9 +248,7 @@ explain update test set data.id = data.id::int + 1
     "frontend": {
       "00": "send_all            0      0      -     # public.test",
       "01": "recv                0      0      0     ",
-      "02": "null                0      0      0     ",
-      "03": "cte_set             0      0      0     ",
-      "04": "ret                 0      0      0     "
+      "02": "ret                 0      0      0     "
     },
     "backend": {
       "00": "table_open_part     0      0      19    # public.test (primary)",
@@ -369,9 +359,7 @@ explain update test set data = data + 1 where id = 0
     "frontend": {
       "00": "send_lookup         0      0      -     # public.test",
       "01": "recv                0      0      0     ",
-      "02": "null                0      0      0     ",
-      "03": "cte_set             0      0      0     ",
-      "04": "ret                 0      0      0     "
+      "02": "ret                 0      0      0     "
     },
     "backend": {
       "00": "int                 0      -      0     # 0",
@@ -411,9 +399,7 @@ explain update test set data = data + 1 where id >= 1
     "frontend": {
       "00": "send_all            0      0      -     # public.test",
       "01": "recv                0      0      0     ",
-      "02": "null                0      0      0     ",
-      "03": "cte_set             0      0      0     ",
-      "04": "ret                 0      0      0     "
+      "02": "ret                 0      0      0     "
     },
     "backend": {
       "00": "int                 0      -      0     # 1",

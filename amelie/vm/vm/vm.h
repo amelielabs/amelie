@@ -25,7 +25,7 @@ struct Vm
 	Uuid*        backend;
 	Executor*    executor;
 	Dtr*         dtr;
-	Result*      cte;
+	Values*      cte;
 	Value*       result;
 	Content*     content;
 	Tr*          tr;
@@ -39,4 +39,4 @@ void vm_init(Vm*, Db*, Uuid*, Executor*, Dtr*, FunctionMgr*);
 void vm_free(Vm*);
 void vm_reset(Vm*);
 void vm_run(Vm*, Local*, Tr*, Code*, CodeData*, Buf*, Buf*,
-            Result*, Value*, Content*, int);
+            Values*, Value*, Content*, int);

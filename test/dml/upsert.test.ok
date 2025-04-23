@@ -39,9 +39,7 @@ explain insert into test values(1, 0), (2, 0), (1, 0) on conflict do nothing
       "00": "set_ptr             0      -      0     ",
       "01": "send_shard          0      0      -     # public.test",
       "02": "recv                0      0      0     ",
-      "03": "null                0      0      0     ",
-      "04": "cte_set             0      0      0     ",
-      "05": "ret                 0      0      0     "
+      "03": "ret                 0      0      0     "
     },
     "backend": {
       "00": "table_prepare       0      -      0     # public.test",
@@ -72,9 +70,7 @@ explain insert into test values(1, 0) on conflict do nothing
       "00": "set_ptr             0      -      0     ",
       "01": "send_shard          0      0      -     # public.test",
       "02": "recv                0      0      0     ",
-      "03": "null                0      0      0     ",
-      "04": "cte_set             0      0      0     ",
-      "05": "ret                 0      0      0     "
+      "03": "ret                 0      0      0     "
     },
     "backend": {
       "00": "table_prepare       0      -      0     # public.test",
@@ -93,9 +89,7 @@ explain insert into test values(1, 0) on conflict do resolve
       "00": "set_ptr             0      -      0     ",
       "01": "send_shard          0      0      -     # public.test",
       "02": "recv                0      0      0     ",
-      "03": "null                0      0      0     ",
-      "04": "cte_set             0      0      0     ",
-      "05": "ret                 0      0      0     "
+      "03": "ret                 0      0      0     "
     },
     "backend": {
       "00": "table_prepare       0      -      0     # public.test",
@@ -125,9 +119,7 @@ explain insert into test values(1, 0) on conflict do update set data = data + 1
       "00": "set_ptr             0      -      0     ",
       "01": "send_shard          0      0      -     # public.test",
       "02": "recv                0      0      0     ",
-      "03": "null                0      0      0     ",
-      "04": "cte_set             0      0      0     ",
-      "05": "ret                 0      0      0     "
+      "03": "ret                 0      0      0     "
     },
     "backend": {
       "00": "table_prepare       0      -      0     # public.test",
@@ -171,9 +163,7 @@ explain insert into test values (1, 0), (1, 0), (1, 0) on conflict do update set
       "00": "set_ptr             0      -      0     ",
       "01": "send_shard          0      0      -     # public.test",
       "02": "recv                0      0      0     ",
-      "03": "null                0      0      0     ",
-      "04": "cte_set             0      0      0     ",
-      "05": "ret                 0      0      0     "
+      "03": "ret                 0      0      0     "
     },
     "backend": {
       "00": "table_prepare       0      -      0     # public.test",
@@ -212,9 +202,7 @@ explain insert into test values (1, 0) on conflict do update set data = data + 1
       "00": "set_ptr             0      -      0     ",
       "01": "send_shard          0      0      -     # public.test",
       "02": "recv                0      0      0     ",
-      "03": "null                0      0      0     ",
-      "04": "cte_set             0      0      0     ",
-      "05": "ret                 0      0      0     "
+      "03": "ret                 0      0      0     "
     },
     "backend": {
       "00": "table_prepare       0      -      0     # public.test",
@@ -256,9 +244,7 @@ explain insert into test values (1, 123) on conflict do update set data = data +
       "00": "set_ptr             0      -      0     ",
       "01": "send_shard          0      0      -     # public.test",
       "02": "recv                0      0      0     ",
-      "03": "null                0      0      0     ",
-      "04": "cte_set             0      0      0     ",
-      "05": "ret                 0      0      0     "
+      "03": "ret                 0      0      0     "
     },
     "backend": {
       "00": "table_prepare       0      -      0     # public.test",
@@ -291,9 +277,7 @@ explain insert into test values (1, null, {"id": 48}) on conflict do update set 
       "00": "set_ptr             0      -      0     ",
       "01": "send_shard          0      0      -     # public.test",
       "02": "recv                0      0      0     ",
-      "03": "null                0      0      0     ",
-      "04": "cte_set             0      0      0     ",
-      "05": "ret                 0      0      0     "
+      "03": "ret                 0      0      0     "
     },
     "backend": {
       "00": "table_prepare       0      -      0     # public.test",

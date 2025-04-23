@@ -30,7 +30,7 @@ struct Req
 	Buf      arg;
 	Table*   arg_table;
 	Value    result;
-	Result*  cte;
+	Values*  cte;
 	bool     shutdown;
 	Route*   route;
 	Limit*   limit;
@@ -92,7 +92,7 @@ req_set(Req*     self,
         Local*   local,
         Program* program,
         Buf*     args,
-        Result*  cte,
+        Values*  cte,
         Limit*   limit)
 {
 	self->local   = local;

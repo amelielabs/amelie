@@ -17,11 +17,11 @@
 
 // value
 #include "value/value.h"
+#include "value/values.h"
 
 // value objects
 #include "value/reg.h"
 #include "value/stack.h"
-#include "value/result.h"
 
 // json
 #include "value/json.h"

@@ -11,9 +11,9 @@
 // AGPL-3.0 Licensed.
 //
 
-typedef struct Result Result;
+typedef struct Values Values;
 
-struct Result
+struct Values
 {
 	Value* set;
 	int    set_size;
@@ -21,7 +21,7 @@ struct Result
 };
 
 static inline void
-result_init(Result* self)
+values_init(Values* self)
 {
 	self->set      = NULL;
 	self->set_size = 0;
@@ -29,7 +29,7 @@ result_init(Result* self)
 }
 
 static inline void
-result_reset(Result* self)
+values_reset(Values* self)
 {
 	for (int i = 0; i < self->set_size; i++)
 	{
@@ -42,14 +42,14 @@ result_reset(Result* self)
 }
 
 static inline void
-result_free(Result* self)
+values_free(Values* self)
 {
-	result_reset(self);
+	values_reset(self);
 	buf_free(&self->data);
 }
 
 static inline void
-result_create(Result* self, int size)
+values_create(Values* self, int size)
 {
 	assert(! self->set);
 	int allocated = sizeof(Value) * size;
@@ -60,7 +60,7 @@ result_create(Result* self, int size)
 }
 
 always_inline hot static inline Value*
-result_at(Result* self, int n)
+values_at(Values* self, int n)
 {
 	return &self->set[n];
 }
