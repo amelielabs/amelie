@@ -132,7 +132,7 @@ vm_run(Vm*       self,
 		// values
 		&&cfree,
 		&&cdup,
-		&&cswap,
+		&&cmov,
 
 		// stack
 		&&cpush,
@@ -455,7 +455,7 @@ cdup:
 	value_copy(&r[op->a], &r[op->b]);
 	op_next;
 
-cswap:
+cmov:
 	// a = b
 	r[op->a] = r[op->b];
 	value_reset(&r[op->b]);

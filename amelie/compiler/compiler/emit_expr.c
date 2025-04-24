@@ -647,7 +647,7 @@ emit_case(Compiler* self, Targets* targets, Ast* ast)
 		    rtype(self, rthen) != TYPE_NULL)
 			stmt_error(self->current, when->r, "CASE expression type mismatch");
 
-		op2(self, CSWAP, rresult, rthen);
+		op2(self, CMOV, rresult, rthen);
 		runpin(self, rthen);
 
 		op1(self, CJMP, _stop_jmp);
@@ -674,7 +674,7 @@ emit_case(Compiler* self, Targets* targets, Ast* ast)
 	{
 		relse = op1(self, CNULL, rpin(self, TYPE_NULL));
 	}
-	op2(self, CSWAP, rresult, relse);
+	op2(self, CMOV, rresult, relse);
 	runpin(self, relse);
 
 	// _stop
