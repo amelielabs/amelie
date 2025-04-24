@@ -27,9 +27,8 @@ explain begin; select 1; commit
       "01": "int                 1      -      0     # 1",
       "02": "push                1      0      0     ",
       "03": "set_add             0      0      0     ",
-      "04": "cte_set             0      0      0     ",
-      "05": "content             0      -      -     ",
-      "06": "ret                 0      0      0     "
+      "04": "content             0      -      -     ",
+      "05": "ret                 0      0      0     "
     }
   },
   "access": []

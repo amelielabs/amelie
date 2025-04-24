@@ -42,9 +42,8 @@ explain select 1
       "01": "int                 1      -      0     # 1",
       "02": "push                1      0      0     ",
       "03": "set_add             0      0      0     ",
-      "04": "cte_set             0      0      0     ",
-      "05": "content             0      -      -     ",
-      "06": "ret                 0      0      0     "
+      "04": "content             0      -      -     ",
+      "05": "ret                 0      0      0     "
     }
   },
   "access": []
@@ -57,9 +56,8 @@ explain select [1, 2, 3]
       "01": "json                1      0      0     ",
       "02": "push                1      0      0     ",
       "03": "set_add             0      0      0     ",
-      "04": "cte_set             0      0      0     ",
-      "05": "content             0      -      -     ",
-      "06": "ret                 0      0      0     "
+      "04": "content             0      -      -     ",
+      "05": "ret                 0      0      0     "
     }
   },
   "access": []
@@ -90,9 +88,8 @@ explain select * from test
       "02": "bool                0      0      0     ",
       "03": "push                0      0      0     ",
       "04": "union_recv          0      -1     -1    ",
-      "05": "cte_set             0      0      0     ",
-      "06": "content             0      -      -     ",
-      "07": "ret                 0      0      0     "
+      "05": "content             0      -      -     ",
+      "06": "ret                 0      0      0     "
     },
     "backend": {
       "00": "set                 0      1      0     ",
@@ -137,9 +134,8 @@ explain select id, data from test
       "02": "bool                0      0      0     ",
       "03": "push                0      0      0     ",
       "04": "union_recv          0      -1     -1    ",
-      "05": "cte_set             0      0      0     ",
-      "06": "content             0      -      -     ",
-      "07": "ret                 0      0      0     "
+      "05": "content             0      -      -     ",
+      "06": "ret                 0      0      0     "
     },
     "backend": {
       "00": "set                 0      2      0     ",
@@ -184,9 +180,8 @@ explain select data.data from test
       "02": "bool                0      0      0     ",
       "03": "push                0      0      0     ",
       "04": "union_recv          0      -1     -1    ",
-      "05": "cte_set             0      0      0     ",
-      "06": "content             0      -      -     ",
-      "07": "ret                 0      0      0     "
+      "05": "content             0      -      -     ",
+      "06": "ret                 0      0      0     "
     },
     "backend": {
       "00": "set                 0      1      0     ",
@@ -235,9 +230,8 @@ explain select data.data.data from test
       "02": "bool                0      0      0     ",
       "03": "push                0      0      0     ",
       "04": "union_recv          0      -1     -1    ",
-      "05": "cte_set             0      0      0     ",
-      "06": "content             0      -      -     ",
-      "07": "ret                 0      0      0     "
+      "05": "content             0      -      -     ",
+      "06": "ret                 0      0      0     "
     },
     "backend": {
       "00": "set                 0      1      0     ",
@@ -272,9 +266,8 @@ explain select test.id, test.data from test
       "02": "bool                0      0      0     ",
       "03": "push                0      0      0     ",
       "04": "union_recv          0      -1     -1    ",
-      "05": "cte_set             0      0      0     ",
-      "06": "content             0      -      -     ",
-      "07": "ret                 0      0      0     "
+      "05": "content             0      -      -     ",
+      "06": "ret                 0      0      0     "
     },
     "backend": {
       "00": "set                 0      2      0     ",
@@ -309,9 +302,8 @@ explain select test.data.data from test
       "02": "bool                0      0      0     ",
       "03": "push                0      0      0     ",
       "04": "union_recv          0      -1     -1    ",
-      "05": "cte_set             0      0      0     ",
-      "06": "content             0      -      -     ",
-      "07": "ret                 0      0      0     "
+      "05": "content             0      -      -     ",
+      "06": "ret                 0      0      0     "
     },
     "backend": {
       "00": "set                 0      1      0     ",
@@ -370,9 +362,8 @@ explain select alias.id, alias.data from test alias
       "02": "bool                0      0      0     ",
       "03": "push                0      0      0     ",
       "04": "union_recv          0      -1     -1    ",
-      "05": "cte_set             0      0      0     ",
-      "06": "content             0      -      -     ",
-      "07": "ret                 0      0      0     "
+      "05": "content             0      -      -     ",
+      "06": "ret                 0      0      0     "
     },
     "backend": {
       "00": "set                 0      2      0     ",
@@ -407,9 +398,8 @@ explain select alias.data.data from test alias
       "02": "bool                0      0      0     ",
       "03": "push                0      0      0     ",
       "04": "union_recv          0      -1     -1    ",
-      "05": "cte_set             0      0      0     ",
-      "06": "content             0      -      -     ",
-      "07": "ret                 0      0      0     "
+      "05": "content             0      -      -     ",
+      "06": "ret                 0      0      0     "
     },
     "backend": {
       "00": "set                 0      1      0     ",
@@ -448,9 +438,8 @@ explain select alias.id, alias.data from test alias
       "02": "bool                0      0      0     ",
       "03": "push                0      0      0     ",
       "04": "union_recv          0      -1     -1    ",
-      "05": "cte_set             0      0      0     ",
-      "06": "content             0      -      -     ",
-      "07": "ret                 0      0      0     "
+      "05": "content             0      -      -     ",
+      "06": "ret                 0      0      0     "
     },
     "backend": {
       "00": "set                 0      2      0     ",
@@ -497,9 +486,8 @@ explain select * from system.users()
       "05": "set_add             0      0      0     ",
       "06": "json_next           0      3      0     ",
       "07": "json_close          0      1      0     ",
-      "08": "cte_set             0      0      0     ",
-      "09": "content             0      -      -     ",
-      "10": "ret                 0      0      0     "
+      "08": "content             0      -      -     ",
+      "09": "ret                 0      0      0     "
     }
   },
   "access": []
@@ -521,9 +509,8 @@ explain select name from system.users()
       "07": "set_add             0      0      0     ",
       "08": "json_next           0      3      0     ",
       "09": "json_close          0      1      0     ",
-      "10": "cte_set             0      0      0     ",
-      "11": "content             0      -      -     ",
-      "12": "ret                 0      0      0     "
+      "10": "content             0      -      -     ",
+      "11": "ret                 0      0      0     "
     }
   },
   "access": []
@@ -572,9 +559,8 @@ explain select * from ([]) t
       "05": "set_add             0      0      0     ",
       "06": "json_next           0      3      0     ",
       "07": "json_close          0      1      0     ",
-      "08": "cte_set             0      0      0     ",
-      "09": "content             0      -      -     ",
-      "10": "ret                 0      0      0     "
+      "08": "content             0      -      -     ",
+      "09": "ret                 0      0      0     "
     }
   },
   "access": []

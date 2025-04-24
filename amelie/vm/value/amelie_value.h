@@ -17,7 +17,6 @@
 
 // value
 #include "value/value.h"
-#include "value/values.h"
 
 // value objects
 #include "value/reg.h"

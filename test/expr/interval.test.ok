@@ -183,9 +183,8 @@ explain select  '1 hour'::interval = '1 hours 10 seconds'::interval
       "07": "equll               3      1      2     ",
       "08": "push                3      0      0     ",
       "09": "set_add             0      0      0     ",
-      "10": "cte_set             0      0      0     ",
-      "11": "content             0      -      -     ",
-      "12": "ret                 0      0      0     "
+      "10": "content             0      -      -     ",
+      "11": "ret                 0      0      0     "
     }
   },
   "access": []
@@ -205,9 +204,8 @@ explain select  '1 hour'::interval = null
       "05": "nullop              3      1      2     ",
       "06": "push                3      0      0     ",
       "07": "set_add             0      0      0     ",
-      "08": "cte_set             0      0      0     ",
-      "09": "content             0      -      -     ",
-      "10": "ret                 0      0      0     "
+      "08": "content             0      -      -     ",
+      "09": "ret                 0      0      0     "
     }
   },
   "access": []
@@ -235,9 +233,8 @@ explain select  '1 hour'::interval <> '1 hours 10 seconds'::interval
       "08": "not                 1      3      0     ",
       "09": "push                1      0      0     ",
       "10": "set_add             0      0      0     ",
-      "11": "cte_set             0      0      0     ",
-      "12": "content             0      -      -     ",
-      "13": "ret                 0      0      0     "
+      "11": "content             0      -      -     ",
+      "12": "ret                 0      0      0     "
     }
   },
   "access": []
@@ -258,9 +255,8 @@ explain select  '1 hour'::interval <> null
       "06": "not                 1      3      0     ",
       "07": "push                1      0      0     ",
       "08": "set_add             0      0      0     ",
-      "09": "cte_set             0      0      0     ",
-      "10": "content             0      -      -     ",
-      "11": "ret                 0      0      0     "
+      "09": "content             0      -      -     ",
+      "10": "ret                 0      0      0     "
     }
   },
   "access": []
@@ -291,9 +287,8 @@ explain select '61 minutes'::interval >= '1 hour'::interval
       "07": "gtell               3      1      2     ",
       "08": "push                3      0      0     ",
       "09": "set_add             0      0      0     ",
-      "10": "cte_set             0      0      0     ",
-      "11": "content             0      -      -     ",
-      "12": "ret                 0      0      0     "
+      "10": "content             0      -      -     ",
+      "11": "ret                 0      0      0     "
     }
   },
   "access": []
@@ -313,9 +308,8 @@ explain select '1 hour'::interval >= null
       "05": "nullop              3      1      2     ",
       "06": "push                3      0      0     ",
       "07": "set_add             0      0      0     ",
-      "08": "cte_set             0      0      0     ",
-      "09": "content             0      -      -     ",
-      "10": "ret                 0      0      0     "
+      "08": "content             0      -      -     ",
+      "09": "ret                 0      0      0     "
     }
   },
   "access": []
@@ -346,9 +340,8 @@ explain select '61 minutes'::interval > '1 hour'::interval
       "07": "gtll                3      1      2     ",
       "08": "push                3      0      0     ",
       "09": "set_add             0      0      0     ",
-      "10": "cte_set             0      0      0     ",
-      "11": "content             0      -      -     ",
-      "12": "ret                 0      0      0     "
+      "10": "content             0      -      -     ",
+      "11": "ret                 0      0      0     "
     }
   },
   "access": []
@@ -368,9 +361,8 @@ explain select '1 hour'::interval > null
       "05": "nullop              3      1      2     ",
       "06": "push                3      0      0     ",
       "07": "set_add             0      0      0     ",
-      "08": "cte_set             0      0      0     ",
-      "09": "content             0      -      -     ",
-      "10": "ret                 0      0      0     "
+      "08": "content             0      -      -     ",
+      "09": "ret                 0      0      0     "
     }
   },
   "access": []
@@ -401,9 +393,8 @@ explain select '61 minutes'::interval <= '1 hour'::interval
       "07": "ltell               3      1      2     ",
       "08": "push                3      0      0     ",
       "09": "set_add             0      0      0     ",
-      "10": "cte_set             0      0      0     ",
-      "11": "content             0      -      -     ",
-      "12": "ret                 0      0      0     "
+      "10": "content             0      -      -     ",
+      "11": "ret                 0      0      0     "
     }
   },
   "access": []
@@ -423,9 +414,8 @@ explain select '1 hour'::interval <= null
       "05": "nullop              3      1      2     ",
       "06": "push                3      0      0     ",
       "07": "set_add             0      0      0     ",
-      "08": "cte_set             0      0      0     ",
-      "09": "content             0      -      -     ",
-      "10": "ret                 0      0      0     "
+      "08": "content             0      -      -     ",
+      "09": "ret                 0      0      0     "
     }
   },
   "access": []
@@ -456,9 +446,8 @@ explain select '61 minutes'::interval < '1 hour'::interval
       "07": "ltll                3      1      2     ",
       "08": "push                3      0      0     ",
       "09": "set_add             0      0      0     ",
-      "10": "cte_set             0      0      0     ",
-      "11": "content             0      -      -     ",
-      "12": "ret                 0      0      0     "
+      "10": "content             0      -      -     ",
+      "11": "ret                 0      0      0     "
     }
   },
   "access": []
@@ -478,9 +467,8 @@ explain select '1 hour'::interval < null
       "05": "nullop              3      1      2     ",
       "06": "push                3      0      0     ",
       "07": "set_add             0      0      0     ",
-      "08": "cte_set             0      0      0     ",
-      "09": "content             0      -      -     ",
-      "10": "ret                 0      0      0     "
+      "08": "content             0      -      -     ",
+      "09": "ret                 0      0      0     "
     }
   },
   "access": []
@@ -513,9 +501,8 @@ explain select  '5 days 1 hour'::interval + '-2 hours'::interval
       "07": "addll               3      1      2     ",
       "08": "push                3      0      0     ",
       "09": "set_add             0      0      0     ",
-      "10": "cte_set             0      0      0     ",
-      "11": "content             0      -      -     ",
-      "12": "ret                 0      0      0     "
+      "10": "content             0      -      -     ",
+      "11": "ret                 0      0      0     "
     }
   },
   "access": []
@@ -537,9 +524,8 @@ explain select '1 hour'::interval + '1970-01-01 00:00:00.000000'::timestamp
       "07": "addlt               3      1      2     ",
       "08": "push                3      0      0     ",
       "09": "set_add             0      0      0     ",
-      "10": "cte_set             0      0      0     ",
-      "11": "content             0      -      -     ",
-      "12": "ret                 0      0      0     "
+      "10": "content             0      -      -     ",
+      "11": "ret                 0      0      0     "
     }
   },
   "access": []

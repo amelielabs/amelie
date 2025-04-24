@@ -311,7 +311,10 @@ scan_expr(Scan* self, Target* target)
 	{
 		auto cte = target->from_cte;
 		if (target->r == -1)
-			target->r = op2(cp, CCTE_GET, rpin(cp, TYPE_STORE), cte->order);
+		{
+			assert(cte->cte_r != -1);
+			target->r = op2(cp, CREF, rpin(cp, TYPE_STORE), cte->cte_r);
+		}
 		break;
 	}
 	case TARGET_FUNCTION:

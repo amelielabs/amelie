@@ -157,7 +157,7 @@ session_execute_distributed(Session* self)
 	compiler_program(compiler, &program_compiled);
 
 	// prepare distributed transaction
-	dtr_create(dtr, program, NULL);
+	dtr_create(dtr, program, &self->vm.r, NULL);
 
 	// explain
 	if (compiler->parser.explain == EXPLAIN)
@@ -179,8 +179,8 @@ session_execute_distributed(Session* self)
 		       program->code,
 		       program->code_data,
 		       NULL,
+		       &self->vm.r,
 		       NULL,
-		       &dtr->cte,
 		       NULL,
 		       &self->content, 0);
 	);

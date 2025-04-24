@@ -16,6 +16,7 @@ typedef struct Vm Vm;
 struct Vm
 {
 	Reg          r;
+	Reg*         regs;
 	Stack        stack;
 	Code*        code;
 	CodeData*    code_data;
@@ -25,7 +26,6 @@ struct Vm
 	Uuid*        backend;
 	Executor*    executor;
 	Dtr*         dtr;
-	Values*      cte;
 	Value*       result;
 	Content*     content;
 	Tr*          tr;
@@ -38,5 +38,5 @@ struct Vm
 void vm_init(Vm*, Db*, Uuid*, Executor*, Dtr*, FunctionMgr*);
 void vm_free(Vm*);
 void vm_reset(Vm*);
-void vm_run(Vm*, Local*, Tr*, Code*, CodeData*, Buf*, Buf*,
-            Values*, Value*, Content*, int);
+void vm_run(Vm*, Local*, Tr*, Code*, CodeData*, Buf*, Reg*, Buf*,
+            Value*, Content*, int);

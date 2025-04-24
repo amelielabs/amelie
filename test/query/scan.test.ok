@@ -12,9 +12,8 @@ explain select * from test where id > 1
       "02": "bool                0      0      0     ",
       "03": "push                0      0      0     ",
       "04": "union_recv          0      -1     -1    ",
-      "05": "cte_set             0      0      0     ",
-      "06": "content             0      -      -     ",
-      "07": "ret                 0      0      0     "
+      "05": "content             0      -      -     ",
+      "06": "ret                 0      0      0     "
     },
     "backend": {
       "00": "set                 0      2      0     ",
@@ -49,9 +48,8 @@ explain select * from test where id >= 1
       "02": "bool                0      0      0     ",
       "03": "push                0      0      0     ",
       "04": "union_recv          0      -1     -1    ",
-      "05": "cte_set             0      0      0     ",
-      "06": "content             0      -      -     ",
-      "07": "ret                 0      0      0     "
+      "05": "content             0      -      -     ",
+      "06": "ret                 0      0      0     "
     },
     "backend": {
       "00": "set                 0      2      0     ",
@@ -90,9 +88,8 @@ explain select * from test where test.id > 1
       "02": "bool                0      0      0     ",
       "03": "push                0      0      0     ",
       "04": "union_recv          0      -1     -1    ",
-      "05": "cte_set             0      0      0     ",
-      "06": "content             0      -      -     ",
-      "07": "ret                 0      0      0     "
+      "05": "content             0      -      -     ",
+      "06": "ret                 0      0      0     "
     },
     "backend": {
       "00": "set                 0      2      0     ",
@@ -127,9 +124,8 @@ explain select * from test where test.id > -1
       "02": "bool                0      0      0     ",
       "03": "push                0      0      0     ",
       "04": "union_recv          0      -1     -1    ",
-      "05": "cte_set             0      0      0     ",
-      "06": "content             0      -      -     ",
-      "07": "ret                 0      0      0     "
+      "05": "content             0      -      -     ",
+      "06": "ret                 0      0      0     "
     },
     "backend": {
       "00": "set                 0      2      0     ",
@@ -168,9 +164,8 @@ explain select * from test alias where alias.id > 1
       "02": "bool                0      0      0     ",
       "03": "push                0      0      0     ",
       "04": "union_recv          0      -1     -1    ",
-      "05": "cte_set             0      0      0     ",
-      "06": "content             0      -      -     ",
-      "07": "ret                 0      0      0     "
+      "05": "content             0      -      -     ",
+      "06": "ret                 0      0      0     "
     },
     "backend": {
       "00": "set                 0      2      0     ",
@@ -223,9 +218,8 @@ explain select * from test where id > 1
       "02": "bool                0      0      0     ",
       "03": "push                0      0      0     ",
       "04": "union_recv          0      -1     -1    ",
-      "05": "cte_set             0      0      0     ",
-      "06": "content             0      -      -     ",
-      "07": "ret                 0      0      0     "
+      "05": "content             0      -      -     ",
+      "06": "ret                 0      0      0     "
     },
     "backend": {
       "00": "set                 0      2      0     ",
@@ -261,9 +255,8 @@ explain select * from test where id > 1 and id > 1
       "02": "bool                0      0      0     ",
       "03": "push                0      0      0     ",
       "04": "union_recv          0      -1     -1    ",
-      "05": "cte_set             0      0      0     ",
-      "06": "content             0      -      -     ",
-      "07": "ret                 0      0      0     "
+      "05": "content             0      -      -     ",
+      "06": "ret                 0      0      0     "
     },
     "backend": {
       "00": "set                 0      2      0     ",
@@ -303,9 +296,8 @@ explain select * from test where id > 2 and id > 1
       "02": "bool                0      0      0     ",
       "03": "push                0      0      0     ",
       "04": "union_recv          0      -1     -1    ",
-      "05": "cte_set             0      0      0     ",
-      "06": "content             0      -      -     ",
-      "07": "ret                 0      0      0     "
+      "05": "content             0      -      -     ",
+      "06": "ret                 0      0      0     "
     },
     "backend": {
       "00": "set                 0      2      0     ",
@@ -345,9 +337,8 @@ explain select * from test where id > 1 and id > 2
       "02": "bool                0      0      0     ",
       "03": "push                0      0      0     ",
       "04": "union_recv          0      -1     -1    ",
-      "05": "cte_set             0      0      0     ",
-      "06": "content             0      -      -     ",
-      "07": "ret                 0      0      0     "
+      "05": "content             0      -      -     ",
+      "06": "ret                 0      0      0     "
     },
     "backend": {
       "00": "set                 0      2      0     ",
@@ -387,9 +378,8 @@ explain select * from test where id > 1 and id = 2
       "02": "bool                0      0      0     ",
       "03": "push                0      0      0     ",
       "04": "union_recv          0      -1     -1    ",
-      "05": "cte_set             0      0      0     ",
-      "06": "content             0      -      -     ",
-      "07": "ret                 0      0      0     "
+      "05": "content             0      -      -     ",
+      "06": "ret                 0      0      0     "
     },
     "backend": {
       "00": "set                 0      2      0     ",
@@ -428,9 +418,8 @@ explain select * from test where id < 1
       "02": "bool                0      0      0     ",
       "03": "push                0      0      0     ",
       "04": "union_recv          0      -1     -1    ",
-      "05": "cte_set             0      0      0     ",
-      "06": "content             0      -      -     ",
-      "07": "ret                 0      0      0     "
+      "05": "content             0      -      -     ",
+      "06": "ret                 0      0      0     "
     },
     "backend": {
       "00": "set                 0      2      0     ",
@@ -467,9 +456,8 @@ explain select * from test where id <= 2
       "02": "bool                0      0      0     ",
       "03": "push                0      0      0     ",
       "04": "union_recv          0      -1     -1    ",
-      "05": "cte_set             0      0      0     ",
-      "06": "content             0      -      -     ",
-      "07": "ret                 0      0      0     "
+      "05": "content             0      -      -     ",
+      "06": "ret                 0      0      0     "
     },
     "backend": {
       "00": "set                 0      2      0     ",
@@ -507,9 +495,8 @@ explain select * from test where id < 1 and id < 1
       "02": "bool                0      0      0     ",
       "03": "push                0      0      0     ",
       "04": "union_recv          0      -1     -1    ",
-      "05": "cte_set             0      0      0     ",
-      "06": "content             0      -      -     ",
-      "07": "ret                 0      0      0     "
+      "05": "content             0      -      -     ",
+      "06": "ret                 0      0      0     "
     },
     "backend": {
       "00": "set                 0      2      0     ",
@@ -551,9 +538,8 @@ explain select * from test where id < 2 and id < 1
       "02": "bool                0      0      0     ",
       "03": "push                0      0      0     ",
       "04": "union_recv          0      -1     -1    ",
-      "05": "cte_set             0      0      0     ",
-      "06": "content             0      -      -     ",
-      "07": "ret                 0      0      0     "
+      "05": "content             0      -      -     ",
+      "06": "ret                 0      0      0     "
     },
     "backend": {
       "00": "set                 0      2      0     ",
@@ -595,9 +581,8 @@ explain select * from test where id < 1 and id < 2
       "02": "bool                0      0      0     ",
       "03": "push                0      0      0     ",
       "04": "union_recv          0      -1     -1    ",
-      "05": "cte_set             0      0      0     ",
-      "06": "content             0      -      -     ",
-      "07": "ret                 0      0      0     "
+      "05": "content             0      -      -     ",
+      "06": "ret                 0      0      0     "
     },
     "backend": {
       "00": "set                 0      2      0     ",
@@ -639,9 +624,8 @@ explain select * from test where id < 1 and id = 2
       "02": "bool                0      0      0     ",
       "03": "push                0      0      0     ",
       "04": "union_recv          0      -1     -1    ",
-      "05": "cte_set             0      0      0     ",
-      "06": "content             0      -      -     ",
-      "07": "ret                 0      0      0     "
+      "05": "content             0      -      -     ",
+      "06": "ret                 0      0      0     "
     },
     "backend": {
       "00": "set                 0      2      0     ",
@@ -684,9 +668,8 @@ explain select * from test where id > 1 and id < 1
       "02": "bool                0      0      0     ",
       "03": "push                0      0      0     ",
       "04": "union_recv          0      -1     -1    ",
-      "05": "cte_set             0      0      0     ",
-      "06": "content             0      -      -     ",
-      "07": "ret                 0      0      0     "
+      "05": "content             0      -      -     ",
+      "06": "ret                 0      0      0     "
     },
     "backend": {
       "00": "set                 0      2      0     ",
@@ -729,9 +712,8 @@ explain select * from test where id >= 1 and id <= 2
       "02": "bool                0      0      0     ",
       "03": "push                0      0      0     ",
       "04": "union_recv          0      -1     -1    ",
-      "05": "cte_set             0      0      0     ",
-      "06": "content             0      -      -     ",
-      "07": "ret                 0      0      0     "
+      "05": "content             0      -      -     ",
+      "06": "ret                 0      0      0     "
     },
     "backend": {
       "00": "set                 0      2      0     ",
@@ -775,9 +757,8 @@ explain select * from test where id > 1 and id < 1 and id = 1
       "02": "bool                0      0      0     ",
       "03": "push                0      0      0     ",
       "04": "union_recv          0      -1     -1    ",
-      "05": "cte_set             0      0      0     ",
-      "06": "content             0      -      -     ",
-      "07": "ret                 0      0      0     "
+      "05": "content             0      -      -     ",
+      "06": "ret                 0      0      0     "
     },
     "backend": {
       "00": "set                 0      2      0     ",
@@ -824,9 +805,8 @@ explain select * from test where id > 1 and id < 1 and data = 1
       "02": "bool                0      0      0     ",
       "03": "push                0      0      0     ",
       "04": "union_recv          0      -1     -1    ",
-      "05": "cte_set             0      0      0     ",
-      "06": "content             0      -      -     ",
-      "07": "ret                 0      0      0     "
+      "05": "content             0      -      -     ",
+      "06": "ret                 0      0      0     "
     },
     "backend": {
       "00": "set                 0      2      0     ",
@@ -874,9 +854,8 @@ explain select * from test where id = 1
       "02": "bool                0      0      0     ",
       "03": "push                0      0      0     ",
       "04": "union_recv          0      -1     -1    ",
-      "05": "cte_set             0      0      0     ",
-      "06": "content             0      -      -     ",
-      "07": "ret                 0      0      0     "
+      "05": "content             0      -      -     ",
+      "06": "ret                 0      0      0     "
     },
     "backend": {
       "00": "set                 0      2      0     ",
@@ -919,9 +898,8 @@ explain select * from test where data = 1
       "02": "bool                0      0      0     ",
       "03": "push                0      0      0     ",
       "04": "union_recv          0      -1     -1    ",
-      "05": "cte_set             0      0      0     ",
-      "06": "content             0      -      -     ",
-      "07": "ret                 0      0      0     "
+      "05": "content             0      -      -     ",
+      "06": "ret                 0      0      0     "
     },
     "backend": {
       "00": "set                 0      2      0     ",
@@ -955,9 +933,8 @@ explain select * from test where id = 1 and id > 0
       "02": "bool                0      0      0     ",
       "03": "push                0      0      0     ",
       "04": "union_recv          0      -1     -1    ",
-      "05": "cte_set             0      0      0     ",
-      "06": "content             0      -      -     ",
-      "07": "ret                 0      0      0     "
+      "05": "content             0      -      -     ",
+      "06": "ret                 0      0      0     "
     },
     "backend": {
       "00": "set                 0      2      0     ",
@@ -996,9 +973,8 @@ explain select * from test where id = 1 and id > 0 and id < 10
       "02": "bool                0      0      0     ",
       "03": "push                0      0      0     ",
       "04": "union_recv          0      -1     -1    ",
-      "05": "cte_set             0      0      0     ",
-      "06": "content             0      -      -     ",
-      "07": "ret                 0      0      0     "
+      "05": "content             0      -      -     ",
+      "06": "ret                 0      0      0     "
     },
     "backend": {
       "00": "set                 0      2      0     ",
@@ -1045,9 +1021,8 @@ explain select * from test where id = 1 and id = 2
       "02": "bool                0      0      0     ",
       "03": "push                0      0      0     ",
       "04": "union_recv          0      -1     -1    ",
-      "05": "cte_set             0      0      0     ",
-      "06": "content             0      -      -     ",
-      "07": "ret                 0      0      0     "
+      "05": "content             0      -      -     ",
+      "06": "ret                 0      0      0     "
     },
     "backend": {
       "00": "set                 0      2      0     ",
@@ -1089,9 +1064,8 @@ explain select * from test where a > 1
       "02": "bool                0      0      0     ",
       "03": "push                0      0      0     ",
       "04": "union_recv          0      -1     -1    ",
-      "05": "cte_set             0      0      0     ",
-      "06": "content             0      -      -     ",
-      "07": "ret                 0      0      0     "
+      "05": "content             0      -      -     ",
+      "06": "ret                 0      0      0     "
     },
     "backend": {
       "00": "set                 0      2      0     ",
@@ -1127,9 +1101,8 @@ explain select * from test where a > 1 and b > 1
       "02": "bool                0      0      0     ",
       "03": "push                0      0      0     ",
       "04": "union_recv          0      -1     -1    ",
-      "05": "cte_set             0      0      0     ",
-      "06": "content             0      -      -     ",
-      "07": "ret                 0      0      0     "
+      "05": "content             0      -      -     ",
+      "06": "ret                 0      0      0     "
     },
     "backend": {
       "00": "set                 0      2      0     ",
@@ -1171,9 +1144,8 @@ explain select * from test where a > 1 and b < 1
       "02": "bool                0      0      0     ",
       "03": "push                0      0      0     ",
       "04": "union_recv          0      -1     -1    ",
-      "05": "cte_set             0      0      0     ",
-      "06": "content             0      -      -     ",
-      "07": "ret                 0      0      0     "
+      "05": "content             0      -      -     ",
+      "06": "ret                 0      0      0     "
     },
     "backend": {
       "00": "set                 0      2      0     ",
@@ -1213,9 +1185,8 @@ explain select * from test where a > 1 and b < 2 and a < 10
       "02": "bool                0      0      0     ",
       "03": "push                0      0      0     ",
       "04": "union_recv          0      -1     -1    ",
-      "05": "cte_set             0      0      0     ",
-      "06": "content             0      -      -     ",
-      "07": "ret                 0      0      0     "
+      "05": "content             0      -      -     ",
+      "06": "ret                 0      0      0     "
     },
     "backend": {
       "00": "set                 0      2      0     ",
@@ -1263,9 +1234,8 @@ explain select * from test where a > 1 and b = 10
       "02": "bool                0      0      0     ",
       "03": "push                0      0      0     ",
       "04": "union_recv          0      -1     -1    ",
-      "05": "cte_set             0      0      0     ",
-      "06": "content             0      -      -     ",
-      "07": "ret                 0      0      0     "
+      "05": "content             0      -      -     ",
+      "06": "ret                 0      0      0     "
     },
     "backend": {
       "00": "set                 0      2      0     ",
@@ -1307,9 +1277,8 @@ explain select * from test where a > 1 and b = 10 and b = 20
       "02": "bool                0      0      0     ",
       "03": "push                0      0      0     ",
       "04": "union_recv          0      -1     -1    ",
-      "05": "cte_set             0      0      0     ",
-      "06": "content             0      -      -     ",
-      "07": "ret                 0      0      0     "
+      "05": "content             0      -      -     ",
+      "06": "ret                 0      0      0     "
     },
     "backend": {
       "00": "set                 0      2      0     ",
@@ -1355,9 +1324,8 @@ explain select * from test where a > 1 and b = 10 and a = 20
       "02": "bool                0      0      0     ",
       "03": "push                0      0      0     ",
       "04": "union_recv          0      -1     -1    ",
-      "05": "cte_set             0      0      0     ",
-      "06": "content             0      -      -     ",
-      "07": "ret                 0      0      0     "
+      "05": "content             0      -      -     ",
+      "06": "ret                 0      0      0     "
     },
     "backend": {
       "00": "set                 0      2      0     ",
@@ -1402,9 +1370,8 @@ explain select * from test where a = 1 and b = 10
       "02": "bool                0      0      0     ",
       "03": "push                0      0      0     ",
       "04": "union_recv          0      -1     -1    ",
-      "05": "cte_set             0      0      0     ",
-      "06": "content             0      -      -     ",
-      "07": "ret                 0      0      0     "
+      "05": "content             0      -      -     ",
+      "06": "ret                 0      0      0     "
     },
     "backend": {
       "00": "set                 0      2      0     ",
@@ -1445,9 +1412,8 @@ explain select * from test where a = 1 and b > 1
       "02": "bool                0      0      0     ",
       "03": "push                0      0      0     ",
       "04": "union_recv          0      -1     -1    ",
-      "05": "cte_set             0      0      0     ",
-      "06": "content             0      -      -     ",
-      "07": "ret                 0      0      0     "
+      "05": "content             0      -      -     ",
+      "06": "ret                 0      0      0     "
     },
     "backend": {
       "00": "set                 0      2      0     ",
@@ -1492,9 +1458,8 @@ explain select * from test where id between 1 and 2
       "02": "bool                0      0      0     ",
       "03": "push                0      0      0     ",
       "04": "union_recv          0      -1     -1    ",
-      "05": "cte_set             0      0      0     ",
-      "06": "content             0      -      -     ",
-      "07": "ret                 0      0      0     "
+      "05": "content             0      -      -     ",
+      "06": "ret                 0      0      0     "
     },
     "backend": {
       "00": "set                 0      2      0     ",
@@ -1537,9 +1502,8 @@ explain select * from test where data between 1 and 2
       "02": "bool                0      0      0     ",
       "03": "push                0      0      0     ",
       "04": "union_recv          0      -1     -1    ",
-      "05": "cte_set             0      0      0     ",
-      "06": "content             0      -      -     ",
-      "07": "ret                 0      0      0     "
+      "05": "content             0      -      -     ",
+      "06": "ret                 0      0      0     "
     },
     "backend": {
       "00": "set                 0      2      0     ",
@@ -1577,9 +1541,8 @@ explain select * from test where id not between 1 and 2
       "02": "bool                0      0      0     ",
       "03": "push                0      0      0     ",
       "04": "union_recv          0      -1     -1    ",
-      "05": "cte_set             0      0      0     ",
-      "06": "content             0      -      -     ",
-      "07": "ret                 0      0      0     "
+      "05": "content             0      -      -     ",
+      "06": "ret                 0      0      0     "
     },
     "backend": {
       "00": "set                 0      2      0     ",

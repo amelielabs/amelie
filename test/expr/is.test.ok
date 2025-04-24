@@ -22,9 +22,8 @@ explain select 1 is null
       "02": "is                  2      1      0     ",
       "03": "push                2      0      0     ",
       "04": "set_add             0      0      0     ",
-      "05": "cte_set             0      0      0     ",
-      "06": "content             0      -      -     ",
-      "07": "ret                 0      0      0     "
+      "05": "content             0      -      -     ",
+      "06": "ret                 0      0      0     "
     }
   },
   "access": []
@@ -44,9 +43,8 @@ explain select 1 is not null
       "03": "not                 1      2      0     ",
       "04": "push                1      0      0     ",
       "05": "set_add             0      0      0     ",
-      "06": "cte_set             0      0      0     ",
-      "07": "content             0      -      -     ",
-      "08": "ret                 0      0      0     "
+      "06": "content             0      -      -     ",
+      "07": "ret                 0      0      0     "
     }
   },
   "access": []

@@ -265,8 +265,7 @@ enum
 	// result
 	CRESULT,
 	CCONTENT,
-	CCTE_SET,
-	CCTE_GET
+	CREF
 };
 
 struct OpDesc

@@ -20,6 +20,12 @@ struct Reg
 	Buf    data;
 };
 
+always_inline hot static inline Value*
+reg_at(Reg* self, int n)
+{
+	return &self->r[n];
+}
+
 static inline void
 reg_init(Reg* self)
 {
@@ -54,10 +60,4 @@ reg_prepare(Reg* self, int count)
 	self->r_count = count;
 	self->r       = (Value*)self->data.start;
 	memset(self->r, 0, allocated);
-}
-
-always_inline hot static inline Value*
-reg_at(Reg* self, int n)
-{
-	return &self->r[n];
 }

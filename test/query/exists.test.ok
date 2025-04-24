@@ -39,9 +39,8 @@ explain select exists (select true from test limit 1)
       "12": "exists              2      1      0     ",
       "13": "push                2      0      0     ",
       "14": "set_add             0      0      0     ",
-      "15": "cte_set             0      0      0     ",
-      "16": "content             0      -      -     ",
-      "17": "ret                 0      0      0     "
+      "15": "content             0      -      -     ",
+      "16": "ret                 0      0      0     "
     }
   },
   "access": [["public.test", "ro_exclusive"]]
@@ -73,9 +72,8 @@ explain select exists (select true from test where false)
       "10": "exists              2      1      0     ",
       "11": "push                2      0      0     ",
       "12": "set_add             0      0      0     ",
-      "13": "cte_set             0      0      0     ",
-      "14": "content             0      -      -     ",
-      "15": "ret                 0      0      0     "
+      "13": "content             0      -      -     ",
+      "14": "ret                 0      0      0     "
     }
   },
   "access": [["public.test", "ro_exclusive"]]

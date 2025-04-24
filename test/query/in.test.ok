@@ -25,9 +25,8 @@ explain select 1 in ()
       "02": "in                  2      1      0     ",
       "03": "push                2      0      0     ",
       "04": "set_add             0      0      0     ",
-      "05": "cte_set             0      0      0     ",
-      "06": "content             0      -      -     ",
-      "07": "ret                 0      0      0     "
+      "05": "content             0      -      -     ",
+      "06": "ret                 0      0      0     "
     }
   },
   "access": []
@@ -111,9 +110,8 @@ explain select 0 in (3,5, (select * from test), 0)
       "16": "in                  2      1      4     ",
       "17": "push                2      0      0     ",
       "18": "set_add             0      0      0     ",
-      "19": "cte_set             0      0      0     ",
-      "20": "content             0      -      -     ",
-      "21": "ret                 0      0      0     "
+      "19": "content             0      -      -     ",
+      "20": "ret                 0      0      0     "
     }
   },
   "access": [["public.test", "ro_exclusive"]]

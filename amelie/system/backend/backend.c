@@ -96,8 +96,8 @@ backend_execute(Backend* self, Tr* tr, Req* req)
 	        req->program->code_backend,
 	        req->program->code_data,
 	       &req->arg,
+	        req->regs,
 	        req->args,
-	        req->cte,
 	       &req->result,
 	        NULL,
 	        req->start);

@@ -59,6 +59,7 @@ struct Stmt
 	Ast*         cte_name;
 	Columns*     cte_columns;
 	Columns      cte_args;
+	int          cte_r;
 	AstList      select_list;
 
 	StmtList*    stmt_list;
@@ -95,6 +96,7 @@ stmt_allocate(Db*          db,
 	self->ret           = false;
 	self->cte_name      = NULL;
 	self->cte_columns   = NULL;
+	self->cte_r         = -1;
 	self->args          = args;
 	self->stmt_list     = stmt_list;
 	self->data          = data;

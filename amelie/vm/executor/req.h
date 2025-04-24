@@ -26,11 +26,11 @@ struct Req
 	ReqType  type;
 	int      start;
 	Program* program;
+	Reg*     regs;
 	Buf*     args;
 	Buf      arg;
 	Table*   arg_table;
 	Value    result;
-	Values*  cte;
 	bool     shutdown;
 	Route*   route;
 	Limit*   limit;
@@ -46,9 +46,9 @@ req_allocate(void)
 	self->type      = REQ_UNDEF;
 	self->start     = 0;
 	self->program   = NULL;
+	self->regs      = NULL;
 	self->args      = NULL;
 	self->arg_table = NULL;
-	self->cte       = NULL;
 	self->shutdown  = false;
 	self->route     = NULL;
 	self->limit     = NULL;
@@ -74,9 +74,9 @@ req_reset(Req* self)
 	self->type      = REQ_UNDEF;
 	self->start     = 0;
 	self->program   = NULL;
+	self->regs      = NULL;
 	self->args      = NULL;
 	self->arg_table = NULL;
-	self->cte       = NULL;
 	self->shutdown  = false;
 	self->route     = NULL;
 	self->limit     = NULL;
@@ -91,14 +91,14 @@ static inline void
 req_set(Req*     self,
         Local*   local,
         Program* program,
+        Reg*     regs,
         Buf*     args,
-        Values*  cte,
         Limit*   limit)
 {
 	self->local   = local;
 	self->program = program;
+	self->regs    = regs;
 	self->args    = args;
-	self->cte     = cte;
 	self->limit   = limit;
 }
 

@@ -56,9 +56,8 @@ explain select 0.058 between 0.010 and 0.053
       "07": "and                 1      3      4     ",
       "08": "push                1      0      0     ",
       "09": "set_add             0      0      0     ",
-      "10": "cte_set             0      0      0     ",
-      "11": "content             0      -      -     ",
-      "12": "ret                 0      0      0     "
+      "10": "content             0      -      -     ",
+      "11": "ret                 0      0      0     "
     }
   },
   "access": []
@@ -80,9 +79,8 @@ explain select 0.058 not between 0.010 and 0.053
       "08": "not                 2      1      0     ",
       "09": "push                2      0      0     ",
       "10": "set_add             0      0      0     ",
-      "11": "cte_set             0      0      0     ",
-      "12": "content             0      -      -     ",
-      "13": "ret                 0      0      0     "
+      "11": "content             0      -      -     ",
+      "12": "ret                 0      0      0     "
     }
   },
   "access": []

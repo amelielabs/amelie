@@ -30,9 +30,8 @@ explain select system.state().directory::length()
       "05": "call                1      -      1     # public.length()",
       "06": "push                1      0      0     ",
       "07": "set_add             0      0      0     ",
-      "08": "cte_set             0      0      0     ",
-      "09": "content             0      -      -     ",
-      "10": "ret                 0      0      0     "
+      "08": "content             0      -      -     ",
+      "09": "ret                 0      0      0     "
     }
   },
   "access": []
@@ -75,9 +74,8 @@ explain select system.state().directory::length
       "05": "call                1      -      1     # public.length()",
       "06": "push                1      0      0     ",
       "07": "set_add             0      0      0     ",
-      "08": "cte_set             0      0      0     ",
-      "09": "content             0      -      -     ",
-      "10": "ret                 0      0      0     "
+      "08": "content             0      -      -     ",
+      "09": "ret                 0      0      0     "
     }
   },
   "access": []

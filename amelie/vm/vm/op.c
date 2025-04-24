@@ -288,8 +288,7 @@ OpDesc ops[] =
 	// result
 	{ CRESULT, "result" },
 	{ CCONTENT, "content" },
-	{ CCTE_SET, "cte_set" },
-	{ CCTE_GET, "cte_get" },
+	{ CREF, "ref" },
 
 	{ 0, NULL }
 };

@@ -45,6 +45,7 @@ vm_init(Vm*          self,
         Dtr*         dtr,
         FunctionMgr* function_mgr)
 {
+	self->regs         = NULL;
 	self->code         = NULL;
 	self->code_data    = NULL;
 	self->code_arg     = NULL;
@@ -52,7 +53,6 @@ vm_init(Vm*          self,
 	self->backend      = backend;
 	self->executor     = executor;
 	self->dtr          = dtr;
-	self->cte          = NULL;
 	self->result       = NULL;
 	self->content      = NULL;
 	self->tr           = NULL;
@@ -100,8 +100,8 @@ vm_run(Vm*       self,
        Code*     code,
        CodeData* code_data,
        Buf*      code_arg,
+       Reg*      regs,
        Buf*      args,
-       Values*   cte,
        Value*    result,
        Content*  content,
        int       start)
@@ -111,8 +111,8 @@ vm_run(Vm*       self,
 	self->code      = code;
 	self->code_data = code_data;
 	self->code_arg  = code_arg;
+	self->regs      = regs;
 	self->args      = args;
-	self->cte       = cte;
 	self->result    = result;
 	self->content   = content;
 	reg_prepare(&self->r, code->regs);
@@ -370,8 +370,7 @@ vm_run(Vm*       self,
 		// result
 		&&cresult,
 		&&ccontent,
-		&&ccte_set,
-		&&ccte_get
+		&&cref
 	};
 
 	int64_t   rc;
@@ -1785,18 +1784,12 @@ cresult:
 	op_next;
 
 ccontent:
-	// [cte, columns*, format*]
-	content_write(self->content, (Str*)op->c, (Columns*)op->b,
-	              values_at(cte, op->a));
+	// [r, columns*, format*]
+	content_write(self->content, (Str*)op->c, (Columns*)op->b, &r[op->a]);
 	op_next;
 
-ccte_set:
-	// [cte_order, result]
-	value_move(values_at(cte, op->a), &r[op->b]);
-	op_next;
-
-ccte_get:
-	// [result, cte_order]
-	value_copy(&r[op->a], values_at(cte, op->b));
+cref:
+	// [result, r]
+	value_copy(&r[op->a], reg_at(self->regs, op->b));
 	op_next;
 }

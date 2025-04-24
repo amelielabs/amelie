@@ -343,9 +343,8 @@ explain insert into test values(1, 0) on conflict do update set data = data + 1 
       "03": "bool                0      0      0     ",
       "04": "push                0      0      0     ",
       "05": "union_recv          0      -1     -1    ",
-      "06": "cte_set             0      0      0     ",
-      "07": "content             0      -      -     ",
-      "08": "ret                 0      0      0     "
+      "06": "content             0      -      -     ",
+      "07": "ret                 0      0      0     "
     },
     "backend": {
       "00": "set                 0      2      0     ",
@@ -393,9 +392,8 @@ explain insert into test values(1, 0) on conflict do nothing returning *
       "03": "bool                0      0      0     ",
       "04": "push                0      0      0     ",
       "05": "union_recv          0      -1     -1    ",
-      "06": "cte_set             0      0      0     ",
-      "07": "content             0      -      -     ",
-      "08": "ret                 0      0      0     "
+      "06": "content             0      -      -     ",
+      "07": "ret                 0      0      0     "
     },
     "backend": {
       "00": "set                 0      2      0     ",
@@ -435,9 +433,8 @@ explain insert into test values(1, 0) on conflict do update set data = data + 1 
       "03": "bool                0      0      0     ",
       "04": "push                0      0      0     ",
       "05": "union_recv          0      -1     -1    ",
-      "06": "cte_set             0      0      0     ",
-      "07": "content             0      -      -     ",
-      "08": "ret                 0      0      0     "
+      "06": "content             0      -      -     ",
+      "07": "ret                 0      0      0     "
     },
     "backend": {
       "00": "set                 0      2      0     ",
@@ -484,9 +481,8 @@ explain insert into test values(1, 0) on conflict do nothing returning *
       "03": "bool                0      0      0     ",
       "04": "push                0      0      0     ",
       "05": "union_recv          0      -1     -1    ",
-      "06": "cte_set             0      0      0     ",
-      "07": "content             0      -      -     ",
-      "08": "ret                 0      0      0     "
+      "06": "content             0      -      -     ",
+      "07": "ret                 0      0      0     "
     },
     "backend": {
       "00": "set                 0      2      0     ",
@@ -559,16 +555,14 @@ explain insert into test select * from src on conflict do update set data = data
       "02": "bool                0      0      0     ",
       "03": "push                0      0      0     ",
       "04": "union_recv          0      -1     -1    ",
-      "05": "cte_set             0      0      0     ",
-      "06": "cte_get             0      0      0     ",
-      "07": "send_shard          1      11     -     # public.test",
-      "08": "recv                1      0      0     ",
-      "09": "bool                0      0      0     ",
-      "10": "push                0      0      0     ",
-      "11": "union_recv          0      -1     -1    ",
-      "12": "cte_set             1      0      0     ",
-      "13": "content             1      -      -     ",
-      "14": "ret                 0      0      0     "
+      "05": "dup                 1      0      0     ",
+      "06": "send_shard          1      11     -     # public.test",
+      "07": "recv                1      0      0     ",
+      "08": "bool                1      0      0     ",
+      "09": "push                1      0      0     ",
+      "10": "union_recv          1      -1     -1    ",
+      "11": "content             1      -      -     ",
+      "12": "ret                 0      0      0     "
     },
     "backend": {
       "00": "set                 0      2      0     ",
@@ -582,24 +576,24 @@ explain insert into test select * from src on conflict do update set data = data
       "08": "table_close         0      0      0     ",
       "09": "result              0      0      0     ",
       "10": "ret                 0      0      0     ",
-      "11": "set                 0      2      0     ",
+      "11": "set                 1      2      0     ",
       "12": "table_prepare       0      -      0     # public.test",
       "13": "jmp                 26     0      0     ",
-      "14": "int                 1      -      0     # 1",
-      "15": "push                1      0      0     ",
-      "16": "table_readi32       1      0      1     ",
-      "17": "int                 2      -      0     # 1",
-      "18": "addii               3      1      2     ",
-      "19": "push                3      0      0     ",
+      "14": "int                 2      -      0     # 1",
+      "15": "push                2      0      0     ",
+      "16": "table_readi32       2      0      1     ",
+      "17": "int                 3      -      0     # 1",
+      "18": "addii               4      2      3     ",
+      "19": "push                4      0      0     ",
       "20": "update              0      1      0     ",
-      "21": "table_readi32       1      0      0     ",
-      "22": "push                1      0      0     ",
-      "23": "table_readi32       1      0      1     ",
-      "24": "push                1      0      0     ",
-      "25": "set_add             0      0      0     ",
+      "21": "table_readi32       2      0      0     ",
+      "22": "push                2      0      0     ",
+      "23": "table_readi32       2      0      1     ",
+      "24": "push                2      0      0     ",
+      "25": "set_add             1      0      0     ",
       "26": "upsert              0      14     21    ",
       "27": "table_close         0      0      0     ",
-      "28": "result              0      0      0     ",
+      "28": "result              1      0      0     ",
       "29": "ret                 0      0      0     "
     }
   },

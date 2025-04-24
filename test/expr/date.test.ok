@@ -65,9 +65,8 @@ explain select [current_date]
       "01": "json                1      0      0     ",
       "02": "push                1      0      0     ",
       "03": "set_add             0      0      0     ",
-      "04": "cte_set             0      0      0     ",
-      "05": "content             0      -      -     ",
-      "06": "ret                 0      0      0     "
+      "04": "content             0      -      -     ",
+      "05": "ret                 0      0      0     "
     }
   },
   "access": []
@@ -80,9 +79,8 @@ explain select [date '1970-01-01']
       "01": "json                1      0      0     ",
       "02": "push                1      0      0     ",
       "03": "set_add             0      0      0     ",
-      "04": "cte_set             0      0      0     ",
-      "05": "content             0      -      -     ",
-      "06": "ret                 0      0      0     "
+      "04": "content             0      -      -     ",
+      "05": "ret                 0      0      0     "
     }
   },
   "access": []
@@ -110,9 +108,8 @@ explain select now()::date between date '0001-01-01' and date '9999-12-31'
       "11": "and                 1      3      4     ",
       "12": "push                1      0      0     ",
       "13": "set_add             0      0      0     ",
-      "14": "cte_set             0      0      0     ",
-      "15": "content             0      -      -     ",
-      "16": "ret                 0      0      0     "
+      "14": "content             0      -      -     ",
+      "15": "ret                 0      0      0     "
     }
   },
   "access": []
@@ -131,9 +128,8 @@ explain select date '1970-01-01' between date '1970-01-01' and date '1970-01-01'
       "07": "and                 1      3      4     ",
       "08": "push                1      0      0     ",
       "09": "set_add             0      0      0     ",
-      "10": "cte_set             0      0      0     ",
-      "11": "content             0      -      -     ",
-      "12": "ret                 0      0      0     "
+      "10": "content             0      -      -     ",
+      "11": "ret                 0      0      0     "
     }
   },
   "access": []

@@ -298,9 +298,8 @@ explain insert into test values (1),(2),(3) returning *
       "03": "bool                0      0      0     ",
       "04": "push                0      0      0     ",
       "05": "union_recv          0      -1     -1    ",
-      "06": "cte_set             0      0      0     ",
-      "07": "content             0      -      -     ",
-      "08": "ret                 0      0      0     "
+      "06": "content             0      -      -     ",
+      "07": "ret                 0      0      0     "
     },
     "backend": {
       "00": "set                 0      1      0     ",
@@ -337,9 +336,8 @@ explain insert into test () values (), (), () returning *
       "03": "bool                0      0      0     ",
       "04": "push                0      0      0     ",
       "05": "union_recv          0      -1     -1    ",
-      "06": "cte_set             0      0      0     ",
-      "07": "content             0      -      -     ",
-      "08": "ret                 0      0      0     "
+      "06": "content             0      -      -     ",
+      "07": "ret                 0      0      0     "
     },
     "backend": {
       "00": "set                 0      1      0     ",
@@ -461,9 +459,8 @@ explain select * from test where ts > "1970-01-01 01:12:59.909090"::timestamp;
       "02": "bool                0      0      0     ",
       "03": "push                0      0      0     ",
       "04": "union_recv          0      -1     -1    ",
-      "05": "cte_set             0      0      0     ",
-      "06": "content             0      -      -     ",
-      "07": "ret                 0      0      0     "
+      "05": "content             0      -      -     ",
+      "06": "ret                 0      0      0     "
     },
     "backend": {
       "00": "set                 0      2      0     ",
@@ -498,9 +495,8 @@ explain select * from test where ts > timestamp "1970-01-01 01:12:59.909090"
       "02": "bool                0      0      0     ",
       "03": "push                0      0      0     ",
       "04": "union_recv          0      -1     -1    ",
-      "05": "cte_set             0      0      0     ",
-      "06": "content             0      -      -     ",
-      "07": "ret                 0      0      0     "
+      "05": "content             0      -      -     ",
+      "06": "ret                 0      0      0     "
     },
     "backend": {
       "00": "set                 0      2      0     ",
@@ -554,9 +550,8 @@ explain select * from test
       "02": "bool                0      0      0     ",
       "03": "push                0      0      0     ",
       "04": "union_recv          0      -1     -1    ",
-      "05": "cte_set             0      0      0     ",
-      "06": "content             0      -      -     ",
-      "07": "ret                 0      0      0     "
+      "05": "content             0      -      -     ",
+      "06": "ret                 0      0      0     "
     },
     "backend": {
       "00": "set                 0      1      0     ",
@@ -587,9 +582,8 @@ explain select * from test where id > timestamp '1970-01-01 00:00:01.000002'
       "02": "bool                0      0      0     ",
       "03": "push                0      0      0     ",
       "04": "union_recv          0      -1     -1    ",
-      "05": "cte_set             0      0      0     ",
-      "06": "content             0      -      -     ",
-      "07": "ret                 0      0      0     "
+      "05": "content             0      -      -     ",
+      "06": "ret                 0      0      0     "
     },
     "backend": {
       "00": "set                 0      1      0     ",
@@ -622,9 +616,8 @@ explain select * from test where id >= timestamp '1970-01-01 00:00:01.000002'
       "02": "bool                0      0      0     ",
       "03": "push                0      0      0     ",
       "04": "union_recv          0      -1     -1    ",
-      "05": "cte_set             0      0      0     ",
-      "06": "content             0      -      -     ",
-      "07": "ret                 0      0      0     "
+      "05": "content             0      -      -     ",
+      "06": "ret                 0      0      0     "
     },
     "backend": {
       "00": "set                 0      1      0     ",
@@ -657,9 +650,8 @@ explain select * from test where id < timestamp '1970-01-01 00:00:01.000003'
       "02": "bool                0      0      0     ",
       "03": "push                0      0      0     ",
       "04": "union_recv          0      -1     -1    ",
-      "05": "cte_set             0      0      0     ",
-      "06": "content             0      -      -     ",
-      "07": "ret                 0      0      0     "
+      "05": "content             0      -      -     ",
+      "06": "ret                 0      0      0     "
     },
     "backend": {
       "00": "set                 0      1      0     ",
@@ -694,9 +686,8 @@ explain select * from test where id = timestamp '1970-01-01 00:00:01.000003'
       "02": "bool                0      0      0     ",
       "03": "push                0      0      0     ",
       "04": "union_recv          0      -1     -1    ",
-      "05": "cte_set             0      0      0     ",
-      "06": "content             0      -      -     ",
-      "07": "ret                 0      0      0     "
+      "05": "content             0      -      -     ",
+      "06": "ret                 0      0      0     "
     },
     "backend": {
       "00": "set                 0      1      0     ",
@@ -736,9 +727,8 @@ explain select * from test where i > "1 year 1 day 10 hour"::interval
       "02": "bool                0      0      0     ",
       "03": "push                0      0      0     ",
       "04": "union_recv          0      -1     -1    ",
-      "05": "cte_set             0      0      0     ",
-      "06": "content             0      -      -     ",
-      "07": "ret                 0      0      0     "
+      "05": "content             0      -      -     ",
+      "06": "ret                 0      0      0     "
     },
     "backend": {
       "00": "set                 0      2      0     ",
@@ -796,9 +786,8 @@ explain select * from test where d >= date '1970-01-01'
       "02": "bool                0      0      0     ",
       "03": "push                0      0      0     ",
       "04": "union_recv          0      -1     -1    ",
-      "05": "cte_set             0      0      0     ",
-      "06": "content             0      -      -     ",
-      "07": "ret                 0      0      0     "
+      "05": "content             0      -      -     ",
+      "06": "ret                 0      0      0     "
     },
     "backend": {
       "00": "set                 0      2      0     ",
@@ -899,9 +888,8 @@ explain select id from test where id = uuid "00000000-0000-0000-0000-00000000000
       "02": "bool                0      0      0     ",
       "03": "push                0      0      0     ",
       "04": "union_recv          0      -1     -1    ",
-      "05": "cte_set             0      0      0     ",
-      "06": "content             0      -      -     ",
-      "07": "ret                 0      0      0     "
+      "05": "content             0      -      -     ",
+      "06": "ret                 0      0      0     "
     },
     "backend": {
       "00": "set                 0      1      0     ",
@@ -940,9 +928,8 @@ explain select * from test
       "02": "bool                0      0      0     ",
       "03": "push                0      0      0     ",
       "04": "union_recv          0      -1     -1    ",
-      "05": "cte_set             0      0      0     ",
-      "06": "content             0      -      -     ",
-      "07": "ret                 0      0      0     "
+      "05": "content             0      -      -     ",
+      "06": "ret                 0      0      0     "
     },
     "backend": {
       "00": "set                 0      2      0     ",
@@ -971,9 +958,8 @@ explain select * from test use index (i)
       "02": "bool                0      0      0     ",
       "03": "push                0      0      0     ",
       "04": "union_recv          0      -1     -1    ",
-      "05": "cte_set             0      0      0     ",
-      "06": "content             0      -      -     ",
-      "07": "ret                 0      0      0     "
+      "05": "content             0      -      -     ",
+      "06": "ret                 0      0      0     "
     },
     "backend": {
       "00": "set                 0      2      0     ",
@@ -1031,11 +1017,10 @@ explain insert into test select 1, 0
       "03": "int                 1      -      0     # 0",
       "04": "push                1      0      0     ",
       "05": "set_add             0      0      0     ",
-      "06": "cte_set             0      0      0     ",
-      "07": "cte_get             0      0      0     ",
-      "08": "send_shard          1      0      -     # public.test",
-      "09": "recv                1      0      0     ",
-      "10": "ret                 0      0      0     "
+      "06": "dup                 1      0      0     ",
+      "07": "send_shard          1      0      -     # public.test",
+      "08": "recv                1      0      0     ",
+      "09": "ret                 0      0      0     "
     },
     "backend": {
       "00": "insert              -      0      0     # public.test",
@@ -1060,22 +1045,20 @@ explain insert into test select * from (select 2, 0) t
       "03": "int                 1      -      0     # 0",
       "04": "push                1      0      0     ",
       "05": "set_add             0      0      0     ",
-      "06": "cte_set             0      0      0     ",
-      "07": "set                 0      2      0     ",
-      "08": "cte_get             1      0      0     ",
-      "09": "store_open          0      1      16    ",
-      "10": "store_read          2      0      0     ",
-      "11": "push                2      0      0     ",
-      "12": "store_read          2      0      1     ",
-      "13": "push                2      0      0     ",
-      "14": "set_add             0      0      0     ",
-      "15": "store_next          0      10     0     ",
-      "16": "store_close         0      1      0     ",
-      "17": "cte_set             1      0      0     ",
-      "18": "cte_get             0      1      0     ",
-      "19": "send_shard          2      0      -     # public.test",
-      "20": "recv                2      0      0     ",
-      "21": "ret                 0      0      0     "
+      "06": "set                 1      2      0     ",
+      "07": "ref                 2      0      0     ",
+      "08": "store_open          0      2      15    ",
+      "09": "store_read          3      0      0     ",
+      "10": "push                3      0      0     ",
+      "11": "store_read          3      0      1     ",
+      "12": "push                3      0      0     ",
+      "13": "set_add             1      0      0     ",
+      "14": "store_next          0      9      0     ",
+      "15": "store_close         0      1      0     ",
+      "16": "dup                 3      1      0     ",
+      "17": "send_shard          2      0      -     # public.test",
+      "18": "recv                2      0      0     ",
+      "19": "ret                 0      0      0     "
     },
     "backend": {
       "00": "insert              -      0      0     # public.test",
@@ -1099,11 +1082,10 @@ explain insert into test select * from src
       "02": "bool                0      0      0     ",
       "03": "push                0      0      0     ",
       "04": "union_recv          0      -1     -1    ",
-      "05": "cte_set             0      0      0     ",
-      "06": "cte_get             0      0      0     ",
-      "07": "send_shard          1      11     -     # public.test",
-      "08": "recv                1      0      0     ",
-      "09": "ret                 0      0      0     "
+      "05": "dup                 1      0      0     ",
+      "06": "send_shard          1      11     -     # public.test",
+      "07": "recv                1      0      0     ",
+      "08": "ret                 0      0      0     "
     },
     "backend": {
       "00": "set                 0      2      0     ",

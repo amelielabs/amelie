@@ -91,7 +91,7 @@ replay(Share* share, Dtr* dtr, Record* record)
 	program.repl       = true;
 
 	dtr_reset(dtr);
-	dtr_create(dtr, &program, NULL);
+	dtr_create(dtr, &program, NULL, NULL);
 
 	ReqList req_list;
 	req_list_init(&req_list);

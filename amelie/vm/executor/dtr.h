@@ -29,8 +29,8 @@ struct Dtr
 	PipeSet   set;
 	Dispatch  dispatch;
 	Program*  program;
+	Reg*      regs;
 	Buf*      args;
-	Values    cte;
 	Buf*      error;
 	Write     write;
 	Event     on_access;
@@ -50,13 +50,13 @@ dtr_init(Dtr* self, Router* router, Local* local)
 {
 	self->state   = DTR_NONE;
 	self->program = NULL;
+	self->regs    = NULL;
 	self->args    = NULL;
 	self->error   = NULL;
 	self->router  = router;
 	self->local   = local;
 	pipe_set_init(&self->set);
 	dispatch_init(&self->dispatch);
-	values_init(&self->cte);
 	event_init(&self->on_access);
 	event_init(&self->on_commit);
 	limit_init(&self->limit, opt_int_of(&config()->limit_write));
@@ -73,7 +73,6 @@ dtr_reset(Dtr* self)
 {
 	dispatch_reset(&self->dispatch,& self->req_cache);
 	pipe_set_reset(&self->set, &self->pipe_cache);
-	values_reset(&self->cte);
 	limit_reset(&self->limit, opt_int_of(&config()->limit_write));
 	write_reset(&self->write);
 	if (self->error)
@@ -83,6 +82,7 @@ dtr_reset(Dtr* self)
 	}
 	self->state   = DTR_NONE;
 	self->program = NULL;
+	self->regs    = NULL;
 	self->args    = NULL;
 	list_init(&self->link_prepare);
 	list_init(&self->link_access);
@@ -97,22 +97,21 @@ dtr_free(Dtr* self)
 	pipe_set_free(&self->set);
 	pipe_cache_free(&self->pipe_cache);
 	req_cache_free(&self->req_cache);
-	values_free(&self->cte);
 	event_detach(&self->on_access);
 	event_detach(&self->on_commit);
 	write_free(&self->write);
 }
 
 static inline void
-dtr_create(Dtr* self, Program* program, Buf* args)
+dtr_create(Dtr* self, Program* program, Reg* regs, Buf* args)
 {
 	self->program = program;
+	self->regs    = regs;
 	self->args    = args;
 	auto set_size = self->router->list_count;
 	pipe_set_create(&self->set, set_size);
 	dispatch_create(&self->dispatch, set_size, program->stmts,
 	                program->stmts_last);
-	values_create(&self->cte, program->stmts);
 	if (! event_attached(&self->on_access))
 		event_attach(&self->on_access);
 	if (! event_attached(&self->on_commit))
@@ -162,8 +161,8 @@ dtr_send(Dtr* self, int stmt, ReqList* list)
 			pipe = pipe_create(&self->pipe_cache, route);
 			pipe_set_set(set, route->order, pipe);
 		}
-		req_set(req, self->local, self->program, self->args,
-		        &self->cte, &self->limit);
+		req_set(req, self->local, self->program, self->regs, self->args,
+		        &self->limit);
 
 		// set pipe per statement backend order and add request to the
 		// statement list

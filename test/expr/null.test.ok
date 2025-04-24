@@ -9,9 +9,8 @@ explain select null
       "01": "null                1      0      0     ",
       "02": "push                1      0      0     ",
       "03": "set_add             0      0      0     ",
-      "04": "cte_set             0      0      0     ",
-      "05": "content             0      -      -     ",
-      "06": "ret                 0      0      0     "
+      "04": "content             0      -      -     ",
+      "05": "ret                 0      0      0     "
     }
   },
   "access": []

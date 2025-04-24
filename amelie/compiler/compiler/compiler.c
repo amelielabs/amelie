@@ -225,7 +225,7 @@ emit_send_insert(Compiler* self, int start)
 		auto columns_select = &ast_select_of(insert->select->ast)->ret.columns;
 		if (! columns_compare(columns, columns_select))
 			stmt_error(stmt, insert->select->ast, "SELECT columns must match the INSERT table");
-		r = op2(self, CCTE_GET, rpin(self, TYPE_STORE), insert->select->order);
+		r = op2(self, CDUP, rpin(self, TYPE_STORE), insert->select->cte_r);
 	} else
 	{
 		r = op2(self, CSET_PTR, rpin(self, TYPE_STORE),
@@ -383,21 +383,14 @@ emit_recv(Compiler* self)
 		abort();
 		break;
 	}
-
-	auto has_result = r != -1;
-	if (has_result)
-	{
-		// CCTE_SET
-		op2(self, CCTE_SET, stmt->order, r);
-		runpin(self, r);
-	}
+	stmt->cte_r = r;
 
 	// statement returns
 	if (stmt->ret)
 	{
 		// create content using cte result
-		if (has_result)
-			op3(self, CCONTENT, stmt->order,
+		if (r != -1)
+			op3(self, CCONTENT, r,
 			    (intptr_t)&ret->columns,
 			    (intptr_t)&ret->format);
 		op0(self, CRET);
@@ -463,14 +456,9 @@ compiler_emit(Compiler* self)
 	auto stmt = self->parser.stmt_list.list;
 	for (; stmt; stmt = stmt->next)
 	{
-		// generate backend code (pushdown)
-		auto stmt_start = code_count(&self->code_backend);
-		compiler_switch_backend(self);
-		self->current = stmt;
-		emit_stmt(self);
-
-		// generate frontend code
+		// generate frontend code (recv)
 		compiler_switch_frontend(self);
+		self->current = stmt;
 
 		// generate recv up to the max dependable statement order, including
 		// frontend only expressions
@@ -485,6 +473,14 @@ compiler_emit(Compiler* self)
 			emit_recv_upto(self, recv_last, recv);
 			recv_last = recv;
 		}
+
+		// generate backend code (pushdown)
+		compiler_switch_backend(self);
+		auto stmt_start = code_count(&self->code_backend);
+		emit_stmt(self);
+
+		// generate frontend code
+		compiler_switch_frontend(self);
 
 		// RETURN stmt
 		if (stmt->ret)
