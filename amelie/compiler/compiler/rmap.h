@@ -15,16 +15,26 @@ typedef struct Rmap Rmap;
 
 struct Rmap
 {
-	uint8_t* map;
-	int      map_max;
-	Buf      buf;
+	Buf buf;
+	int count;
 };
+
+always_inline static inline int
+rmap_at(Rmap* self, int r)
+{
+	return self->buf.start[r];
+}
+
+always_inline inline void
+rmap_assign(Rmap* self, int r, int type)
+{
+	self->buf.start[r] = type;
+}
 
 static inline void
 rmap_init(Rmap* self)
 {
-	self->map     = NULL;
-	self->map_max = 64;
+	self->count = 0;
 	buf_init(&self->buf);
 }
 
@@ -35,45 +45,33 @@ rmap_free(Rmap* self)
 }
 
 static inline void
-rmap_prepare(Rmap* self)
-{
-	if (self->map)
-		return;
-	self->map = buf_claim(&self->buf, self->map_max);
-	memset(self->map, 0xff, self->map_max);
-}
-
-static inline void
 rmap_reset(Rmap* self)
 {
-	if (self->map)
-		memset(self->map, 0xff, self->map_max);
-}
-
-hot static inline int
-rmap_at(Rmap* self, int r)
-{
-	return self->map[r];
+	self->count = 0;
+	buf_reset(&self->buf);
 }
 
 hot static inline int
 rmap_pin(Rmap* self, int type)
 {
-	for (int r = 0; r < self->map_max; r++)
+	auto map = &self->buf;
+	for (auto r = 0; r < self->count; r++)
 	{
-		if (self->map[r] == 0xff)
-		{
-			self->map[r] = type;
-			return r;
-		}
+		if (rmap_at(self, r) != 0xff)
+			continue;
+		rmap_assign(self, r, type);
+		return r;
 	}
-	error("failed to pin register");
-	return -1;
+	buf_reserve(map, sizeof(uint8_t));
+	auto r = self->count;
+	rmap_assign(self, r, type);
+	buf_advance(map, sizeof(uint8_t));
+	self->count++;
+	return r;
 }
 
 static inline void
 rmap_unpin(Rmap* self, int r)
 {
-	assert(r < 128);
-	self->map[r] = 0xff;
+	rmap_assign(self, r, 0xff);
 }

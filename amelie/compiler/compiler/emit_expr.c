@@ -641,7 +641,7 @@ emit_case(Compiler* self, Targets* targets, Ast* ast)
 
 		// set result type to the type of first result
 		if (rtype(self, rresult) == TYPE_NULL)
-			self->map.map[rresult] = rtype(self, rthen);
+			rmap_assign(&self->map, rresult, rtype(self, rthen));
 		else
 		if (rtype(self, rresult) != rtype(self, rthen) &&
 		    rtype(self, rthen) != TYPE_NULL)
@@ -665,7 +665,7 @@ emit_case(Compiler* self, Targets* targets, Ast* ast)
 
 		// set result type to the type of first result
 		if (rtype(self, rresult) == TYPE_NULL)
-			self->map.map[rresult] = rtype(self, relse);
+			rmap_assign(&self->map, rresult, rtype(self, relse));
 		else
 		if (rtype(self, rresult) != rtype(self, relse) &&
 		    rtype(self, relse) != TYPE_NULL)

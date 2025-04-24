@@ -459,9 +459,7 @@ stmt_maxcte(Stmt* self)
 hot void
 compiler_emit(Compiler* self)
 {
-	rmap_prepare(&self->map);
 	auto recv_last = -1;
-
 	auto stmt = self->parser.stmt_list.list;
 	for (; stmt; stmt = stmt->next)
 	{
