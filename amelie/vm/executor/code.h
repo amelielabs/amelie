@@ -23,11 +23,13 @@ struct Op
 struct Code
 {
 	Buf code;
+	int regs;
 };
 
 static inline void
 code_init(Code* self)
 {
+	self->regs = 0;
 	buf_init(&self->code);
 }
 
@@ -40,13 +42,14 @@ code_free(Code* self)
 static inline void
 code_reset(Code* self)
 {
+	self->regs = 0;
 	buf_reset(&self->code);
 }
 
 static inline void
-code_copy(Code* self, Code* from)
+code_set_regs(Code* self, int regs)
 {
-	buf_write(&self->code, from->code.start, buf_size(&from->code));
+	self->regs = regs;
 }
 
 static inline int

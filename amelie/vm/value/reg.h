@@ -16,37 +16,44 @@ typedef struct Reg Reg;
 struct Reg
 {
 	Value* r;
+	int    r_count;
+	Buf    data;
 };
 
 static inline void
 reg_init(Reg* self)
 {
-	self->r = NULL;
+	self->r       = NULL;
+	self->r_count = 0;
+	buf_init(&self->data);
 }
 
 static inline void
 reg_reset(Reg* self)
 {
-	if (! self->r)
-		return;
-	for (int i = 0; i < 64; i++)
+	for (int i = 0; i < self->r_count; i++)
 		value_free(&self->r[i]);
+	self->r       = NULL;
+	self->r_count = 0;
+	buf_reset(&self->data);
 }
 
 static inline void
 reg_free(Reg* self)
 {
-	am_free(self->r);
+	reg_reset(self);
+	buf_free(&self->data);
 }
 
 static inline void
-reg_prepare(Reg* self)
+reg_prepare(Reg* self, int count)
 {
-	if (self->r)
-		return;
-	int size = sizeof(Value) * 64;
-	self->r = am_malloc(size);
-	memset(self->r, 0, size);
+	assert(! self->r);
+	int allocated = sizeof(Value) * count;
+	buf_reserve(&self->data, allocated);
+	self->r_count = count;
+	self->r       = (Value*)self->data.start;
+	memset(self->r, 0, allocated);
 }
 
 always_inline hot static inline Value*

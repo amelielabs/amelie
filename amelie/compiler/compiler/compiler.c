@@ -510,6 +510,10 @@ compiler_emit(Compiler* self)
 	// no statements (last statement always returns)
 	if (! self->parser.stmt)
 		op0(self, CRET);
+
+	// set the max number of registers used
+	code_set_regs(&self->code_frontend, self->map.count);
+	code_set_regs(&self->code_backend, self->map.count);
 }
 
 void

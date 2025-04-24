@@ -115,7 +115,7 @@ vm_run(Vm*       self,
 	self->cte       = cte;
 	self->result    = result;
 	self->content   = content;
-	reg_prepare(&self->r);
+	reg_prepare(&self->r, code->regs);
 	call_mgr_prepare(&self->call_mgr, self->db, local, code_data);
 
 	const void* ops[] =
@@ -374,12 +374,6 @@ vm_run(Vm*       self,
 		&&ccte_get
 	};
 
-	register auto stack = &self->stack;
-	register auto r     =  self->r.r;
-	register auto op    = code_at(self->code, start);
-	auto cursor_mgr     = &self->cursor_mgr;
-	Cursor* cursor;
-
 	int64_t   rc;
 	double    dbl;
 	Str       string;
@@ -394,8 +388,14 @@ vm_run(Vm*       self,
 	uint8_t*  json;
 	void*     ptr;
 	Call      call;
-
 	str_init(&string);
+
+	auto stack       = &self->stack;
+	auto cursor_mgr  = &self->cursor_mgr;
+	Cursor* cursor;
+
+	register auto r  = self->r.r;
+	register auto op = code_at(self->code, start);
 	op_start;
 
 cret:
