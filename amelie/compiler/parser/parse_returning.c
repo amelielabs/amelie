@@ -122,6 +122,19 @@ parse_returning(Returning* self, Stmt* stmt, Expr* ctx)
 		auto type = stmt_expect(stmt, KSTRING);
 		self->format = type->string;
 	}
+
+	// [INTO name]
+	if (stmt_if(stmt, KINTO))
+	{
+		auto name = stmt_expect(stmt, KNAME);
+		if (stmt->cte_name)
+			stmt_error(stmt, name, "INTO cannot be used with CTE");
+		if (stmt->assign)
+			stmt_error(stmt, name, "INTO cannot be used with := operator");
+		if (ctx && ctx->select && ctx->subquery)
+			stmt_error(stmt, name, "INTO cannot be used inside subquery");
+		stmt->assign = declare_add(stmt->declare, &name->string);
+	}
 }
 
 static inline void

@@ -132,6 +132,7 @@ hot AstSelect*
 parse_select(Stmt* self, Targets* outer, bool subquery)
 {
 	// SELECT [DISTINCT] expr, ...
+	// [INTO name]
 	// [FORMAT name]
 	// [FROM name, [...]]
 	// [GROUP BY]
@@ -149,6 +150,7 @@ parse_select(Stmt* self, Targets* outer, bool subquery)
 	Expr ctx;
 	expr_init(&ctx);
 	ctx.select = true;
+	ctx.subquery = subquery;
 	ctx.aggs = &select->expr_aggs;
 	ctx.targets = &select->targets;
 	parse_returning(&select->ret, self, &ctx);
@@ -167,6 +169,7 @@ parse_select(Stmt* self, Targets* outer, bool subquery)
 		Expr ctx_where;
 		expr_init(&ctx_where);
 		ctx_where.select = true;
+		ctx_where.subquery = subquery;
 		ctx_where.targets = &select->targets;
 		select->expr_where = parse_expr(self, &ctx_where);
 	}

@@ -400,6 +400,7 @@ parse_with(Parser* self)
 		                          self->values_cache,
 		                          &self->json,
 		                          &self->stmt_list,
+		                          &self->declare,
 		                           self->args);
 		stmt_list_add(&self->stmt_list, stmt);
 		self->stmt = stmt;
@@ -534,6 +535,7 @@ parse(Parser* self, Str* str)
 		                           self->values_cache,
 		                           &self->json,
 		                           &self->stmt_list,
+		                           &self->declare,
 		                            self->args);
 		stmt_list_add(&self->stmt_list, self->stmt);
 		self->stmt->assign = assign;

@@ -64,6 +64,7 @@ struct Stmt
 	AstList      select_list;
 
 	StmtList*    stmt_list;
+	Declare*     declare;
 	Columns*     args;
 	CodeData*    data;
 	Access*      access;
@@ -87,6 +88,7 @@ stmt_allocate(Db*          db,
               SetCache*    values_cache,
               Json*        json,
               StmtList*    stmt_list,
+              Declare*     declare,
               Columns*     args)
 {
 	Stmt* self = palloc(sizeof(Stmt));
@@ -101,6 +103,7 @@ stmt_allocate(Db*          db,
 	self->assign        = NULL;
 	self->args          = args;
 	self->stmt_list     = stmt_list;
+	self->declare       = declare;
 	self->data          = data;
 	self->access        = access;
 	self->values_cache  = values_cache;

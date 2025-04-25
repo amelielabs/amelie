@@ -16,6 +16,7 @@ typedef struct Expr Expr;
 struct Expr
 {
 	bool     select;
+	bool     subquery;
 	AstList* aggs;
 	Ast*     lambda;
 	Ast*     as;
@@ -25,11 +26,12 @@ struct Expr
 static inline void
 expr_init(Expr* self)
 {
-	self->select  = false;
-	self->aggs    = NULL;
-	self->as      = NULL;
-	self->lambda  = NULL;
-	self->targets = NULL;
+	self->select   = false;
+	self->subquery = false;
+	self->aggs     = NULL;
+	self->as       = NULL;
+	self->lambda   = NULL;
+	self->targets  = NULL;
 }
 
 Ast* parse_expr_args(Stmt*, Expr*, int, bool);
