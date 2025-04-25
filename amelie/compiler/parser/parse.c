@@ -132,9 +132,6 @@ parse_stmt(Parser* self, Stmt* stmt)
 {
 	auto lex = &self->lex;
 	auto ast = lex_next(lex);
-	if (ast->id == KEOF)
-		return;
-
 	switch (ast->id) {
 	case KSHOW:
 		// SHOW name
@@ -372,6 +369,16 @@ parse_stmt(Parser* self, Stmt* stmt)
 		break;
 
 	default:
+		// var := expr
+		if (stmt->assign)
+		{
+			// SELECT expr
+			lex_push(lex, ast);
+			stmt->id = STMT_SELECT;
+			auto select = parse_select_expr(stmt);
+			stmt->ast = &select->ast;
+			break;
+		}
 		stmt_error(stmt, NULL, "unexpected statement");
 		break;
 	}

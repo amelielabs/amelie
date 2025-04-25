@@ -270,6 +270,18 @@ parse_select(Stmt* self, Targets* outer, bool subquery)
 	return select;
 }
 
+AstSelect*
+parse_select_expr(Stmt* self)
+{
+	// SELECT expr
+	auto select = ast_select_allocate(NULL);
+	ast_list_add(&self->select_list, &select->ast);
+	Expr ctx;
+	expr_init(&ctx);
+	parse_returning(&select->ret, self, &ctx);
+	return select;
+}
+
 static void
 parse_select_resolve_group_by(AstSelect* select)
 {

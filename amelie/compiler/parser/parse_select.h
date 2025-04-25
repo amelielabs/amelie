@@ -73,4 +73,5 @@ ast_select_allocate(Targets* outer)
 }
 
 AstSelect* parse_select(Stmt*, Targets*, bool);
+AstSelect* parse_select_expr(Stmt*);
 void       parse_select_resolve(Stmt*);

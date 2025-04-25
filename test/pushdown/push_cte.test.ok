@@ -30,7 +30,7 @@ with test (name,
 with test (name)
 {"msg": "with test (name) ⟵ AS expected"}
 with test as (
-{"msg": "with test as ❰(❱ ⟵ CTE statement must be DML or SELECT"}
+{"msg": "with test as ( ⟵ unexpected end of statement"}
 # test: with () (no stmt)
 with test as ()
 {"msg": "with test as () ⟵ unexpected statement"}
