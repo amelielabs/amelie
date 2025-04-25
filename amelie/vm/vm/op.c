@@ -286,6 +286,7 @@ OpDesc ops[] =
 	{ CRECV, "recv" },
 
 	// result
+	{ CASSIGN, "assign" },
 	{ CRESULT, "result" },
 	{ CCONTENT, "content" },
 	{ CREF, "ref" },

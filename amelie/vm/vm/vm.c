@@ -368,6 +368,7 @@ vm_run(Vm*       self,
 		&&crecv,
 
 		// result
+		&&cassign,
 		&&cresult,
 		&&ccontent,
 		&&cref
@@ -1776,6 +1777,11 @@ csend_all:
 
 crecv:
 	crecv(self, op);
+	op_next;
+
+cassign:
+	// [result, store]
+	cassign(self, op);
 	op_next;
 
 cresult:

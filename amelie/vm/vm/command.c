@@ -248,6 +248,20 @@ cunion_recv(Vm* self, Op* op)
 	}
 }
 
+void
+cassign(Vm* self, Op* op)
+{
+	// [result, store]
+	auto store = reg_at(&self->r, op->b)->store;
+	auto it = store_iterator(store);
+	defer(store_iterator_close, it);
+	auto dst = reg_at(&self->r, op->a);
+	if (store_iterator_has(it))
+		value_copy(dst, it->current);
+	else
+		value_set_null(dst);
+}
+
 hot Op*
 ctable_open(Vm* self, Op* op, bool point_lookup, bool open_part)
 {

@@ -219,9 +219,17 @@ emit_name(Compiler* self, Targets* targets, Ast* ast)
 {
 	// SELECT name
 	auto name = &ast->string;
+
+	// find variable by name
+	auto var = declare_find(&self->parser.declare, name);
+	if (var)
+	{
+		assert(var->r != -1);
+		return op2(self, CREF, rpin(self, var->type), var->r);
+	}
+
 	while (targets && targets_empty(targets))
 		targets = targets->outer;
-
 	if (! targets)
 		stmt_error(self->current, ast, "column not found");
 
@@ -257,6 +265,25 @@ emit_name_compound(Compiler* self, Targets* targets, Ast* ast)
 	Str path;
 	str_init(&path);
 	str_set_str(&path, &ast->string);
+
+	// find variable by name
+	auto var = declare_find(&self->parser.declare, &name);
+	if (var)
+	{
+		assert(var->r != -1);
+		auto r = op2(self, CREF, rpin(self, var->type), var->r);
+		if (str_empty(&path))
+			return r;
+
+		// ensure variable is a json
+		if (var->type != TYPE_JSON)
+			stmt_error(self->current, ast, "variable is not a json");
+
+		// var.path
+		str_advance(&path, str_size(&name) + 1);
+		int rstring = emit_string(self, &path, false);
+		return cast_operator(self, ast, OP_DOT, r, rstring);
+	}
 
 	// check if the first path is a target name
 	Target* target = NULL;

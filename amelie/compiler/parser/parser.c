@@ -57,6 +57,7 @@ parser_init(Parser*      self,
 	self->local        = local;
 	self->db           = db;
 	stmt_list_init(&self->stmt_list);
+	declare_init(&self->declare);
 	lex_init(&self->lex, keywords_alpha);
 	uri_init(&self->uri);
 	json_init(&self->json);
@@ -76,6 +77,7 @@ parser_reset(Parser* self)
 		stmt = next;
 	}
 	stmt_list_init(&self->stmt_list);
+	declare_init(&self->declare);
 	lex_reset(&self->lex);
 	uri_reset(&self->uri);
 	json_reset(&self->json);

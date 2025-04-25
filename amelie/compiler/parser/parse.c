@@ -386,15 +386,10 @@ parse_stmt(Parser* self, Stmt* stmt)
 	parse_select_resolve(stmt);
 }
 
-hot static bool
+hot static void
 parse_with(Parser* self)
 {
 	auto lex = &self->lex;
-
-	// WITH
-	if (! lex_if(lex, KWITH))
-		return false;
-
 	for (;;)
 	{
 		// name [(args)] AS ( stmt )[, ...]
@@ -452,8 +447,6 @@ parse_with(Parser* self)
 		if (! lex_if(lex, ','))
 			break;
 	}
-
-	return true;
 }
 
 hot void
@@ -515,8 +508,11 @@ parse(Parser* self, Str* str)
 		}
 
 		// [WITH name AS ( cte )[, name AS (...)]]
-		if (parse_with(self))
+		if (lex_if(lex, KWITH))
+		{
+			parse_with(self);
 			continue;
+		}
 
 		// stmt (last stmt is main)
 		self->stmt = stmt_allocate(self->db, self->function_mgr,
@@ -529,10 +525,24 @@ parse(Parser* self, Str* str)
 		                           &self->stmt_list,
 		                            self->args);
 		stmt_list_add(&self->stmt_list, self->stmt);
+
+		// name := expr/stmt
+		ast = lex_if(lex, KNAME);
+		if (ast)
+		{
+			stmt_expect(self->stmt, KASSIGN);
+			self->stmt->assign = declare_add(&self->declare, &ast->string);
+		}
+
+		// stmt
 		parse_stmt(self, self->stmt);
 
 		if (stmt_is_utility(self->stmt))
+		{
+			if (self->stmt->assign)
+				lex_error(lex, ast, ":= cannot be used with utility statements");
 			has_utility = true;
+		}
 
 		// EOF
 		if (lex_if(lex, KEOF))

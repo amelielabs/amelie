@@ -138,6 +138,9 @@ lex_error_expect(Lex* self, Ast* ast, int id)
 		case KMETHOD:
 			ref = "::";
 			break;
+		case KASSIGN:
+			ref = ":=";
+			break;
 		// name/path
 		case KNAME:
 			ref = "name";
@@ -317,6 +320,11 @@ reread_as_float:
 		if (symbol == ':' && symbol_next == ':') {
 			self->pos++;
 			return lex_return(self, ast, KMETHOD, start);
+		}
+		// :=
+		if (symbol == ':' && symbol_next == '=') {
+			self->pos++;
+			return lex_return(self, ast, KASSIGN, start);
 		}
 		// ||
 		if (symbol == '|' && symbol_next == '|') {

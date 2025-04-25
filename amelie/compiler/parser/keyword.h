@@ -33,6 +33,7 @@ enum
 	KCAT,
 	KARROW,
 	KMETHOD,
+	KASSIGN,
 
 	// name/path
 	KNAME,

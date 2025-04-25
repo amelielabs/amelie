@@ -385,6 +385,18 @@ emit_recv(Compiler* self)
 	}
 	stmt->cte_r = r;
 
+	// statement has assign :=
+	auto var = stmt->assign;
+	if (var)
+	{
+		if (! ret)
+			stmt_error(stmt, NULL, "statement cannot be assigned");
+		if (ret->count > 1)
+			stmt_error(stmt, NULL, "statement must return only one column to be assigned");
+		var->type = columns_first(&ret->columns)->type;
+		var->r = op2(self, CASSIGN, rpin(self, var->type), r);
+	}
+
 	// statement returns
 	if (stmt->ret)
 	{

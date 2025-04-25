@@ -25,6 +25,7 @@ struct Parser
 	int          explain;
 	StmtList     stmt_list;
 	Stmt*        stmt;
+	Declare      declare;
 	Columns*     args;
 	CodeData*    data;
 	Access*      access;

@@ -263,6 +263,7 @@ enum
 	CRECV,
 
 	// result
+	CASSIGN,
 	CRESULT,
 	CCONTENT,
 	CREF
