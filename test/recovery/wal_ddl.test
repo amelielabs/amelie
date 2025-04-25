@@ -349,5 +349,50 @@ connect E0 S0 127.0.0.1:3485
 select system.state().lsn
 show schemas
 
+# test: create function
+create function test begin select 1 end
+show functions
+select system.state().lsn
+
+# test: restart
+disconnect S0
+close E0
+open E0
+connect E0 S0 127.0.0.1:3485
+
+# test: validate state
+select system.state().lsn
+show functions
+
+# test: alter function rename
+alter function test rename to test2
+select system.state().lsn
+show functions
+
+# test: restart
+disconnect S0
+close E0
+open E0
+connect E0 S0 127.0.0.1:3485
+
+# test: validate state
+select system.state().lsn
+show functions
+
+# test: drop function
+drop function test2
+show functions
+select system.state().lsn
+
+# test: restart
+disconnect S0
+close E0
+open E0
+connect E0 S0 127.0.0.1:3485
+
+# test: validate state
+select system.state().lsn
+show functions
+
 disconnect S0
 close E0

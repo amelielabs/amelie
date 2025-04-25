@@ -68,6 +68,16 @@ udf_mgr_create(UdfMgr*    self,
 }
 
 void
+udf_mgr_drop_of(UdfMgr* self, Tr* tr, Udf* udf)
+{
+	// save drop operation
+	auto op = udf_op_drop(&udf->config->schema, &udf->config->name);
+
+	// update mgr
+	handle_mgr_drop(&self->mgr, tr, CMD_UDF_DROP, &udf->handle, op);
+}
+
+void
 udf_mgr_drop(UdfMgr* self,
              Tr*     tr,
              Str*    schema,
@@ -82,12 +92,7 @@ udf_mgr_drop(UdfMgr* self,
 			      str_of(name));
 		return;
 	}
-
-	// save drop operation
-	auto op = udf_op_drop(&udf->config->schema, &udf->config->name);
-
-	// update mgr
-	handle_mgr_drop(&self->mgr, tr, CMD_UDF_DROP, &udf->handle, op);
+	udf_mgr_drop_of(self, tr, udf);
 }
 
 static void

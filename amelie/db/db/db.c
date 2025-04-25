@@ -29,11 +29,13 @@ db_init(Db*        self,
         PartMapper mapper,
         void*      mapper_arg,
         WorkerIf*  worker_iface,
-        void*      worker_iface_arg)
+        void*      worker_iface_arg,
+        UdfIf*     udf_iface,
+        void*      udf_iface_arg)
 {
 	schema_mgr_init(&self->schema_mgr);
 	table_mgr_init(&self->table_mgr, mapper, mapper_arg);
-	udf_mgr_init(&self->udf_mgr, NULL, NULL);
+	udf_mgr_init(&self->udf_mgr, udf_iface, udf_iface_arg);
 	worker_mgr_init(&self->worker_mgr, worker_iface, worker_iface_arg);
 	checkpoint_mgr_init(&self->checkpoint_mgr, &db_checkpoint_if, self);
 	checkpointer_init(&self->checkpointer, &self->checkpoint_mgr);

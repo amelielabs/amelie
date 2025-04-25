@@ -92,6 +92,13 @@ parse_stmt_free(Stmt* stmt)
 			index_config_free(ast->config);
 		break;
 	}
+	case STMT_CREATE_FUNCTION:
+	{
+		auto ast = ast_function_create_of(stmt->ast);
+		if (ast->config)
+			udf_config_free(ast->config);
+		break;
+	}
 	case STMT_INSERT:
 	{
 		auto ast = ast_insert_of(stmt->ast);
@@ -195,9 +202,10 @@ parse_stmt(Parser* self, Stmt* stmt)
 
 	case KCREATE:
 	{
-		// [UNIQUE | UNLOGGED]
-		bool unique   = false;
-		bool unlogged = false;
+		// [UNIQUE | UNLOGGED | OR REPLACE]
+		bool unique     = false;
+		bool unlogged   = false;
+		bool or_replace = false;
 		for (auto stop = false; !stop ;)
 		{
 			auto mod = lex_next(lex);
@@ -208,6 +216,14 @@ parse_stmt(Parser* self, Stmt* stmt)
 			case KUNLOGGED:
 				unlogged = true;
 				break;
+			case KOR:
+			{
+				stmt_expect(stmt, KREPLACE);
+				auto fn = stmt_expect(stmt, KFUNCTION);
+				stmt_push(stmt, fn);
+				or_replace = true;
+				break;
+			}
 			default:
 				stmt_push(stmt, mod);
 				stop = true;
@@ -227,7 +243,7 @@ parse_stmt(Parser* self, Stmt* stmt)
 			stmt_push(stmt, next);
 		}
 
-		// CREATE USER | TOKEN | REPLICA | BACKEND | SCHEMA | TABLE | INDEX
+		// CREATE USER | TOKEN | REPLICA | BACKEND | SCHEMA | TABLE | INDEX | FUNCTION
 		if (lex_if(lex, KUSER))
 		{
 			stmt->id = STMT_CREATE_USER;
@@ -262,15 +278,20 @@ parse_stmt(Parser* self, Stmt* stmt)
 		{
 			stmt->id = STMT_CREATE_INDEX;
 			parse_index_create(stmt, unique);
+		} else
+		if (lex_if(lex, KFUNCTION))
+		{
+			stmt->id = STMT_CREATE_FUNCTION;
+			parse_function_create(stmt, or_replace);
 		} else {
-			stmt_error(stmt, NULL, "'USER|REPLICA|BACKEND|SCHEMA|TABLE|INDEX' expected");
+			stmt_error(stmt, NULL, "'USER|REPLICA|BACKEND|SCHEMA|TABLE|INDEX|FUNCTION' expected");
 		}
 		break;
 	}
 
 	case KDROP:
 	{
-		// DROP USER | REPLICA | BACKEND | SCHEMA | TABLE | INDEX
+		// DROP USER | REPLICA | BACKEND | SCHEMA | TABLE | INDEX | FUNCTION
 		if (lex_if(lex, KUSER))
 		{
 			stmt->id = STMT_DROP_USER;
@@ -300,15 +321,20 @@ parse_stmt(Parser* self, Stmt* stmt)
 		{
 			stmt->id = STMT_DROP_INDEX;
 			parse_index_drop(stmt);
+		} else
+		if (lex_if(lex, KFUNCTION))
+		{
+			stmt->id = STMT_DROP_FUNCTION;
+			parse_function_drop(stmt);
 		} else {
-			stmt_error(stmt, NULL, "'USER|REPLICA|BACKEND|SCHEMA|TABLE|INDEX' expected");
+			stmt_error(stmt, NULL, "'USER|REPLICA|BACKEND|SCHEMA|TABLE|INDEX|FUNCTION' expected");
 		}
 		break;
 	}
 
 	case KALTER:
 	{
-		// ALTER USER | SCHEMA | TABLE | INDEX | COMPUTE
+		// ALTER USER | SCHEMA | TABLE | INDEX | FUNCTION
 		if (lex_if(lex, KUSER))
 		{
 			stmt->id = STMT_ALTER_USER;
@@ -328,8 +354,13 @@ parse_stmt(Parser* self, Stmt* stmt)
 		{
 			stmt->id = STMT_ALTER_INDEX;
 			parse_index_alter(stmt);
+		} else
+		if (lex_if(lex, KFUNCTION))
+		{
+			stmt->id = STMT_ALTER_FUNCTION;
+			parse_function_alter(stmt);
 		} else {
-			stmt_error(stmt, NULL, "'USER|SCHEMA|TABLE|INDEX' expected");
+			stmt_error(stmt, NULL, "'USER|SCHEMA|TABLE|INDEX|FUNCTION' expected");
 		}
 		break;
 	}

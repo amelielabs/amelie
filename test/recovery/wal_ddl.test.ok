@@ -1007,5 +1007,73 @@ show schemas
   "name": "public",
   "system": true
 }]
+# test: create function
+create function test begin select 1 end
+show functions
+[{
+  "schema": "public",
+  "name": "test",
+  "text": "select 1",
+  "columns": []
+}]
+select system.state().lsn
+[26]
+# test: restart
+disconnect S0
+close E0
+open E0
+connect E0 S0 127.0.0.1:3485
+# test: validate state
+select system.state().lsn
+[26]
+show functions
+[{
+  "schema": "public",
+  "name": "test",
+  "text": "select 1",
+  "columns": []
+}]
+# test: alter function rename
+alter function test rename to test2
+select system.state().lsn
+[27]
+show functions
+[{
+  "schema": "public",
+  "name": "test2",
+  "text": "select 1",
+  "columns": []
+}]
+# test: restart
+disconnect S0
+close E0
+open E0
+connect E0 S0 127.0.0.1:3485
+# test: validate state
+select system.state().lsn
+[27]
+show functions
+[{
+  "schema": "public",
+  "name": "test2",
+  "text": "select 1",
+  "columns": []
+}]
+# test: drop function
+drop function test2
+show functions
+[]
+select system.state().lsn
+[28]
+# test: restart
+disconnect S0
+close E0
+open E0
+connect E0 S0 127.0.0.1:3485
+# test: validate state
+select system.state().lsn
+[28]
+show functions
+[]
 disconnect S0
 close E0

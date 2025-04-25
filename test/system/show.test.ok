@@ -69,17 +69,38 @@ show table test
 }]
 show table test format 'json'
 [{"schema": "public", "name": "test", "unlogged": false}]
+# test: show functions
+create function test begin select 1 end
+show functions
+[{
+  "schema": "public",
+  "name": "test",
+  "text": "select 1",
+  "columns": []
+}]
+# test: show function
+show function
+{"msg": "show function ⟵ function name expected"}
+show function test
+[{
+  "schema": "public",
+  "name": "test",
+  "text": "select 1",
+  "columns": []
+}]
+show function test format 'json'
+[{"schema": "public", "name": "test", "text": "select 1", "columns": []}]
 # test: show wal
 show wal
 [{
-  "lsn": 3,
+  "lsn": 4,
   "lsn_min": 1,
   "files": 1,
   "slots": 0,
   "slots_min": -1,
-  "writes": 2,
-  "writes_bytes": 422,
-  "ops": 2,
+  "writes": 3,
+  "writes_bytes": 511,
+  "ops": 3,
   "checkpoint": 1
 }]
 # test: show replicas
@@ -101,7 +122,7 @@ select system.state()
   "frontends": 1,
   "backends": 1,
   "checkpoint": 1,
-  "lsn": 3,
+  "lsn": 4,
   "psn": 1,
   "read_only": false
 }]

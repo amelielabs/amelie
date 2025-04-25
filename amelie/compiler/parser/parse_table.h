@@ -152,6 +152,7 @@ ast_table_alter_allocate(void)
 	return self;
 }
 
+bool parse_type(Stmt*, int*, int*);
 void parse_key(Stmt*, Keys*);
 void parse_table_create(Stmt*, bool);
 void parse_table_drop(Stmt*);

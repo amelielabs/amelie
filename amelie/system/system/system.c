@@ -52,6 +52,24 @@ system_save_state(void* arg)
 	state_save(state(), path);
 }
 
+static void
+udf_if_prepare(Udf* self)
+{
+	(void)self;
+}
+
+static void
+udf_if_free(Udf* self)
+{
+	(void)self;
+}
+
+UdfIf udf_if =
+{
+	.prepare = udf_if_prepare,
+	.free    = udf_if_free
+};
+
 System*
 system_create(void)
 {
@@ -80,7 +98,8 @@ system_create(void)
 
 	// db
 	db_init(&self->db, (PartMapper)backend_mgr_map, &self->backend_mgr,
-	        &backend_mgr_if, &self->backend_mgr);
+	        &backend_mgr_if, &self->backend_mgr,
+	        &udf_if, NULL);
 
 	// replication
 	repl_init(&self->repl, &self->db);

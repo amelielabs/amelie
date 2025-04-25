@@ -38,7 +38,7 @@
 #include <amelie_vm.h>
 #include <amelie_parser.h>
 
-static inline bool
+bool
 parse_type(Stmt* self, int* type, int* type_size)
 {
 	auto ast = stmt_next_shadow(self);

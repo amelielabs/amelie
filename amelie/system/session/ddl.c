@@ -403,6 +403,53 @@ ddl_alter_index(Session* self, Tr* tr)
 }
 
 static void
+ddl_create_function(Session* self, Tr* tr)
+{
+	auto stmt = compiler_stmt(&self->compiler);
+	auto arg  = ast_function_create_of(stmt->ast);
+	auto db   = self->share->db;
+
+	// ensure schema exists
+	auto schema = schema_mgr_find(&db->schema_mgr, &arg->config->schema, true);
+	if (! schema->config->create)
+		error("system schema <%.*s> cannot be used to create objects",
+		      str_size(&schema->config->name),
+		      str_of(&schema->config->name));
+
+	// create function
+	udf_mgr_create(&db->udf_mgr, tr, arg->config, false);
+}
+
+static void
+ddl_drop_function(Session* self, Tr* tr)
+{
+	auto stmt = compiler_stmt(&self->compiler);
+	auto arg  = ast_function_drop_of(stmt->ast);
+	udf_mgr_drop(&self->share->db->udf_mgr, tr, &arg->schema, &arg->name,
+	             arg->if_exists);
+}
+
+static void
+ddl_alter_function(Session* self, Tr* tr)
+{
+	auto stmt = compiler_stmt(&self->compiler);
+	auto arg  = ast_function_alter_of(stmt->ast);
+	auto db   = self->share->db;
+
+	// ensure schema exists
+	auto schema = schema_mgr_find(&db->schema_mgr, &arg->schema_new, true);
+	if (! schema->config->create)
+		error("system schema <%.*s> cannot be used to create objects",
+		      str_size(&schema->config->name),
+		      str_of(&schema->config->name));
+
+	// rename function
+	udf_mgr_rename(&db->udf_mgr, tr, &arg->schema, &arg->name,
+	               &arg->schema_new, &arg->name_new,
+	               arg->if_exists);
+}
+
+static void
 ddl_create_backend(Session* self, Tr* tr)
 {
 	auto stmt = compiler_stmt(&self->compiler);
@@ -475,6 +522,15 @@ session_execute_ddl_stmt(Session* self, Tr* tr)
 		break;
 	case STMT_ALTER_INDEX:
 		ddl_alter_index(self, tr);
+		break;
+	case STMT_CREATE_FUNCTION:
+		ddl_create_function(self, tr);
+		break;
+	case STMT_DROP_FUNCTION:
+		ddl_drop_function(self, tr);
+		break;
+	case STMT_ALTER_FUNCTION:
+		ddl_alter_function(self, tr);
 		break;
 	case STMT_CREATE_BACKEND:
 		ddl_create_backend(self, tr);

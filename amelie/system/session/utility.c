@@ -97,6 +97,18 @@ ctl_show(Session* self)
 		buf = table_mgr_list(&share->db->table_mgr, &arg->schema,
 		                     &arg->name, arg->extended);
 		break;
+	case SHOW_FUNCTIONS:
+	{
+		Str* schema = NULL;
+		if (! str_empty(&arg->schema))
+			schema = &arg->schema;
+		buf = udf_mgr_list(&share->db->udf_mgr, schema, NULL, arg->extended);
+		break;
+	}
+	case SHOW_FUNCTION:
+		buf = udf_mgr_list(&share->db->udf_mgr, &arg->schema,
+		                   &arg->name, arg->extended);
+		break;
 	case SHOW_CONFIG_ALL:
 		buf = opts_list(&global()->config->opts);
 		break;

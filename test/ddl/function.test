@@ -1,0 +1,97 @@
+#
+
+open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "127.0.0.1", "port": 3485 }]
+connect E0 S0 127.0.0.1:3485
+
+# test: create function statement parsing
+create function
+create function 123
+create function if
+create function or
+create function or 123
+create or
+create or replace
+create or replace 123
+create or replace function
+create function test
+create function test 123
+create function test.test
+create function test (
+create function test (a
+create function test (a 1
+create function test (a int
+create function test (a int,
+create function test (a int,,
+create function test (a int)
+create function test (a int) begin
+create function test ()
+create function test () begin
+create function test begin
+
+# test: create function
+create function test begin select 1 end
+show functions
+
+# test: create function (already exists)
+create function test begin select 1 end
+drop function test
+
+# test: create function (multi statement)
+create function test begin select 1; return select 1; end
+show functions
+
+# test: drop function statement parsing
+drop function
+drop function 123
+drop function if
+drop function if exists
+drop function test abc
+
+# test: drop function
+drop function test
+show functions
+
+# test: drop function if exists
+drop function test
+drop function if exists test
+show functions
+
+# test: alter function statment parsing
+alter function
+alter function 123
+alter function test
+alter function test rename
+alter function test rename to
+alter function test rename "hello"
+
+# test: alter function rename
+create function test begin select 1 end
+select system.functions()
+
+alter function test rename to test2
+select system.functions()
+
+# test: alter function rename (already exists)
+alter function test2 rename to test2
+
+# test: alter function rename (schema rename)
+alter function test2 rename to test.test
+create schema test
+alter function test2 rename to test.test
+show function test.test
+drop function test.test
+show functions
+
+## test: create function (with ddl command)
+#create function test begin select 1; show all; end
+#show functions
+
+#create function test begin show all; end
+#show functions
+
+## test: create function (with arguments)
+#create function test (a int) begin return a; end
+#show functions
+
+disconnect S0
+close E0
