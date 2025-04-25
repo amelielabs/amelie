@@ -33,6 +33,7 @@ db_init(Db*        self,
 {
 	schema_mgr_init(&self->schema_mgr);
 	table_mgr_init(&self->table_mgr, mapper, mapper_arg);
+	udf_mgr_init(&self->udf_mgr, NULL, NULL);
 	worker_mgr_init(&self->worker_mgr, worker_iface, worker_iface_arg);
 	checkpoint_mgr_init(&self->checkpoint_mgr, &db_checkpoint_if, self);
 	checkpointer_init(&self->checkpointer, &self->checkpoint_mgr);
@@ -43,6 +44,7 @@ void
 db_free(Db* self)
 {
 	table_mgr_free(&self->table_mgr);
+	udf_mgr_free(&self->udf_mgr);
 	worker_mgr_free(&self->worker_mgr);
 	schema_mgr_free(&self->schema_mgr);
 	checkpoint_mgr_free(&self->checkpoint_mgr);

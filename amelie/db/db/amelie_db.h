@@ -27,6 +27,12 @@
 // index
 #include "db/table_index.h"
 
+// udf
+#include "db/udf_config.h"
+#include "db/udf.h"
+#include "db/udf_op.h"
+#include "db/udf_mgr.h"
+
 // worker
 #include "db/worker_config.h"
 #include "db/worker.h"

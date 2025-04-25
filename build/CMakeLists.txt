@@ -195,6 +195,7 @@ set(AMELIE_SOURCES_DB
     ${AMELIE_ROOT}/db/db/table_mgr.c
     ${AMELIE_ROOT}/db/db/table_mgr_alter.c
     ${AMELIE_ROOT}/db/db/table_index.c
+    ${AMELIE_ROOT}/db/db/udf_mgr.c
     ${AMELIE_ROOT}/db/db/worker_mgr.c
     ${AMELIE_ROOT}/db/db/db.c
     ${AMELIE_ROOT}/db/db/db_checkpoint.c

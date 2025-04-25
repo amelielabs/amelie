@@ -287,6 +287,32 @@ recover_cmd(Recover* self, RecordCmd* cmd, uint8_t** pos)
 		table_index_rename(table, tr, &name, &name_new, false);
 		break;
 	}
+	case CMD_UDF_CREATE:
+	{
+		auto config = udf_op_create_read(pos);
+		defer(udf_config_free, config);
+		udf_mgr_create(&db->udf_mgr, tr, config, false);
+		break;
+	}
+	case CMD_UDF_DROP:
+	{
+		Str schema;
+		Str name;
+		udf_op_drop_read(pos, &schema, &name);
+		udf_mgr_drop(&db->udf_mgr, tr, &schema, &name, true);
+		break;
+	}
+	case CMD_UDF_RENAME:
+	{
+		Str schema;
+		Str name;
+		Str schema_new;
+		Str name_new;
+		udf_op_rename_read(pos, &schema, &name, &schema_new, &name_new);
+		udf_mgr_rename(&db->udf_mgr, tr, &schema, &name,
+		               &schema_new, &name_new, true);
+		break;
+	}
 	case CMD_WORKER_CREATE:
 	{
 		auto config = worker_op_create_read(pos);

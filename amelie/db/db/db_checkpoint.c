@@ -27,7 +27,7 @@
 static Buf*
 db_checkpoint_catalog_dump(void* arg)
 {
-	// { workers, schemas, tables }
+	// { workers, schemas, tables, udfs }
 	Db* self = arg;
 	auto buf = buf_create();
 	encode_obj(buf);
@@ -41,6 +41,9 @@ db_checkpoint_catalog_dump(void* arg)
 	encode_raw(buf, "tables", 6);
 	table_mgr_dump(&self->table_mgr, buf);
 
+	encode_raw(buf, "udfs", 4);
+	udf_mgr_dump(&self->udf_mgr, buf);
+
 	encode_obj_end(buf);
 	return buf;
 }
@@ -49,7 +52,8 @@ enum
 {
 	RESTORE_WORKER,
 	RESTORE_SCHEMA,
-	RESTORE_TABLE
+	RESTORE_TABLE,
+	RESTORE_UDF
 };
 
 static void
@@ -86,6 +90,16 @@ restore_replay(Db* self, Tr* tr, int type, uint8_t** pos)
 		table_mgr_create(&self->table_mgr, tr, config, false);
 		break;
 	}
+	case RESTORE_UDF:
+	{
+		// read udf config
+		auto config = udf_config_read(pos);
+		defer(udf_config_free, config);
+
+		// create udf
+		udf_mgr_create(&self->udf_mgr, tr, config, false);
+		break;
+	}
 	}
 }
 
@@ -113,17 +127,19 @@ restore_object(Db* self, int type, uint8_t** pos)
 static void
 db_checkpoint_catalog_restore(uint8_t** pos, void* arg)
 {
-	// { workers, schemas, tables }
+	// { workers, schemas, tables, udfs }
 	Db* self = arg;
 
 	uint8_t* pos_workers = NULL;
 	uint8_t* pos_schemas = NULL;
 	uint8_t* pos_tables  = NULL;
+	uint8_t* pos_udfs    = NULL;
 	Decode obj[] =
 	{
 		{ DECODE_ARRAY, "workers", &pos_workers },
 		{ DECODE_ARRAY, "schemas", &pos_schemas },
 		{ DECODE_ARRAY, "tables",  &pos_tables  },
+		{ DECODE_ARRAY, "udfs",    &pos_udfs    },
 		{ 0,             NULL,      NULL        },
 	};
 	decode_obj(obj, "catalog", pos);
@@ -142,6 +158,11 @@ db_checkpoint_catalog_restore(uint8_t** pos, void* arg)
 	json_read_array(&pos_tables);
 	while (! json_read_array_end(&pos_tables))
 		restore_object(self, RESTORE_TABLE, &pos_tables);
+
+	// udfs
+	json_read_array(&pos_udfs);
+	while (! json_read_array_end(&pos_udfs))
+		restore_object(self, RESTORE_UDF, &pos_udfs);
 }
 
 static void
