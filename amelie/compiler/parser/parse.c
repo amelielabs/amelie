@@ -507,12 +507,23 @@ parse(Parser* self, Str* str)
 			break;
 		}
 
+		// name := expr/stmt
+		Var* assign = NULL;
+		ast = lex_if(lex, KNAME);
+		if (ast)
+		{
+			if (! lex_if(lex, KASSIGN))
+				lex_error_expect(lex, lex_next(lex), KASSIGN);
+			assign = declare_add(&self->declare, &ast->string);
+		}
+
 		// [WITH name AS ( cte )[, name AS (...)]]
 		if (lex_if(lex, KWITH))
-		{
 			parse_with(self);
-			continue;
-		}
+
+		ast = lex_if(lex, KEOF);
+		if (ast)
+			lex_error(lex, ast, "statement expected");
 
 		// stmt (last stmt is main)
 		self->stmt = stmt_allocate(self->db, self->function_mgr,
@@ -525,14 +536,7 @@ parse(Parser* self, Str* str)
 		                           &self->stmt_list,
 		                            self->args);
 		stmt_list_add(&self->stmt_list, self->stmt);
-
-		// name := expr/stmt
-		ast = lex_if(lex, KNAME);
-		if (ast)
-		{
-			stmt_expect(self->stmt, KASSIGN);
-			self->stmt->assign = declare_add(&self->declare, &ast->string);
-		}
+		self->stmt->assign = assign;
 
 		// stmt
 		parse_stmt(self, self->stmt);

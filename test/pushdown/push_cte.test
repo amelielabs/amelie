@@ -25,10 +25,6 @@ with test as ()
 
 # test: with(select expr) (no main stmt)
 with test as (select 1)
-explain with test as (select 1)
-
-with test as (select 1,2,3)
-explain with test as (select 1,2,3)
 
 # test: with(select expr), select expr (cte not used)
 with test as (select 1) select 2
@@ -48,13 +44,6 @@ with a as (select 1 as a, 2 as b) select a, b from a
 
 # test: with(select expr as), select target.column from cte
 with a as (select 1 as a, 2 as b) select a.a, a.b from a
-
-# test: with(select * from table) (no main stmt)
-create table test (id int primary key)
-insert into test values (1),(2),(3)
-explain with a as (select * from test)
-with a as (select * from test)
-drop table test
 
 # test: with(select * from table) select expr (cte not used)
 create table test (id int primary key)
@@ -237,7 +226,7 @@ drop table test
 # test: a(expr), stmt, b(expr), stmt
 create table test (id int primary key)
 insert into test values (1),(2),(3)
-with a as (select [1,2,3]); select * from a; with b as (select * from test); select b.*, a.* from b,a
+with a as (select [1,2,3]) select * from a; with b as (select * from test) select b.*, a.* from b,a
 drop table test
 
 # test: a(expr), a(expr) (cte redefined)
@@ -248,8 +237,8 @@ drop table test
 
 # test: with(insert returning), select * from cte
 create table test (id int primary key, data int)
-with a as (insert into test values (2, 0) returning *); select * from a
-explain with a as (insert into test values (2, 0) returning *); select * from a
+with a as (insert into test values (2, 0) returning *) select * from a
+explain with a as (insert into test values (2, 0) returning *) select * from a
 drop table test
 
 # test: with(update returning), select * from cte
