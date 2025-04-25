@@ -157,6 +157,7 @@ Keyword keywords[] =
 	// r
 	{ KRIGHT,                 "right",                 5  },
 	{ KRETURNING,             "returning",             9  },
+	{ KRETURN,                "return",                6  },
 	{ KREPLACE,               "replace",               7  },
 	{ KRENAME,                "rename",                6  },
 	{ KREPLICA,               "replica",               7  },
