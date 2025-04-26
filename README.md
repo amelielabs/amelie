@@ -36,7 +36,7 @@ The SQL dialect is based on ANSI SQL, PostgreSQL and extended with unique featur
 
 The short list of features:
 
-* Serializable ACID Multi-statement transactions 
+* Strict Serializable ACID Multi-statement transactions 
 * Secondary indexes (Tree/Hash)
 * CTE with DML RETURNING
 * Parallel partitioned DML including UPSERT
