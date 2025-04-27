@@ -56,7 +56,6 @@
 #include "parser/parse_token.h"
 #include "parser/parse_replica.h"
 #include "parser/parse_repl.h"
-#include "parser/parse_backend.h"
 #include "parser/parse_watch.h"
 
 // ddl

@@ -18,13 +18,13 @@ struct Backend
 	Vm      vm;
 	TrList  prepared;
 	TrCache cache;
-	Worker* worker;
+	Route   route;
 	Task    task;
 	List    link;
 };
 
 Backend*
-backend_allocate(Worker*, Db*, FunctionMgr*);
+backend_allocate(Db*, FunctionMgr*, int);
 void backend_free(Backend*);
 void backend_start(Backend*);
 void backend_stop(Backend*);

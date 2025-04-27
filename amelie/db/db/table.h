@@ -17,6 +17,7 @@ struct Table
 {
 	Handle       handle;
 	PartList     part_list;
+	PartMgr*     part_mgr;
 	Sequence     seq;
 	TableConfig* config;
 };
@@ -24,6 +25,7 @@ struct Table
 static inline void
 table_free(Table* self)
 {
+	part_mgr_detach(self->part_mgr, &self->part_list);
 	part_list_free(&self->part_list);
 	if (self->config)
 		table_config_free(self->config);
@@ -35,9 +37,10 @@ static inline Table*
 table_allocate(TableConfig* config, PartMgr* part_mgr)
 {
 	Table* self = am_malloc(sizeof(Table));
+	self->part_mgr = part_mgr;
 	self->config = table_config_copy(config);
 	sequence_init(&self->seq);
-	part_list_init(&self->part_list, part_mgr);
+	part_list_init(&self->part_list);
 	handle_init(&self->handle);
 	handle_set_schema(&self->handle, &self->config->schema);
 	handle_set_name(&self->handle, &self->config->name);
@@ -53,6 +56,8 @@ table_open(Table* self)
 	                 &self->seq,
 	                 &self->config->partitions,
 	                 &self->config->indexes);
+
+	part_mgr_attach(self->part_mgr, &self->part_list);
 }
 
 static inline void

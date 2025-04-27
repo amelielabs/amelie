@@ -22,11 +22,10 @@
 #include <amelie_partition.h>
 
 void
-part_list_init(PartList* self, PartMgr* mgr)
+part_list_init(PartList* self)
 {
 	self->unlogged   = false;
 	self->list_count = 0;
-	self->mgr        = mgr;
 	list_init(&self->list);
 	part_map_init(&self->map);
 }
@@ -36,12 +35,9 @@ part_list_free(PartList* self)
 {
 	// unref routes and free mapping
 	part_map_free(&self->map);
-
 	list_foreach_safe(&self->list)
 	{
 		auto part = list_at(Part, link);
-		// unregister partition
-		part_mgr_del(self->mgr, part);
 		part_free(part);
 	}
 	self->list_count = 0;
@@ -79,11 +75,15 @@ part_list_create(PartList* self,
 void
 part_list_map(PartList* self)
 {
-	// register and create partitions mappings
+	// create partition mapping
 	list_foreach(&self->list)
 	{
 		auto part = list_at(Part, link);
-		part_mgr_add(self->mgr, &self->map, part);
+		if (! part_map_created(&self->map))
+			part_map_create(&self->map);
+		int i = part->config->min;
+		for (; i < part->config->max; i++)
+			part_map_set(&self->map, i, part);
 	}
 }
 
@@ -129,12 +129,12 @@ part_list_index_drop(PartList* self, IndexConfig* config)
 }
 
 hot Part*
-part_list_match(PartList* self, Uuid* id)
+part_list_match(PartList* self, Route* route)
 {
 	list_foreach(&self->list)
 	{
 		auto part = list_at(Part, link);
-		if (! uuid_compare(&part->config->backend, id))
+		if (part->route == route)
 			return part;
 	}
 	return NULL;
@@ -157,19 +157,11 @@ part_list_iterator(PartList* self, Part* part, IndexConfig* config,
 	// point lookup (tree or hash index)
 	if (point_lookup)
 	{
-		auto hash  = row_hash(key, &config->keys);
-		auto route = part_map_get(&self->map, hash);
-		list_foreach(&self->list)
-		{
-			auto part = list_at(Part, link);
-			if (part->route != route)
-				continue;
-			auto index = part_find(part, &config->name, true);
-			auto it = index_iterator(index);
-			iterator_open(it, key);
-			return it;
-		}
-		abort();
+		part = part_map_get(&self->map, row_hash(key, &config->keys));
+		auto index = part_find(part, &config->name, true);
+		auto it = index_iterator(index);
+		iterator_open(it, key);
+		return it;
 	}
 
 	// merge all hash partitions (without key)

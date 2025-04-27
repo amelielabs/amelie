@@ -70,6 +70,25 @@ UdfIf udf_if =
 	.free    = udf_if_free
 };
 
+static void
+system_attach(PartList* list, void* arg)
+{
+	// redistribute partitions across backends
+	System* self = arg;
+	auto backend_mgr = &self->backend_mgr;
+	if (list->list_count > PARTITION_MAX)
+		error("exceeded the maximum number of partitions per table");
+	// extend backend pool
+	backend_mgr_ensure(backend_mgr, list->list_count);
+	auto order = 0;
+	list_foreach(&list->list)
+	{
+		auto part = list_at(Part, link);
+		part->route = &backend_mgr->workers[order]->route;
+		order++;
+	}
+}
+
 System*
 system_create(void)
 {
@@ -97,9 +116,7 @@ system_create(void)
 	function_mgr_init(&self->function_mgr);
 
 	// db
-	db_init(&self->db, (PartMapper)backend_mgr_map, &self->backend_mgr,
-	        &backend_mgr_if, &self->backend_mgr,
-	        &udf_if, NULL);
+	db_init(&self->db, system_attach, self, &udf_if, NULL);
 
 	// replication
 	repl_init(&self->repl, &self->db);
@@ -122,7 +139,6 @@ system_free(System* self)
 	repl_free(&self->repl);
 	executor_free(&self->executor);
 	db_free(&self->db);
-	backend_mgr_free(&self->backend_mgr);
 	function_mgr_free(&self->function_mgr);
 	server_free(&self->server);
 	user_mgr_free(&self->user_mgr);
@@ -173,12 +189,9 @@ system_recover(System* self)
 static void
 system_bootstrap(System* self)
 {
-	// create backend workers
-	backend_bootstrap(&self->db, opt_int_of(&config()->backends));
 	state_lsn_set(1);
 
-	// create initial checkpoint, mostly to ensure that backend
-	// information is persisted
+	// create initial checkpoint
 	Checkpoint cp;
 	checkpoint_init(&cp, &self->db.checkpoint_mgr);
 	defer(checkpoint_free, &cp);
@@ -263,6 +276,9 @@ system_stop(System* self)
 
 	// stop frontends
 	frontend_mgr_stop(&self->frontend_mgr);
+
+	// stop backends
+	backend_mgr_stop(&self->backend_mgr);
 
 	// close db
 	db_close(&self->db);

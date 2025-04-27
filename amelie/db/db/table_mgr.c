@@ -25,17 +25,16 @@
 #include <amelie_db.h>
 
 void
-table_mgr_init(TableMgr* self, PartMapper mapper, void* mapper_arg)
+table_mgr_init(TableMgr* self, PartMgr* part_mgr)
 {
+	self->part_mgr = part_mgr;
 	handle_mgr_init(&self->mgr);
-	part_mgr_init(&self->part_mgr, mapper, mapper_arg);
 }
 
 void
 table_mgr_free(TableMgr* self)
 {
 	handle_mgr_free(&self->mgr);
-	part_mgr_free(&self->part_mgr);
 }
 
 bool
@@ -55,7 +54,7 @@ table_mgr_create(TableMgr*    self,
 	}
 
 	// allocate table
-	auto table = table_allocate(config, &self->part_mgr);
+	auto table = table_allocate(config, self->part_mgr);
 
 	// save create table operation
 	auto op = table_op_create(config);
@@ -207,10 +206,4 @@ table_mgr_list(TableMgr* self, Str* schema, Str* name, bool extended)
 	}
 	encode_array_end(buf);
 	return buf;
-}
-
-Part*
-table_mgr_find_partition(TableMgr* self, uint64_t id)
-{
-	return part_mgr_find(&self->part_mgr, id);
 }

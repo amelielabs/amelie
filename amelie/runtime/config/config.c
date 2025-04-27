@@ -37,6 +37,8 @@ config_prepare(Config* self)
 	auto default_be = cpus - default_fe;
 	if (default_fe == 0)
 		default_fe = 1;
+	if (default_be == 0)
+		default_be = 1;
 
 	OptsDef defs[] =
 	{
@@ -61,7 +63,7 @@ config_prepare(Config* self)
 		{ "limit_write",             OPT_INT,    OPT_C,                   &self->limit_write,             NULL,          0                   },
 		// io and compute
 		{ "frontends",               OPT_INT,    OPT_C|OPT_Z,             &self->frontends,               NULL,          default_fe          },
-		{ "backends",                OPT_INT,    OPT_C|OPT_H|OPT_E,       &self->backends,                NULL,          default_be          },
+		{ "backends",                OPT_INT,    OPT_C|OPT_Z,             &self->backends,                NULL,          default_be          },
 		// wal
 		{ "wal_worker",              OPT_BOOL,   OPT_C,                   &self->wal_worker,              NULL,          true                },
 		{ "wal_crc",                 OPT_BOOL,   OPT_C,                   &self->wal_crc,                 NULL,          true                },

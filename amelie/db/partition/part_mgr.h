@@ -13,20 +13,20 @@
 
 typedef struct PartMgr PartMgr;
 
-typedef void (*PartMapper)(void*, PartMap*, Part*);
+typedef void (*PartAttach)(PartList*, void*);
 
 struct PartMgr
 {
 	Hashtable  ht;
-	PartMapper mapper;
-	void*      mapper_arg;
+	PartAttach attach;
+	void*      attach_arg;
 };
 
 static inline void
-part_mgr_init(PartMgr* self, PartMapper mapper, void* mapper_arg)
+part_mgr_init(PartMgr* self, PartAttach attach, void* attach_arg)
 {
-	self->mapper = mapper;
-	self->mapper_arg = mapper_arg;
+	self->attach     = attach;
+	self->attach_arg = attach_arg;
 	hashtable_init(&self->ht);
 }
 
@@ -37,25 +37,34 @@ part_mgr_free(PartMgr* self)
 }
 
 static inline void
-part_mgr_add(PartMgr* self, PartMap* map, Part* part)
+part_mgr_attach(PartMgr* self, PartList* list)
 {
+	// register partitions by id
 	if (unlikely(! hashtable_created(&self->ht)))
 		hashtable_create(&self->ht, 256);
-	hashtable_reserve(&self->ht);
 
-	// register partition by id
-	uint32_t id = part->config->id;
-	part->link_ht.hash = hash_murmur3_32((uint8_t*)&id, sizeof(id), 0);
-	hashtable_set(&self->ht, &part->link_ht);
+	list_foreach(&list->list)
+	{
+		auto part = list_at(Part, link);
 
-	// map partition
-	self->mapper(self->mapper_arg, map, part);
+		hashtable_reserve(&self->ht);
+		uint32_t id = part->config->id;
+		part->link_ht.hash = hash_murmur3_32((uint8_t*)&id, sizeof(id), 0);
+		hashtable_set(&self->ht, &part->link_ht);
+	}
+
+	// assign backends to partitions
+	self->attach(list, self->attach_arg);
 }
 
 static inline void
-part_mgr_del(PartMgr* self, Part* part)
+part_mgr_detach(PartMgr* self, PartList* list)
 {
-	hashtable_delete(&self->ht, &part->link_ht);
+	list_foreach(&list->list)
+	{
+		auto part = list_at(Part, link);
+		hashtable_delete(&self->ht, &part->link_ht);
+	}
 }
 
 hot static inline bool
@@ -65,7 +74,7 @@ part_mgr_cmp(HashtableNode* node, void* ptr)
 	return part->config->id == *(uint32_t*)ptr;
 }
 
-static inline Part*
+hot static inline Part*
 part_mgr_find(PartMgr* self, uint32_t id)
 {
 	auto hash = hash_murmur3_32((uint8_t*)&id, sizeof(id), 0);

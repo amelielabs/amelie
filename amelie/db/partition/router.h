@@ -17,74 +17,45 @@ typedef struct Router Router;
 struct Route
 {
 	int      order;
-	int      refs;
 	Channel* channel;
-	List     link;
 };
 
 struct Router
 {
-	List list;
-	int  list_count;
+	Route** routes;
+	int     routes_count;
 };
 
 static inline void
-route_init(Route* self, Channel* channel)
+route_init(Route* self, Channel* channel, int order)
 {
-	self->order   = 0;
-	self->refs    = 0;
+	self->order   = order;
 	self->channel = channel;
-	list_init(&self->link);
-}
-
-static inline void
-router_ref(Route* self)
-{
-	self->refs++;
-}
-
-static inline void
-router_unref(Route* self)
-{
-	self->refs--;
 }
 
 static inline void
 router_init(Router* self)
 {
-	self->list_count = 0;
-	list_init(&self->list);
+	self->routes = NULL;
+	self->routes_count = 0;
 }
 
 static inline void
-router_reorder(Router* self)
+router_free(Router* self)
 {
-	int order = 0;
-	list_foreach(&self->list)
+	if (self->routes)
 	{
-		auto ref = list_at(Route, link);
-		ref->order = order++;
+		am_free(self->routes);
+		self->routes = NULL;
 	}
+	self->routes_count = 0;
 }
 
 static inline void
-router_add(Router* self, Route* route)
+router_allocate(Router* self, int count)
 {
-	list_append(&self->list, &route->link);
-	self->list_count++;
-	router_reorder(self);
-}
-
-static inline void
-router_del(Router* self, Route* route)
-{
-	list_unlink(&route->link);
-	self->list_count--;
-	router_reorder(self);
-}
-
-static inline Route*
-router_first(Router* self)
-{
-	return container_of(list_first(&self->list), Route, link);
+	auto size = sizeof(Router*) * count;
+	self->routes = am_malloc(size);
+	self->routes_count = count;
+	memset(self->routes, 0, size);
 }

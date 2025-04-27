@@ -64,7 +64,7 @@ recover_cmd(Recover* self, RecordCmd* cmd, uint8_t** pos)
 	case CMD_REPLACE:
 	{
 		// find partition by id
-		auto part = table_mgr_find_partition(&db->table_mgr, cmd->partition);
+		auto part = part_mgr_find(&db->part_mgr, cmd->partition);
 		if (! part)
 			error("failed to find partition %" PRIu64, cmd->partition);
 		auto end = *pos + cmd->size;
@@ -79,7 +79,7 @@ recover_cmd(Recover* self, RecordCmd* cmd, uint8_t** pos)
 	case CMD_DELETE:
 	{
 		// find partition by id
-		auto part = table_mgr_find_partition(&db->table_mgr, cmd->partition);
+		auto part = part_mgr_find(&db->part_mgr, cmd->partition);
 		if (! part)
 			error("failed to find partition %" PRIu64, cmd->partition);
 		auto end = *pos + cmd->size;
@@ -311,20 +311,6 @@ recover_cmd(Recover* self, RecordCmd* cmd, uint8_t** pos)
 		udf_op_rename_read(pos, &schema, &name, &schema_new, &name_new);
 		udf_mgr_rename(&db->udf_mgr, tr, &schema, &name,
 		               &schema_new, &name_new, true);
-		break;
-	}
-	case CMD_WORKER_CREATE:
-	{
-		auto config = worker_op_create_read(pos);
-		defer(worker_config_free, config);
-		worker_mgr_create(&db->worker_mgr, tr, config, false);
-		break;
-	}
-	case CMD_WORKER_DROP:
-	{
-		Str name;
-		worker_op_drop_read(pos, &name);
-		worker_mgr_drop(&db->worker_mgr, tr, &name, true);
 		break;
 	}
 	default:

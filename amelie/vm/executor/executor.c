@@ -117,7 +117,7 @@ executor_prepare(Executor* self, bool abort)
 {
 	auto prepare = &self->prepare;
 	prepare_reset(prepare);
-	prepare_prepare(prepare, self->router->list_count);
+	prepare_prepare(prepare, self->router->routes_count);
 
 	// get a list of last completed local transactions per backend
 	if (unlikely(abort))

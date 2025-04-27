@@ -14,6 +14,8 @@ create table test (id int primary key) partitions 0
 
 # test: table create partitions (> backends)
 create table test (id int primary key) partitions 4
+select system.table('test').partitions::length = 4
+drop table test
 
 # test: table create partitions (= backends)
 create table test (id int primary key) partitions 3

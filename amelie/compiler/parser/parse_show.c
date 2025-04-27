@@ -53,9 +53,6 @@ parse_show_type(Str* name)
 	if (str_is(name, "replica", 7))
 		return SHOW_REPLICA;
 
-	if (str_is(name, "backends", 8))
-		return SHOW_BACKENDS;
-
 	if (str_is(name, "repl", 4) ||
 	    str_is(name, "replication", 11))
 		return SHOW_REPL;

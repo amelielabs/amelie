@@ -108,7 +108,7 @@ dtr_create(Dtr* self, Program* program, Reg* regs, Buf* args)
 	self->program = program;
 	self->regs    = regs;
 	self->args    = args;
-	auto set_size = self->router->list_count;
+	auto set_size = self->router->routes_count;
 	pipe_set_create(&self->set, set_size);
 	dispatch_create(&self->dispatch, set_size, program->stmts,
 	                program->stmts_last);
@@ -141,11 +141,10 @@ dtr_send(Dtr* self, int stmt, ReqList* list)
 	if (self->program->snapshot && !self->dispatch.sent)
 	{
 		// create pipes for all backends
-		list_foreach(&self->router->list)
+		for (auto order = 0; order < self->router->routes_count; order++)
 		{
-			auto route = list_at(Route, link);
-			auto pipe = pipe_create(&self->pipe_cache, route);
-			pipe_set_set(set, route->order, pipe);
+			auto pipe = pipe_create(&self->pipe_cache, self->router->routes[order]);
+			pipe_set_set(set, order, pipe);
 		}
 	}
 
@@ -177,9 +176,9 @@ dtr_send(Dtr* self, int stmt, ReqList* list)
 	// shutdown pipes
 	if (is_last)
 	{
-		list_foreach(&self->router->list)
+		for (auto order = 0; order < self->router->routes_count; order++)
 		{
-			auto route = list_at(Route, link);
+			auto route = self->router->routes[order];
 			auto pipe  = pipe_set_get(set, route->order);
 			if (! pipe)
 				continue;

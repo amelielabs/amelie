@@ -113,14 +113,6 @@ fn_repl(Call* self)
 }
 
 static void
-fn_backends(Call* self)
-{
-	call_expect(self, 0);
-	auto buf = worker_mgr_list(&self->mgr->db->worker_mgr, NULL);
-	value_set_json_buf(self->result, buf);
-}
-
-static void
 fn_schemas(Call* self)
 {
 	call_expect(self, 0);
@@ -240,10 +232,6 @@ fn_system_register(FunctionMgr* self)
 
 	// system.replication()
 	func = function_allocate(TYPE_JSON, "system", "replication", fn_repl);
-	function_mgr_add(self, func);
-
-	// system.backends()
-	func = function_allocate(TYPE_JSON, "system", "backends", fn_backends);
 	function_mgr_add(self, func);
 
 	// system.schemas()

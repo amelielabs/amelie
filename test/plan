@@ -126,7 +126,6 @@ test abort
 # backend
 directory backend
 group backend
-test backend
 test indexate
 
 # recovery

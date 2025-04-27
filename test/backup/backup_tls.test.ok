@@ -35,6 +35,7 @@ show all
   "limit_recv": 1048576,
   "limit_write": 0,
   "frontends": 1,
+  "backends": 3,
   "wal_worker": false,
   "wal_crc": true,
   "wal_sync_on_create": false,

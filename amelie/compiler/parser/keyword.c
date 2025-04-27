@@ -56,7 +56,6 @@ Keyword keywords[] =
 	{ KBEGIN,                 "begin",                 5  },
 	{ KBETWEEN,               "between",               7  },
 	{ KBY,                    "by",                    2  },
-	{ KBACKEND,               "backend",               7  },
 
 	// c
 	{ KCURRENT_TIMESTAMP,     "current_timestamp",     17 },

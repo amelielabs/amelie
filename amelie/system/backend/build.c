@@ -118,9 +118,10 @@ build_run(Build* self)
 	channel_attach(&self->channel);
 
 	// ask each worker to build related partition
-	list_foreach(&self->backend_mgr->list)
+	auto backend_mgr = self->backend_mgr;
+	for (auto i = 0; i < backend_mgr->workers_count; i++)
 	{
-		auto backend = list_at(Backend, link);
+		auto backend = backend_mgr->workers[i];
 		auto buf = msg_create(RPC_BUILD);
 		buf_write(buf, &self, sizeof(Build**));
 		msg_end(buf);
@@ -130,7 +131,7 @@ build_run(Build* self)
 	// wait for completion
 	Buf* error = NULL;
 	int  complete;
-	for (complete = 0; complete < self->backend_mgr->list_count;
+	for (complete = 0; complete < backend_mgr->workers_count;
 	     complete++)
 	{
 		auto buf = channel_read(&self->channel, -1);
@@ -152,7 +153,7 @@ build_run(Build* self)
 }
 
 static void
-build_execute_op(Build* self, Uuid* worker)
+build_execute_op(Build* self, Route* worker)
 {
 	switch (self->type) {
 	case BUILD_RECOVER:
@@ -211,7 +212,7 @@ build_execute_op(Build* self, Uuid* worker)
 }
 
 void
-build_execute(Build* self, Uuid* worker)
+build_execute(Build* self, Route* worker)
 {
 	Buf* buf;
 	if (error_catch( build_execute_op(self, worker) ))

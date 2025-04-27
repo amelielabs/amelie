@@ -58,17 +58,17 @@ csend_shard(Vm* self, Op* op)
 		auto set = (Set*)store;
 		for (auto order = 0; order < set->count_rows; order++)
 		{
-			auto row   = set_row(set, order);
-			auto hash  = row_value_hash(keys, row);
-			auto route = part_map_get(&table->part_list.map, hash);
-			auto req   = map[route->order];
+			auto row  = set_row(set, order);
+			auto hash = row_value_hash(keys, row);
+			auto part = part_map_get(&table->part_list.map, hash);
+			auto req  = map[part->route->order];
 			if (req == NULL)
 			{
 				req = req_create(&dtr->req_cache, REQ_EXECUTE);
 				req->start = op->b;
-				req->route = route;
+				req->route = part->route;
 				req_list_add(&list, req);
-				map[route->order] = req;
+				map[req->route->order] = req;
 			}
 			buf_write(&req->arg, &row, sizeof(Value*));
 		}
@@ -79,16 +79,16 @@ csend_shard(Vm* self, Op* op)
 		Value* row;
 		for (; (row = store_iterator_at(it)); store_iterator_next(it))
 		{
-			auto hash  = row_value_hash(keys, row);
-			auto route = part_map_get(&table->part_list.map, hash);
-			auto req   = map[route->order];
+			auto hash = row_value_hash(keys, row);
+			auto part = part_map_get(&table->part_list.map, hash);
+			auto req  = map[part->route->order];
 			if (req == NULL)
 			{
 				req = req_create(&dtr->req_cache, REQ_EXECUTE);
 				req->start = op->b;
-				req->route = route;
+				req->route = part->route;
 				req_list_add(&list, req);
-				map[route->order] = req;
+				map[req->route->order] = req;
 			}
 			buf_write(&req->arg, &row, sizeof(Value*));
 		}
@@ -108,10 +108,10 @@ csend_lookup(Vm* self, Op* op)
 	// shard by precomputed hash
 	ReqList list;
 	req_list_init(&list);
-	auto route = part_map_get(&table->part_list.map, op->d);
+	auto part = part_map_get(&table->part_list.map, op->d);
 	auto req = req_create(&dtr->req_cache, REQ_EXECUTE);
 	req->start = op->b;
-	req->route = route;
+	req->route = part->route;
 	req_list_add(&list, req);
 
 	executor_send(self->executor, dtr, op->a, &list);
@@ -122,18 +122,16 @@ csend_all(Vm* self, Op* op)
 {
 	// [stmt, start, table]
 	auto table = (Table*)op->c;
-
-	ReqList list;
-	req_list_init(&list);
+	auto dtr = self->dtr;
 
 	// send to all table backends
-	auto dtr = self->dtr;
-	auto map = &table->part_list.map;
-	for (auto i = 0; i < map->list_count; i++)
+	ReqList list;
+	req_list_init(&list);
+	list_foreach(&table->part_list.list)
 	{
-		auto route = map->list[i];
+		auto part  = list_at(Part, link);
 		auto req = req_create(&dtr->req_cache, REQ_EXECUTE);
-		req->route = route;
+		req->route = part->route;
 		req->start = op->b;
 		req_list_add(&list, req);
 	}

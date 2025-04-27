@@ -44,10 +44,8 @@
 static void
 replay_read(Share* share, Dtr* dtr, ReqList* req_list, Record* record)
 {
-	auto router = &share->backend_mgr->router;
-
 	// redistribute rows between backends
-	Req* map[router->list_count];
+	Req* map[share->backend_mgr->workers_count];
 	memset(map, 0, sizeof(map));
 
 	// replay transaction log record
@@ -56,8 +54,7 @@ replay_read(Share* share, Dtr* dtr, ReqList* req_list, Record* record)
 	for (auto i = record->count; i > 0; i--)
 	{
 		// map each write to route
-		auto table_mgr = &share->db->table_mgr;
-		auto part = table_mgr_find_partition(table_mgr, cmd->partition);
+		auto part = part_mgr_find(&share->db->part_mgr, cmd->partition);
 		if (! part)
 			error("failed to find partition %" PRIu64, cmd->partition);
 		auto route = part->route;

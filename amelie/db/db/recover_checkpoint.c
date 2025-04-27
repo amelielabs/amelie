@@ -59,7 +59,7 @@ recover_partition(Part* self)
 }
 
 hot void
-recover_checkpoint(Db* self, Uuid* id)
+recover_checkpoint(Db* self, Route* route)
 {
 	list_foreach(&self->table_mgr.mgr.list)
 	{
@@ -67,7 +67,7 @@ recover_checkpoint(Db* self, Uuid* id)
 		list_foreach(&table->part_list.list)
 		{
 			auto part = list_at(Part, link);
-			if (! uuid_compare(&part->config->backend, id))
+			if (part->route == route)
 				recover_partition(part);
 		}
 	}

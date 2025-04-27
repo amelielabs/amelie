@@ -17,15 +17,14 @@ struct Db
 {
 	SchemaMgr     schema_mgr;
 	TableMgr      table_mgr;
+	PartMgr       part_mgr;
 	UdfMgr        udf_mgr;
-	WorkerMgr     worker_mgr;
 	Checkpointer  checkpointer;
 	CheckpointMgr checkpoint_mgr;
 	WalMgr        wal_mgr;
 };
 
-void db_init(Db*, PartMapper, void*, WorkerIf*, void*,
-             UdfIf*, void*);
+void db_init(Db*, PartAttach, void*, UdfIf*, void*);
 void db_free(Db*);
 void db_open(Db*);
 void db_close(Db*);

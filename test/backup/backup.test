@@ -16,7 +16,6 @@ open E1
 connect E1 S0 127.0.0.1:3480
 
 show uuid
-select system.backends()::length
 
 disconnect S0
 close E1

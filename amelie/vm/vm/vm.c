@@ -40,7 +40,7 @@
 void
 vm_init(Vm*          self,
         Db*          db,
-        Uuid*        backend,
+        Route*       backend,
         Executor*    executor,
         Dtr*         dtr,
         FunctionMgr* function_mgr)

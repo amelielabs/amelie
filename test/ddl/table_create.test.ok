@@ -2,9 +2,9 @@ open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "12
 connect E0 S0 127.0.0.1:3485
 # test: create table statement parsing
 create
-{"msg": "create ⟵ 'USER|REPLICA|BACKEND|SCHEMA|TABLE|INDEX|FUNCTION' expected"}
+{"msg": "create ⟵ 'USER|REPLICA|SCHEMA|TABLE|INDEX|FUNCTION' expected"}
 create junk
-{"msg": "create ❰junk❱ ⟵ 'USER|REPLICA|BACKEND|SCHEMA|TABLE|INDEX|FUNCTION' expected"}
+{"msg": "create ❰junk❱ ⟵ 'USER|REPLICA|SCHEMA|TABLE|INDEX|FUNCTION' expected"}
 create unique
 {"msg": "create unique ⟵ INDEX expected"}
 create unique table

@@ -61,7 +61,7 @@ backend_replay(Backend* self, Tr* tr, Req* req)
 				error("replay: record command crc mismatch");
 
 		// partition
-		auto part = table_mgr_find_partition(&db->table_mgr, cmd->partition);
+		auto part = part_mgr_find(&db->part_mgr, cmd->partition);
 		if (! part)
 			error("failed to find partition %" PRIu64, cmd->partition);
 
@@ -209,7 +209,7 @@ backend_main(void* arg)
 		case RPC_BUILD:
 		{
 			auto build = *(Build**)msg->data;
-			build_execute(build, &self->worker->id);
+			build_execute(build, &self->route);
 			break;
 		}
 		default:
@@ -226,15 +226,15 @@ backend_main(void* arg)
 }
 
 Backend*
-backend_allocate(Worker* worker, Db* db, FunctionMgr* function_mgr)
+backend_allocate(Db* db, FunctionMgr* function_mgr, int order)
 {
 	auto self = (Backend*)am_malloc(sizeof(Backend));
-	self->worker = worker;
+	route_init(&self->route, &self->task.channel, order);
 	tr_list_init(&self->prepared);
 	tr_cache_init(&self->cache);
 	list_init(&self->link);
 	vm_init(&self->vm, db, NULL, NULL, NULL, function_mgr);
-	self->vm.backend = &worker->id;
+	self->vm.backend = &self->route;
 	task_init(&self->task);
 	return self;
 }
@@ -250,12 +250,7 @@ backend_free(Backend* self)
 void
 backend_start(Backend* self)
 {
-	Uuid id;
-	uuid_set(&id, &self->worker->config->id);
-	char name[9];
-	uuid_get_short(&id, name, sizeof(name));
-
-	task_create(&self->task, name, backend_main, self);
+	task_create(&self->task, "backend", backend_main, self);
 }
 
 void

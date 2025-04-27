@@ -71,14 +71,12 @@ ddl_alter_schema(Session* self, Tr* tr)
 }
 
 static inline void
-ddl_create_partition(TableConfig* table_config, Worker* worker,
-                     uint64_t min, uint64_t max)
+ddl_create_partition(TableConfig* table_config, uint64_t min, uint64_t max)
 {
 	// create partition config
 	auto config = part_config_allocate();
 	auto psn = state_psn_next();
 	part_config_set_id(config, psn);
-	part_config_set_backend(config, &worker->id);
 	part_config_set_range(config, min, max);
 	table_config_add_partition(table_config, config);
 }
@@ -98,25 +96,16 @@ ddl_create_table(Session* self, Tr* tr)
 		      str_size(&schema->config->name),
 		      str_of(&schema->config->name));
 
-	// create table partitions
-	auto backend_mgr = self->share->backend_mgr;
-	if (! backend_mgr->list_count)
-		error("system has no backend workers");
-
 	// create partition for each backend
-	if (arg->partitions < 1 || arg->partitions > backend_mgr->list_count)
+	if (arg->partitions < 1 || arg->partitions >= PARTITION_MAX)
 		error("table has invalid partitions number");
 
 	// partition_max / table partitions
 	int range_max      = PARTITION_MAX;
 	int range_interval = range_max / arg->partitions;
 	int range_start    = 0;
-
-	auto order = 0;
-	list_foreach(&backend_mgr->list)
+	for (auto order = 0; order < arg->partitions; order++)
 	{
-		auto backend = list_at(Backend, link);
-
 		// set partition range
 		int range_step;
 		auto is_last = (order == arg->partitions - 1);
@@ -127,14 +116,13 @@ ddl_create_table(Session* self, Tr* tr)
 		if ((range_start + range_step) > range_max)
 			range_step = range_max - range_start;
 
-		ddl_create_partition(config, backend->worker,
+		ddl_create_partition(config,
 		                     range_start,
 		                     range_start + range_step);
 		if (is_last)
 			break;
 
 		range_start += range_step;
-		order++;
 	}
 
 	// create table
@@ -449,48 +437,6 @@ ddl_alter_function(Session* self, Tr* tr)
 	               arg->if_exists);
 }
 
-static void
-ddl_create_backend(Session* self, Tr* tr)
-{
-	auto stmt = compiler_stmt(&self->compiler);
-	auto arg  = ast_backend_create_of(stmt->ast);
-	auto db   = self->share->db;
-
-	auto config = worker_config_allocate();
-	defer(worker_config_free, config);
-
-	// set or generate worker id
-	if (arg->id)
-	{
-		worker_config_set_id(config, &arg->id->string);
-	} else
-	{
-		Uuid id;
-		uuid_generate(&id, global()->random);
-
-		char uuid[UUID_SZ];
-		uuid_get(&id, uuid, sizeof(uuid));
-
-		Str uuid_str;
-		str_set_cstr(&uuid_str, uuid);
-		worker_config_set_id(config, &uuid_str);
-	}
-
-	// create worker
-	worker_mgr_create(&db->worker_mgr, tr, config, arg->if_not_exists);
-}
-
-static void
-ddl_drop_backend(Session* self, Tr* tr)
-{
-	auto stmt = compiler_stmt(&self->compiler);
-	auto arg  = ast_backend_drop_of(stmt->ast);
-	auto db   = self->share->db;
-
-	// drop worker
-	worker_mgr_drop(&db->worker_mgr, tr, &arg->id->string, arg->if_exists);
-}
-
 static inline void
 session_execute_ddl_stmt(Session* self, Tr* tr)
 {
@@ -531,12 +477,6 @@ session_execute_ddl_stmt(Session* self, Tr* tr)
 		break;
 	case STMT_ALTER_FUNCTION:
 		ddl_alter_function(self, tr);
-		break;
-	case STMT_CREATE_BACKEND:
-		ddl_create_backend(self, tr);
-		break;
-	case STMT_DROP_BACKEND:
-		ddl_drop_backend(self, tr);
 		break;
 	case STMT_TRUNCATE:
 		ddl_truncate(self, tr);

@@ -10126,16 +10126,16 @@ show repl
 switch S1
 select identity_of("public", "test2")
 
-# test: create backend
+# test: create table (partitions extended)
 switch S0
-create backend "00000000-0000-0000-0000-00000000000f"
+create table test3 (id serial primary key) partitions 8
 
 # test: wait replica sync
 watch system.replica("00000000-0000-0000-0000-000000000001").lsn = system.state().lsn
 show repl
 
 switch S1
-select system.state().backends::int = 4
+select system.state().backends::int = 8
 
 disconnect S1
 close E1

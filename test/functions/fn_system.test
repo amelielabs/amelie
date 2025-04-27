@@ -28,9 +28,6 @@ select system.repl()
 # test: replication()
 select system.replication()
 
-# test: backends()
-select system.backends()::size
-
 # test: schemas()
 select system.schemas()
 

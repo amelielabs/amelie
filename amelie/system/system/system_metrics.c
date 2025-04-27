@@ -83,7 +83,7 @@ system_metrics_process(System* self, Buf* buf)
 	auto  fe = &self->frontend_mgr;
 	auto  be = &self->backend_mgr;
 
-	int      workers = fe->workers_count + be->list_count;
+	int      workers = fe->workers_count + be->workers_count;
 	int      workers_id[workers];
 	uint64_t workers_usage[workers];
 	int i = 0;
@@ -92,9 +92,9 @@ system_metrics_process(System* self, Buf* buf)
 		workers_id[i] = fe->workers[i].task.thread.tid;
 		workers_usage[i] = 0;
 	}
-	list_foreach(&be->list)
+	for (int j = 0; j < be->workers_count; j++)
 	{
-		auto backend = list_at(Backend, link);
+		auto backend = be->workers[j];
 		workers_id[i] = backend->task.thread.tid;
 		workers_usage[i] = 0;
 		i++;
@@ -139,8 +139,12 @@ system_metrics_process(System* self, Buf* buf)
 	// cpu_backends
 	encode_raw(buf, "cpu_backends", 12);
 	encode_array(buf);
-	list_foreach(&be->list)
+	auto j = 0;
+	for (; j < be->workers_count; j++)
+	{
 		encode_integer(buf, workers_usage[i]);
+		i++;
+	}
 	encode_array_end(buf);
 
 	encode_obj_end(buf);
