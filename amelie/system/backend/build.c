@@ -208,6 +208,7 @@ build_execute(Build* self, Core* worker)
 		break;
 	}
 	case BUILD_NONE:
+		// do nothing, used for sync
 		break;
 	}
 }

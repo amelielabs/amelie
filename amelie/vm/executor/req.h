@@ -19,7 +19,6 @@ enum
 {
 	REQ_EXECUTE,
 	REQ_REPLAY,
-	REQ_SYNC,
 	REQ_BUILD
 };
 

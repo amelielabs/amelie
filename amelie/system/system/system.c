@@ -339,7 +339,10 @@ system_lock(System* self, Rpc* rpc)
 		//
 		// even with exclusive lock, there is a chance that
 		// last abort did not not finished yet
-		backend_mgr_sync(&self->backend_mgr);
+		Build build;
+		build_init(&build, BUILD_NONE, &self->backend_mgr, NULL, NULL, NULL, NULL);
+		defer(build_free, &build);
+		build_run(&build);
 
 		rpc_done(rpc);
 		self->lock = true;

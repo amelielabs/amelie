@@ -104,10 +104,3 @@ backend_mgr_stop(BackendMgr* self)
 	self->workers = NULL;
 	core_mgr_free(&self->core_mgr);
 }
-
-static inline void
-backend_mgr_sync(BackendMgr* self)
-{
-	for (int i = 0; i < self->workers_count; i++)
-		backend_sync(self->workers[i]);
-}

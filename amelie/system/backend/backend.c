@@ -135,9 +135,6 @@ backend_run(Backend* self, Ctr* ctr, Req* req)
 		backend_replay(self, ctr->tr, &req->arg);
 		break;
 	}
-	case REQ_SYNC:
-		// do nothing, used to process commit/abort
-		break;
 	case REQ_BUILD:
 	{
 		auto build = *(Build**)req->arg.start;
@@ -227,10 +224,4 @@ backend_stop(Backend* self)
 		task_free(&self->task);
 		task_init(&self->task);
 	}
-}
-
-void
-backend_sync(Backend* self)
-{
-	(void)self;
 }
