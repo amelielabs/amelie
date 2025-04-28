@@ -67,7 +67,7 @@ explain with a as (select * from test) select 2
 [{
   "bytecode": {
     "frontend": {
-      "00": "send_all            0      0      -     # public.test",
+      "00": "send_all            0      -      0     # public.test",
       "01": "recv                0      0      0     ",
       "02": "bool                0      0      0     ",
       "03": "push                0      0      0     ",
@@ -103,7 +103,7 @@ explain with a as (select * from test) select * from a
 [{
   "bytecode": {
     "frontend": {
-      "00": "send_all            0      0      -     # public.test",
+      "00": "send_all            0      -      0     # public.test",
       "01": "recv                0      0      0     ",
       "02": "bool                0      0      0     ",
       "03": "push                0      0      0     ",
@@ -143,7 +143,7 @@ explain with a as (select * from test) select id from a
 [{
   "bytecode": {
     "frontend": {
-      "00": "send_all            0      0      -     # public.test",
+      "00": "send_all            0      -      0     # public.test",
       "01": "recv                0      0      0     ",
       "02": "bool                0      0      0     ",
       "03": "push                0      0      0     ",
@@ -183,7 +183,7 @@ explain with a as (select * from test) select a.id from a
 [{
   "bytecode": {
     "frontend": {
-      "00": "send_all            0      0      -     # public.test",
+      "00": "send_all            0      -      0     # public.test",
       "01": "recv                0      0      0     ",
       "02": "bool                0      0      0     ",
       "03": "push                0      0      0     ",
@@ -223,7 +223,7 @@ explain with a as (select id from test) select id from a
 [{
   "bytecode": {
     "frontend": {
-      "00": "send_all            0      0      -     # public.test",
+      "00": "send_all            0      -      0     # public.test",
       "01": "recv                0      0      0     ",
       "02": "bool                0      0      0     ",
       "03": "push                0      0      0     ",
@@ -265,7 +265,7 @@ explain with a as (select id as x from test) select x from a
 [{
   "bytecode": {
     "frontend": {
-      "00": "send_all            0      0      -     # public.test",
+      "00": "send_all            0      -      0     # public.test",
       "01": "recv                0      0      0     ",
       "02": "bool                0      0      0     ",
       "03": "push                0      0      0     ",
@@ -315,7 +315,7 @@ explain with a as (select * from test) select * from a
 [{
   "bytecode": {
     "frontend": {
-      "00": "send_all            0      0      -     # public.test",
+      "00": "send_all            0      -      0     # public.test",
       "01": "recv                0      0      0     ",
       "02": "bool                0      0      0     ",
       "03": "push                0      0      0     ",
@@ -355,13 +355,13 @@ explain with a as (select * from test) select * from test
 [{
   "bytecode": {
     "frontend": {
-      "00": "send_all            0      0      -     # public.test",
-      "01": "send_all            1      9      -     # public.test",
+      "00": "send_all            0      -      0     # public.test",
+      "01": "send_all            9      -      0     # public.test",
       "02": "recv                0      0      0     ",
       "03": "bool                0      0      0     ",
       "04": "push                0      0      0     ",
       "05": "union_recv          0      -1     -1    ",
-      "06": "recv                1      0      0     ",
+      "06": "recv                0      0      0     ",
       "07": "bool                1      0      0     ",
       "08": "push                1      0      0     ",
       "09": "union_recv          1      -1     -1    ",
@@ -401,13 +401,13 @@ explain with a as (select * from test) select * from test
 [{
   "bytecode": {
     "frontend": {
-      "00": "send_all            0      0      -     # public.test",
-      "01": "send_all            1      9      -     # public.test",
+      "00": "send_all            0      -      0     # public.test",
+      "01": "send_all            9      -      0     # public.test",
       "02": "recv                0      0      0     ",
       "03": "bool                0      0      0     ",
       "04": "push                0      0      0     ",
       "05": "union_recv          0      -1     -1    ",
-      "06": "recv                1      0      0     ",
+      "06": "recv                0      0      0     ",
       "07": "bool                1      0      0     ",
       "08": "push                1      0      0     ",
       "09": "union_recv          1      -1     -1    ",
@@ -449,8 +449,8 @@ explain with a as (select [4,5,6]) select test.*, a.* from test, a
       "01": "json                1      0      0     ",
       "02": "push                1      0      0     ",
       "03": "set_add             0      0      0     ",
-      "04": "send_all            1      0      -     # public.test",
-      "05": "recv                1      0      0     ",
+      "04": "send_all            0      -      0     # public.test",
+      "05": "recv                0      0      0     ",
       "06": "bool                1      0      0     ",
       "07": "push                1      0      0     ",
       "08": "union_recv          1      -1     -1    ",
@@ -491,8 +491,8 @@ explain with a as (select [4,5,6]) select test.*, a.* from test, a
       "01": "json                1      0      0     ",
       "02": "push                1      0      0     ",
       "03": "set_add             0      0      0     ",
-      "04": "send_all            1      0      -     # public.test",
-      "05": "recv                1      0      0     ",
+      "04": "send_all            0      -      0     # public.test",
+      "05": "recv                0      0      0     ",
       "06": "bool                1      0      0     ",
       "07": "push                1      0      0     ",
       "08": "union_recv          1      -1     -1    ",
@@ -529,13 +529,13 @@ explain with a as (select * from test) select test.* from test join a on test.id
 [{
   "bytecode": {
     "frontend": {
-      "00": "send_all            0      0      -     # public.test",
+      "00": "send_all            0      -      0     # public.test",
       "01": "recv                0      0      0     ",
       "02": "bool                0      0      0     ",
       "03": "push                0      0      0     ",
       "04": "union_recv          0      -1     -1    ",
-      "05": "send_all            1      9      -     # public.test",
-      "06": "recv                1      0      0     ",
+      "05": "send_all            9      -      0     # public.test",
+      "06": "recv                0      0      0     ",
       "07": "bool                1      0      0     ",
       "08": "push                1      0      0     ",
       "09": "union_recv          1      -1     -1    ",
@@ -583,13 +583,13 @@ explain with a as (select data from test) select test.* from test join a on test
 [{
   "bytecode": {
     "frontend": {
-      "00": "send_all            0      0      -     # public.test",
+      "00": "send_all            0      -      0     # public.test",
       "01": "recv                0      0      0     ",
       "02": "bool                0      0      0     ",
       "03": "push                0      0      0     ",
       "04": "union_recv          0      -1     -1    ",
-      "05": "send_all            1      9      -     # public.test",
-      "06": "recv                1      0      0     ",
+      "05": "send_all            9      -      0     # public.test",
+      "06": "recv                0      0      0     ",
       "07": "bool                1      0      0     ",
       "08": "push                1      0      0     ",
       "09": "union_recv          1      -1     -1    ",
@@ -688,7 +688,7 @@ explain with a as (select * from test), b as (select * from a) select * from b
 [{
   "bytecode": {
     "frontend": {
-      "00": "send_all            0      0      -     # public.test",
+      "00": "send_all            0      -      0     # public.test",
       "01": "recv                0      0      0     ",
       "02": "bool                0      0      0     ",
       "03": "push                0      0      0     ",
@@ -736,7 +736,7 @@ explain with a as (select * from test), b as (select [1,2,3]), c as (select * fr
 [{
   "bytecode": {
     "frontend": {
-      "00": "send_all            0      0      -     # public.test",
+      "00": "send_all            0      -      0     # public.test",
       "01": "recv                0      0      0     ",
       "02": "bool                0      0      0     ",
       "03": "push                0      0      0     ",
@@ -788,7 +788,7 @@ explain with a as (select * from test), b as (select [1,2,3]), c as (select * fr
 [{
   "bytecode": {
     "frontend": {
-      "00": "send_all            0      0      -     # public.test",
+      "00": "send_all            0      -      0     # public.test",
       "01": "recv                0      0      0     ",
       "02": "bool                0      0      0     ",
       "03": "push                0      0      0     ",
@@ -797,8 +797,8 @@ explain with a as (select * from test), b as (select [1,2,3]), c as (select * fr
       "06": "json                2      20     0     ",
       "07": "push                2      0      0     ",
       "08": "set_add             1      0      0     ",
-      "09": "send_all            2      9      -     # public.test",
-      "10": "recv                2      0      0     ",
+      "09": "send_all            9      -      0     # public.test",
+      "10": "recv                0      0      0     ",
       "11": "bool                2      0      0     ",
       "12": "push                2      0      0     ",
       "13": "union_recv          2      -1     -1    ",
@@ -846,13 +846,13 @@ explain with a as (select * from test), b as (select * from test), c as (select 
 [{
   "bytecode": {
     "frontend": {
-      "00": "send_all            0      0      -     # public.test",
-      "01": "send_all            1      9      -     # public.test",
+      "00": "send_all            0      -      0     # public.test",
+      "01": "send_all            9      -      0     # public.test",
       "02": "recv                0      0      0     ",
       "03": "bool                0      0      0     ",
       "04": "push                0      0      0     ",
       "05": "union_recv          0      -1     -1    ",
-      "06": "recv                1      0      0     ",
+      "06": "recv                0      0      0     ",
       "07": "bool                1      0      0     ",
       "08": "push                1      0      0     ",
       "09": "union_recv          1      -1     -1    ",
@@ -904,13 +904,13 @@ explain with a as (select * from test), b as (select * from test), c as (select 
 [{
   "bytecode": {
     "frontend": {
-      "00": "send_all            0      0      -     # public.test",
-      "01": "send_all            1      9      -     # public.test",
+      "00": "send_all            0      -      0     # public.test",
+      "01": "send_all            9      -      0     # public.test",
       "02": "recv                0      0      0     ",
       "03": "bool                0      0      0     ",
       "04": "push                0      0      0     ",
       "05": "union_recv          0      -1     -1    ",
-      "06": "recv                1      0      0     ",
+      "06": "recv                0      0      0     ",
       "07": "bool                1      0      0     ",
       "08": "push                1      0      0     ",
       "09": "union_recv          1      -1     -1    ",
@@ -918,8 +918,8 @@ explain with a as (select * from test), b as (select * from test), c as (select 
       "11": "json                3      40     0     ",
       "12": "push                3      0      0     ",
       "13": "set_add             2      0      0     ",
-      "14": "send_all            3      18     -     # public.test",
-      "15": "recv                3      0      0     ",
+      "14": "send_all            18     -      0     # public.test",
+      "15": "recv                0      0      0     ",
       "16": "bool                3      0      0     ",
       "17": "push                3      0      0     ",
       "18": "union_recv          3      -1     -1    ",
@@ -980,8 +980,8 @@ explain with a as (select [1,2,3]), b as (select * from test), c as (select [1,2
       "01": "json                1      0      0     ",
       "02": "push                1      0      0     ",
       "03": "set_add             0      0      0     ",
-      "04": "send_all            1      0      -     # public.test",
-      "05": "recv                1      0      0     ",
+      "04": "send_all            0      -      0     # public.test",
+      "05": "recv                0      0      0     ",
       "06": "bool                1      0      0     ",
       "07": "push                1      0      0     ",
       "08": "union_recv          1      -1     -1    ",
@@ -1034,13 +1034,13 @@ explain with a as (select [1,2,3]), b as (select * from test), c as (select * fr
       "01": "json                1      0      0     ",
       "02": "push                1      0      0     ",
       "03": "set_add             0      0      0     ",
-      "04": "send_all            1      0      -     # public.test",
-      "05": "send_all            2      9      -     # public.test",
-      "06": "recv                1      0      0     ",
+      "04": "send_all            0      -      0     # public.test",
+      "05": "send_all            9      -      0     # public.test",
+      "06": "recv                0      0      0     ",
       "07": "bool                1      0      0     ",
       "08": "push                1      0      0     ",
       "09": "union_recv          1      -1     -1    ",
-      "10": "recv                2      0      0     ",
+      "10": "recv                0      0      0     ",
       "11": "bool                2      0      0     ",
       "12": "push                2      0      0     ",
       "13": "union_recv          2      -1     -1    ",
@@ -1088,7 +1088,7 @@ explain with a as (select * from test), b as (select * from a), c as (select * f
 [{
   "bytecode": {
     "frontend": {
-      "00": "send_all            0      0      -     # public.test",
+      "00": "send_all            0      -      0     # public.test",
       "01": "recv                0      0      0     ",
       "02": "bool                0      0      0     ",
       "03": "push                0      0      0     ",
@@ -1101,8 +1101,8 @@ explain with a as (select * from test), b as (select * from a), c as (select * f
       "10": "set_add             1      0      0     ",
       "11": "store_next          0      8      0     ",
       "12": "store_close         0      1      0     ",
-      "13": "send_all            2      9      -     # public.test",
-      "14": "recv                2      0      0     ",
+      "13": "send_all            9      -      0     # public.test",
+      "14": "recv                0      0      0     ",
       "15": "bool                3      0      0     ",
       "16": "push                3      0      0     ",
       "17": "union_recv          3      -1     -1    ",
@@ -1149,7 +1149,7 @@ explain with a as (select * from test), b as (select * from a), c as (select * f
 [{
   "bytecode": {
     "frontend": {
-      "00": "send_all            0      0      -     # public.test",
+      "00": "send_all            0      -      0     # public.test",
       "01": "recv                0      0      0     ",
       "02": "bool                0      0      0     ",
       "03": "push                0      0      0     ",
@@ -1162,8 +1162,8 @@ explain with a as (select * from test), b as (select * from a), c as (select * f
       "10": "set_add             1      0      0     ",
       "11": "store_next          0      8      0     ",
       "12": "store_close         0      1      0     ",
-      "13": "send_all            2      9      -     # public.test",
-      "14": "recv                2      0      0     ",
+      "13": "send_all            9      -      0     # public.test",
+      "14": "recv                0      0      0     ",
       "15": "bool                3      0      0     ",
       "16": "push                3      0      0     ",
       "17": "union_recv          3      -1     -1    ",
@@ -1223,7 +1223,7 @@ explain with a as (insert into test values (2, 0) returning *) select * from a
   "bytecode": {
     "frontend": {
       "00": "set_ptr             0      -      0     ",
-      "01": "send_shard          0      0      -     # public.test",
+      "01": "send_shard          0      -      0     # public.test",
       "02": "recv                0      0      0     ",
       "03": "bool                0      0      0     ",
       "04": "push                0      0      0     ",
@@ -1273,7 +1273,7 @@ explain with a as (update test set data = data + 1 returning *) select * from a
 [{
   "bytecode": {
     "frontend": {
-      "00": "send_all            0      0      -     # public.test",
+      "00": "send_all            0      -      0     # public.test",
       "01": "recv                0      0      0     ",
       "02": "bool                0      0      0     ",
       "03": "push                0      0      0     ",
@@ -1326,7 +1326,7 @@ explain with a as (delete from test returning *) select * from a
 [{
   "bytecode": {
     "frontend": {
-      "00": "send_all            0      0      -     # public.test",
+      "00": "send_all            0      -      0     # public.test",
       "01": "recv                0      0      0     ",
       "02": "bool                0      0      0     ",
       "03": "push                0      0      0     ",

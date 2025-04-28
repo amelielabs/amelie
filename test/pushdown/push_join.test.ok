@@ -9,7 +9,7 @@ explain select test.*, ref.* from test, ref
 [{
   "bytecode": {
     "frontend": {
-      "00": "send_all            0      0      -     # public.test",
+      "00": "send_all            0      -      0     # public.test",
       "01": "recv                0      0      0     ",
       "02": "bool                0      0      0     ",
       "03": "push                0      0      0     ",
@@ -47,7 +47,7 @@ explain select test.*, ref.* from ref, test
 [{
   "bytecode": {
     "frontend": {
-      "00": "send_all            0      0      -     # public.ref",
+      "00": "send_all            0      -      0     # public.ref",
       "01": "recv                0      0      0     ",
       "02": "bool                0      0      0     ",
       "03": "push                0      0      0     ",
@@ -85,7 +85,7 @@ explain select t.* from test, test t
 [{
   "bytecode": {
     "frontend": {
-      "00": "send_all            0      0      -     # public.test",
+      "00": "send_all            0      -      0     # public.test",
       "01": "recv                0      0      0     ",
       "02": "bool                0      0      0     ",
       "03": "push                0      0      0     ",
@@ -119,7 +119,7 @@ explain select test.id, ref.id from test join ref on true
 [{
   "bytecode": {
     "frontend": {
-      "00": "send_all            0      0      -     # public.test",
+      "00": "send_all            0      -      0     # public.test",
       "01": "recv                0      0      0     ",
       "02": "bool                0      0      0     ",
       "03": "push                0      0      0     ",
@@ -155,7 +155,7 @@ explain select test.id, ref.id from test join ref on test.id = ref.id
 [{
   "bytecode": {
     "frontend": {
-      "00": "send_all            0      0      -     # public.test",
+      "00": "send_all            0      -      0     # public.test",
       "01": "recv                0      0      0     ",
       "02": "bool                0      0      0     ",
       "03": "push                0      0      0     ",
@@ -194,7 +194,7 @@ explain select test.id, ref.id from test join ref on test.id = ref.id join ref r
 [{
   "bytecode": {
     "frontend": {
-      "00": "send_all            0      0      -     # public.test",
+      "00": "send_all            0      -      0     # public.test",
       "01": "recv                0      0      0     ",
       "02": "bool                0      0      0     ",
       "03": "push                0      0      0     ",
@@ -241,7 +241,7 @@ explain select test.id, ref.id from test join ref on test.id = ref.id join ref r
 [{
   "bytecode": {
     "frontend": {
-      "00": "send_all            0      0      -     # public.test",
+      "00": "send_all            0      -      0     # public.test",
       "01": "recv                0      0      0     ",
       "02": "bool                0      0      0     ",
       "03": "push                0      0      0     ",
@@ -294,7 +294,7 @@ explain select test.id, ref.id from test, ref where test.id = ref.id
 [{
   "bytecode": {
     "frontend": {
-      "00": "send_all            0      0      -     # public.test",
+      "00": "send_all            0      -      0     # public.test",
       "01": "recv                0      0      0     ",
       "02": "bool                0      0      0     ",
       "03": "push                0      0      0     ",
@@ -332,7 +332,7 @@ explain select test.id, ref.id from test, ref where ref.id = test.id
 [{
   "bytecode": {
     "frontend": {
-      "00": "send_all            0      0      -     # public.test",
+      "00": "send_all            0      -      0     # public.test",
       "01": "recv                0      0      0     ",
       "02": "bool                0      0      0     ",
       "03": "push                0      0      0     ",
@@ -370,7 +370,7 @@ explain select test.id, ref.id from test, ref where ref.id = 1
 [{
   "bytecode": {
     "frontend": {
-      "00": "send_all            0      0      -     # public.test",
+      "00": "send_all            0      -      0     # public.test",
       "01": "recv                0      0      0     ",
       "02": "bool                0      0      0     ",
       "03": "push                0      0      0     ",
@@ -408,7 +408,7 @@ explain select test.id, ref.id from test, ref where ref.id = 1 and test.id = 1
 [{
   "bytecode": {
     "frontend": {
-      "00": "send_lookup         0      0      -     # public.test",
+      "00": "send_lookup         0      -      -     # public.test",
       "01": "recv                0      0      0     ",
       "02": "bool                0      0      0     ",
       "03": "push                0      0      0     ",
@@ -451,7 +451,7 @@ explain select test.id, ref.id from test, ref where ref.id >= test.id
 [{
   "bytecode": {
     "frontend": {
-      "00": "send_all            0      0      -     # public.test",
+      "00": "send_all            0      -      0     # public.test",
       "01": "recv                0      0      0     ",
       "02": "bool                0      0      0     ",
       "03": "push                0      0      0     ",
@@ -499,7 +499,7 @@ explain select test.id, ref.id from test join ref using(id)
 [{
   "bytecode": {
     "frontend": {
-      "00": "send_all            0      0      -     # public.test",
+      "00": "send_all            0      -      0     # public.test",
       "01": "recv                0      0      0     ",
       "02": "bool                0      0      0     ",
       "03": "push                0      0      0     ",
@@ -541,7 +541,7 @@ explain select test.id, ref.id from test join ref using (id) join ref ref2 using
 [{
   "bytecode": {
     "frontend": {
-      "00": "send_all            0      0      -     # public.test",
+      "00": "send_all            0      -      0     # public.test",
       "01": "recv                0      0      0     ",
       "02": "bool                0      0      0     ",
       "03": "push                0      0      0     ",
@@ -596,13 +596,13 @@ explain with a as (select * from test) select * from test, a where test.id = a.i
 [{
   "bytecode": {
     "frontend": {
-      "00": "send_all            0      0      -     # public.test",
+      "00": "send_all            0      -      0     # public.test",
       "01": "recv                0      0      0     ",
       "02": "bool                0      0      0     ",
       "03": "push                0      0      0     ",
       "04": "union_recv          0      -1     -1    ",
-      "05": "send_all            1      11     -     # public.test",
-      "06": "recv                1      0      0     ",
+      "05": "send_all            11     -      0     # public.test",
+      "06": "recv                0      0      0     ",
       "07": "bool                1      0      0     ",
       "08": "push                1      0      0     ",
       "09": "union_recv          1      -1     -1    ",
@@ -655,13 +655,13 @@ explain with a as (select * from test) select * from test, a where test.id = 1
 [{
   "bytecode": {
     "frontend": {
-      "00": "send_all            0      0      -     # public.test",
+      "00": "send_all            0      -      0     # public.test",
       "01": "recv                0      0      0     ",
       "02": "bool                0      0      0     ",
       "03": "push                0      0      0     ",
       "04": "union_recv          0      -1     -1    ",
-      "05": "send_lookup         1      11     -     # public.test",
-      "06": "recv                1      0      0     ",
+      "05": "send_lookup         11     -      -     # public.test",
+      "06": "recv                0      0      0     ",
       "07": "bool                1      0      0     ",
       "08": "push                1      0      0     ",
       "09": "union_recv          1      -1     -1    ",
@@ -715,7 +715,7 @@ explain with a as (select * from test) select * from a, test where test.id = a.i
 [{
   "bytecode": {
     "frontend": {
-      "00": "send_all            0      0      -     # public.test",
+      "00": "send_all            0      -      0     # public.test",
       "01": "recv                0      0      0     ",
       "02": "bool                0      0      0     ",
       "03": "push                0      0      0     ",
@@ -768,7 +768,7 @@ explain with a as (select * from test) select * from a, test where test.id = 1
 [{
   "bytecode": {
     "frontend": {
-      "00": "send_all            0      0      -     # public.test",
+      "00": "send_all            0      -      0     # public.test",
       "01": "recv                0      0      0     ",
       "02": "bool                0      0      0     ",
       "03": "push                0      0      0     ",
@@ -831,7 +831,7 @@ explain select ref.id from test join ref on (test.id = ref.id) group by ref.id
 [{
   "bytecode": {
     "frontend": {
-      "00": "send_all            0      0      -     # public.test",
+      "00": "send_all            0      -      0     # public.test",
       "01": "recv                0      0      0     ",
       "02": "bool                0      1      0     ",
       "03": "push                0      0      0     ",

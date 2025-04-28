@@ -74,7 +74,7 @@ explain select (select test.*) from test
 [{
   "bytecode": {
     "frontend": {
-      "00": "send_all            0      0      -     # public.test",
+      "00": "send_all            0      -      0     # public.test",
       "01": "recv                0      0      0     ",
       "02": "bool                0      0      0     ",
       "03": "push                0      0      0     ",
@@ -114,7 +114,7 @@ explain select (select test.id) from test
 [{
   "bytecode": {
     "frontend": {
-      "00": "send_all            0      0      -     # public.test",
+      "00": "send_all            0      -      0     # public.test",
       "01": "recv                0      0      0     ",
       "02": "bool                0      0      0     ",
       "03": "push                0      0      0     ",
@@ -149,7 +149,7 @@ explain select (select t.id) from test t
 [{
   "bytecode": {
     "frontend": {
-      "00": "send_all            0      0      -     # public.test",
+      "00": "send_all            0      -      0     # public.test",
       "01": "recv                0      0      0     ",
       "02": "bool                0      0      0     ",
       "03": "push                0      0      0     ",
@@ -261,7 +261,7 @@ explain select * from (select * from test) t
 [{
   "bytecode": {
     "frontend": {
-      "00": "send_all            0      0      -     # public.test",
+      "00": "send_all            0      -      0     # public.test",
       "01": "recv                0      0      0     ",
       "02": "bool                0      0      0     ",
       "03": "push                0      0      0     ",
@@ -422,7 +422,7 @@ explain select (select * from test) from test
 [{
   "bytecode": {
     "frontend": {
-      "00": "send_all            0      0      -     # public.test",
+      "00": "send_all            0      -      0     # public.test",
       "01": "recv                0      0      0     ",
       "02": "bool                0      0      0     ",
       "03": "push                0      0      0     ",
@@ -462,7 +462,7 @@ explain select (select i.* from test i limit 1) from test
 [{
   "bytecode": {
     "frontend": {
-      "00": "send_all            0      0      -     # public.test",
+      "00": "send_all            0      -      0     # public.test",
       "01": "recv                0      0      0     ",
       "02": "bool                0      0      0     ",
       "03": "push                0      0      0     ",
@@ -500,7 +500,7 @@ explain select (select i.* from test i where test.id = i.id) from test
 [{
   "bytecode": {
     "frontend": {
-      "00": "send_all            0      0      -     # public.test",
+      "00": "send_all            0      -      0     # public.test",
       "01": "recv                0      0      0     ",
       "02": "bool                0      0      0     ",
       "03": "push                0      0      0     ",
@@ -556,7 +556,7 @@ explain select * from a where (select true from b where a.id = b.id)
 [{
   "bytecode": {
     "frontend": {
-      "00": "send_all            0      0      -     # public.a",
+      "00": "send_all            0      -      0     # public.a",
       "01": "recv                0      0      0     ",
       "02": "bool                0      0      0     ",
       "03": "push                0      0      0     ",
@@ -603,7 +603,7 @@ explain select t.x from (select z.id as x from (select id from test) z) t
 [{
   "bytecode": {
     "frontend": {
-      "00": "send_all            0      0      -     # public.test",
+      "00": "send_all            0      -      0     # public.test",
       "01": "recv                0      0      0     ",
       "02": "bool                0      0      0     ",
       "03": "push                0      0      0     ",

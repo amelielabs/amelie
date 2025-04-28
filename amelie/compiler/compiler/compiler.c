@@ -250,7 +250,7 @@ emit_send_insert(Compiler* self, int start)
 	}
 
 	// CSEND_SHARD
-	op4(self, CSEND_SHARD, stmt->order, start, (intptr_t)table, r);
+	op3(self, CSEND_SHARD, start, (intptr_t)table, r);
 	runpin(self, r);
 }
 
@@ -318,13 +318,13 @@ emit_send(Compiler* self, int start)
 		uint32_t hash = path_create_hash(path);
 
 		// CSEND_LOOKUP
-		op4(self, CSEND_LOOKUP, stmt->order, start, (intptr_t)table, hash);
+		op3(self, CSEND_LOOKUP, start, (intptr_t)table, hash);
 	} else
 	{
 		// send to all table partitions (one or more)
 
 		// CSEND_ALL
-		op3(self, CSEND_ALL, stmt->order, start, (intptr_t)table);
+		op2(self, CSEND_ALL, start, (intptr_t)table);
 	}
 	self->sends++;
 }

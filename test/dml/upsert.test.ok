@@ -37,7 +37,7 @@ explain insert into test values(1, 0), (2, 0), (1, 0) on conflict do nothing
   "bytecode": {
     "frontend": {
       "00": "set_ptr             0      -      0     ",
-      "01": "send_shard          0      0      -     # public.test",
+      "01": "send_shard          0      -      0     # public.test",
       "02": "recv                0      0      0     ",
       "03": "ret                 0      0      0     "
     },
@@ -68,7 +68,7 @@ explain insert into test values(1, 0) on conflict do nothing
   "bytecode": {
     "frontend": {
       "00": "set_ptr             0      -      0     ",
-      "01": "send_shard          0      0      -     # public.test",
+      "01": "send_shard          0      -      0     # public.test",
       "02": "recv                0      0      0     ",
       "03": "ret                 0      0      0     "
     },
@@ -87,7 +87,7 @@ explain insert into test values(1, 0) on conflict do resolve
   "bytecode": {
     "frontend": {
       "00": "set_ptr             0      -      0     ",
-      "01": "send_shard          0      0      -     # public.test",
+      "01": "send_shard          0      -      0     # public.test",
       "02": "recv                0      0      0     ",
       "03": "ret                 0      0      0     "
     },
@@ -117,7 +117,7 @@ explain insert into test values(1, 0) on conflict do update set data = data + 1
   "bytecode": {
     "frontend": {
       "00": "set_ptr             0      -      0     ",
-      "01": "send_shard          0      0      -     # public.test",
+      "01": "send_shard          0      -      0     # public.test",
       "02": "recv                0      0      0     ",
       "03": "ret                 0      0      0     "
     },
@@ -161,7 +161,7 @@ explain insert into test values (1, 0), (1, 0), (1, 0) on conflict do update set
   "bytecode": {
     "frontend": {
       "00": "set_ptr             0      -      0     ",
-      "01": "send_shard          0      0      -     # public.test",
+      "01": "send_shard          0      -      0     # public.test",
       "02": "recv                0      0      0     ",
       "03": "ret                 0      0      0     "
     },
@@ -200,7 +200,7 @@ explain insert into test values (1, 0) on conflict do update set data = data + 1
   "bytecode": {
     "frontend": {
       "00": "set_ptr             0      -      0     ",
-      "01": "send_shard          0      0      -     # public.test",
+      "01": "send_shard          0      -      0     # public.test",
       "02": "recv                0      0      0     ",
       "03": "ret                 0      0      0     "
     },
@@ -242,7 +242,7 @@ explain insert into test values (1, 123) on conflict do update set data = data +
   "bytecode": {
     "frontend": {
       "00": "set_ptr             0      -      0     ",
-      "01": "send_shard          0      0      -     # public.test",
+      "01": "send_shard          0      -      0     # public.test",
       "02": "recv                0      0      0     ",
       "03": "ret                 0      0      0     "
     },
@@ -275,7 +275,7 @@ explain insert into test values (1, null, {"id": 48}) on conflict do update set 
   "bytecode": {
     "frontend": {
       "00": "set_ptr             0      -      0     ",
-      "01": "send_shard          0      0      -     # public.test",
+      "01": "send_shard          0      -      0     # public.test",
       "02": "recv                0      0      0     ",
       "03": "ret                 0      0      0     "
     },
@@ -338,7 +338,7 @@ explain insert into test values(1, 0) on conflict do update set data = data + 1 
   "bytecode": {
     "frontend": {
       "00": "set_ptr             0      -      0     ",
-      "01": "send_shard          0      0      -     # public.test",
+      "01": "send_shard          0      -      0     # public.test",
       "02": "recv                0      0      0     ",
       "03": "bool                0      0      0     ",
       "04": "push                0      0      0     ",
@@ -387,7 +387,7 @@ explain insert into test values(1, 0) on conflict do nothing returning *
   "bytecode": {
     "frontend": {
       "00": "set_ptr             0      -      0     ",
-      "01": "send_shard          0      0      -     # public.test",
+      "01": "send_shard          0      -      0     # public.test",
       "02": "recv                0      0      0     ",
       "03": "bool                0      0      0     ",
       "04": "push                0      0      0     ",
@@ -428,7 +428,7 @@ explain insert into test values(1, 0) on conflict do update set data = data + 1 
   "bytecode": {
     "frontend": {
       "00": "set_ptr             0      -      0     ",
-      "01": "send_shard          0      0      -     # public.test",
+      "01": "send_shard          0      -      0     # public.test",
       "02": "recv                0      0      0     ",
       "03": "bool                0      0      0     ",
       "04": "push                0      0      0     ",
@@ -476,7 +476,7 @@ explain insert into test values(1, 0) on conflict do nothing returning *
   "bytecode": {
     "frontend": {
       "00": "set_ptr             0      -      0     ",
-      "01": "send_shard          0      0      -     # public.test",
+      "01": "send_shard          0      -      0     # public.test",
       "02": "recv                0      0      0     ",
       "03": "bool                0      0      0     ",
       "04": "push                0      0      0     ",
@@ -550,14 +550,14 @@ explain insert into test select * from src on conflict do update set data = data
 [{
   "bytecode": {
     "frontend": {
-      "00": "send_all            0      0      -     # public.src",
+      "00": "send_all            0      -      0     # public.src",
       "01": "recv                0      0      0     ",
       "02": "bool                0      0      0     ",
       "03": "push                0      0      0     ",
       "04": "union_recv          0      -1     -1    ",
       "05": "dup                 1      0      0     ",
-      "06": "send_shard          1      11     -     # public.test",
-      "07": "recv                1      0      0     ",
+      "06": "send_shard          11     -      1     # public.test",
+      "07": "recv                0      0      0     ",
       "08": "bool                1      0      0     ",
       "09": "push                1      0      0     ",
       "10": "union_recv          1      -1     -1    ",

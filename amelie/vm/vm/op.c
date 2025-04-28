@@ -366,11 +366,21 @@ op_dump(Code* self, CodeData* data, Buf* buf)
 			op_write(output, op, true, false, true, NULL);
 			break;
 		case CSEND_SHARD:
-		case CSEND_LOOKUP:
 		case CSEND_ALL:
 		{
-			auto table = (Table*)op->c;
-			op_write(output, op, true, true, false,
+			auto table = (Table*)op->b;
+			op_write(output, op, true, false, true,
+			         "%.*s.%.*s",
+			         str_size(&table->config->schema),
+			         str_of(&table->config->schema),
+			         str_size(&table->config->name),
+			         str_of(&table->config->name));
+			break;
+		}
+		case CSEND_LOOKUP:
+		{
+			auto table = (Table*)op->b;
+			op_write(output, op, true, false, false,
 			         "%.*s.%.*s",
 			         str_size(&table->config->schema),
 			         str_of(&table->config->schema),

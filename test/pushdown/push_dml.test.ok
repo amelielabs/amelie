@@ -7,7 +7,7 @@ explain insert into test (id) values (1), (2), (3)
   "bytecode": {
     "frontend": {
       "00": "set_ptr             0      -      0     ",
-      "01": "send_shard          0      0      -     # public.test",
+      "01": "send_shard          0      -      0     # public.test",
       "02": "recv                0      0      0     ",
       "03": "ret                 0      0      0     "
     },
@@ -26,7 +26,7 @@ explain delete from test
 [{
   "bytecode": {
     "frontend": {
-      "00": "send_all            0      0      -     # public.test",
+      "00": "send_all            0      -      0     # public.test",
       "01": "recv                0      0      0     ",
       "02": "ret                 0      0      0     "
     },
@@ -49,7 +49,7 @@ explain update test set data = id
 [{
   "bytecode": {
     "frontend": {
-      "00": "send_all            0      0      -     # public.test",
+      "00": "send_all            0      -      0     # public.test",
       "01": "recv                0      0      0     ",
       "02": "ret                 0      0      0     "
     },
@@ -76,7 +76,7 @@ explain insert into test (id) values (1), (2), (3) on conflict do update set dat
   "bytecode": {
     "frontend": {
       "00": "set_ptr             0      -      0     ",
-      "01": "send_shard          0      0      -     # public.test",
+      "01": "send_shard          0      -      0     # public.test",
       "02": "recv                0      0      0     ",
       "03": "ret                 0      0      0     "
     },

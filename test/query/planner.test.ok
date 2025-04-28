@@ -10,7 +10,7 @@ explain select * from test
 [{
   "bytecode": {
     "frontend": {
-      "00": "send_all            0      0      -     # public.test",
+      "00": "send_all            0      -      0     # public.test",
       "01": "recv                0      0      0     ",
       "02": "bool                0      0      0     ",
       "03": "push                0      0      0     ",
@@ -52,7 +52,7 @@ explain select * from test use index (i)
 [{
   "bytecode": {
     "frontend": {
-      "00": "send_all            0      0      -     # public.test",
+      "00": "send_all            0      -      0     # public.test",
       "01": "recv                0      0      0     ",
       "02": "bool                0      0      0     ",
       "03": "push                0      0      0     ",
@@ -89,7 +89,7 @@ explain select * from test
 [{
   "bytecode": {
     "frontend": {
-      "00": "send_all            0      0      -     # public.test",
+      "00": "send_all            0      -      0     # public.test",
       "01": "recv                0      0      0     ",
       "02": "bool                0      0      0     ",
       "03": "push                0      0      0     ",
@@ -117,7 +117,7 @@ explain select * from test use heap
 [{
   "bytecode": {
     "frontend": {
-      "00": "send_all            0      0      -     # public.test",
+      "00": "send_all            0      -      0     # public.test",
       "01": "recv                0      0      0     ",
       "02": "bool                0      0      0     ",
       "03": "push                0      0      0     ",
@@ -165,7 +165,7 @@ explain select * from test
 [{
   "bytecode": {
     "frontend": {
-      "00": "send_all            0      0      -     # public.test",
+      "00": "send_all            0      -      0     # public.test",
       "01": "recv                0      0      0     ",
       "02": "bool                0      0      0     ",
       "03": "push                0      0      0     ",
@@ -197,7 +197,7 @@ explain select * from test where data = 2
 [{
   "bytecode": {
     "frontend": {
-      "00": "send_all            0      0      -     # public.test",
+      "00": "send_all            0      -      0     # public.test",
       "01": "recv                0      0      0     ",
       "02": "bool                0      0      0     ",
       "03": "push                0      0      0     ",
@@ -232,7 +232,7 @@ explain select * from test where id = 1
 [{
   "bytecode": {
     "frontend": {
-      "00": "send_all            0      0      -     # public.test",
+      "00": "send_all            0      -      0     # public.test",
       "01": "recv                0      0      0     ",
       "02": "bool                0      0      0     ",
       "03": "push                0      0      0     ",
@@ -268,7 +268,7 @@ explain select * from test where id = 1 and data = 1
 [{
   "bytecode": {
     "frontend": {
-      "00": "send_lookup         0      0      -     # public.test",
+      "00": "send_lookup         0      -      -     # public.test",
       "01": "recv                0      0      0     ",
       "02": "bool                0      0      0     ",
       "03": "push                0      0      0     ",
@@ -309,7 +309,7 @@ explain select * from test where data = 1 and id = 1
 [{
   "bytecode": {
     "frontend": {
-      "00": "send_lookup         0      0      -     # public.test",
+      "00": "send_lookup         0      -      -     # public.test",
       "01": "recv                0      0      0     ",
       "02": "bool                0      0      0     ",
       "03": "push                0      0      0     ",
@@ -357,7 +357,7 @@ explain select * from test where id = 1
 [{
   "bytecode": {
     "frontend": {
-      "00": "send_lookup         0      0      -     # public.test",
+      "00": "send_lookup         0      -      -     # public.test",
       "01": "recv                0      0      0     ",
       "02": "bool                0      0      0     ",
       "03": "push                0      0      0     ",
@@ -392,7 +392,7 @@ explain select * from test where id > 1
 [{
   "bytecode": {
     "frontend": {
-      "00": "send_all            0      0      -     # public.test",
+      "00": "send_all            0      -      0     # public.test",
       "01": "recv                0      0      0     ",
       "02": "bool                0      0      0     ",
       "03": "push                0      0      0     ",
@@ -428,7 +428,7 @@ explain select * from test where data > 1
 [{
   "bytecode": {
     "frontend": {
-      "00": "send_all            0      0      -     # public.test",
+      "00": "send_all            0      -      0     # public.test",
       "01": "recv                0      0      0     ",
       "02": "bool                0      0      0     ",
       "03": "push                0      0      0     ",
@@ -463,7 +463,7 @@ explain select * from test where data = 1
 [{
   "bytecode": {
     "frontend": {
-      "00": "send_all            0      0      -     # public.test",
+      "00": "send_all            0      -      0     # public.test",
       "01": "recv                0      0      0     ",
       "02": "bool                0      0      0     ",
       "03": "push                0      0      0     ",
@@ -517,7 +517,7 @@ explain select * from test where data = 1 and id = 1
 [{
   "bytecode": {
     "frontend": {
-      "00": "send_lookup         0      0      -     # public.test",
+      "00": "send_lookup         0      -      -     # public.test",
       "01": "recv                0      0      0     ",
       "02": "bool                0      0      0     ",
       "03": "push                0      0      0     ",
@@ -560,7 +560,7 @@ explain select * from test where id = 1 and data = 1
 [{
   "bytecode": {
     "frontend": {
-      "00": "send_lookup         0      0      -     # public.test",
+      "00": "send_lookup         0      -      -     # public.test",
       "01": "recv                0      0      0     ",
       "02": "bool                0      0      0     ",
       "03": "push                0      0      0     ",
@@ -610,7 +610,7 @@ explain select * from test where id > 1
 [{
   "bytecode": {
     "frontend": {
-      "00": "send_all            0      0      -     # public.test",
+      "00": "send_all            0      -      0     # public.test",
       "01": "recv                0      0      0     ",
       "02": "bool                0      0      0     ",
       "03": "push                0      0      0     ",
@@ -646,7 +646,7 @@ explain select * from test where data > 1
 [{
   "bytecode": {
     "frontend": {
-      "00": "send_all            0      0      -     # public.test",
+      "00": "send_all            0      -      0     # public.test",
       "01": "recv                0      0      0     ",
       "02": "bool                0      0      0     ",
       "03": "push                0      0      0     ",
@@ -683,7 +683,7 @@ explain select * from test where data < 1
 [{
   "bytecode": {
     "frontend": {
-      "00": "send_all            0      0      -     # public.test",
+      "00": "send_all            0      -      0     # public.test",
       "01": "recv                0      0      0     ",
       "02": "bool                0      0      0     ",
       "03": "push                0      0      0     ",
@@ -721,7 +721,7 @@ explain select * from test where id < 1
 [{
   "bytecode": {
     "frontend": {
-      "00": "send_all            0      0      -     # public.test",
+      "00": "send_all            0      -      0     # public.test",
       "01": "recv                0      0      0     ",
       "02": "bool                0      0      0     ",
       "03": "push                0      0      0     ",
@@ -759,7 +759,7 @@ explain select * from test where id < 1 and data < 2
 [{
   "bytecode": {
     "frontend": {
-      "00": "send_all            0      0      -     # public.test",
+      "00": "send_all            0      -      0     # public.test",
       "01": "recv                0      0      0     ",
       "02": "bool                0      0      0     ",
       "03": "push                0      0      0     ",

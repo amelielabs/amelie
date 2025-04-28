@@ -40,9 +40,9 @@
 hot void
 csend_shard(Vm* self, Op* op)
 {
-	// [stmt, start, table, store]
+	// [start, table, store]
 	auto dtr   = self->dtr;
-	auto table = (Table*)op->c;
+	auto table = (Table*)op->b;
 	auto keys  = table_keys(table);
 
 	// redistribute rows between backends
@@ -52,7 +52,7 @@ csend_shard(Vm* self, Op* op)
 	ReqList list;
 	req_list_init(&list);
 
-	auto store = reg_at(&self->r, op->d)->store;
+	auto store = reg_at(&self->r, op->c)->store;
 	if (store->type == STORE_SET)
 	{
 		auto set = (Set*)store;
@@ -66,7 +66,7 @@ csend_shard(Vm* self, Op* op)
 			{
 				req = req_create(&dtr->dispatch_mgr.req_cache);
 				req->type  = REQ_EXECUTE;
-				req->start = op->b;
+				req->start = op->a;
 				req->core  = part->core;
 				req_list_add(&list, req);
 				map[part->core->order] = req;
@@ -87,7 +87,7 @@ csend_shard(Vm* self, Op* op)
 			{
 				req = req_create(&dtr->dispatch_mgr.req_cache);
 				req->type  = REQ_EXECUTE;
-				req->start = op->b;
+				req->start = op->a;
 				req->core  = part->core;
 				req_list_add(&list, req);
 				map[part->core->order] = req;
@@ -97,23 +97,23 @@ csend_shard(Vm* self, Op* op)
 	}
 
 	executor_send(self->executor, dtr, &list);
-	value_free(reg_at(&self->r, op->d));
+	value_free(reg_at(&self->r, op->c));
 }
 
 hot void
 csend_lookup(Vm* self, Op* op)
 {
-	// [stmt, start, table, hash]
+	// [start, table, hash]
 	auto dtr   = self->dtr;
-	auto table = (Table*)op->c;
+	auto table = (Table*)op->b;
 
 	// shard by precomputed hash
 	ReqList list;
 	req_list_init(&list);
-	auto part = part_map_get(&table->part_list.map, op->d);
+	auto part = part_map_get(&table->part_list.map, op->c);
 	auto req = req_create(&dtr->dispatch_mgr.req_cache);
 	req->type  = REQ_EXECUTE;
-	req->start = op->b;
+	req->start = op->a;
 	req->core  = part->core;
 	req_list_add(&list, req);
 
@@ -123,8 +123,8 @@ csend_lookup(Vm* self, Op* op)
 hot void
 csend_all(Vm* self, Op* op)
 {
-	// [stmt, start, table]
-	auto table = (Table*)op->c;
+	// [start, table]
+	auto table = (Table*)op->b;
 	auto dtr = self->dtr;
 
 	// send to all table backends
@@ -135,7 +135,7 @@ csend_all(Vm* self, Op* op)
 		auto part = list_at(Part, link);
 		auto req = req_create(&dtr->dispatch_mgr.req_cache);
 		req->type  = REQ_EXECUTE;
-		req->start = op->b;
+		req->start = op->a;
 		req->core  = part->core;
 		req_list_add(&list, req);
 	}
@@ -146,7 +146,6 @@ csend_all(Vm* self, Op* op)
 hot void
 crecv(Vm* self, Op* op)
 {
-	// [stmt]
 	unused(op);
 	executor_recv(self->executor, self->dtr);
 }
@@ -195,7 +194,7 @@ cunion(Vm* self, Op* op)
 hot void
 cunion_recv(Vm* self, Op* op)
 {
-	// [union, limit, offset, stmt]
+	// [union, limit, offset]
 
 	// distinct
 	bool distinct = stack_at(&self->stack, 1)->integer;

@@ -25,7 +25,7 @@ explain delete from test; select error("abort")
 [{
   "bytecode": {
     "frontend": {
-      "00": "send_all            0      0      -     # public.test",
+      "00": "send_all            0      -      0     # public.test",
       "01": "recv                0      0      0     ",
       "02": "set                 0      1      0     ",
       "03": "string              1      20     0     # abort",
@@ -55,7 +55,7 @@ explain update test set data = id; select error("abort")
 [{
   "bytecode": {
     "frontend": {
-      "00": "send_all            0      0      -     # public.test",
+      "00": "send_all            0      -      0     # public.test",
       "01": "recv                0      0      0     ",
       "02": "set                 0      1      0     ",
       "03": "string              1      20     0     # abort",
@@ -90,7 +90,7 @@ explain insert into test values(1, 0) on conflict do update set data = id; selec
   "bytecode": {
     "frontend": {
       "00": "set_ptr             0      -      0     ",
-      "01": "send_shard          0      0      -     # public.test",
+      "01": "send_shard          0      -      0     # public.test",
       "02": "recv                0      0      0     ",
       "03": "set                 0      1      0     ",
       "04": "string              1      0      0     # abort",
@@ -134,7 +134,7 @@ explain insert into b (id) values (10), (20), (30)
   "bytecode": {
     "frontend": {
       "00": "set_ptr             0      -      0     ",
-      "01": "send_shard          0      0      -     # public.b",
+      "01": "send_shard          0      -      0     # public.b",
       "02": "recv                0      0      0     ",
       "03": "ret                 0      0      0     "
     },
@@ -156,17 +156,17 @@ explain update a set data = id; update b set data = id; select * from a; select 
 [{
   "bytecode": {
     "frontend": {
-      "00": "send_all            0      0      -     # public.a",
-      "01": "send_all            1      9      -     # public.b",
-      "02": "send_all            2      18     -     # public.a",
-      "03": "send_all            3      29     -     # public.b",
+      "00": "send_all            0      -      0     # public.a",
+      "01": "send_all            9      -      0     # public.b",
+      "02": "send_all            18     -      0     # public.a",
+      "03": "send_all            29     -      0     # public.b",
       "04": "recv                0      0      0     ",
-      "05": "recv                1      0      0     ",
-      "06": "recv                2      0      0     ",
+      "05": "recv                0      0      0     ",
+      "06": "recv                0      0      0     ",
       "07": "bool                0      0      0     ",
       "08": "push                0      0      0     ",
       "09": "union_recv          0      -1     -1    ",
-      "10": "recv                3      0      0     ",
+      "10": "recv                0      0      0     ",
       "11": "bool                1      0      0     ",
       "12": "push                1      0      0     ",
       "13": "union_recv          1      -1     -1    ",
@@ -236,12 +236,12 @@ explain insert into a values (1, 0), (3, 0) on conflict do update set data = id;
   "bytecode": {
     "frontend": {
       "00": "set_ptr             0      -      0     ",
-      "01": "send_shard          0      0      -     # public.a",
-      "02": "send_all            1      10     -     # public.b",
-      "03": "send_all            2      21     -     # public.a",
+      "01": "send_shard          0      -      0     # public.a",
+      "02": "send_all            10     -      0     # public.b",
+      "03": "send_all            21     -      0     # public.a",
       "04": "recv                0      0      0     ",
-      "05": "recv                1      0      0     ",
-      "06": "recv                2      0      0     ",
+      "05": "recv                0      0      0     ",
+      "06": "recv                0      0      0     ",
       "07": "bool                0      0      0     ",
       "08": "push                0      0      0     ",
       "09": "union_recv          0      -1     -1    ",

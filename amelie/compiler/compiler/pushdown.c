@@ -297,8 +297,7 @@ pushdown_group_by_recv(Compiler* self, AstSelect* select)
 	runpin(self, rdistinct);
 
 	// CUNION_RECV
-	int runion = op4(self, CUNION_RECV, rpin(self, TYPE_STORE), -1, -1,
-	                 self->current->order);
+	int runion = op3(self, CUNION_RECV, rpin(self, TYPE_STORE), -1, -1);
 	select->rset_agg = runion;
 
 	// CUNION_SET_AGGS (enable aggregate merge)
@@ -342,7 +341,7 @@ pushdown_recv(Compiler* self, Ast* ast)
 	AstSelect* select = ast_select_of(ast);
 
 	// CRECV
-	op1(self, CRECV, self->current->order);
+	op0(self, CRECV);
 
 	// SELECT FROM GROUP BY [WHERE] [HAVING] [ORDER BY] [LIMIT/OFFSET]
 	// SELECT aggregate FROM
@@ -372,8 +371,7 @@ pushdown_recv(Compiler* self, Ast* ast)
 		roffset = emit_expr(self, &select->targets, select->expr_offset);
 
 	// CUNION_RECV
-	int runion = op4(self, CUNION_RECV, rpin(self, TYPE_STORE), rlimit, roffset,
-	                 self->current->order);
+	int runion = op3(self, CUNION_RECV, rpin(self, TYPE_STORE), rlimit, roffset);
 
 	if (rlimit != -1)
 		runpin(self, rlimit);
@@ -387,7 +385,7 @@ int
 pushdown_recv_returning(Compiler* self, bool returning)
 {
 	// CRECV
-	op1(self, CRECV, self->current->order);
+	op0(self, CRECV);
 	if (! returning)
 		return -1;
 
@@ -399,7 +397,6 @@ pushdown_recv_returning(Compiler* self, bool returning)
 	runpin(self, rdistinct);
 
 	// CUNION_RECV
-	int runion = op4(self, CUNION_RECV, rpin(self, TYPE_STORE), -1, -1,
-	                 self->current->order);
+	int runion = op3(self, CUNION_RECV, rpin(self, TYPE_STORE), -1, -1);
 	return runion;
 }
