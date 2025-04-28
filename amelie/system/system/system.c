@@ -84,7 +84,7 @@ system_attach(PartList* list, void* arg)
 	list_foreach(&list->list)
 	{
 		auto part = list_at(Part, link);
-		part->route = &backend_mgr->workers[order]->route;
+		part->core = &backend_mgr->workers[order]->core;
 		order++;
 	}
 }
@@ -108,8 +108,8 @@ system_create(void)
 
 	// frontend/backend mgr
 	frontend_mgr_init(&self->frontend_mgr);
-	backend_mgr_init(&self->backend_mgr, &self->db, &self->function_mgr);
-	executor_init(&self->executor, &self->db, &self->backend_mgr.router);
+	backend_mgr_init(&self->backend_mgr, &self->db, &self->executor, &self->function_mgr);
+	executor_init(&self->executor, &self->db, &self->backend_mgr.core_mgr);
 	rpc_queue_init(&self->lock_queue);
 
 	// vm

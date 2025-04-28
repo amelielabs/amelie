@@ -56,14 +56,14 @@ build_init(Build*       self,
 	self->column      = column;
 	self->index       = index;
 	self->backend_mgr = backend_mgr;
-	channel_init(&self->channel);
+	local_init(&self->local, global());
+	dtr_init(&self->dtr, &self->local, &self->backend_mgr->core_mgr);
 }
 
 void
 build_free(Build* self)
 {
-	channel_detach(&self->channel);
-	channel_free(&self->channel);
+	dtr_free(&self->dtr);
 }
 
 void
@@ -115,45 +115,46 @@ build_run(Build* self)
 		break;
 	}
 
-	channel_attach(&self->channel);
-
-	// ask each worker to build related partition
 	auto backend_mgr = self->backend_mgr;
+	auto dtr = &self->dtr;
+
+	// ask each backend to build related partition
+	ReqList req_list;
+	req_list_init(&req_list);
 	for (auto i = 0; i < backend_mgr->workers_count; i++)
 	{
 		auto backend = backend_mgr->workers[i];
-		auto buf = msg_create(RPC_BUILD);
-		buf_write(buf, &self, sizeof(Build**));
-		msg_end(buf);
-		channel_write(&backend->task.channel, buf);
+		auto req = req_create(&dtr->dispatch_mgr.req_cache);
+		req->type = REQ_BUILD;
+		req->core = &backend->core;
+		buf_write(&req->arg, &self, sizeof(Build*));
+		req_list_add(&req_list, req);
 	}
 
-	// wait for completion
+	// process distributed transaction
+	Program program;
+	program_init(&program);
+	program.sends = 1;
+
+	dtr_reset(dtr);
+	dtr_create(dtr, &program, NULL);
+
+	auto executor = self->backend_mgr->executor;
+	auto on_error = error_catch
+	(
+		executor_send(executor, dtr, &req_list);
+		executor_recv(executor, dtr);
+	);
 	Buf* error = NULL;
-	int  complete;
-	for (complete = 0; complete < backend_mgr->workers_count;
-	     complete++)
-	{
-		auto buf = channel_read(&self->channel, -1);
-		auto msg = msg_of(buf);
-		if (msg->id == MSG_ERROR && !error)
-		{
-			error = buf;
-			continue;
-		}
-		buf_free(buf);
-	}
-	if (error)
-	{
-		defer_buf(error);
-		msg_error_throw(error);
-	}
+	if (on_error)
+		error = msg_error(&am_self()->error);
+	executor_commit(executor, dtr, error);
 
 	info("complete");
 }
 
-static void
-build_execute_op(Build* self, Route* worker)
+void
+build_execute(Build* self, Core* worker)
 {
 	switch (self->type) {
 	case BUILD_RECOVER:
@@ -209,21 +210,6 @@ build_execute_op(Build* self, Route* worker)
 	case BUILD_NONE:
 		break;
 	}
-}
-
-void
-build_execute(Build* self, Route* worker)
-{
-	Buf* buf;
-	if (error_catch( build_execute_op(self, worker) ))
-	{
-		buf = msg_error(&am_self()->error);
-	} else
-	{
-		buf = msg_create(MSG_OK);
-		msg_end(buf);
-	}
-	channel_write(&self->channel, buf);
 }
 
 static void

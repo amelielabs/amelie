@@ -27,13 +27,19 @@ req_cache_init(ReqCache* self)
 static inline void
 req_cache_free(ReqCache* self)
 {
-	req_list_free(&self->list);
+	list_foreach_safe(&self->list.list)
+	{
+		auto req = list_at(Req, link);
+		req_detach(req);
+		req_free_memory(req);
+	}
+	req_list_init(&self->list);
 }
 
 static inline Req*
 req_cache_pop(ReqCache* self)
 {
-	return req_list_get(&self->list);
+	return req_list_pop(&self->list);
 }
 
 static inline void
@@ -54,12 +60,17 @@ req_cache_push_list(ReqCache* self, ReqList* list)
 	req_list_init(list);
 }
 
-static inline Req*
-req_create(ReqCache* self, ReqType type)
+hot static inline Req*
+req_create(ReqCache* self)
 {
 	auto req = req_cache_pop(self);
-	if (unlikely(! req))
+	if (! req)
+	{
 		req = req_allocate();
-	req->type = type;
+		req_attach(req);
+	} else
+	{
+		list_init(&req->link);
+	}
 	return req;
 }

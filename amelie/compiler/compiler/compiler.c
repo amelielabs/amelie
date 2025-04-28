@@ -46,6 +46,7 @@ compiler_init(Compiler*    self,
               FunctionMgr* function_mgr)
 {
 	self->snapshot = false;
+	self->sends    = 0;
 	self->current  = NULL;
 	self->last     = NULL;
 	self->db       = db;
@@ -79,6 +80,7 @@ compiler_reset(Compiler* self)
 	self->code     = &self->code_backend;
 	self->args     = NULL;
 	self->snapshot = false;
+	self->sends    = 0;
 	self->current  = NULL;
 	self->last     = NULL;
 	code_reset(&self->code_frontend);
@@ -262,6 +264,7 @@ emit_send(Compiler* self, int start)
 	case STMT_INSERT:
 	{
 		emit_send_insert(self, start);
+		self->sends++;
 		return;
 	}
 
@@ -323,6 +326,7 @@ emit_send(Compiler* self, int start)
 		// CSEND_ALL
 		op3(self, CSEND_ALL, stmt->order, start, (intptr_t)table);
 	}
+	self->sends++;
 }
 
 static inline void
@@ -531,10 +535,7 @@ compiler_program(Compiler* self, Program* program)
 	program->code_backend = &self->code_backend;
 	program->code_data    = &self->code_data;
 	program->access       = &self->access;
-	program->stmts        = self->parser.stmt_list.count;
-	program->stmts_last   = -1;
+	program->sends        = self->sends;
 	program->snapshot     = self->snapshot;
 	program->repl         = false;
-	if (self->last)
-		program->stmts_last = self->last->order;
 }

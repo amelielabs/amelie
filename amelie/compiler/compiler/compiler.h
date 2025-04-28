@@ -24,6 +24,7 @@ struct Compiler
 	Access   access;
 	SetCache values_cache;
 	Columns* args;
+	int      sends;
 	bool     snapshot;
 	Stmt*    current;
 	Stmt*    last;

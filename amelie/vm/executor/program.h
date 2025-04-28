@@ -19,8 +19,7 @@ struct Program
 	Code*     code_backend;
 	CodeData* code_data;
 	Access*   access;
-	int       stmts;
-	int       stmts_last;
+	int       sends;
 	bool      snapshot;
 	bool      repl;
 };
@@ -29,5 +28,4 @@ static inline void
 program_init(Program* self)
 {
 	memset(self, 0, sizeof(*self));
-	self->stmts_last = -1;
 }

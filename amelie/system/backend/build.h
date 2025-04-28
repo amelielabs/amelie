@@ -25,18 +25,19 @@ typedef enum
 struct Build
 {
 	BuildType    type;
+	Dtr          dtr;
+	Local        local;
 	Table*       table;
 	Table*       table_new;
 	Column*      column;
 	IndexConfig* index;
 	BackendMgr*  backend_mgr;
-	Channel      channel;
 };
 
 void build_init(Build*, BuildType, BackendMgr*, Table*, Table*,
                 Column*, IndexConfig*);
 void build_free(Build*);
 void build_run(Build*);
-void build_execute(Build*, Route*);
+void build_execute(Build*, Core*);
 
 extern RecoverIf build_if;

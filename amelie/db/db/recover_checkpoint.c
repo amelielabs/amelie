@@ -59,7 +59,7 @@ recover_partition(Part* self)
 }
 
 hot void
-recover_checkpoint(Db* self, Route* route)
+recover_checkpoint(Db* self, Core* core)
 {
 	list_foreach(&self->table_mgr.mgr.list)
 	{
@@ -67,7 +67,7 @@ recover_checkpoint(Db* self, Route* route)
 		list_foreach(&table->part_list.list)
 		{
 			auto part = list_at(Part, link);
-			if (part->route == route)
+			if (part->core == core)
 				recover_partition(part);
 		}
 	}

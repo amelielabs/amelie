@@ -45,7 +45,7 @@ static void
 replay_read(Share* share, Dtr* dtr, ReqList* req_list, Record* record)
 {
 	// redistribute rows between backends
-	Req* map[share->backend_mgr->workers_count];
+	Req* map[dtr->core_mgr->cores_count];
 	memset(map, 0, sizeof(map));
 
 	// replay transaction log record
@@ -57,14 +57,15 @@ replay_read(Share* share, Dtr* dtr, ReqList* req_list, Record* record)
 		auto part = part_mgr_find(&share->db->part_mgr, cmd->partition);
 		if (! part)
 			error("failed to find partition %" PRIu64, cmd->partition);
-		auto route = part->route;
-		auto req = map[route->order];
+		auto core = part->core;
+		auto req = map[core->order];
 		if (req == NULL)
 		{
-			req = req_create(&dtr->req_cache, REQ_REPLAY);
-			req->route = route;
+			req = req_create(&dtr->dispatch_mgr.req_cache);
+			req->type = REQ_REPLAY;
+			req->core = core;
 			req_list_add(req_list, req);
-			map[route->order] = req;
+			map[core->order] = req;
 		}
 
 		// [cmd, pos]
@@ -83,28 +84,29 @@ replay(Share* share, Dtr* dtr, Record* record)
 	// while in read-only mode
 	Program program;
 	program_init(&program);
-	program.stmts      = 1;
-	program.stmts_last = 0;
-	program.repl       = true;
+	program.sends = 1;
+	program.repl  = true;
 
 	dtr_reset(dtr);
-	dtr_create(dtr, &program, NULL, NULL);
+	dtr_create(dtr, &program, NULL);
 
 	ReqList req_list;
 	req_list_init(&req_list);
-	defer(req_list_free, &req_list);
 
 	auto executor = share->executor;
 	auto on_error = error_catch
 	(
 		replay_read(share, dtr, &req_list, record);
 
-		executor_send(executor, dtr, 0, &req_list);
-		executor_recv(executor, dtr, 0);
+		executor_send(executor, dtr, &req_list);
+		executor_recv(executor, dtr);
 	);
 	Buf* error = NULL;
 	if (on_error)
+	{
 		error = msg_error(&am_self()->error);
+		req_cache_push_list(&dtr->dispatch_mgr.req_cache, &req_list);
+	}
 
 	executor_commit(executor, dtr, error);
 }

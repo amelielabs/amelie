@@ -15,12 +15,10 @@ typedef struct Backend Backend;
 
 struct Backend
 {
-	Vm      vm;
-	TrList  prepared;
-	TrCache cache;
-	Route   route;
-	Task    task;
-	List    link;
+	Vm   vm;
+	Core core;
+	Task task;
+	List link;
 };
 
 Backend*

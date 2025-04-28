@@ -40,7 +40,7 @@
 void
 vm_init(Vm*          self,
         Db*          db,
-        Route*       backend,
+        Core*        core,
         Executor*    executor,
         Dtr*         dtr,
         FunctionMgr* function_mgr)
@@ -50,7 +50,7 @@ vm_init(Vm*          self,
 	self->code_data    = NULL;
 	self->code_arg     = NULL;
 	self->args         = NULL;
-	self->backend      = backend;
+	self->core         = core;
 	self->executor     = executor;
 	self->dtr          = dtr;
 	self->result       = NULL;

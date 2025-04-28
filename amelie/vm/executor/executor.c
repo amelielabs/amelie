@@ -33,23 +33,24 @@
 #include <amelie_executor.h>
 
 void
-executor_init(Executor* self, Db* db, Router* router)
+executor_init(Executor* self, Db* db, CoreMgr* core_mgr)
 {
-	self->db              = db;
-	self->router          = router;
+	self->id              = 1;
 	self->list_count      = 0;
 	self->list_wait_count = 0;
+	self->core_mgr        = core_mgr;
+	self->db              = db;
+	prepare_init(&self->prepare);
 	list_init(&self->list);
 	list_init(&self->list_wait);
-	prepare_init(&self->prepare);
 	spinlock_init(&self->lock);
 }
 
 void
 executor_free(Executor* self)
 {
-	prepare_free(&self->prepare);
 	spinlock_free(&self->lock);
+	prepare_free(&self->prepare);
 }
 
 hot static inline void
@@ -77,52 +78,56 @@ restart:
 }
 
 hot void
-executor_send(Executor* self, Dtr* dtr, int stmt, ReqList* list)
+executor_send(Executor* self, Dtr* dtr, ReqList* list)
 {
-	auto first = !dtr->dispatch.sent;
+	auto dispatch_mgr = &dtr->dispatch_mgr;
+	auto first = dispatch_mgr_is_first(dispatch_mgr);
 
-	// put requests into pipes per backend
-	dtr_send(dtr, stmt, list);
+	// start local transactions and queue requests for execution
+	dtr_send(dtr, list);
 
 	// register transaction and begin execution
 	if (first)
 	{
 		spinlock_lock(&self->lock);
 
-		// process transaction locking
+		// process exclusive transaction locking
 		executor_lock(self, dtr);
 
+		// register transaction
 		dtr_set_state(dtr, DTR_BEGIN);
-
-		// add transaction to the executor list
+		dtr->id = self->id++;
 		list_append(&self->list, &dtr->link);
 		self->list_count++;
 
-		// send BEGIN to the related backends
-		pipe_set_begin(&dtr->set);
+		// begin execution
+		for (auto order = 0; order < dispatch_mgr->ctrs_count; order++)
+		{
+			auto ctr = dispatch_mgr_ctr(dispatch_mgr, order);
+			if (ctr->state == CTR_ACTIVE)
+				core_add(ctr->core, ctr);
+		}
+
 		spinlock_unlock(&self->lock);
 	}
 }
 
 hot void
-executor_recv(Executor* self, Dtr* dtr, int stmt)
+executor_recv(Executor* self, Dtr* dtr)
 {
 	unused(self);
-	// OK or ABORT
-	dtr_recv(dtr, stmt);
+	dtr_recv(dtr);
 }
 
 hot static void
 executor_prepare(Executor* self, bool abort)
 {
 	auto prepare = &self->prepare;
-	prepare_reset(prepare);
-	prepare_prepare(prepare, self->router->routes_count);
+	prepare_reset(prepare, self->core_mgr);
 
-	// get a list of last completed local transactions per backend
 	if (unlikely(abort))
 	{
-		// abort all currently active transactions
+		// add all currently active transactions for abort
 		list_foreach(&self->list)
 		{
 			auto dtr = list_at(Dtr, link);
@@ -144,27 +149,33 @@ executor_prepare(Executor* self, bool abort)
 hot static void
 executor_end(Executor* self, DtrState state)
 {
-	// for each backend, send last prepared Trx*
 	auto prepare = &self->prepare;
-	if (state == DTR_COMMIT)
-	{
-		// RPC_COMMIT
-		pipe_set_commit(&prepare->set);
-	} else
+	if (unlikely(state == DTR_ABORT))
 	{
 		executor_prepare(self, true);
 
-		// RPC_ABORT
-		pipe_set_abort(&prepare->set);
+		// abort each involved core
+		auto cores = (Core**)prepare->cores.start;
+		for (auto order = 0; order < self->core_mgr->cores_count; order++)
+			if (cores[order])
+				core_abort(cores[order]);
+
+	} else
+	{
+		// commit each involved core
+		auto cores = (Core**)prepare->cores.start;
+		for (auto order = 0; order < self->core_mgr->cores_count; order++)
+			if (cores[order])
+				core_commit(cores[order], prepare->id_max);
 	}
 
-	// finilize transactions
+	// finilize distributed transactions
 	list_foreach(&prepare->list)
 	{
 		auto dtr = list_at(Dtr, link_prepare);
 
 		// update state
-		auto dtr_state = dtr->state;
+		auto tr_state = dtr->state;
 		dtr_set_state(dtr, state);
 
 		// remove transaction from the executor
@@ -172,8 +183,8 @@ executor_end(Executor* self, DtrState state)
 		self->list_count--;
 
 		// wakeup
-		if (dtr_state == DTR_PREPARE ||
-		    dtr_state == DTR_ERROR)
+		if (tr_state == DTR_PREPARE ||
+		    tr_state == DTR_ERROR)
 			event_signal(&dtr->on_commit);
 	}
 
@@ -200,26 +211,24 @@ executor_end(Executor* self, DtrState state)
 hot static void
 executor_wal_write(Executor* self)
 {
-	// prepare a list of a finilized wal records
+	// prepare a list of a prepared wal records
 	auto prepare = &self->prepare;
-	auto write_list = &prepare->write_list;
+	auto write_list = &prepare->write;
 	list_foreach(&prepare->list)
 	{
-		auto dtr   = list_at(Dtr, link_prepare);
-		auto set   = &dtr->set;
-		auto write = &dtr->write;
+		auto dtr          = list_at(Dtr, link_prepare);
+		auto dispatch_mgr = &dtr->dispatch_mgr;
+		auto write        = &dtr->write;
 		write_reset(write);
 		write_begin(write);
-		for (int i = 0; i < set->set_size; i++)
+		for (int i = 0; i < dispatch_mgr->ctrs_count; i++)
 		{
-			auto pipe = pipe_set_get(set, i);
-			if (pipe == NULL)
+			auto ctr = dispatch_mgr_ctr(dispatch_mgr, i);
+			if (ctr->state == CTR_NONE)
 				continue;
-			assert(pipe->state == PIPE_CLOSE);
-			assert(pipe->tr);
-			if (tr_read_only(pipe->tr))
+			if (ctr->tr == NULL || tr_read_only(ctr->tr))
 				continue;
-			write_add(write, &pipe->tr->log.write_log);
+			write_add(write, &ctr->tr->log.write_log);
 		}
 		if (write->header.count > 0)
 		{
@@ -238,10 +247,10 @@ executor_wal_write(Executor* self)
 hot void
 executor_commit(Executor* self, Dtr* dtr, Buf* error)
 {
-	// shutdown pipes if there are any left open,
+	// finilize any core transactions that are still active,
 	// this can happen because of error or by premature
 	// return statement
-	dtr_shutdown(dtr);
+	dispatch_mgr_shutdown(&dtr->dispatch_mgr);
 
 	for (;;)
 	{
@@ -305,7 +314,7 @@ executor_commit(Executor* self, Dtr* dtr, Buf* error)
 		// prepare for group commit and wal write
 
 		// get a list of completed distributed transactions (one or more) and
-		// a list of last executed transactions per backend
+		// a list of last executed transactions per core
 		executor_prepare(self, false);
 		spinlock_unlock(&self->lock);
 

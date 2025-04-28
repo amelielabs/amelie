@@ -41,11 +41,11 @@
 #include <amelie_frontend.h>
 #include <amelie_backend.h>
 
-static void
-backend_replay(Backend* self, Tr* tr, Req* req)
+hot static void
+backend_replay(Backend* self, Tr* tr, Buf* arg)
 {
 	auto db = self->vm.db;
-	for (auto pos = req->arg.start; pos < req->arg.position;)
+	for (auto pos = arg->start; pos < arg->position;)
 	{
 		// command
 		auto cmd = *(RecordCmd**)pos;
@@ -86,142 +86,108 @@ backend_replay(Backend* self, Tr* tr, Req* req)
 	}
 }
 
-hot static inline void
-backend_execute(Backend* self, Tr* tr, Req* req)
+hot static void
+backend_run(Backend* self, Ctr* ctr, Req* req)
 {
-	tr_set_limit(tr, req->limit);
-	vm_reset(&self->vm);
-	vm_run(&self->vm, req->local,
-	        tr,
-	        req->program->code_backend,
-	        req->program->code_data,
-	       &req->arg,
-	        req->regs,
-	        req->args,
-	       &req->result,
-	        NULL,
-	        req->start);
-}
-
-hot static inline void
-backend_req(Backend* self, Tr* tr, Req* req)
-{
+	auto dtr = ctr->dtr;
 	switch (req->type) {
 	case REQ_EXECUTE:
-		backend_execute(self, tr, req);
+	{
+		// create and add transaction to the prepared list (even on error)
+		if (ctr->tr == NULL)
+		{
+			auto tr = tr_create(&self->core.cache);
+			tr_begin(tr);
+			tr_set_id(tr, dtr->id);
+			tr_set_limit(tr, &dtr->limit);
+			tr_list_add(&self->core.prepared, tr);
+			ctr->tr = tr;
+		}
+
+		// execute request
+		vm_reset(&self->vm);
+		vm_run(&self->vm, dtr->local,
+		        ctr->tr,
+		        dtr->program->code_backend,
+		        dtr->program->code_data,
+		       &req->arg,
+		        dtr->regs,
+		        NULL,
+		       &req->result,
+		        NULL,
+		        req->start);
 		break;
+	}
 	case REQ_REPLAY:
-		backend_replay(self, tr, req);
+	{
+		// create and add transaction to the prepared list (even on error)
+		if (ctr->tr == NULL)
+		{
+			auto tr = tr_create(&self->core.cache);
+			tr_begin(tr);
+			tr_set_id(tr, dtr->id);
+			tr_set_limit(tr, &dtr->limit);
+			tr_list_add(&self->core.prepared, tr);
+			ctr->tr = tr;
+		}
+
+		// replay commands
+		backend_replay(self, ctr->tr, &req->arg);
 		break;
-	case REQ_SHUTDOWN:
+	}
+	case REQ_SYNC:
+		// do nothing, used to process commit/abort
 		break;
-	default:
+	case REQ_BUILD:
+	{
+		auto build = *(Build**)req->arg.start;
+		build_execute(build, &self->core);
 		break;
+	}
 	}
 }
 
 hot static void
-backend_process(Backend* self, Pipe* pipe)
+backend_process(Backend* self, Ctr* ctr)
 {
-	auto tr = tr_create(&self->cache);
-	tr_begin(tr);
-
-	// read pipe and execute requests
-	pipe->tr = tr;
+	auto queue = &ctr->queue;
 	for (;;)
 	{
-		auto req = req_queue_pop(&pipe->queue);
-		assert(req);
-
-		// execute request
-		auto on_error = error_catch( backend_req(self, tr, req) );
-
-		// MSG_READY on pipe completion
-		// MSG_ERROR on pipe completion with error
-		// MSG_OK on execution
-		auto is_last = req->shutdown;
-		Buf* buf;
-		if (on_error) {
-			buf = msg_error(&am_self()->error);
-		} else
-		{
-			int id;
-			if (is_last)
-				id = MSG_READY;
-			else
-				id = MSG_OK;
-			buf = msg_create(id);
-			msg_end(buf);
-		}
-		channel_write(&pipe->src, buf);
-
-		if (is_last || on_error)
+		auto req = req_queue_pop(queue);
+		if (! req)
 			break;
+		if (error_catch(backend_run(self, ctr, req)))
+			req->error = msg_error(&am_self()->error);
+		req_complete(req);
 	}
-
-	// add transaction to the prepared list (even on error)
-	tr_list_add(&self->prepared, tr);
-}
-
-static void
-backend_rpc(Rpc* rpc, void* arg)
-{
-	Backend* self = arg;
-	switch (rpc->id) {
-	case RPC_SYNC:
-		// do nothing, just respond
-		break;
-	case RPC_STOP:
-		unused(self);
-		vm_reset(&self->vm);
-		break;
-	default:
-		break;
-	}
+	ctr_complete(ctr);
 }
 
 static void
 backend_main(void* arg)
 {
 	Backend* self = arg;
-	for (;;)
+	auto core = &self->core;
+	for (auto active = true; active;)
 	{
-		auto buf = channel_read(&am_task->channel, -1);
-		auto msg = msg_of(buf);
-		defer_buf(buf);
-
-		switch (msg->id) {
-		case RPC_BEGIN:
-			backend_process(self, pipe_of(buf));
+		CoreEvent core_event;
+		switch (core_next(core, &core_event)) {
+		case CORE_SHUTDOWN:
+			active = false;
 			break;
-		case RPC_COMMIT:
-		{
-			// commit all prepared transaction till the last one
-			tr_commit_list(&self->prepared, &self->cache, tr_of(buf));
+		case CORE_RUN:
+			// accept and process incoming core transaction
+			backend_process(self, core_event.ctr);
 			break;
-		}
-		case RPC_ABORT:
-		{
+		case CORE_COMMIT:
+			// commit all transaction <= commit id
+			tr_commit_list(&core->prepared, &core->cache, core_event.commit);
+			break;
+		case CORE_ABORT:
 			// abort all prepared transactions
-			tr_abort_list(&self->prepared, &self->cache);
+			tr_abort_list(&core->prepared, &core->cache);
 			break;
 		}
-		case RPC_BUILD:
-		{
-			auto build = *(Build**)msg->data;
-			build_execute(build, &self->route);
-			break;
-		}
-		default:
-		{
-			auto rpc = rpc_of(buf);
-			rpc_execute(rpc, backend_rpc, self);
-			break;
-		}
-		}
-
-		if (msg->id == RPC_STOP)
-			break;
 	}
 }
 
@@ -229,13 +195,10 @@ Backend*
 backend_allocate(Db* db, FunctionMgr* function_mgr, int order)
 {
 	auto self = (Backend*)am_malloc(sizeof(Backend));
-	route_init(&self->route, &self->task.channel, order);
-	tr_list_init(&self->prepared);
-	tr_cache_init(&self->cache);
-	list_init(&self->link);
-	vm_init(&self->vm, db, NULL, NULL, NULL, function_mgr);
-	self->vm.backend = &self->route;
+	core_init(&self->core, order);
+	vm_init(&self->vm, db, &self->core, NULL, NULL, function_mgr);
 	task_init(&self->task);
+	list_init(&self->link);
 	return self;
 }
 
@@ -243,7 +206,7 @@ void
 backend_free(Backend* self)
 {
 	vm_free(&self->vm);
-	tr_cache_free(&self->cache);
+	core_free(&self->core);
 	am_free(self);
 }
 
@@ -259,7 +222,7 @@ backend_stop(Backend* self)
 	// send stop request
 	if (task_active(&self->task))
 	{
-		rpc(&self->task.channel, RPC_STOP, 0);
+		core_shutdown(&self->core);
 		task_wait(&self->task);
 		task_free(&self->task);
 		task_init(&self->task);
@@ -269,5 +232,5 @@ backend_stop(Backend* self)
 void
 backend_sync(Backend* self)
 {
-	rpc(&self->task.channel, RPC_SYNC, 0);
+	(void)self;
 }

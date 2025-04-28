@@ -16,17 +16,18 @@ typedef struct Executor Executor;
 struct Executor
 {
 	Spinlock lock;
+	uint64_t id;
 	int      list_count;
 	List     list;
 	int      list_wait_count;
 	List     list_wait;
 	Prepare  prepare;
-	Router*  router;
+	CoreMgr* core_mgr;
 	Db*      db;
 };
 
-void executor_init(Executor*, Db*, Router*);
+void executor_init(Executor*, Db*, CoreMgr*);
 void executor_free(Executor*);
-void executor_send(Executor*, Dtr*, int, ReqList*);
-void executor_recv(Executor*, Dtr*, int);
+void executor_send(Executor*, Dtr*, ReqList*);
+void executor_recv(Executor*, Dtr*);
 void executor_commit(Executor*, Dtr*, Buf*);

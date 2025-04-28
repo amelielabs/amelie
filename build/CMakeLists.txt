@@ -27,7 +27,7 @@ project(amelie C)
 # compiler options
 set(CMAKE_C_COMPILER "clang")
 if ("${CMAKE_BUILD_TYPE}" STREQUAL "Release")
-	set(CMAKE_C_FLAGS "-Werror -Wall -Wextra -fPIC -g -O2 -DNDEBUG")
+	set(CMAKE_C_FLAGS "-Werror -Wall -Wextra -fPIC -g -O3 -DNDEBUG")
 elseif("${CMAKE_BUILD_TYPE}" STREQUAL "Debug")
 	set(CMAKE_C_FLAGS "-Werror -Wall -Wextra -fPIC -g -O0")
 endif()

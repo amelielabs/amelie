@@ -46,7 +46,7 @@ csend_shard(Vm* self, Op* op)
 	auto keys  = table_keys(table);
 
 	// redistribute rows between backends
-	Req* map[dtr->set.set_size];
+	Req* map[dtr->dispatch_mgr.ctrs_count];
 	memset(map, 0, sizeof(map));
 
 	ReqList list;
@@ -61,14 +61,15 @@ csend_shard(Vm* self, Op* op)
 			auto row  = set_row(set, order);
 			auto hash = row_value_hash(keys, row);
 			auto part = part_map_get(&table->part_list.map, hash);
-			auto req  = map[part->route->order];
+			auto req  = map[part->core->order];
 			if (req == NULL)
 			{
-				req = req_create(&dtr->req_cache, REQ_EXECUTE);
+				req = req_create(&dtr->dispatch_mgr.req_cache);
+				req->type  = REQ_EXECUTE;
 				req->start = op->b;
-				req->route = part->route;
+				req->core  = part->core;
 				req_list_add(&list, req);
-				map[req->route->order] = req;
+				map[part->core->order] = req;
 			}
 			buf_write(&req->arg, &row, sizeof(Value*));
 		}
@@ -81,20 +82,21 @@ csend_shard(Vm* self, Op* op)
 		{
 			auto hash = row_value_hash(keys, row);
 			auto part = part_map_get(&table->part_list.map, hash);
-			auto req  = map[part->route->order];
+			auto req  = map[part->core->order];
 			if (req == NULL)
 			{
-				req = req_create(&dtr->req_cache, REQ_EXECUTE);
+				req = req_create(&dtr->dispatch_mgr.req_cache);
+				req->type  = REQ_EXECUTE;
 				req->start = op->b;
-				req->route = part->route;
+				req->core  = part->core;
 				req_list_add(&list, req);
-				map[req->route->order] = req;
+				map[part->core->order] = req;
 			}
 			buf_write(&req->arg, &row, sizeof(Value*));
 		}
 	}
 
-	executor_send(self->executor, dtr, op->a, &list);
+	executor_send(self->executor, dtr, &list);
 	value_free(reg_at(&self->r, op->d));
 }
 
@@ -109,12 +111,13 @@ csend_lookup(Vm* self, Op* op)
 	ReqList list;
 	req_list_init(&list);
 	auto part = part_map_get(&table->part_list.map, op->d);
-	auto req = req_create(&dtr->req_cache, REQ_EXECUTE);
+	auto req = req_create(&dtr->dispatch_mgr.req_cache);
+	req->type  = REQ_EXECUTE;
 	req->start = op->b;
-	req->route = part->route;
+	req->core  = part->core;
 	req_list_add(&list, req);
 
-	executor_send(self->executor, dtr, op->a, &list);
+	executor_send(self->executor, dtr, &list);
 }
 
 hot void
@@ -129,21 +132,23 @@ csend_all(Vm* self, Op* op)
 	req_list_init(&list);
 	list_foreach(&table->part_list.list)
 	{
-		auto part  = list_at(Part, link);
-		auto req = req_create(&dtr->req_cache, REQ_EXECUTE);
-		req->route = part->route;
+		auto part = list_at(Part, link);
+		auto req = req_create(&dtr->dispatch_mgr.req_cache);
+		req->type  = REQ_EXECUTE;
 		req->start = op->b;
+		req->core  = part->core;
 		req_list_add(&list, req);
 	}
 
-	executor_send(self->executor, dtr, op->a, &list);
+	executor_send(self->executor, dtr, &list);
 }
 
 hot void
 crecv(Vm* self, Op* op)
 {
 	// [stmt]
-	executor_recv(self->executor, self->dtr, op->a);
+	unused(op);
+	executor_recv(self->executor, self->dtr);
 }
 
 hot void
@@ -222,11 +227,12 @@ cunion_recv(Vm* self, Op* op)
 	auto ref = union_create(distinct, limit, offset);
 	value_set_store(reg_at(&self->r, op->a), &ref->store);
 
-	// add result sets to the union
-	auto stmt = dispatch_stmt(&self->dtr->dispatch, op->d);
-	list_foreach(&stmt->req_list.list)
+	// add result sets from the last recv to the union
+	auto dispatch_mgr = &self->dtr->dispatch_mgr;
+	auto dispatch = dispatch_mgr_dispatch(dispatch_mgr, dispatch_mgr->list_processed - 1);
+	for (auto i = 0; i < dispatch->count; i++)
 	{
-		auto req = list_at(Req, link);
+		auto req = dispatch_mgr_req(dispatch_mgr, dispatch->offset + i);
 		auto value = &req->result;
 		if (value->type == TYPE_STORE)
 		{
@@ -294,7 +300,7 @@ ctable_open(Vm* self, Op* op, bool point_lookup, bool open_part)
 
 	// open cursor
 	if (open_part)
-		cursor->part = part_list_match(&table->part_list, self->backend);
+		cursor->part = part_list_match(&table->part_list, self->core);
 	else
 		cursor->part = NULL;
 	cursor->it    = part_list_iterator(&table->part_list, cursor->part, index, point_lookup, key_ref);
@@ -324,7 +330,7 @@ ctable_open_heap(Vm* self, Op* op)
 
 	// find table and partition
 	auto table = table_mgr_find(&self->db->table_mgr, &name_schema, &name_table, true);
-	auto part  = part_list_match(&table->part_list, self->backend);
+	auto part  = part_list_match(&table->part_list, self->core);
 
 	// open cursor
 	cursor->type  = CURSOR_TABLE;
@@ -353,7 +359,7 @@ ctable_prepare(Vm* self, Op* op)
 	// prepare cursor and primary index iterator for related partition
 	cursor->type  = CURSOR_TABLE;
 	cursor->table = table;
-	cursor->part  = part_list_match(&table->part_list, self->backend);
+	cursor->part  = part_list_match(&table->part_list, self->core);
 	cursor->it    = index_iterator(part_primary(cursor->part));
 }
 
@@ -364,7 +370,7 @@ cinsert(Vm* self, Op* op)
 
 	// find related table partition
 	auto table   = (Table*)op->a;
-	auto part    = part_list_match(&table->part_list, self->backend);
+	auto part    = part_list_match(&table->part_list, self->core);
 	auto columns = table_columns(table);
 
 	// insert

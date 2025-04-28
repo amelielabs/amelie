@@ -17,7 +17,8 @@ struct BackendMgr
 {
 	Backend**    workers;
 	int          workers_count;
-	Router       router;
+	CoreMgr      core_mgr;
+	Executor*    executor;
 	FunctionMgr* function_mgr;
 	Db*          db;
 };
@@ -25,13 +26,15 @@ struct BackendMgr
 static inline void
 backend_mgr_init(BackendMgr*  self,
                  Db*          db,
+                 Executor*    executor,
                  FunctionMgr* function_mgr)
 {
 	self->workers       = NULL;
 	self->workers_count = 0;
+	self->executor      = executor;
 	self->function_mgr  = function_mgr;
 	self->db            = db;
-	router_init(&self->router);
+	core_mgr_init(&self->core_mgr);
 }
 
 static inline void
@@ -41,20 +44,20 @@ backend_mgr_ensure(BackendMgr* self, int count)
 		return;
 
 	auto workers = (Backend**)am_malloc(sizeof(Backend*) * count);
-	Router router;
-	router_init(&router);
-	router_allocate(&router, count);
+	CoreMgr core_mgr;
+	core_mgr_init(&core_mgr);
+	core_mgr_allocate(&core_mgr, count);
 	int i = 0;
 	for (; i < self->workers_count; i++)
 	{
 		workers[i] = self->workers[i];
-		router.routes[i] = &workers[i]->route;
+		core_mgr.cores[i] = &workers[i]->core;
 	}
 	auto start = i;
 	for (; i < count; i++)
 	{
 		workers[i] = backend_allocate(self->db, self->function_mgr, i);
-		router.routes[i] = &workers[i]->route;
+		core_mgr.cores[i] = &workers[i]->core;
 	}
 
 	auto on_error = error_catch(
@@ -70,7 +73,7 @@ backend_mgr_ensure(BackendMgr* self, int count)
 			backend_stop(workers[i]);
 			backend_free(workers[i]);
 		}
-		router_free(&router);
+		core_mgr_free(&core_mgr);
 		am_free(workers);
 		rethrow();
 	}
@@ -80,8 +83,8 @@ backend_mgr_ensure(BackendMgr* self, int count)
 	self->workers_count = count;
 	self->workers       = workers;
 
-	router_free(&self->router);
-	self->router = router;
+	core_mgr_free(&self->core_mgr);
+	self->core_mgr = core_mgr;
 
 	// set backends
 	opt_int_set(&config()->backends, count);
@@ -99,7 +102,7 @@ backend_mgr_stop(BackendMgr* self)
 	}
 	am_free(self->workers);
 	self->workers = NULL;
-	router_free(&self->router);
+	core_mgr_free(&self->core_mgr);
 }
 
 static inline void

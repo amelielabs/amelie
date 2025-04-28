@@ -11,48 +11,40 @@
 // AGPL-3.0 Licensed.
 //
 
-typedef struct Req Req;
+typedef struct Req      Req;
+typedef struct ReqCache ReqCache;
+typedef struct Core     Core;
 
-typedef enum
+enum
 {
-	REQ_UNDEF,
 	REQ_EXECUTE,
 	REQ_REPLAY,
-	REQ_SHUTDOWN
-} ReqType;
+	REQ_SYNC,
+	REQ_BUILD
+};
 
 struct Req
 {
-	ReqType  type;
-	int      start;
-	Program* program;
-	Reg*     regs;
-	Buf*     args;
-	Buf      arg;
-	Table*   arg_table;
-	Value    result;
-	bool     shutdown;
-	Route*   route;
-	Limit*   limit;
-	Local*   local;
-	List     link_queue;
-	List     link;
+	int   type;
+	int   start;
+	Buf   arg;
+	Value result;
+	Buf*  error;
+	Event complete;
+	Core* core;
+	List  link_queue;
+	List  link;
 };
 
 static inline Req*
 req_allocate(void)
 {
 	auto self = (Req*)am_malloc(sizeof(Req));
-	self->type      = REQ_UNDEF;
-	self->start     = 0;
-	self->program   = NULL;
-	self->regs      = NULL;
-	self->args      = NULL;
-	self->arg_table = NULL;
-	self->shutdown  = false;
-	self->route     = NULL;
-	self->limit     = NULL;
-	self->local     = NULL;
+	self->type  = 0;
+	self->start = 0;
+	self->error = NULL;
+	self->core  = NULL;
+	event_init(&self->complete);
 	buf_init(&self->arg);
 	value_init(&self->result);
 	list_init(&self->link_queue);
@@ -61,8 +53,10 @@ req_allocate(void)
 }
 
 static inline void
-req_free(Req* self)
+req_free_memory(Req* self)
 {
+	if (self->error)
+		buf_free(self->error);
 	buf_free(&self->arg);
 	value_free(&self->result);
 	am_free(self);
@@ -71,39 +65,32 @@ req_free(Req* self)
 static inline void
 req_reset(Req* self)
 {
-	self->type      = REQ_UNDEF;
-	self->start     = 0;
-	self->program   = NULL;
-	self->regs      = NULL;
-	self->args      = NULL;
-	self->arg_table = NULL;
-	self->shutdown  = false;
-	self->route     = NULL;
-	self->limit     = NULL;
-	self->local     = NULL;
+	if (self->error)
+	{
+		buf_free(self->error);
+		self->error = NULL;
+	}
+	self->type  = 0;
+	self->start = 0;
+	self->core  = NULL;
 	buf_reset(&self->arg);
 	value_free(&self->result);
-	list_init(&self->link_queue);
-	list_init(&self->link);
 }
 
 static inline void
-req_set(Req*     self,
-        Local*   local,
-        Program* program,
-        Reg*     regs,
-        Buf*     args,
-        Limit*   limit)
+req_attach(Req* self)
 {
-	self->local   = local;
-	self->program = program;
-	self->regs    = regs;
-	self->args    = args;
-	self->limit   = limit;
+	event_attach(&self->complete);
 }
 
-always_inline static inline Req*
-req_of(Buf* buf)
+static inline void
+req_detach(Req* self)
 {
-	return *(Req**)msg_of(buf)->data;
+	event_detach(&self->complete);
+}
+
+static inline void
+req_complete(Req* self)
+{
+	event_signal(&self->complete);
 }

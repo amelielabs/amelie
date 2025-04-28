@@ -60,7 +60,7 @@ session_create(Client* client, Frontend* frontend, Share* share)
 	        &self->dtr,
 	        share->function_mgr);
 	compiler_init(&self->compiler, share->db, &self->local, share->function_mgr);
-	dtr_init(&self->dtr, &share->backend_mgr->router, &self->local);
+	dtr_init(&self->dtr, &self->local, &share->backend_mgr->core_mgr);
 	return self;
 }
 
@@ -157,7 +157,7 @@ session_execute_distributed(Session* self)
 	compiler_program(compiler, &program_compiled);
 
 	// prepare distributed transaction
-	dtr_create(dtr, program, &self->vm.r, NULL);
+	dtr_create(dtr, program, &self->vm.r);
 
 	// explain
 	if (compiler->parser.explain == EXPLAIN)

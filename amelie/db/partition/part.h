@@ -12,12 +12,13 @@
 //
 
 typedef struct Part Part;
+typedef struct Core Core;
 
 struct Part
 {
 	List          indexes;
 	int           indexes_count;
-	Route*        route;
+	Core*         core;
 	Sequence*     seq;
 	bool          unlogged;
 	Heap          heap;

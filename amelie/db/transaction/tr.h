@@ -15,18 +15,20 @@ typedef struct Tr Tr;
 
 struct Tr
 {
-	bool   active;
-	bool   aborted;
-	bool   allocated;
-	Log    log;
-	Limit* limit;
-	void*  arg;
-	List   link;
+	uint64_t id;
+	bool     active;
+	bool     aborted;
+	bool     allocated;
+	Log      log;
+	Limit*   limit;
+	void*    arg;
+	List     link;
 };
 
 static inline void
 tr_init(Tr* self)
 {
+	self->id        = 0;
 	self->active    = false;
 	self->aborted   = false;
 	self->allocated = false;
@@ -39,6 +41,7 @@ tr_init(Tr* self)
 static inline void
 tr_reset(Tr* self)
 {
+	self->id      = 0;
 	self->active  = false;
 	self->aborted = false;
 	self->limit   = NULL;
@@ -62,6 +65,12 @@ tr_free(Tr* self)
 	log_free(&self->log);
 	if (self->allocated)
 		am_free(self);
+}
+
+static inline void
+tr_set_id(Tr* self, uint64_t id)
+{
+	self->id = id;
 }
 
 static inline void
