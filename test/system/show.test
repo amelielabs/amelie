@@ -38,7 +38,7 @@ show table test
 show table test format 'json'
 
 # test: show functions
-create function test begin select 1 end
+create function test() begin select 1 end
 show functions
 
 # test: show function

@@ -41,7 +41,8 @@
 static void
 parse_function_args(Stmt* self, AstFunctionCreate* stmt)
 {
-	// )
+	// ()
+	stmt_expect(self, '(');
 	if (stmt_if(self, ')'))
 		return;
 
@@ -101,8 +102,7 @@ parse_function_create(Stmt* self, bool or_replace)
 	udf_config_set_name(stmt->config, &name);
 
 	// (args)
-	if (stmt_if(self, '('))
-		parse_function_args(self, stmt);
+	parse_function_args(self, stmt);
 
 	// BEGIN
 	stmt_expect(self, KBEGIN);

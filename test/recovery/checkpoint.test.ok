@@ -124,13 +124,26 @@ select identity_of("test", "test")
 select * from test.test
 [0, 1, 2]
 # test: create function
-create function test begin select 1 end
+create function test(arg int) begin select 1 end
 show functions
 [{
   "schema": "public",
   "name": "test",
   "text": "select 1",
-  "columns": []
+  "columns": [{
+    "name": "arg",
+    "type": 2,
+    "type_size": 4,
+    "constraints": {
+      "not_null": false,
+      "random": false,
+      "random_modulo": 9223372036854775807,
+      "default": null,
+      "as_identity": false,
+      "as_stored": "",
+      "as_resolved": ""
+    }
+  }]
 }]
 select system.state().lsn
 [6]
@@ -144,7 +157,20 @@ show functions
   "schema": "public",
   "name": "test",
   "text": "select 1",
-  "columns": []
+  "columns": [{
+    "name": "arg",
+    "type": 2,
+    "type_size": 4,
+    "constraints": {
+      "not_null": false,
+      "random": false,
+      "random_modulo": 9223372036854775807,
+      "default": null,
+      "as_identity": false,
+      "as_stored": "",
+      "as_resolved": ""
+    }
+  }]
 }]
 # test: checkpoint
 checkpoint
@@ -162,7 +188,20 @@ show functions
   "schema": "public",
   "name": "test",
   "text": "select 1",
-  "columns": []
+  "columns": [{
+    "name": "arg",
+    "type": 2,
+    "type_size": 4,
+    "constraints": {
+      "not_null": false,
+      "random": false,
+      "random_modulo": 9223372036854775807,
+      "default": null,
+      "as_identity": false,
+      "as_stored": "",
+      "as_resolved": ""
+    }
+  }]
 }]
 disconnect S0
 close E0

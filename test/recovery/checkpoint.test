@@ -94,7 +94,7 @@ select identity_of("test", "test")
 select * from test.test
 
 # test: create function
-create function test begin select 1 end
+create function test(arg int) begin select 1 end
 show functions
 select system.state().lsn
 

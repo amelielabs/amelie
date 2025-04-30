@@ -70,7 +70,7 @@ show table test
 show table test format 'json'
 [{"schema": "public", "name": "test", "unlogged": false}]
 # test: show functions
-create function test begin select 1 end
+create function test() begin select 1 end
 show functions
 [{
   "schema": "public",

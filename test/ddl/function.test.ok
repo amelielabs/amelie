@@ -20,11 +20,11 @@ create or replace 123
 create or replace function
 {"msg": "create or replace function ⟵ name expected"}
 create function test
-{"msg": "create function test ⟵ BEGIN expected"}
+{"msg": "create function test ⟵ ( expected"}
 create function test 123
-{"msg": "create function test ❰123❱ ⟵ BEGIN expected"}
+{"msg": "create function test ❰123❱ ⟵ ( expected"}
 create function test.test
-{"msg": "create function test.test ⟵ BEGIN expected"}
+{"msg": "create function test.test ⟵ ( expected"}
 create function test (
 {"msg": "create function test ( ⟵ name expected"}
 create function test (a
@@ -46,9 +46,11 @@ create function test ()
 create function test () begin
 {"msg": "create function test () begin ⟵ END expected"}
 create function test begin
-{"msg": "create function test begin ⟵ END expected"}
+{"msg": "create function test ❰begin❱ ⟵ ( expected"}
+create function test () begin
+{"msg": "create function test () begin ⟵ END expected"}
 # test: create function
-create function test begin select 1 end
+create function test() begin select 1 end
 show functions
 [{
   "schema": "public",
@@ -57,14 +59,14 @@ show functions
   "columns": []
 }]
 # test: create function (already exists)
-create function test begin select 1 end
+create function test() begin select 1 end
 {"msg": "function 'test': already exists"}
 drop function test
 # test: create function (builtin already exists)
-create function `set` begin select 1 end
+create function `set`() begin select 1 end
 {"msg": "function 'set': already exists"}
 # test: create function (multi statement)
-create function test begin select 1; return select 1; end
+create function test() begin select 1; return select 1; end
 show functions
 [{
   "schema": "public",
@@ -73,7 +75,7 @@ show functions
   "columns": []
 }]
 # test: create function (no arguments)
-create function test () begin select 1 end
+create function test() begin select 1 end
 {"msg": "function 'test': already exists"}
 show functions
 [{
@@ -84,7 +86,7 @@ show functions
 }]
 drop function test
 # test: create function (arguments)
-create function test (a int) begin select 1 end
+create function test(a int) begin select 1 end
 show functions
 [{
   "schema": "public",
@@ -106,7 +108,7 @@ show functions
   }]
 }]
 drop function test
-create function test (a int, b text) begin select 1 end
+create function test(a int, b text) begin select 1 end
 show functions
 [{
   "schema": "public",
@@ -142,10 +144,10 @@ show functions
 }]
 drop function test
 # test: create function (ddl)
-create function test begin show lsn end
+create function test() begin show lsn end
 {"msg": "functions cannot contain utility commands"}
 # test: drop function statement parsing
-create function test begin select 1 end
+create function test() begin select 1 end
 drop function
 {"msg": "drop function ⟵ name expected"}
 drop function 123
@@ -180,7 +182,7 @@ alter function test rename to
 alter function test rename "hello"
 {"msg": "alter function test rename ❰\"hello\"❱ ⟵ name expected"}
 # test: alter function rename
-create function test begin select 1 end
+create function test() begin select 1 end
 select system.functions()
 [[{
   "schema": "public",

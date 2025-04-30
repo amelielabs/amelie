@@ -27,41 +27,42 @@ create function test (a int) begin
 create function test ()
 create function test () begin
 create function test begin
+create function test () begin
 
 # test: create function
-create function test begin select 1 end
+create function test() begin select 1 end
 show functions
 
 # test: create function (already exists)
-create function test begin select 1 end
+create function test() begin select 1 end
 drop function test
 
 # test: create function (builtin already exists)
-create function `set` begin select 1 end
+create function `set`() begin select 1 end
 
 # test: create function (multi statement)
-create function test begin select 1; return select 1; end
+create function test() begin select 1; return select 1; end
 show functions
 
 # test: create function (no arguments)
-create function test () begin select 1 end
+create function test() begin select 1 end
 show functions
 drop function test
 
 # test: create function (arguments)
-create function test (a int) begin select 1 end
+create function test(a int) begin select 1 end
 show functions
 drop function test
 
-create function test (a int, b text) begin select 1 end
+create function test(a int, b text) begin select 1 end
 show functions
 drop function test
 
 # test: create function (ddl)
-create function test begin show lsn end
+create function test() begin show lsn end
 
 # test: drop function statement parsing
-create function test begin select 1 end
+create function test() begin select 1 end
 drop function
 drop function 123
 drop function if
@@ -86,7 +87,7 @@ alter function test rename to
 alter function test rename "hello"
 
 # test: alter function rename
-create function test begin select 1 end
+create function test() begin select 1 end
 select system.functions()
 
 alter function test rename to test2
@@ -102,17 +103,6 @@ alter function test2 rename to test.test
 show function test.test
 drop function test.test
 show functions
-
-## test: create function (with ddl command)
-#create function test begin select 1; show all; end
-#show functions
-
-#create function test begin show all; end
-#show functions
-
-## test: create function (with arguments)
-#create function test (a int) begin return a; end
-#show functions
 
 disconnect S0
 close E0
