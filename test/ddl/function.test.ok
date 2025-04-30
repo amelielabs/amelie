@@ -140,7 +140,12 @@ show functions
     }
   }]
 }]
+drop function test
+# test: create function (ddl)
+create function test begin show lsn end
+{"msg": "functions cannot contain utility commands"}
 # test: drop function statement parsing
+create function test begin select 1 end
 drop function
 {"msg": "drop function ⟵ name expected"}
 drop function 123

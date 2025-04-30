@@ -55,8 +55,13 @@ drop function test
 
 create function test (a int, b text) begin select 1 end
 show functions
+drop function test
+
+# test: create function (ddl)
+create function test begin show lsn end
 
 # test: drop function statement parsing
+create function test begin select 1 end
 drop function
 drop function 123
 drop function if
