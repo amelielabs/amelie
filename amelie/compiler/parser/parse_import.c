@@ -254,8 +254,7 @@ parse_import(Parser* self, Str* str, Str* uri, EndpointType type)
 	auto stmt = stmt_allocate(self->db, self->function_mgr,
 	                          self->local,
 	                          &self->lex,
-	                           self->data,
-	                           self->access,
+	                           self->program,
 	                           self->values_cache,
 	                          &self->json,
 	                          &self->stmt_list,
@@ -279,7 +278,7 @@ parse_import(Parser* self, Str* str, Str* uri, EndpointType type)
 	target->from_columns = columns;
 	str_set_str(&target->name, &table->config->name);
 	targets_add(&insert->targets, target);
-	access_add(self->access, table, ACCESS_RW);
+	access_add(&self->program->access, table, ACCESS_RW);
 
 	// prepare result set
 	insert->values = set_cache_create(stmt->values_cache);

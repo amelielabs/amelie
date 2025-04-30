@@ -62,8 +62,7 @@ parse_from_target(Stmt* self, Targets* targets, AccessType access, bool subquery
 				// rewrite FROM (SELECT) as CTE statement (this can recurse)
 				auto cte = stmt_allocate(self->db, self->function_mgr, self->local,
 				                         self->lex,
-				                         self->data,
-				                         self->access,
+				                         self->program,
 				                         self->values_cache,
 				                         self->json,
 				                         self->stmt_list,
@@ -173,7 +172,7 @@ parse_from_target(Stmt* self, Targets* targets, AccessType access, bool subquery
 		target->from_columns = &table->config->columns;
 		str_set_str(&target->name, &table->config->name);
 
-		access_add(self->access, table, access);
+		access_add(&self->program->access, table, access);
 		return target;
 	}
 

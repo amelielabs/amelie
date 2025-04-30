@@ -60,7 +60,7 @@ restart:
 	list_foreach(&self->list)
 	{
 		auto ref = list_at(Dtr, link);
-		if (access_try(ref->program->access, dtr->program->access))
+		if (access_try(&ref->program->access, &dtr->program->access))
 			continue;
 
 		// wait for conflicting transaction last send

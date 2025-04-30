@@ -637,8 +637,8 @@ expr_value(Stmt* self, Expr* expr, Ast* value)
 
 	case KVECTOR:
 		// vector [value, ...]
-		value->integer = code_data_offset(self->data);
-		parse_vector(self, &self->data->data);
+		value->integer = code_data_offset(&self->program->code_data);
+		parse_vector(self, &self->program->code_data.data);
 		break;
 
 	// uuid

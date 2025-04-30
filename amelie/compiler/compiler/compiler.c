@@ -45,31 +45,25 @@ compiler_init(Compiler*    self,
               Local*       local,
               FunctionMgr* function_mgr)
 {
-	self->snapshot = false;
-	self->sends    = 0;
-	self->current  = NULL;
-	self->last     = NULL;
-	self->db       = db;
-	self->code     = &self->code_backend;
-	self->args     = NULL;
-	code_init(&self->code_frontend);
-	code_init(&self->code_backend);
-	code_data_init(&self->code_data);
-	access_init(&self->access);
+	self->program   = program_allocate();
+	self->code      = &self->program->code;
+	self->code_data = &self->program->code_data;
+	self->current   = NULL;
+	self->last      = NULL;
+	self->db        = db;
+	self->args      = NULL;
 	set_cache_init(&self->values_cache);
-	parser_init(&self->parser, db, local, function_mgr, &self->code_data,
-	            &self->access, &self->values_cache);
+	parser_init(&self->parser, db, local, function_mgr, &self->values_cache,
+	             self->program);
 	rmap_init(&self->map);
+
 }
 
 void
 compiler_free(Compiler* self)
 {
 	parser_free(&self->parser);
-	code_free(&self->code_frontend);
-	code_free(&self->code_backend);
-	code_data_free(&self->code_data);
-	access_free(&self->access);
+	program_free(self->program);
 	set_cache_free(&self->values_cache);
 	rmap_free(&self->map);
 }
@@ -77,16 +71,11 @@ compiler_free(Compiler* self)
 void
 compiler_reset(Compiler* self)
 {
-	self->code     = &self->code_backend;
-	self->args     = NULL;
-	self->snapshot = false;
-	self->sends    = 0;
-	self->current  = NULL;
-	self->last     = NULL;
-	code_reset(&self->code_frontend);
-	code_reset(&self->code_backend);
-	code_data_reset(&self->code_data);
-	access_reset(&self->access);
+	self->code    = &self->program->code;
+	self->args    = NULL;
+	self->current = NULL;
+	self->last    = NULL;
+	program_reset(self->program);
 	parser_reset(&self->parser);
 	rmap_reset(&self->map);
 }
@@ -164,7 +153,7 @@ emit_stmt(Compiler* self)
 	// set last statement which uses a table,
 	// set snapshot if two or more stmts are using tables
 	if (self->last)
-		self->snapshot = true;
+		self->program->snapshot = true;
 	self->last = self->current;
 
 	// CRET
@@ -264,7 +253,7 @@ emit_send(Compiler* self, int start)
 	case STMT_INSERT:
 	{
 		emit_send_insert(self, start);
-		self->sends++;
+		self->program->sends++;
 		return;
 	}
 
@@ -326,7 +315,7 @@ emit_send(Compiler* self, int start)
 		// CSEND_ALL
 		op2(self, CSEND_ALL, start, (intptr_t)table);
 	}
-	self->sends++;
+	self->program->sends++;
 }
 
 static inline void
@@ -492,7 +481,7 @@ compiler_emit(Compiler* self)
 
 		// generate backend code (pushdown)
 		compiler_switch_backend(self);
-		auto stmt_start = code_count(&self->code_backend);
+		auto stmt_start = code_count(self->code);
 		emit_stmt(self);
 
 		// generate frontend code
@@ -524,18 +513,6 @@ compiler_emit(Compiler* self)
 		op0(self, CRET);
 
 	// set the max number of registers used
-	code_set_regs(&self->code_frontend, self->map.count);
-	code_set_regs(&self->code_backend, self->map.count);
-}
-
-void
-compiler_program(Compiler* self, Program* program)
-{
-	program->code         = &self->code_frontend;
-	program->code_backend = &self->code_backend;
-	program->code_data    = &self->code_data;
-	program->access       = &self->access;
-	program->sends        = self->sends;
-	program->snapshot     = self->snapshot;
-	program->repl         = false;
+	code_set_regs(&self->program->code, self->map.count);
+	code_set_regs(&self->program->code_backend, self->map.count);
 }

@@ -57,6 +57,13 @@ on_write(Primary* self, Buf* data)
 	if (! primary_next(self))
 		return;
 
+	// switch distributed transaction to replication state to write wal
+	// while in read-only mode
+	auto dtr = &session->dtr;
+	auto program = session->compiler.program;
+	program->sends = 1;
+	program->repl  = true;
+
 	// replay writes
 	auto pos = data->start;
 	auto end = data->position;
@@ -71,7 +78,9 @@ on_write(Primary* self, Buf* data)
 		if (likely(record_cmd_is_dml(record_cmd(record))))
 		{
 			// execute DML
-			replay(session->share, &session->dtr, record);
+			dtr_reset(dtr);
+			dtr_create(dtr, program, NULL);
+			replay(session->share, dtr, record);
 		} else
 		{
 			// upgrade to exclusive lock

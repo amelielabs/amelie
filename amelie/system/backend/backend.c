@@ -108,8 +108,8 @@ backend_run(Backend* self, Ctr* ctr, Req* req)
 		vm_reset(&self->vm);
 		vm_run(&self->vm, dtr->local,
 		        ctr->tr,
-		        dtr->program->code_backend,
-		        dtr->program->code_data,
+		       &dtr->program->code_backend,
+		       &dtr->program->code_data,
 		       &req->arg,
 		        dtr->regs,
 		        NULL,

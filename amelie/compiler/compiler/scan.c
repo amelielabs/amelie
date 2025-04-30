@@ -151,10 +151,11 @@ scan_table(Scan* self, Target* target)
 	auto point_lookup = (path->type == PATH_LOOKUP);
 
 	// save schema, table and index name
-	int name_offset = code_data_offset(&cp->code_data);
-	encode_string(&cp->code_data.data, &table->config->schema);
-	encode_string(&cp->code_data.data, &table->config->name);
-	encode_string(&cp->code_data.data, &index->name);
+	auto name_offset = code_data_offset(cp->code_data);
+	auto data = &cp->code_data->data;
+	encode_string(data, &table->config->schema);
+	encode_string(data, &table->config->name);
+	encode_string(data, &index->name);
 
 	// push cursor keys
 	auto keys_count = scan_key(self, target);
@@ -235,9 +236,10 @@ scan_table_heap(Scan* self, Target* target)
 	auto table = target->from_table;
 
 	// save schema, table (no index)
-	int name_offset = code_data_offset(&cp->code_data);
-	encode_string(&cp->code_data.data, &table->config->schema);
-	encode_string(&cp->code_data.data, &table->config->name);
+	auto name_offset = code_data_offset(cp->code_data);
+	auto data = &cp->code_data->data;
+	encode_string(data, &table->config->schema);
+	encode_string(data, &table->config->name);
 
 	// ensure target does not require full table access
 	if (unlikely(target->from_access == ACCESS_RO_EXCLUSIVE))

@@ -80,16 +80,6 @@ replay_read(Share* share, Dtr* dtr, ReqList* req_list, Record* record)
 void
 replay(Share* share, Dtr* dtr, Record* record)
 {
-	// switch distributed transaction to replication state to write wal
-	// while in read-only mode
-	Program program;
-	program_init(&program);
-	program.sends = 1;
-	program.repl  = true;
-
-	dtr_reset(dtr);
-	dtr_create(dtr, &program, NULL);
-
 	ReqList req_list;
 	req_list_init(&req_list);
 

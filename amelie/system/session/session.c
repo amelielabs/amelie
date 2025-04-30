@@ -131,11 +131,7 @@ session_unlock(Session* self)
 hot static inline void
 session_explain(Session* self, Program* program, bool profile)
 {
-	explain(&self->explain,
-	        program->code,
-	        program->code_backend,
-	        program->code_data,
-	        program->access,
+	explain(&self->explain, program,
 	        &self->dtr,
 	        &self->content,
 	        profile);
@@ -150,11 +146,8 @@ session_execute_distributed(Session* self)
 	auto dtr      = &self->dtr;
 
 	// generate bytecode
-	Program  program_compiled;
-	Program* program;
-	program = &program_compiled;
 	compiler_emit(compiler);
-	compiler_program(compiler, &program_compiled);
+	auto program = compiler->program;
 
 	// prepare distributed transaction
 	dtr_create(dtr, program, &self->vm.r);
@@ -176,8 +169,8 @@ session_execute_distributed(Session* self)
 	(
 		vm_run(&self->vm, &self->local,
 		       NULL,
-		       program->code,
-		       program->code_data,
+		       &program->code,
+		       &program->code_data,
 		       NULL,
 		       &self->vm.r,
 		       NULL,

@@ -27,8 +27,7 @@ struct Parser
 	Stmt*        stmt;
 	Declare      declare;
 	Columns*     args;
-	CodeData*    data;
-	Access*      access;
+	Program*     program;
 	SetCache*    values_cache;
 	Uri          uri;
 	Json         json;
@@ -38,8 +37,7 @@ struct Parser
 	Db*          db;
 };
 
-void parser_init(Parser*, Db*, Local*, FunctionMgr*, CodeData*,
-                 Access*, SetCache*);
+void parser_init(Parser*, Db*, Local*, FunctionMgr*, SetCache*, Program*);
 void parser_reset(Parser*);
 void parser_free(Parser*);
 

@@ -44,9 +44,9 @@ emit_string(Compiler* self, Str* string, bool escape)
 {
 	int offset;
 	if (escape)
-		offset = code_data_add_string_unescape(&self->code_data, string);
+		offset = code_data_add_string_unescape(self->code_data, string);
 	else
-		offset = code_data_add_string(&self->code_data, string);
+		offset = code_data_add_string(self->code_data, string);
 	return op2(self, CSTRING, rpin(self, TYPE_STRING), offset);
 }
 
@@ -59,8 +59,8 @@ emit_json(Compiler* self, Targets* targets, Ast* ast)
 	// encode json if possible
 	if (args->constable)
 	{
-		int offset = code_data_offset(&self->code_data);
-		ast_encode(ast, &self->parser.lex, self->parser.local, &self->code_data.data);
+		int offset = code_data_offset(self->code_data);
+		ast_encode(ast, &self->parser.lex, self->parser.local, &self->code_data->data);
 		return op2(self, CJSON, rpin(self, TYPE_JSON), offset);
 	}
 
@@ -518,7 +518,7 @@ emit_call(Compiler* self, Targets* targets, Ast* ast)
 	// register function call, if it has context
 	int call_id = -1;
 	if (fn->flags & FN_CONTEXT)
-		call_id = code_data_add_call(&self->code_data, fn);
+		call_id = code_data_add_call(self->code_data, fn);
 
 	// CALL
 	return op4(self, CCALL, rpin(self, fn_type), (intptr_t)fn,
@@ -565,7 +565,7 @@ emit_call_method(Compiler* self, Targets* targets, Ast* ast)
 	// register function call, if it has context
 	int call_id = -1;
 	if (fn->flags & FN_CONTEXT)
-		call_id = code_data_add_call(&self->code_data, fn);
+		call_id = code_data_add_call(self->code_data, fn);
 
 	// CALL
 	return op4(self, CCALL, rpin(self, fn_type), (intptr_t)fn, argc, call_id);
@@ -867,7 +867,7 @@ emit_expr(Compiler* self, Targets* targets, Ast* ast)
 		return op2(self, CINT, rpin(self, TYPE_INT), ast->integer);
 	case KREAL:
 		return op2(self, CDOUBLE, rpin(self, TYPE_DOUBLE),
-		           code_data_add_double(&self->code_data, ast->real));
+		           code_data_add_double(self->code_data, ast->real));
 	case KSTRING:
 		return emit_string(self, &ast->string, ast->string_escape);
 
@@ -883,8 +883,8 @@ emit_expr(Compiler* self, Targets* targets, Ast* ast)
 	}
 	case KINTERVAL:
 	{
-		int offset = code_data_offset(&self->code_data);
-		auto iv = (Interval*)buf_claim(&self->code_data.data, sizeof(Interval));
+		int offset = code_data_offset(self->code_data);
+		auto iv = (Interval*)buf_claim(&self->code_data->data, sizeof(Interval));
 		interval_init(iv);
 		if (unlikely(error_catch( interval_set(iv, &ast->string) )))
 			stmt_error(self->current, ast, "invalid interval value");
@@ -912,8 +912,8 @@ emit_expr(Compiler* self, Targets* targets, Ast* ast)
 	// uuid
 	case KUUID:
 	{
-		int offset = code_data_offset(&self->code_data);
-		auto uuid = (Uuid*)buf_claim(&self->code_data.data, sizeof(Uuid));
+		int offset = code_data_offset(self->code_data);
+		auto uuid = (Uuid*)buf_claim(&self->code_data->data, sizeof(Uuid));
 		uuid_init(uuid);
 		if (uuid_set_nothrow(uuid, &ast->string) == -1)
 			stmt_error(self->current, ast, "invalid uuid value");

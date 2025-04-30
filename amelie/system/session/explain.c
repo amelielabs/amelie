@@ -57,14 +57,11 @@ explain_reset(Explain* self)
 }
 
 void
-explain(Explain*  self,
-        Code*     code_frontend,
-        Code*     code_backend,
-        CodeData* data,
-        Access*   access,
-        Dtr*      dtr,
-        Content*  content,
-        bool      profile)
+explain(Explain* self,
+        Program* program,
+        Dtr*     dtr,
+        Content* content,
+        bool     profile)
 {
 	auto buf = buf_create();
 	defer_buf(buf);
@@ -78,19 +75,19 @@ explain(Explain*  self,
 
 	// frontend section
 	encode_raw(buf, "frontend", 8);
-	op_dump(code_frontend, data, buf);
+	op_dump(&program->code, &program->code_data, buf);
 
 	// backend section
-	if (code_count(code_backend) > 0)
+	if (code_count(&program->code_backend) > 0)
 	{
 		encode_raw(buf, "backend", 7);
-		op_dump(code_backend, data, buf);
+		op_dump(&program->code_backend, &program->code_data, buf);
 	}
 	encode_obj_end(buf);
 
 	// access
 	encode_raw(buf, "access", 6);
-	access_encode(access, buf);
+	access_encode(&program->access, buf);
 
 	// profiler
 	if (profile)

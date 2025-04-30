@@ -59,9 +59,9 @@ pushdown_group_by(Compiler* self, AstSelect* select)
 	if (ast_agg_has_distinct(&select->expr_aggs))
 	{
 		// set is using following keys [group_by_keys, agg_order, expr]
-		auto  offset = code_data_pos(&self->code_data);
+		auto  offset = code_data_pos(self->code_data);
 		auto  count  = select->expr_group_by.count + 1 + 1;
-		bool* order  = buf_claim(&self->code_data.data, sizeof(bool) * count);
+		bool* order  = buf_claim(&self->code_data->data, sizeof(bool) * count);
 		memset(order, true, sizeof(bool) * count);
 
 		// CSET_ORDERED
