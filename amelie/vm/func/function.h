@@ -19,8 +19,9 @@ typedef void (*FunctionMain)(Call*);
 enum
 {
 	FN_NONE    = 0,
-	FN_DERIVE  = 1 << 1,
-	FN_CONTEXT = 1 << 2
+	FN_UDF     = 1 << 1,
+	FN_DERIVE  = 1 << 2,
+	FN_CONTEXT = 1 << 3
 };
 
 struct Function
@@ -28,8 +29,9 @@ struct Function
 	Str           schema;
 	Str           name;
 	int           type;
-	FunctionMain  function;
 	int           flags;
+	FunctionMain  function;
+	Program*      program;
 	List          link;
 	HashtableNode link_ht;
 };
@@ -44,6 +46,7 @@ function_allocate(int          type,
 	self->type     = type;
 	self->function = function;
 	self->flags    = FN_NONE;
+	self->program  = NULL;
 	str_init(&self->schema);
 	str_init(&self->name);
 	str_set_cstr(&self->schema, schema);
@@ -56,6 +59,8 @@ function_allocate(int          type,
 static inline void
 function_free(Function* self)
 {
+	if (self->program)
+		program_free(self->program);
 	am_free(self);
 }
 

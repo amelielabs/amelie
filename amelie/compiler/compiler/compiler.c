@@ -62,8 +62,9 @@ compiler_init(Compiler*    self,
 void
 compiler_free(Compiler* self)
 {
+	if (self->program)
+		program_free(self->program);
 	parser_free(&self->parser);
-	program_free(self->program);
 	set_cache_free(&self->values_cache);
 	rmap_free(&self->map);
 }

@@ -36,8 +36,24 @@ show functions
 create function test begin select 1 end
 drop function test
 
+# test: create function (builtin already exists)
+create function `set` begin select 1 end
+
 # test: create function (multi statement)
 create function test begin select 1; return select 1; end
+show functions
+
+# test: create function (no arguments)
+create function test () begin select 1 end
+show functions
+drop function test
+
+# test: create function (arguments)
+create function test (a int) begin select 1 end
+show functions
+drop function test
+
+create function test (a int, b text) begin select 1 end
 show functions
 
 # test: drop function statement parsing

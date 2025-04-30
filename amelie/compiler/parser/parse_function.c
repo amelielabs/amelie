@@ -58,6 +58,7 @@ parse_function_args(Stmt* self, AstFunctionCreate* stmt)
 		// add argument
 		arg = column_allocate();
 		column_set_name(arg, &name->string);
+		encode_null(&arg->constraints.value);
 		columns_add(&stmt->config->columns, arg);
 
 		// type

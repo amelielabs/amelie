@@ -350,7 +350,7 @@ select system.state().lsn
 show schemas
 
 # test: create function
-create function test begin select 1 end
+create function test (id int) begin select 1 end
 show functions
 select system.state().lsn
 

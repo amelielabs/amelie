@@ -1008,13 +1008,26 @@ show schemas
   "system": true
 }]
 # test: create function
-create function test begin select 1 end
+create function test (id int) begin select 1 end
 show functions
 [{
   "schema": "public",
   "name": "test",
   "text": "select 1",
-  "columns": []
+  "columns": [{
+    "name": "id",
+    "type": 2,
+    "type_size": 4,
+    "constraints": {
+      "not_null": false,
+      "random": false,
+      "random_modulo": 9223372036854775807,
+      "default": null,
+      "as_identity": false,
+      "as_stored": "",
+      "as_resolved": ""
+    }
+  }]
 }]
 select system.state().lsn
 [26]
@@ -1031,7 +1044,20 @@ show functions
   "schema": "public",
   "name": "test",
   "text": "select 1",
-  "columns": []
+  "columns": [{
+    "name": "id",
+    "type": 2,
+    "type_size": 4,
+    "constraints": {
+      "not_null": false,
+      "random": false,
+      "random_modulo": 9223372036854775807,
+      "default": null,
+      "as_identity": false,
+      "as_stored": "",
+      "as_resolved": ""
+    }
+  }]
 }]
 # test: alter function rename
 alter function test rename to test2
@@ -1042,7 +1068,20 @@ show functions
   "schema": "public",
   "name": "test2",
   "text": "select 1",
-  "columns": []
+  "columns": [{
+    "name": "id",
+    "type": 2,
+    "type_size": 4,
+    "constraints": {
+      "not_null": false,
+      "random": false,
+      "random_modulo": 9223372036854775807,
+      "default": null,
+      "as_identity": false,
+      "as_stored": "",
+      "as_resolved": ""
+    }
+  }]
 }]
 # test: restart
 disconnect S0
@@ -1057,7 +1096,20 @@ show functions
   "schema": "public",
   "name": "test2",
   "text": "select 1",
-  "columns": []
+  "columns": [{
+    "name": "id",
+    "type": 2,
+    "type_size": 4,
+    "constraints": {
+      "not_null": false,
+      "random": false,
+      "random_modulo": 9223372036854775807,
+      "default": null,
+      "as_identity": false,
+      "as_stored": "",
+      "as_resolved": ""
+    }
+  }]
 }]
 # test: drop function
 drop function test2

@@ -60,6 +60,9 @@ show functions
 create function test begin select 1 end
 {"msg": "function 'test': already exists"}
 drop function test
+# test: create function (builtin already exists)
+create function `set` begin select 1 end
+{"msg": "function 'set': already exists"}
 # test: create function (multi statement)
 create function test begin select 1; return select 1; end
 show functions
@@ -68,6 +71,74 @@ show functions
   "name": "test",
   "text": "select 1; return select 1;",
   "columns": []
+}]
+# test: create function (no arguments)
+create function test () begin select 1 end
+{"msg": "function 'test': already exists"}
+show functions
+[{
+  "schema": "public",
+  "name": "test",
+  "text": "select 1; return select 1;",
+  "columns": []
+}]
+drop function test
+# test: create function (arguments)
+create function test (a int) begin select 1 end
+show functions
+[{
+  "schema": "public",
+  "name": "test",
+  "text": "select 1",
+  "columns": [{
+    "name": "a",
+    "type": 2,
+    "type_size": 4,
+    "constraints": {
+      "not_null": false,
+      "random": false,
+      "random_modulo": 9223372036854775807,
+      "default": null,
+      "as_identity": false,
+      "as_stored": "",
+      "as_resolved": ""
+    }
+  }]
+}]
+drop function test
+create function test (a int, b text) begin select 1 end
+show functions
+[{
+  "schema": "public",
+  "name": "test",
+  "text": "select 1",
+  "columns": [{
+    "name": "a",
+    "type": 2,
+    "type_size": 4,
+    "constraints": {
+      "not_null": false,
+      "random": false,
+      "random_modulo": 9223372036854775807,
+      "default": null,
+      "as_identity": false,
+      "as_stored": "",
+      "as_resolved": ""
+    }
+  }, {
+    "name": "b",
+    "type": 4,
+    "type_size": 0,
+    "constraints": {
+      "not_null": false,
+      "random": false,
+      "random_modulo": 9223372036854775807,
+      "default": null,
+      "as_identity": false,
+      "as_stored": "",
+      "as_resolved": ""
+    }
+  }]
 }]
 # test: drop function statement parsing
 drop function

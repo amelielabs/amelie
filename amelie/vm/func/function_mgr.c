@@ -75,6 +75,15 @@ function_mgr_add(FunctionMgr* self, Function* func)
 	hashtable_set(&self->ht, &func->link_ht);
 }
 
+void
+function_mgr_del(FunctionMgr* self, Function* func)
+{
+	hashtable_delete(&self->ht, &func->link_ht);
+
+	list_unlink(&func->link);
+	self->list_count--;
+}
+
 hot static inline bool
 function_mgr_cmp(HashtableNode* node, void* ptr)
 {
