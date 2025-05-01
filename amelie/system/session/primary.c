@@ -79,7 +79,7 @@ on_write(Primary* self, Buf* data)
 		{
 			// execute DML
 			dtr_reset(dtr);
-			dtr_create(dtr, program, NULL);
+			dtr_create(dtr, program);
 			replay(session->share, dtr, record);
 		} else
 		{

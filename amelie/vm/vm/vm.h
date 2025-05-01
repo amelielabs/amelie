@@ -21,11 +21,12 @@ struct Vm
 	Code*        code;
 	CodeData*    code_data;
 	Buf*         code_arg;
-	Buf*         args;
+	Value*       args;
 	CursorMgr    cursor_mgr;
 	Core*        core;
 	Executor*    executor;
 	Dtr*         dtr;
+	Program*     program;
 	Value*       result;
 	Content*     content;
 	Tr*          tr;
@@ -35,8 +36,8 @@ struct Vm
 	Db*          db;
 };
 
-void vm_init(Vm*, Db*, Core*, Executor*, Dtr*, FunctionMgr*);
+void vm_init(Vm*, Db*, Core*, Executor*, Dtr*, Program*, FunctionMgr*);
 void vm_free(Vm*);
 void vm_reset(Vm*);
-void vm_run(Vm*, Local*, Tr*, Code*, CodeData*, Buf*, Reg*, Buf*,
+void vm_run(Vm*, Local*, Tr*, Code*, CodeData*, Buf*, Reg*, Value*,
             Value*, Content*, int);

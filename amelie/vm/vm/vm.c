@@ -43,6 +43,7 @@ vm_init(Vm*          self,
         Core*        core,
         Executor*    executor,
         Dtr*         dtr,
+        Program*     program,
         FunctionMgr* function_mgr)
 {
 	self->regs         = NULL;
@@ -53,6 +54,7 @@ vm_init(Vm*          self,
 	self->core         = core;
 	self->executor     = executor;
 	self->dtr          = dtr;
+	self->program      = program;
 	self->result       = NULL;
 	self->content      = NULL;
 	self->tr           = NULL;
@@ -101,7 +103,7 @@ vm_run(Vm*       self,
        CodeData* code_data,
        Buf*      code_arg,
        Reg*      regs,
-       Buf*      args,
+       Value*    args,
        Value*    result,
        Content*  content,
        int       start)

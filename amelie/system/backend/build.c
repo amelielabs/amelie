@@ -137,7 +137,7 @@ build_run(Build* self)
 	program->sends = 1;
 
 	dtr_reset(dtr);
-	dtr_create(dtr, program, NULL);
+	dtr_create(dtr, program);
 
 	auto executor = self->backend_mgr->executor;
 	auto on_error = error_catch

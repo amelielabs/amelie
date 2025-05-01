@@ -65,9 +65,13 @@ csend_shard(Vm* self, Op* op)
 			if (req == NULL)
 			{
 				req = req_create(&dtr->dispatch_mgr.req_cache);
-				req->type  = REQ_EXECUTE;
-				req->start = op->a;
-				req->core  = part->core;
+				req->type      = REQ_EXECUTE;
+				req->start     = op->a;
+				req->code      = &self->program->code_backend;
+				req->code_data = &self->program->code_data;
+				req->regs      = &self->r;
+				req->args      = self->args;
+				req->core      = part->core;
 				req_list_add(&list, req);
 				map[part->core->order] = req;
 			}
@@ -86,9 +90,13 @@ csend_shard(Vm* self, Op* op)
 			if (req == NULL)
 			{
 				req = req_create(&dtr->dispatch_mgr.req_cache);
-				req->type  = REQ_EXECUTE;
-				req->start = op->a;
-				req->core  = part->core;
+				req->type      = REQ_EXECUTE;
+				req->start     = op->a;
+				req->code      = &self->program->code_backend;
+				req->code_data = &self->program->code_data;
+				req->regs      = &self->r;
+				req->args      = self->args;
+				req->core      = part->core;
 				req_list_add(&list, req);
 				map[part->core->order] = req;
 			}
@@ -112,8 +120,12 @@ csend_lookup(Vm* self, Op* op)
 	req_list_init(&list);
 	auto part = part_map_get(&table->part_list.map, op->c);
 	auto req = req_create(&dtr->dispatch_mgr.req_cache);
-	req->type  = REQ_EXECUTE;
-	req->start = op->a;
+	req->type      = REQ_EXECUTE;
+	req->start     = op->a;
+	req->code      = &self->program->code_backend;
+	req->code_data = &self->program->code_data;
+	req->regs      = &self->r;
+	req->args      = self->args;
 	req->core  = part->core;
 	req_list_add(&list, req);
 
@@ -134,9 +146,13 @@ csend_all(Vm* self, Op* op)
 	{
 		auto part = list_at(Part, link);
 		auto req = req_create(&dtr->dispatch_mgr.req_cache);
-		req->type  = REQ_EXECUTE;
-		req->start = op->a;
-		req->core  = part->core;
+		req->type      = REQ_EXECUTE;
+		req->start     = op->a;
+		req->code      = &self->program->code_backend;
+		req->code_data = &self->program->code_data;
+		req->regs      = &self->r;
+		req->args      = self->args;
+		req->core      = part->core;
 		req_list_add(&list, req);
 	}
 

@@ -29,7 +29,6 @@ struct Dtr
 	DtrState    state;
 	DispatchMgr dispatch_mgr;
 	Program*    program;
-	Reg*        regs;
 	Buf*        error;
 	Write       write;
 	Event       on_access;
@@ -48,7 +47,6 @@ dtr_init(Dtr* self, Local* local, CoreMgr* core_mgr)
 	self->id       = 0;
 	self->state    = DTR_NONE;
 	self->program  = NULL;
-	self->regs     = NULL;
 	self->error    = NULL;
 	self->local    = local;
 	self->core_mgr = core_mgr;
@@ -68,7 +66,6 @@ dtr_reset(Dtr* self)
 	self->id      = 0;
 	self->state   = DTR_NONE;
 	self->program = NULL;
-	self->regs    = NULL;
 	if (self->error)
 	{
 		buf_free(self->error);
@@ -93,10 +90,9 @@ dtr_free(Dtr* self)
 }
 
 static inline void
-dtr_create(Dtr* self, Program* program, Reg* regs)
+dtr_create(Dtr* self, Program* program)
 {
 	self->program = program;
-	self->regs    = regs;
 	dispatch_mgr_prepare(&self->dispatch_mgr);
 	if (! event_attached(&self->on_access))
 		event_attach(&self->on_access);

@@ -24,25 +24,33 @@ enum
 
 struct Req
 {
-	int   type;
-	int   start;
-	Buf   arg;
-	Value result;
-	Buf*  error;
-	Event complete;
-	Core* core;
-	List  link_queue;
-	List  link;
+	int       type;
+	int       start;
+	Buf       arg;
+	Code*     code;
+	CodeData* code_data;
+	Reg*      regs;
+	Value*    args;
+	Value     result;
+	Buf*      error;
+	Event     complete;
+	Core*     core;
+	List      link_queue;
+	List      link;
 };
 
 static inline Req*
 req_allocate(void)
 {
 	auto self = (Req*)am_malloc(sizeof(Req));
-	self->type  = 0;
-	self->start = 0;
-	self->error = NULL;
-	self->core  = NULL;
+	self->type      = 0;
+	self->start     = 0;
+	self->code      = NULL;
+	self->code_data = NULL;
+	self->regs      = NULL;
+	self->args      = NULL;
+	self->error     = NULL;
+	self->core      = NULL;
 	event_init(&self->complete);
 	buf_init(&self->arg);
 	value_init(&self->result);
@@ -69,9 +77,13 @@ req_reset(Req* self)
 		buf_free(self->error);
 		self->error = NULL;
 	}
-	self->type  = 0;
-	self->start = 0;
-	self->core  = NULL;
+	self->type      = 0;
+	self->start     = 0;
+	self->code      = NULL;
+	self->code_data = NULL;
+	self->regs      = NULL;
+	self->args      = NULL;
+	self->core      = NULL;
 	buf_reset(&self->arg);
 	value_free(&self->result);
 }
