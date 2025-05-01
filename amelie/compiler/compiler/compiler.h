@@ -22,12 +22,13 @@ struct Compiler
 	Parser    parser;
 	SetCache  values_cache;
 	Columns*  args;
+	Udf*      udf;
 	Stmt*     current;
 	Stmt*     last;
 	Db*       db;
 };
 
-void compiler_init(Compiler*, Db*, Local*, FunctionMgr*);
+void compiler_init(Compiler*, Db*, Local*, FunctionMgr*, Udf*);
 void compiler_free(Compiler*);
 void compiler_reset(Compiler*);
 void compiler_parse(Compiler*, Str*);

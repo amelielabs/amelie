@@ -76,7 +76,7 @@ udf_if_prepare(Udf* self)
 	local_init(&local, global());
 	local_update_time(&local);
 	Compiler compiler;
-	compiler_init(&compiler, &system->db, &local, &system->function_mgr);
+	compiler_init(&compiler, &system->db, &local, &system->function_mgr, self);
 	defer(compiler_free, &compiler);
 	// todo: set columns
 	compiler_parse(&compiler, &self->config->text);

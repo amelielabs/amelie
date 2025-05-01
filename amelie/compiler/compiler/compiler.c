@@ -43,15 +43,17 @@ void
 compiler_init(Compiler*    self,
               Db*          db,
               Local*       local,
-              FunctionMgr* function_mgr)
+              FunctionMgr* function_mgr,
+              Udf*         udf)
 {
 	self->program   = program_allocate();
 	self->code      = &self->program->code;
 	self->code_data = &self->program->code_data;
+	self->args      = NULL;
+	self->udf       = udf;
 	self->current   = NULL;
 	self->last      = NULL;
 	self->db        = db;
-	self->args      = NULL;
 	set_cache_init(&self->values_cache);
 	parser_init(&self->parser, db, local, function_mgr, &self->values_cache,
 	             self->program);
@@ -391,16 +393,34 @@ emit_recv(Compiler* self)
 		var->r = op2(self, CASSIGN, rpin(self, var->type), r);
 	}
 
-	// statement returns
-	if (stmt->ret)
+	// RETURN (explicit or the last statement)
+	if (! stmt->ret)
+		return;
+
+	if (r != -1)
 	{
-		// create content using cte result
-		if (r != -1)
+		if (self->udf)
+		{
+			// validate function return type (or null otherwise)
+			auto type_fn = self->udf->config->type;
+			if (ret && type_fn != TYPE_NULL)
+			{
+				if (ret->count > 1)
+					stmt_error(stmt, NULL, "RETURN statement must return only one column");
+				auto type = columns_first(&ret->columns)->type;
+				if (type != type_fn)
+					stmt_error(stmt, NULL, "RETURN does not match the function type");
+				op1(self, CRESULT, r);
+			}
+		} else
+		{
+			// create content out of result
 			op3(self, CCONTENT, r,
 			    (intptr_t)&ret->columns,
 			    (intptr_t)&ret->format);
-		op0(self, CRET);
+		}
 	}
+	op0(self, CRET);
 }
 
 static inline void

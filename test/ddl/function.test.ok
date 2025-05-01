@@ -159,6 +159,9 @@ show functions
   "columns": []
 }]
 drop function test
+# test: create function returns (type validate)
+create function test() returns int begin select {} end
+{"msg": "select {} ⟵ RETURN does not match the function type"}
 # test: create function (ddl)
 create function test() begin show lsn end
 {"msg": "functions cannot contain utility commands"}
