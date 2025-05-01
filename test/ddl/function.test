@@ -58,6 +58,11 @@ create function test(a int, b text) begin select 1 end
 show functions
 drop function test
 
+# test: create function returns
+create function test() returns int begin select 1 end
+show functions
+drop function test
+
 # test: create function (ddl)
 create function test() begin show lsn end
 

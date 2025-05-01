@@ -18,6 +18,7 @@ struct UdfConfig
 	Str     schema;
 	Str     name;
 	Str     text;
+	int64_t type;
 	Columns columns;
 };
 
@@ -26,6 +27,7 @@ udf_config_allocate(void)
 {
 	UdfConfig* self;
 	self = am_malloc(sizeof(UdfConfig));
+	self->type = TYPE_NULL;
 	str_init(&self->schema);
 	str_init(&self->name);
 	str_init(&self->text);
@@ -63,6 +65,12 @@ udf_config_set_text(UdfConfig* self, Str* text)
 	str_copy(&self->text, text);
 }
 
+static inline void
+udf_config_set_type(UdfConfig* self, Type type)
+{
+	self->type = type;
+}
+
 static inline UdfConfig*
 udf_config_copy(UdfConfig* self)
 {
@@ -70,6 +78,7 @@ udf_config_copy(UdfConfig* self)
 	udf_config_set_schema(copy, &self->schema);
 	udf_config_set_name(copy, &self->name);
 	udf_config_set_text(copy, &self->text);
+	udf_config_set_type(copy, self->type);
 	columns_copy(&copy->columns, &self->columns);
 	return copy;
 }
@@ -85,6 +94,7 @@ udf_config_read(uint8_t** pos)
 		{ DECODE_STRING, "schema",  &self->schema },
 		{ DECODE_STRING, "name",    &self->name   },
 		{ DECODE_STRING, "text",    &self->text   },
+		{ DECODE_INT,    "type",    &self->type   },
 		{ DECODE_ARRAY,  "columns", &columns      },
 		{ 0,              NULL,      NULL         },
 	};
@@ -110,6 +120,10 @@ udf_config_write(UdfConfig* self, Buf* buf)
 	// text
 	encode_raw(buf, "text", 4);
 	encode_string(buf, &self->text);
+
+	// type
+	encode_raw(buf, "typet", 4);
+	encode_integer(buf, self->type);
 
 	// columns
 	encode_raw(buf, "columns", 7);

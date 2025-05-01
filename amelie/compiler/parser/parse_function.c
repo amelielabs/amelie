@@ -80,7 +80,8 @@ parse_function_args(Stmt* self, AstFunctionCreate* stmt)
 void
 parse_function_create(Stmt* self, bool or_replace)
 {
-	// CREATE [OR REPLACE] FUNCTION [schema.]name [(args)]
+	// CREATE [OR REPLACE] FUNCTION [schema.]name (args)
+	// [RETURNS type]
 	// BEGIN
 	//  [stmt[; stmt]]
 	// END
@@ -103,6 +104,16 @@ parse_function_create(Stmt* self, bool or_replace)
 
 	// (args)
 	parse_function_args(self, stmt);
+
+	// [RETURNS]
+	if (stmt_if(self, KRETURNS))
+	{
+		int type_size;
+		int type;
+		if (parse_type(self, &type, &type_size))
+			stmt_error(self, NULL, "serial type cannot be used here");
+		udf_config_set_type(stmt->config, type);
+	}
 
 	// BEGIN
 	stmt_expect(self, KBEGIN);

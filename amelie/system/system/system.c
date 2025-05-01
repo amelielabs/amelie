@@ -65,7 +65,7 @@ udf_if_prepare(Udf* self)
 		      str_of(&self->config->name));
 
 	// allocate new function
-	fn = function_allocate(TYPE_NULL, self->config->schema.pos,
+	fn = function_allocate(self->config->type, self->config->schema.pos,
 	                       self->config->name.pos,
 	                       NULL);
 	function_set(fn, FN_UDF);

@@ -1014,6 +1014,7 @@ show functions
   "schema": "public",
   "name": "test",
   "text": "select 1",
+  "type": 0,
   "columns": [{
     "name": "id",
     "type": 2,
@@ -1044,6 +1045,7 @@ show functions
   "schema": "public",
   "name": "test",
   "text": "select 1",
+  "type": 0,
   "columns": [{
     "name": "id",
     "type": 2,
@@ -1068,6 +1070,7 @@ show functions
   "schema": "public",
   "name": "test2",
   "text": "select 1",
+  "type": 0,
   "columns": [{
     "name": "id",
     "type": 2,
@@ -1096,6 +1099,7 @@ show functions
   "schema": "public",
   "name": "test2",
   "text": "select 1",
+  "type": 0,
   "columns": [{
     "name": "id",
     "type": 2,

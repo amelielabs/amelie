@@ -76,6 +76,7 @@ show functions
   "schema": "public",
   "name": "test",
   "text": "select 1",
+  "type": 0,
   "columns": []
 }]
 # test: show function
@@ -86,10 +87,11 @@ show function test
   "schema": "public",
   "name": "test",
   "text": "select 1",
+  "type": 0,
   "columns": []
 }]
 show function test format 'json'
-[{"schema": "public", "name": "test", "text": "select 1", "columns": []}]
+[{"schema": "public", "name": "test", "text": "select 1", "type": 0, "columns": []}]
 # test: show wal
 show wal
 [{
@@ -99,7 +101,7 @@ show wal
   "slots": 0,
   "slots_min": -1,
   "writes": 3,
-  "writes_bytes": 465,
+  "writes_bytes": 471,
   "ops": 3,
   "checkpoint": 1
 }]

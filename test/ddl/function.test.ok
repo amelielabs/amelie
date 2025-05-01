@@ -56,6 +56,7 @@ show functions
   "schema": "public",
   "name": "test",
   "text": "select 1",
+  "type": 0,
   "columns": []
 }]
 # test: create function (already exists)
@@ -72,6 +73,7 @@ show functions
   "schema": "public",
   "name": "test",
   "text": "select 1; return select 1;",
+  "type": 0,
   "columns": []
 }]
 # test: create function (no arguments)
@@ -82,6 +84,7 @@ show functions
   "schema": "public",
   "name": "test",
   "text": "select 1; return select 1;",
+  "type": 0,
   "columns": []
 }]
 drop function test
@@ -92,6 +95,7 @@ show functions
   "schema": "public",
   "name": "test",
   "text": "select 1",
+  "type": 0,
   "columns": [{
     "name": "a",
     "type": 2,
@@ -114,6 +118,7 @@ show functions
   "schema": "public",
   "name": "test",
   "text": "select 1",
+  "type": 0,
   "columns": [{
     "name": "a",
     "type": 2,
@@ -141,6 +146,17 @@ show functions
       "as_resolved": ""
     }
   }]
+}]
+drop function test
+# test: create function returns
+create function test() returns int begin select 1 end
+show functions
+[{
+  "schema": "public",
+  "name": "test",
+  "text": "select 1",
+  "type": 2,
+  "columns": []
 }]
 drop function test
 # test: create function (ddl)
@@ -188,6 +204,7 @@ select system.functions()
   "schema": "public",
   "name": "test",
   "text": "select 1",
+  "type": 0,
   "columns": []
 }]]
 alter function test rename to test2
@@ -196,6 +213,7 @@ select system.functions()
   "schema": "public",
   "name": "test2",
   "text": "select 1",
+  "type": 0,
   "columns": []
 }]]
 # test: alter function rename (already exists)
@@ -211,6 +229,7 @@ show function test.test
   "schema": "test",
   "name": "test",
   "text": "select 1",
+  "type": 0,
   "columns": []
 }]
 drop function test.test

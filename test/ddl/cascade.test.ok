@@ -79,6 +79,7 @@ show functions
   "schema": "test2",
   "name": "test",
   "text": "select 1",
+  "type": 0,
   "columns": []
 }]
 disconnect S0
