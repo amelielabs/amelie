@@ -23,8 +23,9 @@ enum
 struct Parser
 {
 	int          explain;
-	Stmts        stmts;
 	Stmt*        stmt;
+	Stmts        stmts;
+	Ctes         ctes;
 	Declare      declare;
 	Columns*     args;
 	Program*     program;

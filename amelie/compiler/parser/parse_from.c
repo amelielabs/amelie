@@ -60,27 +60,29 @@ parse_from_target(Stmt* self, Targets* targets, AccessType access, bool subquery
 			} else
 			{
 				// rewrite FROM (SELECT) as CTE statement (this can recurse)
-				auto cte = stmt_allocate(self->db, self->function_mgr, self->local,
-				                         self->lex,
-				                         self->program,
-				                         self->values_cache,
-				                         self->json,
-				                         self->stmts,
-				                         self->declare,
-				                         self->args);
-				cte->id = STMT_SELECT;
-				stmts_insert(self->stmts, self, cte);
+				auto stmt = stmt_allocate(self->db, self->function_mgr, self->local,
+				                          self->lex,
+				                          self->program,
+				                          self->values_cache,
+				                          self->json,
+				                          self->stmts,
+				                          self->ctes,
+				                          self->declare,
+				                          self->args);
+				stmt->id = STMT_SELECT;
+				stmts_insert(self->stmts, self, stmt);
 
-				select = parse_select(cte, NULL, false);
+				select = parse_select(stmt, NULL, false);
 				stmt_expect(self, ')');
-				cte->ast         = &select->ast;
-				cte->cte_columns = &select->ret.columns;
-				parse_select_resolve(cte);
+				stmt->ast          = &select->ast;
+				stmt->cte          = ctes_add(self->ctes, self, NULL);
+				stmt->cte->columns = &select->ret.columns;
+				parse_select_resolve(stmt);
 
 				target->type         = TARGET_CTE;
 				target->ast          = ast;
-				target->from_cte     = cte;
-				target->from_columns = cte->cte_columns;
+				target->from_cte     = stmt;
+				target->from_columns = stmt->cte->columns;
 			}
 			select->ast.pos_start = ast->pos_start;
 			select->ast.pos_end   = ast->pos_end;
@@ -154,15 +156,15 @@ parse_from_target(Stmt* self, Targets* targets, AccessType access, bool subquery
 	}
 
 	// cte
-	auto cte = stmts_find(self->stmts, &name);
+	auto cte = ctes_find(self->ctes, &name);
 	if (cte)
 	{
-		if (cte == self)
+		if (cte->stmt == self)
 			stmt_error(self, expr, "recursive CTE are not supported");
 		target->type         = TARGET_CTE;
-		target->from_cte     = cte;
-		target->from_columns = cte->cte_columns;
-		str_set_str(&target->name, &cte->cte_name->string);
+		target->from_cte     = cte->stmt;
+		target->from_columns = cte->columns;
+		str_set_str(&target->name, cte->name);
 		return target;
 	}
 

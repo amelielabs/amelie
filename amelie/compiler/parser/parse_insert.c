@@ -410,6 +410,7 @@ parse_insert(Stmt* self)
 			                         self->values_cache,
 			                         self->json,
 			                         self->stmts,
+			                         self->ctes,
 			                         self->declare,
 			                         self->args);
 			cte->id = STMT_SELECT;
@@ -417,8 +418,9 @@ parse_insert(Stmt* self)
 			auto select = parse_select(cte, NULL, false);
 			select->ast.pos_start = values->pos_start;
 			select->ast.pos_end   = values->pos_end;
-			cte->ast         = &select->ast;
-			cte->cte_columns = &select->ret.columns;
+			cte->ast          = &select->ast;
+			cte->cte          = ctes_add(self->ctes, self, NULL);
+			cte->cte->columns = &select->ret.columns;
 			parse_select_resolve(cte);
 			stmt->select = cte;
 		} else {

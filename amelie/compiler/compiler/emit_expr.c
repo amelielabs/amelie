@@ -94,10 +94,10 @@ emit_column(Compiler* self, Target* target, Ast* ast,
 	if (! column)
 	{
 		auto cte = target->from_cte;
-		if (target->type == TARGET_CTE && cte->cte_args.count > 0)
+		if (target->type == TARGET_CTE && cte->cte->args.count > 0)
 		{
 			// find column in the CTE arguments list, redirect to the CTE statement
-			auto arg = columns_find(&cte->cte_args, name);
+			auto arg = columns_find(&cte->cte->args, name);
 			if (arg)
 				column = columns_find_by(target->from_columns, arg->order);
 		} else

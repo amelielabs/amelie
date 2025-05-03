@@ -130,8 +130,6 @@ parse_stmt_free(Stmt* stmt)
 		returning_free(&select->ret);
 		columns_free(&select->targets_group_columns);
 	}
-
-	columns_free(&stmt->cte_args);
 }
 
 hot static inline void
@@ -143,7 +141,7 @@ parse_stmt(Parser* self, Stmt* stmt)
 	// RETURN expr | stmt
 	if (ast->id == KRETURN)
 	{
-		if (stmt->cte_name)
+		if (stmt->cte)
 			stmt_error(stmt, ast, "RETURN cannot be used with CTE");
 		if (stmt->assign)
 			stmt_error(stmt, ast, "RETURN cannot be used with := operator");
@@ -439,6 +437,7 @@ parse_with(Parser* self)
 		                          self->values_cache,
 		                          &self->json,
 		                          &self->stmts,
+		                          &self->ctes,
 		                          &self->declare,
 		                           self->args);
 		stmts_add(&self->stmts, stmt);
@@ -473,11 +472,11 @@ parse_with(Parser* self)
 			stmt_error(stmt, start, "CTE statement must be DML or SELECT");
 			break;
 		}
-		stmt->cte_columns = &ret->columns;
+		stmt->cte->columns = &ret->columns;
 
 		// ensure that arguments count match
-		if (stmt->cte_args.count > 0 &&
-		    stmt->cte_args.count != stmt->cte_columns->count)
+		if (stmt->cte->args.count > 0 &&
+		    stmt->cte->args.count != stmt->cte->columns->count)
 			stmt_error(stmt, start, "CTE arguments count does not match the returning arguments count");
 
 		// )
@@ -573,6 +572,7 @@ parse(Parser* self, Str* str)
 		                           self->values_cache,
 		                           &self->json,
 		                           &self->stmts,
+		                           &self->ctes,
 		                           &self->declare,
 		                            self->args);
 		stmts_add(&self->stmts, self->stmt);

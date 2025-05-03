@@ -55,6 +55,7 @@ parser_init(Parser*      self,
 	self->local        = local;
 	self->db           = db;
 	stmts_init(&self->stmts);
+	ctes_init(&self->ctes);
 	declare_init(&self->declare);
 	lex_init(&self->lex, keywords_alpha);
 	uri_init(&self->uri);
@@ -74,6 +75,7 @@ parser_reset(Parser* self)
 		parse_stmt_free(stmt);
 		stmt = next;
 	}
+	ctes_reset(&self->ctes);
 	stmts_init(&self->stmts);
 	declare_init(&self->declare);
 	lex_reset(&self->lex);

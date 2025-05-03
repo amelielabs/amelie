@@ -60,16 +60,3 @@ stmts_order(Stmts* self)
 	for (auto stmt = self->list; stmt; stmt = stmt->next)
 		stmt->order = order++;
 }
-
-static inline Stmt*
-stmts_find(Stmts* self, Str* name)
-{
-	for (auto stmt = self->list; stmt; stmt = stmt->next)
-	{
-		if (stmt->cte_name == NULL)
-			continue;
-		if (str_compare(&stmt->cte_name->string, name))
-			return stmt;
-	}
-	return NULL;
-}

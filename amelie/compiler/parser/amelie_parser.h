@@ -28,6 +28,7 @@
 
 // variables
 #include "parser/declare.h"
+#include "parser/cte.h"
 
 // stmt
 #include "parser/stmt.h"

@@ -219,7 +219,7 @@ emit_send_insert(Compiler* self, int start)
 		auto columns_select = &ast_select_of(insert->select->ast)->ret.columns;
 		if (! columns_compare(columns, columns_select))
 			stmt_error(stmt, insert->select->ast, "SELECT columns must match the INSERT table");
-		r = op2(self, CDUP, rpin(self, TYPE_STORE), insert->select->cte_r);
+		r = op2(self, CDUP, rpin(self, TYPE_STORE), insert->select->r);
 	} else
 	{
 		r = op2(self, CSET_PTR, rpin(self, TYPE_STORE),
@@ -379,7 +379,7 @@ emit_recv(Compiler* self)
 		abort();
 		break;
 	}
-	stmt->cte_r = r;
+	stmt->r = r;
 
 	// statement has assign :=
 	auto var = stmt->assign;

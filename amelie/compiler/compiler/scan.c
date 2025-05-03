@@ -314,8 +314,8 @@ scan_expr(Scan* self, Target* target)
 		auto cte = target->from_cte;
 		if (target->r == -1)
 		{
-			assert(cte->cte_r != -1);
-			target->r = op2(cp, CREF, rpin(cp, TYPE_STORE), cte->cte_r);
+			assert(cte->r != -1);
+			target->r = op2(cp, CREF, rpin(cp, TYPE_STORE), cte->r);
 		}
 		break;
 	}

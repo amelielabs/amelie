@@ -57,14 +57,13 @@ struct Stmt
 	int          order;
 	int          order_targets;
 	bool         ret;
-	Ast*         cte_name;
-	Columns*     cte_columns;
-	Columns      cte_args;
-	int          cte_r;
+	Cte*         cte;
+	int          r;
 	Var*         assign;
 	AstList      select_list;
 
 	Stmts*       stmts;
+	Ctes*        ctes;
 	Declare*     declare;
 	Columns*     args;
 	Program*     program;
@@ -87,6 +86,7 @@ stmt_allocate(Db*          db,
               SetCache*    values_cache,
               Json*        json,
               Stmts*       stmts,
+              Ctes*        ctes,
               Declare*     declare,
               Columns*     args)
 {
@@ -96,12 +96,12 @@ stmt_allocate(Db*          db,
 	self->order         = 0;
 	self->order_targets = 0;
 	self->ret           = false;
-	self->cte_name      = NULL;
-	self->cte_columns   = NULL;
-	self->cte_r         = -1;
+	self->cte           = NULL;
+	self->r             = -1;
 	self->assign        = NULL;
 	self->args          = args;
 	self->stmts         = stmts;
+	self->ctes          = ctes;
 	self->declare       = declare;
 	self->program       = program;
 	self->values_cache  = values_cache;
@@ -112,7 +112,6 @@ stmt_allocate(Db*          db,
 	self->db            = db;
 	self->next          = NULL;
 	self->prev          = NULL;
-	columns_init(&self->cte_args);
 	ast_list_init(&self->select_list);
 	return self;
 }

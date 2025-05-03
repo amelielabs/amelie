@@ -258,6 +258,7 @@ parse_import(Parser* self, Str* str, Str* uri, EndpointType type)
 	                           self->values_cache,
 	                          &self->json,
 	                          &self->stmts,
+	                          &self->ctes,
 	                          &self->declare,
 	                           self->args);
 	self->stmt = stmt;
