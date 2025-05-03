@@ -88,10 +88,6 @@ udf_if_prepare(Udf* self)
 
 	compiler_emit(&compiler);
 
-	// set executable
-	fn->program = compiler.program;
-	compiler.program = NULL;
-
 	// register function
 	function_mgr_add(&system->function_mgr, fn);
 	self->data = fn;

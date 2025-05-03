@@ -122,7 +122,7 @@ udf_config_write(UdfConfig* self, Buf* buf)
 	encode_string(buf, &self->text);
 
 	// type
-	encode_raw(buf, "typet", 4);
+	encode_raw(buf, "type", 4);
 	encode_integer(buf, self->type);
 
 	// columns

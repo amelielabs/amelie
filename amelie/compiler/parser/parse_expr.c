@@ -260,6 +260,10 @@ expr_call(Stmt* self, Expr* expr, Ast* path, bool with_args)
 	if (! func)
 		stmt_error(self, path, "function not found");
 
+	// ensure function is not a udf
+	if (func->flags & FN_UDF)
+		stmt_error(self, path, "user-defined function must be invoked using CALL statement");
+
 	auto call = ast_call_allocate();
 	call->fn = func;
 	if (with_args)

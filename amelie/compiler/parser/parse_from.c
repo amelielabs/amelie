@@ -128,6 +128,10 @@ parse_from_target(Stmt* self, Targets* targets, AccessType access, bool subquery
 		if (! call->fn)
 			stmt_error(self, expr, "function not found");
 
+		// ensure function is not a udf
+		if (call->fn->flags & FN_UDF)
+			stmt_error(self, expr, "user-defined function must be invoked using CALL statement");
+
 		// parse args ()
 		call->ast.r = parse_expr_args(self, NULL, ')', false);
 

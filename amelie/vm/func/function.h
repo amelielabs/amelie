@@ -31,7 +31,6 @@ struct Function
 	int           type;
 	int           flags;
 	FunctionMain  function;
-	Program*      program;
 	List          link;
 	HashtableNode link_ht;
 };
@@ -46,7 +45,6 @@ function_allocate(int          type,
 	self->type     = type;
 	self->function = function;
 	self->flags    = FN_NONE;
-	self->program  = NULL;
 	str_init(&self->schema);
 	str_init(&self->name);
 	str_set_cstr(&self->schema, schema);
@@ -59,8 +57,6 @@ function_allocate(int          type,
 static inline void
 function_free(Function* self)
 {
-	if (self->program)
-		program_free(self->program);
 	am_free(self);
 }
 
