@@ -11,8 +11,8 @@
 // AGPL-3.0 Licensed.
 //
 
-typedef struct Stmt     Stmt;
-typedef struct StmtList StmtList;
+typedef struct Stmt  Stmt;
+typedef struct Stmts Stmts;
 
 typedef enum
 {
@@ -64,7 +64,7 @@ struct Stmt
 	Var*         assign;
 	AstList      select_list;
 
-	StmtList*    stmt_list;
+	Stmts*       stmts;
 	Declare*     declare;
 	Columns*     args;
 	Program*     program;
@@ -86,7 +86,7 @@ stmt_allocate(Db*          db,
               Program*     program,
               SetCache*    values_cache,
               Json*        json,
-              StmtList*    stmt_list,
+              Stmts*       stmts,
               Declare*     declare,
               Columns*     args)
 {
@@ -101,7 +101,7 @@ stmt_allocate(Db*          db,
 	self->cte_r         = -1;
 	self->assign        = NULL;
 	self->args          = args;
-	self->stmt_list     = stmt_list;
+	self->stmts         = stmts;
 	self->declare       = declare;
 	self->program       = program;
 	self->values_cache  = values_cache;

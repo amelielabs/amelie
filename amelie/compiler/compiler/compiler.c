@@ -427,7 +427,7 @@ static inline void
 emit_recv_upto(Compiler* self, int last, int order)
 {
 	auto current = self->current;
-	auto stmt = self->parser.stmt_list.list;
+	auto stmt = self->parser.stmts.list;
 	for (; stmt; stmt = stmt->next)
 	{
 		if (stmt->order <= last)
@@ -479,7 +479,7 @@ hot void
 compiler_emit(Compiler* self)
 {
 	auto recv_last = -1;
-	auto stmt = self->parser.stmt_list.list;
+	auto stmt = self->parser.stmts.list;
 	for (; stmt; stmt = stmt->next)
 	{
 		// generate frontend code (recv)
@@ -527,7 +527,7 @@ compiler_emit(Compiler* self)
 	}
 
 	// recv rest of commands (if any left)
-	emit_recv_upto(self, recv_last, self->parser.stmt_list.count);
+	emit_recv_upto(self, recv_last, self->parser.stmts.count);
 
 	// no statements (last statement always returns)
 	if (! self->parser.stmt)

@@ -438,10 +438,10 @@ parse_with(Parser* self)
 		                          self->program,
 		                          self->values_cache,
 		                          &self->json,
-		                          &self->stmt_list,
+		                          &self->stmts,
 		                          &self->declare,
 		                           self->args);
-		stmt_list_add(&self->stmt_list, stmt);
+		stmts_add(&self->stmts, stmt);
 		self->stmt = stmt;
 
 		// name [(args)]
@@ -572,10 +572,10 @@ parse(Parser* self, Str* str)
 		                           self->program,
 		                           self->values_cache,
 		                           &self->json,
-		                           &self->stmt_list,
+		                           &self->stmts,
 		                           &self->declare,
 		                            self->args);
-		stmt_list_add(&self->stmt_list, self->stmt);
+		stmts_add(&self->stmts, self->stmt);
 		self->stmt->assign = assign;
 
 		// stmt
@@ -610,13 +610,13 @@ parse(Parser* self, Str* str)
 		self->stmt->ret = true;
 
 	// ensure EXPLAIN has command
-	if (unlikely(self->explain && !self->stmt_list.count))
+	if (unlikely(self->explain && !self->stmts.count))
 		lex_error(lex, explain, "EXPLAIN without command");
 
 	// ensure main stmt is not utility when using CTE
-	if (has_utility && self->stmt_list.count > 1)
+	if (has_utility && self->stmts.count > 1)
 		lex_error(lex, ast, "multi-statement utility commands are not supported");
 
 	// set statements order
-	stmt_list_order(&self->stmt_list);
+	stmts_order(&self->stmts);
 }

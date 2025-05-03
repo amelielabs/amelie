@@ -257,11 +257,11 @@ parse_import(Parser* self, Str* str, Str* uri, EndpointType type)
 	                           self->program,
 	                           self->values_cache,
 	                          &self->json,
-	                          &self->stmt_list,
+	                          &self->stmts,
 	                          &self->declare,
 	                           self->args);
 	self->stmt = stmt;
-	stmt_list_add(&self->stmt_list, stmt);
+	stmts_add(&self->stmts, stmt);
 	stmt->id  = STMT_INSERT;
 	stmt->ret = true;
 	stmt->ast = &ast_insert_allocate()->ast;

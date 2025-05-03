@@ -23,7 +23,7 @@ enum
 struct Parser
 {
 	int          explain;
-	StmtList     stmt_list;
+	Stmts        stmts;
 	Stmt*        stmt;
 	Declare      declare;
 	Columns*     args;

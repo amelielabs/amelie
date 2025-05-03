@@ -54,7 +54,7 @@ parser_init(Parser*      self,
 	self->function_mgr = function_mgr;
 	self->local        = local;
 	self->db           = db;
-	stmt_list_init(&self->stmt_list);
+	stmts_init(&self->stmts);
 	declare_init(&self->declare);
 	lex_init(&self->lex, keywords_alpha);
 	uri_init(&self->uri);
@@ -67,14 +67,14 @@ parser_reset(Parser* self)
 	self->explain = EXPLAIN_NONE;
 	self->stmt    = NULL;
 	self->args    = NULL;
-	auto stmt = self->stmt_list.list;
+	auto stmt = self->stmts.list;
 	while (stmt)
 	{
 		auto next = stmt->next;
 		parse_stmt_free(stmt);
 		stmt = next;
 	}
-	stmt_list_init(&self->stmt_list);
+	stmts_init(&self->stmts);
 	declare_init(&self->declare);
 	lex_reset(&self->lex);
 	uri_reset(&self->uri);

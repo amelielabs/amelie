@@ -76,7 +76,7 @@ parse_cte(Stmt* self)
 	auto name = stmt_expect(self, KNAME);
 
 	// reuse existing cte variable (columns are not compared)
-	auto cte = stmt_list_find(self->stmt_list, &name->string);
+	auto cte = stmts_find(self->stmts, &name->string);
 	if (cte)
 		stmt_error(self, name, "CTE is redefined");
 	self->cte_name = name;

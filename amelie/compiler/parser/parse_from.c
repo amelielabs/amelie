@@ -65,11 +65,11 @@ parse_from_target(Stmt* self, Targets* targets, AccessType access, bool subquery
 				                         self->program,
 				                         self->values_cache,
 				                         self->json,
-				                         self->stmt_list,
+				                         self->stmts,
 				                         self->declare,
 				                         self->args);
 				cte->id = STMT_SELECT;
-				stmt_list_insert(self->stmt_list, self, cte);
+				stmts_insert(self->stmts, self, cte);
 
 				select = parse_select(cte, NULL, false);
 				stmt_expect(self, ')');
@@ -154,7 +154,7 @@ parse_from_target(Stmt* self, Targets* targets, AccessType access, bool subquery
 	}
 
 	// cte
-	auto cte = stmt_list_find(self->stmt_list, &name);
+	auto cte = stmts_find(self->stmts, &name);
 	if (cte)
 	{
 		if (cte == self)

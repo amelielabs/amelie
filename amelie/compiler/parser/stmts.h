@@ -11,9 +11,9 @@
 // AGPL-3.0 Licensed.
 //
 
-typedef struct StmtList StmtList;
+typedef struct Stmts Stmts;
 
-struct StmtList
+struct Stmts
 {
 	Stmt* list;
 	Stmt* list_tail;
@@ -21,7 +21,7 @@ struct StmtList
 };
 
 static inline void
-stmt_list_init(StmtList* self)
+stmts_init(Stmts* self)
 {
 	self->list      = NULL;
 	self->list_tail = NULL;
@@ -29,7 +29,7 @@ stmt_list_init(StmtList* self)
 }
 
 static inline void
-stmt_list_add(StmtList* self, Stmt* stmt)
+stmts_add(Stmts* self, Stmt* stmt)
 {
 	if (self->list == NULL)
 		self->list = stmt;
@@ -41,7 +41,7 @@ stmt_list_add(StmtList* self, Stmt* stmt)
 }
 
 static inline void
-stmt_list_insert(StmtList* self, Stmt* before, Stmt* stmt)
+stmts_insert(Stmts* self, Stmt* before, Stmt* stmt)
 {
 	if (before->prev == NULL)
 		self->list = stmt;
@@ -54,7 +54,7 @@ stmt_list_insert(StmtList* self, Stmt* before, Stmt* stmt)
 }
 
 static inline void
-stmt_list_order(StmtList* self)
+stmts_order(Stmts* self)
 {
 	int order = 0;
 	for (auto stmt = self->list; stmt; stmt = stmt->next)
@@ -62,7 +62,7 @@ stmt_list_order(StmtList* self)
 }
 
 static inline Stmt*
-stmt_list_find(StmtList* self, Str* name)
+stmts_find(Stmts* self, Str* name)
 {
 	for (auto stmt = self->list; stmt; stmt = stmt->next)
 	{
