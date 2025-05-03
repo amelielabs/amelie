@@ -26,7 +26,7 @@ struct Parser
 	Stmt*        stmt;
 	Stmts        stmts;
 	Ctes         ctes;
-	Declare      declare;
+	Vars         vars;
 	Columns*     args;
 	Program*     program;
 	SetCache*    values_cache;

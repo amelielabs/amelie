@@ -438,7 +438,7 @@ parse_with(Parser* self)
 		                          &self->json,
 		                          &self->stmts,
 		                          &self->ctes,
-		                          &self->declare,
+		                          &self->vars,
 		                           self->args);
 		stmts_add(&self->stmts, stmt);
 		self->stmt = stmt;
@@ -553,7 +553,7 @@ parse(Parser* self, Str* str)
 		{
 			if (! lex_if(lex, KASSIGN))
 				lex_error_expect(lex, lex_next(lex), KASSIGN);
-			assign = declare_add(&self->declare, &ast->string);
+			assign = vars_add(&self->vars, &ast->string);
 		}
 
 		// [WITH name AS ( cte )[, name AS (...)]]
@@ -573,7 +573,7 @@ parse(Parser* self, Str* str)
 		                           &self->json,
 		                           &self->stmts,
 		                           &self->ctes,
-		                           &self->declare,
+		                           &self->vars,
 		                            self->args);
 		stmts_add(&self->stmts, self->stmt);
 		self->stmt->assign = assign;

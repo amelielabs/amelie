@@ -133,7 +133,7 @@ parse_returning(Returning* self, Stmt* stmt, Expr* ctx)
 			stmt_error(stmt, name, "INTO cannot be used with := operator");
 		if (ctx && ctx->select && ctx->subquery)
 			stmt_error(stmt, name, "INTO cannot be used inside subquery");
-		stmt->assign = declare_add(stmt->declare, &name->string);
+		stmt->assign = vars_add(stmt->vars, &name->string);
 	}
 }
 

@@ -26,8 +26,8 @@
 #include "parser/target.h"
 #include "parser/targets.h"
 
-// variables
-#include "parser/declare.h"
+// variable
+#include "parser/var.h"
 #include "parser/cte.h"
 
 // stmt

@@ -411,7 +411,7 @@ parse_insert(Stmt* self)
 			                         self->json,
 			                         self->stmts,
 			                         self->ctes,
-			                         self->declare,
+			                         self->vars,
 			                         self->args);
 			cte->id = STMT_SELECT;
 			stmts_insert(self->stmts, self, cte);

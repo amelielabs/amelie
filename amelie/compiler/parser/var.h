@@ -11,8 +11,8 @@
 // AGPL-3.0 Licensed.
 //
 
-typedef struct Var     Var;
-typedef struct Declare Declare;
+typedef struct Var  Var;
+typedef struct Vars Vars;
 
 struct Var
 {
@@ -23,7 +23,7 @@ struct Var
 	Var* next;
 };
 
-struct Declare
+struct Vars
 {
 	Var* list;
 	Var* list_tail;
@@ -31,7 +31,7 @@ struct Declare
 };
 
 static inline void
-declare_init(Declare* self)
+vars_init(Vars* self)
 {
 	self->list      = NULL;
 	self->list_tail = NULL;
@@ -39,7 +39,7 @@ declare_init(Declare* self)
 }
 
 static inline Var*
-declare_find(Declare* self, Str* name)
+vars_find(Vars* self, Str* name)
 {
 	for (auto var = self->list; var; var = var->next)
 	{
@@ -50,9 +50,9 @@ declare_find(Declare* self, Str* name)
 }
 
 static inline Var*
-declare_add(Declare* self, Str* name)
+vars_add(Vars* self, Str* name)
 {
-	auto var = declare_find(self, name);
+	auto var = vars_find(self, name);
 	if (var)
 		return var;
 	var = palloc(sizeof(Var));

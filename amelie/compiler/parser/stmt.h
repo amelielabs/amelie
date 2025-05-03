@@ -64,7 +64,7 @@ struct Stmt
 
 	Stmts*       stmts;
 	Ctes*        ctes;
-	Declare*     declare;
+	Vars*        vars;
 	Columns*     args;
 	Program*     program;
 	SetCache*    values_cache;
@@ -87,7 +87,7 @@ stmt_allocate(Db*          db,
               Json*        json,
               Stmts*       stmts,
               Ctes*        ctes,
-              Declare*     declare,
+              Vars*        vars,
               Columns*     args)
 {
 	Stmt* self = palloc(sizeof(Stmt));
@@ -102,7 +102,7 @@ stmt_allocate(Db*          db,
 	self->args          = args;
 	self->stmts         = stmts;
 	self->ctes          = ctes;
-	self->declare       = declare;
+	self->vars          = vars;
 	self->program       = program;
 	self->values_cache  = values_cache;
 	self->json          = json;

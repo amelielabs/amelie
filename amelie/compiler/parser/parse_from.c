@@ -67,7 +67,7 @@ parse_from_target(Stmt* self, Targets* targets, AccessType access, bool subquery
 				                          self->json,
 				                          self->stmts,
 				                          self->ctes,
-				                          self->declare,
+				                          self->vars,
 				                          self->args);
 				stmt->id = STMT_SELECT;
 				stmts_insert(self->stmts, self, stmt);

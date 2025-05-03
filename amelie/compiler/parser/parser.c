@@ -56,7 +56,7 @@ parser_init(Parser*      self,
 	self->db           = db;
 	stmts_init(&self->stmts);
 	ctes_init(&self->ctes);
-	declare_init(&self->declare);
+	vars_init(&self->vars);
 	lex_init(&self->lex, keywords_alpha);
 	uri_init(&self->uri);
 	json_init(&self->json);
@@ -77,7 +77,7 @@ parser_reset(Parser* self)
 	}
 	ctes_reset(&self->ctes);
 	stmts_init(&self->stmts);
-	declare_init(&self->declare);
+	vars_init(&self->vars);
 	lex_reset(&self->lex);
 	uri_reset(&self->uri);
 	json_reset(&self->json);
