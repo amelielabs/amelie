@@ -256,7 +256,7 @@ expr_call(Stmt* self, Expr* expr, Ast* path, bool with_args)
 		stmt_error(self, path, "bad function call");
 
 	// find and call function
-	auto func = function_mgr_find(self->function_mgr, &schema, &name);
+	auto func = function_mgr_find(self->parser->function_mgr, &schema, &name);
 	if (! func)
 		stmt_error(self, path, "function not found");
 
@@ -641,8 +641,8 @@ expr_value(Stmt* self, Expr* expr, Ast* value)
 
 	case KVECTOR:
 		// vector [value, ...]
-		value->integer = code_data_offset(&self->program->code_data);
-		parse_vector(self, &self->program->code_data.data);
+		value->integer = code_data_offset(&self->parser->program->code_data);
+		parse_vector(self, &self->parser->program->code_data.data);
 		break;
 
 	// uuid

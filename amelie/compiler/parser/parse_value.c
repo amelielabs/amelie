@@ -135,13 +135,14 @@ parse_value(Stmt* self, Column* column, Value* value)
 			pos = lex->start + lex->backlog->pos_start;
 			lex->backlog = lex->backlog->prev;
 		}
-		json_reset(self->json);
+		auto json = &self->parser->json;
+		json_reset(json);
 		Str in;
 		str_set(&in, pos, lex->end - pos);
 		auto buf = buf_create();
 		errdefer_buf(buf);
-		json_parse(self->json, &in, buf);
-		lex->pos = self->json->pos;
+		json_parse(json, &in, buf);
+		lex->pos = json->pos;
 		value_set_json_buf(value, buf);
 		return ast;
 	}
@@ -149,7 +150,7 @@ parse_value(Stmt* self, Column* column, Value* value)
 	{
 		// current_timestamp
 		if (ast->id == KCURRENT_TIMESTAMP) {
-			value_set_timestamp(value, self->local->time_us);
+			value_set_timestamp(value, self->parser->local->time_us);
 			return ast;
 		}
 
@@ -169,7 +170,7 @@ parse_value(Stmt* self, Column* column, Value* value)
 		timestamp_init(&ts);
 		if (unlikely(error_catch( timestamp_set(&ts, &ast->string) )))
 			stmt_error(self, ast, "invalid timestamp value");
-		value_set_timestamp(value, timestamp_get_unixtime(&ts, self->local->timezone));
+		value_set_timestamp(value, timestamp_get_unixtime(&ts, self->parser->local->timezone));
 		return ast;
 	}
 	case TYPE_INTERVAL:
@@ -190,7 +191,7 @@ parse_value(Stmt* self, Column* column, Value* value)
 	{
 		// current_date
 		if (ast->id == KCURRENT_DATE) {
-			value_set_date(value, timestamp_date(self->local->time_us));
+			value_set_date(value, timestamp_date(self->parser->local->time_us));
 			return ast;
 		}
 

@@ -60,22 +60,14 @@ parse_from_target(Stmt* self, Targets* targets, AccessType access, bool subquery
 			} else
 			{
 				// rewrite FROM (SELECT) as CTE statement (this can recurse)
-				auto stmt = stmt_allocate(self->db, self->function_mgr, self->local,
-				                          self->lex,
-				                          self->program,
-				                          self->values_cache,
-				                          self->json,
-				                          self->stmts,
-				                          self->ctes,
-				                          self->vars,
-				                          self->args);
+				auto stmt = stmt_allocate(self->parser, &self->parser->lex);
 				stmt->id = STMT_SELECT;
-				stmts_insert(self->stmts, self, stmt);
+				stmts_insert(&self->parser->stmts, self, stmt);
 
 				select = parse_select(stmt, NULL, false);
 				stmt_expect(self, ')');
 				stmt->ast          = &select->ast;
-				stmt->cte          = ctes_add(self->ctes, self, NULL);
+				stmt->cte          = ctes_add(&self->parser->ctes, self, NULL);
 				stmt->cte->columns = &select->ret.columns;
 				parse_select_resolve(stmt);
 
@@ -126,7 +118,7 @@ parse_from_target(Stmt* self, Targets* targets, AccessType access, bool subquery
 	{
 		// find function
 		auto call = ast_call_allocate();
-		call->fn = function_mgr_find(self->function_mgr, &schema, &name);
+		call->fn = function_mgr_find(self->parser->function_mgr, &schema, &name);
 		if (! call->fn)
 			stmt_error(self, expr, "function not found");
 
@@ -156,7 +148,7 @@ parse_from_target(Stmt* self, Targets* targets, AccessType access, bool subquery
 	}
 
 	// cte
-	auto cte = ctes_find(self->ctes, &name);
+	auto cte = ctes_find(&self->parser->ctes, &name);
 	if (cte)
 	{
 		if (cte->stmt == self)
@@ -169,7 +161,7 @@ parse_from_target(Stmt* self, Targets* targets, AccessType access, bool subquery
 	}
 
 	// table
-	auto table = table_mgr_find(&self->db->table_mgr, &schema, &name, false);
+	auto table = table_mgr_find(&self->parser->db->table_mgr, &schema, &name, false);
 	if (table)
 	{
 		target->type = TARGET_TABLE;
@@ -178,7 +170,7 @@ parse_from_target(Stmt* self, Targets* targets, AccessType access, bool subquery
 		target->from_columns = &table->config->columns;
 		str_set_str(&target->name, &table->config->name);
 
-		access_add(&self->program->access, table, access);
+		access_add(&self->parser->program->access, table, access);
 		return target;
 	}
 

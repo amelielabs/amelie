@@ -104,7 +104,7 @@ parse_stmt_free(Stmt* stmt)
 		auto ast = ast_insert_of(stmt->ast);
 		returning_free(&ast->ret);
 		if (ast->values)
-			set_cache_push(stmt->values_cache, ast->values);
+			set_cache_push(stmt->parser->values_cache, ast->values);
 		break;
 	}
 	case STMT_DELETE:
@@ -431,15 +431,7 @@ parse_with(Parser* self)
 	for (;;)
 	{
 		// name [(args)] AS ( stmt )[, ...]
-		auto stmt = stmt_allocate(self->db, self->function_mgr, self->local,
-		                          &self->lex,
-		                          self->program,
-		                          self->values_cache,
-		                          &self->json,
-		                          &self->stmts,
-		                          &self->ctes,
-		                          &self->vars,
-		                           self->args);
+		auto stmt = stmt_allocate(self, &self->lex);
 		stmts_add(&self->stmts, stmt);
 		self->stmt = stmt;
 
@@ -565,16 +557,7 @@ parse(Parser* self, Str* str)
 			lex_error(lex, ast, "statement expected");
 
 		// stmt (last stmt is main)
-		self->stmt = stmt_allocate(self->db, self->function_mgr,
-		                           self->local,
-		                           &self->lex,
-		                           self->program,
-		                           self->values_cache,
-		                           &self->json,
-		                           &self->stmts,
-		                           &self->ctes,
-		                           &self->vars,
-		                            self->args);
+		self->stmt = stmt_allocate(self, &self->lex);
 		stmts_add(&self->stmts, self->stmt);
 		self->stmt->assign = assign;
 

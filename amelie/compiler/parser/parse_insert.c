@@ -368,7 +368,7 @@ parse_insert(Stmt* self)
 	auto columns = target->from_columns;
 
 	// prepare values
-	stmt->values = set_cache_create(self->values_cache);
+	stmt->values = set_cache_create(self->parser->values_cache);
 	set_prepare(stmt->values, columns->count, 0, NULL);
 
 	// GENERATE
@@ -404,22 +404,14 @@ parse_insert(Stmt* self)
 
 			// rewrite INSERT INTO SELECT as CTE statement, columns will be
 			// validated during the emit
-			auto cte = stmt_allocate(self->db, self->function_mgr, self->local,
-			                         self->lex,
-			                         self->program,
-			                         self->values_cache,
-			                         self->json,
-			                         self->stmts,
-			                         self->ctes,
-			                         self->vars,
-			                         self->args);
+			auto cte = stmt_allocate(self->parser, &self->parser->lex);
 			cte->id = STMT_SELECT;
-			stmts_insert(self->stmts, self, cte);
+			stmts_insert(&self->parser->stmts, self, cte);
 			auto select = parse_select(cte, NULL, false);
 			select->ast.pos_start = values->pos_start;
 			select->ast.pos_end   = values->pos_end;
 			cte->ast          = &select->ast;
-			cte->cte          = ctes_add(self->ctes, self, NULL);
+			cte->cte          = ctes_add(&self->parser->ctes, self, NULL);
 			cte->cte->columns = &select->ret.columns;
 			parse_select_resolve(cte);
 			stmt->select = cte;

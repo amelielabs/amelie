@@ -251,16 +251,7 @@ parse_import(Parser* self, Str* str, Str* uri, EndpointType type)
 	parse_endpoint(&endpoint, self->db);
 
 	// prepare insert stmt
-	auto stmt = stmt_allocate(self->db, self->function_mgr,
-	                          self->local,
-	                          &self->lex,
-	                           self->program,
-	                           self->values_cache,
-	                          &self->json,
-	                          &self->stmts,
-	                          &self->ctes,
-	                          &self->vars,
-	                           self->args);
+	auto stmt = stmt_allocate(self, &self->lex);
 	self->stmt = stmt;
 	stmts_add(&self->stmts, stmt);
 	stmt->id  = STMT_INSERT;
@@ -282,7 +273,7 @@ parse_import(Parser* self, Str* str, Str* uri, EndpointType type)
 	access_add(&self->program->access, table, ACCESS_RW);
 
 	// prepare result set
-	insert->values = set_cache_create(stmt->values_cache);
+	insert->values = set_cache_create(stmt->parser->values_cache);
 	set_prepare(insert->values, columns->count, 0, NULL);
 
 	// parse rows according to the content type

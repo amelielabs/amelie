@@ -11,8 +11,9 @@
 // AGPL-3.0 Licensed.
 //
 
-typedef struct Stmt  Stmt;
-typedef struct Stmts Stmts;
+typedef struct Stmt   Stmt;
+typedef struct Stmts  Stmts;
+typedef struct Parser Parser;
 
 typedef enum
 {
@@ -52,43 +53,23 @@ typedef enum
 
 struct Stmt
 {
-	StmtId       id;
-	Ast*         ast;
-	int          order;
-	int          order_targets;
-	bool         ret;
-	Cte*         cte;
-	int          r;
-	Var*         assign;
-	AstList      select_list;
-
-	Stmts*       stmts;
-	Ctes*        ctes;
-	Vars*        vars;
-	Columns*     args;
-	Program*     program;
-	SetCache*    values_cache;
-	Json*        json;
-	Lex*         lex;
-	FunctionMgr* function_mgr;
-	Local*       local;
-	Db*          db;
-	Stmt*        next;
-	Stmt*        prev;
+	Lex*    lex;
+	StmtId  id;
+	Ast*    ast;
+	int     order;
+	int     order_targets;
+	bool    ret;
+	Cte*    cte;
+	int     r;
+	Var*    assign;
+	AstList select_list;
+	Parser* parser;
+	Stmt*   next;
+	Stmt*   prev;
 };
 
 static inline Stmt*
-stmt_allocate(Db*          db,
-              FunctionMgr* function_mgr,
-              Local*       local,
-              Lex*         lex,
-              Program*     program,
-              SetCache*    values_cache,
-              Json*        json,
-              Stmts*       stmts,
-              Ctes*        ctes,
-              Vars*        vars,
-              Columns*     args)
+stmt_allocate(Parser* parser, Lex* lex)
 {
 	Stmt* self = palloc(sizeof(Stmt));
 	self->id            = STMT_UNDEF;
@@ -99,19 +80,10 @@ stmt_allocate(Db*          db,
 	self->cte           = NULL;
 	self->r             = -1;
 	self->assign        = NULL;
-	self->args          = args;
-	self->stmts         = stmts;
-	self->ctes          = ctes;
-	self->vars          = vars;
-	self->program       = program;
-	self->values_cache  = values_cache;
-	self->json          = json;
-	self->lex           = lex;
-	self->function_mgr  = function_mgr;
-	self->local         = local;
-	self->db            = db;
 	self->next          = NULL;
 	self->prev          = NULL;
+	self->lex           = lex;
+	self->parser        = parser;
 	ast_list_init(&self->select_list);
 	return self;
 }

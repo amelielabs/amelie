@@ -103,7 +103,7 @@ parse_update_expr(Stmt* self)
 			str_set(&func, "set", 3);
 
 			auto call = ast_call_allocate();
-			call->fn    = function_mgr_find(self->function_mgr, &schema, &func);
+			call->fn    = function_mgr_find(self->parser->function_mgr, &schema, &func);
 			call->ast.l = NULL;
 			call->ast.r = &args->ast;
 			assert(call->fn);

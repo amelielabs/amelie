@@ -142,7 +142,7 @@ parse_default(Stmt* self, Column* column, Buf* value)
 		type_match = true;
 		break;
 	case TYPE_JSON:
-		ast_encode(expr, self->lex, self->local, value);
+		ast_encode(expr, self->lex, self->parser->local, value);
 		type_match = true;
 		break;
 	case TYPE_TIMESTAMP:
@@ -633,7 +633,7 @@ parse_table_alter(Stmt* self)
 			if (stmt_if(self, KDEFAULT))
 			{
 				// find table and column
-				auto table  = table_mgr_find(&self->db->table_mgr,
+				auto table  = table_mgr_find(&self->parser->db->table_mgr,
 				                             &stmt->schema,
 				                             &stmt->name, false);
 				if (! table)
