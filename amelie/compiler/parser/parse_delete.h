@@ -38,4 +38,4 @@ ast_delete_allocate(void)
 	return self;
 }
 
-void parse_delete(Stmt*);
+void parse_delete(Scope*);

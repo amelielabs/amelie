@@ -39,33 +39,33 @@
 #include <amelie_parser.h>
 
 bool
-parse_type(Stmt* self, int* type, int* type_size)
+parse_type(Scope* self, int* type, int* type_size)
 {
-	auto ast = stmt_next_shadow(self);
+	auto ast = scope_next_shadow(self);
 	if (ast->id != KNAME)
-		stmt_error(self, ast, "unrecognized data type");
+		scope_error(self, ast, "unrecognized data type");
 
 	*type = type_read(&ast->string, type_size);
 	if (*type == -1)
-		stmt_error(self, ast, "unrecognized data type");
+		scope_error(self, ast, "unrecognized data type");
 
 	return str_is_case(&ast->string, "serial", 6);
 }
 
 void
-parse_key(Stmt* self, Keys* keys)
+parse_key(Scope* self, Keys* keys)
 {
 	// (
-	stmt_expect(self, '(');
+	scope_expect(self, '(');
 	for (;;)
 	{
 		// (column, ...)
-		auto name = stmt_expect(self, KNAME);
+		auto name = scope_expect(self, KNAME);
 
 		// find column
 		auto column = columns_find(keys->columns, &name->string);
 		if (! column)
-			stmt_error(self, name, "column does not exists");
+			scope_error(self, name, "column does not exists");
 
 		// validate key type
 		if ((column->type != TYPE_INT    &&
@@ -73,7 +73,7 @@ parse_key(Stmt* self, Keys* keys)
 		     column->type != TYPE_UUID   &&
 		     column->type != TYPE_TIMESTAMP) ||
 		    (column->type == TYPE_INT && column->type_size < 4))
-			stmt_error(self, name, "supported key types are int32, int64, uuid, timestamp or text");
+			scope_error(self, name, "supported key types are int32, int64, uuid, timestamp or text");
 
 		// force column not_null constraint
 		constraints_set_not_null(&column->constraints, true);
@@ -84,26 +84,26 @@ parse_key(Stmt* self, Keys* keys)
 		keys_add(keys, key);
 
 		// ,
-		if (! stmt_if(self, ','))
+		if (! scope_if(self, ','))
 			break;
 	}
 
 	// )
-	stmt_expect(self, ')');
+	scope_expect(self, ')');
 }
 
 static inline bool
-parse_primary_key(Stmt* self)
+parse_primary_key(Scope* self)
 {
 	// PRIMARY KEY
-	if (! stmt_if(self, KPRIMARY))
+	if (! scope_if(self, KPRIMARY))
 		return false;
-	stmt_expect(self, KKEY);
+	scope_expect(self, KKEY);
 	return true;
 }
 
 static void
-parse_default(Stmt* self, Column* column, Buf* value)
+parse_default(Scope* self, Column* column, Buf* value)
 {
 	buf_reset(value);
 	auto expr = parse_expr(self, NULL);
@@ -142,7 +142,7 @@ parse_default(Stmt* self, Column* column, Buf* value)
 		type_match = true;
 		break;
 	case TYPE_JSON:
-		ast_encode(expr, self->lex, self->local, value);
+		ast_encode(expr, self->lex, self->parser->local, value);
 		type_match = true;
 		break;
 	case TYPE_TIMESTAMP:
@@ -150,15 +150,15 @@ parse_default(Stmt* self, Column* column, Buf* value)
 	case TYPE_DATE:
 	case TYPE_VECTOR:
 	case TYPE_UUID:
-		stmt_error(self, expr, "DEFAULT for this column type is not supported");
+		scope_error(self, expr, "DEFAULT for this column type is not supported");
 		break;
 	}
 	if (! type_match)
-		stmt_error(self, expr, "DEFAULT value must be a const and match the column type");
+		scope_error(self, expr, "DEFAULT value must be a const and match the column type");
 }
 
 static void
-parse_constraints(Stmt* self, Keys* keys, Column* column)
+parse_constraints(Scope* self, Keys* keys, Column* column)
 {
 	// constraints
 	auto cons = &column->constraints;
@@ -168,13 +168,13 @@ parse_constraints(Stmt* self, Keys* keys, Column* column)
 	bool done = false;
 	while (! done)
 	{
-		auto name = stmt_next(self);
+		auto name = scope_next(self);
 		switch (name->id) {
 		// NOT NULL
 		case KNOT:
 		{
 			// NULL
-			stmt_expect(self, KNULL);
+			scope_expect(self, KNULL);
 			constraints_set_not_null(cons, true);
 			break;
 		}
@@ -192,37 +192,37 @@ parse_constraints(Stmt* self, Keys* keys, Column* column)
 		{
 			// ensure the column has type INT
 			if (column->type != TYPE_INT || column->type_size < 4)
-				stmt_error(self, name, "RANDOM column must be int or int64");
+				scope_error(self, name, "RANDOM column must be int or int64");
 
 			constraints_set_random(cons, true);
 
 			// [(modulo)]
-			if (stmt_if(self, '('))
+			if (scope_if(self, '('))
 			{
 				// int
-				auto value = stmt_expect(self, KINT);
+				auto value = scope_expect(self, KINT);
 				// )
-				stmt_expect(self, ')');
+				scope_expect(self, ')');
 				if (value->integer == 0)
-					stmt_error(self, value, "RANDOM modulo value cannot be zero");
+					scope_error(self, value, "RANDOM modulo value cannot be zero");
 				constraints_set_random_modulo(cons, value->integer);
 			}
 
 			if (cons->as_identity)
-				stmt_error(self, name, "cannot be used with identity column");
+				scope_error(self, name, "cannot be used with identity column");
 			break;
 		}
 
 		// PRIMARY KEY
 		case KPRIMARY:
 		{
-			stmt_expect(self, KKEY);
+			scope_expect(self, KKEY);
 
 			if (primary_key)
-				stmt_error(self, name, "PRIMARY KEY defined twice");
+				scope_error(self, name, "PRIMARY KEY defined twice");
 
 			if (! keys)
-				stmt_error(self, name, "PRIMARY KEY clause is not supported in this command");
+				scope_error(self, name, "PRIMARY KEY clause is not supported in this command");
 
 			// force not_null constraint for keys
 			constraints_set_not_null(&column->constraints, true);
@@ -233,7 +233,7 @@ parse_constraints(Stmt* self, Keys* keys, Column* column)
 			     column->type != TYPE_UUID   &&
 			     column->type != TYPE_TIMESTAMP) ||
 			    (column->type == TYPE_INT && column->type_size < 4))
-				stmt_error(self, name, "supported key types are int32, int64, uuid, timestamp or text");
+				scope_error(self, name, "supported key types are int32, int64, uuid, timestamp or text");
 
 			// create key
 			auto key = key_allocate();
@@ -243,7 +243,7 @@ parse_constraints(Stmt* self, Keys* keys, Column* column)
 			primary_key = true;
 
 			if (! str_empty(&cons->as_resolved))
-				stmt_error(self, name, "cannot be used together with RESOLVED");
+				scope_error(self, name, "cannot be used together with RESOLVED");
 			break;
 		}
 
@@ -251,10 +251,10 @@ parse_constraints(Stmt* self, Keys* keys, Column* column)
 		case KGENERATED:
 		{
 			// ALWAYS
-			stmt_expect(self, KALWAYS);
+			scope_expect(self, KALWAYS);
 
 			// AS
-			stmt_expect(self, KAS);
+			scope_expect(self, KAS);
 
 			// fallthrough
 		}
@@ -263,26 +263,26 @@ parse_constraints(Stmt* self, Keys* keys, Column* column)
 		// AS (expr) STORED | RESOLVED
 		case KAS:
 		{
-			auto identity = stmt_if(self, KIDENTITY);
+			auto identity = scope_if(self, KIDENTITY);
 			if (identity)
 			{
 				// ensure the column has type INT64
 				if (column->type != TYPE_INT || column->type_size < 4)
-					stmt_error(self, identity, "identity column must be int or int64");
+					scope_error(self, identity, "identity column must be int or int64");
 
 				constraints_set_as_identity(cons, true);
 
 				if (cons->random)
-					stmt_error(self, identity, "cannot be used with RANDOM");
+					scope_error(self, identity, "cannot be used with RANDOM");
 				break;
 			}
 
 			// (
-			auto lbr = stmt_expect(self, '(');
+			auto lbr = scope_expect(self, '(');
 			// expr
 			parse_expr(self, NULL);
 			// )
-			auto rbr = stmt_expect(self, ')');
+			auto rbr = scope_expect(self, ')');
 
 			Str as;
 			str_set(&as, self->lex->start + lbr->pos_start, rbr->pos_end - lbr->pos_start - 1);
@@ -290,10 +290,10 @@ parse_constraints(Stmt* self, Keys* keys, Column* column)
 			as.pos++;
 			str_shrink(&as);
 			if (str_empty(&as))
-				stmt_error(self, lbr, "AS expression is missing");
+				scope_error(self, lbr, "AS expression is missing");
 
 			// STORED | RESOLVED
-			auto type = stmt_next(self);
+			auto type = scope_next(self);
 			if (type->id == KSTORED) {
 				constraints_set_as_stored(cons, &as);
 			} else
@@ -301,15 +301,15 @@ parse_constraints(Stmt* self, Keys* keys, Column* column)
 			{
 				constraints_set_as_resolved(cons, &as);
 			} else {
-				stmt_error(self, type, "STORED or RESOLVED expected");
+				scope_error(self, type, "STORED or RESOLVED expected");
 			}
 			if (type->id == KRESOLVED && column->refs > 0)
-				stmt_error(self, type, "cannot be used together with PRIMARY KEY");
+				scope_error(self, type, "cannot be used together with PRIMARY KEY");
 			break;
 		}
 
 		default:
-			stmt_push(self, name);
+			scope_push(self, name);
 			done = true;
 			break;
 		}
@@ -321,12 +321,12 @@ parse_constraints(Stmt* self, Keys* keys, Column* column)
 }
 
 static void
-parse_columns(Stmt* self, Columns* columns, Keys* keys)
+parse_columns(Scope* self, Columns* columns, Keys* keys)
 {
 	// (name type [constraints], ..., primary key())
 
 	// (
-	stmt_expect(self, '(');
+	scope_expect(self, '(');
 
 	for (;;)
 	{
@@ -336,18 +336,18 @@ parse_columns(Stmt* self, Columns* columns, Keys* keys)
 			parse_key(self, keys);
 
 			// )
-			stmt_expect(self, ')');
+			scope_expect(self, ')');
 			break;
 		}
 
 		// name type [constraint]
 
 		// name
-		auto name = stmt_expect(self, KNAME);
+		auto name = scope_expect(self, KNAME);
 
 		// ensure column does not exists
 		if (columns_find(keys->columns, &name->string))
-			stmt_error(self, name, "column is redefined");
+			scope_error(self, name, "column is redefined");
 
 		// create column
 		auto column = column_allocate();
@@ -365,40 +365,40 @@ parse_columns(Stmt* self, Columns* columns, Keys* keys)
 		parse_constraints(self, keys, column);
 
 		// ,
-		if (stmt_if(self, ','))
+		if (scope_if(self, ','))
 			continue;
 
 		// )
-		auto rbr = stmt_expect(self, ')');
+		auto rbr = scope_expect(self, ')');
 		if (keys->list_count == 0)
-			stmt_error(self, rbr, "primary key is not defined");
+			scope_error(self, rbr, "primary key is not defined");
 		break;
 	}
 }
 
 static void
-parse_with(Stmt* self, AstTableCreate* stmt, IndexConfig* index_config)
+parse_with(Scope* self, AstTableCreate* stmt, IndexConfig* index_config)
 {
 	// [WITH]
-	if (! stmt_if(self, KWITH))
+	if (! scope_if(self, KWITH))
 		return;
 
 	// (
-	stmt_expect(self, '(');
+	scope_expect(self, '(');
 
 	for (;;)
 	{
 		// key
-		auto key = stmt_expect(self, KNAME);
+		auto key = scope_expect(self, KNAME);
 
 		unused(stmt);
 		if (str_is(&key->string, "type", 4))
 		{
 			// =
-			stmt_expect(self, '=');
+			scope_expect(self, '=');
 
 			// string
-			auto value = stmt_expect(self, KSTRING);
+			auto value = scope_expect(self, KSTRING);
 
 			// tree | hash
 			if (str_is_cstr(&value->string, "tree"))
@@ -407,30 +407,30 @@ parse_with(Stmt* self, AstTableCreate* stmt, IndexConfig* index_config)
 			if (str_is_cstr(&value->string, "hash"))
 				index_config_set_type(index_config, INDEX_HASH);
 			else
-				stmt_error(self, value, "unrecognized index type");
+				scope_error(self, value, "unrecognized index type");
 
 		} else {
-			stmt_error(self, key, "unrecognized parameter");
+			scope_error(self, key, "unrecognized parameter");
 		}
 
 		// ,
-		if (stmt_if(self, ','))
+		if (scope_if(self, ','))
 			continue;
 
 		// )
-		if (stmt_if(self, ')'))
+		if (scope_if(self, ')'))
 			break;
 	}
 }
 
 void
-parse_table_create(Stmt* self, bool unlogged)
+parse_table_create(Scope* self, bool unlogged)
 {
 	// CREATE [UNLOGGED] TABLE [IF NOT EXISTS] name (key)
 	// [PARTITIONS n]
 	// [WITH()]
 	auto stmt = ast_table_create_allocate();
-	self->ast = &stmt->ast;
+	self->stmt->ast = &stmt->ast;
 
 	// if not exists
 	stmt->if_not_exists = parse_if_not_exists(self);
@@ -439,7 +439,7 @@ parse_table_create(Stmt* self, bool unlogged)
 	Str schema;
 	Str name;
 	if (! parse_target(self, &schema, &name))
-		stmt_error(self, NULL, "name expected");
+		scope_error(self, NULL, "name expected");
 
 	// create table config
 	stmt->config = table_config_allocate();
@@ -462,9 +462,9 @@ parse_table_create(Stmt* self, bool unlogged)
 	parse_columns(self, &stmt->config->columns, &index_config->keys);
 
 	// [PARTITIONS]
-	if (stmt_if(self, KPARTITIONS))
+	if (scope_if(self, KPARTITIONS))
 	{
-		auto n = stmt_expect(self, KINT);
+		auto n = scope_expect(self, KINT);
 		stmt->partitions = n->integer;
 	} else {
 		stmt->partitions = opt_int_of(&config()->backends);
@@ -475,22 +475,22 @@ parse_table_create(Stmt* self, bool unlogged)
 }
 
 void
-parse_table_drop(Stmt* self)
+parse_table_drop(Scope* self)
 {
 	// DROP TABLE [IF EXISTS] name
 	auto stmt = ast_table_drop_allocate();
-	self->ast = &stmt->ast;
+	self->stmt->ast = &stmt->ast;
 
 	// if exists
 	stmt->if_exists = parse_if_exists(self);
 
 	// name
 	if (! parse_target(self, &stmt->schema, &stmt->name))
-		stmt_error(self, NULL, "name expected");
+		scope_error(self, NULL, "name expected");
 }
 
 void
-parse_table_alter(Stmt* self)
+parse_table_alter(Scope* self)
 {
 	// ALTER TABLE [IF EXISTS] [schema.]name ADD COLUMN name type [constraint]
 	// ALTER TABLE [IF EXISTS] [schema.]name DROP COLUMN name
@@ -502,7 +502,7 @@ parse_table_alter(Stmt* self)
 	// ALTER TABLE [IF EXISTS] [schema.]name UNSET COLUMN name DEFAULT
 	// ALTER TABLE [IF EXISTS] [schema.]name UNSET COLUMN name AS <IDENTITY|STORED|RESOLVED>
 	auto stmt = ast_table_alter_allocate();
-	self->ast = &stmt->ast;
+	self->stmt->ast = &stmt->ast;
 
 	// if exists
 	stmt->if_exists = parse_if_exists(self);
@@ -510,17 +510,17 @@ parse_table_alter(Stmt* self)
 	// name
 	auto target = parse_target(self, &stmt->schema, &stmt->name);
 	if (! target)
-		stmt_error(self, NULL, "name expected");
+		scope_error(self, NULL, "name expected");
 
 	// [ADD COLUMN]
-	if (stmt_if(self, KADD))
+	if (scope_if(self, KADD))
 	{
-		stmt_expect(self, KCOLUMN);
+		scope_expect(self, KCOLUMN);
 
 		// name type [constraint]
 
 		// name
-		auto name = stmt_expect(self, KNAME);
+		auto name = scope_expect(self, KNAME);
 
 		// create column
 		stmt->column = column_allocate();
@@ -540,19 +540,19 @@ parse_table_alter(Stmt* self)
 		// validate column
 		auto cons = &stmt->column->constraints;
 		if (cons->not_null)
-			stmt_error(self, NULL, "NOT NULL currently not supported with ALTER");
+			scope_error(self, NULL, "NOT NULL currently not supported with ALTER");
 
 		stmt->type = TABLE_ALTER_COLUMN_ADD;
 		return;
 	}
 
 	// [DROP COLUMN]
-	if (stmt_if(self, KDROP))
+	if (scope_if(self, KDROP))
 	{
-		stmt_expect(self, KCOLUMN);
+		scope_expect(self, KCOLUMN);
 
 		// name
-		auto name = stmt_expect(self, KNAME);
+		auto name = scope_expect(self, KNAME);
 		str_set_str(&stmt->column_name, &name->string);
 
 		stmt->type = TABLE_ALTER_COLUMN_DROP;
@@ -560,53 +560,53 @@ parse_table_alter(Stmt* self)
 	}
 
 	// [RENAME]
-	if (stmt_if(self, KRENAME))
+	if (scope_if(self, KRENAME))
 	{
 		// [COLUMN name TO  name]
-		if (stmt_if(self, KCOLUMN))
+		if (scope_if(self, KCOLUMN))
 		{
 			stmt->type = TABLE_ALTER_COLUMN_RENAME;
 
 			// name
-			auto name = stmt_expect(self, KNAME);
+			auto name = scope_expect(self, KNAME);
 			str_set_str(&stmt->column_name, &name->string);
 
 			// TO
-			stmt_expect(self, KTO);
+			scope_expect(self, KTO);
 
 			// name
-			name = stmt_expect(self, KNAME);
+			name = scope_expect(self, KNAME);
 			str_set_str(&stmt->name_new, &name->string);
 			return;
 		}
 
 		// TO
-		stmt_expect(self, KTO);
+		scope_expect(self, KTO);
 
 		// name
 		if (! parse_target(self, &stmt->schema_new, &stmt->name_new))
-			stmt_error(self, NULL, "name expected");
+			scope_error(self, NULL, "name expected");
 		stmt->type = TABLE_ALTER_RENAME;
 		return;
 	}
 
 	// [SET]
-	if (stmt_if(self, KSET))
+	if (scope_if(self, KSET))
 	{
 		// SET IDENTITY TO value
-		if (stmt_if(self, KIDENTITY))
+		if (scope_if(self, KIDENTITY))
 		{
 			// TO
-			stmt_expect(self, KTO);
+			scope_expect(self, KTO);
 
 			// int
-			stmt->identity = stmt_expect(self, KINT);
+			stmt->identity = scope_expect(self, KINT);
 			stmt->type = TABLE_ALTER_SET_IDENTITY;
 			return;
 		}
 
 		// SET LOGGED
-		if (stmt_if(self, KLOGGED))
+		if (scope_if(self, KLOGGED))
 		{
 			stmt->type = TABLE_ALTER_SET_UNLOGGED;
 			stmt->unlogged = false;
@@ -614,7 +614,7 @@ parse_table_alter(Stmt* self)
 		}
 
 		// SET UNLOGGED
-		if (stmt_if(self, KUNLOGGED))
+		if (scope_if(self, KUNLOGGED))
 		{
 			stmt->type = TABLE_ALTER_SET_UNLOGGED;
 			stmt->unlogged = true;
@@ -623,24 +623,24 @@ parse_table_alter(Stmt* self)
 
 		// SET COLUMN DEFAULT
 		// SET COLUMN AS
-		if (stmt_if(self, KCOLUMN))
+		if (scope_if(self, KCOLUMN))
 		{
 			// name
-			auto name = stmt_expect(self, KNAME);
+			auto name = scope_expect(self, KNAME);
 			str_set_str(&stmt->column_name, &name->string);
 
 			// DEFAULT const
-			if (stmt_if(self, KDEFAULT))
+			if (scope_if(self, KDEFAULT))
 			{
 				// find table and column
-				auto table  = table_mgr_find(&self->db->table_mgr,
+				auto table  = table_mgr_find(&self->parser->db->table_mgr,
 				                             &stmt->schema,
 				                             &stmt->name, false);
 				if (! table)
-					stmt_error(self, target, "table not found");
+					scope_error(self, target, "table not found");
 				auto column = columns_find(table_columns(table), &stmt->column_name);
 				if (! column)
-					stmt_error(self, name, "column does not exists");
+					scope_error(self, name, "column does not exists");
 
 				auto value = buf_create();
 				errdefer_buf(value);
@@ -654,9 +654,9 @@ parse_table_alter(Stmt* self)
 
 			// AS IDENTITY
 			// AS (expr) <STORED | RESOLVED>
-			if (stmt_if(self, KAS))
+			if (scope_if(self, KAS))
 			{
-				if (stmt_if(self, KIDENTITY))
+				if (scope_if(self, KIDENTITY))
 				{
 					stmt->type = TABLE_ALTER_COLUMN_SET_IDENTITY;
 					str_set(&stmt->value, "1", 1);
@@ -664,11 +664,11 @@ parse_table_alter(Stmt* self)
 				}
 
 				// (
-				auto lbr = stmt_expect(self, '(');
+				auto lbr = scope_expect(self, '(');
 				// expr
 				parse_expr(self, NULL);
 				// )
-				auto rbr = stmt_expect(self, ')');
+				auto rbr = scope_expect(self, ')');
 
 				Str as;
 				str_set(&as, self->lex->start + lbr->pos_start, rbr->pos_end - lbr->pos_start - 1);
@@ -676,41 +676,41 @@ parse_table_alter(Stmt* self)
 				as.pos++;
 				str_shrink(&as);
 				if (str_empty(&as))
-					stmt_error(self, lbr, "AS expression is missing");
+					scope_error(self, lbr, "AS expression is missing");
 				stmt->value = as;
 
 				// STORED | RESOLVED
-				auto type = stmt_next(self);
+				auto type = scope_next(self);
 				if (type->id == KSTORED)
 					stmt->type = TABLE_ALTER_COLUMN_SET_STORED;
 				else
 				if (type->id == KRESOLVED)
 					stmt->type = TABLE_ALTER_COLUMN_SET_RESOLVED;
 				else
-					stmt_error(self, type, "STORED or RESOLVED expected");
+					scope_error(self, type, "STORED or RESOLVED expected");
 				return;
 			}
 		}
 
-		stmt_error(self, NULL, "'IDENTITY | LOGGED | UNLOGGED | COLUMN DEFAULT | COLUMN AS' expected");
+		scope_error(self, NULL, "'IDENTITY | LOGGED | UNLOGGED | COLUMN DEFAULT | COLUMN AS' expected");
 		return;
 	}
 
 	// [UNSET]
-	if (stmt_if(self, KUNSET))
+	if (scope_if(self, KUNSET))
 	{
 		// UNSET COLUMN DEFAULT
 		// UNSET COLUMN AS IDENTITY
 		// UNSET COLUMN AS STORED
 		// UNSET COLUMN AS RESOLVED
-		if (stmt_if(self, KCOLUMN))
+		if (scope_if(self, KCOLUMN))
 		{
 			// name
-			auto name = stmt_expect(self, KNAME);
+			auto name = scope_expect(self, KNAME);
 			str_set_str(&stmt->column_name, &name->string);
 
 			// DEFAULT
-			if (stmt_if(self, KDEFAULT))
+			if (scope_if(self, KDEFAULT))
 			{
 				auto value = buf_create();
 				errdefer_buf(value);
@@ -722,39 +722,39 @@ parse_table_alter(Stmt* self)
 			}
 
 			// AS
-			stmt_expect(self, KAS);
+			scope_expect(self, KAS);
 
 			// IDENTITY | STORED | RESOLVED
-			if (stmt_if(self, KIDENTITY))
+			if (scope_if(self, KIDENTITY))
 				stmt->type = TABLE_ALTER_COLUMN_UNSET_IDENTITY;
 			else
-			if (stmt_if(self, KSTORED))
+			if (scope_if(self, KSTORED))
 				stmt->type = TABLE_ALTER_COLUMN_UNSET_STORED;
 			else
-			if (stmt_if(self, KRESOLVED))
+			if (scope_if(self, KRESOLVED))
 				stmt->type = TABLE_ALTER_COLUMN_UNSET_RESOLVED;
 			else
-				stmt_error(self, NULL, "'IDENTITY, STORED or RESOLVED' expected");
+				scope_error(self, NULL, "'IDENTITY, STORED or RESOLVED' expected");
 			return;
 		}
 
-		stmt_expect(self, KCOLUMN);
+		scope_expect(self, KCOLUMN);
 	}
 
-	stmt_error(self, NULL, "'RENAME | ADD | DROP | SET | UNSET' expected");
+	scope_error(self, NULL, "'RENAME | ADD | DROP | SET | UNSET' expected");
 }
 
 void
-parse_table_truncate(Stmt* self)
+parse_table_truncate(Scope* self)
 {
 	// TRUNCATE [IF EXISTS] [schema.]name
 	auto stmt = ast_table_truncate_allocate();
-	self->ast = &stmt->ast;
+	self->stmt->ast = &stmt->ast;
 
 	// if exists
 	stmt->if_exists = parse_if_exists(self);
 
 	// name
 	if (! parse_target(self, &stmt->schema, &stmt->name))
-		stmt_error(self, NULL, "name expected");
+		scope_error(self, NULL, "name expected");
 }

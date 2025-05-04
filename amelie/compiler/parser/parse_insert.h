@@ -52,6 +52,6 @@ ast_insert_allocate(void)
 	return self;
 }
 
-void parse_insert(Stmt*);
-void parse_generated(Stmt*);
-void parse_resolved(Stmt*);
+void parse_insert(Scope*);
+void parse_generated(Scope*);
+void parse_resolved(Scope*);

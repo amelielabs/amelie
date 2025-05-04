@@ -46,14 +46,15 @@ compiler_init(Compiler*    self,
               FunctionMgr* function_mgr,
               Udf*         udf)
 {
-	self->program   = program_allocate();
-	self->code      = &self->program->code;
-	self->code_data = &self->program->code_data;
-	self->args      = NULL;
-	self->udf       = udf;
-	self->current   = NULL;
-	self->last      = NULL;
-	self->db        = db;
+	self->program       = program_allocate();
+	self->code          = &self->program->code;
+	self->code_data     = &self->program->code_data;
+	self->args          = NULL;
+	self->udf           = udf;
+	self->current       = NULL;
+	self->current_scope = NULL;
+	self->last          = NULL;
+	self->db            = db;
 	set_cache_init(&self->values_cache);
 	parser_init(&self->parser, db, local, function_mgr, &self->values_cache,
 	             self->program);
@@ -74,10 +75,11 @@ compiler_free(Compiler* self)
 void
 compiler_reset(Compiler* self)
 {
-	self->code    = &self->program->code;
-	self->args    = NULL;
-	self->current = NULL;
-	self->last    = NULL;
+	self->code          = &self->program->code;
+	self->args          = NULL;
+	self->current       = NULL;
+	self->current_scope = NULL;
+	self->last          = NULL;
 	program_reset(self->program);
 	parser_reset(&self->parser);
 	rmap_reset(&self->map);
@@ -87,6 +89,7 @@ void
 compiler_parse(Compiler* self, Str* text)
 {
 	parse(&self->parser, text);
+	self->current_scope = self->parser.scopes.list;
 }
 
 void
@@ -94,6 +97,7 @@ compiler_parse_import(Compiler*    self, Str* text, Str* uri,
                       EndpointType type)
 {
 	parse_import(&self->parser, text, uri, type);
+	self->current_scope = self->parser.scopes.list;
 }
 
 static void
@@ -188,13 +192,12 @@ emit_send_generated_on_match(Compiler* self, Targets* targets, void* arg)
 		// ensure that the expression type is compatible
 		// with the column
 		if (unlikely(type != TYPE_NULL && column->type != type))
-			stmt_error(self->current, &insert->ast,
-			           "column '%.*s.%.*s' generated expression type '%s' does not match column type '%s'",
-			           str_size(&target->name), str_of(&target->name),
-			           str_size(&column->name), str_of(&column->name),
-			           type_of(type),
-			           type_of(column->type));
-
+			compiler_error(self, &insert->ast,
+			               "column '%.*s.%.*s' generated expression type '%s' does not match column type '%s'",
+			               str_size(&target->name), str_of(&target->name),
+			               str_size(&column->name), str_of(&column->name),
+			               type_of(type),
+			               type_of(column->type));
 		op1(self, CPUSH, rexpr);
 		runpin(self, rexpr);
 		count++;
@@ -218,7 +221,7 @@ emit_send_insert(Compiler* self, int start)
 	{
 		auto columns_select = &ast_select_of(insert->select->ast)->ret.columns;
 		if (! columns_compare(columns, columns_select))
-			stmt_error(stmt, insert->select->ast, "SELECT columns must match the INSERT table");
+			compiler_error(self, insert->select->ast, "SELECT columns must match the INSERT table");
 		r = op2(self, CDUP, rpin(self, TYPE_STORE), insert->select->r);
 	} else
 	{
@@ -386,9 +389,9 @@ emit_recv(Compiler* self)
 	if (var)
 	{
 		if (! ret)
-			stmt_error(stmt, NULL, "statement cannot be assigned");
+			compiler_error(self, NULL, "statement cannot be assigned");
 		if (ret->count > 1)
-			stmt_error(stmt, NULL, "statement must return only one column to be assigned");
+			compiler_error(self, NULL, "statement must return only one column to be assigned");
 		var->type = columns_first(&ret->columns)->type;
 		var->r = op2(self, CASSIGN, rpin(self, var->type), r);
 	}
@@ -406,10 +409,10 @@ emit_recv(Compiler* self)
 			if (ret && type_fn != TYPE_NULL)
 			{
 				if (ret->count > 1)
-					stmt_error(stmt, NULL, "RETURN statement must return only one column");
+					compiler_error(self, NULL, "RETURN statement must return only one column");
 				auto type = columns_first(&ret->columns)->type;
 				if (type != type_fn)
-					stmt_error(stmt, NULL, "RETURN does not match the function type");
+					compiler_error(self, NULL, "RETURN does not match the function type");
 				op1(self, CRESULT, r);
 			}
 		} else
@@ -427,7 +430,7 @@ static inline void
 emit_recv_upto(Compiler* self, int last, int order)
 {
 	auto current = self->current;
-	auto stmt = self->parser.stmts.list;
+	auto stmt = compiler_stmt(self);
 	for (; stmt; stmt = stmt->next)
 	{
 		if (stmt->order <= last)
@@ -479,7 +482,7 @@ hot void
 compiler_emit(Compiler* self)
 {
 	auto recv_last = -1;
-	auto stmt = self->parser.stmts.list;
+	auto stmt = compiler_stmt(self);
 	for (; stmt; stmt = stmt->next)
 	{
 		// generate frontend code (recv)
@@ -527,10 +530,10 @@ compiler_emit(Compiler* self)
 	}
 
 	// recv rest of commands (if any left)
-	emit_recv_upto(self, recv_last, self->parser.stmts.count);
+	emit_recv_upto(self, recv_last, self->current_scope->stmts.count);
 
 	// no statements (last statement always returns)
-	if (! self->parser.stmt)
+	if (! self->current_scope->stmts.list)
 		op0(self, CRET);
 
 	// set the max number of registers used

@@ -72,6 +72,6 @@ ast_select_allocate(Targets* outer)
 	return self;
 }
 
-AstSelect* parse_select(Stmt*, Targets*, bool);
-AstSelect* parse_select_expr(Stmt*);
-void       parse_select_resolve(Stmt*);
+AstSelect* parse_select(Scope*, Targets*, bool);
+AstSelect* parse_select_expr(Scope*);
+void       parse_select_resolve(Scope*);

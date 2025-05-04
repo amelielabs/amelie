@@ -39,22 +39,22 @@
 #include <amelie_parser.h>
 
 static void
-parse_function_args(Stmt* self, AstFunctionCreate* stmt)
+parse_function_args(Scope* self, AstFunctionCreate* stmt)
 {
 	// ()
-	stmt_expect(self, '(');
-	if (stmt_if(self, ')'))
+	scope_expect(self, '(');
+	if (scope_if(self, ')'))
 		return;
 
 	for (;;)
 	{
 		// name
-		auto name = stmt_expect(self, KNAME);
+		auto name = scope_expect(self, KNAME);
 
 		// ensure arg does not exists
 		auto arg = columns_find(&stmt->config->columns, &name->string);
 		if (arg)
-			stmt_error(self, name, "argument redefined");
+			scope_error(self, name, "argument redefined");
 
 		// add argument
 		arg = column_allocate();
@@ -66,19 +66,19 @@ parse_function_args(Stmt* self, AstFunctionCreate* stmt)
 		int type_size;
 		int type;
 		if (parse_type(self, &type, &type_size))
-			stmt_error(self, name, "serial type cannot be used here");
+			scope_error(self, name, "serial type cannot be used here");
 		column_set_type(arg, type, type_size);
 		// ,
-		if (! stmt_if(self, ','))
+		if (! scope_if(self, ','))
 			break;
 	}
 
 	// )
-	stmt_expect(self, ')');
+	scope_expect(self, ')');
 }
 
 void
-parse_function_create(Stmt* self, bool or_replace)
+parse_function_create(Scope* self, bool or_replace)
 {
 	// CREATE [OR REPLACE] FUNCTION [schema.]name (args)
 	// [RETURNS type]
@@ -86,7 +86,7 @@ parse_function_create(Stmt* self, bool or_replace)
 	//  [stmt[; stmt]]
 	// END
 	auto stmt = ast_function_create_allocate();
-	self->ast = &stmt->ast;
+	self->stmt->ast = &stmt->ast;
 
 	// or replace
 	stmt->or_replace = or_replace;
@@ -98,7 +98,7 @@ parse_function_create(Stmt* self, bool or_replace)
 	Str schema;
 	Str name;
 	if (! parse_target(self, &schema, &name))
-		stmt_error(self, NULL, "name expected");
+		scope_error(self, NULL, "name expected");
 	udf_config_set_schema(stmt->config, &schema);
 	udf_config_set_name(stmt->config, &name);
 
@@ -106,17 +106,17 @@ parse_function_create(Stmt* self, bool or_replace)
 	parse_function_args(self, stmt);
 
 	// [RETURNS]
-	if (stmt_if(self, KRETURNS))
+	if (scope_if(self, KRETURNS))
 	{
 		int type_size;
 		int type;
 		if (parse_type(self, &type, &type_size))
-			stmt_error(self, NULL, "serial type cannot be used here");
+			scope_error(self, NULL, "serial type cannot be used here");
 		udf_config_set_type(stmt->config, type);
 	}
 
 	// BEGIN
-	stmt_expect(self, KBEGIN);
+	scope_expect(self, KBEGIN);
 
 	char* start = self->lex->pos;
 	char* end   = NULL;
@@ -125,9 +125,9 @@ parse_function_create(Stmt* self, bool or_replace)
 	for (;;)
 	{
 		end = self->lex->pos;
-		auto ast = stmt_next(self);
+		auto ast = scope_next(self);
 		if (ast->id == KEOF)
-			stmt_error(self, ast, "END expected");
+			scope_error(self, ast, "END expected");
 		if (ast->id == KEND)
 			break;
 	}
@@ -140,41 +140,41 @@ parse_function_create(Stmt* self, bool or_replace)
 }
 
 void
-parse_function_drop(Stmt* self)
+parse_function_drop(Scope* self)
 {
 	// DROP FUNCTION [IF EXISTS] name
 	auto stmt = ast_function_drop_allocate();
-	self->ast = &stmt->ast;
+	self->stmt->ast = &stmt->ast;
 
 	// if exists
 	stmt->if_exists = parse_if_exists(self);
 
 	// name
 	if (! parse_target(self, &stmt->schema, &stmt->name))
-		stmt_error(self, NULL, "name expected");
+		scope_error(self, NULL, "name expected");
 }
 
 void
-parse_function_alter(Stmt* self)
+parse_function_alter(Scope* self)
 {
 	// ALTER FUNCTION [IF EXISTS] [schema.]name RENAME [schema.]name
 	auto stmt = ast_function_alter_allocate();
-	self->ast = &stmt->ast;
+	self->stmt->ast = &stmt->ast;
 
 	// if exists
 	stmt->if_exists = parse_if_exists(self);
 
 	// name
 	if (! parse_target(self, &stmt->schema, &stmt->name))
-		stmt_error(self, NULL, "name expected");
+		scope_error(self, NULL, "name expected");
 
 	// RENAME
-	stmt_expect(self, KRENAME);
+	scope_expect(self, KRENAME);
 
 	// [TO]
-	stmt_if(self, KTO);
+	scope_if(self, KTO);
 
 	// name
 	if (! parse_target(self, &stmt->schema_new, &stmt->name_new))
-		stmt_error(self, NULL, "name expected");
+		scope_error(self, NULL, "name expected");
 }

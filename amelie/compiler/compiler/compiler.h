@@ -23,6 +23,7 @@ struct Compiler
 	SetCache  values_cache;
 	Columns*  args;
 	Udf*      udf;
+	Scope*    current_scope;
 	Stmt*     current;
 	Stmt*     last;
 	Db*       db;
@@ -38,7 +39,7 @@ void compiler_emit(Compiler*);
 static inline Stmt*
 compiler_stmt(Compiler* self)
 {
-	return self->parser.stmt;
+	return self->parser.scopes.list->stmts.list;
 }
 
 static inline void
@@ -51,4 +52,17 @@ static inline void
 compiler_switch_backend(Compiler* self)
 {
 	self->code = &self->program->code_backend;
+}
+
+static inline void
+compiler_error(Compiler* self, Ast* ast, const char* fmt, ...)
+{
+	va_list args;
+	char msg[256];
+	va_start(args, fmt);
+	vsnprintf(msg, sizeof(msg), fmt, args);
+	va_end(args);
+	if (! ast)
+		ast = lex_next(self->current_scope->lex);
+	lex_error(self->current_scope->lex, ast, msg);
 }

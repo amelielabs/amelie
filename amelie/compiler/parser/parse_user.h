@@ -82,6 +82,6 @@ ast_user_alter_allocate(void)
 	return self;
 }
 
-void parse_user_create(Stmt*);
-void parse_user_drop(Stmt*);
-void parse_user_alter(Stmt*);
+void parse_user_create(Scope*);
+void parse_user_drop(Scope*);
+void parse_user_alter(Scope*);

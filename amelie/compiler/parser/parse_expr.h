@@ -34,5 +34,5 @@ expr_init(Expr* self)
 	self->targets  = NULL;
 }
 
-Ast* parse_expr_args(Stmt*, Expr*, int, bool);
-Ast* parse_expr(Stmt*, Expr*);
+Ast* parse_expr_args(Scope*, Expr*, int, bool);
+Ast* parse_expr(Scope*, Expr*);

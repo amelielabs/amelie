@@ -127,7 +127,7 @@ emit_select_on_match_aggregate(Compiler* self, Targets* targets, void* arg)
 		if (! agg->function)
 		{
 			if (rt != agg->expr_seed_type)
-				stmt_error(self->current, agg->expr, "lambda expression type mismatch");
+				compiler_error(self, agg->expr, "lambda expression type mismatch");
 			agg->id = AGG_LAMBDA;
 			aggs[agg->order] = AGG_LAMBDA;
 			continue;
@@ -147,7 +147,7 @@ emit_select_on_match_aggregate(Compiler* self, Targets* targets, void* arg)
 			if (rt == TYPE_DOUBLE)
 				agg->id = AGG_DOUBLE_MIN;
 			else
-				stmt_error(self->current, agg->expr, "int or double expected");
+				compiler_error(self, agg->expr, "int or double expected");
 			break;
 		case KMAX:
 			if (rt == TYPE_INT || rt == TYPE_NULL)
@@ -156,7 +156,7 @@ emit_select_on_match_aggregate(Compiler* self, Targets* targets, void* arg)
 			if (rt == TYPE_DOUBLE)
 				agg->id = AGG_DOUBLE_MAX;
 			else
-				stmt_error(self->current, agg->expr, "int or double expected");
+				compiler_error(self, agg->expr, "int or double expected");
 			break;
 		case KSUM:
 			if (rt == TYPE_INT || rt == TYPE_NULL)
@@ -165,7 +165,7 @@ emit_select_on_match_aggregate(Compiler* self, Targets* targets, void* arg)
 			if (rt == TYPE_DOUBLE)
 				agg->id = AGG_DOUBLE_SUM;
 			else
-				stmt_error(self->current, agg->expr, "int or double expected");
+				compiler_error(self, agg->expr, "int or double expected");
 			break;
 		case KAVG:
 			if (rt == TYPE_INT || rt == TYPE_NULL)
@@ -174,7 +174,7 @@ emit_select_on_match_aggregate(Compiler* self, Targets* targets, void* arg)
 			if (rt == TYPE_DOUBLE)
 				agg->id = AGG_DOUBLE_AVG;
 			else
-				stmt_error(self->current, agg->expr, "int or double expected");
+				compiler_error(self, agg->expr, "int or double expected");
 			break;
 		}
 		aggs[agg->order] = agg->id;

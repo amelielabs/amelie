@@ -40,6 +40,6 @@ ast_update_allocate(void)
 	return self;
 }
 
-Ast* parse_update_expr(Stmt*);
-Ast* parse_update_resolved(Stmt*, Columns*);
-void parse_update(Stmt*);
+Ast* parse_update_expr(Scope*);
+Ast* parse_update_resolved(Scope*, Columns*);
+void parse_update(Scope*);

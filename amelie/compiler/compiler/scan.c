@@ -342,8 +342,8 @@ scan_expr(Scan* self, Target* target)
 		op_next  = CJSON_NEXT;
 	} else
 	if (type != TYPE_STORE && type != TYPE_NULL) {
-		stmt_error(cp->current, target->ast, "unsupported expression type %s",
-		           type_of(type));
+		compiler_error(cp, target->ast, "unsupported expression type %s",
+		               type_of(type));
 	}
 
 	// open SET, MERGE or JSON cursor

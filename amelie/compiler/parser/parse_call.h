@@ -22,8 +22,8 @@ struct AstCall
 
 struct AstArgs
 {
-	Ast       ast;
-	bool      constable;
+	Ast  ast;
+	bool constable;
 };
 
 static inline AstCall*

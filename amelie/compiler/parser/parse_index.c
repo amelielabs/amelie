@@ -39,26 +39,26 @@
 #include <amelie_parser.h>
 
 static void
-parse_with(Stmt* self, IndexConfig* index_config)
+parse_with(Scope* self, IndexConfig* index_config)
 {
 	// [WITH]
-	if (! stmt_if(self, KWITH))
+	if (! scope_if(self, KWITH))
 		return;
 
 	// (
-	stmt_expect(self, '(');
+	scope_expect(self, '(');
 
 	for (;;)
 	{
 		// key
-		auto key = stmt_expect(self, KNAME);
+		auto key = scope_expect(self, KNAME);
 		if (str_is(&key->string, "type", 4))
 		{
 			// =
-			stmt_expect(self, '=');
+			scope_expect(self, '=');
 
 			// string
-			auto value = stmt_expect(self, KSTRING);
+			auto value = scope_expect(self, KSTRING);
 
 			// tree | hash
 			if (str_is_cstr(&value->string, "tree"))
@@ -67,53 +67,53 @@ parse_with(Stmt* self, IndexConfig* index_config)
 			if (str_is_cstr(&value->string, "hash"))
 				index_config_set_type(index_config, INDEX_HASH);
 			else
-				stmt_error(self, value, "unrecognized index type");
+				scope_error(self, value, "unrecognized index type");
 
 		} else {
-			stmt_error(self, key, "unrecognized parameter");
+			scope_error(self, key, "unrecognized parameter");
 		}
 
 		// ,
-		if (stmt_if(self, ','))
+		if (scope_if(self, ','))
 			continue;
 
 		// )
-		if (stmt_if(self, ')'))
+		if (scope_if(self, ')'))
 			break;
 	}
 }
 
 void
-parse_index_create(Stmt* self, bool unique)
+parse_index_create(Scope* self, bool unique)
 {
 	// CREATE [UNIQUE] INDEX [IF NOT EXISTS] name ON table_name (keys)
 	// [WITH (...)]
 	auto stmt = ast_index_create_allocate();
-	self->ast = &stmt->ast;
+	self->stmt->ast = &stmt->ast;
 
 	// if not exists
 	stmt->if_not_exists = parse_if_not_exists(self);
 
 	// name
-	auto name = stmt_expect(self, KNAME);
+	auto name = scope_expect(self, KNAME);
 
 	// ON
-	stmt_expect(self, KON);
+	scope_expect(self, KON);
 
 	// [schema.table_name]
 	auto target = parse_target(self, &stmt->table_schema, &stmt->table_name);
 	if (! target)
-		stmt_error(self, NULL, "table name expected");
+		scope_error(self, NULL, "table name expected");
 
 	// find table
-	auto table = table_mgr_find(&self->db->table_mgr, &stmt->table_schema,
+	auto table = table_mgr_find(&self->parser->db->table_mgr, &stmt->table_schema,
 	                            &stmt->table_name, false);
 	if (! table)
-		stmt_error(self, target, "table not found");
+		scope_error(self, target, "table not found");
 
 	// todo: unique indexes can be created only with 1 partition table
 	if (unique && table->part_list.list_count != 1)
-		stmt_error(self, target, "secondary UNIQUE INDEX allowed only for tables with one partition");
+		scope_error(self, target, "secondary UNIQUE INDEX allowed only for tables with one partition");
 
 	// create index config
 	auto config = index_config_allocate(table_columns(table));
@@ -135,55 +135,55 @@ parse_index_create(Stmt* self, bool unique)
 }
 
 void
-parse_index_drop(Stmt* self)
+parse_index_drop(Scope* self)
 {
 	// DROP INDEX [IF EXISTS] name ON table_name
 	auto stmt = ast_index_drop_allocate();
-	self->ast = &stmt->ast;
+	self->stmt->ast = &stmt->ast;
 
 	// if exists
 	stmt->if_exists = parse_if_exists(self);
 
 	// name
-	auto name = stmt_expect(self, KNAME);
+	auto name = scope_expect(self, KNAME);
 	stmt->name = name->string;
 
 	// ON
-	stmt_expect(self, KON);
+	scope_expect(self, KON);
 
 	// [schema.table_name]
 	if (! parse_target(self, &stmt->table_schema, &stmt->table_name))
-		stmt_error(self, NULL, "table name expected");
+		scope_error(self, NULL, "table name expected");
 }
 
 void
-parse_index_alter(Stmt* self)
+parse_index_alter(Scope* self)
 {
 	// ALTER INDEX [IF EXISTS] name ON table_name RENAME TO name
 	auto stmt = ast_index_alter_allocate();
-	self->ast = &stmt->ast;
+	self->stmt->ast = &stmt->ast;
 
 	// if exists
 	stmt->if_exists = parse_if_exists(self);
 
 	// name
-	auto name = stmt_expect(self, KNAME);
+	auto name = scope_expect(self, KNAME);
 	stmt->name = name->string;
 
 	// ON
-	stmt_expect(self, KON);
+	scope_expect(self, KON);
 
 	// [schema.table_name]
 	if (! parse_target(self, &stmt->table_schema, &stmt->table_name))
-		stmt_error(self, NULL, "table name expected");
+		scope_error(self, NULL, "table name expected");
 
 	// RENAME
-	stmt_expect(self, KRENAME);
+	scope_expect(self, KRENAME);
 
 	// TO
-	stmt_expect(self, KTO);
+	scope_expect(self, KTO);
 
 	// name
-	name = stmt_expect(self, KNAME);
+	name = scope_expect(self, KNAME);
 	stmt->name_new = name->string;
 }

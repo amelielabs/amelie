@@ -92,6 +92,6 @@ ast_function_alter_allocate(void)
 	return self;
 }
 
-void parse_function_create(Stmt*, bool);
-void parse_function_drop(Stmt*);
-void parse_function_alter(Stmt*);
+void parse_function_create(Scope*, bool);
+void parse_function_drop(Scope*);
+void parse_function_alter(Scope*);

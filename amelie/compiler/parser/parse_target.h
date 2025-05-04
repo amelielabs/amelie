@@ -12,21 +12,21 @@
 //
 
 static inline bool
-parse_if_not_exists(Stmt* self)
+parse_if_not_exists(Scope* self)
 {
-	if (! stmt_if(self, KIF))
+	if (! scope_if(self, KIF))
 		return false;
-	stmt_expect(self, KNOT);
-	stmt_expect(self, KEXISTS);
+	scope_expect(self, KNOT);
+	scope_expect(self, KEXISTS);
 	return true;
 }
 
 static inline bool
-parse_if_exists(Stmt* self)
+parse_if_exists(Scope* self)
 {
-	if (! stmt_if(self, KIF))
+	if (! scope_if(self, KIF))
 		return false;
-	stmt_expect(self, KEXISTS);
+	scope_expect(self, KEXISTS);
 	return true;
 }
 
@@ -59,12 +59,12 @@ parse_target_path(Ast* path, Str* schema, Str* name)
 }
 
 static inline Ast*
-parse_target(Stmt* self, Str* schema, Str* name)
+parse_target(Scope* self, Str* schema, Str* name)
 {
-	auto path = stmt_next(self);
+	auto path = scope_next(self);
 	if (! parse_target_path(path, schema, name))
 	{
-		stmt_push(self, path);
+		scope_push(self, path);
 		return NULL;
 	}
 	return path;

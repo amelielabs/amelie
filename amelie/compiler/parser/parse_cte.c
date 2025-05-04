@@ -39,51 +39,51 @@
 #include <amelie_parser.h>
 
 static void
-parse_cte_args(Stmt* self)
+parse_cte_args(Scope* self)
 {
 	// )
-	if (stmt_if(self, ')'))
+	if (scope_if(self, ')'))
 		return;
 
 	for (;;)
 	{
 		// name
-		auto name = stmt_expect(self, KNAME);
+		auto name = scope_expect(self, KNAME);
 
 		// ensure argument is unique
-		auto arg = columns_find(&self->cte->args, &name->string);
+		auto arg = columns_find(&self->stmt->cte->args, &name->string);
 		if (arg)
-			stmt_error(self, name, "argument redefined");
+			scope_error(self, name, "argument redefined");
 
 		// add argument to the list
 		arg = column_allocate();
 		column_set_name(arg, &name->string);
-		columns_add(&self->cte->args, arg);
+		columns_add(&self->stmt->cte->args, arg);
 
 		// ,
-		if (! stmt_if(self, ','))
+		if (! scope_if(self, ','))
 			break;
 	}
 
 	// )
-	stmt_expect(self, ')');
+	scope_expect(self, ')');
 }
 
 void
-parse_cte(Stmt* self)
+parse_cte(Scope* self)
 {
 	// name [(args)]
-	auto name = stmt_expect(self, KNAME);
+	auto name = scope_expect(self, KNAME);
 
 	// ensure CTE is not redefined
-	auto cte = ctes_find(self->ctes, &name->string);
+	auto cte = ctes_find(&self->ctes, &name->string);
 	if (cte)
-		stmt_error(self, name, "CTE is redefined");
+		scope_error(self, name, "CTE is redefined");
 
-	cte = ctes_add(self->ctes, self, &name->string);
-	self->cte = cte;
+	cte = ctes_add(&self->ctes, self->stmt, &name->string);
+	self->stmt->cte = cte;
 
 	// (args)
-	if (stmt_if(self, '('))
+	if (scope_if(self, '('))
 		parse_cte_args(self);
 }

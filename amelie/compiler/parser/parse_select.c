@@ -39,7 +39,7 @@
 #include <amelie_parser.h>
 
 static inline void
-parse_select_group_by(Stmt* self, AstSelect* select)
+parse_select_group_by(Scope* self, AstSelect* select)
 {
 	// GROUP BY expr, ...
 	Expr ctx;
@@ -53,7 +53,7 @@ parse_select_group_by(Stmt* self, AstSelect* select)
 		ast_list_add(list, &group->ast);
 
 		// ,
-		if (stmt_if(self, ','))
+		if (scope_if(self, ','))
 			continue;
 
 		break;
@@ -61,7 +61,7 @@ parse_select_group_by(Stmt* self, AstSelect* select)
 }
 
 static inline void
-parse_select_order_by(Stmt* self, AstSelect* select)
+parse_select_order_by(Scope* self, AstSelect* select)
 {
 	// ORDER BY expr, ...
 	Expr ctx;
@@ -76,17 +76,17 @@ parse_select_order_by(Stmt* self, AstSelect* select)
 
 		// [ASC|DESC]
 		bool asc = true;
-		if (stmt_if(self, KASC))
+		if (scope_if(self, KASC))
 			asc = true;
 		else
-		if (stmt_if(self, KDESC))
+		if (scope_if(self, KDESC))
 			asc = false;
 
 		auto order = ast_order_allocate(list->count, expr, asc);
 		ast_list_add(list, &order->ast);
 
 		// ,
-		if (stmt_if(self, ','))
+		if (scope_if(self, ','))
 			continue;
 
 		break;
@@ -94,16 +94,16 @@ parse_select_order_by(Stmt* self, AstSelect* select)
 }
 
 static inline void
-parse_select_distinct(Stmt* self, AstSelect* select)
+parse_select_distinct(Scope* self, AstSelect* select)
 {
 	select->distinct = true;
 
 	// [ON]
-	if (! stmt_if(self, KON))
+	if (! scope_if(self, KON))
 		return;
 
 	// (
-	stmt_expect(self, '(');
+	scope_expect(self, '(');
 	select->distinct_on = true;
 
 	// (expr, ...)
@@ -119,17 +119,17 @@ parse_select_distinct(Stmt* self, AstSelect* select)
 		ast_list_add(&select->expr_order_by, &order->ast);
 
 		// ,
-		if (stmt_if(self, ','))
+		if (scope_if(self, ','))
 			continue;
 
 		// )
-		stmt_expect(self, ')');
+		scope_expect(self, ')');
 		break;
 	}
 }
 
 hot AstSelect*
-parse_select(Stmt* self, Targets* outer, bool subquery)
+parse_select(Scope* self, Targets* outer, bool subquery)
 {
 	// SELECT [DISTINCT] expr, ...
 	// [INTO name]
@@ -140,10 +140,10 @@ parse_select(Stmt* self, Targets* outer, bool subquery)
 	// [ORDER BY]
 	// [LIMIT expr] [OFFSET expr]
 	auto select = ast_select_allocate(outer);
-	ast_list_add(&self->select_list, &select->ast);
+	ast_list_add(&self->stmt->select_list, &select->ast);
 
 	// [DISTINCT]
-	if (stmt_if(self, KDISTINCT))
+	if (scope_if(self, KDISTINCT))
 		parse_select_distinct(self, select);
 
 	// * | expr [AS] [name], ...
@@ -156,7 +156,7 @@ parse_select(Stmt* self, Targets* outer, bool subquery)
 	parse_returning(&select->ret, self, &ctx);
 
 	// [FROM]
-	if (stmt_if(self, KFROM))
+	if (scope_if(self, KFROM))
 	{
 		parse_from(self, &select->targets,
 		           subquery ? ACCESS_RO_EXCLUSIVE : ACCESS_RO,
@@ -164,7 +164,7 @@ parse_select(Stmt* self, Targets* outer, bool subquery)
 	}
 
 	// [WHERE]
-	if (stmt_if(self, KWHERE))
+	if (scope_if(self, KWHERE))
 	{
 		Expr ctx_where;
 		expr_init(&ctx_where);
@@ -181,50 +181,50 @@ parse_select(Stmt* self, Targets* outer, bool subquery)
 			parse_from_join_on_and_where(&select->targets, select->expr_where);
 
 	// [GROUP BY]
-	if (stmt_if(self, KGROUP))
+	if (scope_if(self, KGROUP))
 	{
-		stmt_expect(self, KBY);
+		scope_expect(self, KBY);
 		parse_select_group_by(self, select);
 
 		// [HAVING]
-		if (stmt_if(self, KHAVING))
+		if (scope_if(self, KHAVING))
 			select->expr_having = parse_expr(self, &ctx);
 	}
 
 	// [ORDER BY]
-	if (stmt_if(self, KORDER))
+	if (scope_if(self, KORDER))
 	{
-		stmt_expect(self, KBY);
+		scope_expect(self, KBY);
 		parse_select_order_by(self, select);
 
 		if (select->distinct)
-			stmt_error(self, NULL, "ORDER BY and DISTINCT cannot be combined");
+			scope_error(self, NULL, "ORDER BY and DISTINCT cannot be combined");
 	}
 
 	// [LIMIT]
-	if (stmt_if(self, KLIMIT))
+	if (scope_if(self, KLIMIT))
 	{
 		select->expr_limit = parse_expr(self, NULL);
 		if (select->expr_limit->id != KINT)
-			stmt_error(self, select->expr_limit, "integer type expected");
+			scope_error(self, select->expr_limit, "integer type expected");
 		if (select->expr_limit->integer < 0)
-			stmt_error(self, select->expr_limit, "positive integer value expected");
+			scope_error(self, select->expr_limit, "positive integer value expected");
 	}
 
 	// [OFFSET]
-	if (stmt_if(self, KOFFSET))
+	if (scope_if(self, KOFFSET))
 	{
 		select->expr_offset = parse_expr(self, NULL);
 		if (select->expr_offset->id != KINT)
-			stmt_error(self, select->expr_offset, "integer type expected");
+			scope_error(self, select->expr_offset, "integer type expected");
 		if (select->expr_offset->integer < 0)
-			stmt_error(self, select->expr_offset, "positive integer value expected");
+			scope_error(self, select->expr_offset, "positive integer value expected");
 	}
 
 	// [FORMAT type]
-	if (stmt_if(self, KFORMAT))
+	if (scope_if(self, KFORMAT))
 	{
-		auto type = stmt_expect(self, KSTRING);
+		auto type = scope_expect(self, KSTRING);
 		select->ret.format = type->string;
 	}
 
@@ -232,7 +232,7 @@ parse_select(Stmt* self, Targets* outer, bool subquery)
 	if (select->expr_group_by.count > 0 || select->expr_aggs.count > 0)
 	{
 		if (targets_empty(&select->targets))
-			stmt_error(self, NULL, "no targets to use with GROUP BY or aggregation");
+			scope_error(self, NULL, "no targets to use with GROUP BY or aggregation");
 
 		// add at least one group by key
 		auto list = &select->expr_group_by;
@@ -247,7 +247,7 @@ parse_select(Stmt* self, Targets* outer, bool subquery)
 		}
 
 		// create group by target to scan agg set
-		auto target = target_allocate(&self->order_targets);
+		auto target = target_allocate(&self->stmt->order_targets);
 		target->type = TARGET_GROUP_BY;
 		target->ast  = targets_outer(&select->targets)->ast;
 		target->name = targets_outer(&select->targets)->name;
@@ -271,11 +271,11 @@ parse_select(Stmt* self, Targets* outer, bool subquery)
 }
 
 AstSelect*
-parse_select_expr(Stmt* self)
+parse_select_expr(Scope* self)
 {
 	// SELECT expr
 	auto select = ast_select_allocate(NULL);
-	ast_list_add(&self->select_list, &select->ast);
+	ast_list_add(&self->stmt->select_list, &select->ast);
 	Expr ctx;
 	expr_init(&ctx);
 	parse_returning(&select->ret, self, &ctx);
@@ -323,7 +323,7 @@ parse_select_resolve_group_by(AstSelect* select)
 }
 
 static void
-parse_select_resolve_group_by_alias(Stmt* self, AstSelect* select)
+parse_select_resolve_group_by_alias(Scope* self, AstSelect* select)
 {
 	auto node = select->expr_group_by.list;
 	for (; node; node = node->next)
@@ -352,12 +352,12 @@ parse_select_resolve_group_by_alias(Stmt* self, AstSelect* select)
 		// get the select returning column
 		auto as = returning_find(&select->ret, order);
 		if (! as)
-			stmt_error(self, group->expr, "column %d is not in the SELECT expr list", order);
+			scope_error(self, group->expr, "column %d is not in the SELECT expr list", order);
 
 		// ensure expression does not involve aggregates
 		for (auto node = select->expr_aggs.list; node; node = node->next)
 			if (ast_agg_of(node->ast)->as == as)
-				stmt_error(self, group->expr, "aggregate functions cannot be used in GROUP BY expressions");
+				scope_error(self, group->expr, "aggregate functions cannot be used in GROUP BY expressions");
 
 		// use the returning expression as a group by key
 		group->expr = as->l;
@@ -368,7 +368,7 @@ parse_select_resolve_group_by_alias(Stmt* self, AstSelect* select)
 }
 
 static void
-parse_select_resolve_order_by(Stmt* self, AstSelect* select)
+parse_select_resolve_order_by(Scope* self, AstSelect* select)
 {
 	auto node = select->expr_order_by.list;
 	while (node)
@@ -383,7 +383,7 @@ parse_select_resolve_order_by(Stmt* self, AstSelect* select)
 			auto pos = order->expr->integer;
 			auto expr = returning_find(&select->ret, pos);
 			if (! expr)
-				stmt_error(self, order->expr, "column %d is not in the SELECT expr list", pos);
+				scope_error(self, order->expr, "column %d is not in the SELECT expr list", pos);
 			// replace order by <int> to the select expression
 			order->expr = expr->l;
 		} else
@@ -407,10 +407,10 @@ parse_select_resolve_order_by(Stmt* self, AstSelect* select)
 }
 
 void
-parse_select_resolve(Stmt* self)
+parse_select_resolve(Scope* self)
 {
 	// resolve selects backwards
-	for (auto ref = self->select_list.list_tail; ref; ref = ref->prev)
+	for (auto ref = self->stmt->select_list.list_tail; ref; ref = ref->prev)
 	{
 		auto select = ast_select_of(ref->ast);
 

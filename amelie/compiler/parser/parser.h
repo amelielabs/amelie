@@ -23,11 +23,9 @@ enum
 struct Parser
 {
 	int          explain;
-	Stmt*        stmt;
-	Stmts        stmts;
-	Ctes         ctes;
-	Vars         vars;
-	Columns*     args;
+	bool         begin;
+	bool         commit;
+	Scopes       scopes;
 	Program*     program;
 	SetCache*    values_cache;
 	Uri          uri;
@@ -38,12 +36,12 @@ struct Parser
 	Db*          db;
 };
 
-void parser_init(Parser*, Db*, Local*, FunctionMgr*, SetCache*, Program*);
-void parser_reset(Parser*);
-void parser_free(Parser*);
-
 static inline bool
 parser_is_profile(Parser* self)
 {
 	return self->explain == (EXPLAIN|EXPLAIN_PROFILE);
 }
+
+void parser_init(Parser*, Db*, Local*, FunctionMgr*, SetCache*, Program*);
+void parser_reset(Parser*);
+void parser_free(Parser*);

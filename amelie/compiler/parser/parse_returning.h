@@ -59,5 +59,5 @@ returning_find(Returning* self, int order)
 	return NULL;
 }
 
-void parse_returning(Returning*, Stmt*, Expr*);
-void parse_returning_resolve(Returning*, Stmt*, Targets*);
+void parse_returning(Returning*, Scope*, Expr*);
+void parse_returning_resolve(Returning*, Scope*, Targets*);

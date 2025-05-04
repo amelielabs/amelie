@@ -126,7 +126,7 @@ priority_map[KEYWORD_MAX] =
 };
 
 hot static inline void
-expr_pop(Stmt* self, AstStack* ops, AstStack* result)
+expr_pop(Scope* self, AstStack* ops, AstStack* result)
 {
 	// move operation to result as op(l, r)
 	auto head = ast_pop(ops);
@@ -135,19 +135,19 @@ expr_pop(Stmt* self, AstStack* ops, AstStack* result)
 		// unary
 		head->l = ast_pop(result);
 		if (unlikely(head->l == NULL))
-			stmt_error(self, head, "bad expression");
+			scope_error(self, head, "bad expression");
 	} else
 	{
 		head->r = ast_pop(result);
 		head->l = ast_pop(result);
 		if (unlikely(head->r == NULL || head->l == NULL))
-			stmt_error(self, head, "bad expression");
+			scope_error(self, head, "bad expression");
 	}
 	ast_push(result, head);
 }
 
 hot static inline void
-expr_operator(Stmt* self, AstStack* ops, AstStack* result, Ast* op, int prio)
+expr_operator(Scope* self, AstStack* ops, AstStack* result, Ast* op, int prio)
 {
 	// process last operation if it has lower or equal priority
 	//
@@ -194,14 +194,14 @@ expr_is_constable(Ast* self)
 }
 
 Ast*
-parse_expr_args(Stmt* self, Expr* expr, int endtoken, bool obj_separator)
+parse_expr_args(Scope* self, Expr* expr, int endtoken, bool obj_separator)
 {
 	bool constable = true;
 	int  count     = 0;
 	Ast* expr_head = NULL;
 	Ast* expr_prev = NULL;
 
-	if (stmt_if(self, endtoken))
+	if (scope_if(self, endtoken))
 		goto done;
 
 	for (;;)
@@ -222,15 +222,15 @@ parse_expr_args(Stmt* self, Expr* expr, int endtoken, bool obj_separator)
 		// :
 		if (obj_separator && (count % 2) != 0)
 		{
-			stmt_expect(self, ':');
+			scope_expect(self, ':');
 			continue;
 		}
 
 		// ,
-		if (stmt_if(self, ','))
+		if (scope_if(self, ','))
 			continue;
 
-		stmt_expect(self, endtoken);
+		scope_expect(self, endtoken);
 		break;
 	}
 
@@ -245,7 +245,7 @@ done:;
 }
 
 static Ast*
-expr_call(Stmt* self, Expr* expr, Ast* path, bool with_args)
+expr_call(Scope* self, Expr* expr, Ast* path, bool with_args)
 {
 	// [schema.]function_name[(expr, ...)]
 
@@ -253,16 +253,16 @@ expr_call(Stmt* self, Expr* expr, Ast* path, bool with_args)
 	Str schema;
 	Str name;
 	if (! parse_target_path(path, &schema, &name))
-		stmt_error(self, path, "bad function call");
+		scope_error(self, path, "bad function call");
 
 	// find and call function
-	auto func = function_mgr_find(self->function_mgr, &schema, &name);
+	auto func = function_mgr_find(self->parser->function_mgr, &schema, &name);
 	if (! func)
-		stmt_error(self, path, "function not found");
+		scope_error(self, path, "function not found");
 
 	// ensure function is not a udf
 	if (func->flags & FN_UDF)
-		stmt_error(self, path, "user-defined function must be invoked using CALL statement");
+		scope_error(self, path, "user-defined function must be invoked using CALL statement");
 
 	auto call = ast_call_allocate();
 	call->fn = func;
@@ -272,41 +272,41 @@ expr_call(Stmt* self, Expr* expr, Ast* path, bool with_args)
 }
 
 static inline Ast*
-expr_aggregate(Stmt* self, Expr* expr, Ast* function)
+expr_aggregate(Scope* self, Expr* expr, Ast* function)
 {
 	if (unlikely(!expr || !expr->aggs))
-		stmt_error(self, function, "unexpected aggregate function usage");
+		scope_error(self, function, "unexpected aggregate function usage");
 
 	// function (expr)
 	// (
-	stmt_expect(self, '(');
+	scope_expect(self, '(');
 
 	// [DISTINCT]
-	auto distinct = stmt_if(self, KDISTINCT);
+	auto distinct = scope_if(self, KDISTINCT);
 	if (distinct && function->id != KCOUNT)
-		stmt_error(self, distinct, "is not supported");
+		scope_error(self, distinct, "is not supported");
 
 	// expr
 	Ast* arg  = NULL;
-	auto star = stmt_if(self, '*');
+	auto star = scope_if(self, '*');
 	if (star)
 	{
 		// count(*)
 		if (function->id == KCOUNT)
 		{
 			if (distinct)
-				stmt_error(self, star, "* cannot be used with DISTINCT");
+				scope_error(self, star, "* cannot be used with DISTINCT");
 			arg = ast(KINT);
 			arg->integer = 1;
 		} else {
-			stmt_error(self, star, "* is not supported by this aggregate function");
+			scope_error(self, star, "* is not supported by this aggregate function");
 		}
 	} else {
 		arg = parse_expr(self, NULL);
 	}
 
 	// )
-	stmt_expect(self, ')');
+	scope_expect(self, ')');
 
 	// create aggregate ast node
 	auto agg = ast_agg_allocate(function, expr->aggs->count, arg, NULL, expr->as);
@@ -316,10 +316,10 @@ expr_aggregate(Stmt* self, Expr* expr, Ast* function)
 }
 
 static inline Ast*
-expr_lambda(Stmt* self, Ast* seed, Expr* expr)
+expr_lambda(Scope* self, Ast* seed, Expr* expr)
 {
 	if (unlikely(!expr || !expr->aggs))
-		stmt_error(self, seed, "unexpected lambda usage");
+		scope_error(self, seed, "unexpected lambda usage");
 
 	// create aggregate ast node
 	auto agg = ast_agg_allocate(NULL, expr->aggs->count, NULL, seed, expr->as);
@@ -335,7 +335,7 @@ expr_lambda(Stmt* self, Ast* seed, Expr* expr)
 }
 
 static Ast*
-expr_case(Stmt* self, Expr* expr)
+expr_case(Scope* self, Expr* expr)
 {
 	auto ast = ast_case_allocate();
 	// CASE [expr] [WHEN expr THEN expr]
@@ -344,14 +344,14 @@ expr_case(Stmt* self, Expr* expr)
 	for (;;)
 	{
 		// WHEN expr THEN expr
-		auto when = stmt_if(self, KWHEN);
+		auto when = scope_if(self, KWHEN);
 		if (when)
 		{
 			// expr
 			when->l = parse_expr(self, expr);
 
 			// THEN
-			stmt_expect(self, KTHEN);
+			scope_expect(self, KTHEN);
 
 			// expr
 			when->r = parse_expr(self, expr);
@@ -360,34 +360,34 @@ expr_case(Stmt* self, Expr* expr)
 		}
 
 		// ELSE expr
-		auto _else = stmt_if(self, KELSE);
+		auto _else = scope_if(self, KELSE);
 		if (_else)
 		{
 			if (ast->expr_else)
-				stmt_error(self, _else, "ELSE is redefined");
+				scope_error(self, _else, "ELSE is redefined");
 			ast->expr_else = parse_expr(self, expr);
 			continue;
 		}
 
 		// END
-		auto end = stmt_if(self, KEND);
+		auto end = scope_if(self, KEND);
 		if (end)
 		{
 			if (!ast->expr_else && !ast->when.count)
-				stmt_error(self, end, "WHEN or ELSE expected");
+				scope_error(self, end, "WHEN or ELSE expected");
 			break;
 		}
 
 		// CASE expr
 		if (ast->expr || ast->expr_else || ast->when.count > 0)
-			stmt_error(self, NULL, "WHEN, ELSE or END expected");
+			scope_error(self, NULL, "WHEN, ELSE or END expected");
 		ast->expr = parse_expr(self, expr);
 	}
 	return &ast->ast;
 }
 
 hot static inline Ast*
-expr_extract(Stmt* self, Expr* expr, Ast* value)
+expr_extract(Scope* self, Expr* expr, Ast* value)
 {
 	// replace as call to public.extract(field, expr)
 
@@ -395,25 +395,25 @@ expr_extract(Stmt* self, Expr* expr, Ast* value)
 	str_set(&value->string, "extract", 7);
 
 	// (
-	stmt_expect(self, '(');
+	scope_expect(self, '(');
 	value->id = KNAME;
 	value = expr_call(self, expr, value, false);
 
 	// field
-	auto field = stmt_next_shadow(self);
+	auto field = scope_next_shadow(self);
 	if (field->id != KNAME && field->id != KSTRING)
-		stmt_error(self, field, "name or string expected");
+		scope_error(self, field, "name or string expected");
 	field->id = KSTRING;
 
 	// FROM
-	stmt_expect(self, KFROM);
+	scope_expect(self, KFROM);
 
 	// expr
 	auto time = parse_expr(self, expr);
 	field->next = time;
 
 	// )
-	stmt_expect(self, ')');
+	scope_expect(self, ')');
 
 	// args(list_head, NULL)
 	value->r = &ast_args_allocate()->ast;
@@ -423,10 +423,10 @@ expr_extract(Stmt* self, Expr* expr, Ast* value)
 }
 
 hot static inline Ast*
-expr_cast(Stmt* self, Expr* expr)
+expr_cast(Scope* self, Expr* expr)
 {
 	// CAST (
-	stmt_expect(self, '(');
+	scope_expect(self, '(');
 
 	// expr (prepare args for call)
 	auto args = &ast_args_allocate()->ast;
@@ -434,17 +434,17 @@ expr_cast(Stmt* self, Expr* expr)
 	args->integer = 1;
 
 	// AS
-	stmt_expect(self, KAS);
+	scope_expect(self, KAS);
 
 	// type
-	auto name = stmt_next_shadow(self);
+	auto name = scope_next_shadow(self);
 	if (name->id != KNAME)
-		stmt_error(self, name, "type name expected");
+		scope_error(self, name, "type name expected");
 
 	int type_size;
 	int type = type_read(&name->string, &type_size);
 	if (type == -1)
-		stmt_error(self, name, "unsupported data type");
+		scope_error(self, name, "unsupported data type");
 	switch (type) {
 	case TYPE_BOOL:
 		str_set(&name->string, "bool", 4);
@@ -483,7 +483,7 @@ expr_cast(Stmt* self, Expr* expr)
 	}
 
 	// )
-	stmt_expect(self, ')');
+	scope_expect(self, ')');
 
 	auto call = expr_call(self, expr, name, false);
 	call->r = args;
@@ -491,14 +491,14 @@ expr_cast(Stmt* self, Expr* expr)
 }
 
 hot static inline Ast*
-expr_value(Stmt* self, Expr* expr, Ast* value)
+expr_value(Scope* self, Expr* expr, Ast* value)
 {
 	switch (value->id) {
 	// bracket
 	case '(':
 		// ()
 		value = parse_expr(self, expr);
-		stmt_expect(self, ')');
+		scope_expect(self, ')');
 		break;
 
 	// case
@@ -509,13 +509,13 @@ expr_value(Stmt* self, Expr* expr, Ast* value)
 	// exists
 	case KEXISTS:
 	{
-		stmt_expect(self, '(');
-		auto select = stmt_expect(self, KSELECT);
+		scope_expect(self, '(');
+		auto select = scope_expect(self, KSELECT);
 		if (!expr || !expr->select)
-			stmt_error(self, select, "unexpected subquery");
+			scope_error(self, select, "unexpected subquery");
 		assert(expr->targets);
 		value->r = &parse_select(self, expr->targets, true)->ast;
-		stmt_expect(self, ')');
+		scope_expect(self, ')');
 		break;
 	}
 
@@ -532,7 +532,7 @@ expr_value(Stmt* self, Expr* expr, Ast* value)
 	case KREPLACE:
 	case KERROR:
 	{
-		stmt_expect(self, '(');
+		scope_expect(self, '(');
 		value->id = KNAME;
 		value = expr_call(self, expr, value, true);
 		break;
@@ -552,7 +552,7 @@ expr_value(Stmt* self, Expr* expr, Ast* value)
 	case KSELECT:
 	{
 		if (!expr || !expr->select)
-			stmt_error(self, value, "unexpected subquery");
+			scope_error(self, value, "unexpected subquery");
 		assert(expr->targets);
 		auto select = parse_select(self, expr->targets, true);
 		select->ast.pos_start = value->pos_start;
@@ -573,7 +573,7 @@ expr_value(Stmt* self, Expr* expr, Ast* value)
 	// lambda
 	case KSELF:
 		if (!expr || !expr->lambda)
-			stmt_error(self, value, "unexpected SELF usage without lambda context");
+			scope_error(self, value, "unexpected SELF usage without lambda context");
 		value->r = expr->lambda;
 		break;
 
@@ -590,14 +590,14 @@ expr_value(Stmt* self, Expr* expr, Ast* value)
 	case KINTERVAL:
 	{
 		// interval()
-		if (stmt_if(self, '('))
+		if (scope_if(self, '('))
 		{
 			value->id = KNAME;
 			value = expr_call(self, expr, value, true);
 			break;
 		}
 		// interval 'spec'
-		auto spec = stmt_expect(self, KSTRING);
+		auto spec = scope_expect(self, KSTRING);
 		value->string    = spec->string;
 		value->pos_start = spec->pos_start;
 		value->pos_end   = spec->pos_end;
@@ -606,14 +606,14 @@ expr_value(Stmt* self, Expr* expr, Ast* value)
 	case KTIMESTAMP:
 	{
 		// ()
-		if (stmt_if(self, '('))
+		if (scope_if(self, '('))
 		{
 			value->id = KNAME;
 			value = expr_call(self, expr, value, true);
 			break;
 		}
 		// timestamp 'spec'
-		auto spec = stmt_expect(self, KSTRING);
+		auto spec = scope_expect(self, KSTRING);
 		value->string    = spec->string;
 		value->pos_start = spec->pos_start;
 		value->pos_end   = spec->pos_end;
@@ -622,14 +622,14 @@ expr_value(Stmt* self, Expr* expr, Ast* value)
 	case KDATE:
 	{
 		// ()
-		if (stmt_if(self, '('))
+		if (scope_if(self, '('))
 		{
 			value->id = KNAME;
 			value = expr_call(self, expr, value, true);
 			break;
 		}
 		// date 'spec'
-		auto spec = stmt_expect(self, KSTRING);
+		auto spec = scope_expect(self, KSTRING);
 		value->string    = spec->string;
 		value->pos_start = spec->pos_start;
 		value->pos_end   = spec->pos_end;
@@ -641,22 +641,22 @@ expr_value(Stmt* self, Expr* expr, Ast* value)
 
 	case KVECTOR:
 		// vector [value, ...]
-		value->integer = code_data_offset(&self->program->code_data);
-		parse_vector(self, &self->program->code_data.data);
+		value->integer = code_data_offset(&self->parser->program->code_data);
+		parse_vector(self, &self->parser->program->code_data.data);
 		break;
 
 	// uuid
 	case KUUID:
 	{
 		// uuid()
-		if (stmt_if(self, '('))
+		if (scope_if(self, '('))
 		{
 			value->id = KNAME;
 			value = expr_call(self, expr, value, true);
 			break;
 		}
 		// uuid 'spec'
-		auto spec = stmt_expect(self, KSTRING);
+		auto spec = scope_expect(self, KSTRING);
 		value->string    = spec->string;
 		value->pos_start = spec->pos_start;
 		value->pos_end   = spec->pos_end;
@@ -671,7 +671,7 @@ expr_value(Stmt* self, Expr* expr, Ast* value)
 	case KNAME:
 	{
 		// function(expr, ...)
-		if (stmt_if(self,'('))
+		if (scope_if(self,'('))
 			value = expr_call(self, expr, value, true);
 		break;
 	}
@@ -681,7 +681,7 @@ expr_value(Stmt* self, Expr* expr, Ast* value)
 	case KNAME_COMPOUND:
 	{
 		// function(expr, ...)
-		if (stmt_if(self,'('))
+		if (scope_if(self,'('))
 			value = expr_call(self, expr, value, true);
 		break;
 	}
@@ -695,9 +695,9 @@ expr_value(Stmt* self, Expr* expr, Ast* value)
 }
 
 hot static inline Ast*
-expr_value_between(Stmt* self)
+expr_value_between(Scope* self)
 {
-	auto value = stmt_next(self);
+	auto value = scope_next(self);
 	switch (value->id) {
 	case KREAL:
 	case KINT:
@@ -706,33 +706,33 @@ expr_value_between(Stmt* self)
 	case KINTERVAL:
 	{
 		// interval 'spec'
-		auto spec = stmt_expect(self, KSTRING);
+		auto spec = scope_expect(self, KSTRING);
 		value->string = spec->string;
 		break;
 	}
 	case KTIMESTAMP:
 	{
 		// timestamp 'spec'
-		auto spec = stmt_expect(self, KSTRING);
+		auto spec = scope_expect(self, KSTRING);
 		value->string = spec->string;
 		break;
 	}
 	case KDATE:
 	{
 		// date 'spec'
-		auto spec = stmt_expect(self, KSTRING);
+		auto spec = scope_expect(self, KSTRING);
 		value->string = spec->string;
 		break;
 	}
 	default:
-		stmt_error(self, value, "const value expected");
+		scope_error(self, value, "const value expected");
 		break;
 	}
 	return value;
 }
 
 hot static inline bool
-parse_unary(Stmt*     self, Expr* expr,
+parse_unary(Scope*    self, Expr* expr,
             AstStack* ops,
             AstStack* result,
             Ast*      ast)
@@ -758,14 +758,14 @@ parse_unary(Stmt*     self, Expr* expr,
 		expr_operator(self, ops, result, ast, 11);
 		break;
 	default:
-		stmt_error(self, ast, "bad expression");
+		scope_error(self, ast, "bad expression");
 		break;
 	}
 	return false;
 }
 
 hot static inline bool
-parse_op(Stmt*     self, Expr* expr,
+parse_op(Scope*    self, Expr* expr,
          AstStack* ops,
          AstStack* result,
          Ast*      ast,
@@ -777,16 +777,16 @@ parse_op(Stmt*     self, Expr* expr,
 		// expr NOT BETWEEN
 		// expr NOT IN
 		// expr NOT LIKE
-		if (stmt_if(self, KBETWEEN))
+		if (scope_if(self, KBETWEEN))
 			ast->id = KBETWEEN;
 		else
-		if (stmt_if(self, KIN))
+		if (scope_if(self, KIN))
 			ast->id = KIN;
 		else
-		if (stmt_if(self, KLIKE))
+		if (scope_if(self, KLIKE))
 			ast->id = KLIKE;
 		else
-			stmt_error(self, ast, "NOT 'IN or BETWEEN or LIKE' expected");
+			scope_error(self, ast, "NOT 'IN or BETWEEN or LIKE' expected");
 	}
 
 	// operator
@@ -802,7 +802,7 @@ parse_op(Stmt*     self, Expr* expr,
 	case '<':
 	{
 		// expr operator [ANY|ALL] (expr)
-		auto r = stmt_next(self);
+		auto r = scope_next(self);
 		if (r->id == KANY || r->id == KALL)
 		{
 			//     . ANY|ALL .
@@ -811,13 +811,13 @@ parse_op(Stmt*     self, Expr* expr,
 			int op = ast->id;
 			ast->id = r->id;
 			r->id = op;
-			stmt_expect(self, '(');
+			scope_expect(self, '(');
 			r->r = parse_expr(self, expr);
 			ast_push(result, r);
-			stmt_expect(self, ')');
+			scope_expect(self, ')');
 		} else
 		{
-			stmt_push(self, r);
+			scope_push(self, r);
 		}
 		unary = true;
 		break;
@@ -827,7 +827,7 @@ parse_op(Stmt*     self, Expr* expr,
 		// expr [NOT] BETWEEN x AND y
 		ast->integer = !not;
 		auto x = expr_value_between(self);
-		auto r = stmt_expect(self, KAND);
+		auto r = scope_expect(self, KAND);
 		auto y = expr_value_between(self);
 		//
 		//    . BETWEEN .
@@ -841,7 +841,7 @@ parse_op(Stmt*     self, Expr* expr,
 	case KIS:
 	{
 		// expr IS [NOT] expr
-		auto not = stmt_if(self, KNOT);
+		auto not = scope_if(self, KNOT);
 		ast->integer = !not;
 		// right expression must be null
 		break;
@@ -858,7 +858,7 @@ parse_op(Stmt*     self, Expr* expr,
 	{
 		// expr [NOT] IN (value, ...)
 		ast->integer = !not;
-		stmt_expect(self, '(');
+		scope_expect(self, '(');
 		auto r = parse_expr_args(self, expr, ')', false);
 		ast_push(result, r);
 		break;
@@ -866,7 +866,7 @@ parse_op(Stmt*     self, Expr* expr,
 	case KAT:
 	{
 		// expr AT TIMEZONE expr
-		stmt_expect(self, KTIMEZONE);
+		scope_expect(self, KTIMEZONE);
 		auto r = parse_expr(self, expr);
 		ast_push(result, r);
 		break;
@@ -881,15 +881,15 @@ parse_op(Stmt*     self, Expr* expr,
 	case KMETHOD:
 	{
 		// expr :: path [(call, ...)]
-		auto r = stmt_next_shadow(self);
+		auto r = scope_next_shadow(self);
 		if (r->id == KNAME ||
 			r->id == KNAME_COMPOUND)
 		{
 			// function[(expr, ...)]
-			auto with_args = stmt_if(self, '(') != NULL;
+			auto with_args = scope_if(self, '(') != NULL;
 			r = expr_call(self, expr, r, with_args);
 		} else {
-			stmt_error(self, r, "function name expected");
+			scope_error(self, r, "function name expected");
 		}
 		ast_push(result, r);
 		break;
@@ -899,7 +899,7 @@ parse_op(Stmt*     self, Expr* expr,
 		// expr[idx]
 		auto r = parse_expr(self, expr);
 		ast_push(result, r);
-		stmt_expect(self, ']');
+		scope_expect(self, ']');
 		break;
 	}
 	case '.':
@@ -907,14 +907,14 @@ parse_op(Stmt*     self, Expr* expr,
 		// expr.'key' (handle as expr['key'])
 		// expr.name
 		// expr.name.path
-		auto r = stmt_next_shadow(self);
+		auto r = scope_next_shadow(self);
 		if (r->id == KSTRING)
 			ast->id = '[';
 		else
 		if (r->id == KNAME || r->id == KNAME_COMPOUND)
 			r->id = KSTRING;
 		else
-			stmt_error(self, r, "name expected");
+			scope_error(self, r, "name expected");
 		ast_push(result, r);
 		break;
 	}
@@ -927,7 +927,7 @@ parse_op(Stmt*     self, Expr* expr,
 }
 
 hot Ast*
-parse_expr(Stmt* self, Expr* expr)
+parse_expr(Scope* self, Expr* expr)
 {
 	AstStack ops;
 	ast_stack_init(&ops);
@@ -939,14 +939,14 @@ parse_expr(Stmt* self, Expr* expr)
 	bool done  = false;
 	while (! done)
 	{
-		auto ast = stmt_next(self);
+		auto ast = scope_next(self);
 
 		int priority = priority_map[ast->id];
 		if (priority == 0)
 		{
 			// unknown token or eof
 			done = true;
-			stmt_push(self, ast);
+			scope_push(self, ast);
 		} else
 		if (priority == priority_value)
 		{
@@ -969,7 +969,7 @@ parse_expr(Stmt* self, Expr* expr)
 
 	// only one result
 	if (! result.list)
-		stmt_error(self, NULL, "bad expression");
+		scope_error(self, NULL, "bad expression");
 
 	if (likely(result.list->next == NULL))
 		return result.list;
@@ -984,7 +984,7 @@ parse_expr(Stmt* self, Expr* expr)
 	while (prev)
 	{
 		auto prev_prev = prev->prev;
-		stmt_push(self, ast_pop(&result));
+		scope_push(self, ast_pop(&result));
 		prev = prev_prev;
 	}
 	return head;

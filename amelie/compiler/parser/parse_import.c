@@ -39,9 +39,9 @@
 #include <amelie_parser.h>
 
 hot static inline void
-parse_import_row(Stmt* self, Endpoint* endpoint)
+parse_import_row(Scope* self, Endpoint* endpoint)
 {
-	auto stmt    = ast_insert_of(self->ast);
+	auto stmt    = ast_insert_of(self->stmt->ast);
 	auto table   = endpoint->table;
 	auto columns = table_columns(table);
 
@@ -85,14 +85,14 @@ parse_import_row(Stmt* self, Endpoint* endpoint)
 
 		// ,
 		if (column_separator)
-			stmt_expect(self, ',');
+			scope_expect(self, ',');
 	}
 }
 
 hot static inline void
-parse_import_obj(Stmt* self, Endpoint* endpoint)
+parse_import_obj(Scope* self, Endpoint* endpoint)
 {
-	auto stmt    = ast_insert_of(self->ast);
+	auto stmt    = ast_insert_of(self->stmt->ast);
 	auto table   = endpoint->table;
 	auto columns = table_columns(table);
 
@@ -109,21 +109,21 @@ parse_import_obj(Stmt* self, Endpoint* endpoint)
 	for (;;)
 	{
 		// "key"
-		auto key = stmt_if(self, KSTRING);
+		auto key = scope_if(self, KSTRING);
 		if (! key)
 			break;
 
 		// :
-		stmt_expect(self, ':');
+		scope_expect(self, ':');
 
 		// match column
 		auto column = columns_find(columns, &key->string);
 		if (! column)
-			stmt_error(self, key, "column does not exists");
+			scope_error(self, key, "column does not exists");
 
 		// ensure column is not redefined
 		if (unlikely(match[column->order]))
-			stmt_error(self, key, "column value is redefined");
+			scope_error(self, key, "column value is redefined");
 		match[column->order] = true;
 		match_count++;
 
@@ -135,7 +135,7 @@ parse_import_obj(Stmt* self, Endpoint* endpoint)
 		parse_value_validate(self, column, column_value, value);
 
 		// ,
-		if (! stmt_if(self, ','))
+		if (! scope_if(self, ','))
 			break;
 	}
 	if (match_count == columns->count)
@@ -160,67 +160,67 @@ parse_import_obj(Stmt* self, Endpoint* endpoint)
 }
 
 hot static inline void
-parse_import_json_row(Stmt* self, Endpoint* endpoint)
+parse_import_json_row(Scope* self, Endpoint* endpoint)
 {
 	// {} or []
-	auto begin = stmt_if(self, '{');
+	auto begin = scope_if(self, '{');
 	if (begin)
 	{
 		if (endpoint->columns_has)
 		{
 			if (unlikely(endpoint->columns_count > 1))
-				stmt_error(self, begin, "JSON column list must have zero or one value");
+				scope_error(self, begin, "JSON column list must have zero or one value");
 
 			// process {} as a value for column, if one column
 			if (endpoint->columns_count == 1)
-				stmt_push(self, begin);
+				scope_push(self, begin);
 
 			parse_import_row(self, endpoint);
 		} else {
 			parse_import_obj(self, endpoint);
 		}
 		if (! endpoint->columns_count)
-			stmt_expect(self, '}');
+			scope_expect(self, '}');
 		return;
 	}
 
-	if (! stmt_if(self, '['))
-		stmt_error(self, NULL, "json object or array expected");
+	if (! scope_if(self, '['))
+		scope_error(self, NULL, "json object or array expected");
 	parse_import_row(self, endpoint);
-	stmt_expect(self, ']');
+	scope_expect(self, ']');
 }
 
 hot static inline void
-parse_import_jsonl(Stmt* self, Endpoint* endpoint)
+parse_import_jsonl(Scope* self, Endpoint* endpoint)
 {
 	for (;;)
 	{
 		// {} or []
 		parse_import_json_row(self, endpoint);
-		if (stmt_if(self, KEOF))
+		if (scope_if(self, KEOF))
 			break;
 	}
 }
 
 hot static inline void
-parse_import_json(Stmt* self, Endpoint* endpoint)
+parse_import_json(Scope* self, Endpoint* endpoint)
 {
 	// [ {} or [], ...]
-	stmt_expect(self, '[');
+	scope_expect(self, '[');
 	for (;;)
 	{
 		// {} or []
 		parse_import_json_row(self, endpoint);
 		// ,]
-		if (stmt_if(self, ','))
+		if (scope_if(self, ','))
 			continue;
-		stmt_expect(self, ']');
+		scope_expect(self, ']');
 		break;
 	}
 }
 
 hot static inline void
-parse_import_csv(Stmt* self, Endpoint* endpoint)
+parse_import_csv(Scope* self, Endpoint* endpoint)
 {
 	// ensure column list is not empty for CSV import
 	if (endpoint->columns_has &&
@@ -231,7 +231,7 @@ parse_import_csv(Stmt* self, Endpoint* endpoint)
 	for (;;)
 	{
 		parse_import_row(self, endpoint);
-		if (stmt_if(self, KEOF))
+		if (scope_if(self, KEOF))
 			break;
 	}
 }
@@ -250,19 +250,15 @@ parse_import(Parser* self, Str* str, Str* uri, EndpointType type)
 	endpoint_init(&endpoint, &self->uri, type);
 	parse_endpoint(&endpoint, self->db);
 
+	// create main scope
+	auto scope = scope_allocate(self, NULL);
+	scope->lex = &self->lex;
+	scopes_add(&self->scopes, scope);
+
 	// prepare insert stmt
-	auto stmt = stmt_allocate(self->db, self->function_mgr,
-	                          self->local,
-	                          &self->lex,
-	                           self->program,
-	                           self->values_cache,
-	                          &self->json,
-	                          &self->stmts,
-	                          &self->ctes,
-	                          &self->vars,
-	                           self->args);
-	self->stmt = stmt;
-	stmts_add(&self->stmts, stmt);
+	auto stmt = stmt_allocate(scope);
+	scope->stmt = stmt;
+	stmts_add(&scope->stmts, stmt);
 	stmt->id  = STMT_INSERT;
 	stmt->ret = true;
 	stmt->ast = &ast_insert_allocate()->ast;
@@ -282,32 +278,32 @@ parse_import(Parser* self, Str* str, Str* uri, EndpointType type)
 	access_add(&self->program->access, table, ACCESS_RW);
 
 	// prepare result set
-	insert->values = set_cache_create(stmt->values_cache);
+	insert->values = set_cache_create(self->values_cache);
 	set_prepare(insert->values, columns->count, 0, NULL);
 
 	// parse rows according to the content type
 	switch (endpoint.type) {
 	case ENDPOINT_CSV:
-		parse_import_csv(stmt, &endpoint);
+		parse_import_csv(scope, &endpoint);
 		break;
 	case ENDPOINT_JSONL:
-		parse_import_jsonl(stmt, &endpoint);
+		parse_import_jsonl(scope, &endpoint);
 		break;
 	case ENDPOINT_JSON:
-		parse_import_json(stmt, &endpoint);
+		parse_import_json(scope, &endpoint);
 		break;
 	}
 
 	// ensure there are no data left
-	if (! stmt_if(stmt, KEOF))
-		stmt_error(stmt, NULL, "eof expected");
+	if (! scope_if(scope, KEOF))
+		scope_error(scope, NULL, "eof expected");
 
 	// create a list of generated columns expressions
 	if (columns->count_stored > 0)
-		parse_generated(stmt);
+		parse_generated(scope);
 	
 	// if table has resolved columns, handle insert as upsert
 	// and apply the resolve expressions on conflicts
 	if (columns->count_resolved > 0)
-		parse_resolved(stmt);
+		parse_resolved(scope);
 }

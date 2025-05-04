@@ -39,19 +39,19 @@
 #include <amelie_parser.h>
 
 void
-parse_token_create(Stmt* self)
+parse_token_create(Scope* self)
 {
 	// CREATE TOKEN name [EXPIRE interval]
 	auto stmt = ast_token_create_allocate();
-	self->ast = &stmt->ast;
+	self->stmt->ast = &stmt->ast;
 
 	// name
-	stmt->user = stmt_expect(self, KNAME);
+	stmt->user = scope_expect(self, KNAME);
 
 	// EXPIRE
-	if (stmt_if(self, KEXPIRE))
+	if (scope_if(self, KEXPIRE))
 	{
 		// value
-		stmt->expire = stmt_expect(self, KSTRING);
+		stmt->expire = scope_expect(self, KSTRING);
 	}
 }

@@ -92,16 +92,16 @@ parse_show_type(Str* name)
 }
 
 void
-parse_show(Stmt* self)
+parse_show(Scope* self)
 {
 	// SHOW <SECTION> [name] [IN|FROM schema] [extended] [FORMAT type]
 	auto stmt = ast_show_allocate();
-	self->ast = &stmt->ast;
+	self->stmt->ast = &stmt->ast;
 
 	// section | option name
-	auto name = stmt_next_shadow(self);
+	auto name = scope_next_shadow(self);
 	if (name->id != KNAME)
-		stmt_error(self, name, "name expected");
+		scope_error(self, name, "name expected");
 	stmt->section = name->string;
 
 	stmt->type = parse_show_type(&name->string);
@@ -109,9 +109,9 @@ parse_show(Stmt* self)
 	case SHOW_USER:
 	case SHOW_REPLICA:
 	case SHOW_SCHEMA:
-		name = stmt_next_shadow(self);
+		name = scope_next_shadow(self);
 		if (name->id != KNAME && name->id != KSTRING)
-			stmt_error(self, name, "name expected");
+			scope_error(self, name, "name expected");
 		stmt->name_ast = name;
 		stmt->name = name->string;
 		break;
@@ -121,7 +121,7 @@ parse_show(Stmt* self)
 		// [table name]
 		if (stmt->type == SHOW_TABLE)
 		{
-			name = stmt_next(self);
+			name = scope_next(self);
 			if (name->id == KNAME) {
 				stmt->name_ast = name;
 				stmt->name = name->string;
@@ -134,14 +134,14 @@ parse_show(Stmt* self)
 				str_split(&stmt->name, &stmt->schema, '.');
 				str_advance(&stmt->name, str_size(&stmt->schema) + 1);
 			} else {
-				stmt_error(self, name, "table name expected");
+				scope_error(self, name, "table name expected");
 			}
 		}
 
 		// [IN | FROM schema]
-		if (stmt_if(self, KIN) || stmt_if(self, KFROM))
+		if (scope_if(self, KIN) || scope_if(self, KFROM))
 		{
-			auto schema = stmt_expect(self, KNAME);
+			auto schema = scope_expect(self, KNAME);
 			stmt->schema = schema->string;
 		}
 		break;
@@ -152,7 +152,7 @@ parse_show(Stmt* self)
 		// [function name]
 		if (stmt->type == SHOW_FUNCTION)
 		{
-			name = stmt_next(self);
+			name = scope_next(self);
 			if (name->id == KNAME) {
 				stmt->name_ast = name;
 				stmt->name = name->string;
@@ -165,14 +165,14 @@ parse_show(Stmt* self)
 				str_split(&stmt->name, &stmt->schema, '.');
 				str_advance(&stmt->name, str_size(&stmt->schema) + 1);
 			} else {
-				stmt_error(self, name, "function name expected");
+				scope_error(self, name, "function name expected");
 			}
 		}
 
 		// [IN | FROM schema]
-		if (stmt_if(self, KIN) || stmt_if(self, KFROM))
+		if (scope_if(self, KIN) || scope_if(self, KFROM))
 		{
-			auto schema = stmt_expect(self, KNAME);
+			auto schema = scope_expect(self, KNAME);
 			stmt->schema = schema->string;
 		}
 		break;
@@ -186,12 +186,12 @@ parse_show(Stmt* self)
 	}
 
 	// [EXTENDED]
-	stmt->extended = stmt_if(self, KEXTENDED) != NULL;
+	stmt->extended = scope_if(self, KEXTENDED) != NULL;
 
 	// [FORMAT type]
-	if (stmt_if(self, KFORMAT))
+	if (scope_if(self, KFORMAT))
 	{
-		auto type = stmt_expect(self, KSTRING);
+		auto type = scope_expect(self, KSTRING);
 		stmt->format = type->string;
 	}
 }

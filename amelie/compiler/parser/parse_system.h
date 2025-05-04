@@ -33,4 +33,4 @@ ast_checkpoint_allocate(void)
 	return self;
 }
 
-void parse_checkpoint(Stmt*);
+void parse_checkpoint(Scope*);

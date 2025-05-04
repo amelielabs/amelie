@@ -61,5 +61,5 @@ ast_replica_drop_allocate(void)
 	return self;
 }
 
-void parse_replica_create(Stmt*);
-void parse_replica_drop(Stmt*);
+void parse_replica_create(Scope*);
+void parse_replica_drop(Scope*);

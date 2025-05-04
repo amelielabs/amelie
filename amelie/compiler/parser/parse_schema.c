@@ -39,11 +39,11 @@
 #include <amelie_parser.h>
 
 void
-parse_schema_create(Stmt* self)
+parse_schema_create(Scope* self)
 {
 	// CREATE SCHEMA [IF NOT EXISTS] name
 	auto stmt = ast_schema_create_allocate();
-	self->ast = &stmt->ast;
+	self->stmt->ast = &stmt->ast;
 
 	// if not exists
 	stmt->if_not_exists = parse_if_not_exists(self);
@@ -54,47 +54,47 @@ parse_schema_create(Stmt* self)
 	schema_config_set_create(stmt->config, true);
 
 	// name
-	auto name = stmt_expect(self, KNAME);
+	auto name = scope_expect(self, KNAME);
 	schema_config_set_name(stmt->config, &name->string);
 }
 
 void
-parse_schema_drop(Stmt* self)
+parse_schema_drop(Scope* self)
 {
 	// DROP SCHEMA [IF EXISTS] name [CASCADE]
 	auto stmt = ast_schema_drop_allocate();
-	self->ast = &stmt->ast;
+	self->stmt->ast = &stmt->ast;
 
 	// if exists
 	stmt->if_exists = parse_if_exists(self);
 
 	// name
-	stmt->name = stmt_expect(self, KNAME);
+	stmt->name = scope_expect(self, KNAME);
 
 	// [CASCADE]
-	if (stmt_if(self, KCASCADE))
+	if (scope_if(self, KCASCADE))
 		stmt->cascade = true;
 }
 
 void
-parse_schema_alter(Stmt* self)
+parse_schema_alter(Scope* self)
 {
 	// ALTER SCHEMA [IF EXISTS] name RENAME name
 	auto stmt = ast_schema_alter_allocate();
-	self->ast = &stmt->ast;
+	self->stmt->ast = &stmt->ast;
 
 	// if exists
 	stmt->if_exists = parse_if_exists(self);
 
 	// name
-	stmt->name = stmt_expect(self, KNAME);
+	stmt->name = scope_expect(self, KNAME);
 
 	// RENAME
-	stmt_expect(self, KRENAME);
+	scope_expect(self, KRENAME);
 
 	// TO
-	stmt_expect(self, KTO);
+	scope_expect(self, KTO);
 
 	// name
-	stmt->name_new = stmt_expect(self, KNAME);
+	stmt->name_new = scope_expect(self, KNAME);
 }

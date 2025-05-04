@@ -39,10 +39,10 @@
 #include <amelie_parser.h>
 
 hot Ast*
-parse_update_expr(Stmt* self)
+parse_update_expr(Scope* self)
 {
 	// SET
-	stmt_expect(self, KSET);
+	scope_expect(self, KSET);
 
 	// column = expr [, ... ]
 	Ast* expr_prev = NULL;
@@ -52,15 +52,15 @@ parse_update_expr(Stmt* self)
 		auto op = ast(KSET);
 
 		// column[.path]
-		op->l = stmt_next(self);
+		op->l = scope_next(self);
 		if (op->l->id != KNAME && op->l->id != KNAME_COMPOUND)
-			stmt_error(self, op->l, "column name expected");
+			scope_error(self, op->l, "column name expected");
 
 		// =
-		stmt_expect(self, '=');
+		scope_expect(self, '=');
 
 		// expr
-		auto def = stmt_if(self, KDEFAULT);
+		auto def = scope_if(self, KDEFAULT);
 		if (def)
 			op->r = def;
 		else
@@ -73,7 +73,7 @@ parse_update_expr(Stmt* self)
 		if (op->l->id == KNAME_COMPOUND)
 		{
 			if (def)
-				stmt_error(self, def, "DEFAULT cannot be used this way");
+				scope_error(self, def, "DEFAULT cannot be used this way");
 
 			// exclude path from the column name
 			auto name = ast(KNAME);
@@ -103,7 +103,7 @@ parse_update_expr(Stmt* self)
 			str_set(&func, "set", 3);
 
 			auto call = ast_call_allocate();
-			call->fn    = function_mgr_find(self->function_mgr, &schema, &func);
+			call->fn    = function_mgr_find(self->parser->function_mgr, &schema, &func);
 			call->ast.l = NULL;
 			call->ast.r = &args->ast;
 			assert(call->fn);
@@ -120,7 +120,7 @@ parse_update_expr(Stmt* self)
 		expr_prev = op;
 
 		// ,
-		if(! stmt_if(self, ','))
+		if(! scope_if(self, ','))
 			break;
 	}
 
@@ -128,7 +128,7 @@ parse_update_expr(Stmt* self)
 }
 
 hot Ast*
-parse_update_resolved(Stmt* self, Columns* columns)
+parse_update_resolved(Scope* self, Columns* columns)
 {
 	auto lex_origin = self->lex;
 	Lex lex;
@@ -168,37 +168,37 @@ parse_update_resolved(Stmt* self, Columns* columns)
 }
 
 hot void
-parse_update(Stmt* self)
+parse_update(Scope* self)
 {
 	// UPDATE name SET column = expr [, ... ]
 	// [WHERE expr]
 	// [RETURNING expr [FORMAT name]]
 	auto stmt = ast_update_allocate();
-	self->ast = &stmt->ast;
+	self->stmt->ast = &stmt->ast;
 
 	// table
 	parse_from(self, &stmt->targets, ACCESS_RW, false);
 	if (targets_empty(&stmt->targets) || targets_is_join(&stmt->targets))
-		stmt_error(self, NULL, "table name expected");
+		scope_error(self, NULL, "table name expected");
 	auto target = targets_outer(&stmt->targets);
 	if (! target_is_table(target))
-		stmt_error(self, NULL, "table name expected");
+		scope_error(self, NULL, "table name expected");
 	stmt->table = target->from_table;
 
 	// ensure primary index is used
 	if (target->from_index)
 		if (table_primary(stmt->table) != target->from_index)
-			stmt_error(self, NULL, "UPDATE supports only primary index");
+			scope_error(self, NULL, "UPDATE supports only primary index");
 
 	// prevent from using heap
 	if (target->from_heap)
-		stmt_error(self, NULL, "UPDATE supports only primary index");
+		scope_error(self, NULL, "UPDATE supports only primary index");
 
 	// SET column = expr [, ... ]
 	stmt->expr_update = parse_update_expr(self);
 
 	// [WHERE]
-	if (stmt_if(self, KWHERE))
+	if (scope_if(self, KWHERE))
 	{
 		Expr ctx;
 		expr_init(&ctx);
@@ -208,7 +208,7 @@ parse_update(Stmt* self)
 	}
 
 	// [RETURNING]
-	if (stmt_if(self, KRETURNING))
+	if (scope_if(self, KRETURNING))
 	{
 		parse_returning(&stmt->ret, self, NULL);
 		parse_returning_resolve(&stmt->ret, self, &stmt->targets);

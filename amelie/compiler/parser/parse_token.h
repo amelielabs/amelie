@@ -36,4 +36,4 @@ ast_token_create_allocate(void)
 	return self;
 }
 
-void parse_token_create(Stmt*);
+void parse_token_create(Scope*);

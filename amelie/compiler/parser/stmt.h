@@ -13,6 +13,7 @@
 
 typedef struct Stmt  Stmt;
 typedef struct Stmts Stmts;
+typedef struct Scope Scope;
 
 typedef enum
 {
@@ -52,43 +53,30 @@ typedef enum
 
 struct Stmt
 {
-	StmtId       id;
-	Ast*         ast;
-	int          order;
-	int          order_targets;
-	bool         ret;
-	Cte*         cte;
-	int          r;
-	Var*         assign;
-	AstList      select_list;
+	StmtId  id;
+	Ast*    ast;
+	int     order;
+	int     order_targets;
+	bool    ret;
+	Cte*    cte;
+	Var*    assign;
+	int     r;
+	AstList select_list;
+	Scope*  scope;
+	Stmt*   next;
+	Stmt*   prev;
+};
 
-	Stmts*       stmts;
-	Ctes*        ctes;
-	Vars*        vars;
-	Columns*     args;
-	Program*     program;
-	SetCache*    values_cache;
-	Json*        json;
-	Lex*         lex;
-	FunctionMgr* function_mgr;
-	Local*       local;
-	Db*          db;
-	Stmt*        next;
-	Stmt*        prev;
+struct Stmts
+{
+	Stmt* list;
+	Stmt* list_tail;
+	int   count;
+	int   count_utility;
 };
 
 static inline Stmt*
-stmt_allocate(Db*          db,
-              FunctionMgr* function_mgr,
-              Local*       local,
-              Lex*         lex,
-              Program*     program,
-              SetCache*    values_cache,
-              Json*        json,
-              Stmts*       stmts,
-              Ctes*        ctes,
-              Vars*        vars,
-              Columns*     args)
+stmt_allocate(Scope* scope)
 {
 	Stmt* self = palloc(sizeof(Stmt));
 	self->id            = STMT_UNDEF;
@@ -97,73 +85,13 @@ stmt_allocate(Db*          db,
 	self->order_targets = 0;
 	self->ret           = false;
 	self->cte           = NULL;
-	self->r             = -1;
 	self->assign        = NULL;
-	self->args          = args;
-	self->stmts         = stmts;
-	self->ctes          = ctes;
-	self->vars          = vars;
-	self->program       = program;
-	self->values_cache  = values_cache;
-	self->json          = json;
-	self->lex           = lex;
-	self->function_mgr  = function_mgr;
-	self->local         = local;
-	self->db            = db;
+	self->r             = -1;
+	self->scope         = scope;
 	self->next          = NULL;
 	self->prev          = NULL;
 	ast_list_init(&self->select_list);
 	return self;
-}
-
-always_inline static inline Ast*
-stmt_next_shadow(Stmt* self)
-{
-	lex_set_keywords(self->lex, false);
-	auto ast = lex_next(self->lex);
-	lex_set_keywords(self->lex, true);
-	return ast;
-}
-
-always_inline static inline Ast*
-stmt_next(Stmt* self)
-{
-	return lex_next(self->lex);
-}
-
-always_inline static inline Ast*
-stmt_if(Stmt* self, int id)
-{
-	return lex_if(self->lex, id);
-}
-
-static inline void
-stmt_error(Stmt* self, Ast* ast, const char* fmt, ...)
-{
-	va_list args;
-	char msg[256];
-	va_start(args, fmt);
-	vsnprintf(msg, sizeof(msg), fmt, args);
-	va_end(args);
-	if (! ast)
-		ast = lex_next(self->lex);
-	lex_error(self->lex, ast, msg);
-}
-
-always_inline static inline Ast*
-stmt_expect(Stmt* self, int id)
-{
-	auto ast = lex_next(self->lex);
-	if (ast->id == id)
-		return ast;
-	lex_error_expect(self->lex, ast, id);
-	return NULL;
-}
-
-always_inline static inline void
-stmt_push(Stmt* self, Ast* ast)
-{
-	lex_push(self->lex, ast);
 }
 
 static inline bool
@@ -201,4 +129,48 @@ stmt_is_utility(Stmt* self)
 		break;
 	}
 	return false;
+}
+
+static inline void
+stmts_init(Stmts* self)
+{
+	self->list          = NULL;
+	self->list_tail     = NULL;
+	self->count         = 0;
+	self->count_utility = 0;
+}
+
+static inline void
+stmts_add(Stmts* self, Stmt* stmt)
+{
+	if (self->list == NULL)
+		self->list = stmt;
+	else
+		self->list_tail->next = stmt;
+	stmt->prev = self->list_tail;
+	self->list_tail = stmt;
+	self->count++;
+	if (stmt_is_utility(stmt))
+		self->count_utility++;
+}
+
+static inline void
+stmts_insert(Stmts* self, Stmt* before, Stmt* stmt)
+{
+	if (before->prev == NULL)
+		self->list = stmt;
+	else
+		before->prev->next = stmt;
+	stmt->prev = before->prev;
+	stmt->next = before;
+	before->prev = stmt;
+	self->count++;
+}
+
+static inline void
+stmts_order(Stmts* self)
+{
+	int order = 0;
+	for (auto stmt = self->list; stmt; stmt = stmt->next)
+		stmt->order = order++;
 }

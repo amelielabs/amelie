@@ -109,14 +109,14 @@ emit_column(Compiler* self, Target* target, Ast* ast,
 		if (!column && target->type != TARGET_FUNCTION)
 		{
 			if (column_conflict)
-				stmt_error(self->current, ast,
-				           "column %.*s.%.*s is ambiguous",
-				           str_size(&target->name), str_of(&target->name),
-				           str_size(name), str_of(name));
+				compiler_error(self, ast,
+				               "column %.*s.%.*s is ambiguous",
+				               str_size(&target->name), str_of(&target->name),
+				               str_size(name), str_of(name));
 			else
-				stmt_error(self->current, ast, "column %.*s.%.*s not found",
-				           str_size(&target->name), str_of(&target->name),
-				           str_size(name), str_of(name));
+				compiler_error(self, ast, "column %.*s.%.*s not found",
+				               str_size(&target->name), str_of(&target->name),
+				               str_size(name), str_of(name));
 		}
 	}
 
@@ -221,7 +221,7 @@ emit_name(Compiler* self, Targets* targets, Ast* ast)
 	auto name = &ast->string;
 
 	// find variable by name
-	auto var = vars_find(&self->parser.vars, name);
+	auto var = vars_find(&self->current_scope->vars, name);
 	if (var)
 	{
 		assert(var->r != -1);
@@ -231,11 +231,11 @@ emit_name(Compiler* self, Targets* targets, Ast* ast)
 	while (targets && targets_empty(targets))
 		targets = targets->outer;
 	if (! targets)
-		stmt_error(self->current, ast, "column not found");
+		compiler_error(self, ast, "column not found");
 
 	// SELECT name FROM
 	if (targets_is_join(targets))
-		stmt_error(self->current, ast, "column requires explicit target name");
+		compiler_error(self, ast, "column requires explicit target name");
 
 	auto target = targets_outer(targets);
 
@@ -245,9 +245,9 @@ emit_name(Compiler* self, Targets* targets, Ast* ast)
 	{
 		auto group = ast_group_resolve_column(target->from_group_by, name);
 		if (! group)
-			stmt_error(self->current, ast, "column %.*s must appear in the GROUP BY clause "
-			           "or be used by an aggregate function",
-			           str_size(name), str_of(name));
+			compiler_error(self, ast, "column %.*s must appear in the GROUP BY clause "
+			               "or be used by an aggregate function",
+			               str_size(name), str_of(name));
 		group_by_column = group->column;
 	}
 
@@ -267,7 +267,7 @@ emit_name_compound(Compiler* self, Targets* targets, Ast* ast)
 	str_set_str(&path, &ast->string);
 
 	// find variable by name
-	auto var = vars_find(&self->parser.vars, &name);
+	auto var = vars_find(&self->current_scope->vars, &name);
 	if (var)
 	{
 		assert(var->r != -1);
@@ -277,7 +277,7 @@ emit_name_compound(Compiler* self, Targets* targets, Ast* ast)
 
 		// ensure variable is a json
 		if (var->type != TYPE_JSON)
-			stmt_error(self->current, ast, "variable is not a json");
+			compiler_error(self, ast, "variable is not a json");
 
 		// var.path
 		str_advance(&path, str_size(&name) + 1);
@@ -303,7 +303,7 @@ emit_name_compound(Compiler* self, Targets* targets, Ast* ast)
 		if (targets == NULL ||
 		    targets->count != 1 ||
 		    targets_outer(targets)->type != TARGET_TABLE)
-			stmt_error(self->current, ast, "cannot be used outside of INSERT ON CONFLICT DO UPDATE statement");
+			compiler_error(self, ast, "cannot be used outside of INSERT ON CONFLICT DO UPDATE statement");
 		target = targets_outer(targets);
 	} else
 	{
@@ -321,9 +321,9 @@ emit_name_compound(Compiler* self, Targets* targets, Ast* ast)
 			// group by name can be a prefix of the path, in case of json columns
 			auto group = ast_group_resolve_column_prefix(target->from_group_by, &path);
 			if (! group)
-				stmt_error(self->current, ast, "column %.*s must appear in the GROUP BY clause "
-				           "or be used by an aggregate function",
-				           str_size(&path), str_of(&path));
+				compiler_error(self, ast, "column %.*s must appear in the GROUP BY clause "
+				               "or be used by an aggregate function",
+				               str_size(&path), str_of(&path));
 
 			// use group by name as a prefix for the path
 			str_advance(&path, str_size(&group->expr->string));
@@ -359,7 +359,7 @@ emit_name_compound(Compiler* self, Targets* targets, Ast* ast)
 		}
 
 		if (! target)
-			stmt_error(self->current, ast, "target not found");
+			compiler_error(self, ast, "target not found");
 	}
 
 	// column[.path]
@@ -370,7 +370,7 @@ emit_name_compound(Compiler* self, Targets* targets, Ast* ast)
 
 	// ensure column is a json
 	if (rtype(self, rcolumn) != TYPE_JSON)
-		stmt_error(self->current, ast, "column is not a json");
+		compiler_error(self, ast, "column is not a json");
 
 	// column.path
 	int rstring = emit_string(self, &path, false);
@@ -509,7 +509,7 @@ emit_call(Compiler* self, Targets* targets, Ast* ast)
 		// ensure that the function has identical types, if type is derived
 		if (fn->flags & FN_DERIVE)
 			if (! emit_call_typederive(self, r, &fn_type))
-				stmt_error(self->current, current, "argument type must match other arguments");
+				compiler_error(self, current, "argument type must match other arguments");
 		op1(self, CPUSH, r);
 		runpin(self, r);
 		current = current->next;
@@ -554,7 +554,7 @@ emit_call_method(Compiler* self, Targets* targets, Ast* ast)
 			// ensure that the function has identical types, if type is derived
 			if (fn->flags & FN_DERIVE)
 				if (! emit_call_typederive(self, r, &fn_type))
-					stmt_error(self->current, current, "argument type must match other arguments");
+					compiler_error(self, current, "argument type must match other arguments");
 			op1(self, CPUSH, r);
 			runpin(self, r);
 			current = current->next;
@@ -672,7 +672,7 @@ emit_case(Compiler* self, Targets* targets, Ast* ast)
 		else
 		if (rtype(self, rresult) != rtype(self, rthen) &&
 		    rtype(self, rthen) != TYPE_NULL)
-			stmt_error(self->current, when->r, "CASE expression type mismatch");
+			compiler_error(self, when->r, "CASE expression type mismatch");
 
 		op2(self, CMOV, rresult, rthen);
 		runpin(self, rthen);
@@ -696,7 +696,7 @@ emit_case(Compiler* self, Targets* targets, Ast* ast)
 		else
 		if (rtype(self, rresult) != rtype(self, relse) &&
 		    rtype(self, relse) != TYPE_NULL)
-			stmt_error(self->current, cs->expr_else, "CASE expression type mismatch");
+			compiler_error(self, cs->expr_else, "CASE expression type mismatch");
 	} else
 	{
 		relse = op1(self, CNULL, rpin(self, TYPE_NULL));
@@ -715,7 +715,7 @@ hot static inline int
 emit_is(Compiler* self, Targets* targets, Ast* ast)
 {
 	if (!ast->r || ast->r->id != KNULL)
-		stmt_error(self->current, ast->r, "NOT or NULL expected");
+		compiler_error(self, ast->r, "NOT or NULL expected");
 	auto rexpr = emit_expr(self, targets, ast->l);
 	auto rresult = op2(self, CIS, rpin(self, TYPE_BOOL), rexpr);
 	runpin(self, rexpr);
@@ -750,7 +750,7 @@ emit_in(Compiler* self, Targets* targets, Ast* ast)
 		{
 			auto select = ast_select_of(current);
 			if (select->ret.columns.count > 1)
-				stmt_error(self->current, &select->ast, "subquery must return one column");
+				compiler_error(self, &select->ast, "subquery must return one column");
 			r = emit_select(self, current);
 		} else {
 			r = emit_expr(self, targets, current);
@@ -786,7 +786,7 @@ emit_match(Compiler* self, Targets* targets, Ast* ast)
 	{
 		auto select = ast_select_of(ast->r->r);
 		if (select->ret.columns.count > 1)
-			stmt_error(self->current, &select->ast, "subquery must return one column");
+			compiler_error(self, &select->ast, "subquery must return one column");
 		b = emit_select(self, ast->r->r);
 	} else {
 		b = emit_expr(self, targets, ast->r->r);
@@ -877,7 +877,7 @@ emit_expr(Compiler* self, Targets* targets, Ast* ast)
 		Timestamp ts;
 		timestamp_init(&ts);
 		if (unlikely(error_catch( timestamp_set(&ts, &ast->string) )))
-			stmt_error(self->current, ast, "invalid timestamp value");
+			compiler_error(self, ast, "invalid timestamp value");
 		return op2(self, CTIMESTAMP, rpin(self, TYPE_TIMESTAMP),
 		           timestamp_get_unixtime(&ts, self->parser.local->timezone));
 	}
@@ -887,14 +887,14 @@ emit_expr(Compiler* self, Targets* targets, Ast* ast)
 		auto iv = (Interval*)buf_claim(&self->code_data->data, sizeof(Interval));
 		interval_init(iv);
 		if (unlikely(error_catch( interval_set(iv, &ast->string) )))
-			stmt_error(self->current, ast, "invalid interval value");
+			compiler_error(self, ast, "invalid interval value");
 		return op2(self, CINTERVAL, rpin(self, TYPE_INTERVAL), offset);
 	}
 	case KDATE:
 	{
 		int julian;
 		if (unlikely(error_catch( julian = date_set(&ast->string) )))
-			stmt_error(self->current, ast, "invalid date value");
+			compiler_error(self, ast, "invalid date value");
 		return op2(self, CDATE, rpin(self, TYPE_DATE), julian);
 	}
 	case KCURRENT_TIMESTAMP:
@@ -916,7 +916,7 @@ emit_expr(Compiler* self, Targets* targets, Ast* ast)
 		auto uuid = (Uuid*)buf_claim(&self->code_data->data, sizeof(Uuid));
 		uuid_init(uuid);
 		if (uuid_set_nothrow(uuid, &ast->string) == -1)
-			stmt_error(self->current, ast, "invalid uuid value");
+			compiler_error(self, ast, "invalid uuid value");
 		return op2(self, CUUID, rpin(self, TYPE_UUID), offset);
 	}
 
@@ -1034,7 +1034,7 @@ emit_expr(Compiler* self, Targets* targets, Ast* ast)
 		if (rt == TYPE_INTERVAL)
 			rneg = op2(self, CNEGL, rpin(self, TYPE_INTERVAL), r);
 		else
-			stmt_error(self->current, ast->l, "unsupported operation type %s", type_of(rt));
+			compiler_error(self, ast->l, "unsupported operation type %s", type_of(rt));
 		runpin(self, r);
 		return rneg;
 	}
@@ -1043,7 +1043,7 @@ emit_expr(Compiler* self, Targets* targets, Ast* ast)
 		int r = emit_expr(self, targets, ast->l);
 		int rt = rtype(self, r);
 		if (rt != TYPE_INT)
-			stmt_error(self->current, ast->l, "unsupported operation type %s", type_of(rt));
+			compiler_error(self, ast->l, "unsupported operation type %s", type_of(rt));
 		auto rinv = op2(self, CBINVI, rpin(self, TYPE_INT), r);
 		runpin(self, r);
 		return rinv;
@@ -1062,7 +1062,7 @@ emit_expr(Compiler* self, Targets* targets, Ast* ast)
 		auto select = ast_select_of(ast);
 		auto columns = &select->ret.columns;
 		if (columns->count > 1)
-			stmt_error(self->current, ast, "subquery must return only one column");
+			compiler_error(self, ast, "subquery must return only one column");
 		auto r = emit_select(self, ast);
 		// return first column of the first row and free the set
 		auto rresult = op2(self, CSET_RESULT, rpin(self, columns_first(columns)->type), r);

@@ -39,10 +39,10 @@
 #include <amelie_parser.h>
 
 void
-parse_watch(Stmt* self)
+parse_watch(Scope* self)
 {
 	// WATCH expr
 	auto stmt = ast_watch_allocate();
-	self->ast = &stmt->ast;
+	self->stmt->ast = &stmt->ast;
 	stmt->expr = parse_expr(self, NULL);
 }

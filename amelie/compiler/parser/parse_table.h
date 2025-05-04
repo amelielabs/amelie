@@ -152,9 +152,9 @@ ast_table_alter_allocate(void)
 	return self;
 }
 
-bool parse_type(Stmt*, int*, int*);
-void parse_key(Stmt*, Keys*);
-void parse_table_create(Stmt*, bool);
-void parse_table_drop(Stmt*);
-void parse_table_alter(Stmt*);
-void parse_table_truncate(Stmt*);
+bool parse_type(Scope*, int*, int*);
+void parse_key(Scope*, Keys*);
+void parse_table_create(Scope*, bool);
+void parse_table_drop(Scope*);
+void parse_table_alter(Scope*);
+void parse_table_truncate(Scope*);

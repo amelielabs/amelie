@@ -39,33 +39,33 @@
 #include <amelie_parser.h>
 
 void
-parse_replica_create(Stmt* self)
+parse_replica_create(Scope* self)
 {
 	// CREATE REPLICA [IF NOT EXISTS] id uri
 	auto stmt = ast_replica_create_allocate();
-	self->ast = &stmt->ast;
+	self->stmt->ast = &stmt->ast;
 
 	// if not exists
 	stmt->if_not_exists = parse_if_not_exists(self);
 
 	// id
-	stmt->id = stmt_expect(self, KSTRING);
+	stmt->id = scope_expect(self, KSTRING);
 
 	// options
 	for (;;)
 	{
 		// name
-		auto name = stmt_next_shadow(self);
+		auto name = scope_next_shadow(self);
 		if (name->id == KEOF)
 			break;
 		if (name->id != KNAME)
-			stmt_error(self, name, "option name expected");
+			scope_error(self, name, "option name expected");
 
 		// [=]
-		stmt_if(self, '=');
+		scope_if(self, '=');
 
 		// string
-		auto value = stmt_expect(self, KSTRING);
+		auto value = scope_expect(self, KSTRING);
 		if (str_is_case(&name->string, "uri", 3))
 			remote_set(&stmt->remote, REMOTE_URI, &value->string);
 		else
@@ -84,24 +84,24 @@ parse_replica_create(Stmt* self)
 		if (str_is_case(&name->string, "token", 5))
 			remote_set(&stmt->remote, REMOTE_TOKEN, &value->string);
 		else
-			stmt_error(self, name, "unrecognized option");
+			scope_error(self, name, "unrecognized option");
 	}
 
 	// validate options
 	if (str_empty(remote_get(&stmt->remote, REMOTE_URI)))
-		stmt_error(self, NULL, "URI is not defined");
+		scope_error(self, NULL, "URI is not defined");
 }
 
 void
-parse_replica_drop(Stmt* self)
+parse_replica_drop(Scope* self)
 {
 	// DROP REPLICA [IF EXISTS] id
 	auto stmt = ast_replica_drop_allocate();
-	self->ast = &stmt->ast;
+	self->stmt->ast = &stmt->ast;
 
 	// if exists
 	stmt->if_exists = parse_if_exists(self);
 
 	// id
-	stmt->id = stmt_expect(self, KSTRING);
+	stmt->id = scope_expect(self, KSTRING);
 }

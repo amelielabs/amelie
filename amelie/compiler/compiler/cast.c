@@ -404,9 +404,9 @@ cast_operator(Compiler* self, Ast* ast, int operator, int l, int r)
 		auto cast = &cast_op[operator][lt][rt];
 		if (unlikely(cast->type == TYPE_NULL))
 		{
-			stmt_error(self->current, ast, "operation %s %s %s is not supported",
-			           type_of(lt), cast_op_names[operator],
-			           type_of(rt));
+			compiler_error(self, ast, "operation %s %s %s is not supported",
+			               type_of(lt), cast_op_names[operator],
+			               type_of(rt));
 		}
 		op   = cast->op;
 		type = cast->type;

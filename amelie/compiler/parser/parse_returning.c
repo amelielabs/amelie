@@ -39,10 +39,10 @@
 #include <amelie_parser.h>
 
 void
-parse_returning(Returning* self, Stmt* stmt, Expr* ctx)
+parse_returning(Returning* self, Scope* scope, Expr* ctx)
 {
 	// set returning format
-	self->format = *stmt->local->format;
+	self->format = *scope->parser->local->format;
 
 	// * | target.* | expr [AS] [name], ...
 	for (;;)
@@ -50,7 +50,7 @@ parse_returning(Returning* self, Stmt* stmt, Expr* ctx)
 		auto as = ast(KAS);
 
 		// target.*, * or expr
-		auto expr = stmt_next(stmt);
+		auto expr = scope_next(scope);
 		switch (expr->id) {
 		case '*':
 			expr->id = KSTAR;
@@ -58,28 +58,28 @@ parse_returning(Returning* self, Stmt* stmt, Expr* ctx)
 		case KNAME_COMPOUND_STAR:
 			break;
 		default:
-			stmt_push(stmt, expr);
+			scope_push(scope, expr);
 			if (ctx)
 			{
 				ctx->as = as;
-				expr = parse_expr(stmt, ctx);
+				expr = parse_expr(scope, ctx);
 				ctx->as = NULL;
 			} else {
-				expr = parse_expr(stmt, ctx);
+				expr = parse_expr(scope, ctx);
 			}
 			break;
 		}
 
 		// [AS name]
 		// [name]
-		auto as_has = stmt_if(stmt, KAS);
+		auto as_has = scope_if(scope, KAS);
 
 		// set column name
-		auto name = stmt_if(stmt, KNAME);
+		auto name = scope_if(scope, KNAME);
 		if (unlikely(! name))
 		{
 			if (as_has)
-				stmt_error(stmt, NULL, "label expected");
+				scope_error(scope, NULL, "label expected");
 			if (expr->id == KNAME)
 			{
 				name = ast(KNAME);
@@ -97,7 +97,7 @@ parse_returning(Returning* self, Stmt* stmt, Expr* ctx)
 		{
 			// ensure * has no alias
 			if (expr->id == '*')
-				stmt_error(stmt, name, "* cannot have an alias");
+				scope_error(scope, name, "* cannot have an alias");
 		}
 
 		// add column to the select expression list
@@ -110,30 +110,30 @@ parse_returning(Returning* self, Stmt* stmt, Expr* ctx)
 		self->list_tail = as;
 
 		// ,
-		if (stmt_if(stmt, ','))
+		if (scope_if(scope, ','))
 			continue;
 
 		break;
 	}
 
 	// [FORMAT type]
-	if (stmt_if(stmt, KFORMAT))
+	if (scope_if(scope, KFORMAT))
 	{
-		auto type = stmt_expect(stmt, KSTRING);
+		auto type = scope_expect(scope, KSTRING);
 		self->format = type->string;
 	}
 
 	// [INTO name]
-	if (stmt_if(stmt, KINTO))
+	if (scope_if(scope, KINTO))
 	{
-		auto name = stmt_expect(stmt, KNAME);
-		if (stmt->cte)
-			stmt_error(stmt, name, "INTO cannot be used with CTE");
-		if (stmt->assign)
-			stmt_error(stmt, name, "INTO cannot be used with := operator");
+		auto name = scope_expect(scope, KNAME);
+		if (scope->stmt->cte)
+			scope_error(scope, name, "INTO cannot be used with CTE");
+		if (scope->stmt->assign)
+			scope_error(scope, name, "INTO cannot be used with := operator");
 		if (ctx && ctx->select && ctx->subquery)
-			stmt_error(stmt, name, "INTO cannot be used inside subquery");
-		stmt->assign = vars_add(stmt->vars, &name->string);
+			scope_error(scope, name, "INTO cannot be used inside subquery");
+		scope->stmt->assign = vars_add(&scope->vars, &name->string);
 	}
 }
 
@@ -184,7 +184,7 @@ returning_add_target(Returning* self, Target* target, Ast* star)
 }
 
 void
-parse_returning_resolve(Returning* self, Stmt* stmt, Targets* targets)
+parse_returning_resolve(Returning* self, Scope* scope, Targets* targets)
 {
 	// rewrite returning list by resolving all * and target.*
 	auto as = self->list;
@@ -202,7 +202,7 @@ parse_returning_resolve(Returning* self, Stmt* stmt, Targets* targets)
 			if (unlikely(targets_empty(targets)))
 			{
 				if (! targets->outer)
-					stmt_error(stmt, as->l, "no targets defined");
+					scope_error(scope, as->l, "no targets defined");
 				targets_ref = targets->outer;
 			}
 
@@ -224,10 +224,10 @@ parse_returning_resolve(Returning* self, Stmt* stmt, Targets* targets)
 			// find nearest target
 			auto match = targets_match_outer(targets, &name);
 			if (! match)
-				stmt_error(stmt, as->l, "target not found");
+				scope_error(scope, as->l, "target not found");
 
 			if (as->l->string.pos[str_size(&name) + 1] != '*')
-				stmt_error(stmt, as->l,"incorrect target column path");
+				scope_error(scope, as->l,"incorrect target column path");
 
 			returning_add_target(self, match, as->l);
 			break;

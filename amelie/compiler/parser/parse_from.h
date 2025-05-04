@@ -11,7 +11,7 @@
 // AGPL-3.0 Licensed.
 //
 
-void parse_from(Stmt*, Targets*, AccessType, bool);
+void parse_from(Scope*, Targets*, AccessType, bool);
 
 static inline Ast*
 parse_from_join_on_and_where(Targets* targets, Ast* expr_where)

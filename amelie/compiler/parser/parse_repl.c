@@ -39,35 +39,35 @@
 #include <amelie_parser.h>
 
 void
-parse_repl_start(Stmt* self)
+parse_repl_start(Scope* self)
 {
 	// START REPL
 	auto stmt = ast_repl_ctl_allocate(true);
-	self->ast = &stmt->ast;
+	self->stmt->ast = &stmt->ast;
 }
 
 void
-parse_repl_stop(Stmt* self)
+parse_repl_stop(Scope* self)
 {
 	// STOP REPL
 	auto stmt = ast_repl_ctl_allocate(false);
-	self->ast = &stmt->ast;
+	self->stmt->ast = &stmt->ast;
 }
 
 void
-parse_repl_subscribe(Stmt* self)
+parse_repl_subscribe(Scope* self)
 {
 	// SUBSCRIBE id
 	auto stmt = ast_repl_subscribe_allocate();
-	self->ast = &stmt->ast;
-	stmt->id  = stmt_expect(self, KSTRING);
+	self->stmt->ast = &stmt->ast;
+	stmt->id  = scope_expect(self, KSTRING);
 }
 
 void
-parse_repl_unsubscribe(Stmt* self)
+parse_repl_unsubscribe(Scope* self)
 {
 	// UNSUBSCRIBE
 	auto stmt = ast_repl_subscribe_allocate();
-	self->ast = &stmt->ast;
+	self->stmt->ast = &stmt->ast;
 	stmt->id  = NULL;
 }

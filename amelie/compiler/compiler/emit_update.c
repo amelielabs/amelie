@@ -56,16 +56,16 @@ emit_update_target(Compiler* self, Targets* targets, Ast* expr)
 		auto name = &op->l->string;
 		auto column = columns_find(columns, name);
 		if (! unlikely(column))
-			stmt_error(self->current, op->l,
-			           "column %.*s.%.*s not found",
-			           str_size(&target->name), str_of(&target->name),
-			           str_size(name), str_of(name));
+			compiler_error(self, op->l,
+			               "column %.*s.%.*s not found",
+			               str_size(&target->name), str_of(&target->name),
+			               str_size(name), str_of(name));
 
 		if (unlikely(column->refs > 0))
-			stmt_error(self->current, op->l,
-			           "column %.*s.%.*s used as a part of a key",
-			           str_size(&target->name), str_of(&target->name),
-			           str_size(name), str_of(name));
+			compiler_error(self, op->l,
+			               "column %.*s.%.*s used as a part of a key",
+			               str_size(&target->name), str_of(&target->name),
+			               str_size(name), str_of(name));
 
 		op->l->column = column;
 
@@ -75,10 +75,10 @@ emit_update_target(Compiler* self, Targets* targets, Ast* expr)
 		while (pos)
 		{
 			if (column == pos->l->column)
-				stmt_error(self->current, pos->l,
-				           "column %.*s.%.*s is redefined in UPDATE",
-				           str_size(&target->name), str_of(&target->name),
-				           str_size(&column->name), str_of(&column->name));
+				compiler_error(self, pos->l,
+				               "column %.*s.%.*s is redefined in UPDATE",
+				               str_size(&target->name), str_of(&target->name),
+				               str_size(&column->name), str_of(&column->name));
 
 			if (column->order < pos->l->column->order)
 				break;
@@ -133,12 +133,12 @@ emit_update_target(Compiler* self, Targets* targets, Ast* expr)
 		// ensure that the expression type is compatible
 		// with the column
 		if (unlikely(type != TYPE_NULL && column->type != type))
-			stmt_error(self->current, op->l,
-			           "column %.*s.%.*s update expression type '%s' does not match column type '%s'",
-			           str_size(&target->name), str_of(&target->name),
-			           str_size(&column->name), str_of(&column->name),
-			           type_of(type),
-			           type_of(column->type));
+			compiler_error(self, op->l,
+			               "column %.*s.%.*s update expression type '%s' does not match column type '%s'",
+			               str_size(&target->name), str_of(&target->name),
+			               str_size(&column->name), str_of(&column->name),
+			               type_of(type),
+			               type_of(column->type));
 	}
 
 	// UPDATE

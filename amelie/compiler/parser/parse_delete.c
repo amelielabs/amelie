@@ -39,37 +39,37 @@
 #include <amelie_parser.h>
 
 hot void
-parse_delete(Stmt* self)
+parse_delete(Scope* self)
 {
 	// DELETE FROM name
 	// [WHERE expr]
 	// [RETURNING expr [FORMAT name]]
 	auto stmt = ast_delete_allocate();
-	self->ast = &stmt->ast;
+	self->stmt->ast = &stmt->ast;
 
 	// FROM
-	auto from = stmt_expect(self, KFROM);
+	auto from = scope_expect(self, KFROM);
 
 	// table
 	parse_from(self, &stmt->targets, ACCESS_RW, false);
 	if (targets_empty(&stmt->targets) || targets_is_join(&stmt->targets))
-		stmt_error(self, from, "table name expected");
+		scope_error(self, from, "table name expected");
 	auto target = targets_outer(&stmt->targets);
 	if (! target_is_table(target))
-		stmt_error(self, from, "table name expected");
+		scope_error(self, from, "table name expected");
 	stmt->table = target->from_table;
 
 	// ensure primary index is used
 	if (target->from_index)
 		if (table_primary(stmt->table) != target->from_index)
-			stmt_error(self, from, "DELETE supports only primary index");
+			scope_error(self, from, "DELETE supports only primary index");
 
 	// prevent from using heap
 	if (target->from_heap)
-		stmt_error(self, from, "DELETE supports only primary index");
+		scope_error(self, from, "DELETE supports only primary index");
 
 	// [WHERE]
-	if (stmt_if(self, KWHERE))
+	if (scope_if(self, KWHERE))
 	{
 		Expr ctx;
 		expr_init(&ctx);
@@ -79,7 +79,7 @@ parse_delete(Stmt* self)
 	}
 
 	// [RETURNING]
-	if (stmt_if(self, KRETURNING))
+	if (scope_if(self, KRETURNING))
 	{
 		parse_returning(&stmt->ret, self, NULL);
 		parse_returning_resolve(&stmt->ret, self, &stmt->targets);

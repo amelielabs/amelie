@@ -39,12 +39,12 @@
 #include <amelie_parser.h>
 
 hot static void
-parse_row_list(Stmt* self, AstInsert* stmt, Ast* list)
+parse_row_list(Scope* self, AstInsert* stmt, Ast* list)
 {
 	auto table = targets_outer(&stmt->targets)->from_table;
 
 	// (
-	stmt_expect(self, '(');
+	scope_expect(self, '(');
 
 	// prepare row
 	auto row = set_reserve(stmt->values);
@@ -60,7 +60,7 @@ parse_row_list(Stmt* self, AstInsert* stmt, Ast* list)
 		auto column_value = &row[column->order];
 
 		// DEFAULT | value
-		Ast* value = stmt_if(self, KDEFAULT);
+		Ast* value = scope_if(self, KDEFAULT);
 		if (!value && list && list->column->order == column->order)
 		{
 			// parse column value
@@ -69,7 +69,7 @@ parse_row_list(Stmt* self, AstInsert* stmt, Ast* list)
 			// ,
 			list = list->next;
 			if (list)
-				stmt_expect(self, ',');
+				scope_expect(self, ',');
 
 		} else
 		{
@@ -82,16 +82,16 @@ parse_row_list(Stmt* self, AstInsert* stmt, Ast* list)
 	}
 
 	// )
-	stmt_expect(self, ')');
+	scope_expect(self, ')');
 }
 
 hot static inline void
-parse_row(Stmt* self, AstInsert* stmt)
+parse_row(Scope* self, AstInsert* stmt)
 {
 	auto table = targets_outer(&stmt->targets)->from_table;
 
 	// (
-	stmt_expect(self, '(');
+	scope_expect(self, '(');
 
 	// prepare row
 	auto row = set_reserve(stmt->values);
@@ -106,7 +106,7 @@ parse_row(Stmt* self, AstInsert* stmt)
 		auto column_value = &row[column->order];
 
 		// DEFAULT | value
-		Ast* value = stmt_if(self, KDEFAULT);
+		Ast* value = scope_if(self, KDEFAULT);
 		if (! value)
 		{
 			// parse column value
@@ -121,26 +121,26 @@ parse_row(Stmt* self, AstInsert* stmt)
 		parse_value_validate(self, column, column_value, value);
 
 		// ,
-		if (stmt_if(self, ','))
+		if (scope_if(self, ','))
 		{
 			if (list_is_last(&columns->list, &column->link))
-				stmt_error(self, NULL, "row has incorrect number of columns");
+				scope_error(self, NULL, "row has incorrect number of columns");
 			continue;
 		}
 	}
 
 	// )
-	stmt_expect(self, ')');
+	scope_expect(self, ')');
 }
 
 hot static inline Ast*
-parse_column_list(Stmt* self, AstInsert* stmt)
+parse_column_list(Scope* self, AstInsert* stmt)
 {
 	auto table = targets_outer(&stmt->targets)->from_table;
 	auto columns = table_columns(table);
 
 	// empty column list ()
-	if (unlikely(stmt_if(self, ')')))
+	if (unlikely(scope_if(self, ')')))
 		return NULL;
 
 	Ast* list = NULL;
@@ -148,12 +148,12 @@ parse_column_list(Stmt* self, AstInsert* stmt)
 	for (;;)
 	{
 		// name
-		auto name = stmt_expect(self, KNAME);
+		auto name = scope_expect(self, KNAME);
 
 		// find column and validate order
 		auto column = columns_find(columns, &name->string);
 		if (! column)
-			stmt_error(self, name, "column does not exists");
+			scope_error(self, name, "column does not exists");
 
 		if (list == NULL) {
 			list = name;
@@ -161,7 +161,7 @@ parse_column_list(Stmt* self, AstInsert* stmt)
 		{
 			// validate column order
 			if (column->order <= list_last->column->order)
-				stmt_error(self, name, "column list must be in order");
+				scope_error(self, name, "column list must be in order");
 
 			list_last->next = name;
 		}
@@ -171,11 +171,11 @@ parse_column_list(Stmt* self, AstInsert* stmt)
 		name->column = column;
 
 		// ,
-		if (stmt_if(self, ','))
+		if (scope_if(self, ','))
 			continue;
 
 		// )
-		stmt_expect(self, ')');
+		scope_expect(self, ')');
 		break;
 	}
 
@@ -183,13 +183,13 @@ parse_column_list(Stmt* self, AstInsert* stmt)
 }
 
 hot static inline void
-parse_generate(Stmt* self, AstInsert* stmt)
+parse_generate(Scope* self, AstInsert* stmt)
 {
 	// insert into () values (), ...
 	auto table = targets_outer(&stmt->targets)->from_table;
 
 	// GENERATE count
-	auto count = stmt_expect(self, KINT);
+	auto count = scope_expect(self, KINT);
 
 	auto columns = table_columns(table);
 	for (auto i = 0; i < count->integer; i++)
@@ -216,9 +216,9 @@ parse_generate(Stmt* self, AstInsert* stmt)
 }
 
 hot void
-parse_resolved(Stmt* self)
+parse_resolved(Scope* self)
 {
-	auto stmt = ast_insert_of(self->ast);
+	auto stmt = ast_insert_of(self->stmt->ast);
 	stmt->on_conflict = ON_CONFLICT_UPDATE;
 	// handle insert as upsert and generate
 	//
@@ -231,10 +231,10 @@ parse_resolved(Stmt* self)
 }
 
 hot static inline void
-parse_on_conflict(Stmt* self, AstInsert* stmt)
+parse_on_conflict(Scope* self, AstInsert* stmt)
 {
 	// ON CONFLICT
-	if (! stmt_if(self, KON))
+	if (! scope_if(self, KON))
 	{
 		// if table has resvoled conlumns and no explicit ON CONFLICT clause
 		// then handle as ON CONFLICT DO RESOLVE
@@ -245,13 +245,13 @@ parse_on_conflict(Stmt* self, AstInsert* stmt)
 	}
 
 	// CONFLICT
-	stmt_expect(self, KCONFLICT);
+	scope_expect(self, KCONFLICT);
 
 	// DO
-	stmt_expect(self, KDO);
+	scope_expect(self, KDO);
 
 	// NOTHING | ERROR | UPDATE | RESOLVE
-	auto op = stmt_next(self);
+	auto op = scope_next(self);
 	switch (op->id) {
 	case KNOTHING:
 	{
@@ -266,7 +266,7 @@ parse_on_conflict(Stmt* self, AstInsert* stmt)
 		stmt->update_expr = parse_update_expr(self);
 
 		// [WHERE]
-		if (stmt_if(self, KWHERE))
+		if (scope_if(self, KWHERE))
 		{
 			Expr ctx;
 			expr_init(&ctx);
@@ -287,21 +287,21 @@ parse_on_conflict(Stmt* self, AstInsert* stmt)
 		stmt->on_conflict = ON_CONFLICT_ERROR;
 		break;
 	default:
-		stmt_error(self, op, "'NOTHING | ERROR | UPDATE | RESOLVE' expected");
+		scope_error(self, op, "'NOTHING | ERROR | UPDATE | RESOLVE' expected");
 		break;
 	}
 }
 
 hot void
-parse_generated(Stmt* self)
+parse_generated(Scope* self)
 {
-	auto stmt = ast_insert_of(self->ast);
+	auto stmt = ast_insert_of(self->stmt->ast);
 	auto table = targets_outer(&stmt->targets)->from_table;
 	auto columns = table_columns(table);
 
 	// create a target to iterate inserted values to create new rows
 	// using the generated columns
-	auto target = target_allocate(&self->order_targets);
+	auto target = target_allocate(&self->stmt->order_targets);
 	target->type         = TARGET_VALUES;
 	target->ast          = targets_outer(&stmt->targets)->ast;
 	target->from_columns = targets_outer(&stmt->targets)->from_columns;
@@ -346,44 +346,44 @@ parse_generated(Stmt* self)
 }
 
 hot void
-parse_insert(Stmt* self)
+parse_insert(Scope* self)
 {
 	// INSERT INTO name [(column_list)]
 	// [GENERATE | VALUES (value, ..), ... | SELECT ...]
 	// [ON CONFLICT DO NOTHING | ERROR | UPDATE | RESOLVE]
 	// [RETURNING expr [FORMAT name]]
 	auto stmt = ast_insert_allocate();
-	self->ast = &stmt->ast;
+	self->stmt->ast = &stmt->ast;
 
 	// INTO
-	auto into = stmt_expect(self, KINTO);
+	auto into = scope_expect(self, KINTO);
 
 	// table
 	parse_from(self, &stmt->targets, ACCESS_RW, false);
 	if (targets_empty(&stmt->targets) || targets_is_join(&stmt->targets))
-		stmt_error(self, into, "table name expected");
+		scope_error(self, into, "table name expected");
 	auto target = targets_outer(&stmt->targets);
 	if (! target_is_table(target))
-		stmt_error(self, into, "table name expected");
+		scope_error(self, into, "table name expected");
 	auto columns = target->from_columns;
 
 	// prepare values
-	stmt->values = set_cache_create(self->values_cache);
+	stmt->values = set_cache_create(self->parser->values_cache);
 	set_prepare(stmt->values, columns->count, 0, NULL);
 
 	// GENERATE
-	if (stmt_if(self, KGENERATE))
+	if (scope_if(self, KGENERATE))
 	{
 		parse_generate(self, stmt);
 	} else
 	{
 		// (column list)
 		Ast* list = NULL;
-		bool list_in_use = stmt_if(self, '(');
+		bool list_in_use = scope_if(self, '(');
 		if (list_in_use)
 			list = parse_column_list(self, stmt);
 
-		auto values = stmt_next(self);
+		auto values = scope_next(self);
 		if (values->id == KVALUES)
 		{
 			// VALUES (value[, ...])[, ...]
@@ -393,38 +393,36 @@ parse_insert(Stmt* self)
 					parse_row_list(self, stmt, list);
 				else
 					parse_row(self, stmt);
-				if (! stmt_if(self, ','))
+				if (! scope_if(self, ','))
 					break;
 			}
 		} else
 		if (values->id == KSELECT)
 		{
 			if (list_in_use)
-				stmt_error(self, values, "SELECT using column list is not supported");
+				scope_error(self, values, "SELECT using column list is not supported");
+
+			auto stmt_current = self->stmt;
 
 			// rewrite INSERT INTO SELECT as CTE statement, columns will be
 			// validated during the emit
-			auto cte = stmt_allocate(self->db, self->function_mgr, self->local,
-			                         self->lex,
-			                         self->program,
-			                         self->values_cache,
-			                         self->json,
-			                         self->stmts,
-			                         self->ctes,
-			                         self->vars,
-			                         self->args);
+			auto cte = stmt_allocate(self);
 			cte->id = STMT_SELECT;
-			stmts_insert(self->stmts, self, cte);
-			auto select = parse_select(cte, NULL, false);
+			stmts_insert(&self->stmts, stmt_current, cte);
+			self->stmt = cte;
+
+			auto select = parse_select(self, NULL, false);
 			select->ast.pos_start = values->pos_start;
 			select->ast.pos_end   = values->pos_end;
 			cte->ast          = &select->ast;
-			cte->cte          = ctes_add(self->ctes, self, NULL);
+			cte->cte          = ctes_add(&self->ctes, cte, NULL);
 			cte->cte->columns = &select->ret.columns;
-			parse_select_resolve(cte);
+			parse_select_resolve(self);
 			stmt->select = cte;
+
+			self->stmt = stmt_current;
 		} else {
-			stmt_error(self, values, "'VALUES | SELECT' expected");
+			scope_error(self, values, "'VALUES | SELECT' expected");
 		}
 	}
 
@@ -436,7 +434,7 @@ parse_insert(Stmt* self)
 	parse_on_conflict(self, stmt);
 
 	// [RETURNING]
-	if (stmt_if(self, KRETURNING))
+	if (scope_if(self, KRETURNING))
 	{
 		parse_returning(&stmt->ret, self, NULL);
 		parse_returning_resolve(&stmt->ret, self, &stmt->targets);

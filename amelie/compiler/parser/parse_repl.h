@@ -56,7 +56,7 @@ ast_repl_subscribe_allocate(void)
 	return self;
 }
 
-void parse_repl_start(Stmt*);
-void parse_repl_stop(Stmt*);
-void parse_repl_subscribe(Stmt*);
-void parse_repl_unsubscribe(Stmt*);
+void parse_repl_start(Scope*);
+void parse_repl_stop(Scope*);
+void parse_repl_subscribe(Scope*);
+void parse_repl_unsubscribe(Scope*);

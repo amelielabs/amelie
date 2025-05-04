@@ -26,21 +26,15 @@
 #include "parser/target.h"
 #include "parser/targets.h"
 
-// variable
+// scope
 #include "parser/var.h"
 #include "parser/cte.h"
-
-// stmt
 #include "parser/stmt.h"
-#include "parser/stmts.h"
-#include "parser/endpoint.h"
+#include "parser/scope.h"
 
 // parser
 #include "parser/parser.h"
 #include "parser/parse.h"
-
-// endpoint
-#include "parser/parse_endpoint.h"
 
 // expr
 #include "parser/parse_target.h"
@@ -78,6 +72,10 @@
 #include "parser/parse_order.h"
 #include "parser/parse_group.h"
 #include "parser/parse_select.h"
+
+// endpoint
+#include "parser/endpoint.h"
+#include "parser/parse_endpoint.h"
 
 // import
 #include "parser/parse_import.h"

@@ -88,6 +88,6 @@ ast_schema_alter_allocate(void)
 	return self;
 }
 
-void parse_schema_create(Stmt*);
-void parse_schema_drop(Stmt*);
-void parse_schema_alter(Stmt*);
+void parse_schema_create(Scope*);
+void parse_schema_drop(Scope*);
+void parse_schema_alter(Scope*);

@@ -118,7 +118,7 @@ ctl_show(Session* self)
 		if (opt && opt_is(opt, OPT_S))
 			opt = NULL;
 		if (unlikely(opt == NULL))
-			stmt_error(stmt, arg->name_ast, "option not found");
+			compiler_error(&self->compiler, arg->name_ast, "option not found");
 		buf = buf_create();
 		opt_encode(opt, buf);
 		break;
@@ -137,17 +137,18 @@ static void
 ctl_token(Session* self)
 {
 	auto user_mgr = self->share->user_mgr;
-	auto stmt = compiler_stmt(&self->compiler);
+	auto compiler = &self->compiler;
+	auto stmt = compiler_stmt(compiler);
 	auto arg = ast_token_create_of(stmt->ast);
 
 	// find user
 	auto user = user_cache_find(&user_mgr->cache, &arg->user->string);
 	if (! user)
-		stmt_error(stmt, arg->user, "user not found");
+		compiler_error(compiler, arg->user, "user not found");
 
 	// ensure user has a secret
 	if (str_empty(&user->config->secret))
-		stmt_error(stmt, arg->user, "user has no secret");
+		compiler_error(compiler, arg->user, "user has no secret");
 
 	// set expire timestamp
 	Timestamp expire;

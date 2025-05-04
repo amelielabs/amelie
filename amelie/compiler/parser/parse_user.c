@@ -39,11 +39,11 @@
 #include <amelie_parser.h>
 
 void
-parse_user_create(Stmt* self)
+parse_user_create(Scope* self)
 {
 	// CREATE USER [IF NOT EXISTS] name [SECRET value]
 	auto stmt = ast_user_create_allocate();
-	self->ast = &stmt->ast;
+	self->stmt->ast = &stmt->ast;
 
 	stmt->config = user_config_allocate();
 
@@ -51,49 +51,49 @@ parse_user_create(Stmt* self)
 	stmt->if_not_exists = parse_if_not_exists(self);
 
 	// name
-	auto name = stmt_expect(self, KNAME);
+	auto name = scope_expect(self, KNAME);
 	user_config_set_name(stmt->config, &name->string);
 
 	// [SECRET]
-	if (stmt_if(self, KSECRET))
+	if (scope_if(self, KSECRET))
 	{
 		// value
-		auto value = stmt_expect(self, KSTRING);
+		auto value = scope_expect(self, KSTRING);
 		user_config_set_secret(stmt->config, &value->string);
 	}
 }
 
 void
-parse_user_drop(Stmt* self)
+parse_user_drop(Scope* self)
 {
 	// DROP USER [IF EXISTS] name
 	auto stmt = ast_user_drop_allocate();
-	self->ast = &stmt->ast;
+	self->stmt->ast = &stmt->ast;
 
 	// if exists
 	stmt->if_exists = parse_if_exists(self);
 
 	// name
-	stmt->name = stmt_expect(self, KNAME);
+	stmt->name = scope_expect(self, KNAME);
 }
 
 void
-parse_user_alter(Stmt* self)
+parse_user_alter(Scope* self)
 {
 	// ALTER USER name SECRET expr
 	auto stmt = ast_user_alter_allocate();
-	self->ast = &stmt->ast;
+	self->stmt->ast = &stmt->ast;
 
 	stmt->config = user_config_allocate();
 
 	// name
-	auto name = stmt_expect(self, KNAME);
+	auto name = scope_expect(self, KNAME);
 	user_config_set_name(stmt->config, &name->string);
 
 	// SECRET
-	stmt_expect(self, KSECRET);
+	scope_expect(self, KSECRET);
 
 	// value
-	auto value = stmt_expect(self, KSTRING);
+	auto value = scope_expect(self, KSTRING);
 	user_config_set_secret(stmt->config, &value->string);
 }

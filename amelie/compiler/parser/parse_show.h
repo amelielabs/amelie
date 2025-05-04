@@ -59,4 +59,4 @@ ast_show_allocate(void)
 	return self;
 }
 
-void parse_show(Stmt*);
+void parse_show(Scope*);

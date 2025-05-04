@@ -39,22 +39,22 @@
 #include <amelie_parser.h>
 
 hot void
-parse_vector(Stmt* self, Buf* buf)
+parse_vector(Scope* self, Buf* buf)
 {
 	// [
-	stmt_expect(self, '[');
+	scope_expect(self, '[');
 	auto offset = buf_size(buf);
 	buf_write_i32(buf, 0);
 
 	// []
-	if (stmt_if(self, ']'))
+	if (scope_if(self, ']'))
 		return;
 
 	// [float [, ...]]
 	int count = 0;
 	for (;;)
 	{
-		auto ast = stmt_next(self);
+		auto ast = scope_next(self);
 
 		// int or float
 		float value = 0;
@@ -64,26 +64,26 @@ parse_vector(Stmt* self, Buf* buf)
 		if (ast->id == KREAL)
 			value = ast->real;
 		else
-			stmt_error(self, ast, "invalid vector value");
+			scope_error(self, ast, "invalid vector value");
 		buf_write_float(buf, value);
 		count++;
 
 		// ,
-		ast = stmt_next(self);
+		ast = scope_next(self);
 		if (ast->id == ',')
 			continue;
 		if (ast->id == ']')
 			break;
-		stmt_error(self, ast, "vector array syntax error");
+		scope_error(self, ast, "vector array syntax error");
 	}
 
 	*(uint32_t*)(buf->start + offset) = count;
 }
 
 hot Ast*
-parse_value(Stmt* self, Column* column, Value* value)
+parse_value(Scope* self, Column* column, Value* value)
 {
-	auto ast = stmt_next(self);
+	auto ast = scope_next(self);
 	if (ast->id == KNULL)
 	{
 		value_set_null(value);
@@ -135,13 +135,14 @@ parse_value(Stmt* self, Column* column, Value* value)
 			pos = lex->start + lex->backlog->pos_start;
 			lex->backlog = lex->backlog->prev;
 		}
-		json_reset(self->json);
+		auto json = &self->parser->json;
+		json_reset(json);
 		Str in;
 		str_set(&in, pos, lex->end - pos);
 		auto buf = buf_create();
 		errdefer_buf(buf);
-		json_parse(self->json, &in, buf);
-		lex->pos = self->json->pos;
+		json_parse(json, &in, buf);
+		lex->pos = json->pos;
 		value_set_json_buf(value, buf);
 		return ast;
 	}
@@ -149,7 +150,7 @@ parse_value(Stmt* self, Column* column, Value* value)
 	{
 		// current_timestamp
 		if (ast->id == KCURRENT_TIMESTAMP) {
-			value_set_timestamp(value, self->local->time_us);
+			value_set_timestamp(value, self->parser->local->time_us);
 			return ast;
 		}
 
@@ -161,28 +162,28 @@ parse_value(Stmt* self, Column* column, Value* value)
 
 		// [TIMESTAMP] string
 		if (ast->id == KTIMESTAMP)
-			ast = stmt_next(self);
+			ast = scope_next(self);
 		if (likely(ast->id != KSTRING))
 			break;
 
 		Timestamp ts;
 		timestamp_init(&ts);
 		if (unlikely(error_catch( timestamp_set(&ts, &ast->string) )))
-			stmt_error(self, ast, "invalid timestamp value");
-		value_set_timestamp(value, timestamp_get_unixtime(&ts, self->local->timezone));
+			scope_error(self, ast, "invalid timestamp value");
+		value_set_timestamp(value, timestamp_get_unixtime(&ts, self->parser->local->timezone));
 		return ast;
 	}
 	case TYPE_INTERVAL:
 	{
 		// [INTERVAL] string
 		if (ast->id == KINTERVAL)
-			ast = stmt_next(self);
+			ast = scope_next(self);
 		if (likely(ast->id != KSTRING))
 			break;
 		Interval iv;
 		interval_init(&iv);
 		if (unlikely(error_catch( interval_set(&iv, &ast->string) )))
-			stmt_error(self, ast, "invalid interval value");
+			scope_error(self, ast, "invalid interval value");
 		value_set_interval(value, &iv);
 		return ast;
 	}
@@ -190,19 +191,19 @@ parse_value(Stmt* self, Column* column, Value* value)
 	{
 		// current_date
 		if (ast->id == KCURRENT_DATE) {
-			value_set_date(value, timestamp_date(self->local->time_us));
+			value_set_date(value, timestamp_date(self->parser->local->time_us));
 			return ast;
 		}
 
 		// [DATE] string
 		if (ast->id == KDATE)
-			ast = stmt_next(self);
+			ast = scope_next(self);
 		if (likely(ast->id != KSTRING))
 			break;
 
 		int julian;
 		if (unlikely(error_catch( julian = date_set(&ast->string) )))
-			stmt_error(self, ast, "invalid date value");
+			scope_error(self, ast, "invalid date value");
 		value_set_date(value, julian);
 		return ast;
 	}
@@ -210,8 +211,8 @@ parse_value(Stmt* self, Column* column, Value* value)
 	{
 		// [VECTOR] [array]
 		if (ast->id == KVECTOR)
-			ast = stmt_next(self);
-		stmt_push(self, ast);
+			ast = scope_next(self);
+		scope_push(self, ast);
 		auto buf = buf_create();
 		errdefer_buf(buf);
 		parse_vector(self, buf);
@@ -222,26 +223,26 @@ parse_value(Stmt* self, Column* column, Value* value)
 	{
 		// [UUID] string
 		if (ast->id == KUUID)
-			ast = stmt_next(self);
+			ast = scope_next(self);
 		if (likely(ast->id != KSTRING))
 			break;
 		Uuid uuid;
 		uuid_init(&uuid);
 		if (uuid_set_nothrow(&uuid, &ast->string) == -1)
-			stmt_error(self, ast, "invalid uuid value");
+			scope_error(self, ast, "invalid uuid value");
 		value_set_uuid(value, &uuid);
 		return ast;
 	}
 	}
 
-	stmt_error(self, ast, "'%s' expected for column '%.*s'",
-	           type_of(column->type),
-	           str_size(&column->name), str_of(&column->name));
+	scope_error(self, ast, "'%s' expected for column '%.*s'",
+	            type_of(column->type),
+	            str_size(&column->name), str_of(&column->name));
 	return NULL;
 }
 
 hot void
-parse_value_default(Stmt*    self,
+parse_value_default(Scope*   self,
                     Column*  column,
                     Value*   column_value,
                     uint64_t seq)
@@ -264,7 +265,7 @@ parse_value_default(Stmt*    self,
 }
 
 void
-parse_value_validate(Stmt* self, Column* column, Value* column_value, Ast* expr)
+parse_value_validate(Scope* self, Column* column, Value* column_value, Ast* expr)
 {
 	// ensure NOT NULL constraint
 	if (column_value->type == TYPE_NULL)
@@ -274,8 +275,8 @@ parse_value_validate(Stmt* self, Column* column, Value* column_value, Ast* expr)
 			return;
 
 		if (column->constraints.not_null)
-			stmt_error(self, expr, "column '%.*s' value cannot be NULL",
-			           str_size(&column->name),
-			           str_of(&column->name));
+			scope_error(self, expr, "column '%.*s' value cannot be NULL",
+			            str_size(&column->name),
+			            str_of(&column->name));
 	}
 }

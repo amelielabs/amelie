@@ -39,17 +39,17 @@
 #include <amelie_parser.h>
 
 void
-parse_checkpoint(Stmt* self)
+parse_checkpoint(Scope* self)
 {
 	// CHECKPOINT [WORKERS n]
 	auto stmt = ast_checkpoint_allocate();
-	self->ast = &stmt->ast;
+	self->stmt->ast = &stmt->ast;
 
 	// [WORKERS]
-	if (stmt_if(self, KWORKERS))
+	if (scope_if(self, KWORKERS))
 	{
-		stmt->workers = stmt_expect(self, KINT);
+		stmt->workers = scope_expect(self, KINT);
 		if (stmt->workers->integer <= 0)
-			stmt_error(self, stmt->workers, "WORKERS number must be positive");
+			scope_error(self, stmt->workers, "WORKERS number must be positive");
 	}
 }

@@ -33,4 +33,4 @@ ast_watch_allocate(void)
 	return self;
 }
 
-void parse_watch(Stmt*);
+void parse_watch(Scope*);
