@@ -280,6 +280,7 @@ set(AMELIE_SOURCES_COMPILER
     ${AMELIE_ROOT}/compiler/compiler/emit_delete.c
     ${AMELIE_ROOT}/compiler/compiler/emit_select.c
     ${AMELIE_ROOT}/compiler/compiler/emit_watch.c
+    ${AMELIE_ROOT}/compiler/compiler/emit_scope.c
     ${AMELIE_ROOT}/compiler/compiler/pushdown.c)
 
 set(AMELIE_SOURCES_SYSTEM
