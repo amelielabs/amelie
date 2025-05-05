@@ -1,0 +1,217 @@
+open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "127.0.0.1", "port": 3485 }]
+connect E0 S0 127.0.0.1:3485
+# test: create procedure statement parsing
+create procedure
+{"msg": "create procedure ⟵ name expected"}
+create procedure 123
+{"msg": "create procedure ❰123❱ ⟵ name expected"}
+create procedure if
+{"msg": "create procedure ❰if❱ ⟵ name expected"}
+create procedure or
+{"msg": "create procedure ❰or❱ ⟵ name expected"}
+create procedure or 123
+{"msg": "create procedure ❰or❱ ⟵ name expected"}
+create or
+{"msg": "create or ⟵ REPLACE expected"}
+create or replace
+{"msg": "create or replace ⟵ PROCEDURE expected"}
+create or replace 123
+{"msg": "create or replace ❰123❱ ⟵ PROCEDURE expected"}
+create or replace procedure
+{"msg": "create or replace procedure ⟵ name expected"}
+create procedure test
+{"msg": "create procedure test ⟵ ( expected"}
+create procedure test 123
+{"msg": "create procedure test ❰123❱ ⟵ ( expected"}
+create procedure test.test
+{"msg": "create procedure test.test ⟵ ( expected"}
+create procedure test (
+{"msg": "create procedure test ( ⟵ name expected"}
+create procedure test (a
+{"msg": "create procedure test (a ⟵ unrecognized data type"}
+create procedure test (a 1
+{"msg": "create procedure test (a ❰1❱ ⟵ unrecognized data type"}
+create procedure test (a int
+{"msg": "create procedure test (a int ⟵ ) expected"}
+create procedure test (a int,
+{"msg": "create procedure test (a int, ⟵ name expected"}
+create procedure test (a int,,
+{"msg": "create procedure test (a int,❰,❱ ⟵ name expected"}
+create procedure test (a int)
+{"msg": "create procedure test (a int) ⟵ BEGIN expected"}
+create procedure test (a int) begin
+{"msg": "create procedure test (a int) begin ⟵ END expected"}
+create procedure test ()
+{"msg": "create procedure test () ⟵ BEGIN expected"}
+create procedure test () begin
+{"msg": "create procedure test () begin ⟵ END expected"}
+create procedure test begin
+{"msg": "create procedure test ❰begin❱ ⟵ ( expected"}
+create procedure test () begin
+{"msg": "create procedure test () begin ⟵ END expected"}
+# test: create procedure
+create procedure test() begin select 1 end
+show procedures
+[{
+  "schema": "public",
+  "name": "test",
+  "text": "select 1",
+  "columns": []
+}]
+# test: create procedure (already exists)
+create procedure test() begin select 1 end
+{"msg": "procedure 'test': already exists"}
+drop procedure test
+# test: create procedure (multi statement)
+create procedure test() begin select 1; return select 1; end
+show procedures
+[{
+  "schema": "public",
+  "name": "test",
+  "text": "select 1; return select 1;",
+  "columns": []
+}]
+# test: create procedure (no arguments)
+create procedure test() begin select 1 end
+{"msg": "procedure 'test': already exists"}
+show procedures
+[{
+  "schema": "public",
+  "name": "test",
+  "text": "select 1; return select 1;",
+  "columns": []
+}]
+drop procedure test
+# test: create procedure (arguments)
+create procedure test(a int) begin select 1 end
+show procedures
+[{
+  "schema": "public",
+  "name": "test",
+  "text": "select 1",
+  "columns": [{
+    "name": "a",
+    "type": 2,
+    "type_size": 4,
+    "constraints": {
+      "not_null": false,
+      "random": false,
+      "random_modulo": 9223372036854775807,
+      "default": null,
+      "as_identity": false,
+      "as_stored": "",
+      "as_resolved": ""
+    }
+  }]
+}]
+drop procedure test
+create procedure test(a int, b text) begin select 1 end
+show procedures
+[{
+  "schema": "public",
+  "name": "test",
+  "text": "select 1",
+  "columns": [{
+    "name": "a",
+    "type": 2,
+    "type_size": 4,
+    "constraints": {
+      "not_null": false,
+      "random": false,
+      "random_modulo": 9223372036854775807,
+      "default": null,
+      "as_identity": false,
+      "as_stored": "",
+      "as_resolved": ""
+    }
+  }, {
+    "name": "b",
+    "type": 4,
+    "type_size": 0,
+    "constraints": {
+      "not_null": false,
+      "random": false,
+      "random_modulo": 9223372036854775807,
+      "default": null,
+      "as_identity": false,
+      "as_stored": "",
+      "as_resolved": ""
+    }
+  }]
+}]
+drop procedure test
+# test: create procedure (ddl)
+create procedure test() begin show lsn end
+{"msg": "procedures cannot contain utility commands"}
+# test: drop procedure statement parsing
+create procedure test() begin select 1 end
+drop procedure
+{"msg": "drop procedure ⟵ name expected"}
+drop procedure 123
+{"msg": "drop procedure ❰123❱ ⟵ name expected"}
+drop procedure if
+{"msg": "drop procedure if ⟵ EXISTS expected"}
+drop procedure if exists
+{"msg": "drop procedure if exists ⟵ name expected"}
+drop procedure test abc
+{"msg": "drop procedure test ❰abc❱ ⟵ ; expected"}
+# test: drop procedure
+drop procedure test
+show procedures
+[]
+# test: drop procedure if exists
+drop procedure test
+{"msg": "procedure 'test': not exists"}
+drop procedure if exists test
+show procedures
+[]
+# test: alter procedure statment parsing
+alter procedure
+{"msg": "alter procedure ⟵ name expected"}
+alter procedure 123
+{"msg": "alter procedure ❰123❱ ⟵ name expected"}
+alter procedure test
+{"msg": "alter procedure test ⟵ RENAME expected"}
+alter procedure test rename
+{"msg": "alter procedure test rename ⟵ name expected"}
+alter procedure test rename to
+{"msg": "alter procedure test rename to ⟵ name expected"}
+alter procedure test rename "hello"
+{"msg": "alter procedure test rename ❰\"hello\"❱ ⟵ name expected"}
+# test: alter procedure rename
+create procedure test() begin select 1 end
+select system.procedures()
+[[{
+  "schema": "public",
+  "name": "test",
+  "text": "select 1",
+  "columns": []
+}]]
+alter procedure test rename to test2
+select system.procedures()
+[[{
+  "schema": "public",
+  "name": "test2",
+  "text": "select 1",
+  "columns": []
+}]]
+# test: alter procedure rename (already exists)
+alter procedure test2 rename to test2
+{"msg": "procedure 'test2': already exists"}
+# test: alter procedure rename (schema rename)
+alter procedure test2 rename to test.test
+{"msg": "schema 'test': not exists"}
+create schema test
+alter procedure test2 rename to test.test
+show procedure test.test
+[{
+  "schema": "test",
+  "name": "test",
+  "text": "select 1",
+  "columns": []
+}]
+drop procedure test.test
+show procedures
+[]
+disconnect S0
+close E0

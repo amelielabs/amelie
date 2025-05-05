@@ -58,7 +58,7 @@ test table_create
 test table_drop
 test table_alter
 test index
-test function
+test procedure
 test cascade
 
 # dml

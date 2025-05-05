@@ -11,23 +11,21 @@
 // AGPL-3.0 Licensed.
 //
 
-typedef struct UdfConfig UdfConfig;
+typedef struct ProcConfig ProcConfig;
 
-struct UdfConfig
+struct ProcConfig
 {
 	Str     schema;
 	Str     name;
 	Str     text;
-	int64_t type;
 	Columns columns;
 };
 
-static inline UdfConfig*
-udf_config_allocate(void)
+static inline ProcConfig*
+proc_config_allocate(void)
 {
-	UdfConfig* self;
-	self = am_malloc(sizeof(UdfConfig));
-	self->type = TYPE_NULL;
+	ProcConfig* self;
+	self = am_malloc(sizeof(ProcConfig));
 	str_init(&self->schema);
 	str_init(&self->name);
 	str_init(&self->text);
@@ -36,7 +34,7 @@ udf_config_allocate(void)
 }
 
 static inline void
-udf_config_free(UdfConfig* self)
+proc_config_free(ProcConfig* self)
 {
 	str_free(&self->schema);
 	str_free(&self->name);
@@ -46,65 +44,57 @@ udf_config_free(UdfConfig* self)
 }
 
 static inline void
-udf_config_set_schema(UdfConfig* self, Str* schema)
+proc_config_set_schema(ProcConfig* self, Str* schema)
 {
 	str_free(&self->schema);
 	str_copy(&self->schema, schema);
 }
 
 static inline void
-udf_config_set_name(UdfConfig* self, Str* name)
+proc_config_set_name(ProcConfig* self, Str* name)
 {
 	str_free(&self->name);
 	str_copy(&self->name, name);
 }
 
 static inline void
-udf_config_set_text(UdfConfig* self, Str* text)
+proc_config_set_text(ProcConfig* self, Str* text)
 {
 	str_copy(&self->text, text);
 }
 
-static inline void
-udf_config_set_type(UdfConfig* self, Type type)
+static inline ProcConfig*
+proc_config_copy(ProcConfig* self)
 {
-	self->type = type;
-}
-
-static inline UdfConfig*
-udf_config_copy(UdfConfig* self)
-{
-	auto copy = udf_config_allocate();
-	udf_config_set_schema(copy, &self->schema);
-	udf_config_set_name(copy, &self->name);
-	udf_config_set_text(copy, &self->text);
-	udf_config_set_type(copy, self->type);
+	auto copy = proc_config_allocate();
+	proc_config_set_schema(copy, &self->schema);
+	proc_config_set_name(copy, &self->name);
+	proc_config_set_text(copy, &self->text);
 	columns_copy(&copy->columns, &self->columns);
 	return copy;
 }
 
-static inline UdfConfig*
-udf_config_read(uint8_t** pos)
+static inline ProcConfig*
+proc_config_read(uint8_t** pos)
 {
-	auto self = udf_config_allocate();
-	errdefer(udf_config_free, self);
+	auto self = proc_config_allocate();
+	errdefer(proc_config_free, self);
 	uint8_t* columns = NULL;
 	Decode obj[] =
 	{
 		{ DECODE_STRING, "schema",  &self->schema },
 		{ DECODE_STRING, "name",    &self->name   },
 		{ DECODE_STRING, "text",    &self->text   },
-		{ DECODE_INT,    "type",    &self->type   },
 		{ DECODE_ARRAY,  "columns", &columns      },
 		{ 0,              NULL,      NULL         },
 	};
-	decode_obj(obj, "udf", pos);
+	decode_obj(obj, "proc", pos);
 	columns_read(&self->columns, &columns);
 	return self;
 }
 
 static inline void
-udf_config_write(UdfConfig* self, Buf* buf)
+proc_config_write(ProcConfig* self, Buf* buf)
 {
 	// map
 	encode_obj(buf);
@@ -120,10 +110,6 @@ udf_config_write(UdfConfig* self, Buf* buf)
 	// text
 	encode_raw(buf, "text", 4);
 	encode_string(buf, &self->text);
-
-	// type
-	encode_raw(buf, "type", 4);
-	encode_integer(buf, self->type);
 
 	// columns
 	encode_raw(buf, "columns", 7);

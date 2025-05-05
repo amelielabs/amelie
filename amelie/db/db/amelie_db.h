@@ -27,11 +27,11 @@
 // index
 #include "db/table_index.h"
 
-// udf
-#include "db/udf_config.h"
-#include "db/udf.h"
-#include "db/udf_op.h"
-#include "db/udf_mgr.h"
+// procedure
+#include "db/proc_config.h"
+#include "db/proc.h"
+#include "db/proc_op.h"
+#include "db/proc_mgr.h"
 
 // db
 #include "db/db.h"

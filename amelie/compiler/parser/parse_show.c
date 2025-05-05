@@ -75,11 +75,11 @@ parse_show_type(Str* name)
 	if (str_is(name, "table", 5))
 		return SHOW_TABLE;
 
-	if (str_is(name, "functions", 9))
-		return SHOW_FUNCTIONS;
+	if (str_is(name, "procedures", 10))
+		return SHOW_PROCEDURES;
 
-	if (str_is(name, "function", 8))
-		return SHOW_FUNCTION;
+	if (str_is(name, "procedure", 9))
+		return SHOW_PROCEDURE;
 
 	if (str_is(name, "state", 5))
 		return SHOW_STATE;
@@ -146,11 +146,11 @@ parse_show(Stmt* self)
 		}
 		break;
 	}
-	case SHOW_FUNCTIONS:
-	case SHOW_FUNCTION:
+	case SHOW_PROCEDURES:
+	case SHOW_PROCEDURE:
 	{
-		// [function name]
-		if (stmt->type == SHOW_FUNCTION)
+		// [procedure name]
+		if (stmt->type == SHOW_PROCEDURE)
 		{
 			name = stmt_next(self);
 			if (name->id == KNAME) {
@@ -165,7 +165,7 @@ parse_show(Stmt* self)
 				str_split(&stmt->name, &stmt->schema, '.');
 				str_advance(&stmt->name, str_size(&stmt->schema) + 1);
 			} else {
-				stmt_error(self, name, "function name expected");
+				stmt_error(self, name, "procedure name expected");
 			}
 		}
 

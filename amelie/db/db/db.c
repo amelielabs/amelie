@@ -28,13 +28,13 @@ void
 db_init(Db*        self,
         PartAttach attach,
         void*      attach_arg,
-        UdfIf*     udf_iface,
-        void*      udf_iface_arg)
+        ProcIf*    proc_iface,
+        void*      proc_iface_arg)
 {
 	schema_mgr_init(&self->schema_mgr);
 	part_mgr_init(&self->part_mgr, attach, attach_arg);
 	table_mgr_init(&self->table_mgr, &self->part_mgr);
-	udf_mgr_init(&self->udf_mgr, udf_iface, udf_iface_arg);
+	proc_mgr_init(&self->proc_mgr, proc_iface, proc_iface_arg);
 	checkpoint_mgr_init(&self->checkpoint_mgr, &db_checkpoint_if, self);
 	checkpointer_init(&self->checkpointer, &self->checkpoint_mgr);
 	wal_mgr_init(&self->wal_mgr);
@@ -45,7 +45,7 @@ db_free(Db* self)
 {
 	table_mgr_free(&self->table_mgr);
 	part_mgr_free(&self->part_mgr);
-	udf_mgr_free(&self->udf_mgr);
+	proc_mgr_free(&self->proc_mgr);
 	schema_mgr_free(&self->schema_mgr);
 	checkpoint_mgr_free(&self->checkpoint_mgr);
 	wal_mgr_free(&self->wal_mgr);

@@ -1,0 +1,105 @@
+#
+
+open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "127.0.0.1", "port": 3485 }]
+connect E0 S0 127.0.0.1:3485
+
+# test: create procedure statement parsing
+create procedure
+create procedure 123
+create procedure if
+create procedure or
+create procedure or 123
+create or
+create or replace
+create or replace 123
+create or replace procedure
+create procedure test
+create procedure test 123
+create procedure test.test
+create procedure test (
+create procedure test (a
+create procedure test (a 1
+create procedure test (a int
+create procedure test (a int,
+create procedure test (a int,,
+create procedure test (a int)
+create procedure test (a int) begin
+create procedure test ()
+create procedure test () begin
+create procedure test begin
+create procedure test () begin
+
+# test: create procedure
+create procedure test() begin select 1 end
+show procedures
+
+# test: create procedure (already exists)
+create procedure test() begin select 1 end
+drop procedure test
+
+# test: create procedure (multi statement)
+create procedure test() begin select 1; return select 1; end
+show procedures
+
+# test: create procedure (no arguments)
+create procedure test() begin select 1 end
+show procedures
+drop procedure test
+
+# test: create procedure (arguments)
+create procedure test(a int) begin select 1 end
+show procedures
+drop procedure test
+
+create procedure test(a int, b text) begin select 1 end
+show procedures
+drop procedure test
+
+# test: create procedure (ddl)
+create procedure test() begin show lsn end
+
+# test: drop procedure statement parsing
+create procedure test() begin select 1 end
+drop procedure
+drop procedure 123
+drop procedure if
+drop procedure if exists
+drop procedure test abc
+
+# test: drop procedure
+drop procedure test
+show procedures
+
+# test: drop procedure if exists
+drop procedure test
+drop procedure if exists test
+show procedures
+
+# test: alter procedure statment parsing
+alter procedure
+alter procedure 123
+alter procedure test
+alter procedure test rename
+alter procedure test rename to
+alter procedure test rename "hello"
+
+# test: alter procedure rename
+create procedure test() begin select 1 end
+select system.procedures()
+
+alter procedure test rename to test2
+select system.procedures()
+
+# test: alter procedure rename (already exists)
+alter procedure test2 rename to test2
+
+# test: alter procedure rename (schema rename)
+alter procedure test2 rename to test.test
+create schema test
+alter procedure test2 rename to test.test
+show procedure test.test
+drop procedure test.test
+show procedures
+
+disconnect S0
+close E0

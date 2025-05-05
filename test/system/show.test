@@ -37,14 +37,14 @@ show table
 show table test
 show table test format 'json'
 
-# test: show functions
-create function test() begin select 1 end
-show functions
+# test: show procedures
+create procedure test() begin select 1 end
+show procedures
 
-# test: show function
-show function
-show function test
-show function test format 'json'
+# test: show procedure
+show procedure
+show procedure test
+show procedure test format 'json'
 
 # test: show wal
 show wal

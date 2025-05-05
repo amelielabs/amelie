@@ -44,13 +44,13 @@ compiler_init(Compiler*    self,
               Db*          db,
               Local*       local,
               FunctionMgr* function_mgr,
-              Udf*         udf)
+              Proc*        proc)
 {
 	self->program   = program_allocate();
 	self->code      = &self->program->code;
 	self->code_data = &self->program->code_data;
 	self->args      = NULL;
-	self->udf       = udf;
+	self->proc      = proc;
 	self->current   = NULL;
 	self->last      = NULL;
 	self->db        = db;
@@ -399,8 +399,9 @@ emit_recv(Compiler* self)
 
 	if (r != -1)
 	{
-		if (self->udf)
+		if (self->proc)
 		{
+#if 0
 			// validate function return type (or null otherwise)
 			auto type_fn = self->udf->config->type;
 			if (ret && type_fn != TYPE_NULL)
@@ -412,6 +413,7 @@ emit_recv(Compiler* self)
 					stmt_error(stmt, NULL, "RETURN does not match the function type");
 				op1(self, CRESULT, r);
 			}
+#endif
 		} else
 		{
 			// create content out of result

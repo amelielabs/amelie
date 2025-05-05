@@ -287,30 +287,30 @@ recover_cmd(Recover* self, RecordCmd* cmd, uint8_t** pos)
 		table_index_rename(table, tr, &name, &name_new, false);
 		break;
 	}
-	case CMD_UDF_CREATE:
+	case CMD_PROC_CREATE:
 	{
-		auto config = udf_op_create_read(pos);
-		defer(udf_config_free, config);
-		udf_mgr_create(&db->udf_mgr, tr, config, false);
+		auto config = proc_op_create_read(pos);
+		defer(proc_config_free, config);
+		proc_mgr_create(&db->proc_mgr, tr, config, false);
 		break;
 	}
-	case CMD_UDF_DROP:
+	case CMD_PROC_DROP:
 	{
 		Str schema;
 		Str name;
-		udf_op_drop_read(pos, &schema, &name);
-		udf_mgr_drop(&db->udf_mgr, tr, &schema, &name, true);
+		proc_op_drop_read(pos, &schema, &name);
+		proc_mgr_drop(&db->proc_mgr, tr, &schema, &name, true);
 		break;
 	}
-	case CMD_UDF_RENAME:
+	case CMD_PROC_RENAME:
 	{
 		Str schema;
 		Str name;
 		Str schema_new;
 		Str name_new;
-		udf_op_rename_read(pos, &schema, &name, &schema_new, &name_new);
-		udf_mgr_rename(&db->udf_mgr, tr, &schema, &name,
-		               &schema_new, &name_new, true);
+		proc_op_rename_read(pos, &schema, &name, &schema_new, &name_new);
+		proc_mgr_rename(&db->proc_mgr, tr, &schema, &name,
+		                &schema_new, &name_new, true);
 		break;
 	}
 	default:

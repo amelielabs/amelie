@@ -154,15 +154,15 @@ fn_table(Call* self)
 }
 
 static void
-fn_functions(Call* self)
+fn_procedures(Call* self)
 {
 	call_expect(self, 0);
-	auto buf = udf_mgr_list(&self->mgr->db->udf_mgr, NULL, NULL, true);
+	auto buf = proc_mgr_list(&self->mgr->db->proc_mgr, NULL, NULL, true);
 	value_set_json_buf(self->result, buf);
 }
 
 static void
-fn_function(Call* self)
+fn_procedure(Call* self)
 {
 	call_expect(self, 1);
 	call_expect_arg(self, 0, TYPE_STRING);
@@ -173,7 +173,7 @@ fn_function(Call* self)
 		str_advance(&name, str_size(&schema) + 1);
 	else
 		str_set(&schema, "public", 6);
-	auto buf = udf_mgr_list(&self->mgr->db->udf_mgr, &schema, &name, true);
+	auto buf = proc_mgr_list(&self->mgr->db->proc_mgr, &schema, &name, true);
 	value_set_json_buf(self->result, buf);
 }
 
@@ -250,12 +250,12 @@ fn_system_register(FunctionMgr* self)
 	func = function_allocate(TYPE_JSON, "system", "table", fn_table);
 	function_mgr_add(self, func);
 
-	// system.functions()
-	func = function_allocate(TYPE_JSON, "system", "functions", fn_functions);
+	// system.procedures()
+	func = function_allocate(TYPE_JSON, "system", "procedures", fn_procedures);
 	function_mgr_add(self, func);
 
-	// system.function()
-	func = function_allocate(TYPE_JSON, "system", "function", fn_function);
+	// system.procedure()
+	func = function_allocate(TYPE_JSON, "system", "procedure", fn_procedure);
 	function_mgr_add(self, func);
 
 	// system.wal()

@@ -349,9 +349,9 @@ connect E0 S0 127.0.0.1:3485
 select system.state().lsn
 show schemas
 
-# test: create function
-create function test (id int) begin select 1 end
-show functions
+# test: create procedure
+create procedure test (id int) begin select 1 end
+show procedures
 select system.state().lsn
 
 # test: restart
@@ -362,12 +362,12 @@ connect E0 S0 127.0.0.1:3485
 
 # test: validate state
 select system.state().lsn
-show functions
+show procedures
 
-# test: alter function rename
-alter function test rename to test2
+# test: alter procedure rename
+alter procedure test rename to test2
 select system.state().lsn
-show functions
+show procedures
 
 # test: restart
 disconnect S0
@@ -377,11 +377,11 @@ connect E0 S0 127.0.0.1:3485
 
 # test: validate state
 select system.state().lsn
-show functions
+show procedures
 
-# test: drop function
-drop function test2
-show functions
+# test: drop procedure
+drop procedure test2
+show procedures
 select system.state().lsn
 
 # test: restart
@@ -392,7 +392,7 @@ connect E0 S0 127.0.0.1:3485
 
 # test: validate state
 select system.state().lsn
-show functions
+show procedures
 
 disconnect S0
 close E0

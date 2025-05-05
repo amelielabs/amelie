@@ -7,7 +7,7 @@ connect E0 S0 127.0.0.1:3485
 create schema test
 create table test.a(id int primary key)
 create table test.b(id int primary key)
-create function test.test() begin select 1 end
+create procedure test.test() begin select 1 end
 drop schema test
 
 # test: drop schema cascade
@@ -23,27 +23,27 @@ create table test.b(id int primary key)
 drop schema test cascade
 show tables
 
-# test: drop schema cascade (functions)
-show functions
+# test: drop schema cascade (procedures)
+show procedures
 
 create schema test
-create function test.test() begin select 1 end
+create procedure test.test() begin select 1 end
 drop schema test cascade
-show functions
+show procedures
 
 # test: alter schema rename
 create schema test
 
 create table test.a(id int primary key)
 create table test.b(id int primary key)
-create function test.test() begin select 1 end
+create procedure test.test() begin select 1 end
 select system.schemas()
 
 alter schema test rename to test2
 select system.schemas()
 select system.table('test2.a').name
 select system.table('test2.b').name
-show functions
+show procedures
 
 disconnect S0
 close E0

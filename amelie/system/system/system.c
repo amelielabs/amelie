@@ -53,25 +53,11 @@ system_save_state(void* arg)
 }
 
 static void
-udf_if_prepare(Udf* self)
+proc_if_prepare(Proc* self)
 {
 	System* system = self->iface_arg;
 
-	// ensure builitin function does not exists
-	auto fn = function_mgr_find(&system->function_mgr, &self->config->schema,
-	                            &self->config->name);
-	if (fn)
-		error("function '%.*s': already exists", str_size(&self->config->name),
-		      str_of(&self->config->name));
-
-	// allocate new function
-	fn = function_allocate(self->config->type, self->config->schema.pos,
-	                       self->config->name.pos,
-	                       NULL);
-	function_set(fn, FN_UDF);
-	errdefer(function_free, fn);
-
-	// parse and compile function
+	// parse and compile procedure
 	Local local;
 	local_init(&local, global());
 	local_update_time(&local);
@@ -81,36 +67,24 @@ udf_if_prepare(Udf* self)
 	// todo: set columns
 	compiler_parse(&compiler, &self->config->text);
 
-	// ensure function has no utility/ddl commands
+	// ensure procedure has no utility/ddl commands
 	auto stmt = compiler_stmt(&compiler);
 	if (stmt && stmt_is_utility(stmt))
-		error("functions cannot contain utility commands");
+		error("procedures cannot contain utility commands");
 
 	compiler_emit(&compiler);
-
-	// register function
-	function_mgr_add(&system->function_mgr, fn);
-	self->data = fn;
 }
 
 static void
-udf_if_free(Udf* self)
+proc_if_free(Proc* self)
 {
-	if (! self->data)
-		return;
-
-	// unregister and free function
-	System* system = self->iface_arg;
-	auto fn = (Function*)self->data;
-	function_mgr_del(&system->function_mgr, fn);
-	function_free(fn);
-	self->data = NULL;
+	unused(self);
 }
 
-UdfIf udf_if =
+ProcIf proc_if =
 {
-	.prepare = udf_if_prepare,
-	.free    = udf_if_free
+	.prepare = proc_if_prepare,
+	.free    = proc_if_free
 };
 
 static void
@@ -159,7 +133,7 @@ system_create(void)
 	function_mgr_init(&self->function_mgr);
 
 	// db
-	db_init(&self->db, system_attach, self, &udf_if, self);
+	db_init(&self->db, system_attach, self, &proc_if, self);
 
 	// replication
 	repl_init(&self->repl, &self->db);

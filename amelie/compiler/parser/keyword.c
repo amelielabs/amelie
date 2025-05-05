@@ -93,7 +93,6 @@ Keyword keywords[] =
 	// f
 	{ KFALSE,                 "false",                 5  },
 	{ KFROM,                  "from",                  4  },
-	{ KFUNCTION,              "function",              8  },
 	{ KFOR,                   "for",                   3  },
 	{ KFORMAT,                "format",                6  },
 
@@ -149,6 +148,7 @@ Keyword keywords[] =
 
 	// p
 	{ KPROFILE,               "profile",               7  },
+	{ KPROCEDURE,             "procedure",             9  },
 	{ KPARTITIONS,            "partitions",            10 },
 	{ KPOOL,                  "pool",                  4  },
 	{ KPRIMARY,               "primary",               7  },
@@ -157,7 +157,6 @@ Keyword keywords[] =
 	{ KRIGHT,                 "right",                 5  },
 	{ KRETURNING,             "returning",             9  },
 	{ KRETURN,                "return",                6  },
-	{ KRETURNS,               "returns",               7  },
 	{ KREPLACE,               "replace",               7  },
 	{ KRENAME,                "rename",                6  },
 	{ KREPLICA,               "replica",               7  },

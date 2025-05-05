@@ -108,13 +108,13 @@ select system.table('test')
 [null]
 select system.table('test.a')
 [null]
-# test: functions()
-select system.functions()
+# test: procedures()
+select system.procedures()
 [[]]
-# test: function()
-select system.function('test')
+# test: procedure()
+select system.procedure('test')
 [null]
-select system.function('test.a')
+select system.procedure('test.a')
 [null]
 # test: wal()
 select system.wal()
