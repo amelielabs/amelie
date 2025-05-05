@@ -25,9 +25,7 @@ struct Parser
 	int          explain;
 	Stmt*        stmt;
 	Stmts        stmts;
-	Ctes         ctes;
-	Vars         vars;
-	Columns*     args;
+	Scopes       scopes;
 	Program*     program;
 	SetCache*    values_cache;
 	Uri          uri;
@@ -41,6 +39,12 @@ struct Parser
 void parser_init(Parser*, Db*, Local*, FunctionMgr*, SetCache*, Program*);
 void parser_reset(Parser*);
 void parser_free(Parser*);
+
+static inline Scope*
+parser_scope(Parser* self)
+{
+	return self->scopes.list_tail;
+}
 
 static inline bool
 parser_is_profile(Parser* self)

@@ -60,14 +60,14 @@ parse_from_target(Stmt* self, Targets* targets, AccessType access, bool subquery
 			} else
 			{
 				// rewrite FROM (SELECT) as CTE statement (this can recurse)
-				auto stmt = stmt_allocate(self->parser, &self->parser->lex);
+				auto stmt = stmt_allocate(self->parser, &self->parser->lex, self->scope);
 				stmt->id = STMT_SELECT;
 				stmts_insert(&self->parser->stmts, self, stmt);
 
 				select = parse_select(stmt, NULL, false);
 				stmt_expect(self, ')');
 				stmt->ast          = &select->ast;
-				stmt->cte          = ctes_add(&self->parser->ctes, self, NULL);
+				stmt->cte          = ctes_add(&self->scope->ctes, stmt, NULL);
 				stmt->cte->columns = &select->ret.columns;
 				parse_select_resolve(stmt);
 
@@ -148,7 +148,7 @@ parse_from_target(Stmt* self, Targets* targets, AccessType access, bool subquery
 	}
 
 	// cte
-	auto cte = ctes_find(&self->parser->ctes, &name);
+	auto cte = ctes_find(&self->scope->ctes, &name);
 	if (cte)
 	{
 		if (cte->stmt == self)

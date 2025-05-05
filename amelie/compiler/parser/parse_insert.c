@@ -404,14 +404,14 @@ parse_insert(Stmt* self)
 
 			// rewrite INSERT INTO SELECT as CTE statement, columns will be
 			// validated during the emit
-			auto cte = stmt_allocate(self->parser, &self->parser->lex);
+			auto cte = stmt_allocate(self->parser, &self->parser->lex, self->scope);
 			cte->id = STMT_SELECT;
 			stmts_insert(&self->parser->stmts, self, cte);
 			auto select = parse_select(cte, NULL, false);
 			select->ast.pos_start = values->pos_start;
 			select->ast.pos_end   = values->pos_end;
 			cte->ast          = &select->ast;
-			cte->cte          = ctes_add(&self->parser->ctes, self, NULL);
+			cte->cte          = ctes_add(&self->scope->ctes, cte, NULL);
 			cte->cte->columns = &select->ret.columns;
 			parse_select_resolve(cte);
 			stmt->select = cte;

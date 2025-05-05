@@ -26,9 +26,10 @@
 #include "parser/target.h"
 #include "parser/targets.h"
 
-// variable
+// scope
 #include "parser/var.h"
 #include "parser/cte.h"
+#include "parser/scope.h"
 
 // stmt
 #include "parser/stmt.h"

@@ -48,15 +48,13 @@ parser_init(Parser*      self,
 {
 	self->explain      = EXPLAIN_NONE;
 	self->stmt         = NULL;
-	self->args         = NULL;
 	self->program      = program;
 	self->values_cache = values_cache;
 	self->function_mgr = function_mgr;
 	self->local        = local;
 	self->db           = db;
 	stmts_init(&self->stmts);
-	ctes_init(&self->ctes);
-	vars_init(&self->vars);
+	scopes_init(&self->scopes);
 	lex_init(&self->lex, keywords_alpha);
 	uri_init(&self->uri);
 	json_init(&self->json);
@@ -67,7 +65,6 @@ parser_reset(Parser* self)
 {
 	self->explain = EXPLAIN_NONE;
 	self->stmt    = NULL;
-	self->args    = NULL;
 	auto stmt = self->stmts.list;
 	while (stmt)
 	{
@@ -75,9 +72,8 @@ parser_reset(Parser* self)
 		parse_stmt_free(stmt);
 		stmt = next;
 	}
-	ctes_reset(&self->ctes);
 	stmts_init(&self->stmts);
-	vars_init(&self->vars);
+	scopes_reset(&self->scopes);
 	lex_reset(&self->lex);
 	uri_reset(&self->uri);
 	json_reset(&self->json);

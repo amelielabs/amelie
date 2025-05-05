@@ -425,13 +425,13 @@ parse_stmt(Parser* self, Stmt* stmt)
 }
 
 hot static void
-parse_with(Parser* self)
+parse_with(Parser* self, Scope* scope)
 {
 	auto lex = &self->lex;
 	for (;;)
 	{
 		// name [(args)] AS ( stmt )[, ...]
-		auto stmt = stmt_allocate(self, &self->lex);
+		auto stmt = stmt_allocate(self, &self->lex, scope);
 		stmts_add(&self->stmts, stmt);
 		self->stmt = stmt;
 
@@ -506,6 +506,9 @@ parse(Parser* self, Str* str)
 	if (lex_if(lex, KPROFILE))
 		self->explain = EXPLAIN|EXPLAIN_PROFILE;
 
+	// create main scope
+	auto scope = scopes_add(&self->scopes, NULL);
+
 	// [BEGIN]
 	auto begin  = lex_if(lex, KBEGIN) != NULL;
 	auto commit = false;
@@ -545,19 +548,19 @@ parse(Parser* self, Str* str)
 		{
 			if (! lex_if(lex, KASSIGN))
 				lex_error_expect(lex, lex_next(lex), KASSIGN);
-			assign = vars_add(&self->vars, &ast->string);
+			assign = vars_add(&scope->vars, &ast->string);
 		}
 
 		// [WITH name AS ( cte )[, name AS (...)]]
 		if (lex_if(lex, KWITH))
-			parse_with(self);
+			parse_with(self, scope);
 
 		ast = lex_if(lex, KEOF);
 		if (ast)
 			lex_error(lex, ast, "statement expected");
 
 		// stmt (last stmt is main)
-		self->stmt = stmt_allocate(self, &self->lex);
+		self->stmt = stmt_allocate(self, &self->lex, scope);
 		stmts_add(&self->stmts, self->stmt);
 		self->stmt->assign = assign;
 

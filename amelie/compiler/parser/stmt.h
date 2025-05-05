@@ -63,13 +63,14 @@ struct Stmt
 	int     r;
 	Var*    assign;
 	AstList select_list;
+	Scope*  scope;
 	Parser* parser;
 	Stmt*   next;
 	Stmt*   prev;
 };
 
 static inline Stmt*
-stmt_allocate(Parser* parser, Lex* lex)
+stmt_allocate(Parser* parser, Lex* lex, Scope* scope)
 {
 	Stmt* self = palloc(sizeof(Stmt));
 	self->id            = STMT_UNDEF;
@@ -83,6 +84,7 @@ stmt_allocate(Parser* parser, Lex* lex)
 	self->next          = NULL;
 	self->prev          = NULL;
 	self->lex           = lex;
+	self->scope         = scope;
 	self->parser        = parser;
 	ast_list_init(&self->select_list);
 	return self;
