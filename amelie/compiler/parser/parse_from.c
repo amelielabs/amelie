@@ -117,25 +117,21 @@ parse_from_target(Stmt* self, Targets* targets, AccessType access, bool subquery
 	if (self->id == STMT_SELECT && stmt_if(self, '('))
 	{
 		// find function
-		auto call = ast_call_allocate();
-		call->fn = function_mgr_find(self->parser->function_mgr, &schema, &name);
-		if (! call->fn)
+		auto func = ast_func_allocate();
+		func->fn = function_mgr_find(self->parser->function_mgr, &schema, &name);
+		if (! func->fn)
 			stmt_error(self, expr, "function not found");
 
-		// ensure function is not a udf
-		if (call->fn->flags & FN_UDF)
-			stmt_error(self, expr, "user-defined function must be invoked using CALL statement");
-
 		// parse args ()
-		call->ast.r = parse_expr_args(self, NULL, ')', false);
+		func->ast.r = parse_expr_args(self, NULL, ')', false);
 
 		// ensure function can be used inside FROM
-		if (call->fn->type != TYPE_STORE &&
-		    call->fn->type != TYPE_JSON)
+		if (func->fn->type != TYPE_STORE &&
+		    func->fn->type != TYPE_JSON)
 			stmt_error(self, expr, "function must return result set or JSON");
 
 		target->type = TARGET_FUNCTION;
-		target->from_function = &call->ast;
+		target->from_function = &func->ast;
 
 		// allocate select to keep returning columns
 		auto select = ast_select_allocate(targets->outer);
@@ -143,7 +139,7 @@ parse_from_target(Stmt* self, Targets* targets, AccessType access, bool subquery
 		select->ast.pos_end   = target->ast->pos_end;
 		ast_list_add(&self->select_list, &select->ast);
 		target->from_columns = &select->ret.columns;
-		str_set_str(&target->name, &call->fn->name);
+		str_set_str(&target->name, &func->fn->name);
 		return target;
 	}
 
@@ -209,7 +205,7 @@ parse_from_add(Stmt* self, Targets* targets, AccessType access, bool subquery)
 	// generate first column to match the target name for function target
 	if (target->type == TARGET_FUNCTION)
 	{
-		auto fn = ast_call_of(target->from_function)->fn;
+		auto fn = ast_func_of(target->from_function)->fn;
 		auto column = column_allocate();
 		column_set_name(column, &target->name);
 		column_set_type(column, fn->type, type_sizeof(fn->type));

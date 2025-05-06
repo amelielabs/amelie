@@ -96,20 +96,20 @@ parse_update_expr(Stmt* self)
 			args->ast.integer = 3;
 			args->constable   = false;
 
-			// call(NULL, args)
+			// func(NULL, args)
 			Str schema;
 			str_set(&schema, "public", 6);
-			Str func;
-			str_set(&func, "set", 3);
+			Str fn;
+			str_set(&fn, "set", 3);
 
-			auto call = ast_call_allocate();
-			call->fn    = function_mgr_find(self->parser->function_mgr, &schema, &func);
-			call->ast.l = NULL;
-			call->ast.r = &args->ast;
-			assert(call->fn);
+			auto func = ast_func_allocate();
+			func->fn    = function_mgr_find(self->parser->function_mgr, &schema, &fn);
+			func->ast.l = NULL;
+			func->ast.r = &args->ast;
+			assert(func->fn);
 
 			// replace the update expression
-			op->r = &call->ast;
+			op->r = &func->ast;
 		}
 
 		// op(column, expr)

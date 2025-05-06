@@ -19,9 +19,8 @@ typedef void (*FunctionMain)(Call*);
 enum
 {
 	FN_NONE    = 0,
-	FN_UDF     = 1 << 1,
-	FN_DERIVE  = 1 << 2,
-	FN_CONTEXT = 1 << 3
+	FN_DERIVE  = 1 << 1,
+	FN_CONTEXT = 1 << 2
 };
 
 struct Function

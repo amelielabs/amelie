@@ -40,13 +40,11 @@
 #include "parser/parser.h"
 #include "parser/parse.h"
 
-// endpoint
-#include "parser/parse_endpoint.h"
-
 // expr
 #include "parser/parse_target.h"
 #include "parser/parse_agg.h"
-#include "parser/parse_call.h"
+#include "parser/parse_args.h"
+#include "parser/parse_func.h"
 #include "parser/parse_case.h"
 #include "parser/parse_expr.h"
 #include "parser/parse_encode.h"
@@ -81,4 +79,5 @@
 #include "parser/parse_select.h"
 
 // import
+#include "parser/parse_endpoint.h"
 #include "parser/parse_import.h"

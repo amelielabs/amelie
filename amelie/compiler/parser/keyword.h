@@ -43,7 +43,7 @@ enum
 
 	// meta
 	KARGS,
-	KCALL,
+	KFUNC,
 	KNEG,
 	KARRAY,
 	KAGGR,

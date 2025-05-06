@@ -245,7 +245,7 @@ done:;
 }
 
 static Ast*
-expr_call(Stmt* self, Expr* expr, Ast* path, bool with_args)
+expr_func(Stmt* self, Expr* expr, Ast* path, bool with_args)
 {
 	// [schema.]function_name[(expr, ...)]
 
@@ -256,19 +256,15 @@ expr_call(Stmt* self, Expr* expr, Ast* path, bool with_args)
 		stmt_error(self, path, "bad function call");
 
 	// find and call function
-	auto func = function_mgr_find(self->parser->function_mgr, &schema, &name);
-	if (! func)
+	auto fn = function_mgr_find(self->parser->function_mgr, &schema, &name);
+	if (! fn)
 		stmt_error(self, path, "function not found");
 
-	// ensure function is not a udf
-	if (func->flags & FN_UDF)
-		stmt_error(self, path, "user-defined function must be invoked using CALL statement");
-
-	auto call = ast_call_allocate();
-	call->fn = func;
+	auto func = ast_func_allocate();
+	func->fn = fn;
 	if (with_args)
-		call->ast.r = parse_expr_args(self, expr, ')', false);
-	return &call->ast;
+		func->ast.r = parse_expr_args(self, expr, ')', false);
+	return &func->ast;
 }
 
 static inline Ast*
@@ -397,7 +393,7 @@ expr_extract(Stmt* self, Expr* expr, Ast* value)
 	// (
 	stmt_expect(self, '(');
 	value->id = KNAME;
-	value = expr_call(self, expr, value, false);
+	value = expr_func(self, expr, value, false);
 
 	// field
 	auto field = stmt_next_shadow(self);
@@ -485,7 +481,7 @@ expr_cast(Stmt* self, Expr* expr)
 	// )
 	stmt_expect(self, ')');
 
-	auto call = expr_call(self, expr, name, false);
+	auto call = expr_func(self, expr, name, false);
 	call->r = args;
 	return call;
 }
@@ -534,7 +530,7 @@ expr_value(Stmt* self, Expr* expr, Ast* value)
 	{
 		stmt_expect(self, '(');
 		value->id = KNAME;
-		value = expr_call(self, expr, value, true);
+		value = expr_func(self, expr, value, true);
 		break;
 	}
 
@@ -593,7 +589,7 @@ expr_value(Stmt* self, Expr* expr, Ast* value)
 		if (stmt_if(self, '('))
 		{
 			value->id = KNAME;
-			value = expr_call(self, expr, value, true);
+			value = expr_func(self, expr, value, true);
 			break;
 		}
 		// interval 'spec'
@@ -609,7 +605,7 @@ expr_value(Stmt* self, Expr* expr, Ast* value)
 		if (stmt_if(self, '('))
 		{
 			value->id = KNAME;
-			value = expr_call(self, expr, value, true);
+			value = expr_func(self, expr, value, true);
 			break;
 		}
 		// timestamp 'spec'
@@ -625,7 +621,7 @@ expr_value(Stmt* self, Expr* expr, Ast* value)
 		if (stmt_if(self, '('))
 		{
 			value->id = KNAME;
-			value = expr_call(self, expr, value, true);
+			value = expr_func(self, expr, value, true);
 			break;
 		}
 		// date 'spec'
@@ -652,7 +648,7 @@ expr_value(Stmt* self, Expr* expr, Ast* value)
 		if (stmt_if(self, '('))
 		{
 			value->id = KNAME;
-			value = expr_call(self, expr, value, true);
+			value = expr_func(self, expr, value, true);
 			break;
 		}
 		// uuid 'spec'
@@ -672,7 +668,7 @@ expr_value(Stmt* self, Expr* expr, Ast* value)
 	{
 		// function(expr, ...)
 		if (stmt_if(self,'('))
-			value = expr_call(self, expr, value, true);
+			value = expr_func(self, expr, value, true);
 		break;
 	}
 
@@ -682,7 +678,7 @@ expr_value(Stmt* self, Expr* expr, Ast* value)
 	{
 		// function(expr, ...)
 		if (stmt_if(self,'('))
-			value = expr_call(self, expr, value, true);
+			value = expr_func(self, expr, value, true);
 		break;
 	}
 
@@ -887,7 +883,7 @@ parse_op(Stmt*     self, Expr* expr,
 		{
 			// function[(expr, ...)]
 			auto with_args = stmt_if(self, '(') != NULL;
-			r = expr_call(self, expr, r, with_args);
+			r = expr_func(self, expr, r, with_args);
 		} else {
 			stmt_error(self, r, "function name expected");
 		}

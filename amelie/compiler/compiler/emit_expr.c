@@ -482,7 +482,7 @@ emit_operator(Compiler* self, Targets* targets, Ast* ast, int op)
 }
 
 hot static inline bool
-emit_call_typederive(Compiler* self, int r, int* type)
+emit_func_typederive(Compiler* self, int r, int* type)
 {
 	auto this = rtype(self, r);
 	if (this == TYPE_NULL)
@@ -493,14 +493,14 @@ emit_call_typederive(Compiler* self, int r, int* type)
 }
 
 hot int
-emit_call(Compiler* self, Targets* targets, Ast* ast)
+emit_func(Compiler* self, Targets* targets, Ast* ast)
 {
 	// (function_name, args)
-	auto call = ast_call_of(ast);
+	auto func = ast_func_of(ast);
 	auto args = ast->r;
 
 	// push arguments
-	auto fn = call->fn;
+	auto fn = func->fn;
 	auto fn_type = fn->type;
 	auto current = args->l;
 	while (current)
@@ -508,7 +508,7 @@ emit_call(Compiler* self, Targets* targets, Ast* ast)
 		int r = emit_expr(self, targets, current);
 		// ensure that the function has identical types, if type is derived
 		if (fn->flags & FN_DERIVE)
-			if (! emit_call_typederive(self, r, &fn_type))
+			if (! emit_func_typederive(self, r, &fn_type))
 				stmt_error(self->current, current, "argument type must match other arguments");
 		op1(self, CPUSH, r);
 		runpin(self, r);
@@ -526,20 +526,20 @@ emit_call(Compiler* self, Targets* targets, Ast* ast)
 }
 
 hot static inline int
-emit_call_method(Compiler* self, Targets* targets, Ast* ast)
+emit_method(Compiler* self, Targets* targets, Ast* ast)
 {
 	// expr, method(path, [args])
 	auto expr = ast->l;
-	auto call = ast_call_of(ast->r);
-	auto args = call->ast.r;
+	auto func = ast_func_of(ast->r);
+	auto args = func->ast.r;
 
-	auto fn = call->fn;
+	auto fn = func->fn;
 	auto fn_type = fn->type;
 
 	// use expression as the first argument to the call
 	int r = emit_expr(self, targets, expr);
 	if (fn->flags & FN_DERIVE)
-		emit_call_typederive(self, r, &fn_type);
+		emit_func_typederive(self, r, &fn_type);
 	op1(self, CPUSH, r);
 	runpin(self, r);
 
@@ -553,7 +553,7 @@ emit_call_method(Compiler* self, Targets* targets, Ast* ast)
 			r = emit_expr(self, targets, current);
 			// ensure that the function has identical types, if type is derived
 			if (fn->flags & FN_DERIVE)
-				if (! emit_call_typederive(self, r, &fn_type))
+				if (! emit_func_typederive(self, r, &fn_type))
 					stmt_error(self->current, current, "argument type must match other arguments");
 			op1(self, CPUSH, r);
 			runpin(self, r);
@@ -1050,10 +1050,10 @@ emit_expr(Compiler* self, Targets* targets, Ast* ast)
 	}
 
 	// function/method call
-	case KCALL:
-		return emit_call(self, targets, ast);
+	case KFUNC:
+		return emit_func(self, targets, ast);
 	case KMETHOD:
-		return emit_call_method(self, targets, ast);
+		return emit_method(self, targets, ast);
 
 	// subquery
 	case KSELECT:

@@ -322,7 +322,7 @@ scan_expr(Scan* self, Target* target)
 	case TARGET_FUNCTION:
 	{
 		if (target->r == -1)
-			target->r = emit_call(cp, self->targets, target->from_function);
+			target->r = emit_func(cp, self->targets, target->from_function);
 		break;
 	}
 	default:
