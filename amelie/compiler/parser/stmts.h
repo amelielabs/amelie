@@ -18,14 +18,16 @@ struct Stmts
 	Stmt* list;
 	Stmt* list_tail;
 	int   count;
+	int   count_utility;
 };
 
 static inline void
 stmts_init(Stmts* self)
 {
-	self->list      = NULL;
-	self->list_tail = NULL;
-	self->count     = 0;
+	self->list          = NULL;
+	self->list_tail     = NULL;
+	self->count         = 0;
+	self->count_utility = 0;
 }
 
 static inline void

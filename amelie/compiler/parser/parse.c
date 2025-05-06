@@ -390,9 +390,8 @@ parse_stmt(Parser* self, Stmt* stmt)
 		break;
 
 	case KBEGIN:
-		break;
-
 	case KCOMMIT:
+		stmt_error(stmt, NULL, "unexpected statement");
 		break;
 
 	case KEOF:
@@ -481,40 +480,13 @@ parse_with(Parser* self, Scope* scope)
 }
 
 hot void
-parse(Parser* self, Str* str)
+parse_scope(Parser* self)
 {
-	// prepare parser
-	auto lex = &self->lex;
-	lex_start(&self->lex, str);
-
-	// [EXPLAIN]
-	auto explain = lex_if(lex, KEXPLAIN);
-	if (explain)
-	{
-		// EXPLAIN(PROFILE)
-		self->explain = EXPLAIN;
-		if (lex_if(lex, '('))
-		{
-			if (! lex_if(lex, KPROFILE))
-				lex_error_expect(lex, lex_next(lex), KPROFILE);
-			if (! lex_if(lex, ')'))
-				lex_error_expect(lex, lex_next(lex), ')');
-			self->explain |= EXPLAIN_PROFILE;
-		}
-
-	} else
-	if (lex_if(lex, KPROFILE))
-		self->explain = EXPLAIN|EXPLAIN_PROFILE;
-
-	// create main scope
+	// create scope
 	auto scope = scopes_add(&self->scopes, NULL);
 
-	// [BEGIN]
-	auto begin  = lex_if(lex, KBEGIN) != NULL;
-	auto commit = false;
-
 	// stmt [; stmt]
-	bool has_utility = false;	
+	auto lex = &self->lex;
 	for (;;)
 	{
 		// ; | EOF
@@ -523,23 +495,18 @@ parse(Parser* self, Str* str)
 		if (lex_if(lex, KEOF))
 			break;
 
-		// BEGIN/COMMIT
+		// [COMMIT]
 		auto ast = lex_next(lex);
-		switch (ast->id) {
-		case KBEGIN:
-			lex_error(lex, ast, "unexpected BEGIN operation");
-			break;
-		case KCOMMIT:
-			if (! begin)
-				lex_error(lex, ast, "unexpected COMMIT operation");
-			commit = true;
-			continue;
-		default:
-			if (commit)
-				lex_error(lex, ast, "unexpected statement after COMMIT");
-			lex_push(lex, ast);
+		if (ast->id == KCOMMIT)
+		{
+			if (! self->begin)
+				lex_error(lex, ast, "unexpected COMMIT");
+			self->commit = true;
+			// ;
+			lex_if(lex, ';');
 			break;
 		}
+		lex_push(lex, ast);
 
 		// name := expr/stmt
 		Var* assign = NULL;
@@ -571,7 +538,7 @@ parse(Parser* self, Str* str)
 		{
 			if (self->stmt->assign)
 				lex_error(lex, ast, ":= cannot be used with utility statements");
-			has_utility = true;
+			self->stmts.count_utility++;
 		}
 
 		// EOF
@@ -581,10 +548,43 @@ parse(Parser* self, Str* str)
 		// ;
 		stmt_expect(self->stmt, ';');
 	}
+}
+
+hot void
+parse(Parser* self, Str* str)
+{
+	// prepare parser
+	auto lex = &self->lex;
+	lex_start(&self->lex, str);
+
+	// [EXPLAIN]
+	auto explain = lex_if(lex, KEXPLAIN);
+	if (explain)
+	{
+		// EXPLAIN(PROFILE)
+		self->explain = EXPLAIN;
+		if (lex_if(lex, '('))
+		{
+			if (! lex_if(lex, KPROFILE))
+				lex_error_expect(lex, lex_next(lex), KPROFILE);
+			if (! lex_if(lex, ')'))
+				lex_error_expect(lex, lex_next(lex), ')');
+			self->explain |= EXPLAIN_PROFILE;
+		}
+
+	} else
+	if (lex_if(lex, KPROFILE))
+		self->explain = EXPLAIN|EXPLAIN_PROFILE;
+
+	// [BEGIN]
+	self->begin = lex_if(lex, KBEGIN) != NULL;
+
+	// stmt [; stmt]
+	parse_scope(self);
 
 	// [COMMIT]
 	auto ast = lex_next(lex);
-	if (begin && !commit)
+	if (self->begin && !self->commit)
 		lex_error(lex, ast, "COMMIT expected at the end of transaction");
 
 	// EOF
@@ -600,7 +600,7 @@ parse(Parser* self, Str* str)
 		lex_error(lex, explain, "EXPLAIN without command");
 
 	// ensure main stmt is not utility when using CTE
-	if (has_utility && self->stmts.count > 1)
+	if (self->stmts.count_utility && self->stmts.count > 1)
 		lex_error(lex, ast, "multi-statement utility commands are not supported");
 
 	// set statements order

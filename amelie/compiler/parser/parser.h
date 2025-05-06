@@ -23,6 +23,8 @@ enum
 struct Parser
 {
 	int          explain;
+	bool         begin;
+	bool         commit;
 	Stmt*        stmt;
 	Stmts        stmts;
 	Scopes       scopes;

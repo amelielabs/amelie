@@ -12,4 +12,5 @@
 //
 
 void parse_stmt_free(Stmt*);
+void parse_scope(Parser*);
 void parse(Parser*, Str*);

@@ -9,7 +9,7 @@ begin;;
 {"msg": "begin;; ⟵ COMMIT expected at the end of transaction"}
 # test: commit
 commit
-{"msg": "❰commit❱ ⟵ unexpected COMMIT operation"}
+{"msg": "❰commit❱ ⟵ unexpected COMMIT"}
 # test: begin commit
 begin; select 1
 {"msg": "begin; select 1 ⟵ COMMIT expected at the end of transaction"}
@@ -38,14 +38,14 @@ begin; select error("abort"); commit
 begin; select 1; commit;
 [1]
 begin; select 1; commit;;
-[1]
+{"msg": "begin; select 1; commit;❰;❱ ⟵ unexpected token at the end of transaction"}
 begin; select 1; commit;;;
-[1]
+{"msg": "begin; select 1; commit;❰;❱ ⟵ unexpected token at the end of transaction"}
 begin; select 1; commit commit
-[1]
+{"msg": "begin; select 1; commit ❰commit❱ ⟵ unexpected token at the end of transaction"}
 begin; select 1; commit; begin
-{"msg": "begin; select 1; commit; ❰begin❱ ⟵ unexpected BEGIN operation"}
+{"msg": "begin; select 1; commit; ❰begin❱ ⟵ unexpected token at the end of transaction"}
 begin; select 1; commit; select 1
-{"msg": "begin; select 1; commit; ❰select❱ ⟵ unexpected statement after COMMIT"}
+{"msg": "begin; select 1; commit; ❰select❱ ⟵ unexpected token at the end of transaction"}
 disconnect S0
 close E0

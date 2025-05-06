@@ -47,6 +47,8 @@ parser_init(Parser*      self,
             Program*     program)
 {
 	self->explain      = EXPLAIN_NONE;
+	self->begin        = false;
+	self->commit       = false;
 	self->stmt         = NULL;
 	self->program      = program;
 	self->values_cache = values_cache;
@@ -64,6 +66,8 @@ void
 parser_reset(Parser* self)
 {
 	self->explain = EXPLAIN_NONE;
+	self->begin   = false;
+	self->commit  = false;
 	self->stmt    = NULL;
 	auto stmt = self->stmts.list;
 	while (stmt)
