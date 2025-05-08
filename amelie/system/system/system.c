@@ -64,15 +64,30 @@ proc_if_prepare(Proc* self)
 	Compiler compiler;
 	compiler_init(&compiler, &system->db, &local, &system->function_mgr, self);
 	defer(compiler_free, &compiler);
-	// todo: set columns
-	compiler_parse(&compiler, &self->config->text);
+
+	// create arguments as variables
+	auto scope = scopes_add(&compiler.parser.scopes);
+	list_foreach(&self->config->columns.list)
+	{
+		auto column = list_at(Column, link);
+		auto var = vars_add(&scope->vars, &column->name);
+		var->type = column->type;
+	}
+
+	// parse procedure
+	auto lex = &compiler.parser.lex;
+	lex_start(lex, &self->config->text);
+	parse_scope(&compiler.parser, scope);
 
 	// ensure procedure has no utility/ddl commands
 	auto stmt = compiler_stmt(&compiler);
 	if (stmt && stmt_is_utility(stmt))
 		error("procedures cannot contain utility commands");
 
+#if 0
+	// emit procedure
 	compiler_emit(&compiler);
+#endif
 }
 
 static void

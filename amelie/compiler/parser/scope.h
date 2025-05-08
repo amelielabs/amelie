@@ -16,10 +16,9 @@ typedef struct Scopes Scopes;
 
 struct Scope
 {
-	Columns* args;
-	Vars     vars;
-	Ctes     ctes;
-	Scope*   next;
+	Vars   vars;
+	Ctes   ctes;
+	Scope* next;
 };
 
 struct Scopes
@@ -52,10 +51,9 @@ scopes_reset(Scopes* self)
 }
 
 static inline Scope*
-scopes_add(Scopes* self, Columns* args)
+scopes_add(Scopes* self)
 {
 	auto scope = (Scope*)palloc(sizeof(Scope));
-	scope->args = args;
 	scope->next = NULL;
 	vars_init(&scope->vars);
 	ctes_init(&scope->ctes);

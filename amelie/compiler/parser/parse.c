@@ -394,6 +394,13 @@ parse_stmt(Parser* self, Stmt* stmt)
 		stmt_error(stmt, NULL, "unexpected statement");
 		break;
 
+	case KCALL:
+	{
+		stmt->id = STMT_CALL;
+		parse_call(stmt);
+		break;
+	}
+
 	case KEOF:
 		stmt_error(stmt, NULL, "unexpected end of statement");
 		break;
@@ -480,11 +487,8 @@ parse_with(Parser* self, Scope* scope)
 }
 
 hot void
-parse_scope(Parser* self)
+parse_scope(Parser* self, Scope* scope)
 {
-	// create scope
-	auto scope = scopes_add(&self->scopes, NULL);
-
 	// stmt [; stmt]
 	auto lex = &self->lex;
 	for (;;)
@@ -580,7 +584,8 @@ parse(Parser* self, Str* str)
 	self->begin = lex_if(lex, KBEGIN) != NULL;
 
 	// stmt [; stmt]
-	parse_scope(self);
+	auto scope = scopes_add(&self->scopes);
+	parse_scope(self, scope);
 
 	// [COMMIT]
 	auto ast = lex_next(lex);

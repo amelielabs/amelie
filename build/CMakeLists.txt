@@ -244,6 +244,7 @@ set(AMELIE_SOURCES_VM
 set(AMELIE_SOURCES_COMPILER
     ${AMELIE_ROOT}/compiler/parser/keyword.c
     ${AMELIE_ROOT}/compiler/parser/lex.c
+    ${AMELIE_ROOT}/compiler/parser/parse_call.c
     ${AMELIE_ROOT}/compiler/parser/parse_expr.c
     ${AMELIE_ROOT}/compiler/parser/parse_show.c
     ${AMELIE_ROOT}/compiler/parser/parse_system.c

@@ -144,6 +144,11 @@ emit_stmt(Compiler* self)
 		return;
 	}
 
+	case STMT_CALL:
+	case STMT_CALL_RETURN:
+		// do nothing
+		return;
+
 	case STMT_WATCH:
 		// do nothing (frontend only)
 		return;
@@ -290,6 +295,11 @@ emit_send(Compiler* self, int start)
 		return;
 	}
 
+	case STMT_CALL:
+	case STMT_CALL_RETURN:
+		// do nothing
+		return;
+
 	case STMT_WATCH:
 		// no targets
 		return;
@@ -319,6 +329,33 @@ emit_send(Compiler* self, int start)
 		op2(self, CSEND_ALL, start, (intptr_t)table);
 	}
 	self->program->sends++;
+}
+
+static inline void
+emit_call(Compiler* self)
+{
+	auto stmt = self->current;
+	auto call = ast_call_of(stmt->ast);
+	auto args = call->ast.r;
+	auto arg  = args->l;
+	Targets targets;
+	targets_init(&targets);
+	for (auto var = call->scope->vars.list; var; var = var->next)
+	{
+		var->r = emit_expr(self, &targets, arg);
+		Type type = rtype(self, var->r);
+		if (type != var->type)
+			stmt_error(self->current, arg, "expected %s", type_of(var->type));
+		arg = arg->next;
+	}
+}
+
+static inline void
+emit_call_return(Compiler* self)
+{
+	auto stmt = self->current;
+	for (auto var = stmt->scope->vars.list; var; var = var->next)
+		runpin(self, var->r);
 }
 
 static inline void
@@ -370,6 +407,16 @@ emit_recv(Compiler* self)
 		break;
 	}
 
+	case STMT_CALL:
+		// emit arguments and assign as variables
+		emit_call(self);
+		break;
+
+	case STMT_CALL_RETURN:
+		//unpin variables
+		emit_call_return(self);
+		break;
+
 	case STMT_WATCH:
 		// no targets (frontend only)
 		r = emit_watch(self, stmt->ast);
@@ -389,7 +436,11 @@ emit_recv(Compiler* self)
 			stmt_error(stmt, NULL, "statement cannot be assigned");
 		if (ret->count > 1)
 			stmt_error(stmt, NULL, "statement must return only one column to be assigned");
-		var->type = columns_first(&ret->columns)->type;
+		// argument assignment
+		auto type = columns_first(&ret->columns)->type;
+		if (var->type != TYPE_NULL && var->type != type)
+			stmt_error(self->current, stmt->ast, "variable expected %s", type_of(var->type));
+		var->type = type;
 		var->r = op2(self, CASSIGN, rpin(self, var->type), r);
 	}
 
@@ -425,6 +476,20 @@ emit_recv(Compiler* self)
 	op0(self, CRET);
 }
 
+static inline bool
+stmt_is_call(Stmt* self)
+{
+	return self->id == STMT_CALL || self->id == STMT_CALL_RETURN;
+}
+
+static inline bool
+stmt_is_expr(Stmt* self)
+{
+	if (self->id != STMT_SELECT)
+		return false;
+	return !ast_select_of(self->ast)->pushdown;
+}
+
 static inline void
 emit_recv_upto(Compiler* self, int last, int order)
 {
@@ -434,21 +499,15 @@ emit_recv_upto(Compiler* self, int last, int order)
 	{
 		if (stmt->order <= last)
 			continue;
+		if (stmt_is_call(stmt))
+			continue;
 		if (stmt->order > order)
 			break;
 		// <= recv
-		self->current = stmt;	
+		self->current = stmt;
 		emit_recv(self);
 	}
 	self->current = current;
-}
-
-static inline bool
-stmt_is_expr(Stmt* self)
-{
-	if (self->id != STMT_SELECT)
-		return false;
-	return !ast_select_of(self->ast)->pushdown;
 }
 
 static inline  int
@@ -488,18 +547,25 @@ compiler_emit(Compiler* self)
 		compiler_switch_frontend(self);
 		self->current = stmt;
 
-		// generate recv up to the max dependable statement order, including
-		// frontend only expressions
-		auto is_expr = stmt_is_expr(stmt);
-		auto recv = -1;
-		if (is_expr)
-			recv = stmt->order;
-		else
-			recv = stmt_maxcte(stmt);
-		if (recv >= 0)
+		auto is_expr = false;
+		if (stmt_is_call(stmt))
 		{
-			emit_recv_upto(self, recv_last, recv);
-			recv_last = recv;
+			emit_recv(self);
+		} else
+		{
+			// generate recv up to the max dependable statement order, including
+			// frontend only expressions
+			is_expr = stmt_is_expr(stmt);
+			auto recv = -1;
+			if (is_expr)
+				recv = stmt->order;
+			else
+				recv = stmt_maxcte(stmt);
+			if (recv >= 0)
+			{
+				emit_recv_upto(self, recv_last, recv);
+				recv_last = recv;
+			}
 		}
 
 		// generate backend code (pushdown)
