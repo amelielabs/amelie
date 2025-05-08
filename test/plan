@@ -95,6 +95,7 @@ test lambda
 test limits
 test format
 test var
+test call
 
 # pushdown
 directory pushdown

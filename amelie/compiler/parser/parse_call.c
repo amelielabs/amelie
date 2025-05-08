@@ -46,16 +46,18 @@ parse_call(Stmt* self)
 	self->ast = &stmt->ast;
 
 	// read schema/name
+	auto path = stmt_next(self);
+	stmt_push(self, path);
 	Str schema;
 	Str name;
 	if (! parse_target(self, &schema, &name))
-		stmt_error(self, NULL, "proceure name expected");
+		stmt_error(self, path, "procedure name expected");
 
 	// find and inline procedure
 	auto parser = self->parser;
 	stmt->proc = proc_mgr_find(&parser->db->proc_mgr, &schema, &name, false);
 	if (! stmt->proc)
-		stmt_error(self,  NULL, "procedure not found");
+		stmt_error(self, path, "procedure not found");
 
 	// (args)
 	stmt_expect(self, '(');
@@ -67,8 +69,8 @@ parse_call(Stmt* self)
 	if (argc_call != argc)
 	{
 		if (argc == 0)
-			stmt_error(self,  NULL, "procedure has no arguments");
-		stmt_error(self,  NULL, "expected %d argument%s", argc,
+			stmt_error(self, path, "procedure has no arguments");
+		stmt_error(self, path, "expected %d argument%s", argc,
 		           argc > 1 ? "s": "");
 	}
 	stmt->ast.r = args;
