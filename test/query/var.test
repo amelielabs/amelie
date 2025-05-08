@@ -1,0 +1,108 @@
+#
+
+open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "127.0.0.1", "port": 3485 }]
+connect E0 S0 127.0.0.1:3485
+
+# test: := operator parsing
+:=
+0 :=
+0 := 0
+'x' := 1
+x :=
+
+# test: := expr
+x := 1
+explain x := 1
+
+# test: := select expr
+x := select 1
+explain x := select 1
+
+# test: := select var
+x := 1; select x
+explain x := 1; select x
+x := 1; y := 2; select x + y
+
+# test: := select var (redefine)
+x := 1; y := 2; x := 2; select x + y
+
+# test: := select var (json)
+x := {"id": 48}; select x.id
+explain x := {"id": 48}; select x.id
+
+# test: := select var (null)
+x := null; select x
+explain x := null; select x
+x := null; select x + 10
+
+# test: := select var (1 column)
+x := select 1
+
+# test: := select var (n columns)
+x := select 1, 2
+
+# test: := select var (column shadow)
+create table test (id int primary key)
+insert into test values (1)
+# this compares two vars
+id := 1; select * from test where id = id
+id := 1; select * from test where test.id = id
+drop table test
+
+# test: := insert returning (1 column)
+create table test (id int primary key)
+x := insert into test values (1) returning id; select x
+
+# test: := insert returning (n columns)
+x := insert into test values (2) returning id, id; select x
+
+# test: := pushdown
+x := 1; select * from test where id = x
+explain x := 1; select * from test where id = x
+
+# test: := with cte
+x := with a as (select 1) select * from a; select x
+
+# test: := with cte (assign inside)
+with a as (x := select 1) select * from a; select x
+drop table test
+
+# test: := ddl
+x := show all;
+
+# test: select into
+select 1 into x; select x
+
+# test: select into (redefine)
+select 1 into x; select 2 into x; select x
+x := 1; select 2 into x; select x
+
+# test: select into (cte)
+with a as (select 1 into x) select * from a
+
+# test: select into (subquery)
+select (select 1 into x); select x
+
+# test: select into (var)
+x := select 1 into x; select x
+
+# test: returning into
+create table test (id int primary key)
+insert into test values (1) returning id into x; select x
+
+# test: returning into (var)
+x := insert into test values (1) returning id into x; select x
+
+# test: returning into (cte)
+with a as (insert into test values (1) returning id into x) select * from a
+drop table test
+
+# test: return (var)
+x := 1; return x
+explain x := 1; return x
+
+# test: return (assign)
+x := return 1
+
+disconnect S0
+close E0

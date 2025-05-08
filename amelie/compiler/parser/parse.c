@@ -541,7 +541,7 @@ parse_scope(Parser* self, Scope* scope)
 		if (stmt_is_utility(self->stmt))
 		{
 			if (self->stmt->assign)
-				lex_error(lex, ast, ":= cannot be used with utility statements");
+				stmt_error(self->stmt, NULL, ":= cannot be used with utility statements");
 			self->stmts.count_utility++;
 		}
 
