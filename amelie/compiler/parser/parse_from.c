@@ -95,7 +95,7 @@ parse_from_target(Stmt* self, Targets* targets, AccessType access, bool subquery
 			target->ast  = ast;
 
 			// allocate select to keep returning columns
-			auto select = ast_select_allocate(targets->outer);
+			auto select = ast_select_allocate(targets->outer, targets->scope);
 			select->ast.pos_start = target->ast->pos_start;
 			select->ast.pos_end   = target->ast->pos_end;
 			ast_list_add(&self->select_list, &select->ast);
@@ -134,7 +134,7 @@ parse_from_target(Stmt* self, Targets* targets, AccessType access, bool subquery
 		target->from_function = &func->ast;
 
 		// allocate select to keep returning columns
-		auto select = ast_select_allocate(targets->outer);
+		auto select = ast_select_allocate(targets->outer, targets->scope);
 		select->ast.pos_start = target->ast->pos_start;
 		select->ast.pos_end   = target->ast->pos_end;
 		ast_list_add(&self->select_list, &select->ast);

@@ -352,7 +352,7 @@ parse_insert(Stmt* self)
 	// [GENERATE | VALUES (value, ..), ... | SELECT ...]
 	// [ON CONFLICT DO NOTHING | ERROR | UPDATE | RESOLVE]
 	// [RETURNING expr [FORMAT name]]
-	auto stmt = ast_insert_allocate();
+	auto stmt = ast_insert_allocate(self->scope);
 	self->ast = &stmt->ast;
 
 	// INTO

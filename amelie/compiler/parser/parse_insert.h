@@ -42,12 +42,12 @@ ast_insert_of(Ast* ast)
 }
 
 static inline AstInsert*
-ast_insert_allocate(void)
+ast_insert_allocate(Scope* scope)
 {
 	AstInsert* self;
 	self = ast_allocate(0, sizeof(AstInsert));
-	targets_init(&self->targets);
-	targets_init(&self->targets_generated);
+	targets_init(&self->targets, scope);
+	targets_init(&self->targets_generated, scope);
 	returning_init(&self->ret);
 	return self;
 }

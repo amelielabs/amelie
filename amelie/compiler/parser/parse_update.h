@@ -31,11 +31,11 @@ ast_update_of(Ast* ast)
 }
 
 static inline AstUpdate*
-ast_update_allocate(void)
+ast_update_allocate(Scope* scope)
 {
 	AstUpdate* self;
 	self = ast_allocate(0, sizeof(AstUpdate));
-	targets_init(&self->targets);
+	targets_init(&self->targets, scope);
 	returning_init(&self->ret);
 	return self;
 }

@@ -22,14 +22,14 @@
 // lex
 #include "parser/lex.h"
 
-// target
-#include "parser/target.h"
-#include "parser/targets.h"
-
 // scope
 #include "parser/var.h"
 #include "parser/cte.h"
 #include "parser/scope.h"
+
+// target
+#include "parser/target.h"
+#include "parser/targets.h"
 
 // stmt
 #include "parser/stmt.h"

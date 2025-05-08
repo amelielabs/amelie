@@ -339,7 +339,7 @@ emit_call(Compiler* self)
 	auto args = call->ast.r;
 	auto arg  = args->l;
 	Targets targets;
-	targets_init(&targets);
+	targets_init(&targets, stmt->scope);
 	for (auto var = call->scope->vars.list; var; var = var->next)
 	{
 		var->r = emit_expr(self, &targets, arg);

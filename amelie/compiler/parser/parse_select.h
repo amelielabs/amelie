@@ -44,7 +44,7 @@ ast_select_of(Ast* ast)
 }
 
 static inline AstSelect*
-ast_select_allocate(Targets* outer)
+ast_select_allocate(Targets* outer, Scope* scope)
 {
 	AstSelect* self;
 	self = ast_allocate(KSELECT, sizeof(AstSelect));
@@ -64,8 +64,8 @@ ast_select_allocate(Targets* outer)
 	ast_list_init(&self->expr_aggs);
 	ast_list_init(&self->expr_group_by);
 	ast_list_init(&self->expr_order_by);
-	targets_init(&self->targets);
-	targets_init(&self->targets_group);
+	targets_init(&self->targets, scope);
+	targets_init(&self->targets_group, scope);
 	targets_set_outer(&self->targets, outer);
 	targets_set_outer(&self->targets_group, outer);
 	columns_init(&self->targets_group_columns);

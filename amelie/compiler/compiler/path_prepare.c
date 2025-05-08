@@ -143,7 +143,7 @@ path_prepare_match(Path*        prev_path,
 }
 
 static void
-path_prepare_target(Target* target, AstList* ops)
+path_prepare_target(Target* target, Scope* scope, AstList* ops)
 {
 	auto table = target->from_table;
 	assert(table);
@@ -152,11 +152,11 @@ path_prepare_target(Target* target, AstList* ops)
 	if (target->from_index)
 	{
 		auto keys = &target->from_index->keys;
-		target->path = path_create(target, keys, ops);
+		target->path = path_create(target, scope, keys, ops);
 
 		auto primary = table_primary(target->from_table);
 		if (target->from_index != primary)
-			target->path_primary = path_create(target, &primary->keys, ops);
+			target->path_primary = path_create(target, scope, &primary->keys, ops);
 		else
 			target->path_primary = target->path;
 		return;
@@ -172,7 +172,7 @@ path_prepare_target(Target* target, AstList* ops)
 		auto keys = &index->keys;
 
 		// primary
-		auto path = path_create(target, keys, ops);
+		auto path = path_create(target, scope, keys, ops);
 		if (! match)
 		{
 			match_path_primary = path;
@@ -207,5 +207,5 @@ path_prepare(Targets* targets, Ast* expr)
 	// create paths for table scans
 	for (auto target = targets->list; target; target = target->next)
 		if (target_is_table(target))
-			path_prepare_target(target, &ops);
+			path_prepare_target(target, targets->scope, &ops);
 }

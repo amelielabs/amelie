@@ -43,5 +43,5 @@ struct Path
 	PathKey  keys[];
 };
 
-Path*    path_create(Target*, Keys*, AstList*);
+Path*    path_create(Target*, Scope*, Keys*, AstList*);
 uint32_t path_create_hash(Path*);

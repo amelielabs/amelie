@@ -258,7 +258,7 @@ parse_import(Parser* self, Str* str, Str* uri, EndpointType type)
 	stmts_add(&self->stmts, stmt);
 	stmt->id  = STMT_INSERT;
 	stmt->ret = true;
-	stmt->ast = &ast_insert_allocate()->ast;
+	stmt->ast = &ast_insert_allocate(scope)->ast;
 
 	// create insert target
 	auto insert  = ast_insert_of(stmt->ast);
