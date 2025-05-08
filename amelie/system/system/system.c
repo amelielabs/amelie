@@ -72,6 +72,7 @@ proc_if_prepare(Proc* self)
 		auto column = list_at(Column, link);
 		auto var = vars_add(&scope->vars, &column->name);
 		var->type = column->type;
+		var->r = rpin(&compiler, column->type);
 	}
 
 	// parse procedure
@@ -84,16 +85,21 @@ proc_if_prepare(Proc* self)
 	if (stmt && stmt_is_utility(stmt))
 		error("procedures cannot contain utility commands");
 
-#if 0
 	// emit procedure
 	compiler_emit(&compiler);
-#endif
+
+	self->data = compiler.program;
+	compiler.program = NULL;
 }
 
 static void
 proc_if_free(Proc* self)
 {
-	unused(self);
+	Program* program = self->data;
+	if (! program)
+		return;
+	program_free(program);
+	self->data = NULL;
 }
 
 ProcIf proc_if =
