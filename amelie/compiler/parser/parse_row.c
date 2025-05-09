@@ -38,7 +38,7 @@
 #include <amelie_vm.h>
 #include <amelie_parser.h>
 
-hot void
+hot static void
 parse_row_list(Stmt* self, Table* table, Set* values, Ast* list)
 {
 	// (
@@ -83,7 +83,7 @@ parse_row_list(Stmt* self, Table* table, Set* values, Ast* list)
 	stmt_expect(self, ')');
 }
 
-hot void
+hot static void
 parse_row(Stmt* self, Table* table, Set* values)
 {
 	// (
@@ -154,5 +154,22 @@ parse_row_generate(Stmt* self, Table* table, Set* values, int count)
 			// ensure NOT NULL constraint
 			parse_value_validate(self, column, column_value, NULL);
 		}
+	}
+}
+
+void
+parse_rows(Stmt* self, Table* table, Set* values,
+           Ast*  list,
+           bool  list_in_use)
+{
+	// VALUES (value[, ...])[, ...]
+	for (;;)
+	{
+		if (list_in_use)
+			parse_row_list(self, table, values, list);
+		else
+			parse_row(self, table, values);
+		if (! stmt_if(self, ','))
+			break;
 	}
 }

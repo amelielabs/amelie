@@ -262,15 +262,7 @@ parse_insert(Stmt* self)
 		if (values->id == KVALUES)
 		{
 			// VALUES (value[, ...])[, ...]
-			for (;;)
-			{
-				if (list_in_use)
-					parse_row_list(self, table, stmt->values, list);
-				else
-					parse_row(self, table, stmt->values);
-				if (! stmt_if(self, ','))
-					break;
-			}
+			parse_rows(self, table, stmt->values, list, list_in_use);
 		} else
 		if (values->id == KSELECT)
 		{

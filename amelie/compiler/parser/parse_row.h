@@ -11,6 +11,5 @@
 // AGPL-3.0 Licensed.
 //
 
-void parse_row_list(Stmt*, Table*, Set*, Ast*);
-void parse_row(Stmt*, Table*, Set*);
 void parse_row_generate(Stmt*, Table*, Set*, int);
+void parse_rows(Stmt*, Table*, Set*, Ast*, bool);
