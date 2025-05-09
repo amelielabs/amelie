@@ -77,6 +77,7 @@ parse_call(Stmt* self)
 
 	// create arguments as variables
 	auto scope = scopes_add(&parser->scopes);
+	scope->call = true;
 	stmt->scope = scope;
 
 	list_foreach(&stmt->proc->config->columns.list)

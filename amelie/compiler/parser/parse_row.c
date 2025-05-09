@@ -173,3 +173,159 @@ parse_rows(Stmt* self, Table* table, Set* values,
 			break;
 	}
 }
+
+hot static Ast*
+parse_row_list_expr(Stmt* self, Table* table, Ast* list)
+{
+	// (
+	stmt_expect(self, '(');
+
+	Ast* row = NULL;
+	Ast* row_tail = NULL;
+
+	// set next sequence value for identity columns
+	uint64_t seq = sequence_next(&table->seq);
+
+	// value, ...
+	auto columns = table_columns(table);
+	list_foreach(&columns->list)
+	{
+		auto column = list_at(Column, link);
+
+		// DEFAULT | value
+		Ast* value = stmt_if(self, KDEFAULT);
+		if (!value && list && list->column->order == column->order)
+		{
+			// parse column expr
+			value = parse_expr(self, NULL);
+
+			// ,
+			list = list->next;
+			if (list)
+				stmt_expect(self, ',');
+		} else
+		{
+			// IDENTITY, RANDOM or DEFAULT
+			value = parse_value_default_expr(self, column, seq);
+		}
+
+		// ensure NOT NULL constraint
+		parse_value_validate_expr(self, column, value);
+
+		if (row_tail)
+			row_tail->next = value;
+		else
+			row = value;
+		row_tail = value;
+	}
+
+	// )
+	stmt_expect(self, ')');
+	return row;
+}
+
+hot static Ast*
+parse_row_expr(Stmt* self, Table* table)
+{
+	// (
+	stmt_expect(self, '(');
+
+	Ast* row = NULL;
+	Ast* row_tail = NULL;
+
+	uint64_t seq = sequence_next(&table->seq);
+
+	// value, ...
+	auto columns = table_columns(table);
+	list_foreach(&columns->list)
+	{
+		auto column = list_at(Column, link);
+
+		// DEFAULT | value
+		Ast* value = stmt_if(self, KDEFAULT);
+		if (! value)
+		{
+			// parse column value
+			value = parse_expr(self, NULL);
+		} else
+		{
+			// IDENTITY, RANDOM or DEFAULT
+			value = parse_value_default_expr(self, column, seq);
+		}
+
+		// ensure NOT NULL constraint
+		parse_value_validate_expr(self, column, value);
+
+		if (row_tail)
+			row_tail->next = value;
+		else
+			row = value;
+		row_tail = value;
+
+		// ,
+		if (stmt_if(self, ','))
+		{
+			if (list_is_last(&columns->list, &column->link))
+				stmt_error(self, NULL, "row has incorrect number of columns");
+			continue;
+		}
+	}
+
+	// )
+	stmt_expect(self, ')');
+	return row;
+}
+
+hot void
+parse_row_generate_expr(Stmt* self, Table* table, AstList* rows, int count)
+{
+	// insert into () values (), ...
+	auto columns = table_columns(table);
+	for (auto i = 0; i < count; i++)
+	{
+		// prepare row
+		Ast* row = NULL;
+		Ast* row_tail = NULL;
+
+		// set next sequence value for identity columns
+		uint64_t seq = sequence_next(&table->seq);
+
+		// value, ...
+		list_foreach(&columns->list)
+		{
+			auto column = list_at(Column, link);
+
+			// IDENTITY, RANDOM or DEFAULT
+			auto value = parse_value_default_expr(self, column, seq);
+
+			// ensure NOT NULL constraint
+			parse_value_validate_expr(self, column, value);
+
+			if (row_tail)
+				row_tail->next = value;
+			else
+				row = value;
+			row_tail = value;
+		}
+		ast_list_add(rows, row);
+	}
+}
+
+void
+parse_rows_expr(Stmt* self, Table* table, AstList* rows,
+                Ast*  list,
+                bool  list_in_use)
+{
+	// VALUES (value[, ...])[, ...]
+	for (;;)
+	{
+		Ast* row;
+		if (list_in_use)
+			row = parse_row_list_expr(self, table, list);
+		else
+			row = parse_row_expr(self, table);
+		ast_list_add(rows, row);
+		if (! stmt_if(self, ','))
+			break;
+	}
+}

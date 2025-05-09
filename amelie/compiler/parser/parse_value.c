@@ -264,11 +264,39 @@ parse_value_default(Stmt*    self,
 	}
 }
 
+hot Ast*
+parse_value_default_expr(Stmt* self, Column* column, uint64_t seq)
+{
+	// IDENTITY, RANDOM or DEFAULT
+	unused(self);
+	(void)column;
+	(void)seq;
+	// todo
+	return NULL;
+}
+
 void
-parse_value_validate(Stmt* self, Column* column, Value* column_value, Ast* expr)
+parse_value_validate(Stmt* self, Column* column, Value* value, Ast* expr)
 {
 	// ensure NOT NULL constraint
-	if (column_value->type == TYPE_NULL)
+	if (value->type == TYPE_NULL)
+	{
+		// value can be NULL for generated column (will be rechecked later)
+		if (! str_empty(&column->constraints.as_stored))
+			return;
+
+		if (column->constraints.not_null)
+			stmt_error(self, expr, "column '%.*s' value cannot be NULL",
+			           str_size(&column->name),
+			           str_of(&column->name));
+	}
+}
+
+void
+parse_value_validate_expr(Stmt* self, Column* column, Ast* expr)
+{
+	// ensure NOT NULL constraint
+	if (expr->id == KNULL)
 	{
 		// value can be NULL for generated column (will be rechecked later)
 		if (! str_empty(&column->constraints.as_stored))

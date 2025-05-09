@@ -25,6 +25,7 @@ struct AstInsert
 {
 	Ast       ast;
 	Set*      values;
+	AstList   rows;
 	int       on_conflict;
 	Ast*      update_expr;
 	Ast*      update_where;
@@ -48,6 +49,7 @@ ast_insert_allocate(Scope* scope)
 	self = ast_allocate(0, sizeof(AstInsert));
 	targets_init(&self->targets, scope);
 	targets_init(&self->targets_generated, scope);
+	ast_list_init(&self->rows);
 	returning_init(&self->ret);
 	return self;
 }

@@ -18,6 +18,7 @@ struct Scope
 {
 	Vars   vars;
 	Ctes   ctes;
+	bool   call;
 	Scope* next;
 };
 
@@ -55,6 +56,7 @@ scopes_add(Scopes* self)
 {
 	auto scope = (Scope*)palloc(sizeof(Scope));
 	scope->next = NULL;
+	scope->call = false;
 	vars_init(&scope->vars);
 	ctes_init(&scope->ctes);
 
