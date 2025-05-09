@@ -69,6 +69,7 @@
 // dml
 #include "parser/parse_from.h"
 #include "parser/parse_returning.h"
+#include "parser/parse_row.h"
 #include "parser/parse_value.h"
 #include "parser/parse_insert.h"
 #include "parser/parse_update.h"

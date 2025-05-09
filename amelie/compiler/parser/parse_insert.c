@@ -38,101 +38,6 @@
 #include <amelie_vm.h>
 #include <amelie_parser.h>
 
-hot static void
-parse_row_list(Stmt* self, AstInsert* stmt, Ast* list)
-{
-	auto table = targets_outer(&stmt->targets)->from_table;
-
-	// (
-	stmt_expect(self, '(');
-
-	// prepare row
-	auto row = set_reserve(stmt->values);
-
-	// set next sequence value for identity columns
-	uint64_t seq = sequence_next(&table->seq);
-
-	// value, ...
-	auto columns = table_columns(table);
-	list_foreach(&columns->list)
-	{
-		auto column = list_at(Column, link);
-		auto column_value = &row[column->order];
-
-		// DEFAULT | value
-		Ast* value = stmt_if(self, KDEFAULT);
-		if (!value && list && list->column->order == column->order)
-		{
-			// parse column value
-			value = parse_value(self, column, column_value);
-
-			// ,
-			list = list->next;
-			if (list)
-				stmt_expect(self, ',');
-
-		} else
-		{
-			// IDENTITY, RANDOM or DEFAULT
-			parse_value_default(self, column, column_value, seq);
-		}
-
-		// ensure NOT NULL constraint
-		parse_value_validate(self, column, column_value, value);
-	}
-
-	// )
-	stmt_expect(self, ')');
-}
-
-hot static inline void
-parse_row(Stmt* self, AstInsert* stmt)
-{
-	auto table = targets_outer(&stmt->targets)->from_table;
-
-	// (
-	stmt_expect(self, '(');
-
-	// prepare row
-	auto row = set_reserve(stmt->values);
-
-	uint64_t seq = sequence_next(&table->seq);
-
-	// value, ...
-	auto columns = table_columns(table);
-	list_foreach(&columns->list)
-	{
-		auto column = list_at(Column, link);
-		auto column_value = &row[column->order];
-
-		// DEFAULT | value
-		Ast* value = stmt_if(self, KDEFAULT);
-		if (! value)
-		{
-			// parse column value
-			value = parse_value(self, column, column_value);
-		} else
-		{
-			// IDENTITY, RANDOM or DEFAULT
-			parse_value_default(self, column, column_value, seq);
-		}
-
-		// ensure NOT NULL constraint
-		parse_value_validate(self, column, column_value, value);
-
-		// ,
-		if (stmt_if(self, ','))
-		{
-			if (list_is_last(&columns->list, &column->link))
-				stmt_error(self, NULL, "row has incorrect number of columns");
-			continue;
-		}
-	}
-
-	// )
-	stmt_expect(self, ')');
-}
-
 hot static inline Ast*
 parse_column_list(Stmt* self, AstInsert* stmt)
 {
@@ -180,39 +85,6 @@ parse_column_list(Stmt* self, AstInsert* stmt)
 	}
 
 	return list;
-}
-
-hot static inline void
-parse_generate(Stmt* self, AstInsert* stmt)
-{
-	// insert into () values (), ...
-	auto table = targets_outer(&stmt->targets)->from_table;
-
-	// GENERATE count
-	auto count = stmt_expect(self, KINT);
-
-	auto columns = table_columns(table);
-	for (auto i = 0; i < count->integer; i++)
-	{
-		// prepare row
-		auto row = set_reserve(stmt->values);
-
-		// set next sequence value for identity columns
-		uint64_t seq = sequence_next(&table->seq);
-
-		// value, ...
-		list_foreach(&columns->list)
-		{
-			auto column = list_at(Column, link);
-			auto column_value = &row[column->order];
-
-			// IDENTITY, RANDOM or DEFAULT
-			parse_value_default(self, column, column_value, seq);
-
-			// ensure NOT NULL constraint
-			parse_value_validate(self, column, column_value, NULL);
-		}
-	}
 }
 
 hot void
@@ -365,6 +237,7 @@ parse_insert(Stmt* self)
 	auto target = targets_outer(&stmt->targets);
 	if (! target_is_table(target))
 		stmt_error(self, into, "table name expected");
+	auto table   = target->from_table;
 	auto columns = target->from_columns;
 
 	// prepare values
@@ -374,7 +247,9 @@ parse_insert(Stmt* self)
 	// GENERATE
 	if (stmt_if(self, KGENERATE))
 	{
-		parse_generate(self, stmt);
+		// count
+		auto count = stmt_expect(self, KINT);
+		parse_row_generate(self, table, stmt->values, count->integer);
 	} else
 	{
 		// (column list)
@@ -390,9 +265,9 @@ parse_insert(Stmt* self)
 			for (;;)
 			{
 				if (list_in_use)
-					parse_row_list(self, stmt, list);
+					parse_row_list(self, table, stmt->values, list);
 				else
-					parse_row(self, stmt);
+					parse_row(self, table, stmt->values);
 				if (! stmt_if(self, ','))
 					break;
 			}
