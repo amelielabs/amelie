@@ -209,6 +209,37 @@ emit_send_generated_on_match(Compiler* self, Targets* targets, void* arg)
 	op2(self, CUPDATE_STORE, target->id, count);
 }
 
+static inline int
+emit_send_insert_rows(Compiler* self)
+{
+	auto stmt    = self->current;
+	auto insert  = ast_insert_of(stmt->ast);
+	auto table   = targets_outer(&insert->targets)->from_table;
+	auto columns = table_columns(table);
+
+	// emit rows
+	auto rset = op3(self, CSET, rpin(self, TYPE_STORE), columns->count, 0);
+	for (auto row = insert->rows.list; row; row = row->next)
+	{
+		auto col = row->ast;
+		list_foreach(&columns->list)
+		{
+			auto column = list_at(Column, link);
+			int rexpr   = emit_expr(self, &insert->targets, col);
+			int type    = rtype(self, rexpr);
+			if (unlikely(type != TYPE_NULL && column->type != type))
+				stmt_error(stmt, row->ast, "'%s' expected for column '%.*s'",
+						   type_of(column->type),
+						   str_size(&column->name), str_of(&column->name));
+			op1(self, CPUSH, rexpr);
+			runpin(self, rexpr);
+			col = col->next;
+		}
+		op1(self, CSET_ADD, rset);
+	}
+	return op2(self, CDUP, rpin(self, TYPE_STORE), rset);
+}
+
 static inline void
 emit_send_insert(Compiler* self, int start)
 {
@@ -217,18 +248,23 @@ emit_send_insert(Compiler* self, int start)
 	auto table   = targets_outer(&insert->targets)->from_table;
 	auto columns = table_columns(table);
 
-	// get insert values
+	// get values
 	int r;
 	if (insert->select)
 	{
+		// use rows set returned from select
 		auto columns_select = &ast_select_of(insert->select->ast)->ret.columns;
 		if (! columns_compare(columns, columns_select))
 			stmt_error(stmt, insert->select->ast, "SELECT columns must match the INSERT table");
 		r = op2(self, CDUP, rpin(self, TYPE_STORE), insert->select->r);
 	} else
 	{
-		r = op2(self, CSET_PTR, rpin(self, TYPE_STORE),
-		        (intptr_t)insert->values);
+		if (insert->rows.count > 0)
+			// use rows as expressions provided during parsing
+			r = emit_send_insert_rows(self);
+		else
+			// use rows set created during parsing
+			r = op2(self, CSET_PTR, rpin(self, TYPE_STORE), (intptr_t)insert->values);
 	}
 
 	// scan over insert values to generate and apply stored columns

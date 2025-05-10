@@ -268,11 +268,21 @@ hot Ast*
 parse_value_default_expr(Stmt* self, Column* column, uint64_t seq)
 {
 	// IDENTITY, RANDOM or DEFAULT
-	unused(self);
-	(void)column;
-	(void)seq;
-	// todo
-	return NULL;
+	auto value = ast(KINT);
+	auto cons = &column->constraints;
+	if (cons->as_identity) {
+		value->integer = seq;
+	} else
+	if (cons->random) {
+		value->integer = random_generate(global()->random) % cons->random_modulo;
+	} else {
+		if (ast_decode(value, cons->value.start) == -1)
+			stmt_error(self, NULL,
+			           "column '%.*s' default json values is not supported",
+			           str_size(&column->name),
+			           str_of(&column->name));
+	}
+	return value;
 }
 
 void

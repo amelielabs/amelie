@@ -104,3 +104,37 @@ ast_encode(Ast* self, Lex* lex, Local* local, Buf* buf)
 		break;
 	}
 }
+
+hot static inline int
+ast_decode(Ast* self, uint8_t* json)
+{
+	switch (*json) {
+	case JSON_TRUE:
+		self->id = KTRUE;
+		break;
+	case JSON_FALSE:
+		self->id = KFALSE;
+		break;
+	case JSON_NULL:
+		self->id = KNULL;
+		break;
+	case JSON_REAL32:
+	case JSON_REAL64:
+		self->id = KREAL;
+		json_read_real(&json, &self->real);
+		break;
+	case JSON_INTV0 ... JSON_INT64:
+		self->id = KINT;
+		json_read_integer(&json, &self->integer);
+		break;
+	case JSON_STRINGV0 ... JSON_STRING32:
+		self->id = KSTRING;
+		json_read_string(&json, &self->string);
+		break;
+	case JSON_OBJ:
+	case JSON_ARRAY:
+	default:
+		return -1;
+	}
+	return 0;
+}

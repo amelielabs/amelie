@@ -249,7 +249,10 @@ parse_insert(Stmt* self)
 	{
 		// count
 		auto count = stmt_expect(self, KINT);
-		parse_row_generate(self, table, stmt->values, count->integer);
+		if (self->scope->call)
+			parse_row_generate_expr(self, table, &stmt->rows, count->integer);
+		else
+			parse_row_generate(self, table, stmt->values, count->integer);
 	} else
 	{
 		// (column list)
@@ -262,7 +265,10 @@ parse_insert(Stmt* self)
 		if (values->id == KVALUES)
 		{
 			// VALUES (value[, ...])[, ...]
-			parse_rows(self, table, stmt->values, list, list_in_use);
+			if (self->scope->call)
+				parse_rows_expr(self, table, &stmt->rows, list, list_in_use);
+			else
+				parse_rows(self, table, stmt->values, list, list_in_use);
 		} else
 		if (values->id == KSELECT)
 		{
