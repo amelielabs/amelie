@@ -20,7 +20,6 @@ call test(0)
 {"msg": "call ❰test❱ ⟵ procedure has no arguments"}
 # test: call
 call test()
-[1]
 explain call test()
 [{
   "bytecode": {
@@ -29,15 +28,13 @@ explain call test()
       "01": "int                 1      -      0     # 1",
       "02": "push                1      0      0     ",
       "03": "set_add             0      0      0     ",
-      "04": "content             0      -      -     ",
-      "05": "ret                 0      0      0     "
+      "04": "ret                 0      0      0     "
     }
   },
   "access": []
 }]
 # test: call; call
 call test(); call test()
-[1]
 explain call test(); call test()
 [{
   "bytecode": {
@@ -50,8 +47,7 @@ explain call test(); call test()
       "05": "int                 2      -      0     # 1",
       "06": "push                2      0      0     ",
       "07": "set_add             1      0      0     ",
-      "08": "content             1      -      -     ",
-      "09": "ret                 0      0      0     "
+      "08": "ret                 0      0      0     "
     }
   },
   "access": []
@@ -66,7 +62,6 @@ call test('x')
 {"msg": "call test(❰'x'❱ ⟵ expected int"}
 # test: call (int)
 call test(1)
-[1]
 explain call test(1)
 [{
   "bytecode": {
@@ -76,15 +71,13 @@ explain call test(1)
       "02": "ref                 2      0      0     ",
       "03": "push                2      0      0     ",
       "04": "set_add             1      0      0     ",
-      "05": "content             1      -      -     ",
-      "06": "ret                 0      0      0     "
+      "05": "ret                 0      0      0     "
     }
   },
   "access": []
 }]
 # test: call; call
 call test(1); call test(2)
-[2]
 explain call test(1); call test(2)
 [{
   "bytecode": {
@@ -99,8 +92,7 @@ explain call test(1); call test(2)
       "07": "ref                 3      0      0     ",
       "08": "push                3      0      0     ",
       "09": "set_add             2      0      0     ",
-      "10": "content             2      -      -     ",
-      "11": "ret                 0      0      0     "
+      "10": "ret                 0      0      0     "
     }
   },
   "access": []
@@ -110,7 +102,6 @@ drop procedure test
 create procedure a(val int) begin select val; end
 create procedure b(val int) begin call a(val); end
 call b(5)
-[5]
 explain call b(5)
 [{
   "bytecode": {
@@ -121,8 +112,7 @@ explain call b(5)
       "03": "ref                 3      1      0     ",
       "04": "push                3      0      0     ",
       "05": "set_add             2      0      0     ",
-      "06": "content             2      -      -     ",
-      "07": "ret                 0      0      0     "
+      "06": "ret                 0      0      0     "
     }
   },
   "access": []

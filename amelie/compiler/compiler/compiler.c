@@ -486,7 +486,7 @@ emit_recv(Compiler* self)
 
 	if (r != -1)
 	{
-		if (self->proc)
+		if (stmt->scope->call)
 		{
 #if 0
 			// validate function return type (or null otherwise)
