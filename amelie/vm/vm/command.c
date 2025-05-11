@@ -133,6 +133,40 @@ csend_lookup(Vm* self, Op* op)
 }
 
 hot void
+csend_lookup_by(Vm* self, Op* op)
+{
+	// [start, table]
+	auto dtr   = self->dtr;
+	auto table = (Table*)op->b;
+	auto index = table_primary(table);
+
+	// compute hash using key values
+	uint32_t hash = 0;
+	list_foreach(&index->keys.list)
+	{
+		auto key = list_at(Key, link);
+		auto value = stack_at(&self->stack, index->keys.list_count - key->order);
+		hash = value_hash(value, key->column->type_size, hash);
+	}
+	stack_popn(&self->stack, index->keys.list_count);
+
+	ReqList list;
+	req_list_init(&list);
+	auto part = part_map_get(&table->part_list.map, hash);
+	auto req = req_create(&dtr->dispatch_mgr.req_cache);
+	req->type      = REQ_EXECUTE;
+	req->start     = op->a;
+	req->code      = &self->program->code_backend;
+	req->code_data = &self->program->code_data;
+	req->regs      = &self->r;
+	req->args      = self->args;
+	req->core  = part->core;
+	req_list_add(&list, req);
+
+	executor_send(self->executor, dtr, &list);
+}
+
+hot void
 csend_all(Vm* self, Op* op)
 {
 	// [start, table]

@@ -48,6 +48,7 @@ path_allocate(Target* target, Keys* keys)
 	self->target              = target;
 	self->match_start         = 0;
 	self->match_start_columns = 0;
+	self->match_start_vars    = 0;
 	self->match_stop          = 0;
 	list_foreach(&keys->list)
 	{
@@ -302,6 +303,8 @@ path_create(Target* target, Scope* scope, Keys* keys, AstList* ops)
 			self->match_start++;
 			if (key_path->start->id == KNAME_COMPOUND)
 				self->match_start_columns++;
+			if (key_path->start->id == KNAME)
+				self->match_start_vars++;
 			if (key_path->start_op->id == '=')
 				match_eq++;
 		}

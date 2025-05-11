@@ -39,6 +39,7 @@ struct Path
 	Target*  target;
 	int      match_start;
 	int      match_start_columns;
+	int      match_start_vars;
 	int      match_stop;
 	PathKey  keys[];
 };

@@ -155,13 +155,15 @@ explain x := 1; select * from test where id = x
       "02": "push                1      0      0     ",
       "03": "set_add             0      0      0     ",
       "04": "assign              1      0      0     ",
-      "05": "send_lookup         0      -      -     # public.test",
-      "06": "recv                0      0      0     ",
-      "07": "bool                2      0      0     ",
-      "08": "push                2      0      0     ",
-      "09": "union_recv          2      -1     -1    ",
-      "10": "content             2      -      -     ",
-      "11": "ret                 0      0      0     "
+      "05": "ref                 2      1      0     ",
+      "06": "push                2      0      0     ",
+      "07": "send_lookup_by      0      -      -     # public.test",
+      "08": "recv                0      0      0     ",
+      "09": "bool                2      0      0     ",
+      "10": "push                2      0      0     ",
+      "11": "union_recv          2      -1     -1    ",
+      "12": "content             2      -      -     ",
+      "13": "ret                 0      0      0     "
     },
     "backend": {
       "00": "set                 2      1      0     ",

@@ -13,6 +13,7 @@
 
 void csend_shard(Vm*, Op*);
 void csend_lookup(Vm*, Op*);
+void csend_lookup_by(Vm*, Op*);
 void csend_all(Vm*, Op*);
 void crecv(Vm*, Op*);
 

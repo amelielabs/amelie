@@ -366,6 +366,7 @@ vm_run(Vm*       self,
 		// executor
 		&&csend_shard,
 		&&csend_lookup,
+		&&csend_lookup_by,
 		&&csend_all,
 		&&crecv,
 
@@ -1771,6 +1772,10 @@ csend_shard:
 
 csend_lookup:
 	csend_lookup(self, op);
+	op_next;
+
+csend_lookup_by:
+	csend_lookup_by(self, op);
 	op_next;
 
 csend_all:

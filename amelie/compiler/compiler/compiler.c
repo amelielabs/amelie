@@ -352,11 +352,27 @@ emit_send(Compiler* self, int start)
 	auto path = target->path_primary;
 	if (path->type == PATH_LOOKUP && !path->match_start_columns)
 	{
-		// match exact partition using the point lookup key hash
-		uint32_t hash = path_create_hash(path);
+		if (! path->match_start_vars)
+		{
+			// match exact partition using the point lookup const key hash
+			uint32_t hash = path_create_hash(path);
 
-		// CSEND_LOOKUP
-		op3(self, CSEND_LOOKUP, start, (intptr_t)table, hash);
+			// CSEND_LOOKUP
+			op3(self, CSEND_LOOKUP, start, (intptr_t)table, hash);
+		} else
+		{
+			// match exact partition using the point lookup exprs
+			for (auto i = 0; i < path->match_start; i++)
+			{
+				auto value = path->keys[i].start;
+				auto rexpr = emit_expr(self, target->targets, value);
+				op1(self, CPUSH, rexpr);
+				runpin(self, rexpr);
+			}
+
+			// CSEND_LOOKUP_BY
+			op2(self, CSEND_LOOKUP_BY, start, (intptr_t)table);
+		}
 	} else
 	{
 		// send to all table partitions (one or more)

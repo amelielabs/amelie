@@ -128,9 +128,11 @@ explain call up(0)
   "bytecode": {
     "frontend": {
       "00": "int                 0      -      0     # 0",
-      "01": "send_lookup         0      -      -     # public.test",
-      "02": "recv                0      0      0     ",
-      "03": "ret                 0      0      0     "
+      "01": "ref                 1      0      0     ",
+      "02": "push                1      0      0     ",
+      "03": "send_lookup_by      0      -      -     # public.test",
+      "04": "recv                0      0      0     ",
+      "05": "ret                 0      0      0     "
     },
     "backend": {
       "00": "ref                 1      0      0     ",
@@ -162,15 +164,21 @@ explain call up(0); call up(0); call up(0)
   "bytecode": {
     "frontend": {
       "00": "int                 0      -      0     # 0",
-      "01": "send_lookup         0      -      -     # public.test",
-      "02": "int                 0      -      0     # 0",
-      "03": "send_lookup         16     -      -     # public.test",
+      "01": "ref                 1      0      0     ",
+      "02": "push                1      0      0     ",
+      "03": "send_lookup_by      0      -      -     # public.test",
       "04": "int                 0      -      0     # 0",
-      "05": "send_lookup         32     -      -     # public.test",
-      "06": "recv                0      0      0     ",
-      "07": "recv                0      0      0     ",
-      "08": "recv                0      0      0     ",
-      "09": "ret                 0      0      0     "
+      "05": "ref                 1      0      0     ",
+      "06": "push                1      0      0     ",
+      "07": "send_lookup_by      16     -      -     # public.test",
+      "08": "int                 0      -      0     # 0",
+      "09": "ref                 1      0      0     ",
+      "10": "push                1      0      0     ",
+      "11": "send_lookup_by      32     -      -     # public.test",
+      "12": "recv                0      0      0     ",
+      "13": "recv                0      0      0     ",
+      "14": "recv                0      0      0     ",
+      "15": "ret                 0      0      0     "
     },
     "backend": {
       "00": "ref                 1      0      0     ",
@@ -234,16 +242,20 @@ explain call up(0); select 123; call up(0)
   "bytecode": {
     "frontend": {
       "00": "int                 0      -      0     # 0",
-      "01": "send_lookup         0      -      -     # public.test",
-      "02": "recv                0      0      0     ",
-      "03": "set                 0      1      0     ",
-      "04": "int                 1      -      0     # 123",
-      "05": "push                1      0      0     ",
-      "06": "set_add             0      0      0     ",
-      "07": "int                 1      -      0     # 0",
-      "08": "send_lookup         16     -      -     # public.test",
-      "09": "recv                0      0      0     ",
-      "10": "ret                 0      0      0     "
+      "01": "ref                 1      0      0     ",
+      "02": "push                1      0      0     ",
+      "03": "send_lookup_by      0      -      -     # public.test",
+      "04": "recv                0      0      0     ",
+      "05": "set                 0      1      0     ",
+      "06": "int                 1      -      0     # 123",
+      "07": "push                1      0      0     ",
+      "08": "set_add             0      0      0     ",
+      "09": "int                 1      -      0     # 0",
+      "10": "ref                 2      1      0     ",
+      "11": "push                2      0      0     ",
+      "12": "send_lookup_by      16     -      -     # public.test",
+      "13": "recv                0      0      0     ",
+      "14": "ret                 0      0      0     "
     },
     "backend": {
       "00": "ref                 1      0      0     ",

@@ -282,6 +282,7 @@ OpDesc ops[] =
 	// result
 	{ CSEND_SHARD, "send_shard" },
 	{ CSEND_LOOKUP, "send_lookup" },
+	{ CSEND_LOOKUP_BY, "send_lookup_by" },
 	{ CSEND_ALL, "send_all" },
 	{ CRECV, "recv" },
 
@@ -378,6 +379,7 @@ op_dump(Code* self, CodeData* data, Buf* buf)
 			break;
 		}
 		case CSEND_LOOKUP:
+		case CSEND_LOOKUP_BY:
 		{
 			auto table = (Table*)op->b;
 			op_write(output, op, true, false, false,
