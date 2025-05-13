@@ -1,0 +1,60 @@
+#
+
+open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "127.0.0.1", "port": 3485 }]
+connect E0 S0 127.0.0.1:3485
+
+# test: execute statement parsing
+execute
+execute 123
+execute x
+execute x 1
+execute x(
+
+# test: execute (not exists)
+execute x()
+
+# test: execute (no arguments)
+create procedure x() begin select 1; end
+execute x(0)
+
+# test: execute (argument count mismatch)
+drop procedure x
+create procedure x(val int) begin select val; end
+execute test()
+
+# test: execute (argument type mismatch)
+execute x('x')
+
+# test: execute (int)
+explain execute x(1)
+execute x(1)
+
+# test: execute; execute
+execute x(1); execute x(2)
+
+# test: execute (nested in procedure)
+create procedure a(val int) begin select val; end
+create procedure b(val int) begin call a(val); end
+explain call b(5)
+explain execute b(5)
+execute b(5)
+drop procedure a
+drop procedure b
+
+# test: execute (dml arg key)
+create table test (id int primary key, data int)
+insert into test values (0, 0)
+
+create procedure up(val int) begin update test set data = data + 1 where id = val; end
+explain execute up(0)
+execute up(0)
+select * from test
+
+# test: execute (dml pipeline)
+create procedure up_pipeline() begin call up(0); call up(0); call up(0) end
+explain execute up_pipeline()
+execute up_pipeline()
+select * from test
+
+disconnect S0
+close E0

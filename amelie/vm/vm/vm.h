@@ -36,8 +36,8 @@ struct Vm
 	Db*          db;
 };
 
-void vm_init(Vm*, Db*, Core*, Executor*, Dtr*, Program*, FunctionMgr*);
+void vm_init(Vm*, Db*, Core*, Executor*, Dtr*, FunctionMgr*);
 void vm_free(Vm*);
 void vm_reset(Vm*);
-void vm_run(Vm*, Local*, Tr*, Code*, CodeData*, Buf*, Reg*, Value*,
+void vm_run(Vm*, Local*, Tr*, Program*, Code*, CodeData*, Buf*, Reg*, Value*,
             Value*, Content*, int);

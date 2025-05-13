@@ -87,11 +87,11 @@ explain call test(1); call test(2)
       "02": "ref                 2      0      0     ",
       "03": "push                2      0      0     ",
       "04": "set_add             1      0      0     ",
-      "05": "int                 0      -      0     # 2",
-      "06": "set                 2      1      0     ",
-      "07": "ref                 3      0      0     ",
-      "08": "push                3      0      0     ",
-      "09": "set_add             2      0      0     ",
+      "05": "int                 2      -      0     # 2",
+      "06": "set                 3      1      0     ",
+      "07": "ref                 4      2      0     ",
+      "08": "push                4      0      0     ",
+      "09": "set_add             3      0      0     ",
       "10": "ret                 0      0      0     "
     }
   },
@@ -167,95 +167,18 @@ explain call up(0); call up(0); call up(0)
       "01": "ref                 1      0      0     ",
       "02": "push                1      0      0     ",
       "03": "send_lookup_by      0      -      -     # public.test",
-      "04": "int                 0      -      0     # 0",
-      "05": "ref                 1      0      0     ",
-      "06": "push                1      0      0     ",
+      "04": "int                 1      -      0     # 0",
+      "05": "ref                 2      1      0     ",
+      "06": "push                2      0      0     ",
       "07": "send_lookup_by      16     -      -     # public.test",
-      "08": "int                 0      -      0     # 0",
-      "09": "ref                 1      0      0     ",
-      "10": "push                1      0      0     ",
+      "08": "int                 2      -      0     # 0",
+      "09": "ref                 3      2      0     ",
+      "10": "push                3      0      0     ",
       "11": "send_lookup_by      32     -      -     # public.test",
       "12": "recv                0      0      0     ",
       "13": "recv                0      0      0     ",
       "14": "recv                0      0      0     ",
       "15": "ret                 0      0      0     "
-    },
-    "backend": {
-      "00": "ref                 1      0      0     ",
-      "01": "push                1      0      0     ",
-      "02": "table_open_partl    0      0      14    # public.test (primary)",
-      "03": "table_readi32       1      0      0     ",
-      "04": "ref                 2      0      0     ",
-      "05": "equii               3      1      2     ",
-      "06": "jntr                14     3      0     ",
-      "07": "int                 1      -      0     # 1",
-      "08": "push                1      0      0     ",
-      "09": "table_readi32       1      0      1     ",
-      "10": "int                 2      -      0     # 1",
-      "11": "addii               3      1      2     ",
-      "12": "push                3      0      0     ",
-      "13": "update              0      1      0     ",
-      "14": "table_close         0      0      0     ",
-      "15": "ret                 0      0      0     ",
-      "16": "ref                 1      0      0     ",
-      "17": "push                1      0      0     ",
-      "18": "table_open_partl    0      20     30    # public.test (primary)",
-      "19": "table_readi32       1      0      0     ",
-      "20": "ref                 2      0      0     ",
-      "21": "equii               3      1      2     ",
-      "22": "jntr                30     3      0     ",
-      "23": "int                 1      -      0     # 1",
-      "24": "push                1      0      0     ",
-      "25": "table_readi32       1      0      1     ",
-      "26": "int                 2      -      0     # 1",
-      "27": "addii               3      1      2     ",
-      "28": "push                3      0      0     ",
-      "29": "update              0      1      0     ",
-      "30": "table_close         0      0      0     ",
-      "31": "ret                 0      0      0     ",
-      "32": "ref                 1      0      0     ",
-      "33": "push                1      0      0     ",
-      "34": "table_open_partl    0      40     46    # public.test (primary)",
-      "35": "table_readi32       1      0      0     ",
-      "36": "ref                 2      0      0     ",
-      "37": "equii               3      1      2     ",
-      "38": "jntr                46     3      0     ",
-      "39": "int                 1      -      0     # 1",
-      "40": "push                1      0      0     ",
-      "41": "table_readi32       1      0      1     ",
-      "42": "int                 2      -      0     # 1",
-      "43": "addii               3      1      2     ",
-      "44": "push                3      0      0     ",
-      "45": "update              0      1      0     ",
-      "46": "table_close         0      0      0     ",
-      "47": "ret                 0      0      0     "
-    }
-  },
-  "access": [["public.test", "rw"]]
-}]
-call up(0); call up(0); call up(0)
-select * from test
-[[0, 4]]
-# test: call (dml pipeline stmt mix)
-explain call up(0); select 123; call up(0)
-[{
-  "bytecode": {
-    "frontend": {
-      "00": "int                 0      -      0     # 0",
-      "01": "ref                 1      0      0     ",
-      "02": "push                1      0      0     ",
-      "03": "send_lookup_by      0      -      -     # public.test",
-      "04": "recv                0      0      0     ",
-      "05": "set                 0      1      0     ",
-      "06": "int                 1      -      0     # 123",
-      "07": "push                1      0      0     ",
-      "08": "set_add             0      0      0     ",
-      "09": "int                 1      -      0     # 0",
-      "10": "ref                 2      1      0     ",
-      "11": "push                2      0      0     ",
-      "12": "send_lookup_by      16     -      -     # public.test",
-      "13": "recv                0      0      0     ",
-      "14": "ret                 0      0      0     "
     },
     "backend": {
       "00": "ref                 1      0      0     ",
@@ -289,6 +212,83 @@ explain call up(0); select 123; call up(0)
       "28": "push                4      0      0     ",
       "29": "update              0      1      0     ",
       "30": "table_close         0      0      0     ",
+      "31": "ret                 0      0      0     ",
+      "32": "ref                 3      2      0     ",
+      "33": "push                3      0      0     ",
+      "34": "table_open_partl    0      40     46    # public.test (primary)",
+      "35": "table_readi32       3      0      0     ",
+      "36": "ref                 4      2      0     ",
+      "37": "equii               5      3      4     ",
+      "38": "jntr                46     5      0     ",
+      "39": "int                 3      -      0     # 1",
+      "40": "push                3      0      0     ",
+      "41": "table_readi32       3      0      1     ",
+      "42": "int                 4      -      0     # 1",
+      "43": "addii               5      3      4     ",
+      "44": "push                5      0      0     ",
+      "45": "update              0      1      0     ",
+      "46": "table_close         0      0      0     ",
+      "47": "ret                 0      0      0     "
+    }
+  },
+  "access": [["public.test", "rw"]]
+}]
+call up(0); call up(0); call up(0)
+select * from test
+[[0, 4]]
+# test: call (dml pipeline stmt mix)
+explain call up(0); select 123; call up(0)
+[{
+  "bytecode": {
+    "frontend": {
+      "00": "int                 0      -      0     # 0",
+      "01": "ref                 1      0      0     ",
+      "02": "push                1      0      0     ",
+      "03": "send_lookup_by      0      -      -     # public.test",
+      "04": "recv                0      0      0     ",
+      "05": "set                 1      1      0     ",
+      "06": "int                 2      -      0     # 123",
+      "07": "push                2      0      0     ",
+      "08": "set_add             1      0      0     ",
+      "09": "int                 2      -      0     # 0",
+      "10": "ref                 3      2      0     ",
+      "11": "push                3      0      0     ",
+      "12": "send_lookup_by      16     -      -     # public.test",
+      "13": "recv                0      0      0     ",
+      "14": "ret                 0      0      0     "
+    },
+    "backend": {
+      "00": "ref                 1      0      0     ",
+      "01": "push                1      0      0     ",
+      "02": "table_open_partl    0      0      14    # public.test (primary)",
+      "03": "table_readi32       1      0      0     ",
+      "04": "ref                 2      0      0     ",
+      "05": "equii               3      1      2     ",
+      "06": "jntr                14     3      0     ",
+      "07": "int                 1      -      0     # 1",
+      "08": "push                1      0      0     ",
+      "09": "table_readi32       1      0      1     ",
+      "10": "int                 2      -      0     # 1",
+      "11": "addii               3      1      2     ",
+      "12": "push                3      0      0     ",
+      "13": "update              0      1      0     ",
+      "14": "table_close         0      0      0     ",
+      "15": "ret                 0      0      0     ",
+      "16": "ref                 3      2      0     ",
+      "17": "push                3      0      0     ",
+      "18": "table_open_partl    0      20     30    # public.test (primary)",
+      "19": "table_readi32       3      0      0     ",
+      "20": "ref                 4      2      0     ",
+      "21": "equii               5      3      4     ",
+      "22": "jntr                30     5      0     ",
+      "23": "int                 3      -      0     # 1",
+      "24": "push                3      0      0     ",
+      "25": "table_readi32       3      0      1     ",
+      "26": "int                 4      -      0     # 1",
+      "27": "addii               5      3      4     ",
+      "28": "push                5      0      0     ",
+      "29": "update              0      1      0     ",
+      "30": "table_close         0      0      0     ",
       "31": "ret                 0      0      0     "
     }
   },
@@ -297,5 +297,7 @@ explain call up(0); select 123; call up(0)
 call up(0); select 123; call up(0)
 select * from test
 [[0, 6]]
+drop table test
+drop procedure up
 disconnect S0
 close E0

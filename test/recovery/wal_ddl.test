@@ -353,6 +353,8 @@ show schemas
 create procedure test (id int) begin select 1 end
 show procedures
 select system.state().lsn
+call test(0)
+execute test(0)
 
 # test: restart
 disconnect S0
@@ -363,6 +365,9 @@ connect E0 S0 127.0.0.1:3485
 # test: validate state
 select system.state().lsn
 show procedures
+
+call test(0)
+execute test(0)
 
 # test: alter procedure rename
 alter procedure test rename to test2

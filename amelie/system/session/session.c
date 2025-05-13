@@ -55,11 +55,10 @@ session_create(Client* client, Frontend* frontend, Share* share)
 	local_init(&self->local, global());
 	explain_init(&self->explain);
 	content_init(&self->content, &self->local, &client->reply.content);
-	compiler_init(&self->compiler, share->db, &self->local, share->function_mgr, NULL);
+	compiler_init(&self->compiler, share->db, &self->local, share->function_mgr, &self->vm.r);
 	vm_init(&self->vm, share->db, NULL,
 	        share->executor,
 	        &self->dtr,
-	         self->compiler.program,
 	        share->function_mgr);
 	dtr_init(&self->dtr, &self->local, &share->backend_mgr->core_mgr);
 	return self;
@@ -146,21 +145,32 @@ session_execute_distributed(Session* self)
 	auto explain  = &self->explain;
 	auto dtr      = &self->dtr;
 
-	// generate bytecode
-	compiler_emit(compiler);
-	auto program = compiler->program;
+	// [EXECUTE]
+	Program* program;
+	auto stmt = compiler_stmt(compiler);
+	if (stmt->id == STMT_EXECUTE)
+	{
+		// use precompiled procedure
+		program = ast_execute_of(stmt->ast)->proc->data;
+	} else
+	{
+		// generate bytecode
+		compiler_emit(compiler);
+		program = compiler->program;
+		reg_prepare(&self->vm.r, program->code.regs);
+	}
 
 	// prepare distributed transaction
 	dtr_create(dtr, program);
 
-	// explain
+	// [EXPLAIN]
 	if (compiler->parser.explain == EXPLAIN)
 	{
 		session_explain(self, program, false);
 		return;
 	}
 
-	// profile
+	// [PROFILE]
 	auto profile = parser_is_profile(&compiler->parser);
 	if (profile)
 		explain_start(&explain->time_run_us);
@@ -170,6 +180,7 @@ session_execute_distributed(Session* self)
 	(
 		vm_run(&self->vm, &self->local,
 		       NULL,
+		       program,
 		       &program->code,
 		       &program->code_data,
 		       NULL,

@@ -43,7 +43,6 @@ vm_init(Vm*          self,
         Core*        core,
         Executor*    executor,
         Dtr*         dtr,
-        Program*     program,
         FunctionMgr* function_mgr)
 {
 	self->regs         = NULL;
@@ -54,7 +53,7 @@ vm_init(Vm*          self,
 	self->core         = core;
 	self->executor     = executor;
 	self->dtr          = dtr;
-	self->program      = program;
+	self->program      = NULL;
 	self->result       = NULL;
 	self->content      = NULL;
 	self->tr           = NULL;
@@ -99,6 +98,7 @@ hot void
 vm_run(Vm*       self,
        Local*    local,
        Tr*       tr,
+       Program*  program,
        Code*     code,
        CodeData* code_data,
        Buf*      code_arg,
@@ -110,6 +110,7 @@ vm_run(Vm*       self,
 {
 	self->local     = local;
 	self->tr        = tr;
+	self->program   = program;
 	self->code      = code;
 	self->code_data = code_data;
 	self->code_arg  = code_arg;
@@ -117,7 +118,6 @@ vm_run(Vm*       self,
 	self->args      = args;
 	self->result    = result;
 	self->content   = content;
-	reg_prepare(&self->r, code->regs);
 	call_mgr_prepare(&self->call_mgr, self->db, local, code_data);
 
 	const void* ops[] =

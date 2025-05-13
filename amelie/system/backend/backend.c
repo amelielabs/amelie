@@ -106,8 +106,11 @@ backend_run(Backend* self, Ctr* ctr, Req* req)
 
 		// execute request
 		vm_reset(&self->vm);
+		reg_prepare(&self->vm.r, req->code->regs);
+
 		vm_run(&self->vm, dtr->local,
 		        ctr->tr,
+		        NULL,
 		        req->code,
 		        req->code_data,
 		       &req->arg,
@@ -193,7 +196,7 @@ backend_allocate(Db* db, FunctionMgr* function_mgr, int order)
 {
 	auto self = (Backend*)am_malloc(sizeof(Backend));
 	core_init(&self->core, order);
-	vm_init(&self->vm, db, &self->core, NULL, NULL, NULL, function_mgr);
+	vm_init(&self->vm, db, &self->core, NULL, NULL, function_mgr);
 	task_init(&self->task);
 	list_init(&self->link);
 	return self;

@@ -39,10 +39,10 @@
 #include <amelie_parser.h>
 
 void
-parse_call(Stmt* self)
+parse_execute(Stmt* self)
 {
-	// CALL [schema.]procedure_name[(expr, ...)]
-	auto stmt = ast_call_allocate();
+	// EXECUTE [schema.]procedure_name[(expr, ...)]
+	auto stmt = ast_execute_allocate();
 	self->ast = &stmt->ast;
 
 	// read schema/name
@@ -55,42 +55,29 @@ parse_call(Stmt* self)
 
 	// find and inline procedure
 	auto parser = self->parser;
-	stmt->proc = proc_mgr_find(&parser->db->proc_mgr, &schema, &name, false);
-	if (! stmt->proc)
+	auto proc = proc_mgr_find(&parser->db->proc_mgr, &schema, &name, false);
+	if (! proc)
 		stmt_error(self, path, "procedure not found");
+	stmt->proc = proc;
 
-	// (args)
+	// (
 	stmt_expect(self, '(');
-	auto args = parse_expr_args(self, NULL, ')', false);
 
-	// validate arguments count
-	auto argc_call = args->integer;
-	auto argc = stmt->proc->config->columns.count;
-	if (argc_call != argc)
-	{
-		if (argc == 0)
-			stmt_error(self, path, "procedure has no arguments");
-		stmt_error(self, path, "expected %d argument%s", argc,
-		           argc > 1 ? "s": "");
-	}
-	stmt->ast.r = args;
+	// prepare registers
+	Program* program = proc->data;
+	reg_prepare(parser->regs, program->code.regs);
 
-	// create arguments as variables
-	auto scope = scopes_add(&parser->scopes);
-	scope->call = true;
-	stmt->scope = scope;
-
-	list_foreach(&stmt->proc->config->columns.list)
+	// read arguments and emit directly as registers values
+	list_foreach(&proc->config->columns.list)
 	{
 		auto column = list_at(Column, link);
-		auto var = vars_add(&scope->vars, &column->name);
-		var->type = column->type;
+		parse_value(self, column, reg_at(parser->regs, column->order));
+
+		// ,
+		if (! list_is_last(&proc->config->columns.list, &column->link))
+			stmt_expect(self, ',');
 	}
 
-	// inline procedure
-	Lex lex_current = *self->lex;
-	lex_reset(self->lex);
-	lex_start(self->lex, &stmt->proc->config->text);
-	parse_scope(parser, scope);
-	*self->lex = lex_current;
+	// )
+	stmt_expect(self, ')');
 }

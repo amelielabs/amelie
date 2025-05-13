@@ -142,7 +142,7 @@ show procedures
 drop procedure test
 # test: create procedure (ddl)
 create procedure test() begin show lsn end
-{"msg": "procedures cannot contain utility commands"}
+{"msg": "utility commands cannot be used inside procedure"}
 # test: drop procedure statement parsing
 create procedure test() begin select 1 end
 drop procedure

@@ -44,21 +44,20 @@ compiler_init(Compiler*    self,
               Db*          db,
               Local*       local,
               FunctionMgr* function_mgr,
-              Proc*        proc)
+              Reg*         regs)
 {
 	self->program   = program_allocate();
 	self->code      = &self->program->code;
 	self->code_data = &self->program->code_data;
 	self->args      = NULL;
-	self->proc      = proc;
+	self->regs      = regs;
 	self->current   = NULL;
 	self->last      = NULL;
 	self->db        = db;
 	set_cache_init(&self->values_cache);
 	parser_init(&self->parser, db, local, function_mgr, &self->values_cache,
-	             self->program);
+	             self->program, regs);
 	rmap_init(&self->map);
-
 }
 
 void
@@ -145,7 +144,6 @@ emit_stmt(Compiler* self)
 	}
 
 	case STMT_CALL:
-	case STMT_CALL_RETURN:
 		// do nothing
 		return;
 
@@ -332,7 +330,6 @@ emit_send(Compiler* self, int start)
 	}
 
 	case STMT_CALL:
-	case STMT_CALL_RETURN:
 		// do nothing
 		return;
 
@@ -390,6 +387,8 @@ emit_call(Compiler* self)
 	auto call = ast_call_of(stmt->ast);
 	auto args = call->ast.r;
 	auto arg  = args->l;
+	// emit variables into registers, registers kept pinned until the end
+	// of vm execution to avoid problem with async/recv on backends
 	Targets targets;
 	targets_init(&targets, stmt->scope);
 	for (auto var = call->scope->vars.list; var; var = var->next)
@@ -400,14 +399,6 @@ emit_call(Compiler* self)
 			stmt_error(self->current, arg, "expected %s", type_of(var->type));
 		arg = arg->next;
 	}
-}
-
-static inline void
-emit_call_return(Compiler* self)
-{
-	auto stmt = self->current;
-	for (auto var = stmt->scope->vars.list; var; var = var->next)
-		runpin(self, var->r);
 }
 
 static inline void
@@ -462,11 +453,6 @@ emit_recv(Compiler* self)
 	case STMT_CALL:
 		// emit arguments and assign as variables
 		emit_call(self);
-		break;
-
-	case STMT_CALL_RETURN:
-		//unpin variables
-		emit_call_return(self);
 		break;
 
 	case STMT_WATCH:
@@ -529,12 +515,6 @@ emit_recv(Compiler* self)
 }
 
 static inline bool
-stmt_is_call(Stmt* self)
-{
-	return self->id == STMT_CALL || self->id == STMT_CALL_RETURN;
-}
-
-static inline bool
 stmt_is_expr(Stmt* self)
 {
 	if (self->id != STMT_SELECT)
@@ -551,7 +531,7 @@ emit_recv_upto(Compiler* self, int last, int order)
 	{
 		if (stmt->order <= last)
 			continue;
-		if (stmt_is_call(stmt))
+		if (stmt->id == STMT_CALL)
 			continue;
 		if (stmt->order > order)
 			break;
@@ -600,7 +580,7 @@ compiler_emit(Compiler* self)
 		self->current = stmt;
 
 		auto is_expr = false;
-		if (stmt_is_call(stmt))
+		if (stmt->id == STMT_CALL)
 		{
 			emit_recv(self);
 		} else

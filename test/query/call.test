@@ -69,6 +69,8 @@ select * from test
 explain call up(0); select 123; call up(0)
 call up(0); select 123; call up(0)
 select * from test
+drop table test
+drop procedure up
 
 disconnect S0
 close E0

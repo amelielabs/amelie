@@ -62,11 +62,13 @@ proc_if_prepare(Proc* self)
 	local_init(&local, global());
 	local_update_time(&local);
 	Compiler compiler;
-	compiler_init(&compiler, &system->db, &local, &system->function_mgr, self);
+	compiler_init(&compiler, &system->db, &local, &system->function_mgr, NULL);
 	defer(compiler_free, &compiler);
 
 	// create arguments as variables
 	auto scope = scopes_add(&compiler.parser.scopes);
+	scope->call = true;
+
 	list_foreach(&self->config->columns.list)
 	{
 		auto column = list_at(Column, link);
@@ -76,14 +78,29 @@ proc_if_prepare(Proc* self)
 	}
 
 	// parse procedure
-	auto lex = &compiler.parser.lex;
+	auto parser = &compiler.parser;
+	auto lex = &parser->lex;
 	lex_start(lex, &self->config->text);
-	parse_scope(&compiler.parser, scope);
+	parse_scope(parser, scope);
 
-	// ensure procedure has no utility/ddl commands
-	auto stmt = compiler_stmt(&compiler);
-	if (stmt && stmt_is_utility(stmt))
-		error("procedures cannot contain utility commands");
+	// force last statetement as return
+	if (parser->stmt)
+		parser->stmt->ret = true;
+
+	// ensure EXPLAIN has command
+	if (unlikely(parser->explain))
+		error("EXPLAIN cannot be used inside procedure");
+
+	// ensure main stmt is not utility when using CTE
+	if (parser->stmts.count_utility > 0)
+		error("utility commands cannot be used inside procedure");
+
+	// ensure EXECUTE used only once
+	if (parser->execute)
+		error("EXECUTE command cannot be used inside procedure");
+
+	// set statements order
+	stmts_order(&parser->stmts);
 
 	// emit procedure
 	compiler_emit(&compiler);

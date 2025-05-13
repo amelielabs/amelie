@@ -95,6 +95,7 @@ enum
 
 	// e
 	KEXTRACT,
+	KEXECUTE,
 	KELSE,
 	KEND,
 	KERROR,

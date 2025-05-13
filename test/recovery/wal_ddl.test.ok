@@ -1031,6 +1031,8 @@ show procedures
 }]
 select system.state().lsn
 [26]
+call test(0)
+execute test(0)
 # test: restart
 disconnect S0
 close E0
@@ -1059,6 +1061,8 @@ show procedures
     }
   }]
 }]
+call test(0)
+execute test(0)
 # test: alter procedure rename
 alter procedure test rename to test2
 select system.state().lsn

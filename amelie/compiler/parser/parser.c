@@ -44,13 +44,16 @@ parser_init(Parser*      self,
             Local*       local,
             FunctionMgr* function_mgr,
             SetCache*    values_cache,
-            Program*     program)
+            Program*     program,
+            Reg*         regs)
 {
 	self->explain      = EXPLAIN_NONE;
 	self->begin        = false;
 	self->commit       = false;
+	self->execute      = false;
 	self->stmt         = NULL;
 	self->program      = program;
+	self->regs         = regs;
 	self->values_cache = values_cache;
 	self->function_mgr = function_mgr;
 	self->local        = local;
@@ -68,6 +71,7 @@ parser_reset(Parser* self)
 	self->explain = EXPLAIN_NONE;
 	self->begin   = false;
 	self->commit  = false;
+	self->execute = false;
 	self->stmt    = NULL;
 	auto stmt = self->stmts.list;
 	while (stmt)

@@ -1,0 +1,200 @@
+open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "127.0.0.1", "port": 3485 }]
+connect E0 S0 127.0.0.1:3485
+# test: execute statement parsing
+execute
+{"msg": "execute ⟵ procedure name expected"}
+execute 123
+{"msg": "execute ❰123❱ ⟵ procedure name expected"}
+execute x
+{"msg": "execute ❰x❱ ⟵ procedure not found"}
+execute x 1
+{"msg": "execute ❰x❱ ⟵ procedure not found"}
+execute x(
+{"msg": "execute ❰x❱ ⟵ procedure not found"}
+# test: execute (not exists)
+execute x()
+{"msg": "execute ❰x❱ ⟵ procedure not found"}
+# test: execute (no arguments)
+create procedure x() begin select 1; end
+execute x(0)
+{"msg": "execute x(❰0❱ ⟵ ) expected"}
+# test: execute (argument count mismatch)
+drop procedure x
+create procedure x(val int) begin select val; end
+execute test()
+{"msg": "execute ❰test❱ ⟵ procedure not found"}
+# test: execute (argument type mismatch)
+execute x('x')
+{"msg": "execute x(❰'x'❱ ⟵ 'int' expected for column 'val'"}
+# test: execute (int)
+explain execute x(1)
+[{
+  "bytecode": {
+    "frontend": {
+      "00": "set                 1      1      0     ",
+      "01": "ref                 2      0      0     ",
+      "02": "push                2      0      0     ",
+      "03": "set_add             1      0      0     ",
+      "04": "ret                 0      0      0     "
+    }
+  },
+  "access": []
+}]
+execute x(1)
+# test: execute; execute
+execute x(1); execute x(2)
+{"msg": "execute x(1); execute ❰x❱ ⟵ EXECUTE statement can be used only once and cannot be mixed"}
+# test: execute (nested in procedure)
+create procedure a(val int) begin select val; end
+create procedure b(val int) begin call a(val); end
+explain call b(5)
+[{
+  "bytecode": {
+    "frontend": {
+      "00": "int                 0      -      0     # 5",
+      "01": "ref                 1      0      0     ",
+      "02": "set                 2      1      0     ",
+      "03": "ref                 3      1      0     ",
+      "04": "push                3      0      0     ",
+      "05": "set_add             2      0      0     ",
+      "06": "ret                 0      0      0     "
+    }
+  },
+  "access": []
+}]
+explain execute b(5)
+[{
+  "bytecode": {
+    "frontend": {
+      "00": "ref                 1      0      0     ",
+      "01": "set                 2      1      0     ",
+      "02": "ref                 3      1      0     ",
+      "03": "push                3      0      0     ",
+      "04": "set_add             2      0      0     ",
+      "05": "ret                 0      0      0     "
+    }
+  },
+  "access": []
+}]
+execute b(5)
+drop procedure a
+drop procedure b
+# test: execute (dml arg key)
+create table test (id int primary key, data int)
+insert into test values (0, 0)
+create procedure up(val int) begin update test set data = data + 1 where id = val; end
+explain execute up(0)
+[{
+  "bytecode": {
+    "frontend": {
+      "00": "ref                 1      0      0     ",
+      "01": "push                1      0      0     ",
+      "02": "send_lookup_by      0      -      -     # public.test",
+      "03": "recv                0      0      0     ",
+      "04": "ret                 0      0      0     "
+    },
+    "backend": {
+      "00": "ref                 1      0      0     ",
+      "01": "push                1      0      0     ",
+      "02": "table_open_partl    0      0      14    # public.test (primary)",
+      "03": "table_readi32       1      0      0     ",
+      "04": "ref                 2      0      0     ",
+      "05": "equii               3      1      2     ",
+      "06": "jntr                14     3      0     ",
+      "07": "int                 1      -      0     # 1",
+      "08": "push                1      0      0     ",
+      "09": "table_readi32       1      0      1     ",
+      "10": "int                 2      -      0     # 1",
+      "11": "addii               3      1      2     ",
+      "12": "push                3      0      0     ",
+      "13": "update              0      1      0     ",
+      "14": "table_close         0      0      0     ",
+      "15": "ret                 0      0      0     "
+    }
+  },
+  "access": [["public.test", "rw"]]
+}]
+execute up(0)
+select * from test
+[[0, 1]]
+# test: execute (dml pipeline)
+create procedure up_pipeline() begin call up(0); call up(0); call up(0) end
+explain execute up_pipeline()
+[{
+  "bytecode": {
+    "frontend": {
+      "00": "int                 0      -      0     # 0",
+      "01": "ref                 1      0      0     ",
+      "02": "push                1      0      0     ",
+      "03": "send_lookup_by      0      -      -     # public.test",
+      "04": "int                 1      -      0     # 0",
+      "05": "ref                 2      1      0     ",
+      "06": "push                2      0      0     ",
+      "07": "send_lookup_by      16     -      -     # public.test",
+      "08": "int                 2      -      0     # 0",
+      "09": "ref                 3      2      0     ",
+      "10": "push                3      0      0     ",
+      "11": "send_lookup_by      32     -      -     # public.test",
+      "12": "recv                0      0      0     ",
+      "13": "recv                0      0      0     ",
+      "14": "recv                0      0      0     ",
+      "15": "ret                 0      0      0     "
+    },
+    "backend": {
+      "00": "ref                 1      0      0     ",
+      "01": "push                1      0      0     ",
+      "02": "table_open_partl    0      0      14    # public.test (primary)",
+      "03": "table_readi32       1      0      0     ",
+      "04": "ref                 2      0      0     ",
+      "05": "equii               3      1      2     ",
+      "06": "jntr                14     3      0     ",
+      "07": "int                 1      -      0     # 1",
+      "08": "push                1      0      0     ",
+      "09": "table_readi32       1      0      1     ",
+      "10": "int                 2      -      0     # 1",
+      "11": "addii               3      1      2     ",
+      "12": "push                3      0      0     ",
+      "13": "update              0      1      0     ",
+      "14": "table_close         0      0      0     ",
+      "15": "ret                 0      0      0     ",
+      "16": "ref                 2      1      0     ",
+      "17": "push                2      0      0     ",
+      "18": "table_open_partl    0      20     30    # public.test (primary)",
+      "19": "table_readi32       2      0      0     ",
+      "20": "ref                 3      1      0     ",
+      "21": "equii               4      2      3     ",
+      "22": "jntr                30     4      0     ",
+      "23": "int                 2      -      0     # 1",
+      "24": "push                2      0      0     ",
+      "25": "table_readi32       2      0      1     ",
+      "26": "int                 3      -      0     # 1",
+      "27": "addii               4      2      3     ",
+      "28": "push                4      0      0     ",
+      "29": "update              0      1      0     ",
+      "30": "table_close         0      0      0     ",
+      "31": "ret                 0      0      0     ",
+      "32": "ref                 3      2      0     ",
+      "33": "push                3      0      0     ",
+      "34": "table_open_partl    0      40     46    # public.test (primary)",
+      "35": "table_readi32       3      0      0     ",
+      "36": "ref                 4      2      0     ",
+      "37": "equii               5      3      4     ",
+      "38": "jntr                46     5      0     ",
+      "39": "int                 3      -      0     # 1",
+      "40": "push                3      0      0     ",
+      "41": "table_readi32       3      0      1     ",
+      "42": "int                 4      -      0     # 1",
+      "43": "addii               5      3      4     ",
+      "44": "push                5      0      0     ",
+      "45": "update              0      1      0     ",
+      "46": "table_close         0      0      0     ",
+      "47": "ret                 0      0      0     "
+    }
+  },
+  "access": [["public.test", "rw"]]
+}]
+execute up_pipeline()
+select * from test
+[[0, 4]]
+disconnect S0
+close E0

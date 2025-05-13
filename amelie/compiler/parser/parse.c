@@ -401,6 +401,16 @@ parse_stmt(Parser* self, Stmt* stmt)
 		break;
 	}
 
+	case KEXECUTE:
+	{
+		if (self->execute)
+			stmt_error(stmt, NULL, "EXECUTE statement can be used only once and cannot be mixed");
+		stmt->id = STMT_EXECUTE;
+		parse_execute(stmt);
+		self->execute = true;
+		break;
+	}
+
 	case KEOF:
 		stmt_error(stmt, NULL, "unexpected end of statement");
 		break;

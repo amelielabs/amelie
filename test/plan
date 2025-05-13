@@ -96,6 +96,7 @@ test limits
 test format
 test var
 test call
+test execute
 
 # pushdown
 directory pushdown
