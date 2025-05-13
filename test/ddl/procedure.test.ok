@@ -143,6 +143,12 @@ drop procedure test
 # test: create procedure (ddl)
 create procedure test() begin show lsn end
 {"msg": "utility commands cannot be used inside procedure"}
+# test: create procedure (begin)
+create procedure test() begin begin end
+{"msg": "begin ⟵ unexpected statement"}
+# test: create procedure (commit)
+create procedure test() begin commit end
+{"msg": "❰commit❱ ⟵ COMMIT cannot be inside procedure"}
 # test: drop procedure statement parsing
 create procedure test() begin select 1 end
 drop procedure

@@ -513,6 +513,8 @@ parse_scope(Parser* self, Scope* scope)
 		auto ast = lex_next(lex);
 		if (ast->id == KCOMMIT)
 		{
+			if (scope->call)
+				lex_error(lex, ast, "COMMIT cannot be inside procedure");
 			if (! self->begin)
 				lex_error(lex, ast, "unexpected COMMIT");
 			self->commit = true;

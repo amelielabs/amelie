@@ -58,6 +58,12 @@ drop procedure test
 # test: create procedure (ddl)
 create procedure test() begin show lsn end
 
+# test: create procedure (begin)
+create procedure test() begin begin end
+
+# test: create procedure (commit)
+create procedure test() begin commit end
+
 # test: drop procedure statement parsing
 create procedure test() begin select 1 end
 drop procedure
