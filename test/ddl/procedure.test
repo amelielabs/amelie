@@ -38,7 +38,7 @@ create procedure test() begin select 1 end
 drop procedure test
 
 # test: create procedure (multi statement)
-create procedure test() begin select 1; return select 1; end
+create procedure test() begin select 1; select 1; end
 show procedures
 
 # test: create procedure (no arguments)

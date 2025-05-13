@@ -482,35 +482,14 @@ emit_recv(Compiler* self)
 		var->r = op2(self, CASSIGN, rpin(self, var->type), r);
 	}
 
-	// RETURN (explicit or the last statement)
+	// last statement
 	if (! stmt->ret)
 		return;
 
-	if (r != -1)
-	{
-		if (stmt->scope->call)
-		{
-#if 0
-			// validate function return type (or null otherwise)
-			auto type_fn = self->udf->config->type;
-			if (ret && type_fn != TYPE_NULL)
-			{
-				if (ret->count > 1)
-					stmt_error(stmt, NULL, "RETURN statement must return only one column");
-				auto type = columns_first(&ret->columns)->type;
-				if (type != type_fn)
-					stmt_error(stmt, NULL, "RETURN does not match the function type");
-				op1(self, CRESULT, r);
-			}
-#endif
-		} else
-		{
-			// create content out of result
-			op3(self, CCONTENT, r,
-			    (intptr_t)&ret->columns,
-			    (intptr_t)&ret->format);
-		}
-	}
+	// create content out of result on result
+	if (!stmt->scope->call && r != -1)
+		op3(self, CCONTENT, r, (intptr_t)&ret->columns, (intptr_t)&ret->format);
+
 	op0(self, CRET);
 }
 

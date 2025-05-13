@@ -97,12 +97,5 @@ x := insert into test values (1) returning id into x; select x
 with a as (insert into test values (1) returning id into x) select * from a
 drop table test
 
-# test: return (var)
-x := 1; return x
-explain x := 1; return x
-
-# test: return (assign)
-x := return 1
-
 disconnect S0
 close E0

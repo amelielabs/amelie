@@ -63,12 +63,12 @@ create procedure test() begin select 1 end
 {"msg": "procedure 'test': already exists"}
 drop procedure test
 # test: create procedure (multi statement)
-create procedure test() begin select 1; return select 1; end
+create procedure test() begin select 1; select 1; end
 show procedures
 [{
   "schema": "public",
   "name": "test",
-  "text": "select 1; return select 1;",
+  "text": "select 1; select 1;",
   "columns": []
 }]
 # test: create procedure (no arguments)
@@ -78,7 +78,7 @@ show procedures
 [{
   "schema": "public",
   "name": "test",
-  "text": "select 1; return select 1;",
+  "text": "select 1; select 1;",
   "columns": []
 }]
 drop procedure test

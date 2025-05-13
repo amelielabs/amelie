@@ -138,17 +138,6 @@ parse_stmt(Parser* self, Stmt* stmt)
 	auto lex = &self->lex;
 	auto ast = lex_next(lex);
 
-	// RETURN expr | stmt
-	if (ast->id == KRETURN)
-	{
-		if (stmt->cte)
-			stmt_error(stmt, ast, "RETURN cannot be used with CTE");
-		if (stmt->assign)
-			stmt_error(stmt, ast, "RETURN cannot be used with := operator");
-		stmt->ret = true;
-		ast = lex_next(lex);
-	}
-
 	switch (ast->id) {
 	case KSHOW:
 		// SHOW name
@@ -416,8 +405,8 @@ parse_stmt(Parser* self, Stmt* stmt)
 		break;
 
 	default:
-		// var := expr or RETURN expr
-		if (stmt->assign || stmt->ret)
+		// var := expr
+		if (stmt->assign)
 		{
 			// SELECT expr
 			lex_push(lex, ast);
