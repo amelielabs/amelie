@@ -85,6 +85,7 @@ enum
 
 	// d
 	KDELETE,
+	KDECLARE,
 	KDISTINCT,
 	KDO,
 	KDROP,

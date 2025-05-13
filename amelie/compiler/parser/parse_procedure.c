@@ -77,10 +77,49 @@ parse_procedure_args(Stmt* self, AstProcedureCreate* stmt)
 	stmt_expect(self, ')');
 }
 
+static void
+parse_procedure_vars(Stmt* self, AstProcedureCreate* stmt)
+{
+	for (;;)
+	{
+		// name
+		auto name = stmt_if(self, KNAME);
+		if (! name)
+			break;
+
+		// ensure arg or variable does not exists
+		auto var = columns_find(&stmt->config->columns, &name->string);
+		if (var)
+			stmt_error(self, name, "argument redefined");
+
+		var = columns_find(&stmt->config->vars, &name->string);
+		if (var)
+			stmt_error(self, name, "variable redefined");
+
+		// add variable
+		var = column_allocate();
+		column_set_name(var, &name->string);
+		encode_null(&var->constraints.value);
+		columns_add(&stmt->config->vars, var);
+
+		// type
+		int type_size;
+		int type;
+		if (parse_type(self, &type, &type_size))
+			stmt_error(self, name, "serial type cannot be used here");
+		column_set_type(var, type, type_size);
+
+		// ;
+		stmt_expect(self, ';');
+	}
+}
+
 void
 parse_procedure_create(Stmt* self, bool or_replace)
 {
 	// CREATE [OR REPLACE] PROCEDURE [schema.]name (args)
+	// [DECLARE]
+	//   [var type ;]
 	// BEGIN
 	//  [stmt[; stmt]]
 	// END
@@ -103,6 +142,10 @@ parse_procedure_create(Stmt* self, bool or_replace)
 
 	// (args)
 	parse_procedure_args(self, stmt);
+
+	// [DECLARE]
+	if (stmt_if(self, KDECLARE))
+		parse_procedure_vars(self, stmt);
 
 	// BEGIN
 	stmt_expect(self, KBEGIN);

@@ -391,7 +391,7 @@ emit_call(Compiler* self)
 	// of vm execution to avoid problem with async/recv on backends
 	Targets targets;
 	targets_init(&targets, stmt->scope);
-	for (auto var = call->scope->vars.list; var; var = var->next)
+	for (auto var = call->scope->vars.list; arg && var; var = var->next)
 	{
 		var->r = emit_expr(self, &targets, arg);
 		Type type = rtype(self, var->r);

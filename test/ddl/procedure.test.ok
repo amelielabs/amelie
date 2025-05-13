@@ -56,7 +56,8 @@ show procedures
   "schema": "public",
   "name": "test",
   "text": "select 1",
-  "columns": []
+  "columns": [],
+  "vars": []
 }]
 # test: create procedure (already exists)
 create procedure test() begin select 1 end
@@ -69,7 +70,8 @@ show procedures
   "schema": "public",
   "name": "test",
   "text": "select 1; select 1;",
-  "columns": []
+  "columns": [],
+  "vars": []
 }]
 # test: create procedure (no arguments)
 create procedure test() begin select 1 end
@@ -79,7 +81,8 @@ show procedures
   "schema": "public",
   "name": "test",
   "text": "select 1; select 1;",
-  "columns": []
+  "columns": [],
+  "vars": []
 }]
 drop procedure test
 # test: create procedure (arguments)
@@ -102,7 +105,8 @@ show procedures
       "as_stored": "",
       "as_resolved": ""
     }
-  }]
+  }],
+  "vars": []
 }]
 drop procedure test
 create procedure test(a int, b text) begin select 1 end
@@ -137,7 +141,8 @@ show procedures
       "as_stored": "",
       "as_resolved": ""
     }
-  }]
+  }],
+  "vars": []
 }]
 drop procedure test
 # test: create procedure (ddl)
@@ -149,6 +154,138 @@ create procedure test() begin begin end
 # test: create procedure (commit)
 create procedure test() begin commit end
 {"msg": "❰commit❱ ⟵ COMMIT cannot be inside procedure"}
+# test: create procedure (declare empty)
+create procedure test() declare begin select 1 end
+show procedures
+[{
+  "schema": "public",
+  "name": "test",
+  "text": "select 1",
+  "columns": [],
+  "vars": []
+}]
+drop procedure test
+# test: create procedure (declare)
+create procedure test() declare v begin select 1 end
+{"msg": "create procedure test() declare v ❰begin❱ ⟵ unrecognized data type"}
+create procedure test() declare v int begin select 1 end
+{"msg": "create procedure test() declare v int ❰begin❱ ⟵ ; expected"}
+create procedure test() declare v int; begin select v end
+show procedures
+[{
+  "schema": "public",
+  "name": "test",
+  "text": "select v",
+  "columns": [],
+  "vars": [{
+    "name": "v",
+    "type": 2,
+    "type_size": 4,
+    "constraints": {
+      "not_null": false,
+      "random": false,
+      "random_modulo": 9223372036854775807,
+      "default": null,
+      "as_identity": false,
+      "as_stored": "",
+      "as_resolved": ""
+    }
+  }]
+}]
+drop procedure test
+# test: create procedure (declare type mismatch)
+create procedure test() declare v int; begin v := 'hey'; end
+{"msg": "v := ❰'hey'❱ ⟵ variable expected int"}
+# test: create procedure (declare argument exists)
+create procedure test(v int) declare v int; begin end
+{"msg": "create procedure test(v int) declare ❰v❱ ⟵ argument redefined"}
+# test: create procedure (declare var exists)
+create procedure test() declare v int; v int; begin end
+{"msg": "create procedure test() declare v int; ❰v❱ ⟵ variable redefined"}
+# test: create procedure (declare assign)
+create table cfg(id string primary key)
+create procedure test(prefix string) declare conf json; id string; begin conf := system.config(); id := conf.uuid::string; insert into cfg values (prefix || id); end
+explain call test('id_')
+[{
+  "bytecode": {
+    "frontend": {
+      "00": "string              0      0      0     # id_",
+      "01": "set                 1      1      0     ",
+      "02": "call                2      -      0     # system.config()",
+      "03": "push                2      0      0     ",
+      "04": "set_add             1      0      0     ",
+      "05": "assign              2      1      0     ",
+      "06": "set                 3      1      0     ",
+      "07": "ref                 4      2      0     ",
+      "08": "string              5      4      0     # uuid",
+      "09": "dotjs               6      4      5     ",
+      "10": "push                6      0      0     ",
+      "11": "call                4      -      1     # public.string()",
+      "12": "push                4      0      0     ",
+      "13": "set_add             3      0      0     ",
+      "14": "assign              4      3      0     ",
+      "15": "set                 5      1      0     ",
+      "16": "ref                 6      0      0     ",
+      "17": "ref                 7      4      0     ",
+      "18": "catss               8      6      7     ",
+      "19": "push                8      0      0     ",
+      "20": "set_add             5      0      0     ",
+      "21": "dup                 6      5      0     ",
+      "22": "send_shard          0      -      6     # public.cfg",
+      "23": "recv                0      0      0     ",
+      "24": "ret                 0      0      0     "
+    },
+    "backend": {
+      "00": "insert              -      0      0     # public.cfg",
+      "01": "ret                 0      0      0     "
+    }
+  },
+  "access": [["public.cfg", "rw"]]
+}]
+call test('id_')
+select * from cfg
+["id_00000000-0000-0000-0000-000000000000"]
+explain execute test('id__')
+[{
+  "bytecode": {
+    "frontend": {
+      "00": "set                 3      1      0     ",
+      "01": "call                4      -      0     # system.config()",
+      "02": "push                4      0      0     ",
+      "03": "set_add             3      0      0     ",
+      "04": "assign              4      3      0     ",
+      "05": "set                 5      1      0     ",
+      "06": "ref                 6      4      0     ",
+      "07": "string              7      0      0     # uuid",
+      "08": "dotjs               8      6      7     ",
+      "09": "push                8      0      0     ",
+      "10": "call                6      -      1     # public.string()",
+      "11": "push                6      0      0     ",
+      "12": "set_add             5      0      0     ",
+      "13": "assign              6      5      0     ",
+      "14": "set                 7      1      0     ",
+      "15": "ref                 8      0      0     ",
+      "16": "ref                 9      6      0     ",
+      "17": "catss               10     8      9     ",
+      "18": "push                10     0      0     ",
+      "19": "set_add             7      0      0     ",
+      "20": "dup                 8      7      0     ",
+      "21": "send_shard          0      -      8     # public.cfg",
+      "22": "recv                0      0      0     ",
+      "23": "ret                 0      0      0     "
+    },
+    "backend": {
+      "00": "insert              -      0      0     # public.cfg",
+      "01": "ret                 0      0      0     "
+    }
+  },
+  "access": [["public.cfg", "rw"]]
+}]
+execute test('id__')
+select * from cfg
+["id_00000000-0000-0000-0000-000000000000", "id__00000000-0000-0000-0000-000000000000"]
+drop procedure test
+drop table cfg
 # test: drop procedure statement parsing
 create procedure test() begin select 1 end
 drop procedure
@@ -191,7 +328,8 @@ select system.procedures()
   "schema": "public",
   "name": "test",
   "text": "select 1",
-  "columns": []
+  "columns": [],
+  "vars": []
 }]]
 alter procedure test rename to test2
 select system.procedures()
@@ -199,7 +337,8 @@ select system.procedures()
   "schema": "public",
   "name": "test2",
   "text": "select 1",
-  "columns": []
+  "columns": [],
+  "vars": []
 }]]
 # test: alter procedure rename (already exists)
 alter procedure test2 rename to test2
@@ -214,7 +353,8 @@ show procedure test.test
   "schema": "test",
   "name": "test",
   "text": "select 1",
-  "columns": []
+  "columns": [],
+  "vars": []
 }]
 drop procedure test.test
 show procedures

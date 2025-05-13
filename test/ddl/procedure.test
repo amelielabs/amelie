@@ -64,6 +64,42 @@ create procedure test() begin begin end
 # test: create procedure (commit)
 create procedure test() begin commit end
 
+# test: create procedure (declare empty)
+create procedure test() declare begin select 1 end
+show procedures
+drop procedure test
+
+# test: create procedure (declare)
+create procedure test() declare v begin select 1 end
+create procedure test() declare v int begin select 1 end
+
+create procedure test() declare v int; begin select v end
+show procedures
+drop procedure test
+
+# test: create procedure (declare type mismatch)
+create procedure test() declare v int; begin v := 'hey'; end
+
+# test: create procedure (declare argument exists)
+create procedure test(v int) declare v int; begin end
+
+# test: create procedure (declare var exists)
+create procedure test() declare v int; v int; begin end
+
+# test: create procedure (declare assign)
+create table cfg(id string primary key)
+create procedure test(prefix string) declare conf json; id string; begin conf := system.config(); id := conf.uuid::string; insert into cfg values (prefix || id); end
+explain call test('id_')
+call test('id_')
+select * from cfg
+
+explain execute test('id__')
+execute test('id__')
+select * from cfg
+
+drop procedure test
+drop table cfg
+
 # test: drop procedure statement parsing
 create procedure test() begin select 1 end
 drop procedure

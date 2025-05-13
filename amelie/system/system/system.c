@@ -65,11 +65,21 @@ proc_if_prepare(Proc* self)
 	compiler_init(&compiler, &system->db, &local, &system->function_mgr, NULL);
 	defer(compiler_free, &compiler);
 
-	// create arguments as variables
+	// create parsing scope
 	auto scope = scopes_add(&compiler.parser.scopes);
 	scope->call = true;
 
+	// create arguments as variables
 	list_foreach(&self->config->columns.list)
+	{
+		auto column = list_at(Column, link);
+		auto var = vars_add(&scope->vars, &column->name);
+		var->type = column->type;
+		var->r = rpin(&compiler, column->type);
+	}
+
+	// create variables
+	list_foreach(&self->config->vars.list)
 	{
 		auto column = list_at(Column, link);
 		auto var = vars_add(&scope->vars, &column->name);

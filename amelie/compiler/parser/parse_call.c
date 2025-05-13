@@ -75,12 +75,21 @@ parse_call(Stmt* self)
 	}
 	stmt->ast.r = args;
 
-	// create arguments as variables
+	// create scope
 	auto scope = scopes_add(&parser->scopes);
 	scope->call = true;
 	stmt->scope = scope;
 
+	// create arguments as variables
 	list_foreach(&stmt->proc->config->columns.list)
+	{
+		auto column = list_at(Column, link);
+		auto var = vars_add(&scope->vars, &column->name);
+		var->type = column->type;
+	}
+
+	// create variables
+	list_foreach(&stmt->proc->config->vars.list)
 	{
 		auto column = list_at(Column, link);
 		auto var = vars_add(&scope->vars, &column->name);
