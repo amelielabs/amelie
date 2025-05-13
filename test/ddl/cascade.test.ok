@@ -79,7 +79,8 @@ show procedures
   "schema": "test2",
   "name": "test",
   "text": "select 1",
-  "columns": []
+  "columns": [],
+  "vars": []
 }]
 disconnect S0
 close E0

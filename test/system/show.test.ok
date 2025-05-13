@@ -76,7 +76,8 @@ show procedures
   "schema": "public",
   "name": "test",
   "text": "select 1",
-  "columns": []
+  "columns": [],
+  "vars": []
 }]
 # test: show procedure
 show procedure
@@ -86,10 +87,11 @@ show procedure test
   "schema": "public",
   "name": "test",
   "text": "select 1",
-  "columns": []
+  "columns": [],
+  "vars": []
 }]
 show procedure test format 'json'
-[{"schema": "public", "name": "test", "text": "select 1", "columns": []}]
+[{"schema": "public", "name": "test", "text": "select 1", "columns": [], "vars": []}]
 # test: show wal
 show wal
 [{
@@ -99,7 +101,7 @@ show wal
   "slots": 0,
   "slots_min": -1,
   "writes": 3,
-  "writes_bytes": 465,
+  "writes_bytes": 472,
   "ops": 3,
   "checkpoint": 1
 }]

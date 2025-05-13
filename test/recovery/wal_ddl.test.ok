@@ -1027,7 +1027,8 @@ show procedures
       "as_stored": "",
       "as_resolved": ""
     }
-  }]
+  }],
+  "vars": []
 }]
 select system.state().lsn
 [26]
@@ -1059,7 +1060,8 @@ show procedures
       "as_stored": "",
       "as_resolved": ""
     }
-  }]
+  }],
+  "vars": []
 }]
 call test(0)
 execute test(0)
@@ -1085,7 +1087,8 @@ show procedures
       "as_stored": "",
       "as_resolved": ""
     }
-  }]
+  }],
+  "vars": []
 }]
 # test: restart
 disconnect S0
@@ -1113,7 +1116,8 @@ show procedures
       "as_stored": "",
       "as_resolved": ""
     }
-  }]
+  }],
+  "vars": []
 }]
 # test: drop procedure
 drop procedure test2

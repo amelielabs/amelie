@@ -143,7 +143,8 @@ show procedures
       "as_stored": "",
       "as_resolved": ""
     }
-  }]
+  }],
+  "vars": []
 }]
 select system.state().lsn
 [6]
@@ -170,7 +171,8 @@ show procedures
       "as_stored": "",
       "as_resolved": ""
     }
-  }]
+  }],
+  "vars": []
 }]
 # test: checkpoint
 checkpoint
@@ -201,7 +203,8 @@ show procedures
       "as_stored": "",
       "as_resolved": ""
     }
-  }]
+  }],
+  "vars": []
 }]
 disconnect S0
 close E0
