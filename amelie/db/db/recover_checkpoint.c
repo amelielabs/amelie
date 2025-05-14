@@ -63,7 +63,7 @@ recover_checkpoint(Db* self, Core* core)
 {
 	list_foreach(&self->table_mgr.mgr.list)
 	{
-		auto table = table_of(list_at(Handle, link));
+		auto table = table_of(list_at(Relation, link));
 		list_foreach(&table->part_list.list)
 		{
 			auto part = list_at(Part, link);

@@ -28,13 +28,13 @@ void
 table_mgr_init(TableMgr* self, PartMgr* part_mgr)
 {
 	self->part_mgr = part_mgr;
-	handle_mgr_init(&self->mgr);
+	relation_mgr_init(&self->mgr);
 }
 
 void
 table_mgr_free(TableMgr* self)
 {
-	handle_mgr_free(&self->mgr);
+	relation_mgr_free(&self->mgr);
 }
 
 bool
@@ -60,7 +60,7 @@ table_mgr_create(TableMgr*    self,
 	auto op = table_op_create(config);
 
 	// update tables
-	handle_mgr_create(&self->mgr, tr, CMD_TABLE_CREATE, &table->handle, op);
+	relation_mgr_create(&self->mgr, tr, CMD_TABLE_CREATE, &table->rel, op);
 
 	// prepare partitions
 	table_open(table);
@@ -77,7 +77,7 @@ table_mgr_drop_of(TableMgr* self, Tr* tr, Table* table)
 	auto op = table_op_drop(&table->config->schema, &table->config->name);
 
 	// drop table by object
-	handle_mgr_drop(&self->mgr, tr, CMD_TABLE_DROP, &table->handle, op);
+	relation_mgr_drop(&self->mgr, tr, CMD_TABLE_DROP, &table->rel, op);
 }
 
 void
@@ -98,18 +98,18 @@ table_mgr_drop(TableMgr* self, Tr* tr, Str* schema, Str* name,
 static void
 truncate_if_commit(Log* self, LogOp* op)
 {
-	auto handle = log_handle_of(self, op);
-	auto table = table_of(handle->handle);
+	auto relation = log_relation_of(self, op);
+	auto table = table_of(relation->relation);
 	// truncate all partitions
 	part_list_truncate(&table->part_list);
-	buf_free(handle->data);
+	buf_free(relation->data);
 }
 
 static void
 truncate_if_abort(Log* self, LogOp* op)
 {
-	auto handle = log_handle_of(self, op);
-	buf_free(handle->data);
+	auto relation = log_relation_of(self, op);
+	buf_free(relation->data);
 }
 
 static LogIf truncate_if =
@@ -138,9 +138,9 @@ table_mgr_truncate(TableMgr* self,
 	auto op = table_op_truncate(schema, name);
 
 	// update table
-	log_handle(&tr->log, CMD_TABLE_TRUNCATE, &truncate_if,
-	           NULL,
-	           &table->handle, op);
+	log_relation(&tr->log, CMD_TABLE_TRUNCATE, &truncate_if,
+	             NULL,
+	             &table->rel, op);
 
 	// do nothing (actual truncate will happen on commit)
 }
@@ -152,7 +152,7 @@ table_mgr_dump(TableMgr* self, Buf* buf)
 	encode_array(buf);
 	list_foreach(&self->mgr.list)
 	{
-		auto table = table_of(list_at(Handle, link));
+		auto table = table_of(list_at(Relation, link));
 		table_config_write(table->config, buf);
 	}
 	encode_array_end(buf);
@@ -162,15 +162,15 @@ Table*
 table_mgr_find(TableMgr* self, Str* schema, Str* name,
                bool error_if_not_exists)
 {
-	auto handle = handle_mgr_get(&self->mgr, schema, name);
-	if (! handle)
+	auto relation = relation_mgr_get(&self->mgr, schema, name);
+	if (! relation)
 	{
 		if (error_if_not_exists)
 			error("table '%.*s': not exists", str_size(name),
 			      str_of(name));
 		return NULL;
 	}
-	return table_of(handle);
+	return table_of(relation);
 }
 
 Buf*
@@ -196,7 +196,7 @@ table_mgr_list(TableMgr* self, Str* schema, Str* name, bool extended)
 	encode_array(buf);
 	list_foreach(&self->mgr.list)
 	{
-		auto table = table_of(list_at(Handle, link));
+		auto table = table_of(list_at(Relation, link));
 		if (schema && !str_compare(&table->config->schema, schema))
 			continue;
 		if (extended)

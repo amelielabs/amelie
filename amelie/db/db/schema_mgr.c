@@ -27,13 +27,13 @@
 void
 schema_mgr_init(SchemaMgr* self)
 {
-	handle_mgr_init(&self->mgr);
+	relation_mgr_init(&self->mgr);
 }
 
 void
 schema_mgr_free(SchemaMgr* self)
 {
-	handle_mgr_free(&self->mgr);
+	relation_mgr_free(&self->mgr);
 }
 
 void
@@ -59,8 +59,8 @@ schema_mgr_create(SchemaMgr*    self,
 	auto op = schema_op_create(config);
 
 	// update schemas
-	handle_mgr_create(&self->mgr, tr, CMD_SCHEMA_CREATE,
-	                  &schema->handle, op);
+	relation_mgr_create(&self->mgr, tr, CMD_SCHEMA_CREATE,
+	                    &schema->rel, op);
 }
 
 void
@@ -86,27 +86,27 @@ schema_mgr_drop(SchemaMgr* self,
 	auto op = schema_op_drop(&schema->config->name);
 
 	// drop schema by object
-	handle_mgr_drop(&self->mgr, tr, CMD_SCHEMA_DROP, &schema->handle, op);
+	relation_mgr_drop(&self->mgr, tr, CMD_SCHEMA_DROP, &schema->rel, op);
 }
 
 static void
 rename_if_commit(Log* self, LogOp* op)
 {
-	buf_free(log_handle_of(self, op)->data);
+	buf_free(log_relation_of(self, op)->data);
 }
 
 static void
 rename_if_abort(Log* self, LogOp* op)
 {
-	auto handle = log_handle_of(self, op);
-	auto mgr = schema_of(handle->handle);
+	auto relation = log_relation_of(self, op);
+	auto mgr = schema_of(relation->relation);
 	// set previous name
-	uint8_t* pos = handle->data->start;
+	uint8_t* pos = relation->data->start;
 	Str name;
 	Str name_new;
 	schema_op_rename_read(&pos, &name, &name_new);
 	schema_config_set_name(mgr->config, &name);
-	buf_free(handle->data);
+	buf_free(relation->data);
 }
 
 static LogIf rename_if =
@@ -144,9 +144,9 @@ schema_mgr_rename(SchemaMgr* self,
 	auto op = schema_op_rename(name, name_new);
 
 	// update schema
-	log_handle(&tr->log, CMD_SCHEMA_RENAME, &rename_if,
-	           NULL,
-	           &schema->handle, op);
+	log_relation(&tr->log, CMD_SCHEMA_RENAME, &rename_if,
+	             NULL,
+	             &schema->rel, op);
 
 	// set new name
 	schema_config_set_name(schema->config, name_new);
@@ -159,7 +159,7 @@ schema_mgr_dump(SchemaMgr* self, Buf* buf)
 	encode_array(buf);
 	list_foreach(&self->mgr.list)
 	{
-		auto schema = schema_of(list_at(Handle, link));
+		auto schema = schema_of(list_at(Relation, link));
 		if (schema->config->system)
 			continue;
 		schema_config_write(schema->config, buf);
@@ -170,15 +170,15 @@ schema_mgr_dump(SchemaMgr* self, Buf* buf)
 Schema*
 schema_mgr_find(SchemaMgr* self, Str* name, bool error_if_not_exists)
 {
-	auto handle = handle_mgr_get(&self->mgr, NULL, name);
-	if (! handle)
+	auto relation = relation_mgr_get(&self->mgr, NULL, name);
+	if (! relation)
 	{
 		if (error_if_not_exists)
 			error("schema '%.*s': not exists", str_size(name),
 			      str_of(name));
 		return NULL;
 	}
-	return schema_of(handle);
+	return schema_of(relation);
 }
 
 Buf*
@@ -203,7 +203,7 @@ schema_mgr_list(SchemaMgr* self, Str* name, bool extended)
 		encode_array(buf);
 		list_foreach(&self->mgr.list)
 		{
-			auto schema = schema_of(list_at(Handle, link));
+			auto schema = schema_of(list_at(Relation, link));
 			if (extended)
 				schema_config_write(schema->config, buf);
 			else

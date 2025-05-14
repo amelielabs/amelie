@@ -15,7 +15,7 @@ typedef struct Table Table;
 
 struct Table
 {
-	Handle       handle;
+	Relation     rel;
 	PartList     part_list;
 	PartMgr*     part_mgr;
 	Sequence     seq;
@@ -41,10 +41,10 @@ table_allocate(TableConfig* config, PartMgr* part_mgr)
 	self->config = table_config_copy(config);
 	sequence_init(&self->seq);
 	part_list_init(&self->part_list);
-	handle_init(&self->handle);
-	handle_set_schema(&self->handle, &self->config->schema);
-	handle_set_name(&self->handle, &self->config->name);
-	handle_set_free_function(&self->handle, (HandleFree)table_free);
+	relation_init(&self->rel);
+	relation_set_schema(&self->rel, &self->config->schema);
+	relation_set_name(&self->rel, &self->config->name);
+	relation_set_free_function(&self->rel, (RelationFree)table_free);
 	return self;
 }
 
@@ -68,9 +68,9 @@ table_set_unlogged(Table* self, bool value)
 }
 
 static inline Table*
-table_of(Handle* handle)
+table_of(Relation* self)
 {
-	return (Table*)handle;
+	return (Table*)self;
 }
 
 hot static inline IndexConfig*

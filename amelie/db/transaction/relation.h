@@ -11,20 +11,20 @@
 // AGPL-3.0 Licensed.
 //
 
-typedef struct Handle Handle;
+typedef struct Relation Relation;
 
-typedef void (*HandleFree)(Handle*);
+typedef void (*RelationFree)(Relation*);
 
-struct Handle
+struct Relation
 {
-	Str*       schema;
-	Str*       name;
-	HandleFree free_function;
-	List       link;
+	Str*         schema;
+	Str*         name;
+	RelationFree free_function;
+	List         link;
 };
 
 static inline void
-handle_init(Handle* self)
+relation_init(Relation* self)
 {
 	self->schema        = NULL;
 	self->name          = NULL;
@@ -33,25 +33,25 @@ handle_init(Handle* self)
 }
 
 static inline void
-handle_set_schema(Handle* self, Str* schema)
+relation_set_schema(Relation* self, Str* schema)
 {
 	self->schema = schema;
 }
 
 static inline void
-handle_set_name(Handle* self, Str* name)
+relation_set_name(Relation* self, Str* name)
 {
 	self->name = name;
 }
 
 static inline void
-handle_set_free_function(Handle* self, HandleFree func)
+relation_set_free_function(Relation* self, RelationFree func)
 {
 	self->free_function = func;
 }
 
 static inline void
-handle_free(Handle* self)
+relation_free(Relation* self)
 {
 	self->free_function(self);
 }

@@ -15,8 +15,8 @@ typedef struct TableMgr TableMgr;
 
 struct TableMgr
 {
-	HandleMgr mgr;
-	PartMgr*  part_mgr;
+	RelationMgr mgr;
+	PartMgr*    part_mgr;
 };
 
 void   table_mgr_init(TableMgr*, PartMgr*);

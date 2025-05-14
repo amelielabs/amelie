@@ -15,7 +15,7 @@ typedef struct Schema Schema;
 
 struct Schema
 {
-	Handle        handle;
+	Relation      rel;
 	SchemaConfig* config;
 };
 
@@ -32,15 +32,15 @@ schema_allocate(SchemaConfig* config)
 {
 	Schema* self = am_malloc(sizeof(Schema));
 	self->config = schema_config_copy(config);
-	handle_init(&self->handle);
-	handle_set_schema(&self->handle, NULL);
-	handle_set_name(&self->handle, &self->config->name);
-	handle_set_free_function(&self->handle, (HandleFree)schema_free);
+	relation_init(&self->rel);
+	relation_set_schema(&self->rel, NULL);
+	relation_set_name(&self->rel, &self->config->name);
+	relation_set_free_function(&self->rel, (RelationFree)schema_free);
 	return self;
 }
 
 static inline Schema*
-schema_of(Handle* handle)
+schema_of(Relation* self)
 {
-	return (Schema*)handle;
+	return (Schema*)self;
 }

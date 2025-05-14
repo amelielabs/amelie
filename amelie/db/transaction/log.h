@@ -11,11 +11,11 @@
 // AGPL-3.0 Licensed.
 //
 
-typedef struct LogIf     LogIf;
-typedef struct LogOp     LogOp;
-typedef struct LogRow    LogRow;
-typedef struct LogHandle LogHandle;
-typedef struct Log       Log;
+typedef struct LogIf       LogIf;
+typedef struct LogOp       LogOp;
+typedef struct LogRow      LogRow;
+typedef struct LogRelation LogRelation;
+typedef struct Log         Log;
 
 struct LogIf
 {
@@ -37,9 +37,9 @@ struct LogRow
 	Row* row_prev;
 };
 
-struct LogHandle
+struct LogRelation
 {
-	void* handle;
+	void* relation;
 	Buf*  data;
 };
 
@@ -48,7 +48,7 @@ struct Log
 	Buf      op;
 	Buf      data;
 	int      count;
-	int      count_handle;
+	int      count_relation;
 	WriteLog write_log;
 	List     link;
 };
@@ -71,8 +71,8 @@ log_row_of(Log* self, LogOp* op)
 	return log_data_of(self, op);
 }
 
-always_inline static inline LogHandle*
-log_handle_of(Log* self, LogOp* op)
+always_inline static inline LogRelation*
+log_relation_of(Log* self, LogOp* op)
 {
 	return log_data_of(self, op);
 }
@@ -80,8 +80,8 @@ log_handle_of(Log* self, LogOp* op)
 static inline void
 log_init(Log* self)
 {
-	self->count        = 0;
-	self->count_handle = 0;
+	self->count          = 0;
+	self->count_relation = 0;
 	buf_init(&self->op);
 	buf_init(&self->data);
 	write_log_init(&self->write_log);
@@ -99,8 +99,8 @@ log_free(Log* self)
 static inline void
 log_reset(Log* self)
 {
-	self->count        = 0;
-	self->count_handle = 0;
+	self->count          = 0;
+	self->count_relation = 0;
 	buf_reset(&self->op);
 	buf_reset(&self->data);
 	write_log_reset(&self->write_log);
@@ -149,12 +149,12 @@ log_persist(Log* self, uint64_t partition)
 }
 
 static inline void
-log_handle(Log*   self,
-           Cmd    cmd,
-           LogIf* iface,
-           void*  iface_arg,
-           void*  handle,
-           Buf*   data)
+log_relation(Log*   self,
+             Cmd    cmd,
+             LogIf* iface,
+             void*  iface_arg,
+             void*  relation,
+             Buf*   data)
 {
 	// op
 	LogOp* op = buf_claim(&self->op, sizeof(LogOp));
@@ -163,12 +163,12 @@ log_handle(Log*   self,
 	op->iface_arg = iface_arg;
 	op->pos       = buf_size(&self->data);
 	self->count++;
-	self->count_handle++;
+	self->count_relation++;
 
-	// handle data
-	LogHandle* ref = buf_claim(&self->data, sizeof(LogHandle));
-	ref->handle = handle;
-	ref->data   = data;
+	// relation data
+	LogRelation* rel = buf_claim(&self->data, sizeof(LogRelation));
+	rel->relation = relation;
+	rel->data     = data;
 
 	// [cmd, data]
 	write_log_add_op(&self->write_log, cmd, data);

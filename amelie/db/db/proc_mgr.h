@@ -15,9 +15,9 @@ typedef struct ProcMgr ProcMgr;
 
 struct ProcMgr
 {
-	ProcIf*   iface;
-	void*     iface_arg;
-	HandleMgr mgr;
+	ProcIf*     iface;
+	void*       iface_arg;
+	RelationMgr mgr;
 };
 
 void proc_mgr_init(ProcMgr*, ProcIf*, void*);

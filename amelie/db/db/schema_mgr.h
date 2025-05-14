@@ -15,7 +15,7 @@ typedef struct SchemaMgr SchemaMgr;
 
 struct SchemaMgr
 {
-	HandleMgr mgr;
+	RelationMgr mgr;
 };
 
 void schema_mgr_init(SchemaMgr*);

@@ -30,7 +30,7 @@ cascade_drop(Db* self, Tr* tr, Str* schema)
 	// tables
 	list_foreach_safe(&self->table_mgr.mgr.list)
 	{
-		auto table = table_of(list_at(Handle, link));
+		auto table = table_of(list_at(Relation, link));
 		if (str_compare(&table->config->schema, schema))
 			table_mgr_drop_of(&self->table_mgr, tr, table);
 	}
@@ -38,7 +38,7 @@ cascade_drop(Db* self, Tr* tr, Str* schema)
 	// procs
 	list_foreach_safe(&self->proc_mgr.mgr.list)
 	{
-		auto proc = proc_of(list_at(Handle, link));
+		auto proc = proc_of(list_at(Relation, link));
 		if (str_compare(&proc->config->schema, schema))
 			proc_mgr_drop_of(&self->proc_mgr, tr, proc);
 	}
@@ -50,7 +50,7 @@ cascade_rename(Db* self, Tr* tr, Str* schema, Str* schema_new)
 	// tables
 	list_foreach_safe(&self->table_mgr.mgr.list)
 	{
-		auto table = table_of(list_at(Handle, link));
+		auto table = table_of(list_at(Relation, link));
 		if (str_compare(&table->config->schema, schema))
 			table_mgr_rename(&self->table_mgr, tr, &table->config->schema,
 			                 &table->config->name,
@@ -61,7 +61,7 @@ cascade_rename(Db* self, Tr* tr, Str* schema, Str* schema_new)
 	// procs
 	list_foreach_safe(&self->proc_mgr.mgr.list)
 	{
-		auto proc = proc_of(list_at(Handle, link));
+		auto proc = proc_of(list_at(Relation, link));
 		if (str_compare(&proc->config->schema, schema))
 			proc_mgr_rename(&self->proc_mgr, tr, &proc->config->schema,
 			                &proc->config->name,
@@ -76,7 +76,7 @@ cascade_schema_validate(Db* self, Str* schema)
 	// tables
 	list_foreach(&self->table_mgr.mgr.list)
 	{
-		auto table = table_of(list_at(Handle, link));
+		auto table = table_of(list_at(Relation, link));
 		if (str_compare(&table->config->schema, schema))
 			error("table '%.*s' depends on schema '%.*s", str_size(&table->config->name),
 			      str_of(&table->config->name),
@@ -86,7 +86,7 @@ cascade_schema_validate(Db* self, Str* schema)
 	// procs
 	list_foreach(&self->proc_mgr.mgr.list)
 	{
-		auto proc = proc_of(list_at(Handle, link));
+		auto proc = proc_of(list_at(Relation, link));
 		if (str_compare(&proc->config->schema, schema))
 			error("procedure '%.*s' depends on schema '%.*s", str_size(&proc->config->name),
 			      str_of(&proc->config->name),

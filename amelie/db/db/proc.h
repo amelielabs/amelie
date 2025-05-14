@@ -22,7 +22,7 @@ struct ProcIf
 
 struct Proc
 {
-	Handle      handle;
+	Relation    rel;
 	ProcIf*     iface;
 	void*       iface_arg;
 	void*       data;
@@ -47,17 +47,17 @@ proc_allocate(ProcConfig* config, ProcIf* iface, void* iface_arg)
 	self->iface_arg = iface_arg;
 	self->data      = NULL;
 	self->config    = proc_config_copy(config);
-	handle_init(&self->handle);
-	handle_set_schema(&self->handle, &self->config->schema);
-	handle_set_name(&self->handle, &self->config->name);
-	handle_set_free_function(&self->handle, (HandleFree)proc_free);
+	relation_init(&self->rel);
+	relation_set_schema(&self->rel, &self->config->schema);
+	relation_set_name(&self->rel, &self->config->name);
+	relation_set_free_function(&self->rel, (RelationFree)proc_free);
 	return self;
 }
 
 static inline Proc*
-proc_of(Handle* handle)
+proc_of(Relation* self)
 {
-	return (Proc*)handle;
+	return (Proc*)self;
 }
 
 static inline Columns*

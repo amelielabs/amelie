@@ -40,17 +40,17 @@ table_index_delete(Table* table, IndexConfig* index)
 static void
 create_if_commit(Log* self, LogOp* op)
 {
-	buf_free(log_handle_of(self, op)->data);
+	buf_free(log_relation_of(self, op)->data);
 }
 
 static void
 create_if_abort(Log* self, LogOp* op)
 {
-	auto handle = log_handle_of(self, op);
-	auto table = table_of(handle->handle);
+	auto relation = log_relation_of(self, op);
+	auto table = table_of(relation->relation);
 	IndexConfig* index = op->iface_arg;
 	table_index_delete(table, index);
-	buf_free(handle->data);
+	buf_free(relation->data);
 }
 
 static LogIf create_if =
@@ -88,9 +88,9 @@ table_index_create(Table*       self,
 	                                 config);
 
 	// update table
-	log_handle(&tr->log, CMD_INDEX_CREATE, &create_if,
-	           index,
-	           &self->handle, op);
+	log_relation(&tr->log, CMD_INDEX_CREATE, &create_if,
+	             index,
+	             &self->rel, op);
 
 	// create index for each partition
 	part_list_index_create(&self->part_list, index);
@@ -100,17 +100,17 @@ table_index_create(Table*       self,
 static void
 drop_if_commit(Log* self, LogOp* op)
 {
-	auto handle = log_handle_of(self, op);
-	auto table = table_of(handle->handle);
+	auto relation = log_relation_of(self, op);
+	auto table = table_of(relation->relation);
 	IndexConfig* index = op->iface_arg;
 	table_index_delete(table, index);
-	buf_free(handle->data);
+	buf_free(relation->data);
 }
 
 static void
 drop_if_abort(Log* self, LogOp* op)
 {
-	buf_free(log_handle_of(self, op)->data);
+	buf_free(log_relation_of(self, op)->data);
 }
 
 static LogIf drop_if =
@@ -141,30 +141,30 @@ table_index_drop(Table* self,
 	auto op = table_op_drop_index(&self->config->schema, &self->config->name, name);
 
 	// update table
-	log_handle(&tr->log, CMD_INDEX_DROP, &drop_if,
-	           index,
-	           &self->handle, op);
+	log_relation(&tr->log, CMD_INDEX_DROP, &drop_if,
+	             index,
+	             &self->rel, op);
 }
 
 static void
 rename_if_commit(Log* self, LogOp* op)
 {
-	buf_free(log_handle_of(self, op)->data);
+	buf_free(log_relation_of(self, op)->data);
 }
 
 static void
 rename_if_abort(Log* self, LogOp* op)
 {
 	IndexConfig* index = op->iface_arg;
-	auto handle = log_handle_of(self, op);
-	uint8_t* pos = handle->data->start;
+	auto relation = log_relation_of(self, op);
+	uint8_t* pos = relation->data->start;
 	Str schema;
 	Str name;
 	Str index_name;
 	Str index_name_new;
 	table_op_rename_index_read(&pos, &schema, &name, &index_name, &index_name_new);
 	index_config_set_name(index, &index_name);
-	buf_free(handle->data);
+	buf_free(relation->data);
 }
 
 static LogIf rename_if =
@@ -206,9 +206,9 @@ table_index_rename(Table* self,
 	                                name_new);
 
 	// update table
-	log_handle(&tr->log, CMD_INDEX_RENAME, &rename_if,
-	           index,
-	           &self->handle, op);
+	log_relation(&tr->log, CMD_INDEX_RENAME, &rename_if,
+	             index,
+	             &self->rel, op);
 
 	// rename index
 	index_config_set_name(index, name_new);

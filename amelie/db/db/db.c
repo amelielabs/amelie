@@ -122,7 +122,7 @@ db_status(Db* self)
 	int tables_secondary_indexes = 0;
 	list_foreach(&self->table_mgr.mgr.list)
 	{
-		auto table = table_of(list_at(Handle, link));
+		auto table = table_of(list_at(Relation, link));
 		tables++;
 		tables_secondary_indexes += (table->config->indexes_count - 1);
 	}

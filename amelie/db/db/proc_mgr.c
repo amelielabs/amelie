@@ -29,13 +29,13 @@ proc_mgr_init(ProcMgr* self, ProcIf* iface, void* iface_arg)
 {
 	self->iface = iface;
 	self->iface_arg = iface_arg;
-	handle_mgr_init(&self->mgr);
+	relation_mgr_init(&self->mgr);
 }
 
 void
 proc_mgr_free(ProcMgr* self)
 {
-	handle_mgr_free(&self->mgr);
+	relation_mgr_free(&self->mgr);
 }
 
 void
@@ -61,7 +61,7 @@ proc_mgr_create(ProcMgr*    self,
 	auto op = proc_op_create(config);
 
 	// update mgr
-	handle_mgr_create(&self->mgr, tr, CMD_PROC_CREATE, &proc->handle, op);
+	relation_mgr_create(&self->mgr, tr, CMD_PROC_CREATE, &proc->rel, op);
 
 	// prepare function
 	proc_prepare(proc);
@@ -74,7 +74,7 @@ proc_mgr_drop_of(ProcMgr* self, Tr* tr, Proc* proc)
 	auto op = proc_op_drop(&proc->config->schema, &proc->config->name);
 
 	// update mgr
-	handle_mgr_drop(&self->mgr, tr, CMD_PROC_DROP, &proc->handle, op);
+	relation_mgr_drop(&self->mgr, tr, CMD_PROC_DROP, &proc->rel, op);
 }
 
 void
@@ -98,15 +98,15 @@ proc_mgr_drop(ProcMgr* self,
 static void
 rename_if_commit(Log* self, LogOp* op)
 {
-	buf_free(log_handle_of(self, op)->data);
+	buf_free(log_relation_of(self, op)->data);
 }
 
 static void
 rename_if_abort(Log* self, LogOp* op)
 {
-	auto handle = log_handle_of(self, op);
-	auto proc = proc_of(handle->handle);
-	uint8_t* pos = handle->data->start;
+	auto relation = log_relation_of(self, op);
+	auto proc = proc_of(relation->relation);
+	uint8_t* pos = relation->data->start;
 	Str schema;
 	Str name;
 	Str schema_new;
@@ -114,7 +114,7 @@ rename_if_abort(Log* self, LogOp* op)
 	proc_op_rename_read(&pos, &schema, &name, &schema_new, &name_new);
 	proc_config_set_schema(proc->config, &schema);
 	proc_config_set_name(proc->config, &name);
-	buf_free(handle->data);
+	buf_free(relation->data);
 }
 
 static LogIf rename_if =
@@ -150,9 +150,9 @@ proc_mgr_rename(ProcMgr* self,
 	auto op = proc_op_rename(schema, name, schema_new, name_new);
 
 	// update mgr
-	log_handle(&tr->log, CMD_PROC_RENAME, &rename_if,
-	           NULL,
-	           &proc->handle, op);
+	log_relation(&tr->log, CMD_PROC_RENAME, &rename_if,
+	             NULL,
+	             &proc->rel, op);
 
 	// set new name
 	if (! str_compare(&proc->config->schema, schema_new))
@@ -169,7 +169,7 @@ proc_mgr_dump(ProcMgr* self, Buf* buf)
 	encode_array(buf);
 	list_foreach(&self->mgr.list)
 	{
-		auto proc = proc_of(list_at(Handle, link));
+		auto proc = proc_of(list_at(Relation, link));
 		proc_config_write(proc->config, buf);
 	}
 	encode_array_end(buf);
@@ -196,7 +196,7 @@ proc_mgr_list(ProcMgr* self, Str* schema, Str* name, bool extended)
 	encode_array(buf);
 	list_foreach(&self->mgr.list)
 	{
-		auto proc = proc_of(list_at(Handle, link));
+		auto proc = proc_of(list_at(Relation, link));
 		if (schema && !str_compare(&proc->config->schema, schema))
 			continue;
 		proc_config_write(proc->config, buf);
@@ -209,13 +209,13 @@ Proc*
 proc_mgr_find(ProcMgr* self, Str* schema, Str* name,
               bool     error_if_not_exists)
 {
-	auto handle = handle_mgr_get(&self->mgr, schema, name);
-	if (! handle)
+	auto relation = relation_mgr_get(&self->mgr, schema, name);
+	if (! relation)
 	{
 		if (error_if_not_exists)
 			error("procedure '%.*s': not exists", str_size(name),
 			      str_of(name));
 		return NULL;
 	}
-	return proc_of(handle);
+	return proc_of(relation);
 }
