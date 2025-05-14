@@ -299,5 +299,8 @@ select * from test
 [[0, 6]]
 drop table test
 drop procedure up
+# test: call (recursion)
+create procedure a() begin call a(); end
+{"msg": "call ❰a❱ ⟵ CALL recursion is not supported"}
 disconnect S0
 close E0

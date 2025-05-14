@@ -66,8 +66,7 @@ proc_if_prepare(Proc* self)
 	defer(compiler_free, &compiler);
 
 	// create parsing scope
-	auto scope = scopes_add(&compiler.parser.scopes);
-	scope->call = true;
+	auto scope = scopes_add(&compiler.parser.scopes, NULL, self);
 
 	// create arguments as variables
 	list_foreach(&self->config->columns.list)

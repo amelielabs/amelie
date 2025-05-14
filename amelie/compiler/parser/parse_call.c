@@ -59,6 +59,11 @@ parse_call(Stmt* self)
 	if (! stmt->proc)
 		stmt_error(self, path, "procedure not found");
 
+	// ensure there are no recursion
+	for (auto at = self->scope; at; at = at->parent)
+		if (at->call == stmt->proc)
+			stmt_error(self, path, "CALL recursion is not supported");
+
 	// (args)
 	stmt_expect(self, '(');
 	auto args = parse_expr_args(self, NULL, ')', false);
@@ -76,8 +81,7 @@ parse_call(Stmt* self)
 	stmt->ast.r = args;
 
 	// create scope
-	auto scope = scopes_add(&parser->scopes);
-	scope->call = true;
+	auto scope = scopes_add(&parser->scopes, self->scope, stmt->proc);
 	stmt->scope = scope;
 
 	// create arguments as variables

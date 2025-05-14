@@ -585,7 +585,7 @@ parse(Parser* self, Str* str)
 	self->begin = lex_if(lex, KBEGIN) != NULL;
 
 	// stmt [; stmt]
-	auto scope = scopes_add(&self->scopes);
+	auto scope = scopes_add(&self->scopes, NULL, NULL);
 	parse_scope(self, scope);
 
 	// [COMMIT]

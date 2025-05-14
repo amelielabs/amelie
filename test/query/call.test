@@ -72,5 +72,8 @@ select * from test
 drop table test
 drop procedure up
 
+# test: call (recursion)
+create procedure a() begin call a(); end
+
 disconnect S0
 close E0

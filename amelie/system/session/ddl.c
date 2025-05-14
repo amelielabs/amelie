@@ -191,8 +191,6 @@ ddl_alter_table_rename(Session* self, Tr* tr)
 		      str_size(&schema->config->name),
 		      str_of(&schema->config->name));
 
-	// todo: ensure view with the same name does not exists
-
 	// rename table
 	table_mgr_rename(&db->table_mgr, tr, &arg->schema, &arg->name,
 	                 &arg->schema_new, &arg->name_new,
