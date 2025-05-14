@@ -219,3 +219,15 @@ proc_mgr_find(ProcMgr* self, Str* schema, Str* name,
 	}
 	return proc_of(relation);
 }
+
+Proc*
+proc_mgr_find_dep(ProcMgr* self, Str* schema, Str* name)
+{
+	list_foreach(&self->mgr.list)
+	{
+		auto proc = proc_of(list_at(Relation, link));
+		if (proc_depend(proc, schema, name))
+			return proc;
+	}
+	return NULL;
+}

@@ -116,6 +116,19 @@ access_try(Access* self, Access* with)
 	return true;
 }
 
+hot static inline AccessRecord*
+access_find(Access* self, Str* schema, Str* name)
+{
+	for (auto i = 0; i < self->list_count; i++)
+	{
+		auto record = access_at(self, i);
+		if (str_compare(record->rel->schema, schema) &&
+		    str_compare(record->rel->name, name))
+			return record;
+	}
+	return NULL;
+}
+
 static inline void
 access_encode(Access* self, Buf* buf)
 {

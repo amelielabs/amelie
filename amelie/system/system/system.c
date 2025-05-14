@@ -128,10 +128,18 @@ proc_if_free(Proc* self)
 	self->data = NULL;
 }
 
+static bool
+proc_if_depend(Proc* self, Str* schema, Str* name)
+{
+	Program* program = self->data;
+	return access_find(&program->access, schema, name) != NULL;
+}
+
 ProcIf proc_if =
 {
 	.prepare = proc_if_prepare,
-	.free    = proc_if_free
+	.free    = proc_if_free,
+	.depend  = proc_if_depend
 };
 
 static void

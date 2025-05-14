@@ -130,10 +130,27 @@ ddl_create_table(Session* self, Tr* tr)
 }
 
 static void
+ddl_dep_ensure(Session* self, Str* schema, Str* name)
+{
+	// ensure table is not used by a procedure
+	auto proc = proc_mgr_find_dep(&self->share->db->proc_mgr, schema, name);
+	if (proc)
+		error("relation has dependency on the procedure '%.*s.%.*s'",
+		      str_size(&proc->config->schema),
+		      str_of(&proc->config->schema),
+		      str_size(&proc->config->name),
+		      str_of(&proc->config->name));
+}
+
+static void
 ddl_drop_table(Session* self, Tr* tr)
 {
 	auto stmt = compiler_stmt(&self->compiler);
 	auto arg  = ast_table_drop_of(stmt->ast);
+
+	// ensure table is not used by a procedure
+	ddl_dep_ensure(self, &arg->schema, &arg->name);
+
 	table_mgr_drop(&self->share->db->table_mgr, tr, &arg->schema, &arg->name,
 	               arg->if_exists);
 }
@@ -183,6 +200,9 @@ ddl_alter_table_rename(Session* self, Tr* tr)
 	auto db   = self->share->db;
 
 	// RENAME TO
+
+	// ensure table is not used by a procedure
+	ddl_dep_ensure(self, &arg->schema, &arg->name);
 
 	// ensure schema exists
 	auto schema = schema_mgr_find(&db->schema_mgr, &arg->schema_new, true);
@@ -411,6 +431,10 @@ ddl_drop_procedure(Session* self, Tr* tr)
 {
 	auto stmt = compiler_stmt(&self->compiler);
 	auto arg  = ast_procedure_drop_of(stmt->ast);
+
+	// ensure table is not used by a procedure
+	ddl_dep_ensure(self, &arg->schema, &arg->name);
+
 	proc_mgr_drop(&self->share->db->proc_mgr, tr, &arg->schema, &arg->name,
 	              arg->if_exists);
 }
@@ -421,6 +445,9 @@ ddl_alter_procedure(Session* self, Tr* tr)
 	auto stmt = compiler_stmt(&self->compiler);
 	auto arg  = ast_procedure_alter_of(stmt->ast);
 	auto db   = self->share->db;
+
+	// ensure table is not used by a procedure
+	ddl_dep_ensure(self, &arg->schema, &arg->name);
 
 	// ensure schema exists
 	auto schema = schema_mgr_find(&db->schema_mgr, &arg->schema_new, true);

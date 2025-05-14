@@ -143,5 +143,33 @@ show procedure test.test
 drop procedure test.test
 show procedures
 
+# test: dep (table drop)
+create table x (id int primary key)
+create procedure test() begin insert into x values (0) end
+drop table x
+drop procedure test
+drop table x
+
+# test: dep (table rename)
+create table x (id int primary key)
+create procedure test() begin insert into x values (0) end
+alter table x rename to y
+drop procedure test
+drop table x
+
+# test: dep (procedure drop)
+create procedure a() begin end
+create procedure b() begin call a() end
+drop procedure a
+drop procedure b
+drop procedure a
+
+# test: dep (procedure rename)
+create procedure a() begin end
+create procedure b() begin call a() end
+alter procedure a rename to x
+drop procedure b
+drop procedure a
+
 disconnect S0
 close E0

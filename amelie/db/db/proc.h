@@ -18,6 +18,7 @@ struct ProcIf
 {
 	void (*prepare)(Proc*);
 	void (*free)(Proc*);
+	bool (*depend)(Proc*, Str*, Str*);
 };
 
 struct Proc
@@ -70,4 +71,10 @@ static inline void
 proc_prepare(Proc* self)
 {
 	self->iface->prepare(self);
+}
+
+static inline bool
+proc_depend(Proc* self, Str* schema, Str* name)
+{
+	return self->iface->depend(self, schema, name);
 }
