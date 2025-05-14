@@ -166,7 +166,7 @@ parse_from_target(Stmt* self, Targets* targets, AccessType access, bool subquery
 		target->from_columns = &table->config->columns;
 		str_set_str(&target->name, &table->config->name);
 
-		access_add(&self->parser->program->access, table, access);
+		access_add(&self->parser->program->access, &table->rel, access);
 		return target;
 	}
 

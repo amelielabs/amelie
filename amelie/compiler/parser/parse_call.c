@@ -58,11 +58,15 @@ parse_call(Stmt* self)
 	stmt->proc = proc_mgr_find(&parser->db->proc_mgr, &schema, &name, false);
 	if (! stmt->proc)
 		stmt_error(self, path, "procedure not found");
+	auto proc = stmt->proc;
 
 	// ensure there are no recursion
 	for (auto at = self->scope; at; at = at->parent)
 		if (at->call == stmt->proc)
 			stmt_error(self, path, "CALL recursion is not supported");
+
+	// track call dependency
+	access_add(&self->parser->program->access, &proc->rel, ACCESS_CALL);
 
 	// (args)
 	stmt_expect(self, '(');
@@ -70,7 +74,7 @@ parse_call(Stmt* self)
 
 	// validate arguments count
 	auto argc_call = args->integer;
-	auto argc = stmt->proc->config->columns.count;
+	auto argc = proc->config->columns.count;
 	if (argc_call != argc)
 	{
 		if (argc == 0)
@@ -81,11 +85,11 @@ parse_call(Stmt* self)
 	stmt->ast.r = args;
 
 	// create scope
-	auto scope = scopes_add(&parser->scopes, self->scope, stmt->proc);
+	auto scope = scopes_add(&parser->scopes, self->scope, proc);
 	stmt->scope = scope;
 
 	// create arguments as variables
-	list_foreach(&stmt->proc->config->columns.list)
+	list_foreach(&proc->config->columns.list)
 	{
 		auto column = list_at(Column, link);
 		auto var = vars_add(&scope->vars, &column->name);
@@ -93,7 +97,7 @@ parse_call(Stmt* self)
 	}
 
 	// create variables
-	list_foreach(&stmt->proc->config->vars.list)
+	list_foreach(&proc->config->vars.list)
 	{
 		auto column = list_at(Column, link);
 		auto var = vars_add(&scope->vars, &column->name);
@@ -103,7 +107,7 @@ parse_call(Stmt* self)
 	// inline procedure
 	Lex lex_current = *self->lex;
 	lex_reset(self->lex);
-	lex_start(self->lex, &stmt->proc->config->text);
+	lex_start(self->lex, &proc->config->text);
 	parse_scope(parser, scope);
 	*self->lex = lex_current;
 }

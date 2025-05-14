@@ -19,12 +19,13 @@ typedef enum
 	ACCESS_UNDEF,
 	ACCESS_RO,
 	ACCESS_RW,
-	ACCESS_RO_EXCLUSIVE
+	ACCESS_RO_EXCLUSIVE,
+	ACCESS_CALL
 } AccessType;
 
 struct AccessRecord
 {
-	Table*     table;
+	Relation*  rel;
 	AccessType type;
 };
 
@@ -61,13 +62,13 @@ access_reset(Access* self)
 }
 
 hot static inline void
-access_add(Access* self, Table* table, AccessType type)
+access_add(Access* self, Relation* rel, AccessType type)
 {
 	// find and upgrade access to the relation
 	for (auto i = 0; i < self->list_count; i++)
 	{
 		auto record = access_at(self, i);
-		if (record->table == table)
+		if (record->rel == rel)
 		{
 			if (record->type < type)
 				record->type = type;
@@ -75,8 +76,8 @@ access_add(Access* self, Table* table, AccessType type)
 		}
 	}
 	auto record = (AccessRecord*)buf_claim(&self->list, sizeof(AccessRecord));
-	record->table = table;
-	record->type  = type;
+	record->rel  = rel;
+	record->type = type;
 	self->list_count++;
 }
 
@@ -89,7 +90,7 @@ access_try(Access* self, Access* with)
 		for (auto j = 0; j < with->list_count; j++)
 		{
 			auto record_with = access_at(self, j);
-			if (record->table != record_with->table)
+			if (record->rel != record_with->rel)
 				continue;
 			switch (record->type) {
 			case ACCESS_RO:
@@ -104,6 +105,8 @@ access_try(Access* self, Access* with)
 				// rw block only ro_exclusive
 				if (record_with->type == ACCESS_RW)
 					return false;
+				break;
+			case ACCESS_CALL:
 				break;
 			default:
 				abort();
@@ -121,7 +124,7 @@ access_encode(Access* self, Buf* buf)
 	{
 		auto record = access_at(self, i);
 		encode_array(buf);
-		encode_target(buf, &record->table->config->schema, &record->table->config->name);
+		encode_target(buf, record->rel->schema, record->rel->name);
 		switch (record->type) {
 		case ACCESS_RO:
 			encode_raw(buf, "ro", 2);
@@ -131,6 +134,9 @@ access_encode(Access* self, Buf* buf)
 			break;
 		case ACCESS_RO_EXCLUSIVE:
 			encode_raw(buf, "ro_exclusive", 12);
+			break;
+		case ACCESS_CALL:
+			encode_raw(buf, "call", 4);
 			break;
 		default:
 			abort();

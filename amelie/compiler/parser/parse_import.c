@@ -272,7 +272,7 @@ parse_import(Parser* self, Str* str, Str* uri, EndpointType type)
 	target->from_columns = columns;
 	str_set_str(&target->name, &table->config->name);
 	targets_add(&insert->targets, target);
-	access_add(&self->program->access, table, ACCESS_RW);
+	access_add(&self->program->access, &table->rel, ACCESS_RW);
 
 	// prepare result set
 	insert->values = set_cache_create(stmt->parser->values_cache);

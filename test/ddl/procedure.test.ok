@@ -240,7 +240,7 @@ explain call test('id_')
       "01": "ret                 0      0      0     "
     }
   },
-  "access": [["public.cfg", "rw"]]
+  "access": [["public.test", "call"], ["public.cfg", "rw"]]
 }]
 call test('id_')
 select * from cfg

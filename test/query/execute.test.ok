@@ -60,7 +60,7 @@ explain call b(5)
       "06": "ret                 0      0      0     "
     }
   },
-  "access": []
+  "access": [["public.b", "call"], ["public.a", "call"]]
 }]
 explain execute b(5)
 [{
@@ -74,7 +74,7 @@ explain execute b(5)
       "05": "ret                 0      0      0     "
     }
   },
-  "access": []
+  "access": [["public.a", "call"]]
 }]
 execute b(5)
 drop procedure a
@@ -191,7 +191,7 @@ explain execute up_pipeline()
       "47": "ret                 0      0      0     "
     }
   },
-  "access": [["public.test", "rw"]]
+  "access": [["public.up", "call"], ["public.test", "rw"]]
 }]
 execute up_pipeline()
 select * from test
