@@ -78,7 +78,9 @@ explain execute b(5)
 }]
 execute b(5)
 drop procedure a
+{"msg": "relation has dependency on the procedure 'public.b'"}
 drop procedure b
+drop procedure a
 # test: execute (dml arg key)
 create table test (id int primary key, data int)
 insert into test values (0, 0)

@@ -118,7 +118,9 @@ explain call b(5)
   "access": [["public.b", "call"], ["public.a", "call"]]
 }]
 drop procedure a
+{"msg": "relation has dependency on the procedure 'public.b'"}
 drop procedure b
+drop procedure a
 # test: call (dml arg key)
 create table test (id int primary key, data int)
 insert into test values (0, 0)
@@ -298,7 +300,9 @@ call up(0); select 123; call up(0)
 select * from test
 [[0, 6]]
 drop table test
+{"msg": "relation has dependency on the procedure 'public.up'"}
 drop procedure up
+drop table test
 # test: call (recursion)
 create procedure a() begin call a(); end
 {"msg": "call ❰a❱ ⟵ CALL recursion is not supported"}

@@ -49,6 +49,7 @@ call b(5)
 explain call b(5)
 drop procedure a
 drop procedure b
+drop procedure a
 
 # test: call (dml arg key)
 create table test (id int primary key, data int)
@@ -71,6 +72,7 @@ call up(0); select 123; call up(0)
 select * from test
 drop table test
 drop procedure up
+drop table test
 
 # test: call (recursion)
 create procedure a() begin call a(); end
