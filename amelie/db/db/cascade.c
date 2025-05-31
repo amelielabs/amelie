@@ -71,6 +71,25 @@ cascade_rename(Db* self, Tr* tr, Str* schema, Str* schema_new)
 }
 
 static void
+cascade_schema_validate_external(Db* self, Str* schema)
+{
+	// ensure that no external schema procs depend on the procs
+	// of the dropped schema
+	list_foreach(&self->proc_mgr.mgr.list)
+	{
+		auto proc = proc_of(list_at(Relation, link));
+		if (str_compare(&proc->config->schema, schema))
+			continue;
+		if (proc_depend(proc, schema, NULL))
+			error("procedure '%.*s.%.*s' depends on schema '%.*s", str_size(&proc->config->schema),
+			      str_of(&proc->config->schema),
+			      str_size(&proc->config->name),
+			      str_of(&proc->config->name),
+			      str_size(schema), str_of(schema));
+	}
+}
+
+static void
 cascade_schema_validate(Db* self, Str* schema)
 {
 	// tables
@@ -114,6 +133,9 @@ cascade_schema_drop(Db*  self, Tr* tr, Str* name,
 
 	if (cascade)
 	{
+		// ensure no external dependencies
+		cascade_schema_validate_external(self, name);
+
 		// drop all dependencies
 		cascade_drop(self, tr, name);
 	} else

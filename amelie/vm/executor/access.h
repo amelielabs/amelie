@@ -117,6 +117,18 @@ access_try(Access* self, Access* with)
 }
 
 hot static inline AccessRecord*
+access_find_schema(Access* self, Str* schema)
+{
+	for (auto i = 0; i < self->list_count; i++)
+	{
+		auto record = access_at(self, i);
+		if (str_compare(record->rel->schema, schema))
+			return record;
+	}
+	return NULL;
+}
+
+hot static inline AccessRecord*
 access_find(Access* self, Str* schema, Str* name)
 {
 	for (auto i = 0; i < self->list_count; i++)

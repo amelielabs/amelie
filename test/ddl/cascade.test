@@ -31,6 +31,14 @@ create procedure test.test() begin select 1 end
 drop schema test cascade
 show procedures
 
+# test: drop schema cascade (external dep)
+create schema test
+create procedure test.test() begin select 1 end
+create procedure x() begin call test.test() end
+drop schema test cascade
+drop procedure x
+drop schema test cascade
+
 # test: alter schema rename
 create schema test
 

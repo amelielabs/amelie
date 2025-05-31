@@ -132,7 +132,9 @@ static bool
 proc_if_depend(Proc* self, Str* schema, Str* name)
 {
 	Program* program = self->data;
-	return access_find(&program->access, schema, name) != NULL;
+	if (name)
+		return access_find(&program->access, schema, name) != NULL;
+	return access_find_schema(&program->access, schema) != NULL;
 }
 
 ProcIf proc_if =
