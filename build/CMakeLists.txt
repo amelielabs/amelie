@@ -195,7 +195,6 @@ set(AMELIE_SOURCES_DB
     ${AMELIE_ROOT}/db/db/table_mgr.c
     ${AMELIE_ROOT}/db/db/table_mgr_alter.c
     ${AMELIE_ROOT}/db/db/table_index.c
-    ${AMELIE_ROOT}/db/db/proc_mgr.c
     ${AMELIE_ROOT}/db/db/db.c
     ${AMELIE_ROOT}/db/db/db_checkpoint.c
     ${AMELIE_ROOT}/db/db/recover_checkpoint.c
@@ -244,8 +243,6 @@ set(AMELIE_SOURCES_VM
 set(AMELIE_SOURCES_COMPILER
     ${AMELIE_ROOT}/compiler/parser/keyword.c
     ${AMELIE_ROOT}/compiler/parser/lex.c
-    ${AMELIE_ROOT}/compiler/parser/parse_call.c
-    ${AMELIE_ROOT}/compiler/parser/parse_execute.c
     ${AMELIE_ROOT}/compiler/parser/parse_expr.c
     ${AMELIE_ROOT}/compiler/parser/parse_show.c
     ${AMELIE_ROOT}/compiler/parser/parse_system.c
@@ -257,7 +254,6 @@ set(AMELIE_SOURCES_COMPILER
     ${AMELIE_ROOT}/compiler/parser/parse_schema.c
     ${AMELIE_ROOT}/compiler/parser/parse_table.c
     ${AMELIE_ROOT}/compiler/parser/parse_index.c
-    ${AMELIE_ROOT}/compiler/parser/parse_procedure.c
     ${AMELIE_ROOT}/compiler/parser/parse_cte.c
     ${AMELIE_ROOT}/compiler/parser/parse_from.c
     ${AMELIE_ROOT}/compiler/parser/parse_returning.c

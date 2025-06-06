@@ -34,14 +34,6 @@ cascade_drop(Db* self, Tr* tr, Str* schema)
 		if (str_compare(&table->config->schema, schema))
 			table_mgr_drop_of(&self->table_mgr, tr, table);
 	}
-
-	// procs
-	list_foreach_safe(&self->proc_mgr.mgr.list)
-	{
-		auto proc = proc_of(list_at(Relation, link));
-		if (str_compare(&proc->config->schema, schema))
-			proc_mgr_drop_of(&self->proc_mgr, tr, proc);
-	}
 }
 
 static void
@@ -57,36 +49,6 @@ cascade_rename(Db* self, Tr* tr, Str* schema, Str* schema_new)
 			                 schema_new,
 			                 &table->config->name, false);
 	}
-
-	// procs
-	list_foreach_safe(&self->proc_mgr.mgr.list)
-	{
-		auto proc = proc_of(list_at(Relation, link));
-		if (str_compare(&proc->config->schema, schema))
-			proc_mgr_rename(&self->proc_mgr, tr, &proc->config->schema,
-			                &proc->config->name,
-			                schema_new,
-			                &proc->config->name, false);
-	}
-}
-
-static void
-cascade_schema_validate_external(Db* self, Str* schema)
-{
-	// ensure that no external schema procs depend on the procs
-	// of the dropped schema
-	list_foreach(&self->proc_mgr.mgr.list)
-	{
-		auto proc = proc_of(list_at(Relation, link));
-		if (str_compare(&proc->config->schema, schema))
-			continue;
-		if (proc_depend(proc, schema, NULL))
-			error("procedure '%.*s.%.*s' depends on schema '%.*s", str_size(&proc->config->schema),
-			      str_of(&proc->config->schema),
-			      str_size(&proc->config->name),
-			      str_of(&proc->config->name),
-			      str_size(schema), str_of(schema));
-	}
 }
 
 static void
@@ -99,16 +61,6 @@ cascade_schema_validate(Db* self, Str* schema)
 		if (str_compare(&table->config->schema, schema))
 			error("table '%.*s' depends on schema '%.*s", str_size(&table->config->name),
 			      str_of(&table->config->name),
-			      str_size(schema), str_of(schema));
-	}
-
-	// procs
-	list_foreach(&self->proc_mgr.mgr.list)
-	{
-		auto proc = proc_of(list_at(Relation, link));
-		if (str_compare(&proc->config->schema, schema))
-			error("procedure '%.*s' depends on schema '%.*s", str_size(&proc->config->name),
-			      str_of(&proc->config->name),
 			      str_size(schema), str_of(schema));
 	}
 }
@@ -133,9 +85,6 @@ cascade_schema_drop(Db*  self, Tr* tr, Str* name,
 
 	if (cascade)
 	{
-		// ensure no external dependencies
-		cascade_schema_validate_external(self, name);
-
 		// drop all dependencies
 		cascade_drop(self, tr, name);
 	} else

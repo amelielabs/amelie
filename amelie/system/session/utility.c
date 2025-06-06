@@ -94,18 +94,6 @@ ctl_show(Session* self)
 		buf = table_mgr_list(&share->db->table_mgr, &arg->schema,
 		                     &arg->name, arg->extended);
 		break;
-	case SHOW_PROCEDURES:
-	{
-		Str* schema = NULL;
-		if (! str_empty(&arg->schema))
-			schema = &arg->schema;
-		buf = proc_mgr_list(&share->db->proc_mgr, schema, NULL, arg->extended);
-		break;
-	}
-	case SHOW_PROCEDURE:
-		buf = proc_mgr_list(&share->db->proc_mgr, &arg->schema,
-		                    &arg->name, arg->extended);
-		break;
 	case SHOW_CONFIG_ALL:
 		buf = opts_list(&global()->config->opts);
 		break;

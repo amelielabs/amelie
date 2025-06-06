@@ -250,7 +250,7 @@ parse_import(Parser* self, Str* str, Str* uri, EndpointType type)
 	endpoint_init(&endpoint, &self->uri, type);
 	parse_endpoint(&endpoint, self->db);
 
-	auto scope = scopes_add(&self->scopes, NULL, NULL);
+	auto scope = scopes_add(&self->scopes, NULL);
 
 	// prepare insert stmt
 	auto stmt = stmt_allocate(self, &self->lex, scope);

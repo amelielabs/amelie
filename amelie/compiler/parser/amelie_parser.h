@@ -45,8 +45,6 @@
 #include "parser/parse_agg.h"
 #include "parser/parse_args.h"
 #include "parser/parse_func.h"
-#include "parser/parse_call.h"
-#include "parser/parse_execute.h"
 #include "parser/parse_case.h"
 #include "parser/parse_expr.h"
 #include "parser/parse_encode.h"
@@ -64,7 +62,6 @@
 #include "parser/parse_schema.h"
 #include "parser/parse_table.h"
 #include "parser/parse_index.h"
-#include "parser/parse_procedure.h"
 #include "parser/parse_cte.h"
 
 // dml

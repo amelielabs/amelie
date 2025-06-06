@@ -75,12 +75,6 @@ parse_show_type(Str* name)
 	if (str_is(name, "table", 5))
 		return SHOW_TABLE;
 
-	if (str_is(name, "procedures", 10))
-		return SHOW_PROCEDURES;
-
-	if (str_is(name, "procedure", 9))
-		return SHOW_PROCEDURE;
-
 	if (str_is(name, "state", 5))
 		return SHOW_STATE;
 
@@ -135,37 +129,6 @@ parse_show(Stmt* self)
 				str_advance(&stmt->name, str_size(&stmt->schema) + 1);
 			} else {
 				stmt_error(self, name, "table name expected");
-			}
-		}
-
-		// [IN | FROM schema]
-		if (stmt_if(self, KIN) || stmt_if(self, KFROM))
-		{
-			auto schema = stmt_expect(self, KNAME);
-			stmt->schema = schema->string;
-		}
-		break;
-	}
-	case SHOW_PROCEDURES:
-	case SHOW_PROCEDURE:
-	{
-		// [procedure name]
-		if (stmt->type == SHOW_PROCEDURE)
-		{
-			name = stmt_next(self);
-			if (name->id == KNAME) {
-				stmt->name_ast = name;
-				stmt->name = name->string;
-				str_set(&stmt->schema, "public", 6);
-			} else
-			if (name->id == KNAME_COMPOUND)
-			{
-				stmt->name_ast = name;
-				stmt->name = name->string;
-				str_split(&stmt->name, &stmt->schema, '.');
-				str_advance(&stmt->name, str_size(&stmt->schema) + 1);
-			} else {
-				stmt_error(self, name, "procedure name expected");
 			}
 		}
 

@@ -39,15 +39,15 @@ bench_decre_create(Bench* self, Client* client)
 		buf_str(&buf, &str);
 		client_execute(client, &str);
 	}
+}
 
-	auto text =
-	"create procedure __bench.decre(a int, b int, amount double) "
-	"begin "
-	" update __bench.test set money = money - amount where id = a; "
-	" update __bench.test set money = money + amount where id = b; "
-	"end ";
-	str_set_cstr(&str, text);
-	client_execute(client, &str);
+hot static inline void
+decre_transaction(Buf* buf, int from, int to, double amount)
+{
+	buf_printf(buf, "UPDATE __bench.test SET money = money - %f WHERE id = %d;",
+	           amount, from);
+	buf_printf(buf, "UPDATE __bench.test SET money = money + %f WHERE id = %d;",
+	           amount, to);
 }
 
 hot static void
@@ -70,7 +70,7 @@ bench_decre_main(BenchWorker* self, Client* client)
 			uint32_t b = *(uint32_t*)((uint8_t*)&random + sizeof(uint32_t));
 			int from = a % total;
 			int to   = b % total;
-			buf_printf(&buf, "CALL __bench.decre(%d, %d, 1.0);", from, to);
+			decre_transaction(&buf, from, to, 1.0);
 		}
 		Str cmd;
 		buf_str(&buf, &cmd);

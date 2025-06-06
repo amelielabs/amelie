@@ -27,12 +27,6 @@
 // index
 #include "db/table_index.h"
 
-// procedure
-#include "db/proc_config.h"
-#include "db/proc.h"
-#include "db/proc_op.h"
-#include "db/proc_mgr.h"
-
 // db
 #include "db/db.h"
 #include "db/db_checkpoint.h"

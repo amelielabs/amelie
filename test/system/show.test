@@ -37,15 +37,6 @@ show table
 show table test
 show table test format 'json'
 
-# test: show procedures
-create procedure test() begin select 1 end
-show procedures
-
-# test: show procedure
-show procedure
-show procedure test
-show procedure test format 'json'
-
 # test: show wal
 show wal
 

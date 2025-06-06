@@ -18,7 +18,6 @@ struct Scope
 {
 	Vars   vars;
 	Ctes   ctes;
-	Proc*  call;
 	Scope* parent;
 	Scope* next;
 };
@@ -53,12 +52,11 @@ scopes_reset(Scopes* self)
 }
 
 static inline Scope*
-scopes_add(Scopes* self, Scope* parent, Proc* call)
+scopes_add(Scopes* self, Scope* parent)
 {
 	auto scope = (Scope*)palloc(sizeof(Scope));
 	scope->parent = parent;
 	scope->next   = NULL;
-	scope->call   = call;
 	vars_init(&scope->vars);
 	ctes_init(&scope->ctes);
 

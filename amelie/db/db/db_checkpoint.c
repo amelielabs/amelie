@@ -27,7 +27,7 @@
 static Buf*
 db_checkpoint_catalog_dump(void* arg)
 {
-	// { schemas, tables, procs }
+	// { schemas, tables }
 	Db* self = arg;
 	auto buf = buf_create();
 	encode_obj(buf);
@@ -38,9 +38,6 @@ db_checkpoint_catalog_dump(void* arg)
 	encode_raw(buf, "tables", 6);
 	table_mgr_dump(&self->table_mgr, buf);
 
-	encode_raw(buf, "procs", 5);
-	proc_mgr_dump(&self->proc_mgr, buf);
-
 	encode_obj_end(buf);
 	return buf;
 }
@@ -48,8 +45,7 @@ db_checkpoint_catalog_dump(void* arg)
 enum
 {
 	RESTORE_SCHEMA,
-	RESTORE_TABLE,
-	RESTORE_PROC
+	RESTORE_TABLE
 };
 
 static void
@@ -74,16 +70,6 @@ restore_replay(Db* self, Tr* tr, int type, uint8_t** pos)
 
 		// create table
 		table_mgr_create(&self->table_mgr, tr, config, false);
-		break;
-	}
-	case RESTORE_PROC:
-	{
-		// read procedure config
-		auto config = proc_config_read(pos);
-		defer(proc_config_free, config);
-
-		// create udf
-		proc_mgr_create(&self->proc_mgr, tr, config, false);
 		break;
 	}
 	}
@@ -113,16 +99,14 @@ restore_object(Db* self, int type, uint8_t** pos)
 static void
 db_checkpoint_catalog_restore(uint8_t** pos, void* arg)
 {
-	// { schemas, tables, procs }
+	// { schemas, tables }
 	Db* self = arg;
 	uint8_t* pos_schemas = NULL;
 	uint8_t* pos_tables  = NULL;
-	uint8_t* pos_procs   = NULL;
 	Decode obj[] =
 	{
 		{ DECODE_ARRAY, "schemas", &pos_schemas },
 		{ DECODE_ARRAY, "tables",  &pos_tables  },
-		{ DECODE_ARRAY, "procs",   &pos_procs   },
 		{ 0,             NULL,      NULL        },
 	};
 	decode_obj(obj, "catalog", pos);
@@ -136,11 +120,6 @@ db_checkpoint_catalog_restore(uint8_t** pos, void* arg)
 	json_read_array(&pos_tables);
 	while (! json_read_array_end(&pos_tables))
 		restore_object(self, RESTORE_TABLE, &pos_tables);
-
-	// procs
-	json_read_array(&pos_procs);
-	while (! json_read_array_end(&pos_procs))
-		restore_object(self, RESTORE_PROC, &pos_procs);
 }
 
 static void

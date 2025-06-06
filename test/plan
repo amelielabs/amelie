@@ -58,7 +58,6 @@ test table_create
 test table_drop
 test table_alter
 test index
-test procedure
 test cascade
 
 # dml
@@ -95,8 +94,6 @@ test lambda
 test limits
 test format
 test var
-test call
-test execute
 
 # pushdown
 directory pushdown

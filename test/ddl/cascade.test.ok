@@ -1,13 +1,7 @@
 open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "127.0.0.1", "port": 3485 }]
 connect E0 S0 127.0.0.1:3485
-# test: drop schema with dependency
-create schema test
-create table test.a(id int primary key)
-create table test.b(id int primary key)
-create procedure test.test() begin select 1 end
-drop schema test
-{"msg": "table 'a' depends on schema 'test"}
 # test: drop schema cascade
+create schema test
 drop schema test cascade
 select system.schemas()
 [[{
@@ -28,41 +22,10 @@ create table test.b(id int primary key)
 drop schema test cascade
 show tables
 []
-# test: drop schema cascade (procedures)
-show procedures
-[]
-create schema test
-create procedure test.test() begin select 1 end
-drop schema test cascade
-show procedures
-[]
-# test: drop schema cascade (external dep)
-create schema test
-create procedure test.test() begin select 1 end
-create procedure x() begin call test.test() end
-drop schema test cascade
-{"msg": "procedure 'public.x' depends on schema 'test"}
-drop procedure x
-drop schema test cascade
 # test: alter schema rename
 create schema test
 create table test.a(id int primary key)
 create table test.b(id int primary key)
-create procedure test.test() begin select 1 end
-select system.schemas()
-[[{
-  "name": "system",
-  "system": true,
-  "create": false
-}, {
-  "name": "public",
-  "system": true,
-  "create": true
-}, {
-  "name": "test",
-  "system": false,
-  "create": true
-}]]
 alter schema test rename to test2
 select system.schemas()
 [[{
@@ -82,13 +45,5 @@ select system.table('test2.a').name
 ["a"]
 select system.table('test2.b').name
 ["b"]
-show procedures
-[{
-  "schema": "test2",
-  "name": "test",
-  "text": "select 1",
-  "columns": [],
-  "vars": []
-}]
 disconnect S0
 close E0

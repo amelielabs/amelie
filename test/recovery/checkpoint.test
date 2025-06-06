@@ -93,31 +93,5 @@ show schemas
 select identity_of("test", "test")
 select * from test.test
 
-# test: create procedure
-create procedure test(arg int) begin select 1 end
-show procedures
-select system.state().lsn
-
-# test: restart/recover (checkpoint + wal)
-disconnect S0
-close E0
-open E0
-connect E0 S0 127.0.0.1:3485
-
-show procedures
-
-# test: checkpoint
-checkpoint
-select system.state().lsn
-select system.state().checkpoint
-
-# test: restart/recover (checkpoint)
-disconnect S0
-close E0
-open E0
-connect E0 S0 127.0.0.1:3485
-
-show procedures
-
 disconnect S0
 close E0

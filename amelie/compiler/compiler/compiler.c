@@ -381,27 +381,6 @@ emit_send(Compiler* self, int start)
 }
 
 static inline void
-emit_call(Compiler* self)
-{
-	auto stmt = self->current;
-	auto call = ast_call_of(stmt->ast);
-	auto args = call->ast.r;
-	auto arg  = args->l;
-	// emit variables into registers, registers kept pinned until the end
-	// of vm execution to avoid problem with async/recv on backends
-	Targets targets;
-	targets_init(&targets, stmt->scope);
-	for (auto var = call->scope->vars.list; arg && var; var = var->next)
-	{
-		var->r = emit_expr(self, &targets, arg);
-		Type type = rtype(self, var->r);
-		if (type != var->type)
-			stmt_error(self->current, arg, "expected %s", type_of(var->type));
-		arg = arg->next;
-	}
-}
-
-static inline void
 emit_recv(Compiler* self)
 {
 	Returning* ret = NULL;
@@ -450,11 +429,6 @@ emit_recv(Compiler* self)
 		break;
 	}
 
-	case STMT_CALL:
-		// emit arguments and assign as variables
-		emit_call(self);
-		break;
-
 	case STMT_WATCH:
 		// no targets (frontend only)
 		r = emit_watch(self, stmt->ast);
@@ -487,7 +461,7 @@ emit_recv(Compiler* self)
 		return;
 
 	// create content out of result on result
-	if (!stmt->scope->call && r != -1)
+	if (r != -1)
 		op3(self, CCONTENT, r, (intptr_t)&ret->columns, (intptr_t)&ret->format);
 
 	op0(self, CRET);
@@ -509,8 +483,6 @@ emit_recv_upto(Compiler* self, int last, int order)
 	for (; stmt; stmt = stmt->next)
 	{
 		if (stmt->order <= last)
-			continue;
-		if (stmt->id == STMT_CALL)
 			continue;
 		if (stmt->order > order)
 			break;
@@ -559,24 +531,18 @@ compiler_emit(Compiler* self)
 		self->current = stmt;
 
 		auto is_expr = false;
-		if (stmt->id == STMT_CALL)
+		// generate recv up to the max dependable statement order, including
+		// frontend only expressions
+		is_expr = stmt_is_expr(stmt);
+		auto recv = -1;
+		if (is_expr)
+			recv = stmt->order;
+		else
+			recv = stmt_maxcte(stmt);
+		if (recv >= 0)
 		{
-			emit_recv(self);
-		} else
-		{
-			// generate recv up to the max dependable statement order, including
-			// frontend only expressions
-			is_expr = stmt_is_expr(stmt);
-			auto recv = -1;
-			if (is_expr)
-				recv = stmt->order;
-			else
-				recv = stmt_maxcte(stmt);
-			if (recv >= 0)
-			{
-				emit_recv_upto(self, recv_last, recv);
-				recv_last = recv;
-			}
+			emit_recv_upto(self, recv_last, recv);
+			recv_last = recv;
 		}
 
 		// generate backend code (pushdown)

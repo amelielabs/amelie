@@ -154,30 +154,6 @@ fn_table(Call* self)
 }
 
 static void
-fn_procedures(Call* self)
-{
-	call_expect(self, 0);
-	auto buf = proc_mgr_list(&self->mgr->db->proc_mgr, NULL, NULL, true);
-	value_set_json_buf(self->result, buf);
-}
-
-static void
-fn_procedure(Call* self)
-{
-	call_expect(self, 1);
-	call_expect_arg(self, 0, TYPE_STRING);
-	Str name = self->argv[0].string;
-	Str schema;
-	str_init(&schema);
-	if (str_split(&name, &schema, '.'))
-		str_advance(&name, str_size(&schema) + 1);
-	else
-		str_set(&schema, "public", 6);
-	auto buf = proc_mgr_list(&self->mgr->db->proc_mgr, &schema, &name, true);
-	value_set_json_buf(self->result, buf);
-}
-
-static void
 fn_wal(Call* self)
 {
 	call_expect(self, 0);
@@ -248,14 +224,6 @@ fn_system_register(FunctionMgr* self)
 
 	// system.table()
 	func = function_allocate(TYPE_JSON, "system", "table", fn_table);
-	function_mgr_add(self, func);
-
-	// system.procedures()
-	func = function_allocate(TYPE_JSON, "system", "procedures", fn_procedures);
-	function_mgr_add(self, func);
-
-	// system.procedure()
-	func = function_allocate(TYPE_JSON, "system", "procedure", fn_procedure);
 	function_mgr_add(self, func);
 
 	// system.wal()

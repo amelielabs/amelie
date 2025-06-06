@@ -53,98 +53,6 @@ system_save_state(void* arg)
 }
 
 static void
-proc_if_prepare(Proc* self)
-{
-	System* system = self->iface_arg;
-
-	// parse and compile procedure
-	Local local;
-	local_init(&local, global());
-	local_update_time(&local);
-	Compiler compiler;
-	compiler_init(&compiler, &system->db, &local, &system->function_mgr, NULL);
-	defer(compiler_free, &compiler);
-
-	// create parsing scope
-	auto scope = scopes_add(&compiler.parser.scopes, NULL, self);
-
-	// create arguments as variables
-	list_foreach(&self->config->columns.list)
-	{
-		auto column = list_at(Column, link);
-		auto var = vars_add(&scope->vars, &column->name);
-		var->type = column->type;
-		var->r = rpin(&compiler, column->type);
-	}
-
-	// create variables
-	list_foreach(&self->config->vars.list)
-	{
-		auto column = list_at(Column, link);
-		auto var = vars_add(&scope->vars, &column->name);
-		var->type = column->type;
-		var->r = rpin(&compiler, column->type);
-	}
-
-	// parse procedure
-	auto parser = &compiler.parser;
-	auto lex = &parser->lex;
-	lex_start(lex, &self->config->text);
-	parse_scope(parser, scope);
-
-	// force last statetement as return
-	if (parser->stmt)
-		parser->stmt->ret = true;
-
-	// ensure EXPLAIN has command
-	if (unlikely(parser->explain))
-		error("EXPLAIN cannot be used inside procedure");
-
-	// ensure main stmt is not utility when using CTE
-	if (parser->stmts.count_utility > 0)
-		error("utility commands cannot be used inside procedure");
-
-	// ensure EXECUTE used only once
-	if (parser->execute)
-		error("EXECUTE command cannot be used inside procedure");
-
-	// set statements order
-	stmts_order(&parser->stmts);
-
-	// emit procedure
-	compiler_emit(&compiler);
-
-	self->data = compiler.program;
-	compiler.program = NULL;
-}
-
-static void
-proc_if_free(Proc* self)
-{
-	Program* program = self->data;
-	if (! program)
-		return;
-	program_free(program);
-	self->data = NULL;
-}
-
-static bool
-proc_if_depend(Proc* self, Str* schema, Str* name)
-{
-	Program* program = self->data;
-	if (name)
-		return access_find(&program->access, schema, name) != NULL;
-	return access_find_schema(&program->access, schema) != NULL;
-}
-
-ProcIf proc_if =
-{
-	.prepare = proc_if_prepare,
-	.free    = proc_if_free,
-	.depend  = proc_if_depend
-};
-
-static void
 system_attach(PartList* list, void* arg)
 {
 	// redistribute partitions across backends
@@ -190,7 +98,7 @@ system_create(void)
 	function_mgr_init(&self->function_mgr);
 
 	// db
-	db_init(&self->db, system_attach, self, &proc_if, self);
+	db_init(&self->db, system_attach, self);
 
 	// replication
 	repl_init(&self->repl, &self->db);

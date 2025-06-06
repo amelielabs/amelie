@@ -69,40 +69,17 @@ show table test
 }]
 show table test format 'json'
 [{"schema": "public", "name": "test", "unlogged": false}]
-# test: show procedures
-create procedure test() begin select 1 end
-show procedures
-[{
-  "schema": "public",
-  "name": "test",
-  "text": "select 1",
-  "columns": [],
-  "vars": []
-}]
-# test: show procedure
-show procedure
-{"msg": "show procedure ⟵ procedure name expected"}
-show procedure test
-[{
-  "schema": "public",
-  "name": "test",
-  "text": "select 1",
-  "columns": [],
-  "vars": []
-}]
-show procedure test format 'json'
-[{"schema": "public", "name": "test", "text": "select 1", "columns": [], "vars": []}]
 # test: show wal
 show wal
 [{
-  "lsn": 4,
+  "lsn": 3,
   "lsn_min": 1,
   "files": 1,
   "slots": 0,
   "slots_min": -1,
-  "writes": 3,
-  "writes_bytes": 472,
-  "ops": 3,
+  "writes": 2,
+  "writes_bytes": 376,
+  "ops": 2,
   "checkpoint": 1
 }]
 # test: show replicas
@@ -124,7 +101,7 @@ select system.state()
   "frontends": 1,
   "backends": 1,
   "checkpoint": 1,
-  "lsn": 4,
+  "lsn": 3,
   "psn": 1,
   "read_only": false
 }]

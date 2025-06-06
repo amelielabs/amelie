@@ -151,7 +151,6 @@ Keyword keywords[] =
 
 	// p
 	{ KPROFILE,               "profile",               7  },
-	{ KPROCEDURE,             "procedure",             9  },
 	{ KPARTITIONS,            "partitions",            10 },
 	{ KPOOL,                  "pool",                  4  },
 	{ KPRIMARY,               "primary",               7  },

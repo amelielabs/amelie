@@ -145,20 +145,10 @@ session_execute_distributed(Session* self)
 	auto explain  = &self->explain;
 	auto dtr      = &self->dtr;
 
-	// [EXECUTE]
-	Program* program;
-	auto stmt = compiler_stmt(compiler);
-	if (stmt->id == STMT_EXECUTE)
-	{
-		// use precompiled procedure
-		program = ast_execute_of(stmt->ast)->proc->data;
-	} else
-	{
-		// generate bytecode
-		compiler_emit(compiler);
-		program = compiler->program;
-		reg_prepare(&self->vm.r, program->code.regs);
-	}
+	// generate bytecode
+	compiler_emit(compiler);
+	auto program = compiler->program;
+	reg_prepare(&self->vm.r, program->code.regs);
 
 	// prepare distributed transaction
 	dtr_create(dtr, program);

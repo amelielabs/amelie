@@ -42,13 +42,6 @@ select system.tables()
 select system.table('test')
 select system.table('test.a')
 
-# test: procedures()
-select system.procedures()
-
-# test: procedure()
-select system.procedure('test')
-select system.procedure('test.a')
-
 # test: wal()
 select system.wal()
 
