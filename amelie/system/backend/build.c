@@ -150,7 +150,8 @@ build_run(Build* self)
 		error = msg_error(&am_self()->error);
 	executor_commit(executor, dtr, error);
 
-	info("complete");
+	if (self->type != BUILD_RECOVER)
+		info("complete");
 }
 
 void
