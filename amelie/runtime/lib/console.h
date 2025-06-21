@@ -24,7 +24,7 @@ struct Console
 	Buf*           refresh;
 	Buf*           buf;
 	int            buf_pos;
-    struct termios term;
+	struct termios term;
 };
 
 void console_init(Console*);

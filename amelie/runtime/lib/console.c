@@ -182,8 +182,8 @@ console_read_escape(Console* self)
 		if (! buf_size(buf))
 			break;
 		memmove(buf->start + self->buf_pos,
-				buf->start + self->buf_pos + 1,
-				buf_size(buf) - self->buf_pos);
+		        buf->start + self->buf_pos + 1,
+		        buf_size(buf) - self->buf_pos);
 		buf_truncate(buf, 1);
 		if (self->buf_pos > buf_size(buf))
 			self->buf_pos = buf_size(buf);
