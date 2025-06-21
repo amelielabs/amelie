@@ -151,6 +151,7 @@ set(AMELIE_SOURCES_RUNTIME
     ${AMELIE_ROOT}/runtime/lib/timestamp.c
     ${AMELIE_ROOT}/runtime/lib/vector.c
     ${AMELIE_ROOT}/runtime/lib/logger.c
+    ${AMELIE_ROOT}/runtime/lib/console.c
     ${AMELIE_ROOT}/runtime/json/json_parser.c
     ${AMELIE_ROOT}/runtime/json/json_export.c
     ${AMELIE_ROOT}/runtime/config/opts.c
@@ -300,7 +301,6 @@ set(AMELIE_SOURCES_CLI
     ${AMELIE_ROOT}/cli/cli/login_mgr.c
     ${AMELIE_ROOT}/cli/cli/cli.c
     ${AMELIE_ROOT}/cli/server/server.c
-    ${AMELIE_ROOT}/cli/client/console.c
     ${AMELIE_ROOT}/cli/client/import.c
     ${AMELIE_ROOT}/cli/client/client.c
     ${AMELIE_ROOT}/cli/client/top.c

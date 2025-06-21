@@ -11,6 +11,5 @@
 // AGPL-3.0 Licensed.
 //
 
-#include "client/console.h" 
 #include "client/import.h"
 #include "client/top.h"

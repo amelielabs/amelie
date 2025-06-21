@@ -90,7 +90,7 @@ cli_cmd_client_execute(Client* client, Str* content)
 }
 
 static void
-cli_cmd_client_main(Cli* self, Client* client)
+cli_cmd_client_main(Cli* self, Client* client, Console* cons)
 {
 	auto name = remote_get(client->remote, REMOTE_NAME);
 	auto uri  = remote_get(client->remote, REMOTE_URI);
@@ -109,25 +109,24 @@ cli_cmd_client_main(Cli* self, Client* client)
 	else
 		prompt_str = uri;
 	char prompt_ss[128];
-	char prompt_ms[128];
 	snprintf(prompt_ss, sizeof(prompt_ss), "%.*s> ", str_size(prompt_str),
 	         str_of(prompt_str));
-	snprintf(prompt_ms, sizeof(prompt_ms), "%.*s- ", str_size(prompt_str),
-	         str_of(prompt_str));
-
-	auto is_terminal = console_is_terminal();
 	for (;;)
 	{
 		// >
+		Str prompt;
+		str_init(&prompt);
+		if (! separator_pending(&sep))
+			str_set_cstr(&prompt, prompt_ss);
+
 		Str input;
 		str_init(&input);
-		auto prompt = separator_pending(&sep) ? prompt_ms: prompt_ss;
-		if (! console(prompt, &input))
+		if (! console(cons, &prompt, &input))
 			break;
 		defer(str_free, &input);
 
 		// split commands by \n
-		if (is_terminal)
+		if (cons->is_tty)
 		{
 			cli_cmd_client_execute(client, &input);
 			continue;
@@ -155,9 +154,14 @@ cli_cmd_client(Cli* self, int argc, char** argv)
 	home_open(&self->home);
 
 	// prepare console and read history
-	char path[PATH_MAX];
-	home_set_path(path, sizeof(path), "history");
-	console_open(path);
+	Console console;
+	console_init(&console);
+
+	char path_str[PATH_MAX];
+	home_set_path(path_str, sizeof(path_str), "history");
+	Str path;
+	str_set_cstr(&path, path_str);
+	console_prepare(&console, &path);
 
 	opt_int_set(&config()->log_connections, false);
 
@@ -177,7 +181,7 @@ cli_cmd_client(Cli* self, int argc, char** argv)
 		client_connect(client);
 
 		// process cli
-		cli_cmd_client_main(self, client);
+		cli_cmd_client_main(self, client, &console);
 	);
 
 	if (client)
@@ -187,8 +191,8 @@ cli_cmd_client(Cli* self, int argc, char** argv)
 	}
 
 	// sync history
-	console_sync(path);
-	console_close();
+	console_sync(&console, &path);
+	console_free(&console);
 }
 
 void

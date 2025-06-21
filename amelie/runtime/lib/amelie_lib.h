@@ -49,6 +49,7 @@
 // cli
 #include "lib/arg.h"
 #include "lib/separator.h"
+#include "lib/console.h"
 
 // locking
 #include "lib/lock.h"
