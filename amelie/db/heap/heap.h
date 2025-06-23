@@ -47,6 +47,7 @@ struct HeapBucket
 struct HeapHeader
 {
 	uint32_t   crc;
+	uint32_t   crc_data;
 	uint64_t   lsn;
 	uint32_t   count;
 	HeapBucket buckets[];

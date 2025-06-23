@@ -53,6 +53,7 @@ struct Config
 	// checkpoint
 	Opt  checkpoint_interval;
 	Opt  checkpoint_workers;
+	Opt  checkpoint_crc;
 	Opts opts;
 };
 

@@ -146,7 +146,8 @@ show config
   "repl_readahead": 262144,
   "repl_reconnect_ms": 3000,
   "checkpoint_interval": "5 min",
-  "checkpoint_workers": 3
+  "checkpoint_workers": 3,
+  "checkpoint_crc": true
 }]
 # test: show all
 show all
@@ -183,7 +184,8 @@ show all
   "repl_readahead": 262144,
   "repl_reconnect_ms": 3000,
   "checkpoint_interval": "5 min",
-  "checkpoint_workers": 3
+  "checkpoint_workers": 3,
+  "checkpoint_crc": true
 }]
 select system.config().uuid
 ["00000000-0000-0000-0000-000000000000"]

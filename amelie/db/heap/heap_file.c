@@ -35,16 +35,30 @@ heap_file_write(Heap* self, char* path)
 	auto size = sizeof(HeapHeader) + sizeof(HeapBucket) * 385;
 	iov_add(&iov, self->header, size);
 
+	self->header->crc = 0;
+	self->header->crc_data = 0;
+
 	auto page_mgr = &self->page_mgr;
 	for (int i = 0; i < page_mgr->list_count; i++)
 	{
 		auto page = page_mgr_at(page_mgr, i);
 		auto page_header = (PageHeader*)page->pointer;
+
+		if (opt_int_of(&config()->checkpoint_crc))
+			self->header->crc_data =
+				global()->crc(self->header->crc_data, page->pointer,
+				              page_header->size);
+
 		iov_add(&iov, page->pointer, page_header->size);
 	}
-	file_writev(&file, iov_pointer(&iov), iov.iov_count);
-	// todo: sync
 
+	// always calculate heap header crc
+	self->header->crc =
+		global()->crc(0, &self->header->crc_data, size - sizeof(uint32_t));
+
+	file_writev(&file, iov_pointer(&iov), iov.iov_count);
+
+	// todo: sync
 	return file.size;
 }
 
@@ -61,6 +75,12 @@ heap_file_read(Heap* self, char* path)
 	auto size = sizeof(HeapHeader) + sizeof(HeapBucket) * 385;
 	file_read(&file, self->header, size);
 
+	// validate header crc
+	uint32_t crc_data = 0;
+	uint32_t crc = global()->crc(0, &self->header->crc_data, size - sizeof(uint32_t));
+	if (crc != self->header->crc)
+		error("heap: file '%s' header crc mismatch");
+
 	// read pages
 	auto page_mgr = &self->page_mgr;
 	for (auto i = 0ul; i < self->header->count; i++)
@@ -70,7 +90,14 @@ heap_file_read(Heap* self, char* path)
 		auto page_header = (PageHeader*)page->pointer;
 		file_read(&file, page->pointer + sizeof(PageHeader),
 		          page_header->size - sizeof(PageHeader));
+		if (opt_int_of(&config()->checkpoint_crc))
+			crc_data = global()->crc(crc_data, page->pointer, page_header->size);
 	}
+
+	// validate data crc
+	if (opt_int_of(&config()->checkpoint_crc))
+		if (crc_data != self->header->crc_data)
+			error("heap: file '%s' data crc mismatch");
 
 	// restore last page position
 	if (self->header->count > 0)
