@@ -160,11 +160,9 @@ cli_cmd_client(Cli* self, int argc, char** argv)
 	// prepare console and read history
 	Console console;
 	console_init(&console);
-	char path_str[PATH_MAX];
-	home_set_path(path_str, sizeof(path_str), "history");
-	Str path;
-	str_set_cstr(&path, path_str);
-	console_load(&console, &path);
+	char path[PATH_MAX];
+	home_set_path(path, sizeof(path), "history");
+	console_load(&console, path);
 
 	opt_int_set(&config()->log_connections, false);
 
@@ -194,7 +192,7 @@ cli_cmd_client(Cli* self, int argc, char** argv)
 	}
 
 	// sync history
-	console_save(&console, &path);
+	console_save(&console, path);
 	console_free(&console);
 }
 

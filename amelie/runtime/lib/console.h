@@ -26,11 +26,13 @@ struct Console
 	int            prompt_len;
 	Buf*           data;
 	Buf*           refresh;
+	Buf*           history_at;
+	BufList        history;
 	struct termios term;
 };
 
 void console_init(Console*);
 void console_free(Console*);
-void console_save(Console*, Str*);
-void console_load(Console*, Str*);
+void console_save(Console*, const char*);
+void console_load(Console*, const char*);
 bool console(Console*, Str*, Str*);

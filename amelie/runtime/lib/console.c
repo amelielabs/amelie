@@ -33,7 +33,9 @@ console_init(Console* self)
 	self->prompt_len   = 0;
 	self->refresh      = NULL;
 	self->data         = NULL;
+	self->history_at   = NULL;
 	memset(&self->term, 0, sizeof(self->term));
+	buf_list_init(&self->history);
 }
 
 static void
@@ -44,44 +46,72 @@ console_free(Console* self)
 {
 	if (self->is_openned)
 		console_close(self);
-
 	if (self->refresh)
 	{
 		buf_free(self->refresh);
 		self->refresh = NULL;
 	}
-	if (self->data)
+	buf_list_free(&self->history);
+}
+
+void
+console_save(Console* self, const char* path)
+{
+	// rewrite history file
+	File file;
+	file_init(&file);
+	defer(file_close, &file);
+	file_open_as(&file, path, O_TRUNC|O_CREAT|O_RDWR, 0600);
+
+	Buf* prev = NULL;
+	list_foreach(&self->history.list)
 	{
-		buf_free(self->data);
-		self->data = NULL;
+		auto buf = list_at(Buf, link);
+		if (buf_empty(buf))
+			continue;
+
+		// avoid duplicates
+		if (prev && buf_size(prev) == buf_size(buf))
+			if (! memcmp(buf->start, prev->start, buf_size(buf)))
+				continue;
+
+		file_write_buf(&file, buf);
+		file_write(&file, "\n", 1);
+		prev = buf;
 	}
 }
 
 void
-console_save(Console* self, Str* path)
+console_load(Console* self, const char* path)
 {
-	(void)self;
-	(void)path;
-	// todo: save history file
-}
+	// load history file
+	if (! fs_exists("%s", path))
+		return;
 
-void
-console_load(Console* self, Str* path)
-{
-	(void)self;
-	(void)path;
-	// todo: load history file
+	auto data = file_import("%s", path);
+	defer_buf(data);
+	Str history;
+	buf_str(data, &history);
+	while (! str_empty(&history))
+	{
+		Str cmd;
+		str_split(&history, &cmd, '\n');
+		if (str_empty(&cmd))
+		{
+			str_advance(&history, 1);
+			continue;
+		}
+		str_advance(&history, str_size(&cmd));
+		auto buf = buf_create();
+		buf_write_str(buf, &cmd);
+		buf_list_add(&self->history, buf);
+	}
 }
 
 static int
 console_open(Console* self)
 {
 	assert(! self->is_openned);
-	if (self->data)
-	{
-		buf_free(self->data);
-		self->data = NULL;
-	}
 	self->cursor     = 0;
 	self->cursor_raw = 0;
 
@@ -112,11 +142,14 @@ console_open(Console* self)
 		return -1;
 
 	self->data = buf_create();
+	buf_list_add(&self->history, self->data);
+	self->history_at = self->data;
 	self->is_openned = true;
 
 	// show current prompt
 	if (! str_empty(self->prompt))
-		vfs_write(self->fd_out, str_of(self->prompt), str_size(self->prompt));
+		vfs_write(self->fd_out, str_of(self->prompt),
+		          str_size(self->prompt));
 
 	return 0;
 }
@@ -127,7 +160,6 @@ console_close(Console* self)
 	if (! self->is_openned)
 		return;
 	tcsetattr(self->fd_in, TCSAFLUSH, &self->term);
-	// todo: place to history
 	self->is_openned = false;
 }
 
@@ -175,6 +207,18 @@ console_refresh(Console* self)
 	vfs_write(self->fd_out, buf_cstr(buf), buf_size(buf));
 }
 
+static void
+console_set(Console* self, Buf* as)
+{
+	auto data = self->data;
+	buf_reset(data);
+	buf_write(data, as->start, buf_size(as));
+	Str str;
+	buf_str(data, &str);
+	self->cursor = utf8_strlen(&str);
+	self->cursor_raw = buf_size(data);
+}
+
 static bool
 console_read_escape(Console* self)
 {
@@ -219,11 +263,31 @@ console_read_escape(Console* self)
 		break;
 	}
 	case 'A': // Up
-		// todo: history up
+	{
+		if (self->history.list_count == 1)
+			break;
+		Buf* prev;
+		if (list_is_first(&self->history.list, &self->history_at->link))
+			prev = data;
+		else
+			prev = container_of(self->history_at->link.prev, Buf, link);
+		self->history_at = prev;
+		console_set(self, prev);
 		break;
+	}
 	case 'B': // Down
-		// todo: history down
+	{
+		if (self->history.list_count == 1)
+			break;
+		Buf* next;
+		if (list_is_last(&self->history.list, &self->history_at->link))
+			next = container_of(self->history.list.next, Buf, link);
+		else
+			next = container_of(self->history_at->link.next, Buf, link);
+		self->history_at = next;
+		console_set(self, next);
 		break;
+	}
 	case 'C': // Right
 	{
 		if (self->cursor_raw == buf_size(data))
