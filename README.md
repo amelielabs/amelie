@@ -65,6 +65,7 @@ Currently only Linux environments are supported.
 - clang or gcc
 - openssl
 - libpcre
+- libzstd
 
 #### Build Release
 

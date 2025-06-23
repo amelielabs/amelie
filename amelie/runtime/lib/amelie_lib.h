@@ -43,6 +43,10 @@
 #include "lib/avg.h"
 #include "lib/vector.h"
 
+// compression
+#include "lib/compression.h"
+#include "lib/compression_zstd.h"
+
 // logger
 #include "lib/logger.h"
 

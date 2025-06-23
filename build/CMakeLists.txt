@@ -43,14 +43,17 @@ set(CMAKE_THREAD_PREFER_PTHREAD true)
 find_package(Threads REQUIRED)
 find_package(OpenSSL REQUIRED)
 find_package(PCRE REQUIRED)
+find_package(ZSTD REQUIRED)
 
 include_directories(${OPENSSL_INCLUDE_DIR})
 include_directories(${PCRE_INCLUDE_DIR})
+include_directories(${ZSTD_INCLUDE_DIR})
 
 set(AMELIE_LIBRARIES m
     ${CMAKE_THREAD_LIBS_INIT}
     ${OPENSSL_LIBRARIES}
-    ${PCRE_LIBRARIES})
+    ${PCRE_LIBRARIES}
+    ${ZSTD_LIBRARIES})
 
 # project includes
 set(AMELIE_ROOT "${CMAKE_SOURCE_DIR}/amelie")
@@ -150,6 +153,7 @@ set(AMELIE_SOURCES_RUNTIME
     ${AMELIE_ROOT}/runtime/lib/interval.c
     ${AMELIE_ROOT}/runtime/lib/timestamp.c
     ${AMELIE_ROOT}/runtime/lib/vector.c
+    ${AMELIE_ROOT}/runtime/lib/compression_zstd.c
     ${AMELIE_ROOT}/runtime/lib/logger.c
     ${AMELIE_ROOT}/runtime/lib/console.c
     ${AMELIE_ROOT}/runtime/json/json_parser.c
