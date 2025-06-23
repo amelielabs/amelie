@@ -122,7 +122,11 @@ cli_cmd_client_main(Cli* self, Client* client, Console* cons)
 		Str input;
 		str_init(&input);
 		if (! console(cons, &prompt, &input))
+		{
+			if (separator_read_leftover(&sep, &input))
+				cli_cmd_client_execute(client, &input);
 			break;
+		}
 		defer(str_free, &input);
 
 		// split commands by \n
@@ -156,12 +160,11 @@ cli_cmd_client(Cli* self, int argc, char** argv)
 	// prepare console and read history
 	Console console;
 	console_init(&console);
-
 	char path_str[PATH_MAX];
 	home_set_path(path_str, sizeof(path_str), "history");
 	Str path;
 	str_set_cstr(&path, path_str);
-	console_prepare(&console, &path);
+	console_load(&console, &path);
 
 	opt_int_set(&config()->log_connections, false);
 
@@ -191,7 +194,7 @@ cli_cmd_client(Cli* self, int argc, char** argv)
 	}
 
 	// sync history
-	console_sync(&console, &path);
+	console_save(&console, &path);
 	console_free(&console);
 }
 

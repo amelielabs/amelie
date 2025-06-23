@@ -203,6 +203,15 @@ separator_read(Separator* self, Str* block)
 	return true;
 }
 
+static inline bool
+separator_read_leftover(Separator* self, Str* block)
+{
+	if (! separator_pending(self))
+		return false;
+	buf_str(&self->buf, block);
+	return true;
+}
+
 static inline void
 separator_advance(Separator* self)
 {

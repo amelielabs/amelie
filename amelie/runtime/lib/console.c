@@ -22,10 +22,10 @@
 void
 console_init(Console* self)
 {
-	self->is_openned   = false;
-	self->is_tty       = false;
 	self->fd_in        = STDIN_FILENO;
 	self->fd_out       = STDOUT_FILENO;
+	self->is_openned   = false;
+	self->is_tty       = isatty(self->fd_in);
 	self->cols         = 0;
 	self->cursor       = 0;
 	self->cursor_raw   = 0;
@@ -58,12 +58,19 @@ console_free(Console* self)
 }
 
 void
-console_prepare(Console* self, Str* path)
+console_save(Console* self, Str* path)
 {
-	self->refresh = buf_create();
-	self->is_tty = isatty(self->fd_in);
-	// todo: load history
+	(void)self;
 	(void)path;
+	// todo: save history file
+}
+
+void
+console_load(Console* self, Str* path)
+{
+	(void)self;
+	(void)path;
+	// todo: load history file
 }
 
 static int
@@ -153,6 +160,11 @@ console_refresh(Console* self)
 
 	// print, erase to the right and move the cursor
 	auto buf = self->refresh;
+	if (! buf)
+	{
+		buf = buf_create();
+		self->refresh = buf;
+	}
 	buf_reset(buf);
 	buf_write(buf, "\r", 1);
 	buf_write_str(buf, self->prompt);
@@ -353,32 +365,51 @@ console_read(Console* self)
 	return false;
 }
 
-void
-console_sync(Console* self, Str* path)
+static inline bool
+console_stream(Console* self, Str* input)
 {
-	(void)self;
-	(void)path;
-	// todo: save history file
+	auto data = self->data;
+	if (! data)
+	{
+		data = buf_create();
+		self->data = data;
+	}
+	buf_reset(data);
+	for (;;)
+	{
+		char chr = fgetc(stdin);
+		if (chr == EOF)
+		{
+			if (buf_empty(data))
+				return false;
+			break;
+		}
+		if (chr == '\n')
+			break;
+		buf_write(data, &chr, 1);
+	}
+	buf_str(self->data, input);
+	return true;
+}
+
+static inline bool
+console_tty(Console* self, Str* prompt, Str* input)
+{
+	self->prompt = prompt;
+	self->prompt_len = utf8_strlen(prompt);
+	int rc = console_open(self);
+	if (rc == -1)
+		return false;
+	rc = console_read(self);
+	console_close(self);
+	buf_str(self->data, input);
+	return rc;
 }
 
 bool
 console(Console* self, Str* prompt, Str* input)
 {
-	(void)input;
 	if (self->is_tty)
-	{
-		self->prompt = prompt;
-		self->prompt_len = utf8_strlen(prompt);
-
-		int rc = console_open(self);
-		if (rc == -1)
-			return false;
-		rc = console_read(self);
-		console_close(self);
-		buf_str(self->data, input);
-		return rc;
-	}
-
-	// todo: read from the stream directly
-	return false;
+		return console_tty(self, prompt, input);
+	return console_stream(self, input);
 }

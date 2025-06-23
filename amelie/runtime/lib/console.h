@@ -31,6 +31,6 @@ struct Console
 
 void console_init(Console*);
 void console_free(Console*);
-void console_prepare(Console*, Str*);
-void console_sync(Console*, Str*);
+void console_save(Console*, Str*);
+void console_load(Console*, Str*);
 bool console(Console*, Str*, Str*);
