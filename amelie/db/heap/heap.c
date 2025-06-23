@@ -63,6 +63,8 @@ heap_create(Heap* self)
 	auto header = (HeapHeader*)am_malloc(size);
 	header->crc      = 0;
 	header->crc_data = 0;
+	header->magic    = HEAP_MAGIC;
+	header->version  = 0;
 	header->lsn      = 0;
 	header->count    = 0;
 	self->header     = header;

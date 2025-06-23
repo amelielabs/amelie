@@ -44,10 +44,15 @@ struct HeapBucket
 	uint64_t unused: 16;
 } packed;
 
+#define HEAP_MAGIC   0x20849610
+#define HEAP_VERSION 0
+
 struct HeapHeader
 {
 	uint32_t   crc;
 	uint32_t   crc_data;
+	uint32_t   magic;
+	uint32_t   version;
 	uint64_t   lsn;
 	uint32_t   count;
 	HeapBucket buckets[];

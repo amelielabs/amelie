@@ -75,6 +75,14 @@ heap_file_read(Heap* self, char* path)
 	auto size = sizeof(HeapHeader) + sizeof(HeapBucket) * 385;
 	file_read(&file, self->header, size);
 
+	// validate header magic
+	if (self->header->magic != HEAP_MAGIC)
+		error("heap: file '%s' has invalid header");
+
+	// validate version
+	if (self->header->version != HEAP_VERSION)
+		error("heap: file '%s' has incompatible version");
+
 	// validate header crc
 	uint32_t crc_data = 0;
 	uint32_t crc = global()->crc(0, &self->header->crc_data, size - sizeof(uint32_t));
