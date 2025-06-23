@@ -19,11 +19,13 @@ struct Console
 	bool           is_tty;
 	int            fd_in;
 	int            fd_out;
-	Str*           prompt;
 	int            cols;
+	int            cursor;
+	int            cursor_raw;
+	Str*           prompt;
+	int            prompt_len;
+	Buf*           data;
 	Buf*           refresh;
-	Buf*           buf;
-	int            buf_pos;
 	struct termios term;
 };
 

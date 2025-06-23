@@ -22,15 +22,17 @@
 void
 console_init(Console* self)
 {
-	self->is_openned = false;
-	self->is_tty     = false;
-	self->fd_in      = STDIN_FILENO;
-	self->fd_out     = STDOUT_FILENO;
-	self->prompt     = NULL;
-	self->cols       = 0;
-	self->refresh    = NULL;
-	self->buf        = NULL;
-	self->buf_pos    = 0;
+	self->is_openned   = false;
+	self->is_tty       = false;
+	self->fd_in        = STDIN_FILENO;
+	self->fd_out       = STDOUT_FILENO;
+	self->cols         = 0;
+	self->cursor       = 0;
+	self->cursor_raw   = 0;
+	self->prompt       =  NULL;
+	self->prompt_len   = 0;
+	self->refresh      = NULL;
+	self->data         = NULL;
 	memset(&self->term, 0, sizeof(self->term));
 }
 
@@ -48,10 +50,10 @@ console_free(Console* self)
 		buf_free(self->refresh);
 		self->refresh = NULL;
 	}
-	if (self->buf)
+	if (self->data)
 	{
-		buf_free(self->buf);
-		self->buf = NULL;
+		buf_free(self->data);
+		self->data = NULL;
 	}
 }
 
@@ -68,12 +70,13 @@ static int
 console_open(Console* self)
 {
 	assert(! self->is_openned);
-	if (self->buf)
+	if (self->data)
 	{
-		buf_free(self->buf);
-		self->buf = NULL;
+		buf_free(self->data);
+		self->data = NULL;
 	}
-	self->buf_pos = 0;
+	self->cursor     = 0;
+	self->cursor_raw = 0;
 
 	// get the current terminal columns 
 	struct winsize ws;
@@ -101,7 +104,7 @@ console_open(Console* self)
 	if (rc == -1)
 		return -1;
 
-	self->buf = buf_create();
+	self->data = buf_create();
 	self->is_openned = true;
 
 	// show current prompt
@@ -126,16 +129,27 @@ console_refresh(Console* self)
 {
 	Str data;
 	str_init(&data);
-	buf_str(self->buf, &data);
+	buf_str(self->data, &data);
 
-	int cursor = str_size(self->prompt) + self->buf_pos;
-	while (cursor >= self->cols)
+	// cut the line from the start according to the cursor
+	int cursor = self->prompt_len + self->cursor;
+	while (cursor >= self->cols && !str_empty(&data))
 	{
-		str_advance(&data, 1);
+		utf8_forward(&data.pos);
 		cursor--;
 	}
-	while (str_size(self->prompt) + str_size(&data) > self->cols)
-		data.end--;
+
+	// cut the line from the end to fit on the screen
+	auto data_len = 0;
+	auto end = data.end;
+	data.end = data.pos;
+	while ((self->prompt_len + data_len) < self->cols)
+	{
+		if (data.end == end)
+			break;
+		utf8_forward(&data.end);
+		data_len++;
+	}
 
 	// print, erase to the right and move the cursor
 	auto buf = self->refresh;
@@ -174,20 +188,24 @@ console_read_escape(Console* self)
 		cmd = seq[1];
 	}
 
-	auto buf = self->buf;
+	auto data = self->data;
 	switch (cmd) {
 	case '3': // Delete
-		if (self->buf_pos == buf_size(buf))
+	{
+		if (self->cursor_raw == buf_size(data))
 			break;
-		if (! buf_size(buf))
+		if (buf_empty(data))
 			break;
-		memmove(buf->start + self->buf_pos,
-		        buf->start + self->buf_pos + 1,
-		        buf_size(buf) - self->buf_pos);
-		buf_truncate(buf, 1);
-		if (self->buf_pos > buf_size(buf))
-			self->buf_pos = buf_size(buf);
+		char* start = (char*)data->start + self->cursor_raw;
+		char* pos   = start;
+		utf8_forward(&pos);
+		int   size  = pos - start;
+		memmove(start, pos, (char*)data->position - pos);
+		buf_truncate(data, size);
+		if (self->cursor_raw > buf_size(data))
+			self->cursor_raw = buf_size(data);
 		break;
+	}
 	case 'A': // Up
 		// todo: history up
 		break;
@@ -195,36 +213,83 @@ console_read_escape(Console* self)
 		// todo: history down
 		break;
 	case 'C': // Right
-		if (self->buf_pos < buf_size(buf))
-			self->buf_pos++;
+	{
+		if (self->cursor_raw == buf_size(data))
+			break;
+		char* start = (char*)data->start + self->cursor_raw;
+		char* pos   = start;
+		utf8_forward(&pos);
+		self->cursor_raw += pos - start;
+		self->cursor++;
 		break;
+	}
 	case 'D': // Left
-		if (self->buf_pos > 0)
-			self->buf_pos--;
+	{
+		if (! self->cursor_raw)
+			break;
+
+		int size;
+		if (self->cursor_raw < buf_size(data))
+		{
+			char* start = (char*)data->start + self->cursor_raw;
+			char* pos = start - 1;
+			utf8_backward(&pos);
+			size = start - pos;
+		} else
+		{
+			char* pos = (char*)data->position - 1;
+			utf8_backward(&pos);
+			size = (char*)data->position - pos;
+		}
+
+		self->cursor_raw -= size;
+		self->cursor--;
 		break;
+	}
 	case 'H': // Home
-		self->buf_pos = 0;
+		self->cursor = 0;
+		self->cursor_raw = 0;
 		break;
 	case 'F': // End
-		self->buf_pos = buf_size(buf);
+	{
+		Str str;
+		buf_str(data, &str);
+		self->cursor = utf8_strlen(&str);
+		self->cursor_raw = buf_size(data);
 		break;
+	}
 	}
 
 	return true;
 }
 
+static int
+console_read_unicode(Console* self, char unicode[4])
+{
+	int rc = vfs_read(self->fd_in, &unicode[0], 1);
+	if (rc <= 0)
+		return rc;
+	int size = utf8_sizeof(unicode[0]);
+	if (size == -1 || size == 1)
+		return size;
+	vfs_read(self->fd_in, &unicode[1], size - 1);
+	if (rc <= 0)
+		return rc;
+	return size;
+}
+
 static bool
 console_read(Console* self)
 {
-	auto buf = self->buf;
+	auto data = self->data;
 	for (;;)
 	{
-		char chr;
-		int rc = vfs_read(self->fd_in, &chr, 1);
-		if (rc <= 0)
+		char unicode[4];
+		int size = console_read_unicode(self, unicode);
+		if (size <= 0)
 			break;
 
-		switch (chr) {
+		switch (unicode[0]) {
 		case 13: // Enter
 			vfs_write(self->fd_out, "\n\r", 2);
 			return true;
@@ -240,34 +305,44 @@ console_read(Console* self)
 
 		case 127: // Backspace
 		{
-			if (! self->buf_pos)
+			if (! self->cursor)
 				break;
-			memmove(buf->start + self->buf_pos,
-			        buf->start + self->buf_pos + 1,
-			        buf_size(buf) - self->buf_pos);
-			buf_truncate(buf, 1);
-			self->buf_pos--;
+			if (self->cursor_raw < buf_size(data))
+			{
+				char* start = (char*)data->start + self->cursor_raw;
+				char* pos = start - 1;
+				utf8_backward(&pos);
+				size = start - pos;
+				memmove(pos, start, (char*)data->position - start);
+			} else
+			{
+				// last char
+				char* pos = (char*)data->position - 1;
+				utf8_backward(&pos);
+				size = (char*)data->position - pos;
+			}
+			buf_truncate(data, size);
+
+			self->cursor_raw -= size;
+			self->cursor--;
 			break;
 		}
 
-		default:
+		default: // insert or append
 		{
-			if (! isprint(chr))
-				continue;
-
-			// insert or append
-			buf_reserve(self->buf, 1);
-			if (self->buf_pos < buf_size(buf))
+			buf_reserve(self->data, size);
+			if (self->cursor_raw < buf_size(data))
 			{
-				memmove(buf->start + self->buf_pos + 1,
-				        buf->start + self->buf_pos,
-				        buf_size(buf) - self->buf_pos);
-				buf->start[self->buf_pos] = chr;
-				buf_advance(buf, 1);
+				memmove(data->start + self->cursor_raw + size,
+				        data->start + self->cursor_raw,
+				        buf_size(data) - self->cursor_raw);
+				memcpy(data->start + self->cursor_raw, unicode, size);
+				buf_advance(data, size);
 			} else {
-				buf_append(buf, &chr, 1);
+				buf_append(data, unicode, size);
 			}
-			self->buf_pos++;
+			self->cursor_raw += size;
+			self->cursor++;
 			break;
 		}
 		}
@@ -293,12 +368,14 @@ console(Console* self, Str* prompt, Str* input)
 	if (self->is_tty)
 	{
 		self->prompt = prompt;
+		self->prompt_len = utf8_strlen(prompt);
+
 		int rc = console_open(self);
 		if (rc == -1)
 			return false;
 		rc = console_read(self);
 		console_close(self);
-		buf_str(self->buf, input);
+		buf_str(self->data, input);
 		return rc;
 	}
 
