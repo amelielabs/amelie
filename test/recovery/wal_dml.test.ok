@@ -63,7 +63,8 @@ show all
   "checkpoint_interval": "5 min",
   "checkpoint_workers": 3,
   "checkpoint_crc": true,
-  "checkpoint_compression": "zstd"
+  "checkpoint_compression": "zstd",
+  "checkpoint_sync": false
 }]
 # test: restart
 disconnect S0
@@ -132,7 +133,8 @@ show all
   "checkpoint_interval": "5 min",
   "checkpoint_workers": 3,
   "checkpoint_crc": true,
-  "checkpoint_compression": "zstd"
+  "checkpoint_compression": "zstd",
+  "checkpoint_sync": false
 }]
 # test: create table
 create table test (id serial primary key, data int default 0)

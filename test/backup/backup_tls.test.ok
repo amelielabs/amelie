@@ -49,7 +49,8 @@ show all
   "checkpoint_interval": "5 min",
   "checkpoint_workers": 3,
   "checkpoint_crc": true,
-  "checkpoint_compression": "zstd"
+  "checkpoint_compression": "zstd",
+  "checkpoint_sync": false
 }]
 show state
 [{

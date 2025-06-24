@@ -55,6 +55,7 @@ struct Config
 	Opt  checkpoint_workers;
 	Opt  checkpoint_crc;
 	Opt  checkpoint_compression;
+	Opt  checkpoint_sync;
 	Opts opts;
 };
 

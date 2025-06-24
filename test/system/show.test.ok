@@ -148,7 +148,8 @@ show config
   "checkpoint_interval": "5 min",
   "checkpoint_workers": 3,
   "checkpoint_crc": true,
-  "checkpoint_compression": "zstd"
+  "checkpoint_compression": "zstd",
+  "checkpoint_sync": false
 }]
 # test: show all
 show all
@@ -187,7 +188,8 @@ show all
   "checkpoint_interval": "5 min",
   "checkpoint_workers": 3,
   "checkpoint_crc": true,
-  "checkpoint_compression": "zstd"
+  "checkpoint_compression": "zstd",
+  "checkpoint_sync": false
 }]
 select system.config().uuid
 ["00000000-0000-0000-0000-000000000000"]

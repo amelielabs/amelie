@@ -57,7 +57,9 @@ heap_file_write(Heap* self, char* path)
 		file_write_buf(&file, cp_buf);
 	}
 
-	// todo: sync
+	// sync
+	if (opt_int_of(&config()->checkpoint_sync))
+		file_sync(&file);
 	return file.size;
 }
 
