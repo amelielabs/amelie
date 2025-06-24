@@ -195,7 +195,7 @@ file_writev(File* self, struct iovec* iov, int iov_count)
 }
 
 static inline void
-file_pwrite(File* self, void *data, int size, uint64_t offset)
+file_pwrite(File* self, void* data, int size, uint64_t offset)
 {
 	int rc = vfs_pwrite(self->fd, data, size, offset);
 	if (unlikely(rc == -1))

@@ -36,7 +36,8 @@ show all
   "repl_reconnect_ms": 3000,
   "checkpoint_interval": "5 min",
   "checkpoint_workers": 3,
-  "checkpoint_crc": true
+  "checkpoint_crc": true,
+  "checkpoint_compression": "zstd"
 }]
 show state
 [{
@@ -90,7 +91,8 @@ show all
   "repl_reconnect_ms": 3000,
   "checkpoint_interval": "5 min",
   "checkpoint_workers": 3,
-  "checkpoint_crc": true
+  "checkpoint_crc": true,
+  "checkpoint_compression": "zstd"
 }]
 show state
 [{

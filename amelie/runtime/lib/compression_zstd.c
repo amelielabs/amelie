@@ -48,42 +48,32 @@ compression_zstd_free(Compression* ptr)
 
 hot static void
 compression_zstd_compress(Compression* ptr, Buf* buf, int level,
-                          int          argc,
-                          Buf**        argv)
+                          uint8_t*     data,
+                          int          data_size)
 {
 	auto self = (CompressionZstd*)ptr;
 	ZSTD_CCtx_reset(self->ctx, ZSTD_reset_session_only);
 	if (level > 0)
 		ZSTD_CCtx_setParameter(self->ctx, ZSTD_c_compressionLevel, level);
 
-	size_t size = 0;
-	for (int i = 0; i < argc; i++)
-		size += buf_size(argv[i]);
-	buf_reserve(buf, size);
+	buf_reserve(buf, data_size);
 
 	ZSTD_outBuffer out;
 	out.dst  = buf->position;
 	out.size = buf_size_unused(buf);
 	out.pos  = 0;
 
-	for (int i = 0; i < argc; i++)
-	{
-		ZSTD_inBuffer in;
-		in.src   = argv[i]->start;
-		in.size  = buf_size(argv[i]);
-		in.pos   = 0;
-
-		ssize_t rc;
-		rc = ZSTD_compressStream2(self->ctx, &out, &in, ZSTD_e_continue);
-		assert(rc == 0);
-		unused(rc);
-	}
-
 	ZSTD_inBuffer in;
-	in.src   = NULL;
-	in.size  = 0;
+	in.src   = data;
+	in.size  = data_size;
 	in.pos   = 0;
+
 	ssize_t rc;
+	rc = ZSTD_compressStream2(self->ctx, &out, &in, ZSTD_e_continue);
+	assert(rc == 0);
+	unused(rc);
+
+	memset(&in, 0, sizeof(in));
 	rc = ZSTD_compressStream2(self->ctx, &out, &in, ZSTD_e_end);
 	unused(rc);
 
@@ -94,17 +84,14 @@ hot static void
 compression_zstd_decompress(Compression* ptr,
                             Buf*         buf,
                             uint8_t*     data,
-                            int          data_size,
-                            int          data_size_uncompressed)
+                            int          data_size)
 {
 	unused(ptr);
-	buf_reserve(buf, data_size_uncompressed);
 	ssize_t rc;
-	rc = ZSTD_decompress(buf->start, data_size_uncompressed, data, data_size);
+	rc = ZSTD_decompress(data, data_size, buf->start, buf_size(buf));
 	if (unlikely(ZSTD_isError(rc)))
 		error("zstd: decompression failed");
-	assert(rc == data_size_uncompressed);
-	buf_advance(buf, data_size_uncompressed);
+	assert(rc == data_size);
 }
 
 CompressionIf compression_zstd =

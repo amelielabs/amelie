@@ -80,6 +80,7 @@ config_prepare(Config* self)
 		{ "checkpoint_interval",     OPT_STRING, OPT_C,                   &self->checkpoint_interval,     "5 min",       0                   },
 		{ "checkpoint_workers",      OPT_INT,    OPT_C,                   &self->checkpoint_workers,      NULL,          3                   },
 		{ "checkpoint_crc",          OPT_BOOL,   OPT_C,                   &self->checkpoint_crc,          NULL,          true                },
+		{ "checkpoint_compression",  OPT_STRING, OPT_C,                   &self->checkpoint_compression,  "zstd",        0                   },
 		{  NULL,                     0,          0,                       NULL,                           NULL,          0                   },
 	};
 	opts_define(&self->opts, defs);

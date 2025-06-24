@@ -17,7 +17,9 @@ typedef struct PageMgr    PageMgr;
 
 struct PageHeader
 {
+	uint32_t crc;
 	uint32_t size;
+	uint32_t size_compressed;
 	uint32_t last;
 } packed;
 

@@ -314,5 +314,11 @@ instance_open(Instance* self, char* directory, int argc, char** argv)
 	if (! opt_int_of(&config->log_to_file))
 		logger_close(logger);
 
+	// validate compression type
+	auto cp = &config()->checkpoint_compression.string;
+	if (! str_is(cp, "zstd", 4))
+		error("invalid checkpoint_compression type %.*s",
+		      str_size(cp), str_of(cp));
+
 	return bootstrap;
 }
