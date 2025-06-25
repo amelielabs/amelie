@@ -1,5 +1,20 @@
 # Amelie Changelog.
 
+## 0.4.0 (25-06-2025)
+
+This release introduces checkpoint compression and a custom command reader (readline/linenoise) replacement.
+
+This release introduces checkpoint file format compression (heap file to be exact) and it is enabled by default
+using the zstd compression now.
+
+For performance reasons Amelie checkpoint dumps exact copy of heaps per partition (memory allocator context) to
+avoid index scans. Since the heap file format is sparse and designed for faster allocations, the compression
+allows to greatly save space here in the range of x10-100 depending on the data being stored. Additionally this
+release introduces checkpoint specific options, such as checkpoint_crc and checkpoint_sync.
+
+This versions also introduces custom command line reader to replace linenoise with a simpler implementation with
+utf8 support. This will also allow better extensibility in the future.
+
 ## 0.3.0 (22-04-2025)
 
 This release redefines how Amelie works with tables and partitions, solving major cross-compute limitations.

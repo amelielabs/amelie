@@ -42,7 +42,7 @@ show all
 }]
 show state
 [{
-  "version": "0.4.0",
+  "version": "0.5.0",
   "directory": "_output/E0",
   "uuid": "abc00000-0000-0000-0000-000000000000",
   "frontends": 1,
@@ -98,7 +98,7 @@ show all
 }]
 show state
 [{
-  "version": "0.4.0",
+  "version": "0.5.0",
   "directory": "_output/E0",
   "uuid": "abc00000-0000-0000-0000-000000000000",
   "frontends": 1,
