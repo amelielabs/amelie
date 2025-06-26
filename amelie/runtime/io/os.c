@@ -78,7 +78,7 @@ os_cpuusage(int count, int* ids, uint64_t* usage)
 		unsigned long stat_usertime;
 		unsigned long stat_systime;
 		auto rc = sscanf(buf_cstr(buf), "%*d %*s %*c %*d "
-		                 "%*d %*d %*d %*d %*u %*lu %*lu %*lu %*lu "
+		                 "%*d %*d %*d %*d %*u %*u %*u %*u %*u "
 		                 "%lu %lu",
 		                 &stat_usertime, &stat_systime);
 		if (rc != 2)

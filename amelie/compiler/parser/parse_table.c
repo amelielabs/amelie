@@ -255,8 +255,7 @@ parse_constraints(Stmt* self, Keys* keys, Column* column)
 
 			// AS
 			stmt_expect(self, KAS);
-
-			// fallthrough
+			fallthrough;
 		}
 
 		// AS IDENTITY

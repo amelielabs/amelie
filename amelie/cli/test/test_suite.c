@@ -69,6 +69,9 @@ test_suite_execute(TestSuite* self, Test* test)
 
 	// prepare test file path
 	char test_file[PATH_MAX];
+	char test_result_file[PATH_MAX];
+	char test_ok_file[PATH_MAX];
+
 	snprintf(test_file, sizeof(test_file),
 	         "%.*s/%.*s.test",
 	         str_size(&test->group->directory),
@@ -76,15 +79,19 @@ test_suite_execute(TestSuite* self, Test* test)
 	         str_size(&test->name),
 	         str_of(&test->name));
 
-	// prepare test result file path
-	char test_result_file[PATH_MAX];
 	snprintf(test_result_file, sizeof(test_result_file),
-	         "%s.result", test_file);
+	         "%.*s/%.*s.test.result",
+	         str_size(&test->group->directory),
+	         str_of(&test->group->directory),
+	         str_size(&test->name),
+	         str_of(&test->name));
 
-	// prepare test ok file path
-	char test_ok_file[PATH_MAX];
 	snprintf(test_ok_file, sizeof(test_ok_file),
-	         "%s.ok", test_file);
+	         "%.*s/%.*s.test.ok",
+	         str_size(&test->group->directory),
+	         str_of(&test->group->directory),
+	         str_size(&test->name),
+	         str_of(&test->name));
 
 	info("  \033[0;33m%.*s\033[0m\n", str_size(&test->name),
 	     str_of(&test->name));

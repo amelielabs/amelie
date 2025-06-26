@@ -107,7 +107,7 @@ scan_on_match(Scan* self)
 	auto cp = self->compiler;
 
 	// where expr
-	int _where_jntr;
+	int _where_jntr = -1;
 	if (self->expr_where)
 	{
 		int rwhere = emit_expr(cp, self->targets, self->expr_where);
@@ -117,7 +117,7 @@ scan_on_match(Scan* self)
 	}
 
 	// offset/limit counters
-	int _offset_jmp;
+	int _offset_jmp = -1;
 	if (self->roffset != -1)
 	{
 		_offset_jmp = op_pos(cp);

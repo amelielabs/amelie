@@ -237,8 +237,8 @@ parse_returning_resolve(Returning* self, Stmt* stmt, Targets* targets)
 			// column has no alias
 			if (as->r == NULL)
 			{
-				auto name_sz = palloc(8);
-				snprintf(name_sz, 8, "col%d", self->count + 1);
+				auto name_sz = palloc(32);
+				snprintf(name_sz, 32, "col%d", self->count + 1);
 				as->r = ast(KNAME);
 				str_set_cstr(&as->r->string, name_sz);
 			}

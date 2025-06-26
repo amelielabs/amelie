@@ -74,6 +74,7 @@ type_of(Type type)
 		name = "store";
 		break;
 	case TYPE_MAX:
+	default:
 		abort();
 		break;
 	}

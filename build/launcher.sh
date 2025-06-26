@@ -15,13 +15,15 @@ for ((arg=1; arg<=$#; arg++)); do
 	fi
 done
 
+tool=`basename $1`
+
 # linker or compiler call
 if [ -z "$path_compile" ]; then
-	echo "$1 -o $path_output"
+	echo "$tool -o $path_output"
 else
 	# shorten path to <parent_dir>/<file>
 	path_rel=`echo ${path_compile} | awk -F "/" '{ print $(NF-2) "/" $(NF-1) "/" $NF }'`
-	echo "$1 -c ${path_rel}"
+	echo "$tool -c ${path_rel}"
 fi
 
 exec "$@"

@@ -297,8 +297,8 @@ parse_select_resolve_group_by(AstSelect* select)
 	{
 		auto agg = ast_agg_of(node->ast);
 		auto column = column_allocate();
-		auto name_sz = palloc(8);
-		snprintf(name_sz, 8, "_agg%d", agg->order + 1);
+		auto name_sz = palloc(32);
+		snprintf(name_sz, 32, "_agg%d", agg->order + 1);
 		Str name;
 		str_set_cstr(&name, name_sz);
 		column_set_name(column, &name);
@@ -312,8 +312,8 @@ parse_select_resolve_group_by(AstSelect* select)
 	{
 		auto group = ast_group_of(node->ast);
 		auto column = column_allocate();
-		auto name_sz = palloc(8);
-		snprintf(name_sz, 8, "_key%d", group->order + 1);
+		auto name_sz = palloc(32);
+		snprintf(name_sz, 32, "_key%d", group->order + 1);
 		Str name;
 		str_set_cstr(&name, name_sz);
 		column_set_name(column, &name);

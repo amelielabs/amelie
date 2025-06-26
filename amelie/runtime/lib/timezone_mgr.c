@@ -76,7 +76,7 @@ timezone_mgr_read(TimezoneMgr* self, char* location, char* location_nested)
 		else
 			snprintf(path, sizeof(path), "%s/%s", location, entry->d_name);
 
-		char name_sz[256];
+		char name_sz[PATH_MAX];
 		if (location_nested)
 			snprintf(name_sz, sizeof(name_sz), "%s/%s", location_nested, entry->d_name);
 		else

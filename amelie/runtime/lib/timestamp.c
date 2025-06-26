@@ -328,7 +328,7 @@ timestamp_get(int64_t value, Timezone* timezone, char* str, int str_size)
 		timestamp_error();
 
 	// timezone offset
-	char timezone_sz[16] = { 0 };
+	char timezone_sz[32] = { 0 };
 	if (timezone)
 	{
 		int sign   = tztime->utoff >= 0 ? 1: -1;
@@ -556,18 +556,25 @@ timestamp_trunc(Timestamp* self, Str* field)
 	switch (rc) {
 	case TIMESTAMP_YEAR:
 		time->tm_mon = 0;
+		fallthrough;
 	case TIMESTAMP_MONTH:
 		time->tm_mday = 1;
+		fallthrough;
 	case TIMESTAMP_DAY:
 		time->tm_hour = 0;
+		fallthrough;
 	case TIMESTAMP_HOUR:
 		time->tm_min = 0;
+		fallthrough;
 	case TIMESTAMP_MINUTE:
 		time->tm_sec = 0;
+		fallthrough;
 	case TIMESTAMP_SECOND:
 		self->us = 0;
+		fallthrough;
 	case TIMESTAMP_MILLISECOND:
 		self->us = (self->us / 1000) * 1000;
+		fallthrough;
 	case TIMESTAMP_MICROSECOND:
 		break;
 	}

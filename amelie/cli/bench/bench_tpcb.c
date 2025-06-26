@@ -291,9 +291,9 @@ bench_tpcb_main(BenchWorker* self, Client* client)
 
 	while (! self->shutdown)
 	{
-		uint64_t random = random_generate(global()->random); 
-		uint32_t a = *(uint32_t*)(&random);
-		uint32_t b = *(uint32_t*)((uint8_t*)&random + sizeof(uint32_t));
+		uint64_t random = random_generate(global()->random);
+		uint32_t a = random;
+		uint32_t b = random >> 32;
 		uint32_t c = a ^ b;
 		int aid    = a % accounts;
 		int bid    = b % branches;

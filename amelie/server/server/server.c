@@ -111,7 +111,9 @@ server_listen(ServerListen* listen)
 			snprintf(addr_name, sizeof(addr_name), "%s/%.*s",
 			         state_directory(),
 			         str_size(path), str_of(path));
-		snprintf(addr_un.sun_path, sizeof(addr_un.sun_path) - 1, "%s", addr_name);
+		snprintf(addr_un.sun_path, sizeof(addr_un.sun_path), "%.*s",
+		         (int)sizeof(addr_un.sun_path) - 1,
+		         addr_name);
 		vfs_unlink(addr_name);
 		addr = (struct sockaddr*)&addr_un;
 	} else

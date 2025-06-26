@@ -22,12 +22,10 @@ message(STATUS "VERSION:          ${AMELIE_VERSION}")
 message(STATUS "CMAKE_BUILD_TYPE: ${CMAKE_BUILD_TYPE}")
 message(STATUS "")
 
-project(amelie C)
-
 # compiler options
 set(CMAKE_C_COMPILER "clang")
 if ("${CMAKE_BUILD_TYPE}" STREQUAL "Release")
-	set(CMAKE_C_FLAGS "-Werror -Wall -Wextra -fPIC -g -march=native -O2 -DNDEBUG")
+	set(CMAKE_C_FLAGS "-Werror -Wall -Wextra -Wno-free-nonheap-object -fPIC -g -march=native -O2 -DNDEBUG")
 elseif("${CMAKE_BUILD_TYPE}" STREQUAL "Debug")
 	set(CMAKE_C_FLAGS "-Werror -Wall -Wextra -fPIC -g -O0")
 endif()
@@ -36,6 +34,8 @@ set_property(GLOBAL PROPERTY TARGET_MESSAGES OFF)
 set_property(GLOBAL PROPERTY RULE_MESSAGES OFF)
 set(CMAKE_C_COMPILER_LAUNCHER "${CMAKE_SOURCE_DIR}/build/launcher.sh")
 set(CMAKE_C_LINKER_LAUNCHER "${CMAKE_SOURCE_DIR}/build/launcher.sh")
+
+project(amelie C)
 
 # libraries
 set(CMAKE_THREAD_PREFER_PTHREAD true)

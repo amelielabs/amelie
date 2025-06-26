@@ -39,6 +39,9 @@ ast_allocate(int id, int size)
 {
 	assert(size >= (int)sizeof(Ast));
 	Ast* self = palloc(size);
+	// make gcc happy
+	if (unlikely(! self))
+		abort();
 	memset(self, 0, size);
 	self->id = id;
 	return self;

@@ -95,7 +95,7 @@ part_build(PartBuild* self)
 	auto it = index_iterator(part_primary(self->part));
 	defer(iterator_close, it);
 	iterator_open(it, NULL);
-	uint64_t count;
+	uint64_t count = 0;
 	switch (self->type) {
 	case PART_BUILD_INDEX:
 		count = part_build_index(self, it);
