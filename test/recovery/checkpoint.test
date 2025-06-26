@@ -6,6 +6,9 @@ connect E0 S0 127.0.0.1:3485
 # test: default checkpoint
 select system.state().checkpoint
 
+# test: default checkpoint_compression
+select system.config().checkpoint_compression
+
 # test: checkpoint (no data)
 checkpoint
 select system.state().checkpoint
@@ -95,3 +98,26 @@ select * from test.test
 
 disconnect S0
 close E0
+
+# test: checkpoint (compression none)
+open E1 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "127.0.0.1", "port": 3485 }], "backends": 3, "checkpoint_compression": "none"
+connect E1 S1 127.0.0.1:3485
+
+show checkpoint_compression
+
+create table test (id serial primary key)
+insert into test values (1), (2), (3)
+checkpoint
+
+# test: restart/recover (checkpoint)
+disconnect S1
+close E1
+
+open E1
+connect E1 S1 127.0.0.1:3485
+
+show checkpoint_compression
+select * from test
+
+disconnect S1
+close E1

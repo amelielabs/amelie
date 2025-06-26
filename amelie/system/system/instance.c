@@ -316,7 +316,7 @@ instance_open(Instance* self, char* directory, int argc, char** argv)
 
 	// validate compression type
 	auto cp = &config()->checkpoint_compression.string;
-	if (! str_is(cp, "zstd", 4))
+	if (!str_is(cp, "zstd", 4) && !str_is(cp, "none", 4))
 		error("invalid checkpoint_compression type %.*s",
 		      str_size(cp), str_of(cp));
 

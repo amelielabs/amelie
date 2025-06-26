@@ -28,6 +28,14 @@ heap_file_write(Heap* self, char* path)
 	file_create(&file, path);
 
 	// prepare compession context
+	auto    compression_type = &config()->checkpoint_compression;
+	uint8_t compression = COMPRESSION_NONE;
+	if (str_is(&compression_type->string, "zstd", 4))
+		compression = COMPRESSION_ZSTD;
+	else
+	if (! str_is(&compression_type->string, "none", 4))
+		error("heap: unknown compression type");
+
 	auto cp = compression_create(&compression_zstd);
 	defer(compression_free, cp);
 	auto cp_buf = buf_create();
@@ -35,7 +43,7 @@ heap_file_write(Heap* self, char* path)
 
 	// write header with buckets
 	auto size = sizeof(HeapHeader) + sizeof(HeapBucket) * 385;
-	self->header->compression = COMPRESSION_ZSTD;
+	self->header->compression = compression;
 	self->header->crc =
 		global()->crc(0, &self->header->magic, size - sizeof(uint32_t));
 	file_write(&file, self->header, size);
@@ -43,18 +51,28 @@ heap_file_write(Heap* self, char* path)
 	auto page_mgr = &self->page_mgr;
 	for (int i = 0; i < page_mgr->list_count; i++)
 	{
-		auto page = page_mgr_at(page_mgr, i);
-		auto page_header = (PageHeader*)page->pointer;
+		auto     page = page_mgr_at(page_mgr, i);
+		auto     page_header = (PageHeader*)page->pointer;
+		uint8_t* page_data;
+		int      page_size;
+		if (compression != COMPRESSION_NONE)
+		{
+			buf_reset(cp_buf);
+			compression_compress(cp, cp_buf, 0, page->pointer + sizeof(PageHeader),
+			                     page_header->size - sizeof(PageHeader));
+			page_header->size_compressed = buf_size(cp_buf);
+			page_data = cp_buf->start;
+			page_size = buf_size(cp_buf);
+		} else {
+			page_data = page->pointer + sizeof(PageHeader);
+			page_size = page_header->size - sizeof(PageHeader);
+		}
 
-		buf_reset(cp_buf);
-		compression_compress(cp, cp_buf, 0, page->pointer + sizeof(PageHeader),
-		                     page_header->size - sizeof(PageHeader));
-		page_header->size_compressed = buf_size(cp_buf);
 		if (opt_int_of(&config()->checkpoint_crc))
-			page_header->crc = global()->crc(0, cp_buf->start, buf_size(cp_buf));
+			page_header->crc = global()->crc(0, page_data, page_size);
 
 		file_write(&file, page_header, sizeof(PageHeader));
-		file_write_buf(&file, cp_buf);
+		file_write(&file, page_data, page_size);
 	}
 
 	// sync
@@ -106,20 +124,36 @@ heap_file_read(Heap* self, char* path)
 		auto page = page_mgr_allocate(page_mgr);
 		file_read(&file, page->pointer, sizeof(PageHeader));
 		auto page_header = (PageHeader*)page->pointer;
-		buf_reset(cp_buf);
-		file_read_buf(&file, cp_buf, page_header->size_compressed);
-
-		// validate crc
-		if (opt_int_of(&config()->checkpoint_crc))
+		if (self->header->compression != COMPRESSION_NONE)
 		{
-			crc = global()->crc(0, cp_buf->start, buf_size(cp_buf));
-			if (crc != page_header->crc)
-				error("heap: file '%s' page crc mismatch");
-		}
+			// read and decompress page
+			buf_reset(cp_buf);
+			file_read_buf(&file, cp_buf, page_header->size_compressed);
 
-		// decompress page
-		compression_decompress(cp, cp_buf, page->pointer + sizeof(PageHeader),
-		                       page_header->size - sizeof(PageHeader));
+			// validate crc
+			if (opt_int_of(&config()->checkpoint_crc))
+			{
+				crc = global()->crc(0, cp_buf->start, buf_size(cp_buf));
+				if (crc != page_header->crc)
+					error("heap: file '%s' page crc mismatch");
+			}
+
+			compression_decompress(cp, cp_buf, page->pointer + sizeof(PageHeader),
+			                       page_header->size - sizeof(PageHeader));
+		} else
+		{
+			auto page_data = page->pointer + sizeof(PageHeader);
+			auto page_size = page_header->size - sizeof(PageHeader);
+			file_read(&file, page_data, page_size);
+
+			// validate crc
+			if (opt_int_of(&config()->checkpoint_crc))
+			{
+				crc = global()->crc(0, page_data, page_size);
+				if (crc != page_header->crc)
+					error("heap: file '%s' page crc mismatch");
+			}
+		}
 	}
 
 	// restore last page position
