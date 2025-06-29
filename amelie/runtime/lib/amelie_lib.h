@@ -59,3 +59,4 @@
 // locking
 #include "lib/lock.h"
 #include "lib/resource.h"
+#include "lib/lock_mgr.h"
