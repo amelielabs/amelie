@@ -11,7 +11,7 @@
 //
 
 #include <amelie_runtime.h>
-#include <amelie_io.h>
+#include <amelie_os.h>
 #include <amelie_lib.h>
 
 // Based on public domain base64 implementation written by WEI Zhicheng

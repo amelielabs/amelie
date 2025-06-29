@@ -11,7 +11,7 @@
 //
 
 #include <amelie_runtime.h>
-#include <amelie_io.h>
+#include <amelie_os.h>
 
 #include <openssl/opensslv.h>
 #include <openssl/ssl.h>

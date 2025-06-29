@@ -61,7 +61,7 @@ set(AMELIE_ROOT "${CMAKE_SOURCE_DIR}/amelie")
 # runtime
 include_directories("${AMELIE_ROOT}/runtime")
 include_directories("${AMELIE_ROOT}/runtime/runtime")
-include_directories("${AMELIE_ROOT}/runtime/io")
+include_directories("${AMELIE_ROOT}/runtime/os")
 include_directories("${AMELIE_ROOT}/runtime/lib")
 include_directories("${AMELIE_ROOT}/runtime/json")
 include_directories("${AMELIE_ROOT}/runtime/config")
@@ -131,15 +131,15 @@ set(AMELIE_SOURCES_RUNTIME
     ${AMELIE_ROOT}/runtime/runtime/bus.c
     ${AMELIE_ROOT}/runtime/runtime/channel.c
     ${AMELIE_ROOT}/runtime/runtime/task.c
-    ${AMELIE_ROOT}/runtime/io/vfs.c
-    ${AMELIE_ROOT}/runtime/io/os.c
-    ${AMELIE_ROOT}/runtime/io/tls_lib.c
-    ${AMELIE_ROOT}/runtime/io/tls_context.c
-    ${AMELIE_ROOT}/runtime/io/tls.c
-    ${AMELIE_ROOT}/runtime/io/socket.c
-    ${AMELIE_ROOT}/runtime/io/tcp.c
-    ${AMELIE_ROOT}/runtime/io/listen.c
-    ${AMELIE_ROOT}/runtime/io/resolver.c
+    ${AMELIE_ROOT}/runtime/os/os.c
+    ${AMELIE_ROOT}/runtime/os/vfs.c
+    ${AMELIE_ROOT}/runtime/os/tls_lib.c
+    ${AMELIE_ROOT}/runtime/os/tls_context.c
+    ${AMELIE_ROOT}/runtime/os/tls.c
+    ${AMELIE_ROOT}/runtime/os/socket.c
+    ${AMELIE_ROOT}/runtime/os/tcp.c
+    ${AMELIE_ROOT}/runtime/os/listen.c
+    ${AMELIE_ROOT}/runtime/os/resolver.c
     ${AMELIE_ROOT}/runtime/lib/rbtree.c
     ${AMELIE_ROOT}/runtime/lib/random.c
     ${AMELIE_ROOT}/runtime/lib/uuid.c
