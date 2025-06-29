@@ -17,9 +17,6 @@
 #include "io/fs.h"
 #include "io/file.h"
 
-// file reader
-#include "io/reader.h"
-
 // os
 #include "io/os.h"
 

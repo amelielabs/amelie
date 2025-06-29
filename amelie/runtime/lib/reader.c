@@ -12,6 +12,7 @@
 
 #include <amelie_runtime.h>
 #include <amelie_io.h>
+#include <amelie_lib.h>
 
 void
 reader_init(Reader* self)

@@ -132,7 +132,6 @@ set(AMELIE_SOURCES_RUNTIME
     ${AMELIE_ROOT}/runtime/runtime/channel.c
     ${AMELIE_ROOT}/runtime/runtime/task.c
     ${AMELIE_ROOT}/runtime/io/vfs.c
-    ${AMELIE_ROOT}/runtime/io/reader.c
     ${AMELIE_ROOT}/runtime/io/os.c
     ${AMELIE_ROOT}/runtime/io/tls_lib.c
     ${AMELIE_ROOT}/runtime/io/tls_context.c
@@ -155,6 +154,7 @@ set(AMELIE_SOURCES_RUNTIME
     ${AMELIE_ROOT}/runtime/lib/vector.c
     ${AMELIE_ROOT}/runtime/lib/compression_zstd.c
     ${AMELIE_ROOT}/runtime/lib/logger.c
+    ${AMELIE_ROOT}/runtime/lib/reader.c
     ${AMELIE_ROOT}/runtime/lib/console.c
     ${AMELIE_ROOT}/runtime/json/json_parser.c
     ${AMELIE_ROOT}/runtime/json/json_export.c
