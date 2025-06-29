@@ -25,12 +25,12 @@ struct Session
 	Lock*     lock;
 	Lock*     lock_ref;
 	Local     local;
-	Frontend* frontend;
+	Io*       io;
 	Share*    share;
 };
 
 Session*
-session_create(Client*, Frontend*, Share*);
+session_create(Client*, Io*, Share*);
 void session_free(Session*);
 void session_lock(Session*, int);
 void session_unlock(Session*);

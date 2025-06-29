@@ -20,6 +20,7 @@
 #include <amelie_http.h>
 #include <amelie_client.h>
 #include <amelie_server.h>
+#include <amelie_io.h>
 #include <amelie_row.h>
 #include <amelie_heap.h>
 #include <amelie_transaction.h>
@@ -38,7 +39,6 @@
 #include <amelie_vm.h>
 #include <amelie_parser.h>
 #include <amelie_compiler.h>
-#include <amelie_frontend.h>
 #include <amelie_backend.h>
 #include <amelie_session.h>
 #include <amelie_system.h>
@@ -88,8 +88,8 @@ system_create(void)
 	user_mgr_init(&self->user_mgr);
 	server_init(&self->server);
 
-	// frontend/backend mgr
-	frontend_mgr_init(&self->frontend_mgr);
+	// io/backend mgr
+	io_mgr_init(&self->io_mgr);
 	backend_mgr_init(&self->backend_mgr, &self->db, &self->executor, &self->function_mgr);
 	executor_init(&self->executor, &self->db, &self->backend_mgr.core_mgr);
 	rpc_queue_init(&self->lock_queue);
@@ -103,11 +103,11 @@ system_create(void)
 	// replication
 	repl_init(&self->repl, &self->db);
 
-	// prepare shared context (shared between frontends)
+	// prepare shared context
 	auto share = &self->share;
 	share->executor     = &self->executor;
 	share->repl         = &self->repl;
-	share->frontend_mgr = &self->frontend_mgr;
+	share->io_mgr       = &self->io_mgr;
 	share->backend_mgr  = &self->backend_mgr;
 	share->function_mgr = &self->function_mgr;
 	share->user_mgr     = &self->user_mgr;
@@ -134,14 +134,14 @@ system_on_server_connect(Server* server, Client* client)
 	buf_write(buf, &client, sizeof(void**));
 	msg_end(buf);
 	System* self = server->on_connect_arg;
-	frontend_mgr_forward(&self->frontend_mgr, buf);
+	io_mgr_forward(&self->io_mgr, buf);
 }
 
 static void
-system_on_frontend_connect(Frontend* frontend, Client* client)
+system_on_io_connect(Io* io, Client* client)
 {
-	System* self = frontend->on_connect_arg;
-	auto session = session_create(client, frontend, &self->share);
+	System* self = io->on_connect_arg;
+	auto session = session_create(client, io, &self->share);
 	defer(session_free, session);
 	session_main(session);
 }
@@ -220,15 +220,15 @@ system_start(System* self, bool bootstrap)
 	// start periodic async wal fsync
 	wal_periodic_start(&self->db.wal_mgr.wal_periodic);
 
-	// start frontends
+	// start io workers
 	int workers = opt_int_of(&config()->frontends);
-	frontend_mgr_start(&self->frontend_mgr,
-	                   system_on_frontend_connect,
-	                   self,
-	                   workers);
+	io_mgr_start(&self->io_mgr,
+	             system_on_io_connect,
+	             self,
+	             workers);
 
 	// synchronize caches
-	frontend_mgr_sync_users(&self->frontend_mgr, &self->user_mgr.cache);
+	io_mgr_sync_users(&self->io_mgr, &self->user_mgr.cache);
 
 	// prepare replication manager
 	repl_open(&self->repl);
@@ -256,8 +256,8 @@ system_stop(System* self)
 	// stop replication
 	repl_stop(&self->repl);
 
-	// stop frontends
-	frontend_mgr_stop(&self->frontend_mgr);
+	// stop io workers
+	io_mgr_stop(&self->io_mgr);
 
 	// stop backends
 	backend_mgr_stop(&self->backend_mgr);
@@ -314,8 +314,8 @@ system_lock(System* self, Rpc* rpc)
 		rpc_queue_add(&self->lock_queue, rpc);
 	} else
 	{
-		// request exclusive lock for each frontend worker
-		frontend_mgr_lock(&self->frontend_mgr);
+		// request exclusive lock for each io worker
+		io_mgr_lock(&self->io_mgr);
 
 		// sync to make last operation completed on backends
 		//
@@ -335,12 +335,12 @@ static void
 system_unlock(System* self, Rpc* rpc)
 {
 	assert(self->lock);
-	frontend_mgr_unlock(&self->frontend_mgr);
+	io_mgr_unlock(&self->io_mgr);
 
 	auto pending = rpc_queue_pop(&self->lock_queue);
 	if (pending)
 	{
-		frontend_mgr_lock(&self->frontend_mgr);
+		io_mgr_lock(&self->io_mgr);
 		rpc_done(pending);
 	} else {
 		self->lock = false;

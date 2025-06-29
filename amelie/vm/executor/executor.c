@@ -16,9 +16,11 @@
 #include <amelie_json.h>
 #include <amelie_config.h>
 #include <amelie_user.h>
+#include <amelie_auth.h>
 #include <amelie_http.h>
 #include <amelie_client.h>
 #include <amelie_server.h>
+#include <amelie_io.h>
 #include <amelie_row.h>
 #include <amelie_heap.h>
 #include <amelie_transaction.h>

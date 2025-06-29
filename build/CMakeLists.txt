@@ -73,6 +73,7 @@ include_directories("${AMELIE_ROOT}/server/auth")
 include_directories("${AMELIE_ROOT}/server/http")
 include_directories("${AMELIE_ROOT}/server/client")
 include_directories("${AMELIE_ROOT}/server/server")
+include_directories("${AMELIE_ROOT}/server/io")
 
 # db
 include_directories("${AMELIE_ROOT}/db")
@@ -106,7 +107,6 @@ include_directories("${AMELIE_ROOT}/compiler/compiler")
 
 # system
 include_directories("${AMELIE_ROOT}/system")
-include_directories("${AMELIE_ROOT}/system/frontend")
 include_directories("${AMELIE_ROOT}/system/backend")
 include_directories("${AMELIE_ROOT}/system/session")
 include_directories("${AMELIE_ROOT}/system/system")
@@ -173,7 +173,8 @@ set(AMELIE_SOURCES_SERVER
     ${AMELIE_ROOT}/server/http/uri.c
     ${AMELIE_ROOT}/server/client/client.c
     ${AMELIE_ROOT}/server/server/server.c
-    ${AMELIE_ROOT}/server/server/server_bootstrap.c)
+    ${AMELIE_ROOT}/server/server/server_bootstrap.c
+    ${AMELIE_ROOT}/server/io/io.c)
 
 set(AMELIE_SOURCES_DB
     ${AMELIE_ROOT}/db/heap/heap.c
@@ -287,7 +288,6 @@ set(AMELIE_SOURCES_COMPILER
     ${AMELIE_ROOT}/compiler/compiler/pushdown.c)
 
 set(AMELIE_SOURCES_SYSTEM
-    ${AMELIE_ROOT}/system/frontend/frontend.c
     ${AMELIE_ROOT}/system/backend/backend.c
     ${AMELIE_ROOT}/system/backend/build.c
     ${AMELIE_ROOT}/system/backend/replay.c

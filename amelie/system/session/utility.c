@@ -20,6 +20,7 @@
 #include <amelie_http.h>
 #include <amelie_client.h>
 #include <amelie_server.h>
+#include <amelie_io.h>
 #include <amelie_row.h>
 #include <amelie_heap.h>
 #include <amelie_transaction.h>
@@ -38,7 +39,6 @@
 #include <amelie_vm.h>
 #include <amelie_parser.h>
 #include <amelie_compiler.h>
-#include <amelie_frontend.h>
 #include <amelie_backend.h>
 #include <amelie_session.h>
 
@@ -202,8 +202,8 @@ ctl_user(Session* self)
 	// downgrade back to shared lock to avoid deadlocking
 	session_lock(self, LOCK);
 
-	// sync frontends user caches
-	frontend_mgr_sync_users(self->share->frontend_mgr, &user_mgr->cache);
+	// sync io user caches
+	io_mgr_sync_users(self->share->io_mgr, &user_mgr->cache);
 }
 
 static void

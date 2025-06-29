@@ -20,29 +20,13 @@
 #include <amelie_http.h>
 #include <amelie_client.h>
 #include <amelie_server.h>
-#include <amelie_row.h>
-#include <amelie_heap.h>
-#include <amelie_transaction.h>
-#include <amelie_index.h>
-#include <amelie_partition.h>
-#include <amelie_checkpoint.h>
-#include <amelie_wal.h>
-#include <amelie_db.h>
-#include <amelie_backup.h>
-#include <amelie_repl.h>
-#include <amelie_value.h>
-#include <amelie_set.h>
-#include <amelie_content.h>
-#include <amelie_executor.h>
-#include <amelie_func.h>
-#include <amelie_vm.h>
-#include <amelie_frontend.h>
+#include <amelie_io.h>
 
 hot static void
 client_main(void* arg)
 {
 	auto client = (Client*)arg;
-	auto self   = (Frontend*)client->arg;
+	auto self   = (Io*)client->arg;
 
 	client_mgr_add(&self->client_mgr, client);
 
@@ -61,9 +45,9 @@ client_main(void* arg)
 }
 
 static void
-frontend_rpc(Rpc* rpc, void* arg)
+io_rpc(Rpc* rpc, void* arg)
 {
-	Frontend* self = arg;
+	Io* self = arg;
 	switch (rpc->id) {
 	case RPC_SYNC_USERS:
 	{
@@ -92,16 +76,15 @@ frontend_rpc(Rpc* rpc, void* arg)
 }
 
 static void
-frontend_main(void* arg)
+io_main(void* arg)
 {
-	Frontend* self = arg;
+	Io* self = arg;
 	bool stop = false;
 	while (! stop)
 	{
 		auto buf = channel_read(&am_task->channel, -1);
 		auto msg = msg_of(buf);
 		defer_buf(buf);
-
 		switch (msg->id) {
 		case MSG_CLIENT:
 		{
@@ -116,7 +99,7 @@ frontend_main(void* arg)
 			// command
 			stop = msg->id == RPC_STOP;
 			auto rpc = rpc_of(buf);
-			rpc_execute(rpc, frontend_rpc, self);
+			rpc_execute(rpc, io_rpc, self);
 			break;
 		}
 		}
@@ -124,9 +107,9 @@ frontend_main(void* arg)
 }
 
 void
-frontend_init(Frontend*     self,
-              FrontendEvent on_connect,
-              void*         on_connect_arg)
+io_init(Io*     self,
+        IoEvent on_connect,
+        void*   on_connect_arg)
 {
 	self->on_connect     = on_connect;
 	self->on_connect_arg = on_connect_arg;
@@ -137,7 +120,7 @@ frontend_init(Frontend*     self,
 }
 
 void
-frontend_free(Frontend* self)
+io_free(Io* self)
 {
 	client_mgr_free(&self->client_mgr);
 	lock_mgr_free(&self->lock_mgr);
@@ -145,13 +128,13 @@ frontend_free(Frontend* self)
 }
 
 void
-frontend_start(Frontend* self)
+io_start(Io* self)
 {
-	task_create(&self->task, "frontend", frontend_main, self);
+	task_create(&self->task, "io", io_main, self);
 }
 
 void
-frontend_stop(Frontend* self)
+io_stop(Io* self)
 {
 	// send stop request
 	if (task_active(&self->task))
@@ -164,7 +147,7 @@ frontend_stop(Frontend* self)
 }
 
 void
-frontend_add(Frontend* self, Buf* buf)
+io_add(Io* self, Buf* buf)
 {
 	channel_write(&self->task.channel, buf);
 }
