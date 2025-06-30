@@ -42,7 +42,7 @@ test_command_unit(TestSuite* self, Str* arg)
 	defer(task_free, &task);
 
 	int rc;
-	rc = task_create_nothrow(&task, "test", test_function, NULL, NULL, NULL, NULL,
+	rc = task_create_nothrow(&task, "test", test_function, NULL, NULL, NULL, NULL, NULL,
 	                         &buf_mgr);
 	if (rc == -1)
 		test_error(self, "unit task create error");

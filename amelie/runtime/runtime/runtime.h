@@ -171,7 +171,8 @@ task_create(Task*        self,
 {
 	int rc;
 	rc = task_create_nothrow(self, name, main, main_arg,
-	                         am_task->main_arg_global,
+	                         am_global,
+	                         am_share,
 	                         am_task->log_write,
 	                         am_task->log_write_arg,
 	                         am_task->buf_mgr);

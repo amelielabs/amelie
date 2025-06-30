@@ -83,7 +83,6 @@ system_create(void)
 	control->save_state = system_save_state;
 	control->arg        = self;
 	global()->control   = control;
-	global()->share     = &self->share;
 
 	// prepare shared context
 	auto share = &self->share;
@@ -95,6 +94,9 @@ system_create(void)
 	share->db             = &self->db;
 	share->recover_if     = &build_if;
 	share->recover_if_arg = &self->backend_mgr;
+
+	// share shared context globally
+	am_share = share;
 
 	// server
 	user_mgr_init(&self->user_mgr);

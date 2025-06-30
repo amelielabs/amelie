@@ -12,11 +12,9 @@
 //
 
 typedef struct Global Global;
-typedef struct Share  Share;
 
 struct Global
 {
-	Share*       share;
 	Config*      config;
 	State*       state;
 	Control*     control;
@@ -28,10 +26,9 @@ struct Global
 	CrcFunction  crc;
 };
 
-#define global() ((Global*)am_task->main_arg_global)
+#define global() ((Global*)am_global)
 #define config()  global()->config
 #define state()   global()->state
-#define share()   global()->share
 
 // control
 static inline void

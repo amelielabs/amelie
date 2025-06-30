@@ -150,7 +150,7 @@ cli_start(Cli* self, int argc, char** argv)
 	};
 	int rc;
 	rc = task_create_nothrow(&self->task, "main", cli_runner, &args,
-	                         &self->instance.global,
+	                         &self->instance.global, NULL,
 	                         logger_write, &self->instance.logger,
 	                         &self->instance.buf_mgr);
 	if (unlikely(rc == -1))

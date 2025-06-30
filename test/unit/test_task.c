@@ -28,7 +28,7 @@ void test_task_create(void)
 
 	int rc;
 	rc = task_create_nothrow(&task, "test", test_task_create_main,
-	                         NULL, NULL, NULL, NULL, NULL);
+	                         NULL, NULL, NULL, NULL, NULL, NULL);
 	test(rc == 0);
 
 	task_wait(&task);
@@ -54,7 +54,7 @@ void test_task_args(void)
 
 	int rc;
 	rc = task_create_nothrow(&task, "test", test_task_args_main,
-	                         &arg, &arg_global, NULL, NULL, NULL);
+	                         &arg, &arg_global, NULL, NULL, NULL, NULL);
 	test(rc == 0);
 
 	task_wait(&task);
@@ -77,7 +77,7 @@ void test_task_status(void)
 
 	int rc;
 	rc = task_create_nothrow(&task, "test", test_task_status_main,
-	                         NULL, NULL, NULL, NULL, NULL);
+	                         NULL, NULL, NULL, NULL, NULL, NULL);
 	test(rc == 0);
 
 	test(cond_wait(&task.status) == 123);

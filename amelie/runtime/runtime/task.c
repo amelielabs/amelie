@@ -12,6 +12,8 @@
 
 #include <amelie_runtime.h>
 
+__thread void* am_share;
+__thread void* am_global;
 __thread Task* am_task;
 
 static inline void
@@ -140,7 +142,9 @@ task_main(void* arg)
 	thread->tid = gettid();
 
 	// set global variable
-	am_task = self;
+	am_share  = self->main_arg_share;
+	am_global = self->main_arg_global;
+	am_task   = self;
 
 	// block signals
 	thread_set_sigmask_default();
@@ -205,6 +209,7 @@ task_create_nothrow(Task*        self,
                     MainFunction main,
                     void*        main_arg,
                     void*        main_arg_global,
+                    void*        main_arg_share,
                     LogFunction  log,
                     void*        log_arg,
                     BufMgr*      buf_mgr)
@@ -213,6 +218,7 @@ task_create_nothrow(Task*        self,
 	self->main            = main;
 	self->main_arg        = main_arg;
 	self->main_arg_global = main_arg_global;
+	self->main_arg_share  = main_arg_share;
 	self->log_write       = log;
 	self->log_write_arg   = log_arg;
 	self->buf_mgr         = buf_mgr;
