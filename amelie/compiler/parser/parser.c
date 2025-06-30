@@ -39,13 +39,11 @@
 #include <amelie_parser.h>
 
 void
-parser_init(Parser*      self,
-            Db*          db,
-            Local*       local,
-            FunctionMgr* function_mgr,
-            SetCache*    values_cache,
-            Program*     program,
-            Reg*         regs)
+parser_init(Parser*   self,
+            Local*    local,
+            SetCache* values_cache,
+            Program*  program,
+            Reg*      regs)
 {
 	self->explain      = EXPLAIN_NONE;
 	self->begin        = false;
@@ -55,9 +53,7 @@ parser_init(Parser*      self,
 	self->program      = program;
 	self->regs         = regs;
 	self->values_cache = values_cache;
-	self->function_mgr = function_mgr;
 	self->local        = local;
-	self->db           = db;
 	stmts_init(&self->stmts);
 	scopes_init(&self->scopes);
 	lex_init(&self->lex, keywords_alpha);

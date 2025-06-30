@@ -22,7 +22,7 @@ struct Backend
 };
 
 Backend*
-backend_allocate(Db*, FunctionMgr*, int);
+backend_allocate(int);
 void backend_free(Backend*);
 void backend_start(Backend*);
 void backend_stop(Backend*);

@@ -123,7 +123,7 @@ parse_endpoint_columns(Endpoint* endpoint, Str* value)
 }
 
 void
-parse_endpoint(Endpoint* endpoint, Db* db)
+parse_endpoint(Endpoint* endpoint)
 {
 	// POST /v1/db/schema/table <?columns=...>
 	auto uri = endpoint->uri;
@@ -137,7 +137,7 @@ parse_endpoint(Endpoint* endpoint, Db* db)
 		error("unsupported URI path");
 
 	// find table
-	endpoint->table = table_mgr_find(&db->table_mgr, &schema, &name, true);
+	endpoint->table = table_mgr_find(&share()->db->table_mgr, &schema, &name, true);
 
 	// validate arguments
 	list_foreach(&uri->args)

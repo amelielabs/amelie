@@ -38,28 +38,20 @@
 #include <amelie_vm.h>
 
 void
-vm_init(Vm*          self,
-        Db*          db,
-        Core*        core,
-        Executor*    executor,
-        Dtr*         dtr,
-        FunctionMgr* function_mgr)
+vm_init(Vm* self, Core* core, Dtr* dtr)
 {
-	self->regs         = NULL;
-	self->code         = NULL;
-	self->code_data    = NULL;
-	self->code_arg     = NULL;
-	self->args         = NULL;
-	self->core         = core;
-	self->executor     = executor;
-	self->dtr          = dtr;
-	self->program      = NULL;
-	self->result       = NULL;
-	self->content      = NULL;
-	self->tr           = NULL;
-	self->local        = NULL;
-	self->function_mgr = function_mgr;
-	self->db           = db;
+	self->regs      = NULL;
+	self->code      = NULL;
+	self->code_data = NULL;
+	self->code_arg  = NULL;
+	self->args      = NULL;
+	self->core      = core;
+	self->dtr       = dtr;
+	self->program   = NULL;
+	self->result    = NULL;
+	self->content   = NULL;
+	self->tr        = NULL;
+	self->local     = NULL;
 	reg_init(&self->r);
 	stack_init(&self->stack);
 	cursor_mgr_init(&self->cursor_mgr);
@@ -118,7 +110,7 @@ vm_run(Vm*       self,
 	self->args      = args;
 	self->result    = result;
 	self->content   = content;
-	call_mgr_prepare(&self->call_mgr, self->db, local, code_data);
+	call_mgr_prepare(&self->call_mgr, local, code_data);
 
 	const void* ops[] =
 	{
@@ -1738,7 +1730,7 @@ ccall:
 	call.result   = &r[op->a];
 	call.type     = CALL_EXECUTE;
 	call.function = (Function*)op->b;
-	call.mgr      = &self->call_mgr;
+	call.local    = self->local;
 	call.context  = NULL;
 	if (op->d != -1)
 		call.context = call_mgr_at(&self->call_mgr, op->d);

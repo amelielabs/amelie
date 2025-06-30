@@ -188,7 +188,7 @@ fn_string(Call* self)
 	case TYPE_TIMESTAMP:
 	{
 		buf_reserve(data, 128);
-		int size = timestamp_get(arg->integer, self->mgr->local->timezone, (char*)data->position, 128);
+		int size = timestamp_get(arg->integer, self->local->timezone, (char*)data->position, 128);
 		buf_advance(data, size);
 		break;
 	}
@@ -210,7 +210,7 @@ fn_string(Call* self)
 			buf_write_str(data, &str);
 			break;
 		}
-		value_export(arg, self->mgr->local->timezone, false, data);
+		value_export(arg, self->local->timezone, false, data);
 		break;
 	}
 	Str string;
@@ -230,7 +230,7 @@ fn_json(Call* self)
 		return;
 	}
 	auto buf = buf_create();
-	value_encode(arg, self->mgr->local->timezone, buf);
+	value_encode(arg, self->local->timezone, buf);
 	value_set_json_buf(self->result, buf);
 }
 
@@ -310,7 +310,7 @@ fn_timestamp(Call* self)
 	switch (arg->type) {
 	case TYPE_STRING:
 	{
-		Timezone* timezone = self->mgr->local->timezone;
+		Timezone* timezone = self->local->timezone;
 		if (self->argc == 2)
 		{
 			if (unlikely(self->argv[1].type == TYPE_NULL))

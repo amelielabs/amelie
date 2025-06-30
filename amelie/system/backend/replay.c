@@ -42,7 +42,7 @@
 #include <amelie_backend.h>
 
 static void
-replay_read(Share* share, Dtr* dtr, ReqList* req_list, Record* record)
+replay_read(Dtr* dtr, ReqList* req_list, Record* record)
 {
 	// redistribute rows between backends
 	Req* map[dtr->core_mgr->cores_count];
@@ -54,7 +54,7 @@ replay_read(Share* share, Dtr* dtr, ReqList* req_list, Record* record)
 	for (auto i = record->count; i > 0; i--)
 	{
 		// map each write to route
-		auto part = part_mgr_find(&share->db->part_mgr, cmd->partition);
+		auto part = part_mgr_find(&share()->db->part_mgr, cmd->partition);
 		if (! part)
 			error("failed to find partition %" PRIu64, cmd->partition);
 		auto core = part->core;
@@ -78,15 +78,15 @@ replay_read(Share* share, Dtr* dtr, ReqList* req_list, Record* record)
 }
 
 void
-replay(Share* share, Dtr* dtr, Record* record)
+replay(Dtr* dtr, Record* record)
 {
 	ReqList req_list;
 	req_list_init(&req_list);
 
-	auto executor = share->executor;
+	auto executor = share()->executor;
 	auto on_error = error_catch
 	(
-		replay_read(share, dtr, &req_list, record);
+		replay_read(dtr, &req_list, record);
 
 		executor_send(executor, dtr, &req_list);
 		executor_recv(executor, dtr);

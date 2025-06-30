@@ -42,9 +42,9 @@
 #include <amelie_backend.h>
 
 hot static void
-backend_replay(Backend* self, Tr* tr, Buf* arg)
+backend_replay(Tr* tr, Buf* arg)
 {
-	auto db = self->vm.db;
+	auto db = share()->db;
 	for (auto pos = arg->start; pos < arg->position;)
 	{
 		// command
@@ -135,7 +135,7 @@ backend_run(Backend* self, Ctr* ctr, Req* req)
 		}
 
 		// replay commands
-		backend_replay(self, ctr->tr, &req->arg);
+		backend_replay(ctr->tr, &req->arg);
 		break;
 	}
 	case REQ_BUILD:
@@ -192,11 +192,11 @@ backend_main(void* arg)
 }
 
 Backend*
-backend_allocate(Db* db, FunctionMgr* function_mgr, int order)
+backend_allocate(int order)
 {
 	auto self = (Backend*)am_malloc(sizeof(Backend));
 	core_init(&self->core, order);
-	vm_init(&self->vm, db, &self->core, NULL, NULL, function_mgr);
+	vm_init(&self->vm, &self->core, NULL);
 	task_init(&self->task);
 	list_init(&self->link);
 	return self;

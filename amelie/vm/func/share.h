@@ -16,10 +16,11 @@ typedef struct Share Share;
 struct Share
 {
 	Executor*    executor;
+	CoreMgr*     core_mgr;
 	Repl*        repl;
-	FrontendMgr* frontend_mgr;
-	BackendMgr*  backend_mgr;
 	FunctionMgr* function_mgr;
 	UserMgr*     user_mgr;
 	Db*          db;
+	RecoverIf*   recover_if;
+	void*        recover_if_arg;
 };

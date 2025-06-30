@@ -15,22 +15,22 @@ typedef struct Session Session;
 
 struct Session
 {
-	Vm        vm;
-	Compiler  compiler;
-	Dtr       dtr;
-	Explain   explain;
-	Content   content;
-	Client*   client;
-	int       lock_type;
-	Lock*     lock;
-	Lock*     lock_ref;
-	Local     local;
-	Frontend* frontend;
-	Share*    share;
+	Vm           vm;
+	Compiler     compiler;
+	Dtr          dtr;
+	Explain      explain;
+	Content      content;
+	Client*      client;
+	int          lock_type;
+	Lock*        lock;
+	Lock*        lock_ref;
+	Local        local;
+	Frontend*    frontend;
+	FrontendMgr* frontend_mgr;
 };
 
 Session*
-session_create(Client*, Frontend*, Share*);
+session_create(Client*, FrontendMgr*, Frontend*);
 void session_free(Session*);
 void session_lock(Session*, int);
 void session_unlock(Session*);

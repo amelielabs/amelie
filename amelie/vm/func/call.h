@@ -27,7 +27,7 @@ struct Call
 	Value*    result;
 	Function* function;
 	CallType  type;
-	CallMgr*  mgr;
+	Local*    local;
 	void**    context;
 };
 

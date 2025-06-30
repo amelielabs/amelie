@@ -43,24 +43,21 @@
 #include <amelie_session.h>
 
 Session*
-session_create(Client* client, Frontend* frontend, Share* share)
+session_create(Client* client, FrontendMgr* frontend_mgr, Frontend* frontend)
 {
 	auto self = (Session*)am_malloc(sizeof(Session));
-	self->client    = client;
-	self->lock_type = LOCK_NONE;
-	self->lock      = NULL;
-	self->lock_ref  = NULL;
-	self->frontend  = frontend;
-	self->share     = share;
+	self->client       = client;
+	self->lock_type    = LOCK_NONE;
+	self->lock         = NULL;
+	self->lock_ref     = NULL;
+	self->frontend_mgr = frontend_mgr;
+	self->frontend     = frontend;
 	local_init(&self->local, global());
 	explain_init(&self->explain);
 	content_init(&self->content, &self->local, &client->reply.content);
-	compiler_init(&self->compiler, share->db, &self->local, share->function_mgr, &self->vm.r);
-	vm_init(&self->vm, share->db, NULL,
-	        share->executor,
-	        &self->dtr,
-	        share->function_mgr);
-	dtr_init(&self->dtr, &self->local, &share->backend_mgr->core_mgr);
+	compiler_init(&self->compiler, &self->local, &self->vm.r);
+	vm_init(&self->vm, NULL, &self->dtr);
+	dtr_init(&self->dtr, &self->local, share()->core_mgr);
 	return self;
 }
 
@@ -141,9 +138,9 @@ hot static inline void
 session_execute_distributed(Session* self)
 {
 	auto compiler = &self->compiler;
-	auto executor = self->share->executor;
 	auto explain  = &self->explain;
 	auto dtr      = &self->dtr;
+	auto executor = share()->executor;
 
 	// generate bytecode
 	compiler_emit(compiler);
@@ -328,7 +325,7 @@ session_main(Session* self)
 		if (service)
 		{
 			if (str_is(&service->value, "backup", 6))
-				backup(self->share->db, client);
+				backup(share()->db, client);
 			else
 			if (str_is(&service->value, "repl", 4))
 				session_primary(self);

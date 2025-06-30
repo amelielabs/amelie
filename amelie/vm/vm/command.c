@@ -104,7 +104,7 @@ csend_shard(Vm* self, Op* op)
 		}
 	}
 
-	executor_send(self->executor, dtr, &list);
+	executor_send(share()->executor, dtr, &list);
 	value_free(reg_at(&self->r, op->c));
 }
 
@@ -129,7 +129,7 @@ csend_lookup(Vm* self, Op* op)
 	req->core  = part->core;
 	req_list_add(&list, req);
 
-	executor_send(self->executor, dtr, &list);
+	executor_send(share()->executor, dtr, &list);
 }
 
 hot void
@@ -163,7 +163,7 @@ csend_lookup_by(Vm* self, Op* op)
 	req->core  = part->core;
 	req_list_add(&list, req);
 
-	executor_send(self->executor, dtr, &list);
+	executor_send(share()->executor, dtr, &list);
 }
 
 hot void
@@ -190,14 +190,14 @@ csend_all(Vm* self, Op* op)
 		req_list_add(&list, req);
 	}
 
-	executor_send(self->executor, dtr, &list);
+	executor_send(share()->executor, dtr, &list);
 }
 
 hot void
 crecv(Vm* self, Op* op)
 {
 	unused(op);
-	executor_recv(self->executor, self->dtr);
+	executor_recv(share()->executor, self->dtr);
 }
 
 hot void
@@ -331,7 +331,7 @@ ctable_open(Vm* self, Op* op, bool point_lookup, bool open_part)
 	json_read_string(&pos, &name_index);
 
 	// find table, partition and index
-	auto table = table_mgr_find(&self->db->table_mgr, &name_schema, &name_table, true);
+	auto table = table_mgr_find(&share()->db->table_mgr, &name_schema, &name_table, true);
 	auto index = table_find_index(table, &name_index, true);
 	auto keys  = &index->keys;
 	auto keys_count = op->d;
@@ -378,7 +378,7 @@ ctable_open_heap(Vm* self, Op* op)
 	json_read_string(&pos, &name_table);
 
 	// find table and partition
-	auto table = table_mgr_find(&self->db->table_mgr, &name_schema, &name_table, true);
+	auto table = table_mgr_find(&share()->db->table_mgr, &name_schema, &name_table, true);
 	auto part  = part_list_match(&table->part_list, self->core);
 
 	// open cursor

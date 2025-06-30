@@ -106,7 +106,7 @@ parse_index_create(Stmt* self, bool unique)
 		stmt_error(self, NULL, "table name expected");
 
 	// find table
-	auto table = table_mgr_find(&self->parser->db->table_mgr, &stmt->table_schema,
+	auto table = table_mgr_find(&share()->db->table_mgr, &stmt->table_schema,
 	                            &stmt->table_name, false);
 	if (! table)
 		stmt_error(self, target, "table not found");

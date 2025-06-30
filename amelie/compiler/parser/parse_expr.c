@@ -256,7 +256,7 @@ expr_func(Stmt* self, Expr* expr, Ast* path, bool with_args)
 		stmt_error(self, path, "bad function call");
 
 	// find and call function
-	auto fn = function_mgr_find(self->parser->function_mgr, &schema, &name);
+	auto fn = function_mgr_find(share()->function_mgr, &schema, &name);
 	if (! fn)
 		stmt_error(self, path, "function not found");
 

@@ -248,7 +248,7 @@ parse_import(Parser* self, Str* str, Str* uri, EndpointType type)
 	// parse endpoint path and arguments
 	Endpoint endpoint;
 	endpoint_init(&endpoint, &self->uri, type);
-	parse_endpoint(&endpoint, self->db);
+	parse_endpoint(&endpoint);
 
 	auto scope = scopes_add(&self->scopes, NULL);
 

@@ -41,7 +41,6 @@ call_mgr_init(CallMgr* self)
 {
 	self->local = NULL;
 	self->data  = NULL;
-	self->db    = NULL;
 	buf_init(&self->context);
 }
 
@@ -52,11 +51,10 @@ call_mgr_free(CallMgr* self)
 }
 
 void
-call_mgr_prepare(CallMgr* self, Db* db, Local* local, CodeData* data)
+call_mgr_prepare(CallMgr* self, Local* local, CodeData* data)
 {
 	self->local = local;
 	self->data  = data;
-	self->db    = db;
 	auto count = code_data_count_call(data);
 	if (count == 0)
 		return;
@@ -83,7 +81,6 @@ call_mgr_reset(CallMgr* self)
 			.result   = NULL,
 			.type     = CALL_CLEANUP,
 			.function = code_data_at_call(self->data, i),
-			.mgr      = self,
 			.context  = context
 		};
 		cleanup_call.function->function(&cleanup_call);

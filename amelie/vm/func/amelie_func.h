@@ -14,6 +14,7 @@
 // function manager
 #include "func/function.h"
 #include "func/function_mgr.h"
+#include "func/share.h"
 #include "func/call.h"
 #include "func/call_mgr.h"
 

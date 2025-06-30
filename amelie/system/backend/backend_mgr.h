@@ -15,25 +15,16 @@ typedef struct BackendMgr BackendMgr;
 
 struct BackendMgr
 {
-	Backend**    workers;
-	int          workers_count;
-	CoreMgr      core_mgr;
-	Executor*    executor;
-	FunctionMgr* function_mgr;
-	Db*          db;
+	Backend** workers;
+	int       workers_count;
+	CoreMgr   core_mgr;
 };
 
 static inline void
-backend_mgr_init(BackendMgr*  self,
-                 Db*          db,
-                 Executor*    executor,
-                 FunctionMgr* function_mgr)
+backend_mgr_init(BackendMgr* self)
 {
 	self->workers       = NULL;
 	self->workers_count = 0;
-	self->executor      = executor;
-	self->function_mgr  = function_mgr;
-	self->db            = db;
 	core_mgr_init(&self->core_mgr);
 }
 
@@ -56,7 +47,7 @@ backend_mgr_ensure(BackendMgr* self, int count)
 	auto start = i;
 	for (; i < count; i++)
 	{
-		workers[i] = backend_allocate(self->db, self->function_mgr, i);
+		workers[i] = backend_allocate(i);
 		core_mgr.cores[i] = &workers[i]->core;
 	}
 

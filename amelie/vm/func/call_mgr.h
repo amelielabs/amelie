@@ -17,13 +17,12 @@ struct CallMgr
 {
 	Local*    local;
 	CodeData* data;
-	Db*       db;
 	Buf       context;
 };
 
 void call_mgr_init(CallMgr*);
 void call_mgr_free(CallMgr*);
-void call_mgr_prepare(CallMgr*, Db*, Local*, CodeData*);
+void call_mgr_prepare(CallMgr*, Local*, CodeData*);
 void call_mgr_reset(CallMgr*);
 
 static inline void**

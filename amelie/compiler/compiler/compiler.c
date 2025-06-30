@@ -40,11 +40,7 @@
 #include <amelie_compiler.h>
 
 void
-compiler_init(Compiler*    self,
-              Db*          db,
-              Local*       local,
-              FunctionMgr* function_mgr,
-              Reg*         regs)
+compiler_init(Compiler* self, Local* local, Reg* regs)
 {
 	self->program   = program_allocate();
 	self->code      = &self->program->code;
@@ -53,10 +49,9 @@ compiler_init(Compiler*    self,
 	self->regs      = regs;
 	self->current   = NULL;
 	self->last      = NULL;
-	self->db        = db;
 	set_cache_init(&self->values_cache);
-	parser_init(&self->parser, db, local, function_mgr, &self->values_cache,
-	             self->program, regs);
+	parser_init(&self->parser, local, &self->values_cache,
+	            self->program, regs);
 	rmap_init(&self->map);
 }
 

@@ -632,7 +632,7 @@ parse_table_alter(Stmt* self)
 			if (stmt_if(self, KDEFAULT))
 			{
 				// find table and column
-				auto table  = table_mgr_find(&self->parser->db->table_mgr,
+				auto table  = table_mgr_find(&share()->db->table_mgr,
 				                             &stmt->schema,
 				                             &stmt->name, false);
 				if (! table)

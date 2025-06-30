@@ -22,25 +22,23 @@ enum
 
 struct Parser
 {
-	int          explain;
-	bool         begin;
-	bool         commit;
-	bool         execute;
-	Stmt*        stmt;
-	Stmts        stmts;
-	Scopes       scopes;
-	Program*     program;
-	Reg*         regs;
-	SetCache*    values_cache;
-	Uri          uri;
-	Json         json;
-	Lex          lex;
-	FunctionMgr* function_mgr;
-	Local*       local;
-	Db*          db;
+	int       explain;
+	bool      begin;
+	bool      commit;
+	bool      execute;
+	Stmt*     stmt;
+	Stmts     stmts;
+	Scopes    scopes;
+	Program*  program;
+	Reg*      regs;
+	SetCache* values_cache;
+	Uri       uri;
+	Json      json;
+	Lex       lex;
+	Local*    local;
 };
 
-void parser_init(Parser*, Db*, Local*, FunctionMgr*, SetCache*, Program*, Reg*);
+void parser_init(Parser*, Local*, SetCache*, Program*, Reg*);
 void parser_reset(Parser*);
 void parser_free(Parser*);
 

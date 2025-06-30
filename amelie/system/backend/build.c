@@ -139,7 +139,7 @@ build_run(Build* self)
 	dtr_reset(dtr);
 	dtr_create(dtr, program);
 
-	auto executor = self->backend_mgr->executor;
+	auto executor = share()->executor;
 	auto on_error = error_catch
 	(
 		executor_send(executor, dtr, &req_list);
@@ -160,7 +160,7 @@ build_execute(Build* self, Core* worker)
 	switch (self->type) {
 	case BUILD_RECOVER:
 		// restore last checkpoint partitions related to the worker
-		recover_checkpoint(self->backend_mgr->db, worker);
+		recover_checkpoint(share()->db, worker);
 		break;
 	case BUILD_INDEX:
 	{

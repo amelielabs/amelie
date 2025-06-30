@@ -11,4 +11,4 @@
 // AGPL-3.0 Licensed.
 //
 
-void parse_endpoint(Endpoint*, Db*);
+void parse_endpoint(Endpoint*);

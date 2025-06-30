@@ -103,7 +103,7 @@ parse_update_expr(Stmt* self)
 			str_set(&fn, "set", 3);
 
 			auto func = ast_func_allocate();
-			func->fn    = function_mgr_find(self->parser->function_mgr, &schema, &fn);
+			func->fn    = function_mgr_find(share()->function_mgr, &schema, &fn);
 			func->ast.l = NULL;
 			func->ast.r = &args->ast;
 			assert(func->fn);

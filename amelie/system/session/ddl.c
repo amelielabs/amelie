@@ -47,7 +47,7 @@ ddl_create_schema(Session* self, Tr* tr)
 {
 	auto stmt = compiler_stmt(&self->compiler);
 	auto arg  = ast_schema_create_of(stmt->ast);
-	schema_mgr_create(&self->share->db->schema_mgr, tr, arg->config,
+	schema_mgr_create(&share()->db->schema_mgr, tr, arg->config,
 	                  arg->if_not_exists);
 }
 
@@ -56,7 +56,7 @@ ddl_drop_schema(Session* self, Tr* tr)
 {
 	auto stmt = compiler_stmt(&self->compiler);
 	auto arg  = ast_schema_drop_of(stmt->ast);
-	cascade_schema_drop(self->share->db, tr, &arg->name->string, arg->cascade,
+	cascade_schema_drop(share()->db, tr, &arg->name->string, arg->cascade,
 	                    arg->if_exists);
 }
 
@@ -65,7 +65,7 @@ ddl_alter_schema(Session* self, Tr* tr)
 {
 	auto stmt = compiler_stmt(&self->compiler);
 	auto arg  = ast_schema_alter_of(stmt->ast);
-	cascade_schema_rename(self->share->db, tr, &arg->name->string,
+	cascade_schema_rename(share()->db, tr, &arg->name->string,
 	                      &arg->name_new->string,
 	                       arg->if_exists);
 }
@@ -87,7 +87,7 @@ ddl_create_table(Session* self, Tr* tr)
 	auto stmt   = compiler_stmt(&self->compiler);
 	auto arg    = ast_table_create_of(stmt->ast);
 	auto config = arg->config;
-	auto db     = self->share->db;
+	auto db     = share()->db;
 
 	// ensure schema exists and not system
 	auto schema = schema_mgr_find(&db->schema_mgr, &config->schema, true);
@@ -135,7 +135,7 @@ ddl_drop_table(Session* self, Tr* tr)
 	auto stmt = compiler_stmt(&self->compiler);
 	auto arg  = ast_table_drop_of(stmt->ast);
 
-	table_mgr_drop(&self->share->db->table_mgr, tr, &arg->schema, &arg->name,
+	table_mgr_drop(&share()->db->table_mgr, tr, &arg->schema, &arg->name,
 	               arg->if_exists);
 }
 
@@ -146,7 +146,7 @@ ddl_truncate(Session* self, Tr* tr)
 	auto arg  = ast_table_truncate_of(stmt->ast);
 
 	// truncate table
-	table_mgr_truncate(&self->share->db->table_mgr, tr, &arg->schema, &arg->name,
+	table_mgr_truncate(&share()->db->table_mgr, tr, &arg->schema, &arg->name,
 	                   arg->if_exists);
 }
 
@@ -157,7 +157,7 @@ ddl_alter_table_set_identity(Session* self)
 	auto arg  = ast_table_alter_of(stmt->ast);
 
 	// SET SERIAL
-	auto table = table_mgr_find(&self->share->db->table_mgr, &arg->schema,
+	auto table = table_mgr_find(&share()->db->table_mgr, &arg->schema,
 	                            &arg->name,
 	                            !arg->if_exists);
 	if (! table)
@@ -172,7 +172,7 @@ ddl_alter_table_set_unlogged(Session* self, Tr* tr)
 	auto arg  = ast_table_alter_of(stmt->ast);
 
 	// truncate table
-	table_mgr_set_unlogged(&self->share->db->table_mgr, tr, &arg->schema, &arg->name,
+	table_mgr_set_unlogged(&share()->db->table_mgr, tr, &arg->schema, &arg->name,
 	                       arg->unlogged, arg->if_exists);
 }
 
@@ -181,7 +181,7 @@ ddl_alter_table_rename(Session* self, Tr* tr)
 {
 	auto stmt = compiler_stmt(&self->compiler);
 	auto arg  = ast_table_alter_of(stmt->ast);
-	auto db   = self->share->db;
+	auto db   = share()->db;
 
 	// RENAME TO
 
@@ -203,7 +203,7 @@ ddl_alter_table_column_rename(Session* self, Tr* tr)
 {
 	auto stmt = compiler_stmt(&self->compiler);
 	auto arg  = ast_table_alter_of(stmt->ast);
-	auto db   = self->share->db;
+	auto db   = share()->db;
 
 	// RENAME COLUMN TO
 
@@ -220,7 +220,7 @@ ddl_alter_table_column_add(Session* self, Tr* tr)
 	auto arg  = ast_table_alter_of(stmt->ast);
 
 	// COLUMN ADD name type [constraint]
-	auto table_mgr = &self->share->db->table_mgr;
+	auto table_mgr = &share()->db->table_mgr;
 	auto table = table_mgr_find(table_mgr, &arg->schema, &arg->name,
 	                            !arg->if_exists);
 	if (! table)
@@ -232,12 +232,12 @@ ddl_alter_table_column_add(Session* self, Tr* tr)
 		return;
 
 	// rebuild new table with new column in parallel per backend
-	Build build;
-	build_init(&build, BUILD_COLUMN_ADD, self->share->backend_mgr,
-	            table,
-	            table_new, arg->column, NULL);
-	defer(build_free, &build);
-	build_run(&build);
+	Recover recover;
+	recover_init(&recover, share()->db, false,
+	             share()->recover_if,
+	             share()->recover_if_arg);
+	defer(recover_free, &recover);
+	share()->recover_if->build_column_add(&recover, table, table_new, arg->column);
 }
 
 static void
@@ -247,7 +247,7 @@ ddl_alter_table_column_drop(Session* self, Tr* tr)
 	auto arg  = ast_table_alter_of(stmt->ast);
 
 	// COLUMN DROP name
-	auto table_mgr = &self->share->db->table_mgr;
+	auto table_mgr = &share()->db->table_mgr;
 	auto table = table_mgr_find(table_mgr, &arg->schema, &arg->name,
 	                            !arg->if_exists);
 	if (! table)
@@ -262,12 +262,12 @@ ddl_alter_table_column_drop(Session* self, Tr* tr)
 	assert(column);
 
 	// rebuild new table with new column in parallel per backend
-	Build build;
-	build_init(&build, BUILD_COLUMN_DROP, self->share->backend_mgr,
-	            table,
-	            table_new, column, NULL);
-	defer(build_free, &build);
-	build_run(&build);
+	Recover recover;
+	recover_init(&recover, share()->db, false,
+	             share()->recover_if,
+	             share()->recover_if_arg);
+	defer(recover_free, &recover);
+	share()->recover_if->build_column_drop(&recover, table, table_new, column);
 }
 
 static void
@@ -275,7 +275,7 @@ ddl_alter_table(Session* self, Tr* tr)
 {
 	auto stmt = compiler_stmt(&self->compiler);
 	auto arg  = ast_table_alter_of(stmt->ast);
-	auto db   = self->share->db;
+	auto db   = share()->db;
 	switch (arg->type) {
 	case TABLE_ALTER_RENAME:
 		ddl_alter_table_rename(self, tr);
@@ -337,10 +337,9 @@ ddl_alter_table(Session* self, Tr* tr)
 static void
 ddl_create_index(Session* self, Tr* tr)
 {
-	auto stmt        = compiler_stmt(&self->compiler);
-	auto arg         = ast_index_create_of(stmt->ast);
-	auto db          = self->share->db;
-	auto backend_mgr = self->share->backend_mgr;
+	auto stmt = compiler_stmt(&self->compiler);
+	auto arg  = ast_index_create_of(stmt->ast);
+	auto db   = share()->db;
 
 	// find table
 	auto table = table_mgr_find(&db->table_mgr, &arg->table_schema,
@@ -353,10 +352,12 @@ ddl_create_index(Session* self, Tr* tr)
 	auto index = table_find_index(table, &arg->config->name, true);
 
 	// do parallel indexation per backend
-	Build build;
-	build_init(&build, BUILD_INDEX, backend_mgr, table, NULL, NULL, index);
-	defer(build_free, &build);
-	build_run(&build);
+	Recover recover;
+	recover_init(&recover, share()->db, false,
+	             share()->recover_if,
+	             share()->recover_if_arg);
+	defer(recover_free, &recover);
+	share()->recover_if->build_index(&recover, table, index);
 }
 
 static void
@@ -364,7 +365,7 @@ ddl_drop_index(Session* self, Tr* tr)
 {
 	auto stmt = compiler_stmt(&self->compiler);
 	auto arg  = ast_index_drop_of(stmt->ast);
-	auto db   = self->share->db;
+	auto db   = share()->db;
 
 	// find table
 	auto table = table_mgr_find(&db->table_mgr, &arg->table_schema,
@@ -379,7 +380,7 @@ ddl_alter_index(Session* self, Tr* tr)
 {
 	auto stmt = compiler_stmt(&self->compiler);
 	auto arg  = ast_index_alter_of(stmt->ast);
-	auto db   = self->share->db;
+	auto db   = share()->db;
 
 	// find table
 	auto table = table_mgr_find(&db->table_mgr, &arg->table_schema,
@@ -442,7 +443,7 @@ session_execute_ddl_stmt(Session* self, Tr* tr)
 	WriteList write_list;
 	write_list_init(&write_list);
 	write_list_add(&write_list, &write);
-	wal_mgr_write(&self->share->db->wal_mgr, &write_list);
+	wal_mgr_write(&share()->db->wal_mgr, &write_list);
 }
 
 void

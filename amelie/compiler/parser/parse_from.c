@@ -118,7 +118,7 @@ parse_from_target(Stmt* self, Targets* targets, AccessType access, bool subquery
 	{
 		// find function
 		auto func = ast_func_allocate();
-		func->fn = function_mgr_find(self->parser->function_mgr, &schema, &name);
+		func->fn = function_mgr_find(share()->function_mgr, &schema, &name);
 		if (! func->fn)
 			stmt_error(self, expr, "function not found");
 
@@ -157,7 +157,7 @@ parse_from_target(Stmt* self, Targets* targets, AccessType access, bool subquery
 	}
 
 	// table
-	auto table = table_mgr_find(&self->parser->db->table_mgr, &schema, &name, false);
+	auto table = table_mgr_find(&share()->db->table_mgr, &schema, &name, false);
 	if (table)
 	{
 		target->type = TARGET_TABLE;

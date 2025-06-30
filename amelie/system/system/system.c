@@ -83,6 +83,18 @@ system_create(void)
 	control->save_state = system_save_state;
 	control->arg        = self;
 	global()->control   = control;
+	global()->share     = &self->share;
+
+	// prepare shared context
+	auto share = &self->share;
+	share->executor       = &self->executor;
+	share->core_mgr       = &self->backend_mgr.core_mgr;
+	share->repl           = &self->repl;
+	share->function_mgr   = &self->function_mgr;
+	share->user_mgr       = &self->user_mgr;
+	share->db             = &self->db;
+	share->recover_if     = &build_if;
+	share->recover_if_arg = &self->backend_mgr;
 
 	// server
 	user_mgr_init(&self->user_mgr);
@@ -90,7 +102,7 @@ system_create(void)
 
 	// frontend/backend mgr
 	frontend_mgr_init(&self->frontend_mgr);
-	backend_mgr_init(&self->backend_mgr, &self->db, &self->executor, &self->function_mgr);
+	backend_mgr_init(&self->backend_mgr);
 	executor_init(&self->executor, &self->db, &self->backend_mgr.core_mgr);
 	rpc_queue_init(&self->lock_queue);
 
@@ -102,16 +114,6 @@ system_create(void)
 
 	// replication
 	repl_init(&self->repl, &self->db);
-
-	// prepare shared context (shared between frontends)
-	auto share = &self->share;
-	share->executor     = &self->executor;
-	share->repl         = &self->repl;
-	share->frontend_mgr = &self->frontend_mgr;
-	share->backend_mgr  = &self->backend_mgr;
-	share->function_mgr = &self->function_mgr;
-	share->user_mgr     = &self->user_mgr;
-	share->db           = &self->db;
 	return self;
 }
 
@@ -141,7 +143,7 @@ static void
 system_on_frontend_connect(Frontend* frontend, Client* client)
 {
 	System* self = frontend->on_connect_arg;
-	auto session = session_create(client, frontend, &self->share);
+	auto session = session_create(client, &self->frontend_mgr, frontend);
 	defer(session_free, session);
 	session_main(session);
 }

@@ -40,7 +40,7 @@ hot static void
 fn_now(Call* self)
 {
 	call_expect(self, 0);
-	value_set_timestamp(self->result, self->mgr->local->time_us);
+	value_set_timestamp(self->result, self->local->time_us);
 }
 
 hot static void
@@ -141,7 +141,7 @@ fn_date_trunc(Call* self)
 
 	// (string, timestamp [, timezone])
 	// (timestamp, string [, timezone])
-	Timezone* timezone = self->mgr->local->timezone;
+	Timezone* timezone = self->local->timezone;
 	if (self->argc == 3)
 	{
 		call_expect_arg(self, 2, TYPE_STRING);
@@ -231,7 +231,7 @@ fn_extract(Call* self)
 	// (interval, string)
 	// (timestamp, string [, timezone])
 	// (date, string)
-	Timezone* timezone = self->mgr->local->timezone;
+	Timezone* timezone = self->local->timezone;
 	if (self->argc == 3)
 	{
 		call_expect_arg(self, 2, TYPE_STRING);

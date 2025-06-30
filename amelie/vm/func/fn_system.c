@@ -48,7 +48,7 @@ static void
 fn_state(Call* self)
 {
 	call_expect(self, 0);
-	auto buf = db_state(self->mgr->db);
+	auto buf = db_state(share()->db);
 	value_set_json_buf(self->result, buf);
 }
 
@@ -116,7 +116,7 @@ static void
 fn_schemas(Call* self)
 {
 	call_expect(self, 0);
-	auto buf = schema_mgr_list(&self->mgr->db->schema_mgr, NULL, true);
+	auto buf = schema_mgr_list(&share()->db->schema_mgr, NULL, true);
 	value_set_json_buf(self->result, buf);
 }
 
@@ -125,7 +125,7 @@ fn_schema(Call* self)
 {
 	call_expect(self, 1);
 	call_expect_arg(self, 0, TYPE_STRING);
-	auto buf = schema_mgr_list(&self->mgr->db->schema_mgr, &self->argv[0].string, true);
+	auto buf = schema_mgr_list(&share()->db->schema_mgr, &self->argv[0].string, true);
 	value_set_json_buf(self->result, buf);
 }
 
@@ -133,7 +133,7 @@ static void
 fn_tables(Call* self)
 {
 	call_expect(self, 0);
-	auto buf = table_mgr_list(&self->mgr->db->table_mgr, NULL, NULL, true);
+	auto buf = table_mgr_list(&share()->db->table_mgr, NULL, NULL, true);
 	value_set_json_buf(self->result, buf);
 }
 
@@ -149,7 +149,7 @@ fn_table(Call* self)
 		str_advance(&name, str_size(&schema) + 1);
 	else
 		str_set(&schema, "public", 6);
-	auto buf = table_mgr_list(&self->mgr->db->table_mgr, &schema, &name, true);
+	auto buf = table_mgr_list(&share()->db->table_mgr, &schema, &name, true);
 	value_set_json_buf(self->result, buf);
 }
 
@@ -157,7 +157,7 @@ static void
 fn_wal(Call* self)
 {
 	call_expect(self, 0);
-	auto buf = wal_status(&self->mgr->db->wal_mgr.wal);
+	auto buf = wal_status(&share()->db->wal_mgr.wal);
 	value_set_json_buf(self->result, buf);
 }
 

@@ -47,58 +47,57 @@ ctl_show(Session* self)
 {
 	auto stmt  = compiler_stmt(&self->compiler);
 	auto arg   = ast_show_of(stmt->ast);
-	auto share = self->share;
 	Buf* buf   = NULL;
 
 	switch (arg->type) {
 	case SHOW_USERS:
-		buf = user_mgr_list(share->user_mgr, NULL);
+		buf = user_mgr_list(share()->user_mgr, NULL);
 		break;
 	case SHOW_USER:
-		buf = user_mgr_list(share->user_mgr, &arg->name);
+		buf = user_mgr_list(share()->user_mgr, &arg->name);
 		break;
 	case SHOW_REPLICAS:
-		buf = replica_mgr_list(&share->repl->replica_mgr, NULL);
+		buf = replica_mgr_list(&share()->repl->replica_mgr, NULL);
 		break;
 	case SHOW_REPLICA:
 	{
 		Uuid id;
 		uuid_set(&id, &arg->name);
-		buf = replica_mgr_list(&share->repl->replica_mgr, &id);
+		buf = replica_mgr_list(&share()->repl->replica_mgr, &id);
 		break;
 	}
 	case SHOW_REPL:
-		buf = repl_status(share->repl);
+		buf = repl_status(share()->repl);
 		break;
 	case SHOW_WAL:
-		buf = wal_status(&share->db->wal_mgr.wal);
+		buf = wal_status(&share()->db->wal_mgr.wal);
 		break;
 	case SHOW_METRICS:
 		rpc(global()->control->system, RPC_SHOW_METRICS, 1, &buf);
 		break;
 	case SHOW_SCHEMAS:
-		buf = schema_mgr_list(&share->db->schema_mgr, NULL, arg->extended);
+		buf = schema_mgr_list(&share()->db->schema_mgr, NULL, arg->extended);
 		break;
 	case SHOW_SCHEMA:
-		buf = schema_mgr_list(&share->db->schema_mgr, &arg->name, arg->extended);
+		buf = schema_mgr_list(&share()->db->schema_mgr, &arg->name, arg->extended);
 		break;
 	case SHOW_TABLES:
 	{
 		Str* schema = NULL;
 		if (! str_empty(&arg->schema))
 			schema = &arg->schema;
-		buf = table_mgr_list(&share->db->table_mgr, schema, NULL, arg->extended);
+		buf = table_mgr_list(&share()->db->table_mgr, schema, NULL, arg->extended);
 		break;
 	}
 	case SHOW_TABLE:
-		buf = table_mgr_list(&share->db->table_mgr, &arg->schema,
+		buf = table_mgr_list(&share()->db->table_mgr, &arg->schema,
 		                     &arg->name, arg->extended);
 		break;
 	case SHOW_CONFIG_ALL:
 		buf = opts_list(&global()->config->opts);
 		break;
 	case SHOW_STATE:
-		buf = db_state(share->db);
+		buf = db_state(share()->db);
 		break;
 	case SHOW_CONFIG:
 	{
@@ -124,7 +123,7 @@ ctl_show(Session* self)
 static void
 ctl_token(Session* self)
 {
-	auto user_mgr = self->share->user_mgr;
+	auto user_mgr = share()->user_mgr;
 	auto stmt = compiler_stmt(&self->compiler);
 	auto arg = ast_token_create_of(stmt->ast);
 
@@ -169,7 +168,7 @@ ctl_token(Session* self)
 static void
 ctl_user(Session* self)
 {
-	auto user_mgr = self->share->user_mgr;
+	auto user_mgr = share()->user_mgr;
 
 	// upgrade to exclusive lock
 	session_lock(self, LOCK_EXCLUSIVE);
@@ -203,13 +202,13 @@ ctl_user(Session* self)
 	session_lock(self, LOCK);
 
 	// sync frontends user caches
-	frontend_mgr_sync_users(self->share->frontend_mgr, &user_mgr->cache);
+	frontend_mgr_sync_users(self->frontend_mgr, &user_mgr->cache);
 }
 
 static void
 ctl_replica(Session* self)
 {
-	auto replica_mgr = &self->share->repl->replica_mgr;
+	auto replica_mgr = &share()->repl->replica_mgr;
 
 	// upgrade to exclusive lock
 	session_lock(self, LOCK_EXCLUSIVE);
@@ -251,7 +250,7 @@ ctl_replica(Session* self)
 static void
 ctl_repl(Session* self)
 {
-	auto repl = self->share->repl;
+	auto repl = share()->repl;
 
 	// upgrade to exclusive lock
 	session_lock(self, LOCK_EXCLUSIVE);

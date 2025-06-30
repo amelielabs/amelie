@@ -51,7 +51,7 @@ fn_append(Call* self)
 		call_error_arg(self, 0, "json array expected");
 	if (unlikely(! json_is_array(argv[0].json)))
 		call_error_arg(self, 0, "json array expected");
-	auto tz = self->mgr->local->timezone;
+	auto tz = self->local->timezone;
 	value_array_append(self->result, tz, argv[0].json, argv[0].json_size,
 	                   self->argc - 1, &argv[1]);
 }
@@ -71,7 +71,7 @@ fn_push(Call* self)
 		call_error_arg(self, 0, "json array expected");
 	if (unlikely(! json_is_array(argv[0].json)))
 		call_error_arg(self, 0, "json array expected");
-	auto tz = self->mgr->local->timezone;
+	auto tz = self->local->timezone;
 	value_array_push(self->result, tz, argv[0].json, argv[0].json_size,
 	                 self->argc - 1, &argv[1]);
 }
@@ -124,7 +124,7 @@ fn_put(Call* self)
 	if (unlikely(! json_is_array(argv[0].json)))
 		call_error_arg(self, 0, "json array expected");
 	call_expect_arg(self, 1, TYPE_INT);
-	auto tz = self->mgr->local->timezone;
+	auto tz = self->local->timezone;
 	value_array_put(self->result, tz, argv[0].json, argv[1].integer, &argv[2]);
 }
 
@@ -160,7 +160,7 @@ fn_set(Call* self)
 	if (unlikely(! json_is_obj(argv[0].json)))
 		call_error_arg(self, 0, "json object expected");
 	call_expect_arg(self, 1, TYPE_STRING);
-	auto tz = self->mgr->local->timezone;
+	auto tz = self->local->timezone;
 	update_set(self->result, tz, argv[0].json, &argv[1].string, &argv[2]);
 }
 

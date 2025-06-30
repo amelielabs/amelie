@@ -199,7 +199,7 @@ fn_identity_of(Call* self)
 	call_expect(self, 2);
 	call_expect_arg(self, 0, TYPE_STRING);
 	call_expect_arg(self, 0, TYPE_STRING);
-	auto table = table_mgr_find(&self->mgr->db->table_mgr,
+	auto table = table_mgr_find(&share()->db->table_mgr,
 	                            &argv[0].string,
 	                            &argv[1].string, true);
 	value_set_int(self->result, sequence_get(&table->seq));
@@ -222,7 +222,7 @@ fn_jwt(Call* self)
 		auto pos = argv[0].json;
 		if (! json_is_obj(pos))
 			call_error_arg(self, 0, "string or JSON object expected");
-		json_export(header, self->mgr->local->timezone, &pos);
+		json_export(header, self->local->timezone, &pos);
 		buf_str(header, &header_str);
 	} else
 	if (argv[0].type == TYPE_STRING)
@@ -241,7 +241,7 @@ fn_jwt(Call* self)
 		auto pos = argv[1].json;
 		if (! json_is_obj(pos))
 		call_error_arg(self, 1, "string or JSON object expected");
-		json_export(payload, self->mgr->local->timezone, &pos);
+		json_export(payload, self->local->timezone, &pos);
 		buf_str(payload, &payload_str);
 	} else
 	if (argv[1].type == TYPE_STRING)

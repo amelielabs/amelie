@@ -15,28 +15,25 @@ typedef struct Vm Vm;
 
 struct Vm
 {
-	Reg          r;
-	Reg*         regs;
-	Stack        stack;
-	Code*        code;
-	CodeData*    code_data;
-	Buf*         code_arg;
-	Value*       args;
-	CursorMgr    cursor_mgr;
-	Core*        core;
-	Executor*    executor;
-	Dtr*         dtr;
-	Program*     program;
-	Value*       result;
-	Content*     content;
-	Tr*          tr;
-	Local*       local;
-	CallMgr      call_mgr;
-	FunctionMgr* function_mgr;
-	Db*          db;
+	Reg       r;
+	Reg*      regs;
+	Stack     stack;
+	Code*     code;
+	CodeData* code_data;
+	Buf*      code_arg;
+	Value*    args;
+	CursorMgr cursor_mgr;
+	Core*     core;
+	Dtr*      dtr;
+	Program*  program;
+	Value*    result;
+	Content*  content;
+	Tr*       tr;
+	Local*    local;
+	CallMgr   call_mgr;
 };
 
-void vm_init(Vm*, Db*, Core*, Executor*, Dtr*, FunctionMgr*);
+void vm_init(Vm*, Core*, Dtr*);
 void vm_free(Vm*);
 void vm_reset(Vm*);
 void vm_run(Vm*, Local*, Tr*, Program*, Code*, CodeData*, Buf*, Reg*, Value*,

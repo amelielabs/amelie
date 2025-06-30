@@ -80,7 +80,7 @@ on_write(Primary* self, Buf* data)
 			// execute DML
 			dtr_reset(dtr);
 			dtr_create(dtr, program);
-			replay(session->share, dtr, record);
+			replay(dtr, record);
 		} else
 		{
 			// upgrade to exclusive lock
@@ -96,10 +96,10 @@ on_write(Primary* self, Buf* data)
 hot void
 session_primary(Session* self)
 {
-	auto share = self->share;
-
 	Recover recover;
-	recover_init(&recover, share->db, true, &build_if, share->backend_mgr);
+	recover_init(&recover, share()->db, true,
+	             share()->recover_if,
+	             share()->recover_if_arg);
 	defer(recover_free, &recover);
 
 	Primary primary;

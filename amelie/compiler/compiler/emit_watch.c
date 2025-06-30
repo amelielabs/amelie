@@ -62,7 +62,7 @@ emit_watch(Compiler* self, Ast* ast)
 	str_set(&schema, "public", 6);
 	Str name;
 	str_set(&name, "sleep", 5);
-	auto func = function_mgr_find(self->parser.function_mgr, &schema, &name);
+	auto func = function_mgr_find(share()->function_mgr, &schema, &name);
 	assert(func);
 
 	// call sleep(1000)
