@@ -31,6 +31,7 @@
 #include "db/db.h"
 #include "db/db_checkpoint.h"
 #include "db/cascade.h"
+#include "db/ddl.h"
 
 // recover
 #include "db/recover_checkpoint.h"

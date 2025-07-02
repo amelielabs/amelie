@@ -202,9 +202,10 @@ set(AMELIE_SOURCES_DB
     ${AMELIE_ROOT}/db/db/table_index.c
     ${AMELIE_ROOT}/db/db/db.c
     ${AMELIE_ROOT}/db/db/db_checkpoint.c
+    ${AMELIE_ROOT}/db/db/cascade.c
+    ${AMELIE_ROOT}/db/db/ddl.c
     ${AMELIE_ROOT}/db/db/recover_checkpoint.c
-    ${AMELIE_ROOT}/db/db/recover.c
-    ${AMELIE_ROOT}/db/db/cascade.c)
+    ${AMELIE_ROOT}/db/db/recover.c)
 
 set(AMELIE_SOURCES_REPL
     ${AMELIE_ROOT}/repl/backup/backup.c
