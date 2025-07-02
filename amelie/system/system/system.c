@@ -53,6 +53,49 @@ system_save_state(void* arg)
 }
 
 static void
+db_if_index(Db* self, Table* table, IndexConfig* index)
+{
+	// do parallel indexation per worker
+	System* system = self->iface_arg;
+	BackendMgr* backend_mgr = &system->backend_mgr;
+	Build build;
+	build_init(&build, BUILD_INDEX, backend_mgr, table, NULL, NULL, index);
+	defer(build_free, &build);
+	build_run(&build);
+}
+
+static void
+db_if_column_add(Db* self, Table* table, Table* table_new, Column* column)
+{
+	// rebuild new table with new column in parallel per worker
+	System* system = self->iface_arg;
+	BackendMgr* backend_mgr = &system->backend_mgr;
+	Build build;
+	build_init(&build, BUILD_COLUMN_ADD, backend_mgr, table, table_new, column, NULL);
+	defer(build_free, &build);
+	build_run(&build);
+}
+
+static void
+db_if_column_drop(Db* self, Table* table, Table* table_new, Column* column)
+{
+	// rebuild new table without column in parallel per worker
+	System* system = self->iface_arg;
+	BackendMgr* backend_mgr = &system->backend_mgr;
+	Build build;
+	build_init(&build, BUILD_COLUMN_DROP, backend_mgr, table, table_new, column, NULL);
+	defer(build_free, &build);
+	build_run(&build);
+}
+
+static DbIf db_if =
+{
+	.build_index       = db_if_index,
+	.build_column_add  = db_if_column_add,
+	.build_column_drop = db_if_column_drop
+};
+
+static void
 system_attach(PartList* list, void* arg)
 {
 	// redistribute partitions across backends
@@ -86,14 +129,12 @@ system_create(void)
 
 	// prepare shared context
 	auto share = &self->share;
-	share->executor       = &self->executor;
-	share->core_mgr       = &self->backend_mgr.core_mgr;
-	share->repl           = &self->repl;
-	share->function_mgr   = &self->function_mgr;
-	share->user_mgr       = &self->user_mgr;
-	share->db             = &self->db;
-	share->recover_if     = &build_if;
-	share->recover_if_arg = &self->backend_mgr;
+	share->executor     = &self->executor;
+	share->core_mgr     = &self->backend_mgr.core_mgr;
+	share->repl         = &self->repl;
+	share->function_mgr = &self->function_mgr;
+	share->user_mgr     = &self->user_mgr;
+	share->db           = &self->db;
 
 	// share shared context globally
 	am_share = share;
@@ -112,7 +153,7 @@ system_create(void)
 	function_mgr_init(&self->function_mgr);
 
 	// db
-	db_init(&self->db, system_attach, self);
+	db_init(&self->db, &db_if, self, system_attach, self);
 
 	// replication
 	repl_init(&self->repl, &self->db);
@@ -165,7 +206,7 @@ system_recover(System* self)
 
 	// replay wals
 	Recover recover;
-	recover_init(&recover, &self->db, false, &build_if, &self->backend_mgr);
+	recover_init(&recover, &self->db, false);
 	defer(recover_free, &recover);
 	recover_wal(&recover);
 

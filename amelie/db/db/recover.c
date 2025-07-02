@@ -25,13 +25,8 @@
 #include <amelie_db.h>
 
 void
-recover_init(Recover*   self, Db* db,
-             bool       write_wal,
-             RecoverIf* iface,
-             void*      iface_arg)
+recover_init(Recover* self, Db* db, bool write_wal)
 {
-	self->iface     = iface;
-	self->iface_arg = iface_arg;
 	self->ops       = 0;
 	self->size      = 0;
 	self->write_wal = write_wal;
@@ -180,7 +175,7 @@ recover_cmd(Recover* self, RecordCmd* cmd, uint8_t** pos)
 		if (! table_new)
 			break;
 		// build new table with new column
-		self->iface->build_column_add(self, table, table_new, column);
+		self->db->iface->build_column_add(self->db, table, table_new, column);
 		break;
 	}
 	case CMD_TABLE_COLUMN_DROP:
@@ -197,7 +192,7 @@ recover_cmd(Recover* self, RecordCmd* cmd, uint8_t** pos)
 		auto column = columns_find(&table->config->columns, &name_column);
 		assert(column);
 		// build new table without column
-		self->iface->build_column_drop(self, table, table_new, column);
+		self->db->iface->build_column_drop(self->db, table, table_new, column);
 		break;
 	}
 	case CMD_TABLE_COLUMN_SET_DEFAULT:
@@ -263,7 +258,7 @@ recover_cmd(Recover* self, RecordCmd* cmd, uint8_t** pos)
 		table_index_create(table, tr, config, false);
 		// build index
 		auto index = table_find_index(table, &config->name, true);
-		self->iface->build_index(self, table, index);
+		self->db->iface->build_index(self->db, table, index);
 		break;
 	}
 	case CMD_INDEX_DROP:

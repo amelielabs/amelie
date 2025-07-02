@@ -218,6 +218,7 @@ ddl_alter_table_column_add(Session* self, Tr* tr)
 {
 	auto stmt = compiler_stmt(&self->compiler);
 	auto arg  = ast_table_alter_of(stmt->ast);
+	auto db   = share()->db;
 
 	// COLUMN ADD name type [constraint]
 	auto table_mgr = &share()->db->table_mgr;
@@ -232,12 +233,7 @@ ddl_alter_table_column_add(Session* self, Tr* tr)
 		return;
 
 	// rebuild new table with new column in parallel per backend
-	Recover recover;
-	recover_init(&recover, share()->db, false,
-	             share()->recover_if,
-	             share()->recover_if_arg);
-	defer(recover_free, &recover);
-	share()->recover_if->build_column_add(&recover, table, table_new, arg->column);
+	db->iface->build_column_add(db, table, table_new, arg->column);
 }
 
 static void
@@ -245,6 +241,7 @@ ddl_alter_table_column_drop(Session* self, Tr* tr)
 {
 	auto stmt = compiler_stmt(&self->compiler);
 	auto arg  = ast_table_alter_of(stmt->ast);
+	auto db   = share()->db;
 
 	// COLUMN DROP name
 	auto table_mgr = &share()->db->table_mgr;
@@ -262,12 +259,7 @@ ddl_alter_table_column_drop(Session* self, Tr* tr)
 	assert(column);
 
 	// rebuild new table with new column in parallel per backend
-	Recover recover;
-	recover_init(&recover, share()->db, false,
-	             share()->recover_if,
-	             share()->recover_if_arg);
-	defer(recover_free, &recover);
-	share()->recover_if->build_column_drop(&recover, table, table_new, column);
+	db->iface->build_column_drop(db, table, table_new, column);
 }
 
 static void
@@ -352,12 +344,7 @@ ddl_create_index(Session* self, Tr* tr)
 	auto index = table_find_index(table, &arg->config->name, true);
 
 	// do parallel indexation per backend
-	Recover recover;
-	recover_init(&recover, share()->db, false,
-	             share()->recover_if,
-	             share()->recover_if_arg);
-	defer(recover_free, &recover);
-	share()->recover_if->build_index(&recover, table, index);
+	db->iface->build_index(db, table, index);
 }
 
 static void

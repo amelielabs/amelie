@@ -97,9 +97,7 @@ hot void
 session_primary(Session* self)
 {
 	Recover recover;
-	recover_init(&recover, share()->db, true,
-	             share()->recover_if,
-	             share()->recover_if_arg);
+	recover_init(&recover, share()->db, true);
 	defer(recover_free, &recover);
 
 	Primary primary;

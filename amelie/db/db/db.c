@@ -26,9 +26,13 @@
 
 void
 db_init(Db*        self,
+        DbIf*      iface,
+        void*      iface_arg,
         PartAttach attach,
         void*      attach_arg)
 {
+	self->iface = iface;
+	self->iface_arg = iface_arg;
 	schema_mgr_init(&self->schema_mgr);
 	part_mgr_init(&self->part_mgr, attach, attach_arg);
 	table_mgr_init(&self->table_mgr, &self->part_mgr);
