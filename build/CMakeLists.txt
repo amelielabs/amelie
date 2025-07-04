@@ -82,6 +82,7 @@ include_directories("${AMELIE_ROOT}/db/transaction")
 include_directories("${AMELIE_ROOT}/db/index")
 include_directories("${AMELIE_ROOT}/db/partition")
 include_directories("${AMELIE_ROOT}/db/checkpoint")
+include_directories("${AMELIE_ROOT}/db/catalog")
 include_directories("${AMELIE_ROOT}/db/wal")
 include_directories("${AMELIE_ROOT}/db/db")
 
@@ -191,6 +192,7 @@ set(AMELIE_SOURCES_DB
     ${AMELIE_ROOT}/db/checkpoint/checkpoint_mgr.c
     ${AMELIE_ROOT}/db/checkpoint/checkpoint.c
     ${AMELIE_ROOT}/db/checkpoint/checkpointer.c
+    ${AMELIE_ROOT}/db/catalog/catalog.c
     ${AMELIE_ROOT}/db/wal/wal.c
     ${AMELIE_ROOT}/db/wal/wal_cursor.c
     ${AMELIE_ROOT}/db/wal/wal_worker.c
