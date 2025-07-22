@@ -22,8 +22,6 @@
 #include <amelie_partition.h>
 #include <amelie_checkpoint.h>
 #include <amelie_catalog.h>
-#include <amelie_wal.h>
-#include <amelie_db.h>
 
 void
 table_mgr_init(TableMgr* self, PartMgr* part_mgr)
@@ -57,11 +55,8 @@ table_mgr_create(TableMgr*    self,
 	// allocate table
 	auto table = table_allocate(config, self->part_mgr);
 
-	// save create table operation
-	auto op = table_op_create(config);
-
 	// update tables
-	relation_mgr_create(&self->mgr, tr, CMD_TABLE_CREATE, &table->rel, op);
+	relation_mgr_create(&self->mgr, tr, &table->rel);
 
 	// prepare partitions
 	table_open(table);
@@ -74,14 +69,11 @@ table_mgr_create(TableMgr*    self,
 void
 table_mgr_drop_of(TableMgr* self, Tr* tr, Table* table)
 {
-	// save drop table operation
-	auto op = table_op_drop(&table->config->schema, &table->config->name);
-
 	// drop table by object
-	relation_mgr_drop(&self->mgr, tr, CMD_TABLE_DROP, &table->rel, op);
+	relation_mgr_drop(&self->mgr, tr, &table->rel);
 }
 
-void
+bool
 table_mgr_drop(TableMgr* self, Tr* tr, Str* schema, Str* name,
                bool if_exists)
 {
@@ -91,9 +83,10 @@ table_mgr_drop(TableMgr* self, Tr* tr, Str* schema, Str* name,
 		if (! if_exists)
 			error("table '%.*s': not exists", str_size(name),
 			      str_of(name));
-		return;
+		return false;
 	}
 	table_mgr_drop_of(self, tr, table);
+	return true;
 }
 
 static void
@@ -103,14 +96,13 @@ truncate_if_commit(Log* self, LogOp* op)
 	auto table = table_of(relation->relation);
 	// truncate all partitions
 	part_list_truncate(&table->part_list);
-	buf_free(relation->data);
 }
 
 static void
 truncate_if_abort(Log* self, LogOp* op)
 {
-	auto relation = log_relation_of(self, op);
-	buf_free(relation->data);
+	unused(self);
+	unused(op);
 }
 
 static LogIf truncate_if =
@@ -119,7 +111,7 @@ static LogIf truncate_if =
 	.abort  = truncate_if_abort
 };
 
-void
+bool
 table_mgr_truncate(TableMgr* self,
                    Tr*       tr,
                    Str*      schema,
@@ -132,18 +124,14 @@ table_mgr_truncate(TableMgr* self,
 		if (! if_exists)
 			error("table '%.*s': not exists", str_size(name),
 			      str_of(name));
-		return;
+		return false;
 	}
 
-	// save truncate table operation
-	auto op = table_op_truncate(schema, name);
-
 	// update table
-	log_relation(&tr->log, CMD_TABLE_TRUNCATE, &truncate_if,
-	             NULL,
-	             &table->rel, op);
+	log_relation(&tr->log, &truncate_if, NULL, &table->rel);
 
 	// do nothing (actual truncate will happen on commit)
+	return true;
 }
 
 void

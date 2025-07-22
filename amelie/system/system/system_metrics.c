@@ -177,7 +177,7 @@ system_metrics(System* self)
 
 	// db
 	encode_raw(buf, "db", 2);
-	auto db = db_status(&self->db);
+	auto db = catalog_status(&self->db.catalog);
 	defer_buf(db);
 	buf_write(buf, db->start, buf_size(db));
 

@@ -22,8 +22,6 @@
 #include <amelie_partition.h>
 #include <amelie_checkpoint.h>
 #include <amelie_catalog.h>
-#include <amelie_wal.h>
-#include <amelie_db.h>
 
 void
 schema_mgr_init(SchemaMgr* self)
@@ -37,7 +35,7 @@ schema_mgr_free(SchemaMgr* self)
 	relation_mgr_free(&self->mgr);
 }
 
-void
+bool
 schema_mgr_create(SchemaMgr*    self,
                   Tr*           tr,
                   SchemaConfig* config,
@@ -50,21 +48,18 @@ schema_mgr_create(SchemaMgr*    self,
 		if (! if_not_exists)
 			error("schema '%.*s': already exists", str_size(&config->name),
 			      str_of(&config->name));
-		return;
+		return false;
 	}
 
 	// allocate schema and init
 	auto schema = schema_allocate(config);
 
-	// save create schema operation
-	auto op = schema_op_create(config);
-
 	// update schemas
-	relation_mgr_create(&self->mgr, tr, CMD_SCHEMA_CREATE,
-	                    &schema->rel, op);
+	relation_mgr_create(&self->mgr, tr, &schema->rel);
+	return true;
 }
 
-void
+bool
 schema_mgr_drop(SchemaMgr* self,
                 Tr*        tr,
                 Str*       name,
@@ -76,24 +71,23 @@ schema_mgr_drop(SchemaMgr* self,
 		if (! if_exists)
 			error("schema '%.*s': not exists", str_size(name),
 			      str_of(name));
-		return;
+		return false;
 	}
 
 	if (schema->config->system)
 		error("schema '%.*s': system schema cannot be dropped", str_size(name),
 		      str_of(name));
 
-	// save drop schema operation
-	auto op = schema_op_drop(&schema->config->name);
-
 	// drop schema by object
-	relation_mgr_drop(&self->mgr, tr, CMD_SCHEMA_DROP, &schema->rel, op);
+	relation_mgr_drop(&self->mgr, tr, &schema->rel);
+	return true;
 }
 
 static void
 rename_if_commit(Log* self, LogOp* op)
 {
-	buf_free(log_relation_of(self, op)->data);
+	unused(self);
+	unused(op);
 }
 
 static void
@@ -102,12 +96,10 @@ rename_if_abort(Log* self, LogOp* op)
 	auto relation = log_relation_of(self, op);
 	auto mgr = schema_of(relation->relation);
 	// set previous name
-	uint8_t* pos = relation->data->start;
+	uint8_t* pos = relation->data;
 	Str name;
-	Str name_new;
-	schema_op_rename_read(&pos, &name, &name_new);
+	json_read_string(&pos, &name);
 	schema_config_set_name(mgr->config, &name);
-	buf_free(relation->data);
 }
 
 static LogIf rename_if =
@@ -116,7 +108,7 @@ static LogIf rename_if =
 	.abort  = rename_if_abort
 };
 
-void
+bool
 schema_mgr_rename(SchemaMgr* self,
                   Tr*        tr,
                   Str*       name,
@@ -129,7 +121,7 @@ schema_mgr_rename(SchemaMgr* self,
 		if (! if_exists)
 			error("schema '%.*s': not exists", str_size(name),
 			      str_of(name));
-		return;
+		return false;
 	}
 
 	if (schema->config->system)
@@ -141,16 +133,15 @@ schema_mgr_rename(SchemaMgr* self,
 		error("schema '%.*s': already exists", str_size(name_new),
 		      str_of(name_new));
 
-	// save schema operation
-	auto op = schema_op_rename(name, name_new);
-
 	// update schema
-	log_relation(&tr->log, CMD_SCHEMA_RENAME, &rename_if,
-	             NULL,
-	             &schema->rel, op);
+	log_relation(&tr->log, &rename_if, NULL, &schema->rel);
+
+	// save name for rollback
+	encode_string(&tr->log.data, name);
 
 	// set new name
 	schema_config_set_name(schema->config, name_new);
+	return true;
 }
 
 void

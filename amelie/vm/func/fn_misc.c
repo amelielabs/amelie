@@ -200,7 +200,7 @@ fn_identity_of(Call* self)
 	call_expect(self, 2);
 	call_expect_arg(self, 0, TYPE_STRING);
 	call_expect_arg(self, 0, TYPE_STRING);
-	auto table = table_mgr_find(&share()->db->table_mgr,
+	auto table = table_mgr_find(&share()->db->catalog.table_mgr,
 	                            &argv[0].string,
 	                            &argv[1].string, true);
 	value_set_int(self->result, sequence_get(&table->seq));

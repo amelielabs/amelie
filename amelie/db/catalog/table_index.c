@@ -22,8 +22,6 @@
 #include <amelie_partition.h>
 #include <amelie_checkpoint.h>
 #include <amelie_catalog.h>
-#include <amelie_wal.h>
-#include <amelie_db.h>
 
 static void
 table_index_delete(Table* table, IndexConfig* index)
@@ -41,7 +39,8 @@ table_index_delete(Table* table, IndexConfig* index)
 static void
 create_if_commit(Log* self, LogOp* op)
 {
-	buf_free(log_relation_of(self, op)->data);
+	unused(self);
+	unused(op);
 }
 
 static void
@@ -51,7 +50,6 @@ create_if_abort(Log* self, LogOp* op)
 	auto table = table_of(relation->relation);
 	IndexConfig* index = op->iface_arg;
 	table_index_delete(table, index);
-	buf_free(relation->data);
 }
 
 static LogIf create_if =
@@ -83,15 +81,8 @@ table_index_create(Table*       self,
 	keys_set_primary(&index->keys, false);
 	table_config_add_index(self->config, index);
 
-	// save create index operation
-	auto op = table_op_create_index(&self->config->schema,
-	                                &self->config->name,
-	                                 config);
-
 	// update table
-	log_relation(&tr->log, CMD_INDEX_CREATE, &create_if,
-	             index,
-	             &self->rel, op);
+	log_relation(&tr->log, &create_if, index, &self->rel);
 
 	// create index for each partition
 	part_list_index_create(&self->part_list, index);
@@ -105,13 +96,13 @@ drop_if_commit(Log* self, LogOp* op)
 	auto table = table_of(relation->relation);
 	IndexConfig* index = op->iface_arg;
 	table_index_delete(table, index);
-	buf_free(relation->data);
 }
 
 static void
 drop_if_abort(Log* self, LogOp* op)
 {
-	buf_free(log_relation_of(self, op)->data);
+	unused(self);
+	unused(op);
 }
 
 static LogIf drop_if =
@@ -120,7 +111,7 @@ static LogIf drop_if =
 	.abort  = drop_if_abort
 };
 
-void
+bool
 table_index_drop(Table* self,
                  Tr*    tr,
                  Str*   name,
@@ -135,22 +126,19 @@ table_index_drop(Table* self,
 			      str_of(&self->config->name),
 			      str_size(name),
 			      str_of(name));
-		return;
+		return false;
 	}
 
-	// save drop index operation
-	auto op = table_op_drop_index(&self->config->schema, &self->config->name, name);
-
 	// update table
-	log_relation(&tr->log, CMD_INDEX_DROP, &drop_if,
-	             index,
-	             &self->rel, op);
+	log_relation(&tr->log, &drop_if, index, &self->rel);
+	return true;
 }
 
 static void
 rename_if_commit(Log* self, LogOp* op)
 {
-	buf_free(log_relation_of(self, op)->data);
+	unused(self);
+	unused(op);
 }
 
 static void
@@ -158,14 +146,10 @@ rename_if_abort(Log* self, LogOp* op)
 {
 	IndexConfig* index = op->iface_arg;
 	auto relation = log_relation_of(self, op);
-	uint8_t* pos = relation->data->start;
-	Str schema;
-	Str name;
+	uint8_t* pos = relation->data;
 	Str index_name;
-	Str index_name_new;
-	table_op_rename_index_read(&pos, &schema, &name, &index_name, &index_name_new);
+	json_read_string(&pos, &index_name);
 	index_config_set_name(index, &index_name);
-	buf_free(relation->data);
 }
 
 static LogIf rename_if =
@@ -174,7 +158,7 @@ static LogIf rename_if =
 	.abort  = rename_if_abort
 };
 
-void
+bool
 table_index_rename(Table* self,
                    Tr*    tr,
                    Str*   name,
@@ -190,7 +174,7 @@ table_index_rename(Table* self,
 			      str_of(&self->config->name),
 			      str_size(name),
 			      str_of(name));
-		return;
+		return false;
 	}
 
 	// ensure new index not exists
@@ -201,16 +185,10 @@ table_index_rename(Table* self,
 		      str_size(name_new),
 		      str_of(name_new));
 
-	// save rename index operation
-	auto op = table_op_rename_index(&self->config->schema, &self->config->name,
-	                                name,
-	                                name_new);
-
 	// update table
-	log_relation(&tr->log, CMD_INDEX_RENAME, &rename_if,
-	             index,
-	             &self->rel, op);
+	log_relation(&tr->log, &rename_if, index, &self->rel);
 
 	// rename index
 	index_config_set_name(index, name_new);
+	return true;
 }

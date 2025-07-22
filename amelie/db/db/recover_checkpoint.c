@@ -62,7 +62,7 @@ recover_partition(Part* self)
 hot void
 recover_checkpoint(Db* self, Core* core)
 {
-	list_foreach(&self->table_mgr.mgr.list)
+	list_foreach(&self->catalog.table_mgr.mgr.list)
 	{
 		auto table = table_of(list_at(Relation, link));
 		list_foreach(&table->part_list.list)

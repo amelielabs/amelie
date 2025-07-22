@@ -29,7 +29,7 @@ static Buf*
 db_checkpoint_catalog_dump(void* arg)
 {
 	// { schemas, tables }
-	Db* self = arg;
+	Catalog* self = arg;
 	auto buf = buf_create();
 	encode_obj(buf);
 
@@ -60,7 +60,7 @@ restore_replay(Db* self, Tr* tr, int type, uint8_t** pos)
 		defer(schema_config_free, config);
 
 		// create schema
-		schema_mgr_create(&self->schema_mgr, tr, config, false);
+		schema_mgr_create(&self->catalog.schema_mgr, tr, config, false);
 		break;
 	}
 	case RESTORE_TABLE:
@@ -70,7 +70,7 @@ restore_replay(Db* self, Tr* tr, int type, uint8_t** pos)
 		defer(table_config_free, config);
 
 		// create table
-		table_mgr_create(&self->table_mgr, tr, config, false);
+		table_mgr_create(&self->catalog.table_mgr, tr, config, false);
 		break;
 	}
 	}
@@ -127,7 +127,7 @@ static void
 db_checkpoint_add(Checkpoint* cp, void* arg)
 {
 	Db* self = arg;
-	list_foreach(&self->table_mgr.mgr.list)
+	list_foreach(&self->catalog.table_mgr.mgr.list)
 	{
 		auto table = table_of(list_at(Relation, link));
 		list_foreach(&table->part_list.list)
@@ -142,7 +142,6 @@ static void
 db_checkpoint_complete(void* arg)
 {
 	Db* self = arg;
-	// gc
 	checkpoint_mgr_gc(&self->checkpoint_mgr);
 	wal_mgr_gc(&self->wal_mgr);
 }

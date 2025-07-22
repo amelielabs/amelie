@@ -74,10 +74,10 @@ schema_config_read(uint8_t** pos)
 	errdefer(schema_config_free, self);
 	Decode obj[] =
 	{
-		{ DECODE_STRING, "name",       &self->name   },
-		{ DECODE_BOOL,   "system",     &self->system },
-		{ DECODE_BOOL,   "create",     &self->create },
-		{ 0,              NULL,        NULL          },
+		{ DECODE_STRING, "name",   &self->name   },
+		{ DECODE_BOOL,   "system", &self->system },
+		{ DECODE_BOOL,   "create", &self->create },
+		{ 0,              NULL,    NULL          },
 	};
 	decode_obj(obj, "schema", pos);
 	return self;

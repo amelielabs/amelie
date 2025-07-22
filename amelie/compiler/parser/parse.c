@@ -60,7 +60,8 @@ parse_stmt_free(Stmt* stmt)
 	case STMT_CREATE_REPLICA:
 	{
 		auto ast = ast_replica_create_of(stmt->ast);
-		remote_free(&ast->remote);
+		if (ast->config)
+			replica_config_free(ast->config);
 		break;
 	}
 	case STMT_CREATE_SCHEMA:
@@ -215,7 +216,7 @@ parse_stmt(Parser* self, Stmt* stmt)
 			stmt_push(stmt, next);
 		}
 
-		// CREATE USER | TOKEN | REPLICA | SCHEMA | TABLE | INDEX | PROCEDURE
+		// CREATE USER | TOKEN | REPLICA | SCHEMA | TABLE | INDEX
 		if (lex_if(lex, KUSER))
 		{
 			stmt->id = STMT_CREATE_USER;

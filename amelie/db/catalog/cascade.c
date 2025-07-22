@@ -22,11 +22,9 @@
 #include <amelie_partition.h>
 #include <amelie_checkpoint.h>
 #include <amelie_catalog.h>
-#include <amelie_wal.h>
-#include <amelie_db.h>
 
 static void
-cascade_drop(Db* self, Tr* tr, Str* schema)
+cascade_drop(Catalog* self, Tr* tr, Str* schema)
 {
 	// tables
 	list_foreach_safe(&self->table_mgr.mgr.list)
@@ -38,22 +36,7 @@ cascade_drop(Db* self, Tr* tr, Str* schema)
 }
 
 static void
-cascade_rename(Db* self, Tr* tr, Str* schema, Str* schema_new)
-{
-	// tables
-	list_foreach_safe(&self->table_mgr.mgr.list)
-	{
-		auto table = table_of(list_at(Relation, link));
-		if (str_compare(&table->config->schema, schema))
-			table_mgr_rename(&self->table_mgr, tr, &table->config->schema,
-			                 &table->config->name,
-			                 schema_new,
-			                 &table->config->name, false);
-	}
-}
-
-static void
-cascade_schema_validate(Db* self, Str* schema)
+cascade_schema_validate(Catalog* self, Str* schema)
 {
 	// tables
 	list_foreach(&self->table_mgr.mgr.list)
@@ -66,10 +49,10 @@ cascade_schema_validate(Db* self, Str* schema)
 	}
 }
 
-void
-cascade_schema_drop(Db*  self, Tr* tr, Str* name,
-                    bool cascade,
-                    bool if_exists)
+bool
+cascade_schema_drop(Catalog* self, Tr* tr, Str* name,
+                    bool     cascade,
+                    bool     if_exists)
 {
 	auto schema = schema_mgr_find(&self->schema_mgr, name, false);
 	if (! schema)
@@ -77,7 +60,7 @@ cascade_schema_drop(Db*  self, Tr* tr, Str* name,
 		if (! if_exists)
 			error("schema '%.*s': not exists", str_size(name),
 			      str_of(name));
-		return;
+		return false;
 	}
 
 	if (schema->config->system)
@@ -95,12 +78,28 @@ cascade_schema_drop(Db*  self, Tr* tr, Str* name,
 	}
 
 	schema_mgr_drop(&self->schema_mgr, tr, name, false);
+	return true;
 }
 
-void
-cascade_schema_rename(Db*  self, Tr* tr, Str* name,
-                      Str* name_new,
-                      bool if_exists)
+static void
+cascade_rename(Catalog* self, Tr* tr, Str* schema, Str* schema_new)
+{
+	// tables
+	list_foreach_safe(&self->table_mgr.mgr.list)
+	{
+		auto table = table_of(list_at(Relation, link));
+		if (str_compare(&table->config->schema, schema))
+			table_mgr_rename(&self->table_mgr, tr, &table->config->schema,
+			                 &table->config->name,
+			                 schema_new,
+			                 &table->config->name, false);
+	}
+}
+
+bool
+cascade_schema_rename(Catalog* self, Tr* tr, Str* name,
+                      Str*     name_new,
+                      bool     if_exists)
 {
 	auto schema = schema_mgr_find(&self->schema_mgr, name, false);
 	if (! schema)
@@ -108,7 +107,7 @@ cascade_schema_rename(Db*  self, Tr* tr, Str* name,
 		if (! if_exists)
 			error("schema '%.*s': not exists", str_size(name),
 			      str_of(name));
-		return;
+		return false;
 	}
 
 	if (schema->config->system)
@@ -120,4 +119,5 @@ cascade_schema_rename(Db*  self, Tr* tr, Str* name,
 
 	// rename schema last
 	schema_mgr_rename(&self->schema_mgr, tr, name, name_new, false);
+	return true;
 }

@@ -46,10 +46,10 @@
 static void
 ctl_show(Session* self)
 {
-	auto stmt  = compiler_stmt(&self->compiler);
-	auto arg   = ast_show_of(stmt->ast);
-	Buf* buf   = NULL;
-
+	auto stmt    = compiler_stmt(&self->compiler);
+	auto arg     = ast_show_of(stmt->ast);
+	Buf* buf     = NULL;
+	auto catalog = &share()->db->catalog;
 	switch (arg->type) {
 	case SHOW_USERS:
 		buf = user_mgr_list(share()->user_mgr, NULL);
@@ -77,21 +77,21 @@ ctl_show(Session* self)
 		rpc(global()->control->system, RPC_SHOW_METRICS, 1, &buf);
 		break;
 	case SHOW_SCHEMAS:
-		buf = schema_mgr_list(&share()->db->schema_mgr, NULL, arg->extended);
+		buf = schema_mgr_list(&catalog->schema_mgr, NULL, arg->extended);
 		break;
 	case SHOW_SCHEMA:
-		buf = schema_mgr_list(&share()->db->schema_mgr, &arg->name, arg->extended);
+		buf = schema_mgr_list(&catalog->schema_mgr, &arg->name, arg->extended);
 		break;
 	case SHOW_TABLES:
 	{
 		Str* schema = NULL;
 		if (! str_empty(&arg->schema))
 			schema = &arg->schema;
-		buf = table_mgr_list(&share()->db->table_mgr, schema, NULL, arg->extended);
+		buf = table_mgr_list(&catalog->table_mgr, schema, NULL, arg->extended);
 		break;
 	}
 	case SHOW_TABLE:
-		buf = table_mgr_list(&share()->db->table_mgr, &arg->schema,
+		buf = table_mgr_list(&catalog->table_mgr, &arg->schema,
 		                     &arg->name, arg->extended);
 		break;
 	case SHOW_CONFIG_ALL:
@@ -219,17 +219,7 @@ ctl_replica(Session* self)
 	case STMT_CREATE_REPLICA:
 	{
 		auto arg = ast_replica_create_of(stmt->ast);
-		auto config = replica_config_allocate();
-		defer(replica_config_free, config);
-
-		// id
-		Uuid id;
-		uuid_set(&id, &arg->id->string);
-		replica_config_set_id(config, &id);
-
-		// remote
-		replica_config_set_remote(config, &arg->remote);
-		replica_mgr_create(replica_mgr, config, arg->if_not_exists);
+		replica_mgr_create(replica_mgr, arg->config, arg->if_not_exists);
 		break;
 	}
 	case STMT_DROP_REPLICA:

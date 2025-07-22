@@ -192,20 +192,19 @@ set(AMELIE_SOURCES_DB
     ${AMELIE_ROOT}/db/checkpoint/checkpoint_mgr.c
     ${AMELIE_ROOT}/db/checkpoint/checkpoint.c
     ${AMELIE_ROOT}/db/checkpoint/checkpointer.c
+    ${AMELIE_ROOT}/db/catalog/schema_mgr.c
+    ${AMELIE_ROOT}/db/catalog/table_mgr.c
+    ${AMELIE_ROOT}/db/catalog/table_mgr_alter.c
+    ${AMELIE_ROOT}/db/catalog/table_index.c
     ${AMELIE_ROOT}/db/catalog/catalog.c
+    ${AMELIE_ROOT}/db/catalog/cascade.c
     ${AMELIE_ROOT}/db/wal/wal.c
     ${AMELIE_ROOT}/db/wal/wal_cursor.c
     ${AMELIE_ROOT}/db/wal/wal_worker.c
     ${AMELIE_ROOT}/db/wal/wal_periodic.c
     ${AMELIE_ROOT}/db/wal/wal_mgr.c
-    ${AMELIE_ROOT}/db/db/schema_mgr.c
-    ${AMELIE_ROOT}/db/db/table_mgr.c
-    ${AMELIE_ROOT}/db/db/table_mgr_alter.c
-    ${AMELIE_ROOT}/db/db/table_index.c
     ${AMELIE_ROOT}/db/db/db.c
     ${AMELIE_ROOT}/db/db/db_checkpoint.c
-    ${AMELIE_ROOT}/db/db/cascade.c
-    ${AMELIE_ROOT}/db/db/ddl.c
     ${AMELIE_ROOT}/db/db/recover_checkpoint.c
     ${AMELIE_ROOT}/db/db/recover.c)
 

@@ -423,6 +423,51 @@ parse_with(Stmt* self, AstTableCreate* stmt, IndexConfig* index_config)
 	}
 }
 
+static void
+parse_table_finilize(AstTableCreate* self)
+{
+	// ensure schema exists and not system
+	auto schema = schema_mgr_find(&share()->db->catalog.schema_mgr,
+	                              &self->config->schema,
+	                              true);
+	if (! schema->config->create)
+		error("system schema <%.*s> cannot be used to create objects",
+		      str_size(&schema->config->name),
+		      str_of(&schema->config->name));
+
+	// create partition for each backend
+	if (self->partitions < 1 || self->partitions >= PARTITION_MAX)
+		error("table has invalid partitions number");
+
+	// partition_max / table partitions
+	int range_max      = PARTITION_MAX;
+	int range_interval = range_max / self->partitions;
+	int range_start    = 0;
+	for (auto order = 0; order < self->partitions; order++)
+	{
+		// set partition range
+		int range_step;
+		auto is_last = (order == self->partitions - 1);
+		if (is_last)
+			range_step = range_max - range_start;
+		else
+			range_step = range_interval;
+		if ((range_start + range_step) > range_max)
+			range_step = range_max - range_start;
+
+		// create partition config
+		auto config = part_config_allocate();
+		auto psn = state_psn_next();
+		part_config_set_id(config, psn);
+		part_config_set_range(config, range_start, range_start + range_step);
+		table_config_add_partition(self->config, config);
+		if (is_last)
+			break;
+
+		range_start += range_step;
+	}
+}
+
 void
 parse_table_create(Stmt* self, bool unlogged)
 {
@@ -472,6 +517,9 @@ parse_table_create(Stmt* self, bool unlogged)
 
 	// [WITH]
 	parse_with(self, stmt, index_config);
+
+	// define partitions
+	parse_table_finilize(stmt);
 }
 
 void
@@ -492,19 +540,19 @@ parse_table_drop(Stmt* self)
 void
 parse_table_alter(Stmt* self)
 {
-	// ALTER TABLE [IF EXISTS] [schema.]name ADD COLUMN name type [constraint]
-	// ALTER TABLE [IF EXISTS] [schema.]name DROP COLUMN name
 	// ALTER TABLE [IF EXISTS] [schema.]name RENAME TO [schema.]name
 	// ALTER TABLE [IF EXISTS] [schema.]name SET IDENTITY TO value
-	// ALTER TABLE [IF EXISTS] [schema.]name RENAME COLUMN name TO name
-	// ALTER TABLE [IF EXISTS] [schema.]name SET COLUMN name DEFAULT const
-	// ALTER TABLE [IF EXISTS] [schema.]name SET COLUMN name AS (expr) <STORED|RESOLVED>
-	// ALTER TABLE [IF EXISTS] [schema.]name UNSET COLUMN name DEFAULT
-	// ALTER TABLE [IF EXISTS] [schema.]name UNSET COLUMN name AS <IDENTITY|STORED|RESOLVED>
+	// ALTER TABLE [IF EXISTS] [schema.]name ADD COLUMN [IF NOT EXISTS] name type [constraint]
+	// ALTER TABLE [IF EXISTS] [schema.]name DROP COLUMN [IF EXISTS] name
+	// ALTER TABLE [IF EXISTS] [schema.]name RENAME COLUMN [IF EXISTS] name TO name
+	// ALTER TABLE [IF EXISTS] [schema.]name SET COLUMN [IF EXISTS] name DEFAULT const
+	// ALTER TABLE [IF EXISTS] [schema.]name SET COLUMN [IF EXISTS] name AS (expr) <STORED|RESOLVED>
+	// ALTER TABLE [IF EXISTS] [schema.]name UNSET COLUMN [IF EXISTS] name DEFAULT
+	// ALTER TABLE [IF EXISTS] [schema.]name UNSET COLUMN [IF EXISTS] name AS <IDENTITY|STORED|RESOLVED>
 	auto stmt = ast_table_alter_allocate();
 	self->ast = &stmt->ast;
 
-	// if exists
+	// [if exists]
 	stmt->if_exists = parse_if_exists(self);
 
 	// name
@@ -516,6 +564,9 @@ parse_table_alter(Stmt* self)
 	if (stmt_if(self, KADD))
 	{
 		stmt_expect(self, KCOLUMN);
+
+		// [if not exists]
+		stmt->if_column_not_exists = parse_if_not_exists(self);
 
 		// name type [constraint]
 
@@ -551,6 +602,9 @@ parse_table_alter(Stmt* self)
 	{
 		stmt_expect(self, KCOLUMN);
 
+		// [if exists]
+		stmt->if_column_exists = parse_if_exists(self);
+
 		// name
 		auto name = stmt_expect(self, KNAME);
 		str_set_str(&stmt->column_name, &name->string);
@@ -566,6 +620,9 @@ parse_table_alter(Stmt* self)
 		if (stmt_if(self, KCOLUMN))
 		{
 			stmt->type = TABLE_ALTER_COLUMN_RENAME;
+
+			// [if exists]
+			stmt->if_column_exists = parse_if_exists(self);
 
 			// name
 			auto name = stmt_expect(self, KNAME);
@@ -625,6 +682,9 @@ parse_table_alter(Stmt* self)
 		// SET COLUMN AS
 		if (stmt_if(self, KCOLUMN))
 		{
+			// [if exists]
+			stmt->if_column_exists = parse_if_exists(self);
+
 			// name
 			auto name = stmt_expect(self, KNAME);
 			str_set_str(&stmt->column_name, &name->string);
@@ -633,7 +693,7 @@ parse_table_alter(Stmt* self)
 			if (stmt_if(self, KDEFAULT))
 			{
 				// find table and column
-				auto table  = table_mgr_find(&share()->db->table_mgr,
+				auto table  = table_mgr_find(&share()->db->catalog.table_mgr,
 				                             &stmt->schema,
 				                             &stmt->name, false);
 				if (! table)
@@ -705,6 +765,9 @@ parse_table_alter(Stmt* self)
 		// UNSET COLUMN AS RESOLVED
 		if (stmt_if(self, KCOLUMN))
 		{
+			// [if exists]
+			stmt->if_column_exists = parse_if_exists(self);
+
 			// name
 			auto name = stmt_expect(self, KNAME);
 			str_set_str(&stmt->column_name, &name->string);

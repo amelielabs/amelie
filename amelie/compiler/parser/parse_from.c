@@ -158,7 +158,7 @@ parse_from_target(Stmt* self, Targets* targets, AccessType access, bool subquery
 	}
 
 	// table
-	auto table = table_mgr_find(&share()->db->table_mgr, &schema, &name, false);
+	auto table = table_mgr_find(&share()->db->catalog.table_mgr, &schema, &name, false);
 	if (table)
 	{
 		target->type = TARGET_TABLE;

@@ -286,6 +286,12 @@ select system.table('test').columns
   }
 }]]
 drop table test
+# test: rename column (if table exists)
+alter table if exists test rename column id to id2
+# test: rename column (if column exists)
+create table test (id int primary key, data int default 0)
+alter table if exists test rename column if exists id to id2
+drop table test
 # test: add column parsing
 create table test (id int primary key)
 alter table
@@ -303,6 +309,14 @@ drop table test
 create table test (id int primary key, data int)
 alter table test add column data int
 {"msg": "table 'test': column 'data' already exists"}
+drop table test
+# test: add column (if table exists)
+alter table test add column data int
+{"msg": "table 'test': not exists"}
+alter table if exists test add column data int
+# test: add column (if column exists)
+create table test (id int primary key, data int)
+alter table test add column if not exists data int
 drop table test
 # test: add column primary key
 create table test (id int primary key)
@@ -531,10 +545,15 @@ alter table test drop column
 alter table test drop column 1
 {"msg": "alter table test drop column ❰1❱ ⟵ name expected"}
 drop table test
-# test: drop column (not exists)
+# test: drop column (if table exists)
+alter table test drop column data
+{"msg": "table 'test': not exists"}
+alter table if exists test drop column data
+# test: drop column (if column exists)
 create table test (id int primary key)
 alter table test drop column data
 {"msg": "table 'test': column 'data' not exists"}
+alter table test drop column if exists data
 drop table test
 # test: drop column (primary key)
 create table test (id int primary key)

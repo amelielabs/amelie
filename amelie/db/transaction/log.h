@@ -39,8 +39,8 @@ struct LogRow
 
 struct LogRelation
 {
-	void* relation;
-	Buf*  data;
+	void*   relation;
+	uint8_t data[];
 };
 
 struct Log
@@ -148,17 +148,15 @@ log_persist(Log* self, uint64_t partition)
 	write_log_add(&self->write_log, op->cmd, partition, ref->row);
 }
 
-static inline void
+static inline LogRelation*
 log_relation(Log*   self,
-             Cmd    cmd,
              LogIf* iface,
              void*  iface_arg,
-             void*  relation,
-             Buf*   data)
+             void*  relation)
 {
 	// op
 	LogOp* op = buf_claim(&self->op, sizeof(LogOp));
-	op->cmd       = cmd;
+	op->cmd       = CMD_DDL;
 	op->iface     = iface;
 	op->iface_arg = iface_arg;
 	op->pos       = buf_size(&self->data);
@@ -166,10 +164,14 @@ log_relation(Log*   self,
 	self->count_relation++;
 
 	// relation data
-	LogRelation* rel = buf_claim(&self->data, sizeof(LogRelation));
-	rel->relation = relation;
-	rel->data     = data;
+	LogRelation* ref = buf_claim(&self->data, sizeof(LogRelation));
+	ref->relation = relation;
+	return ref;
+}
 
+hot static inline void
+log_persist_relation(Log* self, uint8_t* data)
+{
 	// [cmd, data]
-	write_log_add_op(&self->write_log, cmd, data);
+	write_log_add_op(&self->write_log, CMD_DDL, data);
 }

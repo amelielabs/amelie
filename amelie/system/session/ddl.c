@@ -43,385 +43,226 @@
 #include <amelie_backend.h>
 #include <amelie_session.h>
 
-static void
-ddl_create_schema(Session* self, Tr* tr)
+static int
+prepare_alter_table(Compiler* self, int* flags_ref)
 {
-	auto stmt = compiler_stmt(&self->compiler);
-	auto arg  = ast_schema_create_of(stmt->ast);
-	schema_mgr_create(&share()->db->schema_mgr, tr, arg->config,
-	                  arg->if_not_exists);
-}
-
-static void
-ddl_drop_schema(Session* self, Tr* tr)
-{
-	auto stmt = compiler_stmt(&self->compiler);
-	auto arg  = ast_schema_drop_of(stmt->ast);
-	cascade_schema_drop(share()->db, tr, &arg->name->string, arg->cascade,
-	                    arg->if_exists);
-}
-
-static void
-ddl_alter_schema(Session* self, Tr* tr)
-{
-	auto stmt = compiler_stmt(&self->compiler);
-	auto arg  = ast_schema_alter_of(stmt->ast);
-	cascade_schema_rename(share()->db, tr, &arg->name->string,
-	                      &arg->name_new->string,
-	                       arg->if_exists);
-}
-
-static inline void
-ddl_create_partition(TableConfig* table_config, uint64_t min, uint64_t max)
-{
-	// create partition config
-	auto config = part_config_allocate();
-	auto psn = state_psn_next();
-	part_config_set_id(config, psn);
-	part_config_set_range(config, min, max);
-	table_config_add_partition(table_config, config);
-}
-
-static void
-ddl_create_table(Session* self, Tr* tr)
-{
-	auto stmt   = compiler_stmt(&self->compiler);
-	auto arg    = ast_table_create_of(stmt->ast);
-	auto config = arg->config;
-	auto db     = share()->db;
-
-	// ensure schema exists and not system
-	auto schema = schema_mgr_find(&db->schema_mgr, &config->schema, true);
-	if (! schema->config->create)
-		error("system schema <%.*s> cannot be used to create objects",
-		      str_size(&schema->config->name),
-		      str_of(&schema->config->name));
-
-	// create partition for each backend
-	if (arg->partitions < 1 || arg->partitions >= PARTITION_MAX)
-		error("table has invalid partitions number");
-
-	// partition_max / table partitions
-	int range_max      = PARTITION_MAX;
-	int range_interval = range_max / arg->partitions;
-	int range_start    = 0;
-	for (auto order = 0; order < arg->partitions; order++)
-	{
-		// set partition range
-		int range_step;
-		auto is_last = (order == arg->partitions - 1);
-		if (is_last)
-			range_step = range_max - range_start;
-		else
-			range_step = range_interval;
-		if ((range_start + range_step) > range_max)
-			range_step = range_max - range_start;
-
-		ddl_create_partition(config,
-		                     range_start,
-		                     range_start + range_step);
-		if (is_last)
-			break;
-
-		range_start += range_step;
-	}
-
-	// create table
-	table_mgr_create(&db->table_mgr, tr, config, arg->if_not_exists);
-}
-
-static void
-ddl_drop_table(Session* self, Tr* tr)
-{
-	auto stmt = compiler_stmt(&self->compiler);
-	auto arg  = ast_table_drop_of(stmt->ast);
-
-	table_mgr_drop(&share()->db->table_mgr, tr, &arg->schema, &arg->name,
-	               arg->if_exists);
-}
-
-static void
-ddl_truncate(Session* self, Tr* tr)
-{
-	auto stmt = compiler_stmt(&self->compiler);
-	auto arg  = ast_table_truncate_of(stmt->ast);
-
-	// truncate table
-	table_mgr_truncate(&share()->db->table_mgr, tr, &arg->schema, &arg->name,
-	                   arg->if_exists);
-}
-
-static void
-ddl_alter_table_set_identity(Session* self)
-{
-	auto stmt = compiler_stmt(&self->compiler);
-	auto arg  = ast_table_alter_of(stmt->ast);
-
-	// SET SERIAL
-	auto table = table_mgr_find(&share()->db->table_mgr, &arg->schema,
-	                            &arg->name,
-	                            !arg->if_exists);
-	if (! table)
-		return;
-	sequence_set(&table->seq, arg->identity->integer);
-}
-
-static void
-ddl_alter_table_set_unlogged(Session* self, Tr* tr)
-{
-	auto stmt = compiler_stmt(&self->compiler);
-	auto arg  = ast_table_alter_of(stmt->ast);
-
-	// truncate table
-	table_mgr_set_unlogged(&share()->db->table_mgr, tr, &arg->schema, &arg->name,
-	                       arg->unlogged, arg->if_exists);
-}
-
-static void
-ddl_alter_table_rename(Session* self, Tr* tr)
-{
-	auto stmt = compiler_stmt(&self->compiler);
-	auto arg  = ast_table_alter_of(stmt->ast);
-	auto db   = share()->db;
-
-	// RENAME TO
-
-	// ensure schema exists
-	auto schema = schema_mgr_find(&db->schema_mgr, &arg->schema_new, true);
-	if (! schema->config->create)
-		error("system schema <%.*s> cannot be used to create objects",
-		      str_size(&schema->config->name),
-		      str_of(&schema->config->name));
-
-	// rename table
-	table_mgr_rename(&db->table_mgr, tr, &arg->schema, &arg->name,
-	                 &arg->schema_new, &arg->name_new,
-	                  arg->if_exists);
-}
-
-static void
-ddl_alter_table_column_rename(Session* self, Tr* tr)
-{
-	auto stmt = compiler_stmt(&self->compiler);
-	auto arg  = ast_table_alter_of(stmt->ast);
-	auto db   = share()->db;
-
-	// RENAME COLUMN TO
-
-	// rename table
-	table_mgr_column_rename(&db->table_mgr, tr, &arg->schema, &arg->name,
-	                        &arg->column_name, &arg->name_new,
-	                         arg->if_exists);
-}
-
-static void
-ddl_alter_table_column_add(Session* self, Tr* tr)
-{
-	auto stmt = compiler_stmt(&self->compiler);
-	auto arg  = ast_table_alter_of(stmt->ast);
-	auto db   = share()->db;
-
-	// COLUMN ADD name type [constraint]
-	auto table_mgr = &share()->db->table_mgr;
-	auto table = table_mgr_find(table_mgr, &arg->schema, &arg->name,
-	                            !arg->if_exists);
-	if (! table)
-		return;
-
-	auto table_new = table_mgr_column_add(table_mgr, tr, &arg->schema, &arg->name,
-	                                      arg->column, false);
-	if (! table_new)
-		return;
-
-	// rebuild new table with new column in parallel per backend
-	db->iface->build_column_add(db, table, table_new, arg->column);
-}
-
-static void
-ddl_alter_table_column_drop(Session* self, Tr* tr)
-{
-	auto stmt = compiler_stmt(&self->compiler);
-	auto arg  = ast_table_alter_of(stmt->ast);
-	auto db   = share()->db;
-
-	// COLUMN DROP name
-	auto table_mgr = &share()->db->table_mgr;
-	auto table = table_mgr_find(table_mgr, &arg->schema, &arg->name,
-	                            !arg->if_exists);
-	if (! table)
-		return;
-
-	auto table_new = table_mgr_column_drop(table_mgr, tr, &arg->schema, &arg->name,
-	                                       &arg->column_name, false);
-	if (! table_new)
-		return;
-
-	auto column = columns_find(&table->config->columns, &arg->column_name);
-	assert(column);
-
-	// rebuild new table with new column in parallel per backend
-	db->iface->build_column_drop(db, table, table_new, column);
-}
-
-static void
-ddl_alter_table(Session* self, Tr* tr)
-{
-	auto stmt = compiler_stmt(&self->compiler);
-	auto arg  = ast_table_alter_of(stmt->ast);
-	auto db   = share()->db;
+	auto stmt   = compiler_stmt(self);
+	auto data   = &self->code_data->data;
+	auto arg    = ast_table_alter_of(stmt->ast);
+	auto offset = 0;
+	auto flags  = 0;
 	switch (arg->type) {
 	case TABLE_ALTER_RENAME:
-		ddl_alter_table_rename(self, tr);
+	{
+		offset = table_op_rename(data, &arg->schema, &arg->name,
+		                         &arg->schema_new,
+		                         &arg->name_new);
+		flags = arg->if_exists ? DDL_IF_EXISTS : 0;
 		break;
+	}
 	case TABLE_ALTER_SET_IDENTITY:
-		ddl_alter_table_set_identity(self);
+	{
+		offset = table_op_set_identity(data, &arg->schema, &arg->name,
+		                               arg->identity->integer);
+		flags = arg->if_exists ? DDL_IF_EXISTS : 0;
 		break;
+	}
 	case TABLE_ALTER_SET_UNLOGGED:
-		ddl_alter_table_set_unlogged(self, tr);
+	{
+		offset = table_op_set_unlogged(data, &arg->schema, &arg->name,
+		                               arg->unlogged);
+		flags = arg->if_exists ? DDL_IF_EXISTS : 0;
 		break;
+	}
 	case TABLE_ALTER_COLUMN_RENAME:
-		ddl_alter_table_column_rename(self, tr);
+	{
+		offset = table_op_column_rename(data, &arg->schema, &arg->name,
+		                                &arg->column_name,
+		                                &arg->name_new);
+		flags = arg->if_exists ? DDL_IF_EXISTS : 0;
+		if (arg->if_column_exists)
+			flags |= DDL_IF_COLUMN_EXISTS;
 		break;
+	}
 	case TABLE_ALTER_COLUMN_ADD:
-		ddl_alter_table_column_add(self, tr);
+	{
+		offset = table_op_column_add(data, &arg->schema, &arg->name, arg->column);
+		flags = arg->if_exists ? DDL_IF_EXISTS : 0;
+		if (arg->if_column_not_exists)
+			flags |= DDL_IF_COLUMN_NOT_EXISTS;
 		break;
+	}
 	case TABLE_ALTER_COLUMN_DROP:
-		ddl_alter_table_column_drop(self, tr);
+	{
+		offset = table_op_column_drop(data, &arg->schema, &arg->name, &arg->column_name);
+		flags = arg->if_exists ? DDL_IF_EXISTS : 0;
+		if (arg->if_column_exists)
+			flags |= DDL_IF_COLUMN_EXISTS;
 		break;
+	}
 	case TABLE_ALTER_COLUMN_SET_DEFAULT:
 	case TABLE_ALTER_COLUMN_UNSET_DEFAULT:
-		table_mgr_column_set_default(&db->table_mgr, tr,
-		                             &arg->schema,
-		                             &arg->name,
+	{
+		offset = table_op_column_set(data, DDL_TABLE_COLUMN_SET_DEFAULT,
+		                             &arg->schema, &arg->name,
 		                             &arg->column_name,
-		                             &arg->value,
-		                              arg->if_exists);
+		                             &arg->value);
+		flags = arg->if_exists ? DDL_IF_EXISTS : 0;
+		if (arg->if_column_exists)
+			flags |= DDL_IF_COLUMN_EXISTS;
 		break;
+	}
 	case TABLE_ALTER_COLUMN_SET_IDENTITY:
 	case TABLE_ALTER_COLUMN_UNSET_IDENTITY:
-		table_mgr_column_set_identity(&db->table_mgr, tr,
-		                              &arg->schema,
-		                              &arg->name,
-		                              &arg->column_name,
-		                              &arg->value,
-		                               arg->if_exists);
+	{
+		offset = table_op_column_set(data, DDL_TABLE_COLUMN_SET_IDENTITY,
+		                             &arg->schema, &arg->name,
+		                             &arg->column_name,
+		                             &arg->value);
+		flags = arg->if_exists ? DDL_IF_EXISTS : 0;
+		if (arg->if_column_exists)
+			flags |= DDL_IF_COLUMN_EXISTS;
 		break;
+	}
 	case TABLE_ALTER_COLUMN_SET_STORED:
 	case TABLE_ALTER_COLUMN_UNSET_STORED:
-		table_mgr_column_set_stored(&db->table_mgr, tr,
-		                            &arg->schema,
-		                            &arg->name,
-		                            &arg->column_name,
-		                            &arg->value,
-		                             arg->if_exists);
+	{
+		offset = table_op_column_set(data, DDL_TABLE_COLUMN_SET_STORED,
+		                             &arg->schema, &arg->name,
+		                             &arg->column_name,
+		                             &arg->value);
+		flags = arg->if_exists ? DDL_IF_EXISTS : 0;
+		if (arg->if_column_exists)
+			flags |= DDL_IF_COLUMN_EXISTS;
 		break;
+	}
 	case TABLE_ALTER_COLUMN_SET_RESOLVED:
 	case TABLE_ALTER_COLUMN_UNSET_RESOLVED:
-		table_mgr_column_set_resolved(&db->table_mgr, tr,
-		                              &arg->schema,
-		                              &arg->name,
-		                              &arg->column_name,
-		                              &arg->value,
-		                               arg->if_exists);
+	{
+		offset = table_op_column_set(data, DDL_TABLE_COLUMN_SET_RESOLVED,
+		                             &arg->schema, &arg->name,
+		                             &arg->column_name,
+		                             &arg->value);
+		flags = arg->if_exists ? DDL_IF_EXISTS : 0;
+		if (arg->if_column_exists)
+			flags |= DDL_IF_COLUMN_EXISTS;
 		break;
 	}
+	default:
+		abort();
+		break;
+	}
+
+	*flags_ref = flags;
+	return offset;
+}
+
+static int
+prepare_ddl(Compiler* self, int* flags_ref)
+{
+	auto stmt   = compiler_stmt(self);
+	auto data   = &self->code_data->data;
+	auto offset = 0;
+	auto flags  = 0;
+	switch (stmt->id) {
+	// schema
+	case STMT_CREATE_SCHEMA:
+	{
+		auto arg = ast_schema_create_of(stmt->ast);
+		offset = schema_op_create(data, arg->config);
+		flags = arg->if_not_exists ? DDL_IF_NOT_EXISTS : 0;
+		break;
+	}
+	case STMT_DROP_SCHEMA:
+	{
+		auto arg = ast_schema_drop_of(stmt->ast);
+		offset = schema_op_drop(data, &arg->name->string, arg->cascade);
+		flags = arg->if_exists ? DDL_IF_EXISTS : 0;
+		break;
+	}
+	case STMT_ALTER_SCHEMA:
+	{
+		auto arg = ast_schema_alter_of(stmt->ast);
+		offset = schema_op_rename(data, &arg->name->string, &arg->name_new->string);
+		flags = arg->if_exists ? DDL_IF_EXISTS : 0;
+		break;
+	}
+
+	// table
+	case STMT_CREATE_TABLE:
+	{
+		auto arg = ast_table_create_of(stmt->ast);
+		offset = table_op_create(data, arg->config);
+		flags = arg->if_not_exists ? DDL_IF_NOT_EXISTS : 0;
+		break;
+	}
+	case STMT_DROP_TABLE:
+	{
+		auto arg = ast_table_drop_of(stmt->ast);
+		offset = table_op_drop(data, &arg->schema, &arg->name);
+		flags = arg->if_exists ? DDL_IF_EXISTS : 0;
+		break;
+	}
+	case STMT_TRUNCATE:
+	{
+		auto arg = ast_table_truncate_of(stmt->ast);
+		offset = table_op_truncate(data, &arg->schema, &arg->name);
+		flags = arg->if_exists ? DDL_IF_EXISTS : 0;
+		break;
+	}
+
+	// index
+	case STMT_CREATE_INDEX:
+	{
+		auto arg = ast_index_create_of(stmt->ast);
+		offset = table_op_index_create(data, &arg->table_schema, &arg->table_name, arg->config);
+		flags = arg->if_not_exists ? DDL_IF_NOT_EXISTS : 0;
+		break;
+	}
+	case STMT_DROP_INDEX:
+	{
+		auto arg = ast_index_drop_of(stmt->ast);
+		offset = table_op_index_drop(data, &arg->table_schema, &arg->table_name, &arg->name);
+		flags = arg->if_exists ? DDL_IF_EXISTS : 0;
+		break;
+	}
+	case STMT_ALTER_INDEX:
+	{
+		auto arg = ast_index_alter_of(stmt->ast);
+		offset = table_op_index_rename(data, &arg->table_schema, &arg->table_name,
+		                               &arg->name, &arg->name_new);
+		flags = arg->if_exists ? DDL_IF_EXISTS : 0;
+		break;
+	}
+	default:
+		abort();
+		break;
+	}
+
+	*flags_ref = flags;
+	return offset;
 }
 
 static void
-ddl_create_index(Session* self, Tr* tr)
-{
-	auto stmt = compiler_stmt(&self->compiler);
-	auto arg  = ast_index_create_of(stmt->ast);
-	auto db   = share()->db;
-
-	// find table
-	auto table = table_mgr_find(&db->table_mgr, &arg->table_schema,
-	                            &arg->table_name,
-	                            true);
-	auto created = table_index_create(table, tr, arg->config, arg->if_not_exists);
-	if (! created)
-		return;
-
-	auto index = table_find_index(table, &arg->config->name, true);
-
-	// do parallel indexation per backend
-	db->iface->build_index(db, table, index);
-}
-
-static void
-ddl_drop_index(Session* self, Tr* tr)
-{
-	auto stmt = compiler_stmt(&self->compiler);
-	auto arg  = ast_index_drop_of(stmt->ast);
-	auto db   = share()->db;
-
-	// find table
-	auto table = table_mgr_find(&db->table_mgr, &arg->table_schema,
-	                            &arg->table_name,
-	                            true);
-
-	table_index_drop(table, tr, &arg->name, arg->if_exists);
-}
-
-static void
-ddl_alter_index(Session* self, Tr* tr)
-{
-	auto stmt = compiler_stmt(&self->compiler);
-	auto arg  = ast_index_alter_of(stmt->ast);
-	auto db   = share()->db;
-
-	// find table
-	auto table = table_mgr_find(&db->table_mgr, &arg->table_schema,
-	                            &arg->table_name,
-	                            true);
-
-	table_index_rename(table, tr, &arg->name, &arg->name_new, arg->if_exists);
-}
-
-static inline void
 session_execute_ddl_stmt(Session* self, Tr* tr)
 {
-	auto stmt = compiler_stmt(&self->compiler);
-	switch (stmt->id) {
-	case STMT_CREATE_SCHEMA:
-		ddl_create_schema(self, tr);
-		break;
-	case STMT_DROP_SCHEMA:
-		ddl_drop_schema(self, tr);
-		break;
-	case STMT_ALTER_SCHEMA:
-		ddl_alter_schema(self, tr);
-		break;
-	case STMT_CREATE_TABLE:
-		ddl_create_table(self, tr);
-		break;
-	case STMT_DROP_TABLE:
-		ddl_drop_table(self, tr);
-		break;
-	case STMT_ALTER_TABLE:
-		ddl_alter_table(self, tr);
-		break;
-	case STMT_CREATE_INDEX:
-		ddl_create_index(self, tr);
-		break;
-	case STMT_DROP_INDEX:
-		ddl_drop_index(self, tr);
-		break;
-	case STMT_ALTER_INDEX:
-		ddl_alter_index(self, tr);
-		break;
-	case STMT_TRUNCATE:
-		ddl_truncate(self, tr);
-		break;
-	default:
-		assert(0);
-		break;
-	}
+	// prepare ddl operation
+	auto compiler = &self->compiler;
+	auto stmt     = compiler_stmt(compiler);
+	int  offset   = 0;
+	int  flags    = 0;
+	if (stmt->id == STMT_ALTER_TABLE)
+		offset = prepare_alter_table(compiler, &flags);
+	else
+		offset = prepare_ddl(compiler, &flags);
 
-	// wal write
-	if (tr_read_only(tr))
+	// execute ddl operation
+	auto pos = code_data_at(compiler->code_data, offset);
+	auto wal_write = catalog_execute(&share()->db->catalog, tr, pos, flags);
+	if (! wal_write)
 		return;
 
+	assert(! tr_read_only(tr));
 	Write write;
 	write_init(&write);
 	defer(write_free, &write);

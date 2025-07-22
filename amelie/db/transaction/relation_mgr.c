@@ -78,7 +78,8 @@ relation_mgr_replace(RelationMgr* self, Relation* prev, Relation* relation)
 static void
 create_if_commit(Log* self, LogOp* op)
 {
-	buf_free(log_relation_of(self, op)->data);
+	(void)self;
+	(void)op;
 }
 
 static void
@@ -88,7 +89,6 @@ create_if_abort(Log* self, LogOp* op)
 	RelationMgr* mgr = op->iface_arg;
 	relation_mgr_delete(mgr, relation->relation);
 	relation_free(relation->relation);
-	buf_free(relation->data);
 }
 
 static LogIf create_if =
@@ -100,15 +100,13 @@ static LogIf create_if =
 void
 relation_mgr_create(RelationMgr* self,
                     Tr*          tr,
-                    Cmd          cmd,
-                    Relation*    relation,
-                    Buf*         data)
+                    Relation*    relation)
 {
 	// update relation mgr
 	relation_mgr_set(self, relation);
 
 	// update transaction log
-	log_relation(&tr->log, cmd, &create_if, self, relation, data);
+	log_relation(&tr->log, &create_if, self, relation);
 }
 
 static void
@@ -116,7 +114,6 @@ drop_if_commit(Log* self, LogOp* op)
 {
 	auto relation = log_relation_of(self, op);
 	relation_free(relation->relation);
-	buf_free(relation->data);
 }
 
 static void
@@ -125,7 +122,6 @@ drop_if_abort(Log* self, LogOp* op)
 	auto relation = log_relation_of(self, op);
 	RelationMgr* mgr = op->iface_arg;
 	relation_mgr_set(mgr, relation->relation);
-	buf_free(relation->data);
 }
 
 static LogIf drop_if =
@@ -137,13 +133,11 @@ static LogIf drop_if =
 void
 relation_mgr_drop(RelationMgr* self,
                   Tr*          tr,
-                  Cmd          cmd,
-                  Relation*    relation,
-                  Buf*         data)
+                  Relation*    relation)
 {
 	// update relation mgr
 	relation_mgr_delete(self, relation);
 
 	// update transaction log
-	log_relation(&tr->log, cmd, &drop_if, self, relation, data);
+	log_relation(&tr->log, &drop_if, self, relation);
 }

@@ -138,7 +138,7 @@ parse_endpoint(Endpoint* endpoint)
 		error("unsupported URI path");
 
 	// find table
-	endpoint->table = table_mgr_find(&share()->db->table_mgr, &schema, &name, true);
+	endpoint->table = table_mgr_find(&share()->db->catalog.table_mgr, &schema, &name, true);
 
 	// validate arguments
 	list_foreach(&uri->args)

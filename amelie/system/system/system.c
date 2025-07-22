@@ -54,7 +54,7 @@ system_save_state(void* arg)
 }
 
 static void
-db_if_index(Db* self, Table* table, IndexConfig* index)
+catalog_if_index(Catalog* self, Table* table, IndexConfig* index)
 {
 	// do parallel indexation per worker
 	System* system = self->iface_arg;
@@ -66,7 +66,7 @@ db_if_index(Db* self, Table* table, IndexConfig* index)
 }
 
 static void
-db_if_column_add(Db* self, Table* table, Table* table_new, Column* column)
+catalog_if_column_add(Catalog* self, Table* table, Table* table_new, Column* column)
 {
 	// rebuild new table with new column in parallel per worker
 	System* system = self->iface_arg;
@@ -78,7 +78,7 @@ db_if_column_add(Db* self, Table* table, Table* table_new, Column* column)
 }
 
 static void
-db_if_column_drop(Db* self, Table* table, Table* table_new, Column* column)
+catalog_if_column_drop(Catalog* self, Table* table, Table* table_new, Column* column)
 {
 	// rebuild new table without column in parallel per worker
 	System* system = self->iface_arg;
@@ -89,11 +89,11 @@ db_if_column_drop(Db* self, Table* table, Table* table_new, Column* column)
 	build_run(&build);
 }
 
-static DbIf db_if =
+static CatalogIf catalog_if =
 {
-	.build_index       = db_if_index,
-	.build_column_add  = db_if_column_add,
-	.build_column_drop = db_if_column_drop
+	.build_index       = catalog_if_index,
+	.build_column_add  = catalog_if_column_add,
+	.build_column_drop = catalog_if_column_drop
 };
 
 static void
@@ -154,7 +154,7 @@ system_create(void)
 	function_mgr_init(&self->function_mgr);
 
 	// db
-	db_init(&self->db, &db_if, self, system_attach, self);
+	db_init(&self->db, &catalog_if, self, system_attach, self);
 
 	// replication
 	repl_init(&self->repl, &self->db);

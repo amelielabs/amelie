@@ -122,6 +122,14 @@ alter table test rename column data to data
 select system.table('test').columns
 drop table test
 
+# test: rename column (if table exists)
+alter table if exists test rename column id to id2
+
+# test: rename column (if column exists)
+create table test (id int primary key, data int default 0)
+alter table if exists test rename column if exists id to id2
+drop table test
+
 # test: add column parsing
 create table test (id int primary key)
 alter table
@@ -134,6 +142,15 @@ drop table test
 # test: add column already exists
 create table test (id int primary key, data int)
 alter table test add column data int
+drop table test
+
+# test: add column (if table exists)
+alter table test add column data int
+alter table if exists test add column data int
+
+# test: add column (if column exists)
+create table test (id int primary key, data int)
+alter table test add column if not exists data int
 drop table test
 
 # test: add column primary key
@@ -205,9 +222,14 @@ alter table test drop column
 alter table test drop column 1
 drop table test
 
-# test: drop column (not exists)
+# test: drop column (if table exists)
+alter table test drop column data
+alter table if exists test drop column data
+
+# test: drop column (if column exists)
 create table test (id int primary key)
 alter table test drop column data
+alter table test drop column if exists data
 drop table test
 
 # test: drop column (primary key)

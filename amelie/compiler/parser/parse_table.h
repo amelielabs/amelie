@@ -62,6 +62,8 @@ struct AstTableAlter
 {
 	Ast     ast;
 	bool    if_exists;
+	bool    if_column_exists;
+	bool    if_column_not_exists;
 	int     type;
 	Str     schema;
 	Str     schema_new;
@@ -137,12 +139,14 @@ ast_table_alter_allocate(void)
 {
 	AstTableAlter* self;
 	self = ast_allocate(0, sizeof(AstTableAlter));
-	self->if_exists  = false;
-	self->type       = 0;
-	self->column     = NULL;
-	self->value_buf  = NULL;
-	self->identity   = NULL;
-	self->unlogged   = false;
+	self->if_exists            = false;
+	self->if_column_exists     = false;
+	self->if_column_not_exists = false;
+	self->type                 = 0;
+	self->column               = NULL;
+	self->value_buf            = NULL;
+	self->identity             = NULL;
+	self->unlogged             = false;
 	str_init(&self->schema);
 	str_init(&self->schema_new);
 	str_init(&self->name);

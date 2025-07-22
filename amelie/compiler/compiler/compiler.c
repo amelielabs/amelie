@@ -515,8 +515,8 @@ stmt_maxcte(Stmt* self)
 	return order;
 }
 
-hot void
-compiler_emit(Compiler* self)
+hot static void
+emit(Compiler* self)
 {
 	auto recv_last = -1;
 	auto stmt = self->parser.stmts.list;
@@ -573,6 +573,14 @@ compiler_emit(Compiler* self)
 	// no statements (last statement always returns)
 	if (! self->parser.stmt)
 		op0(self, CRET);
+}
+
+hot void
+compiler_emit(Compiler* self)
+{
+	auto stmt = self->parser.stmts.list;
+	assert(! stmt_is_utility(stmt));
+	emit(self);
 
 	// set the max number of registers used
 	code_set_regs(&self->program->code, self->map.count);

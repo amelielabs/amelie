@@ -23,5 +23,5 @@ void      relation_mgr_init(RelationMgr*);
 void      relation_mgr_free(RelationMgr*);
 Relation* relation_mgr_get(RelationMgr*, Str*, Str*);
 void      relation_mgr_replace(RelationMgr*, Relation*, Relation*);
-void      relation_mgr_create(RelationMgr*, Tr*, Cmd, Relation*, Buf*);
-void      relation_mgr_drop(RelationMgr*, Tr*, Cmd, Relation*, Buf*);
+void      relation_mgr_create(RelationMgr*, Tr*, Relation*);
+void      relation_mgr_drop(RelationMgr*, Tr*, Relation*);
