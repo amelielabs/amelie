@@ -280,6 +280,29 @@ OpDesc ops[] =
 	{ CUPDATE, "update" },
 	{ CUPDATE_STORE, "update_store" },
 
+	// system
+	{ CSHOW, "show" },
+	{ CCHECKPOINT, "checkpoint" },
+
+	// user
+	{ CUSER_CREATE_TOKEN, "user_create_token" },
+	{ CUSER_CREATE, "user_create" },
+	{ CUSER_DROP, "user_drop" },
+	{ CUSER_ALTER, "user_alter" },
+
+	// replica
+	{ CREPLICA_CREATE, "replica_create" },
+	{ CREPLICA_DROP, "replica_drop" },
+
+	// replication
+	{ CREPL_START, "repl_start" },
+	{ CREPL_STOP, "repl_stop" },
+	{ CREPL_SUBSCRIBE, "repl_subscribe" },
+	{ CREPL_UNSUBSCRIBE, "repl_unsubscribe" },
+
+	// ddl
+	{ CDDL, "ddl" },
+
 	// result
 	{ CSEND_SHARD, "send_shard" },
 	{ CSEND_LOOKUP, "send_lookup" },

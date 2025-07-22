@@ -356,6 +356,29 @@ vm_run(Vm*       self,
 		&&cupdate,
 		&&cupdate_store,
 
+		// system
+		&&cshow,
+		&&ccheckpoint,
+
+		// user
+		&&cuser_create_token,
+		&&cuser_create,
+		&&cuser_drop,
+		&&cuser_alter,
+
+		// replica
+		&&creplica_create,
+		&&creplica_drop,
+
+		// replication
+		&&crepl_start,
+		&&crepl_stop,
+		&&crepl_subscribe,
+		&&crepl_unsubscribe,
+
+		// ddl
+		&&cddl,
+
 		// executor
 		&&csend_shard,
 		&&csend_lookup,
@@ -1757,6 +1780,58 @@ cupdate:
 
 cupdate_store:
 	cupdate_store(self, op);
+	op_next;
+
+cshow:
+	cshow(self, op);
+	op_next;
+
+ccheckpoint:
+	ccheckpoint(self, op);
+	op_next;
+
+cuser_create_token:
+	cuser_create_token(self, op);
+	op_next;
+
+cuser_create:
+	cuser_create(self, op);
+	op_next;
+
+cuser_drop:
+	cuser_drop(self, op);
+	op_next;
+
+cuser_alter:
+	cuser_alter(self, op);
+	op_next;
+
+creplica_create:
+	creplica_create(self, op);
+	op_next;
+
+creplica_drop:
+	creplica_drop(self, op);
+	op_next;
+
+crepl_start:
+	crepl_start(self, op);
+	op_next;
+
+crepl_stop:
+	crepl_stop(self, op);
+	op_next;
+
+crepl_subscribe:
+	crepl_subscribe(self, op);
+	op_next;
+
+crepl_unsubscribe:
+	crepl_unsubscribe(self, op);
+	op_next;
+
+cddl:
+	cddl(self, op);
 	op_next;
 
 csend_shard:

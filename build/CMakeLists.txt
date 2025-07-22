@@ -245,7 +245,8 @@ set(AMELIE_SOURCES_VM
     ${AMELIE_ROOT}/vm/func/fn.c
     ${AMELIE_ROOT}/vm/vm/op.c
     ${AMELIE_ROOT}/vm/vm/vm.c
-    ${AMELIE_ROOT}/vm/vm/command.c)
+    ${AMELIE_ROOT}/vm/vm/command.c
+    ${AMELIE_ROOT}/vm/vm/command_utility.c)
 
 set(AMELIE_SOURCES_COMPILER
     ${AMELIE_ROOT}/compiler/parser/keyword.c
