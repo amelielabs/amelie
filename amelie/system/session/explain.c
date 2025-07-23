@@ -58,17 +58,16 @@ explain_reset(Explain* self)
 }
 
 void
-explain(Explain* self,
-        Program* program,
-        Dtr*     dtr,
-        Content* content,
-        bool     profile)
+explain_run(Explain* self,
+            Program* program,
+            Local*   local,
+            Content* content,
+            bool     profile)
 {
 	auto buf = buf_create();
 	defer_buf(buf);
 
 	encode_obj(buf);
-	unused(dtr);
 
 	// bytecode
 	encode_raw(buf, "bytecode", 8);
@@ -123,5 +122,5 @@ explain(Explain* self,
 	content_reset(content);
 	Str name;
 	str_set(&name, "explain", 7);
-	content_write_json_buf(content, dtr->local->format, &name, buf);
+	content_write_json_buf(content, local->format, &name, buf);
 }

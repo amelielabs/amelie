@@ -127,39 +127,18 @@ session_unlock(Session* self)
 }
 
 hot static inline void
-session_explain(Session* self, Program* program, bool profile)
+session_execute_distributed(Session* self, Program* program, bool profile)
 {
-	explain(&self->explain, program,
-	        &self->dtr,
-	        &self->content,
-	        profile);
-}
-
-hot static inline void
-session_execute_distributed(Session* self)
-{
-	auto compiler = &self->compiler;
 	auto explain  = &self->explain;
 	auto dtr      = &self->dtr;
 	auto executor = share()->executor;
 
-	// generate bytecode
-	compiler_emit(compiler);
-	auto program = compiler->program;
 	reg_prepare(&self->vm.r, program->code.regs);
 
 	// prepare distributed transaction
 	dtr_create(dtr, program);
 
-	// [EXPLAIN]
-	if (compiler->parser.explain == EXPLAIN)
-	{
-		session_explain(self, program, false);
-		return;
-	}
-
 	// [PROFILE]
-	auto profile = parser_is_profile(&compiler->parser);
 	if (profile)
 		explain_start(&explain->time_run_us);
 
@@ -195,7 +174,86 @@ session_execute_distributed(Session* self)
 	if (profile)
 	{
 		explain_end(&explain->time_commit_us);
-		session_explain(self, program, true);
+		explain_run(explain, program,
+		            &self->local,
+		            &self->content,
+		            true);
+	}
+}
+
+hot static inline void
+session_execute_utility(Session* self, Program* program, bool profile)
+{
+	auto explain = &self->explain;
+	reg_prepare(&self->vm.r, program->code.regs);
+
+	// [PROFILE]
+	if (profile)
+		explain_start(&explain->time_run_us);
+
+	// execute utility/ddl transaction
+	Tr tr;
+	tr_init(&tr);
+	defer(tr_free, &tr);
+	auto on_error = error_catch
+	(
+		// begin
+		tr_begin(&tr);
+
+		vm_run(&self->vm, &self->local,
+		       &tr,
+		       program,
+		       &program->code,
+		       &program->code_data,
+		       NULL,
+		       &self->vm.r,
+		       NULL,
+		       NULL,
+		       &self->content, 0);
+	);
+
+	if (unlikely(on_error))
+	{
+		tr_abort(&tr);
+		rethrow();
+	}
+
+	if (profile)
+	{
+		explain_end(&explain->time_run_us);
+		explain_start(&explain->time_commit_us);
+	}
+
+	// wal write
+	if (! tr_read_only(&tr))
+	{
+		// respect system read-only state
+		if (opt_int_of(&state()->read_only))
+			error("system is in read-only mode");
+
+		Write write;
+		write_init(&write);
+		defer(write_free, &write);
+		write_begin(&write);
+		write_add(&write, &tr.log.write_log);
+
+		WriteList write_list;
+		write_list_init(&write_list);
+		write_list_add(&write_list, &write);
+		wal_mgr_write(&share()->db->wal_mgr, &write_list);
+	}
+
+	// commit
+	tr_commit(&tr);
+
+	// explain profile
+	if (profile)
+	{
+		explain_end(&explain->time_commit_us);
+		explain_run(explain, program,
+		            &self->local,
+		            &self->content,
+		            true);
 	}
 }
 
@@ -247,14 +305,40 @@ session_execute(Session* self)
 		error("unsupported API operation");
 	}
 
-	// execute utility, DDL, DML or Query
-	if (compiler->parser.stmts.count > 0)
+	// compile
+	if (! compiler->parser.stmts.count)
+		return;
+
+	// generate bytecode
+	compiler_emit(compiler);
+
+	// [EXPLAIN]
+	auto program = compiler->program;
+	if (compiler->parser.explain == EXPLAIN)
 	{
-		auto stmt = compiler_stmt(compiler);
-		if (stmt && stmt_is_utility(stmt))
-			session_execute_utility(self);
+		explain_run(&self->explain, program,
+		            &self->local,
+		            &self->content,
+		            false);
+		return;
+	}
+
+	// execute utility, DDL, DML or Query
+	auto profile = parser_is_profile(&compiler->parser);
+	auto stmt = compiler_stmt(compiler);
+	if (stmt_is_utility(stmt))
+	{
+		if (stmt->id == STMT_CHECKPOINT)
+			session_unlock(self);
 		else
-			session_execute_distributed(self);
+		if (stmt->id != STMT_SHOW &&
+		    stmt->id != STMT_CREATE_TOKEN)
+			session_lock(self, LOCK_EXCLUSIVE);
+
+		session_execute_utility(self, program, profile);
+	} else
+	{
+		session_execute_distributed(self, program, profile);
 	}
 }
 

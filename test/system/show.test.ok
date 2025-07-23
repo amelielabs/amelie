@@ -6,20 +6,20 @@ show
 show;
 {"msg": "show❰;❱ ⟵ name expected"}
 show all junk
-{"msg": "show all ❰junk❱ ⟵ ; expected"}
+{"msg": "show all <name> unexpected argument"}
 show 1234
 {"msg": "show ❰1234❱ ⟵ name expected"}
 # test: show users
 create user test
 show users abc
-{"msg": "show users ❰abc❱ ⟵ ; expected"}
+{"msg": "show users <name> unexpected argument"}
 show users format
 {"msg": "show users format ⟵ string expected"}
 show users format 'json'
 [{"name": "test"}]
 # test: show user
 show user
-{"msg": "show user ⟵ name expected"}
+{"msg": "show user <name> required"}
 show user unknown
 [null]
 show user test
@@ -60,7 +60,7 @@ show tables
 }]
 # test: show table
 show table
-{"msg": "show table ⟵ table name expected"}
+{"msg": "show table <name> required"}
 show table test
 [{
   "schema": "public",
@@ -199,9 +199,9 @@ select system.config(123)
 show log_enable
 [true]
 show "log_enable"
-{"msg": "show ❰\"log_enable\"❱ ⟵ name expected"}
+[true]
 # test: show unknown
 show asdf
-{"msg": "show ❰asdf❱ ⟵ option not found"}
+{"msg": "show <asdf> option not found"}
 disconnect S0
 close E0

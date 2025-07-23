@@ -578,9 +578,12 @@ emit(Compiler* self)
 hot void
 compiler_emit(Compiler* self)
 {
+	// ddl/utility or dml/query
 	auto stmt = self->parser.stmts.list;
-	assert(! stmt_is_utility(stmt));
-	emit(self);
+	if (stmt_is_utility(stmt))
+		emit_utility(self);
+	else
+		emit(self);
 
 	// set the max number of registers used
 	code_set_regs(&self->program->code, self->map.count);

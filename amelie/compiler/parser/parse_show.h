@@ -14,33 +14,13 @@
 typedef struct AstShow AstShow;
 typedef struct AstSet  AstSet;
 
-enum
-{
-	SHOW_USERS,
-	SHOW_USER,
-	SHOW_REPLICAS,
-	SHOW_REPLICA,
-	SHOW_REPL,
-	SHOW_WAL,
-	SHOW_METRICS,
-	SHOW_SCHEMAS,
-	SHOW_SCHEMA,
-	SHOW_TABLES,
-	SHOW_TABLE,
-	SHOW_STATE,
-	SHOW_CONFIG_ALL,
-	SHOW_CONFIG
-};
-
 struct AstShow
 {
 	Ast  ast;
 	Str  section;
-	Ast* name_ast;
 	Str  name;
 	Str  schema;
 	Str  format;
-	int  type;
 	bool extended;
 };
 

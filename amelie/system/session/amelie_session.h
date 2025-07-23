@@ -13,6 +13,4 @@
 
 #include "session/explain.h"
 #include "session/session.h"
-#include "session/utility.h"
-#include "session/ddl.h"
 #include "session/primary.h"

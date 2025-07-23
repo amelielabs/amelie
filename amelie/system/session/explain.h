@@ -21,7 +21,7 @@ struct Explain
 
 void explain_init(Explain*);
 void explain_reset(Explain*);
-void explain(Explain*, Program*, Dtr*, Content*, bool);
+void explain_run(Explain*, Program*, Local*, Content*, bool);
 
 static inline void
 explain_start(uint64_t* metric)
