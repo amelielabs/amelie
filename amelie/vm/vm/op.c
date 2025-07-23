@@ -281,7 +281,6 @@ OpDesc ops[] =
 	{ CUPDATE_STORE, "update_store" },
 
 	// system
-	{ CSHOW, "show" },
 	{ CCHECKPOINT, "checkpoint" },
 
 	// user

@@ -63,6 +63,24 @@ call_error(Call* self, char* fmt, ...)
 }
 
 void no_return
+call_error_noargs(Call* self, char* fmt, ...)
+{
+	auto buf = buf_create();
+	errdefer_buf(buf);
+
+	buf_printf(buf, "%.*s()", str_size(&self->function->name),
+	           str_of(&self->function->name));
+
+	va_list args;
+	char msg[256];
+	va_start(args, fmt);
+	vsnprintf(msg, sizeof(msg), fmt, args);
+	va_end(args);
+
+	error("%.*s ⟵ %s", buf_size(buf), buf->start, msg);
+}
+
+void no_return
 call_error_arg(Call* self, int arg, char* fmt, ...)
 {
 	auto buf = buf_create();

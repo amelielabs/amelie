@@ -257,7 +257,6 @@ enum
 	CUPDATE_STORE,
 
 	// system
-	CSHOW,
 	CCHECKPOINT,
 
 	// user

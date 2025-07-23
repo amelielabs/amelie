@@ -171,6 +171,198 @@ fn_metrics(Call* self)
 	value_set_json_buf(self->result, buf);
 }
 
+enum
+{
+	SHOW_USERS,
+	SHOW_USER,
+	SHOW_REPLICAS,
+	SHOW_REPLICA,
+	SHOW_REPL,
+	SHOW_WAL,
+	SHOW_METRICS,
+	SHOW_SCHEMAS,
+	SHOW_SCHEMA,
+	SHOW_TABLES,
+	SHOW_TABLE,
+	SHOW_STATE,
+	SHOW_ALL,
+	SHOW_CONFIG
+};
+
+typedef struct ShowCmd ShowCmd;
+
+struct ShowCmd
+{
+	int         id;
+	const char* name;
+	int         name_size;
+	bool        has_arg;
+};
+
+static ShowCmd show_cmds[] =
+{
+	{ SHOW_USERS,    "users",       5,  false  },
+	{ SHOW_USER,     "user",        4,  true   },
+	{ SHOW_REPLICAS, "replicas",    8,  false  },
+	{ SHOW_REPLICA,  "replica",     7,  true   },
+	{ SHOW_REPL,     "repl",        4,  false  },
+	{ SHOW_REPL,     "replication", 11, false  },
+	{ SHOW_WAL,      "wal",         3,  false  },
+	{ SHOW_METRICS,  "metrics",     7,  false  },
+	{ SHOW_SCHEMAS,  "schemas",     7,  false  },
+	{ SHOW_SCHEMA,   "schema",      6,  true   },
+	{ SHOW_TABLES,   "tables",      6,  false  },
+	{ SHOW_TABLE,    "table",       5,  true   },
+	{ SHOW_STATE,    "state",       5,  false  },
+	{ SHOW_ALL,      "all",         3,  false  },
+	{ SHOW_CONFIG,   "config",      6,  false  },
+	{ 0,              NULL,         0,  false  }
+};
+
+static inline ShowCmd*
+show_cmd_find(Str* name)
+{
+	for (auto i = 0; show_cmds[i].name; i++)
+	{
+		auto cmd = &show_cmds[i];
+		if (str_is(name, cmd->name, cmd->name_size))
+			return cmd;
+	}
+	return NULL;
+}
+
+static void
+fn_show(Call* self)
+{
+	// [section, name, schema, extended]
+	call_expect(self, 4);
+	call_expect_arg(self, 0, TYPE_STRING);
+	call_expect_arg(self, 1, TYPE_STRING);
+	call_expect_arg(self, 2, TYPE_STRING);
+	call_expect_arg(self, 3, TYPE_BOOL);
+
+	Str* section  = &self->argv[0].string;
+	Str* name     = &self->argv[1].string;
+	Str* schema   = &self->argv[2].string;
+	bool extended =  self->argv[3].integer;
+
+	// match command
+	Buf* buf = NULL;
+	auto cmd = show_cmd_find(section);
+	if (! cmd)
+	{
+		// config option
+		if (str_empty(section))
+			call_error_noargs(self, "section name is not defined");
+		if (! str_empty(name))
+			call_error_noargs(self, "unexpected name argument");
+
+		auto opt = opts_find(&global()->config->opts, section);
+		if (opt && opt_is(opt, OPT_S))
+			opt = NULL;
+		if (unlikely(opt == NULL))
+			call_error_noargs(self, "option '%.*s' is not found", str_size(section),
+			                  str_of(section));
+		buf = buf_create();
+		opt_encode(opt, buf);
+		value_set_json_buf(self->result, buf);
+		return;
+	}
+
+	// ensure argument is set
+	if (cmd->has_arg) {
+		if (str_empty(name))
+			call_error_noargs(self, "name is missing for '%.*s'",
+			                  str_size(section),
+			                  str_of(section));
+	} else {
+		if (! str_empty(name))
+			call_error_noargs(self, "unexpected name argument");
+	}
+
+	auto catalog = &share()->db->catalog;
+	switch (cmd->id) {
+	case SHOW_USERS:
+	{
+		buf = user_mgr_list(share()->user_mgr, NULL);
+		break;
+	}
+	case SHOW_USER:
+	{
+		buf = user_mgr_list(share()->user_mgr, name);
+		break;
+	}
+	case SHOW_REPLICAS:
+	{
+		buf = replica_mgr_list(&share()->repl->replica_mgr, NULL);
+		break;
+	}
+	case SHOW_REPLICA:
+	{
+		Uuid id;
+		uuid_set(&id, name);
+		buf = replica_mgr_list(&share()->repl->replica_mgr, &id);
+		break;
+	}
+	case SHOW_REPL:
+	{
+		buf = repl_status(share()->repl);
+		break;
+	}
+	case SHOW_WAL:
+	{
+		buf = wal_status(&share()->db->wal_mgr.wal);
+		break;
+	}
+	case SHOW_METRICS:
+	{
+		rpc(global()->control->system, RPC_SHOW_METRICS, 1, &buf);
+		break;
+	}
+	case SHOW_SCHEMAS:
+	{
+		buf = schema_mgr_list(&catalog->schema_mgr, NULL, extended);
+		break;
+	}
+	case SHOW_SCHEMA:
+	{
+		buf = schema_mgr_list(&catalog->schema_mgr, name, extended);
+		break;
+	}
+	case SHOW_TABLES:
+	{
+		Str* schema_ref = NULL;
+		if (! str_empty(schema))
+			schema_ref = schema;
+		buf = table_mgr_list(&catalog->table_mgr, schema_ref, NULL, extended);
+		break;
+	}
+	case SHOW_TABLE:
+	{
+		Str* schema_ref = NULL;
+		if (! str_empty(schema))
+			schema_ref = schema;
+		buf = table_mgr_list(&catalog->table_mgr, schema_ref, name, extended);
+		break;
+	}
+	case SHOW_STATE:
+	{
+		buf = db_state(share()->db);
+		break;
+	}
+	case SHOW_ALL:
+	case SHOW_CONFIG:
+	{
+		buf = opts_list(&global()->config->opts);
+		break;
+	}
+	default:
+		abort();
+	}
+
+	value_set_json_buf(self->result, buf);
+}
+
 void
 fn_system_register(FunctionMgr* self)
 {
@@ -233,5 +425,9 @@ fn_system_register(FunctionMgr* self)
 
 	// system.metrics()
 	func = function_allocate(TYPE_JSON, "system", "metrics", fn_metrics);
+	function_mgr_add(self, func);
+
+	// system.show()
+	func = function_allocate(TYPE_JSON, "system", "show", fn_show);
 	function_mgr_add(self, func);
 }

@@ -6,20 +6,20 @@ show
 show;
 {"msg": "show❰;❱ ⟵ name expected"}
 show all junk
-{"msg": "show all <name> unexpected argument"}
+{"msg": "show() ⟵ unexpected name argument"}
 show 1234
 {"msg": "show ❰1234❱ ⟵ name expected"}
 # test: show users
 create user test
 show users abc
-{"msg": "show users <name> unexpected argument"}
+{"msg": "show() ⟵ unexpected name argument"}
 show users format
 {"msg": "show users format ⟵ string expected"}
 show users format 'json'
 [{"name": "test"}]
 # test: show user
 show user
-{"msg": "show user <name> required"}
+{"msg": "show() ⟵ name is missing for 'user'"}
 show user unknown
 [null]
 show user test
@@ -60,7 +60,7 @@ show tables
 }]
 # test: show table
 show table
-{"msg": "show table <name> required"}
+{"msg": "show() ⟵ name is missing for 'table'"}
 show table test
 [{
   "schema": "public",
@@ -202,6 +202,6 @@ show "log_enable"
 [true]
 # test: show unknown
 show asdf
-{"msg": "show <asdf> option not found"}
+{"msg": "show() ⟵ option 'asdf' is not found"}
 disconnect S0
 close E0

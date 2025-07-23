@@ -12,7 +12,6 @@
 //
 
 // system
-void cshow(Vm*, Op*);
 void ccheckpoint(Vm*, Op*);
 
 // users

@@ -32,6 +32,7 @@ struct Call
 };
 
 no_return void call_error(Call*, char*, ...);
+no_return void call_error_noargs(Call*, char*, ...);
 no_return void call_error_arg(Call*, int, char*, ...);
 
 static inline void

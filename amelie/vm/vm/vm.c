@@ -357,7 +357,6 @@ vm_run(Vm*       self,
 		&&cupdate_store,
 
 		// system
-		&&cshow,
 		&&ccheckpoint,
 
 		// user
@@ -1781,10 +1780,6 @@ cupdate:
 
 cupdate_store:
 	cupdate_store(self, op);
-	op_next;
-
-cshow:
-	cshow(self, op);
 	op_next;
 
 ccheckpoint:

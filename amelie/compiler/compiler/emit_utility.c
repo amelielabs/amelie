@@ -241,6 +241,51 @@ emit_ddl(Compiler* self)
 	op2(self, CDDL, offset, flags);
 }
 
+static void
+emit_show(Compiler* self)
+{
+	auto stmt = compiler_stmt(self);
+	auto data = &self->code_data->data;
+	auto arg  = ast_show_of(stmt->ast);
+
+	// find system.show() function
+	Str schema;
+	str_set(&schema, "system", 6);
+	Str name;
+	str_set(&name, "show", 4);
+	auto fn = function_mgr_find(share()->function_mgr, &schema, &name);
+	assert(fn);
+
+	// system.show(section, name, schema, extended)
+	int r = emit_string(self, &arg->section, false);
+	op1(self, CPUSH, r);
+	runpin(self, r);
+
+	r = emit_string(self, &arg->name, false);
+	op1(self, CPUSH, r);
+	runpin(self, r);
+
+	r = emit_string(self, &arg->schema, false);
+	op1(self, CPUSH, r);
+	runpin(self, r);
+
+	r = op2(self, CBOOL, rpin(self, TYPE_BOOL), arg->extended);
+	op1(self, CPUSH, r);
+	runpin(self, r);
+
+	r = op4(self, CCALL, rpin(self, fn->type), (intptr_t)fn, 4, -1);
+
+	// content_json
+	auto offset = buf_size(data);
+	encode_string(data, &arg->section);
+
+	auto format = &arg->format;
+	if (str_empty(format))
+		format = self->parser.local->format;
+	op3(self, CCONTENT_JSON, r, offset, (intptr_t)format);
+	runpin(self, r);
+}
+
 void
 emit_utility(Compiler* self)
 {
@@ -250,22 +295,7 @@ emit_utility(Compiler* self)
 	// system
 	case STMT_SHOW:
 	{
-		auto arg = ast_show_of(stmt->ast);
-		auto offset = buf_size(data);
-		encode_string(data, &arg->section);
-		encode_string(data, &arg->name);
-		encode_string(data, &arg->schema);
-		encode_bool(data, arg->extended);
-
-		auto r = op2(self, CSHOW, rpin(self, TYPE_JSON), offset);
-		offset = buf_size(data);
-		encode_string(data, &arg->section);
-
-		auto format = &arg->format;
-		if (str_empty(format))
-			format = self->parser.local->format;
-		op3(self, CCONTENT_JSON, r, offset, (intptr_t)format);
-		runpin(self, r);
+		emit_show(self);
 		break;
 	}
 	case STMT_CHECKPOINT:
@@ -371,8 +401,10 @@ emit_utility(Compiler* self)
 
 	// ddl
 	default:	
+	{
 		emit_ddl(self);
 		break;
+	}
 	}
 
 	op0(self, CRET);
