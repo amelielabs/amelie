@@ -485,6 +485,7 @@ op_dump(Code* self, CodeData* data, Buf* buf)
 			break;
 		}
 		case CCONTENT:
+		case CCONTENT_JSON:
 			op_write(output, op, true, false, false, NULL);
 			break;
 		default:

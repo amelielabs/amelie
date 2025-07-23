@@ -70,5 +70,8 @@ show "log_enable"
 # test: show unknown
 show asdf
 
+# test: explain show
+explain show log_enable
+
 disconnect S0
 close E0
