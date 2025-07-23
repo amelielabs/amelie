@@ -90,11 +90,8 @@ content_write(Content* self, Str* spec, Columns* columns, Value* value)
 }
 
 void
-content_write_json(Content* self, Str* spec, Str* name, Buf* buf)
+content_write_json(Content* self, Str* spec, Str* name, Value* value)
 {
-	Value value;
-	value_set_json_buf(&value, buf);
-
 	// prepare columns
 	Columns columns;
 	columns_init(&columns);
@@ -105,7 +102,16 @@ content_write_json(Content* self, Str* spec, Str* name, Buf* buf)
 	columns_add(&columns, column);
 
 	// write content
-	content_write(self, spec, &columns, &value);
+	content_write(self, spec, &columns, value);
+}
+
+void
+content_write_json_buf(Content* self, Str* spec, Str* name, Buf* buf)
+{
+	Value value;
+	value_set_json_buf(&value, buf);
+
+	content_write_json(self, spec, name, &value);
 }
 
 void

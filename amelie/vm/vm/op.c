@@ -314,6 +314,7 @@ OpDesc ops[] =
 	{ CASSIGN, "assign" },
 	{ CRESULT, "result" },
 	{ CCONTENT, "content" },
+	{ CCONTENT_JSON, "content_json" },
 	{ CREF, "ref" },
 
 	{ 0, NULL }

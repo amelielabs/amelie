@@ -118,7 +118,7 @@ ctl_show(Session* self)
 	auto format = self->local.format;
 	if (! str_empty(&arg->format))
 		format = &arg->format;
-	content_write_json(&self->content, format, &arg->section, buf);
+	content_write_json_buf(&self->content, format, &arg->section, buf);
 }
 
 static void
@@ -163,7 +163,7 @@ ctl_token(Session* self)
 	// write content
 	Str name;
 	str_set(&name, "token", 5);
-	content_write_json(&self->content, self->local.format, &name, buf);
+	content_write_json_buf(&self->content, self->local.format, &name, buf);
 }
 
 static void

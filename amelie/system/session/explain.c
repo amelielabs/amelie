@@ -123,5 +123,5 @@ explain(Explain* self,
 	content_reset(content);
 	Str name;
 	str_set(&name, "explain", 7);
-	content_write_json(content, dtr->local->format, &name, buf);
+	content_write_json_buf(content, dtr->local->format, &name, buf);
 }

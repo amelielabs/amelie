@@ -390,6 +390,7 @@ vm_run(Vm*       self,
 		&&cassign,
 		&&cresult,
 		&&ccontent,
+		&&ccontent_json,
 		&&cref
 	};
 
@@ -1867,6 +1868,13 @@ cresult:
 ccontent:
 	// [r, columns*, format*]
 	content_write(self->content, (Str*)op->c, (Columns*)op->b, &r[op->a]);
+	op_next;
+
+ccontent_json:
+	// [r, column_offset, format*]
+	json = code_data_at(self->code_data, op->b);
+	json_read_string(&json, &string);
+	content_write_json(self->content, (Str*)op->c, &string, &r[op->a]);
 	op_next;
 
 cref:

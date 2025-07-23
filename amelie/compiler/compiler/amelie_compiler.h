@@ -32,4 +32,5 @@
 #include "compiler/emit_delete.h"
 #include "compiler/emit_select.h"
 #include "compiler/emit_watch.h"
+#include "compiler/emit_utility.h"
 #include "compiler/pushdown.h"
