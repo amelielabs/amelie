@@ -11,4 +11,4 @@
 // AGPL-3.0 Licensed.
 //
 
-void parse_import(Parser*, Str*, Str*, EndpointType);
+void parse_import(Parser*, Program*, Str*, Str*, EndpointType);

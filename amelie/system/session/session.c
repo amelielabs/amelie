@@ -56,7 +56,7 @@ session_create(Client* client, FrontendMgr* frontend_mgr, Frontend* frontend)
 	local_init(&self->local, global());
 	explain_init(&self->explain);
 	content_init(&self->content, &self->local, &client->reply.content);
-	compiler_init(&self->compiler, &self->local, &self->vm.r);
+	compiler_init(&self->compiler, &self->local);
 	vm_init(&self->vm, NULL, &self->dtr);
 	dtr_init(&self->dtr, &self->local, share()->core_mgr);
 	return self;

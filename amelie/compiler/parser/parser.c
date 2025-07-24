@@ -40,17 +40,12 @@
 #include <amelie_parser.h>
 
 void
-parser_init(Parser*   self,
-            Local*    local,
-            SetCache* values_cache,
-            Program*  program,
-            Reg*      regs)
+parser_init(Parser* self, Local* local, SetCache* values_cache)
 {
 	self->begin        = false;
 	self->commit       = false;
 	self->stmt         = NULL;
-	self->program      = program;
-	self->regs         = regs;
+	self->program      = NULL;
 	self->values_cache = values_cache;
 	self->local        = local;
 	stmts_init(&self->stmts);
@@ -63,9 +58,10 @@ parser_init(Parser*   self,
 void
 parser_reset(Parser* self)
 {
-	self->begin  = false;
-	self->commit = false;
-	self->stmt   = NULL;
+	self->begin   = false;
+	self->commit  = false;
+	self->stmt    = NULL;
+	self->program = NULL;
 	auto stmt = self->stmts.list;
 	while (stmt)
 	{

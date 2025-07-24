@@ -41,18 +41,16 @@
 #include <amelie_compiler.h>
 
 void
-compiler_init(Compiler* self, Local* local, Reg* regs)
+compiler_init(Compiler* self, Local* local)
 {
 	self->program   = program_allocate();
 	self->code      = &self->program->code;
 	self->code_data = &self->program->code_data;
 	self->args      = NULL;
-	self->regs      = regs;
 	self->current   = NULL;
 	self->last      = NULL;
 	set_cache_init(&self->values_cache);
-	parser_init(&self->parser, local, &self->values_cache,
-	            self->program, regs);
+	parser_init(&self->parser, local, &self->values_cache);
 	rmap_init(&self->map);
 }
 
@@ -81,14 +79,14 @@ compiler_reset(Compiler* self)
 void
 compiler_parse(Compiler* self, Str* text)
 {
-	parse(&self->parser, text);
+	parse(&self->parser, self->program, text);
 }
 
 void
 compiler_parse_import(Compiler*    self, Str* text, Str* uri,
                       EndpointType type)
 {
-	parse_import(&self->parser, text, uri, type);
+	parse_import(&self->parser, self->program, text, uri, type);
 }
 
 static void

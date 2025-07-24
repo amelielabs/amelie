@@ -22,12 +22,11 @@ struct Compiler
 	Parser    parser;
 	SetCache  values_cache;
 	Columns*  args;
-	Reg*      regs;
 	Stmt*     current;
 	Stmt*     last;
 };
 
-void compiler_init(Compiler*, Local*, Reg*);
+void compiler_init(Compiler*, Local*);
 void compiler_free(Compiler*);
 void compiler_reset(Compiler*);
 void compiler_parse(Compiler*, Str*);

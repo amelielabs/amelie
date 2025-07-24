@@ -508,8 +508,10 @@ parse_scope(Parser* self, Scope* scope)
 }
 
 hot void
-parse(Parser* self, Str* str)
+parse(Parser* self, Program* program, Str* str)
 {
+	self->program = program;
+
 	// prepare parser
 	auto lex = &self->lex;
 	lex_start(&self->lex, str);

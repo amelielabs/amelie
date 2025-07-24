@@ -238,8 +238,11 @@ parse_import_csv(Stmt* self, Endpoint* endpoint)
 }
 
 hot void
-parse_import(Parser* self, Str* str, Str* uri, EndpointType type)
+parse_import(Parser* self, Program* program, Str* str, Str* uri,
+             EndpointType type)
 {
+	self->program = program;
+
 	// prepare parser
 	lex_start(&self->lex, str);
 

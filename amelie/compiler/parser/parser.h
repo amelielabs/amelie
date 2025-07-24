@@ -21,7 +21,6 @@ struct Parser
 	Stmts     stmts;
 	Scopes    scopes;
 	Program*  program;
-	Reg*      regs;
 	SetCache* values_cache;
 	Uri       uri;
 	Json      json;
@@ -29,7 +28,7 @@ struct Parser
 	Local*    local;
 };
 
-void parser_init(Parser*, Local*, SetCache*, Program*, Reg*);
+void parser_init(Parser*, Local*, SetCache*);
 void parser_reset(Parser*);
 void parser_free(Parser*);
 
