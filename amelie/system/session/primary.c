@@ -61,7 +61,7 @@ on_write(Primary* self, Buf* data)
 	// switch distributed transaction to replication state to write wal
 	// while in read-only mode
 	auto dtr = &session->dtr;
-	auto program = session->compiler.program;
+	auto program = session->program;
 	program->sends = 1;
 	program->repl  = true;
 

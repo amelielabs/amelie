@@ -48,6 +48,7 @@ session_create(Client* client, FrontendMgr* frontend_mgr, Frontend* frontend)
 {
 	auto self = (Session*)am_malloc(sizeof(Session));
 	self->client       = client;
+	self->program      = program_allocate();
 	self->lock_type    = LOCK_NONE;
 	self->lock         = NULL;
 	self->lock_ref     = NULL;
@@ -66,6 +67,7 @@ static inline void
 session_reset(Session* self)
 {
 	vm_reset(&self->vm);
+	program_reset(self->program);
 	compiler_reset(&self->compiler);
 	dtr_reset(&self->dtr);
 	explain_reset(&self->explain);
@@ -80,6 +82,7 @@ session_free(Session *self)
 	session_reset(self);
 	vm_free(&self->vm);
 	compiler_free(&self->compiler);
+	program_free(self->program);
 	dtr_free(&self->dtr);
 	local_free(&self->local);
 	am_free(self);
@@ -127,8 +130,9 @@ session_unlock(Session* self)
 }
 
 hot static inline void
-session_execute_distributed(Session* self, Program* program)
+session_execute_distributed(Session* self)
 {
+	auto program  = self->program;
 	auto explain  = &self->explain;
 	auto dtr      = &self->dtr;
 	auto executor = share()->executor;
@@ -182,12 +186,13 @@ session_execute_distributed(Session* self, Program* program)
 }
 
 hot static inline void
-session_execute_utility(Session* self, Program* program)
+session_execute_utility(Session* self)
 {
-	auto explain = &self->explain;
+	auto program = self->program;
 	reg_prepare(&self->vm.r, program->code.regs);
 
 	// [PROFILE]
+	auto explain = &self->explain;
 	if (program->profile)
 		explain_start(&explain->time_run_us);
 
@@ -262,9 +267,13 @@ session_execute(Session* self)
 {
 	auto request  = &self->client->request;
 	auto compiler = &self->compiler;
+	auto program  =  self->program;
 
 	// set transaction time
 	local_update_time(&self->local);
+
+	// set program
+	compiler_set(compiler, program);
 
 	// POST /
 	// POST /v1/execute
@@ -313,7 +322,6 @@ session_execute(Session* self)
 	compiler_emit(compiler);
 
 	// [EXPLAIN]
-	auto program = compiler->program;
 	if (program->explain)
 	{
 		explain_run(&self->explain, program,
@@ -328,9 +336,9 @@ session_execute(Session* self)
 
 	// execute utility, DDL, DML or Query
 	if (stmt_is_utility(compiler_stmt(compiler)))
-		session_execute_utility(self, program);
+		session_execute_utility(self);
 	else
-		session_execute_distributed(self, program);
+		session_execute_distributed(self);
 }
 
 hot static inline void

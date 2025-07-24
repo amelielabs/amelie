@@ -16,6 +16,7 @@ typedef struct Session Session;
 struct Session
 {
 	Vm           vm;
+	Program*     program;
 	Compiler     compiler;
 	Dtr          dtr;
 	Explain      explain;

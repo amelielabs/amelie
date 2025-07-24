@@ -43,9 +43,9 @@
 void
 compiler_init(Compiler* self, Local* local)
 {
-	self->program   = program_allocate();
-	self->code      = &self->program->code;
-	self->code_data = &self->program->code_data;
+	self->program   = NULL;
+	self->code      = NULL;
+	self->code_data = NULL;
 	self->args      = NULL;
 	self->current   = NULL;
 	self->last      = NULL;
@@ -57,8 +57,6 @@ compiler_init(Compiler* self, Local* local)
 void
 compiler_free(Compiler* self)
 {
-	if (self->program)
-		program_free(self->program);
 	parser_free(&self->parser);
 	set_cache_free(&self->values_cache);
 	rmap_free(&self->map);
@@ -67,13 +65,22 @@ compiler_free(Compiler* self)
 void
 compiler_reset(Compiler* self)
 {
-	self->code    = &self->program->code;
-	self->args    = NULL;
-	self->current = NULL;
-	self->last    = NULL;
-	program_reset(self->program);
+	self->program   = NULL;
+	self->code      = NULL;
+	self->code_data = NULL;
+	self->args      = NULL;
+	self->current   = NULL;
+	self->last      = NULL;
 	parser_reset(&self->parser);
 	rmap_reset(&self->map);
+}
+
+void
+compiler_set(Compiler* self, Program* program)
+{
+	self->program   = program;
+	self->code      = &self->program->code;
+	self->code_data = &self->program->code_data;
 }
 
 void
