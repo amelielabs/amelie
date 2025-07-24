@@ -519,19 +519,20 @@ parse(Parser* self, Str* str)
 	if (explain)
 	{
 		// EXPLAIN(PROFILE)
-		self->explain = EXPLAIN;
+		self->program->explain = true;
 		if (lex_if(lex, '('))
 		{
 			if (! lex_if(lex, KPROFILE))
 				lex_error_expect(lex, lex_next(lex), KPROFILE);
 			if (! lex_if(lex, ')'))
 				lex_error_expect(lex, lex_next(lex), ')');
-			self->explain |= EXPLAIN_PROFILE;
+			self->program->explain = false;
+			self->program->profile = true;
 		}
 
 	} else
 	if (lex_if(lex, KPROFILE))
-		self->explain = EXPLAIN|EXPLAIN_PROFILE;
+		self->program->profile = true;
 
 	// [BEGIN]
 	self->begin = lex_if(lex, KBEGIN) != NULL;
@@ -553,9 +554,11 @@ parse(Parser* self, Str* str)
 	if (self->stmt)
 		self->stmt->ret = true;
 
-	// ensure EXPLAIN has command
-	if (unlikely(self->explain && !self->stmts.count))
-		lex_error(lex, explain, "EXPLAIN without command");
+	// ensure EXPLAIN has a command
+	if (unlikely(! self->stmts.count)) {
+		if (self->program->explain || self->program->profile)
+			lex_error(lex, explain, "EXPLAIN without command");
+	}
 
 	// ensure main stmt is not utility when using CTE
 	if (self->stmts.count_utility && self->stmts.count > 1)

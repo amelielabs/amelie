@@ -127,7 +127,7 @@ session_unlock(Session* self)
 }
 
 hot static inline void
-session_execute_distributed(Session* self, Program* program, bool profile)
+session_execute_distributed(Session* self, Program* program)
 {
 	auto explain  = &self->explain;
 	auto dtr      = &self->dtr;
@@ -139,7 +139,7 @@ session_execute_distributed(Session* self, Program* program, bool profile)
 	dtr_create(dtr, program);
 
 	// [PROFILE]
-	if (profile)
+	if (program->profile)
 		explain_start(&explain->time_run_us);
 
 	// execute coordinator
@@ -161,7 +161,7 @@ session_execute_distributed(Session* self, Program* program, bool profile)
 	if (on_error)
 		error = msg_error(&am_self()->error);
 
-	if (profile)
+	if (program->profile)
 	{
 		explain_end(&explain->time_run_us);
 		explain_start(&explain->time_commit_us);
@@ -171,7 +171,7 @@ session_execute_distributed(Session* self, Program* program, bool profile)
 	executor_commit(executor, dtr, error);
 
 	// explain profile
-	if (profile)
+	if (program->profile)
 	{
 		explain_end(&explain->time_commit_us);
 		explain_run(explain, program,
@@ -182,13 +182,13 @@ session_execute_distributed(Session* self, Program* program, bool profile)
 }
 
 hot static inline void
-session_execute_utility(Session* self, Program* program, bool profile)
+session_execute_utility(Session* self, Program* program)
 {
 	auto explain = &self->explain;
 	reg_prepare(&self->vm.r, program->code.regs);
 
 	// [PROFILE]
-	if (profile)
+	if (program->profile)
 		explain_start(&explain->time_run_us);
 
 	// execute utility/ddl transaction
@@ -218,7 +218,7 @@ session_execute_utility(Session* self, Program* program, bool profile)
 		rethrow();
 	}
 
-	if (profile)
+	if (program->profile)
 	{
 		explain_end(&explain->time_run_us);
 		explain_start(&explain->time_commit_us);
@@ -247,7 +247,7 @@ session_execute_utility(Session* self, Program* program, bool profile)
 	tr_commit(&tr);
 
 	// explain profile
-	if (profile)
+	if (program->profile)
 	{
 		explain_end(&explain->time_commit_us);
 		explain_run(explain, program,
@@ -314,7 +314,7 @@ session_execute(Session* self)
 
 	// [EXPLAIN]
 	auto program = compiler->program;
-	if (compiler->parser.explain == EXPLAIN)
+	if (program->explain)
 	{
 		explain_run(&self->explain, program,
 		            &self->local,
@@ -327,12 +327,10 @@ session_execute(Session* self)
 	session_lock(self, program->lock);
 
 	// execute utility, DDL, DML or Query
-	auto profile = parser_is_profile(&compiler->parser);
-	auto stmt = compiler_stmt(compiler);
-	if (stmt_is_utility(stmt))
-		session_execute_utility(self, program, profile);
+	if (stmt_is_utility(compiler_stmt(compiler)))
+		session_execute_utility(self, program);
 	else
-		session_execute_distributed(self, program, profile);
+		session_execute_distributed(self, program);
 }
 
 hot static inline void

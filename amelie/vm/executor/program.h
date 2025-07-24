@@ -23,6 +23,8 @@ struct Program
 	int      lock;
 	bool     snapshot;
 	bool     repl;
+	bool     explain;
+	bool     profile;
 };
 
 static inline Program*
@@ -33,6 +35,8 @@ program_allocate(void)
 	self->lock      = LOCK_SHARED;
 	self->snapshot  = false;
 	self->repl      = false;
+	self->explain   = false;
+	self->profile   = false;
 	code_init(&self->code);
 	code_init(&self->code_backend);
 	code_data_init(&self->code_data);
@@ -53,10 +57,12 @@ program_free(Program* self)
 static inline void
 program_reset(Program* self)
 {
-	self->sends    = 0;
-	self->lock     = LOCK_SHARED;
-	self->snapshot = false;
-	self->repl     = false;
+	self->sends     = 0;
+	self->lock      = LOCK_SHARED;
+	self->snapshot  = false;
+	self->repl      = false;
+	self->explain   = false;
+	self->profile   = false;
 	code_reset(&self->code);
 	code_reset(&self->code_backend);
 	code_data_reset(&self->code_data);

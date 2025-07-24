@@ -46,7 +46,6 @@ parser_init(Parser*   self,
             Program*  program,
             Reg*      regs)
 {
-	self->explain      = EXPLAIN_NONE;
 	self->begin        = false;
 	self->commit       = false;
 	self->execute      = false;
@@ -65,7 +64,6 @@ parser_init(Parser*   self,
 void
 parser_reset(Parser* self)
 {
-	self->explain = EXPLAIN_NONE;
 	self->begin   = false;
 	self->commit  = false;
 	self->execute = false;

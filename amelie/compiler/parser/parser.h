@@ -13,16 +13,8 @@
 
 typedef struct Parser Parser;
 
-enum
-{
-	EXPLAIN_NONE    = 0,
-	EXPLAIN         = 1,
-	EXPLAIN_PROFILE = 2
-};
-
 struct Parser
 {
-	int       explain;
 	bool      begin;
 	bool      commit;
 	bool      execute;
@@ -46,10 +38,4 @@ static inline Scope*
 parser_scope(Parser* self)
 {
 	return self->scopes.list_tail;
-}
-
-static inline bool
-parser_is_profile(Parser* self)
-{
-	return self->explain == (EXPLAIN|EXPLAIN_PROFILE);
 }
