@@ -347,6 +347,12 @@ system_rpc(Rpc* rpc, void* arg)
 		*buf = system_metrics(self);
 		break;
 	}
+	case RPC_SYNC_USERS:
+	{
+		UserCache* cache = rpc_arg_ptr(rpc, 0);
+		frontend_mgr_sync_users(&self->frontend_mgr, cache);
+		break;
+	}
 	default:
 		break;
 	}
