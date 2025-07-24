@@ -139,10 +139,6 @@ emit_stmt(Compiler* self)
 		return;
 	}
 
-	case STMT_CALL:
-		// do nothing
-		return;
-
 	case STMT_WATCH:
 		// do nothing (frontend only)
 		return;
@@ -324,10 +320,6 @@ emit_send(Compiler* self, int start)
 		//
 		return;
 	}
-
-	case STMT_CALL:
-		// do nothing
-		return;
 
 	case STMT_WATCH:
 		// no targets

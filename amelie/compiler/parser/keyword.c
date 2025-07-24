@@ -62,7 +62,6 @@ Keyword keywords[] =
 	{ KCURRENT_TIMESTAMP,     "current_timestamp",     17 },
 	{ KCURRENT_DATE,          "current_date",          12 },
 	{ KCAST,                  "cast",                  4  },
-	{ KCALL,                  "call",                  4  },
 	{ KCASE,                  "case",                  4  },
 	{ KCONFLICT,              "conflict",              8  },
 	{ KCOUNT,                 "count",                 5  },
@@ -85,7 +84,6 @@ Keyword keywords[] =
 
 	// e
 	{ KEXTRACT,               "extract",               7  },
-	{ KEXECUTE,               "execute",               7  },
 	{ KELSE,                  "else",                  4  },
 	{ KEND,                   "end",                   3  },
 	{ KERROR,                 "error",                 5  },

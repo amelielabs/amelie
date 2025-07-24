@@ -48,7 +48,6 @@ parser_init(Parser*   self,
 {
 	self->begin        = false;
 	self->commit       = false;
-	self->execute      = false;
 	self->stmt         = NULL;
 	self->program      = program;
 	self->regs         = regs;
@@ -64,10 +63,9 @@ parser_init(Parser*   self,
 void
 parser_reset(Parser* self)
 {
-	self->begin   = false;
-	self->commit  = false;
-	self->execute = false;
-	self->stmt    = NULL;
+	self->begin  = false;
+	self->commit = false;
+	self->stmt   = NULL;
 	auto stmt = self->stmts.list;
 	while (stmt)
 	{

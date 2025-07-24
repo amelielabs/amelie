@@ -17,7 +17,6 @@ struct Parser
 {
 	bool      begin;
 	bool      commit;
-	bool      execute;
 	Stmt*     stmt;
 	Stmts     stmts;
 	Scopes    scopes;
