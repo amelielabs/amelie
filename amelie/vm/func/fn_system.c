@@ -57,8 +57,7 @@ static void
 fn_users(Call* self)
 {
 	call_expect(self, 0);
-	Buf* buf;
-	rpc(global()->control->system, RPC_SHOW_USERS, 1, &buf);
+	auto buf = user_mgr_list(share()->user_mgr, NULL);
 	value_set_json_buf(self->result, buf);
 }
 
@@ -67,8 +66,7 @@ fn_user(Call* self)
 {
 	call_expect(self, 1);
 	call_expect_arg(self, 0, TYPE_STRING);
-	Buf* buf;
-	rpc(global()->control->system, RPC_SHOW_USERS, 2, &buf, &self->argv[0].string);
+	auto buf = user_mgr_list(share()->user_mgr, &self->argv[0].string);
 	value_set_json_buf(self->result, buf);
 }
 
@@ -76,8 +74,7 @@ static void
 fn_replicas(Call* self)
 {
 	call_expect(self, 0);
-	Buf* buf;
-	rpc(global()->control->system, RPC_SHOW_REPLICAS, 1, &buf);
+	auto buf = replica_mgr_list(&share()->repl->replica_mgr, NULL);
 	value_set_json_buf(self->result, buf);
 }
 
@@ -90,14 +87,12 @@ fn_replica(Call* self)
 	{
 		Uuid id;
 		uuid_set(&id, &argv[0].string);
-		Buf* buf;
-		rpc(global()->control->system, RPC_SHOW_REPLICAS, 2, &buf, &id);
+		auto buf = replica_mgr_list(&share()->repl->replica_mgr, &id);
 		value_set_json_buf(self->result, buf);
 	} else
 	if (argv[0].type == TYPE_UUID)
 	{
-		Buf* buf;
-		rpc(global()->control->system, RPC_SHOW_REPLICAS, 2, &buf, &argv[0].uuid);
+		auto buf = replica_mgr_list(&share()->repl->replica_mgr, &argv[0].uuid);
 		value_set_json_buf(self->result, buf);
 	} else {
 		call_unsupported(self, 0);
@@ -108,8 +103,7 @@ static void
 fn_repl(Call* self)
 {
 	call_expect(self, 0);
-	Buf* buf;
-	rpc(global()->control->system, RPC_SHOW_REPL, 1, &buf);
+	auto buf = repl_status(share()->repl);
 	value_set_json_buf(self->result, buf);
 }
 

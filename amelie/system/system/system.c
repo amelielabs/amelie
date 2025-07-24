@@ -317,30 +317,6 @@ system_rpc(Rpc* rpc, void* arg)
 {
 	System* self = arg;
 	switch (rpc->id) {
-	case RPC_SHOW_USERS:
-	{
-		Buf** buf  = rpc_arg_ptr(rpc, 0);
-		Str*  name = NULL;
-		if (rpc->argc == 2)
-			name = rpc_arg_ptr(rpc, 1);
-		*buf = user_mgr_list(&self->user_mgr, name);
-		break;
-	}
-	case RPC_SHOW_REPLICAS:
-	{
-		Buf** buf = rpc_arg_ptr(rpc, 0);
-		Uuid* id  = NULL;
-		if (rpc->argc == 2)
-			id = rpc_arg_ptr(rpc, 1);
-		*buf = replica_mgr_list(&self->repl.replica_mgr, id);
-		break;
-	}
-	case RPC_SHOW_REPL:
-	{
-		Buf** buf = rpc_arg_ptr(rpc, 0);
-		*buf = repl_status(&self->repl);
-		break;
-	}
 	case RPC_SHOW_METRICS:
 	{
 		Buf** buf = rpc_arg_ptr(rpc, 0);
