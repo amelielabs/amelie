@@ -16,7 +16,7 @@ typedef struct LockMgr LockMgr;
 enum
 {
 	LOCK_NONE,
-	LOCK,
+	LOCK_SHARED,
 	LOCK_EXCLUSIVE
 };
 
@@ -46,7 +46,7 @@ lock_mgr_lock(LockMgr* self, int type)
 {
 	Lock* lock_shared = NULL;
 	switch (type) {
-	case LOCK:
+	case LOCK_SHARED:
 		lock_shared = resource_lock(&self->rw, true);
 		break;
 	case LOCK_EXCLUSIVE:
@@ -65,7 +65,7 @@ static inline void
 lock_mgr_unlock(LockMgr* self, int type, Lock* lock)
 {
 	switch (type) {
-	case LOCK:
+	case LOCK_SHARED:
 		assert(lock);
 		resource_unlock(lock);
 		break;

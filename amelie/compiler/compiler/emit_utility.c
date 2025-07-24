@@ -291,11 +291,19 @@ emit_utility(Compiler* self)
 {
 	auto stmt = compiler_stmt(self);
 	auto data = &self->code_data->data;
+
+	// explicily set program to have exclusive lock for majority of
+	// the utility/ddl commands with some exceptions below
+	self->program->lock = LOCK_EXCLUSIVE;
+
 	switch (stmt->id) {
 	// system
 	case STMT_SHOW:
 	{
 		emit_show(self);
+
+		// shared lock
+		self->program->lock = LOCK_SHARED;
 		break;
 	}
 	case STMT_CHECKPOINT:
@@ -310,6 +318,9 @@ emit_utility(Compiler* self)
 				workers = 1;
 		}
 		op1(self, CCHECKPOINT, workers);
+
+		// checkpoint operation must not hold any locks
+		self->program->lock = LOCK_NONE;
 		break;
 	}
 
@@ -330,6 +341,9 @@ emit_utility(Compiler* self)
 		encode_raw(data, "token", 5);
 		op3(self, CCONTENT_JSON, r, offset, (intptr_t)self->parser.local->format);
 		runpin(self, r);
+
+		// shared lock
+		self->program->lock = LOCK_SHARED;
 		break;
 	}
 	case STMT_CREATE_USER:

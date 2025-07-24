@@ -96,7 +96,7 @@ session_lock(Session* self, int type)
 		session_unlock(self);
 
 	switch (type) {
-	case LOCK:
+	case LOCK_SHARED:
 		// take shared frontend lock
 		self->lock = lock_mgr_lock(&self->frontend->lock_mgr, type);
 		break;
@@ -114,7 +114,7 @@ void
 session_unlock(Session* self)
 {
 	switch (self->lock_type) {
-	case LOCK:
+	case LOCK_SHARED:
 		lock_mgr_unlock(&self->frontend->lock_mgr, self->lock_type, self->lock);
 		break;
 	case LOCK_EXCLUSIVE:
@@ -323,23 +323,16 @@ session_execute(Session* self)
 		return;
 	}
 
+	// take the required program lock
+	session_lock(self, program->lock);
+
 	// execute utility, DDL, DML or Query
 	auto profile = parser_is_profile(&compiler->parser);
 	auto stmt = compiler_stmt(compiler);
 	if (stmt_is_utility(stmt))
-	{
-		if (stmt->id == STMT_CHECKPOINT)
-			session_unlock(self);
-		else
-		if (stmt->id != STMT_SHOW &&
-		    stmt->id != STMT_CREATE_TOKEN)
-			session_lock(self, LOCK_EXCLUSIVE);
-
 		session_execute_utility(self, program, profile);
-	} else
-	{
+	else
 		session_execute_distributed(self, program, profile);
-	}
 }
 
 hot static inline void
@@ -429,7 +422,7 @@ session_main(Session* self)
 			session_read(self);
 
 			// take shared session lock (for catalog access)
-			session_lock(self, LOCK);
+			session_lock(self, LOCK_SHARED);
 
 			// parse and execute request
 			session_execute(self);

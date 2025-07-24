@@ -49,7 +49,7 @@ on_write(Primary* self, Buf* data)
 	Session* session = self->replay_arg;
 
 	// take shared lock
-	session_lock(session, LOCK);
+	session_lock(session, LOCK_SHARED);
 	defer(session_unlock, session);
 
 	// validate request fields and check current replication state
