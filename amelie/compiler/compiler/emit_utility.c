@@ -289,12 +289,14 @@ emit_show(Compiler* self)
 void
 emit_utility(Compiler* self)
 {
-	auto stmt = compiler_stmt(self);
-	auto data = &self->code_data->data;
+	auto stmt    = compiler_stmt(self);
+	auto data    = &self->code_data->data;
+	auto program = self->program;
 
 	// explicily set program to have exclusive lock for majority of
 	// the utility/ddl commands with some exceptions below
-	self->program->lock = LOCK_EXCLUSIVE;
+	program->lock = LOCK_EXCLUSIVE;
+	program->utility = true;
 
 	switch (stmt->id) {
 	// system
@@ -303,7 +305,7 @@ emit_utility(Compiler* self)
 		emit_show(self);
 
 		// shared lock
-		self->program->lock = LOCK_SHARED;
+		program->lock = LOCK_SHARED;
 		break;
 	}
 	case STMT_CHECKPOINT:
@@ -320,7 +322,7 @@ emit_utility(Compiler* self)
 		op1(self, CCHECKPOINT, workers);
 
 		// checkpoint operation must not hold any locks
-		self->program->lock = LOCK_NONE;
+		program->lock = LOCK_NONE;
 		break;
 	}
 
@@ -343,7 +345,7 @@ emit_utility(Compiler* self)
 		runpin(self, r);
 
 		// shared lock
-		self->program->lock = LOCK_SHARED;
+		program->lock = LOCK_SHARED;
 		break;
 	}
 	case STMT_CREATE_USER:

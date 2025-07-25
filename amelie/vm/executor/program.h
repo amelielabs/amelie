@@ -23,6 +23,7 @@ struct Program
 	int      lock;
 	bool     snapshot;
 	bool     repl;
+	bool     utility;
 	bool     explain;
 	bool     profile;
 };
@@ -35,6 +36,7 @@ program_allocate(void)
 	self->lock      = LOCK_SHARED;
 	self->snapshot  = false;
 	self->repl      = false;
+	self->utility   = false;
 	self->explain   = false;
 	self->profile   = false;
 	code_init(&self->code);
@@ -61,6 +63,7 @@ program_reset(Program* self)
 	self->lock      = LOCK_SHARED;
 	self->snapshot  = false;
 	self->repl      = false;
+	self->utility   = false;
 	self->explain   = false;
 	self->profile   = false;
 	code_reset(&self->code);

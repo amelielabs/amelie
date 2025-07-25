@@ -335,7 +335,7 @@ session_execute(Session* self)
 	session_lock(self, program->lock);
 
 	// execute utility, DDL, DML or Query
-	if (stmt_is_utility(compiler_stmt(compiler)))
+	if (program->utility)
 		session_execute_utility(self);
 	else
 		session_execute_distributed(self);
