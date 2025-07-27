@@ -34,3 +34,7 @@
 #include "compiler/emit_watch.h"
 #include "compiler/emit_utility.h"
 #include "compiler/pushdown.h"
+
+// query language
+#include "compiler/ql.h"
+#include "compiler/ql_mgr.h"
