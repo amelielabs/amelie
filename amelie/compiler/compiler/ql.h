@@ -25,14 +25,14 @@ struct QlIf
 struct Ql
 {
 	QlIf* iface;
-	Str   application_type;
+	Str   content_type;
 	List  link;
 };
 
 static inline Ql*
-ql_allocate(QlIf* iface, Local* local, Str* application_type)
+ql_allocate(QlIf* iface, Local* local, Str* content_type)
 {
-	return iface->create(local, application_type);
+	return iface->create(local, content_type);
 }
 
 static inline void

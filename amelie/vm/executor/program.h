@@ -71,3 +71,9 @@ program_reset(Program* self)
 	code_data_reset(&self->code_data);
 	access_reset(&self->access);
 }
+
+static inline bool
+program_empty(Program* self)
+{
+	return !code_count(&self->code);
+}

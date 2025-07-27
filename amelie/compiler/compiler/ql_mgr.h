@@ -35,19 +35,19 @@ ql_mgr_free(QlMgr* self)
 }
 
 static inline void
-ql_mgr_add(QlMgr* self, Local* local, QlIf* iface, Str* application_type)
+ql_mgr_add(QlMgr* self, Local* local, QlIf* iface, Str* content_type)
 {
-	auto ql = ql_allocate(iface, local, application_type);
+	auto ql = ql_allocate(iface, local, content_type);
 	list_append(&self->list, &ql->link);
 }
 
 hot static inline Ql*
-ql_mgr_find(QlMgr* self, Str* application_type)
+ql_mgr_find(QlMgr* self, Str* content_type)
 {
 	list_foreach(&self->list)
 	{
 		auto ql = list_at(Ql, link);
-		if (str_compare(&ql->application_type, application_type))
+		if (str_compare(&ql->content_type, content_type))
 			return ql;
 	}
 	return NULL;

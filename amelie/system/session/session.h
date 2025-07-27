@@ -17,7 +17,8 @@ struct Session
 {
 	Vm           vm;
 	Program*     program;
-	Compiler     compiler;
+	Ql*          ql;
+	QlMgr        ql_mgr;
 	Dtr          dtr;
 	Explain      explain;
 	Content      content;

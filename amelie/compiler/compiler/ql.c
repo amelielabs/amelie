@@ -49,12 +49,12 @@ struct QlCompiler
 };
 
 static inline Ql*
-ql_compiler_create(Local* local, QlIf* iface, Str* application_type)
+ql_compiler_create(Local* local, QlIf* iface, Str* content_type)
 {
 	auto self = (QlCompiler*)am_malloc(sizeof(QlCompiler));
 	auto ql = &self->ql;
 	ql->iface = iface;
-	str_copy(&ql->application_type, application_type);
+	str_copy(&ql->content_type, content_type);
 	list_init(&ql->link);
 	compiler_init(&self->compiler, local);
 	return &self->ql;
@@ -65,7 +65,7 @@ ql_compiler_free(Ql* ql)
 {
 	auto self = (QlCompiler*)ql;
 	compiler_free(&self->compiler);
-	str_free(&self->ql.application_type);
+	str_free(&self->ql.content_type);
 	am_free(self);
 }
 
@@ -114,9 +114,9 @@ ql_compiler_parse_endpoint(Ql*          ql,
 
 // sql
 static Ql*
-ql_sql_create(Local* local, Str* application_type)
+ql_sql_create(Local* local, Str* content_type)
 {
-	return ql_compiler_create(local, &ql_sql_if, application_type);
+	return ql_compiler_create(local, &ql_sql_if, content_type);
 }
 
 static void
@@ -136,9 +136,9 @@ QlIf ql_sql_if =
 
 // csv
 static Ql*
-ql_csv_create(Local* local, Str* application_type)
+ql_csv_create(Local* local, Str* content_type)
 {
-	return ql_compiler_create(local, &ql_csv_if, application_type);
+	return ql_compiler_create(local, &ql_csv_if, content_type);
 }
 
 static void
@@ -157,9 +157,9 @@ QlIf ql_csv_if =
 
 // json
 static Ql*
-ql_json_create(Local* local, Str* application_type)
+ql_json_create(Local* local, Str* content_type)
 {
-	return ql_compiler_create(local, &ql_json_if, application_type);
+	return ql_compiler_create(local, &ql_json_if, content_type);
 }
 
 static void
@@ -178,9 +178,9 @@ QlIf ql_json_if =
 
 // jsonl
 static Ql*
-ql_jsonl_create(Local* local, Str* application_type)
+ql_jsonl_create(Local* local, Str* content_type)
 {
-	return ql_compiler_create(local, &ql_jsonl_if, application_type);
+	return ql_compiler_create(local, &ql_jsonl_if, content_type);
 }
 
 static void

@@ -47,6 +47,7 @@ Session*
 session_create(Client* client, FrontendMgr* frontend_mgr, Frontend* frontend)
 {
 	auto self = (Session*)am_malloc(sizeof(Session));
+	self->ql           = NULL;
 	self->client       = client;
 	self->program      = program_allocate();
 	self->lock_type    = LOCK_NONE;
@@ -57,18 +58,46 @@ session_create(Client* client, FrontendMgr* frontend_mgr, Frontend* frontend)
 	local_init(&self->local, global());
 	explain_init(&self->explain);
 	content_init(&self->content, &self->local, &client->reply.content);
-	compiler_init(&self->compiler, &self->local);
 	vm_init(&self->vm, NULL, &self->dtr);
 	dtr_init(&self->dtr, &self->local, share()->core_mgr);
+
+	// register query languages based on the supported content types
+	auto ql_mgr = &self->ql_mgr;
+	ql_mgr_init(ql_mgr);
+
+	// text/plain
+	Str type;
+	str_set(&type, "text/plain", 10);
+	ql_mgr_add(ql_mgr, &self->local, &ql_sql_if, &type);
+
+	// application/sql
+	str_set(&type, "application/sql", 15);
+	ql_mgr_add(ql_mgr, &self->local, &ql_sql_if, &type);
+
+	// text/csv
+	str_set(&type, "text/csv", 8);
+	ql_mgr_add(ql_mgr, &self->local, &ql_csv_if, &type);
+
+	// application/json
+	str_set(&type, "application/json", 16);
+	ql_mgr_add(ql_mgr, &self->local, &ql_json_if, &type);
+
+	// application/jsonl
+	str_set(&type, "application/jsonl", 17);
+	ql_mgr_add(ql_mgr, &self->local, &ql_jsonl_if, &type);
 	return self;
 }
 
 static inline void
 session_reset(Session* self)
 {
+	if (self->ql)
+	{
+		ql_reset(self->ql);
+		self->ql = NULL;
+	}
 	vm_reset(&self->vm);
 	program_reset(self->program);
-	compiler_reset(&self->compiler);
 	dtr_reset(&self->dtr);
 	explain_reset(&self->explain);
 	content_reset(&self->content);
@@ -81,7 +110,7 @@ session_free(Session *self)
 	assert(self->lock_type == LOCK_NONE);
 	session_reset(self);
 	vm_free(&self->vm);
-	compiler_free(&self->compiler);
+	ql_mgr_free(&self->ql_mgr);
 	program_free(self->program);
 	dtr_free(&self->dtr);
 	local_free(&self->local);
@@ -265,15 +294,11 @@ session_execute_utility(Session* self)
 static void
 session_execute(Session* self)
 {
-	auto request  = &self->client->request;
-	auto compiler = &self->compiler;
-	auto program  =  self->program;
+	auto request = &self->client->request;
+	auto program =  self->program;
 
 	// set transaction time
 	local_update_time(&self->local);
-
-	// set program
-	compiler_set(compiler, program);
 
 	// POST /
 	// POST /v1/execute
@@ -285,41 +310,23 @@ session_execute(Session* self)
 
 	Str text;
 	buf_str(&request->content, &text);
-	if (str_is(&type->value, "text/plain", 10) ||
-	    str_is(&type->value, "application/sql", 15))
+
+	// find query parser based on the content type
+	self->ql = ql_mgr_find(&self->ql_mgr, &type->value);
+	if (unlikely(! self->ql))
+		error("unsupported API operation");
+
+	// parse and compile request
+	if (self->ql->iface == &ql_sql_if)
 	{
 		if (unlikely(!str_is(url, "/", 1) &&
 		             !str_is(url, "/v1/execute", 11)))
 			error("unsupported API operation");
-
-		// parse SQL
-		compiler_parse(compiler, &text);
-	} else
-	if (str_is(&type->value, "text/csv", 8))
-	{
-		// parse CSV
-		compiler_parse_import(compiler, &text, url, ENDPOINT_CSV);
-	} else
-	if (str_is(&type->value, "application/jsonl", 17))
-	{
-		// parse JSONL
-		compiler_parse_import(compiler, &text, url, ENDPOINT_JSONL);
-	} else
-	if (str_is(&type->value, "application/json", 16))
-	{
-		// parse JSON
-		compiler_parse_import(compiler, &text, url, ENDPOINT_JSON);
-	} else
-	{
-		error("unsupported API operation");
 	}
+	ql_parse(self->ql, program, &text, url);
 
-	// compile
-	if (! compiler->parser.stmts.count)
+	if (program_empty(program))
 		return;
-
-	// generate bytecode
-	compiler_emit(compiler);
 
 	// [EXPLAIN]
 	if (program->explain)
