@@ -120,17 +120,17 @@ frontend_if_session_execute(void*    ptr,
 }
 
 static void
-frontend_if_session_replay(void* ptr, Primary* primary, Buf* data)
+frontend_if_session_execute_replay(void* ptr, Primary* primary, Buf* data)
 {
 	session_execute_replay(ptr, primary, data);
 }
 
 static FrontendIf frontend_if =
 {
-	.session_create  = frontend_if_session_create,
-	.session_free    = frontend_if_session_free,
-	.session_execute = frontend_if_session_execute,
-	.session_replay  = frontend_if_session_replay
+	.session_create         = frontend_if_session_create,
+	.session_free           = frontend_if_session_free,
+	.session_execute        = frontend_if_session_execute,
+	.session_execute_replay = frontend_if_session_execute_replay
 };
 
 static void

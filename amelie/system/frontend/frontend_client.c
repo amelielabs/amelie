@@ -43,7 +43,7 @@ hot static void
 frontend_client_primary_on_write(Primary* self, Buf* data)
 {
 	auto fe = (Frontend*)((void**)self->replay_arg)[0];
-	fe->iface->session_replay(((void**)self->replay_arg)[1], self, data);
+	fe->iface->session_execute_replay(((void**)self->replay_arg)[1], self, data);
 }
 
 static void
@@ -129,6 +129,7 @@ frontend_client(Frontend* self, Client* client)
 		auto content_type = http_find(request, "Content-Type", 12);
 		if (unlikely(! content_type))
 		{
+			// 403 Forbidden
 			client_403(client);
 			continue;
 		}
@@ -141,6 +142,7 @@ frontend_client(Frontend* self, Client* client)
 			                        limit);
 		if (unlikely(limit_reached))
 		{
+			// 413 Payload Too Large
 			client_413(client);
 			continue;
 		}

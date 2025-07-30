@@ -19,7 +19,7 @@ struct FrontendIf
 	void* (*session_create)(Frontend*, void*);
 	void  (*session_free)(void*);
 	bool  (*session_execute)(void*, Str*, Str*, Str*, Content*);
-	void  (*session_replay)(void*, Primary*, Buf*);
+	void  (*session_execute_replay)(void*, Primary*, Buf*);
 };
 
 struct Frontend
