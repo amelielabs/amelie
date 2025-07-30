@@ -11,21 +11,28 @@
 // AGPL-3.0 Licensed.
 //
 
-typedef struct Frontend Frontend;
+typedef struct FrontendIf FrontendIf;
+typedef struct Frontend   Frontend;
 
-typedef void (*FrontendEvent)(Frontend*, Client*);
+struct FrontendIf
+{
+	void* (*session_create)(Frontend*, void*);
+	void  (*session_free)(void*);
+	bool  (*session_execute)(void*, Str*, Str*, Str*, Content*);
+	void  (*session_replay)(void*, Primary*, Buf*);
+};
 
 struct Frontend
 {
-	LockMgr       lock_mgr;
-	ClientMgr     client_mgr;
-	Auth          auth;
-	FrontendEvent on_connect;
-	void*         on_connect_arg;
-	Task          task;
+	LockMgr     lock_mgr;
+	ClientMgr   client_mgr;
+	Auth        auth;
+	FrontendIf* iface;
+	void*       iface_arg;
+	Task        task;
 };
 
-void frontend_init(Frontend*, FrontendEvent, void*);
+void frontend_init(Frontend*, FrontendIf*, void*);
 void frontend_free(Frontend*);
 void frontend_start(Frontend*);
 void frontend_stop(Frontend*);

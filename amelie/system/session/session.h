@@ -15,25 +15,23 @@ typedef struct Session Session;
 
 struct Session
 {
-	Vm           vm;
-	Program*     program;
-	Ql*          ql;
-	QlMgr        ql_mgr;
-	Dtr          dtr;
-	Explain      explain;
-	Content      content;
-	Client*      client;
-	int          lock_type;
-	Lock*        lock;
-	Lock*        lock_ref;
-	Local        local;
-	Frontend*    frontend;
-	FrontendMgr* frontend_mgr;
+	Vm        vm;
+	Program*  program;
+	Ql*       ql;
+	QlMgr     ql_mgr;
+	Dtr       dtr;
+	Explain   explain;
+	int       lock_type;
+	Lock*     lock;
+	Lock*     lock_ref;
+	Local     local;
+	Frontend* frontend;
 };
 
 Session*
-session_create(Client*, FrontendMgr*, Frontend*);
+session_create(Frontend*);
 void session_free(Session*);
 void session_lock(Session*, int);
 void session_unlock(Session*);
-void session_main(Session*);
+bool session_execute(Session*, Str*, Str*, Str*, Content*);
+void session_execute_replay(Session*, Primary*, Buf*);

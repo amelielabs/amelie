@@ -109,6 +109,6 @@ close E0
 open E0 "limit_recv": 0
 connect E0 S0 127.0.0.1:3485
 select 1
-{"msg": "http request limit reached"}
+Payload Too Large
 disconnect S0
 close E0

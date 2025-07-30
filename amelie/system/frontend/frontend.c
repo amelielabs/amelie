@@ -52,7 +52,7 @@ client_main(void* arg)
 	(
 		client_attach(client);
 		client_accept(client);
-		self->on_connect(self, client);
+		frontend_client(self, client);
 	);
 
 	client_mgr_del(&self->client_mgr, client);
@@ -125,12 +125,12 @@ frontend_main(void* arg)
 }
 
 void
-frontend_init(Frontend*     self,
-              FrontendEvent on_connect,
-              void*         on_connect_arg)
+frontend_init(Frontend*   self,
+              FrontendIf* iface,
+              void*       iface_arg)
 {
-	self->on_connect     = on_connect;
-	self->on_connect_arg = on_connect_arg;
+	self->iface     = iface;
+	self->iface_arg = iface_arg;
 	lock_mgr_init(&self->lock_mgr);
 	client_mgr_init(&self->client_mgr);
 	auth_init(&self->auth);

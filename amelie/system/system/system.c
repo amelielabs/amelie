@@ -96,6 +96,43 @@ static CatalogIf catalog_if =
 	.build_column_drop = catalog_if_column_drop
 };
 
+static void*
+frontend_if_session_create(Frontend* self, void* arg)
+{
+	unused(arg);
+	return session_create(self);
+}
+
+static void
+frontend_if_session_free(void* ptr)
+{
+	return session_free(ptr);
+}
+
+static bool
+frontend_if_session_execute(void*    ptr,
+                            Str*     url,
+                            Str*     text,
+                            Str*     content_type,
+                            Content* output)
+{
+	return session_execute(ptr, url, text, content_type, output);
+}
+
+static void
+frontend_if_session_replay(void* ptr, Primary* primary, Buf* data)
+{
+	session_execute_replay(ptr, primary, data);
+}
+
+static FrontendIf frontend_if =
+{
+	.session_create  = frontend_if_session_create,
+	.session_free    = frontend_if_session_free,
+	.session_execute = frontend_if_session_execute,
+	.session_replay  = frontend_if_session_replay
+};
+
 static void
 system_attach(PartList* list, void* arg)
 {
@@ -184,15 +221,6 @@ system_on_server_connect(Server* server, Client* client)
 }
 
 static void
-system_on_frontend_connect(Frontend* frontend, Client* client)
-{
-	System* self = frontend->on_connect_arg;
-	auto session = session_create(client, &self->frontend_mgr, frontend);
-	defer(session_free, session);
-	session_main(session);
-}
-
-static void
 system_recover(System* self)
 {
 	// ask each backend to recover last checkpoint partitions in parallel
@@ -269,7 +297,7 @@ system_start(System* self, bool bootstrap)
 	// start frontends
 	int workers = opt_int_of(&config()->frontends);
 	frontend_mgr_start(&self->frontend_mgr,
-	                   system_on_frontend_connect,
+	                   &frontend_if,
 	                   self,
 	                   workers);
 

@@ -11,5 +11,9 @@
 // AGPL-3.0 Licensed.
 //
 
+// frontend
 #include "frontend/frontend.h"
 #include "frontend/frontend_mgr.h"
+
+// frontend client
+#include "frontend/frontend_client.h"

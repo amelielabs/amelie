@@ -29,10 +29,10 @@ frontend_mgr_init(FrontendMgr* self)
 }
 
 static inline void
-frontend_mgr_start(FrontendMgr*  self,
-                   FrontendEvent on_connect,
-                   void*         on_connect_arg,
-                   int           count)
+frontend_mgr_start(FrontendMgr* self,
+                   FrontendIf*  iface,
+                   void*        iface_arg,
+                   int          count)
 {
 	if (count == 0)
 		return;
@@ -40,7 +40,7 @@ frontend_mgr_start(FrontendMgr*  self,
 	self->workers = am_malloc(sizeof(Frontend) * count);
 	int i = 0;
 	for (; i < count; i++)
-		frontend_init(&self->workers[i], on_connect, on_connect_arg);
+		frontend_init(&self->workers[i], iface, iface_arg);
 	for (i = 0; i < count; i++)
 		frontend_start(&self->workers[i]);
 }

@@ -50,3 +50,12 @@ client_403(Client* self)
 	http_write_end(reply);
 	tcp_write_buf(&self->tcp, &reply->raw);
 }
+
+static inline void
+client_413(Client* self)
+{
+	auto reply = &self->reply;
+	http_write_reply(reply, 413, "Payload Too Large");
+	http_write_end(reply);
+	tcp_write_buf(&self->tcp, &reply->raw);
+}

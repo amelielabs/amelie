@@ -11,4 +11,4 @@
 // AGPL-3.0 Licensed.
 //
 
-void session_primary(Session*);
+void frontend_client(Frontend*, Client*);

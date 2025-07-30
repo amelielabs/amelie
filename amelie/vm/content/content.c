@@ -42,19 +42,12 @@ static ContentType content_type[] =
 };
 
 void
-content_init(Content* self, Local* local, Buf* content)
+content_init(Content* self)
 {
-	self->content      = content;
+	self->content      = NULL;
 	self->content_type = NULL;
-	self->local        = local;
+	self->local        = NULL;
 	content_fmt_init(&self->fmt);
-}
-
-void
-content_reset(Content* self)
-{
-	self->content_type = NULL;
-	buf_reset(self->content);
 }
 
 static void

@@ -75,7 +75,9 @@ cli_cmd_client_execute(Client* client, Str* content)
 	http_read_content(reply, &client->readahead, &reply->content);
 
 	// 403 Forbidden
-	if (str_is(&reply->options[HTTP_CODE], "403", 3))
+	// 413 Payload Too Large
+	if (str_is(&reply->options[HTTP_CODE], "403", 3) ||
+	    str_is(&reply->options[HTTP_CODE], "413", 3))
 	{
 		auto code = &reply->options[HTTP_CODE];
 		auto msg  = &reply->options[HTTP_MSG];

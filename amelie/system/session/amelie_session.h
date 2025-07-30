@@ -13,4 +13,3 @@
 
 #include "session/explain.h"
 #include "session/session.h"
-#include "session/primary.h"

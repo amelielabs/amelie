@@ -89,7 +89,9 @@ test_session_execute(TestSession* self,
 	http_read_content(reply, &client->readahead, &reply->content);
 
 	// 403 Forbidden
-	if (str_is(&reply->options[HTTP_CODE], "403", 3))
+	// 413 Payload Too Large
+	if (str_is(&reply->options[HTTP_CODE], "403", 3) ||
+	    str_is(&reply->options[HTTP_CODE], "413", 3))
 	{
 		auto msg = &reply->options[HTTP_MSG];
 		file_write(output, str_of(msg), str_size(msg));

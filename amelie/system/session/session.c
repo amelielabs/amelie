@@ -44,20 +44,17 @@
 #include <amelie_session.h>
 
 Session*
-session_create(Client* client, FrontendMgr* frontend_mgr, Frontend* frontend)
+session_create(Frontend* frontend)
 {
 	auto self = (Session*)am_malloc(sizeof(Session));
-	self->ql           = NULL;
-	self->client       = client;
-	self->program      = program_allocate();
-	self->lock_type    = LOCK_NONE;
-	self->lock         = NULL;
-	self->lock_ref     = NULL;
-	self->frontend_mgr = frontend_mgr;
-	self->frontend     = frontend;
+	self->ql        = NULL;
+	self->program   = program_allocate();
+	self->lock_type = LOCK_NONE;
+	self->lock      = NULL;
+	self->lock_ref  = NULL;
+	self->frontend  = frontend;
 	local_init(&self->local, global());
 	explain_init(&self->explain);
-	content_init(&self->content, &self->local, &client->reply.content);
 	vm_init(&self->vm, NULL, &self->dtr);
 	dtr_init(&self->dtr, &self->local, share()->core_mgr);
 
@@ -100,7 +97,6 @@ session_reset(Session* self)
 	program_reset(self->program);
 	dtr_reset(&self->dtr);
 	explain_reset(&self->explain);
-	content_reset(&self->content);
 	palloc_truncate(0);
 }
 
@@ -159,7 +155,7 @@ session_unlock(Session* self)
 }
 
 hot static inline void
-session_execute_distributed(Session* self)
+session_execute_distributed(Session* self, Content* output)
 {
 	auto program  = self->program;
 	auto explain  = &self->explain;
@@ -187,7 +183,7 @@ session_execute_distributed(Session* self)
 		       &self->vm.r,
 		       NULL,
 		       NULL,
-		       &self->content, 0);
+		       output, 0);
 	);
 
 	Buf* error = NULL;
@@ -207,15 +203,13 @@ session_execute_distributed(Session* self)
 	if (program->profile)
 	{
 		explain_end(&explain->time_commit_us);
-		explain_run(explain, program,
-		            &self->local,
-		            &self->content,
-		            true);
+		explain_run(explain, program, &self->local,
+		            output, true);
 	}
 }
 
 hot static inline void
-session_execute_utility(Session* self)
+session_execute_utility(Session* self, Content* output)
 {
 	auto program = self->program;
 	reg_prepare(&self->vm.r, program->code.regs);
@@ -243,7 +237,7 @@ session_execute_utility(Session* self)
 		       &self->vm.r,
 		       NULL,
 		       NULL,
-		       &self->content, 0);
+		       output, 0);
 	);
 
 	if (unlikely(on_error))
@@ -284,46 +278,39 @@ session_execute_utility(Session* self)
 	if (program->profile)
 	{
 		explain_end(&explain->time_commit_us);
-		explain_run(explain, program,
-		            &self->local,
-		            &self->content,
-		            true);
+		explain_run(explain, program, &self->local,
+		            output, true);
 	}
 }
 
-static void
-session_execute(Session* self)
+hot static void
+session_execute_main(Session* self,
+                     Str*     url,
+                     Str*     text,
+                     Str*     content_type,
+                     Content* output)
 {
-	auto request = &self->client->request;
-	auto program =  self->program;
-
 	// set transaction time
 	local_update_time(&self->local);
 
 	// POST /
 	// POST /v1/execute
 	// POST /v1/db/schema/relation
-	auto type = http_find(request, "Content-Type", 12);
-	if (unlikely(! type))
-		error("Content-Type is missing");
-	auto url = &request->options[HTTP_URL];
-
-	Str text;
-	buf_str(&request->content, &text);
 
 	// find query parser based on the content type
-	self->ql = ql_mgr_find(&self->ql_mgr, &type->value);
+	self->ql = ql_mgr_find(&self->ql_mgr, content_type);
 	if (unlikely(! self->ql))
 		error("unsupported API operation");
 
-	// parse and compile request
+	// parse and compile request program
+	auto program = self->program;
 	if (self->ql->iface == &ql_sql_if)
 	{
 		if (unlikely(!str_is(url, "/", 1) &&
 		             !str_is(url, "/v1/execute", 11)))
 			error("unsupported API operation");
 	}
-	ql_parse(self->ql, program, &text, url);
+	ql_parse(self->ql, program, text, url);
 
 	if (program_empty(program))
 		return;
@@ -333,8 +320,7 @@ session_execute(Session* self)
 	{
 		explain_run(&self->explain, program,
 		            &self->local,
-		            &self->content,
-		            false);
+		            output, false);
 		return;
 	}
 
@@ -343,128 +329,95 @@ session_execute(Session* self)
 
 	// execute utility, DDL, DML or Query
 	if (program->utility)
-		session_execute_utility(self);
+		session_execute_utility(self, output);
 	else
-		session_execute_distributed(self);
+		session_execute_distributed(self, output);
 }
 
-hot static inline void
-session_read(Session* self)
+hot bool
+session_execute(Session* self,
+                Str*     url,
+                Str*     text,
+                Str*     content_type,
+                Content* output)
 {
-	auto client = self->client;
-	auto limit = opt_int_of(&config()->limit_recv);
-	auto limit_reached =
-		http_read_content_limit(&client->request,
-		                        &client->readahead,
-		                        &client->request.content,
-		                         limit);
-	if (unlikely(limit_reached))
-		error("http request limit reached");
-}
+	cancel_pause();
 
-hot static inline bool
-session_auth(Session* self)
-{
-	auto client  = self->client;
-	auto request = &client->request;
+	// execute request based on the content-type
+	auto on_error = error_catch
+	(
+		// prepare session state for execution
+		session_reset(self);
 
-	auto method = &request->options[HTTP_METHOD];
-	if (unlikely(! str_is(method, "POST", 4)))
-		goto forbidden;
+		content_set_local(output, &self->local);
 
-	auto auth_header = http_find(request, "Authorization", 13);
-	if (! auth_header)
+		// take shared session lock (for catalog access)
+		session_lock(self, LOCK_SHARED);
+
+		// parse and execute request
+		session_execute_main(self, url, text, content_type, output);
+
+		// done
+		session_unlock(self);
+	);
+
+	if (on_error)
 	{
-		// trusted by the server listen configuration
-		if (! client->auth)
-			return true;
-	} else
-	{
-		auto user = auth(&self->frontend->auth, &auth_header->value);
-		if (likely(user))
-			return true;
+		content_reset(output);
+		content_write_json_error(output, &am_self()->error);
+		session_unlock(self);
 	}
 
-forbidden:
-	// 403 Forbidden
-	client_403(client);
-	return false;
+	// cancellation point
+	cancel_resume();
+	return on_error;
 }
 
-hot void
-session_main(Session* self)
+void
+session_execute_replay(Session* self, Primary* primary, Buf* data)
 {
-	auto client    = self->client;
-	auto readahead = &client->readahead;
-	auto request   = &client->request;
-	auto content   = &self->content;
+	// take shared lock
+	session_lock(self, LOCK_SHARED);
+	defer(session_unlock, self);
 
-	for (;;)
+	// validate request fields and check current replication state
+
+	// first join request has no data
+	if (! primary_next(primary))
+		return;
+
+	// switch distributed transaction to replication state to write wal
+	// while in read-only mode
+	auto dtr = &self->dtr;
+	auto program = self->program;
+	program->sends = 1;
+	program->repl  = true;
+
+	// replay writes
+	auto pos = data->start;
+	auto end = data->position;
+	while (pos < end)
 	{
-		// read request header
-		http_reset(request);
-		auto eof = http_read(request, readahead, true);
-		if (unlikely(eof))
-			break;
+		auto record = (Record*)pos;
+		if (opt_int_of(&config()->wal_crc))
+			if (unlikely(! record_validate(record)))
+				error("repl: record crc mismatch, system LSN is: %" PRIu64,
+				      state_lsn());
 
-		// authenticate
-		if (! session_auth(self))
-			break;
-
-		// handle backup or primary server connection
-		auto service = http_find(request, "Am-Service", 10);
-		if (service)
+		if (likely(record_cmd_is_dml(record_cmd(record))))
 		{
-			if (str_is(&service->value, "backup", 6))
-				backup(share()->db, client);
-			else
-			if (str_is(&service->value, "repl", 4))
-				session_primary(self);
-			break;
-		}
-
-		cancel_pause();
-
-		// execute request based on the content-type
-		auto on_error = error_catch
-		(
-			// prepare session state for execution
-			session_reset(self);
-
-			// read content
-			session_read(self);
-
-			// take shared session lock (for catalog access)
-			session_lock(self, LOCK_SHARED);
-
-			// parse and execute request
-			session_execute(self);
-
-			// done
-			session_unlock(self);
-		);
-
-		// reply
-		if (on_error)
-		{
-			content_reset(content);
-			content_write_json_error(content, &am_self()->error);
-
-			session_unlock(self);
-
-			// 400 Bad Request
-			client_400(client, content->content, content->content_type->mime);
+			// execute DML
+			dtr_reset(dtr);
+			dtr_create(dtr, program);
+			replay(dtr, record);
 		} else
 		{
-			// 204 No Content
-			// 200 OK
-			if (buf_empty(content->content))
-				client_204(client);
-			else
-				client_200(client, content->content, content->content_type->mime);
-		}
+			// upgrade to exclusive lock
+			session_lock(self, LOCK_EXCLUSIVE);
 
-		// cancellation point
-		cancel_resume();
+			// execute DDL
+			recover_next(primary->recover, record);
+		}
+		pos += record->size;
 	}
 }
