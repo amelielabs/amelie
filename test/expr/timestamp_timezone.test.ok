@@ -38,7 +38,7 @@ select '2024-07-29 18:40:19'::timestamp::at_timezone('UTC')
 ["2024-07-29 15:40:19+00"]
 select '2024-07-29 18:40:19'::timestamp::at_timezone('Asia/Famagusta')
 ["2024-07-29 18:40:19+03"]
-select '2024-07-29 18:40:19'::timestamp::at_timezone('Japan')
+select '2024-07-29 18:40:19'::timestamp::at_timezone('Asia/Tokyo')
 ["2024-07-30 00:40:19+09"]
 select '2024-07-29 18:40:19'::timestamp::at_timezone(null)
 {"msg": "at_timezone(timestamp, ❰null❱ ⟵ expected string"}
@@ -47,7 +47,7 @@ select '2024-07-29 18:40:19'::timestamp at timezone 'UTC'
 ["2024-07-29 15:40:19+00"]
 select '2024-07-29 18:40:19'::timestamp at timezone 'Asia/Famagusta'
 ["2024-07-29 18:40:19+03"]
-select '2024-07-29 18:40:19'::timestamp at timezone 'Japan'
+select '2024-07-29 18:40:19'::timestamp at timezone 'Asia/Tokyo'
 ["2024-07-30 00:40:19+09"]
 select '2024-07-29 18:40:19'::timestamp at timezone null
 {"msg": "at_timezone(timestamp, ❰null❱ ⟵ expected string"}

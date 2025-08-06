@@ -167,9 +167,9 @@ select date_trunc('day', TIMESTAMP '2001-02-16 20:38:40', 'UTC');
 ["2001-02-16 00:00:00+00"]
 select date_trunc('day', TIMESTAMP '2001-02-16 20:38:40', 'Asia/Famagusta');
 ["2001-02-15 22:00:00+00"]
-select date_trunc('day', TIMESTAMP '2001-02-16 20:38:40', 'Japan');
+select date_trunc('day', TIMESTAMP '2001-02-16 20:38:40', 'Asia/Tokyo');
 ["2001-02-15 15:00:00+00"]
-select date_trunc('day', TIMESTAMP '2001-02-16 20:38:40Z', 'Japan');
+select date_trunc('day', TIMESTAMP '2001-02-16 20:38:40Z', 'Asia/Tokyo');
 ["2001-02-15 15:00:00+00"]
 disconnect S0
 close E0

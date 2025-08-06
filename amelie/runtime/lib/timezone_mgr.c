@@ -93,6 +93,7 @@ timezone_mgr_read(TimezoneMgr* self, char* location, char* location_nested)
 	}
 }
 
+#if 0
 static void
 timezone_mgr_read_system_timezone(TimezoneMgr* self)
 {
@@ -111,13 +112,35 @@ timezone_mgr_read_system_timezone(TimezoneMgr* self)
 		error("timezone: failed to set system timezone '%.*s'",
 		      str_size(&name), str_of(&name));
 }
+#endif
+
+static void
+timezone_mgr_read_system_localtime(TimezoneMgr* self)
+{
+	char path[PATH_MAX];
+	auto size = readlink("/etc/localtime", path, sizeof(path));
+	if (size == -1)
+		error("timezone: failed to read /etc/localtime symlink");
+
+	// exclude directory name from the path
+	if (size <= 20 || memcmp(path, "/usr/share/zoneinfo/", 20) != 0)
+		error("timezone: /etc/localtime has invalid path");
+
+	// set as system timezone in timezone mgr
+	Str name;
+	str_set(&name, path + 20, size - 20);
+	self->system = timezone_mgr_find(self, &name);
+	if (! self->system)
+		error("timezone: failed to set system timezone '%.*s'",
+		      str_size(&name), str_of(&name));
+}
 
 void
 timezone_mgr_open(TimezoneMgr* self)
 {
 	hashtable_create(&self->ht, 2048);
 	timezone_mgr_read(self, "/usr/share/zoneinfo", NULL);
-	timezone_mgr_read_system_timezone(self);
+	timezone_mgr_read_system_localtime(self);
 }
 
 hot static inline bool

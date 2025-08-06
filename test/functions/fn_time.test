@@ -131,8 +131,8 @@ select date_trunc('us', TIMESTAMP '2001-02-16 20:38:40.123456');
 # test: date_trunc(timestamp day, timezone)
 select date_trunc('day', TIMESTAMP '2001-02-16 20:38:40', 'UTC');
 select date_trunc('day', TIMESTAMP '2001-02-16 20:38:40', 'Asia/Famagusta');
-select date_trunc('day', TIMESTAMP '2001-02-16 20:38:40', 'Japan');
-select date_trunc('day', TIMESTAMP '2001-02-16 20:38:40Z', 'Japan');
+select date_trunc('day', TIMESTAMP '2001-02-16 20:38:40', 'Asia/Tokyo');
+select date_trunc('day', TIMESTAMP '2001-02-16 20:38:40Z', 'Asia/Tokyo');
 
 disconnect S0
 close E0
