@@ -10,7 +10,7 @@
 // AGPL-3.0 Licensed.
 //
 
-#include <amelie.h>
+#include <amelie_core.h>
 #include <amelie_cli.h>
 
 extern void cli_cmd_init(Cli*, int, char**);
