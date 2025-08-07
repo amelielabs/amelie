@@ -45,6 +45,13 @@ thread_create(Thread* self, ThreadFunction function, void* arg)
 	return 0;
 }
 
+static inline void
+thread_create_self(Thread* self)
+{
+	self->id  = pthread_self();
+	self->tid = gettid();
+}
+
 static inline int
 thread_join(Thread* self)
 {

@@ -22,7 +22,7 @@ task_shutdown(CoroutineMgr* mgr)
 	if (mgr->count == 1)
 		return;
 
-	// cancel all coroutines, except current one
+	// cancel all coroutines, except the current one
 	list_foreach(&mgr->list) {
 		auto coro = list_at(Coroutine, link);
 		if (mgr->current == coro)
@@ -133,24 +133,31 @@ mainloop(Task* self)
 	}
 }
 
-hot static void*
-task_main(void* arg)
+always_inline static inline void
+task_enter(Task* self, void* global, void* share)
 {
-	Thread* thread = arg;
-	Task* self = thread->arg;
-
-	thread->tid = gettid();
-
-	// set global variable
-	am_share  = self->main_arg_share;
-	am_global = self->main_arg_global;
+	am_global = global;
+	am_share  = share;
 	am_task   = self;
+}
 
-	// block signals
-	thread_set_sigmask_default();
+hot static void
+task_main(Task* self, bool native)
+{
+	// set global variables
+	task_enter(self, self->main_arg_global, self->main_arg_share);
 
-	// set task name
-	thread_set_name(&self->thread, self->name);
+	if (! native)
+	{
+		// get tid
+		self->thread.tid = gettid();
+
+		// block signals
+		thread_set_sigmask_default();
+
+		// set task name
+		thread_set_name(&self->thread, self->name);
+	}
 
 	// create task main coroutine
 	Coroutine* main;
@@ -162,6 +169,14 @@ task_main(void* arg)
 
 	// schedule coroutines and handle io
 	mainloop(self);
+}
+
+hot static void*
+task_thread_main(void* arg)
+{
+	Thread* thread = arg;
+	Task* self = thread->arg;
+	task_main(self, false);
 	return NULL;
 }
 
@@ -238,11 +253,29 @@ task_create_nothrow(Task*        self,
 	channel_attach_to(&self->channel, &self->bus);
 
 	// create task thread
-	rc = thread_create(&self->thread, task_main, self);
-	if (unlikely(rc == -1))
-		return -1;
+	if (main)
+	{
+		rc = thread_create(&self->thread, task_thread_main, self);
+		if (unlikely(rc == -1))
+			return -1;
+	} else {
+		thread_create_self(&self->thread);
+	}
 
 	return 0;
+}
+
+void
+task_execute(Task* self, MainFunction main, void* main_arg)
+{
+	// save and restore the current task context after execution
+	auto _am_share  = am_share;
+	auto _am_global = am_global;
+	auto _am_task   = am_task;
+	self->main     = main;
+	self->main_arg = main_arg;
+	task_main(self, true);
+	task_enter(_am_task, _am_global, _am_share);
 }
 
 void

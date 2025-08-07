@@ -2,6 +2,15 @@
 # test: test task
 unit test_task_create
 
+# test: test task native
+unit test_task_create_native
+
+# test: test task native error
+unit test_task_native_error
+
+# test: test task native error2
+unit test_task_native_error2
+
 # test: test task args
 unit test_task_args
 

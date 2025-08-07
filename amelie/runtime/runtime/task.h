@@ -46,8 +46,10 @@ am_self(void)
 void task_init(Task*);
 void task_free(Task*);
 bool task_active(Task*);
-int  task_create_nothrow(Task*, char*, MainFunction, void*, void*, void*,
+int  task_create_nothrow(Task*, char*,
+                         MainFunction, void*, void*, void*,
                          LogFunction, void*,
                          BufMgr*);
+void task_execute(Task*, MainFunction, void*);
 void task_wait(Task*);
 void task_coroutine_main(void*);
