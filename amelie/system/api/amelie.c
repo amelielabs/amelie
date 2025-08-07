@@ -43,7 +43,7 @@ struct amelie_session
 AMELIE_API amelie_t*
 amelie_init(void)
 {
-	auto self = (amelie_t*)malloc(sizeof(amelie_t));
+	auto self = (amelie_t*)am_malloc(sizeof(amelie_t));
 	self->type   = AMELIE_OBJ;
 	self->system = NULL;
 	instance_init(&self->instance);
@@ -97,7 +97,7 @@ amelie_free(void* ptr)
 	}
 	}
 	*(int*)ptr = AMELIE_OBJ_FREE;
-	free(ptr);
+	am_free(ptr);
 }
 
 typedef struct
@@ -182,7 +182,7 @@ amelie_connect_main(void* arg)
 AMELIE_API amelie_session_t*
 amelie_connect(amelie_t* self)
 {
-	auto session = (amelie_session_t*)malloc(sizeof(amelie_session_t));
+	auto session = (amelie_session_t*)am_malloc(sizeof(amelie_session_t));
 	session->type    = AMELIE_OBJ_SESSION;
 	session->session = NULL;
 	session->amelie  = self;
@@ -202,7 +202,7 @@ amelie_connect(amelie_t* self)
 	if (unlikely(rc == -1))
 	{
 		task_free(&self->task);
-		free(session);
+		am_free(session);
 		return NULL;
 	}
 
@@ -242,7 +242,7 @@ amelie_execute_main(void* arg)
 	result->data_size = buf_size(&self->content_buf);
 }
 
-AMELIE_API int
+hot AMELIE_API int
 amelie_execute(amelie_session_t* self,
                const char*       command,
                int               argc,
