@@ -112,6 +112,7 @@ include_directories("${AMELIE_ROOT}/system/backend")
 include_directories("${AMELIE_ROOT}/system/session")
 include_directories("${AMELIE_ROOT}/system/system")
 include_directories("${AMELIE_ROOT}/system/instance")
+include_directories("${AMELIE_ROOT}/system/api")
 
 # cli
 include_directories("${AMELIE_ROOT}/cli")
@@ -301,7 +302,8 @@ set(AMELIE_SOURCES_SYSTEM
     ${AMELIE_ROOT}/system/session/session.c
     ${AMELIE_ROOT}/system/system/system.c
     ${AMELIE_ROOT}/system/system/system_metrics.c
-    ${AMELIE_ROOT}/system/system/instance.c)
+    ${AMELIE_ROOT}/system/system/instance.c
+    ${AMELIE_ROOT}/system/api/amelie.c)
 
 set(AMELIE_SOURCES_CLI
     ${AMELIE_ROOT}/cli/cli/daemon.c
