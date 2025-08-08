@@ -16,6 +16,9 @@
 void
 cli_cmd_init(Cli* self, int argc, char** argv)
 {
+	if (argc < 1)
+		error("init <path> [options] expected");
+
 	// amelie init path [server options]
 	auto bootstrap = instance_open(&self->instance, argv[0], argc - 1, argv + 1);
 	if (! bootstrap)
@@ -42,6 +45,9 @@ cli_cmd_init(Cli* self, int argc, char** argv)
 void
 cli_cmd_start(Cli* self, int argc, char** argv)
 {
+	if (argc < 1)
+		error("start <path> [options] expected");
+
 	// amelie start path [server options]
 	auto bootstrap = instance_open(&self->instance, argv[0], argc - 1, argv + 1);
 
@@ -70,14 +76,19 @@ cli_cmd_stop(Cli* self, int argc, char** argv)
 {
 	// amelie stop path
 	unused(self);	
-	unused(argc);	
 	unused(argv);	
+	if (argc < 1)
+		error("stop <path> expected\n");
+
 	// do nothing here
 }
 
 void
 cli_cmd_backup(Cli* self, int argc, char** argv)
 {
+	if (argc < 1)
+		error("backup <path> <remote> expected");
+
 	home_open(&self->home);
 
 	// amelie backup path [remote options]
