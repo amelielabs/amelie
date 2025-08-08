@@ -57,7 +57,6 @@ amelie_free_session_main(void* arg)
 	amelie_session_t* self = arg;
 	session_free(self->session);
 	buf_free(&self->content_buf);
-	task_free(&self->native);
 }
 
 AMELIE_API void
@@ -67,9 +66,12 @@ amelie_free(void* ptr)
 	case AMELIE_OBJ:
 	{
 		amelie_t* self = ptr;
-		auto buf = msg_create_as(&self->instance.buf_mgr, RPC_STOP, 0);
-		channel_write(&self->task.channel, buf);
-		task_wait(&self->task);
+		if (task_active(&self->task))
+		{
+			auto buf = msg_create_as(&self->instance.buf_mgr, RPC_STOP, 0);
+			channel_write(&self->task.channel, buf);
+			task_wait(&self->task);
+		}
 		task_free(&self->task);
 		break;
 	}
@@ -77,6 +79,7 @@ amelie_free(void* ptr)
 	{
 		amelie_session_t* self = ptr;
 		task_execute(&self->native, amelie_free_session_main, self);
+		task_free(&self->native);
 		break;
 	}
 	case AMELIE_OBJ_FREE:
@@ -151,6 +154,14 @@ amelie_main(void* arg)
 AMELIE_API int
 amelie_open(amelie_t* self, const char* path, int argc, char** argv)
 {
+	if (unlikely(self->system))
+	{
+		fprintf(stderr, "\n%s(%p): double open\n",
+		        source_function, self);
+		fflush(stderr);
+		abort();
+	}
+
 	// start system task
 	AmelieArgs args =
 	{
@@ -196,7 +207,8 @@ amelie_connect(amelie_t* self)
 	// create session native task
 	int rc;
 	rc = task_create_nothrow(&session->native, "api", NULL, NULL,
-	                         &self->instance.global, NULL,
+	                         &self->instance.global,
+	                         &self->system->share,
 	                         logger_write, &self->instance.logger,
 	                         &self->instance.buf_mgr);
 	if (unlikely(rc == -1))
@@ -238,8 +250,11 @@ amelie_execute_main(void* arg)
 		args->rc = -1;
 
 	auto result = args->result;
-	result->data = buf_cstr(&self->content_buf);
-	result->data_size = buf_size(&self->content_buf);
+	if (result)
+	{
+		result->data = buf_cstr(&self->content_buf);
+		result->data_size = buf_size(&self->content_buf);
+	}
 }
 
 hot AMELIE_API int

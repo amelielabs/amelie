@@ -12,9 +12,9 @@
 
 #include <amelie_runtime.h>
 
-__thread void* am_share;
-__thread void* am_global;
 __thread Task* am_task;
+__thread void* am_global;
+__thread void* am_share;
 
 static inline void
 task_shutdown(CoroutineMgr* mgr)
@@ -136,9 +136,9 @@ mainloop(Task* self)
 always_inline static inline void
 task_enter(Task* self, void* global, void* share)
 {
+	am_task   = self;
 	am_global = global;
 	am_share  = share;
-	am_task   = self;
 }
 
 hot static void

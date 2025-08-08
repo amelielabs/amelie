@@ -86,18 +86,24 @@ session_create(Frontend* frontend)
 }
 
 static inline void
-session_reset(Session* self)
+session_reset_ql(Session* self)
 {
 	if (self->ql)
 	{
 		ql_reset(self->ql);
 		self->ql = NULL;
 	}
+	palloc_truncate(0);
+}
+
+static inline void
+session_reset(Session* self)
+{
+	assert(! self->ql);
 	vm_reset(&self->vm);
 	program_reset(self->program);
 	dtr_reset(&self->dtr);
 	explain_reset(&self->explain);
-	palloc_truncate(0);
 }
 
 void
@@ -126,7 +132,10 @@ session_lock(Session* self, int type)
 	switch (type) {
 	case LOCK_SHARED:
 		// take shared frontend lock
-		self->lock = lock_mgr_lock(&self->frontend->lock_mgr, type);
+		if (self->frontend)
+			self->lock = lock_mgr_lock(&self->frontend->lock_mgr, type);
+		else
+			; // todo
 		break;
 	case LOCK_EXCLUSIVE:
 		control_lock();
@@ -143,7 +152,10 @@ session_unlock(Session* self)
 {
 	switch (self->lock_type) {
 	case LOCK_SHARED:
-		lock_mgr_unlock(&self->frontend->lock_mgr, self->lock_type, self->lock);
+		if (self->frontend)
+			lock_mgr_unlock(&self->frontend->lock_mgr, self->lock_type, self->lock);
+		else
+			; // todo
 		break;
 	case LOCK_EXCLUSIVE:
 		control_unlock();
@@ -360,6 +372,8 @@ session_execute(Session* self,
 		// done
 		session_unlock(self);
 	);
+
+	session_reset_ql(self);
 
 	if (on_error)
 	{

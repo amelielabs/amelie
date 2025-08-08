@@ -151,3 +151,15 @@ unit test_sleep
 
 # test: test heap
 unit test_heap
+
+# test: test api init
+unit test_api_init
+
+# test: test api open
+unit test_api_open
+
+# test: test api connect
+unit test_api_connect
+
+# test: test api execute
+unit test_api_execute
