@@ -15,17 +15,18 @@
 #include <amelie_cli_bench.h>
 
 static void
-bench_decre_create(Bench* self, Client* client)
+bench_decre_create(Bench* self, BenchClient* client)
 {
 	unused(self);
 
 	Str str;
 	str_set_cstr(&str, "create table __bench.test (id serial primary key, money double default 100.0) with (type = 'hash')");
-	client_execute(client, &str);
+	bench_client_execute(client, &str);
+
 	if (opt_int_of(&self->unlogged))
 	{
 		str_set_cstr(&str, "alter table __bench.test set unlogged");
-		client_execute(client, &str);
+		bench_client_execute(client, &str);
 	}
 	Buf buf;
 	buf_init(&buf);
@@ -37,7 +38,7 @@ bench_decre_create(Bench* self, Client* client)
 		buf_reset(&buf);
 		buf_printf(&buf, "insert into __bench.test generate 500");
 		buf_str(&buf, &str);
-		client_execute(client, &str);
+		bench_client_execute(client, &str);
 	}
 }
 
@@ -51,7 +52,7 @@ decre_transaction(Buf* buf, int from, int to, double amount)
 }
 
 hot static void
-bench_decre_main(BenchWorker* self, Client* client)
+bench_decre_main(BenchWorker* self, BenchClient* client)
 {
 	auto bench = self->bench;
 	auto total = 100000ul;
@@ -74,7 +75,7 @@ bench_decre_main(BenchWorker* self, Client* client)
 		}
 		Str cmd;
 		buf_str(&buf, &cmd);
-		client_execute(client, &cmd);
+		bench_client_execute(client, &cmd);
 
 		atomic_u64_add(&bench->transactions, batch);
 		atomic_u64_add(&bench->writes, 2 * batch);

@@ -15,7 +15,7 @@
 #include <amelie_cli_bench.h>
 
 static void
-bench_resolved_create(Bench* self, Client* client)
+bench_resolved_create(Bench* self, BenchClient* client)
 {
 	unused(self);
 	Str str;
@@ -26,16 +26,16 @@ bench_resolved_create(Bench* self, Client* client)
 	             "    hits int default 0 as ( hits + 1 ) resolved,"
 	             "    primary key(ts, id)"
 	             ") with (type = 'hash')");
-	client_execute(client, &str);
+	bench_client_execute(client, &str);
 	if (opt_int_of(&self->unlogged))
 	{
 		str_set_cstr(&str, "alter table __bench.test set unlogged");
-		client_execute(client, &str);
+		bench_client_execute(client, &str);
 	}
 }
 
 hot static void
-bench_resolved_main(BenchWorker* self, Client* client)
+bench_resolved_main(BenchWorker* self, BenchClient* client)
 {
 	auto bench = self->bench;
 	auto batch = opt_int_of(&bench->batch);
@@ -47,7 +47,7 @@ bench_resolved_main(BenchWorker* self, Client* client)
 
 	while (! self->shutdown)
 	{
-		client_execute(client, &cmd);
+		bench_client_execute(client, &cmd);
 		atomic_u64_add(&bench->transactions, 1);
 		atomic_u64_add(&bench->writes, batch);
 	}

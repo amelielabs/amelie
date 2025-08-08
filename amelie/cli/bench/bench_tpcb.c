@@ -50,7 +50,7 @@ loader_init(Loader*   self, Bench* bench,
 }
 
 static void
-loader_client_main(Loader* self, Client* client)
+loader_client_main(Loader* self, BenchClient* client)
 {
 	auto filler = buf_create();
 	defer_buf(filler);
@@ -80,7 +80,7 @@ loader_client_main(Loader* self, Client* client)
 		}
 		Str str;
 		buf_str(&buf, &str);
-		client_execute(client, &str);
+		bench_client_execute(client, &str);
 
 		(*self->writes) += batch;
 		(*self->transactions)++;
@@ -92,23 +92,16 @@ loader_main(void* arg)
 {
 	auto self = (Loader*)arg;
 
-	Client* client = NULL;
+	auto client = bench_client_create(self->bench->iface_client, NULL);
+	defer(bench_client_free, client);
 	error_catch
 	(
 		// create client and connect
-		client = client_create();
-		client_set_remote(client, self->bench->remote);
-		client_connect(client);
+		bench_client_connect(client, self->bench->remote);
 
 		// process
 		loader_client_main(self, client);
 	);
-
-	if (client)
-	{
-		client_close(client);
-		client_free(client);
-	}
 
 	(*self->complete)++;
 }
@@ -161,10 +154,10 @@ bench_tpcb_load(Bench* self, int scale, int batch, int clients)
 }
 
 hot static inline void
-tpcb_execute(Client* client,
-             int     bid,
-             int     tid,
-             int     aid, int delta)
+tpcb_execute(BenchClient* client,
+             int          bid,
+             int          tid,
+             int          aid, int delta)
 {
 	auto buf = buf_create();
 	defer_buf(buf);
@@ -182,11 +175,11 @@ tpcb_execute(Client* client,
 
 	Str cmd;
 	buf_str(buf, &cmd);
-	client_execute(client, &cmd);
+	bench_client_execute(client, &cmd);
 }
 
 static void
-bench_tpcb_create(Bench* self, Client* client)
+bench_tpcb_create(Bench* self, BenchClient* client)
 {
 	info("preparing tables.");
 
@@ -204,7 +197,7 @@ bench_tpcb_create(Bench* self, Client* client)
 	for (auto i = 0; ddl[i]; i++)
 	{
 		str_set_cstr(&str, ddl[i]);
-		client_execute(client, &str);
+		bench_client_execute(client, &str);
 	}
 
 	if (opt_int_of(&self->unlogged))
@@ -220,7 +213,7 @@ bench_tpcb_create(Bench* self, Client* client)
 		for (auto i = 0; ddl_unlogged[i]; i++)
 		{
 			str_set_cstr(&str, ddl_unlogged[i]);
-			client_execute(client, &str);
+			bench_client_execute(client, &str);
 		}
 	}
 
@@ -243,7 +236,7 @@ bench_tpcb_create(Bench* self, Client* client)
 		           i,
 		           buf_size(filler), filler->start);
 		buf_str(buf, &str);
-		client_execute(client, &str);
+		bench_client_execute(client, &str);
 	}
 
 	for (auto i = 0ul; i < tpcb_tellers * scale; i++)
@@ -253,7 +246,7 @@ bench_tpcb_create(Bench* self, Client* client)
 		           i, i / tpcb_tellers,
 		           buf_size(filler), filler->start);
 		buf_str(buf, &str);
-		client_execute(client, &str);
+		bench_client_execute(client, &str);
 	}
 
 	if (scale == 1)
@@ -265,7 +258,7 @@ bench_tpcb_create(Bench* self, Client* client)
 			           i, i / tpcb_accounts,
 			           buf_size(filler), filler->start);
 			buf_str(buf, &str);
-			client_execute(client, &str);
+			bench_client_execute(client, &str);
 		}
 	} else {
 		auto clients = opt_int_of(&self->clients);
@@ -280,7 +273,7 @@ bench_tpcb_create(Bench* self, Client* client)
 }
 
 hot static void
-bench_tpcb_main(BenchWorker* self, Client* client)
+bench_tpcb_main(BenchWorker* self, BenchClient* client)
 {
 	auto bench  = self->bench;
 

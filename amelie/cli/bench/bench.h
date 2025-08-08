@@ -17,8 +17,8 @@ typedef struct Bench       Bench;
 
 struct BenchIf
 {
-	void (*create)(Bench*, Client*);
-	void (*main)(BenchWorker*, Client*);
+	void (*create)(Bench*, BenchClient*);
+	void (*main)(BenchWorker*, BenchClient*);
 };
 
 struct BenchWorker
@@ -32,20 +32,21 @@ struct BenchWorker
 
 struct Bench
 {
-	BenchIf*   iface;
-	atomic_u64 transactions;
-	atomic_u64 writes;
-	Opt        type;
-	Opt        threads;
-	Opt        clients;
-	Opt        time;
-	Opt        scale;
-	Opt        batch;
-	Opt        init;
-	Opt        unlogged;
-	Opts       opts;
-	Remote*    remote;
-	List       list;
+	BenchIf*       iface;
+	BenchClientIf* iface_client;
+	atomic_u64     transactions;
+	atomic_u64     writes;
+	Opt            type;
+	Opt            threads;
+	Opt            clients;
+	Opt            time;
+	Opt            scale;
+	Opt            batch;
+	Opt            init;
+	Opt            unlogged;
+	Opts           opts;
+	Remote*        remote;
+	List           list;
 };
 
 void bench_init(Bench*, Remote*);

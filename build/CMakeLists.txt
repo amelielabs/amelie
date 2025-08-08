@@ -313,6 +313,7 @@ set(AMELIE_SOURCES_CLI
     ${AMELIE_ROOT}/cli/client/import.c
     ${AMELIE_ROOT}/cli/client/client.c
     ${AMELIE_ROOT}/cli/client/top.c
+    ${AMELIE_ROOT}/cli/bench/bench_client.c
     ${AMELIE_ROOT}/cli/bench/bench.c
     ${AMELIE_ROOT}/cli/bench/bench_insert.c
     ${AMELIE_ROOT}/cli/bench/bench_upsert.c

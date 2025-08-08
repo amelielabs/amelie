@@ -19,23 +19,16 @@ bench_connection(void* arg)
 {
 	BenchWorker* self = arg;
 
-	Client* client = NULL;
+	auto client = bench_client_create(self->bench->iface_client, NULL);
+	defer(bench_client_free, client);
 	error_catch
 	(
 		// create client and connect
-		client = client_create();
-		client_set_remote(client, self->bench->remote);
-		client_connect(client);
+		bench_client_connect(client, self->bench->remote);
 
 		// process
 		self->bench->iface->main(self, client);
 	);
-
-	if (client)
-	{
-		client_close(client);
-		client_free(client);
-	}
 }
 
 static void
@@ -106,7 +99,9 @@ void
 bench_init(Bench* self, Remote* remote)
 {
 	memset(self, 0, sizeof(*self));
-	self->remote = remote;
+	self->iface        = NULL;
+	self->iface_client = &bench_client_http;
+	self->remote       = remote;
 	opts_init(&self->opts);
 	list_init(&self->list);
 	OptsDef defs[] =
@@ -136,18 +131,18 @@ bench_free(Bench* self)
 }
 
 static void
-bench_service_execute(Bench* self, Client* client, bool create)
+bench_service_execute(Bench* self, BenchClient* client, bool create)
 {
 	// drop test schema if exists
 	Str str;
 	str_set_cstr(&str, "drop schema if exists __bench cascade");
-	client_execute(client, &str);
+	bench_client_execute(client, &str);
 
 	if (create)
 	{
 		// create test schema and run benchmark
 		str_set_cstr(&str, "create schema __bench");
-		client_execute(client, &str);
+		bench_client_execute(client, &str);
 
 		self->iface->create(self, client);
 	}
@@ -156,22 +151,15 @@ bench_service_execute(Bench* self, Client* client, bool create)
 static void
 bench_service(Bench* self, bool create)
 {
-	Client* client = NULL;
+	auto client = bench_client_create(self->iface_client, NULL);
+	defer(bench_client_free, client);
 	error_catch
 	(
 		// create client and connect
-		client = client_create();
-		client_set_remote(client, self->remote);
-		client_connect(client);
+		bench_client_connect(client, self->remote);
 
 		bench_service_execute(self, client, create);
 	);
-
-	if (client)
-	{
-		client_close(client);
-		client_free(client);
-	}
 }
 
 void
