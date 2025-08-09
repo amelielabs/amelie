@@ -11,6 +11,7 @@
 //
 
 #include <amelie_core.h>
+#include <amelie.h>
 #include <amelie_cli.h>
 #include <amelie_cli_bench.h>
 
@@ -91,8 +92,7 @@ static void
 loader_main(void* arg)
 {
 	auto self = (Loader*)arg;
-
-	auto client = bench_client_create(self->bench->iface_client, NULL);
+	auto client = bench_client_create(self->bench->iface_client, self->bench->amelie);
 	defer(bench_client_free, client);
 	error_catch
 	(
@@ -102,7 +102,6 @@ loader_main(void* arg)
 		// process
 		loader_client_main(self, client);
 	);
-
 	(*self->complete)++;
 }
 
@@ -282,6 +281,7 @@ bench_tpcb_main(BenchWorker* self, BenchClient* client)
 	auto branches = tpcb_branches * scale;
 	auto tellers  = tpcb_tellers  * scale;
 
+	auto count    = 0ULL;
 	while (! self->shutdown)
 	{
 		uint64_t random = random_generate(global()->random);
@@ -297,6 +297,10 @@ bench_tpcb_main(BenchWorker* self, BenchClient* client)
 
 		atomic_u64_add(&bench->transactions, 1);
 		atomic_u64_add(&bench->writes, 4);
+
+		if ((count % 10000) == 0)
+			coroutine_yield();
+		count++;
 	}
 }
 

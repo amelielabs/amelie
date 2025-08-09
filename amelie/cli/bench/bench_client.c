@@ -11,6 +11,7 @@
 //
 
 #include <amelie_core.h>
+#include <amelie.h>
 #include <amelie_cli.h>
 #include <amelie_cli_bench.h>
 
@@ -37,11 +38,8 @@ static void
 bench_client_http_free(BenchClient* ptr)
 {
 	auto self = (BenchClientHttp*)ptr;
-	if (self->client)
-	{
-		client_close(self->client);
-		client_free(self->client);
-	}
+	client_close(self->client);
+	client_free(self->client);
 	am_free(ptr);
 }
 
@@ -102,4 +100,87 @@ BenchClientIf bench_client_http =
 	.connect = bench_client_http_connect,
 	.execute = bench_client_http_execute,
 	.import  = bench_client_http_import
+};
+
+typedef struct BenchClientApi BenchClientApi;
+
+struct BenchClientApi
+{
+	BenchClient       obj;
+	amelie_session_t* session;
+	amelie_t*         amelie;
+};
+
+static BenchClient*
+bench_client_api_create(void* arg)
+{
+	unused(arg);
+	auto self = (BenchClientApi*)am_malloc(sizeof(BenchClientApi));
+	self->obj.iface = &bench_client_api;
+	self->session   = NULL;
+	self->amelie    = arg;
+	return &self->obj;
+}
+
+static void
+bench_client_api_free(BenchClient* ptr)
+{
+	auto self = (BenchClientApi*)ptr;
+	if (self->session)
+		amelie_free(self->session);
+	am_free(ptr);
+}
+
+static void
+bench_client_api_connect(BenchClient* ptr, Remote* remote)
+{
+	unused(remote);
+	auto self = (BenchClientApi*)ptr;
+	self->session = amelie_connect(self->amelie);
+	if (unlikely(! self->session))
+		error("amelie_connect() failed");
+}
+
+static void
+bench_client_api_set(BenchClient* ptr, Histogram* histogram)
+{
+	auto self = (BenchClientApi*)ptr;
+	self->obj.histogram = histogram;
+}
+
+hot static void
+bench_client_api_execute(BenchClient* ptr, Str* cmd)
+{
+	auto self = (BenchClientApi*)ptr;
+	if (! self->obj.histogram)
+	{
+		amelie_execute(self->session, cmd->pos, 0, NULL, NULL);
+		return;
+	}
+
+	uint64_t time_us;
+	time_start(&time_us);
+	amelie_execute(self->session, cmd->pos, 0, NULL, NULL);
+	time_end(&time_us);
+	histogram_add(self->obj.histogram, time_us);
+}
+
+hot static void
+bench_client_api_import(BenchClient* ptr, Str* path, Str* content_type, Str* content)
+{
+	unused(ptr);
+	unused(path);
+	unused(content_type);
+	unused(content);
+	error("import operation is not support with embeddable db");
+}
+
+BenchClientIf bench_client_api =
+{
+	.create  = bench_client_api_create,
+	.free    = bench_client_api_free,
+	.set     = bench_client_api_set,
+	.connect = bench_client_api_connect,
+	.execute = bench_client_api_execute,
+	.import  = bench_client_api_import
 };

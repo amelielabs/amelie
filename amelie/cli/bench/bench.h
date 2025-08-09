@@ -45,9 +45,11 @@ struct Bench
 	Opt            batch;
 	Opt            init;
 	Opt            unlogged;
+	Opt            embedded;
 	Opt            histogram;
 	Opts           opts;
 	Remote*        remote;
+	amelie_t*      amelie;
 	List           list;
 };
 

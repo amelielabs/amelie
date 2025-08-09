@@ -67,3 +67,4 @@ bench_client_import(BenchClient* self, Str* path, Str* content_type, Str* conten
 }
 
 extern BenchClientIf bench_client_http;
+extern BenchClientIf bench_client_api;

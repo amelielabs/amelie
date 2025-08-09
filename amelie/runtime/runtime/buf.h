@@ -222,7 +222,9 @@ buf_vprintf(Buf* self, const char* fmt, va_list args)
 	char tmp[512];
 	int  tmp_len;
 	tmp_len = vsnprintf(tmp, sizeof(tmp), fmt, args);
-	buf_write(self, tmp, tmp_len);
+	buf_reserve(self, tmp_len + 1);
+	buf_append(self, tmp, tmp_len);
+	*self->position = 0;
 }
 
 static inline void

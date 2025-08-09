@@ -11,6 +11,7 @@
 //
 
 #include <amelie_core.h>
+#include <amelie.h>
 #include <amelie_cli.h>
 #include <amelie_cli_bench.h>
 
@@ -18,7 +19,7 @@ static void
 bench_connection(void* arg)
 {
 	BenchWorker* self = arg;
-	auto client = bench_client_create(self->bench->iface_client, NULL);
+	auto client = bench_client_create(self->bench->iface_client, self->bench->amelie);
 	defer(bench_client_free, client);
 
 	// meassure histogram
@@ -107,6 +108,7 @@ bench_init(Bench* self, Remote* remote)
 	self->iface        = NULL;
 	self->iface_client = &bench_client_http;
 	self->remote       = remote;
+	self->amelie       = NULL;
 	opts_init(&self->opts);
 	list_init(&self->list);
 	OptsDef defs[] =
@@ -120,6 +122,7 @@ bench_init(Bench* self, Remote* remote)
 		{ "init",      OPT_BOOL,   OPT_C,       &self->init,      NULL,  true  },
 		{ "unlogged",  OPT_BOOL,   OPT_C,       &self->unlogged,  NULL,  false },
 		{ "histogram", OPT_BOOL,   OPT_C,       &self->histogram, NULL,  false },
+		{ "embedded",  OPT_BOOL,   OPT_C,       &self->embedded,  NULL,  false },
 		{  NULL,       0,          0,            NULL,            NULL,  0     }
 	};
 	opts_define(&self->opts, defs);
@@ -134,6 +137,9 @@ bench_free(Bench* self)
 		bench_worker_free(worker);
 	}
 	opts_free(&self->opts);
+
+	if (self->amelie)
+		amelie_free(self->amelie);
 }
 
 static void
@@ -157,7 +163,7 @@ bench_service_execute(Bench* self, BenchClient* client, bool create)
 static void
 bench_service(Bench* self, bool create)
 {
-	auto client = bench_client_create(self->iface_client, NULL);
+	auto client = bench_client_create(self->iface_client, self->amelie);
 	defer(bench_client_free, client);
 	error_catch
 	(
@@ -181,6 +187,7 @@ bench_run(Bench* self)
 	auto clients_per_worker = clients / workers;
 	auto init               = opt_int_of(&self->init);
 	auto unlogged           = opt_int_of(&self->unlogged);
+	auto embedded           = opt_int_of(&self->embedded);
 	auto histogram          = opt_int_of(&self->histogram);
 
 	// set benchmark
@@ -208,14 +215,51 @@ bench_run(Bench* self)
 	// hello
 	info("amelie benchmark.");
 	info("");
-	info("type:      %.*s", str_size(type), str_of(type));
-	info("time:      %" PRIu64 " sec", time);
-	info("threads:   %" PRIu64, workers);
-	info("clients:   %" PRIu64 " (%" PRIu64 " per thread)", clients, clients_per_worker);
-	info("batch:     %" PRIu64, batch);
-	info("scale:     %" PRIu64, scale);
-	info("init:      %" PRIu64, init);
-	info("unlogged:  %" PRIu64, unlogged);
+
+	// using embeddable database benchmark
+	if (embedded)
+	{
+		auto path = remote_get(self->remote, REMOTE_PATH);
+		if (str_empty(path))
+			error("a repository path must be specified for the embeddable db benchmark");
+
+		// get the directory name from the socket path <path>/socket
+		if (str_size(path) < 7 || memcmp(path->end - 7, "/socket", 7) != 0)
+			error("invalid repository path");
+		str_truncate(path, 7);
+		*path->end = 0;
+
+		// open the repository
+		self->amelie = amelie_init();
+		if (! self->amelie)
+			error("amelie_init() failed");
+		int   argc   = 1;
+		char* argv[] = {
+			"--log_to_stdout=false",
+		};
+		auto rc = amelie_open(self->amelie, str_of(path), argc, argv);
+		if (rc == -1)
+			error("amelie_open() failed");
+
+		// forcing clients to 1
+		opt_int_set(&self->clients, 1);
+		clients = 1;
+		clients_per_worker = 1;
+
+		// update client interface
+		self->iface_client = &bench_client_api;
+	}
+
+	// print stats
+	info("type:     %.*s", str_size(type), str_of(type));
+	info("time:     %" PRIu64 " sec", time);
+	info("threads:  %" PRIu64, workers);
+	info("clients:  %" PRIu64 " (%" PRIu64 " per thread)", clients, clients_per_worker);
+	info("batch:    %" PRIu64, batch);
+	info("scale:    %" PRIu64, scale);
+	info("init:     %" PRIu64, init);
+	info("unlogged: %" PRIu64, unlogged);
+	info("embedded: %" PRIu64, embedded);
 	info("histogram: %" PRIu64, histogram);
 	info("");
 
