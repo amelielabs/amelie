@@ -279,7 +279,6 @@ bench_run(Bench* self)
 
 	if (histogram)
 	{
-		info("");
 		list_foreach_safe(&self->list)
 		{
 			auto worker = list_at(BenchWorker, link);

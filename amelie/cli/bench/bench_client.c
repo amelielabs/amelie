@@ -74,7 +74,7 @@ bench_client_http_execute(BenchClient* ptr, Str* cmd)
 	time_start(&time_us);
 	client_execute(self->client, cmd);
 	time_end(&time_us);
-	histogram_add(self->obj.histogram, time_us);
+	histogram_add(self->obj.histogram, time_us / 1000);
 }
 
 hot static void
@@ -91,7 +91,7 @@ bench_client_http_import(BenchClient* ptr, Str* path, Str* content_type, Str* co
 	time_start(&time_us);
 	client_import(self->client, path, content_type, content);
 	time_end(&time_us);
-	histogram_add(self->obj.histogram, time_us);
+	histogram_add(self->obj.histogram, time_us / 1000);
 }
 
 BenchClientIf bench_client_http =

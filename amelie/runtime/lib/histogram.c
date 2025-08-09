@@ -80,7 +80,8 @@ histogram_print(Histogram* self)
 	if (! self->count)
 		return;
 
-	info("[%7s, %7s]\t%11s\t%7s", "us min", "us max", "count", "%");
+	info("");
+	info("[%7s, %7s]\t%11s\t%7s", "ms min", "ms max", "count", "%");
 	info("--------------------------------------------------");
 	auto i = 0;
 	for (; i < HISTOGRAM_MAX; i++)
@@ -97,7 +98,7 @@ histogram_print(Histogram* self)
 	info("--------------------------------------------------");
 	info("total:%5s%" PRIu64 "\t%11" PRIu64 " \t   100%%", "", self->sum, self->count);
 	info("");
-	info("min latency: %" PRIu64 " us/op", self->min);
-	info("avg latency: %" PRIu64 " us/op", avg_latency);
-	info("max latency: %" PRIu64 " us/op", self->max);
+	info("min latency: %" PRIu64 " ms/op", self->min);
+	info("avg latency: %" PRIu64 " ms/op", avg_latency);
+	info("max latency: %" PRIu64 " ms/op", self->max);
 }
