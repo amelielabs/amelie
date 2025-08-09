@@ -158,6 +158,7 @@ set(AMELIE_SOURCES_RUNTIME
     ${AMELIE_ROOT}/runtime/lib/logger.c
     ${AMELIE_ROOT}/runtime/lib/reader.c
     ${AMELIE_ROOT}/runtime/lib/console.c
+    ${AMELIE_ROOT}/runtime/lib/histogram.c
     ${AMELIE_ROOT}/runtime/json/json_parser.c
     ${AMELIE_ROOT}/runtime/json/json_export.c
     ${AMELIE_ROOT}/runtime/config/opts.c

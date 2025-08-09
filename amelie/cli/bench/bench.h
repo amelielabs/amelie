@@ -23,11 +23,12 @@ struct BenchIf
 
 struct BenchWorker
 {
-	int    connections;
-	bool   shutdown;
-	Bench* bench;
-	Task   task;
-	List   link;
+	int       connections;
+	bool      shutdown;
+	Histogram histogram;
+	Bench*    bench;
+	Task      task;
+	List      link;
 };
 
 struct Bench
@@ -44,6 +45,7 @@ struct Bench
 	Opt            batch;
 	Opt            init;
 	Opt            unlogged;
+	Opt            histogram;
 	Opts           opts;
 	Remote*        remote;
 	List           list;

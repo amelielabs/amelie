@@ -18,9 +18,13 @@ static void
 bench_connection(void* arg)
 {
 	BenchWorker* self = arg;
-
 	auto client = bench_client_create(self->bench->iface_client, NULL);
 	defer(bench_client_free, client);
+
+	// meassure histogram
+	if (opt_int_of(&self->bench->histogram))
+		bench_client_set(client, &self->histogram);
+
 	error_catch
 	(
 		// create client and connect
@@ -64,6 +68,7 @@ bench_worker_allocate(Bench* bench, int connections)
 	self->connections = connections;
 	self->shutdown    = false;
 	self->bench       = bench;
+	histogram_init(&self->histogram);
 	task_init(&self->task);
 	list_init(&self->link);
 	return self;
@@ -106,15 +111,16 @@ bench_init(Bench* self, Remote* remote)
 	list_init(&self->list);
 	OptsDef defs[] =
 	{
-		{ "type",     OPT_STRING, OPT_C,       &self->type,    "tpcb", 0     },
-		{ "threads",  OPT_INT,    OPT_C|OPT_Z, &self->threads,  NULL,  1     },
-		{ "clients",  OPT_INT,    OPT_C|OPT_Z, &self->clients,  NULL,  12    },
-		{ "time",     OPT_INT,    OPT_C|OPT_Z, &self->time,     NULL,  10    },
-		{ "scale",    OPT_INT,    OPT_C|OPT_Z, &self->scale,    NULL,  1     },
-		{ "batch",    OPT_INT,    OPT_C|OPT_Z, &self->batch,    NULL,  500   },
-		{ "init",     OPT_BOOL,   OPT_C,       &self->init,     NULL,  true  },
-		{ "unlogged", OPT_BOOL,   OPT_C,       &self->unlogged, NULL,  false },
-		{  NULL,      0,          0,            NULL,           NULL,  0     }
+		{ "type",      OPT_STRING, OPT_C,       &self->type,     "tpcb", 0     },
+		{ "threads",   OPT_INT,    OPT_C|OPT_Z, &self->threads,   NULL,  1     },
+		{ "clients",   OPT_INT,    OPT_C|OPT_Z, &self->clients,   NULL,  12    },
+		{ "time",      OPT_INT,    OPT_C|OPT_Z, &self->time,      NULL,  10    },
+		{ "scale",     OPT_INT,    OPT_C|OPT_Z, &self->scale,     NULL,  1     },
+		{ "batch",     OPT_INT,    OPT_C|OPT_Z, &self->batch,     NULL,  500   },
+		{ "init",      OPT_BOOL,   OPT_C,       &self->init,      NULL,  true  },
+		{ "unlogged",  OPT_BOOL,   OPT_C,       &self->unlogged,  NULL,  false },
+		{ "histogram", OPT_BOOL,   OPT_C,       &self->histogram, NULL,  false },
+		{  NULL,       0,          0,            NULL,            NULL,  0     }
 	};
 	opts_define(&self->opts, defs);
 }
@@ -175,6 +181,7 @@ bench_run(Bench* self)
 	auto clients_per_worker = clients / workers;
 	auto init               = opt_int_of(&self->init);
 	auto unlogged           = opt_int_of(&self->unlogged);
+	auto histogram          = opt_int_of(&self->histogram);
 
 	// set benchmark
 	if (str_is_cstr(type, "tpcb"))
@@ -201,14 +208,15 @@ bench_run(Bench* self)
 	// hello
 	info("amelie benchmark.");
 	info("");
-	info("type:     %.*s", str_size(type), str_of(type));
-	info("time:     %" PRIu64 " sec", time);
-	info("threads:  %" PRIu64, workers);
-	info("clients:  %" PRIu64 " (%" PRIu64 " per thread)", clients, clients_per_worker);
-	info("batch:    %" PRIu64, batch);
-	info("scale:    %" PRIu64, scale);
-	info("init:     %" PRIu64, init);
-	info("unlogged: %" PRIu64, unlogged);
+	info("type:      %.*s", str_size(type), str_of(type));
+	info("time:      %" PRIu64 " sec", time);
+	info("threads:   %" PRIu64, workers);
+	info("clients:   %" PRIu64 " (%" PRIu64 " per thread)", clients, clients_per_worker);
+	info("batch:     %" PRIu64, batch);
+	info("scale:     %" PRIu64, scale);
+	info("init:      %" PRIu64, init);
+	info("unlogged:  %" PRIu64, unlogged);
+	info("histogram: %" PRIu64, histogram);
 	info("");
 
 	// prepare workers
@@ -253,7 +261,7 @@ bench_run(Bench* self)
 		auto worker = list_at(BenchWorker, link);
 		bench_worker_stop_notify(worker);
 	}
-	list_foreach_safe(&self->list)
+	list_foreach(&self->list)
 	{
 		auto worker = list_at(BenchWorker, link);
 		bench_worker_stop(worker);
@@ -268,4 +276,14 @@ bench_run(Bench* self)
 	info("writes:       %.2f millions writes (%" PRIu64 ")",
 	     self->writes / 1000000.0,
 	     self->writes);
+
+	if (histogram)
+	{
+		info("");
+		list_foreach_safe(&self->list)
+		{
+			auto worker = list_at(BenchWorker, link);
+			histogram_print(&worker->histogram);
+		}
+	}
 }

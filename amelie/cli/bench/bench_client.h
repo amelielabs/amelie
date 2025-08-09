@@ -18,6 +18,7 @@ struct BenchClientIf
 {
 	BenchClient* (*create)(void*);
 	void         (*free)(BenchClient*);
+	void         (*set)(BenchClient*, Histogram*);
 	void         (*connect)(BenchClient*, Remote*);
 	void         (*execute)(BenchClient*, Str*);
 	void         (*import)(BenchClient*, Str*, Str*, Str*);
@@ -26,6 +27,7 @@ struct BenchClientIf
 struct BenchClient
 {
 	BenchClientIf* iface;
+	Histogram*     histogram;
 };
 
 static inline BenchClient*
@@ -44,6 +46,12 @@ static inline void
 bench_client_connect(BenchClient* self, Remote* remote)
 {
 	self->iface->connect(self, remote);
+}
+
+static inline void
+bench_client_set(BenchClient* self, Histogram* histogram)
+{
+	self->iface->set(self, histogram);
 }
 
 static inline void
