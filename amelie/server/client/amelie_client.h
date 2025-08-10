@@ -11,6 +11,12 @@
 // AGPL-3.0 Licensed.
 //
 
+// remote client
 #include "client/client.h"
 #include "client/client_mgr.h"
 #include "client/client_reply.h"
+
+// native
+#include "client/request.h"
+#include "client/request_queue.h"
+#include "client/native.h"
