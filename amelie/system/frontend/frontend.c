@@ -68,11 +68,8 @@ native_main(void* arg)
 	auto self   = (Frontend*)native->arg;
 
 	// process native connection
-	error_catch (
-		native_attach(native);
-		frontend_native(self, native);
-	);
-	native_detach(native);
+	native_attach(native);
+	frontend_native(self, native);
 }
 
 static void

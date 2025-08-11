@@ -17,6 +17,7 @@ enum
 {
 	AMELIE_OBJ         = 0x0323410L,
 	AMELIE_OBJ_SESSION = 0x04A3455L,
+	AMELIE_OBJ_REQUEST = 0x02BF130L,
 	AMELIE_OBJ_FREE    = 0x0f0f0f0L
 };
 
@@ -30,14 +31,21 @@ struct amelie
 
 struct amelie_session
 {
-	int       type;
-	Session*  session;
-	Content   content;
-	Buf       content_buf;
-	Str       url;
-	Str       content_type;
-	Task      native;
-	amelie_t* amelie;
+	int        type;
+	Native     native;
+	List       req_cache;
+	int        req_cache_count;
+	void     (*on_complete)(void*);
+	void*      on_complete_arg;
+	amelie_t*  amelie;
+};
+
+struct amelie_request
+{
+	int               type;
+	Request           request;
+	amelie_session_t* session;
+	List              link;
 };
 
 AMELIE_API amelie_t*
@@ -51,20 +59,13 @@ amelie_init(void)
 	return self;
 }
 
-static void
-amelie_free_session_main(void* arg)
-{
-	amelie_session_t* self = arg;
-	session_free(self->session);
-	buf_free(&self->content_buf);
-}
-
 AMELIE_API void
 amelie_free(void* ptr)
 {
 	switch (*(int*)ptr) {
 	case AMELIE_OBJ:
 	{
+		// all sessions must be closed at this point
 		amelie_t* self = ptr;
 		if (task_active(&self->task))
 		{
@@ -77,10 +78,35 @@ amelie_free(void* ptr)
 	}
 	case AMELIE_OBJ_SESSION:
 	{
+		// all requests must be completed at this point
 		amelie_session_t* self = ptr;
-		task_execute(&self->native, amelie_free_session_main, self);
-		task_free(&self->native);
+		Request req;
+		request_init(&req);
+		req.type = REQUEST_DISCONNECT;
+		request_queue_push(&self->native.queue, &req, true);
+		request_wait(&req);
+		request_free(&req);
+		native_free(&self->native);
+
+		// cleanup request cache
+		list_foreach_safe(&self->req_cache)
+		{
+			auto req = list_at(amelie_request_t, link);
+			request_free(&req->request);
+			am_free(req);
+		}
 		break;
+	}
+	case AMELIE_OBJ_REQUEST:
+	{
+		// place request object to the session request cache
+		amelie_request_t* self = ptr;
+		assert(self->request.complete);
+		auto session = self->session;
+		list_append(&session->req_cache, &self->link);
+		session->req_cache_count++;
+		self->type = AMELIE_OBJ_FREE;
+		return;
 	}
 	case AMELIE_OBJ_FREE:
 	{
@@ -183,96 +209,90 @@ amelie_open(amelie_t* self, const char* path, int argc, char** argv)
 	return rc;
 }
 
-static void
-amelie_connect_main(void* arg)
-{
-	amelie_session_t* self = arg;
-	self->session = session_create(NULL);
-}
-
 AMELIE_API amelie_session_t*
 amelie_connect(amelie_t* self)
 {
 	auto session = (amelie_session_t*)am_malloc(sizeof(amelie_session_t));
-	session->type    = AMELIE_OBJ_SESSION;
-	session->session = NULL;
-	session->amelie  = self;
-	buf_init(&session->content_buf);
-	content_init(&session->content);
-	content_set(&session->content, &session->content_buf);
-	str_set_cstr(&session->url, "/");
-	str_set_cstr(&session->content_type, "text/plain");
-	task_init(&session->native);
+	session->type            = AMELIE_OBJ_SESSION;
+	session->amelie          = self;
+	session->on_complete     = NULL;
+	session->on_complete_arg = NULL;
+	session->req_cache_count = 0;
+	list_init(&session->req_cache);
+	native_init(&session->native);
 
-	// create session native task
-	int rc;
-	rc = task_create_nothrow(&session->native, "api", NULL, NULL,
-	                         &self->instance.global,
-	                         &self->system->share,
-	                         logger_write, &self->instance.logger,
-	                         &self->instance.buf_mgr);
-	if (unlikely(rc == -1))
-	{
-		task_free(&self->task);
-		am_free(session);
-		return NULL;
-	}
+	// prepare connect event before the native registration
+	Request req;
+	request_init(&req);
+	req.type = REQUEST_CONNECT;
+	request_queue_push(&session->native.queue, &req, false);
 
-	// create session using native task context
-	task_execute(&session->native, amelie_connect_main, session);
-	assert(session->session);
+	// register native client in the frontend pool
+	auto buf = msg_create_as(&self->instance.buf_mgr, MSG_NATIVE, 0);
+	auto native_ptr = &session->native;
+	buf_write(buf, &native_ptr, sizeof(void**));
+	msg_end(buf);
+	frontend_mgr_forward(&self->system->frontend_mgr, buf);
+
+	// wait for completion
+	request_wait(&req);
+	assert(! req.error);
+	request_free(&req);
 	return session;
 }
 
-typedef struct
+AMELIE_API void
+amelie_set_notify(amelie_session_t*  self,
+                  void             (*on_complete)(void*),
+                  void*              on_complete_arg)
 {
-	amelie_session_t* self;
-	char*             command;
-	int               argc;
-	amelie_arg_t*     argv;
-	amelie_arg_t*     result;
-	int               rc;
-} AmelieExecuteArgs;
-
-hot static void
-amelie_execute_main(void* arg)
-{
-	AmelieExecuteArgs* args = arg;
-	auto self = args->self;
-
-	content_reset(&self->content);
-	Str text;
-	str_set_cstr(&text, args->command);
-	auto on_error = session_execute(self->session, &self->url, &text,
-	                                &self->content_type,
-	                                &self->content);
-	if (on_error)
-		args->rc = -1;
-
-	auto result = args->result;
-	if (result)
-	{
-		result->data = buf_cstr(&self->content_buf);
-		result->data_size = buf_size(&self->content_buf);
-	}
+	self->on_complete     = on_complete;
+	self->on_complete_arg = on_complete_arg;
 }
 
-hot AMELIE_API int
+hot AMELIE_API amelie_request_t*
 amelie_execute(amelie_session_t* self,
                const char*       command,
                int               argc,
-               amelie_arg_t*     argv,
-               amelie_arg_t*     result)
+               amelie_arg_t*     argv)
 {
-	AmelieExecuteArgs args =
+	// allocate request
+	amelie_request_t* req;
+	if (likely(self->req_cache_count > 0))
 	{
-		.self    = self,
-		.command = (char*)command,
-		.argc    = argc,
-		.argv    = argv,
-		.result  = result,
-		.rc      = 0
-	};
-	task_execute(&self->native, amelie_execute_main, &args);
-	return args.rc;
+		req = container_of(list_pop(&self->req_cache), amelie_request_t, link);
+		self->req_cache_count--;
+		request_reset(&req->request);
+	} else
+	{
+		req = am_malloc(sizeof(amelie_request_t));
+		req->session = self;
+		request_init(&req->request);
+		list_init(&req->link);
+	}
+
+	// prepare request
+	req->type = AMELIE_OBJ_REQUEST;
+	str_set_cstr(&req->request.cmd, command);
+	req->request.on_complete     = self->on_complete;
+	req->request.on_complete_arg = self->on_complete_arg;
+	(void)argc;
+	(void)argv;
+
+	// schedule for execution
+	request_queue_push(&self->native.queue, &req->request, true);
+	return req;
+}
+
+AMELIE_API int
+amelie_wait(amelie_request_t* self, uint32_t time_ms, amelie_arg_t* result)
+{
+	(void)time_ms;
+	request_wait(&self->request);
+	if (result)
+	{
+		result->data = buf_cstr(&self->request.content);
+		result->data_size = buf_size(&self->request.content);
+	}
+	return self->request.error ? -1 : 0;
 }

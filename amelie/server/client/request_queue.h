@@ -49,13 +49,14 @@ request_queue_detach(RequestQueue* self)
 }
 
 hot static inline void
-request_queue_push(RequestQueue* self, Request* req)
+request_queue_push(RequestQueue* self, Request* req, bool signal)
 {
 	spinlock_lock(&self->lock);
 	list_init(&req->link);
 	list_append(&self->list, &req->link);
 	spinlock_unlock(&self->lock);
-	bus_signal(&self->on_write);
+	if (signal)
+		bus_signal(&self->on_write);
 }
 
 static inline Request*
@@ -74,7 +75,7 @@ request_queue_pop(RequestQueue* self)
 {
 	assert(self->on_write.bus);
 	Request* req;
-	while ((req = request_queue_pop(self)) == NULL)
+	while ((req = request_queue_peek(self)) == NULL)
 		event_wait(&self->on_write, -1);
 	return req;
 }

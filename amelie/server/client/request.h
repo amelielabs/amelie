@@ -34,28 +34,27 @@ struct Request
 	List        link;
 };
 
-static inline Request*
-request_allocate(void)
+static inline void
+request_init(Request* self)
 {
-	auto self = (Request*)am_malloc(sizeof(Request));
 	self->type            = REQUEST_EXECUTE;
 	self->complete        = false;
 	self->error           = false;
 	self->on_complete     = NULL;
 	self->on_complete_arg = NULL;
+	buf_init(&self->content);
+	str_init(&self->cmd);
 	mutex_init(&self->lock);
 	cond_var_init(&self->cond_var);
 	list_init(&self->link);
-	return self;
 }
 
 static inline void
 request_free(Request* self)
 {
-	buf_free(&self->content);
+	buf_free_memory(&self->content);
 	mutex_free(&self->lock);
 	cond_var_free(&self->cond_var);
-	am_free(self);
 }
 
 static inline void
@@ -82,17 +81,11 @@ request_complete(Request* self, bool error)
 	mutex_unlock(&self->lock);
 }
 
-static inline bool
-request_wait(Request* self, uint32_t time_ms)
+static inline void
+request_wait(Request* self)
 {
 	mutex_lock(&self->lock);
-	auto complete = self->complete;
-	if (! self->complete)
-	{
-		if (time_ms > 0)
-			cond_var_timedwait(&self->cond_var, &self->lock, time_ms);
-		complete = self->complete;
-	}
+	while (! self->complete)
+		cond_var_wait(&self->cond_var, &self->lock);
 	mutex_unlock(&self->lock);
-	return complete;
 }

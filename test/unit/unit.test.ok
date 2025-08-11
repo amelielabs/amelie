@@ -100,3 +100,5 @@ unit test_api_open
 unit test_api_connect
 # test: test api execute
 unit test_api_execute
+# test: test api execute error
+unit test_api_execute_error
