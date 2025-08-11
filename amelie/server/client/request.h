@@ -15,7 +15,6 @@ typedef struct Request Request;
 
 typedef enum
 {
-	REQUEST_UNDEF,
 	REQUEST_CONNECT,
 	REQUEST_DISCONNECT,
 	REQUEST_EXECUTE
@@ -39,7 +38,7 @@ static inline Request*
 request_allocate(void)
 {
 	auto self = (Request*)am_malloc(sizeof(Request));
-	self->type            = REQUEST_UNDEF;
+	self->type            = REQUEST_EXECUTE;
 	self->complete        = false;
 	self->error           = false;
 	self->on_complete     = NULL;
@@ -62,7 +61,7 @@ request_free(Request* self)
 static inline void
 request_reset(Request* self)
 {
-	self->type            = REQUEST_UNDEF;
+	self->type            = REQUEST_EXECUTE;
 	self->complete        = false;
 	self->error           = false;
 	self->on_complete     = NULL;

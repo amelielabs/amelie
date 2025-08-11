@@ -16,6 +16,7 @@ enum
 	MSG_OK,
 	MSG_ERROR,
 	MSG_CLIENT,
+	MSG_NATIVE,
 
 	// rpc
 	RPC_START,

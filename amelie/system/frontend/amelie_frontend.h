@@ -17,3 +17,4 @@
 
 // frontend client
 #include "frontend/frontend_client.h"
+#include "frontend/frontend_native.h"

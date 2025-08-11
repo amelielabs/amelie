@@ -16,6 +16,7 @@ typedef struct Native Native;
 struct Native
 {
 	RequestQueue queue;
+	void*        arg;
 };
 
 static inline void
@@ -28,4 +29,16 @@ static inline void
 native_free(Native* self)
 {
 	request_queue_free(&self->queue);
+}
+
+static inline void
+native_attach(Native* self)
+{
+	request_queue_attach(&self->queue);
+}
+
+static inline void
+native_detach(Native* self)
+{
+	request_queue_detach(&self->queue);
 }

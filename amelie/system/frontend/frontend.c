@@ -61,6 +61,20 @@ client_main(void* arg)
 	client_free(client);
 }
 
+hot static void
+native_main(void* arg)
+{
+	auto native = (Native*)arg;
+	auto self   = (Frontend*)native->arg;
+
+	// process native connection
+	error_catch (
+		native_attach(native);
+		frontend_native(self, native);
+	);
+	native_detach(native);
+}
+
 static void
 frontend_rpc(Rpc* rpc, void* arg)
 {
@@ -110,6 +124,14 @@ frontend_main(void* arg)
 			Client* client = *(void**)msg->data;
 			client->arg = self;
 			coroutine_create(client_main, client);
+			break;
+		}
+		case MSG_NATIVE:
+		{
+			// native client
+			Native* native = *(void**)msg->data;
+			native->arg = self;
+			coroutine_create(native_main, native);
 			break;
 		}
 		default:
