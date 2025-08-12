@@ -169,6 +169,7 @@ api_execute(BenchClientApi* self, Str* cmd)
 	auto req = amelie_execute(self->session, cmd->pos, 0, NULL);
 	event_wait(&self->event, UINT32_MAX);
 	amelie_wait(req, -1, NULL);
+	amelie_free(req);
 }
 
 hot static void
@@ -184,7 +185,7 @@ bench_client_api_execute(BenchClient* ptr, Str* cmd)
 	time_start(&time_us);
 	api_execute(self, cmd);
 	time_end(&time_us);
-	histogram_add(self->obj.histogram, time_us);
+	histogram_add(self->obj.histogram, time_us / 1000);
 }
 
 hot static void
