@@ -70,7 +70,7 @@ loader_client_main(Loader* self, BenchClient* client)
 			batch = self->to - seq;
 
 		buf_reset(&buf);
-		buf_printf(&buf, "INSERT INTO __bench.accounts VALUES ");
+		buf_printf(&buf, "INSERT INTO accounts VALUES ");
 		for (auto i = 0ul; i < batch; i++)
 		{
 			buf_printf(&buf, "%s(%d, %d, 0, \"%.*s\")",
@@ -163,14 +163,14 @@ tpcb_execute(BenchClient* client,
 	auto buf = buf_create();
 	defer_buf(buf);
 
-	buf_printf(buf, "UPDATE __bench.accounts SET abalance = abalance + %d WHERE aid = %d;",
+	buf_printf(buf, "UPDATE accounts SET abalance = abalance + %d WHERE aid = %d;",
 	           delta, aid);
-	buf_printf(buf, "SELECT abalance FROM __bench.accounts WHERE aid = %d;", aid);
-	buf_printf(buf, "UPDATE __bench.tellers SET tbalance = tbalance + %d WHERE tid = %d;",
+	buf_printf(buf, "SELECT abalance FROM accounts WHERE aid = %d;", aid);
+	buf_printf(buf, "UPDATE tellers SET tbalance = tbalance + %d WHERE tid = %d;",
 	           delta, tid);
-	buf_printf(buf, "UPDATE __bench.branches SET bbalance = bbalance + %d WHERE bid = %d;",
+	buf_printf(buf, "UPDATE branches SET bbalance = bbalance + %d WHERE bid = %d;",
 	           delta, bid);
-	buf_printf(buf, "INSERT INTO __bench.history (tid, bid, aid, delta, time, filler) "
+	buf_printf(buf, "INSERT INTO history (tid, bid, aid, delta, time, filler) "
 	           "VALUES (%d, %d, %d, %d, current_timestamp, '                                                  ');",
 	           tid, bid, aid, delta);
 
@@ -186,10 +186,10 @@ bench_tpcb_create(Bench* self, BenchClient* client)
 
 	char* ddl[] =
 	{
-		"create table __bench.branches (bid int primary key, bbalance int, filler text) with (type = \"hash\")",
-		"create table __bench.tellers (tid int primary key, bid int, tbalance int, filler text) with (type = \"hash\")",
-		"create table __bench.accounts (aid int primary key, bid int, abalance int, filler text) with (type = \"hash\")",
-		"create table __bench.history (tid int, bid int, aid int, delta int, time timestamp, seq serial primary key, filler text)",
+		"create table branches (bid int primary key, bbalance int, filler text)",
+		"create table tellers (tid int primary key, bid int, tbalance int, filler text)",
+		"create table accounts (aid int primary key, bid int, abalance int, filler text)",
+		"create table history (tid int, bid int, aid int, delta int, time timestamp, seq auto increment primary key, filler text)",
 		 NULL
 	};
 
@@ -205,10 +205,10 @@ bench_tpcb_create(Bench* self, BenchClient* client)
 	{
 		char* ddl_unlogged[] =
 		{
-			"alter table __bench.branches set unlogged",
-			"alter table __bench.tellers set unlogged",
-			"alter table __bench.accounts set unlogged",
-			"alter table __bench.history set unlogged",
+			"alter table branches set unlogged",
+			"alter table tellers set unlogged",
+			"alter table accounts set unlogged",
+			"alter table history set unlogged",
 		     NULL
 		};
 		for (auto i = 0; ddl_unlogged[i]; i++)
@@ -233,7 +233,7 @@ bench_tpcb_create(Bench* self, BenchClient* client)
 	for (auto i = 0ul; i < tpcb_branches * scale; i++)
 	{
 		buf_reset(buf);
-		buf_printf(buf, "INSERT INTO __bench.branches VALUES (%d, 0, \"%.*s\")",
+		buf_printf(buf, "INSERT INTO branches VALUES (%d, 0, \"%.*s\")",
 		           i,
 		           buf_size(filler), filler->start);
 		buf_str(buf, &str);
@@ -243,7 +243,7 @@ bench_tpcb_create(Bench* self, BenchClient* client)
 	for (auto i = 0ul; i < tpcb_tellers * scale; i++)
 	{
 		buf_reset(buf);
-		buf_printf(buf, "INSERT INTO __bench.tellers VALUES (%d, %d, 0, \"%.*s\")",
+		buf_printf(buf, "INSERT INTO tellers VALUES (%d, %d, 0, \"%.*s\")",
 		           i, i / tpcb_tellers,
 		           buf_size(filler), filler->start);
 		buf_str(buf, &str);
@@ -255,7 +255,7 @@ bench_tpcb_create(Bench* self, BenchClient* client)
 		for (auto i = 0ul; i < tpcb_accounts * scale; i++)
 		{
 			buf_reset(buf);
-			buf_printf(buf, "INSERT INTO __bench.accounts VALUES (%d, %d, 0, \"%.*s\")",
+			buf_printf(buf, "INSERT INTO accounts VALUES (%d, %d, 0, \"%.*s\")",
 			           i, i / tpcb_accounts,
 			           buf_size(filler), filler->start);
 			buf_str(buf, &str);
@@ -283,6 +283,7 @@ bench_tpcb_main(BenchWorker* self, BenchClient* client)
 	auto branches = tpcb_branches * scale;
 	auto tellers  = tpcb_tellers  * scale;
 
+	auto count = 0ull;
 	while (! self->shutdown)
 	{
 		uint64_t random = random_generate(global()->random);
@@ -298,6 +299,11 @@ bench_tpcb_main(BenchWorker* self, BenchClient* client)
 
 		atomic_u64_add(&bench->transactions, 1);
 		atomic_u64_add(&bench->writes, 4);
+
+		if ((count % 10000) == 0)
+			coroutine_yield();
+
+		count++;
 	}
 }
 

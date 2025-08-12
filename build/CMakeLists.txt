@@ -49,7 +49,7 @@ include_directories(${OPENSSL_INCLUDE_DIR})
 include_directories(${PCRE_INCLUDE_DIR})
 include_directories(${ZSTD_INCLUDE_DIR})
 
-set(AMELIE_LIBRARIES m
+set(AMELIE_LIBRARIES m sqlite3
     ${CMAKE_THREAD_LIBS_INIT}
     ${OPENSSL_LIBRARIES}
     ${PCRE_LIBRARIES}
@@ -324,6 +324,7 @@ set(AMELIE_SOURCES_CLI
     ${AMELIE_ROOT}/cli/bench/bench_import.c
     ${AMELIE_ROOT}/cli/bench/bench_decre.c
     ${AMELIE_ROOT}/cli/bench/bench_main.c
+    ${AMELIE_ROOT}/cli/bench/sqlite.c
     ${AMELIE_ROOT}/cli/test/test_plan.c
     ${AMELIE_ROOT}/cli/test/test_suite.c
     ${AMELIE_ROOT}/cli/test/test_command.c

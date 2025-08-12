@@ -144,6 +144,10 @@ bench_free(Bench* self)
 static void
 bench_service_execute(Bench* self, BenchClient* client, bool create)
 {
+	(void)self;
+	(void)client;
+	(void)create;
+#if 0
 	// drop test schema if exists
 	Str str;
 	str_set_cstr(&str, "drop schema if exists __bench cascade");
@@ -157,6 +161,9 @@ bench_service_execute(Bench* self, BenchClient* client, bool create)
 
 		self->iface->create(self, client);
 	}
+#endif
+	if (create)
+		self->iface->create(self, client);
 }
 
 static void
@@ -218,6 +225,7 @@ bench_run(Bench* self)
 	// using embeddable database benchmark
 	if (api)
 	{
+#if 0
 		auto path = remote_get(self->remote, REMOTE_PATH);
 		if (str_empty(path))
 			error("a repository path must be specified for the embeddable db benchmark");
@@ -242,6 +250,10 @@ bench_run(Bench* self)
 
 		// update client interface
 		self->iface_client = &bench_client_api;
+#endif
+
+		extern BenchClientIf bench_client_sqlite;
+		self->iface_client = &bench_client_sqlite;
 	}
 
 	info("type:      %.*s", str_size(type), str_of(type));
