@@ -35,6 +35,7 @@ struct Bench
 {
 	BenchIf*       iface;
 	BenchClientIf* iface_client;
+	amelie_t*      amelie;
 	atomic_u64     transactions;
 	atomic_u64     writes;
 	Opt            type;
@@ -46,6 +47,7 @@ struct Bench
 	Opt            init;
 	Opt            unlogged;
 	Opt            histogram;
+	Opt            api;
 	Opts           opts;
 	Remote*        remote;
 	List           list;

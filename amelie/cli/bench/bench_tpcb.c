@@ -11,6 +11,7 @@
 //
 
 #include <amelie_core.h>
+#include <amelie.h>
 #include <amelie_cli.h>
 #include <amelie_cli_bench.h>
 
@@ -92,7 +93,7 @@ loader_main(void* arg)
 {
 	auto self = (Loader*)arg;
 
-	auto client = bench_client_create(self->bench->iface_client, NULL);
+	auto client = bench_client_create(self->bench->iface_client, self->bench->amelie);
 	defer(bench_client_free, client);
 	error_catch
 	(
