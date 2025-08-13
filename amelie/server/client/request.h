@@ -81,11 +81,28 @@ request_complete(Request* self, bool error)
 	mutex_unlock(&self->lock);
 }
 
-static inline void
-request_wait(Request* self)
+static inline bool
+request_wait(Request* self, uint32_t time_ms)
 {
+	// blocking wait
+	if (time_ms == UINT32_MAX)
+	{
+		mutex_lock(&self->lock);
+		while (! self->complete)
+			cond_var_wait(&self->cond_var, &self->lock);
+		mutex_unlock(&self->lock);
+		return true;
+	}
+
+	// wait for timeout
+	auto complete = false;
 	mutex_lock(&self->lock);
-	while (! self->complete)
-		cond_var_wait(&self->cond_var, &self->lock);
+	complete = self->complete;
+	if (!complete && time_ms != 0)
+	{
+		cond_var_timedwait(&self->cond_var, &self->lock, time_ms);
+		complete = self->complete;
+	}
 	mutex_unlock(&self->lock);
+	return complete;
 }

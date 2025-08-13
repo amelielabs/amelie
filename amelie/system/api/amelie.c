@@ -84,7 +84,7 @@ amelie_free(void* ptr)
 		request_init(&req);
 		req.type = REQUEST_DISCONNECT;
 		request_queue_push(&self->native.queue, &req, true);
-		request_wait(&req);
+		request_wait(&req, -1);
 		request_free(&req);
 		native_free(&self->native);
 
@@ -235,7 +235,7 @@ amelie_connect(amelie_t* self)
 	frontend_mgr_forward(&self->system->frontend_mgr, buf);
 
 	// wait for completion
-	request_wait(&req);
+	request_wait(&req, -1);
 	assert(! req.error);
 	request_free(&req);
 	return session;
@@ -287,8 +287,8 @@ amelie_execute(amelie_session_t* self,
 AMELIE_API int
 amelie_wait(amelie_request_t* self, uint32_t time_ms, amelie_arg_t* result)
 {
-	(void)time_ms;
-	request_wait(&self->request);
+	if (! request_wait(&self->request, time_ms))
+		return 1;
 	if (result)
 	{
 		result->data = buf_cstr(&self->request.content);
