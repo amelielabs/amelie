@@ -1,5 +1,39 @@
 # Amelie Changelog.
 
+## 0.5.0 (13-08-2025)
+
+This release introduces Embeddable Async API interface which allows to use Amelie as a shared
+library similar to SQLite.
+
+Embeddable Async API.
+
+Using Amelie as an embeddable database allows to get maximum out of the latency and performance by
+avoiding network io/http parsing and authentication. Primary use case for this is fintech and cases which
+require high performance processing.
+
+Amelie API is async with separate execute/wait stages which allows it to be integrated into any existing event loops.
+
+Amelie is designed to benefit from parallel execution. It is possible to execute several commands
+in parallel to scale the performance and benefit from multi-core processing and things like group commit,
+and STRICT SERIALIZABILITY at the same time.
+
+There are no limitations compared to the stand-alone server mode. Unlike SQLite Amelie does not block
+writers and have a full network support in the embeddable mode. That means that the replication, network
+client connections and remote hot backup will work the same way (or can be disabled completely).
+
+Amelie as a Compute Framework.
+
+This release introduces important internal concept of Amelie as a compute framework. It is one of the goals
+towards support of extensions.
+
+The idea is to define and keep the Amelie core as a storage/replication + compute (virtual machine,
+executor and parallel processing) and move query parsing out to extensions. This allows to implement
+other protocols/parsers as an extensions on top of it and use Amelie core as a framework.
+
+Basically it allows to completely separate SQL parsing from the actual code execution and extend Amelie
+with different query languages (think redis, memcache) without paying the price of building on
+top of the SQL processing.
+
 ## 0.4.0 (25-06-2025)
 
 This release introduces checkpoint compression and a custom command reader (readline/linenoise) replacement.
