@@ -121,6 +121,7 @@ bench_client_api_create(void* arg)
 	unused(arg);
 	auto self = (BenchClientApi*)am_malloc(sizeof(BenchClientApi));
 	self->obj.iface = &bench_client_api;
+	self->obj.histogram = NULL;
 	self->session   = NULL;
 	self->amelie    = arg;
 	event_init(&self->event);
