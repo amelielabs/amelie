@@ -132,10 +132,7 @@ session_lock(Session* self, int type)
 	switch (type) {
 	case LOCK_SHARED:
 		// take shared frontend lock
-		if (self->frontend)
-			self->lock = lock_mgr_lock(&self->frontend->lock_mgr, type);
-		else
-			; // todo
+		self->lock = lock_mgr_lock(&self->frontend->lock_mgr, type);
 		break;
 	case LOCK_EXCLUSIVE:
 		control_lock();
@@ -152,10 +149,7 @@ session_unlock(Session* self)
 {
 	switch (self->lock_type) {
 	case LOCK_SHARED:
-		if (self->frontend)
-			lock_mgr_unlock(&self->frontend->lock_mgr, self->lock_type, self->lock);
-		else
-			; // todo
+		lock_mgr_unlock(&self->frontend->lock_mgr, self->lock_type, self->lock);
 		break;
 	case LOCK_EXCLUSIVE:
 		control_unlock();
