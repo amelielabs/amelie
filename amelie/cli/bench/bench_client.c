@@ -150,11 +150,10 @@ bench_client_api_connect(BenchClient* ptr, Remote* remote)
 {
 	unused(remote);
 	auto self = (BenchClientApi*)ptr;
-	self->session = amelie_connect(self->amelie);
+	self->session = amelie_connect(self->amelie, NULL);
 	if (unlikely(! self->session))
 		error("amelie_connect() failed");
 	event_attach(&self->event);
-	amelie_set_notify(self->session, bench_client_api_notify, self);
 }
 
 static void
@@ -167,7 +166,7 @@ bench_client_api_set(BenchClient* ptr, Histogram* histogram)
 hot static inline void
 api_execute(BenchClientApi* self, Str* cmd)
 {
-	auto req = amelie_execute(self->session, cmd->pos, 0, NULL);
+	auto req = amelie_execute(self->session, cmd->pos, 0, NULL, bench_client_api_notify, self);
 	event_wait(&self->event, UINT32_MAX);
 	amelie_wait(req, -1, NULL);
 	amelie_free(req);

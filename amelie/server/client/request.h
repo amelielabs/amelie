@@ -20,18 +20,20 @@ typedef enum
 	REQUEST_EXECUTE
 } RequestType;
 
+typedef void (*RequestNotify)(void*);
+
 struct Request
 {
-	Mutex       lock;
-	CondVar     cond_var;
-	RequestType type;
-	bool        complete;
-	bool        error;
-	Buf         content;
-	Str         cmd;
-	void      (*on_complete)(void*);
-	void*       on_complete_arg;
-	List        link;
+	Mutex         lock;
+	CondVar       cond_var;
+	RequestType   type;
+	bool          complete;
+	bool          error;
+	Buf           content;
+	Str           cmd;
+	RequestNotify on_complete;
+	void*         on_complete_arg;
+	List          link;
 };
 
 static inline void
@@ -64,6 +66,7 @@ request_reset(Request* self)
 	self->complete        = false;
 	self->error           = false;
 	self->on_complete     = NULL;
+	self->on_complete_arg = NULL;
 	self->on_complete_arg = NULL;
 	str_init(&self->cmd);
 	buf_reset(&self->content);

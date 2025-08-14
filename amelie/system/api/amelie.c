@@ -210,8 +210,11 @@ amelie_open(amelie_t* self, const char* path, int argc, char** argv)
 }
 
 AMELIE_API amelie_session_t*
-amelie_connect(amelie_t* self)
+amelie_connect(amelie_t* self, const char* uri)
 {
+	// reserved as a feature
+	unused(uri);
+
 	auto session = (amelie_session_t*)am_malloc(sizeof(amelie_session_t));
 	session->type            = AMELIE_OBJ_SESSION;
 	session->amelie          = self;
@@ -241,20 +244,13 @@ amelie_connect(amelie_t* self)
 	return session;
 }
 
-AMELIE_API void
-amelie_set_notify(amelie_session_t*  self,
-                  void             (*on_complete)(void*),
-                  void*              on_complete_arg)
-{
-	self->on_complete     = on_complete;
-	self->on_complete_arg = on_complete_arg;
-}
-
 hot AMELIE_API amelie_request_t*
-amelie_execute(amelie_session_t* self,
-               const char*       command,
-               int               argc,
-               amelie_arg_t*     argv)
+amelie_execute(amelie_session_t*    self,
+               const char*          command,
+               int                  argc,
+               amelie_arg_t*        argv,
+               amelie_on_complete_t on_complete,
+               void*                on_complete_arg)
 {
 	// allocate request
 	amelie_request_t* req;
@@ -274,8 +270,8 @@ amelie_execute(amelie_session_t* self,
 	// prepare request
 	req->type = AMELIE_OBJ_REQUEST;
 	str_set_cstr(&req->request.cmd, command);
-	req->request.on_complete     = self->on_complete;
-	req->request.on_complete_arg = self->on_complete_arg;
+	req->request.on_complete     = (RequestNotify)on_complete;
+	req->request.on_complete_arg = on_complete_arg;
 	(void)argc;
 	(void)argv;
 

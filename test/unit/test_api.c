@@ -75,11 +75,11 @@ test_api_connect(void* arg)
 	auto rc = amelie_open(amelie, path, argc, argv);
 	test(! rc);
 
-	auto session1 = amelie_connect(amelie);
+	auto session1 = amelie_connect(amelie, NULL);
 	test(session1);
 	amelie_free(session1);
 
-	auto session2 = amelie_connect(amelie);
+	auto session2 = amelie_connect(amelie, NULL);
 	test(session2);
 	amelie_free(session2);
 
@@ -112,18 +112,18 @@ test_api_execute(void* arg)
 	auto rc = amelie_open(amelie, path, argc, argv);
 	test(! rc);
 
-	auto session = amelie_connect(amelie);
+	auto session = amelie_connect(amelie, NULL);
 	test(session);
 
-	auto req = amelie_execute(session, "create table test (id int primary key)", 0, NULL);
+	auto req = amelie_execute(session, "create table test (id int primary key)", 0, NULL, NULL, NULL);
 	test(amelie_wait(req, -1, NULL) == 0);
 	amelie_free(req);
 
-	req = amelie_execute(session, "insert into test values (1), (2), (3)", 0, NULL);
+	req = amelie_execute(session, "insert into test values (1), (2), (3)", 0, NULL, NULL, NULL);
 	test(amelie_wait(req, -1, NULL) == 0);
 	amelie_free(req);
 
-	req = amelie_execute(session, "select * from test", 0, NULL);
+	req = amelie_execute(session, "select * from test", 0, NULL, NULL, NULL);
 	amelie_arg_t result = {
 		.data = NULL,
 		.data_size = 0
@@ -141,12 +141,12 @@ test_api_execute(void* arg)
 	rc = amelie_open(amelie, path, argc, argv);
 	test(! rc);
 
-	session = amelie_connect(amelie);
+	session = amelie_connect(amelie, NULL);
 	test(session);
 
 	result.data = NULL;
 	result.data_size = 0;
-	req = amelie_execute(session, "select * from test", 0, NULL);
+	req = amelie_execute(session, "select * from test", 0, NULL, NULL, NULL);
 	test(amelie_wait(req, -1, &result) == 0);
 	test(result.data_size == 9);
 	test(! memcmp(result.data, "[1, 2, 3]", 9));
@@ -182,10 +182,10 @@ test_api_execute_error(void* arg)
 	auto rc = amelie_open(amelie, path, argc, argv);
 	test(! rc);
 
-	auto session = amelie_connect(amelie);
+	auto session = amelie_connect(amelie, NULL);
 	test(session);
 
-	auto req = amelie_execute(session, "select abcd", 0, NULL);
+	auto req = amelie_execute(session, "select abcd", 0, NULL, NULL, NULL);
 	test(amelie_wait(req, -1, NULL) == -1);
 	amelie_free(req);
 
