@@ -31,13 +31,11 @@ struct amelie
 
 struct amelie_session
 {
-	int        type;
-	Native     native;
-	List       req_cache;
-	int        req_cache_count;
-	void     (*on_complete)(void*);
-	void*      on_complete_arg;
-	amelie_t*  amelie;
+	int       type;
+	Native    native;
+	List      req_cache;
+	int       req_cache_count;
+	amelie_t* amelie;
 };
 
 struct amelie_request
@@ -218,8 +216,6 @@ amelie_connect(amelie_t* self, const char* uri)
 	auto session = (amelie_session_t*)am_malloc(sizeof(amelie_session_t));
 	session->type            = AMELIE_OBJ_SESSION;
 	session->amelie          = self;
-	session->on_complete     = NULL;
-	session->on_complete_arg = NULL;
 	session->req_cache_count = 0;
 	list_init(&session->req_cache);
 	native_init(&session->native);
