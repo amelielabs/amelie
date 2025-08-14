@@ -17,35 +17,44 @@
 void
 cli_cmd_login(Cli* self, int argc, char** argv)
 {
+	unused(self);
+
 	// amelie login name [remote options]
-	auto home = &self->home;
-	home_open(home);
+	Home home;
+	home_init(&home);
+	defer(home_free, &home);
+	home_open(&home);
 
 	Str name;
 	str_set_cstr(&name, argv[0]);
-	auto login = login_mgr_find(&home->login_mgr, &name);
+	auto login = login_mgr_find(&home.login_mgr, &name);
 	if (! login)
 	{
 		login = login_allocate();
 		remote_set(&login->remote, REMOTE_NAME, &name);
-		login_mgr_add(&home->login_mgr, login);
+		login_mgr_add(&home.login_mgr, login);
 	}
 
-	login_mgr_set(&home->login_mgr, &login->remote, NULL, argc - 1, argv + 1);
-	home_sync(home);
+	login_mgr_set(&home.login_mgr, &login->remote, NULL, argc - 1, argv + 1);
+	home_sync(&home);
 }
 
 void
 cli_cmd_logout(Cli* self, int argc, char** argv)
 {
-	// amelie logout name
-	auto home = &self->home;
-	home_open(home);
+	unused(self);
 	unused(argc);
+
+	// amelie logout name
+	Home home;
+	home_init(&home);
+	defer(home_free, &home);
+	home_open(&home);
+
 	Str name;
 	str_set_cstr(&name, argv[0]);
-	login_mgr_delete(&home->login_mgr, &name);
-	home_sync(home);
+	login_mgr_delete(&home.login_mgr, &name);
+	home_sync(&home);
 }
 
 static void
@@ -92,7 +101,7 @@ cli_cmd_client_execute(Client* client, Str* content)
 }
 
 static void
-cli_cmd_client_main(Cli* self, Client* client, Console* cons)
+cli_cmd_client_main(Client* client, Console* cons)
 {
 	auto name = remote_get(client->remote, REMOTE_NAME);
 	auto uri  = remote_get(client->remote, REMOTE_URI);
@@ -150,14 +159,18 @@ cli_cmd_client_main(Cli* self, Client* client, Console* cons)
 		}
 	}
 
-	home_sync(&self->home);
 }
 
 void
 cli_cmd_client(Cli* self, int argc, char** argv)
 {
+	unused(self);
+
 	// amelie client [remote options]
-	home_open(&self->home);
+	Home home;
+	home_init(&home);
+	defer(home_free, &home);
+	home_open(&home);
 
 	// prepare console and read history
 	Console console;
@@ -176,7 +189,7 @@ cli_cmd_client(Cli* self, int argc, char** argv)
 	error_catch
 	(
 		// prepare remote
-		login_mgr_set(&self->home.login_mgr, &remote, NULL, argc, argv);
+		login_mgr_set(&home.login_mgr, &remote, NULL, argc, argv);
 
 		// create client and connect
 		client = client_create();
@@ -184,7 +197,7 @@ cli_cmd_client(Cli* self, int argc, char** argv)
 		client_connect(client);
 
 		// process cli
-		cli_cmd_client_main(self, client, &console);
+		cli_cmd_client_main(client, &console);
 	);
 
 	if (client)
@@ -192,6 +205,7 @@ cli_cmd_client(Cli* self, int argc, char** argv)
 		client_close(client);
 		client_free(client);
 	}
+	home_sync(&home);
 
 	// sync history
 	console_save(&console, path);
@@ -201,9 +215,14 @@ cli_cmd_client(Cli* self, int argc, char** argv)
 void
 cli_cmd_import(Cli* self, int argc, char** argv)
 {
+	unused(self);
+
 	// amelie import name
-	auto home = &self->home;
-	home_open(home);
+	Home home;
+	home_init(&home);
+	defer(home_free, &home);
+	home_open(&home);
+
 	opt_int_set(&config()->log_connections, false);
 
 	Remote remote;
@@ -217,7 +236,7 @@ cli_cmd_import(Cli* self, int argc, char** argv)
 	error_catch
 	(
 		// read arguments
-		auto last = login_mgr_set(&self->home.login_mgr, &remote,
+		auto last = login_mgr_set(&home.login_mgr, &remote,
 		                          &import.opts,
 		                           argc,
 		                           argv);
@@ -230,9 +249,14 @@ cli_cmd_import(Cli* self, int argc, char** argv)
 void
 cli_cmd_top(Cli* self, int argc, char** argv)
 {
+	unused(self);
+
 	// amelie top name
-	auto home = &self->home;
-	home_open(home);
+	Home home;
+	home_init(&home);
+	defer(home_free, &home);
+	home_open(&home);
+
 	opt_int_set(&config()->log_connections, false);
 
 	Remote remote;
@@ -246,7 +270,7 @@ cli_cmd_top(Cli* self, int argc, char** argv)
 	// prepare remote
 	error_catch
 	(
-		login_mgr_set(&self->home.login_mgr, &remote, NULL, argc, argv);
+		login_mgr_set(&home.login_mgr, &remote, NULL, argc, argv);
 		top_run(&top);
 	);
 }

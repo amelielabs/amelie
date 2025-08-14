@@ -125,7 +125,6 @@ cli_runner(void* arg)
 void
 cli_init(Cli* self)
 {
-	home_init(&self->home);
 	instance_init(&self->instance);
 	task_init(&self->task);
 }
@@ -134,7 +133,6 @@ void
 cli_free(Cli* self)
 {
 	task_free(&self->task);
-	home_free(&self->home);
 	instance_free(&self->instance);
 }
 

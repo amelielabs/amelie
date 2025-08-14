@@ -89,7 +89,10 @@ cli_cmd_backup(Cli* self, int argc, char** argv)
 	if (argc < 1)
 		error("backup <path> <remote> expected");
 
-	home_open(&self->home);
+	Home home;
+	home_init(&home);
+	defer(home_free, &home);
+	home_open(&home);
 
 	// amelie backup path [remote options]
 	auto bootstrap = instance_create(&self->instance, argv[0]);
@@ -100,7 +103,7 @@ cli_cmd_backup(Cli* self, int argc, char** argv)
 	Remote remote;
 	remote_init(&remote);
 	defer(remote_free, &remote);
-	login_mgr_set(&self->home.login_mgr, &remote, NULL, argc - 1, argv + 1);
+	login_mgr_set(&home.login_mgr, &remote, NULL, argc - 1, argv + 1);
 
 	// disable log output
 	if (str_is_cstr(remote_get(&remote, REMOTE_DEBUG), "0"))

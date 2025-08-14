@@ -30,7 +30,6 @@ struct CliCmd
 
 struct Cli
 {
-	Home     home;
 	Instance instance;
 	Task     task;
 };

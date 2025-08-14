@@ -18,9 +18,14 @@
 void
 cli_cmd_bench(Cli* self, int argc, char** argv)
 {
+	unused(self);
+
 	// amelie bench name
-	auto home = &self->home;
-	home_open(home);
+	Home home;
+	home_init(&home);
+	defer(home_free, &home);
+	home_open(&home);
+
 	opt_int_set(&config()->log_connections, false);
 
 	Remote remote;
@@ -34,7 +39,7 @@ cli_cmd_bench(Cli* self, int argc, char** argv)
 	// prepare remote
 	error_catch
 	(
-		login_mgr_set(&self->home.login_mgr, &remote, &bench.opts, argc, argv);
+		login_mgr_set(&home.login_mgr, &remote, &bench.opts, argc, argv);
 		bench_run(&bench);
 	);
 }
