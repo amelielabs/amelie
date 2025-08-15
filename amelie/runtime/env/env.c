@@ -15,34 +15,6 @@
 #include <amelie_lib.h>
 #include <amelie_json.h>
 #include <amelie_env.h>
-#include <amelie_user.h>
-#include <amelie_auth.h>
-#include <amelie_http.h>
-#include <amelie_client.h>
-#include <amelie_server.h>
-#include <amelie_row.h>
-#include <amelie_heap.h>
-#include <amelie_transaction.h>
-#include <amelie_index.h>
-#include <amelie_partition.h>
-#include <amelie_checkpoint.h>
-#include <amelie_catalog.h>
-#include <amelie_wal.h>
-#include <amelie_db.h>
-#include <amelie_backup.h>
-#include <amelie_repl.h>
-#include <amelie_value.h>
-#include <amelie_set.h>
-#include <amelie_content.h>
-#include <amelie_executor.h>
-#include <amelie_func.h>
-#include <amelie_vm.h>
-#include <amelie_parser.h>
-#include <amelie_compiler.h>
-#include <amelie_frontend.h>
-#include <amelie_backend.h>
-#include <amelie_session.h>
-#include <amelie_system.h>
 
 void
 instance_init(Instance* self)
@@ -216,6 +188,33 @@ instance_version_open(const char* path)
 }
 
 static void
+instance_bootstrap_server(void)
+{
+	Buf buf;
+	buf_init(&buf);
+	defer_buf(&buf);
+
+	// tls and auto are disabled by default
+
+	// []
+	encode_array(&buf);
+
+	// {}
+	encode_obj(&buf);
+	// host
+	encode_raw(&buf, "host", 4);
+	encode_cstr(&buf, "*");
+	// port
+	encode_raw(&buf, "port", 4);
+	encode_integer(&buf, 3485);
+	encode_obj_end(&buf);
+
+	encode_array_end(&buf);
+
+	opt_json_set_buf(&config()->listen, &buf);
+}
+
+static void
 instance_bootstrap(Instance* self)
 {
 	auto config = config();
@@ -237,7 +236,7 @@ instance_bootstrap(Instance* self)
 
 	// set default server listen
 	if (! opt_json_is_set(&config->listen))
-		server_bootstrap();
+		instance_bootstrap_server();
 }
 
 bool

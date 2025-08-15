@@ -162,7 +162,8 @@ set(AMELIE_SOURCES_RUNTIME
     ${AMELIE_ROOT}/runtime/json/json_export.c
     ${AMELIE_ROOT}/runtime/env/opts.c
     ${AMELIE_ROOT}/runtime/env/config.c
-    ${AMELIE_ROOT}/runtime/env/state.c)
+    ${AMELIE_ROOT}/runtime/env/state.c
+    ${AMELIE_ROOT}/runtime/env/env.c)
 
 set(AMELIE_SOURCES_SERVER
     ${AMELIE_ROOT}/server/user/user_mgr.c
@@ -174,8 +175,7 @@ set(AMELIE_SOURCES_SERVER
     ${AMELIE_ROOT}/server/http/http.c
     ${AMELIE_ROOT}/server/http/uri.c
     ${AMELIE_ROOT}/server/client/client.c
-    ${AMELIE_ROOT}/server/server/server.c
-    ${AMELIE_ROOT}/server/server/server_bootstrap.c)
+    ${AMELIE_ROOT}/server/server/server.c)
 
 set(AMELIE_SOURCES_DB
     ${AMELIE_ROOT}/db/heap/heap.c
@@ -303,7 +303,6 @@ set(AMELIE_SOURCES_SYSTEM
     ${AMELIE_ROOT}/system/session/session.c
     ${AMELIE_ROOT}/system/system/system.c
     ${AMELIE_ROOT}/system/system/system_metrics.c
-    ${AMELIE_ROOT}/system/system/instance.c
     ${AMELIE_ROOT}/system/api/amelie.c)
 
 set(AMELIE_SOURCES_CLI
