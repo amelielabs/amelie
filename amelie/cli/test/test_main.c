@@ -18,7 +18,7 @@ void
 cli_cmd_test(Cli* self, int argc, char** argv)
 {
 	unused(self);
-	logger_set_cli(global()->logger, true, false);
+	logger_set_cli(&env()->logger, true, false);
 
 	TestSuite suite;
 	test_suite_init(&suite);

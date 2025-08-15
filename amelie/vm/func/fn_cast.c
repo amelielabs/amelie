@@ -321,7 +321,7 @@ fn_timestamp(Call* self)
 			}
 			call_expect_arg(self, 1, TYPE_STRING);
 			auto name = &self->argv[1].string;
-			timezone = timezone_mgr_find(global()->timezone_mgr, name);
+			timezone = timezone_mgr_find(&env()->timezone_mgr, name);
 			if (! timezone)
 				call_error_arg(self, 1, "failed to find timezone '%.*s'",
 				               str_size(name), str_of(name));

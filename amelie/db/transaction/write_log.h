@@ -69,7 +69,7 @@ write_log_add(WriteLog* self, int cmd, uint64_t partition, Row* row)
 
 	// calculate crc
 	if (opt_int_of(&config()->wal_crc))
-		hdr->crc = global()->crc(hdr->crc, row, row_size(row));
+		hdr->crc = env()->crc(hdr->crc, row, row_size(row));
 }
 
 hot static inline void
@@ -87,5 +87,5 @@ write_log_add_op(WriteLog* self, int cmd, uint8_t* op)
 
 	// calculate crc
 	if (opt_int_of(&config()->wal_crc))
-		hdr->crc = global()->crc(0, op, hdr->size);
+		hdr->crc = env()->crc(0, op, hdr->size);
 }

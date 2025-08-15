@@ -19,27 +19,16 @@
 void
 env_init(Env* self)
 {
-	logger_init(&self->logger);
-	random_init(&self->random);
-	resolver_init(&self->resolver);
+	self->timezone = NULL;
+	self->crc      = crc32_sse_supported() ? crc32_sse : crc32;
+	self->control  = NULL;
+	buf_mgr_init(&self->buf_mgr);
 	config_init(&self->config);
 	state_init(&self->state);
 	timezone_mgr_init(&self->timezone_mgr);
-	buf_mgr_init(&self->buf_mgr);
-
-	auto global = &self->global;
-	global->config       = &self->config;
-	global->state        = &self->state;
-	global->timezone     = NULL;
-	global->timezone_mgr = &self->timezone_mgr;
-	global->control      = NULL;
-	global->random       = &self->random;
-	global->logger       = &self->logger;
-	global->resolver     = &self->resolver;
-	if (crc32_sse_supported())
-		global->crc = crc32_sse;
-	else
-		global->crc = crc32;
+	random_init(&self->random);
+	resolver_init(&self->resolver);
+	logger_init(&self->logger);
 }
 
 void
@@ -72,8 +61,8 @@ env_start(Env* self)
 	timezone_mgr_open(&self->timezone_mgr);
 
 	// set default timezone as system timezone
-	global()->timezone = self->timezone_mgr.system;
-	logger_set_timezone(logger, global()->timezone);
+	self->timezone = self->timezone_mgr.system;
+	logger_set_timezone(logger, self->timezone);
 
 	// init uuid manager
 	random_open(&self->random);
@@ -224,7 +213,7 @@ env_bootstrap(Env* self)
 	if (! opt_string_is_set(&config->uuid))
 	{
 		Uuid uuid;
-		uuid_generate(&uuid, global()->random);
+		uuid_generate(&uuid, &self->random);
 		char uuid_sz[UUID_SZ];
 		uuid_get(&uuid, uuid_sz, sizeof(uuid_sz));
 		opt_string_set_raw(&config->uuid, uuid_sz, sizeof(uuid_sz) - 1);
@@ -242,8 +231,8 @@ env_bootstrap(Env* self)
 bool
 env_open(Env* self, char* directory, int argc, char** argv)
 {
-	auto config = config();
-	auto state  = state();
+	auto config = &self->config;
+	auto state  = &self->state;
 
 	// create base directory, if not exists
 	auto bootstrap = env_create(self, directory);
@@ -303,14 +292,14 @@ env_open(Env* self, char* directory, int argc, char** argv)
 
 	// set system timezone
 	auto name = &config()->timezone.string;
-	global()->timezone = timezone_mgr_find(global()->timezone_mgr, name);
-	if (! global()->timezone)
+	self->timezone = timezone_mgr_find(&self->timezone_mgr, name);
+	if (! self->timezone)
 		error("failed to find timezone %.*s", str_size(name), str_of(name));
 
 	// reconfigure logger
 	logger_set_enable(logger, opt_int_of(&config->log_enable));
 	logger_set_to_stdout(logger, opt_int_of(&config->log_to_stdout));
-	logger_set_timezone(logger, global()->timezone);
+	logger_set_timezone(logger, self->timezone);
 	if (! opt_int_of(&config->log_to_file))
 		logger_close(logger);
 

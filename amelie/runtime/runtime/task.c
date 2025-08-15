@@ -13,7 +13,7 @@
 #include <amelie_runtime.h>
 
 __thread Task* am_task;
-__thread void* am_global;
+__thread void* am_env;
 __thread void* am_share;
 
 static inline void
@@ -134,18 +134,18 @@ mainloop(Task* self)
 }
 
 always_inline static inline void
-task_enter(Task* self, void* global, void* share)
+task_enter(Task* self, void* env, void* share)
 {
-	am_task   = self;
-	am_global = global;
-	am_share  = share;
+	am_task  = self;
+	am_env   = env;
+	am_share = share;
 }
 
 hot static void
 task_main(Task* self, bool native)
 {
 	// set global variables
-	task_enter(self, self->main_arg_global, self->main_arg_share);
+	task_enter(self, self->main_arg_env, self->main_arg_share);
 
 	if (! native)
 	{
@@ -183,13 +183,13 @@ task_thread_main(void* arg)
 void
 task_init(Task* self)
 {
-	self->main            = NULL;
-	self->main_arg        = NULL;
-	self->main_arg_global = NULL;
-	self->main_coroutine  = NULL;
-	self->log_write       = NULL;
-	self->log_write_arg   = NULL;
-	self->name[0]         = 0;
+	self->main           = NULL;
+	self->main_arg       = NULL;
+	self->main_arg_env   = NULL;
+	self->main_coroutine = NULL;
+	self->log_write      = NULL;
+	self->log_write_arg  = NULL;
+	self->name[0]        = 0;
 	coroutine_mgr_init(&self->coroutine_mgr, 4096 * 32); // 128kb
 	timer_mgr_init(&self->timer_mgr);
 	poller_init(&self->poller);
@@ -223,20 +223,20 @@ task_create_nothrow(Task*        self,
                     char*        name,
                     MainFunction main,
                     void*        main_arg,
-                    void*        main_arg_global,
+                    void*        main_arg_env,
                     void*        main_arg_share,
                     LogFunction  log,
                     void*        log_arg,
                     BufMgr*      buf_mgr)
 {
 	// set arguments
-	self->main            = main;
-	self->main_arg        = main_arg;
-	self->main_arg_global = main_arg_global;
-	self->main_arg_share  = main_arg_share;
-	self->log_write       = log;
-	self->log_write_arg   = log_arg;
-	self->buf_mgr         = buf_mgr;
+	self->main           = main;
+	self->main_arg       = main_arg;
+	self->main_arg_env   = main_arg_env;
+	self->main_arg_share = main_arg_share;
+	self->log_write      = log;
+	self->log_write_arg  = log_arg;
+	self->buf_mgr        = buf_mgr;
 	snprintf(self->name, sizeof(self->name), "%s", name);
 
 	// prepare poller
@@ -269,13 +269,13 @@ void
 task_execute(Task* self, MainFunction main, void* main_arg)
 {
 	// save and restore the current task context after execution
-	auto _am_share  = am_share;
-	auto _am_global = am_global;
-	auto _am_task   = am_task;
+	auto _am_share = am_share;
+	auto _am_env   = am_env;
+	auto _am_task  = am_task;
 	self->main     = main;
 	self->main_arg = main_arg;
 	task_main(self, true);
-	task_enter(_am_task, _am_global, _am_share);
+	task_enter(_am_task, _am_env, _am_share);
 }
 
 void

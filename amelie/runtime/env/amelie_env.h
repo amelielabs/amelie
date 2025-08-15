@@ -16,15 +16,12 @@
 #include "env/opts.h"
 #include "env/config.h"
 
-// state
+// runtime state
 #include "env/state.h"
 
-// control
-#include "env/control.h"
+// env
+#include "env/env.h"
 
 // global/local
 #include "env/global.h"
 #include "env/local.h"
-
-// env
-#include "env/env.h"

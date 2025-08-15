@@ -62,14 +62,14 @@ static inline bool
 record_validate(Record* self)
 {
 	auto size = self->count * sizeof(RecordCmd);
-	auto crc  = global()->crc(0, (uint8_t*)self + sizeof(*self), size);
-	crc = global()->crc(crc, &self->lsn, sizeof(*self) - sizeof(self->crc));
+	auto crc  = env()->crc(0, (uint8_t*)self + sizeof(*self), size);
+	crc = env()->crc(crc, &self->lsn, sizeof(*self) - sizeof(self->crc));
 	return crc == self->crc;
 }
 
 static inline bool
 record_validate_cmd(RecordCmd* self, uint8_t* data)
 {
-	uint32_t crc = global()->crc(0, data, self->size);
+	uint32_t crc = env()->crc(0, data, self->size);
 	return crc == self->crc;
 }

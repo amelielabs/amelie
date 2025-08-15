@@ -163,7 +163,7 @@ system_create(void)
 	control->system     = &am_task->channel;
 	control->save_state = system_save_state;
 	control->arg        = self;
-	global()->control   = control;
+	env()->control      = control;
 
 	// prepare shared context
 	auto share = &self->share;

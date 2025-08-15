@@ -11,42 +11,27 @@
 // AGPL-3.0 Licensed.
 //
 
-typedef struct Global Global;
-
-struct Global
-{
-	Config*      config;
-	State*       state;
-	Control*     control;
-	Timezone*    timezone;
-	TimezoneMgr* timezone_mgr;
-	Random*      random;
-	Logger*      logger;
-	Resolver*    resolver;
-	CrcFunction  crc;
-};
-
-#define global() ((Global*)am_global)
-#define config()  global()->config
-#define state()   global()->state
+#define env()    ((Env*)am_env)
+#define config() (&env()->config)
+#define state()  (&env()->state)
 
 // control
 static inline void
 control_lock(void)
 {
-	rpc(global()->control->system, RPC_LOCK, 0);
+	rpc(env()->control->system, RPC_LOCK, 0);
 }
 
 static inline void
 control_unlock(void)
 {
-	rpc(global()->control->system, RPC_UNLOCK, 0);
+	rpc(env()->control->system, RPC_UNLOCK, 0);
 }
 
 static inline void
 control_save_state(void)
 {
-	global()->control->save_state(global()->control->arg);
+	env()->control->save_state(env()->control->arg);
 }
 
 // directory

@@ -161,7 +161,7 @@ fn_metrics(Call* self)
 {
 	call_expect(self, 0);
 	Buf* buf;
-	rpc(global()->control->system, RPC_SHOW_METRICS, 1, &buf);
+	rpc(env()->control->system, RPC_SHOW_METRICS, 1, &buf);
 	value_set_json_buf(self->result, buf);
 }
 
@@ -251,7 +251,7 @@ fn_show(Call* self)
 		if (! str_empty(name))
 			call_error_noargs(self, "unexpected name argument");
 
-		auto opt = opts_find(&global()->config->opts, section);
+		auto opt = opts_find(&config()->opts, section);
 		if (opt && opt_is(opt, OPT_S))
 			opt = NULL;
 		if (unlikely(opt == NULL))
@@ -310,7 +310,7 @@ fn_show(Call* self)
 	}
 	case SHOW_METRICS:
 	{
-		rpc(global()->control->system, RPC_SHOW_METRICS, 1, &buf);
+		rpc(env()->control->system, RPC_SHOW_METRICS, 1, &buf);
 		break;
 	}
 	case SHOW_SCHEMAS:
@@ -347,7 +347,7 @@ fn_show(Call* self)
 	case SHOW_ALL:
 	case SHOW_CONFIG:
 	{
-		buf = opts_list(&global()->config->opts);
+		buf = opts_list(&config()->opts);
 		break;
 	}
 	default:

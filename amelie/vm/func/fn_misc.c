@@ -62,7 +62,7 @@ static void
 fn_random(Call* self)
 {
 	call_expect(self, 0);
-	int64_t value = random_generate(global()->random);
+	int64_t value = random_generate(&env()->random);
 	value_set_int(self->result, llabs(value));
 }
 
@@ -72,7 +72,7 @@ fn_random_uuid(Call* self)
 	call_expect(self, 0);
 	Uuid id;
 	uuid_init(&id);
-	uuid_generate(&id, global()->random);
+	uuid_generate(&id, &env()->random);
 	value_set_uuid(self->result, &id);
 }
 

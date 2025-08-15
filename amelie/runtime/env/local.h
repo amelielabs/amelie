@@ -21,10 +21,10 @@ struct Local
 };
 
 static inline void
-local_init(Local* self, Global* global)
+local_init(Local* self)
 {
 	// derive default configuration
-	self->timezone = global->timezone;
+	self->timezone = env()->timezone;
 	self->time_us  = 0;
 	self->format   = &config()->format.string;
 }

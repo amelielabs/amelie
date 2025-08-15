@@ -31,8 +31,8 @@ struct System
 	// server
 	Server      server;
 	UserMgr     user_mgr;
-	// config state
-	Control     control;
+	// system control
+	EnvControl  control;
 };
 
 System*

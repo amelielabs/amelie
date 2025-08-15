@@ -11,18 +11,28 @@
 // AGPL-3.0 Licensed.
 //
 
-typedef struct Env Env;
+typedef struct EnvControl EnvControl;
+typedef struct Env        Env;
+
+struct EnvControl
+{
+	Channel*  system;
+	void    (*save_state)(void*);
+	void*     arg;
+};
 
 struct Env
 {
-	Logger      logger;
-	Random      random;
-	Resolver    resolver;
+	BufMgr      buf_mgr;
 	Config      config;
 	State       state;
+	Timezone*   timezone;
 	TimezoneMgr timezone_mgr;
-	BufMgr      buf_mgr;
-	Global      global;
+	CrcFunction crc;
+	EnvControl* control;
+	Random      random;
+	Resolver    resolver;
+	Logger      logger;
 };
 
 void env_init(Env*);

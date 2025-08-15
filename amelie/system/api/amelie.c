@@ -196,7 +196,7 @@ amelie_open(amelie_t* self, const char* path, int argc, char** argv)
 	};
 	int rc;
 	rc = task_create_nothrow(&self->task, "main", amelie_main, &args,
-	                         &self->env.global, NULL,
+	                         &self->env, NULL,
 	                         logger_write, &self->env.logger,
 	                         &self->env.buf_mgr);
 	if (unlikely(rc == -1))

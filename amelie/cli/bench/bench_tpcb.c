@@ -285,7 +285,7 @@ bench_tpcb_main(BenchWorker* self, BenchClient* client)
 
 	while (! self->shutdown)
 	{
-		uint64_t random = random_generate(global()->random);
+		uint64_t random = random_generate(&env()->random);
 		uint32_t a = random;
 		uint32_t b = random >> 32;
 		uint32_t c = a ^ b;

@@ -53,7 +53,7 @@ session_create(Frontend* frontend)
 	self->lock      = NULL;
 	self->lock_ref  = NULL;
 	self->frontend  = frontend;
-	local_init(&self->local, global());
+	local_init(&self->local);
 	explain_init(&self->explain);
 	vm_init(&self->vm, NULL, &self->dtr);
 	dtr_init(&self->dtr, &self->local, share()->core_mgr);

@@ -41,19 +41,19 @@ static void
 test_task_args_main(void* arg)
 {
 	test( *(int*)arg == 123 );
-	test( *(int*)am_task->main_arg_global == 321 );
+	test( *(int*)am_task->main_arg_env == 321 );
 }
 
 void test_task_args(void)
 {
 	int arg = 123;
-	int arg_global = 321;
+	int arg_env = 321;
 
 	Task task;
 	task_init(&task);
 	int rc;
 	rc = task_create_nothrow(&task, "test", test_task_args_main,
-	                         &arg, &arg_global, NULL, NULL, NULL, NULL);
+	                         &arg, &arg_env, NULL, NULL, NULL, NULL);
 	test(rc == 0);
 	task_wait(&task);
 	task_free(&task);

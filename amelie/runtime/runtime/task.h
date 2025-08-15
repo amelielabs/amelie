@@ -23,7 +23,7 @@ struct Task
 	Channel      channel;
 	MainFunction main;
 	void*        main_arg;
-	void*        main_arg_global;
+	void*        main_arg_env;
 	void*        main_arg_share;
 	Coroutine*   main_coroutine;
 	LogFunction  log_write;
@@ -34,7 +34,7 @@ struct Task
 };
 
 extern __thread void* am_share;
-extern __thread void* am_global;
+extern __thread void* am_env;
 extern __thread Task* am_task;
 
 static inline Coroutine*

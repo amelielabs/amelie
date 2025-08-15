@@ -57,7 +57,7 @@ build_init(Build*       self,
 	self->column      = column;
 	self->index       = index;
 	self->backend_mgr = backend_mgr;
-	local_init(&self->local, global());
+	local_init(&self->local);
 	dtr_init(&self->dtr, &self->local, &self->backend_mgr->core_mgr);
 }
 

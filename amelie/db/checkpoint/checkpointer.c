@@ -100,7 +100,7 @@ checkpointer_periodic_main(void* arg)
 		if (workers == 0)
 			workers = 1;
 		coroutine_sleep(self->interval_us);
-		rpc(global()->control->system, RPC_CHECKPOINT, 1, workers);
+		rpc(env()->control->system, RPC_CHECKPOINT, 1, workers);
 	}
 }
 
