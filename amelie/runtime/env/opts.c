@@ -14,7 +14,7 @@
 #include <amelie_os.h>
 #include <amelie_lib.h>
 #include <amelie_json.h>
-#include <amelie_config.h>
+#include <amelie_env.h>
 
 void
 opts_init(Opts* self)

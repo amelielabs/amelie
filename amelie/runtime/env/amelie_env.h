@@ -12,16 +12,16 @@
 //
 
 // config
-#include "config/opt.h"
-#include "config/opts.h"
-#include "config/config.h"
+#include "env/opt.h"
+#include "env/opts.h"
+#include "env/config.h"
 
 // state
-#include "config/state.h"
+#include "env/state.h"
 
 // control
-#include "config/control.h"
+#include "env/control.h"
 
 // global/local
-#include "config/global.h"
-#include "config/local.h"
+#include "env/global.h"
+#include "env/local.h"
