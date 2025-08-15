@@ -11,9 +11,9 @@
 // AGPL-3.0 Licensed.
 //
 
-typedef struct Instance Instance;
+typedef struct Env Env;
 
-struct Instance
+struct Env
 {
 	Logger      logger;
 	Random      random;
@@ -25,9 +25,9 @@ struct Instance
 	Global      global;
 };
 
-void instance_init(Instance*);
-void instance_free(Instance*);
-void instance_start(Instance*);
-void instance_stop(Instance*);
-bool instance_create(Instance*, char*);
-bool instance_open(Instance*, char*, int, char**);
+void env_init(Env*);
+void env_free(Env*);
+void env_start(Env*);
+void env_stop(Env*);
+bool env_create(Env*, char*);
+bool env_open(Env*, char*, int, char**);

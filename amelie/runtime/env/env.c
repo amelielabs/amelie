@@ -17,7 +17,7 @@
 #include <amelie_env.h>
 
 void
-instance_init(Instance* self)
+env_init(Env* self)
 {
 	logger_init(&self->logger);
 	random_init(&self->random);
@@ -43,7 +43,7 @@ instance_init(Instance* self)
 }
 
 void
-instance_free(Instance* self)
+env_free(Env* self)
 {
 	config_free(&self->config);
 	state_free(&self->state);
@@ -54,7 +54,7 @@ instance_free(Instance* self)
 }
 
 void
-instance_start(Instance* self)
+env_start(Env* self)
 {
 	// prepare default logger settings
 	auto logger = &self->logger;
@@ -89,14 +89,14 @@ instance_start(Instance* self)
 }
 
 void
-instance_stop(Instance* self)
+env_stop(Env* self)
 {
 	// stop resolver
 	resolver_stop(&self->resolver);
 }
 
 bool
-instance_create(Instance* self, char* directory)
+env_create(Env* self, char* directory)
 {
 	unused(self);
 
@@ -115,7 +115,7 @@ instance_create(Instance* self, char* directory)
 }
 
 static Buf*
-instance_version_create(void)
+env_version_create(void)
 {
 	// {}
 	auto buf = buf_create();
@@ -130,9 +130,9 @@ instance_version_create(void)
 }
 
 static void
-instance_version_save(const char* path)
+env_version_save(const char* path)
 {
-	auto buf = instance_version_create();
+	auto buf = env_version_create();
 	defer_buf(buf);
 
 	// convert to json
@@ -151,7 +151,7 @@ instance_version_save(const char* path)
 }
 
 static void
-instance_version_open(const char* path)
+env_version_open(const char* path)
 {
 	// read version file
 	auto version_buf = file_import("%s", path);
@@ -188,7 +188,7 @@ instance_version_open(const char* path)
 }
 
 static void
-instance_bootstrap_server(void)
+env_bootstrap_server(void)
 {
 	Buf buf;
 	buf_init(&buf);
@@ -215,7 +215,7 @@ instance_bootstrap_server(void)
 }
 
 static void
-instance_bootstrap(Instance* self)
+env_bootstrap(Env* self)
 {
 	auto config = config();
 	unused(self);
@@ -236,17 +236,17 @@ instance_bootstrap(Instance* self)
 
 	// set default server listen
 	if (! opt_json_is_set(&config->listen))
-		instance_bootstrap_server();
+		env_bootstrap_server();
 }
 
 bool
-instance_open(Instance* self, char* directory, int argc, char** argv)
+env_open(Env* self, char* directory, int argc, char** argv)
 {
 	auto config = config();
 	auto state  = state();
 
 	// create base directory, if not exists
-	auto bootstrap = instance_create(self, directory);
+	auto bootstrap = env_create(self, directory);
 
 	// open log with default settings
 	auto logger = &self->logger;
@@ -261,11 +261,11 @@ instance_open(Instance* self, char* directory, int argc, char** argv)
 	if (bootstrap)
 	{
 		// create version file
-		instance_version_save(path);
+		env_version_save(path);
 	} else
 	{
 		// read and validate version file
-		instance_version_open(path);
+		env_version_open(path);
 	}
 
 	// read config file
@@ -276,7 +276,7 @@ instance_open(Instance* self, char* directory, int argc, char** argv)
 		opts_set_argv(&config->opts, argc, argv);
 
 		// set default settings
-		instance_bootstrap(self);
+		env_bootstrap(self);
 
 		// create config file
 		config_save(config, path);

@@ -30,8 +30,8 @@ struct CliCmd
 
 struct Cli
 {
-	Instance instance;
-	Task     task;
+	Env  env;
+	Task task;
 };
 
 void  cli_init(Cli*);

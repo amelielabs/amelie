@@ -20,7 +20,7 @@ cli_cmd_init(Cli* self, int argc, char** argv)
 		error("init <path> [options] expected");
 
 	// amelie init path [server options]
-	auto bootstrap = instance_open(&self->instance, argv[0], argc - 1, argv + 1);
+	auto bootstrap = env_open(&self->env, argv[0], argc - 1, argv + 1);
 	if (! bootstrap)
 		error("directory already exists");
 
@@ -49,7 +49,7 @@ cli_cmd_start(Cli* self, int argc, char** argv)
 		error("start <path> [options] expected");
 
 	// amelie start path [server options]
-	auto bootstrap = instance_open(&self->instance, argv[0], argc - 1, argv + 1);
+	auto bootstrap = env_open(&self->env, argv[0], argc - 1, argv + 1);
 
 	auto system = (System*)NULL;
 	error_catch
@@ -95,7 +95,7 @@ cli_cmd_backup(Cli* self, int argc, char** argv)
 	home_open(&home);
 
 	// amelie backup path [remote options]
-	auto bootstrap = instance_create(&self->instance, argv[0]);
+	auto bootstrap = env_create(&self->env, argv[0]);
 	if (! bootstrap)
 		error("directory already exists");
 
@@ -107,7 +107,7 @@ cli_cmd_backup(Cli* self, int argc, char** argv)
 
 	// disable log output
 	if (str_is_cstr(remote_get(&remote, REMOTE_DEBUG), "0"))
-		logger_set_to_stdout(&self->instance.logger, false);
+		logger_set_to_stdout(&self->env.logger, false);
 
 	restore(&remote);
 }
