@@ -64,7 +64,7 @@ include_directories("${AMELIE_ROOT}/runtime/base")
 include_directories("${AMELIE_ROOT}/runtime/os")
 include_directories("${AMELIE_ROOT}/runtime/lib")
 include_directories("${AMELIE_ROOT}/runtime/json")
-include_directories("${AMELIE_ROOT}/runtime/env")
+include_directories("${AMELIE_ROOT}/runtime/runtime")
 
 # server
 include_directories("${AMELIE_ROOT}/server")
@@ -160,10 +160,10 @@ set(AMELIE_SOURCES_RUNTIME
     ${AMELIE_ROOT}/runtime/lib/histogram.c
     ${AMELIE_ROOT}/runtime/json/json_parser.c
     ${AMELIE_ROOT}/runtime/json/json_export.c
-    ${AMELIE_ROOT}/runtime/env/opts.c
-    ${AMELIE_ROOT}/runtime/env/config.c
-    ${AMELIE_ROOT}/runtime/env/state.c
-    ${AMELIE_ROOT}/runtime/env/env.c)
+    ${AMELIE_ROOT}/runtime/runtime/opts.c
+    ${AMELIE_ROOT}/runtime/runtime/config.c
+    ${AMELIE_ROOT}/runtime/runtime/state.c
+    ${AMELIE_ROOT}/runtime/runtime/runtime.c)
 
 set(AMELIE_SOURCES_SERVER
     ${AMELIE_ROOT}/server/user/user_mgr.c
