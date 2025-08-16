@@ -60,7 +60,7 @@ set(AMELIE_ROOT "${CMAKE_SOURCE_DIR}/amelie")
 
 # runtime
 include_directories("${AMELIE_ROOT}/runtime")
-include_directories("${AMELIE_ROOT}/runtime/runtime")
+include_directories("${AMELIE_ROOT}/runtime/base")
 include_directories("${AMELIE_ROOT}/runtime/os")
 include_directories("${AMELIE_ROOT}/runtime/lib")
 include_directories("${AMELIE_ROOT}/runtime/json")
@@ -123,15 +123,15 @@ include_directories("${AMELIE_ROOT}/cli/test")
 
 # sources
 set(AMELIE_SOURCES_RUNTIME
-    ${AMELIE_ROOT}/runtime/runtime/report.c
-    ${AMELIE_ROOT}/runtime/runtime/timer_mgr.c
-    ${AMELIE_ROOT}/runtime/runtime/poller.c
-    ${AMELIE_ROOT}/runtime/runtime/notify.c
-    ${AMELIE_ROOT}/runtime/runtime/context_stack.c
-    ${AMELIE_ROOT}/runtime/runtime/context.c
-    ${AMELIE_ROOT}/runtime/runtime/bus.c
-    ${AMELIE_ROOT}/runtime/runtime/channel.c
-    ${AMELIE_ROOT}/runtime/runtime/task.c
+    ${AMELIE_ROOT}/runtime/base/report.c
+    ${AMELIE_ROOT}/runtime/base/timer_mgr.c
+    ${AMELIE_ROOT}/runtime/base/poller.c
+    ${AMELIE_ROOT}/runtime/base/notify.c
+    ${AMELIE_ROOT}/runtime/base/context_stack.c
+    ${AMELIE_ROOT}/runtime/base/context.c
+    ${AMELIE_ROOT}/runtime/base/bus.c
+    ${AMELIE_ROOT}/runtime/base/channel.c
+    ${AMELIE_ROOT}/runtime/base/task.c
     ${AMELIE_ROOT}/runtime/os/os.c
     ${AMELIE_ROOT}/runtime/os/vfs.c
     ${AMELIE_ROOT}/runtime/os/tls_lib.c

@@ -10,7 +10,7 @@
 // AGPL-3.0 Licensed.
 //
 
-#include <amelie_runtime.h>
+#include <amelie_base.h>
 
 void
 bus_init(Bus* self)

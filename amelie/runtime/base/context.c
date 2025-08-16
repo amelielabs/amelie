@@ -10,7 +10,7 @@
 // AGPL-3.0 Licensed.
 //
 
-#include <amelie_runtime.h>
+#include <amelie_base.h>
 
 #if !defined(__amd64) && !defined(__i386)
 #error unsupported architecture
