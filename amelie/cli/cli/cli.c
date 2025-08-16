@@ -110,10 +110,10 @@ cli_runner(void* arg)
 
 	auto on_error = error_catch
 	(
-		env_start(&self->env);
+		runtime_start(&self->runtime);
 		cli_main(self, args->argc, args->argv);
 	);
-	env_stop(&self->env);
+	runtime_stop(&self->runtime);
 
 	// complete
 	CliRc rc = CLI_COMPLETE;
@@ -125,7 +125,7 @@ cli_runner(void* arg)
 void
 cli_init(Cli* self)
 {
-	env_init(&self->env);
+	runtime_init(&self->runtime);
 	task_init(&self->task);
 }
 
@@ -133,7 +133,7 @@ void
 cli_free(Cli* self)
 {
 	task_free(&self->task);
-	env_free(&self->env);
+	runtime_free(&self->runtime);
 }
 
 CliRc
@@ -148,9 +148,9 @@ cli_start(Cli* self, int argc, char** argv)
 	};
 	int rc;
 	rc = task_create_nothrow(&self->task, "main", cli_runner, &args,
-	                         &self->env, NULL,
-	                         logger_write, &self->env.logger,
-	                         &self->env.buf_mgr);
+	                         &self->runtime, NULL,
+	                         logger_write, &self->runtime.logger,
+	                         &self->runtime.buf_mgr);
 	if (unlikely(rc == -1))
 		return CLI_ERROR;
 
@@ -162,7 +162,7 @@ cli_start(Cli* self, int argc, char** argv)
 void
 cli_stop(Cli* self)
 {
-	auto buf = msg_create_as(&self->env.buf_mgr, RPC_STOP, 0);
+	auto buf = msg_create_as(&self->runtime.buf_mgr, RPC_STOP, 0);
 	channel_write(&self->task.channel, buf);
 	task_wait(&self->task);
 }

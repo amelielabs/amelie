@@ -171,7 +171,7 @@ task_create(Task*        self,
 {
 	int rc;
 	rc = task_create_nothrow(self, name, main, main_arg,
-	                         am_env,
+	                         am_runtime,
 	                         am_share,
 	                         am_task->log_write,
 	                         am_task->log_write_arg,

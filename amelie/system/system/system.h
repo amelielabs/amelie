@@ -31,8 +31,8 @@ struct System
 	// server
 	Server      server;
 	UserMgr     user_mgr;
-	// system control
-	EnvControl  control;
+	// runtime control
+	RuntimeIf   runtime_if;
 };
 
 System*

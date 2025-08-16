@@ -45,7 +45,7 @@ heap_file_write(Heap* self, char* path)
 	auto size = sizeof(HeapHeader) + sizeof(HeapBucket) * 385;
 	self->header->compression = compression;
 	self->header->crc =
-		env()->crc(0, &self->header->magic, size - sizeof(uint32_t));
+		runtime()->crc(0, &self->header->magic, size - sizeof(uint32_t));
 	file_write(&file, self->header, size);
 
 	auto page_mgr = &self->page_mgr;
@@ -69,7 +69,7 @@ heap_file_write(Heap* self, char* path)
 		}
 
 		if (opt_int_of(&config()->checkpoint_crc))
-			page_header->crc = env()->crc(0, page_data, page_size);
+			page_header->crc = runtime()->crc(0, page_data, page_size);
 
 		file_write(&file, page_header, sizeof(PageHeader));
 		file_write(&file, page_data, page_size);
@@ -99,7 +99,7 @@ heap_file_read(Heap* self, char* path)
 		error("heap: file '%s' has invalid header");
 
 	// validate header crc
-	uint32_t crc = env()->crc(0, &self->header->magic, size - sizeof(uint32_t));
+	uint32_t crc = runtime()->crc(0, &self->header->magic, size - sizeof(uint32_t));
 	if (crc != self->header->crc)
 		error("heap: file '%s' header crc mismatch");
 
@@ -133,7 +133,7 @@ heap_file_read(Heap* self, char* path)
 			// validate crc
 			if (opt_int_of(&config()->checkpoint_crc))
 			{
-				crc = env()->crc(0, cp_buf->start, buf_size(cp_buf));
+				crc = runtime()->crc(0, cp_buf->start, buf_size(cp_buf));
 				if (crc != page_header->crc)
 					error("heap: file '%s' page crc mismatch");
 			}
@@ -149,7 +149,7 @@ heap_file_read(Heap* self, char* path)
 			// validate crc
 			if (opt_int_of(&config()->checkpoint_crc))
 			{
-				crc = env()->crc(0, page_data, page_size);
+				crc = runtime()->crc(0, page_data, page_size);
 				if (crc != page_header->crc)
 					error("heap: file '%s' page crc mismatch");
 			}

@@ -67,8 +67,8 @@ write_end(Write* self, uint64_t lsn)
 
 	// calculate header crc (header + commands)
 	if (opt_int_of(&config()->wal_crc))
-		header->crc = env()->crc(header->crc, &header->lsn,
-		                         sizeof(Record) - sizeof(uint32_t));
+		header->crc = runtime()->crc(header->crc, &header->lsn,
+		                             sizeof(Record) - sizeof(uint32_t));
 }
 
 static inline void
@@ -88,6 +88,6 @@ write_add(Write* self, WriteLog* write_log)
 
 	// calculate crc
 	if (opt_int_of(&config()->wal_crc))
-		header->crc = env()->crc(header->crc, write_log->meta.start,
-		                         buf_size(&write_log->meta));
+		header->crc = runtime()->crc(header->crc, write_log->meta.start,
+		                             buf_size(&write_log->meta));
 }

@@ -11,33 +11,33 @@
 // AGPL-3.0 Licensed.
 //
 
-typedef struct EnvControl EnvControl;
-typedef struct Env        Env;
+typedef struct RuntimeIf RuntimeIf;
+typedef struct Runtime   Runtime;
 
-struct EnvControl
+struct RuntimeIf
 {
 	Channel*  system;
 	void    (*save_state)(void*);
 	void*     arg;
 };
 
-struct Env
+struct Runtime
 {
 	BufMgr      buf_mgr;
 	Config      config;
 	State       state;
+	RuntimeIf*  iface;
 	Timezone*   timezone;
 	TimezoneMgr timezone_mgr;
 	CrcFunction crc;
-	EnvControl* control;
 	Random      random;
 	Resolver    resolver;
 	Logger      logger;
 };
 
-void env_init(Env*);
-void env_free(Env*);
-void env_start(Env*);
-void env_stop(Env*);
-bool env_create(Env*, char*);
-bool env_open(Env*, char*, int, char**);
+void runtime_init(Runtime*);
+void runtime_free(Runtime*);
+void runtime_start(Runtime*);
+void runtime_stop(Runtime*);
+bool runtime_create(Runtime*, char*);
+bool runtime_open(Runtime*, char*, int, char**);

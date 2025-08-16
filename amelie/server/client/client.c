@@ -141,7 +141,7 @@ client_connect_to(Client* self, UriHost* host)
 {
 	// resolve host address
 	struct addrinfo* addr = NULL;
-	resolve(&env()->resolver, str_of(&host->host), host->port, &addr);
+	resolve(&runtime()->resolver, str_of(&host->host), host->port, &addr);
 	defer(freeaddrinfo, addr);
 
 	// prepare for https connection

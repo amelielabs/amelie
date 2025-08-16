@@ -67,7 +67,7 @@ bench_decre_main(BenchWorker* self, BenchClient* client)
 		buf_reset(&buf);
 		for (auto i = 0ul; i < batch; i++)
 		{
-			uint64_t random = random_generate(&env()->random);
+			uint64_t random = random_generate(&runtime()->random);
 			uint32_t a = random;
 			uint32_t b = random >> 32;
 			int from = a % total;

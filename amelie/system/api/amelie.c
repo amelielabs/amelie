@@ -25,7 +25,7 @@ struct amelie
 {
 	int     type;
 	System* system;
-	Env     env;
+	Runtime runtime;
 	Task    task;
 };
 
@@ -52,7 +52,7 @@ amelie_init(void)
 	auto self = (amelie_t*)am_malloc(sizeof(amelie_t));
 	self->type   = AMELIE_OBJ;
 	self->system = NULL;
-	env_init(&self->env);
+	runtime_init(&self->runtime);
 	task_init(&self->task);
 	return self;
 }
@@ -67,7 +67,7 @@ amelie_free(void* ptr)
 		amelie_t* self = ptr;
 		if (task_active(&self->task))
 		{
-			auto buf = msg_create_as(&self->env.buf_mgr, RPC_STOP, 0);
+			auto buf = msg_create_as(&self->runtime.buf_mgr, RPC_STOP, 0);
 			channel_write(&self->task.channel, buf);
 			task_wait(&self->task);
 		}
@@ -142,11 +142,11 @@ amelie_main(void* arg)
 	auto self = args->self;
 	auto on_error = error_catch
 	(
-		// start env
-		env_start(&self->env);
-		auto bootstrap = env_open(&self->env, args->path,
-		                          args->argc,
-		                          args->argv);
+		// start runtime
+		runtime_start(&self->runtime);
+		auto bootstrap = runtime_open(&self->runtime, args->path,
+		                              args->argc,
+		                              args->argv);
 		// create system object
 		self->system = system_create();
 		system_start(self->system, bootstrap);
@@ -165,8 +165,8 @@ amelie_main(void* arg)
 		system_free(system);
 		self->system = NULL;
 	}
-	env_stop(&self->env);
-	env_free(&self->env);
+	runtime_stop(&self->runtime);
+	runtime_free(&self->runtime);
 
 	// complete
 	int rc = 0;
@@ -196,9 +196,9 @@ amelie_open(amelie_t* self, const char* path, int argc, char** argv)
 	};
 	int rc;
 	rc = task_create_nothrow(&self->task, "main", amelie_main, &args,
-	                         &self->env, NULL,
-	                         logger_write, &self->env.logger,
-	                         &self->env.buf_mgr);
+	                         &self->runtime, NULL,
+	                         logger_write, &self->runtime.logger,
+	                         &self->runtime.buf_mgr);
 	if (unlikely(rc == -1))
 		return -1;
 
@@ -227,7 +227,7 @@ amelie_connect(amelie_t* self, const char* uri)
 	request_queue_push(&session->native.queue, &req, false);
 
 	// register native client in the frontend pool
-	auto buf = msg_create_as(&self->env.buf_mgr, MSG_NATIVE, 0);
+	auto buf = msg_create_as(&self->runtime.buf_mgr, MSG_NATIVE, 0);
 	auto native_ptr = &session->native;
 	buf_write(buf, &native_ptr, sizeof(void**));
 	msg_end(buf);

@@ -158,12 +158,12 @@ system_create(void)
 	System* self = am_malloc(sizeof(System));
 	self->lock = false;
 
-	// set control
-	auto control = &self->control;
+	// set runtime control
+	auto control = &self->runtime_if;
 	control->system     = &am_task->channel;
 	control->save_state = system_save_state;
 	control->arg        = self;
-	env()->control      = control;
+	runtime()->iface    = control;
 
 	// prepare shared context
 	auto share = &self->share;

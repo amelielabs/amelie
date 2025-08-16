@@ -11,27 +11,27 @@
 // AGPL-3.0 Licensed.
 //
 
-#define env()    ((Env*)am_env)
-#define config() (&env()->config)
-#define state()  (&env()->state)
+#define runtime() ((Runtime*)am_runtime)
+#define config()  (&runtime()->config)
+#define state()   (&runtime()->state)
 
 // control
 static inline void
 control_lock(void)
 {
-	rpc(env()->control->system, RPC_LOCK, 0);
+	rpc(runtime()->iface->system, RPC_LOCK, 0);
 }
 
 static inline void
 control_unlock(void)
 {
-	rpc(env()->control->system, RPC_UNLOCK, 0);
+	rpc(runtime()->iface->system, RPC_UNLOCK, 0);
 }
 
 static inline void
 control_save_state(void)
 {
-	env()->control->save_state(env()->control->arg);
+	runtime()->iface->save_state(runtime()->iface->arg);
 }
 
 // directory

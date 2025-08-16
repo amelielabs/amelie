@@ -24,7 +24,7 @@ static inline void
 local_init(Local* self)
 {
 	// derive default configuration
-	self->timezone = env()->timezone;
+	self->timezone = runtime()->timezone;
 	self->time_us  = 0;
 	self->format   = &config()->format.string;
 }

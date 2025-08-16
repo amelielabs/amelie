@@ -17,11 +17,11 @@
 #include <amelie_runtime.h>
 
 void
-env_init(Env* self)
+runtime_init(Runtime* self)
 {
 	self->timezone = NULL;
 	self->crc      = crc32_sse_supported() ? crc32_sse : crc32;
-	self->control  = NULL;
+	self->iface    = NULL;
 	buf_mgr_init(&self->buf_mgr);
 	config_init(&self->config);
 	state_init(&self->state);
@@ -32,7 +32,7 @@ env_init(Env* self)
 }
 
 void
-env_free(Env* self)
+runtime_free(Runtime* self)
 {
 	config_free(&self->config);
 	state_free(&self->state);
@@ -43,7 +43,7 @@ env_free(Env* self)
 }
 
 void
-env_start(Env* self)
+runtime_start(Runtime* self)
 {
 	// prepare default logger settings
 	auto logger = &self->logger;
@@ -78,14 +78,14 @@ env_start(Env* self)
 }
 
 void
-env_stop(Env* self)
+runtime_stop(Runtime* self)
 {
 	// stop resolver
 	resolver_stop(&self->resolver);
 }
 
 bool
-env_create(Env* self, char* directory)
+runtime_create(Runtime* self, char* directory)
 {
 	unused(self);
 
@@ -104,7 +104,7 @@ env_create(Env* self, char* directory)
 }
 
 static Buf*
-env_version_create(void)
+runtime_version_create(void)
 {
 	// {}
 	auto buf = buf_create();
@@ -119,9 +119,9 @@ env_version_create(void)
 }
 
 static void
-env_version_save(const char* path)
+runtime_version_save(const char* path)
 {
-	auto buf = env_version_create();
+	auto buf = runtime_version_create();
 	defer_buf(buf);
 
 	// convert to json
@@ -140,7 +140,7 @@ env_version_save(const char* path)
 }
 
 static void
-env_version_open(const char* path)
+runtime_version_open(const char* path)
 {
 	// read version file
 	auto version_buf = file_import("%s", path);
@@ -177,7 +177,7 @@ env_version_open(const char* path)
 }
 
 static void
-env_bootstrap_server(void)
+runtime_bootstrap_server(void)
 {
 	Buf buf;
 	buf_init(&buf);
@@ -204,7 +204,7 @@ env_bootstrap_server(void)
 }
 
 static void
-env_bootstrap(Env* self)
+runtime_bootstrap(Runtime* self)
 {
 	auto config = config();
 	unused(self);
@@ -225,17 +225,17 @@ env_bootstrap(Env* self)
 
 	// set default server listen
 	if (! opt_json_is_set(&config->listen))
-		env_bootstrap_server();
+		runtime_bootstrap_server();
 }
 
 bool
-env_open(Env* self, char* directory, int argc, char** argv)
+runtime_open(Runtime* self, char* directory, int argc, char** argv)
 {
 	auto config = &self->config;
 	auto state  = &self->state;
 
 	// create base directory, if not exists
-	auto bootstrap = env_create(self, directory);
+	auto bootstrap = runtime_create(self, directory);
 
 	// open log with default settings
 	auto logger = &self->logger;
@@ -250,11 +250,11 @@ env_open(Env* self, char* directory, int argc, char** argv)
 	if (bootstrap)
 	{
 		// create version file
-		env_version_save(path);
+		runtime_version_save(path);
 	} else
 	{
 		// read and validate version file
-		env_version_open(path);
+		runtime_version_open(path);
 	}
 
 	// read config file
@@ -265,7 +265,7 @@ env_open(Env* self, char* directory, int argc, char** argv)
 		opts_set_argv(&config->opts, argc, argv);
 
 		// set default settings
-		env_bootstrap(self);
+		runtime_bootstrap(self);
 
 		// create config file
 		config_save(config, path);
