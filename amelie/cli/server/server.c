@@ -16,11 +16,12 @@
 void
 cli_cmd_init(Cli* self, int argc, char** argv)
 {
+	unused(self);
 	if (argc < 1)
 		error("init <path> [options] expected");
 
 	// amelie init path [server options]
-	auto bootstrap = runtime_open(&self->runtime, argv[0], argc - 1, argv + 1);
+	auto bootstrap = repository_open(argv[0], argc - 1, argv + 1);
 	if (! bootstrap)
 		error("directory already exists");
 
@@ -49,7 +50,7 @@ cli_cmd_start(Cli* self, int argc, char** argv)
 		error("start <path> [options] expected");
 
 	// amelie start path [server options]
-	auto bootstrap = runtime_open(&self->runtime, argv[0], argc - 1, argv + 1);
+	auto bootstrap = repository_open(argv[0], argc - 1, argv + 1);
 
 	auto system = (System*)NULL;
 	error_catch

@@ -144,9 +144,8 @@ amelie_main(void* arg)
 	(
 		// start runtime
 		runtime_start(&self->runtime);
-		auto bootstrap = runtime_open(&self->runtime, args->path,
-		                              args->argc,
-		                              args->argv);
+		auto bootstrap = repository_open(args->path, args->argc, args->argv);
+
 		// create system object
 		self->system = system_create();
 		system_start(self->system, bootstrap);

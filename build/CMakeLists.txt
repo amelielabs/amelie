@@ -301,6 +301,7 @@ set(AMELIE_SOURCES_SYSTEM
     ${AMELIE_ROOT}/system/backend/replay.c
     ${AMELIE_ROOT}/system/session/explain.c
     ${AMELIE_ROOT}/system/session/session.c
+    ${AMELIE_ROOT}/system/system/repository.c
     ${AMELIE_ROOT}/system/system/system.c
     ${AMELIE_ROOT}/system/system/system_metrics.c
     ${AMELIE_ROOT}/system/api/amelie.c)

@@ -11,9 +11,4 @@
 // AGPL-3.0 Licensed.
 //
 
-// repository
-#include "system/repository.h"
-
-// system
-#include "system/system.h"
-#include "system/system_metrics.h"
+bool repository_open(char*, int, char**);

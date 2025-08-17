@@ -39,4 +39,3 @@ void runtime_init(Runtime*);
 void runtime_free(Runtime*);
 void runtime_start(Runtime*);
 void runtime_stop(Runtime*);
-bool runtime_open(Runtime*, char*, int, char**);
