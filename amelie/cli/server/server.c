@@ -86,6 +86,7 @@ cli_cmd_stop(Cli* self, int argc, char** argv)
 void
 cli_cmd_backup(Cli* self, int argc, char** argv)
 {
+	// amelie backup path [remote options]
 	if (argc < 1)
 		error("backup <path> <remote> expected");
 
@@ -93,11 +94,6 @@ cli_cmd_backup(Cli* self, int argc, char** argv)
 	home_init(&home);
 	defer(home_free, &home);
 	home_open(&home);
-
-	// amelie backup path [remote options]
-	auto bootstrap = runtime_create(&self->runtime, argv[0]);
-	if (! bootstrap)
-		error("directory already exists");
 
 	// prepare remote
 	Remote remote;
@@ -109,5 +105,5 @@ cli_cmd_backup(Cli* self, int argc, char** argv)
 	if (str_is_cstr(remote_get(&remote, REMOTE_DEBUG), "0"))
 		logger_set_to_stdout(&self->runtime.logger, false);
 
-	restore(&remote);
+	restore(&remote, argv[0]);
 }

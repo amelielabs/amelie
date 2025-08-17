@@ -84,7 +84,7 @@ runtime_stop(Runtime* self)
 	resolver_stop(&self->resolver);
 }
 
-bool
+static bool
 runtime_create(Runtime* self, char* directory)
 {
 	unused(self);

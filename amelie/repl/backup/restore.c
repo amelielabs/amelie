@@ -49,6 +49,7 @@ restore_init(Restore* self, Remote* remote)
 	self->checkpoint  = 0;
 	self->step        = 0;
 	self->step_total  = 0;
+	self->client      = NULL;
 	self->remote      = remote;
 	buf_init(&self->state);
 }
@@ -69,6 +70,29 @@ restore_connect(Restore* self)
 	client->readahead.readahead = 256 * 1024;
 	client_set_remote(client, self->remote);
 	client_connect(client);
+}
+
+static void
+restore_create(char* directory)
+{
+	// ensure directory does not exists
+	if (fs_exists("%s", directory))
+		error("directory already exists");
+
+	// set directory
+	opt_string_set_raw(&state()->directory, directory, strlen(directory));
+
+	// <base>/
+	fs_mkdir(0755, "%s", state_directory());
+
+	// <base>/certs
+	fs_mkdir(0755, "%s/certs", state_directory());
+
+	// <base>/checkpoints
+	fs_mkdir(0755, "%s/checkpoints", state_directory());
+
+	// <base>/wals
+	fs_mkdir(0755, "%s/wals", state_directory());
 }
 
 static void
@@ -132,14 +156,10 @@ restore_start(Restore* self)
 	};
 	decode_obj(obj, "restore", &pos);
 
-	// create checkpoints directory
-	fs_mkdir(0755, "%s/checkpoints", state_directory());
+	// create checkpoint directory
 	if (self->checkpoint > 0)
 		fs_mkdir(0755, "%s/checkpoints/%" PRIi64, state_directory(),
 		         self->checkpoint);
-
-	// create wals directory
-	fs_mkdir(0755, "%s/wals", state_directory());
 }
 
 static void
@@ -242,13 +262,14 @@ restore_next(Restore* self)
 }
 
 void
-restore(Remote* remote)
+restore(Remote* remote, char* directory)
 {
 	coroutine_set_name(am_self(), "restore");
 
 	Restore restore;
 	restore_init(&restore, remote);
 	defer(restore_free, &restore);
+	restore_create(directory);
 	restore_connect(&restore);
 	restore_start(&restore);
 	for (; restore.step < restore.step_total; restore.step++)
