@@ -411,8 +411,15 @@ system_main(System* self)
 	{
 		auto buf = channel_read(&am_task->channel, -1);
 		auto msg = msg_of(buf);
-		defer_buf(buf);
 
+		if (msg->id == MSG_NATIVE)
+		{
+			// amelie_connect()
+			frontend_mgr_forward(&self->frontend_mgr, buf);
+			continue;
+		}
+
+		defer_buf(buf);
 		if (msg->id == RPC_STOP)
 			break;
 		auto rpc = rpc_of(buf);

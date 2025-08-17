@@ -24,7 +24,6 @@ enum
 struct amelie
 {
 	int     type;
-	System* system;
 	Runtime runtime;
 	Task    task;
 };
@@ -50,8 +49,7 @@ AMELIE_API amelie_t*
 amelie_init(void)
 {
 	auto self = (amelie_t*)am_malloc(sizeof(amelie_t));
-	self->type   = AMELIE_OBJ;
-	self->system = NULL;
+	self->type = AMELIE_OBJ;
 	runtime_init(&self->runtime);
 	task_init(&self->task);
 	return self;
@@ -140,6 +138,8 @@ amelie_main(void* arg)
 {
 	AmelieArgs* args = arg;
 	auto self = args->self;
+
+	System* system = NULL;
 	auto on_error = error_catch
 	(
 		// start runtime
@@ -147,22 +147,19 @@ amelie_main(void* arg)
 		auto bootstrap = repository_open(args->path, args->argc, args->argv);
 
 		// create system object
-		self->system = system_create();
-		system_start(self->system, bootstrap);
+		system = system_create();
+		system_start(system, bootstrap);
 
 		// notify cli_start about start completion
 		cond_signal(&self->task.status, 0);
 
 		// handle system requests
-		system_main(self->system);
+		system_main(system);
 	);
-
-	auto system = self->system;
 	if (system)
 	{
 		system_stop(system);
 		system_free(system);
-		self->system = NULL;
 	}
 	runtime_stop(&self->runtime);
 	runtime_free(&self->runtime);
@@ -177,14 +174,6 @@ amelie_main(void* arg)
 AMELIE_API int
 amelie_open(amelie_t* self, const char* path, int argc, char** argv)
 {
-	if (unlikely(self->system))
-	{
-		fprintf(stderr, "\n%s(%p): double open\n",
-		        source_function, self);
-		fflush(stderr);
-		abort();
-	}
-
 	// start system task
 	AmelieArgs args =
 	{
@@ -230,7 +219,7 @@ amelie_connect(amelie_t* self, const char* uri)
 	auto native_ptr = &session->native;
 	buf_write(buf, &native_ptr, sizeof(void**));
 	msg_end(buf);
-	frontend_mgr_forward(&self->system->frontend_mgr, buf);
+	channel_write(&self->task.channel, buf);
 
 	// wait for completion
 	request_wait(&req, -1);
