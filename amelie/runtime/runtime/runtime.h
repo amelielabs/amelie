@@ -14,6 +14,15 @@
 typedef struct RuntimeIf RuntimeIf;
 typedef struct Runtime   Runtime;
 
+typedef void (*RuntimeMain)(char*, int, char**);
+
+typedef enum
+{
+	RUNTIME_ERROR,
+	RUNTIME_OK,
+	RUNTIME_COMPLETE
+} RuntimeStatus;
+
 struct RuntimeIf
 {
 	Channel*  system;
@@ -33,9 +42,10 @@ struct Runtime
 	Random      random;
 	Resolver    resolver;
 	Logger      logger;
+	Task        task;
 };
 
-void runtime_init(Runtime*);
-void runtime_free(Runtime*);
-void runtime_start(Runtime*);
-void runtime_stop(Runtime*);
+void          runtime_init(Runtime*);
+void          runtime_free(Runtime*);
+RuntimeStatus runtime_start(Runtime*, RuntimeMain, char*, int, char**);
+void          runtime_stop(Runtime*);

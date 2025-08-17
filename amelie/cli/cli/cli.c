@@ -13,17 +13,26 @@
 #include <amelie_core.h>
 #include <amelie_cli.h>
 
-extern void cli_cmd_init(Cli*, int, char**);
-extern void cli_cmd_start(Cli*, int, char**);
-extern void cli_cmd_stop(Cli*, int, char**);
-extern void cli_cmd_backup(Cli*, int, char**);
-extern void cli_cmd_login(Cli*, int, char**);
-extern void cli_cmd_logout(Cli*, int, char**);
-extern void cli_cmd_client(Cli*, int, char**);
-extern void cli_cmd_import(Cli*, int, char**);
-extern void cli_cmd_top(Cli*, int, char**);
-extern void cli_cmd_bench(Cli*, int, char**);
-extern void cli_cmd_test(Cli*, int, char**);
+typedef struct CliCmd CliCmd;
+
+struct CliCmd
+{
+	void       (*function)(int, char**);
+	const char*  name;
+	const char*  description;
+};
+
+extern void cli_cmd_init(int, char**);
+extern void cli_cmd_start(int, char**);
+extern void cli_cmd_stop(int, char**);
+extern void cli_cmd_backup(int, char**);
+extern void cli_cmd_login(int, char**);
+extern void cli_cmd_logout(int, char**);
+extern void cli_cmd_client(int, char**);
+extern void cli_cmd_import(int, char**);
+extern void cli_cmd_top(int, char**);
+extern void cli_cmd_bench(int, char**);
+extern void cli_cmd_test(int, char**);
 
 static struct CliCmd
 cli_commands[] =
@@ -63,9 +72,11 @@ cli_usage(void)
 	info("");
 }
 
-static void
-cli_main(Cli* self, int argc, char** argv)
+void
+cli_main(char* directory, int argc, char** argv)
 {
+	unused(directory);
+
 	// amelie [command] [options]
 	if (argc <= 1 || !strcmp(argv[1], "-h") || !strcmp(argv[1], "--help"))
 	{
@@ -79,7 +90,6 @@ cli_main(Cli* self, int argc, char** argv)
 		info("%.*s", str_size(version), str_of(version));
 		return;	
 	}
-
 	for (auto i = 0;; i++)
 	{
 		auto cmd = &cli_commands[i];
@@ -87,82 +97,10 @@ cli_main(Cli* self, int argc, char** argv)
 			break;
 		if (strcmp(cmd->name, argv[1]) != 0)
 			continue;
-		cmd->function(self, argc - 2, argv + 2);
+		cmd->function(argc - 2, argv + 2);
 		return;
 	}
 
 	// client by default
-	cli_cmd_client(self, argc - 1, argv + 1);
-}
-
-typedef struct
-{
-	int    argc;
-	char** argv;
-	Cli*   self;
-} CliArgs;
-
-static void
-cli_runner(void* arg)
-{
-	CliArgs* args = arg;
-	Cli* self = args->self;
-
-	auto on_error = error_catch
-	(
-		runtime_start(&self->runtime);
-		cli_main(self, args->argc, args->argv);
-	);
-	runtime_stop(&self->runtime);
-
-	// complete
-	CliRc rc = CLI_COMPLETE;
-	if (on_error)
-		rc = CLI_ERROR;
-	cond_signal(&self->task.status, rc);
-}
-
-void
-cli_init(Cli* self)
-{
-	runtime_init(&self->runtime);
-	task_init(&self->task);
-}
-
-void
-cli_free(Cli* self)
-{
-	task_free(&self->task);
-	runtime_free(&self->runtime);
-}
-
-CliRc
-cli_start(Cli* self, int argc, char** argv)
-{
-	// start cli task
-	CliArgs args =
-	{
-		.argc = argc,
-		.argv = argv,
-		.self = self
-	};
-	int rc;
-	rc = task_create_nothrow(&self->task, "main", cli_runner, &args,
-	                         &self->runtime, NULL,
-	                         logger_write, &self->runtime.logger,
-	                         &self->runtime.buf_mgr);
-	if (unlikely(rc == -1))
-		return CLI_ERROR;
-
-	// wait for cli task to start
-	rc = cond_wait(&self->task.status);
-	return rc;
-}
-
-void
-cli_stop(Cli* self)
-{
-	auto buf = msg_create_as(&self->runtime.buf_mgr, RPC_STOP, 0);
-	channel_write(&self->task.channel, buf);
-	task_wait(&self->task);
+	cli_cmd_client(argc - 1, argv + 1);
 }

@@ -29,11 +29,13 @@ runtime_init(Runtime* self)
 	random_init(&self->random);
 	resolver_init(&self->resolver);
 	logger_init(&self->logger);
+	task_init(&self->task);
 }
 
 void
 runtime_free(Runtime* self)
 {
+	task_free(&self->task);
 	config_free(&self->config);
 	state_free(&self->state);
 	timezone_mgr_free(&self->timezone_mgr);
@@ -42,8 +44,16 @@ runtime_free(Runtime* self)
 	tls_lib_free();
 }
 
-void
-runtime_start(Runtime* self)
+typedef struct
+{
+	RuntimeMain main;
+	char*       directory;
+	int         argc;
+	char**      argv;
+} RuntimeArgs;
+
+static void
+runtime_prepare(Runtime* self)
 {
 	// prepare default logger settings
 	auto logger = &self->logger;
@@ -71,15 +81,65 @@ runtime_start(Runtime* self)
 	resolver_start(&self->resolver);
 
 	// prepare default configuration
-	config_prepare(config());
+	config_prepare(&self->config);
 
 	// prepare state
-	state_prepare(state());
+	state_prepare(&self->state);
+}
+
+static void
+runtime_shutdown(Runtime* self)
+{
+	// stop resolver
+	resolver_stop(&self->resolver);
+}
+
+static void
+runtime_main(void* arg)
+{
+	RuntimeArgs* args = arg;
+	auto self = runtime();
+	auto on_error = error_catch
+	(
+		runtime_prepare(self);
+		args->main(args->directory, args->argc, args->argv);
+	);
+	runtime_shutdown(self);
+
+	// notify for completion
+	RuntimeStatus status = RUNTIME_COMPLETE;
+	if (on_error)
+		status = RUNTIME_ERROR;
+	cond_signal(&self->task.status, status);
+}
+
+RuntimeStatus
+runtime_start(Runtime* self, RuntimeMain main, char* directory, int argc, char** argv)
+{
+	RuntimeArgs args =
+	{
+		.main      = main,
+		.directory = directory,
+		.argc      = argc,
+		.argv      = argv,
+	};
+	int rc;
+	rc = task_create_nothrow(&self->task, "main", runtime_main, &args, self, NULL,
+	                         logger_write, &self->logger,
+	                         &self->buf_mgr);
+	if (unlikely(rc == -1))
+		return RUNTIME_ERROR;
+	rc = cond_wait(&self->task.status);
+	return rc;
 }
 
 void
 runtime_stop(Runtime* self)
 {
-	// stop resolver
-	resolver_stop(&self->resolver);
+	if (task_active(&self->task))
+	{
+		auto buf = msg_create_as(&self->buf_mgr, RPC_STOP, 0);
+		channel_write(&self->task.channel, buf);
+		task_wait(&self->task);
+	}
 }

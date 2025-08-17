@@ -162,7 +162,7 @@ test_api_execute_error(void* arg)
 	TestSuite* suite = arg;
 
 	char path[PATH_MAX];
-	snprintf(path, sizeof(path), "%.*s/__api2", str_size(&suite->option_result_dir),
+	snprintf(path, sizeof(path), "%.*s/__api3", str_size(&suite->option_result_dir),
 	         str_of(&suite->option_result_dir));
 
 	int   argc   = 9;

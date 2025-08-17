@@ -11,30 +11,4 @@
 // AGPL-3.0 Licensed.
 //
 
-typedef struct Cli    Cli;
-typedef struct CliCmd CliCmd;
-
-typedef enum
-{
-	CLI_ERROR,
-	CLI_RUN,
-	CLI_COMPLETE
-} CliRc;
-
-struct CliCmd
-{
-	void       (*function)(Cli*, int, char**);
-	const char*  name;
-	const char*  description;
-};
-
-struct Cli
-{
-	Runtime runtime;
-	Task    task;
-};
-
-void  cli_init(Cli*);
-void  cli_free(Cli*);
-CliRc cli_start(Cli*, int, char**);
-void  cli_stop(Cli*);
+void cli_main(char*, int, char**);

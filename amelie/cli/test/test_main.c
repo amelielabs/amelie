@@ -15,9 +15,8 @@
 #include <amelie_cli_test.h>
 
 void
-cli_cmd_test(Cli* self, int argc, char** argv)
+cli_cmd_test(int argc, char** argv)
 {
-	unused(self);
 	logger_set_cli(&runtime()->logger, true, false);
 
 	TestSuite suite;

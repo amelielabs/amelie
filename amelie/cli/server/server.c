@@ -14,9 +14,8 @@
 #include <amelie_cli.h>
 
 void
-cli_cmd_init(Cli* self, int argc, char** argv)
+cli_cmd_init(int argc, char** argv)
 {
-	unused(self);
 	if (argc < 1)
 		error("init <path> [options] expected");
 
@@ -26,8 +25,8 @@ cli_cmd_init(Cli* self, int argc, char** argv)
 		error("directory already exists");
 
 	// start, bootstrap and quick exit
-	auto system = (System*)NULL;
-	error_catch
+	System* system = NULL;
+	auto on_error = error_catch
 	(
 		system = system_create();
 		system_start(system, bootstrap);
@@ -41,10 +40,13 @@ cli_cmd_init(Cli* self, int argc, char** argv)
 		system_stop(system);
 		system_free(system);
 	}
+
+	if (on_error)
+		rethrow();
 }
 
 void
-cli_cmd_start(Cli* self, int argc, char** argv)
+cli_cmd_start(int argc, char** argv)
 {
 	if (argc < 1)
 		error("start <path> [options] expected");
@@ -52,14 +54,14 @@ cli_cmd_start(Cli* self, int argc, char** argv)
 	// amelie start path [server options]
 	auto bootstrap = repository_open(argv[0], argc - 1, argv + 1);
 
-	auto system = (System*)NULL;
-	error_catch
+	System* system = NULL;
+	auto on_error = error_catch
 	(
 		system = system_create();
 		system_start(system, bootstrap);
 
 		// notify cli_start about start completion
-		cond_signal(&self->task.status, CLI_RUN);
+		cond_signal(&am_task->status, RUNTIME_OK);
 
 		// handle system requests
 		system_main(system);
@@ -70,13 +72,15 @@ cli_cmd_start(Cli* self, int argc, char** argv)
 		system_stop(system);
 		system_free(system);
 	}
+
+	if (on_error)
+		rethrow();
 }
 
 void
-cli_cmd_stop(Cli* self, int argc, char** argv)
+cli_cmd_stop(int argc, char** argv)
 {
 	// amelie stop path
-	unused(self);	
 	unused(argv);	
 	if (argc < 1)
 		error("stop <path> expected\n");
@@ -85,7 +89,7 @@ cli_cmd_stop(Cli* self, int argc, char** argv)
 }
 
 void
-cli_cmd_backup(Cli* self, int argc, char** argv)
+cli_cmd_backup(int argc, char** argv)
 {
 	// amelie backup path [remote options]
 	if (argc < 1)
@@ -104,7 +108,7 @@ cli_cmd_backup(Cli* self, int argc, char** argv)
 
 	// disable log output
 	if (str_is_cstr(remote_get(&remote, REMOTE_DEBUG), "0"))
-		logger_set_to_stdout(&self->runtime.logger, false);
+		logger_set_to_stdout(&runtime()->logger, false);
 
 	restore(&remote, argv[0]);
 }

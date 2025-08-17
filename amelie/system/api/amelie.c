@@ -25,7 +25,6 @@ struct amelie
 {
 	int     type;
 	Runtime runtime;
-	Task    task;
 };
 
 struct amelie_session
@@ -51,7 +50,6 @@ amelie_init(void)
 	auto self = (amelie_t*)am_malloc(sizeof(amelie_t));
 	self->type = AMELIE_OBJ;
 	runtime_init(&self->runtime);
-	task_init(&self->task);
 	return self;
 }
 
@@ -63,13 +61,8 @@ amelie_free(void* ptr)
 	{
 		// all sessions must be closed at this point
 		amelie_t* self = ptr;
-		if (task_active(&self->task))
-		{
-			auto buf = msg_create_as(&self->runtime.buf_mgr, RPC_STOP, 0);
-			channel_write(&self->task.channel, buf);
-			task_wait(&self->task);
-		}
-		task_free(&self->task);
+		runtime_stop(&self->runtime);
+		runtime_free(&self->runtime);
 		break;
 	}
 	case AMELIE_OBJ_SESSION:
@@ -125,33 +118,21 @@ amelie_free(void* ptr)
 	am_free(ptr);
 }
 
-typedef struct
-{
-	amelie_t* self;
-	char*     path;
-	int       argc;
-	char**    argv;
-} AmelieArgs;
-
 static void
-amelie_main(void* arg)
+amelie_main(char* directory, int argc, char** argv)
 {
-	AmelieArgs* args = arg;
-	auto self = args->self;
-
 	System* system = NULL;
 	auto on_error = error_catch
 	(
-		// start runtime
-		runtime_start(&self->runtime);
-		auto bootstrap = repository_open(args->path, args->argc, args->argv);
+		// create or open repository
+		auto bootstrap = repository_open(directory, argc, argv);
 
 		// create system object
 		system = system_create();
 		system_start(system, bootstrap);
 
-		// notify cli_start about start completion
-		cond_signal(&self->task.status, 0);
+		// notify start completion
+		cond_signal(&am_task->status, RUNTIME_OK);
 
 		// handle system requests
 		system_main(system);
@@ -161,38 +142,16 @@ amelie_main(void* arg)
 		system_stop(system);
 		system_free(system);
 	}
-	runtime_stop(&self->runtime);
-	runtime_free(&self->runtime);
 
-	// complete
-	int rc = 0;
 	if (on_error)
-		rc = -1;
-	cond_signal(&self->task.status, rc);
+		rethrow();
 }
 
 AMELIE_API int
 amelie_open(amelie_t* self, const char* path, int argc, char** argv)
 {
-	// start system task
-	AmelieArgs args =
-	{
-		.self = self,
-		.path = (char*)path,
-		.argc = argc,
-		.argv = argv
-	};
-	int rc;
-	rc = task_create_nothrow(&self->task, "main", amelie_main, &args,
-	                         &self->runtime, NULL,
-	                         logger_write, &self->runtime.logger,
-	                         &self->runtime.buf_mgr);
-	if (unlikely(rc == -1))
-		return -1;
-
-	// wait for the start completion
-	rc = cond_wait(&self->task.status);
-	return rc;
+	auto status = runtime_start(&self->runtime, amelie_main, (char*)path, argc, argv);
+	return status == RUNTIME_OK? 0: -1;
 }
 
 AMELIE_API amelie_session_t*
@@ -219,7 +178,7 @@ amelie_connect(amelie_t* self, const char* uri)
 	auto native_ptr = &session->native;
 	buf_write(buf, &native_ptr, sizeof(void**));
 	msg_end(buf);
-	channel_write(&self->task.channel, buf);
+	channel_write(&self->runtime.task.channel, buf);
 
 	// wait for completion
 	request_wait(&req, -1);
@@ -236,6 +195,9 @@ amelie_execute(amelie_session_t*    self,
                amelie_on_complete_t on_complete,
                void*                on_complete_arg)
 {
+	unused(argc);
+	unused(argv);
+
 	// allocate request
 	amelie_request_t* req;
 	if (likely(self->req_cache_count > 0))
@@ -256,8 +218,6 @@ amelie_execute(amelie_session_t*    self,
 	str_set_cstr(&req->request.cmd, command);
 	req->request.on_complete     = (RequestNotify)on_complete;
 	req->request.on_complete_arg = on_complete_arg;
-	(void)argc;
-	(void)argv;
 
 	// schedule for execution
 	request_queue_push(&self->native.queue, &req->request, true);

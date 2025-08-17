@@ -16,10 +16,8 @@
 #include <amelie_cli_bench.h>
 
 void
-cli_cmd_bench(Cli* self, int argc, char** argv)
+cli_cmd_bench(int argc, char** argv)
 {
-	unused(self);
-
 	// amelie bench name
 	Home home;
 	home_init(&home);

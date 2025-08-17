@@ -15,10 +15,8 @@
 #include <amelie_cli_client.h>
 
 void
-cli_cmd_login(Cli* self, int argc, char** argv)
+cli_cmd_login(int argc, char** argv)
 {
-	unused(self);
-
 	// amelie login name [remote options]
 	Home home;
 	home_init(&home);
@@ -40,9 +38,8 @@ cli_cmd_login(Cli* self, int argc, char** argv)
 }
 
 void
-cli_cmd_logout(Cli* self, int argc, char** argv)
+cli_cmd_logout(int argc, char** argv)
 {
-	unused(self);
 	unused(argc);
 
 	// amelie logout name
@@ -162,10 +159,8 @@ cli_cmd_client_main(Client* client, Console* cons)
 }
 
 void
-cli_cmd_client(Cli* self, int argc, char** argv)
+cli_cmd_client(int argc, char** argv)
 {
-	unused(self);
-
 	// amelie client [remote options]
 	Home home;
 	home_init(&home);
@@ -213,10 +208,8 @@ cli_cmd_client(Cli* self, int argc, char** argv)
 }
 
 void
-cli_cmd_import(Cli* self, int argc, char** argv)
+cli_cmd_import(int argc, char** argv)
 {
-	unused(self);
-
 	// amelie import name
 	Home home;
 	home_init(&home);
@@ -247,10 +240,8 @@ cli_cmd_import(Cli* self, int argc, char** argv)
 }
 
 void
-cli_cmd_top(Cli* self, int argc, char** argv)
+cli_cmd_top(int argc, char** argv)
 {
-	unused(self);
-
 	// amelie top name
 	Home home;
 	home_init(&home);

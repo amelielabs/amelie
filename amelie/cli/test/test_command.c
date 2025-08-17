@@ -102,7 +102,7 @@ test_command_open(TestSuite* self, Str* arg)
 		argc++;
 	}
 
-	int rc = cli_start(&env->cli, argc, argv);
+	int rc = runtime_start(&env->runtime, cli_main, NULL, argc, argv);
 	if (rc == -1)
 		test_error(self, "start failed");
 }
@@ -175,7 +175,7 @@ test_command_backup(TestSuite* self, Str* arg)
 		argc++;
 	}
 
-	int rc = cli_start(&env->cli, argc, argv);
+	int rc = runtime_start(&env->runtime, cli_main, NULL, argc, argv);
 	if (rc == -1)
 		test_error(self, "%start failed");
 }

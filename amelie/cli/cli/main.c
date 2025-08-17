@@ -24,12 +24,12 @@ main(int argc, char* argv[])
 	if (daemon.cmd == DAEMON_STOP)
 		return EXIT_SUCCESS;
 
-	Cli cli;
-	cli_init(&cli);
-	auto status = cli_start(&cli, argc, argv);
-	if (status == CLI_RUN)
+	Runtime runtime;
+	runtime_init(&runtime);
+	auto status = runtime_start(&runtime, cli_main, NULL, argc, argv);
+	if (status == RUNTIME_OK)
 		daemon_wait_for_signal();
-	cli_stop(&cli);
-	cli_free(&cli);
-	return status == CLI_ERROR? EXIT_FAILURE: EXIT_SUCCESS;
+	runtime_stop(&runtime);
+	runtime_free(&runtime);
+	return status == RUNTIME_ERROR? EXIT_FAILURE: EXIT_SUCCESS;
 }

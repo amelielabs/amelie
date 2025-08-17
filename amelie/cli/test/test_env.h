@@ -15,10 +15,10 @@ typedef struct TestEnv TestEnv;
 
 struct TestEnv
 {
-	Str  name;
-	Cli  cli;
-	int  sessions;
-	List link;
+	Str     name;
+	Runtime runtime;
+	int     sessions;
+	List    link;
 };
 
 static inline TestEnv*
@@ -27,7 +27,7 @@ test_env_create(Str* name)
 	TestEnv* self = am_malloc(sizeof(*self));
 	str_copy(&self->name, name);
 	self->sessions = 0;
-	cli_init(&self->cli);
+	runtime_init(&self->runtime);
 	list_init(&self->link);
 	return self;
 }
@@ -35,8 +35,8 @@ test_env_create(Str* name)
 static inline void
 test_env_free(TestEnv* self)
 {
-	cli_stop(&self->cli);
-	cli_free(&self->cli);
+	runtime_stop(&self->runtime);
+	runtime_free(&self->runtime);
 	str_free(&self->name);
 	am_free(self);
 }
