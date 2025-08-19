@@ -126,7 +126,7 @@ import_path_read(Str* target, Str* schema, Str* name)
 	auto start = pos;
 	while (pos < end && *pos != '.')
 	{
-		if (unlikely(! isalnum(*pos)))
+		if (unlikely(!isalnum(*pos) && *pos != '_'))
 			return false;
 		pos++;
 	}
@@ -153,7 +153,7 @@ import_path_read(Str* target, Str* schema, Str* name)
 	start = pos;
 	while (pos < end)
 	{
-		if (unlikely(! isalnum(*pos)))
+		if (unlikely(!isalnum(*pos) && *pos != '_'))
 			return false;
 		pos++;
 	}
