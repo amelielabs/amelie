@@ -99,34 +99,5 @@ remote_copy(Remote* self, Remote* from)
 			remote_set(self, i, &from->options[i]);
 }
 
-static inline const char*
-remote_nameof(int id)
-{
-	switch (id) {
-	case REMOTE_NAME:
-		return "name";
-	case REMOTE_URI:
-		return "uri";
-	case REMOTE_USER:
-		return "user";
-	case REMOTE_SECRET:
-		return "secret";
-	case REMOTE_TOKEN:
-		return "token";
-	case REMOTE_PATH:
-		return "path";
-	case REMOTE_PATH_CA:
-		return "tls_capath";
-	case REMOTE_FILE_CA:
-		return "tls_ca";
-	case REMOTE_FILE_CERT:
-		return "tls_cert";
-	case REMOTE_FILE_KEY:
-		return "tls_key";
-	case REMOTE_SERVER:
-		return "tls_server";
-	case REMOTE_DEBUG:
-		return "debug";
-	}
-	return NULL;
-}
+const char* remote_nameof(int);
+int         remote_idof(Str*);

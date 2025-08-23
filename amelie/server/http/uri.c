@@ -369,3 +369,41 @@ uri_find(Uri* self, Str* name)
 	}
 	return NULL;
 }
+
+void
+uri_export(Uri* self, Remote* remote)
+{
+	// convert uri into remote
+	assert(self->hosts_count > 0);
+
+	// set user/password
+	if (! str_empty(&self->user))
+		remote_set(remote, REMOTE_USER, &self->user);
+	if (! str_empty(&self->password))
+		remote_set(remote, REMOTE_SECRET, &self->password);
+
+	// create short remote uri <proto>://host:port
+	auto host = container_of(self->hosts.next, UriHost, link);
+	Buf uri;
+	buf_init(&uri);
+	defer_buf(&uri);
+	buf_printf(&uri, "%s", self->proto == URI_HTTP? "http://": "https://");
+	buf_write_str(&uri, &host->host);
+	buf_printf(&uri, ":%d", host->port);
+	Str uri_str;
+	buf_str(&uri, &uri_str);
+	remote_set(remote, REMOTE_URI, &uri_str);
+
+	// process arguments as remote options
+	list_foreach_safe(&self->args)
+	{
+		auto arg = list_at(UriArg, link);
+		auto id = remote_idof(&arg->name);
+		if (id == -1          ||
+		    id == REMOTE_NAME ||
+		    id == REMOTE_URI  ||
+		    id == REMOTE_PATH)
+			continue;
+		remote_set(remote, id, &arg->value);
+	}
+}

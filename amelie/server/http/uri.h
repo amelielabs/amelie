@@ -55,3 +55,4 @@ void uri_reset(Uri*);
 void uri_set(Uri*, Str*, bool);
 UriArg*
 uri_find(Uri*, Str*);
+void uri_export(Uri*, Remote*);

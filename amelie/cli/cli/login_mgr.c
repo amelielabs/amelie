@@ -170,10 +170,10 @@ login_mgr_set(LoginMgr* self, Remote* remote, Opts* opts,
               int       argc,
               char**    argv)
 {
-	// [path or name] [remote options | options] ...
 	if (argc == 0)
 		return 0;
 
+	// [path, uri or login]
 	int arg = 0;
 	if (!strncmp(argv[0], ".", 1) ||
 	    !strncmp(argv[0], "/", 1))
@@ -184,6 +184,21 @@ login_mgr_set(LoginMgr* self, Remote* remote, Opts* opts,
 		Str str;
 		str_set_cstr(&str, path);
 		remote_set(remote, REMOTE_PATH, &str);
+		arg = 1;
+	} else
+	if (!strncmp(argv[0], "http://", 7) ||
+	    !strncmp(argv[0], "https://", 8))
+	{
+		// parse uri
+		Str uri_str;
+		str_set_cstr(&uri_str, argv[0]);
+		Uri uri;
+		uri_init(&uri);
+		defer(uri_free, &uri);
+		uri_set(&uri, &uri_str, false);
+
+		// convert uri into remote options
+		uri_export(&uri, remote);
 		arg = 1;
 	} else
 	if (strncmp(argv[0], "--", 2) != 0)
@@ -197,6 +212,8 @@ login_mgr_set(LoginMgr* self, Remote* remote, Opts* opts,
 		remote_copy(remote, &match->remote);
 		arg = 1;
 	}
+
+	// [remote options | options] ...
 
 	// --<option>=<value> | name
 	for (; arg < argc; arg++)
@@ -221,11 +238,9 @@ login_mgr_set(LoginMgr* self, Remote* remote, Opts* opts,
 			continue;
 		}
 
-		int id = 0;
-		for (; id < REMOTE_MAX; id++)
-			if (str_is_cstr(&name, remote_nameof(id)))
-				break;
-		if (id != REMOTE_MAX)
+		// handle remote options
+		auto id = remote_idof(&name);
+		if (id != -1)
 		{
 			remote_set(remote, id, &value);
 			continue;

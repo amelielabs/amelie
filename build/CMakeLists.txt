@@ -134,6 +134,7 @@ set(AMELIE_SOURCES_RUNTIME
     ${AMELIE_ROOT}/runtime/base/task.c
     ${AMELIE_ROOT}/runtime/os/os.c
     ${AMELIE_ROOT}/runtime/os/vfs.c
+    ${AMELIE_ROOT}/runtime/os/remote.c
     ${AMELIE_ROOT}/runtime/os/tls_lib.c
     ${AMELIE_ROOT}/runtime/os/tls_context.c
     ${AMELIE_ROOT}/runtime/os/tls.c
