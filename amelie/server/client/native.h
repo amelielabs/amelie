@@ -16,19 +16,29 @@ typedef struct Native Native;
 struct Native
 {
 	RequestQueue queue;
+	Str          uri;
 	void*        arg;
 };
 
 static inline void
 native_init(Native* self)
 {
+	str_init(&self->uri);
 	request_queue_init(&self->queue);
 }
 
 static inline void
 native_free(Native* self)
 {
+	str_free(&self->uri);
 	request_queue_free(&self->queue);
+}
+
+static inline void
+native_set_uri(Native* self, char* uri)
+{
+	if (uri)
+		str_dup_cstr(&self->uri, uri);
 }
 
 static inline void

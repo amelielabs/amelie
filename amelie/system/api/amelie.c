@@ -157,15 +157,13 @@ amelie_open(amelie_t* self, const char* path, int argc, char** argv)
 AMELIE_API amelie_session_t*
 amelie_connect(amelie_t* self, const char* uri)
 {
-	// reserved as a feature
-	unused(uri);
-
 	auto session = (amelie_session_t*)am_malloc(sizeof(amelie_session_t));
 	session->type            = AMELIE_OBJ_SESSION;
 	session->amelie          = self;
 	session->req_cache_count = 0;
 	list_init(&session->req_cache);
 	native_init(&session->native);
+	native_set_uri(&session->native, (char*)uri);
 
 	// prepare connect event before the native registration
 	Request req;

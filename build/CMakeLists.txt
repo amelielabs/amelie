@@ -296,6 +296,7 @@ set(AMELIE_SOURCES_SYSTEM
     ${AMELIE_ROOT}/system/frontend/frontend.c
     ${AMELIE_ROOT}/system/frontend/frontend_client.c
     ${AMELIE_ROOT}/system/frontend/frontend_native.c
+    ${AMELIE_ROOT}/system/frontend/frontend_relay.c
     ${AMELIE_ROOT}/system/backend/backend.c
     ${AMELIE_ROOT}/system/backend/build.c
     ${AMELIE_ROOT}/system/backend/replay.c

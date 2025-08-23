@@ -18,3 +18,4 @@
 // frontend client
 #include "frontend/frontend_client.h"
 #include "frontend/frontend_native.h"
+#include "frontend/frontend_relay.h"

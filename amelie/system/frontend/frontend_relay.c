@@ -40,7 +40,7 @@
 #include <amelie_frontend.h>
 
 void
-frontend_native(Frontend* self, Native* native)
+frontend_relay(Frontend* self, Native* native)
 {
 	auto ctl = self->iface;
 	auto session = self->iface->session_create(self, self->iface_arg);
