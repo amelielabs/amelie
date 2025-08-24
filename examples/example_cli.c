@@ -47,7 +47,26 @@ main(int argc, char* argv[])
 	}
 
 	// create session
-	amelie_session_t* session = amelie_connect(env, NULL);
+	//
+	// There are two cases to consider for amelie_connect():
+	//
+	// 1) without URI argument (set to NULL)
+	//
+	//    Session will be connected to the local embeddable database
+	//    using optimized path which avoids network io.
+	//
+	// 2) with URI argument
+	//
+	//    Session will be connected to a remote server specified by the URI
+	//    acting as a remote client.
+	//
+	//    In this example it connects to the server created by this
+	//    database using http.
+	//
+	//    Note that the actual connection happens on the first request,
+	//    (this also allows it be handled using async API).
+	//
+	amelie_session_t* session = amelie_connect(env, "http://localhost");
 	if (! session)
 	{
 		amelie_free(env);
@@ -89,6 +108,9 @@ main(int argc, char* argv[])
 		if (rc == -1) {
 			// indicates error, the result likely contains the error message
 		}
+
+		// the result data pointers are valid until the request
+		// object is freed
 		if (result.data)
 			printf("%.*s\n", (int)result.data_size, result.data);
 

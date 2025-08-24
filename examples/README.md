@@ -7,3 +7,6 @@
 The example creates a new or opens an existing amelie repository,
 continuous reads and executes SQL commands from stdin
 until EOF.
+
+Example shows how to create embeddable or remote clients using
+the Amelie API.
