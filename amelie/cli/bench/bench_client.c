@@ -65,15 +65,16 @@ hot static void
 bench_client_http_execute(BenchClient* ptr, Str* cmd)
 {
 	auto self = (BenchClientHttp*)ptr;
+	auto content = &self->client->reply.content;
 	if (! self->obj.histogram)
 	{
-		client_execute(self->client, cmd);
+		client_execute(self->client, cmd, content);
 		return;
 	}
 
 	uint64_t time_us;
 	time_start(&time_us);
-	client_execute(self->client, cmd);
+	client_execute(self->client, cmd, content);
 	time_end(&time_us);
 	histogram_add(self->obj.histogram, time_us / 1000);
 }

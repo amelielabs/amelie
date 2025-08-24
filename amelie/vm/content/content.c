@@ -108,14 +108,14 @@ content_write_json_buf(Content* self, Str* spec, Str* name, Buf* buf)
 }
 
 void
-content_write_json_error(Content* self, Error* error)
+content_write_json_error_as(Content* self, Str* text)
 {
 	// {}
 	auto buf = buf_create();
 	defer_buf(buf);
 	encode_obj(buf);
 	encode_raw(buf, "msg", 3);
-	encode_raw(buf, error->text, error->text_len);
+	encode_string(buf, text);
 	encode_obj_end(buf);
 
 	uint8_t* pos = buf->start;
@@ -123,4 +123,12 @@ content_write_json_error(Content* self, Error* error)
 
 	// json
 	self->content_type = &content_type[0];
+}
+
+void
+content_write_json_error(Content* self, Error* error)
+{
+	Str msg;
+	str_set(&msg, error->text, error->text_len);
+	content_write_json_error_as(self, &msg);
 }

@@ -38,6 +38,7 @@ void content_write(Content*, Str*, Columns*, Value*);
 void content_write_json(Content*, Str*, Str*, Value*);
 void content_write_json_buf(Content*, Str*, Str*, Buf*);
 void content_write_json_error(Content*, Error*);
+void content_write_json_error_as(Content*, Str*);
 
 static inline void
 content_reset(Content* self)

@@ -39,17 +39,101 @@
 #include <amelie_vm.h>
 #include <amelie_frontend.h>
 
+typedef struct Relay Relay;
+
+struct Relay
+{
+	Client* client;
+	bool    connected;
+	Remote  remote;
+	Str     url;
+	Str     content_type;
+};
+
+static inline void
+relay_init(Relay* self)
+{
+	self->client = NULL;
+	self->connected = false;
+	remote_init(&self->remote);
+	str_set_cstr(&self->url, "/");
+	str_set_cstr(&self->content_type, "text/plain");
+}
+
+static inline void
+relay_free(Relay* self)
+{
+	if (self->client)
+		client_free(self->client);
+	remote_free(&self->remote);
+}
+
+static inline void
+relay_connect(Relay* self, Str* uri_str)
+{
+	// parse uri and prepare remote
+	Uri uri;
+	uri_init(&uri);
+	defer(uri_free, &uri);
+	uri_set(&uri, uri_str, false);
+	uri_export(&uri, &self->remote);
+
+	// create client
+	if (self->client) {
+		client_free(self->client);
+		self->client = NULL;
+	}
+	self->client = client_create();
+	client_set_remote(self->client, &self->remote);
+	client_connect(self->client);
+	self->connected = true;
+}
+
+hot static inline bool
+relay_execute(Relay* self, Str* uri, Str* command, Content* output)
+{
+	content_reset(output);
+	auto on_error = error_catch
+	(
+		if (! self->connected)
+			relay_connect(self, uri);
+		client_execute(self->client, command, output->content);
+	);
+	if (on_error) {
+		self->connected = false;
+		content_reset(output);
+		content_write_json_error(output, &am_self()->error);
+		return true;
+	}
+
+	// 200 OK
+	// 204 No Content
+	auto reply = &self->client->reply;
+	if (str_is(&reply->options[HTTP_CODE], "200", 3) ||
+	    str_is(&reply->options[HTTP_CODE], "204", 3))
+		return false;
+
+	// error content is already set
+
+	// 400 Bad Request
+	if (str_is(&reply->options[HTTP_CODE], "400", 3))
+		return true;
+
+	// 403 Forbidden
+	// 413 Payload Too Large
+	content_reset(output);
+	content_write_json_error_as(output, &reply->options[HTTP_MSG]);
+	return true;
+}
+
 void
 frontend_relay(Frontend* self, Native* native)
 {
-	auto ctl = self->iface;
-	auto session = self->iface->session_create(self, self->iface_arg);
-	defer(ctl->session_free, session);
+	unused(self);
 
-	Str url;
-	Str content_type;
-	str_set_cstr(&url, "/");
-	str_set_cstr(&content_type, "text/plain");
+	Relay relay;
+	relay_init(&relay);
+	defer(relay_free, &relay);
 
 	Content output;
 	content_init(&output);
@@ -72,8 +156,7 @@ frontend_relay(Frontend* self, Native* native)
 		case REQUEST_EXECUTE:
 		{
 			content_set(&output, &req->content);
-			content_reset(&output);
-			error = ctl->session_execute(session, &url, &req->cmd, &content_type, &output);
+			error = relay_execute(&relay, &native->uri, &req->cmd, &output);
 			break;
 		}
 		}
