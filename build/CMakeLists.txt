@@ -384,3 +384,12 @@ target_link_libraries(amelie_cli ${AMELIE_STATIC_LINK})
 target_link_libraries(amelie_cli ${AMELIE_UNIT_STATIC_LINK})
 target_link_libraries(amelie_cli ${AMELIE_LIBRARIES})
 set_target_properties(amelie_cli PROPERTIES ENABLE_EXPORTS ON OUTPUT_NAME amelie)
+
+# examples
+add_executable(example_cli EXCLUDE_FROM_ALL
+               ${CMAKE_SOURCE_DIR}/examples/example_cli.c)
+target_link_libraries(example_cli ${AMELIE_STATIC_LINK})
+target_link_libraries(example_cli ${AMELIE_LIBRARIES})
+set_target_properties(example_cli PROPERTIES OUTPUT_NAME example_cli)
+
+add_custom_target(examples DEPENDS example_cli)

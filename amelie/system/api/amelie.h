@@ -16,6 +16,7 @@ extern "C" {
 #endif
 
 #include <stdlib.h>
+#include <stdint.h>
 #include <stdbool.h>
 
 #define AMELIE_API __attribute__((visibility("default")))

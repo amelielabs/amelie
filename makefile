@@ -10,7 +10,11 @@ release:
 	@(cd build && cmake -DCMAKE_BUILD_TYPE=Release .)
 	@(echo)
 	@(cd build && make --no-print-directory)
+examples:
+	@(cd build && make examples --no-print-directory)
 clean:
 	@(cd build && make clean --no-print-directory)
 distclean:
 	git clean -f -x -d
+
+.PHONY: examples

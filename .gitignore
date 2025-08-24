@@ -13,3 +13,4 @@ build/cmake_install.cmake
 build/libamelie.a
 build/amelie-test
 build/amelie
+build/example_cli
