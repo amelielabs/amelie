@@ -155,7 +155,7 @@ test streaming
 test streaming_tls
 test streaming_tls_2
 
-# api
-directory api
-group api
-test api
+# http
+directory http
+group http
+test http
