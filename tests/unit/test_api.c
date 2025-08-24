@@ -116,11 +116,13 @@ test_api_execute(void* arg)
 	test(session);
 
 	auto req = amelie_execute(session, "create table test (id int primary key)", 0, NULL, NULL, NULL);
-	test(amelie_wait(req, -1, NULL) == 0);
+	test(amelie_wait(req, -1, NULL) == 204);
+	// wait twice test
+	test(amelie_wait(req, -1, NULL) == 204);
 	amelie_free(req);
 
 	req = amelie_execute(session, "insert into test values (1), (2), (3)", 0, NULL, NULL, NULL);
-	test(amelie_wait(req, -1, NULL) == 0);
+	test(amelie_wait(req, -1, NULL) == 204);
 	amelie_free(req);
 
 	req = amelie_execute(session, "select * from test", 0, NULL, NULL, NULL);
@@ -128,7 +130,7 @@ test_api_execute(void* arg)
 		.data = NULL,
 		.data_size = 0
 	};
-	test(amelie_wait(req, -1, &result) == 0);
+	test(amelie_wait(req, -1, &result) == 200);
 	test(result.data_size == 9);
 	test(! memcmp(result.data, "[1, 2, 3]", 9));
 	amelie_free(req);
@@ -147,7 +149,7 @@ test_api_execute(void* arg)
 	result.data = NULL;
 	result.data_size = 0;
 	req = amelie_execute(session, "select * from test", 0, NULL, NULL, NULL);
-	test(amelie_wait(req, -1, &result) == 0);
+	test(amelie_wait(req, -1, &result) == 200);
 	test(result.data_size == 9);
 	test(! memcmp(result.data, "[1, 2, 3]", 9));
 	amelie_free(req);
@@ -186,7 +188,7 @@ test_api_execute_error(void* arg)
 	test(session);
 
 	auto req = amelie_execute(session, "select abcd", 0, NULL, NULL, NULL);
-	test(amelie_wait(req, -1, NULL) == -1);
+	test(amelie_wait(req, -1, NULL) == 400);
 	amelie_free(req);
 
 	amelie_free(session);

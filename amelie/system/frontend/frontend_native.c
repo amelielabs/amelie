@@ -77,6 +77,20 @@ frontend_native(Frontend* self, Native* native)
 			break;
 		}
 		}
-		request_complete(req, error);
+
+		int code;
+		if (likely(! error))
+		{
+			// 204 No Content
+			// 200 OK
+			if (buf_empty(&req->content))
+				code = 204;
+			else
+				code = 200;
+		} else {
+			// 400 Bad Request
+			code = 400;
+		}
+		request_complete(req, code);
 	}
 }

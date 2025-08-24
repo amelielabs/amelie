@@ -180,7 +180,6 @@ amelie_connect(amelie_t* self, const char* uri)
 
 	// wait for completion
 	request_wait(&req, -1);
-	assert(! req.error);
 	request_free(&req);
 	return session;
 }
@@ -225,12 +224,13 @@ amelie_execute(amelie_session_t*    self,
 AMELIE_API int
 amelie_wait(amelie_request_t* self, uint32_t time_ms, amelie_arg_t* result)
 {
+	// 408 Request Timeout
 	if (! request_wait(&self->request, time_ms))
-		return 1;
+		return 408;
 	if (result)
 	{
 		result->data = buf_cstr(&self->request.content);
 		result->data_size = buf_size(&self->request.content);
 	}
-	return self->request.error ? -1 : 0;
+	return self->request.code;
 }

@@ -89,7 +89,7 @@ relay_connect(Relay* self, Str* uri_str)
 	self->connected = true;
 }
 
-hot static inline bool
+hot static inline int
 relay_execute(Relay* self, Str* uri, Str* command, Content* output)
 {
 	content_reset(output);
@@ -99,31 +99,25 @@ relay_execute(Relay* self, Str* uri, Str* command, Content* output)
 			relay_connect(self, uri);
 		client_execute(self->client, command, output->content);
 	);
-	if (on_error) {
+	int64_t code = 0;
+	if (likely(! on_error))
+	{
+		// 200 OK
+		// 204 No Content
+		// 400 Bad Request
+		// 403 Forbidden
+		// 413 Payload Too Large
+		str_toint(&self->client->reply.options[HTTP_CODE], &code);
+	} else
+	{
 		self->connected = false;
 		content_reset(output);
 		content_write_json_error(output, &am_self()->error);
-		return true;
+
+		// 502 Bad Gateway (connection or IO error)
+		code = 502;
 	}
-
-	// 200 OK
-	// 204 No Content
-	auto reply = &self->client->reply;
-	if (str_is(&reply->options[HTTP_CODE], "200", 3) ||
-	    str_is(&reply->options[HTTP_CODE], "204", 3))
-		return false;
-
-	// error content is already set
-
-	// 400 Bad Request
-	if (str_is(&reply->options[HTTP_CODE], "400", 3))
-		return true;
-
-	// 403 Forbidden
-	// 413 Payload Too Large
-	content_reset(output);
-	content_write_json_error_as(output, &reply->options[HTTP_MSG]);
-	return true;
+	return code;
 }
 
 void
@@ -139,9 +133,9 @@ frontend_relay(Frontend* self, Native* native)
 	content_init(&output);
 	for (auto connected = true; connected;)
 	{
-		auto req = request_queue_pop(&native->queue);
+		auto req  = request_queue_pop(&native->queue);
 		assert(req);
-		auto error = false;
+		auto code = 0;
 		switch (req->type) {
 		case REQUEST_CONNECT:
 		{
@@ -156,10 +150,10 @@ frontend_relay(Frontend* self, Native* native)
 		case REQUEST_EXECUTE:
 		{
 			content_set(&output, &req->content);
-			error = relay_execute(&relay, &native->uri, &req->cmd, &output);
+			code = relay_execute(&relay, &native->uri, &req->cmd, &output);
 			break;
 		}
 		}
-		request_complete(req, error);
+		request_complete(req, code);
 	}
 }

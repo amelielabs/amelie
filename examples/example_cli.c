@@ -103,15 +103,19 @@ main(int argc, char* argv[])
 		}
 
 		// wait for request completion (the result argument can be NULL)
+		//
+		// amelie_wait() returns http code
+		//
 		amelie_arg_t result = {NULL, 0};
-		rc = amelie_wait(req, -1, &result);
-		if (rc == -1) {
+		int status = amelie_wait(req, -1, &result);
+		if (status != 200 &&
+		    status != 204) {
 			// indicates error, the result likely contains the error message
 		}
 
 		// the result data pointers are valid until the request
 		// object is freed
-		if (result.data)
+		if (result.data_size > 0)
 			printf("%.*s\n", (int)result.data_size, result.data);
 
 		// free the request

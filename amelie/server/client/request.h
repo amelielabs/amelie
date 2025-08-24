@@ -28,7 +28,7 @@ struct Request
 	CondVar       cond_var;
 	RequestType   type;
 	bool          complete;
-	bool          error;
+	int           code;
 	Buf           content;
 	Str           cmd;
 	RequestNotify on_complete;
@@ -41,7 +41,7 @@ request_init(Request* self)
 {
 	self->type            = REQUEST_EXECUTE;
 	self->complete        = false;
-	self->error           = false;
+	self->code            = 0;
 	self->on_complete     = NULL;
 	self->on_complete_arg = NULL;
 	buf_init(&self->content);
@@ -64,20 +64,19 @@ request_reset(Request* self)
 {
 	self->type            = REQUEST_EXECUTE;
 	self->complete        = false;
-	self->error           = false;
+	self->code            = 0;
 	self->on_complete     = NULL;
-	self->on_complete_arg = NULL;
 	self->on_complete_arg = NULL;
 	str_init(&self->cmd);
 	buf_reset(&self->content);
 }
 
 static inline void
-request_complete(Request* self, bool error)
+request_complete(Request* self, int code)
 {
 	mutex_lock(&self->lock);
 	self->complete = true;
-	self->error    = error;
+	self->code     = code;
 	if (self->on_complete)
 		self->on_complete(self->on_complete_arg);
 	cond_var_signal(&self->cond_var);
