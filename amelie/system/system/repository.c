@@ -157,9 +157,44 @@ repository_bootstrap(void)
 		repository_bootstrap_server();
 }
 
+static void
+repository_open_client_mode(int argc, char** argv)
+{
+	auto runtime = runtime();
+	auto config  = config();
+
+	// prepare logger
+	auto logger = &runtime->logger;
+	logger_set_enable(logger, true);
+	logger_set_cli(logger, false, false);
+
+	// set default settings
+	repository_bootstrap();
+
+	// set options
+	opts_set_argv(&config->opts, argc, argv);
+
+	// set system timezone
+	auto name = &config()->timezone.string;
+	runtime->timezone = timezone_mgr_find(&runtime->timezone_mgr, name);
+	if (! runtime->timezone)
+		error("failed to find timezone %.*s", str_size(name), str_of(name));
+
+	// reconfigure logger
+	logger_set_enable(logger, opt_int_of(&config->log_enable));
+	logger_set_to_stdout(logger, opt_int_of(&config->log_to_stdout));
+	logger_set_timezone(logger, runtime->timezone);
+}
+
 bool
 repository_open(char* directory, int argc, char** argv)
 {
+	if (! directory)
+	{
+		repository_open_client_mode(argc, argv);
+		return true;
+	}
+
 	auto runtime = runtime();
 	auto config  = config();
 	auto state   = state();

@@ -49,3 +49,9 @@ void          runtime_init(Runtime*);
 void          runtime_free(Runtime*);
 RuntimeStatus runtime_start(Runtime*, RuntimeMain, char*, int, char**);
 void          runtime_stop(Runtime*);
+
+static inline bool
+runtime_started(Runtime* self)
+{
+	return task_active(&self->task);
+}

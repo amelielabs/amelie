@@ -38,6 +38,11 @@ main(int argc, char* argv[])
 
 	// open or create the database repository, passing the arguments
 	// from the command line
+	//
+	// The directory argument can be set to NULL, in such case no repository
+	// directory will be used or created and the sessions can be used only
+	// for a remote connections.
+	//
 	int rc = amelie_open(env, argv[1], argc - 2, argv + 2);
 	if (rc == -1)
 	{

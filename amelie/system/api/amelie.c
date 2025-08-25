@@ -150,6 +150,9 @@ amelie_main(char* directory, int argc, char** argv)
 AMELIE_API int
 amelie_open(amelie_t* self, const char* path, int argc, char** argv)
 {
+	// ensure amelie_open() was not called previously
+	if (unlikely(runtime_started(&self->runtime)))
+		return -1;
 	auto status = runtime_start(&self->runtime, amelie_main, (char*)path, argc, argv);
 	return status == RUNTIME_OK? 0: -1;
 }
@@ -157,6 +160,16 @@ amelie_open(amelie_t* self, const char* path, int argc, char** argv)
 AMELIE_API amelie_session_t*
 amelie_connect(amelie_t* self, const char* uri)
 {
+	// ensure amelie_open() executed
+	if (unlikely(! runtime_started(&self->runtime)))
+		return NULL;
+
+	// if amelie started without repository, ensure that the
+	// client has the uri argument set
+	if (str_empty(opt_string_of(&self->runtime.state.directory)))
+		if (! uri)
+			return NULL;
+
 	auto session = (amelie_session_t*)am_malloc(sizeof(amelie_session_t));
 	session->type            = AMELIE_OBJ_SESSION;
 	session->amelie          = self;
@@ -194,6 +207,10 @@ amelie_execute(amelie_session_t*    self,
 {
 	unused(argc);
 	unused(argv);
+
+	// ensure amelie_open() executed
+	if (unlikely(! runtime_started(&self->amelie->runtime)))
+		return NULL;
 
 	// allocate request
 	amelie_request_t* req;

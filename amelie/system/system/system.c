@@ -272,6 +272,20 @@ system_start(System* self, bool bootstrap)
 		info("");
 	}
 
+	// start system in the client mode without repository
+	if (str_empty(opt_string_of(&state()->directory)))
+	{
+		info("client-only mode.");
+
+		// start frontends to handle relay clients
+		int workers = opt_int_of(&config()->frontends);
+		frontend_mgr_start(&self->frontend_mgr,
+		                   &frontend_if,
+		                   self,
+		                   workers);
+		return;
+	}
+
 	// register builtin functions
 	fn_register(&self->function_mgr);
 
