@@ -15,7 +15,7 @@ typedef struct Task Task;
 
 struct Task
 {
-	BufMgr*      buf_mgr;
+	BufCache*    buf_cache;
 	Poller       poller;
 	CoroutineMgr coroutine_mgr;
 	TimerMgr     timer_mgr;
@@ -49,7 +49,7 @@ bool task_active(Task*);
 int  task_create_nothrow(Task*, char*,
                          MainFunction, void*, void*, void*,
                          LogFunction, void*,
-                         BufMgr*);
+                         BufCache*);
 void task_execute(Task*, MainFunction, void*);
 void task_wait(Task*);
 void task_coroutine_main(void*);

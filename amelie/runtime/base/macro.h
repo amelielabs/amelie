@@ -20,6 +20,7 @@
 #define fallthrough       __attribute__((fallthrough));
 #define auto              __auto_type
 #define unused(name)     (void)name
+#define cache_line       64
 
 #define source_file       __FILE__
 #define source_function   __func__

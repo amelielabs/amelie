@@ -227,7 +227,7 @@ task_create_nothrow(Task*        self,
                     void*        main_arg_share,
                     LogFunction  log,
                     void*        log_arg,
-                    BufMgr*      buf_mgr)
+                    BufCache*    buf_cache)
 {
 	// set arguments
 	self->main             = main;
@@ -236,7 +236,7 @@ task_create_nothrow(Task*        self,
 	self->main_arg_share   = main_arg_share;
 	self->log_write        = log;
 	self->log_write_arg    = log_arg;
-	self->buf_mgr          = buf_mgr;
+	self->buf_cache        = buf_cache;
 	snprintf(self->name, sizeof(self->name), "%s", name);
 
 	// prepare poller

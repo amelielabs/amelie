@@ -22,7 +22,7 @@ runtime_init(Runtime* self)
 	self->timezone = NULL;
 	self->crc      = crc32_sse_supported() ? crc32_sse : crc32;
 	self->iface    = NULL;
-	buf_mgr_init(&self->buf_mgr);
+	buf_cache_init(&self->buf_cache);
 	config_init(&self->config);
 	state_init(&self->state);
 	timezone_mgr_init(&self->timezone_mgr);
@@ -39,7 +39,7 @@ runtime_free(Runtime* self)
 	config_free(&self->config);
 	state_free(&self->state);
 	timezone_mgr_free(&self->timezone_mgr);
-	buf_mgr_free(&self->buf_mgr);
+	buf_cache_free(&self->buf_cache);
 	logger_close(&self->logger);
 	tls_lib_free();
 }
@@ -126,7 +126,7 @@ runtime_start(Runtime* self, RuntimeMain main, char* directory, int argc, char**
 	int rc;
 	rc = task_create_nothrow(&self->task, "main", runtime_main, &args, self, NULL,
 	                         logger_write, &self->logger,
-	                         &self->buf_mgr);
+	                         &self->buf_cache);
 	if (unlikely(rc == -1))
 		return RUNTIME_ERROR;
 	rc = cond_wait(&self->task.status);
@@ -138,7 +138,7 @@ runtime_stop(Runtime* self)
 {
 	if (task_active(&self->task))
 	{
-		auto buf = msg_create_as(&self->buf_mgr, RPC_STOP, 0);
+		auto buf = msg_create_as(&self->buf_cache, RPC_STOP, 0);
 		channel_write(&self->task.channel, buf);
 		task_wait(&self->task);
 	}

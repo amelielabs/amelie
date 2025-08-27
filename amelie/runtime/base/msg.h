@@ -27,9 +27,9 @@ msg_of(Buf* buf)
 }
 
 static inline Buf*
-msg_create_as(BufMgr* mgr, int id, int reserve)
+msg_create_as(BufCache* cache, int id, int reserve)
 {
-	auto buf = buf_mgr_create(mgr, sizeof(Msg) + reserve);
+	auto buf = buf_cache_create(cache, sizeof(Msg) + reserve);
 	auto msg = msg_of(buf);
 	msg->size = sizeof(Msg);
 	msg->id   = id;

@@ -34,7 +34,7 @@ palloc_truncate(int snapshot)
 static inline Buf*
 buf_create(void)
 {
-	return buf_mgr_create(am_task->buf_mgr, 0);
+	return buf_cache_create(am_task->buf_cache, 0);
 }
 
 static inline void
@@ -56,7 +56,7 @@ buf_free(Buf* self)
 static inline Buf*
 msg_create(int id)
 {
-	return msg_create_as(am_task->buf_mgr, id, 0);
+	return msg_create_as(am_task->buf_cache, id, 0);
 }
 
 // event
@@ -175,7 +175,7 @@ task_create(Task*        self,
 	                         am_share,
 	                         am_task->log_write,
 	                         am_task->log_write_arg,
-	                         am_task->buf_mgr);
+	                         am_task->buf_cache);
 	if (unlikely(rc == -1))
 		error_system();
 }

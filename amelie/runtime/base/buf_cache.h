@@ -15,69 +15,70 @@ typedef struct BufCache BufCache;
 
 struct BufCache
 {
-	Spinlock lock;
-	int      list_count;
-	List     list;
-	int      limit_buf;
+	Buf* head;
+	char pad[cache_line - sizeof(Buf*)];
 };
 
 static inline void
-buf_cache_init(BufCache* self, int limit_buf)
+buf_cache_init(BufCache* self)
 {
-	self->list_count = 0;
-	self->limit_buf  = limit_buf;
-	spinlock_init(&self->lock);
-	list_init(&self->list);
+	self->head = NULL;
 }
 
 static inline void
 buf_cache_free(BufCache* self)
 {
-	list_foreach_safe(&self->list)
+	auto buf = self->head;
+	while (buf)
 	{
-		auto buf = list_at(Buf, link);
+		auto next = buf->cache_next;
 		buf_free_memory(buf);
+		buf = next;
 	}
-	list_init(&self->list);
-	spinlock_free(&self->lock);
 }
 
-static inline Buf*
+hot static inline Buf*
 buf_cache_pop(BufCache* self)
 {
-	spinlock_lock(&self->lock);
-	Buf* buf = NULL;
-	if (likely(self->list_count > 0))
+	for (;;)
 	{
-		auto first = list_pop(&self->list);
-		buf = container_of(first, Buf, link);
-		self->list_count--;
+		auto head = __atomic_load_n(&self->head, __ATOMIC_ACQUIRE);
+		if (! head)
+			break;
+		auto next = head->cache_next;
+		if (__atomic_compare_exchange_n(&self->head, &head, next, 0,
+		                                __ATOMIC_RELEASE,
+		                                __ATOMIC_RELAXED))
+			return head;
 	}
-	spinlock_unlock(&self->lock);
-	return buf;
+	return NULL;
 }
 
-static inline void
+hot static inline void
 buf_cache_push(BufCache* self, Buf* buf)
 {
-	if (unlikely(buf_capacity(buf)) >= self->limit_buf)
+	if (unlikely(buf_capacity(buf)) >= 32 * 1024)
 	{
 		buf_free_memory(buf);
 		return;
 	}
-	list_init(&buf->link);
-	spinlock_lock(&self->lock);
-	list_append(&self->list, &buf->link);
-	self->list_count++;
-	spinlock_unlock(&self->lock);
+	for (;;)
+	{
+		auto head = __atomic_load_n(&self->head, __ATOMIC_RELAXED);
+		buf->cache_next = head;
+		if (__atomic_compare_exchange_n(&self->head, &head, buf, 1,
+		                                __ATOMIC_RELEASE,
+		                                __ATOMIC_RELAXED))
+			return;
+	}
 }
 
-static inline Buf*
+hot static inline Buf*
 buf_cache_create(BufCache* self, int size)
 {
 	auto buf = buf_cache_pop(self);
-	if (buf) {
-		list_init(&buf->link);
+	if (likely(buf)) {
+		buf->cache_next = NULL;
 		buf_reset(buf);
 	} else
 	{
