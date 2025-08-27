@@ -29,7 +29,6 @@
 
 // exception
 #include "base/exception.h"
-#include "base/log.h"
 #include "base/error.h"
 #include "base/report.h"
 

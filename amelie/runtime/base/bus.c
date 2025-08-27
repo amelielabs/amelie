@@ -17,7 +17,6 @@ bus_init(Bus* self)
 {
 	spinlock_init(&self->lock);
 	list_init(&self->list_ready);
-	list_init(&self->list);
 	notify_init(&self->notify);
 }
 
@@ -49,16 +48,12 @@ bus_close(Bus* self)
 void
 bus_attach(Bus* self, Event* event)
 {
-	spinlock_lock(&self->lock);
 	if (event->bus)
 	{
 		assert(event->bus == self);
-		spinlock_unlock(&self->lock);
 		return;
 	}
 	event->bus = self;
-	list_append(&self->list, &event->link);
-	spinlock_unlock(&self->lock);
 }
 
 void
@@ -69,7 +64,6 @@ bus_detach(Event* event)
 	Bus* self = event->bus;
 	spinlock_lock(&self->lock);
 	event->bus = NULL;
-	list_unlink(&event->link);
 	list_unlink(&event->link_ready);
 	spinlock_unlock(&self->lock);
 }

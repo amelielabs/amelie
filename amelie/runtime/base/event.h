@@ -21,7 +21,6 @@ struct Event
 	bool   signal;
 	void*  bus;
 	List   link_ready;
-	List   link;
 };
 
 static inline void
@@ -33,7 +32,6 @@ event_init(Event* self)
 	self->signal        = false;
 	self->bus           = NULL;
 	list_init(&self->link_ready);
-	list_init(&self->link);
 }
 
 static inline void

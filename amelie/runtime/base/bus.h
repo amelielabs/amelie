@@ -17,7 +17,6 @@ struct Bus
 {
 	Spinlock lock;
 	List     list_ready;
-	List     list;
 	Notify   notify;
 };
 
