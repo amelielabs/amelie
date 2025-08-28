@@ -273,7 +273,7 @@ executor_commit(Executor* self, Dtr* dtr, Buf* error)
 			if (error)
 			{
 				dtr_set_error(dtr, error);
-				msg_error_rethrow(error);
+				rethrow_buf(error);
 			}
 			return;
 		case DTR_BEGIN:
@@ -309,7 +309,7 @@ executor_commit(Executor* self, Dtr* dtr, Buf* error)
 		{
 			executor_end(self, DTR_ABORT);
 			spinlock_unlock(&self->lock);
-			msg_error_throw(dtr->error);
+			error_buf(dtr->error);
 		}
 
 		// prepare for group commit and wal write

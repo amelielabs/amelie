@@ -12,33 +12,20 @@
 //
 
 static inline Buf*
-msg_error(Error* e)
+error_create(Error* error)
 {
-	auto buf = msg_create(MSG_ERROR);
-	encode_obj(buf);
-	encode_raw(buf, "msg", 3);
-	encode_raw(buf, e->text, e->text_len);
-	encode_obj_end(buf);
-	msg_end(buf);
-	return buf;
-}
-
-static inline Buf*
-msg_error_as(Str* msg)
-{
-	auto buf = msg_create(MSG_ERROR);
-	encode_obj(buf);
-	encode_raw(buf, "msg", 3);
-	encode_string(buf, msg);
-	encode_obj_end(buf);
-	msg_end(buf);
-	return buf;
+	auto self = buf_create();
+	encode_obj(self);
+	encode_raw(self, "msg", 3);
+	encode_raw(self, error->text, error->text_len);
+	encode_obj_end(self);
+	return self;
 }
 
 static inline void
-msg_error_throw(Buf* buf)
+error_buf(Buf* buf)
 {
-	uint8_t* pos = msg_of(buf)->data;
+	auto pos = buf->start;
 	json_read_obj(&pos);
 	// msg
 	json_skip(&pos);
@@ -48,9 +35,9 @@ msg_error_throw(Buf* buf)
 }
 
 static inline void
-msg_error_rethrow(Buf* buf)
+rethrow_buf(Buf* buf)
 {
-	uint8_t* pos = msg_of(buf)->data;
+	auto pos = buf->start;
 	json_read_obj(&pos);
 	// msg
 	json_skip(&pos);

@@ -158,7 +158,7 @@ backend_process(Backend* self, Ctr* ctr)
 		if (! req)
 			break;
 		if (error_catch(backend_run(self, ctr, req)))
-			req->error = msg_error(&am_self()->error);
+			req->error = error_create(&am_self()->error);
 		req_complete(req);
 	}
 	ctr_complete(ctr);

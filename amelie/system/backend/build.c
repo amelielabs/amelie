@@ -148,7 +148,7 @@ build_run(Build* self)
 	);
 	Buf* error = NULL;
 	if (on_error)
-		error = msg_error(&am_self()->error);
+		error = error_create(&am_self()->error);
 	executor_commit(executor, dtr, error);
 
 	if (self->type != BUILD_RECOVER)

@@ -95,7 +95,7 @@ replay(Dtr* dtr, Record* record)
 	Buf* error = NULL;
 	if (on_error)
 	{
-		error = msg_error(&am_self()->error);
+		error = error_create(&am_self()->error);
 		req_cache_push_list(&dtr->dispatch_mgr.req_cache, &req_list);
 	}
 

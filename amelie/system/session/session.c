@@ -194,7 +194,7 @@ session_execute_distributed(Session* self, Content* output)
 
 	Buf* error = NULL;
 	if (on_error)
-		error = msg_error(&am_self()->error);
+		error = error_create(&am_self()->error);
 
 	if (program->profile)
 	{

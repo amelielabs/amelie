@@ -197,7 +197,7 @@ dispatch_mgr_recv(DispatchMgr* self)
 	self->list_processed++;
 
 	if (error)
-		msg_error_rethrow(error->error);
+		rethrow_buf(error->error);
 }
 
 hot static inline void
