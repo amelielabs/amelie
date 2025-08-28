@@ -213,11 +213,8 @@ system_free(System* self)
 static void
 system_on_server_connect(Server* server, Client* client)
 {
-	auto buf = msg_create(MSG_CLIENT);
-	buf_write(buf, &client, sizeof(void**));
-	msg_end(buf);
 	System* self = server->on_connect_arg;
-	frontend_mgr_forward(&self->frontend_mgr, buf);
+	frontend_mgr_forward(&self->frontend_mgr, &client->msg);
 }
 
 static void
@@ -358,7 +355,7 @@ static void
 system_rpc(Rpc* rpc, void* arg)
 {
 	System* self = arg;
-	switch (rpc->id) {
+	switch (rpc->msg.id) {
 	case RPC_SHOW_METRICS:
 	{
 		Buf** buf = rpc_arg_ptr(rpc, 0);
@@ -423,20 +420,17 @@ system_main(System* self)
 {
 	for (;;)
 	{
-		auto buf = channel_read(&am_task->channel, -1);
-		auto msg = msg_of(buf);
-
+		auto msg = channel_read(&am_task->channel, -1);
+		if (msg->id == RPC_STOP)
+			break;
 		if (msg->id == MSG_NATIVE)
 		{
 			// amelie_connect()
-			frontend_mgr_forward(&self->frontend_mgr, buf);
+			frontend_mgr_forward(&self->frontend_mgr, msg);
 			continue;
 		}
-
-		defer_buf(buf);
-		if (msg->id == RPC_STOP)
-			break;
-		auto rpc = rpc_of(buf);
+		// rpc
+		auto rpc = rpc_of(msg);
 		switch (msg->id) {
 		case RPC_LOCK:
 			system_lock(self, rpc);

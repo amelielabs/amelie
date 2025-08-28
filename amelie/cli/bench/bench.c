@@ -47,14 +47,7 @@ bench_worker_main(void* arg)
 		coroutine_create(bench_connection, self);
 
 	// wait for stop
-	for (;;)
-	{
-		auto buf = channel_read(&am_task->channel, -1);
-		auto msg = msg_of(buf);
-		defer_buf(buf);
-		if (msg->id == RPC_STOP)
-			break;
-	}
+	channel_read(&am_task->channel, -1);
 
 	// wait for completion
 	self->shutdown = true;
@@ -70,6 +63,7 @@ bench_worker_allocate(Bench* bench, int connections)
 	self->shutdown    = false;
 	self->bench       = bench;
 	histogram_init(&self->histogram);
+	msg_init(&self->stop, RPC_STOP);
 	task_init(&self->task);
 	list_init(&self->link);
 	return self;
@@ -91,8 +85,7 @@ bench_worker_start(BenchWorker* self)
 static void
 bench_worker_stop_notify(BenchWorker* self)
 {
-	auto buf = msg_create(RPC_STOP);
-	channel_write(&self->task.channel, buf);
+	channel_write(&self->task.channel, &self->stop);
 }
 
 static void

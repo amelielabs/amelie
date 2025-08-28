@@ -131,12 +131,14 @@ test_cancel_condition(void* arg)
 	event_detach(&cond);
 }
 
+static Msg cancel_msg;
+
 static void
 test_cancel_channel_pause_main(void* arg)
 {
 	Channel* channel = arg;
 	coroutine_sleep(100);
-	channel_write(channel, buf_create());
+	channel_write(channel, &cancel_msg);
 }
 
 static void
@@ -149,6 +151,8 @@ test_cancel_channel_pause_canceller(void* arg)
 void
 test_cancel_channel_pause(void* arg)
 {
+	msg_init(&cancel_msg, 0);
+
 	unused(arg);
 	Channel channel;
 	channel_init(&channel);
@@ -165,9 +169,9 @@ test_cancel_channel_pause(void* arg)
 
 	coroutine_cancel_pause(am_self());
 
-	auto buf = channel_read(&channel, -1);
-	test(buf);
-	buf_free(buf);
+	auto msg = channel_read(&channel, -1);
+	test(msg);
+	test(msg == &cancel_msg);
 
 	task_wait(&task);
 	task_free(&task);

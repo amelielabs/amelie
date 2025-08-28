@@ -36,4 +36,9 @@ void frontend_init(Frontend*, FrontendIf*, void*);
 void frontend_free(Frontend*);
 void frontend_start(Frontend*);
 void frontend_stop(Frontend*);
-void frontend_add(Frontend*, Buf*);
+
+static inline void
+frontend_add(Frontend* self, Msg* msg)
+{
+	channel_write(&self->task.channel, msg);
+}

@@ -28,6 +28,7 @@ client_create(void)
 	self->host         = NULL;
 	self->auth         = false;
 	self->arg          = NULL;
+	msg_init(&self->msg, MSG_CLIENT);
 	http_init(&self->request);
 	http_init(&self->reply);
 	tls_context_init(&self->tls_context);

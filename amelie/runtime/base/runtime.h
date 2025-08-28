@@ -52,13 +52,6 @@ buf_free(Buf* self)
 	buf_free_memory(self);
 }
 
-// msg
-static inline Buf*
-msg_create(int id)
-{
-	return msg_create_as(am_task->buf_mgr, id, 0);
-}
-
 // event
 static inline void
 event_attach(Event* self)

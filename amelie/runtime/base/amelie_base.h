@@ -61,7 +61,6 @@
 // ipc
 #include "base/wait.h"
 #include "base/bus.h"
-#include "base/msg_id.h"
 #include "base/msg.h"
 #include "base/channel.h"
 #include "base/task.h"

@@ -69,11 +69,11 @@ frontend_mgr_next(FrontendMgr* self)
 }
 
 static inline void
-frontend_mgr_forward(FrontendMgr* self, Buf* buf)
+frontend_mgr_forward(FrontendMgr* self, Msg* msg)
 {
 	assert(self->workers_count > 0);
 	int pos = frontend_mgr_next(self);
-	frontend_add(&self->workers[pos], buf);
+	frontend_add(&self->workers[pos], msg);
 }
 
 static inline void

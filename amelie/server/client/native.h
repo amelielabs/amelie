@@ -15,6 +15,7 @@ typedef struct Native Native;
 
 struct Native
 {
+	Msg          msg;
 	RequestQueue queue;
 	Str          uri;
 	void*        arg;
@@ -25,6 +26,7 @@ native_init(Native* self)
 {
 	str_init(&self->uri);
 	request_queue_init(&self->queue);
+	msg_init(&self->msg, MSG_NATIVE);
 }
 
 static inline void

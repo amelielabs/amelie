@@ -34,8 +34,6 @@ unit test_buf_reserve
 unit test_buf_write
 # test: test buf overwrite
 unit test_buf_overwrite
-# test: test msg
-unit test_msg
 # test: test coroutine create
 unit test_coroutine_create
 # test: test coroutine context switch

@@ -265,9 +265,8 @@ streamer_task_main(void* arg)
 	uint64_t id = coroutine_create(streamer_main, self);
 	for (;;)
 	{
-		auto buf = channel_read(&am_task->channel, -1);
-		auto rpc = rpc_of(buf);
-		defer(buf_free, buf);
+		auto msg = channel_read(&am_task->channel, -1);
+		auto rpc = rpc_of(msg);
 		rpc_execute(rpc, streamer_shutdown, &id);
 		break;
 	}

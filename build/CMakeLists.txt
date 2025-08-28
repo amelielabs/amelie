@@ -348,7 +348,6 @@ set(AMELIE_SOURCES_UNIT
     ${CMAKE_SOURCE_DIR}/tests/unit/test_exception.c
     ${CMAKE_SOURCE_DIR}/tests/unit/test_palloc.c
     ${CMAKE_SOURCE_DIR}/tests/unit/test_buf.c
-    ${CMAKE_SOURCE_DIR}/tests/unit/test_msg.c
     ${CMAKE_SOURCE_DIR}/tests/unit/test_coroutine.c
     ${CMAKE_SOURCE_DIR}/tests/unit/test_event.c
     ${CMAKE_SOURCE_DIR}/tests/unit/test_condition.c

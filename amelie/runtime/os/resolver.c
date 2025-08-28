@@ -19,10 +19,9 @@ resolver_main(void* arg)
 	unused(arg);
 	for (bool active = true; active;)
 	{
-		auto buf = channel_read(&am_task->channel, -1);
-		auto rpc = rpc_of(buf);
-		buf_free(buf);
-		switch (rpc->id) {
+		auto msg = channel_read(&am_task->channel, -1);
+		auto rpc = rpc_of(msg);
+		switch (rpc->msg.id) {
 		case RPC_STOP:
 			active = false;
 			break;

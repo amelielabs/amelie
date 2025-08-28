@@ -27,6 +27,7 @@ struct BenchWorker
 	bool      shutdown;
 	Histogram histogram;
 	Bench*    bench;
+	Msg       stop;
 	Task      task;
 	List      link;
 };

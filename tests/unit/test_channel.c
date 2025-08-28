@@ -12,14 +12,6 @@
 
 #include <amelie_test.h>
 
-static void
-test_channel_main(void *arg)
-{
-	Channel* channel = arg;
-	auto buf = buf_create();
-	channel_write(channel, buf);
-}
-
 void
 test_channel_read_empty(void* arg)
 {
@@ -28,16 +20,27 @@ test_channel_read_empty(void* arg)
 	channel_init(&channel);
 	channel_attach(&channel);
 
-	auto buf = channel_read(&channel, 0);
-	test(buf == NULL);
+	auto msg = channel_read(&channel, 0);
+	test(msg == NULL);
 
 	channel_detach(&channel);
 	channel_free(&channel);
 }
 
+static Msg _msg;
+
+static void
+test_channel_main(void *arg)
+{
+	Channel* channel = arg;
+	channel_write(channel, &_msg);
+}
+
 void
 test_channel(void* arg)
 {
+	msg_init(&_msg, 0);
+
 	unused(arg);
 	Channel channel;
 	channel_init(&channel);
@@ -47,12 +50,10 @@ test_channel(void* arg)
 	id = coroutine_create(test_channel_main, &channel);
 	test( id != 0 );
 
-	auto buf = channel_read(&channel, -1);
-	test(buf);
+	auto msg = channel_read(&channel, -1);
+	test(msg);
 
 	coroutine_wait(id);
-
-	buf_free(buf);
 
 	channel_detach(&channel);
 	channel_free(&channel);
@@ -61,6 +62,8 @@ test_channel(void* arg)
 void
 test_channel_task(void* arg)
 {
+	msg_init(&_msg, 0);
+
 	unused(arg);
 	Channel channel;
 	channel_init(&channel);
@@ -70,9 +73,8 @@ test_channel_task(void* arg)
 	task_init(&task);
 	task_create(&task, "test", test_channel_main, &channel);
 
-	auto buf = channel_read(&channel, -1);
-	test(buf);
-	buf_free(buf);
+	auto msg = channel_read(&channel, -1);
+	test(msg);
 
 	task_wait(&task);
 	task_free(&task);
@@ -86,12 +88,14 @@ test_channel_timeout_main(void* arg)
 {
 	Channel* channel = arg;
 	coroutine_sleep(100);
-	channel_write(channel, buf_create());
+	channel_write(channel, &_msg);
 }
 
 void
 test_channel_task_timeout(void* arg)
 {
+	msg_init(&_msg, 0);
+
 	unused(arg);
 	Channel channel;
 	channel_init(&channel);
@@ -101,12 +105,11 @@ test_channel_task_timeout(void* arg)
 	task_init(&task);
 	task_create(&task, "test", test_channel_timeout_main, &channel);
 
-	auto buf = channel_read(&channel, 10);
-	test(buf == NULL);
+	auto msg = channel_read(&channel, 10);
+	test(msg == NULL);
 
-	buf = channel_read(&channel, -1);
-	test(buf);
-	buf_free(buf);
+	msg = channel_read(&channel, -1);
+	test(msg);
 
 	task_wait(&task);
 	task_free(&task);
@@ -114,6 +117,16 @@ test_channel_task_timeout(void* arg)
 	channel_detach(&channel);
 	channel_free(&channel);
 }
+
+typedef struct PCEvent PCEvent;
+
+struct PCEvent
+{
+	Msg msg;
+	int value;
+};
+
+static PCEvent events[101];
 
 enum
 {
@@ -131,20 +144,12 @@ test_channel_consumer(void *arg)
 	auto channel = &am_task->channel;
 	for (;;)
 	{
-		auto buf = channel_read(channel, -1);
-		auto msg = msg_of(buf);
+		auto msg = channel_read(channel, -1);
 		if (msg->id == STOP)
-		{
-			buf_free(buf);
 			break;
-		}
-
-		uint64_t value = *(uint64_t*)msg->data;
-		consumer_sum += value;
+		consumer_sum += ((PCEvent*)msg)->value;
 		consumer_count++;
-		buf_free(buf);
 	}
-
 	event_signal(on_complete);
 }
 
@@ -152,21 +157,16 @@ static void
 test_channel_producer(void* arg)
 {
 	Channel* consumer_channel = arg;
-	Buf* buf;
-
-	uint64_t i = 0;
-	while (i < 1000)
+	for (int i = 0; i < 100; i++)
 	{
-		buf = msg_create(DATA);
-		buf_write(buf, &i, sizeof(i));
-		msg_end(buf);
-		channel_write(consumer_channel, buf);
-		i++;
+		auto msg = &events[i];
+		msg_init(&msg->msg, DATA);
+		msg->value = i;
+		channel_write(consumer_channel, &msg->msg);
 	}
-
-	buf = msg_create(STOP);
-	msg_end(buf);
-	channel_write(consumer_channel, buf);
+	auto stop = &events[100];
+	msg_init(&stop->msg, STOP);
+	channel_write(consumer_channel, &stop->msg);
 }
 
 void
@@ -187,7 +187,7 @@ test_channel_producer_consumer(void* arg)
 
 	bool timeout = event_wait(&event, -1);
 	test(! timeout);
-	test(consumer_count == 1000);
+	test(consumer_count == 100);
 
 	task_wait(&producer);
 	task_free(&producer);

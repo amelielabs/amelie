@@ -15,7 +15,7 @@ typedef struct Rpc Rpc;
 
 struct Rpc
 {
-	int       id;
+	Msg       msg;
 	int       argc;
 	intptr_t* argv;
 	int       rc;
@@ -26,9 +26,9 @@ struct Rpc
 };
 
 always_inline hot static inline Rpc*
-rpc_of(Buf* buf)
+rpc_of(Msg* msg)
 {
-	return *(Rpc**)msg_of(buf)->data;
+	return (Rpc*)msg;
 }
 
 always_inline hot static inline intptr_t
@@ -77,23 +77,19 @@ rpc(Channel* channel, int id, int argc, ...)
 	error->code = ERROR_NONE;
 	Rpc rpc =
 	{
-		.id      = id,
 		.argc    = argc,
 		.argv    = argv,
 		.rc      = 0,
 		.error   = error,
 		.channel = channel
 	};
+	msg_init(&rpc.msg, id);
 	list_init(&rpc.link);
 	event_init(&rpc.on_complete);
 	event_attach(&rpc.on_complete);
 
 	// do rpc call and wait for completion
-	auto rpc_ptr = &rpc;
-	auto buf = msg_create(id);
-	buf_write(buf, &rpc_ptr, sizeof(void**));
-	msg_end(buf);
-	channel_write(channel, buf);
+	channel_write(channel, &rpc.msg);
 
 	cancel_pause();
 	event_wait(&rpc.on_complete, -1);

@@ -13,38 +13,33 @@
 
 typedef struct Msg Msg;
 
+enum
+{
+	MSG_CLIENT,
+	MSG_NATIVE,
+
+	// rpc
+	RPC_START,
+	RPC_STOP,
+	RPC_RESOLVE,
+
+	RPC_LOCK,
+	RPC_UNLOCK,
+	RPC_CHECKPOINT,
+
+	RPC_SYNC_USERS,
+	RPC_SHOW_METRICS
+};
+
 struct Msg
 {
-	uint32_t size:24;
-	uint32_t id:8;
-	uint8_t  data[];
-} packed;
-
-static inline Msg*
-msg_of(Buf* buf)
-{
-	return (Msg*)buf->start;
-}
-
-static inline Buf*
-msg_create_as(BufMgr* mgr, int id, int reserve)
-{
-	auto buf = buf_mgr_create(mgr, sizeof(Msg) + reserve);
-	auto msg = msg_of(buf);
-	msg->size = sizeof(Msg);
-	msg->id   = id;
-	buf_advance(buf, sizeof(Msg));
-	return buf;
-}
-
-static inline int
-msg_data_size(Msg* msg)
-{
-	return msg->size - sizeof(Msg);
-}
+	int  id;
+	List link;
+};
 
 static inline void
-msg_end(Buf* self)
+msg_init(Msg* self, int id)
 {
-	msg_of(self)->size = buf_size(self);
+	self->id = id;
+	list_init(&self->link);
 }

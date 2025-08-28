@@ -12,6 +12,7 @@
 
 #include <amelie_test.h>
 
+#if 0
 static void
 test_benchmark_main(void* arg)
 {
@@ -263,3 +264,4 @@ test_benchmark_buf_defer(void* arg)
 
 	printf("%.2f sec (rps %.0f) ", sec, count / sec);
 }
+#endif

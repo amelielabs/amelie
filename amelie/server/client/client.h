@@ -15,6 +15,7 @@ typedef struct Client Client;
 
 struct Client
 {
+	Msg        msg;
 	Http       request;
 	Http       reply;
 	Readahead  readahead;

@@ -15,7 +15,7 @@
 void
 channel_init(Channel* self)
 {
-	buf_list_init(&self->list);
+	list_init(&self->list);
 	event_init(&self->on_write);
 	spinlock_init(&self->lock);
 }
@@ -24,16 +24,7 @@ void
 channel_free(Channel* self)
 {
 	assert(! self->on_write.bus);
-	buf_list_free(&self->list);
 	spinlock_free(&self->lock);
-}
-
-void
-channel_reset(Channel* self)
-{
-	spinlock_lock(&self->lock);
-	buf_list_free(&self->list);
-	spinlock_unlock(&self->lock);
 }
 
 void
@@ -55,24 +46,29 @@ channel_detach(Channel* self)
 }
 
 hot void
-channel_write(Channel* self, Buf* buf)
+channel_write(Channel* self, Msg* msg)
 {
 	spinlock_lock(&self->lock);
-	buf_list_add(&self->list, buf);
+	list_append(&self->list, &msg->link);
 	spinlock_unlock(&self->lock);
 	bus_signal(&self->on_write);
 }
 
-static inline Buf*
+static inline Msg*
 channel_pop(Channel* self)
 {
 	spinlock_lock(&self->lock);
-	auto next = buf_list_pop(&self->list);
+	Msg* msg = NULL;
+	if (! list_empty(&self->list))
+	{
+		auto next = list_pop(&self->list);
+		msg = container_of(next, Msg, link);
+	}
 	spinlock_unlock(&self->lock);
-	return next;
+	return msg;
 }
 
-Buf*
+Msg*
 channel_read(Channel* self, int time_ms)
 {
 	assert(self->on_write.bus);
@@ -82,18 +78,18 @@ channel_read(Channel* self, int time_ms)
 		return channel_pop(self);
 
 	// wait indefinately
-	Buf* buf;
+	Msg* msg;
 	if (time_ms == -1)
 	{
-		while ((buf = channel_pop(self)) == NULL)
+		while ((msg = channel_pop(self)) == NULL)
 			event_wait(&self->on_write, -1);
-		return buf;
+		return msg;
 	}
 
 	// timedwait
-	buf = channel_pop(self);
-	if (buf)
-		return buf;
+	msg = channel_pop(self);
+	if (msg)
+		return msg;
 	event_wait(&self->on_write, time_ms);
 	return channel_pop(self);
 }

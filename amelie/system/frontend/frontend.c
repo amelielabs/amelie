@@ -79,7 +79,7 @@ static void
 frontend_rpc(Rpc* rpc, void* arg)
 {
 	Frontend* self = arg;
-	switch (rpc->id) {
+	switch (rpc->msg.id) {
 	case RPC_SYNC_USERS:
 	{
 		// sync user caches
@@ -113,15 +113,12 @@ frontend_main(void* arg)
 	bool stop = false;
 	while (! stop)
 	{
-		auto buf = channel_read(&am_task->channel, -1);
-		auto msg = msg_of(buf);
-		defer_buf(buf);
-
+		auto msg = channel_read(&am_task->channel, -1);
 		switch (msg->id) {
 		case MSG_CLIENT:
 		{
 			// remote client
-			Client* client = *(void**)msg->data;
+			auto client = (Client*)msg;
 			client->arg = self;
 			coroutine_create(client_main, client);
 			break;
@@ -129,7 +126,7 @@ frontend_main(void* arg)
 		case MSG_NATIVE:
 		{
 			// native client
-			Native* native = *(void**)msg->data;
+			auto native = (Native*)msg;
 			native->arg = self;
 			coroutine_create(native_main, native);
 			break;
@@ -138,7 +135,7 @@ frontend_main(void* arg)
 		{
 			// command
 			stop = msg->id == RPC_STOP;
-			auto rpc = rpc_of(buf);
+			auto rpc = rpc_of(msg);
 			rpc_execute(rpc, frontend_rpc, self);
 			break;
 		}
@@ -184,10 +181,4 @@ frontend_stop(Frontend* self)
 		task_free(&self->task);
 		task_init(&self->task);
 	}
-}
-
-void
-frontend_add(Frontend* self, Buf* buf)
-{
-	channel_write(&self->task.channel, buf);
 }

@@ -138,8 +138,9 @@ runtime_stop(Runtime* self)
 {
 	if (task_active(&self->task))
 	{
-		auto buf = msg_create_as(&self->buf_mgr, RPC_STOP, 0);
-		channel_write(&self->task.channel, buf);
+		Msg stop;
+		msg_init(&stop, RPC_STOP);
+		channel_write(&self->task.channel, &stop);
 		task_wait(&self->task);
 	}
 }
