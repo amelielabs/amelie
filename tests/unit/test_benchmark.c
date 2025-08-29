@@ -12,29 +12,27 @@
 
 #include <amelie_test.h>
 
-#if 0
 static void
-test_benchmark_main(void* arg)
+test_benchmark_rpc_main(void* arg)
 {
 	unused(arg);
 	bool stop = false;
 	while (! stop)
 	{
-		auto buf = channel_read(&am_task->channel, -1);
-		auto rpc = rpc_of(buf);
-		buf_free(buf);
-		stop = rpc->id == 0;
+		auto msg = channel_read(&am_task->channel, -1);
+		auto rpc = rpc_of(msg);
+		stop = msg->id == 0;
 		rpc_done(rpc);
 	}
 }
 
 void
-test_benchmark(void* arg)
+test_benchmark_rpc(void* arg)
 {
 	unused(arg);
 	Task task;
 	task_init(&task);
-	task_create(&task, "test", test_benchmark_main, NULL);
+	task_create(&task, "test", test_benchmark_rpc_main, NULL);
 
 	uint64_t time_us;
 	time_start(&time_us);
@@ -143,6 +141,7 @@ test_benchmark_mutex(void* arg)
 	task_free(&task);
 }
 
+#if 0
 static Buf*
 test_benchmark_get_buf(void)
 {
