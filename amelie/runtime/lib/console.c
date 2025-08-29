@@ -22,20 +22,21 @@
 void
 console_init(Console* self)
 {
-	self->fd_in        = STDIN_FILENO;
-	self->fd_out       = STDOUT_FILENO;
-	self->is_openned   = false;
-	self->is_tty       = isatty(self->fd_in);
-	self->cols         = 0;
-	self->cursor       = 0;
-	self->cursor_raw   = 0;
-	self->prompt       =  NULL;
-	self->prompt_len   = 0;
-	self->refresh      = NULL;
-	self->data         = NULL;
-	self->history_at   = NULL;
+	self->fd_in         = STDIN_FILENO;
+	self->fd_out        = STDOUT_FILENO;
+	self->is_openned    = false;
+	self->is_tty        = isatty(self->fd_in);
+	self->cols          = 0;
+	self->cursor        = 0;
+	self->cursor_raw    = 0;
+	self->prompt        =  NULL;
+	self->prompt_len    = 0;
+	self->refresh       = NULL;
+	self->data          = NULL;
+	self->history_pos   = 0;
+	self->history_count = 0;
+	buf_init(&self->history);
 	memset(&self->term, 0, sizeof(self->term));
-	buf_list_init(&self->history);
 }
 
 static void
@@ -51,7 +52,11 @@ console_free(Console* self)
 		buf_free(self->refresh);
 		self->refresh = NULL;
 	}
-	buf_list_free(&self->history);
+
+	auto history = (Buf**)self->history.start;
+	for (auto at = 0; at < self->history_count; at++)
+		buf_free(history[at]);
+	buf_free(&self->history);
 }
 
 void
@@ -64,9 +69,10 @@ console_save(Console* self, const char* path)
 	file_open_as(&file, path, O_TRUNC|O_CREAT|O_RDWR, 0600);
 
 	Buf* prev = NULL;
-	list_foreach(&self->history.list)
+	auto history = (Buf**)self->history.start;
+	for (auto at = 0; at < self->history_count; at++)
 	{
-		auto buf = list_at(Buf, link);
+		auto buf = history[at];
 		if (buf_empty(buf))
 			continue;
 
@@ -104,7 +110,9 @@ console_load(Console* self, const char* path)
 		str_advance(&history, str_size(&cmd));
 		auto buf = buf_create();
 		buf_write_str(buf, &cmd);
-		buf_list_add(&self->history, buf);
+
+		buf_write(&self->history, &buf, sizeof(void**));
+		self->history_count++;
 	}
 }
 
@@ -142,9 +150,10 @@ console_open(Console* self)
 		return -1;
 
 	self->data = buf_create();
-	buf_list_add(&self->history, self->data);
-	self->history_at = self->data;
-	self->is_openned = true;
+	buf_write(&self->history, &self->data, sizeof(void**));
+	self->history_count++;
+	self->history_pos = 0;
+	self->is_openned  = true;
 
 	// show current prompt
 	if (! str_empty(self->prompt))
@@ -264,28 +273,26 @@ console_read_escape(Console* self)
 	}
 	case 'A': // Up
 	{
-		if (self->history.list_count == 1)
+		if (self->history_count == 1)
 			break;
-		Buf* prev;
-		if (list_is_first(&self->history.list, &self->history_at->link))
-			prev = data;
+		if (self->history_pos == 0)
+			self->history_pos = self->history_count - 1;
 		else
-			prev = container_of(self->history_at->link.prev, Buf, link);
-		self->history_at = prev;
-		console_set(self, prev);
+			self->history_pos--;
+		auto at = ((Buf**)self->history.start)[self->history_pos];
+		console_set(self, at);
 		break;
 	}
 	case 'B': // Down
 	{
-		if (self->history.list_count == 1)
+		if (self->history_count == 1)
 			break;
-		Buf* next;
-		if (list_is_last(&self->history.list, &self->history_at->link))
-			next = container_of(self->history.list.next, Buf, link);
+		if (self->history_pos == self->history_count - 1)
+			self->history_pos = 0;
 		else
-			next = container_of(self->history_at->link.next, Buf, link);
-		self->history_at = next;
-		console_set(self, next);
+			self->history_pos++;
+		auto at = ((Buf**)self->history.start)[self->history_pos];
+		console_set(self, at);
 		break;
 	}
 	case 'C': // Right

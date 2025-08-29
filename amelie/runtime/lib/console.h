@@ -26,8 +26,9 @@ struct Console
 	int            prompt_len;
 	Buf*           data;
 	Buf*           refresh;
-	Buf*           history_at;
-	BufList        history;
+	int            history_pos;
+	int            history_count;
+	Buf            history;
 	struct termios term;
 };
 
