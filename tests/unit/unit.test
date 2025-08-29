@@ -135,10 +135,10 @@ unit test_lock_read1
 unit test_sleep
 
 # test: test benchmark rpc
-# unit test_benchmark_rpc
+#unit test_benchmark_rpc
 
 # test: test benchmark_mutex
-# unit test_benchmark_mutex
+#unit test_benchmark_mutex
 
 ## test: test benchmark_buf
 #unit test_benchmark_buf
