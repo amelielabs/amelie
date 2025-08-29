@@ -19,6 +19,7 @@ struct Resolver
 };
 
 void resolver_init(Resolver*);
+void resolver_free(Resolver*);
 void resolver_start(Resolver*);
 void resolver_stop(Resolver*);
 void resolve(Resolver*, const char*, int, struct addrinfo**);

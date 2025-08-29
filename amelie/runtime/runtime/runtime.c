@@ -36,6 +36,7 @@ void
 runtime_free(Runtime* self)
 {
 	task_free(&self->task);
+	resolver_free(&self->resolver);
 	config_free(&self->config);
 	state_free(&self->state);
 	timezone_mgr_free(&self->timezone_mgr);

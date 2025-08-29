@@ -208,6 +208,7 @@ backend_free(Backend* self)
 {
 	vm_free(&self->vm);
 	core_free(&self->core);
+	task_free(&self->task);
 	am_free(self);
 }
 
@@ -225,7 +226,5 @@ backend_stop(Backend* self)
 	{
 		core_shutdown(&self->core);
 		task_wait(&self->task);
-		task_free(&self->task);
-		task_init(&self->task);
 	}
 }

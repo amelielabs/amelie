@@ -15,12 +15,11 @@ typedef struct Channel Channel;
 
 struct Channel
 {
-	Spinlock lock;
-	List     list;
-	Event    on_write;
+	Ring  ring;
+	Event on_write;
 };
 
-void channel_init(Channel*);
+void channel_init(Channel*, int);
 void channel_free(Channel*);
 void channel_attach_to(Channel*, Bus*);
 void channel_attach(Channel*);

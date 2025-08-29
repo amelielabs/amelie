@@ -91,7 +91,7 @@ bus_step(Bus* self)
 	list_foreach_safe(&self->list_ready)
 	{
 		auto event = list_at(Event, link_ready);
-		event_signal_direct(event);
+		event_signal_local(event);
 		list_init(&event->link_ready);
 	}
 	list_init(&self->list_ready);

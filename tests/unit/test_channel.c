@@ -17,7 +17,7 @@ test_channel_read_empty(void* arg)
 {
 	unused(arg);
 	Channel channel;
-	channel_init(&channel);
+	channel_init(&channel, 8);
 	channel_attach(&channel);
 
 	auto msg = channel_read(&channel, 0);
@@ -43,7 +43,7 @@ test_channel(void* arg)
 
 	unused(arg);
 	Channel channel;
-	channel_init(&channel);
+	channel_init(&channel, 8);
 	channel_attach(&channel);
 
 	uint64_t id;
@@ -66,7 +66,7 @@ test_channel_task(void* arg)
 
 	unused(arg);
 	Channel channel;
-	channel_init(&channel);
+	channel_init(&channel, 8);
 	channel_attach(&channel);
 
 	Task task;
@@ -98,7 +98,7 @@ test_channel_task_timeout(void* arg)
 
 	unused(arg);
 	Channel channel;
-	channel_init(&channel);
+	channel_init(&channel, 8);
 	channel_attach(&channel);
 
 	Task task;

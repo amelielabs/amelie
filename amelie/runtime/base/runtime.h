@@ -71,7 +71,7 @@ event_signal(Event* self)
 	if (self->bus)
 		bus_signal(self);
 	else
-		event_signal_direct(self);
+		event_signal_local(self);
 }
 
 hot static inline bool

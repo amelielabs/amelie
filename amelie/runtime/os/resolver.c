@@ -46,6 +46,12 @@ resolver_init(Resolver* self)
 }
 
 void
+resolver_free(Resolver* self)
+{
+	task_free(&self->task);
+}
+
+void
 resolver_start(Resolver* self)
 {
 	task_create(&self->task, "resolver", resolver_main, self);
@@ -57,7 +63,6 @@ resolver_stop(Resolver* self)
 	if (task_active(&self->task))
 		rpc(&self->task.channel, MSG_STOP, 0);
 	task_wait(&self->task);
-	task_free(&self->task);
 }
 
 void

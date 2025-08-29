@@ -194,7 +194,7 @@ task_init(Task* self)
 	timer_mgr_init(&self->timer_mgr);
 	poller_init(&self->poller);
 	bus_init(&self->bus);
-	channel_init(&self->channel);
+	channel_init(&self->channel, 1024);
 	cond_init(&self->status);
 	thread_init(&self->thread);
 }

@@ -58,10 +58,13 @@
 #include "base/coroutine_mgr.h"
 
 // ipc
+#include "base/ring.h"
 #include "base/wait.h"
 #include "base/bus.h"
 #include "base/msg.h"
 #include "base/channel.h"
+
+// task
 #include "base/task.h"
 
 // runtime operations

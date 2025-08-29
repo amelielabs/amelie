@@ -155,7 +155,7 @@ test_cancel_channel_pause(void* arg)
 
 	unused(arg);
 	Channel channel;
-	channel_init(&channel);
+	channel_init(&channel, 8);
 	channel_attach(&channel);
 
 	Task task;

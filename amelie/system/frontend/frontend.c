@@ -162,6 +162,7 @@ frontend_free(Frontend* self)
 	client_mgr_free(&self->client_mgr);
 	lock_mgr_free(&self->lock_mgr);
 	auth_free(&self->auth);
+	task_free(&self->task);
 }
 
 void
@@ -178,7 +179,5 @@ frontend_stop(Frontend* self)
 	{
 		rpc(&self->task.channel, MSG_STOP, 0);
 		task_wait(&self->task);
-		task_free(&self->task);
-		task_init(&self->task);
 	}
 }
