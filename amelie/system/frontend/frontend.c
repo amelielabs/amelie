@@ -80,22 +80,22 @@ frontend_rpc(Rpc* rpc, void* arg)
 {
 	Frontend* self = arg;
 	switch (rpc->msg.id) {
-	case RPC_SYNC_USERS:
+	case MSG_SYNC_USERS:
 	{
 		// sync user caches
 		UserCache* with = rpc_arg_ptr(rpc, 0);
 		auth_sync(&self->auth, with);
 		break;
 	}
-	case RPC_LOCK:
+	case MSG_LOCK:
 		// exclusive lock
 		lock_mgr_lock(&self->lock_mgr, LOCK_EXCLUSIVE);
 		break;
-	case RPC_UNLOCK:
+	case MSG_UNLOCK:
 		// exclusive unlock
 		lock_mgr_unlock(&self->lock_mgr, LOCK_EXCLUSIVE, NULL);
 		break;
-	case RPC_STOP:
+	case MSG_STOP:
 	{
 		// disconnect clients
 		client_mgr_shutdown(&self->client_mgr);
@@ -134,7 +134,7 @@ frontend_main(void* arg)
 		default:
 		{
 			// command
-			stop = msg->id == RPC_STOP;
+			stop = msg->id == MSG_STOP;
 			auto rpc = rpc_of(msg);
 			rpc_execute(rpc, frontend_rpc, self);
 			break;
@@ -176,7 +176,7 @@ frontend_stop(Frontend* self)
 	// send stop request
 	if (task_active(&self->task))
 	{
-		rpc(&self->task.channel, RPC_STOP, 0);
+		rpc(&self->task.channel, MSG_STOP, 0);
 		task_wait(&self->task);
 		task_free(&self->task);
 		task_init(&self->task);

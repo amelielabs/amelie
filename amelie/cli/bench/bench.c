@@ -63,7 +63,7 @@ bench_worker_allocate(Bench* bench, int connections)
 	self->shutdown    = false;
 	self->bench       = bench;
 	histogram_init(&self->histogram);
-	msg_init(&self->stop, RPC_STOP);
+	msg_init(&self->stop, MSG_STOP);
 	task_init(&self->task);
 	list_init(&self->link);
 	return self;

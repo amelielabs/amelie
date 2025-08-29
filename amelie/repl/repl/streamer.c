@@ -304,6 +304,6 @@ streamer_start(Streamer* self, Uuid* id, Remote* remote)
 void
 streamer_stop(Streamer* self)
 {
-	rpc(&self->task.channel, RPC_STOP, 0);
+	rpc(&self->task.channel, MSG_STOP, 0);
 	task_wait(&self->task);
 }

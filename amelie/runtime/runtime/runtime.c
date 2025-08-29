@@ -139,7 +139,7 @@ runtime_stop(Runtime* self)
 	if (task_active(&self->task))
 	{
 		Msg stop;
-		msg_init(&stop, RPC_STOP);
+		msg_init(&stop, MSG_STOP);
 		channel_write(&self->task.channel, &stop);
 		task_wait(&self->task);
 	}

@@ -15,20 +15,22 @@ typedef struct Msg Msg;
 
 enum
 {
+	// generic
+	MSG_STOP,
+
+	// resolver
+	MSG_RESOLVE,
+
+	// frontend
 	MSG_CLIENT,
 	MSG_NATIVE,
 
-	// rpc
-	RPC_START,
-	RPC_STOP,
-	RPC_RESOLVE,
-
-	RPC_LOCK,
-	RPC_UNLOCK,
-	RPC_CHECKPOINT,
-
-	RPC_SYNC_USERS,
-	RPC_SHOW_METRICS
+	// system
+	MSG_LOCK,
+	MSG_UNLOCK,
+	MSG_CHECKPOINT,
+	MSG_SYNC_USERS,
+	MSG_SHOW_METRICS
 };
 
 struct Msg

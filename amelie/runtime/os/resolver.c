@@ -22,10 +22,10 @@ resolver_main(void* arg)
 		auto msg = channel_read(&am_task->channel, -1);
 		auto rpc = rpc_of(msg);
 		switch (rpc->msg.id) {
-		case RPC_STOP:
+		case MSG_STOP:
 			active = false;
 			break;
-		case RPC_RESOLVE:
+		case MSG_RESOLVE:
 		{
 			const char       *addr    = rpc_arg_ptr(rpc, 0);
 			const char       *service = rpc_arg_ptr(rpc, 1);
@@ -55,7 +55,7 @@ void
 resolver_stop(Resolver* self)
 {
 	if (task_active(&self->task))
-		rpc(&self->task.channel, RPC_STOP, 0);
+		rpc(&self->task.channel, MSG_STOP, 0);
 	task_wait(&self->task);
 	task_free(&self->task);
 }
@@ -77,7 +77,7 @@ resolve(Resolver*         self,
 	hints.ai_protocol = IPPROTO_TCP;
 
 	int rc;
-	rc = rpc(&self->task.channel, RPC_RESOLVE, 4, addr, service, &hints, result);
+	rc = rpc(&self->task.channel, MSG_RESOLVE, 4, addr, service, &hints, result);
 	if (rc == -1 || *result == NULL)
 		error("failed to resolve %s:%d", addr, port);
 }

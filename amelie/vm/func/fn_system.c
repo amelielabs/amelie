@@ -161,7 +161,7 @@ fn_metrics(Call* self)
 {
 	call_expect(self, 0);
 	Buf* buf;
-	rpc(runtime()->iface->system, RPC_SHOW_METRICS, 1, &buf);
+	rpc(runtime()->iface->system, MSG_SHOW_METRICS, 1, &buf);
 	value_set_json_buf(self->result, buf);
 }
 
@@ -310,7 +310,7 @@ fn_show(Call* self)
 	}
 	case SHOW_METRICS:
 	{
-		rpc(runtime()->iface->system, RPC_SHOW_METRICS, 1, &buf);
+		rpc(runtime()->iface->system, MSG_SHOW_METRICS, 1, &buf);
 		break;
 	}
 	case SHOW_SCHEMAS:

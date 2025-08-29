@@ -356,13 +356,13 @@ system_rpc(Rpc* rpc, void* arg)
 {
 	System* self = arg;
 	switch (rpc->msg.id) {
-	case RPC_SHOW_METRICS:
+	case MSG_SHOW_METRICS:
 	{
 		Buf** buf = rpc_arg_ptr(rpc, 0);
 		*buf = system_metrics(self);
 		break;
 	}
-	case RPC_SYNC_USERS:
+	case MSG_SYNC_USERS:
 	{
 		UserCache* cache = rpc_arg_ptr(rpc, 0);
 		frontend_mgr_sync_users(&self->frontend_mgr, cache);
@@ -421,7 +421,7 @@ system_main(System* self)
 	for (;;)
 	{
 		auto msg = channel_read(&am_task->channel, -1);
-		if (msg->id == RPC_STOP)
+		if (msg->id == MSG_STOP)
 			break;
 		if (msg->id == MSG_NATIVE)
 		{
@@ -432,13 +432,13 @@ system_main(System* self)
 		// rpc
 		auto rpc = rpc_of(msg);
 		switch (msg->id) {
-		case RPC_LOCK:
+		case MSG_LOCK:
 			system_lock(self, rpc);
 			break;
-		case RPC_UNLOCK:
+		case MSG_UNLOCK:
 			system_unlock(self, rpc);
 			break;
-		case RPC_CHECKPOINT:
+		case MSG_CHECKPOINT:
 			checkpointer_request(&self->db.checkpointer, rpc);
 			break;
 		default:
