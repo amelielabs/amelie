@@ -16,29 +16,29 @@ typedef struct BufCache BufCache;
 struct BufCache
 {
 	Spinlock lock;
-	int      list_count;
-	List     list;
+	Buf*     cache;
 	int      limit_buf;
 };
 
 static inline void
 buf_cache_init(BufCache* self, int limit_buf)
 {
-	self->list_count = 0;
-	self->limit_buf  = limit_buf;
+	self->cache     = NULL;
+	self->limit_buf = limit_buf;
 	spinlock_init(&self->lock);
-	list_init(&self->list);
 }
 
 static inline void
 buf_cache_free(BufCache* self)
 {
-	list_foreach_safe(&self->list)
+	auto buf = self->cache;
+	while (buf)
 	{
-		auto buf = list_at(Buf, link);
+		auto next = buf->cache_next;
 		buf_free_memory(buf);
+		buf = next;
 	}
-	list_init(&self->list);
+	self->cache = NULL;
 	spinlock_free(&self->lock);
 }
 
@@ -46,13 +46,9 @@ static inline Buf*
 buf_cache_pop(BufCache* self)
 {
 	spinlock_lock(&self->lock);
-	Buf* buf = NULL;
-	if (likely(self->list_count > 0))
-	{
-		auto first = list_pop(&self->list);
-		buf = container_of(first, Buf, link);
-		self->list_count--;
-	}
+	Buf* buf = self->cache;
+	if (buf)
+		self->cache = buf->cache_next;
 	spinlock_unlock(&self->lock);
 	return buf;
 }
@@ -65,10 +61,9 @@ buf_cache_push(BufCache* self, Buf* buf)
 		buf_free_memory(buf);
 		return;
 	}
-	list_init(&buf->link);
 	spinlock_lock(&self->lock);
-	list_append(&self->list, &buf->link);
-	self->list_count++;
+	buf->cache_next = self->cache;
+	self->cache = buf;
 	spinlock_unlock(&self->lock);
 }
 
@@ -77,7 +72,7 @@ buf_cache_create(BufCache* self, int size)
 {
 	auto buf = buf_cache_pop(self);
 	if (buf) {
-		list_init(&buf->link);
+		buf->cache_next = NULL;
 		buf_reset(buf);
 	} else
 	{

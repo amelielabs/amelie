@@ -42,7 +42,6 @@
 // buffer manager
 #include "base/buf.h"
 #include "base/buf_cache.h"
-#include "base/buf_list.h"
 #include "base/buf_mgr.h"
 
 // event loop

@@ -21,18 +21,18 @@ struct Buf
 	uint8_t*   end;
 	atomic_u32 refs;
 	BufCache*  cache;
-	List       link;
+	Buf*       cache_next;
 };
 
 static inline void
 buf_init(Buf* self)
 {
-	self->start    = NULL;
-	self->position = NULL;
-	self->end      = NULL;
-	self->refs     = 0;
-	self->cache    = NULL;
-	list_init(&self->link);
+	self->start      = NULL;
+	self->position   = NULL;
+	self->end        = NULL;
+	self->refs       = 0;
+	self->cache      = NULL;
+	self->cache_next = NULL;
 }
 
 static inline void
