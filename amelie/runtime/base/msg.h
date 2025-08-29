@@ -21,6 +21,9 @@ enum
 	// resolver
 	MSG_RESOLVE,
 
+	// executor
+	MSG_REQUEST,
+
 	// frontend
 	MSG_CLIENT,
 	MSG_NATIVE,

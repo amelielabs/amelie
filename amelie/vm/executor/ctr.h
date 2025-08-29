@@ -27,7 +27,8 @@ struct Ctr
 	Dtr*     dtr;
 	Tr*      tr;
 	Core*    core;
-	ReqQueue queue;
+	Ring     queue;
+	bool     queue_close;
 	Event    complete;
 	List     link;
 };
@@ -35,11 +36,13 @@ struct Ctr
 static inline void
 ctr_init(Ctr* self, Dtr* dtr, Core* core)
 {
-	self->state = CTR_NONE;
-	self->dtr   = dtr;
-	self->tr    = NULL;
-	self->core  = core;
-	req_queue_init(&self->queue);
+	self->state       = CTR_NONE;
+	self->dtr         = dtr;
+	self->tr          = NULL;
+	self->core        = core;
+	self->queue_close = false;
+	ring_init(&self->queue);
+	ring_prepare(&self->queue, 128);
 	event_init(&self->complete);
 	list_init(&self->link);
 }
@@ -47,15 +50,15 @@ ctr_init(Ctr* self, Dtr* dtr, Core* core)
 static inline void
 ctr_free(Ctr* self)
 {
-	req_queue_free(&self->queue);
+	ring_free(&self->queue);
 }
 
 static inline void
 ctr_reset(Ctr* self)
 {
-	self->state = CTR_NONE;
-	self->tr    = NULL;
-	req_queue_reset(&self->queue);
+	self->state       = CTR_NONE;
+	self->tr          = NULL;
+	self->queue_close = false;
 	list_init(&self->link);
 }
 
