@@ -63,7 +63,7 @@ ring_write(Ring* self, void* data)
 	// This is where the channel blocks if full.
 	//
 	while (slot >= atomic_load_explicit(&self->pos_read, memory_order_acquire) + self->ring_size) {
-		// spin
+		__asm__("pause");
 	}
 
 	// write the data to the claimed slot.
@@ -72,7 +72,7 @@ ring_write(Ring* self, void* data)
 	// wait for our turn to publish. This ensures that writes are published
 	// in the same order they were claimed, maintaining sequence
 	while (atomic_load_explicit(&self->pos_write, memory_order_relaxed) != slot) {
-		// spin
+		__asm__("pause");
 	}
 
 	// publish the write, making it visible to the consumer.

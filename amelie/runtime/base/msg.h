@@ -35,13 +35,11 @@ enum
 
 struct Msg
 {
-	int  id;
-	List link;
+	int id;
 };
 
 static inline void
 msg_init(Msg* self, int id)
 {
 	self->id = id;
-	list_init(&self->link);
 }
