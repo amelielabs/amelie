@@ -55,7 +55,7 @@ page_mgr_free(PageMgr* self)
 	for (int i = 0; i < self->list_count; i++)
 	{
 		auto page = page_mgr_at(self, i);
-		vfs_munmap(page->pointer, self->page_size);
+		munmap(page->pointer, self->page_size);
 	}
 	self->list_count = 0;
 	buf_free(&self->list);
@@ -64,7 +64,9 @@ page_mgr_free(PageMgr* self)
 static inline Page*
 page_mgr_allocate(PageMgr* self)
 {
-	uint8_t* pointer = vfs_mmap(-1, self->page_size);
+	uint8_t* pointer = mmap(NULL, self->page_size, PROT_READ|PROT_WRITE,
+	                        MAP_PRIVATE|MAP_ANONYMOUS,
+	                        -1, 0);
 	if (unlikely(pointer == NULL))
 		error_system();
 	Page* page = buf_claim(&self->list, sizeof(Page));

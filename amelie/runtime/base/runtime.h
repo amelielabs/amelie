@@ -72,7 +72,11 @@ hot static inline bool
 event_wait(Event* self, int time_ms)
 {
 	cancellation_point();
-	bool timedout = wait_event(self, &am_task->timer_mgr, am_self(), time_ms);
+	bool timedout = false;
+	if (time_ms >= 0)
+		timedout = wait_event_time(self, &am_task->timer_mgr, am_self(), time_ms);
+	else
+		wait_event(self, am_self());
 	cancellation_point();
 	return timedout;
 }
@@ -95,7 +99,7 @@ coroutine_wait(uint64_t id)
 		return;
 	auto self = am_self();
 	coroutine_cancel_pause(self);
-	wait_event(&coro->on_exit, &am_task->timer_mgr, self, -1);
+	wait_event(&coro->on_exit, self);
 	coroutine_cancel_resume(self);
 }
 
@@ -117,7 +121,7 @@ coroutine_kill(uint64_t id)
 	coroutine_cancel(coro);
 	auto self = am_self();
 	coroutine_cancel_pause(self);
-	wait_event(&coro->on_exit, &am_task->timer_mgr, self, -1);
+	wait_event(&coro->on_exit, self);
 	coroutine_cancel_resume(self);
 }
 

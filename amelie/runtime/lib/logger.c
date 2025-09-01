@@ -28,8 +28,7 @@ logger_init(Logger* self)
 void
 logger_open(Logger* self, const char* path)
 {
-	int rc;
-	rc = vfs_open(path, O_APPEND|O_RDWR|O_CREAT, 0644);
+	auto rc = open(path, O_APPEND|O_RDWR|O_CREAT, 0644);
 	if (unlikely(rc == -1))
 		error_system();
 	self->fd = rc;
@@ -40,7 +39,7 @@ logger_close(Logger* self)
 {
 	if (self->fd != -1)
 	{
-		vfs_close(self->fd);
+		close(self->fd);
 		self->fd = -1;
 	}
 }
@@ -108,7 +107,7 @@ logger_write(void*       arg,
 
 	// write to the log file
 	if (self->fd != -1)
-		vfs_write(self->fd, buf, buf_len);
+		write(self->fd, buf, buf_len);
 
 print_stdout:
 	// cli print (simplified output)
@@ -118,5 +117,5 @@ print_stdout:
 
 	// print
 	if (self->to_stdout)
-		vfs_write(STDOUT_FILENO, buf, buf_len);
+		write(STDOUT_FILENO, buf, buf_len);
 }

@@ -45,7 +45,7 @@ timezone_create(Str* name, char* path)
 	file_init(&file);
 	defer(file_close, &file);
 	file_open_as(&file, path, O_RDONLY, 0644);
-	file_read(&file, header, sizeof(TimezoneHeader));
+	auto offset = file_pread(&file, header, sizeof(TimezoneHeader), 0);
 
 	// check magic and version
 	if (memcmp(header->magic, "TZif", 4) != 0)
@@ -85,20 +85,21 @@ timezone_create(Str* name, char* path)
 		// transition times
 		int transition_times_size = header->timecnt * sizeof(uint32_t);
 		self->transition_times = am_malloc(transition_times_size);
-		file_read(&file, self->transition_times, transition_times_size);
+		offset = file_pread(&file, self->transition_times, transition_times_size, offset);
+
 		for (uint32_t i = 0; i < header->timecnt; i++)
 			self->transition_times[i] = ntohl(self->transition_times[i]);
 
 		// transition types
 		int transition_types_size = header->timecnt;
 		self->transition_types = am_malloc(transition_types_size);
-		file_read(&file, self->transition_types, transition_types_size);
+		offset = file_pread(&file, self->transition_types, transition_types_size, offset);
 	}
 
 	// local time type records
 	int times_size = sizeof(TimezoneTime) * header->typecnt;
 	self->times = am_malloc(times_size);
-	file_read(&file, self->times, times_size);
+	offset = file_pread(&file, self->times, times_size, offset);
 	for (uint32_t i = 0; i < header->typecnt; i++)
 		self->times[i].utoff = ntohl(self->times[i].utoff);
 

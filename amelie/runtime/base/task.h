@@ -16,7 +16,7 @@ typedef struct Task Task;
 struct Task
 {
 	BufMgr*      buf_mgr;
-	Poller       poller;
+	Io           io;
 	CoroutineMgr coroutine_mgr;
 	TimerMgr     timer_mgr;
 	Bus          bus;

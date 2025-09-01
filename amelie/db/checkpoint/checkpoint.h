@@ -16,11 +16,9 @@ typedef struct Checkpoint       Checkpoint;
 
 struct CheckpointWorker
 {
-	int    list_count;
-	List   list;
-	Notify notify;
-	Event  on_complete;
-	pid_t  pid;
+	int   list_count;
+	List  list;
+	pid_t pid;
 };
 
 struct Checkpoint

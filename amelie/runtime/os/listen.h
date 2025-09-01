@@ -15,11 +15,15 @@ typedef struct Listen Listen;
 
 struct Listen
 {
-	Fd      fd;
-	Poller* poller;
+	int fd;
 };
 
 void listen_init(Listen*);
 void listen_start(Listen*, int, struct sockaddr*);
 void listen_stop(Listen*);
-int  listen_accept(Listen*);
+
+static inline int
+listen_accept(Listen* self)
+{
+	return io_accept(self->fd, NULL, NULL, 0);
+}

@@ -28,8 +28,24 @@ wait_event_timer(Timer* timer)
 	coroutine_resume(event->wait);
 }
 
+hot static inline void
+wait_event(Event* event, Coroutine* coro)
+{
+	if (event->signal)
+	{
+		event->signal = false;
+		return;
+	}
+	assert(event->wait == NULL);
+	event->wait = coro;
+	// wait for signal
+	coroutine_suspend(coro);
+	event->wait   = NULL;
+	event->signal = false;
+}
+
 hot static inline bool
-wait_event(Event* event, TimerMgr* timer_mgr, Coroutine* coro, int time_ms)
+wait_event_time(Event* event, TimerMgr* timer_mgr, Coroutine* coro, int time_ms)
 {
 	if (event->signal)
 	{

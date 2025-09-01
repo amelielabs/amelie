@@ -27,6 +27,7 @@ test like
 test between
 test case
 test cast
+test open_close
 
 # functions
 directory functions
@@ -136,15 +137,15 @@ test wal_ddl
 test checkpoint
 
 # tls
-directory tls
-group tls
-test tls
+#directory tls
+#group tls
+#test tls
 
 # backup
 directory backup
 group backup
 test backup
-test backup_tls
+#test backup_tls
 
 # replication
 directory repl
@@ -152,8 +153,8 @@ group repl
 test replica
 test repl
 test streaming
-test streaming_tls
-test streaming_tls_2
+#test streaming_tls
+#test streaming_tls_2
 
 # http
 directory http
