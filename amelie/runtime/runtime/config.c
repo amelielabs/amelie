@@ -64,6 +64,7 @@ config_prepare(Config* self)
 		// io and compute
 		{ "frontends",               OPT_INT,    OPT_C|OPT_Z,             &self->frontends,               NULL,          default_fe          },
 		{ "backends",                OPT_INT,    OPT_C|OPT_Z,             &self->backends,                NULL,          default_be          },
+		{ "cpu_affinity",            OPT_BOOL,   OPT_C,                   &self->cpu_affinity,            NULL,          false               },
 		// wal
 		{ "wal_worker",              OPT_BOOL,   OPT_C,                   &self->wal_worker,              NULL,          true                },
 		{ "wal_crc",                 OPT_BOOL,   OPT_C,                   &self->wal_crc,                 NULL,          true                },

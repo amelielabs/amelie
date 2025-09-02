@@ -29,6 +29,26 @@ backend_mgr_init(BackendMgr* self)
 }
 
 static inline void
+backend_mgr_set_affinity(BackendMgr* self)
+{
+	auto cpus = get_nprocs();
+	auto workers_fe = (int)opt_int_of(&config()->frontends);
+	auto workers = workers_fe + self->workers_count;
+	if (workers > cpus)
+	{
+		info("cpu_affinity: the total number of frontend and backends workers is more then "
+		     "the number of available cpu cores, skipping.");
+		return;
+	}
+	auto cpu = workers_fe;
+	for (int i = 0; i < self->workers_count; i++)
+	{
+		thread_set_affinity(&self->workers[i]->task.thread, cpu);
+		cpu++;
+	}
+}
+
+static inline void
 backend_mgr_ensure(BackendMgr* self, int count)
 {
 	if (self->workers_count >= count)
@@ -79,6 +99,10 @@ backend_mgr_ensure(BackendMgr* self, int count)
 
 	// set backends
 	opt_int_set(&config()->backends, count);
+
+	// set cpu affinity
+	if (opt_int_of(&config()->cpu_affinity))
+		backend_mgr_set_affinity(self);
 }
 
 static inline void

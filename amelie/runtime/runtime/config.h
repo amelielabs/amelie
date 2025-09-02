@@ -38,6 +38,7 @@ struct Config
 	// io and compute
 	Opt  frontends;
 	Opt  backends;
+	Opt  cpu_affinity;
 	// wal
 	Opt  wal_worker;
 	Opt  wal_crc;

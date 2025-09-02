@@ -29,6 +29,20 @@ frontend_mgr_init(FrontendMgr* self)
 }
 
 static inline void
+frontend_mgr_set_affinity(FrontendMgr* self)
+{
+	auto cpus = get_nprocs();
+	if (self->workers_count > cpus)
+	{
+		info("cpu_affinity: the total number of frontend workers is more then "
+		     "the number of available cpu cores, skipping.");
+		return;
+	}
+	for (int i = 0; i < self->workers_count; i++)
+		thread_set_affinity(&self->workers[i].task.thread, i);
+}
+
+static inline void
 frontend_mgr_start(FrontendMgr* self,
                    FrontendIf*  iface,
                    void*        iface_arg,
@@ -43,6 +57,11 @@ frontend_mgr_start(FrontendMgr* self,
 		frontend_init(&self->workers[i], iface, iface_arg);
 	for (i = 0; i < count; i++)
 		frontend_start(&self->workers[i]);
+
+
+	// set cpu affinity
+	if (opt_int_of(&config()->cpu_affinity))
+		frontend_mgr_set_affinity(self);
 }
 
 static inline void

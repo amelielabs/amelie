@@ -24,6 +24,7 @@ select system.config()
   "limit_write": 0,
   "frontends": 1,
   "backends": 1,
+  "cpu_affinity": false,
   "wal_worker": false,
   "wal_crc": true,
   "wal_sync_on_create": false,
