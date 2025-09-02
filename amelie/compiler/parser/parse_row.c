@@ -133,15 +133,15 @@ parse_row(Stmt* self, Table* table, Set* values)
 hot void
 parse_row_generate(Stmt* self, Table* table, Set* values, int count)
 {
+	// reserve the sequence range
+	uint64_t seq = sequence_add(&table->seq, count);
+
 	// insert into () values (), ...
 	auto columns = table_columns(table);
 	for (auto i = 0; i < count; i++)
 	{
 		// prepare row
 		auto row = set_reserve(values);
-
-		// set next sequence value for identity columns
-		uint64_t seq = sequence_next(&table->seq);
 
 		// value, ...
 		list_foreach(&columns->list)
@@ -150,7 +150,7 @@ parse_row_generate(Stmt* self, Table* table, Set* values, int count)
 			auto column_value = &row[column->order];
 
 			// IDENTITY, RANDOM or DEFAULT
-			parse_value_default(self, column, column_value, seq);
+			parse_value_default(self, column, column_value, seq + i);
 
 			// ensure NOT NULL constraint
 			parse_value_validate(self, column, column_value, NULL);
@@ -275,41 +275,6 @@ parse_row_expr(Stmt* self, Table* table)
 	// )
 	stmt_expect(self, ')');
 	return row;
-}
-
-hot void
-parse_row_generate_expr(Stmt* self, Table* table, AstList* rows, int count)
-{
-	// insert into () values (), ...
-	auto columns = table_columns(table);
-	for (auto i = 0; i < count; i++)
-	{
-		// prepare row
-		Ast* row = NULL;
-		Ast* row_tail = NULL;
-
-		// set next sequence value for identity columns
-		uint64_t seq = sequence_next(&table->seq);
-
-		// value, ...
-		list_foreach(&columns->list)
-		{
-			auto column = list_at(Column, link);
-
-			// IDENTITY, RANDOM or DEFAULT
-			auto value = parse_value_default_expr(self, column, seq);
-
-			// ensure NOT NULL constraint
-			parse_value_validate_expr(self, column, value);
-
-			if (row_tail)
-				row_tail->next = value;
-			else
-				row = value;
-			row_tail = value;
-		}
-		ast_list_add(rows, row);
-	}
 }
 
 void

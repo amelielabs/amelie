@@ -45,6 +45,12 @@ sequence_next(Sequence* self)
 }
 
 static inline uint64_t
+sequence_add(Sequence* self, int value)
+{
+	return atomic_u64_add(&self->value, value);
+}
+
+static inline uint64_t
 sequence_get(Sequence* self)
 {
 	return atomic_u64_of(&self->value);
