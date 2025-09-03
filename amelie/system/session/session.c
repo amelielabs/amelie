@@ -93,7 +93,7 @@ session_reset_ql(Session* self)
 		ql_reset(self->ql);
 		self->ql = NULL;
 	}
-	palloc_truncate(0);
+	palloc_reset();
 }
 
 static inline void

@@ -50,7 +50,7 @@ coroutine_init(Coroutine* self, void* mgr)
 	context_stack_init(&self->stack);
 	exception_mgr_init(&self->exception_mgr);
 	error_init(&self->error);
-	arena_init(&self->arena, 4000);
+	arena_init(&self->arena, 4096 - sizeof(ArenaPage));
 	list_init(&self->link);
 	list_init(&self->link_ready);
 	event_init(&self->on_exit);
@@ -59,7 +59,7 @@ coroutine_init(Coroutine* self, void* mgr)
 static inline void
 coroutine_free(Coroutine* self)
 {
-	arena_reset(&self->arena);
+	arena_free(&self->arena);
 	context_stack_free(&self->stack);
 	am_free(self);
 }

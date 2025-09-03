@@ -18,16 +18,10 @@ palloc(size_t size)
 	return arena_allocate(&am_self()->arena, size);
 }
 
-static inline int
-palloc_snapshot(void)
-{
-	return am_self()->arena.offset;
-}
-
 static inline void
-palloc_truncate(int snapshot)
+palloc_reset(void)
 {
-	arena_truncate(&am_self()->arena, snapshot);
+	arena_reset(&am_self()->arena);
 }
 
 // buf
