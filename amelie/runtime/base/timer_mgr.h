@@ -47,7 +47,7 @@ void     timer_mgr_add(TimerMgr*, Timer*);
 void     timer_mgr_remove(TimerMgr*, Timer*);
 uint64_t timer_mgr_gettime(void);
 
-static inline void
+always_inline static inline void
 timer_mgr_reset(TimerMgr* self)
 {
 	self->time_cached = false;
@@ -74,8 +74,8 @@ timer_mgr_time_us(TimerMgr* self)
 	return self->time_us;
 }
 
-static inline bool
-timer_mgr_has_active_timers(TimerMgr* self)
+always_inline static inline bool
+timer_mgr_has_timers(TimerMgr* self)
 {
 	return self->timers_count > 0;
 }

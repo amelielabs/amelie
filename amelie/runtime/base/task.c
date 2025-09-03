@@ -109,24 +109,27 @@ mainloop(Task* self)
 
 		// update timer_mgr time
 		timer_mgr_reset(timer_mgr);
-		if (timer_mgr_has_active_timers(timer_mgr))
+
+		uint32_t timeout = UINT32_MAX;
+		if (timer_mgr_has_timers(timer_mgr))
+		{
 			timer_mgr_update(timer_mgr);
 
-		// get minimal timer timeout
-		uint32_t timeout = UINT32_MAX;
-		Timer* next;
-		next = timer_mgr_timer_min(timer_mgr);
-		if (next)
-		{
-			int diff = next->timeout - timer_mgr->time_ms;
-			if (diff <= 0)
-				timeout = 0;
-			else
-				timeout = diff;
-		}
+			// get minimal timer timeout
+			Timer* next;
+			next = timer_mgr_timer_min(timer_mgr);
+			if (next)
+			{
+				int diff = next->timeout - timer_mgr->time_ms;
+				if (diff <= 0)
+					timeout = 0;
+				else
+					timeout = diff;
+			}
 
-		// run timers
-		timer_mgr_step(timer_mgr);
+			// run timers
+			timer_mgr_step(timer_mgr);
+		}
 
 		// poll for events
 		poller_step(poller, timeout);
