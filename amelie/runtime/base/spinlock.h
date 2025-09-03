@@ -11,6 +11,87 @@
 // AGPL-3.0 Licensed.
 //
 
+typedef uint64_t Spinlock;
+
+static inline void
+spinlock_init(Spinlock* self)
+{
+	*self = 0;
+}
+
+static inline void
+spinlock_free(Spinlock* self)
+{
+	*self = 0;
+}
+
+hot static inline void
+spinlock_lock(Spinlock* self)
+{
+	if (__sync_lock_test_and_set(self, 1) != 0)
+	{
+		unsigned int count = 0;
+		for (;;) {
+			__asm__("pause");
+			if (*self == 0 && __sync_lock_test_and_set(self, 1) == 0)
+				break;
+			if (++count > 100)
+				usleep(0);
+		}
+	}
+}
+
+static inline void
+spinlock_unlock(Spinlock* self)
+{
+	__sync_lock_release(self);
+}
+
+#if 0
+typedef struct Spinlock Spinlock;
+
+struct Spinlock
+{
+	uint64_t state;
+	char     pad[cache_line - sizeof(uint64_t)];
+};
+
+static inline void
+spinlock_init(Spinlock* self)
+{
+	memset(self, 0, sizeof(*self));
+}
+
+static inline void
+spinlock_free(Spinlock* self)
+{
+	memset(self, 0, sizeof(*self));
+}
+
+hot static inline void
+spinlock_lock(Spinlock* self)
+{
+	if (__sync_lock_test_and_set(&self->state, 1) != 0)
+	{
+		unsigned int count = 0;
+		for (;;) {
+			__asm__("pause");
+			if (self->state == 0 && __sync_lock_test_and_set(&self->state, 1) == 0)
+				break;
+			if (++count > 100)
+				usleep(0);
+		}
+	}
+}
+
+static inline void
+spinlock_unlock(Spinlock* self)
+{
+	__sync_lock_release(&self->state);
+}
+#endif
+
+#if 0
 typedef struct Spinlock Spinlock;
 
 struct Spinlock
@@ -40,47 +121,5 @@ static inline void
 spinlock_unlock(Spinlock* self)
 {
 	pthread_spin_unlock(&self->lock);
-}
-
-#if 0
-typedef uint8_t Spinlock;
-
-#if defined(__x86_64__) || defined(__i386) || defined(_X86_)
-#  define AM_SPINLOCK_BACKOFF __asm__ ("pause")
-#else
-#  define AM_SPINLOCK_BACKOFF
-#endif
-
-static inline void
-spinlock_init(Spinlock* self)
-{
-	*self = 0;
-}
-
-static inline void
-spinlock_free(Spinlock* self)
-{
-	*self = 0;
-}
-
-hot static inline void
-spinlock_lock(Spinlock* self)
-{
-	if (__sync_lock_test_and_set(self, 1) != 0) {
-		unsigned int spcount = 0U;
-		for (;;) {
-			AM_SPINLOCK_BACKOFF;
-			if (*self == 0U && __sync_lock_test_and_set(self, 1) == 0)
-				break;
-			if (++spcount > 100U)
-				usleep(0);
-		}
-	}
-}
-
-static inline void
-spinlock_unlock(Spinlock* self)
-{
-	__sync_lock_release(self);
 }
 #endif
