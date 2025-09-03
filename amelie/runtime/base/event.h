@@ -17,7 +17,6 @@ struct Event
 {
 	void*  wait;
 	Event* parent;
-	Event* parent_signal;
 	bool   signal;
 	void*  bus;
 	List   link_ready;
@@ -26,11 +25,10 @@ struct Event
 static inline void
 event_init(Event* self)
 {
-	self->wait          = NULL;
-	self->parent        = NULL;
-	self->parent_signal = NULL;
-	self->signal        = false;
-	self->bus           = NULL;
+	self->wait   = NULL;
+	self->parent = NULL;
+	self->signal = false;
+	self->bus    = NULL;
 	list_init(&self->link_ready);
 }
 

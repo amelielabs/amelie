@@ -16,12 +16,7 @@ event_signal_local(Event* event)
 {
 	event->signal = true;
 	if (event->parent)
-	{
-		Event* parent = event->parent;
-		if (parent->parent_signal == NULL)
-			parent->parent_signal = event;
 		event_signal_local(event->parent);
-	}
 	if (event->wait)
 		coroutine_resume(event->wait);
 }
