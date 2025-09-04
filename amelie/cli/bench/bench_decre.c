@@ -24,9 +24,14 @@ bench_decre_create(Bench* self, BenchClient* client)
 	str_set_cstr(&str, "create table __bench.test (id serial primary key, money double default 100.0) with (type = 'hash')");
 	bench_client_execute(client, &str);
 
+	str_set_cstr(&str, "create table __bench.history (id serial primary key, src int, dst int, amount double) with (type = 'tree')");
+	bench_client_execute(client, &str);
+
 	if (opt_int_of(&self->unlogged))
 	{
 		str_set_cstr(&str, "alter table __bench.test set unlogged");
+		bench_client_execute(client, &str);
+		str_set_cstr(&str, "alter table __bench.history set unlogged");
 		bench_client_execute(client, &str);
 	}
 	Buf buf;
@@ -50,6 +55,8 @@ decre_transaction(Buf* buf, int from, int to, double amount)
 	           amount, from);
 	buf_printf(buf, "UPDATE __bench.test SET money = money + %f WHERE id = %d;",
 	           amount, to);
+	buf_printf(buf, "INSERT INTO __bench.history (src, dst, amount) VALUES (%d, %d, %f);",
+	           from, to, amount);
 }
 
 hot static void
