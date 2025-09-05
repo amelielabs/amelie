@@ -86,7 +86,7 @@ bench_decre_main(BenchWorker* self, BenchClient* client)
 		bench_client_execute(client, &cmd);
 
 		atomic_u64_add(&bench->transactions, batch);
-		atomic_u64_add(&bench->writes, 2 * batch);
+		atomic_u64_add(&bench->writes, 3 * batch);
 	}
 }
 
