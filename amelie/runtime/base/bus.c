@@ -15,6 +15,7 @@
 void
 bus_init(Bus* self)
 {
+	self->signals = 0;
 	spinlock_init(&self->lock);
 	list_init(&self->list_ready);
 	notify_init(&self->notify);
@@ -78,13 +79,14 @@ bus_signal(Event* event)
 		spinlock_unlock(&self->lock);
 		return;
 	}
+	atomic_u64_inc(&self->signals);
 	list_append(&self->list_ready, &event->link_ready);
 	spinlock_unlock(&self->lock);
 
 	notify_signal(&self->notify);
 }
 
-void
+uint64_t
 bus_step(Bus* self)
 {
 	spinlock_lock(&self->lock);
@@ -95,5 +97,7 @@ bus_step(Bus* self)
 		list_init(&event->link_ready);
 	}
 	list_init(&self->list_ready);
+	auto signals = atomic_u64_of(&self->signals);
 	spinlock_unlock(&self->lock);
+	return signals;
 }
