@@ -35,8 +35,8 @@ spinlock_lock(Spinlock* self)
 			__asm__("pause");
 			if (*self == 0 && __sync_lock_test_and_set(self, 1) == 0)
 				break;
-			if (++count > 100)
-				usleep(0);
+			if (++count > 300)
+				sched_yield();
 		}
 	}
 }
