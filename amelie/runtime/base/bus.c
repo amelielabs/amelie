@@ -28,16 +28,23 @@ bus_free(Bus* self)
 }
 
 static inline void
-bus_on_notify(void* arg)
+bus_on_notify(IoEvent* event)
 {
-	unused(arg);
-	// used only to wakeup event loop
+	// wakeup event loop and restart read
+	auto self = (Bus*)event->callback_arg;
+	notify_read_signal(&self->notify);
+	notify_read(&self->notify);
 }
 
 int
-bus_open(Bus* self, Poller* poller)
+bus_open(Bus* self, Io* io)
 {
-	return notify_open(&self->notify, poller, bus_on_notify, self);
+	auto rc = notify_open(&self->notify, io, bus_on_notify, self);
+	if (rc == -1)
+		return -1;
+	// schedule read
+	notify_read(&self->notify);
+	return 0;
 }
 
 void
@@ -83,7 +90,7 @@ bus_signal(Event* event)
 	list_append(&self->list_ready, &event->link_ready);
 	spinlock_unlock(&self->lock);
 
-	notify_signal(&self->notify);
+	notify_write(&self->notify);
 }
 
 uint64_t

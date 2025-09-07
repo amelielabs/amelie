@@ -35,6 +35,7 @@
 static inline bool
 streamer_collect(Streamer* self)
 {
+#if 0
 	auto size = opt_int_of(&config()->repl_readahead);
 	for (;;)
 	{
@@ -65,6 +66,9 @@ streamer_collect(Streamer* self)
 		if (on_disconnect.signal)
 			return false;
 	}
+#endif
+	(void)self;
+	// todo
 	return true;
 }
 

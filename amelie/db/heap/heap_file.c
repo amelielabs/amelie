@@ -92,7 +92,7 @@ heap_file_read(Heap* self, char* path)
 
 	// read header
 	auto size = sizeof(HeapHeader) + sizeof(HeapBucket) * 385;
-	file_read(&file, self->header, size);
+	auto offset = file_pread(&file, self->header, size, 0);
 
 	// validate header magic
 	if (self->header->magic != HEAP_MAGIC)
@@ -122,13 +122,14 @@ heap_file_read(Heap* self, char* path)
 	for (auto i = 0ul; i < self->header->count; i++)
 	{
 		auto page = page_mgr_allocate(page_mgr);
-		file_read(&file, page->pointer, sizeof(PageHeader));
+		offset = file_pread(&file, page->pointer, sizeof(PageHeader), offset);
+
 		auto page_header = (PageHeader*)page->pointer;
 		if (self->header->compression != COMPRESSION_NONE)
 		{
 			// read and decompress page
 			buf_reset(cp_buf);
-			file_read_buf(&file, cp_buf, page_header->size_compressed);
+			offset = file_pread_buf(&file, cp_buf, page_header->size_compressed, offset);
 
 			// validate crc
 			if (opt_int_of(&config()->checkpoint_crc))
@@ -144,7 +145,7 @@ heap_file_read(Heap* self, char* path)
 		{
 			auto page_data = page->pointer + sizeof(PageHeader);
 			auto page_size = page_header->size - sizeof(PageHeader);
-			file_read(&file, page_data, page_size);
+			offset = file_pread(&file, page_data, page_size, offset);
 
 			// validate crc
 			if (opt_int_of(&config()->checkpoint_crc))

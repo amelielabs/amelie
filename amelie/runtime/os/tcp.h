@@ -15,13 +15,12 @@ typedef struct Tcp Tcp;
 
 struct Tcp
 {
-	Fd          fd;
+	int         fd;
 	Tls         tls;
 	bool        connected;
 	bool        eof;
 	atomic_u64* stat_sent;
 	atomic_u64* stat_recv;
-	Poller*     poller;
 };
 
 void tcp_init(Tcp*, atomic_u64*, atomic_u64*);
@@ -31,8 +30,6 @@ void tcp_set_tls(Tcp*, TlsContext*);
 void tcp_set_fd(Tcp*, int);
 void tcp_getpeername(Tcp*, char*, int);
 void tcp_getsockname(Tcp*, char*, int);
-void tcp_attach(Tcp*);
-void tcp_detach(Tcp*);
 bool tcp_connected(Tcp*);
 bool tcp_eof(Tcp*);
 void tcp_connect_fd(Tcp*);

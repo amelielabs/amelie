@@ -79,16 +79,13 @@ client_set_auth(Client* self, bool auth)
 void
 client_attach(Client* self)
 {
-	assert(self->tcp.fd.fd != -1);
-	tcp_attach(&self->tcp);
+	assert(self->tcp.fd != -1);
 	self->coroutine_id = am_self()->id;
 }
 
 void
 client_detach(Client* self)
 {
-	if (tcp_connected(&self->tcp))
-		tcp_detach(&self->tcp);
 	self->coroutine_id = UINT64_MAX;
 }
 

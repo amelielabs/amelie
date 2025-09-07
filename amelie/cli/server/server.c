@@ -60,6 +60,8 @@ cli_cmd_start(int argc, char** argv)
 		system = system_create();
 		system_start(system, bootstrap);
 
+		coroutine_sleep(0);
+
 		// notify start completion
 		cond_signal(&am_task->status, RUNTIME_OK);
 

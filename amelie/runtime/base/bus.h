@@ -23,7 +23,7 @@ struct Bus
 
 void     bus_init(Bus*);
 void     bus_free(Bus*);
-int      bus_open(Bus*, Poller*);
+int      bus_open(Bus*, Io*);
 void     bus_close(Bus*);
 void     bus_attach(Bus*, Event*);
 void     bus_detach(Event*);

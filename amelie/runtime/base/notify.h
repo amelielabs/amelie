@@ -17,14 +17,17 @@ typedef void (*NotifyFunction)(void*);
 
 struct Notify
 {
-	volatile int   signaled;
-	Fd             fd;
-	NotifyFunction on_notify;
-	void*          arg;
-	Poller*        poller;
+	atomic_u32   signal;
+	int          fd;
+	IoEvent      event;
+	uint64_t     event_data;
+	struct iovec iov;
+	Io*          io;
 };
 
 void notify_init(Notify*);
-int  notify_open(Notify*, Poller*, NotifyFunction, void*);
+int  notify_open(Notify*, Io*, IoFunction, void*);
 void notify_close(Notify*);
-void notify_signal(Notify*);
+void notify_read_signal(Notify*);
+void notify_read(Notify*);
+void notify_write(Notify*);

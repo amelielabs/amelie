@@ -12,66 +12,64 @@
 
 #include <amelie_base.h>
 
-static void
-notify_on_read(Fd* fd)
-{
-	Notify* self = fd->on_read_arg;
-	uint64_t id;
-	read(fd->fd, &id, sizeof(id));
-	__sync_lock_release(&self->signaled);
-	if (self->on_notify)
-		self->on_notify(self->arg);
-}
-
 void
 notify_init(Notify* self)
 {
-	self->signaled  = 0;
-	self->on_notify = NULL;
-	self->arg       = NULL;
-	self->poller    = NULL;
-	fd_init(&self->fd);
+	self->signal     = 0;
+	self->fd         = -1;
+	self->event_data = 0;
+	io_event_init(&self->event);
+	memset(&self->iov, 0, sizeof(self->iov));
 }
 
 int
-notify_open(Notify* self, Poller* poller, NotifyFunction callback, void* arg)
+notify_open(Notify* self, Io* io, IoFunction fn, void* fn_arg)
 {
-	self->fd.fd = eventfd(0, EFD_NONBLOCK);
-	if (unlikely(self->fd.fd == -1))
+	self->fd = eventfd(0, 0);
+	if (unlikely(self->fd == -1))
 		return -1;
-	int rc;
-	rc = poller_add(poller, &self->fd);
-	if (unlikely(rc == -1))
-		return -1;
-	rc = poller_read(poller, &self->fd, notify_on_read, self);
-	if (unlikely(rc == -1))
-	{
-		poller_del(poller, &self->fd);
-		return -1;
-	}
-	self->on_notify = callback;
-	self->arg       = arg;
-	self->poller    = poller;
+	self->signal     = 0;
+	self->event_data = 0;
+	self->io         = io;
+	self->event.callback = fn;
+	self->event.callback_arg = fn_arg;
+
+	auto iov = &self->iov;
+	iov->iov_base = &self->event_data;
+	iov->iov_len  = sizeof(self->event_data);
 	return 0;
 }
 
 void
 notify_close(Notify* self)
 {
-	if (self->fd.fd == -1)
+	if (self->fd == -1)
 		return;
-	poller_del(self->poller, &self->fd);
-	close(self->fd.fd);
-	self->fd.fd = -1;
+	close(self->fd);
+	self->fd = -1;
 }
 
 void
-notify_signal(Notify* self)
+notify_read(Notify* self)
 {
-	if (unlikely(self->fd.fd == -1))
-		return;
-	if (__sync_lock_test_and_set(&self->signaled, 1) == 1)
+	auto sqe = io_uring_get_sqe(self->io->ring);
+	assert(sqe);
+	sqe->user_data = (uintptr_t)&self->event;
+	io_uring_prep_readv(sqe, self->fd, &self->iov, 1, 0);
+	io_set_pending(self->io);
+}
+
+void
+notify_read_signal(Notify* self)
+{
+	__sync_lock_release(&self->signal);
+}
+
+void
+notify_write(Notify* self)
+{
+	if (__sync_lock_test_and_set(&self->signal, 1) == 1)
 		return;
 	uint64_t id = 1;
-	write(self->fd.fd, &id, sizeof(id));
+	write(self->fd, &id, sizeof(id));
 }
