@@ -72,57 +72,68 @@ io_set_pending(Io* self)
 	self->pending = true;
 }
 
-always_inline static inline void
-io_process_event(Io* self, struct io_uring_cqe* cqe)
-{
-	auto event = (IoEvent*)cqe->user_data;
-	event->rc = cqe->res;
-	event_signal_local(&event->event);
-	io_uring_cqe_seen(self->ring, cqe);
-	if (event->callback)
-		event->callback(event);
-}
-
 hot static inline int
 io_process(Io* self)
 {
-	int count = 0;
+	unsigned int count = 0;
+	unsigned int it;
 	struct io_uring_cqe* cqe;
-	while (io_uring_peek_cqe(self->ring, &cqe) == 0)
+	io_uring_for_each_cqe(self->ring, it, cqe)
 	{
-		io_process_event(self, cqe);
+		auto event = (IoEvent*)cqe->user_data;
+		event->rc = cqe->res;
+		event_signal_local(&event->event);
+		if (event->callback)
+			event->callback(event);
 		count++;
 	}
+	io_uring_cq_advance(self->ring, count);
 	return count;
 }
 
 hot static inline void
 io_step(Io* self, uint32_t time_ms)
 {
-	// process delayed submit
-	if (self->pending)
-	{
-		io_uring_submit(self->ring);
-		self->pending = false;
-	}
-
 	// process pending events
 	if (io_process(self) > 0)
-		return;
-
-	// wait for next events
-	struct io_uring_cqe* cqe;
-	if (time_ms == UINT32_MAX)
 	{
-		if (io_uring_wait_cqe(self->ring, &cqe) == 0)
-			io_process_event(self, cqe);
+		// submit pending events
+		if (self->pending)
+		{
+			io_uring_submit(self->ring);
+			self->pending = false;
+		}
+		return;
+	}
+
+	struct io_uring_cqe* cqe;
+	if (self->pending)
+	{
+		// submit and wait
+		if (time_ms == UINT32_MAX)
+		{
+			io_uring_submit_and_wait(self->ring, 1);
+		} else
+		{
+			struct __kernel_timespec ts;
+			ts.tv_sec  = time_ms / 1000;
+			ts.tv_nsec = (time_ms % 1000) * 1000000;
+			io_uring_submit_and_wait_timeout(self->ring, &cqe, 1, &ts, NULL);
+		}
+		self->pending = false;
 	} else
 	{
-		struct __kernel_timespec ts;
-		ts.tv_sec  = time_ms / 1000;
-		ts.tv_nsec = (time_ms % 1000) * 1000000;
-		if (io_uring_wait_cqe_timeout(self->ring, &cqe, &ts) == 0)
-			io_process_event(self, cqe);
+		// wait
+		if (time_ms == UINT32_MAX)
+		{
+			io_uring_wait_cqe(self->ring, &cqe);
+		} else
+		{
+			struct __kernel_timespec ts;
+			ts.tv_sec  = time_ms / 1000;
+			ts.tv_nsec = (time_ms % 1000) * 1000000;
+			io_uring_wait_cqe_timeout(self->ring, &cqe, &ts);
+		}
 	}
 	io_process(self);
 }
