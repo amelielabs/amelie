@@ -13,44 +13,18 @@
 #include <amelie_base.h>
 
 void
-bus_init(Bus* self)
+bus_init(Bus* self, Io* io)
 {
 	self->signals = 0;
+	self->io      = io;
 	spinlock_init(&self->lock);
 	list_init(&self->list_ready);
-	notify_init(&self->notify);
 }
 
 void
 bus_free(Bus* self)
 {
 	spinlock_free(&self->lock);
-}
-
-static inline void
-bus_on_notify(IoEvent* event)
-{
-	// wakeup event loop and restart read
-	auto self = (Bus*)event->callback_arg;
-	notify_read_signal(&self->notify);
-	notify_read(&self->notify);
-}
-
-int
-bus_open(Bus* self, Io* io)
-{
-	auto rc = notify_open(&self->notify, io, bus_on_notify, self);
-	if (rc == -1)
-		return -1;
-	// schedule read
-	notify_read(&self->notify);
-	return 0;
-}
-
-void
-bus_close(Bus* self)
-{
-	notify_close(&self->notify);
 }
 
 void
@@ -87,10 +61,12 @@ bus_signal(Event* event)
 		return;
 	}
 	atomic_u64_inc(&self->signals);
+	auto wakeup = list_empty(&self->list_ready);
 	list_append(&self->list_ready, &event->link_ready);
 	spinlock_unlock(&self->lock);
 
-	notify_write(&self->notify);
+	if (wakeup)
+		io_wakeup(self->io);
 }
 
 uint64_t

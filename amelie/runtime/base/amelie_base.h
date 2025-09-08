@@ -57,7 +57,6 @@
 
 // event loop
 #include "base/io.h"
-#include "base/notify.h"
 
 // ipc
 #include "base/bus.h"

@@ -200,7 +200,7 @@ task_init(Task* self)
 	coroutine_mgr_init(&self->coroutine_mgr, 4096 * 32); // 128kb
 	timer_mgr_init(&self->timer_mgr);
 	io_init(&self->io);
-	bus_init(&self->bus);
+	bus_init(&self->bus, &self->io);
 	channel_init(&self->channel, 1024);
 	cond_init(&self->status);
 	thread_init(&self->thread);
@@ -213,7 +213,6 @@ task_free(Task* self)
 	timer_mgr_free(&self->timer_mgr);
 	channel_detach(&self->channel);
 	channel_free(&self->channel);
-	bus_close(&self->bus);
 	bus_free(&self->bus);
 	io_free(&self->io);
 	cond_free(&self->status);
@@ -248,11 +247,6 @@ task_create_nothrow(Task*        self,
 
 	// prepare io_uring context
 	int rc = io_create(&self->io);
-	if (unlikely(rc == -1))
-		return -1;
-
-	// prepare bus
-	rc = bus_open(&self->bus, &self->io);
 	if (unlikely(rc == -1))
 		return -1;
 

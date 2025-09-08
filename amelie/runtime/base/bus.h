@@ -18,13 +18,11 @@ struct Bus
 	Spinlock   lock;
 	atomic_u64 signals;
 	List       list_ready;
-	Notify     notify;
+	Io*        io;
 };
 
-void     bus_init(Bus*);
+void     bus_init(Bus*, Io*);
 void     bus_free(Bus*);
-int      bus_open(Bus*, Io*);
-void     bus_close(Bus*);
 void     bus_attach(Bus*, Event*);
 void     bus_detach(Event*);
 void     bus_signal(Event*);

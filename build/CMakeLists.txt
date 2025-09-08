@@ -128,7 +128,6 @@ include_directories("${AMELIE_ROOT}/cli/test")
 set(AMELIE_SOURCES_RUNTIME
     ${AMELIE_ROOT}/runtime/base/report.c
     ${AMELIE_ROOT}/runtime/base/timer_mgr.c
-    ${AMELIE_ROOT}/runtime/base/notify.c
     ${AMELIE_ROOT}/runtime/base/context_stack.c
     ${AMELIE_ROOT}/runtime/base/context.c
     ${AMELIE_ROOT}/runtime/base/bus.c

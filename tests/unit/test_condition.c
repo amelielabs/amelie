@@ -18,8 +18,8 @@ static void
 test_condition_main(void* arg)
 {
 	Event* cond = arg;
-	event_signal(cond);
 	cond_value = 123;
+	event_signal(cond);
 }
 
 void

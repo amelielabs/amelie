@@ -14,28 +14,24 @@
 typedef struct IoEvent IoEvent;
 typedef struct Io      Io;
 
-typedef void (*IoFunction)(IoEvent*);
-
 struct IoEvent
 {
-	ssize_t    rc;
-	Event      event;
-	IoFunction callback;
-	void*      callback_arg;
+	ssize_t rc;
+	Event   event;
 };
 
 struct Io
 {
 	struct io_uring* ring;
 	bool             pending;
+	atomic_u32       pending_wakeup;
+	IoEvent          wakeup;
 };
 
 static inline void
 io_event_init(IoEvent* self)
 {
-	self->rc           = 0;
-	self->callback     = NULL;
-	self->callback_arg = NULL;
+	self->rc = 0;
 	event_init(&self->event);
 }
 
@@ -44,6 +40,8 @@ io_init(Io* self)
 {
 	self->ring    = NULL;
 	self->pending = false;
+	self->pending_wakeup = 0;
+	io_event_init(&self->wakeup);
 }
 
 static inline int
@@ -72,6 +70,19 @@ io_set_pending(Io* self)
 	self->pending = true;
 }
 
+hot static inline void
+io_wakeup(Io* self)
+{
+	if (__sync_lock_test_and_set(&self->pending_wakeup, 1) == 1)
+		return;
+	auto sqe = io_uring_get_sqe(self->ring);
+	assert(sqe);
+	sqe->user_data = (uintptr_t)&self->wakeup;
+	io_uring_prep_nop(sqe);
+
+	io_uring_submit(self->ring);
+}
+
 hot static inline int
 io_process(Io* self)
 {
@@ -83,11 +94,12 @@ io_process(Io* self)
 		auto event = (IoEvent*)cqe->user_data;
 		event->rc = cqe->res;
 		event_signal_local(&event->event);
-		if (event->callback)
-			event->callback(event);
+		if (event == &self->wakeup)
+			__sync_lock_release(&self->pending_wakeup);
 		count++;
 	}
-	io_uring_cq_advance(self->ring, count);
+	if (count > 0)
+		io_uring_cq_advance(self->ring, count);
 	return count;
 }
 

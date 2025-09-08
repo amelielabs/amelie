@@ -114,10 +114,13 @@ checkpoint_worker_run(Checkpoint* self, CheckpointWorker* worker)
 	}
 
 	// reinit io_uring after fork
-	bus_close(&am_task->bus);
-	io_free(&am_task->io);
-	io_create(&am_task->io);
-	bus_open(&am_task->bus, &am_task->io);
+	auto io  = &am_task->io;
+	auto bus = &am_task->bus;
+	bus_free(bus);
+	io_free(io);
+	io_init(io);
+	io_create(io);
+	bus_init(bus, io);
 
 	// create snapshots
 	auto error = error_catch(

@@ -47,7 +47,7 @@ io_wait(IoEvent* self)
 		io_set_pending(&am_task->io);
 		wait_event(&cancel.event, coro);
 
-		// wait for the originall request completion
+		// wait for the original request completion
 		wait_event(&self->event, coro);
 
 		// cancellation point
