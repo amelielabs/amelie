@@ -38,8 +38,8 @@ io_event_init(IoEvent* self)
 static inline void
 io_init(Io* self)
 {
-	self->ring    = NULL;
-	self->pending = false;
+	self->ring           = NULL;
+	self->pending        = false;
 	self->pending_wakeup = 0;
 	io_event_init(&self->wakeup);
 }

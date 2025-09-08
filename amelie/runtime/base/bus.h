@@ -16,14 +16,20 @@ typedef struct Bus Bus;
 struct Bus
 {
 	Spinlock   lock;
-	atomic_u64 signals;
-	List       list_ready;
+	List       list;
+	atomic_u64 list_count;
 	Io*        io;
 };
 
-void     bus_init(Bus*, Io*);
-void     bus_free(Bus*);
-void     bus_attach(Bus*, Event*);
-void     bus_detach(Event*);
-void     bus_signal(Event*);
-uint64_t bus_step(Bus*);
+void bus_init(Bus*, Io*);
+void bus_free(Bus*);
+void bus_attach(Bus*, Event*);
+void bus_detach(Event*);
+void bus_signal(Event*);
+void bus_step(Bus*);
+
+static inline uint64_t
+bus_pending(Bus* self)
+{
+	return atomic_u64_of(&self->list_count);
+}

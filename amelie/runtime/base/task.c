@@ -99,7 +99,7 @@ mainloop(Task* self)
 	for (;;)
 	{
 		// process pending events
-		auto signals = bus_step(bus);
+		bus_step(bus);
 
 		// execute pending coroutines
 		coroutine_mgr_scheduler(coroutine_mgr);
@@ -107,12 +107,12 @@ mainloop(Task* self)
 		if (unlikely(! coroutine_mgr->count))
 			break;
 
+		// retry loop before blocking wait, if some events are ready
+		if (bus_pending(bus) > 0)
+			continue;
+
 		// update timer_mgr time
 		timer_mgr_reset(timer_mgr);
-
-		// retry loop before blocking wait, if some events are ready
-		if (atomic_u64_of(&bus->signals) > signals)
-			continue;
 
 		uint32_t timeout = UINT32_MAX;
 		if (timer_mgr_has_timers(timer_mgr))

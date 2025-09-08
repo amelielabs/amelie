@@ -15,10 +15,10 @@
 void
 bus_init(Bus* self, Io* io)
 {
-	self->signals = 0;
-	self->io      = io;
+	self->list_count = 0;
+	self->io         = io;
 	spinlock_init(&self->lock);
-	list_init(&self->list_ready);
+	list_init(&self->list);
 }
 
 void
@@ -60,27 +60,26 @@ bus_signal(Event* event)
 		spinlock_unlock(&self->lock);
 		return;
 	}
-	atomic_u64_inc(&self->signals);
-	auto wakeup = list_empty(&self->list_ready);
-	list_append(&self->list_ready, &event->link_ready);
+	atomic_u64_inc(&self->list_count);
+	auto wakeup = list_empty(&self->list);
+	list_append(&self->list, &event->link_ready);
 	spinlock_unlock(&self->lock);
 
 	if (wakeup)
 		io_wakeup(self->io);
 }
 
-uint64_t
+hot void
 bus_step(Bus* self)
 {
 	spinlock_lock(&self->lock);
-	list_foreach_safe(&self->list_ready)
+	list_foreach_safe(&self->list)
 	{
 		auto event = list_at(Event, link_ready);
 		event_signal_local(event);
 		list_init(&event->link_ready);
 	}
-	list_init(&self->list_ready);
-	auto signals = atomic_u64_of(&self->signals);
+	list_init(&self->list);
+	atomic_u64_set(&self->list_count, 0);
 	spinlock_unlock(&self->lock);
-	return signals;
 }
