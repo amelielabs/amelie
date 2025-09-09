@@ -183,7 +183,10 @@ executor_end(Executor* self, DtrState state)
 		list_unlink(&dtr->link);
 		self->list_count--;
 
-		// wakeup
+		// wakeup waiters
+		if (list_is_first(&prepare->list, &dtr->link_prepare))
+			continue;
+
 		if (tr_state == DTR_PREPARE ||
 		    tr_state == DTR_ERROR)
 			event_signal(&dtr->on_commit);
