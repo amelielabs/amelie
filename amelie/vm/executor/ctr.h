@@ -66,12 +66,6 @@ ctr_attach(Ctr* self)
 }
 
 static inline void
-ctr_detach(Ctr* self)
-{
-	event_detach(&self->complete);
-}
-
-static inline void
 ctr_complete(Ctr* self)
 {
 	event_signal(&self->complete);

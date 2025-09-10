@@ -54,7 +54,6 @@ backup_free(Backup* self)
 	wal_del(&db->wal_mgr.wal, &self->wal_slot);
 	if (self->snapshot)
 		id_mgr_delete(&db->checkpoint_mgr.list_snapshot, 0);
-	event_detach(&self->on_complete);
 	if (self->state_file)
 		buf_free(self->state_file);
 	buf_free(&self->state);

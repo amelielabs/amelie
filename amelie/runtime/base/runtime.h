@@ -47,23 +47,17 @@ buf_free(Buf* self)
 }
 
 // event
-static inline void
+hot static inline void
 event_attach(Event* self)
 {
-	bus_attach(&am_task->bus, self);
-}
-
-static inline void
-event_detach(Event* self)
-{
-	bus_detach(self);
+	event_set_bus(self, &am_task->bus);
 }
 
 hot static inline void
 event_signal(Event* self)
 {
 	if (self->bus)
-		bus_signal(self);
+		bus_send(self->bus, &self->ipc);
 	else
 		event_signal_local(self);
 }
@@ -169,6 +163,18 @@ task_create(Task*        self,
 	                         am_task->buf_mgr);
 	if (unlikely(rc == -1))
 		error_system();
+}
+
+static inline Msg*
+task_recv(void)
+{
+	return mailbox_pop(&am_task->bus.mailbox, am_self());
+}
+
+static inline void
+task_send(Task* dest, Msg* msg)
+{
+	bus_send(&dest->bus, &msg->ipc);
 }
 
 // time

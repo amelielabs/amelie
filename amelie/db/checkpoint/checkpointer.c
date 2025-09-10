@@ -100,7 +100,7 @@ checkpointer_periodic_main(void* arg)
 		if (workers == 0)
 			workers = 1;
 		coroutine_sleep(self->interval_us);
-		rpc(runtime()->iface->system, MSG_CHECKPOINT, 1, workers);
+		rpc(&runtime()->task, MSG_CHECKPOINT, 1, workers);
 	}
 }
 

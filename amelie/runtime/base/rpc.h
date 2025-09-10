@@ -20,7 +20,6 @@ struct Rpc
 	intptr_t* argv;
 	int       rc;
 	Error*    error;
-	Channel*  channel;
 	Event     on_complete;
 	List      link;
 };
@@ -59,8 +58,8 @@ rpc_execute(Rpc* self,
 	rpc_done(self);
 }
 
-hot static inline int
-rpc(Channel* channel, int id, int argc, ...)
+static inline int
+rpc(Task* dest, MsgId id, int argc, ...)
 {
 	// prepare arguments
 	intptr_t argv[argc];
@@ -71,29 +70,25 @@ rpc(Channel* channel, int id, int argc, ...)
 		argv[i] = va_arg(args, intptr_t);
 	va_end(args);
 
-	// prepare condition
-	auto coro  = am_self();
-	auto error = &coro->error;
+	// prepare the rpc object
+	auto error = &am_self()->error;
 	error->code = ERROR_NONE;
 	Rpc rpc =
 	{
-		.argc    = argc,
-		.argv    = argv,
-		.rc      = 0,
-		.error   = error,
-		.channel = channel
+		.argc  = argc,
+		.argv  = argv,
+		.rc    = 0,
+		.error = error,
 	};
 	msg_init(&rpc.msg, id);
 	list_init(&rpc.link);
-	event_init(&rpc.on_complete);
-	event_attach(&rpc.on_complete);
+	event_init_bus(&rpc.on_complete, &am_task->bus);
 
-	// do rpc call and wait for completion
-	channel_write(channel, &rpc.msg);
+	// do the call and wait for completion
+	task_send(dest, &rpc.msg);
 
 	cancel_pause();
 	event_wait(&rpc.on_complete, -1);
-	event_detach(&rpc.on_complete);
 	cancel_resume();
 
 	if (unlikely(error->code != ERROR_NONE))

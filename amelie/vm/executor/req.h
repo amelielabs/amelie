@@ -95,12 +95,6 @@ req_attach(Req* self)
 }
 
 static inline void
-req_detach(Req* self)
-{
-	event_detach(&self->complete);
-}
-
-static inline void
 req_complete(Req* self)
 {
 	event_signal(&self->complete);

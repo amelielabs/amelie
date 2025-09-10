@@ -113,7 +113,7 @@ frontend_main(void* arg)
 	bool stop = false;
 	while (! stop)
 	{
-		auto msg = channel_read(&am_task->channel, -1);
+		auto msg = task_recv();
 		switch (msg->id) {
 		case MSG_CLIENT:
 		{
@@ -177,7 +177,7 @@ frontend_stop(Frontend* self)
 	// send stop request
 	if (task_active(&self->task))
 	{
-		rpc(&self->task.channel, MSG_STOP, 0);
+		rpc(&self->task, MSG_STOP, 0);
 		task_wait(&self->task);
 	}
 }

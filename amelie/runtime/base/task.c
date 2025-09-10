@@ -98,7 +98,7 @@ mainloop(Task* self)
 	// main loop
 	for (;;)
 	{
-		// process pending events
+		// process pending events and msgs
 		bus_step(bus);
 
 		// execute pending coroutines
@@ -107,7 +107,7 @@ mainloop(Task* self)
 		if (unlikely(! coroutine_mgr->count))
 			break;
 
-		// retry loop before blocking wait, if some events are ready
+		// retry the loop before blocking wait, if some events are ready
 		if (bus_pending(bus) > 0)
 			continue;
 
@@ -135,7 +135,7 @@ mainloop(Task* self)
 			timer_mgr_step(timer_mgr);
 		}
 
-		// wait and process events, wakeup waiters
+		// wait and process io events, wakeup waiters
 		io_step(io, timeout);
 	}
 }
@@ -201,7 +201,6 @@ task_init(Task* self)
 	timer_mgr_init(&self->timer_mgr);
 	io_init(&self->io);
 	bus_init(&self->bus, &self->io);
-	channel_init(&self->channel, 1024);
 	cond_init(&self->status);
 	thread_init(&self->thread);
 }
@@ -211,8 +210,6 @@ task_free(Task* self)
 {
 	coroutine_mgr_free(&self->coroutine_mgr);
 	timer_mgr_free(&self->timer_mgr);
-	channel_detach(&self->channel);
-	channel_free(&self->channel);
 	bus_free(&self->bus);
 	io_free(&self->io);
 	cond_free(&self->status);
@@ -249,9 +246,6 @@ task_create_nothrow(Task*        self,
 	int rc = io_create(&self->io);
 	if (unlikely(rc == -1))
 		return -1;
-
-	// attach task channel
-	channel_attach_to(&self->channel, &self->bus);
 
 	// create task thread
 	if (main)

@@ -15,21 +15,56 @@ typedef struct Bus Bus;
 
 struct Bus
 {
-	Spinlock   lock;
-	List       list;
-	atomic_u64 list_count;
-	Io*        io;
+	Ring    ring;
+	Io*     io;
+	Mailbox mailbox;
 };
 
-void bus_init(Bus*, Io*);
-void bus_free(Bus*);
-void bus_attach(Bus*, Event*);
-void bus_detach(Event*);
-void bus_signal(Event*);
-void bus_step(Bus*);
+static inline void
+bus_init(Bus* self, Io* io)
+{
+	self->io = io;
+	ring_init(&self->ring);
+	ring_prepare(&self->ring, 1024);
+	mailbox_init(&self->mailbox);
+}
+
+static inline void
+bus_free(Bus* self)
+{
+	ring_free(&self->ring);
+}
+
+hot static inline void
+bus_send(Bus* self, Ipc* ipc)
+{
+	if (! ipc_ref(ipc))
+		return;
+	ring_write(&self->ring, ipc);
+	io_wakeup(self->io);
+}
+
+hot static inline void
+bus_step(Bus* self)
+{
+	Event* event;
+	Ipc* ipc;
+	while ((ipc = ring_read(&self->ring)))
+	{
+		if (ipc->id == IPC_EVENT) {
+			event = (Event*)ipc;
+		} else {
+			auto msg = (Msg*)ipc;
+			mailbox_append(&self->mailbox, msg);
+			event = &self->mailbox.event;
+		}
+		event_signal_local(event);
+		ipc_unref(ipc);
+	}
+}
 
 static inline uint64_t
 bus_pending(Bus* self)
 {
-	return atomic_u64_of(&self->list_count);
+	return ring_pending(&self->ring);
 }

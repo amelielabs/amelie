@@ -133,7 +133,6 @@ static void
 bench_client_api_free(BenchClient* ptr)
 {
 	auto self = (BenchClientApi*)ptr;
-	event_detach(&self->event);
 	amelie_free(self->session);
 	am_free(ptr);
 }

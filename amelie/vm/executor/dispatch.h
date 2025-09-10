@@ -105,7 +105,6 @@ dispatch_mgr_free_ctrs(DispatchMgr* self)
 	for (auto i = 0; i < self->ctrs_count; i++)
 	{
 		auto ctr = dispatch_mgr_ctr(self, i);
-		ctr_detach(ctr);
 		ctr_free(ctr);
 	}
 	self->ctrs_count = 0;

@@ -25,9 +25,8 @@ typedef enum
 
 struct RuntimeIf
 {
-	Channel*  system;
-	void    (*save_state)(void*);
-	void*     arg;
+	void  (*save_state)(void*);
+	void*   arg;
 };
 
 struct Runtime

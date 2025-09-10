@@ -47,7 +47,7 @@ bench_worker_main(void* arg)
 		coroutine_create(bench_connection, self);
 
 	// wait for stop
-	channel_read(&am_task->channel, -1);
+	task_recv();
 
 	// wait for completion
 	self->shutdown = true;
@@ -85,7 +85,7 @@ bench_worker_start(BenchWorker* self)
 static void
 bench_worker_stop_notify(BenchWorker* self)
 {
-	channel_write(&self->task.channel, &self->stop);
+	task_send(&self->task, &self->stop);
 }
 
 static void

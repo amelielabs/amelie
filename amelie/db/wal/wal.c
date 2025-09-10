@@ -412,7 +412,7 @@ void
 wal_detach(Wal* self, WalSlot* slot)
 {
 	mutex_lock(&self->lock);
-	event_detach(&slot->on_write);
+	event_set_bus(&slot->on_write, NULL);
 	mutex_unlock(&self->lock);
 }
 

@@ -160,7 +160,6 @@ system_create(void)
 
 	// set runtime control
 	auto control = &self->runtime_if;
-	control->system     = &am_task->channel;
 	control->save_state = system_save_state;
 	control->arg        = self;
 	runtime()->iface    = control;
@@ -420,7 +419,7 @@ system_main(System* self)
 {
 	for (;;)
 	{
-		auto msg = channel_read(&am_task->channel, -1);
+		auto msg = task_recv();
 		if (msg->id == MSG_STOP)
 			break;
 		if (msg->id == MSG_NATIVE)

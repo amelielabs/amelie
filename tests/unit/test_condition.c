@@ -39,7 +39,6 @@ test_condition(void* arg)
 	test(cond_value == 123);
 
 	coroutine_wait(id);
-	event_detach(&cond);
 }
 
 void
@@ -62,8 +61,6 @@ test_condition_task(void* arg)
 
 	task_wait(&task);
 	task_free(&task);
-
-	event_detach(&cond);
 }
 
 static void
@@ -99,8 +96,6 @@ test_condition_task_timeout(void* arg)
 
 	task_wait(&task);
 	task_free(&task);
-
-	event_detach(&cond);
 }
 
 static void
@@ -131,7 +126,6 @@ test_condition_n_task(void* arg)
 		event_wait(&cond[i], -1);
 		task_wait(&cond_task[i]);
 		task_free(&cond_task[i]);
-		event_detach(&cond[i]);
 	}
 }
 
@@ -177,7 +171,6 @@ test_condition_n_task2(void* arg)
 	for (auto i = 0; i < count * 10; i++)
 	{
 		event_wait(&cond[i], -1);
-		event_detach(&cond[i]);
 	}
 
 	for (auto i = 0; i < count; i++)

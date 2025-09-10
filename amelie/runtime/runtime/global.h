@@ -19,13 +19,13 @@
 static inline void
 control_lock(void)
 {
-	rpc(runtime()->iface->system, MSG_LOCK, 0);
+	rpc(&runtime()->task, MSG_LOCK, 0);
 }
 
 static inline void
 control_unlock(void)
 {
-	rpc(runtime()->iface->system, MSG_UNLOCK, 0);
+	rpc(&runtime()->task, MSG_UNLOCK, 0);
 }
 
 static inline void

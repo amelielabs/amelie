@@ -44,7 +44,7 @@ ccheckpoint(Vm* self, Op* op)
 	// [workers]
 	unused(self);
 	int workers = op->a;
-	rpc(runtime()->iface->system, MSG_CHECKPOINT, 1, workers);
+	rpc(&runtime()->task, MSG_CHECKPOINT, 1, workers);
 }
 
 void
@@ -98,7 +98,7 @@ cuser_create(Vm* self, Op* op)
 	user_mgr_create(share()->user_mgr, config, if_not_exists);
 
 	// sync user caches among frontends
-	rpc(runtime()->iface->system, MSG_SYNC_USERS, 1, &share()->user_mgr->cache);
+	rpc(&runtime()->task, MSG_SYNC_USERS, 1, &share()->user_mgr->cache);
 }
 
 void
@@ -113,7 +113,7 @@ cuser_drop(Vm* self, Op* op)
 	user_mgr_drop(share()->user_mgr, &name, if_exists);
 
 	// sync user caches among frontends
-	rpc(runtime()->iface->system, MSG_SYNC_USERS, 1, &share()->user_mgr->cache);
+	rpc(&runtime()->task, MSG_SYNC_USERS, 1, &share()->user_mgr->cache);
 }
 
 void
@@ -126,7 +126,7 @@ cuser_alter(Vm* self, Op* op)
 	user_mgr_alter(share()->user_mgr, config);
 
 	// sync user caches among frontends
-	rpc(runtime()->iface->system, MSG_SYNC_USERS, 1, &share()->user_mgr->cache);
+	rpc(&runtime()->task, MSG_SYNC_USERS, 1, &share()->user_mgr->cache);
 }
 
 void

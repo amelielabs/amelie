@@ -30,7 +30,6 @@ req_cache_free(ReqCache* self)
 	list_foreach_safe(&self->list.list)
 	{
 		auto req = list_at(Req, link);
-		req_detach(req);
 		req_free_memory(req);
 	}
 	req_list_init(&self->list);

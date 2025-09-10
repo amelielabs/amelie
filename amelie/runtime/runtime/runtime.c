@@ -141,7 +141,7 @@ runtime_stop(Runtime* self)
 	{
 		Msg stop;
 		msg_init(&stop, MSG_STOP);
-		channel_write(&self->task.channel, &stop);
+		task_send(&self->task, &stop);
 		task_wait(&self->task);
 	}
 }

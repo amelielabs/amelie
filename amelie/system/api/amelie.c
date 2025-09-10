@@ -185,7 +185,7 @@ amelie_connect(amelie_t* self, const char* uri)
 	request_queue_push(&session->native.queue, &req, false);
 
 	// register native client in the frontend pool
-	channel_write(&self->runtime.task.channel, &session->native.msg);
+	task_send(&self->runtime.task, &session->native.msg);
 
 	// wait for completion
 	request_wait(&req, -1);

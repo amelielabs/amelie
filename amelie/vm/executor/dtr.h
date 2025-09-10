@@ -84,8 +84,6 @@ dtr_free(Dtr* self)
 {
 	dtr_reset(self);
 	dispatch_mgr_free(&self->dispatch_mgr);
-	event_detach(&self->on_access);
-	event_detach(&self->on_commit);
 	write_free(&self->write);
 }
 

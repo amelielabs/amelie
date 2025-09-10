@@ -130,8 +130,6 @@ set(AMELIE_SOURCES_RUNTIME
     ${AMELIE_ROOT}/runtime/base/timer_mgr.c
     ${AMELIE_ROOT}/runtime/base/context_stack.c
     ${AMELIE_ROOT}/runtime/base/context.c
-    ${AMELIE_ROOT}/runtime/base/bus.c
-    ${AMELIE_ROOT}/runtime/base/channel.c
     ${AMELIE_ROOT}/runtime/base/task.c
     ${AMELIE_ROOT}/runtime/os/remote.c
     ${AMELIE_ROOT}/runtime/os/tls_lib.c
@@ -351,7 +349,7 @@ set(AMELIE_SOURCES_UNIT
     ${CMAKE_SOURCE_DIR}/tests/unit/test_coroutine.c
     ${CMAKE_SOURCE_DIR}/tests/unit/test_event.c
     ${CMAKE_SOURCE_DIR}/tests/unit/test_condition.c
-    ${CMAKE_SOURCE_DIR}/tests/unit/test_channel.c
+    ${CMAKE_SOURCE_DIR}/tests/unit/test_ipc.c
     ${CMAKE_SOURCE_DIR}/tests/unit/test_rpc.c
     ${CMAKE_SOURCE_DIR}/tests/unit/test_cancel.c
     ${CMAKE_SOURCE_DIR}/tests/unit/test_lock.c

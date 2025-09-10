@@ -40,5 +40,5 @@ void frontend_stop(Frontend*);
 static inline void
 frontend_add(Frontend* self, Msg* msg)
 {
-	channel_write(&self->task.channel, msg);
+	task_send(&self->task, msg);
 }
