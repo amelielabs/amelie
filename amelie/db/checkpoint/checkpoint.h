@@ -18,6 +18,7 @@ struct CheckpointWorker
 {
 	int   list_count;
 	List  list;
+	int   eventfd;
 	pid_t pid;
 };
 

@@ -38,7 +38,15 @@ void
 checkpoint_free(Checkpoint* self)
 {
 	if (self->workers)
+	{
+		for (int i = 0; i < self->workers_count; i++)
+		{
+			auto worker = &self->workers[i];
+			if (worker->eventfd != -1)
+				close(worker->eventfd);
+		}
 		am_free(self->workers);
+	}
 	self->workers = NULL;
 	self->workers_count = 0;
 	if (self->catalog)
@@ -60,8 +68,18 @@ checkpoint_begin(Checkpoint* self, uint64_t lsn, int workers)
 	{
 		auto worker = &self->workers[i];
 		worker->pid        = -1;
+		worker->eventfd    = -1;
 		worker->list_count = 0;
 		list_init(&worker->list);
+	}
+
+	// prepare eventfd
+	for (int i = 0; i < self->workers_count; i++)
+	{
+		auto worker = &self->workers[i];
+		worker->eventfd = eventfd(0, 0);
+		if (worker->eventfd == -1)
+			error_system();
 	}
 
 	// add partitions
@@ -129,6 +147,8 @@ checkpoint_worker_run(Checkpoint* self, CheckpointWorker* worker)
 	);
 
 	// done
+	uint64_t value = 1;
+	write(worker->eventfd, &value, sizeof(value));
 
 	// valgrind hack.
 	//
@@ -143,6 +163,7 @@ checkpoint_worker_run(Checkpoint* self, CheckpointWorker* worker)
 	execl("/bin/false", "/bin/false", NULL);
 }
 
+#if 0
 static bool
 checkpoint_worker_wait(CheckpointWorker* self)
 {
@@ -154,6 +175,33 @@ checkpoint_worker_wait(CheckpointWorker* self)
 		error_system();
 	bool is_failed = si.si_code != CLD_EXITED || si.si_status != EXIT_SUCCESS;
 	return is_failed;
+}
+#endif
+
+static bool
+checkpoint_worker_wait(CheckpointWorker* self)
+{
+	// wait for completion
+	uint64_t value;
+	auto rc = io_pread(self->eventfd, &value, sizeof(value), 0);
+	if (rc == -1)
+		error_system();
+
+	int status = 0;
+	rc = waitpid(self->pid, &status, 0);
+	if (rc == -1)
+		error_system();
+
+	bool failed = false;
+	if (WIFEXITED(status))
+	{
+		if (WEXITSTATUS(status) == EXIT_FAILURE)
+			failed = true;
+	} else {
+		failed = true;
+	}
+
+	return failed;
 }
 
 static void
