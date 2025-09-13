@@ -15,7 +15,7 @@ hot static inline struct io_uring_sqe*
 io_prepare(IoEvent* self)
 {
 	io_event_init(self);
-	auto sqe = io_uring_get_sqe(am_task->io.ring);
+	auto sqe = io_uring_get_sqe(&am_task->io.ring);
 	if (unlikely(! sqe))
 		error("failed to allocate sqe");
 	sqe->user_data = (uintptr_t)self;
@@ -70,7 +70,7 @@ static inline ssize_t
 io_open(const char* path, int flags, mode_t mode)
 {
 	IoEvent ev;
-	io_uring_prep_openat(io_prepare(&ev), AT_FDCWD, path, flags, mode);
+	io_uring_prep_open(io_prepare(&ev), path, flags, mode);
 	return io_wait(&ev);
 }
 
@@ -280,17 +280,17 @@ io_recv(int fd, void* data, size_t len, int flags)
 static inline ssize_t
 io_poll_read(int fd)
 {
-	(void)fd;
-	// todo:
-	return 0;
+	IoEvent ev;
+	io_uring_prep_poll_add(io_prepare(&ev), fd, POLLIN|POLLHUP|POLLERR);
+	return io_wait(&ev);
 }
 
 static inline ssize_t
 io_poll_write(int fd)
 {
-	(void)fd;
-	// todo:
-	return 0;
+	IoEvent ev;
+	io_uring_prep_poll_add(io_prepare(&ev), fd, POLLOUT);
+	return io_wait(&ev);
 }
 
 static inline int

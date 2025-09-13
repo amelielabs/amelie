@@ -51,6 +51,7 @@
 #include <sys/eventfd.h>
 #include <sys/sysinfo.h>
 #include <sys/un.h>
+#include <poll.h>
 #include <netinet/tcp.h>
 #include <arpa/inet.h>
 #include <netdb.h>

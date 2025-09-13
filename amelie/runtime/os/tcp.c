@@ -52,7 +52,11 @@ tcp_set_tls(Tcp* self, TlsContext *context)
 static inline void
 tcp_socket_init(int fd, int family)
 {
-	auto rc = socket_set_nosigpipe(fd, 1);
+	auto rc = socket_set_nonblock(fd, 1);
+	if (unlikely(rc == -1))
+		error_system();
+
+	rc = socket_set_nosigpipe(fd, 1);
 	if (unlikely(rc == -1))
 		error_system();
 
@@ -209,7 +213,7 @@ tcp_write(Tcp* self, struct iovec* iov, int iov_count)
 			}
 		} else
 		{
-			rc = io_pwritev(self->fd, iov, iov_count, -1);
+			rc = io_pwritev(self->fd, iov, iov_count, 0);
 		}
 
 		// retry

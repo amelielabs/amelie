@@ -22,10 +22,10 @@ struct IoEvent
 
 struct Io
 {
-	struct io_uring* ring;
-	bool             pending;
-	atomic_u32       pending_wakeup;
-	IoEvent          wakeup;
+	struct io_uring ring;
+	bool            pending;
+	atomic_u32      pending_wakeup;
+	IoEvent         wakeup;
 };
 
 static inline void
@@ -38,17 +38,16 @@ io_event_init(IoEvent* self)
 static inline void
 io_init(Io* self)
 {
-	self->ring           = NULL;
 	self->pending        = false;
 	self->pending_wakeup = 0;
 	io_event_init(&self->wakeup);
+	memset(&self->ring, 0, sizeof(self->ring));
 }
 
 static inline int
 io_create(Io* self)
 {
-	self->ring = (struct io_uring*)am_malloc(sizeof(*self->ring));
-	if (io_uring_queue_init(1024, self->ring, 0) < 0)
+	if (io_uring_queue_init(2048, &self->ring, 0) < 0)
 		return -1;
 	return 0;
 }
@@ -56,12 +55,7 @@ io_create(Io* self)
 static inline void
 io_free(Io* self)
 {
-	if (self->ring)
-	{
-		io_uring_queue_exit(self->ring);
-		am_free(self->ring);
-		self->ring = NULL;
-	}
+	io_uring_queue_exit(&self->ring);
 }
 
 static inline void
@@ -75,12 +69,12 @@ io_wakeup(Io* self)
 {
 	if (__sync_lock_test_and_set(&self->pending_wakeup, 1) == 1)
 		return;
-	auto sqe = io_uring_get_sqe(self->ring);
+	auto sqe = io_uring_get_sqe(&self->ring);
 	assert(sqe);
 	sqe->user_data = (uintptr_t)&self->wakeup;
 	io_uring_prep_nop(sqe);
 
-	io_uring_submit(self->ring);
+	io_uring_submit(&self->ring);
 }
 
 hot static inline int
@@ -89,7 +83,7 @@ io_process(Io* self)
 	unsigned int count = 0;
 	unsigned int it;
 	struct io_uring_cqe* cqe;
-	io_uring_for_each_cqe(self->ring, it, cqe)
+	io_uring_for_each_cqe(&self->ring, it, cqe)
 	{
 		auto event = (IoEvent*)cqe->user_data;
 		event->rc = cqe->res;
@@ -99,7 +93,7 @@ io_process(Io* self)
 		count++;
 	}
 	if (count > 0)
-		io_uring_cq_advance(self->ring, count);
+		io_uring_cq_advance(&self->ring, count);
 	return count;
 }
 
@@ -112,7 +106,7 @@ io_step(Io* self, uint32_t time_ms)
 		// submit pending events
 		if (self->pending)
 		{
-			io_uring_submit(self->ring);
+			io_uring_submit(&self->ring);
 			self->pending = false;
 		}
 		return;
@@ -124,13 +118,13 @@ io_step(Io* self, uint32_t time_ms)
 		// submit and wait
 		if (time_ms == UINT32_MAX)
 		{
-			io_uring_submit_and_wait(self->ring, 1);
+			io_uring_submit_and_wait(&self->ring, 1);
 		} else
 		{
 			struct __kernel_timespec ts;
 			ts.tv_sec  = time_ms / 1000;
 			ts.tv_nsec = (time_ms % 1000) * 1000000;
-			io_uring_submit_and_wait_timeout(self->ring, &cqe, 1, &ts, NULL);
+			io_uring_submit_and_wait_timeout(&self->ring, &cqe, 1, &ts, NULL);
 		}
 		self->pending = false;
 	} else
@@ -138,13 +132,13 @@ io_step(Io* self, uint32_t time_ms)
 		// wait
 		if (time_ms == UINT32_MAX)
 		{
-			io_uring_wait_cqe(self->ring, &cqe);
+			io_uring_wait_cqe(&self->ring, &cqe);
 		} else
 		{
 			struct __kernel_timespec ts;
 			ts.tv_sec  = time_ms / 1000;
 			ts.tv_nsec = (time_ms % 1000) * 1000000;
-			io_uring_wait_cqe_timeout(self->ring, &cqe, &ts);
+			io_uring_wait_cqe_timeout(&self->ring, &cqe, &ts);
 		}
 	}
 	io_process(self);
