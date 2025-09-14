@@ -50,19 +50,22 @@
 #include "base/poller.h"
 #include "base/notify.h"
 
-// cooperative multitasking
+// event
+#include "base/ipc.h"
 #include "base/event.h"
+
+// cooperative multitasking
 #include "base/context_stack.h"
 #include "base/context.h"
 #include "base/coroutine.h"
 #include "base/coroutine_mgr.h"
-
-// ipc
-#include "base/ring.h"
 #include "base/wait.h"
-#include "base/bus.h"
+
+// bus
+#include "base/ring.h"
 #include "base/msg.h"
-#include "base/channel.h"
+#include "base/mailbox.h"
+#include "base/bus.h"
 
 // task
 #include "base/task.h"

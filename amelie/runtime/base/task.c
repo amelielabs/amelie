@@ -31,7 +31,7 @@ task_shutdown(CoroutineMgr* mgr)
 	}
 
 	// wait for completion
-	wait_event(&mgr->on_exit, &am_task->timer_mgr, am_self(), -1);
+	wait_event(&mgr->on_exit, am_self());
 }
 
 hot void
@@ -98,8 +98,8 @@ mainloop(Task* self)
 	// main loop
 	for (;;)
 	{
-		// process pending events
-		auto signals = bus_step(bus);
+		// process pending events and msgs
+		bus_step(bus);
 
 		// execute pending coroutines
 		coroutine_mgr_scheduler(coroutine_mgr);
@@ -110,8 +110,8 @@ mainloop(Task* self)
 		// update timer_mgr time
 		timer_mgr_reset(timer_mgr);
 
-		// retry loop before blocking wait, if some events are ready
-		if (atomic_u64_of(&bus->signals) > signals)
+		// retry the loop before blocking wait, if some events are ready
+		if (bus_pending(bus) > 0)
 			continue;
 
 		uint32_t timeout = UINT32_MAX;
@@ -201,7 +201,6 @@ task_init(Task* self)
 	timer_mgr_init(&self->timer_mgr);
 	poller_init(&self->poller);
 	bus_init(&self->bus);
-	channel_init(&self->channel, 1024);
 	cond_init(&self->status);
 	thread_init(&self->thread);
 }
@@ -211,8 +210,6 @@ task_free(Task* self)
 {
 	coroutine_mgr_free(&self->coroutine_mgr);
 	timer_mgr_free(&self->timer_mgr);
-	channel_detach(&self->channel);
-	channel_free(&self->channel);
 	bus_close(&self->bus);
 	bus_free(&self->bus);
 	poller_free(&self->poller);
@@ -255,9 +252,6 @@ task_create_nothrow(Task*        self,
 	rc = bus_open(&self->bus, &self->poller);
 	if (unlikely(rc == -1))
 		return -1;
-
-	// attach task channel
-	channel_attach_to(&self->channel, &self->bus);
 
 	// create task thread
 	if (main)

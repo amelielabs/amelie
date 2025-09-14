@@ -53,17 +53,11 @@ event_attach(Event* self)
 	bus_attach(&am_task->bus, self);
 }
 
-static inline void
-event_detach(Event* self)
-{
-	bus_detach(self);
-}
-
 hot static inline void
 event_signal(Event* self)
 {
 	if (self->bus)
-		bus_signal(self);
+		bus_send(self->bus, &self->ipc);
 	else
 		event_signal_local(self);
 }
@@ -72,7 +66,11 @@ hot static inline bool
 event_wait(Event* self, int time_ms)
 {
 	cancellation_point();
-	bool timedout = wait_event(self, &am_task->timer_mgr, am_self(), time_ms);
+	bool timedout = false;
+	if (time_ms >= 0)
+		timedout = wait_event_time(self, &am_task->timer_mgr, am_self(), time_ms);
+	else
+		wait_event(self, am_self());
 	cancellation_point();
 	return timedout;
 }
@@ -95,7 +93,7 @@ coroutine_wait(uint64_t id)
 		return;
 	auto self = am_self();
 	coroutine_cancel_pause(self);
-	wait_event(&coro->on_exit, &am_task->timer_mgr, self, -1);
+	wait_event(&coro->on_exit, self);
 	coroutine_cancel_resume(self);
 }
 
@@ -117,7 +115,7 @@ coroutine_kill(uint64_t id)
 	coroutine_cancel(coro);
 	auto self = am_self();
 	coroutine_cancel_pause(self);
-	wait_event(&coro->on_exit, &am_task->timer_mgr, self, -1);
+	wait_event(&coro->on_exit, self);
 	coroutine_cancel_resume(self);
 }
 
@@ -165,6 +163,18 @@ task_create(Task*        self,
 	                         am_task->buf_mgr);
 	if (unlikely(rc == -1))
 		error_system();
+}
+
+static inline Msg*
+task_recv(void)
+{
+	return mailbox_pop(&am_task->bus.mailbox, am_self());
+}
+
+static inline void
+task_send(Task* dest, Msg* msg)
+{
+	bus_send(&dest->bus, &msg->ipc);
 }
 
 // time

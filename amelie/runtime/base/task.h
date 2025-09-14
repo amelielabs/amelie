@@ -20,7 +20,6 @@ struct Task
 	CoroutineMgr coroutine_mgr;
 	TimerMgr     timer_mgr;
 	Bus          bus;
-	Channel      channel;
 	MainFunction main;
 	void*        main_arg;
 	void*        main_arg_runtime;

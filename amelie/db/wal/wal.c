@@ -412,9 +412,13 @@ wal_attach(Wal* self, WalSlot* slot)
 void
 wal_detach(Wal* self, WalSlot* slot)
 {
+	(void)self;
+	(void)slot;
+	/*
 	mutex_lock(&self->lock);
 	event_detach(&slot->on_write);
 	mutex_unlock(&self->lock);
+	*/
 }
 
 void

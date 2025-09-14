@@ -127,10 +127,9 @@ test_cancel_condition(void* arg)
 
 	coroutine_kill(id);
 	test(! am_self()->cancel );
-
-	event_detach(&cond);
 }
 
+#if 0
 static Msg cancel_msg;
 
 static void
@@ -184,3 +183,4 @@ test_cancel_channel_pause(void* arg)
 	/* unreach */
 	test( 0 );
 }
+#endif

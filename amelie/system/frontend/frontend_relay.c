@@ -144,7 +144,6 @@ frontend_relay(Frontend* self, Native* native)
 		case REQUEST_DISCONNECT:
 		{
 			connected = false;
-			native_detach(native);
 			break;
 		}
 		case REQUEST_EXECUTE:

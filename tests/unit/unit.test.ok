@@ -54,14 +54,10 @@ unit test_condition_task_timeout
 unit test_condition_n_task
 # test: test condition n task 2
 unit test_condition_n_task2
-# test: test channel
-unit test_channel
-# test: test channel task
-unit test_channel_task
-# test: test channel task timeout
-unit test_channel_task_timeout
-# test: test channel producer consumer
-unit test_channel_producer_consumer
+# test: test ipc task
+unit test_ipc_task
+# test: test ipc producer consumer
+unit test_ipc_producer_consumer
 # test: test rpc
 unit test_rpc
 # test: test rpc execute
@@ -76,8 +72,6 @@ unit test_cancel
 unit test_cancel_pause
 # test: test cancel condition
 unit test_cancel_condition
-# test: test cancel channel pause
-unit test_cancel_channel_pause
 # test: test lock write
 unit test_lock_write
 # test: test lock write readers

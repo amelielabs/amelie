@@ -19,7 +19,7 @@ test_benchmark_rpc_main(void* arg)
 	bool stop = false;
 	while (! stop)
 	{
-		auto msg = channel_read(&am_task->channel, -1);
+		auto msg = task_recv();
 		auto rpc = rpc_of(msg);
 		stop = msg->id == 0;
 		rpc_done(rpc);
@@ -40,8 +40,8 @@ test_benchmark_rpc(void* arg)
 	int count = 1000000;
 	int i = 0;
 	for(; i < count; i++)
-		rpc(&task.channel, 1, 0);
-	rpc(&task.channel, 0, 0); // stop
+		rpc(&task, 1, 0);
+	rpc(&task, 0, 0); // stop
 
 	time_end(&time_us);
 

@@ -11,9 +11,10 @@
 // AGPL-3.0 Licensed.
 //
 
-typedef struct Msg Msg;
+typedef struct Msg     Msg;
+typedef struct Channel Channel;
 
-enum
+typedef enum
 {
 	// generic
 	MSG_STOP,
@@ -31,15 +32,19 @@ enum
 	MSG_CHECKPOINT,
 	MSG_SYNC_USERS,
 	MSG_SHOW_METRICS
-};
+} MsgId;
 
 struct Msg
 {
-	int id;
+	Ipc   ipc;
+	MsgId id;
+	List  link;
 };
 
 static inline void
-msg_init(Msg* self, int id)
+msg_init(Msg* self, MsgId id)
 {
 	self->id = id;
+	ipc_init(&self->ipc, IPC_MSG);
+	list_init(&self->link);
 }

@@ -265,7 +265,7 @@ streamer_task_main(void* arg)
 	uint64_t id = coroutine_create(streamer_main, self);
 	for (;;)
 	{
-		auto msg = channel_read(&am_task->channel, -1);
+		auto msg = task_recv();
 		auto rpc = rpc_of(msg);
 		rpc_execute(rpc, streamer_shutdown, &id);
 		break;
@@ -304,6 +304,6 @@ streamer_start(Streamer* self, Uuid* id, Remote* remote)
 void
 streamer_stop(Streamer* self)
 {
-	rpc(&self->task.channel, MSG_STOP, 0);
+	rpc(&self->task, MSG_STOP, 0);
 	task_wait(&self->task);
 }

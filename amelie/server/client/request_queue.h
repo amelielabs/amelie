@@ -31,7 +31,6 @@ request_queue_init(RequestQueue* self)
 static inline void
 request_queue_free(RequestQueue* self)
 {
-	assert(! self->on_write.bus);
 	assert(list_empty(&self->list));
 	spinlock_free(&self->lock);
 }
@@ -42,12 +41,6 @@ request_queue_attach(RequestQueue* self)
 	bus_attach(&am_task->bus, &self->on_write);
 }
 
-static inline void
-request_queue_detach(RequestQueue* self)
-{
-	bus_detach(&self->on_write);
-}
-
 hot static inline void
 request_queue_push(RequestQueue* self, Request* req, bool signal)
 {
@@ -56,7 +49,7 @@ request_queue_push(RequestQueue* self, Request* req, bool signal)
 	list_append(&self->list, &req->link);
 	spinlock_unlock(&self->lock);
 	if (signal)
-		bus_signal(&self->on_write);
+		event_signal(&self->on_write);
 }
 
 static inline Request*

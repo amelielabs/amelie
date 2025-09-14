@@ -15,17 +15,75 @@ typedef struct Bus Bus;
 
 struct Bus
 {
-	Spinlock   lock;
-	atomic_u64 signals;
-	List       list_ready;
-	Notify     notify;
+	Ring    ring;
+	Mailbox mailbox;
+	Notify  notify;
 };
 
-void     bus_init(Bus*);
-void     bus_free(Bus*);
-int      bus_open(Bus*, Poller*);
-void     bus_close(Bus*);
-void     bus_attach(Bus*, Event*);
-void     bus_detach(Event*);
-void     bus_signal(Event*);
-uint64_t bus_step(Bus*);
+static inline void
+bus_init(Bus* self)
+{
+	ring_init(&self->ring);
+	ring_prepare(&self->ring, 1024);
+	mailbox_init(&self->mailbox);
+	notify_init(&self->notify);
+}
+
+static inline void
+bus_free(Bus* self)
+{
+	ring_free(&self->ring);
+}
+
+static inline int
+bus_open(Bus* self, Poller* poller)
+{
+	return notify_open(&self->notify, poller, NULL, NULL);
+}
+
+static inline void
+bus_close(Bus* self)
+{
+	notify_close(&self->notify);
+}
+
+static inline void
+bus_attach(Bus* self, Event* event)
+{
+	event_set_bus(event, self);
+}
+
+hot static inline void
+bus_send(Bus* self, Ipc* ipc)
+{
+	if (! ipc_ref(ipc))
+		return;
+	ring_write(&self->ring, ipc);
+
+	notify_signal(&self->notify);
+}
+
+hot static inline void
+bus_step(Bus* self)
+{
+	Event* event;
+	Ipc* ipc;
+	while ((ipc = ring_read(&self->ring)))
+	{
+		if (ipc->id == IPC_EVENT) {
+			event = (Event*)ipc;
+		} else {
+			auto msg = (Msg*)ipc;
+			mailbox_append(&self->mailbox, msg);
+			event = &self->mailbox.event;
+		}
+		event_signal_local(event);
+		ipc_unref(ipc);
+	}
+}
+
+static inline uint64_t
+bus_pending(Bus* self)
+{
+	return ring_pending(&self->ring);
+}

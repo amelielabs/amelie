@@ -48,9 +48,3 @@ native_attach(Native* self)
 {
 	request_queue_attach(&self->queue);
 }
-
-static inline void
-native_detach(Native* self)
-{
-	request_queue_detach(&self->queue);
-}
