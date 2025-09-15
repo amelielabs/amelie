@@ -15,14 +15,16 @@ typedef struct Bus Bus;
 
 struct Bus
 {
-	Ring    ring;
-	Mailbox mailbox;
-	Notify  notify;
+	Ring       ring;
+	Mailbox    mailbox;
+	atomic_u32 sleep;
+	Notify     notify;
 };
 
 static inline void
 bus_init(Bus* self)
 {
+	self->sleep = 0;
 	ring_init(&self->ring);
 	ring_prepare(&self->ring, 1024);
 	mailbox_init(&self->mailbox);
@@ -48,6 +50,12 @@ bus_close(Bus* self)
 }
 
 static inline void
+bus_set_sleep(Bus* self, int value)
+{
+	atomic_u32_set(&self->sleep, value);
+}
+
+static inline void
 bus_attach(Bus* self, Event* event)
 {
 	event_set_bus(event, self);
@@ -60,7 +68,8 @@ bus_send(Bus* self, Ipc* ipc)
 		return;
 	ring_write(&self->ring, ipc);
 
-	notify_signal(&self->notify);
+	if (atomic_u32_of(&self->sleep))
+		notify_signal(&self->notify);
 }
 
 hot static inline void

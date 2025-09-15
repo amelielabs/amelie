@@ -38,7 +38,7 @@ request_queue_free(RequestQueue* self)
 static inline void
 request_queue_attach(RequestQueue* self)
 {
-	bus_attach(&am_task->bus, &self->on_write);
+	event_attach(&self->on_write);
 }
 
 hot static inline void

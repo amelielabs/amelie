@@ -107,12 +107,12 @@ mainloop(Task* self)
 		if (unlikely(! coroutine_mgr->count))
 			break;
 
-		// update timer_mgr time
-		timer_mgr_reset(timer_mgr);
-
 		// retry the loop before blocking wait, if some events are ready
 		if (bus_pending(bus) > 0)
 			continue;
+
+		// update timer_mgr time
+		timer_mgr_reset(timer_mgr);
 
 		uint32_t timeout = UINT32_MAX;
 		if (timer_mgr_has_timers(timer_mgr))
@@ -135,8 +135,15 @@ mainloop(Task* self)
 			timer_mgr_step(timer_mgr);
 		}
 
-		// poll for events
+		// retry the loop before blocking wait, if some events are ready
+		bus_set_sleep(bus, true);
+		if (bus_pending(bus) > 0)
+		{
+			bus_set_sleep(bus, false);
+			continue;
+		}
 		poller_step(poller, timeout);
+		bus_set_sleep(bus, false);
 	}
 }
 

@@ -107,8 +107,6 @@ ring_read(Ring* self)
 hot static inline bool
 ring_pending(Ring* self)
 {
-	// ring is empty
-	uint64_t pos_read  = atomic_load_explicit(&self->pos_read, memory_order_relaxed);
-	uint64_t pos_write = atomic_load_explicit(&self->pos_write, memory_order_acquire);
-	return pos_read != pos_write;
+	return atomic_load_explicit(&self->pos_read,  memory_order_relaxed) !=
+	       atomic_load_explicit(&self->pos_write, memory_order_acquire);
 }
