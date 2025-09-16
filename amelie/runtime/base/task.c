@@ -88,7 +88,7 @@ hot static inline void
 mainloop(Task* self)
 {
 	auto timer_mgr = &self->timer_mgr;
-	auto poller = &self->poller;
+	auto io = &self->io;
 	auto coroutine_mgr = &self->coroutine_mgr;
 	auto bus = &self->bus;
 
@@ -142,7 +142,7 @@ mainloop(Task* self)
 			bus_set_sleep(bus, false);
 			continue;
 		}
-		poller_step(poller, timeout);
+		io_step(io, timeout);
 		bus_set_sleep(bus, false);
 	}
 }
@@ -206,8 +206,8 @@ task_init(Task* self)
 	self->name[0]          = 0;
 	coroutine_mgr_init(&self->coroutine_mgr, 4096 * 32); // 128kb
 	timer_mgr_init(&self->timer_mgr);
-	poller_init(&self->poller);
-	bus_init(&self->bus);
+	io_init(&self->io);
+	bus_init(&self->bus, &self->io);
 	cond_init(&self->status);
 	thread_init(&self->thread);
 }
@@ -217,9 +217,8 @@ task_free(Task* self)
 {
 	coroutine_mgr_free(&self->coroutine_mgr);
 	timer_mgr_free(&self->timer_mgr);
-	bus_close(&self->bus);
 	bus_free(&self->bus);
-	poller_free(&self->poller);
+	io_free(&self->io);
 	cond_free(&self->status);
 }
 
@@ -250,13 +249,8 @@ task_create_nothrow(Task*        self,
 	self->buf_mgr          = buf_mgr;
 	snprintf(self->name, sizeof(self->name), "%s", name);
 
-	// prepare poller
-	int rc = poller_create(&self->poller);
-	if (unlikely(rc == -1))
-		return -1;
-
-	// prepare bus
-	rc = bus_open(&self->bus, &self->poller);
+	// prepare io_uring context
+	int rc = io_create(&self->io);
 	if (unlikely(rc == -1))
 		return -1;
 

@@ -70,7 +70,10 @@ server_accept_main(void* arg)
 
 	// remove unix socket after use
 	if (! listen->addr)
-		vfs_unlink(str_of(&listen->addr_name));
+	{
+		if (fs_exists("%s", str_of(&listen->addr_name)))
+			fs_unlink("%s", str_of(&listen->addr_name));
+	}
 
 	listen_stop(&listen->listen);
 }
@@ -114,7 +117,8 @@ server_listen(ServerListen* listen)
 		snprintf(addr_un.sun_path, sizeof(addr_un.sun_path), "%.*s",
 		         (int)sizeof(addr_un.sun_path) - 1,
 		         addr_name);
-		vfs_unlink(addr_name);
+		if (fs_exists("%s", addr_name))
+			fs_unlink("%s", addr_name);
 		addr = (struct sockaddr*)&addr_un;
 	} else
 	{

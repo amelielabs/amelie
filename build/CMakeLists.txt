@@ -42,16 +42,19 @@ set(CMAKE_THREAD_PREFER_PTHREAD true)
 
 find_package(Threads REQUIRED)
 find_package(OpenSSL REQUIRED)
+find_package(URING REQUIRED)
 find_package(PCRE REQUIRED)
 find_package(ZSTD REQUIRED)
 
 include_directories(${OPENSSL_INCLUDE_DIR})
+include_directories(${URING_INCLUDE_DIR})
 include_directories(${PCRE_INCLUDE_DIR})
 include_directories(${ZSTD_INCLUDE_DIR})
 
 set(AMELIE_LIBRARIES m
     ${CMAKE_THREAD_LIBS_INIT}
     ${OPENSSL_LIBRARIES}
+    ${URING_LIBRARIES}
     ${PCRE_LIBRARIES}
     ${ZSTD_LIBRARIES})
 
@@ -125,13 +128,9 @@ include_directories("${AMELIE_ROOT}/cli/test")
 set(AMELIE_SOURCES_RUNTIME
     ${AMELIE_ROOT}/runtime/base/report.c
     ${AMELIE_ROOT}/runtime/base/timer_mgr.c
-    ${AMELIE_ROOT}/runtime/base/poller.c
-    ${AMELIE_ROOT}/runtime/base/notify.c
     ${AMELIE_ROOT}/runtime/base/context_stack.c
     ${AMELIE_ROOT}/runtime/base/context.c
     ${AMELIE_ROOT}/runtime/base/task.c
-    ${AMELIE_ROOT}/runtime/os/os.c
-    ${AMELIE_ROOT}/runtime/os/vfs.c
     ${AMELIE_ROOT}/runtime/os/remote.c
     ${AMELIE_ROOT}/runtime/os/tls_lib.c
     ${AMELIE_ROOT}/runtime/os/tls_context.c
@@ -140,6 +139,7 @@ set(AMELIE_SOURCES_RUNTIME
     ${AMELIE_ROOT}/runtime/os/tcp.c
     ${AMELIE_ROOT}/runtime/os/listen.c
     ${AMELIE_ROOT}/runtime/os/resolver.c
+    ${AMELIE_ROOT}/runtime/os/os.c
     ${AMELIE_ROOT}/runtime/lib/rbtree.c
     ${AMELIE_ROOT}/runtime/lib/random.c
     ${AMELIE_ROOT}/runtime/lib/uuid.c

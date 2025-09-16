@@ -157,8 +157,8 @@ console_open(Console* self)
 
 	// show current prompt
 	if (! str_empty(self->prompt))
-		vfs_write(self->fd_out, str_of(self->prompt),
-		          str_size(self->prompt));
+		write(self->fd_out, str_of(self->prompt),
+		      str_size(self->prompt));
 
 	return 0;
 }
@@ -213,7 +213,7 @@ console_refresh(Console* self)
 	buf_write(buf, "\x1b[0K", 4);
 	buf_printf(buf, "\r\x1b[%dC", cursor);
 
-	vfs_write(self->fd_out, buf_cstr(buf), buf_size(buf));
+	write(self->fd_out, buf_cstr(buf), buf_size(buf));
 }
 
 static void
@@ -233,7 +233,7 @@ console_read_escape(Console* self)
 {
 	// read the escape sequence
 	char seq[3];
-	if (vfs_read(self->fd_in, seq, 2) <= 0)
+	if (read(self->fd_in, seq, 2) <= 0)
 		return false;
 
 	char cmd = 0;
@@ -241,7 +241,7 @@ console_read_escape(Console* self)
 	{
 		if (seq[1] >= '0' && seq[1] <= '9') {
 			// extended escape, read additional byte
-			if (vfs_read(self->fd_in, &seq[2], 1) <= 0)
+			if (read(self->fd_in, &seq[2], 1) <= 0)
 				return false;
 			if (seq[2] == '~' && seq[1] == '3')
 				cmd = seq[1];
@@ -349,13 +349,13 @@ console_read_escape(Console* self)
 static int
 console_read_unicode(Console* self, char unicode[4])
 {
-	int rc = vfs_read(self->fd_in, &unicode[0], 1);
+	int rc = read(self->fd_in, &unicode[0], 1);
 	if (rc <= 0)
 		return rc;
 	int size = utf8_sizeof(unicode[0]);
 	if (size == -1 || size == 1)
 		return size;
-	vfs_read(self->fd_in, &unicode[1], size - 1);
+	read(self->fd_in, &unicode[1], size - 1);
 	if (rc <= 0)
 		return rc;
 	return size;
@@ -374,7 +374,7 @@ console_read(Console* self)
 
 		switch (unicode[0]) {
 		case 13: // Enter
-			vfs_write(self->fd_out, "\n\r", 2);
+			write(self->fd_out, "\n\r", 2);
 			return true;
 
 		case 3: // Ctrl + C

@@ -19,7 +19,8 @@ fs_exists(const char* fmt, ...)
 	char path[PATH_MAX];
 	vsnprintf(path, sizeof(path), fmt, args);
 	va_end(args);
-	return vfs_size(path) >= 0;
+	struct statx stat;
+	return io_statx(path, AT_STATX_SYNC_AS_STAT, STATX_MODE, &stat) >= 0;
 }
 
 static inline void
@@ -30,8 +31,7 @@ fs_mkdir(int mode, const char* fmt, ...)
 	char path[PATH_MAX];
 	vsnprintf(path, sizeof(path), fmt, args);
 	va_end(args);
-	int rc = vfs_mkdir(path, mode);
-	if (unlikely(rc == -1))
+	if (unlikely(io_mkdir(path, mode) == -1))
 		error_system();
 }
 
@@ -43,8 +43,7 @@ fs_unlink(const char* fmt, ...)
 	char path[PATH_MAX];
 	vsnprintf(path, sizeof(path), fmt, args);
 	va_end(args);
-	int rc = vfs_unlink(path);
-	if (unlikely(rc == -1))
+	if (unlikely(io_unlink(path, 0) == -1))
 		error_system();
 }
 
@@ -56,12 +55,11 @@ fs_rename(const char* old, const char* fmt, ...)
 	char path[PATH_MAX];
 	vsnprintf(path, sizeof(path), fmt, args);
 	va_end(args);
-	int rc = vfs_rename(old, path);
-	if (unlikely(rc == -1))
+	if (unlikely(io_rename(old, path) == -1))
 		error_system();
 }
 
-static inline int64_t
+static inline ssize_t
 fs_size(const char* fmt, ...)
 {
 	va_list args;
@@ -69,7 +67,11 @@ fs_size(const char* fmt, ...)
 	char path[PATH_MAX];
 	vsnprintf(path, sizeof(path), fmt, args);
 	va_end(args);
-	return vfs_size(path);
+	struct statx stat;
+	stat.stx_size = 0;
+	if (unlikely(io_statx(path, AT_STATX_SYNC_AS_STAT, STATX_SIZE, &stat) == -1))
+		error_system();
+	return stat.stx_size;
 }
 
 static void
@@ -101,7 +103,6 @@ fs_rmdir(const char* fmt, ...)
 			continue;
 		fs_unlink("%s/%s", path, entry->d_name);
 	}
-	int rc = vfs_rmdir(path);
-	if (unlikely(rc == -1))
+	if (unlikely(io_unlink(path, AT_REMOVEDIR) == -1))
 		error_system();
 }

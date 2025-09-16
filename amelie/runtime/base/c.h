@@ -39,6 +39,7 @@
 #include <dirent.h>
 #include <errno.h>
 #include <time.h>
+#include <poll.h>
 #include <sys/types.h>
 #include <sys/time.h>
 #include <sys/wait.h>
@@ -58,3 +59,7 @@
 #include <net/if.h>
 #include <ifaddrs.h>
 #include <termios.h>
+
+#include <liburing.h>
+#include <valgrind/valgrind.h>
+#include <valgrind/memcheck.h>

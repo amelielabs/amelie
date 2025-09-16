@@ -15,10 +15,9 @@ typedef struct File File;
 
 struct File
 {
-	int      fd;
-	uint64_t size;
-	Str      path;
-	List     link;
+	int    fd;
+	size_t size;
+	Str    path;
 };
 
 static inline void
@@ -45,7 +44,7 @@ file_open_stdin(File* self)
 	self->size = 0;
 
 	// open
-	self->fd = vfs_open(str_of(&self->path), O_RDONLY, 0);
+	self->fd = io_open(str_of(&self->path), O_RDONLY, 0);
 	if (unlikely(self->fd == -1))
 		file_error(self, "open");
 }
@@ -59,14 +58,14 @@ file_open_as(File* self, const char* path, int flags, int mode)
 	// get file size
 	if (! (flags & O_CREAT))
 	{
-		int64_t size = vfs_size(str_of(&self->path));
+		auto size = fs_size(str_of(&self->path));
 		if (unlikely(size == -1))
 			file_error(self, "stat");
 		self->size = size;
 	}
 
 	// open
-	self->fd = vfs_open(str_of(&self->path), flags, mode);
+	self->fd = io_open(str_of(&self->path), flags, mode);
 	if (unlikely(self->fd == -1))
 		file_error(self, "open");
 }
@@ -95,49 +94,34 @@ file_create(File* self, const char* path)
 static inline void
 file_close(File* self)
 {
-	if (self->fd != -1) {
-		vfs_close(self->fd);
-		self->fd = -1;
-	}
+	if (self->fd != -1)
+		io_close(self->fd);
 	str_free(&self->path);
-}
-
-static inline void
-file_seek_to_end(File* self)
-{
-	int rc;
-	rc = vfs_seek(self->fd, self->size);
-	if (unlikely(rc == -1))
-		file_error(self, "seek");
+	file_init(self);
 }
 
 static inline void
 file_sync(File* self)
 {
-	int rc;
-	rc = vfs_fdatasync(self->fd);
-	if (unlikely(rc == -1))
+	if (unlikely(io_fsync(self->fd) == -1))
 		file_error(self, "sync");
 }
 
 static inline void
-file_truncate(File* self, uint64_t size)
+file_truncate(File* self, size_t size)
 {
-	int rc;
-	rc = vfs_truncate(self->fd, size);
-	if (unlikely(rc == -1))
+	if (unlikely(io_ftruncate(self->fd, size) == -1))
 		file_error(self, "truncate");
 	self->size = size;
-	file_seek_to_end(self);
 }
 
 static inline bool
 file_update_size(File* self)
 {
-	int64_t size = vfs_size(str_of(&self->path));
+	auto size = fs_size(str_of(&self->path));
 	if (unlikely(size == -1))
 		file_error(self, "stat");
-	bool updated = self->size != (uint64_t)size;
+	bool updated = self->size != (size_t)size;
 	self->size = size;
 	return updated;
 }
@@ -147,7 +131,7 @@ file_rename(File* self, const char* path)
 {
 	Str new_path;
 	str_dup_cstr(&new_path, path);
-	int rc = vfs_rename(str_of(&self->path), str_of(&new_path));
+	int rc = io_rename(str_of(&self->path), str_of(&new_path));
 	if (unlikely(rc == -1))
 	{
 		str_free(&new_path);
@@ -157,18 +141,23 @@ file_rename(File* self, const char* path)
 	self->path = new_path;
 }
 
-static inline uint64_t
-file_write(File* self, void* data, int size)
+static inline size_t
+file_write(File* self, void* data, size_t size)
 {
-	uint64_t offset = self->size;
-	int rc = vfs_write(self->fd, data, size);
-	if (unlikely(rc == -1))
-		file_error(self, "write");
-	self->size += rc;
-	return offset;
+	auto pos = (uint8_t*)data;
+	while (size > 0)
+	{
+		auto rc = io_pwrite(self->fd, pos, size, self->size);
+		if (unlikely(rc == -1))
+			file_error(self, "write");
+		size       -= rc;
+		pos        += rc;
+		self->size += rc;
+	}
+	return self->size;
 }
 
-static inline uint64_t
+static inline size_t
 file_write_buf(File* self, Buf* buf)
 {
 	return file_write(self, buf->start, buf_size(buf));
@@ -185,69 +174,60 @@ file_writev(File* self, struct iovec* iov, int iov_count)
 			n = IOV_MAX;
 		else
 			n = count_left;
-		int64_t rc = vfs_writev(self->fd, iov, n);
+		auto rc = io_pwritev(self->fd, iov, n, self->size);
 		if (unlikely(rc == -1))
 			file_error(self, "writev");
 		count_left -= n;
-		iov += n;
+		iov        += n;
 		self->size += rc;
 	}
 }
 
 static inline void
-file_pwrite(File* self, void* data, int size, uint64_t offset)
+file_pwrite(File* self, void* data, size_t size, size_t offset)
 {
-	int rc = vfs_pwrite(self->fd, data, size, offset);
-	if (unlikely(rc == -1))
+	if (unlikely(io_pwrite(self->fd, data, size, offset) == -1))
 		file_error(self, "pwrite");
 }
 
 static inline void
-file_pwrite_buf(File* self, Buf* buf, uint64_t offset)
+file_pwrite_buf(File* self, Buf* buf, size_t offset)
 {
 	file_pwrite(self, buf->start, buf_size(buf), offset);
 }
 
-static inline int64_t
-file_read_raw(File* self, void* data, int size)
+static inline ssize_t
+file_read_raw(File* self, void* data, size_t size)
 {
-	int64_t rc = vfs_read_raw(self->fd, data, size);
+	auto rc = read(self->fd, data, size);
 	if (unlikely(rc == -1))
 		file_error(self, "read");
 	return rc;
 }
 
-static inline void
-file_read(File* self, void* data, int size)
+static inline size_t
+file_pread(File* self, void* data, size_t size, size_t offset)
 {
-	int rc = vfs_read(self->fd, data, size);
-	if (unlikely(rc == -1))
-		file_error(self, "read");
+	auto pos = (uint8_t*)data;
+	while (size > 0)
+	{
+		auto rc = io_pread(self->fd, pos, size, offset);
+		if (unlikely(rc == -1))
+			file_error(self, "pread");
+		size   -= rc;
+		pos    += rc;
+		offset += rc;
+	}
+	return offset;
 }
 
-static inline void
-file_read_buf(File* self, Buf* buf, int size)
+static inline size_t
+file_pread_buf(File* self, Buf* buf, size_t size, size_t offset)
 {
 	buf_reserve(buf, size);
-	file_read(self, buf->position, size);
+	offset = file_pread(self, buf->position, size, offset);
 	buf_advance(buf, size);
-}
-
-static inline void
-file_pread(File* self, void* data, int size, uint64_t offset)
-{
-	int rc;
-	rc = vfs_pread(self->fd, offset, data, size);
-	if (unlikely(rc == -1))
-		file_error(self, "pread");
-}
-
-static inline void
-file_pread_buf(File* self, Buf* buf, int size, uint64_t offset)
-{
-	buf_reserve(buf, size);
-	file_pread(self, buf->position, size, offset);
-	buf_advance(buf, size);
+	return offset;
 }
 
 static inline Buf*

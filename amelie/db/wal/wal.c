@@ -160,7 +160,7 @@ wal_open_directory(Wal* self)
 		fs_mkdir(0755, "%s", path);
 
 	// open and keep directory fd to support sync
-	self->dirfd = vfs_open(path, O_DIRECTORY|O_RDONLY, 0);
+	self->dirfd = io_open(path, O_DIRECTORY|O_RDONLY, 0);
 	if (self->dirfd == -1)
 		error_system();
 
@@ -282,7 +282,6 @@ reopen:
 	uint64_t last = id_mgr_max(&self->list);
 	self->current = wal_file_allocate(last);
 	wal_file_open(self->current);
-	file_seek_to_end(&self->current->file);
 }
 
 void
@@ -373,7 +372,7 @@ wal_sync(Wal* self, bool sync_dir)
 	wal_file_sync(self->current);
 	if (! sync_dir)
 		return;
-	auto rc = vfs_fsync(self->dirfd);
+	auto rc = io_fsync(self->dirfd);
 	if (rc == -1)
 		error_system();
 }

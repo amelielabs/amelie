@@ -235,13 +235,13 @@ backup_send_file(Backup* self, Str* name, int64_t size, Buf* data)
 	file_init(&file);
 	defer(file_close, &file);
 	file_open(&file, path);
-	while (size > 0)
+	for (size_t offset = 0; size > 0;)
 	{
 		buf_reset(buf);
-		int64_t chunk = 256 * 1024;
+		auto chunk = 256 * 1024;
 		if (size < chunk)
 			chunk = size;
-		file_read_buf(&file, buf, chunk);
+		offset = file_pread_buf(&file, buf, chunk, offset);
 		tcp_write_buf(tcp, buf);
 		buf_reset(buf);
 		size -= chunk;
@@ -316,18 +316,13 @@ backup_process(Backup* self, Client* client)
 static void
 backup_main(void* arg)
 {
-	Backup* self   = arg;
-	auto    client = self->client;
-	auto    tcp    = &client->tcp;
+	Backup* self = arg;
 
 	info("");
 	info("⟶ backup");
-	error_catch
-	(
-		tcp_attach(tcp);
-		backup_process(self, client);
+	error_catch (
+		backup_process(self, self->client);
 	);
-	tcp_detach(tcp);
 
 	event_signal(&self->on_complete);
 	info("complete");
@@ -337,7 +332,6 @@ void
 backup_run(Backup* self, Client* client)
 {
 	// detach client from current task
-	tcp_detach(&client->tcp);
 	self->client = client;
 
 	// prepare on wait condition

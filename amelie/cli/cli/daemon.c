@@ -77,21 +77,29 @@ daemon_read_pidfile(Daemon* self)
 {
 	char path[PATH_MAX];
 	snprintf(path, sizeof(path), "%s/pid", self->directory);
-	auto fd = vfs_open(path, O_RDONLY, 0644);
+	auto fd = open(path, O_RDONLY, 0644);
 	if (fd == -1)
 	{
 		printf("error: pid file '%s' open error (%s)\n", path,
 		       strerror(errno));
 		return -1;
 	}
+	struct stat st;
+	auto rc = fstat(fd, &st);
+	if (rc == -1)
+	{
+		printf("error: pid file '%s' stat error (%s)\n", path,
+		       strerror(errno));
+		return -1;
+	}
 	char pid_sz[32];
-	auto pid_len = vfs_size_fd(fd);
+	auto pid_len = st.st_size;
 	if (pid_len > (int64_t)sizeof(pid_sz))
 	{
 		printf("error: invalid pid file '%s'\n", path);
 		return -1;
 	}
-	if (vfs_read(fd, pid_sz, pid_len) != pid_len)
+	if (read(fd, pid_sz, pid_len) != pid_len)
 	{
 		printf("error: pid file '%s' read error (%s)\n", path,
 		       strerror(errno));
@@ -114,7 +122,7 @@ daemon_write_pidfile(Daemon* self, pid_t pid)
 {
 	char path[PATH_MAX];
 	snprintf(path, sizeof(path), "%s/pid", self->directory);
-	auto fd = vfs_open(path, O_TRUNC|O_CREAT|O_WRONLY, 0644);
+	auto fd = open(path, O_TRUNC|O_CREAT|O_WRONLY, 0644);
 	if (fd == -1)
 	{
 		printf("error: pid file '%s' create error (%s)\n", path,
@@ -124,7 +132,7 @@ daemon_write_pidfile(Daemon* self, pid_t pid)
 
 	char pid_sz[32];
 	auto pid_len = snprintf(pid_sz, sizeof(pid_sz), "%d", pid);
-	if (vfs_write(fd, pid_sz, pid_len) != pid_len)
+	if (write(fd, pid_sz, pid_len) != pid_len)
 	{
 		printf("error: pid file '%s' write error (%s)\n", path,
 		       strerror(errno));
@@ -149,7 +157,7 @@ daemon_open(Daemon* self)
 	}
 
 	// open directory fd
-	rc = vfs_open(self->directory, O_DIRECTORY|O_RDONLY, 0755);
+	rc = open(self->directory, O_DIRECTORY|O_RDONLY, 0755);
 	if (rc == -1)
 	{
 		printf("error: directory '%s' open error (%s)\n", self->directory,
@@ -204,7 +212,7 @@ daemon_start(Daemon* self)
 		return -1;
 
 	// try to take exclusive directory lock
-	rc = vfs_flock_exclusive(self->directory_fd);
+	rc = flock(self->directory_fd, LOCK_EX);
 	if (rc == -1)
 	{
 		if (errno == EWOULDBLOCK)
@@ -231,7 +239,7 @@ daemon_stop(Daemon* self)
 		return -1;
 
 	// try to take exclusive directory lock
-	rc = vfs_flock_exclusive(self->directory_fd);
+	rc = flock(self->directory_fd, LOCK_EX);
 	if (rc == 0)
 	{
 		// instance is not active

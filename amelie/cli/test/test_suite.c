@@ -102,6 +102,8 @@ test_suite_execute(TestSuite* self, Test* test)
 
 	// create result file
 	unlink(test_result_file);
+
+	file_init(&self->current_test_result);
 	file_create(&self->current_test_result, test_result_file);
 	defer(file_close, &self->current_test_result);
 
@@ -181,8 +183,8 @@ test_suite_execute(TestSuite* self, Test* test)
 	if (! list_empty(&self->plan.list_env))
 		error("%s", "env left open\n");
 
-	unlink(test_result_file);
 	test_suite_cleanup(self);
+	unlink(test_result_file);
 	return true;
 }
 

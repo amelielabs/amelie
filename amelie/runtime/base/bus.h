@@ -18,17 +18,17 @@ struct Bus
 	Ring       ring;
 	Mailbox    mailbox;
 	atomic_u32 sleep;
-	Notify     notify;
+	Io*        io;
 };
 
 static inline void
-bus_init(Bus* self)
+bus_init(Bus* self, Io* io)
 {
 	self->sleep = 0;
+	self->io    = io;
 	ring_init(&self->ring);
 	ring_prepare(&self->ring, 1024);
 	mailbox_init(&self->mailbox);
-	notify_init(&self->notify);
 }
 
 static inline void
@@ -37,28 +37,10 @@ bus_free(Bus* self)
 	ring_free(&self->ring);
 }
 
-static inline int
-bus_open(Bus* self, Poller* poller)
-{
-	return notify_open(&self->notify, poller, NULL, NULL);
-}
-
-static inline void
-bus_close(Bus* self)
-{
-	notify_close(&self->notify);
-}
-
 static inline void
 bus_set_sleep(Bus* self, int value)
 {
 	atomic_u32_set(&self->sleep, value);
-}
-
-static inline void
-bus_attach(Bus* self, Event* event)
-{
-	event_set_bus(event, self);
 }
 
 hot static inline void
@@ -69,7 +51,7 @@ bus_send(Bus* self, Ipc* ipc)
 	ring_write(&self->ring, ipc);
 
 	if (atomic_u32_of(&self->sleep))
-		notify_signal(&self->notify);
+		io_wakeup(self->io);
 }
 
 hot static inline void

@@ -50,7 +50,7 @@ buf_free(Buf* self)
 static inline void
 event_attach(Event* self)
 {
-	bus_attach(&am_task->bus, self);
+	event_set_bus(self, &am_task->bus);
 }
 
 hot static inline void

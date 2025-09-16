@@ -42,7 +42,8 @@ checkpoint_free(Checkpoint* self)
 		for (int i = 0; i < self->workers_count; i++)
 		{
 			auto worker = &self->workers[i];
-			notify_close(&worker->notify);
+			if (worker->eventfd != -1)
+				close(worker->eventfd);
 		}
 		am_free(self->workers);
 	}
@@ -50,13 +51,6 @@ checkpoint_free(Checkpoint* self)
 	self->workers_count = 0;
 	if (self->catalog)
 		buf_free(self->catalog);
-}
-
-static inline void
-checkpoint_worker_on_complete(void* arg)
-{
-	Event* event = arg;
-	event_signal(event);
 }
 
 void
@@ -74,13 +68,18 @@ checkpoint_begin(Checkpoint* self, uint64_t lsn, int workers)
 	{
 		auto worker = &self->workers[i];
 		worker->pid        = -1;
+		worker->eventfd    = -1;
 		worker->list_count = 0;
-		event_init(&worker->on_complete);
-		notify_init(&worker->notify);
-		notify_open(&worker->notify, &am_task->poller,
-		            checkpoint_worker_on_complete,
-		            &worker->on_complete);
 		list_init(&worker->list);
+	}
+
+	// prepare eventfd
+	for (int i = 0; i < self->workers_count; i++)
+	{
+		auto worker = &self->workers[i];
+		worker->eventfd = eventfd(0, 0);
+		if (worker->eventfd == -1)
+			error_system();
 	}
 
 	// add partitions
@@ -132,16 +131,24 @@ checkpoint_worker_run(Checkpoint* self, CheckpointWorker* worker)
 		return;
 	}
 
+	// reinit io_uring after fork
+	auto io  = &am_task->io;
+	auto bus = &am_task->bus;
+	bus_free(bus);
+	io_free(io);
+	io_init(io);
+	io_create(io);
+	bus_init(bus, io);
+
 	// create snapshots
 	auto error = error_catch(
 		list_foreach(&worker->list)
 			checkpoint_part(self, list_at(Part, link_cp));
 	);
 
-	// signal waiter process
-	notify_signal(&worker->notify);
-
 	// done
+	uint64_t value = 1;
+	write(worker->eventfd, &value, sizeof(value));
 
 	// valgrind hack.
 	//
@@ -156,13 +163,32 @@ checkpoint_worker_run(Checkpoint* self, CheckpointWorker* worker)
 	execl("/bin/false", "/bin/false", NULL);
 }
 
+#if 0
 static bool
 checkpoint_worker_wait(CheckpointWorker* self)
 {
-	event_wait(&self->on_complete, -1);
+	// wait for the completion
+	siginfo_t si;
+	memset(&si, 0, sizeof(si));
+	int rc = io_waitid(P_PID, self->pid, &si, WEXITED);
+	if (rc == -1)
+		error_system();
+	bool is_failed = si.si_code != CLD_EXITED || si.si_status != EXIT_SUCCESS;
+	return is_failed;
+}
+#endif
+
+static bool
+checkpoint_worker_wait(CheckpointWorker* self)
+{
+	// wait for completion
+	uint64_t value;
+	auto rc = io_pread(self->eventfd, &value, sizeof(value), 0);
+	if (rc == -1)
+		error_system();
 
 	int status = 0;
-	int rc = waitpid(self->pid, &status, 0);
+	rc = waitpid(self->pid, &status, 0);
 	if (rc == -1)
 		error_system();
 

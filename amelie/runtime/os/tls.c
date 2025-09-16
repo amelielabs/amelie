@@ -24,7 +24,7 @@
 void
 tls_init(Tls* self)
 {
-	self->fd      = NULL;
+	self->fd      = -1;
 	self->ssl     = NULL;
 	self->context = NULL;
 	buf_init(&self->write_buf);
@@ -35,7 +35,7 @@ tls_free(Tls* self)
 {
 	if (self->ssl)
 		SSL_free(self->ssl);
-	self->fd      = NULL;
+	self->fd      = -1;
 	self->ssl     = NULL;
 	self->context = NULL;
 	buf_free(&self->write_buf);
@@ -68,7 +68,7 @@ tls_set(Tls* self, TlsContext* context)
 }
 
 void
-tls_create(Tls* self, Fd* fd)
+tls_create(Tls* self, int fd)
 {
 	assert(self->context);
 	self->fd = fd;
@@ -93,11 +93,11 @@ tls_create(Tls* self, Fd* fd)
 
 	// set socket
 	int rc;
-	rc = SSL_set_rfd(ssl, fd->fd);
+	rc = SSL_set_rfd(ssl, fd);
 	if (rc == -1)
 		tls_lib_error(0, "SSL_set_rfd()");
 
-	rc = SSL_set_wfd(ssl, fd->fd);
+	rc = SSL_set_wfd(ssl, fd);
 	if (rc == -1)
 		tls_lib_error(0, "SSL_set_wfd()");
 }
@@ -112,10 +112,10 @@ tls_connect(Tls* self)
 		{
 			int error = SSL_get_error(self->ssl, rc);
 			if (error == SSL_ERROR_WANT_READ)
-				poll_read(self->fd, -1);
+				io_poll_read(self->fd);
 			else
 			if (error == SSL_ERROR_WANT_WRITE)
-				poll_write(self->fd, -1);
+				io_poll_write(self->fd);
 			else
 				tls_error(self, rc, "SSL_connect()");
 			continue;
@@ -134,10 +134,10 @@ tls_accept(Tls* self)
 		{
 			int error = SSL_get_error(self->ssl, rc);
 			if (error == SSL_ERROR_WANT_READ)
-				poll_read(self->fd, -1);
+				io_poll_read(self->fd);
 			else
 			if (error == SSL_ERROR_WANT_WRITE)
-				poll_write(self->fd, -1);
+				io_poll_write(self->fd);
 			else
 				tls_error(self, rc, "SSL_accept()");
 			continue;

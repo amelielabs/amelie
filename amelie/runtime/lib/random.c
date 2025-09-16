@@ -26,12 +26,11 @@ random_open(Random* self)
 {
 	uint64_t seed_random_dev[2] = { 0, 0 };
 
-	int fd;
-	fd = vfs_open("/dev/urandom", O_RDONLY, 0644);
+	auto fd = open("/dev/urandom", O_RDONLY, 0644);
 	if (unlikely(fd != -1))
 	{
-		vfs_read(fd, seed_random_dev, sizeof(uint64_t) * 2);
-		vfs_close(fd);
+		read(fd, seed_random_dev, sizeof(uint64_t) * 2);
+		close(fd);
 	}
 
 	struct timespec ts;
