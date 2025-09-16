@@ -120,9 +120,6 @@ tree_search(Tree* self, TreePage* page, Row* key, bool* match)
 	int min = 0;
 	int mid = 0;
 	int max = page->keys_count - 1;
-	if (compare(self->keys, page->rows[max], key) < 0)
-		return max + 1;
-
 	while (max >= min)
 	{
 		mid = min + ((max - min) >> 1);
