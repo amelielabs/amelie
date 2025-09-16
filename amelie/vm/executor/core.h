@@ -11,48 +11,30 @@
 // AGPL-3.0 Licensed.
 //
 
-typedef union  CoreEvent CoreEvent;
-typedef struct Core      Core;
-
-enum
-{
-	CORE_SHUTDOWN,
-	CORE_RUN,
-	CORE_COMMIT,
-	CORE_ABORT
-};
-
-union CoreEvent
-{
-	Ctr*     ctr;
-	uint64_t commit;
-};
+typedef struct Core Core;
 
 struct Core
 {
-	Mutex    lock;
-	CondVar  cond_var;
-	int      order;
-	List     list;
-	int      list_count;
-	uint64_t event_commit;
-	bool     event_abort;
-	bool     event_shutdown;
-	TrList   prepared;
-	TrCache  cache;
+	Ring       ring;
+	atomic_u64 commit;
+	atomic_u64 abort;
+	int        order;
+	TrList     prepared;
+	TrCache    cache;
+	Msg        msg_stop;
+	Task*      task;
 };
 
 static inline void
-core_init(Core* self, int order)
+core_init(Core* self, Task* task, int order)
 {
-	self->order          = order;
-	self->list_count     = 0;
-	self->event_commit   = 0;
-	self->event_abort    = false;
-	self->event_shutdown = false;
-	mutex_init(&self->lock);
-	cond_var_init(&self->cond_var);
-	list_init(&self->list);
+	self->order  = order;
+	self->commit = 0;
+	self->abort  = 0;
+	self->task   = task;
+	ring_init(&self->ring);
+	ring_prepare(&self->ring, 1024);
+	msg_init(&self->msg_stop, MSG_STOP);
 	tr_list_init(&self->prepared);
 	tr_cache_init(&self->cache);
 }
@@ -60,92 +42,31 @@ core_init(Core* self, int order)
 static inline void
 core_free(Core* self)
 {
-	assert(! self->list_count);
-	mutex_free(&self->lock);
-	cond_var_free(&self->cond_var);
+	assert(! ring_pending(&self->ring));
+	ring_free(&self->ring);
 	tr_cache_free(&self->cache);
 }
 
 static inline void
 core_shutdown(Core* self)
 {
-	mutex_lock(&self->lock);
-	self->event_shutdown = true;
-	cond_var_signal(&self->cond_var);
-	mutex_unlock(&self->lock);
+	task_send(self->task, &self->msg_stop);
 }
 
 static inline void
 core_abort(Core* self)
 {
-	mutex_lock(&self->lock);
-	self->event_abort = true;
-	cond_var_signal(&self->cond_var);
-	mutex_unlock(&self->lock);
+	atomic_u64_inc(&self->abort);
 }
 
 static inline void
 core_commit(Core* self, uint64_t commit)
 {
-	mutex_lock(&self->lock);
-	self->event_commit = commit;
-	cond_var_signal(&self->cond_var);
-	mutex_unlock(&self->lock);
+	atomic_u64_set(&self->commit, commit);
 }
 
 static inline void
 core_add(Core* self, Ctr* ctr)
 {
-	mutex_lock(&self->lock);
-	list_append(&self->list, &ctr->link);
-	self->list_count++;
-	cond_var_signal(&self->cond_var);
-	mutex_unlock(&self->lock);
-}
-
-hot static inline int
-core_next(Core* self, CoreEvent* event)
-{
-	mutex_lock(&self->lock);
-	int type;
-	for (;;)
-	{
-		// abort
-		if (unlikely(self->event_abort))
-		{
-			type = CORE_ABORT;
-			self->event_abort = false;
-			break;
-		}
-
-		// commit
-		if (self->event_commit > 0)
-		{
-			type = CORE_COMMIT;
-			event->commit = self->event_commit;
-			self->event_commit = 0;
-			break;
-		}
-
-		// run
-		if (self->list_count > 0)
-		{
-			auto ref = list_pop(&self->list);
-			self->list_count--;
-			type = CORE_RUN;
-			event->ctr = container_of(ref, Ctr, link);
-			break;
-		}
-
-		// shutdown
-		if (unlikely(self->event_shutdown))
-		{
-			type = CORE_SHUTDOWN;
-			break;
-		}
-
-		cond_var_wait(&self->cond_var, &self->lock);
-	}
-	mutex_unlock(&self->lock);
-	return type;
+	task_send(self->task, &ctr->msg);
 }

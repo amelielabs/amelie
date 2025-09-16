@@ -175,31 +175,38 @@ backend_process(Backend* self, Ctr* ctr)
 	ctr_complete(ctr);
 }
 
-static void
+hot static void
 backend_main(void* arg)
 {
 	Backend* self = arg;
 	auto core = &self->core;
-	for (auto active = true; active;)
+
+	uint64_t id_commit = 0;
+	uint64_t id_abort  = 0;
+	for (;;)
 	{
-		CoreEvent core_event;
-		switch (core_next(core, &core_event)) {
-		case CORE_SHUTDOWN:
-			active = false;
+		auto msg = task_recv();
+		if (unlikely(msg->id == MSG_STOP))
 			break;
-		case CORE_RUN:
-			// accept and process incoming core transaction
-			backend_process(self, core_event.ctr);
-			break;
-		case CORE_COMMIT:
-			// commit all transaction <= commit id
-			tr_commit_list(&core->prepared, &core->cache, core_event.commit);
-			break;
-		case CORE_ABORT:
+
+		auto id = atomic_u64_of(&core->abort);
+		if (unlikely(id > id_abort))
+		{
 			// abort all prepared transactions
 			tr_abort_list(&core->prepared, &core->cache);
-			break;
+			id_abort = id;
 		}
+
+		id = atomic_u64_of(&core->commit);
+		if (id > id_commit)
+		{
+			// commit all transaction <= commit id
+			tr_commit_list(&core->prepared, &core->cache, id);
+			id_commit = id;
+		}
+
+		// accept and process incoming core transaction
+		backend_process(self, (Ctr*)msg);
 	}
 }
 
@@ -207,7 +214,7 @@ Backend*
 backend_allocate(int order)
 {
 	auto self = (Backend*)am_malloc(sizeof(Backend));
-	core_init(&self->core, order);
+	core_init(&self->core, &self->task, order);
 	vm_init(&self->vm, &self->core, NULL);
 	task_init(&self->task);
 	list_init(&self->link);

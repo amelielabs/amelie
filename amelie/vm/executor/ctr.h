@@ -23,6 +23,7 @@ typedef enum
 
 struct Ctr
 {
+	Msg      msg;
 	CtrState state;
 	Dtr*     dtr;
 	Tr*      tr;
@@ -30,20 +31,20 @@ struct Ctr
 	Ring     queue;
 	bool     queue_close;
 	Event    complete;
-	List     link;
 };
 
 static inline void
 ctr_init(Ctr* self, Dtr* dtr, Core* core)
 {
-	self->state = CTR_NONE;
-	self->dtr   = dtr;
-	self->tr    = NULL;
-	self->core  = core;
+	self->state       = CTR_NONE;
+	self->dtr         = dtr;
+	self->tr          = NULL;
+	self->core        = core;
+	self->queue_close = false;
+	msg_init(&self->msg, MSG_CTR);
 	ring_init(&self->queue);
 	ring_prepare(&self->queue, 128);
 	event_init(&self->complete);
-	list_init(&self->link);
 }
 
 static inline void
@@ -58,7 +59,6 @@ ctr_reset(Ctr* self)
 	self->state       = CTR_NONE;
 	self->tr          = NULL;
 	self->queue_close = false;
-	list_init(&self->link);
 }
 
 static inline void

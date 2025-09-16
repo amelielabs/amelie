@@ -24,6 +24,7 @@ typedef enum
 
 	// executor
 	MSG_REQ,
+	MSG_CTR,
 
 	// frontend
 	MSG_CLIENT,
