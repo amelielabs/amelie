@@ -15,12 +15,20 @@ hot static inline struct io_uring_sqe*
 io_prepare(IoEvent* self)
 {
 	io_event_init(self);
-	// TODO
-	auto sqe = io_uring_get_sqe(&am_task->io.ring);
-	if (unlikely(! sqe))
-		error("failed to allocate sqe");
-	io_uring_sqe_set_data(sqe, self);
-	return sqe;
+	for (;;)
+	{
+		auto sqe = io_uring_get_sqe(&am_task->io.ring);
+		if (likely(sqe))
+		{
+			io_uring_sqe_set_data(sqe, self);
+			return sqe;
+		}
+		// force submit and retry
+		io_set_pending(&am_task->io);
+		coroutine_yield();
+	}
+	// unreach
+	return NULL;
 }
 
 hot static inline ssize_t
