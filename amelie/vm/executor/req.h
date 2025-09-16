@@ -24,6 +24,7 @@ enum
 
 struct Req
 {
+	Msg       msg;
 	int       type;
 	int       start;
 	Buf       arg;
@@ -33,6 +34,7 @@ struct Req
 	Value*    args;
 	Value     result;
 	Buf*      error;
+	bool      close;
 	Event     complete;
 	Core*     core;
 	List      link_queue;
@@ -51,6 +53,8 @@ req_allocate(void)
 	self->args      = NULL;
 	self->error     = NULL;
 	self->core      = NULL;
+	self->error     = false;
+	msg_init(&self->msg, MSG_REQ);
 	event_init(&self->complete);
 	buf_init(&self->arg);
 	value_init(&self->result);
@@ -84,6 +88,7 @@ req_reset(Req* self)
 	self->regs      = NULL;
 	self->args      = NULL;
 	self->core      = NULL;
+	self->error     = false;
 	buf_reset(&self->arg);
 	value_free(&self->result);
 }

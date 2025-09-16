@@ -151,14 +151,25 @@ backend_run(Backend* self, Ctr* ctr, Req* req)
 hot static void
 backend_process(Backend* self, Ctr* ctr)
 {
-	auto queue = &ctr->queue;
-	for (;;)
+	auto queue  = &ctr->queue;
+	auto active = true;
+	while (active)
 	{
-		auto req = req_queue_pop(queue);
-		if (! req)
-			break;
+		Msg* msg = ring_read(queue);
+		if (! msg) {
+			// backoff
+			__asm__("pause");
+			continue;
+		}
+		if (msg->id == MSG_STOP)
+		{
+			active = false;
+			continue;
+		}
+		auto req = (Req*)msg;
 		if (error_catch(backend_run(self, ctr, req)))
 			req->error = error_create(&am_self()->error);
+		active = !req->close;
 		req_complete(req);
 	}
 	ctr_complete(ctr);

@@ -32,6 +32,7 @@ struct DispatchMgr
 	Buf      ctrs;
 	int      ctrs_count;
 	CoreMgr* core_mgr;
+	Msg      close;
 	Dtr*     dtr;
 };
 
@@ -75,6 +76,7 @@ dispatch_mgr_init(DispatchMgr* self, CoreMgr* core_mgr, Dtr* dtr)
 	buf_init(&self->reqs);
 	buf_init(&self->ctrs);
 	req_cache_init(&self->req_cache);
+	msg_init(&self->close, MSG_STOP);
 }
 
 static inline void
@@ -173,7 +175,9 @@ dispatch_mgr_send(DispatchMgr* self, ReqList* list, bool close)
 			ctr->state = CTR_ACTIVE;
 
 		// add request to the core transaction queue
-		req_queue_send(&ctr->queue, req, close);
+		ctr->queue_close = close;
+		req->close = close;
+		ring_write(&ctr->queue, &req->msg);
 	}
 }
 
@@ -206,11 +210,10 @@ dispatch_mgr_close(DispatchMgr* self)
 	for (auto i = 0; i < self->ctrs_count; i++)
 	{
 		auto ctr = dispatch_mgr_ctr(self, i);
-		if (ctr->state == CTR_NONE)
+		if (ctr->state == CTR_NONE || ctr->queue_close)
 			continue;
-		if (ctr->queue.close)
-			continue;
-		req_queue_close(&ctr->queue);
+		ring_write(&ctr->queue, &self->close);
+		ctr->queue_close = true;
 	}
 }
 

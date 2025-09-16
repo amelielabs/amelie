@@ -22,6 +22,9 @@ typedef enum
 	// resolver
 	MSG_RESOLVE,
 
+	// executor
+	MSG_REQ,
+
 	// frontend
 	MSG_CLIENT,
 	MSG_NATIVE,
