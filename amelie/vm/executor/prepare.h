@@ -16,8 +16,9 @@ typedef struct Prepare Prepare;
 struct Prepare
 {
 	uint64_t  id_max;
+	Dtr*      list;
+	Dtr*      list_tail;
 	int       list_count;
-	List      list;
 	Buf       cores;
 	WriteList write;
 };
@@ -26,9 +27,10 @@ static inline void
 prepare_init(Prepare* self)
 {
 	self->id_max     = 0;
+	self->list       = NULL;
+	self->list_tail  = NULL;
 	self->list_count = 0;
 	buf_init(&self->cores);
-	list_init(&self->list);
 	write_list_init(&self->write);
 }
 
@@ -47,8 +49,9 @@ prepare_reset(Prepare* self, CoreMgr* core_mgr)
 	memset(self->cores.start, 0, size);
 
 	self->id_max     = 0;
+	self->list       = NULL;
+	self->list_tail  = NULL;
 	self->list_count = 0;
-	list_init(&self->list);
 	write_list_reset(&self->write);
 }
 
@@ -56,7 +59,11 @@ hot static inline void
 prepare_add(Prepare* self, Dtr* dtr)
 {
 	// add transaction to the list
-	list_append(&self->list, &dtr->link_prepare);
+	if (self->list)
+		self->list_tail->link_queue = dtr;
+	else
+		self->list = dtr;
+	self->list_tail = dtr;
 	self->list_count++;
 
 	// track max transaction id

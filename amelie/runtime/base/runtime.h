@@ -171,6 +171,12 @@ task_recv(void)
 	return mailbox_pop(&am_task->bus.mailbox, am_self());
 }
 
+static inline Msg*
+task_recv_try(void)
+{
+	return mailbox_pop_nowait(&am_task->bus.mailbox);
+}
+
 static inline void
 task_send(Task* dest, Msg* msg)
 {

@@ -22,6 +22,7 @@ struct System
 	Repl        repl;
 	// executor
 	Executor    executor;
+	Commit      commit;
 	FrontendMgr frontend_mgr;
 	BackendMgr  backend_mgr;
 	bool        lock;

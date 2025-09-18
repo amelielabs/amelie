@@ -13,30 +13,21 @@
 
 typedef struct Dtr Dtr;
 
-typedef enum
-{
-	DTR_NONE,
-	DTR_BEGIN,
-	DTR_PREPARE,
-	DTR_ERROR,
-	DTR_COMMIT,
-	DTR_ABORT
-} DtrState;
-
 struct Dtr
 {
+	Msg         msg;
 	uint64_t    id;
-	DtrState    state;
 	DispatchMgr dispatch_mgr;
 	Program*    program;
 	Buf*        error;
+	bool        abort;
 	Write       write;
 	Event       on_access;
 	Event       on_commit;
 	Limit       limit;
 	Local*      local;
 	CoreMgr*    core_mgr;
-	List        link_prepare;
+	Dtr*        link_queue;
 	List        link_access;
 	List        link;
 };
@@ -44,28 +35,30 @@ struct Dtr
 static inline void
 dtr_init(Dtr* self, Local* local, CoreMgr* core_mgr)
 {
-	self->id       = 0;
-	self->state    = DTR_NONE;
-	self->program  = NULL;
-	self->error    = NULL;
-	self->local    = local;
-	self->core_mgr = core_mgr;
+	self->id         = 0;
+	self->program    = NULL;
+	self->error      = NULL;
+	self->abort      = false;
+	self->local      = local;
+	self->core_mgr   = core_mgr;
+	self->link_queue = NULL;
 	dispatch_mgr_init(&self->dispatch_mgr, core_mgr, self);
 	event_init(&self->on_access);
 	event_init(&self->on_commit);
 	limit_init(&self->limit, opt_int_of(&config()->limit_write));
 	write_init(&self->write);
-	list_init(&self->link_prepare);
 	list_init(&self->link_access);
 	list_init(&self->link);
+	msg_init(&self->msg, MSG_DTR);
 }
 
 static inline void
 dtr_reset(Dtr* self)
 {
-	self->id      = 0;
-	self->state   = DTR_NONE;
-	self->program = NULL;
+	self->id         = 0;
+	self->program    = NULL;
+	self->link_queue = NULL;
+	self->abort      = false;
 	if (self->error)
 	{
 		buf_free(self->error);
@@ -74,7 +67,6 @@ dtr_reset(Dtr* self)
 	dispatch_mgr_reset(&self->dispatch_mgr);
 	limit_reset(&self->limit, opt_int_of(&config()->limit_write));
 	write_reset(&self->write);
-	list_init(&self->link_prepare);
 	list_init(&self->link_access);
 	list_init(&self->link);
 }
@@ -99,9 +91,9 @@ dtr_create(Dtr* self, Program* program)
 }
 
 static inline void
-dtr_set_state(Dtr* self, DtrState state)
+dtr_set_abort(Dtr* self)
 {
-	self->state = state;
+	self->abort = true;
 }
 
 static inline void
@@ -132,4 +124,10 @@ hot static inline void
 dtr_recv(Dtr* self)
 {
 	dispatch_mgr_recv(&self->dispatch_mgr);
+}
+
+static inline bool
+dtr_active(Dtr* self)
+{
+	return self->id != 0;
 }

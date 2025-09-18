@@ -129,7 +129,7 @@ select system.state().read_only
 select system.state().lsn
 [9]
 insert into test values (10)
-{"msg": "system is in read-only mode"}
+{"msg": "transaction aborted during commit"}
 select system.state().lsn
 [9]
 select system.state().psn

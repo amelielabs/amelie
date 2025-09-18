@@ -228,7 +228,7 @@ set(AMELIE_SOURCES_VM
     ${AMELIE_ROOT}/vm/set/in.c
     ${AMELIE_ROOT}/vm/content/content.c
     ${AMELIE_ROOT}/vm/content/content_json.c
-    ${AMELIE_ROOT}/vm/executor/executor.c
+    ${AMELIE_ROOT}/vm/executor/commit.c
     ${AMELIE_ROOT}/vm/func/function_mgr.c
     ${AMELIE_ROOT}/vm/func/call.c
     ${AMELIE_ROOT}/vm/func/call_mgr.c

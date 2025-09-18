@@ -22,6 +22,17 @@ error_create(Error* error)
 	return self;
 }
 
+static inline Buf*
+error_create_cstr(char* msg)
+{
+	auto self = buf_create();
+	encode_obj(self);
+	encode_raw(self, "msg", 3);
+	encode_cstr(self, msg);
+	encode_obj_end(self);
+	return self;
+}
+
 static inline void
 error_buf(Buf* buf)
 {

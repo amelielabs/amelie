@@ -40,3 +40,12 @@ mailbox_pop(Mailbox* self, Coroutine* coro)
 	auto first = list_pop(&self->list);
 	return container_of(first, Msg, link);
 }
+
+static inline Msg*
+mailbox_pop_nowait(Mailbox* self)
+{
+	if (list_empty(&self->list))
+		return NULL;
+	auto first = list_pop(&self->list);
+	return container_of(first, Msg, link);
+}

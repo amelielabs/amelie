@@ -43,7 +43,7 @@ ctr_init(Ctr* self, Dtr* dtr, Core* core)
 	self->queue_close = false;
 	msg_init(&self->msg, MSG_CTR);
 	ring_init(&self->queue);
-	ring_prepare(&self->queue, 128);
+	ring_prepare(&self->queue, 1024);
 	event_init(&self->complete);
 }
 

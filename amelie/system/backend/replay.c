@@ -98,6 +98,5 @@ replay(Dtr* dtr, Record* record)
 		error = error_create(&am_self()->error);
 		req_cache_push_list(&dtr->dispatch_mgr.req_cache, &req_list);
 	}
-
-	executor_commit(executor, dtr, error);
+	commit(share()->commit, dtr, error);
 }

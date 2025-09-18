@@ -112,7 +112,7 @@ bench_init(Bench* self, Remote* remote)
 		{ "time",      OPT_INT,    OPT_C|OPT_Z, &self->time,      NULL,  10    },
 		{ "scale",     OPT_INT,    OPT_C|OPT_Z, &self->scale,     NULL,  1     },
 		{ "batch",     OPT_INT,    OPT_C|OPT_Z, &self->batch,     NULL,  500   },
-		{ "init",      OPT_BOOL,   OPT_C,       &self->init,      NULL,  true  },
+		{ "init",      OPT_INT,    OPT_C,       &self->init,      NULL,  1     },
 		{ "unlogged",  OPT_BOOL,   OPT_C,       &self->unlogged,  NULL,  false },
 		{ "histogram", OPT_BOOL,   OPT_C,       &self->histogram, NULL,  false },
 		{ "api",       OPT_BOOL,   OPT_C,       &self->api,       NULL,  false },
@@ -258,7 +258,14 @@ bench_run(Bench* self)
 
 	// prepare tables
 	if (init)
+	{
 		bench_service(self, true);
+		if (init == 2)
+		{
+			info("init complete.");
+			return;
+		}
+	}
 
 	// begin
 	list_foreach_safe(&self->list)

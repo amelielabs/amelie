@@ -163,10 +163,9 @@ session_unlock(Session* self)
 hot static inline void
 session_execute_distributed(Session* self, Content* output)
 {
-	auto program  = self->program;
-	auto explain  = &self->explain;
-	auto dtr      = &self->dtr;
-	auto executor = share()->executor;
+	auto program = self->program;
+	auto explain = &self->explain;
+	auto dtr     = &self->dtr;
 
 	reg_prepare(&self->vm.r, program->code.regs);
 
@@ -202,8 +201,8 @@ session_execute_distributed(Session* self, Content* output)
 		explain_start(&explain->time_commit_us);
 	}
 
-	// coordinate wal write and group commit, handle abort
-	executor_commit(executor, dtr, error);
+	// coordinate wal write and group commit, handle group abort
+	commit(share()->commit, dtr, error);
 
 	// explain profile
 	if (program->profile)

@@ -167,6 +167,7 @@ system_create(void)
 	// prepare shared context
 	auto share = &self->share;
 	share->executor     = &self->executor;
+	share->commit       = &self->commit;
 	share->core_mgr     = &self->backend_mgr.core_mgr;
 	share->repl         = &self->repl;
 	share->function_mgr = &self->function_mgr;
@@ -183,7 +184,9 @@ system_create(void)
 	// frontend/backend mgr
 	frontend_mgr_init(&self->frontend_mgr);
 	backend_mgr_init(&self->backend_mgr);
-	executor_init(&self->executor, &self->db, &self->backend_mgr.core_mgr);
+	executor_init(&self->executor);
+	commit_init(&self->commit, &self->db, &self->backend_mgr.core_mgr,
+	            &self->executor);
 	rpc_queue_init(&self->lock_queue);
 
 	// vm
@@ -201,6 +204,7 @@ void
 system_free(System* self)
 {
 	repl_free(&self->repl);
+	commit_free(&self->commit);
 	executor_free(&self->executor);
 	db_free(&self->db);
 	function_mgr_free(&self->function_mgr);
@@ -288,6 +292,9 @@ system_start(System* self, bool bootstrap)
 	// open user manager
 	user_mgr_open(&self->user_mgr);
 
+	// start commit worker
+	commit_start(&self->commit);
+
 	// create system object and objects from last snapshot (including backends)
 	db_open(&self->db);
 
@@ -342,6 +349,9 @@ system_stop(System* self)
 
 	// stop frontends
 	frontend_mgr_stop(&self->frontend_mgr);
+
+	// stop commit worker
+	commit_stop(&self->commit);
 
 	// stop backends
 	backend_mgr_stop(&self->backend_mgr);
