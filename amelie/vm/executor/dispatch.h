@@ -217,7 +217,7 @@ dispatch_mgr_close(DispatchMgr* self)
 	}
 }
 
-hot static inline void
+hot static inline bool
 dispatch_mgr_shutdown(DispatchMgr* self)
 {
 	// not all steps were completed, force close active
@@ -226,6 +226,7 @@ dispatch_mgr_shutdown(DispatchMgr* self)
 		dispatch_mgr_close(self);
 
 	// make sure all transactions complete execution
+	bool is_write = false;
 	for (auto i = 0; i < self->ctrs_count; i++)
 	{
 		auto ctr = dispatch_mgr_ctr(self, i);
@@ -233,5 +234,8 @@ dispatch_mgr_shutdown(DispatchMgr* self)
 			continue;
 		event_wait(&ctr->complete, -1);
 		ctr->state = CTR_COMPLETE;
+		if (ctr->tr && !tr_read_only(ctr->tr))
+			is_write = true;
 	}
+	return is_write;
 }

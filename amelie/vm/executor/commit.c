@@ -67,47 +67,11 @@ commit_complete(Commit* self, bool abort)
 }
 
 static void
-commit_wal_write(Commit* self)
-{
-	// prepare a list of a prepared wal records
-	auto prepare = &self->prepare;
-	auto write_list = &prepare->write;
-
-	for (auto dtr = prepare->list; dtr; dtr = dtr->link_queue)
-	{
-		auto dispatch_mgr = &dtr->dispatch_mgr;
-		auto write        = &dtr->write;
-		write_reset(write);
-		write_begin(write);
-		for (int i = 0; i < dispatch_mgr->ctrs_count; i++)
-		{
-			auto ctr = dispatch_mgr_ctr(dispatch_mgr, i);
-			if (ctr->state == CTR_NONE)
-				continue;
-			if (ctr->tr == NULL || tr_read_only(ctr->tr))
-				continue;
-			write_add(write, &ctr->tr->log.write_log);
-		}
-		if (write->header.count > 0)
-		{
-			// unless transaction is used for replication writer, respect
-			// system read-only state
-			if (!dtr->program->repl && opt_int_of(&state()->read_only))
-				error("system is in read-only mode");
-
-			write_list_add(write_list, write);
-		}
-	}
-
-	// do atomical wal write
-	wal_mgr_write(&self->db->wal_mgr, write_list);
-}
-
-static void
 commit_process(Commit* self, DtrQueue* queue)
 {
 	// get a list of completed distributed transactions (one or more) and
 	// a list of last executed transactions per core
+	auto wal = &self->db->wal_mgr;
 	auto prepare = &self->prepare;
 	prepare_reset(prepare, self->core_mgr);
 	for (;;)
@@ -118,34 +82,40 @@ commit_process(Commit* self, DtrQueue* queue)
 			break;
 		prepare_add(prepare, dtr);
 
-		// GROUP ABORT
-		//
-		// transaction error or forced abort
-		//
-		// aborted transactions are always first in the queue
-		if (unlikely(dtr->abort))
+		bool abort;
+		if (likely(! dtr->abort))
 		{
+			// GROUP COMMIT
+			//
+			abort = false;
+			while ((dtr = dtr_queue_peek(queue)))
+			{
+				// transactions with error will remain in the queue
+				// for the next iteration
+				if (dtr->abort)
+					break;
+				dtr_queue_pop(queue);
+				prepare_add(prepare, dtr);
+			}
+
+			// wal write
+			if (prepare->write.list_count)
+				abort = error_catch( wal_mgr_write(wal, &prepare->write) );
+		} else
+		{
+			// GROUP ABORT
+			//
+			// transaction error or forced abort
+			//
+			// aborted transactions are always first in the queue
+			//
+			abort = true;
 			while ((dtr = dtr_queue_next(queue)))
 				prepare_add(prepare, dtr);
-			commit_complete(self, true);
-			continue;
 		}
 
-		// GROUP COMMIT
-		//
-		while ((dtr = dtr_queue_peek(queue)))
-		{
-			// transactions with error will remain in the queue
-			// for the next iteration
-			if (dtr->abort)
-				break;
-			dtr_queue_pop(queue);
-			prepare_add(prepare, dtr);
-		}
-
-		// wal write and commit/abort
-		auto on_error = error_catch( commit_wal_write(self) );
-		commit_complete(self, on_error);
+		// commit/abort
+		commit_complete(self, abort);
 	}
 }
 
@@ -184,7 +154,13 @@ commit(Commit* self, Dtr* dtr, Buf* error)
 	// finilize any core transactions that are still active,
 	// this can happen because of error or by premature
 	// return statement
-	dispatch_mgr_shutdown(&dtr->dispatch_mgr);
+	auto is_write = dispatch_mgr_shutdown(&dtr->dispatch_mgr);
+
+	// unless transaction is used for replication writer, respect
+	// system read-only state
+	if (unlikely(is_write && opt_int_of(&state()->read_only)))
+		if (!error && !dtr->program->repl)
+			error = error_create_cstr("system is in read-only mode");
 
 	if (unlikely(error))
 	{
@@ -192,7 +168,7 @@ commit(Commit* self, Dtr* dtr, Buf* error)
 		dtr_set_error(dtr, error);
 	}
 
-	// pprocess transaction commit/abort, only if the transaction
+	// process transaction commit/abort, only if the transaction
 	// was registered in executor
 	if (dtr_active(dtr))
 	{
@@ -205,7 +181,7 @@ commit(Commit* self, Dtr* dtr, Buf* error)
 	if (unlikely(dtr->abort))
 	{
 		if (dtr->error)
-			rethrow_buf(error);
+			rethrow_buf(dtr->error);
 
 		error("transaction aborted during commit");
 	}

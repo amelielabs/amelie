@@ -70,14 +70,23 @@ prepare_add(Prepare* self, Dtr* dtr)
 	if (dtr->id > self->id_max)
 		self->id_max = dtr->id;
 
-	// create a list of active cores
+	// create a list of active cores and wal write list
 	auto cores = (Core**)self->cores.start;
 	auto dispatch_mgr = &dtr->dispatch_mgr;
+	auto write        = &dtr->write;
+	write_reset(write);
+	write_begin(write);
 	for (auto order = 0; order < dispatch_mgr->ctrs_count; order++)
 	{
 		auto ctr = dispatch_mgr_ctr(dispatch_mgr, order);
 		if (ctr->state == CTR_NONE)
 			continue;
 		cores[order] = ctr->core;
+
+		if (ctr->tr == NULL || tr_read_only(ctr->tr))
+			continue;
+		write_add(write, &ctr->tr->log.write_log);
 	}
+	if (write->header.count > 0)
+		write_list_add(&self->write, write);
 }
