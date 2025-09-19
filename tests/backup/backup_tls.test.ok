@@ -36,7 +36,7 @@ show all
   "limit_write": 0,
   "frontends": 1,
   "backends": 3,
-  "cpu_affinity": false,
+  "cpu_affinity": true,
   "wal_worker": false,
   "wal_crc": true,
   "wal_sync_on_create": false,

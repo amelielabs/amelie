@@ -32,14 +32,6 @@ config_free(Config* self)
 void
 config_prepare(Config* self)
 {
-	auto cpus = get_nprocs();
-	auto default_fe = cpus / 2;
-	auto default_be = cpus - default_fe;
-	if (default_fe == 0)
-		default_fe = 1;
-	if (default_be == 0)
-		default_be = 1;
-
 	OptsDef defs[] =
 	{
 		{ "uuid",                    OPT_STRING, OPT_C,                   &self->uuid,                    NULL,          0                   },
@@ -62,9 +54,9 @@ config_prepare(Config* self)
 		{ "limit_recv",              OPT_INT,    OPT_C,                   &self->limit_recv,              NULL,          1 * 1024 * 1024     },
 		{ "limit_write",             OPT_INT,    OPT_C,                   &self->limit_write,             NULL,          0                   },
 		// io and compute
-		{ "frontends",               OPT_INT,    OPT_C|OPT_Z,             &self->frontends,               NULL,          default_fe          },
-		{ "backends",                OPT_INT,    OPT_C|OPT_Z,             &self->backends,                NULL,          default_be          },
-		{ "cpu_affinity",            OPT_BOOL,   OPT_C,                   &self->cpu_affinity,            NULL,          false               },
+		{ "frontends",               OPT_INT,    OPT_C|OPT_Z,             &self->frontends,               NULL,          7                   },
+		{ "backends",                OPT_INT,    OPT_C|OPT_Z,             &self->backends,                NULL,          3                   },
+		{ "cpu_affinity",            OPT_BOOL,   OPT_C,                   &self->cpu_affinity,            NULL,          true                },
 		// wal
 		{ "wal_worker",              OPT_BOOL,   OPT_C,                   &self->wal_worker,              NULL,          true                },
 		{ "wal_crc",                 OPT_BOOL,   OPT_C,                   &self->wal_crc,                 NULL,          true                },
