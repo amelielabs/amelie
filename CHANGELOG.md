@@ -1,5 +1,49 @@
 # Amelie Changelog.
 
+## 0.6.0 (19-09-2025)
+
+This release introduces a way to use embedded Amelie as a client driver for remote connections
+and some significant performance improvements.
+
+Amelie to Amelie connections.
+
+Embedded Amelie API has the `amelie_connect()` function, which is used to open a session for the local database.
+
+This release introduces the URI argument support. If supplied, it will open a remote HTTP
+connection instead of a local one, handle the IO/HTTP/TLS and Authentication transparently and in
+the most efficient way (using frontends - pool of workers with cooperative multitasking).
+Amelie API is asynchronous.
+
+In other words, one embeddable database can be used as a client driver for another remote server.
+This change also opens up a lot of useful and fun things to do in the future.
+
+Group Commit Redesigned.
+
+This release introduces redesigned executor/commit logic. The distributed commit + wal path has
+entirely moved to the dedicated commit worker. This change allowed for a significant improvement
+in group commit/write + fsync performance and a measurable reduction in CPU usage for frontends.
+The executor part now works as a transaction serializer only.
+
+Last benchmarks showed that Amelie can now handle 600-700K debit-credit transactions
+(TigerBeetle benchmark) with fsync on each write!
+
+Since those transactions are not prepared (SQL needs to be parsed/planned on each execution),
+there is still room for improvement.
+
+I've also seen 10M+ batch inserts with fsync on each write.
+
+Lockless IPC and Event Processing / Reduced Context Switches.
+
+Classical multi-threading sync primitives like mutexes/condition variables and even spinlocks can
+lead to increased context switches, poor CPU utilization, and increased latencies. Context Switching
+is one of the significant problems in low-latency high-performance systems.
+
+In this release, IPC and the event processing between workers were redesigned using lockless
+queues (similar to LMAX-Dispurtor), and most of the hot paths were optimized further.
+
+As a result of those changes, Amelie was able to do 20M+ upserts/second on in-memory workloads
+for the first time on a dev machine during testing.
+
 ## 0.5.0 (13-08-2025)
 
 This release introduces Embeddable Async API interface which allows to use Amelie as a shared
