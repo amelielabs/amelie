@@ -25,6 +25,7 @@ struct Io
 	struct io_uring ring;
 	bool            pending;
 	atomic_u32      pending_wakeup;
+	atomic_u32      sleep;
 	IoEvent         wakeup;
 };
 
@@ -40,6 +41,7 @@ io_init(Io* self)
 {
 	self->pending        = false;
 	self->pending_wakeup = 0;
+	self->sleep          = 0;
 	io_event_init(&self->wakeup);
 	memset(&self->ring, 0, sizeof(self->ring));
 }
@@ -64,11 +66,20 @@ io_set_pending(Io* self)
 	self->pending = true;
 }
 
+static inline void
+io_set_sleep(Io* self, int value)
+{
+	atomic_u32_set(&self->sleep, value);
+}
+
 hot static inline void
 io_wakeup(Io* self)
 {
+	if (! atomic_u32_of(&self->sleep))
+		return;
 	if (__sync_lock_test_and_set(&self->pending_wakeup, 1) == 1)
 		return;
+
 	auto sqe = io_uring_get_sqe(&self->ring);
 	assert(sqe);
 	// FIXME
@@ -113,6 +124,8 @@ io_step(Io* self, uint32_t time_ms)
 		return;
 	}
 
+	io_set_sleep(self, 1);
+
 	struct io_uring_cqe* cqe;
 	if (self->pending)
 	{
@@ -142,5 +155,7 @@ io_step(Io* self, uint32_t time_ms)
 			io_uring_wait_cqe_timeout(&self->ring, &cqe, &ts);
 		}
 	}
+	io_set_sleep(self, 0);
+
 	io_process(self);
 }

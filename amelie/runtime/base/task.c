@@ -120,11 +120,10 @@ mainloop(Task* self)
 			timer_mgr_update(timer_mgr);
 
 			// get minimal timer timeout
-			Timer* next;
-			next = timer_mgr_timer_min(timer_mgr);
+			auto next = timer_mgr_timer_min(timer_mgr);
 			if (next)
 			{
-				int diff = next->timeout - timer_mgr->time_ms;
+				auto diff = next->timeout - timer_mgr->time_ms;
 				if (diff <= 0)
 					timeout = 0;
 				else
@@ -136,14 +135,10 @@ mainloop(Task* self)
 		}
 
 		// retry the loop before blocking wait, if some events are ready
-		bus_set_sleep(bus, true);
 		if (bus_pending(bus) > 0)
-		{
-			bus_set_sleep(bus, false);
 			continue;
-		}
+
 		io_step(io, timeout);
-		bus_set_sleep(bus, false);
 	}
 }
 
