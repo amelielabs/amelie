@@ -220,11 +220,6 @@ dispatch_mgr_close(DispatchMgr* self)
 hot static inline bool
 dispatch_mgr_shutdown(DispatchMgr* self)
 {
-	// not all steps were completed, force close active
-	// transactions
-	if (self->list_count != self->list_processed)
-		dispatch_mgr_close(self);
-
 	// make sure all transactions complete execution
 	bool is_write = false;
 	for (auto i = 0; i < self->ctrs_count; i++)
@@ -232,6 +227,12 @@ dispatch_mgr_shutdown(DispatchMgr* self)
 		auto ctr = dispatch_mgr_ctr(self, i);
 		if (ctr->state == CTR_NONE)
 			continue;
+		// force close active transactions
+		if (! ctr->queue_close)
+		{
+			ring_write(&ctr->queue, &self->close);
+			ctr->queue_close = true;
+		}
 		event_wait(&ctr->complete, -1);
 		ctr->state = CTR_COMPLETE;
 		if (ctr->tr && !tr_read_only(ctr->tr))

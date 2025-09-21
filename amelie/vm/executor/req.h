@@ -37,7 +37,6 @@ struct Req
 	bool      close;
 	Event     complete;
 	Core*     core;
-	List      link_queue;
 	List      link;
 };
 
@@ -58,7 +57,6 @@ req_allocate(void)
 	event_init(&self->complete);
 	buf_init(&self->arg);
 	value_init(&self->result);
-	list_init(&self->link_queue);
 	list_init(&self->link);
 	return self;
 }
