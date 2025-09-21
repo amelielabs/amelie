@@ -59,13 +59,13 @@ restart:
 }
 
 hot static inline void
-executor_send(Executor* self, Dtr* dtr, ReqList* list)
+executor_send(Executor* self, Dtr* dtr, ReqList* list, bool last)
 {
 	auto dispatch_mgr = &dtr->dispatch_mgr;
 	auto first = dispatch_mgr_is_first(dispatch_mgr);
 
 	// start local transactions and queue requests for execution
-	dtr_send(dtr, list);
+	dtr_send(dtr, list, last);
 
 	// register transaction and begin execution
 	if (first)

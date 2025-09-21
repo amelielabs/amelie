@@ -397,8 +397,7 @@ session_execute_replay(Session* self, Primary* primary, Buf* data)
 	// while in read-only mode
 	auto dtr = &self->dtr;
 	auto program = self->program;
-	program->sends = 1;
-	program->repl  = true;
+	program->repl = true;
 
 	// replay writes
 	auto pos = data->start;

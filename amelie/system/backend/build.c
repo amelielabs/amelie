@@ -135,7 +135,6 @@ build_run(Build* self)
 	// process distributed transaction
 	auto program = program_allocate();
 	defer(program_free, program);
-	program->sends = 1;
 
 	dtr_reset(dtr);
 	dtr_create(dtr, program);
@@ -143,7 +142,7 @@ build_run(Build* self)
 	auto executor = share()->executor;
 	auto on_error = error_catch
 	(
-		executor_send(executor, dtr, &req_list);
+		executor_send(executor, dtr, &req_list, true);
 		executor_recv(executor, dtr);
 	);
 	Buf* error = NULL;

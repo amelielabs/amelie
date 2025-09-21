@@ -104,7 +104,7 @@ dtr_set_error(Dtr* self, Buf* buf)
 }
 
 hot static inline void
-dtr_send(Dtr* self, ReqList* list)
+dtr_send(Dtr* self, ReqList* list, bool last)
 {
 	// begin local transactions for each core to handle
 	auto sent = self->dispatch_mgr.list_count;
@@ -112,7 +112,6 @@ dtr_send(Dtr* self, ReqList* list)
 		dispatch_mgr_snapshot(&self->dispatch_mgr);
 
 	// start local transactions and queue requests for execution
-	auto last = self->program->sends == (sent + 1);
 	dispatch_mgr_send(&self->dispatch_mgr, list, last);
 
 	// finilize still active transactions on the last send

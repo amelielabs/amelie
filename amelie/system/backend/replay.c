@@ -89,7 +89,7 @@ replay(Dtr* dtr, Record* record)
 	(
 		replay_read(dtr, &req_list, record);
 
-		executor_send(executor, dtr, &req_list);
+		executor_send(executor, dtr, &req_list, true);
 		executor_recv(executor, dtr);
 	);
 	Buf* error = NULL;

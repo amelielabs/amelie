@@ -105,7 +105,8 @@ csend_shard(Vm* self, Op* op)
 		}
 	}
 
-	executor_send(share()->executor, dtr, &list);
+	auto is_last = self->program->send_last == code_posof(self->code, op);
+	executor_send(share()->executor, dtr, &list, is_last);
 	value_free(reg_at(&self->r, op->c));
 }
 
@@ -130,7 +131,8 @@ csend_lookup(Vm* self, Op* op)
 	req->core  = part->core;
 	req_list_add(&list, req);
 
-	executor_send(share()->executor, dtr, &list);
+	auto is_last = self->program->send_last == code_posof(self->code, op);
+	executor_send(share()->executor, dtr, &list, is_last);
 }
 
 hot void
@@ -164,7 +166,8 @@ csend_lookup_by(Vm* self, Op* op)
 	req->core  = part->core;
 	req_list_add(&list, req);
 
-	executor_send(share()->executor, dtr, &list);
+	auto is_last = self->program->send_last == code_posof(self->code, op);
+	executor_send(share()->executor, dtr, &list, is_last);
 }
 
 hot void
@@ -191,7 +194,8 @@ csend_all(Vm* self, Op* op)
 		req_list_add(&list, req);
 	}
 
-	executor_send(share()->executor, dtr, &list);
+	auto is_last = self->program->send_last == code_posof(self->code, op);
+	executor_send(share()->executor, dtr, &list, is_last);
 }
 
 hot void

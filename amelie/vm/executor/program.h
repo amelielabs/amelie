@@ -19,8 +19,8 @@ struct Program
 	Code     code_backend;
 	CodeData code_data;
 	Access   access;
-	int      sends;
 	int      lock;
+	int      send_last;
 	bool     snapshot;
 	bool     repl;
 	bool     utility;
@@ -32,8 +32,8 @@ static inline Program*
 program_allocate(void)
 {
 	auto self = (Program*)am_malloc(sizeof(Program));
-	self->sends     = 0;
 	self->lock      = LOCK_SHARED;
+	self->send_last = -1;
 	self->snapshot  = false;
 	self->repl      = false;
 	self->utility   = false;
@@ -59,8 +59,8 @@ program_free(Program* self)
 static inline void
 program_reset(Program* self)
 {
-	self->sends     = 0;
 	self->lock      = LOCK_SHARED;
+	self->send_last = -1;
 	self->snapshot  = false;
 	self->repl      = false;
 	self->utility   = false;

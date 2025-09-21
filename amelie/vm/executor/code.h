@@ -67,6 +67,13 @@ code_at(Code* self, int pos)
 	return &((Op*)self->code.start)[pos];
 }
 
+static inline int
+code_posof(Code* self, Op* op)
+{
+	assert(self->code.start != NULL);
+	return ((uintptr_t)op - (uintptr_t)self->code.start) / sizeof(Op);
+}
+
 hot static inline Op*
 code_add(Code*    self,
          uint8_t  id,

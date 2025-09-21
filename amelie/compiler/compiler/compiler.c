@@ -278,6 +278,7 @@ emit_send_insert(Compiler* self, int start)
 	}
 
 	// CSEND_SHARD
+	self->program->send_last = op_pos(self);
 	op3(self, CSEND_SHARD, start, (intptr_t)table, r);
 	runpin(self, r);
 }
@@ -292,7 +293,6 @@ emit_send(Compiler* self, int start)
 	case STMT_INSERT:
 	{
 		emit_send_insert(self, start);
-		self->program->sends++;
 		return;
 	}
 
@@ -348,6 +348,7 @@ emit_send(Compiler* self, int start)
 			uint32_t hash = path_create_hash(path);
 
 			// CSEND_LOOKUP
+			self->program->send_last = op_pos(self);
 			op3(self, CSEND_LOOKUP, start, (intptr_t)table, hash);
 		} else
 		{
@@ -361,6 +362,7 @@ emit_send(Compiler* self, int start)
 			}
 
 			// CSEND_LOOKUP_BY
+			self->program->send_last = op_pos(self);
 			op2(self, CSEND_LOOKUP_BY, start, (intptr_t)table);
 		}
 	} else
@@ -368,9 +370,9 @@ emit_send(Compiler* self, int start)
 		// send to all table partitions (one or more)
 
 		// CSEND_ALL
+		self->program->send_last = op_pos(self);
 		op2(self, CSEND_ALL, start, (intptr_t)table);
 	}
-	self->program->sends++;
 }
 
 static inline void
