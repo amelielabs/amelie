@@ -201,6 +201,7 @@ enum
 
 	// union
 	CUNION,
+	CUNION_ADD,
 	CUNION_SET_AGGS,
 	CUNION_RECV,
 

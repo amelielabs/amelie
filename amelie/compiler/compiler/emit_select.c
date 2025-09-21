@@ -280,8 +280,11 @@ emit_select_union(Compiler* self, AstSelect* select)
 		roffset = emit_expr(self, &select->targets, select->expr_offset);
 
 	// CUNION
-	int runion = op4(self, CUNION, rpin(self, TYPE_STORE), select->rset,
+	int runion = op3(self, CUNION, rpin(self, TYPE_STORE),
 	                 rlimit, roffset);
+
+	// CUNION_ADD
+	op2(self, CUNION_ADD, runion, select->rset);
 
 	runpin(self, select->rset);
 	select->rset = -1;

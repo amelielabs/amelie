@@ -342,9 +342,10 @@ explain insert into test values(1, 0) on conflict do update set data = data + 1 
       "02": "recv                0      0      0     ",
       "03": "bool                0      0      0     ",
       "04": "push                0      0      0     ",
-      "05": "union_recv          0      -1     -1    ",
-      "06": "content             0      -      -     ",
-      "07": "ret                 0      0      0     "
+      "05": "union               0      -1     -1    ",
+      "06": "union_recv          0      0      0     ",
+      "07": "content             0      -      -     ",
+      "08": "ret                 0      0      0     "
     },
     "backend": {
       "00": "set                 0      2      0     ",
@@ -391,9 +392,10 @@ explain insert into test values(1, 0) on conflict do nothing returning *
       "02": "recv                0      0      0     ",
       "03": "bool                0      0      0     ",
       "04": "push                0      0      0     ",
-      "05": "union_recv          0      -1     -1    ",
-      "06": "content             0      -      -     ",
-      "07": "ret                 0      0      0     "
+      "05": "union               0      -1     -1    ",
+      "06": "union_recv          0      0      0     ",
+      "07": "content             0      -      -     ",
+      "08": "ret                 0      0      0     "
     },
     "backend": {
       "00": "set                 0      2      0     ",
@@ -432,9 +434,10 @@ explain insert into test values(1, 0) on conflict do update set data = data + 1 
       "02": "recv                0      0      0     ",
       "03": "bool                0      0      0     ",
       "04": "push                0      0      0     ",
-      "05": "union_recv          0      -1     -1    ",
-      "06": "content             0      -      -     ",
-      "07": "ret                 0      0      0     "
+      "05": "union               0      -1     -1    ",
+      "06": "union_recv          0      0      0     ",
+      "07": "content             0      -      -     ",
+      "08": "ret                 0      0      0     "
     },
     "backend": {
       "00": "set                 0      2      0     ",
@@ -480,9 +483,10 @@ explain insert into test values(1, 0) on conflict do nothing returning *
       "02": "recv                0      0      0     ",
       "03": "bool                0      0      0     ",
       "04": "push                0      0      0     ",
-      "05": "union_recv          0      -1     -1    ",
-      "06": "content             0      -      -     ",
-      "07": "ret                 0      0      0     "
+      "05": "union               0      -1     -1    ",
+      "06": "union_recv          0      0      0     ",
+      "07": "content             0      -      -     ",
+      "08": "ret                 0      0      0     "
     },
     "backend": {
       "00": "set                 0      2      0     ",
@@ -554,15 +558,17 @@ explain insert into test select * from src on conflict do update set data = data
       "01": "recv                0      0      0     ",
       "02": "bool                0      0      0     ",
       "03": "push                0      0      0     ",
-      "04": "union_recv          0      -1     -1    ",
-      "05": "dup                 1      0      0     ",
-      "06": "send_shard          11     -      1     # public.test",
-      "07": "recv                0      0      0     ",
-      "08": "bool                1      0      0     ",
-      "09": "push                1      0      0     ",
-      "10": "union_recv          1      -1     -1    ",
-      "11": "content             1      -      -     ",
-      "12": "ret                 0      0      0     "
+      "04": "union               0      -1     -1    ",
+      "05": "union_recv          0      0      0     ",
+      "06": "dup                 1      0      0     ",
+      "07": "send_shard          11     -      1     # public.test",
+      "08": "recv                0      0      0     ",
+      "09": "bool                1      0      0     ",
+      "10": "push                1      0      0     ",
+      "11": "union               1      -1     -1    ",
+      "12": "union_recv          1      0      0     ",
+      "13": "content             1      -      -     ",
+      "14": "ret                 0      0      0     "
     },
     "backend": {
       "00": "set                 0      2      0     ",

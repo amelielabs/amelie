@@ -161,9 +161,10 @@ explain x := 1; select * from test where id = x
       "08": "recv                0      0      0     ",
       "09": "bool                2      0      0     ",
       "10": "push                2      0      0     ",
-      "11": "union_recv          2      -1     -1    ",
-      "12": "content             2      -      -     ",
-      "13": "ret                 0      0      0     "
+      "11": "union               2      -1     -1    ",
+      "12": "union_recv          2      0      0     ",
+      "13": "content             2      -      -     ",
+      "14": "ret                 0      0      0     "
     },
     "backend": {
       "00": "set                 2      1      0     ",

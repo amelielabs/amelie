@@ -297,9 +297,12 @@ pushdown_group_by_recv(Compiler* self, AstSelect* select)
 	op1(self, CPUSH, rdistinct);
 	runpin(self, rdistinct);
 
-	// CUNION_RECV
-	int runion = op3(self, CUNION_RECV, rpin(self, TYPE_STORE), -1, -1);
+	// CUNION
+	int runion = op3(self, CUNION, rpin(self, TYPE_STORE), -1, -1);
 	select->rset_agg = runion;
+
+	// CUNION_RECV
+	op1(self, CUNION_RECV, runion);
 
 	// CUNION_SET_AGGS (enable aggregate merge)
 	op2(self, CUNION_SET_AGGS, runion, select->aggs);
@@ -371,8 +374,11 @@ pushdown_recv(Compiler* self, Ast* ast)
 	if (select->expr_offset)
 		roffset = emit_expr(self, &select->targets, select->expr_offset);
 
+	// CUNION
+	int runion = op3(self, CUNION, rpin(self, TYPE_STORE), rlimit, roffset);
+
 	// CUNION_RECV
-	int runion = op3(self, CUNION_RECV, rpin(self, TYPE_STORE), rlimit, roffset);
+	op1(self, CUNION_RECV, runion);
 
 	if (rlimit != -1)
 		runpin(self, rlimit);
@@ -397,7 +403,10 @@ pushdown_recv_returning(Compiler* self, bool returning)
 	op1(self, CPUSH, rdistinct);
 	runpin(self, rdistinct);
 
+	// CUNION
+	int runion = op3(self, CUNION, rpin(self, TYPE_STORE), -1, -1);
+
 	// CUNION_RECV
-	int runion = op3(self, CUNION_RECV, rpin(self, TYPE_STORE), -1, -1);
+	op1(self, CUNION_RECV, runion);
 	return runion;
 }

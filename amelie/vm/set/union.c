@@ -74,11 +74,3 @@ union_create(bool distinct, int64_t limit, int64_t offset)
 	list_init(&self->list);
 	return self;
 }
-
-void
-union_add(Union* self, Set* set)
-{
-	// all set properties must match (keys, columns and order)
-	list_append(&self->list, &set->link);
-	self->list_count++;
-}

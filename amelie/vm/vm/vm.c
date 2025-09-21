@@ -301,6 +301,7 @@ vm_run(Vm*       self,
 
 		// union
 		&&cunion,
+		&&cunion_add,
 		&&cunion_set_aggs,
 		&&cunion_recv,
 
@@ -1452,8 +1453,14 @@ cself:
 	op_next;
 
 cunion:
-	// [union, set, limit, offset]
+	// [union, limit, offset]
 	cunion(self, op);
+	op_next;
+
+cunion_add:
+	// [union, set]
+	union_add((Union*)r[op->a].store, (Set*)r[op->b].store);
+	value_reset(&r[op->b]);
 	op_next;
 
 cunion_set_aggs:
@@ -1462,7 +1469,7 @@ cunion_set_aggs:
 	op_next;
 
 cunion_recv:
-	// [union, stmt, limit, offset]
+	// [union]
 	cunion_recv(self, op);
 	op_next;
 

@@ -11,9 +11,10 @@ explain select * from test
       "01": "recv                0      0      0     ",
       "02": "bool                0      0      0     ",
       "03": "push                0      0      0     ",
-      "04": "union_recv          0      -1     -1    ",
-      "05": "content             0      -      -     ",
-      "06": "ret                 0      0      0     "
+      "04": "union               0      -1     -1    ",
+      "05": "union_recv          0      0      0     ",
+      "06": "content             0      -      -     ",
+      "07": "ret                 0      0      0     "
     },
     "backend": {
       "00": "set                 0      2      0     ",
@@ -42,9 +43,10 @@ explain select * from test where id > 1
       "01": "recv                0      0      0     ",
       "02": "bool                0      0      0     ",
       "03": "push                0      0      0     ",
-      "04": "union_recv          0      -1     -1    ",
-      "05": "content             0      -      -     ",
-      "06": "ret                 0      0      0     "
+      "04": "union               0      -1     -1    ",
+      "05": "union_recv          0      0      0     ",
+      "06": "content             0      -      -     ",
+      "07": "ret                 0      0      0     "
     },
     "backend": {
       "00": "set                 0      2      0     ",
@@ -83,9 +85,10 @@ explain select * from test where id = 1
       "01": "recv                0      0      0     ",
       "02": "bool                0      0      0     ",
       "03": "push                0      0      0     ",
-      "04": "union_recv          0      -1     -1    ",
-      "05": "content             0      -      -     ",
-      "06": "ret                 0      0      0     "
+      "04": "union               0      -1     -1    ",
+      "05": "union_recv          0      0      0     ",
+      "06": "content             0      -      -     ",
+      "07": "ret                 0      0      0     "
     },
     "backend": {
       "00": "set                 0      2      0     ",
@@ -130,9 +133,10 @@ explain select (select (select (test.id))) from test
       "01": "recv                0      0      0     ",
       "02": "bool                0      0      0     ",
       "03": "push                0      0      0     ",
-      "04": "union_recv          0      -1     -1    ",
-      "05": "content             0      -      -     ",
-      "06": "ret                 0      0      0     "
+      "04": "union               0      -1     -1    ",
+      "05": "union_recv          0      0      0     ",
+      "06": "content             0      -      -     ",
+      "07": "ret                 0      0      0     "
     },
     "backend": {
       "00": "set                 0      1      0     ",
@@ -166,9 +170,10 @@ explain select (select (select test.id)) from test
       "01": "recv                0      0      0     ",
       "02": "bool                0      0      0     ",
       "03": "push                0      0      0     ",
-      "04": "union_recv          0      -1     -1    ",
-      "05": "content             0      -      -     ",
-      "06": "ret                 0      0      0     "
+      "04": "union               0      -1     -1    ",
+      "05": "union_recv          0      0      0     ",
+      "06": "content             0      -      -     ",
+      "07": "ret                 0      0      0     "
     },
     "backend": {
       "00": "set                 0      1      0     ",
@@ -203,9 +208,10 @@ explain select (select (select id from test t)) from test
       "01": "recv                0      0      0     ",
       "02": "bool                0      0      0     ",
       "03": "push                0      0      0     ",
-      "04": "union_recv          0      -1     -1    ",
-      "05": "content             0      -      -     ",
-      "06": "ret                 0      0      0     "
+      "04": "union               0      -1     -1    ",
+      "05": "union_recv          0      0      0     ",
+      "06": "content             0      -      -     ",
+      "07": "ret                 0      0      0     "
     },
     "backend": {
       "00": "set                 0      1      0     ",
@@ -243,9 +249,10 @@ explain select (select (select id from ref)) from test
       "01": "recv                0      0      0     ",
       "02": "bool                0      0      0     ",
       "03": "push                0      0      0     ",
-      "04": "union_recv          0      -1     -1    ",
-      "05": "content             0      -      -     ",
-      "06": "ret                 0      0      0     "
+      "04": "union               0      -1     -1    ",
+      "05": "union_recv          0      0      0     ",
+      "06": "content             0      -      -     ",
+      "07": "ret                 0      0      0     "
     },
     "backend": {
       "00": "set                 0      1      0     ",
@@ -285,9 +292,10 @@ explain select * from test where (select id from test t)
       "01": "recv                0      0      0     ",
       "02": "bool                0      0      0     ",
       "03": "push                0      0      0     ",
-      "04": "union_recv          0      -1     -1    ",
-      "05": "content             0      -      -     ",
-      "06": "ret                 0      0      0     "
+      "04": "union               0      -1     -1    ",
+      "05": "union_recv          0      0      0     ",
+      "06": "content             0      -      -     ",
+      "07": "ret                 0      0      0     "
     },
     "backend": {
       "00": "set                 0      2      0     ",
@@ -323,9 +331,10 @@ explain select * from test where (select id from ref)
       "01": "recv                0      0      0     ",
       "02": "bool                0      0      0     ",
       "03": "push                0      0      0     ",
-      "04": "union_recv          0      -1     -1    ",
-      "05": "content             0      -      -     ",
-      "06": "ret                 0      0      0     "
+      "04": "union               0      -1     -1    ",
+      "05": "union_recv          0      0      0     ",
+      "06": "content             0      -      -     ",
+      "07": "ret                 0      0      0     "
     },
     "backend": {
       "00": "set                 0      2      0     ",
@@ -363,9 +372,10 @@ explain select * from test where exists (select 1 from ref where test.id = ref.i
       "01": "recv                0      0      0     ",
       "02": "bool                0      0      0     ",
       "03": "push                0      0      0     ",
-      "04": "union_recv          0      -1     -1    ",
-      "05": "content             0      -      -     ",
-      "06": "ret                 0      0      0     "
+      "04": "union               0      -1     -1    ",
+      "05": "union_recv          0      0      0     ",
+      "06": "content             0      -      -     ",
+      "07": "ret                 0      0      0     "
     },
     "backend": {
       "00": "set                 0      2      0     ",

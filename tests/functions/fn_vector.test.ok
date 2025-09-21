@@ -62,9 +62,10 @@ explain select id, embedding::cos_distance(vector [1,3,1,2,0]) from test order b
       "01": "recv                0      0      0     ",
       "02": "bool                0      0      0     ",
       "03": "push                0      0      0     ",
-      "04": "union_recv          0      -1     -1    ",
-      "05": "content             0      -      -     ",
-      "06": "ret                 0      0      0     "
+      "04": "union               0      -1     -1    ",
+      "05": "union_recv          0      0      0     ",
+      "06": "content             0      -      -     ",
+      "07": "ret                 0      0      0     "
     },
     "backend": {
       "00": "set_ordered         0      2      1     ",
@@ -104,9 +105,10 @@ explain select id from test order by embedding::cos_distance(vector [1,3,1,2,0])
       "02": "bool                0      0      0     ",
       "03": "push                0      0      0     ",
       "04": "int                 0      -      0     # 1",
-      "05": "union_recv          1      0      -1    ",
-      "06": "content             1      -      -     ",
-      "07": "ret                 0      0      0     "
+      "05": "union               1      0      -1    ",
+      "06": "union_recv          1      0      0     ",
+      "07": "content             1      -      -     ",
+      "08": "ret                 0      0      0     "
     },
     "backend": {
       "00": "set_ordered         0      1      1     ",

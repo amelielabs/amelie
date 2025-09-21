@@ -204,47 +204,6 @@ crecv(Vm* self, Op* op)
 hot void
 cunion(Vm* self, Op* op)
 {
-	// [union, set, limit, offset]
-
-	// distinct
-	bool distinct = stack_at(&self->stack, 1)->integer;
-	stack_popn(&self->stack, 1);
-
-	// limit
-	int64_t limit = INT64_MAX;
-	if (op->c != -1)
-	{
-		if (unlikely(reg_at(&self->r, op->c)->type != TYPE_INT))
-			error("LIMIT: integer type expected");
-		limit = reg_at(&self->r, op->c)->integer;
-		if (unlikely(limit < 0))
-			error("LIMIT: positive integer value expected");
-	}
-
-	// offset
-	int64_t offset = 0;
-	if (op->d != -1)
-	{
-		if (unlikely(reg_at(&self->r, op->d)->type != TYPE_INT))
-			error("OFFSET: integer type expected");
-		offset = reg_at(&self->r, op->d)->integer;
-		if (unlikely(offset < 0))
-			error("OFFSET: positive integer value expected");
-	}
-
-	// create union object
-	auto ref = union_create(distinct, limit, offset);
-	value_set_store(reg_at(&self->r, op->a), &ref->store);
-
-	// add set
-	auto value = reg_at(&self->r, op->b);
-	union_add(ref, (Set*)value->store);
-	value_reset(value);
-}
-
-hot void
-cunion_recv(Vm* self, Op* op)
-{
 	// [union, limit, offset]
 
 	// distinct
@@ -276,6 +235,13 @@ cunion_recv(Vm* self, Op* op)
 	// create union object
 	auto ref = union_create(distinct, limit, offset);
 	value_set_store(reg_at(&self->r, op->a), &ref->store);
+}
+
+hot void
+cunion_recv(Vm* self, Op* op)
+{
+	// [union]
+	auto ref = (Union*)reg_at(&self->r, op->a)->store;
 
 	// add result sets from the last recv to the union
 	auto dispatch_mgr = &self->dtr->dispatch_mgr;
