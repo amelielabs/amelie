@@ -11,4 +11,4 @@
 // AGPL-3.0 Licensed.
 //
 
-int emit_watch(Compiler*, Ast*);
+void emit_watch(Compiler*, Ast*);

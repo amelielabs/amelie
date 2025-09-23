@@ -13,4 +13,3 @@
 
 void pushdown(Compiler*, Ast*);
 int  pushdown_recv(Compiler*, Ast*);
-int  pushdown_recv_returning(Compiler*, bool);

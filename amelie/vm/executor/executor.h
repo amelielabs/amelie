@@ -37,7 +37,7 @@ executor_free(Executor* self)
 }
 
 hot static inline void
-executor_lock(Executor* self, Dtr* dtr)
+executor_attach_lock(Executor* self, Dtr* dtr)
 {
 restart:
 	list_foreach(&self->list)
@@ -59,48 +59,33 @@ restart:
 }
 
 hot static inline void
-executor_send(Executor* self, Dtr* dtr, ReqList* list, bool last)
+executor_attach(Executor* self, Dtr* dtr)
 {
-	auto dispatch_mgr = &dtr->dispatch_mgr;
-	auto first = dispatch_mgr_is_first(dispatch_mgr);
+	spinlock_lock(&self->lock);
 
-	// start local transactions and queue requests for execution
-	dtr_send(dtr, list, last);
+	// process exclusive transaction locking
+	executor_attach_lock(self, dtr);
 
-	// register transaction and begin execution
-	if (first)
+	// register transaction
+	dtr->id = self->id++;
+	list_append(&self->list, &dtr->link);
+
+	// begin execution
+	auto dispatch = &dtr->dispatch;
+	for (auto order = 0; order < dispatch->ctrs_count; order++)
 	{
-		spinlock_lock(&self->lock);
-
-		// process exclusive transaction locking
-		executor_lock(self, dtr);
-
-		// register transaction
-		dtr->id = self->id++;
-		list_append(&self->list, &dtr->link);
-
-		// begin execution
-		for (auto order = 0; order < dispatch_mgr->ctrs_count; order++)
-		{
-			auto ctr = dispatch_mgr_ctr(dispatch_mgr, order);
-			if (ctr->state == CTR_ACTIVE)
-				core_add(ctr->core, ctr);
-		}
-
-		spinlock_unlock(&self->lock);
+		auto ctr = dispatch_ctr(dispatch, order);
+		if (ctr->state == CTR_ACTIVE)
+			core_add(ctr->core, ctr);
 	}
+
+	spinlock_unlock(&self->lock);
 }
 
 hot static inline void
-executor_recv(Executor* self, Dtr* dtr)
+executor_detach(Executor* self, Dtr* list, bool abort)
 {
-	unused(self);
-	dtr_recv(dtr);
-}
-
-hot static inline void
-executor_complete(Executor* self, Dtr* list, bool abort)
-{
+	// called by Commit
 	spinlock_lock(&self->lock);
 
 	// remove transactions from the list
@@ -128,4 +113,18 @@ executor_complete(Executor* self, Dtr* list, bool abort)
 	}
 
 	spinlock_unlock(&self->lock);
+}
+
+hot static inline void
+executor_send(Executor* self, Dtr* dtr, ReqList* list, bool last)
+{
+	auto dispatch = &dtr->dispatch;
+	auto first = dispatch_is_first(dispatch);
+
+	// start local transactions and queue requests for execution
+	dtr_send(dtr, list, last);
+
+	// register transaction and begin execution
+	if (first)
+		executor_attach(self, dtr);
 }

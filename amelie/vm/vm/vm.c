@@ -301,6 +301,7 @@ vm_run(Vm*       self,
 
 		// union
 		&&cunion,
+		&&cunion_set,
 		&&cunion_add,
 		&&cunion_set_aggs,
 		&&cunion_recv,
@@ -384,7 +385,6 @@ vm_run(Vm*       self,
 		&&csend_lookup,
 		&&csend_lookup_by,
 		&&csend_all,
-		&&crecv,
 
 		// result
 		&&cassign,
@@ -1453,8 +1453,13 @@ cself:
 	op_next;
 
 cunion:
-	// [union, limit, offset]
-	cunion(self, op);
+	// [union]
+	value_set_store(&r[op->a], &union_create()->store);
+	op_next;
+
+cunion_set:
+	// [union, distinct, limit, offset]
+	cunion_set(self, op);
 	op_next;
 
 cunion_add:
@@ -1851,10 +1856,6 @@ csend_lookup_by:
 
 csend_all:
 	csend_all(self, op);
-	op_next;
-
-crecv:
-	crecv(self, op);
 	op_next;
 
 cassign:

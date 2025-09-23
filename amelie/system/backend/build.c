@@ -125,7 +125,7 @@ build_run(Build* self)
 	for (auto i = 0; i < backend_mgr->workers_count; i++)
 	{
 		auto backend = backend_mgr->workers[i];
-		auto req = req_create(&dtr->dispatch_mgr.req_cache);
+		auto req = req_create(&dtr->dispatch.req_cache);
 		req->type = REQ_BUILD;
 		req->core = &backend->core;
 		buf_write(&req->arg, &self, sizeof(Build*));
@@ -138,12 +138,8 @@ build_run(Build* self)
 
 	dtr_reset(dtr);
 	dtr_create(dtr, program);
-
-	auto executor = share()->executor;
-	auto on_error = error_catch
-	(
-		executor_send(executor, dtr, &req_list, true);
-		executor_recv(executor, dtr);
+	auto on_error = error_catch(
+		executor_send(share()->executor, dtr, &req_list, true);
 	);
 	Buf* error = NULL;
 	if (on_error)

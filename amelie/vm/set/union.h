@@ -18,6 +18,8 @@ struct Union
 	Store   store;
 	List    list;
 	int     list_count;
+	List    list_reqs;
+	int     list_reqs_count;
 	bool    distinct;
 	int*    aggs;
 	int64_t limit;
@@ -25,7 +27,7 @@ struct Union
 	Union*  child;
 };
 
-Union* union_create(bool, int64_t, int64_t);
+Union* union_create(void);
 
 static inline void
 union_assign(Union* self, Union* child)
@@ -46,4 +48,12 @@ union_add(Union* self, Set* set)
 	// all set properties must match (keys, columns and order)
 	list_append(&self->list, &set->link);
 	self->list_count++;
+}
+
+static inline void
+union_set(Union* self, bool distinct, int64_t limit, int64_t offset)
+{
+	self->limit    = limit;
+	self->offset   = offset;
+	self->distinct = distinct;
 }

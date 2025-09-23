@@ -9,14 +9,12 @@ explain select test.*, ref.* from test, ref
 [{
   "bytecode": {
     "frontend": {
-      "00": "send_all            0      -      0     # public.test",
-      "01": "recv                0      0      0     ",
-      "02": "bool                0      0      0     ",
-      "03": "push                0      0      0     ",
-      "04": "union               0      -1     -1    ",
-      "05": "union_recv          0      0      0     ",
-      "06": "content             0      -      -     ",
-      "07": "ret                 0      0      0     "
+      "00": "union               0      0      0     ",
+      "01": "send_all            0      -      0     # public.test",
+      "02": "union_recv          0      0      0     ",
+      "03": "union_set           0      0      -1    ",
+      "04": "content             0      -      -     ",
+      "05": "ret                 0      0      0     "
     },
     "backend": {
       "00": "set                 0      4      0     ",
@@ -48,14 +46,12 @@ explain select test.*, ref.* from ref, test
 [{
   "bytecode": {
     "frontend": {
-      "00": "send_all            0      -      0     # public.ref",
-      "01": "recv                0      0      0     ",
-      "02": "bool                0      0      0     ",
-      "03": "push                0      0      0     ",
-      "04": "union               0      -1     -1    ",
-      "05": "union_recv          0      0      0     ",
-      "06": "content             0      -      -     ",
-      "07": "ret                 0      0      0     "
+      "00": "union               0      0      0     ",
+      "01": "send_all            0      -      0     # public.ref",
+      "02": "union_recv          0      0      0     ",
+      "03": "union_set           0      0      -1    ",
+      "04": "content             0      -      -     ",
+      "05": "ret                 0      0      0     "
     },
     "backend": {
       "00": "set                 0      4      0     ",
@@ -87,14 +83,12 @@ explain select t.* from test, test t
 [{
   "bytecode": {
     "frontend": {
-      "00": "send_all            0      -      0     # public.test",
-      "01": "recv                0      0      0     ",
-      "02": "bool                0      0      0     ",
-      "03": "push                0      0      0     ",
-      "04": "union               0      -1     -1    ",
-      "05": "union_recv          0      0      0     ",
-      "06": "content             0      -      -     ",
-      "07": "ret                 0      0      0     "
+      "00": "union               0      0      0     ",
+      "01": "send_all            0      -      0     # public.test",
+      "02": "union_recv          0      0      0     ",
+      "03": "union_set           0      0      -1    ",
+      "04": "content             0      -      -     ",
+      "05": "ret                 0      0      0     "
     },
     "backend": {
       "00": "set                 0      2      0     ",
@@ -122,14 +116,12 @@ explain select test.id, ref.id from test join ref on true
 [{
   "bytecode": {
     "frontend": {
-      "00": "send_all            0      -      0     # public.test",
-      "01": "recv                0      0      0     ",
-      "02": "bool                0      0      0     ",
-      "03": "push                0      0      0     ",
-      "04": "union               0      -1     -1    ",
-      "05": "union_recv          0      0      0     ",
-      "06": "content             0      -      -     ",
-      "07": "ret                 0      0      0     "
+      "00": "union               0      0      0     ",
+      "01": "send_all            0      -      0     # public.test",
+      "02": "union_recv          0      0      0     ",
+      "03": "union_set           0      0      -1    ",
+      "04": "content             0      -      -     ",
+      "05": "ret                 0      0      0     "
     },
     "backend": {
       "00": "set                 0      2      0     ",
@@ -159,14 +151,12 @@ explain select test.id, ref.id from test join ref on test.id = ref.id
 [{
   "bytecode": {
     "frontend": {
-      "00": "send_all            0      -      0     # public.test",
-      "01": "recv                0      0      0     ",
-      "02": "bool                0      0      0     ",
-      "03": "push                0      0      0     ",
-      "04": "union               0      -1     -1    ",
-      "05": "union_recv          0      0      0     ",
-      "06": "content             0      -      -     ",
-      "07": "ret                 0      0      0     "
+      "00": "union               0      0      0     ",
+      "01": "send_all            0      -      0     # public.test",
+      "02": "union_recv          0      0      0     ",
+      "03": "union_set           0      0      -1    ",
+      "04": "content             0      -      -     ",
+      "05": "ret                 0      0      0     "
     },
     "backend": {
       "00": "set                 0      2      0     ",
@@ -199,14 +189,12 @@ explain select test.id, ref.id from test join ref on test.id = ref.id join ref r
 [{
   "bytecode": {
     "frontend": {
-      "00": "send_all            0      -      0     # public.test",
-      "01": "recv                0      0      0     ",
-      "02": "bool                0      0      0     ",
-      "03": "push                0      0      0     ",
-      "04": "union               0      -1     -1    ",
-      "05": "union_recv          0      0      0     ",
-      "06": "content             0      -      -     ",
-      "07": "ret                 0      0      0     "
+      "00": "union               0      0      0     ",
+      "01": "send_all            0      -      0     # public.test",
+      "02": "union_recv          0      0      0     ",
+      "03": "union_set           0      0      -1    ",
+      "04": "content             0      -      -     ",
+      "05": "ret                 0      0      0     "
     },
     "backend": {
       "00": "set                 0      2      0     ",
@@ -247,14 +235,12 @@ explain select test.id, ref.id from test join ref on test.id = ref.id join ref r
 [{
   "bytecode": {
     "frontend": {
-      "00": "send_all            0      -      0     # public.test",
-      "01": "recv                0      0      0     ",
-      "02": "bool                0      0      0     ",
-      "03": "push                0      0      0     ",
-      "04": "union               0      -1     -1    ",
-      "05": "union_recv          0      0      0     ",
-      "06": "content             0      -      -     ",
-      "07": "ret                 0      0      0     "
+      "00": "union               0      0      0     ",
+      "01": "send_all            0      -      0     # public.test",
+      "02": "union_recv          0      0      0     ",
+      "03": "union_set           0      0      -1    ",
+      "04": "content             0      -      -     ",
+      "05": "ret                 0      0      0     "
     },
     "backend": {
       "00": "set                 0      2      0     ",
@@ -301,14 +287,12 @@ explain select test.id, ref.id from test, ref where test.id = ref.id
 [{
   "bytecode": {
     "frontend": {
-      "00": "send_all            0      -      0     # public.test",
-      "01": "recv                0      0      0     ",
-      "02": "bool                0      0      0     ",
-      "03": "push                0      0      0     ",
-      "04": "union               0      -1     -1    ",
-      "05": "union_recv          0      0      0     ",
-      "06": "content             0      -      -     ",
-      "07": "ret                 0      0      0     "
+      "00": "union               0      0      0     ",
+      "01": "send_all            0      -      0     # public.test",
+      "02": "union_recv          0      0      0     ",
+      "03": "union_set           0      0      -1    ",
+      "04": "content             0      -      -     ",
+      "05": "ret                 0      0      0     "
     },
     "backend": {
       "00": "set                 0      2      0     ",
@@ -340,14 +324,12 @@ explain select test.id, ref.id from test, ref where ref.id = test.id
 [{
   "bytecode": {
     "frontend": {
-      "00": "send_all            0      -      0     # public.test",
-      "01": "recv                0      0      0     ",
-      "02": "bool                0      0      0     ",
-      "03": "push                0      0      0     ",
-      "04": "union               0      -1     -1    ",
-      "05": "union_recv          0      0      0     ",
-      "06": "content             0      -      -     ",
-      "07": "ret                 0      0      0     "
+      "00": "union               0      0      0     ",
+      "01": "send_all            0      -      0     # public.test",
+      "02": "union_recv          0      0      0     ",
+      "03": "union_set           0      0      -1    ",
+      "04": "content             0      -      -     ",
+      "05": "ret                 0      0      0     "
     },
     "backend": {
       "00": "set                 0      2      0     ",
@@ -379,14 +361,12 @@ explain select test.id, ref.id from test, ref where ref.id = 1
 [{
   "bytecode": {
     "frontend": {
-      "00": "send_all            0      -      0     # public.test",
-      "01": "recv                0      0      0     ",
-      "02": "bool                0      0      0     ",
-      "03": "push                0      0      0     ",
-      "04": "union               0      -1     -1    ",
-      "05": "union_recv          0      0      0     ",
-      "06": "content             0      -      -     ",
-      "07": "ret                 0      0      0     "
+      "00": "union               0      0      0     ",
+      "01": "send_all            0      -      0     # public.test",
+      "02": "union_recv          0      0      0     ",
+      "03": "union_set           0      0      -1    ",
+      "04": "content             0      -      -     ",
+      "05": "ret                 0      0      0     "
     },
     "backend": {
       "00": "set                 0      2      0     ",
@@ -418,14 +398,12 @@ explain select test.id, ref.id from test, ref where ref.id = 1 and test.id = 1
 [{
   "bytecode": {
     "frontend": {
-      "00": "send_lookup         0      -      -     # public.test",
-      "01": "recv                0      0      0     ",
-      "02": "bool                0      0      0     ",
-      "03": "push                0      0      0     ",
-      "04": "union               0      -1     -1    ",
-      "05": "union_recv          0      0      0     ",
-      "06": "content             0      -      -     ",
-      "07": "ret                 0      0      0     "
+      "00": "union               0      0      0     ",
+      "01": "send_lookup         0      -      -     # public.test",
+      "02": "union_recv          0      0      0     ",
+      "03": "union_set           0      0      -1    ",
+      "04": "content             0      -      -     ",
+      "05": "ret                 0      0      0     "
     },
     "backend": {
       "00": "set                 0      2      0     ",
@@ -462,14 +440,12 @@ explain select test.id, ref.id from test, ref where ref.id >= test.id
 [{
   "bytecode": {
     "frontend": {
-      "00": "send_all            0      -      0     # public.test",
-      "01": "recv                0      0      0     ",
-      "02": "bool                0      0      0     ",
-      "03": "push                0      0      0     ",
-      "04": "union               0      -1     -1    ",
-      "05": "union_recv          0      0      0     ",
-      "06": "content             0      -      -     ",
-      "07": "ret                 0      0      0     "
+      "00": "union               0      0      0     ",
+      "01": "send_all            0      -      0     # public.test",
+      "02": "union_recv          0      0      0     ",
+      "03": "union_set           0      0      -1    ",
+      "04": "content             0      -      -     ",
+      "05": "ret                 0      0      0     "
     },
     "backend": {
       "00": "set                 0      2      0     ",
@@ -511,14 +487,12 @@ explain select test.id, ref.id from test join ref using(id)
 [{
   "bytecode": {
     "frontend": {
-      "00": "send_all            0      -      0     # public.test",
-      "01": "recv                0      0      0     ",
-      "02": "bool                0      0      0     ",
-      "03": "push                0      0      0     ",
-      "04": "union               0      -1     -1    ",
-      "05": "union_recv          0      0      0     ",
-      "06": "content             0      -      -     ",
-      "07": "ret                 0      0      0     "
+      "00": "union               0      0      0     ",
+      "01": "send_all            0      -      0     # public.test",
+      "02": "union_recv          0      0      0     ",
+      "03": "union_set           0      0      -1    ",
+      "04": "content             0      -      -     ",
+      "05": "ret                 0      0      0     "
     },
     "backend": {
       "00": "set                 0      2      0     ",
@@ -554,14 +528,12 @@ explain select test.id, ref.id from test join ref using (id) join ref ref2 using
 [{
   "bytecode": {
     "frontend": {
-      "00": "send_all            0      -      0     # public.test",
-      "01": "recv                0      0      0     ",
-      "02": "bool                0      0      0     ",
-      "03": "push                0      0      0     ",
-      "04": "union               0      -1     -1    ",
-      "05": "union_recv          0      0      0     ",
-      "06": "content             0      -      -     ",
-      "07": "ret                 0      0      0     "
+      "00": "union               0      0      0     ",
+      "01": "send_all            0      -      0     # public.test",
+      "02": "union_recv          0      0      0     ",
+      "03": "union_set           0      0      -1    ",
+      "04": "content             0      -      -     ",
+      "05": "ret                 0      0      0     "
     },
     "backend": {
       "00": "set                 0      2      0     ",
@@ -610,20 +582,16 @@ explain with a as (select * from test) select * from test, a where test.id = a.i
 [{
   "bytecode": {
     "frontend": {
-      "00": "send_all            0      -      0     # public.test",
-      "01": "recv                0      0      0     ",
-      "02": "bool                0      0      0     ",
-      "03": "push                0      0      0     ",
-      "04": "union               0      -1     -1    ",
-      "05": "union_recv          0      0      0     ",
-      "06": "send_all            11     -      0     # public.test",
-      "07": "recv                0      0      0     ",
-      "08": "bool                1      0      0     ",
-      "09": "push                1      0      0     ",
-      "10": "union               1      -1     -1    ",
-      "11": "union_recv          1      0      0     ",
-      "12": "content             1      -      -     ",
-      "13": "ret                 0      0      0     "
+      "00": "union               0      0      0     ",
+      "01": "send_all            0      -      0     # public.test",
+      "02": "union_recv          0      0      0     ",
+      "03": "union_set           0      0      -1    ",
+      "04": "union               1      0      0     ",
+      "05": "send_all            11     -      1     # public.test",
+      "06": "union_recv          1      0      0     ",
+      "07": "union_set           1      0      -1    ",
+      "08": "content             1      -      -     ",
+      "09": "ret                 0      0      0     "
     },
     "backend": {
       "00": "set                 0      2      0     ",
@@ -671,20 +639,16 @@ explain with a as (select * from test) select * from test, a where test.id = 1
 [{
   "bytecode": {
     "frontend": {
-      "00": "send_all            0      -      0     # public.test",
-      "01": "recv                0      0      0     ",
-      "02": "bool                0      0      0     ",
-      "03": "push                0      0      0     ",
-      "04": "union               0      -1     -1    ",
-      "05": "union_recv          0      0      0     ",
-      "06": "send_lookup         11     -      -     # public.test",
-      "07": "recv                0      0      0     ",
-      "08": "bool                1      0      0     ",
-      "09": "push                1      0      0     ",
-      "10": "union               1      -1     -1    ",
-      "11": "union_recv          1      0      0     ",
-      "12": "content             1      -      -     ",
-      "13": "ret                 0      0      0     "
+      "00": "union               0      0      0     ",
+      "01": "send_all            0      -      0     # public.test",
+      "02": "union_recv          0      0      0     ",
+      "03": "union_set           0      0      -1    ",
+      "04": "union               1      0      0     ",
+      "05": "send_lookup         11     -      -     # public.test",
+      "06": "union_recv          1      0      0     ",
+      "07": "union_set           1      0      -1    ",
+      "08": "content             1      -      -     ",
+      "09": "ret                 0      0      0     "
     },
     "backend": {
       "00": "set                 0      2      0     ",
@@ -733,36 +697,34 @@ explain with a as (select * from test) select * from a, test where test.id = a.i
 [{
   "bytecode": {
     "frontend": {
-      "00": "send_all            0      -      0     # public.test",
-      "01": "recv                0      0      0     ",
-      "02": "bool                0      0      0     ",
-      "03": "push                0      0      0     ",
-      "04": "union               0      -1     -1    ",
-      "05": "union_recv          0      0      0     ",
-      "06": "set                 1      4      0     ",
-      "07": "ref                 2      0      0     ",
-      "08": "store_open          0      2      27    ",
-      "09": "store_read          3      0      0     ",
-      "10": "push                3      0      0     ",
-      "11": "table_openl         1      20     25    # public.test (primary)",
-      "12": "table_readi32       3      1      0     ",
-      "13": "store_read          4      0      0     ",
-      "14": "equii               5      3      4     ",
-      "15": "jntr                25     5      0     ",
-      "16": "store_read          3      0      0     ",
+      "00": "union               0      0      0     ",
+      "01": "send_all            0      -      0     # public.test",
+      "02": "union_recv          0      0      0     ",
+      "03": "union_set           0      0      -1    ",
+      "04": "set                 1      4      0     ",
+      "05": "ref                 2      0      0     ",
+      "06": "store_open          0      2      25    ",
+      "07": "store_read          3      0      0     ",
+      "08": "push                3      0      0     ",
+      "09": "table_openl         1      20     23    # public.test (primary)",
+      "10": "table_readi32       3      1      0     ",
+      "11": "store_read          4      0      0     ",
+      "12": "equii               5      3      4     ",
+      "13": "jntr                23     5      0     ",
+      "14": "store_read          3      0      0     ",
+      "15": "push                3      0      0     ",
+      "16": "store_read          3      0      1     ",
       "17": "push                3      0      0     ",
-      "18": "store_read          3      0      1     ",
+      "18": "table_readi32       3      1      0     ",
       "19": "push                3      0      0     ",
-      "20": "table_readi32       3      1      0     ",
+      "20": "table_readi32       3      1      1     ",
       "21": "push                3      0      0     ",
-      "22": "table_readi32       3      1      1     ",
-      "23": "push                3      0      0     ",
-      "24": "set_add             1      0      0     ",
-      "25": "table_close         1      0      0     ",
-      "26": "store_next          0      9      0     ",
-      "27": "store_close         0      1      0     ",
-      "28": "content             1      -      -     ",
-      "29": "ret                 0      0      0     "
+      "22": "set_add             1      0      0     ",
+      "23": "table_close         1      0      0     ",
+      "24": "store_next          0      7      0     ",
+      "25": "store_close         0      1      0     ",
+      "26": "content             1      -      -     ",
+      "27": "ret                 0      0      0     "
     },
     "backend": {
       "00": "set                 0      2      0     ",
@@ -787,36 +749,34 @@ explain with a as (select * from test) select * from a, test where test.id = 1
 [{
   "bytecode": {
     "frontend": {
-      "00": "send_all            0      -      0     # public.test",
-      "01": "recv                0      0      0     ",
-      "02": "bool                0      0      0     ",
-      "03": "push                0      0      0     ",
-      "04": "union               0      -1     -1    ",
-      "05": "union_recv          0      0      0     ",
-      "06": "set                 1      4      0     ",
-      "07": "ref                 2      0      0     ",
-      "08": "store_open          0      2      27    ",
-      "09": "int                 3      -      0     # 1",
-      "10": "push                3      0      0     ",
-      "11": "table_openl         1      20     25    # public.test (primary)",
-      "12": "table_readi32       3      1      0     ",
-      "13": "int                 4      -      0     # 1",
-      "14": "equii               5      3      4     ",
-      "15": "jntr                25     5      0     ",
-      "16": "store_read          3      0      0     ",
+      "00": "union               0      0      0     ",
+      "01": "send_all            0      -      0     # public.test",
+      "02": "union_recv          0      0      0     ",
+      "03": "union_set           0      0      -1    ",
+      "04": "set                 1      4      0     ",
+      "05": "ref                 2      0      0     ",
+      "06": "store_open          0      2      25    ",
+      "07": "int                 3      -      0     # 1",
+      "08": "push                3      0      0     ",
+      "09": "table_openl         1      20     23    # public.test (primary)",
+      "10": "table_readi32       3      1      0     ",
+      "11": "int                 4      -      0     # 1",
+      "12": "equii               5      3      4     ",
+      "13": "jntr                23     5      0     ",
+      "14": "store_read          3      0      0     ",
+      "15": "push                3      0      0     ",
+      "16": "store_read          3      0      1     ",
       "17": "push                3      0      0     ",
-      "18": "store_read          3      0      1     ",
+      "18": "table_readi32       3      1      0     ",
       "19": "push                3      0      0     ",
-      "20": "table_readi32       3      1      0     ",
+      "20": "table_readi32       3      1      1     ",
       "21": "push                3      0      0     ",
-      "22": "table_readi32       3      1      1     ",
-      "23": "push                3      0      0     ",
-      "24": "set_add             1      0      0     ",
-      "25": "table_close         1      0      0     ",
-      "26": "store_next          0      9      0     ",
-      "27": "store_close         0      1      0     ",
-      "28": "content             1      -      -     ",
-      "29": "ret                 0      0      0     "
+      "22": "set_add             1      0      0     ",
+      "23": "table_close         1      0      0     ",
+      "24": "store_next          0      7      0     ",
+      "25": "store_close         0      1      0     ",
+      "26": "content             1      -      -     ",
+      "27": "ret                 0      0      0     "
     },
     "backend": {
       "00": "set                 0      2      0     ",
@@ -851,22 +811,20 @@ explain select ref.id from test join ref on (test.id = ref.id) group by ref.id
 [{
   "bytecode": {
     "frontend": {
-      "00": "send_all            0      -      0     # public.test",
-      "01": "recv                0      0      0     ",
-      "02": "bool                0      1      0     ",
-      "03": "push                0      0      0     ",
-      "04": "union               0      -1     -1    ",
-      "05": "union_recv          0      0      0     ",
-      "06": "union_set_aggs      0      40     0     ",
-      "07": "set                 1      1      0     ",
-      "08": "store_open          2      0      13    ",
-      "09": "store_read          2      2      0     ",
-      "10": "push                2      0      0     ",
-      "11": "set_add             1      0      0     ",
-      "12": "store_next          2      9      0     ",
-      "13": "store_close         2      1      0     ",
-      "14": "content             1      -      -     ",
-      "15": "ret                 0      0      0     "
+      "00": "union               0      0      0     ",
+      "01": "send_all            0      -      0     # public.test",
+      "02": "union_recv          0      0      0     ",
+      "03": "union_set           0      1      -1    ",
+      "04": "union_set_aggs      0      40     0     ",
+      "05": "set                 1      1      0     ",
+      "06": "store_open          2      0      11    ",
+      "07": "store_read          2      2      0     ",
+      "08": "push                2      0      0     ",
+      "09": "set_add             1      0      0     ",
+      "10": "store_next          2      7      0     ",
+      "11": "store_close         2      1      0     ",
+      "12": "content             1      -      -     ",
+      "13": "ret                 0      0      0     "
     },
     "backend": {
       "00": "set_ordered         0      0      1     ",

@@ -62,7 +62,7 @@ replay_read(Dtr* dtr, ReqList* req_list, Record* record)
 		auto req = map[core->order];
 		if (req == NULL)
 		{
-			req = req_create(&dtr->dispatch_mgr.req_cache);
+			req = req_create(&dtr->dispatch.req_cache);
 			req->type = REQ_REPLAY;
 			req->core = core;
 			req_list_add(req_list, req);
@@ -83,20 +83,16 @@ replay(Dtr* dtr, Record* record)
 {
 	ReqList req_list;
 	req_list_init(&req_list);
-
-	auto executor = share()->executor;
 	auto on_error = error_catch
 	(
 		replay_read(dtr, &req_list, record);
-
-		executor_send(executor, dtr, &req_list, true);
-		executor_recv(executor, dtr);
+		executor_send(share()->executor, dtr, &req_list, true);
 	);
 	Buf* error = NULL;
 	if (on_error)
 	{
 		error = error_create(&am_self()->error);
-		req_cache_push_list(&dtr->dispatch_mgr.req_cache, &req_list);
+		req_cache_push_list(&dtr->dispatch.req_cache, &req_list);
 	}
 	commit(share()->commit, dtr, error);
 }

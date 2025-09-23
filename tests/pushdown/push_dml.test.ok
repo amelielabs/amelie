@@ -8,8 +8,7 @@ explain insert into test (id) values (1), (2), (3)
     "frontend": {
       "00": "set_ptr             0      -      0     ",
       "01": "send_shard          0      -      0     # public.test",
-      "02": "recv                0      0      0     ",
-      "03": "ret                 0      0      0     "
+      "02": "ret                 0      0      0     "
     },
     "backend": {
       "00": "insert              -      0      0     # public.test",
@@ -26,9 +25,8 @@ explain delete from test
 [{
   "bytecode": {
     "frontend": {
-      "00": "send_all            0      -      0     # public.test",
-      "01": "recv                0      0      0     ",
-      "02": "ret                 0      0      0     "
+      "00": "send_all            0      -      -1    # public.test",
+      "01": "ret                 0      0      0     "
     },
     "backend": {
       "00": "table_open_part     0      0      3     # public.test (primary)",
@@ -49,9 +47,8 @@ explain update test set data = id
 [{
   "bytecode": {
     "frontend": {
-      "00": "send_all            0      -      0     # public.test",
-      "01": "recv                0      0      0     ",
-      "02": "ret                 0      0      0     "
+      "00": "send_all            0      -      -1    # public.test",
+      "01": "ret                 0      0      0     "
     },
     "backend": {
       "00": "table_open_part     0      0      7     # public.test (primary)",
@@ -77,8 +74,7 @@ explain insert into test (id) values (1), (2), (3) on conflict do update set dat
     "frontend": {
       "00": "set_ptr             0      -      0     ",
       "01": "send_shard          0      -      0     # public.test",
-      "02": "recv                0      0      0     ",
-      "03": "ret                 0      0      0     "
+      "02": "ret                 0      0      0     "
     },
     "backend": {
       "00": "table_prepare       0      -      0     # public.test",

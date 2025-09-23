@@ -243,8 +243,8 @@ pushdown(Compiler* self, Ast* ast)
 	pushdown_limit(self, select);
 }
 
-static inline int
-pushdown_group_by_recv_order_by(Compiler* self, AstSelect* select)
+static int
+pushdown_recv_group_by_order_by(Compiler* self, AstSelect* select)
 {
 	// create ordered data set
 	int offset = emit_select_order_by_data(self, select, false);
@@ -268,6 +268,8 @@ pushdown_group_by_recv_order_by(Compiler* self, AstSelect* select)
 
 	runpin(self, select->rset_agg);
 	select->rset_agg = -1;
+	select->ret.r = -1;
+
 	auto target_group = targets_outer(&select->targets_group);
 	target_group->r = -1;
 
@@ -287,22 +289,15 @@ pushdown_group_by_recv_order_by(Compiler* self, AstSelect* select)
 }
 
 static int
-pushdown_group_by_recv(Compiler* self, AstSelect* select)
+pushdown_recv_group_by(Compiler* self, AstSelect* select)
 {
 	// recv ordered aggregate sets, enable aggregates states merge
 	// during union iteration
-
-	// distinct
-	int rdistinct = op2(self, CBOOL, rpin(self, TYPE_BOOL), true);
-	op1(self, CPUSH, rdistinct);
-	runpin(self, rdistinct);
-
-	// CUNION
-	int runion = op3(self, CUNION, rpin(self, TYPE_STORE), -1, -1);
+	auto runion = select->ret.r;
 	select->rset_agg = runion;
 
-	// CUNION_RECV
-	op1(self, CUNION_RECV, runion);
+	// CUNION_SET
+	op4(self, CUNION_SET, runion, true, -1, -1);
 
 	// CUNION_SET_AGGS (enable aggregate merge)
 	op2(self, CUNION_SET_AGGS, runion, select->aggs);
@@ -312,7 +307,7 @@ pushdown_group_by_recv(Compiler* self, AstSelect* select)
 
 	// [ORDER BY]
 	if (select->expr_order_by.count > 0)
-		return pushdown_group_by_recv_order_by(self, select);
+		return pushdown_recv_group_by_order_by(self, select);
 
 	// create set
 	int rset = op3(self, CSET, rpin(self, TYPE_STORE), select->ret.count, 0);
@@ -331,6 +326,7 @@ pushdown_group_by_recv(Compiler* self, AstSelect* select)
 	     select);
 
 	runpin(self, runion);
+	select->ret.r = -1;
 	select->rset_agg = -1;
 	target_group->r = -1;
 
@@ -344,25 +340,17 @@ pushdown_recv(Compiler* self, Ast* ast)
 	// all functions below return UNION/SET on frontend
 	AstSelect* select = ast_select_of(ast);
 
-	// CRECV
-	op0(self, CRECV);
-
 	// SELECT FROM GROUP BY [WHERE] [HAVING] [ORDER BY] [LIMIT/OFFSET]
 	// SELECT aggregate FROM
 	if (! targets_empty(&select->targets_group))
-		return pushdown_group_by_recv(self, select);
+		return pushdown_recv_group_by(self, select);
 
 	// SELECT FROM [WHERE] ORDER BY [LIMIT/OFFSET]
 	// SELECT FROM [WHERE] LIMIT/OFFSET
 	// SELECT FROM [WHERE]
 
-	// create union object using received sets and apply
-	// distinct/limit/offset
-	
-	// distinct
-	int rdistinct = op2(self, CBOOL, rpin(self, TYPE_BOOL), select->distinct);
-	op1(self, CPUSH, rdistinct);
-	runpin(self, rdistinct);
+	//  apply distinct/limit/offset to the result union
+	auto runion = select->ret.r;
 
 	// limit
 	int rlimit = -1;
@@ -374,39 +362,12 @@ pushdown_recv(Compiler* self, Ast* ast)
 	if (select->expr_offset)
 		roffset = emit_expr(self, &select->targets, select->expr_offset);
 
-	// CUNION
-	int runion = op3(self, CUNION, rpin(self, TYPE_STORE), rlimit, roffset);
-
-	// CUNION_RECV
-	op1(self, CUNION_RECV, runion);
-
+	// CUNION_SET
+	op4(self, CUNION_SET, runion, select->distinct, rlimit, roffset);
 	if (rlimit != -1)
 		runpin(self, rlimit);
 	if (roffset != -1)
 		runpin(self, roffset);
 
-	return runion;
-}
-
-int
-pushdown_recv_returning(Compiler* self, bool returning)
-{
-	// CRECV
-	op0(self, CRECV);
-	if (! returning)
-		return -1;
-
-	// create union object using received sets
-
-	// distinct
-	int rdistinct = op2(self, CBOOL, rpin(self, TYPE_BOOL), false);
-	op1(self, CPUSH, rdistinct);
-	runpin(self, rdistinct);
-
-	// CUNION
-	int runion = op3(self, CUNION, rpin(self, TYPE_STORE), -1, -1);
-
-	// CUNION_RECV
-	op1(self, CUNION_RECV, runion);
 	return runion;
 }

@@ -33,10 +33,12 @@ struct Req
 	Reg*      regs;
 	Value*    args;
 	Value     result;
+	Event     result_ready;
+	bool      result_pending;
 	Buf*      error;
 	bool      close;
-	Event     complete;
 	Core*     core;
+	List      link_union;
 	List      link;
 };
 
@@ -44,19 +46,20 @@ static inline Req*
 req_allocate(void)
 {
 	auto self = (Req*)am_malloc(sizeof(Req));
-	self->type      = 0;
-	self->start     = 0;
-	self->code      = NULL;
-	self->code_data = NULL;
-	self->regs      = NULL;
-	self->args      = NULL;
-	self->error     = NULL;
-	self->core      = NULL;
-	self->error     = false;
+	self->type           = 0;
+	self->start          = 0;
+	self->code           = NULL;
+	self->code_data      = NULL;
+	self->regs           = NULL;
+	self->args           = NULL;
+	self->error          = NULL;
+	self->core           = NULL;
+	self->result_pending = false;
 	msg_init(&self->msg, MSG_REQ);
-	event_init(&self->complete);
 	buf_init(&self->arg);
 	value_init(&self->result);
+	event_init(&self->result_ready);
+	list_init(&self->link_union);
 	list_init(&self->link);
 	return self;
 }
@@ -79,14 +82,14 @@ req_reset(Req* self)
 		buf_free(self->error);
 		self->error = NULL;
 	}
-	self->type      = 0;
-	self->start     = 0;
-	self->code      = NULL;
-	self->code_data = NULL;
-	self->regs      = NULL;
-	self->args      = NULL;
-	self->core      = NULL;
-	self->error     = false;
+	self->type           = 0;
+	self->start          = 0;
+	self->code           = NULL;
+	self->code_data      = NULL;
+	self->regs           = NULL;
+	self->args           = NULL;
+	self->core           = NULL;
+	self->result_pending = false;
 	buf_reset(&self->arg);
 	value_free(&self->result);
 }
@@ -94,11 +97,12 @@ req_reset(Req* self)
 static inline void
 req_attach(Req* self)
 {
-	event_attach(&self->complete);
+	event_attach(&self->result_ready);
 }
 
 static inline void
-req_complete(Req* self)
+req_result_ready(Req* self)
 {
-	event_signal(&self->complete);
+	if (self->result_pending)
+		event_signal(&self->result_ready);
 }

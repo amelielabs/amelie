@@ -168,9 +168,13 @@ backend_process(Backend* self, Ctr* ctr)
 		}
 		auto req = (Req*)msg;
 		if (error_catch(backend_run(self, ctr, req)))
+		{
 			req->error = error_create(&am_self()->error);
+			if (! ctr->error)
+				ctr->error = req->error;
+		}
 		active = !req->close;
-		req_complete(req);
+		req_result_ready(req);
 	}
 	ctr_complete(ctr);
 }

@@ -59,18 +59,20 @@ union_iterator(Store* store)
 }
 
 Union*
-union_create(bool distinct, int64_t limit, int64_t offset)
+union_create(void)
 {
 	Union* self = am_malloc(sizeof(Union));
 	store_init(&self->store, STORE_UNION);
-	self->store.free     = union_free;
-	self->store.iterator = union_iterator;
-	self->list_count     = 0;
-	self->limit          = limit;
-	self->offset         = offset;
-	self->distinct       = distinct;
-	self->aggs           = NULL;
-	self->child          = NULL;
+	self->store.free      = union_free;
+	self->store.iterator  = union_iterator;
+	self->list_count      = 0;
+	self->list_reqs_count = 0;
+	self->limit           = INT64_MAX;
+	self->offset          = 0;
+	self->distinct        = false;
+	self->aggs            = NULL;
+	self->child           = NULL;
 	list_init(&self->list);
+	list_init(&self->list_reqs);
 	return self;
 }

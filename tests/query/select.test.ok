@@ -83,14 +83,12 @@ explain select * from test
 [{
   "bytecode": {
     "frontend": {
-      "00": "send_all            0      -      0     # public.test",
-      "01": "recv                0      0      0     ",
-      "02": "bool                0      0      0     ",
-      "03": "push                0      0      0     ",
-      "04": "union               0      -1     -1    ",
-      "05": "union_recv          0      0      0     ",
-      "06": "content             0      -      -     ",
-      "07": "ret                 0      0      0     "
+      "00": "union               0      0      0     ",
+      "01": "send_all            0      -      0     # public.test",
+      "02": "union_recv          0      0      0     ",
+      "03": "union_set           0      0      -1    ",
+      "04": "content             0      -      -     ",
+      "05": "ret                 0      0      0     "
     },
     "backend": {
       "00": "set                 0      1      0     ",
@@ -130,14 +128,12 @@ explain select id, data from test
 [{
   "bytecode": {
     "frontend": {
-      "00": "send_all            0      -      0     # public.test",
-      "01": "recv                0      0      0     ",
-      "02": "bool                0      0      0     ",
-      "03": "push                0      0      0     ",
-      "04": "union               0      -1     -1    ",
-      "05": "union_recv          0      0      0     ",
-      "06": "content             0      -      -     ",
-      "07": "ret                 0      0      0     "
+      "00": "union               0      0      0     ",
+      "01": "send_all            0      -      0     # public.test",
+      "02": "union_recv          0      0      0     ",
+      "03": "union_set           0      0      -1    ",
+      "04": "content             0      -      -     ",
+      "05": "ret                 0      0      0     "
     },
     "backend": {
       "00": "set                 0      2      0     ",
@@ -177,14 +173,12 @@ explain select data.data from test
 [{
   "bytecode": {
     "frontend": {
-      "00": "send_all            0      -      0     # public.test",
-      "01": "recv                0      0      0     ",
-      "02": "bool                0      0      0     ",
-      "03": "push                0      0      0     ",
-      "04": "union               0      -1     -1    ",
-      "05": "union_recv          0      0      0     ",
-      "06": "content             0      -      -     ",
-      "07": "ret                 0      0      0     "
+      "00": "union               0      0      0     ",
+      "01": "send_all            0      -      0     # public.test",
+      "02": "union_recv          0      0      0     ",
+      "03": "union_set           0      0      -1    ",
+      "04": "content             0      -      -     ",
+      "05": "ret                 0      0      0     "
     },
     "backend": {
       "00": "set                 0      1      0     ",
@@ -228,14 +222,12 @@ explain select data.data.data from test
 [{
   "bytecode": {
     "frontend": {
-      "00": "send_all            0      -      0     # public.test",
-      "01": "recv                0      0      0     ",
-      "02": "bool                0      0      0     ",
-      "03": "push                0      0      0     ",
-      "04": "union               0      -1     -1    ",
-      "05": "union_recv          0      0      0     ",
-      "06": "content             0      -      -     ",
-      "07": "ret                 0      0      0     "
+      "00": "union               0      0      0     ",
+      "01": "send_all            0      -      0     # public.test",
+      "02": "union_recv          0      0      0     ",
+      "03": "union_set           0      0      -1    ",
+      "04": "content             0      -      -     ",
+      "05": "ret                 0      0      0     "
     },
     "backend": {
       "00": "set                 0      1      0     ",
@@ -265,14 +257,12 @@ explain select test.id, test.data from test
 [{
   "bytecode": {
     "frontend": {
-      "00": "send_all            0      -      0     # public.test",
-      "01": "recv                0      0      0     ",
-      "02": "bool                0      0      0     ",
-      "03": "push                0      0      0     ",
-      "04": "union               0      -1     -1    ",
-      "05": "union_recv          0      0      0     ",
-      "06": "content             0      -      -     ",
-      "07": "ret                 0      0      0     "
+      "00": "union               0      0      0     ",
+      "01": "send_all            0      -      0     # public.test",
+      "02": "union_recv          0      0      0     ",
+      "03": "union_set           0      0      -1    ",
+      "04": "content             0      -      -     ",
+      "05": "ret                 0      0      0     "
     },
     "backend": {
       "00": "set                 0      2      0     ",
@@ -302,14 +292,12 @@ explain select test.data.data from test
 [{
   "bytecode": {
     "frontend": {
-      "00": "send_all            0      -      0     # public.test",
-      "01": "recv                0      0      0     ",
-      "02": "bool                0      0      0     ",
-      "03": "push                0      0      0     ",
-      "04": "union               0      -1     -1    ",
-      "05": "union_recv          0      0      0     ",
-      "06": "content             0      -      -     ",
-      "07": "ret                 0      0      0     "
+      "00": "union               0      0      0     ",
+      "01": "send_all            0      -      0     # public.test",
+      "02": "union_recv          0      0      0     ",
+      "03": "union_set           0      0      -1    ",
+      "04": "content             0      -      -     ",
+      "05": "ret                 0      0      0     "
     },
     "backend": {
       "00": "set                 0      1      0     ",
@@ -363,14 +351,12 @@ explain select alias.id, alias.data from test alias
 [{
   "bytecode": {
     "frontend": {
-      "00": "send_all            0      -      0     # public.test",
-      "01": "recv                0      0      0     ",
-      "02": "bool                0      0      0     ",
-      "03": "push                0      0      0     ",
-      "04": "union               0      -1     -1    ",
-      "05": "union_recv          0      0      0     ",
-      "06": "content             0      -      -     ",
-      "07": "ret                 0      0      0     "
+      "00": "union               0      0      0     ",
+      "01": "send_all            0      -      0     # public.test",
+      "02": "union_recv          0      0      0     ",
+      "03": "union_set           0      0      -1    ",
+      "04": "content             0      -      -     ",
+      "05": "ret                 0      0      0     "
     },
     "backend": {
       "00": "set                 0      2      0     ",
@@ -400,14 +386,12 @@ explain select alias.data.data from test alias
 [{
   "bytecode": {
     "frontend": {
-      "00": "send_all            0      -      0     # public.test",
-      "01": "recv                0      0      0     ",
-      "02": "bool                0      0      0     ",
-      "03": "push                0      0      0     ",
-      "04": "union               0      -1     -1    ",
-      "05": "union_recv          0      0      0     ",
-      "06": "content             0      -      -     ",
-      "07": "ret                 0      0      0     "
+      "00": "union               0      0      0     ",
+      "01": "send_all            0      -      0     # public.test",
+      "02": "union_recv          0      0      0     ",
+      "03": "union_set           0      0      -1    ",
+      "04": "content             0      -      -     ",
+      "05": "ret                 0      0      0     "
     },
     "backend": {
       "00": "set                 0      1      0     ",
@@ -441,14 +425,12 @@ explain select alias.id, alias.data from test alias
 [{
   "bytecode": {
     "frontend": {
-      "00": "send_all            0      -      0     # public.test",
-      "01": "recv                0      0      0     ",
-      "02": "bool                0      0      0     ",
-      "03": "push                0      0      0     ",
-      "04": "union               0      -1     -1    ",
-      "05": "union_recv          0      0      0     ",
-      "06": "content             0      -      -     ",
-      "07": "ret                 0      0      0     "
+      "00": "union               0      0      0     ",
+      "01": "send_all            0      -      0     # public.test",
+      "02": "union_recv          0      0      0     ",
+      "03": "union_set           0      0      -1    ",
+      "04": "content             0      -      -     ",
+      "05": "ret                 0      0      0     "
     },
     "backend": {
       "00": "set                 0      2      0     ",

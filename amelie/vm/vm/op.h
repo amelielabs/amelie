@@ -201,6 +201,7 @@ enum
 
 	// union
 	CUNION,
+	CUNION_SET,
 	CUNION_ADD,
 	CUNION_SET_AGGS,
 	CUNION_RECV,
@@ -284,7 +285,6 @@ enum
 	CSEND_LOOKUP,
 	CSEND_LOOKUP_BY,
 	CSEND_ALL,
-	CRECV,
 
 	// result
 	CASSIGN,

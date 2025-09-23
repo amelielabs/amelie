@@ -72,13 +72,13 @@ prepare_add(Prepare* self, Dtr* dtr)
 
 	// create a list of active cores and wal write list
 	auto cores = (Core**)self->cores.start;
-	auto dispatch_mgr = &dtr->dispatch_mgr;
-	auto write        = &dtr->write;
+	auto dispatch = &dtr->dispatch;
+	auto write    = &dtr->write;
 	write_reset(write);
 	write_begin(write);
-	for (auto order = 0; order < dispatch_mgr->ctrs_count; order++)
+	for (auto order = 0; order < dispatch->ctrs_count; order++)
 	{
-		auto ctr = dispatch_mgr_ctr(dispatch_mgr, order);
+		auto ctr = dispatch_ctr(dispatch, order);
 		if (ctr->state == CTR_NONE)
 			continue;
 		cores[order] = ctr->core;

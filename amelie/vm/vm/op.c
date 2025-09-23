@@ -225,6 +225,7 @@ OpDesc ops[] =
 
 	// union
 	{ CUNION, "union" },
+	{ CUNION_SET, "union_set" },
 	{ CUNION_ADD, "union_add" },
 	{ CUNION_SET_AGGS, "union_set_aggs" },
 	{ CUNION_RECV, "union_recv" },
@@ -308,7 +309,6 @@ OpDesc ops[] =
 	{ CSEND_LOOKUP, "send_lookup" },
 	{ CSEND_LOOKUP_BY, "send_lookup_by" },
 	{ CSEND_ALL, "send_all" },
-	{ CRECV, "recv" },
 
 	// result
 	{ CASSIGN, "assign" },

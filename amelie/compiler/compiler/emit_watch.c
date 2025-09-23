@@ -40,7 +40,7 @@
 #include <amelie_parser.h>
 #include <amelie_compiler.h>
 
-int
+void
 emit_watch(Compiler* self, Ast* ast)
 {
 	AstWatch* watch = ast_watch_of(ast);
@@ -83,5 +83,4 @@ emit_watch(Compiler* self, Ast* ast)
 
 	// nop
 	op0(self, CNOP);
-	return -1;
 }

@@ -9,14 +9,12 @@ explain select * from test order by id
 [{
   "bytecode": {
     "frontend": {
-      "00": "send_all            0      -      0     # public.test",
-      "01": "recv                0      0      0     ",
-      "02": "bool                0      0      0     ",
-      "03": "push                0      0      0     ",
-      "04": "union               0      -1     -1    ",
-      "05": "union_recv          0      0      0     ",
-      "06": "content             0      -      -     ",
-      "07": "ret                 0      0      0     "
+      "00": "union               0      0      0     ",
+      "01": "send_all            0      -      0     # public.test",
+      "02": "union_recv          0      0      0     ",
+      "03": "union_set           0      0      -1    ",
+      "04": "content             0      -      -     ",
+      "05": "ret                 0      0      0     "
     },
     "backend": {
       "00": "set_ordered         0      1      1     ",
@@ -42,14 +40,12 @@ explain select * from test order by id asc
 [{
   "bytecode": {
     "frontend": {
-      "00": "send_all            0      -      0     # public.test",
-      "01": "recv                0      0      0     ",
-      "02": "bool                0      0      0     ",
-      "03": "push                0      0      0     ",
-      "04": "union               0      -1     -1    ",
-      "05": "union_recv          0      0      0     ",
-      "06": "content             0      -      -     ",
-      "07": "ret                 0      0      0     "
+      "00": "union               0      0      0     ",
+      "01": "send_all            0      -      0     # public.test",
+      "02": "union_recv          0      0      0     ",
+      "03": "union_set           0      0      -1    ",
+      "04": "content             0      -      -     ",
+      "05": "ret                 0      0      0     "
     },
     "backend": {
       "00": "set_ordered         0      1      1     ",
@@ -75,14 +71,12 @@ explain select * from test order by id desc
 [{
   "bytecode": {
     "frontend": {
-      "00": "send_all            0      -      0     # public.test",
-      "01": "recv                0      0      0     ",
-      "02": "bool                0      0      0     ",
-      "03": "push                0      0      0     ",
-      "04": "union               0      -1     -1    ",
-      "05": "union_recv          0      0      0     ",
-      "06": "content             0      -      -     ",
-      "07": "ret                 0      0      0     "
+      "00": "union               0      0      0     ",
+      "01": "send_all            0      -      0     # public.test",
+      "02": "union_recv          0      0      0     ",
+      "03": "union_set           0      0      -1    ",
+      "04": "content             0      -      -     ",
+      "05": "ret                 0      0      0     "
     },
     "backend": {
       "00": "set_ordered         0      1      1     ",
@@ -108,15 +102,13 @@ explain select * from test order by id limit 1
 [{
   "bytecode": {
     "frontend": {
-      "00": "send_all            0      -      0     # public.test",
-      "01": "recv                0      0      0     ",
-      "02": "bool                0      0      0     ",
-      "03": "push                0      0      0     ",
-      "04": "int                 0      -      0     # 1",
-      "05": "union               1      0      -1    ",
-      "06": "union_recv          1      0      0     ",
-      "07": "content             1      -      -     ",
-      "08": "ret                 0      0      0     "
+      "00": "union               0      0      0     ",
+      "01": "send_all            0      -      0     # public.test",
+      "02": "union_recv          0      0      0     ",
+      "03": "int                 1      -      0     # 1",
+      "04": "union_set           0      0      1     ",
+      "05": "content             0      -      -     ",
+      "06": "ret                 0      0      0     "
     },
     "backend": {
       "00": "set_ordered         0      1      1     ",
@@ -152,15 +144,13 @@ explain select * from test order by id limit 0
 [{
   "bytecode": {
     "frontend": {
-      "00": "send_all            0      -      0     # public.test",
-      "01": "recv                0      0      0     ",
-      "02": "bool                0      0      0     ",
-      "03": "push                0      0      0     ",
-      "04": "int                 0      -      0     # 0",
-      "05": "union               1      0      -1    ",
-      "06": "union_recv          1      0      0     ",
-      "07": "content             1      -      -     ",
-      "08": "ret                 0      0      0     "
+      "00": "union               0      0      0     ",
+      "01": "send_all            0      -      0     # public.test",
+      "02": "union_recv          0      0      0     ",
+      "03": "int                 1      -      0     # 0",
+      "04": "union_set           0      0      1     ",
+      "05": "content             0      -      -     ",
+      "06": "ret                 0      0      0     "
     },
     "backend": {
       "00": "set_ordered         0      1      1     ",
@@ -188,15 +178,13 @@ explain select * from test order by id desc limit 1
 [{
   "bytecode": {
     "frontend": {
-      "00": "send_all            0      -      0     # public.test",
-      "01": "recv                0      0      0     ",
-      "02": "bool                0      0      0     ",
-      "03": "push                0      0      0     ",
-      "04": "int                 0      -      0     # 1",
-      "05": "union               1      0      -1    ",
-      "06": "union_recv          1      0      0     ",
-      "07": "content             1      -      -     ",
-      "08": "ret                 0      0      0     "
+      "00": "union               0      0      0     ",
+      "01": "send_all            0      -      0     # public.test",
+      "02": "union_recv          0      0      0     ",
+      "03": "int                 1      -      0     # 1",
+      "04": "union_set           0      0      1     ",
+      "05": "content             0      -      -     ",
+      "06": "ret                 0      0      0     "
     },
     "backend": {
       "00": "set_ordered         0      1      1     ",
@@ -232,16 +220,14 @@ explain select * from test order by id limit 1 offset 0
 [{
   "bytecode": {
     "frontend": {
-      "00": "send_all            0      -      0     # public.test",
-      "01": "recv                0      0      0     ",
-      "02": "bool                0      0      0     ",
-      "03": "push                0      0      0     ",
-      "04": "int                 0      -      0     # 1",
-      "05": "int                 1      -      0     # 0",
-      "06": "union               2      0      1     ",
-      "07": "union_recv          2      0      0     ",
-      "08": "content             2      -      -     ",
-      "09": "ret                 0      0      0     "
+      "00": "union               0      0      0     ",
+      "01": "send_all            0      -      0     # public.test",
+      "02": "union_recv          0      0      0     ",
+      "03": "int                 1      -      0     # 1",
+      "04": "int                 2      -      0     # 0",
+      "05": "union_set           0      0      1     ",
+      "06": "content             0      -      -     ",
+      "07": "ret                 0      0      0     "
     },
     "backend": {
       "00": "set_ordered         0      1      1     ",
@@ -267,16 +253,14 @@ explain select * from test order by id limit 1 offset 1
 [{
   "bytecode": {
     "frontend": {
-      "00": "send_all            0      -      0     # public.test",
-      "01": "recv                0      0      0     ",
-      "02": "bool                0      0      0     ",
-      "03": "push                0      0      0     ",
-      "04": "int                 0      -      0     # 1",
-      "05": "int                 1      -      0     # 1",
-      "06": "union               2      0      1     ",
-      "07": "union_recv          2      0      0     ",
-      "08": "content             2      -      -     ",
-      "09": "ret                 0      0      0     "
+      "00": "union               0      0      0     ",
+      "01": "send_all            0      -      0     # public.test",
+      "02": "union_recv          0      0      0     ",
+      "03": "int                 1      -      0     # 1",
+      "04": "int                 2      -      0     # 1",
+      "05": "union_set           0      0      1     ",
+      "06": "content             0      -      -     ",
+      "07": "ret                 0      0      0     "
     },
     "backend": {
       "00": "set_ordered         0      1      1     ",
@@ -308,16 +292,14 @@ explain select * from test order by id desc limit 1 offset 1
 [{
   "bytecode": {
     "frontend": {
-      "00": "send_all            0      -      0     # public.test",
-      "01": "recv                0      0      0     ",
-      "02": "bool                0      0      0     ",
-      "03": "push                0      0      0     ",
-      "04": "int                 0      -      0     # 1",
-      "05": "int                 1      -      0     # 1",
-      "06": "union               2      0      1     ",
-      "07": "union_recv          2      0      0     ",
-      "08": "content             2      -      -     ",
-      "09": "ret                 0      0      0     "
+      "00": "union               0      0      0     ",
+      "01": "send_all            0      -      0     # public.test",
+      "02": "union_recv          0      0      0     ",
+      "03": "int                 1      -      0     # 1",
+      "04": "int                 2      -      0     # 1",
+      "05": "union_set           0      0      1     ",
+      "06": "content             0      -      -     ",
+      "07": "ret                 0      0      0     "
     },
     "backend": {
       "00": "set_ordered         0      1      1     ",
@@ -349,15 +331,13 @@ explain select * from test order by id offset 1
 [{
   "bytecode": {
     "frontend": {
-      "00": "send_all            0      -      0     # public.test",
-      "01": "recv                0      0      0     ",
-      "02": "bool                0      0      0     ",
-      "03": "push                0      0      0     ",
-      "04": "int                 0      -      0     # 1",
-      "05": "union               1      -1     0     ",
-      "06": "union_recv          1      0      0     ",
-      "07": "content             1      -      -     ",
-      "08": "ret                 0      0      0     "
+      "00": "union               0      0      0     ",
+      "01": "send_all            0      -      0     # public.test",
+      "02": "union_recv          0      0      0     ",
+      "03": "int                 1      -      0     # 1",
+      "04": "union_set           0      0      -1    ",
+      "05": "content             0      -      -     ",
+      "06": "ret                 0      0      0     "
     },
     "backend": {
       "00": "set_ordered         0      1      1     ",
@@ -393,15 +373,13 @@ explain select * from test order by id desc offset 1
 [{
   "bytecode": {
     "frontend": {
-      "00": "send_all            0      -      0     # public.test",
-      "01": "recv                0      0      0     ",
-      "02": "bool                0      0      0     ",
-      "03": "push                0      0      0     ",
-      "04": "int                 0      -      0     # 1",
-      "05": "union               1      -1     0     ",
-      "06": "union_recv          1      0      0     ",
-      "07": "content             1      -      -     ",
-      "08": "ret                 0      0      0     "
+      "00": "union               0      0      0     ",
+      "01": "send_all            0      -      0     # public.test",
+      "02": "union_recv          0      0      0     ",
+      "03": "int                 1      -      0     # 1",
+      "04": "union_set           0      0      -1    ",
+      "05": "content             0      -      -     ",
+      "06": "ret                 0      0      0     "
     },
     "backend": {
       "00": "set_ordered         0      1      1     ",

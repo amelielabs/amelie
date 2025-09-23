@@ -27,6 +27,7 @@ struct Ctr
 	CtrState state;
 	Dtr*     dtr;
 	Tr*      tr;
+	Buf*     error;
 	Core*    core;
 	Ring     queue;
 	bool     queue_close;
@@ -39,6 +40,7 @@ ctr_init(Ctr* self, Dtr* dtr, Core* core)
 	self->state       = CTR_NONE;
 	self->dtr         = dtr;
 	self->tr          = NULL;
+	self->error       = NULL;
 	self->core        = core;
 	self->queue_close = false;
 	msg_init(&self->msg, MSG_CTR);
@@ -58,6 +60,7 @@ ctr_reset(Ctr* self)
 {
 	self->state       = CTR_NONE;
 	self->tr          = NULL;
+	self->error       = NULL;
 	self->queue_close = false;
 }
 

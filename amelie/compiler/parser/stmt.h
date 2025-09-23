@@ -55,8 +55,8 @@ struct Stmt
 	int     order;
 	int     order_targets;
 	bool    ret;
-	Cte*    cte;
 	int     r;
+	Cte*    cte;
 	Var*    assign;
 	AstList select_list;
 	Scope*  scope;
@@ -74,8 +74,8 @@ stmt_allocate(Parser* parser, Lex* lex, Scope* scope)
 	self->order         = 0;
 	self->order_targets = 0;
 	self->ret           = false;
-	self->cte           = NULL;
 	self->r             = -1;
+	self->cte           = NULL;
 	self->assign        = NULL;
 	self->next          = NULL;
 	self->prev          = NULL;

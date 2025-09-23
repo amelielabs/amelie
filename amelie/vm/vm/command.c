@@ -41,13 +41,18 @@
 hot void
 csend_shard(Vm* self, Op* op)
 {
-	// [start, table, store]
+	// [start, table, store, result]
 	auto dtr   = self->dtr;
 	auto table = (Table*)op->b;
 	auto keys  = table_keys(table);
 
+	// get result union
+	Union* result = NULL;
+	if (op->d != -1)
+		result = (Union*)reg_at(&self->r, op->d)->store;
+
 	// redistribute rows between backends
-	Req* map[dtr->dispatch_mgr.ctrs_count];
+	Req* map[dtr->dispatch.ctrs_count];
 	memset(map, 0, sizeof(map));
 
 	ReqList list;
@@ -65,7 +70,7 @@ csend_shard(Vm* self, Op* op)
 			auto req  = map[part->core->order];
 			if (req == NULL)
 			{
-				req = req_create(&dtr->dispatch_mgr.req_cache);
+				req = req_create(&dtr->dispatch.req_cache);
 				req->type      = REQ_EXECUTE;
 				req->start     = op->a;
 				req->code      = &self->program->code_backend;
@@ -75,6 +80,12 @@ csend_shard(Vm* self, Op* op)
 				req->core      = part->core;
 				req_list_add(&list, req);
 				map[part->core->order] = req;
+				if (result)
+				{
+					req->result_pending = true;
+					list_append(&result->list_reqs, &req->link_union);
+					result->list_reqs_count++;
+				}
 			}
 			buf_write(&req->arg, &row, sizeof(Value*));
 		}
@@ -90,7 +101,7 @@ csend_shard(Vm* self, Op* op)
 			auto req  = map[part->core->order];
 			if (req == NULL)
 			{
-				req = req_create(&dtr->dispatch_mgr.req_cache);
+				req = req_create(&dtr->dispatch.req_cache);
 				req->type      = REQ_EXECUTE;
 				req->start     = op->a;
 				req->code      = &self->program->code_backend;
@@ -100,6 +111,12 @@ csend_shard(Vm* self, Op* op)
 				req->core      = part->core;
 				req_list_add(&list, req);
 				map[part->core->order] = req;
+				if (result)
+				{
+					req->result_pending = true;
+					list_append(&result->list_reqs, &req->link_union);
+					result->list_reqs_count++;
+				}
 			}
 			buf_write(&req->arg, &row, sizeof(Value*));
 		}
@@ -113,23 +130,34 @@ csend_shard(Vm* self, Op* op)
 hot void
 csend_lookup(Vm* self, Op* op)
 {
-	// [start, table, hash]
+	// [start, table, hash, result]
 	auto dtr   = self->dtr;
 	auto table = (Table*)op->b;
+
+	// get result union
+	Union* result = NULL;
+	if (op->d != -1)
+		result = (Union*)reg_at(&self->r, op->d)->store;
 
 	// shard by precomputed hash
 	ReqList list;
 	req_list_init(&list);
 	auto part = part_map_get(&table->part_list.map, op->c);
-	auto req = req_create(&dtr->dispatch_mgr.req_cache);
+	auto req = req_create(&dtr->dispatch.req_cache);
 	req->type      = REQ_EXECUTE;
 	req->start     = op->a;
 	req->code      = &self->program->code_backend;
 	req->code_data = &self->program->code_data;
 	req->regs      = &self->r;
 	req->args      = self->args;
-	req->core  = part->core;
+	req->core      = part->core;
 	req_list_add(&list, req);
+	if (result)
+	{
+		req->result_pending = true;
+		list_append(&result->list_reqs, &req->link_union);
+		result->list_reqs_count++;
+	}
 
 	auto is_last = self->program->send_last == code_posof(self->code, op);
 	executor_send(share()->executor, dtr, &list, is_last);
@@ -138,10 +166,15 @@ csend_lookup(Vm* self, Op* op)
 hot void
 csend_lookup_by(Vm* self, Op* op)
 {
-	// [start, table]
+	// [start, table, result]
 	auto dtr   = self->dtr;
 	auto table = (Table*)op->b;
 	auto index = table_primary(table);
+
+	// get result union
+	Union* result = NULL;
+	if (op->c != -1)
+		result = (Union*)reg_at(&self->r, op->c)->store;
 
 	// compute hash using key values
 	uint32_t hash = 0;
@@ -156,15 +189,21 @@ csend_lookup_by(Vm* self, Op* op)
 	ReqList list;
 	req_list_init(&list);
 	auto part = part_map_get(&table->part_list.map, hash);
-	auto req = req_create(&dtr->dispatch_mgr.req_cache);
+	auto req = req_create(&dtr->dispatch.req_cache);
 	req->type      = REQ_EXECUTE;
 	req->start     = op->a;
 	req->code      = &self->program->code_backend;
 	req->code_data = &self->program->code_data;
 	req->regs      = &self->r;
 	req->args      = self->args;
-	req->core  = part->core;
+	req->core      = part->core;
 	req_list_add(&list, req);
+	if (result)
+	{
+		req->result_pending = true;
+		list_append(&result->list_reqs, &req->link_union);
+		result->list_reqs_count++;
+	}
 
 	auto is_last = self->program->send_last == code_posof(self->code, op);
 	executor_send(share()->executor, dtr, &list, is_last);
@@ -173,9 +212,14 @@ csend_lookup_by(Vm* self, Op* op)
 hot void
 csend_all(Vm* self, Op* op)
 {
-	// [start, table]
+	// [start, table, result]
 	auto table = (Table*)op->b;
 	auto dtr = self->dtr;
+
+	// get result union
+	Union* result = NULL;
+	if (op->c != -1)
+		result = (Union*)reg_at(&self->r, op->c)->store;
 
 	// send to all table backends
 	ReqList list;
@@ -183,7 +227,7 @@ csend_all(Vm* self, Op* op)
 	list_foreach(&table->part_list.list)
 	{
 		auto part = list_at(Part, link);
-		auto req = req_create(&dtr->dispatch_mgr.req_cache);
+		auto req = req_create(&dtr->dispatch.req_cache);
 		req->type      = REQ_EXECUTE;
 		req->start     = op->a;
 		req->code      = &self->program->code_backend;
@@ -192,6 +236,12 @@ csend_all(Vm* self, Op* op)
 		req->args      = self->args;
 		req->core      = part->core;
 		req_list_add(&list, req);
+		if (result)
+		{
+			req->result_pending = true;
+			list_append(&result->list_reqs, &req->link_union);
+			result->list_reqs_count++;
+		}
 	}
 
 	auto is_last = self->program->send_last == code_posof(self->code, op);
@@ -199,60 +249,54 @@ csend_all(Vm* self, Op* op)
 }
 
 hot void
-crecv(Vm* self, Op* op)
+cunion_set(Vm* self, Op* op)
 {
-	unused(op);
-	executor_recv(share()->executor, self->dtr);
-}
-
-hot void
-cunion(Vm* self, Op* op)
-{
-	// [union, limit, offset]
+	// [union, distinct, limit, offset]
+	auto ref = (Union*)reg_at(&self->r, op->a)->store;
 
 	// distinct
-	bool distinct = stack_at(&self->stack, 1)->integer;
-	stack_popn(&self->stack, 1);
+	bool distinct = op->b;
 
 	// limit
 	int64_t limit = INT64_MAX;
-	if (op->b != -1)
+	if (op->c != -1)
 	{
-		if (unlikely(reg_at(&self->r, op->b)->type != TYPE_INT))
+		if (unlikely(reg_at(&self->r, op->c)->type != TYPE_INT))
 			error("LIMIT: integer type expected");
-		limit = reg_at(&self->r, op->b)->integer;
+		limit = reg_at(&self->r, op->c)->integer;
 		if (unlikely(limit < 0))
 			error("LIMIT: positive integer value expected");
 	}
 
 	// offset
 	int64_t offset = 0;
-	if (op->c != -1)
+	if (op->d != -1)
 	{
-		if (unlikely(reg_at(&self->r, op->c)->type != TYPE_INT))
+		if (unlikely(reg_at(&self->r, op->d)->type != TYPE_INT))
 			error("OFFSET: integer type expected");
-		offset = reg_at(&self->r, op->c)->integer;
+		offset = reg_at(&self->r, op->d)->integer;
 		if (unlikely(offset < 0))
 			error("OFFSET: positive integer value expected");
 	}
 
-	// create union object
-	auto ref = union_create(distinct, limit, offset);
-	value_set_store(reg_at(&self->r, op->a), &ref->store);
+	union_set(ref, distinct, limit, offset);
 }
 
 hot void
 cunion_recv(Vm* self, Op* op)
 {
 	// [union]
-	auto ref = (Union*)reg_at(&self->r, op->a)->store;
+	auto result = (Union*)reg_at(&self->r, op->a)->store;
 
-	// add result sets from the last recv to the union
-	auto dispatch_mgr = &self->dtr->dispatch_mgr;
-	auto dispatch = dispatch_mgr_dispatch(dispatch_mgr, dispatch_mgr->list_processed - 1);
-	for (auto i = 0; i < dispatch->count; i++)
+	// wait for all requests completion and add result to the union
+	auto error = (Req*)NULL;
+	list_foreach(&result->list_reqs)
 	{
-		auto req = dispatch_mgr_req(dispatch_mgr, dispatch->offset + i);
+		auto req = list_at(Req, link_union);
+		event_wait(&req->result_ready, -1);
+		if (req->error && !error)
+			error = req;
+
 		auto value = &req->result;
 		if (value->type == TYPE_STORE)
 		{
@@ -260,16 +304,22 @@ cunion_recv(Vm* self, Op* op)
 			// create child union out of set childs
 			if (set->child)
 			{
-				if (! ref->child)
-					union_assign(ref, union_create(true, INT64_MAX, 0));
+				if (! result->child)
+				{
+					auto ref = union_create();
+					union_set(ref, true, INT64_MAX, 0);
+					union_assign(result, ref);
+				}
 				auto child = set->child;
 				set_assign(set, NULL);
-				union_add(ref->child, child);
+				union_add(result->child, child);
 			}
-			union_add(ref, set);
+			union_add(result, set);
 			value_reset(value);
 		}
 	}
+	if (error)
+		rethrow_buf(error->error);
 }
 
 void

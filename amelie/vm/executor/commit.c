@@ -54,7 +54,7 @@ commit_complete(Commit* self, bool abort)
 	}
 
 	// remove transactions from executor and handle abort
-	executor_complete(self->executor, self->prepare.list, abort);
+	executor_detach(self->executor, self->prepare.list, abort);
 
 	// signal completion
 	auto dtr = self->prepare.list;
@@ -151,17 +151,21 @@ commit(Commit* self, Dtr* dtr, Buf* error)
 {
 	cancel_pause();
 
-	// finilize any core transactions that are still active,
-	// this can happen because of error or by premature
-	// return statement
-	auto is_write = dispatch_mgr_shutdown(&dtr->dispatch_mgr);
-
-	// unless transaction is used for replication writer, respect
-	// system read-only state
-	if (unlikely(is_write && opt_int_of(&state()->read_only)))
-		if (!error && !dtr->program->repl)
+	// finilize core transactions and handle errors
+	auto error_pending = dispatch_shutdown(&dtr->dispatch);
+	if (! error)
+	{
+		// unless transaction is used for replication writer, respect
+		// system read-only state
+		if (error_pending)
+		{
+			error = buf_create();
+			buf_write_buf(error, error_pending);
+		} else
+		if (unlikely(dtr->dispatch.write && dtr->program->repl == false &&
+		             opt_int_of(&state()->read_only)))
 			error = error_create_cstr("system is in read-only mode");
-
+	}
 	if (unlikely(error))
 	{
 		dtr_set_abort(dtr);

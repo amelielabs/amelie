@@ -264,10 +264,8 @@ emit_select_order_by_data(Compiler* self, AstSelect* select, bool use_group_by)
 hot int
 emit_select_union(Compiler* self, AstSelect* select)
 {
-	// distinct
-	int rdistinct = op2(self, CBOOL, rpin(self, TYPE_BOOL), select->distinct);
-	op1(self, CPUSH, rdistinct);
-	runpin(self, rdistinct);
+	// CUNION
+	int runion = op1(self, CUNION, rpin(self, TYPE_STORE));
 
 	// limit
 	int rlimit = -1;
@@ -279,19 +277,17 @@ emit_select_union(Compiler* self, AstSelect* select)
 	if (select->expr_offset)
 		roffset = emit_expr(self, &select->targets, select->expr_offset);
 
-	// CUNION
-	int runion = op3(self, CUNION, rpin(self, TYPE_STORE),
-	                 rlimit, roffset);
-
-	// CUNION_ADD
-	op2(self, CUNION_ADD, runion, select->rset);
-
-	runpin(self, select->rset);
-	select->rset = -1;
+	// CUNION_SET
+	op4(self, CUNION_SET, runion, select->distinct, rlimit, roffset);
 	if (rlimit != -1)
 		runpin(self, rlimit);
 	if (roffset != -1)
 		runpin(self, roffset);
+
+	// CUNION_ADD
+	op2(self, CUNION_ADD, runion, select->rset);
+	runpin(self, select->rset);
+	select->rset = -1;
 
 	return runion;
 }
