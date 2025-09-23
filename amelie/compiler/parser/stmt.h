@@ -52,8 +52,7 @@ struct Stmt
 	Lex*    lex;
 	StmtId  id;
 	Ast*    ast;
-	int     order;
-	int     order_targets;
+	int     targets_seq;
 	bool    ret;
 	int     r;
 	Cte*    cte;
@@ -69,19 +68,18 @@ static inline Stmt*
 stmt_allocate(Parser* parser, Lex* lex, Scope* scope)
 {
 	Stmt* self = palloc(sizeof(Stmt));
-	self->id            = STMT_UNDEF;
-	self->ast           = NULL;
-	self->order         = 0;
-	self->order_targets = 0;
-	self->ret           = false;
-	self->r             = -1;
-	self->cte           = NULL;
-	self->assign        = NULL;
-	self->next          = NULL;
-	self->prev          = NULL;
-	self->lex           = lex;
-	self->scope         = scope;
-	self->parser        = parser;
+	self->id          = STMT_UNDEF;
+	self->ast         = NULL;
+	self->targets_seq = 0;
+	self->ret         = false;
+	self->r           = -1;
+	self->cte         = NULL;
+	self->assign      = NULL;
+	self->next        = NULL;
+	self->prev        = NULL;
+	self->lex         = lex;
+	self->scope       = scope;
+	self->parser      = parser;
 	ast_list_init(&self->select_list);
 	return self;
 }

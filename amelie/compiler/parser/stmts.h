@@ -54,11 +54,3 @@ stmts_insert(Stmts* self, Stmt* before, Stmt* stmt)
 	before->prev = stmt;
 	self->count++;
 }
-
-static inline void
-stmts_order(Stmts* self)
-{
-	int order = 0;
-	for (auto stmt = self->list; stmt; stmt = stmt->next)
-		stmt->order = order++;
-}

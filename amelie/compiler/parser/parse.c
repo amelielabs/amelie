@@ -565,7 +565,4 @@ parse(Parser* self, Program* program, Str* str)
 	// ensure main stmt is not utility when using CTE
 	if (self->stmts.count_utility && self->stmts.count > 1)
 		lex_error(lex, ast, "multi-statement utility commands are not supported");
-
-	// set statements order
-	stmts_order(&self->stmts);
 }

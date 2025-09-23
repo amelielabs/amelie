@@ -174,7 +174,7 @@ parse_generated(Stmt* self)
 
 	// create a target to iterate inserted values to create new rows
 	// using the generated columns
-	auto target = target_allocate(&self->order_targets);
+	auto target = target_allocate(&self->targets_seq);
 	target->type         = TARGET_VALUES;
 	target->ast          = targets_outer(&stmt->targets)->ast;
 	target->from_columns = targets_outer(&stmt->targets)->from_columns;

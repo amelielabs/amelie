@@ -268,7 +268,7 @@ parse_import(Parser* self, Program* program, Str* str, Str* uri,
 	auto insert  = ast_insert_of(stmt->ast);
 	auto table   = endpoint.table;
 	auto columns = table_columns(table);
-	auto target  = target_allocate(&stmt->order_targets);
+	auto target  = target_allocate(&stmt->targets_seq);
 	target->type         = TARGET_TABLE;
 	target->ast          = stmt->ast;
 	target->from_access  = ACCESS_RW;
