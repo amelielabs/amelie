@@ -22,23 +22,21 @@
 // lex
 #include "parser/lex.h"
 
-// scope
+// stmt
+#include "parser/stmt.h"
+#include "parser/stmts.h"
+
+// block
 #include "parser/var.h"
 #include "parser/cte.h"
-#include "parser/scope.h"
+#include "parser/block.h"
 
 // target
 #include "parser/target.h"
 #include "parser/targets.h"
 
-// stmt
-#include "parser/stmt.h"
-#include "parser/stmts.h"
-#include "parser/endpoint.h"
-
 // parser
 #include "parser/parser.h"
-#include "parser/parse.h"
 
 // expr
 #include "parser/parse_target.h"
@@ -79,5 +77,9 @@
 #include "parser/parse_select.h"
 
 // import
+#include "parser/endpoint.h"
 #include "parser/parse_endpoint.h"
 #include "parser/parse_import.h"
+
+// parse
+#include "parser/parse.h"

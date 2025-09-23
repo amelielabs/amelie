@@ -17,9 +17,7 @@ struct Parser
 {
 	bool      begin;
 	bool      commit;
-	Stmt*     stmt;
-	Stmts     stmts;
-	Scopes    scopes;
+	Blocks    blocks;
 	Program*  program;
 	SetCache* values_cache;
 	Uri       uri;
@@ -31,9 +29,3 @@ struct Parser
 void parser_init(Parser*, Local*, SetCache*);
 void parser_reset(Parser*);
 void parser_free(Parser*);
-
-static inline Scope*
-parser_scope(Parser* self)
-{
-	return self->scopes.list_tail;
-}

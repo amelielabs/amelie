@@ -85,7 +85,11 @@ ql_compiler_parse(Ql* ql, Program* program, Str* text)
 
 	// parse SQL statements
 	compiler_parse(compiler, text);
-	if (! compiler->parser.stmts.count)
+
+	auto main = compiler->parser.blocks.list;
+	if (! main)
+		return;
+	if (! main->stmts.list)
 		return;
 
 	// generate bytecode
@@ -105,7 +109,11 @@ ql_compiler_parse_endpoint(Ql*          ql,
 
 	// parse SQL statements
 	compiler_parse_import(compiler, text, uri, type);
-	if (! compiler->parser.stmts.count)
+
+	auto main = compiler->parser.blocks.list;
+	if (! main)
+		return;
+	if (! main->stmts.list)
 		return;
 
 	// generate bytecode

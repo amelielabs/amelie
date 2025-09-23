@@ -61,14 +61,14 @@ parse_from_target(Stmt* self, Targets* targets, AccessType access, bool subquery
 			} else
 			{
 				// rewrite FROM (SELECT) as CTE statement (this can recurse)
-				auto stmt = stmt_allocate(self->parser, &self->parser->lex, self->scope);
+				auto stmt = stmt_allocate(self->parser, &self->parser->lex, self->block);
 				stmt->id = STMT_SELECT;
-				stmts_insert(&self->parser->stmts, self, stmt);
+				stmts_insert(&self->block->stmts, self, stmt);
 
 				select = parse_select(stmt, NULL, false);
 				stmt_expect(self, ')');
 				stmt->ast          = &select->ast;
-				stmt->cte          = ctes_add(&self->scope->ctes, stmt, NULL);
+				stmt->cte          = ctes_add(&self->block->ctes, stmt, NULL);
 				stmt->cte->columns = &select->ret.columns;
 				parse_select_resolve(stmt);
 
@@ -96,7 +96,7 @@ parse_from_target(Stmt* self, Targets* targets, AccessType access, bool subquery
 			target->ast  = ast;
 
 			// allocate select to keep returning columns
-			auto select = ast_select_allocate(targets->outer, targets->scope);
+			auto select = ast_select_allocate(targets->outer, targets->block);
 			select->ast.pos_start = target->ast->pos_start;
 			select->ast.pos_end   = target->ast->pos_end;
 			ast_list_add(&self->select_list, &select->ast);
@@ -135,7 +135,7 @@ parse_from_target(Stmt* self, Targets* targets, AccessType access, bool subquery
 		target->from_function = &func->ast;
 
 		// allocate select to keep returning columns
-		auto select = ast_select_allocate(targets->outer, targets->scope);
+		auto select = ast_select_allocate(targets->outer, targets->block);
 		select->ast.pos_start = target->ast->pos_start;
 		select->ast.pos_end   = target->ast->pos_end;
 		ast_list_add(&self->select_list, &select->ast);
@@ -145,7 +145,7 @@ parse_from_target(Stmt* self, Targets* targets, AccessType access, bool subquery
 	}
 
 	// cte
-	auto cte = ctes_find(&self->scope->ctes, &name);
+	auto cte = ctes_find(&self->block->ctes, &name);
 	if (cte)
 	{
 		if (cte->stmt == self)

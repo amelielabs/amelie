@@ -225,7 +225,7 @@ parse_insert(Stmt* self)
 	// [GENERATE | VALUES (value, ..), ... | SELECT ...]
 	// [ON CONFLICT DO NOTHING | ERROR | UPDATE | RESOLVE]
 	// [RETURNING expr [FORMAT name]]
-	auto stmt = ast_insert_allocate(self->scope);
+	auto stmt = ast_insert_allocate(self->block);
 	self->ast = &stmt->ast;
 
 	// INTO
@@ -272,14 +272,15 @@ parse_insert(Stmt* self)
 
 			// rewrite INSERT INTO SELECT as CTE statement, columns will be
 			// validated during the emit
-			auto cte = stmt_allocate(self->parser, &self->parser->lex, self->scope);
+			auto cte = stmt_allocate(self->parser, &self->parser->lex, self->block);
 			cte->id = STMT_SELECT;
-			stmts_insert(&self->parser->stmts, self, cte);
+			stmts_insert(&self->block->stmts, self, cte);
+
 			auto select = parse_select(cte, NULL, false);
 			select->ast.pos_start = values->pos_start;
 			select->ast.pos_end   = values->pos_end;
 			cte->ast          = &select->ast;
-			cte->cte          = ctes_add(&self->scope->ctes, cte, NULL);
+			cte->cte          = ctes_add(&self->block->ctes, cte, NULL);
 			cte->cte->columns = &select->ret.columns;
 			parse_select_resolve(cte);
 			stmt->select = cte;

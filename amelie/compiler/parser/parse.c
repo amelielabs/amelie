@@ -384,15 +384,14 @@ parse_stmt(Parser* self, Stmt* stmt)
 }
 
 hot static void
-parse_with(Parser* self, Scope* scope)
+parse_with(Parser* self, Block* block)
 {
 	auto lex = &self->lex;
 	for (;;)
 	{
 		// name [(args)] AS ( stmt )[, ...]
-		auto stmt = stmt_allocate(self, &self->lex, scope);
-		stmts_add(&self->stmts, stmt);
-		self->stmt = stmt;
+		auto stmt = stmt_allocate(self, &self->lex, block);
+		stmts_add(&block->stmts, stmt);
 
 		// name [(args)]
 		parse_cte(stmt);
@@ -440,7 +439,7 @@ parse_with(Parser* self, Scope* scope)
 }
 
 hot void
-parse_scope(Parser* self, Scope* scope)
+parse_block(Parser* self, Block* block)
 {
 	// stmt [; stmt]
 	auto lex = &self->lex;
@@ -472,30 +471,30 @@ parse_scope(Parser* self, Scope* scope)
 		{
 			if (! lex_if(lex, KASSIGN))
 				lex_error_expect(lex, lex_next(lex), KASSIGN);
-			assign = vars_add(&scope->vars, &ast->string);
+			assign = vars_add(&block->vars, &ast->string);
 		}
 
 		// [WITH name AS ( cte )[, name AS (...)]]
 		if (lex_if(lex, KWITH))
-			parse_with(self, scope);
+			parse_with(self, block);
 
 		ast = lex_if(lex, KEOF);
 		if (ast)
 			lex_error(lex, ast, "statement expected");
 
 		// stmt (last stmt is main)
-		self->stmt = stmt_allocate(self, &self->lex, scope);
-		stmts_add(&self->stmts, self->stmt);
-		self->stmt->assign = assign;
+		auto stmt = stmt_allocate(self, &self->lex, block);
+		stmts_add(&block->stmts, stmt);
+		stmt->assign = assign;
 
 		// stmt
-		parse_stmt(self, self->stmt);
+		parse_stmt(self, stmt);
 
-		if (stmt_is_utility(self->stmt))
+		if (stmt_is_utility(stmt))
 		{
-			if (self->stmt->assign)
-				stmt_error(self->stmt, NULL, ":= cannot be used with utility statements");
-			self->stmts.count_utility++;
+			if (stmt->assign)
+				stmt_error(stmt, NULL, ":= cannot be used with utility statements");
+			block->stmts.count_utility++;
 		}
 
 		// EOF
@@ -503,7 +502,7 @@ parse_scope(Parser* self, Scope* scope)
 			break;
 
 		// ;
-		stmt_expect(self->stmt, ';');
+		stmt_expect(stmt, ';');
 	}
 }
 
@@ -540,8 +539,8 @@ parse(Parser* self, Program* program, Str* str)
 	self->begin = lex_if(lex, KBEGIN) != NULL;
 
 	// stmt [; stmt]
-	auto scope = scopes_add(&self->scopes, NULL);
-	parse_scope(self, scope);
+	auto block = blocks_add(&self->blocks, NULL);
+	parse_block(self, block);
 
 	// [COMMIT]
 	auto ast = lex_next(lex);
@@ -553,16 +552,16 @@ parse(Parser* self, Program* program, Str* str)
 		lex_error(lex, ast, "unexpected token at the end of transaction");
 
 	// force last statetement as return
-	if (self->stmt)
-		self->stmt->ret = true;
+	if (block->stmts.list_tail)
+		block->stmts.list_tail->ret = true;
 
 	// ensure EXPLAIN has a command
-	if (unlikely(! self->stmts.count)) {
+	if (unlikely(! block->stmts.count)) {
 		if (self->program->explain || self->program->profile)
 			lex_error(lex, explain, "EXPLAIN without command");
 	}
 
 	// ensure main stmt is not utility when using CTE
-	if (self->stmts.count_utility && self->stmts.count > 1)
+	if (block->stmts.count_utility && block->stmts.count > 1)
 		lex_error(lex, ast, "multi-statement utility commands are not supported");
 }

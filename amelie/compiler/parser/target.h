@@ -13,7 +13,6 @@
 
 typedef struct Target  Target;
 typedef struct Targets Targets;
-typedef struct Stmt    Stmt;
 typedef struct Path    Path;
 
 typedef enum

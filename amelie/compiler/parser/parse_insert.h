@@ -43,12 +43,12 @@ ast_insert_of(Ast* ast)
 }
 
 static inline AstInsert*
-ast_insert_allocate(Scope* scope)
+ast_insert_allocate(Block* block)
 {
 	AstInsert* self;
 	self = ast_allocate(0, sizeof(AstInsert));
-	targets_init(&self->targets, scope);
-	targets_init(&self->targets_generated, scope);
+	targets_init(&self->targets, block);
+	targets_init(&self->targets_generated, block);
 	ast_list_init(&self->rows);
 	returning_init(&self->ret);
 	return self;

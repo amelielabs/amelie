@@ -37,7 +37,10 @@ void compiler_emit(Compiler*);
 static inline Stmt*
 compiler_stmt(Compiler* self)
 {
-	return self->parser.stmt;
+	auto main = self->parser.blocks.list;
+	if (! main)
+		return NULL;
+	return main->stmts.list;
 }
 
 static inline void

@@ -207,7 +207,7 @@ path_column(Path* self, Str* string)
 }
 
 static inline void
-path_key(Path* self, Scope* scope, PathKey* key, AstList* ops)
+path_key(Path* self, Block* block, PathKey* key, AstList* ops)
 {
 	auto node = ops->list;
 	for (; node; node = node->next)
@@ -245,7 +245,7 @@ path_key(Path* self, Scope* scope, PathKey* key, AstList* ops)
 		case KNAME:
 		{
 			// match variable by name
-			auto match = vars_find(&scope->vars, &value->string);
+			auto match = vars_find(&block->vars, &value->string);
 			if (! match)
 				continue;
 			break;
@@ -285,7 +285,7 @@ path_key(Path* self, Scope* scope, PathKey* key, AstList* ops)
 }
 
 Path*
-path_create(Target* target, Scope* scope, Keys* keys, AstList* ops)
+path_create(Target* target, Block* block, Keys* keys, AstList* ops)
 {
 	auto self = path_allocate(target, keys);
 	auto match_eq = 0;
@@ -295,7 +295,7 @@ path_create(Target* target, Scope* scope, Keys* keys, AstList* ops)
 	{
 		auto key = list_at(Key, link);
 		auto key_path = &self->keys[key->order];
-		path_key(self, scope, key_path, ops);
+		path_key(self, block, key_path, ops);
 
 		// count sequential number of matches from start
 		if (key_path->start && (match_last_start == (key->order - 1)))

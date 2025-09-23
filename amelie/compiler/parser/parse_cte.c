@@ -77,11 +77,11 @@ parse_cte(Stmt* self)
 	auto name = stmt_expect(self, KNAME);
 
 	// ensure CTE is not redefined
-	auto cte = ctes_find(&self->scope->ctes, &name->string);
+	auto cte = ctes_find(&self->block->ctes, &name->string);
 	if (cte)
 		stmt_error(self, name, "CTE is redefined");
 
-	cte = ctes_add(&self->scope->ctes, self, &name->string);
+	cte = ctes_add(&self->block->ctes, self, &name->string);
 	self->cte = cte;
 
 	// (args)

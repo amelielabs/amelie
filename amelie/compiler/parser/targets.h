@@ -18,18 +18,18 @@ struct Targets
 	Target*  list;
 	Target*  list_tail;
 	int      count;
-	Scope*   scope;
+	Block*   block;
 	Targets* outer;
 	Targets* next;
 };
 
 static inline void
-targets_init(Targets* self, Scope* scope)
+targets_init(Targets* self, Block* block)
 {
 	self->list      = NULL;
 	self->list_tail = NULL;
 	self->count     = 0;
-	self->scope     = scope;
+	self->block     = block;
 	self->outer     = NULL;
 	self->next      = NULL;
 }

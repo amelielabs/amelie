@@ -12,8 +12,10 @@
 //
 
 typedef struct Stmt   Stmt;
-typedef struct Stmts  Stmts;
 typedef struct Parser Parser;
+typedef struct Var    Var;
+typedef struct Cte    Cte;
+typedef struct Block  Block;
 
 typedef enum
 {
@@ -58,14 +60,14 @@ struct Stmt
 	Cte*    cte;
 	Var*    assign;
 	AstList select_list;
-	Scope*  scope;
+	Block*  block;
 	Parser* parser;
 	Stmt*   next;
 	Stmt*   prev;
 };
 
 static inline Stmt*
-stmt_allocate(Parser* parser, Lex* lex, Scope* scope)
+stmt_allocate(Parser* parser, Lex* lex, Block* block)
 {
 	Stmt* self = palloc(sizeof(Stmt));
 	self->id          = STMT_UNDEF;
@@ -78,7 +80,7 @@ stmt_allocate(Parser* parser, Lex* lex, Scope* scope)
 	self->next        = NULL;
 	self->prev        = NULL;
 	self->lex         = lex;
-	self->scope       = scope;
+	self->block       = block;
 	self->parser      = parser;
 	ast_list_init(&self->select_list);
 	return self;

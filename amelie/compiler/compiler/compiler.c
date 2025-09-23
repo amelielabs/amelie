@@ -368,7 +368,7 @@ emit_frontend(Compiler* self, int start)
 	if (stmt->ret)
 	{
 		// ensure all pending statements being received
-		auto ref = self->parser.stmts.list;
+		auto ref = stmt->block->stmts.list;
 		for (; ref; ref = ref->next)
 			emit_recv(self, ref);
 
@@ -404,10 +404,9 @@ emit_sync(Compiler* self, Stmt* stmt)
 }
 
 hot static void
-emit(Compiler* self)
+emit_block(Compiler* self, Block* block)
 {
-	assert(self->parser.stmt);
-	auto stmt = self->parser.stmts.list;
+	auto stmt = block->stmts.list;
 	for (; stmt; stmt = stmt->next)
 	{
 		// generate frontend code (for recv)
@@ -432,11 +431,16 @@ hot void
 compiler_emit(Compiler* self)
 {
 	// ddl/utility or dml/query
-	auto stmt = self->parser.stmts.list;
+	auto main = self->parser.blocks.list;
+	assert(main);
+
+	auto stmt = main->stmts.list;
+	assert(stmt);
+
 	if (stmt_is_utility(stmt))
 		emit_utility(self);
 	else
-		emit(self);
+		emit_block(self, main);
 
 	// set the max number of registers used
 	code_set_regs(&self->program->code, self->map.count);

@@ -254,15 +254,14 @@ parse_import(Parser* self, Program* program, Str* str, Str* uri,
 	endpoint_init(&endpoint, &self->uri, type);
 	parse_endpoint(&endpoint);
 
-	auto scope = scopes_add(&self->scopes, NULL);
+	auto block = blocks_add(&self->blocks, NULL);
 
 	// prepare insert stmt
-	auto stmt = stmt_allocate(self, &self->lex, scope);
-	self->stmt = stmt;
-	stmts_add(&self->stmts, stmt);
+	auto stmt = stmt_allocate(self, &self->lex, block);
+	stmts_add(&block->stmts, stmt);
 	stmt->id  = STMT_INSERT;
 	stmt->ret = true;
-	stmt->ast = &ast_insert_allocate(scope)->ast;
+	stmt->ast = &ast_insert_allocate(block)->ast;
 
 	// create insert target
 	auto insert  = ast_insert_of(stmt->ast);

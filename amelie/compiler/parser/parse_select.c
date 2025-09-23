@@ -140,7 +140,7 @@ parse_select(Stmt* self, Targets* outer, bool subquery)
 	// [WHERE expr]
 	// [ORDER BY]
 	// [LIMIT expr] [OFFSET expr]
-	auto select = ast_select_allocate(outer, self->scope);
+	auto select = ast_select_allocate(outer, self->block);
 	ast_list_add(&self->select_list, &select->ast);
 
 	// [DISTINCT]
@@ -275,7 +275,7 @@ AstSelect*
 parse_select_expr(Stmt* self)
 {
 	// SELECT expr
-	auto select = ast_select_allocate(NULL, self->scope);
+	auto select = ast_select_allocate(NULL, self->block);
 	ast_list_add(&self->select_list, &select->ast);
 	Expr ctx;
 	expr_init(&ctx);
