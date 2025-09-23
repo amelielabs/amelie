@@ -44,7 +44,7 @@ struct Cursor
 
 struct CursorMgr
 {
-	Cursor cursor[16];
+	Cursor* cursor;
 };
 
 static inline void
@@ -90,6 +90,15 @@ cursor_reset(Cursor* self)
 static inline void
 cursor_mgr_init(CursorMgr* self)
 {
+	self->cursor = NULL;
+}
+
+static inline void
+cursor_mgr_prepare(CursorMgr* self)
+{
+	if (self->cursor)
+		return;
+	self->cursor = am_malloc(sizeof(Cursor) * 16);
 	for (int i = 0; i < 16; i++)
 	{
 		auto cursor = &self->cursor[i];
@@ -100,20 +109,28 @@ cursor_mgr_init(CursorMgr* self)
 static inline void
 cursor_mgr_reset(CursorMgr* self)
 {
+	if (! self->cursor)
+		return;
 	for (int i = 0; i < 16; i++)
 	{
 		auto cursor = &self->cursor[i];
-		cursor_reset(cursor);
+		if (cursor->type != CURSOR_NONE)
+			cursor_reset(cursor);
 	}
 }
 
 static inline void
 cursor_mgr_free(CursorMgr* self)
 {
-	for (int i = 0; i < 16; i++)
+	if (self->cursor)
 	{
-		auto cursor = &self->cursor[i];
-		cursor_reset(cursor);
+		for (int i = 0; i < 16; i++)
+		{
+			auto cursor = &self->cursor[i];
+			cursor_reset(cursor);
+		}
+		am_free(self->cursor);
+		self->cursor = NULL;
 	}
 }
 

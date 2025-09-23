@@ -111,6 +111,7 @@ vm_run(Vm*       self,
 	self->args      = args;
 	self->result    = result;
 	self->content   = content;
+	cursor_mgr_prepare(&self->cursor_mgr);
 	call_mgr_prepare(&self->call_mgr, local, code_data);
 
 	const void* ops[] =
