@@ -97,69 +97,6 @@ compiler_parse_import(Compiler*    self, Str* text, Str* uri,
 }
 
 static void
-emit_backend(Compiler* self)
-{
-	// generate backend code (pushdown)
-	auto stmt = self->current;
-	switch (stmt->id) {
-	case STMT_INSERT:
-	{
-		auto insert = ast_insert_of(stmt->ast);
-		if (insert->on_conflict == ON_CONFLICT_NONE)
-			emit_insert(self, stmt->ast);
-		else
-			emit_upsert(self, stmt->ast);
-		break;
-	}
-	case STMT_UPDATE:
-	{
-		emit_update(self, stmt->ast);
-		break;
-	}
-	case STMT_DELETE:
-	{
-		emit_delete(self, stmt->ast);
-		break;
-	}
-	case STMT_SELECT:
-	{
-		// select from table, ...
-		auto select = ast_select_of(stmt->ast);
-		if (select->pushdown)
-		{
-			// table direct scan or join
-			//
-			// execute on one or more backends, process the result on frontend
-			//
-			pushdown(self, stmt->ast);
-			break;
-		}
-
-		// select (select from table)
-		// select expr
-		//
-		// do nothing (frontend only)
-		return;
-	}
-	case STMT_WATCH:
-		// do nothing (frontend only)
-		return;
-	default:
-		abort();
-		break;
-	}
-
-	// set last statement which uses a table,
-	// set snapshot if two or more stmts are using tables
-	if (self->last)
-		self->program->snapshot = true;
-	self->last = self->current;
-
-	// CRET
-	op0(self, CRET);
-}
-
-static void
 emit_send(Compiler* self, Target* target, Returning* ret, int start)
 {
 	auto stmt = self->current;
@@ -281,12 +218,104 @@ emit_recv(Compiler* self, Stmt* stmt)
 		stmt->r = ret->r;
 }
 
-static void
-emit_frontend(Compiler* self, int start)
+hot static void
+emit_sync(Compiler* self, Stmt* stmt)
 {
+	compiler_switch_frontend(self);
+	if (stmt->id == STMT_INSERT)
+	{
+		auto insert = ast_insert_of(stmt->ast);
+		if (insert->select)
+			emit_recv(self, insert->select);
+		return;
+	}
+	for (auto ref = stmt->select_list.list; ref; ref = ref->next)
+	{
+		auto select = ast_select_of(ref->ast);
+		for (auto target = select->targets.list; target; target = target->next)
+		{
+			if (target->type != TARGET_CTE)
+				continue;
+			emit_recv(self, target->from_cte);
+		}
+	}
+}
+
+hot static int
+emit_stmt_backend(Compiler* self, Stmt* stmt)
+{
+	// generate backend code (pushdown)
+	compiler_switch_backend(self);
+	auto start = code_count(&self->program->code_backend);
+
+	switch (stmt->id) {
+	case STMT_INSERT:
+	{
+		auto insert = ast_insert_of(stmt->ast);
+		if (insert->on_conflict == ON_CONFLICT_NONE)
+			emit_insert(self, stmt->ast);
+		else
+			emit_upsert(self, stmt->ast);
+		break;
+	}
+	case STMT_UPDATE:
+	{
+		emit_update(self, stmt->ast);
+		break;
+	}
+	case STMT_DELETE:
+	{
+		emit_delete(self, stmt->ast);
+		break;
+	}
+	case STMT_SELECT:
+	{
+		// select from table, ...
+		auto select = ast_select_of(stmt->ast);
+		if (select->pushdown)
+		{
+			// table direct scan or join
+			//
+			// execute on one or more backends, process the result on frontend
+			//
+			pushdown(self, stmt->ast);
+			break;
+		}
+
+		// select (select from table)
+		// select expr
+		//
+		// do nothing (frontend only)
+		return -1;
+	}
+	case STMT_WATCH:
+		// do nothing (frontend only)
+		return -1;
+	default:
+		abort();
+		break;
+	}
+
+	// CRET
+	op0(self, CRET);
+	return start;
+}
+
+hot static void
+emit_stmt(Compiler* self, Stmt* stmt)
+{
+	self->current = stmt;
+
+	// generate all dependable recv statements first
+	emit_sync(self, stmt);
+
+	// generate backend code (pushdown)
+	auto start = emit_stmt_backend(self, stmt);
+
+	// generate frontend code
+	compiler_switch_frontend(self);
 	Returning* ret = NULL;
 	Target* target = NULL;
-	auto stmt = self->current;
 	switch (stmt->id) {
 	case STMT_INSERT:
 	{
@@ -314,11 +343,14 @@ emit_frontend(Compiler* self, int start)
 		// select from table, ...
 		auto select = ast_select_of(stmt->ast);
 		ret = &select->ret;
+		target = select->pushdown;
+
+		// table scan or join
+		//
+		// execute on one or more backends, process the result on frontend
+		//
 		if (select->pushdown)
-		{
-			target = select->pushdown;
 			break;
-		}
 
 		// select (select from table)
 		// select expr
@@ -360,6 +392,7 @@ emit_frontend(Compiler* self, int start)
 		if (var->type != TYPE_NULL && var->type != type)
 			stmt_error(self->current, stmt->ast, "variable expected %s",
 			           type_of(var->type));
+		assert(stmt->r != -1);
 		var->type = type;
 		var->r = op2(self, CASSIGN, rpin(self, var->type), stmt->r);
 	}
@@ -379,28 +412,12 @@ emit_frontend(Compiler* self, int start)
 			    (intptr_t)&ret->format);
 		op0(self, CRET);
 	}
-}
 
-hot static void
-emit_sync(Compiler* self, Stmt* stmt)
-{
-	if (stmt->id == STMT_INSERT)
-	{
-		auto insert = ast_insert_of(stmt->ast);
-		if (insert->select)
-			emit_recv(self, insert->select);
-		return;
-	}
-	for (auto ref = stmt->select_list.list; ref; ref = ref->next)
-	{
-		auto select = ast_select_of(ref->ast);
-		for (auto target = select->targets.list; target; target = target->next)
-		{
-			if (target->type != TARGET_CTE)
-				continue;
-			emit_recv(self, target->from_cte);
-		}
-	}
+	// set last statement which uses a table,
+	// set snapshot if two or more stmts are using tables
+	if (self->last)
+		self->program->snapshot = true;
+	self->last = self->current;
 }
 
 hot static void
@@ -408,23 +425,7 @@ emit_block(Compiler* self, Block* block)
 {
 	auto stmt = block->stmts.list;
 	for (; stmt; stmt = stmt->next)
-	{
-		// generate frontend code (for recv)
-		compiler_switch_frontend(self);
-		self->current = stmt;
-
-		// generate all dependable recv statements first
-		emit_sync(self, stmt);
-
-		// generate backend code (pushdown)
-		compiler_switch_backend(self);
-		auto stmt_start = code_count(self->code);
-		emit_backend(self);
-
-		// generate frontend code (for send and exprs)
-		compiler_switch_frontend(self);
-		emit_frontend(self, stmt_start);
-	}
+		emit_stmt(self, stmt);
 }
 
 hot void
@@ -434,10 +435,7 @@ compiler_emit(Compiler* self)
 	auto main = self->parser.blocks.list;
 	assert(main);
 
-	auto stmt = main->stmts.list;
-	assert(stmt);
-
-	if (stmt_is_utility(stmt))
+	if (stmt_is_utility(compiler_stmt(self)))
 		emit_utility(self);
 	else
 		emit_block(self, main);
