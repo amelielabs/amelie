@@ -56,3 +56,15 @@ blocks_add(Blocks* self, Block* parent)
 	self->count++;
 	return block;
 }
+
+static inline Var*
+block_add_var(Block* self, Str* name)
+{
+	for (auto block = self; block; block = block->parent)
+	{
+		auto var = vars_find(&block->vars, name);
+		if (var)
+			return var;
+	}
+	return vars_add(&self->vars, name);
+}

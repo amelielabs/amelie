@@ -47,6 +47,9 @@
 #include "parser/parse_expr.h"
 #include "parser/parse_encode.h"
 
+// control structures
+#include "parser/parse_if.h"
+
 // system
 #include "parser/parse_system.h"
 #include "parser/parse_show.h"

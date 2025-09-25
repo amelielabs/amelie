@@ -320,6 +320,12 @@ parse_stmt(Parser* self, Stmt* stmt)
 		break;
 	}
 
+	case KWATCH:
+		// WATCH expr
+		stmt->id = STMT_WATCH;
+		parse_watch(stmt);
+		break;
+
 	case KINSERT:
 		stmt->id = STMT_INSERT;
 		parse_insert(stmt);
@@ -343,11 +349,12 @@ parse_stmt(Parser* self, Stmt* stmt)
 		break;
 	}
 
-	case KWATCH:
-		// WATCH expr
-		stmt->id = STMT_WATCH;
-		parse_watch(stmt);
+	case KIF:
+	{
+		stmt->id = STMT_IF;
+		parse_if(stmt);
 		break;
+	}
 
 	case KBEGIN:
 	case KCOMMIT:
@@ -445,14 +452,23 @@ parse_block(Parser* self, Block* block)
 	auto lex = &self->lex;
 	for (;;)
 	{
-		// ; | EOF
-		if (lex_if(lex, ';'))
+		// ;
+		auto ast = lex_next(lex);
+		if (ast->id == ';')
 			continue;
-		if (lex_if(lex, KEOF))
+
+		// EOF | or block end clauses
+		if (ast->id == KEOF)
 			break;
+		if (ast->id == KEND   ||
+		    ast->id == KELSE  ||
+		    ast->id == KELSIF)
+		{
+			lex_push(lex, ast);
+			break;
+		}
 
 		// [COMMIT]
-		auto ast = lex_next(lex);
 		if (ast->id == KCOMMIT)
 		{
 			if (! self->begin)
@@ -471,7 +487,7 @@ parse_block(Parser* self, Block* block)
 		{
 			if (! lex_if(lex, KASSIGN))
 				lex_error_expect(lex, lex_next(lex), KASSIGN);
-			assign = vars_add(&block->vars, &ast->string);
+			assign = block_add_var(block, &ast->string);
 		}
 
 		// [WITH name AS ( cte )[, name AS (...)]]

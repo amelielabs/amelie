@@ -85,6 +85,7 @@ Keyword keywords[] =
 	// e
 	{ KEXTRACT,               "extract",               7  },
 	{ KELSE,                  "else",                  4  },
+	{ KELSIF,                 "elsif",                 5  },
 	{ KEND,                   "end",                   3  },
 	{ KERROR,                 "error",                 5  },
 	{ KEXPLAIN,               "explain",               7  },

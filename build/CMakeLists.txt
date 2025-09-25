@@ -252,6 +252,7 @@ set(AMELIE_SOURCES_COMPILER
     ${AMELIE_ROOT}/compiler/parser/keyword.c
     ${AMELIE_ROOT}/compiler/parser/lex.c
     ${AMELIE_ROOT}/compiler/parser/parse_expr.c
+    ${AMELIE_ROOT}/compiler/parser/parse_if.c
     ${AMELIE_ROOT}/compiler/parser/parse_show.c
     ${AMELIE_ROOT}/compiler/parser/parse_system.c
     ${AMELIE_ROOT}/compiler/parser/parse_user.c

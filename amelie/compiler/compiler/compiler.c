@@ -201,6 +201,8 @@ emit_recv(Compiler* self, Stmt* stmt)
 	}
 	case STMT_WATCH:
 		return;
+	case STMT_IF:
+		return;
 	default:
 		abort();
 		break;
@@ -216,10 +218,14 @@ emit_recv(Compiler* self, Stmt* stmt)
 	ret->r_recv = true;
 
 	// process pushdown result
-	if (stmt->id == STMT_SELECT)
+	if (stmt->id == STMT_SELECT) {
+		auto stmt_prev = self->current;
+		self->current = stmt;
 		stmt->r = pushdown_recv(self, stmt->ast);
-	else
+		self->current = stmt_prev;
+	} else {
 		stmt->r = ret->r;
+	}
 }
 
 hot static void
@@ -308,6 +314,7 @@ emit_stmt_backend(Compiler* self, Stmt* stmt)
 hot static Returning*
 emit_stmt(Compiler* self, Stmt* stmt)
 {
+	auto stmt_prev = self->current;
 	self->current = stmt;
 
 	// generate all dependable recv statements first
@@ -395,22 +402,111 @@ emit_stmt(Compiler* self, Stmt* stmt)
 			stmt_error(self->current, stmt->ast, "variable expected %s",
 			           type_of(var->type));
 		assert(stmt->r != -1);
-		var->type = type;
-		var->r = op2(self, CASSIGN, rpin(self, var->type), stmt->r);
+		if  (var->r == -1)
+		{
+			var->type = type;
+			var->r = op2(self, CASSIGN, rpin(self, var->type), stmt->r);
+		} else {
+			op2(self, CASSIGN, var->r, stmt->r);
+		}
 	}
+
+	// set previous stmt
+	self->current = stmt_prev;
 	return ret;
+}
+
+hot static void
+emit_block(Compiler*, Block*);
+
+hot static void
+emit_if(Compiler* self, Stmt* stmt)
+{
+	auto stmt_prev = self->current;
+	self->current = stmt;
+
+	auto ifa = ast_if_of(stmt->ast);
+	compiler_switch_frontend(self);
+
+	// jmp to start
+	auto _start_jmp = op_pos(self);
+	op1(self, CJMP, 0 /* _start */);
+
+	// _stop_jmp
+	auto _stop_jmp = op_pos(self);
+	op1(self, CJMP, 0 /* _stop */);
+
+	// _start
+	auto _start = op_pos(self);
+	op_set_jmp(self, _start_jmp, _start);
+
+	// foreach cond
+	//   stmt
+	//   jntr _next
+	//   block
+	//   jmp _stop
+	//
+	// else_block
+	// _stop
+	//
+	auto ref = ifa->conds.list;
+	for (; ref; ref = ref->next)
+	{
+		auto cond = ast_if_cond_of(ref->ast);
+
+		// IF expr
+		auto r = emit_expr(self, &ifa->targets, cond->expr);
+
+		// jntr _next
+		int _next_jntr = op_pos(self);
+		op2(self, CJNTR, 0 /* _next */, r);
+		runpin(self, r);
+
+		// THEN block
+
+		// block
+		emit_block(self, cond->block);
+
+		op1(self, CJMP, _stop_jmp);
+
+		// _next
+		op_set_jmp(self, _next_jntr, op_pos(self));
+		op_at(self, _next_jntr)->a = op_pos(self);
+	}
+
+	// else block
+	if (ifa->cond_else)
+	{
+		emit_block(self, ifa->cond_else);
+	}
+
+	// _stop
+	auto _stop = op_pos(self);
+	op_set_jmp(self, _stop_jmp, _stop);
+
+	// force snapshot
+	self->program->snapshot = true;
+
+	// set previous stmt
+	self->current = stmt_prev;
 }
 
 hot static void
 emit_block(Compiler* self, Block* block)
 {
+	auto stmt_prev = self->current;
+	self->current = NULL;
+
 	// emit statements in the block, track last statement returning
 	Returning* returning = NULL;
 	Stmt* last = NULL;
 	auto stmt = block->stmts.list;
 	for (; stmt; stmt = stmt->next)
 	{
-		returning = emit_stmt(self, stmt);
+		if (stmt->id == STMT_IF)
+			emit_if(self, stmt);
+		else
+			returning = emit_stmt(self, stmt);
 		last = stmt;
 	}
 
@@ -418,7 +514,9 @@ emit_block(Compiler* self, Block* block)
 	// on block exit
 	stmt = block->stmts.list;
 	for (; stmt; stmt = stmt->next)
+	{
 		emit_recv(self, stmt);
+	}
 
 	// create result content for last stmt of the main block
 	if (block == compiler_block(self))
@@ -430,6 +528,9 @@ emit_block(Compiler* self, Block* block)
 
 		op0(self, CRET);
 	}
+
+	// set previous stmt
+	self->current = stmt_prev;
 }
 
 hot void

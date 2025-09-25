@@ -1,0 +1,65 @@
+#pragma once
+
+//
+// amelie.
+//
+// Real-Time SQL OLTP Database.
+//
+// Copyright (c) 2024 Dmitry Simonenko.
+// Copyright (c) 2024 Amelie Labs.
+//
+// AGPL-3.0 Licensed.
+//
+
+typedef struct AstIfCond AstIfCond;
+typedef struct AstIf     AstIf;
+
+struct AstIfCond
+{
+	Ast    ast;
+	Ast*   expr;
+	Block* block;
+};
+
+struct AstIf
+{
+	Ast     ast;
+	AstList conds;
+	Block*  cond_else;
+	Targets targets;
+};
+
+static inline AstIfCond*
+ast_if_cond_of(Ast* ast)
+{
+	return (AstIfCond*)ast;
+}
+
+static inline AstIfCond*
+ast_if_cond_allocate(void)
+{
+	AstIfCond* self;
+	self = ast_allocate(0, sizeof(AstIfCond));
+	self->expr  = NULL;
+	self->block = NULL;
+	return self;
+}
+
+static inline AstIf*
+ast_if_of(Ast* ast)
+{
+	return (AstIf*)ast;
+}
+
+static inline AstIf*
+ast_if_allocate(Block* block)
+{
+	AstIf* self;
+	self = ast_allocate(0, sizeof(AstIf));
+	self->cond_else = NULL;
+	ast_list_init(&self->conds);
+	targets_init(&self->targets, block);
+	return self;
+}
+
+void parse_if(Stmt*);

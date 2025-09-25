@@ -1,0 +1,608 @@
+open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "127.0.0.1", "port": 3485 }]
+connect E0 S0 127.0.0.1:3485
+# test: if parsing
+if
+{"msg": "if ⟵ bad expression"}
+if 1
+{"msg": "if 1 ⟵ THEN expected"}
+if 1 do
+{"msg": "if 1 ❰do❱ ⟵ THEN expected"}
+if 1 then
+{"msg": "if 1 then ⟵ END expected"}
+if 1 then 1
+{"msg": "if 1 then 1 ⟵ unexpected statement"}
+if 1 then select 1
+{"msg": "if 1 then select 1 ⟵ END expected"}
+if 1 then select 1;
+{"msg": "if 1 then select 1; ⟵ END expected"}
+# test: if
+explain if 1 then select 123; end
+[{
+  "bytecode": {
+    "frontend": {
+      "00": "jmp                 2      0      0     ",
+      "01": "jmp                 6      0      0     ",
+      "02": "int                 0      -      0     # 1",
+      "03": "jntr                6      0      0     ",
+      "04": "int                 0      -      0     # 123",
+      "05": "jmp                 1      0      0     ",
+      "06": "ret                 0      0      0     "
+    }
+  },
+  "access": []
+}]
+if 1 then select 123; end
+# test: if empty
+explain if 1 then end
+[{
+  "bytecode": {
+    "frontend": {
+      "00": "jmp                 2      0      0     ",
+      "01": "jmp                 5      0      0     ",
+      "02": "int                 0      -      0     # 1",
+      "03": "jntr                5      0      0     ",
+      "04": "jmp                 1      0      0     ",
+      "05": "ret                 0      0      0     "
+    }
+  },
+  "access": []
+}]
+if 1 then end
+# test: if else parsing
+if 1 then select 123; else
+{"msg": "if 1 then select 123; else ⟵ END expected"}
+if 1 then select 123; else 1
+{"msg": "if 1 then select 123; else 1 ⟵ unexpected statement"}
+if 1 then select 123; else else
+{"msg": "if 1 then select 123; else ❰else❱ ⟵ END expected"}
+if 1 then select 123; else select 321;
+{"msg": "if 1 then select 123; else select 321; ⟵ END expected"}
+# test: if else
+explain if 1 then select 123; else select 321; end
+[{
+  "bytecode": {
+    "frontend": {
+      "00": "jmp                 2      0      0     ",
+      "01": "jmp                 7      0      0     ",
+      "02": "int                 0      -      0     # 1",
+      "03": "jntr                6      0      0     ",
+      "04": "int                 0      -      0     # 123",
+      "05": "jmp                 1      0      0     ",
+      "06": "int                 1      -      0     # 321",
+      "07": "ret                 0      0      0     "
+    }
+  },
+  "access": []
+}]
+if 1 then select 123; else select 321; end
+# test: if else else
+if 1 then select 123; else select 321; else select 432; end
+{"msg": "if 1 then select 123; else select 321; ❰else❱ ⟵ END expected"}
+# test: if elsif parsing
+if 1 then select 123; elsif
+{"msg": "if 1 then select 123; elsif ⟵ bad expression"}
+if 1 then select 123; elsif 2
+{"msg": "if 1 then select 123; elsif 2 ⟵ THEN expected"}
+if 1 then select 123; elsif 2 then
+{"msg": "if 1 then select 123; elsif 2 then ⟵ END expected"}
+if 1 then select 123; elsif 2 then 1
+{"msg": "if 1 then select 123; elsif 2 then 1 ⟵ unexpected statement"}
+if 1 then select 123; elsif 2 then select 321
+{"msg": "if 1 then select 123; elsif 2 then select 321 ⟵ END expected"}
+if 1 then select 123; elsif 2 then select 321;
+{"msg": "if 1 then select 123; elsif 2 then select 321; ⟵ END expected"}
+# test: if elsif
+explain if 1 then select 123; elsif 2 then select 321; end
+[{
+  "bytecode": {
+    "frontend": {
+      "00": "jmp                 2      0      0     ",
+      "01": "jmp                 10     0      0     ",
+      "02": "int                 0      -      0     # 1",
+      "03": "jntr                6      0      0     ",
+      "04": "int                 0      -      0     # 123",
+      "05": "jmp                 1      0      0     ",
+      "06": "int                 1      -      0     # 2",
+      "07": "jntr                10     1      0     ",
+      "08": "int                 1      -      0     # 321",
+      "09": "jmp                 1      0      0     ",
+      "10": "ret                 0      0      0     "
+    }
+  },
+  "access": []
+}]
+if 1 then select 123; elsif 2 then select 321; end
+# test: if elsif elsif
+explain if 1 then select 123; elsif 2 then select 321; elsif 3 then select 821; end
+[{
+  "bytecode": {
+    "frontend": {
+      "00": "jmp                 2      0      0     ",
+      "01": "jmp                 14     0      0     ",
+      "02": "int                 0      -      0     # 1",
+      "03": "jntr                6      0      0     ",
+      "04": "int                 0      -      0     # 123",
+      "05": "jmp                 1      0      0     ",
+      "06": "int                 1      -      0     # 2",
+      "07": "jntr                10     1      0     ",
+      "08": "int                 1      -      0     # 321",
+      "09": "jmp                 1      0      0     ",
+      "10": "int                 2      -      0     # 3",
+      "11": "jntr                14     2      0     ",
+      "12": "int                 2      -      0     # 821",
+      "13": "jmp                 1      0      0     ",
+      "14": "ret                 0      0      0     "
+    }
+  },
+  "access": []
+}]
+if 1 then select 123; elsif 2 then select 321; elsif 3 then select 821; end
+# test: if elsif else
+if 1 then select 123; elsif 2 then select 321; else
+{"msg": "if 1 then select 123; elsif 2 then select 321; else ⟵ END expected"}
+if 1 then select 123; elsif 2 then select 321; else 1
+{"msg": "if 1 then select 123; elsif 2 then select 321; else 1 ⟵ unexpected statement"}
+explain if 1 then select 123; elsif 2 then select 321; else select 821; end
+[{
+  "bytecode": {
+    "frontend": {
+      "00": "jmp                 2      0      0     ",
+      "01": "jmp                 11     0      0     ",
+      "02": "int                 0      -      0     # 1",
+      "03": "jntr                6      0      0     ",
+      "04": "int                 0      -      0     # 123",
+      "05": "jmp                 1      0      0     ",
+      "06": "int                 1      -      0     # 2",
+      "07": "jntr                10     1      0     ",
+      "08": "int                 1      -      0     # 321",
+      "09": "jmp                 1      0      0     ",
+      "10": "int                 2      -      0     # 821",
+      "11": "ret                 0      0      0     "
+    }
+  },
+  "access": []
+}]
+if 1 then select 123; elsif 2 then select 321; else select 821; end
+# test: if elsif elsif else
+explain if 1 then select 123; elsif 2 then select 321; elsif 3 then select 821; else select 0; end
+[{
+  "bytecode": {
+    "frontend": {
+      "00": "jmp                 2      0      0     ",
+      "01": "jmp                 15     0      0     ",
+      "02": "int                 0      -      0     # 1",
+      "03": "jntr                6      0      0     ",
+      "04": "int                 0      -      0     # 123",
+      "05": "jmp                 1      0      0     ",
+      "06": "int                 1      -      0     # 2",
+      "07": "jntr                10     1      0     ",
+      "08": "int                 1      -      0     # 321",
+      "09": "jmp                 1      0      0     ",
+      "10": "int                 2      -      0     # 3",
+      "11": "jntr                14     2      0     ",
+      "12": "int                 2      -      0     # 821",
+      "13": "jmp                 1      0      0     ",
+      "14": "int                 3      -      0     # 0",
+      "15": "ret                 0      0      0     "
+    }
+  },
+  "access": []
+}]
+if 1 then select 123; elsif 2 then select 321; elsif 3 then select 821; else select 0; end
+# test: if if
+explain x := 0; if 1 then if 2 then x:= 2; end; end; select x
+[{
+  "bytecode": {
+    "frontend": {
+      "00": "int                 0      -      0     # 0",
+      "01": "assign              1      0      0     ",
+      "02": "jmp                 4      0      0     ",
+      "03": "jmp                 14     0      0     ",
+      "04": "int                 2      -      0     # 1",
+      "05": "jntr                14     2      0     ",
+      "06": "jmp                 8      0      0     ",
+      "07": "jmp                 13     0      0     ",
+      "08": "int                 2      -      0     # 2",
+      "09": "jntr                13     2      0     ",
+      "10": "int                 2      -      0     # 2",
+      "11": "assign              1      2      0     ",
+      "12": "jmp                 7      0      0     ",
+      "13": "jmp                 3      0      0     ",
+      "14": "ref                 3      1      0     ",
+      "15": "content             3      -      -     ",
+      "16": "ret                 0      0      0     "
+    }
+  },
+  "access": []
+}]
+x := 0; if 1 then if 2 then x:= 2; end; end; select x
+[2]
+# test: if if else
+explain x := 0; if 1 then if 0 then x:= 2; else x := 3; end; end; select x
+[{
+  "bytecode": {
+    "frontend": {
+      "00": "int                 0      -      0     # 0",
+      "01": "assign              1      0      0     ",
+      "02": "jmp                 4      0      0     ",
+      "03": "jmp                 16     0      0     ",
+      "04": "int                 2      -      0     # 1",
+      "05": "jntr                16     2      0     ",
+      "06": "jmp                 8      0      0     ",
+      "07": "jmp                 15     0      0     ",
+      "08": "int                 2      -      0     # 0",
+      "09": "jntr                13     2      0     ",
+      "10": "int                 2      -      0     # 2",
+      "11": "assign              1      2      0     ",
+      "12": "jmp                 7      0      0     ",
+      "13": "int                 3      -      0     # 3",
+      "14": "assign              1      3      0     ",
+      "15": "jmp                 3      0      0     ",
+      "16": "ref                 4      1      0     ",
+      "17": "content             4      -      -     ",
+      "18": "ret                 0      0      0     "
+    }
+  },
+  "access": []
+}]
+x := 0; if 1 then if 0 then x:= 2; else x := 3; end; end; select x
+[3]
+# test: if if else else
+explain x := 0; if 1 then if 0 then x:= 2; else x := 3; end; else x:= 4; end; select x
+[{
+  "bytecode": {
+    "frontend": {
+      "00": "int                 0      -      0     # 0",
+      "01": "assign              1      0      0     ",
+      "02": "jmp                 4      0      0     ",
+      "03": "jmp                 18     0      0     ",
+      "04": "int                 2      -      0     # 1",
+      "05": "jntr                16     2      0     ",
+      "06": "jmp                 8      0      0     ",
+      "07": "jmp                 15     0      0     ",
+      "08": "int                 2      -      0     # 0",
+      "09": "jntr                13     2      0     ",
+      "10": "int                 2      -      0     # 2",
+      "11": "assign              1      2      0     ",
+      "12": "jmp                 7      0      0     ",
+      "13": "int                 3      -      0     # 3",
+      "14": "assign              1      3      0     ",
+      "15": "jmp                 3      0      0     ",
+      "16": "int                 4      -      0     # 4",
+      "17": "assign              1      4      0     ",
+      "18": "ref                 5      1      0     ",
+      "19": "content             5      -      -     ",
+      "20": "ret                 0      0      0     "
+    }
+  },
+  "access": []
+}]
+x := 0; if 1 then if 0 then x:= 2; else x := 3; end; else x:= 4; end; select x
+[3]
+x := 0; if 0 then if 0 then x:= 2; else x := 3; end; else x:= 4; end; select x
+[4]
+x := 0; if 0 then if 0 then x:= 2; end; else x:= 4; end; select x
+[4]
+# test: if insert
+create table test (id int primary key)
+explain if true then; insert into test values (1); insert into test values (2); end;
+[{
+  "bytecode": {
+    "frontend": {
+      "00": "jmp                 2      0      0     ",
+      "01": "jmp                 9      0      0     ",
+      "02": "bool                0      1      0     ",
+      "03": "jntr                9      0      0     ",
+      "04": "set_ptr             0      -      0     ",
+      "05": "send_shard          0      -      0     # public.test",
+      "06": "set_ptr             0      -      0     ",
+      "07": "send_shard          2      -      0     # public.test",
+      "08": "jmp                 1      0      0     ",
+      "09": "ret                 0      0      0     "
+    },
+    "backend": {
+      "00": "insert              -      0      0     # public.test",
+      "01": "ret                 0      0      0     ",
+      "02": "insert              -      0      0     # public.test",
+      "03": "ret                 0      0      0     "
+    }
+  },
+  "access": [["public.test", "rw"]]
+}]
+if true then; insert into test values (1); insert into test values (2); end;
+drop table test
+# test: if insert if insert select
+create table test (id int primary key)
+explain if true then; insert into test values (1); end; if false then insert into test values (2); end; select * from test
+[{
+  "bytecode": {
+    "frontend": {
+      "00": "jmp                 2      0      0     ",
+      "01": "jmp                 7      0      0     ",
+      "02": "bool                0      1      0     ",
+      "03": "jntr                7      0      0     ",
+      "04": "set_ptr             0      -      0     ",
+      "05": "send_shard          0      -      0     # public.test",
+      "06": "jmp                 1      0      0     ",
+      "07": "jmp                 9      0      0     ",
+      "08": "jmp                 14     0      0     ",
+      "09": "bool                0      0      0     ",
+      "10": "jntr                14     0      0     ",
+      "11": "set_ptr             0      -      0     ",
+      "12": "send_shard          2      -      0     # public.test",
+      "13": "jmp                 8      0      0     ",
+      "14": "union               0      0      0     ",
+      "15": "send_all            4      -      0     # public.test",
+      "16": "union_recv          0      0      0     ",
+      "17": "union_set           0      0      -1    ",
+      "18": "content             0      -      -     ",
+      "19": "ret                 0      0      0     "
+    },
+    "backend": {
+      "00": "insert              -      0      0     # public.test",
+      "01": "ret                 0      0      0     ",
+      "02": "insert              -      0      0     # public.test",
+      "03": "ret                 0      0      0     ",
+      "04": "set                 0      1      0     ",
+      "05": "table_open_part     0      0      10    # public.test (primary)",
+      "06": "table_readi32       1      0      0     ",
+      "07": "push                1      0      0     ",
+      "08": "set_add             0      0      0     ",
+      "09": "table_next          0      6      0     ",
+      "10": "table_close         0      0      0     ",
+      "11": "result              0      0      0     ",
+      "12": "ret                 0      0      0     "
+    }
+  },
+  "access": [["public.test", "rw"]]
+}]
+if true then; insert into test values (1); end; if false then insert into test values (2); end; select * from test
+[1]
+delete from test
+if false then; insert into test values (1); end; if true then insert into test values (2); end; select * from test
+[2]
+drop table test
+# test: if insert else insert
+create table test (id int primary key)
+explain if true then; insert into test values (1); else insert into test values (2); end; select * from test
+[{
+  "bytecode": {
+    "frontend": {
+      "00": "jmp                 2      0      0     ",
+      "01": "jmp                 9      0      0     ",
+      "02": "bool                0      1      0     ",
+      "03": "jntr                7      0      0     ",
+      "04": "set_ptr             0      -      0     ",
+      "05": "send_shard          0      -      0     # public.test",
+      "06": "jmp                 1      0      0     ",
+      "07": "set_ptr             0      -      0     ",
+      "08": "send_shard          2      -      0     # public.test",
+      "09": "union               0      0      0     ",
+      "10": "send_all            4      -      0     # public.test",
+      "11": "union_recv          0      0      0     ",
+      "12": "union_set           0      0      -1    ",
+      "13": "content             0      -      -     ",
+      "14": "ret                 0      0      0     "
+    },
+    "backend": {
+      "00": "insert              -      0      0     # public.test",
+      "01": "ret                 0      0      0     ",
+      "02": "insert              -      0      0     # public.test",
+      "03": "ret                 0      0      0     ",
+      "04": "set                 0      1      0     ",
+      "05": "table_open_part     0      0      10    # public.test (primary)",
+      "06": "table_readi32       1      0      0     ",
+      "07": "push                1      0      0     ",
+      "08": "set_add             0      0      0     ",
+      "09": "table_next          0      6      0     ",
+      "10": "table_close         0      0      0     ",
+      "11": "result              0      0      0     ",
+      "12": "ret                 0      0      0     "
+    }
+  },
+  "access": [["public.test", "rw"]]
+}]
+if true then; insert into test values (1); else insert into test values (2); end; select * from test
+[1]
+if false then; insert into test values (1); else insert into test values (2); end; select * from test
+[1, 2]
+drop table test
+# test: if insert elsif insert else insert
+create table test (id int primary key)
+explain x := 0; if x = 0 then; insert into test values (0); elsif x = 1 then insert into test values (1); else insert into test values (2); end; select * from test
+[{
+  "bytecode": {
+    "frontend": {
+      "00": "int                 0      -      0     # 0",
+      "01": "assign              1      0      0     ",
+      "02": "jmp                 4      0      0     ",
+      "03": "jmp                 20     0      0     ",
+      "04": "ref                 2      1      0     ",
+      "05": "int                 3      -      0     # 0",
+      "06": "equii               4      2      3     ",
+      "07": "jntr                11     4      0     ",
+      "08": "set_ptr             2      -      0     ",
+      "09": "send_shard          0      -      2     # public.test",
+      "10": "jmp                 3      0      0     ",
+      "11": "ref                 2      1      0     ",
+      "12": "int                 3      -      0     # 1",
+      "13": "equii               4      2      3     ",
+      "14": "jntr                18     4      0     ",
+      "15": "set_ptr             2      -      0     ",
+      "16": "send_shard          2      -      2     # public.test",
+      "17": "jmp                 3      0      0     ",
+      "18": "set_ptr             2      -      0     ",
+      "19": "send_shard          4      -      2     # public.test",
+      "20": "union               2      0      0     ",
+      "21": "send_all            6      -      2     # public.test",
+      "22": "union_recv          2      0      0     ",
+      "23": "union_set           2      0      -1    ",
+      "24": "content             2      -      -     ",
+      "25": "ret                 0      0      0     "
+    },
+    "backend": {
+      "00": "insert              -      0      0     # public.test",
+      "01": "ret                 0      0      0     ",
+      "02": "insert              -      0      0     # public.test",
+      "03": "ret                 0      0      0     ",
+      "04": "insert              -      0      0     # public.test",
+      "05": "ret                 0      0      0     ",
+      "06": "set                 2      1      0     ",
+      "07": "table_open_part     0      0      12    # public.test (primary)",
+      "08": "table_readi32       3      0      0     ",
+      "09": "push                3      0      0     ",
+      "10": "set_add             2      0      0     ",
+      "11": "table_next          0      8      0     ",
+      "12": "table_close         0      0      0     ",
+      "13": "result              2      0      0     ",
+      "14": "ret                 0      0      0     "
+    }
+  },
+  "access": [["public.test", "rw"]]
+}]
+x := 0; if x = 0 then; insert into test values (0); elsif x = 1 then insert into test values (1); else insert into test values (2); end; select * from test
+[0]
+x := 1; if x = 0 then; insert into test values (0); elsif x = 1 then insert into test values (1); else insert into test values (2); end; select * from test
+[0, 1]
+x := 2; if x = 0 then; insert into test values (0); elsif x = 1 then insert into test values (1); else insert into test values (2); end; select * from test
+[0, 1, 2]
+drop table test
+# test: if insert returning
+create table test (id int primary key)
+explain x := 0; if true then; x := insert into test values (123) returning *; end; select x
+[{
+  "bytecode": {
+    "frontend": {
+      "00": "int                 0      -      0     # 0",
+      "01": "assign              1      0      0     ",
+      "02": "jmp                 4      0      0     ",
+      "03": "jmp                 12     0      0     ",
+      "04": "bool                2      1      0     ",
+      "05": "jntr                12     2      0     ",
+      "06": "union               2      0      0     ",
+      "07": "set_ptr             3      -      0     ",
+      "08": "send_shard          0      -      3     # public.test",
+      "09": "union_recv          2      0      0     ",
+      "10": "assign              1      2      0     ",
+      "11": "jmp                 3      0      0     ",
+      "12": "ref                 3      1      0     ",
+      "13": "content             3      -      -     ",
+      "14": "ret                 0      0      0     "
+    },
+    "backend": {
+      "00": "set                 2      1      0     ",
+      "01": "table_prepare       0      -      0     # public.test",
+      "02": "jmp                 9      0      0     ",
+      "03": "string              3      0      0     # unique key constraint violation",
+      "04": "push                3      0      0     ",
+      "05": "call                3      -      1     # public.error()",
+      "06": "table_readi32       3      0      0     ",
+      "07": "push                3      0      0     ",
+      "08": "set_add             2      0      0     ",
+      "09": "upsert              0      3      6     ",
+      "10": "table_close         0      0      0     ",
+      "11": "result              2      0      0     ",
+      "12": "ret                 0      0      0     "
+    }
+  },
+  "access": [["public.test", "rw"]]
+}]
+x := 0; if true then; x := insert into test values (123) returning *; end; select x
+[123]
+drop table test
+# test: if select
+create table test (id int primary key)
+insert into test values (123)
+explain x := 0; if true then x := select * from test; end; select x
+[{
+  "bytecode": {
+    "frontend": {
+      "00": "int                 0      -      0     # 0",
+      "01": "assign              1      0      0     ",
+      "02": "jmp                 4      0      0     ",
+      "03": "jmp                 12     0      0     ",
+      "04": "bool                2      1      0     ",
+      "05": "jntr                12     2      0     ",
+      "06": "union               2      0      0     ",
+      "07": "send_all            0      -      2     # public.test",
+      "08": "union_recv          2      0      0     ",
+      "09": "union_set           2      0      -1    ",
+      "10": "assign              1      2      0     ",
+      "11": "jmp                 3      0      0     ",
+      "12": "ref                 3      1      0     ",
+      "13": "content             3      -      -     ",
+      "14": "ret                 0      0      0     "
+    },
+    "backend": {
+      "00": "set                 2      1      0     ",
+      "01": "table_open_part     0      0      6     # public.test (primary)",
+      "02": "table_readi32       3      0      0     ",
+      "03": "push                3      0      0     ",
+      "04": "set_add             2      0      0     ",
+      "05": "table_next          0      2      0     ",
+      "06": "table_close         0      0      0     ",
+      "07": "result              2      0      0     ",
+      "08": "ret                 0      0      0     "
+    }
+  },
+  "access": [["public.test", "ro"]]
+}]
+x := 0; if true then x := select * from test; end; select x
+[123]
+explain x := 0; if true then x := select count(*) from test; end; select x
+[{
+  "bytecode": {
+    "frontend": {
+      "00": "int                 0      -      0     # 0",
+      "01": "assign              1      0      0     ",
+      "02": "jmp                 4      0      0     ",
+      "03": "jmp                 20     0      0     ",
+      "04": "bool                2      1      0     ",
+      "05": "jntr                20     2      0     ",
+      "06": "union               2      0      0     ",
+      "07": "send_all            0      -      2     # public.test",
+      "08": "union_recv          2      0      0     ",
+      "09": "union_set           2      1      -1    ",
+      "10": "union_set_aggs      2      21     0     ",
+      "11": "set                 3      1      0     ",
+      "12": "store_open          1      2      17    ",
+      "13": "count               4      1      0     ",
+      "14": "push                4      0      0     ",
+      "15": "set_add             3      0      0     ",
+      "16": "store_next          1      13     0     ",
+      "17": "store_close         1      1      0     ",
+      "18": "assign              1      3      0     ",
+      "19": "jmp                 3      0      0     ",
+      "20": "ref                 2      1      0     ",
+      "21": "content             2      -      -     ",
+      "22": "ret                 0      0      0     "
+    },
+    "backend": {
+      "00": "set_ordered         2      1      1     ",
+      "01": "table_open_part     0      1      9     # public.test (primary)",
+      "02": "bool                3      1      0     ",
+      "03": "push                3      0      0     ",
+      "04": "set_get             3      2      0     ",
+      "05": "int                 4      -      0     # 1",
+      "06": "push                4      0      0     ",
+      "07": "set_agg             2      3      21    ",
+      "08": "table_next          0      2      0     ",
+      "09": "table_close         0      0      0     ",
+      "10": "bool                3      1      0     ",
+      "11": "push                3      0      0     ",
+      "12": "set_get             3      2      0     ",
+      "13": "null                4      0      0     ",
+      "14": "push                4      0      0     ",
+      "15": "set_agg             2      3      21    ",
+      "16": "set_sort            2      0      0     ",
+      "17": "result              2      0      0     ",
+      "18": "ret                 0      0      0     "
+    }
+  },
+  "access": [["public.test", "ro"]]
+}]
+x := 0; if true then x := select count(*) from test; end; select x
+[1]
+drop table test
+disconnect S0
+close E0

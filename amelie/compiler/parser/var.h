@@ -52,10 +52,7 @@ vars_find(Vars* self, Str* name)
 static inline Var*
 vars_add(Vars* self, Str* name)
 {
-	auto var = vars_find(self, name);
-	if (var)
-		return var;
-	var = palloc(sizeof(Var));
+	auto var = (Var*)palloc(sizeof(Var));
 	var->order = self->count;
 	var->r     = -1;
 	var->type  = TYPE_NULL;
