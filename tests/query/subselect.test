@@ -175,6 +175,11 @@ explain select t.x from (select z.id as x from (select id from test) z) t
 # test: select from (select from), (select from)
 select * from (select * from a) a, (select * from a) b
 
+# test: select from (select from (select expr)))
+explain select * from (select * from ([1,2,3]) i ) o
+select * from (select * from ([1,2,3]) i ) o
+select count(*) from (select * from ([1,2,3]) i ) o
+
 drop table a
 drop table b
 drop table test

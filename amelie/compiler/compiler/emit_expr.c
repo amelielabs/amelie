@@ -212,6 +212,10 @@ emit_column(Compiler* self, Target* target, Ast* ast,
 		{
 			r = op3(self, CSTORE_READ, rpin(self, column->type),
 			        target->id, column->order);
+		} else
+		if (rt == TYPE_NULL)
+		{
+			r = op1(self, CNULL, rpin(self, column->type));
 		} else {
 			error("unsupported operation");
 		}

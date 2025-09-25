@@ -297,7 +297,21 @@ scan_expr(Scan* self, Target* target)
 	case TARGET_SELECT:
 	{
 		if (target->r == -1)
-			target->r = emit_select(cp, target->from_select, true);
+		{
+			auto r = emit_select(cp, target->from_select, false);
+			auto rt = rtype(cp, target->r);
+			if (rt == TYPE_STORE || rt == TYPE_JSON || rt == TYPE_NULL) {
+				target->r = r;
+			} else
+			{
+				// wrap result into set
+				op1(cp, CPUSH, r);
+				runpin(cp, r);
+				target->r = op3(cp, CSET, rpin(cp, TYPE_STORE), 1, 0);
+				op1(cp, CSET_ADD, target->r);
+				rt = TYPE_STORE;
+			}
+		}
 		break;
 	}
 	case TARGET_EXPR:
@@ -318,7 +332,7 @@ scan_expr(Scan* self, Target* target)
 			assert(cte->r != -1);
 			auto rt = rtype(cp, cte->r);
 			auto r  = op2(cp, CREF, rpin(cp, rt), cte->r);
-			if (rt == TYPE_STORE || rt == TYPE_JSON) {
+			if (rt == TYPE_STORE || rt == TYPE_JSON || rt == TYPE_NULL) {
 				target->r = r;
 			} else
 			{
@@ -339,9 +353,9 @@ scan_expr(Scan* self, Target* target)
 		break;
 	}
 	default:
-		assert(target->r != -1);
 		break;
 	}
+	assert(target->r != -1);
 
 	// scan over set, union or function result
 	int op_open  = CSTORE_OPEN;
