@@ -7,12 +7,9 @@ explain select "hello world"
 [{
   "bytecode": {
     "frontend": {
-      "00": "set                 0      1      0     ",
-      "01": "string              1      0      0     # hello world",
-      "02": "push                1      0      0     ",
-      "03": "set_add             0      0      0     ",
-      "04": "content             0      -      -     ",
-      "05": "ret                 0      0      0     "
+      "00": "string              0      0      0     # hello world",
+      "01": "content             0      -      -     ",
+      "02": "ret                 0      0      0     "
     }
   },
   "access": []
@@ -51,14 +48,11 @@ explain select '1 hour' = '1 hours'
 [{
   "bytecode": {
     "frontend": {
-      "00": "set                 0      1      0     ",
-      "01": "string              1      0      0     # 1 hour",
-      "02": "string              2      7      0     # 1 hours",
-      "03": "equss               3      1      2     ",
-      "04": "push                3      0      0     ",
-      "05": "set_add             0      0      0     ",
-      "06": "content             0      -      -     ",
-      "07": "ret                 0      0      0     "
+      "00": "string              0      0      0     # 1 hour",
+      "01": "string              1      7      0     # 1 hours",
+      "02": "equss               2      0      1     ",
+      "03": "content             2      -      -     ",
+      "04": "ret                 0      0      0     "
     }
   },
   "access": []
@@ -78,15 +72,12 @@ explain select '1 hour' <> '1 hours'
 [{
   "bytecode": {
     "frontend": {
-      "00": "set                 0      1      0     ",
-      "01": "string              1      0      0     # 1 hour",
-      "02": "string              2      7      0     # 1 hours",
-      "03": "equss               3      1      2     ",
-      "04": "not                 1      3      0     ",
-      "05": "push                1      0      0     ",
-      "06": "set_add             0      0      0     ",
-      "07": "content             0      -      -     ",
-      "08": "ret                 0      0      0     "
+      "00": "string              0      0      0     # 1 hour",
+      "01": "string              1      7      0     # 1 hours",
+      "02": "equss               2      0      1     ",
+      "03": "not                 0      2      0     ",
+      "04": "content             0      -      -     ",
+      "05": "ret                 0      0      0     "
     }
   },
   "access": []
@@ -106,14 +97,11 @@ explain select '1 hour' >= '1 hour'
 [{
   "bytecode": {
     "frontend": {
-      "00": "set                 0      1      0     ",
-      "01": "string              1      0      0     # 1 hour",
-      "02": "string              2      7      0     # 1 hour",
-      "03": "gtess               3      1      2     ",
-      "04": "push                3      0      0     ",
-      "05": "set_add             0      0      0     ",
-      "06": "content             0      -      -     ",
-      "07": "ret                 0      0      0     "
+      "00": "string              0      0      0     # 1 hour",
+      "01": "string              1      7      0     # 1 hour",
+      "02": "gtess               2      0      1     ",
+      "03": "content             2      -      -     ",
+      "04": "ret                 0      0      0     "
     }
   },
   "access": []
@@ -123,14 +111,11 @@ explain select '1 hour' >= null
 [{
   "bytecode": {
     "frontend": {
-      "00": "set                 0      1      0     ",
-      "01": "string              1      0      0     # 1 hour",
-      "02": "null                2      0      0     ",
-      "03": "nullop              3      1      2     ",
-      "04": "push                3      0      0     ",
-      "05": "set_add             0      0      0     ",
-      "06": "content             0      -      -     ",
-      "07": "ret                 0      0      0     "
+      "00": "string              0      0      0     # 1 hour",
+      "01": "null                1      0      0     ",
+      "02": "nullop              2      0      1     ",
+      "03": "content             2      -      -     ",
+      "04": "ret                 0      0      0     "
     }
   },
   "access": []
@@ -147,14 +132,11 @@ explain select '1 hour' > '1 hour'
 [{
   "bytecode": {
     "frontend": {
-      "00": "set                 0      1      0     ",
-      "01": "string              1      0      0     # 1 hour",
-      "02": "string              2      7      0     # 1 hour",
-      "03": "gtss                3      1      2     ",
-      "04": "push                3      0      0     ",
-      "05": "set_add             0      0      0     ",
-      "06": "content             0      -      -     ",
-      "07": "ret                 0      0      0     "
+      "00": "string              0      0      0     # 1 hour",
+      "01": "string              1      7      0     # 1 hour",
+      "02": "gtss                2      0      1     ",
+      "03": "content             2      -      -     ",
+      "04": "ret                 0      0      0     "
     }
   },
   "access": []
@@ -164,14 +146,11 @@ explain select '1 hour' > null
 [{
   "bytecode": {
     "frontend": {
-      "00": "set                 0      1      0     ",
-      "01": "string              1      0      0     # 1 hour",
-      "02": "null                2      0      0     ",
-      "03": "nullop              3      1      2     ",
-      "04": "push                3      0      0     ",
-      "05": "set_add             0      0      0     ",
-      "06": "content             0      -      -     ",
-      "07": "ret                 0      0      0     "
+      "00": "string              0      0      0     # 1 hour",
+      "01": "null                1      0      0     ",
+      "02": "nullop              2      0      1     ",
+      "03": "content             2      -      -     ",
+      "04": "ret                 0      0      0     "
     }
   },
   "access": []
@@ -188,14 +167,11 @@ explain select '1 hour' <= '1 hour'
 [{
   "bytecode": {
     "frontend": {
-      "00": "set                 0      1      0     ",
-      "01": "string              1      0      0     # 1 hour",
-      "02": "string              2      7      0     # 1 hour",
-      "03": "ltess               3      1      2     ",
-      "04": "push                3      0      0     ",
-      "05": "set_add             0      0      0     ",
-      "06": "content             0      -      -     ",
-      "07": "ret                 0      0      0     "
+      "00": "string              0      0      0     # 1 hour",
+      "01": "string              1      7      0     # 1 hour",
+      "02": "ltess               2      0      1     ",
+      "03": "content             2      -      -     ",
+      "04": "ret                 0      0      0     "
     }
   },
   "access": []
@@ -205,14 +181,11 @@ explain select '1 hour' <= null
 [{
   "bytecode": {
     "frontend": {
-      "00": "set                 0      1      0     ",
-      "01": "string              1      0      0     # 1 hour",
-      "02": "null                2      0      0     ",
-      "03": "nullop              3      1      2     ",
-      "04": "push                3      0      0     ",
-      "05": "set_add             0      0      0     ",
-      "06": "content             0      -      -     ",
-      "07": "ret                 0      0      0     "
+      "00": "string              0      0      0     # 1 hour",
+      "01": "null                1      0      0     ",
+      "02": "nullop              2      0      1     ",
+      "03": "content             2      -      -     ",
+      "04": "ret                 0      0      0     "
     }
   },
   "access": []
@@ -229,14 +202,11 @@ explain select '1 hour' < '1 hour'
 [{
   "bytecode": {
     "frontend": {
-      "00": "set                 0      1      0     ",
-      "01": "string              1      0      0     # 1 hour",
-      "02": "string              2      7      0     # 1 hour",
-      "03": "ltss                3      1      2     ",
-      "04": "push                3      0      0     ",
-      "05": "set_add             0      0      0     ",
-      "06": "content             0      -      -     ",
-      "07": "ret                 0      0      0     "
+      "00": "string              0      0      0     # 1 hour",
+      "01": "string              1      7      0     # 1 hour",
+      "02": "ltss                2      0      1     ",
+      "03": "content             2      -      -     ",
+      "04": "ret                 0      0      0     "
     }
   },
   "access": []
@@ -246,14 +216,11 @@ explain select '1 hour' < null
 [{
   "bytecode": {
     "frontend": {
-      "00": "set                 0      1      0     ",
-      "01": "string              1      0      0     # 1 hour",
-      "02": "null                2      0      0     ",
-      "03": "nullop              3      1      2     ",
-      "04": "push                3      0      0     ",
-      "05": "set_add             0      0      0     ",
-      "06": "content             0      -      -     ",
-      "07": "ret                 0      0      0     "
+      "00": "string              0      0      0     # 1 hour",
+      "01": "null                1      0      0     ",
+      "02": "nullop              2      0      1     ",
+      "03": "content             2      -      -     ",
+      "04": "ret                 0      0      0     "
     }
   },
   "access": []
@@ -268,14 +235,11 @@ explain select "hello " || "world"
 [{
   "bytecode": {
     "frontend": {
-      "00": "set                 0      1      0     ",
-      "01": "string              1      0      0     # hello ",
-      "02": "string              2      7      0     # world",
-      "03": "catss               3      1      2     ",
-      "04": "push                3      0      0     ",
-      "05": "set_add             0      0      0     ",
-      "06": "content             0      -      -     ",
-      "07": "ret                 0      0      0     "
+      "00": "string              0      0      0     # hello ",
+      "01": "string              1      7      0     # world",
+      "02": "catss               2      0      1     ",
+      "03": "content             2      -      -     ",
+      "04": "ret                 0      0      0     "
     }
   },
   "access": []
@@ -303,14 +267,11 @@ explain select 'abc' like 'abc'
 [{
   "bytecode": {
     "frontend": {
-      "00": "set                 0      1      0     ",
-      "01": "string              1      0      0     # abc",
-      "02": "string              2      4      0     # abc",
-      "03": "likess              3      1      2     ",
-      "04": "push                3      0      0     ",
-      "05": "set_add             0      0      0     ",
-      "06": "content             0      -      -     ",
-      "07": "ret                 0      0      0     "
+      "00": "string              0      0      0     # abc",
+      "01": "string              1      4      0     # abc",
+      "02": "likess              2      0      1     ",
+      "03": "content             2      -      -     ",
+      "04": "ret                 0      0      0     "
     }
   },
   "access": []

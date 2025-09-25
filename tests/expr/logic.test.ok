@@ -11,14 +11,11 @@ explain select true and true
 [{
   "bytecode": {
     "frontend": {
-      "00": "set                 0      1      0     ",
+      "00": "bool                0      1      0     ",
       "01": "bool                1      1      0     ",
-      "02": "bool                2      1      0     ",
-      "03": "and                 3      1      2     ",
-      "04": "push                3      0      0     ",
-      "05": "set_add             0      0      0     ",
-      "06": "content             0      -      -     ",
-      "07": "ret                 0      0      0     "
+      "02": "and                 2      0      1     ",
+      "03": "content             2      -      -     ",
+      "04": "ret                 0      0      0     "
     }
   },
   "access": []
@@ -55,14 +52,11 @@ explain select false or true
 [{
   "bytecode": {
     "frontend": {
-      "00": "set                 0      1      0     ",
-      "01": "bool                1      0      0     ",
-      "02": "bool                2      1      0     ",
-      "03": "or                  3      1      2     ",
-      "04": "push                3      0      0     ",
-      "05": "set_add             0      0      0     ",
-      "06": "content             0      -      -     ",
-      "07": "ret                 0      0      0     "
+      "00": "bool                0      0      0     ",
+      "01": "bool                1      1      0     ",
+      "02": "or                  2      0      1     ",
+      "03": "content             2      -      -     ",
+      "04": "ret                 0      0      0     "
     }
   },
   "access": []

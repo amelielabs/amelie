@@ -357,7 +357,7 @@ emit_stmt(Compiler* self, Stmt* stmt)
 		//
 		// emit expression for return
 		//
-		stmt->r = emit_select(self, stmt->ast);
+		stmt->r = emit_select(self, stmt->ast, false);
 		break;
 	}
 	case STMT_WATCH:

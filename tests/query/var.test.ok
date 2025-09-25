@@ -18,13 +18,10 @@ explain x := 1
 [{
   "bytecode": {
     "frontend": {
-      "00": "set                 0      1      0     ",
-      "01": "int                 1      -      0     # 1",
-      "02": "push                1      0      0     ",
-      "03": "set_add             0      0      0     ",
-      "04": "assign              1      0      0     ",
-      "05": "content             0      -      -     ",
-      "06": "ret                 0      0      0     "
+      "00": "int                 0      -      0     # 1",
+      "01": "assign              1      0      0     ",
+      "02": "content             0      -      -     ",
+      "03": "ret                 0      0      0     "
     }
   },
   "access": []
@@ -36,13 +33,10 @@ explain x := select 1
 [{
   "bytecode": {
     "frontend": {
-      "00": "set                 0      1      0     ",
-      "01": "int                 1      -      0     # 1",
-      "02": "push                1      0      0     ",
-      "03": "set_add             0      0      0     ",
-      "04": "assign              1      0      0     ",
-      "05": "content             0      -      -     ",
-      "06": "ret                 0      0      0     "
+      "00": "int                 0      -      0     # 1",
+      "01": "assign              1      0      0     ",
+      "02": "content             0      -      -     ",
+      "03": "ret                 0      0      0     "
     }
   },
   "access": []
@@ -54,17 +48,11 @@ explain x := 1; select x
 [{
   "bytecode": {
     "frontend": {
-      "00": "set                 0      1      0     ",
-      "01": "int                 1      -      0     # 1",
-      "02": "push                1      0      0     ",
-      "03": "set_add             0      0      0     ",
-      "04": "assign              1      0      0     ",
-      "05": "set                 2      1      0     ",
-      "06": "ref                 3      1      0     ",
-      "07": "push                3      0      0     ",
-      "08": "set_add             2      0      0     ",
-      "09": "content             2      -      -     ",
-      "10": "ret                 0      0      0     "
+      "00": "int                 0      -      0     # 1",
+      "01": "assign              1      0      0     ",
+      "02": "ref                 2      1      0     ",
+      "03": "content             2      -      -     ",
+      "04": "ret                 0      0      0     "
     }
   },
   "access": []
@@ -81,19 +69,13 @@ explain x := {"id": 48}; select x.id
 [{
   "bytecode": {
     "frontend": {
-      "00": "set                 0      1      0     ",
-      "01": "json                1      0      0     ",
-      "02": "push                1      0      0     ",
-      "03": "set_add             0      0      0     ",
-      "04": "assign              1      0      0     ",
-      "05": "set                 2      1      0     ",
-      "06": "ref                 3      1      0     ",
-      "07": "string              4      7      0     # id",
-      "08": "dotjs               5      3      4     ",
-      "09": "push                5      0      0     ",
-      "10": "set_add             2      0      0     ",
-      "11": "content             2      -      -     ",
-      "12": "ret                 0      0      0     "
+      "00": "json                0      0      0     ",
+      "01": "assign              1      0      0     ",
+      "02": "ref                 2      1      0     ",
+      "03": "string              3      7      0     # id",
+      "04": "dotjs               4      2      3     ",
+      "05": "content             4      -      -     ",
+      "06": "ret                 0      0      0     "
     }
   },
   "access": []
@@ -105,17 +87,11 @@ explain x := null; select x
 [{
   "bytecode": {
     "frontend": {
-      "00": "set                 0      1      0     ",
-      "01": "null                1      0      0     ",
-      "02": "push                1      0      0     ",
-      "03": "set_add             0      0      0     ",
-      "04": "assign              1      0      0     ",
-      "05": "set                 2      1      0     ",
-      "06": "ref                 3      1      0     ",
-      "07": "push                3      0      0     ",
-      "08": "set_add             2      0      0     ",
-      "09": "content             2      -      -     ",
-      "10": "ret                 0      0      0     "
+      "00": "null                0      0      0     ",
+      "01": "assign              1      0      0     ",
+      "02": "ref                 2      1      0     ",
+      "03": "content             2      -      -     ",
+      "04": "ret                 0      0      0     "
     }
   },
   "access": []
@@ -150,19 +126,16 @@ explain x := 1; select * from test where id = x
 [{
   "bytecode": {
     "frontend": {
-      "00": "set                 0      1      0     ",
-      "01": "int                 1      -      0     # 1",
-      "02": "push                1      0      0     ",
-      "03": "set_add             0      0      0     ",
-      "04": "assign              1      0      0     ",
-      "05": "union               2      0      0     ",
-      "06": "ref                 3      1      0     ",
-      "07": "push                3      0      0     ",
-      "08": "send_lookup_by      0      -      -     # public.test",
-      "09": "union_recv          2      0      0     ",
-      "10": "union_set           2      0      -1    ",
-      "11": "content             2      -      -     ",
-      "12": "ret                 0      0      0     "
+      "00": "int                 0      -      0     # 1",
+      "01": "assign              1      0      0     ",
+      "02": "union               2      0      0     ",
+      "03": "ref                 3      1      0     ",
+      "04": "push                3      0      0     ",
+      "05": "send_lookup_by      0      -      -     # public.test",
+      "06": "union_recv          2      0      0     ",
+      "07": "union_set           2      0      -1    ",
+      "08": "content             2      -      -     ",
+      "09": "ret                 0      0      0     "
     },
     "backend": {
       "00": "set                 2      1      0     ",

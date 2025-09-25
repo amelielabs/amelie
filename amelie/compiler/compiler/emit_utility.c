@@ -279,10 +279,7 @@ emit_show(Compiler* self)
 	auto offset = buf_size(data);
 	encode_string(data, &arg->section);
 
-	auto format = &arg->format;
-	if (str_empty(format))
-		format = self->parser.local->format;
-	op3(self, CCONTENT_JSON, r, offset, (intptr_t)format);
+	op3(self, CCONTENT_JSON, r, offset, (intptr_t)&arg->format);
 	runpin(self, r);
 }
 

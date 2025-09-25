@@ -22,16 +22,13 @@ explain select system.state().directory::length()
 [{
   "bytecode": {
     "frontend": {
-      "00": "set                 0      1      0     ",
-      "01": "call                1      -      0     # system.state()",
-      "02": "string              2      0      0     # directory",
-      "03": "dotjs               3      1      2     ",
-      "04": "push                3      0      0     ",
-      "05": "call                1      -      1     # public.length()",
-      "06": "push                1      0      0     ",
-      "07": "set_add             0      0      0     ",
-      "08": "content             0      -      -     ",
-      "09": "ret                 0      0      0     "
+      "00": "call                0      -      0     # system.state()",
+      "01": "string              1      0      0     # directory",
+      "02": "dotjs               2      0      1     ",
+      "03": "push                2      0      0     ",
+      "04": "call                0      -      1     # public.length()",
+      "05": "content             0      -      -     ",
+      "06": "ret                 0      0      0     "
     }
   },
   "access": []
@@ -66,16 +63,13 @@ explain select system.state().directory::length
 [{
   "bytecode": {
     "frontend": {
-      "00": "set                 0      1      0     ",
-      "01": "call                1      -      0     # system.state()",
-      "02": "string              2      0      0     # directory",
-      "03": "dotjs               3      1      2     ",
-      "04": "push                3      0      0     ",
-      "05": "call                1      -      1     # public.length()",
-      "06": "push                1      0      0     ",
-      "07": "set_add             0      0      0     ",
-      "08": "content             0      -      -     ",
-      "09": "ret                 0      0      0     "
+      "00": "call                0      -      0     # system.state()",
+      "01": "string              1      0      0     # directory",
+      "02": "dotjs               2      0      1     ",
+      "03": "push                2      0      0     ",
+      "04": "call                0      -      1     # public.length()",
+      "05": "content             0      -      -     ",
+      "06": "ret                 0      0      0     "
     }
   },
   "access": []

@@ -193,24 +193,28 @@ emit_column(Compiler* self, Target* target, Ast* ast,
 		r = op3(self, op, rpin(self, column->type),
 		        target->id, column->order);
 	} else
-	if (target->type == TARGET_EXPR ||
-	    target->type == TARGET_FUNCTION)
 	{
 		assert(target->r != -1);
-		r = op2(self, CJSON_READ, rpin(self, TYPE_JSON), target->id);
-		if (! column)
+		auto rt = rtype(self, target->r);
+		if (rt == TYPE_JSON)
 		{
-			// handle as {}.column for json target
-			auto rstring = emit_string(self, name, false);
-			auto rdot = cast_operator(self, ast, OP_DOT, r, rstring);
-			runpin(self, r);
-			r = rdot;
+			r = op2(self, CJSON_READ, rpin(self, TYPE_JSON), target->id);
+			if (! column)
+			{
+				// handle as {}.column for json target
+				auto rstring = emit_string(self, name, false);
+				auto rdot = cast_operator(self, ast, OP_DOT, r, rstring);
+				runpin(self, r);
+				r = rdot;
+			}
+		} else
+		if (rt == TYPE_STORE)
+		{
+			r = op3(self, CSTORE_READ, rpin(self, column->type),
+			        target->id, column->order);
+		} else {
+			error("unsupported operation");
 		}
-	} else
-	{
-		assert(target->r != -1);
-		r = op3(self, CSTORE_READ, rpin(self, column->type),
-		        target->id, column->order);
 	}
 	return r;
 }
@@ -752,7 +756,7 @@ emit_in(Compiler* self, Targets* targets, Ast* ast)
 			auto select = ast_select_of(current);
 			if (select->ret.columns.count > 1)
 				stmt_error(self->current, &select->ast, "subquery must return one column");
-			r = emit_select(self, current);
+			r = emit_select(self, current, true);
 		} else {
 			r = emit_expr(self, targets, current);
 		}
@@ -788,7 +792,7 @@ emit_match(Compiler* self, Targets* targets, Ast* ast)
 		auto select = ast_select_of(ast->r->r);
 		if (select->ret.columns.count > 1)
 			stmt_error(self->current, &select->ast, "subquery must return one column");
-		b = emit_select(self, ast->r->r);
+		b = emit_select(self, ast->r->r, true);
 	} else {
 		b = emit_expr(self, targets, ast->r->r);
 	}
@@ -1064,10 +1068,14 @@ emit_expr(Compiler* self, Targets* targets, Ast* ast)
 		auto columns = &select->ret.columns;
 		if (columns->count > 1)
 			stmt_error(self->current, ast, "subquery must return only one column");
-		auto r = emit_select(self, ast);
-		// return first column of the first row and free the set
-		auto rresult = op2(self, CSET_RESULT, rpin(self, columns_first(columns)->type), r);
-		runpin(self, r);
+		auto r = emit_select(self, ast, false);
+		int rresult = r;
+		if (rtype(self, r) == TYPE_STORE)
+		{
+			// return first column of the first row and free the set
+			rresult = op2(self, CSET_RESULT, rpin(self, columns_first(columns)->type), r);
+			runpin(self, r);
+		}
 		return rresult;
 	}
 
@@ -1095,7 +1103,7 @@ emit_expr(Compiler* self, Targets* targets, Ast* ast)
 	// exists
 	case KEXISTS:
 	{
-		auto r = emit_select(self, ast->r);
+		auto r = emit_select(self, ast->r, true);
 		auto rc = op2(self, CEXISTS, rpin(self, TYPE_BOOL), r);
 		runpin(self, r);
 		return rc;

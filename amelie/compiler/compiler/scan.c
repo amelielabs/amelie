@@ -297,7 +297,7 @@ scan_expr(Scan* self, Target* target)
 	case TARGET_SELECT:
 	{
 		if (target->r == -1)
-			target->r = emit_select(cp, target->from_select);
+			target->r = emit_select(cp, target->from_select, true);
 		break;
 	}
 	case TARGET_EXPR:
@@ -306,7 +306,7 @@ scan_expr(Scan* self, Target* target)
 			target->r = emit_expr(cp, self->targets, target->ast);
 		assert(target->from_columns->count == 1);
 		// set expression type
-		int rt = rtype(cp, target->r);
+		auto rt = rtype(cp, target->r);
 		column_set_type(columns_first(target->from_columns), rt, type_sizeof(rt));
 		break;
 	}
@@ -316,7 +316,19 @@ scan_expr(Scan* self, Target* target)
 		if (target->r == -1)
 		{
 			assert(cte->r != -1);
-			target->r = op2(cp, CREF, rpin(cp, TYPE_STORE), cte->r);
+			auto rt = rtype(cp, cte->r);
+			auto r  = op2(cp, CREF, rpin(cp, rt), cte->r);
+			if (rt == TYPE_STORE || rt == TYPE_JSON) {
+				target->r = r;
+			} else
+			{
+				// wrap result into set
+				op1(cp, CPUSH, r);
+				runpin(cp, r);
+				target->r = op3(cp, CSET, rpin(cp, TYPE_STORE), 1, 0);
+				op1(cp, CSET_ADD, target->r);
+				rt = TYPE_STORE;
+			}
 		}
 		break;
 	}
@@ -343,7 +355,7 @@ scan_expr(Scan* self, Target* target)
 		op_next  = CJSON_NEXT;
 	} else
 	if (type != TYPE_STORE && type != TYPE_NULL) {
-		stmt_error(cp->current, target->ast, "unsupported expression type %s",
+		stmt_error(cp->current, target->ast, "unsupported expression type '%s'",
 		           type_of(type));
 	}
 

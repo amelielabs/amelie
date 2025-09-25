@@ -20,13 +20,10 @@ explain select 1 in ()
 [{
   "bytecode": {
     "frontend": {
-      "00": "set                 0      1      0     ",
-      "01": "int                 1      -      0     # 1",
-      "02": "in                  2      1      0     ",
-      "03": "push                2      0      0     ",
-      "04": "set_add             0      0      0     ",
-      "05": "content             0      -      -     ",
-      "06": "ret                 0      0      0     "
+      "00": "int                 0      -      0     # 1",
+      "01": "in                  1      0      0     ",
+      "02": "content             1      -      -     ",
+      "03": "ret                 0      0      0     "
     }
   },
   "access": []
@@ -91,27 +88,24 @@ explain select 0 in (3,5, (select * from test), 0)
 [{
   "bytecode": {
     "frontend": {
-      "00": "set                 0      1      0     ",
-      "01": "int                 1      -      0     # 0",
-      "02": "int                 2      -      0     # 3",
-      "03": "push                2      0      0     ",
-      "04": "int                 2      -      0     # 5",
-      "05": "push                2      0      0     ",
-      "06": "set                 2      1      0     ",
-      "07": "table_open          0      0      12    # public.test (primary)",
-      "08": "table_readi32       3      0      0     ",
-      "09": "push                3      0      0     ",
-      "10": "set_add             2      0      0     ",
-      "11": "table_next          0      8      0     ",
-      "12": "table_close         0      0      0     ",
-      "13": "push                2      0      0     ",
-      "14": "int                 2      -      0     # 0",
-      "15": "push                2      0      0     ",
-      "16": "in                  2      1      4     ",
-      "17": "push                2      0      0     ",
-      "18": "set_add             0      0      0     ",
-      "19": "content             0      -      -     ",
-      "20": "ret                 0      0      0     "
+      "00": "int                 0      -      0     # 0",
+      "01": "int                 1      -      0     # 3",
+      "02": "push                1      0      0     ",
+      "03": "int                 1      -      0     # 5",
+      "04": "push                1      0      0     ",
+      "05": "set                 1      1      0     ",
+      "06": "table_open          0      0      11    # public.test (primary)",
+      "07": "table_readi32       2      0      0     ",
+      "08": "push                2      0      0     ",
+      "09": "set_add             1      0      0     ",
+      "10": "table_next          0      7      0     ",
+      "11": "table_close         0      0      0     ",
+      "12": "push                1      0      0     ",
+      "13": "int                 1      -      0     # 0",
+      "14": "push                1      0      0     ",
+      "15": "in                  1      0      4     ",
+      "16": "content             1      -      -     ",
+      "17": "ret                 0      0      0     "
     }
   },
   "access": [["public.test", "ro_exclusive"]]

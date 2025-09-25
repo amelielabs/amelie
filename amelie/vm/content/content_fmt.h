@@ -21,6 +21,7 @@ struct ContentFmt
 	bool  opt_array;
 	bool  opt_obj;
 	bool  opt_pretty;
+	bool  opt_unwrap;
 	Str*  spec;
 };
 
@@ -33,6 +34,7 @@ content_fmt_init(ContentFmt* self)
 	self->opt_array  = false;
 	self->opt_obj    = false;
 	self->opt_pretty = false;
+	self->opt_unwrap = false;
 	str_init(&self->name);
 }
 
@@ -67,6 +69,7 @@ content_fmt_read(ContentFmt* self, Str* spec)
 	self->opt_array  = false;
 	self->opt_obj    = false;
 	self->opt_pretty = false;
+	self->opt_unwrap = false;
 	self->pos        = spec->pos;
 	self->pos_end    = spec->end;
 	self->spec       = spec;
@@ -88,6 +91,9 @@ content_fmt_read(ContentFmt* self, Str* spec)
 		} else
 		if (str_is_case(&name, "pretty", 6)) {
 			self->opt_pretty = true;
+		} else
+		if (str_is_case(&name, "unwrap", 6)) {
+			self->opt_unwrap = true;
 		} else {
 			error("unrecognized format flag '%.*s'", str_size(&name),
 			       str_of(&name));

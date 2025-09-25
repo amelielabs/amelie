@@ -138,21 +138,21 @@ content_json(Content* self, Columns* columns, Value* value)
 		// ]
 		buf_write(buf, "]", 1);
 	} else
-	if (value->type == TYPE_JSON)
 	{
 		// [
-		if (! json_is_array(value->json))
+		auto wrap = true;
+		if (self->fmt.opt_unwrap && json_is_array(value->json))
+			wrap = false;
+
+		if (wrap)
 			buf_write(buf, "[", 1);
 
 		if (self->fmt.opt_obj)
 			content_json_row_obj(self, columns, value);
 		else
 			content_json_row_array(self, columns, value);
-
 		// ]
-		if (! json_is_array(value->json))
+		if (wrap)
 			buf_write(buf, "]", 1);
-	} else {
-		error("operation unsupported");
 	}
 }

@@ -5,12 +5,12 @@ explain select * from (select 1) t
 [{
   "bytecode": {
     "frontend": {
-      "00": "set                 0      1      0     ",
-      "01": "int                 1      -      0     # 1",
-      "02": "push                1      0      0     ",
-      "03": "set_add             0      0      0     ",
-      "04": "set                 1      1      0     ",
-      "05": "ref                 2      0      0     ",
+      "00": "int                 0      -      0     # 1",
+      "01": "set                 1      1      0     ",
+      "02": "ref                 2      0      0     ",
+      "03": "push                2      0      0     ",
+      "04": "set                 2      1      0     ",
+      "05": "set_add             2      0      0     ",
       "06": "store_open          0      2      11    ",
       "07": "store_read          3      0      0     ",
       "08": "push                3      0      0     ",
@@ -58,12 +58,12 @@ explain select x from (select 1 as x) t
 [{
   "bytecode": {
     "frontend": {
-      "00": "set                 0      1      0     ",
-      "01": "int                 1      -      0     # 1",
-      "02": "push                1      0      0     ",
-      "03": "set_add             0      0      0     ",
-      "04": "set                 1      1      0     ",
-      "05": "ref                 2      0      0     ",
+      "00": "int                 0      -      0     # 1",
+      "01": "set                 1      1      0     ",
+      "02": "ref                 2      0      0     ",
+      "03": "push                2      0      0     ",
+      "04": "set                 2      1      0     ",
+      "05": "set_add             2      0      0     ",
       "06": "store_open          0      2      11    ",
       "07": "store_read          3      0      0     ",
       "08": "push                3      0      0     ",

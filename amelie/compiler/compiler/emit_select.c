@@ -461,22 +461,35 @@ emit_select_scan(Compiler* self, AstSelect* select)
 }
 
 hot int
-emit_select(Compiler* self, Ast* ast)
+emit_select(Compiler* self, Ast* ast, bool emit_store)
 {
 	AstSelect* select = ast_select_of(ast);
 
 	// SELECT expr[, ...]
 	if (targets_empty(&select->targets))
 	{
-		// create result set
-		int rresult = op3(self, CSET, rpin(self, TYPE_STORE), select->ret.count, 0);
-		select->rset = rresult;
+		int rresult;
+		if (!emit_store && select->ret.count == 1)
+		{
+			// push expr and prepare returning columns
+			auto as = select->ret.list;
+			auto column = as->r->column;
+			// expr
+			rresult = emit_expr(self, &select->targets, as->l);
+			int rt = rtype(self, rresult);
+			column_set_type(column, rt, type_sizeof(rt));
+		} else
+		{
+			// create result set
+			rresult = op3(self, CSET, rpin(self, TYPE_STORE), select->ret.count, 0);
+			select->rset = rresult;
 
-		// push expressions
-		emit_select_expr(self, &select->targets, select);
+			// push expressions
+			emit_select_expr(self, &select->targets, select);
 
-		// add to the returning set
-		op1(self, CSET_ADD, select->rset);
+			// add to the returning set
+			op1(self, CSET_ADD, select->rset);
+		}
 		return rresult;
 	}
 	//

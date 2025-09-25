@@ -77,9 +77,18 @@ parse_show(Stmt* self)
 	stmt->extended = stmt_if(self, KEXTENDED) != NULL;
 
 	// [FORMAT type]
+	Str* spec;
 	if (stmt_if(self, KFORMAT))
 	{
 		auto type = stmt_expect(self, KSTRING);
-		stmt->format = type->string;
+		spec = &type->string;
+	} else {
+		spec = self->parser->local->format;
 	}
+
+	// force include -unwrap to avoid double [] wrap
+	char* fmt = palloc(str_size(spec) + 8);
+	memcpy(fmt, spec->pos, str_size(spec));
+	memcpy(fmt + str_size(spec), "-unwrap", 8);
+	str_set_cstr(&stmt->format, fmt);
 }

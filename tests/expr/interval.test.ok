@@ -173,18 +173,15 @@ explain select  '1 hour'::interval = '1 hours 10 seconds'::interval
 [{
   "bytecode": {
     "frontend": {
-      "00": "set                 0      1      0     ",
-      "01": "string              1      0      0     # 1 hour",
-      "02": "push                1      0      0     ",
-      "03": "call                1      -      1     # public.interval()",
-      "04": "string              2      7      0     # 1 hours 10 seconds",
-      "05": "push                2      0      0     ",
-      "06": "call                2      -      1     # public.interval()",
-      "07": "equll               3      1      2     ",
-      "08": "push                3      0      0     ",
-      "09": "set_add             0      0      0     ",
-      "10": "content             0      -      -     ",
-      "11": "ret                 0      0      0     "
+      "00": "string              0      0      0     # 1 hour",
+      "01": "push                0      0      0     ",
+      "02": "call                0      -      1     # public.interval()",
+      "03": "string              1      7      0     # 1 hours 10 seconds",
+      "04": "push                1      0      0     ",
+      "05": "call                1      -      1     # public.interval()",
+      "06": "equll               2      0      1     ",
+      "07": "content             2      -      -     ",
+      "08": "ret                 0      0      0     "
     }
   },
   "access": []
@@ -196,16 +193,13 @@ explain select  '1 hour'::interval = null
 [{
   "bytecode": {
     "frontend": {
-      "00": "set                 0      1      0     ",
-      "01": "string              1      0      0     # 1 hour",
-      "02": "push                1      0      0     ",
-      "03": "call                1      -      1     # public.interval()",
-      "04": "null                2      0      0     ",
-      "05": "nullop              3      1      2     ",
-      "06": "push                3      0      0     ",
-      "07": "set_add             0      0      0     ",
-      "08": "content             0      -      -     ",
-      "09": "ret                 0      0      0     "
+      "00": "string              0      0      0     # 1 hour",
+      "01": "push                0      0      0     ",
+      "02": "call                0      -      1     # public.interval()",
+      "03": "null                1      0      0     ",
+      "04": "nullop              2      0      1     ",
+      "05": "content             2      -      -     ",
+      "06": "ret                 0      0      0     "
     }
   },
   "access": []
@@ -222,19 +216,16 @@ explain select  '1 hour'::interval <> '1 hours 10 seconds'::interval
 [{
   "bytecode": {
     "frontend": {
-      "00": "set                 0      1      0     ",
-      "01": "string              1      0      0     # 1 hour",
-      "02": "push                1      0      0     ",
-      "03": "call                1      -      1     # public.interval()",
-      "04": "string              2      7      0     # 1 hours 10 seconds",
-      "05": "push                2      0      0     ",
-      "06": "call                2      -      1     # public.interval()",
-      "07": "equll               3      1      2     ",
-      "08": "not                 1      3      0     ",
-      "09": "push                1      0      0     ",
-      "10": "set_add             0      0      0     ",
-      "11": "content             0      -      -     ",
-      "12": "ret                 0      0      0     "
+      "00": "string              0      0      0     # 1 hour",
+      "01": "push                0      0      0     ",
+      "02": "call                0      -      1     # public.interval()",
+      "03": "string              1      7      0     # 1 hours 10 seconds",
+      "04": "push                1      0      0     ",
+      "05": "call                1      -      1     # public.interval()",
+      "06": "equll               2      0      1     ",
+      "07": "not                 0      2      0     ",
+      "08": "content             0      -      -     ",
+      "09": "ret                 0      0      0     "
     }
   },
   "access": []
@@ -246,17 +237,14 @@ explain select  '1 hour'::interval <> null
 [{
   "bytecode": {
     "frontend": {
-      "00": "set                 0      1      0     ",
-      "01": "string              1      0      0     # 1 hour",
-      "02": "push                1      0      0     ",
-      "03": "call                1      -      1     # public.interval()",
-      "04": "null                2      0      0     ",
-      "05": "nullop              3      1      2     ",
-      "06": "not                 1      3      0     ",
-      "07": "push                1      0      0     ",
-      "08": "set_add             0      0      0     ",
-      "09": "content             0      -      -     ",
-      "10": "ret                 0      0      0     "
+      "00": "string              0      0      0     # 1 hour",
+      "01": "push                0      0      0     ",
+      "02": "call                0      -      1     # public.interval()",
+      "03": "null                1      0      0     ",
+      "04": "nullop              2      0      1     ",
+      "05": "not                 0      2      0     ",
+      "06": "content             0      -      -     ",
+      "07": "ret                 0      0      0     "
     }
   },
   "access": []
@@ -277,18 +265,15 @@ explain select '61 minutes'::interval >= '1 hour'::interval
 [{
   "bytecode": {
     "frontend": {
-      "00": "set                 0      1      0     ",
-      "01": "string              1      0      0     # 61 minutes",
-      "02": "push                1      0      0     ",
-      "03": "call                1      -      1     # public.interval()",
-      "04": "string              2      11     0     # 1 hour",
-      "05": "push                2      0      0     ",
-      "06": "call                2      -      1     # public.interval()",
-      "07": "gtell               3      1      2     ",
-      "08": "push                3      0      0     ",
-      "09": "set_add             0      0      0     ",
-      "10": "content             0      -      -     ",
-      "11": "ret                 0      0      0     "
+      "00": "string              0      0      0     # 61 minutes",
+      "01": "push                0      0      0     ",
+      "02": "call                0      -      1     # public.interval()",
+      "03": "string              1      11     0     # 1 hour",
+      "04": "push                1      0      0     ",
+      "05": "call                1      -      1     # public.interval()",
+      "06": "gtell               2      0      1     ",
+      "07": "content             2      -      -     ",
+      "08": "ret                 0      0      0     "
     }
   },
   "access": []
@@ -300,16 +285,13 @@ explain select '1 hour'::interval >= null
 [{
   "bytecode": {
     "frontend": {
-      "00": "set                 0      1      0     ",
-      "01": "string              1      0      0     # 1 hour",
-      "02": "push                1      0      0     ",
-      "03": "call                1      -      1     # public.interval()",
-      "04": "null                2      0      0     ",
-      "05": "nullop              3      1      2     ",
-      "06": "push                3      0      0     ",
-      "07": "set_add             0      0      0     ",
-      "08": "content             0      -      -     ",
-      "09": "ret                 0      0      0     "
+      "00": "string              0      0      0     # 1 hour",
+      "01": "push                0      0      0     ",
+      "02": "call                0      -      1     # public.interval()",
+      "03": "null                1      0      0     ",
+      "04": "nullop              2      0      1     ",
+      "05": "content             2      -      -     ",
+      "06": "ret                 0      0      0     "
     }
   },
   "access": []
@@ -330,18 +312,15 @@ explain select '61 minutes'::interval > '1 hour'::interval
 [{
   "bytecode": {
     "frontend": {
-      "00": "set                 0      1      0     ",
-      "01": "string              1      0      0     # 61 minutes",
-      "02": "push                1      0      0     ",
-      "03": "call                1      -      1     # public.interval()",
-      "04": "string              2      11     0     # 1 hour",
-      "05": "push                2      0      0     ",
-      "06": "call                2      -      1     # public.interval()",
-      "07": "gtll                3      1      2     ",
-      "08": "push                3      0      0     ",
-      "09": "set_add             0      0      0     ",
-      "10": "content             0      -      -     ",
-      "11": "ret                 0      0      0     "
+      "00": "string              0      0      0     # 61 minutes",
+      "01": "push                0      0      0     ",
+      "02": "call                0      -      1     # public.interval()",
+      "03": "string              1      11     0     # 1 hour",
+      "04": "push                1      0      0     ",
+      "05": "call                1      -      1     # public.interval()",
+      "06": "gtll                2      0      1     ",
+      "07": "content             2      -      -     ",
+      "08": "ret                 0      0      0     "
     }
   },
   "access": []
@@ -353,16 +332,13 @@ explain select '1 hour'::interval > null
 [{
   "bytecode": {
     "frontend": {
-      "00": "set                 0      1      0     ",
-      "01": "string              1      0      0     # 1 hour",
-      "02": "push                1      0      0     ",
-      "03": "call                1      -      1     # public.interval()",
-      "04": "null                2      0      0     ",
-      "05": "nullop              3      1      2     ",
-      "06": "push                3      0      0     ",
-      "07": "set_add             0      0      0     ",
-      "08": "content             0      -      -     ",
-      "09": "ret                 0      0      0     "
+      "00": "string              0      0      0     # 1 hour",
+      "01": "push                0      0      0     ",
+      "02": "call                0      -      1     # public.interval()",
+      "03": "null                1      0      0     ",
+      "04": "nullop              2      0      1     ",
+      "05": "content             2      -      -     ",
+      "06": "ret                 0      0      0     "
     }
   },
   "access": []
@@ -383,18 +359,15 @@ explain select '61 minutes'::interval <= '1 hour'::interval
 [{
   "bytecode": {
     "frontend": {
-      "00": "set                 0      1      0     ",
-      "01": "string              1      0      0     # 61 minutes",
-      "02": "push                1      0      0     ",
-      "03": "call                1      -      1     # public.interval()",
-      "04": "string              2      11     0     # 1 hour",
-      "05": "push                2      0      0     ",
-      "06": "call                2      -      1     # public.interval()",
-      "07": "ltell               3      1      2     ",
-      "08": "push                3      0      0     ",
-      "09": "set_add             0      0      0     ",
-      "10": "content             0      -      -     ",
-      "11": "ret                 0      0      0     "
+      "00": "string              0      0      0     # 61 minutes",
+      "01": "push                0      0      0     ",
+      "02": "call                0      -      1     # public.interval()",
+      "03": "string              1      11     0     # 1 hour",
+      "04": "push                1      0      0     ",
+      "05": "call                1      -      1     # public.interval()",
+      "06": "ltell               2      0      1     ",
+      "07": "content             2      -      -     ",
+      "08": "ret                 0      0      0     "
     }
   },
   "access": []
@@ -406,16 +379,13 @@ explain select '1 hour'::interval <= null
 [{
   "bytecode": {
     "frontend": {
-      "00": "set                 0      1      0     ",
-      "01": "string              1      0      0     # 1 hour",
-      "02": "push                1      0      0     ",
-      "03": "call                1      -      1     # public.interval()",
-      "04": "null                2      0      0     ",
-      "05": "nullop              3      1      2     ",
-      "06": "push                3      0      0     ",
-      "07": "set_add             0      0      0     ",
-      "08": "content             0      -      -     ",
-      "09": "ret                 0      0      0     "
+      "00": "string              0      0      0     # 1 hour",
+      "01": "push                0      0      0     ",
+      "02": "call                0      -      1     # public.interval()",
+      "03": "null                1      0      0     ",
+      "04": "nullop              2      0      1     ",
+      "05": "content             2      -      -     ",
+      "06": "ret                 0      0      0     "
     }
   },
   "access": []
@@ -436,18 +406,15 @@ explain select '61 minutes'::interval < '1 hour'::interval
 [{
   "bytecode": {
     "frontend": {
-      "00": "set                 0      1      0     ",
-      "01": "string              1      0      0     # 61 minutes",
-      "02": "push                1      0      0     ",
-      "03": "call                1      -      1     # public.interval()",
-      "04": "string              2      11     0     # 1 hour",
-      "05": "push                2      0      0     ",
-      "06": "call                2      -      1     # public.interval()",
-      "07": "ltll                3      1      2     ",
-      "08": "push                3      0      0     ",
-      "09": "set_add             0      0      0     ",
-      "10": "content             0      -      -     ",
-      "11": "ret                 0      0      0     "
+      "00": "string              0      0      0     # 61 minutes",
+      "01": "push                0      0      0     ",
+      "02": "call                0      -      1     # public.interval()",
+      "03": "string              1      11     0     # 1 hour",
+      "04": "push                1      0      0     ",
+      "05": "call                1      -      1     # public.interval()",
+      "06": "ltll                2      0      1     ",
+      "07": "content             2      -      -     ",
+      "08": "ret                 0      0      0     "
     }
   },
   "access": []
@@ -459,16 +426,13 @@ explain select '1 hour'::interval < null
 [{
   "bytecode": {
     "frontend": {
-      "00": "set                 0      1      0     ",
-      "01": "string              1      0      0     # 1 hour",
-      "02": "push                1      0      0     ",
-      "03": "call                1      -      1     # public.interval()",
-      "04": "null                2      0      0     ",
-      "05": "nullop              3      1      2     ",
-      "06": "push                3      0      0     ",
-      "07": "set_add             0      0      0     ",
-      "08": "content             0      -      -     ",
-      "09": "ret                 0      0      0     "
+      "00": "string              0      0      0     # 1 hour",
+      "01": "push                0      0      0     ",
+      "02": "call                0      -      1     # public.interval()",
+      "03": "null                1      0      0     ",
+      "04": "nullop              2      0      1     ",
+      "05": "content             2      -      -     ",
+      "06": "ret                 0      0      0     "
     }
   },
   "access": []
@@ -491,18 +455,15 @@ explain select  '5 days 1 hour'::interval + '-2 hours'::interval
 [{
   "bytecode": {
     "frontend": {
-      "00": "set                 0      1      0     ",
-      "01": "string              1      0      0     # 5 days 1 hour",
-      "02": "push                1      0      0     ",
-      "03": "call                1      -      1     # public.interval()",
-      "04": "string              2      14     0     # -2 hours",
-      "05": "push                2      0      0     ",
-      "06": "call                2      -      1     # public.interval()",
-      "07": "addll               3      1      2     ",
-      "08": "push                3      0      0     ",
-      "09": "set_add             0      0      0     ",
-      "10": "content             0      -      -     ",
-      "11": "ret                 0      0      0     "
+      "00": "string              0      0      0     # 5 days 1 hour",
+      "01": "push                0      0      0     ",
+      "02": "call                0      -      1     # public.interval()",
+      "03": "string              1      14     0     # -2 hours",
+      "04": "push                1      0      0     ",
+      "05": "call                1      -      1     # public.interval()",
+      "06": "addll               2      0      1     ",
+      "07": "content             2      -      -     ",
+      "08": "ret                 0      0      0     "
     }
   },
   "access": []
@@ -514,18 +475,15 @@ explain select '1 hour'::interval + '1970-01-01 00:00:00.000000'::timestamp
 [{
   "bytecode": {
     "frontend": {
-      "00": "set                 0      1      0     ",
-      "01": "string              1      0      0     # 1 hour",
-      "02": "push                1      0      0     ",
-      "03": "call                1      -      1     # public.interval()",
-      "04": "string              2      7      0     # 1970-01-01 00:00:00.000000",
-      "05": "push                2      0      0     ",
-      "06": "call                2      -      1     # public.timestamp()",
-      "07": "addlt               3      1      2     ",
-      "08": "push                3      0      0     ",
-      "09": "set_add             0      0      0     ",
-      "10": "content             0      -      -     ",
-      "11": "ret                 0      0      0     "
+      "00": "string              0      0      0     # 1 hour",
+      "01": "push                0      0      0     ",
+      "02": "call                0      -      1     # public.interval()",
+      "03": "string              1      7      0     # 1970-01-01 00:00:00.000000",
+      "04": "push                1      0      0     ",
+      "05": "call                1      -      1     # public.timestamp()",
+      "06": "addlt               2      0      1     ",
+      "07": "content             2      -      -     ",
+      "08": "ret                 0      0      0     "
     }
   },
   "access": []

@@ -17,13 +17,10 @@ explain select 1 is null
 [{
   "bytecode": {
     "frontend": {
-      "00": "set                 0      1      0     ",
-      "01": "int                 1      -      0     # 1",
-      "02": "is                  2      1      0     ",
-      "03": "push                2      0      0     ",
-      "04": "set_add             0      0      0     ",
-      "05": "content             0      -      -     ",
-      "06": "ret                 0      0      0     "
+      "00": "int                 0      -      0     # 1",
+      "01": "is                  1      0      0     ",
+      "02": "content             1      -      -     ",
+      "03": "ret                 0      0      0     "
     }
   },
   "access": []
@@ -37,14 +34,11 @@ explain select 1 is not null
 [{
   "bytecode": {
     "frontend": {
-      "00": "set                 0      1      0     ",
-      "01": "int                 1      -      0     # 1",
-      "02": "is                  2      1      0     ",
-      "03": "not                 1      2      0     ",
-      "04": "push                1      0      0     ",
-      "05": "set_add             0      0      0     ",
-      "06": "content             0      -      -     ",
-      "07": "ret                 0      0      0     "
+      "00": "int                 0      -      0     # 1",
+      "01": "is                  1      0      0     ",
+      "02": "not                 0      1      0     ",
+      "03": "content             0      -      -     ",
+      "04": "ret                 0      0      0     "
     }
   },
   "access": []

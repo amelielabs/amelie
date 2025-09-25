@@ -325,15 +325,21 @@ cunion_recv(Vm* self, Op* op)
 void
 cassign(Vm* self, Op* op)
 {
-	// [result, store]
-	auto store = reg_at(&self->r, op->b)->store;
-	auto it = store_iterator(store);
-	defer(store_iterator_close, it);
+	// [result, value]
 	auto dst = reg_at(&self->r, op->a);
-	if (store_iterator_has(it))
-		value_copy(dst, it->current);
-	else
-		value_set_null(dst);
+	auto src = reg_at(&self->r, op->b);
+	if (src->type == TYPE_STORE)
+	{
+		auto store = src->store;
+		auto it = store_iterator(store);
+		defer(store_iterator_close, it);
+		if (store_iterator_has(it))
+			value_copy(dst, it->current);
+		else
+			value_set_null(dst);
+	} else {
+		value_copy(dst, src);
+	}
 }
 
 hot Op*
