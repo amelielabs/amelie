@@ -551,10 +551,6 @@ parse(Parser* self, Program* program, Str* str)
 	if (ast->id != KEOF)
 		lex_error(lex, ast, "unexpected token at the end of transaction");
 
-	// force last statetement as return
-	if (block->stmts.list_tail)
-		block->stmts.list_tail->ret = true;
-
 	// ensure EXPLAIN has a command
 	if (unlikely(! block->stmts.count)) {
 		if (self->program->explain || self->program->profile)

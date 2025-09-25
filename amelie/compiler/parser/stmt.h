@@ -55,7 +55,6 @@ struct Stmt
 	StmtId  id;
 	Ast*    ast;
 	int     targets_seq;
-	bool    ret;
 	int     r;
 	Cte*    cte;
 	Var*    assign;
@@ -73,7 +72,6 @@ stmt_allocate(Parser* parser, Lex* lex, Block* block)
 	self->id          = STMT_UNDEF;
 	self->ast         = NULL;
 	self->targets_seq = 0;
-	self->ret         = false;
 	self->r           = -1;
 	self->cte         = NULL;
 	self->assign      = NULL;

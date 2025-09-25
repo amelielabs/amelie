@@ -23,7 +23,6 @@ struct Compiler
 	SetCache  values_cache;
 	Columns*  args;
 	Stmt*     current;
-	Stmt*     last;
 };
 
 void compiler_init(Compiler*, Local*);
@@ -33,15 +32,6 @@ void compiler_set(Compiler*, Program*);
 void compiler_parse(Compiler*, Str*);
 void compiler_parse_import(Compiler*, Str*, Str*, EndpointType);
 void compiler_emit(Compiler*);
-
-static inline Stmt*
-compiler_stmt(Compiler* self)
-{
-	auto main = self->parser.blocks.list;
-	if (! main)
-		return NULL;
-	return main->stmts.list;
-}
 
 static inline void
 compiler_switch_frontend(Compiler* self)
@@ -53,4 +43,19 @@ static inline void
 compiler_switch_backend(Compiler* self)
 {
 	self->code = &self->program->code_backend;
+}
+
+static inline Block*
+compiler_block(Compiler* self)
+{
+	return self->parser.blocks.list;
+}
+
+static inline Stmt*
+compiler_stmt(Compiler* self)
+{
+	auto main = self->parser.blocks.list;
+	if (! main)
+		return NULL;
+	return main->stmts.list;
 }

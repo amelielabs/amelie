@@ -48,7 +48,6 @@ compiler_init(Compiler* self, Local* local)
 	self->code_data = NULL;
 	self->args      = NULL;
 	self->current   = NULL;
-	self->last      = NULL;
 	set_cache_init(&self->values_cache);
 	parser_init(&self->parser, local, &self->values_cache);
 	rmap_init(&self->map);
@@ -70,7 +69,6 @@ compiler_reset(Compiler* self)
 	self->code_data = NULL;
 	self->args      = NULL;
 	self->current   = NULL;
-	self->last      = NULL;
 	parser_reset(&self->parser);
 	rmap_reset(&self->map);
 }
@@ -108,6 +106,12 @@ emit_send(Compiler* self, Target* target, Returning* ret, int start)
 	// table target pushdown
 	auto table = target->from_table;
 
+	// set snapshot if two or more stmts are sending data
+	// and using tables
+	auto program = self->program;
+	if (program->send_last != -1)
+		program->snapshot = true;
+
 	// INSERT
 	if (stmt->id == STMT_INSERT)
 	{
@@ -115,7 +119,7 @@ emit_send(Compiler* self, Target* target, Returning* ret, int start)
 		auto r = emit_insert_store(self);
 
 		// CSEND_SHARD
-		self->program->send_last = op_pos(self);
+		program->send_last = op_pos(self);
 		op4(self, CSEND_SHARD, start, (intptr_t)table, r, ret->r);
 		runpin(self, r);
 		return;
@@ -134,7 +138,7 @@ emit_send(Compiler* self, Target* target, Returning* ret, int start)
 			uint32_t hash = path_create_hash(path);
 
 			// CSEND_LOOKUP
-			self->program->send_last = op_pos(self);
+			program->send_last = op_pos(self);
 			op4(self, CSEND_LOOKUP, start, (intptr_t)table, hash, ret->r);
 		} else
 		{
@@ -148,7 +152,7 @@ emit_send(Compiler* self, Target* target, Returning* ret, int start)
 			}
 
 			// CSEND_LOOKUP_BY
-			self->program->send_last = op_pos(self);
+			program->send_last = op_pos(self);
 			op3(self, CSEND_LOOKUP_BY, start, (intptr_t)table, ret->r);
 		}
 		return;
@@ -157,7 +161,7 @@ emit_send(Compiler* self, Target* target, Returning* ret, int start)
 	// send to all table partitions (one or more)
 
 	// CSEND_ALL
-	self->program->send_last = op_pos(self);
+	program->send_last = op_pos(self);
 	op3(self, CSEND_ALL, start, (intptr_t)table, ret->r);
 }
 
@@ -301,7 +305,7 @@ emit_stmt_backend(Compiler* self, Stmt* stmt)
 	return start;
 }
 
-hot static void
+hot static Returning*
 emit_stmt(Compiler* self, Stmt* stmt)
 {
 	self->current = stmt;
@@ -371,18 +375,16 @@ emit_stmt(Compiler* self, Stmt* stmt)
 
 	// generate frontend send command based on the target
 	if (target)
-	{
 		emit_send(self, target, ret, start);
-
-		// generate recv if stmt result is expected for := or return
-		if (stmt->assign || stmt->ret)
-			emit_recv(self, stmt);
-	}
 
 	// assign :=
 	auto var = stmt->assign;
 	if (var)
 	{
+		// generate recv if stmt result is expected for := or return
+		if (stmt->assign)
+			emit_recv(self, stmt);
+
 		if (! ret)
 			stmt_error(stmt, NULL, "statement cannot be assigned");
 		if (ret->count > 1)
@@ -396,36 +398,38 @@ emit_stmt(Compiler* self, Stmt* stmt)
 		var->type = type;
 		var->r = op2(self, CASSIGN, rpin(self, var->type), stmt->r);
 	}
-
-	// return
-	if (stmt->ret)
-	{
-		// ensure all pending statements being received
-		auto ref = stmt->block->stmts.list;
-		for (; ref; ref = ref->next)
-			emit_recv(self, ref);
-
-		// create result content
-		if (stmt->r != -1)
-			op3(self, CCONTENT, stmt->r,
-			    (intptr_t)&ret->columns,
-			    (intptr_t)&ret->format);
-		op0(self, CRET);
-	}
-
-	// set last statement which uses a table,
-	// set snapshot if two or more stmts are using tables
-	if (self->last)
-		self->program->snapshot = true;
-	self->last = self->current;
+	return ret;
 }
 
 hot static void
 emit_block(Compiler* self, Block* block)
 {
+	// emit statements in the block, track last statement returning
+	Returning* returning = NULL;
+	Stmt* last = NULL;
 	auto stmt = block->stmts.list;
 	for (; stmt; stmt = stmt->next)
-		emit_stmt(self, stmt);
+	{
+		returning = emit_stmt(self, stmt);
+		last = stmt;
+	}
+
+	// ensure all pending returning statements are received
+	// on block exit
+	stmt = block->stmts.list;
+	for (; stmt; stmt = stmt->next)
+		emit_recv(self, stmt);
+
+	// create result content for last stmt of the main block
+	if (block == compiler_block(self))
+	{
+		if (last && last->r != -1)
+			op3(self, CCONTENT, last->r,
+			    (intptr_t)&returning->columns,
+			    (intptr_t)&returning->format);
+
+		op0(self, CRET);
+	}
 }
 
 hot void
