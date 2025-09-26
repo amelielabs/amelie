@@ -245,7 +245,7 @@ path_key(Path* self, Block* block, PathKey* key, AstList* ops)
 		case KNAME:
 		{
 			// match variable by name
-			auto match = vars_find(&block->vars, &value->string);
+			auto match = block_var_find(block, &value->string);
 			if (! match)
 				continue;
 			break;

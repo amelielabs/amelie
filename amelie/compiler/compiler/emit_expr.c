@@ -230,7 +230,7 @@ emit_name(Compiler* self, Targets* targets, Ast* ast)
 	auto name = &ast->string;
 
 	// find variable by name
-	auto var = vars_find(&self->current->block->vars, name);
+	auto var = block_var_find(self->current->block, name);
 	if (var)
 	{
 		assert(var->r != -1);
@@ -276,7 +276,7 @@ emit_name_compound(Compiler* self, Targets* targets, Ast* ast)
 	str_set_str(&path, &ast->string);
 
 	// find variable by name
-	auto var = vars_find(&self->current->block->vars, &name);
+	auto var = block_var_find(self->current->block, &name);
 	if (var)
 	{
 		assert(var->r != -1);

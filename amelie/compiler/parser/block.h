@@ -58,7 +58,7 @@ blocks_add(Blocks* self, Block* parent)
 }
 
 static inline Var*
-block_add_var(Block* self, Str* name)
+block_var_find(Block* self, Str* name)
 {
 	for (auto block = self; block; block = block->parent)
 	{
@@ -66,5 +66,14 @@ block_add_var(Block* self, Str* name)
 		if (var)
 			return var;
 	}
+	return NULL;
+}
+
+static inline Var*
+block_var_add(Block* self, Str* name)
+{
+	auto var = block_var_find(self, name);
+	if (var)
+		return var;
 	return vars_add(&self->vars, name);
 }

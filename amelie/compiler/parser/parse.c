@@ -487,7 +487,7 @@ parse_block(Parser* self, Block* block)
 		{
 			if (! lex_if(lex, KASSIGN))
 				lex_error_expect(lex, lex_next(lex), KASSIGN);
-			assign = block_add_var(block, &ast->string);
+			assign = block_var_add(block, &ast->string);
 		}
 
 		// [WITH name AS ( cte )[, name AS (...)]]
