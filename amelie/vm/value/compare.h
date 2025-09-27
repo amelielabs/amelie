@@ -39,6 +39,9 @@ value_compare(Value* a, Value* b)
 		return uuid_compare(&a->uuid, &b->uuid);
 	// TYPE_AVG
 	// TYPE_STORE
+	// TYPE_CURSOR
+	// TYPE_CURSOR_STORE
+	// TYPE_CURSOR_JSON
 	default:
 		break;
 	}
@@ -69,6 +72,9 @@ value_is_true(Value* a)
 		return a->vector->size > 0;
 	// TYPE_AVG
 	// TYPE_STORE
+	// TYPE_CURSOR
+	// TYPE_CURSOR_STORE
+	// TYPE_CURSOR_JSON
 	default:
 		break;
 	}

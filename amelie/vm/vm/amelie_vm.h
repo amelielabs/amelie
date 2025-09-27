@@ -15,7 +15,6 @@
 #include "vm/op.h"
 
 // vm
-#include "vm/cursor.h"
 #include "vm/vm.h"
 #include "vm/command.h"
 #include "vm/command_utility.h"

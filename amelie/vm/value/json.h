@@ -80,6 +80,9 @@ value_encode(Value* self, Timezone* tz, Buf* buf)
 		break;
 	}
 	// TYPE_STORE
+	// TYPE_CURSOR
+	// TYPE_CURSOR_STORE
+	// TYPE_CURSOR_JSON
 	default:
 		error("operation unsupported");
 		break;
@@ -226,6 +229,9 @@ value_export(Value* self, Timezone* tz, bool pretty, Buf* buf)
 		break;
 	}
 	// TYPE_STORE
+	// TYPE_CURSOR
+	// TYPE_CURSOR_STORE
+	// TYPE_CURSOR_JSON
 	default:
 		error("operation unsupported");
 		break;

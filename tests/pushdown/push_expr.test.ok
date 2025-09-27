@@ -11,14 +11,15 @@ explain select * from (select 1) t
       "03": "push                2      0      0     ",
       "04": "set                 2      1      0     ",
       "05": "set_add             2      0      0     ",
-      "06": "store_open          0      2      11    ",
-      "07": "store_read          3      0      0     ",
-      "08": "push                3      0      0     ",
+      "06": "store_open          3      2      11    ",
+      "07": "store_read          4      3      0     ",
+      "08": "push                4      0      0     ",
       "09": "set_add             1      0      0     ",
-      "10": "store_next          0      7      0     ",
-      "11": "store_close         0      1      0     ",
-      "12": "content             1      -      -     ",
-      "13": "ret                 0      0      0     "
+      "10": "store_next          3      7      0     ",
+      "11": "free                3      0      0     ",
+      "12": "free                2      0      0     ",
+      "13": "content             1      -      -     ",
+      "14": "ret                 0      0      0     "
     }
   },
   "access": []
@@ -37,16 +38,17 @@ explain select * from (select 1, 2) t
       "05": "set_add             0      0      0     ",
       "06": "set                 1      2      0     ",
       "07": "ref                 2      0      0     ",
-      "08": "store_open          0      2      15    ",
-      "09": "store_read          3      0      0     ",
-      "10": "push                3      0      0     ",
-      "11": "store_read          3      0      1     ",
-      "12": "push                3      0      0     ",
+      "08": "store_open          3      2      15    ",
+      "09": "store_read          4      3      0     ",
+      "10": "push                4      0      0     ",
+      "11": "store_read          4      3      1     ",
+      "12": "push                4      0      0     ",
       "13": "set_add             1      0      0     ",
-      "14": "store_next          0      9      0     ",
-      "15": "store_close         0      1      0     ",
-      "16": "content             1      -      -     ",
-      "17": "ret                 0      0      0     "
+      "14": "store_next          3      9      0     ",
+      "15": "free                3      0      0     ",
+      "16": "free                2      0      0     ",
+      "17": "content             1      -      -     ",
+      "18": "ret                 0      0      0     "
     }
   },
   "access": []
@@ -64,14 +66,15 @@ explain select x from (select 1 as x) t
       "03": "push                2      0      0     ",
       "04": "set                 2      1      0     ",
       "05": "set_add             2      0      0     ",
-      "06": "store_open          0      2      11    ",
-      "07": "store_read          3      0      0     ",
-      "08": "push                3      0      0     ",
+      "06": "store_open          3      2      11    ",
+      "07": "store_read          4      3      0     ",
+      "08": "push                4      0      0     ",
       "09": "set_add             1      0      0     ",
-      "10": "store_next          0      7      0     ",
-      "11": "store_close         0      1      0     ",
-      "12": "content             1      -      -     ",
-      "13": "ret                 0      0      0     "
+      "10": "store_next          3      7      0     ",
+      "11": "free                3      0      0     ",
+      "12": "free                2      0      0     ",
+      "13": "content             1      -      -     ",
+      "14": "ret                 0      0      0     "
     }
   },
   "access": []
@@ -90,16 +93,17 @@ explain select a, b from (select 1 as a, 2 as b) t
       "05": "set_add             0      0      0     ",
       "06": "set                 1      2      0     ",
       "07": "ref                 2      0      0     ",
-      "08": "store_open          0      2      15    ",
-      "09": "store_read          3      0      0     ",
-      "10": "push                3      0      0     ",
-      "11": "store_read          3      0      1     ",
-      "12": "push                3      0      0     ",
+      "08": "store_open          3      2      15    ",
+      "09": "store_read          4      3      0     ",
+      "10": "push                4      0      0     ",
+      "11": "store_read          4      3      1     ",
+      "12": "push                4      0      0     ",
       "13": "set_add             1      0      0     ",
-      "14": "store_next          0      9      0     ",
-      "15": "store_close         0      1      0     ",
-      "16": "content             1      -      -     ",
-      "17": "ret                 0      0      0     "
+      "14": "store_next          3      9      0     ",
+      "15": "free                3      0      0     ",
+      "16": "free                2      0      0     ",
+      "17": "content             1      -      -     ",
+      "18": "ret                 0      0      0     "
     }
   },
   "access": []

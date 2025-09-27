@@ -53,7 +53,7 @@ emit_upsert(Compiler* self, Ast* ast)
 		rset = op3(self, CSET, rpin(self, TYPE_STORE), insert->ret.count, 0);
 
 	// CTABLE_PREPARE
-	op2(self, CTABLE_PREPARE, target->id, (intptr_t)table);
+	target->rcursor = op2(self, CTABLE_PREPARE, rpin(self, TYPE_CURSOR), (intptr_t)table);
 
 	// jmp _start
 	int jmp_start = op_pos(self);
@@ -145,10 +145,12 @@ emit_upsert(Compiler* self, Ast* ast)
 	op_at(self, jmp_start)->a = op_pos(self);
 
 	// CUPSERT
-	op3(self, CUPSERT, target->id, jmp_where, jmp_returning);
+	op3(self, CUPSERT, target->rcursor, jmp_where, jmp_returning);
 	
-	// CTABLE_CLOSE
-	op1(self, CTABLE_CLOSE, target->id);
+	// close cursor
+	op1(self, CFREE, target->rcursor);
+	runpin(self, target->rcursor);
+	target->rcursor = -1;
 
 	// CRESULT (returning)
 	if (returning_has(&insert->ret))

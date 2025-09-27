@@ -143,7 +143,7 @@ emit_update_target(Compiler* self, Targets* targets, Ast* expr)
 	}
 
 	// UPDATE
-	op2(self, CUPDATE, target->id, list_count);
+	op2(self, CUPDATE, target->rcursor, list_count);
 }
 
 static inline void

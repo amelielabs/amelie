@@ -178,7 +178,11 @@ scan_table(Scan* self, Target* target)
 		else
 			open_op = CTABLE_OPEN_PART;
 	}
-	op4(cp, open_op, target->id, name_offset, 0 /* _eof */, keys_count);
+
+	// create table cursor
+	target->rcursor = op4(cp, open_op, rpin(cp, TYPE_CURSOR),
+	                      name_offset, 0 /* _eof */,
+	                      keys_count);
 
 	// handle outer target eof jmp (for limit)
 	if (self->rlimit != -1 && !target->prev)
@@ -211,7 +215,7 @@ scan_table(Scan* self, Target* target)
 
 	// do not iterate further for point-lookups on unique index
 	if (! (point_lookup && index->unique))
-		op2(cp, CTABLE_NEXT, target->id, _where);
+		op2(cp, CTABLE_NEXT, target->rcursor, _where);
 
 	// _eof:
 	int _eof = op_pos(cp);
@@ -227,7 +231,10 @@ scan_table(Scan* self, Target* target)
 	if (self->rlimit != -1 && !target->prev)
 		code_at(cp->code, self->eof)->a = _eof;
 
-	op1(cp, CTABLE_CLOSE, target->id);
+	// close cursor
+	op1(cp, CFREE, target->rcursor);
+	runpin(cp, target->rcursor);
+	target->rcursor = -1;
 }
 
 static inline void
@@ -248,7 +255,8 @@ scan_table_heap(Scan* self, Target* target)
 
 	// table_open
 	int _open = op_pos(cp);
-	op4(cp, CTABLE_OPEN_HEAP, target->id, name_offset, 0 /* _eof */, 0);
+	target->rcursor = op4(cp, CTABLE_OPEN_HEAP, rpin(cp, TYPE_CURSOR),
+	                      name_offset, 0 /* _eof */, 0);
 
 	// handle outer target eof jmp (for limit)
 	if (self->rlimit != -1 && !target->prev)
@@ -272,7 +280,7 @@ scan_table_heap(Scan* self, Target* target)
 		scan_on_match(self);
 
 	// table_next
-	op2(cp, CTABLE_NEXT, target->id, _where);
+	op2(cp, CTABLE_NEXT, target->rcursor, _where);
 
 	// _eof:
 	int _eof = op_pos(cp);
@@ -284,7 +292,10 @@ scan_table_heap(Scan* self, Target* target)
 	if (self->rlimit != -1 && !target->prev)
 		code_at(cp->code, self->eof)->a = _eof;
 
-	op1(cp, CTABLE_CLOSE, target->id);
+	// close cursor
+	op1(cp, CFREE, target->rcursor);
+	runpin(cp, target->rcursor);
+	target->rcursor = -1;
 }
 
 static inline void
@@ -358,24 +369,26 @@ scan_expr(Scan* self, Target* target)
 	assert(target->r != -1);
 
 	// scan over set, union or function result
-	int op_open  = CSTORE_OPEN;
-	int op_close = CSTORE_CLOSE;
-	int op_next  = CSTORE_NEXT;
+	int cursor_open = CSTORE_OPEN;
+	int cursor_next = CSTORE_NEXT;
+	int cursor_type = TYPE_CURSOR_STORE;
+
 	auto type = rtype(cp, target->r);
 	if (type == TYPE_JSON)
 	{
-		op_open  = CJSON_OPEN;
-		op_close = CJSON_CLOSE;
-		op_next  = CJSON_NEXT;
+		cursor_open = CJSON_OPEN;
+		cursor_next = CJSON_NEXT;
+		cursor_type = TYPE_CURSOR_JSON;
 	} else
 	if (type != TYPE_STORE && type != TYPE_NULL) {
 		stmt_error(cp->current, target->ast, "unsupported expression type '%s'",
 		           type_of(type));
 	}
 
-	// open SET, MERGE or JSON cursor
+	// open SET/MERGE or JSON cursor
 	auto _open = op_pos(cp);
-	op3(cp, op_open, target->id, target->r, 0 /* _eof */);
+	target->rcursor = op3(cp, cursor_open, rpin(cp, cursor_type),
+	                      target->r, 0 /* _eof */);
 
 	// handle outer target eof jmp (for limit)
 	if (self->rlimit != -1 && !target->prev)
@@ -399,7 +412,7 @@ scan_expr(Scan* self, Target* target)
 		scan_on_match(self);
 
 	// cursor next
-	op2(cp, op_next, target->id, _where);
+	op2(cp, cursor_next, target->rcursor, _where);
 
 	// _eof:
 	int _eof = op_pos(cp);
@@ -411,8 +424,15 @@ scan_expr(Scan* self, Target* target)
 	if (self->rlimit != -1 && !target->prev)
 		code_at(cp->code, self->eof)->a = _eof;
 
-	// cursor close
-	op2(cp, op_close, target->id, true);
+	// close cursor
+	op1(cp, CFREE, target->rcursor);
+	runpin(cp, target->rcursor);
+	target->rcursor = -1;
+
+	// free target value
+	op1(cp, CFREE, target->r);
+	runpin(cp, target->r);
+	target->r = -1;
 }
 
 static inline void

@@ -13,6 +13,7 @@
 
 typedef enum
 {
+	// materialized
 	TYPE_NULL,
 	TYPE_BOOL,
 	TYPE_INT,
@@ -24,8 +25,12 @@ typedef enum
 	TYPE_INTERVAL,
 	TYPE_VECTOR,
 	TYPE_UUID,
+	// non-materialized
 	TYPE_AVG,
 	TYPE_STORE,
+	TYPE_CURSOR,
+	TYPE_CURSOR_JSON,
+	TYPE_CURSOR_STORE,
 	TYPE_MAX
 } Type;
 
@@ -72,6 +77,15 @@ type_of(Type type)
 		break;
 	case TYPE_STORE:
 		name = "store";
+		break;
+	case TYPE_CURSOR:
+		name = "cursor";
+		break;
+	case TYPE_CURSOR_JSON:
+		name = "cursor_json";
+		break;
+	case TYPE_CURSOR_STORE:
+		name = "cursor_store";
 		break;
 	case TYPE_MAX:
 	default:

@@ -45,6 +45,7 @@ vm_init(Vm* self, Core* core, Dtr* dtr)
 	self->code      = NULL;
 	self->code_data = NULL;
 	self->code_arg  = NULL;
+	self->upsert    = 0;
 	self->args      = NULL;
 	self->core      = core;
 	self->dtr       = dtr;
@@ -55,7 +56,6 @@ vm_init(Vm* self, Core* core, Dtr* dtr)
 	self->local     = NULL;
 	reg_init(&self->r);
 	stack_init(&self->stack);
-	cursor_mgr_init(&self->cursor_mgr);
 	call_mgr_init(&self->call_mgr);
 }
 
@@ -63,7 +63,6 @@ void
 vm_free(Vm* self)
 {
 	vm_reset(self);
-	cursor_mgr_free(&self->cursor_mgr);
 	call_mgr_free(&self->call_mgr);
 	stack_free(&self->stack);
 	reg_free(&self->r);
@@ -76,11 +75,11 @@ vm_reset(Vm* self)
 		call_mgr_reset(&self->call_mgr);
 	reg_reset(&self->r);
 	stack_reset(&self->stack);
-	cursor_mgr_reset(&self->cursor_mgr);
 	self->code      = NULL;
 	self->code_data = NULL;
 	self->code_arg  = NULL;
 	self->args      = NULL;
+	self->upsert    = 0;
 }
 
 #define op_start goto *ops[(op)->op]
@@ -111,7 +110,6 @@ vm_run(Vm*       self,
 	self->args      = args;
 	self->result    = result;
 	self->content   = content;
-	cursor_mgr_prepare(&self->cursor_mgr);
 	call_mgr_prepare(&self->call_mgr, local, code_data);
 
 	const void* ops[] =
@@ -314,7 +312,6 @@ vm_run(Vm*       self,
 		&&ctable_open_part_lookup,
 		&&ctable_open_heap,
 		&&ctable_prepare,
-		&&ctable_close,
 		&&ctable_next,
 		&&ctable_readb,
 		&&ctable_readi8,
@@ -333,13 +330,11 @@ vm_run(Vm*       self,
 
 		// store cursor
 		&&cstore_open,
-		&&cstore_close,
 		&&cstore_next,
 		&&cstore_read,
 
 		// json cursor
 		&&cjson_open,
-		&&cjson_close,
 		&&cjson_next,
 		&&cjson_read,
 
@@ -411,12 +406,9 @@ vm_run(Vm*       self,
 	Call      call;
 	str_init(&string);
 
-	auto stack       = &self->stack;
-	auto cursor_mgr  = &self->cursor_mgr;
-	Cursor* cursor;
-
-	register auto r  = self->r.r;
-	register auto op = code_at(self->code, start);
+	auto stack = &self->stack;
+	auto r     = self->r.r;
+	auto op    = code_at(self->code, start);
 	op_start;
 
 cret:
@@ -554,11 +546,10 @@ carg:
 	op_next;
 
 cexcluded:
-	// [result, cursor, order]
-	cursor = cursor_mgr_of(cursor_mgr, op->b);
-	if (unlikely(! cursor->ref))
+	// [result, column]
+	if (unlikely(! self->upsert))
 		error("unexpected EXCLUDED usage");
-	value_copy(&r[op->a], cursor->ref + op->c);
+	value_copy(&r[op->a], ((Value**)self->code_arg->start)[self->upsert - 1] + op->b);
 	op_next;
 
 cnullop:
@@ -1504,21 +1495,16 @@ ctable_prepare:
 	ctable_prepare(self, op);
 	op_next;
 
-ctable_close:
-	cursor_reset(cursor_mgr_of(cursor_mgr, op->a));
-	op_next;
-
 ctable_next:
-	// [target_id, _on_success]
-	cursor = cursor_mgr_of(&self->cursor_mgr, op->a);
-	iterator_next(cursor->it);
+	// [cursor, _on_success]
+	iterator_next(r[op->a].cursor);
 	// jmp on success or skip to the next op on eof
-	op = likely(iterator_has(cursor->it)) ? code_at(self->code, op->b) : op + 1;
+	op = likely(iterator_has(r[op->a].cursor)) ? code_at(self->code, op->b) : op + 1;
 	op_jmp;
 
 ctable_readb:
 	// [result, cursor, column]
-	ptr = row_at(iterator_at(cursor_mgr_of(cursor_mgr, op->b)->it), op->c);
+	ptr = row_at(iterator_at(r[op->b].cursor), op->c);
 	if (likely(ptr))
 		value_set_bool(&r[op->a], *(int8_t*)ptr);
 	else
@@ -1527,7 +1513,7 @@ ctable_readb:
 
 ctable_readi8:
 	// [result, cursor, column]
-	ptr = row_at(iterator_at(cursor_mgr_of(cursor_mgr, op->b)->it), op->c);
+	ptr = row_at(iterator_at(r[op->b].cursor), op->c);
 	if (likely(ptr))
 		value_set_int(&r[op->a], *(int8_t*)ptr);
 	else
@@ -1535,7 +1521,7 @@ ctable_readi8:
 	op_next;
 
 ctable_readi16:
-	ptr = row_at(iterator_at(cursor_mgr_of(cursor_mgr, op->b)->it), op->c);
+	ptr = row_at(iterator_at(r[op->b].cursor), op->c);
 	if (likely(ptr))
 		value_set_int(&r[op->a], *(int16_t*)ptr);
 	else
@@ -1543,7 +1529,7 @@ ctable_readi16:
 	op_next;
 
 ctable_readi32:
-	ptr = row_at(iterator_at(cursor_mgr_of(cursor_mgr, op->b)->it), op->c);
+	ptr = row_at(iterator_at(r[op->b].cursor), op->c);
 	if (likely(ptr))
 		value_set_int(&r[op->a], *(int32_t*)ptr);
 	else
@@ -1551,7 +1537,7 @@ ctable_readi32:
 	op_next;
 
 ctable_readi64:
-	ptr = row_at(iterator_at(cursor_mgr_of(cursor_mgr, op->b)->it), op->c);
+	ptr = row_at(iterator_at(r[op->b].cursor), op->c);
 	if (likely(ptr))
 		value_set_int(&r[op->a], *(int64_t*)ptr);
 	else
@@ -1559,7 +1545,7 @@ ctable_readi64:
 	op_next;
 
 ctable_readf32:
-	ptr = row_at(iterator_at(cursor_mgr_of(cursor_mgr, op->b)->it), op->c);
+	ptr = row_at(iterator_at(r[op->b].cursor), op->c);
 	if (likely(ptr))
 		value_set_double(&r[op->a], *(float*)ptr);
 	else
@@ -1567,7 +1553,7 @@ ctable_readf32:
 	op_next;
 
 ctable_readf64:
-	ptr = row_at(iterator_at(cursor_mgr_of(cursor_mgr, op->b)->it), op->c);
+	ptr = row_at(iterator_at(r[op->b].cursor), op->c);
 	if (likely(ptr))
 		value_set_double(&r[op->a], *(double*)ptr);
 	else
@@ -1575,7 +1561,7 @@ ctable_readf64:
 	op_next;
 
 ctable_readt:
-	ptr = row_at(iterator_at(cursor_mgr_of(cursor_mgr, op->b)->it), op->c);
+	ptr = row_at(iterator_at(r[op->b].cursor), op->c);
 	if (likely(ptr))
 		value_set_timestamp(&r[op->a], *(int64_t*)ptr);
 	else
@@ -1583,7 +1569,7 @@ ctable_readt:
 	op_next;
 
 ctable_readl:
-	ptr = row_at(iterator_at(cursor_mgr_of(cursor_mgr, op->b)->it), op->c);
+	ptr = row_at(iterator_at(r[op->b].cursor), op->c);
 	if (likely(ptr))
 		value_set_interval(&r[op->a], (Interval*)ptr);
 	else
@@ -1591,7 +1577,7 @@ ctable_readl:
 	op_next;
 
 ctable_readd:
-	ptr = row_at(iterator_at(cursor_mgr_of(cursor_mgr, op->b)->it), op->c);
+	ptr = row_at(iterator_at(r[op->b].cursor), op->c);
 	if (likely(ptr))
 		value_set_date(&r[op->a], *(int32_t*)ptr);
 	else
@@ -1599,7 +1585,7 @@ ctable_readd:
 	op_next;
 
 ctable_reads:
-	ptr = row_at(iterator_at(cursor_mgr_of(cursor_mgr, op->b)->it), op->c);
+	ptr = row_at(iterator_at(r[op->b].cursor), op->c);
 	if (likely(ptr))
 	{
 		json_read_string((uint8_t**)&ptr, &r[op->a].string);
@@ -1611,7 +1597,7 @@ ctable_reads:
 	op_next;
 
 ctable_readj:
-	ptr = row_at(iterator_at(cursor_mgr_of(cursor_mgr, op->b)->it), op->c);
+	ptr = row_at(iterator_at(r[op->b].cursor), op->c);
 	if (likely(ptr))
 		value_set_json(&r[op->a], ptr, json_sizeof(ptr), NULL);
 	else
@@ -1619,7 +1605,7 @@ ctable_readj:
 	op_next;
 
 ctable_readv:
-	ptr = row_at(iterator_at(cursor_mgr_of(cursor_mgr, op->b)->it), op->c);
+	ptr = row_at(iterator_at(r[op->b].cursor), op->c);
 	if (likely(ptr))
 		value_set_vector(&r[op->a], (Vector*)ptr, NULL);
 	else
@@ -1627,7 +1613,7 @@ ctable_readv:
 	op_next;
 
 ctable_readu:
-	ptr = row_at(iterator_at(cursor_mgr_of(cursor_mgr, op->b)->it), op->c);
+	ptr = row_at(iterator_at(r[op->b].cursor), op->c);
 	if (likely(ptr))
 		value_set_uuid(&r[op->a], (Uuid*)ptr);
 	else
@@ -1637,36 +1623,29 @@ ctable_readu:
 // set/merge cursor
 cstore_open:
 	// [cursor, store, _eof]
-	cursor = cursor_mgr_of(&self->cursor_mgr, op->a);
-	cursor->r = op->b;
-	cursor->type = CURSOR_STORE;
+	a = &r[op->a];
 	if (likely(r[op->b].type == TYPE_STORE))
 	{
 		// jmp on success or skip to the next op on eof
-		cursor->it_store = store_iterator(r[op->b].store);
-		if (likely(store_iterator_has(cursor->it_store)))
+		a->cursor_store = store_iterator(r[op->b].store);
+		if (likely(store_iterator_has(a->cursor_store)))
 			op++;
 		else
 			op = code_at(self->code, op->c);
+		a->type = TYPE_CURSOR_STORE;
 	} else {
 		assert(r[op->b].type == TYPE_NULL);
+		value_set_null(&r[op->a]);
 		op = code_at(self->code, op->c);
 	}
 	op_jmp;
 
-cstore_close:
-	// [cursor]
-	cursor = cursor_mgr_of(cursor_mgr, op->a);
-	value_free(&r[cursor->r]);
-	cursor_reset(cursor);
-	op_next;
-
 cstore_next:
-	// [target_id, _on_success]
-	cursor = cursor_mgr_of(&self->cursor_mgr, op->a);
-	store_iterator_next(cursor->it_store);
+	// [cursor, _on_success]
+	a = &r[op->a];
+	store_iterator_next(a->cursor_store);
 	// jmp on success or skip to the next op on eof
-	if (likely(store_iterator_has(cursor->it_store)))
+	if (likely(store_iterator_has(a->cursor_store)))
 		op = code_at(self->code, op->b);
 	else
 		op++;
@@ -1674,48 +1653,39 @@ cstore_next:
 
 cstore_read:
 	// [result, cursor, column]
-	cursor = cursor_mgr_of(&self->cursor_mgr, op->b);
-	value_copy(&r[op->a], &store_iterator_at(cursor->it_store)[op->c]);
+	value_copy(&r[op->a], &store_iterator_at(r[op->b].cursor_store)[op->c]);
 	op_next;
 
 cjson_open:
 	// [cursor, json, _eof]
-	cursor = cursor_mgr_of(&self->cursor_mgr, op->a);
-	cursor->r = op->b;
-	cursor->type = CURSOR_JSON;
+	a = &r[op->a];
 	if (likely(r[op->b].type == TYPE_JSON))
 	{
 		if (unlikely(! json_is_array(r[op->b].json)))
 			error("FROM: json array expected");
 		// jmp on success or skip to the next op on eof
-		cursor->pos = r[op->b].json;
-		json_read_array(&cursor->pos);
-		if (likely(! json_is_array_end(cursor->pos))) {
+		a->type = TYPE_CURSOR_JSON;
+		a->json = r[op->b].json;
+		json_read_array(&a->json);
+		if (likely(! json_read_array_end(&a->json))) {
+			a->json_size = json_sizeof(a->json);
 			op++;
-		} else
-		{
-			cursor->pos_size = json_sizeof(cursor->pos);
+		} else {
 			op = code_at(self->code, op->c);
 		}
 	} else {
 		assert(r[op->b].type == TYPE_NULL);
+		value_set_null(&r[op->a]);
 		op = code_at(self->code, op->c);
 	}
 	op_jmp;
 
-cjson_close:
-	// [cursor]
-	cursor = cursor_mgr_of(cursor_mgr, op->a);
-	value_free(&r[cursor->r]);
-	cursor_reset(cursor);
-	op_next;
-
 cjson_next:
-	// [target_id, _on_success]
-	cursor = cursor_mgr_of(&self->cursor_mgr, op->a);
-	json_skip(&cursor->pos);
-	if (likely(! json_read_array_end(&cursor->pos))) {
-		cursor->pos_size = json_sizeof(cursor->pos);
+	// [cursor, _on_success]
+	a = &r[op->a];
+	json_skip(&a->json);
+	if (likely(! json_read_array_end(&a->json))) {
+		a->json_size = json_sizeof(a->json);
 		op = code_at(self->code, op->b);
 	} else {
 		op++;
@@ -1724,18 +1694,18 @@ cjson_next:
 
 cjson_read:
 	// [result, cursor]
-	cursor = cursor_mgr_of(&self->cursor_mgr, op->b);
-	value_set_json(&r[op->a], cursor->pos, cursor->pos_size, NULL);
+	b = &r[op->b];
+	value_set_json(&r[op->a], b->json, b->json_size, NULL);
 	op_next;
 
 cagg:
 	// [result, cursor, column]
-	r[op->a] = store_iterator_at(cursor_mgr_of(&self->cursor_mgr, op->b)->it_store)[op->c];
+	r[op->a] = store_iterator_at(r[op->b].cursor_store)[op->c];
 	op_next;
 
 ccount:
 	// [result, cursor, column]
-	c = &store_iterator_at(cursor_mgr_of(&self->cursor_mgr, op->b)->it_store)[op->c];
+	c = &store_iterator_at(r[op->b].cursor_store)[op->c];
 	if (likely(c->type == TYPE_INT))
 		value_set_int(&r[op->a], c->integer);
 	else
@@ -1744,7 +1714,7 @@ ccount:
 
 cavgi:
 	// [result, cursor, column]
-	c = &store_iterator_at(cursor_mgr_of(&self->cursor_mgr, op->b)->it_store)[op->c];
+	c = &store_iterator_at(r[op->b].cursor_store)[op->c];
 	if (likely(c->type == TYPE_AVG))
 		value_set_int(&r[op->a], avg_int(&c->avg));
 	else
@@ -1753,7 +1723,7 @@ cavgi:
 
 cavgf:
 	// [result, cursor, column]
-	c = &store_iterator_at(cursor_mgr_of(&self->cursor_mgr, op->b)->it_store)[op->c];
+	c = &store_iterator_at(r[op->b].cursor_store)[op->c];
 	if (likely(c->type == TYPE_AVG))
 		value_set_double(&r[op->a], avg_double(&c->avg));
 	else

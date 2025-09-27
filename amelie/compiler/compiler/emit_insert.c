@@ -78,7 +78,7 @@ emit_insert_store_generated_on_match(Compiler* self, Targets* targets, void* arg
 	}
 
 	// CUPDATE_STORE
-	op2(self, CUPDATE_STORE, target->id, count);
+	op2(self, CUPDATE_STORE, target->rcursor, count);
 }
 
 static int

@@ -18,17 +18,23 @@ struct Value
 	Type type;
 	union
 	{
-		int64_t   integer;
-		double    dbl;
-		Str       string;
-		Interval  interval;
-		Vector*   vector;
-		Uuid      uuid;
-		Avg       avg;
-		Store*    store;
+		int64_t        integer;
+		double         dbl;
+		Str            string;
+		Interval       interval;
+		Vector*        vector;
+		Uuid           uuid;
+		Avg            avg;
+		Store*         store;
+		StoreIterator* cursor_store;
 		struct {
-			uint8_t* json;
-			int      json_size;
+			Iterator*  cursor;
+			Table*     table;
+			Part*      part;
+		};
+		struct {
+			uint8_t*   json;
+			int        json_size;
 		};
 	};
 	Buf* buf;
@@ -46,8 +52,14 @@ value_free(Value* self)
 	if (self->type == TYPE_NULL)
 		return;
 
-	if (unlikely(self->type == TYPE_STORE))
+	if (self->type == TYPE_STORE)
 		store_free(self->store);
+	else
+	if (self->type == TYPE_CURSOR_STORE)
+		store_iterator_close(self->cursor_store);
+	else
+	if (self->type == TYPE_CURSOR)
+		iterator_close(self->cursor);
 
 	if (unlikely(self->buf))
 	{
@@ -177,6 +189,30 @@ value_set_store(Value* self, Store* store)
 {
 	self->type  = TYPE_STORE;
 	self->store = store;
+}
+
+always_inline hot static inline void
+value_set_cursor(Value* self, Table* table, Part* part, Iterator* cursor)
+{
+	self->type   = TYPE_CURSOR;
+	self->table  = table;
+	self->part   = part;
+	self->cursor = cursor;
+}
+
+always_inline hot static inline void
+value_set_cursor_store(Value* self, StoreIterator* cursor)
+{
+	self->type         = TYPE_CURSOR_STORE;
+	self->cursor_store = cursor;
+}
+
+always_inline hot static inline void
+value_set_cursor_json(Value* self, uint8_t* json, int json_size)
+{
+	self->type      = TYPE_CURSOR_JSON;
+	self->json      = json;
+	self->json_size = json_size;
 }
 
 always_inline hot static inline void

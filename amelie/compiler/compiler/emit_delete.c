@@ -48,7 +48,7 @@ emit_delete_on_match(Compiler* self, Targets* targets, void* arg)
 
 	// DELETE by cursor
 	auto target = targets_outer(targets);
-	op1(self, CDELETE, target->id);
+	op1(self, CDELETE, target->rcursor);
 }
 
 static inline void
@@ -72,7 +72,7 @@ emit_delete_on_match_returning(Compiler* self, Targets* targets, void* arg)
 
 	// DELETE by cursor
 	auto target = targets_outer(targets);
-	op1(self, CDELETE, target->id);
+	op1(self, CDELETE, target->rcursor);
 }
 
 hot void

@@ -248,7 +248,7 @@ parse_select(Stmt* self, Targets* outer, bool subquery)
 		}
 
 		// create group by target to scan agg set
-		auto target = target_allocate(&self->targets_seq);
+		auto target = target_allocate();
 		target->type = TARGET_GROUP_BY;
 		target->ast  = targets_outer(&select->targets)->ast;
 		target->name = targets_outer(&select->targets)->name;

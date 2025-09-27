@@ -237,7 +237,6 @@ OpDesc ops[] =
 	{ CTABLE_OPEN_PARTL, "table_open_partl" },
 	{ CTABLE_OPEN_HEAP, "table_open_heap" },
 	{ CTABLE_PREPARE, "table_prepare" },
-	{ CTABLE_CLOSE, "table_close" },
 	{ CTABLE_NEXT, "table_next" },
 	{ CTABLE_READB, "table_readb" },
 	{ CTABLE_READI8, "table_readi8" },
@@ -256,13 +255,11 @@ OpDesc ops[] =
 
 	// store cursor
 	{ CSTORE_OPEN, "store_open" },
-	{ CSTORE_CLOSE, "store_close" },
 	{ CSTORE_NEXT, "store_next" },
 	{ CSTORE_READ, "store_read" },
 
 	// json cursor
 	{ CJSON_OPEN, "json_open" },
-	{ CJSON_CLOSE, "json_close" },
 	{ CJSON_NEXT, "json_next" },
 	{ CJSON_READ, "json_read" },
 

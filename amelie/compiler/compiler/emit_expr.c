@@ -123,8 +123,7 @@ emit_column(Compiler* self, Target* target, Ast* ast,
 
 	// read excluded column
 	if (unlikely(excluded))
-		return op3(self, CEXCLUDED, rpin(self, column->type),
-		           target->id, column->order);
+		return op2(self, CEXCLUDED, rpin(self, column->type), column->order);
 
 	// generate cursor read based on the target
 	int r;
@@ -191,14 +190,14 @@ emit_column(Compiler* self, Target* target, Ast* ast,
 			break;
 		}
 		r = op3(self, op, rpin(self, column->type),
-		        target->id, column->order);
+		        target->rcursor, column->order);
 	} else
 	{
 		assert(target->r != -1);
 		auto rt = rtype(self, target->r);
 		if (rt == TYPE_JSON)
 		{
-			r = op2(self, CJSON_READ, rpin(self, TYPE_JSON), target->id);
+			r = op2(self, CJSON_READ, rpin(self, TYPE_JSON), target->rcursor);
 			if (! column)
 			{
 				// handle as {}.column for json target
@@ -211,7 +210,7 @@ emit_column(Compiler* self, Target* target, Ast* ast,
 		if (rt == TYPE_STORE)
 		{
 			r = op3(self, CSTORE_READ, rpin(self, column->type),
-			        target->id, column->order);
+			        target->rcursor, column->order);
 		} else
 		if (rt == TYPE_NULL)
 		{
@@ -405,7 +404,7 @@ emit_aggregate(Compiler* self, Targets* targets, Ast* ast)
 	{
 		assert(agg->expr_seed_type != -1);
 		return op3(self, CSTORE_READ, rpin(self, agg->expr_seed_type),
-		           target->id, agg->order);
+		           target->rcursor, agg->order);
 	}
 	switch (agg->id) {
 	case AGG_INT_COUNT:
@@ -437,7 +436,7 @@ emit_aggregate(Compiler* self, Targets* targets, Ast* ast)
 		abort();
 		break;
 	}
-	return op3(self, agg_op, rpin(self, agg_type), target->id,
+	return op3(self, agg_op, rpin(self, agg_type), target->rcursor,
 	           agg->order);
 }
 
@@ -457,7 +456,7 @@ emit_aggregate_key(Compiler* self, Targets* targets, Ast* ast)
 	assert(column->type != -1);
 
 	// read aggregate key value
-	return op3(self, CSTORE_READ, rpin(self, column->type), target->id,
+	return op3(self, CSTORE_READ, rpin(self, column->type), target->rcursor,
 	           column->order);
 }
 

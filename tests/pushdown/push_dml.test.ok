@@ -32,7 +32,7 @@ explain delete from test
       "00": "table_open_part     0      0      3     # public.test (primary)",
       "01": "delete              0      0      0     ",
       "02": "table_next          0      1      0     ",
-      "03": "table_close         0      0      0     ",
+      "03": "free                0      0      0     ",
       "04": "ret                 0      0      0     "
     }
   },
@@ -52,13 +52,13 @@ explain update test set data = id
     },
     "backend": {
       "00": "table_open_part     0      0      7     # public.test (primary)",
-      "01": "int                 0      -      0     # 1",
-      "02": "push                0      0      0     ",
-      "03": "table_readi32       0      0      0     ",
-      "04": "push                0      0      0     ",
+      "01": "int                 1      -      0     # 1",
+      "02": "push                1      0      0     ",
+      "03": "table_readi32       1      0      0     ",
+      "04": "push                1      0      0     ",
       "05": "update              0      1      0     ",
       "06": "table_next          0      1      0     ",
-      "07": "table_close         0      0      0     ",
+      "07": "free                0      0      0     ",
       "08": "ret                 0      0      0     "
     }
   },
@@ -79,15 +79,15 @@ explain insert into test (id) values (1), (2), (3) on conflict do update set dat
     "backend": {
       "00": "table_prepare       0      -      0     # public.test",
       "01": "jmp                 9      0      0     ",
-      "02": "int                 0      -      0     # 1",
-      "03": "push                0      0      0     ",
-      "04": "table_readi32       0      0      1     ",
-      "05": "int                 1      -      0     # 1",
-      "06": "addii               2      0      1     ",
-      "07": "push                2      0      0     ",
+      "02": "int                 1      -      0     # 1",
+      "03": "push                1      0      0     ",
+      "04": "table_readi32       1      0      1     ",
+      "05": "int                 2      -      0     # 1",
+      "06": "addii               3      1      2     ",
+      "07": "push                3      0      0     ",
       "08": "update              0      1      0     ",
       "09": "upsert              0      2      -1    ",
-      "10": "table_close         0      0      0     ",
+      "10": "free                0      0      0     ",
       "11": "ret                 0      0      0     "
     }
   },

@@ -21,6 +21,7 @@ struct Vm
 	Code*     code;
 	CodeData* code_data;
 	Buf*      code_arg;
+	int       upsert;
 	Value*    args;
 	Core*     core;
 	Dtr*      dtr;
@@ -29,7 +30,6 @@ struct Vm
 	Content*  content;
 	Tr*       tr;
 	Local*    local;
-	CursorMgr cursor_mgr;
 	CallMgr   call_mgr;
 };
 

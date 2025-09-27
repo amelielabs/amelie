@@ -38,7 +38,6 @@ typedef enum
 struct Target
 {
 	TargetType   type;
-	int          id;
 	Str          name;
 	Ast*         ast;
 	// target
@@ -52,6 +51,7 @@ struct Target
 	Columns*     from_columns;
 	Ast*         from_function;
 	int          r;
+	int          rcursor;
 	// target path
 	Path*        path;
 	Path*        path_primary;
@@ -65,30 +65,29 @@ struct Target
 };
 
 static inline Target*
-target_allocate(int* id_seq)
+target_allocate(void)
 {
 	Target* self = palloc(sizeof(Target));
-	self->type            = TARGET_NONE;
-	self->id              = *id_seq;
-	self->from_access     = ACCESS_UNDEF;
-	self->from_table      = NULL;
-	self->from_index      = NULL;
-	self->from_heap       = false;
-	self->from_select     = NULL;
-	self->from_group_by   = NULL;
-	self->from_cte        = NULL;
-	self->from_columns    = NULL;
-	self->from_function   = NULL;
-	self->r               = -1;
-	self->path            = NULL;
-	self->path_primary    = NULL;
-	self->join            = JOIN_NONE;
-	self->join_on         = NULL;
-	self->next            = NULL;
-	self->prev            = NULL;
-	self->targets         = NULL;
+	self->type          = TARGET_NONE;
+	self->from_access   = ACCESS_UNDEF;
+	self->from_table    = NULL;
+	self->from_index    = NULL;
+	self->from_heap     = false;
+	self->from_select   = NULL;
+	self->from_group_by = NULL;
+	self->from_cte      = NULL;
+	self->from_columns  = NULL;
+	self->from_function = NULL;
+	self->r             = -1;
+	self->rcursor       = -1;
+	self->path          = NULL;
+	self->path_primary  = NULL;
+	self->join          = JOIN_NONE;
+	self->join_on       = NULL;
+	self->next          = NULL;
+	self->prev          = NULL;
+	self->targets       = NULL;
 	str_init(&self->name);
-	(*id_seq)++;
 	return self;
 }
 

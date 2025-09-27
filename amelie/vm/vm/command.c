@@ -346,7 +346,6 @@ hot Op*
 ctable_open(Vm* self, Op* op, bool point_lookup, bool open_part)
 {
 	// [cursor, name_offset, _eof, keys_count]
-	auto cursor = cursor_mgr_of(&self->cursor_mgr, op->a);
 
 	// read names
 	uint8_t* pos = code_data_at(self->code_data, op->b);
@@ -375,16 +374,17 @@ ctable_open(Vm* self, Op* op, bool point_lookup, bool open_part)
 		key_ref = NULL;
 
 	// open cursor
+	auto cursor = reg_at(&self->r, op->a);
 	if (open_part)
 		cursor->part = part_list_match(&table->part_list, self->core);
 	else
 		cursor->part = NULL;
-	cursor->it    = part_list_iterator(&table->part_list, cursor->part, index, point_lookup, key_ref);
-	cursor->table = table;
-	cursor->type  = CURSOR_TABLE;
+	cursor->cursor = part_list_iterator(&table->part_list, cursor->part, index, point_lookup, key_ref);
+	cursor->table  = table;
+	cursor->type   = TYPE_CURSOR;
 
 	// jmp to next op if has data
-	if (likely(iterator_has(cursor->it)))
+	if (likely(iterator_has(cursor->cursor)))
 		return ++op;
 
 	// jmp on eof
@@ -395,7 +395,6 @@ hot Op*
 ctable_open_heap(Vm* self, Op* op)
 {
 	// [cursor, name_offset, _eof]
-	auto cursor = cursor_mgr_of(&self->cursor_mgr, op->a);
 
 	// read names
 	uint8_t* pos = code_data_at(self->code_data, op->b);
@@ -409,14 +408,15 @@ ctable_open_heap(Vm* self, Op* op)
 	auto part  = part_list_match(&table->part_list, self->core);
 
 	// open cursor
-	cursor->type  = CURSOR_TABLE;
-	cursor->table = table;
-	cursor->part  = part;
-	cursor->it    = heap_iterator_allocate(&part->heap);
-	iterator_open(cursor->it, NULL);
+	auto cursor = reg_at(&self->r, op->a);
+	cursor->table  = table;
+	cursor->part   = part;
+	cursor->cursor = heap_iterator_allocate(&part->heap);
+	iterator_open(cursor->cursor, NULL);
+	cursor->type   = TYPE_CURSOR;
 
 	// jmp to next op if has data
-	if (likely(iterator_has(cursor->it)))
+	if (likely(iterator_has(cursor->cursor)))
 		return ++op;
 
 	// jmp on eof
@@ -426,17 +426,17 @@ ctable_open_heap(Vm* self, Op* op)
 hot void
 ctable_prepare(Vm* self, Op* op)
 {
-	// [target_id, table*]
-	auto cursor = cursor_mgr_of(&self->cursor_mgr, op->a);
+	// [cursor, table*]
 
 	// find partition
 	Table* table = (Table*)op->b;
 
 	// prepare cursor and primary index iterator for related partition
-	cursor->type  = CURSOR_TABLE;
-	cursor->table = table;
-	cursor->part  = part_list_match(&table->part_list, self->core);
-	cursor->it    = index_iterator(part_primary(cursor->part));
+	auto cursor = reg_at(&self->r, op->a);
+	cursor->table  = table;
+	cursor->part   = part_list_match(&table->part_list, self->core);
+	cursor->cursor = index_iterator(part_primary(cursor->part));
+	cursor->type   = TYPE_CURSOR;
 }
 
 hot void
@@ -459,29 +459,28 @@ cinsert(Vm* self, Op* op)
 	}
 }
 
-hot Op*
+Op*
 cupsert(Vm* self, Op* op)
 {
-	// [target_id, _jmp, _jmp_returning]
-	auto cursor  = cursor_mgr_of(&self->cursor_mgr, op->a);
-	auto columns = table_columns(cursor->table);
+	// [cursor, _jmp, _jmp_returning]
+	auto cursor = reg_at(&self->r, op->a);
+	assert(cursor->type == TYPE_CURSOR);
 
-	// first call
-	if (cursor->ref_pos == 0)
-		cursor->ref_count = buf_size(self->code_arg) / sizeof(Value*);
+	auto columns = table_columns(cursor->table);
+	int    count = buf_size(self->code_arg) / sizeof(Value*);
 
 	// insert or upsert
 	auto list = (Value**)self->code_arg->start;
-	while (cursor->ref_pos < cursor->ref_count)
+	while (self->upsert < count)
 	{
 		// set cursor ref pointer to the current insert row
-		cursor->ref = list[cursor->ref_pos];
-		cursor->ref_pos++;
+		auto ref = list[self->upsert];
+		self->upsert++;
 
-		auto row = row_create(&cursor->part->heap, columns, cursor->ref);
+		auto row = row_create(&cursor->part->heap, columns, ref);
 
 		// insert or get (open iterator in both cases)
-		auto exists = part_upsert(cursor->part, self->tr, cursor->it, row);
+		auto exists = part_upsert(cursor->part, self->tr, cursor->cursor, row);
 		if (exists)
 		{
 			// upsert
@@ -506,20 +505,21 @@ hot void
 cdelete(Vm* self, Op* op)
 {
 	// [cursor]
-	auto cursor = cursor_mgr_of(&self->cursor_mgr, op->a);
-	part_delete(cursor->part, self->tr, cursor->it);
+	auto cursor = reg_at(&self->r, op->a);
+	part_delete(cursor->part, self->tr, cursor->cursor);
 }
 
 hot void
 cupdate(Vm* self, Op* op)
 {
 	// [cursor, order/value count]
-	auto cursor = cursor_mgr_of(&self->cursor_mgr, op->a);
-	auto row_src = iterator_at(cursor->it);
+	auto cursor = reg_at(&self->r, op->a);
+	assert(cursor->type == TYPE_CURSOR);
+	auto row_src = iterator_at(cursor->cursor);
 	auto row_values = stack_at(&self->stack, op->b * 2);
 	auto row = row_update(&cursor->part->heap, row_src, table_columns(cursor->table),
 	                      row_values, op->b);
-	part_update(cursor->part, self->tr, cursor->it, row);
+	part_update(cursor->part, self->tr, cursor->cursor, row);
 	stack_popn(&self->stack, op->b * 2);
 }
 
@@ -527,10 +527,10 @@ hot void
 cupdate_store(Vm* self, Op* op)
 {
 	// [cursor, count]
-	auto cursor = cursor_mgr_of(&self->cursor_mgr, op->a);
-	assert(cursor->type == CURSOR_STORE);
+	auto cursor = reg_at(&self->r, op->a);
+	assert(cursor->type == TYPE_CURSOR_STORE);
 	auto count = op->b * 2;
-	auto row = store_iterator_at(cursor->it_store);
+	auto row = store_iterator_at(cursor->cursor_store);
 	auto values = stack_at(&self->stack, count);
 
 	// [column_order, value], ...

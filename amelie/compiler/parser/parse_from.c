@@ -42,7 +42,7 @@
 static inline Target*
 parse_from_target(Stmt* self, Targets* targets, AccessType access, bool subquery)
 {
-	auto target = target_allocate(&self->targets_seq);
+	auto target = target_allocate();
 	// FROM (expr | SELECT)
 	if (stmt_if(self, '('))
 	{
