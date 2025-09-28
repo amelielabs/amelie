@@ -15,6 +15,7 @@ void csend_shard(Vm*, Op*);
 void csend_lookup(Vm*, Op*);
 void csend_lookup_by(Vm*, Op*);
 void csend_all(Vm*, Op*);
+void cclose(Vm*, Op*);
 
 void cunion_set(Vm*, Op*);
 void cunion_recv(Vm*, Op*);

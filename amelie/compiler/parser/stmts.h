@@ -17,6 +17,7 @@ struct Stmts
 {
 	Stmt* list;
 	Stmt* list_tail;
+	Stmt* last_send;
 	int   count;
 	int   count_utility;
 };
@@ -26,6 +27,7 @@ stmts_init(Stmts* self)
 {
 	self->list          = NULL;
 	self->list_tail     = NULL;
+	self->last_send     = NULL;
 	self->count         = 0;
 	self->count_utility = 0;
 }

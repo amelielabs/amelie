@@ -117,6 +117,16 @@ x := 0; if true then x := select * from test; end; select x
 
 explain x := 0; if true then x := select count(*) from test; end; select x
 x := 0; if true then x := select count(*) from test; end; select x
+
+explain x := 0; if false then else x := select count(*) from test; end; select x
+x := 0; if false then else x := select count(*) from test; end; select x
+
+explain x := 0; if false then else x := select count(*) from test; end; select 1; select x
+x := 0; if false then else x := select count(*) from test; end; select 1; select x
+
+explain x := 0; if false then else x := select count(*) from test; end; select * from test; select x
+x := 0; if false then else x := select count(*) from test; end; select * from test; select x
+
 drop table test
 
 disconnect S0

@@ -46,6 +46,7 @@ compiler_init(Compiler* self, Local* local)
 	self->program   = NULL;
 	self->code      = NULL;
 	self->code_data = NULL;
+	self->sends     = 0;
 	self->args      = NULL;
 	self->current   = NULL;
 	set_cache_init(&self->values_cache);
@@ -67,6 +68,7 @@ compiler_reset(Compiler* self)
 	self->program   = NULL;
 	self->code      = NULL;
 	self->code_data = NULL;
+	self->sends     = 0;
 	self->args      = NULL;
 	self->current   = NULL;
 	parser_reset(&self->parser);
@@ -109,8 +111,9 @@ emit_send(Compiler* self, Target* target, Returning* ret, int start)
 	// set snapshot if two or more stmts are sending data
 	// and using tables
 	auto program = self->program;
-	if (program->send_last != -1)
+	if (self->sends > 0)
 		program->snapshot = true;
+	self->sends++;
 
 	// INSERT
 	if (stmt->id == STMT_INSERT)
@@ -119,50 +122,51 @@ emit_send(Compiler* self, Target* target, Returning* ret, int start)
 		auto r = emit_insert_store(self);
 
 		// CSEND_SHARD
-		program->send_last = op_pos(self);
 		op4(self, CSEND_SHARD, start, (intptr_t)table, r, ret->r);
 		runpin(self, r);
-		return;
-	}
-
-	// UPDATE, DELETE, SELECT
-	//
-	// point-lookup or range scan
-	//
-	auto path = target->path_primary;
-	if (path->type == PATH_LOOKUP && !path->match_start_columns)
+	} else
 	{
-		if (! path->match_start_vars)
+		// UPDATE, DELETE, SELECT
+		//
+		// point-lookup or range scan
+		//
+		auto path = target->path_primary;
+		if (path->type == PATH_LOOKUP && !path->match_start_columns)
 		{
-			// match exact partition using the point lookup const key hash
-			uint32_t hash = path_create_hash(path);
+			if (! path->match_start_vars)
+			{
+				// match exact partition using the point lookup const key hash
+				uint32_t hash = path_create_hash(path);
 
-			// CSEND_LOOKUP
-			program->send_last = op_pos(self);
-			op4(self, CSEND_LOOKUP, start, (intptr_t)table, hash, ret->r);
+				// CSEND_LOOKUP
+				op4(self, CSEND_LOOKUP, start, (intptr_t)table, hash, ret->r);
+			} else
+			{
+				// match exact partition using the point lookup exprs
+				for (auto i = 0; i < path->match_start; i++)
+				{
+					auto value = path->keys[i].start;
+					auto rexpr = emit_expr(self, target->targets, value);
+					op1(self, CPUSH, rexpr);
+					runpin(self, rexpr);
+				}
+
+				// CSEND_LOOKUP_BY
+				op3(self, CSEND_LOOKUP_BY, start, (intptr_t)table, ret->r);
+			}
 		} else
 		{
-			// match exact partition using the point lookup exprs
-			for (auto i = 0; i < path->match_start; i++)
-			{
-				auto value = path->keys[i].start;
-				auto rexpr = emit_expr(self, target->targets, value);
-				op1(self, CPUSH, rexpr);
-				runpin(self, rexpr);
-			}
+			// send to all table partitions (one or more)
 
-			// CSEND_LOOKUP_BY
-			program->send_last = op_pos(self);
-			op3(self, CSEND_LOOKUP_BY, start, (intptr_t)table, ret->r);
+			// CSEND_ALL
+			op3(self, CSEND_ALL, start, (intptr_t)table, ret->r);
 		}
-		return;
 	}
 
-	// send to all table partitions (one or more)
-
-	// CSEND_ALL
-	program->send_last = op_pos(self);
-	op3(self, CSEND_ALL, start, (intptr_t)table, ret->r);
+	// mark last sending operation in the main block
+	auto block = compiler_block(self);
+	if (stmt->block == block && block->stmts.last_send == stmt)
+		program->send_last = op_pos(self) - 1;
 }
 
 static void
@@ -484,8 +488,10 @@ emit_if(Compiler* self, Stmt* stmt)
 	auto _stop = op_pos(self);
 	op_set_jmp(self, _stop_jmp, _stop);
 
-	// force snapshot
-	self->program->snapshot = true;
+	// mark last sending operation in the main block
+	auto block = compiler_block(self);
+	if (stmt->block == block && block->stmts.last_send == stmt)
+		op0(self, CCLOSE);
 
 	// set previous stmt
 	self->current = stmt_prev;
@@ -514,9 +520,7 @@ emit_block(Compiler* self, Block* block)
 	// on block exit
 	stmt = block->stmts.list;
 	for (; stmt; stmt = stmt->next)
-	{
 		emit_recv(self, stmt);
-	}
 
 	// create result content for last stmt of the main block
 	if (block == compiler_block(self))

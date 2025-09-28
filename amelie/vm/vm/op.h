@@ -282,6 +282,7 @@ enum
 	CSEND_LOOKUP,
 	CSEND_LOOKUP_BY,
 	CSEND_ALL,
+	CCLOSE,
 
 	// result
 	CASSIGN,

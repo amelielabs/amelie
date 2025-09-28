@@ -248,6 +248,13 @@ csend_all(Vm* self, Op* op)
 	executor_send(share()->executor, dtr, &list, is_last);
 }
 
+void
+cclose(Vm* self, Op* op)
+{
+	unused(op);
+	dispatch_close(&self->dtr->dispatch);
+}
+
 hot void
 cunion_set(Vm* self, Op* op)
 {

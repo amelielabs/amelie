@@ -62,4 +62,4 @@ ast_if_allocate(Block* block)
 	return self;
 }
 
-void parse_if(Stmt*);
+bool parse_if(Stmt*);

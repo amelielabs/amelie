@@ -64,7 +64,7 @@ parse_if_block(Stmt* self)
 	parse_block(parser, cond->block);
 }
 
-void
+bool
 parse_if(Stmt* self)
 {
 	// IF expr THEN
@@ -99,4 +99,16 @@ parse_if(Stmt* self)
 		stmt_expect(self, KEND);
 		break;
 	}
+
+	// return true if any of the blocks send data
+	auto ref = stmt->conds.list;
+	for (; ref; ref = ref->next)
+		if (ast_if_cond_of(ref->ast)->block->stmts.last_send)
+			return true;
+
+	// else stmt sends data
+	if (stmt->cond_else && stmt->cond_else->stmts.last_send)
+		return true;
+
+	return false;
 }

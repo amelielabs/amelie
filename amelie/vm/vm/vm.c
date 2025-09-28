@@ -381,6 +381,7 @@ vm_run(Vm*       self,
 		&&csend_lookup,
 		&&csend_lookup_by,
 		&&csend_all,
+		&&cclose,
 
 		// result
 		&&cassign,
@@ -1827,6 +1828,10 @@ csend_lookup_by:
 
 csend_all:
 	csend_all(self, op);
+	op_next;
+
+cclose:
+	cclose(self, op);
 	op_next;
 
 cassign:

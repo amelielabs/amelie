@@ -306,6 +306,7 @@ OpDesc ops[] =
 	{ CSEND_LOOKUP, "send_lookup" },
 	{ CSEND_LOOKUP_BY, "send_lookup_by" },
 	{ CSEND_ALL, "send_all" },
+	{ CCLOSE, "close" },
 
 	// result
 	{ CASSIGN, "assign" },

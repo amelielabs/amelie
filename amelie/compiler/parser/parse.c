@@ -329,16 +329,19 @@ parse_stmt(Parser* self, Stmt* stmt)
 	case KINSERT:
 		stmt->id = STMT_INSERT;
 		parse_insert(stmt);
+		stmt->block->stmts.last_send = stmt;
 		break;
 
 	case KUPDATE:
 		stmt->id = STMT_UPDATE;
 		parse_update(stmt);
+		stmt->block->stmts.last_send = stmt;
 		break;
 
 	case KDELETE:
 		stmt->id = STMT_DELETE;
 		parse_delete(stmt);
+		stmt->block->stmts.last_send = stmt;
 		break;
 
 	case KSELECT:
@@ -346,13 +349,16 @@ parse_stmt(Parser* self, Stmt* stmt)
 		stmt->id = STMT_SELECT;
 		auto select = parse_select(stmt, NULL, false);
 		stmt->ast = &select->ast;
+		if (select->pushdown)
+			stmt->block->stmts.last_send = stmt;
 		break;
 	}
 
 	case KIF:
 	{
 		stmt->id = STMT_IF;
-		parse_if(stmt);
+		if (parse_if(stmt))
+			stmt->block->stmts.last_send = stmt;
 		break;
 	}
 

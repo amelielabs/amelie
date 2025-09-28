@@ -131,6 +131,19 @@ dispatch_snapshot(Dispatch* self)
 }
 
 hot static inline void
+dispatch_close(Dispatch* self)
+{
+	for (auto i = 0; i < self->ctrs_count; i++)
+	{
+		auto ctr = dispatch_ctr(self, i);
+		if (ctr->state == CTR_NONE || ctr->queue_close)
+			continue;
+		ring_write(&ctr->queue, &self->close);
+		ctr->queue_close = true;
+	}
+}
+
+hot static inline void
 dispatch_send(Dispatch* self, ReqList* list, bool close)
 {
 	// add requests to the dispatch
@@ -154,16 +167,7 @@ dispatch_send(Dispatch* self, ReqList* list, bool close)
 
 	// finilize still active transactions on the last send
 	if (close)
-	{
-		for (auto i = 0; i < self->ctrs_count; i++)
-		{
-			auto ctr = dispatch_ctr(self, i);
-			if (ctr->state == CTR_NONE || ctr->queue_close)
-				continue;
-			ring_write(&ctr->queue, &self->close);
-			ctr->queue_close = true;
-		}
-	}
+		dispatch_close(self);
 }
 
 hot static inline Buf*

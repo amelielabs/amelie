@@ -17,6 +17,7 @@ struct Compiler
 {
 	Code*     code;
 	CodeData* code_data;
+	int       sends;
 	Rmap      map;
 	Program*  program;
 	Parser    parser;
