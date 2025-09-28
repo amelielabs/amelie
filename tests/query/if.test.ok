@@ -789,6 +789,48 @@ explain x := 0; if false then else x := select count(*) from test; end; select *
 }]
 x := 0; if false then else x := select count(*) from test; end; select * from test; select x
 [1]
+explain x := 0; if true then if false then x := select * from test; end; end; select x
+[{
+  "bytecode": {
+    "frontend": {
+      "00": "int                 0      -      0     # 0",
+      "01": "assign              1      0      0     ",
+      "02": "jmp                 4      0      0     ",
+      "03": "jmp                 17     0      0     ",
+      "04": "bool                2      1      0     ",
+      "05": "jntr                17     2      0     ",
+      "06": "jmp                 8      0      0     ",
+      "07": "jmp                 16     0      0     ",
+      "08": "bool                2      0      0     ",
+      "09": "jntr                16     2      0     ",
+      "10": "union               2      0      0     ",
+      "11": "send_all            0      -      2     # public.test",
+      "12": "union_recv          2      0      0     ",
+      "13": "union_set           2      0      -1    ",
+      "14": "assign              1      2      0     ",
+      "15": "jmp                 7      0      0     ",
+      "16": "jmp                 3      0      0     ",
+      "17": "close               0      0      0     ",
+      "18": "ref                 3      1      0     ",
+      "19": "content             3      -      -     ",
+      "20": "ret                 0      0      0     "
+    },
+    "backend": {
+      "00": "set                 2      1      0     ",
+      "01": "table_open_part     3      0      6     # public.test (primary)",
+      "02": "table_readi32       4      3      0     ",
+      "03": "push                4      0      0     ",
+      "04": "set_add             2      0      0     ",
+      "05": "table_next          3      2      0     ",
+      "06": "free                3      0      0     ",
+      "07": "result              2      0      0     ",
+      "08": "ret                 0      0      0     "
+    }
+  },
+  "access": [["public.test", "ro"]]
+}]
+x := 0; if true then if false then x := select * from test; end; end; select x
+[0]
 drop table test
 disconnect S0
 close E0

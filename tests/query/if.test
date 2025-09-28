@@ -127,6 +127,9 @@ x := 0; if false then else x := select count(*) from test; end; select 1; select
 explain x := 0; if false then else x := select count(*) from test; end; select * from test; select x
 x := 0; if false then else x := select count(*) from test; end; select * from test; select x
 
+
+explain x := 0; if true then if false then x := select * from test; end; end; select x
+x := 0; if true then if false then x := select * from test; end; end; select x
 drop table test
 
 disconnect S0
