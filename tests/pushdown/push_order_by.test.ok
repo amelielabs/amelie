@@ -10,7 +10,7 @@ explain select * from test order by id
   "bytecode": {
     "frontend": {
       "00": "union               0      0      0     ",
-      "01": "send_all            0      -      0     # public.test",
+      "01": "send_all            0      -      0     # public.test (last)",
       "02": "union_recv          0      0      0     ",
       "03": "union_set           0      0      -1    ",
       "04": "content             0      -      -     ",
@@ -41,7 +41,7 @@ explain select * from test order by id asc
   "bytecode": {
     "frontend": {
       "00": "union               0      0      0     ",
-      "01": "send_all            0      -      0     # public.test",
+      "01": "send_all            0      -      0     # public.test (last)",
       "02": "union_recv          0      0      0     ",
       "03": "union_set           0      0      -1    ",
       "04": "content             0      -      -     ",
@@ -72,7 +72,7 @@ explain select * from test order by id desc
   "bytecode": {
     "frontend": {
       "00": "union               0      0      0     ",
-      "01": "send_all            0      -      0     # public.test",
+      "01": "send_all            0      -      0     # public.test (last)",
       "02": "union_recv          0      0      0     ",
       "03": "union_set           0      0      -1    ",
       "04": "content             0      -      -     ",
@@ -103,7 +103,7 @@ explain select * from test order by id limit 1
   "bytecode": {
     "frontend": {
       "00": "union               0      0      0     ",
-      "01": "send_all            0      -      0     # public.test",
+      "01": "send_all            0      -      0     # public.test (last)",
       "02": "union_recv          0      0      0     ",
       "03": "int                 1      -      0     # 1",
       "04": "union_set           0      0      1     ",
@@ -145,7 +145,7 @@ explain select * from test order by id limit 0
   "bytecode": {
     "frontend": {
       "00": "union               0      0      0     ",
-      "01": "send_all            0      -      0     # public.test",
+      "01": "send_all            0      -      0     # public.test (last)",
       "02": "union_recv          0      0      0     ",
       "03": "int                 1      -      0     # 0",
       "04": "union_set           0      0      1     ",
@@ -179,7 +179,7 @@ explain select * from test order by id desc limit 1
   "bytecode": {
     "frontend": {
       "00": "union               0      0      0     ",
-      "01": "send_all            0      -      0     # public.test",
+      "01": "send_all            0      -      0     # public.test (last)",
       "02": "union_recv          0      0      0     ",
       "03": "int                 1      -      0     # 1",
       "04": "union_set           0      0      1     ",
@@ -221,7 +221,7 @@ explain select * from test order by id limit 1 offset 0
   "bytecode": {
     "frontend": {
       "00": "union               0      0      0     ",
-      "01": "send_all            0      -      0     # public.test",
+      "01": "send_all            0      -      0     # public.test (last)",
       "02": "union_recv          0      0      0     ",
       "03": "int                 1      -      0     # 1",
       "04": "int                 2      -      0     # 0",
@@ -254,7 +254,7 @@ explain select * from test order by id limit 1 offset 1
   "bytecode": {
     "frontend": {
       "00": "union               0      0      0     ",
-      "01": "send_all            0      -      0     # public.test",
+      "01": "send_all            0      -      0     # public.test (last)",
       "02": "union_recv          0      0      0     ",
       "03": "int                 1      -      0     # 1",
       "04": "int                 2      -      0     # 1",
@@ -293,7 +293,7 @@ explain select * from test order by id desc limit 1 offset 1
   "bytecode": {
     "frontend": {
       "00": "union               0      0      0     ",
-      "01": "send_all            0      -      0     # public.test",
+      "01": "send_all            0      -      0     # public.test (last)",
       "02": "union_recv          0      0      0     ",
       "03": "int                 1      -      0     # 1",
       "04": "int                 2      -      0     # 1",
@@ -332,7 +332,7 @@ explain select * from test order by id offset 1
   "bytecode": {
     "frontend": {
       "00": "union               0      0      0     ",
-      "01": "send_all            0      -      0     # public.test",
+      "01": "send_all            0      -      0     # public.test (last)",
       "02": "union_recv          0      0      0     ",
       "03": "int                 1      -      0     # 1",
       "04": "union_set           0      0      -1    ",
@@ -374,7 +374,7 @@ explain select * from test order by id desc offset 1
   "bytecode": {
     "frontend": {
       "00": "union               0      0      0     ",
-      "01": "send_all            0      -      0     # public.test",
+      "01": "send_all            0      -      0     # public.test (last)",
       "02": "union_recv          0      0      0     ",
       "03": "int                 1      -      0     # 1",
       "04": "union_set           0      0      -1    ",

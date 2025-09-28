@@ -131,7 +131,7 @@ explain x := 1; select * from test where id = x
       "02": "union               2      0      0     ",
       "03": "ref                 3      1      0     ",
       "04": "push                3      0      0     ",
-      "05": "send_lookup_by      0      -      -     # public.test",
+      "05": "send_lookup_by      0      -      -     # public.test (last)",
       "06": "union_recv          2      0      0     ",
       "07": "union_set           2      0      -1    ",
       "08": "content             2      -      -     ",

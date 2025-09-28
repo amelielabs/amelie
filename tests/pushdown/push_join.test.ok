@@ -10,7 +10,7 @@ explain select test.*, ref.* from test, ref
   "bytecode": {
     "frontend": {
       "00": "union               0      0      0     ",
-      "01": "send_all            0      -      0     # public.test",
+      "01": "send_all            0      -      0     # public.test (last)",
       "02": "union_recv          0      0      0     ",
       "03": "union_set           0      0      -1    ",
       "04": "content             0      -      -     ",
@@ -47,7 +47,7 @@ explain select test.*, ref.* from ref, test
   "bytecode": {
     "frontend": {
       "00": "union               0      0      0     ",
-      "01": "send_all            0      -      0     # public.ref",
+      "01": "send_all            0      -      0     # public.ref (last)",
       "02": "union_recv          0      0      0     ",
       "03": "union_set           0      0      -1    ",
       "04": "content             0      -      -     ",
@@ -84,7 +84,7 @@ explain select t.* from test, test t
   "bytecode": {
     "frontend": {
       "00": "union               0      0      0     ",
-      "01": "send_all            0      -      0     # public.test",
+      "01": "send_all            0      -      0     # public.test (last)",
       "02": "union_recv          0      0      0     ",
       "03": "union_set           0      0      -1    ",
       "04": "content             0      -      -     ",
@@ -117,7 +117,7 @@ explain select test.id, ref.id from test join ref on true
   "bytecode": {
     "frontend": {
       "00": "union               0      0      0     ",
-      "01": "send_all            0      -      0     # public.test",
+      "01": "send_all            0      -      0     # public.test (last)",
       "02": "union_recv          0      0      0     ",
       "03": "union_set           0      0      -1    ",
       "04": "content             0      -      -     ",
@@ -152,7 +152,7 @@ explain select test.id, ref.id from test join ref on test.id = ref.id
   "bytecode": {
     "frontend": {
       "00": "union               0      0      0     ",
-      "01": "send_all            0      -      0     # public.test",
+      "01": "send_all            0      -      0     # public.test (last)",
       "02": "union_recv          0      0      0     ",
       "03": "union_set           0      0      -1    ",
       "04": "content             0      -      -     ",
@@ -190,7 +190,7 @@ explain select test.id, ref.id from test join ref on test.id = ref.id join ref r
   "bytecode": {
     "frontend": {
       "00": "union               0      0      0     ",
-      "01": "send_all            0      -      0     # public.test",
+      "01": "send_all            0      -      0     # public.test (last)",
       "02": "union_recv          0      0      0     ",
       "03": "union_set           0      0      -1    ",
       "04": "content             0      -      -     ",
@@ -236,7 +236,7 @@ explain select test.id, ref.id from test join ref on test.id = ref.id join ref r
   "bytecode": {
     "frontend": {
       "00": "union               0      0      0     ",
-      "01": "send_all            0      -      0     # public.test",
+      "01": "send_all            0      -      0     # public.test (last)",
       "02": "union_recv          0      0      0     ",
       "03": "union_set           0      0      -1    ",
       "04": "content             0      -      -     ",
@@ -288,7 +288,7 @@ explain select test.id, ref.id from test, ref where test.id = ref.id
   "bytecode": {
     "frontend": {
       "00": "union               0      0      0     ",
-      "01": "send_all            0      -      0     # public.test",
+      "01": "send_all            0      -      0     # public.test (last)",
       "02": "union_recv          0      0      0     ",
       "03": "union_set           0      0      -1    ",
       "04": "content             0      -      -     ",
@@ -325,7 +325,7 @@ explain select test.id, ref.id from test, ref where ref.id = test.id
   "bytecode": {
     "frontend": {
       "00": "union               0      0      0     ",
-      "01": "send_all            0      -      0     # public.test",
+      "01": "send_all            0      -      0     # public.test (last)",
       "02": "union_recv          0      0      0     ",
       "03": "union_set           0      0      -1    ",
       "04": "content             0      -      -     ",
@@ -362,7 +362,7 @@ explain select test.id, ref.id from test, ref where ref.id = 1
   "bytecode": {
     "frontend": {
       "00": "union               0      0      0     ",
-      "01": "send_all            0      -      0     # public.test",
+      "01": "send_all            0      -      0     # public.test (last)",
       "02": "union_recv          0      0      0     ",
       "03": "union_set           0      0      -1    ",
       "04": "content             0      -      -     ",
@@ -399,7 +399,7 @@ explain select test.id, ref.id from test, ref where ref.id = 1 and test.id = 1
   "bytecode": {
     "frontend": {
       "00": "union               0      0      0     ",
-      "01": "send_lookup         0      -      -     # public.test",
+      "01": "send_lookup         0      -      -     # public.test (last)",
       "02": "union_recv          0      0      0     ",
       "03": "union_set           0      0      -1    ",
       "04": "content             0      -      -     ",
@@ -441,7 +441,7 @@ explain select test.id, ref.id from test, ref where ref.id >= test.id
   "bytecode": {
     "frontend": {
       "00": "union               0      0      0     ",
-      "01": "send_all            0      -      0     # public.test",
+      "01": "send_all            0      -      0     # public.test (last)",
       "02": "union_recv          0      0      0     ",
       "03": "union_set           0      0      -1    ",
       "04": "content             0      -      -     ",
@@ -488,7 +488,7 @@ explain select test.id, ref.id from test join ref using(id)
   "bytecode": {
     "frontend": {
       "00": "union               0      0      0     ",
-      "01": "send_all            0      -      0     # public.test",
+      "01": "send_all            0      -      0     # public.test (last)",
       "02": "union_recv          0      0      0     ",
       "03": "union_set           0      0      -1    ",
       "04": "content             0      -      -     ",
@@ -529,7 +529,7 @@ explain select test.id, ref.id from test join ref using (id) join ref ref2 using
   "bytecode": {
     "frontend": {
       "00": "union               0      0      0     ",
-      "01": "send_all            0      -      0     # public.test",
+      "01": "send_all            0      -      0     # public.test (last)",
       "02": "union_recv          0      0      0     ",
       "03": "union_set           0      0      -1    ",
       "04": "content             0      -      -     ",
@@ -587,7 +587,7 @@ explain with a as (select * from test) select * from test, a where test.id = a.i
       "02": "union_recv          0      0      0     ",
       "03": "union_set           0      0      -1    ",
       "04": "union               1      0      0     ",
-      "05": "send_all            11     -      1     # public.test",
+      "05": "send_all            11     -      1     # public.test (last)",
       "06": "union_recv          1      0      0     ",
       "07": "union_set           1      0      -1    ",
       "08": "content             1      -      -     ",
@@ -645,7 +645,7 @@ explain with a as (select * from test) select * from test, a where test.id = 1
       "02": "union_recv          0      0      0     ",
       "03": "union_set           0      0      -1    ",
       "04": "union               1      0      0     ",
-      "05": "send_lookup         11     -      -     # public.test",
+      "05": "send_lookup         11     -      -     # public.test (last)",
       "06": "union_recv          1      0      0     ",
       "07": "union_set           1      0      -1    ",
       "08": "content             1      -      -     ",
@@ -700,7 +700,7 @@ explain with a as (select * from test) select * from a, test where test.id = a.i
   "bytecode": {
     "frontend": {
       "00": "union               0      0      0     ",
-      "01": "send_all            0      -      0     # public.test",
+      "01": "send_all            0      -      0     # public.test (last)",
       "02": "union_recv          0      0      0     ",
       "03": "union_set           0      0      -1    ",
       "04": "set                 1      4      0     ",
@@ -753,7 +753,7 @@ explain with a as (select * from test) select * from a, test where test.id = 1
   "bytecode": {
     "frontend": {
       "00": "union               0      0      0     ",
-      "01": "send_all            0      -      0     # public.test",
+      "01": "send_all            0      -      0     # public.test (last)",
       "02": "union_recv          0      0      0     ",
       "03": "union_set           0      0      -1    ",
       "04": "set                 1      4      0     ",
@@ -816,7 +816,7 @@ explain select ref.id from test join ref on (test.id = ref.id) group by ref.id
   "bytecode": {
     "frontend": {
       "00": "union               0      0      0     ",
-      "01": "send_all            0      -      0     # public.test",
+      "01": "send_all            0      -      0     # public.test (last)",
       "02": "union_recv          0      0      0     ",
       "03": "union_set           0      1      -1    ",
       "04": "union_set_aggs      0      40     0     ",

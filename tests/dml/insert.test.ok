@@ -294,7 +294,7 @@ explain insert into test values (1),(2),(3) returning *
     "frontend": {
       "00": "union               0      0      0     ",
       "01": "set_ptr             1      -      0     ",
-      "02": "send_shard          0      -      1     # public.test",
+      "02": "send_shard          0      -      1     # public.test (last)",
       "03": "union_recv          0      0      0     ",
       "04": "content             0      -      -     ",
       "05": "ret                 0      0      0     "
@@ -330,7 +330,7 @@ explain insert into test () values (), (), () returning *
     "frontend": {
       "00": "union               0      0      0     ",
       "01": "set_ptr             1      -      0     ",
-      "02": "send_shard          0      -      1     # public.test",
+      "02": "send_shard          0      -      1     # public.test (last)",
       "03": "union_recv          0      0      0     ",
       "04": "content             0      -      -     ",
       "05": "ret                 0      0      0     "
@@ -451,7 +451,7 @@ explain select * from test where ts > "1970-01-01 01:12:59.909090"::timestamp;
   "bytecode": {
     "frontend": {
       "00": "union               0      0      0     ",
-      "01": "send_all            0      -      0     # public.test",
+      "01": "send_all            0      -      0     # public.test (last)",
       "02": "union_recv          0      0      0     ",
       "03": "union_set           0      0      -1    ",
       "04": "content             0      -      -     ",
@@ -486,7 +486,7 @@ explain select * from test where ts > timestamp "1970-01-01 01:12:59.909090"
   "bytecode": {
     "frontend": {
       "00": "union               0      0      0     ",
-      "01": "send_all            0      -      0     # public.test",
+      "01": "send_all            0      -      0     # public.test (last)",
       "02": "union_recv          0      0      0     ",
       "03": "union_set           0      0      -1    ",
       "04": "content             0      -      -     ",
@@ -540,7 +540,7 @@ explain select * from test
   "bytecode": {
     "frontend": {
       "00": "union               0      0      0     ",
-      "01": "send_all            0      -      0     # public.test",
+      "01": "send_all            0      -      0     # public.test (last)",
       "02": "union_recv          0      0      0     ",
       "03": "union_set           0      0      -1    ",
       "04": "content             0      -      -     ",
@@ -571,7 +571,7 @@ explain select * from test where id > timestamp '1970-01-01 00:00:01.000002'
   "bytecode": {
     "frontend": {
       "00": "union               0      0      0     ",
-      "01": "send_all            0      -      0     # public.test",
+      "01": "send_all            0      -      0     # public.test (last)",
       "02": "union_recv          0      0      0     ",
       "03": "union_set           0      0      -1    ",
       "04": "content             0      -      -     ",
@@ -604,7 +604,7 @@ explain select * from test where id >= timestamp '1970-01-01 00:00:01.000002'
   "bytecode": {
     "frontend": {
       "00": "union               0      0      0     ",
-      "01": "send_all            0      -      0     # public.test",
+      "01": "send_all            0      -      0     # public.test (last)",
       "02": "union_recv          0      0      0     ",
       "03": "union_set           0      0      -1    ",
       "04": "content             0      -      -     ",
@@ -637,7 +637,7 @@ explain select * from test where id < timestamp '1970-01-01 00:00:01.000003'
   "bytecode": {
     "frontend": {
       "00": "union               0      0      0     ",
-      "01": "send_all            0      -      0     # public.test",
+      "01": "send_all            0      -      0     # public.test (last)",
       "02": "union_recv          0      0      0     ",
       "03": "union_set           0      0      -1    ",
       "04": "content             0      -      -     ",
@@ -672,7 +672,7 @@ explain select * from test where id = timestamp '1970-01-01 00:00:01.000003'
   "bytecode": {
     "frontend": {
       "00": "union               0      0      0     ",
-      "01": "send_lookup         0      -      -     # public.test",
+      "01": "send_lookup         0      -      -     # public.test (last)",
       "02": "union_recv          0      0      0     ",
       "03": "union_set           0      0      -1    ",
       "04": "content             0      -      -     ",
@@ -712,7 +712,7 @@ explain select * from test where i > "1 year 1 day 10 hour"::interval
   "bytecode": {
     "frontend": {
       "00": "union               0      0      0     ",
-      "01": "send_all            0      -      0     # public.test",
+      "01": "send_all            0      -      0     # public.test (last)",
       "02": "union_recv          0      0      0     ",
       "03": "union_set           0      0      -1    ",
       "04": "content             0      -      -     ",
@@ -770,7 +770,7 @@ explain select * from test where d >= date '1970-01-01'
   "bytecode": {
     "frontend": {
       "00": "union               0      0      0     ",
-      "01": "send_all            0      -      0     # public.test",
+      "01": "send_all            0      -      0     # public.test (last)",
       "02": "union_recv          0      0      0     ",
       "03": "union_set           0      0      -1    ",
       "04": "content             0      -      -     ",
@@ -871,7 +871,7 @@ explain select id from test where id = uuid "00000000-0000-0000-0000-00000000000
   "bytecode": {
     "frontend": {
       "00": "union               0      0      0     ",
-      "01": "send_lookup         0      -      -     # public.test",
+      "01": "send_lookup         0      -      -     # public.test (last)",
       "02": "union_recv          0      0      0     ",
       "03": "union_set           0      0      -1    ",
       "04": "content             0      -      -     ",
@@ -910,7 +910,7 @@ explain select * from test
   "bytecode": {
     "frontend": {
       "00": "union               0      0      0     ",
-      "01": "send_all            0      -      0     # public.test",
+      "01": "send_all            0      -      0     # public.test (last)",
       "02": "union_recv          0      0      0     ",
       "03": "union_set           0      0      -1    ",
       "04": "content             0      -      -     ",
@@ -939,7 +939,7 @@ explain select * from test use index (i)
   "bytecode": {
     "frontend": {
       "00": "union               0      0      0     ",
-      "01": "send_all            0      -      0     # public.test",
+      "01": "send_all            0      -      0     # public.test (last)",
       "02": "union_recv          0      0      0     ",
       "03": "union_set           0      0      -1    ",
       "04": "content             0      -      -     ",
@@ -1002,7 +1002,7 @@ explain insert into test select 1, 0
       "04": "push                1      0      0     ",
       "05": "set_add             0      0      0     ",
       "06": "dup                 1      0      0     ",
-      "07": "send_shard          0      -      1     # public.test",
+      "07": "send_shard          0      -      1     # public.test (last)",
       "08": "ret                 0      0      0     "
     },
     "backend": {
@@ -1040,7 +1040,7 @@ explain insert into test select * from (select 2, 0) t
       "15": "free                3      0      0     ",
       "16": "free                2      0      0     ",
       "17": "dup                 2      1      0     ",
-      "18": "send_shard          0      -      2     # public.test",
+      "18": "send_shard          0      -      2     # public.test (last)",
       "19": "ret                 0      0      0     "
     },
     "backend": {
@@ -1065,7 +1065,7 @@ explain insert into test select * from src
       "02": "union_recv          0      0      0     ",
       "03": "union_set           0      0      -1    ",
       "04": "dup                 1      0      0     ",
-      "05": "send_shard          11     -      1     # public.test",
+      "05": "send_shard          11     -      1     # public.test (last)",
       "06": "ret                 0      0      0     "
     },
     "backend": {

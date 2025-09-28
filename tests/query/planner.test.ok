@@ -11,7 +11,7 @@ explain select * from test
   "bytecode": {
     "frontend": {
       "00": "union               0      0      0     ",
-      "01": "send_all            0      -      0     # public.test",
+      "01": "send_all            0      -      0     # public.test (last)",
       "02": "union_recv          0      0      0     ",
       "03": "union_set           0      0      -1    ",
       "04": "content             0      -      -     ",
@@ -52,7 +52,7 @@ explain select * from test use index (i)
   "bytecode": {
     "frontend": {
       "00": "union               0      0      0     ",
-      "01": "send_all            0      -      0     # public.test",
+      "01": "send_all            0      -      0     # public.test (last)",
       "02": "union_recv          0      0      0     ",
       "03": "union_set           0      0      -1    ",
       "04": "content             0      -      -     ",
@@ -88,7 +88,7 @@ explain select * from test
   "bytecode": {
     "frontend": {
       "00": "union               0      0      0     ",
-      "01": "send_all            0      -      0     # public.test",
+      "01": "send_all            0      -      0     # public.test (last)",
       "02": "union_recv          0      0      0     ",
       "03": "union_set           0      0      -1    ",
       "04": "content             0      -      -     ",
@@ -115,7 +115,7 @@ explain select * from test use heap
   "bytecode": {
     "frontend": {
       "00": "union               0      0      0     ",
-      "01": "send_all            0      -      0     # public.test",
+      "01": "send_all            0      -      0     # public.test (last)",
       "02": "union_recv          0      0      0     ",
       "03": "union_set           0      0      -1    ",
       "04": "content             0      -      -     ",
@@ -162,7 +162,7 @@ explain select * from test
   "bytecode": {
     "frontend": {
       "00": "union               0      0      0     ",
-      "01": "send_all            0      -      0     # public.test",
+      "01": "send_all            0      -      0     # public.test (last)",
       "02": "union_recv          0      0      0     ",
       "03": "union_set           0      0      -1    ",
       "04": "content             0      -      -     ",
@@ -193,7 +193,7 @@ explain select * from test where data = 2
   "bytecode": {
     "frontend": {
       "00": "union               0      0      0     ",
-      "01": "send_all            0      -      0     # public.test",
+      "01": "send_all            0      -      0     # public.test (last)",
       "02": "union_recv          0      0      0     ",
       "03": "union_set           0      0      -1    ",
       "04": "content             0      -      -     ",
@@ -227,7 +227,7 @@ explain select * from test where id = 1
   "bytecode": {
     "frontend": {
       "00": "union               0      0      0     ",
-      "01": "send_all            0      -      0     # public.test",
+      "01": "send_all            0      -      0     # public.test (last)",
       "02": "union_recv          0      0      0     ",
       "03": "union_set           0      0      -1    ",
       "04": "content             0      -      -     ",
@@ -262,7 +262,7 @@ explain select * from test where id = 1 and data = 1
   "bytecode": {
     "frontend": {
       "00": "union               0      0      0     ",
-      "01": "send_lookup         0      -      -     # public.test",
+      "01": "send_lookup         0      -      -     # public.test (last)",
       "02": "union_recv          0      0      0     ",
       "03": "union_set           0      0      -1    ",
       "04": "content             0      -      -     ",
@@ -302,7 +302,7 @@ explain select * from test where data = 1 and id = 1
   "bytecode": {
     "frontend": {
       "00": "union               0      0      0     ",
-      "01": "send_lookup         0      -      -     # public.test",
+      "01": "send_lookup         0      -      -     # public.test (last)",
       "02": "union_recv          0      0      0     ",
       "03": "union_set           0      0      -1    ",
       "04": "content             0      -      -     ",
@@ -349,7 +349,7 @@ explain select * from test where id = 1
   "bytecode": {
     "frontend": {
       "00": "union               0      0      0     ",
-      "01": "send_lookup         0      -      -     # public.test",
+      "01": "send_lookup         0      -      -     # public.test (last)",
       "02": "union_recv          0      0      0     ",
       "03": "union_set           0      0      -1    ",
       "04": "content             0      -      -     ",
@@ -383,7 +383,7 @@ explain select * from test where id > 1
   "bytecode": {
     "frontend": {
       "00": "union               0      0      0     ",
-      "01": "send_all            0      -      0     # public.test",
+      "01": "send_all            0      -      0     # public.test (last)",
       "02": "union_recv          0      0      0     ",
       "03": "union_set           0      0      -1    ",
       "04": "content             0      -      -     ",
@@ -418,7 +418,7 @@ explain select * from test where data > 1
   "bytecode": {
     "frontend": {
       "00": "union               0      0      0     ",
-      "01": "send_all            0      -      0     # public.test",
+      "01": "send_all            0      -      0     # public.test (last)",
       "02": "union_recv          0      0      0     ",
       "03": "union_set           0      0      -1    ",
       "04": "content             0      -      -     ",
@@ -452,7 +452,7 @@ explain select * from test where data = 1
   "bytecode": {
     "frontend": {
       "00": "union               0      0      0     ",
-      "01": "send_all            0      -      0     # public.test",
+      "01": "send_all            0      -      0     # public.test (last)",
       "02": "union_recv          0      0      0     ",
       "03": "union_set           0      0      -1    ",
       "04": "content             0      -      -     ",
@@ -505,7 +505,7 @@ explain select * from test where data = 1 and id = 1
   "bytecode": {
     "frontend": {
       "00": "union               0      0      0     ",
-      "01": "send_lookup         0      -      -     # public.test",
+      "01": "send_lookup         0      -      -     # public.test (last)",
       "02": "union_recv          0      0      0     ",
       "03": "union_set           0      0      -1    ",
       "04": "content             0      -      -     ",
@@ -547,7 +547,7 @@ explain select * from test where id = 1 and data = 1
   "bytecode": {
     "frontend": {
       "00": "union               0      0      0     ",
-      "01": "send_lookup         0      -      -     # public.test",
+      "01": "send_lookup         0      -      -     # public.test (last)",
       "02": "union_recv          0      0      0     ",
       "03": "union_set           0      0      -1    ",
       "04": "content             0      -      -     ",
@@ -596,7 +596,7 @@ explain select * from test where id > 1
   "bytecode": {
     "frontend": {
       "00": "union               0      0      0     ",
-      "01": "send_all            0      -      0     # public.test",
+      "01": "send_all            0      -      0     # public.test (last)",
       "02": "union_recv          0      0      0     ",
       "03": "union_set           0      0      -1    ",
       "04": "content             0      -      -     ",
@@ -631,7 +631,7 @@ explain select * from test where data > 1
   "bytecode": {
     "frontend": {
       "00": "union               0      0      0     ",
-      "01": "send_all            0      -      0     # public.test",
+      "01": "send_all            0      -      0     # public.test (last)",
       "02": "union_recv          0      0      0     ",
       "03": "union_set           0      0      -1    ",
       "04": "content             0      -      -     ",
@@ -667,7 +667,7 @@ explain select * from test where data < 1
   "bytecode": {
     "frontend": {
       "00": "union               0      0      0     ",
-      "01": "send_all            0      -      0     # public.test",
+      "01": "send_all            0      -      0     # public.test (last)",
       "02": "union_recv          0      0      0     ",
       "03": "union_set           0      0      -1    ",
       "04": "content             0      -      -     ",
@@ -704,7 +704,7 @@ explain select * from test where id < 1
   "bytecode": {
     "frontend": {
       "00": "union               0      0      0     ",
-      "01": "send_all            0      -      0     # public.test",
+      "01": "send_all            0      -      0     # public.test (last)",
       "02": "union_recv          0      0      0     ",
       "03": "union_set           0      0      -1    ",
       "04": "content             0      -      -     ",
@@ -741,7 +741,7 @@ explain select * from test where id < 1 and data < 2
   "bytecode": {
     "frontend": {
       "00": "union               0      0      0     ",
-      "01": "send_all            0      -      0     # public.test",
+      "01": "send_all            0      -      0     # public.test (last)",
       "02": "union_recv          0      0      0     ",
       "03": "union_set           0      0      -1    ",
       "04": "content             0      -      -     ",

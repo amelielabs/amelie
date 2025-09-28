@@ -31,7 +31,7 @@ explain select (select id from test) from test2
   "bytecode": {
     "frontend": {
       "00": "union               0      0      0     ",
-      "01": "send_all            0      -      0     # public.test2",
+      "01": "send_all            0      -      0     # public.test2 (last)",
       "02": "union_recv          0      0      0     ",
       "03": "union_set           0      0      -1    ",
       "04": "content             0      -      -     ",

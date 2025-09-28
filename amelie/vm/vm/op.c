@@ -349,14 +349,15 @@ op_write(Buf* output, Op* op, bool a, bool b, bool c, char *fmt, ...)
 }
 
 void
-op_dump(Code* self, CodeData* data, Buf* buf)
+op_dump(Program* self, Code* code, Buf* buf)
 {
+	auto data   = &self->code_data;
 	auto output = buf_create();
 	defer_buf(output);
 
 	encode_obj(buf);
-	auto op  = (Op*)self->code.start;
-	auto end = (Op*)self->code.position;
+	auto op  = (Op*)code->code.start;
+	auto end = (Op*)code->code.position;
 	for (int pos = 0; op < end; pos++)
 	{
 		// "pos": "op description"
@@ -392,25 +393,29 @@ op_dump(Code* self, CodeData* data, Buf* buf)
 		case CSEND_SHARD:
 		case CSEND_ALL:
 		{
+			auto is_last = self->send_last == code_posof(code, op);
 			auto table = (Table*)op->b;
 			op_write(output, op, true, false, true,
-			         "%.*s.%.*s",
+			         "%.*s.%.*s%s",
 			         str_size(&table->config->schema),
 			         str_of(&table->config->schema),
 			         str_size(&table->config->name),
-			         str_of(&table->config->name));
+			         str_of(&table->config->name),
+			         is_last? " (last)": "");
 			break;
 		}
 		case CSEND_LOOKUP:
 		case CSEND_LOOKUP_BY:
 		{
+			auto is_last = self->send_last == code_posof(code, op);
 			auto table = (Table*)op->b;
 			op_write(output, op, true, false, false,
-			         "%.*s.%.*s",
+			         "%.*s.%.*s%s",
 			         str_size(&table->config->schema),
 			         str_of(&table->config->schema),
 			         str_size(&table->config->name),
-			         str_of(&table->config->name));
+			         str_of(&table->config->name),
+			         is_last? " (last)": "");
 			break;
 		}
 		case CINSERT:

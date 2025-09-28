@@ -28,7 +28,7 @@ explain select 0 -> id, 0 -> data from test
   "bytecode": {
     "frontend": {
       "00": "union               0      0      0     ",
-      "01": "send_all            0      -      0     # public.test",
+      "01": "send_all            0      -      0     # public.test (last)",
       "02": "union_recv          0      0      0     ",
       "03": "union_set           0      1      -1    ",
       "04": "union_set_aggs      0      21     0     ",
@@ -90,7 +90,7 @@ explain select 0 -> self + 1 from test
   "bytecode": {
     "frontend": {
       "00": "union               0      0      0     ",
-      "01": "send_all            0      -      0     # public.test",
+      "01": "send_all            0      -      0     # public.test (last)",
       "02": "union_recv          0      0      0     ",
       "03": "union_set           0      1      -1    ",
       "04": "union_set_aggs      0      21     0     ",
@@ -199,7 +199,7 @@ explain select 0 -> self + 1 from test
   "bytecode": {
     "frontend": {
       "00": "union               0      0      0     ",
-      "01": "send_all            0      -      0     # public.test",
+      "01": "send_all            0      -      0     # public.test (last)",
       "02": "union_recv          0      0      0     ",
       "03": "union_set           0      1      -1    ",
       "04": "union_set_aggs      0      21     0     ",

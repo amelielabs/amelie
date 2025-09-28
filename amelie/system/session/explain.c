@@ -75,13 +75,13 @@ explain_run(Explain* self,
 
 	// frontend section
 	encode_raw(buf, "frontend", 8);
-	op_dump(&program->code, &program->code_data, buf);
+	op_dump(program, &program->code, buf);
 
 	// backend section
 	if (code_count(&program->code_backend) > 0)
 	{
 		encode_raw(buf, "backend", 7);
-		op_dump(&program->code_backend, &program->code_data, buf);
+		op_dump(program, &program->code_backend, buf);
 	}
 	encode_obj_end(buf);
 

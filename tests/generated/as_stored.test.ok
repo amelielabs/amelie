@@ -59,7 +59,7 @@ explain insert into test values (0, null)
       "10": "store_next          2      3      0     ",
       "11": "free                2      0      0     ",
       "12": "free                1      0      0     ",
-      "13": "send_shard          0      -      0     # public.test",
+      "13": "send_shard          0      -      0     # public.test (last)",
       "14": "ret                 0      0      0     "
     },
     "backend": {
@@ -146,7 +146,7 @@ explain insert into test (id) values (0) on conflict do update set data = data +
       "10": "store_next          2      3      0     ",
       "11": "free                2      0      0     ",
       "12": "free                1      0      0     ",
-      "13": "send_shard          0      -      0     # public.test",
+      "13": "send_shard          0      -      0     # public.test (last)",
       "14": "ret                 0      0      0     "
     },
     "backend": {
@@ -220,7 +220,7 @@ explain insert into test select * from src
       "14": "store_next          3      7      0     ",
       "15": "free                3      0      0     ",
       "16": "free                2      0      0     ",
-      "17": "send_shard          11     -      1     # public.test",
+      "17": "send_shard          11     -      1     # public.test (last)",
       "18": "ret                 0      0      0     "
     },
     "backend": {

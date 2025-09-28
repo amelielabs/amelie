@@ -46,7 +46,7 @@ explain delete from test where id = 3
 [{
   "bytecode": {
     "frontend": {
-      "00": "send_lookup         0      -      -     # public.test",
+      "00": "send_lookup         0      -      -     # public.test (last)",
       "01": "ret                 0      0      0     "
     },
     "backend": {
@@ -100,7 +100,7 @@ explain delete from test where id > 0 and id < 1
 [{
   "bytecode": {
     "frontend": {
-      "00": "send_all            0      -      -1    # public.test",
+      "00": "send_all            0      -      -1    # public.test (last)",
       "01": "ret                 0      0      0     "
     },
     "backend": {
