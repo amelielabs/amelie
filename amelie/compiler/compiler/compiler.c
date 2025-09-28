@@ -204,8 +204,8 @@ emit_recv(Compiler* self, Stmt* stmt)
 		break;
 	}
 	case STMT_WATCH:
-		return;
 	case STMT_IF:
+	case STMT_FOR:
 		return;
 	default:
 		abort();
@@ -480,13 +480,53 @@ emit_if(Compiler* self, Stmt* stmt)
 
 	// else block
 	if (ifa->cond_else)
-	{
 		emit_block(self, ifa->cond_else);
-	}
 
 	// _stop
 	auto _stop = op_pos(self);
 	op_set_jmp(self, _stop_jmp, _stop);
+
+	// mark last sending operation in the main block
+	auto block = compiler_block(self);
+	if (stmt->block == block && block->stmts.last_send == stmt)
+		op0(self, CCLOSE);
+
+	// set previous stmt
+	self->current = stmt_prev;
+}
+
+static void
+emit_for_on_match(Compiler* self, Targets* targets, void* arg)
+{
+	unused(targets);
+	AstFor* fora = arg;
+	emit_block(self, fora->block);
+}
+
+hot static void
+emit_for(Compiler* self, Stmt* stmt)
+{
+	auto stmt_prev = self->current;
+	self->current = stmt;
+
+	auto fora = ast_for_of(stmt->ast);
+	compiler_switch_frontend(self);
+
+	// ensure IN stmt received at this point
+	emit_recv(self, fora->cte);
+
+	// scan over cte results
+	scan(self,
+	     &fora->targets,
+	     NULL,
+	     NULL,
+	     NULL,
+	     emit_for_on_match,
+	     fora);
+
+	op1(self, CFREE, fora->cte->r);
+	runpin(self, fora->cte->r);
+	fora->cte->r = -1;
 
 	// mark last sending operation in the main block
 	auto block = compiler_block(self);
@@ -511,6 +551,9 @@ emit_block(Compiler* self, Block* block)
 	{
 		if (stmt->id == STMT_IF)
 			emit_if(self, stmt);
+		else
+		if (stmt->id == STMT_FOR)
+			emit_for(self, stmt);
 		else
 			returning = emit_stmt(self, stmt);
 		last = stmt;

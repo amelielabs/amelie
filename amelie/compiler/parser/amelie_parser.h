@@ -26,14 +26,14 @@
 #include "parser/stmt.h"
 #include "parser/stmts.h"
 
+// target
+#include "parser/target.h"
+#include "parser/targets.h"
+
 // block
 #include "parser/var.h"
 #include "parser/cte.h"
 #include "parser/block.h"
-
-// target
-#include "parser/target.h"
-#include "parser/targets.h"
 
 // parser
 #include "parser/parser.h"
@@ -49,6 +49,7 @@
 
 // control structures
 #include "parser/parse_if.h"
+#include "parser/parse_for.h"
 
 // system
 #include "parser/parse_system.h"

@@ -223,7 +223,7 @@ parse_returning_resolve(Returning* self, Stmt* stmt, Targets* targets)
 			str_split(&as->l->string, &name, '.');
 
 			// find nearest target
-			auto match = targets_match_outer(targets, &name);
+			auto match = block_target_find(targets, &name);
 			if (! match)
 				stmt_error(stmt, as->l, "target not found");
 

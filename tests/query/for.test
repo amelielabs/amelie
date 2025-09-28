@@ -1,0 +1,76 @@
+#
+
+open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "127.0.0.1", "port": 3485 }]
+connect E0 S0 127.0.0.1:3485
+
+# test: for parsing
+for
+for 1
+for it
+for it 1
+for it in
+for it in 1
+for it in ;
+for it in [1,2,3]
+for it in select [1,2,3]
+for it in select [1,2,3];
+for it in select [1,2,3] then
+for it in select [1,2,3] do
+
+# test: for
+explain for it in select [1,2,3] do end
+for it in select [1,2,3] do end
+n := 0; for it in select [1,2,3] do n := n + 1; end; select n
+
+# test: for if
+n := 0; for it in select [1,2,3,4] as it do if it::int % 2 = 0 then n := n + 1; end; end; select n
+
+# test: for for
+n := 0; for i in select [1,2,3] do for j in select [1,2,3] do n := n + 1; end; end; select n
+explain n := 0; for i in select [1,2,3] as i do for j in select [1,2,3] as j do n := n + i.i::int + j.j::int; end; end; select n
+n := 0; for i in select [1,2,3] as i do for j in select [1,2,3] as j do n := n + i.i::int + j.j::int; end; end; select n
+
+# test: for for for
+n := 0; for i in select [1,2,3] do for j in select [1,2,3] do for k in select [1,2,3] do n := n + 1; end; end; end; select n
+n := 0; for i in select [1,2,3] as i do for j in select [1,2,3] as j do for k in select [1,2,3] as k do n := n + i.i::int + j.j::int + k.k::int; end; end; end; select n
+
+# test: for in select
+create table test (id int primary key)
+insert into test values (1), (2), (3)
+explain n := 0; for i in select * from test do n := n + 1; end; select n
+n := 0; for i in select * from test do n := n + 1; end; select n
+n := 0; for i in select * from test do n := n + i.id; end; select n
+drop table test
+
+# test: for in select for int select
+create table test (id int primary key)
+insert into test values (1), (2), (3)
+explain n := 0; for i in select * from test do  for j in select * from test do n := n + 1; end; end; select n
+n := 0; for i in select * from test do  for j in select * from test do n := n + 1; end; end; select n
+n := 0; for i in select * from test do  for j in select * from test do n := n + i.id + j.id; end; end; select n
+drop table test
+
+# test: for .. select
+create table test (id int primary key)
+insert into test values (1), (2), (3)
+explain total := 0; for i in select [1,2,3] do n := select count(id) from test; total := total + n; end; select total;
+total := 0; for i in select [1,2,3] do n := select count(id) from test; total := total + n; end; select total;
+drop table test
+
+# test: for .. returning
+create table test (id int primary key, data int)
+insert into test values (1, 0), (2, 0), (3, 0)
+explain n := 0; for i in update test set data = id returning id do n := n + i.id; end; select n
+n := 0; for i in update test set data = id returning id do n := n + i.id; end; select n
+drop table test
+
+# test: for .. upsert
+create table test (id int primary key, data int)
+insert into test values (1, 0)
+explain for i in select [1,2,3] do insert into test values (1, 0) on conflict do update set data = data + 1; end
+for i in select [1,2,3] do insert into test values (1, 0) on conflict do update set data = data + 1; end
+select * from test;
+drop table test
+
+disconnect S0
+close E0

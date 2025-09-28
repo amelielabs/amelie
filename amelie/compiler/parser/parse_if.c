@@ -48,13 +48,11 @@ parse_if_block(Stmt* self)
 	// IF expr
 	auto cond = ast_if_cond_allocate();
 	ast_list_add(&stmt->conds, &cond->ast);
-	cond->expr = parse_expr(self, NULL);
 
-	/*
-	cond->stmt = stmt_allocate(self->parser, self->lex, self->block);
-	cond->stmt->id  = STMT_SELECT;
-	cond->stmt->ast = &parse_select_expr(self)->ast;
-	*/
+	Expr ctx;
+	expr_init(&ctx);
+	ctx.targets = &stmt->targets;
+	cond->expr = parse_expr(self, &ctx);
 
 	// THEN
 	stmt_expect(self, KTHEN);

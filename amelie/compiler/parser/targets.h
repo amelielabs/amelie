@@ -97,20 +97,6 @@ targets_match_by(Targets* self, TargetType type)
 }
 
 static inline Target*
-targets_match_outer(Targets* self, Str* name) 
-{
-	Targets* targets = self;
-	while (targets)
-	{
-		auto target = targets_match(targets, name);
-		if (target)
-			return target;
-		targets = targets->outer;
-	}
-	return NULL;
-}
-
-static inline Target*
 targets_outer(Targets* self)
 {
 	return self->list;

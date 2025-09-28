@@ -16,11 +16,12 @@ typedef struct Blocks Blocks;
 
 struct Block
 {
-	Vars   vars;
-	Ctes   ctes;
-	Stmts  stmts;
-	Block* parent;
-	Block* next;
+	Vars     vars;
+	Ctes     ctes;
+	Stmts    stmts;
+	Targets* targets;
+	Block*   parent;
+	Block*   next;
 };
 
 struct Blocks
@@ -42,8 +43,9 @@ static inline Block*
 blocks_add(Blocks* self, Block* parent)
 {
 	auto block = (Block*)palloc(sizeof(Block));
-	block->parent = parent;
-	block->next   = NULL;
+	block->parent  = parent;
+	block->next    = NULL;
+	block->targets = NULL;
 	vars_init(&block->vars);
 	ctes_init(&block->ctes);
 	stmts_init(&block->stmts);
@@ -76,4 +78,37 @@ block_var_add(Block* self, Str* name)
 	if (var)
 		return var;
 	return vars_add(&self->vars, name);
+}
+
+static inline Target*
+block_target_find(Targets* self, Str* name)
+{
+	while (self)
+	{
+		auto targets = self;
+		while (targets)
+		{
+			auto target = targets_match(targets, name);
+			if (target)
+				return target;
+			targets = targets->outer;
+		}
+		self = self->block->targets;
+	}
+	return NULL;
+}
+
+static inline Targets*
+block_targets(Targets* self)
+{
+	while (self)
+	{
+		auto targets = self;
+		while (targets && targets_empty(targets))
+			targets = targets->outer;
+		if (targets)
+			return targets;
+		self = self->block->targets;
+	}
+	return NULL;
 }

@@ -344,6 +344,7 @@ cassign(Vm* self, Op* op)
 			value_copy(dst, it->current);
 		else
 			value_set_null(dst);
+		value_free(src);
 	} else {
 		value_copy(dst, src);
 	}

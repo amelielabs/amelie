@@ -139,6 +139,7 @@ enum
 
 	// l
 	KLIKE,
+	KLOOP,
 	KLIMIT,
 	KLEFT,
 	KLOCAL,

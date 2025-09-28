@@ -47,7 +47,8 @@ typedef enum
 	STMT_UPDATE,
 	STMT_DELETE,
 	STMT_SELECT,
-	STMT_IF
+	STMT_IF,
+	STMT_FOR
 } StmtId;
 
 struct Stmt

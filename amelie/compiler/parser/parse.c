@@ -127,7 +127,7 @@ parse_stmt_free(Stmt* stmt)
 	}
 }
 
-hot static inline void
+hot void
 parse_stmt(Parser* self, Stmt* stmt)
 {
 	auto lex = &self->lex;
@@ -347,7 +347,7 @@ parse_stmt(Parser* self, Stmt* stmt)
 	case KSELECT:
 	{
 		stmt->id = STMT_SELECT;
-		auto select = parse_select(stmt, NULL, false);
+		auto select = parse_select(stmt, stmt->block->targets, false);
 		stmt->ast = &select->ast;
 		if (select->pushdown)
 			stmt->block->stmts.last_send = stmt;
@@ -358,6 +358,14 @@ parse_stmt(Parser* self, Stmt* stmt)
 	{
 		stmt->id = STMT_IF;
 		if (parse_if(stmt))
+			stmt->block->stmts.last_send = stmt;
+		break;
+	}
+
+	case KFOR:
+	{
+		stmt->id = STMT_FOR;
+		if (parse_for(stmt))
 			stmt->block->stmts.last_send = stmt;
 		break;
 	}

@@ -236,8 +236,7 @@ emit_name(Compiler* self, Targets* targets, Ast* ast)
 		return op2(self, CREF, rpin(self, var->type), var->r);
 	}
 
-	while (targets && targets_empty(targets))
-		targets = targets->outer;
+	targets = block_targets(targets);
 	if (! targets)
 		stmt_error(self->current, ast, "column not found");
 
@@ -346,7 +345,7 @@ emit_name_compound(Compiler* self, Targets* targets, Ast* ast)
 			if (target && str_compare(&target->name, &name))
 				match = target;
 			else
-				match = targets_match_outer(targets, &name);
+				match = block_target_find(targets, &name);
 			if (match)
 			{
 				// target.column

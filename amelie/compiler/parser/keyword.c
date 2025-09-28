@@ -128,6 +128,7 @@ Keyword keywords[] =
 
 	// l
 	{ KLIKE,                  "like",                  4  },
+	{ KLOOP,                  "loop",                  4  },
 	{ KLIMIT,                 "limit",                 5  },
 	{ KLEFT,                  "left",                  4  },
 	{ KLOCAL,                 "local",                 5  },
