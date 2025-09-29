@@ -346,7 +346,7 @@ cassign(Vm* self, Op* op)
 			value_set_null(dst);
 		value_free(src);
 	} else {
-		value_copy(dst, src);
+		value_move(dst, src);
 	}
 }
 

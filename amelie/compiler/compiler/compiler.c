@@ -393,8 +393,7 @@ emit_stmt(Compiler* self, Stmt* stmt)
 	if (var)
 	{
 		// generate recv if stmt result is expected for := or return
-		if (stmt->assign)
-			emit_recv(self, stmt);
+		emit_recv(self, stmt);
 
 		if (! ret)
 			stmt_error(stmt, NULL, "statement cannot be assigned");
@@ -402,17 +401,14 @@ emit_stmt(Compiler* self, Stmt* stmt)
 			stmt_error(stmt, NULL, "statement must return only one column to be assigned");
 		// argument assignment
 		auto type = columns_first(&ret->columns)->type;
-		if (var->type != TYPE_NULL && var->type != type)
+		if (type != TYPE_NULL && var->type != type)
 			stmt_error(self->current, stmt->ast, "variable expected %s",
 			           type_of(var->type));
 		assert(stmt->r != -1);
-		if  (var->r == -1)
-		{
-			var->type = type;
-			var->r = op2(self, CASSIGN, rpin(self, var->type), stmt->r);
-		} else {
-			op2(self, CASSIGN, var->r, stmt->r);
-		}
+
+		op2(self, CASSIGN, var->r, stmt->r);
+		runpin(self, stmt->r);
+		stmt->r = -1;
 	}
 
 	// set previous stmt
@@ -543,6 +539,11 @@ emit_block(Compiler* self, Block* block)
 	auto stmt_prev = self->current;
 	self->current = NULL;
 
+	// reserve variables
+	auto var = block->vars.list;
+	for (; var; var = var->next)
+		var->r = rpin(self, var->type);
+
 	// emit statements in the block, track last statement returning
 	Returning* returning = NULL;
 	Stmt* last = NULL;
@@ -574,6 +575,16 @@ emit_block(Compiler* self, Block* block)
 			    (intptr_t)&returning->format);
 
 		op0(self, CRET);
+	} else
+	{
+		// free variable on block exit
+		var = block->vars.list;
+		for (; var; var = var->next)
+		{
+			op1(self, CFREE, var->r);
+			runpin(self, var->r);
+			var->r = -1;
+		}
 	}
 
 	// set previous stmt

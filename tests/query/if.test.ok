@@ -190,98 +190,98 @@ explain if 1 then select 123; elsif 2 then select 321; elsif 3 then select 821; 
 }]
 if 1 then select 123; elsif 2 then select 321; elsif 3 then select 821; else select 0; end
 # test: if if
-explain x := 0; if 1 then if 2 then x:= 2; end; end; select x
+explain declare x int; x := 0; if 1 then if 2 then x:= 2; end; end; select x
 [{
   "bytecode": {
     "frontend": {
-      "00": "int                 0      -      0     # 0",
-      "01": "assign              1      0      0     ",
+      "00": "int                 1      -      0     # 0",
+      "01": "assign              0      1      0     ",
       "02": "jmp                 4      0      0     ",
       "03": "jmp                 14     0      0     ",
-      "04": "int                 2      -      0     # 1",
-      "05": "jntr                14     2      0     ",
+      "04": "int                 1      -      0     # 1",
+      "05": "jntr                14     1      0     ",
       "06": "jmp                 8      0      0     ",
       "07": "jmp                 13     0      0     ",
-      "08": "int                 2      -      0     # 2",
-      "09": "jntr                13     2      0     ",
-      "10": "int                 2      -      0     # 2",
-      "11": "assign              1      2      0     ",
+      "08": "int                 1      -      0     # 2",
+      "09": "jntr                13     1      0     ",
+      "10": "int                 1      -      0     # 2",
+      "11": "assign              0      1      0     ",
       "12": "jmp                 7      0      0     ",
       "13": "jmp                 3      0      0     ",
-      "14": "ref                 3      1      0     ",
-      "15": "content             3      -      -     ",
+      "14": "ref                 1      0      0     ",
+      "15": "content             1      -      -     ",
       "16": "ret                 0      0      0     "
     }
   },
   "access": []
 }]
-x := 0; if 1 then if 2 then x:= 2; end; end; select x
+declare x int; x := 0; if 1 then if 2 then x:= 2; end; end; select x
 [2]
 # test: if if else
-explain x := 0; if 1 then if 0 then x:= 2; else x := 3; end; end; select x
+explain declare x int; x := 0; if 1 then if 0 then x:= 2; else x := 3; end; end; select x
 [{
   "bytecode": {
     "frontend": {
-      "00": "int                 0      -      0     # 0",
-      "01": "assign              1      0      0     ",
+      "00": "int                 1      -      0     # 0",
+      "01": "assign              0      1      0     ",
       "02": "jmp                 4      0      0     ",
       "03": "jmp                 16     0      0     ",
-      "04": "int                 2      -      0     # 1",
-      "05": "jntr                16     2      0     ",
+      "04": "int                 1      -      0     # 1",
+      "05": "jntr                16     1      0     ",
       "06": "jmp                 8      0      0     ",
       "07": "jmp                 15     0      0     ",
-      "08": "int                 2      -      0     # 0",
-      "09": "jntr                13     2      0     ",
-      "10": "int                 2      -      0     # 2",
-      "11": "assign              1      2      0     ",
+      "08": "int                 1      -      0     # 0",
+      "09": "jntr                13     1      0     ",
+      "10": "int                 1      -      0     # 2",
+      "11": "assign              0      1      0     ",
       "12": "jmp                 7      0      0     ",
-      "13": "int                 3      -      0     # 3",
-      "14": "assign              1      3      0     ",
+      "13": "int                 1      -      0     # 3",
+      "14": "assign              0      1      0     ",
       "15": "jmp                 3      0      0     ",
-      "16": "ref                 4      1      0     ",
-      "17": "content             4      -      -     ",
+      "16": "ref                 1      0      0     ",
+      "17": "content             1      -      -     ",
       "18": "ret                 0      0      0     "
     }
   },
   "access": []
 }]
-x := 0; if 1 then if 0 then x:= 2; else x := 3; end; end; select x
+declare x int; x := 0; if 1 then if 0 then x:= 2; else x := 3; end; end; select x
 [3]
 # test: if if else else
-explain x := 0; if 1 then if 0 then x:= 2; else x := 3; end; else x:= 4; end; select x
+explain declare x int; x := 0; if 1 then if 0 then x:= 2; else x := 3; end; else x:= 4; end; select x
 [{
   "bytecode": {
     "frontend": {
-      "00": "int                 0      -      0     # 0",
-      "01": "assign              1      0      0     ",
+      "00": "int                 1      -      0     # 0",
+      "01": "assign              0      1      0     ",
       "02": "jmp                 4      0      0     ",
       "03": "jmp                 18     0      0     ",
-      "04": "int                 2      -      0     # 1",
-      "05": "jntr                16     2      0     ",
+      "04": "int                 1      -      0     # 1",
+      "05": "jntr                16     1      0     ",
       "06": "jmp                 8      0      0     ",
       "07": "jmp                 15     0      0     ",
-      "08": "int                 2      -      0     # 0",
-      "09": "jntr                13     2      0     ",
-      "10": "int                 2      -      0     # 2",
-      "11": "assign              1      2      0     ",
+      "08": "int                 1      -      0     # 0",
+      "09": "jntr                13     1      0     ",
+      "10": "int                 1      -      0     # 2",
+      "11": "assign              0      1      0     ",
       "12": "jmp                 7      0      0     ",
-      "13": "int                 3      -      0     # 3",
-      "14": "assign              1      3      0     ",
+      "13": "int                 1      -      0     # 3",
+      "14": "assign              0      1      0     ",
       "15": "jmp                 3      0      0     ",
-      "16": "int                 4      -      0     # 4",
-      "17": "assign              1      4      0     ",
-      "18": "ref                 5      1      0     ",
-      "19": "content             5      -      -     ",
+      "16": "int                 1      -      0     # 4",
+      "17": "assign              0      1      0     ",
+      "18": "ref                 1      0      0     ",
+      "19": "content             1      -      -     ",
       "20": "ret                 0      0      0     "
     }
   },
   "access": []
 }]
-x := 0; if 1 then if 0 then x:= 2; else x := 3; end; else x:= 4; end; select x
+declare x int; x := 0; if 1 then if 0 then x:= 2; else x := 3; end; else x:= 4; end; select x
 [3]
-x := 0; if 0 then if 0 then x:= 2; else x := 3; end; else x:= 4; end; select x
+declare x int; x := 0; if 0 then if 0 then x:= 2; else x := 3; end; else x:= 4; end; select x
 [4]
-x := 0; if 0 then if 0 then x:= 2; end; else x:= 4; end; select x
+declare x int; x := 0; if 0 then if 0 then x:= 2; end; else x:= 4; end; select x
 [4]
 # test: if insert
 create table test (id int primary key)
@@ -410,35 +410,35 @@ if false then; insert into test values (1); else insert into test values (2); en
 drop table test
 # test: if insert elsif insert else insert
 create table test (id int primary key)
-explain x := 0; if x = 0 then; insert into test values (0); elsif x = 1 then insert into test values (1); else insert into test values (2); end; select * from test
+explain declare x int; x := 0; if x = 0 then; insert into test values (0); elsif x = 1 then insert into test values (1); else insert into test values (2); end; select * from test
 [{
   "bytecode": {
     "frontend": {
-      "00": "int                 0      -      0     # 0",
-      "01": "assign              1      0      0     ",
+      "00": "int                 1      -      0     # 0",
+      "01": "assign              0      1      0     ",
       "02": "jmp                 4      0      0     ",
       "03": "jmp                 20     0      0     ",
-      "04": "ref                 2      1      0     ",
-      "05": "int                 3      -      0     # 0",
-      "06": "equii               4      2      3     ",
-      "07": "jntr                11     4      0     ",
-      "08": "set_ptr             2      -      0     ",
-      "09": "send_shard          0      -      2     # public.test",
+      "04": "ref                 1      0      0     ",
+      "05": "int                 2      -      0     # 0",
+      "06": "equii               3      1      2     ",
+      "07": "jntr                11     3      0     ",
+      "08": "set_ptr             1      -      0     ",
+      "09": "send_shard          0      -      1     # public.test",
       "10": "jmp                 3      0      0     ",
-      "11": "ref                 2      1      0     ",
-      "12": "int                 3      -      0     # 1",
-      "13": "equii               4      2      3     ",
-      "14": "jntr                18     4      0     ",
-      "15": "set_ptr             2      -      0     ",
-      "16": "send_shard          2      -      2     # public.test",
+      "11": "ref                 1      0      0     ",
+      "12": "int                 2      -      0     # 1",
+      "13": "equii               3      1      2     ",
+      "14": "jntr                18     3      0     ",
+      "15": "set_ptr             1      -      0     ",
+      "16": "send_shard          2      -      1     # public.test",
       "17": "jmp                 3      0      0     ",
-      "18": "set_ptr             2      -      0     ",
-      "19": "send_shard          4      -      2     # public.test",
-      "20": "union               2      0      0     ",
-      "21": "send_all            6      -      2     # public.test (last)",
-      "22": "union_recv          2      0      0     ",
-      "23": "union_set           2      0      -1    ",
-      "24": "content             2      -      -     ",
+      "18": "set_ptr             1      -      0     ",
+      "19": "send_shard          4      -      1     # public.test",
+      "20": "union               1      0      0     ",
+      "21": "send_all            6      -      1     # public.test (last)",
+      "22": "union_recv          1      0      0     ",
+      "23": "union_set           1      0      -1    ",
+      "24": "content             1      -      -     ",
       "25": "ret                 0      0      0     "
     },
     "backend": {
@@ -448,388 +448,388 @@ explain x := 0; if x = 0 then; insert into test values (0); elsif x = 1 then ins
       "03": "ret                 0      0      0     ",
       "04": "insert              -      0      0     # public.test",
       "05": "ret                 0      0      0     ",
-      "06": "set                 2      1      0     ",
-      "07": "table_open_part     3      0      12    # public.test (primary)",
-      "08": "table_readi32       4      3      0     ",
-      "09": "push                4      0      0     ",
-      "10": "set_add             2      0      0     ",
-      "11": "table_next          3      8      0     ",
-      "12": "free                3      0      0     ",
-      "13": "result              2      0      0     ",
+      "06": "set                 1      1      0     ",
+      "07": "table_open_part     2      0      12    # public.test (primary)",
+      "08": "table_readi32       3      2      0     ",
+      "09": "push                3      0      0     ",
+      "10": "set_add             1      0      0     ",
+      "11": "table_next          2      8      0     ",
+      "12": "free                2      0      0     ",
+      "13": "result              1      0      0     ",
       "14": "ret                 0      0      0     "
     }
   },
   "access": [["public.test", "rw"]]
 }]
-x := 0; if x = 0 then; insert into test values (0); elsif x = 1 then insert into test values (1); else insert into test values (2); end; select * from test
+declare x int; x := 0; if x = 0 then; insert into test values (0); elsif x = 1 then insert into test values (1); else insert into test values (2); end; select * from test
 [0]
-x := 1; if x = 0 then; insert into test values (0); elsif x = 1 then insert into test values (1); else insert into test values (2); end; select * from test
+declare x int; x := 1; if x = 0 then; insert into test values (0); elsif x = 1 then insert into test values (1); else insert into test values (2); end; select * from test
 [0, 1]
-x := 2; if x = 0 then; insert into test values (0); elsif x = 1 then insert into test values (1); else insert into test values (2); end; select * from test
+declare x int; x := 2; if x = 0 then; insert into test values (0); elsif x = 1 then insert into test values (1); else insert into test values (2); end; select * from test
 [0, 1, 2]
 drop table test
 # test: if insert returning
 create table test (id int primary key)
-explain x := 0; if true then; x := insert into test values (123) returning *; end; select x
+explain declare x int; x := 0; if true then; x := insert into test values (123) returning *; end; select x
 [{
   "bytecode": {
     "frontend": {
-      "00": "int                 0      -      0     # 0",
-      "01": "assign              1      0      0     ",
+      "00": "int                 1      -      0     # 0",
+      "01": "assign              0      1      0     ",
       "02": "jmp                 4      0      0     ",
       "03": "jmp                 12     0      0     ",
-      "04": "bool                2      1      0     ",
-      "05": "jntr                12     2      0     ",
-      "06": "union               2      0      0     ",
-      "07": "set_ptr             3      -      0     ",
-      "08": "send_shard          0      -      3     # public.test",
-      "09": "union_recv          2      0      0     ",
-      "10": "assign              1      2      0     ",
+      "04": "bool                1      1      0     ",
+      "05": "jntr                12     1      0     ",
+      "06": "union               1      0      0     ",
+      "07": "set_ptr             2      -      0     ",
+      "08": "send_shard          0      -      2     # public.test",
+      "09": "union_recv          1      0      0     ",
+      "10": "assign              0      1      0     ",
       "11": "jmp                 3      0      0     ",
       "12": "close               0      0      0     ",
-      "13": "ref                 3      1      0     ",
-      "14": "content             3      -      -     ",
+      "13": "ref                 1      0      0     ",
+      "14": "content             1      -      -     ",
       "15": "ret                 0      0      0     "
     },
     "backend": {
-      "00": "set                 2      1      0     ",
-      "01": "table_prepare       3      -      0     # public.test",
+      "00": "set                 1      1      0     ",
+      "01": "table_prepare       2      -      0     # public.test",
       "02": "jmp                 9      0      0     ",
-      "03": "string              4      0      0     # unique key constraint violation",
-      "04": "push                4      0      0     ",
-      "05": "call                4      -      1     # public.error()",
-      "06": "table_readi32       4      3      0     ",
-      "07": "push                4      0      0     ",
-      "08": "set_add             2      0      0     ",
-      "09": "upsert              3      3      6     ",
-      "10": "free                3      0      0     ",
-      "11": "result              2      0      0     ",
+      "03": "string              3      0      0     # unique key constraint violation",
+      "04": "push                3      0      0     ",
+      "05": "call                3      -      1     # public.error()",
+      "06": "table_readi32       3      2      0     ",
+      "07": "push                3      0      0     ",
+      "08": "set_add             1      0      0     ",
+      "09": "upsert              2      3      6     ",
+      "10": "free                2      0      0     ",
+      "11": "result              1      0      0     ",
       "12": "ret                 0      0      0     "
     }
   },
   "access": [["public.test", "rw"]]
 }]
-x := 0; if true then; x := insert into test values (123) returning *; end; select x
+declare x int; x := 0; if true then; x := insert into test values (123) returning *; end; select x
 [123]
 drop table test
 # test: if select
 create table test (id int primary key)
 insert into test values (123)
-explain x := 0; if true then x := select * from test; end; select x
+explain declare x int; x := 0; if true then x := select * from test; end; select x
 [{
   "bytecode": {
     "frontend": {
-      "00": "int                 0      -      0     # 0",
-      "01": "assign              1      0      0     ",
+      "00": "int                 1      -      0     # 0",
+      "01": "assign              0      1      0     ",
       "02": "jmp                 4      0      0     ",
       "03": "jmp                 12     0      0     ",
-      "04": "bool                2      1      0     ",
-      "05": "jntr                12     2      0     ",
-      "06": "union               2      0      0     ",
-      "07": "send_all            0      -      2     # public.test",
-      "08": "union_recv          2      0      0     ",
-      "09": "union_set           2      0      -1    ",
-      "10": "assign              1      2      0     ",
+      "04": "bool                1      1      0     ",
+      "05": "jntr                12     1      0     ",
+      "06": "union               1      0      0     ",
+      "07": "send_all            0      -      1     # public.test",
+      "08": "union_recv          1      0      0     ",
+      "09": "union_set           1      0      -1    ",
+      "10": "assign              0      1      0     ",
       "11": "jmp                 3      0      0     ",
       "12": "close               0      0      0     ",
-      "13": "ref                 3      1      0     ",
-      "14": "content             3      -      -     ",
+      "13": "ref                 1      0      0     ",
+      "14": "content             1      -      -     ",
       "15": "ret                 0      0      0     "
     },
     "backend": {
-      "00": "set                 2      1      0     ",
-      "01": "table_open_part     3      0      6     # public.test (primary)",
-      "02": "table_readi32       4      3      0     ",
-      "03": "push                4      0      0     ",
-      "04": "set_add             2      0      0     ",
-      "05": "table_next          3      2      0     ",
-      "06": "free                3      0      0     ",
-      "07": "result              2      0      0     ",
+      "00": "set                 1      1      0     ",
+      "01": "table_open_part     2      0      6     # public.test (primary)",
+      "02": "table_readi32       3      2      0     ",
+      "03": "push                3      0      0     ",
+      "04": "set_add             1      0      0     ",
+      "05": "table_next          2      2      0     ",
+      "06": "free                2      0      0     ",
+      "07": "result              1      0      0     ",
       "08": "ret                 0      0      0     "
     }
   },
   "access": [["public.test", "ro"]]
 }]
-x := 0; if true then x := select * from test; end; select x
+declare x int; x := 0; if true then x := select * from test; end; select x
 [123]
-explain x := 0; if true then x := select count(*) from test; end; select x
+explain declare x int; x := 0; if true then x := select count(*) from test; end; select x
 [{
   "bytecode": {
     "frontend": {
-      "00": "int                 0      -      0     # 0",
-      "01": "assign              1      0      0     ",
+      "00": "int                 1      -      0     # 0",
+      "01": "assign              0      1      0     ",
       "02": "jmp                 4      0      0     ",
       "03": "jmp                 21     0      0     ",
-      "04": "bool                2      1      0     ",
-      "05": "jntr                21     2      0     ",
-      "06": "union               2      0      0     ",
-      "07": "send_all            0      -      2     # public.test",
-      "08": "union_recv          2      0      0     ",
-      "09": "union_set           2      1      -1    ",
-      "10": "union_set_aggs      2      21     0     ",
-      "11": "set                 3      1      0     ",
-      "12": "store_open          4      2      17    ",
-      "13": "count               5      4      0     ",
-      "14": "push                5      0      0     ",
-      "15": "set_add             3      0      0     ",
-      "16": "store_next          4      13     0     ",
-      "17": "free                4      0      0     ",
-      "18": "free                2      0      0     ",
-      "19": "assign              1      3      0     ",
+      "04": "bool                1      1      0     ",
+      "05": "jntr                21     1      0     ",
+      "06": "union               1      0      0     ",
+      "07": "send_all            0      -      1     # public.test",
+      "08": "union_recv          1      0      0     ",
+      "09": "union_set           1      1      -1    ",
+      "10": "union_set_aggs      1      21     0     ",
+      "11": "set                 2      1      0     ",
+      "12": "store_open          3      1      17    ",
+      "13": "count               4      3      0     ",
+      "14": "push                4      0      0     ",
+      "15": "set_add             2      0      0     ",
+      "16": "store_next          3      13     0     ",
+      "17": "free                3      0      0     ",
+      "18": "free                1      0      0     ",
+      "19": "assign              0      2      0     ",
       "20": "jmp                 3      0      0     ",
       "21": "close               0      0      0     ",
-      "22": "ref                 2      1      0     ",
-      "23": "content             2      -      -     ",
+      "22": "ref                 1      0      0     ",
+      "23": "content             1      -      -     ",
       "24": "ret                 0      0      0     "
     },
     "backend": {
-      "00": "set_ordered         2      1      1     ",
-      "01": "table_open_part     3      1      9     # public.test (primary)",
-      "02": "bool                4      1      0     ",
-      "03": "push                4      0      0     ",
-      "04": "set_get             4      2      0     ",
-      "05": "int                 5      -      0     # 1",
-      "06": "push                5      0      0     ",
-      "07": "set_agg             2      4      21    ",
-      "08": "table_next          3      2      0     ",
-      "09": "free                3      0      0     ",
-      "10": "bool                3      1      0     ",
-      "11": "push                3      0      0     ",
-      "12": "set_get             3      2      0     ",
-      "13": "null                4      0      0     ",
-      "14": "push                4      0      0     ",
-      "15": "set_agg             2      3      21    ",
-      "16": "set_sort            2      0      0     ",
-      "17": "result              2      0      0     ",
+      "00": "set_ordered         1      1      1     ",
+      "01": "table_open_part     2      1      9     # public.test (primary)",
+      "02": "bool                3      1      0     ",
+      "03": "push                3      0      0     ",
+      "04": "set_get             3      1      0     ",
+      "05": "int                 4      -      0     # 1",
+      "06": "push                4      0      0     ",
+      "07": "set_agg             1      3      21    ",
+      "08": "table_next          2      2      0     ",
+      "09": "free                2      0      0     ",
+      "10": "bool                2      1      0     ",
+      "11": "push                2      0      0     ",
+      "12": "set_get             2      1      0     ",
+      "13": "null                3      0      0     ",
+      "14": "push                3      0      0     ",
+      "15": "set_agg             1      2      21    ",
+      "16": "set_sort            1      0      0     ",
+      "17": "result              1      0      0     ",
       "18": "ret                 0      0      0     "
     }
   },
   "access": [["public.test", "ro"]]
 }]
-x := 0; if true then x := select count(*) from test; end; select x
+declare x int; x := 0; if true then x := select count(*) from test; end; select x
 [1]
-explain x := 0; if false then else x := select count(*) from test; end; select x
+explain declare x int; x := 0; if false then else x := select count(*) from test; end; select x
 [{
   "bytecode": {
     "frontend": {
-      "00": "int                 0      -      0     # 0",
-      "01": "assign              1      0      0     ",
+      "00": "int                 1      -      0     # 0",
+      "01": "assign              0      1      0     ",
       "02": "jmp                 4      0      0     ",
       "03": "jmp                 21     0      0     ",
-      "04": "bool                2      0      0     ",
-      "05": "jntr                7      2      0     ",
+      "04": "bool                1      0      0     ",
+      "05": "jntr                7      1      0     ",
       "06": "jmp                 3      0      0     ",
-      "07": "union               2      0      0     ",
-      "08": "send_all            0      -      2     # public.test",
-      "09": "union_recv          2      0      0     ",
-      "10": "union_set           2      1      -1    ",
-      "11": "union_set_aggs      2      21     0     ",
-      "12": "set                 3      1      0     ",
-      "13": "store_open          4      2      18    ",
-      "14": "count               5      4      0     ",
-      "15": "push                5      0      0     ",
-      "16": "set_add             3      0      0     ",
-      "17": "store_next          4      14     0     ",
-      "18": "free                4      0      0     ",
-      "19": "free                2      0      0     ",
-      "20": "assign              1      3      0     ",
+      "07": "union               1      0      0     ",
+      "08": "send_all            0      -      1     # public.test",
+      "09": "union_recv          1      0      0     ",
+      "10": "union_set           1      1      -1    ",
+      "11": "union_set_aggs      1      21     0     ",
+      "12": "set                 2      1      0     ",
+      "13": "store_open          3      1      18    ",
+      "14": "count               4      3      0     ",
+      "15": "push                4      0      0     ",
+      "16": "set_add             2      0      0     ",
+      "17": "store_next          3      14     0     ",
+      "18": "free                3      0      0     ",
+      "19": "free                1      0      0     ",
+      "20": "assign              0      2      0     ",
       "21": "close               0      0      0     ",
-      "22": "ref                 2      1      0     ",
-      "23": "content             2      -      -     ",
+      "22": "ref                 1      0      0     ",
+      "23": "content             1      -      -     ",
       "24": "ret                 0      0      0     "
     },
     "backend": {
-      "00": "set_ordered         2      1      1     ",
-      "01": "table_open_part     3      1      9     # public.test (primary)",
-      "02": "bool                4      1      0     ",
-      "03": "push                4      0      0     ",
-      "04": "set_get             4      2      0     ",
-      "05": "int                 5      -      0     # 1",
-      "06": "push                5      0      0     ",
-      "07": "set_agg             2      4      21    ",
-      "08": "table_next          3      2      0     ",
-      "09": "free                3      0      0     ",
-      "10": "bool                3      1      0     ",
-      "11": "push                3      0      0     ",
-      "12": "set_get             3      2      0     ",
-      "13": "null                4      0      0     ",
-      "14": "push                4      0      0     ",
-      "15": "set_agg             2      3      21    ",
-      "16": "set_sort            2      0      0     ",
-      "17": "result              2      0      0     ",
+      "00": "set_ordered         1      1      1     ",
+      "01": "table_open_part     2      1      9     # public.test (primary)",
+      "02": "bool                3      1      0     ",
+      "03": "push                3      0      0     ",
+      "04": "set_get             3      1      0     ",
+      "05": "int                 4      -      0     # 1",
+      "06": "push                4      0      0     ",
+      "07": "set_agg             1      3      21    ",
+      "08": "table_next          2      2      0     ",
+      "09": "free                2      0      0     ",
+      "10": "bool                2      1      0     ",
+      "11": "push                2      0      0     ",
+      "12": "set_get             2      1      0     ",
+      "13": "null                3      0      0     ",
+      "14": "push                3      0      0     ",
+      "15": "set_agg             1      2      21    ",
+      "16": "set_sort            1      0      0     ",
+      "17": "result              1      0      0     ",
       "18": "ret                 0      0      0     "
     }
   },
   "access": [["public.test", "ro"]]
 }]
-x := 0; if false then else x := select count(*) from test; end; select x
+declare x int; x := 0; if false then else x := select count(*) from test; end; select x
 [1]
-explain x := 0; if false then else x := select count(*) from test; end; select 1; select x
+explain declare x int; x := 0; if false then else x := select count(*) from test; end; select 1; select x
 [{
   "bytecode": {
     "frontend": {
-      "00": "int                 0      -      0     # 0",
-      "01": "assign              1      0      0     ",
+      "00": "int                 1      -      0     # 0",
+      "01": "assign              0      1      0     ",
       "02": "jmp                 4      0      0     ",
       "03": "jmp                 21     0      0     ",
-      "04": "bool                2      0      0     ",
-      "05": "jntr                7      2      0     ",
+      "04": "bool                1      0      0     ",
+      "05": "jntr                7      1      0     ",
       "06": "jmp                 3      0      0     ",
-      "07": "union               2      0      0     ",
-      "08": "send_all            0      -      2     # public.test",
-      "09": "union_recv          2      0      0     ",
-      "10": "union_set           2      1      -1    ",
-      "11": "union_set_aggs      2      21     0     ",
-      "12": "set                 3      1      0     ",
-      "13": "store_open          4      2      18    ",
-      "14": "count               5      4      0     ",
-      "15": "push                5      0      0     ",
-      "16": "set_add             3      0      0     ",
-      "17": "store_next          4      14     0     ",
-      "18": "free                4      0      0     ",
-      "19": "free                2      0      0     ",
-      "20": "assign              1      3      0     ",
+      "07": "union               1      0      0     ",
+      "08": "send_all            0      -      1     # public.test",
+      "09": "union_recv          1      0      0     ",
+      "10": "union_set           1      1      -1    ",
+      "11": "union_set_aggs      1      21     0     ",
+      "12": "set                 2      1      0     ",
+      "13": "store_open          3      1      18    ",
+      "14": "count               4      3      0     ",
+      "15": "push                4      0      0     ",
+      "16": "set_add             2      0      0     ",
+      "17": "store_next          3      14     0     ",
+      "18": "free                3      0      0     ",
+      "19": "free                1      0      0     ",
+      "20": "assign              0      2      0     ",
       "21": "close               0      0      0     ",
-      "22": "int                 2      -      0     # 1",
-      "23": "ref                 4      1      0     ",
-      "24": "content             4      -      -     ",
+      "22": "int                 1      -      0     # 1",
+      "23": "ref                 2      0      0     ",
+      "24": "content             2      -      -     ",
       "25": "ret                 0      0      0     "
     },
     "backend": {
-      "00": "set_ordered         2      1      1     ",
-      "01": "table_open_part     3      1      9     # public.test (primary)",
-      "02": "bool                4      1      0     ",
-      "03": "push                4      0      0     ",
-      "04": "set_get             4      2      0     ",
-      "05": "int                 5      -      0     # 1",
-      "06": "push                5      0      0     ",
-      "07": "set_agg             2      4      21    ",
-      "08": "table_next          3      2      0     ",
-      "09": "free                3      0      0     ",
-      "10": "bool                3      1      0     ",
-      "11": "push                3      0      0     ",
-      "12": "set_get             3      2      0     ",
-      "13": "null                4      0      0     ",
-      "14": "push                4      0      0     ",
-      "15": "set_agg             2      3      21    ",
-      "16": "set_sort            2      0      0     ",
-      "17": "result              2      0      0     ",
+      "00": "set_ordered         1      1      1     ",
+      "01": "table_open_part     2      1      9     # public.test (primary)",
+      "02": "bool                3      1      0     ",
+      "03": "push                3      0      0     ",
+      "04": "set_get             3      1      0     ",
+      "05": "int                 4      -      0     # 1",
+      "06": "push                4      0      0     ",
+      "07": "set_agg             1      3      21    ",
+      "08": "table_next          2      2      0     ",
+      "09": "free                2      0      0     ",
+      "10": "bool                2      1      0     ",
+      "11": "push                2      0      0     ",
+      "12": "set_get             2      1      0     ",
+      "13": "null                3      0      0     ",
+      "14": "push                3      0      0     ",
+      "15": "set_agg             1      2      21    ",
+      "16": "set_sort            1      0      0     ",
+      "17": "result              1      0      0     ",
       "18": "ret                 0      0      0     "
     }
   },
   "access": [["public.test", "ro"]]
 }]
-x := 0; if false then else x := select count(*) from test; end; select 1; select x
+declare x int; x := 0; if false then else x := select count(*) from test; end; select 1; select x
 [1]
-explain x := 0; if false then else x := select count(*) from test; end; select * from test; select x
+explain declare x int; x := 0; if false then else x := select count(*) from test; end; select * from test; select x
 [{
   "bytecode": {
     "frontend": {
-      "00": "int                 0      -      0     # 0",
-      "01": "assign              1      0      0     ",
+      "00": "int                 1      -      0     # 0",
+      "01": "assign              0      1      0     ",
       "02": "jmp                 4      0      0     ",
       "03": "jmp                 21     0      0     ",
-      "04": "bool                2      0      0     ",
-      "05": "jntr                7      2      0     ",
+      "04": "bool                1      0      0     ",
+      "05": "jntr                7      1      0     ",
       "06": "jmp                 3      0      0     ",
-      "07": "union               2      0      0     ",
-      "08": "send_all            0      -      2     # public.test",
-      "09": "union_recv          2      0      0     ",
-      "10": "union_set           2      1      -1    ",
-      "11": "union_set_aggs      2      21     0     ",
-      "12": "set                 3      1      0     ",
-      "13": "store_open          4      2      18    ",
-      "14": "count               5      4      0     ",
-      "15": "push                5      0      0     ",
-      "16": "set_add             3      0      0     ",
-      "17": "store_next          4      14     0     ",
-      "18": "free                4      0      0     ",
-      "19": "free                2      0      0     ",
-      "20": "assign              1      3      0     ",
-      "21": "union               2      0      0     ",
-      "22": "send_all            19     -      2     # public.test (last)",
-      "23": "ref                 4      1      0     ",
-      "24": "union_recv          2      0      0     ",
-      "25": "union_set           2      0      -1    ",
-      "26": "content             4      -      -     ",
+      "07": "union               1      0      0     ",
+      "08": "send_all            0      -      1     # public.test",
+      "09": "union_recv          1      0      0     ",
+      "10": "union_set           1      1      -1    ",
+      "11": "union_set_aggs      1      21     0     ",
+      "12": "set                 2      1      0     ",
+      "13": "store_open          3      1      18    ",
+      "14": "count               4      3      0     ",
+      "15": "push                4      0      0     ",
+      "16": "set_add             2      0      0     ",
+      "17": "store_next          3      14     0     ",
+      "18": "free                3      0      0     ",
+      "19": "free                1      0      0     ",
+      "20": "assign              0      2      0     ",
+      "21": "union               1      0      0     ",
+      "22": "send_all            19     -      1     # public.test (last)",
+      "23": "ref                 2      0      0     ",
+      "24": "union_recv          1      0      0     ",
+      "25": "union_set           1      0      -1    ",
+      "26": "content             2      -      -     ",
       "27": "ret                 0      0      0     "
     },
     "backend": {
-      "00": "set_ordered         2      1      1     ",
-      "01": "table_open_part     3      1      9     # public.test (primary)",
-      "02": "bool                4      1      0     ",
-      "03": "push                4      0      0     ",
-      "04": "set_get             4      2      0     ",
-      "05": "int                 5      -      0     # 1",
-      "06": "push                5      0      0     ",
-      "07": "set_agg             2      4      21    ",
-      "08": "table_next          3      2      0     ",
-      "09": "free                3      0      0     ",
-      "10": "bool                3      1      0     ",
-      "11": "push                3      0      0     ",
-      "12": "set_get             3      2      0     ",
-      "13": "null                4      0      0     ",
-      "14": "push                4      0      0     ",
-      "15": "set_agg             2      3      21    ",
-      "16": "set_sort            2      0      0     ",
-      "17": "result              2      0      0     ",
+      "00": "set_ordered         1      1      1     ",
+      "01": "table_open_part     2      1      9     # public.test (primary)",
+      "02": "bool                3      1      0     ",
+      "03": "push                3      0      0     ",
+      "04": "set_get             3      1      0     ",
+      "05": "int                 4      -      0     # 1",
+      "06": "push                4      0      0     ",
+      "07": "set_agg             1      3      21    ",
+      "08": "table_next          2      2      0     ",
+      "09": "free                2      0      0     ",
+      "10": "bool                2      1      0     ",
+      "11": "push                2      0      0     ",
+      "12": "set_get             2      1      0     ",
+      "13": "null                3      0      0     ",
+      "14": "push                3      0      0     ",
+      "15": "set_agg             1      2      21    ",
+      "16": "set_sort            1      0      0     ",
+      "17": "result              1      0      0     ",
       "18": "ret                 0      0      0     ",
-      "19": "set                 2      1      0     ",
-      "20": "table_open_part     4      25     25    # public.test (primary)",
-      "21": "table_readi32       5      4      0     ",
-      "22": "push                5      0      0     ",
-      "23": "set_add             2      0      0     ",
-      "24": "table_next          4      21     0     ",
-      "25": "free                4      0      0     ",
-      "26": "result              2      0      0     ",
+      "19": "set                 1      1      0     ",
+      "20": "table_open_part     2      25     25    # public.test (primary)",
+      "21": "table_readi32       3      2      0     ",
+      "22": "push                3      0      0     ",
+      "23": "set_add             1      0      0     ",
+      "24": "table_next          2      21     0     ",
+      "25": "free                2      0      0     ",
+      "26": "result              1      0      0     ",
       "27": "ret                 0      0      0     "
     }
   },
   "access": [["public.test", "ro"]]
 }]
-x := 0; if false then else x := select count(*) from test; end; select * from test; select x
+declare x int; x := 0; if false then else x := select count(*) from test; end; select * from test; select x
 [1]
-explain x := 0; if true then if false then x := select * from test; end; end; select x
+explain declare x int; x := 0; if true then if false then x := select * from test; end; end; select x
 [{
   "bytecode": {
     "frontend": {
-      "00": "int                 0      -      0     # 0",
-      "01": "assign              1      0      0     ",
+      "00": "int                 1      -      0     # 0",
+      "01": "assign              0      1      0     ",
       "02": "jmp                 4      0      0     ",
       "03": "jmp                 17     0      0     ",
-      "04": "bool                2      1      0     ",
-      "05": "jntr                17     2      0     ",
+      "04": "bool                1      1      0     ",
+      "05": "jntr                17     1      0     ",
       "06": "jmp                 8      0      0     ",
       "07": "jmp                 16     0      0     ",
-      "08": "bool                2      0      0     ",
-      "09": "jntr                16     2      0     ",
-      "10": "union               2      0      0     ",
-      "11": "send_all            0      -      2     # public.test",
-      "12": "union_recv          2      0      0     ",
-      "13": "union_set           2      0      -1    ",
-      "14": "assign              1      2      0     ",
+      "08": "bool                1      0      0     ",
+      "09": "jntr                16     1      0     ",
+      "10": "union               1      0      0     ",
+      "11": "send_all            0      -      1     # public.test",
+      "12": "union_recv          1      0      0     ",
+      "13": "union_set           1      0      -1    ",
+      "14": "assign              0      1      0     ",
       "15": "jmp                 7      0      0     ",
       "16": "jmp                 3      0      0     ",
       "17": "close               0      0      0     ",
-      "18": "ref                 3      1      0     ",
-      "19": "content             3      -      -     ",
+      "18": "ref                 1      0      0     ",
+      "19": "content             1      -      -     ",
       "20": "ret                 0      0      0     "
     },
     "backend": {
-      "00": "set                 2      1      0     ",
-      "01": "table_open_part     3      0      6     # public.test (primary)",
-      "02": "table_readi32       4      3      0     ",
-      "03": "push                4      0      0     ",
-      "04": "set_add             2      0      0     ",
-      "05": "table_next          3      2      0     ",
-      "06": "free                3      0      0     ",
-      "07": "result              2      0      0     ",
+      "00": "set                 1      1      0     ",
+      "01": "table_open_part     2      0      6     # public.test (primary)",
+      "02": "table_readi32       3      2      0     ",
+      "03": "push                3      0      0     ",
+      "04": "set_add             1      0      0     ",
+      "05": "table_next          2      2      0     ",
+      "06": "free                2      0      0     ",
+      "07": "result              1      0      0     ",
       "08": "ret                 0      0      0     "
     }
   },
   "access": [["public.test", "ro"]]
 }]
-x := 0; if true then if false then x := select * from test; end; end; select x
+declare x int; x := 0; if true then if false then x := select * from test; end; end; select x
 [0]
 drop table test
 disconnect S0

@@ -16,11 +16,12 @@ typedef struct Vars Vars;
 
 struct Var
 {
-	int  order;
-	int  r;
-	Type type;
-	Str* name;
-	Var* next;
+	int     order;
+	int     r;
+	Type    type;
+	Columns columns;
+	Str*    name;
+	Var*    next;
 };
 
 struct Vars
@@ -36,6 +37,13 @@ vars_init(Vars* self)
 	self->list      = NULL;
 	self->list_tail = NULL;
 	self->count     = 0;
+}
+
+static inline void
+vars_free(Vars* self)
+{
+	for (auto var = self->list; var; var = var->next)
+		columns_free(&var->columns);
 }
 
 static inline Var*
@@ -64,5 +72,6 @@ vars_add(Vars* self, Str* name)
 		self->list_tail->next = var;
 	self->list_tail = var;
 	self->count++;
+	columns_init(&var->columns);
 	return var;
 }

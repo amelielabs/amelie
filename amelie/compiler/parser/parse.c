@@ -501,7 +501,9 @@ parse_block(Parser* self, Block* block)
 		{
 			if (! lex_if(lex, KASSIGN))
 				lex_error_expect(lex, lex_next(lex), KASSIGN);
-			assign = block_var_add(block, &ast->string);
+			assign = block_var_find(block, &ast->string);
+			if (! assign)
+				lex_error(lex, ast, "variable not found");
 		}
 
 		// [WITH name AS ( cte )[, name AS (...)]]
@@ -565,11 +567,14 @@ parse(Parser* self, Program* program, Str* str)
 	if (lex_if(lex, KPROFILE))
 		self->program->profile = true;
 
+	auto block = blocks_add(&self->blocks, NULL);
+	if (lex_if(lex, KDECLARE))
+		parse_declare(self, &block->vars);
+
 	// [BEGIN]
 	self->begin = lex_if(lex, KBEGIN) != NULL;
 
 	// stmt [; stmt]
-	auto block = blocks_add(&self->blocks, NULL);
 	parse_block(self, block);
 
 	// [COMMIT]

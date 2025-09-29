@@ -43,179 +43,179 @@ explain for it in select [1,2,3] do end
   "access": []
 }]
 for it in select [1,2,3] do end
-n := 0; for it in select [1,2,3] do n := n + 1; end; select n
+declare n int; n := 0; for it in select [1,2,3] do n := n + 1; end; select n
 [3]
 # test: for if
-n := 0; for it in select [1,2,3,4] as it do if it::int % 2 = 0 then n := n + 1; end; end; select n
+declare n int; n := 0; for it in select [1,2,3,4] as it do if it::int % 2 = 0 then n := n + 1; end; end; select n
 [2]
 # test: for for
-n := 0; for i in select [1,2,3] do for j in select [1,2,3] do n := n + 1; end; end; select n
+declare n int; n := 0; for i in select [1,2,3] do for j in select [1,2,3] do n := n + 1; end; end; select n
 [9]
-explain n := 0; for i in select [1,2,3] as i do for j in select [1,2,3] as j do n := n + i.i::int + j.j::int; end; end; select n
+explain declare n int; n := 0; for i in select [1,2,3] as i do for j in select [1,2,3] as j do n := n + i.i::int + j.j::int; end; end; select n
 [{
   "bytecode": {
     "frontend": {
-      "00": "int                 0      -      0     # 0",
-      "01": "assign              1      0      0     ",
-      "02": "json                2      0      0     ",
-      "03": "ref                 3      2      0     ",
-      "04": "json_open           4      3      23    ",
-      "05": "json                5      5      0     ",
-      "06": "ref                 6      5      0     ",
-      "07": "json_open           7      6      19    ",
-      "08": "ref                 8      1      0     ",
-      "09": "json_read           9      4      0     ",
-      "10": "push                9      0      0     ",
-      "11": "call                9      -      1     # public.int()",
-      "12": "json_read           10     7      0     ",
-      "13": "push                10     0      0     ",
-      "14": "call                10     -      1     # public.int()",
-      "15": "addii               11     9      10    ",
-      "16": "addii               9      8      11    ",
-      "17": "assign              1      9      0     ",
-      "18": "json_next           7      8      0     ",
-      "19": "free                7      0      0     ",
-      "20": "free                6      0      0     ",
-      "21": "free                5      0      0     ",
-      "22": "json_next           4      5      0     ",
-      "23": "free                4      0      0     ",
-      "24": "free                3      0      0     ",
-      "25": "free                2      0      0     ",
-      "26": "ref                 2      1      0     ",
-      "27": "content             2      -      -     ",
+      "00": "int                 1      -      0     # 0",
+      "01": "assign              0      1      0     ",
+      "02": "json                1      0      0     ",
+      "03": "ref                 2      1      0     ",
+      "04": "json_open           3      2      23    ",
+      "05": "json                4      5      0     ",
+      "06": "ref                 5      4      0     ",
+      "07": "json_open           6      5      19    ",
+      "08": "ref                 7      0      0     ",
+      "09": "json_read           8      3      0     ",
+      "10": "push                8      0      0     ",
+      "11": "call                8      -      1     # public.int()",
+      "12": "json_read           9      6      0     ",
+      "13": "push                9      0      0     ",
+      "14": "call                9      -      1     # public.int()",
+      "15": "addii               10     8      9     ",
+      "16": "addii               8      7      10    ",
+      "17": "assign              0      8      0     ",
+      "18": "json_next           6      8      0     ",
+      "19": "free                6      0      0     ",
+      "20": "free                5      0      0     ",
+      "21": "free                4      0      0     ",
+      "22": "json_next           3      5      0     ",
+      "23": "free                3      0      0     ",
+      "24": "free                2      0      0     ",
+      "25": "free                1      0      0     ",
+      "26": "ref                 1      0      0     ",
+      "27": "content             1      -      -     ",
       "28": "ret                 0      0      0     "
     }
   },
   "access": []
 }]
-n := 0; for i in select [1,2,3] as i do for j in select [1,2,3] as j do n := n + i.i::int + j.j::int; end; end; select n
+declare n int; n := 0; for i in select [1,2,3] as i do for j in select [1,2,3] as j do n := n + i.i::int + j.j::int; end; end; select n
 [36]
 # test: for for for
-n := 0; for i in select [1,2,3] do for j in select [1,2,3] do for k in select [1,2,3] do n := n + 1; end; end; end; select n
+declare n int; n := 0; for i in select [1,2,3] do for j in select [1,2,3] do for k in select [1,2,3] do n := n + 1; end; end; end; select n
 [27]
-n := 0; for i in select [1,2,3] as i do for j in select [1,2,3] as j do for k in select [1,2,3] as k do n := n + i.i::int + j.j::int + k.k::int; end; end; end; select n
+declare n int; n := 0; for i in select [1,2,3] as i do for j in select [1,2,3] as j do for k in select [1,2,3] as k do n := n + i.i::int + j.j::int + k.k::int; end; end; end; select n
 [162]
 # test: for in select
 create table test (id int primary key)
 insert into test values (1), (2), (3)
-explain n := 0; for i in select * from test do n := n + 1; end; select n
+explain declare n int; n := 0; for i in select * from test do n := n + 1; end; select n
 [{
   "bytecode": {
     "frontend": {
-      "00": "int                 0      -      0     # 0",
-      "01": "assign              1      0      0     ",
-      "02": "union               2      0      0     ",
-      "03": "send_all            0      -      2     # public.test (last)",
-      "04": "union_recv          2      0      0     ",
-      "05": "union_set           2      0      -1    ",
-      "06": "ref                 3      2      0     ",
-      "07": "store_open          4      3      13    ",
-      "08": "ref                 5      1      0     ",
-      "09": "int                 6      -      0     # 1",
-      "10": "addii               7      5      6     ",
-      "11": "assign              1      7      0     ",
-      "12": "store_next          4      8      0     ",
-      "13": "free                4      0      0     ",
-      "14": "free                3      0      0     ",
-      "15": "free                2      0      0     ",
-      "16": "ref                 2      1      0     ",
-      "17": "content             2      -      -     ",
+      "00": "int                 1      -      0     # 0",
+      "01": "assign              0      1      0     ",
+      "02": "union               1      0      0     ",
+      "03": "send_all            0      -      1     # public.test (last)",
+      "04": "union_recv          1      0      0     ",
+      "05": "union_set           1      0      -1    ",
+      "06": "ref                 2      1      0     ",
+      "07": "store_open          3      2      13    ",
+      "08": "ref                 4      0      0     ",
+      "09": "int                 5      -      0     # 1",
+      "10": "addii               6      4      5     ",
+      "11": "assign              0      6      0     ",
+      "12": "store_next          3      8      0     ",
+      "13": "free                3      0      0     ",
+      "14": "free                2      0      0     ",
+      "15": "free                1      0      0     ",
+      "16": "ref                 1      0      0     ",
+      "17": "content             1      -      -     ",
       "18": "ret                 0      0      0     "
     },
     "backend": {
-      "00": "set                 2      1      0     ",
-      "01": "table_open_part     3      0      6     # public.test (primary)",
-      "02": "table_readi32       4      3      0     ",
-      "03": "push                4      0      0     ",
-      "04": "set_add             2      0      0     ",
-      "05": "table_next          3      2      0     ",
-      "06": "free                3      0      0     ",
-      "07": "result              2      0      0     ",
+      "00": "set                 1      1      0     ",
+      "01": "table_open_part     2      0      6     # public.test (primary)",
+      "02": "table_readi32       3      2      0     ",
+      "03": "push                3      0      0     ",
+      "04": "set_add             1      0      0     ",
+      "05": "table_next          2      2      0     ",
+      "06": "free                2      0      0     ",
+      "07": "result              1      0      0     ",
       "08": "ret                 0      0      0     "
     }
   },
   "access": [["public.test", "ro"]]
 }]
-n := 0; for i in select * from test do n := n + 1; end; select n
+declare n int; n := 0; for i in select * from test do n := n + 1; end; select n
 [3]
-n := 0; for i in select * from test do n := n + i.id; end; select n
+declare n int; n := 0; for i in select * from test do n := n + i.id; end; select n
 [6]
 drop table test
 # test: for in select for int select
 create table test (id int primary key)
 insert into test values (1), (2), (3)
-explain n := 0; for i in select * from test do  for j in select * from test do n := n + 1; end; end; select n
+explain declare n int; n := 0; for i in select * from test do  for j in select * from test do n := n + 1; end; end; select n
 [{
   "bytecode": {
     "frontend": {
-      "00": "int                 0      -      0     # 0",
-      "01": "assign              1      0      0     ",
-      "02": "union               2      0      0     ",
-      "03": "send_all            0      -      2     # public.test",
-      "04": "union_recv          2      0      0     ",
-      "05": "union_set           2      0      -1    ",
-      "06": "ref                 3      2      0     ",
-      "07": "store_open          4      3      23    ",
-      "08": "union               5      0      0     ",
-      "09": "send_all            9      -      5     # public.test",
-      "10": "union_recv          5      0      0     ",
-      "11": "union_set           5      0      -1    ",
-      "12": "ref                 6      5      0     ",
-      "13": "store_open          7      6      19    ",
-      "14": "ref                 8      1      0     ",
-      "15": "int                 9      -      0     # 1",
-      "16": "addii               10     8      9     ",
-      "17": "assign              1      10     0     ",
-      "18": "store_next          7      14     0     ",
-      "19": "free                7      0      0     ",
-      "20": "free                6      0      0     ",
-      "21": "free                5      0      0     ",
-      "22": "store_next          4      8      0     ",
-      "23": "free                4      0      0     ",
-      "24": "free                3      0      0     ",
-      "25": "free                2      0      0     ",
+      "00": "int                 1      -      0     # 0",
+      "01": "assign              0      1      0     ",
+      "02": "union               1      0      0     ",
+      "03": "send_all            0      -      1     # public.test",
+      "04": "union_recv          1      0      0     ",
+      "05": "union_set           1      0      -1    ",
+      "06": "ref                 2      1      0     ",
+      "07": "store_open          3      2      23    ",
+      "08": "union               4      0      0     ",
+      "09": "send_all            9      -      4     # public.test",
+      "10": "union_recv          4      0      0     ",
+      "11": "union_set           4      0      -1    ",
+      "12": "ref                 5      4      0     ",
+      "13": "store_open          6      5      19    ",
+      "14": "ref                 7      0      0     ",
+      "15": "int                 8      -      0     # 1",
+      "16": "addii               9      7      8     ",
+      "17": "assign              0      9      0     ",
+      "18": "store_next          6      14     0     ",
+      "19": "free                6      0      0     ",
+      "20": "free                5      0      0     ",
+      "21": "free                4      0      0     ",
+      "22": "store_next          3      8      0     ",
+      "23": "free                3      0      0     ",
+      "24": "free                2      0      0     ",
+      "25": "free                1      0      0     ",
       "26": "close               0      0      0     ",
-      "27": "ref                 2      1      0     ",
-      "28": "content             2      -      -     ",
+      "27": "ref                 1      0      0     ",
+      "28": "content             1      -      -     ",
       "29": "ret                 0      0      0     "
     },
     "backend": {
-      "00": "set                 2      1      0     ",
-      "01": "table_open_part     3      0      6     # public.test (primary)",
-      "02": "table_readi32       4      3      0     ",
-      "03": "push                4      0      0     ",
-      "04": "set_add             2      0      0     ",
-      "05": "table_next          3      2      0     ",
-      "06": "free                3      0      0     ",
-      "07": "result              2      0      0     ",
+      "00": "set                 1      1      0     ",
+      "01": "table_open_part     2      0      6     # public.test (primary)",
+      "02": "table_readi32       3      2      0     ",
+      "03": "push                3      0      0     ",
+      "04": "set_add             1      0      0     ",
+      "05": "table_next          2      2      0     ",
+      "06": "free                2      0      0     ",
+      "07": "result              1      0      0     ",
       "08": "ret                 0      0      0     ",
-      "09": "set                 5      1      0     ",
-      "10": "table_open_part     6      20     15    # public.test (primary)",
-      "11": "table_readi32       7      6      0     ",
-      "12": "push                7      0      0     ",
-      "13": "set_add             5      0      0     ",
-      "14": "table_next          6      11     0     ",
-      "15": "free                6      0      0     ",
-      "16": "result              5      0      0     ",
+      "09": "set                 4      1      0     ",
+      "10": "table_open_part     5      20     15    # public.test (primary)",
+      "11": "table_readi32       6      5      0     ",
+      "12": "push                6      0      0     ",
+      "13": "set_add             4      0      0     ",
+      "14": "table_next          5      11     0     ",
+      "15": "free                5      0      0     ",
+      "16": "result              4      0      0     ",
       "17": "ret                 0      0      0     "
     }
   },
   "access": [["public.test", "ro"]]
 }]
-n := 0; for i in select * from test do  for j in select * from test do n := n + 1; end; end; select n
+declare n int; n := 0; for i in select * from test do  for j in select * from test do n := n + 1; end; end; select n
 [9]
-n := 0; for i in select * from test do  for j in select * from test do n := n + i.id + j.id; end; end; select n
+declare n int; n := 0; for i in select * from test do  for j in select * from test do n := n + i.id + j.id; end; end; select n
 [36]
 drop table test
 # test: for .. select
 create table test (id int primary key)
 insert into test values (1), (2), (3)
-explain total := 0; for i in select [1,2,3] do n := select count(id) from test; total := total + n; end; select total;
+explain declare total int; n int; total := 0; for i in select [1,2,3] do n := select count(id) from test; total := total + n; end; select total;
 [{
   "bytecode": {
     "frontend": {
-      "00": "int                 0      -      0     # 0",
-      "01": "assign              1      0      0     ",
+      "00": "int                 2      -      0     # 0",
+      "01": "assign              0      2      0     ",
       "02": "json                2      0      0     ",
       "03": "ref                 3      2      0     ",
       "04": "json_open           4      3      24    ",
@@ -232,17 +232,17 @@ explain total := 0; for i in select [1,2,3] do n := select count(id) from test; 
       "15": "store_next          7      12     0     ",
       "16": "free                7      0      0     ",
       "17": "free                5      0      0     ",
-      "18": "assign              5      6      0     ",
-      "19": "ref                 7      1      0     ",
-      "20": "ref                 8      5      0     ",
-      "21": "addii               9      7      8     ",
-      "22": "assign              1      9      0     ",
+      "18": "assign              1      6      0     ",
+      "19": "ref                 5      0      0     ",
+      "20": "ref                 6      1      0     ",
+      "21": "addii               7      5      6     ",
+      "22": "assign              0      7      0     ",
       "23": "json_next           4      5      0     ",
       "24": "free                4      0      0     ",
       "25": "free                3      0      0     ",
       "26": "free                2      0      0     ",
       "27": "close               0      0      0     ",
-      "28": "ref                 2      1      0     ",
+      "28": "ref                 2      0      0     ",
       "29": "content             2      -      -     ",
       "30": "ret                 0      0      0     "
     },
@@ -270,55 +270,55 @@ explain total := 0; for i in select [1,2,3] do n := select count(id) from test; 
   },
   "access": [["public.test", "ro"]]
 }]
-total := 0; for i in select [1,2,3] do n := select count(id) from test; total := total + n; end; select total;
+declare total int; n int; total := 0; for i in select [1,2,3] do n := select count(id) from test; total := total + n; end; select total;
 [9]
 drop table test
 # test: for .. returning
 create table test (id int primary key, data int)
 insert into test values (1, 0), (2, 0), (3, 0)
-explain n := 0; for i in update test set data = id returning id do n := n + i.id; end; select n
+explain declare n int; n := 0; for i in update test set data = id returning id do n := n + i.id; end; select n
 [{
   "bytecode": {
     "frontend": {
-      "00": "int                 0      -      0     # 0",
-      "01": "assign              1      0      0     ",
-      "02": "union               2      0      0     ",
-      "03": "send_all            0      -      2     # public.test (last)",
-      "04": "union_recv          2      0      0     ",
-      "05": "ref                 3      2      0     ",
-      "06": "store_open          4      3      12    ",
-      "07": "ref                 5      1      0     ",
-      "08": "store_read          6      4      0     ",
-      "09": "addii               7      5      6     ",
-      "10": "assign              1      7      0     ",
-      "11": "store_next          4      7      0     ",
-      "12": "free                4      0      0     ",
-      "13": "free                3      0      0     ",
-      "14": "free                2      0      0     ",
-      "15": "ref                 2      1      0     ",
-      "16": "content             2      -      -     ",
+      "00": "int                 1      -      0     # 0",
+      "01": "assign              0      1      0     ",
+      "02": "union               1      0      0     ",
+      "03": "send_all            0      -      1     # public.test (last)",
+      "04": "union_recv          1      0      0     ",
+      "05": "ref                 2      1      0     ",
+      "06": "store_open          3      2      12    ",
+      "07": "ref                 4      0      0     ",
+      "08": "store_read          5      3      0     ",
+      "09": "addii               6      4      5     ",
+      "10": "assign              0      6      0     ",
+      "11": "store_next          3      7      0     ",
+      "12": "free                3      0      0     ",
+      "13": "free                2      0      0     ",
+      "14": "free                1      0      0     ",
+      "15": "ref                 1      0      0     ",
+      "16": "content             1      -      -     ",
       "17": "ret                 0      0      0     "
     },
     "backend": {
-      "00": "set                 2      1      0     ",
-      "01": "table_open_part     3      0      11    # public.test (primary)",
-      "02": "int                 4      -      0     # 1",
-      "03": "push                4      0      0     ",
-      "04": "table_readi32       4      3      0     ",
-      "05": "push                4      0      0     ",
-      "06": "update              3      1      0     ",
-      "07": "table_readi32       4      3      0     ",
-      "08": "push                4      0      0     ",
-      "09": "set_add             2      0      0     ",
-      "10": "table_next          3      2      0     ",
-      "11": "free                3      0      0     ",
-      "12": "result              2      0      0     ",
+      "00": "set                 1      1      0     ",
+      "01": "table_open_part     2      0      11    # public.test (primary)",
+      "02": "int                 3      -      0     # 1",
+      "03": "push                3      0      0     ",
+      "04": "table_readi32       3      2      0     ",
+      "05": "push                3      0      0     ",
+      "06": "update              2      1      0     ",
+      "07": "table_readi32       3      2      0     ",
+      "08": "push                3      0      0     ",
+      "09": "set_add             1      0      0     ",
+      "10": "table_next          2      2      0     ",
+      "11": "free                2      0      0     ",
+      "12": "result              1      0      0     ",
       "13": "ret                 0      0      0     "
     }
   },
   "access": [["public.test", "rw"]]
 }]
-n := 0; for i in update test set data = id returning id do n := n + i.id; end; select n
+declare n int; n := 0; for i in update test set data = id returning id do n := n + i.id; end; select n
 [6]
 drop table test
 # test: for .. upsert

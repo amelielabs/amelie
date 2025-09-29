@@ -86,4 +86,5 @@
 #include "parser/parse_import.h"
 
 // parse
+#include "parser/parse_declare.h"
 #include "parser/parse.h"

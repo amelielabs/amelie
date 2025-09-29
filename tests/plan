@@ -93,7 +93,7 @@ test all
 test lambda
 test limits
 test format
-test var
+test declare
 test if
 test for
 

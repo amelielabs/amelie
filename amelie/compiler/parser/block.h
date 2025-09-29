@@ -71,15 +71,6 @@ block_var_find(Block* self, Str* name)
 	return NULL;
 }
 
-static inline Var*
-block_var_add(Block* self, Str* name)
-{
-	auto var = block_var_find(self, name);
-	if (var)
-		return var;
-	return vars_add(&self->vars, name);
-}
-
 static inline Target*
 block_target_find(Targets* self, Str* name)
 {
