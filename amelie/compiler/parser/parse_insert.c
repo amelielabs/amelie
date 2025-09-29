@@ -175,10 +175,10 @@ parse_generated(Stmt* self)
 	// create a target to iterate inserted values to create new rows
 	// using the generated columns
 	auto target = target_allocate();
-	target->type         = TARGET_VALUES;
-	target->ast          = targets_outer(&stmt->targets)->ast;
-	target->from_columns = targets_outer(&stmt->targets)->from_columns;
-	target->name         = table->config->name;
+	target->type    = TARGET_VALUES;
+	target->ast     = targets_outer(&stmt->targets)->ast;
+	target->columns = targets_outer(&stmt->targets)->columns;
+	target->name    = table->config->name;
 	targets_add(&stmt->targets_generated, target);
 
 	// parse generated columns expressions
@@ -239,7 +239,7 @@ parse_insert(Stmt* self)
 	if (! target_is_table(target))
 		stmt_error(self, into, "table name expected");
 	auto table   = target->from_table;
-	auto columns = target->from_columns;
+	auto columns = target->columns;
 
 	// prepare values
 	stmt->values = set_cache_create(self->parser->values_cache);

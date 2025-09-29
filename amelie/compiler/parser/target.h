@@ -40,16 +40,21 @@ struct Target
 	TargetType   type;
 	Str          name;
 	Ast*         ast;
+	// target src
+	union {
+		struct {
+			AccessType   from_access;
+			Table*       from_table;
+			IndexConfig* from_index;
+			bool         from_heap;
+		};
+		Ast*     from_select;
+		AstList* from_group_by;
+		Stmt*    from_cte;
+		Ast*     from_function;
+	};
 	// target
-	AccessType   from_access;
-	Table*       from_table;
-	IndexConfig* from_index;
-	bool         from_heap;
-	Ast*         from_select;
-	AstList*     from_group_by;
-	Stmt*        from_cte;
-	Columns*     from_columns;
-	Ast*         from_function;
+	Columns*     columns;
 	int          r;
 	int          rcursor;
 	// target path
@@ -76,8 +81,8 @@ target_allocate(void)
 	self->from_select   = NULL;
 	self->from_group_by = NULL;
 	self->from_cte      = NULL;
-	self->from_columns  = NULL;
 	self->from_function = NULL;
+	self->columns       = NULL;
 	self->r             = -1;
 	self->rcursor       = -1;
 	self->path          = NULL;

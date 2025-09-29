@@ -160,7 +160,7 @@ static inline void
 returning_add_target(Returning* self, Target* target, Ast* star)
 {
 	// import all available columns into the expression list
-	Columns* columns = target->from_columns;
+	auto columns = target->columns;
 
 	// use CTE arguments, if they are defined
 	auto cte = target->from_cte;

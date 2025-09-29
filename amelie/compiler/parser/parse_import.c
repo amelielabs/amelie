@@ -267,11 +267,11 @@ parse_import(Parser* self, Program* program, Str* str, Str* uri,
 	auto table   = endpoint.table;
 	auto columns = table_columns(table);
 	auto target  = target_allocate();
-	target->type         = TARGET_TABLE;
-	target->ast          = stmt->ast;
-	target->from_access  = ACCESS_RW;
-	target->from_table   = table;
-	target->from_columns = columns;
+	target->type        = TARGET_TABLE;
+	target->ast         = stmt->ast;
+	target->from_access = ACCESS_RW;
+	target->from_table  = table;
+	target->columns     = columns;
 	str_set_str(&target->name, &table->config->name);
 	targets_add(&insert->targets, target);
 	access_add(&self->program->access, &table->rel, ACCESS_RW);

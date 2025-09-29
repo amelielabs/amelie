@@ -54,10 +54,10 @@ parse_from_target(Stmt* self, Targets* targets, AccessType access, bool subquery
 			{
 				select = parse_select(self, targets->outer, true);
 				stmt_expect(self, ')');
-				target->type         = TARGET_SELECT;
-				target->ast          = ast;
-				target->from_select  = &select->ast;
-				target->from_columns = &select->ret.columns;
+				target->type        = TARGET_SELECT;
+				target->ast         = ast;
+				target->from_select = &select->ast;
+				target->columns     = &select->ret.columns;
 			} else
 			{
 				// rewrite FROM (SELECT) as CTE statement (this can recurse)
@@ -72,10 +72,10 @@ parse_from_target(Stmt* self, Targets* targets, AccessType access, bool subquery
 				stmt->cte->columns = &select->ret.columns;
 				parse_select_resolve(stmt);
 
-				target->type         = TARGET_CTE;
-				target->ast          = ast;
-				target->from_cte     = stmt;
-				target->from_columns = stmt->cte->columns;
+				target->type     = TARGET_CTE;
+				target->ast      = ast;
+				target->from_cte = stmt;
+				target->columns  = stmt->cte->columns;
 			}
 			select->ast.pos_start = ast->pos_start;
 			select->ast.pos_end   = ast->pos_end;
@@ -100,7 +100,7 @@ parse_from_target(Stmt* self, Targets* targets, AccessType access, bool subquery
 			select->ast.pos_start = target->ast->pos_start;
 			select->ast.pos_end   = target->ast->pos_end;
 			ast_list_add(&self->select_list, &select->ast);
-			target->from_columns = &select->ret.columns;
+			target->columns = &select->ret.columns;
 		}
 		return target;
 	}
@@ -139,7 +139,7 @@ parse_from_target(Stmt* self, Targets* targets, AccessType access, bool subquery
 		select->ast.pos_start = target->ast->pos_start;
 		select->ast.pos_end   = target->ast->pos_end;
 		ast_list_add(&self->select_list, &select->ast);
-		target->from_columns = &select->ret.columns;
+		target->columns = &select->ret.columns;
 		str_set_str(&target->name, &func->fn->name);
 		return target;
 	}
@@ -150,9 +150,9 @@ parse_from_target(Stmt* self, Targets* targets, AccessType access, bool subquery
 	{
 		if (cte->stmt == self)
 			stmt_error(self, expr, "recursive CTE are not supported");
-		target->type         = TARGET_CTE;
-		target->from_cte     = cte->stmt;
-		target->from_columns = cte->columns;
+		target->type     = TARGET_CTE;
+		target->from_cte = cte->stmt;
+		target->columns  = cte->columns;
 		str_set_str(&target->name, cte->name);
 		return target;
 	}
@@ -162,9 +162,9 @@ parse_from_target(Stmt* self, Targets* targets, AccessType access, bool subquery
 	if (table)
 	{
 		target->type = TARGET_TABLE;
-		target->from_access  = access;
-		target->from_table   = table;
-		target->from_columns = &table->config->columns;
+		target->from_access = access;
+		target->from_table  = table;
+		target->columns     = &table->config->columns;
 		str_set_str(&target->name, &table->config->name);
 
 		access_add(&self->parser->program->access, &table->rel, access);
@@ -210,13 +210,13 @@ parse_from_add(Stmt* self, Targets* targets, AccessType access, bool subquery)
 		auto column = column_allocate();
 		column_set_name(column, &target->name);
 		column_set_type(column, fn->type, type_sizeof(fn->type));
-		columns_add(target->from_columns, column);
+		columns_add(target->columns, column);
 	} else
 	if (target->type == TARGET_EXPR)
 	{
 		auto column = column_allocate();
 		column_set_name(column, &target->name);
-		columns_add(target->from_columns, column);
+		columns_add(target->columns, column);
 	}
 
 	// add target

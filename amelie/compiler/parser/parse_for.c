@@ -87,9 +87,9 @@ parse_for(Stmt* self)
 	cte->cte->columns = &ret->columns;
 
 	auto target = target_allocate();
-	target->type         = TARGET_CTE;
-	target->from_cte     = cte;
-	target->from_columns = &ret->columns;
+	target->type     = TARGET_CTE;
+	target->from_cte = cte;
+	target->columns  = &ret->columns;
 	str_set_str(&target->name, &name->string);
 	targets_add(&stmt->targets, target);
 

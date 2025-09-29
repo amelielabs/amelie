@@ -249,11 +249,11 @@ parse_select(Stmt* self, Targets* outer, bool subquery)
 
 		// create group by target to scan agg set
 		auto target = target_allocate();
-		target->type = TARGET_GROUP_BY;
-		target->ast  = targets_outer(&select->targets)->ast;
-		target->name = targets_outer(&select->targets)->name;
+		target->type          = TARGET_GROUP_BY;
+		target->ast           = targets_outer(&select->targets)->ast;
+		target->name          = targets_outer(&select->targets)->name;
 		target->from_group_by = &select->expr_group_by;
-		target->from_columns  = &select->targets_group_columns;
+		target->columns       = &select->targets_group_columns;
 		targets_add(&select->targets_group, target);
 
 		// group by target columns will be created

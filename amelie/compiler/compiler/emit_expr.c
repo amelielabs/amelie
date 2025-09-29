@@ -100,11 +100,11 @@ emit_column(Compiler* self, Target* target, Ast* ast,
 			// find column in the CTE arguments list, redirect to the CTE statement
 			auto arg = columns_find(&cte->cte->args, name);
 			if (arg)
-				column = columns_find_by(target->from_columns, arg->order);
+				column = columns_find_by(target->columns, arg->order);
 		} else
 		{
 			// find unique column name in the target
-			column = columns_find_noconflict(target->from_columns, name, &column_conflict);
+			column = columns_find_noconflict(target->columns, name, &column_conflict);
 		}
 
 		if (!column && target->type != TARGET_FUNCTION)
