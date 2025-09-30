@@ -42,8 +42,6 @@
 void
 parser_init(Parser* self, Local* local, SetCache* values_cache)
 {
-	self->begin        = false;
-	self->commit       = false;
 	self->program      = NULL;
 	self->values_cache = values_cache;
 	self->local        = local;

@@ -146,7 +146,7 @@ cli_cmd_client_main(Client* client, Console* cons)
 
 		// pipe mode
 
-		// split commands using ; and begin/commit stmts
+		// split commands using ; and begin/end stmts
 		Str content;
 		separator_write(&sep, &input);
 		while (separator_read(&sep, &content))

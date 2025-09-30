@@ -93,6 +93,7 @@ test all
 test lambda
 test limits
 test format
+test begin_end
 test declare
 test if
 test for
@@ -122,7 +123,6 @@ test hash
 # executor
 directory executor
 group executor
-test begin_commit
 test abort
 
 # backend

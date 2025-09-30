@@ -1,0 +1,67 @@
+open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "127.0.0.1", "port": 3485 }], "backends": 3
+connect E0 S0 127.0.0.1:3485
+# test: begin
+begin
+{"msg": "begin ⟵ END expected"}
+begin;
+{"msg": "begin; ⟵ END expected"}
+begin;;
+{"msg": "begin;; ⟵ END expected"}
+begin begin
+{"msg": "begin begin ⟵ unsupported statement"}
+end
+{"msg": "❰end❱ ⟵ unexpected token at the end of transaction"}
+# test: commit
+commit
+{"msg": "commit ⟵ unsupported statement"}
+begin commit
+{"msg": "begin commit ⟵ unsupported statement"}
+# test: begin end
+begin; select 1
+{"msg": "begin; select 1 ⟵ END expected"}
+begin end
+begin select 1 end
+{"msg": "begin select 1 ❰end❱ ⟵ ; expected"}
+begin; end
+explain begin; end
+{"msg": "❰explain❱ ⟵ EXPLAIN without command"}
+explain begin; select 1; end
+[{
+  "bytecode": {
+    "frontend": {
+      "00": "int                 0      -      0     # 1",
+      "01": "content             0      -      -     ",
+      "02": "ret                 0      0      0     "
+    }
+  },
+  "access": []
+}]
+begin; select 1; end;
+[1]
+begin; select 1; end;;
+{"msg": "begin; select 1; end;❰;❱ ⟵ unexpected token at the end of transaction"}
+begin; select 1; end;;;
+{"msg": "begin; select 1; end;❰;❱ ⟵ unexpected token at the end of transaction"}
+begin; select 1; end end
+{"msg": "begin; select 1; end ❰end❱ ⟵ unexpected token at the end of transaction"}
+begin; select 1; end; begin
+{"msg": "begin; select 1; end; ❰begin❱ ⟵ unexpected token at the end of transaction"}
+begin; select 1; end; select 1
+{"msg": "begin; select 1; end; ❰select❱ ⟵ unexpected token at the end of transaction"}
+# test: begin end last stmt
+explain begin; select 1; select 2; end;
+[{
+  "bytecode": {
+    "frontend": {
+      "00": "int                 0      -      0     # 1",
+      "01": "int                 1      -      0     # 2",
+      "02": "content             1      -      -     ",
+      "03": "ret                 0      0      0     "
+    }
+  },
+  "access": []
+}]
+begin; select 1; select 2; end;
+[2]
+disconnect S0
+close E0

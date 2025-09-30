@@ -45,9 +45,7 @@ parse_declare_columns(Parser* self, Var* var)
 	auto lex = &self->lex;
 
 	// (
-	auto ast = lex_next(lex);
-	if  (ast->id != '(')
-		lex_error_expect(lex, ast, '(');
+	lex_expect(lex,'(');
 
 	for (;;)
 	{
@@ -62,9 +60,7 @@ parse_declare_columns(Parser* self, Var* var)
 			lex_error(lex, name, "column redefined");
 
 		// type
-		lex_set_keywords(lex, false);
-		ast = lex_next(lex);
-		lex_set_keywords(lex, true);
+		auto ast = lex_next_shadow(lex);
 		if (ast->id != KNAME)
 			lex_error(lex, ast, "unrecognized data type");
 
@@ -80,14 +76,11 @@ parse_declare_columns(Parser* self, Var* var)
 		columns_add(&var->columns, column);
 
 		// ,
-		ast = lex_next(lex);
-		if (ast->id == ',')
+		if (lex_if(lex, ','))
 			continue;
 
 		// )
-		if (ast->id != ')')
-			lex_error_expect(lex, ast, ')');
-
+		lex_expect(lex,')');
 		break;
 	}
 }
@@ -98,9 +91,7 @@ parse_declare_var(Parser* self, Var* var)
 	auto lex = &self->lex;
 
 	// type
-	lex_set_keywords(lex, false);
-	auto ast = lex_next(lex);
-	lex_set_keywords(lex, true);
+	auto ast = lex_next_shadow(lex);
 	if (ast->id != KNAME)
 		lex_error(lex, ast, "unrecognized data type");
 
@@ -148,8 +139,6 @@ parse_declare(Parser* self, Vars* vars)
 		parse_declare_var(self, var);
 
 		// ;
-		auto ast = lex_next(lex);
-		if (ast->id != ';')
-			lex_error_expect(lex, ast, ';');
+		lex_expect(lex, ';');
 	}
 }

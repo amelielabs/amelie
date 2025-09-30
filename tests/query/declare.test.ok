@@ -12,8 +12,8 @@ declare a int
 declare a int;
 explain declare a int;
 {"msg": "❰explain❱ ⟵ EXPLAIN without command"}
-# test: declare begin/commit
-explain declare a int; begin; select a; commit;
+# test: declare begin/end
+explain declare a int; begin; select a; end;
 [{
   "bytecode": {
     "frontend": {
@@ -24,7 +24,7 @@ explain declare a int; begin; select a; commit;
   },
   "access": []
 }]
-declare a int; begin; select a; commit;
+declare a int; begin; select a; end;
 [null]
 # test: declare default
 explain declare a int; select a

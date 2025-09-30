@@ -15,8 +15,6 @@ typedef struct Parser Parser;
 
 struct Parser
 {
-	bool      begin;
-	bool      commit;
 	Blocks    blocks;
 	Program*  program;
 	SetCache* values_cache;

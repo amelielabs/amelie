@@ -31,6 +31,15 @@ void lex_error(Lex*, Ast*, const char*);
 void lex_error_expect(Lex*, Ast*, int);
 Ast* lex_next(Lex*);
 
+static inline Ast*
+lex_next_shadow(Lex* self)
+{
+	lex_set_keywords(self, false);
+	auto ast = lex_next(self);
+	lex_set_keywords(self, true);
+	return ast;
+}
+
 static inline void
 lex_push(Lex* self, Ast* ast)
 {
@@ -46,5 +55,15 @@ lex_if(Lex* self, int id)
 	if (ast->id == id)
 		return ast;
 	lex_push(self, ast);
+	return NULL;
+}
+
+hot static inline Ast*
+lex_expect(Lex* self, int id)
+{
+	auto ast = lex_next(self);
+	if (ast->id == id)
+		return ast;
+	lex_error_expect(self, ast, id);
 	return NULL;
 }

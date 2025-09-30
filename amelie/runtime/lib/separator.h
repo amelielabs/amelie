@@ -17,7 +17,7 @@ enum
 {
 	SEPARATOR_EOF,
 	SEPARATOR_BEGIN,
-	SEPARATOR_COMMIT,
+	SEPARATOR_END,
 	SEPARATOR_MATCH
 };
 
@@ -106,7 +106,7 @@ separator_next(Separator* self)
 	if (separator_next_ws(self))
 		return SEPARATOR_EOF;
 
-	// [BEGIN | COMMIT]
+	// [BEGIN | END]
 	int separator = SEPARATOR_MATCH;
 	if (*self->pos == 'b' || *self->pos == 'B')
 	{
@@ -117,12 +117,12 @@ separator_next(Separator* self)
 		}
 		goto eol;
 	} else
-	if (*self->pos == 'c' || *self->pos == 'C')
+	if (*self->pos == 'e' || *self->pos == 'E')
 	{
-		if (separator_match(self, "commit", 6))
+		if (separator_match(self, "end", 3))
 		{
-			self->pos += 6;
-			separator = SEPARATOR_COMMIT;
+			self->pos += 3;
+			separator = SEPARATOR_END;
 		}
 		goto eol;
 	}
@@ -146,17 +146,17 @@ separator_read(Separator* self, Str* block)
 	//
 	// request for more data, if ';' is not matched.
 	//
-	// separate [EXPLAIN/PROFILE] BEGIN/COMMIT statements and return
+	// separate [EXPLAIN/PROFILE] BEGIN/END statements and return
 	// as a single multi-stmt transaction.
 	//
-	// request for more data, if COMMIT is not matched.
+	// request for more data, if END is not matched.
 	//
 	auto buf = &self->buf;
 	if (buf_empty(buf))
 		return false;
 
 	// stmt;  [stmt; ...]
-	// begin; [stmt; ...] commit;
+	// begin; [stmt; ...] end;
 	auto start = buf_cstr(&self->buf);
 	self->pos  = start;
 	self->end  = start + buf_size(buf);
@@ -176,7 +176,7 @@ separator_read(Separator* self, Str* block)
 		// ;
 		case SEPARATOR_MATCH:
 		{
-			// wait for COMMIT
+			// wait for END
 			if (begin)
 				continue;
 			break;
@@ -189,8 +189,8 @@ separator_read(Separator* self, Str* block)
 			begin = true;
 			continue;
 		}
-		// commit
-		case SEPARATOR_COMMIT:
+		// end
+		case SEPARATOR_END:
 			break;
 		// eof (request more data)
 		case SEPARATOR_EOF:

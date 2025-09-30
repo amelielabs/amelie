@@ -1,0 +1,40 @@
+#
+
+open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "127.0.0.1", "port": 3485 }], "backends": 3
+connect E0 S0 127.0.0.1:3485
+
+# test: begin
+begin
+begin;
+begin;;
+
+begin begin
+end
+
+# test: commit
+commit
+begin commit
+
+# test: begin end
+begin; select 1
+
+begin end
+begin select 1 end
+
+begin; end
+explain begin; end
+explain begin; select 1; end
+
+begin; select 1; end;
+begin; select 1; end;;
+begin; select 1; end;;;
+begin; select 1; end end
+begin; select 1; end; begin
+begin; select 1; end; select 1
+
+# test: begin end last stmt
+explain begin; select 1; select 2; end;
+begin; select 1; select 2; end;
+
+disconnect S0
+close E0

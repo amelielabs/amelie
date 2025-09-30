@@ -372,7 +372,7 @@ parse_stmt(Parser* self, Stmt* stmt)
 
 	case KBEGIN:
 	case KCOMMIT:
-		stmt_error(stmt, NULL, "unexpected statement");
+		stmt_error(stmt, NULL, "unsupported statement");
 		break;
 
 	case KEOF:
@@ -481,17 +481,6 @@ parse_block(Parser* self, Block* block)
 			lex_push(lex, ast);
 			break;
 		}
-
-		// [COMMIT]
-		if (ast->id == KCOMMIT)
-		{
-			if (! self->begin)
-				lex_error(lex, ast, "unexpected COMMIT");
-			self->commit = true;
-			// ;
-			lex_if(lex, ';');
-			break;
-		}
 		lex_push(lex, ast);
 
 		// name := expr/stmt
@@ -555,10 +544,8 @@ parse(Parser* self, Program* program, Str* str)
 		self->program->explain = true;
 		if (lex_if(lex, '('))
 		{
-			if (! lex_if(lex, KPROFILE))
-				lex_error_expect(lex, lex_next(lex), KPROFILE);
-			if (! lex_if(lex, ')'))
-				lex_error_expect(lex, lex_next(lex), ')');
+			lex_expect(lex, KPROFILE);
+			lex_expect(lex, ')');
 			self->program->explain = false;
 			self->program->profile = true;
 		}
@@ -572,17 +559,20 @@ parse(Parser* self, Program* program, Str* str)
 		parse_declare(self, &block->vars);
 
 	// [BEGIN]
-	self->begin = lex_if(lex, KBEGIN) != NULL;
+	auto begin = lex_if(lex, KBEGIN) != NULL;
 
 	// stmt [; stmt]
 	parse_block(self, block);
 
-	// [COMMIT]
-	auto ast = lex_next(lex);
-	if (self->begin && !self->commit)
-		lex_error(lex, ast, "COMMIT expected at the end of transaction");
+	// [END [;]]
+	if (begin)
+	{
+		lex_expect(lex, KEND);
+		lex_if(lex, ';');
+	}
 
 	// EOF
+	auto ast = lex_next(lex);
 	if (ast->id != KEOF)
 		lex_error(lex, ast, "unexpected token at the end of transaction");
 
