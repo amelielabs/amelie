@@ -190,7 +190,7 @@ explain if 1 then select 123; elsif 2 then select 321; elsif 3 then select 821; 
 }]
 if 1 then select 123; elsif 2 then select 321; elsif 3 then select 821; else select 0; end
 # test: if if
-explain declare x int; x := 0; if 1 then if 2 then x:= 2; end; end; select x
+explain declare x int := 0; if 1 then if 2 then x:= 2; end; end; select x
 [{
   "bytecode": {
     "frontend": {
@@ -215,10 +215,10 @@ explain declare x int; x := 0; if 1 then if 2 then x:= 2; end; end; select x
   },
   "access": []
 }]
-declare x int; x := 0; if 1 then if 2 then x:= 2; end; end; select x
+declare x int := 0; if 1 then if 2 then x:= 2; end; end; select x
 [2]
 # test: if if else
-explain declare x int; x := 0; if 1 then if 0 then x:= 2; else x := 3; end; end; select x
+explain declare x int := 0; if 1 then if 0 then x:= 2; else x := 3; end; end; select x
 [{
   "bytecode": {
     "frontend": {
@@ -245,10 +245,10 @@ explain declare x int; x := 0; if 1 then if 0 then x:= 2; else x := 3; end; end;
   },
   "access": []
 }]
-declare x int; x := 0; if 1 then if 0 then x:= 2; else x := 3; end; end; select x
+declare x int := 0; if 1 then if 0 then x:= 2; else x := 3; end; end; select x
 [3]
 # test: if if else else
-explain declare x int; x := 0; if 1 then if 0 then x:= 2; else x := 3; end; else x:= 4; end; select x
+explain declare x int := 0; if 1 then if 0 then x:= 2; else x := 3; end; else x:= 4; end; select x
 [{
   "bytecode": {
     "frontend": {
@@ -277,11 +277,11 @@ explain declare x int; x := 0; if 1 then if 0 then x:= 2; else x := 3; end; else
   },
   "access": []
 }]
-declare x int; x := 0; if 1 then if 0 then x:= 2; else x := 3; end; else x:= 4; end; select x
+declare x int := 0; if 1 then if 0 then x:= 2; else x := 3; end; else x:= 4; end; select x
 [3]
-declare x int; x := 0; if 0 then if 0 then x:= 2; else x := 3; end; else x:= 4; end; select x
+declare x int := 0; if 0 then if 0 then x:= 2; else x := 3; end; else x:= 4; end; select x
 [4]
-declare x int; x := 0; if 0 then if 0 then x:= 2; end; else x:= 4; end; select x
+declare x int := 0; if 0 then if 0 then x:= 2; end; else x:= 4; end; select x
 [4]
 # test: if insert
 create table test (id int primary key)
@@ -410,7 +410,7 @@ if false then; insert into test values (1); else insert into test values (2); en
 drop table test
 # test: if insert elsif insert else insert
 create table test (id int primary key)
-explain declare x int; x := 0; if x = 0 then; insert into test values (0); elsif x = 1 then insert into test values (1); else insert into test values (2); end; select * from test
+explain declare x int := 0; if x = 0 then; insert into test values (0); elsif x = 1 then insert into test values (1); else insert into test values (2); end; select * from test
 [{
   "bytecode": {
     "frontend": {
@@ -461,16 +461,16 @@ explain declare x int; x := 0; if x = 0 then; insert into test values (0); elsif
   },
   "access": [["public.test", "rw"]]
 }]
-declare x int; x := 0; if x = 0 then; insert into test values (0); elsif x = 1 then insert into test values (1); else insert into test values (2); end; select * from test
+declare x int := 0; if x = 0 then; insert into test values (0); elsif x = 1 then insert into test values (1); else insert into test values (2); end; select * from test
 [0]
-declare x int; x := 1; if x = 0 then; insert into test values (0); elsif x = 1 then insert into test values (1); else insert into test values (2); end; select * from test
+declare x int := 1; if x = 0 then; insert into test values (0); elsif x = 1 then insert into test values (1); else insert into test values (2); end; select * from test
 [0, 1]
-declare x int; x := 2; if x = 0 then; insert into test values (0); elsif x = 1 then insert into test values (1); else insert into test values (2); end; select * from test
+declare x int := 2; if x = 0 then; insert into test values (0); elsif x = 1 then insert into test values (1); else insert into test values (2); end; select * from test
 [0, 1, 2]
 drop table test
 # test: if insert returning
 create table test (id int primary key)
-explain declare x int; x := 0; if true then; x := insert into test values (123) returning *; end; select x
+explain declare x int := 0; if true then; x := insert into test values (123) returning *; end; select x
 [{
   "bytecode": {
     "frontend": {
@@ -509,13 +509,13 @@ explain declare x int; x := 0; if true then; x := insert into test values (123) 
   },
   "access": [["public.test", "rw"]]
 }]
-declare x int; x := 0; if true then; x := insert into test values (123) returning *; end; select x
+declare x int := 0; if true then; x := insert into test values (123) returning *; end; select x
 [123]
 drop table test
 # test: if select
 create table test (id int primary key)
 insert into test values (123)
-explain declare x int; x := 0; if true then x := select * from test; end; select x
+explain declare x int := 0; if true then x := select * from test; end; select x
 [{
   "bytecode": {
     "frontend": {
@@ -550,9 +550,9 @@ explain declare x int; x := 0; if true then x := select * from test; end; select
   },
   "access": [["public.test", "ro"]]
 }]
-declare x int; x := 0; if true then x := select * from test; end; select x
+declare x int := 0; if true then x := select * from test; end; select x
 [123]
-explain declare x int; x := 0; if true then x := select count(*) from test; end; select x
+explain declare x int := 0; if true then x := select count(*) from test; end; select x
 [{
   "bytecode": {
     "frontend": {
@@ -606,9 +606,9 @@ explain declare x int; x := 0; if true then x := select count(*) from test; end;
   },
   "access": [["public.test", "ro"]]
 }]
-declare x int; x := 0; if true then x := select count(*) from test; end; select x
+declare x int := 0; if true then x := select count(*) from test; end; select x
 [1]
-explain declare x int; x := 0; if false then else x := select count(*) from test; end; select x
+explain declare x int := 0; if false then else x := select count(*) from test; end; select x
 [{
   "bytecode": {
     "frontend": {
@@ -662,9 +662,9 @@ explain declare x int; x := 0; if false then else x := select count(*) from test
   },
   "access": [["public.test", "ro"]]
 }]
-declare x int; x := 0; if false then else x := select count(*) from test; end; select x
+declare x int := 0; if false then else x := select count(*) from test; end; select x
 [1]
-explain declare x int; x := 0; if false then else x := select count(*) from test; end; select 1; select x
+explain declare x int := 0; if false then else x := select count(*) from test; end; select 1; select x
 [{
   "bytecode": {
     "frontend": {
@@ -719,9 +719,9 @@ explain declare x int; x := 0; if false then else x := select count(*) from test
   },
   "access": [["public.test", "ro"]]
 }]
-declare x int; x := 0; if false then else x := select count(*) from test; end; select 1; select x
+declare x int := 0; if false then else x := select count(*) from test; end; select 1; select x
 [1]
-explain declare x int; x := 0; if false then else x := select count(*) from test; end; select * from test; select x
+explain declare x int := 0; if false then else x := select count(*) from test; end; select * from test; select x
 [{
   "bytecode": {
     "frontend": {
@@ -787,9 +787,9 @@ explain declare x int; x := 0; if false then else x := select count(*) from test
   },
   "access": [["public.test", "ro"]]
 }]
-declare x int; x := 0; if false then else x := select count(*) from test; end; select * from test; select x
+declare x int := 0; if false then else x := select count(*) from test; end; select * from test; select x
 [1]
-explain declare x int; x := 0; if true then if false then x := select * from test; end; end; select x
+explain declare x int := 0; if true then if false then x := select * from test; end; end; select x
 [{
   "bytecode": {
     "frontend": {
@@ -829,8 +829,53 @@ explain declare x int; x := 0; if true then if false then x := select * from tes
   },
   "access": [["public.test", "ro"]]
 }]
-declare x int; x := 0; if true then if false then x := select * from test; end; end; select x
+declare x int := 0; if true then if false then x := select * from test; end; end; select x
 [0]
 drop table test
+# test: if declare
+explain if true then declare x int := 10; end
+[{
+  "bytecode": {
+    "frontend": {
+      "00": "jmp                 2      0      0     ",
+      "01": "jmp                 8      0      0     ",
+      "02": "bool                0      1      0     ",
+      "03": "jntr                8      0      0     ",
+      "04": "int                 1      -      0     # 10",
+      "05": "assign              0      1      0     ",
+      "06": "free                0      0      0     ",
+      "07": "jmp                 1      0      0     ",
+      "08": "ret                 0      0      0     "
+    }
+  },
+  "access": []
+}]
+if true then declare x int := 10; end
+explain if true then declare x int := 10; else declare x int := 20; end
+[{
+  "bytecode": {
+    "frontend": {
+      "00": "jmp                 2      0      0     ",
+      "01": "jmp                 11     0      0     ",
+      "02": "bool                0      1      0     ",
+      "03": "jntr                8      0      0     ",
+      "04": "int                 1      -      0     # 10",
+      "05": "assign              0      1      0     ",
+      "06": "free                0      0      0     ",
+      "07": "jmp                 1      0      0     ",
+      "08": "int                 1      -      0     # 20",
+      "09": "assign              0      1      0     ",
+      "10": "free                0      0      0     ",
+      "11": "ret                 0      0      0     "
+    }
+  },
+  "access": []
+}]
+if true then declare x int := 10; else declare x int := 20; end
+if true then declare x int := 10; else declare x int := 20; end; select x
+{"msg": "if true then declare x int := 10; else declare x int := 20; end; select ❰x❱ ⟵ column not found"}
+# test: if declare shadow
+declare x int := 2; if true then declare x int := 10; else declare x int := 20; end; select x
+[2]
 disconnect S0
 close E0

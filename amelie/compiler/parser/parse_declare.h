@@ -11,4 +11,4 @@
 // AGPL-3.0 Licensed.
 //
 
-void parse_declare(Parser*, Vars*);
+Var* parse_declare(Parser*, Vars*);

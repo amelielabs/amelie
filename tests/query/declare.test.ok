@@ -2,8 +2,9 @@ open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "12
 connect E0 S0 127.0.0.1:3485
 # test: declare parsing
 declare
+{"msg": "declare ⟵ name expected"}
 declare 1
-{"msg": "declare 1 ⟵ unexpected statement"}
+{"msg": "declare ❰1❱ ⟵ name expected"}
 declare name
 {"msg": "declare name ⟵ unrecognized data type"}
 # test: declare
@@ -13,7 +14,9 @@ declare a int;
 explain declare a int;
 {"msg": "❰explain❱ ⟵ EXPLAIN without command"}
 # test: declare begin/end
-explain declare a int; begin; select a; end;
+declare a int; begin; select a; end;
+{"msg": "declare a int; begin❰;❱ ⟵ unsupported statement"}
+explain begin; declare a int; select a; end;
 [{
   "bytecode": {
     "frontend": {
@@ -24,7 +27,7 @@ explain declare a int; begin; select a; end;
   },
   "access": []
 }]
-declare a int; begin; select a; end;
+begin; declare a int; select a; end;
 [null]
 # test: declare default
 explain declare a int; select a
@@ -40,7 +43,7 @@ explain declare a int; select a
 }]
 declare a int; select a
 [null]
-explain declare a int; b int; select a, b
+explain declare a int; declare b int; select a, b
 [{
   "bytecode": {
     "frontend": {
@@ -56,13 +59,13 @@ explain declare a int; b int; select a, b
   },
   "access": []
 }]
-declare a int; b int; select a, b
+declare a int; declare b int; select a, b
 [[null, null]]
-declare a int; b json; select a::type, b::type
+declare a int; declare b json; select a::type, b::type
 [["null", "null"]]
 # test: declare redefine
-declare a int; a int;
-{"msg": "declare a int; ❰a❱ ⟵ variable redefined"}
+declare a int; declare a int;
+{"msg": "declare a int; declare ❰a❱ ⟵ variable redefined"}
 # test: declare null
 declare a null;
 {"msg": "declare a ❰null❱ ⟵ unrecognized data type"}
@@ -123,7 +126,7 @@ explain declare x int; x := 1; select x
   },
   "access": []
 }]
-declare x int; y int; x := 1; y := 2; select x + y
+declare x int; declare y int; x := 1; y := 2; select x + y
 [3]
 # test: := select var (json)
 declare x json; x := {"id": 48}; select x.id
@@ -229,6 +232,19 @@ drop table test
 # test: := ddl
 declare x json; x := show all;
 {"msg": "declare x json; x := show all❰;❱ ⟵ := cannot be used with utility statements"}
+# test: declare := select expr
+declare x int := select 1
+explain declare x int := select 1
+[{
+  "bytecode": {
+    "frontend": {
+      "00": "int                 1      -      0     # 1",
+      "01": "assign              0      1      0     ",
+      "02": "ret                 0      0      0     "
+    }
+  },
+  "access": []
+}]
 # test: select into (not defined)
 select 1 into x; select x
 {"msg": "select 1 into ❰x❱ ⟵ variable not found"}

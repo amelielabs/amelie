@@ -85,10 +85,13 @@ parse_declare_columns(Parser* self, Var* var)
 	}
 }
 
-hot static void
-parse_declare_var(Parser* self, Var* var)
+Var*
+parse_declare(Parser* self, Vars* vars)
 {
 	auto lex = &self->lex;
+
+	// name
+	auto name = lex_expect(lex, KNAME);
 
 	// type
 	auto ast = lex_next_shadow(lex);
@@ -103,42 +106,17 @@ parse_declare_var(Parser* self, Var* var)
 		type = type_read(&ast->string, &type_size);
 	if (type == -1)
 		lex_error(lex, ast, "unrecognized data type");
+
+	// create variable
+	auto var = vars_find(vars, &name->string);
+	if (var)
+		lex_error(lex, name, "variable redefined");
+	var = vars_add(vars, &name->string);
 	var->type = type;
 
 	// var store (column, ...)
 	if (var->type == TYPE_STORE)
 		parse_declare_columns(self, var);
-}
 
-hot void
-parse_declare(Parser* self, Vars* vars)
-{
-	// DECLARE [name type [, ...]]
-	auto lex = &self->lex;
-	for (;;)
-	{
-		// name
-		auto name = lex_if(lex, KNAME);
-		if (! name)
-			break;
-
-		// skip :=
-		auto assign = lex_if(lex, KASSIGN);
-		if (assign)
-		{
-			lex_push(lex, assign);
-			lex_push(lex, name);
-			break;
-		}
-
-		// create variable
-		auto var = vars_find(vars, &name->string);
-		if (var)
-			lex_error(lex, name, "variable redefined");
-		var = vars_add(vars, &name->string);
-		parse_declare_var(self, var);
-
-		// ;
-		lex_expect(lex, ';');
-	}
+	return var;
 }

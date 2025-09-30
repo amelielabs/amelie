@@ -43,15 +43,15 @@ explain for it in select [1,2,3] do end
   "access": []
 }]
 for it in select [1,2,3] do end
-declare n int; n := 0; for it in select [1,2,3] do n := n + 1; end; select n
+declare n int := 0; for it in select [1,2,3] do n := n + 1; end; select n
 [3]
 # test: for if
-declare n int; n := 0; for it in select [1,2,3,4] as it do if it::int % 2 = 0 then n := n + 1; end; end; select n
+declare n int := 0; for it in select [1,2,3,4] as it do if it::int % 2 = 0 then n := n + 1; end; end; select n
 [2]
 # test: for for
-declare n int; n := 0; for i in select [1,2,3] do for j in select [1,2,3] do n := n + 1; end; end; select n
+declare n int := 0; for i in select [1,2,3] do for j in select [1,2,3] do n := n + 1; end; end; select n
 [9]
-explain declare n int; n := 0; for i in select [1,2,3] as i do for j in select [1,2,3] as j do n := n + i.i::int + j.j::int; end; end; select n
+explain declare n int := 0; for i in select [1,2,3] as i do for j in select [1,2,3] as j do n := n + i.i::int + j.j::int; end; end; select n
 [{
   "bytecode": {
     "frontend": {
@@ -88,17 +88,17 @@ explain declare n int; n := 0; for i in select [1,2,3] as i do for j in select [
   },
   "access": []
 }]
-declare n int; n := 0; for i in select [1,2,3] as i do for j in select [1,2,3] as j do n := n + i.i::int + j.j::int; end; end; select n
+declare n int := 0; for i in select [1,2,3] as i do for j in select [1,2,3] as j do n := n + i.i::int + j.j::int; end; end; select n
 [36]
 # test: for for for
-declare n int; n := 0; for i in select [1,2,3] do for j in select [1,2,3] do for k in select [1,2,3] do n := n + 1; end; end; end; select n
+declare n int := 0; for i in select [1,2,3] do for j in select [1,2,3] do for k in select [1,2,3] do n := n + 1; end; end; end; select n
 [27]
-declare n int; n := 0; for i in select [1,2,3] as i do for j in select [1,2,3] as j do for k in select [1,2,3] as k do n := n + i.i::int + j.j::int + k.k::int; end; end; end; select n
+declare n int := 0; for i in select [1,2,3] as i do for j in select [1,2,3] as j do for k in select [1,2,3] as k do n := n + i.i::int + j.j::int + k.k::int; end; end; end; select n
 [162]
 # test: for in select
 create table test (id int primary key)
 insert into test values (1), (2), (3)
-explain declare n int; n := 0; for i in select * from test do n := n + 1; end; select n
+explain declare n int := 0; for i in select * from test do n := n + 1; end; select n
 [{
   "bytecode": {
     "frontend": {
@@ -136,9 +136,9 @@ explain declare n int; n := 0; for i in select * from test do n := n + 1; end; s
   },
   "access": [["public.test", "ro"]]
 }]
-declare n int; n := 0; for i in select * from test do n := n + 1; end; select n
+declare n int := 0; for i in select * from test do n := n + 1; end; select n
 [3]
-declare n int; n := 0; for i in select * from test do n := n + i.id; end; select n
+declare n int := 0; for i in select * from test do n := n + i.id; end; select n
 [6]
 drop table test
 # test: for in select for int select
@@ -202,15 +202,15 @@ explain declare n int; n := 0; for i in select * from test do  for j in select *
   },
   "access": [["public.test", "ro"]]
 }]
-declare n int; n := 0; for i in select * from test do  for j in select * from test do n := n + 1; end; end; select n
+declare n int := 0; for i in select * from test do  for j in select * from test do n := n + 1; end; end; select n
 [9]
-declare n int; n := 0; for i in select * from test do  for j in select * from test do n := n + i.id + j.id; end; end; select n
+declare n int := 0; for i in select * from test do  for j in select * from test do n := n + i.id + j.id; end; end; select n
 [36]
 drop table test
 # test: for .. select
 create table test (id int primary key)
 insert into test values (1), (2), (3)
-explain declare total int; n int; total := 0; for i in select [1,2,3] do n := select count(id) from test; total := total + n; end; select total;
+explain declare total int; declare n int; total := 0; for i in select [1,2,3] do n := select count(id) from test; total := total + n; end; select total;
 [{
   "bytecode": {
     "frontend": {
@@ -270,13 +270,13 @@ explain declare total int; n int; total := 0; for i in select [1,2,3] do n := se
   },
   "access": [["public.test", "ro"]]
 }]
-declare total int; n int; total := 0; for i in select [1,2,3] do n := select count(id) from test; total := total + n; end; select total;
+declare total int; declare n int; total := 0; for i in select [1,2,3] do n := select count(id) from test; total := total + n; end; select total;
 [9]
 drop table test
 # test: for .. returning
 create table test (id int primary key, data int)
 insert into test values (1, 0), (2, 0), (3, 0)
-explain declare n int; n := 0; for i in update test set data = id returning id do n := n + i.id; end; select n
+explain declare n int := 0; for i in update test set data = id returning id do n := n + i.id; end; select n
 [{
   "bytecode": {
     "frontend": {
@@ -318,7 +318,7 @@ explain declare n int; n := 0; for i in update test set data = id returning id d
   },
   "access": [["public.test", "rw"]]
 }]
-declare n int; n := 0; for i in update test set data = id returning id do n := n + i.id; end; select n
+declare n int := 0; for i in update test set data = id returning id do n := n + i.id; end; select n
 [6]
 drop table test
 # test: for .. upsert
