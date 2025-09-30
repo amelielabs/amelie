@@ -39,11 +39,12 @@
 #include <amelie_vm.h>
 #include <amelie_parser.h>
 
-static inline Target*
+static Target*
 parse_from_target(Stmt* self, Targets* targets, AccessType access, bool subquery)
 {
 	auto target = target_allocate();
-	// FROM (expr | SELECT)
+
+	// FROM (SELECT | expr)
 	if (stmt_if(self, '('))
 	{
 		auto ast = stmt_next(self);
@@ -83,7 +84,7 @@ parse_from_target(Stmt* self, Targets* targets, AccessType access, bool subquery
 		{
 			stmt_push(self, ast);
 
-			// FROM(expr)
+			// (expr)
 			Expr ctx;
 			expr_init(&ctx);
 			ctx.select = true;
@@ -168,6 +169,26 @@ parse_from_target(Stmt* self, Targets* targets, AccessType access, bool subquery
 		str_set_str(&target->name, &table->config->name);
 
 		access_add(&self->parser->program->access, &table->rel, access);
+
+		// [USE INDEX (name) | HEAP]
+		if (stmt_if(self, KUSE))
+		{
+			if (stmt_if(self, KINDEX))
+			{
+				stmt_expect(self, '(');
+				auto name = stmt_next_shadow(self);
+				if (name->id != KNAME)
+					stmt_error(self, name, "<index name> expected");
+				stmt_expect(self, ')');
+				target->from_index = table_find_index(target->from_table, &name->string, true);
+			} else
+			if (stmt_if(self, KHEAP))
+			{
+				target->from_heap = true;
+			} else {
+				stmt_error(self, NULL, "USE INDEX or HEAP expected");
+			}
+		}
 		return target;
 	}
 
@@ -175,7 +196,7 @@ parse_from_target(Stmt* self, Targets* targets, AccessType access, bool subquery
 	return NULL;
 }
 
-static inline Target*
+Target*
 parse_from_add(Stmt* self, Targets* targets, AccessType access, bool subquery)
 {
 	// FROM [schema.]name | (SELECT) [AS] [alias] [USE INDEX (name)]
@@ -221,29 +242,6 @@ parse_from_add(Stmt* self, Targets* targets, AccessType access, bool subquery)
 
 	// add target
 	targets_add(targets, target);
-
-	// [USE INDEX (name) | HEAP]
-	if (stmt_if(self, KUSE))
-	{
-		if (stmt_if(self, KINDEX))
-		{
-			stmt_expect(self, '(');
-			auto name = stmt_next_shadow(self);
-			if (name->id != KNAME)
-				stmt_error(self, name, "<index name> expected");
-			stmt_expect(self, ')');
-			if (target->type != TARGET_TABLE)
-				stmt_error(self, NULL, "USE INDEX expects table target");
-			target->from_index = table_find_index(target->from_table, &name->string, true);
-		} else
-		if (stmt_if(self, KHEAP))
-		{
-			target->from_heap = true;
-		} else {
-			stmt_error(self, NULL, "USE INDEX or HEAP expected");
-		}
-	}
-
 	return target;
 }
 
