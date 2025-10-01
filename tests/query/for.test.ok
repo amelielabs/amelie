@@ -258,6 +258,27 @@ insert into test values (1), (2), (3)
 for i in test do end
 {"msg": "for i in test ❰do❱ ⟵ tables are not supported here"}
 drop table test
+# test: for var
+declare list json := []; declare x json := [1,2,3]; for it in x do list := list::append(it); end; select list
+[[1, 2, 3]]
+declare list json := []; declare x json := [1,2,3]; for it in (x) do list := list::append(it); end; select list
+[[1, 2, 3]]
+declare list json := []; declare x json := [1,2,3]; for it in (select x as it) do list := list::append(it); end; select list
+[[1, 2, 3]]
+declare x int := 77; declare last int; for it in x do last := it; end; select last
+[77]
+declare x int := 77; declare last int; for it in (x) do last := it; end; select last
+[77]
+declare x int := 77; declare last int; for it in (select x as it) do last := it; end; select last
+[77]
+# test: for var (table)
+create table test (id int primary key)
+insert into test values (1), (2), (3)
+# test: select from var (table)
+declare x table (a int, b int); x := select id, id * 10 from test; for it in x do end
+declare list json := []; declare x table (a int, b int); x := select id, id * 10 from test; for it in x do list := list::append(it.a)::append(it.b); end; select list
+[[1, 10, 2, 20, 3, 30]]
+drop table test
 # test: for .. select
 create table test (id int primary key)
 insert into test values (1), (2), (3)

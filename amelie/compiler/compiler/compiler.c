@@ -394,19 +394,32 @@ emit_stmt(Compiler* self, Stmt* stmt)
 	{
 		// generate recv if stmt result is expected for := or return
 		emit_recv(self, stmt);
-
 		if (! ret)
 			stmt_error(stmt, NULL, "statement cannot be assigned");
-		if (ret->count > 1)
-			stmt_error(stmt, NULL, "statement must return only one column to be assigned");
-		// argument assignment
-		auto type = columns_first(&ret->columns)->type;
-		if (type != TYPE_NULL && var->type != type)
-			stmt_error(self->current, stmt->ast, "variable expected %s",
-			           type_of(var->type));
 		assert(stmt->r != -1);
 
-		op2(self, CASSIGN, var->r, stmt->r);
+		if (var->type == TYPE_STORE)
+		{
+			// compare columns
+			auto type = rtype(self, stmt->r);
+			if (type != TYPE_NULL && !columns_compare(&var->columns, &ret->columns))
+				stmt_error(self->current, stmt->ast, "variable table columns mismatch");
+
+			// var = store
+			op2(self, CASSIGN_STORE, var->r, stmt->r);
+		} else
+		{
+			if (ret->count > 1)
+				stmt_error(stmt, NULL, "statement must return only one column to be assigned");
+
+			auto type = columns_first(&ret->columns)->type;
+			if (type != TYPE_NULL && var->type != type)
+				stmt_error(self->current, stmt->ast, "variable expected %s",
+				           type_of(var->type));
+
+			op2(self, CASSIGN, var->r, stmt->r);
+		}
+
 		runpin(self, stmt->r);
 		stmt->r = -1;
 	}

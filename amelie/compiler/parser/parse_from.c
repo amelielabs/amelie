@@ -146,6 +146,27 @@ parse_from_target(Stmt* self, Targets* targets, AccessType access, bool subquery
 		return target;
 	}
 
+	// var
+	auto var = vars_find(&self->block->vars, &name);
+	if (var)
+	{
+		target->type     = TARGET_VAR;
+		target->from_var = var;
+		if (var->columns.count > 0) {
+			target->columns = &var->columns;
+		} else
+		{
+			// allocate select to keep returning columns
+			auto select = ast_select_allocate(targets->outer, targets->block);
+			select->ast.pos_start = target->ast->pos_start;
+			select->ast.pos_end   = target->ast->pos_end;
+			ast_list_add(&self->select_list, &select->ast);
+			target->columns = &select->ret.columns;
+		}
+		str_set_str(&target->name, var->name);
+		return target;
+	}
+
 	// cte
 	auto cte = ctes_find(&self->block->ctes, &name);
 	if (cte)
@@ -248,6 +269,13 @@ parse_from_add(Stmt* self, Targets* targets, AccessType access,
 	{
 		auto column = column_allocate();
 		column_set_name(column, &target->name);
+		columns_add(target->columns, column);
+	} else
+	if (target->type == TARGET_VAR && target->from_var->type != TYPE_STORE)
+	{
+		auto column = column_allocate();
+		column_set_name(column, &target->name);
+		column_set_type(column, target->from_var->type, type_sizeof(target->from_var->type));
 		columns_add(target->columns, column);
 	}
 

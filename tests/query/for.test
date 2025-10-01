@@ -63,12 +63,32 @@ insert into test values (1), (2), (3)
 for i in test do end
 drop table test
 
+# test: for var
+declare list json := []; declare x json := [1,2,3]; for it in x do list := list::append(it); end; select list
+declare list json := []; declare x json := [1,2,3]; for it in (x) do list := list::append(it); end; select list
+declare list json := []; declare x json := [1,2,3]; for it in (select x as it) do list := list::append(it); end; select list
+
+declare x int := 77; declare last int; for it in x do last := it; end; select last
+declare x int := 77; declare last int; for it in (x) do last := it; end; select last
+declare x int := 77; declare last int; for it in (select x as it) do last := it; end; select last
+
+# test: for var (table)
+create table test (id int primary key)
+insert into test values (1), (2), (3)
+
+# test: select from var (table)
+declare x table (a int, b int); x := select id, id * 10 from test; for it in x do end
+declare list json := []; declare x table (a int, b int); x := select id, id * 10 from test; for it in x do list := list::append(it.a)::append(it.b); end; select list
+
+drop table test
+
 # test: for .. select
 create table test (id int primary key)
 insert into test values (1), (2), (3)
 explain declare total int; declare n int; total := 0; for i in (select [1,2,3]) do n := select count(id) from test; total := total + n; end; select total;
 declare total int; declare n int; total := 0; for i in (select [1,2,3]) do n := select count(id) from test; total := total + n; end; select total;
 drop table test
+
 
 ## test: for .. returning
 #create table test (id int primary key, data int)

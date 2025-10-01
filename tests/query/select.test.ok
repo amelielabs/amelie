@@ -529,7 +529,7 @@ select * from (1)
 {"msg": "select * from (1) ⟵ subquery must have an alias"}
 # test: select * from (unsupported type)
 select * from (1) t
-{"msg": "select * from (❰1❱ ⟵ unsupported expression type 'int'"}
+[1]
 # test: select * from ({})
 select * from ({}) t
 {"msg": "FROM: json array expected"}

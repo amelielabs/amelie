@@ -334,6 +334,8 @@ cassign(Vm* self, Op* op)
 {
 	// [result, value]
 	auto dst = reg_at(&self->r, op->a);
+	value_free(dst);
+
 	auto src = reg_at(&self->r, op->b);
 	if (src->type == TYPE_STORE)
 	{

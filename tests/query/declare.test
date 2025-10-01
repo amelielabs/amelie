@@ -136,5 +136,51 @@ declare x string; x := insert into test values (1) returning id into x; select x
 declare x int; with a as (insert into test values (1) returning id into x) select * from a
 drop table test
 
+# test: select from var
+explain declare x json := [1,2,3]; select * from x as it;
+declare x json := [1,2,3]; select * from x as it;
+declare x json := [1,2,3]; select it from x as it;
+declare x json := [1,2,3]; select it.it from x as it;
+
+explain declare x json := [1,2,3]; select * from (x) as it;
+declare x json := [1,2,3]; select * from (x) as it;
+declare x json := [1,2,3]; select it from (x) as it;
+declare x json := [1,2,3]; select it.it from (x) as it;
+
+# test: declare table parsing
+declare x table
+declare x table 1
+declare x table (
+declare x table ()
+declare x table (id
+declare x table (id int
+
+# test: declare table
+create table test (id int primary key)
+insert into test values (1), (2), (3)
+
+declare x table (id int); select x::type
+declare x table (id int); x := select * from test; select x::type
+declare x table (id int); x := select * from test; select x
+drop table test
+
+# test: := table (mismatch)
+create table test (id int primary key, data int)
+insert into test values (1, 1), (2, 2), (3, 3)
+
+declare x table (a int, b int); x := select id from test;
+
+# test: := table
+declare x table (a int, b int); x := select * from test;
+declare x table (a int, b int); x := select data, id from test;
+
+# test: := table (null)
+declare x table (a int, b int); x := select * from test; x := null; select x::type
+
+# test: select from var (table)
+declare x table (a int, b int); x := select * from test; select * from x as it
+declare x table (a int, b int); x := select * from test; select it.a, it.b from x as it
+drop table test
+
 disconnect S0
 close E0

@@ -24,6 +24,7 @@ typedef enum
 	TARGET_FUNCTION,
 	TARGET_GROUP_BY,
 	TARGET_CTE,
+	TARGET_VAR,
 	TARGET_VALUES
 } TargetType;
 
@@ -51,6 +52,7 @@ struct Target
 		Ast*     from_select;
 		AstList* from_group_by;
 		Stmt*    from_cte;
+		Var*     from_var;
 		Ast*     from_function;
 	};
 	// target
@@ -73,25 +75,13 @@ static inline Target*
 target_allocate(void)
 {
 	Target* self = palloc(sizeof(Target));
-	self->type          = TARGET_NONE;
-	self->from_access   = ACCESS_UNDEF;
-	self->from_table    = NULL;
-	self->from_index    = NULL;
-	self->from_heap     = false;
-	self->from_select   = NULL;
-	self->from_group_by = NULL;
-	self->from_cte      = NULL;
-	self->from_function = NULL;
-	self->columns       = NULL;
-	self->r             = -1;
-	self->rcursor       = -1;
-	self->path          = NULL;
-	self->path_primary  = NULL;
-	self->join          = JOIN_NONE;
-	self->join_on       = NULL;
-	self->next          = NULL;
-	self->prev          = NULL;
-	self->targets       = NULL;
+	memset(self, 0, sizeof(Target));
+	self->type        = TARGET_NONE;
+	self->from_access = ACCESS_UNDEF;
+	self->columns     = NULL;
+	self->r           = -1;
+	self->rcursor     = -1;
+	self->join        = JOIN_NONE;
 	str_init(&self->name);
 	return self;
 }

@@ -50,9 +50,7 @@ parse_declare_columns(Parser* self, Var* var)
 	for (;;)
 	{
 		// column name
-		auto name = lex_if(lex, KNAME);
-		if (! name)
-			lex_error_expect(lex, name, KNAME);
+		auto name = lex_expect(lex, KNAME);
 
 		// ensure column is unique
 		auto column = columns_find(&var->columns, &name->string);
@@ -100,7 +98,7 @@ parse_declare(Parser* self, Vars* vars)
 
 	int type_size;
 	int type;
-	if (str_is_case(&ast->string, "store", 5))
+	if (str_is_case(&ast->string, "table", 5))
 		type = TYPE_STORE;
 	else
 		type = type_read(&ast->string, &type_size);
@@ -114,7 +112,7 @@ parse_declare(Parser* self, Vars* vars)
 	var = vars_add(vars, &name->string);
 	var->type = type;
 
-	// var store (column, ...)
+	// var table(column, ...)
 	if (var->type == TYPE_STORE)
 		parse_declare_columns(self, var);
 

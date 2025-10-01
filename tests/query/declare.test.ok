@@ -280,5 +280,100 @@ declare x string; x := insert into test values (1) returning id into x; select x
 declare x int; with a as (insert into test values (1) returning id into x) select * from a
 {"msg": "declare x int; with a as (insert into test values (1) returning id into ❰x❱ ⟵ INTO cannot be used with CTE"}
 drop table test
+# test: select from var
+explain declare x json := [1,2,3]; select * from x as it;
+[{
+  "bytecode": {
+    "frontend": {
+      "00": "json                1      0      0     ",
+      "01": "assign              0      1      0     ",
+      "02": "set                 1      1      0     ",
+      "03": "ref                 2      0      0     ",
+      "04": "json_open           3      2      9     ",
+      "05": "json_read           4      3      0     ",
+      "06": "push                4      0      0     ",
+      "07": "set_add             1      0      0     ",
+      "08": "json_next           3      5      0     ",
+      "09": "free                3      0      0     ",
+      "10": "free                2      0      0     ",
+      "11": "content             1      -      -     ",
+      "12": "ret                 0      0      0     "
+    }
+  },
+  "access": []
+}]
+declare x json := [1,2,3]; select * from x as it;
+[1, 2, 3]
+declare x json := [1,2,3]; select it from x as it;
+[1, 2, 3]
+declare x json := [1,2,3]; select it.it from x as it;
+[1, 2, 3]
+explain declare x json := [1,2,3]; select * from (x) as it;
+[{
+  "bytecode": {
+    "frontend": {
+      "00": "json                1      0      0     ",
+      "01": "assign              0      1      0     ",
+      "02": "set                 1      1      0     ",
+      "03": "ref                 2      0      0     ",
+      "04": "json_open           3      2      9     ",
+      "05": "json_read           4      3      0     ",
+      "06": "push                4      0      0     ",
+      "07": "set_add             1      0      0     ",
+      "08": "json_next           3      5      0     ",
+      "09": "free                3      0      0     ",
+      "10": "free                2      0      0     ",
+      "11": "content             1      -      -     ",
+      "12": "ret                 0      0      0     "
+    }
+  },
+  "access": []
+}]
+declare x json := [1,2,3]; select * from (x) as it;
+[1, 2, 3]
+declare x json := [1,2,3]; select it from (x) as it;
+[1, 2, 3]
+declare x json := [1,2,3]; select it.it from (x) as it;
+[1, 2, 3]
+# test: declare table parsing
+declare x table
+{"msg": "declare x table ⟵ ( expected"}
+declare x table 1
+{"msg": "declare x table ❰1❱ ⟵ ( expected"}
+declare x table (
+{"msg": "declare x table ( ⟵ name expected"}
+declare x table ()
+{"msg": "declare x table (❰)❱ ⟵ name expected"}
+declare x table (id
+{"msg": "declare x table (id ⟵ unrecognized data type"}
+declare x table (id int
+{"msg": "declare x table (id int ⟵ ) expected"}
+# test: declare table
+create table test (id int primary key)
+insert into test values (1), (2), (3)
+declare x table (id int); select x::type
+["null"]
+declare x table (id int); x := select * from test; select x::type
+["store"]
+declare x table (id int); x := select * from test; select x
+[1, 2, 3]
+drop table test
+# test: := table (mismatch)
+create table test (id int primary key, data int)
+insert into test values (1, 1), (2, 2), (3, 3)
+declare x table (a int, b int); x := select id from test;
+{"msg": "declare x table (a int, b int); x := ❰select❱ ⟵ variable table columns mismatch"}
+# test: := table
+declare x table (a int, b int); x := select * from test;
+declare x table (a int, b int); x := select data, id from test;
+# test: := table (null)
+declare x table (a int, b int); x := select * from test; x := null; select x::type
+["null"]
+# test: select from var (table)
+declare x table (a int, b int); x := select * from test; select * from x as it
+[[1, 1], [2, 2], [3, 3]]
+declare x table (a int, b int); x := select * from test; select it.a, it.b from x as it
+[[1, 1], [2, 2], [3, 3]]
+drop table test
 disconnect S0
 close E0

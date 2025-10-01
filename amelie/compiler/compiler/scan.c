@@ -310,7 +310,7 @@ scan_expr(Scan* self, Target* target)
 		if (target->r == -1)
 		{
 			auto r = emit_select(cp, target->from_select, false);
-			auto rt = rtype(cp, target->r);
+			auto rt = rtype(cp, r);
 			if (rt == TYPE_STORE || rt == TYPE_JSON || rt == TYPE_NULL) {
 				target->r = r;
 			} else
@@ -320,7 +320,6 @@ scan_expr(Scan* self, Target* target)
 				runpin(cp, r);
 				target->r = op3(cp, CSET, rpin(cp, TYPE_STORE), 1, 0);
 				op1(cp, CSET_ADD, target->r);
-				rt = TYPE_STORE;
 			}
 		}
 		break;
@@ -328,11 +327,24 @@ scan_expr(Scan* self, Target* target)
 	case TARGET_EXPR:
 	{
 		if (target->r == -1)
-			target->r = emit_expr(cp, self->targets, target->ast);
-		assert(target->columns->count == 1);
-		// set expression type
-		auto rt = rtype(cp, target->r);
-		column_set_type(columns_first(target->columns), rt, type_sizeof(rt));
+		{
+			auto r = emit_expr(cp, self->targets, target->ast);
+			auto rt = rtype(cp, r);
+			if (rt == TYPE_STORE || rt == TYPE_JSON || rt == TYPE_NULL) {
+				target->r = r;
+			} else
+			{
+				// wrap result into set
+				op1(cp, CPUSH, r);
+				runpin(cp, r);
+				target->r = op3(cp, CSET, rpin(cp, TYPE_STORE), 1, 0);
+				op1(cp, CSET_ADD, target->r);
+			}
+
+			// set expression type
+			assert(target->columns->count == 1);
+			column_set_type(columns_first(target->columns), rt, type_sizeof(rt));
+		}
 		break;
 	}
 	case TARGET_CTE:
@@ -352,7 +364,26 @@ scan_expr(Scan* self, Target* target)
 				runpin(cp, r);
 				target->r = op3(cp, CSET, rpin(cp, TYPE_STORE), 1, 0);
 				op1(cp, CSET_ADD, target->r);
-				rt = TYPE_STORE;
+			}
+		}
+		break;
+	}
+	case TARGET_VAR:
+	{
+		auto var = target->from_var;
+		if (target->r == -1)
+		{
+			auto rt = rtype(cp, var->r);
+			auto r  = op2(cp, CREF, rpin(cp, rt), var->r);
+			if (rt == TYPE_STORE || rt == TYPE_JSON || rt == TYPE_NULL) {
+				target->r = r;
+			} else
+			{
+				// wrap result into set
+				op1(cp, CPUSH, r);
+				runpin(cp, r);
+				target->r = op3(cp, CSET, rpin(cp, TYPE_STORE), 1, 0);
+				op1(cp, CSET_ADD, target->r);
 			}
 		}
 		break;
