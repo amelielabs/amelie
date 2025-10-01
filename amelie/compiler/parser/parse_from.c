@@ -116,7 +116,8 @@ parse_from_target(Stmt* self, Targets* targets, AccessType access, bool subquery
 	target->ast = expr;
 
 	// function()
-	if (self->id == STMT_SELECT && stmt_if(self, '('))
+	if ((self->id == STMT_SELECT || self->id == STMT_FOR) &&
+	    stmt_if(self, '('))
 	{
 		// find function
 		auto func = ast_func_allocate();
@@ -197,23 +198,33 @@ parse_from_target(Stmt* self, Targets* targets, AccessType access, bool subquery
 }
 
 Target*
-parse_from_add(Stmt* self, Targets* targets, AccessType access, bool subquery)
+parse_from_add(Stmt* self, Targets* targets, AccessType access,
+               Str*  as,
+               bool  subquery)
 {
 	// FROM [schema.]name | (SELECT) [AS] [alias] [USE INDEX (name)]
 	auto target = parse_from_target(self, targets, access, subquery);
 
 	// [AS] [alias]
-	auto as = stmt_if(self, KAS);
-	auto alias = stmt_if(self, KNAME);
-	if (alias) {
-		str_set_str(&target->name, &alias->string);
-	} else {
-		if (as)
-			stmt_error(self, as, "name expected");
-		if ( target->type == TARGET_SELECT ||
-		     target->type == TARGET_EXPR   ||
-		    (target->type == TARGET_CTE && str_empty(&target->name)))
-			stmt_error(self, NULL, "subquery must have an alias");
+	if (as)
+	{
+		// forced alias
+		str_set_str(&target->name, as);
+	} else
+	{
+		Ast* alias = NULL;
+		if (stmt_if(self, KAS))
+			alias = stmt_expect(self, KNAME);
+		else
+			alias = stmt_if(self, KNAME);
+		if (alias) {
+			str_set_str(&target->name, &alias->string);
+		} else {
+			if ( target->type == TARGET_SELECT ||
+			     target->type == TARGET_EXPR   ||
+			    (target->type == TARGET_CTE && str_empty(&target->name)))
+				stmt_error(self, NULL, "subquery must have an alias");
+		}
 	}
 
 	// ensure target does not exists
@@ -252,7 +263,7 @@ parse_from(Stmt* self, Targets* targets, AccessType access, bool subquery)
 	// FROM <[schema.]name | (SELECT)> [AS] [alias]> [JOIN <..> ON (expr) ...]
 
 	// FROM name | expr
-	parse_from_add(self, targets, access, subquery);
+	parse_from_add(self, targets, access, NULL, subquery);
 
 	for (;;)
 	{
@@ -260,7 +271,7 @@ parse_from(Stmt* self, Targets* targets, AccessType access, bool subquery)
 		if (stmt_if(self, ','))
 		{
 			// name | expr
-			parse_from_add(self, targets, ACCESS_RO_EXCLUSIVE, subquery);
+			parse_from_add(self, targets, ACCESS_RO_EXCLUSIVE, NULL, subquery);
 			continue;
 		}
 
@@ -300,7 +311,7 @@ parse_from(Stmt* self, Targets* targets, AccessType access, bool subquery)
 				stmt_error(self, NULL, "outer joins currently are not supported");
 
 			// <name|expr>
-			auto target = parse_from_add(self, targets, ACCESS_RO_EXCLUSIVE, subquery);
+			auto target = parse_from_add(self, targets, ACCESS_RO_EXCLUSIVE, NULL, subquery);
 
 			// ON
 			if (stmt_if(self, KON))

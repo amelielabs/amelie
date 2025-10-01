@@ -10,23 +10,23 @@ for it
 for it 1
 {"msg": "for it ❰1❱ ⟵ IN expected"}
 for it in
-{"msg": "for it in ⟵ unexpected end of statement"}
+{"msg": "for it in ⟵ target name expected"}
 for it in 1
-{"msg": "for it in 1 ⟵ unexpected statement"}
+{"msg": "for it in ❰1❱ ⟵ target name expected"}
 for it in ;
-{"msg": "for it in ; ⟵ unexpected statement"}
+{"msg": "for it in ❰;❱ ⟵ target name expected"}
 for it in [1,2,3]
-{"msg": "for it in [❰1❱ ⟵ unexpected statement"}
-for it in select [1,2,3]
-{"msg": "for it in select [1,2,3] ⟵ DO expected"}
-for it in select [1,2,3];
-{"msg": "for it in select [1,2,3]❰;❱ ⟵ DO expected"}
-for it in select [1,2,3] then
-{"msg": "for it in select [1,2,3] ❰then❱ ⟵ DO expected"}
-for it in select [1,2,3] do
-{"msg": "for it in select [1,2,3] do ⟵ END expected"}
+{"msg": "for it in ❰[❱ ⟵ target name expected"}
+for it in ([1,2,3]
+{"msg": "for it in ([1,2,3] ⟵ ) expected"}
+for it in (select [1,2,3]
+{"msg": "for it in (select [1,2,3] ⟵ ) expected"}
+for it in (select [1,2,3])
+{"msg": "for it in (select [1,2,3]) ⟵ DO expected"}
+for it in (select [1,2,3]) do
+{"msg": "for it in (select [1,2,3]) do ⟵ END expected"}
 # test: for
-explain for it in select [1,2,3] do end
+explain for it in (select [1,2,3]) do end
 [{
   "bytecode": {
     "frontend": {
@@ -36,22 +36,21 @@ explain for it in select [1,2,3] do end
       "03": "json_next           2      3      0     ",
       "04": "free                2      0      0     ",
       "05": "free                1      0      0     ",
-      "06": "free                0      0      0     ",
-      "07": "ret                 0      0      0     "
+      "06": "ret                 0      0      0     "
     }
   },
   "access": []
 }]
-for it in select [1,2,3] do end
-declare n int := 0; for it in select [1,2,3] do n := n + 1; end; select n
+for it in (select [1,2,3]) do end
+declare n int := 0; for it in (select [1,2,3]) do n := n + 1; end; select n
 [3]
 # test: for if
-declare n int := 0; for it in select [1,2,3,4] as it do if it::int % 2 = 0 then n := n + 1; end; end; select n
+declare n int := 0; for it in (select [1,2,3,4] as it) do if it::int % 2 = 0 then n := n + 1; end; end; select n
 [2]
 # test: for for
-declare n int := 0; for i in select [1,2,3] do for j in select [1,2,3] do n := n + 1; end; end; select n
+declare n int := 0; for i in (select [1,2,3]) do for j in (select [1,2,3]) do n := n + 1; end; end; select n
 [9]
-explain declare n int := 0; for i in select [1,2,3] as i do for j in select [1,2,3] as j do n := n + i.i::int + j.j::int; end; end; select n
+explain declare n int := 0; for i in (select [1,2,3] as i) do for j in (select [1,2,3] as j) do n := n + i.i::int + j.j::int; end; end; select n
 [{
   "bytecode": {
     "frontend": {
@@ -59,7 +58,7 @@ explain declare n int := 0; for i in select [1,2,3] as i do for j in select [1,2
       "01": "assign              0      1      0     ",
       "02": "json                1      0      0     ",
       "03": "ref                 2      1      0     ",
-      "04": "json_open           3      2      23    ",
+      "04": "json_open           3      2      22    ",
       "05": "json                4      5      0     ",
       "06": "ref                 5      4      0     ",
       "07": "json_open           6      5      19    ",
@@ -76,36 +75,34 @@ explain declare n int := 0; for i in select [1,2,3] as i do for j in select [1,2
       "18": "json_next           6      8      0     ",
       "19": "free                6      0      0     ",
       "20": "free                5      0      0     ",
-      "21": "free                4      0      0     ",
-      "22": "json_next           3      5      0     ",
-      "23": "free                3      0      0     ",
-      "24": "free                2      0      0     ",
-      "25": "free                1      0      0     ",
-      "26": "ref                 1      0      0     ",
-      "27": "content             1      -      -     ",
-      "28": "ret                 0      0      0     "
+      "21": "json_next           3      5      0     ",
+      "22": "free                3      0      0     ",
+      "23": "free                2      0      0     ",
+      "24": "ref                 2      0      0     ",
+      "25": "content             2      -      -     ",
+      "26": "ret                 0      0      0     "
     }
   },
   "access": []
 }]
-declare n int := 0; for i in select [1,2,3] as i do for j in select [1,2,3] as j do n := n + i.i::int + j.j::int; end; end; select n
+declare n int := 0; for i in (select [1,2,3] as i) do for j in (select [1,2,3] as j) do n := n + i.i::int + j.j::int; end; end; select n
 [36]
 # test: for for for
-declare n int := 0; for i in select [1,2,3] do for j in select [1,2,3] do for k in select [1,2,3] do n := n + 1; end; end; end; select n
+declare n int := 0; for i in (select [1,2,3]) do for j in (select [1,2,3]) do for k in (select [1,2,3]) do n := n + 1; end; end; end; select n
 [27]
-declare n int := 0; for i in select [1,2,3] as i do for j in select [1,2,3] as j do for k in select [1,2,3] as k do n := n + i.i::int + j.j::int + k.k::int; end; end; end; select n
+declare n int := 0; for i in (select [1,2,3] as i) do for j in (select [1,2,3] as j) do for k in (select [1,2,3] as k) do n := n + i.i::int + j.j::int + k.k::int; end; end; end; select n
 [162]
 # test: for in select
 create table test (id int primary key)
 insert into test values (1), (2), (3)
-explain declare n int := 0; for i in select * from test do n := n + 1; end; select n
+explain declare n int := 0; for i in (select * from test) do n := n + 1; end; select n
 [{
   "bytecode": {
     "frontend": {
       "00": "int                 1      -      0     # 0",
       "01": "assign              0      1      0     ",
       "02": "union               1      0      0     ",
-      "03": "send_all            0      -      1     # public.test (last)",
+      "03": "send_all            0      -      1     # public.test",
       "04": "union_recv          1      0      0     ",
       "05": "union_set           1      0      -1    ",
       "06": "ref                 2      1      0     ",
@@ -117,10 +114,9 @@ explain declare n int := 0; for i in select * from test do n := n + 1; end; sele
       "12": "store_next          3      8      0     ",
       "13": "free                3      0      0     ",
       "14": "free                2      0      0     ",
-      "15": "free                1      0      0     ",
-      "16": "ref                 1      0      0     ",
-      "17": "content             1      -      -     ",
-      "18": "ret                 0      0      0     "
+      "15": "ref                 2      0      0     ",
+      "16": "content             2      -      -     ",
+      "17": "ret                 0      0      0     "
     },
     "backend": {
       "00": "set                 1      1      0     ",
@@ -136,15 +132,15 @@ explain declare n int := 0; for i in select * from test do n := n + 1; end; sele
   },
   "access": [["public.test", "ro"]]
 }]
-declare n int := 0; for i in select * from test do n := n + 1; end; select n
+declare n int := 0; for i in (select * from test) do n := n + 1; end; select n
 [3]
-declare n int := 0; for i in select * from test do n := n + i.id; end; select n
+declare n int := 0; for i in (select * from test) do n := n + i.id; end; select n
 [6]
 drop table test
 # test: for in select for int select
 create table test (id int primary key)
 insert into test values (1), (2), (3)
-explain declare n int; n := 0; for i in select * from test do  for j in select * from test do n := n + 1; end; end; select n
+explain declare n int; n := 0; for i in (select * from test) do  for j in (select * from test) do n := n + 1; end; end; select n
 [{
   "bytecode": {
     "frontend": {
@@ -155,7 +151,7 @@ explain declare n int; n := 0; for i in select * from test do  for j in select *
       "04": "union_recv          1      0      0     ",
       "05": "union_set           1      0      -1    ",
       "06": "ref                 2      1      0     ",
-      "07": "store_open          3      2      23    ",
+      "07": "store_open          3      2      22    ",
       "08": "union               4      0      0     ",
       "09": "send_all            9      -      4     # public.test",
       "10": "union_recv          4      0      0     ",
@@ -169,15 +165,12 @@ explain declare n int; n := 0; for i in select * from test do  for j in select *
       "18": "store_next          6      14     0     ",
       "19": "free                6      0      0     ",
       "20": "free                5      0      0     ",
-      "21": "free                4      0      0     ",
-      "22": "store_next          3      8      0     ",
-      "23": "free                3      0      0     ",
-      "24": "free                2      0      0     ",
-      "25": "free                1      0      0     ",
-      "26": "close               0      0      0     ",
-      "27": "ref                 1      0      0     ",
-      "28": "content             1      -      -     ",
-      "29": "ret                 0      0      0     "
+      "21": "store_next          3      8      0     ",
+      "22": "free                3      0      0     ",
+      "23": "free                2      0      0     ",
+      "24": "ref                 2      0      0     ",
+      "25": "content             2      -      -     ",
+      "26": "ret                 0      0      0     "
     },
     "backend": {
       "00": "set                 1      1      0     ",
@@ -202,15 +195,73 @@ explain declare n int; n := 0; for i in select * from test do  for j in select *
   },
   "access": [["public.test", "ro"]]
 }]
-declare n int := 0; for i in select * from test do  for j in select * from test do n := n + 1; end; end; select n
+declare n int := 0; for i in (select * from test) do for j in (select * from test) do n := n + 1; end; end; select n
 [9]
-declare n int := 0; for i in select * from test do  for j in select * from test do n := n + i.id + j.id; end; end; select n
+declare n int := 0; for i in (select * from test) do for j in (select * from test) do n := n + i.id + j.id; end; end; select n
 [36]
+drop table test
+# test: for (select from (select from))
+create table test (id int primary key)
+insert into test values (1), (2), (3)
+explain declare n int := 0; for i in (select * from (select * from test) x) do n := n + 1; end; select n
+[{
+  "bytecode": {
+    "frontend": {
+      "00": "int                 1      -      0     # 0",
+      "01": "assign              0      1      0     ",
+      "02": "union               1      0      0     ",
+      "03": "send_all            0      -      1     # public.test",
+      "04": "union_recv          1      0      0     ",
+      "05": "union_set           1      0      -1    ",
+      "06": "set                 2      1      0     ",
+      "07": "ref                 3      1      0     ",
+      "08": "store_open          4      3      13    ",
+      "09": "store_read          5      4      0     ",
+      "10": "push                5      0      0     ",
+      "11": "set_add             2      0      0     ",
+      "12": "store_next          4      9      0     ",
+      "13": "free                4      0      0     ",
+      "14": "free                3      0      0     ",
+      "15": "ref                 3      2      0     ",
+      "16": "store_open          4      3      22    ",
+      "17": "ref                 5      0      0     ",
+      "18": "int                 6      -      0     # 1",
+      "19": "addii               7      5      6     ",
+      "20": "assign              0      7      0     ",
+      "21": "store_next          4      17     0     ",
+      "22": "free                4      0      0     ",
+      "23": "free                3      0      0     ",
+      "24": "ref                 3      0      0     ",
+      "25": "content             3      -      -     ",
+      "26": "ret                 0      0      0     "
+    },
+    "backend": {
+      "00": "set                 1      1      0     ",
+      "01": "table_open_part     2      0      6     # public.test (primary)",
+      "02": "table_readi32       3      2      0     ",
+      "03": "push                3      0      0     ",
+      "04": "set_add             1      0      0     ",
+      "05": "table_next          2      2      0     ",
+      "06": "free                2      0      0     ",
+      "07": "result              1      0      0     ",
+      "08": "ret                 0      0      0     "
+    }
+  },
+  "access": [["public.test", "ro"]]
+}]
+declare n int := 0; for i in (select * from (select * from test) x) do n := n + 1; end; select n
+[3]
+drop table test
+# test: for table
+create table test (id int primary key)
+insert into test values (1), (2), (3)
+for i in test do end
+{"msg": "for i in test ❰do❱ ⟵ tables are not supported here"}
 drop table test
 # test: for .. select
 create table test (id int primary key)
 insert into test values (1), (2), (3)
-explain declare total int; declare n int; total := 0; for i in select [1,2,3] do n := select count(id) from test; total := total + n; end; select total;
+explain declare total int; declare n int; total := 0; for i in (select [1,2,3]) do n := select count(id) from test; total := total + n; end; select total;
 [{
   "bytecode": {
     "frontend": {
@@ -240,11 +291,10 @@ explain declare total int; declare n int; total := 0; for i in select [1,2,3] do
       "23": "json_next           4      5      0     ",
       "24": "free                4      0      0     ",
       "25": "free                3      0      0     ",
-      "26": "free                2      0      0     ",
-      "27": "close               0      0      0     ",
-      "28": "ref                 2      0      0     ",
-      "29": "content             2      -      -     ",
-      "30": "ret                 0      0      0     "
+      "26": "close               0      0      0     ",
+      "27": "ref                 3      0      0     ",
+      "28": "content             3      -      -     ",
+      "29": "ret                 0      0      0     "
     },
     "backend": {
       "00": "set_ordered         5      1      1     ",
@@ -270,96 +320,8 @@ explain declare total int; declare n int; total := 0; for i in select [1,2,3] do
   },
   "access": [["public.test", "ro"]]
 }]
-declare total int; declare n int; total := 0; for i in select [1,2,3] do n := select count(id) from test; total := total + n; end; select total;
+declare total int; declare n int; total := 0; for i in (select [1,2,3]) do n := select count(id) from test; total := total + n; end; select total;
 [9]
-drop table test
-# test: for .. returning
-create table test (id int primary key, data int)
-insert into test values (1, 0), (2, 0), (3, 0)
-explain declare n int := 0; for i in update test set data = id returning id do n := n + i.id; end; select n
-[{
-  "bytecode": {
-    "frontend": {
-      "00": "int                 1      -      0     # 0",
-      "01": "assign              0      1      0     ",
-      "02": "union               1      0      0     ",
-      "03": "send_all            0      -      1     # public.test (last)",
-      "04": "union_recv          1      0      0     ",
-      "05": "ref                 2      1      0     ",
-      "06": "store_open          3      2      12    ",
-      "07": "ref                 4      0      0     ",
-      "08": "store_read          5      3      0     ",
-      "09": "addii               6      4      5     ",
-      "10": "assign              0      6      0     ",
-      "11": "store_next          3      7      0     ",
-      "12": "free                3      0      0     ",
-      "13": "free                2      0      0     ",
-      "14": "free                1      0      0     ",
-      "15": "ref                 1      0      0     ",
-      "16": "content             1      -      -     ",
-      "17": "ret                 0      0      0     "
-    },
-    "backend": {
-      "00": "set                 1      1      0     ",
-      "01": "table_open_part     2      0      11    # public.test (primary)",
-      "02": "int                 3      -      0     # 1",
-      "03": "push                3      0      0     ",
-      "04": "table_readi32       3      2      0     ",
-      "05": "push                3      0      0     ",
-      "06": "update              2      1      0     ",
-      "07": "table_readi32       3      2      0     ",
-      "08": "push                3      0      0     ",
-      "09": "set_add             1      0      0     ",
-      "10": "table_next          2      2      0     ",
-      "11": "free                2      0      0     ",
-      "12": "result              1      0      0     ",
-      "13": "ret                 0      0      0     "
-    }
-  },
-  "access": [["public.test", "rw"]]
-}]
-declare n int := 0; for i in update test set data = id returning id do n := n + i.id; end; select n
-[6]
-drop table test
-# test: for .. upsert
-create table test (id int primary key, data int)
-insert into test values (1, 0)
-explain for i in select [1,2,3] do insert into test values (1, 0) on conflict do update set data = data + 1; end
-[{
-  "bytecode": {
-    "frontend": {
-      "00": "json                0      0      0     ",
-      "01": "ref                 1      0      0     ",
-      "02": "json_open           2      1      6     ",
-      "03": "set_ptr             3      -      0     ",
-      "04": "send_shard          0      -      3     # public.test",
-      "05": "json_next           2      3      0     ",
-      "06": "free                2      0      0     ",
-      "07": "free                1      0      0     ",
-      "08": "free                0      0      0     ",
-      "09": "close               0      0      0     ",
-      "10": "ret                 0      0      0     "
-    },
-    "backend": {
-      "00": "table_prepare       3      -      0     # public.test",
-      "01": "jmp                 9      0      0     ",
-      "02": "int                 4      -      0     # 1",
-      "03": "push                4      0      0     ",
-      "04": "table_readi32       4      3      1     ",
-      "05": "int                 5      -      0     # 1",
-      "06": "addii               6      4      5     ",
-      "07": "push                6      0      0     ",
-      "08": "update              3      1      0     ",
-      "09": "upsert              3      2      -1    ",
-      "10": "free                3      0      0     ",
-      "11": "ret                 0      0      0     "
-    }
-  },
-  "access": [["public.test", "rw"]]
-}]
-for i in select [1,2,3] do insert into test values (1, 0) on conflict do update set data = data + 1; end
-select * from test;
-[[1, 3]]
 drop table test
 disconnect S0
 close E0

@@ -11,7 +11,7 @@
 // AGPL-3.0 Licensed.
 //
 
-Target* parse_from_add(Stmt*, Targets*, AccessType, bool);
+Target* parse_from_add(Stmt*, Targets*, AccessType, Str*, bool);
 void    parse_from(Stmt*, Targets*, AccessType, bool);
 
 static inline Ast*

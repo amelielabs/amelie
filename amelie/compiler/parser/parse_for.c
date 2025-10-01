@@ -42,56 +42,22 @@
 bool
 parse_for(Stmt* self)
 {
-	// FOR target IN cte DO
+	// FOR alias IN from_target DO
 	//   block
 	// END
 	auto stmt = ast_for_allocate(self->block);
 	self->ast = &stmt->ast;
 
-	// target
-	auto name = stmt_expect(self, KNAME);
+	// alias
+	auto as = stmt_expect(self, KNAME);
 
 	// IN
-	auto in = stmt_expect(self, KIN);
+	stmt_expect(self, KIN);
 
-	// cte
-	auto cte = stmt_allocate(self->parser, &self->parser->lex, self->block);
-	stmts_insert(&self->block->stmts, self, cte);
-	stmt->cte = cte;
-
-	// parse stmt
-	parse_stmt(self->parser, cte);
-
-	// set cte returning columns
-	Returning* ret = NULL;
-	switch (cte->id) {
-	case STMT_INSERT:
-		ret = &ast_insert_of(cte->ast)->ret;
-		break;
-	case STMT_UPDATE:
-		ret = &ast_update_of(cte->ast)->ret;
-		break;
-	case STMT_DELETE:
-		ret = &ast_delete_of(cte->ast)->ret;
-		break;
-	case STMT_SELECT:
-		ret = &ast_select_of(cte->ast)->ret;
-		break;
-	default:
-		break;
-	}
-	if (ret == NULL || !returning_has(ret))
-		stmt_error(self, in, "expected Returning DML or SELECT");
-
-	cte->cte = ctes_add(&self->block->ctes, self, &name->string);
-	cte->cte->columns = &ret->columns;
-
-	auto target = target_allocate();
-	target->type     = TARGET_CTE;
-	target->from_cte = cte;
-	target->columns  = &ret->columns;
-	str_set_str(&target->name, &name->string);
-	targets_add(&stmt->targets, target);
+	// identical to FROM target
+	auto target = parse_from_add(self, &stmt->targets, ACCESS_RO, &as->string, false);
+	if (target->type == TARGET_TABLE)
+		stmt_error(self, NULL, "tables are not supported here");
 
 	// LOOP | DO
 	if (! stmt_if(self, KLOOP))

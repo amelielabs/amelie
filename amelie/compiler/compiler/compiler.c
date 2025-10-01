@@ -508,10 +508,13 @@ emit_for(Compiler* self, Stmt* stmt)
 	auto fora = ast_for_of(stmt->ast);
 	compiler_switch_frontend(self);
 
-	// ensure IN stmt received at this point
-	emit_recv(self, fora->cte);
+	// generate all dependable recv statements first
+	auto target = targets_outer(&fora->targets);
+	assert(target);
+	if (target->type == TARGET_CTE)
+		emit_recv(self, target->from_cte);
 
-	// scan over cte results
+	// scan over targets
 	scan(self,
 	     &fora->targets,
 	     NULL,
@@ -519,10 +522,6 @@ emit_for(Compiler* self, Stmt* stmt)
 	     NULL,
 	     emit_for_on_match,
 	     fora);
-
-	op1(self, CFREE, fora->cte->r);
-	runpin(self, fora->cte->r);
-	fora->cte->r = -1;
 
 	// mark last sending operation in the main block
 	auto block = compiler_block(self);

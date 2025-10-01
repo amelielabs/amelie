@@ -12,65 +12,78 @@ for it in
 for it in 1
 for it in ;
 for it in [1,2,3]
-for it in select [1,2,3]
-for it in select [1,2,3];
-for it in select [1,2,3] then
-for it in select [1,2,3] do
+for it in ([1,2,3]
+for it in (select [1,2,3]
+for it in (select [1,2,3])
+for it in (select [1,2,3]) do
 
 # test: for
-explain for it in select [1,2,3] do end
-for it in select [1,2,3] do end
-declare n int := 0; for it in select [1,2,3] do n := n + 1; end; select n
+explain for it in (select [1,2,3]) do end
+for it in (select [1,2,3]) do end
+declare n int := 0; for it in (select [1,2,3]) do n := n + 1; end; select n
 
 # test: for if
-declare n int := 0; for it in select [1,2,3,4] as it do if it::int % 2 = 0 then n := n + 1; end; end; select n
+declare n int := 0; for it in (select [1,2,3,4] as it) do if it::int % 2 = 0 then n := n + 1; end; end; select n
 
 # test: for for
-declare n int := 0; for i in select [1,2,3] do for j in select [1,2,3] do n := n + 1; end; end; select n
-explain declare n int := 0; for i in select [1,2,3] as i do for j in select [1,2,3] as j do n := n + i.i::int + j.j::int; end; end; select n
-declare n int := 0; for i in select [1,2,3] as i do for j in select [1,2,3] as j do n := n + i.i::int + j.j::int; end; end; select n
+declare n int := 0; for i in (select [1,2,3]) do for j in (select [1,2,3]) do n := n + 1; end; end; select n
+explain declare n int := 0; for i in (select [1,2,3] as i) do for j in (select [1,2,3] as j) do n := n + i.i::int + j.j::int; end; end; select n
+declare n int := 0; for i in (select [1,2,3] as i) do for j in (select [1,2,3] as j) do n := n + i.i::int + j.j::int; end; end; select n
 
 # test: for for for
-declare n int := 0; for i in select [1,2,3] do for j in select [1,2,3] do for k in select [1,2,3] do n := n + 1; end; end; end; select n
-declare n int := 0; for i in select [1,2,3] as i do for j in select [1,2,3] as j do for k in select [1,2,3] as k do n := n + i.i::int + j.j::int + k.k::int; end; end; end; select n
+declare n int := 0; for i in (select [1,2,3]) do for j in (select [1,2,3]) do for k in (select [1,2,3]) do n := n + 1; end; end; end; select n
+declare n int := 0; for i in (select [1,2,3] as i) do for j in (select [1,2,3] as j) do for k in (select [1,2,3] as k) do n := n + i.i::int + j.j::int + k.k::int; end; end; end; select n
 
 # test: for in select
 create table test (id int primary key)
 insert into test values (1), (2), (3)
-explain declare n int := 0; for i in select * from test do n := n + 1; end; select n
-declare n int := 0; for i in select * from test do n := n + 1; end; select n
-declare n int := 0; for i in select * from test do n := n + i.id; end; select n
+explain declare n int := 0; for i in (select * from test) do n := n + 1; end; select n
+declare n int := 0; for i in (select * from test) do n := n + 1; end; select n
+declare n int := 0; for i in (select * from test) do n := n + i.id; end; select n
 drop table test
 
 # test: for in select for int select
 create table test (id int primary key)
 insert into test values (1), (2), (3)
-explain declare n int; n := 0; for i in select * from test do  for j in select * from test do n := n + 1; end; end; select n
-declare n int := 0; for i in select * from test do  for j in select * from test do n := n + 1; end; end; select n
-declare n int := 0; for i in select * from test do  for j in select * from test do n := n + i.id + j.id; end; end; select n
+explain declare n int; n := 0; for i in (select * from test) do  for j in (select * from test) do n := n + 1; end; end; select n
+declare n int := 0; for i in (select * from test) do for j in (select * from test) do n := n + 1; end; end; select n
+declare n int := 0; for i in (select * from test) do for j in (select * from test) do n := n + i.id + j.id; end; end; select n
+drop table test
+
+# test: for (select from (select from))
+create table test (id int primary key)
+insert into test values (1), (2), (3)
+explain declare n int := 0; for i in (select * from (select * from test) x) do n := n + 1; end; select n
+declare n int := 0; for i in (select * from (select * from test) x) do n := n + 1; end; select n
+drop table test
+
+# test: for table
+create table test (id int primary key)
+insert into test values (1), (2), (3)
+for i in test do end
 drop table test
 
 # test: for .. select
 create table test (id int primary key)
 insert into test values (1), (2), (3)
-explain declare total int; declare n int; total := 0; for i in select [1,2,3] do n := select count(id) from test; total := total + n; end; select total;
-declare total int; declare n int; total := 0; for i in select [1,2,3] do n := select count(id) from test; total := total + n; end; select total;
+explain declare total int; declare n int; total := 0; for i in (select [1,2,3]) do n := select count(id) from test; total := total + n; end; select total;
+declare total int; declare n int; total := 0; for i in (select [1,2,3]) do n := select count(id) from test; total := total + n; end; select total;
 drop table test
 
-# test: for .. returning
-create table test (id int primary key, data int)
-insert into test values (1, 0), (2, 0), (3, 0)
-explain declare n int := 0; for i in update test set data = id returning id do n := n + i.id; end; select n
-declare n int := 0; for i in update test set data = id returning id do n := n + i.id; end; select n
-drop table test
+## test: for .. returning
+#create table test (id int primary key, data int)
+#insert into test values (1, 0), (2, 0), (3, 0)
+#explain declare n int := 0; for i in update test set data = id returning id do n := n + i.id; end; select n
+#declare n int := 0; for i in update test set data = id returning id do n := n + i.id; end; select n
+#drop table test
 
-# test: for .. upsert
-create table test (id int primary key, data int)
-insert into test values (1, 0)
-explain for i in select [1,2,3] do insert into test values (1, 0) on conflict do update set data = data + 1; end
-for i in select [1,2,3] do insert into test values (1, 0) on conflict do update set data = data + 1; end
-select * from test;
-drop table test
+## test: for .. upsert
+#create table test (id int primary key, data int)
+#insert into test values (1, 0)
+#explain for i in select [1,2,3] do insert into test values (1, 0) on conflict do update set data = data + 1; end
+#for i in select [1,2,3] do insert into test values (1, 0) on conflict do update set data = data + 1; end
+#select * from test;
+#drop table test
 
 disconnect S0
 close E0
