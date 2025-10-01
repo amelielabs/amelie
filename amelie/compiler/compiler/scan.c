@@ -305,25 +305,6 @@ scan_expr(Scan* self, Target* target)
 
 	// emit expression, if not set
 	switch (target->type) {
-	case TARGET_SELECT:
-	{
-		if (target->r == -1)
-		{
-			auto r = emit_select(cp, target->from_select, false);
-			auto rt = rtype(cp, r);
-			if (rt == TYPE_STORE || rt == TYPE_JSON || rt == TYPE_NULL) {
-				target->r = r;
-			} else
-			{
-				// wrap result into set
-				op1(cp, CPUSH, r);
-				runpin(cp, r);
-				target->r = op3(cp, CSET, rpin(cp, TYPE_STORE), 1, 0);
-				op1(cp, CSET_ADD, target->r);
-			}
-		}
-		break;
-	}
 	case TARGET_EXPR:
 	{
 		if (target->r == -1)

@@ -55,10 +55,9 @@ parse_from_target(Stmt* self, Targets* targets, AccessType access, bool subquery
 			{
 				select = parse_select(self, targets->outer, true);
 				stmt_expect(self, ')');
-				target->type        = TARGET_SELECT;
-				target->ast         = ast;
-				target->from_select = &select->ast;
-				target->columns     = &select->ret.columns;
+				target->type    = TARGET_EXPR;
+				target->ast     = ast;
+				target->columns = &select->ret.columns;
 			} else
 			{
 				// rewrite FROM (SELECT) as CTE statement (this can recurse)
@@ -241,8 +240,7 @@ parse_from_add(Stmt* self, Targets* targets, AccessType access,
 		if (alias) {
 			str_set_str(&target->name, &alias->string);
 		} else {
-			if ( target->type == TARGET_SELECT ||
-			     target->type == TARGET_EXPR   ||
+			if ( target->type == TARGET_EXPR ||
 			    (target->type == TARGET_CTE && str_empty(&target->name)))
 				stmt_error(self, NULL, "subquery must have an alias");
 		}

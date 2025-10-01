@@ -19,7 +19,6 @@ typedef enum
 {
 	TARGET_NONE,
 	TARGET_TABLE,
-	TARGET_SELECT,
 	TARGET_EXPR,
 	TARGET_FUNCTION,
 	TARGET_GROUP_BY,
@@ -49,7 +48,6 @@ struct Target
 			IndexConfig* from_index;
 			bool         from_heap;
 		};
-		Ast*     from_select;
 		AstList* from_group_by;
 		Stmt*    from_cte;
 		Var*     from_var;
