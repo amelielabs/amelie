@@ -448,9 +448,6 @@ drop table test
 # test: select * from function() (missing)
 select * from unknown()
 {"msg": "select * from ❰unknown❱ ⟵ function not found"}
-# test: select * from function() (unsupported type)
-select * from now()
-{"msg": "select * from ❰now❱ ⟵ function must return result set or JSON"}
 # test: select * from function() (unsupported json type)
 select * from system.wal()
 {"msg": "FROM: json array expected"}

@@ -306,6 +306,7 @@ scan_expr(Scan* self, Target* target)
 	// emit expression, if not set
 	switch (target->type) {
 	case TARGET_EXPR:
+	case TARGET_FUNCTION:
 	{
 		if (target->r == -1)
 		{
@@ -367,12 +368,6 @@ scan_expr(Scan* self, Target* target)
 				op1(cp, CSET_ADD, target->r);
 			}
 		}
-		break;
-	}
-	case TARGET_FUNCTION:
-	{
-		if (target->r == -1)
-			target->r = emit_func(cp, self->targets, target->from_function);
 		break;
 	}
 	default:

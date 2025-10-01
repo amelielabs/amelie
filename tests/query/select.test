@@ -135,9 +135,6 @@ drop table test
 # test: select * from function() (missing)
 select * from unknown()
 
-# test: select * from function() (unsupported type)
-select * from now()
-
 # test: select * from function() (unsupported json type)
 select * from system.wal()
 

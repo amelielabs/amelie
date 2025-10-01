@@ -127,13 +127,8 @@ parse_from_target(Stmt* self, Targets* targets, AccessType access, bool subquery
 		// parse args ()
 		func->ast.r = parse_expr_args(self, NULL, ')', false);
 
-		// ensure function can be used inside FROM
-		if (func->fn->type != TYPE_STORE &&
-		    func->fn->type != TYPE_JSON)
-			stmt_error(self, expr, "function must return result set or JSON");
-
 		target->type = TARGET_FUNCTION;
-		target->from_function = &func->ast;
+		target->ast  = &func->ast;
 
 		// allocate select to keep returning columns
 		auto select = ast_select_allocate(targets->outer, targets->block);
@@ -255,15 +250,8 @@ parse_from_add(Stmt* self, Targets* targets, AccessType access,
 	}
 
 	// generate first column to match the target name for function target
-	if (target->type == TARGET_FUNCTION)
-	{
-		auto fn = ast_func_of(target->from_function)->fn;
-		auto column = column_allocate();
-		column_set_name(column, &target->name);
-		column_set_type(column, fn->type, type_sizeof(fn->type));
-		columns_add(target->columns, column);
-	} else
-	if (target->type == TARGET_EXPR)
+	if (target->type == TARGET_EXPR ||
+	    target->type == TARGET_FUNCTION)
 	{
 		auto column = column_allocate();
 		column_set_name(column, &target->name);
