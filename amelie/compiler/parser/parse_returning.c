@@ -165,7 +165,7 @@ returning_add_target(Returning* self, Target* target, Ast* star)
 	auto columns = target->columns;
 
 	// use CTE arguments, if they are defined
-	auto cte = target->from_cte;
+	auto cte = target->from_stmt;
 	if (target->type == TARGET_CTE && cte->cte->args.count > 0)
 		columns = &cte->cte->args;
 

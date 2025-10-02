@@ -22,6 +22,7 @@ typedef enum
 	TARGET_FUNCTION,
 	TARGET_EXPR,
 	TARGET_GROUP_BY,
+	TARGET_STMT,
 	TARGET_CTE,
 	TARGET_VAR,
 	TARGET_VALUES
@@ -49,7 +50,7 @@ struct Target
 			bool         from_heap;
 		};
 		AstList* from_group_by;
-		Stmt*    from_cte;
+		Stmt*    from_stmt;
 		Var*     from_var;
 		Ast*     from_function;
 	};

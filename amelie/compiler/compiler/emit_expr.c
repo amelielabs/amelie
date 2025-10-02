@@ -94,7 +94,7 @@ emit_column(Compiler* self, Target* target, Ast* ast,
 	bool column_conflict = false;
 	if (! column)
 	{
-		auto cte = target->from_cte;
+		auto cte = target->from_stmt;
 		if (target->type == TARGET_CTE && cte->cte->args.count > 0)
 		{
 			// find column in the CTE arguments list, redirect to the CTE statement

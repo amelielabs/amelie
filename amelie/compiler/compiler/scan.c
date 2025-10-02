@@ -330,13 +330,14 @@ scan_expr(Scan* self, Target* target)
 		break;
 	}
 	case TARGET_CTE:
+	case TARGET_STMT:
 	{
-		auto cte = target->from_cte;
+		auto stmt = target->from_stmt;
 		if (target->r == -1)
 		{
-			assert(cte->r != -1);
-			auto rt = rtype(cp, cte->r);
-			auto r  = op2(cp, CREF, rpin(cp, rt), cte->r);
+			assert(stmt->r != -1);
+			auto rt = rtype(cp, stmt->r);
+			auto r  = op2(cp, CREF, rpin(cp, rt), stmt->r);
 			if (rt == TYPE_STORE || rt == TYPE_JSON || rt == TYPE_NULL) {
 				target->r = r;
 			} else

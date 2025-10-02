@@ -60,23 +60,21 @@ parse_from_target(Stmt* self, Targets* targets, AccessType access, bool subquery
 				target->columns = &select->ret.columns;
 			} else
 			{
-				// rewrite FROM (SELECT) as CTE statement (this can recurse)
+				// rewrite FROM (SELECT) as dependable statement (this can recurse)
 				auto stmt = stmt_allocate(self->parser, &self->parser->lex, self->block);
 				stmt->id = STMT_SELECT;
 				stmts_insert(&self->block->stmts, self, stmt);
 
 				select = parse_select(stmt, NULL, false);
 				stmt_expect(self, ')');
-				stmt->ast          = &select->ast;
-				stmt->ret          = &select->ret;
-				stmt->cte          = ctes_add(&self->block->ctes, stmt, NULL);
-				stmt->cte->columns = &select->ret.columns;
+				stmt->ast = &select->ast;
+				stmt->ret = &select->ret;
 				parse_select_resolve(stmt);
 
-				target->type     = TARGET_CTE;
-				target->ast      = ast;
-				target->from_cte = stmt;
-				target->columns  = stmt->cte->columns;
+				target->type      = TARGET_STMT;
+				target->ast       = ast;
+				target->from_stmt = stmt;
+				target->columns   = &select->ret.columns;
 			}
 			select->ast.pos_start = ast->pos_start;
 			select->ast.pos_end   = ast->pos_end;
@@ -168,9 +166,9 @@ parse_from_target(Stmt* self, Targets* targets, AccessType access, bool subquery
 	{
 		if (cte->stmt == self)
 			stmt_error(self, expr, "recursive CTE are not supported");
-		target->type     = TARGET_CTE;
-		target->from_cte = cte->stmt;
-		target->columns  = cte->columns;
+		target->type      = TARGET_CTE;
+		target->from_stmt = cte->stmt;
+		target->columns   = cte->columns;
 		str_set_str(&target->name, cte->name);
 		return target;
 	}
@@ -236,8 +234,7 @@ parse_from_add(Stmt* self, Targets* targets, AccessType access,
 		if (alias) {
 			str_set_str(&target->name, &alias->string);
 		} else {
-			if ( target->type == TARGET_EXPR ||
-			    (target->type == TARGET_CTE && str_empty(&target->name)))
+			if (target->type == TARGET_EXPR || target->type == TARGET_STMT)
 				stmt_error(self, NULL, "subquery must have an alias");
 		}
 	}

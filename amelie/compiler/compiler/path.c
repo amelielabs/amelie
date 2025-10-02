@@ -189,7 +189,7 @@ path_column(Path* self, Str* string)
 		str_advance(&path, str_size(&name));
 
 	Column* column = NULL;
-	auto cte = target->from_cte;
+	auto cte = target->from_stmt;
 	if (target->type == TARGET_CTE && cte->cte->args.count > 0)
 	{
 		// find column in the CTE arguments list, redirect to the CTE statement

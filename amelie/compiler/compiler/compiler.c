@@ -226,9 +226,10 @@ emit_sync(Compiler* self, Stmt* stmt)
 		auto select = ast_select_of(ref->ast);
 		for (auto target = select->targets.list; target; target = target->next)
 		{
-			if (target->type != TARGET_CTE)
+			if (target->type != TARGET_CTE &&
+			    target->type != TARGET_STMT)
 				continue;
-			emit_recv(self, target->from_cte);
+			emit_recv(self, target->from_stmt);
 		}
 	}
 }
@@ -497,8 +498,8 @@ emit_for(Compiler* self, Stmt* stmt)
 	// generate all dependable recv statements first
 	auto target = targets_outer(&fora->targets);
 	assert(target);
-	if (target->type == TARGET_CTE)
-		emit_recv(self, target->from_cte);
+	if (target->type == TARGET_CTE || target->type == TARGET_STMT)
+		emit_recv(self, target->from_stmt);
 
 	// scan over targets
 	scan(self,
