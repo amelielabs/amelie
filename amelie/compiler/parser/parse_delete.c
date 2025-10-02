@@ -47,6 +47,7 @@ parse_delete(Stmt* self)
 	// [RETURNING expr [FORMAT name]]
 	auto stmt = ast_delete_allocate();
 	self->ast = &stmt->ast;
+	self->ret = &stmt->ret;
 
 	// FROM
 	auto from = stmt_expect(self, KFROM);

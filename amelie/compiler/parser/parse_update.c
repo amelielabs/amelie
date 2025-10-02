@@ -176,6 +176,7 @@ parse_update(Stmt* self)
 	// [RETURNING expr [FORMAT name]]
 	auto stmt = ast_update_allocate(self->block);
 	self->ast = &stmt->ast;
+	self->ret = &stmt->ret;
 
 	// table
 	parse_from(self, &stmt->targets, ACCESS_RW, false);

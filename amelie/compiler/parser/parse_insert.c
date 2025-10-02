@@ -227,6 +227,7 @@ parse_insert(Stmt* self)
 	// [RETURNING expr [FORMAT name]]
 	auto stmt = ast_insert_allocate(self->block);
 	self->ast = &stmt->ast;
+	self->ret = &stmt->ret;
 
 	// INTO
 	auto into = stmt_expect(self, KINTO);
@@ -273,10 +274,12 @@ parse_insert(Stmt* self)
 			// rewrite INSERT INTO SELECT as separate statement, columns will be
 			// validated during the emit
 			auto select = stmt_allocate(self->parser, &self->parser->lex, self->block);
-			select->id = STMT_SELECT;
+			select->id  = STMT_SELECT;
 			stmts_insert(&self->block->stmts, self, select);
 
-			select->ast = &parse_select(select, NULL, false)->ast;
+			auto select_ref = parse_select(select, NULL, false);
+			select->ret = &select_ref->ret;
+			select->ast = &select_ref->ast;
 			select->ast->pos_start = values->pos_start;
 			select->ast->pos_end   = values->pos_end;
 			parse_select_resolve(select);

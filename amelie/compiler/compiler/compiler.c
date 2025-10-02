@@ -97,13 +97,18 @@ compiler_parse_import(Compiler*    self, Str* text, Str* uri,
 }
 
 static void
-emit_send(Compiler* self, Target* target, Returning* ret, int start)
+emit_send(Compiler* self, Target* target, int start)
 {
 	auto stmt = self->current;
+	auto ret  = stmt->ret;
 
 	// prepare union to use for the distributed operation result
-	if (returning_has(ret))
-		ret->r = op1(self, CUNION, rpin(self, TYPE_STORE));
+	auto rret = -1;
+	if (ret && returning_has(ret))
+	{
+		rret   = op1(self, CUNION, rpin(self, TYPE_STORE));
+		ret->r = rret;
+	}
 
 	// table target pushdown
 	auto table = target->from_table;
@@ -122,7 +127,7 @@ emit_send(Compiler* self, Target* target, Returning* ret, int start)
 		auto r = emit_insert_store(self);
 
 		// CSEND_SHARD
-		op4(self, CSEND_SHARD, start, (intptr_t)table, r, ret->r);
+		op4(self, CSEND_SHARD, start, (intptr_t)table, r, rret);
 		runpin(self, r);
 	} else
 	{
@@ -139,7 +144,7 @@ emit_send(Compiler* self, Target* target, Returning* ret, int start)
 				uint32_t hash = path_create_hash(path);
 
 				// CSEND_LOOKUP
-				op4(self, CSEND_LOOKUP, start, (intptr_t)table, hash, ret->r);
+				op4(self, CSEND_LOOKUP, start, (intptr_t)table, hash, rret);
 			} else
 			{
 				// match exact partition using the point lookup exprs
@@ -152,14 +157,14 @@ emit_send(Compiler* self, Target* target, Returning* ret, int start)
 				}
 
 				// CSEND_LOOKUP_BY
-				op3(self, CSEND_LOOKUP_BY, start, (intptr_t)table, ret->r);
+				op3(self, CSEND_LOOKUP_BY, start, (intptr_t)table, rret);
 			}
 		} else
 		{
 			// send to all table partitions (one or more)
 
 			// CSEND_ALL
-			op3(self, CSEND_ALL, start, (intptr_t)table, ret->r);
+			op3(self, CSEND_ALL, start, (intptr_t)table, rret);
 		}
 	}
 
@@ -172,47 +177,20 @@ emit_send(Compiler* self, Target* target, Returning* ret, int start)
 static void
 emit_recv(Compiler* self, Stmt* stmt)
 {
+	// Select or DML Returning with target
+	auto ret = stmt->ret;
+	if (!ret || ret->r == -1 || ret->r_recv)
+		return;
+
 	if (stmt->r != -1)
 		return;
 
-	Returning* ret = NULL;
-	switch (stmt->id) {
-	case STMT_INSERT:
-	{
-		auto insert = ast_insert_of(stmt->ast);
-		ret = &insert->ret;
-		break;
-	}
-	case STMT_UPDATE:
-	{
-		auto update = ast_update_of(stmt->ast);
-		ret = &update->ret;
-		break;
-	}
-	case STMT_DELETE:
-	{
-		auto delete = ast_delete_of(stmt->ast);
-		ret = &delete->ret;
-		break;
-	}
-	case STMT_SELECT:
+	if (stmt->id == STMT_SELECT)
 	{
 		auto select = ast_select_of(stmt->ast);
-		ret = &select->ret;
 		if (! select->pushdown)
 			return;
-		break;
 	}
-	case STMT_WATCH:
-	case STMT_IF:
-	case STMT_FOR:
-		return;
-	default:
-		abort();
-		break;
-	}
-	if (ret->r == -1 || ret->r_recv)
-		return;
 
 	// CUNION_RECV
 	//
@@ -315,7 +293,7 @@ emit_stmt_backend(Compiler* self, Stmt* stmt)
 	return start;
 }
 
-hot static Returning*
+hot static void
 emit_stmt(Compiler* self, Stmt* stmt)
 {
 	auto stmt_prev = self->current;
@@ -329,27 +307,23 @@ emit_stmt(Compiler* self, Stmt* stmt)
 
 	// generate frontend code
 	compiler_switch_frontend(self);
-	Returning* ret = NULL;
 	Target* target = NULL;
 	switch (stmt->id) {
 	case STMT_INSERT:
 	{
 		auto insert = ast_insert_of(stmt->ast);
-		ret = &insert->ret;
 		target = targets_outer(&insert->targets);
 		break;
 	}
 	case STMT_UPDATE:
 	{
 		auto update = ast_update_of(stmt->ast);
-		ret = &update->ret;
 		target = targets_outer(&update->targets);
 		break;
 	}
 	case STMT_DELETE:
 	{
 		auto delete = ast_delete_of(stmt->ast);
-		ret = &delete->ret;
 		target = targets_outer(&delete->targets);
 		break;
 	}
@@ -357,7 +331,6 @@ emit_stmt(Compiler* self, Stmt* stmt)
 	{
 		// select from table, ...
 		auto select = ast_select_of(stmt->ast);
-		ret = &select->ret;
 		target = select->pushdown;
 
 		// table scan or join
@@ -386,9 +359,10 @@ emit_stmt(Compiler* self, Stmt* stmt)
 
 	// generate frontend send command based on the target
 	if (target)
-		emit_send(self, target, ret, start);
+		emit_send(self, target, start);
 
 	// assign :=
+	auto ret = stmt->ret;
 	auto var = stmt->assign;
 	if (var)
 	{
@@ -426,7 +400,6 @@ emit_stmt(Compiler* self, Stmt* stmt)
 
 	// set previous stmt
 	self->current = stmt_prev;
-	return ret;
 }
 
 hot static void
@@ -556,8 +529,7 @@ emit_block(Compiler* self, Block* block)
 	for (; var; var = var->next)
 		var->r = rpin(self, var->type);
 
-	// emit statements in the block, track last statement returning
-	Returning* returning = NULL;
+	// emit statements in the block, track last statement
 	Stmt* last = NULL;
 	auto stmt = block->stmts.list;
 	for (; stmt; stmt = stmt->next)
@@ -568,7 +540,7 @@ emit_block(Compiler* self, Block* block)
 		if (stmt->id == STMT_FOR)
 			emit_for(self, stmt);
 		else
-			returning = emit_stmt(self, stmt);
+			emit_stmt(self, stmt);
 		last = stmt;
 	}
 
@@ -583,8 +555,8 @@ emit_block(Compiler* self, Block* block)
 	{
 		if (last && last->r != -1)
 			op3(self, CCONTENT, last->r,
-			    (intptr_t)&returning->columns,
-			    (intptr_t)&returning->format);
+			    (intptr_t)&last->ret->columns,
+			    (intptr_t)&last->ret->format);
 
 		op0(self, CRET);
 	} else

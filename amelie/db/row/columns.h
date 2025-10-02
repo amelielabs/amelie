@@ -40,6 +40,7 @@ columns_free(Columns* self)
 		auto column = list_at(Column, link);
 		column_free(column);
 	}
+	list_init(&self->list);
 }
 
 static inline void

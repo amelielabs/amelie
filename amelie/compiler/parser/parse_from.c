@@ -68,6 +68,7 @@ parse_from_target(Stmt* self, Targets* targets, AccessType access, bool subquery
 				select = parse_select(stmt, NULL, false);
 				stmt_expect(self, ')');
 				stmt->ast          = &select->ast;
+				stmt->ret          = &select->ret;
 				stmt->cte          = ctes_add(&self->block->ctes, stmt, NULL);
 				stmt->cte->columns = &select->ret.columns;
 				parse_select_resolve(stmt);

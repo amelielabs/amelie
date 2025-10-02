@@ -11,11 +11,12 @@
 // AGPL-3.0 Licensed.
 //
 
-typedef struct Stmt   Stmt;
-typedef struct Parser Parser;
-typedef struct Var    Var;
-typedef struct Cte    Cte;
-typedef struct Block  Block;
+typedef struct Stmt      Stmt;
+typedef struct Parser    Parser;
+typedef struct Var       Var;
+typedef struct Cte       Cte;
+typedef struct Returning Returning;
+typedef struct Block     Block;
 
 typedef enum
 {
@@ -53,17 +54,18 @@ typedef enum
 
 struct Stmt
 {
-	Lex*    lex;
-	StmtId  id;
-	Ast*    ast;
-	int     r;
-	Cte*    cte;
-	Var*    assign;
-	AstList select_list;
-	Block*  block;
-	Parser* parser;
-	Stmt*   next;
-	Stmt*   prev;
+	Lex*       lex;
+	StmtId     id;
+	Ast*       ast;
+	int        r;
+	Returning* ret;
+	Cte*       cte;
+	Var*       assign;
+	AstList    select_list;
+	Block*     block;
+	Parser*    parser;
+	Stmt*      next;
+	Stmt*      prev;
 };
 
 static inline Stmt*
@@ -73,6 +75,7 @@ stmt_allocate(Parser* parser, Lex* lex, Block* block)
 	self->id     = STMT_UNDEF;
 	self->ast    = NULL;
 	self->r      = -1;
+	self->ret    = NULL;
 	self->cte    = NULL;
 	self->assign = NULL;
 	self->next   = NULL;

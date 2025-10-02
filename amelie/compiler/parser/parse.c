@@ -97,25 +97,17 @@ parse_stmt_free(Stmt* stmt)
 	case STMT_INSERT:
 	{
 		auto ast = ast_insert_of(stmt->ast);
-		returning_free(&ast->ret);
 		if (ast->values)
 			set_cache_push(stmt->parser->values_cache, ast->values);
 		break;
 	}
-	case STMT_DELETE:
-	{
-		auto ast = ast_delete_of(stmt->ast);
-		returning_free(&ast->ret);
-		break;
-	}
-	case STMT_UPDATE:
-	{
-		auto ast = ast_update_of(stmt->ast);
-		returning_free(&ast->ret);
-		break;
-	}
 	default:
 		break;
+	}
+	if (stmt->ret)
+	{
+		returning_free(stmt->ret);
+		stmt->ret = NULL;
 	}
 
 	// free select statements
@@ -327,7 +319,7 @@ parse_stmt(Parser* self, Stmt* stmt)
 		break;
 
 	case KINSERT:
-		stmt->id = STMT_INSERT;
+		stmt->id  = STMT_INSERT;
 		parse_insert(stmt);
 		stmt->block->stmts.last_send = stmt;
 		break;
@@ -349,6 +341,7 @@ parse_stmt(Parser* self, Stmt* stmt)
 		stmt->id = STMT_SELECT;
 		auto select = parse_select(stmt, stmt->block->targets, false);
 		stmt->ast = &select->ast;
+		stmt->ret = &select->ret;
 		if (select->pushdown)
 			stmt->block->stmts.last_send = stmt;
 		break;
@@ -388,6 +381,7 @@ parse_stmt(Parser* self, Stmt* stmt)
 			stmt->id = STMT_SELECT;
 			auto select = parse_select_expr(stmt);
 			stmt->ast = &select->ast;
+			stmt->ret = &select->ret;
 			break;
 		}
 		stmt_error(stmt, NULL, "unexpected statement");
@@ -425,24 +419,9 @@ parse_with(Parser* self, Block* block)
 		parse_stmt(self, stmt);
 
 		// set cte returning columns
-		Returning* ret = NULL;
-		switch (stmt->id) {
-		case STMT_INSERT:
-			ret = &ast_insert_of(stmt->ast)->ret;
-			break;
-		case STMT_UPDATE:
-			ret = &ast_update_of(stmt->ast)->ret;
-			break;
-		case STMT_DELETE:
-			ret = &ast_delete_of(stmt->ast)->ret;
-			break;
-		case STMT_SELECT:
-			ret = &ast_select_of(stmt->ast)->ret;
-			break;
-		default:
+		auto ret = stmt->ret;
+		if (! ret)
 			stmt_error(stmt, start, "CTE statement must be DML or SELECT");
-			break;
-		}
 		stmt->cte->columns = &ret->columns;
 
 		// ensure that arguments count match
