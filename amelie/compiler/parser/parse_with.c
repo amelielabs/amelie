@@ -40,7 +40,7 @@
 #include <amelie_parser.h>
 
 static void
-parse_cte_args(Stmt* self)
+parse_with_args(Stmt* self, Columns* columns)
 {
 	// )
 	if (stmt_if(self, ')'))
@@ -52,14 +52,14 @@ parse_cte_args(Stmt* self)
 		auto name = stmt_expect(self, KNAME);
 
 		// ensure argument is unique
-		auto arg = columns_find(&self->cte_columns, &name->string);
+		auto arg = columns_find(columns, &name->string);
 		if (arg)
 			stmt_error(self, name, "argument redefined");
 
 		// add argument to the list
 		arg = column_allocate();
 		column_set_name(arg, &name->string);
-		columns_add(&self->cte_columns, arg);
+		columns_add(columns, arg);
 
 		// ,
 		if (! stmt_if(self, ','))
@@ -70,19 +70,53 @@ parse_cte_args(Stmt* self)
 	stmt_expect(self, ')');
 }
 
-void
-parse_cte(Stmt* self)
+hot void
+parse_with(Parser* self, Block* block)
 {
-	// name [(args)]
-	auto name = stmt_expect(self, KNAME);
+	auto lex = &self->lex;
+	for (;;)
+	{
+		// name [(args)] AS ( stmt )[, ...]
+		auto name = lex_expect(lex, KNAME);
 
-	// ensure CTE is not redefined
-	auto stmt = block_find(self->block, &name->string);
-	if (stmt)
-		stmt_error(self, name, "CTE is redefined");
-	self->cte_name = &name->string;
+		// ensure CTE is not redefined
+		auto cte = block_find(block, &name->string);
+		if (cte)
+			lex_error(lex, name, "CTE is redefined");
+		cte = stmt_allocate(self, lex, block);
+		cte->cte_name = &name->string;
+		stmts_add(&block->stmts, cte);
 
-	// (args)
-	if (stmt_if(self, '('))
-		parse_cte_args(self);
+		// (args)
+		if (lex_if(lex, '('))
+			parse_with_args(cte, &cte->cte_columns);
+
+		// AS (
+		stmt_expect(cte, KAS);
+		auto start = stmt_expect(cte, '(');
+
+		// parse stmt (cannot be a utility statement)
+		parse_stmt(self, cte);
+
+		// set cte returning columns
+		auto ret = cte->ret;
+		if (! ret)
+			stmt_error(cte, start, "CTE statement must be DML or SELECT");
+
+		// ensure that arguments count match
+		if (cte->cte_columns.count > 0)
+		{
+		    if (cte->cte_columns.count != ret->columns.count)
+				stmt_error(cte, start, "CTE arguments count does not match the returning arguments count");
+		} else {
+			columns_copy(&cte->cte_columns, &ret->columns);
+		}
+
+		// )
+		stmt_expect(cte, ')');
+
+		// ,
+		if (! lex_if(lex, ','))
+			break;
+	}
 }

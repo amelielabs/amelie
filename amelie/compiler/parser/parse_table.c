@@ -377,7 +377,7 @@ parse_columns(Stmt* self, Columns* columns, Keys* keys)
 }
 
 static void
-parse_with(Stmt* self, AstTableCreate* stmt, IndexConfig* index_config)
+parse_table_with(Stmt* self, AstTableCreate* stmt, IndexConfig* index_config)
 {
 	// [WITH]
 	if (! stmt_if(self, KWITH))
@@ -516,7 +516,7 @@ parse_table_create(Stmt* self, bool unlogged)
 	}
 
 	// [WITH]
-	parse_with(self, stmt, index_config);
+	parse_table_with(self, stmt, index_config);
 
 	// define partitions
 	parse_table_finilize(stmt);

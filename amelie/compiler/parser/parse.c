@@ -399,49 +399,6 @@ parse_stmt(Parser* self, Stmt* stmt)
 	parse_select_resolve(stmt);
 }
 
-hot static void
-parse_with(Parser* self, Block* block)
-{
-	auto lex = &self->lex;
-	for (;;)
-	{
-		// name [(args)] AS ( stmt )[, ...]
-		auto stmt = stmt_allocate(self, &self->lex, block);
-		stmts_add(&block->stmts, stmt);
-
-		// name [(args)]
-		parse_cte(stmt);
-
-		// AS (
-		stmt_expect(stmt, KAS);
-		auto start = stmt_expect(stmt, '(');
-
-		// parse stmt (cannot be a utility statement)
-		parse_stmt(self, stmt);
-
-		// set cte returning columns
-		auto ret = stmt->ret;
-		if (! ret)
-			stmt_error(stmt, start, "CTE statement must be DML or SELECT");
-
-		// ensure that arguments count match
-		if (stmt->cte_columns.count > 0)
-		{
-		    if (stmt->cte_columns.count != ret->columns.count)
-				stmt_error(stmt, start, "CTE arguments count does not match the returning arguments count");
-		} else {
-			columns_copy(&stmt->cte_columns, &ret->columns);
-		}
-
-		// )
-		stmt_expect(stmt, ')');
-
-		// ,
-		if (! lex_if(lex, ','))
-			break;
-	}
-}
-
 hot void
 parse_block(Parser* self, Block* block)
 {

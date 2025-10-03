@@ -40,7 +40,7 @@
 #include <amelie_parser.h>
 
 static void
-parse_with(Stmt* self, IndexConfig* index_config)
+parse_index_with(Stmt* self, IndexConfig* index_config)
 {
 	// [WITH]
 	if (! stmt_if(self, KWITH))
@@ -132,7 +132,7 @@ parse_index_create(Stmt* self, bool unique)
 		keys_copy_distinct(&config->keys, table_keys(table));
 
 	// [WITH (options)]
-	parse_with(self, stmt->config);
+	parse_index_with(self, stmt->config);
 }
 
 void
