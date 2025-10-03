@@ -226,8 +226,7 @@ emit_sync(Compiler* self, Stmt* stmt)
 		auto select = ast_select_of(ref->ast);
 		for (auto target = select->targets.list; target; target = target->next)
 		{
-			if (target->type != TARGET_CTE &&
-			    target->type != TARGET_STMT)
+			if (target->type != TARGET_STMT)
 				continue;
 			emit_recv(self, target->from_stmt);
 		}
@@ -295,6 +294,45 @@ emit_stmt_backend(Compiler* self, Stmt* stmt)
 }
 
 hot static void
+emit_assign(Compiler* self, Stmt* stmt)
+{
+	// assign :=
+	auto ret = stmt->ret;
+	auto var = stmt->assign;
+
+	// generate recv if stmt result is expected for := or return
+	emit_recv(self, stmt);
+	if (! ret)
+		stmt_error(stmt, NULL, "statement cannot be assigned");
+	assert(stmt->r != -1);
+
+	if (var->type == TYPE_STORE)
+	{
+		// compare columns
+		auto type = rtype(self, stmt->r);
+		if (type != TYPE_NULL && !columns_compare(&var->columns, &ret->columns))
+			stmt_error(self->current, stmt->ast, "variable table columns mismatch");
+
+		// var = store
+		op2(self, CASSIGN_STORE, var->r, stmt->r);
+	} else
+	{
+		if (ret->count > 1)
+			stmt_error(stmt, NULL, "statement must return only one column to be assigned");
+
+		auto type = columns_first(&ret->columns)->type;
+		if (type != TYPE_NULL && var->type != type)
+			stmt_error(self->current, stmt->ast, "variable expected %s",
+			           type_of(var->type));
+
+		op2(self, CASSIGN, var->r, stmt->r);
+	}
+
+	runpin(self, stmt->r);
+	stmt->r = -1;
+}
+
+hot static void
 emit_stmt(Compiler* self, Stmt* stmt)
 {
 	auto stmt_prev = self->current;
@@ -358,46 +396,17 @@ emit_stmt(Compiler* self, Stmt* stmt)
 		break;
 	}
 
+	// set cte columns types
+	if (stmt->cte_name)
+		columns_copy_types(&stmt->cte_columns, &stmt->ret->columns);
+
 	// generate frontend send command based on the target
 	if (target)
 		emit_send(self, target, start);
 
 	// assign :=
-	auto ret = stmt->ret;
-	auto var = stmt->assign;
-	if (var)
-	{
-		// generate recv if stmt result is expected for := or return
-		emit_recv(self, stmt);
-		if (! ret)
-			stmt_error(stmt, NULL, "statement cannot be assigned");
-		assert(stmt->r != -1);
-
-		if (var->type == TYPE_STORE)
-		{
-			// compare columns
-			auto type = rtype(self, stmt->r);
-			if (type != TYPE_NULL && !columns_compare(&var->columns, &ret->columns))
-				stmt_error(self->current, stmt->ast, "variable table columns mismatch");
-
-			// var = store
-			op2(self, CASSIGN_STORE, var->r, stmt->r);
-		} else
-		{
-			if (ret->count > 1)
-				stmt_error(stmt, NULL, "statement must return only one column to be assigned");
-
-			auto type = columns_first(&ret->columns)->type;
-			if (type != TYPE_NULL && var->type != type)
-				stmt_error(self->current, stmt->ast, "variable expected %s",
-				           type_of(var->type));
-
-			op2(self, CASSIGN, var->r, stmt->r);
-		}
-
-		runpin(self, stmt->r);
-		stmt->r = -1;
-	}
+	if (stmt->assign)
+		emit_assign(self, stmt);
 
 	// set previous stmt
 	self->current = stmt_prev;
@@ -498,7 +507,7 @@ emit_for(Compiler* self, Stmt* stmt)
 	// generate all dependable recv statements first
 	auto target = targets_outer(&fora->targets);
 	assert(target);
-	if (target->type == TARGET_CTE || target->type == TARGET_STMT)
+	if (target->type == TARGET_STMT)
 		emit_recv(self, target->from_stmt);
 
 	// scan over targets

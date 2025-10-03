@@ -94,19 +94,8 @@ emit_column(Compiler* self, Target* target, Ast* ast,
 	bool column_conflict = false;
 	if (! column)
 	{
-		auto cte = target->from_stmt;
-		if (target->type == TARGET_CTE && cte->cte->args.count > 0)
-		{
-			// find column in the CTE arguments list, redirect to the CTE statement
-			auto arg = columns_find(&cte->cte->args, name);
-			if (arg)
-				column = columns_find_by(target->columns, arg->order);
-		} else
-		{
-			// find unique column name in the target
-			column = columns_find_noconflict(target->columns, name, &column_conflict);
-		}
-
+		// find unique column name in the target
+		column = columns_find_noconflict(target->columns, name, &column_conflict);
 		if (!column && target->type != TARGET_FUNCTION)
 		{
 			if (column_conflict)

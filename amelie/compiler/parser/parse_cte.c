@@ -52,14 +52,14 @@ parse_cte_args(Stmt* self)
 		auto name = stmt_expect(self, KNAME);
 
 		// ensure argument is unique
-		auto arg = columns_find(&self->cte->args, &name->string);
+		auto arg = columns_find(&self->cte_columns, &name->string);
 		if (arg)
 			stmt_error(self, name, "argument redefined");
 
 		// add argument to the list
 		arg = column_allocate();
 		column_set_name(arg, &name->string);
-		columns_add(&self->cte->args, arg);
+		columns_add(&self->cte_columns, arg);
 
 		// ,
 		if (! stmt_if(self, ','))
@@ -77,12 +77,10 @@ parse_cte(Stmt* self)
 	auto name = stmt_expect(self, KNAME);
 
 	// ensure CTE is not redefined
-	auto cte = ctes_find(&self->block->ctes, &name->string);
-	if (cte)
+	auto stmt = block_find(self->block, &name->string);
+	if (stmt)
 		stmt_error(self, name, "CTE is redefined");
-
-	cte = ctes_add(&self->block->ctes, self, &name->string);
-	self->cte = cte;
+	self->cte_name = &name->string;
 
 	// (args)
 	if (stmt_if(self, '('))

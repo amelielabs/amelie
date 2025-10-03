@@ -60,8 +60,6 @@ parser_reset(Parser* self)
 	for (auto block = self->blocks.list; block; block = block->next)
 	{
 		vars_free(&block->vars);
-		ctes_free(&block->ctes);
-
 		auto stmt = block->stmts.list;
 		while (stmt)
 		{

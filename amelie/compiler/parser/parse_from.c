@@ -161,15 +161,15 @@ parse_from_target(Stmt* self, Targets* targets, AccessType access, bool subquery
 	}
 
 	// cte
-	auto cte = ctes_find(&self->block->ctes, &name);
-	if (cte)
+	auto stmt = block_find(self->block, &name);
+	if (stmt)
 	{
-		if (cte->stmt == self)
+		if (stmt == self)
 			stmt_error(self, expr, "recursive CTE are not supported");
-		target->type      = TARGET_CTE;
-		target->from_stmt = cte->stmt;
-		target->columns   = cte->columns;
-		str_set_str(&target->name, cte->name);
+		target->type      = TARGET_STMT;
+		target->from_stmt = stmt;
+		target->columns   = &stmt->cte_columns;
+		str_set_str(&target->name, stmt->cte_name);
 		return target;
 	}
 
@@ -234,7 +234,7 @@ parse_from_add(Stmt* self, Targets* targets, AccessType access,
 		if (alias) {
 			str_set_str(&target->name, &alias->string);
 		} else {
-			if (target->type == TARGET_EXPR || target->type == TARGET_STMT)
+			if (str_empty(&target->name))
 				stmt_error(self, NULL, "subquery must have an alias");
 		}
 	}

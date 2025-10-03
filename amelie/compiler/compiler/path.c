@@ -188,21 +188,9 @@ path_column(Path* self, Str* string)
 	else
 		str_advance(&path, str_size(&name));
 
-	Column* column = NULL;
-	auto cte = target->from_stmt;
-	if (target->type == TARGET_CTE && cte->cte->args.count > 0)
-	{
-		// find column in the CTE arguments list, redirect to the CTE statement
-		auto arg = columns_find(&cte->cte->args, &name);
-		if (arg)
-			column = columns_find_by(target->columns, arg->order);
-	} else
-	{
-		// find unique column name in the target
-		bool column_conflict = false;
-		column = columns_find_noconflict(target->columns, &name, &column_conflict);
-	}
-
+	// find unique column name in the target
+	bool column_conflict = false;
+	auto column = columns_find_noconflict(target->columns, &name, &column_conflict);
 	return column;
 }
 

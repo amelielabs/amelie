@@ -128,7 +128,7 @@ parse_returning(Returning* self, Stmt* stmt, Expr* ctx)
 	if (stmt_if(stmt, KINTO))
 	{
 		auto name = stmt_expect(stmt, KNAME);
-		if (stmt->cte)
+		if (stmt->cte_name)
 			stmt_error(stmt, name, "INTO cannot be used with CTE");
 		if (stmt->assign)
 			stmt_error(stmt, name, "INTO cannot be used with := operator");
@@ -163,12 +163,6 @@ returning_add_target(Returning* self, Target* target, Ast* star)
 {
 	// import all available columns into the expression list
 	auto columns = target->columns;
-
-	// use CTE arguments, if they are defined
-	auto cte = target->from_stmt;
-	if (target->type == TARGET_CTE && cte->cte->args.count > 0)
-		columns = &cte->cte->args;
-
 	list_foreach(&columns->list)
 	{
 		auto column = list_at(Column, link);

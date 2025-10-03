@@ -40,7 +40,7 @@ columns_free(Columns* self)
 		auto column = list_at(Column, link);
 		column_free(column);
 	}
-	list_init(&self->list);
+	columns_init(self);
 }
 
 static inline void
@@ -167,6 +167,20 @@ columns_compare(Columns* self, Columns* with)
 		with_it = with_it->next;
 	}
 	return true;
+}
+
+static inline void
+columns_copy_types(Columns* self, Columns* src)
+{
+	assert(self->count == src->count);
+	auto src_it = src->list.next;
+	list_foreach(&self->list)
+	{
+		auto column = list_at(Column, link);
+		auto column_src = container_of(src_it, Column, link);
+		column->type = column_src->type;
+		src_it = src_it->next;
+	}
 }
 
 static inline void

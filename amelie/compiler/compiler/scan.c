@@ -329,7 +329,6 @@ scan_expr(Scan* self, Target* target)
 		}
 		break;
 	}
-	case TARGET_CTE:
 	case TARGET_STMT:
 	{
 		auto stmt = target->from_stmt;

@@ -109,6 +109,7 @@ parse_stmt_free(Stmt* stmt)
 		returning_free(stmt->ret);
 		stmt->ret = NULL;
 	}
+	columns_free(&stmt->cte_columns);
 
 	// free select statements
 	for (auto ref = stmt->select_list.list; ref; ref = ref->next)
@@ -422,12 +423,15 @@ parse_with(Parser* self, Block* block)
 		auto ret = stmt->ret;
 		if (! ret)
 			stmt_error(stmt, start, "CTE statement must be DML or SELECT");
-		stmt->cte->columns = &ret->columns;
 
 		// ensure that arguments count match
-		if (stmt->cte->args.count > 0 &&
-		    stmt->cte->args.count != stmt->cte->columns->count)
-			stmt_error(stmt, start, "CTE arguments count does not match the returning arguments count");
+		if (stmt->cte_columns.count > 0)
+		{
+		    if (stmt->cte_columns.count != ret->columns.count)
+				stmt_error(stmt, start, "CTE arguments count does not match the returning arguments count");
+		} else {
+			columns_copy(&stmt->cte_columns, &ret->columns);
+		}
 
 		// )
 		stmt_expect(stmt, ')');

@@ -56,3 +56,16 @@ stmts_insert(Stmts* self, Stmt* before, Stmt* stmt)
 	before->prev = stmt;
 	self->count++;
 }
+
+static inline Stmt*
+stmts_find(Stmts* self, Str* name)
+{
+	for (auto stmt = self->list; stmt; stmt = stmt->next)
+	{
+		if (! stmt->cte_name)
+			continue;
+		if (str_compare(stmt->cte_name, name))
+			return stmt;
+	}
+	return NULL;
+}
