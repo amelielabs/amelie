@@ -519,6 +519,10 @@ emit_for(Compiler* self, Stmt* stmt)
 	     emit_for_on_match,
 	     fora);
 
+	// set snapshot if loop is using send command
+	if (fora->block->stmts.last_send)
+		self->program->snapshot = true;
+
 	// mark last sending operation in the main block
 	auto block = compiler_block(self);
 	if (stmt->block == block && block->stmts.last_send == stmt)
