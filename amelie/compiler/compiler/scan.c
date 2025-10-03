@@ -304,74 +304,47 @@ scan_expr(Scan* self, Target* target)
 	auto cp = self->compiler;
 
 	// emit expression, if not set
-	switch (target->type) {
-	case TARGET_EXPR:
-	case TARGET_FUNCTION:
+	if (target->r == -1)
 	{
-		if (target->r == -1)
+		auto r    = -1;
+		auto type = -1;
+		auto ref  = true;
+		switch (target->type) {
+		case TARGET_EXPR:
+		case TARGET_FUNCTION:
 		{
-			auto r = emit_expr(cp, self->targets, target->ast);
-			auto rt = rtype(cp, r);
-			if (rt == TYPE_STORE || rt == TYPE_JSON || rt == TYPE_NULL) {
-				target->r = r;
-			} else
-			{
-				// wrap result into set
-				op1(cp, CPUSH, r);
-				runpin(cp, r);
-				target->r = op3(cp, CSET, rpin(cp, TYPE_STORE), 1, 0);
-				op1(cp, CSET_ADD, target->r);
-			}
-
+			r = emit_expr(cp, self->targets, target->ast);
+			type = rtype(cp, r);
 			// set expression type
 			assert(target->columns->count == 1);
-			column_set_type(columns_first(target->columns), rt, type_sizeof(rt));
+			column_set_type(columns_first(target->columns), type, type_sizeof(type));
+			ref = false;
+			break;
 		}
-		break;
-	}
-	case TARGET_STMT:
-	{
-		auto stmt = target->from_stmt;
-		if (target->r == -1)
+		case TARGET_STMT:
+			r = target->from_stmt->r;
+			break;
+		case TARGET_VAR:
+			r = target->from_var->r;
+			break;
+		default:
+			abort();
+			break;
+		}
+
+		type = rtype(cp, r);
+		if (ref)
+			r = op2(cp, CREF, rpin(cp, type), r);
+
+		// convert value to store
+		if (type != TYPE_STORE && type != TYPE_JSON && type != TYPE_NULL)
 		{
-			assert(stmt->r != -1);
-			auto rt = rtype(cp, stmt->r);
-			auto r  = op2(cp, CREF, rpin(cp, rt), stmt->r);
-			if (rt == TYPE_STORE || rt == TYPE_JSON || rt == TYPE_NULL) {
-				target->r = r;
-			} else
-			{
-				// wrap result into set
-				op1(cp, CPUSH, r);
-				runpin(cp, r);
-				target->r = op3(cp, CSET, rpin(cp, TYPE_STORE), 1, 0);
-				op1(cp, CSET_ADD, target->r);
-			}
+			op1(cp, CPUSH, r);
+			runpin(cp, r);
+			r = op3(cp, CSET, rpin(cp, TYPE_STORE), 1, 0);
+			op1(cp, CSET_ADD, r);
 		}
-		break;
-	}
-	case TARGET_VAR:
-	{
-		auto var = target->from_var;
-		if (target->r == -1)
-		{
-			auto rt = rtype(cp, var->r);
-			auto r  = op2(cp, CREF, rpin(cp, rt), var->r);
-			if (rt == TYPE_STORE || rt == TYPE_JSON || rt == TYPE_NULL) {
-				target->r = r;
-			} else
-			{
-				// wrap result into set
-				op1(cp, CPUSH, r);
-				runpin(cp, r);
-				target->r = op3(cp, CSET, rpin(cp, TYPE_STORE), 1, 0);
-				op1(cp, CSET_ADD, target->r);
-			}
-		}
-		break;
-	}
-	default:
-		break;
+		target->r = r;
 	}
 	assert(target->r != -1);
 
