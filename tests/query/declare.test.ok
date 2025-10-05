@@ -9,7 +9,6 @@ declare name
 {"msg": "declare name ⟵ unrecognized data type"}
 # test: declare
 declare a int
-{"msg": "declare a int ⟵ ; expected"}
 declare a int;
 explain declare a int;
 {"msg": "❰explain❱ ⟵ EXPLAIN without command"}
@@ -225,7 +224,7 @@ explain declare x int; x := 1; select * from test where id = x
 }]
 # test: := with cte
 declare x int; x := with a as (select 1) select * from a; select x
-[1]
+{"msg": "declare x int; x := ❰with❱ ⟵ bad expression"}
 # test: := with cte (assign inside)
 declare x int; with a as (x := select 1) select * from a; select x
 {"msg": "declare x int; with a as (x ❰:=❱ ⟵ unexpected statement"}

@@ -36,7 +36,7 @@ with test as ()
 {"msg": "with test as () ⟵ unexpected statement"}
 # test: with(select expr) (no main stmt)
 with test as (select 1)
-{"msg": "with test as (select 1) ⟵ statement expected"}
+{"msg": "with test as (select 1) ⟵ unexpected end of statement"}
 # test: with(select expr), select expr (cte not used)
 with test as (select 1) select 2
 [2]

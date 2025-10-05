@@ -399,6 +399,60 @@ parse_stmt(Parser* self, Stmt* stmt)
 	parse_select_resolve(stmt);
 }
 
+hot static void
+parse_block_stmt(Parser* self, Block* block)
+{
+	auto lex = &self->lex;
+
+	// [WITH name AS ( cte )[, name AS (...)]]
+	if (lex_if(lex, KWITH))
+	{
+		parse_with(self, block);
+		return;
+	}
+
+	// [DECLARE var type ;]
+	// [DECLARE var type := expr]
+	Var* assign = NULL;
+	if (lex_if(lex, KDECLARE)) {
+		assign = parse_declare(self, &block->vars);
+		if (! lex_if(lex, KASSIGN))
+			return;
+	} else
+	{
+		// [var := stmt]
+		auto ast = lex_if(lex, KNAME);
+		if (ast)
+		{
+			if (! lex_if(lex, KASSIGN))
+				lex_error_expect(lex, lex_next(lex), KASSIGN);
+			assign = block_var_find(block, &ast->string);
+			if (! assign)
+				lex_error(lex, ast, "variable not found");
+		}
+	}
+
+	// stmt
+	auto stmt = stmt_allocate(self, &self->lex, block);
+	stmts_add(&block->stmts, stmt);
+	stmt->assign = assign;
+	parse_stmt(self, stmt);
+
+	// validate usage of utility statement
+	if (stmt_is_utility(stmt))
+	{
+		// ensure root block being used
+		if (block != self->blocks.list)
+			stmt_error(stmt, stmt->ast, "utility statement cannot be used here");
+
+		// ensure it is not assigned
+		if (stmt->assign)
+			stmt_error(stmt, NULL, ":= cannot be used with utility statements");
+
+		block->stmts.count_utility++;
+	}
+}
+
 hot void
 parse_block(Parser* self, Block* block)
 {
@@ -423,58 +477,15 @@ parse_block(Parser* self, Block* block)
 		}
 		lex_push(lex, ast);
 
-		// [DECLARE var type ;]
-		// [DECLARE var type := stmt]
-		Var* assign = NULL;
-		if (lex_if(lex, KDECLARE)) {
-			assign = parse_declare(self, &block->vars);
-			if (! lex_if(lex, KASSIGN)) {
-				lex_expect(lex, ';');
-				continue;
-			}
-		} else
-		{
-			// [var := stmt]
-			ast = lex_if(lex, KNAME);
-			if (ast)
-			{
-				if (! lex_if(lex, KASSIGN))
-					lex_error_expect(lex, lex_next(lex), KASSIGN);
-				assign = block_var_find(block, &ast->string);
-				if (! assign)
-					lex_error(lex, ast, "variable not found");
-			}
-		}
-
-		// [WITH name AS ( cte )[, name AS (...)]]
-		if (lex_if(lex, KWITH))
-			parse_with(self, block);
-
-		ast = lex_if(lex, KEOF);
-		if (ast)
-			lex_error(lex, ast, "statement expected");
-
-		// stmt (last stmt is main)
-		auto stmt = stmt_allocate(self, &self->lex, block);
-		stmts_add(&block->stmts, stmt);
-		stmt->assign = assign;
-
-		// stmt
-		parse_stmt(self, stmt);
-
-		if (stmt_is_utility(stmt))
-		{
-			if (stmt->assign)
-				stmt_error(stmt, NULL, ":= cannot be used with utility statements");
-			block->stmts.count_utility++;
-		}
+		// WITH | DECLARE | := | stmt
+		parse_block_stmt(self, block);
 
 		// EOF
 		if (lex_if(lex, KEOF))
 			break;
 
 		// ;
-		stmt_expect(stmt, ';');
+		lex_expect(lex, ';');
 	}
 }
 
@@ -525,10 +536,9 @@ parse(Parser* self, Program* program, Str* str)
 		lex_error(lex, ast, "unexpected token at the end of transaction");
 
 	// ensure EXPLAIN has a command
-	if (unlikely(! block->stmts.count)) {
+	if (unlikely(! block->stmts.count))
 		if (self->program->explain || self->program->profile)
 			lex_error(lex, explain, "EXPLAIN without command");
-	}
 
 	// ensure main stmt is not utility when using CTE
 	if (block->stmts.count_utility && block->stmts.count > 1)

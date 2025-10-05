@@ -877,5 +877,13 @@ if true then declare x int := 10; else declare x int := 20; end; select x
 # test: if declare shadow
 declare x int := 2; if true then declare x int := 10; else declare x int := 20; end; select x
 [2]
+# test: if utility
+if true then show all; end
+{"msg": "if true then ❰show❱ ⟵ utility statement cannot be used here"}
+# test: cte if
+with a as (if true then end) select 1
+{"msg": "with a as (❰if❱ ⟵ statement cannot be used inside CTE"}
+with a as (select 1) if true then end
+{"msg": "with a as (select 1) ❰if❱ ⟵ statement cannot be used inside CTE"}
 disconnect S0
 close E0
