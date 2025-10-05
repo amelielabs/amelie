@@ -75,6 +75,9 @@ parse_if(Stmt* self)
 	auto stmt = ast_if_allocate(self->block);
 	self->ast = &stmt->ast;
 
+	if (self->assign)
+		stmt_error(self, NULL, "IF cannot be assigned");
+
 	// IF expr THEN block [END]
 	parse_if_block(self);
 

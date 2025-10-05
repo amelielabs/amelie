@@ -182,5 +182,11 @@ declare x table (a int, b int); x := select * from test; select * from x as it
 declare x table (a int, b int); x := select * from test; select it.a, it.b from x as it
 drop table test
 
+# test: := if
+declare x int := if true then end
+
+# test: := for
+declare x int := for i in ([1,2,3]) do end
+
 disconnect S0
 close E0

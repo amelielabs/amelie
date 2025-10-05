@@ -375,5 +375,11 @@ declare x table (a int, b int); x := select * from test; select * from x as it
 declare x table (a int, b int); x := select * from test; select it.a, it.b from x as it
 [[1, 1], [2, 2], [3, 3]]
 drop table test
+# test: := if
+declare x int := if true then end
+{"msg": "declare x int := if ❰true❱ ⟵ IF cannot be assigned"}
+# test: := for
+declare x int := for i in ([1,2,3]) do end
+{"msg": "declare x int := for ❰i❱ ⟵ FOR cannot be assigned"}
 disconnect S0
 close E0
