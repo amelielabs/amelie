@@ -47,6 +47,9 @@ emit_upsert(Compiler* self, Ast* ast)
 	auto target = targets_outer(&insert->targets);
 	auto table  = target->from_table;
 
+	// set target origin
+	target_set_origin(target, self->origin);
+
 	// create returning set
 	int rset = -1;
 	if (returning_has(&insert->ret))

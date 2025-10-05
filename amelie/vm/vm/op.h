@@ -31,6 +31,7 @@ enum
 
 	// stack
 	CPUSH,
+	CPUSH_DUP,
 	CPOP,
 
 	// consts

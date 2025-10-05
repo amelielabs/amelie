@@ -17,7 +17,7 @@ typedef struct Code Code;
 struct Op
 {
 	uint8_t op;
-	int64_t a, b, c, d;
+	int64_t a, b, c, d, e;
 };
 
 struct Code
@@ -80,7 +80,8 @@ code_add(Code*    self,
          uint64_t a,
          uint64_t b,
          uint64_t c,
-         uint64_t d)
+         uint64_t d,
+         uint64_t e)
 {
 	buf_reserve(&self->code, sizeof(Op));
 	auto op = (Op*)self->code.position;
@@ -89,6 +90,7 @@ code_add(Code*    self,
 	op->b     = b;
 	op->c     = c;
 	op->d     = d;
+	op->e     = e;
 	buf_advance(&self->code, sizeof(Op));
 	return op;
 }

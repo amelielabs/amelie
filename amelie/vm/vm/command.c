@@ -41,7 +41,7 @@
 hot void
 csend_shard(Vm* self, Op* op)
 {
-	// [start, table, store, result]
+	// [start, table, store, result, refs]
 	auto dtr   = self->dtr;
 	auto table = (Table*)op->b;
 	auto keys  = table_keys(table);
@@ -71,14 +71,14 @@ csend_shard(Vm* self, Op* op)
 			if (req == NULL)
 			{
 				req = req_create(&dtr->dispatch.req_cache);
+				req_list_add(&list, req);
 				req->type      = REQ_EXECUTE;
 				req->start     = op->a;
 				req->code      = &self->program->code_backend;
 				req->code_data = &self->program->code_data;
-				req->regs      = &self->r;
-				req->args      = self->args;
 				req->core      = part->core;
-				req_list_add(&list, req);
+				if (op->e > 0)
+					req_copy_refs(req, stack_at(&self->stack, op->e), op->e);
 				map[part->core->order] = req;
 				if (result)
 				{
@@ -106,9 +106,9 @@ csend_shard(Vm* self, Op* op)
 				req->start     = op->a;
 				req->code      = &self->program->code_backend;
 				req->code_data = &self->program->code_data;
-				req->regs      = &self->r;
-				req->args      = self->args;
 				req->core      = part->core;
+				if (op->e > 0)
+					req_copy_refs(req, stack_at(&self->stack, op->e), op->e);
 				req_list_add(&list, req);
 				map[part->core->order] = req;
 				if (result)
@@ -121,6 +121,8 @@ csend_shard(Vm* self, Op* op)
 			buf_write(&req->arg, &row, sizeof(Value*));
 		}
 	}
+	if (op->e > 0)
+		stack_popn(&self->stack, op->e);
 
 	auto is_last = self->program->send_last == code_posof(self->code, op);
 	executor_send(share()->executor, dtr, &list, is_last);
@@ -130,7 +132,7 @@ csend_shard(Vm* self, Op* op)
 hot void
 csend_lookup(Vm* self, Op* op)
 {
-	// [start, table, hash, result]
+	// [start, table, hash, result, refs]
 	auto dtr   = self->dtr;
 	auto table = (Table*)op->b;
 
@@ -148,9 +150,12 @@ csend_lookup(Vm* self, Op* op)
 	req->start     = op->a;
 	req->code      = &self->program->code_backend;
 	req->code_data = &self->program->code_data;
-	req->regs      = &self->r;
-	req->args      = self->args;
 	req->core      = part->core;
+	if (op->e > 0)
+	{
+		req_copy_refs(req, stack_at(&self->stack, op->e), op->e);
+		stack_popn(&self->stack, op->e);
+	}
 	req_list_add(&list, req);
 	if (result)
 	{
@@ -166,7 +171,7 @@ csend_lookup(Vm* self, Op* op)
 hot void
 csend_lookup_by(Vm* self, Op* op)
 {
-	// [start, table, result]
+	// [start, table, result, refs]
 	auto dtr   = self->dtr;
 	auto table = (Table*)op->b;
 	auto index = table_primary(table);
@@ -194,9 +199,12 @@ csend_lookup_by(Vm* self, Op* op)
 	req->start     = op->a;
 	req->code      = &self->program->code_backend;
 	req->code_data = &self->program->code_data;
-	req->regs      = &self->r;
-	req->args      = self->args;
 	req->core      = part->core;
+	if (op->d > 0)
+	{
+		req_copy_refs(req, stack_at(&self->stack, op->d), op->d);
+		stack_popn(&self->stack, op->e);
+	}
 	req_list_add(&list, req);
 	if (result)
 	{
@@ -212,7 +220,7 @@ csend_lookup_by(Vm* self, Op* op)
 hot void
 csend_all(Vm* self, Op* op)
 {
-	// [start, table, result]
+	// [start, table, result, refs]
 	auto table = (Table*)op->b;
 	auto dtr = self->dtr;
 
@@ -232,9 +240,9 @@ csend_all(Vm* self, Op* op)
 		req->start     = op->a;
 		req->code      = &self->program->code_backend;
 		req->code_data = &self->program->code_data;
-		req->regs      = &self->r;
-		req->args      = self->args;
 		req->core      = part->core;
+		if (op->d > 0)
+			req_copy_refs(req, stack_at(&self->stack, op->d), op->d);
 		req_list_add(&list, req);
 		if (result)
 		{
@@ -243,6 +251,8 @@ csend_all(Vm* self, Op* op)
 			result->list_reqs_count++;
 		}
 	}
+	if (op->e > 0)
+		stack_popn(&self->stack, op->e);
 
 	auto is_last = self->program->send_last == code_posof(self->code, op);
 	executor_send(share()->executor, dtr, &list, is_last);

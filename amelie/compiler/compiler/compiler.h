@@ -15,15 +15,17 @@ typedef struct Compiler Compiler;
 
 struct Compiler
 {
-	Code*     code;
-	CodeData* code_data;
-	int       sends;
-	Rmap      map;
-	Program*  program;
-	Parser    parser;
-	SetCache  values_cache;
-	Columns*  args;
-	Stmt*     current;
+	Stmt*        current;
+	Code*        code;
+	CodeData*    code_data;
+	TargetOrigin origin;
+	int          sends;
+	Rmap         map;
+	Refs         refs;
+	Program*     program;
+	Parser       parser;
+	SetCache     values_cache;
+	Columns*     args;
 };
 
 void compiler_init(Compiler*, Local*);
@@ -37,12 +39,14 @@ void compiler_emit(Compiler*);
 static inline void
 compiler_switch_frontend(Compiler* self)
 {
-	self->code = &self->program->code;
+	self->origin = ORIGIN_FRONTEND;
+	self->code   = &self->program->code;
 }
 
 static inline void
 compiler_switch_backend(Compiler* self)
 {
+	self->origin = ORIGIN_BACKEND;
 	self->code = &self->program->code_backend;
 }
 

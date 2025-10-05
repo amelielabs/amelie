@@ -85,7 +85,10 @@ emit_json(Compiler* self, Targets* targets, Ast* ast)
 }
 
 hot static inline int
-emit_column(Compiler* self, Target* target, Ast* ast,
+emit_column(Compiler* self,
+            Targets*  targets,
+            Target*   target,
+            Ast*      ast,
             Column*   column,
             Str*      name,
             bool      excluded)
@@ -108,6 +111,18 @@ emit_column(Compiler* self, Target* target, Ast* ast,
 				           str_size(&target->name), str_of(&target->name),
 				           str_size(name), str_of(name));
 		}
+	}
+
+	// create reference, if frontend target column is accessed from backend
+	if (self->origin == ORIGIN_BACKEND && target->origin == ORIGIN_FRONTEND)
+	{
+		auto ref_id = refs_add(&self->refs, targets, ast, -1);
+		int type = -1;
+		if (column)
+			type = column->type;
+		else
+			type = TYPE_JSON;
+		return op2(self, CREF, rpin(self, type), ref_id);
 	}
 
 	// read excluded column
@@ -222,7 +237,13 @@ emit_name(Compiler* self, Targets* targets, Ast* ast)
 	if (var)
 	{
 		assert(var->r != -1);
-		return op2(self, CREF, rpin(self, var->type), var->r);
+		if (self->origin == ORIGIN_BACKEND)
+		{
+			// create reference, if variable is accessed from backend
+			auto ref_id = refs_add(&self->refs, targets, NULL, var->r);
+			return op2(self, CREF, rpin(self, var->type), ref_id);
+		}
+		return op2(self, CDUP, rpin(self, var->type), var->r);
 	}
 
 	targets = block_targets(targets);
@@ -247,7 +268,8 @@ emit_name(Compiler* self, Targets* targets, Ast* ast)
 		group_by_column = group->column;
 	}
 
-	return emit_column(self, target, ast, group_by_column, name, false);
+	return emit_column(self, targets, target, ast, group_by_column,
+	                   name, false);
 }
 
 hot static inline int
@@ -267,7 +289,16 @@ emit_name_compound(Compiler* self, Targets* targets, Ast* ast)
 	if (var)
 	{
 		assert(var->r != -1);
-		auto r = op2(self, CREF, rpin(self, var->type), var->r);
+
+		int r;
+		if (self->origin == ORIGIN_BACKEND)
+		{
+			// create reference, if variable is accessed from backend
+			auto ref_id = refs_add(&self->refs, targets, ast, -1);
+			r = op2(self, CREF, rpin(self, var->type), ref_id);
+		} else {
+			r = op2(self, CDUP, rpin(self, var->type), var->r);
+		}
 		if (str_empty(&path))
 			return r;
 
@@ -359,7 +390,8 @@ emit_name_compound(Compiler* self, Targets* targets, Ast* ast)
 	}
 
 	// column[.path]
-	auto rcolumn = emit_column(self, target, ast, group_by_column, &name, excluded);
+	auto rcolumn = emit_column(self, targets, target, ast, group_by_column,
+	                           &name, excluded);
 
 	if (str_empty(&path))
 		return rcolumn;

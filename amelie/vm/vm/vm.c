@@ -41,12 +41,11 @@
 void
 vm_init(Vm* self, Core* core, Dtr* dtr)
 {
-	self->regs      = NULL;
 	self->code      = NULL;
 	self->code_data = NULL;
 	self->code_arg  = NULL;
 	self->upsert    = 0;
-	self->args      = NULL;
+	self->refs      = NULL;
 	self->core      = core;
 	self->dtr       = dtr;
 	self->program   = NULL;
@@ -78,7 +77,7 @@ vm_reset(Vm* self)
 	self->code      = NULL;
 	self->code_data = NULL;
 	self->code_arg  = NULL;
-	self->args      = NULL;
+	self->refs      = NULL;
 	self->upsert    = 0;
 }
 
@@ -94,8 +93,7 @@ vm_run(Vm*       self,
        Code*     code,
        CodeData* code_data,
        Buf*      code_arg,
-       Reg*      regs,
-       Value*    args,
+       Value*    refs,
        Value*    result,
        Content*  content,
        int       start)
@@ -106,8 +104,7 @@ vm_run(Vm*       self,
 	self->code      = code;
 	self->code_data = code_data;
 	self->code_arg  = code_arg;
-	self->regs      = regs;
-	self->args      = args;
+	self->refs      = refs;
 	self->result    = result;
 	self->content   = content;
 	call_mgr_prepare(&self->call_mgr, local, code_data);
@@ -130,6 +127,7 @@ vm_run(Vm*       self,
 
 		// stack
 		&&cpush,
+		&&cpush_dup,
 		&&cpop,
 
 		// consts
@@ -480,6 +478,12 @@ cmov:
 cpush:
 	*stack_push(stack) = r[op->a];
 	value_reset(&r[op->a]);
+	op_next;
+
+cpush_dup:
+	a = stack_push(stack);
+	value_init(a);
+	value_copy(a, &r[op->a]);
 	op_next;
 
 cpop:
@@ -1864,7 +1868,7 @@ ccontent_json:
 	op_next;
 
 cref:
-	// [result, r]
-	value_copy(&r[op->a], reg_at(self->regs, op->b));
+	// [result, id]
+	value_copy(&r[op->a], &self->refs[op->b]);
 	op_next;
 }

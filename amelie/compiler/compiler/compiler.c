@@ -44,14 +44,16 @@ void
 compiler_init(Compiler* self, Local* local)
 {
 	self->program   = NULL;
+	self->current   = NULL;
 	self->code      = NULL;
 	self->code_data = NULL;
+	self->origin    = ORIGIN_FRONTEND;
 	self->sends     = 0;
 	self->args      = NULL;
-	self->current   = NULL;
 	set_cache_init(&self->values_cache);
 	parser_init(&self->parser, local, &self->values_cache);
 	rmap_init(&self->map);
+	refs_init(&self->refs);
 }
 
 void
@@ -60,6 +62,7 @@ compiler_free(Compiler* self)
 	parser_free(&self->parser);
 	set_cache_free(&self->values_cache);
 	rmap_free(&self->map);
+	refs_free(&self->refs);
 }
 
 void
@@ -73,6 +76,7 @@ compiler_reset(Compiler* self)
 	self->current   = NULL;
 	parser_reset(&self->parser);
 	rmap_reset(&self->map);
+	refs_reset(&self->refs);
 }
 
 void
@@ -102,6 +106,20 @@ emit_send(Compiler* self, Target* target, int start)
 	auto stmt = self->current;
 	auto ret  = stmt->ret;
 
+	// push references
+	auto refs_count = self->refs.count;
+	for (auto order = 0; order < refs_count; order++)
+	{
+		auto ref = refs_at(&self->refs, order);
+		if (ref->ast) {
+			auto r = emit_expr(self, ref->targets, ref->ast);
+			op1(self, CPUSH, r);
+			runpin(self, r);
+			continue;
+		}
+		op1(self, CPUSH_DUP, ref->r);
+	}
+
 	// prepare union to use for the distributed operation result
 	auto rret = -1;
 	if (ret && returning_has(ret))
@@ -127,7 +145,7 @@ emit_send(Compiler* self, Target* target, int start)
 		auto r = emit_insert_store(self);
 
 		// CSEND_SHARD
-		op4(self, CSEND_SHARD, start, (intptr_t)table, r, rret);
+		op5(self, CSEND_SHARD, start, (intptr_t)table, r, rret, refs_count);
 		runpin(self, r);
 	} else
 	{
@@ -144,7 +162,7 @@ emit_send(Compiler* self, Target* target, int start)
 				uint32_t hash = path_create_hash(path);
 
 				// CSEND_LOOKUP
-				op4(self, CSEND_LOOKUP, start, (intptr_t)table, hash, rret);
+				op5(self, CSEND_LOOKUP, start, (intptr_t)table, hash, rret, refs_count);
 			} else
 			{
 				// match exact partition using the point lookup exprs
@@ -157,14 +175,14 @@ emit_send(Compiler* self, Target* target, int start)
 				}
 
 				// CSEND_LOOKUP_BY
-				op3(self, CSEND_LOOKUP_BY, start, (intptr_t)table, rret);
+				op4(self, CSEND_LOOKUP_BY, start, (intptr_t)table, rret, refs_count);
 			}
 		} else
 		{
 			// send to all table partitions (one or more)
 
 			// CSEND_ALL
-			op3(self, CSEND_ALL, start, (intptr_t)table, rret);
+			op4(self, CSEND_ALL, start, (intptr_t)table, rret, refs_count);
 		}
 	}
 
@@ -239,6 +257,9 @@ emit_stmt_backend(Compiler* self, Stmt* stmt)
 	// generate backend code (pushdown)
 	compiler_switch_backend(self);
 	auto start = code_count(&self->program->code_backend);
+
+	// prepare to collects refs
+	refs_reset(&self->refs);
 
 	switch (stmt->id) {
 	case STMT_INSERT:

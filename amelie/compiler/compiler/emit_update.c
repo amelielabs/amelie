@@ -182,9 +182,13 @@ hot void
 emit_update(Compiler* self, Ast* ast)
 {
 	// UPDATE name SET column = expr [, ... ] [WHERE expr]
+	auto update = ast_update_of(ast);
+
+	// set target origin
+	auto target = targets_outer(&update->targets);
+	target_set_origin(target, self->origin);
 
 	// update by cursor
-	auto update = ast_update_of(ast);
 	if (! returning_has(&update->ret))
 	{
 		scan(self, &update->targets,

@@ -151,6 +151,9 @@ scan_table(Scan* self, Target* target)
 	auto path  = target->path;
 	auto point_lookup = (path->type == PATH_LOOKUP);
 
+	// set target origin
+	target_set_origin(target, cp->origin);
+
 	// save schema, table and index name
 	auto name_offset = code_data_offset(cp->code_data);
 	auto data = &cp->code_data->data;
@@ -243,6 +246,9 @@ scan_table_heap(Scan* self, Target* target)
 	auto cp    = self->compiler;
 	auto table = target->from_table;
 
+	// set target origin
+	target_set_origin(target, cp->origin);
+
 	// save schema, table (no index)
 	auto name_offset = code_data_offset(cp->code_data);
 	auto data = &cp->code_data->data;
@@ -319,13 +325,16 @@ scan_expr(Scan* self, Target* target)
 			assert(target->columns->count == 1);
 			column_set_type(columns_first(target->columns), type, type_sizeof(type));
 			ref = false;
+			target_set_origin(target, cp->origin);
 			break;
 		}
 		case TARGET_STMT:
 			r = target->from_stmt->r;
+			target_set_origin(target, ORIGIN_FRONTEND);
 			break;
 		case TARGET_VAR:
 			r = target->from_var->r;
+			target_set_origin(target, ORIGIN_FRONTEND);
 			break;
 		default:
 			abort();
@@ -334,7 +343,19 @@ scan_expr(Scan* self, Target* target)
 
 		type = rtype(cp, r);
 		if (ref)
-			r = op2(cp, CREF, rpin(cp, type), r);
+		{
+			// create reference, if frontend value is accessed from backend
+			if (cp->origin == ORIGIN_BACKEND && target->origin == ORIGIN_FRONTEND)
+			{
+				auto ref_id = refs_add(&cp->refs, self->targets, NULL, r);
+				r = op2(cp, CREF, rpin(cp, type), ref_id);
+			} else {
+				r = op2(cp, CDUP, rpin(cp, type), r);
+			}
+
+			// futher object access will be using cursor created on backend
+			target_set_origin(target, ORIGIN_BACKEND);
+		}
 
 		// convert value to store
 		if (type != TYPE_STORE && type != TYPE_JSON && type != TYPE_NULL)

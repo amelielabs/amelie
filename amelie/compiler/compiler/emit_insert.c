@@ -117,8 +117,12 @@ emit_insert_store(Compiler* self)
 {
 	auto stmt    = self->current;
 	auto insert  = ast_insert_of(stmt->ast);
-	auto table   = targets_outer(&insert->targets)->from_table;
+	auto target  = targets_outer(&insert->targets);
+	auto table   = target->from_table;
 	auto columns = table_columns(table);
+
+	// set target origin
+	target_set_origin(target, self->origin);
 
 	// create or match a set to use with the insert operation
 	int r;
@@ -163,6 +167,9 @@ emit_insert(Compiler* self, Ast* ast)
 {
 	// CINSERT
 	auto insert = ast_insert_of(ast);
-	auto table  = targets_outer(&insert->targets)->from_table;
+	auto target = targets_outer(&insert->targets);
+	auto table  = target->from_table;
+	// set target origin
+	target_set_origin(target, self->origin);
 	op1(self, CINSERT, (intptr_t)table);
 }

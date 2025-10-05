@@ -16,13 +16,12 @@ typedef struct Vm Vm;
 struct Vm
 {
 	Reg       r;
-	Reg*      regs;
 	Stack     stack;
 	Code*     code;
 	CodeData* code_data;
 	Buf*      code_arg;
 	int       upsert;
-	Value*    args;
+	Value*    refs;
 	Core*     core;
 	Dtr*      dtr;
 	Program*  program;
@@ -36,5 +35,5 @@ struct Vm
 void vm_init(Vm*, Core*, Dtr*);
 void vm_free(Vm*);
 void vm_reset(Vm*);
-void vm_run(Vm*, Local*, Tr*, Program*, Code*, CodeData*, Buf*, Reg*, Value*,
+void vm_run(Vm*, Local*, Tr*, Program*, Code*, CodeData*, Buf*, Value*,
             Value*, Content*, int);

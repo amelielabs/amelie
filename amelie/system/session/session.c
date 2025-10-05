@@ -185,7 +185,6 @@ session_execute_distributed(Session* self, Content* output)
 		       &program->code,
 		       &program->code_data,
 		       NULL,
-		       &self->vm.r,
 		       NULL,
 		       NULL,
 		       output, 0);
@@ -239,7 +238,6 @@ session_execute_utility(Session* self, Content* output)
 		       &program->code,
 		       &program->code_data,
 		       NULL,
-		       &self->vm.r,
 		       NULL,
 		       NULL,
 		       output, 0);

@@ -115,8 +115,7 @@ backend_run(Backend* self, Ctr* ctr, Req* req)
 		        req->code,
 		        req->code_data,
 		       &req->arg,
-		        req->regs,
-		        req->args,
+		       (Value*)req->refs.start,
 		       &req->result,
 		        NULL,
 		        req->start);
