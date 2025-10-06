@@ -304,7 +304,9 @@ emit_name_compound(Compiler* self, Targets* targets, Ast* ast)
 
 		// ensure variable is a json
 		if (var->type != TYPE_JSON)
-			stmt_error(self->current, ast, "variable is not a json");
+			stmt_error(self->current, ast, "variable '%.*s' is not a json",
+			           str_size(var->name),
+			           str_of(var->name));
 
 		// var.path
 		str_advance(&path, str_size(&name) + 1);

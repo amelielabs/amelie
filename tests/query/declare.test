@@ -47,31 +47,21 @@ explain x := 1
 declare x int; x := 1
 explain declare x int; x := 1
 
-# test: := select expr
-declare x int; x := select 1
-explain declare x int; x := select 1
-
-# test: := select var
+# test: := expr
 declare x int; x := 1; select x
 explain declare x int; x := 1; select x
 declare x int; declare y int; x := 1; y := 2; select x + y
 
-# test: := select var (json)
+# test: := expr (json)
 declare x json; x := {"id": 48}; select x.id
 explain declare x json; x := {"id": 48}; select x.id
 
-# test: := select var (null)
+# test: := expr (null)
 declare x int; x := null; select x
 explain declare x int; x := null; select x
 declare x int; x := null; select x + 10
 
-# test: := select var (1 column)
-declare x int; x := select 1; select x
-
-# test: := select var (n columns)
-declare x int; x := select 1, 2; select x
-
-# test: := select var (column shadow)
+# test: := expr (column shadow)
 create table test (id int primary key)
 insert into test values (1)
 # this compares two vars
@@ -79,14 +69,11 @@ declare id int; id := 1; select * from test where id = id
 declare id int; id := 1; select * from test where test.id = id
 drop table test
 
-# test: := insert returning (1 column)
+# test: insert returning into (1 column)
 create table test (id int primary key)
-declare x int; x := insert into test values (1) returning id; select x
+insert into test values (1), (2), (3), (4)
 
-# test: := insert returning (n columns)
-declare x int; x := insert into test values (2) returning id, id; select x
-
-# test: := pushdown
+# test: var pushdown
 declare x int; x := 1; select * from test where id = x
 explain declare x int; x := 1; select * from test where id = x
 
@@ -124,16 +111,19 @@ declare x int; select (select 1 into x); select x
 # test: select into (var)
 declare x int; x := select 1 into x; select x
 
-# test: returning into
+# test: insert returning into (1 column)
 create table test (id int primary key)
 declare x int; insert into test values (1) returning id into x; select x
 
-# test: returning into (var)
-declare x int; x := insert into test values (1) returning id into x; select x
-declare x string; x := insert into test values (1) returning id into x; select x
+# test: insert returning into (2 columns, 1 into)
+declare x int; insert into test values (2) returning id, id into x; select x
 
-# test: returning into (cte)
-declare x int; with a as (insert into test values (1) returning id into x) select * from a
+# test: insert returning into (2 columns, 2 into)
+declare x int; declare y int; insert into test values (3) returning id, id + 10 into x, y; select x, y
+
+# test: insert returning into (2 columns, 2 into rewrite)
+declare x int; insert into test values (4) returning id, id + 10 into x, x; select x
+
 drop table test
 
 # test: select from var
@@ -160,26 +150,32 @@ create table test (id int primary key)
 insert into test values (1), (2), (3)
 
 declare x table (id int); select x::type
-declare x table (id int); x := select * from test; select x::type
-declare x table (id int); x := select * from test; select x
+declare x table (id int); select 123 into x; select x
+declare x table (id int); select * into x from test; select x::type
+declare x table (id int); select * into x from test; select x
 drop table test
 
-# test: := table (mismatch)
+# test: select into table (mismatch)
 create table test (id int primary key, data int)
 insert into test values (1, 1), (2, 2), (3, 3)
 
-declare x table (a int, b int); x := select id from test;
+declare x table (a int, b int); select id into x from test;
 
-# test: := table
-declare x table (a int, b int); x := select * from test;
-declare x table (a int, b int); x := select data, id from test;
+# test: select into table
+declare x table (a int, b int); select * into x from test; select * from x
+declare x table (a int, b int); select * into x from test; select * from x _
+declare x table (a int, b int); select data, id into x from test; select * from x _
 
-# test: := table (null)
-declare x table (a int, b int); x := select * from test; x := null; select x::type
+# test: select into table (null)
+declare x table (a int, b int); select * into x from test; x := null; select x::type
+
+# test: select into table (mix)
+declare x table (a int, b int); declare a int; select * into x, a from test;
+declare x table (a int, b int); declare a int; select * into a, x from test;
 
 # test: select from var (table)
-declare x table (a int, b int); x := select * from test; select * from x as it
-declare x table (a int, b int); x := select * from test; select it.a, it.b from x as it
+declare x table (a int, b int); select * into x from test; select * from x as it
+declare x table (a int, b int); select * into x from test; select it.a, it.b from x as it
 drop table test
 
 # test: := if

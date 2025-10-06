@@ -311,7 +311,6 @@ OpDesc ops[] =
 
 	// result
 	{ CASSIGN, "assign" },
-	{ CASSIGN_STORE, "assign_store" },
 	{ CRESULT, "result" },
 	{ CCONTENT, "content" },
 	{ CCONTENT_JSON, "content_json" },

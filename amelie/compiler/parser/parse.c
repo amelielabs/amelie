@@ -374,17 +374,6 @@ parse_stmt(Parser* self, Stmt* stmt)
 		break;
 
 	default:
-		// var := expr
-		if (stmt->assign)
-		{
-			// SELECT expr
-			lex_push(lex, ast);
-			stmt->id = STMT_SELECT;
-			auto select = parse_select_expr(stmt);
-			stmt->ast = &select->ast;
-			stmt->ret = &select->ret;
-			break;
-		}
 		stmt_error(stmt, NULL, "unexpected statement");
 		break;
 	}
@@ -399,60 +388,6 @@ parse_stmt(Parser* self, Stmt* stmt)
 	parse_select_resolve(stmt);
 }
 
-hot static void
-parse_block_stmt(Parser* self, Block* block)
-{
-	auto lex = &self->lex;
-
-	// [WITH name AS ( cte )[, name AS (...)]]
-	if (lex_if(lex, KWITH))
-	{
-		parse_with(self, block);
-		return;
-	}
-
-	// [DECLARE var type ;]
-	// [DECLARE var type := expr]
-	Var* assign = NULL;
-	if (lex_if(lex, KDECLARE)) {
-		assign = parse_declare(self, &block->vars);
-		if (! lex_if(lex, KASSIGN))
-			return;
-	} else
-	{
-		// [var := stmt]
-		auto ast = lex_if(lex, KNAME);
-		if (ast)
-		{
-			if (! lex_if(lex, KASSIGN))
-				lex_error_expect(lex, lex_next(lex), KASSIGN);
-			assign = block_var_find(block, &ast->string);
-			if (! assign)
-				lex_error(lex, ast, "variable not found");
-		}
-	}
-
-	// stmt
-	auto stmt = stmt_allocate(self, &self->lex, block);
-	stmts_add(&block->stmts, stmt);
-	stmt->assign = assign;
-	parse_stmt(self, stmt);
-
-	// validate usage of utility statement
-	if (stmt_is_utility(stmt))
-	{
-		// ensure root block being used
-		if (block != self->blocks.list)
-			stmt_error(stmt, stmt->ast, "utility statement cannot be used here");
-
-		// ensure it is not assigned
-		if (stmt->assign)
-			stmt_error(stmt, NULL, ":= cannot be used with utility statements");
-
-		block->stmts.count_utility++;
-	}
-}
-
 hot void
 parse_block(Parser* self, Block* block)
 {
@@ -465,20 +400,50 @@ parse_block(Parser* self, Block* block)
 		if (ast->id == ';')
 			continue;
 
-		// EOF | or block end clauses
-		if (ast->id == KEOF)
+		switch (ast->id) {
+		case KWITH:
+			// [WITH name AS ( cte )[, name AS (...)]]
+			parse_with(self, block);
 			break;
-		if (ast->id == KEND   ||
-		    ast->id == KELSE  ||
-		    ast->id == KELSIF)
-		{
+		case KDECLARE:
+			// [DECLARE var type ;]
+			// [DECLARE var type := expr]
+			parse_declare(self, block);
+			break;
+		case KNAME:
+			// var := expr
 			lex_push(lex, ast);
+			parse_assign(self, block);
+			break;
+
+		case KEND:
+		case KELSE:
+		case KELSIF:
+			// block end
+			lex_push(lex, ast);
+			return;
+		case KEOF:
+			return;
+
+		default:
+		{
+			// stmt
+			lex_push(lex, ast);
+			auto stmt = stmt_allocate(self, lex, block);
+			stmts_add(&block->stmts, stmt);
+			parse_stmt(self, stmt);
+
+			// validate usage of utility statement
+			if (stmt_is_utility(stmt))
+			{
+				// ensure root block being used
+				if (block != self->blocks.list)
+					stmt_error(stmt, stmt->ast, "utility statement cannot be used here");
+				block->stmts.count_utility++;
+			}
 			break;
 		}
-		lex_push(lex, ast);
-
-		// WITH | DECLARE | := | stmt
-		parse_block_stmt(self, block);
+		}
 
 		// EOF
 		if (lex_if(lex, KEOF))

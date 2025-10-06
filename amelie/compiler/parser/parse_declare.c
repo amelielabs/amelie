@@ -83,12 +83,25 @@ parse_declare_columns(Parser* self, Var* var)
 	}
 }
 
-Var*
-parse_declare(Parser* self, Vars* vars)
+static void
+parse_assign_stmt(Parser* self, Block* block, Str* name)
 {
-	auto lex = &self->lex;
+	// SELECT expr INTO var
+	auto stmt = stmt_allocate(self, &self->lex, block);
+	stmts_add(&block->stmts, stmt);
 
+	auto select = parse_select_expr(stmt, name);
+	stmt->id  = STMT_SELECT;
+	stmt->ast = &select->ast;
+	stmt->ret = &select->ret;
+	parse_select_resolve(stmt);
+}
+
+void
+parse_declare(Parser* self, Block* block)
+{
 	// name
+	auto lex = &self->lex;
 	auto name = lex_expect(lex, KNAME);
 
 	// type
@@ -106,15 +119,33 @@ parse_declare(Parser* self, Vars* vars)
 		lex_error(lex, ast, "unrecognized data type");
 
 	// create variable
-	auto var = vars_find(vars, &name->string);
+	auto var = vars_find(&block->vars, &name->string);
 	if (var)
 		lex_error(lex, name, "variable redefined");
-	var = vars_add(vars, &name->string);
+	var = vars_add(&block->vars, &name->string);
 	var->type = type;
 
 	// var table(column, ...)
 	if (var->type == TYPE_STORE)
 		parse_declare_columns(self, var);
 
-	return var;
+	// := expr
+	if (lex_if(lex, KASSIGN))
+		parse_assign_stmt(self, block, var->name);
+}
+
+void
+parse_assign(Parser* self, Block* block)
+{
+	// var := expr
+
+	// name
+	auto lex = &self->lex;
+	auto name = lex_expect(lex, KNAME);
+
+	// :=
+	lex_expect(lex, KASSIGN);
+
+	// expr
+	parse_assign_stmt(self, block, &name->string);
 }

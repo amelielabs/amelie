@@ -12,6 +12,7 @@
 //
 
 typedef struct Ast Ast;
+typedef struct Var Var;
 
 struct Ast
 {
@@ -21,6 +22,7 @@ struct Ast
 		int64_t integer;
 		double  real;
 		Column* column;
+		Var*    var;
 		struct {
 			Str  string;
 			bool string_escape;

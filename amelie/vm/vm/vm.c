@@ -383,7 +383,6 @@ vm_run(Vm*       self,
 
 		// result
 		&&cassign,
-		&&cassign_store,
 		&&cresult,
 		&&ccontent,
 		&&ccontent_json,
@@ -471,8 +470,7 @@ cdup:
 
 cmov:
 	// a = b
-	r[op->a] = r[op->b];
-	value_reset(&r[op->b]);
+	value_move(&r[op->a], &r[op->b]);
 	op_next;
 
 cpush:
@@ -1840,14 +1838,8 @@ cclose:
 	op_next;
 
 cassign:
-	// [result, value]
+	// [result, value, column]
 	cassign(self, op);
-	op_next;
-
-cassign_store:
-	// [result, store]
-	value_free(&r[op->a]);
-	value_move(&r[op->a], &r[op->b]);
 	op_next;
 
 cresult:

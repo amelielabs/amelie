@@ -342,7 +342,7 @@ cunion_recv(Vm* self, Op* op)
 void
 cassign(Vm* self, Op* op)
 {
-	// [result, value]
+	// [result, value, column]
 	auto dst = reg_at(&self->r, op->a);
 	value_free(dst);
 
@@ -353,12 +353,11 @@ cassign(Vm* self, Op* op)
 		auto it = store_iterator(store);
 		defer(store_iterator_close, it);
 		if (store_iterator_has(it))
-			value_copy(dst, it->current);
+			value_copy(dst, it->current + op->c);
 		else
 			value_set_null(dst);
-		value_free(src);
 	} else {
-		value_move(dst, src);
+		value_copy(dst, src);
 	}
 }
 

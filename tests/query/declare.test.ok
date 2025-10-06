@@ -78,12 +78,12 @@ declare a null;
 'x' := 1
 {"msg": "'x' ❰:=❱ ⟵ unexpected statement"}
 x :=
-{"msg": "❰x❱ ⟵ variable not found"}
+{"msg": "x := ⟵ bad expression"}
 # test: := expr
 x := 1
-{"msg": "❰x❱ ⟵ variable not found"}
+{"msg": "x := 1 ⟵ variable 'x' not found"}
 explain x := 1
-{"msg": "explain ❰x❱ ⟵ variable not found"}
+{"msg": "explain x := 1 ⟵ variable 'x' not found"}
 declare x int; x := 1
 explain declare x int; x := 1
 [{
@@ -91,25 +91,13 @@ explain declare x int; x := 1
     "frontend": {
       "00": "int                 1      -      0     # 1",
       "01": "assign              0      1      0     ",
-      "02": "ret                 0      0      0     "
+      "02": "free                1      0      0     ",
+      "03": "ret                 0      0      0     "
     }
   },
   "access": []
 }]
-# test: := select expr
-declare x int; x := select 1
-explain declare x int; x := select 1
-[{
-  "bytecode": {
-    "frontend": {
-      "00": "int                 1      -      0     # 1",
-      "01": "assign              0      1      0     ",
-      "02": "ret                 0      0      0     "
-    }
-  },
-  "access": []
-}]
-# test: := select var
+# test: := expr
 declare x int; x := 1; select x
 [1]
 explain declare x int; x := 1; select x
@@ -118,16 +106,17 @@ explain declare x int; x := 1; select x
     "frontend": {
       "00": "int                 1      -      0     # 1",
       "01": "assign              0      1      0     ",
-      "02": "dup                 1      0      0     ",
-      "03": "content             1      -      -     ",
-      "04": "ret                 0      0      0     "
+      "02": "free                1      0      0     ",
+      "03": "dup                 1      0      0     ",
+      "04": "content             1      -      -     ",
+      "05": "ret                 0      0      0     "
     }
   },
   "access": []
 }]
 declare x int; declare y int; x := 1; y := 2; select x + y
 [3]
-# test: := select var (json)
+# test: := expr (json)
 declare x json; x := {"id": 48}; select x.id
 [48]
 explain declare x json; x := {"id": 48}; select x.id
@@ -136,16 +125,17 @@ explain declare x json; x := {"id": 48}; select x.id
     "frontend": {
       "00": "json                1      0      0     ",
       "01": "assign              0      1      0     ",
-      "02": "dup                 1      0      0     ",
-      "03": "string              2      7      0     # id",
-      "04": "dotjs               3      1      2     ",
-      "05": "content             3      -      -     ",
-      "06": "ret                 0      0      0     "
+      "02": "free                1      0      0     ",
+      "03": "dup                 1      0      0     ",
+      "04": "string              2      7      0     # id",
+      "05": "dotjs               3      1      2     ",
+      "06": "content             3      -      -     ",
+      "07": "ret                 0      0      0     "
     }
   },
   "access": []
 }]
-# test: := select var (null)
+# test: := expr (null)
 declare x int; x := null; select x
 [null]
 explain declare x int; x := null; select x
@@ -154,22 +144,17 @@ explain declare x int; x := null; select x
     "frontend": {
       "00": "null                1      0      0     ",
       "01": "assign              0      1      0     ",
-      "02": "dup                 1      0      0     ",
-      "03": "content             1      -      -     ",
-      "04": "ret                 0      0      0     "
+      "02": "free                1      0      0     ",
+      "03": "dup                 1      0      0     ",
+      "04": "content             1      -      -     ",
+      "05": "ret                 0      0      0     "
     }
   },
   "access": []
 }]
 declare x int; x := null; select x + 10
 [null]
-# test: := select var (1 column)
-declare x int; x := select 1; select x
-[1]
-# test: := select var (n columns)
-declare x int; x := select 1, 2; select x
-{"msg": "declare x int; x := select 1, 2; select x ⟵ statement must return only one column to be assigned"}
-# test: := select var (column shadow)
+# test: := expr (column shadow)
 create table test (id int primary key)
 insert into test values (1)
 declare id int; id := 1; select * from test where id = id
@@ -177,14 +162,10 @@ declare id int; id := 1; select * from test where id = id
 declare id int; id := 1; select * from test where test.id = id
 [1]
 drop table test
-# test: := insert returning (1 column)
+# test: insert returning into (1 column)
 create table test (id int primary key)
-declare x int; x := insert into test values (1) returning id; select x
-[1]
-# test: := insert returning (n columns)
-declare x int; x := insert into test values (2) returning id, id; select x
-{"msg": "declare x int; x := insert into test values (2) returning id, id; select x ⟵ statement must return only one column to be assigned"}
-# test: := pushdown
+insert into test values (1), (2), (3), (4)
+# test: var pushdown
 declare x int; x := 1; select * from test where id = x
 [1]
 explain declare x int; x := 1; select * from test where id = x
@@ -193,15 +174,16 @@ explain declare x int; x := 1; select * from test where id = x
     "frontend": {
       "00": "int                 1      -      0     # 1",
       "01": "assign              0      1      0     ",
-      "02": "push_dup            0      0      0     ",
-      "03": "union               1      0      0     ",
-      "04": "dup                 2      0      0     ",
-      "05": "push                2      0      0     ",
-      "06": "send_lookup_by      0      -      -     # public.test (last)",
-      "07": "union_recv          1      0      0     ",
-      "08": "union_set           1      0      -1    ",
-      "09": "content             1      -      -     ",
-      "10": "ret                 0      0      0     "
+      "02": "free                1      0      0     ",
+      "03": "push_dup            0      0      0     ",
+      "04": "union               1      0      0     ",
+      "05": "dup                 2      0      0     ",
+      "06": "push                2      0      0     ",
+      "07": "send_lookup_by      0      -      -     # public.test (last)",
+      "08": "union_recv          1      0      0     ",
+      "09": "union_set           1      0      -1    ",
+      "10": "content             1      -      -     ",
+      "11": "ret                 0      0      0     "
     },
     "backend": {
       "00": "set                 1      1      0     ",
@@ -231,23 +213,15 @@ declare x int; with a as (x := select 1) select * from a; select x
 drop table test
 # test: := ddl
 declare x json; x := show all;
-{"msg": "declare x json; x := show all❰;❱ ⟵ := cannot be used with utility statements"}
+{"msg": "declare x json; x := ❰show❱ ⟵ bad expression"}
 # test: declare := select expr
 declare x int := select 1
+{"msg": "declare x int := ❰select❱ ⟵ unexpected subquery"}
 explain declare x int := select 1
-[{
-  "bytecode": {
-    "frontend": {
-      "00": "int                 1      -      0     # 1",
-      "01": "assign              0      1      0     ",
-      "02": "ret                 0      0      0     "
-    }
-  },
-  "access": []
-}]
+{"msg": "explain declare x int := ❰select❱ ⟵ unexpected subquery"}
 # test: select into (not defined)
 select 1 into x; select x
-{"msg": "select 1 into ❰x❱ ⟵ variable not found"}
+{"msg": "select 1 into x❰;❱ ⟵ variable 'x' not found"}
 # test: select into
 declare x int; select 1 into x; select x
 [1]
@@ -258,27 +232,28 @@ declare x int; x := 1; select 2 into x; select x
 [2]
 # test: select into (cte)
 with a as (select 1 into x) select * from a
-{"msg": "with a as (select 1 into ❰x❱ ⟵ INTO cannot be used with CTE"}
+{"msg": "with a as (select 1 ❰into❱ ⟵ INTO cannot be used with CTE"}
 declare x int; with a as (select 1 into x) select * from a
-{"msg": "declare x int; with a as (select 1 into ❰x❱ ⟵ INTO cannot be used with CTE"}
+{"msg": "declare x int; with a as (select 1 ❰into❱ ⟵ INTO cannot be used with CTE"}
 # test: select into (subquery)
 declare x int; select (select 1 into x); select x
-{"msg": "declare x int; select (select 1 into ❰x❱ ⟵ INTO cannot be used inside subquery"}
+{"msg": "declare x int; select (select 1 ❰into❱ ⟵ INTO cannot be used inside subquery"}
 # test: select into (var)
 declare x int; x := select 1 into x; select x
-{"msg": "declare x int; x := select 1 into ❰x❱ ⟵ INTO cannot be used with := operator"}
-# test: returning into
+{"msg": "declare x int; x := ❰select❱ ⟵ unexpected subquery"}
+# test: insert returning into (1 column)
 create table test (id int primary key)
 declare x int; insert into test values (1) returning id into x; select x
 [1]
-# test: returning into (var)
-declare x int; x := insert into test values (1) returning id into x; select x
-{"msg": "declare x int; x := insert into test values (1) returning id into ❰x❱ ⟵ INTO cannot be used with := operator"}
-declare x string; x := insert into test values (1) returning id into x; select x
-{"msg": "declare x string; x := insert into test values (1) returning id into ❰x❱ ⟵ INTO cannot be used with := operator"}
-# test: returning into (cte)
-declare x int; with a as (insert into test values (1) returning id into x) select * from a
-{"msg": "declare x int; with a as (insert into test values (1) returning id into ❰x❱ ⟵ INTO cannot be used with CTE"}
+# test: insert returning into (2 columns, 1 into)
+declare x int; insert into test values (2) returning id, id into x; select x
+[2]
+# test: insert returning into (2 columns, 2 into)
+declare x int; declare y int; insert into test values (3) returning id, id + 10 into x, y; select x, y
+[[3, 13]]
+# test: insert returning into (2 columns, 2 into rewrite)
+declare x int; insert into test values (4) returning id, id + 10 into x, x; select x
+[14]
 drop table test
 # test: select from var
 explain declare x json := [1,2,3]; select * from x as it;
@@ -287,17 +262,18 @@ explain declare x json := [1,2,3]; select * from x as it;
     "frontend": {
       "00": "json                1      0      0     ",
       "01": "assign              0      1      0     ",
-      "02": "set                 1      1      0     ",
-      "03": "dup                 2      0      0     ",
-      "04": "json_open           3      2      9     ",
-      "05": "json_read           4      3      0     ",
-      "06": "push                4      0      0     ",
-      "07": "set_add             1      0      0     ",
-      "08": "json_next           3      5      0     ",
-      "09": "free                3      0      0     ",
-      "10": "free                2      0      0     ",
-      "11": "content             1      -      -     ",
-      "12": "ret                 0      0      0     "
+      "02": "free                1      0      0     ",
+      "03": "set                 1      1      0     ",
+      "04": "dup                 2      0      0     ",
+      "05": "json_open           3      2      10    ",
+      "06": "json_read           4      3      0     ",
+      "07": "push                4      0      0     ",
+      "08": "set_add             1      0      0     ",
+      "09": "json_next           3      6      0     ",
+      "10": "free                3      0      0     ",
+      "11": "free                2      0      0     ",
+      "12": "content             1      -      -     ",
+      "13": "ret                 0      0      0     "
     }
   },
   "access": []
@@ -314,17 +290,18 @@ explain declare x json := [1,2,3]; select * from (x) as it;
     "frontend": {
       "00": "json                1      0      0     ",
       "01": "assign              0      1      0     ",
-      "02": "set                 1      1      0     ",
-      "03": "dup                 2      0      0     ",
-      "04": "json_open           3      2      9     ",
-      "05": "json_read           4      3      0     ",
-      "06": "push                4      0      0     ",
-      "07": "set_add             1      0      0     ",
-      "08": "json_next           3      5      0     ",
-      "09": "free                3      0      0     ",
-      "10": "free                2      0      0     ",
-      "11": "content             1      -      -     ",
-      "12": "ret                 0      0      0     "
+      "02": "free                1      0      0     ",
+      "03": "set                 1      1      0     ",
+      "04": "dup                 2      0      0     ",
+      "05": "json_open           3      2      10    ",
+      "06": "json_read           4      3      0     ",
+      "07": "push                4      0      0     ",
+      "08": "set_add             1      0      0     ",
+      "09": "json_next           3      6      0     ",
+      "10": "free                3      0      0     ",
+      "11": "free                2      0      0     ",
+      "12": "content             1      -      -     ",
+      "13": "ret                 0      0      0     "
     }
   },
   "access": []
@@ -353,33 +330,44 @@ create table test (id int primary key)
 insert into test values (1), (2), (3)
 declare x table (id int); select x::type
 ["null"]
-declare x table (id int); x := select * from test; select x::type
+declare x table (id int); select 123 into x; select x
+[123]
+declare x table (id int); select * into x from test; select x::type
 ["store"]
-declare x table (id int); x := select * from test; select x
+declare x table (id int); select * into x from test; select x
 [1, 2, 3]
 drop table test
-# test: := table (mismatch)
+# test: select into table (mismatch)
 create table test (id int primary key, data int)
 insert into test values (1, 1), (2, 2), (3, 3)
-declare x table (a int, b int); x := select id from test;
-{"msg": "declare x table (a int, b int); x := ❰select❱ ⟵ variable table columns mismatch"}
-# test: := table
-declare x table (a int, b int); x := select * from test;
-declare x table (a int, b int); x := select data, id from test;
-# test: := table (null)
-declare x table (a int, b int); x := select * from test; x := null; select x::type
-["null"]
-# test: select from var (table)
-declare x table (a int, b int); x := select * from test; select * from x as it
+declare x table (a int, b int); select id into x from test;
+{"msg": "declare x table (a int, b int); ❰select❱ ⟵ variable table columns mismatch"}
+# test: select into table
+declare x table (a int, b int); select * into x from test; select * from x
+{"msg": "declare x table (a int, b int); select * into x from test; select ❰*❱ ⟵ variable 'x' is not a json"}
+declare x table (a int, b int); select * into x from test; select * from x _
 [[1, 1], [2, 2], [3, 3]]
-declare x table (a int, b int); x := select * from test; select it.a, it.b from x as it
+declare x table (a int, b int); select data, id into x from test; select * from x _
+[[1, 1], [2, 2], [3, 3]]
+# test: select into table (null)
+declare x table (a int, b int); select * into x from test; x := null; select x::type
+["null"]
+# test: select into table (mix)
+declare x table (a int, b int); declare a int; select * into x, a from test;
+{"msg": "declare x table (a int, b int); declare a int; ❰select❱ ⟵ INTO accept only one table variable"}
+declare x table (a int, b int); declare a int; select * into a, x from test;
+{"msg": "declare x table (a int, b int); declare a int; ❰select❱ ⟵ INTO accept only one table variable"}
+# test: select from var (table)
+declare x table (a int, b int); select * into x from test; select * from x as it
+[[1, 1], [2, 2], [3, 3]]
+declare x table (a int, b int); select * into x from test; select it.a, it.b from x as it
 [[1, 1], [2, 2], [3, 3]]
 drop table test
 # test: := if
 declare x int := if true then end
-{"msg": "declare x int := if ❰true❱ ⟵ IF cannot be assigned"}
+{"msg": "declare x int := ❰if❱ ⟵ bad expression"}
 # test: := for
 declare x int := for i in ([1,2,3]) do end
-{"msg": "declare x int := for ❰i❱ ⟵ FOR cannot be assigned"}
+{"msg": "declare x int := ❰for❱ ⟵ bad expression"}
 disconnect S0
 close E0

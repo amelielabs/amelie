@@ -17,7 +17,10 @@ struct Returning
 {
 	Ast*    list;
 	Ast*    list_tail;
+	Ast*    list_into;
+	Ast*    list_into_tail;
 	int     count;
+	int     count_into;
 	Columns columns;
 	Str     format;
 	int     r;
@@ -27,11 +30,15 @@ struct Returning
 static inline void
 returning_init(Returning* self)
 {
-	self->list      = NULL;
-	self->list_tail = NULL;
-	self->count     = 0;
-	self->r         = -1;
-	self->r_recv    = false;
+	self->list           = NULL;
+	self->list_tail      = NULL;
+	self->list_into      = NULL;
+	self->list_into_tail = NULL;
+	self->list_tail      = NULL;
+	self->count          = 0;
+	self->count_into     = 0;
+	self->r              = -1;
+	self->r_recv         = false;
 	columns_init(&self->columns);
 	str_init(&self->format);
 }

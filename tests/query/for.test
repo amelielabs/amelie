@@ -77,37 +77,37 @@ create table test (id int primary key)
 insert into test values (1), (2), (3)
 
 # test: select from var (table)
-declare x table (a int, b int); x := select id, id * 10 from test; for it in x do end
-declare list json := []; declare x table (a int, b int); x := select id, id * 10 from test; for it in x do list := list::append(it.a)::append(it.b); end; select list
+declare x table (a int, b int); select id, id * 10 into x from test; for it in x do end
+declare list json := []; declare x table (a int, b int); select id, id * 10 into x from test; for it in x do list := list::append(it.a)::append(it.b); end; select list
 
 drop table test
 
 # test: for .. select
 create table test (id int primary key)
 insert into test values (1), (2), (3)
-explain declare total int; declare n int; total := 0; for i in (select [1,2,3]) do n := select count(id) from test; total := total + n; end; select total;
-declare total int; declare n int; total := 0; for i in (select [1,2,3]) do n := select count(id) from test; total := total + n; end; select total;
+explain declare total int; declare n int; total := 0; for i in (select [1,2,3]) do select count(id) into n from test; total := total + n; end; select total;
+declare total int; declare n int; total := 0; for i in (select [1,2,3]) do select count(id) into n from test; total := total + n; end; select total;
 drop table test
 
 # test: for .. select (push target)
 create table test (id int primary key)
 insert into test values (1), (2), (3)
-explain declare n int := 0; for i in ([1,2,3]) do declare r int := select 1 from test where id = i.i::int; n := n + r; end; select n
-declare n int := 0; for i in ([1,2,3]) do declare r int := select 1 from test where id = i.i::int; n := n + r; end; select n
+explain declare n int := 0; for i in ([1,2,3]) do declare r int; select 1 into r from test where id = i.i::int; n := n + r; end; select n
+declare n int := 0; for i in ([1,2,3]) do declare r int; select 1 into r from test where id = i.i::int; n := n + r; end; select n
 drop table test
 
 # test: for .. select (push target agg)
 create table test (id int primary key)
 insert into test values (1), (2), (3)
-explain declare n int := 0; for i in ([1,2,3]) do declare r int := select count(*) from test where id = i.i::int; n := n + r; end; select n
-declare n int := 0; for i in ([1,2,3]) do declare r int := select count(*) from test where id = i.i::int; n := n + r; end; select n
+explain declare n int := 0; for i in ([1,2,3]) do declare r int; select count(*) into r from test where id = i.i::int; n := n + r; end; select n
+declare n int := 0; for i in ([1,2,3]) do declare r int; select count(*) into r from test where id = i.i::int; n := n + r; end; select n
 drop table test
 
 # test: for .. select (push var)
 create table test (id int primary key)
 insert into test values (1), (2), (3)
-explain declare n int := 0; for i in ([1,2,3]) do declare k int := i.i::int; declare r int := select 1 from test where id = k; n := n + r; end; select n
-declare n int := 0; for i in ([1,2,3]) do declare k int := i.i::int; declare r int := select 1 from test where id = k; n := n + r; end; select n
+explain declare n int := 0; for i in ([1,2,3]) do declare k int := i.i::int; declare r int; select 1 into r from test where id = k; n := n + r; end; select n
+declare n int := 0; for i in ([1,2,3]) do declare k int := i.i::int; declare r int; select 1 into r from test where id = k; n := n + r; end; select n
 drop table test
 
 # test: for .. returning

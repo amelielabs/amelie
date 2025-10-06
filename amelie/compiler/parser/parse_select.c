@@ -272,14 +272,28 @@ parse_select(Stmt* self, Targets* outer, bool subquery)
 }
 
 AstSelect*
-parse_select_expr(Stmt* self)
+parse_select_expr(Stmt* self, Str* var_name)
 {
-	// SELECT expr
+	// SELECT expr [INTO into]
 	auto select = ast_select_allocate(NULL, self->block);
 	ast_list_add(&self->select_list, &select->ast);
 	Expr ctx;
 	expr_init(&ctx);
-	parse_returning(&select->ret, self, &ctx);
+	auto ret = &select->ret;
+	parse_returning(ret, self, &ctx);
+
+	// into variable name
+	if (var_name)
+	{
+		auto var = (Ast*)ast_allocate(0, sizeof(Ast));
+		var->string = *var_name;
+		if (ret->list_into == NULL)
+			ret->list_into = var;
+		else
+			ret->list_into_tail->next = var;
+		ret->list_into_tail = var;
+		ret->count_into++;
+	}
 	return select;
 }
 

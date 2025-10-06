@@ -124,19 +124,33 @@ parse_returning(Returning* self, Stmt* stmt, Expr* ctx)
 		self->format = type->string;
 	}
 
-	// [INTO name]
-	if (stmt_if(stmt, KINTO))
+	// [INTO name, ...]
+	auto into = stmt_if(stmt, KINTO);
+	if (into)
 	{
-		auto name = stmt_expect(stmt, KNAME);
 		if (stmt->cte_name)
-			stmt_error(stmt, name, "INTO cannot be used with CTE");
-		if (stmt->assign)
-			stmt_error(stmt, name, "INTO cannot be used with := operator");
+			stmt_error(stmt, into, "INTO cannot be used with CTE");
+
 		if (ctx && ctx->select && ctx->subquery)
-			stmt_error(stmt, name, "INTO cannot be used inside subquery");
-		stmt->assign = block_var_find(stmt->block, &name->string);
-		if (! stmt->assign)
-			stmt_error(stmt, name, "variable not found");
+			stmt_error(stmt, into, "INTO cannot be used inside subquery");
+
+		for (;;)
+		{
+			// variable name
+			auto var = stmt_expect(stmt, KNAME);
+			if (self->list_into == NULL)
+				self->list_into = var;
+			else
+				self->list_into_tail->next = var;
+			self->list_into_tail = var;
+			self->count_into++;
+
+			// ,
+			if (stmt_if(stmt, ','))
+				continue;
+
+			break;
+		}
 	}
 }
 
@@ -180,8 +194,8 @@ returning_add_target(Returning* self, Target* target, Ast* star)
 	}
 }
 
-void
-parse_returning_resolve(Returning* self, Stmt* stmt, Targets* targets)
+static void
+parse_returning_resolve_exprs(Returning* self, Stmt* stmt, Targets* targets)
 {
 	// rewrite returning list by resolving all * and target.*
 	auto as = self->list;
@@ -243,5 +257,29 @@ parse_returning_resolve(Returning* self, Stmt* stmt, Targets* targets)
 			break;
 		}
 		}
+	}
+}
+
+void
+parse_returning_resolve(Returning* self, Stmt* stmt, Targets* targets)
+{
+	// rewrite returning list by resolving all * and target.*
+	parse_returning_resolve_exprs(self, stmt, targets);
+
+	// resolve INTO variables
+	if (! self->count_into)
+		return;
+
+	if (self->count_into > self->count)
+		stmt_error(stmt, NULL, "number of INTO variables exceed returning expressions");
+
+	auto ref = self->list_into;
+	for (; ref; ref = ref->next)
+	{
+		auto var = block_var_find(stmt->block, &ref->string);
+		if (! var)
+			stmt_error(stmt, NULL, "variable '%.*s' not found", str_size(&ref->string),
+			           str_of(&ref->string));
+		ref->var = var;
 	}
 }

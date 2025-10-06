@@ -105,30 +105,30 @@ drop table test
 
 # test: if insert returning
 create table test (id int primary key)
-explain declare x int := 0; if true then; x := insert into test values (123) returning *; end; select x
-declare x int := 0; if true then; x := insert into test values (123) returning *; end; select x
+explain declare x int := 0; if true then; insert into test values (123) returning * into x; end; select x
+declare x int := 0; if true then; insert into test values (123) returning * into x; end; select x
 drop table test
 
 # test: if select
 create table test (id int primary key)
 insert into test values (123)
-explain declare x int := 0; if true then x := select * from test; end; select x
-declare x int := 0; if true then x := select * from test; end; select x
+explain declare x int := 0; if true then select * into x from test; end; select x
+declare x int := 0; if true then select * into x from test; end; select x
 
-explain declare x int := 0; if true then x := select count(*) from test; end; select x
-declare x int := 0; if true then x := select count(*) from test; end; select x
+explain declare x int := 0; if true then select count(*) into x from test; end; select x
+declare x int := 0; if true then select count(*) into x from test; end; select x
 
-explain declare x int := 0; if false then else x := select count(*) from test; end; select x
-declare x int := 0; if false then else x := select count(*) from test; end; select x
+explain declare x int := 0; if false then else select count(*) into x from test; end; select x
+declare x int := 0; if false then else select count(*) into x from test; end; select x
 
-explain declare x int := 0; if false then else x := select count(*) from test; end; select 1; select x
-declare x int := 0; if false then else x := select count(*) from test; end; select 1; select x
+explain declare x int := 0; if false then else select count(*) into x from test; end; select 1; select x
+declare x int := 0; if false then else select count(*) into x from test; end; select 1; select x
 
-explain declare x int := 0; if false then else x := select count(*) from test; end; select * from test; select x
-declare x int := 0; if false then else x := select count(*) from test; end; select * from test; select x
+explain declare x int := 0; if false then else select count(*) into x from test; end; select * from test; select x
+declare x int := 0; if false then else select count(*) into x from test; end; select * from test; select x
 
-explain declare x int := 0; if true then if false then x := select * from test; end; end; select x
-declare x int := 0; if true then if false then x := select * from test; end; end; select x
+explain declare x int := 0; if true then if false then select * into x from test; end; end; select x
+declare x int := 0; if true then if false then select * into x from test; end; end; select x
 drop table test
 
 # test: if declare

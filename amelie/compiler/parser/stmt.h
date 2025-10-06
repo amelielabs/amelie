@@ -60,7 +60,6 @@ struct Stmt
 	Returning* ret;
 	Str*       cte_name;
 	Columns    cte_columns;
-	Var*       assign;
 	AstList    select_list;
 	Block*     block;
 	Parser*    parser;
@@ -77,7 +76,6 @@ stmt_allocate(Parser* parser, Lex* lex, Block* block)
 	self->r        = -1;
 	self->ret      = NULL;
 	self->cte_name = NULL;
-	self->assign   = NULL;
 	self->next     = NULL;
 	self->prev     = NULL;
 	self->lex      = lex;

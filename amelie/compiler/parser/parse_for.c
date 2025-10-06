@@ -48,9 +48,6 @@ parse_for(Stmt* self)
 	auto stmt = ast_for_allocate(self->block);
 	self->ast = &stmt->ast;
 
-	if (self->assign)
-		stmt_error(self, NULL, "FOR cannot be assigned");
-
 	// alias
 	auto as = stmt_expect(self, KNAME);
 

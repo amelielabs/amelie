@@ -200,16 +200,6 @@ emit_recv(Compiler* self, Stmt* stmt)
 	if (!ret || ret->r == -1 || ret->r_recv)
 		return;
 
-	if (stmt->r != -1)
-		return;
-
-	if (stmt->id == STMT_SELECT)
-	{
-		auto select = ast_select_of(stmt->ast);
-		if (! select->pushdown)
-			return;
-	}
-
 	// CUNION_RECV
 	//
 	// receive results and add them to the union
@@ -315,40 +305,68 @@ emit_stmt_backend(Compiler* self, Stmt* stmt)
 }
 
 hot static void
-emit_assign(Compiler* self, Stmt* stmt)
+emit_into(Compiler* self, Stmt* stmt)
 {
-	// assign :=
+	// INTO var, ... and := operator
 	auto ret = stmt->ret;
-	auto var = stmt->assign;
-
-	// generate recv if stmt result is expected for := or return
-	emit_recv(self, stmt);
 	if (! ret)
 		stmt_error(stmt, NULL, "statement cannot be assigned");
+	if (! ret->count_into)
+		return;
+
+	// ensure statement received
+	emit_recv(self, stmt);
 	assert(stmt->r != -1);
 
+	auto var = stmt->ret->list_into->var;
 	if (var->type == TYPE_STORE)
 	{
+		// INTO table_var
+
+		// ensure only one table var used
+		if (ret->count_into > 1)
+			stmt_error(self->current, stmt->ast, "INTO accept only one table variable");
+
 		// compare columns
 		auto type = rtype(self, stmt->r);
 		if (type != TYPE_NULL && !columns_compare(&var->columns, &ret->columns))
 			stmt_error(self->current, stmt->ast, "variable table columns mismatch");
 
 		// var = store
-		op2(self, CASSIGN_STORE, var->r, stmt->r);
-	} else
-	{
-		if (ret->count > 1)
-			stmt_error(stmt, NULL, "statement must return only one column to be assigned");
+		op2(self, CMOV, var->r, stmt->r);
 
-		auto type = columns_first(&ret->columns)->type;
-		if (type != TYPE_NULL && var->type != type)
-			stmt_error(self->current, stmt->ast, "variable expected %s",
-			           type_of(var->type));
-
-		op2(self, CASSIGN, var->r, stmt->r);
+		runpin(self, stmt->r);
+		stmt->r = -1;
+		return;
 	}
 
+	// INTO var, ...
+	auto ref = stmt->ret->list_into;
+	list_foreach(&ret->columns.list)
+	{
+		auto column = list_at(Column, link);
+
+		// all variables must be resolved at this point
+		auto var  = ref->var;
+		if (var->type == TYPE_STORE)
+			stmt_error(self->current, stmt->ast, "INTO accept only one table variable");
+
+		auto type = column->type;
+		if (type != TYPE_NULL && var->type != type)
+			stmt_error(self->current, stmt->ast, "variable expected %s",
+					   type_of(var->type));
+
+		// CASSIGN
+		op3(self, CASSIGN, var->r, stmt->r, column->order);
+
+		// variables count can be less than expressions
+		ref = ref->next;
+		if (! ref)
+			break;
+	}
+
+	// CFREE
+	op1(self, CFREE, stmt->r);
 	runpin(self, stmt->r);
 	stmt->r = -1;
 }
@@ -425,9 +443,9 @@ emit_stmt(Compiler* self, Stmt* stmt)
 	if (target)
 		emit_send(self, target, start);
 
-	// assign :=
-	if (stmt->assign)
-		emit_assign(self, stmt);
+	// INTO and :=
+	if (stmt->ret && stmt->ret->count_into > 0)
+		emit_into(self, stmt);
 
 	// set previous stmt
 	self->current = stmt_prev;
