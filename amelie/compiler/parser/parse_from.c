@@ -64,6 +64,7 @@ parse_from_target(Stmt* self, Targets* targets, AccessType access, bool subquery
 				auto stmt = stmt_allocate(self->parser, &self->parser->lex, self->block);
 				stmt->id = STMT_SELECT;
 				stmts_insert(&self->block->stmts, self, stmt);
+				deps_add(&self->deps, DEP_STMT, stmt);
 
 				select = parse_select(stmt, NULL, false);
 				stmt_expect(self, ')');
@@ -167,6 +168,7 @@ parse_from_target(Stmt* self, Targets* targets, AccessType access, bool subquery
 		target->from_stmt = stmt;
 		target->columns   = &stmt->cte_columns;
 		str_set_str(&target->name, stmt->cte_name);
+		deps_add(&self->deps, DEP_STMT, stmt);
 		return target;
 	}
 

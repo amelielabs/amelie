@@ -222,23 +222,9 @@ hot static void
 emit_sync(Compiler* self, Stmt* stmt)
 {
 	compiler_switch_frontend(self);
-	if (stmt->id == STMT_INSERT)
-	{
-		auto insert = ast_insert_of(stmt->ast);
-		if (insert->select)
-			emit_recv(self, insert->select);
-		return;
-	}
-	for (auto ref = stmt->select_list.list; ref; ref = ref->next)
-	{
-		auto select = ast_select_of(ref->ast);
-		for (auto target = select->targets.list; target; target = target->next)
-		{
-			if (target->type != TARGET_STMT)
-				continue;
-			emit_recv(self, target->from_stmt);
-		}
-	}
+	auto dep = stmt->deps.list;
+	for (; dep; dep = dep->next)
+		emit_recv(self, dep->stmt);
 }
 
 hot static int
