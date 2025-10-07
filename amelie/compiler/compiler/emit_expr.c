@@ -232,20 +232,6 @@ emit_name(Compiler* self, Targets* targets, Ast* ast)
 	// SELECT name
 	auto name = &ast->string;
 
-	// find variable by name
-	auto var = block_var_find(self->current->block, name);
-	if (var)
-	{
-		assert(var->r != -1);
-		if (self->origin == ORIGIN_BACKEND)
-		{
-			// create reference, if variable is accessed from backend
-			auto ref_id = refs_add(&self->refs, targets, NULL, var->r);
-			return op2(self, CREF, rpin(self, var->type), ref_id);
-		}
-		return op2(self, CDUP, rpin(self, var->type), var->r);
-	}
-
 	targets = block_targets(targets);
 	if (! targets)
 		stmt_error(self->current, ast, "column not found");
@@ -283,36 +269,6 @@ emit_name_compound(Compiler* self, Targets* targets, Ast* ast)
 	Str path;
 	str_init(&path);
 	str_set_str(&path, &ast->string);
-
-	// find variable by name
-	auto var = block_var_find(self->current->block, &name);
-	if (var)
-	{
-		assert(var->r != -1);
-
-		int r;
-		if (self->origin == ORIGIN_BACKEND)
-		{
-			// create reference, if variable is accessed from backend
-			auto ref_id = refs_add(&self->refs, targets, ast, -1);
-			r = op2(self, CREF, rpin(self, var->type), ref_id);
-		} else {
-			r = op2(self, CDUP, rpin(self, var->type), var->r);
-		}
-		if (str_empty(&path))
-			return r;
-
-		// ensure variable is a json
-		if (var->type != TYPE_JSON)
-			stmt_error(self->current, ast, "variable '%.*s' is not a json",
-			           str_size(var->name),
-			           str_of(var->name));
-
-		// var.path
-		str_advance(&path, str_size(&name) + 1);
-		int rstring = emit_string(self, &path, false);
-		return cast_operator(self, ast, OP_DOT, r, rstring);
-	}
 
 	// check if the first path is a target name
 	Target* target = NULL;
@@ -954,6 +910,21 @@ emit_expr(Compiler* self, Targets* targets, Ast* ast)
 	case '{':
 	case KARRAY:
 		return emit_json(self, targets, ast);
+
+	// variable
+	case KVAR:
+	{
+		// SELECT var
+		auto var = ast->var;
+		assert(var->r != -1);
+		if (self->origin == ORIGIN_BACKEND)
+		{
+			// create reference, if variable is accessed from backend
+			auto ref_id = refs_add(&self->refs, targets, NULL, var->r);
+			return op2(self, CREF, rpin(self, var->type), ref_id);
+		}
+		return op2(self, CDUP, rpin(self, var->type), var->r);
+	}
 
 	// column
 	case KNAME:

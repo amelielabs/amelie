@@ -230,14 +230,11 @@ path_key(Path* self, Block* block, PathKey* key, AstList* ops)
 			if (unlikely(column->type != TYPE_UUID))
 				continue;
 			break;
-		case KNAME:
-		{
-			// match variable by name
-			auto match = block_var_find(block, &value->string);
-			if (! match)
+		case KVAR:
+			unused(block);
+			if (unlikely(column->type != value->var->type))
 				continue;
 			break;
-		}
 		case KNAME_COMPOUND:
 		{
 			// match outer target [target.]column and find the column
@@ -292,7 +289,7 @@ path_create(Target* target, Block* block, Keys* keys, AstList* ops)
 			self->match_start++;
 			if (key_path->start->id == KNAME_COMPOUND)
 				self->match_start_columns++;
-			if (key_path->start->id == KNAME)
+			if (key_path->start->id == KVAR)
 				self->match_start_vars++;
 			if (key_path->start_op->id == '=')
 				match_eq++;

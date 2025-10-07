@@ -162,9 +162,12 @@ insert into test values (1, 1), (2, 2), (3, 3)
 declare x table (a int, b int); select id into x from test;
 
 # test: select into table
+explain declare x table (a int, b int); select * into x from test; select * from x
 declare x table (a int, b int); select * into x from test; select * from x
-declare x table (a int, b int); select * into x from test; select * from x _
-declare x table (a int, b int); select data, id into x from test; select * from x _
+declare x table (a int, b int); select * into x from test; select * from x as it
+
+declare x table (a int, b int); select data, id into x from test; select * from x
+declare x table (a int, b int); select data, id into x from test; select * from x as it
 
 # test: select into table (null)
 declare x table (a int, b int); select * into x from test; x := null; select x::type

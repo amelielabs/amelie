@@ -63,10 +63,12 @@ ops_extract(AstList* self, Ast* expr)
 	{
 		// [target.]name = value | [target.]name
 		Ast* value;
-		if (expr->l->id == KNAME || expr->l->id == KNAME_COMPOUND)
+		if (expr->l->id == KNAME || expr->l->id == KNAME_COMPOUND ||
+		    expr->l->id == KVAR)
 			value = expr->r;
 		else
-		if (expr->r->id == KNAME || expr->r->id == KNAME_COMPOUND)
+		if (expr->r->id == KNAME || expr->r->id == KNAME_COMPOUND ||
+		    expr->r->id == KVAR)
 			value = expr->l;
 		else
 			break;
@@ -74,6 +76,7 @@ ops_extract(AstList* self, Ast* expr)
 		    value->id == KSTRING    ||
 		    value->id == KTIMESTAMP ||
 		    value->id == KUUID      ||
+		    value->id == KVAR       ||
 		    value->id == KNAME      ||
 		    value->id == KNAME_COMPOUND)
 		{

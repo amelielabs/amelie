@@ -343,11 +343,52 @@ insert into test values (1, 1), (2, 2), (3, 3)
 declare x table (a int, b int); select id into x from test;
 {"msg": "declare x table (a int, b int); ❰select❱ ⟵ variable table columns mismatch"}
 # test: select into table
+explain declare x table (a int, b int); select * into x from test; select * from x
+[{
+  "bytecode": {
+    "frontend": {
+      "00": "union               1      0      0     ",
+      "01": "send_all            0      -      1     # public.test (last)",
+      "02": "union_recv          1      0      0     ",
+      "03": "union_set           1      0      -1    ",
+      "04": "mov                 0      1      0     ",
+      "05": "set                 1      2      0     ",
+      "06": "dup                 2      0      0     ",
+      "07": "store_open          3      2      14    ",
+      "08": "store_read          4      3      0     ",
+      "09": "push                4      0      0     ",
+      "10": "store_read          4      3      1     ",
+      "11": "push                4      0      0     ",
+      "12": "set_add             1      0      0     ",
+      "13": "store_next          3      8      0     ",
+      "14": "free                3      0      0     ",
+      "15": "free                2      0      0     ",
+      "16": "content             1      -      -     ",
+      "17": "ret                 0      0      0     "
+    },
+    "backend": {
+      "00": "set                 1      2      0     ",
+      "01": "table_open_part     2      0      8     # public.test (primary)",
+      "02": "table_readi32       3      2      0     ",
+      "03": "push                3      0      0     ",
+      "04": "table_readi32       3      2      1     ",
+      "05": "push                3      0      0     ",
+      "06": "set_add             1      0      0     ",
+      "07": "table_next          2      2      0     ",
+      "08": "free                2      0      0     ",
+      "09": "result              1      0      0     ",
+      "10": "ret                 0      0      0     "
+    }
+  },
+  "access": [["public.test", "ro"]]
+}]
 declare x table (a int, b int); select * into x from test; select * from x
-{"msg": "declare x table (a int, b int); select * into x from test; select ❰*❱ ⟵ variable 'x' is not a json"}
-declare x table (a int, b int); select * into x from test; select * from x _
 [[1, 1], [2, 2], [3, 3]]
-declare x table (a int, b int); select data, id into x from test; select * from x _
+declare x table (a int, b int); select * into x from test; select * from x as it
+[[1, 1], [2, 2], [3, 3]]
+declare x table (a int, b int); select data, id into x from test; select * from x
+[[1, 1], [2, 2], [3, 3]]
+declare x table (a int, b int); select data, id into x from test; select * from x as it
 [[1, 1], [2, 2], [3, 3]]
 # test: select into table (null)
 declare x table (a int, b int); select * into x from test; x := null; select x::type

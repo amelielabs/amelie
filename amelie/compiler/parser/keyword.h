@@ -48,6 +48,7 @@ enum
 	KARRAY,
 	KAGGR,
 	KAGGRKEY,
+	KVAR,
 
 	// keywords
 	KKEYWORD,

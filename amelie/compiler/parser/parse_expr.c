@@ -123,7 +123,8 @@ priority_map[KEYWORD_MAX] =
 	[KNULL]                    = priority_value,
 	[KARGID]                   = priority_value,
 	[KNAME]                    = priority_value,
-	[KNAME_COMPOUND]           = priority_value
+	[KNAME_COMPOUND]           = priority_value,
+	[KVAR]                     = priority_value
 };
 
 hot static inline void
@@ -668,8 +669,17 @@ expr_value(Stmt* self, Expr* expr, Ast* value)
 	case KNAME:
 	{
 		// function(expr, ...)
-		if (stmt_if(self,'('))
+		if (stmt_if(self,'(')) {
 			value = expr_func(self, expr, value, true);
+			break;
+		}
+
+		// find variable by name
+		auto var = block_var_find(self->block, &value->string);
+		if (! var)
+			break;
+		value->id  = KVAR;
+		value->var = var;
 		break;
 	}
 
@@ -679,7 +689,25 @@ expr_value(Stmt* self, Expr* expr, Ast* value)
 	{
 		// function(expr, ...)
 		if (stmt_if(self,'('))
+		{
 			value = expr_func(self, expr, value, true);
+			break;
+		}
+
+		// find variable by name
+		Str name;
+		str_split(&value->string, &name, '.');
+
+		// find variable by name
+		auto var = block_var_find(self->block, &name);
+		if (! var)
+			break;
+		value->id  = KVAR;
+		value->var = var;
+
+		// .path
+		self->lex->pos = name.end;
+		self->lex->backlog = NULL;
 		break;
 	}
 
