@@ -857,53 +857,10 @@ declare x int := 0; if true then if false then select * into x from test; end; e
 [0]
 drop table test
 # test: if declare
-explain if true then declare x int := 10; end
-[{
-  "bytecode": {
-    "frontend": {
-      "00": "jmp                 2      0      0     ",
-      "01": "jmp                 9      0      0     ",
-      "02": "bool                0      1      0     ",
-      "03": "jntr                9      0      0     ",
-      "04": "int                 1      -      0     # 10",
-      "05": "assign              0      1      0     ",
-      "06": "free                1      0      0     ",
-      "07": "free                0      0      0     ",
-      "08": "jmp                 1      0      0     ",
-      "09": "ret                 0      0      0     "
-    }
-  },
-  "access": []
-}]
 if true then declare x int := 10; end
-explain if true then declare x int := 10; else declare x int := 20; end
-[{
-  "bytecode": {
-    "frontend": {
-      "00": "jmp                 2      0      0     ",
-      "01": "jmp                 13     0      0     ",
-      "02": "bool                0      1      0     ",
-      "03": "jntr                9      0      0     ",
-      "04": "int                 1      -      0     # 10",
-      "05": "assign              0      1      0     ",
-      "06": "free                1      0      0     ",
-      "07": "free                0      0      0     ",
-      "08": "jmp                 1      0      0     ",
-      "09": "int                 1      -      0     # 20",
-      "10": "assign              0      1      0     ",
-      "11": "free                1      0      0     ",
-      "12": "free                0      0      0     ",
-      "13": "ret                 0      0      0     "
-    }
-  },
-  "access": []
-}]
-if true then declare x int := 10; else declare x int := 20; end
-if true then declare x int := 10; else declare x int := 20; end; select x
-{"msg": "if true then declare x int := 10; else declare x int := 20; end; select ❰x❱ ⟵ column not found"}
-# test: if declare shadow
-declare x int := 2; if true then declare x int := 10; else declare x int := 20; end; select x
-[2]
+{"msg": "if true then ❰declare❱ ⟵ declare cannot be used here"}
+if true then else declare x int := 10; end
+{"msg": "if true then else ❰declare❱ ⟵ declare cannot be used here"}
 # test: if utility
 if true then show all; end
 {"msg": "if true then ❰show❱ ⟵ utility statement cannot be used here"}

@@ -358,36 +358,35 @@ drop table test
 # test: for .. select (push target)
 create table test (id int primary key)
 insert into test values (1), (2), (3)
-explain declare n int := 0; for i in ([1,2,3]) do declare r int; select 1 into r from test where id = i.i::int; n := n + r; end; select n
+explain declare n int := 0; declare r int; for i in ([1,2,3]) do select 1 into r from test where id = i.i::int; n := n + r; end; select n
 [{
   "bytecode": {
     "frontend": {
-      "00": "int                 1      -      0     # 0",
-      "01": "assign              0      1      0     ",
-      "02": "free                1      0      0     ",
-      "03": "json                1      0      0     ",
-      "04": "json_open           2      1      20    ",
-      "05": "json_read           4      2      0     ",
+      "00": "int                 2      -      0     # 0",
+      "01": "assign              0      2      0     ",
+      "02": "free                2      0      0     ",
+      "03": "json                2      0      0     ",
+      "04": "json_open           3      2      19    ",
+      "05": "json_read           4      3      0     ",
       "06": "push                4      0      0     ",
       "07": "union               4      0      0     ",
       "08": "send_all            0      -      4     # public.test",
       "09": "union_recv          4      0      0     ",
       "10": "union_set           4      0      -1    ",
-      "11": "assign              3      4      0     ",
+      "11": "assign              1      4      0     ",
       "12": "free                4      0      0     ",
       "13": "dup                 4      0      0     ",
-      "14": "dup                 5      3      0     ",
+      "14": "dup                 5      1      0     ",
       "15": "addii               6      4      5     ",
       "16": "assign              0      6      0     ",
       "17": "free                6      0      0     ",
-      "18": "free                3      0      0     ",
-      "19": "json_next           2      5      0     ",
+      "18": "json_next           3      5      0     ",
+      "19": "free                3      0      0     ",
       "20": "free                2      0      0     ",
-      "21": "free                1      0      0     ",
-      "22": "close               0      0      0     ",
-      "23": "dup                 1      0      0     ",
-      "24": "content             1      -      -     ",
-      "25": "ret                 0      0      0     "
+      "21": "close               0      0      0     ",
+      "22": "dup                 2      0      0     ",
+      "23": "content             2      -      -     ",
+      "24": "ret                 0      0      0     "
     },
     "backend": {
       "00": "set                 4      1      0     ",
@@ -409,22 +408,22 @@ explain declare n int := 0; for i in ([1,2,3]) do declare r int; select 1 into r
   },
   "access": [["public.test", "ro"]]
 }]
-declare n int := 0; for i in ([1,2,3]) do declare r int; select 1 into r from test where id = i.i::int; n := n + r; end; select n
+declare n int := 0; declare r int; for i in ([1,2,3]) do select 1 into r from test where id = i.i::int; n := n + r; end; select n
 [3]
 drop table test
 # test: for .. select (push target agg)
 create table test (id int primary key)
 insert into test values (1), (2), (3)
-explain declare n int := 0; for i in ([1,2,3]) do declare r int; select count(*) into r from test where id = i.i::int; n := n + r; end; select n
+explain declare n int := 0; declare r int; for i in ([1,2,3]) do select count(*) into r from test where id = i.i::int; n := n + r; end; select n
 [{
   "bytecode": {
     "frontend": {
-      "00": "int                 1      -      0     # 0",
-      "01": "assign              0      1      0     ",
-      "02": "free                1      0      0     ",
-      "03": "json                1      0      0     ",
-      "04": "json_open           2      1      29    ",
-      "05": "json_read           4      2      0     ",
+      "00": "int                 2      -      0     # 0",
+      "01": "assign              0      2      0     ",
+      "02": "free                2      0      0     ",
+      "03": "json                2      0      0     ",
+      "04": "json_open           3      2      28    ",
+      "05": "json_read           4      3      0     ",
       "06": "push                4      0      0     ",
       "07": "union               4      0      0     ",
       "08": "send_all            0      -      4     # public.test",
@@ -439,21 +438,20 @@ explain declare n int := 0; for i in ([1,2,3]) do declare r int; select count(*)
       "17": "store_next          6      14     0     ",
       "18": "free                6      0      0     ",
       "19": "free                4      0      0     ",
-      "20": "assign              3      5      0     ",
+      "20": "assign              1      5      0     ",
       "21": "free                5      0      0     ",
       "22": "dup                 4      0      0     ",
-      "23": "dup                 5      3      0     ",
+      "23": "dup                 5      1      0     ",
       "24": "addii               6      4      5     ",
       "25": "assign              0      6      0     ",
       "26": "free                6      0      0     ",
-      "27": "free                3      0      0     ",
-      "28": "json_next           2      5      0     ",
+      "27": "json_next           3      5      0     ",
+      "28": "free                3      0      0     ",
       "29": "free                2      0      0     ",
-      "30": "free                1      0      0     ",
-      "31": "close               0      0      0     ",
-      "32": "dup                 1      0      0     ",
-      "33": "content             1      -      -     ",
-      "34": "ret                 0      0      0     "
+      "30": "close               0      0      0     ",
+      "31": "dup                 2      0      0     ",
+      "32": "content             2      -      -     ",
+      "33": "ret                 0      0      0     "
     },
     "backend": {
       "00": "set_ordered         4      1      1     ",
@@ -485,49 +483,47 @@ explain declare n int := 0; for i in ([1,2,3]) do declare r int; select count(*)
   },
   "access": [["public.test", "ro"]]
 }]
-declare n int := 0; for i in ([1,2,3]) do declare r int; select count(*) into r from test where id = i.i::int; n := n + r; end; select n
+declare n int := 0; declare r int; for i in ([1,2,3]) do select count(*) into r from test where id = i.i::int; n := n + r; end; select n
 [3]
 drop table test
 # test: for .. select (push var)
 create table test (id int primary key)
 insert into test values (1), (2), (3)
-explain declare n int := 0; for i in ([1,2,3]) do declare k int := i.i::int; declare r int; select 1 into r from test where id = k; n := n + r; end; select n
+explain declare n int := 0; declare r int; declare k int; for i in ([1,2,3]) do k := i.i::int; select 1 into r from test where id = k; n := n + r; end; select n
 [{
   "bytecode": {
     "frontend": {
-      "00": "int                 1      -      0     # 0",
-      "01": "assign              0      1      0     ",
-      "02": "free                1      0      0     ",
-      "03": "json                1      0      0     ",
-      "04": "json_open           2      1      27    ",
-      "05": "json_read           5      2      0     ",
+      "00": "int                 3      -      0     # 0",
+      "01": "assign              0      3      0     ",
+      "02": "free                3      0      0     ",
+      "03": "json                3      0      0     ",
+      "04": "json_open           4      3      25    ",
+      "05": "json_read           5      4      0     ",
       "06": "push                5      0      0     ",
       "07": "call                5      -      1     # public.int()",
-      "08": "assign              3      5      0     ",
+      "08": "assign              2      5      0     ",
       "09": "free                5      0      0     ",
-      "10": "push_dup            3      0      0     ",
+      "10": "push_dup            2      0      0     ",
       "11": "union               5      0      0     ",
-      "12": "dup                 6      3      0     ",
+      "12": "dup                 6      2      0     ",
       "13": "push                6      0      0     ",
       "14": "send_lookup_by      0      -      -     # public.test",
       "15": "union_recv          5      0      0     ",
       "16": "union_set           5      0      -1    ",
-      "17": "assign              4      5      0     ",
+      "17": "assign              1      5      0     ",
       "18": "free                5      0      0     ",
       "19": "dup                 5      0      0     ",
-      "20": "dup                 6      4      0     ",
+      "20": "dup                 6      1      0     ",
       "21": "addii               7      5      6     ",
       "22": "assign              0      7      0     ",
       "23": "free                7      0      0     ",
-      "24": "free                3      0      0     ",
+      "24": "json_next           4      5      0     ",
       "25": "free                4      0      0     ",
-      "26": "json_next           2      5      0     ",
-      "27": "free                2      0      0     ",
-      "28": "free                1      0      0     ",
-      "29": "close               0      0      0     ",
-      "30": "dup                 1      0      0     ",
-      "31": "content             1      -      -     ",
-      "32": "ret                 0      0      0     "
+      "26": "free                3      0      0     ",
+      "27": "close               0      0      0     ",
+      "28": "dup                 3      0      0     ",
+      "29": "content             3      -      -     ",
+      "30": "ret                 0      0      0     "
     },
     "backend": {
       "00": "set                 5      1      0     ",
@@ -548,44 +544,43 @@ explain declare n int := 0; for i in ([1,2,3]) do declare k int := i.i::int; dec
   },
   "access": [["public.test", "ro"]]
 }]
-declare n int := 0; for i in ([1,2,3]) do declare k int := i.i::int; declare r int; select 1 into r from test where id = k; n := n + r; end; select n
+declare n int := 0; declare r int; declare k int; for i in ([1,2,3]) do k := i.i::int; select 1 into r from test where id = k; n := n + r; end; select n
 [3]
 drop table test
 # test: for .. returning
 create table test (id int primary key, data int)
 insert into test values (1, 0), (2, 0), (3, 0)
-explain declare n int := 0; for i in ([1,2,3]) do declare r int := 0; update test set data = id where id = i.i::int returning 1 into r; n := n + r; end; select n
+explain declare n int := 0; declare r int := 0; for i in ([1,2,3]) do update test set data = id where id = i.i::int returning 1 into r; n := n + r; end; select n
 [{
   "bytecode": {
     "frontend": {
-      "00": "int                 1      -      0     # 0",
-      "01": "assign              0      1      0     ",
-      "02": "free                1      0      0     ",
-      "03": "json                1      0      0     ",
-      "04": "json_open           2      1      22    ",
-      "05": "int                 4      -      0     # 0",
-      "06": "assign              3      4      0     ",
-      "07": "free                4      0      0     ",
-      "08": "json_read           4      2      0     ",
+      "00": "int                 2      -      0     # 0",
+      "01": "assign              0      2      0     ",
+      "02": "free                2      0      0     ",
+      "03": "int                 2      -      0     # 0",
+      "04": "assign              1      2      0     ",
+      "05": "free                2      0      0     ",
+      "06": "json                2      0      0     ",
+      "07": "json_open           3      2      21    ",
+      "08": "json_read           4      3      0     ",
       "09": "push                4      0      0     ",
       "10": "union               4      0      0     ",
       "11": "send_all            0      -      4     # public.test",
       "12": "union_recv          4      0      0     ",
-      "13": "assign              3      4      0     ",
+      "13": "assign              1      4      0     ",
       "14": "free                4      0      0     ",
       "15": "dup                 4      0      0     ",
-      "16": "dup                 5      3      0     ",
+      "16": "dup                 5      1      0     ",
       "17": "addii               6      4      5     ",
       "18": "assign              0      6      0     ",
       "19": "free                6      0      0     ",
-      "20": "free                3      0      0     ",
-      "21": "json_next           2      5      0     ",
+      "20": "json_next           3      8      0     ",
+      "21": "free                3      0      0     ",
       "22": "free                2      0      0     ",
-      "23": "free                1      0      0     ",
-      "24": "close               0      0      0     ",
-      "25": "dup                 1      0      0     ",
-      "26": "content             1      -      -     ",
-      "27": "ret                 0      0      0     "
+      "23": "close               0      0      0     ",
+      "24": "dup                 2      0      0     ",
+      "25": "content             2      -      -     ",
+      "26": "ret                 0      0      0     "
     },
     "backend": {
       "00": "set                 4      1      0     ",
@@ -612,7 +607,7 @@ explain declare n int := 0; for i in ([1,2,3]) do declare r int := 0; update tes
   },
   "access": [["public.test", "rw"]]
 }]
-declare n int := 0; for i in ([1,2,3]) do declare r int := 0; update test set data = id where id = i.i::int returning 1 into r; n := n + r; end; select n
+declare n int := 0; declare r int := 0; for i in ([1,2,3]) do update test set data = id where id = i.i::int returning 1 into r; n := n + r; end; select n
 [3]
 drop table test
 # test: for utility

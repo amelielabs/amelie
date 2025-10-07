@@ -408,6 +408,10 @@ parse_block(Parser* self, Block* block)
 		case KDECLARE:
 			// [DECLARE var type ;]
 			// [DECLARE var type := expr]
+			//
+			// ensure root block being used
+			if (block != self->blocks.list)
+				lex_error(lex, ast, "declare cannot be used here");
 			parse_declare(self, block);
 			break;
 		case KNAME:

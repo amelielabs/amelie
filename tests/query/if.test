@@ -132,15 +132,8 @@ declare x int := 0; if true then if false then select * into x from test; end; e
 drop table test
 
 # test: if declare
-explain if true then declare x int := 10; end
 if true then declare x int := 10; end
-
-explain if true then declare x int := 10; else declare x int := 20; end
-if true then declare x int := 10; else declare x int := 20; end
-if true then declare x int := 10; else declare x int := 20; end; select x
-
-# test: if declare shadow
-declare x int := 2; if true then declare x int := 10; else declare x int := 20; end; select x
+if true then else declare x int := 10; end
 
 # test: if utility
 if true then show all; end
