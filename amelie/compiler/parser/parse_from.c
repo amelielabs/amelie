@@ -95,10 +95,9 @@ parse_from_target(Stmt* self, Targets* targets, AccessType access, bool subquery
 			target->ast  = ast;
 
 			// allocate select to keep returning columns
-			auto select = ast_select_allocate(targets->outer, targets->block);
+			auto select = ast_select_allocate(self, targets->outer, targets->block);
 			select->ast.pos_start = target->ast->pos_start;
 			select->ast.pos_end   = target->ast->pos_end;
-			ast_list_add(&self->select_list, &select->ast);
 			target->columns = &select->ret.columns;
 		}
 		return target;
@@ -130,10 +129,9 @@ parse_from_target(Stmt* self, Targets* targets, AccessType access, bool subquery
 		target->ast  = &func->ast;
 
 		// allocate select to keep returning columns
-		auto select = ast_select_allocate(targets->outer, targets->block);
+		auto select = ast_select_allocate(self, targets->outer, targets->block);
 		select->ast.pos_start = target->ast->pos_start;
 		select->ast.pos_end   = target->ast->pos_end;
-		ast_list_add(&self->select_list, &select->ast);
 		target->columns = &select->ret.columns;
 		str_set_str(&target->name, &func->fn->name);
 		return target;
@@ -150,10 +148,9 @@ parse_from_target(Stmt* self, Targets* targets, AccessType access, bool subquery
 		} else
 		{
 			// allocate select to keep returning columns
-			auto select = ast_select_allocate(targets->outer, targets->block);
+			auto select = ast_select_allocate(self, targets->outer, targets->block);
 			select->ast.pos_start = target->ast->pos_start;
 			select->ast.pos_end   = target->ast->pos_end;
-			ast_list_add(&self->select_list, &select->ast);
 			target->columns = &select->ret.columns;
 		}
 		str_set_str(&target->name, var->name);

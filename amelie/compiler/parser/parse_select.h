@@ -44,7 +44,7 @@ ast_select_of(Ast* ast)
 }
 
 static inline AstSelect*
-ast_select_allocate(Targets* outer, Block* block)
+ast_select_allocate(Stmt* stmt, Targets* outer, Block* block)
 {
 	AstSelect* self;
 	self = ast_allocate(KSELECT, sizeof(AstSelect));
@@ -69,6 +69,7 @@ ast_select_allocate(Targets* outer, Block* block)
 	targets_set_outer(&self->targets, outer);
 	targets_set_outer(&self->targets_group, outer);
 	columns_init(&self->targets_group_columns);
+	ast_list_add(&stmt->select_list, &self->ast);
 	return self;
 }
 
