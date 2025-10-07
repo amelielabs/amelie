@@ -21,6 +21,7 @@ struct Var
 	Type    type;
 	Columns columns;
 	Str*    name;
+	Stmt*   writer;
 	Var*    next;
 };
 
@@ -62,11 +63,12 @@ static inline Var*
 vars_add(Vars* self, Str* name)
 {
 	auto var = (Var*)palloc(sizeof(Var));
-	var->order = self->count;
-	var->r     = -1;
-	var->type  = TYPE_NULL;
-	var->name  = name;
-	var->next  = NULL;
+	var->order  = self->count;
+	var->r      = -1;
+	var->type   = TYPE_NULL;
+	var->name   = name;
+	var->writer = NULL;
+	var->next   = NULL;
 	if (self->list == NULL)
 		self->list = var;
 	else

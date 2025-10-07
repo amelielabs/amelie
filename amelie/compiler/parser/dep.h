@@ -17,7 +17,8 @@ typedef struct Stmt Stmt;
 
 typedef enum
 {
-	DEP_STMT
+	DEP_STMT,
+	DEP_VAR
 } DepType;
 
 struct Dep

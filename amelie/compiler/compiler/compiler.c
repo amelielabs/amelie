@@ -192,6 +192,72 @@ emit_send(Compiler* self, Target* target, int start)
 		program->send_last = op_pos(self) - 1;
 }
 
+hot static void
+emit_into(Compiler* self, Stmt* stmt)
+{
+	// INTO var, ... and := operator
+	auto ret = stmt->ret;
+	if (! ret)
+		stmt_error(stmt, NULL, "statement cannot be assigned");
+	if (! ret->count_into)
+		return;
+
+	// statement must received at this point
+	assert(stmt->r != -1);
+
+	auto var = stmt->ret->list_into->var;
+	if (var->type == TYPE_STORE)
+	{
+		// INTO table_var
+
+		// ensure only one table var used
+		if (ret->count_into > 1)
+			stmt_error(self->current, stmt->ast, "INTO accept only one table variable");
+
+		// compare columns
+		auto type = rtype(self, stmt->r);
+		if (type != TYPE_NULL && !columns_compare(&var->columns, &ret->columns))
+			stmt_error(self->current, stmt->ast, "variable table columns mismatch");
+
+		// var = store
+		op2(self, CMOV, var->r, stmt->r);
+
+		runpin(self, stmt->r);
+		stmt->r = -1;
+		return;
+	}
+
+	// INTO var, ...
+	auto ref = stmt->ret->list_into;
+	list_foreach(&ret->columns.list)
+	{
+		auto column = list_at(Column, link);
+
+		// all variables must be resolved at this point
+		auto var  = ref->var;
+		if (var->type == TYPE_STORE)
+			stmt_error(self->current, stmt->ast, "INTO accept only one table variable");
+
+		auto type = column->type;
+		if (type != TYPE_NULL && var->type != type)
+			stmt_error(self->current, stmt->ast, "variable expected %s",
+					   type_of(var->type));
+
+		// CASSIGN
+		op3(self, CASSIGN, var->r, stmt->r, column->order);
+
+		// variables count can be less than expressions
+		ref = ref->next;
+		if (! ref)
+			break;
+	}
+
+	// CFREE
+	op1(self, CFREE, stmt->r);
+	runpin(self, stmt->r);
+	stmt->r = -1;
+}
+
 static void
 emit_recv(Compiler* self, Stmt* stmt)
 {
@@ -207,24 +273,21 @@ emit_recv(Compiler* self, Stmt* stmt)
 	op1(self, CUNION_RECV, ret->r);
 	ret->r_recv = true;
 
+	auto stmt_prev = self->current;
+	self->current = stmt;
+
 	// process pushdown result
 	if (stmt->id == STMT_SELECT) {
-		auto stmt_prev = self->current;
-		self->current = stmt;
 		stmt->r = pushdown_recv(self, stmt->ast);
-		self->current = stmt_prev;
 	} else {
 		stmt->r = ret->r;
 	}
-}
 
-hot static void
-emit_sync(Compiler* self, Stmt* stmt)
-{
-	compiler_switch_frontend(self);
-	auto dep = stmt->deps.list;
-	for (; dep; dep = dep->next)
-		emit_recv(self, dep->stmt);
+	// handle INTO and := after receive
+	if (ret->count_into > 0)
+		emit_into(self, stmt);
+
+	self->current = stmt_prev;
 }
 
 hot static int
@@ -291,80 +354,10 @@ emit_stmt_backend(Compiler* self, Stmt* stmt)
 }
 
 hot static void
-emit_into(Compiler* self, Stmt* stmt)
-{
-	// INTO var, ... and := operator
-	auto ret = stmt->ret;
-	if (! ret)
-		stmt_error(stmt, NULL, "statement cannot be assigned");
-	if (! ret->count_into)
-		return;
-
-	// ensure statement received
-	emit_recv(self, stmt);
-	assert(stmt->r != -1);
-
-	auto var = stmt->ret->list_into->var;
-	if (var->type == TYPE_STORE)
-	{
-		// INTO table_var
-
-		// ensure only one table var used
-		if (ret->count_into > 1)
-			stmt_error(self->current, stmt->ast, "INTO accept only one table variable");
-
-		// compare columns
-		auto type = rtype(self, stmt->r);
-		if (type != TYPE_NULL && !columns_compare(&var->columns, &ret->columns))
-			stmt_error(self->current, stmt->ast, "variable table columns mismatch");
-
-		// var = store
-		op2(self, CMOV, var->r, stmt->r);
-
-		runpin(self, stmt->r);
-		stmt->r = -1;
-		return;
-	}
-
-	// INTO var, ...
-	auto ref = stmt->ret->list_into;
-	list_foreach(&ret->columns.list)
-	{
-		auto column = list_at(Column, link);
-
-		// all variables must be resolved at this point
-		auto var  = ref->var;
-		if (var->type == TYPE_STORE)
-			stmt_error(self->current, stmt->ast, "INTO accept only one table variable");
-
-		auto type = column->type;
-		if (type != TYPE_NULL && var->type != type)
-			stmt_error(self->current, stmt->ast, "variable expected %s",
-					   type_of(var->type));
-
-		// CASSIGN
-		op3(self, CASSIGN, var->r, stmt->r, column->order);
-
-		// variables count can be less than expressions
-		ref = ref->next;
-		if (! ref)
-			break;
-	}
-
-	// CFREE
-	op1(self, CFREE, stmt->r);
-	runpin(self, stmt->r);
-	stmt->r = -1;
-}
-
-hot static void
 emit_stmt(Compiler* self, Stmt* stmt)
 {
 	auto stmt_prev = self->current;
 	self->current = stmt;
-
-	// generate all dependable recv statements first
-	emit_sync(self, stmt);
 
 	// generate backend code (pushdown)
 	auto start = emit_stmt_backend(self, stmt);
@@ -426,12 +419,14 @@ emit_stmt(Compiler* self, Stmt* stmt)
 		columns_copy_types(&stmt->cte_columns, &stmt->ret->columns);
 
 	// generate frontend send command based on the target
-	if (target)
+	if (target) {
 		emit_send(self, target, start);
-
-	// INTO and :=
-	if (stmt->ret && stmt->ret->count_into > 0)
-		emit_into(self, stmt);
+	} else
+	{
+		// INTO and :=  (only for expressions)
+		if (stmt->ret && stmt->ret->count_into > 0)
+			emit_into(self, stmt);
+	}
 
 	// set previous stmt
 	self->current = stmt_prev;
@@ -529,12 +524,6 @@ emit_for(Compiler* self, Stmt* stmt)
 	auto fora = ast_for_of(stmt->ast);
 	compiler_switch_frontend(self);
 
-	// generate all dependable recv statements first
-	auto target = targets_outer(&fora->targets);
-	assert(target);
-	if (target->type == TARGET_STMT)
-		emit_recv(self, target->from_stmt);
-
 	// scan over targets
 	scan(self,
 	     &fora->targets,
@@ -563,11 +552,16 @@ emit_block(Compiler* self, Block* block)
 	auto stmt_prev = self->current;
 	self->current = NULL;
 
-	// emit statements in the block, track last statement
-	Stmt* last = NULL;
+	// emit statements in the block
 	auto stmt = block->stmts.list;
 	for (; stmt; stmt = stmt->next)
 	{
+		// generate all dependable recv statements first
+		compiler_switch_frontend(self);
+		auto dep = stmt->deps.list;
+		for (; dep; dep = dep->next)
+			emit_recv(self, dep->stmt);
+
 		if (stmt->id == STMT_IF)
 			emit_if(self, stmt);
 		else
@@ -575,7 +569,6 @@ emit_block(Compiler* self, Block* block)
 			emit_for(self, stmt);
 		else
 			emit_stmt(self, stmt);
-		last = stmt;
 	}
 
 	// ensure all pending returning statements are received
@@ -587,6 +580,7 @@ emit_block(Compiler* self, Block* block)
 	// create result content for last stmt of the main block
 	if (block == compiler_block(self))
 	{
+		auto last = block->stmts.list_tail;
 		if (last && last->r != -1)
 			op3(self, CCONTENT, last->r,
 			    (intptr_t)&last->ret->columns,

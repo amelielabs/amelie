@@ -95,6 +95,7 @@ test limits
 test format
 test begin_end
 test declare
+test deps
 test if
 test for
 

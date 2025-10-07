@@ -144,6 +144,8 @@ parse_from_target(Stmt* self, Targets* targets, AccessType access, bool subquery
 	{
 		target->type     = TARGET_VAR;
 		target->from_var = var;
+		if (var->writer)
+			deps_add(&self->deps, DEP_VAR, var->writer);
 		if (var->columns.count > 0) {
 			target->columns = &var->columns;
 		} else

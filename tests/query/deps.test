@@ -1,0 +1,65 @@
+#
+
+open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "127.0.0.1", "port": 3485 }]
+connect E0 S0 127.0.0.1:3485
+
+# test: select var
+explain declare x int; select x
+declare x int; select x
+
+# test: select var expr
+explain declare x int := 0; select x
+declare x int := 0; select x
+
+explain declare x int := 0; select x; x:= 15; select x
+declare x int := 0; select x; x:= 15; select x
+
+# test: select into expr
+explain declare x int; select 123 into x; select x
+declare x int; select 123 into x; select x
+
+explain declare x int; select 123 into x; select x; select 15 into x; select x
+declare x int; select 123 into x; select x; select 15 into x; select x
+
+# test: select from into (no recv)
+create table test (id int primary key)
+insert into test values (1), (2), (3)
+explain declare x int; select id into x from test
+declare x int; select id into x from test
+
+# test: select from into / select var
+explain declare x int; select id into x from test; select x
+declare x int; select id into x from test; select x
+
+# test: select from into / select expr / select var
+explain declare x int; select id into x from test; select 123; select x
+declare x int; select id into x from test; select 123; select x
+
+# test: select from into / select from / select var
+explain declare x int; select id into x from test; select * from test; select x
+declare x int; select id into x from test; select * from test; select x
+
+# test: select from into / select expr / select from var
+explain declare x int; select id into x from test; select 123; select * from x
+declare x int; select id into x from test; select 123; select * from x
+
+# test: select from into / select from into
+explain declare x int; select id into x from test; select 123 into x from test
+declare x int; select id into x from test; select 123 into x from test
+
+# test: select from into / select from into / select var
+explain declare x int; select id into x from test; select 123 into x from test; select x
+declare x int; select id into x from test; select 123 into x from test; select x
+
+# test: select expr into / select from into
+explain declare x int; select 123 into x; select id into x from test
+declare x int; select 123 into x; select id into x from test
+
+# test: select expr into / select from into / select var
+explain declare x int; select 123 into x; select id into x from test; select x
+declare x int; select 123 into x; select id into x from test; select x
+
+drop table test
+
+disconnect S0
+close E0

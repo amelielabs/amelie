@@ -281,5 +281,10 @@ parse_returning_resolve(Returning* self, Stmt* stmt, Targets* targets)
 			stmt_error(stmt, NULL, "variable '%.*s' not found", str_size(&ref->string),
 			           str_of(&ref->string));
 		ref->var = var;
+
+		// add dep for previous var updating stmt and update writer to self
+		if (var->writer)
+			deps_add(&stmt->deps, DEP_VAR, var->writer);
+		var->writer = stmt;
 	}
 }
