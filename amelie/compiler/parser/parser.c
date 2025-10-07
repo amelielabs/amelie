@@ -45,6 +45,7 @@ parser_init(Parser* self, Local* local, SetCache* values_cache)
 	self->program      = NULL;
 	self->values_cache = values_cache;
 	self->local        = local;
+	vars_init(&self->vars);
 	blocks_init(&self->blocks);
 	lex_init(&self->lex, keywords_alpha);
 	uri_init(&self->uri);
@@ -56,10 +57,9 @@ parser_reset(Parser* self)
 {
 	self->program = NULL;
 
-	// free blocks
+	vars_free(&self->vars);
 	for (auto block = self->blocks.list; block; block = block->next)
 	{
-		vars_free(&block->vars);
 		auto stmt = block->stmts.list;
 		while (stmt)
 		{

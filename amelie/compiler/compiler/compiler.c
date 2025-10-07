@@ -577,11 +577,6 @@ emit_block(Compiler* self, Block* block)
 	auto stmt_prev = self->current;
 	self->current = NULL;
 
-	// reserve variables
-	auto var = block->vars.list;
-	for (; var; var = var->next)
-		var->r = rpin(self, var->type);
-
 	// emit statements in the block, track last statement
 	Stmt* last = NULL;
 	auto stmt = block->stmts.list;
@@ -612,16 +607,6 @@ emit_block(Compiler* self, Block* block)
 			    (intptr_t)&last->ret->format);
 
 		op0(self, CRET);
-	} else
-	{
-		// free variable on block exit
-		var = block->vars.list;
-		for (; var; var = var->next)
-		{
-			op1(self, CFREE, var->r);
-			runpin(self, var->r);
-			var->r = -1;
-		}
 	}
 
 	// set previous stmt
@@ -634,6 +619,11 @@ compiler_emit(Compiler* self)
 	// ddl/utility or dml/query
 	auto main = self->parser.blocks.list;
 	assert(main);
+
+	// reserve variables
+	auto var = self->parser.vars.list;
+	for (; var; var = var->next)
+		var->r = rpin(self, var->type);
 
 	if (stmt_is_utility(compiler_stmt(self)))
 		emit_utility(self);

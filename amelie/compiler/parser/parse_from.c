@@ -138,7 +138,7 @@ parse_from_target(Stmt* self, Targets* targets, AccessType access, bool subquery
 	}
 
 	// var
-	auto var = vars_find(&self->block->vars, &name);
+	auto var = vars_find(&self->parser->vars, &name);
 	if (var)
 	{
 		target->type     = TARGET_VAR;

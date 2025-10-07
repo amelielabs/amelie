@@ -119,10 +119,10 @@ parse_declare(Parser* self, Block* block)
 		lex_error(lex, ast, "unrecognized data type");
 
 	// create variable
-	auto var = vars_find(&block->vars, &name->string);
+	auto var = vars_find(&self->vars, &name->string);
 	if (var)
 		lex_error(lex, name, "variable redefined");
-	var = vars_add(&block->vars, &name->string);
+	var = vars_add(&self->vars, &name->string);
 	var->type = type;
 
 	// var table(column, ...)

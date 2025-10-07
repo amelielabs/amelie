@@ -44,6 +44,7 @@ vars_free(Vars* self)
 {
 	for (auto var = self->list; var; var = var->next)
 		columns_free(&var->columns);
+	vars_init(self);
 }
 
 static inline Var*
