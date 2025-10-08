@@ -99,3 +99,25 @@ block_targets(Targets* self)
 	}
 	return NULL;
 }
+
+hot static inline void
+block_copy_deps(Stmt* self, Block* start)
+{
+	// search and copy all inner blocks deps of the statements
+	// of the current block stmt
+	auto outer = self->block->stmts.list;
+	for (; outer != self; outer = outer->next)
+	{
+		for (auto block = start; block; block = block->next)
+		{
+			auto inner = block->stmts.list;
+			for (; inner; inner = inner->next)
+			{
+				auto dep = deps_find(&inner->deps, outer);
+				if (! dep)
+					continue;
+				deps_add(&self->deps, dep->type, dep->stmt, dep->var);
+			}
+		}
+	}
+}

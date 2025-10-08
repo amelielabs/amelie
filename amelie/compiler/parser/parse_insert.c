@@ -276,7 +276,7 @@ parse_insert(Stmt* self)
 			auto select = stmt_allocate(self->parser, &self->parser->lex, self->block);
 			select->id  = STMT_SELECT;
 			stmts_insert(&self->block->stmts, self, select);
-			deps_add(&self->deps, DEP_STMT, select);
+			deps_add_stmt(&self->deps, select);
 
 			auto select_ref = parse_select(select, NULL, false);
 			select->ret = &select_ref->ret;

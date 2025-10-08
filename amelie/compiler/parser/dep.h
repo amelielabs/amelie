@@ -14,6 +14,7 @@
 typedef struct Dep  Dep;
 typedef struct Deps Deps;
 typedef struct Stmt Stmt;
+typedef struct Var  Var;
 
 typedef enum
 {
@@ -25,6 +26,7 @@ struct Dep
 {
 	DepType type;
 	Stmt*   stmt;
+	Var*    var;
 	Dep*    next;
 };
 
@@ -61,13 +63,12 @@ deps_find(Deps* self, Stmt* stmt)
 }
 
 static inline void
-deps_add(Deps* self, DepType type, Stmt* stmt)
+deps_add(Deps* self, DepType type, Stmt* stmt, Var* var)
 {
-	if (deps_find(self, stmt))
-		return;
 	auto dep = (Dep*)palloc(sizeof(Dep));
 	dep->type = type;
 	dep->stmt = stmt;
+	dep->var  = var;
 	dep->next = NULL;
 
 	if (self->list == NULL)
@@ -76,4 +77,20 @@ deps_add(Deps* self, DepType type, Stmt* stmt)
 		self->list_tail->next = dep;
 	self->list_tail = dep;
 	self->count++;
+}
+
+static inline void
+deps_add_stmt(Deps* self, Stmt* stmt)
+{
+	if (deps_find(self, stmt))
+		return;
+	deps_add(self, DEP_STMT, stmt, NULL);
+}
+
+static inline void
+deps_add_var(Deps* self, Stmt* stmt, Var* var)
+{
+	if (deps_find(self, stmt))
+		return;
+	deps_add(self, DEP_VAR, stmt, var);
 }

@@ -39,7 +39,7 @@
 #include <amelie_vm.h>
 #include <amelie_parser.h>
 
-static void
+static AstIfCond*
 parse_if_block(Stmt* self)
 {
 	auto parser = self->parser;
@@ -59,7 +59,9 @@ parse_if_block(Stmt* self)
 
 	// block
 	cond->block = blocks_add(&parser->blocks, self->block);
+	cond->block->targets = &stmt->targets;
 	parse_block(parser, cond->block);
+	return cond;
 }
 
 bool
@@ -76,7 +78,7 @@ parse_if(Stmt* self)
 	self->ast = &stmt->ast;
 
 	// IF expr THEN block [END]
-	parse_if_block(self);
+	auto first = parse_if_block(self);
 
 	for (;;)
 	{
@@ -97,6 +99,14 @@ parse_if(Stmt* self)
 		stmt_expect(self, KEND);
 		break;
 	}
+
+	// iterate all created blocks and copy deps (to vars) to the
+	// statements of the outer block
+	//
+	// this is necessary to receive all vars stmts before executing
+	// the if blocks
+	//
+	block_copy_deps(self, first->block);
 
 	// return true if any of the blocks send data
 	auto ref = stmt->conds.list;

@@ -284,7 +284,7 @@ parse_returning_resolve(Returning* self, Stmt* stmt, Targets* targets)
 
 		// add dep for previous var updating stmt and update writer to self
 		if (var->writer)
-			deps_add(&stmt->deps, DEP_VAR, var->writer);
+			deps_add_var(&stmt->deps, var->writer, var);
 		var->writer = stmt;
 	}
 }

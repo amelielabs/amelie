@@ -59,6 +59,120 @@ declare x int; select 123 into x; select id into x from test
 explain declare x int; select 123 into x; select id into x from test; select x
 declare x int; select 123 into x; select id into x from test; select x
 
+# test: select from into / if / select var
+explain declare x int; select id into x from test; if true then end; select x
+declare x int; select id into x from test; if true then end; select x
+
+# test: select from into / if var / select var
+explain declare x int; select id into x from test; if x then end; select x
+declare x int; select id into x from test; if x then end; select x
+
+# test: select from into / if then select var / select var
+explain declare x int; select id into x from test; if true then select x; end; select x
+declare x int; select id into x from test; if true then select x; end; select x
+
+# test: select from into / if then var := / select var
+explain declare x int; select id into x from test; if true then x := 7; end; select x
+declare x int; select id into x from test; if true then x := 7; end; select x
+
+# test: select from into / if then := var / select var
+explain declare x int; declare y int; select id into x from test; if true then y := x; end; select x, y
+declare x int; declare y int; select id into x from test; if true then y := x; end; select x, y
+
+# test: select from into / if .. else select var / select var
+explain declare x int; select id into x from test; if false then else select x; end; select x
+declare x int; select id into x from test; if false then else select x; end; select x
+
+explain declare x int; select id into x from test; if false then select 1; else select x; end; select x
+declare x int; select id into x from test; if false then else select x; end; select x
+
+# test: select from into / if .. else var := / select var
+explain declare x int; select id into x from test; if false then else x := 7; end; select x
+declare x int; select id into x from test; if false then else x := 7; end; select x
+
+explain declare x int; select id into x from test; if false then select 1; else x := 7; end; select x
+declare x int; select id into x from test; if false then select 1; else x := 7; end; select x
+
+# test: select from into / if .. else := var / select var
+explain declare x int; declare y int; select id into x from test; if false then else y := x; end; select x, y
+declare x int; declare y int; select id into x from test; if false then else y := x; end; select x, y
+
+explain declare x int; declare y int; select id into x from test; if false then select 1; else y := x; end; select x, y
+declare x int; declare y int; select id into x from test; if false then select 1; else y := x; end; select x, y
+
+# test: select from into / if if var / select var
+explain declare x int; select id into x from test; if true then if x then end; end; select x
+declare x int; select id into x from test; if true then if x then end; end; select x
+
+# test: select from into / if then if select var / select var
+explain declare x int; select id into x from test; if true then if true then select x; end; end; select x
+declare x int; select id into x from test; if true then if true then select x; end; end; select x
+
+# test: select from into / if then if select into var / select var
+explain declare x int; select id into x from test; if true then if true then select 123 into x; end; end; select x
+declare x int; select id into x from test; if true then if true then select 123 into x; end; end; select x
+
+explain declare x int; declare y int; select id into x from test; if true then if true then select 123 into y; x := x + y; end; end; select x
+declare x int; declare y int; select id into x from test; if true then if true then select 123 into y; x := x + y; end; end; select x
+
+# test: if select into var / select var
+explain declare x int; if true then select * into x from test; end; select x
+declare x int; if true then select * into x from test; end; select x
+
+# test: if select into var else select into var / select var
+explain declare x int; if true then select id into x from test; else select 7 + id into x from test; end; select x
+declare x int; if true then select id into x from test; else select 7 + id into x from test; end; select x
+
+explain declare x int; if false then select id into x from test; else select 7 + id into x from test; end; select x
+declare x int; if false then select id into x from test; else select 7 + id into x from test; end; select x
+
+# test: select from into / if select into var else select into var / select var
+explain declare x int; select id into x from test; if true then select 5 + id into x from test; else select 10 + id into x from test; end; select x
+declare x int; select id into x from test; if true then select 5 + id into x from test; else select 10 + id into x from test; end; select x
+
+explain declare x int; select id into x from test; if false then select 5 + id into x from test; else select 10 + id into x from test; end; select x
+declare x int; select id into x from test; if false then select 5 + id into x from test; else select 10 + id into x from test; end; select x
+
+# test: select from into / for in var
+explain declare x int; select id into x from test; for it in x do end
+declare x int; select id into x from test; for it in x do end
+
+# test: select from into / for do select var
+explain declare x int; select id into x from test; for it in ([1,2,3]) do select x; end
+declare x int; select id into x from test; for it in ([1,2,3]) do select x; end
+
+# test: select from into / for do var :=
+explain declare x int; select id into x from test; for it in ([1,2,3]) do x := it::int; end; select x
+declare x int; select id into x from test; for it in ([1,2,3]) do x := it::int; end; select x
+
+explain declare x int; declare y int; select id into x from test; for it in ([1,2,3]) do y := x + it::int; end; select x, y
+declare x int; declare y int; select id into x from test; for it in ([1,2,3]) do y := x + it::int; end; select x, y
+
+# test: select from into / for / select var
+explain declare x int; select id into x from test; for it in ([1,2,3]) do if true then end; end; select x
+declare x int; select id into x from test; for it in ([1,2,3]) do if true then end; end; select x
+
+# test: select from into / for if var
+explain declare x int; select id into x from test; for it in ([1,2,3]) do if x then end; end;
+declare x int; select id into x from test; for it in ([1,2,3]) do if x then end; end;
+
+# test: select from into / for if then var
+explain declare x int; select id into x from test; for it in ([1,2,3]) do if true then select x; end; end;
+declare x int; select id into x from test; for it in ([1,2,3]) do if true then select x; end; end;
+
+explain declare x int; declare y int; select id into x from test; for it in ([1,2,3]) do if true then y := x + it::int; end; end; select x, y
+declare x int; declare y int; select id into x from test; for it in ([1,2,3]) do if true then y := x + it::int; end; end; select x, y
+
+explain declare x int := 0; for it in ([1,2,3]) do if true then x := x + it::int; end; end; select x
+declare x int := 0; for it in ([1,2,3]) do if true then x := x + it::int; end; end; select x
+
+explain declare x int := 0; for it in ([1,2,3]) do x := x + it::int; end; select x
+declare x int := 0; for it in ([1,2,3]) do x := x + it::int; end; select x
+
+# test: select from into / for if if then var
+explain declare x int; declare y int; select id into x from test; for it in ([1,2,3]) do if true then if true then y := x + it::int; end; end; end; select x, y
+declare x int; declare y int; select id into x from test; for it in ([1,2,3]) do if true then if true then y := x + it::int; end; end; end; select x, y
+
 drop table test
 
 disconnect S0
