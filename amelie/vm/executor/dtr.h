@@ -106,10 +106,20 @@ dtr_set_error(Dtr* self, Buf* buf)
 hot static inline void
 dtr_send(Dtr* self, ReqList* list, bool last)
 {
-	// begin local transactions on each core
+	// begin local transactions on each core for multi-stmt
 	auto dispatch = &self->dispatch;
-	if (dispatch_is_first(dispatch) && self->program->snapshot)
-		dispatch_snapshot(dispatch);
+	if (dispatch_is_first(dispatch))
+	{
+		int cores_count;
+		if (self->program->snapshot)
+		{
+			dispatch_snapshot(dispatch);
+			cores_count = self->core_mgr->cores_count;
+		} else {
+			cores_count = list->list_count;
+		}
+		complete_prepare(&dispatch->complete, cores_count);
+	}
 
 	// start local transactions and queue requests for execution
 	dispatch_send(dispatch, list, last);

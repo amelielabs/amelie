@@ -23,19 +23,19 @@ typedef enum
 
 struct Ctr
 {
-	Msg      msg;
-	CtrState state;
-	Dtr*     dtr;
-	Tr*      tr;
-	Buf*     error;
-	Core*    core;
-	Ring     queue;
-	bool     queue_close;
-	Event    complete;
+	Msg       msg;
+	CtrState  state;
+	Dtr*      dtr;
+	Tr*       tr;
+	Buf*      error;
+	Core*     core;
+	Ring      queue;
+	bool      queue_close;
+	Complete* complete;
 };
 
 static inline void
-ctr_init(Ctr* self, Dtr* dtr, Core* core)
+ctr_init(Ctr* self, Dtr* dtr, Core* core, Complete* complete)
 {
 	self->state       = CTR_NONE;
 	self->dtr         = dtr;
@@ -43,10 +43,10 @@ ctr_init(Ctr* self, Dtr* dtr, Core* core)
 	self->error       = NULL;
 	self->core        = core;
 	self->queue_close = false;
+	self->complete    = complete;
 	msg_init(&self->msg, MSG_CTR);
 	ring_init(&self->queue);
 	ring_prepare(&self->queue, 1024);
-	event_init(&self->complete);
 }
 
 static inline void
@@ -65,13 +65,7 @@ ctr_reset(Ctr* self)
 }
 
 static inline void
-ctr_attach(Ctr* self)
-{
-	event_attach(&self->complete);
-}
-
-static inline void
 ctr_complete(Ctr* self)
 {
-	event_signal(&self->complete);
+	complete_signal(self->complete);
 }

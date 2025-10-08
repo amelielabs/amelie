@@ -19,6 +19,7 @@
 #include "executor/program.h"
 
 // core transaction (per backend)
+#include "executor/complete.h"
 #include "executor/req.h"
 #include "executor/req_list.h"
 #include "executor/req_cache.h"

@@ -24,6 +24,7 @@ struct Dispatch
 	CoreMgr* core_mgr;
 	bool     write;
 	Msg      close;
+	Complete complete;
 	Dtr*     dtr;
 };
 
@@ -59,6 +60,7 @@ dispatch_init(Dispatch* self, CoreMgr* core_mgr, Dtr* dtr)
 	buf_init(&self->ctrs);
 	req_cache_init(&self->req_cache);
 	msg_init(&self->close, MSG_STOP);
+	complete_init(&self->complete);
 }
 
 static inline void
@@ -78,6 +80,7 @@ dispatch_reset(Dispatch* self)
 		ctr_reset(ctr);
 	}
 	self->write = false;
+	complete_reset(&self->complete);
 }
 
 static inline void
@@ -106,16 +109,16 @@ static inline void
 dispatch_prepare(Dispatch* self)
 {
 	// prepare a list of core transactions on first call
-	if (likely(self->ctrs_count == self->core_mgr->cores_count))
+	auto cores_count = self->core_mgr->cores_count;
+	if (likely(self->ctrs_count == cores_count))
 		return;
 	dispatch_free_ctrs(self);
 	buf_reserve(&self->ctrs, sizeof(Ctr) * self->core_mgr->cores_count);
-	self->ctrs_count = self->core_mgr->cores_count;
+	self->ctrs_count = cores_count;
 	for (auto i = 0; i < self->ctrs_count; i++)
 	{
 		auto ctr = dispatch_ctr(self, i);
-		ctr_init(ctr, self->dtr, self->core_mgr->cores[i]);
-		ctr_attach(ctr);
+		ctr_init(ctr, self->dtr, self->core_mgr->cores[i], &self->complete);
 	}
 }
 
@@ -130,17 +133,22 @@ dispatch_snapshot(Dispatch* self)
 	}
 }
 
-hot static inline void
+hot static inline int
 dispatch_close(Dispatch* self)
 {
+	int active = 0;
 	for (auto i = 0; i < self->ctrs_count; i++)
 	{
 		auto ctr = dispatch_ctr(self, i);
-		if (ctr->state == CTR_NONE || ctr->queue_close)
+		if (ctr->state == CTR_NONE)
+			continue;
+		active++;
+		if (ctr->queue_close)
 			continue;
 		ring_write(&ctr->queue, &self->close);
 		ctr->queue_close = true;
 	}
+	return active;
 }
 
 hot static inline void
@@ -174,6 +182,14 @@ hot static inline Buf*
 dispatch_shutdown(Dispatch* self)
 {
 	// make sure all transactions complete execution
+	auto active = dispatch_close(self);
+	if (! active)
+		return NULL;
+
+	// wait for group completion
+	complete_wait(&self->complete);
+
+	// collect errors
 	Buf* error = NULL;
 	bool is_write = false;
 	for (auto i = 0; i < self->ctrs_count; i++)
@@ -181,14 +197,6 @@ dispatch_shutdown(Dispatch* self)
 		auto ctr = dispatch_ctr(self, i);
 		if (ctr->state == CTR_NONE)
 			continue;
-		if (! ctr->queue_close)
-		{
-			// force close active transactions
-			ring_write(&ctr->queue, &self->close);
-			ctr->queue_close = true;
-		}
-		event_wait(&ctr->complete, -1);
-
 		if (ctr->error && !error)
 			error = ctr->error;
 		if (ctr->tr && !tr_read_only(ctr->tr))
