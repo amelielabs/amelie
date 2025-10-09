@@ -22,6 +22,7 @@
 #include "executor/complete.h"
 #include "executor/req.h"
 #include "executor/req_cache.h"
+#include "executor/consensus.h"
 #include "executor/ctr.h"
 
 // core

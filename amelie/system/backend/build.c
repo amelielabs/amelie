@@ -149,7 +149,8 @@ build_run(Build* self)
 		error = error_create(&am_self()->error);
 	commit(share()->commit, dtr, error);
 
-	if (self->type != BUILD_RECOVER)
+	if (self->type != BUILD_RECOVER &&
+	    self->type != BUILD_NONE)
 		info("complete");
 }
 

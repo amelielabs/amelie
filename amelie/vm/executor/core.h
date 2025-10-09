@@ -15,23 +15,21 @@ typedef struct Core Core;
 
 struct Core
 {
-	Ring       ring;
-	atomic_u64 commit;
-	atomic_u64 abort;
-	int        order;
-	TrList     prepared;
-	TrCache    cache;
-	Msg        msg_stop;
-	Task*      task;
+	Ring      ring;
+	Consensus consensus;
+	int       order;
+	TrList    prepared;
+	TrCache   cache;
+	Msg       msg_stop;
+	Task*     task;
 };
 
 static inline void
 core_init(Core* self, Task* task, int order)
 {
-	self->order  = order;
-	self->commit = 0;
-	self->abort  = 0;
-	self->task   = task;
+	self->order = order;
+	self->task  = task;
+	consensus_init(&self->consensus);
 	ring_init(&self->ring);
 	ring_prepare(&self->ring, 1024);
 	msg_init(&self->msg_stop, MSG_STOP);
@@ -54,19 +52,8 @@ core_shutdown(Core* self)
 }
 
 static inline void
-core_abort(Core* self)
-{
-	atomic_u64_inc(&self->abort);
-}
-
-static inline void
-core_commit(Core* self, uint64_t commit)
-{
-	atomic_u64_set(&self->commit, commit);
-}
-
-static inline void
 core_add(Core* self, Ctr* ctr)
 {
+	ctr_set_consensus(ctr, &self->consensus);
 	task_send(self->task, &ctr->msg);
 }

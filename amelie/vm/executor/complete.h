@@ -51,5 +51,6 @@ static inline void
 complete_wait(Complete* self)
 {
 	event_wait(&self->event, -1);
-	assert(! atomic_u32_of(&self->pending));
+	while (atomic_u32_of(&self->pending) > 0)
+		__asm__("pause");
 }

@@ -31,6 +31,7 @@ struct Ctr
 	Core*     core;
 	Ring      queue;
 	bool      queue_close;
+	Consensus consensus;
 	Complete* complete;
 };
 
@@ -47,6 +48,7 @@ ctr_init(Ctr* self, Dtr* dtr, Core* core, Complete* complete)
 	msg_init(&self->msg, MSG_CTR);
 	ring_init(&self->queue);
 	ring_prepare(&self->queue, 1024);
+	consensus_init(&self->consensus);
 }
 
 static inline void
@@ -68,4 +70,10 @@ static inline void
 ctr_complete(Ctr* self)
 {
 	complete_signal(self->complete);
+}
+
+static inline void
+ctr_set_consensus(Ctr* self, Consensus* consensus)
+{
+	self->consensus = *consensus;
 }

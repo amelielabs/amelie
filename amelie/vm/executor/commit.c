@@ -39,18 +39,17 @@ commit_complete(Commit* self, bool abort)
 	auto core_mgr = self->core_mgr;
 	auto cores = (Core**)self->prepare.cores.start;
 
+	// schedule commit/abort for all involved cores
 	if (unlikely(abort))
 	{
-		// abort each involved core
 		for (auto order = 0; order < core_mgr->cores_count; order++)
 			if (cores[order])
-				core_abort(cores[order]);
+				cores[order]->consensus.abort++;
 	} else
 	{
-		// commit each involved core
 		for (auto order = 0; order < core_mgr->cores_count; order++)
 			if (cores[order])
-				core_commit(cores[order], self->prepare.id_max);
+				cores[order]->consensus.commit = self->prepare.id_max;
 	}
 
 	// remove transactions from executor and handle abort

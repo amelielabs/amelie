@@ -192,7 +192,10 @@ backend_main(void* arg)
 		if (unlikely(msg->id == MSG_STOP))
 			break;
 
-		auto id = atomic_u64_of(&core->abort);
+		auto ctr = (Ctr*)msg;
+		auto consensus = &ctr->consensus;
+
+		auto id = consensus->abort;
 		if (unlikely(id > id_abort))
 		{
 			// abort all prepared transactions
@@ -200,7 +203,7 @@ backend_main(void* arg)
 			id_abort = id;
 		}
 
-		id = atomic_u64_of(&core->commit);
+		id = consensus->commit;
 		if (id > id_commit)
 		{
 			// commit all transaction <= commit id
