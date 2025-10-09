@@ -1,0 +1,122 @@
+#
+
+open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "127.0.0.1", "port": 3485 }]
+connect E0 S0 127.0.0.1:3485
+
+# test: return (last stmt)
+explain select 1
+explain select 1; select 2
+explain select 1; select 2; select 3
+select 1; select 2;
+
+# test: return (last stmt, if)
+explain if true then end;
+if true then end;
+
+explain if true then end; select 1
+if true then end; select 1
+
+explain if true then select 1; end; select 2
+if true then select 1; end; select 2
+
+# test: return (last stmt select into)
+explain declare x int; select 123 into x;
+declare x int; select 123 into x;
+
+# test: return var
+return x;
+declare x int; return x;
+declare x int := 123; return x;
+
+# test: return var format
+declare x int := 123; return x format
+declare x int := 123; return x format 'json-obj';
+
+# test: return var table
+declare x table (a int, b int); select 1, 2 into x; return x
+declare x table (a int, b int); select 1, 2 into x; return x format 'json-obj'
+declare x table (a int, b int); select 1, 2 into x; select x format 'json-obj'
+
+# test: return from cte
+declare x int; with a as (return x) select 1
+declare x int; with a as (select 1) return x
+
+# test: return return
+explain declare x int := 0; return x; return x;
+declare x int := 0; return x; return x;
+
+# test: if return
+explain declare x int; if true then x := 12; return x; end;
+declare x int; if true then x := 12; return x; end;
+
+# test: if return return
+explain declare x int; if true then x := 12; return x; end; return x
+declare x int; if true then x := 12; return x; end; return x
+
+explain declare x int; if false then x := 12; return x; end; return x
+declare x int; if false then x := 12; return x; end; return x
+
+# test: if return return (dep)
+create table test (id int primary key)
+insert into test values (1), (2), (3)
+
+explain declare x int; select id into x from test; if true then x := x + 1; return x; end; return x
+declare x int; select id into x from test; if true then x := x + 1; return x; end; return x
+
+explain declare x int; select id into x from test; if false then x := x + 1; return x; end; return x
+declare x int; select id into x from test; if false then x := x + 1; return x; end; return x
+
+explain declare x int; if true then select id into x from test; return x; end; return x
+declare x int; if true then select id into x from test; return x; end; return x
+
+explain declare x int; if false then select id into x from test; return x; end; return x
+declare x int; if false then select id into x from test; return x; end; return x
+
+# test: for if return
+explain declare x int := 0; for i in (select id from test) do if i.id > 2 then return x; end; x := x + 1; end; select x
+declare x int := 0; for i in (select id from test) do if i.id > 2 then return x; end; x := x + 1; end; select x
+
+insert into test values (4), (5)
+declare x int := 0; for i in (select id from test) do if i.id > 2 then return x; end; x := x + 1; end; select x
+declare x int := 0; for i in ([1,2,3,4]) do if i::int > 2 then return x; end; x := x + 1; end; select x
+declare x int := 0; for i in ([1,2,3,4]) do if i::int > 2 then return select x; end; x := x + 1; end; select x
+
+# test: return insert
+explain return insert into test values (6)
+return insert into test values (6)
+
+explain return insert into test values (6); select 1
+return insert into test values (6); select 1
+
+# test: return insert returning
+explain return insert into test values (7) returning *
+return insert into test values (7) returning *
+
+explain return insert into test values (8) returning *; select 1
+return insert into test values (8) returning *; select 1
+
+# test: if return insert returning
+explain if true then return insert into test values (9) returning *; end; select 0;
+if true then return insert into test values (9) returning *; end; select 0;
+if false then return insert into test values (9) returning *; end; select 0;
+
+# test: return select
+explain return select 1 as a, 2 as b
+return select 1 as a, 2 as b
+return select 1 as a, 2 as b format 'json-obj'
+return select system.tables()
+
+declare list json := []; for it in system.tables() do list := list::append([it.schema, it.name]); end; return list
+select `schema`, name from system.tables()
+declare list json := []; for it in system.tables() do list := list::append({"schema": it.schema, "name": it.name}); end; return list
+declare list json := []; for it in system.tables() do list := list::append({"schema": it.schema, "name": it.name}); end; select list
+
+declare list json := []; for it in system.tables() do list := list::append({"schema": it.schema, "name": it.name}); end; select list
+select [] -> self::append({"schema": it.schema, "name": it.name}) from system.tables() as it
+declare list json; select [] -> self::append({"schema": it.schema, "name": it.name}) into list from system.tables() as it; return list
+declare list json; select [] -> append(self, {"schema": it.schema, "name": it.name}) into list from system.tables() as it; return list
+
+drop table test
+
+disconnect S0
+close E0

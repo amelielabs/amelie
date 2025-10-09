@@ -195,10 +195,8 @@ explain declare x int; select id into x from test; select * from test; select x
       "06": "assign              0      1      0     ",
       "07": "free                1      0      0     ",
       "08": "dup                 1      0      0     ",
-      "09": "union_recv          2      0      0     ",
-      "10": "union_set           2      0      -1    ",
-      "11": "content             1      -      -     ",
-      "12": "ret                 0      0      0     "
+      "09": "content             1      -      -     ",
+      "10": "ret                 0      0      0     "
     },
     "backend": {
       "00": "set                 1      1      0     ",

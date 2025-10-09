@@ -547,6 +547,38 @@ emit_for(Compiler* self, Stmt* stmt)
 }
 
 hot static void
+emit_return(Compiler* self, Stmt* stmt)
+{
+	compiler_switch_frontend(self);
+
+	auto     r = -1;
+	Columns* columns;
+	Str*     fmt;
+	if (stmt->id == STMT_RETURN)
+	{
+		auto return_ = ast_return_of(stmt->ast);
+		r       =  return_->var->r;
+		columns =  return_->columns;
+		fmt     = &return_->format;
+		assert(r != -1);
+	} else
+	{
+		if (stmt->ret)
+		{
+			emit_recv(self, stmt);
+			r       = stmt->r;
+			columns = &stmt->ret->columns;
+			fmt     = &stmt->ret->format;
+		}
+	}
+
+	if (r != -1)
+		op3(self, CCONTENT, r, (intptr_t)columns,
+		    (intptr_t)fmt);
+	op0(self, CRET);
+}
+
+hot static void
 emit_block(Compiler* self, Block* block)
 {
 	auto stmt_prev = self->current;
@@ -556,37 +588,41 @@ emit_block(Compiler* self, Block* block)
 	auto stmt = block->stmts.list;
 	for (; stmt; stmt = stmt->next)
 	{
-		// generate all dependable recv statements first
+		// recv all dependable statements first
 		compiler_switch_frontend(self);
-		auto dep = stmt->deps.list;
-		for (; dep; dep = dep->next)
+		for (auto dep = stmt->deps.list; dep; dep = dep->next)
 			emit_recv(self, dep->stmt);
 
-		if (stmt->id == STMT_IF)
+		switch (stmt->id) {
+		case STMT_IF:
 			emit_if(self, stmt);
-		else
-		if (stmt->id == STMT_FOR)
+			break;
+		case STMT_FOR:
 			emit_for(self, stmt);
-		else
+			break;
+		case STMT_RETURN:
+			break;
+		default:
 			emit_stmt(self, stmt);
+			break;
+		}
+
+		// RETURN var | stmt
+		if (stmt->is_return)
+			emit_return(self, stmt);
 	}
 
 	// ensure all pending returning statements are received
 	// on block exit
-	stmt = block->stmts.list;
-	for (; stmt; stmt = stmt->next)
-		emit_recv(self, stmt);
-
-	// create result content for last stmt of the main block
-	if (block == compiler_block(self))
+	if (block != compiler_block(self))
 	{
 		auto last = block->stmts.list_tail;
-		if (last && last->r != -1)
-			op3(self, CCONTENT, last->r,
-			    (intptr_t)&last->ret->columns,
-			    (intptr_t)&last->ret->format);
-
-		op0(self, CRET);
+		if (last && !last->is_return)
+		{
+			stmt = block->stmts.list;
+			for (; stmt; stmt = stmt->next)
+				emit_recv(self, stmt);
+		}
 	}
 
 	// set previous stmt

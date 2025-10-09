@@ -87,4 +87,5 @@
 // parse
 #include "parser/parse_declare.h"
 #include "parser/parse_with.h"
+#include "parser/parse_return.h"
 #include "parser/parse.h"

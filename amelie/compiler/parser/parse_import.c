@@ -261,6 +261,7 @@ parse_import(Parser* self, Program* program, Str* str, Str* uri,
 	stmts_add(&block->stmts, stmt);
 	stmt->id  = STMT_INSERT;
 	stmt->ast = &ast_insert_allocate(block)->ast;
+	stmt->is_return = true;
 
 	// create insert target
 	auto insert  = ast_insert_of(stmt->ast);

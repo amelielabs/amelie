@@ -771,10 +771,8 @@ explain declare x int := 0; if false then else select count(*) into x from test;
       "23": "union               1      0      0     ",
       "24": "send_all            19     -      1     # public.test (last)",
       "25": "dup                 2      0      0     ",
-      "26": "union_recv          1      0      0     ",
-      "27": "union_set           1      0      -1    ",
-      "28": "content             2      -      -     ",
-      "29": "ret                 0      0      0     "
+      "26": "content             2      -      -     ",
+      "27": "ret                 0      0      0     "
     },
     "backend": {
       "00": "set_ordered         1      1      1     ",

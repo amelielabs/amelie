@@ -121,58 +121,70 @@ parse_stmt_free(Stmt* stmt)
 }
 
 hot void
-parse_stmt(Parser* self, Stmt* stmt)
+parse_stmt(Stmt* self)
 {
-	auto lex = &self->lex;
-	auto ast = lex_next(lex);
+	// [RETURN var | stmt]
+	auto return_ = stmt_if(self, KRETURN);
+	if (return_)
+	{
+		self->is_return = true;
+		auto name = stmt_if(self, KNAME);
+		if (name)
+		{
+			stmt_push(self, name);
+			stmt_push(self, return_);
+		}
+	}
 
+	// stmt
+	auto ast = stmt_next(self);
 	switch (ast->id) {
 	case KSHOW:
 		// SHOW name
-		stmt->id = STMT_SHOW;
-		parse_show(stmt);
+		self->id = STMT_SHOW;
+		parse_show(self);
 		break;
 
 	case KSUBSCRIBE:
 		// SUBSCRIBE id
-		stmt->id = STMT_SUBSCRIBE;
-		parse_repl_subscribe(stmt);
+		self->id = STMT_SUBSCRIBE;
+		parse_repl_subscribe(self);
 		break;
 
 	case KUNSUBSCRIBE:
 		// UNSUBSCRIBE
-		stmt->id = STMT_UNSUBSCRIBE;
-		parse_repl_unsubscribe(stmt);
+		self->id = STMT_UNSUBSCRIBE;
+		parse_repl_unsubscribe(self);
 		break;
 
 	case KSTART:
 		// START REPL
-		if (lex_if(lex, KREPL) ||
-		    lex_if(lex, KREPLICATION))
+		if (stmt_if(self, KREPL) ||
+		    stmt_if(self, KREPLICATION))
 		{
-			stmt->id = STMT_START_REPL;
-			parse_repl_start(stmt);
+			self->id = STMT_START_REPL;
+			parse_repl_start(self);
 		} else {
-			stmt_error(stmt, ast, "REPL expected");
+			stmt_error(self, ast, "REPL expected");
 		}
 		break;
 
 	case KSTOP:
 		// STOP REPL
-		if (lex_if(lex, KREPL) ||
-		    lex_if(lex, KREPLICATION))
+		if (stmt_if(self, KREPL) ||
+		    stmt_if(self, KREPLICATION))
 		{
-			stmt->id = STMT_STOP_REPL;
-			parse_repl_stop(stmt);
+			self->id = STMT_STOP_REPL;
+			parse_repl_stop(self);
 		} else {
-			stmt_error(stmt, ast, "REPL expected");
+			stmt_error(self, ast, "REPL expected");
 		}
 		break;
 
 	case KCHECKPOINT:
 		// CHECKPOINT
-		stmt->id = STMT_CHECKPOINT;
-		parse_checkpoint(stmt);
+		self->id = STMT_CHECKPOINT;
+		parse_checkpoint(self);
 		break;
 
 	case KCREATE:
@@ -182,7 +194,7 @@ parse_stmt(Parser* self, Stmt* stmt)
 		bool unlogged = false;
 		for (auto stop = false; !stop ;)
 		{
-			auto mod = lex_next(lex);
+			auto mod = stmt_next(self);
 			switch (mod->id) {
 			case KUNIQUE:
 				unique = true;
@@ -191,7 +203,7 @@ parse_stmt(Parser* self, Stmt* stmt)
 				unlogged = true;
 				break;
 			default:
-				stmt_push(stmt, mod);
+				stmt_push(self, mod);
 				stop = true;
 				break;
 			}
@@ -199,48 +211,48 @@ parse_stmt(Parser* self, Stmt* stmt)
 
 		if (unique)
 		{
-			auto next = stmt_expect(stmt, KINDEX);
-			stmt_push(stmt, next);
+			auto next = stmt_expect(self, KINDEX);
+			stmt_push(self, next);
 		}
 
 		if (unlogged)
 		{
-			auto next = stmt_expect(stmt, KTABLE);
-			stmt_push(stmt, next);
+			auto next = stmt_expect(self, KTABLE);
+			stmt_push(self, next);
 		}
 
 		// CREATE USER | TOKEN | REPLICA | SCHEMA | TABLE | INDEX
-		if (lex_if(lex, KUSER))
+		if (stmt_if(self, KUSER))
 		{
-			stmt->id = STMT_CREATE_USER;
-			parse_user_create(stmt);
+			self->id = STMT_CREATE_USER;
+			parse_user_create(self);
 		} else
-		if (lex_if(lex, KTOKEN))
+		if (stmt_if(self, KTOKEN))
 		{
-			stmt->id = STMT_CREATE_TOKEN;
-			parse_token_create(stmt);
+			self->id = STMT_CREATE_TOKEN;
+			parse_token_create(self);
 		} else
-		if (lex_if(lex, KREPLICA))
+		if (stmt_if(self, KREPLICA))
 		{
-			stmt->id = STMT_CREATE_REPLICA;
-			parse_replica_create(stmt);
+			self->id = STMT_CREATE_REPLICA;
+			parse_replica_create(self);
 		} else
-		if (lex_if(lex, KSCHEMA))
+		if (stmt_if(self, KSCHEMA))
 		{
-			stmt->id = STMT_CREATE_SCHEMA;
-			parse_schema_create(stmt);
+			self->id = STMT_CREATE_SCHEMA;
+			parse_schema_create(self);
 		} else
-		if (lex_if(lex, KTABLE))
+		if (stmt_if(self, KTABLE))
 		{
-			stmt->id = STMT_CREATE_TABLE;
-			parse_table_create(stmt, unlogged);
+			self->id = STMT_CREATE_TABLE;
+			parse_table_create(self, unlogged);
 		} else
-		if (lex_if(lex, KINDEX))
+		if (stmt_if(self, KINDEX))
 		{
-			stmt->id = STMT_CREATE_INDEX;
-			parse_index_create(stmt, unique);
+			self->id = STMT_CREATE_INDEX;
+			parse_index_create(self, unique);
 		} else {
-			stmt_error(stmt, NULL, "USER|REPLICA|SCHEMA|TABLE|INDEX expected");
+			stmt_error(self, NULL, "USER|REPLICA|SCHEMA|TABLE|INDEX expected");
 		}
 		break;
 	}
@@ -248,32 +260,32 @@ parse_stmt(Parser* self, Stmt* stmt)
 	case KDROP:
 	{
 		// DROP USER | REPLICA | SCHEMA | TABLE | INDEX
-		if (lex_if(lex, KUSER))
+		if (stmt_if(self, KUSER))
 		{
-			stmt->id = STMT_DROP_USER;
-			parse_user_drop(stmt);
+			self->id = STMT_DROP_USER;
+			parse_user_drop(self);
 		} else
-		if (lex_if(lex, KREPLICA))
+		if (stmt_if(self, KREPLICA))
 		{
-			stmt->id = STMT_DROP_REPLICA;
-			parse_replica_drop(stmt);
+			self->id = STMT_DROP_REPLICA;
+			parse_replica_drop(self);
 		} else
-		if (lex_if(lex, KSCHEMA))
+		if (stmt_if(self, KSCHEMA))
 		{
-			stmt->id = STMT_DROP_SCHEMA;
-			parse_schema_drop(stmt);
+			self->id = STMT_DROP_SCHEMA;
+			parse_schema_drop(self);
 		} else
-		if (lex_if(lex, KTABLE))
+		if (stmt_if(self, KTABLE))
 		{
-			stmt->id = STMT_DROP_TABLE;
-			parse_table_drop(stmt);
+			self->id = STMT_DROP_TABLE;
+			parse_table_drop(self);
 		} else
-		if (lex_if(lex, KINDEX))
+		if (stmt_if(self, KINDEX))
 		{
-			stmt->id = STMT_DROP_INDEX;
-			parse_index_drop(stmt);
+			self->id = STMT_DROP_INDEX;
+			parse_index_drop(self);
 		} else {
-			stmt_error(stmt, NULL, "USER|REPLICA|SCHEMA|TABLE|INDEX expected");
+			stmt_error(self, NULL, "USER|REPLICA|SCHEMA|TABLE|INDEX expected");
 		}
 		break;
 	}
@@ -281,111 +293,124 @@ parse_stmt(Parser* self, Stmt* stmt)
 	case KALTER:
 	{
 		// ALTER USER | SCHEMA | TABLE | INDEX
-		if (lex_if(lex, KUSER))
+		if (stmt_if(self, KUSER))
 		{
-			stmt->id = STMT_ALTER_USER;
-			parse_user_alter(stmt);
+			self->id = STMT_ALTER_USER;
+			parse_user_alter(self);
 		} else
-		if (lex_if(lex, KSCHEMA))
+		if (stmt_if(self, KSCHEMA))
 		{
-			stmt->id = STMT_ALTER_SCHEMA;
-			parse_schema_alter(stmt);
+			self->id = STMT_ALTER_SCHEMA;
+			parse_schema_alter(self);
 		} else
-		if (lex_if(lex, KTABLE))
+		if (stmt_if(self, KTABLE))
 		{
-			stmt->id = STMT_ALTER_TABLE;
-			parse_table_alter(stmt);
+			self->id = STMT_ALTER_TABLE;
+			parse_table_alter(self);
 		} else
-		if (lex_if(lex, KINDEX))
+		if (stmt_if(self, KINDEX))
 		{
-			stmt->id = STMT_ALTER_INDEX;
-			parse_index_alter(stmt);
+			self->id = STMT_ALTER_INDEX;
+			parse_index_alter(self);
 		} else {
-			stmt_error(stmt, NULL, "USER|SCHEMA|TABLE|INDEX expected");
+			stmt_error(self, NULL, "USER|SCHEMA|TABLE|INDEX expected");
 		}
 		break;
 	}
 
 	case KTRUNCATE:
 	{
-		stmt->id = STMT_TRUNCATE;
-		parse_table_truncate(stmt);
+		self->id = STMT_TRUNCATE;
+		parse_table_truncate(self);
 		break;
 	}
 
 	case KWATCH:
 		// WATCH expr
-		stmt->id = STMT_WATCH;
-		parse_watch(stmt);
+		self->id = STMT_WATCH;
+		parse_watch(self);
 		break;
 
 	case KINSERT:
-		stmt->id  = STMT_INSERT;
-		parse_insert(stmt);
-		stmt->block->stmts.last_send = stmt;
+		self->id  = STMT_INSERT;
+		parse_insert(self);
+		self->block->stmts.last_send = self;
 		break;
 
 	case KUPDATE:
-		stmt->id = STMT_UPDATE;
-		parse_update(stmt);
-		stmt->block->stmts.last_send = stmt;
+		self->id = STMT_UPDATE;
+		parse_update(self);
+		self->block->stmts.last_send = self;
 		break;
 
 	case KDELETE:
-		stmt->id = STMT_DELETE;
-		parse_delete(stmt);
-		stmt->block->stmts.last_send = stmt;
+		self->id = STMT_DELETE;
+		parse_delete(self);
+		self->block->stmts.last_send = self;
 		break;
 
 	case KSELECT:
 	{
-		stmt->id = STMT_SELECT;
-		auto select = parse_select(stmt, stmt->block->targets, false);
-		stmt->ast = &select->ast;
-		stmt->ret = &select->ret;
+		self->id = STMT_SELECT;
+		auto select = parse_select(self, self->block->targets, false);
+		self->ast = &select->ast;
+		self->ret = &select->ret;
 		if (select->pushdown)
-			stmt->block->stmts.last_send = stmt;
+			self->block->stmts.last_send = self;
 		break;
 	}
 
 	case KIF:
 	{
-		stmt->id = STMT_IF;
-		if (parse_if(stmt))
-			stmt->block->stmts.last_send = stmt;
+		self->id = STMT_IF;
+		if (parse_if(self))
+			self->block->stmts.last_send = self;
 		break;
 	}
 
 	case KFOR:
 	{
-		stmt->id = STMT_FOR;
-		if (parse_for(stmt))
-			stmt->block->stmts.last_send = stmt;
+		self->id = STMT_FOR;
+		if (parse_for(self))
+			self->block->stmts.last_send = self;
+		break;
+	}
+
+	case KRETURN:
+	{
+		// RETURN var
+		self->id = STMT_RETURN;
+		parse_return(self);
 		break;
 	}
 
 	case KBEGIN:
 	case KCOMMIT:
-		stmt_error(stmt, NULL, "unsupported statement");
+		stmt_error(self, NULL, "unsupported statement");
 		break;
 
 	case KEOF:
-		stmt_error(stmt, NULL, "unexpected end of statement");
+		stmt_error(self, NULL, "unexpected end of statement");
 		break;
 
 	default:
-		stmt_error(stmt, NULL, "unexpected statement");
+		stmt_error(self, NULL, "unexpected statement");
 		break;
 	}
 
-	if (stmt->ast)
+	// ensure statement can RETURN
+	if (self->is_return && self->id != STMT_RETURN)
+		if (! self->ret)
+			stmt_error(self, ast, "RETURN statement must return data");
+
+	if (self->ast)
 	{
-		stmt->ast->pos_start = ast->pos_start;
-		stmt->ast->pos_end   = ast->pos_end;
+		self->ast->pos_start = ast->pos_start;
+		self->ast->pos_end   = ast->pos_end;
 	}
 
 	// resolve select targets
-	parse_select_resolve(stmt);
+	parse_select_resolve(self);
 }
 
 hot void
@@ -435,7 +460,7 @@ parse_block(Parser* self, Block* block)
 			lex_push(lex, ast);
 			auto stmt = stmt_allocate(self, lex, block);
 			stmts_add(&block->stmts, stmt);
-			parse_stmt(self, stmt);
+			parse_stmt(stmt);
 
 			// validate usage of utility statement
 			if (stmt_is_utility(stmt))
@@ -512,4 +537,9 @@ parse(Parser* self, Program* program, Str* str)
 	// ensure main stmt is not utility when using CTE
 	if (block->stmts.count_utility && block->stmts.count > 1)
 		lex_error(lex, ast, "multi-statement utility commands are not supported");
+
+	// mark last stmt as return
+	auto last = block->stmts.list_tail;
+	if (last && !last->is_return)
+		last->is_return = true;
 }

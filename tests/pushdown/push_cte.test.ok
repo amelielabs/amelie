@@ -70,10 +70,8 @@ explain with a as (select * from test) select 2
       "00": "union               0      0      0     ",
       "01": "send_all            0      -      0     # public.test (last)",
       "02": "int                 1      -      0     # 2",
-      "03": "union_recv          0      0      0     ",
-      "04": "union_set           0      0      -1    ",
-      "05": "content             1      -      -     ",
-      "06": "ret                 0      0      0     "
+      "03": "content             1      -      -     ",
+      "04": "ret                 0      0      0     "
     },
     "backend": {
       "00": "set                 0      1      0     ",
@@ -355,12 +353,10 @@ explain with a as (select * from test) select * from test
       "01": "send_all            0      -      0     # public.test",
       "02": "union               1      0      0     ",
       "03": "send_all            9      -      1     # public.test (last)",
-      "04": "union_recv          0      0      0     ",
-      "05": "union_set           0      0      -1    ",
-      "06": "union_recv          1      0      0     ",
-      "07": "union_set           1      0      -1    ",
-      "08": "content             1      -      -     ",
-      "09": "ret                 0      0      0     "
+      "04": "union_recv          1      0      0     ",
+      "05": "union_set           1      0      -1    ",
+      "06": "content             1      -      -     ",
+      "07": "ret                 0      0      0     "
     },
     "backend": {
       "00": "set                 0      1      0     ",
@@ -399,12 +395,10 @@ explain with a as (select * from test) select * from test
       "01": "send_all            0      -      0     # public.test",
       "02": "union               1      0      0     ",
       "03": "send_all            9      -      1     # public.test (last)",
-      "04": "union_recv          0      0      0     ",
-      "05": "union_set           0      0      -1    ",
-      "06": "union_recv          1      0      0     ",
-      "07": "union_set           1      0      -1    ",
-      "08": "content             1      -      -     ",
-      "09": "ret                 0      0      0     "
+      "04": "union_recv          1      0      0     ",
+      "05": "union_set           1      0      -1    ",
+      "06": "content             1      -      -     ",
+      "07": "ret                 0      0      0     "
     },
     "backend": {
       "00": "set                 0      1      0     ",
@@ -792,10 +786,8 @@ explain with a as (select * from test), b as (select [1,2,3]), c as (select * fr
       "13": "store_next          5      10     0     ",
       "14": "free                5      0      0     ",
       "15": "free                4      0      0     ",
-      "16": "union_recv          0      0      0     ",
-      "17": "union_set           0      0      -1    ",
-      "18": "content             3      -      -     ",
-      "19": "ret                 0      0      0     "
+      "16": "content             3      -      -     ",
+      "17": "ret                 0      0      0     "
     },
     "backend": {
       "00": "set                 0      1      0     ",
@@ -844,12 +836,8 @@ explain with a as (select * from test), b as (select * from test), c as (select 
       "11": "json_next           5      8      0     ",
       "12": "free                5      0      0     ",
       "13": "free                4      0      0     ",
-      "14": "union_recv          0      0      0     ",
-      "15": "union_set           0      0      -1    ",
-      "16": "union_recv          1      0      0     ",
-      "17": "union_set           1      0      -1    ",
-      "18": "content             3      -      -     ",
-      "19": "ret                 0      0      0     "
+      "14": "content             3      -      -     ",
+      "15": "ret                 0      0      0     "
     },
     "backend": {
       "00": "set                 0      1      0     ",
@@ -902,12 +890,8 @@ explain with a as (select * from test), b as (select * from test), c as (select 
       "15": "store_next          6      12     0     ",
       "16": "free                6      0      0     ",
       "17": "free                5      0      0     ",
-      "18": "union_recv          0      0      0     ",
-      "19": "union_set           0      0      -1    ",
-      "20": "union_recv          1      0      0     ",
-      "21": "union_set           1      0      -1    ",
-      "22": "content             4      -      -     ",
-      "23": "ret                 0      0      0     "
+      "18": "content             4      -      -     ",
+      "19": "ret                 0      0      0     "
     },
     "backend": {
       "00": "set                 0      1      0     ",
@@ -1016,10 +1000,8 @@ explain with a as (select [1,2,3]), b as (select * from test), c as (select * fr
       "13": "store_next          5      10     0     ",
       "14": "free                5      0      0     ",
       "15": "free                4      0      0     ",
-      "16": "union_recv          1      0      0     ",
-      "17": "union_set           1      0      -1    ",
-      "18": "content             3      -      -     ",
-      "19": "ret                 0      0      0     "
+      "16": "content             3      -      -     ",
+      "17": "ret                 0      0      0     "
     },
     "backend": {
       "00": "set                 1      1      0     ",

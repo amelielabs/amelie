@@ -76,7 +76,8 @@ parse_with_validate(Stmt* stmt)
 	// ensure stmt is not utility
 	if (stmt_is_utility(stmt) ||
 	    stmt->id == STMT_IF   ||
-	    stmt->id == STMT_FOR)
+	    stmt->id == STMT_FOR  ||
+	    stmt->id == STMT_RETURN)
 		stmt_error(stmt, stmt->ast, "statement cannot be used inside CTE");
 }
 
@@ -106,7 +107,7 @@ parse_with(Parser* self, Block* block)
 		auto start = stmt_expect(cte, '(');
 
 		// parse stmt (cannot be a utility statement)
-		parse_stmt(self, cte);
+		parse_stmt(cte);
 		parse_with_validate(cte);
 
 		// set cte returning columns
@@ -134,6 +135,6 @@ parse_with(Parser* self, Block* block)
 	// stmt
 	auto stmt = stmt_allocate(self, &self->lex, block);
 	stmts_add(&block->stmts, stmt);
-	parse_stmt(self, stmt);
+	parse_stmt(stmt);
 	parse_with_validate(stmt);
 }
