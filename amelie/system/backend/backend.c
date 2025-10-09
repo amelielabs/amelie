@@ -172,8 +172,8 @@ backend_process(Backend* self, Ctr* ctr)
 			if (! ctr->error)
 				ctr->error = req->error;
 		}
-		active = !req->close;
-		req_result_ready(req);
+		active = !req->dispatch->close;
+		dispatch_complete(req->dispatch);
 	}
 	ctr_complete(ctr);
 }

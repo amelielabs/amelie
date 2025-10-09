@@ -15,48 +15,40 @@ typedef struct ReqCache ReqCache;
 
 struct ReqCache
 {
-	ReqList list;
+	List list;
 };
 
 static inline void
 req_cache_init(ReqCache* self)
 {
-	req_list_init(&self->list);
+	list_init(&self->list);
 }
 
 static inline void
 req_cache_free(ReqCache* self)
 {
-	list_foreach_safe(&self->list.list)
+	list_foreach_safe(&self->list)
 	{
 		auto req = list_at(Req, link);
 		req_free_memory(req);
 	}
-	req_list_init(&self->list);
+	list_init(&self->list);
 }
 
 static inline Req*
 req_cache_pop(ReqCache* self)
 {
-	return req_list_pop(&self->list);
+	if (list_empty(&self->list))
+		return NULL;
+	auto first = list_pop(&self->list);
+	return container_of(first, Req, link);
 }
 
 static inline void
 req_cache_push(ReqCache* self, Req* req)
 {
 	req_reset(req);
-	req_list_add(&self->list, req);
-}
-
-static inline void
-req_cache_push_list(ReqCache* self, ReqList* list)
-{
-	list_foreach_safe(&list->list)
-	{
-		auto req = list_at(Req, link);
-		req_cache_push(self, req);
-	}
-	req_list_init(list);
+	list_append(&self->list, &req->link);
 }
 
 hot static inline Req*
@@ -64,12 +56,8 @@ req_create(ReqCache* self)
 {
 	auto req = req_cache_pop(self);
 	if (! req)
-	{
 		req = req_allocate();
-		req_attach(req);
-	} else
-	{
+	else
 		list_init(&req->link);
-	}
 	return req;
 }

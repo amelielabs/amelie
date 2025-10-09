@@ -117,19 +117,22 @@ build_run(Build* self)
 	}
 
 	auto backend_mgr = self->backend_mgr;
+	if (! backend_mgr->workers_count)
+		return;
+
 	auto dtr = &self->dtr;
+	auto dispatch_mgr = &dtr->dispatch_mgr;
+	auto dispatch = dispatch_create(&dispatch_mgr->cache);
+	dispatch_set_close(dispatch);
 
 	// ask each backend to build related partition
-	ReqList req_list;
-	req_list_init(&req_list);
 	for (auto i = 0; i < backend_mgr->workers_count; i++)
 	{
 		auto backend = backend_mgr->workers[i];
-		auto req = req_create(&dtr->dispatch.req_cache);
-		req->type = REQ_BUILD;
-		req->core = &backend->core;
+		auto req = dispatch_add(dispatch, &dispatch_mgr->cache_req,
+		                        REQ_BUILD, -1, NULL, NULL,
+		                        &backend->core);
 		buf_write(&req->arg, &self, sizeof(Build*));
-		req_list_add(&req_list, req);
 	}
 
 	// process distributed transaction
@@ -139,7 +142,7 @@ build_run(Build* self)
 	dtr_reset(dtr);
 	dtr_create(dtr, program);
 	auto on_error = error_catch(
-		executor_send(share()->executor, dtr, &req_list, true);
+		executor_send(share()->executor, dtr, dispatch);
 	);
 	Buf* error = NULL;
 	if (on_error)

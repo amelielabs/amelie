@@ -71,10 +71,10 @@ executor_attach(Executor* self, Dtr* dtr)
 	list_append(&self->list, &dtr->link);
 
 	// begin execution
-	auto dispatch = &dtr->dispatch;
-	for (auto order = 0; order < dispatch->ctrs_count; order++)
+	auto mgr = &dtr->dispatch_mgr;
+	for (auto order = 0; order < mgr->ctrs_count; order++)
 	{
-		auto ctr = dispatch_ctr(dispatch, order);
+		auto ctr = dispatch_mgr_ctr(mgr, order);
 		if (ctr->state == CTR_ACTIVE)
 			core_add(ctr->core, ctr);
 	}
@@ -116,13 +116,13 @@ executor_detach(Executor* self, Dtr* list, bool abort)
 }
 
 hot static inline void
-executor_send(Executor* self, Dtr* dtr, ReqList* list, bool last)
+executor_send(Executor* self, Dtr* dtr, Dispatch* dispatch)
 {
-	auto dispatch = &dtr->dispatch;
-	auto first = dispatch_is_first(dispatch);
+	auto mgr = &dtr->dispatch_mgr;
+	auto first = dispatch_mgr_is_first(mgr);
 
 	// start local transactions and queue requests for execution
-	dtr_send(dtr, list, last);
+	dtr_send(dtr, dispatch);
 
 	// register transaction and begin execution
 	if (first)

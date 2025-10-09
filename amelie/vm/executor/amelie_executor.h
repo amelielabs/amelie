@@ -21,7 +21,6 @@
 // core transaction (per backend)
 #include "executor/complete.h"
 #include "executor/req.h"
-#include "executor/req_list.h"
 #include "executor/req_cache.h"
 #include "executor/ctr.h"
 
@@ -29,8 +28,12 @@
 #include "executor/core.h"
 #include "executor/core_mgr.h"
 
-// distributed transaction
+// dispatch
 #include "executor/dispatch.h"
+#include "executor/dispatch_cache.h"
+#include "executor/dispatch_mgr.h"
+
+// distributed transaction
 #include "executor/dtr.h"
 #include "executor/dtr_queue.h"
 

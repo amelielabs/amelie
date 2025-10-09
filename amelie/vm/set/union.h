@@ -18,12 +18,11 @@ struct Union
 	Store   store;
 	List    list;
 	int     list_count;
-	List    list_reqs;
-	int     list_reqs_count;
 	bool    distinct;
 	int*    aggs;
 	int64_t limit;
 	int64_t offset;
+	void*   dispatch;
 	Union*  child;
 };
 

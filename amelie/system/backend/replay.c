@@ -43,7 +43,7 @@
 #include <amelie_backend.h>
 
 static void
-replay_read(Dtr* dtr, ReqList* req_list, Record* record)
+replay_read(Dtr* dtr, Dispatch* dispatch, Record* record)
 {
 	// redistribute rows between backends
 	Req* map[dtr->core_mgr->cores_count];
@@ -62,10 +62,9 @@ replay_read(Dtr* dtr, ReqList* req_list, Record* record)
 		auto req = map[core->order];
 		if (req == NULL)
 		{
-			req = req_create(&dtr->dispatch.req_cache);
-			req->type = REQ_REPLAY;
-			req->core = core;
-			req_list_add(req_list, req);
+			req = dispatch_add(dispatch, &dtr->dispatch_mgr.cache_req,
+			                   REQ_REPLAY, -1, NULL, NULL,
+			                   core);
 			map[core->order] = req;
 		}
 
@@ -81,18 +80,20 @@ replay_read(Dtr* dtr, ReqList* req_list, Record* record)
 void
 replay(Dtr* dtr, Record* record)
 {
-	ReqList req_list;
-	req_list_init(&req_list);
-	auto on_error = error_catch
-	(
-		replay_read(dtr, &req_list, record);
-		executor_send(share()->executor, dtr, &req_list, true);
+	auto dispatch_mgr = &dtr->dispatch_mgr;
+	auto dispatch = dispatch_create(&dispatch_mgr->cache);
+	dispatch_set_close(dispatch);
+
+	auto on_error = error_catch (
+		replay_read(dtr, dispatch, record);
 	);
-	Buf* error = NULL;
 	if (on_error)
 	{
-		error = error_create(&am_self()->error);
-		req_cache_push_list(&dtr->dispatch.req_cache, &req_list);
+		dispatch_reset(dispatch, &dispatch_mgr->cache_req);
+		dispatch_free(dispatch);
+		rethrow();
 	}
-	commit(share()->commit, dtr, error);
+
+	executor_send(share()->executor, dtr, dispatch);
+	commit(share()->commit, dtr, NULL);
 }

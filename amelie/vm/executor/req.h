@@ -14,6 +14,7 @@
 typedef struct Req      Req;
 typedef struct ReqCache ReqCache;
 typedef struct Core     Core;
+typedef struct Dispatch Dispatch;
 
 enum
 {
@@ -33,12 +34,10 @@ struct Req
 	Buf       refs;
 	int       refs_count;
 	Value     result;
-	Event     result_ready;
 	bool      result_pending;
 	Buf*      error;
-	bool      close;
+	Dispatch* dispatch;
 	Core*     core;
-	List      link_union;
 	List      link;
 };
 
@@ -54,12 +53,11 @@ req_allocate(void)
 	self->core           = NULL;
 	self->refs_count     = 0;
 	self->result_pending = false;
+	self->dispatch       = NULL;
 	msg_init(&self->msg, MSG_REQ);
 	buf_init(&self->arg);
 	buf_init(&self->refs);
 	value_init(&self->result);
-	event_init(&self->result_ready);
-	list_init(&self->link_union);
 	list_init(&self->link);
 	return self;
 }
@@ -104,20 +102,8 @@ req_reset(Req* self)
 	self->core           = NULL;
 	self->refs_count     = 0;
 	self->result_pending = false;
+	self->dispatch       = NULL;
 	buf_reset(&self->arg);
-}
-
-static inline void
-req_attach(Req* self)
-{
-	event_attach(&self->result_ready);
-}
-
-static inline void
-req_result_ready(Req* self)
-{
-	if (self->result_pending)
-		event_signal(&self->result_ready);
 }
 
 static inline void

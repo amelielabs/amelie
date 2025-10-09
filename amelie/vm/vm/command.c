@@ -46,17 +46,21 @@ csend_shard(Vm* self, Op* op)
 	auto table = (Table*)op->b;
 	auto keys  = table_keys(table);
 
-	// get result union
-	Union* result = NULL;
+	// create dispatch
+	auto dispatch_mgr = &dtr->dispatch_mgr;
+	auto dispatch = dispatch_create(&dispatch_mgr->cache);
 	if (op->d != -1)
-		result = (Union*)reg_at(&self->r, op->d)->store;
+	{
+		auto result = (Union*)reg_at(&self->r, op->d)->store;
+		result->dispatch = dispatch;
+		dispatch_set_returning(dispatch);
+	}
+	if (self->program->send_last == code_posof(self->code, op))
+		dispatch_set_close(dispatch);
 
 	// redistribute rows between backends
-	Req* map[dtr->dispatch.ctrs_count];
+	Req* map[dtr->dispatch_mgr.ctrs_count];
 	memset(map, 0, sizeof(map));
-
-	ReqList list;
-	req_list_init(&list);
 
 	auto store = reg_at(&self->r, op->c)->store;
 	if (store->type == STORE_SET)
@@ -70,22 +74,15 @@ csend_shard(Vm* self, Op* op)
 			auto req  = map[part->core->order];
 			if (req == NULL)
 			{
-				req = req_create(&dtr->dispatch.req_cache);
-				req_list_add(&list, req);
-				req->type      = REQ_EXECUTE;
-				req->start     = op->a;
-				req->code      = &self->program->code_backend;
-				req->code_data = &self->program->code_data;
-				req->core      = part->core;
+				req = dispatch_add(dispatch, &dispatch_mgr->cache_req,
+				                   REQ_EXECUTE,
+				                   op->a,
+				                   &self->program->code_backend,
+				                   &self->program->code_data,
+				                   part->core);
 				if (op->e > 0)
 					req_copy_refs(req, stack_at(&self->stack, op->e), op->e);
 				map[part->core->order] = req;
-				if (result)
-				{
-					req->result_pending = true;
-					list_append(&result->list_reqs, &req->link_union);
-					result->list_reqs_count++;
-				}
 			}
 			buf_write(&req->arg, &row, sizeof(Value*));
 		}
@@ -101,22 +98,15 @@ csend_shard(Vm* self, Op* op)
 			auto req  = map[part->core->order];
 			if (req == NULL)
 			{
-				req = req_create(&dtr->dispatch.req_cache);
-				req->type      = REQ_EXECUTE;
-				req->start     = op->a;
-				req->code      = &self->program->code_backend;
-				req->code_data = &self->program->code_data;
-				req->core      = part->core;
+				req = dispatch_add(dispatch, &dispatch_mgr->cache_req,
+				                   REQ_EXECUTE,
+				                   op->a,
+				                   &self->program->code_backend,
+				                   &self->program->code_data,
+				                   part->core);
 				if (op->e > 0)
 					req_copy_refs(req, stack_at(&self->stack, op->e), op->e);
-				req_list_add(&list, req);
 				map[part->core->order] = req;
-				if (result)
-				{
-					req->result_pending = true;
-					list_append(&result->list_reqs, &req->link_union);
-					result->list_reqs_count++;
-				}
 			}
 			buf_write(&req->arg, &row, sizeof(Value*));
 		}
@@ -124,8 +114,7 @@ csend_shard(Vm* self, Op* op)
 	if (op->e > 0)
 		stack_popn(&self->stack, op->e);
 
-	auto is_last = self->program->send_last == code_posof(self->code, op);
-	executor_send(share()->executor, dtr, &list, is_last);
+	executor_send(share()->executor, dtr, dispatch);
 	value_free(reg_at(&self->r, op->c));
 }
 
@@ -136,36 +125,33 @@ csend_lookup(Vm* self, Op* op)
 	auto dtr   = self->dtr;
 	auto table = (Table*)op->b;
 
-	// get result union
-	Union* result = NULL;
+	// create dispatch
+	auto dispatch_mgr = &dtr->dispatch_mgr;
+	auto dispatch = dispatch_create(&dispatch_mgr->cache);
 	if (op->d != -1)
-		result = (Union*)reg_at(&self->r, op->d)->store;
+	{
+		auto result = (Union*)reg_at(&self->r, op->d)->store;
+		result->dispatch = dispatch;
+		dispatch_set_returning(dispatch);
+	}
+	if (self->program->send_last == code_posof(self->code, op))
+		dispatch_set_close(dispatch);
 
 	// shard by precomputed hash
-	ReqList list;
-	req_list_init(&list);
 	auto part = part_map_get(&table->part_list.map, op->c);
-	auto req = req_create(&dtr->dispatch.req_cache);
-	req->type      = REQ_EXECUTE;
-	req->start     = op->a;
-	req->code      = &self->program->code_backend;
-	req->code_data = &self->program->code_data;
-	req->core      = part->core;
+	auto req  = dispatch_add(dispatch, &dispatch_mgr->cache_req,
+	                         REQ_EXECUTE,
+	                         op->a,
+	                         &self->program->code_backend,
+	                         &self->program->code_data,
+	                         part->core);
 	if (op->e > 0)
 	{
 		req_copy_refs(req, stack_at(&self->stack, op->e), op->e);
 		stack_popn(&self->stack, op->e);
 	}
-	req_list_add(&list, req);
-	if (result)
-	{
-		req->result_pending = true;
-		list_append(&result->list_reqs, &req->link_union);
-		result->list_reqs_count++;
-	}
 
-	auto is_last = self->program->send_last == code_posof(self->code, op);
-	executor_send(share()->executor, dtr, &list, is_last);
+	executor_send(share()->executor, dtr, dispatch);
 }
 
 hot void
@@ -176,10 +162,17 @@ csend_lookup_by(Vm* self, Op* op)
 	auto table = (Table*)op->b;
 	auto index = table_primary(table);
 
-	// get result union
-	Union* result = NULL;
+	// create dispatch
+	auto dispatch_mgr = &dtr->dispatch_mgr;
+	auto dispatch = dispatch_create(&dispatch_mgr->cache);
 	if (op->c != -1)
-		result = (Union*)reg_at(&self->r, op->c)->store;
+	{
+		auto result = (Union*)reg_at(&self->r, op->c)->store;
+		result->dispatch = dispatch;
+		dispatch_set_returning(dispatch);
+	}
+	if (self->program->send_last == code_posof(self->code, op))
+		dispatch_set_close(dispatch);
 
 	// compute hash using key values
 	uint32_t hash = 0;
@@ -191,30 +184,20 @@ csend_lookup_by(Vm* self, Op* op)
 	}
 	stack_popn(&self->stack, index->keys.list_count);
 
-	ReqList list;
-	req_list_init(&list);
 	auto part = part_map_get(&table->part_list.map, hash);
-	auto req = req_create(&dtr->dispatch.req_cache);
-	req->type      = REQ_EXECUTE;
-	req->start     = op->a;
-	req->code      = &self->program->code_backend;
-	req->code_data = &self->program->code_data;
-	req->core      = part->core;
+	auto req  = dispatch_add(dispatch, &dispatch_mgr->cache_req,
+	                         REQ_EXECUTE,
+	                         op->a,
+	                         &self->program->code_backend,
+	                         &self->program->code_data,
+	                         part->core);
 	if (op->d > 0)
 	{
 		req_copy_refs(req, stack_at(&self->stack, op->d), op->d);
-		stack_popn(&self->stack, op->e);
-	}
-	req_list_add(&list, req);
-	if (result)
-	{
-		req->result_pending = true;
-		list_append(&result->list_reqs, &req->link_union);
-		result->list_reqs_count++;
+		stack_popn(&self->stack, op->d);
 	}
 
-	auto is_last = self->program->send_last == code_posof(self->code, op);
-	executor_send(share()->executor, dtr, &list, is_last);
+	executor_send(share()->executor, dtr, dispatch);
 }
 
 hot void
@@ -224,45 +207,42 @@ csend_all(Vm* self, Op* op)
 	auto table = (Table*)op->b;
 	auto dtr = self->dtr;
 
-	// get result union
-	Union* result = NULL;
+	// create dispatch
+	auto dispatch_mgr = &dtr->dispatch_mgr;
+	auto dispatch = dispatch_create(&dispatch_mgr->cache);
 	if (op->c != -1)
-		result = (Union*)reg_at(&self->r, op->c)->store;
+	{
+		auto result = (Union*)reg_at(&self->r, op->c)->store;
+		result->dispatch = dispatch;
+		dispatch_set_returning(dispatch);
+	}
+	if (self->program->send_last == code_posof(self->code, op))
+		dispatch_set_close(dispatch);
 
 	// send to all table backends
-	ReqList list;
-	req_list_init(&list);
 	list_foreach(&table->part_list.list)
 	{
 		auto part = list_at(Part, link);
-		auto req = req_create(&dtr->dispatch.req_cache);
-		req->type      = REQ_EXECUTE;
-		req->start     = op->a;
-		req->code      = &self->program->code_backend;
-		req->code_data = &self->program->code_data;
-		req->core      = part->core;
+		auto req = dispatch_add(dispatch, &dispatch_mgr->cache_req,
+		                        REQ_EXECUTE,
+		                        op->a,
+		                        &self->program->code_backend,
+		                        &self->program->code_data,
+		                        part->core);
 		if (op->d > 0)
 			req_copy_refs(req, stack_at(&self->stack, op->d), op->d);
-		req_list_add(&list, req);
-		if (result)
-		{
-			req->result_pending = true;
-			list_append(&result->list_reqs, &req->link_union);
-			result->list_reqs_count++;
-		}
 	}
-	if (op->e > 0)
-		stack_popn(&self->stack, op->e);
+	if (op->d > 0)
+		stack_popn(&self->stack, op->d);
 
-	auto is_last = self->program->send_last == code_posof(self->code, op);
-	executor_send(share()->executor, dtr, &list, is_last);
+	executor_send(share()->executor, dtr, dispatch);
 }
 
 void
 cclose(Vm* self, Op* op)
 {
 	unused(op);
-	dispatch_close(&self->dtr->dispatch);
+	dispatch_mgr_close(&self->dtr->dispatch_mgr);
 }
 
 hot void
@@ -305,12 +285,17 @@ cunion_recv(Vm* self, Op* op)
 	// [union]
 	auto result = (Union*)reg_at(&self->r, op->a)->store;
 
-	// wait for all requests completion and add result to the union
+	auto dispatch = (Dispatch*)result->dispatch;
+	assert(dispatch);
+
+	// wait for group completion
+	dispatch_wait(dispatch);
+
+	// add results to the union
 	auto error = (Req*)NULL;
-	list_foreach(&result->list_reqs)
+	list_foreach(&dispatch->list)
 	{
-		auto req = list_at(Req, link_union);
-		event_wait(&req->result_ready, -1);
+		auto req = list_at(Req, link);
 		if (req->error && !error)
 			error = req;
 

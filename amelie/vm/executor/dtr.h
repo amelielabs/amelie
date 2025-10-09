@@ -15,21 +15,21 @@ typedef struct Dtr Dtr;
 
 struct Dtr
 {
-	Msg      msg;
-	uint64_t id;
-	Dispatch dispatch;
-	Program* program;
-	Buf*     error;
-	bool     abort;
-	Write    write;
-	Event    on_access;
-	Event    on_commit;
-	Limit    limit;
-	Local*   local;
-	CoreMgr* core_mgr;
-	Dtr*     link_queue;
-	List     link_access;
-	List     link;
+	Msg         msg;
+	uint64_t    id;
+	DispatchMgr dispatch_mgr;
+	Program*    program;
+	Buf*        error;
+	bool        abort;
+	Write       write;
+	Event       on_access;
+	Event       on_commit;
+	Limit       limit;
+	Local*      local;
+	CoreMgr*    core_mgr;
+	Dtr*        link_queue;
+	List        link_access;
+	List        link;
 };
 
 static inline void
@@ -42,7 +42,7 @@ dtr_init(Dtr* self, Local* local, CoreMgr* core_mgr)
 	self->local      = local;
 	self->core_mgr   = core_mgr;
 	self->link_queue = NULL;
-	dispatch_init(&self->dispatch, core_mgr, self);
+	dispatch_mgr_init(&self->dispatch_mgr, core_mgr, self);
 	event_init(&self->on_access);
 	event_init(&self->on_commit);
 	limit_init(&self->limit, opt_int_of(&config()->limit_write));
@@ -64,7 +64,7 @@ dtr_reset(Dtr* self)
 		buf_free(self->error);
 		self->error = NULL;
 	}
-	dispatch_reset(&self->dispatch);
+	dispatch_mgr_reset(&self->dispatch_mgr);
 	limit_reset(&self->limit, opt_int_of(&config()->limit_write));
 	write_reset(&self->write);
 	list_init(&self->link_access);
@@ -75,7 +75,7 @@ static inline void
 dtr_free(Dtr* self)
 {
 	dtr_reset(self);
-	dispatch_free(&self->dispatch);
+	dispatch_mgr_free(&self->dispatch_mgr);
 	write_free(&self->write);
 }
 
@@ -83,7 +83,7 @@ static inline void
 dtr_create(Dtr* self, Program* program)
 {
 	self->program = program;
-	dispatch_prepare(&self->dispatch);
+	dispatch_mgr_prepare(&self->dispatch_mgr);
 	if (! event_attached(&self->on_access))
 		event_attach(&self->on_access);
 	if (! event_attached(&self->on_commit))
@@ -104,25 +104,27 @@ dtr_set_error(Dtr* self, Buf* buf)
 }
 
 hot static inline void
-dtr_send(Dtr* self, ReqList* list, bool last)
+dtr_send(Dtr* self, Dispatch* dispatch)
 {
+	dispatch_prepare(dispatch);
+
 	// begin local transactions on each core for multi-stmt
-	auto dispatch = &self->dispatch;
-	if (dispatch_is_first(dispatch))
+	auto mgr = &self->dispatch_mgr;
+	if (dispatch_mgr_is_first(mgr))
 	{
 		int cores_count;
 		if (self->program->snapshot)
 		{
-			dispatch_snapshot(dispatch);
+			dispatch_mgr_snapshot(mgr);
 			cores_count = self->core_mgr->cores_count;
 		} else {
-			cores_count = list->list_count;
+			cores_count = dispatch->list_count;
 		}
-		complete_prepare(&dispatch->complete, cores_count);
+		complete_prepare(&mgr->complete, cores_count);
 	}
 
 	// start local transactions and queue requests for execution
-	dispatch_send(dispatch, list, last);
+	dispatch_mgr_send(mgr, dispatch);
 }
 
 static inline bool

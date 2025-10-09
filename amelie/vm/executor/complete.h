@@ -51,5 +51,5 @@ static inline void
 complete_wait(Complete* self)
 {
 	event_wait(&self->event, -1);
-	assert(! self->pending);
+	assert(! atomic_u32_of(&self->pending));
 }

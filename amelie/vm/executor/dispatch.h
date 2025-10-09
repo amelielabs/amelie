@@ -12,197 +12,101 @@
 //
 
 typedef struct Dispatch Dispatch;
-typedef struct Dtr      Dtr;
 
 struct Dispatch
 {
-	Buf      reqs;
-	int      reqs_count;
-	ReqCache req_cache;
-	Buf      ctrs;
-	int      ctrs_count;
-	CoreMgr* core_mgr;
-	bool     write;
-	Msg      close;
-	Complete complete;
-	Dtr*     dtr;
+	List      list; 
+	int       list_count;
+	Complete  complete;
+	bool      close;
+	bool      returning;
+	List      link;
 };
 
-always_inline static inline Req*
-dispatch_req(Dispatch* self, int order)
+static inline Dispatch*
+dispatch_allocate(void)
 {
-	assert(order < self->reqs_count);
-	return ((Req**)self->reqs.start)[order];
-}
-
-hot always_inline static inline Ctr*
-dispatch_ctr(Dispatch* self, int order)
-{
-	assert(order < self->ctrs_count);
-	return &((Ctr*)self->ctrs.start)[order];
-}
-
-static inline bool
-dispatch_is_first(Dispatch* self)
-{
-	return self->reqs_count == 0;
-}
-
-static inline void
-dispatch_init(Dispatch* self, CoreMgr* core_mgr, Dtr* dtr)
-{
-	self->reqs_count = 0;
-	self->ctrs_count = 0;
-	self->core_mgr   = core_mgr;
-	self->dtr        = dtr;
-	self->write      = false;
-	buf_init(&self->reqs);
-	buf_init(&self->ctrs);
-	req_cache_init(&self->req_cache);
-	msg_init(&self->close, MSG_STOP);
+	auto self = (Dispatch*)am_malloc(sizeof(Dispatch));
+	self->list_count = 0;
+	self->returning  = false;
+	self->close      = false;
+	list_init(&self->list);
+	list_init(&self->link);
 	complete_init(&self->complete);
-}
-
-static inline void
-dispatch_reset(Dispatch* self)
-{
-	for (auto i = 0; i < self->reqs_count; i++)
-	{
-		auto req = dispatch_req(self, i);
-		req_cache_push(&self->req_cache, req);
-	}
-	self->reqs_count = 0;
-	buf_reset(&self->reqs);
-
-	for (auto i = 0; i < self->ctrs_count; i++)
-	{
-		auto ctr = dispatch_ctr(self, i);
-		ctr_reset(ctr);
-	}
-	self->write = false;
-	complete_reset(&self->complete);
-}
-
-static inline void
-dispatch_free_ctrs(Dispatch* self)
-{
-	for (auto i = 0; i < self->ctrs_count; i++)
-	{
-		auto ctr = dispatch_ctr(self, i);
-		ctr_free(ctr);
-	}
-	self->ctrs_count = 0;
-	buf_reset(&self->ctrs);
+	return self;
 }
 
 static inline void
 dispatch_free(Dispatch* self)
 {
-	dispatch_reset(self);
-	dispatch_free_ctrs(self);
-	buf_free(&self->reqs);
-	buf_free(&self->ctrs);
-	req_cache_free(&self->req_cache);
+	assert(! self->list_count);
+	am_free(self);
+}
+
+static inline void
+dispatch_reset(Dispatch* self, ReqCache* cache)
+{
+	list_foreach_safe(&self->list)
+	{
+		auto req = list_at(Req, link);
+		req_cache_push(cache, req);
+	}
+	list_init(&self->list);
+	self->list_count = 0;
+	self->returning  = false;
+	self->close      = false;
+	complete_reset(&self->complete);
+}
+
+static inline void
+dispatch_set_returning(Dispatch* self)
+{
+	self->returning = true;
+}
+
+static inline void
+dispatch_set_close(Dispatch* self)
+{
+	self->close = true;
 }
 
 static inline void
 dispatch_prepare(Dispatch* self)
 {
-	// prepare a list of core transactions on first call
-	auto cores_count = self->core_mgr->cores_count;
-	if (likely(self->ctrs_count == cores_count))
-		return;
-	dispatch_free_ctrs(self);
-	buf_reserve(&self->ctrs, sizeof(Ctr) * self->core_mgr->cores_count);
-	self->ctrs_count = cores_count;
-	for (auto i = 0; i < self->ctrs_count; i++)
-	{
-		auto ctr = dispatch_ctr(self, i);
-		ctr_init(ctr, self->dtr, self->core_mgr->cores[i], &self->complete);
-	}
+	assert(self->list_count > 0);
+	complete_prepare(&self->complete, self->list_count);
 }
 
-hot static inline void
-dispatch_snapshot(Dispatch* self)
+static inline Req*
+dispatch_add(Dispatch* self, ReqCache* cache, int type,
+             int       start,
+             Code*     code,
+             CodeData* code_data,
+             Core*     core)
 {
-	// start transactions for all cores
-	for (auto i = 0; i < self->ctrs_count; i++)
-	{
-		auto ctr = dispatch_ctr(self, i);
-		ctr->state = CTR_ACTIVE;
-	}
+	auto req = req_create(cache);
+	req->type      = type;
+	req->start     = start;
+	req->code      = code;
+	req->code_data = code_data;
+	req->core      = core;
+	req->dispatch  = self;
+	list_append(&self->list, &req->link);
+	self->list_count++;
+	return req;
 }
 
-hot static inline int
-dispatch_close(Dispatch* self)
+static inline void
+dispatch_wait(Dispatch* self)
 {
-	int active = 0;
-	for (auto i = 0; i < self->ctrs_count; i++)
-	{
-		auto ctr = dispatch_ctr(self, i);
-		if (ctr->state == CTR_NONE)
-			continue;
-		active++;
-		if (ctr->queue_close)
-			continue;
-		ring_write(&ctr->queue, &self->close);
-		ctr->queue_close = true;
-	}
-	return active;
-}
-
-hot static inline void
-dispatch_send(Dispatch* self, ReqList* list, bool close)
-{
-	// add requests to the dispatch
-	list_foreach_safe(&list->list)
-	{
-		auto req = list_at(Req, link);
-		req_list_del(list, req);
-		buf_write(&self->reqs, &req, sizeof(Req*));
-		self->reqs_count++;
-
-		// activate transaction for the core
-		auto ctr = dispatch_ctr(self, req->core->order);
-		if (ctr->state == CTR_NONE)
-			ctr->state = CTR_ACTIVE;
-
-		// add request to the core transaction queue
-		ctr->queue_close = close;
-		req->close = close;
-		ring_write(&ctr->queue, &req->msg);
-	}
-
-	// finilize still active transactions on the last send
-	if (close)
-		dispatch_close(self);
-}
-
-hot static inline Buf*
-dispatch_shutdown(Dispatch* self)
-{
-	// make sure all transactions complete execution
-	auto active = dispatch_close(self);
-	if (! active)
-		return NULL;
-
-	// wait for group completion
+	// wait for dispatch completion
+	assert(self->returning);
 	complete_wait(&self->complete);
+}
 
-	// collect errors
-	Buf* error = NULL;
-	bool is_write = false;
-	for (auto i = 0; i < self->ctrs_count; i++)
-	{
-		auto ctr = dispatch_ctr(self, i);
-		if (ctr->state == CTR_NONE)
-			continue;
-		if (ctr->error && !error)
-			error = ctr->error;
-		if (ctr->tr && !tr_read_only(ctr->tr))
-			is_write = true;
-		ctr->state = CTR_COMPLETE;
-	}
-	self->write = is_write;
-	return error;
+static inline void
+dispatch_complete(Dispatch* self)
+{
+	if (self->returning)
+		complete_signal(&self->complete);
 }

@@ -152,7 +152,7 @@ commit(Commit* self, Dtr* dtr, Buf* error)
 	cancel_pause();
 
 	// finilize core transactions and handle errors
-	auto error_pending = dispatch_shutdown(&dtr->dispatch);
+	auto error_pending = dispatch_mgr_shutdown(&dtr->dispatch_mgr);
 	if (! error)
 	{
 		// unless transaction is used for replication writer, respect
@@ -162,7 +162,7 @@ commit(Commit* self, Dtr* dtr, Buf* error)
 			error = buf_create();
 			buf_write_buf(error, error_pending);
 		} else
-		if (unlikely(dtr->dispatch.write && dtr->program->repl == false &&
+		if (unlikely(dtr->dispatch_mgr.is_write && dtr->program->repl == false &&
 		             opt_int_of(&state()->read_only)))
 			error = error_create_cstr("system is in read-only mode");
 	}
