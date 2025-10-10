@@ -63,6 +63,7 @@ struct Stmt
 	Columns    cte_columns;
 	bool       is_return;
 	Deps       deps;
+	Refs       refs;
 	AstList    select_list;
 	Block*     block;
 	Parser*    parser;
@@ -86,6 +87,7 @@ stmt_allocate(Parser* parser, Lex* lex, Block* block)
 	self->block     = block;
 	self->parser    = parser;
 	deps_init(&self->deps);
+	refs_init(&self->refs);
 	columns_init(&self->cte_columns);
 	ast_list_init(&self->select_list);
 	return self;

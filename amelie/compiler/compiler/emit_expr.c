@@ -116,7 +116,7 @@ emit_column(Compiler* self,
 	// create reference, if frontend target column is accessed from backend
 	if (self->origin == ORIGIN_BACKEND && target->origin == ORIGIN_FRONTEND)
 	{
-		auto ref_id = refs_add(&self->refs, targets, ast, -1);
+		auto ref_id = refs_add(&self->current->refs, targets, ast, -1);
 		int type = -1;
 		if (column)
 			type = column->type;
@@ -920,7 +920,7 @@ emit_expr(Compiler* self, Targets* targets, Ast* ast)
 		if (self->origin == ORIGIN_BACKEND)
 		{
 			// create reference, if variable is accessed from backend
-			auto ref_id = refs_add(&self->refs, targets, NULL, var->r);
+			auto ref_id = refs_add(&self->current->refs, targets, NULL, var->r);
 			return op2(self, CREF, rpin(self, var->type), ref_id);
 		}
 		return op2(self, CDUP, rpin(self, var->type), var->r);

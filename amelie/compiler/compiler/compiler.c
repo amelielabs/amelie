@@ -53,7 +53,6 @@ compiler_init(Compiler* self, Local* local)
 	set_cache_init(&self->values_cache);
 	parser_init(&self->parser, local, &self->values_cache);
 	rmap_init(&self->map);
-	refs_init(&self->refs);
 }
 
 void
@@ -62,7 +61,6 @@ compiler_free(Compiler* self)
 	parser_free(&self->parser);
 	set_cache_free(&self->values_cache);
 	rmap_free(&self->map);
-	refs_free(&self->refs);
 }
 
 void
@@ -76,7 +74,6 @@ compiler_reset(Compiler* self)
 	self->current   = NULL;
 	parser_reset(&self->parser);
 	rmap_reset(&self->map);
-	refs_reset(&self->refs);
 }
 
 void
@@ -107,17 +104,18 @@ emit_send(Compiler* self, Target* target, int start)
 	auto ret  = stmt->ret;
 
 	// push references
-	auto refs_count = self->refs.count;
-	for (auto order = 0; order < refs_count; order++)
+	auto refs_count = stmt->refs.count;
+	auto ref = stmt->refs.list;
+	while (ref)
 	{
-		auto ref = refs_at(&self->refs, order);
 		if (ref->ast) {
 			auto r = emit_expr(self, ref->targets, ref->ast);
 			op1(self, CPUSH, r);
 			runpin(self, r);
-			continue;
+		} else {
+			op1(self, CPUSH_DUP, ref->r);
 		}
-		op1(self, CPUSH_DUP, ref->r);
+		ref = ref->next;
 	}
 
 	// prepare union to use for the distributed operation result
@@ -296,9 +294,6 @@ emit_stmt_backend(Compiler* self, Stmt* stmt)
 	// generate backend code (pushdown)
 	compiler_switch_backend(self);
 	auto start = code_count(&self->program->code_backend);
-
-	// prepare to collects refs
-	refs_reset(&self->refs);
 
 	switch (stmt->id) {
 	case STMT_INSERT:

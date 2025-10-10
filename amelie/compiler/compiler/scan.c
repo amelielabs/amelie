@@ -347,7 +347,7 @@ scan_expr(Scan* self, Target* target)
 			// create reference, if frontend value is accessed from backend
 			if (cp->origin == ORIGIN_BACKEND && target->origin == ORIGIN_FRONTEND)
 			{
-				auto ref_id = refs_add(&cp->refs, self->targets, NULL, r);
+				auto ref_id = refs_add(&cp->current->refs, self->targets, NULL, r);
 				r = op2(cp, CREF, rpin(cp, type), ref_id);
 			} else {
 				r = op2(cp, CDUP, rpin(cp, type), r);

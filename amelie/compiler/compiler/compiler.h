@@ -21,7 +21,6 @@ struct Compiler
 	TargetOrigin origin;
 	int          sends;
 	Rmap         map;
-	Refs         refs;
 	Program*     program;
 	Parser       parser;
 	SetCache     values_cache;
