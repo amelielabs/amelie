@@ -175,7 +175,7 @@ explain declare x int; x := 1; select * from test where id = x
       "00": "int                 1      -      0     # 1",
       "01": "assign              0      1      0     ",
       "02": "free                1      0      0     ",
-      "03": "push_dup            0      0      0     ",
+      "03": "push_ref            0      1      0     ",
       "04": "union               1      0      0     ",
       "05": "dup                 2      0      0     ",
       "06": "push                2      0      0     ",

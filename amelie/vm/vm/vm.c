@@ -127,7 +127,7 @@ vm_run(Vm*       self,
 
 		// stack
 		&&cpush,
-		&&cpush_dup,
+		&&cpush_ref,
 		&&cpop,
 
 		// consts
@@ -478,10 +478,20 @@ cpush:
 	value_reset(&r[op->a]);
 	op_next;
 
-cpush_dup:
-	a = stack_push(stack);
-	value_init(a);
-	value_copy(a, &r[op->a]);
+cpush_ref:
+	// [value, dup, not_null]
+	if (unlikely(op->c && r[op->a].type == TYPE_NULL))
+		error("variable cannot be NULL");
+	if (op->b)
+	{
+		a = stack_push(stack);
+		value_init(a);
+		value_copy(a, &r[op->a]);
+	} else
+	{
+		*stack_push(stack) = r[op->a];
+		value_reset(&r[op->a]);
+	}
 	op_next;
 
 cpop:

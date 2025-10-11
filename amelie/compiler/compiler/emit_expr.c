@@ -116,13 +116,13 @@ emit_column(Compiler* self,
 	// create reference, if frontend target column is accessed from backend
 	if (self->origin == ORIGIN_BACKEND && target->origin == ORIGIN_FRONTEND)
 	{
-		auto ref_id = refs_add(&self->current->refs, from, ast, -1);
+		auto ref = refs_add(&self->current->refs, from, ast, -1);
 		int type = -1;
 		if (column)
 			type = column->type;
 		else
 			type = TYPE_JSON;
-		return op2(self, CREF, rpin(self, type), ref_id);
+		return op2(self, CREF, rpin(self, type), ref->order);
 	}
 
 	// read excluded column
@@ -920,8 +920,8 @@ emit_expr(Compiler* self, From* from, Ast* ast)
 		if (self->origin == ORIGIN_BACKEND)
 		{
 			// create reference, if variable is accessed from backend
-			auto ref_id = refs_add(&self->current->refs, from, NULL, var->r);
-			return op2(self, CREF, rpin(self, var->type), ref_id);
+			auto ref = refs_add(&self->current->refs, from, NULL, var->r);
+			return op2(self, CREF, rpin(self, var->type), ref->order);
 		}
 		return op2(self, CDUP, rpin(self, var->type), var->r);
 	}

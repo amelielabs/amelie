@@ -538,7 +538,7 @@ explain declare x int := 0; if true then; insert into test values (x); end; sele
       "05": "bool                1      1      0     ",
       "06": "jntr                12     1      0     ",
       "07": "dup                 1      0      0     ",
-      "08": "push                1      0      0     ",
+      "08": "push_ref            1      0      1     ",
       "09": "set_ptr             1      -      0     ",
       "10": "send_shard          0      -      1     # public.test",
       "11": "jmp                 4      0      0     ",

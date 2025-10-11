@@ -110,10 +110,10 @@ emit_send(Compiler* self, Target* target, int start)
 	{
 		if (ref->ast) {
 			auto r = emit_expr(self, ref->from, ref->ast);
-			op1(self, CPUSH, r);
+			op3(self, CPUSH_REF, r, 0, ref->not_null);
 			runpin(self, r);
 		} else {
-			op1(self, CPUSH_DUP, ref->r);
+			op3(self, CPUSH_REF, ref->r, 1, ref->not_null);
 		}
 		ref = ref->next;
 	}

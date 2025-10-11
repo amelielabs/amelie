@@ -21,6 +21,7 @@ struct Ref
 	Ast*  ast;
 	int   r;
 	From* from;
+	bool  not_null;
 	Ref*  next;
 };
 
@@ -39,7 +40,7 @@ refs_init(Refs* self)
 	self->count     = 0;
 }
 
-hot static inline int
+hot static inline Ref*
 refs_add(Refs* self, From* from, Ast* ast, int r)
 {
 	if (ast)
@@ -48,7 +49,7 @@ refs_add(Refs* self, From* from, Ast* ast, int r)
 		while (ref)
 		{
 			if (ref->ast == ast)
-				return ref->order;
+				return ref;
 			ref = ref->next;
 		}
 	} else
@@ -58,16 +59,17 @@ refs_add(Refs* self, From* from, Ast* ast, int r)
 		while (ref)
 		{
 			if (ref->r == r)
-				return ref->order;
+				return ref;
 			ref = ref->next;
 		}
 	}
 	auto ref = (Ref*)palloc(sizeof(Ref));
-	ref->order = self->count;
-	ref->ast   = ast;
-	ref->r     = r;
-	ref->from  = from;
-	ref->next  = NULL;
+	ref->order    = self->count;
+	ref->ast      = ast;
+	ref->r        = r;
+	ref->from     = from;
+	ref->not_null = false;
+	ref->next     = NULL;
 
 	if (self->list == NULL)
 		self->list = ref;
@@ -75,5 +77,5 @@ refs_add(Refs* self, From* from, Ast* ast, int r)
 		self->list_tail->next = ref;
 	self->list_tail = ref;
 	self->count++;
-	return ref->order;
+	return ref;
 }

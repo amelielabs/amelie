@@ -104,8 +104,9 @@ parse_value(Stmt* self, From* from, Column* column, Value* value)
 		ast->id  = KVAR;
 		ast->var = var;
 
-		auto ref_id = refs_add(&self->refs, from, ast, -1);
-		value_set_ref(value, ref_id);
+		auto ref = refs_add(&self->refs, from, ast, -1);
+		ref->not_null = column->constraints.not_null;
+		value_set_ref(value, ref->order);
 		return ast;
 	}
 

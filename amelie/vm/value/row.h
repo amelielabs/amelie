@@ -25,10 +25,9 @@ row_value_hash(Keys* keys, Value* refs, Value* row)
 		auto value = row + column->order;
 		if (value->type == TYPE_REF)
 		{
+			// this condition checked by PUSH_REF
 			value = &refs[value->integer];
-			if (unlikely(value->type == TYPE_NULL))
-				error("column '%.*s' cannot be NULL", str_size(&column->name),
-				      str_of(&column->name));
+			assert(value->type != TYPE_NULL);
 		}
 		hash = value_hash(value, column->type_size, hash);
 	}

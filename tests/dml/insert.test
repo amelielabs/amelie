@@ -546,7 +546,12 @@ explain insert into test select * from src
 insert into test select * from src returning *
 select * from test
 drop table src
+drop table test
 
+# test: insert select from var
+create table test (id int primary key, data int)
+insert into test values (3, 0), (4, 0), (5, 0)
+declare x table(id int, data int); select * into x from test; delete from test; insert into test select * from x returning *
 drop table test
 
 disconnect S0

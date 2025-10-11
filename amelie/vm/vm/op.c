@@ -56,7 +56,7 @@ OpDesc ops[] =
 
 	// stack
 	{ CPUSH, "push" },
-	{ CPUSH_DUP, "push_dup" },
+	{ CPUSH_REF, "push_ref" },
 	{ CPOP, "pop" },
 
 	// consts

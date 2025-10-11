@@ -432,7 +432,7 @@ explain with a as (select [4,5,6]) select test.*, a.* from test, a
   "bytecode": {
     "frontend": {
       "00": "json                0      0      0     ",
-      "01": "push_dup            0      0      0     ",
+      "01": "push_ref            0      1      0     ",
       "02": "union               1      0      0     ",
       "03": "send_all            0      -      1     # public.test (last)",
       "04": "union_recv          1      0      0     ",
@@ -472,7 +472,7 @@ explain with a as (select [4,5,6]) select test.*, a.* from test, a
   "bytecode": {
     "frontend": {
       "00": "json                0      0      0     ",
-      "01": "push_dup            0      0      0     ",
+      "01": "push_ref            0      1      0     ",
       "02": "union               1      0      0     ",
       "03": "send_all            0      -      1     # public.test (last)",
       "04": "union_recv          1      0      0     ",
@@ -515,7 +515,7 @@ explain with a as (select * from test) select test.* from test join a on test.id
       "01": "send_all            0      -      0     # public.test",
       "02": "union_recv          0      0      0     ",
       "03": "union_set           0      0      -1    ",
-      "04": "push_dup            0      0      0     ",
+      "04": "push_ref            0      1      0     ",
       "05": "union               1      0      0     ",
       "06": "send_all            9      -      1     # public.test (last)",
       "07": "union_recv          1      0      0     ",
@@ -569,7 +569,7 @@ explain with a as (select data from test) select test.* from test join a on test
       "01": "send_all            0      -      0     # public.test",
       "02": "union_recv          0      0      0     ",
       "03": "union_set           0      0      -1    ",
-      "04": "push_dup            0      0      0     ",
+      "04": "push_ref            0      1      0     ",
       "05": "union               1      0      0     ",
       "06": "send_all            9      -      1     # public.test (last)",
       "07": "union_recv          1      0      0     ",
