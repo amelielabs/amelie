@@ -12,7 +12,7 @@
 //
 
 void parse_vector(Stmt*, Buf*);
-Ast* parse_value(Stmt*, Targets*, Column*, Value*);
+Ast* parse_value(Stmt*, From*, Column*, Value*);
 void parse_value_default(Stmt*, Column*, Value*, uint64_t);
 
 Ast* parse_value_default_expr(Stmt*, Column*, uint64_t);

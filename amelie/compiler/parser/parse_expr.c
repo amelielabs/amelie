@@ -326,8 +326,8 @@ expr_lambda(Stmt* self, Ast* seed, Expr* expr)
 	// process lambda expression using different context
 	Expr ctx;
 	expr_init(&ctx);
-	ctx.lambda  = &agg->ast;
-	ctx.targets = expr->targets;
+	ctx.lambda = &agg->ast;
+	ctx.from   = expr->from;
 	agg->expr = parse_expr(self, &ctx);
 	return &agg->ast;
 }
@@ -511,8 +511,8 @@ expr_value(Stmt* self, Expr* expr, Ast* value)
 		auto select = stmt_expect(self, KSELECT);
 		if (!expr || !expr->select)
 			stmt_error(self, select, "unexpected subquery");
-		assert(expr->targets);
-		value->r = &parse_select(self, expr->targets, true)->ast;
+		assert(expr->from);
+		value->r = &parse_select(self, expr->from, true)->ast;
 		stmt_expect(self, ')');
 		break;
 	}
@@ -551,8 +551,8 @@ expr_value(Stmt* self, Expr* expr, Ast* value)
 	{
 		if (!expr || !expr->select)
 			stmt_error(self, value, "unexpected subquery");
-		assert(expr->targets);
-		auto select = parse_select(self, expr->targets, true);
+		assert(expr->from);
+		auto select = parse_select(self, expr->from, true);
 		select->ast.pos_start = value->pos_start;
 		select->ast.pos_end   = value->pos_end;
 		value = &select->ast;

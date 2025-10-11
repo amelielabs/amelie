@@ -11,9 +11,9 @@
 // AGPL-3.0 Licensed.
 //
 
-typedef struct Target  Target;
-typedef struct Targets Targets;
-typedef struct Path    Path;
+typedef struct Target Target;
+typedef struct From   From;
+typedef struct Path   Path;
 
 typedef enum
 {
@@ -73,7 +73,7 @@ struct Target
 	// inner/outer
 	Target*      next;
 	Target*      prev;
-	Targets*     targets;
+	From*        from;
 };
 
 static inline Target*

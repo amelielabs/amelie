@@ -41,9 +41,9 @@
 #include <amelie_compiler.h>
 
 hot void
-emit_update_target(Compiler* self, Targets* targets, Ast* expr)
+emit_update_target(Compiler* self, From* from, Ast* expr)
 {
-	auto target = targets_outer(targets);
+	auto target = from_first(from);
 	Ast* list = NULL;
 	int  list_count = 0;
 
@@ -125,7 +125,7 @@ emit_update_target(Compiler* self, Targets* targets, Ast* expr)
 		} else
 		{
 			// SET column = expr
-			rexpr = emit_expr(self, targets, op->r);
+			rexpr = emit_expr(self, from, op->r);
 			type  = rtype(self, rexpr);
 		}
 		op1(self, CPUSH, rexpr);
@@ -147,19 +147,19 @@ emit_update_target(Compiler* self, Targets* targets, Ast* expr)
 }
 
 static inline void
-emit_update_on_match(Compiler* self, Targets* targets, void* arg)
+emit_update_on_match(Compiler* self, From* from, void* arg)
 {
 	AstUpdate* update = arg;
-	emit_update_target(self, targets, update->expr_update);
+	emit_update_target(self, from, update->expr_update);
 }
 
 static inline void
-emit_update_on_match_returning(Compiler* self, Targets* targets, void* arg)
+emit_update_on_match_returning(Compiler* self, From* from, void* arg)
 {
 	AstUpdate* update = arg;
 
 	// update by cursor
-	emit_update_target(self, targets, update->expr_update);
+	emit_update_target(self, from, update->expr_update);
 
 	// push expr and set column type
 	for (auto as = update->ret.list; as; as = as->next)
@@ -167,7 +167,7 @@ emit_update_on_match_returning(Compiler* self, Targets* targets, void* arg)
 		auto column = as->r->column;
 
 		// expr
-		int rexpr = emit_expr(self, targets, as->l);
+		int rexpr = emit_expr(self, from, as->l);
 		int rt = rtype(self, rexpr);
 		column_set_type(column, rt, type_sizeof(rt));
 		op1(self, CPUSH, rexpr);
@@ -185,13 +185,13 @@ emit_update(Compiler* self, Ast* ast)
 	auto update = ast_update_of(ast);
 
 	// set target origin
-	auto target = targets_outer(&update->targets);
+	auto target = from_first(&update->from);
 	target_set_origin(target, self->origin);
 
 	// update by cursor
 	if (! returning_has(&update->ret))
 	{
-		scan(self, &update->targets,
+		scan(self, &update->from,
 		     NULL,
 		     NULL,
 		     update->expr_where,
@@ -207,7 +207,7 @@ emit_update(Compiler* self, Ast* ast)
 		op3(self, CSET, rpin(self, TYPE_STORE),
 		    update->ret.count, 0);
 
-	scan(self, &update->targets,
+	scan(self, &update->from,
 	     NULL,
 	     NULL,
 	     update->expr_where,

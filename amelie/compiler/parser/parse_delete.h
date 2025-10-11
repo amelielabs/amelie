@@ -18,7 +18,7 @@ struct AstDelete
 	Ast       ast;
 	Ast*      expr_where;
 	Table*    table;
-	Targets   targets;
+	From      from;
 	Returning ret;
 	int       rset;
 };

@@ -51,7 +51,7 @@ parse_if_block(Stmt* self)
 
 	Expr ctx;
 	expr_init(&ctx);
-	ctx.targets = &stmt->targets;
+	ctx.from = &stmt->from;
 	cond->expr = parse_expr(self, &ctx);
 
 	// THEN
@@ -59,7 +59,7 @@ parse_if_block(Stmt* self)
 
 	// block
 	cond->block = blocks_add(&parser->blocks, self->block);
-	cond->block->targets = &stmt->targets;
+	cond->block->from = &stmt->from;
 	parse_block(parser, cond->block);
 	return cond;
 }

@@ -48,7 +48,7 @@ typedef struct
 	int          eof;
 	ScanFunction on_match;
 	void*        on_match_arg;
-	Targets*     targets;
+	From*        from;
 	Compiler*    compiler;
 } Scan;
 
@@ -68,7 +68,7 @@ scan_key(Scan* self, Target* target)
 		if (! ref->start)
 			break;
 
-		int rexpr = emit_expr(cp, self->targets, ref->start);
+		int rexpr = emit_expr(cp, self->from, ref->start);
 		op1(cp, CPUSH, rexpr);
 		runpin(cp, rexpr);
 		count++;
@@ -92,7 +92,7 @@ scan_stop(Scan* self, Target* target, int scan_stop_jntr[])
 
 		// use <, <= condition
 		int rexpr;
-		rexpr = emit_expr(cp, self->targets, ref->stop_op);
+		rexpr = emit_expr(cp, self->from, ref->stop_op);
 
 		// jntr _eof
 		scan_stop_jntr[key->order] = op_pos(cp);
@@ -111,7 +111,7 @@ scan_on_match(Scan* self)
 	int _where_jntr = -1;
 	if (self->expr_where)
 	{
-		int rwhere = emit_expr(cp, self->targets, self->expr_where);
+		int rwhere = emit_expr(cp, self->from, self->expr_where);
 		_where_jntr = op_pos(cp);
 		op2(cp, CJNTR, 0 /* _next */, rwhere);
 		runpin(cp, rwhere);
@@ -128,7 +128,7 @@ scan_on_match(Scan* self)
 		op2(cp, CJLTD, self->rlimit, self->eof);
 
 	// aggregation / expr against current cursor position
-	self->on_match(cp, self->targets, self->on_match_arg);
+	self->on_match(cp, self->from, self->on_match_arg);
 
 	// _next:
 	int _next = op_pos(cp);
@@ -257,7 +257,7 @@ scan_table_heap(Scan* self, Target* target)
 
 	// ensure target does not require full table access
 	if (unlikely(target->from_access == ACCESS_RO_EXCLUSIVE))
-		error("heap only scan for subqueries and inner join targets is not supported");
+		error("heap only scan for subqueries and inner join targets are not supported");
 
 	// table_open
 	int _open = op_pos(cp);
@@ -319,7 +319,7 @@ scan_expr(Scan* self, Target* target)
 		case TARGET_EXPR:
 		case TARGET_FUNCTION:
 		{
-			r = emit_expr(cp, self->targets, target->ast);
+			r = emit_expr(cp, self->from, target->ast);
 			type = rtype(cp, r);
 			// set expression type
 			assert(target->columns->count == 1);
@@ -347,7 +347,7 @@ scan_expr(Scan* self, Target* target)
 			// create reference, if frontend value is accessed from backend
 			if (cp->origin == ORIGIN_BACKEND && target->origin == ORIGIN_FRONTEND)
 			{
-				auto ref_id = refs_add(&cp->current->refs, self->targets, NULL, r);
+				auto ref_id = refs_add(&cp->current->refs, self->from, NULL, r);
 				r = op2(cp, CREF, rpin(cp, type), ref_id);
 			} else {
 				r = op2(cp, CDUP, rpin(cp, type), r);
@@ -452,7 +452,7 @@ scan_target(Scan* self, Target* target)
 
 void
 scan(Compiler*    compiler,
-     Targets*     targets,
+     From*        from,
      Ast*         expr_limit,
      Ast*         expr_offset,
      Ast*         expr_where,
@@ -467,22 +467,22 @@ scan(Compiler*    compiler,
 		.eof          = -1,
 		.on_match     = on_match,
 		.on_match_arg = on_match_arg,
-		.targets      = targets,
+		.from         = from,
 		.compiler     = compiler
 	};
 
 	// prepare scan path using where expression per target
-	path_prepare(targets, expr_where);
+	path_prepare(from, expr_where);
 
 	// limit
 	if (expr_limit)
-		self.rlimit = emit_expr(compiler, targets, expr_limit);
+		self.rlimit = emit_expr(compiler, from, expr_limit);
 
 	// offset
 	if (expr_offset)
-		self.roffset = emit_expr(compiler, targets, expr_offset);
+		self.roffset = emit_expr(compiler, from, expr_offset);
 
-	scan_target(&self, targets_outer(targets));
+	scan_target(&self, from_first(from));
 
 	if (self.roffset != -1)
 		runpin(compiler, self.roffset);

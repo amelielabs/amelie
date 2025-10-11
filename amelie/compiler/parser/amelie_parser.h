@@ -30,7 +30,7 @@
 
 // target
 #include "parser/target.h"
-#include "parser/targets.h"
+#include "parser/from.h"
 
 // block
 #include "parser/block.h"

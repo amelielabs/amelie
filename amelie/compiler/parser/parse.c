@@ -116,7 +116,7 @@ parse_stmt_free(Stmt* stmt)
 	{
 		auto select = ast_select_of(ref->ast);
 		returning_free(&select->ret);
-		columns_free(&select->targets_group_columns);
+		columns_free(&select->from_group_columns);
 	}
 }
 
@@ -352,7 +352,7 @@ parse_stmt(Stmt* self)
 	case KSELECT:
 	{
 		self->id = STMT_SELECT;
-		auto select = parse_select(self, self->block->targets, false);
+		auto select = parse_select(self, self->block->from, false);
 		self->ast = &select->ast;
 		self->ret = &select->ret;
 		if (select->pushdown)

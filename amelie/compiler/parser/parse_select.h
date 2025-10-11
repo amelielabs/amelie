@@ -15,26 +15,26 @@ typedef struct AstSelect AstSelect;
 
 struct AstSelect
 {
-	Ast         ast;
-	Returning   ret;
-	AstList     expr_aggs;
-	Ast*        expr_where;
-	Ast*        expr_having;
-	Ast*        expr_limit;
-	Ast*        expr_offset;
-	AstList     expr_group_by;
-	bool        expr_group_by_has;
-	AstList     expr_order_by;
-	bool        distinct;
-	bool        distinct_on;
-	Targets     targets;
-	Targets     targets_group;
-	Columns     targets_group_columns;
-	Target*     pushdown;
-	int         rset;
-	int         rset_agg;
-	int         rset_agg_row;
-	int         aggs;
+	Ast       ast;
+	Returning ret;
+	AstList   expr_aggs;
+	Ast*      expr_where;
+	Ast*      expr_having;
+	Ast*      expr_limit;
+	Ast*      expr_offset;
+	AstList   expr_group_by;
+	bool      expr_group_by_has;
+	AstList   expr_order_by;
+	bool      distinct;
+	bool      distinct_on;
+	From      from;
+	From      from_group;
+	Columns   from_group_columns;
+	Target*   pushdown;
+	int       rset;
+	int       rset_agg;
+	int       rset_agg_row;
+	int       aggs;
 };
 
 static inline AstSelect*
@@ -44,7 +44,7 @@ ast_select_of(Ast* ast)
 }
 
 static inline AstSelect*
-ast_select_allocate(Stmt* stmt, Targets* outer, Block* block)
+ast_select_allocate(Stmt* stmt, From* outer, Block* block)
 {
 	AstSelect* self;
 	self = ast_allocate(KSELECT, sizeof(AstSelect));
@@ -64,15 +64,15 @@ ast_select_allocate(Stmt* stmt, Targets* outer, Block* block)
 	ast_list_init(&self->expr_aggs);
 	ast_list_init(&self->expr_group_by);
 	ast_list_init(&self->expr_order_by);
-	targets_init(&self->targets, block);
-	targets_init(&self->targets_group, block);
-	targets_set_outer(&self->targets, outer);
-	targets_set_outer(&self->targets_group, outer);
-	columns_init(&self->targets_group_columns);
+	from_init(&self->from, block);
+	from_init(&self->from_group, block);
+	from_set_outer(&self->from, outer);
+	from_set_outer(&self->from_group, outer);
+	columns_init(&self->from_group_columns);
 	ast_list_add(&stmt->select_list, &self->ast);
 	return self;
 }
 
-AstSelect* parse_select(Stmt*, Targets*, bool);
+AstSelect* parse_select(Stmt*, From*, bool);
 AstSelect* parse_select_expr(Stmt*, Str*);
 void       parse_select_resolve(Stmt*);

@@ -31,8 +31,8 @@ struct AstInsert
 	Ast*      update_where;
 	Ast*      generated_columns;
 	Stmt*     select;
-	Targets   targets;
-	Targets   targets_generated;
+	From      from;
+	From      from_generated;
 	Returning ret;
 };
 
@@ -47,8 +47,8 @@ ast_insert_allocate(Block* block)
 {
 	AstInsert* self;
 	self = ast_allocate(0, sizeof(AstInsert));
-	targets_init(&self->targets, block);
-	targets_init(&self->targets_generated, block);
+	from_init(&self->from, block);
+	from_init(&self->from_generated, block);
 	ast_list_init(&self->rows);
 	returning_init(&self->ret);
 	return self;

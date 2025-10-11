@@ -130,7 +130,7 @@ parse_select_distinct(Stmt* self, AstSelect* select)
 }
 
 hot AstSelect*
-parse_select(Stmt* self, Targets* outer, bool subquery)
+parse_select(Stmt* self, From* outer, bool subquery)
 {
 	// SELECT [DISTINCT] expr, ...
 	// [INTO name]
@@ -152,13 +152,13 @@ parse_select(Stmt* self, Targets* outer, bool subquery)
 	ctx.select = true;
 	ctx.subquery = subquery;
 	ctx.aggs = &select->expr_aggs;
-	ctx.targets = &select->targets;
+	ctx.from = &select->from;
 	parse_returning(&select->ret, self, &ctx);
 
 	// [FROM]
 	if (stmt_if(self, KFROM))
 	{
-		parse_from(self, &select->targets,
+		parse_from(self, &select->from,
 		           subquery ? ACCESS_RO_EXCLUSIVE : ACCESS_RO,
 		           subquery);
 	}
@@ -170,15 +170,15 @@ parse_select(Stmt* self, Targets* outer, bool subquery)
 		expr_init(&ctx_where);
 		ctx_where.select = true;
 		ctx_where.subquery = subquery;
-		ctx_where.targets = &select->targets;
+		ctx_where.from = &select->from;
 		select->expr_where = parse_expr(self, &ctx_where);
 	}
 
 	// use as WHERE expr or combine JOIN ON (expr) together with
 	// WHERE expr per target
-	if (targets_is_join(&select->targets))
+	if (from_is_join(&select->from))
 		select->expr_where =
-			parse_from_join_on_and_where(&select->targets, select->expr_where);
+			parse_from_join_on_and_where(&select->from, select->expr_where);
 
 	// [GROUP BY]
 	if (stmt_if(self, KGROUP))
@@ -231,7 +231,7 @@ parse_select(Stmt* self, Targets* outer, bool subquery)
 	// add group by target
 	if (select->expr_group_by.count > 0 || select->expr_aggs.count > 0)
 	{
-		if (targets_empty(&select->targets))
+		if (from_empty(&select->from))
 			stmt_error(self, NULL, "no targets to use with GROUP BY or aggregation");
 
 		// add at least one group by key
@@ -249,11 +249,11 @@ parse_select(Stmt* self, Targets* outer, bool subquery)
 		// create group by target to scan agg set
 		auto target = target_allocate();
 		target->type          = TARGET_GROUP_BY;
-		target->ast           = targets_outer(&select->targets)->ast;
-		target->name          = targets_outer(&select->targets)->name;
+		target->ast           = from_first(&select->from)->ast;
+		target->name          = from_first(&select->from)->name;
 		target->from_group_by = &select->expr_group_by;
-		target->columns       = &select->targets_group_columns;
-		targets_add(&select->targets_group, target);
+		target->columns       = &select->from_group_columns;
+		from_add(&select->from_group, target);
 
 		// group by target columns will be created
 		// during resolve
@@ -262,8 +262,8 @@ parse_select(Stmt* self, Targets* outer, bool subquery)
 	// set pushdown strategy for the root query
 	if (! subquery)
 	{
-		auto outer = select->targets.list;
-		if (outer && target_is_table(select->targets.list))
+		auto outer = select->from.list;
+		if (outer && target_is_table(select->from.list))
 			select->pushdown = outer;
 	}
 
@@ -316,7 +316,7 @@ parse_select_resolve_group_by(AstSelect* select)
 		Str name;
 		str_set_cstr(&name, name_sz);
 		column_set_name(column, &name);
-		columns_add(&select->targets_group_columns, column);
+		columns_add(&select->from_group_columns, column);
 		agg->column = column;
 	}
 
@@ -331,7 +331,7 @@ parse_select_resolve_group_by(AstSelect* select)
 		Str name;
 		str_set_cstr(&name, name_sz);
 		column_set_name(column, &name);
-		columns_add(&select->targets_group_columns, column);
+		columns_add(&select->from_group_columns, column);
 		group->column = column;
 	}
 }
@@ -429,7 +429,7 @@ parse_select_resolve(Stmt* self)
 		auto select = ast_select_of(ref->ast);
 
 		// create select expressions and resolve *
-		parse_returning_resolve(&select->ret, self, &select->targets);
+		parse_returning_resolve(&select->ret, self, &select->from);
 
 		// use select expr as distinct expression, if not set
 		if (select->distinct && !select->distinct_on)
@@ -443,7 +443,7 @@ parse_select_resolve(Stmt* self)
 		}
 
 		// resolve GROUP BY alias/int cases and create columns
-		if (! targets_empty(&select->targets_group))
+		if (! from_empty(&select->from_group))
 		{
 			parse_select_resolve_group_by_alias(self, select);
 			parse_select_resolve_group_by(select);

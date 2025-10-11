@@ -40,7 +40,7 @@
 #include <amelie_parser.h>
 
 static Target*
-parse_from_target(Stmt* self, Targets* targets, AccessType access, bool subquery)
+parse_from_target(Stmt* self, From* from, AccessType access, bool subquery)
 {
 	auto target = target_allocate();
 
@@ -53,7 +53,7 @@ parse_from_target(Stmt* self, Targets* targets, AccessType access, bool subquery
 			AstSelect* select;
 			if (subquery)
 			{
-				select = parse_select(self, targets->outer, true);
+				select = parse_select(self, from->outer, true);
 				stmt_expect(self, ')');
 				target->type    = TARGET_EXPR;
 				target->ast     = ast;
@@ -88,7 +88,7 @@ parse_from_target(Stmt* self, Targets* targets, AccessType access, bool subquery
 			expr_init(&ctx);
 			ctx.select = true;
 			ctx.aggs = NULL;
-			ctx.targets = targets->outer;
+			ctx.from = from->outer;
 			ast = parse_expr(self, &ctx);
 			stmt_expect(self, ')');
 
@@ -96,7 +96,7 @@ parse_from_target(Stmt* self, Targets* targets, AccessType access, bool subquery
 			target->ast  = ast;
 
 			// allocate select to keep returning columns
-			auto select = ast_select_allocate(self, targets->outer, targets->block);
+			auto select = ast_select_allocate(self, from->outer, from->block);
 			select->ast.pos_start = target->ast->pos_start;
 			select->ast.pos_end   = target->ast->pos_end;
 			target->columns = &select->ret.columns;
@@ -130,7 +130,7 @@ parse_from_target(Stmt* self, Targets* targets, AccessType access, bool subquery
 		target->ast  = &func->ast;
 
 		// allocate select to keep returning columns
-		auto select = ast_select_allocate(self, targets->outer, targets->block);
+		auto select = ast_select_allocate(self, from->outer, from->block);
 		select->ast.pos_start = target->ast->pos_start;
 		select->ast.pos_end   = target->ast->pos_end;
 		target->columns = &select->ret.columns;
@@ -151,7 +151,7 @@ parse_from_target(Stmt* self, Targets* targets, AccessType access, bool subquery
 		} else
 		{
 			// allocate select to keep returning columns
-			auto select = ast_select_allocate(self, targets->outer, targets->block);
+			auto select = ast_select_allocate(self, from->outer, from->block);
 			select->ast.pos_start = target->ast->pos_start;
 			select->ast.pos_end   = target->ast->pos_end;
 			target->columns = &select->ret.columns;
@@ -178,7 +178,7 @@ parse_from_target(Stmt* self, Targets* targets, AccessType access, bool subquery
 	auto table = table_mgr_find(&share()->db->catalog.table_mgr, &schema, &name, false);
 	if (table)
 	{
-		target->type = TARGET_TABLE;
+		target->type        = TARGET_TABLE;
 		target->from_access = access;
 		target->from_table  = table;
 		target->columns     = &table->config->columns;
@@ -213,12 +213,12 @@ parse_from_target(Stmt* self, Targets* targets, AccessType access, bool subquery
 }
 
 Target*
-parse_from_add(Stmt* self, Targets* targets, AccessType access,
+parse_from_add(Stmt* self, From* from, AccessType access,
                Str*  as,
                bool  subquery)
 {
 	// FROM [schema.]name | (SELECT) [AS] [alias] [USE INDEX (name)]
-	auto target = parse_from_target(self, targets, access, subquery);
+	auto target = parse_from_target(self, from, access, subquery);
 
 	// [AS] [alias]
 	if (as)
@@ -243,7 +243,7 @@ parse_from_add(Stmt* self, Targets* targets, AccessType access,
 	// ensure target does not exists
 	if (! str_empty(&target->name))
 	{
-		auto match = targets_match(targets, &target->name);
+		auto match = from_match(from, &target->name);
 		if (match)
 			stmt_error(self, NULL, "target is redefined, please use different alias for the target");
 	}
@@ -265,18 +265,18 @@ parse_from_add(Stmt* self, Targets* targets, AccessType access,
 	}
 
 	// add target
-	targets_add(targets, target);
+	from_add(from, target);
 	return target;
 }
 
 void
-parse_from(Stmt* self, Targets* targets, AccessType access, bool subquery)
+parse_from(Stmt* self, From* from, AccessType access, bool subquery)
 {
 	// FROM <[schema.]name | (SELECT)> [AS] [alias]> [, ...]
 	// FROM <[schema.]name | (SELECT)> [AS] [alias]> [JOIN <..> ON (expr) ...]
 
 	// FROM name | expr
-	parse_from_add(self, targets, access, NULL, subquery);
+	parse_from_add(self, from, access, NULL, subquery);
 
 	for (;;)
 	{
@@ -284,7 +284,7 @@ parse_from(Stmt* self, Targets* targets, AccessType access, bool subquery)
 		if (stmt_if(self, ','))
 		{
 			// name | expr
-			parse_from_add(self, targets, ACCESS_RO_EXCLUSIVE, NULL, subquery);
+			parse_from_add(self, from, ACCESS_RO_EXCLUSIVE, NULL, subquery);
 			continue;
 		}
 
@@ -324,7 +324,7 @@ parse_from(Stmt* self, Targets* targets, AccessType access, bool subquery)
 				stmt_error(self, NULL, "outer joins currently are not supported");
 
 			// <name|expr>
-			auto target = parse_from_add(self, targets, ACCESS_RO_EXCLUSIVE, NULL, subquery);
+			auto target = parse_from_add(self, from, ACCESS_RO_EXCLUSIVE, NULL, subquery);
 
 			// ON
 			if (stmt_if(self, KON))
@@ -332,7 +332,7 @@ parse_from(Stmt* self, Targets* targets, AccessType access, bool subquery)
 				// expr
 				Expr ctx;
 				expr_init(&ctx);
-				ctx.targets = targets;
+				ctx.from = from;
 				target->join_on = parse_expr(self, &ctx);
 				target->join    = join;
 				continue;

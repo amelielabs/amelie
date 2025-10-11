@@ -26,7 +26,7 @@ struct AstIf
 	Ast     ast;
 	AstList conds;
 	Block*  cond_else;
-	Targets targets;
+	From    from;
 };
 
 static inline AstIfCond*
@@ -58,7 +58,7 @@ ast_if_allocate(Block* block)
 	self = ast_allocate(0, sizeof(AstIf));
 	self->cond_else = NULL;
 	ast_list_init(&self->conds);
-	targets_init(&self->targets, block);
+	from_init(&self->from, block);
 	return self;
 }
 

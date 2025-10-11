@@ -15,9 +15,9 @@ typedef struct AstFor AstFor;
 
 struct AstFor
 {
-	Ast     ast;
-	Block*  block;
-	Targets targets;
+	Ast    ast;
+	Block* block;
+	From   from;
 };
 
 static inline AstFor*
@@ -32,7 +32,7 @@ ast_for_allocate(Block* block)
 	AstFor* self;
 	self = ast_allocate(0, sizeof(AstFor));
 	self->block = NULL;
-	targets_init(&self->targets, block);
+	from_init(&self->from, block);
 	return self;
 }
 

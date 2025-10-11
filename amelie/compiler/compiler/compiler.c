@@ -109,7 +109,7 @@ emit_send(Compiler* self, Target* target, int start)
 	while (ref)
 	{
 		if (ref->ast) {
-			auto r = emit_expr(self, ref->targets, ref->ast);
+			auto r = emit_expr(self, ref->from, ref->ast);
 			op1(self, CPUSH, r);
 			runpin(self, r);
 		} else {
@@ -167,7 +167,7 @@ emit_send(Compiler* self, Target* target, int start)
 				for (auto i = 0; i < path->match_start; i++)
 				{
 					auto value = path->keys[i].start;
-					auto rexpr = emit_expr(self, target->targets, value);
+					auto rexpr = emit_expr(self, target->from, value);
 					op1(self, CPUSH, rexpr);
 					runpin(self, rexpr);
 				}
@@ -364,19 +364,19 @@ emit_stmt(Compiler* self, Stmt* stmt)
 	case STMT_INSERT:
 	{
 		auto insert = ast_insert_of(stmt->ast);
-		target = targets_outer(&insert->targets);
+		target = from_first(&insert->from);
 		break;
 	}
 	case STMT_UPDATE:
 	{
 		auto update = ast_update_of(stmt->ast);
-		target = targets_outer(&update->targets);
+		target = from_first(&update->from);
 		break;
 	}
 	case STMT_DELETE:
 	{
 		auto delete = ast_delete_of(stmt->ast);
-		target = targets_outer(&delete->targets);
+		target = from_first(&delete->from);
 		break;
 	}
 	case STMT_SELECT:
@@ -466,7 +466,7 @@ emit_if(Compiler* self, Stmt* stmt)
 		auto cond = ast_if_cond_of(ref->ast);
 
 		// IF expr
-		auto r = emit_expr(self, &ifa->targets, cond->expr);
+		auto r = emit_expr(self, &ifa->from, cond->expr);
 
 		// jntr _next
 		int _next_jntr = op_pos(self);
@@ -503,9 +503,9 @@ emit_if(Compiler* self, Stmt* stmt)
 }
 
 static void
-emit_for_on_match(Compiler* self, Targets* targets, void* arg)
+emit_for_on_match(Compiler* self, From* from, void* arg)
 {
-	unused(targets);
+	unused(from);
 	AstFor* fora = arg;
 	emit_block(self, fora->block);
 }
@@ -519,9 +519,9 @@ emit_for(Compiler* self, Stmt* stmt)
 	auto fora = ast_for_of(stmt->ast);
 	compiler_switch_frontend(self);
 
-	// scan over targets
+	// scan over from
 	scan(self,
-	     &fora->targets,
+	     &fora->from,
 	     NULL,
 	     NULL,
 	     NULL,

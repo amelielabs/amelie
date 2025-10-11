@@ -12,5 +12,5 @@
 //
 
 int emit_string(Compiler*, Str*, bool);
-int emit_func(Compiler*, Targets*, Ast*);
-int emit_expr(Compiler*, Targets*, Ast*);
+int emit_func(Compiler*, From*, Ast*);
+int emit_expr(Compiler*, From*, Ast*);

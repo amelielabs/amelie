@@ -41,10 +41,10 @@
 #include <amelie_compiler.h>
 
 static inline void
-emit_insert_store_generated_on_match(Compiler* self, Targets* targets, void* arg)
+emit_insert_store_generated_on_match(Compiler* self, From* from, void* arg)
 {
 	AstInsert* insert = arg;
-	auto target = targets_outer(&insert->targets_generated);
+	auto target = from_first(&insert->from_generated);
 
 	// generate and push to the stack each generated column expression
 	auto count = 0;
@@ -59,7 +59,7 @@ emit_insert_store_generated_on_match(Compiler* self, Targets* targets, void* arg
 		runpin(self, rexpr);
 
 		// push expr
-		rexpr = emit_expr(self, targets, op->r);
+		rexpr = emit_expr(self, from, op->r);
 		int type = rtype(self, rexpr);
 
 		// ensure that the expression type is compatible
@@ -86,7 +86,7 @@ emit_insert_store_rows(Compiler* self)
 {
 	auto stmt    = self->current;
 	auto insert  = ast_insert_of(stmt->ast);
-	auto table   = targets_outer(&insert->targets)->from_table;
+	auto table   = from_first(&insert->from)->from_table;
 	auto columns = table_columns(table);
 
 	// emit rows
@@ -97,7 +97,7 @@ emit_insert_store_rows(Compiler* self)
 		list_foreach(&columns->list)
 		{
 			auto column = list_at(Column, link);
-			int rexpr   = emit_expr(self, &insert->targets, col);
+			int rexpr   = emit_expr(self, &insert->from, col);
 			int type    = rtype(self, rexpr);
 			if (unlikely(type != TYPE_NULL && column->type != type))
 				stmt_error(stmt, row->ast, "'%s' expected for column '%.*s'",
@@ -117,7 +117,7 @@ emit_insert_store(Compiler* self)
 {
 	auto stmt    = self->current;
 	auto insert  = ast_insert_of(stmt->ast);
-	auto target  = targets_outer(&insert->targets);
+	auto target  = from_first(&insert->from);
 	auto table   = target->from_table;
 	auto columns = table_columns(table);
 
@@ -149,8 +149,8 @@ emit_insert_store(Compiler* self)
 	{
 		// store_open( rvalues )
 		auto values_dup = op2(self, CDUP, rpin(self, TYPE_STORE), r);
-		targets_outer(&insert->targets_generated)->r = values_dup;
-		scan(self, &insert->targets_generated,
+		from_first(&insert->from_generated)->r = values_dup;
+		scan(self, &insert->from_generated,
 		     NULL,
 		     NULL,
 		     NULL,
@@ -167,7 +167,7 @@ emit_insert(Compiler* self, Ast* ast)
 {
 	// CINSERT
 	auto insert = ast_insert_of(ast);
-	auto target = targets_outer(&insert->targets);
+	auto target = from_first(&insert->from);
 	auto table  = target->from_table;
 	// set target origin
 	target_set_origin(target, self->origin);

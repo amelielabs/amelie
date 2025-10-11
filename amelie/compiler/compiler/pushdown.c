@@ -81,12 +81,12 @@ pushdown_group_by(Compiler* self, AstSelect* select)
 		auto agg = ast_agg_of(node->ast);
 		if (! agg->expr_seed)
 			continue;
-		agg->rseed = emit_expr(self, select->targets.outer, agg->expr_seed);
+		agg->rseed = emit_expr(self, select->from.outer, agg->expr_seed);
 		agg->expr_seed_type = rtype(self, agg->rseed);
 	}
 
 	// scan over target and process aggregates per group by key
-	scan(self, &select->targets,
+	scan(self, &select->from,
 	     NULL,
 	     NULL,
 	     select->expr_where,
@@ -109,7 +109,7 @@ pushdown_group_by(Compiler* self, AstSelect* select)
 	//
 	// force create empty record by processing one NULL value
 	if (! select->expr_group_by_has)
-		emit_select_on_match_aggregate_empty(self, &select->targets, select);
+		emit_select_on_match_aggregate_empty(self, &select->from, select);
 
 	// CSET_SORT
 	op1(self, CSET_SORT, select->rset_agg);
@@ -162,7 +162,7 @@ pushdown_order_by(Compiler* self, AstSelect* select)
 
 	// scan for table/expression and joins
 	scan(self,
-	     &select->targets,
+	     &select->from,
 	     NULL,
 	     NULL,
 	     select->expr_where,
@@ -197,7 +197,7 @@ pushdown_limit(Compiler* self, AstSelect* select)
 
 	// scan for table/expression and joins
 	scan(self,
-	     &select->targets,
+	     &select->from,
 	     limit,
 	     NULL,
 	     select->expr_where,
@@ -225,7 +225,7 @@ pushdown(Compiler* self, Ast* ast)
 
 	// SELECT FROM GROUP BY [WHERE] [HAVING] [ORDER BY] [LIMIT/OFFSET]
 	// SELECT aggregate FROM
-	if (! targets_empty(&select->targets_group))
+	if (! from_empty(&select->from_group))
 	{
 		pushdown_group_by(self, select);
 		return;
@@ -259,7 +259,7 @@ pushdown_recv_group_by_order_by(Compiler* self, AstSelect* select)
 	// result will be added to the set
 	//
 	scan(self,
-	     &select->targets_group,
+	     &select->from_group,
 	     NULL,
 	     NULL,
 	     select->expr_having,
@@ -270,7 +270,7 @@ pushdown_recv_group_by_order_by(Compiler* self, AstSelect* select)
 	select->rset_agg = -1;
 	select->ret.r = -1;
 
-	auto target_group = targets_outer(&select->targets_group);
+	auto target_group = from_first(&select->from_group);
 	target_group->r = -1;
 
 	// sort select set
@@ -302,7 +302,7 @@ pushdown_recv_group_by(Compiler* self, AstSelect* select)
 	// CUNION_SET_AGGS (enable aggregate merge)
 	op2(self, CUNION_SET_AGGS, runion, select->aggs);
 
-	auto target_group = targets_outer(&select->targets_group);
+	auto target_group = from_first(&select->from_group);
 	target_group->r = runion;
 
 	// [ORDER BY]
@@ -318,7 +318,7 @@ pushdown_recv_group_by(Compiler* self, AstSelect* select)
 	// result will be added to the set, safe to apply limit/offset
 	//
 	scan(self,
-	     &select->targets_group,
+	     &select->from_group,
 	     select->expr_limit,
 	     select->expr_offset,
 	     select->expr_having,
@@ -342,7 +342,7 @@ pushdown_recv(Compiler* self, Ast* ast)
 
 	// SELECT FROM GROUP BY [WHERE] [HAVING] [ORDER BY] [LIMIT/OFFSET]
 	// SELECT aggregate FROM
-	if (! targets_empty(&select->targets_group))
+	if (! from_empty(&select->from_group))
 		return pushdown_recv_group_by(self, select);
 
 	// SELECT FROM [WHERE] ORDER BY [LIMIT/OFFSET]
@@ -355,12 +355,12 @@ pushdown_recv(Compiler* self, Ast* ast)
 	// limit
 	int rlimit = -1;
 	if (select->expr_limit)
-		rlimit = emit_expr(self, &select->targets, select->expr_limit);
+		rlimit = emit_expr(self, &select->from, select->expr_limit);
 
 	// offset
 	int roffset = -1;
 	if (select->expr_offset)
-		roffset = emit_expr(self, &select->targets, select->expr_offset);
+		roffset = emit_expr(self, &select->from, select->expr_offset);
 
 	// CUNION_SET
 	op4(self, CUNION_SET, runion, select->distinct, rlimit, roffset);

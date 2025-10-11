@@ -195,7 +195,7 @@ returning_add_target(Returning* self, Target* target, Ast* star)
 }
 
 static void
-parse_returning_resolve_exprs(Returning* self, Stmt* stmt, Targets* targets)
+parse_returning_resolve_exprs(Returning* self, Stmt* stmt, From* from)
 {
 	// rewrite returning list by resolving all * and target.*
 	auto as = self->list;
@@ -209,16 +209,16 @@ parse_returning_resolve_exprs(Returning* self, Stmt* stmt, Targets* targets)
 		case KSTAR:
 		{
 			// SELECT * (without from)
-			auto targets_ref = targets;
-			if (unlikely(targets_empty(targets)))
+			auto from_ref = from;
+			if (unlikely(from_empty(from)))
 			{
-				if (! targets->outer)
+				if (! from->outer)
 					stmt_error(stmt, as->l, "no targets defined");
-				targets_ref = targets->outer;
+				from_ref = from->outer;
 			}
 
 			// import all available columns
-			auto join = targets_ref->list;
+			auto join = from_ref->list;
 			while (join)
 			{
 				returning_add_target(self, join, as->l);
@@ -233,7 +233,7 @@ parse_returning_resolve_exprs(Returning* self, Stmt* stmt, Targets* targets)
 			str_split(&as->l->string, &name, '.');
 
 			// find nearest target
-			auto match = block_target_find(targets, &name);
+			auto match = block_target_find(from, &name);
 			if (! match)
 				stmt_error(stmt, as->l, "target not found");
 
@@ -261,10 +261,10 @@ parse_returning_resolve_exprs(Returning* self, Stmt* stmt, Targets* targets)
 }
 
 void
-parse_returning_resolve(Returning* self, Stmt* stmt, Targets* targets)
+parse_returning_resolve(Returning* self, Stmt* stmt, From* from)
 {
 	// rewrite returning list by resolving all * and target.*
-	parse_returning_resolve_exprs(self, stmt, targets);
+	parse_returning_resolve_exprs(self, stmt, from);
 
 	// resolve INTO variables
 	if (! self->count_into)

@@ -146,9 +146,9 @@ insert into test values (0, 2)
 insert into test values (1, 1)
 insert into test values (2, 0)
 explain select (select id from test use heap)
-{"msg": "heap only scan for subqueries and inner join targets is not supported"}
+{"msg": "heap only scan for subqueries and inner join targets are not supported"}
 select (select id from test use heap)
-{"msg": "heap only scan for subqueries and inner join targets is not supported"}
+{"msg": "heap only scan for subqueries and inner join targets are not supported"}
 drop table test
 # test: hash/hash
 create table test (id int, data int, primary key (id, data)) partitions 1 with (type = 'hash')

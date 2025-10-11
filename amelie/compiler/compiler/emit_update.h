@@ -11,5 +11,5 @@
 // AGPL-3.0 Licensed.
 //
 
-void emit_update_target(Compiler*, Targets*, Ast*);
+void emit_update_target(Compiler*, From*, Ast*);
 void emit_update(Compiler*, Ast*);

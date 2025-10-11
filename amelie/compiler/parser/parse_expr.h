@@ -20,7 +20,7 @@ struct Expr
 	AstList* aggs;
 	Ast*     lambda;
 	Ast*     as;
-	Targets* targets;
+	From*    from;
 };
 
 static inline void
@@ -31,7 +31,7 @@ expr_init(Expr* self)
 	self->aggs     = NULL;
 	self->as       = NULL;
 	self->lambda   = NULL;
-	self->targets  = NULL;
+	self->from     = NULL;
 }
 
 Ast* parse_expr_args(Stmt*, Expr*, int, bool);

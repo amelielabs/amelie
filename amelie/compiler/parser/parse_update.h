@@ -19,7 +19,7 @@ struct AstUpdate
 	Ast*      expr_update;
 	Ast*      expr_where;
 	Table*    table;
-	Targets   targets;
+	From      from;
 	Returning ret;
 	int       rset;
 };
@@ -35,7 +35,7 @@ ast_update_allocate(Block* block)
 {
 	AstUpdate* self;
 	self = ast_allocate(0, sizeof(AstUpdate));
-	targets_init(&self->targets, block);
+	from_init(&self->from, block);
 	returning_init(&self->ret);
 	return self;
 }

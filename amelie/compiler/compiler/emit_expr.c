@@ -52,7 +52,7 @@ emit_string(Compiler* self, Str* string, bool escape)
 }
 
 hot static inline int
-emit_json(Compiler* self, Targets* targets, Ast* ast)
+emit_json(Compiler* self, From* from, Ast* ast)
 {
 	assert(ast->l->id == KARGS);
 	auto args = ast_args_of(ast->l);
@@ -69,7 +69,7 @@ emit_json(Compiler* self, Targets* targets, Ast* ast)
 	auto current = args->ast.l;
 	while (current)
 	{
-		int r = emit_expr(self, targets, current);
+		int r = emit_expr(self, from, current);
 		op1(self, CPUSH, r);
 		runpin(self, r);
 		current = current->next;
@@ -86,7 +86,7 @@ emit_json(Compiler* self, Targets* targets, Ast* ast)
 
 hot static inline int
 emit_column(Compiler* self,
-            Targets*  targets,
+            From*     from,
             Target*   target,
             Ast*      ast,
             Column*   column,
@@ -116,7 +116,7 @@ emit_column(Compiler* self,
 	// create reference, if frontend target column is accessed from backend
 	if (self->origin == ORIGIN_BACKEND && target->origin == ORIGIN_FRONTEND)
 	{
-		auto ref_id = refs_add(&self->current->refs, targets, ast, -1);
+		auto ref_id = refs_add(&self->current->refs, from, ast, -1);
 		int type = -1;
 		if (column)
 			type = column->type;
@@ -227,20 +227,20 @@ emit_column(Compiler* self,
 }
 
 hot static inline int
-emit_name(Compiler* self, Targets* targets, Ast* ast)
+emit_name(Compiler* self, From* from, Ast* ast)
 {
 	// SELECT name
 	auto name = &ast->string;
 
-	targets = block_targets(targets);
-	if (! targets)
+	from = block_from(from);
+	if (! from)
 		stmt_error(self->current, ast, "column not found");
 
 	// SELECT name FROM
-	if (targets_is_join(targets))
+	if (from_is_join(from))
 		stmt_error(self->current, ast, "column requires explicit target name");
 
-	auto target = targets_outer(targets);
+	auto target = from_first(from);
 
 	// SELECT name FROM GROUP BY name
 	auto group_by_column = NULL;
@@ -254,12 +254,12 @@ emit_name(Compiler* self, Targets* targets, Ast* ast)
 		group_by_column = group->column;
 	}
 
-	return emit_column(self, targets, target, ast, group_by_column,
+	return emit_column(self, from, target, ast, group_by_column,
 	                   name, false);
 }
 
 hot static inline int
-emit_name_compound(Compiler* self, Targets* targets, Ast* ast)
+emit_name_compound(Compiler* self, From* from, Ast* ast)
 {
 	// target.column[.path]
 	// column.path
@@ -285,16 +285,16 @@ emit_name_compound(Compiler* self, Targets* targets, Ast* ast)
 		else
 			str_advance(&path, str_size(&name));
 		excluded = true;
-		if (targets == NULL ||
-		    targets->count != 1 ||
-		    targets_outer(targets)->type != TARGET_TABLE)
+		if (from == NULL     ||
+		    from->count != 1 ||
+		    from_first(from)->type != TARGET_TABLE)
 			stmt_error(self->current, ast, "cannot be used outside of INSERT ON CONFLICT DO UPDATE statement");
-		target = targets_outer(targets);
+		target = from_first(from);
 	} else
 	{
 		// find target
-		if (targets && targets->count == 1)
-			target = targets_outer(targets);
+		if (from && from->count == 1)
+			target = from_first(from);
 
 		if (target && target->type == TARGET_GROUP_BY)
 		{
@@ -323,7 +323,7 @@ emit_name_compound(Compiler* self, Targets* targets, Ast* ast)
 			if (target && str_compare(&target->name, &name))
 				match = target;
 			else
-				match = block_target_find(targets, &name);
+				match = block_target_find(from, &name);
 			if (match)
 			{
 				// target.column
@@ -348,7 +348,7 @@ emit_name_compound(Compiler* self, Targets* targets, Ast* ast)
 	}
 
 	// column[.path]
-	auto rcolumn = emit_column(self, targets, target, ast, group_by_column,
+	auto rcolumn = emit_column(self, from, target, ast, group_by_column,
 	                           &name, excluded);
 
 	if (str_empty(&path))
@@ -364,13 +364,13 @@ emit_name_compound(Compiler* self, Targets* targets, Ast* ast)
 }
 
 hot static inline int
-emit_aggregate(Compiler* self, Targets* targets, Ast* ast)
+emit_aggregate(Compiler* self, From* from, Ast* ast)
 {
 	// SELECT agg GROUP BY
 	// SELECT GROUP BY HAVING agg
 
 	// called during group by result set scan
-	auto target = targets_outer(targets);
+	auto target = from_first(from);
 	assert(target->r != -1);
 	assert(rtype(self, target->r) == TYPE_STORE);
 
@@ -419,13 +419,13 @@ emit_aggregate(Compiler* self, Targets* targets, Ast* ast)
 }
 
 hot static inline int
-emit_aggregate_key(Compiler* self, Targets* targets, Ast* ast)
+emit_aggregate_key(Compiler* self, From* from, Ast* ast)
 {
 	// SELECT GROUP BY 1
 	// SELECT GROUP BY alias
 
 	// called during group by result set scan
-	auto target = targets_outer(targets);
+	auto target = from_first(from);
 	assert(target->r != -1);
 	assert(rtype(self, target->r) == TYPE_STORE);
 
@@ -460,10 +460,10 @@ emit_self(Compiler* self, Ast* ast)
 }
 
 hot static inline int
-emit_operator(Compiler* self, Targets* targets, Ast* ast, int op)
+emit_operator(Compiler* self, From* from, Ast* ast, int op)
 {
-	int l = emit_expr(self, targets, ast->l);
-	int r = emit_expr(self, targets, ast->r);
+	int l = emit_expr(self, from, ast->l);
+	int r = emit_expr(self, from, ast->r);
 	return cast_operator(self, ast->r, op, l, r);
 }
 
@@ -479,7 +479,7 @@ emit_func_typederive(Compiler* self, int r, int* type)
 }
 
 hot int
-emit_func(Compiler* self, Targets* targets, Ast* ast)
+emit_func(Compiler* self, From* from, Ast* ast)
 {
 	// (function_name, args)
 	auto func = ast_func_of(ast);
@@ -491,7 +491,7 @@ emit_func(Compiler* self, Targets* targets, Ast* ast)
 	auto current = args->l;
 	while (current)
 	{
-		int r = emit_expr(self, targets, current);
+		int r = emit_expr(self, from, current);
 		// ensure that the function has identical types, if type is derived
 		if (fn->flags & FN_DERIVE)
 			if (! emit_func_typederive(self, r, &fn_type))
@@ -512,7 +512,7 @@ emit_func(Compiler* self, Targets* targets, Ast* ast)
 }
 
 hot static inline int
-emit_method(Compiler* self, Targets* targets, Ast* ast)
+emit_method(Compiler* self, From* from, Ast* ast)
 {
 	// expr, method(path, [args])
 	auto expr = ast->l;
@@ -523,7 +523,7 @@ emit_method(Compiler* self, Targets* targets, Ast* ast)
 	auto fn_type = fn->type;
 
 	// use expression as the first argument to the call
-	int r = emit_expr(self, targets, expr);
+	int r = emit_expr(self, from, expr);
 	if (fn->flags & FN_DERIVE)
 		emit_func_typederive(self, r, &fn_type);
 	op1(self, CPUSH, r);
@@ -536,7 +536,7 @@ emit_method(Compiler* self, Targets* targets, Ast* ast)
 		auto current = args->l;
 		while (current)
 		{
-			r = emit_expr(self, targets, current);
+			r = emit_expr(self, from, current);
 			// ensure that the function has identical types, if type is derived
 			if (fn->flags & FN_DERIVE)
 				if (! emit_func_typederive(self, r, &fn_type))
@@ -558,7 +558,7 @@ emit_method(Compiler* self, Targets* targets, Ast* ast)
 }
 
 hot static inline int
-emit_between(Compiler* self, Targets* targets, Ast* ast)
+emit_between(Compiler* self, From* from, Ast* ast)
 {
 	//    . BETWEEN .
 	// expr       . AND .
@@ -584,11 +584,11 @@ emit_between(Compiler* self, Targets* targets, Ast* ast)
 	not.l  = &and;
 	not.r  = NULL;
 	auto op = !ast->integer ? &not : &and;
-	return emit_expr(self, targets, op);
+	return emit_expr(self, from, op);
 }
 
 hot static inline int
-emit_case(Compiler* self, Targets* targets, Ast* ast)
+emit_case(Compiler* self, From* from, Ast* ast)
 {
 	auto cs = ast_case_of(ast);
 	// CASE [expr] [WHEN expr THEN expr]
@@ -636,13 +636,13 @@ emit_case(Compiler* self, Targets* targets, Ast* ast)
 		if (cs->expr)
 		{
 			// WHEN expr = case_expr THEN result
-			auto rexpr = emit_expr(self, targets, cs->expr);
-			auto rwhen = emit_expr(self, targets, when->l);
+			auto rexpr = emit_expr(self, from, cs->expr);
+			auto rwhen = emit_expr(self, from, when->l);
 			rcond = cast_operator(self, when->l, OP_EQU, rexpr, rwhen);
 		} else
 		{
 			// WHEN expr THEN result
-			rcond = emit_expr(self, targets, when->l);
+			rcond = emit_expr(self, from, when->l);
 		}
 
 		// jntr _next
@@ -650,7 +650,7 @@ emit_case(Compiler* self, Targets* targets, Ast* ast)
 		op2(self, CJNTR, 0 /* _next */, rcond);
 
 		// THEN expr
-		int rthen = emit_expr(self, targets, when->r);
+		int rthen = emit_expr(self, from, when->r);
 
 		// set result type to the type of first result
 		if (rtype(self, rresult) == TYPE_NULL)
@@ -674,7 +674,7 @@ emit_case(Compiler* self, Targets* targets, Ast* ast)
 	int relse;
 	if (cs->expr_else)
 	{
-		relse = emit_expr(self, targets, cs->expr_else);
+		relse = emit_expr(self, from, cs->expr_else);
 
 		// set result type to the type of first result
 		if (rtype(self, rresult) == TYPE_NULL)
@@ -698,11 +698,11 @@ emit_case(Compiler* self, Targets* targets, Ast* ast)
 }
 
 hot static inline int
-emit_is(Compiler* self, Targets* targets, Ast* ast)
+emit_is(Compiler* self, From* from, Ast* ast)
 {
 	if (!ast->r || ast->r->id != KNULL)
 		stmt_error(self->current, ast->r, "NOT or NULL expected");
-	auto rexpr = emit_expr(self, targets, ast->l);
+	auto rexpr = emit_expr(self, from, ast->l);
 	auto rresult = op2(self, CIS, rpin(self, TYPE_BOOL), rexpr);
 	runpin(self, rexpr);
 
@@ -718,14 +718,14 @@ emit_is(Compiler* self, Targets* targets, Ast* ast)
 }
 
 hot static inline int
-emit_in(Compiler* self, Targets* targets, Ast* ast)
+emit_in(Compiler* self, From* from, Ast* ast)
 {
 	auto expr = ast->l;
 	auto args = ast->r;
 	assert(args->id == KARGS);
 
 	// expr [NOT] IN (value, ...)
-	int rexpr = emit_expr(self, targets, expr);
+	int rexpr = emit_expr(self, from, expr);
 
 	// push values
 	auto current = args->l;
@@ -739,7 +739,7 @@ emit_in(Compiler* self, Targets* targets, Ast* ast)
 				stmt_error(self->current, &select->ast, "subquery must return one column");
 			r = emit_select(self, current, true);
 		} else {
-			r = emit_expr(self, targets, current);
+			r = emit_expr(self, from, current);
 		}
 		op1(self, CPUSH, r);
 		runpin(self, r);
@@ -761,12 +761,12 @@ emit_in(Compiler* self, Targets* targets, Ast* ast)
 }
 
 hot static inline int
-emit_match(Compiler* self, Targets* targets, Ast* ast)
+emit_match(Compiler* self, From* from, Ast* ast)
 {
 	//  . ANY|ALL .
 	//  a         op .
 	//               b
-	int a = emit_expr(self, targets, ast->l);
+	int a = emit_expr(self, from, ast->l);
 	int b;
 	if (ast->r->r->id == KSELECT)
 	{
@@ -775,7 +775,7 @@ emit_match(Compiler* self, Targets* targets, Ast* ast)
 			stmt_error(self->current, &select->ast, "subquery must return one column");
 		b = emit_select(self, ast->r->r, true);
 	} else {
-		b = emit_expr(self, targets, ast->r->r);
+		b = emit_expr(self, from, ast->r->r);
 	}
 	int op;
 	switch (ast->r->id) {
@@ -813,7 +813,7 @@ emit_match(Compiler* self, Targets* targets, Ast* ast)
 }
 
 hot static inline int
-emit_at_timezone(Compiler* self, Targets* targets, Ast* ast)
+emit_at_timezone(Compiler* self, From* from, Ast* ast)
 {
 	// public.at_timezone(time, timezone)
 	Str schema;
@@ -826,11 +826,11 @@ emit_at_timezone(Compiler* self, Targets* targets, Ast* ast)
 	assert(fn);
 
 	// push arguments
-	int r = emit_expr(self, targets, ast->l);
+	int r = emit_expr(self, from, ast->l);
 	op1(self, CPUSH, r);
 	runpin(self, r);
 
-	r = emit_expr(self, targets, ast->r);
+	r = emit_expr(self, from, ast->r);
 	op1(self, CPUSH, r);
 	runpin(self, r);
 
@@ -839,7 +839,7 @@ emit_at_timezone(Compiler* self, Targets* targets, Ast* ast)
 }
 
 hot int
-emit_expr(Compiler* self, Targets* targets, Ast* ast)
+emit_expr(Compiler* self, From* from, Ast* ast)
 {
 	switch (ast->id) {
 	// consts
@@ -909,7 +909,7 @@ emit_expr(Compiler* self, Targets* targets, Ast* ast)
 	// json
 	case '{':
 	case KARRAY:
-		return emit_json(self, targets, ast);
+		return emit_json(self, from, ast);
 
 	// variable
 	case KVAR:
@@ -920,7 +920,7 @@ emit_expr(Compiler* self, Targets* targets, Ast* ast)
 		if (self->origin == ORIGIN_BACKEND)
 		{
 			// create reference, if variable is accessed from backend
-			auto ref_id = refs_add(&self->current->refs, targets, NULL, var->r);
+			auto ref_id = refs_add(&self->current->refs, from, NULL, var->r);
 			return op2(self, CREF, rpin(self, var->type), ref_id);
 		}
 		return op2(self, CDUP, rpin(self, var->type), var->r);
@@ -928,18 +928,18 @@ emit_expr(Compiler* self, Targets* targets, Ast* ast)
 
 	// column
 	case KNAME:
-		return emit_name(self, targets, ast);
+		return emit_name(self, from, ast);
 	case KNAME_COMPOUND:
-		return emit_name_compound(self, targets, ast);
+		return emit_name_compound(self, from, ast);
 
 	// aggregate
 	case KAGGR:
-		return emit_aggregate(self, targets, ast);
+		return emit_aggregate(self, from, ast);
 	case KAGGRKEY:
-		return emit_aggregate_key(self, targets, ast);
+		return emit_aggregate_key(self, from, ast);
 	case KARROW:
 		// lambda (during result set scan)
-		return emit_aggregate(self, targets, ast->r);
+		return emit_aggregate(self, from, ast->r);
 	case KSELF:
 		// lambda state read (during table scan)
 		return emit_self(self, ast);
@@ -947,40 +947,40 @@ emit_expr(Compiler* self, Targets* targets, Ast* ast)
 	// operators
 	case KNEQU:
 	{
-		auto r = emit_operator(self, targets, ast, OP_EQU);
+		auto r = emit_operator(self, from, ast, OP_EQU);
 		auto rnot = op2(self, CNOT, rpin(self, TYPE_BOOL), r);
 		runpin(self, r);
 		return rnot;
 	}
 	case '=':
-		return emit_operator(self, targets, ast, OP_EQU);
+		return emit_operator(self, from, ast, OP_EQU);
 	case KGTE:
-		return emit_operator(self, targets, ast, OP_GTE);
+		return emit_operator(self, from, ast, OP_GTE);
 	case '>':
-		return emit_operator(self, targets, ast, OP_GT);
+		return emit_operator(self, from, ast, OP_GT);
 	case KLTE:
-		return emit_operator(self, targets, ast, OP_LTE);
+		return emit_operator(self, from, ast, OP_LTE);
 	case '<':
-		return emit_operator(self, targets, ast, OP_LT);
+		return emit_operator(self, from, ast, OP_LT);
 	case '+':
-		return emit_operator(self, targets, ast, OP_ADD);
+		return emit_operator(self, from, ast, OP_ADD);
 	case '-':
-		return emit_operator(self, targets, ast, OP_SUB);
+		return emit_operator(self, from, ast, OP_SUB);
 	case '*':
-		return emit_operator(self, targets, ast, OP_MUL);
+		return emit_operator(self, from, ast, OP_MUL);
 	case '/':
-		return emit_operator(self, targets, ast, OP_DIV);
+		return emit_operator(self, from, ast, OP_DIV);
 	case '%':
-		return emit_operator(self, targets, ast, OP_MOD);
+		return emit_operator(self, from, ast, OP_MOD);
 	case KCAT:
-		return emit_operator(self, targets, ast, OP_CAT);
+		return emit_operator(self, from, ast, OP_CAT);
 	case '[':
-		return emit_operator(self, targets, ast, OP_IDX);
+		return emit_operator(self, from, ast, OP_IDX);
 	case '.':
-		return emit_operator(self, targets, ast, OP_DOT);
+		return emit_operator(self, from, ast, OP_DOT);
 	case KLIKE:
 	{
-		auto r = emit_operator(self, targets, ast, OP_LIKE);
+		auto r = emit_operator(self, from, ast, OP_LIKE);
 		if (ast->integer)
 			return r;
 		// [not]
@@ -989,22 +989,22 @@ emit_expr(Compiler* self, Targets* targets, Ast* ast)
 		return rnot;
 	}
 	case '|':
-		return emit_operator(self, targets, ast, OP_BOR);
+		return emit_operator(self, from, ast, OP_BOR);
 	case '^':
-		return emit_operator(self, targets, ast, OP_BXOR);
+		return emit_operator(self, from, ast, OP_BXOR);
 	case '&':
-		return emit_operator(self, targets, ast, OP_BAND);
+		return emit_operator(self, from, ast, OP_BAND);
 	case KSHL:
-		return emit_operator(self, targets, ast, OP_BSHL);
+		return emit_operator(self, from, ast, OP_BSHL);
 	case KSHR:
-		return emit_operator(self, targets, ast, OP_BSHR);
+		return emit_operator(self, from, ast, OP_BSHR);
 
 	// logic
 	case KAND:
 	case KOR:
 	{
-		int l = emit_expr(self, targets, ast->l);
-		int r = emit_expr(self, targets, ast->r);
+		int l = emit_expr(self, from, ast->l);
+		int r = emit_expr(self, from, ast->r);
 		int rc;
 		rc = op3(self, ast->id == KAND? CAND: COR,
 		         rpin(self, TYPE_BOOL), l, r);
@@ -1014,7 +1014,7 @@ emit_expr(Compiler* self, Targets* targets, Ast* ast)
 	}
 	case KNOT:
 	{
-		int r = emit_expr(self, targets, ast->l);
+		int r = emit_expr(self, from, ast->l);
 		auto rnot = op2(self, CNOT, rpin(self, TYPE_BOOL), r);
 		runpin(self, r);
 		return rnot;
@@ -1023,7 +1023,7 @@ emit_expr(Compiler* self, Targets* targets, Ast* ast)
 	// unary operations
 	case KNEG:
 	{
-		int r = emit_expr(self, targets, ast->l);
+		int r = emit_expr(self, from, ast->l);
 		int rt = rtype(self, r);
 		int rneg = -1;
 		if (rt == TYPE_INT)
@@ -1041,7 +1041,7 @@ emit_expr(Compiler* self, Targets* targets, Ast* ast)
 	}
 	case '~':
 	{
-		int r = emit_expr(self, targets, ast->l);
+		int r = emit_expr(self, from, ast->l);
 		int rt = rtype(self, r);
 		if (rt != TYPE_INT)
 			stmt_error(self->current, ast->l, "unsupported operation type %s", type_of(rt));
@@ -1052,9 +1052,9 @@ emit_expr(Compiler* self, Targets* targets, Ast* ast)
 
 	// function/method call
 	case KFUNC:
-		return emit_func(self, targets, ast);
+		return emit_func(self, from, ast);
 	case KMETHOD:
-		return emit_method(self, targets, ast);
+		return emit_method(self, from, ast);
 
 	// subquery
 	case KSELECT:
@@ -1077,24 +1077,24 @@ emit_expr(Compiler* self, Targets* targets, Ast* ast)
 
 	// case
 	case KCASE:
-		return emit_case(self, targets, ast);
+		return emit_case(self, from, ast);
 
 	// between
 	case KBETWEEN:
-		return emit_between(self, targets, ast);
+		return emit_between(self, from, ast);
 
 	// is
 	case KIS:
-		return emit_is(self, targets, ast);
+		return emit_is(self, from, ast);
 
 	// in
 	case KIN:
-		return emit_in(self, targets, ast);
+		return emit_in(self, from, ast);
 
 	// any|all
 	case KANY:
 	case KALL:
-		return emit_match(self, targets, ast);
+		return emit_match(self, from, ast);
 
 	// exists
 	case KEXISTS:
@@ -1107,7 +1107,7 @@ emit_expr(Compiler* self, Targets* targets, Ast* ast)
 
 	// at timezone
 	case KAT:
-		return emit_at_timezone(self, targets, ast);
+		return emit_at_timezone(self, from, ast);
 
 	default:
 		assert(0);

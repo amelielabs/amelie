@@ -11,17 +11,17 @@
 // AGPL-3.0 Licensed.
 //
 
-typedef struct Ref     Ref;
-typedef struct Refs    Refs;
-typedef struct Targets Targets;
+typedef struct Ref  Ref;
+typedef struct Refs Refs;
+typedef struct From From;
 
 struct Ref
 {
-	int      order;
-	Ast*     ast;
-	int      r;
-	Targets* targets;
-	Ref*     next;
+	int   order;
+	Ast*  ast;
+	int   r;
+	From* from;
+	Ref*  next;
 };
 
 struct Refs
@@ -40,7 +40,7 @@ refs_init(Refs* self)
 }
 
 hot static inline int
-refs_add(Refs* self, Targets* targets, Ast* ast, int r)
+refs_add(Refs* self, From* from, Ast* ast, int r)
 {
 	if (ast)
 	{
@@ -63,11 +63,11 @@ refs_add(Refs* self, Targets* targets, Ast* ast, int r)
 		}
 	}
 	auto ref = (Ref*)palloc(sizeof(Ref));
-	ref->order   = self->count;
-	ref->ast     = ast;
-	ref->r       = r;
-	ref->targets = targets;
-	ref->next    = NULL;
+	ref->order = self->count;
+	ref->ast   = ast;
+	ref->r     = r;
+	ref->from  = from;
+	ref->next  = NULL;
 
 	if (self->list == NULL)
 		self->list = ref;

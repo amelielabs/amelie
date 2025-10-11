@@ -41,14 +41,14 @@
 #include <amelie_compiler.h>
 
 static inline void
-emit_select_expr(Compiler* self, Targets* targets, AstSelect* select)
+emit_select_expr(Compiler* self, From* from, AstSelect* select)
 {
 	// push expr and prepare returning columns
 	for (auto as = select->ret.list; as; as = as->next)
 	{
 		auto column = as->r->column;
 		// expr
-		int rexpr = emit_expr(self, targets, as->l);
+		int rexpr = emit_expr(self, from, as->l);
 		int rt = rtype(self, rexpr);
 		column_set_type(column, rt, type_sizeof(rt));
 		op1(self, CPUSH, rexpr);
@@ -57,12 +57,12 @@ emit_select_expr(Compiler* self, Targets* targets, AstSelect* select)
 }
 
 void
-emit_select_on_match(Compiler* self, Targets* targets, void* arg)
+emit_select_on_match(Compiler* self, From* from, void* arg)
 {
 	AstSelect* select = arg;
 
 	// push expressions
-	emit_select_expr(self, targets, select);
+	emit_select_expr(self, from, select);
 
 	// push order by key (if any)
 	auto node = select->expr_order_by.list;
@@ -70,7 +70,7 @@ emit_select_on_match(Compiler* self, Targets* targets, void* arg)
 	{
 		auto order = ast_order_of(node->ast);
 		int rexpr_order_by;
-		rexpr_order_by = emit_expr(self, targets, order->expr);
+		rexpr_order_by = emit_expr(self, from, order->expr);
 		op1(self, CPUSH, rexpr_order_by);
 		runpin(self, rexpr_order_by);
 		node = node->next;
@@ -81,7 +81,7 @@ emit_select_on_match(Compiler* self, Targets* targets, void* arg)
 }
 
 void
-emit_select_on_match_aggregate(Compiler* self, Targets* targets, void* arg)
+emit_select_on_match_aggregate(Compiler* self, From* from, void* arg)
 {
 	AstSelect* select = arg;
 
@@ -98,7 +98,7 @@ emit_select_on_match_aggregate(Compiler* self, Targets* targets, void* arg)
 	{
 		auto group = ast_group_of(node->ast);
 		// expr
-		auto rexpr = emit_expr(self, targets, group->expr);
+		auto rexpr = emit_expr(self, from, group->expr);
 		auto rt = rtype(self, rexpr);
 		column_set_type(group->column, rt, type_sizeof(rt));
 		op1(self, CPUSH, rexpr);
@@ -117,7 +117,7 @@ emit_select_on_match_aggregate(Compiler* self, Targets* targets, void* arg)
 		agg->select = &select->ast;
 
 		// expr
-		auto rexpr = emit_expr(self, targets, agg->expr);
+		auto rexpr = emit_expr(self, from, agg->expr);
 		auto rt = rtype(self, rexpr);
 		column_set_type(agg->column, rt, type_sizeof(rt));
 		op1(self, CPUSH, rexpr);
@@ -192,7 +192,7 @@ emit_select_on_match_aggregate(Compiler* self, Targets* targets, void* arg)
 }
 
 void
-emit_select_on_match_aggregate_empty(Compiler* self, Targets* targets, void* arg)
+emit_select_on_match_aggregate_empty(Compiler* self, From* from, void* arg)
 {
 	// process NULL values for the aggregate
 	AstSelect* select = arg;
@@ -202,7 +202,7 @@ emit_select_on_match_aggregate_empty(Compiler* self, Targets* targets, void* arg
 	while (node)
 	{
 		auto group = ast_group_of(node->ast);
-		auto rexpr = emit_expr(self, targets, group->expr);
+		auto rexpr = emit_expr(self, from, group->expr);
 		auto rt = rtype(self, rexpr);
 		column_set_type(group->column, rt, type_sizeof(rt));
 		op1(self, CPUSH, rexpr);
@@ -270,12 +270,12 @@ emit_select_union(Compiler* self, AstSelect* select)
 	// limit
 	int rlimit = -1;
 	if (select->expr_limit)
-		rlimit = emit_expr(self, &select->targets, select->expr_limit);
+		rlimit = emit_expr(self, &select->from, select->expr_limit);
 
 	// offset
 	int roffset = -1;
 	if (select->expr_offset)
-		roffset = emit_expr(self, &select->targets, select->expr_offset);
+		roffset = emit_expr(self, &select->from, select->expr_offset);
 
 	// CUNION_SET
 	op4(self, CUNION_SET, runion, select->distinct, rlimit, roffset);
@@ -311,12 +311,12 @@ emit_select_group_by_scan(Compiler* self, AstSelect* select,
 		auto agg = ast_agg_of(node->ast);
 		if (! agg->expr_seed)
 			continue;
-		agg->rseed = emit_expr(self, select->targets.outer, agg->expr_seed);
+		agg->rseed = emit_expr(self, select->from.outer, agg->expr_seed);
 		agg->expr_seed_type = rtype(self, agg->rseed);
 	}
 
 	// scan over target and process aggregates per group by key
-	scan(self, &select->targets,
+	scan(self, &select->from,
 	     NULL,
 	     NULL,
 	     select->expr_where,
@@ -327,7 +327,7 @@ emit_select_group_by_scan(Compiler* self, AstSelect* select,
 	//
 	// force create empty record by processing one NULL value
 	if (! select->expr_group_by_has)
-		emit_select_on_match_aggregate_empty(self, &select->targets, select);
+		emit_select_on_match_aggregate_empty(self, &select->from, select);
 
 	// free seed values
 	node = select->expr_aggs.list;
@@ -345,11 +345,11 @@ emit_select_group_by_scan(Compiler* self, AstSelect* select,
 	//
 	// result will be added to the set
 	//
-	auto target_group = targets_outer(&select->targets_group);
+	auto target_group = from_first(&select->from_group);
 	target_group->r = rset;
 
 	scan(self,
-	     &select->targets_group,
+	     &select->from_group,
 	     limit,
 	     offset,
 	     select->expr_having,
@@ -421,7 +421,7 @@ emit_select_order_by(Compiler* self, AstSelect* select)
 
 	// scan for table/expression and joins
 	scan(self,
-	     &select->targets,
+	     &select->from,
 	     NULL,
 	     NULL,
 	     select->expr_where,
@@ -450,7 +450,7 @@ emit_select_scan(Compiler* self, AstSelect* select)
 
 	// scan for table/expression and joins
 	scan(self,
-	     &select->targets,
+	     &select->from,
 	     select->expr_limit,
 	     select->expr_offset,
 	     select->expr_where,
@@ -466,7 +466,7 @@ emit_select(Compiler* self, Ast* ast, bool emit_store)
 	AstSelect* select = ast_select_of(ast);
 
 	// SELECT expr[, ...]
-	if (targets_empty(&select->targets))
+	if (from_empty(&select->from))
 	{
 		int rresult;
 		if (!emit_store && select->ret.count == 1)
@@ -475,7 +475,7 @@ emit_select(Compiler* self, Ast* ast, bool emit_store)
 			auto as = select->ret.list;
 			auto column = as->r->column;
 			// expr
-			rresult = emit_expr(self, &select->targets, as->l);
+			rresult = emit_expr(self, &select->from, as->l);
 			int rt = rtype(self, rresult);
 			column_set_type(column, rt, type_sizeof(rt));
 		} else
@@ -485,7 +485,7 @@ emit_select(Compiler* self, Ast* ast, bool emit_store)
 			select->rset = rresult;
 
 			// push expressions
-			emit_select_expr(self, &select->targets, select);
+			emit_select_expr(self, &select->from, select);
 
 			// add to the returning set
 			op1(self, CSET_ADD, select->rset);
@@ -502,7 +502,7 @@ emit_select(Compiler* self, Ast* ast, bool emit_store)
 
 	// SELECT FROM GROUP BY [WHERE] [HAVING] [ORDER BY] [LIMIT/OFFSET]
 	// SELECT aggregate FROM
-	if (! targets_empty(&select->targets_group))
+	if (! from_empty(&select->from_group))
 		return emit_select_group_by(self, select);
 
 	// SELECT FROM [WHERE] ORDER BY [LIMIT/OFFSET]

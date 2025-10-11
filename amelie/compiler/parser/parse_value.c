@@ -82,7 +82,7 @@ parse_vector(Stmt* self, Buf* buf)
 }
 
 hot Ast*
-parse_value(Stmt* self, Targets* targets, Column* column, Value* value)
+parse_value(Stmt* self, From* from, Column* column, Value* value)
 {
 	auto ast = stmt_next(self);
 	if (ast->id == KNULL)
@@ -104,7 +104,7 @@ parse_value(Stmt* self, Targets* targets, Column* column, Value* value)
 		ast->id  = KVAR;
 		ast->var = var;
 
-		auto ref_id = refs_add(&self->refs, targets, ast, -1);
+		auto ref_id = refs_add(&self->refs, from, ast, -1);
 		value_set_ref(value, ref_id);
 		return ast;
 	}

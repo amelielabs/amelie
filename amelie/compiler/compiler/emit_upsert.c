@@ -44,7 +44,7 @@ hot void
 emit_upsert(Compiler* self, Ast* ast)
 {
 	auto insert = ast_insert_of(ast);
-	auto target = targets_outer(&insert->targets);
+	auto target = from_first(&insert->from);
 	auto table  = target->from_table;
 
 	// set target origin
@@ -75,7 +75,7 @@ emit_upsert(Compiler* self, Ast* ast)
 		{
 			// expr
 			int rexpr;
-			rexpr = emit_expr(self, &insert->targets, insert->update_where);
+			rexpr = emit_expr(self, &insert->from, insert->update_where);
 
 			// jntr _start
 			jmp_where_jntr = op_pos(self);
@@ -85,7 +85,7 @@ emit_upsert(Compiler* self, Ast* ast)
 		}
 
 		// update
-		emit_update_target(self, &insert->targets, insert->update_expr);
+		emit_update_target(self, &insert->from, insert->update_expr);
 
 		// set jntr _start to _start
 		if (insert->update_where)
@@ -131,7 +131,7 @@ emit_upsert(Compiler* self, Ast* ast)
 		{
 			auto column = as->r->column;
 			// expr
-			int rexpr = emit_expr(self, &insert->targets, as->l);
+			int rexpr = emit_expr(self, &insert->from, as->l);
 			int rt = rtype(self, rexpr);
 			column_set_type(column, rt, type_sizeof(rt));
 			op1(self, CPUSH, rexpr);

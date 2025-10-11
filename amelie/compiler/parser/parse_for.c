@@ -55,7 +55,7 @@ parse_for(Stmt* self)
 	stmt_expect(self, KIN);
 
 	// identical to FROM target
-	auto target = parse_from_add(self, &stmt->targets, ACCESS_RO, &as->string, false);
+	auto target = parse_from_add(self, &stmt->from, ACCESS_RO, &as->string, false);
 	if (target->type == TARGET_TABLE)
 		stmt_error(self, NULL, "tables are not supported here");
 
@@ -65,7 +65,7 @@ parse_for(Stmt* self)
 
 	// block
 	stmt->block = blocks_add(&self->parser->blocks, self->block);
-	stmt->block->targets = &stmt->targets;
+	stmt->block->from = &stmt->from;
 	parse_block(self->parser, stmt->block);
 
 	// END

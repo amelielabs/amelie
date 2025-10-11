@@ -179,10 +179,10 @@ parse_update(Stmt* self)
 	self->ret = &stmt->ret;
 
 	// table
-	parse_from(self, &stmt->targets, ACCESS_RW, false);
-	if (targets_empty(&stmt->targets) || targets_is_join(&stmt->targets))
+	parse_from(self, &stmt->from, ACCESS_RW, false);
+	if (from_empty(&stmt->from) || from_is_join(&stmt->from))
 		stmt_error(self, NULL, "table name expected");
-	auto target = targets_outer(&stmt->targets);
+	auto target = from_first(&stmt->from);
 	if (! target_is_table(target))
 		stmt_error(self, NULL, "table name expected");
 	stmt->table = target->from_table;
@@ -204,8 +204,8 @@ parse_update(Stmt* self)
 	{
 		Expr ctx;
 		expr_init(&ctx);
-		ctx.select  = true;
-		ctx.targets = &stmt->targets;
+		ctx.select = true;
+		ctx.from = &stmt->from;
 		stmt->expr_where = parse_expr(self, &ctx);
 	}
 
@@ -213,6 +213,6 @@ parse_update(Stmt* self)
 	if (stmt_if(self, KRETURNING))
 	{
 		parse_returning(&stmt->ret, self, NULL);
-		parse_returning_resolve(&stmt->ret, self, &stmt->targets);
+		parse_returning_resolve(&stmt->ret, self, &stmt->from);
 	}
 }

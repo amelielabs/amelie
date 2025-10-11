@@ -71,4 +71,4 @@ returning_find(Returning* self, int order)
 }
 
 void parse_returning(Returning*, Stmt*, Expr*);
-void parse_returning_resolve(Returning*, Stmt*, Targets*);
+void parse_returning_resolve(Returning*, Stmt*, From*);

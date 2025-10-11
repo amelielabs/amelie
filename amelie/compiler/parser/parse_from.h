@@ -11,13 +11,13 @@
 // AGPL-3.0 Licensed.
 //
 
-Target* parse_from_add(Stmt*, Targets*, AccessType, Str*, bool);
-void    parse_from(Stmt*, Targets*, AccessType, bool);
+Target* parse_from_add(Stmt*, From*, AccessType, Str*, bool);
+void    parse_from(Stmt*, From*, AccessType, bool);
 
 static inline Ast*
-parse_from_join_on_and_where(Targets* targets, Ast* expr_where)
+parse_from_join_on_and_where(From* from, Ast* expr_where)
 {
-	for (auto target = targets->list; target; target = target->next)
+	for (auto target = from->list; target; target = target->next)
 	{
 		if (! target->join_on)
 			continue;

@@ -16,10 +16,10 @@ typedef struct Blocks Blocks;
 
 struct Block
 {
-	Stmts    stmts;
-	Targets* targets;
-	Block*   parent;
-	Block*   next;
+	Stmts  stmts;
+	From*  from;
+	Block* parent;
+	Block* next;
 };
 
 struct Blocks
@@ -41,9 +41,9 @@ static inline Block*
 blocks_add(Blocks* self, Block* parent)
 {
 	auto block = (Block*)palloc(sizeof(Block));
-	block->parent  = parent;
-	block->next    = NULL;
-	block->targets = NULL;
+	block->parent = parent;
+	block->next   = NULL;
+	block->from   = NULL;
 	stmts_init(&block->stmts);
 
 	if (self->list == NULL)
@@ -68,34 +68,34 @@ block_find(Block* self, Str* name)
 }
 
 static inline Target*
-block_target_find(Targets* self, Str* name)
+block_target_find(From* self, Str* name)
 {
 	while (self)
 	{
-		auto targets = self;
-		while (targets)
+		auto from = self;
+		while (from)
 		{
-			auto target = targets_match(targets, name);
+			auto target = from_match(from, name);
 			if (target)
 				return target;
-			targets = targets->outer;
+			from = from->outer;
 		}
-		self = self->block->targets;
+		self = self->block->from;
 	}
 	return NULL;
 }
 
-static inline Targets*
-block_targets(Targets* self)
+static inline From*
+block_from(From* self)
 {
 	while (self)
 	{
-		auto targets = self;
-		while (targets && targets_empty(targets))
-			targets = targets->outer;
-		if (targets)
-			return targets;
-		self = self->block->targets;
+		auto from = self;
+		while (from && from_empty(from))
+			from = from->outer;
+		if (from)
+			return from;
+		self = self->block->from;
 	}
 	return NULL;
 }
