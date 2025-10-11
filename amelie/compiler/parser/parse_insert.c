@@ -264,7 +264,7 @@ parse_insert(Stmt* self)
 		if (values->id == KVALUES)
 		{
 			// VALUES (value[, ...])[, ...]
-			parse_rows(self, table, stmt->values, list, list_in_use);
+			parse_rows(self, &stmt->targets, table, stmt->values, list, list_in_use);
 		} else
 		if (values->id == KSELECT)
 		{

@@ -65,7 +65,7 @@ parse_import_row(Stmt* self, Endpoint* endpoint)
 			if (list && list->column == column)
 			{
 				// parse column value
-				value = parse_value(self, column, column_value);
+				value = parse_value(self, &stmt->targets, column, column_value);
 				list = list->next;
 				column_separator = list != NULL;
 			} else
@@ -77,7 +77,7 @@ parse_import_row(Stmt* self, Endpoint* endpoint)
 		} else
 		{
 			// parse column value
-			value = parse_value(self, column, column_value);
+			value = parse_value(self, &stmt->targets, column, column_value);
 			column_separator = !list_is_last(&columns->list, &column->link);
 		}
 
@@ -130,7 +130,7 @@ parse_import_obj(Stmt* self, Endpoint* endpoint)
 
 		// parse column value
 		auto column_value = &row[column->order];
-		auto value = parse_value(self, column, column_value);
+		auto value = parse_value(self, &stmt->targets, column, column_value);
 
 		// ensure NOT NULL constraint and hash key
 		parse_value_validate(self, column, column_value, value);

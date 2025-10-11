@@ -34,13 +34,17 @@
 #include <amelie_value.h>
 
 hot static inline int
-row_create_prepare(Columns* columns, Value* values)
+row_create_prepare(Columns* columns, Value* values, Value* refs)
 {
 	auto size = 0;
 	list_foreach(&columns->list)
 	{
 		auto column = list_at(Column, link);
 		auto value = values + column->order;
+
+		// use reference
+		if (value->type == TYPE_REF)
+			value = &refs[value->integer];
 
 		// null
 		if (value->type == TYPE_NULL)
@@ -49,7 +53,7 @@ row_create_prepare(Columns* columns, Value* values)
 			{
 				// NOT NULL constraint
 				if (unlikely(column->constraints.not_null))
-					error("column <%.*s> cannot be NULL", str_size(&column->name),
+					error("column '%.*s' cannot be NULL", str_size(&column->name),
 					      str_of(&column->name));
 			}
 			continue;
@@ -82,17 +86,21 @@ row_create_prepare(Columns* columns, Value* values)
 }
 
 hot Row*
-row_create(Heap* heap, Columns* columns, Value* values)
+row_create(Heap* heap, Columns* columns, Value* values, Value* refs)
 {
-	auto     row_size = row_create_prepare(columns, values);
+	auto     row_size = row_create_prepare(columns, values, refs);
 	auto     row = row_allocate(heap, columns->count, row_size);
 	uint8_t* pos = row_data(row, columns->count);
 	list_foreach(&columns->list)
 	{
 		auto column = list_at(Column, link);
 
-		// null
+		// use reference
 		auto value = &values[column->order];
+		if (value->type == TYPE_REF)
+			value = &refs[value->integer];
+
+		// null
 		if (value->type == TYPE_NULL)
 		{
 			row_set_null(row, column->order);
@@ -309,7 +317,7 @@ row_update_prepare(Row* self, Columns* columns, Value* values, int count)
 				{
 					// NOT NULL constraint
 					if (unlikely(column->constraints.not_null))
-						error("column <%.*s> cannot be NULL", str_size(&column->name),
+						error("column '%.*s' cannot be NULL", str_size(&column->name),
 						      str_of(&column->name));
 				}
 				continue;

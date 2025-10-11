@@ -179,6 +179,13 @@ value_set_avg(Value* self, Avg* value)
 }
 
 always_inline hot static inline void
+value_set_ref(Value* self, int value)
+{
+	self->type    = TYPE_REF;
+	self->integer = value;
+}
+
+always_inline hot static inline void
 value_set_vector_buf(Value* self, Buf* buf)
 {
 	value_set_vector(self, (Vector*)buf->start, buf);
@@ -260,6 +267,9 @@ value_copy(Value* self, Value* src)
 		break;
 	case TYPE_AVG:
 		value_set_avg(self, &src->avg);
+		break;
+	case TYPE_REF:
+		value_set_ref(self, src->integer);
 		break;
 	case TYPE_STORE:
 		value_set_store(self, src->store);

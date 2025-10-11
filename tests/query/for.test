@@ -117,6 +117,18 @@ explain declare n int := 0; declare r int := 0; for i in ([1,2,3]) do update tes
 declare n int := 0; declare r int := 0; for i in ([1,2,3]) do update test set data = id where id = i.i::int returning 1 into r; n := n + r; end; select n
 drop table test
 
+# test: for .. insert
+create table test (id int primary key, data int)
+explain declare v int; for i in ([0,1,2,3,4,5,6,7,8,9]) do v := i::int; insert into test values (v, 0); end; select * from test
+declare v int; for i in ([0,1,2,3,4,5,6,7,8,9]) do v := i::int; insert into test values (v, 0); end; select * from test
+
+explain declare v int; for i in ([0,1,2,3,4,5,6,7,8,9]) do v := i::int; insert into test values (v, 0) on conflict do update set data = excluded.id; end; select * from test
+declare v int; for i in ([0,1,2,3,4,5,6,7,8,9]) do v := i::int; insert into test values (v, 0) on conflict do update set data = excluded.id; end; select * from test
+
+truncate test
+declare v int; for i in ([0,1,2,3,0,1,2,3,0,1,2,3,4,5]) do v := i::int; insert into test values (v, 0) on conflict do update set data = data + 1; end; select * from test
+drop table test
+
 # test: for utility
 for i in ([1,2,3]) do show all; end
 

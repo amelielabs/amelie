@@ -81,7 +81,7 @@ drop table test
 # test: insert (expr, reuse column)
 create table test (id int primary key, data int default 0 as (data + 1) stored not null)
 insert into test values (0, null)
-{"msg": "column <data> cannot be NULL"}
+{"msg": "column 'data' cannot be NULL"}
 insert into test values (0, 42)
 select * from test
 [[0, 43]]
@@ -94,7 +94,7 @@ select * from test
 # test: insert column list (expr, reuse column)
 insert into test (id, data) values (3, 777), (4, 777)
 insert into test (id, data) values (5, null)
-{"msg": "column <data> cannot be NULL"}
+{"msg": "column 'data' cannot be NULL"}
 select * from test
 [[0, 43], [1, 1], [2, 1], [3, 778], [4, 778]]
 drop table test

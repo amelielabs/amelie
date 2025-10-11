@@ -27,6 +27,7 @@ typedef enum
 	TYPE_UUID,
 	// non-materialized
 	TYPE_AVG,
+	TYPE_REF,
 	TYPE_STORE,
 	TYPE_CURSOR,
 	TYPE_CURSOR_JSON,
@@ -74,6 +75,9 @@ type_of(Type type)
 		break;
 	case TYPE_AVG:
 		name = "avg";
+		break;
+	case TYPE_REF:
+		name = "ref";
 		break;
 	case TYPE_STORE:
 		name = "store";

@@ -38,6 +38,7 @@ value_compare(Value* a, Value* b)
 	case TYPE_UUID:
 		return uuid_compare(&a->uuid, &b->uuid);
 	// TYPE_AVG
+	// TYPE_REF
 	// TYPE_STORE
 	// TYPE_CURSOR
 	// TYPE_CURSOR_STORE
@@ -71,6 +72,7 @@ value_is_true(Value* a)
 	case TYPE_VECTOR:
 		return a->vector->size > 0;
 	// TYPE_AVG
+	// TYPE_REF
 	// TYPE_STORE
 	// TYPE_CURSOR
 	// TYPE_CURSOR_STORE

@@ -40,7 +40,7 @@
 #include <amelie_parser.h>
 
 hot static void
-parse_row_list(Stmt* self, Table* table, Set* values, Ast* list)
+parse_row_list(Stmt* self, Targets* targets, Table* table, Set* values, Ast* list)
 {
 	// (
 	stmt_expect(self, '(');
@@ -63,7 +63,7 @@ parse_row_list(Stmt* self, Table* table, Set* values, Ast* list)
 		if (!value && list && list->column->order == column->order)
 		{
 			// parse column value
-			value = parse_value(self, column, column_value);
+			value = parse_value(self, targets, column, column_value);
 
 			// ,
 			list = list->next;
@@ -85,7 +85,7 @@ parse_row_list(Stmt* self, Table* table, Set* values, Ast* list)
 }
 
 hot static void
-parse_row(Stmt* self, Table* table, Set* values)
+parse_row(Stmt* self, Targets* targets, Table* table, Set* values)
 {
 	// (
 	stmt_expect(self, '(');
@@ -107,7 +107,7 @@ parse_row(Stmt* self, Table* table, Set* values)
 		if (! value)
 		{
 			// parse column value
-			value = parse_value(self, column, column_value);
+			value = parse_value(self, targets, column, column_value);
 		} else
 		{
 			// IDENTITY, RANDOM or DEFAULT
@@ -159,7 +159,7 @@ parse_row_generate(Stmt* self, Table* table, Set* values, int count)
 }
 
 void
-parse_rows(Stmt* self, Table* table, Set* values,
+parse_rows(Stmt* self, Targets* targets, Table* table, Set* values,
            Ast*  list,
            bool  list_in_use)
 {
@@ -167,9 +167,9 @@ parse_rows(Stmt* self, Table* table, Set* values,
 	for (;;)
 	{
 		if (list_in_use)
-			parse_row_list(self, table, values, list);
+			parse_row_list(self, targets, table, values, list);
 		else
-			parse_row(self, table, values);
+			parse_row(self, targets, table, values);
 		if (! stmt_if(self, ','))
 			break;
 	}

@@ -82,7 +82,7 @@ parse_vector(Stmt* self, Buf* buf)
 }
 
 hot Ast*
-parse_value(Stmt* self, Column* column, Value* value)
+parse_value(Stmt* self, Targets* targets, Column* column, Value* value)
 {
 	auto ast = stmt_next(self);
 	if (ast->id == KNULL)
@@ -90,6 +90,25 @@ parse_value(Stmt* self, Column* column, Value* value)
 		value_set_null(value);
 		return ast;
 	}
+
+	// variable
+	if (ast->id == KNAME)
+	{
+		auto var = vars_find(&self->parser->vars, &ast->string);
+		if (! var)
+			stmt_error(self, ast, "variable not found");
+
+		if (var->type != column->type)
+			stmt_error(self, ast, "variable does not match column '%.*s' type",
+			           str_size(&column->name), str_of(&column->name));
+		ast->id  = KVAR;
+		ast->var = var;
+
+		auto ref_id = refs_add(&self->refs, targets, ast, -1);
+		value_set_ref(value, ref_id);
+		return ast;
+	}
+
 	switch (column->type) {
 	case TYPE_BOOL:
 		if (ast->id != KTRUE && ast->id != KFALSE)

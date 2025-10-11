@@ -897,6 +897,31 @@ explain select id from test where id = uuid "00000000-0000-0000-0000-00000000000
   "access": [["public.test", "ro"]]
 }]
 drop table test
+# test: insert var
+create table test (id uuid primary key)
+insert into test values (x)
+{"msg": "insert into test values (❰x❱ ⟵ variable not found"}
+declare id0 uuid := uuid "00000000-0000-0000-0000-000000000000"; declare id1 uuid := uuid "00000000-0000-0000-0000-000000000001"; insert into test values (id0), (id1)
+select * from test
+["00000000-0000-0000-0000-000000000000", "00000000-0000-0000-0000-000000000001"]
+# test: insert var (type mismatch)
+declare x int; insert into test values (x)
+{"msg": "declare x int; insert into test values (❰x❱ ⟵ variable does not match column 'id' type"}
+drop table test
+create table test (id int primary key, data int)
+# test: insert var (key null)
+declare x int; insert into test values(x, 0)
+{"msg": "column 'id' cannot be NULL"}
+# test: insert var (null)
+declare x int; insert into test values(0, x)
+select * from test;
+[[0, null]]
+drop table test
+# test: insert var (not null)
+create table test (id int primary key, data int not null)
+declare x int; insert into test values(0, x)
+{"msg": "column 'data' cannot be NULL"}
+drop table test
 # test: insert secondary index
 create table test (id int primary key, data int)
 create index i on test (data)

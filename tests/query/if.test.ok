@@ -524,6 +524,50 @@ explain declare x int := 0; if true then; insert into test values (123) returnin
 declare x int := 0; if true then; insert into test values (123) returning * into x; end; select x
 [123]
 drop table test
+# test: if insert var
+create table test (id int primary key)
+explain declare x int := 0; if true then; insert into test values (x); end; select * from test
+[{
+  "bytecode": {
+    "frontend": {
+      "00": "int                 1      -      0     # 0",
+      "01": "assign              0      1      0     ",
+      "02": "free                1      0      0     ",
+      "03": "jmp                 5      0      0     ",
+      "04": "jmp                 12     0      0     ",
+      "05": "bool                1      1      0     ",
+      "06": "jntr                12     1      0     ",
+      "07": "dup                 1      0      0     ",
+      "08": "push                1      0      0     ",
+      "09": "set_ptr             1      -      0     ",
+      "10": "send_shard          0      -      1     # public.test",
+      "11": "jmp                 4      0      0     ",
+      "12": "union               1      0      0     ",
+      "13": "send_all            2      -      1     # public.test (last)",
+      "14": "union_recv          1      0      0     ",
+      "15": "union_set           1      0      -1    ",
+      "16": "content             1      -      -     ",
+      "17": "ret                 0      0      0     "
+    },
+    "backend": {
+      "00": "insert              -      0      0     # public.test",
+      "01": "ret                 0      0      0     ",
+      "02": "set                 1      1      0     ",
+      "03": "table_open_part     2      0      8     # public.test (primary)",
+      "04": "table_readi32       3      2      0     ",
+      "05": "push                3      0      0     ",
+      "06": "set_add             1      0      0     ",
+      "07": "table_next          2      4      0     ",
+      "08": "free                2      0      0     ",
+      "09": "result              1      0      0     ",
+      "10": "ret                 0      0      0     "
+    }
+  },
+  "access": [["public.test", "rw"]]
+}]
+declare x int := 0; if true then; insert into test values (x); end; select * from test
+[0]
+drop table test
 # test: if select
 create table test (id int primary key)
 insert into test values (123)

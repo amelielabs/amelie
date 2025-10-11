@@ -62,6 +62,7 @@ csend_shard(Vm* self, Op* op)
 	Req* map[dtr->dispatch_mgr.ctrs_count];
 	memset(map, 0, sizeof(map));
 
+	auto refs  = stack_at(&self->stack, op->e);
 	auto store = reg_at(&self->r, op->c)->store;
 	if (store->type == STORE_SET)
 	{
@@ -69,7 +70,7 @@ csend_shard(Vm* self, Op* op)
 		for (auto order = 0; order < set->count_rows; order++)
 		{
 			auto row  = set_row(set, order);
-			auto hash = row_value_hash(keys, row);
+			auto hash = row_value_hash(keys, refs, row);
 			auto part = part_map_get(&table->part_list.map, hash);
 			auto req  = map[part->core->order];
 			if (req == NULL)
@@ -81,7 +82,7 @@ csend_shard(Vm* self, Op* op)
 				                   &self->program->code_data,
 				                   part->core);
 				if (op->e > 0)
-					req_copy_refs(req, stack_at(&self->stack, op->e), op->e);
+					req_copy_refs(req, refs, op->e);
 				map[part->core->order] = req;
 			}
 			buf_write(&req->arg, &row, sizeof(Value*));
@@ -93,7 +94,7 @@ csend_shard(Vm* self, Op* op)
 		Value* row;
 		for (; (row = store_iterator_at(it)); store_iterator_next(it))
 		{
-			auto hash = row_value_hash(keys, row);
+			auto hash = row_value_hash(keys, refs, row);
 			auto part = part_map_get(&table->part_list.map, hash);
 			auto req  = map[part->core->order];
 			if (req == NULL)
@@ -105,7 +106,7 @@ csend_shard(Vm* self, Op* op)
 				                   &self->program->code_data,
 				                   part->core);
 				if (op->e > 0)
-					req_copy_refs(req, stack_at(&self->stack, op->e), op->e);
+					req_copy_refs(req, refs, op->e);
 				map[part->core->order] = req;
 			}
 			buf_write(&req->arg, &row, sizeof(Value*));
@@ -458,7 +459,7 @@ cinsert(Vm* self, Op* op)
 	int  list_count = buf_size(self->code_arg) / sizeof(Value*);
 	for (int i = 0; i < list_count; i++)
 	{
-		auto row = row_create(&part->heap, columns, list[i]);
+		auto row = row_create(&part->heap, columns, list[i], self->refs);
 		part_insert(part, self->tr, false, row);
 	}
 }
@@ -481,7 +482,7 @@ cupsert(Vm* self, Op* op)
 		auto ref = list[self->upsert];
 		self->upsert++;
 
-		auto row = row_create(&cursor->part->heap, columns, ref);
+		auto row = row_create(&cursor->part->heap, columns, ref, self->refs);
 
 		// insert or get (open iterator in both cases)
 		auto exists = part_upsert(cursor->part, self->tr, cursor->cursor, row);

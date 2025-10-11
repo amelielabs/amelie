@@ -125,6 +125,24 @@ insert into test generate 10 on conflict do update set data = data + 1
 select * from test
 drop table test
 
+# test: upsert var
+create table test (id int primary key, data int default 0)
+
+declare v int := 10; insert into test values (v, 0) on conflict do update set data = data + 1;
+select * from test
+
+declare v int := 10; insert into test values (v, 0) on conflict do update set data = data + 1;
+select * from test
+
+declare v int := 10; insert into test values (v, 0) on conflict do update set data = data + 1;
+select * from test
+
+# test: upsert var excluded
+declare v int := 10; insert into test values (v, 0) on conflict do update set data = excluded.id + data;
+select * from test
+
+drop table test
+
 # test: upsert returning
 create table test (id int primary key, data int)
 insert into test values (1, 0)
@@ -159,6 +177,21 @@ create table test (id int primary key, data int)
 explain insert into test values(1, 0) on conflict do nothing returning *
 insert into test values(1, 0) on conflict do nothing returning *
 insert into test values(1, 0) on conflict do nothing returning *
+select * from test
+drop table test
+
+# test: upsert returning (excluded var)
+create table test (id int primary key, data int)
+declare v int := 10; insert into test values (v, 0) on conflict do update set data = excluded.id + data returning excluded.id, id, data
+select * from test
+
+declare v int := 10; insert into test values (v, 0) on conflict do update set data = excluded.id + data returning excluded.id, id, data
+select * from test
+
+declare v int := 10; insert into test values (v, 0) on conflict do update set data = excluded.id + data returning excluded.id, id, data
+select * from test
+
+declare v int := 10; insert into test values (v, 0) on conflict do update set data = excluded.id + data returning excluded.id, id, data
 select * from test
 drop table test
 

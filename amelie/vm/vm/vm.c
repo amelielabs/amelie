@@ -553,7 +553,11 @@ cexcluded:
 	// [result, column]
 	if (unlikely(! self->upsert))
 		error("unexpected EXCLUDED usage");
-	value_copy(&r[op->a], ((Value**)self->code_arg->start)[self->upsert - 1] + op->b);
+	b = ((Value**)self->code_arg->start)[self->upsert - 1] + op->b;
+	if (b->type != TYPE_REF)
+		value_copy(&r[op->a], b);
+	else
+		value_copy(&r[op->a], &self->refs[b->integer]);
 	op_next;
 
 cnullop:

@@ -109,6 +109,12 @@ explain declare x int := 0; if true then; insert into test values (123) returnin
 declare x int := 0; if true then; insert into test values (123) returning * into x; end; select x
 drop table test
 
+# test: if insert var
+create table test (id int primary key)
+explain declare x int := 0; if true then; insert into test values (x); end; select * from test
+declare x int := 0; if true then; insert into test values (x); end; select * from test
+drop table test
+
 # test: if select
 create table test (id int primary key)
 insert into test values (123)

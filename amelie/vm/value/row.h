@@ -11,18 +11,26 @@
 // AGPL-3.0 Licensed.
 //
 
-Row* row_create(Heap*, Columns*, Value*);
+Row* row_create(Heap*, Columns*, Value*, Value*);
 Row* row_create_key(Buf*, Keys*, Value*, int);
 Row* row_update(Heap*, Row*, Columns*, Value*, int);
 
 static inline uint32_t
-row_value_hash(Keys* keys, Value* row)
+row_value_hash(Keys* keys, Value* refs, Value* row)
 {
 	uint32_t hash = 0;
 	list_foreach(&keys->list)
 	{
 		auto column = list_at(Key, link)->column;
-		hash = value_hash(row + column->order, column->type_size, hash);
+		auto value = row + column->order;
+		if (value->type == TYPE_REF)
+		{
+			value = &refs[value->integer];
+			if (unlikely(value->type == TYPE_NULL))
+				error("column '%.*s' cannot be NULL", str_size(&column->name),
+				      str_of(&column->name));
+		}
+		hash = value_hash(value, column->type_size, hash);
 	}
 	return hash;
 }

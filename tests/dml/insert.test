@@ -456,6 +456,30 @@ select id from test where id = uuid "00000000-0000-0000-0000-000000000002";
 explain select id from test where id = uuid "00000000-0000-0000-0000-000000000002";
 drop table test
 
+# test: insert var
+create table test (id uuid primary key)
+insert into test values (x)
+declare id0 uuid := uuid "00000000-0000-0000-0000-000000000000"; declare id1 uuid := uuid "00000000-0000-0000-0000-000000000001"; insert into test values (id0), (id1)
+select * from test
+
+# test: insert var (type mismatch)
+declare x int; insert into test values (x)
+drop table test
+
+create table test (id int primary key, data int)
+# test: insert var (key null)
+declare x int; insert into test values(x, 0)
+
+# test: insert var (null)
+declare x int; insert into test values(0, x)
+select * from test;
+drop table test
+
+# test: insert var (not null)
+create table test (id int primary key, data int not null)
+declare x int; insert into test values(0, x)
+drop table test
+
 # test: insert secondary index
 create table test (id int primary key, data int)
 create index i on test (data)
