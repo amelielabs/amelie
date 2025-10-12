@@ -108,43 +108,43 @@ cli_cmd_client_main(Client* client, Console* cons)
 	separator_init(&sep);
 	defer(separator_free, &sep);
 
-	Str* prompt_str;
+	Str* prompt_text;
 	if (! str_empty(name))
-		prompt_str = name;
+		prompt_text = name;
 	else
 	if (! str_empty(path))
-		prompt_str = path;
+		prompt_text = path;
 	else
-		prompt_str = uri;
-	char prompt_ss[128];
-	snprintf(prompt_ss, sizeof(prompt_ss), "%.*s> ", str_size(prompt_str),
-	         str_of(prompt_str));
+		prompt_text = uri;
+
+	char prompt_str[128];
+	snprintf(prompt_str, sizeof(prompt_str), "%.*s> ", str_size(prompt_text),
+	         str_of(prompt_text));
+	Str prompt;
+	str_set_cstr(&prompt, prompt_str);
+
+	char prompt_str_pending[128];
+	snprintf(prompt_str_pending, sizeof(prompt_str_pending), "%.*s- ",
+	         str_size(prompt_text), str_of(prompt_text));
+	Str prompt_pending;
+	str_set_cstr(&prompt_pending, prompt_str_pending);
+
 	for (;;)
 	{
 		// >
-		Str prompt;
-		str_init(&prompt);
-		if (! separator_pending(&sep))
-			str_set_cstr(&prompt, prompt_ss);
+		auto prompt_ptr = &prompt;
+		if (separator_pending(&sep))
+			prompt_ptr = &prompt_pending;
 
 		Str input;
 		str_init(&input);
-		if (! console(cons, &prompt, &input))
+		if (! console(cons, prompt_ptr, &input))
 		{
 			if (separator_read_leftover(&sep, &input))
 				cli_cmd_client_execute(client, &input);
 			break;
 		}
 		defer(str_free, &input);
-
-		// split commands by \n
-		if (cons->is_tty)
-		{
-			cli_cmd_client_execute(client, &input);
-			continue;
-		}
-
-		// pipe mode
 
 		// split commands using ; and begin/end stmts
 		Str content;

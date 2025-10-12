@@ -13,13 +13,16 @@
 
 typedef struct Separator Separator;
 
-enum
+typedef enum
 {
 	SEPARATOR_EOF,
 	SEPARATOR_BEGIN,
+	SEPARATOR_IF,
+	SEPARATOR_CASE,
+	SEPARATOR_FOR,
 	SEPARATOR_END,
-	SEPARATOR_MATCH
-};
+	SEPARATOR_SEMICOLON
+} SeparatorToken;
 
 struct Separator
 {
@@ -45,8 +48,8 @@ separator_free(Separator* self)
 static inline void
 separator_write(Separator* self, Str* str)
 {
-	buf_write(&self->buf, "\n", 1);
 	buf_write_str(&self->buf, str);
+	buf_write(&self->buf, "\n", 1);
 }
 
 static inline bool
@@ -55,22 +58,16 @@ separator_pending(Separator* self)
 	return !buf_empty(&self->buf);
 }
 
-static inline bool
-separator_match(Separator* self, char* match, int size)
+hot static inline bool
+separator_skip(Separator* self)
 {
-	return (self->end - self->pos) >= size && !strncasecmp(self->pos, match, size);
-}
-
-static inline bool
-separator_next_ws(Separator* self)
-{
-	// skip white spaces and comments
+	// skip white spaces
 	while (self->pos < self->end && isspace(*self->pos))
 		self->pos++;
 	if (self->pos == self->end)
 		return true;
 
-	// --
+	// skip comments --
 	if (*self->pos == '-')
 	{
 		if ((self->end - self->pos) >= 2 && (self->pos[1] == '-'))
@@ -82,59 +79,106 @@ separator_next_ws(Separator* self)
 	return self->pos == self->end;
 }
 
-static inline int
+hot static inline bool
+separator_skip_string(Separator* self)
+{
+	// skip strings
+	char end_char = *self->pos;
+	self->pos++;
+
+	bool slash = false;
+	for (; self->pos < self->end; self->pos++)
+	{
+		if (*self->pos == end_char) {
+			if (slash) {
+				slash = false;
+				continue;
+			}
+			self->pos++;
+			break;
+		}
+		if (*self->pos == '\\')
+			slash = !slash;
+		else
+			slash = false;
+	}
+	return self->pos == self->end;
+}
+
+static inline bool
+separator_match(Separator* self, char* with, int size)
+{
+	// todo: check <ws or first> before keyword
+
+	// keyword <ws | symbol>
+	if ((self->end - self->pos) < (size + 1))
+		return false;
+	if (strncasecmp(self->pos, with, size) != 0)
+		return false;
+	if (self->pos == self->end)
+		return false;
+	// ws | symbol
+	if (!isspace(self->pos[size]) && self->pos[size] != ';')
+		return false;
+	self->pos += size;
+	return true;
+}
+
+static inline SeparatorToken
 separator_next(Separator* self)
 {
-	// skip white spaces and comments
-	if (separator_next_ws(self))
-		return SEPARATOR_EOF;
-
-	// [EXPLAIN | PROFILE]
-	if (*self->pos == 'e' || *self->pos == 'E')
+	for (;;)
 	{
-		if (separator_match(self, "explain", 7))
-			self->pos += 7;
+		// skip white spaces and comments
+		if (separator_skip(self))
+			return SEPARATOR_EOF;
 
-	} else
-	if (*self->pos == 'p' || *self->pos == 'P')
-	{
-		if (separator_match(self, "profile", 8))
-			self->pos += 8;
-	}
-
-	// skip white spaces and comments
-	if (separator_next_ws(self))
-		return SEPARATOR_EOF;
-
-	// [BEGIN | END]
-	int separator = SEPARATOR_MATCH;
-	if (*self->pos == 'b' || *self->pos == 'B')
-	{
-		if (separator_match(self, "begin", 5))
-		{
-			self->pos += 5;
-			separator = SEPARATOR_BEGIN;
+		switch (*self->pos) {
+		// BEGIN
+		case 'b':
+		case 'B':
+			if (separator_match(self, "begin", 5))
+				return SEPARATOR_BEGIN;
+			break;
+		// IF
+		case 'i':
+		case 'I':
+			if (separator_match(self, "if", 2))
+				return SEPARATOR_IF;
+			break;
+		// CASE
+		case 'c':
+		case 'C':
+			if (separator_match(self, "case", 4))
+				return SEPARATOR_CASE;
+			break;
+		// FOR
+		case 'f':
+		case 'F':
+			if (separator_match(self, "for", 3))
+				return SEPARATOR_FOR;
+			break;
+		// END
+		case 'e':
+		case 'E':
+			if (separator_match(self, "end", 3))
+				return SEPARATOR_END;
+			break;
+		// ;
+		case ';':
+			self->pos++;
+			return SEPARATOR_SEMICOLON;
+		// ' or "
+		case '\'':
+		case '"':
+			if (separator_skip_string(self))
+				return SEPARATOR_EOF;
+			continue;
 		}
-		goto eol;
-	} else
-	if (*self->pos == 'e' || *self->pos == 'E')
-	{
-		if (separator_match(self, "end", 3))
-		{
-			self->pos += 3;
-			separator = SEPARATOR_END;
-		}
-		goto eol;
-	}
-
-eol:
-	// match next ;
-	while (self->pos < self->end && *self->pos != ';')
 		self->pos++;
-	if (self->pos == self->end)
-		return SEPARATOR_EOF;
-	self->pos++;
-	return separator;
+	}
+
+	return SEPARATOR_EOF;
 }
 
 static inline bool
@@ -146,8 +190,8 @@ separator_read(Separator* self, Str* block)
 	//
 	// request for more data, if ';' is not matched.
 	//
-	// separate [EXPLAIN/PROFILE] BEGIN/END statements and return
-	// as a single multi-stmt transaction.
+	// separate BEGIN/IF/CASE/FOR/END statements and return
+	// as a single multi-stmt block.
 	//
 	// request for more data, if END is not matched.
 	//
@@ -162,38 +206,38 @@ separator_read(Separator* self, Str* block)
 	self->end  = start + buf_size(buf);
 
 	// handle empty string
-	if (separator_next_ws(self))
+	if (separator_skip(self))
 	{
-		str_set(block, start, self->pos - start);
+		// empty block
+		str_set(block, start, 0);
 		return true;
 	}
 
-	auto begin = false;
-	for (auto first = true;; first = false)
+	int level = 0;
+	for (;;)
 	{
 		auto rc = separator_next(self);
 		switch (rc) {
-		// ;
-		case SEPARATOR_MATCH:
-		{
-			// wait for END
-			if (begin)
-				continue;
-			break;
-		}
-		// begin
 		case SEPARATOR_BEGIN:
-		{
-			if (begin || !first)
-				break;
-			begin = true;
+		case SEPARATOR_IF:
+		case SEPARATOR_CASE:
+		case SEPARATOR_FOR:
+			level++;
 			continue;
-		}
-		// end
 		case SEPARATOR_END:
-			break;
-		// eof (request more data)
+			level--;
+			// error
+			if (level < 0)
+				break;
+			// wait for semicolon on zero level
+			continue;
+		case SEPARATOR_SEMICOLON:
+			if (! level)
+				break;
+			// wait for end
+			continue;
 		case SEPARATOR_EOF:
+			// request more data
 			return false;
 		}
 		break;
