@@ -284,49 +284,11 @@ parse_value_default(Stmt*    self,
 	}
 }
 
-hot Ast*
-parse_value_default_expr(Stmt* self, Column* column, uint64_t seq)
-{
-	// IDENTITY or DEFAULT
-	auto value = ast(KINT);
-	auto cons = &column->constraints;
-	if (cons->as_identity == IDENTITY_SERIAL) {
-		value->integer = seq;
-	} else
-	if (cons->as_identity == IDENTITY_RANDOM) {
-		value->integer = random_generate(&runtime()->random) % cons->as_identity_modulo;
-	} else {
-		if (ast_decode(value, cons->value.start) == -1)
-			stmt_error(self, NULL,
-			           "column '%.*s' default json values is not supported",
-			           str_size(&column->name),
-			           str_of(&column->name));
-	}
-	return value;
-}
-
 void
 parse_value_validate(Stmt* self, Column* column, Value* value, Ast* expr)
 {
 	// ensure NOT NULL constraint
 	if (value->type == TYPE_NULL)
-	{
-		// value can be NULL for generated column (will be rechecked later)
-		if (! str_empty(&column->constraints.as_stored))
-			return;
-
-		if (column->constraints.not_null)
-			stmt_error(self, expr, "column '%.*s' value cannot be NULL",
-			           str_size(&column->name),
-			           str_of(&column->name));
-	}
-}
-
-void
-parse_value_validate_expr(Stmt* self, Column* column, Ast* expr)
-{
-	// ensure NOT NULL constraint
-	if (expr->id == KNULL)
 	{
 		// value can be NULL for generated column (will be rechecked later)
 		if (! str_empty(&column->constraints.as_stored))

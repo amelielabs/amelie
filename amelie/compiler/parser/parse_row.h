@@ -13,4 +13,3 @@
 
 void parse_row_generate(Stmt*, Table*, Set*, int);
 void parse_rows(Stmt*, From*, Table*, Set*, Ast*, bool);
-void parse_rows_expr(Stmt*, Table*, AstList*, Ast*, bool);
