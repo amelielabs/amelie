@@ -213,6 +213,11 @@ insert into test (id) values (4), (5), (6)
 select data from test
 drop table test
 
+# test: add column (serial already exists)
+create table test (id serial primary key)
+alter table test add column data serial
+drop table test
+
 # test: drop column parsing
 create table test (id int primary key)
 alter table

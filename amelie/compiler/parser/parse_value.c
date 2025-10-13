@@ -268,16 +268,15 @@ parse_value_default(Stmt*    self,
                     Value*   column_value,
                     uint64_t seq)
 {
-	// IDENTITY, RANDOM or DEFAULT
+	// IDENTITY or DEFAULT
 	unused(self);
 	auto cons = &column->constraints;
-	if (cons->as_identity)
-	{
+	if (cons->as_identity == IDENTITY_SERIAL) {
 		value_set_int(column_value, seq);
 	} else
-	if (cons->random)
+	if (cons->as_identity == IDENTITY_RANDOM)
 	{
-		auto value = random_generate(&runtime()->random) % cons->random_modulo;
+		auto value = random_generate(&runtime()->random) % cons->as_identity_modulo;
 		value_set_int(column_value, value);
 	} else
 	{
@@ -288,14 +287,14 @@ parse_value_default(Stmt*    self,
 hot Ast*
 parse_value_default_expr(Stmt* self, Column* column, uint64_t seq)
 {
-	// IDENTITY, RANDOM or DEFAULT
+	// IDENTITY or DEFAULT
 	auto value = ast(KINT);
 	auto cons = &column->constraints;
-	if (cons->as_identity) {
+	if (cons->as_identity == IDENTITY_SERIAL) {
 		value->integer = seq;
 	} else
-	if (cons->random) {
-		value->integer = random_generate(&runtime()->random) % cons->random_modulo;
+	if (cons->as_identity == IDENTITY_RANDOM) {
+		value->integer = random_generate(&runtime()->random) % cons->as_identity_modulo;
 	} else {
 		if (ast_decode(value, cons->value.start) == -1)
 			stmt_error(self, NULL,

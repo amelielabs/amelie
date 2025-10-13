@@ -164,8 +164,9 @@ parse_constraints(Stmt* self, Keys* keys, Column* column)
 	// constraints
 	auto cons = &column->constraints;
 
-	bool primary_key = false;
-	bool has_default = false;
+	bool has_primary_key = false;
+	bool has_default     = false;
+	bool has_identity    = false;
 	bool done = false;
 	while (! done)
 	{
@@ -188,38 +189,12 @@ parse_constraints(Stmt* self, Keys* keys, Column* column)
 			break;
 		}
 
-		// RANDOM
-		case KRANDOM:
-		{
-			// ensure the column has type INT
-			if (column->type != TYPE_INT || column->type_size < 4)
-				stmt_error(self, name, "RANDOM column must be int or int64");
-
-			constraints_set_random(cons, true);
-
-			// [(modulo)]
-			if (stmt_if(self, '('))
-			{
-				// int
-				auto value = stmt_expect(self, KINT);
-				// )
-				stmt_expect(self, ')');
-				if (value->integer == 0)
-					stmt_error(self, value, "RANDOM modulo value cannot be zero");
-				constraints_set_random_modulo(cons, value->integer);
-			}
-
-			if (cons->as_identity)
-				stmt_error(self, name, "cannot be used with identity column");
-			break;
-		}
-
 		// PRIMARY KEY
 		case KPRIMARY:
 		{
 			stmt_expect(self, KKEY);
 
-			if (primary_key)
+			if (has_primary_key)
 				stmt_error(self, name, "PRIMARY KEY defined twice");
 
 			if (! keys)
@@ -241,7 +216,7 @@ parse_constraints(Stmt* self, Keys* keys, Column* column)
 			key_set_ref(key, column->order);
 			keys_add(keys, key);
 
-			primary_key = true;
+			has_primary_key = true;
 
 			if (! str_empty(&cons->as_resolved))
 				stmt_error(self, name, "cannot be used together with RESOLVED");
@@ -260,20 +235,43 @@ parse_constraints(Stmt* self, Keys* keys, Column* column)
 		}
 
 		// AS IDENTITY
+		// AS IDENTITY RANDOM [(modulo])
 		// AS (expr) STORED | RESOLVED
 		case KAS:
 		{
 			auto identity = stmt_if(self, KIDENTITY);
 			if (identity)
 			{
+				// allow only one identity column
+				if (has_identity)
+					stmt_error(self, identity, "IDENTITY column defined twice");
+
 				// ensure the column has type INT64
 				if (column->type != TYPE_INT || column->type_size < 4)
 					stmt_error(self, identity, "identity column must be int or int64");
 
-				constraints_set_as_identity(cons, true);
+				constraints_set_as_identity(cons, IDENTITY_SERIAL);
 
-				if (cons->random)
-					stmt_error(self, identity, "cannot be used with RANDOM");
+				// RANDOM
+				if (stmt_if(self, KRANDOM))
+				{
+					constraints_set_as_identity(cons, IDENTITY_RANDOM);
+
+					// [(modulo)]
+					if (stmt_if(self, '('))
+					{
+						// int
+						auto value = stmt_expect(self, KINT);
+						// )
+						stmt_expect(self, ')');
+						if (value->integer == 0)
+							stmt_error(self, value, "RANDOM modulo value cannot be zero");
+
+						constraints_set_as_identity_modulo(cons, value->integer);
+					}
+				}
+
+				has_identity = true;
 				break;
 			}
 
@@ -328,6 +326,7 @@ parse_columns(Stmt* self, Columns* columns, Keys* keys)
 	// (
 	stmt_expect(self, '(');
 
+	auto has_serial = false;
 	for (;;)
 	{
 		// PRIMARY KEY (columns)
@@ -358,10 +357,15 @@ parse_columns(Stmt* self, Columns* columns, Keys* keys)
 		int type_size;
 		int type;
 		if (parse_type(self, &type, &type_size))
-			constraints_set_as_identity(&column->constraints, true);
+		{
+			if (has_serial)
+				stmt_error(self, name, "IDENTITY column defined twice");
+			constraints_set_as_identity(&column->constraints, IDENTITY_SERIAL);
+			has_serial = true;
+		}
 		column_set_type(column, type, type_size);
 
-		// [PRIMARY KEY | NOT NULL | DEFAULT | RANDOM | AS]
+		// [PRIMARY KEY | NOT NULL | DEFAULT | AS]
 		parse_constraints(self, keys, column);
 
 		// ,
@@ -582,10 +586,10 @@ parse_table_alter(Stmt* self)
 		int type_size;
 		int type;
 		if (parse_type(self, &type, &type_size))
-			constraints_set_as_identity(&column->constraints, true);
+			constraints_set_as_identity(&column->constraints, IDENTITY_SERIAL);
 		column_set_type(column, type, type_size);
 
-		// [NOT NULL | DEFAULT | RANDOM | AS]
+		// [NOT NULL | DEFAULT | AS]
 		parse_constraints(self, NULL, column);
 
 		// validate column

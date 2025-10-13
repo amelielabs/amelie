@@ -266,8 +266,6 @@ drop table test
 
 # test: constraint serial multiple columns
 create table test (id serial primary key, data serial)
-select system.table('test').columns
-drop table test
 
 # test: with parsing
 create table test (id int primary key) with

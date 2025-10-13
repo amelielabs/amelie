@@ -20,12 +20,11 @@ select system.table('test').columns
   "type_size": 4,
   "constraints": {
     "not_null": true,
-    "random": false,
-    "random_modulo": 9223372036854775807,
-    "default": null,
-    "as_identity": true,
+    "as_identity": 1,
+    "as_identity_modulo": 9223372036854775807,
     "as_stored": "",
-    "as_resolved": ""
+    "as_resolved": "",
+    "default": null
   }
 }]]
 insert into test () values ()
@@ -43,12 +42,11 @@ select system.table('test').columns
   "type_size": 4,
   "constraints": {
     "not_null": true,
-    "random": false,
-    "random_modulo": 9223372036854775807,
-    "default": null,
-    "as_identity": false,
+    "as_identity": 0,
+    "as_identity_modulo": 9223372036854775807,
     "as_stored": "",
-    "as_resolved": ""
+    "as_resolved": "",
+    "default": null
   }
 }, {
   "name": "data",
@@ -56,12 +54,11 @@ select system.table('test').columns
   "type_size": 4,
   "constraints": {
     "not_null": false,
-    "random": false,
-    "random_modulo": 9223372036854775807,
-    "default": null,
-    "as_identity": true,
+    "as_identity": 1,
+    "as_identity_modulo": 9223372036854775807,
     "as_stored": "",
-    "as_resolved": ""
+    "as_resolved": "",
+    "default": null
   }
 }]]
 insert into test (id) values (1)

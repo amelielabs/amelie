@@ -133,12 +133,11 @@ select system.table('test').columns
   "type_size": 8,
   "constraints": {
     "not_null": true,
-    "random": false,
-    "random_modulo": 9223372036854775807,
-    "default": null,
-    "as_identity": true,
+    "as_identity": 1,
+    "as_identity_modulo": 9223372036854775807,
     "as_stored": "",
-    "as_resolved": ""
+    "as_resolved": "",
+    "default": null
   }
 }, {
   "name": "data",
@@ -146,12 +145,11 @@ select system.table('test').columns
   "type_size": 4,
   "constraints": {
     "not_null": false,
-    "random": false,
-    "random_modulo": 9223372036854775807,
-    "default": 0,
-    "as_identity": false,
+    "as_identity": 0,
+    "as_identity_modulo": 9223372036854775807,
     "as_stored": "",
-    "as_resolved": ""
+    "as_resolved": "",
+    "default": 0
   }
 }]]
 alter table test rename column data to data2
@@ -162,12 +160,11 @@ select system.table('test').columns
   "type_size": 8,
   "constraints": {
     "not_null": true,
-    "random": false,
-    "random_modulo": 9223372036854775807,
-    "default": null,
-    "as_identity": true,
+    "as_identity": 1,
+    "as_identity_modulo": 9223372036854775807,
     "as_stored": "",
-    "as_resolved": ""
+    "as_resolved": "",
+    "default": null
   }
 }, {
   "name": "data2",
@@ -175,12 +172,11 @@ select system.table('test').columns
   "type_size": 4,
   "constraints": {
     "not_null": false,
-    "random": false,
-    "random_modulo": 9223372036854775807,
-    "default": 0,
-    "as_identity": false,
+    "as_identity": 0,
+    "as_identity_modulo": 9223372036854775807,
     "as_stored": "",
-    "as_resolved": ""
+    "as_resolved": "",
+    "default": 0
   }
 }]]
 select data2 from test
@@ -196,12 +192,11 @@ select system.table('test').columns
   "type_size": 4,
   "constraints": {
     "not_null": true,
-    "random": false,
-    "random_modulo": 9223372036854775807,
-    "default": null,
-    "as_identity": false,
+    "as_identity": 0,
+    "as_identity_modulo": 9223372036854775807,
     "as_stored": "",
-    "as_resolved": ""
+    "as_resolved": "",
+    "default": null
   }
 }]]
 alter table test rename column id to id2
@@ -212,12 +207,11 @@ select system.table('test').columns
   "type_size": 4,
   "constraints": {
     "not_null": true,
-    "random": false,
-    "random_modulo": 9223372036854775807,
-    "default": null,
-    "as_identity": false,
+    "as_identity": 0,
+    "as_identity_modulo": 9223372036854775807,
     "as_stored": "",
-    "as_resolved": ""
+    "as_resolved": "",
+    "default": null
   }
 }]]
 select * from test
@@ -234,12 +228,11 @@ select system.table('test').columns
   "type_size": 8,
   "constraints": {
     "not_null": true,
-    "random": false,
-    "random_modulo": 9223372036854775807,
-    "default": null,
-    "as_identity": true,
+    "as_identity": 1,
+    "as_identity_modulo": 9223372036854775807,
     "as_stored": "",
-    "as_resolved": ""
+    "as_resolved": "",
+    "default": null
   }
 }, {
   "name": "data",
@@ -247,12 +240,11 @@ select system.table('test').columns
   "type_size": 4,
   "constraints": {
     "not_null": false,
-    "random": false,
-    "random_modulo": 9223372036854775807,
-    "default": 0,
-    "as_identity": false,
+    "as_identity": 0,
+    "as_identity_modulo": 9223372036854775807,
     "as_stored": "",
-    "as_resolved": ""
+    "as_resolved": "",
+    "default": 0
   }
 }]]
 alter table test rename column data to data
@@ -264,12 +256,11 @@ select system.table('test').columns
   "type_size": 8,
   "constraints": {
     "not_null": true,
-    "random": false,
-    "random_modulo": 9223372036854775807,
-    "default": null,
-    "as_identity": true,
+    "as_identity": 1,
+    "as_identity_modulo": 9223372036854775807,
     "as_stored": "",
-    "as_resolved": ""
+    "as_resolved": "",
+    "default": null
   }
 }, {
   "name": "data",
@@ -277,12 +268,11 @@ select system.table('test').columns
   "type_size": 4,
   "constraints": {
     "not_null": false,
-    "random": false,
-    "random_modulo": 9223372036854775807,
-    "default": 0,
-    "as_identity": false,
+    "as_identity": 0,
+    "as_identity_modulo": 9223372036854775807,
     "as_stored": "",
-    "as_resolved": ""
+    "as_resolved": "",
+    "default": 0
   }
 }]]
 drop table test
@@ -332,12 +322,11 @@ select system.table('test').columns
   "type_size": 4,
   "constraints": {
     "not_null": true,
-    "random": false,
-    "random_modulo": 9223372036854775807,
-    "default": null,
-    "as_identity": false,
+    "as_identity": 0,
+    "as_identity_modulo": 9223372036854775807,
     "as_stored": "",
-    "as_resolved": ""
+    "as_resolved": "",
+    "default": null
   }
 }]]
 alter table test add column data int
@@ -348,12 +337,11 @@ select system.table('test').columns
   "type_size": 4,
   "constraints": {
     "not_null": true,
-    "random": false,
-    "random_modulo": 9223372036854775807,
-    "default": null,
-    "as_identity": false,
+    "as_identity": 0,
+    "as_identity_modulo": 9223372036854775807,
     "as_stored": "",
-    "as_resolved": ""
+    "as_resolved": "",
+    "default": null
   }
 }, {
   "name": "data",
@@ -361,12 +349,11 @@ select system.table('test').columns
   "type_size": 4,
   "constraints": {
     "not_null": false,
-    "random": false,
-    "random_modulo": 9223372036854775807,
-    "default": null,
-    "as_identity": false,
+    "as_identity": 0,
+    "as_identity_modulo": 9223372036854775807,
     "as_stored": "",
-    "as_resolved": ""
+    "as_resolved": "",
+    "default": null
   }
 }]]
 insert into test values (1,1), (2,2), (3,3)
@@ -384,12 +371,11 @@ select system.table('test').columns
   "type_size": 4,
   "constraints": {
     "not_null": true,
-    "random": false,
-    "random_modulo": 9223372036854775807,
-    "default": null,
-    "as_identity": false,
+    "as_identity": 0,
+    "as_identity_modulo": 9223372036854775807,
     "as_stored": "",
-    "as_resolved": ""
+    "as_resolved": "",
+    "default": null
   }
 }, {
   "name": "data",
@@ -397,12 +383,11 @@ select system.table('test').columns
   "type_size": 4,
   "constraints": {
     "not_null": false,
-    "random": false,
-    "random_modulo": 9223372036854775807,
-    "default": null,
-    "as_identity": false,
+    "as_identity": 0,
+    "as_identity_modulo": 9223372036854775807,
     "as_stored": "",
-    "as_resolved": ""
+    "as_resolved": "",
+    "default": null
   }
 }]]
 select data from test
@@ -423,12 +408,11 @@ select system.table('test').columns
   "type_size": 4,
   "constraints": {
     "not_null": true,
-    "random": false,
-    "random_modulo": 9223372036854775807,
-    "default": null,
-    "as_identity": false,
+    "as_identity": 0,
+    "as_identity_modulo": 9223372036854775807,
     "as_stored": "",
-    "as_resolved": ""
+    "as_resolved": "",
+    "default": null
   }
 }]]
 drop table test
@@ -443,12 +427,11 @@ select system.table('test').columns
   "type_size": 4,
   "constraints": {
     "not_null": true,
-    "random": false,
-    "random_modulo": 9223372036854775807,
-    "default": null,
-    "as_identity": false,
+    "as_identity": 0,
+    "as_identity_modulo": 9223372036854775807,
     "as_stored": "",
-    "as_resolved": ""
+    "as_resolved": "",
+    "default": null
   }
 }, {
   "name": "data",
@@ -456,12 +439,11 @@ select system.table('test').columns
   "type_size": 4,
   "constraints": {
     "not_null": false,
-    "random": false,
-    "random_modulo": 9223372036854775807,
-    "default": 123,
-    "as_identity": false,
+    "as_identity": 0,
+    "as_identity_modulo": 9223372036854775807,
     "as_stored": "",
-    "as_resolved": ""
+    "as_resolved": "",
+    "default": 123
   }
 }]]
 select data from test
@@ -485,12 +467,11 @@ select system.table('test').columns
   "type_size": 4,
   "constraints": {
     "not_null": true,
-    "random": false,
-    "random_modulo": 9223372036854775807,
-    "default": null,
-    "as_identity": false,
+    "as_identity": 0,
+    "as_identity_modulo": 9223372036854775807,
     "as_stored": "",
-    "as_resolved": ""
+    "as_resolved": "",
+    "default": null
   }
 }]]
 drop table test
@@ -505,12 +486,11 @@ select system.table('test').columns
   "type_size": 4,
   "constraints": {
     "not_null": true,
-    "random": false,
-    "random_modulo": 9223372036854775807,
-    "default": null,
-    "as_identity": false,
+    "as_identity": 0,
+    "as_identity_modulo": 9223372036854775807,
     "as_stored": "",
-    "as_resolved": ""
+    "as_resolved": "",
+    "default": null
   }
 }, {
   "name": "data",
@@ -518,12 +498,11 @@ select system.table('test').columns
   "type_size": 8,
   "constraints": {
     "not_null": false,
-    "random": false,
-    "random_modulo": 9223372036854775807,
-    "default": null,
-    "as_identity": true,
+    "as_identity": 1,
+    "as_identity_modulo": 9223372036854775807,
     "as_stored": "",
-    "as_resolved": ""
+    "as_resolved": "",
+    "default": null
   }
 }]]
 select data from test
@@ -531,6 +510,11 @@ select data from test
 insert into test (id) values (4), (5), (6)
 select data from test
 [null, null, null, 0, 1, 2]
+drop table test
+# test: add column (serial already exists)
+create table test (id serial primary key)
+alter table test add column data serial
+{"msg": "table 'test': already has identity column"}
 drop table test
 # test: drop column parsing
 create table test (id int primary key)
@@ -575,12 +559,11 @@ select system.table('test').columns
   "type_size": 4,
   "constraints": {
     "not_null": true,
-    "random": false,
-    "random_modulo": 9223372036854775807,
-    "default": null,
-    "as_identity": false,
+    "as_identity": 0,
+    "as_identity_modulo": 9223372036854775807,
     "as_stored": "",
-    "as_resolved": ""
+    "as_resolved": "",
+    "default": null
   }
 }, {
   "name": "a",
@@ -588,12 +571,11 @@ select system.table('test').columns
   "type_size": 4,
   "constraints": {
     "not_null": false,
-    "random": false,
-    "random_modulo": 9223372036854775807,
-    "default": null,
-    "as_identity": false,
+    "as_identity": 0,
+    "as_identity_modulo": 9223372036854775807,
     "as_stored": "",
-    "as_resolved": ""
+    "as_resolved": "",
+    "default": null
   }
 }]]
 alter table test drop column a
@@ -604,12 +586,11 @@ select system.table('test').columns
   "type_size": 4,
   "constraints": {
     "not_null": true,
-    "random": false,
-    "random_modulo": 9223372036854775807,
-    "default": null,
-    "as_identity": false,
+    "as_identity": 0,
+    "as_identity_modulo": 9223372036854775807,
     "as_stored": "",
-    "as_resolved": ""
+    "as_resolved": "",
+    "default": null
   }
 }]]
 drop table test
@@ -622,12 +603,11 @@ select system.table('test').columns
   "type_size": 4,
   "constraints": {
     "not_null": true,
-    "random": false,
-    "random_modulo": 9223372036854775807,
-    "default": null,
-    "as_identity": false,
+    "as_identity": 0,
+    "as_identity_modulo": 9223372036854775807,
     "as_stored": "",
-    "as_resolved": ""
+    "as_resolved": "",
+    "default": null
   }
 }, {
   "name": "a",
@@ -635,12 +615,11 @@ select system.table('test').columns
   "type_size": 4,
   "constraints": {
     "not_null": false,
-    "random": false,
-    "random_modulo": 9223372036854775807,
-    "default": null,
-    "as_identity": false,
+    "as_identity": 0,
+    "as_identity_modulo": 9223372036854775807,
     "as_stored": "",
-    "as_resolved": ""
+    "as_resolved": "",
+    "default": null
   }
 }, {
   "name": "b",
@@ -648,12 +627,11 @@ select system.table('test').columns
   "type_size": 4,
   "constraints": {
     "not_null": false,
-    "random": false,
-    "random_modulo": 9223372036854775807,
-    "default": null,
-    "as_identity": false,
+    "as_identity": 0,
+    "as_identity_modulo": 9223372036854775807,
     "as_stored": "",
-    "as_resolved": ""
+    "as_resolved": "",
+    "default": null
   }
 }]]
 alter table test drop column a
@@ -664,12 +642,11 @@ select system.table('test').columns
   "type_size": 4,
   "constraints": {
     "not_null": true,
-    "random": false,
-    "random_modulo": 9223372036854775807,
-    "default": null,
-    "as_identity": false,
+    "as_identity": 0,
+    "as_identity_modulo": 9223372036854775807,
     "as_stored": "",
-    "as_resolved": ""
+    "as_resolved": "",
+    "default": null
   }
 }, {
   "name": "b",
@@ -677,12 +654,11 @@ select system.table('test').columns
   "type_size": 4,
   "constraints": {
     "not_null": false,
-    "random": false,
-    "random_modulo": 9223372036854775807,
-    "default": null,
-    "as_identity": false,
+    "as_identity": 0,
+    "as_identity_modulo": 9223372036854775807,
     "as_stored": "",
-    "as_resolved": ""
+    "as_resolved": "",
+    "default": null
   }
 }]]
 drop table test
@@ -695,12 +671,11 @@ select system.table('test').columns
   "type_size": 4,
   "constraints": {
     "not_null": true,
-    "random": false,
-    "random_modulo": 9223372036854775807,
-    "default": null,
-    "as_identity": false,
+    "as_identity": 0,
+    "as_identity_modulo": 9223372036854775807,
     "as_stored": "",
-    "as_resolved": ""
+    "as_resolved": "",
+    "default": null
   }
 }, {
   "name": "a",
@@ -708,12 +683,11 @@ select system.table('test').columns
   "type_size": 0,
   "constraints": {
     "not_null": false,
-    "random": false,
-    "random_modulo": 9223372036854775807,
-    "default": null,
-    "as_identity": false,
+    "as_identity": 0,
+    "as_identity_modulo": 9223372036854775807,
     "as_stored": "",
-    "as_resolved": ""
+    "as_resolved": "",
+    "default": null
   }
 }, {
   "name": "b",
@@ -721,12 +695,11 @@ select system.table('test').columns
   "type_size": 4,
   "constraints": {
     "not_null": false,
-    "random": false,
-    "random_modulo": 9223372036854775807,
-    "default": null,
-    "as_identity": false,
+    "as_identity": 0,
+    "as_identity_modulo": 9223372036854775807,
     "as_stored": "",
-    "as_resolved": ""
+    "as_resolved": "",
+    "default": null
   }
 }]]
 insert into test values (1,"id",1), (2,"a",2), (3,"b",3)
@@ -744,12 +717,11 @@ select system.table('test').columns
   "type_size": 4,
   "constraints": {
     "not_null": true,
-    "random": false,
-    "random_modulo": 9223372036854775807,
-    "default": null,
-    "as_identity": false,
+    "as_identity": 0,
+    "as_identity_modulo": 9223372036854775807,
     "as_stored": "",
-    "as_resolved": ""
+    "as_resolved": "",
+    "default": null
   }
 }, {
   "name": "b",
@@ -757,12 +729,11 @@ select system.table('test').columns
   "type_size": 4,
   "constraints": {
     "not_null": false,
-    "random": false,
-    "random_modulo": 9223372036854775807,
-    "default": null,
-    "as_identity": false,
+    "as_identity": 0,
+    "as_identity_modulo": 9223372036854775807,
     "as_stored": "",
-    "as_resolved": ""
+    "as_resolved": "",
+    "default": null
   }
 }]]
 select * from test
@@ -778,12 +749,11 @@ select system.table('test').columns
   "type_size": 4,
   "constraints": {
     "not_null": true,
-    "random": false,
-    "random_modulo": 9223372036854775807,
-    "default": null,
-    "as_identity": false,
+    "as_identity": 0,
+    "as_identity_modulo": 9223372036854775807,
     "as_stored": "",
-    "as_resolved": ""
+    "as_resolved": "",
+    "default": null
   }
 }, {
   "name": "b",
@@ -791,12 +761,11 @@ select system.table('test').columns
   "type_size": 4,
   "constraints": {
     "not_null": false,
-    "random": false,
-    "random_modulo": 9223372036854775807,
-    "default": null,
-    "as_identity": false,
+    "as_identity": 0,
+    "as_identity_modulo": 9223372036854775807,
     "as_stored": "",
-    "as_resolved": ""
+    "as_resolved": "",
+    "default": null
   }
 }]]
 alter table test drop column b
@@ -807,12 +776,11 @@ select system.table('test').columns
   "type_size": 4,
   "constraints": {
     "not_null": true,
-    "random": false,
-    "random_modulo": 9223372036854775807,
-    "default": null,
-    "as_identity": false,
+    "as_identity": 0,
+    "as_identity_modulo": 9223372036854775807,
     "as_stored": "",
-    "as_resolved": ""
+    "as_resolved": "",
+    "default": null
   }
 }]]
 select * from test
@@ -833,12 +801,11 @@ select system.table('test').columns
   "type_size": 0,
   "constraints": {
     "not_null": false,
-    "random": false,
-    "random_modulo": 9223372036854775807,
-    "default": null,
-    "as_identity": false,
+    "as_identity": 0,
+    "as_identity_modulo": 9223372036854775807,
     "as_stored": "",
-    "as_resolved": ""
+    "as_resolved": "",
+    "default": null
   }
 }, {
   "name": "b",
@@ -846,12 +813,11 @@ select system.table('test').columns
   "type_size": 4,
   "constraints": {
     "not_null": false,
-    "random": false,
-    "random_modulo": 9223372036854775807,
-    "default": null,
-    "as_identity": false,
+    "as_identity": 0,
+    "as_identity_modulo": 9223372036854775807,
     "as_stored": "",
-    "as_resolved": ""
+    "as_resolved": "",
+    "default": null
   }
 }, {
   "name": "id",
@@ -859,12 +825,11 @@ select system.table('test').columns
   "type_size": 4,
   "constraints": {
     "not_null": true,
-    "random": false,
-    "random_modulo": 9223372036854775807,
-    "default": null,
-    "as_identity": false,
+    "as_identity": 0,
+    "as_identity_modulo": 9223372036854775807,
     "as_stored": "",
-    "as_resolved": ""
+    "as_resolved": "",
+    "default": null
   }
 }]]
 insert into test values ("id",1, 1), ("a",2, 2), ("b",3, 3)
@@ -884,12 +849,11 @@ select system.table('test').columns
   "type_size": 4,
   "constraints": {
     "not_null": false,
-    "random": false,
-    "random_modulo": 9223372036854775807,
-    "default": null,
-    "as_identity": false,
+    "as_identity": 0,
+    "as_identity_modulo": 9223372036854775807,
     "as_stored": "",
-    "as_resolved": ""
+    "as_resolved": "",
+    "default": null
   }
 }, {
   "name": "id",
@@ -897,12 +861,11 @@ select system.table('test').columns
   "type_size": 4,
   "constraints": {
     "not_null": true,
-    "random": false,
-    "random_modulo": 9223372036854775807,
-    "default": null,
-    "as_identity": false,
+    "as_identity": 0,
+    "as_identity_modulo": 9223372036854775807,
     "as_stored": "",
-    "as_resolved": ""
+    "as_resolved": "",
+    "default": null
   }
 }]]
 select * from test
@@ -920,12 +883,11 @@ select system.table('test').columns
   "type_size": 4,
   "constraints": {
     "not_null": false,
-    "random": false,
-    "random_modulo": 9223372036854775807,
-    "default": null,
-    "as_identity": false,
+    "as_identity": 0,
+    "as_identity_modulo": 9223372036854775807,
     "as_stored": "",
-    "as_resolved": ""
+    "as_resolved": "",
+    "default": null
   }
 }, {
   "name": "id",
@@ -933,12 +895,11 @@ select system.table('test').columns
   "type_size": 4,
   "constraints": {
     "not_null": true,
-    "random": false,
-    "random_modulo": 9223372036854775807,
-    "default": null,
-    "as_identity": false,
+    "as_identity": 0,
+    "as_identity_modulo": 9223372036854775807,
     "as_stored": "",
-    "as_resolved": ""
+    "as_resolved": "",
+    "default": null
   }
 }]]
 alter table test drop column b
@@ -949,12 +910,11 @@ select system.table('test').columns
   "type_size": 4,
   "constraints": {
     "not_null": true,
-    "random": false,
-    "random_modulo": 9223372036854775807,
-    "default": null,
-    "as_identity": false,
+    "as_identity": 0,
+    "as_identity_modulo": 9223372036854775807,
     "as_stored": "",
-    "as_resolved": ""
+    "as_resolved": "",
+    "default": null
   }
 }]]
 select * from test
@@ -987,12 +947,11 @@ select system.table('test').columns
   "type_size": 4,
   "constraints": {
     "not_null": true,
-    "random": false,
-    "random_modulo": 9223372036854775807,
-    "default": null,
-    "as_identity": false,
+    "as_identity": 0,
+    "as_identity_modulo": 9223372036854775807,
     "as_stored": "",
-    "as_resolved": ""
+    "as_resolved": "",
+    "default": null
   }
 }, {
   "name": "data",
@@ -1000,12 +959,11 @@ select system.table('test').columns
   "type_size": 4,
   "constraints": {
     "not_null": false,
-    "random": false,
-    "random_modulo": 9223372036854775807,
-    "default": 0,
-    "as_identity": false,
+    "as_identity": 0,
+    "as_identity_modulo": 9223372036854775807,
     "as_stored": "",
-    "as_resolved": ""
+    "as_resolved": "",
+    "default": 0
   }
 }]]
 # test: unset default
@@ -1020,12 +978,11 @@ select system.table('test').columns
   "type_size": 4,
   "constraints": {
     "not_null": true,
-    "random": false,
-    "random_modulo": 9223372036854775807,
-    "default": null,
-    "as_identity": false,
+    "as_identity": 0,
+    "as_identity_modulo": 9223372036854775807,
     "as_stored": "",
-    "as_resolved": ""
+    "as_resolved": "",
+    "default": null
   }
 }, {
   "name": "data",
@@ -1033,12 +990,11 @@ select system.table('test').columns
   "type_size": 4,
   "constraints": {
     "not_null": false,
-    "random": false,
-    "random_modulo": 9223372036854775807,
-    "default": null,
-    "as_identity": false,
+    "as_identity": 0,
+    "as_identity_modulo": 9223372036854775807,
     "as_stored": "",
-    "as_resolved": ""
+    "as_resolved": "",
+    "default": null
   }
 }]]
 # test: set identity
@@ -1053,12 +1009,11 @@ select system.table('test').columns
   "type_size": 4,
   "constraints": {
     "not_null": true,
-    "random": false,
-    "random_modulo": 9223372036854775807,
-    "default": null,
-    "as_identity": false,
+    "as_identity": 0,
+    "as_identity_modulo": 9223372036854775807,
     "as_stored": "",
-    "as_resolved": ""
+    "as_resolved": "",
+    "default": null
   }
 }, {
   "name": "data",
@@ -1066,12 +1021,11 @@ select system.table('test').columns
   "type_size": 4,
   "constraints": {
     "not_null": false,
-    "random": false,
-    "random_modulo": 9223372036854775807,
-    "default": null,
-    "as_identity": true,
+    "as_identity": 1,
+    "as_identity_modulo": 9223372036854775807,
     "as_stored": "",
-    "as_resolved": ""
+    "as_resolved": "",
+    "default": null
   }
 }]]
 # test: unset identity
@@ -1083,12 +1037,11 @@ select system.table('test').columns
   "type_size": 4,
   "constraints": {
     "not_null": true,
-    "random": false,
-    "random_modulo": 9223372036854775807,
-    "default": null,
-    "as_identity": false,
+    "as_identity": 0,
+    "as_identity_modulo": 9223372036854775807,
     "as_stored": "",
-    "as_resolved": ""
+    "as_resolved": "",
+    "default": null
   }
 }, {
   "name": "data",
@@ -1096,12 +1049,11 @@ select system.table('test').columns
   "type_size": 4,
   "constraints": {
     "not_null": false,
-    "random": false,
-    "random_modulo": 9223372036854775807,
-    "default": null,
-    "as_identity": false,
+    "as_identity": 0,
+    "as_identity_modulo": 9223372036854775807,
     "as_stored": "",
-    "as_resolved": ""
+    "as_resolved": "",
+    "default": null
   }
 }]]
 # test: set stored
@@ -1116,12 +1068,11 @@ select system.table('test').columns
   "type_size": 4,
   "constraints": {
     "not_null": true,
-    "random": false,
-    "random_modulo": 9223372036854775807,
-    "default": null,
-    "as_identity": false,
+    "as_identity": 0,
+    "as_identity_modulo": 9223372036854775807,
     "as_stored": "",
-    "as_resolved": ""
+    "as_resolved": "",
+    "default": null
   }
 }, {
   "name": "data",
@@ -1129,12 +1080,11 @@ select system.table('test').columns
   "type_size": 4,
   "constraints": {
     "not_null": false,
-    "random": false,
-    "random_modulo": 9223372036854775807,
-    "default": null,
-    "as_identity": false,
+    "as_identity": 0,
+    "as_identity_modulo": 9223372036854775807,
     "as_stored": "1 + 1",
-    "as_resolved": ""
+    "as_resolved": "",
+    "default": null
   }
 }]]
 # test: unset stored
@@ -1149,12 +1099,11 @@ select system.table('test').columns
   "type_size": 4,
   "constraints": {
     "not_null": true,
-    "random": false,
-    "random_modulo": 9223372036854775807,
-    "default": null,
-    "as_identity": false,
+    "as_identity": 0,
+    "as_identity_modulo": 9223372036854775807,
     "as_stored": "",
-    "as_resolved": ""
+    "as_resolved": "",
+    "default": null
   }
 }, {
   "name": "data",
@@ -1162,12 +1111,11 @@ select system.table('test').columns
   "type_size": 4,
   "constraints": {
     "not_null": false,
-    "random": false,
-    "random_modulo": 9223372036854775807,
-    "default": null,
-    "as_identity": false,
+    "as_identity": 0,
+    "as_identity_modulo": 9223372036854775807,
     "as_stored": "",
-    "as_resolved": ""
+    "as_resolved": "",
+    "default": null
   }
 }]]
 # test: set resolved
@@ -1185,12 +1133,11 @@ select system.table('test').columns
   "type_size": 4,
   "constraints": {
     "not_null": true,
-    "random": false,
-    "random_modulo": 9223372036854775807,
-    "default": null,
-    "as_identity": false,
+    "as_identity": 0,
+    "as_identity_modulo": 9223372036854775807,
     "as_stored": "",
-    "as_resolved": ""
+    "as_resolved": "",
+    "default": null
   }
 }, {
   "name": "data",
@@ -1198,12 +1145,11 @@ select system.table('test').columns
   "type_size": 4,
   "constraints": {
     "not_null": false,
-    "random": false,
-    "random_modulo": 9223372036854775807,
-    "default": 0,
-    "as_identity": false,
+    "as_identity": 0,
+    "as_identity_modulo": 9223372036854775807,
     "as_stored": "",
-    "as_resolved": "data + 1"
+    "as_resolved": "data + 1",
+    "default": 0
   }
 }]]
 # test: unset resolved
@@ -1219,12 +1165,11 @@ select system.table('test').columns
   "type_size": 4,
   "constraints": {
     "not_null": true,
-    "random": false,
-    "random_modulo": 9223372036854775807,
-    "default": null,
-    "as_identity": false,
+    "as_identity": 0,
+    "as_identity_modulo": 9223372036854775807,
     "as_stored": "",
-    "as_resolved": ""
+    "as_resolved": "",
+    "default": null
   }
 }, {
   "name": "data",
@@ -1232,12 +1177,11 @@ select system.table('test').columns
   "type_size": 4,
   "constraints": {
     "not_null": false,
-    "random": false,
-    "random_modulo": 9223372036854775807,
-    "default": 0,
-    "as_identity": false,
+    "as_identity": 0,
+    "as_identity_modulo": 9223372036854775807,
     "as_stored": "",
-    "as_resolved": ""
+    "as_resolved": "",
+    "default": 0
   }
 }]]
 drop table test

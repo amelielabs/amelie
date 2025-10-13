@@ -610,12 +610,11 @@ return select system.tables()
     "type_size": 4,
     "constraints": {
       "not_null": true,
-      "random": false,
-      "random_modulo": 9223372036854775807,
-      "default": null,
-      "as_identity": false,
+      "as_identity": 0,
+      "as_identity_modulo": 9223372036854775807,
       "as_stored": "",
-      "as_resolved": ""
+      "as_resolved": "",
+      "default": null
     }
   }],
   "indexes": [{

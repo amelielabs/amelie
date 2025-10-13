@@ -124,6 +124,7 @@ alter table test2 unset column abc default
 select system.table('test2').columns
 
 # test: alter table set identity
+alter table test2 unset column id as identity
 alter table test2 set column abc as identity
 select system.table('test2').columns
 

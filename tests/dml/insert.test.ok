@@ -59,12 +59,11 @@ select system.table('test').columns
   "type_size": 4,
   "constraints": {
     "not_null": true,
-    "random": false,
-    "random_modulo": 9223372036854775807,
-    "default": null,
-    "as_identity": false,
+    "as_identity": 0,
+    "as_identity_modulo": 9223372036854775807,
     "as_stored": "",
-    "as_resolved": ""
+    "as_resolved": "",
+    "default": null
   }
 }, {
   "name": "id2",
@@ -72,12 +71,11 @@ select system.table('test').columns
   "type_size": 4,
   "constraints": {
     "not_null": true,
-    "random": false,
-    "random_modulo": 9223372036854775807,
-    "default": null,
-    "as_identity": false,
+    "as_identity": 0,
+    "as_identity_modulo": 9223372036854775807,
     "as_stored": "",
-    "as_resolved": ""
+    "as_resolved": "",
+    "default": null
   }
 }]]
 insert into test values (123)
@@ -249,19 +247,6 @@ insert into test (id, data) values (null, 123)
 {"msg": "insert into test (id, data) values (❰null❱ ⟵ column 'id' value cannot be NULL"}
 select * from test
 []
-drop table test
-# test: insert serial multiple column
-create table test (id serial primary key, data serial)
-insert into test () values ()
-insert into test () values ()
-insert into test () values ()
-select * from test
-[[0, 0], [1, 1], [2, 2]]
-insert into test (data) values (0)
-insert into test (data) values (0)
-insert into test () values ()
-select * from test
-[[0, 0], [1, 1], [2, 2], [3, 0], [4, 0], [5, 5]]
 drop table test
 # test: insert insert error
 create table test (id int primary key)

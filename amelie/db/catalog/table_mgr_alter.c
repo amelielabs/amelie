@@ -327,6 +327,11 @@ table_mgr_column_add(TableMgr* self,
 		return NULL;
 	}
 
+	// ensure only one identity column defined
+	if (column->constraints.as_identity && table->config->columns.identity)
+		error("table '%.*s': already has identity column", str_size(name),
+		      str_of(name));
+
 	// physical column require a new table
 
 	// allocate new table
@@ -468,20 +473,38 @@ table_mgr_column_set(TableMgr* self,
 
 	switch (cmd) {
 	case DDL_TABLE_COLUMN_SET_DEFAULT:
+	{
 		constraints_set_default_str(&column->constraints, value);
 		break;
+	}
 	case DDL_TABLE_COLUMN_SET_IDENTITY:
-		constraints_set_as_identity(&column->constraints, !str_empty(value));
+	{
+		int type = IDENTITY_NONE;
+		if (! str_empty(value))
+		{
+			type = IDENTITY_SERIAL;
+			// ensure only one identity column is used
+			if (table->config->columns.identity)
+				error("table '%.*s': already has identity column", str_size(name),
+				      str_of(name));
+		}
+		constraints_set_as_identity(&column->constraints, type);
 		break;
+	}
 	case DDL_TABLE_COLUMN_SET_STORED:
+	{
 		constraints_set_as_stored(&column->constraints, value);
 		break;
+	}
 	case DDL_TABLE_COLUMN_SET_RESOLVED:
+	{
 		constraints_set_as_resolved(&column->constraints, value);
 		break;
-	default:
+	}
+	default: {
 		abort();
 		break;
+	}
 	}
 	columns_sync(&table->config->columns);
 	return true;
