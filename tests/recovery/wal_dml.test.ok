@@ -199,7 +199,7 @@ insert into test values (2, 0) on conflict do update set data = data + 1
 select system.state().lsn
 [5]
 select identity_of("public", "test")
-[4]
+[3]
 select * from test
 [[0, 0], [1, 1], [2, 3]]
 # test: restart

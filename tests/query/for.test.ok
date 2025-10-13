@@ -714,6 +714,12 @@ truncate test
 declare v int; for i in ([0,1,2,3,0,1,2,3,0,1,2,3,4,5]) do v := i::int; insert into test values (v, 0) on conflict do update set data = data + 1; end; select * from test
 [[0, 2], [1, 2], [2, 2], [3, 2], [4, 0], [5, 0]]
 drop table test
+# test: for .. insert (serial)
+create table test (id serial primary key)
+for i in ([0,1,2,3,4,5,6,7,8,9]) do insert into test () values (), (), (); end;
+select * from test;
+[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29]
+drop table test
 # test: for utility
 for i in ([1,2,3]) do show all; end
 {"msg": "for i in ([1,2,3]) do ❰show❱ ⟵ utility statement cannot be used here"}

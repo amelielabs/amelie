@@ -20,7 +20,7 @@ bench_upsert_create(Bench* self, BenchClient* client)
 {
 	unused(self);
 	Str str;
-	str_set_cstr(&str, "create table __bench.test (id int primary key random (100000), data int default 0) with (type = 'hash')");
+	str_set_cstr(&str, "create table __bench.test (id int primary key as identity random (100000), data int default 0) with (type = 'hash')");
 	bench_client_execute(client, &str);
 	if (opt_int_of(&self->unlogged))
 	{

@@ -184,6 +184,8 @@ drop table test
 create table test (id serial primary key, data int)
 insert into test (data) values (123)
 insert into test (id, data) values (1, 123)
+
+# test: insert serial directly (conflict)
 insert into test () values ()
 select * from test
 drop table test
@@ -191,6 +193,8 @@ drop table test
 # test: insert serial null
 create table test (id serial primary key, data int)
 insert into test (id, data) values (null, 123)
+select * from test
+insert into test (data) values (123)
 select * from test
 drop table test
 

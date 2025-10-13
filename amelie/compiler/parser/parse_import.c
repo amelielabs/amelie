@@ -49,9 +49,6 @@ parse_import_row(Stmt* self, Endpoint* endpoint)
 	// prepare row
 	auto row = set_reserve(stmt->values);
 
-	// set next sequence value
-	uint64_t seq = sequence_next(&table->seq);
-
 	auto list = endpoint->columns;
 	list_foreach(&columns->list)
 	{
@@ -71,7 +68,7 @@ parse_import_row(Stmt* self, Endpoint* endpoint)
 			} else
 			{
 				// default value, write IDENTITY, RANDOM or DEFAULT
-				parse_value_default(self, column, column_value, seq);
+				parse_value_default(self, column, column_value);
 				column_separator = false;
 			}
 		} else
@@ -142,9 +139,6 @@ parse_import_obj(Stmt* self, Endpoint* endpoint)
 	if (match_count == columns->count)
 		return;
 
-	// set next sequence value
-	uint64_t seq = sequence_next(&table->seq);
-
 	// default value, write IDENTITY, RANDOM or DEFAULT
 	list_foreach(&columns->list)
 	{
@@ -153,7 +147,7 @@ parse_import_obj(Stmt* self, Endpoint* endpoint)
 			continue;
 
 		auto column_value = &row[column->order];
-		parse_value_default(self, column, column_value, seq);
+		parse_value_default(self, column, column_value);
 
 		// ensure NOT NULL constraint and hash key
 		parse_value_validate(self, column, column_value, NULL);

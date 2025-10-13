@@ -263,25 +263,15 @@ parse_value(Stmt* self, From* from, Column* column, Value* value)
 }
 
 hot void
-parse_value_default(Stmt*    self,
-                    Column*  column,
-                    Value*   column_value,
-                    uint64_t seq)
+parse_value_default(Stmt* self, Column* column, Value* column_value)
 {
 	// IDENTITY or DEFAULT
 	unused(self);
 	auto cons = &column->constraints;
-	if (cons->as_identity == IDENTITY_SERIAL) {
-		value_set_int(column_value, seq);
-	} else
-	if (cons->as_identity == IDENTITY_RANDOM)
-	{
-		auto value = random_generate(&runtime()->random) % cons->as_identity_modulo;
-		value_set_int(column_value, value);
-	} else
-	{
+	if (cons->as_identity)
+		value_set_null(column_value);
+	else
 		value_decode(column_value, cons->value.start, NULL);
-	}
 }
 
 void
@@ -291,10 +281,11 @@ parse_value_validate(Stmt* self, Column* column, Value* value, Ast* expr)
 	if (value->type == TYPE_NULL)
 	{
 		// value can be NULL for generated column (will be rechecked later)
-		if (! str_empty(&column->constraints.as_stored))
+		auto cons = &column->constraints;
+		if (! str_empty(&cons->as_stored))
 			return;
 
-		if (column->constraints.not_null)
+		if (cons->not_null && !cons->as_identity)
 			stmt_error(self, expr, "column '%.*s' value cannot be NULL",
 			           str_size(&column->name),
 			           str_of(&column->name));

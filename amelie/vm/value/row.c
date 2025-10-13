@@ -49,13 +49,17 @@ row_create_prepare(Columns* columns, Value* values, Value* refs)
 		// null
 		if (value->type == TYPE_NULL)
 		{
-			if (column->constraints.not_null)
+			// identity column
+			if (column->constraints.as_identity)
 			{
-				// NOT NULL constraint
-				if (unlikely(column->constraints.not_null))
-					error("column '%.*s' cannot be NULL", str_size(&column->name),
-					      str_of(&column->name));
+				size += column->type_size;
+				continue;
 			}
+
+			// NOT NULL constraint
+			if (unlikely(column->constraints.not_null))
+				error("column '%.*s' cannot be NULL", str_size(&column->name),
+				      str_of(&column->name));
 			continue;
 		}
 
@@ -86,7 +90,8 @@ row_create_prepare(Columns* columns, Value* values, Value* refs)
 }
 
 hot Row*
-row_create(Heap* heap, Columns* columns, Value* values, Value* refs)
+row_create(Heap*   heap, Columns* columns, Value* values, Value* refs,
+           int64_t identity)
 {
 	auto     row_size = row_create_prepare(columns, values, refs);
 	auto     row = row_allocate(heap, columns->count, row_size);
@@ -103,6 +108,15 @@ row_create(Heap* heap, Columns* columns, Value* values, Value* refs)
 		// null
 		if (value->type == TYPE_NULL)
 		{
+			// set identity column value
+			if (columns->identity == column)
+			{
+				row_set(row, column->order, pos - (uint8_t*)row);
+				*(int64_t*)pos = identity;
+				pos += sizeof(int64_t);
+				continue;
+			}
+
 			row_set_null(row, column->order);
 			continue;
 		}

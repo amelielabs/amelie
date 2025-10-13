@@ -20,7 +20,7 @@ struct Vm
 	Code*     code;
 	CodeData* code_data;
 	Buf*      code_arg;
-	int       upsert;
+	uint8_t*  upsert;
 	Value*    refs;
 	Core*     core;
 	Dtr*      dtr;

@@ -44,7 +44,7 @@ vm_init(Vm* self, Core* core, Dtr* dtr)
 	self->code      = NULL;
 	self->code_data = NULL;
 	self->code_arg  = NULL;
-	self->upsert    = 0;
+	self->upsert    = NULL;
 	self->refs      = NULL;
 	self->core      = core;
 	self->dtr       = dtr;
@@ -78,7 +78,7 @@ vm_reset(Vm* self)
 	self->code_data = NULL;
 	self->code_arg  = NULL;
 	self->refs      = NULL;
-	self->upsert    = 0;
+	self->upsert    = NULL;
 }
 
 #define op_start goto *ops[(op)->op]
@@ -563,7 +563,7 @@ cexcluded:
 	// [result, column]
 	if (unlikely(! self->upsert))
 		error("unexpected EXCLUDED usage");
-	b = ((Value**)self->code_arg->start)[self->upsert - 1] + op->b;
+	b = *(Value**)(self->upsert - (sizeof(Value*) + sizeof(int64_t))) + op->b;
 	if (b->type != TYPE_REF)
 		value_copy(&r[op->a], b);
 	else

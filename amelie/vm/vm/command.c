@@ -69,10 +69,12 @@ csend_shard(Vm* self, Op* op)
 		auto set = (Set*)store;
 		for (auto order = 0; order < set->count_rows; order++)
 		{
-			auto row  = set_row(set, order);
-			auto hash = row_value_hash(keys, refs, row);
-			auto part = part_map_get(&table->part_list.map, hash);
-			auto req  = map[part->core->order];
+			auto row      = set_row(set, order);
+			auto identity = row_get_identity(table, refs, row);
+			auto hash     = row_value_hash(keys, refs, row, identity);
+			auto part     = part_map_get(&table->part_list.map, hash);
+
+			auto req = map[part->core->order];
 			if (req == NULL)
 			{
 				req = dispatch_add(dispatch, &dispatch_mgr->cache_req,
@@ -85,7 +87,9 @@ csend_shard(Vm* self, Op* op)
 					req_copy_refs(req, refs, op->e);
 				map[part->core->order] = req;
 			}
+
 			buf_write(&req->arg, &row, sizeof(Value*));
+			buf_write(&req->arg, &identity, sizeof(int64_t));
 		}
 	} else
 	{
@@ -94,8 +98,10 @@ csend_shard(Vm* self, Op* op)
 		Value* row;
 		for (; (row = store_iterator_at(it)); store_iterator_next(it))
 		{
-			auto hash = row_value_hash(keys, refs, row);
-			auto part = part_map_get(&table->part_list.map, hash);
+			auto identity = row_get_identity(table, refs, row);
+			auto hash     = row_value_hash(keys, refs, row, identity);
+			auto part     = part_map_get(&table->part_list.map, hash);
+
 			auto req  = map[part->core->order];
 			if (req == NULL)
 			{
@@ -110,6 +116,7 @@ csend_shard(Vm* self, Op* op)
 				map[part->core->order] = req;
 			}
 			buf_write(&req->arg, &row, sizeof(Value*));
+			buf_write(&req->arg, &identity, sizeof(int64_t));
 		}
 	}
 	if (op->e > 0)
@@ -442,6 +449,9 @@ ctable_prepare(Vm* self, Op* op)
 	cursor->part   = part_list_match(&table->part_list, self->core);
 	cursor->cursor = index_iterator(part_primary(cursor->part));
 	cursor->type   = TYPE_CURSOR;
+
+	// prepare upsert state
+	self->upsert   = self->code_arg->start;
 }
 
 hot void
@@ -455,11 +465,15 @@ cinsert(Vm* self, Op* op)
 	auto columns = table_columns(table);
 
 	// insert
-	auto list       = (Value**)self->code_arg->start;
-	int  list_count = buf_size(self->code_arg) / sizeof(Value*);
-	for (int i = 0; i < list_count; i++)
+	auto pos = self->code_arg->start;
+	auto end = self->code_arg->position;
+	while (pos < end)
 	{
-		auto row = row_create(&part->heap, columns, list[i], self->refs);
+		auto value    = *(Value**)pos;
+		auto identity = *(int64_t*)(pos + sizeof(Value*));
+		pos += sizeof(Value*) + sizeof(int64_t);
+
+		auto row = row_create(&part->heap, columns, value, self->refs, identity);
 		part_insert(part, self->tr, false, row);
 	}
 }
@@ -472,17 +486,15 @@ cupsert(Vm* self, Op* op)
 	assert(cursor->type == TYPE_CURSOR);
 
 	auto columns = table_columns(cursor->table);
-	int    count = buf_size(self->code_arg) / sizeof(Value*);
-
-	// insert or upsert
-	auto list = (Value**)self->code_arg->start;
-	while (self->upsert < count)
+	auto end = self->code_arg->position;
+	while (self->upsert < end)
 	{
 		// set cursor ref pointer to the current insert row
-		auto ref = list[self->upsert];
-		self->upsert++;
+		auto value    = *(Value**)self->upsert;
+		auto identity = *(int64_t*)(self->upsert + sizeof(Value*));
+		self->upsert += sizeof(Value*) + sizeof(int64_t);
 
-		auto row = row_create(&cursor->part->heap, columns, ref, self->refs);
+		auto row = row_create(&cursor->part->heap, columns, value, self->refs, identity);
 
 		// insert or get (open iterator in both cases)
 		auto exists = part_upsert(cursor->part, self->tr, cursor->cursor, row);
