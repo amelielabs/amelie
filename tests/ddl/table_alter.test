@@ -338,16 +338,6 @@ insert into test (id) values (1)
 select * from test
 select system.table('test').columns
 
-# test: set identity
-alter table test set column data as identity
-insert into test (id) values (2)
-select * from test
-select system.table('test').columns
-
-# test: unset identity
-alter table test unset column data as identity
-select system.table('test').columns
-
 # test: set stored
 alter table test set column data as (1 + 1) stored
 insert into test (id) values (3)

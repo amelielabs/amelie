@@ -477,20 +477,6 @@ table_mgr_column_set(TableMgr* self,
 		constraints_set_default_str(&column->constraints, value);
 		break;
 	}
-	case DDL_TABLE_COLUMN_SET_IDENTITY:
-	{
-		int type = IDENTITY_NONE;
-		if (! str_empty(value))
-		{
-			type = IDENTITY_SERIAL;
-			// ensure only one identity column is used
-			if (table->config->columns.identity)
-				error("table '%.*s': already has identity column", str_size(name),
-				      str_of(name));
-		}
-		constraints_set_as_identity(&column->constraints, type);
-		break;
-	}
 	case DDL_TABLE_COLUMN_SET_STORED:
 	{
 		constraints_set_as_stored(&column->constraints, value);

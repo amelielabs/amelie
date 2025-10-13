@@ -92,6 +92,7 @@ columns_sync(Columns* self)
 	// sync generated columns count
 	self->count_stored   = 0;
 	self->count_resolved = 0;
+	self->identity       = NULL;
 	list_foreach_safe(&self->list)
 	{
 		auto column = list_at(Column, link);
@@ -99,6 +100,8 @@ columns_sync(Columns* self)
 			self->count_stored++;
 		if (! str_empty(&column->constraints.as_resolved))
 			self->count_resolved++;
+		if (column->constraints.as_identity && !self->identity)
+			self->identity = column;
 	}
 }
 

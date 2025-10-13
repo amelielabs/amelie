@@ -254,10 +254,8 @@ insert into test (id) values(3)
 select * from test
 drop table test
 
-# test: constraint serial
+# test: constraint serial (non key column)
 create table test (id int primary key, data serial)
-select system.table('test').columns
-drop table test
 
 # test: constraint serial key
 create table test (id serial primary key)
@@ -266,6 +264,9 @@ drop table test
 
 # test: constraint serial multiple columns
 create table test (id serial primary key, data serial)
+
+# test: constraint serial as identity
+create table test (id serial primary key as identity)
 
 # test: with parsing
 create table test (id int primary key) with

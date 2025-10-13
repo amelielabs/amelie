@@ -166,7 +166,6 @@ parse_constraints(Stmt* self, Keys* keys, Column* column)
 
 	bool has_primary_key = false;
 	bool has_default     = false;
-	bool has_identity    = false;
 	bool done = false;
 	while (! done)
 	{
@@ -242,9 +241,8 @@ parse_constraints(Stmt* self, Keys* keys, Column* column)
 			auto identity = stmt_if(self, KIDENTITY);
 			if (identity)
 			{
-				// allow only one identity column
-				if (has_identity)
-					stmt_error(self, identity, "IDENTITY column defined twice");
+				if (cons->as_identity)
+					stmt_error(self, identity, "IDENTITY defined twice");
 
 				// ensure the column has type INT64
 				if (column->type != TYPE_INT || column->type_size < 4)
@@ -270,8 +268,6 @@ parse_constraints(Stmt* self, Keys* keys, Column* column)
 						constraints_set_as_identity_modulo(cons, value->integer);
 					}
 				}
-
-				has_identity = true;
 				break;
 			}
 
@@ -326,7 +322,7 @@ parse_columns(Stmt* self, Columns* columns, Keys* keys)
 	// (
 	stmt_expect(self, '(');
 
-	auto has_serial = false;
+	Column* identity = NULL;
 	for (;;)
 	{
 		// PRIMARY KEY (columns)
@@ -335,7 +331,6 @@ parse_columns(Stmt* self, Columns* columns, Keys* keys)
 			parse_key(self, keys);
 
 			// )
-			stmt_expect(self, ')');
 			break;
 		}
 
@@ -357,26 +352,49 @@ parse_columns(Stmt* self, Columns* columns, Keys* keys)
 		int type_size;
 		int type;
 		if (parse_type(self, &type, &type_size))
-		{
-			if (has_serial)
-				stmt_error(self, name, "IDENTITY column defined twice");
 			constraints_set_as_identity(&column->constraints, IDENTITY_SERIAL);
-			has_serial = true;
-		}
 		column_set_type(column, type, type_size);
 
 		// [PRIMARY KEY | NOT NULL | DEFAULT | AS]
 		parse_constraints(self, keys, column);
+
+		// ensure identity column only one
+		if (column->constraints.as_identity)
+		{
+			if (identity)
+				stmt_error(self, name, "only one IDENTITY column is allowed");
+			identity = column;
+		}
 
 		// ,
 		if (stmt_if(self, ','))
 			continue;
 
 		// )
-		auto rbr = stmt_expect(self, ')');
-		if (keys->list_count == 0)
-			stmt_error(self, rbr, "primary key is not defined");
 		break;
+	}
+
+	// )
+	auto rbr = stmt_expect(self, ')');
+
+	// ensure primary key is defined
+	if (keys->list_count == 0)
+		stmt_error(self, rbr, "primary key is not defined");
+
+	// ensure identity column is a key
+	if (identity)
+	{
+		auto match = false;
+		list_foreach(&keys->list)
+		{
+			auto key = list_at(Key, link);
+			if (key->column != identity)
+				continue;
+			match = true;
+			break;
+		}
+		if (! match)
+			stmt_error(self, rbr, "IDENTITY column can only be used with primary key");
 	}
 }
 
@@ -716,17 +734,9 @@ parse_table_alter(Stmt* self)
 				return;
 			}
 
-			// AS IDENTITY
 			// AS (expr) <STORED | RESOLVED>
 			if (stmt_if(self, KAS))
 			{
-				if (stmt_if(self, KIDENTITY))
-				{
-					stmt->type = TABLE_ALTER_COLUMN_SET_IDENTITY;
-					str_set(&stmt->value, "1", 1);
-					return;
-				}
-
 				// (
 				auto lbr = stmt_expect(self, '(');
 				// expr
@@ -756,7 +766,7 @@ parse_table_alter(Stmt* self)
 			}
 		}
 
-		stmt_error(self, NULL, "'IDENTITY | LOGGED | UNLOGGED | COLUMN DEFAULT | COLUMN AS' expected");
+		stmt_error(self, NULL, "'LOGGED | UNLOGGED | COLUMN DEFAULT | COLUMN AS' expected");
 		return;
 	}
 
@@ -764,7 +774,6 @@ parse_table_alter(Stmt* self)
 	if (stmt_if(self, KUNSET))
 	{
 		// UNSET COLUMN DEFAULT
-		// UNSET COLUMN AS IDENTITY
 		// UNSET COLUMN AS STORED
 		// UNSET COLUMN AS RESOLVED
 		if (stmt_if(self, KCOLUMN))
@@ -792,16 +801,13 @@ parse_table_alter(Stmt* self)
 			stmt_expect(self, KAS);
 
 			// IDENTITY | STORED | RESOLVED
-			if (stmt_if(self, KIDENTITY))
-				stmt->type = TABLE_ALTER_COLUMN_UNSET_IDENTITY;
-			else
 			if (stmt_if(self, KSTORED))
 				stmt->type = TABLE_ALTER_COLUMN_UNSET_STORED;
 			else
 			if (stmt_if(self, KRESOLVED))
 				stmt->type = TABLE_ALTER_COLUMN_UNSET_RESOLVED;
 			else
-				stmt_error(self, NULL, "'IDENTITY, STORED or RESOLVED' expected");
+				stmt_error(self, NULL, "'STORED or RESOLVED' expected");
 			return;
 		}
 

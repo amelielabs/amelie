@@ -66,7 +66,7 @@ static inline void
 keys_update(Keys* self)
 {
 	int order = 0;
-	list_foreach_safe(&self->list)
+	list_foreach(&self->list)
 	{
 		auto key = list_at(Key, link);
 		key->order = order;
@@ -78,7 +78,7 @@ keys_update(Keys* self)
 hot static inline Key*
 keys_find(Keys* self, Str* name)
 {
-	list_foreach_safe(&self->list)
+	list_foreach(&self->list)
 	{
 		auto key = list_at(Key, link);
 		if (str_compare(&key->column->name, name))
@@ -90,7 +90,7 @@ keys_find(Keys* self, Str* name)
 hot static inline Key*
 keys_find_column(Keys* self, int order)
 {
-	list_foreach_safe(&self->list)
+	list_foreach(&self->list)
 	{
 		auto key = list_at(Key, link);
 		if (key->ref == order)
@@ -102,7 +102,7 @@ keys_find_column(Keys* self, int order)
 static inline void
 keys_copy(Keys* self, Keys* src)
 {
-	list_foreach_safe(&src->list)
+	list_foreach(&src->list)
 	{
 		auto copy = key_copy(list_at(Key, link));
 		keys_add(self, copy);

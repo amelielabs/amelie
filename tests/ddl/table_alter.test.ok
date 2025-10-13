@@ -64,7 +64,7 @@ insert into test () values ()
 select * from test
 [[0, 0], [1, 0], [2, 0]]
 alter table test set
-{"msg": "alter table test set ⟵ 'IDENTITY | LOGGED | UNLOGGED | COLUMN DEFAULT | COLUMN AS' expected"}
+{"msg": "alter table test set ⟵ 'LOGGED | UNLOGGED | COLUMN DEFAULT | COLUMN AS' expected"}
 alter table test set identity 
 {"msg": "alter table test set identity  ⟵ TO expected"}
 alter table test set identity 123
@@ -997,70 +997,11 @@ select system.table('test').columns
     "default": null
   }
 }]]
-# test: set identity
-alter table test set column data as identity
-insert into test (id) values (2)
-select * from test
-[[0, 0], [1, null], [2, 2]]
-select system.table('test').columns
-[[{
-  "name": "id",
-  "type": 2,
-  "type_size": 4,
-  "constraints": {
-    "not_null": true,
-    "as_identity": 0,
-    "as_identity_modulo": 9223372036854775807,
-    "as_stored": "",
-    "as_resolved": "",
-    "default": null
-  }
-}, {
-  "name": "data",
-  "type": 2,
-  "type_size": 4,
-  "constraints": {
-    "not_null": false,
-    "as_identity": 1,
-    "as_identity_modulo": 9223372036854775807,
-    "as_stored": "",
-    "as_resolved": "",
-    "default": null
-  }
-}]]
-# test: unset identity
-alter table test unset column data as identity
-select system.table('test').columns
-[[{
-  "name": "id",
-  "type": 2,
-  "type_size": 4,
-  "constraints": {
-    "not_null": true,
-    "as_identity": 0,
-    "as_identity_modulo": 9223372036854775807,
-    "as_stored": "",
-    "as_resolved": "",
-    "default": null
-  }
-}, {
-  "name": "data",
-  "type": 2,
-  "type_size": 4,
-  "constraints": {
-    "not_null": false,
-    "as_identity": 0,
-    "as_identity_modulo": 9223372036854775807,
-    "as_stored": "",
-    "as_resolved": "",
-    "default": null
-  }
-}]]
 # test: set stored
 alter table test set column data as (1 + 1) stored
 insert into test (id) values (3)
 select * from test
-[[0, 0], [1, null], [2, 2], [3, 2]]
+[[0, 0], [1, null], [3, 2]]
 select system.table('test').columns
 [[{
   "name": "id",
@@ -1091,7 +1032,7 @@ select system.table('test').columns
 alter table test unset column data as stored
 insert into test (id) values (4)
 select * from test
-[[0, 0], [1, null], [2, 2], [3, 2], [4, null]]
+[[0, 0], [1, null], [3, 2], [4, null]]
 select system.table('test').columns
 [[{
   "name": "id",
@@ -1125,7 +1066,7 @@ insert into test (id) values (5)
 insert into test (id) values (5)
 insert into test (id) values (5)
 select * from test
-[[0, 0], [1, null], [2, 2], [3, 2], [4, null], [5, 2]]
+[[0, 0], [1, null], [3, 2], [4, null], [5, 2]]
 select system.table('test').columns
 [[{
   "name": "id",
@@ -1157,7 +1098,7 @@ alter table test unset column data as resolved
 insert into test (id) values (5)
 {"msg": "index 'primary': unique key constraint violation"}
 select * from test
-[[0, 0], [1, null], [2, 2], [3, 2], [4, null], [5, 2]]
+[[0, 0], [1, null], [3, 2], [4, null], [5, 2]]
 select system.table('test').columns
 [[{
   "name": "id",

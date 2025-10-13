@@ -123,11 +123,6 @@ select system.table('test2').columns
 alter table test2 unset column abc default
 select system.table('test2').columns
 
-# test: alter table set identity
-alter table test2 unset column id as identity
-alter table test2 set column abc as identity
-select system.table('test2').columns
-
 # test: restart
 disconnect S0
 close E0
@@ -136,10 +131,6 @@ connect E0 S0 127.0.0.1:3485
 
 # test: validate state
 select system.state().lsn
-select system.table('test2').columns
-
-# test: alter table unset identity
-alter table test2 unset column abc as identity
 select system.table('test2').columns
 
 # test: restart

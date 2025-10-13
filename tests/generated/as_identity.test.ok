@@ -33,39 +33,5 @@ insert into test () values ()
 select * from test
 [0, 1, 2]
 drop table test
-# test: as identity column
-create table test (id int primary key, data int as identity)
-select system.table('test').columns
-[[{
-  "name": "id",
-  "type": 2,
-  "type_size": 4,
-  "constraints": {
-    "not_null": true,
-    "as_identity": 0,
-    "as_identity_modulo": 9223372036854775807,
-    "as_stored": "",
-    "as_resolved": "",
-    "default": null
-  }
-}, {
-  "name": "data",
-  "type": 2,
-  "type_size": 4,
-  "constraints": {
-    "not_null": false,
-    "as_identity": 1,
-    "as_identity_modulo": 9223372036854775807,
-    "as_stored": "",
-    "as_resolved": "",
-    "default": null
-  }
-}]]
-insert into test (id) values (1)
-insert into test (id) values (2)
-insert into test (id) values (3)
-select * from test
-[[1, 0], [2, 1], [3, 2]]
-drop table test
 disconnect S0
 close E0

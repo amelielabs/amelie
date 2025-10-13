@@ -296,7 +296,6 @@ catalog_execute(Catalog* self, Tr* tr, uint8_t* op, int flags)
 		break;
 	}
 	case DDL_TABLE_COLUMN_SET_DEFAULT:
-	case DDL_TABLE_COLUMN_SET_IDENTITY:
 	case DDL_TABLE_COLUMN_SET_STORED:
 	case DDL_TABLE_COLUMN_SET_RESOLVED:
 	{

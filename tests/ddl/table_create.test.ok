@@ -933,35 +933,9 @@ select * from test
   "data": [1, 2, 3]
 }]]
 drop table test
-# test: constraint serial
+# test: constraint serial (non key column)
 create table test (id int primary key, data serial)
-select system.table('test').columns
-[[{
-  "name": "id",
-  "type": 2,
-  "type_size": 4,
-  "constraints": {
-    "not_null": true,
-    "as_identity": 0,
-    "as_identity_modulo": 9223372036854775807,
-    "as_stored": "",
-    "as_resolved": "",
-    "default": null
-  }
-}, {
-  "name": "data",
-  "type": 2,
-  "type_size": 8,
-  "constraints": {
-    "not_null": false,
-    "as_identity": 1,
-    "as_identity_modulo": 9223372036854775807,
-    "as_stored": "",
-    "as_resolved": "",
-    "default": null
-  }
-}]]
-drop table test
+{"msg": "create table test (id int primary key, data serial❰)❱ ⟵ IDENTITY column can only be used with primary key"}
 # test: constraint serial key
 create table test (id serial primary key)
 select system.table('test').columns
@@ -981,7 +955,10 @@ select system.table('test').columns
 drop table test
 # test: constraint serial multiple columns
 create table test (id serial primary key, data serial)
-{"msg": "create table test (id serial primary key, ❰data❱ ⟵ IDENTITY column defined twice"}
+{"msg": "create table test (id serial primary key, ❰data❱ ⟵ only one IDENTITY column is allowed"}
+# test: constraint serial as identity
+create table test (id serial primary key as identity)
+{"msg": "create table test (id serial primary key as ❰identity❱ ⟵ IDENTITY defined twice"}
 # test: with parsing
 create table test (id int primary key) with
 {"msg": "create table test (id int primary key) with ⟵ ( expected"}
