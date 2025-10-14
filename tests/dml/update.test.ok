@@ -39,7 +39,7 @@ explain update test set data = data + 1
   "bytecode": {
     "frontend": {
       "00": "send_all            0      -      -1    # public.test (last)",
-      "01": "ret                 0      0      0     "
+      "01": "ret                 -1     -      -     "
     },
     "backend": {
       "00": "table_open_part     0      0      9     # public.test (primary)",
@@ -52,7 +52,7 @@ explain update test set data = data + 1
       "07": "update              0      1      0     ",
       "08": "table_next          0      1      0     ",
       "09": "free                0      0      0     ",
-      "10": "ret                 0      0      0     "
+      "10": "ret                 -1     -      -     "
     }
   },
   "access": [["public.test", "rw"]]
@@ -90,7 +90,7 @@ explain update test.test set data = data + 1
   "bytecode": {
     "frontend": {
       "00": "send_all            0      -      -1    # test.test (last)",
-      "01": "ret                 0      0      0     "
+      "01": "ret                 -1     -      -     "
     },
     "backend": {
       "00": "table_open_part     0      0      9     # test.test (primary)",
@@ -103,7 +103,7 @@ explain update test.test set data = data + 1
       "07": "update              0      1      0     ",
       "08": "table_next          0      1      0     ",
       "09": "free                0      0      0     ",
-      "10": "ret                 0      0      0     "
+      "10": "ret                 -1     -      -     "
     }
   },
   "access": [["test.test", "rw"]]
@@ -123,7 +123,7 @@ explain update test set a = a + 1, b = b - 1
   "bytecode": {
     "frontend": {
       "00": "send_all            0      -      -1    # public.test (last)",
-      "01": "ret                 0      0      0     "
+      "01": "ret                 -1     -      -     "
     },
     "backend": {
       "00": "table_open_part     0      0      15    # public.test (primary)",
@@ -142,7 +142,7 @@ explain update test set a = a + 1, b = b - 1
       "13": "update              0      2      0     ",
       "14": "table_next          0      1      0     ",
       "15": "free                0      0      0     ",
-      "16": "ret                 0      0      0     "
+      "16": "ret                 -1     -      -     "
     }
   },
   "access": [["public.test", "rw"]]
@@ -172,7 +172,7 @@ explain update test set data = {"id": data.id::int + 1}
   "bytecode": {
     "frontend": {
       "00": "send_all            0      -      -1    # public.test (last)",
-      "01": "ret                 0      0      0     "
+      "01": "ret                 -1     -      -     "
     },
     "backend": {
       "00": "table_open_part     0      0      17    # public.test (primary)",
@@ -193,7 +193,7 @@ explain update test set data = {"id": data.id::int + 1}
       "15": "update              0      1      0     ",
       "16": "table_next          0      1      0     ",
       "17": "free                0      0      0     ",
-      "18": "ret                 0      0      0     "
+      "18": "ret                 -1     -      -     "
     }
   },
   "access": [["public.test", "rw"]]
@@ -243,7 +243,7 @@ explain update test set data.id = data.id::int + 1
   "bytecode": {
     "frontend": {
       "00": "send_all            0      -      -1    # public.test (last)",
-      "01": "ret                 0      0      0     "
+      "01": "ret                 -1     -      -     "
     },
     "backend": {
       "00": "table_open_part     0      0      19    # public.test (primary)",
@@ -266,7 +266,7 @@ explain update test set data.id = data.id::int + 1
       "17": "update              0      1      0     ",
       "18": "table_next          0      1      0     ",
       "19": "free                0      0      0     ",
-      "20": "ret                 0      0      0     "
+      "20": "ret                 -1     -      -     "
     }
   },
   "access": [["public.test", "rw"]]
@@ -353,7 +353,7 @@ explain update test set data = data + 1 where id = 0
   "bytecode": {
     "frontend": {
       "00": "send_lookup         0      -      -     # public.test (last)",
-      "01": "ret                 0      0      0     "
+      "01": "ret                 -1     -      -     "
     },
     "backend": {
       "00": "int                 0      -      0     # 0",
@@ -371,7 +371,7 @@ explain update test set data = data + 1 where id = 0
       "12": "push                3      0      0     ",
       "13": "update              0      1      0     ",
       "14": "free                0      0      0     ",
-      "15": "ret                 0      0      0     "
+      "15": "ret                 -1     -      -     "
     }
   },
   "access": [["public.test", "rw"]]
@@ -392,7 +392,7 @@ explain update test set data = data + 1 where id >= 1
   "bytecode": {
     "frontend": {
       "00": "send_all            0      -      -1    # public.test (last)",
-      "01": "ret                 0      0      0     "
+      "01": "ret                 -1     -      -     "
     },
     "backend": {
       "00": "int                 0      -      0     # 1",
@@ -411,7 +411,7 @@ explain update test set data = data + 1 where id >= 1
       "13": "update              0      1      0     ",
       "14": "table_next          0      3      0     ",
       "15": "free                0      0      0     ",
-      "16": "ret                 0      0      0     "
+      "16": "ret                 -1     -      -     "
     }
   },
   "access": [["public.test", "rw"]]
@@ -471,8 +471,7 @@ explain update test set data = data + 1 returning *
       "00": "union               0      0      0     ",
       "01": "send_all            0      -      0     # public.test (last)",
       "02": "union_recv          0      0      0     ",
-      "03": "content             0      -      -     ",
-      "04": "ret                 0      0      0     "
+      "03": "ret                 0      -      -     "
     },
     "backend": {
       "00": "set                 0      2      0     ",
@@ -491,8 +490,7 @@ explain update test set data = data + 1 returning *
       "13": "set_add             0      0      0     ",
       "14": "table_next          1      2      0     ",
       "15": "free                1      0      0     ",
-      "16": "result              0      0      0     ",
-      "17": "ret                 0      0      0     "
+      "16": "ret                 0      -      -     "
     }
   },
   "access": [["public.test", "rw"]]

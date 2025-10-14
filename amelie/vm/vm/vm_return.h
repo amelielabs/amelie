@@ -1,0 +1,29 @@
+#pragma once
+
+//
+// amelie.
+//
+// Real-Time SQL OLTP Database.
+//
+// Copyright (c) 2024 Dmitry Simonenko.
+// Copyright (c) 2024 Amelie Labs.
+//
+// AGPL-3.0 Licensed.
+//
+
+typedef struct VmReturn VmReturn;
+
+struct VmReturn
+{
+	Value*   value;
+	Columns* columns;
+	Str*     fmt;
+};
+
+static inline void
+vm_return_init(VmReturn* self)
+{
+	self->value   = NULL;
+	self->columns = NULL;
+	self->fmt     = NULL;
+}

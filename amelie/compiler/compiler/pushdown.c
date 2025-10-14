@@ -40,7 +40,7 @@
 #include <amelie_parser.h>
 #include <amelie_compiler.h>
 
-static inline void
+static inline int
 pushdown_group_by(Compiler* self, AstSelect* select)
 {
 	// SELECT FROM GROUP BY [WHERE] [HAVING] [ORDER BY] [LIMIT/OFFSET]
@@ -113,14 +113,10 @@ pushdown_group_by(Compiler* self, AstSelect* select)
 
 	// CSET_SORT
 	op1(self, CSET_SORT, select->rset_agg);
-
-	// CRESULT (return agg set)
-	op1(self, CRESULT, select->rset_agg);
-	runpin(self, select->rset_agg);
-	select->rset_agg = -1;
+	return select->rset_agg;
 }
 
-static inline void
+static inline int
 pushdown_order_by(Compiler* self, AstSelect* select)
 {
 	// write order by key types
@@ -171,13 +167,10 @@ pushdown_order_by(Compiler* self, AstSelect* select)
 
 	// CSET_SORT
 	op1(self, CSET_SORT, select->rset);
-
-	// CRESULT (return set)
-	op1(self, CRESULT, select->rset);
-	runpin(self, select->rset);
+	return select->rset;
 }
 
-static inline void
+static inline int
 pushdown_limit(Compiler* self, AstSelect* select)
 {
 	// create result set
@@ -204,12 +197,10 @@ pushdown_limit(Compiler* self, AstSelect* select)
 	     emit_select_on_match,
 	     select);
 
-	// CRESULT (return set)
-	op1(self, CRESULT, select->rset);
-	runpin(self, select->rset);
+	return select->rset;
 }
 
-hot void
+hot int
 pushdown(Compiler* self, Ast* ast)
 {
 	AstSelect* select = ast_select_of(ast);
@@ -226,21 +217,15 @@ pushdown(Compiler* self, Ast* ast)
 	// SELECT FROM GROUP BY [WHERE] [HAVING] [ORDER BY] [LIMIT/OFFSET]
 	// SELECT aggregate FROM
 	if (! from_empty(&select->from_group))
-	{
-		pushdown_group_by(self, select);
-		return;
-	}
+		return pushdown_group_by(self, select);
 
 	// SELECT FROM [WHERE] ORDER BY [LIMIT/OFFSET]
 	if (select->expr_order_by.count > 0)
-	{
-		pushdown_order_by(self, select);
-		return;
-	}
+		return pushdown_order_by(self, select);
 
 	// SELECT FROM [WHERE] LIMIT/OFFSET
 	// SELECT FROM [WHERE]
-	pushdown_limit(self, select);
+	return pushdown_limit(self, select);
 }
 
 static int

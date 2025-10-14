@@ -229,11 +229,10 @@ emit_ddl(Compiler* self)
 	op2(self, CDDL, offset, flags);
 }
 
-static void
+static int
 emit_show(Compiler* self)
 {
 	auto stmt = compiler_stmt(self);
-	auto data = &self->code_data->data;
 	auto arg  = ast_show_of(stmt->ast);
 
 	// find system.show() function
@@ -262,13 +261,7 @@ emit_show(Compiler* self)
 	runpin(self, r);
 
 	r = op4(self, CCALL, rpin(self, fn->type), (intptr_t)fn, 4, -1);
-
-	// content_json
-	auto offset = buf_size(data);
-	encode_string(data, &arg->section);
-
-	op3(self, CCONTENT_JSON, r, offset, (intptr_t)&arg->format);
-	runpin(self, r);
+	return r;
 }
 
 void
@@ -283,11 +276,15 @@ emit_utility(Compiler* self)
 	program->lock = LOCK_EXCLUSIVE;
 	program->utility = true;
 
+	int r = -1;
+	Str* fmt = NULL;
 	switch (stmt->id) {
 	// system
 	case STMT_SHOW:
 	{
-		emit_show(self);
+		auto arg = ast_show_of(stmt->ast);
+		fmt = &arg->format;
+		r = emit_show(self);
 
 		// shared lock
 		program->lock = LOCK_SHARED;
@@ -323,11 +320,8 @@ emit_utility(Compiler* self)
 			str_set_cstr(&str, "1 year");
 			encode_string(data, &str);
 		}
-		auto r = op2(self, CUSER_CREATE_TOKEN, rpin(self, TYPE_JSON), offset);
-		offset = buf_size(data);
-		encode_raw(data, "token", 5);
-		op3(self, CCONTENT_JSON, r, offset, (intptr_t)self->parser.local->format);
-		runpin(self, r);
+		r = op2(self, CUSER_CREATE_TOKEN, rpin(self, TYPE_JSON), offset);
+		fmt = self->parser.local->format;
 
 		// shared lock
 		program->lock = LOCK_SHARED;
@@ -408,5 +402,8 @@ emit_utility(Compiler* self)
 	}
 	}
 
-	op0(self, CRET);
+	// CRET
+	op3(self, CRET, r, 0, (intptr_t)fmt);
+	if (r != -1)
+		runpin(self, r);
 }

@@ -49,8 +49,6 @@ vm_init(Vm* self, Core* core, Dtr* dtr)
 	self->core      = core;
 	self->dtr       = dtr;
 	self->program   = NULL;
-	self->result    = NULL;
-	self->content   = NULL;
 	self->tr        = NULL;
 	self->local     = NULL;
 	reg_init(&self->r);
@@ -94,8 +92,7 @@ vm_run(Vm*       self,
        CodeData* code_data,
        Buf*      code_arg,
        Value*    refs,
-       Value*    result,
-       Content*  content,
+       VmReturn* ret,
        int       start)
 {
 	self->local     = local;
@@ -105,8 +102,6 @@ vm_run(Vm*       self,
 	self->code_data = code_data;
 	self->code_arg  = code_arg;
 	self->refs      = refs;
-	self->result    = result;
-	self->content   = content;
 	call_mgr_prepare(&self->call_mgr, local, code_data);
 
 	const void* ops[] =
@@ -383,9 +378,6 @@ vm_run(Vm*       self,
 
 		// result
 		&&cassign,
-		&&cresult,
-		&&ccontent,
-		&&ccontent_json,
 		&&cref
 	};
 
@@ -411,6 +403,13 @@ vm_run(Vm*       self,
 	op_start;
 
 cret:
+	// [result, columns, fmt]
+	if (op->a != -1)
+	{
+		ret->value   = &r[op->a];
+		ret->columns = (Columns*)op->b;
+		ret->fmt     = (Str*)op->c;
+	}
 	return;
 
 cnop:
@@ -1854,23 +1853,6 @@ cclose:
 cassign:
 	// [result, value, column]
 	cassign(self, op);
-	op_next;
-
-cresult:
-	// [result]
-	value_move(self->result, &r[op->a]);
-	op_next;
-
-ccontent:
-	// [r, columns*, format*]
-	content_write(self->content, (Str*)op->c, (Columns*)op->b, &r[op->a]);
-	op_next;
-
-ccontent_json:
-	// [r, column_offset, format*]
-	json = code_data_at(self->code_data, op->b);
-	json_read_string(&json, &string);
-	content_write_json(self->content, (Str*)op->c, &string, &r[op->a]);
 	op_next;
 
 cref:

@@ -20,8 +20,7 @@ explain begin; declare a int; select a; end;
   "bytecode": {
     "frontend": {
       "00": "dup                 1      0      0     ",
-      "01": "content             1      -      -     ",
-      "02": "ret                 0      0      0     "
+      "01": "ret                 1      -      -     "
     }
   },
   "access": []
@@ -34,8 +33,7 @@ explain declare a int; select a
   "bytecode": {
     "frontend": {
       "00": "dup                 1      0      0     ",
-      "01": "content             1      -      -     ",
-      "02": "ret                 0      0      0     "
+      "01": "ret                 1      -      -     "
     }
   },
   "access": []
@@ -52,8 +50,7 @@ explain declare a int; declare b int; select a, b
       "03": "dup                 3      1      0     ",
       "04": "push                3      0      0     ",
       "05": "set_add             2      0      0     ",
-      "06": "content             2      -      -     ",
-      "07": "ret                 0      0      0     "
+      "06": "ret                 2      -      -     "
     }
   },
   "access": []
@@ -92,7 +89,7 @@ explain declare x int; x := 1
       "00": "int                 1      -      0     # 1",
       "01": "assign              0      1      0     ",
       "02": "free                1      0      0     ",
-      "03": "ret                 0      0      0     "
+      "03": "ret                 -1     -      -     "
     }
   },
   "access": []
@@ -108,8 +105,7 @@ explain declare x int; x := 1; select x
       "01": "assign              0      1      0     ",
       "02": "free                1      0      0     ",
       "03": "dup                 1      0      0     ",
-      "04": "content             1      -      -     ",
-      "05": "ret                 0      0      0     "
+      "04": "ret                 1      -      -     "
     }
   },
   "access": []
@@ -129,8 +125,7 @@ explain declare x json; x := {"id": 48}; select x.id
       "03": "dup                 1      0      0     ",
       "04": "string              2      7      0     # id",
       "05": "dotjs               3      1      2     ",
-      "06": "content             3      -      -     ",
-      "07": "ret                 0      0      0     "
+      "06": "ret                 3      -      -     "
     }
   },
   "access": []
@@ -146,8 +141,7 @@ explain declare x int; x := null; select x
       "01": "assign              0      1      0     ",
       "02": "free                1      0      0     ",
       "03": "dup                 1      0      0     ",
-      "04": "content             1      -      -     ",
-      "05": "ret                 0      0      0     "
+      "04": "ret                 1      -      -     "
     }
   },
   "access": []
@@ -182,8 +176,7 @@ explain declare x int; x := 1; select * from test where id = x
       "07": "send_lookup_by      0      -      -     # public.test (last)",
       "08": "union_recv          1      0      0     ",
       "09": "union_set           1      0      -1    ",
-      "10": "content             1      -      -     ",
-      "11": "ret                 0      0      0     "
+      "10": "ret                 1      -      -     "
     },
     "backend": {
       "00": "set                 1      1      0     ",
@@ -198,8 +191,7 @@ explain declare x int; x := 1; select * from test where id = x
       "09": "push                3      0      0     ",
       "10": "set_add             1      0      0     ",
       "11": "free                2      0      0     ",
-      "12": "result              1      0      0     ",
-      "13": "ret                 0      0      0     "
+      "12": "ret                 1      -      -     "
     }
   },
   "access": [["public.test", "ro"]]
@@ -272,8 +264,7 @@ explain declare x json := [1,2,3]; select * from x as it;
       "09": "json_next           3      6      0     ",
       "10": "free                3      0      0     ",
       "11": "free                2      0      0     ",
-      "12": "content             1      -      -     ",
-      "13": "ret                 0      0      0     "
+      "12": "ret                 1      -      -     "
     }
   },
   "access": []
@@ -300,8 +291,7 @@ explain declare x json := [1,2,3]; select * from (x) as it;
       "09": "json_next           3      6      0     ",
       "10": "free                3      0      0     ",
       "11": "free                2      0      0     ",
-      "12": "content             1      -      -     ",
-      "13": "ret                 0      0      0     "
+      "12": "ret                 1      -      -     "
     }
   },
   "access": []
@@ -363,8 +353,7 @@ explain declare x table (a int, b int); select * into x from test; select * from
       "13": "store_next          3      8      0     ",
       "14": "free                3      0      0     ",
       "15": "free                2      0      0     ",
-      "16": "content             1      -      -     ",
-      "17": "ret                 0      0      0     "
+      "16": "ret                 1      -      -     "
     },
     "backend": {
       "00": "set                 1      2      0     ",
@@ -376,8 +365,7 @@ explain declare x table (a int, b int); select * into x from test; select * from
       "06": "set_add             1      0      0     ",
       "07": "table_next          2      2      0     ",
       "08": "free                2      0      0     ",
-      "09": "result              1      0      0     ",
-      "10": "ret                 0      0      0     "
+      "09": "ret                 1      -      -     "
     }
   },
   "access": [["public.test", "ro"]]

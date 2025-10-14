@@ -62,8 +62,7 @@ explain select [current_date]
   "bytecode": {
     "frontend": {
       "00": "json                0      0      0     ",
-      "01": "content             0      -      -     ",
-      "02": "ret                 0      0      0     "
+      "01": "ret                 0      -      -     "
     }
   },
   "access": []
@@ -73,8 +72,7 @@ explain select [date '1970-01-01']
   "bytecode": {
     "frontend": {
       "00": "json                0      0      0     ",
-      "01": "content             0      -      -     ",
-      "02": "ret                 0      0      0     "
+      "01": "ret                 0      -      -     "
     }
   },
   "access": []
@@ -99,8 +97,7 @@ explain select now()::date between date '0001-01-01' and date '9999-12-31'
       "08": "date                1      5373484 0     ",
       "09": "lteii               3      0      1     ",
       "10": "and                 0      2      3     ",
-      "11": "content             0      -      -     ",
-      "12": "ret                 0      0      0     "
+      "11": "ret                 0      -      -     "
     }
   },
   "access": []
@@ -116,8 +113,7 @@ explain select date '1970-01-01' between date '1970-01-01' and date '1970-01-01'
       "04": "date                1      2440588 0     ",
       "05": "lteii               3      0      1     ",
       "06": "and                 0      2      3     ",
-      "07": "content             0      -      -     ",
-      "08": "ret                 0      0      0     "
+      "07": "ret                 0      -      -     "
     }
   },
   "access": []

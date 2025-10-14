@@ -25,8 +25,6 @@ struct Vm
 	Core*     core;
 	Dtr*      dtr;
 	Program*  program;
-	Value*    result;
-	Content*  content;
 	Tr*       tr;
 	Local*    local;
 	CallMgr   call_mgr;
@@ -36,4 +34,4 @@ void vm_init(Vm*, Core*, Dtr*);
 void vm_free(Vm*);
 void vm_reset(Vm*);
 void vm_run(Vm*, Local*, Tr*, Program*, Code*, CodeData*, Buf*, Value*,
-            Value*, Content*, int);
+            VmReturn*, int);

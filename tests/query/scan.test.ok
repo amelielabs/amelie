@@ -11,8 +11,7 @@ explain select * from test where id > 1
       "01": "send_all            0      -      0     # public.test (last)",
       "02": "union_recv          0      0      0     ",
       "03": "union_set           0      0      -1    ",
-      "04": "content             0      -      -     ",
-      "05": "ret                 0      0      0     "
+      "04": "ret                 0      -      -     "
     },
     "backend": {
       "00": "set                 0      2      0     ",
@@ -30,8 +29,7 @@ explain select * from test where id > 1
       "12": "set_add             0      0      0     ",
       "13": "table_next          1      4      0     ",
       "14": "free                1      0      0     ",
-      "15": "result              0      0      0     ",
-      "16": "ret                 0      0      0     "
+      "15": "ret                 0      -      -     "
     }
   },
   "access": [["public.test", "ro"]]
@@ -46,8 +44,7 @@ explain select * from test where id >= 1
       "01": "send_all            0      -      0     # public.test (last)",
       "02": "union_recv          0      0      0     ",
       "03": "union_set           0      0      -1    ",
-      "04": "content             0      -      -     ",
-      "05": "ret                 0      0      0     "
+      "04": "ret                 0      -      -     "
     },
     "backend": {
       "00": "set                 0      2      0     ",
@@ -65,8 +62,7 @@ explain select * from test where id >= 1
       "12": "set_add             0      0      0     ",
       "13": "table_next          1      4      0     ",
       "14": "free                1      0      0     ",
-      "15": "result              0      0      0     ",
-      "16": "ret                 0      0      0     "
+      "15": "ret                 0      -      -     "
     }
   },
   "access": [["public.test", "ro"]]
@@ -85,8 +81,7 @@ explain select * from test where test.id > 1
       "01": "send_all            0      -      0     # public.test (last)",
       "02": "union_recv          0      0      0     ",
       "03": "union_set           0      0      -1    ",
-      "04": "content             0      -      -     ",
-      "05": "ret                 0      0      0     "
+      "04": "ret                 0      -      -     "
     },
     "backend": {
       "00": "set                 0      2      0     ",
@@ -104,8 +99,7 @@ explain select * from test where test.id > 1
       "12": "set_add             0      0      0     ",
       "13": "table_next          1      4      0     ",
       "14": "free                1      0      0     ",
-      "15": "result              0      0      0     ",
-      "16": "ret                 0      0      0     "
+      "15": "ret                 0      -      -     "
     }
   },
   "access": [["public.test", "ro"]]
@@ -120,8 +114,7 @@ explain select * from test where test.id > -1
       "01": "send_all            0      -      0     # public.test (last)",
       "02": "union_recv          0      0      0     ",
       "03": "union_set           0      0      -1    ",
-      "04": "content             0      -      -     ",
-      "05": "ret                 0      0      0     "
+      "04": "ret                 0      -      -     "
     },
     "backend": {
       "00": "set                 0      2      0     ",
@@ -139,8 +132,7 @@ explain select * from test where test.id > -1
       "12": "set_add             0      0      0     ",
       "13": "table_next          1      4      0     ",
       "14": "free                1      0      0     ",
-      "15": "result              0      0      0     ",
-      "16": "ret                 0      0      0     "
+      "15": "ret                 0      -      -     "
     }
   },
   "access": [["public.test", "ro"]]
@@ -159,8 +151,7 @@ explain select * from test alias where alias.id > 1
       "01": "send_all            0      -      0     # public.test (last)",
       "02": "union_recv          0      0      0     ",
       "03": "union_set           0      0      -1    ",
-      "04": "content             0      -      -     ",
-      "05": "ret                 0      0      0     "
+      "04": "ret                 0      -      -     "
     },
     "backend": {
       "00": "set                 0      2      0     ",
@@ -178,8 +169,7 @@ explain select * from test alias where alias.id > 1
       "12": "set_add             0      0      0     ",
       "13": "table_next          1      4      0     ",
       "14": "free                1      0      0     ",
-      "15": "result              0      0      0     ",
-      "16": "ret                 0      0      0     "
+      "15": "ret                 0      -      -     "
     }
   },
   "access": [["public.test", "ro"]]
@@ -212,8 +202,7 @@ explain select * from test where id > 1
       "01": "send_all            0      -      0     # public.test (last)",
       "02": "union_recv          0      0      0     ",
       "03": "union_set           0      0      -1    ",
-      "04": "content             0      -      -     ",
-      "05": "ret                 0      0      0     "
+      "04": "ret                 0      -      -     "
     },
     "backend": {
       "00": "set                 0      2      0     ",
@@ -231,8 +220,7 @@ explain select * from test where id > 1
       "12": "set_add             0      0      0     ",
       "13": "table_next          1      4      0     ",
       "14": "free                1      0      0     ",
-      "15": "result              0      0      0     ",
-      "16": "ret                 0      0      0     "
+      "15": "ret                 0      -      -     "
     }
   },
   "access": [["public.test", "ro"]]
@@ -248,8 +236,7 @@ explain select * from test where id > 1 and id > 1
       "01": "send_all            0      -      0     # public.test (last)",
       "02": "union_recv          0      0      0     ",
       "03": "union_set           0      0      -1    ",
-      "04": "content             0      -      -     ",
-      "05": "ret                 0      0      0     "
+      "04": "ret                 0      -      -     "
     },
     "backend": {
       "00": "set                 0      2      0     ",
@@ -271,8 +258,7 @@ explain select * from test where id > 1 and id > 1
       "16": "set_add             0      0      0     ",
       "17": "table_next          1      4      0     ",
       "18": "free                1      0      0     ",
-      "19": "result              0      0      0     ",
-      "20": "ret                 0      0      0     "
+      "19": "ret                 0      -      -     "
     }
   },
   "access": [["public.test", "ro"]]
@@ -288,8 +274,7 @@ explain select * from test where id > 2 and id > 1
       "01": "send_all            0      -      0     # public.test (last)",
       "02": "union_recv          0      0      0     ",
       "03": "union_set           0      0      -1    ",
-      "04": "content             0      -      -     ",
-      "05": "ret                 0      0      0     "
+      "04": "ret                 0      -      -     "
     },
     "backend": {
       "00": "set                 0      2      0     ",
@@ -311,8 +296,7 @@ explain select * from test where id > 2 and id > 1
       "16": "set_add             0      0      0     ",
       "17": "table_next          1      4      0     ",
       "18": "free                1      0      0     ",
-      "19": "result              0      0      0     ",
-      "20": "ret                 0      0      0     "
+      "19": "ret                 0      -      -     "
     }
   },
   "access": [["public.test", "ro"]]
@@ -328,8 +312,7 @@ explain select * from test where id > 1 and id > 2
       "01": "send_all            0      -      0     # public.test (last)",
       "02": "union_recv          0      0      0     ",
       "03": "union_set           0      0      -1    ",
-      "04": "content             0      -      -     ",
-      "05": "ret                 0      0      0     "
+      "04": "ret                 0      -      -     "
     },
     "backend": {
       "00": "set                 0      2      0     ",
@@ -351,8 +334,7 @@ explain select * from test where id > 1 and id > 2
       "16": "set_add             0      0      0     ",
       "17": "table_next          1      4      0     ",
       "18": "free                1      0      0     ",
-      "19": "result              0      0      0     ",
-      "20": "ret                 0      0      0     "
+      "19": "ret                 0      -      -     "
     }
   },
   "access": [["public.test", "ro"]]
@@ -368,8 +350,7 @@ explain select * from test where id > 1 and id = 2
       "01": "send_lookup         0      -      -     # public.test (last)",
       "02": "union_recv          0      0      0     ",
       "03": "union_set           0      0      -1    ",
-      "04": "content             0      -      -     ",
-      "05": "ret                 0      0      0     "
+      "04": "ret                 0      -      -     "
     },
     "backend": {
       "00": "set                 0      2      0     ",
@@ -390,8 +371,7 @@ explain select * from test where id > 1 and id = 2
       "15": "push                2      0      0     ",
       "16": "set_add             0      0      0     ",
       "17": "free                1      0      0     ",
-      "18": "result              0      0      0     ",
-      "19": "ret                 0      0      0     "
+      "18": "ret                 0      -      -     "
     }
   },
   "access": [["public.test", "ro"]]
@@ -407,8 +387,7 @@ explain select * from test where id < 1
       "01": "send_all            0      -      0     # public.test (last)",
       "02": "union_recv          0      0      0     ",
       "03": "union_set           0      0      -1    ",
-      "04": "content             0      -      -     ",
-      "05": "ret                 0      0      0     "
+      "04": "ret                 0      -      -     "
     },
     "backend": {
       "00": "set                 0      2      0     ",
@@ -428,8 +407,7 @@ explain select * from test where id < 1
       "14": "set_add             0      0      0     ",
       "15": "table_next          1      2      0     ",
       "16": "free                1      0      0     ",
-      "17": "result              0      0      0     ",
-      "18": "ret                 0      0      0     "
+      "17": "ret                 0      -      -     "
     }
   },
   "access": [["public.test", "ro"]]
@@ -444,8 +422,7 @@ explain select * from test where id <= 2
       "01": "send_all            0      -      0     # public.test (last)",
       "02": "union_recv          0      0      0     ",
       "03": "union_set           0      0      -1    ",
-      "04": "content             0      -      -     ",
-      "05": "ret                 0      0      0     "
+      "04": "ret                 0      -      -     "
     },
     "backend": {
       "00": "set                 0      2      0     ",
@@ -465,8 +442,7 @@ explain select * from test where id <= 2
       "14": "set_add             0      0      0     ",
       "15": "table_next          1      2      0     ",
       "16": "free                1      0      0     ",
-      "17": "result              0      0      0     ",
-      "18": "ret                 0      0      0     "
+      "17": "ret                 0      -      -     "
     }
   },
   "access": [["public.test", "ro"]]
@@ -482,8 +458,7 @@ explain select * from test where id < 1 and id < 1
       "01": "send_all            0      -      0     # public.test (last)",
       "02": "union_recv          0      0      0     ",
       "03": "union_set           0      0      -1    ",
-      "04": "content             0      -      -     ",
-      "05": "ret                 0      0      0     "
+      "04": "ret                 0      -      -     "
     },
     "backend": {
       "00": "set                 0      2      0     ",
@@ -507,8 +482,7 @@ explain select * from test where id < 1 and id < 1
       "18": "set_add             0      0      0     ",
       "19": "table_next          1      2      0     ",
       "20": "free                1      0      0     ",
-      "21": "result              0      0      0     ",
-      "22": "ret                 0      0      0     "
+      "21": "ret                 0      -      -     "
     }
   },
   "access": [["public.test", "ro"]]
@@ -524,8 +498,7 @@ explain select * from test where id < 2 and id < 1
       "01": "send_all            0      -      0     # public.test (last)",
       "02": "union_recv          0      0      0     ",
       "03": "union_set           0      0      -1    ",
-      "04": "content             0      -      -     ",
-      "05": "ret                 0      0      0     "
+      "04": "ret                 0      -      -     "
     },
     "backend": {
       "00": "set                 0      2      0     ",
@@ -549,8 +522,7 @@ explain select * from test where id < 2 and id < 1
       "18": "set_add             0      0      0     ",
       "19": "table_next          1      2      0     ",
       "20": "free                1      0      0     ",
-      "21": "result              0      0      0     ",
-      "22": "ret                 0      0      0     "
+      "21": "ret                 0      -      -     "
     }
   },
   "access": [["public.test", "ro"]]
@@ -566,8 +538,7 @@ explain select * from test where id < 1 and id < 2
       "01": "send_all            0      -      0     # public.test (last)",
       "02": "union_recv          0      0      0     ",
       "03": "union_set           0      0      -1    ",
-      "04": "content             0      -      -     ",
-      "05": "ret                 0      0      0     "
+      "04": "ret                 0      -      -     "
     },
     "backend": {
       "00": "set                 0      2      0     ",
@@ -591,8 +562,7 @@ explain select * from test where id < 1 and id < 2
       "18": "set_add             0      0      0     ",
       "19": "table_next          1      2      0     ",
       "20": "free                1      0      0     ",
-      "21": "result              0      0      0     ",
-      "22": "ret                 0      0      0     "
+      "21": "ret                 0      -      -     "
     }
   },
   "access": [["public.test", "ro"]]
@@ -608,8 +578,7 @@ explain select * from test where id < 1 and id = 2
       "01": "send_lookup         0      -      -     # public.test (last)",
       "02": "union_recv          0      0      0     ",
       "03": "union_set           0      0      -1    ",
-      "04": "content             0      -      -     ",
-      "05": "ret                 0      0      0     "
+      "04": "ret                 0      -      -     "
     },
     "backend": {
       "00": "set                 0      2      0     ",
@@ -634,8 +603,7 @@ explain select * from test where id < 1 and id = 2
       "19": "push                2      0      0     ",
       "20": "set_add             0      0      0     ",
       "21": "free                1      0      0     ",
-      "22": "result              0      0      0     ",
-      "23": "ret                 0      0      0     "
+      "22": "ret                 0      -      -     "
     }
   },
   "access": [["public.test", "ro"]]
@@ -651,8 +619,7 @@ explain select * from test where id > 1 and id < 1
       "01": "send_all            0      -      0     # public.test (last)",
       "02": "union_recv          0      0      0     ",
       "03": "union_set           0      0      -1    ",
-      "04": "content             0      -      -     ",
-      "05": "ret                 0      0      0     "
+      "04": "ret                 0      -      -     "
     },
     "backend": {
       "00": "set                 0      2      0     ",
@@ -678,8 +645,7 @@ explain select * from test where id > 1 and id < 1
       "20": "set_add             0      0      0     ",
       "21": "table_next          1      4      0     ",
       "22": "free                1      0      0     ",
-      "23": "result              0      0      0     ",
-      "24": "ret                 0      0      0     "
+      "23": "ret                 0      -      -     "
     }
   },
   "access": [["public.test", "ro"]]
@@ -694,8 +660,7 @@ explain select * from test where id >= 1 and id <= 2
       "01": "send_all            0      -      0     # public.test (last)",
       "02": "union_recv          0      0      0     ",
       "03": "union_set           0      0      -1    ",
-      "04": "content             0      -      -     ",
-      "05": "ret                 0      0      0     "
+      "04": "ret                 0      -      -     "
     },
     "backend": {
       "00": "set                 0      2      0     ",
@@ -721,8 +686,7 @@ explain select * from test where id >= 1 and id <= 2
       "20": "set_add             0      0      0     ",
       "21": "table_next          1      4      0     ",
       "22": "free                1      0      0     ",
-      "23": "result              0      0      0     ",
-      "24": "ret                 0      0      0     "
+      "23": "ret                 0      -      -     "
     }
   },
   "access": [["public.test", "ro"]]
@@ -738,8 +702,7 @@ explain select * from test where id > 1 and id < 1 and id = 1
       "01": "send_lookup         0      -      -     # public.test (last)",
       "02": "union_recv          0      0      0     ",
       "03": "union_set           0      0      -1    ",
-      "04": "content             0      -      -     ",
-      "05": "ret                 0      0      0     "
+      "04": "ret                 0      -      -     "
     },
     "backend": {
       "00": "set                 0      2      0     ",
@@ -768,8 +731,7 @@ explain select * from test where id > 1 and id < 1 and id = 1
       "23": "push                2      0      0     ",
       "24": "set_add             0      0      0     ",
       "25": "free                1      0      0     ",
-      "26": "result              0      0      0     ",
-      "27": "ret                 0      0      0     "
+      "26": "ret                 0      -      -     "
     }
   },
   "access": [["public.test", "ro"]]
@@ -785,8 +747,7 @@ explain select * from test where id > 1 and id < 1 and data = 1
       "01": "send_all            0      -      0     # public.test (last)",
       "02": "union_recv          0      0      0     ",
       "03": "union_set           0      0      -1    ",
-      "04": "content             0      -      -     ",
-      "05": "ret                 0      0      0     "
+      "04": "ret                 0      -      -     "
     },
     "backend": {
       "00": "set                 0      2      0     ",
@@ -816,8 +777,7 @@ explain select * from test where id > 1 and id < 1 and data = 1
       "24": "set_add             0      0      0     ",
       "25": "table_next          1      4      0     ",
       "26": "free                1      0      0     ",
-      "27": "result              0      0      0     ",
-      "28": "ret                 0      0      0     "
+      "27": "ret                 0      -      -     "
     }
   },
   "access": [["public.test", "ro"]]
@@ -833,8 +793,7 @@ explain select * from test where id = 1
       "01": "send_lookup         0      -      -     # public.test (last)",
       "02": "union_recv          0      0      0     ",
       "03": "union_set           0      0      -1    ",
-      "04": "content             0      -      -     ",
-      "05": "ret                 0      0      0     "
+      "04": "ret                 0      -      -     "
     },
     "backend": {
       "00": "set                 0      2      0     ",
@@ -851,8 +810,7 @@ explain select * from test where id = 1
       "11": "push                2      0      0     ",
       "12": "set_add             0      0      0     ",
       "13": "free                1      0      0     ",
-      "14": "result              0      0      0     ",
-      "15": "ret                 0      0      0     "
+      "14": "ret                 0      -      -     "
     }
   },
   "access": [["public.test", "ro"]]
@@ -876,8 +834,7 @@ explain select * from test where data = 1
       "01": "send_all            0      -      0     # public.test (last)",
       "02": "union_recv          0      0      0     ",
       "03": "union_set           0      0      -1    ",
-      "04": "content             0      -      -     ",
-      "05": "ret                 0      0      0     "
+      "04": "ret                 0      -      -     "
     },
     "backend": {
       "00": "set                 0      2      0     ",
@@ -893,8 +850,7 @@ explain select * from test where data = 1
       "10": "set_add             0      0      0     ",
       "11": "table_next          1      2      0     ",
       "12": "free                1      0      0     ",
-      "13": "result              0      0      0     ",
-      "14": "ret                 0      0      0     "
+      "13": "ret                 0      -      -     "
     }
   },
   "access": [["public.test", "ro"]]
@@ -910,8 +866,7 @@ explain select * from test where id = 1 and id > 0
       "01": "send_lookup         0      -      -     # public.test (last)",
       "02": "union_recv          0      0      0     ",
       "03": "union_set           0      0      -1    ",
-      "04": "content             0      -      -     ",
-      "05": "ret                 0      0      0     "
+      "04": "ret                 0      -      -     "
     },
     "backend": {
       "00": "set                 0      2      0     ",
@@ -932,8 +887,7 @@ explain select * from test where id = 1 and id > 0
       "15": "push                2      0      0     ",
       "16": "set_add             0      0      0     ",
       "17": "free                1      0      0     ",
-      "18": "result              0      0      0     ",
-      "19": "ret                 0      0      0     "
+      "18": "ret                 0      -      -     "
     }
   },
   "access": [["public.test", "ro"]]
@@ -949,8 +903,7 @@ explain select * from test where id = 1 and id > 0 and id < 10
       "01": "send_lookup         0      -      -     # public.test (last)",
       "02": "union_recv          0      0      0     ",
       "03": "union_set           0      0      -1    ",
-      "04": "content             0      -      -     ",
-      "05": "ret                 0      0      0     "
+      "04": "ret                 0      -      -     "
     },
     "backend": {
       "00": "set                 0      2      0     ",
@@ -979,8 +932,7 @@ explain select * from test where id = 1 and id > 0 and id < 10
       "23": "push                2      0      0     ",
       "24": "set_add             0      0      0     ",
       "25": "free                1      0      0     ",
-      "26": "result              0      0      0     ",
-      "27": "ret                 0      0      0     "
+      "26": "ret                 0      -      -     "
     }
   },
   "access": [["public.test", "ro"]]
@@ -996,8 +948,7 @@ explain select * from test where id = 1 and id = 2
       "01": "send_lookup         0      -      -     # public.test (last)",
       "02": "union_recv          0      0      0     ",
       "03": "union_set           0      0      -1    ",
-      "04": "content             0      -      -     ",
-      "05": "ret                 0      0      0     "
+      "04": "ret                 0      -      -     "
     },
     "backend": {
       "00": "set                 0      2      0     ",
@@ -1018,8 +969,7 @@ explain select * from test where id = 1 and id = 2
       "15": "push                2      0      0     ",
       "16": "set_add             0      0      0     ",
       "17": "free                1      0      0     ",
-      "18": "result              0      0      0     ",
-      "19": "ret                 0      0      0     "
+      "18": "ret                 0      -      -     "
     }
   },
   "access": [["public.test", "ro"]]
@@ -1038,8 +988,7 @@ explain select * from test where a > 1
       "01": "send_all            0      -      0     # public.test (last)",
       "02": "union_recv          0      0      0     ",
       "03": "union_set           0      0      -1    ",
-      "04": "content             0      -      -     ",
-      "05": "ret                 0      0      0     "
+      "04": "ret                 0      -      -     "
     },
     "backend": {
       "00": "set                 0      2      0     ",
@@ -1057,8 +1006,7 @@ explain select * from test where a > 1
       "12": "set_add             0      0      0     ",
       "13": "table_next          1      4      0     ",
       "14": "free                1      0      0     ",
-      "15": "result              0      0      0     ",
-      "16": "ret                 0      0      0     "
+      "15": "ret                 0      -      -     "
     }
   },
   "access": [["public.test", "ro"]]
@@ -1074,8 +1022,7 @@ explain select * from test where a > 1 and b > 1
       "01": "send_all            0      -      0     # public.test (last)",
       "02": "union_recv          0      0      0     ",
       "03": "union_set           0      0      -1    ",
-      "04": "content             0      -      -     ",
-      "05": "ret                 0      0      0     "
+      "04": "ret                 0      -      -     "
     },
     "backend": {
       "00": "set                 0      2      0     ",
@@ -1099,8 +1046,7 @@ explain select * from test where a > 1 and b > 1
       "18": "set_add             0      0      0     ",
       "19": "table_next          1      6      0     ",
       "20": "free                1      0      0     ",
-      "21": "result              0      0      0     ",
-      "22": "ret                 0      0      0     "
+      "21": "ret                 0      -      -     "
     }
   },
   "access": [["public.test", "ro"]]
@@ -1116,8 +1062,7 @@ explain select * from test where a > 1 and b < 1
       "01": "send_all            0      -      0     # public.test (last)",
       "02": "union_recv          0      0      0     ",
       "03": "union_set           0      0      -1    ",
-      "04": "content             0      -      -     ",
-      "05": "ret                 0      0      0     "
+      "04": "ret                 0      -      -     "
     },
     "backend": {
       "00": "set                 0      2      0     ",
@@ -1139,8 +1084,7 @@ explain select * from test where a > 1 and b < 1
       "16": "set_add             0      0      0     ",
       "17": "table_next          1      4      0     ",
       "18": "free                1      0      0     ",
-      "19": "result              0      0      0     ",
-      "20": "ret                 0      0      0     "
+      "19": "ret                 0      -      -     "
     }
   },
   "access": [["public.test", "ro"]]
@@ -1156,8 +1100,7 @@ explain select * from test where a > 1 and b < 2 and a < 10
       "01": "send_all            0      -      0     # public.test (last)",
       "02": "union_recv          0      0      0     ",
       "03": "union_set           0      0      -1    ",
-      "04": "content             0      -      -     ",
-      "05": "ret                 0      0      0     "
+      "04": "ret                 0      -      -     "
     },
     "backend": {
       "00": "set                 0      2      0     ",
@@ -1187,8 +1130,7 @@ explain select * from test where a > 1 and b < 2 and a < 10
       "24": "set_add             0      0      0     ",
       "25": "table_next          1      4      0     ",
       "26": "free                1      0      0     ",
-      "27": "result              0      0      0     ",
-      "28": "ret                 0      0      0     "
+      "27": "ret                 0      -      -     "
     }
   },
   "access": [["public.test", "ro"]]
@@ -1204,8 +1146,7 @@ explain select * from test where a > 1 and b = 10
       "01": "send_all            0      -      0     # public.test (last)",
       "02": "union_recv          0      0      0     ",
       "03": "union_set           0      0      -1    ",
-      "04": "content             0      -      -     ",
-      "05": "ret                 0      0      0     "
+      "04": "ret                 0      -      -     "
     },
     "backend": {
       "00": "set                 0      2      0     ",
@@ -1229,8 +1170,7 @@ explain select * from test where a > 1 and b = 10
       "18": "set_add             0      0      0     ",
       "19": "table_next          1      6      0     ",
       "20": "free                1      0      0     ",
-      "21": "result              0      0      0     ",
-      "22": "ret                 0      0      0     "
+      "21": "ret                 0      -      -     "
     }
   },
   "access": [["public.test", "ro"]]
@@ -1246,8 +1186,7 @@ explain select * from test where a > 1 and b = 10 and b = 20
       "01": "send_all            0      -      0     # public.test (last)",
       "02": "union_recv          0      0      0     ",
       "03": "union_set           0      0      -1    ",
-      "04": "content             0      -      -     ",
-      "05": "ret                 0      0      0     "
+      "04": "ret                 0      -      -     "
     },
     "backend": {
       "00": "set                 0      2      0     ",
@@ -1275,8 +1214,7 @@ explain select * from test where a > 1 and b = 10 and b = 20
       "22": "set_add             0      0      0     ",
       "23": "table_next          1      6      0     ",
       "24": "free                1      0      0     ",
-      "25": "result              0      0      0     ",
-      "26": "ret                 0      0      0     "
+      "25": "ret                 0      -      -     "
     }
   },
   "access": [["public.test", "ro"]]
@@ -1292,8 +1230,7 @@ explain select * from test where a > 1 and b = 10 and a = 20
       "01": "send_lookup         0      -      -     # public.test (last)",
       "02": "union_recv          0      0      0     ",
       "03": "union_set           0      0      -1    ",
-      "04": "content             0      -      -     ",
-      "05": "ret                 0      0      0     "
+      "04": "ret                 0      -      -     "
     },
     "backend": {
       "00": "set                 0      2      0     ",
@@ -1320,8 +1257,7 @@ explain select * from test where a > 1 and b = 10 and a = 20
       "21": "push                2      0      0     ",
       "22": "set_add             0      0      0     ",
       "23": "free                1      0      0     ",
-      "24": "result              0      0      0     ",
-      "25": "ret                 0      0      0     "
+      "24": "ret                 0      -      -     "
     }
   },
   "access": [["public.test", "ro"]]
@@ -1337,8 +1273,7 @@ explain select * from test where a = 1 and b = 10
       "01": "send_lookup         0      -      -     # public.test (last)",
       "02": "union_recv          0      0      0     ",
       "03": "union_set           0      0      -1    ",
-      "04": "content             0      -      -     ",
-      "05": "ret                 0      0      0     "
+      "04": "ret                 0      -      -     "
     },
     "backend": {
       "00": "set                 0      2      0     ",
@@ -1361,8 +1296,7 @@ explain select * from test where a = 1 and b = 10
       "17": "push                2      0      0     ",
       "18": "set_add             0      0      0     ",
       "19": "free                1      0      0     ",
-      "20": "result              0      0      0     ",
-      "21": "ret                 0      0      0     "
+      "20": "ret                 0      -      -     "
     }
   },
   "access": [["public.test", "ro"]]
@@ -1378,8 +1312,7 @@ explain select * from test where a = 1 and b > 1
       "01": "send_all            0      -      0     # public.test (last)",
       "02": "union_recv          0      0      0     ",
       "03": "union_set           0      0      -1    ",
-      "04": "content             0      -      -     ",
-      "05": "ret                 0      0      0     "
+      "04": "ret                 0      -      -     "
     },
     "backend": {
       "00": "set                 0      2      0     ",
@@ -1403,8 +1336,7 @@ explain select * from test where a = 1 and b > 1
       "18": "set_add             0      0      0     ",
       "19": "table_next          1      6      0     ",
       "20": "free                1      0      0     ",
-      "21": "result              0      0      0     ",
-      "22": "ret                 0      0      0     "
+      "21": "ret                 0      -      -     "
     }
   },
   "access": [["public.test", "ro"]]
@@ -1423,8 +1355,7 @@ explain select * from test where id between 1 and 2
       "01": "send_all            0      -      0     # public.test (last)",
       "02": "union_recv          0      0      0     ",
       "03": "union_set           0      0      -1    ",
-      "04": "content             0      -      -     ",
-      "05": "ret                 0      0      0     "
+      "04": "ret                 0      -      -     "
     },
     "backend": {
       "00": "set                 0      2      0     ",
@@ -1450,8 +1381,7 @@ explain select * from test where id between 1 and 2
       "20": "set_add             0      0      0     ",
       "21": "table_next          1      4      0     ",
       "22": "free                1      0      0     ",
-      "23": "result              0      0      0     ",
-      "24": "ret                 0      0      0     "
+      "23": "ret                 0      -      -     "
     }
   },
   "access": [["public.test", "ro"]]
@@ -1466,8 +1396,7 @@ explain select * from test where data between 1 and 2
       "01": "send_all            0      -      0     # public.test (last)",
       "02": "union_recv          0      0      0     ",
       "03": "union_set           0      0      -1    ",
-      "04": "content             0      -      -     ",
-      "05": "ret                 0      0      0     "
+      "04": "ret                 0      -      -     "
     },
     "backend": {
       "00": "set                 0      2      0     ",
@@ -1487,8 +1416,7 @@ explain select * from test where data between 1 and 2
       "14": "set_add             0      0      0     ",
       "15": "table_next          1      2      0     ",
       "16": "free                1      0      0     ",
-      "17": "result              0      0      0     ",
-      "18": "ret                 0      0      0     "
+      "17": "ret                 0      -      -     "
     }
   },
   "access": [["public.test", "ro"]]
@@ -1504,8 +1432,7 @@ explain select * from test where id not between 1 and 2
       "01": "send_all            0      -      0     # public.test (last)",
       "02": "union_recv          0      0      0     ",
       "03": "union_set           0      0      -1    ",
-      "04": "content             0      -      -     ",
-      "05": "ret                 0      0      0     "
+      "04": "ret                 0      -      -     "
     },
     "backend": {
       "00": "set                 0      2      0     ",
@@ -1526,8 +1453,7 @@ explain select * from test where id not between 1 and 2
       "15": "set_add             0      0      0     ",
       "16": "table_next          1      2      0     ",
       "17": "free                1      0      0     ",
-      "18": "result              0      0      0     ",
-      "19": "ret                 0      0      0     "
+      "18": "ret                 0      -      -     "
     }
   },
   "access": [["public.test", "ro"]]

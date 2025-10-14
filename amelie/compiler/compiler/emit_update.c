@@ -178,7 +178,7 @@ emit_update_on_match_returning(Compiler* self, From* from, void* arg)
 	op1(self, CSET_ADD, update->rset);
 }
 
-hot void
+hot int
 emit_update(Compiler* self, Ast* ast)
 {
 	// UPDATE name SET column = expr [, ... ] [WHERE expr]
@@ -197,7 +197,7 @@ emit_update(Compiler* self, Ast* ast)
 		     update->expr_where,
 		     emit_update_on_match,
 		     update);
-		return;
+		return -1;
 	}
 
 	// RETURNING expr
@@ -214,8 +214,6 @@ emit_update(Compiler* self, Ast* ast)
 	     emit_update_on_match_returning,
 	     update);
 
-	// CRESULT (return set)
-	op1(self, CRESULT, update->rset);
-	runpin(self, update->rset);
-	update->rset = -1;
+	// returning set
+	return update->rset;
 }

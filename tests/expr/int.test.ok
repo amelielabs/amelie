@@ -6,8 +6,7 @@ explain select 0
   "bytecode": {
     "frontend": {
       "00": "int                 0      -      0     # 0",
-      "01": "content             0      -      -     ",
-      "02": "ret                 0      0      0     "
+      "01": "ret                 0      -      -     "
     }
   },
   "access": []
@@ -21,8 +20,7 @@ explain select -1234
   "bytecode": {
     "frontend": {
       "00": "int                 0      -      0     # -1234",
-      "01": "content             0      -      -     ",
-      "02": "ret                 0      0      0     "
+      "01": "ret                 0      -      -     "
     }
   },
   "access": []
@@ -57,8 +55,7 @@ explain select 1 = true
       "00": "int                 0      -      0     # 1",
       "01": "bool                1      1      0     ",
       "02": "equii               2      0      1     ",
-      "03": "content             2      -      -     ",
-      "04": "ret                 0      0      0     "
+      "03": "ret                 2      -      -     "
     }
   },
   "access": []
@@ -77,8 +74,7 @@ explain select 1 = 18
       "00": "int                 0      -      0     # 1",
       "01": "int                 1      -      0     # 18",
       "02": "equii               2      0      1     ",
-      "03": "content             2      -      -     ",
-      "04": "ret                 0      0      0     "
+      "03": "ret                 2      -      -     "
     }
   },
   "access": []
@@ -97,8 +93,7 @@ explain select 1 = 1.0000
       "00": "int                 0      -      0     # 1",
       "01": "double              1      0      0     # 1",
       "02": "equif               2      0      1     ",
-      "03": "content             2      -      -     ",
-      "04": "ret                 0      0      0     "
+      "03": "ret                 2      -      -     "
     }
   },
   "access": []
@@ -115,8 +110,7 @@ explain select 0 = '1970-01-01 00:00:00'::timestamp
       "02": "push                1      0      0     ",
       "03": "call                1      -      1     # public.timestamp()",
       "04": "equii               2      0      1     ",
-      "05": "content             2      -      -     ",
-      "06": "ret                 0      0      0     "
+      "05": "ret                 2      -      -     "
     }
   },
   "access": []
@@ -133,8 +127,7 @@ explain select 1 = null
       "00": "int                 0      -      0     # 1",
       "01": "null                1      0      0     ",
       "02": "nullop              2      0      1     ",
-      "03": "content             2      -      -     ",
-      "04": "ret                 0      0      0     "
+      "03": "ret                 2      -      -     "
     }
   },
   "access": []
@@ -157,8 +150,7 @@ explain select 1 <> true
       "01": "bool                1      1      0     ",
       "02": "equii               2      0      1     ",
       "03": "not                 0      2      0     ",
-      "04": "content             0      -      -     ",
-      "05": "ret                 0      0      0     "
+      "04": "ret                 0      -      -     "
     }
   },
   "access": []
@@ -178,8 +170,7 @@ explain select 1 <> 18
       "01": "int                 1      -      0     # 18",
       "02": "equii               2      0      1     ",
       "03": "not                 0      2      0     ",
-      "04": "content             0      -      -     ",
-      "05": "ret                 0      0      0     "
+      "04": "ret                 0      -      -     "
     }
   },
   "access": []
@@ -199,8 +190,7 @@ explain select 1 <> 1.0000
       "01": "double              1      0      0     # 1",
       "02": "equif               2      0      1     ",
       "03": "not                 0      2      0     ",
-      "04": "content             0      -      -     ",
-      "05": "ret                 0      0      0     "
+      "04": "ret                 0      -      -     "
     }
   },
   "access": []
@@ -218,8 +208,7 @@ explain select 0 <> '1970-01-01 00:00:00'::timestamp
       "03": "call                1      -      1     # public.timestamp()",
       "04": "equii               2      0      1     ",
       "05": "not                 0      2      0     ",
-      "06": "content             0      -      -     ",
-      "07": "ret                 0      0      0     "
+      "06": "ret                 0      -      -     "
     }
   },
   "access": []
@@ -237,8 +226,7 @@ explain select 1 <> null
       "01": "null                1      0      0     ",
       "02": "nullop              2      0      1     ",
       "03": "not                 0      2      0     ",
-      "04": "content             0      -      -     ",
-      "05": "ret                 0      0      0     "
+      "04": "ret                 0      -      -     "
     }
   },
   "access": []
@@ -270,8 +258,7 @@ explain select -1 >= -10
       "00": "int                 0      -      0     # -1",
       "01": "int                 1      -      0     # -10",
       "02": "gteii               2      0      1     ",
-      "03": "content             2      -      -     ",
-      "04": "ret                 0      0      0     "
+      "03": "ret                 2      -      -     "
     }
   },
   "access": []
@@ -288,8 +275,7 @@ explain select 1 >= 1.11
       "00": "int                 0      -      0     # 1",
       "01": "double              1      0      0     # 1.11",
       "02": "gteif               2      0      1     ",
-      "03": "content             2      -      -     ",
-      "04": "ret                 0      0      0     "
+      "03": "ret                 2      -      -     "
     }
   },
   "access": []
@@ -308,8 +294,7 @@ explain select 0 >= '1970-01-01 00:00:00'::timestamp
       "02": "push                1      0      0     ",
       "03": "call                1      -      1     # public.timestamp()",
       "04": "gteii               2      0      1     ",
-      "05": "content             2      -      -     ",
-      "06": "ret                 0      0      0     "
+      "05": "ret                 2      -      -     "
     }
   },
   "access": []
@@ -324,8 +309,7 @@ explain select 1 >= null
       "00": "int                 0      -      0     # 1",
       "01": "null                1      0      0     ",
       "02": "nullop              2      0      1     ",
-      "03": "content             2      -      -     ",
-      "04": "ret                 0      0      0     "
+      "03": "ret                 2      -      -     "
     }
   },
   "access": []
@@ -355,8 +339,7 @@ explain select -1 > -10
       "00": "int                 0      -      0     # -1",
       "01": "int                 1      -      0     # -10",
       "02": "gtii                2      0      1     ",
-      "03": "content             2      -      -     ",
-      "04": "ret                 0      0      0     "
+      "03": "ret                 2      -      -     "
     }
   },
   "access": []
@@ -373,8 +356,7 @@ explain select 1 > 1.11
       "00": "int                 0      -      0     # 1",
       "01": "double              1      0      0     # 1.11",
       "02": "gtif                2      0      1     ",
-      "03": "content             2      -      -     ",
-      "04": "ret                 0      0      0     "
+      "03": "ret                 2      -      -     "
     }
   },
   "access": []
@@ -393,8 +375,7 @@ explain select 0 > '1970-01-01 00:00:00'::timestamp
       "02": "push                1      0      0     ",
       "03": "call                1      -      1     # public.timestamp()",
       "04": "gtii                2      0      1     ",
-      "05": "content             2      -      -     ",
-      "06": "ret                 0      0      0     "
+      "05": "ret                 2      -      -     "
     }
   },
   "access": []
@@ -409,8 +390,7 @@ explain select 1 > null
       "00": "int                 0      -      0     # 1",
       "01": "null                1      0      0     ",
       "02": "nullop              2      0      1     ",
-      "03": "content             2      -      -     ",
-      "04": "ret                 0      0      0     "
+      "03": "ret                 2      -      -     "
     }
   },
   "access": []
@@ -440,8 +420,7 @@ explain select -1 <= -10
       "00": "int                 0      -      0     # -1",
       "01": "int                 1      -      0     # -10",
       "02": "lteii               2      0      1     ",
-      "03": "content             2      -      -     ",
-      "04": "ret                 0      0      0     "
+      "03": "ret                 2      -      -     "
     }
   },
   "access": []
@@ -458,8 +437,7 @@ explain select 1 <= 1.11
       "00": "int                 0      -      0     # 1",
       "01": "double              1      0      0     # 1.11",
       "02": "lteif               2      0      1     ",
-      "03": "content             2      -      -     ",
-      "04": "ret                 0      0      0     "
+      "03": "ret                 2      -      -     "
     }
   },
   "access": []
@@ -478,8 +456,7 @@ explain select 0 <= '1970-01-01 00:00:00'::timestamp
       "02": "push                1      0      0     ",
       "03": "call                1      -      1     # public.timestamp()",
       "04": "lteii               2      0      1     ",
-      "05": "content             2      -      -     ",
-      "06": "ret                 0      0      0     "
+      "05": "ret                 2      -      -     "
     }
   },
   "access": []
@@ -494,8 +471,7 @@ explain select 1 <= null
       "00": "int                 0      -      0     # 1",
       "01": "null                1      0      0     ",
       "02": "nullop              2      0      1     ",
-      "03": "content             2      -      -     ",
-      "04": "ret                 0      0      0     "
+      "03": "ret                 2      -      -     "
     }
   },
   "access": []
@@ -525,8 +501,7 @@ explain select -1 < -10
       "00": "int                 0      -      0     # -1",
       "01": "int                 1      -      0     # -10",
       "02": "ltii                2      0      1     ",
-      "03": "content             2      -      -     ",
-      "04": "ret                 0      0      0     "
+      "03": "ret                 2      -      -     "
     }
   },
   "access": []
@@ -543,8 +518,7 @@ explain select 1 < 1.11
       "00": "int                 0      -      0     # 1",
       "01": "double              1      0      0     # 1.11",
       "02": "ltif                2      0      1     ",
-      "03": "content             2      -      -     ",
-      "04": "ret                 0      0      0     "
+      "03": "ret                 2      -      -     "
     }
   },
   "access": []
@@ -563,8 +537,7 @@ explain select 0 < '1970-01-01 00:00:00'::timestamp
       "02": "push                1      0      0     ",
       "03": "call                1      -      1     # public.timestamp()",
       "04": "ltii                2      0      1     ",
-      "05": "content             2      -      -     ",
-      "06": "ret                 0      0      0     "
+      "05": "ret                 2      -      -     "
     }
   },
   "access": []
@@ -579,8 +552,7 @@ explain select 1 < null
       "00": "int                 0      -      0     # 1",
       "01": "null                1      0      0     ",
       "02": "nullop              2      0      1     ",
-      "03": "content             2      -      -     ",
-      "04": "ret                 0      0      0     "
+      "03": "ret                 2      -      -     "
     }
   },
   "access": []
@@ -598,8 +570,7 @@ explain select 1 + 1
       "00": "int                 0      -      0     # 1",
       "01": "int                 1      -      0     # 1",
       "02": "addii               2      0      1     ",
-      "03": "content             2      -      -     ",
-      "04": "ret                 0      0      0     "
+      "03": "ret                 2      -      -     "
     }
   },
   "access": []
@@ -623,8 +594,7 @@ explain select 1 + 1.5
       "00": "int                 0      -      0     # 1",
       "01": "double              1      0      0     # 1.5",
       "02": "addif               2      0      1     ",
-      "03": "content             2      -      -     ",
-      "04": "ret                 0      0      0     "
+      "03": "ret                 2      -      -     "
     }
   },
   "access": []
@@ -645,8 +615,7 @@ explain select 1 - 1
       "00": "int                 0      -      0     # 1",
       "01": "int                 1      -      0     # 1",
       "02": "subii               2      0      1     ",
-      "03": "content             2      -      -     ",
-      "04": "ret                 0      0      0     "
+      "03": "ret                 2      -      -     "
     }
   },
   "access": []
@@ -670,8 +639,7 @@ explain select 1 - 1.5
       "00": "int                 0      -      0     # 1",
       "01": "double              1      0      0     # 1.5",
       "02": "subif               2      0      1     ",
-      "03": "content             2      -      -     ",
-      "04": "ret                 0      0      0     "
+      "03": "ret                 2      -      -     "
     }
   },
   "access": []
@@ -692,8 +660,7 @@ explain select 2 * 2
       "00": "int                 0      -      0     # 2",
       "01": "int                 1      -      0     # 2",
       "02": "mulii               2      0      1     ",
-      "03": "content             2      -      -     ",
-      "04": "ret                 0      0      0     "
+      "03": "ret                 2      -      -     "
     }
   },
   "access": []
@@ -717,8 +684,7 @@ explain select 2 * 1.5
       "00": "int                 0      -      0     # 2",
       "01": "double              1      0      0     # 1.5",
       "02": "mulif               2      0      1     ",
-      "03": "content             2      -      -     ",
-      "04": "ret                 0      0      0     "
+      "03": "ret                 2      -      -     "
     }
   },
   "access": []
@@ -739,8 +705,7 @@ explain select 2 / 2
       "00": "int                 0      -      0     # 2",
       "01": "int                 1      -      0     # 2",
       "02": "divii               2      0      1     ",
-      "03": "content             2      -      -     ",
-      "04": "ret                 0      0      0     "
+      "03": "ret                 2      -      -     "
     }
   },
   "access": []
@@ -759,8 +724,7 @@ explain select 35 / 1.5
       "00": "int                 0      -      0     # 35",
       "01": "double              1      0      0     # 1.5",
       "02": "divif               2      0      1     ",
-      "03": "content             2      -      -     ",
-      "04": "ret                 0      0      0     "
+      "03": "ret                 2      -      -     "
     }
   },
   "access": []
@@ -781,8 +745,7 @@ explain select 8 % 3
       "00": "int                 0      -      0     # 8",
       "01": "int                 1      -      0     # 3",
       "02": "modii               2      0      1     ",
-      "03": "content             2      -      -     ",
-      "04": "ret                 0      0      0     "
+      "03": "ret                 2      -      -     "
     }
   },
   "access": []
@@ -805,8 +768,7 @@ explain select 60 | 13
       "00": "int                 0      -      0     # 60",
       "01": "int                 1      -      0     # 13",
       "02": "borii               2      0      1     ",
-      "03": "content             2      -      -     ",
-      "04": "ret                 0      0      0     "
+      "03": "ret                 2      -      -     "
     }
   },
   "access": []
@@ -821,8 +783,7 @@ explain select 60 | null
       "00": "int                 0      -      0     # 60",
       "01": "null                1      0      0     ",
       "02": "nullop              2      0      1     ",
-      "03": "content             2      -      -     ",
-      "04": "ret                 0      0      0     "
+      "03": "ret                 2      -      -     "
     }
   },
   "access": []
@@ -840,8 +801,7 @@ explain select 60 & 13
       "00": "int                 0      -      0     # 60",
       "01": "int                 1      -      0     # 13",
       "02": "bandii              2      0      1     ",
-      "03": "content             2      -      -     ",
-      "04": "ret                 0      0      0     "
+      "03": "ret                 2      -      -     "
     }
   },
   "access": []
@@ -856,8 +816,7 @@ explain select 60 & null
       "00": "int                 0      -      0     # 60",
       "01": "null                1      0      0     ",
       "02": "nullop              2      0      1     ",
-      "03": "content             2      -      -     ",
-      "04": "ret                 0      0      0     "
+      "03": "ret                 2      -      -     "
     }
   },
   "access": []
@@ -875,8 +834,7 @@ explain select 60 ^ 13
       "00": "int                 0      -      0     # 60",
       "01": "int                 1      -      0     # 13",
       "02": "bxorii              2      0      1     ",
-      "03": "content             2      -      -     ",
-      "04": "ret                 0      0      0     "
+      "03": "ret                 2      -      -     "
     }
   },
   "access": []
@@ -891,8 +849,7 @@ explain select 60 ^ null
       "00": "int                 0      -      0     # 60",
       "01": "null                1      0      0     ",
       "02": "nullop              2      0      1     ",
-      "03": "content             2      -      -     ",
-      "04": "ret                 0      0      0     "
+      "03": "ret                 2      -      -     "
     }
   },
   "access": []
@@ -910,8 +867,7 @@ explain select 60 << 2
       "00": "int                 0      -      0     # 60",
       "01": "int                 1      -      0     # 2",
       "02": "bshlii              2      0      1     ",
-      "03": "content             2      -      -     ",
-      "04": "ret                 0      0      0     "
+      "03": "ret                 2      -      -     "
     }
   },
   "access": []
@@ -932,8 +888,7 @@ explain select 60 >> 2
       "00": "int                 0      -      0     # 60",
       "01": "int                 1      -      0     # 2",
       "02": "bshrii              2      0      1     ",
-      "03": "content             2      -      -     ",
-      "04": "ret                 0      0      0     "
+      "03": "ret                 2      -      -     "
     }
   },
   "access": []
@@ -955,8 +910,7 @@ explain select -18
   "bytecode": {
     "frontend": {
       "00": "int                 0      -      0     # -18",
-      "01": "content             0      -      -     ",
-      "02": "ret                 0      0      0     "
+      "01": "ret                 0      -      -     "
     }
   },
   "access": []

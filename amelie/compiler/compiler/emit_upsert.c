@@ -40,7 +40,7 @@
 #include <amelie_parser.h>
 #include <amelie_compiler.h>
 
-hot void
+hot int
 emit_upsert(Compiler* self, Ast* ast)
 {
 	auto insert = ast_insert_of(ast);
@@ -155,10 +155,6 @@ emit_upsert(Compiler* self, Ast* ast)
 	runpin(self, target->rcursor);
 	target->rcursor = -1;
 
-	// CRESULT (returning)
-	if (returning_has(&insert->ret))
-	{
-		op1(self, CRESULT, rset);
-		runpin(self, rset);
-	}
+	// returning set
+	return rset;
 }

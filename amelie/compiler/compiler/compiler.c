@@ -295,6 +295,7 @@ emit_stmt_backend(Compiler* self, Stmt* stmt)
 	compiler_switch_backend(self);
 	auto start = code_count(&self->program->code_backend);
 
+	int r = -1;
 	switch (stmt->id) {
 	case STMT_INSERT:
 	{
@@ -302,17 +303,17 @@ emit_stmt_backend(Compiler* self, Stmt* stmt)
 		if (insert->on_conflict == ON_CONFLICT_NONE)
 			emit_insert(self, stmt->ast);
 		else
-			emit_upsert(self, stmt->ast);
+			r = emit_upsert(self, stmt->ast);
 		break;
 	}
 	case STMT_UPDATE:
 	{
-		emit_update(self, stmt->ast);
+		r = emit_update(self, stmt->ast);
 		break;
 	}
 	case STMT_DELETE:
 	{
-		emit_delete(self, stmt->ast);
+		r = emit_delete(self, stmt->ast);
 		break;
 	}
 	case STMT_SELECT:
@@ -325,7 +326,7 @@ emit_stmt_backend(Compiler* self, Stmt* stmt)
 			//
 			// execute on one or more backends, process the result on frontend
 			//
-			pushdown(self, stmt->ast);
+			r = pushdown(self, stmt->ast);
 			break;
 		}
 
@@ -344,7 +345,9 @@ emit_stmt_backend(Compiler* self, Stmt* stmt)
 	}
 
 	// CRET
-	op0(self, CRET);
+	op3(self, CRET, r, 0, 0);
+	if (r != -1)
+		runpin(self, r);
 	return start;
 }
 
@@ -547,8 +550,8 @@ emit_return(Compiler* self, Stmt* stmt)
 	compiler_switch_frontend(self);
 
 	auto     r = -1;
-	Columns* columns;
-	Str*     fmt;
+	Columns* columns = NULL;
+	Str*     fmt = NULL;
 	if (stmt->id == STMT_RETURN)
 	{
 		auto return_ = ast_return_of(stmt->ast);
@@ -566,11 +569,7 @@ emit_return(Compiler* self, Stmt* stmt)
 			fmt     = &stmt->ret->format;
 		}
 	}
-
-	if (r != -1)
-		op3(self, CCONTENT, r, (intptr_t)columns,
-		    (intptr_t)fmt);
-	op0(self, CRET);
+	op3(self, CRET, r, (intptr_t)columns, (intptr_t)fmt);
 }
 
 hot static void

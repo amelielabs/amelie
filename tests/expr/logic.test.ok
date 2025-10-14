@@ -14,8 +14,7 @@ explain select true and true
       "00": "bool                0      1      0     ",
       "01": "bool                1      1      0     ",
       "02": "and                 2      0      1     ",
-      "03": "content             2      -      -     ",
-      "04": "ret                 0      0      0     "
+      "03": "ret                 2      -      -     "
     }
   },
   "access": []
@@ -55,8 +54,7 @@ explain select false or true
       "00": "bool                0      0      0     ",
       "01": "bool                1      1      0     ",
       "02": "or                  2      0      1     ",
-      "03": "content             2      -      -     ",
-      "04": "ret                 0      0      0     "
+      "03": "ret                 2      -      -     "
     }
   },
   "access": []

@@ -31,8 +31,7 @@ explain select case 1 when 1 then 1 end
       "09": "null                1      0      0     ",
       "10": "mov                 0      1      0     ",
       "11": "nop                 0      0      0     ",
-      "12": "content             0      -      -     ",
-      "13": "ret                 0      0      0     "
+      "12": "ret                 0      -      -     "
     }
   },
   "access": []
@@ -64,8 +63,7 @@ explain select case 0 when 1 then 1 when 2 then 2 end
       "16": "null                1      0      0     ",
       "17": "mov                 0      1      0     ",
       "18": "nop                 0      0      0     ",
-      "19": "content             0      -      -     ",
-      "20": "ret                 0      0      0     "
+      "19": "ret                 0      -      -     "
     }
   },
   "access": []
@@ -120,8 +118,7 @@ explain select case null when [1,0] then 1 when [1,2,3,4] then 2 else 3 when nul
       "23": "int                 1      -      0     # 3",
       "24": "mov                 0      1      0     ",
       "25": "nop                 0      0      0     ",
-      "26": "content             0      -      -     ",
-      "27": "ret                 0      0      0     "
+      "26": "ret                 0      -      -     "
     }
   },
   "access": []
@@ -157,8 +154,7 @@ explain select case when 1 then 1 end
       "07": "null                1      0      0     ",
       "08": "mov                 0      1      0     ",
       "09": "nop                 0      0      0     ",
-      "10": "content             0      -      -     ",
-      "11": "ret                 0      0      0     "
+      "10": "ret                 0      -      -     "
     }
   },
   "access": []

@@ -11,5 +11,5 @@
 // AGPL-3.0 Licensed.
 //
 
-void pushdown(Compiler*, Ast*);
-int  pushdown_recv(Compiler*, Ast*);
+int pushdown(Compiler*, Ast*);
+int pushdown_recv(Compiler*, Ast*);

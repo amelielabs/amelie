@@ -212,8 +212,7 @@ explain select '1970-01-01 00:00:00'::timestamp = 0
       "02": "call                0      -      1     # public.timestamp()",
       "03": "int                 1      -      0     # 0",
       "04": "equii               2      0      1     ",
-      "05": "content             2      -      -     ",
-      "06": "ret                 0      0      0     "
+      "05": "ret                 2      -      -     "
     }
   },
   "access": []
@@ -236,8 +235,7 @@ explain select '1970-01-01 01:12:59.909090'::timestamp = '1970-01-01 01:12:59.90
       "04": "push                1      0      0     ",
       "05": "call                1      -      1     # public.timestamp()",
       "06": "equii               2      0      1     ",
-      "07": "content             2      -      -     ",
-      "08": "ret                 0      0      0     "
+      "07": "ret                 2      -      -     "
     }
   },
   "access": []
@@ -254,8 +252,7 @@ explain select '1970-01-01 01:12:59.909090'::timestamp = null
       "02": "call                0      -      1     # public.timestamp()",
       "03": "null                1      0      0     ",
       "04": "nullop              2      0      1     ",
-      "05": "content             2      -      -     ",
-      "06": "ret                 0      0      0     "
+      "05": "ret                 2      -      -     "
     }
   },
   "access": []
@@ -276,8 +273,7 @@ explain select '1970-01-01 00:00:00'::timestamp <> 0
       "03": "int                 1      -      0     # 0",
       "04": "equii               2      0      1     ",
       "05": "not                 0      2      0     ",
-      "06": "content             0      -      -     ",
-      "07": "ret                 0      0      0     "
+      "06": "ret                 0      -      -     "
     }
   },
   "access": []
@@ -301,8 +297,7 @@ explain select '1970-01-01 01:12:59.909090'::timestamp <> '1970-01-01 01:12:59.9
       "05": "call                1      -      1     # public.timestamp()",
       "06": "equii               2      0      1     ",
       "07": "not                 0      2      0     ",
-      "08": "content             0      -      -     ",
-      "09": "ret                 0      0      0     "
+      "08": "ret                 0      -      -     "
     }
   },
   "access": []
@@ -320,8 +315,7 @@ explain select '1970-01-01 01:12:59.909090'::timestamp <> null
       "03": "null                1      0      0     ",
       "04": "nullop              2      0      1     ",
       "05": "not                 0      2      0     ",
-      "06": "content             0      -      -     ",
-      "07": "ret                 0      0      0     "
+      "06": "ret                 0      -      -     "
     }
   },
   "access": []
@@ -341,8 +335,7 @@ explain select '1970-01-01 00:00:00'::timestamp >= 0
       "02": "call                0      -      1     # public.timestamp()",
       "03": "int                 1      -      0     # 0",
       "04": "gteii               2      0      1     ",
-      "05": "content             2      -      -     ",
-      "06": "ret                 0      0      0     "
+      "05": "ret                 2      -      -     "
     }
   },
   "access": []
@@ -369,8 +362,7 @@ explain select '1970-01-01 01:12:59.909090'::timestamp >= '1970-01-01 01:12:59.9
       "04": "push                1      0      0     ",
       "05": "call                1      -      1     # public.timestamp()",
       "06": "gteii               2      0      1     ",
-      "07": "content             2      -      -     ",
-      "08": "ret                 0      0      0     "
+      "07": "ret                 2      -      -     "
     }
   },
   "access": []
@@ -401,8 +393,7 @@ explain select '1970-01-01 01:12:59.909090'::timestamp > '1970-01-01 01:12:59.90
       "04": "push                1      0      0     ",
       "05": "call                1      -      1     # public.timestamp()",
       "06": "gtii                2      0      1     ",
-      "07": "content             2      -      -     ",
-      "08": "ret                 0      0      0     "
+      "07": "ret                 2      -      -     "
     }
   },
   "access": []
@@ -433,8 +424,7 @@ explain select '1970-01-01 01:12:59.909090'::timestamp <= '1970-01-01 01:12:59.9
       "04": "push                1      0      0     ",
       "05": "call                1      -      1     # public.timestamp()",
       "06": "lteii               2      0      1     ",
-      "07": "content             2      -      -     ",
-      "08": "ret                 0      0      0     "
+      "07": "ret                 2      -      -     "
     }
   },
   "access": []
@@ -465,8 +455,7 @@ explain select '1970-01-01 01:12:59.909090'::timestamp < '1970-01-01 01:12:59.90
       "04": "push                1      0      0     ",
       "05": "call                1      -      1     # public.timestamp()",
       "06": "ltii                2      0      1     ",
-      "07": "content             2      -      -     ",
-      "08": "ret                 0      0      0     "
+      "07": "ret                 2      -      -     "
     }
   },
   "access": []
@@ -507,8 +496,7 @@ explain select '1970-01-01 00:00:00.000000'::timestamp + '1 year'::interval + '1
       "08": "call                2      -      1     # public.interval()",
       "09": "addll               3      1      2     ",
       "10": "addtl               1      0      3     ",
-      "11": "content             1      -      -     ",
-      "12": "ret                 0      0      0     "
+      "11": "ret                 1      -      -     "
     }
   },
   "access": []
@@ -549,8 +537,7 @@ explain select '1980-01-01 00:00:00.000000'::timestamp - '-1 year'::interval - '
       "08": "call                2      -      1     # public.interval()",
       "09": "subll               3      1      2     ",
       "10": "subtl               1      0      3     ",
-      "11": "content             1      -      -     ",
-      "12": "ret                 0      0      0     "
+      "11": "ret                 1      -      -     "
     }
   },
   "access": []

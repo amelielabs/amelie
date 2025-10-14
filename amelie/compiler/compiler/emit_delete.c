@@ -75,7 +75,7 @@ emit_delete_on_match_returning(Compiler* self, From* from, void* arg)
 	op1(self, CDELETE, target->rcursor);
 }
 
-hot void
+hot int
 emit_delete(Compiler* self, Ast* ast)
 {
 	// DELETE FROM name [WHERE expr] [RETURNING expr]
@@ -94,7 +94,7 @@ emit_delete(Compiler* self, Ast* ast)
 		     delete->expr_where,
 		     emit_delete_on_match,
 		     delete);
-		return;
+		return -1;
 	}
 
 	// RETURNING expr
@@ -111,8 +111,6 @@ emit_delete(Compiler* self, Ast* ast)
 	     emit_delete_on_match_returning,
 	     delete);
 
-	// CRESULT (return set)
-	op1(self, CRESULT, delete->rset);
-	runpin(self, delete->rset);
-	delete->rset = -1;
+	// returning set
+	return delete->rset;
 }

@@ -177,6 +177,8 @@ session_execute_distributed(Session* self, Content* output)
 		explain_start(&explain->time_run_us);
 
 	// execute coordinator
+	VmReturn ret;
+	vm_return_init(&ret);
 	auto on_error = error_catch
 	(
 		vm_run(&self->vm, &self->local,
@@ -186,8 +188,8 @@ session_execute_distributed(Session* self, Content* output)
 		       &program->code_data,
 		       NULL,
 		       NULL,
-		       NULL,
-		       output, 0);
+		       &ret,
+		       0);
 	);
 
 	Buf* error = NULL;
@@ -209,6 +211,10 @@ session_execute_distributed(Session* self, Content* output)
 		explain_end(&explain->time_commit_us);
 		explain_run(explain, program, &self->local,
 		            output, true);
+	} else
+	{
+		if (ret.value)
+			content_write(output, ret.fmt, ret.columns, ret.value);
 	}
 }
 
@@ -227,6 +233,9 @@ session_execute_utility(Session* self, Content* output)
 	Tr tr;
 	tr_init(&tr);
 	defer(tr_free, &tr);
+
+	VmReturn ret;
+	vm_return_init(&ret);
 	auto on_error = error_catch
 	(
 		// begin
@@ -239,8 +248,8 @@ session_execute_utility(Session* self, Content* output)
 		       &program->code_data,
 		       NULL,
 		       NULL,
-		       NULL,
-		       output, 0);
+		       &ret,
+		       0);
 	);
 
 	if (unlikely(on_error))
@@ -253,6 +262,14 @@ session_execute_utility(Session* self, Content* output)
 	{
 		explain_end(&explain->time_run_us);
 		explain_start(&explain->time_commit_us);
+	} else
+	{
+		if (ret.value)
+		{
+			Str column;
+			str_set(&column, "result", 6);
+			content_write_json(output, ret.fmt, &column, ret.value);
+		}
 	}
 
 	// wal write

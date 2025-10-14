@@ -53,8 +53,7 @@ explain select 0.058 between 0.010 and 0.053
       "04": "double              1      24     0     # 0.053",
       "05": "lteff               3      0      1     ",
       "06": "and                 0      2      3     ",
-      "07": "content             0      -      -     ",
-      "08": "ret                 0      0      0     "
+      "07": "ret                 0      -      -     "
     }
   },
   "access": []
@@ -73,8 +72,7 @@ explain select 0.058 not between 0.010 and 0.053
       "05": "lteff               3      0      1     ",
       "06": "and                 0      2      3     ",
       "07": "not                 1      0      0     ",
-      "08": "content             1      -      -     ",
-      "09": "ret                 0      0      0     "
+      "08": "ret                 1      -      -     "
     }
   },
   "access": []

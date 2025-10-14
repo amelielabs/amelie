@@ -6,8 +6,7 @@ explain select null
   "bytecode": {
     "frontend": {
       "00": "null                0      0      0     ",
-      "01": "content             0      -      -     ",
-      "02": "ret                 0      0      0     "
+      "01": "ret                 0      -      -     "
     }
   },
   "access": []

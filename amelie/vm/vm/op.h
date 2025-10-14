@@ -287,9 +287,6 @@ enum
 
 	// result
 	CASSIGN,
-	CRESULT,
-	CCONTENT,
-	CCONTENT_JSON,
 	CREF
 };
 

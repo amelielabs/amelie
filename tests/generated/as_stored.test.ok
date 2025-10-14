@@ -59,11 +59,11 @@ explain insert into test values (0, null)
       "11": "free                2      0      0     ",
       "12": "free                1      0      0     ",
       "13": "send_shard          0      -      0     # public.test (last)",
-      "14": "ret                 0      0      0     "
+      "14": "ret                 -1     -      -     "
     },
     "backend": {
       "00": "insert              -      0      0     # public.test",
-      "01": "ret                 0      0      0     "
+      "01": "ret                 -1     -      -     "
     }
   },
   "access": [["public.test", "rw"]]
@@ -146,7 +146,7 @@ explain insert into test (id) values (0) on conflict do update set data = data +
       "11": "free                2      0      0     ",
       "12": "free                1      0      0     ",
       "13": "send_shard          0      -      0     # public.test (last)",
-      "14": "ret                 0      0      0     "
+      "14": "ret                 -1     -      -     "
     },
     "backend": {
       "00": "table_prepare       0      -      0     # public.test",
@@ -160,7 +160,7 @@ explain insert into test (id) values (0) on conflict do update set data = data +
       "08": "update              0      1      0     ",
       "09": "upsert              0      2      -1    ",
       "10": "free                0      0      0     ",
-      "11": "ret                 0      0      0     "
+      "11": "ret                 -1     -      -     "
     }
   },
   "access": [["public.test", "rw"]]
@@ -219,8 +219,8 @@ explain insert into test select * from src
       "14": "store_next          3      7      0     ",
       "15": "free                3      0      0     ",
       "16": "free                2      0      0     ",
-      "17": "send_shard          11     -      1     # public.test (last)",
-      "18": "ret                 0      0      0     "
+      "17": "send_shard          10     -      1     # public.test (last)",
+      "18": "ret                 -1     -      -     "
     },
     "backend": {
       "00": "set                 0      2      0     ",
@@ -232,10 +232,9 @@ explain insert into test select * from src
       "06": "set_add             0      0      0     ",
       "07": "table_next          1      2      0     ",
       "08": "free                1      0      0     ",
-      "09": "result              0      0      0     ",
-      "10": "ret                 0      0      0     ",
-      "11": "insert              -      0      0     # public.test",
-      "12": "ret                 0      0      0     "
+      "09": "ret                 0      -      -     ",
+      "10": "insert              -      0      0     # public.test",
+      "11": "ret                 -1     -      -     "
     }
   },
   "access": [["public.test", "rw"], ["public.src", "ro"]]

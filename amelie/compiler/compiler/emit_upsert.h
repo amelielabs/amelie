@@ -11,4 +11,4 @@
 // AGPL-3.0 Licensed.
 //
 
-void emit_upsert(Compiler*, Ast*);
+int emit_upsert(Compiler*, Ast*);

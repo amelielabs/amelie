@@ -12,4 +12,4 @@
 //
 
 void emit_update_target(Compiler*, From*, Ast*);
-void emit_update(Compiler*, Ast*);
+int  emit_update(Compiler*, Ast*);

@@ -14,8 +14,7 @@ explain select * from test limit 1
       "02": "union_recv          0      0      0     ",
       "03": "int                 1      -      0     # 1",
       "04": "union_set           0      0      1     ",
-      "05": "content             0      -      -     ",
-      "06": "ret                 0      0      0     "
+      "05": "ret                 0      -      -     "
     },
     "backend": {
       "00": "set                 0      1      0     ",
@@ -29,8 +28,7 @@ explain select * from test limit 1
       "08": "set_add             0      0      0     ",
       "09": "table_next          2      5      0     ",
       "10": "free                2      0      0     ",
-      "11": "result              0      0      0     ",
-      "12": "ret                 0      0      0     "
+      "11": "ret                 0      -      -     "
     }
   },
   "access": [["public.test", "ro"]]
@@ -62,8 +60,7 @@ explain select * from test limit 0
       "02": "union_recv          0      0      0     ",
       "03": "int                 1      -      0     # 0",
       "04": "union_set           0      0      1     ",
-      "05": "content             0      -      -     ",
-      "06": "ret                 0      0      0     "
+      "05": "ret                 0      -      -     "
     },
     "backend": {
       "00": "set                 0      1      0     ",
@@ -77,8 +74,7 @@ explain select * from test limit 0
       "08": "set_add             0      0      0     ",
       "09": "table_next          2      5      0     ",
       "10": "free                2      0      0     ",
-      "11": "result              0      0      0     ",
-      "12": "ret                 0      0      0     "
+      "11": "ret                 0      -      -     "
     }
   },
   "access": [["public.test", "ro"]]
@@ -98,8 +94,7 @@ explain select * from test limit 1 offset 0
       "03": "int                 1      -      0     # 1",
       "04": "int                 2      -      0     # 0",
       "05": "union_set           0      0      1     ",
-      "06": "content             0      -      -     ",
-      "07": "ret                 0      0      0     "
+      "06": "ret                 0      -      -     "
     },
     "backend": {
       "00": "set                 0      1      0     ",
@@ -115,8 +110,7 @@ explain select * from test limit 1 offset 0
       "10": "set_add             0      0      0     ",
       "11": "table_next          1      7      0     ",
       "12": "free                1      0      0     ",
-      "13": "result              0      0      0     ",
-      "14": "ret                 0      0      0     "
+      "13": "ret                 0      -      -     "
     }
   },
   "access": [["public.test", "ro"]]
@@ -139,8 +133,7 @@ explain select * from test limit 1 offset 1
       "03": "int                 1      -      0     # 1",
       "04": "int                 2      -      0     # 1",
       "05": "union_set           0      0      1     ",
-      "06": "content             0      -      -     ",
-      "07": "ret                 0      0      0     "
+      "06": "ret                 0      -      -     "
     },
     "backend": {
       "00": "set                 0      1      0     ",
@@ -156,8 +149,7 @@ explain select * from test limit 1 offset 1
       "10": "set_add             0      0      0     ",
       "11": "table_next          1      7      0     ",
       "12": "free                1      0      0     ",
-      "13": "result              0      0      0     ",
-      "14": "ret                 0      0      0     "
+      "13": "ret                 0      -      -     "
     }
   },
   "access": [["public.test", "ro"]]
@@ -203,8 +195,7 @@ explain select * from test offset 1
       "02": "union_recv          0      0      0     ",
       "03": "int                 1      -      0     # 1",
       "04": "union_set           0      0      -1    ",
-      "05": "content             0      -      -     ",
-      "06": "ret                 0      0      0     "
+      "05": "ret                 0      -      -     "
     },
     "backend": {
       "00": "set                 0      1      0     ",
@@ -214,8 +205,7 @@ explain select * from test offset 1
       "04": "set_add             0      0      0     ",
       "05": "table_next          1      2      0     ",
       "06": "free                1      0      0     ",
-      "07": "result              0      0      0     ",
-      "08": "ret                 0      0      0     "
+      "07": "ret                 0      -      -     "
     }
   },
   "access": [["public.test", "ro"]]

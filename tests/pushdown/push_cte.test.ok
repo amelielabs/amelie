@@ -70,8 +70,7 @@ explain with a as (select * from test) select 2
       "00": "union               0      0      0     ",
       "01": "send_all            0      -      0     # public.test (last)",
       "02": "int                 1      -      0     # 2",
-      "03": "content             1      -      -     ",
-      "04": "ret                 0      0      0     "
+      "03": "ret                 1      -      -     "
     },
     "backend": {
       "00": "set                 0      1      0     ",
@@ -81,8 +80,7 @@ explain with a as (select * from test) select 2
       "04": "set_add             0      0      0     ",
       "05": "table_next          1      2      0     ",
       "06": "free                1      0      0     ",
-      "07": "result              0      0      0     ",
-      "08": "ret                 0      0      0     "
+      "07": "ret                 0      -      -     "
     }
   },
   "access": [["public.test", "ro"]]
@@ -110,8 +108,7 @@ explain with a as (select * from test) select * from a
       "10": "store_next          3      7      0     ",
       "11": "free                3      0      0     ",
       "12": "free                2      0      0     ",
-      "13": "content             1      -      -     ",
-      "14": "ret                 0      0      0     "
+      "13": "ret                 1      -      -     "
     },
     "backend": {
       "00": "set                 0      1      0     ",
@@ -121,8 +118,7 @@ explain with a as (select * from test) select * from a
       "04": "set_add             0      0      0     ",
       "05": "table_next          1      2      0     ",
       "06": "free                1      0      0     ",
-      "07": "result              0      0      0     ",
-      "08": "ret                 0      0      0     "
+      "07": "ret                 0      -      -     "
     }
   },
   "access": [["public.test", "ro"]]
@@ -150,8 +146,7 @@ explain with a as (select * from test) select id from a
       "10": "store_next          3      7      0     ",
       "11": "free                3      0      0     ",
       "12": "free                2      0      0     ",
-      "13": "content             1      -      -     ",
-      "14": "ret                 0      0      0     "
+      "13": "ret                 1      -      -     "
     },
     "backend": {
       "00": "set                 0      1      0     ",
@@ -161,8 +156,7 @@ explain with a as (select * from test) select id from a
       "04": "set_add             0      0      0     ",
       "05": "table_next          1      2      0     ",
       "06": "free                1      0      0     ",
-      "07": "result              0      0      0     ",
-      "08": "ret                 0      0      0     "
+      "07": "ret                 0      -      -     "
     }
   },
   "access": [["public.test", "ro"]]
@@ -190,8 +184,7 @@ explain with a as (select * from test) select a.id from a
       "10": "store_next          3      7      0     ",
       "11": "free                3      0      0     ",
       "12": "free                2      0      0     ",
-      "13": "content             1      -      -     ",
-      "14": "ret                 0      0      0     "
+      "13": "ret                 1      -      -     "
     },
     "backend": {
       "00": "set                 0      1      0     ",
@@ -201,8 +194,7 @@ explain with a as (select * from test) select a.id from a
       "04": "set_add             0      0      0     ",
       "05": "table_next          1      2      0     ",
       "06": "free                1      0      0     ",
-      "07": "result              0      0      0     ",
-      "08": "ret                 0      0      0     "
+      "07": "ret                 0      -      -     "
     }
   },
   "access": [["public.test", "ro"]]
@@ -230,8 +222,7 @@ explain with a as (select id from test) select id from a
       "10": "store_next          3      7      0     ",
       "11": "free                3      0      0     ",
       "12": "free                2      0      0     ",
-      "13": "content             1      -      -     ",
-      "14": "ret                 0      0      0     "
+      "13": "ret                 1      -      -     "
     },
     "backend": {
       "00": "set                 0      1      0     ",
@@ -241,8 +232,7 @@ explain with a as (select id from test) select id from a
       "04": "set_add             0      0      0     ",
       "05": "table_next          1      2      0     ",
       "06": "free                1      0      0     ",
-      "07": "result              0      0      0     ",
-      "08": "ret                 0      0      0     "
+      "07": "ret                 0      -      -     "
     }
   },
   "access": [["public.test", "ro"]]
@@ -272,8 +262,7 @@ explain with a as (select id as x from test) select x from a
       "10": "store_next          3      7      0     ",
       "11": "free                3      0      0     ",
       "12": "free                2      0      0     ",
-      "13": "content             1      -      -     ",
-      "14": "ret                 0      0      0     "
+      "13": "ret                 1      -      -     "
     },
     "backend": {
       "00": "set                 0      1      0     ",
@@ -283,8 +272,7 @@ explain with a as (select id as x from test) select x from a
       "04": "set_add             0      0      0     ",
       "05": "table_next          1      2      0     ",
       "06": "free                1      0      0     ",
-      "07": "result              0      0      0     ",
-      "08": "ret                 0      0      0     "
+      "07": "ret                 0      -      -     "
     }
   },
   "access": [["public.test", "ro"]]
@@ -322,8 +310,7 @@ explain with a as (select * from test) select * from a
       "10": "store_next          3      7      0     ",
       "11": "free                3      0      0     ",
       "12": "free                2      0      0     ",
-      "13": "content             1      -      -     ",
-      "14": "ret                 0      0      0     "
+      "13": "ret                 1      -      -     "
     },
     "backend": {
       "00": "set                 0      1      0     ",
@@ -333,8 +320,7 @@ explain with a as (select * from test) select * from a
       "04": "set_add             0      0      0     ",
       "05": "table_next          1      2      0     ",
       "06": "free                1      0      0     ",
-      "07": "result              0      0      0     ",
-      "08": "ret                 0      0      0     "
+      "07": "ret                 0      -      -     "
     }
   },
   "access": [["public.test", "ro"]]
@@ -352,11 +338,10 @@ explain with a as (select * from test) select * from test
       "00": "union               0      0      0     ",
       "01": "send_all            0      -      0     # public.test",
       "02": "union               1      0      0     ",
-      "03": "send_all            9      -      1     # public.test (last)",
+      "03": "send_all            8      -      1     # public.test (last)",
       "04": "union_recv          1      0      0     ",
       "05": "union_set           1      0      -1    ",
-      "06": "content             1      -      -     ",
-      "07": "ret                 0      0      0     "
+      "06": "ret                 1      -      -     "
     },
     "backend": {
       "00": "set                 0      1      0     ",
@@ -366,17 +351,15 @@ explain with a as (select * from test) select * from test
       "04": "set_add             0      0      0     ",
       "05": "table_next          1      2      0     ",
       "06": "free                1      0      0     ",
-      "07": "result              0      0      0     ",
-      "08": "ret                 0      0      0     ",
-      "09": "set                 1      1      0     ",
-      "10": "table_open_part     2      20     15    # public.test (primary)",
-      "11": "table_readi32       3      2      0     ",
-      "12": "push                3      0      0     ",
-      "13": "set_add             1      0      0     ",
-      "14": "table_next          2      11     0     ",
-      "15": "free                2      0      0     ",
-      "16": "result              1      0      0     ",
-      "17": "ret                 0      0      0     "
+      "07": "ret                 0      -      -     ",
+      "08": "set                 1      1      0     ",
+      "09": "table_open_part     2      20     14    # public.test (primary)",
+      "10": "table_readi32       3      2      0     ",
+      "11": "push                3      0      0     ",
+      "12": "set_add             1      0      0     ",
+      "13": "table_next          2      10     0     ",
+      "14": "free                2      0      0     ",
+      "15": "ret                 1      -      -     "
     }
   },
   "access": [["public.test", "ro"]]
@@ -394,11 +377,10 @@ explain with a as (select * from test) select * from test
       "00": "union               0      0      0     ",
       "01": "send_all            0      -      0     # public.test",
       "02": "union               1      0      0     ",
-      "03": "send_all            9      -      1     # public.test (last)",
+      "03": "send_all            8      -      1     # public.test (last)",
       "04": "union_recv          1      0      0     ",
       "05": "union_set           1      0      -1    ",
-      "06": "content             1      -      -     ",
-      "07": "ret                 0      0      0     "
+      "06": "ret                 1      -      -     "
     },
     "backend": {
       "00": "set                 0      1      0     ",
@@ -408,17 +390,15 @@ explain with a as (select * from test) select * from test
       "04": "set_add             0      0      0     ",
       "05": "table_next          1      2      0     ",
       "06": "free                1      0      0     ",
-      "07": "result              0      0      0     ",
-      "08": "ret                 0      0      0     ",
-      "09": "set                 1      1      0     ",
-      "10": "table_open_part     2      20     15    # public.test (primary)",
-      "11": "table_readi32       3      2      0     ",
-      "12": "push                3      0      0     ",
-      "13": "set_add             1      0      0     ",
-      "14": "table_next          2      11     0     ",
-      "15": "free                2      0      0     ",
-      "16": "result              1      0      0     ",
-      "17": "ret                 0      0      0     "
+      "07": "ret                 0      -      -     ",
+      "08": "set                 1      1      0     ",
+      "09": "table_open_part     2      20     14    # public.test (primary)",
+      "10": "table_readi32       3      2      0     ",
+      "11": "push                3      0      0     ",
+      "12": "set_add             1      0      0     ",
+      "13": "table_next          2      10     0     ",
+      "14": "free                2      0      0     ",
+      "15": "ret                 1      -      -     "
     }
   },
   "access": [["public.test", "ro"]]
@@ -437,8 +417,7 @@ explain with a as (select [4,5,6]) select test.*, a.* from test, a
       "03": "send_all            0      -      1     # public.test (last)",
       "04": "union_recv          1      0      0     ",
       "05": "union_set           1      0      -1    ",
-      "06": "content             1      -      -     ",
-      "07": "ret                 0      0      0     "
+      "06": "ret                 1      -      -     "
     },
     "backend": {
       "00": "set                 1      2      0     ",
@@ -455,8 +434,7 @@ explain with a as (select [4,5,6]) select test.*, a.* from test, a
       "11": "free                3      0      0     ",
       "12": "table_next          2      2      0     ",
       "13": "free                2      0      0     ",
-      "14": "result              1      0      0     ",
-      "15": "ret                 0      0      0     "
+      "14": "ret                 1      -      -     "
     }
   },
   "access": [["public.test", "ro"]]
@@ -477,8 +455,7 @@ explain with a as (select [4,5,6]) select test.*, a.* from test, a
       "03": "send_all            0      -      1     # public.test (last)",
       "04": "union_recv          1      0      0     ",
       "05": "union_set           1      0      -1    ",
-      "06": "content             1      -      -     ",
-      "07": "ret                 0      0      0     "
+      "06": "ret                 1      -      -     "
     },
     "backend": {
       "00": "set                 1      2      0     ",
@@ -495,8 +472,7 @@ explain with a as (select [4,5,6]) select test.*, a.* from test, a
       "11": "free                3      0      0     ",
       "12": "table_next          2      2      0     ",
       "13": "free                2      0      0     ",
-      "14": "result              1      0      0     ",
-      "15": "ret                 0      0      0     "
+      "14": "ret                 1      -      -     "
     }
   },
   "access": [["public.test", "ro"]]
@@ -517,11 +493,10 @@ explain with a as (select * from test) select test.* from test join a on test.id
       "03": "union_set           0      0      -1    ",
       "04": "push_ref            0      1      0     ",
       "05": "union               1      0      0     ",
-      "06": "send_all            9      -      1     # public.test (last)",
+      "06": "send_all            8      -      1     # public.test (last)",
       "07": "union_recv          1      0      0     ",
       "08": "union_set           1      0      -1    ",
-      "09": "content             1      -      -     ",
-      "10": "ret                 0      0      0     "
+      "09": "ret                 1      -      -     "
     },
     "backend": {
       "00": "set                 0      1      0     ",
@@ -531,26 +506,24 @@ explain with a as (select * from test) select test.* from test join a on test.id
       "04": "set_add             0      0      0     ",
       "05": "table_next          1      2      0     ",
       "06": "free                1      0      0     ",
-      "07": "result              0      0      0     ",
-      "08": "ret                 0      0      0     ",
-      "09": "set                 1      1      0     ",
-      "10": "table_open_part     2      20     24    # public.test (primary)",
-      "11": "ref                 3      0      0     ",
-      "12": "store_open          4      3      21    ",
-      "13": "table_readi32       5      2      0     ",
-      "14": "store_read          6      4      0     ",
-      "15": "equii               7      5      6     ",
-      "16": "jntr                20     7      0     ",
-      "17": "table_readi32       5      2      0     ",
-      "18": "push                5      0      0     ",
-      "19": "set_add             1      0      0     ",
-      "20": "store_next          4      13     0     ",
-      "21": "free                4      0      0     ",
-      "22": "free                3      0      0     ",
-      "23": "table_next          2      11     0     ",
-      "24": "free                2      0      0     ",
-      "25": "result              1      0      0     ",
-      "26": "ret                 0      0      0     "
+      "07": "ret                 0      -      -     ",
+      "08": "set                 1      1      0     ",
+      "09": "table_open_part     2      20     23    # public.test (primary)",
+      "10": "ref                 3      0      0     ",
+      "11": "store_open          4      3      20    ",
+      "12": "table_readi32       5      2      0     ",
+      "13": "store_read          6      4      0     ",
+      "14": "equii               7      5      6     ",
+      "15": "jntr                19     7      0     ",
+      "16": "table_readi32       5      2      0     ",
+      "17": "push                5      0      0     ",
+      "18": "set_add             1      0      0     ",
+      "19": "store_next          4      12     0     ",
+      "20": "free                4      0      0     ",
+      "21": "free                3      0      0     ",
+      "22": "table_next          2      10     0     ",
+      "23": "free                2      0      0     ",
+      "24": "ret                 1      -      -     "
     }
   },
   "access": [["public.test", "ro"]]
@@ -571,11 +544,10 @@ explain with a as (select data from test) select test.* from test join a on test
       "03": "union_set           0      0      -1    ",
       "04": "push_ref            0      1      0     ",
       "05": "union               1      0      0     ",
-      "06": "send_all            9      -      1     # public.test (last)",
+      "06": "send_all            8      -      1     # public.test (last)",
       "07": "union_recv          1      0      0     ",
       "08": "union_set           1      0      -1    ",
-      "09": "content             1      -      -     ",
-      "10": "ret                 0      0      0     "
+      "09": "ret                 1      -      -     "
     },
     "backend": {
       "00": "set                 0      1      0     ",
@@ -585,28 +557,26 @@ explain with a as (select data from test) select test.* from test join a on test
       "04": "set_add             0      0      0     ",
       "05": "table_next          1      2      0     ",
       "06": "free                1      0      0     ",
-      "07": "result              0      0      0     ",
-      "08": "ret                 0      0      0     ",
-      "09": "set                 1      2      0     ",
-      "10": "table_open_part     2      20     26    # public.test (primary)",
-      "11": "ref                 3      0      0     ",
-      "12": "store_open          4      3      23    ",
-      "13": "table_reads         5      2      1     ",
-      "14": "store_read          6      4      0     ",
-      "15": "equss               7      5      6     ",
-      "16": "jntr                22     7      0     ",
-      "17": "table_readi32       5      2      0     ",
-      "18": "push                5      0      0     ",
-      "19": "table_reads         5      2      1     ",
-      "20": "push                5      0      0     ",
-      "21": "set_add             1      0      0     ",
-      "22": "store_next          4      13     0     ",
-      "23": "free                4      0      0     ",
-      "24": "free                3      0      0     ",
-      "25": "table_next          2      11     0     ",
-      "26": "free                2      0      0     ",
-      "27": "result              1      0      0     ",
-      "28": "ret                 0      0      0     "
+      "07": "ret                 0      -      -     ",
+      "08": "set                 1      2      0     ",
+      "09": "table_open_part     2      20     25    # public.test (primary)",
+      "10": "ref                 3      0      0     ",
+      "11": "store_open          4      3      22    ",
+      "12": "table_reads         5      2      1     ",
+      "13": "store_read          6      4      0     ",
+      "14": "equss               7      5      6     ",
+      "15": "jntr                21     7      0     ",
+      "16": "table_readi32       5      2      0     ",
+      "17": "push                5      0      0     ",
+      "18": "table_reads         5      2      1     ",
+      "19": "push                5      0      0     ",
+      "20": "set_add             1      0      0     ",
+      "21": "store_next          4      12     0     ",
+      "22": "free                4      0      0     ",
+      "23": "free                3      0      0     ",
+      "24": "table_next          2      10     0     ",
+      "25": "free                2      0      0     ",
+      "26": "ret                 1      -      -     "
     }
   },
   "access": [["public.test", "ro"]]
@@ -640,8 +610,7 @@ explain with z (a,b,c) as (select 4,5,6) select * from z
       "18": "store_next          3      11     0     ",
       "19": "free                3      0      0     ",
       "20": "free                2      0      0     ",
-      "21": "content             1      -      -     ",
-      "22": "ret                 0      0      0     "
+      "21": "ret                 1      -      -     "
     }
   },
   "access": []
@@ -693,8 +662,7 @@ explain with a as (select * from test), b as (select * from a) select * from b
       "19": "store_next          4      16     0     ",
       "20": "free                4      0      0     ",
       "21": "free                3      0      0     ",
-      "22": "content             2      -      -     ",
-      "23": "ret                 0      0      0     "
+      "22": "ret                 2      -      -     "
     },
     "backend": {
       "00": "set                 0      1      0     ",
@@ -704,8 +672,7 @@ explain with a as (select * from test), b as (select * from a) select * from b
       "04": "set_add             0      0      0     ",
       "05": "table_next          1      2      0     ",
       "06": "free                1      0      0     ",
-      "07": "result              0      0      0     ",
-      "08": "ret                 0      0      0     "
+      "07": "ret                 0      -      -     "
     }
   },
   "access": [["public.test", "ro"]]
@@ -743,8 +710,7 @@ explain with a as (select * from test), b as (select [1,2,3]), c as (select * fr
       "20": "store_next          5      17     0     ",
       "21": "free                5      0      0     ",
       "22": "free                4      0      0     ",
-      "23": "content             3      -      -     ",
-      "24": "ret                 0      0      0     "
+      "23": "ret                 3      -      -     "
     },
     "backend": {
       "00": "set                 0      1      0     ",
@@ -754,8 +720,7 @@ explain with a as (select * from test), b as (select [1,2,3]), c as (select * fr
       "04": "set_add             0      0      0     ",
       "05": "table_next          1      2      0     ",
       "06": "free                1      0      0     ",
-      "07": "result              0      0      0     ",
-      "08": "ret                 0      0      0     "
+      "07": "ret                 0      -      -     "
     }
   },
   "access": [["public.test", "ro"]]
@@ -774,7 +739,7 @@ explain with a as (select * from test), b as (select [1,2,3]), c as (select * fr
       "01": "send_all            0      -      0     # public.test",
       "02": "json                1      20     0     ",
       "03": "union               2      0      0     ",
-      "04": "send_all            9      -      2     # public.test (last)",
+      "04": "send_all            8      -      2     # public.test (last)",
       "05": "union_recv          2      0      0     ",
       "06": "union_set           2      0      -1    ",
       "07": "set                 3      1      0     ",
@@ -786,8 +751,7 @@ explain with a as (select * from test), b as (select [1,2,3]), c as (select * fr
       "13": "store_next          5      10     0     ",
       "14": "free                5      0      0     ",
       "15": "free                4      0      0     ",
-      "16": "content             3      -      -     ",
-      "17": "ret                 0      0      0     "
+      "16": "ret                 3      -      -     "
     },
     "backend": {
       "00": "set                 0      1      0     ",
@@ -797,17 +761,15 @@ explain with a as (select * from test), b as (select [1,2,3]), c as (select * fr
       "04": "set_add             0      0      0     ",
       "05": "table_next          1      2      0     ",
       "06": "free                1      0      0     ",
-      "07": "result              0      0      0     ",
-      "08": "ret                 0      0      0     ",
-      "09": "set                 2      1      0     ",
-      "10": "table_open_part     3      25     15    # public.test (primary)",
-      "11": "table_readi32       4      3      0     ",
-      "12": "push                4      0      0     ",
-      "13": "set_add             2      0      0     ",
-      "14": "table_next          3      11     0     ",
-      "15": "free                3      0      0     ",
-      "16": "result              2      0      0     ",
-      "17": "ret                 0      0      0     "
+      "07": "ret                 0      -      -     ",
+      "08": "set                 2      1      0     ",
+      "09": "table_open_part     3      25     14    # public.test (primary)",
+      "10": "table_readi32       4      3      0     ",
+      "11": "push                4      0      0     ",
+      "12": "set_add             2      0      0     ",
+      "13": "table_next          3      10     0     ",
+      "14": "free                3      0      0     ",
+      "15": "ret                 2      -      -     "
     }
   },
   "access": [["public.test", "ro"]]
@@ -825,7 +787,7 @@ explain with a as (select * from test), b as (select * from test), c as (select 
       "00": "union               0      0      0     ",
       "01": "send_all            0      -      0     # public.test",
       "02": "union               1      0      0     ",
-      "03": "send_all            9      -      1     # public.test (last)",
+      "03": "send_all            8      -      1     # public.test (last)",
       "04": "json                2      40     0     ",
       "05": "set                 3      1      0     ",
       "06": "dup                 4      2      0     ",
@@ -836,8 +798,7 @@ explain with a as (select * from test), b as (select * from test), c as (select 
       "11": "json_next           5      8      0     ",
       "12": "free                5      0      0     ",
       "13": "free                4      0      0     ",
-      "14": "content             3      -      -     ",
-      "15": "ret                 0      0      0     "
+      "14": "ret                 3      -      -     "
     },
     "backend": {
       "00": "set                 0      1      0     ",
@@ -847,17 +808,15 @@ explain with a as (select * from test), b as (select * from test), c as (select 
       "04": "set_add             0      0      0     ",
       "05": "table_next          1      2      0     ",
       "06": "free                1      0      0     ",
-      "07": "result              0      0      0     ",
-      "08": "ret                 0      0      0     ",
-      "09": "set                 1      1      0     ",
-      "10": "table_open_part     2      20     15    # public.test (primary)",
-      "11": "table_readi32       3      2      0     ",
-      "12": "push                3      0      0     ",
-      "13": "set_add             1      0      0     ",
-      "14": "table_next          2      11     0     ",
-      "15": "free                2      0      0     ",
-      "16": "result              1      0      0     ",
-      "17": "ret                 0      0      0     "
+      "07": "ret                 0      -      -     ",
+      "08": "set                 1      1      0     ",
+      "09": "table_open_part     2      20     14    # public.test (primary)",
+      "10": "table_readi32       3      2      0     ",
+      "11": "push                3      0      0     ",
+      "12": "set_add             1      0      0     ",
+      "13": "table_next          2      10     0     ",
+      "14": "free                2      0      0     ",
+      "15": "ret                 1      -      -     "
     }
   },
   "access": [["public.test", "ro"]]
@@ -875,10 +834,10 @@ explain with a as (select * from test), b as (select * from test), c as (select 
       "00": "union               0      0      0     ",
       "01": "send_all            0      -      0     # public.test",
       "02": "union               1      0      0     ",
-      "03": "send_all            9      -      1     # public.test",
+      "03": "send_all            8      -      1     # public.test",
       "04": "json                2      40     0     ",
       "05": "union               3      0      0     ",
-      "06": "send_all            18     -      3     # public.test (last)",
+      "06": "send_all            16     -      3     # public.test (last)",
       "07": "union_recv          3      0      0     ",
       "08": "union_set           3      0      -1    ",
       "09": "set                 4      1      0     ",
@@ -890,8 +849,7 @@ explain with a as (select * from test), b as (select * from test), c as (select 
       "15": "store_next          6      12     0     ",
       "16": "free                6      0      0     ",
       "17": "free                5      0      0     ",
-      "18": "content             4      -      -     ",
-      "19": "ret                 0      0      0     "
+      "18": "ret                 4      -      -     "
     },
     "backend": {
       "00": "set                 0      1      0     ",
@@ -901,26 +859,23 @@ explain with a as (select * from test), b as (select * from test), c as (select 
       "04": "set_add             0      0      0     ",
       "05": "table_next          1      2      0     ",
       "06": "free                1      0      0     ",
-      "07": "result              0      0      0     ",
-      "08": "ret                 0      0      0     ",
-      "09": "set                 1      1      0     ",
-      "10": "table_open_part     2      20     15    # public.test (primary)",
-      "11": "table_readi32       3      2      0     ",
-      "12": "push                3      0      0     ",
-      "13": "set_add             1      0      0     ",
-      "14": "table_next          2      11     0     ",
-      "15": "free                2      0      0     ",
-      "16": "result              1      0      0     ",
-      "17": "ret                 0      0      0     ",
-      "18": "set                 3      1      0     ",
-      "19": "table_open_part     4      45     24    # public.test (primary)",
-      "20": "table_readi32       5      4      0     ",
-      "21": "push                5      0      0     ",
-      "22": "set_add             3      0      0     ",
-      "23": "table_next          4      20     0     ",
-      "24": "free                4      0      0     ",
-      "25": "result              3      0      0     ",
-      "26": "ret                 0      0      0     "
+      "07": "ret                 0      -      -     ",
+      "08": "set                 1      1      0     ",
+      "09": "table_open_part     2      20     14    # public.test (primary)",
+      "10": "table_readi32       3      2      0     ",
+      "11": "push                3      0      0     ",
+      "12": "set_add             1      0      0     ",
+      "13": "table_next          2      10     0     ",
+      "14": "free                2      0      0     ",
+      "15": "ret                 1      -      -     ",
+      "16": "set                 3      1      0     ",
+      "17": "table_open_part     4      45     22    # public.test (primary)",
+      "18": "table_readi32       5      4      0     ",
+      "19": "push                5      0      0     ",
+      "20": "set_add             3      0      0     ",
+      "21": "table_next          4      18     0     ",
+      "22": "free                4      0      0     ",
+      "23": "ret                 3      -      -     "
     }
   },
   "access": [["public.test", "ro"]]
@@ -957,8 +912,7 @@ explain with a as (select [1,2,3]), b as (select * from test), c as (select [1,2
       "19": "store_next          5      9      0     ",
       "20": "free                5      0      0     ",
       "21": "free                4      0      0     ",
-      "22": "content             3      -      -     ",
-      "23": "ret                 0      0      0     "
+      "22": "ret                 3      -      -     "
     },
     "backend": {
       "00": "set                 1      1      0     ",
@@ -968,8 +922,7 @@ explain with a as (select [1,2,3]), b as (select * from test), c as (select [1,2
       "04": "set_add             1      0      0     ",
       "05": "table_next          2      2      0     ",
       "06": "free                2      0      0     ",
-      "07": "result              1      0      0     ",
-      "08": "ret                 0      0      0     "
+      "07": "ret                 1      -      -     "
     }
   },
   "access": [["public.test", "ro"]]
@@ -988,7 +941,7 @@ explain with a as (select [1,2,3]), b as (select * from test), c as (select * fr
       "01": "union               1      0      0     ",
       "02": "send_all            0      -      1     # public.test",
       "03": "union               2      0      0     ",
-      "04": "send_all            9      -      2     # public.test (last)",
+      "04": "send_all            8      -      2     # public.test (last)",
       "05": "union_recv          2      0      0     ",
       "06": "union_set           2      0      -1    ",
       "07": "set                 3      1      0     ",
@@ -1000,8 +953,7 @@ explain with a as (select [1,2,3]), b as (select * from test), c as (select * fr
       "13": "store_next          5      10     0     ",
       "14": "free                5      0      0     ",
       "15": "free                4      0      0     ",
-      "16": "content             3      -      -     ",
-      "17": "ret                 0      0      0     "
+      "16": "ret                 3      -      -     "
     },
     "backend": {
       "00": "set                 1      1      0     ",
@@ -1011,17 +963,15 @@ explain with a as (select [1,2,3]), b as (select * from test), c as (select * fr
       "04": "set_add             1      0      0     ",
       "05": "table_next          2      2      0     ",
       "06": "free                2      0      0     ",
-      "07": "result              1      0      0     ",
-      "08": "ret                 0      0      0     ",
-      "09": "set                 2      1      0     ",
-      "10": "table_open_part     3      25     15    # public.test (primary)",
-      "11": "table_readi32       4      3      0     ",
-      "12": "push                4      0      0     ",
-      "13": "set_add             2      0      0     ",
-      "14": "table_next          3      11     0     ",
-      "15": "free                3      0      0     ",
-      "16": "result              2      0      0     ",
-      "17": "ret                 0      0      0     "
+      "07": "ret                 1      -      -     ",
+      "08": "set                 2      1      0     ",
+      "09": "table_open_part     3      25     14    # public.test (primary)",
+      "10": "table_readi32       4      3      0     ",
+      "11": "push                4      0      0     ",
+      "12": "set_add             2      0      0     ",
+      "13": "table_next          3      10     0     ",
+      "14": "free                3      0      0     ",
+      "15": "ret                 2      -      -     "
     }
   },
   "access": [["public.test", "ro"]]
@@ -1050,7 +1000,7 @@ explain with a as (select * from test), b as (select * from a), c as (select * f
       "11": "free                3      0      0     ",
       "12": "free                2      0      0     ",
       "13": "union               2      0      0     ",
-      "14": "send_all            9      -      2     # public.test (last)",
+      "14": "send_all            8      -      2     # public.test (last)",
       "15": "union_recv          2      0      0     ",
       "16": "union_set           2      0      -1    ",
       "17": "set                 3      1      0     ",
@@ -1062,8 +1012,7 @@ explain with a as (select * from test), b as (select * from a), c as (select * f
       "23": "store_next          5      20     0     ",
       "24": "free                5      0      0     ",
       "25": "free                4      0      0     ",
-      "26": "content             3      -      -     ",
-      "27": "ret                 0      0      0     "
+      "26": "ret                 3      -      -     "
     },
     "backend": {
       "00": "set                 0      1      0     ",
@@ -1073,17 +1022,15 @@ explain with a as (select * from test), b as (select * from a), c as (select * f
       "04": "set_add             0      0      0     ",
       "05": "table_next          1      2      0     ",
       "06": "free                1      0      0     ",
-      "07": "result              0      0      0     ",
-      "08": "ret                 0      0      0     ",
-      "09": "set                 2      1      0     ",
-      "10": "table_open_part     3      20     15    # public.test (primary)",
-      "11": "table_readi32       4      3      0     ",
-      "12": "push                4      0      0     ",
-      "13": "set_add             2      0      0     ",
-      "14": "table_next          3      11     0     ",
-      "15": "free                3      0      0     ",
-      "16": "result              2      0      0     ",
-      "17": "ret                 0      0      0     "
+      "07": "ret                 0      -      -     ",
+      "08": "set                 2      1      0     ",
+      "09": "table_open_part     3      20     14    # public.test (primary)",
+      "10": "table_readi32       4      3      0     ",
+      "11": "push                4      0      0     ",
+      "12": "set_add             2      0      0     ",
+      "13": "table_next          3      10     0     ",
+      "14": "free                3      0      0     ",
+      "15": "ret                 2      -      -     "
     }
   },
   "access": [["public.test", "ro"]]
@@ -1111,7 +1058,7 @@ explain with a as (select * from test), b as (select * from a), c as (select * f
       "11": "free                3      0      0     ",
       "12": "free                2      0      0     ",
       "13": "union               2      0      0     ",
-      "14": "send_all            9      -      2     # public.test (last)",
+      "14": "send_all            8      -      2     # public.test (last)",
       "15": "union_recv          2      0      0     ",
       "16": "union_set           2      0      -1    ",
       "17": "set                 3      1      0     ",
@@ -1123,8 +1070,7 @@ explain with a as (select * from test), b as (select * from a), c as (select * f
       "23": "store_next          5      20     0     ",
       "24": "free                5      0      0     ",
       "25": "free                4      0      0     ",
-      "26": "content             3      -      -     ",
-      "27": "ret                 0      0      0     "
+      "26": "ret                 3      -      -     "
     },
     "backend": {
       "00": "set                 0      1      0     ",
@@ -1134,17 +1080,15 @@ explain with a as (select * from test), b as (select * from a), c as (select * f
       "04": "set_add             0      0      0     ",
       "05": "table_next          1      2      0     ",
       "06": "free                1      0      0     ",
-      "07": "result              0      0      0     ",
-      "08": "ret                 0      0      0     ",
-      "09": "set                 2      1      0     ",
-      "10": "table_open_part     3      20     15    # public.test (primary)",
-      "11": "table_readi32       4      3      0     ",
-      "12": "push                4      0      0     ",
-      "13": "set_add             2      0      0     ",
-      "14": "table_next          3      11     0     ",
-      "15": "free                3      0      0     ",
-      "16": "result              2      0      0     ",
-      "17": "ret                 0      0      0     "
+      "07": "ret                 0      -      -     ",
+      "08": "set                 2      1      0     ",
+      "09": "table_open_part     3      20     14    # public.test (primary)",
+      "10": "table_readi32       4      3      0     ",
+      "11": "push                4      0      0     ",
+      "12": "set_add             2      0      0     ",
+      "13": "table_next          3      10     0     ",
+      "14": "free                3      0      0     ",
+      "15": "ret                 2      -      -     "
     }
   },
   "access": [["public.test", "ro"]]
@@ -1185,8 +1129,7 @@ explain with a as (insert into test values (2, 0) returning *) select * from a
       "12": "store_next          3      7      0     ",
       "13": "free                3      0      0     ",
       "14": "free                2      0      0     ",
-      "15": "content             1      -      -     ",
-      "16": "ret                 0      0      0     "
+      "15": "ret                 1      -      -     "
     },
     "backend": {
       "00": "set                 0      2      0     ",
@@ -1202,8 +1145,7 @@ explain with a as (insert into test values (2, 0) returning *) select * from a
       "10": "set_add             0      0      0     ",
       "11": "upsert              1      3      6     ",
       "12": "free                1      0      0     ",
-      "13": "result              0      0      0     ",
-      "14": "ret                 0      0      0     "
+      "13": "ret                 0      -      -     "
     }
   },
   "access": [["public.test", "rw"]]
@@ -1234,8 +1176,7 @@ explain with a as (update test set data = data + 1 returning *) select * from a
       "11": "store_next          3      6      0     ",
       "12": "free                3      0      0     ",
       "13": "free                2      0      0     ",
-      "14": "content             1      -      -     ",
-      "15": "ret                 0      0      0     "
+      "14": "ret                 1      -      -     "
     },
     "backend": {
       "00": "set                 0      2      0     ",
@@ -1254,8 +1195,7 @@ explain with a as (update test set data = data + 1 returning *) select * from a
       "13": "set_add             0      0      0     ",
       "14": "table_next          1      2      0     ",
       "15": "free                1      0      0     ",
-      "16": "result              0      0      0     ",
-      "17": "ret                 0      0      0     "
+      "16": "ret                 0      -      -     "
     }
   },
   "access": [["public.test", "rw"]]
@@ -1286,8 +1226,7 @@ explain with a as (delete from test returning *) select * from a
       "11": "store_next          3      6      0     ",
       "12": "free                3      0      0     ",
       "13": "free                2      0      0     ",
-      "14": "content             1      -      -     ",
-      "15": "ret                 0      0      0     "
+      "14": "ret                 1      -      -     "
     },
     "backend": {
       "00": "set                 0      2      0     ",
@@ -1300,8 +1239,7 @@ explain with a as (delete from test returning *) select * from a
       "07": "delete              1      0      0     ",
       "08": "table_next          1      2      0     ",
       "09": "free                1      0      0     ",
-      "10": "result              0      0      0     ",
-      "11": "ret                 0      0      0     "
+      "10": "ret                 0      -      -     "
     }
   },
   "access": [["public.test", "rw"]]

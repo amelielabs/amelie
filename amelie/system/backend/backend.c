@@ -109,6 +109,9 @@ backend_run(Backend* self, Ctr* ctr, Req* req)
 		vm_reset(&self->vm);
 		reg_prepare(&self->vm.r, req->code->regs);
 
+		VmReturn ret;
+		vm_return_init(&ret);
+
 		vm_run(&self->vm, dtr->local,
 		        ctr->tr,
 		        NULL,
@@ -116,9 +119,11 @@ backend_run(Backend* self, Ctr* ctr, Req* req)
 		        req->code_data,
 		       &req->arg,
 		       (Value*)req->refs.start,
-		       &req->result,
-		        NULL,
+		       &ret,
 		        req->start);
+
+		if (ret.value)
+			value_move(&req->result, ret.value);
 		break;
 	}
 	case REQ_REPLAY:

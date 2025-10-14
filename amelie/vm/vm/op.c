@@ -311,9 +311,6 @@ OpDesc ops[] =
 
 	// result
 	{ CASSIGN, "assign" },
-	{ CRESULT, "result" },
-	{ CCONTENT, "content" },
-	{ CCONTENT_JSON, "content_json" },
 	{ CREF, "ref" },
 
 	{ 0, NULL }
@@ -489,8 +486,7 @@ op_dump(Program* self, Code* code, Buf* buf)
 			         str_of(&function->name));
 			break;
 		}
-		case CCONTENT:
-		case CCONTENT_JSON:
+		case CRET:
 			op_write(output, op, true, false, false, NULL);
 			break;
 		default:

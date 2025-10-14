@@ -18,8 +18,7 @@ explain select [1.0, 2.1, 3]::vector * [1.5, 1.5, 1.5]::vector;
       "04": "push                1      0      0     ",
       "05": "call                1      -      1     # public.vector()",
       "06": "mulvv               2      0      1     ",
-      "07": "content             2      -      -     ",
-      "08": "ret                 0      0      0     "
+      "07": "ret                 2      -      -     "
     }
   },
   "access": []
@@ -33,8 +32,7 @@ explain select vector [1.0, 2.1, 3] * vector [1.5, 1.5, 1.5];
       "00": "vector              0      0      0     ",
       "01": "vector              1      16     0     ",
       "02": "mulvv               2      0      1     ",
-      "03": "content             2      -      -     ",
-      "04": "ret                 0      0      0     "
+      "03": "ret                 2      -      -     "
     }
   },
   "access": []
@@ -56,8 +54,7 @@ explain select id, embedding::cos_distance(vector [1,3,1,2,0]) from test order b
       "01": "send_all            0      -      0     # public.test (last)",
       "02": "union_recv          0      0      0     ",
       "03": "union_set           0      0      -1    ",
-      "04": "content             0      -      -     ",
-      "05": "ret                 0      0      0     "
+      "04": "ret                 0      -      -     "
     },
     "backend": {
       "00": "set_ordered         0      2      1     ",
@@ -80,8 +77,7 @@ explain select id, embedding::cos_distance(vector [1,3,1,2,0]) from test order b
       "17": "table_next          1      2      0     ",
       "18": "free                1      0      0     ",
       "19": "set_sort            0      0      0     ",
-      "20": "result              0      0      0     ",
-      "21": "ret                 0      0      0     "
+      "20": "ret                 0      -      -     "
     }
   },
   "access": [["public.test", "ro"]]
@@ -97,8 +93,7 @@ explain select id from test order by embedding::cos_distance(vector [1,3,1,2,0])
       "02": "union_recv          0      0      0     ",
       "03": "int                 1      -      0     # 1",
       "04": "union_set           0      0      1     ",
-      "05": "content             0      -      -     ",
-      "06": "ret                 0      0      0     "
+      "05": "ret                 0      -      -     "
     },
     "backend": {
       "00": "set_ordered         0      1      1     ",
@@ -115,8 +110,7 @@ explain select id from test order by embedding::cos_distance(vector [1,3,1,2,0])
       "11": "table_next          1      2      0     ",
       "12": "free                1      0      0     ",
       "13": "set_sort            0      0      0     ",
-      "14": "result              0      0      0     ",
-      "15": "ret                 0      0      0     "
+      "14": "ret                 0      -      -     "
     }
   },
   "access": [["public.test", "ro"]]
