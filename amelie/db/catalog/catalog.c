@@ -32,11 +32,13 @@ catalog_init(Catalog*   self, PartMgr* part_mgr,
 	self->iface_arg = iface_arg;
 	schema_mgr_init(&self->schema_mgr);
 	table_mgr_init(&self->table_mgr, part_mgr);
+	udf_mgr_init(&self->udf_mgr, iface->udf_free, iface_arg);
 }
 
 void
 catalog_free(Catalog* self)
 {
+	udf_mgr_free(&self->udf_mgr);
 	table_mgr_free(&self->table_mgr);
 	schema_mgr_free(&self->schema_mgr);
 }
@@ -123,6 +125,22 @@ catalog_status(Catalog* self)
 	return buf;
 }
 
+static void
+catalog_validate_udfs(Catalog* self, Str* schema, Str* name)
+{
+	// validate udf dependencies on the relation
+	list_foreach(&self->udf_mgr.mgr.list)
+	{
+		auto udf = udf_of(list_at(Relation, link));
+		if (self->iface->udf_depends(udf, schema, name))
+			error("udf '%.*s.%.*s' depends on relation '%.*s.%.*s",
+			      str_size(udf->rel.schema), str_of(udf->rel.schema),
+			      str_size(udf->rel.name), str_of(udf->rel.name),
+			      str_size(schema), str_of(schema),
+			      str_size(name), str_of(name));
+	}
+}
+
 bool
 catalog_execute(Catalog* self, Tr* tr, uint8_t* op, int flags)
 {
@@ -174,6 +192,9 @@ catalog_execute(Catalog* self, Tr* tr, uint8_t* op, int flags)
 		Str name;
 		table_op_drop_read(op, &schema, &name);
 
+		// ensure no other udfs depend on the table
+		catalog_validate_udfs(self, &schema, &name);
+
 		auto if_exists = ddl_if_exists(flags);
 		write = table_mgr_drop(&self->table_mgr, tr, &schema, &name, if_exists);
 		break;
@@ -192,6 +213,9 @@ catalog_execute(Catalog* self, Tr* tr, uint8_t* op, int flags)
 			error("system schema <%.*s> cannot be used to create objects",
 			      str_size(&ref->config->name),
 			      str_of(&ref->config->name));
+
+		// ensure no other udfs depend on the table
+		catalog_validate_udfs(self, &schema, &name);
 
 		auto if_exists = ddl_if_exists(flags);
 		write = table_mgr_rename(&self->table_mgr, tr, &schema, &name,
@@ -356,6 +380,59 @@ catalog_execute(Catalog* self, Tr* tr, uint8_t* op, int flags)
 		auto table = table_mgr_find(&self->table_mgr, &schema, &name, true);
 		auto if_exists = ddl_if_exists(flags);
 		write = table_index_rename(table, tr, &name_index, &name_index_new, if_exists);
+		break;
+	}
+	case DDL_UDF_CREATE:
+	{
+		auto config = udf_op_create_read(op);
+		defer(udf_config_free, config);
+
+		auto if_not_exists = ddl_if_not_exists(flags);
+		write = udf_mgr_create(&self->udf_mgr, tr, config, if_not_exists);
+
+		// compile udf on creation
+		if (write)
+		{
+			auto udf = udf_mgr_find(&self->udf_mgr, &config->schema, &config->name, true);
+			self->iface->udf_compile(self, udf);
+		}
+		break;
+	}
+	case DDL_UDF_DROP:
+	{
+		Str schema;
+		Str name;
+		udf_op_drop_read(op, &schema, &name);
+
+		// ensure no other udfs depend on the udf
+		catalog_validate_udfs(self, &schema, &name);
+
+		auto if_exists = ddl_if_exists(flags);
+		write = udf_mgr_drop(&self->udf_mgr, tr, &schema, &name, if_exists);
+		break;
+	}
+	case DDL_UDF_RENAME:
+	{
+		Str schema;
+		Str name;
+		Str schema_new;
+		Str name_new;
+		udf_op_rename_read(op, &schema, &name, &schema_new, &name_new);
+
+		// ensure schema exists and not system
+		auto ref = schema_mgr_find(&self->schema_mgr, &schema_new, true);
+		if (! ref->config->create)
+			error("system schema <%.*s> cannot be used to create objects",
+			      str_size(&ref->config->name),
+			      str_of(&ref->config->name));
+
+		// ensure no other udfs depend on the udf
+		catalog_validate_udfs(self, &schema, &name);
+
+		auto if_exists = ddl_if_exists(flags);
+		write = udf_mgr_rename(&self->udf_mgr, tr, &schema, &name,
+		                       &schema_new,
+		                       &name_new, if_exists);
 		break;
 	}
 	default:

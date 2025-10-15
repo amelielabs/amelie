@@ -28,6 +28,12 @@
 #include "catalog/table_mgr_alter.h"
 #include "catalog/table_index.h"
 
+// udf
+#include "catalog/udf_config.h"
+#include "catalog/udf.h"
+#include "catalog/udf_op.h"
+#include "catalog/udf_mgr.h"
+
 // catalog
 #include "catalog/catalog.h"
 #include "catalog/cascade.h"

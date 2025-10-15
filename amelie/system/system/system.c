@@ -89,11 +89,36 @@ catalog_if_column_drop(Catalog* self, Table* table, Table* table_new, Column* co
 	build_run(&build);
 }
 
+static void
+catalog_if_udf_compile(Catalog* self, Udf* udf)
+{
+	(void)self;
+	(void)udf;
+}
+
+static void
+catalog_if_udf_free(Udf* udf)
+{
+	(void)udf;
+}
+
+static bool
+catalog_if_udf_depends(Udf* udf, Str* schema, Str* name)
+{
+	(void)udf;
+	(void)schema;
+	(void)name;
+	return false;
+}
+
 static CatalogIf catalog_if =
 {
 	.build_index       = catalog_if_index,
 	.build_column_add  = catalog_if_column_add,
-	.build_column_drop = catalog_if_column_drop
+	.build_column_drop = catalog_if_column_drop,
+	.udf_compile       = catalog_if_udf_compile,
+	.udf_free          = catalog_if_udf_free,
+	.udf_depends       = catalog_if_udf_depends
 };
 
 static void*

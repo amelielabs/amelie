@@ -196,6 +196,7 @@ set(AMELIE_SOURCES_DB
     ${AMELIE_ROOT}/db/catalog/table_mgr.c
     ${AMELIE_ROOT}/db/catalog/table_mgr_alter.c
     ${AMELIE_ROOT}/db/catalog/table_index.c
+    ${AMELIE_ROOT}/db/catalog/udf_mgr.c
     ${AMELIE_ROOT}/db/catalog/catalog.c
     ${AMELIE_ROOT}/db/catalog/cascade.c
     ${AMELIE_ROOT}/db/wal/wal.c

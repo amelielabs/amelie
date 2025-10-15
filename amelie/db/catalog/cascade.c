@@ -24,19 +24,7 @@
 #include <amelie_catalog.h>
 
 static void
-cascade_drop(Catalog* self, Tr* tr, Str* schema)
-{
-	// tables
-	list_foreach_safe(&self->table_mgr.mgr.list)
-	{
-		auto table = table_of(list_at(Relation, link));
-		if (str_compare(&table->config->schema, schema))
-			table_mgr_drop_of(&self->table_mgr, tr, table);
-	}
-}
-
-static void
-cascade_schema_validate(Catalog* self, Str* schema)
+cascade_validate(Catalog* self, Str* schema)
 {
 	// tables
 	list_foreach(&self->table_mgr.mgr.list)
@@ -46,6 +34,70 @@ cascade_schema_validate(Catalog* self, Str* schema)
 			error("table '%.*s' depends on schema '%.*s", str_size(&table->config->name),
 			      str_of(&table->config->name),
 			      str_size(schema), str_of(schema));
+	}
+
+	// udfs
+	list_foreach(&self->udf_mgr.mgr.list)
+	{
+		auto udf = udf_of(list_at(Relation, link));
+		if (str_compare(&udf->config->schema, schema))
+			error("udf '%.*s' depends on schema '%.*s", str_size(&udf->config->name),
+			      str_of(&udf->config->name),
+			      str_size(schema), str_of(schema));
+	}
+}
+
+static void
+cascade_validate_udfs_external(Catalog* self, Str* schema)
+{
+	// ensure that no external schema udfs depend on the schema
+	list_foreach(&self->udf_mgr.mgr.list)
+	{
+		auto udf = udf_of(list_at(Relation, link));
+		if (str_compare(&udf->config->schema, schema))
+			continue;
+		if (self->iface->udf_depends(udf, schema, NULL))
+			error("udf '%.*s.%.*s' depends on schema '%.*s", str_size(&udf->config->schema),
+			      str_of(&udf->config->schema),
+			      str_size(&udf->config->name),
+			      str_of(&udf->config->name),
+			      str_size(schema), str_of(schema));
+	}
+}
+
+static void
+cascade_validate_udfs(Catalog* self, Str* schema)
+{
+	// ensure that no udfs depends on the schema
+	list_foreach(&self->udf_mgr.mgr.list)
+	{
+		auto udf = udf_of(list_at(Relation, link));
+		if (self->iface->udf_depends(udf, schema, NULL))
+			error("udf '%.*s.%.*s' depends on schema '%.*s", str_size(&udf->config->schema),
+			      str_of(&udf->config->schema),
+			      str_size(&udf->config->name),
+			      str_of(&udf->config->name),
+			      str_size(schema), str_of(schema));
+	}
+}
+
+static void
+cascade_drop(Catalog* self, Tr* tr, Str* schema)
+{
+	// tables
+	list_foreach_safe(&self->table_mgr.mgr.list)
+	{
+		auto table = table_of(list_at(Relation, link));
+		if (str_compare(&table->config->schema, schema))
+			table_mgr_drop_of(&self->table_mgr, tr, table);
+	}
+
+	// udfs
+	list_foreach_safe(&self->udf_mgr.mgr.list)
+	{
+		auto udf = udf_of(list_at(Relation, link));
+		if (str_compare(&udf->config->schema, schema))
+			udf_mgr_drop_of(&self->udf_mgr, tr, udf);
 	}
 }
 
@@ -67,6 +119,9 @@ cascade_schema_drop(Catalog* self, Tr* tr, Str* name,
 		error("schema '%.*s': system schema cannot be dropped", str_size(name),
 		       str_of(name));
 
+	// ensure no dependencies from other schemas
+	cascade_validate_udfs_external(self, name);
+
 	if (cascade)
 	{
 		// drop all dependencies
@@ -74,7 +129,7 @@ cascade_schema_drop(Catalog* self, Tr* tr, Str* name,
 	} else
 	{
 		// ensure no dependencies
-		cascade_schema_validate(self, name);
+		cascade_validate(self, name);
 	}
 
 	schema_mgr_drop(&self->schema_mgr, tr, name, false);
@@ -93,6 +148,17 @@ cascade_rename(Catalog* self, Tr* tr, Str* schema, Str* schema_new)
 			                 &table->config->name,
 			                 schema_new,
 			                 &table->config->name, false);
+	}
+
+	// udfs
+	list_foreach_safe(&self->udf_mgr.mgr.list)
+	{
+		auto udf = udf_of(list_at(Relation, link));
+		if (str_compare(&udf->config->schema, schema))
+			udf_mgr_rename(&self->udf_mgr, tr, &udf->config->schema,
+			               &udf->config->name,
+			               schema_new,
+			               &udf->config->name, false);
 	}
 }
 
@@ -113,6 +179,9 @@ cascade_schema_rename(Catalog* self, Tr* tr, Str* name,
 	if (schema->config->system)
 		error("schema '%.*s': system schema cannot be altered", str_size(name),
 		      str_of(name));
+
+	// ensure that no udfs depends on the schema
+	cascade_validate_udfs(self, name);
 
 	// rename schema on all dependable objects
 	cascade_rename(self, tr, name, name_new);
