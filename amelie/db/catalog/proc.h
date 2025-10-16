@@ -1,0 +1,56 @@
+#pragma once
+
+//
+// amelie.
+//
+// Real-Time SQL OLTP Database.
+//
+// Copyright (c) 2024 Dmitry Simonenko.
+// Copyright (c) 2024 Amelie Labs.
+//
+// AGPL-3.0 Licensed.
+//
+
+typedef struct Proc Proc;
+
+typedef void (*ProcFree)(Proc*);
+
+struct Proc
+{
+	Relation    rel;
+	ProcFree    free;
+	void*       free_arg;
+	void*       data;
+	ProcConfig* config;
+};
+
+static inline void
+proc_free(Proc* self)
+{
+	if (self->free)
+		self->free(self);
+	if (self->config)
+		proc_config_free(self->config);
+	am_free(self);
+}
+
+static inline Proc*
+proc_allocate(ProcConfig* config, ProcFree free, void* free_arg)
+{
+	auto self = (Proc*)am_malloc(sizeof(Proc));
+	self->free     = free;
+	self->free_arg = free_arg;
+	self->data     = NULL;
+	self->config   = proc_config_copy(config);
+	relation_init(&self->rel);
+	relation_set_schema(&self->rel, &self->config->schema);
+	relation_set_name(&self->rel, &self->config->name);
+	relation_set_free_function(&self->rel, (RelationFree)proc_free);
+	return self;
+}
+
+static inline Proc*
+proc_of(Relation* self)
+{
+	return (Proc*)self;
+}

@@ -40,7 +40,7 @@
 #include <amelie_parser.h>
 
 static void
-parse_function_args(Stmt* self, AstFunctionCreate* stmt)
+parse_procedure_args(Stmt* self, AstProcedureCreate* stmt)
 {
 	// ()
 	stmt_expect(self, '(');
@@ -80,80 +80,56 @@ parse_function_args(Stmt* self, AstFunctionCreate* stmt)
 }
 
 void
-parse_function_create(Stmt* self, bool or_replace)
+parse_procedure_create(Stmt* self, bool or_replace)
 {
-	// CREATE [OR REPLACE] FUNCTION [schema.]name (args) [RETURN type]
+	// CREATE [OR REPLACE] PROCEDURE [schema.]name (args)
 	// BEGIN
 	//   block
 	// END
-	auto stmt = ast_function_create_allocate();
+	auto stmt = ast_procedure_create_allocate();
 	self->ast = &stmt->ast;
 
 	// or replace
 	stmt->or_replace = or_replace;
 
-	// create function config
-	stmt->config = udf_config_allocate();
+	// create procedure config
+	stmt->config = proc_config_allocate();
 
 	// name
 	Str schema;
 	Str name;
 	if (! parse_target(self, &schema, &name))
 		stmt_error(self, NULL, "name expected");
-	udf_config_set_schema(stmt->config, &schema);
-	udf_config_set_name(stmt->config, &name);
+	proc_config_set_schema(stmt->config, &schema);
+	proc_config_set_name(stmt->config, &name);
 
 	// (args)
-	parse_function_args(self, stmt);
-
-	// [return type]
-	auto parser = self->parser;
-	if (stmt_if(self, KRETURN))
-	{
-		// type
-		auto ast = stmt_next_shadow(self);
-		if (ast->id != KNAME)
-			stmt_error(self, ast, "unrecognized data type");
-
-		int type_size;
-		int type;
-		if (str_is_case(&ast->string, "table", 5))
-			type = TYPE_STORE;
-		else
-			type = type_read(&ast->string, &type_size);
-		if (type == -1)
-			stmt_error(self, ast, "unrecognized data type");
-
-		// table (columns)
-		if (type == TYPE_STORE)
-			parse_declare_columns(parser, &stmt->config->columns);
-
-		udf_config_set_type(stmt->config, type);
-	}
+	parse_procedure_args(self, stmt);
 
 	// BEGIN
 	auto begin = stmt_expect(self, KBEGIN);
 
+	auto parser = self->parser;
 	auto block = blocks_add(&parser->blocks, self->block);
 	parse_block(parser, block, true);
 
 	// END
 	auto end = stmt_expect(self, KEND);
 
-	// set function text
+	// set procedure text
 	Str text;
 	str_init(&text);
 	str_set(&text, parser->lex.start + begin->pos_start,
-	         end->pos_end - begin->pos_start);
+	        end->pos_end - begin->pos_start);
 	str_shrink(&text);
-	udf_config_set_text(stmt->config, &text);
+	proc_config_set_text(stmt->config, &text);
 }
 
 void
-parse_function_drop(Stmt* self)
+parse_procedure_drop(Stmt* self)
 {
-	// DROP FUNCTION [IF EXISTS] name
-	auto stmt = ast_function_drop_allocate();
+	// DROP PROCEDURE [IF EXISTS] name
+	auto stmt = ast_procedure_drop_allocate();
 	self->ast = &stmt->ast;
 
 	// if exists
@@ -165,10 +141,10 @@ parse_function_drop(Stmt* self)
 }
 
 void
-parse_function_alter(Stmt* self)
+parse_procedure_alter(Stmt* self)
 {
-	// ALTER FUNCTION [IF EXISTS] [schema.]name RENAME [schema.]name
-	auto stmt = ast_function_alter_allocate();
+	// ALTER PROCEDURE [IF EXISTS] [schema.]name RENAME [schema.]name
+	auto stmt = ast_procedure_alter_allocate();
 	self->ast = &stmt->ast;
 
 	// if exists

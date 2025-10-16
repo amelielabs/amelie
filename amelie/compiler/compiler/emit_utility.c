@@ -223,27 +223,27 @@ emit_ddl(Compiler* self)
 		break;
 	}
 
-	// function
-	case STMT_CREATE_FUNCTION:
+	// procedure
+	case STMT_CREATE_PROCEDURE:
 	{
-		auto arg = ast_function_create_of(stmt->ast);
-		offset = udf_op_create(data, arg->config);
+		auto arg = ast_procedure_create_of(stmt->ast);
+		offset = proc_op_create(data, arg->config);
 		flags = 0;
 		break;
 	}
-	case STMT_DROP_FUNCTION:
+	case STMT_DROP_PROCEDURE:
 	{
-		auto arg = ast_function_drop_of(stmt->ast);
-		offset = udf_op_drop(data, &arg->schema, &arg->name);
+		auto arg = ast_procedure_drop_of(stmt->ast);
+		offset = proc_op_drop(data, &arg->schema, &arg->name);
 		flags = arg->if_exists ? DDL_IF_EXISTS : 0;
 		break;
 	}
-	case STMT_ALTER_FUNCTION:
+	case STMT_ALTER_PROCEDURE:
 	{
-		auto arg = ast_function_alter_of(stmt->ast);
-		offset = udf_op_rename(data, &arg->schema, &arg->name,
-		                       &arg->schema_new,
-		                       &arg->name_new);
+		auto arg = ast_procedure_alter_of(stmt->ast);
+		offset = proc_op_rename(data, &arg->schema, &arg->name,
+		                        &arg->schema_new,
+		                        &arg->name_new);
 		flags = arg->if_exists ? DDL_IF_EXISTS : 0;
 		break;
 	}

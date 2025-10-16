@@ -98,7 +98,6 @@ Keyword keywords[] =
 	{ KFROM,                  "from",                  4  },
 	{ KFOR,                   "for",                   3  },
 	{ KFORMAT,                "format",                6  },
-	{ KFUNCTION,              "function",              8  },
 
 	// g
 	{ KGROUP,                 "group",                 5  },
@@ -153,6 +152,7 @@ Keyword keywords[] =
 
 	// p
 	{ KPROFILE,               "profile",               7  },
+	{ KPROCEDURE,             "procedure",             9  },
 	{ KPARTITIONS,            "partitions",            10 },
 	{ KPOOL,                  "pool",                  4  },
 	{ KPRIMARY,               "primary",               7  },

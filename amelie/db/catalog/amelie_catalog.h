@@ -28,11 +28,11 @@
 #include "catalog/table_mgr_alter.h"
 #include "catalog/table_index.h"
 
-// udf
-#include "catalog/udf_config.h"
-#include "catalog/udf.h"
-#include "catalog/udf_op.h"
-#include "catalog/udf_mgr.h"
+// stored procedure
+#include "catalog/proc_config.h"
+#include "catalog/proc.h"
+#include "catalog/proc_op.h"
+#include "catalog/proc_mgr.h"
 
 // catalog
 #include "catalog/catalog.h"

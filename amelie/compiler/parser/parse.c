@@ -94,11 +94,11 @@ parse_stmt_free(Stmt* stmt)
 			index_config_free(ast->config);
 		break;
 	}
-	case STMT_CREATE_FUNCTION:
+	case STMT_CREATE_PROCEDURE:
 	{
-		auto ast = ast_function_create_of(stmt->ast);
+		auto ast = ast_procedure_create_of(stmt->ast);
 		if (ast->config)
-			udf_config_free(ast->config);
+			proc_config_free(ast->config);
 		break;
 	}
 	case STMT_INSERT:
@@ -228,7 +228,7 @@ parse_stmt(Stmt* self)
 			stmt_push(self, next);
 		}
 
-		// CREATE USER | TOKEN | REPLICA | SCHEMA | TABLE | INDEX | FUNCTION
+		// CREATE USER | TOKEN | REPLICA | SCHEMA | TABLE | INDEX | PROCEDURE
 		if (stmt_if(self, KUSER))
 		{
 			self->id = STMT_CREATE_USER;
@@ -259,20 +259,20 @@ parse_stmt(Stmt* self)
 			self->id = STMT_CREATE_INDEX;
 			parse_index_create(self, unique);
 		} else
-		if (stmt_if(self, KFUNCTION))
+		if (stmt_if(self, KPROCEDURE))
 		{
-			self->id = STMT_CREATE_FUNCTION;
-			parse_function_create(self, false);
+			self->id = STMT_CREATE_PROCEDURE;
+			parse_procedure_create(self, false);
 		} else
 		{
-			stmt_error(self, NULL, "USER|REPLICA|SCHEMA|TABLE|INDEX|FUNCTION expected");
+			stmt_error(self, NULL, "USER|REPLICA|SCHEMA|TABLE|INDEX|PROCEDURE expected");
 		}
 		break;
 	}
 
 	case KDROP:
 	{
-		// DROP USER | REPLICA | SCHEMA | TABLE | INDEX | FUNCTION
+		// DROP USER | REPLICA | SCHEMA | TABLE | INDEX | PROCEDURE
 		if (stmt_if(self, KUSER))
 		{
 			self->id = STMT_DROP_USER;
@@ -298,19 +298,19 @@ parse_stmt(Stmt* self)
 			self->id = STMT_DROP_INDEX;
 			parse_index_drop(self);
 		} else
-		if (stmt_if(self, KFUNCTION))
+		if (stmt_if(self, KPROCEDURE))
 		{
-			self->id = STMT_DROP_FUNCTION;
-			parse_function_drop(self);
+			self->id = STMT_DROP_PROCEDURE;
+			parse_procedure_drop(self);
 		} else {
-			stmt_error(self, NULL, "USER|REPLICA|SCHEMA|TABLE|INDEX|FUNCTION expected");
+			stmt_error(self, NULL, "USER|REPLICA|SCHEMA|TABLE|INDEX|PROCEDURE expected");
 		}
 		break;
 	}
 
 	case KALTER:
 	{
-		// ALTER USER | SCHEMA | TABLE | INDEX | FUNCTION
+		// ALTER USER | SCHEMA | TABLE | INDEX | PROCEDURE
 		if (stmt_if(self, KUSER))
 		{
 			self->id = STMT_ALTER_USER;
@@ -331,12 +331,12 @@ parse_stmt(Stmt* self)
 			self->id = STMT_ALTER_INDEX;
 			parse_index_alter(self);
 		} else
-		if (stmt_if(self, KFUNCTION))
+		if (stmt_if(self, KPROCEDURE))
 		{
-			self->id = STMT_ALTER_FUNCTION;
-			parse_function_alter(self);
+			self->id = STMT_ALTER_PROCEDURE;
+			parse_procedure_alter(self);
 		} else {
-			stmt_error(self, NULL, "USER|SCHEMA|TABLE|INDEX|FUNCTION expected");
+			stmt_error(self, NULL, "USER|SCHEMA|TABLE|INDEX|PROCEDURE expected");
 		}
 		break;
 	}

@@ -28,7 +28,7 @@
 static Buf*
 db_checkpoint_catalog_dump(void* arg)
 {
-	// { schemas, tables, udfs }
+	// { schemas, tables, procedures }
 	Catalog* self = arg;
 	auto buf = buf_create();
 	encode_obj(buf);
@@ -39,8 +39,8 @@ db_checkpoint_catalog_dump(void* arg)
 	encode_raw(buf, "tables", 6);
 	table_mgr_dump(&self->table_mgr, buf);
 
-	encode_raw(buf, "udfs", 4);
-	udf_mgr_dump(&self->udf_mgr, buf);
+	encode_raw(buf, "procedures", 10);
+	proc_mgr_dump(&self->proc_mgr, buf);
 
 	encode_obj_end(buf);
 	return buf;
@@ -50,7 +50,7 @@ enum
 {
 	RESTORE_SCHEMA,
 	RESTORE_TABLE,
-	RESTORE_UDF
+	RESTORE_PROC
 };
 
 static void
@@ -77,14 +77,14 @@ restore_replay(Db* self, Tr* tr, int type, uint8_t** pos)
 		table_mgr_create(&self->catalog.table_mgr, tr, config, false);
 		break;
 	}
-	case RESTORE_UDF:
+	case RESTORE_PROC:
 	{
-		// read udfconfig
-		auto config = udf_config_read(pos);
-		defer(udf_config_free, config);
+		// read procedure config
+		auto config = proc_config_read(pos);
+		defer(proc_config_free, config);
 
-		// create udf
-		udf_mgr_create(&self->catalog.udf_mgr, tr, config, false);
+		// create procedure
+		proc_mgr_create(&self->catalog.proc_mgr, tr, config, false);
 		break;
 	}
 	}
@@ -118,13 +118,13 @@ db_checkpoint_catalog_restore(uint8_t** pos, void* arg)
 	Db* self = arg;
 	uint8_t* pos_schemas = NULL;
 	uint8_t* pos_tables  = NULL;
-	uint8_t* pos_udfs    = NULL;
+	uint8_t* pos_procs   = NULL;
 	Decode obj[] =
 	{
-		{ DECODE_ARRAY, "schemas", &pos_schemas },
-		{ DECODE_ARRAY, "tables",  &pos_tables  },
-		{ DECODE_ARRAY, "udfs",    &pos_udfs    },
-		{ 0,             NULL,      NULL        },
+		{ DECODE_ARRAY, "schemas",    &pos_schemas },
+		{ DECODE_ARRAY, "tables",     &pos_tables  },
+		{ DECODE_ARRAY, "procedures", &pos_procs   },
+		{ 0,             NULL,         NULL        },
 	};
 	decode_obj(obj, "catalog", pos);
 
@@ -138,10 +138,10 @@ db_checkpoint_catalog_restore(uint8_t** pos, void* arg)
 	while (! json_read_array_end(&pos_tables))
 		restore_object(self, RESTORE_TABLE, &pos_tables);
 
-	// udfs
-	json_read_array(&pos_udfs);
-	while (! json_read_array_end(&pos_udfs))
-		restore_object(self, RESTORE_UDF, &pos_udfs);
+	// procedures
+	json_read_array(&pos_procs);
+	while (! json_read_array_end(&pos_procs))
+		restore_object(self, RESTORE_PROC, &pos_procs);
 }
 
 static void
