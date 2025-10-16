@@ -94,6 +94,13 @@ parse_stmt_free(Stmt* stmt)
 			index_config_free(ast->config);
 		break;
 	}
+	case STMT_CREATE_FUNCTION:
+	{
+		auto ast = ast_function_create_of(stmt->ast);
+		if (ast->config)
+			udf_config_free(ast->config);
+		break;
+	}
 	case STMT_INSERT:
 	{
 		auto ast = ast_insert_of(stmt->ast);
@@ -221,7 +228,7 @@ parse_stmt(Stmt* self)
 			stmt_push(self, next);
 		}
 
-		// CREATE USER | TOKEN | REPLICA | SCHEMA | TABLE | INDEX
+		// CREATE USER | TOKEN | REPLICA | SCHEMA | TABLE | INDEX | FUNCTION
 		if (stmt_if(self, KUSER))
 		{
 			self->id = STMT_CREATE_USER;
@@ -251,15 +258,21 @@ parse_stmt(Stmt* self)
 		{
 			self->id = STMT_CREATE_INDEX;
 			parse_index_create(self, unique);
-		} else {
-			stmt_error(self, NULL, "USER|REPLICA|SCHEMA|TABLE|INDEX expected");
+		} else
+		if (stmt_if(self, KFUNCTION))
+		{
+			self->id = STMT_CREATE_FUNCTION;
+			parse_function_create(self, false);
+		} else
+		{
+			stmt_error(self, NULL, "USER|REPLICA|SCHEMA|TABLE|INDEX|FUNCTION expected");
 		}
 		break;
 	}
 
 	case KDROP:
 	{
-		// DROP USER | REPLICA | SCHEMA | TABLE | INDEX
+		// DROP USER | REPLICA | SCHEMA | TABLE | INDEX | FUNCTION
 		if (stmt_if(self, KUSER))
 		{
 			self->id = STMT_DROP_USER;
@@ -284,15 +297,20 @@ parse_stmt(Stmt* self)
 		{
 			self->id = STMT_DROP_INDEX;
 			parse_index_drop(self);
+		} else
+		if (stmt_if(self, KFUNCTION))
+		{
+			self->id = STMT_DROP_FUNCTION;
+			parse_function_drop(self);
 		} else {
-			stmt_error(self, NULL, "USER|REPLICA|SCHEMA|TABLE|INDEX expected");
+			stmt_error(self, NULL, "USER|REPLICA|SCHEMA|TABLE|INDEX|FUNCTION expected");
 		}
 		break;
 	}
 
 	case KALTER:
 	{
-		// ALTER USER | SCHEMA | TABLE | INDEX
+		// ALTER USER | SCHEMA | TABLE | INDEX | FUNCTION
 		if (stmt_if(self, KUSER))
 		{
 			self->id = STMT_ALTER_USER;
@@ -312,8 +330,13 @@ parse_stmt(Stmt* self)
 		{
 			self->id = STMT_ALTER_INDEX;
 			parse_index_alter(self);
+		} else
+		if (stmt_if(self, KFUNCTION))
+		{
+			self->id = STMT_ALTER_FUNCTION;
+			parse_function_alter(self);
 		} else {
-			stmt_error(self, NULL, "USER|SCHEMA|TABLE|INDEX expected");
+			stmt_error(self, NULL, "USER|SCHEMA|TABLE|INDEX|FUNCTION expected");
 		}
 		break;
 	}
@@ -414,7 +437,7 @@ parse_stmt(Stmt* self)
 }
 
 hot void
-parse_block(Parser* self, Block* block)
+parse_block(Parser* self, Block* block, bool allow_declare)
 {
 	// stmt [; stmt]
 	auto lex = &self->lex;
@@ -433,9 +456,7 @@ parse_block(Parser* self, Block* block)
 		case KDECLARE:
 			// [DECLARE var type ;]
 			// [DECLARE var type := expr]
-			//
-			// ensure root block being used
-			if (block != self->blocks.list)
+			if (! allow_declare)
 				lex_error(lex, ast, "declare cannot be used here");
 			parse_declare(self, block);
 			break;
@@ -515,7 +536,7 @@ parse(Parser* self, Program* program, Str* str)
 
 	// stmt [; stmt]
 	auto block = blocks_add(&self->blocks, NULL);
-	parse_block(self, block);
+	parse_block(self, block, true);
 
 	// [END [;]]
 	if (begin)

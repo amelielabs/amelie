@@ -98,6 +98,7 @@ Keyword keywords[] =
 	{ KFROM,                  "from",                  4  },
 	{ KFOR,                   "for",                   3  },
 	{ KFORMAT,                "format",                6  },
+	{ KFUNCTION,              "function",              8  },
 
 	// g
 	{ KGROUP,                 "group",                 5  },

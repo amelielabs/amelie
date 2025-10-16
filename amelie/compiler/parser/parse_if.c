@@ -60,7 +60,7 @@ parse_if_block(Stmt* self)
 	// block
 	cond->block = blocks_add(&parser->blocks, self->block);
 	cond->block->from = &stmt->from;
-	parse_block(parser, cond->block);
+	parse_block(parser, cond->block, false);
 	return cond;
 }
 
@@ -93,7 +93,7 @@ parse_if(Stmt* self)
 		{
 			// block
 			stmt->cond_else = blocks_add(&self->parser->blocks, self->block);
-			parse_block(self->parser, stmt->cond_else);
+			parse_block(self->parser, stmt->cond_else, false);
 		}
 
 		stmt_expect(self, KEND);

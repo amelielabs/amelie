@@ -178,6 +178,8 @@ enum
 	SHOW_SCHEMA,
 	SHOW_TABLES,
 	SHOW_TABLE,
+	SHOW_FUNCTIONS,
+	SHOW_FUNCTION,
 	SHOW_STATE,
 	SHOW_ALL,
 	SHOW_CONFIG
@@ -195,22 +197,24 @@ struct ShowCmd
 
 static ShowCmd show_cmds[] =
 {
-	{ SHOW_USERS,    "users",       5,  false  },
-	{ SHOW_USER,     "user",        4,  true   },
-	{ SHOW_REPLICAS, "replicas",    8,  false  },
-	{ SHOW_REPLICA,  "replica",     7,  true   },
-	{ SHOW_REPL,     "repl",        4,  false  },
-	{ SHOW_REPL,     "replication", 11, false  },
-	{ SHOW_WAL,      "wal",         3,  false  },
-	{ SHOW_METRICS,  "metrics",     7,  false  },
-	{ SHOW_SCHEMAS,  "schemas",     7,  false  },
-	{ SHOW_SCHEMA,   "schema",      6,  true   },
-	{ SHOW_TABLES,   "tables",      6,  false  },
-	{ SHOW_TABLE,    "table",       5,  true   },
-	{ SHOW_STATE,    "state",       5,  false  },
-	{ SHOW_ALL,      "all",         3,  false  },
-	{ SHOW_CONFIG,   "config",      6,  false  },
-	{ 0,              NULL,         0,  false  }
+	{ SHOW_USERS,     "users",       5,  false  },
+	{ SHOW_USER,      "user",        4,  true   },
+	{ SHOW_REPLICAS,  "replicas",    8,  false  },
+	{ SHOW_REPLICA,   "replica",     7,  true   },
+	{ SHOW_REPL,      "repl",        4,  false  },
+	{ SHOW_REPL,      "replication", 11, false  },
+	{ SHOW_WAL,       "wal",         3,  false  },
+	{ SHOW_METRICS,   "metrics",     7,  false  },
+	{ SHOW_SCHEMAS,   "schemas",     7,  false  },
+	{ SHOW_SCHEMA,    "schema",      6,  true   },
+	{ SHOW_TABLES,    "tables",      6,  false  },
+	{ SHOW_TABLE,     "table",       5,  true   },
+	{ SHOW_FUNCTIONS, "functions",   9,  false  },
+	{ SHOW_FUNCTION,  "function",    8,  true   },
+	{ SHOW_STATE,     "state",       5,  false  },
+	{ SHOW_ALL,       "all",         3,  false  },
+	{ SHOW_CONFIG,    "config",      6,  false  },
+	{ 0,               NULL,         0,  false  }
 };
 
 static inline ShowCmd*
@@ -337,6 +341,22 @@ fn_show(Call* self)
 		if (! str_empty(schema))
 			schema_ref = schema;
 		buf = table_mgr_list(&catalog->table_mgr, schema_ref, name, extended);
+		break;
+	}
+	case SHOW_FUNCTIONS:
+	{
+		Str* schema_ref = NULL;
+		if (! str_empty(schema))
+			schema_ref = schema;
+		buf = udf_mgr_list(&catalog->udf_mgr, schema_ref, NULL, extended);
+		break;
+	}
+	case SHOW_FUNCTION:
+	{
+		Str* schema_ref = NULL;
+		if (! str_empty(schema))
+			schema_ref = schema;
+		buf = udf_mgr_list(&catalog->udf_mgr, schema_ref, name, extended);
 		break;
 	}
 	case SHOW_STATE:

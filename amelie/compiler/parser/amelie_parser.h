@@ -65,6 +65,7 @@
 #include "parser/parse_schema.h"
 #include "parser/parse_table.h"
 #include "parser/parse_index.h"
+#include "parser/parse_function.h"
 
 // dml
 #include "parser/parse_from.h"

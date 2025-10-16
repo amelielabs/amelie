@@ -110,6 +110,7 @@ enum
 	KFROM,
 	KFOR,
 	KFORMAT,
+	KFUNCTION,
 
 	// g
 	KGROUP,

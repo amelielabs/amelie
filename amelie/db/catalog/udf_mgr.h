@@ -29,4 +29,3 @@ bool udf_mgr_rename(UdfMgr*, Tr*, Str*, Str*, Str*, Str*, bool);
 void udf_mgr_dump(UdfMgr*, Buf*);
 Buf* udf_mgr_list(UdfMgr*, Str*, Str*, bool);
 Udf* udf_mgr_find(UdfMgr*, Str*, Str*, bool);
-Udf* udf_mgr_find_depend(UdfMgr*, Str*, Str*);

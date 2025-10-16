@@ -222,6 +222,32 @@ emit_ddl(Compiler* self)
 		flags = arg->if_exists ? DDL_IF_EXISTS : 0;
 		break;
 	}
+
+	// function
+	case STMT_CREATE_FUNCTION:
+	{
+		auto arg = ast_function_create_of(stmt->ast);
+		offset = udf_op_create(data, arg->config);
+		flags = 0;
+		break;
+	}
+	case STMT_DROP_FUNCTION:
+	{
+		auto arg = ast_function_drop_of(stmt->ast);
+		offset = udf_op_drop(data, &arg->schema, &arg->name);
+		flags = arg->if_exists ? DDL_IF_EXISTS : 0;
+		break;
+	}
+	case STMT_ALTER_FUNCTION:
+	{
+		auto arg = ast_function_alter_of(stmt->ast);
+		offset = udf_op_rename(data, &arg->schema, &arg->name,
+		                       &arg->schema_new,
+		                       &arg->name_new);
+		flags = arg->if_exists ? DDL_IF_EXISTS : 0;
+		break;
+	}
+
 	default:
 		abort();
 		break;

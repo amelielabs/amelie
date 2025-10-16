@@ -39,8 +39,8 @@
 #include <amelie_vm.h>
 #include <amelie_parser.h>
 
-hot static void
-parse_declare_columns(Parser* self, Var* var)
+void
+parse_declare_columns(Parser* self, Columns* columns)
 {
 	auto lex = &self->lex;
 
@@ -53,7 +53,7 @@ parse_declare_columns(Parser* self, Var* var)
 		auto name = lex_expect(lex, KNAME);
 
 		// ensure column is unique
-		auto column = columns_find(&var->columns, &name->string);
+		auto column = columns_find(columns, &name->string);
 		if (column)
 			lex_error(lex, name, "column redefined");
 
@@ -71,7 +71,7 @@ parse_declare_columns(Parser* self, Var* var)
 		column = column_allocate();
 		column_set_name(column, &name->string);
 		column_set_type(column, type, type_size);
-		columns_add(&var->columns, column);
+		columns_add(columns, column);
 
 		// ,
 		if (lex_if(lex, ','))
@@ -127,7 +127,7 @@ parse_declare(Parser* self, Block* block)
 
 	// var table(column, ...)
 	if (var->type == TYPE_STORE)
-		parse_declare_columns(self, var);
+		parse_declare_columns(self, &var->columns);
 
 	// := expr
 	if (lex_if(lex, KASSIGN))
