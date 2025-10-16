@@ -675,7 +675,7 @@ expr_value(Stmt* self, Expr* expr, Ast* value)
 		}
 
 		// find variable by name
-		auto var = vars_find(&self->parser->vars, &value->string);
+		auto var = block_find_var(self->block, &value->string);
 		if (! var)
 			break;
 		value->id  = KVAR;
@@ -701,7 +701,7 @@ expr_value(Stmt* self, Expr* expr, Ast* value)
 		str_split(&value->string, &name, '.');
 
 		// find variable by name
-		auto var = vars_find(&self->parser->vars, &name);
+		auto var = block_find_var(self->block, &name);
 		if (! var)
 			break;
 		value->id  = KVAR;

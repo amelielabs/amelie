@@ -175,7 +175,7 @@ path_column(Path* self, Str* string)
 		target = target->prev;
 	}
 	if (! target)
-		target = block_target_find(self->target->from->outer, &name);
+		target = block_find_target(self->target->from->outer, &name);
 	if (! target)
 		return NULL;
 

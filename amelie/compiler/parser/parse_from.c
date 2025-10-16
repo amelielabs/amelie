@@ -139,7 +139,7 @@ parse_from_target(Stmt* self, From* from, AccessType access, bool subquery)
 	}
 
 	// var
-	auto var = vars_find(&self->parser->vars, &name);
+	auto var = block_find_var(self->block, &name);
 	if (var)
 	{
 		target->type     = TARGET_VAR;

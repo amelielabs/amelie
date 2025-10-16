@@ -15,7 +15,6 @@ typedef struct Parser Parser;
 
 struct Parser
 {
-	Vars      vars;
 	Blocks    blocks;
 	Program*  program;
 	SetCache* values_cache;

@@ -437,7 +437,7 @@ parse_stmt(Stmt* self)
 }
 
 hot void
-parse_block(Parser* self, Block* block, bool allow_declare)
+parse_block(Parser* self, Block* block)
 {
 	// stmt [; stmt]
 	auto lex = &self->lex;
@@ -456,8 +456,6 @@ parse_block(Parser* self, Block* block, bool allow_declare)
 		case KDECLARE:
 			// [DECLARE var type ;]
 			// [DECLARE var type := expr]
-			if (! allow_declare)
-				lex_error(lex, ast, "declare cannot be used here");
 			parse_declare(self, block);
 			break;
 		case KNAME:
@@ -536,7 +534,7 @@ parse(Parser* self, Program* program, Str* str)
 
 	// stmt [; stmt]
 	auto block = blocks_add(&self->blocks, NULL);
-	parse_block(self, block, true);
+	parse_block(self, block);
 
 	// [END [;]]
 	if (begin)

@@ -13,7 +13,6 @@
 
 typedef struct Stmt      Stmt;
 typedef struct Parser    Parser;
-typedef struct Var       Var;
 typedef struct Returning Returning;
 typedef struct Block     Block;
 

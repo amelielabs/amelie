@@ -323,7 +323,7 @@ emit_name_compound(Compiler* self, From* from, Ast* ast)
 			if (target && str_compare(&target->name, &name))
 				match = target;
 			else
-				match = block_target_find(from, &name);
+				match = block_find_target(from, &name);
 			if (match)
 			{
 				// target.column

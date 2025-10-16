@@ -66,7 +66,7 @@ parse_for(Stmt* self)
 	// block
 	stmt->block = blocks_add(&self->parser->blocks, self->block);
 	stmt->block->from = &stmt->from;
-	parse_block(self->parser, stmt->block, false);
+	parse_block(self->parser, stmt->block);
 
 	// END
 	stmt_expect(self, KEND);

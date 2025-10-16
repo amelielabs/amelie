@@ -233,7 +233,7 @@ parse_returning_resolve_exprs(Returning* self, Stmt* stmt, From* from)
 			str_split(&as->l->string, &name, '.');
 
 			// find nearest target
-			auto match = block_target_find(from, &name);
+			auto match = block_find_target(from, &name);
 			if (! match)
 				stmt_error(stmt, as->l, "target not found");
 
@@ -276,7 +276,7 @@ parse_returning_resolve(Returning* self, Stmt* stmt, From* from)
 	auto ref = self->list_into;
 	for (; ref; ref = ref->next)
 	{
-		auto var = vars_find(&stmt->parser->vars, &ref->string);
+		auto var = block_find_var(stmt->block, &ref->string);
 		if (! var)
 			stmt_error(stmt, NULL, "variable '%.*s' not found", str_size(&ref->string),
 			           str_of(&ref->string));

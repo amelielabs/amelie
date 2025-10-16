@@ -578,6 +578,11 @@ emit_block(Compiler* self, Block* block)
 	auto stmt_prev = self->current;
 	self->current = NULL;
 
+	// reserve variables
+	auto var = block->vars.list;
+	for (; var; var = var->next)
+		var->r = rpin(self, var->type);
+
 	// emit statements in the block
 	auto stmt = block->stmts.list;
 	for (; stmt; stmt = stmt->next)
@@ -606,16 +611,25 @@ emit_block(Compiler* self, Block* block)
 			emit_return(self, stmt);
 	}
 
-	// ensure all pending returning statements are received
-	// on block exit
+	// on block exit (not main)
 	if (block != compiler_block(self))
 	{
+		// ensure all pending returning statements are received
 		auto last = block->stmts.list_tail;
 		if (last && !last->is_return)
 		{
 			stmt = block->stmts.list;
 			for (; stmt; stmt = stmt->next)
 				emit_recv(self, stmt);
+		}
+
+		// clean all variables in the block
+		var = block->vars.list;
+		for (; var; var = var->next)
+		{
+			op1(self, CFREE, var->r);
+			runpin(self, var->r);
+			var->r = -1;
 		}
 	}
 
@@ -629,11 +643,6 @@ compiler_emit(Compiler* self)
 	// ddl/utility or dml/query
 	auto main = self->parser.blocks.list;
 	assert(main);
-
-	// reserve variables
-	auto var = self->parser.vars.list;
-	for (; var; var = var->next)
-		var->r = rpin(self, var->type);
 
 	if (stmt_is_utility(compiler_stmt(self)))
 		emit_utility(self);

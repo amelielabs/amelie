@@ -17,6 +17,7 @@ typedef struct Blocks Blocks;
 struct Block
 {
 	Stmts  stmts;
+	Vars   vars;
 	From*  from;
 	Block* parent;
 	Block* next;
@@ -45,6 +46,7 @@ blocks_add(Blocks* self, Block* parent)
 	block->next   = NULL;
 	block->from   = NULL;
 	stmts_init(&block->stmts);
+	vars_init(&block->vars);
 
 	if (self->list == NULL)
 		self->list = block;
@@ -67,8 +69,20 @@ block_find(Block* self, Str* name)
 	return NULL;
 }
 
+static inline Var*
+block_find_var(Block* self, Str* name)
+{
+	for (auto block = self; block; block = block->parent)
+	{
+		auto var = vars_find(&block->vars, name);
+		if (var)
+			return var;
+	}
+	return NULL;
+}
+
 static inline Target*
-block_target_find(From* self, Str* name)
+block_find_target(From* self, Str* name)
 {
 	while (self)
 	{

@@ -111,7 +111,7 @@ parse_procedure_create(Stmt* self, bool or_replace)
 
 	auto parser = self->parser;
 	auto block = blocks_add(&parser->blocks, self->block);
-	parse_block(parser, block, true);
+	parse_block(parser, block);
 
 	// END
 	auto end = stmt_expect(self, KEND);
