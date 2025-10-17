@@ -706,37 +706,5 @@ with a as (for i in ([1,2,3]) do end) select 1
 {"msg": "with a as (❰for❱ ⟵ statement cannot be used inside CTE"}
 with a as (select 1) for i in ([1,2,3]) do end
 {"msg": "with a as (select 1) ❰for❱ ⟵ statement cannot be used inside CTE"}
-# test: for declare
-explain declare r int := 0; for i in ([1,2,3]) do declare x int := i::int; r := r + x; end; select r;
-[{
-  "bytecode": {
-    "frontend": {
-      "00": "int                 1      -      0     # 0",
-      "01": "assign              0      1      0     ",
-      "02": "free                1      0      0     ",
-      "03": "json                1      0      0     ",
-      "04": "json_open           2      1      17    ",
-      "05": "json_read           4      2      0     ",
-      "06": "push                4      0      0     ",
-      "07": "call                4      -      1     # public.int()",
-      "08": "assign              3      4      0     ",
-      "09": "free                4      0      0     ",
-      "10": "dup                 4      0      0     ",
-      "11": "dup                 5      3      0     ",
-      "12": "addii               6      4      5     ",
-      "13": "assign              0      6      0     ",
-      "14": "free                6      0      0     ",
-      "15": "free                3      0      0     ",
-      "16": "json_next           2      5      0     ",
-      "17": "free                2      0      0     ",
-      "18": "free                1      0      0     ",
-      "19": "dup                 1      0      0     ",
-      "20": "ret                 1      -      -     "
-    }
-  },
-  "access": []
-}]
-declare r int := 0; for i in ([1,2,3]) do declare x int := i::int; r := r + x; end; select r;
-[6]
 disconnect S0
 close E0

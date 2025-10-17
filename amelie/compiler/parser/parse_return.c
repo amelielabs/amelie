@@ -48,7 +48,7 @@ parse_return(Stmt* self)
 	// RETURN var [FORMAT spec]
 	auto name = stmt_expect(self, KNAME);
 
-	auto var = block_find_var(self->block, &name->string);
+	auto var = namespace_find_var(self->block->ns, &name->string);
 	if (! var)
 		stmt_error(self, name, "variable not found");
 	stmt->var = var;

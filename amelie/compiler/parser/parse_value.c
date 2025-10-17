@@ -94,7 +94,7 @@ parse_value(Stmt* self, From* from, Column* column, Value* value)
 	// variable
 	if (ast->id == KNAME)
 	{
-		auto var = block_find_var(self->block, &ast->string);
+		auto var = namespace_find_var(self->block->ns, &ast->string);
 		if (! var)
 			stmt_error(self, ast, "variable not found");
 

@@ -142,9 +142,5 @@ for i in ([1,2,3]) do show all; end
 with a as (for i in ([1,2,3]) do end) select 1
 with a as (select 1) for i in ([1,2,3]) do end
 
-# test: for declare
-explain declare r int := 0; for i in ([1,2,3]) do declare x int := i::int; r := r + x; end; select r;
-declare r int := 0; for i in ([1,2,3]) do declare x int := i::int; r := r + x; end; select r;
-
 disconnect S0
 close E0

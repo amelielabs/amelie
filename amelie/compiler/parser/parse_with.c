@@ -91,7 +91,7 @@ parse_with(Parser* self, Block* block)
 		auto name = lex_expect(lex, KNAME);
 
 		// ensure CTE is not redefined
-		auto cte = block_find(block, &name->string);
+		auto cte = block_find_cte(block, &name->string);
 		if (cte)
 			lex_error(lex, name, "CTE is redefined");
 		cte = stmt_allocate(self, lex, block);

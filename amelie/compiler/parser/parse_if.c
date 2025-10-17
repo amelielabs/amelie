@@ -58,7 +58,7 @@ parse_if_block(Stmt* self)
 	stmt_expect(self, KTHEN);
 
 	// block
-	cond->block = blocks_add(&parser->blocks, self->block);
+	cond->block = blocks_add(&self->block->ns->blocks, self->block);
 	cond->block->from = &stmt->from;
 	parse_block(parser, cond->block);
 	return cond;
@@ -92,7 +92,7 @@ parse_if(Stmt* self)
 		if (stmt_if(self, KELSE))
 		{
 			// block
-			stmt->cond_else = blocks_add(&self->parser->blocks, self->block);
+			stmt->cond_else = blocks_add(&self->block->ns->blocks, self->block);
 			parse_block(self->parser, stmt->cond_else);
 		}
 

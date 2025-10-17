@@ -64,7 +64,7 @@ parse_for(Stmt* self)
 		stmt_expect(self, KDO);
 
 	// block
-	stmt->block = blocks_add(&self->parser->blocks, self->block);
+	stmt->block = blocks_add(&self->block->ns->blocks, self->block);
 	stmt->block->from = &stmt->from;
 	parse_block(self->parser, stmt->block);
 

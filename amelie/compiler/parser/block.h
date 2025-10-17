@@ -11,31 +11,34 @@
 // AGPL-3.0 Licensed.
 //
 
-typedef struct Block  Block;
-typedef struct Blocks Blocks;
+typedef struct Block     Block;
+typedef struct Blocks    Blocks;
+typedef struct Namespace Namespace;
 
 struct Block
 {
-	Stmts  stmts;
-	Vars   vars;
-	From*  from;
-	Block* parent;
-	Block* next;
+	Stmts       stmts;
+	From*       from;
+	Namespace*  ns;
+	Block*      parent;
+	Block*      next;
 };
 
 struct Blocks
 {
-	Block* list;
-	Block* list_tail;
-	int    count;
+	Block*     list;
+	Block*     list_tail;
+	int        count;
+	Namespace* ns;
 };
 
 static inline void
-blocks_init(Blocks* self)
+blocks_init(Blocks* self, Namespace* ns)
 {
 	self->list      = NULL;
 	self->list_tail = NULL;
 	self->count     = 0;
+	self->ns        = ns;
 }
 
 static inline Block*
@@ -44,10 +47,9 @@ blocks_add(Blocks* self, Block* parent)
 	auto block = (Block*)palloc(sizeof(Block));
 	block->parent = parent;
 	block->next   = NULL;
+	block->ns     = self->ns;
 	block->from   = NULL;
 	stmts_init(&block->stmts);
-	vars_init(&block->vars);
-
 	if (self->list == NULL)
 		self->list = block;
 	else
@@ -58,25 +60,13 @@ blocks_add(Blocks* self, Block* parent)
 }
 
 static inline Stmt*
-block_find(Block* self, Str* name)
+block_find_cte(Block* self, Str* name)
 {
 	for (auto block = self; block; block = block->parent)
 	{
 		auto stmt = stmts_find(&block->stmts, name);
 		if (stmt)
 			return stmt;
-	}
-	return NULL;
-}
-
-static inline Var*
-block_find_var(Block* self, Str* name)
-{
-	for (auto block = self; block; block = block->parent)
-	{
-		auto var = vars_find(&block->vars, name);
-		if (var)
-			return var;
 	}
 	return NULL;
 }
@@ -100,7 +90,7 @@ block_find_target(From* self, Str* name)
 }
 
 static inline From*
-block_from(From* self)
+block_find_from(From* self)
 {
 	while (self)
 	{

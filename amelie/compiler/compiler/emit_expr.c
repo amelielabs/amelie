@@ -232,7 +232,7 @@ emit_name(Compiler* self, From* from, Ast* ast)
 	// SELECT name
 	auto name = &ast->string;
 
-	from = block_from(from);
+	from = block_find_from(from);
 	if (! from)
 		stmt_error(self->current, ast, "column not found");
 

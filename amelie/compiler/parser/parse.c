@@ -456,6 +456,8 @@ parse_block(Parser* self, Block* block)
 		case KDECLARE:
 			// [DECLARE var type ;]
 			// [DECLARE var type := expr]
+			if (block != block->ns->blocks.list)
+				lex_error(lex, ast, "DECLARE cannot be used here");
 			parse_declare(self, block);
 			break;
 		case KNAME:
@@ -485,7 +487,7 @@ parse_block(Parser* self, Block* block)
 			if (stmt_is_utility(stmt))
 			{
 				// ensure root block being used
-				if (block != self->blocks.list)
+				if (block != block->ns->blocks.list || block->ns != self->nss.list)
 					stmt_error(stmt, stmt->ast, "utility statement cannot be used here");
 				block->stmts.count_utility++;
 			}
@@ -532,8 +534,11 @@ parse(Parser* self, Program* program, Str* str)
 	// [BEGIN]
 	auto begin = lex_if(lex, KBEGIN) != NULL;
 
+	// create main namespace and the main block
+	auto ns    = namespaces_add(&self->nss, NULL);
+	auto block = blocks_add(&ns->blocks, NULL);
+
 	// stmt [; stmt]
-	auto block = blocks_add(&self->blocks, NULL);
 	parse_block(self, block);
 
 	// [END [;]]

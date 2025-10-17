@@ -35,6 +35,7 @@
 // block
 #include "parser/var.h"
 #include "parser/block.h"
+#include "parser/namespace.h"
 
 // parser
 #include "parser/parser.h"

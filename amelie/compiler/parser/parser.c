@@ -45,7 +45,7 @@ parser_init(Parser* self, Local* local, SetCache* values_cache)
 	self->program      = NULL;
 	self->values_cache = values_cache;
 	self->local        = local;
-	blocks_init(&self->blocks);
+	namespaces_init(&self->nss);
 	lex_init(&self->lex, keywords_alpha);
 	uri_init(&self->uri);
 	json_init(&self->json);
@@ -55,18 +55,21 @@ void
 parser_reset(Parser* self)
 {
 	self->program = NULL;
-	for (auto block = self->blocks.list; block; block = block->next)
+	for (auto ns = self->nss.list; ns; ns = ns->next)
 	{
-		vars_free(&block->vars);
-		auto stmt = block->stmts.list;
-		while (stmt)
+		vars_free(&ns->vars);
+		for (auto block = ns->blocks.list; block; block = block->next)
 		{
-			auto next = stmt->next;
-			parse_stmt_free(stmt);
-			stmt = next;
+			auto stmt = block->stmts.list;
+			while (stmt)
+			{
+				auto next = stmt->next;
+				parse_stmt_free(stmt);
+				stmt = next;
+			}
 		}
 	}
-	blocks_init(&self->blocks);
+	namespaces_init(&self->nss);
 
 	lex_reset(&self->lex);
 	uri_reset(&self->uri);

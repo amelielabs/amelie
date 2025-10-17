@@ -248,7 +248,9 @@ parse_import(Parser* self, Program* program, Str* str, Str* uri,
 	endpoint_init(&endpoint, &self->uri, type);
 	parse_endpoint(&endpoint);
 
-	auto block = blocks_add(&self->blocks, NULL);
+	// create main namespace and the main block
+	auto ns    = namespaces_add(&self->nss, NULL);
+	auto block = blocks_add(&ns->blocks, NULL);
 
 	// prepare insert stmt
 	auto stmt = stmt_allocate(self, &self->lex, block);

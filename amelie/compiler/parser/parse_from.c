@@ -139,7 +139,7 @@ parse_from_target(Stmt* self, From* from, AccessType access, bool subquery)
 	}
 
 	// var
-	auto var = block_find_var(self->block, &name);
+	auto var = namespace_find_var(self->block->ns, &name);
 	if (var)
 	{
 		target->type     = TARGET_VAR;
@@ -161,7 +161,7 @@ parse_from_target(Stmt* self, From* from, AccessType access, bool subquery)
 	}
 
 	// cte
-	auto stmt = block_find(self->block, &name);
+	auto stmt = block_find_cte(self->block, &name);
 	if (stmt)
 	{
 		if (stmt == self)

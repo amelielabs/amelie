@@ -276,7 +276,7 @@ parse_returning_resolve(Returning* self, Stmt* stmt, From* from)
 	auto ref = self->list_into;
 	for (; ref; ref = ref->next)
 	{
-		auto var = block_find_var(stmt->block, &ref->string);
+		auto var = namespace_find_var(stmt->block->ns, &ref->string);
 		if (! var)
 			stmt_error(stmt, NULL, "variable '%.*s' not found", str_size(&ref->string),
 			           str_of(&ref->string));

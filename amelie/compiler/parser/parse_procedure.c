@@ -106,11 +106,14 @@ parse_procedure_create(Stmt* self, bool or_replace)
 	// (args)
 	parse_procedure_args(self, stmt);
 
+	// create new namespace
+	auto parser = self->parser;
+	auto ns     = namespaces_add(&parser->nss, self->block->ns);
+
 	// BEGIN
 	auto begin = stmt_expect(self, KBEGIN);
 
-	auto parser = self->parser;
-	auto block = blocks_add(&parser->blocks, self->block);
+	auto block = blocks_add(&ns->blocks, self->block);
 	parse_block(parser, block);
 
 	// END

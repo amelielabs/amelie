@@ -185,7 +185,7 @@ emit_send(Compiler* self, Target* target, int start)
 	}
 
 	// mark last sending operation in the main block
-	auto block = compiler_block(self);
+	auto block = compiler_main(self);
 	if (stmt->block == block && block->stmts.last_send == stmt)
 		program->send_last = op_pos(self) - 1;
 }
@@ -497,7 +497,7 @@ emit_if(Compiler* self, Stmt* stmt)
 	op_set_jmp(self, _stop_jmp, _stop);
 
 	// mark last sending operation in the main block
-	auto block = compiler_block(self);
+	auto block = compiler_main(self);
 	if (stmt->block == block && block->stmts.last_send == stmt)
 		op0(self, CCLOSE);
 
@@ -536,7 +536,7 @@ emit_for(Compiler* self, Stmt* stmt)
 		self->program->snapshot = true;
 
 	// mark last sending operation in the main block
-	auto block = compiler_block(self);
+	auto block = compiler_main(self);
 	if (stmt->block == block && block->stmts.last_send == stmt)
 		op0(self, CCLOSE);
 
@@ -578,11 +578,6 @@ emit_block(Compiler* self, Block* block)
 	auto stmt_prev = self->current;
 	self->current = NULL;
 
-	// reserve variables
-	auto var = block->vars.list;
-	for (; var; var = var->next)
-		var->r = rpin(self, var->type);
-
 	// emit statements in the block
 	auto stmt = block->stmts.list;
 	for (; stmt; stmt = stmt->next)
@@ -612,7 +607,7 @@ emit_block(Compiler* self, Block* block)
 	}
 
 	// on block exit (not main)
-	if (block != compiler_block(self))
+	if (block != compiler_main(self))
 	{
 		// ensure all pending returning statements are received
 		auto last = block->stmts.list_tail;
@@ -622,9 +617,29 @@ emit_block(Compiler* self, Block* block)
 			for (; stmt; stmt = stmt->next)
 				emit_recv(self, stmt);
 		}
+	}
 
+	// set previous stmt
+	self->current = stmt_prev;
+}
+
+hot static void
+emit_namespace(Compiler* self, Namespace* ns)
+{
+	// reserve variables
+	auto var = ns->vars.list;
+	for (; var; var = var->next)
+		var->r = rpin(self, var->type);
+
+	// emit main block
+	emit_block(self, ns->blocks.list);
+
+	// on ns return
+	auto main = self->parser.nss.list;
+	if (ns != main)
+	{
 		// clean all variables in the block
-		var = block->vars.list;
+		var = ns->vars.list;
 		for (; var; var = var->next)
 		{
 			op1(self, CFREE, var->r);
@@ -632,22 +647,19 @@ emit_block(Compiler* self, Block* block)
 			var->r = -1;
 		}
 	}
-
-	// set previous stmt
-	self->current = stmt_prev;
 }
 
 hot void
 compiler_emit(Compiler* self)
 {
 	// ddl/utility or dml/query
-	auto main = self->parser.blocks.list;
+	auto main = compiler_namespace(self);
 	assert(main);
 
 	if (stmt_is_utility(compiler_stmt(self)))
 		emit_utility(self);
 	else
-		emit_block(self, main);
+		emit_namespace(self, main);
 
 	// set the max number of registers used
 	code_set_regs(&self->program->code, self->map.count);

@@ -15,13 +15,13 @@ typedef struct Parser Parser;
 
 struct Parser
 {
-	Blocks    blocks;
-	Program*  program;
-	SetCache* values_cache;
-	Uri       uri;
-	Json      json;
-	Lex       lex;
-	Local*    local;
+	Namespaces nss;
+	Program*   program;
+	SetCache*  values_cache;
+	Uri        uri;
+	Json       json;
+	Lex        lex;
+	Local*     local;
 };
 
 void parser_init(Parser*, Local*, SetCache*);

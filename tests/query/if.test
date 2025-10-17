@@ -137,16 +137,6 @@ explain declare x int := 0; if true then if false then select * into x from test
 declare x int := 0; if true then if false then select * into x from test; end; end; select x
 drop table test
 
-# test: if declare
-if true then declare x int := 10; select x; end
-if true then else declare x int := 10; select x; end
-
-# test: if declare (shadow)
-explain declare x int := 0; declare r int := 0; if true then declare x int := 10; select x into r; end; select r;
-declare x int := 0; declare r int := 0; if true then declare x int := 10; select x into r; end; select r;
-
-declare x int := 0; declare r int := 0; declare y int := 77; if true then declare x int := 10 + y; select x into r; end; select r;
-
 # test: if utility
 if true then show all; end
 

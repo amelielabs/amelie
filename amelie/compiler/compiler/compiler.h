@@ -49,17 +49,20 @@ compiler_switch_backend(Compiler* self)
 	self->code = &self->program->code_backend;
 }
 
-static inline Block*
-compiler_block(Compiler* self)
+static inline Namespace*
+compiler_namespace(Compiler* self)
 {
-	return self->parser.blocks.list;
+	return self->parser.nss.list;
+}
+
+static inline Block*
+compiler_main(Compiler* self)
+{
+	return compiler_namespace(self)->blocks.list;
 }
 
 static inline Stmt*
 compiler_stmt(Compiler* self)
 {
-	auto main = self->parser.blocks.list;
-	if (! main)
-		return NULL;
-	return main->stmts.list;
+	return compiler_main(self)->stmts.list;
 }
