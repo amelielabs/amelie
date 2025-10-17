@@ -38,7 +38,7 @@
 #include <amelie_func.h>
 
 hot static void
-fn_coalesce(Call* self)
+fn_coalesce(Fn* self)
 {
 	for (int i = 0; i < self->argc; i++)
 	{
@@ -52,9 +52,9 @@ fn_coalesce(Call* self)
 }
 
 hot static void
-fn_nullif(Call* self)
+fn_nullif(Fn* self)
 {
-	call_expect(self, 2);
+	fn_expect(self, 2);
 	if (! value_compare(&self->argv[0], &self->argv[1]))
 	{
 		value_set_null(self->result);

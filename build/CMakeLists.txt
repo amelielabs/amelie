@@ -231,8 +231,8 @@ set(AMELIE_SOURCES_VM
     ${AMELIE_ROOT}/vm/content/content_json.c
     ${AMELIE_ROOT}/vm/executor/commit.c
     ${AMELIE_ROOT}/vm/func/function_mgr.c
-    ${AMELIE_ROOT}/vm/func/call.c
-    ${AMELIE_ROOT}/vm/func/call_mgr.c
+    ${AMELIE_ROOT}/vm/func/fn.c
+    ${AMELIE_ROOT}/vm/func/fn_mgr.c
     ${AMELIE_ROOT}/vm/func/fn_system.c
     ${AMELIE_ROOT}/vm/func/fn_cast.c
     ${AMELIE_ROOT}/vm/func/fn_null.c
@@ -243,7 +243,7 @@ set(AMELIE_SOURCES_VM
     ${AMELIE_ROOT}/vm/func/fn_misc.c
     ${AMELIE_ROOT}/vm/func/fn_time.c
     ${AMELIE_ROOT}/vm/func/fn_vector.c
-    ${AMELIE_ROOT}/vm/func/fn.c
+    ${AMELIE_ROOT}/vm/func/fn_register.c
     ${AMELIE_ROOT}/vm/vm/op.c
     ${AMELIE_ROOT}/vm/vm/vm.c
     ${AMELIE_ROOT}/vm/vm/command.c

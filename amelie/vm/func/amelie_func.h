@@ -15,8 +15,8 @@
 #include "func/function.h"
 #include "func/function_mgr.h"
 #include "func/share.h"
-#include "func/call.h"
-#include "func/call_mgr.h"
+#include "func/fn.h"
+#include "func/fn_mgr.h"
 
 // functions
 #include "func/fn_system.h"
@@ -29,4 +29,6 @@
 #include "func/fn_misc.h"
 #include "func/fn_time.h"
 #include "func/fn_vector.h"
-#include "func/fn.h"
+
+// functions register
+#include "func/fn_register.h"

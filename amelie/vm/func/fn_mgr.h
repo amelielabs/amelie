@@ -11,22 +11,22 @@
 // AGPL-3.0 Licensed.
 //
 
-typedef struct CallMgr CallMgr;
+typedef struct FnMgr FnMgr;
 
-struct CallMgr
+struct FnMgr
 {
 	Local*    local;
 	CodeData* data;
 	Buf       context;
 };
 
-void call_mgr_init(CallMgr*);
-void call_mgr_free(CallMgr*);
-void call_mgr_prepare(CallMgr*, Local*, CodeData*);
-void call_mgr_reset(CallMgr*);
+void fn_mgr_init(FnMgr*);
+void fn_mgr_free(FnMgr*);
+void fn_mgr_prepare(FnMgr*, Local*, CodeData*);
+void fn_mgr_reset(FnMgr*);
 
 static inline void**
-call_mgr_at(CallMgr* self, int id)
+fn_mgr_at(FnMgr* self, int id)
 {
 	assert(buf_size(&self->context) > 0);
 	auto list = (void**)self->context.start;

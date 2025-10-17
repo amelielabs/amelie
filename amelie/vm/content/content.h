@@ -14,15 +14,15 @@
 typedef struct ContentType ContentType;
 typedef struct Content     Content;
 
-typedef void (*ContentFn)(Content*, Columns*, Value*);
+typedef void (*ContentFunction)(Content*, Columns*, Value*);
 
 struct ContentType
 {
-	char*     name;
-	int       name_size;
-	char*     mime;
-	int       mime_size;
-	ContentFn fn;
+	char*           name;
+	int             name_size;
+	char*           mime;
+	int             mime_size;
+	ContentFunction func;
 };
 
 struct Content

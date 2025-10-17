@@ -38,7 +38,7 @@
 #include <amelie_func.h>
 
 void
-call_mgr_init(CallMgr* self)
+fn_mgr_init(FnMgr* self)
 {
 	self->local = NULL;
 	self->data  = NULL;
@@ -46,17 +46,17 @@ call_mgr_init(CallMgr* self)
 }
 
 void
-call_mgr_free(CallMgr* self)
+fn_mgr_free(FnMgr* self)
 {
 	buf_free(&self->context);
 }
 
 void
-call_mgr_prepare(CallMgr* self, Local* local, CodeData* data)
+fn_mgr_prepare(FnMgr* self, Local* local, CodeData* data)
 {
 	self->local = local;
 	self->data  = data;
-	auto count = code_data_count_call(data);
+	auto count = code_data_count_fn(data);
 	if (count == 0)
 		return;
 	buf_claim(&self->context, count * sizeof(void*));
@@ -64,27 +64,27 @@ call_mgr_prepare(CallMgr* self, Local* local, CodeData* data)
 }
 
 void
-call_mgr_reset(CallMgr* self)
+fn_mgr_reset(FnMgr* self)
 {
 	if (buf_empty(&self->context))
 		return;
 
-	auto count = code_data_count_call(self->data);
+	auto count = code_data_count_fn(self->data);
 	for (int i = 0; i < count; i++)
 	{
-		auto context = call_mgr_at(self, i);
+		auto context = fn_mgr_at(self, i);
 		if (! *context)
 			continue;
-		Call cleanup_call =
+		Fn cleanup_fn =
 		{
 			.argc     = 0,
 			.argv     = NULL,
 			.result   = NULL,
-			.type     = CALL_CLEANUP,
-			.function = code_data_at_call(self->data, i),
+			.action   = FN_CLEANUP,
+			.function = code_data_at_fn(self->data, i),
 			.context  = context
 		};
-		cleanup_call.function->function(&cleanup_call);
+		cleanup_fn.function->function(&cleanup_fn);
 		*context = NULL;
 	}
 

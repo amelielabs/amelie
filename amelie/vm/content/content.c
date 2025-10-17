@@ -79,7 +79,7 @@ content_write(Content* self, Str* spec, Columns* columns, Value* value)
 	content_set_type(self, spec);
 
 	// create content
-	self->content_type->fn(self, columns, value);
+	self->content_type->func(self, columns, value);
 }
 
 void

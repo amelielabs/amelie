@@ -27,7 +27,7 @@ struct Vm
 	Program*  program;
 	Tr*       tr;
 	Local*    local;
-	CallMgr   call_mgr;
+	FnMgr     fn_mgr;
 };
 
 void vm_init(Vm*, Core*, Dtr*);

@@ -504,7 +504,7 @@ emit_func(Compiler* self, From* from, Ast* ast)
 	// register function call, if it has context
 	int call_id = -1;
 	if (fn->flags & FN_CONTEXT)
-		call_id = code_data_add_call(self->code_data, fn);
+		call_id = code_data_add_fn(self->code_data, fn);
 
 	// CALL
 	return op4(self, CCALL, rpin(self, fn_type), (intptr_t)fn,
@@ -551,7 +551,7 @@ emit_method(Compiler* self, From* from, Ast* ast)
 	// register function call, if it has context
 	int call_id = -1;
 	if (fn->flags & FN_CONTEXT)
-		call_id = code_data_add_call(self->code_data, fn);
+		call_id = code_data_add_fn(self->code_data, fn);
 
 	// CALL
 	return op4(self, CCALL, rpin(self, fn_type), (intptr_t)fn, argc, call_id);

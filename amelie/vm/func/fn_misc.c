@@ -40,36 +40,36 @@
 #include <openssl/evp.h>
 
 static void
-fn_error(Call* self)
+fn_throw(Fn* self)
 {
 	auto argv = self->argv;
-	call_expect(self, 1);
-	call_expect_arg(self, 0, TYPE_STRING);
+	fn_expect(self, 1);
+	fn_expect_arg(self, 0, TYPE_STRING);
 	error("%.*s", str_size(&argv[0].string), str_of(&argv[0].string));
 }
 
 static void
-fn_sleep(Call* self)
+fn_sleep(Fn* self)
 {
 	auto argv = self->argv;
-	call_expect(self, 1);
-	call_expect_arg(self, 0, TYPE_INT);
+	fn_expect(self, 1);
+	fn_expect_arg(self, 0, TYPE_INT);
 	coroutine_sleep(argv[0].integer);
 	value_set_null(self->result);
 }
 
 static void
-fn_random(Call* self)
+fn_random(Fn* self)
 {
-	call_expect(self, 0);
+	fn_expect(self, 0);
 	int64_t value = random_generate(&runtime()->random);
 	value_set_int(self->result, llabs(value));
 }
 
 static void
-fn_random_uuid(Call* self)
+fn_random_uuid(Fn* self)
 {
-	call_expect(self, 0);
+	fn_expect(self, 0);
 	Uuid id;
 	uuid_init(&id);
 	uuid_generate(&id, &runtime()->random);
@@ -95,11 +95,11 @@ create_digest(const EVP_MD* md, Str* input, char* output)
 }
 
 static void
-fn_md5(Call* self)
+fn_md5(Fn* self)
 {
 	auto argv = self->argv;
-	call_expect(self, 1);
-	call_expect_arg(self, 0, TYPE_STRING);
+	fn_expect(self, 1);
+	fn_expect_arg(self, 0, TYPE_STRING);
 
 	char digest[32];
 	create_digest(EVP_md5(), &argv[0].string, digest);
@@ -116,11 +116,11 @@ fn_md5(Call* self)
 }
 
 static void
-fn_sha1(Call* self)
+fn_sha1(Fn* self)
 {
 	auto argv = self->argv;
-	call_expect(self, 1);
-	call_expect_arg(self, 0, TYPE_STRING);
+	fn_expect(self, 1);
+	fn_expect_arg(self, 0, TYPE_STRING);
 
 	char digest[40];
 	create_digest(EVP_sha1(), &argv[0].string, digest);
@@ -137,12 +137,12 @@ fn_sha1(Call* self)
 }
 
 static void
-fn_encode(Call* self)
+fn_encode(Fn* self)
 {
 	auto argv = self->argv;
-	call_expect(self, 2);
-	call_expect_arg(self, 0, TYPE_STRING);
-	call_expect_arg(self, 1, TYPE_STRING);
+	fn_expect(self, 2);
+	fn_expect_arg(self, 0, TYPE_STRING);
+	fn_expect_arg(self, 1, TYPE_STRING);
 
 	if (str_is_cstr(&argv[1].string, "base64"))
 	{
@@ -160,18 +160,18 @@ fn_encode(Call* self)
 		str_set_u8(&string, buf->start, buf_size(buf));
 		value_set_string(self->result, &string, buf);
 	} else {
-		call_error_arg(self, 1, "unsupported format");
+		fn_error_arg(self, 1, "unsupported format");
 	}
 
 }
 
 static void
-fn_decode(Call* self)
+fn_decode(Fn* self)
 {
 	auto argv = self->argv;
-	call_expect(self, 2);
-	call_expect_arg(self, 0, TYPE_STRING);
-	call_expect_arg(self, 1, TYPE_STRING);
+	fn_expect(self, 2);
+	fn_expect_arg(self, 0, TYPE_STRING);
+	fn_expect_arg(self, 1, TYPE_STRING);
 
 	if (str_is_cstr(&argv[1].string, "base64"))
 	{
@@ -189,17 +189,17 @@ fn_decode(Call* self)
 		str_set_u8(&string, buf->start, buf_size(buf));
 		value_set_string(self->result, &string, buf);
 	} else {
-		call_error_arg(self, 1, "unsupported format");
+		fn_error_arg(self, 1, "unsupported format");
 	}
 }
 
 static void
-fn_identity_of(Call* self)
+fn_identity_of(Fn* self)
 {
 	auto argv = self->argv;
-	call_expect(self, 2);
-	call_expect_arg(self, 0, TYPE_STRING);
-	call_expect_arg(self, 0, TYPE_STRING);
+	fn_expect(self, 2);
+	fn_expect_arg(self, 0, TYPE_STRING);
+	fn_expect_arg(self, 0, TYPE_STRING);
 	auto table = table_mgr_find(&share()->db->catalog.table_mgr,
 	                            &argv[0].string,
 	                            &argv[1].string, true);
@@ -207,11 +207,11 @@ fn_identity_of(Call* self)
 }
 
 static void
-fn_jwt(Call* self)
+fn_jwt(Fn* self)
 {
 	auto argv = self->argv;
-	call_expect(self, 3);
-	call_expect_arg(self, 2, TYPE_STRING);
+	fn_expect(self, 3);
+	fn_expect_arg(self, 2, TYPE_STRING);
 
 	// header
 	Str  header_str;
@@ -222,7 +222,7 @@ fn_jwt(Call* self)
 		// obj
 		auto pos = argv[0].json;
 		if (! json_is_obj(pos))
-			call_error_arg(self, 0, "string or JSON object expected");
+			fn_error_arg(self, 0, "string or JSON object expected");
 		json_export(header, self->local->timezone, &pos);
 		buf_str(header, &header_str);
 	} else
@@ -230,7 +230,7 @@ fn_jwt(Call* self)
 	{
 		header_str = argv[0].string;
 	} else {
-		call_error_arg(self, 0, "string or JSON object expected");
+		fn_error_arg(self, 0, "string or JSON object expected");
 	}
 
 	// payload
@@ -241,7 +241,7 @@ fn_jwt(Call* self)
 	{
 		auto pos = argv[1].json;
 		if (! json_is_obj(pos))
-		call_error_arg(self, 1, "string or JSON object expected");
+		fn_error_arg(self, 1, "string or JSON object expected");
 		json_export(payload, self->local->timezone, &pos);
 		buf_str(payload, &payload_str);
 	} else
@@ -249,7 +249,7 @@ fn_jwt(Call* self)
 	{
 		payload_str = argv[1].string;
 	} else {
-		call_error_arg(self, 1, "string or JSON object expected");
+		fn_error_arg(self, 1, "string or JSON object expected");
 	}
 
 	// create jwt using supplied data
@@ -268,7 +268,7 @@ fn_misc_register(FunctionMgr* self)
 {
 	// public.error()
 	Function* func;
-	func = function_allocate(TYPE_NULL, "public", "error", fn_error);
+	func = function_allocate(TYPE_NULL, "public", "error", fn_throw);
 	function_mgr_add(self, func);
 
 	// public.sleep()

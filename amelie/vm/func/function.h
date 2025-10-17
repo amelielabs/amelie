@@ -12,9 +12,9 @@
 //
 
 typedef struct Function Function;
-typedef struct Call     Call;
+typedef struct Fn       Fn;
 
-typedef void (*FunctionMain)(Call*);
+typedef void (*FunctionMain)(Fn*);
 
 enum
 {

@@ -38,19 +38,19 @@
 #include <amelie_func.h>
 
 static void
-fn_type(Call* self)
+fn_type(Fn* self)
 {
 	auto arg = &self->argv[0];
-	call_expect(self, 1);
+	fn_expect(self, 1);
 	Str string;
 	str_set_cstr(&string, type_of(arg->type));
 	value_set_string(self->result, &string, NULL);
 }
 
 hot static void
-fn_int(Call* self)
+fn_int(Fn* self)
 {
-	call_expect(self, 1);
+	fn_expect(self, 1);
 	auto arg = &self->argv[0];
 	if (arg->type == TYPE_JSON)
 	{
@@ -71,22 +71,22 @@ fn_int(Call* self)
 		break;
 	case TYPE_STRING:
 		if (str_toint(&arg->string, &value) == -1)
-			call_error_arg(self, 0, "failed to cast string");
+			fn_error_arg(self, 0, "failed to cast string");
 		break;
 	case TYPE_NULL:
 		value_set_null(self->result);
 		return;
 	default:
-		call_unsupported(self, 0);
+		fn_unsupported(self, 0);
 		break;
 	}
 	value_set_int(self->result, value);
 }
 
 hot static void
-fn_bool(Call* self)
+fn_bool(Fn* self)
 {
-	call_expect(self, 1);
+	fn_expect(self, 1);
 	auto arg = &self->argv[0];
 	if (arg->type == TYPE_JSON)
 	{
@@ -113,22 +113,22 @@ fn_bool(Call* self)
 		if (str_is_case(&arg->string, "false", 5))
 			value = false;
 		else
-			call_error_arg(self, 0, "failed to cast string to bool");
+			fn_error_arg(self, 0, "failed to cast string to bool");
 		break;
 	case TYPE_NULL:
 		value_set_null(self->result);
 		return;
 	default:
-		call_unsupported(self, 0);
+		fn_unsupported(self, 0);
 		break;
 	}
 	value_set_bool(self->result, value);
 }
 
 hot static void
-fn_double(Call* self)
+fn_double(Fn* self)
 {
-	call_expect(self, 1);
+	fn_expect(self, 1);
 	auto arg = &self->argv[0];
 	if (arg->type == TYPE_JSON)
 	{
@@ -151,16 +151,16 @@ fn_double(Call* self)
 		value_set_null(self->result);
 		return;
 	default:
-		call_unsupported(self, 0);
+		fn_unsupported(self, 0);
 		break;
 	}
 	value_set_double(self->result, value);
 }
 
 hot static void
-fn_string(Call* self)
+fn_string(Fn* self)
 {
-	call_expect(self, 1);
+	fn_expect(self, 1);
 	auto arg = &self->argv[0];
 	if (unlikely(arg->type == TYPE_NULL))
 	{
@@ -221,9 +221,9 @@ fn_string(Call* self)
 }
 
 hot static void
-fn_json(Call* self)
+fn_json(Fn* self)
 {
-	call_expect(self, 1);
+	fn_expect(self, 1);
 	auto arg = &self->argv[0];
 	if (unlikely(arg->type == TYPE_JSON))
 	{
@@ -236,9 +236,9 @@ fn_json(Call* self)
 }
 
 hot static void
-fn_json_import(Call* self)
+fn_json_import(Fn* self)
 {
-	call_expect(self, 1);
+	fn_expect(self, 1);
 	auto arg = &self->argv[0];
 	if (unlikely(arg->type == TYPE_NULL))
 	{
@@ -251,7 +251,7 @@ fn_json_import(Call* self)
 		return;
 	}
 	if (unlikely(arg->type != TYPE_STRING))
-		call_unsupported(self, 0);
+		fn_unsupported(self, 0);
 
 	auto buf = buf_create();
 	errdefer_buf(buf);
@@ -265,9 +265,9 @@ fn_json_import(Call* self)
 }
 
 hot static void
-fn_interval(Call* self)
+fn_interval(Fn* self)
 {
-	call_expect(self, 1);
+	fn_expect(self, 1);
 	auto arg = &self->argv[0];
 	if (arg->type == TYPE_JSON)
 	{
@@ -286,7 +286,7 @@ fn_interval(Call* self)
 		return;
 	}
 	if (unlikely(arg->type != TYPE_STRING))
-		call_unsupported(self, 0);
+		fn_unsupported(self, 0);
 	Interval iv;
 	interval_init(&iv);
 	interval_set(&iv, &arg->string);
@@ -294,10 +294,10 @@ fn_interval(Call* self)
 }
 
 hot static void
-fn_timestamp(Call* self)
+fn_timestamp(Fn* self)
 {
 	if (self->argc < 1 || self->argc > 2)
-		call_error(self, "unexpected number of arguments");
+		fn_error(self, "unexpected number of arguments");
 	auto arg = &self->argv[0];
 	if (arg->type == TYPE_JSON)
 	{
@@ -319,12 +319,12 @@ fn_timestamp(Call* self)
 				value_set_null(self->result);
 				return;
 			}
-			call_expect_arg(self, 1, TYPE_STRING);
+			fn_expect_arg(self, 1, TYPE_STRING);
 			auto name = &self->argv[1].string;
 			timezone = timezone_mgr_find(&runtime()->timezone_mgr, name);
 			if (! timezone)
-				call_error_arg(self, 1, "failed to find timezone '%.*s'",
-				               str_size(name), str_of(name));
+				fn_error_arg(self, 1, "failed to find timezone '%.*s'",
+				             str_size(name), str_of(name));
 		}
 		Timestamp ts;
 		timestamp_init(&ts);
@@ -336,7 +336,7 @@ fn_timestamp(Call* self)
 	case TYPE_INT:
 	{
 		if (self->argc == 2)
-			call_error_arg(self, 1, "unexpected argument");
+			fn_error_arg(self, 1, "unexpected argument");
 		Timestamp ts;
 		timestamp_init(&ts);
 		timestamp_set_unixtime(&ts, arg->integer);
@@ -362,14 +362,14 @@ fn_timestamp(Call* self)
 		break;
 	}
 	default:
-		call_unsupported(self, 0);
+		fn_unsupported(self, 0);
 	}
 }
 
 hot static void
-fn_date(Call* self)
+fn_date(Fn* self)
 {
-	call_expect(self, 1);
+	fn_expect(self, 1);
 	auto arg = &self->argv[0];
 	if (arg->type == TYPE_JSON)
 	{
@@ -409,14 +409,14 @@ fn_date(Call* self)
 		break;
 	}
 	default:
-		call_unsupported(self, 0);
+		fn_unsupported(self, 0);
 	}
 }
 
 hot static void
-fn_vector(Call* self)
+fn_vector(Fn* self)
 {
-	call_expect(self, 1);
+	fn_expect(self, 1);
 	auto arg = &self->argv[0];
 	if (unlikely(arg->type == TYPE_NULL))
 	{
@@ -429,11 +429,11 @@ fn_vector(Call* self)
 		return;
 	}
 	if (unlikely(arg->type != TYPE_JSON))
-		call_unsupported(self, 0);
+		fn_unsupported(self, 0);
 
 	uint8_t* pos = arg->json;
 	if (! json_is_array(pos))
-		call_error_arg(self, 0, "json array expected");
+		fn_error_arg(self, 0, "json array expected");
 
 	auto buf = buf_create();
 	errdefer_buf(buf);
@@ -456,7 +456,7 @@ fn_vector(Call* self)
 			json_read_integer(&pos, &value);
 			value_flt = value;
 		} else {
-			call_error_arg(self, 0, "json array values must be int or float");
+			fn_error_arg(self, 0, "json array values must be int or float");
 		}
 		buf_write_float(buf, value_flt);
 		count++;
@@ -467,9 +467,9 @@ fn_vector(Call* self)
 }
 
 hot static void
-fn_uuid(Call* self)
+fn_uuid(Fn* self)
 {
-	call_expect(self, 1);
+	fn_expect(self, 1);
 	auto arg = &self->argv[0];
 	if (arg->type == TYPE_JSON)
 	{
@@ -488,7 +488,7 @@ fn_uuid(Call* self)
 		return;
 	}
 	if (unlikely(arg->type != TYPE_STRING))
-		call_unsupported(self, 0);
+		fn_unsupported(self, 0);
 	Uuid uuid;
 	uuid_init(&uuid);
 	uuid_set(&uuid, &arg->string);

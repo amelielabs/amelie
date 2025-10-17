@@ -13,7 +13,7 @@
 
 typedef struct Reader Reader;
 
-typedef void (*ReaderFn)(Reader*, Str*, Str*);
+typedef void (*ReaderFunction)(Reader*, Str*, Str*);
 
 typedef enum
 {
@@ -22,15 +22,15 @@ typedef enum
 
 struct Reader
 {
-	ReaderType type;
-	ReaderFn   read;
-	Buf        readahead;
-	int        readahead_size;
-	int        offset;
-	uint64_t   offset_file;
-	int        limit;
-	int        limit_size;
-	File       file;
+	ReaderType     type;
+	ReaderFunction read;
+	Buf            readahead;
+	int            readahead_size;
+	int            offset;
+	uint64_t       offset_file;
+	int            limit;
+	int            limit_size;
+	File           file;
 };
 
 void reader_init(Reader*);

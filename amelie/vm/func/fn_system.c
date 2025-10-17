@@ -38,51 +38,51 @@
 #include <amelie_func.h>
 
 static void
-fn_config(Call* self)
+fn_config(Fn* self)
 {
-	call_expect(self, 0);
+	fn_expect(self, 0);
 	auto buf = opts_list(&config()->opts);
 	value_set_json_buf(self->result, buf);
 }
 
 static void
-fn_state(Call* self)
+fn_state(Fn* self)
 {
-	call_expect(self, 0);
+	fn_expect(self, 0);
 	auto buf = db_state(share()->db);
 	value_set_json_buf(self->result, buf);
 }
 
 static void
-fn_users(Call* self)
+fn_users(Fn* self)
 {
-	call_expect(self, 0);
+	fn_expect(self, 0);
 	auto buf = user_mgr_list(share()->user_mgr, NULL);
 	value_set_json_buf(self->result, buf);
 }
 
 static void
-fn_user(Call* self)
+fn_user(Fn* self)
 {
-	call_expect(self, 1);
-	call_expect_arg(self, 0, TYPE_STRING);
+	fn_expect(self, 1);
+	fn_expect_arg(self, 0, TYPE_STRING);
 	auto buf = user_mgr_list(share()->user_mgr, &self->argv[0].string);
 	value_set_json_buf(self->result, buf);
 }
 
 static void
-fn_replicas(Call* self)
+fn_replicas(Fn* self)
 {
-	call_expect(self, 0);
+	fn_expect(self, 0);
 	auto buf = replica_mgr_list(&share()->repl->replica_mgr, NULL);
 	value_set_json_buf(self->result, buf);
 }
 
 static void
-fn_replica(Call* self)
+fn_replica(Fn* self)
 {
 	auto argv = self->argv;
-	call_expect(self, 1);
+	fn_expect(self, 1);
 	if (argv[0].type == TYPE_STRING)
 	{
 		Uuid id;
@@ -95,48 +95,48 @@ fn_replica(Call* self)
 		auto buf = replica_mgr_list(&share()->repl->replica_mgr, &argv[0].uuid);
 		value_set_json_buf(self->result, buf);
 	} else {
-		call_unsupported(self, 0);
+		fn_unsupported(self, 0);
 	}
 }
 
 static void
-fn_repl(Call* self)
+fn_repl(Fn* self)
 {
-	call_expect(self, 0);
+	fn_expect(self, 0);
 	auto buf = repl_status(share()->repl);
 	value_set_json_buf(self->result, buf);
 }
 
 static void
-fn_schemas(Call* self)
+fn_schemas(Fn* self)
 {
-	call_expect(self, 0);
+	fn_expect(self, 0);
 	auto buf = schema_mgr_list(&share()->db->catalog.schema_mgr, NULL, true);
 	value_set_json_buf(self->result, buf);
 }
 
 static void
-fn_schema(Call* self)
+fn_schema(Fn* self)
 {
-	call_expect(self, 1);
-	call_expect_arg(self, 0, TYPE_STRING);
+	fn_expect(self, 1);
+	fn_expect_arg(self, 0, TYPE_STRING);
 	auto buf = schema_mgr_list(&share()->db->catalog.schema_mgr, &self->argv[0].string, true);
 	value_set_json_buf(self->result, buf);
 }
 
 static void
-fn_tables(Call* self)
+fn_tables(Fn* self)
 {
-	call_expect(self, 0);
+	fn_expect(self, 0);
 	auto buf = table_mgr_list(&share()->db->catalog.table_mgr, NULL, NULL, true);
 	value_set_json_buf(self->result, buf);
 }
 
 static void
-fn_table(Call* self)
+fn_table(Fn* self)
 {
-	call_expect(self, 1);
-	call_expect_arg(self, 0, TYPE_STRING);
+	fn_expect(self, 1);
+	fn_expect_arg(self, 0, TYPE_STRING);
 	Str name = self->argv[0].string;
 	Str schema;
 	str_init(&schema);
@@ -149,17 +149,17 @@ fn_table(Call* self)
 }
 
 static void
-fn_wal(Call* self)
+fn_wal(Fn* self)
 {
-	call_expect(self, 0);
+	fn_expect(self, 0);
 	auto buf = wal_status(&share()->db->wal_mgr.wal);
 	value_set_json_buf(self->result, buf);
 }
 
 static void
-fn_metrics(Call* self)
+fn_metrics(Fn* self)
 {
-	call_expect(self, 0);
+	fn_expect(self, 0);
 	Buf* buf;
 	rpc(&runtime()->task, MSG_SHOW_METRICS, 1, &buf);
 	value_set_json_buf(self->result, buf);
@@ -230,14 +230,14 @@ show_cmd_find(Str* name)
 }
 
 static void
-fn_show(Call* self)
+fn_show(Fn* self)
 {
 	// [section, name, schema, extended]
-	call_expect(self, 4);
-	call_expect_arg(self, 0, TYPE_STRING);
-	call_expect_arg(self, 1, TYPE_STRING);
-	call_expect_arg(self, 2, TYPE_STRING);
-	call_expect_arg(self, 3, TYPE_BOOL);
+	fn_expect(self, 4);
+	fn_expect_arg(self, 0, TYPE_STRING);
+	fn_expect_arg(self, 1, TYPE_STRING);
+	fn_expect_arg(self, 2, TYPE_STRING);
+	fn_expect_arg(self, 3, TYPE_BOOL);
 
 	Str* section  = &self->argv[0].string;
 	Str* name     = &self->argv[1].string;
@@ -251,15 +251,15 @@ fn_show(Call* self)
 	{
 		// config option
 		if (str_empty(section))
-			call_error_noargs(self, "section name is not defined");
+			fn_error_noargs(self, "section name is not defined");
 		if (! str_empty(name))
-			call_error_noargs(self, "unexpected name argument");
+			fn_error_noargs(self, "unexpected name argument");
 
 		auto opt = opts_find(&config()->opts, section);
 		if (opt && opt_is(opt, OPT_S))
 			opt = NULL;
 		if (unlikely(opt == NULL))
-			call_error_noargs(self, "option '%.*s' is not found", str_size(section),
+			fn_error_noargs(self, "option '%.*s' is not found", str_size(section),
 			                  str_of(section));
 		buf = buf_create();
 		opt_encode(opt, buf);
@@ -270,12 +270,12 @@ fn_show(Call* self)
 	// ensure argument is set
 	if (cmd->has_arg) {
 		if (str_empty(name))
-			call_error_noargs(self, "name is missing for '%.*s'",
-			                  str_size(section),
-			                  str_of(section));
+			fn_error_noargs(self, "name is missing for '%.*s'",
+			                str_size(section),
+			                str_of(section));
 	} else {
 		if (! str_empty(name))
-			call_error_noargs(self, "unexpected name argument");
+			fn_error_noargs(self, "unexpected name argument");
 	}
 
 	auto catalog = &share()->db->catalog;

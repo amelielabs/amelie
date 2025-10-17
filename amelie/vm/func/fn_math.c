@@ -38,38 +38,38 @@
 #include <amelie_func.h>
 
 static void
-fn_abs(Call* self)
+fn_abs(Fn* self)
 {
 	auto arg = &self->argv[0];
-	call_expect(self, 1);
-	call_expect_arg(self, 0, TYPE_INT);
+	fn_expect(self, 1);
+	fn_expect_arg(self, 0, TYPE_INT);
 	value_set_int(self->result, llabs(arg->integer));
 }
 
 static void
-fn_fabs(Call* self)
+fn_fabs(Fn* self)
 {
 	auto arg = &self->argv[0];
-	call_expect(self, 1);
-	call_expect_arg(self, 0, TYPE_DOUBLE);
+	fn_expect(self, 1);
+	fn_expect_arg(self, 0, TYPE_DOUBLE);
 	value_set_double(self->result, fabs(arg->dbl));
 }
 
 static void
-fn_round(Call* self)
+fn_round(Fn* self)
 {
 	auto arg = &self->argv[0];
-	call_expect(self, 1);
-	call_expect_arg(self, 0, TYPE_DOUBLE);
+	fn_expect(self, 1);
+	fn_expect_arg(self, 0, TYPE_DOUBLE);
 	value_set_int(self->result, llround(arg->dbl));
 }
 
 static void
-fn_sign(Call* self)
+fn_sign(Fn* self)
 {
 	auto arg = &self->argv[0];
 	int sign = 0;
-	call_expect(self, 1);
+	fn_expect(self, 1);
 	if (arg->type == TYPE_INT)
 	{
 		if (arg->integer > 0)
@@ -86,117 +86,117 @@ fn_sign(Call* self)
 		if (arg->dbl < 0.0)
 			sign = -1;
 	} else {
-		call_unsupported(self, 0);
+		fn_unsupported(self, 0);
 	}
 	value_set_int(self->result, sign);
 }
 
 static void
-fn_ceil(Call* self)
+fn_ceil(Fn* self)
 {
 	auto arg = &self->argv[0];
-	call_expect(self, 1);
-	call_expect_arg(self, 0, TYPE_DOUBLE);
+	fn_expect(self, 1);
+	fn_expect_arg(self, 0, TYPE_DOUBLE);
 	value_set_double(self->result, ceil(arg->dbl));
 }
 
 static void
-fn_exp(Call* self)
+fn_exp(Fn* self)
 {
 	auto arg = &self->argv[0];
-	call_expect(self, 1);
-	call_expect_arg(self, 0, TYPE_DOUBLE);
+	fn_expect(self, 1);
+	fn_expect_arg(self, 0, TYPE_DOUBLE);
 	errno = 0;
 	double result = exp(arg->dbl);
 	if (errno != 0)
-		call_error(self, "operation failed");
+		fn_error(self, "operation failed");
 	value_set_double(self->result, result);
 }
 
 static void
-fn_floor(Call* self)
+fn_floor(Fn* self)
 {
 	auto arg = &self->argv[0];
-	call_expect(self, 1);
-	call_expect_arg(self, 0, TYPE_DOUBLE);
+	fn_expect(self, 1);
+	fn_expect_arg(self, 0, TYPE_DOUBLE);
 	value_set_double(self->result, floor(arg->dbl));
 }
 
 static void
-fn_mod(Call* self)
+fn_mod(Fn* self)
 {
 	auto argv = self->argv;
-	call_expect(self, 2);
-	call_expect_arg(self, 0, TYPE_INT);
-	call_expect_arg(self, 1, TYPE_INT);
+	fn_expect(self, 2);
+	fn_expect_arg(self, 0, TYPE_INT);
+	fn_expect_arg(self, 1, TYPE_INT);
 	if (argv[1].integer == 0)
-		call_error_arg(self, 1, "zero division");
+		fn_error_arg(self, 1, "zero division");
 	int64_t result = argv[0].integer % argv[1].integer;
 	value_set_int(self->result, result);
 }
 
 static void
-fn_fmod(Call* self)
+fn_fmod(Fn* self)
 {
 	auto argv = self->argv;
-	call_expect(self, 2);
-	call_expect_arg(self, 0, TYPE_DOUBLE);
-	call_expect_arg(self, 1, TYPE_DOUBLE);
+	fn_expect(self, 2);
+	fn_expect_arg(self, 0, TYPE_DOUBLE);
+	fn_expect_arg(self, 1, TYPE_DOUBLE);
 	if (argv[1].integer == 0)
-		call_error_arg(self, 1, "zero division");
+		fn_error_arg(self, 1, "zero division");
 	double result = fmod(argv[0].dbl, argv[1].dbl);
 	value_set_double(self->result, result);
 }
 
 static void
-fn_pow(Call* self)
+fn_pow(Fn* self)
 {
 	auto argv = self->argv;
-	call_expect(self, 2);
-	call_expect_arg(self, 0, TYPE_INT);
-	call_expect_arg(self, 1, TYPE_INT);
+	fn_expect(self, 2);
+	fn_expect_arg(self, 0, TYPE_INT);
+	fn_expect_arg(self, 1, TYPE_INT);
 	errno = 0;
 	double result = pow(argv[0].integer, argv[1].integer);
 	if (errno != 0)
-		call_error(self, "operation failed");
+		fn_error(self, "operation failed");
 	value_set_int(self->result, (int64_t)result);
 }
 
 static void
-fn_fpow(Call* self)
+fn_fpow(Fn* self)
 {
 	auto argv = self->argv;
-	call_expect(self, 2);
-	call_expect_arg(self, 0, TYPE_DOUBLE);
-	call_expect_arg(self, 1, TYPE_DOUBLE);
+	fn_expect(self, 2);
+	fn_expect_arg(self, 0, TYPE_DOUBLE);
+	fn_expect_arg(self, 1, TYPE_DOUBLE);
 	errno = 0;
 	double result = pow(argv[0].dbl, argv[1].dbl);
 	if (errno != 0)
-		call_error(self, "operation failed");
+		fn_error(self, "operation failed");
 	value_set_double(self->result, result);
 }
 
 static void
-fn_trunc(Call* self)
+fn_trunc(Fn* self)
 {
 	auto arg = &self->argv[0];
-	call_expect(self, 1);
-	call_expect_arg(self, 0, TYPE_DOUBLE);
+	fn_expect(self, 1);
+	fn_expect_arg(self, 0, TYPE_DOUBLE);
 	value_set_double(self->result, trunc(arg->dbl));
 }
 
 static void
-fn_pi(Call* self)
+fn_pi(Fn* self)
 {
-	call_expect(self, 0);
+	fn_expect(self, 0);
 	value_set_double(self->result, 3.141592653589793);
 }
 
 static void
-fn_sqrt(Call* self)
+fn_sqrt(Fn* self)
 {
 	auto arg = &self->argv[0];
-	call_expect(self, 1);
+	fn_expect(self, 1);
 	double value;
 	if (arg->type == TYPE_INT)
 		value = arg->integer;
@@ -204,19 +204,19 @@ fn_sqrt(Call* self)
 	if (arg->type == TYPE_DOUBLE)
 		value = arg->dbl;
 	else
-		call_unsupported(self, 0);
+		fn_unsupported(self, 0);
 	errno = 0;
 	double result = sqrt(value);
 	if (errno != 0)
-		call_error(self, "operation failed");
+		fn_error(self, "operation failed");
 	value_set_double(self->result, result);
 }
 
 static void
-fn_acos(Call* self)
+fn_acos(Fn* self)
 {
 	auto arg = &self->argv[0];
-	call_expect(self, 1);
+	fn_expect(self, 1);
 	double value;
 	if (arg->type == TYPE_INT)
 		value = arg->integer;
@@ -224,19 +224,19 @@ fn_acos(Call* self)
 	if (arg->type == TYPE_DOUBLE)
 		value = arg->dbl;
 	else
-		call_unsupported(self, 0);
+		fn_unsupported(self, 0);
 	errno = 0;
 	double result = acos(value);
 	if (errno != 0)
-		call_error(self, "operation failed");
+		fn_error(self, "operation failed");
 	value_set_double(self->result, result);
 }
 
 static void
-fn_acosh(Call* self)
+fn_acosh(Fn* self)
 {
 	auto arg = &self->argv[0];
-	call_expect(self, 1);
+	fn_expect(self, 1);
 	double value;
 	if (arg->type == TYPE_INT)
 		value = arg->integer;
@@ -244,19 +244,19 @@ fn_acosh(Call* self)
 	if (arg->type == TYPE_DOUBLE)
 		value = arg->dbl;
 	else
-		call_unsupported(self, 0);
+		fn_unsupported(self, 0);
 	errno = 0;
 	double result = acosh(value);
 	if (errno != 0)
-		call_error(self, "operation failed");
+		fn_error(self, "operation failed");
 	value_set_double(self->result, result);
 }
 
 static void
-fn_asin(Call* self)
+fn_asin(Fn* self)
 {
 	auto arg = &self->argv[0];
-	call_expect(self, 1);
+	fn_expect(self, 1);
 	double value;
 	if (arg->type == TYPE_INT)
 		value = arg->integer;
@@ -264,19 +264,19 @@ fn_asin(Call* self)
 	if (arg->type == TYPE_DOUBLE)
 		value = arg->dbl;
 	else
-		call_unsupported(self, 0);
+		fn_unsupported(self, 0);
 	errno = 0;
 	double result = asin(value);
 	if (errno != 0)
-		call_error(self, "operation failed");
+		fn_error(self, "operation failed");
 	value_set_double(self->result, result);
 }
 
 static void
-fn_asinh(Call* self)
+fn_asinh(Fn* self)
 {
 	auto arg = &self->argv[0];
-	call_expect(self, 1);
+	fn_expect(self, 1);
 	double value;
 	if (arg->type == TYPE_INT)
 		value = arg->integer;
@@ -284,19 +284,19 @@ fn_asinh(Call* self)
 	if (arg->type == TYPE_DOUBLE)
 		value = arg->dbl;
 	else
-		call_unsupported(self, 0);
+		fn_unsupported(self, 0);
 	errno = 0;
 	double result = asinh(value);
 	if (errno != 0)
-		call_error(self, "operation failed");
+		fn_error(self, "operation failed");
 	value_set_double(self->result, result);
 }
 
 static void
-fn_atan(Call* self)
+fn_atan(Fn* self)
 {
 	auto arg = &self->argv[0];
-	call_expect(self, 1);
+	fn_expect(self, 1);
 	double value;
 	if (arg->type == TYPE_INT)
 		value = arg->integer;
@@ -304,19 +304,19 @@ fn_atan(Call* self)
 	if (arg->type == TYPE_DOUBLE)
 		value = arg->dbl;
 	else
-		call_unsupported(self, 0);
+		fn_unsupported(self, 0);
 	errno = 0;
 	double result = atan(value);
 	if (errno != 0)
-		call_error(self, "operation failed");
+		fn_error(self, "operation failed");
 	value_set_double(self->result, result);
 }
 
 static void
-fn_atanh(Call* self)
+fn_atanh(Fn* self)
 {
 	auto arg = &self->argv[0];
-	call_expect(self, 1);
+	fn_expect(self, 1);
 	double value;
 	if (arg->type == TYPE_INT)
 		value = arg->integer;
@@ -324,19 +324,19 @@ fn_atanh(Call* self)
 	if (arg->type == TYPE_DOUBLE)
 		value = arg->dbl;
 	else
-		call_unsupported(self, 0);
+		fn_unsupported(self, 0);
 	errno = 0;
 	double result = atanh(value);
 	if (errno != 0)
-		call_error(self, "operation failed");
+		fn_error(self, "operation failed");
 	value_set_double(self->result, result);
 }
 
 static void
-fn_atan2(Call* self)
+fn_atan2(Fn* self)
 {
 	auto argv = self->argv;
-	call_expect(self, 2);
+	fn_expect(self, 2);
 
 	double arg1;
 	if (argv[0].type == TYPE_INT)
@@ -345,7 +345,7 @@ fn_atan2(Call* self)
 	if (argv[0].type == TYPE_DOUBLE)
 		arg1 = argv[0].dbl;
 	else
-		call_unsupported(self, 0);
+		fn_unsupported(self, 0);
 
 	double arg2;
 	if (argv[1].type == TYPE_INT)
@@ -354,20 +354,20 @@ fn_atan2(Call* self)
 	if (argv[1].type == TYPE_DOUBLE)
 		arg2 = argv[1].dbl;
 	else
-		call_unsupported(self, 0);
+		fn_unsupported(self, 0);
 
 	errno = 0;
 	double result = atan2(arg1, arg2);
 	if (errno != 0)
-		call_error(self, "operation failed");
+		fn_error(self, "operation failed");
 	value_set_double(self->result, result);
 }
 
 static void
-fn_cos(Call* self)
+fn_cos(Fn* self)
 {
 	auto arg = &self->argv[0];
-	call_expect(self, 1);
+	fn_expect(self, 1);
 	double value;
 	if (arg->type == TYPE_INT)
 		value = arg->integer;
@@ -375,19 +375,19 @@ fn_cos(Call* self)
 	if (arg->type == TYPE_DOUBLE)
 		value = arg->dbl;
 	else
-		call_unsupported(self, 0);
+		fn_unsupported(self, 0);
 	errno = 0;
 	double result = cos(value);
 	if (errno != 0)
-		call_error(self, "operation failed");
+		fn_error(self, "operation failed");
 	value_set_double(self->result, result);
 }
 
 static void
-fn_cosh(Call* self)
+fn_cosh(Fn* self)
 {
 	auto arg = &self->argv[0];
-	call_expect(self, 1);
+	fn_expect(self, 1);
 	double value;
 	if (arg->type == TYPE_INT)
 		value = arg->integer;
@@ -395,19 +395,19 @@ fn_cosh(Call* self)
 	if (arg->type == TYPE_DOUBLE)
 		value = arg->dbl;
 	else
-		call_unsupported(self, 0);
+		fn_unsupported(self, 0);
 	errno = 0;
 	double result = cosh(value);
 	if (errno != 0)
-		call_error(self, "operation failed");
+		fn_error(self, "operation failed");
 	value_set_double(self->result, result);
 }
 
 static void
-fn_sin(Call* self)
+fn_sin(Fn* self)
 {
 	auto arg = &self->argv[0];
-	call_expect(self, 1);
+	fn_expect(self, 1);
 	double value;
 	if (arg->type == TYPE_INT)
 		value = arg->integer;
@@ -415,19 +415,19 @@ fn_sin(Call* self)
 	if (arg->type == TYPE_DOUBLE)
 		value = arg->dbl;
 	else
-		call_unsupported(self, 0);
+		fn_unsupported(self, 0);
 	errno = 0;
 	double result = sin(value);
 	if (errno != 0)
-		call_error(self, "operation failed");
+		fn_error(self, "operation failed");
 	value_set_double(self->result, result);
 }
 
 static void
-fn_sinh(Call* self)
+fn_sinh(Fn* self)
 {
 	auto arg = &self->argv[0];
-	call_expect(self, 1);
+	fn_expect(self, 1);
 	double value;
 	if (arg->type == TYPE_INT)
 		value = arg->integer;
@@ -435,19 +435,19 @@ fn_sinh(Call* self)
 	if (arg->type == TYPE_DOUBLE)
 		value = arg->dbl;
 	else
-		call_unsupported(self, 0);
+		fn_unsupported(self, 0);
 	errno = 0;
 	double result = sinh(value);
 	if (errno != 0)
-		call_error(self, "operation failed");
+		fn_error(self, "operation failed");
 	value_set_double(self->result, result);
 }
 
 static void
-fn_tan(Call* self)
+fn_tan(Fn* self)
 {
 	auto arg = &self->argv[0];
-	call_expect(self, 1);
+	fn_expect(self, 1);
 	double value;
 	if (arg->type == TYPE_INT)
 		value = arg->integer;
@@ -455,19 +455,19 @@ fn_tan(Call* self)
 	if (arg->type == TYPE_DOUBLE)
 		value = arg->dbl;
 	else
-		call_unsupported(self, 0);
+		fn_unsupported(self, 0);
 	errno = 0;
 	double result = tan(value);
 	if (errno != 0)
-		call_error(self, "operation failed");
+		fn_error(self, "operation failed");
 	value_set_double(self->result, result);
 }
 
 static void
-fn_tanh(Call* self)
+fn_tanh(Fn* self)
 {
 	auto arg = &self->argv[0];
-	call_expect(self, 1);
+	fn_expect(self, 1);
 	double value;
 	if (arg->type == TYPE_INT)
 		value = arg->integer;
@@ -475,19 +475,19 @@ fn_tanh(Call* self)
 	if (arg->type == TYPE_DOUBLE)
 		value = arg->dbl;
 	else
-		call_unsupported(self, 0);
+		fn_unsupported(self, 0);
 	errno = 0;
 	double result = tanh(value);
 	if (errno != 0)
-		call_error(self, "operation failed");
+		fn_error(self, "operation failed");
 	value_set_double(self->result, result);
 }
 
 static void
-fn_ln(Call* self)
+fn_ln(Fn* self)
 {
 	auto arg = &self->argv[0];
-	call_expect(self, 1);
+	fn_expect(self, 1);
 	double value;
 	if (arg->type == TYPE_INT)
 		value = arg->integer;
@@ -495,19 +495,19 @@ fn_ln(Call* self)
 	if (arg->type == TYPE_DOUBLE)
 		value = arg->dbl;
 	else
-		call_unsupported(self, 0);
+		fn_unsupported(self, 0);
 	errno = 0;
 	double result = log(value);
 	if (errno != 0)
-		call_error(self, "operation failed");
+		fn_error(self, "operation failed");
 	value_set_double(self->result, result);
 }
 
 static void
-fn_log(Call* self)
+fn_log(Fn* self)
 {
 	auto arg = &self->argv[0];
-	call_expect(self, 1);
+	fn_expect(self, 1);
 	double value;
 	if (arg->type == TYPE_INT)
 		value = arg->integer;
@@ -515,19 +515,19 @@ fn_log(Call* self)
 	if (arg->type == TYPE_DOUBLE)
 		value = arg->dbl;
 	else
-		call_unsupported(self, 0);
+		fn_unsupported(self, 0);
 	errno = 0;
 	double result = log10(value);
 	if (errno != 0)
-		call_error(self, "operation failed");
+		fn_error(self, "operation failed");
 	value_set_double(self->result, result);
 }
 
 static void
-fn_log2(Call* self)
+fn_log2(Fn* self)
 {
 	auto arg = &self->argv[0];
-	call_expect(self, 1);
+	fn_expect(self, 1);
 	double value;
 	if (arg->type == TYPE_INT)
 		value = arg->integer;
@@ -535,16 +535,16 @@ fn_log2(Call* self)
 	if (arg->type == TYPE_DOUBLE)
 		value = arg->dbl;
 	else
-		call_unsupported(self, 0);
+		fn_unsupported(self, 0);
 	errno = 0;
 	double result = log2(value);
 	if (errno != 0)
-		call_error(self, "operation failed");
+		fn_error(self, "operation failed");
 	value_set_double(self->result, result);
 }
 
 static void
-fn_greatest(Call* self)
+fn_greatest(Fn* self)
 {
 	Value* max = NULL;
 	for (int i = 0; i < self->argc; i++)
@@ -566,7 +566,7 @@ fn_greatest(Call* self)
 }
 
 static void
-fn_least(Call* self)
+fn_least(Fn* self)
 {
 	Value* max = NULL;
 	for (int i = 0; i < self->argc; i++)

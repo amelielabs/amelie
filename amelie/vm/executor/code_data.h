@@ -16,28 +16,28 @@ typedef struct CodeData CodeData;
 struct CodeData
 {
 	Buf data;
-	Buf data_call;
+	Buf data_fn;
 };
 
 static inline void
 code_data_init(CodeData* self)
 {
 	buf_init(&self->data);
-	buf_init(&self->data_call);
+	buf_init(&self->data_fn);
 }
 
 static inline void
 code_data_free(CodeData* self)
 {
 	buf_free(&self->data);
-	buf_free(&self->data_call);
+	buf_free(&self->data_fn);
 }
 
 static inline void
 code_data_reset(CodeData* self)
 {
 	buf_reset(&self->data);
-	buf_reset(&self->data_call);
+	buf_reset(&self->data_fn);
 }
 
 static inline int
@@ -75,24 +75,24 @@ code_data_at_string(CodeData* self, int offset, Str* string)
 }
 
 static inline void*
-code_data_at_call(CodeData* self, int id)
+code_data_at_fn(CodeData* self, int id)
 {
-	assert(self->data_call.start != NULL);
-	auto list = (void**)self->data_call.start;
+	assert(self->data_fn.start != NULL);
+	auto list = (void**)self->data_fn.start;
 	return list[id];
 }
 
 static inline int
-code_data_count_call(CodeData* self)
+code_data_count_fn(CodeData* self)
 {
-	return buf_size(&self->data_call) / sizeof(void*);
+	return buf_size(&self->data_fn) / sizeof(void*);
 }
 
 static inline int
-code_data_add_call(CodeData* self, void* pointer)
+code_data_add_fn(CodeData* self, void* pointer)
 {
-	int id = buf_size(&self->data_call) / sizeof(void*);
-	buf_write(&self->data_call, &pointer, sizeof(pointer));
+	int id = buf_size(&self->data_fn) / sizeof(void*);
+	buf_write(&self->data_fn, &pointer, sizeof(pointer));
 	return id;
 }
 
