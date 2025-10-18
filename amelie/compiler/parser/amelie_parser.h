@@ -76,6 +76,7 @@
 #include "parser/parse_insert.h"
 #include "parser/parse_update.h"
 #include "parser/parse_delete.h"
+#include "parser/parse_call.h"
 
 // query
 #include "parser/parse_order.h"

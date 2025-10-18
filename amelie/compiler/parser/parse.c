@@ -407,6 +407,14 @@ parse_stmt(Stmt* self)
 		break;
 	}
 
+	case KCALL:
+	{
+		self->id = STMT_CALL;
+		if (parse_call(self))
+			self->block->stmts.last_send = self;
+		break;
+	}
+
 	case KBEGIN:
 	case KCOMMIT:
 		stmt_error(self, NULL, "unsupported statement");

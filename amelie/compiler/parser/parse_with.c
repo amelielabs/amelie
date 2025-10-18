@@ -74,10 +74,11 @@ hot void
 parse_with_validate(Stmt* stmt)
 {
 	// ensure stmt is not utility
-	if (stmt_is_utility(stmt) ||
-	    stmt->id == STMT_IF   ||
-	    stmt->id == STMT_FOR  ||
-	    stmt->id == STMT_RETURN)
+	if (stmt_is_utility(stmt)   ||
+	    stmt->id == STMT_IF     ||
+	    stmt->id == STMT_FOR    ||
+	    stmt->id == STMT_RETURN ||
+	    stmt->id == STMT_CALL)
 		stmt_error(stmt, stmt->ast, "statement cannot be used inside CTE");
 }
 

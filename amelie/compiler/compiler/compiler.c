@@ -544,6 +544,49 @@ emit_for(Compiler* self, Stmt* stmt)
 	self->current = stmt_prev;
 }
 
+static void
+emit_namespace(Compiler*, Namespace*);
+
+hot static void
+emit_call(Compiler* self, Stmt* stmt)
+{
+	auto stmt_prev = self->current;
+	self->current = stmt;
+
+	auto call = ast_call_of(stmt->ast);
+	compiler_switch_frontend(self);
+
+	// emit call arguments into variables
+	auto var  = call->ns->vars.list;
+	auto argc = call->args->integer;
+	auto arg  = call->args->l;
+	for (auto at = 0; at < argc; at++)
+	{
+		// expr
+		var->r = emit_expr(self, &call->from, arg);
+
+		// validate argument type
+		auto type = (Type)rtype(self, var->r);
+		if (type != TYPE_NULL && var->type != type)
+			stmt_error(self->current, stmt->ast, "expected %s for argument %.*s",
+			           type_of(var->type), str_size(var->name),
+			           str_of(var->name));
+		arg = arg->next;
+		var = var->next;
+	}
+
+	// emit procedure statements
+	emit_namespace(self, call->ns);
+
+	// mark last sending operation in the main block
+	auto block = compiler_main(self);
+	if (stmt->block == block && block->stmts.last_send == stmt)
+		op0(self, CCLOSE);
+
+	// set previous stmt
+	self->current = stmt_prev;
+}
+
 hot static void
 emit_return(Compiler* self, Stmt* stmt)
 {
@@ -594,6 +637,9 @@ emit_block(Compiler* self, Block* block)
 		case STMT_FOR:
 			emit_for(self, stmt);
 			break;
+		case STMT_CALL:
+			emit_call(self, stmt);
+			break;
 		case STMT_RETURN:
 			break;
 		default:
@@ -626,10 +672,16 @@ emit_block(Compiler* self, Block* block)
 hot static void
 emit_namespace(Compiler* self, Namespace* ns)
 {
-	// reserve variables
+	auto stmt_prev = self->current;
+	self->current = NULL;
+
+	// reserve uninitialized variables
 	auto var = ns->vars.list;
 	for (; var; var = var->next)
-		var->r = rpin(self, var->type);
+	{
+		if (var->r == -1)
+			var->r = rpin(self, var->type);
+	}
 
 	// emit main block
 	emit_block(self, ns->blocks.list);
@@ -647,6 +699,9 @@ emit_namespace(Compiler* self, Namespace* ns)
 			var->r = -1;
 		}
 	}
+
+	// set previous stmt
+	self->current = stmt_prev;
 }
 
 hot void

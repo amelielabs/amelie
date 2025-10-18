@@ -63,6 +63,7 @@ Keyword keywords[] =
 	{ KCURRENT_DATE,          "current_date",          12 },
 	{ KCAST,                  "cast",                  4  },
 	{ KCASE,                  "case",                  4  },
+	{ KCALL,                  "call",                  4  },
 	{ KCONFLICT,              "conflict",              8  },
 	{ KCOUNT,                 "count",                 5  },
 	{ KCOMMIT,                "commit",                6  },

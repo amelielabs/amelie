@@ -110,6 +110,14 @@ parse_procedure_create(Stmt* self, bool or_replace)
 	auto parser = self->parser;
 	auto ns     = namespaces_add(&parser->nss, self->block->ns);
 
+	// precreate arguments as variables
+	list_foreach(&stmt->config->args.list)
+	{
+		auto column = list_at(Column, link);
+		auto var = vars_add(&ns->vars, &column->name);
+		var->type = column->type;
+	}
+
 	// BEGIN
 	auto begin = stmt_expect(self, KBEGIN);
 
