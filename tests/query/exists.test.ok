@@ -36,7 +36,7 @@ explain select exists (select true from test limit 1)
       "09": "table_next          2      5      0     ",
       "10": "free                2      0      0     ",
       "11": "exists              1      0      0     ",
-      "12": "ret                 1      -      -     "
+      "12": "ret                 1      -1     -     "
     }
   },
   "access": [["public.test", "ro_exclusive"]]
@@ -65,7 +65,7 @@ explain select exists (select true from test where false)
       "07": "table_next          1      2      0     ",
       "08": "free                1      0      0     ",
       "09": "exists              1      0      0     ",
-      "10": "ret                 1      -      -     "
+      "10": "ret                 1      -1     -     "
     }
   },
   "access": [["public.test", "ro_exclusive"]]

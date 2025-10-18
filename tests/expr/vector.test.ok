@@ -53,7 +53,7 @@ explain select []::vector = []::vector
       "04": "push                1      0      0     ",
       "05": "call                1      -      1     # public.vector()",
       "06": "equvv               2      0      1     ",
-      "07": "ret                 2      -      -     "
+      "07": "ret                 2      -1     -     "
     }
   },
   "access": []
@@ -73,7 +73,7 @@ explain select vector [] = vector []
       "00": "vector              0      0      0     ",
       "01": "vector              1      4      0     ",
       "02": "equvv               2      0      1     ",
-      "03": "ret                 2      -      -     "
+      "03": "ret                 2      -1     -     "
     }
   },
   "access": []
@@ -90,7 +90,7 @@ explain select [1.0, 1.1]::vector = null
       "02": "call                0      -      1     # public.vector()",
       "03": "null                1      0      0     ",
       "04": "nullop              2      0      1     ",
-      "05": "ret                 2      -      -     "
+      "05": "ret                 2      -1     -     "
     }
   },
   "access": []
@@ -119,7 +119,7 @@ explain select []::vector <> []::vector
       "05": "call                1      -      1     # public.vector()",
       "06": "equvv               2      0      1     ",
       "07": "not                 0      2      0     ",
-      "08": "ret                 0      -      -     "
+      "08": "ret                 0      -1     -     "
     }
   },
   "access": []
@@ -137,7 +137,7 @@ explain select [1.0, 1.1]::vector <> null
       "03": "null                1      0      0     ",
       "04": "nullop              2      0      1     ",
       "05": "not                 0      2      0     ",
-      "06": "ret                 0      -      -     "
+      "06": "ret                 0      -1     -     "
     }
   },
   "access": []
@@ -163,7 +163,7 @@ explain select [1.0, 1.1]::vector >= [1.0]::vector
       "04": "push                1      0      0     ",
       "05": "call                1      -      1     # public.vector()",
       "06": "gtevv               2      0      1     ",
-      "07": "ret                 2      -      -     "
+      "07": "ret                 2      -1     -     "
     }
   },
   "access": []
@@ -192,7 +192,7 @@ explain select [1.0, 1.1]::vector > [1.0]::vector
       "04": "push                1      0      0     ",
       "05": "call                1      -      1     # public.vector()",
       "06": "gtvv                2      0      1     ",
-      "07": "ret                 2      -      -     "
+      "07": "ret                 2      -1     -     "
     }
   },
   "access": []
@@ -221,7 +221,7 @@ explain select [1.0, 1.3]::vector <= [1.0, 1.2]::vector
       "04": "push                1      0      0     ",
       "05": "call                1      -      1     # public.vector()",
       "06": "ltevv               2      0      1     ",
-      "07": "ret                 2      -      -     "
+      "07": "ret                 2      -1     -     "
     }
   },
   "access": []
@@ -263,7 +263,7 @@ explain select [1.0, 2.1, 3]::vector + [1, 1]::vector
       "04": "push                1      0      0     ",
       "05": "call                1      -      1     # public.vector()",
       "06": "addvv               2      0      1     ",
-      "07": "ret                 2      -      -     "
+      "07": "ret                 2      -1     -     "
     }
   },
   "access": []
@@ -290,7 +290,7 @@ explain select [1.0, 2.1, 3]::vector - [1, 1]::vector
       "04": "push                1      0      0     ",
       "05": "call                1      -      1     # public.vector()",
       "06": "subvv               2      0      1     ",
-      "07": "ret                 2      -      -     "
+      "07": "ret                 2      -1     -     "
     }
   },
   "access": []
@@ -307,7 +307,7 @@ explain select [1.0, 2.1, 3]::vector - null
       "02": "call                0      -      1     # public.vector()",
       "03": "null                1      0      0     ",
       "04": "nullop              2      0      1     ",
-      "05": "ret                 2      -      -     "
+      "05": "ret                 2      -1     -     "
     }
   },
   "access": []
@@ -331,7 +331,7 @@ explain select [1.0, 2.1, 3]::vector * [1.5, 1.5]::vector
       "04": "push                1      0      0     ",
       "05": "call                1      -      1     # public.vector()",
       "06": "mulvv               2      0      1     ",
-      "07": "ret                 2      -      -     "
+      "07": "ret                 2      -1     -     "
     }
   },
   "access": []
@@ -362,7 +362,7 @@ explain select [1.0, 1.1, 1.2]::vector[-10]
       "02": "call                0      -      1     # public.vector()",
       "03": "int                 1      -      0     # -10",
       "04": "idxvi               2      0      1     ",
-      "05": "ret                 2      -      -     "
+      "05": "ret                 2      -1     -     "
     }
   },
   "access": []

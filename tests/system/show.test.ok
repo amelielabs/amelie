@@ -219,7 +219,7 @@ explain show log_enable
       "06": "bool                0      0      0     ",
       "07": "push                0      0      0     ",
       "08": "call                0      -      4     # system.show()",
-      "09": "ret                 0      -      -     "
+      "09": "ret                 0      -1     -     "
     }
   },
   "access": []

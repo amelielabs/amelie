@@ -45,6 +45,14 @@ parse_return(Stmt* self)
 	auto stmt = ast_return_allocate();
 	self->ast = &stmt->ast;
 
+	// RETURN ;
+	auto eos = stmt_if(self, ';');
+	if (eos)
+	{
+		stmt_push(self, eos);
+		return;
+	}
+
 	// RETURN var [FORMAT spec]
 	auto name = stmt_expect(self, KNAME);
 

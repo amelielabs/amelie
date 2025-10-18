@@ -345,7 +345,7 @@ emit_stmt_backend(Compiler* self, Stmt* stmt)
 	}
 
 	// CRET
-	op3(self, CRET, r, 0, 0);
+	op4(self, CRET, r, -1, 0, 0);
 	if (r != -1)
 		runpin(self, r);
 	return start;
@@ -602,18 +602,19 @@ emit_return(Compiler* self, Stmt* stmt)
 {
 	compiler_switch_frontend(self);
 
-	auto     r = -1;
+	auto     r       = -1;
+	auto     var     = -1;
 	Columns* columns = NULL;
-	Str*     fmt = NULL;
+	Str*     fmt     = NULL;
 	if (stmt->id == STMT_RETURN)
 	{
-		/*
 		auto return_ = ast_return_of(stmt->ast);
-		r       =  return_->var->r;
-		columns =  return_->columns;
-		fmt     = &return_->format;
-		assert(r != -1);
-		*/
+		if (return_->var)
+		{
+			var     =  return_->var->order;
+			columns =  return_->columns;
+			fmt     = &return_->format;
+		}
 	} else
 	{
 		if (stmt->ret)
@@ -624,7 +625,7 @@ emit_return(Compiler* self, Stmt* stmt)
 			fmt     = &stmt->ret->format;
 		}
 	}
-	op3(self, CRET, r, (intptr_t)columns, (intptr_t)fmt);
+	op4(self, CRET, r, var, (intptr_t)columns, (intptr_t)fmt);
 }
 
 hot static void
@@ -681,7 +682,7 @@ emit_block(Compiler* self, Block* block)
 	// emit RET if ns has no statements
 	auto ns = block->ns;
 	if (ns->blocks.list == block && !block->stmts.count)
-		op3(self, CRET, -1, 0, 0);
+		op4(self, CRET, -1, -1, 0, 0);
 
 	// set previous stmt
 	self->current = stmt_prev;

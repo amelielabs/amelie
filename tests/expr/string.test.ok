@@ -8,7 +8,7 @@ explain select "hello world"
   "bytecode": {
     "frontend": {
       "00": "string              0      0      0     # hello world",
-      "01": "ret                 0      -      -     "
+      "01": "ret                 0      -1     -     "
     }
   },
   "access": []
@@ -50,7 +50,7 @@ explain select '1 hour' = '1 hours'
       "00": "string              0      0      0     # 1 hour",
       "01": "string              1      7      0     # 1 hours",
       "02": "equss               2      0      1     ",
-      "03": "ret                 2      -      -     "
+      "03": "ret                 2      -1     -     "
     }
   },
   "access": []
@@ -74,7 +74,7 @@ explain select '1 hour' <> '1 hours'
       "01": "string              1      7      0     # 1 hours",
       "02": "equss               2      0      1     ",
       "03": "not                 0      2      0     ",
-      "04": "ret                 0      -      -     "
+      "04": "ret                 0      -1     -     "
     }
   },
   "access": []
@@ -97,7 +97,7 @@ explain select '1 hour' >= '1 hour'
       "00": "string              0      0      0     # 1 hour",
       "01": "string              1      7      0     # 1 hour",
       "02": "gtess               2      0      1     ",
-      "03": "ret                 2      -      -     "
+      "03": "ret                 2      -1     -     "
     }
   },
   "access": []
@@ -110,7 +110,7 @@ explain select '1 hour' >= null
       "00": "string              0      0      0     # 1 hour",
       "01": "null                1      0      0     ",
       "02": "nullop              2      0      1     ",
-      "03": "ret                 2      -      -     "
+      "03": "ret                 2      -1     -     "
     }
   },
   "access": []
@@ -130,7 +130,7 @@ explain select '1 hour' > '1 hour'
       "00": "string              0      0      0     # 1 hour",
       "01": "string              1      7      0     # 1 hour",
       "02": "gtss                2      0      1     ",
-      "03": "ret                 2      -      -     "
+      "03": "ret                 2      -1     -     "
     }
   },
   "access": []
@@ -143,7 +143,7 @@ explain select '1 hour' > null
       "00": "string              0      0      0     # 1 hour",
       "01": "null                1      0      0     ",
       "02": "nullop              2      0      1     ",
-      "03": "ret                 2      -      -     "
+      "03": "ret                 2      -1     -     "
     }
   },
   "access": []
@@ -163,7 +163,7 @@ explain select '1 hour' <= '1 hour'
       "00": "string              0      0      0     # 1 hour",
       "01": "string              1      7      0     # 1 hour",
       "02": "ltess               2      0      1     ",
-      "03": "ret                 2      -      -     "
+      "03": "ret                 2      -1     -     "
     }
   },
   "access": []
@@ -176,7 +176,7 @@ explain select '1 hour' <= null
       "00": "string              0      0      0     # 1 hour",
       "01": "null                1      0      0     ",
       "02": "nullop              2      0      1     ",
-      "03": "ret                 2      -      -     "
+      "03": "ret                 2      -1     -     "
     }
   },
   "access": []
@@ -196,7 +196,7 @@ explain select '1 hour' < '1 hour'
       "00": "string              0      0      0     # 1 hour",
       "01": "string              1      7      0     # 1 hour",
       "02": "ltss                2      0      1     ",
-      "03": "ret                 2      -      -     "
+      "03": "ret                 2      -1     -     "
     }
   },
   "access": []
@@ -209,7 +209,7 @@ explain select '1 hour' < null
       "00": "string              0      0      0     # 1 hour",
       "01": "null                1      0      0     ",
       "02": "nullop              2      0      1     ",
-      "03": "ret                 2      -      -     "
+      "03": "ret                 2      -1     -     "
     }
   },
   "access": []
@@ -227,7 +227,7 @@ explain select "hello " || "world"
       "00": "string              0      0      0     # hello ",
       "01": "string              1      7      0     # world",
       "02": "catss               2      0      1     ",
-      "03": "ret                 2      -      -     "
+      "03": "ret                 2      -1     -     "
     }
   },
   "access": []
@@ -258,7 +258,7 @@ explain select 'abc' like 'abc'
       "00": "string              0      0      0     # abc",
       "01": "string              1      4      0     # abc",
       "02": "likess              2      0      1     ",
-      "03": "ret                 2      -      -     "
+      "03": "ret                 2      -1     -     "
     }
   },
   "access": []

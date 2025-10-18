@@ -130,17 +130,16 @@ parse_stmt_free(Stmt* stmt)
 hot void
 parse_stmt(Stmt* self)
 {
-	// [RETURN var | stmt]
+	// [RETURN var | stmt | ;]
 	auto return_ = stmt_if(self, KRETURN);
 	if (return_)
 	{
+		// var | ;
 		self->is_return = true;
-		auto name = stmt_if(self, KNAME);
-		if (name)
-		{
-			stmt_push(self, name);
+		auto next = stmt_next(self);
+		stmt_push(self, next);
+		if (next->id == KNAME || next->id == ';')
 			stmt_push(self, return_);
-		}
 	}
 
 	// stmt
@@ -429,10 +428,30 @@ parse_stmt(Stmt* self)
 		break;
 	}
 
-	// ensure statement can RETURN
-	if (self->is_return && self->id != STMT_RETURN)
-		if (! self->ret)
-			stmt_error(self, ast, "RETURN statement must return data");
+	// validate RETURN usage
+	if (self->is_return)
+	{
+		auto ns = self->block->ns;
+		auto ns_is_root = (ns == self->parser->nss.list);
+
+		// return stmt
+		if (self->id != STMT_RETURN)
+		{
+			// ensure return stmt is not used inside a procedure
+			if (! ns_is_root)
+				stmt_error(self, ast, "procedure cannot RETURN statement result this way");
+
+			// stmt must be returning
+			if (! self->ret)
+				stmt_error(self, ast, "RETURN statement must return data");
+		} else {
+			// return var
+			// return ;
+			auto ret = ast_return_of(self->ast);
+			if (! ns_is_root && ret->var)
+				stmt_error(self, ast, "procedure cannot RETURN variable this way");
+		}
+	}
 
 	if (self->ast)
 	{

@@ -429,7 +429,7 @@ emit_utility(Compiler* self)
 	}
 
 	// CRET
-	op3(self, CRET, r, 0, (intptr_t)fmt);
+	op4(self, CRET, r, -1, 0, (intptr_t)fmt);
 	if (r != -1)
 		runpin(self, r);
 }

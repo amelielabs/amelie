@@ -13,7 +13,7 @@ explain select * from test order by id
       "01": "send_all            0      -      0     # public.test (last)",
       "02": "union_recv          0      0      0     ",
       "03": "union_set           0      0      -1    ",
-      "04": "ret                 0      -      -     "
+      "04": "ret                 0      -1     -     "
     },
     "backend": {
       "00": "set_ordered         0      1      1     ",
@@ -26,7 +26,7 @@ explain select * from test order by id
       "07": "table_next          1      2      0     ",
       "08": "free                1      0      0     ",
       "09": "set_sort            0      0      0     ",
-      "10": "ret                 0      -      -     "
+      "10": "ret                 0      -1     -     "
     }
   },
   "access": [["public.test", "ro"]]
@@ -42,7 +42,7 @@ explain select * from test order by id asc
       "01": "send_all            0      -      0     # public.test (last)",
       "02": "union_recv          0      0      0     ",
       "03": "union_set           0      0      -1    ",
-      "04": "ret                 0      -      -     "
+      "04": "ret                 0      -1     -     "
     },
     "backend": {
       "00": "set_ordered         0      1      1     ",
@@ -55,7 +55,7 @@ explain select * from test order by id asc
       "07": "table_next          1      2      0     ",
       "08": "free                1      0      0     ",
       "09": "set_sort            0      0      0     ",
-      "10": "ret                 0      -      -     "
+      "10": "ret                 0      -1     -     "
     }
   },
   "access": [["public.test", "ro"]]
@@ -71,7 +71,7 @@ explain select * from test order by id desc
       "01": "send_all            0      -      0     # public.test (last)",
       "02": "union_recv          0      0      0     ",
       "03": "union_set           0      0      -1    ",
-      "04": "ret                 0      -      -     "
+      "04": "ret                 0      -1     -     "
     },
     "backend": {
       "00": "set_ordered         0      1      1     ",
@@ -84,7 +84,7 @@ explain select * from test order by id desc
       "07": "table_next          1      2      0     ",
       "08": "free                1      0      0     ",
       "09": "set_sort            0      0      0     ",
-      "10": "ret                 0      -      -     "
+      "10": "ret                 0      -1     -     "
     }
   },
   "access": [["public.test", "ro"]]
@@ -101,7 +101,7 @@ explain select * from test order by id limit 1
       "02": "union_recv          0      0      0     ",
       "03": "int                 1      -      0     # 1",
       "04": "union_set           0      0      1     ",
-      "05": "ret                 0      -      -     "
+      "05": "ret                 0      -1     -     "
     },
     "backend": {
       "00": "set_ordered         0      1      1     ",
@@ -114,7 +114,7 @@ explain select * from test order by id limit 1
       "07": "table_next          1      2      0     ",
       "08": "free                1      0      0     ",
       "09": "set_sort            0      0      0     ",
-      "10": "ret                 0      -      -     "
+      "10": "ret                 0      -1     -     "
     }
   },
   "access": [["public.test", "ro"]]
@@ -141,7 +141,7 @@ explain select * from test order by id limit 0
       "02": "union_recv          0      0      0     ",
       "03": "int                 1      -      0     # 0",
       "04": "union_set           0      0      1     ",
-      "05": "ret                 0      -      -     "
+      "05": "ret                 0      -1     -     "
     },
     "backend": {
       "00": "set_ordered         0      1      1     ",
@@ -154,7 +154,7 @@ explain select * from test order by id limit 0
       "07": "table_next          1      2      0     ",
       "08": "free                1      0      0     ",
       "09": "set_sort            0      0      0     ",
-      "10": "ret                 0      -      -     "
+      "10": "ret                 0      -1     -     "
     }
   },
   "access": [["public.test", "ro"]]
@@ -173,7 +173,7 @@ explain select * from test order by id desc limit 1
       "02": "union_recv          0      0      0     ",
       "03": "int                 1      -      0     # 1",
       "04": "union_set           0      0      1     ",
-      "05": "ret                 0      -      -     "
+      "05": "ret                 0      -1     -     "
     },
     "backend": {
       "00": "set_ordered         0      1      1     ",
@@ -186,7 +186,7 @@ explain select * from test order by id desc limit 1
       "07": "table_next          1      2      0     ",
       "08": "free                1      0      0     ",
       "09": "set_sort            0      0      0     ",
-      "10": "ret                 0      -      -     "
+      "10": "ret                 0      -1     -     "
     }
   },
   "access": [["public.test", "ro"]]
@@ -214,7 +214,7 @@ explain select * from test order by id limit 1 offset 0
       "03": "int                 1      -      0     # 1",
       "04": "int                 2      -      0     # 0",
       "05": "union_set           0      0      1     ",
-      "06": "ret                 0      -      -     "
+      "06": "ret                 0      -1     -     "
     },
     "backend": {
       "00": "set_ordered         0      1      1     ",
@@ -227,7 +227,7 @@ explain select * from test order by id limit 1 offset 0
       "07": "table_next          1      2      0     ",
       "08": "free                1      0      0     ",
       "09": "set_sort            0      0      0     ",
-      "10": "ret                 0      -      -     "
+      "10": "ret                 0      -1     -     "
     }
   },
   "access": [["public.test", "ro"]]
@@ -245,7 +245,7 @@ explain select * from test order by id limit 1 offset 1
       "03": "int                 1      -      0     # 1",
       "04": "int                 2      -      0     # 1",
       "05": "union_set           0      0      1     ",
-      "06": "ret                 0      -      -     "
+      "06": "ret                 0      -1     -     "
     },
     "backend": {
       "00": "set_ordered         0      1      1     ",
@@ -258,7 +258,7 @@ explain select * from test order by id limit 1 offset 1
       "07": "table_next          1      2      0     ",
       "08": "free                1      0      0     ",
       "09": "set_sort            0      0      0     ",
-      "10": "ret                 0      -      -     "
+      "10": "ret                 0      -1     -     "
     }
   },
   "access": [["public.test", "ro"]]
@@ -282,7 +282,7 @@ explain select * from test order by id desc limit 1 offset 1
       "03": "int                 1      -      0     # 1",
       "04": "int                 2      -      0     # 1",
       "05": "union_set           0      0      1     ",
-      "06": "ret                 0      -      -     "
+      "06": "ret                 0      -1     -     "
     },
     "backend": {
       "00": "set_ordered         0      1      1     ",
@@ -295,7 +295,7 @@ explain select * from test order by id desc limit 1 offset 1
       "07": "table_next          1      2      0     ",
       "08": "free                1      0      0     ",
       "09": "set_sort            0      0      0     ",
-      "10": "ret                 0      -      -     "
+      "10": "ret                 0      -1     -     "
     }
   },
   "access": [["public.test", "ro"]]
@@ -318,7 +318,7 @@ explain select * from test order by id offset 1
       "02": "union_recv          0      0      0     ",
       "03": "int                 1      -      0     # 1",
       "04": "union_set           0      0      -1    ",
-      "05": "ret                 0      -      -     "
+      "05": "ret                 0      -1     -     "
     },
     "backend": {
       "00": "set_ordered         0      1      1     ",
@@ -331,7 +331,7 @@ explain select * from test order by id offset 1
       "07": "table_next          1      2      0     ",
       "08": "free                1      0      0     ",
       "09": "set_sort            0      0      0     ",
-      "10": "ret                 0      -      -     "
+      "10": "ret                 0      -1     -     "
     }
   },
   "access": [["public.test", "ro"]]
@@ -358,7 +358,7 @@ explain select * from test order by id desc offset 1
       "02": "union_recv          0      0      0     ",
       "03": "int                 1      -      0     # 1",
       "04": "union_set           0      0      -1    ",
-      "05": "ret                 0      -      -     "
+      "05": "ret                 0      -1     -     "
     },
     "backend": {
       "00": "set_ordered         0      1      1     ",
@@ -371,7 +371,7 @@ explain select * from test order by id desc offset 1
       "07": "table_next          1      2      0     ",
       "08": "free                1      0      0     ",
       "09": "set_sort            0      0      0     ",
-      "10": "ret                 0      -      -     "
+      "10": "ret                 0      -1     -     "
     }
   },
   "access": [["public.test", "ro"]]

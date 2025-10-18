@@ -11,7 +11,7 @@ explain select * from test
       "01": "send_all            0      -      0     # public.test (last)",
       "02": "union_recv          0      0      0     ",
       "03": "union_set           0      0      -1    ",
-      "04": "ret                 0      -      -     "
+      "04": "ret                 0      -1     -     "
     },
     "backend": {
       "00": "set                 0      2      0     ",
@@ -23,7 +23,7 @@ explain select * from test
       "06": "set_add             0      0      0     ",
       "07": "table_next          1      2      0     ",
       "08": "free                1      0      0     ",
-      "09": "ret                 0      -      -     "
+      "09": "ret                 0      -1     -     "
     }
   },
   "access": [["public.test", "ro"]]
@@ -39,7 +39,7 @@ explain select * from test where id > 1
       "01": "send_all            0      -      0     # public.test (last)",
       "02": "union_recv          0      0      0     ",
       "03": "union_set           0      0      -1    ",
-      "04": "ret                 0      -      -     "
+      "04": "ret                 0      -1     -     "
     },
     "backend": {
       "00": "set                 0      2      0     ",
@@ -57,7 +57,7 @@ explain select * from test where id > 1
       "12": "set_add             0      0      0     ",
       "13": "table_next          1      4      0     ",
       "14": "free                1      0      0     ",
-      "15": "ret                 0      -      -     "
+      "15": "ret                 0      -1     -     "
     }
   },
   "access": [["public.test", "ro"]]
@@ -77,7 +77,7 @@ explain select * from test where id = 1
       "01": "send_lookup         0      -      -     # public.test (last)",
       "02": "union_recv          0      0      0     ",
       "03": "union_set           0      0      -1    ",
-      "04": "ret                 0      -      -     "
+      "04": "ret                 0      -1     -     "
     },
     "backend": {
       "00": "set                 0      2      0     ",
@@ -94,7 +94,7 @@ explain select * from test where id = 1
       "11": "push                2      0      0     ",
       "12": "set_add             0      0      0     ",
       "13": "free                1      0      0     ",
-      "14": "ret                 0      -      -     "
+      "14": "ret                 0      -1     -     "
     }
   },
   "access": [["public.test", "ro"]]
@@ -121,7 +121,7 @@ explain select (select (select (test.id))) from test
       "01": "send_all            0      -      0     # public.test (last)",
       "02": "union_recv          0      0      0     ",
       "03": "union_set           0      0      -1    ",
-      "04": "ret                 0      -      -     "
+      "04": "ret                 0      -1     -     "
     },
     "backend": {
       "00": "set                 0      1      0     ",
@@ -131,7 +131,7 @@ explain select (select (select (test.id))) from test
       "04": "set_add             0      0      0     ",
       "05": "table_next          1      2      0     ",
       "06": "free                1      0      0     ",
-      "07": "ret                 0      -      -     "
+      "07": "ret                 0      -1     -     "
     }
   },
   "access": [["public.test", "ro"]]
@@ -146,7 +146,7 @@ explain select (select (select test.id)) from test
       "01": "send_all            0      -      0     # public.test (last)",
       "02": "union_recv          0      0      0     ",
       "03": "union_set           0      0      -1    ",
-      "04": "ret                 0      -      -     "
+      "04": "ret                 0      -1     -     "
     },
     "backend": {
       "00": "set                 0      1      0     ",
@@ -156,7 +156,7 @@ explain select (select (select test.id)) from test
       "04": "set_add             0      0      0     ",
       "05": "table_next          1      2      0     ",
       "06": "free                1      0      0     ",
-      "07": "ret                 0      -      -     "
+      "07": "ret                 0      -1     -     "
     }
   },
   "access": [["public.test", "ro"]]
@@ -172,7 +172,7 @@ explain select (select (select id from test t)) from test
       "01": "send_all            0      -      0     # public.test (last)",
       "02": "union_recv          0      0      0     ",
       "03": "union_set           0      0      -1    ",
-      "04": "ret                 0      -      -     "
+      "04": "ret                 0      -1     -     "
     },
     "backend": {
       "00": "set                 0      1      0     ",
@@ -189,7 +189,7 @@ explain select (select (select id from test t)) from test
       "11": "set_add             0      0      0     ",
       "12": "table_next          1      2      0     ",
       "13": "free                1      0      0     ",
-      "14": "ret                 0      -      -     "
+      "14": "ret                 0      -1     -     "
     }
   },
   "access": [["public.test", "ro_exclusive"]]
@@ -205,7 +205,7 @@ explain select (select (select id from ref)) from test
       "01": "send_all            0      -      0     # public.test (last)",
       "02": "union_recv          0      0      0     ",
       "03": "union_set           0      0      -1    ",
-      "04": "ret                 0      -      -     "
+      "04": "ret                 0      -1     -     "
     },
     "backend": {
       "00": "set                 0      1      0     ",
@@ -222,7 +222,7 @@ explain select (select (select id from ref)) from test
       "11": "set_add             0      0      0     ",
       "12": "table_next          1      2      0     ",
       "13": "free                1      0      0     ",
-      "14": "ret                 0      -      -     "
+      "14": "ret                 0      -1     -     "
     }
   },
   "access": [["public.ref", "ro_exclusive"], ["public.test", "ro"]]
@@ -240,7 +240,7 @@ explain select * from test where (select id from test t)
       "01": "send_all            0      -      0     # public.test (last)",
       "02": "union_recv          0      0      0     ",
       "03": "union_set           0      0      -1    ",
-      "04": "ret                 0      -      -     "
+      "04": "ret                 0      -1     -     "
     },
     "backend": {
       "00": "set                 0      2      0     ",
@@ -261,7 +261,7 @@ explain select * from test where (select id from test t)
       "15": "set_add             0      0      0     ",
       "16": "table_next          1      2      0     ",
       "17": "free                1      0      0     ",
-      "18": "ret                 0      -      -     "
+      "18": "ret                 0      -1     -     "
     }
   },
   "access": [["public.test", "ro_exclusive"]]
@@ -275,7 +275,7 @@ explain select * from test where (select id from ref)
       "01": "send_all            0      -      0     # public.test (last)",
       "02": "union_recv          0      0      0     ",
       "03": "union_set           0      0      -1    ",
-      "04": "ret                 0      -      -     "
+      "04": "ret                 0      -1     -     "
     },
     "backend": {
       "00": "set                 0      2      0     ",
@@ -296,7 +296,7 @@ explain select * from test where (select id from ref)
       "15": "set_add             0      0      0     ",
       "16": "table_next          1      2      0     ",
       "17": "free                1      0      0     ",
-      "18": "ret                 0      -      -     "
+      "18": "ret                 0      -1     -     "
     }
   },
   "access": [["public.test", "ro"], ["public.ref", "ro_exclusive"]]
@@ -312,7 +312,7 @@ explain select * from test where exists (select 1 from ref where test.id = ref.i
       "01": "send_all            0      -      0     # public.test (last)",
       "02": "union_recv          0      0      0     ",
       "03": "union_set           0      0      -1    ",
-      "04": "ret                 0      -      -     "
+      "04": "ret                 0      -1     -     "
     },
     "backend": {
       "00": "set                 0      2      0     ",
@@ -338,7 +338,7 @@ explain select * from test where exists (select 1 from ref where test.id = ref.i
       "20": "set_add             0      0      0     ",
       "21": "table_next          1      2      0     ",
       "22": "free                1      0      0     ",
-      "23": "ret                 0      -      -     "
+      "23": "ret                 0      -1     -     "
     }
   },
   "access": [["public.test", "ro"], ["public.ref", "ro_exclusive"]]

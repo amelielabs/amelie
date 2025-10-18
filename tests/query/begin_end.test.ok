@@ -30,7 +30,7 @@ explain begin; select 1; end
   "bytecode": {
     "frontend": {
       "00": "int                 0      -      0     # 1",
-      "01": "ret                 0      -      -     "
+      "01": "ret                 0      -1     -     "
     }
   },
   "access": []
@@ -54,7 +54,7 @@ explain begin; select 1; select 2; end;
     "frontend": {
       "00": "int                 0      -      0     # 1",
       "01": "int                 1      -      0     # 2",
-      "02": "ret                 1      -      -     "
+      "02": "ret                 1      -1     -     "
     }
   },
   "access": []

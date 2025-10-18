@@ -26,7 +26,7 @@ explain select * from test group by id
       "10": "store_next          2      7      0     ",
       "11": "free                2      0      0     ",
       "12": "free                0      0      0     ",
-      "13": "ret                 1      -      -     "
+      "13": "ret                 1      -1     -     "
     },
     "backend": {
       "00": "set_ordered         0      0      1     ",
@@ -37,7 +37,7 @@ explain select * from test group by id
       "05": "table_next          1      2      0     ",
       "06": "free                1      0      0     ",
       "07": "set_sort            0      0      0     ",
-      "08": "ret                 0      -      -     "
+      "08": "ret                 0      -1     -     "
     }
   },
   "access": [["public.test", "ro"]]
@@ -73,7 +73,7 @@ explain select id from test group by id
       "10": "store_next          2      7      0     ",
       "11": "free                2      0      0     ",
       "12": "free                0      0      0     ",
-      "13": "ret                 1      -      -     "
+      "13": "ret                 1      -1     -     "
     },
     "backend": {
       "00": "set_ordered         0      0      1     ",
@@ -84,7 +84,7 @@ explain select id from test group by id
       "05": "table_next          1      2      0     ",
       "06": "free                1      0      0     ",
       "07": "set_sort            0      0      0     ",
-      "08": "ret                 0      -      -     "
+      "08": "ret                 0      -1     -     "
     }
   },
   "access": [["public.test", "ro"]]
@@ -131,7 +131,7 @@ explain select * from (select id from test group by id) t
       "19": "store_next          3      16     0     ",
       "20": "free                3      0      0     ",
       "21": "free                2      0      0     ",
-      "22": "ret                 0      -      -     "
+      "22": "ret                 0      -1     -     "
     },
     "backend": {
       "00": "set_ordered         0      0      1     ",
@@ -142,7 +142,7 @@ explain select * from (select id from test group by id) t
       "05": "table_next          1      2      0     ",
       "06": "free                1      0      0     ",
       "07": "set_sort            0      0      0     ",
-      "08": "ret                 0      -      -     "
+      "08": "ret                 0      -1     -     "
     }
   },
   "access": [["public.test", "ro"]]
@@ -173,7 +173,7 @@ explain select id from test group by id limit 1
       "14": "store_next          3      10     0     ",
       "15": "free                3      0      0     ",
       "16": "free                0      0      0     ",
-      "17": "ret                 1      -      -     "
+      "17": "ret                 1      -1     -     "
     },
     "backend": {
       "00": "set_ordered         0      0      1     ",
@@ -184,7 +184,7 @@ explain select id from test group by id limit 1
       "05": "table_next          1      2      0     ",
       "06": "free                1      0      0     ",
       "07": "set_sort            0      0      0     ",
-      "08": "ret                 0      -      -     "
+      "08": "ret                 0      -1     -     "
     }
   },
   "access": [["public.test", "ro"]]
@@ -219,7 +219,7 @@ explain select id from test group by id limit 1 offset 1
       "16": "store_next          4      11     0     ",
       "17": "free                4      0      0     ",
       "18": "free                0      0      0     ",
-      "19": "ret                 1      -      -     "
+      "19": "ret                 1      -1     -     "
     },
     "backend": {
       "00": "set_ordered         0      0      1     ",
@@ -230,7 +230,7 @@ explain select id from test group by id limit 1 offset 1
       "05": "table_next          1      2      0     ",
       "06": "free                1      0      0     ",
       "07": "set_sort            0      0      0     ",
-      "08": "ret                 0      -      -     "
+      "08": "ret                 0      -1     -     "
     }
   },
   "access": [["public.test", "ro"]]
@@ -263,7 +263,7 @@ explain select id from test group by id offset 1
       "12": "store_next          3      8      0     ",
       "13": "free                3      0      0     ",
       "14": "free                0      0      0     ",
-      "15": "ret                 1      -      -     "
+      "15": "ret                 1      -1     -     "
     },
     "backend": {
       "00": "set_ordered         0      0      1     ",
@@ -274,7 +274,7 @@ explain select id from test group by id offset 1
       "05": "table_next          1      2      0     ",
       "06": "free                1      0      0     ",
       "07": "set_sort            0      0      0     ",
-      "08": "ret                 0      -      -     "
+      "08": "ret                 0      -1     -     "
     }
   },
   "access": [["public.test", "ro"]]
@@ -318,7 +318,7 @@ explain select * from (select id from test group by id limit 1) t
       "23": "store_next          3      20     0     ",
       "24": "free                3      0      0     ",
       "25": "free                2      0      0     ",
-      "26": "ret                 0      -      -     "
+      "26": "ret                 0      -1     -     "
     },
     "backend": {
       "00": "set_ordered         0      0      1     ",
@@ -329,7 +329,7 @@ explain select * from (select id from test group by id limit 1) t
       "05": "table_next          1      2      0     ",
       "06": "free                1      0      0     ",
       "07": "set_sort            0      0      0     ",
-      "08": "ret                 0      -      -     "
+      "08": "ret                 0      -1     -     "
     }
   },
   "access": [["public.test", "ro"]]
@@ -375,7 +375,7 @@ explain select * from (select id from test group by id limit 1 offset 1) t
       "25": "store_next          3      22     0     ",
       "26": "free                3      0      0     ",
       "27": "free                2      0      0     ",
-      "28": "ret                 0      -      -     "
+      "28": "ret                 0      -1     -     "
     },
     "backend": {
       "00": "set_ordered         0      0      1     ",
@@ -386,7 +386,7 @@ explain select * from (select id from test group by id limit 1 offset 1) t
       "05": "table_next          1      2      0     ",
       "06": "free                1      0      0     ",
       "07": "set_sort            0      0      0     ",
-      "08": "ret                 0      -      -     "
+      "08": "ret                 0      -1     -     "
     }
   },
   "access": [["public.test", "ro"]]
@@ -428,7 +428,7 @@ explain select * from (select id from test group by id offset 1) t
       "21": "store_next          3      18     0     ",
       "22": "free                3      0      0     ",
       "23": "free                2      0      0     ",
-      "24": "ret                 0      -      -     "
+      "24": "ret                 0      -1     -     "
     },
     "backend": {
       "00": "set_ordered         0      0      1     ",
@@ -439,7 +439,7 @@ explain select * from (select id from test group by id offset 1) t
       "05": "table_next          1      2      0     ",
       "06": "free                1      0      0     ",
       "07": "set_sort            0      0      0     ",
-      "08": "ret                 0      -      -     "
+      "08": "ret                 0      -1     -     "
     }
   },
   "access": [["public.test", "ro"]]
@@ -474,7 +474,7 @@ explain select id from test group by id having id >= 3
       "14": "store_next          2      7      0     ",
       "15": "free                2      0      0     ",
       "16": "free                0      0      0     ",
-      "17": "ret                 1      -      -     "
+      "17": "ret                 1      -1     -     "
     },
     "backend": {
       "00": "set_ordered         0      0      1     ",
@@ -485,7 +485,7 @@ explain select id from test group by id having id >= 3
       "05": "table_next          1      2      0     ",
       "06": "free                1      0      0     ",
       "07": "set_sort            0      0      0     ",
-      "08": "ret                 0      -      -     "
+      "08": "ret                 0      -1     -     "
     }
   },
   "access": [["public.test", "ro"]]
@@ -532,7 +532,7 @@ explain select id from test group by id having id >= 1 limit 1
       "18": "store_next          3      10     0     ",
       "19": "free                3      0      0     ",
       "20": "free                0      0      0     ",
-      "21": "ret                 1      -      -     "
+      "21": "ret                 1      -1     -     "
     },
     "backend": {
       "00": "set_ordered         0      0      1     ",
@@ -543,7 +543,7 @@ explain select id from test group by id having id >= 1 limit 1
       "05": "table_next          1      2      0     ",
       "06": "free                1      0      0     ",
       "07": "set_sort            0      0      0     ",
-      "08": "ret                 0      -      -     "
+      "08": "ret                 0      -1     -     "
     }
   },
   "access": [["public.test", "ro"]]
@@ -580,7 +580,7 @@ explain select id from test group by id having id >= 1 limit 1 offset 1
       "20": "store_next          4      11     0     ",
       "21": "free                4      0      0     ",
       "22": "free                0      0      0     ",
-      "23": "ret                 1      -      -     "
+      "23": "ret                 1      -1     -     "
     },
     "backend": {
       "00": "set_ordered         0      0      1     ",
@@ -591,7 +591,7 @@ explain select id from test group by id having id >= 1 limit 1 offset 1
       "05": "table_next          1      2      0     ",
       "06": "free                1      0      0     ",
       "07": "set_sort            0      0      0     ",
-      "08": "ret                 0      -      -     "
+      "08": "ret                 0      -1     -     "
     }
   },
   "access": [["public.test", "ro"]]
@@ -626,7 +626,7 @@ explain select id from test group by id having id >= 1 offset 1
       "16": "store_next          3      8      0     ",
       "17": "free                3      0      0     ",
       "18": "free                0      0      0     ",
-      "19": "ret                 1      -      -     "
+      "19": "ret                 1      -1     -     "
     },
     "backend": {
       "00": "set_ordered         0      0      1     ",
@@ -637,7 +637,7 @@ explain select id from test group by id having id >= 1 offset 1
       "05": "table_next          1      2      0     ",
       "06": "free                1      0      0     ",
       "07": "set_sort            0      0      0     ",
-      "08": "ret                 0      -      -     "
+      "08": "ret                 0      -1     -     "
     }
   },
   "access": [["public.test", "ro"]]
@@ -679,7 +679,7 @@ explain select * from (select id from test group by id having id >= 3) t
       "23": "store_next          3      20     0     ",
       "24": "free                3      0      0     ",
       "25": "free                2      0      0     ",
-      "26": "ret                 0      -      -     "
+      "26": "ret                 0      -1     -     "
     },
     "backend": {
       "00": "set_ordered         0      0      1     ",
@@ -690,7 +690,7 @@ explain select * from (select id from test group by id having id >= 3) t
       "05": "table_next          1      2      0     ",
       "06": "free                1      0      0     ",
       "07": "set_sort            0      0      0     ",
-      "08": "ret                 0      -      -     "
+      "08": "ret                 0      -1     -     "
     }
   },
   "access": [["public.test", "ro"]]
@@ -732,7 +732,7 @@ explain select * from (select id from test group by id having id >= 1 limit 1) t
       "27": "store_next          3      24     0     ",
       "28": "free                3      0      0     ",
       "29": "free                2      0      0     ",
-      "30": "ret                 0      -      -     "
+      "30": "ret                 0      -1     -     "
     },
     "backend": {
       "00": "set_ordered         0      0      1     ",
@@ -743,7 +743,7 @@ explain select * from (select id from test group by id having id >= 1 limit 1) t
       "05": "table_next          1      2      0     ",
       "06": "free                1      0      0     ",
       "07": "set_sort            0      0      0     ",
-      "08": "ret                 0      -      -     "
+      "08": "ret                 0      -1     -     "
     }
   },
   "access": [["public.test", "ro"]]
@@ -789,7 +789,7 @@ explain select * from (select id from test group by id having id >= 1 limit 1 of
       "29": "store_next          3      26     0     ",
       "30": "free                3      0      0     ",
       "31": "free                2      0      0     ",
-      "32": "ret                 0      -      -     "
+      "32": "ret                 0      -1     -     "
     },
     "backend": {
       "00": "set_ordered         0      0      1     ",
@@ -800,7 +800,7 @@ explain select * from (select id from test group by id having id >= 1 limit 1 of
       "05": "table_next          1      2      0     ",
       "06": "free                1      0      0     ",
       "07": "set_sort            0      0      0     ",
-      "08": "ret                 0      -      -     "
+      "08": "ret                 0      -1     -     "
     }
   },
   "access": [["public.test", "ro"]]
@@ -844,7 +844,7 @@ explain select * from (select id from test group by id having id >= 1 offset 1) 
       "25": "store_next          3      22     0     ",
       "26": "free                3      0      0     ",
       "27": "free                2      0      0     ",
-      "28": "ret                 0      -      -     "
+      "28": "ret                 0      -1     -     "
     },
     "backend": {
       "00": "set_ordered         0      0      1     ",
@@ -855,7 +855,7 @@ explain select * from (select id from test group by id having id >= 1 offset 1) 
       "05": "table_next          1      2      0     ",
       "06": "free                1      0      0     ",
       "07": "set_sort            0      0      0     ",
-      "08": "ret                 0      -      -     "
+      "08": "ret                 0      -1     -     "
     }
   },
   "access": [["public.test", "ro"]]
@@ -887,7 +887,7 @@ explain select id from test group by id order by id
       "13": "free                2      0      0     ",
       "14": "free                0      0      0     ",
       "15": "set_sort            1      0      0     ",
-      "16": "ret                 1      -      -     "
+      "16": "ret                 1      -1     -     "
     },
     "backend": {
       "00": "set_ordered         0      0      1     ",
@@ -898,7 +898,7 @@ explain select id from test group by id order by id
       "05": "table_next          1      2      0     ",
       "06": "free                1      0      0     ",
       "07": "set_sort            0      0      0     ",
-      "08": "ret                 0      -      -     "
+      "08": "ret                 0      -1     -     "
     }
   },
   "access": [["public.test", "ro"]]
@@ -929,7 +929,7 @@ explain select id from test group by id order by id desc
       "13": "free                2      0      0     ",
       "14": "free                0      0      0     ",
       "15": "set_sort            1      0      0     ",
-      "16": "ret                 1      -      -     "
+      "16": "ret                 1      -1     -     "
     },
     "backend": {
       "00": "set_ordered         0      0      1     ",
@@ -940,7 +940,7 @@ explain select id from test group by id order by id desc
       "05": "table_next          1      2      0     ",
       "06": "free                1      0      0     ",
       "07": "set_sort            0      0      0     ",
-      "08": "ret                 0      -      -     "
+      "08": "ret                 0      -1     -     "
     }
   },
   "access": [["public.test", "ro"]]
@@ -977,7 +977,7 @@ explain select * from (select id from test group by id order by id desc) t
       "22": "store_next          3      19     0     ",
       "23": "free                3      0      0     ",
       "24": "free                2      0      0     ",
-      "25": "ret                 0      -      -     "
+      "25": "ret                 0      -1     -     "
     },
     "backend": {
       "00": "set_ordered         0      0      1     ",
@@ -988,7 +988,7 @@ explain select * from (select id from test group by id order by id desc) t
       "05": "table_next          1      2      0     ",
       "06": "free                1      0      0     ",
       "07": "set_sort            0      0      0     ",
-      "08": "ret                 0      -      -     "
+      "08": "ret                 0      -1     -     "
     }
   },
   "access": [["public.test", "ro"]]
@@ -1020,7 +1020,7 @@ explain select id from test group by id order by id asc limit 1
       "17": "int                 2      -      0     # 1",
       "18": "union_set           0      0      2     ",
       "19": "union_add           0      1      0     ",
-      "20": "ret                 0      -      -     "
+      "20": "ret                 0      -1     -     "
     },
     "backend": {
       "00": "set_ordered         0      0      1     ",
@@ -1031,7 +1031,7 @@ explain select id from test group by id order by id asc limit 1
       "05": "table_next          1      2      0     ",
       "06": "free                1      0      0     ",
       "07": "set_sort            0      0      0     ",
-      "08": "ret                 0      -      -     "
+      "08": "ret                 0      -1     -     "
     }
   },
   "access": [["public.test", "ro"]]
@@ -1068,7 +1068,7 @@ explain select id from test group by id order by id asc limit 1 offset 1
       "18": "int                 3      -      0     # 1",
       "19": "union_set           0      0      2     ",
       "20": "union_add           0      1      0     ",
-      "21": "ret                 0      -      -     "
+      "21": "ret                 0      -1     -     "
     },
     "backend": {
       "00": "set_ordered         0      0      1     ",
@@ -1079,7 +1079,7 @@ explain select id from test group by id order by id asc limit 1 offset 1
       "05": "table_next          1      2      0     ",
       "06": "free                1      0      0     ",
       "07": "set_sort            0      0      0     ",
-      "08": "ret                 0      -      -     "
+      "08": "ret                 0      -1     -     "
     }
   },
   "access": [["public.test", "ro"]]
@@ -1115,7 +1115,7 @@ explain select id from test group by id order by id asc offset 1
       "17": "int                 2      -      0     # 1",
       "18": "union_set           0      0      -1    ",
       "19": "union_add           0      1      0     ",
-      "20": "ret                 0      -      -     "
+      "20": "ret                 0      -1     -     "
     },
     "backend": {
       "00": "set_ordered         0      0      1     ",
@@ -1126,7 +1126,7 @@ explain select id from test group by id order by id asc offset 1
       "05": "table_next          1      2      0     ",
       "06": "free                1      0      0     ",
       "07": "set_sort            0      0      0     ",
-      "08": "ret                 0      -      -     "
+      "08": "ret                 0      -1     -     "
     }
   },
   "access": [["public.test", "ro"]]
@@ -1162,7 +1162,7 @@ explain select id from test group by id order by id desc limit 1
       "17": "int                 2      -      0     # 1",
       "18": "union_set           0      0      2     ",
       "19": "union_add           0      1      0     ",
-      "20": "ret                 0      -      -     "
+      "20": "ret                 0      -1     -     "
     },
     "backend": {
       "00": "set_ordered         0      0      1     ",
@@ -1173,7 +1173,7 @@ explain select id from test group by id order by id desc limit 1
       "05": "table_next          1      2      0     ",
       "06": "free                1      0      0     ",
       "07": "set_sort            0      0      0     ",
-      "08": "ret                 0      -      -     "
+      "08": "ret                 0      -1     -     "
     }
   },
   "access": [["public.test", "ro"]]
@@ -1210,7 +1210,7 @@ explain select id from test group by id order by id desc limit 1 offset 1
       "18": "int                 3      -      0     # 1",
       "19": "union_set           0      0      2     ",
       "20": "union_add           0      1      0     ",
-      "21": "ret                 0      -      -     "
+      "21": "ret                 0      -1     -     "
     },
     "backend": {
       "00": "set_ordered         0      0      1     ",
@@ -1221,7 +1221,7 @@ explain select id from test group by id order by id desc limit 1 offset 1
       "05": "table_next          1      2      0     ",
       "06": "free                1      0      0     ",
       "07": "set_sort            0      0      0     ",
-      "08": "ret                 0      -      -     "
+      "08": "ret                 0      -1     -     "
     }
   },
   "access": [["public.test", "ro"]]
@@ -1257,7 +1257,7 @@ explain select id from test group by id order by id desc offset 1
       "17": "int                 2      -      0     # 1",
       "18": "union_set           0      0      -1    ",
       "19": "union_add           0      1      0     ",
-      "20": "ret                 0      -      -     "
+      "20": "ret                 0      -1     -     "
     },
     "backend": {
       "00": "set_ordered         0      0      1     ",
@@ -1268,7 +1268,7 @@ explain select id from test group by id order by id desc offset 1
       "05": "table_next          1      2      0     ",
       "06": "free                1      0      0     ",
       "07": "set_sort            0      0      0     ",
-      "08": "ret                 0      -      -     "
+      "08": "ret                 0      -1     -     "
     }
   },
   "access": [["public.test", "ro"]]
@@ -1315,7 +1315,7 @@ explain select * from (select id from test group by id order by id asc limit 1) 
       "26": "store_next          3      23     0     ",
       "27": "free                3      0      0     ",
       "28": "free                2      0      0     ",
-      "29": "ret                 1      -      -     "
+      "29": "ret                 1      -1     -     "
     },
     "backend": {
       "00": "set_ordered         0      0      1     ",
@@ -1326,7 +1326,7 @@ explain select * from (select id from test group by id order by id asc limit 1) 
       "05": "table_next          1      2      0     ",
       "06": "free                1      0      0     ",
       "07": "set_sort            0      0      0     ",
-      "08": "ret                 0      -      -     "
+      "08": "ret                 0      -1     -     "
     }
   },
   "access": [["public.test", "ro"]]
@@ -1374,7 +1374,7 @@ explain select * from (select id from test group by id order by id asc limit 1 o
       "27": "store_next          3      24     0     ",
       "28": "free                3      0      0     ",
       "29": "free                2      0      0     ",
-      "30": "ret                 1      -      -     "
+      "30": "ret                 1      -1     -     "
     },
     "backend": {
       "00": "set_ordered         0      0      1     ",
@@ -1385,7 +1385,7 @@ explain select * from (select id from test group by id order by id asc limit 1 o
       "05": "table_next          1      2      0     ",
       "06": "free                1      0      0     ",
       "07": "set_sort            0      0      0     ",
-      "08": "ret                 0      -      -     "
+      "08": "ret                 0      -1     -     "
     }
   },
   "access": [["public.test", "ro"]]
@@ -1430,7 +1430,7 @@ explain select * from (select id from test group by id order by id asc offset 1)
       "26": "store_next          3      23     0     ",
       "27": "free                3      0      0     ",
       "28": "free                2      0      0     ",
-      "29": "ret                 1      -      -     "
+      "29": "ret                 1      -1     -     "
     },
     "backend": {
       "00": "set_ordered         0      0      1     ",
@@ -1441,7 +1441,7 @@ explain select * from (select id from test group by id order by id asc offset 1)
       "05": "table_next          1      2      0     ",
       "06": "free                1      0      0     ",
       "07": "set_sort            0      0      0     ",
-      "08": "ret                 0      -      -     "
+      "08": "ret                 0      -1     -     "
     }
   },
   "access": [["public.test", "ro"]]
@@ -1488,7 +1488,7 @@ explain select * from (select id from test group by id order by id desc limit 1)
       "26": "store_next          3      23     0     ",
       "27": "free                3      0      0     ",
       "28": "free                2      0      0     ",
-      "29": "ret                 1      -      -     "
+      "29": "ret                 1      -1     -     "
     },
     "backend": {
       "00": "set_ordered         0      0      1     ",
@@ -1499,7 +1499,7 @@ explain select * from (select id from test group by id order by id desc limit 1)
       "05": "table_next          1      2      0     ",
       "06": "free                1      0      0     ",
       "07": "set_sort            0      0      0     ",
-      "08": "ret                 0      -      -     "
+      "08": "ret                 0      -1     -     "
     }
   },
   "access": [["public.test", "ro"]]
@@ -1547,7 +1547,7 @@ explain select * from (select id from test group by id order by id desc limit 1 
       "27": "store_next          3      24     0     ",
       "28": "free                3      0      0     ",
       "29": "free                2      0      0     ",
-      "30": "ret                 1      -      -     "
+      "30": "ret                 1      -1     -     "
     },
     "backend": {
       "00": "set_ordered         0      0      1     ",
@@ -1558,7 +1558,7 @@ explain select * from (select id from test group by id order by id desc limit 1 
       "05": "table_next          1      2      0     ",
       "06": "free                1      0      0     ",
       "07": "set_sort            0      0      0     ",
-      "08": "ret                 0      -      -     "
+      "08": "ret                 0      -1     -     "
     }
   },
   "access": [["public.test", "ro"]]
@@ -1603,7 +1603,7 @@ explain select * from (select id from test group by id order by id desc offset 1
       "26": "store_next          3      23     0     ",
       "27": "free                3      0      0     ",
       "28": "free                2      0      0     ",
-      "29": "ret                 1      -      -     "
+      "29": "ret                 1      -1     -     "
     },
     "backend": {
       "00": "set_ordered         0      0      1     ",
@@ -1614,7 +1614,7 @@ explain select * from (select id from test group by id order by id desc offset 1
       "05": "table_next          1      2      0     ",
       "06": "free                1      0      0     ",
       "07": "set_sort            0      0      0     ",
-      "08": "ret                 0      -      -     "
+      "08": "ret                 0      -1     -     "
     }
   },
   "access": [["public.test", "ro"]]
@@ -1652,7 +1652,7 @@ explain select data from test where data > 0 group by data having data >= 1 orde
       "17": "free                2      0      0     ",
       "18": "free                0      0      0     ",
       "19": "set_sort            1      0      0     ",
-      "20": "ret                 1      -      -     "
+      "20": "ret                 1      -1     -     "
     },
     "backend": {
       "00": "set_ordered         0      0      1     ",
@@ -1667,7 +1667,7 @@ explain select data from test where data > 0 group by data having data >= 1 orde
       "09": "table_next          1      2      0     ",
       "10": "free                1      0      0     ",
       "11": "set_sort            0      0      0     ",
-      "12": "ret                 0      -      -     "
+      "12": "ret                 0      -1     -     "
     }
   },
   "access": [["public.test", "ro"]]
@@ -1703,7 +1703,7 @@ explain select data from test where data > 0 group by data having data >= 1 orde
       "21": "int                 2      -      0     # 1",
       "22": "union_set           0      0      2     ",
       "23": "union_add           0      1      0     ",
-      "24": "ret                 0      -      -     "
+      "24": "ret                 0      -1     -     "
     },
     "backend": {
       "00": "set_ordered         0      0      1     ",
@@ -1718,7 +1718,7 @@ explain select data from test where data > 0 group by data having data >= 1 orde
       "09": "table_next          1      2      0     ",
       "10": "free                1      0      0     ",
       "11": "set_sort            0      0      0     ",
-      "12": "ret                 0      -      -     "
+      "12": "ret                 0      -1     -     "
     }
   },
   "access": [["public.test", "ro"]]
@@ -1755,7 +1755,7 @@ explain select data from test where data > 0 group by data having data >= 1 orde
       "22": "int                 3      -      0     # 1",
       "23": "union_set           0      0      2     ",
       "24": "union_add           0      1      0     ",
-      "25": "ret                 0      -      -     "
+      "25": "ret                 0      -1     -     "
     },
     "backend": {
       "00": "set_ordered         0      0      1     ",
@@ -1770,7 +1770,7 @@ explain select data from test where data > 0 group by data having data >= 1 orde
       "09": "table_next          1      2      0     ",
       "10": "free                1      0      0     ",
       "11": "set_sort            0      0      0     ",
-      "12": "ret                 0      -      -     "
+      "12": "ret                 0      -1     -     "
     }
   },
   "access": [["public.test", "ro"]]
@@ -1806,7 +1806,7 @@ explain select data from test where data > 0 group by data having data >= 1 orde
       "21": "int                 2      -      0     # 1",
       "22": "union_set           0      0      -1    ",
       "23": "union_add           0      1      0     ",
-      "24": "ret                 0      -      -     "
+      "24": "ret                 0      -1     -     "
     },
     "backend": {
       "00": "set_ordered         0      0      1     ",
@@ -1821,7 +1821,7 @@ explain select data from test where data > 0 group by data having data >= 1 orde
       "09": "table_next          1      2      0     ",
       "10": "free                1      0      0     ",
       "11": "set_sort            0      0      0     ",
-      "12": "ret                 0      -      -     "
+      "12": "ret                 0      -1     -     "
     }
   },
   "access": [["public.test", "ro"]]
@@ -1862,7 +1862,7 @@ explain select * from (select data from test where data > 0 group by data having
       "26": "store_next          3      23     0     ",
       "27": "free                3      0      0     ",
       "28": "free                2      0      0     ",
-      "29": "ret                 0      -      -     "
+      "29": "ret                 0      -1     -     "
     },
     "backend": {
       "00": "set_ordered         0      0      1     ",
@@ -1877,7 +1877,7 @@ explain select * from (select data from test where data > 0 group by data having
       "09": "table_next          1      2      0     ",
       "10": "free                1      0      0     ",
       "11": "set_sort            0      0      0     ",
-      "12": "ret                 0      -      -     "
+      "12": "ret                 0      -1     -     "
     }
   },
   "access": [["public.test", "ro"]]
@@ -1922,7 +1922,7 @@ explain select * from (select data from test where data > 0 group by data having
       "30": "store_next          3      27     0     ",
       "31": "free                3      0      0     ",
       "32": "free                2      0      0     ",
-      "33": "ret                 1      -      -     "
+      "33": "ret                 1      -1     -     "
     },
     "backend": {
       "00": "set_ordered         0      0      1     ",
@@ -1937,7 +1937,7 @@ explain select * from (select data from test where data > 0 group by data having
       "09": "table_next          1      2      0     ",
       "10": "free                1      0      0     ",
       "11": "set_sort            0      0      0     ",
-      "12": "ret                 0      -      -     "
+      "12": "ret                 0      -1     -     "
     }
   },
   "access": [["public.test", "ro"]]
@@ -1982,7 +1982,7 @@ explain select * from (select data from test where data > 0 group by data having
       "30": "store_next          3      27     0     ",
       "31": "free                3      0      0     ",
       "32": "free                2      0      0     ",
-      "33": "ret                 1      -      -     "
+      "33": "ret                 1      -1     -     "
     },
     "backend": {
       "00": "set_ordered         0      0      1     ",
@@ -1997,7 +1997,7 @@ explain select * from (select data from test where data > 0 group by data having
       "09": "table_next          1      2      0     ",
       "10": "free                1      0      0     ",
       "11": "set_sort            0      0      0     ",
-      "12": "ret                 0      -      -     "
+      "12": "ret                 0      -1     -     "
     }
   },
   "access": [["public.test", "ro"]]
@@ -2043,7 +2043,7 @@ explain select * from (select data from test where data > 0 group by data having
       "31": "store_next          3      28     0     ",
       "32": "free                3      0      0     ",
       "33": "free                2      0      0     ",
-      "34": "ret                 1      -      -     "
+      "34": "ret                 1      -1     -     "
     },
     "backend": {
       "00": "set_ordered         0      0      1     ",
@@ -2058,7 +2058,7 @@ explain select * from (select data from test where data > 0 group by data having
       "09": "table_next          1      2      0     ",
       "10": "free                1      0      0     ",
       "11": "set_sort            0      0      0     ",
-      "12": "ret                 0      -      -     "
+      "12": "ret                 0      -1     -     "
     }
   },
   "access": [["public.test", "ro"]]
@@ -2103,7 +2103,7 @@ explain select * from (select data from test where data > 0 group by data having
       "30": "store_next          3      27     0     ",
       "31": "free                3      0      0     ",
       "32": "free                2      0      0     ",
-      "33": "ret                 1      -      -     "
+      "33": "ret                 1      -1     -     "
     },
     "backend": {
       "00": "set_ordered         0      0      1     ",
@@ -2118,7 +2118,7 @@ explain select * from (select data from test where data > 0 group by data having
       "09": "table_next          1      2      0     ",
       "10": "free                1      0      0     ",
       "11": "set_sort            0      0      0     ",
-      "12": "ret                 0      -      -     "
+      "12": "ret                 0      -1     -     "
     }
   },
   "access": [["public.test", "ro"]]
@@ -2159,7 +2159,7 @@ explain select * from (select count(*), sum(2 * id) from test group by id) t
       "23": "store_next          3      18     0     ",
       "24": "free                3      0      0     ",
       "25": "free                2      0      0     ",
-      "26": "ret                 0      -      -     "
+      "26": "ret                 0      -1     -     "
     },
     "backend": {
       "00": "set_ordered         0      2      1     ",
@@ -2177,7 +2177,7 @@ explain select * from (select count(*), sum(2 * id) from test group by id) t
       "12": "table_next          1      2      0     ",
       "13": "free                1      0      0     ",
       "14": "set_sort            0      0      0     ",
-      "15": "ret                 0      -      -     "
+      "15": "ret                 0      -1     -     "
     }
   },
   "access": [["public.test", "ro"]]
@@ -2227,7 +2227,7 @@ explain select count(*) from (select count(*) from test group by id) t
       "36": "store_next          3      33     0     ",
       "37": "free                3      0      0     ",
       "38": "free                2      0      0     ",
-      "39": "ret                 0      -      -     "
+      "39": "ret                 0      -1     -     "
     },
     "backend": {
       "00": "set_ordered         0      1      1     ",
@@ -2241,7 +2241,7 @@ explain select count(*) from (select count(*) from test group by id) t
       "08": "table_next          1      2      0     ",
       "09": "free                1      0      0     ",
       "10": "set_sort            0      0      0     ",
-      "11": "ret                 0      -      -     "
+      "11": "ret                 0      -1     -     "
     }
   },
   "access": [["public.test", "ro"]]

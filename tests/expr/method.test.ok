@@ -27,7 +27,7 @@ explain select system.state().directory::length()
       "02": "dotjs               2      0      1     ",
       "03": "push                2      0      0     ",
       "04": "call                0      -      1     # public.length()",
-      "05": "ret                 0      -      -     "
+      "05": "ret                 0      -1     -     "
     }
   },
   "access": []
@@ -67,7 +67,7 @@ explain select system.state().directory::length
       "02": "dotjs               2      0      1     ",
       "03": "push                2      0      0     ",
       "04": "call                0      -      1     # public.length()",
-      "05": "ret                 0      -      -     "
+      "05": "ret                 0      -1     -     "
     }
   },
   "access": []

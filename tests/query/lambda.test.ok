@@ -42,7 +42,7 @@ explain select 0 -> id, 0 -> data from test
       "12": "store_next          2      7      0     ",
       "13": "free                2      0      0     ",
       "14": "free                0      0      0     ",
-      "15": "ret                 1      -      -     "
+      "15": "ret                 1      -1     -     "
     },
     "backend": {
       "00": "set_ordered         0      2      1     ",
@@ -70,7 +70,7 @@ explain select 0 -> id, 0 -> data from test
       "22": "push                2      0      0     ",
       "23": "set_agg             0      1      21    ",
       "24": "set_sort            0      0      0     ",
-      "25": "ret                 0      -      -     "
+      "25": "ret                 0      -1     -     "
     }
   },
   "access": [["public.test", "ro"]]
@@ -100,7 +100,7 @@ explain select 0 -> self + 1 from test
       "10": "store_next          2      7      0     ",
       "11": "free                2      0      0     ",
       "12": "free                0      0      0     ",
-      "13": "ret                 1      -      -     "
+      "13": "ret                 1      -1     -     "
     },
     "backend": {
       "00": "set_ordered         0      1      1     ",
@@ -126,7 +126,7 @@ explain select 0 -> self + 1 from test
       "20": "push                2      0      0     ",
       "21": "set_agg             0      1      21    ",
       "22": "set_sort            0      0      0     ",
-      "23": "ret                 0      -      -     "
+      "23": "ret                 0      -1     -     "
     }
   },
   "access": [["public.test", "ro"]]
@@ -207,7 +207,7 @@ explain select 0 -> self + 1 from test
       "10": "store_next          2      7      0     ",
       "11": "free                2      0      0     ",
       "12": "free                0      0      0     ",
-      "13": "ret                 1      -      -     "
+      "13": "ret                 1      -1     -     "
     },
     "backend": {
       "00": "set_ordered         0      1      1     ",
@@ -233,7 +233,7 @@ explain select 0 -> self + 1 from test
       "20": "push                2      0      0     ",
       "21": "set_agg             0      1      21    ",
       "22": "set_sort            0      0      0     ",
-      "23": "ret                 0      -      -     "
+      "23": "ret                 0      -1     -     "
     }
   },
   "access": [["public.test", "ro"]]

@@ -6,7 +6,7 @@ explain select true
   "bytecode": {
     "frontend": {
       "00": "bool                0      1      0     ",
-      "01": "ret                 0      -      -     "
+      "01": "ret                 0      -1     -     "
     }
   },
   "access": []
@@ -29,7 +29,7 @@ explain select true = false
       "00": "bool                0      1      0     ",
       "01": "bool                1      0      0     ",
       "02": "equii               2      0      1     ",
-      "03": "ret                 2      -      -     "
+      "03": "ret                 2      -1     -     "
     }
   },
   "access": []
@@ -46,7 +46,7 @@ explain select true = 1
       "00": "bool                0      1      0     ",
       "01": "int                 1      -      0     # 1",
       "02": "equii               2      0      1     ",
-      "03": "ret                 2      -      -     "
+      "03": "ret                 2      -1     -     "
     }
   },
   "access": []
@@ -63,7 +63,7 @@ explain select true = null
       "00": "bool                0      1      0     ",
       "01": "null                1      0      0     ",
       "02": "nullop              2      0      1     ",
-      "03": "ret                 2      -      -     "
+      "03": "ret                 2      -1     -     "
     }
   },
   "access": []
@@ -86,7 +86,7 @@ explain select true <> false
       "01": "bool                1      0      0     ",
       "02": "equii               2      0      1     ",
       "03": "not                 0      2      0     ",
-      "04": "ret                 0      -      -     "
+      "04": "ret                 0      -1     -     "
     }
   },
   "access": []
@@ -104,7 +104,7 @@ explain select true <> 1
       "01": "int                 1      -      0     # 1",
       "02": "equii               2      0      1     ",
       "03": "not                 0      2      0     ",
-      "04": "ret                 0      -      -     "
+      "04": "ret                 0      -1     -     "
     }
   },
   "access": []
@@ -122,7 +122,7 @@ explain select true <> null
       "01": "null                1      0      0     ",
       "02": "nullop              2      0      1     ",
       "03": "not                 0      2      0     ",
-      "04": "ret                 0      -      -     "
+      "04": "ret                 0      -1     -     "
     }
   },
   "access": []

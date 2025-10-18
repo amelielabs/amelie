@@ -285,7 +285,7 @@ explain insert into test values (1),(2),(3) returning *
       "01": "set_ptr             1      -      0     ",
       "02": "send_shard          0      -      1     # public.test (last)",
       "03": "union_recv          0      0      0     ",
-      "04": "ret                 0      -      -     "
+      "04": "ret                 0      -1     -     "
     },
     "backend": {
       "00": "set                 0      1      0     ",
@@ -299,7 +299,7 @@ explain insert into test values (1),(2),(3) returning *
       "08": "set_add             0      0      0     ",
       "09": "upsert              1      3      6     ",
       "10": "free                1      0      0     ",
-      "11": "ret                 0      -      -     "
+      "11": "ret                 0      -1     -     "
     }
   },
   "access": [["public.test", "rw"]]
@@ -319,7 +319,7 @@ explain insert into test () values (), (), () returning *
       "01": "set_ptr             1      -      0     ",
       "02": "send_shard          0      -      1     # public.test (last)",
       "03": "union_recv          0      0      0     ",
-      "04": "ret                 0      -      -     "
+      "04": "ret                 0      -1     -     "
     },
     "backend": {
       "00": "set                 0      1      0     ",
@@ -333,7 +333,7 @@ explain insert into test () values (), (), () returning *
       "08": "set_add             0      0      0     ",
       "09": "upsert              1      3      6     ",
       "10": "free                1      0      0     ",
-      "11": "ret                 0      -      -     "
+      "11": "ret                 0      -1     -     "
     }
   },
   "access": [["public.test", "rw"]]
@@ -439,7 +439,7 @@ explain select * from test where ts > "1970-01-01 01:12:59.909090"::timestamp;
       "01": "send_all            0      -      0     # public.test (last)",
       "02": "union_recv          0      0      0     ",
       "03": "union_set           0      0      -1    ",
-      "04": "ret                 0      -      -     "
+      "04": "ret                 0      -1     -     "
     },
     "backend": {
       "00": "set                 0      2      0     ",
@@ -457,7 +457,7 @@ explain select * from test where ts > "1970-01-01 01:12:59.909090"::timestamp;
       "12": "set_add             0      0      0     ",
       "13": "table_next          1      2      0     ",
       "14": "free                1      0      0     ",
-      "15": "ret                 0      -      -     "
+      "15": "ret                 0      -1     -     "
     }
   },
   "access": [["public.test", "ro"]]
@@ -472,7 +472,7 @@ explain select * from test where ts > timestamp "1970-01-01 01:12:59.909090"
       "01": "send_all            0      -      0     # public.test (last)",
       "02": "union_recv          0      0      0     ",
       "03": "union_set           0      0      -1    ",
-      "04": "ret                 0      -      -     "
+      "04": "ret                 0      -1     -     "
     },
     "backend": {
       "00": "set                 0      2      0     ",
@@ -488,7 +488,7 @@ explain select * from test where ts > timestamp "1970-01-01 01:12:59.909090"
       "10": "set_add             0      0      0     ",
       "11": "table_next          1      2      0     ",
       "12": "free                1      0      0     ",
-      "13": "ret                 0      -      -     "
+      "13": "ret                 0      -1     -     "
     }
   },
   "access": [["public.test", "ro"]]
@@ -524,7 +524,7 @@ explain select * from test
       "01": "send_all            0      -      0     # public.test (last)",
       "02": "union_recv          0      0      0     ",
       "03": "union_set           0      0      -1    ",
-      "04": "ret                 0      -      -     "
+      "04": "ret                 0      -1     -     "
     },
     "backend": {
       "00": "set                 0      1      0     ",
@@ -534,7 +534,7 @@ explain select * from test
       "04": "set_add             0      0      0     ",
       "05": "table_next          1      2      0     ",
       "06": "free                1      0      0     ",
-      "07": "ret                 0      -      -     "
+      "07": "ret                 0      -1     -     "
     }
   },
   "access": [["public.test", "ro"]]
@@ -553,7 +553,7 @@ explain select * from test where id > timestamp '1970-01-01 00:00:01.000002'
       "01": "send_all            0      -      0     # public.test (last)",
       "02": "union_recv          0      0      0     ",
       "03": "union_set           0      0      -1    ",
-      "04": "ret                 0      -      -     "
+      "04": "ret                 0      -1     -     "
     },
     "backend": {
       "00": "set                 0      1      0     ",
@@ -569,7 +569,7 @@ explain select * from test where id > timestamp '1970-01-01 00:00:01.000002'
       "10": "set_add             0      0      0     ",
       "11": "table_next          1      4      0     ",
       "12": "free                1      0      0     ",
-      "13": "ret                 0      -      -     "
+      "13": "ret                 0      -1     -     "
     }
   },
   "access": [["public.test", "ro"]]
@@ -584,7 +584,7 @@ explain select * from test where id >= timestamp '1970-01-01 00:00:01.000002'
       "01": "send_all            0      -      0     # public.test (last)",
       "02": "union_recv          0      0      0     ",
       "03": "union_set           0      0      -1    ",
-      "04": "ret                 0      -      -     "
+      "04": "ret                 0      -1     -     "
     },
     "backend": {
       "00": "set                 0      1      0     ",
@@ -600,7 +600,7 @@ explain select * from test where id >= timestamp '1970-01-01 00:00:01.000002'
       "10": "set_add             0      0      0     ",
       "11": "table_next          1      4      0     ",
       "12": "free                1      0      0     ",
-      "13": "ret                 0      -      -     "
+      "13": "ret                 0      -1     -     "
     }
   },
   "access": [["public.test", "ro"]]
@@ -615,7 +615,7 @@ explain select * from test where id < timestamp '1970-01-01 00:00:01.000003'
       "01": "send_all            0      -      0     # public.test (last)",
       "02": "union_recv          0      0      0     ",
       "03": "union_set           0      0      -1    ",
-      "04": "ret                 0      -      -     "
+      "04": "ret                 0      -1     -     "
     },
     "backend": {
       "00": "set                 0      1      0     ",
@@ -633,7 +633,7 @@ explain select * from test where id < timestamp '1970-01-01 00:00:01.000003'
       "12": "set_add             0      0      0     ",
       "13": "table_next          1      2      0     ",
       "14": "free                1      0      0     ",
-      "15": "ret                 0      -      -     "
+      "15": "ret                 0      -1     -     "
     }
   },
   "access": [["public.test", "ro"]]
@@ -648,7 +648,7 @@ explain select * from test where id = timestamp '1970-01-01 00:00:01.000003'
       "01": "send_lookup         0      -      -     # public.test (last)",
       "02": "union_recv          0      0      0     ",
       "03": "union_set           0      0      -1    ",
-      "04": "ret                 0      -      -     "
+      "04": "ret                 0      -1     -     "
     },
     "backend": {
       "00": "set                 0      1      0     ",
@@ -663,7 +663,7 @@ explain select * from test where id = timestamp '1970-01-01 00:00:01.000003'
       "09": "push                2      0      0     ",
       "10": "set_add             0      0      0     ",
       "11": "free                1      0      0     ",
-      "12": "ret                 0      -      -     "
+      "12": "ret                 0      -1     -     "
     }
   },
   "access": [["public.test", "ro"]]
@@ -686,7 +686,7 @@ explain select * from test where i > "1 year 1 day 10 hour"::interval
       "01": "send_all            0      -      0     # public.test (last)",
       "02": "union_recv          0      0      0     ",
       "03": "union_set           0      0      -1    ",
-      "04": "ret                 0      -      -     "
+      "04": "ret                 0      -1     -     "
     },
     "backend": {
       "00": "set                 0      2      0     ",
@@ -704,7 +704,7 @@ explain select * from test where i > "1 year 1 day 10 hour"::interval
       "12": "set_add             0      0      0     ",
       "13": "table_next          1      2      0     ",
       "14": "free                1      0      0     ",
-      "15": "ret                 0      -      -     "
+      "15": "ret                 0      -1     -     "
     }
   },
   "access": [["public.test", "ro"]]
@@ -742,7 +742,7 @@ explain select * from test where d >= date '1970-01-01'
       "01": "send_all            0      -      0     # public.test (last)",
       "02": "union_recv          0      0      0     ",
       "03": "union_set           0      0      -1    ",
-      "04": "ret                 0      -      -     "
+      "04": "ret                 0      -1     -     "
     },
     "backend": {
       "00": "set                 0      2      0     ",
@@ -758,7 +758,7 @@ explain select * from test where d >= date '1970-01-01'
       "10": "set_add             0      0      0     ",
       "11": "table_next          1      2      0     ",
       "12": "free                1      0      0     ",
-      "13": "ret                 0      -      -     "
+      "13": "ret                 0      -1     -     "
     }
   },
   "access": [["public.test", "ro"]]
@@ -841,7 +841,7 @@ explain select id from test where id = uuid "00000000-0000-0000-0000-00000000000
       "01": "send_lookup         0      -      -     # public.test (last)",
       "02": "union_recv          0      0      0     ",
       "03": "union_set           0      0      -1    ",
-      "04": "ret                 0      -      -     "
+      "04": "ret                 0      -1     -     "
     },
     "backend": {
       "00": "set                 0      1      0     ",
@@ -856,7 +856,7 @@ explain select id from test where id = uuid "00000000-0000-0000-0000-00000000000
       "09": "push                2      0      0     ",
       "10": "set_add             0      0      0     ",
       "11": "free                1      0      0     ",
-      "12": "ret                 0      -      -     "
+      "12": "ret                 0      -1     -     "
     }
   },
   "access": [["public.test", "ro"]]
@@ -903,7 +903,7 @@ explain select * from test
       "01": "send_all            0      -      0     # public.test (last)",
       "02": "union_recv          0      0      0     ",
       "03": "union_set           0      0      -1    ",
-      "04": "ret                 0      -      -     "
+      "04": "ret                 0      -1     -     "
     },
     "backend": {
       "00": "set                 0      2      0     ",
@@ -915,7 +915,7 @@ explain select * from test
       "06": "set_add             0      0      0     ",
       "07": "table_next          1      2      0     ",
       "08": "free                1      0      0     ",
-      "09": "ret                 0      -      -     "
+      "09": "ret                 0      -1     -     "
     }
   },
   "access": [["public.test", "ro"]]
@@ -930,7 +930,7 @@ explain select * from test use index (i)
       "01": "send_all            0      -      0     # public.test (last)",
       "02": "union_recv          0      0      0     ",
       "03": "union_set           0      0      -1    ",
-      "04": "ret                 0      -      -     "
+      "04": "ret                 0      -1     -     "
     },
     "backend": {
       "00": "set                 0      2      0     ",
@@ -942,7 +942,7 @@ explain select * from test use index (i)
       "06": "set_add             0      0      0     ",
       "07": "table_next          1      2      0     ",
       "08": "free                1      0      0     ",
-      "09": "ret                 0      -      -     "
+      "09": "ret                 0      -1     -     "
     }
   },
   "access": [["public.test", "ro"]]
@@ -989,11 +989,11 @@ explain insert into test select 1, 0
       "05": "set_add             0      0      0     ",
       "06": "dup                 1      0      0     ",
       "07": "send_shard          0      -      1     # public.test (last)",
-      "08": "ret                 -1     -      -     "
+      "08": "ret                 -1     -1     -     "
     },
     "backend": {
       "00": "insert              -      0      0     # public.test",
-      "01": "ret                 -1     -      -     "
+      "01": "ret                 -1     -1     -     "
     }
   },
   "access": [["public.test", "rw"]]
@@ -1027,11 +1027,11 @@ explain insert into test select * from (select 2, 0) t
       "16": "free                2      0      0     ",
       "17": "dup                 2      1      0     ",
       "18": "send_shard          0      -      2     # public.test (last)",
-      "19": "ret                 -1     -      -     "
+      "19": "ret                 -1     -1     -     "
     },
     "backend": {
       "00": "insert              -      0      0     # public.test",
-      "01": "ret                 -1     -      -     "
+      "01": "ret                 -1     -1     -     "
     }
   },
   "access": [["public.test", "rw"]]
@@ -1052,7 +1052,7 @@ explain insert into test select * from src
       "03": "union_set           0      0      -1    ",
       "04": "dup                 1      0      0     ",
       "05": "send_shard          10     -      1     # public.test (last)",
-      "06": "ret                 -1     -      -     "
+      "06": "ret                 -1     -1     -     "
     },
     "backend": {
       "00": "set                 0      2      0     ",
@@ -1064,9 +1064,9 @@ explain insert into test select * from src
       "06": "set_add             0      0      0     ",
       "07": "table_next          1      2      0     ",
       "08": "free                1      0      0     ",
-      "09": "ret                 0      -      -     ",
+      "09": "ret                 0      -1     -     ",
       "10": "insert              -      0      0     # public.test",
-      "11": "ret                 -1     -      -     "
+      "11": "ret                 -1     -1     -     "
     }
   },
   "access": [["public.test", "rw"], ["public.src", "ro"]]

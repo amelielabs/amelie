@@ -19,7 +19,7 @@ explain select 1 is null
     "frontend": {
       "00": "int                 0      -      0     # 1",
       "01": "is                  1      0      0     ",
-      "02": "ret                 1      -      -     "
+      "02": "ret                 1      -1     -     "
     }
   },
   "access": []
@@ -36,7 +36,7 @@ explain select 1 is not null
       "00": "int                 0      -      0     # 1",
       "01": "is                  1      0      0     ",
       "02": "not                 0      1      0     ",
-      "03": "ret                 0      -      -     "
+      "03": "ret                 0      -1     -     "
     }
   },
   "access": []

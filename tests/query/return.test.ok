@@ -6,7 +6,7 @@ explain select 1
   "bytecode": {
     "frontend": {
       "00": "int                 0      -      0     # 1",
-      "01": "ret                 0      -      -     "
+      "01": "ret                 0      -1     -     "
     }
   },
   "access": []
@@ -17,7 +17,7 @@ explain select 1; select 2
     "frontend": {
       "00": "int                 0      -      0     # 1",
       "01": "int                 1      -      0     # 2",
-      "02": "ret                 1      -      -     "
+      "02": "ret                 1      -1     -     "
     }
   },
   "access": []
@@ -29,7 +29,7 @@ explain select 1; select 2; select 3
       "00": "int                 0      -      0     # 1",
       "01": "int                 1      -      0     # 2",
       "02": "int                 2      -      0     # 3",
-      "03": "ret                 2      -      -     "
+      "03": "ret                 2      -1     -     "
     }
   },
   "access": []
@@ -46,7 +46,7 @@ explain if true then end;
       "02": "bool                0      1      0     ",
       "03": "jntr                5      0      0     ",
       "04": "jmp                 1      0      0     ",
-      "05": "ret                 -1     -      -     "
+      "05": "ret                 -1     -1     -     "
     }
   },
   "access": []
@@ -62,7 +62,7 @@ explain if true then end; select 1
       "03": "jntr                5      0      0     ",
       "04": "jmp                 1      0      0     ",
       "05": "int                 0      -      0     # 1",
-      "06": "ret                 0      -      -     "
+      "06": "ret                 0      -1     -     "
     }
   },
   "access": []
@@ -80,7 +80,7 @@ explain if true then select 1; end; select 2
       "04": "int                 0      -      0     # 1",
       "05": "jmp                 1      0      0     ",
       "06": "int                 1      -      0     # 2",
-      "07": "ret                 1      -      -     "
+      "07": "ret                 1      -1     -     "
     }
   },
   "access": []
@@ -92,10 +92,11 @@ explain declare x int; select 123 into x;
 [{
   "bytecode": {
     "frontend": {
-      "00": "int                 1      -      0     # 123",
-      "01": "assign              0      1      0     ",
-      "02": "free                1      0      0     ",
-      "03": "ret                 -1     -      -     "
+      "00": "push_nulls          1      0      0     ",
+      "01": "int                 0      -      0     # 123",
+      "02": "var_set             0      0      0     ",
+      "03": "free                0      0      0     ",
+      "04": "ret                 -1     -1     -     "
     }
   },
   "access": []
@@ -130,11 +131,12 @@ explain declare x int := 0; return x; return x;
 [{
   "bytecode": {
     "frontend": {
-      "00": "int                 1      -      0     # 0",
-      "01": "assign              0      1      0     ",
-      "02": "free                1      0      0     ",
-      "03": "ret                 0      -      -     ",
-      "04": "ret                 0      -      -     "
+      "00": "push_nulls          1      0      0     ",
+      "01": "int                 0      -      0     # 0",
+      "02": "var_set             0      0      0     ",
+      "03": "free                0      0      0     ",
+      "04": "ret                 -1     0      -     ",
+      "05": "ret                 -1     0      -     "
     }
   },
   "access": []
@@ -146,16 +148,17 @@ explain declare x int; if true then x := 12; return x; end;
 [{
   "bytecode": {
     "frontend": {
-      "00": "jmp                 2      0      0     ",
-      "01": "jmp                 9      0      0     ",
-      "02": "bool                1      1      0     ",
-      "03": "jntr                9      1      0     ",
-      "04": "int                 1      -      0     # 12",
-      "05": "assign              0      1      0     ",
-      "06": "free                1      0      0     ",
-      "07": "ret                 0      -      -     ",
-      "08": "jmp                 1      0      0     ",
-      "09": "ret                 -1     -      -     "
+      "00": "push_nulls          1      0      0     ",
+      "01": "jmp                 3      0      0     ",
+      "02": "jmp                 10     0      0     ",
+      "03": "bool                0      1      0     ",
+      "04": "jntr                10     0      0     ",
+      "05": "int                 0      -      0     # 12",
+      "06": "var_set             0      0      0     ",
+      "07": "free                0      0      0     ",
+      "08": "ret                 -1     0      -     ",
+      "09": "jmp                 2      0      0     ",
+      "10": "ret                 -1     -1     -     "
     }
   },
   "access": []
@@ -167,16 +170,17 @@ explain declare x int; if true then x := 12; return x; end; return x
 [{
   "bytecode": {
     "frontend": {
-      "00": "jmp                 2      0      0     ",
-      "01": "jmp                 9      0      0     ",
-      "02": "bool                1      1      0     ",
-      "03": "jntr                9      1      0     ",
-      "04": "int                 1      -      0     # 12",
-      "05": "assign              0      1      0     ",
-      "06": "free                1      0      0     ",
-      "07": "ret                 0      -      -     ",
-      "08": "jmp                 1      0      0     ",
-      "09": "ret                 0      -      -     "
+      "00": "push_nulls          1      0      0     ",
+      "01": "jmp                 3      0      0     ",
+      "02": "jmp                 10     0      0     ",
+      "03": "bool                0      1      0     ",
+      "04": "jntr                10     0      0     ",
+      "05": "int                 0      -      0     # 12",
+      "06": "var_set             0      0      0     ",
+      "07": "free                0      0      0     ",
+      "08": "ret                 -1     0      -     ",
+      "09": "jmp                 2      0      0     ",
+      "10": "ret                 -1     0      -     "
     }
   },
   "access": []
@@ -187,16 +191,17 @@ explain declare x int; if false then x := 12; return x; end; return x
 [{
   "bytecode": {
     "frontend": {
-      "00": "jmp                 2      0      0     ",
-      "01": "jmp                 9      0      0     ",
-      "02": "bool                1      0      0     ",
-      "03": "jntr                9      1      0     ",
-      "04": "int                 1      -      0     # 12",
-      "05": "assign              0      1      0     ",
-      "06": "free                1      0      0     ",
-      "07": "ret                 0      -      -     ",
-      "08": "jmp                 1      0      0     ",
-      "09": "ret                 0      -      -     "
+      "00": "push_nulls          1      0      0     ",
+      "01": "jmp                 3      0      0     ",
+      "02": "jmp                 10     0      0     ",
+      "03": "bool                0      0      0     ",
+      "04": "jntr                10     0      0     ",
+      "05": "int                 0      -      0     # 12",
+      "06": "var_set             0      0      0     ",
+      "07": "free                0      0      0     ",
+      "08": "ret                 -1     0      -     ",
+      "09": "jmp                 2      0      0     ",
+      "10": "ret                 -1     0      -     "
     }
   },
   "access": []
@@ -210,34 +215,35 @@ explain declare x int; select id into x from test; if true then x := x + 1; retu
 [{
   "bytecode": {
     "frontend": {
-      "00": "union               1      0      0     ",
-      "01": "send_all            0      -      1     # public.test (last)",
-      "02": "union_recv          1      0      0     ",
-      "03": "union_set           1      0      -1    ",
-      "04": "assign              0      1      0     ",
-      "05": "free                1      0      0     ",
-      "06": "jmp                 8      0      0     ",
-      "07": "jmp                 17     0      0     ",
-      "08": "bool                1      1      0     ",
-      "09": "jntr                17     1      0     ",
-      "10": "dup                 1      0      0     ",
-      "11": "int                 2      -      0     # 1",
-      "12": "addii               3      1      2     ",
-      "13": "assign              0      3      0     ",
-      "14": "free                3      0      0     ",
-      "15": "ret                 0      -      -     ",
-      "16": "jmp                 7      0      0     ",
-      "17": "ret                 0      -      -     "
+      "00": "push_nulls          1      0      0     ",
+      "01": "union               0      0      0     ",
+      "02": "send_all            0      -      0     # public.test (last)",
+      "03": "union_recv          0      0      0     ",
+      "04": "union_set           0      0      -1    ",
+      "05": "var_set             0      0      0     ",
+      "06": "free                0      0      0     ",
+      "07": "jmp                 9      0      0     ",
+      "08": "jmp                 18     0      0     ",
+      "09": "bool                0      1      0     ",
+      "10": "jntr                18     0      0     ",
+      "11": "var                 0      0      0     ",
+      "12": "int                 1      -      0     # 1",
+      "13": "addii               2      0      1     ",
+      "14": "var_set             0      2      0     ",
+      "15": "free                2      0      0     ",
+      "16": "ret                 -1     0      -     ",
+      "17": "jmp                 8      0      0     ",
+      "18": "ret                 -1     0      -     "
     },
     "backend": {
-      "00": "set                 1      1      0     ",
-      "01": "table_open_part     2      0      6     # public.test (primary)",
-      "02": "table_readi32       3      2      0     ",
-      "03": "push                3      0      0     ",
-      "04": "set_add             1      0      0     ",
-      "05": "table_next          2      2      0     ",
-      "06": "free                2      0      0     ",
-      "07": "ret                 1      -      -     "
+      "00": "set                 0      1      0     ",
+      "01": "table_open_part     1      0      6     # public.test (primary)",
+      "02": "table_readi32       2      1      0     ",
+      "03": "push                2      0      0     ",
+      "04": "set_add             0      0      0     ",
+      "05": "table_next          1      2      0     ",
+      "06": "free                1      0      0     ",
+      "07": "ret                 0      -1     -     "
     }
   },
   "access": [["public.test", "ro"]]
@@ -248,34 +254,35 @@ explain declare x int; select id into x from test; if false then x := x + 1; ret
 [{
   "bytecode": {
     "frontend": {
-      "00": "union               1      0      0     ",
-      "01": "send_all            0      -      1     # public.test (last)",
-      "02": "union_recv          1      0      0     ",
-      "03": "union_set           1      0      -1    ",
-      "04": "assign              0      1      0     ",
-      "05": "free                1      0      0     ",
-      "06": "jmp                 8      0      0     ",
-      "07": "jmp                 17     0      0     ",
-      "08": "bool                1      0      0     ",
-      "09": "jntr                17     1      0     ",
-      "10": "dup                 1      0      0     ",
-      "11": "int                 2      -      0     # 1",
-      "12": "addii               3      1      2     ",
-      "13": "assign              0      3      0     ",
-      "14": "free                3      0      0     ",
-      "15": "ret                 0      -      -     ",
-      "16": "jmp                 7      0      0     ",
-      "17": "ret                 0      -      -     "
+      "00": "push_nulls          1      0      0     ",
+      "01": "union               0      0      0     ",
+      "02": "send_all            0      -      0     # public.test (last)",
+      "03": "union_recv          0      0      0     ",
+      "04": "union_set           0      0      -1    ",
+      "05": "var_set             0      0      0     ",
+      "06": "free                0      0      0     ",
+      "07": "jmp                 9      0      0     ",
+      "08": "jmp                 18     0      0     ",
+      "09": "bool                0      0      0     ",
+      "10": "jntr                18     0      0     ",
+      "11": "var                 0      0      0     ",
+      "12": "int                 1      -      0     # 1",
+      "13": "addii               2      0      1     ",
+      "14": "var_set             0      2      0     ",
+      "15": "free                2      0      0     ",
+      "16": "ret                 -1     0      -     ",
+      "17": "jmp                 8      0      0     ",
+      "18": "ret                 -1     0      -     "
     },
     "backend": {
-      "00": "set                 1      1      0     ",
-      "01": "table_open_part     2      0      6     # public.test (primary)",
-      "02": "table_readi32       3      2      0     ",
-      "03": "push                3      0      0     ",
-      "04": "set_add             1      0      0     ",
-      "05": "table_next          2      2      0     ",
-      "06": "free                2      0      0     ",
-      "07": "ret                 1      -      -     "
+      "00": "set                 0      1      0     ",
+      "01": "table_open_part     1      0      6     # public.test (primary)",
+      "02": "table_readi32       2      1      0     ",
+      "03": "push                2      0      0     ",
+      "04": "set_add             0      0      0     ",
+      "05": "table_next          1      2      0     ",
+      "06": "free                1      0      0     ",
+      "07": "ret                 0      -1     -     "
     }
   },
   "access": [["public.test", "ro"]]
@@ -286,30 +293,31 @@ explain declare x int; if true then select id into x from test; return x; end; r
 [{
   "bytecode": {
     "frontend": {
-      "00": "jmp                 2      0      0     ",
-      "01": "jmp                 12     0      0     ",
-      "02": "bool                1      1      0     ",
-      "03": "jntr                12     1      0     ",
-      "04": "union               1      0      0     ",
-      "05": "send_all            0      -      1     # public.test",
-      "06": "union_recv          1      0      0     ",
-      "07": "union_set           1      0      -1    ",
-      "08": "assign              0      1      0     ",
-      "09": "free                1      0      0     ",
-      "10": "ret                 0      -      -     ",
-      "11": "jmp                 1      0      0     ",
-      "12": "close               0      0      0     ",
-      "13": "ret                 0      -      -     "
+      "00": "push_nulls          1      0      0     ",
+      "01": "jmp                 3      0      0     ",
+      "02": "jmp                 13     0      0     ",
+      "03": "bool                0      1      0     ",
+      "04": "jntr                13     0      0     ",
+      "05": "union               0      0      0     ",
+      "06": "send_all            0      -      0     # public.test",
+      "07": "union_recv          0      0      0     ",
+      "08": "union_set           0      0      -1    ",
+      "09": "var_set             0      0      0     ",
+      "10": "free                0      0      0     ",
+      "11": "ret                 -1     0      -     ",
+      "12": "jmp                 2      0      0     ",
+      "13": "close               0      0      0     ",
+      "14": "ret                 -1     0      -     "
     },
     "backend": {
-      "00": "set                 1      1      0     ",
-      "01": "table_open_part     2      0      6     # public.test (primary)",
-      "02": "table_readi32       3      2      0     ",
-      "03": "push                3      0      0     ",
-      "04": "set_add             1      0      0     ",
-      "05": "table_next          2      2      0     ",
-      "06": "free                2      0      0     ",
-      "07": "ret                 1      -      -     "
+      "00": "set                 0      1      0     ",
+      "01": "table_open_part     1      0      6     # public.test (primary)",
+      "02": "table_readi32       2      1      0     ",
+      "03": "push                2      0      0     ",
+      "04": "set_add             0      0      0     ",
+      "05": "table_next          1      2      0     ",
+      "06": "free                1      0      0     ",
+      "07": "ret                 0      -1     -     "
     }
   },
   "access": [["public.test", "ro"]]
@@ -320,30 +328,31 @@ explain declare x int; if false then select id into x from test; return x; end; 
 [{
   "bytecode": {
     "frontend": {
-      "00": "jmp                 2      0      0     ",
-      "01": "jmp                 12     0      0     ",
-      "02": "bool                1      0      0     ",
-      "03": "jntr                12     1      0     ",
-      "04": "union               1      0      0     ",
-      "05": "send_all            0      -      1     # public.test",
-      "06": "union_recv          1      0      0     ",
-      "07": "union_set           1      0      -1    ",
-      "08": "assign              0      1      0     ",
-      "09": "free                1      0      0     ",
-      "10": "ret                 0      -      -     ",
-      "11": "jmp                 1      0      0     ",
-      "12": "close               0      0      0     ",
-      "13": "ret                 0      -      -     "
+      "00": "push_nulls          1      0      0     ",
+      "01": "jmp                 3      0      0     ",
+      "02": "jmp                 13     0      0     ",
+      "03": "bool                0      0      0     ",
+      "04": "jntr                13     0      0     ",
+      "05": "union               0      0      0     ",
+      "06": "send_all            0      -      0     # public.test",
+      "07": "union_recv          0      0      0     ",
+      "08": "union_set           0      0      -1    ",
+      "09": "var_set             0      0      0     ",
+      "10": "free                0      0      0     ",
+      "11": "ret                 -1     0      -     ",
+      "12": "jmp                 2      0      0     ",
+      "13": "close               0      0      0     ",
+      "14": "ret                 -1     0      -     "
     },
     "backend": {
-      "00": "set                 1      1      0     ",
-      "01": "table_open_part     2      0      6     # public.test (primary)",
-      "02": "table_readi32       3      2      0     ",
-      "03": "push                3      0      0     ",
-      "04": "set_add             1      0      0     ",
-      "05": "table_next          2      2      0     ",
-      "06": "free                2      0      0     ",
-      "07": "ret                 1      -      -     "
+      "00": "set                 0      1      0     ",
+      "01": "table_open_part     1      0      6     # public.test (primary)",
+      "02": "table_readi32       2      1      0     ",
+      "03": "push                2      0      0     ",
+      "04": "set_add             0      0      0     ",
+      "05": "table_next          1      2      0     ",
+      "06": "free                1      0      0     ",
+      "07": "ret                 0      -1     -     "
     }
   },
   "access": [["public.test", "ro"]]
@@ -355,43 +364,44 @@ explain declare x int := 0; for i in (select id from test) do if i.id > 2 then r
 [{
   "bytecode": {
     "frontend": {
-      "00": "int                 1      -      0     # 0",
-      "01": "assign              0      1      0     ",
-      "02": "free                1      0      0     ",
-      "03": "union               1      0      0     ",
-      "04": "send_all            0      -      1     # public.test",
-      "05": "union_recv          1      0      0     ",
-      "06": "union_set           1      0      -1    ",
-      "07": "dup                 2      1      0     ",
-      "08": "store_open          3      2      23    ",
-      "09": "jmp                 11     0      0     ",
-      "10": "jmp                 17     0      0     ",
-      "11": "store_read          4      3      0     ",
-      "12": "int                 5      -      0     # 2",
-      "13": "gtii                6      4      5     ",
-      "14": "jntr                17     6      0     ",
-      "15": "ret                 0      -      -     ",
-      "16": "jmp                 10     0      0     ",
-      "17": "dup                 4      0      0     ",
-      "18": "int                 5      -      0     # 1",
-      "19": "addii               6      4      5     ",
-      "20": "assign              0      6      0     ",
-      "21": "free                6      0      0     ",
-      "22": "store_next          3      9      0     ",
-      "23": "free                3      0      0     ",
+      "00": "push_nulls          1      0      0     ",
+      "01": "int                 0      -      0     # 0",
+      "02": "var_set             0      0      0     ",
+      "03": "free                0      0      0     ",
+      "04": "union               0      0      0     ",
+      "05": "send_all            0      -      0     # public.test",
+      "06": "union_recv          0      0      0     ",
+      "07": "union_set           0      0      -1    ",
+      "08": "dup                 1      0      0     ",
+      "09": "store_open          2      1      24    ",
+      "10": "jmp                 12     0      0     ",
+      "11": "jmp                 18     0      0     ",
+      "12": "store_read          3      2      0     ",
+      "13": "int                 4      -      0     # 2",
+      "14": "gtii                5      3      4     ",
+      "15": "jntr                18     5      0     ",
+      "16": "ret                 -1     0      -     ",
+      "17": "jmp                 11     0      0     ",
+      "18": "var                 3      0      0     ",
+      "19": "int                 4      -      0     # 1",
+      "20": "addii               5      3      4     ",
+      "21": "var_set             0      5      0     ",
+      "22": "free                5      0      0     ",
+      "23": "store_next          2      10     0     ",
       "24": "free                2      0      0     ",
-      "25": "dup                 2      0      0     ",
-      "26": "ret                 2      -      -     "
+      "25": "free                1      0      0     ",
+      "26": "var                 1      0      0     ",
+      "27": "ret                 1      -1     -     "
     },
     "backend": {
-      "00": "set                 1      1      0     ",
-      "01": "table_open_part     2      0      6     # public.test (primary)",
-      "02": "table_readi32       3      2      0     ",
-      "03": "push                3      0      0     ",
-      "04": "set_add             1      0      0     ",
-      "05": "table_next          2      2      0     ",
-      "06": "free                2      0      0     ",
-      "07": "ret                 1      -      -     "
+      "00": "set                 0      1      0     ",
+      "01": "table_open_part     1      0      6     # public.test (primary)",
+      "02": "table_readi32       2      1      0     ",
+      "03": "push                2      0      0     ",
+      "04": "set_add             0      0      0     ",
+      "05": "table_next          1      2      0     ",
+      "06": "free                1      0      0     ",
+      "07": "ret                 0      -1     -     "
     }
   },
   "access": [["public.test", "ro"]]
@@ -412,11 +422,11 @@ explain return insert into test values (6)
     "frontend": {
       "00": "set_ptr             0      -      0     ",
       "01": "send_shard          0      -      0     # public.test (last)",
-      "02": "ret                 -1     -      -     "
+      "02": "ret                 -1     -1     -     "
     },
     "backend": {
       "00": "insert              -      0      0     # public.test",
-      "01": "ret                 -1     -      -     "
+      "01": "ret                 -1     -1     -     "
     }
   },
   "access": [["public.test", "rw"]]
@@ -428,13 +438,13 @@ explain return insert into test values (6); select 1
     "frontend": {
       "00": "set_ptr             0      -      0     ",
       "01": "send_shard          0      -      0     # public.test (last)",
-      "02": "ret                 -1     -      -     ",
+      "02": "ret                 -1     -1     -     ",
       "03": "int                 0      -      0     # 1",
-      "04": "ret                 0      -      -     "
+      "04": "ret                 0      -1     -     "
     },
     "backend": {
       "00": "insert              -      0      0     # public.test",
-      "01": "ret                 -1     -      -     "
+      "01": "ret                 -1     -1     -     "
     }
   },
   "access": [["public.test", "rw"]]
@@ -450,7 +460,7 @@ explain return insert into test values (7) returning *
       "01": "set_ptr             1      -      0     ",
       "02": "send_shard          0      -      1     # public.test (last)",
       "03": "union_recv          0      0      0     ",
-      "04": "ret                 0      -      -     "
+      "04": "ret                 0      -1     -     "
     },
     "backend": {
       "00": "set                 0      1      0     ",
@@ -464,7 +474,7 @@ explain return insert into test values (7) returning *
       "08": "set_add             0      0      0     ",
       "09": "upsert              1      3      6     ",
       "10": "free                1      0      0     ",
-      "11": "ret                 0      -      -     "
+      "11": "ret                 0      -1     -     "
     }
   },
   "access": [["public.test", "rw"]]
@@ -479,9 +489,9 @@ explain return insert into test values (8) returning *; select 1
       "01": "set_ptr             1      -      0     ",
       "02": "send_shard          0      -      1     # public.test (last)",
       "03": "union_recv          0      0      0     ",
-      "04": "ret                 0      -      -     ",
+      "04": "ret                 0      -1     -     ",
       "05": "int                 1      -      0     # 1",
-      "06": "ret                 1      -      -     "
+      "06": "ret                 1      -1     -     "
     },
     "backend": {
       "00": "set                 0      1      0     ",
@@ -495,7 +505,7 @@ explain return insert into test values (8) returning *; select 1
       "08": "set_add             0      0      0     ",
       "09": "upsert              1      3      6     ",
       "10": "free                1      0      0     ",
-      "11": "ret                 0      -      -     "
+      "11": "ret                 0      -1     -     "
     }
   },
   "access": [["public.test", "rw"]]
@@ -515,11 +525,11 @@ explain if true then return insert into test values (9) returning *; end; select
       "05": "set_ptr             1      -      0     ",
       "06": "send_shard          0      -      1     # public.test",
       "07": "union_recv          0      0      0     ",
-      "08": "ret                 0      -      -     ",
+      "08": "ret                 0      -1     -     ",
       "09": "jmp                 1      0      0     ",
       "10": "close               0      0      0     ",
       "11": "int                 1      -      0     # 0",
-      "12": "ret                 1      -      -     "
+      "12": "ret                 1      -1     -     "
     },
     "backend": {
       "00": "set                 0      1      0     ",
@@ -533,7 +543,7 @@ explain if true then return insert into test values (9) returning *; end; select
       "08": "set_add             0      0      0     ",
       "09": "upsert              1      3      6     ",
       "10": "free                1      0      0     ",
-      "11": "ret                 0      -      -     "
+      "11": "ret                 0      -1     -     "
     }
   },
   "access": [["public.test", "rw"]]
@@ -553,7 +563,7 @@ explain return select 1 as a, 2 as b
       "03": "int                 1      -      0     # 2",
       "04": "push                1      0      0     ",
       "05": "set_add             0      0      0     ",
-      "06": "ret                 0      -      -     "
+      "06": "ret                 0      -1     -     "
     }
   },
   "access": []
@@ -629,6 +639,31 @@ declare list json; select [] -> append(self, {"schema": it.schema, "name": it.na
   "schema": "public",
   "name": "test"
 }]]
+# test: return ;
+explain return;
+[{
+  "bytecode": {
+    "frontend": {
+      "00": "ret                 -1     -1     -     "
+    }
+  },
+  "access": []
+}]
+return;
+explain select 123; return; select 7;
+[{
+  "bytecode": {
+    "frontend": {
+      "00": "int                 0      -      0     # 123",
+      "01": "ret                 -1     -1     -     ",
+      "02": "int                 1      -      0     # 7",
+      "03": "ret                 1      -1     -     "
+    }
+  },
+  "access": []
+}]
+select 123; return; select 7;
+declare x int := 0; for i in ([1,2,3]) do x := i::int; return; end; select x;
 drop table test
 disconnect S0
 close E0

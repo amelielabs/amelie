@@ -502,7 +502,7 @@ op_dump(Program* self, Code* code, Buf* buf)
 			break;
 		}
 		case CRET:
-			op_write(output, op, true, false, false, NULL);
+			op_write(output, op, true, true, false, NULL);
 			break;
 		default:
 			op_write(output, op, true, true, true, NULL);

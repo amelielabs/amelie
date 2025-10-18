@@ -48,7 +48,7 @@ explain select t.x from (select z.id as x from (select id from test) z) t
       "19": "store_next          4      16     0     ",
       "20": "free                4      0      0     ",
       "21": "free                3      0      0     ",
-      "22": "ret                 2      -      -     "
+      "22": "ret                 2      -1     -     "
     },
     "backend": {
       "00": "set                 0      1      0     ",
@@ -58,7 +58,7 @@ explain select t.x from (select z.id as x from (select id from test) z) t
       "04": "set_add             0      0      0     ",
       "05": "table_next          1      2      0     ",
       "06": "free                1      0      0     ",
-      "07": "ret                 0      -      -     "
+      "07": "ret                 0      -1     -     "
     }
   },
   "access": [["public.test", "ro"]]

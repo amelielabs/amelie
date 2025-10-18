@@ -98,7 +98,7 @@ test declare
 test deps
 test if
 test for
-#test return
+test return
 
 # pushdown
 directory pushdown

@@ -1899,6 +1899,8 @@ ccall_sp:
 	op_next;
 
 cret:
+	// [result, var, columns, fmt]
+
 	// return from last enter (procedure call)
 	if (call_stack_head(stack_call) > 0)
 	{
@@ -1908,12 +1910,13 @@ cret:
 		op_jmp;
 	}
 
-	// [result, columns, fmt]
+	ret->value   = NULL;
+	ret->columns = (Columns*)op->c;
+	ret->fmt     = (Str*)op->d;
 	if (op->a != -1)
-	{
-		ret->value   = &r[op->a];
-		ret->columns = (Columns*)op->b;
-		ret->fmt     = (Str*)op->c;
-	}
+		ret->value = &r[op->a];
+	 else
+	if (op->b != -1)
+		ret->value = stack_get(stack, op->b);
 	return;
 }

@@ -7,7 +7,7 @@ explain declare x int; select x
     "frontend": {
       "00": "push_nulls          1      0      0     ",
       "01": "var                 0      0      0     ",
-      "02": "ret                 0      -      -     "
+      "02": "ret                 0      -1     -     "
     }
   },
   "access": []
@@ -24,7 +24,7 @@ explain declare x int := 0; select x
       "02": "var_set             0      0      0     ",
       "03": "free                0      0      0     ",
       "04": "var                 0      0      0     ",
-      "05": "ret                 0      -      -     "
+      "05": "ret                 0      -1     -     "
     }
   },
   "access": []
@@ -44,7 +44,7 @@ explain declare x int := 0; select x; x:= 15; select x
       "06": "var_set             0      1      0     ",
       "07": "free                1      0      0     ",
       "08": "var                 1      0      0     ",
-      "09": "ret                 1      -      -     "
+      "09": "ret                 1      -1     -     "
     }
   },
   "access": []
@@ -61,7 +61,7 @@ explain declare x int; select 123 into x; select x
       "02": "var_set             0      0      0     ",
       "03": "free                0      0      0     ",
       "04": "var                 0      0      0     ",
-      "05": "ret                 0      -      -     "
+      "05": "ret                 0      -1     -     "
     }
   },
   "access": []
@@ -81,7 +81,7 @@ explain declare x int; select 123 into x; select x; select 15 into x; select x
       "06": "var_set             0      1      0     ",
       "07": "free                1      0      0     ",
       "08": "var                 1      0      0     ",
-      "09": "ret                 1      -      -     "
+      "09": "ret                 1      -1     -     "
     }
   },
   "access": []
@@ -102,7 +102,7 @@ explain declare x int; select id into x from test
       "04": "union_set           0      0      -1    ",
       "05": "var_set             0      0      0     ",
       "06": "free                0      0      0     ",
-      "07": "ret                 -1     -      -     "
+      "07": "ret                 -1     -1     -     "
     },
     "backend": {
       "00": "set                 0      1      0     ",
@@ -112,7 +112,7 @@ explain declare x int; select id into x from test
       "04": "set_add             0      0      0     ",
       "05": "table_next          1      2      0     ",
       "06": "free                1      0      0     ",
-      "07": "ret                 0      -      -     "
+      "07": "ret                 0      -1     -     "
     }
   },
   "access": [["public.test", "ro"]]
@@ -131,7 +131,7 @@ explain declare x int; select id into x from test; select x
       "05": "var_set             0      0      0     ",
       "06": "free                0      0      0     ",
       "07": "var                 0      0      0     ",
-      "08": "ret                 0      -      -     "
+      "08": "ret                 0      -1     -     "
     },
     "backend": {
       "00": "set                 0      1      0     ",
@@ -141,7 +141,7 @@ explain declare x int; select id into x from test; select x
       "04": "set_add             0      0      0     ",
       "05": "table_next          1      2      0     ",
       "06": "free                1      0      0     ",
-      "07": "ret                 0      -      -     "
+      "07": "ret                 0      -1     -     "
     }
   },
   "access": [["public.test", "ro"]]
@@ -162,7 +162,7 @@ explain declare x int; select id into x from test; select 123; select x
       "06": "var_set             0      0      0     ",
       "07": "free                0      0      0     ",
       "08": "var                 0      0      0     ",
-      "09": "ret                 0      -      -     "
+      "09": "ret                 0      -1     -     "
     },
     "backend": {
       "00": "set                 0      1      0     ",
@@ -172,7 +172,7 @@ explain declare x int; select id into x from test; select 123; select x
       "04": "set_add             0      0      0     ",
       "05": "table_next          1      2      0     ",
       "06": "free                1      0      0     ",
-      "07": "ret                 0      -      -     "
+      "07": "ret                 0      -1     -     "
     }
   },
   "access": [["public.test", "ro"]]
@@ -194,7 +194,7 @@ explain declare x int; select id into x from test; select * from test; select x
       "07": "var_set             0      0      0     ",
       "08": "free                0      0      0     ",
       "09": "var                 0      0      0     ",
-      "10": "ret                 0      -      -     "
+      "10": "ret                 0      -1     -     "
     },
     "backend": {
       "00": "set                 0      1      0     ",
@@ -204,7 +204,7 @@ explain declare x int; select id into x from test; select * from test; select x
       "04": "set_add             0      0      0     ",
       "05": "table_next          1      2      0     ",
       "06": "free                1      0      0     ",
-      "07": "ret                 0      -      -     ",
+      "07": "ret                 0      -1     -     ",
       "08": "set                 1      1      0     ",
       "09": "table_open_part     2      20     14    # public.test (primary)",
       "10": "table_readi32       3      2      0     ",
@@ -212,7 +212,7 @@ explain declare x int; select id into x from test; select * from test; select x
       "12": "set_add             1      0      0     ",
       "13": "table_next          2      10     0     ",
       "14": "free                2      0      0     ",
-      "15": "ret                 1      -      -     "
+      "15": "ret                 1      -1     -     "
     }
   },
   "access": [["public.test", "ro"]]
@@ -244,7 +244,7 @@ explain declare x int; select id into x from test; select 123; select * from x
       "17": "store_next          3      14     0     ",
       "18": "free                3      0      0     ",
       "19": "free                2      0      0     ",
-      "20": "ret                 0      -      -     "
+      "20": "ret                 0      -1     -     "
     },
     "backend": {
       "00": "set                 0      1      0     ",
@@ -254,7 +254,7 @@ explain declare x int; select id into x from test; select 123; select * from x
       "04": "set_add             0      0      0     ",
       "05": "table_next          1      2      0     ",
       "06": "free                1      0      0     ",
-      "07": "ret                 0      -      -     "
+      "07": "ret                 0      -1     -     "
     }
   },
   "access": [["public.test", "ro"]]
@@ -279,7 +279,7 @@ explain declare x int; select id into x from test; select 123 into x from test
       "10": "union_set           0      0      -1    ",
       "11": "var_set             0      0      0     ",
       "12": "free                0      0      0     ",
-      "13": "ret                 -1     -      -     "
+      "13": "ret                 -1     -1     -     "
     },
     "backend": {
       "00": "set                 0      1      0     ",
@@ -289,7 +289,7 @@ explain declare x int; select id into x from test; select 123 into x from test
       "04": "set_add             0      0      0     ",
       "05": "table_next          1      2      0     ",
       "06": "free                1      0      0     ",
-      "07": "ret                 0      -      -     ",
+      "07": "ret                 0      -1     -     ",
       "08": "set                 0      1      0     ",
       "09": "table_open_part     1      20     14    # public.test (primary)",
       "10": "int                 2      -      0     # 123",
@@ -297,7 +297,7 @@ explain declare x int; select id into x from test; select 123 into x from test
       "12": "set_add             0      0      0     ",
       "13": "table_next          1      10     0     ",
       "14": "free                1      0      0     ",
-      "15": "ret                 0      -      -     "
+      "15": "ret                 0      -1     -     "
     }
   },
   "access": [["public.test", "ro"]]
@@ -322,7 +322,7 @@ explain declare x int; select id into x from test; select 123 into x from test; 
       "11": "var_set             0      0      0     ",
       "12": "free                0      0      0     ",
       "13": "var                 0      0      0     ",
-      "14": "ret                 0      -      -     "
+      "14": "ret                 0      -1     -     "
     },
     "backend": {
       "00": "set                 0      1      0     ",
@@ -332,7 +332,7 @@ explain declare x int; select id into x from test; select 123 into x from test; 
       "04": "set_add             0      0      0     ",
       "05": "table_next          1      2      0     ",
       "06": "free                1      0      0     ",
-      "07": "ret                 0      -      -     ",
+      "07": "ret                 0      -1     -     ",
       "08": "set                 0      1      0     ",
       "09": "table_open_part     1      20     14    # public.test (primary)",
       "10": "int                 2      -      0     # 123",
@@ -340,7 +340,7 @@ explain declare x int; select id into x from test; select 123 into x from test; 
       "12": "set_add             0      0      0     ",
       "13": "table_next          1      10     0     ",
       "14": "free                1      0      0     ",
-      "15": "ret                 0      -      -     "
+      "15": "ret                 0      -1     -     "
     }
   },
   "access": [["public.test", "ro"]]
@@ -362,7 +362,7 @@ explain declare x int; select 123 into x; select id into x from test
       "07": "union_set           0      0      -1    ",
       "08": "var_set             0      0      0     ",
       "09": "free                0      0      0     ",
-      "10": "ret                 -1     -      -     "
+      "10": "ret                 -1     -1     -     "
     },
     "backend": {
       "00": "set                 0      1      0     ",
@@ -372,7 +372,7 @@ explain declare x int; select 123 into x; select id into x from test
       "04": "set_add             0      0      0     ",
       "05": "table_next          1      2      0     ",
       "06": "free                1      0      0     ",
-      "07": "ret                 0      -      -     "
+      "07": "ret                 0      -1     -     "
     }
   },
   "access": [["public.test", "ro"]]
@@ -394,7 +394,7 @@ explain declare x int; select 123 into x; select id into x from test; select x
       "08": "var_set             0      0      0     ",
       "09": "free                0      0      0     ",
       "10": "var                 0      0      0     ",
-      "11": "ret                 0      -      -     "
+      "11": "ret                 0      -1     -     "
     },
     "backend": {
       "00": "set                 0      1      0     ",
@@ -404,7 +404,7 @@ explain declare x int; select 123 into x; select id into x from test; select x
       "04": "set_add             0      0      0     ",
       "05": "table_next          1      2      0     ",
       "06": "free                1      0      0     ",
-      "07": "ret                 0      -      -     "
+      "07": "ret                 0      -1     -     "
     }
   },
   "access": [["public.test", "ro"]]
@@ -429,7 +429,7 @@ explain declare x int; select id into x from test; if true then end; select x
       "10": "var_set             0      0      0     ",
       "11": "free                0      0      0     ",
       "12": "var                 0      0      0     ",
-      "13": "ret                 0      -      -     "
+      "13": "ret                 0      -1     -     "
     },
     "backend": {
       "00": "set                 0      1      0     ",
@@ -439,7 +439,7 @@ explain declare x int; select id into x from test; if true then end; select x
       "04": "set_add             0      0      0     ",
       "05": "table_next          1      2      0     ",
       "06": "free                1      0      0     ",
-      "07": "ret                 0      -      -     "
+      "07": "ret                 0      -1     -     "
     }
   },
   "access": [["public.test", "ro"]]
@@ -464,7 +464,7 @@ explain declare x int; select id into x from test; if x then end; select x
       "10": "jntr                12     0      0     ",
       "11": "jmp                 8      0      0     ",
       "12": "var                 0      0      0     ",
-      "13": "ret                 0      -      -     "
+      "13": "ret                 0      -1     -     "
     },
     "backend": {
       "00": "set                 0      1      0     ",
@@ -474,7 +474,7 @@ explain declare x int; select id into x from test; if x then end; select x
       "04": "set_add             0      0      0     ",
       "05": "table_next          1      2      0     ",
       "06": "free                1      0      0     ",
-      "07": "ret                 0      -      -     "
+      "07": "ret                 0      -1     -     "
     }
   },
   "access": [["public.test", "ro"]]
@@ -500,7 +500,7 @@ explain declare x int; select id into x from test; if true then select x; end; s
       "11": "var                 0      0      0     ",
       "12": "jmp                 8      0      0     ",
       "13": "var                 1      0      0     ",
-      "14": "ret                 1      -      -     "
+      "14": "ret                 1      -1     -     "
     },
     "backend": {
       "00": "set                 0      1      0     ",
@@ -510,7 +510,7 @@ explain declare x int; select id into x from test; if true then select x; end; s
       "04": "set_add             0      0      0     ",
       "05": "table_next          1      2      0     ",
       "06": "free                1      0      0     ",
-      "07": "ret                 0      -      -     "
+      "07": "ret                 0      -1     -     "
     }
   },
   "access": [["public.test", "ro"]]
@@ -538,7 +538,7 @@ explain declare x int; select id into x from test; if true then x := 7; end; sel
       "13": "free                0      0      0     ",
       "14": "jmp                 8      0      0     ",
       "15": "var                 0      0      0     ",
-      "16": "ret                 0      -      -     "
+      "16": "ret                 0      -1     -     "
     },
     "backend": {
       "00": "set                 0      1      0     ",
@@ -548,7 +548,7 @@ explain declare x int; select id into x from test; if true then x := 7; end; sel
       "04": "set_add             0      0      0     ",
       "05": "table_next          1      2      0     ",
       "06": "free                1      0      0     ",
-      "07": "ret                 0      -      -     "
+      "07": "ret                 0      -1     -     "
     }
   },
   "access": [["public.test", "ro"]]
@@ -581,7 +581,7 @@ explain declare x int; declare y int; select id into x from test; if true then y
       "18": "var                 1      1      0     ",
       "19": "push                1      0      0     ",
       "20": "set_add             0      0      0     ",
-      "21": "ret                 0      -      -     "
+      "21": "ret                 0      -1     -     "
     },
     "backend": {
       "00": "set                 0      1      0     ",
@@ -591,7 +591,7 @@ explain declare x int; declare y int; select id into x from test; if true then y
       "04": "set_add             0      0      0     ",
       "05": "table_next          1      2      0     ",
       "06": "free                1      0      0     ",
-      "07": "ret                 0      -      -     "
+      "07": "ret                 0      -1     -     "
     }
   },
   "access": [["public.test", "ro"]]
@@ -617,7 +617,7 @@ explain declare x int; select id into x from test; if false then else select x; 
       "11": "jmp                 8      0      0     ",
       "12": "var                 0      0      0     ",
       "13": "var                 1      0      0     ",
-      "14": "ret                 1      -      -     "
+      "14": "ret                 1      -1     -     "
     },
     "backend": {
       "00": "set                 0      1      0     ",
@@ -627,7 +627,7 @@ explain declare x int; select id into x from test; if false then else select x; 
       "04": "set_add             0      0      0     ",
       "05": "table_next          1      2      0     ",
       "06": "free                1      0      0     ",
-      "07": "ret                 0      -      -     "
+      "07": "ret                 0      -1     -     "
     }
   },
   "access": [["public.test", "ro"]]
@@ -653,7 +653,7 @@ explain declare x int; select id into x from test; if false then select 1; else 
       "12": "jmp                 8      0      0     ",
       "13": "var                 1      0      0     ",
       "14": "var                 2      0      0     ",
-      "15": "ret                 2      -      -     "
+      "15": "ret                 2      -1     -     "
     },
     "backend": {
       "00": "set                 0      1      0     ",
@@ -663,7 +663,7 @@ explain declare x int; select id into x from test; if false then select 1; else 
       "04": "set_add             0      0      0     ",
       "05": "table_next          1      2      0     ",
       "06": "free                1      0      0     ",
-      "07": "ret                 0      -      -     "
+      "07": "ret                 0      -1     -     "
     }
   },
   "access": [["public.test", "ro"]]
@@ -691,7 +691,7 @@ explain declare x int; select id into x from test; if false then else x := 7; en
       "13": "var_set             0      0      0     ",
       "14": "free                0      0      0     ",
       "15": "var                 0      0      0     ",
-      "16": "ret                 0      -      -     "
+      "16": "ret                 0      -1     -     "
     },
     "backend": {
       "00": "set                 0      1      0     ",
@@ -701,7 +701,7 @@ explain declare x int; select id into x from test; if false then else x := 7; en
       "04": "set_add             0      0      0     ",
       "05": "table_next          1      2      0     ",
       "06": "free                1      0      0     ",
-      "07": "ret                 0      -      -     "
+      "07": "ret                 0      -1     -     "
     }
   },
   "access": [["public.test", "ro"]]
@@ -729,7 +729,7 @@ explain declare x int; select id into x from test; if false then select 1; else 
       "14": "var_set             0      1      0     ",
       "15": "free                1      0      0     ",
       "16": "var                 1      0      0     ",
-      "17": "ret                 1      -      -     "
+      "17": "ret                 1      -1     -     "
     },
     "backend": {
       "00": "set                 0      1      0     ",
@@ -739,7 +739,7 @@ explain declare x int; select id into x from test; if false then select 1; else 
       "04": "set_add             0      0      0     ",
       "05": "table_next          1      2      0     ",
       "06": "free                1      0      0     ",
-      "07": "ret                 0      -      -     "
+      "07": "ret                 0      -1     -     "
     }
   },
   "access": [["public.test", "ro"]]
@@ -772,7 +772,7 @@ explain declare x int; declare y int; select id into x from test; if false then 
       "18": "var                 1      1      0     ",
       "19": "push                1      0      0     ",
       "20": "set_add             0      0      0     ",
-      "21": "ret                 0      -      -     "
+      "21": "ret                 0      -1     -     "
     },
     "backend": {
       "00": "set                 0      1      0     ",
@@ -782,7 +782,7 @@ explain declare x int; declare y int; select id into x from test; if false then 
       "04": "set_add             0      0      0     ",
       "05": "table_next          1      2      0     ",
       "06": "free                1      0      0     ",
-      "07": "ret                 0      -      -     "
+      "07": "ret                 0      -1     -     "
     }
   },
   "access": [["public.test", "ro"]]
@@ -815,7 +815,7 @@ explain declare x int; declare y int; select id into x from test; if false then 
       "19": "var                 2      1      0     ",
       "20": "push                2      0      0     ",
       "21": "set_add             1      0      0     ",
-      "22": "ret                 1      -      -     "
+      "22": "ret                 1      -1     -     "
     },
     "backend": {
       "00": "set                 0      1      0     ",
@@ -825,7 +825,7 @@ explain declare x int; declare y int; select id into x from test; if false then 
       "04": "set_add             0      0      0     ",
       "05": "table_next          1      2      0     ",
       "06": "free                1      0      0     ",
-      "07": "ret                 0      -      -     "
+      "07": "ret                 0      -1     -     "
     }
   },
   "access": [["public.test", "ro"]]
@@ -855,7 +855,7 @@ explain declare x int; select id into x from test; if true then if x then end; e
       "15": "jmp                 12     0      0     ",
       "16": "jmp                 8      0      0     ",
       "17": "var                 0      0      0     ",
-      "18": "ret                 0      -      -     "
+      "18": "ret                 0      -1     -     "
     },
     "backend": {
       "00": "set                 0      1      0     ",
@@ -865,7 +865,7 @@ explain declare x int; select id into x from test; if true then if x then end; e
       "04": "set_add             0      0      0     ",
       "05": "table_next          1      2      0     ",
       "06": "free                1      0      0     ",
-      "07": "ret                 0      -      -     "
+      "07": "ret                 0      -1     -     "
     }
   },
   "access": [["public.test", "ro"]]
@@ -896,7 +896,7 @@ explain declare x int; select id into x from test; if true then if true then sel
       "16": "jmp                 12     0      0     ",
       "17": "jmp                 8      0      0     ",
       "18": "var                 1      0      0     ",
-      "19": "ret                 1      -      -     "
+      "19": "ret                 1      -1     -     "
     },
     "backend": {
       "00": "set                 0      1      0     ",
@@ -906,7 +906,7 @@ explain declare x int; select id into x from test; if true then if true then sel
       "04": "set_add             0      0      0     ",
       "05": "table_next          1      2      0     ",
       "06": "free                1      0      0     ",
-      "07": "ret                 0      -      -     "
+      "07": "ret                 0      -1     -     "
     }
   },
   "access": [["public.test", "ro"]]
@@ -939,7 +939,7 @@ explain declare x int; select id into x from test; if true then if true then sel
       "18": "jmp                 12     0      0     ",
       "19": "jmp                 8      0      0     ",
       "20": "var                 0      0      0     ",
-      "21": "ret                 0      -      -     "
+      "21": "ret                 0      -1     -     "
     },
     "backend": {
       "00": "set                 0      1      0     ",
@@ -949,7 +949,7 @@ explain declare x int; select id into x from test; if true then if true then sel
       "04": "set_add             0      0      0     ",
       "05": "table_next          1      2      0     ",
       "06": "free                1      0      0     ",
-      "07": "ret                 0      -      -     "
+      "07": "ret                 0      -1     -     "
     }
   },
   "access": [["public.test", "ro"]]
@@ -986,7 +986,7 @@ explain declare x int; declare y int; select id into x from test; if true then i
       "23": "jmp                 12     0      0     ",
       "24": "jmp                 8      0      0     ",
       "25": "var                 0      0      0     ",
-      "26": "ret                 0      -      -     "
+      "26": "ret                 0      -1     -     "
     },
     "backend": {
       "00": "set                 0      1      0     ",
@@ -996,7 +996,7 @@ explain declare x int; declare y int; select id into x from test; if true then i
       "04": "set_add             0      0      0     ",
       "05": "table_next          1      2      0     ",
       "06": "free                1      0      0     ",
-      "07": "ret                 0      -      -     "
+      "07": "ret                 0      -1     -     "
     }
   },
   "access": [["public.test", "ro"]]
@@ -1022,7 +1022,7 @@ explain declare x int; if true then select * into x from test; end; select x
       "11": "jmp                 2      0      0     ",
       "12": "close               0      0      0     ",
       "13": "var                 0      0      0     ",
-      "14": "ret                 0      -      -     "
+      "14": "ret                 0      -1     -     "
     },
     "backend": {
       "00": "set                 0      1      0     ",
@@ -1032,7 +1032,7 @@ explain declare x int; if true then select * into x from test; end; select x
       "04": "set_add             0      0      0     ",
       "05": "table_next          1      2      0     ",
       "06": "free                1      0      0     ",
-      "07": "ret                 0      -      -     "
+      "07": "ret                 0      -1     -     "
     }
   },
   "access": [["public.test", "ro"]]
@@ -1064,7 +1064,7 @@ explain declare x int; if true then select id into x from test; else select 7 + 
       "17": "free                0      0      0     ",
       "18": "close               0      0      0     ",
       "19": "var                 0      0      0     ",
-      "20": "ret                 0      -      -     "
+      "20": "ret                 0      -1     -     "
     },
     "backend": {
       "00": "set                 0      1      0     ",
@@ -1074,7 +1074,7 @@ explain declare x int; if true then select id into x from test; else select 7 + 
       "04": "set_add             0      0      0     ",
       "05": "table_next          1      2      0     ",
       "06": "free                1      0      0     ",
-      "07": "ret                 0      -      -     ",
+      "07": "ret                 0      -1     -     ",
       "08": "set                 0      1      0     ",
       "09": "table_open_part     1      20     16    # public.test (primary)",
       "10": "int                 2      -      0     # 7",
@@ -1084,7 +1084,7 @@ explain declare x int; if true then select id into x from test; else select 7 + 
       "14": "set_add             0      0      0     ",
       "15": "table_next          1      10     0     ",
       "16": "free                1      0      0     ",
-      "17": "ret                 0      -      -     "
+      "17": "ret                 0      -1     -     "
     }
   },
   "access": [["public.test", "ro"]]
@@ -1115,7 +1115,7 @@ explain declare x int; if false then select id into x from test; else select 7 +
       "17": "free                0      0      0     ",
       "18": "close               0      0      0     ",
       "19": "var                 0      0      0     ",
-      "20": "ret                 0      -      -     "
+      "20": "ret                 0      -1     -     "
     },
     "backend": {
       "00": "set                 0      1      0     ",
@@ -1125,7 +1125,7 @@ explain declare x int; if false then select id into x from test; else select 7 +
       "04": "set_add             0      0      0     ",
       "05": "table_next          1      2      0     ",
       "06": "free                1      0      0     ",
-      "07": "ret                 0      -      -     ",
+      "07": "ret                 0      -1     -     ",
       "08": "set                 0      1      0     ",
       "09": "table_open_part     1      20     16    # public.test (primary)",
       "10": "int                 2      -      0     # 7",
@@ -1135,7 +1135,7 @@ explain declare x int; if false then select id into x from test; else select 7 +
       "14": "set_add             0      0      0     ",
       "15": "table_next          1      10     0     ",
       "16": "free                1      0      0     ",
-      "17": "ret                 0      -      -     "
+      "17": "ret                 0      -1     -     "
     }
   },
   "access": [["public.test", "ro"]]
@@ -1173,7 +1173,7 @@ explain declare x int; select id into x from test; if true then select 5 + id in
       "23": "free                0      0      0     ",
       "24": "close               0      0      0     ",
       "25": "var                 0      0      0     ",
-      "26": "ret                 0      -      -     "
+      "26": "ret                 0      -1     -     "
     },
     "backend": {
       "00": "set                 0      1      0     ",
@@ -1183,7 +1183,7 @@ explain declare x int; select id into x from test; if true then select 5 + id in
       "04": "set_add             0      0      0     ",
       "05": "table_next          1      2      0     ",
       "06": "free                1      0      0     ",
-      "07": "ret                 0      -      -     ",
+      "07": "ret                 0      -1     -     ",
       "08": "set                 0      1      0     ",
       "09": "table_open_part     1      20     16    # public.test (primary)",
       "10": "int                 2      -      0     # 5",
@@ -1193,7 +1193,7 @@ explain declare x int; select id into x from test; if true then select 5 + id in
       "14": "set_add             0      0      0     ",
       "15": "table_next          1      10     0     ",
       "16": "free                1      0      0     ",
-      "17": "ret                 0      -      -     ",
+      "17": "ret                 0      -1     -     ",
       "18": "set                 0      1      0     ",
       "19": "table_open_part     1      40     26    # public.test (primary)",
       "20": "int                 2      -      0     # 10",
@@ -1203,7 +1203,7 @@ explain declare x int; select id into x from test; if true then select 5 + id in
       "24": "set_add             0      0      0     ",
       "25": "table_next          1      20     0     ",
       "26": "free                1      0      0     ",
-      "27": "ret                 0      -      -     "
+      "27": "ret                 0      -1     -     "
     }
   },
   "access": [["public.test", "ro"]]
@@ -1240,7 +1240,7 @@ explain declare x int; select id into x from test; if false then select 5 + id i
       "23": "free                0      0      0     ",
       "24": "close               0      0      0     ",
       "25": "var                 0      0      0     ",
-      "26": "ret                 0      -      -     "
+      "26": "ret                 0      -1     -     "
     },
     "backend": {
       "00": "set                 0      1      0     ",
@@ -1250,7 +1250,7 @@ explain declare x int; select id into x from test; if false then select 5 + id i
       "04": "set_add             0      0      0     ",
       "05": "table_next          1      2      0     ",
       "06": "free                1      0      0     ",
-      "07": "ret                 0      -      -     ",
+      "07": "ret                 0      -1     -     ",
       "08": "set                 0      1      0     ",
       "09": "table_open_part     1      20     16    # public.test (primary)",
       "10": "int                 2      -      0     # 5",
@@ -1260,7 +1260,7 @@ explain declare x int; select id into x from test; if false then select 5 + id i
       "14": "set_add             0      0      0     ",
       "15": "table_next          1      10     0     ",
       "16": "free                1      0      0     ",
-      "17": "ret                 0      -      -     ",
+      "17": "ret                 0      -1     -     ",
       "18": "set                 0      1      0     ",
       "19": "table_open_part     1      40     26    # public.test (primary)",
       "20": "int                 2      -      0     # 10",
@@ -1270,7 +1270,7 @@ explain declare x int; select id into x from test; if false then select 5 + id i
       "24": "set_add             0      0      0     ",
       "25": "table_next          1      20     0     ",
       "26": "free                1      0      0     ",
-      "27": "ret                 0      -      -     "
+      "27": "ret                 0      -1     -     "
     }
   },
   "access": [["public.test", "ro"]]
@@ -1297,7 +1297,7 @@ explain declare x int; select id into x from test; for it in x do end
       "12": "store_next          1      12     0     ",
       "13": "free                1      0      0     ",
       "14": "free                0      0      0     ",
-      "15": "ret                 -1     -      -     "
+      "15": "ret                 -1     -1     -     "
     },
     "backend": {
       "00": "set                 0      1      0     ",
@@ -1307,7 +1307,7 @@ explain declare x int; select id into x from test; for it in x do end
       "04": "set_add             0      0      0     ",
       "05": "table_next          1      2      0     ",
       "06": "free                1      0      0     ",
-      "07": "ret                 0      -      -     "
+      "07": "ret                 0      -1     -     "
     }
   },
   "access": [["public.test", "ro"]]
@@ -1331,7 +1331,7 @@ explain declare x int; select id into x from test; for it in ([1,2,3]) do select
       "10": "json_next           1      9      0     ",
       "11": "free                1      0      0     ",
       "12": "free                0      0      0     ",
-      "13": "ret                 -1     -      -     "
+      "13": "ret                 -1     -1     -     "
     },
     "backend": {
       "00": "set                 0      1      0     ",
@@ -1341,7 +1341,7 @@ explain declare x int; select id into x from test; for it in ([1,2,3]) do select
       "04": "set_add             0      0      0     ",
       "05": "table_next          1      2      0     ",
       "06": "free                1      0      0     ",
-      "07": "ret                 0      -      -     "
+      "07": "ret                 0      -1     -     "
     }
   },
   "access": [["public.test", "ro"]]
@@ -1370,7 +1370,7 @@ explain declare x int; select id into x from test; for it in ([1,2,3]) do x := i
       "15": "free                1      0      0     ",
       "16": "free                0      0      0     ",
       "17": "var                 0      0      0     ",
-      "18": "ret                 0      -      -     "
+      "18": "ret                 0      -1     -     "
     },
     "backend": {
       "00": "set                 0      1      0     ",
@@ -1380,7 +1380,7 @@ explain declare x int; select id into x from test; for it in ([1,2,3]) do x := i
       "04": "set_add             0      0      0     ",
       "05": "table_next          1      2      0     ",
       "06": "free                1      0      0     ",
-      "07": "ret                 0      -      -     "
+      "07": "ret                 0      -1     -     "
     }
   },
   "access": [["public.test", "ro"]]
@@ -1416,7 +1416,7 @@ explain declare x int; declare y int; select id into x from test; for it in ([1,
       "22": "var                 1      1      0     ",
       "23": "push                1      0      0     ",
       "24": "set_add             0      0      0     ",
-      "25": "ret                 0      -      -     "
+      "25": "ret                 0      -1     -     "
     },
     "backend": {
       "00": "set                 0      1      0     ",
@@ -1426,7 +1426,7 @@ explain declare x int; declare y int; select id into x from test; for it in ([1,
       "04": "set_add             0      0      0     ",
       "05": "table_next          1      2      0     ",
       "06": "free                1      0      0     ",
-      "07": "ret                 0      -      -     "
+      "07": "ret                 0      -1     -     "
     }
   },
   "access": [["public.test", "ro"]]
@@ -1456,7 +1456,7 @@ explain declare x int; select id into x from test; for it in ([1,2,3]) do if tru
       "15": "var_set             0      0      0     ",
       "16": "free                0      0      0     ",
       "17": "var                 0      0      0     ",
-      "18": "ret                 0      -      -     "
+      "18": "ret                 0      -1     -     "
     },
     "backend": {
       "00": "set                 0      1      0     ",
@@ -1466,7 +1466,7 @@ explain declare x int; select id into x from test; for it in ([1,2,3]) do if tru
       "04": "set_add             0      0      0     ",
       "05": "table_next          1      2      0     ",
       "06": "free                1      0      0     ",
-      "07": "ret                 0      -      -     "
+      "07": "ret                 0      -1     -     "
     }
   },
   "access": [["public.test", "ro"]]
@@ -1495,7 +1495,7 @@ explain declare x int; select id into x from test; for it in ([1,2,3]) do if x t
       "14": "json_next           1      9      0     ",
       "15": "free                1      0      0     ",
       "16": "free                0      0      0     ",
-      "17": "ret                 -1     -      -     "
+      "17": "ret                 -1     -1     -     "
     },
     "backend": {
       "00": "set                 0      1      0     ",
@@ -1505,7 +1505,7 @@ explain declare x int; select id into x from test; for it in ([1,2,3]) do if x t
       "04": "set_add             0      0      0     ",
       "05": "table_next          1      2      0     ",
       "06": "free                1      0      0     ",
-      "07": "ret                 0      -      -     "
+      "07": "ret                 0      -1     -     "
     }
   },
   "access": [["public.test", "ro"]]
@@ -1534,7 +1534,7 @@ explain declare x int; select id into x from test; for it in ([1,2,3]) do if tru
       "15": "json_next           1      9      0     ",
       "16": "free                1      0      0     ",
       "17": "free                0      0      0     ",
-      "18": "ret                 -1     -      -     "
+      "18": "ret                 -1     -1     -     "
     },
     "backend": {
       "00": "set                 0      1      0     ",
@@ -1544,7 +1544,7 @@ explain declare x int; select id into x from test; for it in ([1,2,3]) do if tru
       "04": "set_add             0      0      0     ",
       "05": "table_next          1      2      0     ",
       "06": "free                1      0      0     ",
-      "07": "ret                 0      -      -     "
+      "07": "ret                 0      -1     -     "
     }
   },
   "access": [["public.test", "ro"]]
@@ -1584,7 +1584,7 @@ explain declare x int; declare y int; select id into x from test; for it in ([1,
       "27": "var                 1      1      0     ",
       "28": "push                1      0      0     ",
       "29": "set_add             0      0      0     ",
-      "30": "ret                 0      -      -     "
+      "30": "ret                 0      -1     -     "
     },
     "backend": {
       "00": "set                 0      1      0     ",
@@ -1594,7 +1594,7 @@ explain declare x int; declare y int; select id into x from test; for it in ([1,
       "04": "set_add             0      0      0     ",
       "05": "table_next          1      2      0     ",
       "06": "free                1      0      0     ",
-      "07": "ret                 0      -      -     "
+      "07": "ret                 0      -1     -     "
     }
   },
   "access": [["public.test", "ro"]]
@@ -1627,7 +1627,7 @@ explain declare x int := 0; for it in ([1,2,3]) do if true then x := x + it::int
       "19": "free                1      0      0     ",
       "20": "free                0      0      0     ",
       "21": "var                 0      0      0     ",
-      "22": "ret                 0      -      -     "
+      "22": "ret                 0      -1     -     "
     }
   },
   "access": []
@@ -1655,7 +1655,7 @@ explain declare x int := 0; for it in ([1,2,3]) do x := x + it::int; end; select
       "14": "free                1      0      0     ",
       "15": "free                0      0      0     ",
       "16": "var                 0      0      0     ",
-      "17": "ret                 0      -      -     "
+      "17": "ret                 0      -1     -     "
     }
   },
   "access": []
@@ -1702,7 +1702,7 @@ explain declare x int; declare y int; select id into x from test; for it in ([1,
       "32": "var                 1      1      0     ",
       "33": "push                1      0      0     ",
       "34": "set_add             0      0      0     ",
-      "35": "ret                 0      -      -     "
+      "35": "ret                 0      -1     -     "
     },
     "backend": {
       "00": "set                 0      1      0     ",
@@ -1712,7 +1712,7 @@ explain declare x int; declare y int; select id into x from test; for it in ([1,
       "04": "set_add             0      0      0     ",
       "05": "table_next          1      2      0     ",
       "06": "free                1      0      0     ",
-      "07": "ret                 0      -      -     "
+      "07": "ret                 0      -1     -     "
     }
   },
   "access": [["public.test", "ro"]]
