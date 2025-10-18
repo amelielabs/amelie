@@ -19,7 +19,7 @@ void cclose(Vm*, Op*);
 
 void cunion_set(Vm*, Op*);
 void cunion_recv(Vm*, Op*);
-void cassign(Vm*, Op*);
+void cvar_set(Vm*, Op*);
 
 Op*  ctable_open(Vm*, Op*, bool, bool);
 Op*  ctable_open_heap(Vm*, Op*);

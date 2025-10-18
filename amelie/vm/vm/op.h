@@ -15,8 +15,7 @@ typedef struct OpDesc OpDesc;
 
 enum
 {
-	// control
-	CRET,
+	// control flow
 	CNOP,
 	CJMP,
 	CJTR,
@@ -32,6 +31,7 @@ enum
 	// stack
 	CPUSH,
 	CPUSH_REF,
+	CPUSH_NULLS,
 	CPOP,
 
 	// consts
@@ -246,9 +246,6 @@ enum
 	CAVGI,
 	CAVGF,
 
-	// functions
-	CCALL,
-
 	// dml
 	CINSERT,
 	CUPSERT,
@@ -285,9 +282,16 @@ enum
 	CSEND_ALL,
 	CCLOSE,
 
-	// result
-	CASSIGN,
-	CREF
+	// var
+	CVAR,
+	CVAR_MOV,
+	CVAR_SET,
+	CREF,
+
+	// call/return
+	CCALL,
+	CCALL_SP,
+	CRET
 };
 
 struct OpDesc

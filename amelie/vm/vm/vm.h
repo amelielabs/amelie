@@ -17,6 +17,7 @@ struct Vm
 {
 	Reg       r;
 	Stack     stack;
+	CallStack stack_call;
 	Code*     code;
 	CodeData* code_data;
 	Buf*      code_arg;
@@ -34,4 +35,4 @@ void vm_init(Vm*, Core*, Dtr*);
 void vm_free(Vm*);
 void vm_reset(Vm*);
 void vm_run(Vm*, Local*, Tr*, Program*, Code*, CodeData*, Buf*, Value*,
-            VmReturn*, int);
+            Return*, int);

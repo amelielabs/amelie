@@ -40,8 +40,7 @@
 
 OpDesc ops[] =
 {
-	// control
-	{ CRET, "ret" },
+	// control flow
 	{ CNOP, "nop" },
 	{ CJMP, "jmp" },
 	{ CJTR, "jtr" },
@@ -57,6 +56,7 @@ OpDesc ops[] =
 	// stack
 	{ CPUSH, "push" },
 	{ CPUSH_REF, "push_ref" },
+	{ CPUSH_NULLS, "push_nulls" },
 	{ CPOP, "pop" },
 
 	// consts
@@ -270,9 +270,6 @@ OpDesc ops[] =
 	{ CAVGI, "avgi" },
 	{ CAVGF, "avgf" },
 
-	// functions
-	{ CCALL, "call" },
-
 	// dml
 	{ CINSERT, "insert" },
 	{ CUPSERT, "upsert" },
@@ -309,9 +306,16 @@ OpDesc ops[] =
 	{ CSEND_ALL, "send_all" },
 	{ CCLOSE, "close" },
 
-	// result
-	{ CASSIGN, "assign" },
+	// var
+	{ CVAR, "var" },
+	{ CVAR_MOV, "var_mov" },
+	{ CVAR_SET, "var_set" },
 	{ CREF, "ref" },
+
+	// call / return
+	{ CCALL, "call" },
+	{ CCALL_SP, "call_sp" },
+	{ CRET, "ret" },
 
 	{ 0, NULL }
 };
@@ -478,12 +482,23 @@ op_dump(Program* self, Code* code, Buf* buf)
 		case CCALL:
 		{
 			auto function = (Function*)op->b;
-			op_write(output, op,true, false, true,
+			op_write(output, op, true, false, true,
 			         "%.*s.%.*s()",
 			         str_size(&function->schema),
 			         str_of(&function->schema),
 			         str_size(&function->name),
 			         str_of(&function->name));
+			break;
+		}
+		case CCALL_SP:
+		{
+			auto proc = (Proc*)op->b;
+			op_write(output, op, true, false, false,
+			         "%.*s.%.*s()",
+			         str_size(&proc->config->schema),
+			         str_of(&proc->config->schema),
+			         str_size(&proc->config->name),
+			         str_of(&proc->config->name));
 			break;
 		}
 		case CRET:

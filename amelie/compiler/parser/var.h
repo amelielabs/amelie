@@ -17,7 +17,6 @@ typedef struct Vars Vars;
 struct Var
 {
 	int     order;
-	int     r;
 	Type    type;
 	Columns columns;
 	Str*    name;
@@ -64,7 +63,6 @@ vars_add(Vars* self, Str* name)
 {
 	auto var = (Var*)palloc(sizeof(Var));
 	var->order  = self->count;
-	var->r      = -1;
 	var->type   = TYPE_NULL;
 	var->name   = name;
 	var->writer = NULL;

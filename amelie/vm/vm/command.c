@@ -333,12 +333,21 @@ cunion_recv(Vm* self, Op* op)
 }
 
 void
-cassign(Vm* self, Op* op)
+cvar_set(Vm* self, Op* op)
 {
-	// [result, value, column]
-	auto dst = reg_at(&self->r, op->a);
-	value_free(dst);
+	// [var, value, column]
+	Value* var;
+	if (call_stack_head(&self->stack_call) > 0)
+	{
+		// head
+		auto call = call_stack_at(&self->stack_call, 1);
+		var = stack_get(&self->stack, call->stack_head + op->a);
+	} else {
+		var = stack_get(&self->stack, op->a);
+	}
+	value_free(var);
 
+	// value
 	auto src = reg_at(&self->r, op->b);
 	if (src->type == TYPE_STORE)
 	{
@@ -346,11 +355,11 @@ cassign(Vm* self, Op* op)
 		auto it = store_iterator(store);
 		defer(store_iterator_close, it);
 		if (store_iterator_has(it))
-			value_copy(dst, it->current + op->c);
+			value_copy(var, it->current + op->c);
 		else
-			value_set_null(dst);
+			value_set_null(var);
 	} else {
-		value_copy(dst, src);
+		value_copy(var, src);
 	}
 }
 

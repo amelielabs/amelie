@@ -177,8 +177,8 @@ session_execute_distributed(Session* self, Content* output)
 		explain_start(&explain->time_run_us);
 
 	// execute coordinator
-	VmReturn ret;
-	vm_return_init(&ret);
+	Return ret;
+	return_init(&ret);
 	auto on_error = error_catch
 	(
 		vm_run(&self->vm, &self->local,
@@ -234,8 +234,8 @@ session_execute_utility(Session* self, Content* output)
 	tr_init(&tr);
 	defer(tr_free, &tr);
 
-	VmReturn ret;
-	vm_return_init(&ret);
+	Return ret;
+	return_init(&ret);
 	auto on_error = error_catch
 	(
 		// begin

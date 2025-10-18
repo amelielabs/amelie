@@ -109,8 +109,8 @@ backend_run(Backend* self, Ctr* ctr, Req* req)
 		vm_reset(&self->vm);
 		reg_prepare(&self->vm.r, req->code->regs);
 
-		VmReturn ret;
-		vm_return_init(&ret);
+		Return ret;
+		return_init(&ret);
 
 		vm_run(&self->vm, dtr->local,
 		        ctr->tr,

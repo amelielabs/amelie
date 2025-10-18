@@ -11,9 +11,9 @@
 // AGPL-3.0 Licensed.
 //
 
-typedef struct VmReturn VmReturn;
+typedef struct Return Return;
 
-struct VmReturn
+struct Return
 {
 	Value*   value;
 	Columns* columns;
@@ -21,7 +21,7 @@ struct VmReturn
 };
 
 static inline void
-vm_return_init(VmReturn* self)
+return_init(Return* self)
 {
 	self->value   = NULL;
 	self->columns = NULL;

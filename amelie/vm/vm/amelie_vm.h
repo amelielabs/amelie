@@ -14,8 +14,11 @@
 // bytecode
 #include "vm/op.h"
 
+// call/return
+#include "vm/call.h"
+#include "vm/return.h"
+
 // vm
-#include "vm/vm_return.h"
 #include "vm/vm.h"
 #include "vm/command.h"
 #include "vm/command_utility.h"

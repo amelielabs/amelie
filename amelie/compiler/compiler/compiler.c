@@ -217,8 +217,8 @@ emit_into(Compiler* self, Stmt* stmt)
 		if (type != TYPE_NULL && !columns_compare(&var->columns, &ret->columns))
 			stmt_error(self->current, stmt->ast, "variable table columns mismatch");
 
-		// var = store
-		op2(self, CMOV, var->r, stmt->r);
+		// CVAR_MOV (var = store)
+		op2(self, CVAR_MOV, var->order, stmt->r);
 
 		runpin(self, stmt->r);
 		stmt->r = -1;
@@ -241,8 +241,8 @@ emit_into(Compiler* self, Stmt* stmt)
 			stmt_error(self->current, stmt->ast, "variable expected %s",
 					   type_of(var->type));
 
-		// CASSIGN
-		op3(self, CASSIGN, var->r, stmt->r, column->order);
+		// CVAR_SET
+		op3(self, CVAR_SET, var->order, stmt->r, column->order);
 
 		// variables count can be less than expressions
 		ref = ref->next;
@@ -544,9 +544,6 @@ emit_for(Compiler* self, Stmt* stmt)
 	self->current = stmt_prev;
 }
 
-static void
-emit_namespace(Compiler*, Namespace*);
-
 hot static void
 emit_call(Compiler* self, Stmt* stmt)
 {
@@ -556,27 +553,40 @@ emit_call(Compiler* self, Stmt* stmt)
 	auto call = ast_call_of(stmt->ast);
 	compiler_switch_frontend(self);
 
-	// emit call arguments into variables
+	// CCALL_SP
+	auto _enter = op_pos(self);
+	op2(self, CCALL_SP, 0 /* jmp_ret */, (intptr_t)call->proc);
+
+	// push call arguments (arguments are variables)
 	auto var  = call->ns->vars.list;
 	auto argc = call->args->integer;
 	auto arg  = call->args->l;
 	for (auto at = 0; at < argc; at++)
 	{
 		// expr
-		var->r = emit_expr(self, &call->from, arg);
+		auto r = emit_expr(self, &call->from, arg);
 
 		// validate argument type
-		auto type = (Type)rtype(self, var->r);
+		auto type = (Type)rtype(self, r);
 		if (type != TYPE_NULL && var->type != type)
 			stmt_error(self->current, stmt->ast, "expected %s for argument %.*s",
 			           type_of(var->type), str_size(var->name),
 			           str_of(var->name));
+
+		// PUSH
+		op1(self, CPUSH, r);
+		runpin(self, r);
+
 		arg = arg->next;
 		var = var->next;
 	}
 
-	// emit procedure statements
-	emit_namespace(self, call->ns);
+	// emit main block
+	emit_block(self, call->ns->blocks.list);
+
+	// set call return jmp
+	auto _return = op_pos(self);
+	op_set_jmp(self, _enter, _return);
 
 	// mark last sending operation in the main block
 	auto block = compiler_main(self);
@@ -597,11 +607,13 @@ emit_return(Compiler* self, Stmt* stmt)
 	Str*     fmt = NULL;
 	if (stmt->id == STMT_RETURN)
 	{
+		/*
 		auto return_ = ast_return_of(stmt->ast);
 		r       =  return_->var->r;
 		columns =  return_->columns;
 		fmt     = &return_->format;
 		assert(r != -1);
+		*/
 	} else
 	{
 		if (stmt->ret)
@@ -652,6 +664,7 @@ emit_block(Compiler* self, Block* block)
 			emit_return(self, stmt);
 	}
 
+
 	// on block exit (not main)
 	if (block != compiler_main(self))
 	{
@@ -665,40 +678,10 @@ emit_block(Compiler* self, Block* block)
 		}
 	}
 
-	// set previous stmt
-	self->current = stmt_prev;
-}
-
-hot static void
-emit_namespace(Compiler* self, Namespace* ns)
-{
-	auto stmt_prev = self->current;
-	self->current = NULL;
-
-	// reserve uninitialized variables
-	auto var = ns->vars.list;
-	for (; var; var = var->next)
-	{
-		if (var->r == -1)
-			var->r = rpin(self, var->type);
-	}
-
-	// emit main block
-	emit_block(self, ns->blocks.list);
-
-	// on ns return
-	auto main = self->parser.nss.list;
-	if (ns != main)
-	{
-		// clean all variables in the block
-		var = ns->vars.list;
-		for (; var; var = var->next)
-		{
-			op1(self, CFREE, var->r);
-			runpin(self, var->r);
-			var->r = -1;
-		}
-	}
+	// emit RET if ns has no statements
+	auto ns = block->ns;
+	if (ns->blocks.list == block && !block->stmts.count)
+		op3(self, CRET, -1, 0, 0);
 
 	// set previous stmt
 	self->current = stmt_prev;
@@ -712,9 +695,17 @@ compiler_emit(Compiler* self)
 	assert(main);
 
 	if (stmt_is_utility(compiler_stmt(self)))
+	{
 		emit_utility(self);
-	else
-		emit_namespace(self, main);
+	} else
+	{
+		// initialize variables
+		if (main->vars.count > 0)
+			op1(self, CPUSH_NULLS, main->vars.count);
+
+		// emit main block
+		emit_block(self, main->blocks.list);
+	}
 
 	// set the max number of registers used
 	code_set_regs(&self->program->code, self->map.count);

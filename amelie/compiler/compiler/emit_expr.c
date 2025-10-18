@@ -916,14 +916,14 @@ emit_expr(Compiler* self, From* from, Ast* ast)
 	{
 		// SELECT var
 		auto var = ast->var;
-		assert(var->r != -1);
 		if (self->origin == ORIGIN_BACKEND)
 		{
 			// create reference, if variable is accessed from backend
-			auto ref = refs_add(&self->current->refs, from, NULL, var->r);
+			auto ref = refs_add(&self->current->refs, from, ast, -1);
 			return op2(self, CREF, rpin(self, var->type), ref->order);
 		}
-		return op2(self, CDUP, rpin(self, var->type), var->r);
+		auto r = op2(self, CVAR, rpin(self, var->type), var->order);
+		return r;
 	}
 
 	// column

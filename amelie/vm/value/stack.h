@@ -33,9 +33,15 @@ stack_head(Stack* self)
 }
 
 always_inline hot static inline Value*
+stack_get(Stack* self, int pos)
+{
+	return &((Value*)self->stack.start)[pos];
+}
+
+always_inline hot static inline Value*
 stack_at(Stack* self, int pos)
 {
-	return &((Value*)self->stack.start)[self->stack_size - pos];
+	return stack_get(self, self->stack_size - pos);
 }
 
 always_inline hot static inline Value*
@@ -53,6 +59,16 @@ stack_pop(Stack* self)
 	buf_truncate(&self->stack, sizeof(Value));
 	self->stack_size--;
 	return value;
+}
+
+always_inline hot static inline void
+stack_truncate(Stack* self, int head)
+{
+	while (self->stack_size > head)
+	{
+		value_free(stack_pop(self));
+		self->stack_size--;
+	}
 }
 
 always_inline hot static inline void

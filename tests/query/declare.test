@@ -65,7 +65,9 @@ declare x int; x := null; select x + 10
 create table test (id int primary key)
 insert into test values (1)
 # this compares two vars
+explain  declare id int; id := 1; select * from test where id = id
 declare id int; id := 1; select * from test where id = id
+explain declare id int; id := 1; select * from test where test.id = id
 declare id int; id := 1; select * from test where test.id = id
 drop table test
 

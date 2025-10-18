@@ -314,7 +314,6 @@ scan_expr(Scan* self, Target* target)
 	{
 		auto r    = -1;
 		auto type = -1;
-		auto ref  = true;
 		switch (target->type) {
 		case TARGET_EXPR:
 		case TARGET_FUNCTION:
@@ -324,28 +323,16 @@ scan_expr(Scan* self, Target* target)
 			// set expression type
 			assert(target->columns->count == 1);
 			column_set_type(columns_first(target->columns), type, type_sizeof(type));
-			ref = false;
 			target_set_origin(target, cp->origin);
 			break;
 		}
 		case TARGET_STMT:
 			r = target->from_stmt->r;
 			target_set_origin(target, ORIGIN_FRONTEND);
-			break;
-		case TARGET_VAR:
-			r = target->from_var->r;
-			target_set_origin(target, ORIGIN_FRONTEND);
-			break;
-		default:
-			abort();
-			break;
-		}
 
-		type = rtype(cp, r);
-		if (ref)
-		{
 			// create reference, if frontend value is accessed from backend
-			if (cp->origin == ORIGIN_BACKEND && target->origin == ORIGIN_FRONTEND)
+			type = rtype(cp, r);
+			if (cp->origin == ORIGIN_BACKEND)
 			{
 				auto ref = refs_add(&cp->current->refs, self->from, NULL, r);
 				r = op2(cp, CREF, rpin(cp, type), ref->order);
@@ -355,6 +342,25 @@ scan_expr(Scan* self, Target* target)
 
 			// futher object access will be using cursor created on backend
 			target_set_origin(target, ORIGIN_BACKEND);
+			break;
+		case TARGET_VAR:
+
+			// create reference, if frontend value is accessed from backend
+			type = target->from_var->type;
+			if (cp->origin == ORIGIN_BACKEND)
+			{
+				auto ref = refs_add(&cp->current->refs, self->from, target->ast, -1);
+				r = op2(cp, CREF, rpin(cp, type), ref->order);
+			} else {
+				r = op2(cp, CVAR, rpin(cp, type), target->from_var->order);
+			}
+
+			// futher object access will be using cursor created on backend
+			target_set_origin(target, ORIGIN_FRONTEND);
+			break;
+		default:
+			abort();
+			break;
 		}
 
 		// convert value to store

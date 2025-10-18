@@ -19,8 +19,9 @@ explain begin; declare a int; select a; end;
 [{
   "bytecode": {
     "frontend": {
-      "00": "dup                 1      0      0     ",
-      "01": "ret                 1      -      -     "
+      "00": "push_nulls          1      0      0     ",
+      "01": "var                 0      0      0     ",
+      "02": "ret                 0      -      -     "
     }
   },
   "access": []
@@ -32,8 +33,9 @@ explain declare a int; select a
 [{
   "bytecode": {
     "frontend": {
-      "00": "dup                 1      0      0     ",
-      "01": "ret                 1      -      -     "
+      "00": "push_nulls          1      0      0     ",
+      "01": "var                 0      0      0     ",
+      "02": "ret                 0      -      -     "
     }
   },
   "access": []
@@ -44,13 +46,14 @@ explain declare a int; declare b int; select a, b
 [{
   "bytecode": {
     "frontend": {
-      "00": "set                 2      2      0     ",
-      "01": "dup                 3      0      0     ",
-      "02": "push                3      0      0     ",
-      "03": "dup                 3      1      0     ",
-      "04": "push                3      0      0     ",
-      "05": "set_add             2      0      0     ",
-      "06": "ret                 2      -      -     "
+      "00": "push_nulls          2      0      0     ",
+      "01": "set                 0      2      0     ",
+      "02": "var                 1      0      0     ",
+      "03": "push                1      0      0     ",
+      "04": "var                 1      1      0     ",
+      "05": "push                1      0      0     ",
+      "06": "set_add             0      0      0     ",
+      "07": "ret                 0      -      -     "
     }
   },
   "access": []
@@ -86,10 +89,11 @@ explain declare x int; x := 1
 [{
   "bytecode": {
     "frontend": {
-      "00": "int                 1      -      0     # 1",
-      "01": "assign              0      1      0     ",
-      "02": "free                1      0      0     ",
-      "03": "ret                 -1     -      -     "
+      "00": "push_nulls          1      0      0     ",
+      "01": "int                 0      -      0     # 1",
+      "02": "var_set             0      0      0     ",
+      "03": "free                0      0      0     ",
+      "04": "ret                 -1     -      -     "
     }
   },
   "access": []
@@ -101,11 +105,12 @@ explain declare x int; x := 1; select x
 [{
   "bytecode": {
     "frontend": {
-      "00": "int                 1      -      0     # 1",
-      "01": "assign              0      1      0     ",
-      "02": "free                1      0      0     ",
-      "03": "dup                 1      0      0     ",
-      "04": "ret                 1      -      -     "
+      "00": "push_nulls          1      0      0     ",
+      "01": "int                 0      -      0     # 1",
+      "02": "var_set             0      0      0     ",
+      "03": "free                0      0      0     ",
+      "04": "var                 0      0      0     ",
+      "05": "ret                 0      -      -     "
     }
   },
   "access": []
@@ -119,13 +124,14 @@ explain declare x json; x := {"id": 48}; select x.id
 [{
   "bytecode": {
     "frontend": {
-      "00": "json                1      0      0     ",
-      "01": "assign              0      1      0     ",
-      "02": "free                1      0      0     ",
-      "03": "dup                 1      0      0     ",
-      "04": "string              2      7      0     # id",
-      "05": "dotjs               3      1      2     ",
-      "06": "ret                 3      -      -     "
+      "00": "push_nulls          1      0      0     ",
+      "01": "json                0      0      0     ",
+      "02": "var_set             0      0      0     ",
+      "03": "free                0      0      0     ",
+      "04": "var                 0      0      0     ",
+      "05": "string              1      7      0     # id",
+      "06": "dotjs               2      0      1     ",
+      "07": "ret                 2      -      -     "
     }
   },
   "access": []
@@ -137,11 +143,12 @@ explain declare x int; x := null; select x
 [{
   "bytecode": {
     "frontend": {
-      "00": "null                1      0      0     ",
-      "01": "assign              0      1      0     ",
-      "02": "free                1      0      0     ",
-      "03": "dup                 1      0      0     ",
-      "04": "ret                 1      -      -     "
+      "00": "push_nulls          1      0      0     ",
+      "01": "null                0      0      0     ",
+      "02": "var_set             0      0      0     ",
+      "03": "free                0      0      0     ",
+      "04": "var                 0      0      0     ",
+      "05": "ret                 0      -      -     "
     }
   },
   "access": []
@@ -151,8 +158,79 @@ declare x int; x := null; select x + 10
 # test: := expr (column shadow)
 create table test (id int primary key)
 insert into test values (1)
+explain  declare id int; id := 1; select * from test where id = id
+[{
+  "bytecode": {
+    "frontend": {
+      "00": "push_nulls          1      0      0     ",
+      "01": "int                 0      -      0     # 1",
+      "02": "var_set             0      0      0     ",
+      "03": "free                0      0      0     ",
+      "04": "var                 0      0      0     ",
+      "05": "push_ref            0      0      0     ",
+      "06": "var                 0      0      0     ",
+      "07": "push_ref            0      0      0     ",
+      "08": "union               0      0      0     ",
+      "09": "send_all            0      -      0     # public.test (last)",
+      "10": "union_recv          0      0      0     ",
+      "11": "union_set           0      0      -1    ",
+      "12": "ret                 0      -      -     "
+    },
+    "backend": {
+      "00": "set                 0      1      0     ",
+      "01": "table_open_part     1      0      10    # public.test (primary)",
+      "02": "ref                 2      0      0     ",
+      "03": "ref                 3      1      0     ",
+      "04": "equii               4      2      3     ",
+      "05": "jntr                9      4      0     ",
+      "06": "table_readi32       2      1      0     ",
+      "07": "push                2      0      0     ",
+      "08": "set_add             0      0      0     ",
+      "09": "table_next          1      2      0     ",
+      "10": "free                1      0      0     ",
+      "11": "ret                 0      -      -     "
+    }
+  },
+  "access": [["public.test", "ro"]]
+}]
 declare id int; id := 1; select * from test where id = id
 [1]
+explain declare id int; id := 1; select * from test where test.id = id
+[{
+  "bytecode": {
+    "frontend": {
+      "00": "push_nulls          1      0      0     ",
+      "01": "int                 0      -      0     # 1",
+      "02": "var_set             0      0      0     ",
+      "03": "free                0      0      0     ",
+      "04": "var                 0      0      0     ",
+      "05": "push_ref            0      0      0     ",
+      "06": "union               0      0      0     ",
+      "07": "var                 1      0      0     ",
+      "08": "push                1      0      0     ",
+      "09": "send_lookup_by      0      -      -     # public.test (last)",
+      "10": "union_recv          0      0      0     ",
+      "11": "union_set           0      0      -1    ",
+      "12": "ret                 0      -      -     "
+    },
+    "backend": {
+      "00": "set                 0      1      0     ",
+      "01": "ref                 1      0      0     ",
+      "02": "push                1      0      0     ",
+      "03": "table_open_partl    1      0      11    # public.test (primary)",
+      "04": "table_readi32       2      1      0     ",
+      "05": "ref                 3      0      0     ",
+      "06": "equii               4      2      3     ",
+      "07": "jntr                11     4      0     ",
+      "08": "table_readi32       2      1      0     ",
+      "09": "push                2      0      0     ",
+      "10": "set_add             0      0      0     ",
+      "11": "free                1      0      0     ",
+      "12": "ret                 0      -      -     "
+    }
+  },
+  "access": [["public.test", "ro"]]
+}]
 declare id int; id := 1; select * from test where test.id = id
 [1]
 drop table test
@@ -166,32 +244,34 @@ explain declare x int; x := 1; select * from test where id = x
 [{
   "bytecode": {
     "frontend": {
-      "00": "int                 1      -      0     # 1",
-      "01": "assign              0      1      0     ",
-      "02": "free                1      0      0     ",
-      "03": "push_ref            0      1      0     ",
-      "04": "union               1      0      0     ",
-      "05": "dup                 2      0      0     ",
-      "06": "push                2      0      0     ",
-      "07": "send_lookup_by      0      -      -     # public.test (last)",
-      "08": "union_recv          1      0      0     ",
-      "09": "union_set           1      0      -1    ",
-      "10": "ret                 1      -      -     "
+      "00": "push_nulls          1      0      0     ",
+      "01": "int                 0      -      0     # 1",
+      "02": "var_set             0      0      0     ",
+      "03": "free                0      0      0     ",
+      "04": "var                 0      0      0     ",
+      "05": "push_ref            0      0      0     ",
+      "06": "union               0      0      0     ",
+      "07": "var                 1      0      0     ",
+      "08": "push                1      0      0     ",
+      "09": "send_lookup_by      0      -      -     # public.test (last)",
+      "10": "union_recv          0      0      0     ",
+      "11": "union_set           0      0      -1    ",
+      "12": "ret                 0      -      -     "
     },
     "backend": {
-      "00": "set                 1      1      0     ",
-      "01": "ref                 2      0      0     ",
-      "02": "push                2      0      0     ",
-      "03": "table_open_partl    2      0      11    # public.test (primary)",
-      "04": "table_readi32       3      2      0     ",
-      "05": "ref                 4      0      0     ",
-      "06": "equii               5      3      4     ",
-      "07": "jntr                11     5      0     ",
-      "08": "table_readi32       3      2      0     ",
-      "09": "push                3      0      0     ",
-      "10": "set_add             1      0      0     ",
-      "11": "free                2      0      0     ",
-      "12": "ret                 1      -      -     "
+      "00": "set                 0      1      0     ",
+      "01": "ref                 1      0      0     ",
+      "02": "push                1      0      0     ",
+      "03": "table_open_partl    1      0      11    # public.test (primary)",
+      "04": "table_readi32       2      1      0     ",
+      "05": "ref                 3      0      0     ",
+      "06": "equii               4      2      3     ",
+      "07": "jntr                11     4      0     ",
+      "08": "table_readi32       2      1      0     ",
+      "09": "push                2      0      0     ",
+      "10": "set_add             0      0      0     ",
+      "11": "free                1      0      0     ",
+      "12": "ret                 0      -      -     "
     }
   },
   "access": [["public.test", "ro"]]
@@ -252,19 +332,20 @@ explain declare x json := [1,2,3]; select * from x as it;
 [{
   "bytecode": {
     "frontend": {
-      "00": "json                1      0      0     ",
-      "01": "assign              0      1      0     ",
-      "02": "free                1      0      0     ",
-      "03": "set                 1      1      0     ",
-      "04": "dup                 2      0      0     ",
-      "05": "json_open           3      2      10    ",
-      "06": "json_read           4      3      0     ",
-      "07": "push                4      0      0     ",
-      "08": "set_add             1      0      0     ",
-      "09": "json_next           3      6      0     ",
-      "10": "free                3      0      0     ",
+      "00": "push_nulls          1      0      0     ",
+      "01": "json                0      0      0     ",
+      "02": "var_set             0      0      0     ",
+      "03": "free                0      0      0     ",
+      "04": "set                 0      1      0     ",
+      "05": "var                 1      0      0     ",
+      "06": "json_open           2      1      11    ",
+      "07": "json_read           3      2      0     ",
+      "08": "push                3      0      0     ",
+      "09": "set_add             0      0      0     ",
+      "10": "json_next           2      7      0     ",
       "11": "free                2      0      0     ",
-      "12": "ret                 1      -      -     "
+      "12": "free                1      0      0     ",
+      "13": "ret                 0      -      -     "
     }
   },
   "access": []
@@ -279,19 +360,20 @@ explain declare x json := [1,2,3]; select * from (x) as it;
 [{
   "bytecode": {
     "frontend": {
-      "00": "json                1      0      0     ",
-      "01": "assign              0      1      0     ",
-      "02": "free                1      0      0     ",
-      "03": "set                 1      1      0     ",
-      "04": "dup                 2      0      0     ",
-      "05": "json_open           3      2      10    ",
-      "06": "json_read           4      3      0     ",
-      "07": "push                4      0      0     ",
-      "08": "set_add             1      0      0     ",
-      "09": "json_next           3      6      0     ",
-      "10": "free                3      0      0     ",
+      "00": "push_nulls          1      0      0     ",
+      "01": "json                0      0      0     ",
+      "02": "var_set             0      0      0     ",
+      "03": "free                0      0      0     ",
+      "04": "set                 0      1      0     ",
+      "05": "var                 1      0      0     ",
+      "06": "json_open           2      1      11    ",
+      "07": "json_read           3      2      0     ",
+      "08": "push                3      0      0     ",
+      "09": "set_add             0      0      0     ",
+      "10": "json_next           2      7      0     ",
       "11": "free                2      0      0     ",
-      "12": "ret                 1      -      -     "
+      "12": "free                1      0      0     ",
+      "13": "ret                 0      -      -     "
     }
   },
   "access": []
@@ -337,35 +419,36 @@ explain declare x table (a int, b int); select * into x from test; select * from
 [{
   "bytecode": {
     "frontend": {
-      "00": "union               1      0      0     ",
-      "01": "send_all            0      -      1     # public.test (last)",
-      "02": "union_recv          1      0      0     ",
-      "03": "union_set           1      0      -1    ",
-      "04": "mov                 0      1      0     ",
-      "05": "set                 1      2      0     ",
-      "06": "dup                 2      0      0     ",
-      "07": "store_open          3      2      14    ",
-      "08": "store_read          4      3      0     ",
-      "09": "push                4      0      0     ",
-      "10": "store_read          4      3      1     ",
-      "11": "push                4      0      0     ",
-      "12": "set_add             1      0      0     ",
-      "13": "store_next          3      8      0     ",
-      "14": "free                3      0      0     ",
+      "00": "push_nulls          1      0      0     ",
+      "01": "union               0      0      0     ",
+      "02": "send_all            0      -      0     # public.test (last)",
+      "03": "union_recv          0      0      0     ",
+      "04": "union_set           0      0      -1    ",
+      "05": "var_mov             0      0      0     ",
+      "06": "set                 0      2      0     ",
+      "07": "var                 1      0      0     ",
+      "08": "store_open          2      1      15    ",
+      "09": "store_read          3      2      0     ",
+      "10": "push                3      0      0     ",
+      "11": "store_read          3      2      1     ",
+      "12": "push                3      0      0     ",
+      "13": "set_add             0      0      0     ",
+      "14": "store_next          2      9      0     ",
       "15": "free                2      0      0     ",
-      "16": "ret                 1      -      -     "
+      "16": "free                1      0      0     ",
+      "17": "ret                 0      -      -     "
     },
     "backend": {
-      "00": "set                 1      2      0     ",
-      "01": "table_open_part     2      0      8     # public.test (primary)",
-      "02": "table_readi32       3      2      0     ",
-      "03": "push                3      0      0     ",
-      "04": "table_readi32       3      2      1     ",
-      "05": "push                3      0      0     ",
-      "06": "set_add             1      0      0     ",
-      "07": "table_next          2      2      0     ",
-      "08": "free                2      0      0     ",
-      "09": "ret                 1      -      -     "
+      "00": "set                 0      2      0     ",
+      "01": "table_open_part     1      0      8     # public.test (primary)",
+      "02": "table_readi32       2      1      0     ",
+      "03": "push                2      0      0     ",
+      "04": "table_readi32       2      1      1     ",
+      "05": "push                2      0      0     ",
+      "06": "set_add             0      0      0     ",
+      "07": "table_next          1      2      0     ",
+      "08": "free                1      0      0     ",
+      "09": "ret                 0      -      -     "
     }
   },
   "access": [["public.test", "ro"]]
