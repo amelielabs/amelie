@@ -57,26 +57,12 @@ select system.table('test').columns
   "name": "id",
   "type": 2,
   "type_size": 4,
-  "constraints": {
-    "not_null": true,
-    "as_identity": 0,
-    "as_identity_modulo": 9223372036854775807,
-    "as_stored": "",
-    "as_resolved": "",
-    "default": null
-  }
+  "constraints": [["not_null", true], ["default", null]]
 }, {
   "name": "id2",
   "type": 2,
   "type_size": 4,
-  "constraints": {
-    "not_null": true,
-    "as_identity": 0,
-    "as_identity_modulo": 9223372036854775807,
-    "as_stored": "",
-    "as_resolved": "",
-    "default": null
-  }
+  "constraints": [["not_null", true], ["default", null]]
 }]]
 insert into test values (123)
 {"msg": "insert into test values (123❰)❱ ⟵ 'int' expected for column 'id2'"}

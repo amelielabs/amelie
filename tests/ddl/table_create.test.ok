@@ -62,38 +62,17 @@ select system.table('test').columns
   "name": "id",
   "type": 2,
   "type_size": 4,
-  "constraints": {
-    "not_null": true,
-    "as_identity": 0,
-    "as_identity_modulo": 9223372036854775807,
-    "as_stored": "",
-    "as_resolved": "",
-    "default": null
-  }
+  "constraints": [["not_null", true], ["default", null]]
 }, {
   "name": "a",
   "type": 1,
   "type_size": 1,
-  "constraints": {
-    "not_null": false,
-    "as_identity": 0,
-    "as_identity_modulo": 9223372036854775807,
-    "as_stored": "",
-    "as_resolved": "",
-    "default": null
-  }
+  "constraints": [["default", null]]
 }, {
   "name": "b",
   "type": 1,
   "type_size": 1,
-  "constraints": {
-    "not_null": false,
-    "as_identity": 0,
-    "as_identity_modulo": 9223372036854775807,
-    "as_stored": "",
-    "as_resolved": "",
-    "default": null
-  }
+  "constraints": [["default", null]]
 }]]
 drop table test
 # test: column int8/i8
@@ -103,38 +82,17 @@ select system.table('test').columns
   "name": "id",
   "type": 2,
   "type_size": 4,
-  "constraints": {
-    "not_null": true,
-    "as_identity": 0,
-    "as_identity_modulo": 9223372036854775807,
-    "as_stored": "",
-    "as_resolved": "",
-    "default": null
-  }
+  "constraints": [["not_null", true], ["default", null]]
 }, {
   "name": "id2",
   "type": 2,
   "type_size": 1,
-  "constraints": {
-    "not_null": false,
-    "as_identity": 0,
-    "as_identity_modulo": 9223372036854775807,
-    "as_stored": "",
-    "as_resolved": "",
-    "default": null
-  }
+  "constraints": [["default", null]]
 }, {
   "name": "id3",
   "type": 2,
   "type_size": 1,
-  "constraints": {
-    "not_null": false,
-    "as_identity": 0,
-    "as_identity_modulo": 9223372036854775807,
-    "as_stored": "",
-    "as_resolved": "",
-    "default": null
-  }
+  "constraints": [["default", null]]
 }]]
 drop table test
 # test: column int16/i16
@@ -144,38 +102,17 @@ select system.table('test').columns
   "name": "id",
   "type": 2,
   "type_size": 4,
-  "constraints": {
-    "not_null": true,
-    "as_identity": 0,
-    "as_identity_modulo": 9223372036854775807,
-    "as_stored": "",
-    "as_resolved": "",
-    "default": null
-  }
+  "constraints": [["not_null", true], ["default", null]]
 }, {
   "name": "id2",
   "type": 2,
   "type_size": 2,
-  "constraints": {
-    "not_null": false,
-    "as_identity": 0,
-    "as_identity_modulo": 9223372036854775807,
-    "as_stored": "",
-    "as_resolved": "",
-    "default": null
-  }
+  "constraints": [["default", null]]
 }, {
   "name": "id3",
   "type": 2,
   "type_size": 2,
-  "constraints": {
-    "not_null": false,
-    "as_identity": 0,
-    "as_identity_modulo": 9223372036854775807,
-    "as_stored": "",
-    "as_resolved": "",
-    "default": null
-  }
+  "constraints": [["default", null]]
 }]]
 drop table test
 # test: column int/integer/int32/i32
@@ -185,50 +122,22 @@ select system.table('test').columns
   "name": "id",
   "type": 2,
   "type_size": 4,
-  "constraints": {
-    "not_null": true,
-    "as_identity": 0,
-    "as_identity_modulo": 9223372036854775807,
-    "as_stored": "",
-    "as_resolved": "",
-    "default": null
-  }
+  "constraints": [["not_null", true], ["default", null]]
 }, {
   "name": "id2",
   "type": 2,
   "type_size": 4,
-  "constraints": {
-    "not_null": false,
-    "as_identity": 0,
-    "as_identity_modulo": 9223372036854775807,
-    "as_stored": "",
-    "as_resolved": "",
-    "default": null
-  }
+  "constraints": [["default", null]]
 }, {
   "name": "id3",
   "type": 2,
   "type_size": 4,
-  "constraints": {
-    "not_null": false,
-    "as_identity": 0,
-    "as_identity_modulo": 9223372036854775807,
-    "as_stored": "",
-    "as_resolved": "",
-    "default": null
-  }
+  "constraints": [["default", null]]
 }, {
   "name": "id4",
   "type": 2,
   "type_size": 4,
-  "constraints": {
-    "not_null": false,
-    "as_identity": 0,
-    "as_identity_modulo": 9223372036854775807,
-    "as_stored": "",
-    "as_resolved": "",
-    "default": null
-  }
+  "constraints": [["default", null]]
 }]]
 drop table test
 # test: column int64/i64
@@ -238,26 +147,12 @@ select system.table('test').columns
   "name": "id",
   "type": 2,
   "type_size": 8,
-  "constraints": {
-    "not_null": true,
-    "as_identity": 0,
-    "as_identity_modulo": 9223372036854775807,
-    "as_stored": "",
-    "as_resolved": "",
-    "default": null
-  }
+  "constraints": [["not_null", true], ["default", null]]
 }, {
   "name": "id2",
   "type": 2,
   "type_size": 8,
-  "constraints": {
-    "not_null": false,
-    "as_identity": 0,
-    "as_identity_modulo": 9223372036854775807,
-    "as_stored": "",
-    "as_resolved": "",
-    "default": null
-  }
+  "constraints": [["default", null]]
 }]]
 drop table test
 # test: column float/f32
@@ -267,38 +162,17 @@ select system.table('test').columns
   "name": "id",
   "type": 2,
   "type_size": 4,
-  "constraints": {
-    "not_null": true,
-    "as_identity": 0,
-    "as_identity_modulo": 9223372036854775807,
-    "as_stored": "",
-    "as_resolved": "",
-    "default": null
-  }
+  "constraints": [["not_null", true], ["default", null]]
 }, {
   "name": "a",
   "type": 3,
   "type_size": 4,
-  "constraints": {
-    "not_null": false,
-    "as_identity": 0,
-    "as_identity_modulo": 9223372036854775807,
-    "as_stored": "",
-    "as_resolved": "",
-    "default": null
-  }
+  "constraints": [["default", null]]
 }, {
   "name": "b",
   "type": 3,
   "type_size": 4,
-  "constraints": {
-    "not_null": false,
-    "as_identity": 0,
-    "as_identity_modulo": 9223372036854775807,
-    "as_stored": "",
-    "as_resolved": "",
-    "default": null
-  }
+  "constraints": [["default", null]]
 }]]
 drop table test
 # test: column double/f64
@@ -308,38 +182,17 @@ select system.table('test').columns
   "name": "id",
   "type": 2,
   "type_size": 4,
-  "constraints": {
-    "not_null": true,
-    "as_identity": 0,
-    "as_identity_modulo": 9223372036854775807,
-    "as_stored": "",
-    "as_resolved": "",
-    "default": null
-  }
+  "constraints": [["not_null", true], ["default", null]]
 }, {
   "name": "a",
   "type": 3,
   "type_size": 8,
-  "constraints": {
-    "not_null": false,
-    "as_identity": 0,
-    "as_identity_modulo": 9223372036854775807,
-    "as_stored": "",
-    "as_resolved": "",
-    "default": null
-  }
+  "constraints": [["default", null]]
 }, {
   "name": "b",
   "type": 3,
   "type_size": 8,
-  "constraints": {
-    "not_null": false,
-    "as_identity": 0,
-    "as_identity_modulo": 9223372036854775807,
-    "as_stored": "",
-    "as_resolved": "",
-    "default": null
-  }
+  "constraints": [["default", null]]
 }]]
 drop table test
 # test: column text/string
@@ -349,38 +202,17 @@ select system.table('test').columns
   "name": "id",
   "type": 2,
   "type_size": 4,
-  "constraints": {
-    "not_null": true,
-    "as_identity": 0,
-    "as_identity_modulo": 9223372036854775807,
-    "as_stored": "",
-    "as_resolved": "",
-    "default": null
-  }
+  "constraints": [["not_null", true], ["default", null]]
 }, {
   "name": "a",
   "type": 4,
   "type_size": 0,
-  "constraints": {
-    "not_null": false,
-    "as_identity": 0,
-    "as_identity_modulo": 9223372036854775807,
-    "as_stored": "",
-    "as_resolved": "",
-    "default": null
-  }
+  "constraints": [["default", null]]
 }, {
   "name": "b",
   "type": 4,
   "type_size": 0,
-  "constraints": {
-    "not_null": false,
-    "as_identity": 0,
-    "as_identity_modulo": 9223372036854775807,
-    "as_stored": "",
-    "as_resolved": "",
-    "default": null
-  }
+  "constraints": [["default", null]]
 }]]
 drop table test
 # test: column json
@@ -390,38 +222,17 @@ select system.table('test').columns
   "name": "id",
   "type": 2,
   "type_size": 4,
-  "constraints": {
-    "not_null": true,
-    "as_identity": 0,
-    "as_identity_modulo": 9223372036854775807,
-    "as_stored": "",
-    "as_resolved": "",
-    "default": null
-  }
+  "constraints": [["not_null", true], ["default", null]]
 }, {
   "name": "a",
   "type": 5,
   "type_size": 0,
-  "constraints": {
-    "not_null": false,
-    "as_identity": 0,
-    "as_identity_modulo": 9223372036854775807,
-    "as_stored": "",
-    "as_resolved": "",
-    "default": null
-  }
+  "constraints": [["default", null]]
 }, {
   "name": "b",
   "type": 5,
   "type_size": 0,
-  "constraints": {
-    "not_null": false,
-    "as_identity": 0,
-    "as_identity_modulo": 9223372036854775807,
-    "as_stored": "",
-    "as_resolved": "",
-    "default": null
-  }
+  "constraints": [["default", null]]
 }]]
 drop table test
 # test: column timestamp
@@ -431,26 +242,12 @@ select system.table('test').columns
   "name": "id",
   "type": 2,
   "type_size": 4,
-  "constraints": {
-    "not_null": true,
-    "as_identity": 0,
-    "as_identity_modulo": 9223372036854775807,
-    "as_stored": "",
-    "as_resolved": "",
-    "default": null
-  }
+  "constraints": [["not_null", true], ["default", null]]
 }, {
   "name": "a",
   "type": 7,
   "type_size": 8,
-  "constraints": {
-    "not_null": false,
-    "as_identity": 0,
-    "as_identity_modulo": 9223372036854775807,
-    "as_stored": "",
-    "as_resolved": "",
-    "default": null
-  }
+  "constraints": [["default", null]]
 }]]
 drop table test
 # test: column interval
@@ -460,26 +257,12 @@ select system.table('test').columns
   "name": "id",
   "type": 2,
   "type_size": 4,
-  "constraints": {
-    "not_null": true,
-    "as_identity": 0,
-    "as_identity_modulo": 9223372036854775807,
-    "as_stored": "",
-    "as_resolved": "",
-    "default": null
-  }
+  "constraints": [["not_null", true], ["default", null]]
 }, {
   "name": "a",
   "type": 8,
   "type_size": 16,
-  "constraints": {
-    "not_null": false,
-    "as_identity": 0,
-    "as_identity_modulo": 9223372036854775807,
-    "as_stored": "",
-    "as_resolved": "",
-    "default": null
-  }
+  "constraints": [["default", null]]
 }]]
 drop table test
 # test: column date
@@ -489,26 +272,12 @@ select system.table('test').columns
   "name": "id",
   "type": 2,
   "type_size": 4,
-  "constraints": {
-    "not_null": true,
-    "as_identity": 0,
-    "as_identity_modulo": 9223372036854775807,
-    "as_stored": "",
-    "as_resolved": "",
-    "default": null
-  }
+  "constraints": [["not_null", true], ["default", null]]
 }, {
   "name": "a",
   "type": 6,
   "type_size": 4,
-  "constraints": {
-    "not_null": false,
-    "as_identity": 0,
-    "as_identity_modulo": 9223372036854775807,
-    "as_stored": "",
-    "as_resolved": "",
-    "default": null
-  }
+  "constraints": [["default", null]]
 }]]
 drop table test
 # test: column vector
@@ -518,26 +287,12 @@ select system.table('test').columns
   "name": "id",
   "type": 2,
   "type_size": 4,
-  "constraints": {
-    "not_null": true,
-    "as_identity": 0,
-    "as_identity_modulo": 9223372036854775807,
-    "as_stored": "",
-    "as_resolved": "",
-    "default": null
-  }
+  "constraints": [["not_null", true], ["default", null]]
 }, {
   "name": "a",
   "type": 9,
   "type_size": 0,
-  "constraints": {
-    "not_null": false,
-    "as_identity": 0,
-    "as_identity_modulo": 9223372036854775807,
-    "as_stored": "",
-    "as_resolved": "",
-    "default": null
-  }
+  "constraints": [["default", null]]
 }]]
 drop table test
 # test: column uuid
@@ -547,26 +302,12 @@ select system.table('test').columns
   "name": "id",
   "type": 2,
   "type_size": 4,
-  "constraints": {
-    "not_null": true,
-    "as_identity": 0,
-    "as_identity_modulo": 9223372036854775807,
-    "as_stored": "",
-    "as_resolved": "",
-    "default": null
-  }
+  "constraints": [["not_null", true], ["default", null]]
 }, {
   "name": "a",
   "type": 10,
   "type_size": 16,
-  "constraints": {
-    "not_null": false,
-    "as_identity": 0,
-    "as_identity_modulo": 9223372036854775807,
-    "as_stored": "",
-    "as_resolved": "",
-    "default": null
-  }
+  "constraints": [["default", null]]
 }]]
 drop table test
 # test: column redefined
@@ -605,14 +346,7 @@ select system.table('test').columns
   "name": "id",
   "type": 2,
   "type_size": 4,
-  "constraints": {
-    "not_null": true,
-    "as_identity": 0,
-    "as_identity_modulo": 9223372036854775807,
-    "as_stored": "",
-    "as_resolved": "",
-    "default": null
-  }
+  "constraints": [["not_null", true], ["default", null]]
 }]]
 drop table test
 # test: primary key redefined #2
@@ -635,14 +369,7 @@ select system.table('test').columns
   "name": "id",
   "type": 2,
   "type_size": 4,
-  "constraints": {
-    "not_null": true,
-    "as_identity": 0,
-    "as_identity_modulo": 9223372036854775807,
-    "as_stored": "",
-    "as_resolved": "",
-    "default": null
-  }
+  "constraints": [["not_null", true], ["default", null]]
 }]]
 drop table test
 select system.table('test').columns
@@ -686,26 +413,12 @@ select system.table('test').columns
   "name": "id",
   "type": 2,
   "type_size": 4,
-  "constraints": {
-    "not_null": true,
-    "as_identity": 0,
-    "as_identity_modulo": 9223372036854775807,
-    "as_stored": "",
-    "as_resolved": "",
-    "default": null
-  }
+  "constraints": [["not_null", true], ["default", null]]
 }, {
   "name": "data",
   "type": 2,
   "type_size": 4,
-  "constraints": {
-    "not_null": false,
-    "as_identity": 0,
-    "as_identity_modulo": 9223372036854775807,
-    "as_stored": "",
-    "as_resolved": "",
-    "default": 1
-  }
+  "constraints": [["default", 1]]
 }]]
 drop table test
 # test: constraint default with key
@@ -715,14 +428,7 @@ select system.table('test').columns
   "name": "id",
   "type": 2,
   "type_size": 4,
-  "constraints": {
-    "not_null": true,
-    "as_identity": 0,
-    "as_identity_modulo": 9223372036854775807,
-    "as_stored": "",
-    "as_resolved": "",
-    "default": 1
-  }
+  "constraints": [["not_null", true], ["default", 1]]
 }]]
 drop table test
 # test: constraint default with key #2
@@ -732,14 +438,7 @@ select system.table('test').columns
   "name": "id",
   "type": 2,
   "type_size": 4,
-  "constraints": {
-    "not_null": true,
-    "as_identity": 0,
-    "as_identity_modulo": 9223372036854775807,
-    "as_stored": "",
-    "as_resolved": "",
-    "default": 1
-  }
+  "constraints": [["not_null", true], ["default", 1]]
 }]]
 drop table test
 # test: constraint default expr validate
@@ -773,14 +472,7 @@ select system.table('test').columns
   "name": "id",
   "type": 2,
   "type_size": 4,
-  "constraints": {
-    "not_null": true,
-    "as_identity": 0,
-    "as_identity_modulo": 9223372036854775807,
-    "as_stored": "",
-    "as_resolved": "",
-    "default": null
-  }
+  "constraints": [["not_null", true], ["default", null]]
 }]]
 drop table test
 # test: constraint not null forced for keys
@@ -790,26 +482,12 @@ select system.table('test').columns
   "name": "id",
   "type": 2,
   "type_size": 4,
-  "constraints": {
-    "not_null": true,
-    "as_identity": 0,
-    "as_identity_modulo": 9223372036854775807,
-    "as_stored": "",
-    "as_resolved": "",
-    "default": null
-  }
+  "constraints": [["not_null", true], ["default", null]]
 }, {
   "name": "data",
   "type": 2,
   "type_size": 4,
-  "constraints": {
-    "not_null": false,
-    "as_identity": 0,
-    "as_identity_modulo": 9223372036854775807,
-    "as_stored": "",
-    "as_resolved": "",
-    "default": null
-  }
+  "constraints": [["default", null]]
 }]]
 drop table test
 # test: constraint not null forced for keys #2
@@ -819,26 +497,12 @@ select system.table('test').columns
   "name": "id",
   "type": 2,
   "type_size": 4,
-  "constraints": {
-    "not_null": true,
-    "as_identity": 0,
-    "as_identity_modulo": 9223372036854775807,
-    "as_stored": "",
-    "as_resolved": "",
-    "default": null
-  }
+  "constraints": [["not_null", true], ["default", null]]
 }, {
   "name": "data",
   "type": 2,
   "type_size": 4,
-  "constraints": {
-    "not_null": false,
-    "as_identity": 0,
-    "as_identity_modulo": 9223372036854775807,
-    "as_stored": "",
-    "as_resolved": "",
-    "default": null
-  }
+  "constraints": [["default", null]]
 }]]
 drop table test
 # test: constraint not null
@@ -850,26 +514,12 @@ select system.table('test').columns
   "name": "id",
   "type": 2,
   "type_size": 4,
-  "constraints": {
-    "not_null": true,
-    "as_identity": 0,
-    "as_identity_modulo": 9223372036854775807,
-    "as_stored": "",
-    "as_resolved": "",
-    "default": null
-  }
+  "constraints": [["not_null", true], ["default", null]]
 }, {
   "name": "data",
   "type": 2,
   "type_size": 4,
-  "constraints": {
-    "not_null": true,
-    "as_identity": 0,
-    "as_identity_modulo": 9223372036854775807,
-    "as_stored": "",
-    "as_resolved": "",
-    "default": null
-  }
+  "constraints": [["not_null", true], ["default", null]]
 }]]
 insert into test values(1, 1)
 insert into test values(2, null)
@@ -884,26 +534,12 @@ select system.table('test').columns
   "name": "id",
   "type": 2,
   "type_size": 4,
-  "constraints": {
-    "not_null": true,
-    "as_identity": 0,
-    "as_identity_modulo": 9223372036854775807,
-    "as_stored": "",
-    "as_resolved": "",
-    "default": null
-  }
+  "constraints": [["not_null", true], ["default", null]]
 }, {
   "name": "data",
   "type": 2,
   "type_size": 4,
-  "constraints": {
-    "not_null": true,
-    "as_identity": 0,
-    "as_identity_modulo": 9223372036854775807,
-    "as_stored": "",
-    "as_resolved": "",
-    "default": 123
-  }
+  "constraints": [["not_null", true], ["default", 123]]
 }]]
 insert into test values(1, 1)
 insert into test values(2, null)
@@ -943,14 +579,7 @@ select system.table('test').columns
   "name": "id",
   "type": 2,
   "type_size": 8,
-  "constraints": {
-    "not_null": true,
-    "as_identity": 1,
-    "as_identity_modulo": 9223372036854775807,
-    "as_stored": "",
-    "as_resolved": "",
-    "default": null
-  }
+  "constraints": [["not_null", true], ["as_identity", 1], ["default", null]]
 }]]
 drop table test
 # test: constraint serial multiple columns

@@ -18,14 +18,7 @@ select system.table('test').columns
   "name": "id",
   "type": 2,
   "type_size": 4,
-  "constraints": {
-    "not_null": true,
-    "as_identity": 1,
-    "as_identity_modulo": 9223372036854775807,
-    "as_stored": "",
-    "as_resolved": "",
-    "default": null
-  }
+  "constraints": [["not_null", true], ["as_identity", 1], ["default", null]]
 }]]
 insert into test () values ()
 insert into test () values ()

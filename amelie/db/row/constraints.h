@@ -109,47 +109,103 @@ constraints_copy(Constraints* self, Constraints* copy)
 static inline void
 constraints_read(Constraints* self, uint8_t** pos)
 {
-	Decode obj[] =
+	// [[name, value], ...]
+	json_read_array(pos);
+	while (! json_read_array_end(pos))
 	{
-		{ DECODE_BOOL,   "not_null",           &self->not_null           },
-		{ DECODE_INT,    "as_identity",        &self->as_identity        },
-		{ DECODE_INT,    "as_identity_modulo", &self->as_identity_modulo },
-		{ DECODE_STRING, "as_stored",          &self->as_stored          },
-		{ DECODE_STRING, "as_resolved",        &self->as_resolved        },
-		{ DECODE_DATA,   "default",            &self->value              },
-		{ 0,              NULL,                 NULL                     },
-	};
-	decode_obj(obj, "constraints", pos);
+		json_read_array(pos);
+
+		// name
+		Str name;
+		json_read_string(pos, &name);
+
+		if (str_is(&name, "not_null", 8))
+			json_read_bool(pos, &self->not_null);
+		else
+		if (str_is(&name, "as_identity", 11))
+			json_read_integer(pos, &self->as_identity);
+		else
+		if (str_is(&name, "as_identity_modulo", 18))
+			json_read_integer(pos, &self->as_identity_modulo);
+		else
+		if (str_is(&name, "as_stored", 9))
+			json_read_string_copy(pos, &self->as_stored);
+		else
+		if (str_is(&name, "as_resolved", 11))
+			json_read_string_copy(pos, &self->as_resolved);
+		else
+		if (str_is(&name, "default", 7))
+		{
+			auto start = *pos;
+			json_skip(pos);
+			buf_write(&self->value, start, *pos - start);
+		} else {
+			error("unrecognized constraint %.*s", str_size(&name),
+			      str_of(&name));
+		}
+
+		json_read_array_end(pos);
+	}
 }
 
 static inline void
 constraints_write(Constraints* self, Buf* buf)
 {
-	encode_obj(buf);
+	encode_array(buf);
 
 	// not_null
-	encode_raw(buf, "not_null", 8);
-	encode_bool(buf, self->not_null);
+	if (self->not_null)
+	{
+		encode_array(buf);
+		encode_raw(buf, "not_null", 8);
+		encode_bool(buf, self->not_null);
+		encode_array_end(buf);
+	}
 
 	// as_identity
-	encode_raw(buf, "as_identity", 11);
-	encode_integer(buf, self->as_identity);
+	if (self->as_identity)
+	{
+		encode_array(buf);
+		encode_raw(buf, "as_identity", 11);
+		encode_integer(buf, self->as_identity);
+		encode_array_end(buf);
+	}
 
 	// as_identity_modulo
-	encode_raw(buf, "as_identity_modulo", 18);
-	encode_integer(buf, self->as_identity_modulo);
+	if (self->as_identity_modulo != INT64_MAX)
+	{
+		encode_array(buf);
+		encode_raw(buf, "as_identity_modulo", 18);
+		encode_integer(buf, self->as_identity_modulo);
+		encode_array_end(buf);
+	}
 
 	// as_stored
-	encode_raw(buf, "as_stored", 9);
-	encode_string(buf, &self->as_stored);
+	if (! str_empty(&self->as_stored))
+	{
+		encode_array(buf);
+		encode_raw(buf, "as_stored", 9);
+		encode_string(buf, &self->as_stored);
+		encode_array_end(buf);
+	}
 
 	// as_resolved
-	encode_raw(buf, "as_resolved", 11);
-	encode_string(buf, &self->as_resolved);
+	if (! str_empty(&self->as_resolved))
+	{
+		encode_array(buf);
+		encode_raw(buf, "as_resolved", 11);
+		encode_string(buf, &self->as_resolved);
+		encode_array_end(buf);
+	}
 
 	// default
-	encode_raw(buf, "default", 7);
-	buf_write(buf, self->value.start, buf_size(&self->value));
+	if (! buf_empty(&self->value))
+	{
+		encode_array(buf);
+		encode_raw(buf, "default", 7);
+		buf_write(buf, self->value.start, buf_size(&self->value));
+		encode_array_end(buf);
+	}
 
-	encode_obj_end(buf);
+	encode_array_end(buf);
 }

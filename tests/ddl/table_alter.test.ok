@@ -131,26 +131,12 @@ select system.table('test').columns
   "name": "id",
   "type": 2,
   "type_size": 8,
-  "constraints": {
-    "not_null": true,
-    "as_identity": 1,
-    "as_identity_modulo": 9223372036854775807,
-    "as_stored": "",
-    "as_resolved": "",
-    "default": null
-  }
+  "constraints": [["not_null", true], ["as_identity", 1], ["default", null]]
 }, {
   "name": "data",
   "type": 2,
   "type_size": 4,
-  "constraints": {
-    "not_null": false,
-    "as_identity": 0,
-    "as_identity_modulo": 9223372036854775807,
-    "as_stored": "",
-    "as_resolved": "",
-    "default": 0
-  }
+  "constraints": [["default", 0]]
 }]]
 alter table test rename column data to data2
 select system.table('test').columns
@@ -158,26 +144,12 @@ select system.table('test').columns
   "name": "id",
   "type": 2,
   "type_size": 8,
-  "constraints": {
-    "not_null": true,
-    "as_identity": 1,
-    "as_identity_modulo": 9223372036854775807,
-    "as_stored": "",
-    "as_resolved": "",
-    "default": null
-  }
+  "constraints": [["not_null", true], ["as_identity", 1], ["default", null]]
 }, {
   "name": "data2",
   "type": 2,
   "type_size": 4,
-  "constraints": {
-    "not_null": false,
-    "as_identity": 0,
-    "as_identity_modulo": 9223372036854775807,
-    "as_stored": "",
-    "as_resolved": "",
-    "default": 0
-  }
+  "constraints": [["default", 0]]
 }]]
 select data2 from test
 []
@@ -190,14 +162,7 @@ select system.table('test').columns
   "name": "id",
   "type": 2,
   "type_size": 4,
-  "constraints": {
-    "not_null": true,
-    "as_identity": 0,
-    "as_identity_modulo": 9223372036854775807,
-    "as_stored": "",
-    "as_resolved": "",
-    "default": null
-  }
+  "constraints": [["not_null", true], ["default", null]]
 }]]
 alter table test rename column id to id2
 select system.table('test').columns
@@ -205,14 +170,7 @@ select system.table('test').columns
   "name": "id2",
   "type": 2,
   "type_size": 4,
-  "constraints": {
-    "not_null": true,
-    "as_identity": 0,
-    "as_identity_modulo": 9223372036854775807,
-    "as_stored": "",
-    "as_resolved": "",
-    "default": null
-  }
+  "constraints": [["not_null", true], ["default", null]]
 }]]
 select * from test
 [1, 2, 3]
@@ -226,26 +184,12 @@ select system.table('test').columns
   "name": "id",
   "type": 2,
   "type_size": 8,
-  "constraints": {
-    "not_null": true,
-    "as_identity": 1,
-    "as_identity_modulo": 9223372036854775807,
-    "as_stored": "",
-    "as_resolved": "",
-    "default": null
-  }
+  "constraints": [["not_null", true], ["as_identity", 1], ["default", null]]
 }, {
   "name": "data",
   "type": 2,
   "type_size": 4,
-  "constraints": {
-    "not_null": false,
-    "as_identity": 0,
-    "as_identity_modulo": 9223372036854775807,
-    "as_stored": "",
-    "as_resolved": "",
-    "default": 0
-  }
+  "constraints": [["default", 0]]
 }]]
 alter table test rename column data to data
 {"msg": "table 'test': column 'data' already exists"}
@@ -254,26 +198,12 @@ select system.table('test').columns
   "name": "id",
   "type": 2,
   "type_size": 8,
-  "constraints": {
-    "not_null": true,
-    "as_identity": 1,
-    "as_identity_modulo": 9223372036854775807,
-    "as_stored": "",
-    "as_resolved": "",
-    "default": null
-  }
+  "constraints": [["not_null", true], ["as_identity", 1], ["default", null]]
 }, {
   "name": "data",
   "type": 2,
   "type_size": 4,
-  "constraints": {
-    "not_null": false,
-    "as_identity": 0,
-    "as_identity_modulo": 9223372036854775807,
-    "as_stored": "",
-    "as_resolved": "",
-    "default": 0
-  }
+  "constraints": [["default", 0]]
 }]]
 drop table test
 # test: rename column (if table exists)
@@ -320,14 +250,7 @@ select system.table('test').columns
   "name": "id",
   "type": 2,
   "type_size": 4,
-  "constraints": {
-    "not_null": true,
-    "as_identity": 0,
-    "as_identity_modulo": 9223372036854775807,
-    "as_stored": "",
-    "as_resolved": "",
-    "default": null
-  }
+  "constraints": [["not_null", true], ["default", null]]
 }]]
 alter table test add column data int
 select system.table('test').columns
@@ -335,26 +258,12 @@ select system.table('test').columns
   "name": "id",
   "type": 2,
   "type_size": 4,
-  "constraints": {
-    "not_null": true,
-    "as_identity": 0,
-    "as_identity_modulo": 9223372036854775807,
-    "as_stored": "",
-    "as_resolved": "",
-    "default": null
-  }
+  "constraints": [["not_null", true], ["default", null]]
 }, {
   "name": "data",
   "type": 2,
   "type_size": 4,
-  "constraints": {
-    "not_null": false,
-    "as_identity": 0,
-    "as_identity_modulo": 9223372036854775807,
-    "as_stored": "",
-    "as_resolved": "",
-    "default": null
-  }
+  "constraints": [["default", null]]
 }]]
 insert into test values (1,1), (2,2), (3,3)
 select data from test
@@ -369,26 +278,12 @@ select system.table('test').columns
   "name": "id",
   "type": 2,
   "type_size": 4,
-  "constraints": {
-    "not_null": true,
-    "as_identity": 0,
-    "as_identity_modulo": 9223372036854775807,
-    "as_stored": "",
-    "as_resolved": "",
-    "default": null
-  }
+  "constraints": [["not_null", true], ["default", null]]
 }, {
   "name": "data",
   "type": 2,
   "type_size": 4,
-  "constraints": {
-    "not_null": false,
-    "as_identity": 0,
-    "as_identity_modulo": 9223372036854775807,
-    "as_stored": "",
-    "as_resolved": "",
-    "default": null
-  }
+  "constraints": [["default", null]]
 }]]
 select data from test
 [null, null, null]
@@ -406,14 +301,7 @@ select system.table('test').columns
   "name": "id",
   "type": 2,
   "type_size": 4,
-  "constraints": {
-    "not_null": true,
-    "as_identity": 0,
-    "as_identity_modulo": 9223372036854775807,
-    "as_stored": "",
-    "as_resolved": "",
-    "default": null
-  }
+  "constraints": [["not_null", true], ["default", null]]
 }]]
 drop table test
 # test: add column (default)
@@ -425,26 +313,12 @@ select system.table('test').columns
   "name": "id",
   "type": 2,
   "type_size": 4,
-  "constraints": {
-    "not_null": true,
-    "as_identity": 0,
-    "as_identity_modulo": 9223372036854775807,
-    "as_stored": "",
-    "as_resolved": "",
-    "default": null
-  }
+  "constraints": [["not_null", true], ["default", null]]
 }, {
   "name": "data",
   "type": 2,
   "type_size": 4,
-  "constraints": {
-    "not_null": false,
-    "as_identity": 0,
-    "as_identity_modulo": 9223372036854775807,
-    "as_stored": "",
-    "as_resolved": "",
-    "default": 123
-  }
+  "constraints": [["default", 123]]
 }]]
 select data from test
 [null, null, null]
@@ -465,14 +339,7 @@ select system.table('test').columns
   "name": "id",
   "type": 2,
   "type_size": 4,
-  "constraints": {
-    "not_null": true,
-    "as_identity": 0,
-    "as_identity_modulo": 9223372036854775807,
-    "as_stored": "",
-    "as_resolved": "",
-    "default": null
-  }
+  "constraints": [["not_null", true], ["default", null]]
 }]]
 drop table test
 # test: add column (serial)
@@ -484,26 +351,12 @@ select system.table('test').columns
   "name": "id",
   "type": 2,
   "type_size": 4,
-  "constraints": {
-    "not_null": true,
-    "as_identity": 0,
-    "as_identity_modulo": 9223372036854775807,
-    "as_stored": "",
-    "as_resolved": "",
-    "default": null
-  }
+  "constraints": [["not_null", true], ["default", null]]
 }, {
   "name": "data",
   "type": 2,
   "type_size": 8,
-  "constraints": {
-    "not_null": false,
-    "as_identity": 1,
-    "as_identity_modulo": 9223372036854775807,
-    "as_stored": "",
-    "as_resolved": "",
-    "default": null
-  }
+  "constraints": [["as_identity", 1], ["default", null]]
 }]]
 select data from test
 [null, null, null]
@@ -557,26 +410,12 @@ select system.table('test').columns
   "name": "id",
   "type": 2,
   "type_size": 4,
-  "constraints": {
-    "not_null": true,
-    "as_identity": 0,
-    "as_identity_modulo": 9223372036854775807,
-    "as_stored": "",
-    "as_resolved": "",
-    "default": null
-  }
+  "constraints": [["not_null", true], ["default", null]]
 }, {
   "name": "a",
   "type": 2,
   "type_size": 4,
-  "constraints": {
-    "not_null": false,
-    "as_identity": 0,
-    "as_identity_modulo": 9223372036854775807,
-    "as_stored": "",
-    "as_resolved": "",
-    "default": null
-  }
+  "constraints": [["default", null]]
 }]]
 alter table test drop column a
 select system.table('test').columns
@@ -584,14 +423,7 @@ select system.table('test').columns
   "name": "id",
   "type": 2,
   "type_size": 4,
-  "constraints": {
-    "not_null": true,
-    "as_identity": 0,
-    "as_identity_modulo": 9223372036854775807,
-    "as_stored": "",
-    "as_resolved": "",
-    "default": null
-  }
+  "constraints": [["not_null", true], ["default", null]]
 }]]
 drop table test
 # test: drop column (empty, reorder)
@@ -601,38 +433,17 @@ select system.table('test').columns
   "name": "id",
   "type": 2,
   "type_size": 4,
-  "constraints": {
-    "not_null": true,
-    "as_identity": 0,
-    "as_identity_modulo": 9223372036854775807,
-    "as_stored": "",
-    "as_resolved": "",
-    "default": null
-  }
+  "constraints": [["not_null", true], ["default", null]]
 }, {
   "name": "a",
   "type": 2,
   "type_size": 4,
-  "constraints": {
-    "not_null": false,
-    "as_identity": 0,
-    "as_identity_modulo": 9223372036854775807,
-    "as_stored": "",
-    "as_resolved": "",
-    "default": null
-  }
+  "constraints": [["default", null]]
 }, {
   "name": "b",
   "type": 2,
   "type_size": 4,
-  "constraints": {
-    "not_null": false,
-    "as_identity": 0,
-    "as_identity_modulo": 9223372036854775807,
-    "as_stored": "",
-    "as_resolved": "",
-    "default": null
-  }
+  "constraints": [["default", null]]
 }]]
 alter table test drop column a
 select system.table('test').columns
@@ -640,26 +451,12 @@ select system.table('test').columns
   "name": "id",
   "type": 2,
   "type_size": 4,
-  "constraints": {
-    "not_null": true,
-    "as_identity": 0,
-    "as_identity_modulo": 9223372036854775807,
-    "as_stored": "",
-    "as_resolved": "",
-    "default": null
-  }
+  "constraints": [["not_null", true], ["default", null]]
 }, {
   "name": "b",
   "type": 2,
   "type_size": 4,
-  "constraints": {
-    "not_null": false,
-    "as_identity": 0,
-    "as_identity_modulo": 9223372036854775807,
-    "as_stored": "",
-    "as_resolved": "",
-    "default": null
-  }
+  "constraints": [["default", null]]
 }]]
 drop table test
 # test: drop column
@@ -669,38 +466,17 @@ select system.table('test').columns
   "name": "id",
   "type": 2,
   "type_size": 4,
-  "constraints": {
-    "not_null": true,
-    "as_identity": 0,
-    "as_identity_modulo": 9223372036854775807,
-    "as_stored": "",
-    "as_resolved": "",
-    "default": null
-  }
+  "constraints": [["not_null", true], ["default", null]]
 }, {
   "name": "a",
   "type": 4,
   "type_size": 0,
-  "constraints": {
-    "not_null": false,
-    "as_identity": 0,
-    "as_identity_modulo": 9223372036854775807,
-    "as_stored": "",
-    "as_resolved": "",
-    "default": null
-  }
+  "constraints": [["default", null]]
 }, {
   "name": "b",
   "type": 2,
   "type_size": 4,
-  "constraints": {
-    "not_null": false,
-    "as_identity": 0,
-    "as_identity_modulo": 9223372036854775807,
-    "as_stored": "",
-    "as_resolved": "",
-    "default": null
-  }
+  "constraints": [["default", null]]
 }]]
 insert into test values (1,"id",1), (2,"a",2), (3,"b",3)
 select * from test
@@ -715,26 +491,12 @@ select system.table('test').columns
   "name": "id",
   "type": 2,
   "type_size": 4,
-  "constraints": {
-    "not_null": true,
-    "as_identity": 0,
-    "as_identity_modulo": 9223372036854775807,
-    "as_stored": "",
-    "as_resolved": "",
-    "default": null
-  }
+  "constraints": [["not_null", true], ["default", null]]
 }, {
   "name": "b",
   "type": 2,
   "type_size": 4,
-  "constraints": {
-    "not_null": false,
-    "as_identity": 0,
-    "as_identity_modulo": 9223372036854775807,
-    "as_stored": "",
-    "as_resolved": "",
-    "default": null
-  }
+  "constraints": [["default", null]]
 }]]
 select * from test
 [[1, 1], [2, 2], [3, 3]]
@@ -747,26 +509,12 @@ select system.table('test').columns
   "name": "id",
   "type": 2,
   "type_size": 4,
-  "constraints": {
-    "not_null": true,
-    "as_identity": 0,
-    "as_identity_modulo": 9223372036854775807,
-    "as_stored": "",
-    "as_resolved": "",
-    "default": null
-  }
+  "constraints": [["not_null", true], ["default", null]]
 }, {
   "name": "b",
   "type": 2,
   "type_size": 4,
-  "constraints": {
-    "not_null": false,
-    "as_identity": 0,
-    "as_identity_modulo": 9223372036854775807,
-    "as_stored": "",
-    "as_resolved": "",
-    "default": null
-  }
+  "constraints": [["default", null]]
 }]]
 alter table test drop column b
 select system.table('test').columns
@@ -774,14 +522,7 @@ select system.table('test').columns
   "name": "id",
   "type": 2,
   "type_size": 4,
-  "constraints": {
-    "not_null": true,
-    "as_identity": 0,
-    "as_identity_modulo": 9223372036854775807,
-    "as_stored": "",
-    "as_resolved": "",
-    "default": null
-  }
+  "constraints": [["not_null", true], ["default", null]]
 }]]
 select * from test
 [1, 2, 3]
@@ -799,38 +540,17 @@ select system.table('test').columns
   "name": "a",
   "type": 4,
   "type_size": 0,
-  "constraints": {
-    "not_null": false,
-    "as_identity": 0,
-    "as_identity_modulo": 9223372036854775807,
-    "as_stored": "",
-    "as_resolved": "",
-    "default": null
-  }
+  "constraints": [["default", null]]
 }, {
   "name": "b",
   "type": 2,
   "type_size": 4,
-  "constraints": {
-    "not_null": false,
-    "as_identity": 0,
-    "as_identity_modulo": 9223372036854775807,
-    "as_stored": "",
-    "as_resolved": "",
-    "default": null
-  }
+  "constraints": [["default", null]]
 }, {
   "name": "id",
   "type": 2,
   "type_size": 4,
-  "constraints": {
-    "not_null": true,
-    "as_identity": 0,
-    "as_identity_modulo": 9223372036854775807,
-    "as_stored": "",
-    "as_resolved": "",
-    "default": null
-  }
+  "constraints": [["not_null", true], ["default", null]]
 }]]
 insert into test values ("id",1, 1), ("a",2, 2), ("b",3, 3)
 select * from test
@@ -847,26 +567,12 @@ select system.table('test').columns
   "name": "b",
   "type": 2,
   "type_size": 4,
-  "constraints": {
-    "not_null": false,
-    "as_identity": 0,
-    "as_identity_modulo": 9223372036854775807,
-    "as_stored": "",
-    "as_resolved": "",
-    "default": null
-  }
+  "constraints": [["default", null]]
 }, {
   "name": "id",
   "type": 2,
   "type_size": 4,
-  "constraints": {
-    "not_null": true,
-    "as_identity": 0,
-    "as_identity_modulo": 9223372036854775807,
-    "as_stored": "",
-    "as_resolved": "",
-    "default": null
-  }
+  "constraints": [["not_null", true], ["default", null]]
 }]]
 select * from test
 [[1, 1], [2, 2], [3, 3]]
@@ -881,26 +587,12 @@ select system.table('test').columns
   "name": "b",
   "type": 2,
   "type_size": 4,
-  "constraints": {
-    "not_null": false,
-    "as_identity": 0,
-    "as_identity_modulo": 9223372036854775807,
-    "as_stored": "",
-    "as_resolved": "",
-    "default": null
-  }
+  "constraints": [["default", null]]
 }, {
   "name": "id",
   "type": 2,
   "type_size": 4,
-  "constraints": {
-    "not_null": true,
-    "as_identity": 0,
-    "as_identity_modulo": 9223372036854775807,
-    "as_stored": "",
-    "as_resolved": "",
-    "default": null
-  }
+  "constraints": [["not_null", true], ["default", null]]
 }]]
 alter table test drop column b
 select system.table('test').columns
@@ -908,14 +600,7 @@ select system.table('test').columns
   "name": "id",
   "type": 2,
   "type_size": 4,
-  "constraints": {
-    "not_null": true,
-    "as_identity": 0,
-    "as_identity_modulo": 9223372036854775807,
-    "as_stored": "",
-    "as_resolved": "",
-    "default": null
-  }
+  "constraints": [["not_null", true], ["default", null]]
 }]]
 select * from test
 [1, 2, 3]
@@ -945,26 +630,12 @@ select system.table('test').columns
   "name": "id",
   "type": 2,
   "type_size": 4,
-  "constraints": {
-    "not_null": true,
-    "as_identity": 0,
-    "as_identity_modulo": 9223372036854775807,
-    "as_stored": "",
-    "as_resolved": "",
-    "default": null
-  }
+  "constraints": [["not_null", true], ["default", null]]
 }, {
   "name": "data",
   "type": 2,
   "type_size": 4,
-  "constraints": {
-    "not_null": false,
-    "as_identity": 0,
-    "as_identity_modulo": 9223372036854775807,
-    "as_stored": "",
-    "as_resolved": "",
-    "default": 0
-  }
+  "constraints": [["default", 0]]
 }]]
 # test: unset default
 alter table test unset column data default
@@ -976,26 +647,12 @@ select system.table('test').columns
   "name": "id",
   "type": 2,
   "type_size": 4,
-  "constraints": {
-    "not_null": true,
-    "as_identity": 0,
-    "as_identity_modulo": 9223372036854775807,
-    "as_stored": "",
-    "as_resolved": "",
-    "default": null
-  }
+  "constraints": [["not_null", true], ["default", null]]
 }, {
   "name": "data",
   "type": 2,
   "type_size": 4,
-  "constraints": {
-    "not_null": false,
-    "as_identity": 0,
-    "as_identity_modulo": 9223372036854775807,
-    "as_stored": "",
-    "as_resolved": "",
-    "default": null
-  }
+  "constraints": [["default", null]]
 }]]
 # test: set stored
 alter table test set column data as (1 + 1) stored
@@ -1007,26 +664,12 @@ select system.table('test').columns
   "name": "id",
   "type": 2,
   "type_size": 4,
-  "constraints": {
-    "not_null": true,
-    "as_identity": 0,
-    "as_identity_modulo": 9223372036854775807,
-    "as_stored": "",
-    "as_resolved": "",
-    "default": null
-  }
+  "constraints": [["not_null", true], ["default", null]]
 }, {
   "name": "data",
   "type": 2,
   "type_size": 4,
-  "constraints": {
-    "not_null": false,
-    "as_identity": 0,
-    "as_identity_modulo": 9223372036854775807,
-    "as_stored": "1 + 1",
-    "as_resolved": "",
-    "default": null
-  }
+  "constraints": [["as_stored", "1 + 1"], ["default", null]]
 }]]
 # test: unset stored
 alter table test unset column data as stored
@@ -1038,26 +681,12 @@ select system.table('test').columns
   "name": "id",
   "type": 2,
   "type_size": 4,
-  "constraints": {
-    "not_null": true,
-    "as_identity": 0,
-    "as_identity_modulo": 9223372036854775807,
-    "as_stored": "",
-    "as_resolved": "",
-    "default": null
-  }
+  "constraints": [["not_null", true], ["default", null]]
 }, {
   "name": "data",
   "type": 2,
   "type_size": 4,
-  "constraints": {
-    "not_null": false,
-    "as_identity": 0,
-    "as_identity_modulo": 9223372036854775807,
-    "as_stored": "",
-    "as_resolved": "",
-    "default": null
-  }
+  "constraints": [["default", null]]
 }]]
 # test: set resolved
 alter table test set column data default 0
@@ -1072,26 +701,12 @@ select system.table('test').columns
   "name": "id",
   "type": 2,
   "type_size": 4,
-  "constraints": {
-    "not_null": true,
-    "as_identity": 0,
-    "as_identity_modulo": 9223372036854775807,
-    "as_stored": "",
-    "as_resolved": "",
-    "default": null
-  }
+  "constraints": [["not_null", true], ["default", null]]
 }, {
   "name": "data",
   "type": 2,
   "type_size": 4,
-  "constraints": {
-    "not_null": false,
-    "as_identity": 0,
-    "as_identity_modulo": 9223372036854775807,
-    "as_stored": "",
-    "as_resolved": "data + 1",
-    "default": 0
-  }
+  "constraints": [["as_resolved", "data + 1"], ["default", 0]]
 }]]
 # test: unset resolved
 alter table test unset column data as resolved
@@ -1104,26 +719,12 @@ select system.table('test').columns
   "name": "id",
   "type": 2,
   "type_size": 4,
-  "constraints": {
-    "not_null": true,
-    "as_identity": 0,
-    "as_identity_modulo": 9223372036854775807,
-    "as_stored": "",
-    "as_resolved": "",
-    "default": null
-  }
+  "constraints": [["not_null", true], ["default", null]]
 }, {
   "name": "data",
   "type": 2,
   "type_size": 4,
-  "constraints": {
-    "not_null": false,
-    "as_identity": 0,
-    "as_identity_modulo": 9223372036854775807,
-    "as_stored": "",
-    "as_resolved": "",
-    "default": 0
-  }
+  "constraints": [["default", 0]]
 }]]
 drop table test
 disconnect S0

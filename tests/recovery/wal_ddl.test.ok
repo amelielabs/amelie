@@ -121,38 +121,17 @@ select system.table('test2').columns
   "name": "id",
   "type": 2,
   "type_size": 8,
-  "constraints": {
-    "not_null": true,
-    "as_identity": 1,
-    "as_identity_modulo": 9223372036854775807,
-    "as_stored": "",
-    "as_resolved": "",
-    "default": null
-  }
+  "constraints": [["not_null", true], ["as_identity", 1], ["default", null]]
 }, {
   "name": "abc",
   "type": 2,
   "type_size": 4,
-  "constraints": {
-    "not_null": false,
-    "as_identity": 0,
-    "as_identity_modulo": 9223372036854775807,
-    "as_stored": "",
-    "as_resolved": "",
-    "default": 123
-  }
+  "constraints": [["default", 123]]
 }, {
   "name": "obj",
   "type": 5,
   "type_size": 0,
-  "constraints": {
-    "not_null": false,
-    "as_identity": 0,
-    "as_identity_modulo": 9223372036854775807,
-    "as_stored": "",
-    "as_resolved": "",
-    "default": null
-  }
+  "constraints": [["default", null]]
 }]]
 # test: restart
 disconnect S0
@@ -167,38 +146,17 @@ select system.table('test2').columns
   "name": "id",
   "type": 2,
   "type_size": 8,
-  "constraints": {
-    "not_null": true,
-    "as_identity": 1,
-    "as_identity_modulo": 9223372036854775807,
-    "as_stored": "",
-    "as_resolved": "",
-    "default": null
-  }
+  "constraints": [["not_null", true], ["as_identity", 1], ["default", null]]
 }, {
   "name": "abc",
   "type": 2,
   "type_size": 4,
-  "constraints": {
-    "not_null": false,
-    "as_identity": 0,
-    "as_identity_modulo": 9223372036854775807,
-    "as_stored": "",
-    "as_resolved": "",
-    "default": 123
-  }
+  "constraints": [["default", 123]]
 }, {
   "name": "obj",
   "type": 5,
   "type_size": 0,
-  "constraints": {
-    "not_null": false,
-    "as_identity": 0,
-    "as_identity_modulo": 9223372036854775807,
-    "as_stored": "",
-    "as_resolved": "",
-    "default": null
-  }
+  "constraints": [["default", null]]
 }]]
 # test: alter table unset default
 alter table test2 unset column abc default
@@ -207,38 +165,17 @@ select system.table('test2').columns
   "name": "id",
   "type": 2,
   "type_size": 8,
-  "constraints": {
-    "not_null": true,
-    "as_identity": 1,
-    "as_identity_modulo": 9223372036854775807,
-    "as_stored": "",
-    "as_resolved": "",
-    "default": null
-  }
+  "constraints": [["not_null", true], ["as_identity", 1], ["default", null]]
 }, {
   "name": "abc",
   "type": 2,
   "type_size": 4,
-  "constraints": {
-    "not_null": false,
-    "as_identity": 0,
-    "as_identity_modulo": 9223372036854775807,
-    "as_stored": "",
-    "as_resolved": "",
-    "default": null
-  }
+  "constraints": [["default", null]]
 }, {
   "name": "obj",
   "type": 5,
   "type_size": 0,
-  "constraints": {
-    "not_null": false,
-    "as_identity": 0,
-    "as_identity_modulo": 9223372036854775807,
-    "as_stored": "",
-    "as_resolved": "",
-    "default": null
-  }
+  "constraints": [["default", null]]
 }]]
 # test: restart
 disconnect S0
@@ -253,38 +190,17 @@ select system.table('test2').columns
   "name": "id",
   "type": 2,
   "type_size": 8,
-  "constraints": {
-    "not_null": true,
-    "as_identity": 1,
-    "as_identity_modulo": 9223372036854775807,
-    "as_stored": "",
-    "as_resolved": "",
-    "default": null
-  }
+  "constraints": [["not_null", true], ["as_identity", 1], ["default", null]]
 }, {
   "name": "abc",
   "type": 2,
   "type_size": 4,
-  "constraints": {
-    "not_null": false,
-    "as_identity": 0,
-    "as_identity_modulo": 9223372036854775807,
-    "as_stored": "",
-    "as_resolved": "",
-    "default": null
-  }
+  "constraints": [["default", null]]
 }, {
   "name": "obj",
   "type": 5,
   "type_size": 0,
-  "constraints": {
-    "not_null": false,
-    "as_identity": 0,
-    "as_identity_modulo": 9223372036854775807,
-    "as_stored": "",
-    "as_resolved": "",
-    "default": null
-  }
+  "constraints": [["default", null]]
 }]]
 # test: restart
 disconnect S0
@@ -299,38 +215,17 @@ select system.table('test2').columns
   "name": "id",
   "type": 2,
   "type_size": 8,
-  "constraints": {
-    "not_null": true,
-    "as_identity": 1,
-    "as_identity_modulo": 9223372036854775807,
-    "as_stored": "",
-    "as_resolved": "",
-    "default": null
-  }
+  "constraints": [["not_null", true], ["as_identity", 1], ["default", null]]
 }, {
   "name": "abc",
   "type": 2,
   "type_size": 4,
-  "constraints": {
-    "not_null": false,
-    "as_identity": 0,
-    "as_identity_modulo": 9223372036854775807,
-    "as_stored": "",
-    "as_resolved": "",
-    "default": null
-  }
+  "constraints": [["default", null]]
 }, {
   "name": "obj",
   "type": 5,
   "type_size": 0,
-  "constraints": {
-    "not_null": false,
-    "as_identity": 0,
-    "as_identity_modulo": 9223372036854775807,
-    "as_stored": "",
-    "as_resolved": "",
-    "default": null
-  }
+  "constraints": [["default", null]]
 }]]
 # test: alter table set stored
 alter table test2 set column abc as (1 + 1) stored
@@ -339,38 +234,17 @@ select system.table('test2').columns
   "name": "id",
   "type": 2,
   "type_size": 8,
-  "constraints": {
-    "not_null": true,
-    "as_identity": 1,
-    "as_identity_modulo": 9223372036854775807,
-    "as_stored": "",
-    "as_resolved": "",
-    "default": null
-  }
+  "constraints": [["not_null", true], ["as_identity", 1], ["default", null]]
 }, {
   "name": "abc",
   "type": 2,
   "type_size": 4,
-  "constraints": {
-    "not_null": false,
-    "as_identity": 0,
-    "as_identity_modulo": 9223372036854775807,
-    "as_stored": "1 + 1",
-    "as_resolved": "",
-    "default": null
-  }
+  "constraints": [["as_stored", "1 + 1"], ["default", null]]
 }, {
   "name": "obj",
   "type": 5,
   "type_size": 0,
-  "constraints": {
-    "not_null": false,
-    "as_identity": 0,
-    "as_identity_modulo": 9223372036854775807,
-    "as_stored": "",
-    "as_resolved": "",
-    "default": null
-  }
+  "constraints": [["default", null]]
 }]]
 # test: restart
 disconnect S0
@@ -385,38 +259,17 @@ select system.table('test2').columns
   "name": "id",
   "type": 2,
   "type_size": 8,
-  "constraints": {
-    "not_null": true,
-    "as_identity": 1,
-    "as_identity_modulo": 9223372036854775807,
-    "as_stored": "",
-    "as_resolved": "",
-    "default": null
-  }
+  "constraints": [["not_null", true], ["as_identity", 1], ["default", null]]
 }, {
   "name": "abc",
   "type": 2,
   "type_size": 4,
-  "constraints": {
-    "not_null": false,
-    "as_identity": 0,
-    "as_identity_modulo": 9223372036854775807,
-    "as_stored": "1 + 1",
-    "as_resolved": "",
-    "default": null
-  }
+  "constraints": [["as_stored", "1 + 1"], ["default", null]]
 }, {
   "name": "obj",
   "type": 5,
   "type_size": 0,
-  "constraints": {
-    "not_null": false,
-    "as_identity": 0,
-    "as_identity_modulo": 9223372036854775807,
-    "as_stored": "",
-    "as_resolved": "",
-    "default": null
-  }
+  "constraints": [["default", null]]
 }]]
 # test: alter table unset stored
 alter table test2 unset column abc as stored
@@ -425,38 +278,17 @@ select system.table('test2').columns
   "name": "id",
   "type": 2,
   "type_size": 8,
-  "constraints": {
-    "not_null": true,
-    "as_identity": 1,
-    "as_identity_modulo": 9223372036854775807,
-    "as_stored": "",
-    "as_resolved": "",
-    "default": null
-  }
+  "constraints": [["not_null", true], ["as_identity", 1], ["default", null]]
 }, {
   "name": "abc",
   "type": 2,
   "type_size": 4,
-  "constraints": {
-    "not_null": false,
-    "as_identity": 0,
-    "as_identity_modulo": 9223372036854775807,
-    "as_stored": "",
-    "as_resolved": "",
-    "default": null
-  }
+  "constraints": [["default", null]]
 }, {
   "name": "obj",
   "type": 5,
   "type_size": 0,
-  "constraints": {
-    "not_null": false,
-    "as_identity": 0,
-    "as_identity_modulo": 9223372036854775807,
-    "as_stored": "",
-    "as_resolved": "",
-    "default": null
-  }
+  "constraints": [["default", null]]
 }]]
 # test: restart
 disconnect S0
@@ -471,38 +303,17 @@ select system.table('test2').columns
   "name": "id",
   "type": 2,
   "type_size": 8,
-  "constraints": {
-    "not_null": true,
-    "as_identity": 1,
-    "as_identity_modulo": 9223372036854775807,
-    "as_stored": "",
-    "as_resolved": "",
-    "default": null
-  }
+  "constraints": [["not_null", true], ["as_identity", 1], ["default", null]]
 }, {
   "name": "abc",
   "type": 2,
   "type_size": 4,
-  "constraints": {
-    "not_null": false,
-    "as_identity": 0,
-    "as_identity_modulo": 9223372036854775807,
-    "as_stored": "",
-    "as_resolved": "",
-    "default": null
-  }
+  "constraints": [["default", null]]
 }, {
   "name": "obj",
   "type": 5,
   "type_size": 0,
-  "constraints": {
-    "not_null": false,
-    "as_identity": 0,
-    "as_identity_modulo": 9223372036854775807,
-    "as_stored": "",
-    "as_resolved": "",
-    "default": null
-  }
+  "constraints": [["default", null]]
 }]]
 # test: alter table set resolved
 alter table test2 set column abc as (1 + 1) resolved
@@ -511,38 +322,17 @@ select system.table('test2').columns
   "name": "id",
   "type": 2,
   "type_size": 8,
-  "constraints": {
-    "not_null": true,
-    "as_identity": 1,
-    "as_identity_modulo": 9223372036854775807,
-    "as_stored": "",
-    "as_resolved": "",
-    "default": null
-  }
+  "constraints": [["not_null", true], ["as_identity", 1], ["default", null]]
 }, {
   "name": "abc",
   "type": 2,
   "type_size": 4,
-  "constraints": {
-    "not_null": false,
-    "as_identity": 0,
-    "as_identity_modulo": 9223372036854775807,
-    "as_stored": "",
-    "as_resolved": "1 + 1",
-    "default": null
-  }
+  "constraints": [["as_resolved", "1 + 1"], ["default", null]]
 }, {
   "name": "obj",
   "type": 5,
   "type_size": 0,
-  "constraints": {
-    "not_null": false,
-    "as_identity": 0,
-    "as_identity_modulo": 9223372036854775807,
-    "as_stored": "",
-    "as_resolved": "",
-    "default": null
-  }
+  "constraints": [["default", null]]
 }]]
 # test: restart
 disconnect S0
@@ -557,38 +347,17 @@ select system.table('test2').columns
   "name": "id",
   "type": 2,
   "type_size": 8,
-  "constraints": {
-    "not_null": true,
-    "as_identity": 1,
-    "as_identity_modulo": 9223372036854775807,
-    "as_stored": "",
-    "as_resolved": "",
-    "default": null
-  }
+  "constraints": [["not_null", true], ["as_identity", 1], ["default", null]]
 }, {
   "name": "abc",
   "type": 2,
   "type_size": 4,
-  "constraints": {
-    "not_null": false,
-    "as_identity": 0,
-    "as_identity_modulo": 9223372036854775807,
-    "as_stored": "",
-    "as_resolved": "1 + 1",
-    "default": null
-  }
+  "constraints": [["as_resolved", "1 + 1"], ["default", null]]
 }, {
   "name": "obj",
   "type": 5,
   "type_size": 0,
-  "constraints": {
-    "not_null": false,
-    "as_identity": 0,
-    "as_identity_modulo": 9223372036854775807,
-    "as_stored": "",
-    "as_resolved": "",
-    "default": null
-  }
+  "constraints": [["default", null]]
 }]]
 # test: alter table unset resolved
 alter table test2 unset column abc as resolved
@@ -597,38 +366,17 @@ select system.table('test2').columns
   "name": "id",
   "type": 2,
   "type_size": 8,
-  "constraints": {
-    "not_null": true,
-    "as_identity": 1,
-    "as_identity_modulo": 9223372036854775807,
-    "as_stored": "",
-    "as_resolved": "",
-    "default": null
-  }
+  "constraints": [["not_null", true], ["as_identity", 1], ["default", null]]
 }, {
   "name": "abc",
   "type": 2,
   "type_size": 4,
-  "constraints": {
-    "not_null": false,
-    "as_identity": 0,
-    "as_identity_modulo": 9223372036854775807,
-    "as_stored": "",
-    "as_resolved": "",
-    "default": null
-  }
+  "constraints": [["default", null]]
 }, {
   "name": "obj",
   "type": 5,
   "type_size": 0,
-  "constraints": {
-    "not_null": false,
-    "as_identity": 0,
-    "as_identity_modulo": 9223372036854775807,
-    "as_stored": "",
-    "as_resolved": "",
-    "default": null
-  }
+  "constraints": [["default", null]]
 }]]
 # test: restart
 disconnect S0
@@ -643,38 +391,17 @@ select system.table('test2').columns
   "name": "id",
   "type": 2,
   "type_size": 8,
-  "constraints": {
-    "not_null": true,
-    "as_identity": 1,
-    "as_identity_modulo": 9223372036854775807,
-    "as_stored": "",
-    "as_resolved": "",
-    "default": null
-  }
+  "constraints": [["not_null", true], ["as_identity", 1], ["default", null]]
 }, {
   "name": "abc",
   "type": 2,
   "type_size": 4,
-  "constraints": {
-    "not_null": false,
-    "as_identity": 0,
-    "as_identity_modulo": 9223372036854775807,
-    "as_stored": "",
-    "as_resolved": "",
-    "default": null
-  }
+  "constraints": [["default", null]]
 }, {
   "name": "obj",
   "type": 5,
   "type_size": 0,
-  "constraints": {
-    "not_null": false,
-    "as_identity": 0,
-    "as_identity_modulo": 9223372036854775807,
-    "as_stored": "",
-    "as_resolved": "",
-    "default": null
-  }
+  "constraints": [["default", null]]
 }]]
 # test: alter table column drop
 alter table test2 drop column abc

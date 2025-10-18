@@ -18,6 +18,7 @@ create table test (id int primary key as (42) resolved)
 
 # test: insert on conflict do resolve
 create table test (id int primary key, data int as (data + 1) resolved)
+show table test extended;
 insert into test values (0, 0) on conflict do resolve
 insert into test values (0, 0) on conflict do resolve
 insert into test values (0, 0) on conflict do resolve
