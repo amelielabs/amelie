@@ -40,7 +40,7 @@
 #include <amelie_parser.h>
 
 static void
-parse_procedure_args(Stmt* self, AstProcedureCreate* stmt)
+parse_function_args(Stmt* self, AstFunctionCreate* stmt)
 {
 	// ()
 	stmt_expect(self, '(');
@@ -49,9 +49,6 @@ parse_procedure_args(Stmt* self, AstProcedureCreate* stmt)
 
 	for (;;)
 	{
-		// [OUT]
-		auto out = stmt_if(self, KOUT);
-
 		// name
 		auto name = stmt_expect(self, KNAME);
 
@@ -64,8 +61,6 @@ parse_procedure_args(Stmt* self, AstProcedureCreate* stmt)
 		arg = column_allocate();
 		column_set_name(arg, &name->string);
 		encode_null(&arg->constraints.value);
-		if (out)
-			constraints_set_out(&arg->constraints, true);
 		columns_add(&stmt->config->args, arg);
 
 		// type
@@ -85,31 +80,43 @@ parse_procedure_args(Stmt* self, AstProcedureCreate* stmt)
 }
 
 void
-parse_procedure_create(Stmt* self, bool or_replace)
+parse_function_create(Stmt* self, bool or_replace)
 {
-	// CREATE [OR REPLACE] PROCEDURE [schema.]name (args)
+	// CREATE [OR REPLACE] FUNCTION [schema.]name (args) [RETURN type]
 	// BEGIN
 	//   block
 	// END
-	auto stmt = ast_procedure_create_allocate();
+	auto stmt = ast_function_create_allocate();
 	self->ast = &stmt->ast;
 
 	// or replace
 	stmt->or_replace = or_replace;
 
-	// create procedure config
-	stmt->config = proc_config_allocate();
+	// create function config
+	stmt->config = udf_config_allocate();
 
 	// name
 	Str schema;
 	Str name;
 	if (! parse_target(self, &schema, &name))
 		stmt_error(self, NULL, "name expected");
-	proc_config_set_schema(stmt->config, &schema);
-	proc_config_set_name(stmt->config, &name);
+	udf_config_set_schema(stmt->config, &schema);
+	udf_config_set_name(stmt->config, &name);
 
 	// (args)
-	parse_procedure_args(self, stmt);
+	parse_function_args(self, stmt);
+
+	// [RETURN]
+	auto ret = stmt_if(self, KRETURN);
+	if (ret)
+	{
+		// type
+		int type_size;
+		int type;
+		if (parse_type(self, &type, &type_size))
+			stmt_error(self, ret, "serial type cannot be used here");
+		udf_config_set_type(stmt->config, type);
+	}
 
 	// create new namespace
 	auto parser = self->parser;
@@ -121,6 +128,7 @@ parse_procedure_create(Stmt* self, bool or_replace)
 		auto column = list_at(Column, link);
 		auto var = vars_add(&ns->vars, &column->name);
 		var->type = column->type;
+		var->is_arg = true;
 	}
 
 	// BEGIN
@@ -132,20 +140,20 @@ parse_procedure_create(Stmt* self, bool or_replace)
 	// END
 	auto end = stmt_expect(self, KEND);
 
-	// set procedure text
+	// set function text
 	Str text;
 	str_init(&text);
 	str_set(&text, parser->lex.start + begin->pos_start,
 	        end->pos_end - begin->pos_start);
 	str_shrink(&text);
-	proc_config_set_text(stmt->config, &text);
+	udf_config_set_text(stmt->config, &text);
 }
 
 void
-parse_procedure_drop(Stmt* self)
+parse_function_drop(Stmt* self)
 {
-	// DROP PROCEDURE [IF EXISTS] name
-	auto stmt = ast_procedure_drop_allocate();
+	// DROP FUNCTION [IF EXISTS] name
+	auto stmt = ast_function_drop_allocate();
 	self->ast = &stmt->ast;
 
 	// if exists
@@ -157,10 +165,10 @@ parse_procedure_drop(Stmt* self)
 }
 
 void
-parse_procedure_alter(Stmt* self)
+parse_function_alter(Stmt* self)
 {
-	// ALTER PROCEDURE [IF EXISTS] [schema.]name RENAME [schema.]name
-	auto stmt = ast_procedure_alter_allocate();
+	// ALTER FUNCTION [IF EXISTS] [schema.]name RENAME [schema.]name
+	auto stmt = ast_function_alter_allocate();
 	self->ast = &stmt->ast;
 
 	// if exists

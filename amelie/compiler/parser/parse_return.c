@@ -51,25 +51,6 @@ parse_return(Stmt* self)
 	if (eos)
 	{
 		stmt_push(self, eos);
-
-		// main block
-		auto proc = self->block->ns->proc;
-		if (!proc || !proc->args.count_out)
-			return;
-
-		// return from procedure
-
-		// create deps for all OUT columns prior to return
-		list_foreach(&proc->args.list)
-		{
-			auto column = list_at(Column, link);
-			if (! column->constraints.out)
-				continue;
-			auto var = namespace_find_var(self->block->ns, &column->name);
-			assert(var);
-			if (var->writer)
-				deps_add_var(&self->deps, var->writer, var);
-		}
 		return;
 	}
 

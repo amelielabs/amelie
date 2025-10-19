@@ -32,13 +32,13 @@ catalog_init(Catalog*   self, PartMgr* part_mgr,
 	self->iface_arg = iface_arg;
 	schema_mgr_init(&self->schema_mgr);
 	table_mgr_init(&self->table_mgr, part_mgr);
-	proc_mgr_init(&self->proc_mgr, iface->proc_free, iface_arg);
+	udf_mgr_init(&self->udf_mgr, iface->udf_free, iface_arg);
 }
 
 void
 catalog_free(Catalog* self)
 {
-	proc_mgr_free(&self->proc_mgr);
+	udf_mgr_free(&self->udf_mgr);
 	table_mgr_free(&self->table_mgr);
 	schema_mgr_free(&self->schema_mgr);
 }
@@ -126,16 +126,16 @@ catalog_status(Catalog* self)
 }
 
 static void
-catalog_validate_procs(Catalog* self, Str* schema, Str* name)
+catalog_validate_udfs(Catalog* self, Str* schema, Str* name)
 {
-	// validate procedure dependencies on the relation
-	list_foreach(&self->proc_mgr.mgr.list)
+	// validate udf dependencies on the relation
+	list_foreach(&self->udf_mgr.mgr.list)
 	{
-		auto proc = proc_of(list_at(Relation, link));
-		if (self->iface->proc_depends(proc, schema, name))
-			error("procedure '%.*s.%.*s' depends on relation '%.*s.%.*s",
-			      str_size(proc->rel.schema), str_of(proc->rel.schema),
-			      str_size(proc->rel.name), str_of(proc->rel.name),
+		auto udf = udf_of(list_at(Relation, link));
+		if (self->iface->udf_depends(udf, schema, name))
+			error("udf '%.*s.%.*s' depends on relation '%.*s.%.*s",
+			      str_size(udf->rel.schema), str_of(udf->rel.schema),
+			      str_size(udf->rel.name), str_of(udf->rel.name),
 			      str_size(schema), str_of(schema),
 			      str_size(name), str_of(name));
 	}
@@ -192,8 +192,8 @@ catalog_execute(Catalog* self, Tr* tr, uint8_t* op, int flags)
 		Str name;
 		table_op_drop_read(op, &schema, &name);
 
-		// ensure no other procedures depend on the table
-		catalog_validate_procs(self, &schema, &name);
+		// ensure no other udfs depend on the table
+		catalog_validate_udfs(self, &schema, &name);
 
 		auto if_exists = ddl_if_exists(flags);
 		write = table_mgr_drop(&self->table_mgr, tr, &schema, &name, if_exists);
@@ -214,8 +214,8 @@ catalog_execute(Catalog* self, Tr* tr, uint8_t* op, int flags)
 			      str_size(&ref->config->name),
 			      str_of(&ref->config->name));
 
-		// ensure no other procedures depend on the table
-		catalog_validate_procs(self, &schema, &name);
+		// ensure no other udfs depend on the table
+		catalog_validate_udfs(self, &schema, &name);
 
 		auto if_exists = ddl_if_exists(flags);
 		write = table_mgr_rename(&self->table_mgr, tr, &schema, &name,
@@ -382,42 +382,42 @@ catalog_execute(Catalog* self, Tr* tr, uint8_t* op, int flags)
 		write = table_index_rename(table, tr, &name_index, &name_index_new, if_exists);
 		break;
 	}
-	case DDL_PROC_CREATE:
+	case DDL_UDF_CREATE:
 	{
-		auto config = proc_op_create_read(op);
-		defer(proc_config_free, config);
+		auto config = udf_op_create_read(op);
+		defer(udf_config_free, config);
 
 		auto if_not_exists = ddl_if_not_exists(flags);
-		write = proc_mgr_create(&self->proc_mgr, tr, config, if_not_exists);
+		write = udf_mgr_create(&self->udf_mgr, tr, config, if_not_exists);
 
 		// compile on creation
 		if (write)
 		{
-			auto proc = proc_mgr_find(&self->proc_mgr, &config->schema, &config->name, true);
-			self->iface->proc_compile(self, proc);
+			auto udf = udf_mgr_find(&self->udf_mgr, &config->schema, &config->name, true);
+			self->iface->udf_compile(self, udf);
 		}
 		break;
 	}
-	case DDL_PROC_DROP:
+	case DDL_UDF_DROP:
 	{
 		Str schema;
 		Str name;
-		proc_op_drop_read(op, &schema, &name);
+		udf_op_drop_read(op, &schema, &name);
 
-		// ensure no other procedures depend on it
-		catalog_validate_procs(self, &schema, &name);
+		// ensure no other udfs depend on it
+		catalog_validate_udfs(self, &schema, &name);
 
 		auto if_exists = ddl_if_exists(flags);
-		write = proc_mgr_drop(&self->proc_mgr, tr, &schema, &name, if_exists);
+		write = udf_mgr_drop(&self->udf_mgr, tr, &schema, &name, if_exists);
 		break;
 	}
-	case DDL_PROC_RENAME:
+	case DDL_UDF_RENAME:
 	{
 		Str schema;
 		Str name;
 		Str schema_new;
 		Str name_new;
-		proc_op_rename_read(op, &schema, &name, &schema_new, &name_new);
+		udf_op_rename_read(op, &schema, &name, &schema_new, &name_new);
 
 		// ensure schema exists and not system
 		auto ref = schema_mgr_find(&self->schema_mgr, &schema_new, true);
@@ -426,13 +426,13 @@ catalog_execute(Catalog* self, Tr* tr, uint8_t* op, int flags)
 			      str_size(&ref->config->name),
 			      str_of(&ref->config->name));
 
-		// ensure no other procedures depend on it
-		catalog_validate_procs(self, &schema, &name);
+		// ensure no other udfs depend on it
+		catalog_validate_udfs(self, &schema, &name);
 
 		auto if_exists = ddl_if_exists(flags);
-		write = proc_mgr_rename(&self->proc_mgr, tr, &schema, &name,
-		                        &schema_new,
-		                        &name_new, if_exists);
+		write = udf_mgr_rename(&self->udf_mgr, tr, &schema, &name,
+		                       &schema_new,
+		                       &name_new, if_exists);
 		break;
 	}
 	default:

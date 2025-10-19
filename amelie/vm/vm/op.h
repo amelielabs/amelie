@@ -290,7 +290,7 @@ enum
 
 	// call/return
 	CCALL,
-	CCALL_SP,
+	CCALL_UDF,
 	CRET
 };
 

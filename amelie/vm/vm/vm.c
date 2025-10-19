@@ -52,7 +52,6 @@ vm_init(Vm* self, Core* core, Dtr* dtr)
 	self->tr        = NULL;
 	self->local     = NULL;
 	reg_init(&self->r);
-	call_stack_init(&self->stack_call);
 	stack_init(&self->stack);
 	fn_mgr_init(&self->fn_mgr);
 }
@@ -62,7 +61,6 @@ vm_free(Vm* self)
 {
 	vm_reset(self);
 	fn_mgr_free(&self->fn_mgr);
-	call_stack_free(&self->stack_call);
 	stack_free(&self->stack);
 	reg_free(&self->r);
 }
@@ -73,7 +71,6 @@ vm_reset(Vm* self)
 	if (self->code_data)
 		fn_mgr_reset(&self->fn_mgr);
 	reg_reset(&self->r);
-	call_stack_reset(&self->stack_call);
 	stack_reset(&self->stack);
 	self->code      = NULL;
 	self->code_data = NULL;
@@ -384,7 +381,7 @@ vm_run(Vm*       self,
 
 		// call / return
 		&&ccall,
-		&&ccall_sp,
+		&&ccall_udf,
 		&&cret
 	};
 
@@ -402,13 +399,11 @@ vm_run(Vm*       self,
 	uint8_t*  json;
 	void*     ptr;
 	Fn        fn;
-	Call*     call;
 	str_init(&string);
 
-	auto stack_call = &self->stack_call;
-	auto stack      = &self->stack;
-	auto r          = self->r.r;
-	auto op         = code_at(self->code, start);
+	auto stack = &self->stack;
+	auto r     = self->r.r;
+	auto op    = code_at(self->code, start);
 	op_start;
 
 cnop:
@@ -1842,27 +1837,13 @@ cclose:
 
 cvar:
 	// [result, var]
-	if (call_stack_head(stack_call) > 0)
-	{
-		// head
-		call = call_stack_at(stack_call, 1);
-		b = stack_get(stack, call->stack_head + op->b);
-	} else {
-		b = stack_get(stack, op->b);
-	}
+	b = stack_get(stack, op->b);
 	value_copy(&r[op->a], b);
 	op_next;
 
 cvar_mov:
 	// [var, value]
-	if (call_stack_head(stack_call) > 0)
-	{
-		// head
-		call = call_stack_at(stack_call, 1);
-		a = stack_get(stack, call->stack_head + op->a);
-	} else {
-		a = stack_get(stack, op->a);
-	}
+	a = stack_get(stack, op->a);
 	value_move(a, &r[op->b]);
 	op_next;
 
@@ -1891,12 +1872,8 @@ ccall:
 	stack_popn(&self->stack, op->c);
 	op_next;
 
-ccall_sp:
-	// [jmp_return, rresult, proc*]
-	call = call_stack_push(stack_call);
-	call->stack_head = stack_head(stack);
-	call->jmp_ret    = op->a;
-	call->rresult    = op->b;
+ccall_udf:
+	// todo:
 	op_next;
 
 cret:
@@ -1908,21 +1885,6 @@ cret:
 		a = stack_get(stack, op->b);
 	else
 		a = NULL;
-
-	// return from last procedure call
-	if (call_stack_head(stack_call) > 0)
-	{
-		call = call_stack_pop(stack_call);
-		// set result
-		if (a)
-			value_move(&r[call->rresult], a);
-		else
-			value_set_null(&r[call->rresult]);
-		stack_truncate(stack, call->stack_head);
-		op = code_at(code, call->jmp_ret);
-		op_jmp;
-	}
-
 	ret->value   = a;
 	ret->columns = (Columns*)op->c;
 	ret->fmt     = (Str*)op->d;

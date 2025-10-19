@@ -17,11 +17,11 @@ typedef struct Namespace Namespace;
 
 struct Block
 {
-	Stmts       stmts;
-	From*       from;
-	Namespace*  ns;
-	Block*      parent;
-	Block*      next;
+	Stmts      stmts;
+	From*      from;
+	Namespace* ns;
+	Block*     parent;
+	Block*     next;
 };
 
 struct Blocks

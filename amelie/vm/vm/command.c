@@ -336,15 +336,7 @@ void
 cvar_set(Vm* self, Op* op)
 {
 	// [var, value, column]
-	Value* var;
-	if (call_stack_head(&self->stack_call) > 0)
-	{
-		// head
-		auto call = call_stack_at(&self->stack_call, 1);
-		var = stack_get(&self->stack, call->stack_head + op->a);
-	} else {
-		var = stack_get(&self->stack, op->a);
-	}
+	auto var = stack_get(&self->stack, op->a);
 	value_free(var);
 
 	// value

@@ -196,7 +196,7 @@ set(AMELIE_SOURCES_DB
     ${AMELIE_ROOT}/db/catalog/table_mgr.c
     ${AMELIE_ROOT}/db/catalog/table_mgr_alter.c
     ${AMELIE_ROOT}/db/catalog/table_index.c
-    ${AMELIE_ROOT}/db/catalog/proc_mgr.c
+    ${AMELIE_ROOT}/db/catalog/udf_mgr.c
     ${AMELIE_ROOT}/db/catalog/catalog.c
     ${AMELIE_ROOT}/db/catalog/cascade.c
     ${AMELIE_ROOT}/db/wal/wal.c
@@ -265,12 +265,11 @@ set(AMELIE_SOURCES_COMPILER
     ${AMELIE_ROOT}/compiler/parser/parse_schema.c
     ${AMELIE_ROOT}/compiler/parser/parse_table.c
     ${AMELIE_ROOT}/compiler/parser/parse_index.c
-    ${AMELIE_ROOT}/compiler/parser/parse_procedure.c
+    ${AMELIE_ROOT}/compiler/parser/parse_function.c
     ${AMELIE_ROOT}/compiler/parser/parse_from.c
     ${AMELIE_ROOT}/compiler/parser/parse_returning.c
     ${AMELIE_ROOT}/compiler/parser/parse_value.c
     ${AMELIE_ROOT}/compiler/parser/parse_row.c
-    ${AMELIE_ROOT}/compiler/parser/parse_call.c
     ${AMELIE_ROOT}/compiler/parser/parse_insert.c
     ${AMELIE_ROOT}/compiler/parser/parse_update.c
     ${AMELIE_ROOT}/compiler/parser/parse_delete.c

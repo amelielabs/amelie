@@ -66,7 +66,7 @@
 #include "parser/parse_schema.h"
 #include "parser/parse_table.h"
 #include "parser/parse_index.h"
-#include "parser/parse_procedure.h"
+#include "parser/parse_function.h"
 
 // dml
 #include "parser/parse_from.h"
@@ -76,7 +76,6 @@
 #include "parser/parse_insert.h"
 #include "parser/parse_update.h"
 #include "parser/parse_delete.h"
-#include "parser/parse_call.h"
 
 // query
 #include "parser/parse_order.h"

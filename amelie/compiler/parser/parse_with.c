@@ -77,8 +77,7 @@ parse_with_validate(Stmt* stmt)
 	if (stmt_is_utility(stmt)   ||
 	    stmt->id == STMT_IF     ||
 	    stmt->id == STMT_FOR    ||
-	    stmt->id == STMT_RETURN ||
-	    stmt->id == STMT_CALL)
+	    stmt->id == STMT_RETURN)
 		stmt_error(stmt, stmt->ast, "statement cannot be used inside CTE");
 }
 

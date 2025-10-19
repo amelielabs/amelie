@@ -17,7 +17,6 @@ struct Vm
 {
 	Reg       r;
 	Stack     stack;
-	CallStack stack_call;
 	Code*     code;
 	CodeData* code_data;
 	Buf*      code_arg;

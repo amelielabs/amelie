@@ -314,7 +314,7 @@ OpDesc ops[] =
 
 	// call / return
 	{ CCALL, "call" },
-	{ CCALL_SP, "call_sp" },
+	{ CCALL_UDF, "call_udf" },
 	{ CRET, "ret" },
 
 	{ 0, NULL }
@@ -490,17 +490,19 @@ op_dump(Program* self, Code* code, Buf* buf)
 			         str_of(&function->name));
 			break;
 		}
-		case CCALL_SP:
+#if 0
+		case CCALL_UDF:
 		{
-			auto proc = (Proc*)op->c;
+			auto udf = (Udf*)op->c;
 			op_write(output, op, true, true, false,
 			         "%.*s.%.*s()",
-			         str_size(&proc->config->schema),
-			         str_of(&proc->config->schema),
-			         str_size(&proc->config->name),
-			         str_of(&proc->config->name));
+			         str_size(&udf->config->schema),
+			         str_of(&udf->config->schema),
+			         str_size(&udf->config->name),
+			         str_of(&udf->config->name));
 			break;
 		}
+#endif
 		case CRET:
 			op_write(output, op, true, true, false, NULL);
 			break;

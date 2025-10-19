@@ -90,22 +90,22 @@ catalog_if_column_drop(Catalog* self, Table* table, Table* table_new, Column* co
 }
 
 static void
-catalog_if_proc_compile(Catalog* self, Proc* proc)
+catalog_if_udf_compile(Catalog* self, Udf* udf)
 {
 	(void)self;
-	(void)proc;
+	(void)udf;
 }
 
 static void
-catalog_if_proc_free(Proc* proc)
+catalog_if_udf_free(Udf* udf)
 {
-	(void)proc;
+	(void)udf;
 }
 
 static bool
-catalog_if_proc_depends(Proc* proc, Str* schema, Str* name)
+catalog_if_udf_depends(Udf* udf, Str* schema, Str* name)
 {
-	(void)proc;
+	(void)udf;
 	(void)schema;
 	(void)name;
 	return false;
@@ -116,9 +116,9 @@ static CatalogIf catalog_if =
 	.build_index       = catalog_if_index,
 	.build_column_add  = catalog_if_column_add,
 	.build_column_drop = catalog_if_column_drop,
-	.proc_compile      = catalog_if_proc_compile,
-	.proc_free         = catalog_if_proc_free,
-	.proc_depends      = catalog_if_proc_depends
+	.udf_compile       = catalog_if_udf_compile,
+	.udf_free          = catalog_if_udf_free,
+	.udf_depends       = catalog_if_udf_depends
 };
 
 static void*

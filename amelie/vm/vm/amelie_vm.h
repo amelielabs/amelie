@@ -15,7 +15,6 @@
 #include "vm/op.h"
 
 // call/return
-#include "vm/call.h"
 #include "vm/return.h"
 
 // vm

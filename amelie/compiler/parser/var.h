@@ -18,6 +18,7 @@ struct Var
 {
 	int     order;
 	Type    type;
+	bool    is_arg;
 	Columns columns;
 	Str*    name;
 	Stmt*   writer;
@@ -64,6 +65,7 @@ vars_add(Vars* self, Str* name)
 	auto var = (Var*)palloc(sizeof(Var));
 	var->order  = self->count;
 	var->type   = TYPE_NULL;
+	var->is_arg = false;
 	var->name   = name;
 	var->writer = NULL;
 	var->next   = NULL;

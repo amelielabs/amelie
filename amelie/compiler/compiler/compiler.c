@@ -545,66 +545,6 @@ emit_for(Compiler* self, Stmt* stmt)
 }
 
 hot static void
-emit_call(Compiler* self, Stmt* stmt)
-{
-	auto stmt_prev = self->current;
-	self->current = stmt;
-
-	auto call = ast_call_of(stmt->ast);
-	compiler_switch_frontend(self);
-
-	// CCALL_SP
-	stmt->r = rpin(self, TYPE_STORE);
-
-	auto _enter  = op_pos(self);
-	op3(self, CCALL_SP, 0 /* jmp_ret */, stmt->r, (intptr_t)call->proc);
-
-	// push call arguments (arguments are variables)
-	auto var  = call->ns->vars.list;
-	auto argc = call->args->integer;
-	auto arg  = call->args->l;
-	for (auto at = 0; at < argc; at++)
-	{
-		// expr
-		auto r = emit_expr(self, &call->from, arg);
-
-		// validate argument type
-		auto type = (Type)rtype(self, r);
-		if (type != TYPE_NULL && var->type != type)
-			stmt_error(self->current, stmt->ast, "expected %s for argument %.*s",
-			           type_of(var->type), str_size(var->name),
-			           str_of(var->name));
-
-		// PUSH
-		op1(self, CPUSH, r);
-		runpin(self, r);
-
-		arg = arg->next;
-		var = var->next;
-	}
-
-	// init rest of variables
-	auto vars_count = call->ns->vars.count - argc;
-	if (vars_count > 0)
-		op1(self, CPUSH_NULLS, vars_count);
-
-	// emit main block
-	emit_block(self, call->ns->blocks.list);
-
-	// set call return jmp
-	auto _return = op_pos(self);
-	op_set_jmp(self, _enter, _return);
-
-	// mark last sending operation in the main block
-	auto block = compiler_main(self);
-	if (stmt->block == block && block->stmts.last_send == stmt)
-		op0(self, CCLOSE);
-
-	// set previous stmt
-	self->current = stmt_prev;
-}
-
-hot static void
 emit_return(Compiler* self, Stmt* stmt)
 {
 	compiler_switch_frontend(self);
@@ -621,29 +561,6 @@ emit_return(Compiler* self, Stmt* stmt)
 			var     =  return_->var->order;
 			columns =  return_->columns;
 			fmt     = &return_->format;
-		} else
-		{
-			// return from procedure or main block
-			auto proc = stmt->block->ns->proc;
-			if (proc && proc->args.count_out > 0)
-			{
-				// create returning set using OUT args
-				r = op3(self, CSET, rpin(self, TYPE_STORE), proc->args.count_out, 0);
-
-				// push expr
-				list_foreach(&proc->args.list)
-				{
-					auto column = list_at(Column, link);
-					if (! column->constraints.out)
-						continue;
-					auto rvar = op2(self, CVAR, rpin(self, column->type), column->order);
-					op1(self, CPUSH, rvar);
-					runpin(self, rvar);
-				}
-
-				// add to the returning set
-				op1(self, CSET_ADD, r);
-			}
 		}
 	} else
 	{
@@ -679,9 +596,6 @@ emit_block(Compiler* self, Block* block)
 			break;
 		case STMT_FOR:
 			emit_for(self, stmt);
-			break;
-		case STMT_CALL:
-			emit_call(self, stmt);
 			break;
 		case STMT_RETURN:
 			break;

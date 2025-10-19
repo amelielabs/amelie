@@ -94,11 +94,11 @@ parse_stmt_free(Stmt* stmt)
 			index_config_free(ast->config);
 		break;
 	}
-	case STMT_CREATE_PROCEDURE:
+	case STMT_CREATE_FUNCTION:
 	{
-		auto ast = ast_procedure_create_of(stmt->ast);
+		auto ast = ast_function_create_of(stmt->ast);
 		if (ast->config)
-			proc_config_free(ast->config);
+			udf_config_free(ast->config);
 		break;
 	}
 	case STMT_INSERT:
@@ -227,7 +227,7 @@ parse_stmt(Stmt* self)
 			stmt_push(self, next);
 		}
 
-		// CREATE USER | TOKEN | REPLICA | SCHEMA | TABLE | INDEX | PROCEDURE
+		// CREATE USER | TOKEN | REPLICA | SCHEMA | TABLE | INDEX | FUNCTION
 		if (stmt_if(self, KUSER))
 		{
 			self->id = STMT_CREATE_USER;
@@ -258,20 +258,20 @@ parse_stmt(Stmt* self)
 			self->id = STMT_CREATE_INDEX;
 			parse_index_create(self, unique);
 		} else
-		if (stmt_if(self, KPROCEDURE))
+		if (stmt_if(self, KFUNCTION))
 		{
-			self->id = STMT_CREATE_PROCEDURE;
-			parse_procedure_create(self, false);
+			self->id = STMT_CREATE_FUNCTION;
+			parse_function_create(self, false);
 		} else
 		{
-			stmt_error(self, NULL, "USER|REPLICA|SCHEMA|TABLE|INDEX|PROCEDURE expected");
+			stmt_error(self, NULL, "USER|REPLICA|SCHEMA|TABLE|INDEX|FUNCTION expected");
 		}
 		break;
 	}
 
 	case KDROP:
 	{
-		// DROP USER | REPLICA | SCHEMA | TABLE | INDEX | PROCEDURE
+		// DROP USER | REPLICA | SCHEMA | TABLE | INDEX | FUNCTION
 		if (stmt_if(self, KUSER))
 		{
 			self->id = STMT_DROP_USER;
@@ -297,19 +297,19 @@ parse_stmt(Stmt* self)
 			self->id = STMT_DROP_INDEX;
 			parse_index_drop(self);
 		} else
-		if (stmt_if(self, KPROCEDURE))
+		if (stmt_if(self, KFUNCTION))
 		{
-			self->id = STMT_DROP_PROCEDURE;
-			parse_procedure_drop(self);
+			self->id = STMT_DROP_FUNCTION;
+			parse_function_drop(self);
 		} else {
-			stmt_error(self, NULL, "USER|REPLICA|SCHEMA|TABLE|INDEX|PROCEDURE expected");
+			stmt_error(self, NULL, "USER|REPLICA|SCHEMA|TABLE|INDEX|FUNCTION expected");
 		}
 		break;
 	}
 
 	case KALTER:
 	{
-		// ALTER USER | SCHEMA | TABLE | INDEX | PROCEDURE
+		// ALTER USER | SCHEMA | TABLE | INDEX | FUNCTION
 		if (stmt_if(self, KUSER))
 		{
 			self->id = STMT_ALTER_USER;
@@ -330,12 +330,12 @@ parse_stmt(Stmt* self)
 			self->id = STMT_ALTER_INDEX;
 			parse_index_alter(self);
 		} else
-		if (stmt_if(self, KPROCEDURE))
+		if (stmt_if(self, KFUNCTION))
 		{
-			self->id = STMT_ALTER_PROCEDURE;
-			parse_procedure_alter(self);
+			self->id = STMT_ALTER_FUNCTION;
+			parse_function_alter(self);
 		} else {
-			stmt_error(self, NULL, "USER|SCHEMA|TABLE|INDEX|PROCEDURE expected");
+			stmt_error(self, NULL, "USER|SCHEMA|TABLE|INDEX|FUNCTION expected");
 		}
 		break;
 	}
@@ -406,14 +406,6 @@ parse_stmt(Stmt* self)
 		break;
 	}
 
-	case KCALL:
-	{
-		self->id = STMT_CALL;
-		if (parse_call(self))
-			self->block->stmts.last_send = self;
-		break;
-	}
-
 	case KBEGIN:
 	case KCOMMIT:
 		stmt_error(self, NULL, "unsupported statement");
@@ -431,25 +423,14 @@ parse_stmt(Stmt* self)
 	// validate RETURN usage
 	if (self->is_return)
 	{
-		auto ns = self->block->ns;
-		auto ns_is_root = (ns == self->parser->nss.list);
-
 		// return stmt
+		// return var
+		// return ;
 		if (self->id != STMT_RETURN)
 		{
-			// ensure return stmt is not used inside a procedure
-			if (! ns_is_root)
-				stmt_error(self, ast, "procedure cannot RETURN statement result this way");
-
 			// stmt must be returning
 			if (! self->ret)
 				stmt_error(self, ast, "RETURN statement must return data");
-		} else {
-			// return var
-			// return ;
-			auto ret = ast_return_of(self->ast);
-			if (! ns_is_root && ret->var)
-				stmt_error(self, ast, "procedure cannot RETURN variable this way");
 		}
 	}
 
@@ -496,23 +477,6 @@ parse_block(Parser* self, Block* block)
 		case KEND:
 		case KELSE:
 		case KELSIF:
-
-			// on procedure end
-			if (block->ns->proc && block == block->ns->blocks.list)
-			{
-				// force add explicit RETURN if procedure has no statements or
-				// last stmt is not return
-				if (!block->stmts.count || !block->stmts.list_tail->is_return)
-				{
-					lex_push(lex, ast(';'));
-					auto stmt = stmt_allocate(self, lex, block);
-					stmt->id = STMT_RETURN;
-					stmt->is_return = true;
-					stmts_add(&block->stmts, stmt);
-					parse_return(stmt);
-				}
-			}
-
 			// block end
 			lex_push(lex, next);
 			return;

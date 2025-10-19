@@ -111,6 +111,7 @@ enum
 	KFROM,
 	KFOR,
 	KFORMAT,
+	KFUNCTION,
 
 	// g
 	KGROUP,
@@ -166,7 +167,6 @@ enum
 
 	// p
 	KPROFILE,
-	KPROCEDURE,
 	KPARTITIONS,
 	KPOOL,
 	KPRIMARY,
