@@ -249,7 +249,7 @@ parse_import(Parser* self, Program* program, Str* str, Str* uri,
 	parse_endpoint(&endpoint);
 
 	// create main namespace and the main block
-	auto ns    = namespaces_add(&self->nss, NULL);
+	auto ns    = namespaces_add(&self->nss, NULL, NULL);
 	auto block = blocks_add(&ns->blocks, NULL);
 
 	// prepare insert stmt

@@ -20,6 +20,7 @@ struct AstCall
 	Namespace* ns;
 	Proc*      proc;
 	From       from;
+	Returning  ret;
 };
 
 static inline AstCall*
@@ -37,6 +38,7 @@ ast_call_allocate(void)
 	self->ns   = NULL;
 	self->proc = NULL;
 	from_init(&self->from, NULL);
+	returning_init(&self->ret);
 	return self;
 }
 

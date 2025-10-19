@@ -492,8 +492,8 @@ op_dump(Program* self, Code* code, Buf* buf)
 		}
 		case CCALL_SP:
 		{
-			auto proc = (Proc*)op->b;
-			op_write(output, op, true, false, false,
+			auto proc = (Proc*)op->c;
+			op_write(output, op, true, true, false,
 			         "%.*s.%.*s()",
 			         str_size(&proc->config->schema),
 			         str_of(&proc->config->schema),

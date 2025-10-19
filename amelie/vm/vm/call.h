@@ -18,6 +18,7 @@ struct Call
 {
 	int stack_head;
 	int jmp_ret;
+	int rresult;
 };
 
 struct CallStack

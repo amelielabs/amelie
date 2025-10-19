@@ -44,12 +44,32 @@ parse_return(Stmt* self)
 {
 	auto stmt = ast_return_allocate();
 	self->ast = &stmt->ast;
+	stmt->format = *self->parser->local->format;
 
 	// RETURN ;
 	auto eos = stmt_if(self, ';');
 	if (eos)
 	{
 		stmt_push(self, eos);
+
+		// main block
+		auto proc = self->block->ns->proc;
+		if (!proc || !proc->args.count_out)
+			return;
+
+		// return from procedure
+
+		// create deps for all OUT columns prior to return
+		list_foreach(&proc->args.list)
+		{
+			auto column = list_at(Column, link);
+			if (! column->constraints.out)
+				continue;
+			auto var = namespace_find_var(self->block->ns, &column->name);
+			assert(var);
+			if (var->writer)
+				deps_add_var(&self->deps, var->writer, var);
+		}
 		return;
 	}
 
@@ -86,8 +106,5 @@ parse_return(Stmt* self)
 	{
 		auto type = stmt_expect(self, KSTRING);
 		stmt->format = type->string;
-	} else
-	{
-		stmt->format = *self->parser->local->format;
 	}
 }

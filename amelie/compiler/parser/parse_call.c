@@ -85,9 +85,16 @@ parse_call(Stmt* self)
 	}
 
 	// create namespace and main block
-	auto ns = namespaces_add(&parser->nss, self->block->ns);
+	auto ns = namespaces_add(&parser->nss, self->block->ns, proc->config);
 	auto block = blocks_add(&ns->blocks, NULL);
 	stmt->ns = ns;
+
+	// set returning if procedure has OUT arguments
+	if (proc->config->args.count_out > 0)
+	{
+		self->ret = &stmt->ret;
+		stmt->ret.format = *self->parser->local->format;
+	}
 
 	// precreate arguments as variables
 	list_foreach(&proc->config->args.list)
@@ -95,6 +102,15 @@ parse_call(Stmt* self)
 		auto column = list_at(Column, link);
 		auto var = vars_add(&ns->vars, &column->name);
 		var->type = column->type;
+
+		// add returning column
+		if (column->constraints.out)
+		{
+			auto out = column_allocate();
+			column_set_name(out, &column->name);
+			column_set_type(out, column->type, column->type_size);
+			columns_add(&stmt->ret.columns, out);
+		}
 	}
 
 	// inline procedure call

@@ -16,10 +16,11 @@ typedef struct Namespaces Namespaces;
 
 struct Namespace
 {
-	Vars       vars;
-	Blocks     blocks;
-	Namespace* parent;
-	Namespace* next;
+	Vars        vars;
+	Blocks      blocks;
+	ProcConfig* proc;
+	Namespace*  parent;
+	Namespace*  next;
 };
 
 struct Namespaces
@@ -38,9 +39,10 @@ namespaces_init(Namespaces* self)
 }
 
 static inline Namespace*
-namespaces_add(Namespaces* self, Namespace* parent)
+namespaces_add(Namespaces* self, Namespace* parent, ProcConfig* proc)
 {
 	auto ns = (Namespace*)palloc(sizeof(Namespace));
+	ns->proc   = proc;
 	ns->parent = parent;
 	ns->next   = NULL;
 	blocks_init(&ns->blocks, ns);

@@ -65,10 +65,7 @@ always_inline hot static inline void
 stack_truncate(Stack* self, int head)
 {
 	while (self->stack_size > head)
-	{
 		value_free(stack_pop(self));
-		self->stack_size--;
-	}
 }
 
 always_inline hot static inline void

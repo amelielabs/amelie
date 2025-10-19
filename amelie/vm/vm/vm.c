@@ -1892,31 +1892,39 @@ ccall:
 	op_next;
 
 ccall_sp:
-	// [jmp_return, proc*]
+	// [jmp_return, rresult, proc*]
 	call = call_stack_push(stack_call);
 	call->stack_head = stack_head(stack);
 	call->jmp_ret    = op->a;
+	call->rresult    = op->b;
 	op_next;
 
 cret:
 	// [result, var, columns, fmt]
+	if (op->a != -1)
+		a = &r[op->a];
+	 else
+	if (op->b != -1)
+		a = stack_get(stack, op->b);
+	else
+		a = NULL;
 
-	// return from last enter (procedure call)
+	// return from last procedure call
 	if (call_stack_head(stack_call) > 0)
 	{
 		call = call_stack_pop(stack_call);
+		// set result
+		if (a)
+			value_move(&r[call->rresult], a);
+		else
+			value_set_null(&r[call->rresult]);
 		stack_truncate(stack, call->stack_head);
 		op = code_at(code, call->jmp_ret);
 		op_jmp;
 	}
 
-	ret->value   = NULL;
+	ret->value   = a;
 	ret->columns = (Columns*)op->c;
 	ret->fmt     = (Str*)op->d;
-	if (op->a != -1)
-		ret->value = &r[op->a];
-	 else
-	if (op->b != -1)
-		ret->value = stack_get(stack, op->b);
 	return;
 }

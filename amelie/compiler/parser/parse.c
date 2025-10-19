@@ -471,11 +471,11 @@ parse_block(Parser* self, Block* block)
 	for (;;)
 	{
 		// ;
-		auto ast = lex_next(lex);
-		if (ast->id == ';')
+		auto next = lex_next(lex);
+		if (next->id == ';')
 			continue;
 
-		switch (ast->id) {
+		switch (next->id) {
 		case KWITH:
 			// [WITH name AS ( cte )[, name AS (...)]]
 			parse_with(self, block);
@@ -484,28 +484,46 @@ parse_block(Parser* self, Block* block)
 			// [DECLARE var type ;]
 			// [DECLARE var type := expr]
 			if (block != block->ns->blocks.list)
-				lex_error(lex, ast, "DECLARE cannot be used here");
+				lex_error(lex, next, "DECLARE cannot be used here");
 			parse_declare(self, block);
 			break;
 		case KNAME:
 			// var := expr
-			lex_push(lex, ast);
+			lex_push(lex, next);
 			parse_assign(self, block);
 			break;
 
 		case KEND:
 		case KELSE:
 		case KELSIF:
+
+			// on procedure end
+			if (block->ns->proc && block == block->ns->blocks.list)
+			{
+				// force add explicit RETURN if procedure has no statements or
+				// last stmt is not return
+				if (!block->stmts.count || !block->stmts.list_tail->is_return)
+				{
+					lex_push(lex, ast(';'));
+					auto stmt = stmt_allocate(self, lex, block);
+					stmt->id = STMT_RETURN;
+					stmt->is_return = true;
+					stmts_add(&block->stmts, stmt);
+					parse_return(stmt);
+				}
+			}
+
 			// block end
-			lex_push(lex, ast);
+			lex_push(lex, next);
 			return;
+
 		case KEOF:
 			return;
 
 		default:
 		{
 			// stmt
-			lex_push(lex, ast);
+			lex_push(lex, next);
 			auto stmt = stmt_allocate(self, lex, block);
 			stmts_add(&block->stmts, stmt);
 			parse_stmt(stmt);
@@ -562,7 +580,7 @@ parse(Parser* self, Program* program, Str* str)
 	auto begin = lex_if(lex, KBEGIN) != NULL;
 
 	// create main namespace and the main block
-	auto ns    = namespaces_add(&self->nss, NULL);
+	auto ns    = namespaces_add(&self->nss, NULL, NULL);
 	auto block = blocks_add(&ns->blocks, NULL);
 
 	// stmt [; stmt]

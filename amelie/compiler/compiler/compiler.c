@@ -554,8 +554,10 @@ emit_call(Compiler* self, Stmt* stmt)
 	compiler_switch_frontend(self);
 
 	// CCALL_SP
-	auto _enter = op_pos(self);
-	op2(self, CCALL_SP, 0 /* jmp_ret */, (intptr_t)call->proc);
+	stmt->r = rpin(self, TYPE_STORE);
+
+	auto _enter  = op_pos(self);
+	op3(self, CCALL_SP, 0 /* jmp_ret */, stmt->r, (intptr_t)call->proc);
 
 	// push call arguments (arguments are variables)
 	auto var  = call->ns->vars.list;
@@ -580,6 +582,11 @@ emit_call(Compiler* self, Stmt* stmt)
 		arg = arg->next;
 		var = var->next;
 	}
+
+	// init rest of variables
+	auto vars_count = call->ns->vars.count - argc;
+	if (vars_count > 0)
+		op1(self, CPUSH_NULLS, vars_count);
 
 	// emit main block
 	emit_block(self, call->ns->blocks.list);
@@ -614,13 +621,36 @@ emit_return(Compiler* self, Stmt* stmt)
 			var     =  return_->var->order;
 			columns =  return_->columns;
 			fmt     = &return_->format;
+		} else
+		{
+			// return from procedure or main block
+			auto proc = stmt->block->ns->proc;
+			if (proc && proc->args.count_out > 0)
+			{
+				// create returning set using OUT args
+				r = op3(self, CSET, rpin(self, TYPE_STORE), proc->args.count_out, 0);
+
+				// push expr
+				list_foreach(&proc->args.list)
+				{
+					auto column = list_at(Column, link);
+					if (! column->constraints.out)
+						continue;
+					auto rvar = op2(self, CVAR, rpin(self, column->type), column->order);
+					op1(self, CPUSH, rvar);
+					runpin(self, rvar);
+				}
+
+				// add to the returning set
+				op1(self, CSET_ADD, r);
+			}
 		}
 	} else
 	{
 		if (stmt->ret)
 		{
 			emit_recv(self, stmt);
-			r       = stmt->r;
+			r       =  stmt->r;
 			columns = &stmt->ret->columns;
 			fmt     = &stmt->ret->format;
 		}
@@ -678,11 +708,6 @@ emit_block(Compiler* self, Block* block)
 				emit_recv(self, stmt);
 		}
 	}
-
-	// emit RET if ns has no statements
-	auto ns = block->ns;
-	if (ns->blocks.list == block && !block->stmts.count)
-		op4(self, CRET, -1, -1, 0, 0);
 
 	// set previous stmt
 	self->current = stmt_prev;

@@ -113,7 +113,7 @@ parse_procedure_create(Stmt* self, bool or_replace)
 
 	// create new namespace
 	auto parser = self->parser;
-	auto ns     = namespaces_add(&parser->nss, self->block->ns);
+	auto ns     = namespaces_add(&parser->nss, self->block->ns, stmt->config);
 
 	// precreate arguments as variables
 	list_foreach(&stmt->config->args.list)
