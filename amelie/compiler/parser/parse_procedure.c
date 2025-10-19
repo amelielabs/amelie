@@ -49,6 +49,9 @@ parse_procedure_args(Stmt* self, AstProcedureCreate* stmt)
 
 	for (;;)
 	{
+		// [OUT]
+		auto out = stmt_if(self, KOUT);
+
 		// name
 		auto name = stmt_expect(self, KNAME);
 
@@ -61,6 +64,8 @@ parse_procedure_args(Stmt* self, AstProcedureCreate* stmt)
 		arg = column_allocate();
 		column_set_name(arg, &name->string);
 		encode_null(&arg->constraints.value);
+		if (out)
+			constraints_set_out(&arg->constraints, true);
 		columns_add(&stmt->config->args, arg);
 
 		// type

@@ -162,6 +162,7 @@ enum
 	KOFFSET,
 	KORDER,
 	KOUTER,
+	KOUT,
 
 	// p
 	KPROFILE,

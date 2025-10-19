@@ -150,6 +150,7 @@ Keyword keywords[] =
 	{ KOFFSET,                "offset",                6  },
 	{ KORDER,                 "order",                 5  },
 	{ KOUTER,                 "outer",                 5  },
+	{ KOUT,                   "out",                   3  },
 
 	// p
 	{ KPROFILE,               "profile",               7  },
