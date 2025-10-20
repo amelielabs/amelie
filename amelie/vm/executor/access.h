@@ -81,6 +81,16 @@ access_add(Access* self, Relation* rel, AccessType type)
 	self->list_count++;
 }
 
+hot static inline void
+access_merge(Access* self, Access* with)
+{
+	for (auto i = 0; i < with->list_count; i++)
+	{
+		auto record = access_at(with, i);
+		access_add(self, record->rel, record->type);
+	}
+}
+
 hot static inline bool
 access_try(Access* self, Access* with)
 {

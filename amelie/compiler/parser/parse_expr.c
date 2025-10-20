@@ -268,7 +268,11 @@ expr_func(Stmt* self, Expr* expr, Ast* path, bool with_args)
 			stmt_error(self, path, "function not found");
 
 		// track udf access
-		access_add(&self->parser->program->access, &func->udf->rel, ACCESS_CALL);
+		auto access = &self->parser->program->access;
+		access_add(access, &func->udf->rel, ACCESS_CALL);
+
+		// import access from the udf
+		access_merge(access, &((Program*)func->udf->data)->access);
 	}
 	if (with_args)
 	{
