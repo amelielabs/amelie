@@ -79,6 +79,15 @@ separator_skip(Separator* self)
 	return self->pos == self->end;
 }
 
+static inline bool
+separator_skip_pragma(Separator* self)
+{
+	// skip # .. \n
+	while (self->pos < self->end && *self->pos != '\n')
+		self->pos++;
+	return self->pos == self->end;
+}
+
 hot static inline bool
 separator_skip_string(Separator* self)
 {
@@ -210,6 +219,14 @@ separator_read(Separator* self, Str* block)
 	{
 		// empty block
 		str_set(block, start, 0);
+		return true;
+	}
+
+	// handle # pragma
+	if (*self->pos == '#')
+	{
+		separator_skip_pragma(self);
+		str_set(block, start, self->pos - start);
 		return true;
 	}
 
