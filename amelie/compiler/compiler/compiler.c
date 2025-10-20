@@ -49,7 +49,6 @@ compiler_init(Compiler* self, Local* local)
 	self->code_data = NULL;
 	self->origin    = ORIGIN_FRONTEND;
 	self->sends     = 0;
-	self->args      = NULL;
 	set_cache_init(&self->values_cache);
 	parser_init(&self->parser, local, &self->values_cache);
 	rmap_init(&self->map);
@@ -70,7 +69,6 @@ compiler_reset(Compiler* self)
 	self->code      = NULL;
 	self->code_data = NULL;
 	self->sends     = 0;
-	self->args      = NULL;
 	self->current   = NULL;
 	parser_reset(&self->parser);
 	rmap_reset(&self->map);
@@ -91,10 +89,25 @@ compiler_parse(Compiler* self, Str* text)
 }
 
 void
+compiler_parse_udf(Compiler* self, Udf* udf)
+{
+	parse_udf(&self->parser, self->program, udf);
+}
+
+void
 compiler_parse_import(Compiler*    self, Str* text, Str* uri,
                       EndpointType type)
 {
 	parse_import(&self->parser, self->program, text, uri, type);
+}
+
+static void
+emit_close(Compiler* self, Stmt* stmt)
+{
+	// mark last sending operation in the main block
+	auto block = compiler_main(self);
+	if (stmt->block == block && block->stmts.last_send == stmt)
+		op0(self, CCLOSE);
 }
 
 static void
@@ -218,7 +231,7 @@ emit_into(Compiler* self, Stmt* stmt)
 			stmt_error(self->current, stmt->ast, "variable table columns mismatch");
 
 		// CVAR_MOV (var = store)
-		op2(self, CVAR_MOV, var->order, stmt->r);
+		op3(self, CVAR_MOV, var->order, var->is_arg, stmt->r);
 
 		runpin(self, stmt->r);
 		stmt->r = -1;
@@ -242,7 +255,7 @@ emit_into(Compiler* self, Stmt* stmt)
 					   type_of(var->type));
 
 		// CVAR_SET
-		op3(self, CVAR_SET, var->order, stmt->r, column->order);
+		op4(self, CVAR_SET, var->order, var->is_arg, stmt->r, column->order);
 
 		// variables count can be less than expressions
 		ref = ref->next;
@@ -345,7 +358,7 @@ emit_stmt_backend(Compiler* self, Stmt* stmt)
 	}
 
 	// CRET
-	op4(self, CRET, r, -1, 0, 0);
+	op5(self, CRET, r, -1, 0, 0, 0);
 	if (r != -1)
 		runpin(self, r);
 	return start;
@@ -497,9 +510,7 @@ emit_if(Compiler* self, Stmt* stmt)
 	op_set_jmp(self, _stop_jmp, _stop);
 
 	// mark last sending operation in the main block
-	auto block = compiler_main(self);
-	if (stmt->block == block && block->stmts.last_send == stmt)
-		op0(self, CCLOSE);
+	emit_close(self, stmt);
 
 	// set previous stmt
 	self->current = stmt_prev;
@@ -536,9 +547,7 @@ emit_for(Compiler* self, Stmt* stmt)
 		self->program->snapshot = true;
 
 	// mark last sending operation in the main block
-	auto block = compiler_main(self);
-	if (stmt->block == block && block->stmts.last_send == stmt)
-		op0(self, CCLOSE);
+	emit_close(self, stmt);
 
 	// set previous stmt
 	self->current = stmt_prev;
@@ -549,18 +558,24 @@ emit_return(Compiler* self, Stmt* stmt)
 {
 	compiler_switch_frontend(self);
 
-	auto     r       = -1;
-	auto     var     = -1;
-	Columns* columns = NULL;
-	Str*     fmt     = NULL;
+	auto     r          = -1;
+	auto     var        = -1;
+	auto     var_is_arg = false;
+	Columns* columns    = NULL;
+	Str*     fmt        = NULL;
 	if (stmt->id == STMT_RETURN)
 	{
 		auto return_ = ast_return_of(stmt->ast);
 		if (return_->var)
 		{
-			var     =  return_->var->order;
-			columns =  return_->columns;
-			fmt     = &return_->format;
+			var        =  return_->var->order;
+			var_is_arg =  return_->var->is_arg;
+			columns    =  return_->columns;
+			fmt        = &return_->format;
+
+			auto udf = stmt->block->ns->udf;
+			if (udf && udf->type != return_->var->type)
+				stmt_error(stmt, stmt->ast, "RETURN does not match function type");
 		}
 	} else
 	{
@@ -570,9 +585,15 @@ emit_return(Compiler* self, Stmt* stmt)
 			r       =  stmt->r;
 			columns = &stmt->ret->columns;
 			fmt     = &stmt->ret->format;
+
+			auto udf = stmt->block->ns->udf;
+			if (udf && udf->type != rtype(self, r))
+				stmt_error(stmt, stmt->ast, "RETURN does not match function type");
 		}
 	}
-	op4(self, CRET, r, var, (intptr_t)columns, (intptr_t)fmt);
+	op5(self, CRET, r, var, var_is_arg,
+	    (intptr_t)columns,
+	    (intptr_t)fmt);
 }
 
 hot static void
@@ -621,6 +642,16 @@ emit_block(Compiler* self, Block* block)
 			for (; stmt; stmt = stmt->next)
 				emit_recv(self, stmt);
 		}
+	} else
+	if (block->ns->udf)
+	{
+		// generate RET if function has no stmts
+		auto udf = block->ns->udf;
+		if (! block->stmts.list)
+		{
+			auto r = op1(self, CNULL, rpin(self, udf->type));
+			op5(self, CRET, r, -1, 0, 0, 0);
+		}
 	}
 
 	// set previous stmt
@@ -639,9 +670,13 @@ compiler_emit(Compiler* self)
 		emit_utility(self);
 	} else
 	{
-		// initialize variables
-		if (main->vars.count > 0)
-			op1(self, CPUSH_NULLS, main->vars.count);
+		// initialize declared variables (skipping arguments)
+		auto vars = 0;
+		for (auto var = main->vars.list; var; var = var->next)
+			if (! var->is_arg)
+				vars++;
+		if (vars > 0)
+			op1(self, CPUSH_NULLS, vars);
 
 		// emit main block
 		emit_block(self, main->blocks.list);

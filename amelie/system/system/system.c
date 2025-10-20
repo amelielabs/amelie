@@ -92,14 +92,39 @@ catalog_if_column_drop(Catalog* self, Table* table, Table* table_new, Column* co
 static void
 catalog_if_udf_compile(Catalog* self, Udf* udf)
 {
-	(void)self;
-	(void)udf;
+	unused(self);
+
+	Local local;
+	local_init(&local);
+	local_update_time(&local);
+
+	auto program = program_allocate();
+	errdefer(program_free, program);
+
+	Compiler compiler;
+	compiler_init(&compiler, &local);
+	defer(compiler_free, &compiler);
+	compiler_set(&compiler, program);
+
+	// parse SQL statements
+	compiler_parse_udf(&compiler, udf);
+
+	// generate bytecode
+	compiler_emit(&compiler);
+
+	// assign udf program
+	udf->data = program;
 }
 
 static void
 catalog_if_udf_free(Udf* udf)
 {
-	(void)udf;
+	Program* program = udf->data;
+	if (program)
+	{
+		program_free(program);
+		udf->data = NULL;
+	}
 }
 
 static bool

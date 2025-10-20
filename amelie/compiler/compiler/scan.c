@@ -344,20 +344,22 @@ scan_expr(Scan* self, Target* target)
 			target_set_origin(target, ORIGIN_BACKEND);
 			break;
 		case TARGET_VAR:
-
+		{
 			// create reference, if frontend value is accessed from backend
-			type = target->from_var->type;
+			auto var = target->from_var;
+			type = var->type;
 			if (cp->origin == ORIGIN_BACKEND)
 			{
 				auto ref = refs_add(&cp->current->refs, self->from, target->ast, -1);
 				r = op2(cp, CREF, rpin(cp, type), ref->order);
 			} else {
-				r = op2(cp, CVAR, rpin(cp, type), target->from_var->order);
+				r = op3(cp, CVAR, rpin(cp, type), var->order, var->is_arg);
 			}
 
 			// futher object access will be using cursor created on backend
 			target_set_origin(target, ORIGIN_FRONTEND);
 			break;
+		}
 		default:
 			abort();
 			break;

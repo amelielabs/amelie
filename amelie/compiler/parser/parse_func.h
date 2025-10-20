@@ -17,6 +17,7 @@ struct AstFunc
 {
 	Ast       ast;
 	Function* fn;
+	Udf*      udf;
 };
 
 static inline AstFunc*
@@ -30,6 +31,7 @@ ast_func_allocate(void)
 {
 	AstFunc* self;
 	self = ast_allocate(KFUNC, sizeof(AstFunc));
-	self->fn = NULL;
+	self->fn  = NULL;
+	self->udf = NULL;
 	return self;
 }

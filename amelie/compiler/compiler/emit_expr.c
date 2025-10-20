@@ -467,6 +467,52 @@ emit_operator(Compiler* self, From* from, Ast* ast, int op)
 	return cast_operator(self, ast->r, op, l, r);
 }
 
+hot int
+emit_udf(Compiler* self, From* from, Ast* ast)
+{
+	// (function_name, args)
+	auto func = ast_func_of(ast);
+	auto args = ast->r;
+	auto udf  = func->udf;
+
+	// ensure UDF is not pushed down
+	if (block_find_from(from))
+		stmt_error(self->current, ast, "UDF cannot be called with FROM clause");
+
+	// push arguments
+	auto current = args->l;
+	list_foreach(&udf->config->args.list)
+	{
+		auto column = list_at(Column, link);
+		auto r = emit_expr(self, from, current);
+
+		// validate expression type
+		auto type = rtype(self, r);
+		if (type != TYPE_NULL && type != column->type)
+			stmt_error(self->current, current, "argument '%.*s' expects %s",
+			           str_size(&column->name),
+			           str_of(&column->name),
+			           type_of(column->type));
+
+		op1(self, CPUSH, r);
+		runpin(self, r);
+
+		current = current->next;
+	}
+
+	// CALL_UDF
+	return op2(self, CCALL_UDF, rpin(self, udf->config->type), (intptr_t)udf);
+}
+
+hot int
+emit_udf_method(Compiler* self, From* from, Ast* ast)
+{
+	(void)self;
+	(void)from;
+	(void)ast;
+	return -1;
+}
+
 hot static inline bool
 emit_func_typederive(Compiler* self, int r, int* type)
 {
@@ -922,7 +968,7 @@ emit_expr(Compiler* self, From* from, Ast* ast)
 			auto ref = refs_add(&self->current->refs, from, ast, -1);
 			return op2(self, CREF, rpin(self, var->type), ref->order);
 		}
-		auto r = op2(self, CVAR, rpin(self, var->type), var->order);
+		auto r = op3(self, CVAR, rpin(self, var->type), var->order, var->is_arg);
 		return r;
 	}
 
@@ -1052,9 +1098,19 @@ emit_expr(Compiler* self, From* from, Ast* ast)
 
 	// function/method call
 	case KFUNC:
+	{
+		auto func = ast_func_of(ast);
+		if (func->udf)
+			return emit_udf(self, from, ast);
 		return emit_func(self, from, ast);
+	}
 	case KMETHOD:
+	{
+		auto func = ast_func_of(ast->r);
+		if (func->udf)
+			return emit_udf_method(self, from, ast);
 		return emit_method(self, from, ast);
+	}
 
 	// subquery
 	case KSELECT:

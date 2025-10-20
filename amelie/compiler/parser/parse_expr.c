@@ -250,6 +250,7 @@ static Ast*
 expr_func(Stmt* self, Expr* expr, Ast* path, bool with_args)
 {
 	// [schema.]function_name[(expr, ...)]
+	auto func = ast_func_allocate();
 
 	// read schema/name
 	Str schema;
@@ -258,14 +259,24 @@ expr_func(Stmt* self, Expr* expr, Ast* path, bool with_args)
 		stmt_error(self, path, "bad function call");
 
 	// find and call function
-	auto fn = function_mgr_find(share()->function_mgr, &schema, &name);
-	if (! fn)
-		stmt_error(self, path, "function not found");
+	func->fn = function_mgr_find(share()->function_mgr, &schema, &name);
+	if (! func->fn)
+	{
+		// find udf
+		func->udf = udf_mgr_find(&share()->db->catalog.udf_mgr, &schema, &name, false);
+		if (! func->udf)
+			stmt_error(self, path, "function not found");
 
-	auto func = ast_func_allocate();
-	func->fn = fn;
+		// track udf access
+		access_add(&self->parser->program->access, &func->udf->rel, ACCESS_CALL);
+	}
 	if (with_args)
-		func->ast.r = parse_expr_args(self, expr, ')', false);
+	{
+		auto args = parse_expr_args(self, expr, ')', false);
+		func->ast.r = args;
+		if (func->udf && args->integer != func->udf->config->args.count)
+			stmt_error(self, path, "invalid number of arguments");
+	}
 	return &func->ast;
 }
 

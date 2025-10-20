@@ -75,7 +75,6 @@ OpDesc ops[] =
 	{ CUUID, "uuid" },
 
 	// argument
-	{ CARG, "arg" },
 	{ CEXCLUDED, "excluded" },
 
 	// null operations
@@ -490,11 +489,10 @@ op_dump(Program* self, Code* code, Buf* buf)
 			         str_of(&function->name));
 			break;
 		}
-#if 0
 		case CCALL_UDF:
 		{
-			auto udf = (Udf*)op->c;
-			op_write(output, op, true, true, false,
+			auto udf = (Udf*)op->b;
+			op_write(output, op, true, false, false,
 			         "%.*s.%.*s()",
 			         str_size(&udf->config->schema),
 			         str_of(&udf->config->schema),
@@ -502,7 +500,6 @@ op_dump(Program* self, Code* code, Buf* buf)
 			         str_of(&udf->config->name));
 			break;
 		}
-#endif
 		case CRET:
 			op_write(output, op, true, true, false, NULL);
 			break;

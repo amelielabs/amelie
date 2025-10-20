@@ -21,7 +21,9 @@ struct Vm
 	CodeData* code_data;
 	Buf*      code_arg;
 	uint8_t*  upsert;
+	bool      allow_close;
 	Value*    refs;
+	Value*    args;
 	Core*     core;
 	Dtr*      dtr;
 	Program*  program;
@@ -33,5 +35,5 @@ struct Vm
 void vm_init(Vm*, Core*, Dtr*);
 void vm_free(Vm*);
 void vm_reset(Vm*);
-void vm_run(Vm*, Local*, Tr*, Program*, Code*, CodeData*, Buf*, Value*,
-            Return*, int);
+void vm_run(Vm*, Local*, Tr*, Program*, Code*, CodeData*, Buf*,
+            Value*, Value*, Return*, bool, int);

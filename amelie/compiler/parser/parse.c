@@ -576,3 +576,54 @@ parse(Parser* self, Program* program, Str* str)
 	if (last && !last->is_return)
 		last->is_return = true;
 }
+
+void
+parse_udf(Parser* self, Program* program, Udf* udf)
+{
+	self->program = program;
+
+	// prepare parser
+	auto lex = &self->lex;
+	lex_start(&self->lex, &udf->config->text);
+
+	// BEGIN
+	lex_expect(lex, KBEGIN);
+
+	// create main namespace and the main block
+	auto ns = namespaces_add(&self->nss, NULL, udf->config);
+
+	// precreate arguments as variables
+	list_foreach(&udf->config->args.list)
+	{
+		auto column = list_at(Column, link);
+		auto var = vars_add(&ns->vars, &column->name);
+		var->type = column->type;
+		var->is_arg = true;
+	}
+
+	auto block = blocks_add(&ns->blocks, NULL);
+	parse_block(self, block);
+
+	// END
+	auto end = lex_expect(lex, KEND);
+
+	// ensure udf has no recursion
+	if (access_find(&program->access, &udf->config->schema, &udf->config->name))
+		lex_error(lex, end, "UDF recursion is not supported");
+
+	// ensure main stmt is not utility when using CTE
+	if (block->stmts.count_utility > 1)
+		lex_error(lex, end, "utility commands are not supported with UDF");
+
+	if (block->stmts.count > 0)
+	{
+		// mark last stmt as return
+		auto last = block->stmts.list_tail;
+		if (! last->is_return)
+			last->is_return = true;
+	} else
+	{
+		// return null;
+		// TODO
+	}
+}

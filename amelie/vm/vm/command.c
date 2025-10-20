@@ -55,7 +55,8 @@ csend_shard(Vm* self, Op* op)
 		result->dispatch = dispatch;
 		dispatch_set_returning(dispatch);
 	}
-	if (self->program->send_last == code_posof(self->code, op))
+	if (self->allow_close &&
+	    self->program->send_last == code_posof(self->code, op))
 		dispatch_set_close(dispatch);
 
 	// redistribute rows between backends
@@ -142,7 +143,8 @@ csend_lookup(Vm* self, Op* op)
 		result->dispatch = dispatch;
 		dispatch_set_returning(dispatch);
 	}
-	if (self->program->send_last == code_posof(self->code, op))
+	if (self->allow_close &&
+	    self->program->send_last == code_posof(self->code, op))
 		dispatch_set_close(dispatch);
 
 	// shard by precomputed hash
@@ -179,7 +181,8 @@ csend_lookup_by(Vm* self, Op* op)
 		result->dispatch = dispatch;
 		dispatch_set_returning(dispatch);
 	}
-	if (self->program->send_last == code_posof(self->code, op))
+	if (self->allow_close &&
+	    self->program->send_last == code_posof(self->code, op))
 		dispatch_set_close(dispatch);
 
 	// compute hash using key values
@@ -224,7 +227,8 @@ csend_all(Vm* self, Op* op)
 		result->dispatch = dispatch;
 		dispatch_set_returning(dispatch);
 	}
-	if (self->program->send_last == code_posof(self->code, op))
+	if (self->allow_close &&
+	    self->program->send_last == code_posof(self->code, op))
 		dispatch_set_close(dispatch);
 
 	// send to all table backends
@@ -250,7 +254,8 @@ void
 cclose(Vm* self, Op* op)
 {
 	unused(op);
-	dispatch_mgr_close(&self->dtr->dispatch_mgr);
+	if (self->allow_close)
+		dispatch_mgr_close(&self->dtr->dispatch_mgr);
 }
 
 hot void
@@ -335,19 +340,23 @@ cunion_recv(Vm* self, Op* op)
 void
 cvar_set(Vm* self, Op* op)
 {
-	// [var, value, column]
-	auto var = stack_get(&self->stack, op->a);
+	// [var, is_arg, value, column]
+	Value* var;
+	if (op->b)
+		var = &self->args[op->a];
+	else
+		var = stack_get(&self->stack, op->a);
 	value_free(var);
 
 	// value
-	auto src = reg_at(&self->r, op->b);
+	auto src = reg_at(&self->r, op->c);
 	if (src->type == TYPE_STORE)
 	{
 		auto store = src->store;
 		auto it = store_iterator(store);
 		defer(store_iterator_close, it);
 		if (store_iterator_has(it))
-			value_copy(var, it->current + op->c);
+			value_copy(var, it->current + op->d);
 		else
 			value_set_null(var);
 	} else {
@@ -554,4 +563,38 @@ cupdate_store(Vm* self, Op* op)
 	// [column_order, value], ...
 	for (auto order = 0; order < count; order += 2)
 		value_move(&row[values[order].integer], &values[order + 1]);
+}
+
+hot void
+ccall_udf(Vm* self, Op* op)
+{
+	// [result, udf*]
+	auto udf = (Udf*)op->b;
+	auto program = (Program*)udf->data;
+
+	auto argc   = udf->config->args.count;
+	auto argv   = stack_at(&self->stack, argc);
+	auto result = reg_at(&self->r, op->a);
+
+	Return ret;
+	return_init(&ret);
+
+	// execute udf
+	Vm vm;
+	vm_init(&vm, self->core, self->dtr);
+	defer(vm_free, &vm);
+	reg_prepare(&vm.r, program->code.regs);
+
+	vm_run(&vm, self->local, self->tr,
+	       program, &program->code, &program->code_data, NULL,
+	       NULL, // refs
+	       argv,
+	       &ret,
+	       false,
+		   0);
+
+	if (ret.value)
+		value_move(result, ret.value);
+
+	stack_popn(&self->stack, argc);
 }

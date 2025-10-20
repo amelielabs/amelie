@@ -41,16 +41,18 @@
 void
 vm_init(Vm* self, Core* core, Dtr* dtr)
 {
-	self->code      = NULL;
-	self->code_data = NULL;
-	self->code_arg  = NULL;
-	self->upsert    = NULL;
-	self->refs      = NULL;
-	self->core      = core;
-	self->dtr       = dtr;
-	self->program   = NULL;
-	self->tr        = NULL;
-	self->local     = NULL;
+	self->code        = NULL;
+	self->code_data   = NULL;
+	self->code_arg    = NULL;
+	self->upsert      = NULL;
+	self->allow_close = true;
+	self->refs        = NULL;
+	self->args        = NULL;
+	self->core        = core;
+	self->dtr         = dtr;
+	self->program     = NULL;
+	self->tr          = NULL;
+	self->local       = NULL;
 	reg_init(&self->r);
 	stack_init(&self->stack);
 	fn_mgr_init(&self->fn_mgr);
@@ -72,11 +74,13 @@ vm_reset(Vm* self)
 		fn_mgr_reset(&self->fn_mgr);
 	reg_reset(&self->r);
 	stack_reset(&self->stack);
-	self->code      = NULL;
-	self->code_data = NULL;
-	self->code_arg  = NULL;
-	self->refs      = NULL;
-	self->upsert    = NULL;
+	self->code        = NULL;
+	self->code_data   = NULL;
+	self->code_arg    = NULL;
+	self->refs        = NULL;
+	self->args        = NULL;
+	self->upsert      = NULL;
+	self->allow_close = true;
 }
 
 #define op_start goto *ops[(op)->op]
@@ -92,16 +96,20 @@ vm_run(Vm*       self,
        CodeData* code_data,
        Buf*      code_arg,
        Value*    refs,
+       Value*    args,
        Return*   ret,
+       bool      allow_close,
        int       start)
 {
-	self->local     = local;
-	self->tr        = tr;
-	self->program   = program;
-	self->code      = code;
-	self->code_data = code_data;
-	self->code_arg  = code_arg;
-	self->refs      = refs;
+	self->local       = local;
+	self->tr          = tr;
+	self->program     = program;
+	self->code        = code;
+	self->code_data   = code_data;
+	self->code_arg    = code_arg;
+	self->refs        = refs;
+	self->args        = args;
+	self->allow_close = allow_close;
 	fn_mgr_prepare(&self->fn_mgr, local, code_data);
 
 	const void* ops[] =
@@ -140,8 +148,7 @@ vm_run(Vm*       self,
 		&&cvector,
 		&&cuuid,
 
-		// argument
-		&&carg,
+		// upsert
 		&&cexcluded,
 
 		// null operations
@@ -550,12 +557,6 @@ cvector:
 
 cuuid:
 	value_set_uuid(&r[op->a], (Uuid*)code_data_at(code_data, op->b));
-	op_next;
-
-carg:
-	// [result, order]
-	// todo: read array
-	// value_read_arg(&r[op->a], self->args, op->b);
 	op_next;
 
 cexcluded:
@@ -1836,19 +1837,25 @@ cclose:
 	op_next;
 
 cvar:
-	// [result, var]
-	b = stack_get(stack, op->b);
+	// [result, var, is_arg]
+	if (op->c)
+		b = &self->args[op->b];
+	else
+		b = stack_get(stack, op->b);
 	value_copy(&r[op->a], b);
 	op_next;
 
 cvar_mov:
-	// [var, value]
-	a = stack_get(stack, op->a);
-	value_move(a, &r[op->b]);
+	// [var, is_arg, value]
+	if (op->b)
+		a = &self->args[op->a];
+	else
+		a = stack_get(stack, op->a);
+	value_move(a, &r[op->c]);
 	op_next;
 
 cvar_set:
-	// [var, value, column]
+	// [var, is_arg, value, column]
 	cvar_set(self, op);
 	op_next;
 
@@ -1873,20 +1880,25 @@ ccall:
 	op_next;
 
 ccall_udf:
-	// todo:
+	// [result, udf*]
+	ccall_udf(self, op);
 	op_next;
 
 cret:
-	// [result, var, columns, fmt]
-	if (op->a != -1)
+	// [result, var, is_arg, columns, fmt]
+	if (op->a != -1) {
 		a = &r[op->a];
-	 else
-	if (op->b != -1)
-		a = stack_get(stack, op->b);
-	else
+	} else
+	if (op->b != -1) {
+		if (op->c)
+			a = &self->args[op->b];
+		else
+			a = stack_get(stack, op->b);
+	} else {
 		a = NULL;
+	}
 	ret->value   = a;
-	ret->columns = (Columns*)op->c;
-	ret->fmt     = (Str*)op->d;
+	ret->columns = (Columns*)op->d;
+	ret->fmt     = (Str*)op->e;
 	return;
 }

@@ -188,7 +188,9 @@ session_execute_distributed(Session* self, Content* output)
 		       &program->code_data,
 		       NULL,
 		       NULL,
+		       NULL,
 		       &ret,
+		       true,
 		       0);
 	);
 
@@ -248,7 +250,9 @@ session_execute_utility(Session* self, Content* output)
 		       &program->code_data,
 		       NULL,
 		       NULL,
+		       NULL,
 		       &ret,
+		       true,
 		       0);
 	);
 

@@ -50,7 +50,6 @@ enum
 	CUUID,
 
 	// argument
-	CARG,
 	CEXCLUDED,
 
 	// null operations
