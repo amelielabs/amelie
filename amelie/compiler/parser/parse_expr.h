@@ -17,6 +17,7 @@ struct Expr
 {
 	bool     select;
 	bool     subquery;
+	bool     udf;
 	AstList* aggs;
 	Ast*     lambda;
 	Ast*     as;
@@ -28,6 +29,7 @@ expr_init(Expr* self)
 {
 	self->select   = false;
 	self->subquery = false;
+	self->udf      = false;
 	self->aggs     = NULL;
 	self->as       = NULL;
 	self->lambda   = NULL;

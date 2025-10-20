@@ -267,6 +267,10 @@ expr_func(Stmt* self, Expr* expr, Ast* path, bool with_args)
 		if (! func->udf)
 			stmt_error(self, path, "function not found");
 
+		// ensure udf can be used here
+		if (!expr || !expr->udf)
+			stmt_error(self, path, "UDF cannot be used here");
+
 		// track udf access
 		auto access = &self->parser->program->access;
 		access_add(access, &func->udf->rel, ACCESS_CALL);

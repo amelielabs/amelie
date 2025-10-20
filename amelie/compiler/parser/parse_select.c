@@ -153,6 +153,7 @@ parse_select(Stmt* self, From* outer, bool subquery)
 	ctx.subquery = subquery;
 	ctx.aggs = &select->expr_aggs;
 	ctx.from = &select->from;
+	ctx.udf  = true;
 	parse_returning(&select->ret, self, &ctx);
 
 	// [FROM]
