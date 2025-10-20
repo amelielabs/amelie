@@ -278,7 +278,6 @@ set(AMELIE_SOURCES_COMPILER
     ${AMELIE_ROOT}/compiler/parser/parse_import.c
     ${AMELIE_ROOT}/compiler/parser/parse_declare.c
     ${AMELIE_ROOT}/compiler/parser/parse_with.c
-    ${AMELIE_ROOT}/compiler/parser/parse_return.c
     ${AMELIE_ROOT}/compiler/parser/parse.c
     ${AMELIE_ROOT}/compiler/parser/parser.c
     ${AMELIE_ROOT}/compiler/compiler/compiler.c

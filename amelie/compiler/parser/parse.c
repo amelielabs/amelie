@@ -130,16 +130,18 @@ parse_stmt_free(Stmt* stmt)
 hot void
 parse_stmt(Stmt* self)
 {
-	// [RETURN var | stmt | ;]
+	// [RETURN stmt | expr | ;]
 	auto return_ = stmt_if(self, KRETURN);
 	if (return_)
 	{
-		// var | ;
 		self->is_return = true;
-		auto next = stmt_next(self);
-		stmt_push(self, next);
-		if (next->id == KNAME || next->id == ';')
-			stmt_push(self, return_);
+		auto semicolon = stmt_if(self, ';');
+		if (semicolon)
+		{
+			self->id = STMT_RETURN;
+			stmt_push(self, semicolon);
+			return;
+		}
 	}
 
 	// stmt
@@ -398,14 +400,6 @@ parse_stmt(Stmt* self)
 		break;
 	}
 
-	case KRETURN:
-	{
-		// RETURN var
-		self->id = STMT_RETURN;
-		parse_return(self);
-		break;
-	}
-
 	case KBEGIN:
 	case KCOMMIT:
 		stmt_error(self, NULL, "unsupported statement");
@@ -416,22 +410,32 @@ parse_stmt(Stmt* self)
 		break;
 
 	default:
+	{
+		// handle RETURN expr as RETURN SELECT expr
+		if (self->is_return)
+		{
+			stmt_push(self, ast);
+			auto select = parse_select_expr(self, NULL);
+			self->id  = STMT_SELECT;
+			self->ast = &select->ast;
+			self->ret = &select->ret;
+			break;
+		}
+
 		stmt_error(self, NULL, "unexpected statement");
 		break;
+	}
 	}
 
 	// validate RETURN usage
 	if (self->is_return)
 	{
 		// return stmt
-		// return var
-		// return ;
-		if (self->id != STMT_RETURN)
-		{
-			// stmt must be returning
-			if (! self->ret)
-				stmt_error(self, ast, "RETURN statement must return data");
-		}
+		// return expr
+
+		// ensure stmt must be returning
+		if (! self->ret)
+			stmt_error(self, ast, "RETURN statement must return data");
 	}
 
 	if (self->ast)
@@ -623,7 +627,12 @@ parse_udf(Parser* self, Program* program, Udf* udf)
 			last->is_return = true;
 	} else
 	{
-		// return null;
-		// TODO
+		// automatically add return statement at the end
+
+		// RETURN;
+		auto stmt = stmt_allocate(self, lex, block);
+		stmt->is_return = true;
+		stmt->id = STMT_RETURN;
+		stmts_add(&block->stmts, stmt);
 	}
 }

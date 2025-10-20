@@ -575,6 +575,7 @@ ccall_udf(Vm* self, Op* op)
 	auto argc   = udf->config->args.count;
 	auto argv   = stack_at(&self->stack, argc);
 	auto result = reg_at(&self->r, op->a);
+	value_set_null(result);
 
 	Return ret;
 	return_init(&ret);

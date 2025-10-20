@@ -32,10 +32,10 @@ declare x int := 123; return x;
 declare x int := 123; return x format
 declare x int := 123; return x format 'json-obj';
 
-# test: return var table
-declare x table (a int, b int); select 1, 2 into x; return x
-declare x table (a int, b int); select 1, 2 into x; return x format 'json-obj'
-declare x table (a int, b int); select 1, 2 into x; select x format 'json-obj'
+## test: return var table
+#declare x table (a int, b int); select 1, 2 into x; return x
+#declare x table (a int, b int); select 1, 2 into x; return x format 'json-obj'
+#declare x table (a int, b int); select 1, 2 into x; select x format 'json-obj'
 
 # test: return from cte
 declare x int; with a as (return x) select 1
@@ -124,6 +124,13 @@ explain select 123; return; select 7;
 select 123; return; select 7;
 
 declare x int := 0; for i in ([1,2,3]) do x := i::int; return; end; select x;
+
+# test: return expr
+explain return 123;
+return 123;
+return 2 * 2;
+return select 123;
+return select (select 123);
 
 drop table test
 

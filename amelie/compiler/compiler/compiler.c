@@ -563,34 +563,23 @@ emit_return(Compiler* self, Stmt* stmt)
 	auto     var_is_arg = false;
 	Columns* columns    = NULL;
 	Str*     fmt        = NULL;
+
 	if (stmt->id == STMT_RETURN)
 	{
-		auto return_ = ast_return_of(stmt->ast);
-		if (return_->var)
-		{
-			var        =  return_->var->order;
-			var_is_arg =  return_->var->is_arg;
-			columns    =  return_->columns;
-			fmt        = &return_->format;
-
-			auto udf = stmt->block->ns->udf;
-			if (udf && udf->type != return_->var->type)
-				stmt_error(stmt, stmt->ast, "RETURN does not match function type");
-		}
+		// null
 	} else
+	if (stmt->ret)
 	{
-		if (stmt->ret)
-		{
-			emit_recv(self, stmt);
-			r       =  stmt->r;
-			columns = &stmt->ret->columns;
-			fmt     = &stmt->ret->format;
+		emit_recv(self, stmt);
+		r       =  stmt->r;
+		columns = &stmt->ret->columns;
+		fmt     = &stmt->ret->format;
 
-			auto udf = stmt->block->ns->udf;
-			if (udf && udf->type != rtype(self, r))
-				stmt_error(stmt, stmt->ast, "RETURN does not match function type");
-		}
+		auto udf = stmt->block->ns->udf;
+		if (udf && udf->type != rtype(self, r))
+			stmt_error(stmt, stmt->ast, "RETURN does not match function type");
 	}
+
 	op5(self, CRET, r, var, var_is_arg,
 	    (intptr_t)columns,
 	    (intptr_t)fmt);
@@ -630,7 +619,6 @@ emit_block(Compiler* self, Block* block)
 			emit_return(self, stmt);
 	}
 
-
 	// on block exit (not main)
 	if (block != compiler_main(self))
 	{
@@ -641,16 +629,6 @@ emit_block(Compiler* self, Block* block)
 			stmt = block->stmts.list;
 			for (; stmt; stmt = stmt->next)
 				emit_recv(self, stmt);
-		}
-	} else
-	if (block->ns->udf)
-	{
-		// generate RET if function has no stmts
-		auto udf = block->ns->udf;
-		if (! block->stmts.list)
-		{
-			auto r = op1(self, CNULL, rpin(self, udf->type));
-			op5(self, CRET, r, -1, 0, 0, 0);
 		}
 	}
 

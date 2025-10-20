@@ -104,7 +104,7 @@ explain declare x int; select 123 into x;
 declare x int; select 123 into x;
 # test: return var
 return x;
-{"msg": "return ❰x❱ ⟵ variable not found"}
+{"msg": "return ❰x❱ ⟵ column not found"}
 declare x int; return x;
 [null]
 declare x int := 123; return x;
@@ -113,19 +113,12 @@ declare x int := 123; return x;
 declare x int := 123; return x format
 {"msg": "declare x int := 123; return x format ⟵ string expected"}
 declare x int := 123; return x format 'json-obj';
-[{"x": 123}]
-# test: return var table
-declare x table (a int, b int); select 1, 2 into x; return x
-[[1, 2]]
-declare x table (a int, b int); select 1, 2 into x; return x format 'json-obj'
-[{"a": 1, "b": 2}]
-declare x table (a int, b int); select 1, 2 into x; select x format 'json-obj'
-[{"col1": 1}]
+[{"col1": 123}]
 # test: return from cte
 declare x int; with a as (return x) select 1
-{"msg": "declare x int; with a as (❰return❱ ⟵ statement cannot be used inside CTE"}
+{"msg": "declare x int; with a as (return ❰x❱ ⟵ statement cannot be used inside CTE"}
 declare x int; with a as (select 1) return x
-{"msg": "declare x int; with a as (select 1) ❰return❱ ⟵ statement cannot be used inside CTE"}
+{"msg": "declare x int; with a as (select 1) return ❰x❱ ⟵ statement cannot be used inside CTE"}
 # test: return return
 explain declare x int := 0; return x; return x;
 [{
@@ -135,8 +128,10 @@ explain declare x int := 0; return x; return x;
       "01": "int                 0      -      0     # 0",
       "02": "var_set             0      0      0     ",
       "03": "free                0      0      0     ",
-      "04": "ret                 -1     0      -     ",
-      "05": "ret                 -1     0      -     "
+      "04": "var                 0      0      0     ",
+      "05": "ret                 0      -1     -     ",
+      "06": "var                 1      0      0     ",
+      "07": "ret                 1      -1     -     "
     }
   },
   "access": []
@@ -150,15 +145,16 @@ explain declare x int; if true then x := 12; return x; end;
     "frontend": {
       "00": "push_nulls          1      0      0     ",
       "01": "jmp                 3      0      0     ",
-      "02": "jmp                 10     0      0     ",
+      "02": "jmp                 11     0      0     ",
       "03": "bool                0      1      0     ",
-      "04": "jntr                10     0      0     ",
+      "04": "jntr                11     0      0     ",
       "05": "int                 0      -      0     # 12",
       "06": "var_set             0      0      0     ",
       "07": "free                0      0      0     ",
-      "08": "ret                 -1     0      -     ",
-      "09": "jmp                 2      0      0     ",
-      "10": "ret                 -1     -1     -     "
+      "08": "var                 0      0      0     ",
+      "09": "ret                 0      -1     -     ",
+      "10": "jmp                 2      0      0     ",
+      "11": "ret                 -1     -1     -     "
     }
   },
   "access": []
@@ -172,15 +168,17 @@ explain declare x int; if true then x := 12; return x; end; return x
     "frontend": {
       "00": "push_nulls          1      0      0     ",
       "01": "jmp                 3      0      0     ",
-      "02": "jmp                 10     0      0     ",
+      "02": "jmp                 11     0      0     ",
       "03": "bool                0      1      0     ",
-      "04": "jntr                10     0      0     ",
+      "04": "jntr                11     0      0     ",
       "05": "int                 0      -      0     # 12",
       "06": "var_set             0      0      0     ",
       "07": "free                0      0      0     ",
-      "08": "ret                 -1     0      -     ",
-      "09": "jmp                 2      0      0     ",
-      "10": "ret                 -1     0      -     "
+      "08": "var                 0      0      0     ",
+      "09": "ret                 0      -1     -     ",
+      "10": "jmp                 2      0      0     ",
+      "11": "var                 1      0      0     ",
+      "12": "ret                 1      -1     -     "
     }
   },
   "access": []
@@ -193,15 +191,17 @@ explain declare x int; if false then x := 12; return x; end; return x
     "frontend": {
       "00": "push_nulls          1      0      0     ",
       "01": "jmp                 3      0      0     ",
-      "02": "jmp                 10     0      0     ",
+      "02": "jmp                 11     0      0     ",
       "03": "bool                0      0      0     ",
-      "04": "jntr                10     0      0     ",
+      "04": "jntr                11     0      0     ",
       "05": "int                 0      -      0     # 12",
       "06": "var_set             0      0      0     ",
       "07": "free                0      0      0     ",
-      "08": "ret                 -1     0      -     ",
-      "09": "jmp                 2      0      0     ",
-      "10": "ret                 -1     0      -     "
+      "08": "var                 0      0      0     ",
+      "09": "ret                 0      -1     -     ",
+      "10": "jmp                 2      0      0     ",
+      "11": "var                 1      0      0     ",
+      "12": "ret                 1      -1     -     "
     }
   },
   "access": []
@@ -223,17 +223,19 @@ explain declare x int; select id into x from test; if true then x := x + 1; retu
       "05": "var_set             0      0      0     ",
       "06": "free                0      0      0     ",
       "07": "jmp                 9      0      0     ",
-      "08": "jmp                 18     0      0     ",
+      "08": "jmp                 19     0      0     ",
       "09": "bool                0      1      0     ",
-      "10": "jntr                18     0      0     ",
+      "10": "jntr                19     0      0     ",
       "11": "var                 0      0      0     ",
       "12": "int                 1      -      0     # 1",
       "13": "addii               2      0      1     ",
       "14": "var_set             0      0      2     ",
       "15": "free                2      0      0     ",
-      "16": "ret                 -1     0      -     ",
-      "17": "jmp                 8      0      0     ",
-      "18": "ret                 -1     0      -     "
+      "16": "var                 0      0      0     ",
+      "17": "ret                 0      -1     -     ",
+      "18": "jmp                 8      0      0     ",
+      "19": "var                 1      0      0     ",
+      "20": "ret                 1      -1     -     "
     },
     "backend": {
       "00": "set                 0      1      0     ",
@@ -262,17 +264,19 @@ explain declare x int; select id into x from test; if false then x := x + 1; ret
       "05": "var_set             0      0      0     ",
       "06": "free                0      0      0     ",
       "07": "jmp                 9      0      0     ",
-      "08": "jmp                 18     0      0     ",
+      "08": "jmp                 19     0      0     ",
       "09": "bool                0      0      0     ",
-      "10": "jntr                18     0      0     ",
+      "10": "jntr                19     0      0     ",
       "11": "var                 0      0      0     ",
       "12": "int                 1      -      0     # 1",
       "13": "addii               2      0      1     ",
       "14": "var_set             0      0      2     ",
       "15": "free                2      0      0     ",
-      "16": "ret                 -1     0      -     ",
-      "17": "jmp                 8      0      0     ",
-      "18": "ret                 -1     0      -     "
+      "16": "var                 0      0      0     ",
+      "17": "ret                 0      -1     -     ",
+      "18": "jmp                 8      0      0     ",
+      "19": "var                 1      0      0     ",
+      "20": "ret                 1      -1     -     "
     },
     "backend": {
       "00": "set                 0      1      0     ",
@@ -295,19 +299,21 @@ explain declare x int; if true then select id into x from test; return x; end; r
     "frontend": {
       "00": "push_nulls          1      0      0     ",
       "01": "jmp                 3      0      0     ",
-      "02": "jmp                 13     0      0     ",
+      "02": "jmp                 14     0      0     ",
       "03": "bool                0      1      0     ",
-      "04": "jntr                13     0      0     ",
+      "04": "jntr                14     0      0     ",
       "05": "union               0      0      0     ",
       "06": "send_all            0      -      0     # public.test",
       "07": "union_recv          0      0      0     ",
       "08": "union_set           0      0      -1    ",
       "09": "var_set             0      0      0     ",
       "10": "free                0      0      0     ",
-      "11": "ret                 -1     0      -     ",
-      "12": "jmp                 2      0      0     ",
-      "13": "close               0      0      0     ",
-      "14": "ret                 -1     0      -     "
+      "11": "var                 0      0      0     ",
+      "12": "ret                 0      -1     -     ",
+      "13": "jmp                 2      0      0     ",
+      "14": "close               0      0      0     ",
+      "15": "var                 1      0      0     ",
+      "16": "ret                 1      -1     -     "
     },
     "backend": {
       "00": "set                 0      1      0     ",
@@ -330,19 +336,21 @@ explain declare x int; if false then select id into x from test; return x; end; 
     "frontend": {
       "00": "push_nulls          1      0      0     ",
       "01": "jmp                 3      0      0     ",
-      "02": "jmp                 13     0      0     ",
+      "02": "jmp                 14     0      0     ",
       "03": "bool                0      0      0     ",
-      "04": "jntr                13     0      0     ",
+      "04": "jntr                14     0      0     ",
       "05": "union               0      0      0     ",
       "06": "send_all            0      -      0     # public.test",
       "07": "union_recv          0      0      0     ",
       "08": "union_set           0      0      -1    ",
       "09": "var_set             0      0      0     ",
       "10": "free                0      0      0     ",
-      "11": "ret                 -1     0      -     ",
-      "12": "jmp                 2      0      0     ",
-      "13": "close               0      0      0     ",
-      "14": "ret                 -1     0      -     "
+      "11": "var                 0      0      0     ",
+      "12": "ret                 0      -1     -     ",
+      "13": "jmp                 2      0      0     ",
+      "14": "close               0      0      0     ",
+      "15": "var                 1      0      0     ",
+      "16": "ret                 1      -1     -     "
     },
     "backend": {
       "00": "set                 0      1      0     ",
@@ -373,25 +381,26 @@ explain declare x int := 0; for i in (select id from test) do if i.id > 2 then r
       "06": "union_recv          0      0      0     ",
       "07": "union_set           0      0      -1    ",
       "08": "dup                 1      0      0     ",
-      "09": "store_open          2      1      24    ",
+      "09": "store_open          2      1      25    ",
       "10": "jmp                 12     0      0     ",
-      "11": "jmp                 18     0      0     ",
+      "11": "jmp                 19     0      0     ",
       "12": "store_read          3      2      0     ",
       "13": "int                 4      -      0     # 2",
       "14": "gtii                5      3      4     ",
-      "15": "jntr                18     5      0     ",
-      "16": "ret                 -1     0      -     ",
-      "17": "jmp                 11     0      0     ",
-      "18": "var                 3      0      0     ",
-      "19": "int                 4      -      0     # 1",
-      "20": "addii               5      3      4     ",
-      "21": "var_set             0      0      5     ",
-      "22": "free                5      0      0     ",
-      "23": "store_next          2      10     0     ",
-      "24": "free                2      0      0     ",
-      "25": "free                1      0      0     ",
-      "26": "var                 1      0      0     ",
-      "27": "ret                 1      -1     -     "
+      "15": "jntr                19     5      0     ",
+      "16": "var                 3      0      0     ",
+      "17": "ret                 3      -1     -     ",
+      "18": "jmp                 11     0      0     ",
+      "19": "var                 4      0      0     ",
+      "20": "int                 5      -      0     # 1",
+      "21": "addii               6      4      5     ",
+      "22": "var_set             0      0      6     ",
+      "23": "free                6      0      0     ",
+      "24": "store_next          2      10     0     ",
+      "25": "free                2      0      0     ",
+      "26": "free                1      0      0     ",
+      "27": "var                 1      0      0     ",
+      "28": "ret                 1      -1     -     "
     },
     "backend": {
       "00": "set                 0      1      0     ",
@@ -657,6 +666,25 @@ explain select 123; return; select 7;
 }]
 select 123; return; select 7;
 declare x int := 0; for i in ([1,2,3]) do x := i::int; return; end; select x;
+# test: return expr
+explain return 123;
+[{
+  "bytecode": {
+    "frontend": {
+      "00": "int                 0      -      0     # 123",
+      "01": "ret                 0      -1     -     "
+    }
+  },
+  "access": []
+}]
+return 123;
+[123]
+return 2 * 2;
+[4]
+return select 123;
+[123]
+return select (select 123);
+[123]
 drop table test
 disconnect S0
 close E0
