@@ -475,6 +475,10 @@ emit_udf(Compiler* self, From* from, Ast* ast)
 	auto args = ast->r;
 	auto udf  = func->udf;
 
+	// validate number of arguments
+	if (args->integer != func->udf->config->args.count)
+		stmt_error(self->current, ast, "invalid number of arguments");
+
 	// ensure UDF is not pushed down
 	if (block_find_from(from))
 		stmt_error(self->current, ast, "UDF cannot be called with FROM clause");
@@ -501,16 +505,68 @@ emit_udf(Compiler* self, From* from, Ast* ast)
 	}
 
 	// CALL_UDF
-	return op2(self, CCALL_UDF, rpin(self, udf->config->type), (intptr_t)udf);
+	return op2(self, CCALL_UDF, rpin(self, udf->config->type),
+	           (intptr_t)udf);
 }
 
 hot int
 emit_udf_method(Compiler* self, From* from, Ast* ast)
 {
-	(void)self;
-	(void)from;
-	(void)ast;
-	return -1;
+	// expr, method(path, [args])
+	auto expr = ast->l;
+	auto func = ast_func_of(ast->r);
+	auto udf  = func->udf;
+	auto args = func->ast.r;
+
+	// validate number of arguments
+	auto argc = 1;
+	Ast* current = NULL;
+	if (args)
+	{
+		argc += args->integer;
+		current = args->l;
+	}
+	if (argc != func->udf->config->args.count)
+		stmt_error(self->current, ast, "invalid number of arguments");
+
+	// ensure UDF is not pushed down
+	if (block_find_from(from))
+		stmt_error(self->current, ast, "UDF cannot be called with FROM clause");
+
+	// push arguments
+	list_foreach(&udf->config->args.list)
+	{
+		auto column = list_at(Column, link);
+		auto is_first = (column == columns_first(&udf->config->args));
+
+		// use the expression for the first argument
+		Ast* ast;
+		if (is_first)
+			ast = expr;
+		else
+			ast = current;
+		auto r = emit_expr(self, from, ast);
+
+		// validate expression type
+		auto type = rtype(self, r);
+		if (type != TYPE_NULL && type != column->type)
+			stmt_error(self->current, current, "argument '%.*s' expects %s",
+			           str_size(&column->name),
+			           str_of(&column->name),
+			           type_of(column->type));
+
+		op1(self, CPUSH, r);
+		runpin(self, r);
+
+		if (is_first)
+			continue;
+
+		current = current->next;
+	}
+
+	// CALL_UDF
+	return op2(self, CCALL_UDF, rpin(self, udf->config->type),
+	           (intptr_t)udf);
 }
 
 hot static inline bool

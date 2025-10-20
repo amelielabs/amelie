@@ -282,9 +282,10 @@ expr_func(Stmt* self, Expr* expr, Ast* path, bool with_args)
 	{
 		auto args = parse_expr_args(self, expr, ')', false);
 		func->ast.r = args;
-		if (func->udf && args->integer != func->udf->config->args.count)
-			stmt_error(self, path, "invalid number of arguments");
 	}
+
+	func->ast.pos_start = path->pos_start;
+	func->ast.pos_end   = path->pos_end;
 	return &func->ast;
 }
 
