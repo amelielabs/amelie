@@ -57,6 +57,39 @@ explain_reset(Explain* self)
 	self->time_commit_us = 0;
 }
 
+static void
+explain_call(Udf* udf, Buf* buf)
+{
+	auto program = (Program*)udf->data;
+	encode_obj(buf);
+
+	// target
+	encode_raw(buf, "function", 8);
+	encode_target(buf, &udf->config->schema, &udf->config->name);
+
+	// bytecode
+	encode_raw(buf, "bytecode", 8);
+	encode_obj(buf);
+
+	// frontend section
+	encode_raw(buf, "frontend", 8);
+	op_dump(program, &program->code, buf);
+
+	// backend section
+	if (code_count(&program->code_backend) > 0)
+	{
+		encode_raw(buf, "backend", 7);
+		op_dump(program, &program->code_backend, buf);
+	}
+	encode_obj_end(buf);
+
+	// access
+	encode_raw(buf, "access", 6);
+	access_encode(&program->access, buf);
+
+	encode_obj_end(buf);
+}
+
 void
 explain_run(Explain* self,
             Program* program,
@@ -86,8 +119,23 @@ explain_run(Explain* self,
 	encode_obj_end(buf);
 
 	// access
+	auto access = &program->access;
 	encode_raw(buf, "access", 6);
-	access_encode(&program->access, buf);
+	auto has_call = access_encode(access, buf);
+
+	// calls
+	if (has_call)
+	{
+		encode_raw(buf, "calls", 5);
+		encode_array(buf);
+		for (auto i = 0; i < access->list_count; i++)
+		{
+			auto record = access_at(access, i);
+			if (record->type == ACCESS_CALL)
+				explain_call(udf_of(record->rel), buf);
+		}
+		encode_array_end(buf);
+	}
 
 	// profiler
 	if (profile)

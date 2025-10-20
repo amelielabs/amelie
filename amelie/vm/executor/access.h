@@ -151,9 +151,10 @@ access_find(Access* self, Str* schema, Str* name)
 	return NULL;
 }
 
-static inline void
+static inline bool
 access_encode(Access* self, Buf* buf)
 {
+	auto has_call = false;
 	encode_array(buf);
 	for (auto i = 0; i < self->list_count; i++)
 	{
@@ -172,6 +173,7 @@ access_encode(Access* self, Buf* buf)
 			break;
 		case ACCESS_CALL:
 			encode_raw(buf, "call", 4);
+			has_call = true;
 			break;
 		default:
 			abort();
@@ -179,4 +181,5 @@ access_encode(Access* self, Buf* buf)
 		encode_array_end(buf);
 	}
 	encode_array_end(buf);
+	return has_call;
 }
