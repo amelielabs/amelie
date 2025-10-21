@@ -3,11 +3,9 @@ connect E0 S0 127.0.0.1:3485
 # test: null
 explain select null
 [{
-  "bytecode": {
-    "frontend": {
-      "00": "null                0      0      0     ",
-      "01": "ret                 0      -1     -     "
-    }
+  "main": {
+    "00": "null                0      0      0     ",
+    "01": "ret                 0      -1     -     "
   },
   "access": []
 }]

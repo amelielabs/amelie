@@ -205,15 +205,13 @@ select '1970-01-01 00:00:00'::timestamp = 0
 [true]
 explain select '1970-01-01 00:00:00'::timestamp = 0
 [{
-  "bytecode": {
-    "frontend": {
-      "00": "string              0      0      0     # 1970-01-01 00:00:00",
-      "01": "push                0      0      0     ",
-      "02": "call                0      -      1     # public.timestamp()",
-      "03": "int                 1      -      0     # 0",
-      "04": "equii               2      0      1     ",
-      "05": "ret                 2      -1     -     "
-    }
+  "main": {
+    "00": "string              0      0      0     # 1970-01-01 00:00:00",
+    "01": "push                0      0      0     ",
+    "02": "call                0      -      1     # public.timestamp()",
+    "03": "int                 1      -      0     # 0",
+    "04": "equii               2      0      1     ",
+    "05": "ret                 2      -1     -     "
   },
   "access": []
 }]
@@ -226,17 +224,15 @@ select '1970-01-01 01:12:59.909090'::timestamp = '1970-01-01 01:12:59.909099'::t
 [false]
 explain select '1970-01-01 01:12:59.909090'::timestamp = '1970-01-01 01:12:59.909099'::timestamp
 [{
-  "bytecode": {
-    "frontend": {
-      "00": "string              0      0      0     # 1970-01-01 01:12:59.909090",
-      "01": "push                0      0      0     ",
-      "02": "call                0      -      1     # public.timestamp()",
-      "03": "string              1      27     0     # 1970-01-01 01:12:59.909099",
-      "04": "push                1      0      0     ",
-      "05": "call                1      -      1     # public.timestamp()",
-      "06": "equii               2      0      1     ",
-      "07": "ret                 2      -1     -     "
-    }
+  "main": {
+    "00": "string              0      0      0     # 1970-01-01 01:12:59.909090",
+    "01": "push                0      0      0     ",
+    "02": "call                0      -      1     # public.timestamp()",
+    "03": "string              1      27     0     # 1970-01-01 01:12:59.909099",
+    "04": "push                1      0      0     ",
+    "05": "call                1      -      1     # public.timestamp()",
+    "06": "equii               2      0      1     ",
+    "07": "ret                 2      -1     -     "
   },
   "access": []
 }]
@@ -245,15 +241,13 @@ select '1970-01-01 01:12:59.909090'::timestamp = null
 [null]
 explain select '1970-01-01 01:12:59.909090'::timestamp = null
 [{
-  "bytecode": {
-    "frontend": {
-      "00": "string              0      0      0     # 1970-01-01 01:12:59.909090",
-      "01": "push                0      0      0     ",
-      "02": "call                0      -      1     # public.timestamp()",
-      "03": "null                1      0      0     ",
-      "04": "nullop              2      0      1     ",
-      "05": "ret                 2      -1     -     "
-    }
+  "main": {
+    "00": "string              0      0      0     # 1970-01-01 01:12:59.909090",
+    "01": "push                0      0      0     ",
+    "02": "call                0      -      1     # public.timestamp()",
+    "03": "null                1      0      0     ",
+    "04": "nullop              2      0      1     ",
+    "05": "ret                 2      -1     -     "
   },
   "access": []
 }]
@@ -265,16 +259,14 @@ select '1970-01-01 00:00:00'::timestamp <> 0
 [false]
 explain select '1970-01-01 00:00:00'::timestamp <> 0
 [{
-  "bytecode": {
-    "frontend": {
-      "00": "string              0      0      0     # 1970-01-01 00:00:00",
-      "01": "push                0      0      0     ",
-      "02": "call                0      -      1     # public.timestamp()",
-      "03": "int                 1      -      0     # 0",
-      "04": "equii               2      0      1     ",
-      "05": "not                 0      2      0     ",
-      "06": "ret                 0      -1     -     "
-    }
+  "main": {
+    "00": "string              0      0      0     # 1970-01-01 00:00:00",
+    "01": "push                0      0      0     ",
+    "02": "call                0      -      1     # public.timestamp()",
+    "03": "int                 1      -      0     # 0",
+    "04": "equii               2      0      1     ",
+    "05": "not                 0      2      0     ",
+    "06": "ret                 0      -1     -     "
   },
   "access": []
 }]
@@ -287,18 +279,16 @@ select '1970-01-01 01:12:59.909090'::timestamp <> '1970-01-01 01:12:59.909099'::
 [true]
 explain select '1970-01-01 01:12:59.909090'::timestamp <> '1970-01-01 01:12:59.909099'::timestamp
 [{
-  "bytecode": {
-    "frontend": {
-      "00": "string              0      0      0     # 1970-01-01 01:12:59.909090",
-      "01": "push                0      0      0     ",
-      "02": "call                0      -      1     # public.timestamp()",
-      "03": "string              1      27     0     # 1970-01-01 01:12:59.909099",
-      "04": "push                1      0      0     ",
-      "05": "call                1      -      1     # public.timestamp()",
-      "06": "equii               2      0      1     ",
-      "07": "not                 0      2      0     ",
-      "08": "ret                 0      -1     -     "
-    }
+  "main": {
+    "00": "string              0      0      0     # 1970-01-01 01:12:59.909090",
+    "01": "push                0      0      0     ",
+    "02": "call                0      -      1     # public.timestamp()",
+    "03": "string              1      27     0     # 1970-01-01 01:12:59.909099",
+    "04": "push                1      0      0     ",
+    "05": "call                1      -      1     # public.timestamp()",
+    "06": "equii               2      0      1     ",
+    "07": "not                 0      2      0     ",
+    "08": "ret                 0      -1     -     "
   },
   "access": []
 }]
@@ -307,16 +297,14 @@ select '1970-01-01 01:12:59.909090'::timestamp <> null
 [null]
 explain select '1970-01-01 01:12:59.909090'::timestamp <> null
 [{
-  "bytecode": {
-    "frontend": {
-      "00": "string              0      0      0     # 1970-01-01 01:12:59.909090",
-      "01": "push                0      0      0     ",
-      "02": "call                0      -      1     # public.timestamp()",
-      "03": "null                1      0      0     ",
-      "04": "nullop              2      0      1     ",
-      "05": "not                 0      2      0     ",
-      "06": "ret                 0      -1     -     "
-    }
+  "main": {
+    "00": "string              0      0      0     # 1970-01-01 01:12:59.909090",
+    "01": "push                0      0      0     ",
+    "02": "call                0      -      1     # public.timestamp()",
+    "03": "null                1      0      0     ",
+    "04": "nullop              2      0      1     ",
+    "05": "not                 0      2      0     ",
+    "06": "ret                 0      -1     -     "
   },
   "access": []
 }]
@@ -328,15 +316,13 @@ select '1970-01-01 00:00:00'::timestamp >= 0
 [true]
 explain select '1970-01-01 00:00:00'::timestamp >= 0
 [{
-  "bytecode": {
-    "frontend": {
-      "00": "string              0      0      0     # 1970-01-01 00:00:00",
-      "01": "push                0      0      0     ",
-      "02": "call                0      -      1     # public.timestamp()",
-      "03": "int                 1      -      0     # 0",
-      "04": "gteii               2      0      1     ",
-      "05": "ret                 2      -1     -     "
-    }
+  "main": {
+    "00": "string              0      0      0     # 1970-01-01 00:00:00",
+    "01": "push                0      0      0     ",
+    "02": "call                0      -      1     # public.timestamp()",
+    "03": "int                 1      -      0     # 0",
+    "04": "gteii               2      0      1     ",
+    "05": "ret                 2      -1     -     "
   },
   "access": []
 }]
@@ -353,17 +339,15 @@ select '1970-01-01 01:12:59.909090'::timestamp >= '1970-01-01 01:12:59.909099'::
 [false]
 explain select '1970-01-01 01:12:59.909090'::timestamp >= '1970-01-01 01:12:59.909099'::timestamp
 [{
-  "bytecode": {
-    "frontend": {
-      "00": "string              0      0      0     # 1970-01-01 01:12:59.909090",
-      "01": "push                0      0      0     ",
-      "02": "call                0      -      1     # public.timestamp()",
-      "03": "string              1      27     0     # 1970-01-01 01:12:59.909099",
-      "04": "push                1      0      0     ",
-      "05": "call                1      -      1     # public.timestamp()",
-      "06": "gteii               2      0      1     ",
-      "07": "ret                 2      -1     -     "
-    }
+  "main": {
+    "00": "string              0      0      0     # 1970-01-01 01:12:59.909090",
+    "01": "push                0      0      0     ",
+    "02": "call                0      -      1     # public.timestamp()",
+    "03": "string              1      27     0     # 1970-01-01 01:12:59.909099",
+    "04": "push                1      0      0     ",
+    "05": "call                1      -      1     # public.timestamp()",
+    "06": "gteii               2      0      1     ",
+    "07": "ret                 2      -1     -     "
   },
   "access": []
 }]
@@ -384,17 +368,15 @@ select '1970-01-01 01:12:59.909090'::timestamp > '1970-01-01 01:12:59.909099'::t
 [false]
 explain select '1970-01-01 01:12:59.909090'::timestamp > '1970-01-01 01:12:59.909099'::timestamp
 [{
-  "bytecode": {
-    "frontend": {
-      "00": "string              0      0      0     # 1970-01-01 01:12:59.909090",
-      "01": "push                0      0      0     ",
-      "02": "call                0      -      1     # public.timestamp()",
-      "03": "string              1      27     0     # 1970-01-01 01:12:59.909099",
-      "04": "push                1      0      0     ",
-      "05": "call                1      -      1     # public.timestamp()",
-      "06": "gtii                2      0      1     ",
-      "07": "ret                 2      -1     -     "
-    }
+  "main": {
+    "00": "string              0      0      0     # 1970-01-01 01:12:59.909090",
+    "01": "push                0      0      0     ",
+    "02": "call                0      -      1     # public.timestamp()",
+    "03": "string              1      27     0     # 1970-01-01 01:12:59.909099",
+    "04": "push                1      0      0     ",
+    "05": "call                1      -      1     # public.timestamp()",
+    "06": "gtii                2      0      1     ",
+    "07": "ret                 2      -1     -     "
   },
   "access": []
 }]
@@ -415,17 +397,15 @@ select '1970-01-01 01:12:59.909090'::timestamp <= '1970-01-01 01:12:59.909099'::
 [true]
 explain select '1970-01-01 01:12:59.909090'::timestamp <= '1970-01-01 01:12:59.909099'::timestamp
 [{
-  "bytecode": {
-    "frontend": {
-      "00": "string              0      0      0     # 1970-01-01 01:12:59.909090",
-      "01": "push                0      0      0     ",
-      "02": "call                0      -      1     # public.timestamp()",
-      "03": "string              1      27     0     # 1970-01-01 01:12:59.909099",
-      "04": "push                1      0      0     ",
-      "05": "call                1      -      1     # public.timestamp()",
-      "06": "lteii               2      0      1     ",
-      "07": "ret                 2      -1     -     "
-    }
+  "main": {
+    "00": "string              0      0      0     # 1970-01-01 01:12:59.909090",
+    "01": "push                0      0      0     ",
+    "02": "call                0      -      1     # public.timestamp()",
+    "03": "string              1      27     0     # 1970-01-01 01:12:59.909099",
+    "04": "push                1      0      0     ",
+    "05": "call                1      -      1     # public.timestamp()",
+    "06": "lteii               2      0      1     ",
+    "07": "ret                 2      -1     -     "
   },
   "access": []
 }]
@@ -446,17 +426,15 @@ select '1970-01-01 01:12:59.909090'::timestamp < '1970-01-01 01:12:59.909099'::t
 [true]
 explain select '1970-01-01 01:12:59.909090'::timestamp < '1970-01-01 01:12:59.909099'::timestamp
 [{
-  "bytecode": {
-    "frontend": {
-      "00": "string              0      0      0     # 1970-01-01 01:12:59.909090",
-      "01": "push                0      0      0     ",
-      "02": "call                0      -      1     # public.timestamp()",
-      "03": "string              1      27     0     # 1970-01-01 01:12:59.909099",
-      "04": "push                1      0      0     ",
-      "05": "call                1      -      1     # public.timestamp()",
-      "06": "ltii                2      0      1     ",
-      "07": "ret                 2      -1     -     "
-    }
+  "main": {
+    "00": "string              0      0      0     # 1970-01-01 01:12:59.909090",
+    "01": "push                0      0      0     ",
+    "02": "call                0      -      1     # public.timestamp()",
+    "03": "string              1      27     0     # 1970-01-01 01:12:59.909099",
+    "04": "push                1      0      0     ",
+    "05": "call                1      -      1     # public.timestamp()",
+    "06": "ltii                2      0      1     ",
+    "07": "ret                 2      -1     -     "
   },
   "access": []
 }]
@@ -483,21 +461,19 @@ select '1970-01-01 00:00:00.000000'::timestamp + '1 year'::interval + '1 year'::
 ["1972-01-01 00:00:00+00"]
 explain select '1970-01-01 00:00:00.000000'::timestamp + '1 year'::interval + '1 year'::interval
 [{
-  "bytecode": {
-    "frontend": {
-      "00": "string              0      0      0     # 1970-01-01 00:00:00.000000",
-      "01": "push                0      0      0     ",
-      "02": "call                0      -      1     # public.timestamp()",
-      "03": "string              1      27     0     # 1 year",
-      "04": "push                1      0      0     ",
-      "05": "call                1      -      1     # public.interval()",
-      "06": "string              2      34     0     # 1 year",
-      "07": "push                2      0      0     ",
-      "08": "call                2      -      1     # public.interval()",
-      "09": "addll               3      1      2     ",
-      "10": "addtl               1      0      3     ",
-      "11": "ret                 1      -1     -     "
-    }
+  "main": {
+    "00": "string              0      0      0     # 1970-01-01 00:00:00.000000",
+    "01": "push                0      0      0     ",
+    "02": "call                0      -      1     # public.timestamp()",
+    "03": "string              1      27     0     # 1 year",
+    "04": "push                1      0      0     ",
+    "05": "call                1      -      1     # public.interval()",
+    "06": "string              2      34     0     # 1 year",
+    "07": "push                2      0      0     ",
+    "08": "call                2      -      1     # public.interval()",
+    "09": "addll               3      1      2     ",
+    "10": "addtl               1      0      3     ",
+    "11": "ret                 1      -1     -     "
   },
   "access": []
 }]
@@ -524,21 +500,19 @@ select '1980-01-01 00:00:00.000000'::timestamp - '-1 year'::interval - '-1 year'
 ["1980-01-01 00:00:00+00"]
 explain select '1980-01-01 00:00:00.000000'::timestamp - '-1 year'::interval - '-1 year'::interval
 [{
-  "bytecode": {
-    "frontend": {
-      "00": "string              0      0      0     # 1980-01-01 00:00:00.000000",
-      "01": "push                0      0      0     ",
-      "02": "call                0      -      1     # public.timestamp()",
-      "03": "string              1      27     0     # -1 year",
-      "04": "push                1      0      0     ",
-      "05": "call                1      -      1     # public.interval()",
-      "06": "string              2      35     0     # -1 year",
-      "07": "push                2      0      0     ",
-      "08": "call                2      -      1     # public.interval()",
-      "09": "subll               3      1      2     ",
-      "10": "subtl               1      0      3     ",
-      "11": "ret                 1      -1     -     "
-    }
+  "main": {
+    "00": "string              0      0      0     # 1980-01-01 00:00:00.000000",
+    "01": "push                0      0      0     ",
+    "02": "call                0      -      1     # public.timestamp()",
+    "03": "string              1      27     0     # -1 year",
+    "04": "push                1      0      0     ",
+    "05": "call                1      -      1     # public.interval()",
+    "06": "string              2      35     0     # -1 year",
+    "07": "push                2      0      0     ",
+    "08": "call                2      -      1     # public.interval()",
+    "09": "subll               3      1      2     ",
+    "10": "subtl               1      0      3     ",
+    "11": "ret                 1      -1     -     "
   },
   "access": []
 }]

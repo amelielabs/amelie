@@ -34,19 +34,17 @@ insert into test values(1, 0) on conflict do nothing
 insert into test values(1, 0) on conflict do nothing
 explain insert into test values(1, 0), (2, 0), (1, 0) on conflict do nothing
 [{
-  "bytecode": {
-    "frontend": {
-      "00": "set_ptr             0      -      0     ",
-      "01": "send_shard          0      -      0     # public.test (last)",
-      "02": "ret                 -1     -1     -     "
-    },
-    "backend": {
-      "00": "table_prepare       0      -      0     # public.test",
-      "01": "jmp                 2      0      0     ",
-      "02": "upsert              0      2      -1    ",
-      "03": "free                0      0      0     ",
-      "04": "ret                 -1     -1     -     "
-    }
+  "main": {
+    "00": "set_ptr             0      -      0     ",
+    "01": "send_shard          0      -      0     # public.test (last)",
+    "02": "ret                 -1     -1     -     "
+  },
+  "pushdown": {
+    "00": "table_prepare       0      -      0     # public.test",
+    "01": "jmp                 2      0      0     ",
+    "02": "upsert              0      2      -1    ",
+    "03": "free                0      0      0     ",
+    "04": "ret                 -1     -1     -     "
   },
   "access": [["public.test", "rw"]]
 }]
@@ -64,40 +62,36 @@ drop table test
 create table test (id int primary key, data int)
 explain insert into test values(1, 0) on conflict do nothing
 [{
-  "bytecode": {
-    "frontend": {
-      "00": "set_ptr             0      -      0     ",
-      "01": "send_shard          0      -      0     # public.test (last)",
-      "02": "ret                 -1     -1     -     "
-    },
-    "backend": {
-      "00": "table_prepare       0      -      0     # public.test",
-      "01": "jmp                 2      0      0     ",
-      "02": "upsert              0      2      -1    ",
-      "03": "free                0      0      0     ",
-      "04": "ret                 -1     -1     -     "
-    }
+  "main": {
+    "00": "set_ptr             0      -      0     ",
+    "01": "send_shard          0      -      0     # public.test (last)",
+    "02": "ret                 -1     -1     -     "
+  },
+  "pushdown": {
+    "00": "table_prepare       0      -      0     # public.test",
+    "01": "jmp                 2      0      0     ",
+    "02": "upsert              0      2      -1    ",
+    "03": "free                0      0      0     ",
+    "04": "ret                 -1     -1     -     "
   },
   "access": [["public.test", "rw"]]
 }]
 explain insert into test values(1, 0) on conflict do resolve
 [{
-  "bytecode": {
-    "frontend": {
-      "00": "set_ptr             0      -      0     ",
-      "01": "send_shard          0      -      0     # public.test (last)",
-      "02": "ret                 -1     -1     -     "
-    },
-    "backend": {
-      "00": "table_prepare       0      -      0     # public.test",
-      "01": "jmp                 5      0      0     ",
-      "02": "string              1      0      0     # unique key constraint violation",
-      "03": "push                1      0      0     ",
-      "04": "call                1      -      1     # public.error()",
-      "05": "upsert              0      2      -1    ",
-      "06": "free                0      0      0     ",
-      "07": "ret                 -1     -1     -     "
-    }
+  "main": {
+    "00": "set_ptr             0      -      0     ",
+    "01": "send_shard          0      -      0     # public.test (last)",
+    "02": "ret                 -1     -1     -     "
+  },
+  "pushdown": {
+    "00": "table_prepare       0      -      0     # public.test",
+    "01": "jmp                 5      0      0     ",
+    "02": "string              1      0      0     # unique key constraint violation",
+    "03": "push                1      0      0     ",
+    "04": "call                1      -      1     # public.error()",
+    "05": "upsert              0      2      -1    ",
+    "06": "free                0      0      0     ",
+    "07": "ret                 -1     -1     -     "
   },
   "access": [["public.test", "rw"]]
 }]
@@ -111,26 +105,24 @@ drop table test
 create table test (id int primary key, data int)
 explain insert into test values(1, 0) on conflict do update set data = data + 1
 [{
-  "bytecode": {
-    "frontend": {
-      "00": "set_ptr             0      -      0     ",
-      "01": "send_shard          0      -      0     # public.test (last)",
-      "02": "ret                 -1     -1     -     "
-    },
-    "backend": {
-      "00": "table_prepare       0      -      0     # public.test",
-      "01": "jmp                 9      0      0     ",
-      "02": "int                 1      -      0     # 1",
-      "03": "push                1      0      0     ",
-      "04": "table_readi32       1      0      1     ",
-      "05": "int                 2      -      0     # 1",
-      "06": "addii               3      1      2     ",
-      "07": "push                3      0      0     ",
-      "08": "update              0      1      0     ",
-      "09": "upsert              0      2      -1    ",
-      "10": "free                0      0      0     ",
-      "11": "ret                 -1     -1     -     "
-    }
+  "main": {
+    "00": "set_ptr             0      -      0     ",
+    "01": "send_shard          0      -      0     # public.test (last)",
+    "02": "ret                 -1     -1     -     "
+  },
+  "pushdown": {
+    "00": "table_prepare       0      -      0     # public.test",
+    "01": "jmp                 9      0      0     ",
+    "02": "int                 1      -      0     # 1",
+    "03": "push                1      0      0     ",
+    "04": "table_readi32       1      0      1     ",
+    "05": "int                 2      -      0     # 1",
+    "06": "addii               3      1      2     ",
+    "07": "push                3      0      0     ",
+    "08": "update              0      1      0     ",
+    "09": "upsert              0      2      -1    ",
+    "10": "free                0      0      0     ",
+    "11": "ret                 -1     -1     -     "
   },
   "access": [["public.test", "rw"]]
 }]
@@ -154,26 +146,24 @@ drop table test
 create table test (id int primary key, data int)
 explain insert into test values (1, 0), (1, 0), (1, 0) on conflict do update set data = data + 1
 [{
-  "bytecode": {
-    "frontend": {
-      "00": "set_ptr             0      -      0     ",
-      "01": "send_shard          0      -      0     # public.test (last)",
-      "02": "ret                 -1     -1     -     "
-    },
-    "backend": {
-      "00": "table_prepare       0      -      0     # public.test",
-      "01": "jmp                 9      0      0     ",
-      "02": "int                 1      -      0     # 1",
-      "03": "push                1      0      0     ",
-      "04": "table_readi32       1      0      1     ",
-      "05": "int                 2      -      0     # 1",
-      "06": "addii               3      1      2     ",
-      "07": "push                3      0      0     ",
-      "08": "update              0      1      0     ",
-      "09": "upsert              0      2      -1    ",
-      "10": "free                0      0      0     ",
-      "11": "ret                 -1     -1     -     "
-    }
+  "main": {
+    "00": "set_ptr             0      -      0     ",
+    "01": "send_shard          0      -      0     # public.test (last)",
+    "02": "ret                 -1     -1     -     "
+  },
+  "pushdown": {
+    "00": "table_prepare       0      -      0     # public.test",
+    "01": "jmp                 9      0      0     ",
+    "02": "int                 1      -      0     # 1",
+    "03": "push                1      0      0     ",
+    "04": "table_readi32       1      0      1     ",
+    "05": "int                 2      -      0     # 1",
+    "06": "addii               3      1      2     ",
+    "07": "push                3      0      0     ",
+    "08": "update              0      1      0     ",
+    "09": "upsert              0      2      -1    ",
+    "10": "free                0      0      0     ",
+    "11": "ret                 -1     -1     -     "
   },
   "access": [["public.test", "rw"]]
 }]
@@ -192,28 +182,26 @@ select * from test
 [[1, 2]]
 explain insert into test values (1, 0) on conflict do update set data = data + 1 where true
 [{
-  "bytecode": {
-    "frontend": {
-      "00": "set_ptr             0      -      0     ",
-      "01": "send_shard          0      -      0     # public.test (last)",
-      "02": "ret                 -1     -1     -     "
-    },
-    "backend": {
-      "00": "table_prepare       0      -      0     # public.test",
-      "01": "jmp                 11     0      0     ",
-      "02": "bool                1      1      0     ",
-      "03": "jntr                11     1      0     ",
-      "04": "int                 1      -      0     # 1",
-      "05": "push                1      0      0     ",
-      "06": "table_readi32       1      0      1     ",
-      "07": "int                 2      -      0     # 1",
-      "08": "addii               3      1      2     ",
-      "09": "push                3      0      0     ",
-      "10": "update              0      1      0     ",
-      "11": "upsert              0      2      -1    ",
-      "12": "free                0      0      0     ",
-      "13": "ret                 -1     -1     -     "
-    }
+  "main": {
+    "00": "set_ptr             0      -      0     ",
+    "01": "send_shard          0      -      0     # public.test (last)",
+    "02": "ret                 -1     -1     -     "
+  },
+  "pushdown": {
+    "00": "table_prepare       0      -      0     # public.test",
+    "01": "jmp                 11     0      0     ",
+    "02": "bool                1      1      0     ",
+    "03": "jntr                11     1      0     ",
+    "04": "int                 1      -      0     # 1",
+    "05": "push                1      0      0     ",
+    "06": "table_readi32       1      0      1     ",
+    "07": "int                 2      -      0     # 1",
+    "08": "addii               3      1      2     ",
+    "09": "push                3      0      0     ",
+    "10": "update              0      1      0     ",
+    "11": "upsert              0      2      -1    ",
+    "12": "free                0      0      0     ",
+    "13": "ret                 -1     -1     -     "
   },
   "access": [["public.test", "rw"]]
 }]
@@ -233,26 +221,24 @@ insert into test values (1, 0)
 insert into test values (1, 123) on conflict do update set data = data + excluded.data
 explain insert into test values (1, 123) on conflict do update set data = data + excluded.data
 [{
-  "bytecode": {
-    "frontend": {
-      "00": "set_ptr             0      -      0     ",
-      "01": "send_shard          0      -      0     # public.test (last)",
-      "02": "ret                 -1     -1     -     "
-    },
-    "backend": {
-      "00": "table_prepare       0      -      0     # public.test",
-      "01": "jmp                 9      0      0     ",
-      "02": "int                 1      -      0     # 1",
-      "03": "push                1      0      0     ",
-      "04": "table_readi32       1      0      1     ",
-      "05": "excluded            2      1      0     ",
-      "06": "addii               3      1      2     ",
-      "07": "push                3      0      0     ",
-      "08": "update              0      1      0     ",
-      "09": "upsert              0      2      -1    ",
-      "10": "free                0      0      0     ",
-      "11": "ret                 -1     -1     -     "
-    }
+  "main": {
+    "00": "set_ptr             0      -      0     ",
+    "01": "send_shard          0      -      0     # public.test (last)",
+    "02": "ret                 -1     -1     -     "
+  },
+  "pushdown": {
+    "00": "table_prepare       0      -      0     # public.test",
+    "01": "jmp                 9      0      0     ",
+    "02": "int                 1      -      0     # 1",
+    "03": "push                1      0      0     ",
+    "04": "table_readi32       1      0      1     ",
+    "05": "excluded            2      1      0     ",
+    "06": "addii               3      1      2     ",
+    "07": "push                3      0      0     ",
+    "08": "update              0      1      0     ",
+    "09": "upsert              0      2      -1    ",
+    "10": "free                0      0      0     ",
+    "11": "ret                 -1     -1     -     "
   },
   "access": [["public.test", "rw"]]
 }]
@@ -265,30 +251,28 @@ insert into test values (1, 0, null)
 insert into test values (1, null, {"id": 48}) on conflict do update set data = data + excluded.data2.id::int
 explain insert into test values (1, null, {"id": 48}) on conflict do update set data = data + excluded.data2.id::int
 [{
-  "bytecode": {
-    "frontend": {
-      "00": "set_ptr             0      -      0     ",
-      "01": "send_shard          0      -      0     # public.test (last)",
-      "02": "ret                 -1     -1     -     "
-    },
-    "backend": {
-      "00": "table_prepare       0      -      0     # public.test",
-      "01": "jmp                 13     0      0     ",
-      "02": "int                 1      -      0     # 1",
-      "03": "push                1      0      0     ",
-      "04": "table_readi32       1      0      1     ",
-      "05": "excluded            2      2      0     ",
-      "06": "string              3      0      0     # id",
-      "07": "dotjs               4      2      3     ",
-      "08": "push                4      0      0     ",
-      "09": "call                2      -      1     # public.int()",
-      "10": "addii               3      1      2     ",
-      "11": "push                3      0      0     ",
-      "12": "update              0      1      0     ",
-      "13": "upsert              0      2      -1    ",
-      "14": "free                0      0      0     ",
-      "15": "ret                 -1     -1     -     "
-    }
+  "main": {
+    "00": "set_ptr             0      -      0     ",
+    "01": "send_shard          0      -      0     # public.test (last)",
+    "02": "ret                 -1     -1     -     "
+  },
+  "pushdown": {
+    "00": "table_prepare       0      -      0     # public.test",
+    "01": "jmp                 13     0      0     ",
+    "02": "int                 1      -      0     # 1",
+    "03": "push                1      0      0     ",
+    "04": "table_readi32       1      0      1     ",
+    "05": "excluded            2      2      0     ",
+    "06": "string              3      0      0     # id",
+    "07": "dotjs               4      2      3     ",
+    "08": "push                4      0      0     ",
+    "09": "call                2      -      1     # public.int()",
+    "10": "addii               3      1      2     ",
+    "11": "push                3      0      0     ",
+    "12": "update              0      1      0     ",
+    "13": "upsert              0      2      -1    ",
+    "14": "free                0      0      0     ",
+    "15": "ret                 -1     -1     -     "
   },
   "access": [["public.test", "rw"]]
 }]
@@ -343,34 +327,32 @@ create table test (id int primary key, data int)
 insert into test values (1, 0)
 explain insert into test values(1, 0) on conflict do update set data = data + 1 returning *
 [{
-  "bytecode": {
-    "frontend": {
-      "00": "union               0      0      0     ",
-      "01": "set_ptr             1      -      0     ",
-      "02": "send_shard          0      -      1     # public.test (last)",
-      "03": "union_recv          0      0      0     ",
-      "04": "ret                 0      -1     -     "
-    },
-    "backend": {
-      "00": "set                 0      2      0     ",
-      "01": "table_prepare       1      -      0     # public.test",
-      "02": "jmp                 15     0      0     ",
-      "03": "int                 2      -      0     # 1",
-      "04": "push                2      0      0     ",
-      "05": "table_readi32       2      1      1     ",
-      "06": "int                 3      -      0     # 1",
-      "07": "addii               4      2      3     ",
-      "08": "push                4      0      0     ",
-      "09": "update              1      1      0     ",
-      "10": "table_readi32       2      1      0     ",
-      "11": "push                2      0      0     ",
-      "12": "table_readi32       2      1      1     ",
-      "13": "push                2      0      0     ",
-      "14": "set_add             0      0      0     ",
-      "15": "upsert              1      3      10    ",
-      "16": "free                1      0      0     ",
-      "17": "ret                 0      -1     -     "
-    }
+  "main": {
+    "00": "union               0      0      0     ",
+    "01": "set_ptr             1      -      0     ",
+    "02": "send_shard          0      -      1     # public.test (last)",
+    "03": "union_recv          0      0      0     ",
+    "04": "ret                 0      -1     -     "
+  },
+  "pushdown": {
+    "00": "set                 0      2      0     ",
+    "01": "table_prepare       1      -      0     # public.test",
+    "02": "jmp                 15     0      0     ",
+    "03": "int                 2      -      0     # 1",
+    "04": "push                2      0      0     ",
+    "05": "table_readi32       2      1      1     ",
+    "06": "int                 3      -      0     # 1",
+    "07": "addii               4      2      3     ",
+    "08": "push                4      0      0     ",
+    "09": "update              1      1      0     ",
+    "10": "table_readi32       2      1      0     ",
+    "11": "push                2      0      0     ",
+    "12": "table_readi32       2      1      1     ",
+    "13": "push                2      0      0     ",
+    "14": "set_add             0      0      0     ",
+    "15": "upsert              1      3      10    ",
+    "16": "free                1      0      0     ",
+    "17": "ret                 0      -1     -     "
   },
   "access": [["public.test", "rw"]]
 }]
@@ -388,27 +370,25 @@ create table test (id int primary key, data int)
 insert into test values (1, 0)
 explain insert into test values(1, 0) on conflict do nothing returning *
 [{
-  "bytecode": {
-    "frontend": {
-      "00": "union               0      0      0     ",
-      "01": "set_ptr             1      -      0     ",
-      "02": "send_shard          0      -      1     # public.test (last)",
-      "03": "union_recv          0      0      0     ",
-      "04": "ret                 0      -1     -     "
-    },
-    "backend": {
-      "00": "set                 0      2      0     ",
-      "01": "table_prepare       1      -      0     # public.test",
-      "02": "jmp                 8      0      0     ",
-      "03": "table_readi32       2      1      0     ",
-      "04": "push                2      0      0     ",
-      "05": "table_readi32       2      1      1     ",
-      "06": "push                2      0      0     ",
-      "07": "set_add             0      0      0     ",
-      "08": "upsert              1      3      3     ",
-      "09": "free                1      0      0     ",
-      "10": "ret                 0      -1     -     "
-    }
+  "main": {
+    "00": "union               0      0      0     ",
+    "01": "set_ptr             1      -      0     ",
+    "02": "send_shard          0      -      1     # public.test (last)",
+    "03": "union_recv          0      0      0     ",
+    "04": "ret                 0      -1     -     "
+  },
+  "pushdown": {
+    "00": "set                 0      2      0     ",
+    "01": "table_prepare       1      -      0     # public.test",
+    "02": "jmp                 8      0      0     ",
+    "03": "table_readi32       2      1      0     ",
+    "04": "push                2      0      0     ",
+    "05": "table_readi32       2      1      1     ",
+    "06": "push                2      0      0     ",
+    "07": "set_add             0      0      0     ",
+    "08": "upsert              1      3      3     ",
+    "09": "free                1      0      0     ",
+    "10": "ret                 0      -1     -     "
   },
   "access": [["public.test", "rw"]]
 }]
@@ -425,34 +405,32 @@ drop table test
 create table test (id int primary key, data int)
 explain insert into test values(1, 0) on conflict do update set data = data + 1 returning *
 [{
-  "bytecode": {
-    "frontend": {
-      "00": "union               0      0      0     ",
-      "01": "set_ptr             1      -      0     ",
-      "02": "send_shard          0      -      1     # public.test (last)",
-      "03": "union_recv          0      0      0     ",
-      "04": "ret                 0      -1     -     "
-    },
-    "backend": {
-      "00": "set                 0      2      0     ",
-      "01": "table_prepare       1      -      0     # public.test",
-      "02": "jmp                 15     0      0     ",
-      "03": "int                 2      -      0     # 1",
-      "04": "push                2      0      0     ",
-      "05": "table_readi32       2      1      1     ",
-      "06": "int                 3      -      0     # 1",
-      "07": "addii               4      2      3     ",
-      "08": "push                4      0      0     ",
-      "09": "update              1      1      0     ",
-      "10": "table_readi32       2      1      0     ",
-      "11": "push                2      0      0     ",
-      "12": "table_readi32       2      1      1     ",
-      "13": "push                2      0      0     ",
-      "14": "set_add             0      0      0     ",
-      "15": "upsert              1      3      10    ",
-      "16": "free                1      0      0     ",
-      "17": "ret                 0      -1     -     "
-    }
+  "main": {
+    "00": "union               0      0      0     ",
+    "01": "set_ptr             1      -      0     ",
+    "02": "send_shard          0      -      1     # public.test (last)",
+    "03": "union_recv          0      0      0     ",
+    "04": "ret                 0      -1     -     "
+  },
+  "pushdown": {
+    "00": "set                 0      2      0     ",
+    "01": "table_prepare       1      -      0     # public.test",
+    "02": "jmp                 15     0      0     ",
+    "03": "int                 2      -      0     # 1",
+    "04": "push                2      0      0     ",
+    "05": "table_readi32       2      1      1     ",
+    "06": "int                 3      -      0     # 1",
+    "07": "addii               4      2      3     ",
+    "08": "push                4      0      0     ",
+    "09": "update              1      1      0     ",
+    "10": "table_readi32       2      1      0     ",
+    "11": "push                2      0      0     ",
+    "12": "table_readi32       2      1      1     ",
+    "13": "push                2      0      0     ",
+    "14": "set_add             0      0      0     ",
+    "15": "upsert              1      3      10    ",
+    "16": "free                1      0      0     ",
+    "17": "ret                 0      -1     -     "
   },
   "access": [["public.test", "rw"]]
 }]
@@ -469,27 +447,25 @@ drop table test
 create table test (id int primary key, data int)
 explain insert into test values(1, 0) on conflict do nothing returning *
 [{
-  "bytecode": {
-    "frontend": {
-      "00": "union               0      0      0     ",
-      "01": "set_ptr             1      -      0     ",
-      "02": "send_shard          0      -      1     # public.test (last)",
-      "03": "union_recv          0      0      0     ",
-      "04": "ret                 0      -1     -     "
-    },
-    "backend": {
-      "00": "set                 0      2      0     ",
-      "01": "table_prepare       1      -      0     # public.test",
-      "02": "jmp                 8      0      0     ",
-      "03": "table_readi32       2      1      0     ",
-      "04": "push                2      0      0     ",
-      "05": "table_readi32       2      1      1     ",
-      "06": "push                2      0      0     ",
-      "07": "set_add             0      0      0     ",
-      "08": "upsert              1      3      3     ",
-      "09": "free                1      0      0     ",
-      "10": "ret                 0      -1     -     "
-    }
+  "main": {
+    "00": "union               0      0      0     ",
+    "01": "set_ptr             1      -      0     ",
+    "02": "send_shard          0      -      1     # public.test (last)",
+    "03": "union_recv          0      0      0     ",
+    "04": "ret                 0      -1     -     "
+  },
+  "pushdown": {
+    "00": "set                 0      2      0     ",
+    "01": "table_prepare       1      -      0     # public.test",
+    "02": "jmp                 8      0      0     ",
+    "03": "table_readi32       2      1      0     ",
+    "04": "push                2      0      0     ",
+    "05": "table_readi32       2      1      1     ",
+    "06": "push                2      0      0     ",
+    "07": "set_add             0      0      0     ",
+    "08": "upsert              1      3      3     ",
+    "09": "free                1      0      0     ",
+    "10": "ret                 0      -1     -     "
   },
   "access": [["public.test", "rw"]]
 }]
@@ -559,48 +535,46 @@ create table src (id int primary key, data int)
 insert into src values (0, 0), (1, 0)
 explain insert into test select * from src on conflict do update set data = data + 1 returning *
 [{
-  "bytecode": {
-    "frontend": {
-      "00": "union               0      0      0     ",
-      "01": "send_all            0      -      0     # public.src",
-      "02": "union_recv          0      0      0     ",
-      "03": "union_set           0      0      -1    ",
-      "04": "union               1      0      0     ",
-      "05": "dup                 2      0      0     ",
-      "06": "send_shard          10     -      2     # public.test (last)",
-      "07": "union_recv          1      0      0     ",
-      "08": "ret                 1      -1     -     "
-    },
-    "backend": {
-      "00": "set                 0      2      0     ",
-      "01": "table_open_part     1      0      8     # public.src (primary)",
-      "02": "table_readi32       2      1      0     ",
-      "03": "push                2      0      0     ",
-      "04": "table_readi32       2      1      1     ",
-      "05": "push                2      0      0     ",
-      "06": "set_add             0      0      0     ",
-      "07": "table_next          1      2      0     ",
-      "08": "free                1      0      0     ",
-      "09": "ret                 0      -1     -     ",
-      "10": "set                 1      2      0     ",
-      "11": "table_prepare       2      -      0     # public.test",
-      "12": "jmp                 25     0      0     ",
-      "13": "int                 3      -      0     # 1",
-      "14": "push                3      0      0     ",
-      "15": "table_readi32       3      2      1     ",
-      "16": "int                 4      -      0     # 1",
-      "17": "addii               5      3      4     ",
-      "18": "push                5      0      0     ",
-      "19": "update              2      1      0     ",
-      "20": "table_readi32       3      2      0     ",
-      "21": "push                3      0      0     ",
-      "22": "table_readi32       3      2      1     ",
-      "23": "push                3      0      0     ",
-      "24": "set_add             1      0      0     ",
-      "25": "upsert              2      13     20    ",
-      "26": "free                2      0      0     ",
-      "27": "ret                 1      -1     -     "
-    }
+  "main": {
+    "00": "union               0      0      0     ",
+    "01": "send_all            0      -      0     # public.src",
+    "02": "union_recv          0      0      0     ",
+    "03": "union_set           0      0      -1    ",
+    "04": "union               1      0      0     ",
+    "05": "dup                 2      0      0     ",
+    "06": "send_shard          10     -      2     # public.test (last)",
+    "07": "union_recv          1      0      0     ",
+    "08": "ret                 1      -1     -     "
+  },
+  "pushdown": {
+    "00": "set                 0      2      0     ",
+    "01": "table_open_part     1      0      8     # public.src (primary)",
+    "02": "table_readi32       2      1      0     ",
+    "03": "push                2      0      0     ",
+    "04": "table_readi32       2      1      1     ",
+    "05": "push                2      0      0     ",
+    "06": "set_add             0      0      0     ",
+    "07": "table_next          1      2      0     ",
+    "08": "free                1      0      0     ",
+    "09": "ret                 0      -1     -     ",
+    "10": "set                 1      2      0     ",
+    "11": "table_prepare       2      -      0     # public.test",
+    "12": "jmp                 25     0      0     ",
+    "13": "int                 3      -      0     # 1",
+    "14": "push                3      0      0     ",
+    "15": "table_readi32       3      2      1     ",
+    "16": "int                 4      -      0     # 1",
+    "17": "addii               5      3      4     ",
+    "18": "push                5      0      0     ",
+    "19": "update              2      1      0     ",
+    "20": "table_readi32       3      2      0     ",
+    "21": "push                3      0      0     ",
+    "22": "table_readi32       3      2      1     ",
+    "23": "push                3      0      0     ",
+    "24": "set_add             1      0      0     ",
+    "25": "upsert              2      13     20    ",
+    "26": "free                2      0      0     ",
+    "27": "ret                 1      -1     -     "
   },
   "access": [["public.test", "rw"], ["public.src", "ro"]]
 }]

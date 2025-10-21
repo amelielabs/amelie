@@ -3,23 +3,21 @@ connect E0 S0 127.0.0.1:3485
 # test: select * from (select expr)
 explain select * from (select 1) t
 [{
-  "bytecode": {
-    "frontend": {
-      "00": "int                 0      -      0     # 1",
-      "01": "set                 1      1      0     ",
-      "02": "dup                 2      0      0     ",
-      "03": "push                2      0      0     ",
-      "04": "set                 2      1      0     ",
-      "05": "set_add             2      0      0     ",
-      "06": "store_open          3      2      11    ",
-      "07": "store_read          4      3      0     ",
-      "08": "push                4      0      0     ",
-      "09": "set_add             1      0      0     ",
-      "10": "store_next          3      7      0     ",
-      "11": "free                3      0      0     ",
-      "12": "free                2      0      0     ",
-      "13": "ret                 1      -1     -     "
-    }
+  "main": {
+    "00": "int                 0      -      0     # 1",
+    "01": "set                 1      1      0     ",
+    "02": "dup                 2      0      0     ",
+    "03": "push                2      0      0     ",
+    "04": "set                 2      1      0     ",
+    "05": "set_add             2      0      0     ",
+    "06": "store_open          3      2      11    ",
+    "07": "store_read          4      3      0     ",
+    "08": "push                4      0      0     ",
+    "09": "set_add             1      0      0     ",
+    "10": "store_next          3      7      0     ",
+    "11": "free                3      0      0     ",
+    "12": "free                2      0      0     ",
+    "13": "ret                 1      -1     -     "
   },
   "access": []
 }]
@@ -27,27 +25,25 @@ select * from (select 1) t
 [1]
 explain select * from (select 1, 2) t
 [{
-  "bytecode": {
-    "frontend": {
-      "00": "set                 0      2      0     ",
-      "01": "int                 1      -      0     # 1",
-      "02": "push                1      0      0     ",
-      "03": "int                 1      -      0     # 2",
-      "04": "push                1      0      0     ",
-      "05": "set_add             0      0      0     ",
-      "06": "set                 1      2      0     ",
-      "07": "dup                 2      0      0     ",
-      "08": "store_open          3      2      15    ",
-      "09": "store_read          4      3      0     ",
-      "10": "push                4      0      0     ",
-      "11": "store_read          4      3      1     ",
-      "12": "push                4      0      0     ",
-      "13": "set_add             1      0      0     ",
-      "14": "store_next          3      9      0     ",
-      "15": "free                3      0      0     ",
-      "16": "free                2      0      0     ",
-      "17": "ret                 1      -1     -     "
-    }
+  "main": {
+    "00": "set                 0      2      0     ",
+    "01": "int                 1      -      0     # 1",
+    "02": "push                1      0      0     ",
+    "03": "int                 1      -      0     # 2",
+    "04": "push                1      0      0     ",
+    "05": "set_add             0      0      0     ",
+    "06": "set                 1      2      0     ",
+    "07": "dup                 2      0      0     ",
+    "08": "store_open          3      2      15    ",
+    "09": "store_read          4      3      0     ",
+    "10": "push                4      0      0     ",
+    "11": "store_read          4      3      1     ",
+    "12": "push                4      0      0     ",
+    "13": "set_add             1      0      0     ",
+    "14": "store_next          3      9      0     ",
+    "15": "free                3      0      0     ",
+    "16": "free                2      0      0     ",
+    "17": "ret                 1      -1     -     "
   },
   "access": []
 }]
@@ -56,23 +52,21 @@ select * from (select 1, 2) t
 # test: select column from (select expr as)
 explain select x from (select 1 as x) t
 [{
-  "bytecode": {
-    "frontend": {
-      "00": "int                 0      -      0     # 1",
-      "01": "set                 1      1      0     ",
-      "02": "dup                 2      0      0     ",
-      "03": "push                2      0      0     ",
-      "04": "set                 2      1      0     ",
-      "05": "set_add             2      0      0     ",
-      "06": "store_open          3      2      11    ",
-      "07": "store_read          4      3      0     ",
-      "08": "push                4      0      0     ",
-      "09": "set_add             1      0      0     ",
-      "10": "store_next          3      7      0     ",
-      "11": "free                3      0      0     ",
-      "12": "free                2      0      0     ",
-      "13": "ret                 1      -1     -     "
-    }
+  "main": {
+    "00": "int                 0      -      0     # 1",
+    "01": "set                 1      1      0     ",
+    "02": "dup                 2      0      0     ",
+    "03": "push                2      0      0     ",
+    "04": "set                 2      1      0     ",
+    "05": "set_add             2      0      0     ",
+    "06": "store_open          3      2      11    ",
+    "07": "store_read          4      3      0     ",
+    "08": "push                4      0      0     ",
+    "09": "set_add             1      0      0     ",
+    "10": "store_next          3      7      0     ",
+    "11": "free                3      0      0     ",
+    "12": "free                2      0      0     ",
+    "13": "ret                 1      -1     -     "
   },
   "access": []
 }]
@@ -80,27 +74,25 @@ select x from (select 1 as x) t
 [1]
 explain select a, b from (select 1 as a, 2 as b) t
 [{
-  "bytecode": {
-    "frontend": {
-      "00": "set                 0      2      0     ",
-      "01": "int                 1      -      0     # 1",
-      "02": "push                1      0      0     ",
-      "03": "int                 1      -      0     # 2",
-      "04": "push                1      0      0     ",
-      "05": "set_add             0      0      0     ",
-      "06": "set                 1      2      0     ",
-      "07": "dup                 2      0      0     ",
-      "08": "store_open          3      2      15    ",
-      "09": "store_read          4      3      0     ",
-      "10": "push                4      0      0     ",
-      "11": "store_read          4      3      1     ",
-      "12": "push                4      0      0     ",
-      "13": "set_add             1      0      0     ",
-      "14": "store_next          3      9      0     ",
-      "15": "free                3      0      0     ",
-      "16": "free                2      0      0     ",
-      "17": "ret                 1      -1     -     "
-    }
+  "main": {
+    "00": "set                 0      2      0     ",
+    "01": "int                 1      -      0     # 1",
+    "02": "push                1      0      0     ",
+    "03": "int                 1      -      0     # 2",
+    "04": "push                1      0      0     ",
+    "05": "set_add             0      0      0     ",
+    "06": "set                 1      2      0     ",
+    "07": "dup                 2      0      0     ",
+    "08": "store_open          3      2      15    ",
+    "09": "store_read          4      3      0     ",
+    "10": "push                4      0      0     ",
+    "11": "store_read          4      3      1     ",
+    "12": "push                4      0      0     ",
+    "13": "set_add             1      0      0     ",
+    "14": "store_next          3      9      0     ",
+    "15": "free                3      0      0     ",
+    "16": "free                2      0      0     ",
+    "17": "ret                 1      -1     -     "
   },
   "access": []
 }]

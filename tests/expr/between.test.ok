@@ -44,17 +44,15 @@ select 0.058 between 0.010 and 0.053
 [false]
 explain select 0.058 between 0.010 and 0.053
 [{
-  "bytecode": {
-    "frontend": {
-      "00": "double              0      0      0     # 0.058",
-      "01": "double              1      8      0     # 0.01",
-      "02": "gteff               2      0      1     ",
-      "03": "double              0      16     0     # 0.058",
-      "04": "double              1      24     0     # 0.053",
-      "05": "lteff               3      0      1     ",
-      "06": "and                 0      2      3     ",
-      "07": "ret                 0      -1     -     "
-    }
+  "main": {
+    "00": "double              0      0      0     # 0.058",
+    "01": "double              1      8      0     # 0.01",
+    "02": "gteff               2      0      1     ",
+    "03": "double              0      16     0     # 0.058",
+    "04": "double              1      24     0     # 0.053",
+    "05": "lteff               3      0      1     ",
+    "06": "and                 0      2      3     ",
+    "07": "ret                 0      -1     -     "
   },
   "access": []
 }]
@@ -62,18 +60,16 @@ select 0.058 not between 0.010 and 0.053
 [true]
 explain select 0.058 not between 0.010 and 0.053
 [{
-  "bytecode": {
-    "frontend": {
-      "00": "double              0      0      0     # 0.058",
-      "01": "double              1      8      0     # 0.01",
-      "02": "gteff               2      0      1     ",
-      "03": "double              0      16     0     # 0.058",
-      "04": "double              1      24     0     # 0.053",
-      "05": "lteff               3      0      1     ",
-      "06": "and                 0      2      3     ",
-      "07": "not                 1      0      0     ",
-      "08": "ret                 1      -1     -     "
-    }
+  "main": {
+    "00": "double              0      0      0     # 0.058",
+    "01": "double              1      8      0     # 0.01",
+    "02": "gteff               2      0      1     ",
+    "03": "double              0      16     0     # 0.058",
+    "04": "double              1      24     0     # 0.053",
+    "05": "lteff               3      0      1     ",
+    "06": "and                 0      2      3     ",
+    "07": "not                 1      0      0     ",
+    "08": "ret                 1      -1     -     "
   },
   "access": []
 }]

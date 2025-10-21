@@ -7,27 +7,25 @@ select * from test
 [0, 1, 6, 7, 8, 14, 15, 17, 2, 9, 10, 12, 18, 19, 3, 4, 5, 11, 13, 16]
 explain select * from test order by id
 [{
-  "bytecode": {
-    "frontend": {
-      "00": "union               0      0      0     ",
-      "01": "send_all            0      -      0     # public.test (last)",
-      "02": "union_recv          0      0      0     ",
-      "03": "union_set           0      0      -1    ",
-      "04": "ret                 0      -1     -     "
-    },
-    "backend": {
-      "00": "set_ordered         0      1      1     ",
-      "01": "table_open_part     1      1      8     # public.test (primary)",
-      "02": "table_readi64       2      1      0     ",
-      "03": "push                2      0      0     ",
-      "04": "table_readi64       2      1      0     ",
-      "05": "push                2      0      0     ",
-      "06": "set_add             0      0      0     ",
-      "07": "table_next          1      2      0     ",
-      "08": "free                1      0      0     ",
-      "09": "set_sort            0      0      0     ",
-      "10": "ret                 0      -1     -     "
-    }
+  "main": {
+    "00": "union               0      0      0     ",
+    "01": "send_all            0      -      0     # public.test (last)",
+    "02": "union_recv          0      0      0     ",
+    "03": "union_set           0      0      -1    ",
+    "04": "ret                 0      -1     -     "
+  },
+  "pushdown": {
+    "00": "set_ordered         0      1      1     ",
+    "01": "table_open_part     1      1      8     # public.test (primary)",
+    "02": "table_readi64       2      1      0     ",
+    "03": "push                2      0      0     ",
+    "04": "table_readi64       2      1      0     ",
+    "05": "push                2      0      0     ",
+    "06": "set_add             0      0      0     ",
+    "07": "table_next          1      2      0     ",
+    "08": "free                1      0      0     ",
+    "09": "set_sort            0      0      0     ",
+    "10": "ret                 0      -1     -     "
   },
   "access": [["public.test", "ro"]]
 }]
@@ -36,27 +34,25 @@ select * from test order by id
 # test: select from table order by asc
 explain select * from test order by id asc
 [{
-  "bytecode": {
-    "frontend": {
-      "00": "union               0      0      0     ",
-      "01": "send_all            0      -      0     # public.test (last)",
-      "02": "union_recv          0      0      0     ",
-      "03": "union_set           0      0      -1    ",
-      "04": "ret                 0      -1     -     "
-    },
-    "backend": {
-      "00": "set_ordered         0      1      1     ",
-      "01": "table_open_part     1      1      8     # public.test (primary)",
-      "02": "table_readi64       2      1      0     ",
-      "03": "push                2      0      0     ",
-      "04": "table_readi64       2      1      0     ",
-      "05": "push                2      0      0     ",
-      "06": "set_add             0      0      0     ",
-      "07": "table_next          1      2      0     ",
-      "08": "free                1      0      0     ",
-      "09": "set_sort            0      0      0     ",
-      "10": "ret                 0      -1     -     "
-    }
+  "main": {
+    "00": "union               0      0      0     ",
+    "01": "send_all            0      -      0     # public.test (last)",
+    "02": "union_recv          0      0      0     ",
+    "03": "union_set           0      0      -1    ",
+    "04": "ret                 0      -1     -     "
+  },
+  "pushdown": {
+    "00": "set_ordered         0      1      1     ",
+    "01": "table_open_part     1      1      8     # public.test (primary)",
+    "02": "table_readi64       2      1      0     ",
+    "03": "push                2      0      0     ",
+    "04": "table_readi64       2      1      0     ",
+    "05": "push                2      0      0     ",
+    "06": "set_add             0      0      0     ",
+    "07": "table_next          1      2      0     ",
+    "08": "free                1      0      0     ",
+    "09": "set_sort            0      0      0     ",
+    "10": "ret                 0      -1     -     "
   },
   "access": [["public.test", "ro"]]
 }]
@@ -65,27 +61,25 @@ select * from test order by id asc
 # test: select from table order by desc
 explain select * from test order by id desc
 [{
-  "bytecode": {
-    "frontend": {
-      "00": "union               0      0      0     ",
-      "01": "send_all            0      -      0     # public.test (last)",
-      "02": "union_recv          0      0      0     ",
-      "03": "union_set           0      0      -1    ",
-      "04": "ret                 0      -1     -     "
-    },
-    "backend": {
-      "00": "set_ordered         0      1      1     ",
-      "01": "table_open_part     1      1      8     # public.test (primary)",
-      "02": "table_readi64       2      1      0     ",
-      "03": "push                2      0      0     ",
-      "04": "table_readi64       2      1      0     ",
-      "05": "push                2      0      0     ",
-      "06": "set_add             0      0      0     ",
-      "07": "table_next          1      2      0     ",
-      "08": "free                1      0      0     ",
-      "09": "set_sort            0      0      0     ",
-      "10": "ret                 0      -1     -     "
-    }
+  "main": {
+    "00": "union               0      0      0     ",
+    "01": "send_all            0      -      0     # public.test (last)",
+    "02": "union_recv          0      0      0     ",
+    "03": "union_set           0      0      -1    ",
+    "04": "ret                 0      -1     -     "
+  },
+  "pushdown": {
+    "00": "set_ordered         0      1      1     ",
+    "01": "table_open_part     1      1      8     # public.test (primary)",
+    "02": "table_readi64       2      1      0     ",
+    "03": "push                2      0      0     ",
+    "04": "table_readi64       2      1      0     ",
+    "05": "push                2      0      0     ",
+    "06": "set_add             0      0      0     ",
+    "07": "table_next          1      2      0     ",
+    "08": "free                1      0      0     ",
+    "09": "set_sort            0      0      0     ",
+    "10": "ret                 0      -1     -     "
   },
   "access": [["public.test", "ro"]]
 }]
@@ -94,28 +88,26 @@ select * from test order by id desc
 # test: select from table order by limit
 explain select * from test order by id limit 1
 [{
-  "bytecode": {
-    "frontend": {
-      "00": "union               0      0      0     ",
-      "01": "send_all            0      -      0     # public.test (last)",
-      "02": "union_recv          0      0      0     ",
-      "03": "int                 1      -      0     # 1",
-      "04": "union_set           0      0      1     ",
-      "05": "ret                 0      -1     -     "
-    },
-    "backend": {
-      "00": "set_ordered         0      1      1     ",
-      "01": "table_open_part     1      1      8     # public.test (primary)",
-      "02": "table_readi64       2      1      0     ",
-      "03": "push                2      0      0     ",
-      "04": "table_readi64       2      1      0     ",
-      "05": "push                2      0      0     ",
-      "06": "set_add             0      0      0     ",
-      "07": "table_next          1      2      0     ",
-      "08": "free                1      0      0     ",
-      "09": "set_sort            0      0      0     ",
-      "10": "ret                 0      -1     -     "
-    }
+  "main": {
+    "00": "union               0      0      0     ",
+    "01": "send_all            0      -      0     # public.test (last)",
+    "02": "union_recv          0      0      0     ",
+    "03": "int                 1      -      0     # 1",
+    "04": "union_set           0      0      1     ",
+    "05": "ret                 0      -1     -     "
+  },
+  "pushdown": {
+    "00": "set_ordered         0      1      1     ",
+    "01": "table_open_part     1      1      8     # public.test (primary)",
+    "02": "table_readi64       2      1      0     ",
+    "03": "push                2      0      0     ",
+    "04": "table_readi64       2      1      0     ",
+    "05": "push                2      0      0     ",
+    "06": "set_add             0      0      0     ",
+    "07": "table_next          1      2      0     ",
+    "08": "free                1      0      0     ",
+    "09": "set_sort            0      0      0     ",
+    "10": "ret                 0      -1     -     "
   },
   "access": [["public.test", "ro"]]
 }]
@@ -134,28 +126,26 @@ select * from test order by id limit 20
 # test: select from table order by limit 0
 explain select * from test order by id limit 0
 [{
-  "bytecode": {
-    "frontend": {
-      "00": "union               0      0      0     ",
-      "01": "send_all            0      -      0     # public.test (last)",
-      "02": "union_recv          0      0      0     ",
-      "03": "int                 1      -      0     # 0",
-      "04": "union_set           0      0      1     ",
-      "05": "ret                 0      -1     -     "
-    },
-    "backend": {
-      "00": "set_ordered         0      1      1     ",
-      "01": "table_open_part     1      1      8     # public.test (primary)",
-      "02": "table_readi64       2      1      0     ",
-      "03": "push                2      0      0     ",
-      "04": "table_readi64       2      1      0     ",
-      "05": "push                2      0      0     ",
-      "06": "set_add             0      0      0     ",
-      "07": "table_next          1      2      0     ",
-      "08": "free                1      0      0     ",
-      "09": "set_sort            0      0      0     ",
-      "10": "ret                 0      -1     -     "
-    }
+  "main": {
+    "00": "union               0      0      0     ",
+    "01": "send_all            0      -      0     # public.test (last)",
+    "02": "union_recv          0      0      0     ",
+    "03": "int                 1      -      0     # 0",
+    "04": "union_set           0      0      1     ",
+    "05": "ret                 0      -1     -     "
+  },
+  "pushdown": {
+    "00": "set_ordered         0      1      1     ",
+    "01": "table_open_part     1      1      8     # public.test (primary)",
+    "02": "table_readi64       2      1      0     ",
+    "03": "push                2      0      0     ",
+    "04": "table_readi64       2      1      0     ",
+    "05": "push                2      0      0     ",
+    "06": "set_add             0      0      0     ",
+    "07": "table_next          1      2      0     ",
+    "08": "free                1      0      0     ",
+    "09": "set_sort            0      0      0     ",
+    "10": "ret                 0      -1     -     "
   },
   "access": [["public.test", "ro"]]
 }]
@@ -166,28 +156,26 @@ select * from test order by id limit -1
 # test: select from table order by desc limit
 explain select * from test order by id desc limit 1
 [{
-  "bytecode": {
-    "frontend": {
-      "00": "union               0      0      0     ",
-      "01": "send_all            0      -      0     # public.test (last)",
-      "02": "union_recv          0      0      0     ",
-      "03": "int                 1      -      0     # 1",
-      "04": "union_set           0      0      1     ",
-      "05": "ret                 0      -1     -     "
-    },
-    "backend": {
-      "00": "set_ordered         0      1      1     ",
-      "01": "table_open_part     1      1      8     # public.test (primary)",
-      "02": "table_readi64       2      1      0     ",
-      "03": "push                2      0      0     ",
-      "04": "table_readi64       2      1      0     ",
-      "05": "push                2      0      0     ",
-      "06": "set_add             0      0      0     ",
-      "07": "table_next          1      2      0     ",
-      "08": "free                1      0      0     ",
-      "09": "set_sort            0      0      0     ",
-      "10": "ret                 0      -1     -     "
-    }
+  "main": {
+    "00": "union               0      0      0     ",
+    "01": "send_all            0      -      0     # public.test (last)",
+    "02": "union_recv          0      0      0     ",
+    "03": "int                 1      -      0     # 1",
+    "04": "union_set           0      0      1     ",
+    "05": "ret                 0      -1     -     "
+  },
+  "pushdown": {
+    "00": "set_ordered         0      1      1     ",
+    "01": "table_open_part     1      1      8     # public.test (primary)",
+    "02": "table_readi64       2      1      0     ",
+    "03": "push                2      0      0     ",
+    "04": "table_readi64       2      1      0     ",
+    "05": "push                2      0      0     ",
+    "06": "set_add             0      0      0     ",
+    "07": "table_next          1      2      0     ",
+    "08": "free                1      0      0     ",
+    "09": "set_sort            0      0      0     ",
+    "10": "ret                 0      -1     -     "
   },
   "access": [["public.test", "ro"]]
 }]
@@ -206,29 +194,27 @@ select * from test order by id desc limit 20
 # test: select from table order by limit offset
 explain select * from test order by id limit 1 offset 0
 [{
-  "bytecode": {
-    "frontend": {
-      "00": "union               0      0      0     ",
-      "01": "send_all            0      -      0     # public.test (last)",
-      "02": "union_recv          0      0      0     ",
-      "03": "int                 1      -      0     # 1",
-      "04": "int                 2      -      0     # 0",
-      "05": "union_set           0      0      1     ",
-      "06": "ret                 0      -1     -     "
-    },
-    "backend": {
-      "00": "set_ordered         0      1      1     ",
-      "01": "table_open_part     1      1      8     # public.test (primary)",
-      "02": "table_readi64       2      1      0     ",
-      "03": "push                2      0      0     ",
-      "04": "table_readi64       2      1      0     ",
-      "05": "push                2      0      0     ",
-      "06": "set_add             0      0      0     ",
-      "07": "table_next          1      2      0     ",
-      "08": "free                1      0      0     ",
-      "09": "set_sort            0      0      0     ",
-      "10": "ret                 0      -1     -     "
-    }
+  "main": {
+    "00": "union               0      0      0     ",
+    "01": "send_all            0      -      0     # public.test (last)",
+    "02": "union_recv          0      0      0     ",
+    "03": "int                 1      -      0     # 1",
+    "04": "int                 2      -      0     # 0",
+    "05": "union_set           0      0      1     ",
+    "06": "ret                 0      -1     -     "
+  },
+  "pushdown": {
+    "00": "set_ordered         0      1      1     ",
+    "01": "table_open_part     1      1      8     # public.test (primary)",
+    "02": "table_readi64       2      1      0     ",
+    "03": "push                2      0      0     ",
+    "04": "table_readi64       2      1      0     ",
+    "05": "push                2      0      0     ",
+    "06": "set_add             0      0      0     ",
+    "07": "table_next          1      2      0     ",
+    "08": "free                1      0      0     ",
+    "09": "set_sort            0      0      0     ",
+    "10": "ret                 0      -1     -     "
   },
   "access": [["public.test", "ro"]]
 }]
@@ -237,29 +223,27 @@ select * from test order by id limit 1 offset 0
 # test: select from table order by limit offset #2
 explain select * from test order by id limit 1 offset 1
 [{
-  "bytecode": {
-    "frontend": {
-      "00": "union               0      0      0     ",
-      "01": "send_all            0      -      0     # public.test (last)",
-      "02": "union_recv          0      0      0     ",
-      "03": "int                 1      -      0     # 1",
-      "04": "int                 2      -      0     # 1",
-      "05": "union_set           0      0      1     ",
-      "06": "ret                 0      -1     -     "
-    },
-    "backend": {
-      "00": "set_ordered         0      1      1     ",
-      "01": "table_open_part     1      1      8     # public.test (primary)",
-      "02": "table_readi64       2      1      0     ",
-      "03": "push                2      0      0     ",
-      "04": "table_readi64       2      1      0     ",
-      "05": "push                2      0      0     ",
-      "06": "set_add             0      0      0     ",
-      "07": "table_next          1      2      0     ",
-      "08": "free                1      0      0     ",
-      "09": "set_sort            0      0      0     ",
-      "10": "ret                 0      -1     -     "
-    }
+  "main": {
+    "00": "union               0      0      0     ",
+    "01": "send_all            0      -      0     # public.test (last)",
+    "02": "union_recv          0      0      0     ",
+    "03": "int                 1      -      0     # 1",
+    "04": "int                 2      -      0     # 1",
+    "05": "union_set           0      0      1     ",
+    "06": "ret                 0      -1     -     "
+  },
+  "pushdown": {
+    "00": "set_ordered         0      1      1     ",
+    "01": "table_open_part     1      1      8     # public.test (primary)",
+    "02": "table_readi64       2      1      0     ",
+    "03": "push                2      0      0     ",
+    "04": "table_readi64       2      1      0     ",
+    "05": "push                2      0      0     ",
+    "06": "set_add             0      0      0     ",
+    "07": "table_next          1      2      0     ",
+    "08": "free                1      0      0     ",
+    "09": "set_sort            0      0      0     ",
+    "10": "ret                 0      -1     -     "
   },
   "access": [["public.test", "ro"]]
 }]
@@ -274,29 +258,27 @@ select * from test order by id limit 1 offset 4
 # test: select from table order by desc limit offset
 explain select * from test order by id desc limit 1 offset 1
 [{
-  "bytecode": {
-    "frontend": {
-      "00": "union               0      0      0     ",
-      "01": "send_all            0      -      0     # public.test (last)",
-      "02": "union_recv          0      0      0     ",
-      "03": "int                 1      -      0     # 1",
-      "04": "int                 2      -      0     # 1",
-      "05": "union_set           0      0      1     ",
-      "06": "ret                 0      -1     -     "
-    },
-    "backend": {
-      "00": "set_ordered         0      1      1     ",
-      "01": "table_open_part     1      1      8     # public.test (primary)",
-      "02": "table_readi64       2      1      0     ",
-      "03": "push                2      0      0     ",
-      "04": "table_readi64       2      1      0     ",
-      "05": "push                2      0      0     ",
-      "06": "set_add             0      0      0     ",
-      "07": "table_next          1      2      0     ",
-      "08": "free                1      0      0     ",
-      "09": "set_sort            0      0      0     ",
-      "10": "ret                 0      -1     -     "
-    }
+  "main": {
+    "00": "union               0      0      0     ",
+    "01": "send_all            0      -      0     # public.test (last)",
+    "02": "union_recv          0      0      0     ",
+    "03": "int                 1      -      0     # 1",
+    "04": "int                 2      -      0     # 1",
+    "05": "union_set           0      0      1     ",
+    "06": "ret                 0      -1     -     "
+  },
+  "pushdown": {
+    "00": "set_ordered         0      1      1     ",
+    "01": "table_open_part     1      1      8     # public.test (primary)",
+    "02": "table_readi64       2      1      0     ",
+    "03": "push                2      0      0     ",
+    "04": "table_readi64       2      1      0     ",
+    "05": "push                2      0      0     ",
+    "06": "set_add             0      0      0     ",
+    "07": "table_next          1      2      0     ",
+    "08": "free                1      0      0     ",
+    "09": "set_sort            0      0      0     ",
+    "10": "ret                 0      -1     -     "
   },
   "access": [["public.test", "ro"]]
 }]
@@ -311,28 +293,26 @@ select * from test order by id desc limit 1 offset 4
 # test: select from table order by offset
 explain select * from test order by id offset 1
 [{
-  "bytecode": {
-    "frontend": {
-      "00": "union               0      0      0     ",
-      "01": "send_all            0      -      0     # public.test (last)",
-      "02": "union_recv          0      0      0     ",
-      "03": "int                 1      -      0     # 1",
-      "04": "union_set           0      0      -1    ",
-      "05": "ret                 0      -1     -     "
-    },
-    "backend": {
-      "00": "set_ordered         0      1      1     ",
-      "01": "table_open_part     1      1      8     # public.test (primary)",
-      "02": "table_readi64       2      1      0     ",
-      "03": "push                2      0      0     ",
-      "04": "table_readi64       2      1      0     ",
-      "05": "push                2      0      0     ",
-      "06": "set_add             0      0      0     ",
-      "07": "table_next          1      2      0     ",
-      "08": "free                1      0      0     ",
-      "09": "set_sort            0      0      0     ",
-      "10": "ret                 0      -1     -     "
-    }
+  "main": {
+    "00": "union               0      0      0     ",
+    "01": "send_all            0      -      0     # public.test (last)",
+    "02": "union_recv          0      0      0     ",
+    "03": "int                 1      -      0     # 1",
+    "04": "union_set           0      0      -1    ",
+    "05": "ret                 0      -1     -     "
+  },
+  "pushdown": {
+    "00": "set_ordered         0      1      1     ",
+    "01": "table_open_part     1      1      8     # public.test (primary)",
+    "02": "table_readi64       2      1      0     ",
+    "03": "push                2      0      0     ",
+    "04": "table_readi64       2      1      0     ",
+    "05": "push                2      0      0     ",
+    "06": "set_add             0      0      0     ",
+    "07": "table_next          1      2      0     ",
+    "08": "free                1      0      0     ",
+    "09": "set_sort            0      0      0     ",
+    "10": "ret                 0      -1     -     "
   },
   "access": [["public.test", "ro"]]
 }]
@@ -351,28 +331,26 @@ select * from test order by id offset -1
 # test: select from table order by desc offset
 explain select * from test order by id desc offset 1
 [{
-  "bytecode": {
-    "frontend": {
-      "00": "union               0      0      0     ",
-      "01": "send_all            0      -      0     # public.test (last)",
-      "02": "union_recv          0      0      0     ",
-      "03": "int                 1      -      0     # 1",
-      "04": "union_set           0      0      -1    ",
-      "05": "ret                 0      -1     -     "
-    },
-    "backend": {
-      "00": "set_ordered         0      1      1     ",
-      "01": "table_open_part     1      1      8     # public.test (primary)",
-      "02": "table_readi64       2      1      0     ",
-      "03": "push                2      0      0     ",
-      "04": "table_readi64       2      1      0     ",
-      "05": "push                2      0      0     ",
-      "06": "set_add             0      0      0     ",
-      "07": "table_next          1      2      0     ",
-      "08": "free                1      0      0     ",
-      "09": "set_sort            0      0      0     ",
-      "10": "ret                 0      -1     -     "
-    }
+  "main": {
+    "00": "union               0      0      0     ",
+    "01": "send_all            0      -      0     # public.test (last)",
+    "02": "union_recv          0      0      0     ",
+    "03": "int                 1      -      0     # 1",
+    "04": "union_set           0      0      -1    ",
+    "05": "ret                 0      -1     -     "
+  },
+  "pushdown": {
+    "00": "set_ordered         0      1      1     ",
+    "01": "table_open_part     1      1      8     # public.test (primary)",
+    "02": "table_readi64       2      1      0     ",
+    "03": "push                2      0      0     ",
+    "04": "table_readi64       2      1      0     ",
+    "05": "push                2      0      0     ",
+    "06": "set_add             0      0      0     ",
+    "07": "table_next          1      2      0     ",
+    "08": "free                1      0      0     ",
+    "09": "set_sort            0      0      0     ",
+    "10": "ret                 0      -1     -     "
   },
   "access": [["public.test", "ro"]]
 }]

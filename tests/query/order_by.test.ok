@@ -7,29 +7,27 @@ insert into test values (2, 3)
 insert into test values (3, 2)
 explain select * from test order by data
 [{
-  "bytecode": {
-    "frontend": {
-      "00": "union               0      0      0     ",
-      "01": "send_all            0      -      0     # public.test (last)",
-      "02": "union_recv          0      0      0     ",
-      "03": "union_set           0      0      -1    ",
-      "04": "ret                 0      -1     -     "
-    },
-    "backend": {
-      "00": "set_ordered         0      2      1     ",
-      "01": "table_open_part     1      1      10    # public.test (primary)",
-      "02": "table_readi32       2      1      0     ",
-      "03": "push                2      0      0     ",
-      "04": "table_readi32       2      1      1     ",
-      "05": "push                2      0      0     ",
-      "06": "table_readi32       2      1      1     ",
-      "07": "push                2      0      0     ",
-      "08": "set_add             0      0      0     ",
-      "09": "table_next          1      2      0     ",
-      "10": "free                1      0      0     ",
-      "11": "set_sort            0      0      0     ",
-      "12": "ret                 0      -1     -     "
-    }
+  "main": {
+    "00": "union               0      0      0     ",
+    "01": "send_all            0      -      0     # public.test (last)",
+    "02": "union_recv          0      0      0     ",
+    "03": "union_set           0      0      -1    ",
+    "04": "ret                 0      -1     -     "
+  },
+  "pushdown": {
+    "00": "set_ordered         0      2      1     ",
+    "01": "table_open_part     1      1      10    # public.test (primary)",
+    "02": "table_readi32       2      1      0     ",
+    "03": "push                2      0      0     ",
+    "04": "table_readi32       2      1      1     ",
+    "05": "push                2      0      0     ",
+    "06": "table_readi32       2      1      1     ",
+    "07": "push                2      0      0     ",
+    "08": "set_add             0      0      0     ",
+    "09": "table_next          1      2      0     ",
+    "10": "free                1      0      0     ",
+    "11": "set_sort            0      0      0     ",
+    "12": "ret                 0      -1     -     "
   },
   "access": [["public.test", "ro"]]
 }]

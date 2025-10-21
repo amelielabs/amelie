@@ -5,18 +5,16 @@ insert into test (id) values (1), (2), (3)
 # test: select (select from table)
 explain select (select id from test)
 [{
-  "bytecode": {
-    "frontend": {
-      "00": "set                 0      1      0     ",
-      "01": "table_open          1      0      6     # public.test (primary)",
-      "02": "table_readi32       2      1      0     ",
-      "03": "push                2      0      0     ",
-      "04": "set_add             0      0      0     ",
-      "05": "table_next          1      2      0     ",
-      "06": "free                1      0      0     ",
-      "07": "set_result          1      0      0     ",
-      "08": "ret                 1      -1     -     "
-    }
+  "main": {
+    "00": "set                 0      1      0     ",
+    "01": "table_open          1      0      6     # public.test (primary)",
+    "02": "table_readi32       2      1      0     ",
+    "03": "push                2      0      0     ",
+    "04": "set_add             0      0      0     ",
+    "05": "table_next          1      2      0     ",
+    "06": "free                1      0      0     ",
+    "07": "set_result          1      0      0     ",
+    "08": "ret                 1      -1     -     "
   },
   "access": [["public.test", "ro_exclusive"]]
 }]
@@ -27,31 +25,29 @@ create table test2 (id int primary key)
 insert into test2 (id) values (1), (2), (3)
 explain select (select id from test) from test2
 [{
-  "bytecode": {
-    "frontend": {
-      "00": "union               0      0      0     ",
-      "01": "send_all            0      -      0     # public.test2 (last)",
-      "02": "union_recv          0      0      0     ",
-      "03": "union_set           0      0      -1    ",
-      "04": "ret                 0      -1     -     "
-    },
-    "backend": {
-      "00": "set                 0      1      0     ",
-      "01": "table_open_part     1      0      13    # public.test2 (primary)",
-      "02": "set                 2      1      0     ",
-      "03": "table_open          3      21     8     # public.test (primary)",
-      "04": "table_readi32       4      3      0     ",
-      "05": "push                4      0      0     ",
-      "06": "set_add             2      0      0     ",
-      "07": "table_next          3      4      0     ",
-      "08": "free                3      0      0     ",
-      "09": "set_result          3      2      0     ",
-      "10": "push                3      0      0     ",
-      "11": "set_add             0      0      0     ",
-      "12": "table_next          1      2      0     ",
-      "13": "free                1      0      0     ",
-      "14": "ret                 0      -1     -     "
-    }
+  "main": {
+    "00": "union               0      0      0     ",
+    "01": "send_all            0      -      0     # public.test2 (last)",
+    "02": "union_recv          0      0      0     ",
+    "03": "union_set           0      0      -1    ",
+    "04": "ret                 0      -1     -     "
+  },
+  "pushdown": {
+    "00": "set                 0      1      0     ",
+    "01": "table_open_part     1      0      13    # public.test2 (primary)",
+    "02": "set                 2      1      0     ",
+    "03": "table_open          3      21     8     # public.test (primary)",
+    "04": "table_readi32       4      3      0     ",
+    "05": "push                4      0      0     ",
+    "06": "set_add             2      0      0     ",
+    "07": "table_next          3      4      0     ",
+    "08": "free                3      0      0     ",
+    "09": "set_result          3      2      0     ",
+    "10": "push                3      0      0     ",
+    "11": "set_add             0      0      0     ",
+    "12": "table_next          1      2      0     ",
+    "13": "free                1      0      0     ",
+    "14": "ret                 0      -1     -     "
   },
   "access": [["public.test", "ro_exclusive"], ["public.test2", "ro"]]
 }]
@@ -60,40 +56,38 @@ select (select id from test) from test2
 # test: select (select from table) from (select from table)
 explain select (select id from test) from (select * from test2) t
 [{
-  "bytecode": {
-    "frontend": {
-      "00": "union               0      0      0     ",
-      "01": "send_all            0      -      0     # public.test2",
-      "02": "union_recv          0      0      0     ",
-      "03": "union_set           0      0      -1    ",
-      "04": "set                 1      1      0     ",
-      "05": "dup                 2      0      0     ",
-      "06": "store_open          3      2      18    ",
-      "07": "set                 4      1      0     ",
-      "08": "table_open          5      21     13    # public.test (primary)",
-      "09": "table_readi32       6      5      0     ",
-      "10": "push                6      0      0     ",
-      "11": "set_add             4      0      0     ",
-      "12": "table_next          5      9      0     ",
-      "13": "free                5      0      0     ",
-      "14": "set_result          5      4      0     ",
-      "15": "push                5      0      0     ",
-      "16": "set_add             1      0      0     ",
-      "17": "store_next          3      7      0     ",
-      "18": "free                3      0      0     ",
-      "19": "free                2      0      0     ",
-      "20": "ret                 1      -1     -     "
-    },
-    "backend": {
-      "00": "set                 0      1      0     ",
-      "01": "table_open_part     1      0      6     # public.test2 (primary)",
-      "02": "table_readi32       2      1      0     ",
-      "03": "push                2      0      0     ",
-      "04": "set_add             0      0      0     ",
-      "05": "table_next          1      2      0     ",
-      "06": "free                1      0      0     ",
-      "07": "ret                 0      -1     -     "
-    }
+  "main": {
+    "00": "union               0      0      0     ",
+    "01": "send_all            0      -      0     # public.test2",
+    "02": "union_recv          0      0      0     ",
+    "03": "union_set           0      0      -1    ",
+    "04": "set                 1      1      0     ",
+    "05": "dup                 2      0      0     ",
+    "06": "store_open          3      2      18    ",
+    "07": "set                 4      1      0     ",
+    "08": "table_open          5      21     13    # public.test (primary)",
+    "09": "table_readi32       6      5      0     ",
+    "10": "push                6      0      0     ",
+    "11": "set_add             4      0      0     ",
+    "12": "table_next          5      9      0     ",
+    "13": "free                5      0      0     ",
+    "14": "set_result          5      4      0     ",
+    "15": "push                5      0      0     ",
+    "16": "set_add             1      0      0     ",
+    "17": "store_next          3      7      0     ",
+    "18": "free                3      0      0     ",
+    "19": "free                2      0      0     ",
+    "20": "ret                 1      -1     -     "
+  },
+  "pushdown": {
+    "00": "set                 0      1      0     ",
+    "01": "table_open_part     1      0      6     # public.test2 (primary)",
+    "02": "table_readi32       2      1      0     ",
+    "03": "push                2      0      0     ",
+    "04": "set_add             0      0      0     ",
+    "05": "table_next          1      2      0     ",
+    "06": "free                1      0      0     ",
+    "07": "ret                 0      -1     -     "
   },
   "access": [["public.test", "ro_exclusive"], ["public.test2", "ro"]]
 }]
@@ -103,37 +97,35 @@ drop table test2
 # test: select from (select from table)
 explain select * from (select * from test) t
 [{
-  "bytecode": {
-    "frontend": {
-      "00": "union               0      0      0     ",
-      "01": "send_all            0      -      0     # public.test",
-      "02": "union_recv          0      0      0     ",
-      "03": "union_set           0      0      -1    ",
-      "04": "set                 1      2      0     ",
-      "05": "dup                 2      0      0     ",
-      "06": "store_open          3      2      13    ",
-      "07": "store_read          4      3      0     ",
-      "08": "push                4      0      0     ",
-      "09": "store_read          4      3      1     ",
-      "10": "push                4      0      0     ",
-      "11": "set_add             1      0      0     ",
-      "12": "store_next          3      7      0     ",
-      "13": "free                3      0      0     ",
-      "14": "free                2      0      0     ",
-      "15": "ret                 1      -1     -     "
-    },
-    "backend": {
-      "00": "set                 0      2      0     ",
-      "01": "table_open_part     1      0      8     # public.test (primary)",
-      "02": "table_readi32       2      1      0     ",
-      "03": "push                2      0      0     ",
-      "04": "table_readi32       2      1      1     ",
-      "05": "push                2      0      0     ",
-      "06": "set_add             0      0      0     ",
-      "07": "table_next          1      2      0     ",
-      "08": "free                1      0      0     ",
-      "09": "ret                 0      -1     -     "
-    }
+  "main": {
+    "00": "union               0      0      0     ",
+    "01": "send_all            0      -      0     # public.test",
+    "02": "union_recv          0      0      0     ",
+    "03": "union_set           0      0      -1    ",
+    "04": "set                 1      2      0     ",
+    "05": "dup                 2      0      0     ",
+    "06": "store_open          3      2      13    ",
+    "07": "store_read          4      3      0     ",
+    "08": "push                4      0      0     ",
+    "09": "store_read          4      3      1     ",
+    "10": "push                4      0      0     ",
+    "11": "set_add             1      0      0     ",
+    "12": "store_next          3      7      0     ",
+    "13": "free                3      0      0     ",
+    "14": "free                2      0      0     ",
+    "15": "ret                 1      -1     -     "
+  },
+  "pushdown": {
+    "00": "set                 0      2      0     ",
+    "01": "table_open_part     1      0      8     # public.test (primary)",
+    "02": "table_readi32       2      1      0     ",
+    "03": "push                2      0      0     ",
+    "04": "table_readi32       2      1      1     ",
+    "05": "push                2      0      0     ",
+    "06": "set_add             0      0      0     ",
+    "07": "table_next          1      2      0     ",
+    "08": "free                1      0      0     ",
+    "09": "ret                 0      -1     -     "
   },
   "access": [["public.test", "ro"]]
 }]
@@ -144,40 +136,38 @@ create table test2 (id int primary key)
 insert into test2 (id) values (1), (2), (3)
 explain select * from (select (select id from test2) from test) t
 [{
-  "bytecode": {
-    "frontend": {
-      "00": "union               0      0      0     ",
-      "01": "send_all            0      -      0     # public.test",
-      "02": "union_recv          0      0      0     ",
-      "03": "union_set           0      0      -1    ",
-      "04": "set                 1      1      0     ",
-      "05": "dup                 2      0      0     ",
-      "06": "store_open          3      2      11    ",
-      "07": "store_read          4      3      0     ",
-      "08": "push                4      0      0     ",
-      "09": "set_add             1      0      0     ",
-      "10": "store_next          3      7      0     ",
-      "11": "free                3      0      0     ",
-      "12": "free                2      0      0     ",
-      "13": "ret                 1      -1     -     "
-    },
-    "backend": {
-      "00": "set                 0      1      0     ",
-      "01": "table_open_part     1      0      13    # public.test (primary)",
-      "02": "set                 2      1      0     ",
-      "03": "table_open          3      20     8     # public.test2 (primary)",
-      "04": "table_readi32       4      3      0     ",
-      "05": "push                4      0      0     ",
-      "06": "set_add             2      0      0     ",
-      "07": "table_next          3      4      0     ",
-      "08": "free                3      0      0     ",
-      "09": "set_result          3      2      0     ",
-      "10": "push                3      0      0     ",
-      "11": "set_add             0      0      0     ",
-      "12": "table_next          1      2      0     ",
-      "13": "free                1      0      0     ",
-      "14": "ret                 0      -1     -     "
-    }
+  "main": {
+    "00": "union               0      0      0     ",
+    "01": "send_all            0      -      0     # public.test",
+    "02": "union_recv          0      0      0     ",
+    "03": "union_set           0      0      -1    ",
+    "04": "set                 1      1      0     ",
+    "05": "dup                 2      0      0     ",
+    "06": "store_open          3      2      11    ",
+    "07": "store_read          4      3      0     ",
+    "08": "push                4      0      0     ",
+    "09": "set_add             1      0      0     ",
+    "10": "store_next          3      7      0     ",
+    "11": "free                3      0      0     ",
+    "12": "free                2      0      0     ",
+    "13": "ret                 1      -1     -     "
+  },
+  "pushdown": {
+    "00": "set                 0      1      0     ",
+    "01": "table_open_part     1      0      13    # public.test (primary)",
+    "02": "set                 2      1      0     ",
+    "03": "table_open          3      20     8     # public.test2 (primary)",
+    "04": "table_readi32       4      3      0     ",
+    "05": "push                4      0      0     ",
+    "06": "set_add             2      0      0     ",
+    "07": "table_next          3      4      0     ",
+    "08": "free                3      0      0     ",
+    "09": "set_result          3      2      0     ",
+    "10": "push                3      0      0     ",
+    "11": "set_add             0      0      0     ",
+    "12": "table_next          1      2      0     ",
+    "13": "free                1      0      0     ",
+    "14": "ret                 0      -1     -     "
   },
   "access": [["public.test2", "ro_exclusive"], ["public.test", "ro"]]
 }]
@@ -187,40 +177,38 @@ drop table test2
 # test: select from (select (select from table) from table)
 explain select * from (select (select id from test t) from test) g
 [{
-  "bytecode": {
-    "frontend": {
-      "00": "union               0      0      0     ",
-      "01": "send_all            0      -      0     # public.test",
-      "02": "union_recv          0      0      0     ",
-      "03": "union_set           0      0      -1    ",
-      "04": "set                 1      1      0     ",
-      "05": "dup                 2      0      0     ",
-      "06": "store_open          3      2      11    ",
-      "07": "store_read          4      3      0     ",
-      "08": "push                4      0      0     ",
-      "09": "set_add             1      0      0     ",
-      "10": "store_next          3      7      0     ",
-      "11": "free                3      0      0     ",
-      "12": "free                2      0      0     ",
-      "13": "ret                 1      -1     -     "
-    },
-    "backend": {
-      "00": "set                 0      1      0     ",
-      "01": "table_open_part     1      0      13    # public.test (primary)",
-      "02": "set                 2      1      0     ",
-      "03": "table_open          3      20     8     # public.test (primary)",
-      "04": "table_readi32       4      3      0     ",
-      "05": "push                4      0      0     ",
-      "06": "set_add             2      0      0     ",
-      "07": "table_next          3      4      0     ",
-      "08": "free                3      0      0     ",
-      "09": "set_result          3      2      0     ",
-      "10": "push                3      0      0     ",
-      "11": "set_add             0      0      0     ",
-      "12": "table_next          1      2      0     ",
-      "13": "free                1      0      0     ",
-      "14": "ret                 0      -1     -     "
-    }
+  "main": {
+    "00": "union               0      0      0     ",
+    "01": "send_all            0      -      0     # public.test",
+    "02": "union_recv          0      0      0     ",
+    "03": "union_set           0      0      -1    ",
+    "04": "set                 1      1      0     ",
+    "05": "dup                 2      0      0     ",
+    "06": "store_open          3      2      11    ",
+    "07": "store_read          4      3      0     ",
+    "08": "push                4      0      0     ",
+    "09": "set_add             1      0      0     ",
+    "10": "store_next          3      7      0     ",
+    "11": "free                3      0      0     ",
+    "12": "free                2      0      0     ",
+    "13": "ret                 1      -1     -     "
+  },
+  "pushdown": {
+    "00": "set                 0      1      0     ",
+    "01": "table_open_part     1      0      13    # public.test (primary)",
+    "02": "set                 2      1      0     ",
+    "03": "table_open          3      20     8     # public.test (primary)",
+    "04": "table_readi32       4      3      0     ",
+    "05": "push                4      0      0     ",
+    "06": "set_add             2      0      0     ",
+    "07": "table_next          3      4      0     ",
+    "08": "free                3      0      0     ",
+    "09": "set_result          3      2      0     ",
+    "10": "push                3      0      0     ",
+    "11": "set_add             0      0      0     ",
+    "12": "table_next          1      2      0     ",
+    "13": "free                1      0      0     ",
+    "14": "ret                 0      -1     -     "
   },
   "access": [["public.test", "ro_exclusive"]]
 }]
@@ -236,42 +224,40 @@ create table test2 (id int primary key)
 insert into test2 (id) values (1), (2), (3)
 explain select (select t.id from test2) from (select * from test) t
 [{
-  "bytecode": {
-    "frontend": {
-      "00": "union               0      0      0     ",
-      "01": "send_all            0      -      0     # public.test",
-      "02": "union_recv          0      0      0     ",
-      "03": "union_set           0      0      -1    ",
-      "04": "set                 1      1      0     ",
-      "05": "dup                 2      0      0     ",
-      "06": "store_open          3      2      18    ",
-      "07": "set                 4      1      0     ",
-      "08": "table_open          5      20     13    # public.test2 (primary)",
-      "09": "store_read          6      3      0     ",
-      "10": "push                6      0      0     ",
-      "11": "set_add             4      0      0     ",
-      "12": "table_next          5      9      0     ",
-      "13": "free                5      0      0     ",
-      "14": "set_result          5      4      0     ",
-      "15": "push                5      0      0     ",
-      "16": "set_add             1      0      0     ",
-      "17": "store_next          3      7      0     ",
-      "18": "free                3      0      0     ",
-      "19": "free                2      0      0     ",
-      "20": "ret                 1      -1     -     "
-    },
-    "backend": {
-      "00": "set                 0      2      0     ",
-      "01": "table_open_part     1      0      8     # public.test (primary)",
-      "02": "table_readi32       2      1      0     ",
-      "03": "push                2      0      0     ",
-      "04": "table_readi32       2      1      1     ",
-      "05": "push                2      0      0     ",
-      "06": "set_add             0      0      0     ",
-      "07": "table_next          1      2      0     ",
-      "08": "free                1      0      0     ",
-      "09": "ret                 0      -1     -     "
-    }
+  "main": {
+    "00": "union               0      0      0     ",
+    "01": "send_all            0      -      0     # public.test",
+    "02": "union_recv          0      0      0     ",
+    "03": "union_set           0      0      -1    ",
+    "04": "set                 1      1      0     ",
+    "05": "dup                 2      0      0     ",
+    "06": "store_open          3      2      18    ",
+    "07": "set                 4      1      0     ",
+    "08": "table_open          5      20     13    # public.test2 (primary)",
+    "09": "store_read          6      3      0     ",
+    "10": "push                6      0      0     ",
+    "11": "set_add             4      0      0     ",
+    "12": "table_next          5      9      0     ",
+    "13": "free                5      0      0     ",
+    "14": "set_result          5      4      0     ",
+    "15": "push                5      0      0     ",
+    "16": "set_add             1      0      0     ",
+    "17": "store_next          3      7      0     ",
+    "18": "free                3      0      0     ",
+    "19": "free                2      0      0     ",
+    "20": "ret                 1      -1     -     "
+  },
+  "pushdown": {
+    "00": "set                 0      2      0     ",
+    "01": "table_open_part     1      0      8     # public.test (primary)",
+    "02": "table_readi32       2      1      0     ",
+    "03": "push                2      0      0     ",
+    "04": "table_readi32       2      1      1     ",
+    "05": "push                2      0      0     ",
+    "06": "set_add             0      0      0     ",
+    "07": "table_next          1      2      0     ",
+    "08": "free                1      0      0     ",
+    "09": "ret                 0      -1     -     "
   },
   "access": [["public.test2", "ro_exclusive"], ["public.test", "ro"]]
 }]
@@ -281,42 +267,40 @@ drop table test2
 # test: select (select from table) from (select from table)
 explain select (select t.id from test z) from (select * from test) t
 [{
-  "bytecode": {
-    "frontend": {
-      "00": "union               0      0      0     ",
-      "01": "send_all            0      -      0     # public.test",
-      "02": "union_recv          0      0      0     ",
-      "03": "union_set           0      0      -1    ",
-      "04": "set                 1      1      0     ",
-      "05": "dup                 2      0      0     ",
-      "06": "store_open          3      2      18    ",
-      "07": "set                 4      1      0     ",
-      "08": "table_open          5      20     13    # public.test (primary)",
-      "09": "store_read          6      3      0     ",
-      "10": "push                6      0      0     ",
-      "11": "set_add             4      0      0     ",
-      "12": "table_next          5      9      0     ",
-      "13": "free                5      0      0     ",
-      "14": "set_result          5      4      0     ",
-      "15": "push                5      0      0     ",
-      "16": "set_add             1      0      0     ",
-      "17": "store_next          3      7      0     ",
-      "18": "free                3      0      0     ",
-      "19": "free                2      0      0     ",
-      "20": "ret                 1      -1     -     "
-    },
-    "backend": {
-      "00": "set                 0      2      0     ",
-      "01": "table_open_part     1      0      8     # public.test (primary)",
-      "02": "table_readi32       2      1      0     ",
-      "03": "push                2      0      0     ",
-      "04": "table_readi32       2      1      1     ",
-      "05": "push                2      0      0     ",
-      "06": "set_add             0      0      0     ",
-      "07": "table_next          1      2      0     ",
-      "08": "free                1      0      0     ",
-      "09": "ret                 0      -1     -     "
-    }
+  "main": {
+    "00": "union               0      0      0     ",
+    "01": "send_all            0      -      0     # public.test",
+    "02": "union_recv          0      0      0     ",
+    "03": "union_set           0      0      -1    ",
+    "04": "set                 1      1      0     ",
+    "05": "dup                 2      0      0     ",
+    "06": "store_open          3      2      18    ",
+    "07": "set                 4      1      0     ",
+    "08": "table_open          5      20     13    # public.test (primary)",
+    "09": "store_read          6      3      0     ",
+    "10": "push                6      0      0     ",
+    "11": "set_add             4      0      0     ",
+    "12": "table_next          5      9      0     ",
+    "13": "free                5      0      0     ",
+    "14": "set_result          5      4      0     ",
+    "15": "push                5      0      0     ",
+    "16": "set_add             1      0      0     ",
+    "17": "store_next          3      7      0     ",
+    "18": "free                3      0      0     ",
+    "19": "free                2      0      0     ",
+    "20": "ret                 1      -1     -     "
+  },
+  "pushdown": {
+    "00": "set                 0      2      0     ",
+    "01": "table_open_part     1      0      8     # public.test (primary)",
+    "02": "table_readi32       2      1      0     ",
+    "03": "push                2      0      0     ",
+    "04": "table_readi32       2      1      1     ",
+    "05": "push                2      0      0     ",
+    "06": "set_add             0      0      0     ",
+    "07": "table_next          1      2      0     ",
+    "08": "free                1      0      0     ",
+    "09": "ret                 0      -1     -     "
   },
   "access": [["public.test", "ro_exclusive"]]
 }]
@@ -327,60 +311,58 @@ select * from (select id from test) a, (select * from test) b
 [[1, 1, 0], [1, 3, 0], [1, 2, 0], [3, 1, 0], [3, 3, 0], [3, 2, 0], [2, 1, 0], [2, 3, 0], [2, 2, 0]]
 explain select * from (select * from test) a, (select * from test) b
 [{
-  "bytecode": {
-    "frontend": {
-      "00": "union               0      0      0     ",
-      "01": "send_all            0      -      0     # public.test",
-      "02": "union               1      0      0     ",
-      "03": "send_all            10     -      1     # public.test",
-      "04": "union_recv          0      0      0     ",
-      "05": "union_set           0      0      -1    ",
-      "06": "union_recv          1      0      0     ",
-      "07": "union_set           1      0      -1    ",
-      "08": "set                 2      4      0     ",
-      "09": "dup                 3      0      0     ",
-      "10": "store_open          4      3      26    ",
-      "11": "dup                 5      1      0     ",
-      "12": "store_open          6      5      23    ",
-      "13": "store_read          7      4      0     ",
-      "14": "push                7      0      0     ",
-      "15": "store_read          7      4      1     ",
-      "16": "push                7      0      0     ",
-      "17": "store_read          7      6      0     ",
-      "18": "push                7      0      0     ",
-      "19": "store_read          7      6      1     ",
-      "20": "push                7      0      0     ",
-      "21": "set_add             2      0      0     ",
-      "22": "store_next          6      13     0     ",
-      "23": "free                6      0      0     ",
-      "24": "free                5      0      0     ",
-      "25": "store_next          4      11     0     ",
-      "26": "free                4      0      0     ",
-      "27": "free                3      0      0     ",
-      "28": "ret                 2      -1     -     "
-    },
-    "backend": {
-      "00": "set                 0      2      0     ",
-      "01": "table_open_part     1      0      8     # public.test (primary)",
-      "02": "table_readi32       2      1      0     ",
-      "03": "push                2      0      0     ",
-      "04": "table_readi32       2      1      1     ",
-      "05": "push                2      0      0     ",
-      "06": "set_add             0      0      0     ",
-      "07": "table_next          1      2      0     ",
-      "08": "free                1      0      0     ",
-      "09": "ret                 0      -1     -     ",
-      "10": "set                 1      2      0     ",
-      "11": "table_open_part     2      20     18    # public.test (primary)",
-      "12": "table_readi32       3      2      0     ",
-      "13": "push                3      0      0     ",
-      "14": "table_readi32       3      2      1     ",
-      "15": "push                3      0      0     ",
-      "16": "set_add             1      0      0     ",
-      "17": "table_next          2      12     0     ",
-      "18": "free                2      0      0     ",
-      "19": "ret                 1      -1     -     "
-    }
+  "main": {
+    "00": "union               0      0      0     ",
+    "01": "send_all            0      -      0     # public.test",
+    "02": "union               1      0      0     ",
+    "03": "send_all            10     -      1     # public.test",
+    "04": "union_recv          0      0      0     ",
+    "05": "union_set           0      0      -1    ",
+    "06": "union_recv          1      0      0     ",
+    "07": "union_set           1      0      -1    ",
+    "08": "set                 2      4      0     ",
+    "09": "dup                 3      0      0     ",
+    "10": "store_open          4      3      26    ",
+    "11": "dup                 5      1      0     ",
+    "12": "store_open          6      5      23    ",
+    "13": "store_read          7      4      0     ",
+    "14": "push                7      0      0     ",
+    "15": "store_read          7      4      1     ",
+    "16": "push                7      0      0     ",
+    "17": "store_read          7      6      0     ",
+    "18": "push                7      0      0     ",
+    "19": "store_read          7      6      1     ",
+    "20": "push                7      0      0     ",
+    "21": "set_add             2      0      0     ",
+    "22": "store_next          6      13     0     ",
+    "23": "free                6      0      0     ",
+    "24": "free                5      0      0     ",
+    "25": "store_next          4      11     0     ",
+    "26": "free                4      0      0     ",
+    "27": "free                3      0      0     ",
+    "28": "ret                 2      -1     -     "
+  },
+  "pushdown": {
+    "00": "set                 0      2      0     ",
+    "01": "table_open_part     1      0      8     # public.test (primary)",
+    "02": "table_readi32       2      1      0     ",
+    "03": "push                2      0      0     ",
+    "04": "table_readi32       2      1      1     ",
+    "05": "push                2      0      0     ",
+    "06": "set_add             0      0      0     ",
+    "07": "table_next          1      2      0     ",
+    "08": "free                1      0      0     ",
+    "09": "ret                 0      -1     -     ",
+    "10": "set                 1      2      0     ",
+    "11": "table_open_part     2      20     18    # public.test (primary)",
+    "12": "table_readi32       3      2      0     ",
+    "13": "push                3      0      0     ",
+    "14": "table_readi32       3      2      1     ",
+    "15": "push                3      0      0     ",
+    "16": "set_add             1      0      0     ",
+    "17": "table_next          2      12     0     ",
+    "18": "free                2      0      0     ",
+    "19": "ret                 1      -1     -     "
   },
   "access": [["public.test", "ro"]]
 }]

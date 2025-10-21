@@ -3,12 +3,10 @@ connect E0 S0 127.0.0.1:3485
 # test: select var
 explain declare x int; select x
 [{
-  "bytecode": {
-    "frontend": {
-      "00": "push_nulls          1      0      0     ",
-      "01": "var                 0      0      0     ",
-      "02": "ret                 0      -1     -     "
-    }
+  "main": {
+    "00": "push_nulls          1      0      0     ",
+    "01": "var                 0      0      0     ",
+    "02": "ret                 0      -1     -     "
   },
   "access": []
 }]
@@ -17,15 +15,13 @@ declare x int; select x
 # test: select var expr
 explain declare x int := 0; select x
 [{
-  "bytecode": {
-    "frontend": {
-      "00": "push_nulls          1      0      0     ",
-      "01": "int                 0      -      0     # 0",
-      "02": "var_set             0      0      0     ",
-      "03": "free                0      0      0     ",
-      "04": "var                 0      0      0     ",
-      "05": "ret                 0      -1     -     "
-    }
+  "main": {
+    "00": "push_nulls          1      0      0     ",
+    "01": "int                 0      -      0     # 0",
+    "02": "var_set             0      0      0     ",
+    "03": "free                0      0      0     ",
+    "04": "var                 0      0      0     ",
+    "05": "ret                 0      -1     -     "
   },
   "access": []
 }]
@@ -33,19 +29,17 @@ declare x int := 0; select x
 [0]
 explain declare x int := 0; select x; x:= 15; select x
 [{
-  "bytecode": {
-    "frontend": {
-      "00": "push_nulls          1      0      0     ",
-      "01": "int                 0      -      0     # 0",
-      "02": "var_set             0      0      0     ",
-      "03": "free                0      0      0     ",
-      "04": "var                 0      0      0     ",
-      "05": "int                 1      -      0     # 15",
-      "06": "var_set             0      0      1     ",
-      "07": "free                1      0      0     ",
-      "08": "var                 1      0      0     ",
-      "09": "ret                 1      -1     -     "
-    }
+  "main": {
+    "00": "push_nulls          1      0      0     ",
+    "01": "int                 0      -      0     # 0",
+    "02": "var_set             0      0      0     ",
+    "03": "free                0      0      0     ",
+    "04": "var                 0      0      0     ",
+    "05": "int                 1      -      0     # 15",
+    "06": "var_set             0      0      1     ",
+    "07": "free                1      0      0     ",
+    "08": "var                 1      0      0     ",
+    "09": "ret                 1      -1     -     "
   },
   "access": []
 }]
@@ -54,15 +48,13 @@ declare x int := 0; select x; x:= 15; select x
 # test: select into expr
 explain declare x int; select 123 into x; select x
 [{
-  "bytecode": {
-    "frontend": {
-      "00": "push_nulls          1      0      0     ",
-      "01": "int                 0      -      0     # 123",
-      "02": "var_set             0      0      0     ",
-      "03": "free                0      0      0     ",
-      "04": "var                 0      0      0     ",
-      "05": "ret                 0      -1     -     "
-    }
+  "main": {
+    "00": "push_nulls          1      0      0     ",
+    "01": "int                 0      -      0     # 123",
+    "02": "var_set             0      0      0     ",
+    "03": "free                0      0      0     ",
+    "04": "var                 0      0      0     ",
+    "05": "ret                 0      -1     -     "
   },
   "access": []
 }]
@@ -70,19 +62,17 @@ declare x int; select 123 into x; select x
 [123]
 explain declare x int; select 123 into x; select x; select 15 into x; select x
 [{
-  "bytecode": {
-    "frontend": {
-      "00": "push_nulls          1      0      0     ",
-      "01": "int                 0      -      0     # 123",
-      "02": "var_set             0      0      0     ",
-      "03": "free                0      0      0     ",
-      "04": "var                 0      0      0     ",
-      "05": "int                 1      -      0     # 15",
-      "06": "var_set             0      0      1     ",
-      "07": "free                1      0      0     ",
-      "08": "var                 1      0      0     ",
-      "09": "ret                 1      -1     -     "
-    }
+  "main": {
+    "00": "push_nulls          1      0      0     ",
+    "01": "int                 0      -      0     # 123",
+    "02": "var_set             0      0      0     ",
+    "03": "free                0      0      0     ",
+    "04": "var                 0      0      0     ",
+    "05": "int                 1      -      0     # 15",
+    "06": "var_set             0      0      1     ",
+    "07": "free                1      0      0     ",
+    "08": "var                 1      0      0     ",
+    "09": "ret                 1      -1     -     "
   },
   "access": []
 }]
@@ -93,27 +83,25 @@ create table test (id int primary key)
 insert into test values (1), (2), (3)
 explain declare x int; select id into x from test
 [{
-  "bytecode": {
-    "frontend": {
-      "00": "push_nulls          1      0      0     ",
-      "01": "union               0      0      0     ",
-      "02": "send_all            0      -      0     # public.test (last)",
-      "03": "union_recv          0      0      0     ",
-      "04": "union_set           0      0      -1    ",
-      "05": "var_set             0      0      0     ",
-      "06": "free                0      0      0     ",
-      "07": "ret                 -1     -1     -     "
-    },
-    "backend": {
-      "00": "set                 0      1      0     ",
-      "01": "table_open_part     1      0      6     # public.test (primary)",
-      "02": "table_readi32       2      1      0     ",
-      "03": "push                2      0      0     ",
-      "04": "set_add             0      0      0     ",
-      "05": "table_next          1      2      0     ",
-      "06": "free                1      0      0     ",
-      "07": "ret                 0      -1     -     "
-    }
+  "main": {
+    "00": "push_nulls          1      0      0     ",
+    "01": "union               0      0      0     ",
+    "02": "send_all            0      -      0     # public.test (last)",
+    "03": "union_recv          0      0      0     ",
+    "04": "union_set           0      0      -1    ",
+    "05": "var_set             0      0      0     ",
+    "06": "free                0      0      0     ",
+    "07": "ret                 -1     -1     -     "
+  },
+  "pushdown": {
+    "00": "set                 0      1      0     ",
+    "01": "table_open_part     1      0      6     # public.test (primary)",
+    "02": "table_readi32       2      1      0     ",
+    "03": "push                2      0      0     ",
+    "04": "set_add             0      0      0     ",
+    "05": "table_next          1      2      0     ",
+    "06": "free                1      0      0     ",
+    "07": "ret                 0      -1     -     "
   },
   "access": [["public.test", "ro"]]
 }]
@@ -121,28 +109,26 @@ declare x int; select id into x from test
 # test: select from into / select var
 explain declare x int; select id into x from test; select x
 [{
-  "bytecode": {
-    "frontend": {
-      "00": "push_nulls          1      0      0     ",
-      "01": "union               0      0      0     ",
-      "02": "send_all            0      -      0     # public.test (last)",
-      "03": "union_recv          0      0      0     ",
-      "04": "union_set           0      0      -1    ",
-      "05": "var_set             0      0      0     ",
-      "06": "free                0      0      0     ",
-      "07": "var                 0      0      0     ",
-      "08": "ret                 0      -1     -     "
-    },
-    "backend": {
-      "00": "set                 0      1      0     ",
-      "01": "table_open_part     1      0      6     # public.test (primary)",
-      "02": "table_readi32       2      1      0     ",
-      "03": "push                2      0      0     ",
-      "04": "set_add             0      0      0     ",
-      "05": "table_next          1      2      0     ",
-      "06": "free                1      0      0     ",
-      "07": "ret                 0      -1     -     "
-    }
+  "main": {
+    "00": "push_nulls          1      0      0     ",
+    "01": "union               0      0      0     ",
+    "02": "send_all            0      -      0     # public.test (last)",
+    "03": "union_recv          0      0      0     ",
+    "04": "union_set           0      0      -1    ",
+    "05": "var_set             0      0      0     ",
+    "06": "free                0      0      0     ",
+    "07": "var                 0      0      0     ",
+    "08": "ret                 0      -1     -     "
+  },
+  "pushdown": {
+    "00": "set                 0      1      0     ",
+    "01": "table_open_part     1      0      6     # public.test (primary)",
+    "02": "table_readi32       2      1      0     ",
+    "03": "push                2      0      0     ",
+    "04": "set_add             0      0      0     ",
+    "05": "table_next          1      2      0     ",
+    "06": "free                1      0      0     ",
+    "07": "ret                 0      -1     -     "
   },
   "access": [["public.test", "ro"]]
 }]
@@ -151,29 +137,27 @@ declare x int; select id into x from test; select x
 # test: select from into / select expr / select var
 explain declare x int; select id into x from test; select 123; select x
 [{
-  "bytecode": {
-    "frontend": {
-      "00": "push_nulls          1      0      0     ",
-      "01": "union               0      0      0     ",
-      "02": "send_all            0      -      0     # public.test (last)",
-      "03": "int                 1      -      0     # 123",
-      "04": "union_recv          0      0      0     ",
-      "05": "union_set           0      0      -1    ",
-      "06": "var_set             0      0      0     ",
-      "07": "free                0      0      0     ",
-      "08": "var                 0      0      0     ",
-      "09": "ret                 0      -1     -     "
-    },
-    "backend": {
-      "00": "set                 0      1      0     ",
-      "01": "table_open_part     1      0      6     # public.test (primary)",
-      "02": "table_readi32       2      1      0     ",
-      "03": "push                2      0      0     ",
-      "04": "set_add             0      0      0     ",
-      "05": "table_next          1      2      0     ",
-      "06": "free                1      0      0     ",
-      "07": "ret                 0      -1     -     "
-    }
+  "main": {
+    "00": "push_nulls          1      0      0     ",
+    "01": "union               0      0      0     ",
+    "02": "send_all            0      -      0     # public.test (last)",
+    "03": "int                 1      -      0     # 123",
+    "04": "union_recv          0      0      0     ",
+    "05": "union_set           0      0      -1    ",
+    "06": "var_set             0      0      0     ",
+    "07": "free                0      0      0     ",
+    "08": "var                 0      0      0     ",
+    "09": "ret                 0      -1     -     "
+  },
+  "pushdown": {
+    "00": "set                 0      1      0     ",
+    "01": "table_open_part     1      0      6     # public.test (primary)",
+    "02": "table_readi32       2      1      0     ",
+    "03": "push                2      0      0     ",
+    "04": "set_add             0      0      0     ",
+    "05": "table_next          1      2      0     ",
+    "06": "free                1      0      0     ",
+    "07": "ret                 0      -1     -     "
   },
   "access": [["public.test", "ro"]]
 }]
@@ -182,38 +166,36 @@ declare x int; select id into x from test; select 123; select x
 # test: select from into / select from / select var
 explain declare x int; select id into x from test; select * from test; select x
 [{
-  "bytecode": {
-    "frontend": {
-      "00": "push_nulls          1      0      0     ",
-      "01": "union               0      0      0     ",
-      "02": "send_all            0      -      0     # public.test",
-      "03": "union               1      0      0     ",
-      "04": "send_all            8      -      1     # public.test (last)",
-      "05": "union_recv          0      0      0     ",
-      "06": "union_set           0      0      -1    ",
-      "07": "var_set             0      0      0     ",
-      "08": "free                0      0      0     ",
-      "09": "var                 0      0      0     ",
-      "10": "ret                 0      -1     -     "
-    },
-    "backend": {
-      "00": "set                 0      1      0     ",
-      "01": "table_open_part     1      0      6     # public.test (primary)",
-      "02": "table_readi32       2      1      0     ",
-      "03": "push                2      0      0     ",
-      "04": "set_add             0      0      0     ",
-      "05": "table_next          1      2      0     ",
-      "06": "free                1      0      0     ",
-      "07": "ret                 0      -1     -     ",
-      "08": "set                 1      1      0     ",
-      "09": "table_open_part     2      20     14    # public.test (primary)",
-      "10": "table_readi32       3      2      0     ",
-      "11": "push                3      0      0     ",
-      "12": "set_add             1      0      0     ",
-      "13": "table_next          2      10     0     ",
-      "14": "free                2      0      0     ",
-      "15": "ret                 1      -1     -     "
-    }
+  "main": {
+    "00": "push_nulls          1      0      0     ",
+    "01": "union               0      0      0     ",
+    "02": "send_all            0      -      0     # public.test",
+    "03": "union               1      0      0     ",
+    "04": "send_all            8      -      1     # public.test (last)",
+    "05": "union_recv          0      0      0     ",
+    "06": "union_set           0      0      -1    ",
+    "07": "var_set             0      0      0     ",
+    "08": "free                0      0      0     ",
+    "09": "var                 0      0      0     ",
+    "10": "ret                 0      -1     -     "
+  },
+  "pushdown": {
+    "00": "set                 0      1      0     ",
+    "01": "table_open_part     1      0      6     # public.test (primary)",
+    "02": "table_readi32       2      1      0     ",
+    "03": "push                2      0      0     ",
+    "04": "set_add             0      0      0     ",
+    "05": "table_next          1      2      0     ",
+    "06": "free                1      0      0     ",
+    "07": "ret                 0      -1     -     ",
+    "08": "set                 1      1      0     ",
+    "09": "table_open_part     2      20     14    # public.test (primary)",
+    "10": "table_readi32       3      2      0     ",
+    "11": "push                3      0      0     ",
+    "12": "set_add             1      0      0     ",
+    "13": "table_next          2      10     0     ",
+    "14": "free                2      0      0     ",
+    "15": "ret                 1      -1     -     "
   },
   "access": [["public.test", "ro"]]
 }]
@@ -222,40 +204,38 @@ declare x int; select id into x from test; select * from test; select x
 # test: select from into / select expr / select from var
 explain declare x int; select id into x from test; select 123; select * from x
 [{
-  "bytecode": {
-    "frontend": {
-      "00": "push_nulls          1      0      0     ",
-      "01": "union               0      0      0     ",
-      "02": "send_all            0      -      0     # public.test (last)",
-      "03": "int                 1      -      0     # 123",
-      "04": "union_recv          0      0      0     ",
-      "05": "union_set           0      0      -1    ",
-      "06": "var_set             0      0      0     ",
-      "07": "free                0      0      0     ",
-      "08": "set                 0      1      0     ",
-      "09": "var                 2      0      0     ",
-      "10": "push                2      0      0     ",
-      "11": "set                 2      1      0     ",
-      "12": "set_add             2      0      0     ",
-      "13": "store_open          3      2      18    ",
-      "14": "store_read          4      3      0     ",
-      "15": "push                4      0      0     ",
-      "16": "set_add             0      0      0     ",
-      "17": "store_next          3      14     0     ",
-      "18": "free                3      0      0     ",
-      "19": "free                2      0      0     ",
-      "20": "ret                 0      -1     -     "
-    },
-    "backend": {
-      "00": "set                 0      1      0     ",
-      "01": "table_open_part     1      0      6     # public.test (primary)",
-      "02": "table_readi32       2      1      0     ",
-      "03": "push                2      0      0     ",
-      "04": "set_add             0      0      0     ",
-      "05": "table_next          1      2      0     ",
-      "06": "free                1      0      0     ",
-      "07": "ret                 0      -1     -     "
-    }
+  "main": {
+    "00": "push_nulls          1      0      0     ",
+    "01": "union               0      0      0     ",
+    "02": "send_all            0      -      0     # public.test (last)",
+    "03": "int                 1      -      0     # 123",
+    "04": "union_recv          0      0      0     ",
+    "05": "union_set           0      0      -1    ",
+    "06": "var_set             0      0      0     ",
+    "07": "free                0      0      0     ",
+    "08": "set                 0      1      0     ",
+    "09": "var                 2      0      0     ",
+    "10": "push                2      0      0     ",
+    "11": "set                 2      1      0     ",
+    "12": "set_add             2      0      0     ",
+    "13": "store_open          3      2      18    ",
+    "14": "store_read          4      3      0     ",
+    "15": "push                4      0      0     ",
+    "16": "set_add             0      0      0     ",
+    "17": "store_next          3      14     0     ",
+    "18": "free                3      0      0     ",
+    "19": "free                2      0      0     ",
+    "20": "ret                 0      -1     -     "
+  },
+  "pushdown": {
+    "00": "set                 0      1      0     ",
+    "01": "table_open_part     1      0      6     # public.test (primary)",
+    "02": "table_readi32       2      1      0     ",
+    "03": "push                2      0      0     ",
+    "04": "set_add             0      0      0     ",
+    "05": "table_next          1      2      0     ",
+    "06": "free                1      0      0     ",
+    "07": "ret                 0      -1     -     "
   },
   "access": [["public.test", "ro"]]
 }]
@@ -264,41 +244,39 @@ declare x int; select id into x from test; select 123; select * from x
 # test: select from into / select from into
 explain declare x int; select id into x from test; select 123 into x from test
 [{
-  "bytecode": {
-    "frontend": {
-      "00": "push_nulls          1      0      0     ",
-      "01": "union               0      0      0     ",
-      "02": "send_all            0      -      0     # public.test",
-      "03": "union_recv          0      0      0     ",
-      "04": "union_set           0      0      -1    ",
-      "05": "var_set             0      0      0     ",
-      "06": "free                0      0      0     ",
-      "07": "union               0      0      0     ",
-      "08": "send_all            8      -      0     # public.test (last)",
-      "09": "union_recv          0      0      0     ",
-      "10": "union_set           0      0      -1    ",
-      "11": "var_set             0      0      0     ",
-      "12": "free                0      0      0     ",
-      "13": "ret                 -1     -1     -     "
-    },
-    "backend": {
-      "00": "set                 0      1      0     ",
-      "01": "table_open_part     1      0      6     # public.test (primary)",
-      "02": "table_readi32       2      1      0     ",
-      "03": "push                2      0      0     ",
-      "04": "set_add             0      0      0     ",
-      "05": "table_next          1      2      0     ",
-      "06": "free                1      0      0     ",
-      "07": "ret                 0      -1     -     ",
-      "08": "set                 0      1      0     ",
-      "09": "table_open_part     1      20     14    # public.test (primary)",
-      "10": "int                 2      -      0     # 123",
-      "11": "push                2      0      0     ",
-      "12": "set_add             0      0      0     ",
-      "13": "table_next          1      10     0     ",
-      "14": "free                1      0      0     ",
-      "15": "ret                 0      -1     -     "
-    }
+  "main": {
+    "00": "push_nulls          1      0      0     ",
+    "01": "union               0      0      0     ",
+    "02": "send_all            0      -      0     # public.test",
+    "03": "union_recv          0      0      0     ",
+    "04": "union_set           0      0      -1    ",
+    "05": "var_set             0      0      0     ",
+    "06": "free                0      0      0     ",
+    "07": "union               0      0      0     ",
+    "08": "send_all            8      -      0     # public.test (last)",
+    "09": "union_recv          0      0      0     ",
+    "10": "union_set           0      0      -1    ",
+    "11": "var_set             0      0      0     ",
+    "12": "free                0      0      0     ",
+    "13": "ret                 -1     -1     -     "
+  },
+  "pushdown": {
+    "00": "set                 0      1      0     ",
+    "01": "table_open_part     1      0      6     # public.test (primary)",
+    "02": "table_readi32       2      1      0     ",
+    "03": "push                2      0      0     ",
+    "04": "set_add             0      0      0     ",
+    "05": "table_next          1      2      0     ",
+    "06": "free                1      0      0     ",
+    "07": "ret                 0      -1     -     ",
+    "08": "set                 0      1      0     ",
+    "09": "table_open_part     1      20     14    # public.test (primary)",
+    "10": "int                 2      -      0     # 123",
+    "11": "push                2      0      0     ",
+    "12": "set_add             0      0      0     ",
+    "13": "table_next          1      10     0     ",
+    "14": "free                1      0      0     ",
+    "15": "ret                 0      -1     -     "
   },
   "access": [["public.test", "ro"]]
 }]
@@ -306,42 +284,40 @@ declare x int; select id into x from test; select 123 into x from test
 # test: select from into / select from into / select var
 explain declare x int; select id into x from test; select 123 into x from test; select x
 [{
-  "bytecode": {
-    "frontend": {
-      "00": "push_nulls          1      0      0     ",
-      "01": "union               0      0      0     ",
-      "02": "send_all            0      -      0     # public.test",
-      "03": "union_recv          0      0      0     ",
-      "04": "union_set           0      0      -1    ",
-      "05": "var_set             0      0      0     ",
-      "06": "free                0      0      0     ",
-      "07": "union               0      0      0     ",
-      "08": "send_all            8      -      0     # public.test (last)",
-      "09": "union_recv          0      0      0     ",
-      "10": "union_set           0      0      -1    ",
-      "11": "var_set             0      0      0     ",
-      "12": "free                0      0      0     ",
-      "13": "var                 0      0      0     ",
-      "14": "ret                 0      -1     -     "
-    },
-    "backend": {
-      "00": "set                 0      1      0     ",
-      "01": "table_open_part     1      0      6     # public.test (primary)",
-      "02": "table_readi32       2      1      0     ",
-      "03": "push                2      0      0     ",
-      "04": "set_add             0      0      0     ",
-      "05": "table_next          1      2      0     ",
-      "06": "free                1      0      0     ",
-      "07": "ret                 0      -1     -     ",
-      "08": "set                 0      1      0     ",
-      "09": "table_open_part     1      20     14    # public.test (primary)",
-      "10": "int                 2      -      0     # 123",
-      "11": "push                2      0      0     ",
-      "12": "set_add             0      0      0     ",
-      "13": "table_next          1      10     0     ",
-      "14": "free                1      0      0     ",
-      "15": "ret                 0      -1     -     "
-    }
+  "main": {
+    "00": "push_nulls          1      0      0     ",
+    "01": "union               0      0      0     ",
+    "02": "send_all            0      -      0     # public.test",
+    "03": "union_recv          0      0      0     ",
+    "04": "union_set           0      0      -1    ",
+    "05": "var_set             0      0      0     ",
+    "06": "free                0      0      0     ",
+    "07": "union               0      0      0     ",
+    "08": "send_all            8      -      0     # public.test (last)",
+    "09": "union_recv          0      0      0     ",
+    "10": "union_set           0      0      -1    ",
+    "11": "var_set             0      0      0     ",
+    "12": "free                0      0      0     ",
+    "13": "var                 0      0      0     ",
+    "14": "ret                 0      -1     -     "
+  },
+  "pushdown": {
+    "00": "set                 0      1      0     ",
+    "01": "table_open_part     1      0      6     # public.test (primary)",
+    "02": "table_readi32       2      1      0     ",
+    "03": "push                2      0      0     ",
+    "04": "set_add             0      0      0     ",
+    "05": "table_next          1      2      0     ",
+    "06": "free                1      0      0     ",
+    "07": "ret                 0      -1     -     ",
+    "08": "set                 0      1      0     ",
+    "09": "table_open_part     1      20     14    # public.test (primary)",
+    "10": "int                 2      -      0     # 123",
+    "11": "push                2      0      0     ",
+    "12": "set_add             0      0      0     ",
+    "13": "table_next          1      10     0     ",
+    "14": "free                1      0      0     ",
+    "15": "ret                 0      -1     -     "
   },
   "access": [["public.test", "ro"]]
 }]
@@ -350,30 +326,28 @@ declare x int; select id into x from test; select 123 into x from test; select x
 # test: select expr into / select from into
 explain declare x int; select 123 into x; select id into x from test
 [{
-  "bytecode": {
-    "frontend": {
-      "00": "push_nulls          1      0      0     ",
-      "01": "int                 0      -      0     # 123",
-      "02": "var_set             0      0      0     ",
-      "03": "free                0      0      0     ",
-      "04": "union               0      0      0     ",
-      "05": "send_all            0      -      0     # public.test (last)",
-      "06": "union_recv          0      0      0     ",
-      "07": "union_set           0      0      -1    ",
-      "08": "var_set             0      0      0     ",
-      "09": "free                0      0      0     ",
-      "10": "ret                 -1     -1     -     "
-    },
-    "backend": {
-      "00": "set                 0      1      0     ",
-      "01": "table_open_part     1      0      6     # public.test (primary)",
-      "02": "table_readi32       2      1      0     ",
-      "03": "push                2      0      0     ",
-      "04": "set_add             0      0      0     ",
-      "05": "table_next          1      2      0     ",
-      "06": "free                1      0      0     ",
-      "07": "ret                 0      -1     -     "
-    }
+  "main": {
+    "00": "push_nulls          1      0      0     ",
+    "01": "int                 0      -      0     # 123",
+    "02": "var_set             0      0      0     ",
+    "03": "free                0      0      0     ",
+    "04": "union               0      0      0     ",
+    "05": "send_all            0      -      0     # public.test (last)",
+    "06": "union_recv          0      0      0     ",
+    "07": "union_set           0      0      -1    ",
+    "08": "var_set             0      0      0     ",
+    "09": "free                0      0      0     ",
+    "10": "ret                 -1     -1     -     "
+  },
+  "pushdown": {
+    "00": "set                 0      1      0     ",
+    "01": "table_open_part     1      0      6     # public.test (primary)",
+    "02": "table_readi32       2      1      0     ",
+    "03": "push                2      0      0     ",
+    "04": "set_add             0      0      0     ",
+    "05": "table_next          1      2      0     ",
+    "06": "free                1      0      0     ",
+    "07": "ret                 0      -1     -     "
   },
   "access": [["public.test", "ro"]]
 }]
@@ -381,31 +355,29 @@ declare x int; select 123 into x; select id into x from test
 # test: select expr into / select from into / select var
 explain declare x int; select 123 into x; select id into x from test; select x
 [{
-  "bytecode": {
-    "frontend": {
-      "00": "push_nulls          1      0      0     ",
-      "01": "int                 0      -      0     # 123",
-      "02": "var_set             0      0      0     ",
-      "03": "free                0      0      0     ",
-      "04": "union               0      0      0     ",
-      "05": "send_all            0      -      0     # public.test (last)",
-      "06": "union_recv          0      0      0     ",
-      "07": "union_set           0      0      -1    ",
-      "08": "var_set             0      0      0     ",
-      "09": "free                0      0      0     ",
-      "10": "var                 0      0      0     ",
-      "11": "ret                 0      -1     -     "
-    },
-    "backend": {
-      "00": "set                 0      1      0     ",
-      "01": "table_open_part     1      0      6     # public.test (primary)",
-      "02": "table_readi32       2      1      0     ",
-      "03": "push                2      0      0     ",
-      "04": "set_add             0      0      0     ",
-      "05": "table_next          1      2      0     ",
-      "06": "free                1      0      0     ",
-      "07": "ret                 0      -1     -     "
-    }
+  "main": {
+    "00": "push_nulls          1      0      0     ",
+    "01": "int                 0      -      0     # 123",
+    "02": "var_set             0      0      0     ",
+    "03": "free                0      0      0     ",
+    "04": "union               0      0      0     ",
+    "05": "send_all            0      -      0     # public.test (last)",
+    "06": "union_recv          0      0      0     ",
+    "07": "union_set           0      0      -1    ",
+    "08": "var_set             0      0      0     ",
+    "09": "free                0      0      0     ",
+    "10": "var                 0      0      0     ",
+    "11": "ret                 0      -1     -     "
+  },
+  "pushdown": {
+    "00": "set                 0      1      0     ",
+    "01": "table_open_part     1      0      6     # public.test (primary)",
+    "02": "table_readi32       2      1      0     ",
+    "03": "push                2      0      0     ",
+    "04": "set_add             0      0      0     ",
+    "05": "table_next          1      2      0     ",
+    "06": "free                1      0      0     ",
+    "07": "ret                 0      -1     -     "
   },
   "access": [["public.test", "ro"]]
 }]
@@ -414,33 +386,31 @@ declare x int; select 123 into x; select id into x from test; select x
 # test: select from into / if / select var
 explain declare x int; select id into x from test; if true then end; select x
 [{
-  "bytecode": {
-    "frontend": {
-      "00": "push_nulls          1      0      0     ",
-      "01": "union               0      0      0     ",
-      "02": "send_all            0      -      0     # public.test (last)",
-      "03": "jmp                 5      0      0     ",
-      "04": "jmp                 8      0      0     ",
-      "05": "bool                1      1      0     ",
-      "06": "jntr                8      1      0     ",
-      "07": "jmp                 4      0      0     ",
-      "08": "union_recv          0      0      0     ",
-      "09": "union_set           0      0      -1    ",
-      "10": "var_set             0      0      0     ",
-      "11": "free                0      0      0     ",
-      "12": "var                 0      0      0     ",
-      "13": "ret                 0      -1     -     "
-    },
-    "backend": {
-      "00": "set                 0      1      0     ",
-      "01": "table_open_part     1      0      6     # public.test (primary)",
-      "02": "table_readi32       2      1      0     ",
-      "03": "push                2      0      0     ",
-      "04": "set_add             0      0      0     ",
-      "05": "table_next          1      2      0     ",
-      "06": "free                1      0      0     ",
-      "07": "ret                 0      -1     -     "
-    }
+  "main": {
+    "00": "push_nulls          1      0      0     ",
+    "01": "union               0      0      0     ",
+    "02": "send_all            0      -      0     # public.test (last)",
+    "03": "jmp                 5      0      0     ",
+    "04": "jmp                 8      0      0     ",
+    "05": "bool                1      1      0     ",
+    "06": "jntr                8      1      0     ",
+    "07": "jmp                 4      0      0     ",
+    "08": "union_recv          0      0      0     ",
+    "09": "union_set           0      0      -1    ",
+    "10": "var_set             0      0      0     ",
+    "11": "free                0      0      0     ",
+    "12": "var                 0      0      0     ",
+    "13": "ret                 0      -1     -     "
+  },
+  "pushdown": {
+    "00": "set                 0      1      0     ",
+    "01": "table_open_part     1      0      6     # public.test (primary)",
+    "02": "table_readi32       2      1      0     ",
+    "03": "push                2      0      0     ",
+    "04": "set_add             0      0      0     ",
+    "05": "table_next          1      2      0     ",
+    "06": "free                1      0      0     ",
+    "07": "ret                 0      -1     -     "
   },
   "access": [["public.test", "ro"]]
 }]
@@ -449,33 +419,31 @@ declare x int; select id into x from test; if true then end; select x
 # test: select from into / if var / select var
 explain declare x int; select id into x from test; if x then end; select x
 [{
-  "bytecode": {
-    "frontend": {
-      "00": "push_nulls          1      0      0     ",
-      "01": "union               0      0      0     ",
-      "02": "send_all            0      -      0     # public.test (last)",
-      "03": "union_recv          0      0      0     ",
-      "04": "union_set           0      0      -1    ",
-      "05": "var_set             0      0      0     ",
-      "06": "free                0      0      0     ",
-      "07": "jmp                 9      0      0     ",
-      "08": "jmp                 12     0      0     ",
-      "09": "var                 0      0      0     ",
-      "10": "jntr                12     0      0     ",
-      "11": "jmp                 8      0      0     ",
-      "12": "var                 0      0      0     ",
-      "13": "ret                 0      -1     -     "
-    },
-    "backend": {
-      "00": "set                 0      1      0     ",
-      "01": "table_open_part     1      0      6     # public.test (primary)",
-      "02": "table_readi32       2      1      0     ",
-      "03": "push                2      0      0     ",
-      "04": "set_add             0      0      0     ",
-      "05": "table_next          1      2      0     ",
-      "06": "free                1      0      0     ",
-      "07": "ret                 0      -1     -     "
-    }
+  "main": {
+    "00": "push_nulls          1      0      0     ",
+    "01": "union               0      0      0     ",
+    "02": "send_all            0      -      0     # public.test (last)",
+    "03": "union_recv          0      0      0     ",
+    "04": "union_set           0      0      -1    ",
+    "05": "var_set             0      0      0     ",
+    "06": "free                0      0      0     ",
+    "07": "jmp                 9      0      0     ",
+    "08": "jmp                 12     0      0     ",
+    "09": "var                 0      0      0     ",
+    "10": "jntr                12     0      0     ",
+    "11": "jmp                 8      0      0     ",
+    "12": "var                 0      0      0     ",
+    "13": "ret                 0      -1     -     "
+  },
+  "pushdown": {
+    "00": "set                 0      1      0     ",
+    "01": "table_open_part     1      0      6     # public.test (primary)",
+    "02": "table_readi32       2      1      0     ",
+    "03": "push                2      0      0     ",
+    "04": "set_add             0      0      0     ",
+    "05": "table_next          1      2      0     ",
+    "06": "free                1      0      0     ",
+    "07": "ret                 0      -1     -     "
   },
   "access": [["public.test", "ro"]]
 }]
@@ -484,34 +452,32 @@ declare x int; select id into x from test; if x then end; select x
 # test: select from into / if then select var / select var
 explain declare x int; select id into x from test; if true then select x; end; select x
 [{
-  "bytecode": {
-    "frontend": {
-      "00": "push_nulls          1      0      0     ",
-      "01": "union               0      0      0     ",
-      "02": "send_all            0      -      0     # public.test (last)",
-      "03": "union_recv          0      0      0     ",
-      "04": "union_set           0      0      -1    ",
-      "05": "var_set             0      0      0     ",
-      "06": "free                0      0      0     ",
-      "07": "jmp                 9      0      0     ",
-      "08": "jmp                 13     0      0     ",
-      "09": "bool                0      1      0     ",
-      "10": "jntr                13     0      0     ",
-      "11": "var                 0      0      0     ",
-      "12": "jmp                 8      0      0     ",
-      "13": "var                 1      0      0     ",
-      "14": "ret                 1      -1     -     "
-    },
-    "backend": {
-      "00": "set                 0      1      0     ",
-      "01": "table_open_part     1      0      6     # public.test (primary)",
-      "02": "table_readi32       2      1      0     ",
-      "03": "push                2      0      0     ",
-      "04": "set_add             0      0      0     ",
-      "05": "table_next          1      2      0     ",
-      "06": "free                1      0      0     ",
-      "07": "ret                 0      -1     -     "
-    }
+  "main": {
+    "00": "push_nulls          1      0      0     ",
+    "01": "union               0      0      0     ",
+    "02": "send_all            0      -      0     # public.test (last)",
+    "03": "union_recv          0      0      0     ",
+    "04": "union_set           0      0      -1    ",
+    "05": "var_set             0      0      0     ",
+    "06": "free                0      0      0     ",
+    "07": "jmp                 9      0      0     ",
+    "08": "jmp                 13     0      0     ",
+    "09": "bool                0      1      0     ",
+    "10": "jntr                13     0      0     ",
+    "11": "var                 0      0      0     ",
+    "12": "jmp                 8      0      0     ",
+    "13": "var                 1      0      0     ",
+    "14": "ret                 1      -1     -     "
+  },
+  "pushdown": {
+    "00": "set                 0      1      0     ",
+    "01": "table_open_part     1      0      6     # public.test (primary)",
+    "02": "table_readi32       2      1      0     ",
+    "03": "push                2      0      0     ",
+    "04": "set_add             0      0      0     ",
+    "05": "table_next          1      2      0     ",
+    "06": "free                1      0      0     ",
+    "07": "ret                 0      -1     -     "
   },
   "access": [["public.test", "ro"]]
 }]
@@ -520,36 +486,34 @@ declare x int; select id into x from test; if true then select x; end; select x
 # test: select from into / if then var := / select var
 explain declare x int; select id into x from test; if true then x := 7; end; select x
 [{
-  "bytecode": {
-    "frontend": {
-      "00": "push_nulls          1      0      0     ",
-      "01": "union               0      0      0     ",
-      "02": "send_all            0      -      0     # public.test (last)",
-      "03": "union_recv          0      0      0     ",
-      "04": "union_set           0      0      -1    ",
-      "05": "var_set             0      0      0     ",
-      "06": "free                0      0      0     ",
-      "07": "jmp                 9      0      0     ",
-      "08": "jmp                 15     0      0     ",
-      "09": "bool                0      1      0     ",
-      "10": "jntr                15     0      0     ",
-      "11": "int                 0      -      0     # 7",
-      "12": "var_set             0      0      0     ",
-      "13": "free                0      0      0     ",
-      "14": "jmp                 8      0      0     ",
-      "15": "var                 0      0      0     ",
-      "16": "ret                 0      -1     -     "
-    },
-    "backend": {
-      "00": "set                 0      1      0     ",
-      "01": "table_open_part     1      0      6     # public.test (primary)",
-      "02": "table_readi32       2      1      0     ",
-      "03": "push                2      0      0     ",
-      "04": "set_add             0      0      0     ",
-      "05": "table_next          1      2      0     ",
-      "06": "free                1      0      0     ",
-      "07": "ret                 0      -1     -     "
-    }
+  "main": {
+    "00": "push_nulls          1      0      0     ",
+    "01": "union               0      0      0     ",
+    "02": "send_all            0      -      0     # public.test (last)",
+    "03": "union_recv          0      0      0     ",
+    "04": "union_set           0      0      -1    ",
+    "05": "var_set             0      0      0     ",
+    "06": "free                0      0      0     ",
+    "07": "jmp                 9      0      0     ",
+    "08": "jmp                 15     0      0     ",
+    "09": "bool                0      1      0     ",
+    "10": "jntr                15     0      0     ",
+    "11": "int                 0      -      0     # 7",
+    "12": "var_set             0      0      0     ",
+    "13": "free                0      0      0     ",
+    "14": "jmp                 8      0      0     ",
+    "15": "var                 0      0      0     ",
+    "16": "ret                 0      -1     -     "
+  },
+  "pushdown": {
+    "00": "set                 0      1      0     ",
+    "01": "table_open_part     1      0      6     # public.test (primary)",
+    "02": "table_readi32       2      1      0     ",
+    "03": "push                2      0      0     ",
+    "04": "set_add             0      0      0     ",
+    "05": "table_next          1      2      0     ",
+    "06": "free                1      0      0     ",
+    "07": "ret                 0      -1     -     "
   },
   "access": [["public.test", "ro"]]
 }]
@@ -558,41 +522,39 @@ declare x int; select id into x from test; if true then x := 7; end; select x
 # test: select from into / if then := var / select var
 explain declare x int; declare y int; select id into x from test; if true then y := x; end; select x, y
 [{
-  "bytecode": {
-    "frontend": {
-      "00": "push_nulls          2      0      0     ",
-      "01": "union               0      0      0     ",
-      "02": "send_all            0      -      0     # public.test (last)",
-      "03": "union_recv          0      0      0     ",
-      "04": "union_set           0      0      -1    ",
-      "05": "var_set             0      0      0     ",
-      "06": "free                0      0      0     ",
-      "07": "jmp                 9      0      0     ",
-      "08": "jmp                 15     0      0     ",
-      "09": "bool                0      1      0     ",
-      "10": "jntr                15     0      0     ",
-      "11": "var                 0      0      0     ",
-      "12": "var_set             1      0      0     ",
-      "13": "free                0      0      0     ",
-      "14": "jmp                 8      0      0     ",
-      "15": "set                 0      2      0     ",
-      "16": "var                 1      0      0     ",
-      "17": "push                1      0      0     ",
-      "18": "var                 1      1      0     ",
-      "19": "push                1      0      0     ",
-      "20": "set_add             0      0      0     ",
-      "21": "ret                 0      -1     -     "
-    },
-    "backend": {
-      "00": "set                 0      1      0     ",
-      "01": "table_open_part     1      0      6     # public.test (primary)",
-      "02": "table_readi32       2      1      0     ",
-      "03": "push                2      0      0     ",
-      "04": "set_add             0      0      0     ",
-      "05": "table_next          1      2      0     ",
-      "06": "free                1      0      0     ",
-      "07": "ret                 0      -1     -     "
-    }
+  "main": {
+    "00": "push_nulls          2      0      0     ",
+    "01": "union               0      0      0     ",
+    "02": "send_all            0      -      0     # public.test (last)",
+    "03": "union_recv          0      0      0     ",
+    "04": "union_set           0      0      -1    ",
+    "05": "var_set             0      0      0     ",
+    "06": "free                0      0      0     ",
+    "07": "jmp                 9      0      0     ",
+    "08": "jmp                 15     0      0     ",
+    "09": "bool                0      1      0     ",
+    "10": "jntr                15     0      0     ",
+    "11": "var                 0      0      0     ",
+    "12": "var_set             1      0      0     ",
+    "13": "free                0      0      0     ",
+    "14": "jmp                 8      0      0     ",
+    "15": "set                 0      2      0     ",
+    "16": "var                 1      0      0     ",
+    "17": "push                1      0      0     ",
+    "18": "var                 1      1      0     ",
+    "19": "push                1      0      0     ",
+    "20": "set_add             0      0      0     ",
+    "21": "ret                 0      -1     -     "
+  },
+  "pushdown": {
+    "00": "set                 0      1      0     ",
+    "01": "table_open_part     1      0      6     # public.test (primary)",
+    "02": "table_readi32       2      1      0     ",
+    "03": "push                2      0      0     ",
+    "04": "set_add             0      0      0     ",
+    "05": "table_next          1      2      0     ",
+    "06": "free                1      0      0     ",
+    "07": "ret                 0      -1     -     "
   },
   "access": [["public.test", "ro"]]
 }]
@@ -601,34 +563,32 @@ declare x int; declare y int; select id into x from test; if true then y := x; e
 # test: select from into / if .. else select var / select var
 explain declare x int; select id into x from test; if false then else select x; end; select x
 [{
-  "bytecode": {
-    "frontend": {
-      "00": "push_nulls          1      0      0     ",
-      "01": "union               0      0      0     ",
-      "02": "send_all            0      -      0     # public.test (last)",
-      "03": "union_recv          0      0      0     ",
-      "04": "union_set           0      0      -1    ",
-      "05": "var_set             0      0      0     ",
-      "06": "free                0      0      0     ",
-      "07": "jmp                 9      0      0     ",
-      "08": "jmp                 13     0      0     ",
-      "09": "bool                0      0      0     ",
-      "10": "jntr                12     0      0     ",
-      "11": "jmp                 8      0      0     ",
-      "12": "var                 0      0      0     ",
-      "13": "var                 1      0      0     ",
-      "14": "ret                 1      -1     -     "
-    },
-    "backend": {
-      "00": "set                 0      1      0     ",
-      "01": "table_open_part     1      0      6     # public.test (primary)",
-      "02": "table_readi32       2      1      0     ",
-      "03": "push                2      0      0     ",
-      "04": "set_add             0      0      0     ",
-      "05": "table_next          1      2      0     ",
-      "06": "free                1      0      0     ",
-      "07": "ret                 0      -1     -     "
-    }
+  "main": {
+    "00": "push_nulls          1      0      0     ",
+    "01": "union               0      0      0     ",
+    "02": "send_all            0      -      0     # public.test (last)",
+    "03": "union_recv          0      0      0     ",
+    "04": "union_set           0      0      -1    ",
+    "05": "var_set             0      0      0     ",
+    "06": "free                0      0      0     ",
+    "07": "jmp                 9      0      0     ",
+    "08": "jmp                 13     0      0     ",
+    "09": "bool                0      0      0     ",
+    "10": "jntr                12     0      0     ",
+    "11": "jmp                 8      0      0     ",
+    "12": "var                 0      0      0     ",
+    "13": "var                 1      0      0     ",
+    "14": "ret                 1      -1     -     "
+  },
+  "pushdown": {
+    "00": "set                 0      1      0     ",
+    "01": "table_open_part     1      0      6     # public.test (primary)",
+    "02": "table_readi32       2      1      0     ",
+    "03": "push                2      0      0     ",
+    "04": "set_add             0      0      0     ",
+    "05": "table_next          1      2      0     ",
+    "06": "free                1      0      0     ",
+    "07": "ret                 0      -1     -     "
   },
   "access": [["public.test", "ro"]]
 }]
@@ -636,35 +596,33 @@ declare x int; select id into x from test; if false then else select x; end; sel
 [1]
 explain declare x int; select id into x from test; if false then select 1; else select x; end; select x
 [{
-  "bytecode": {
-    "frontend": {
-      "00": "push_nulls          1      0      0     ",
-      "01": "union               0      0      0     ",
-      "02": "send_all            0      -      0     # public.test (last)",
-      "03": "union_recv          0      0      0     ",
-      "04": "union_set           0      0      -1    ",
-      "05": "var_set             0      0      0     ",
-      "06": "free                0      0      0     ",
-      "07": "jmp                 9      0      0     ",
-      "08": "jmp                 14     0      0     ",
-      "09": "bool                0      0      0     ",
-      "10": "jntr                13     0      0     ",
-      "11": "int                 0      -      0     # 1",
-      "12": "jmp                 8      0      0     ",
-      "13": "var                 1      0      0     ",
-      "14": "var                 2      0      0     ",
-      "15": "ret                 2      -1     -     "
-    },
-    "backend": {
-      "00": "set                 0      1      0     ",
-      "01": "table_open_part     1      0      6     # public.test (primary)",
-      "02": "table_readi32       2      1      0     ",
-      "03": "push                2      0      0     ",
-      "04": "set_add             0      0      0     ",
-      "05": "table_next          1      2      0     ",
-      "06": "free                1      0      0     ",
-      "07": "ret                 0      -1     -     "
-    }
+  "main": {
+    "00": "push_nulls          1      0      0     ",
+    "01": "union               0      0      0     ",
+    "02": "send_all            0      -      0     # public.test (last)",
+    "03": "union_recv          0      0      0     ",
+    "04": "union_set           0      0      -1    ",
+    "05": "var_set             0      0      0     ",
+    "06": "free                0      0      0     ",
+    "07": "jmp                 9      0      0     ",
+    "08": "jmp                 14     0      0     ",
+    "09": "bool                0      0      0     ",
+    "10": "jntr                13     0      0     ",
+    "11": "int                 0      -      0     # 1",
+    "12": "jmp                 8      0      0     ",
+    "13": "var                 1      0      0     ",
+    "14": "var                 2      0      0     ",
+    "15": "ret                 2      -1     -     "
+  },
+  "pushdown": {
+    "00": "set                 0      1      0     ",
+    "01": "table_open_part     1      0      6     # public.test (primary)",
+    "02": "table_readi32       2      1      0     ",
+    "03": "push                2      0      0     ",
+    "04": "set_add             0      0      0     ",
+    "05": "table_next          1      2      0     ",
+    "06": "free                1      0      0     ",
+    "07": "ret                 0      -1     -     "
   },
   "access": [["public.test", "ro"]]
 }]
@@ -673,36 +631,34 @@ declare x int; select id into x from test; if false then else select x; end; sel
 # test: select from into / if .. else var := / select var
 explain declare x int; select id into x from test; if false then else x := 7; end; select x
 [{
-  "bytecode": {
-    "frontend": {
-      "00": "push_nulls          1      0      0     ",
-      "01": "union               0      0      0     ",
-      "02": "send_all            0      -      0     # public.test (last)",
-      "03": "union_recv          0      0      0     ",
-      "04": "union_set           0      0      -1    ",
-      "05": "var_set             0      0      0     ",
-      "06": "free                0      0      0     ",
-      "07": "jmp                 9      0      0     ",
-      "08": "jmp                 15     0      0     ",
-      "09": "bool                0      0      0     ",
-      "10": "jntr                12     0      0     ",
-      "11": "jmp                 8      0      0     ",
-      "12": "int                 0      -      0     # 7",
-      "13": "var_set             0      0      0     ",
-      "14": "free                0      0      0     ",
-      "15": "var                 0      0      0     ",
-      "16": "ret                 0      -1     -     "
-    },
-    "backend": {
-      "00": "set                 0      1      0     ",
-      "01": "table_open_part     1      0      6     # public.test (primary)",
-      "02": "table_readi32       2      1      0     ",
-      "03": "push                2      0      0     ",
-      "04": "set_add             0      0      0     ",
-      "05": "table_next          1      2      0     ",
-      "06": "free                1      0      0     ",
-      "07": "ret                 0      -1     -     "
-    }
+  "main": {
+    "00": "push_nulls          1      0      0     ",
+    "01": "union               0      0      0     ",
+    "02": "send_all            0      -      0     # public.test (last)",
+    "03": "union_recv          0      0      0     ",
+    "04": "union_set           0      0      -1    ",
+    "05": "var_set             0      0      0     ",
+    "06": "free                0      0      0     ",
+    "07": "jmp                 9      0      0     ",
+    "08": "jmp                 15     0      0     ",
+    "09": "bool                0      0      0     ",
+    "10": "jntr                12     0      0     ",
+    "11": "jmp                 8      0      0     ",
+    "12": "int                 0      -      0     # 7",
+    "13": "var_set             0      0      0     ",
+    "14": "free                0      0      0     ",
+    "15": "var                 0      0      0     ",
+    "16": "ret                 0      -1     -     "
+  },
+  "pushdown": {
+    "00": "set                 0      1      0     ",
+    "01": "table_open_part     1      0      6     # public.test (primary)",
+    "02": "table_readi32       2      1      0     ",
+    "03": "push                2      0      0     ",
+    "04": "set_add             0      0      0     ",
+    "05": "table_next          1      2      0     ",
+    "06": "free                1      0      0     ",
+    "07": "ret                 0      -1     -     "
   },
   "access": [["public.test", "ro"]]
 }]
@@ -710,37 +666,35 @@ declare x int; select id into x from test; if false then else x := 7; end; selec
 [7]
 explain declare x int; select id into x from test; if false then select 1; else x := 7; end; select x
 [{
-  "bytecode": {
-    "frontend": {
-      "00": "push_nulls          1      0      0     ",
-      "01": "union               0      0      0     ",
-      "02": "send_all            0      -      0     # public.test (last)",
-      "03": "union_recv          0      0      0     ",
-      "04": "union_set           0      0      -1    ",
-      "05": "var_set             0      0      0     ",
-      "06": "free                0      0      0     ",
-      "07": "jmp                 9      0      0     ",
-      "08": "jmp                 16     0      0     ",
-      "09": "bool                0      0      0     ",
-      "10": "jntr                13     0      0     ",
-      "11": "int                 0      -      0     # 1",
-      "12": "jmp                 8      0      0     ",
-      "13": "int                 1      -      0     # 7",
-      "14": "var_set             0      0      1     ",
-      "15": "free                1      0      0     ",
-      "16": "var                 1      0      0     ",
-      "17": "ret                 1      -1     -     "
-    },
-    "backend": {
-      "00": "set                 0      1      0     ",
-      "01": "table_open_part     1      0      6     # public.test (primary)",
-      "02": "table_readi32       2      1      0     ",
-      "03": "push                2      0      0     ",
-      "04": "set_add             0      0      0     ",
-      "05": "table_next          1      2      0     ",
-      "06": "free                1      0      0     ",
-      "07": "ret                 0      -1     -     "
-    }
+  "main": {
+    "00": "push_nulls          1      0      0     ",
+    "01": "union               0      0      0     ",
+    "02": "send_all            0      -      0     # public.test (last)",
+    "03": "union_recv          0      0      0     ",
+    "04": "union_set           0      0      -1    ",
+    "05": "var_set             0      0      0     ",
+    "06": "free                0      0      0     ",
+    "07": "jmp                 9      0      0     ",
+    "08": "jmp                 16     0      0     ",
+    "09": "bool                0      0      0     ",
+    "10": "jntr                13     0      0     ",
+    "11": "int                 0      -      0     # 1",
+    "12": "jmp                 8      0      0     ",
+    "13": "int                 1      -      0     # 7",
+    "14": "var_set             0      0      1     ",
+    "15": "free                1      0      0     ",
+    "16": "var                 1      0      0     ",
+    "17": "ret                 1      -1     -     "
+  },
+  "pushdown": {
+    "00": "set                 0      1      0     ",
+    "01": "table_open_part     1      0      6     # public.test (primary)",
+    "02": "table_readi32       2      1      0     ",
+    "03": "push                2      0      0     ",
+    "04": "set_add             0      0      0     ",
+    "05": "table_next          1      2      0     ",
+    "06": "free                1      0      0     ",
+    "07": "ret                 0      -1     -     "
   },
   "access": [["public.test", "ro"]]
 }]
@@ -749,41 +703,39 @@ declare x int; select id into x from test; if false then select 1; else x := 7; 
 # test: select from into / if .. else := var / select var
 explain declare x int; declare y int; select id into x from test; if false then else y := x; end; select x, y
 [{
-  "bytecode": {
-    "frontend": {
-      "00": "push_nulls          2      0      0     ",
-      "01": "union               0      0      0     ",
-      "02": "send_all            0      -      0     # public.test (last)",
-      "03": "union_recv          0      0      0     ",
-      "04": "union_set           0      0      -1    ",
-      "05": "var_set             0      0      0     ",
-      "06": "free                0      0      0     ",
-      "07": "jmp                 9      0      0     ",
-      "08": "jmp                 15     0      0     ",
-      "09": "bool                0      0      0     ",
-      "10": "jntr                12     0      0     ",
-      "11": "jmp                 8      0      0     ",
-      "12": "var                 0      0      0     ",
-      "13": "var_set             1      0      0     ",
-      "14": "free                0      0      0     ",
-      "15": "set                 0      2      0     ",
-      "16": "var                 1      0      0     ",
-      "17": "push                1      0      0     ",
-      "18": "var                 1      1      0     ",
-      "19": "push                1      0      0     ",
-      "20": "set_add             0      0      0     ",
-      "21": "ret                 0      -1     -     "
-    },
-    "backend": {
-      "00": "set                 0      1      0     ",
-      "01": "table_open_part     1      0      6     # public.test (primary)",
-      "02": "table_readi32       2      1      0     ",
-      "03": "push                2      0      0     ",
-      "04": "set_add             0      0      0     ",
-      "05": "table_next          1      2      0     ",
-      "06": "free                1      0      0     ",
-      "07": "ret                 0      -1     -     "
-    }
+  "main": {
+    "00": "push_nulls          2      0      0     ",
+    "01": "union               0      0      0     ",
+    "02": "send_all            0      -      0     # public.test (last)",
+    "03": "union_recv          0      0      0     ",
+    "04": "union_set           0      0      -1    ",
+    "05": "var_set             0      0      0     ",
+    "06": "free                0      0      0     ",
+    "07": "jmp                 9      0      0     ",
+    "08": "jmp                 15     0      0     ",
+    "09": "bool                0      0      0     ",
+    "10": "jntr                12     0      0     ",
+    "11": "jmp                 8      0      0     ",
+    "12": "var                 0      0      0     ",
+    "13": "var_set             1      0      0     ",
+    "14": "free                0      0      0     ",
+    "15": "set                 0      2      0     ",
+    "16": "var                 1      0      0     ",
+    "17": "push                1      0      0     ",
+    "18": "var                 1      1      0     ",
+    "19": "push                1      0      0     ",
+    "20": "set_add             0      0      0     ",
+    "21": "ret                 0      -1     -     "
+  },
+  "pushdown": {
+    "00": "set                 0      1      0     ",
+    "01": "table_open_part     1      0      6     # public.test (primary)",
+    "02": "table_readi32       2      1      0     ",
+    "03": "push                2      0      0     ",
+    "04": "set_add             0      0      0     ",
+    "05": "table_next          1      2      0     ",
+    "06": "free                1      0      0     ",
+    "07": "ret                 0      -1     -     "
   },
   "access": [["public.test", "ro"]]
 }]
@@ -791,42 +743,40 @@ declare x int; declare y int; select id into x from test; if false then else y :
 [[1, 1]]
 explain declare x int; declare y int; select id into x from test; if false then select 1; else y := x; end; select x, y
 [{
-  "bytecode": {
-    "frontend": {
-      "00": "push_nulls          2      0      0     ",
-      "01": "union               0      0      0     ",
-      "02": "send_all            0      -      0     # public.test (last)",
-      "03": "union_recv          0      0      0     ",
-      "04": "union_set           0      0      -1    ",
-      "05": "var_set             0      0      0     ",
-      "06": "free                0      0      0     ",
-      "07": "jmp                 9      0      0     ",
-      "08": "jmp                 16     0      0     ",
-      "09": "bool                0      0      0     ",
-      "10": "jntr                13     0      0     ",
-      "11": "int                 0      -      0     # 1",
-      "12": "jmp                 8      0      0     ",
-      "13": "var                 1      0      0     ",
-      "14": "var_set             1      0      1     ",
-      "15": "free                1      0      0     ",
-      "16": "set                 1      2      0     ",
-      "17": "var                 2      0      0     ",
-      "18": "push                2      0      0     ",
-      "19": "var                 2      1      0     ",
-      "20": "push                2      0      0     ",
-      "21": "set_add             1      0      0     ",
-      "22": "ret                 1      -1     -     "
-    },
-    "backend": {
-      "00": "set                 0      1      0     ",
-      "01": "table_open_part     1      0      6     # public.test (primary)",
-      "02": "table_readi32       2      1      0     ",
-      "03": "push                2      0      0     ",
-      "04": "set_add             0      0      0     ",
-      "05": "table_next          1      2      0     ",
-      "06": "free                1      0      0     ",
-      "07": "ret                 0      -1     -     "
-    }
+  "main": {
+    "00": "push_nulls          2      0      0     ",
+    "01": "union               0      0      0     ",
+    "02": "send_all            0      -      0     # public.test (last)",
+    "03": "union_recv          0      0      0     ",
+    "04": "union_set           0      0      -1    ",
+    "05": "var_set             0      0      0     ",
+    "06": "free                0      0      0     ",
+    "07": "jmp                 9      0      0     ",
+    "08": "jmp                 16     0      0     ",
+    "09": "bool                0      0      0     ",
+    "10": "jntr                13     0      0     ",
+    "11": "int                 0      -      0     # 1",
+    "12": "jmp                 8      0      0     ",
+    "13": "var                 1      0      0     ",
+    "14": "var_set             1      0      1     ",
+    "15": "free                1      0      0     ",
+    "16": "set                 1      2      0     ",
+    "17": "var                 2      0      0     ",
+    "18": "push                2      0      0     ",
+    "19": "var                 2      1      0     ",
+    "20": "push                2      0      0     ",
+    "21": "set_add             1      0      0     ",
+    "22": "ret                 1      -1     -     "
+  },
+  "pushdown": {
+    "00": "set                 0      1      0     ",
+    "01": "table_open_part     1      0      6     # public.test (primary)",
+    "02": "table_readi32       2      1      0     ",
+    "03": "push                2      0      0     ",
+    "04": "set_add             0      0      0     ",
+    "05": "table_next          1      2      0     ",
+    "06": "free                1      0      0     ",
+    "07": "ret                 0      -1     -     "
   },
   "access": [["public.test", "ro"]]
 }]
@@ -835,38 +785,36 @@ declare x int; declare y int; select id into x from test; if false then select 1
 # test: select from into / if if var / select var
 explain declare x int; select id into x from test; if true then if x then end; end; select x
 [{
-  "bytecode": {
-    "frontend": {
-      "00": "push_nulls          1      0      0     ",
-      "01": "union               0      0      0     ",
-      "02": "send_all            0      -      0     # public.test (last)",
-      "03": "union_recv          0      0      0     ",
-      "04": "union_set           0      0      -1    ",
-      "05": "var_set             0      0      0     ",
-      "06": "free                0      0      0     ",
-      "07": "jmp                 9      0      0     ",
-      "08": "jmp                 17     0      0     ",
-      "09": "bool                0      1      0     ",
-      "10": "jntr                17     0      0     ",
-      "11": "jmp                 13     0      0     ",
-      "12": "jmp                 16     0      0     ",
-      "13": "var                 0      0      0     ",
-      "14": "jntr                16     0      0     ",
-      "15": "jmp                 12     0      0     ",
-      "16": "jmp                 8      0      0     ",
-      "17": "var                 0      0      0     ",
-      "18": "ret                 0      -1     -     "
-    },
-    "backend": {
-      "00": "set                 0      1      0     ",
-      "01": "table_open_part     1      0      6     # public.test (primary)",
-      "02": "table_readi32       2      1      0     ",
-      "03": "push                2      0      0     ",
-      "04": "set_add             0      0      0     ",
-      "05": "table_next          1      2      0     ",
-      "06": "free                1      0      0     ",
-      "07": "ret                 0      -1     -     "
-    }
+  "main": {
+    "00": "push_nulls          1      0      0     ",
+    "01": "union               0      0      0     ",
+    "02": "send_all            0      -      0     # public.test (last)",
+    "03": "union_recv          0      0      0     ",
+    "04": "union_set           0      0      -1    ",
+    "05": "var_set             0      0      0     ",
+    "06": "free                0      0      0     ",
+    "07": "jmp                 9      0      0     ",
+    "08": "jmp                 17     0      0     ",
+    "09": "bool                0      1      0     ",
+    "10": "jntr                17     0      0     ",
+    "11": "jmp                 13     0      0     ",
+    "12": "jmp                 16     0      0     ",
+    "13": "var                 0      0      0     ",
+    "14": "jntr                16     0      0     ",
+    "15": "jmp                 12     0      0     ",
+    "16": "jmp                 8      0      0     ",
+    "17": "var                 0      0      0     ",
+    "18": "ret                 0      -1     -     "
+  },
+  "pushdown": {
+    "00": "set                 0      1      0     ",
+    "01": "table_open_part     1      0      6     # public.test (primary)",
+    "02": "table_readi32       2      1      0     ",
+    "03": "push                2      0      0     ",
+    "04": "set_add             0      0      0     ",
+    "05": "table_next          1      2      0     ",
+    "06": "free                1      0      0     ",
+    "07": "ret                 0      -1     -     "
   },
   "access": [["public.test", "ro"]]
 }]
@@ -875,39 +823,37 @@ declare x int; select id into x from test; if true then if x then end; end; sele
 # test: select from into / if then if select var / select var
 explain declare x int; select id into x from test; if true then if true then select x; end; end; select x
 [{
-  "bytecode": {
-    "frontend": {
-      "00": "push_nulls          1      0      0     ",
-      "01": "union               0      0      0     ",
-      "02": "send_all            0      -      0     # public.test (last)",
-      "03": "union_recv          0      0      0     ",
-      "04": "union_set           0      0      -1    ",
-      "05": "var_set             0      0      0     ",
-      "06": "free                0      0      0     ",
-      "07": "jmp                 9      0      0     ",
-      "08": "jmp                 18     0      0     ",
-      "09": "bool                0      1      0     ",
-      "10": "jntr                18     0      0     ",
-      "11": "jmp                 13     0      0     ",
-      "12": "jmp                 17     0      0     ",
-      "13": "bool                0      1      0     ",
-      "14": "jntr                17     0      0     ",
-      "15": "var                 0      0      0     ",
-      "16": "jmp                 12     0      0     ",
-      "17": "jmp                 8      0      0     ",
-      "18": "var                 1      0      0     ",
-      "19": "ret                 1      -1     -     "
-    },
-    "backend": {
-      "00": "set                 0      1      0     ",
-      "01": "table_open_part     1      0      6     # public.test (primary)",
-      "02": "table_readi32       2      1      0     ",
-      "03": "push                2      0      0     ",
-      "04": "set_add             0      0      0     ",
-      "05": "table_next          1      2      0     ",
-      "06": "free                1      0      0     ",
-      "07": "ret                 0      -1     -     "
-    }
+  "main": {
+    "00": "push_nulls          1      0      0     ",
+    "01": "union               0      0      0     ",
+    "02": "send_all            0      -      0     # public.test (last)",
+    "03": "union_recv          0      0      0     ",
+    "04": "union_set           0      0      -1    ",
+    "05": "var_set             0      0      0     ",
+    "06": "free                0      0      0     ",
+    "07": "jmp                 9      0      0     ",
+    "08": "jmp                 18     0      0     ",
+    "09": "bool                0      1      0     ",
+    "10": "jntr                18     0      0     ",
+    "11": "jmp                 13     0      0     ",
+    "12": "jmp                 17     0      0     ",
+    "13": "bool                0      1      0     ",
+    "14": "jntr                17     0      0     ",
+    "15": "var                 0      0      0     ",
+    "16": "jmp                 12     0      0     ",
+    "17": "jmp                 8      0      0     ",
+    "18": "var                 1      0      0     ",
+    "19": "ret                 1      -1     -     "
+  },
+  "pushdown": {
+    "00": "set                 0      1      0     ",
+    "01": "table_open_part     1      0      6     # public.test (primary)",
+    "02": "table_readi32       2      1      0     ",
+    "03": "push                2      0      0     ",
+    "04": "set_add             0      0      0     ",
+    "05": "table_next          1      2      0     ",
+    "06": "free                1      0      0     ",
+    "07": "ret                 0      -1     -     "
   },
   "access": [["public.test", "ro"]]
 }]
@@ -916,41 +862,39 @@ declare x int; select id into x from test; if true then if true then select x; e
 # test: select from into / if then if select into var / select var
 explain declare x int; select id into x from test; if true then if true then select 123 into x; end; end; select x
 [{
-  "bytecode": {
-    "frontend": {
-      "00": "push_nulls          1      0      0     ",
-      "01": "union               0      0      0     ",
-      "02": "send_all            0      -      0     # public.test (last)",
-      "03": "union_recv          0      0      0     ",
-      "04": "union_set           0      0      -1    ",
-      "05": "var_set             0      0      0     ",
-      "06": "free                0      0      0     ",
-      "07": "jmp                 9      0      0     ",
-      "08": "jmp                 20     0      0     ",
-      "09": "bool                0      1      0     ",
-      "10": "jntr                20     0      0     ",
-      "11": "jmp                 13     0      0     ",
-      "12": "jmp                 19     0      0     ",
-      "13": "bool                0      1      0     ",
-      "14": "jntr                19     0      0     ",
-      "15": "int                 0      -      0     # 123",
-      "16": "var_set             0      0      0     ",
-      "17": "free                0      0      0     ",
-      "18": "jmp                 12     0      0     ",
-      "19": "jmp                 8      0      0     ",
-      "20": "var                 0      0      0     ",
-      "21": "ret                 0      -1     -     "
-    },
-    "backend": {
-      "00": "set                 0      1      0     ",
-      "01": "table_open_part     1      0      6     # public.test (primary)",
-      "02": "table_readi32       2      1      0     ",
-      "03": "push                2      0      0     ",
-      "04": "set_add             0      0      0     ",
-      "05": "table_next          1      2      0     ",
-      "06": "free                1      0      0     ",
-      "07": "ret                 0      -1     -     "
-    }
+  "main": {
+    "00": "push_nulls          1      0      0     ",
+    "01": "union               0      0      0     ",
+    "02": "send_all            0      -      0     # public.test (last)",
+    "03": "union_recv          0      0      0     ",
+    "04": "union_set           0      0      -1    ",
+    "05": "var_set             0      0      0     ",
+    "06": "free                0      0      0     ",
+    "07": "jmp                 9      0      0     ",
+    "08": "jmp                 20     0      0     ",
+    "09": "bool                0      1      0     ",
+    "10": "jntr                20     0      0     ",
+    "11": "jmp                 13     0      0     ",
+    "12": "jmp                 19     0      0     ",
+    "13": "bool                0      1      0     ",
+    "14": "jntr                19     0      0     ",
+    "15": "int                 0      -      0     # 123",
+    "16": "var_set             0      0      0     ",
+    "17": "free                0      0      0     ",
+    "18": "jmp                 12     0      0     ",
+    "19": "jmp                 8      0      0     ",
+    "20": "var                 0      0      0     ",
+    "21": "ret                 0      -1     -     "
+  },
+  "pushdown": {
+    "00": "set                 0      1      0     ",
+    "01": "table_open_part     1      0      6     # public.test (primary)",
+    "02": "table_readi32       2      1      0     ",
+    "03": "push                2      0      0     ",
+    "04": "set_add             0      0      0     ",
+    "05": "table_next          1      2      0     ",
+    "06": "free                1      0      0     ",
+    "07": "ret                 0      -1     -     "
   },
   "access": [["public.test", "ro"]]
 }]
@@ -958,46 +902,44 @@ declare x int; select id into x from test; if true then if true then select 123 
 [123]
 explain declare x int; declare y int; select id into x from test; if true then if true then select 123 into y; x := x + y; end; end; select x
 [{
-  "bytecode": {
-    "frontend": {
-      "00": "push_nulls          2      0      0     ",
-      "01": "union               0      0      0     ",
-      "02": "send_all            0      -      0     # public.test (last)",
-      "03": "union_recv          0      0      0     ",
-      "04": "union_set           0      0      -1    ",
-      "05": "var_set             0      0      0     ",
-      "06": "free                0      0      0     ",
-      "07": "jmp                 9      0      0     ",
-      "08": "jmp                 25     0      0     ",
-      "09": "bool                0      1      0     ",
-      "10": "jntr                25     0      0     ",
-      "11": "jmp                 13     0      0     ",
-      "12": "jmp                 24     0      0     ",
-      "13": "bool                0      1      0     ",
-      "14": "jntr                24     0      0     ",
-      "15": "int                 0      -      0     # 123",
-      "16": "var_set             1      0      0     ",
-      "17": "free                0      0      0     ",
-      "18": "var                 0      0      0     ",
-      "19": "var                 1      1      0     ",
-      "20": "addii               2      0      1     ",
-      "21": "var_set             0      0      2     ",
-      "22": "free                2      0      0     ",
-      "23": "jmp                 12     0      0     ",
-      "24": "jmp                 8      0      0     ",
-      "25": "var                 0      0      0     ",
-      "26": "ret                 0      -1     -     "
-    },
-    "backend": {
-      "00": "set                 0      1      0     ",
-      "01": "table_open_part     1      0      6     # public.test (primary)",
-      "02": "table_readi32       2      1      0     ",
-      "03": "push                2      0      0     ",
-      "04": "set_add             0      0      0     ",
-      "05": "table_next          1      2      0     ",
-      "06": "free                1      0      0     ",
-      "07": "ret                 0      -1     -     "
-    }
+  "main": {
+    "00": "push_nulls          2      0      0     ",
+    "01": "union               0      0      0     ",
+    "02": "send_all            0      -      0     # public.test (last)",
+    "03": "union_recv          0      0      0     ",
+    "04": "union_set           0      0      -1    ",
+    "05": "var_set             0      0      0     ",
+    "06": "free                0      0      0     ",
+    "07": "jmp                 9      0      0     ",
+    "08": "jmp                 25     0      0     ",
+    "09": "bool                0      1      0     ",
+    "10": "jntr                25     0      0     ",
+    "11": "jmp                 13     0      0     ",
+    "12": "jmp                 24     0      0     ",
+    "13": "bool                0      1      0     ",
+    "14": "jntr                24     0      0     ",
+    "15": "int                 0      -      0     # 123",
+    "16": "var_set             1      0      0     ",
+    "17": "free                0      0      0     ",
+    "18": "var                 0      0      0     ",
+    "19": "var                 1      1      0     ",
+    "20": "addii               2      0      1     ",
+    "21": "var_set             0      0      2     ",
+    "22": "free                2      0      0     ",
+    "23": "jmp                 12     0      0     ",
+    "24": "jmp                 8      0      0     ",
+    "25": "var                 0      0      0     ",
+    "26": "ret                 0      -1     -     "
+  },
+  "pushdown": {
+    "00": "set                 0      1      0     ",
+    "01": "table_open_part     1      0      6     # public.test (primary)",
+    "02": "table_readi32       2      1      0     ",
+    "03": "push                2      0      0     ",
+    "04": "set_add             0      0      0     ",
+    "05": "table_next          1      2      0     ",
+    "06": "free                1      0      0     ",
+    "07": "ret                 0      -1     -     "
   },
   "access": [["public.test", "ro"]]
 }]
@@ -1006,34 +948,32 @@ declare x int; declare y int; select id into x from test; if true then if true t
 # test: if select into var / select var
 explain declare x int; if true then select * into x from test; end; select x
 [{
-  "bytecode": {
-    "frontend": {
-      "00": "push_nulls          1      0      0     ",
-      "01": "jmp                 3      0      0     ",
-      "02": "jmp                 12     0      0     ",
-      "03": "bool                0      1      0     ",
-      "04": "jntr                12     0      0     ",
-      "05": "union               0      0      0     ",
-      "06": "send_all            0      -      0     # public.test",
-      "07": "union_recv          0      0      0     ",
-      "08": "union_set           0      0      -1    ",
-      "09": "var_set             0      0      0     ",
-      "10": "free                0      0      0     ",
-      "11": "jmp                 2      0      0     ",
-      "12": "close               0      0      0     ",
-      "13": "var                 0      0      0     ",
-      "14": "ret                 0      -1     -     "
-    },
-    "backend": {
-      "00": "set                 0      1      0     ",
-      "01": "table_open_part     1      0      6     # public.test (primary)",
-      "02": "table_readi32       2      1      0     ",
-      "03": "push                2      0      0     ",
-      "04": "set_add             0      0      0     ",
-      "05": "table_next          1      2      0     ",
-      "06": "free                1      0      0     ",
-      "07": "ret                 0      -1     -     "
-    }
+  "main": {
+    "00": "push_nulls          1      0      0     ",
+    "01": "jmp                 3      0      0     ",
+    "02": "jmp                 12     0      0     ",
+    "03": "bool                0      1      0     ",
+    "04": "jntr                12     0      0     ",
+    "05": "union               0      0      0     ",
+    "06": "send_all            0      -      0     # public.test",
+    "07": "union_recv          0      0      0     ",
+    "08": "union_set           0      0      -1    ",
+    "09": "var_set             0      0      0     ",
+    "10": "free                0      0      0     ",
+    "11": "jmp                 2      0      0     ",
+    "12": "close               0      0      0     ",
+    "13": "var                 0      0      0     ",
+    "14": "ret                 0      -1     -     "
+  },
+  "pushdown": {
+    "00": "set                 0      1      0     ",
+    "01": "table_open_part     1      0      6     # public.test (primary)",
+    "02": "table_readi32       2      1      0     ",
+    "03": "push                2      0      0     ",
+    "04": "set_add             0      0      0     ",
+    "05": "table_next          1      2      0     ",
+    "06": "free                1      0      0     ",
+    "07": "ret                 0      -1     -     "
   },
   "access": [["public.test", "ro"]]
 }]
@@ -1042,50 +982,48 @@ declare x int; if true then select * into x from test; end; select x
 # test: if select into var else select into var / select var
 explain declare x int; if true then select id into x from test; else select 7 + id into x from test; end; select x
 [{
-  "bytecode": {
-    "frontend": {
-      "00": "push_nulls          1      0      0     ",
-      "01": "jmp                 3      0      0     ",
-      "02": "jmp                 18     0      0     ",
-      "03": "bool                0      1      0     ",
-      "04": "jntr                12     0      0     ",
-      "05": "union               0      0      0     ",
-      "06": "send_all            0      -      0     # public.test",
-      "07": "union_recv          0      0      0     ",
-      "08": "union_set           0      0      -1    ",
-      "09": "var_set             0      0      0     ",
-      "10": "free                0      0      0     ",
-      "11": "jmp                 2      0      0     ",
-      "12": "union               0      0      0     ",
-      "13": "send_all            8      -      0     # public.test",
-      "14": "union_recv          0      0      0     ",
-      "15": "union_set           0      0      -1    ",
-      "16": "var_set             0      0      0     ",
-      "17": "free                0      0      0     ",
-      "18": "close               0      0      0     ",
-      "19": "var                 0      0      0     ",
-      "20": "ret                 0      -1     -     "
-    },
-    "backend": {
-      "00": "set                 0      1      0     ",
-      "01": "table_open_part     1      0      6     # public.test (primary)",
-      "02": "table_readi32       2      1      0     ",
-      "03": "push                2      0      0     ",
-      "04": "set_add             0      0      0     ",
-      "05": "table_next          1      2      0     ",
-      "06": "free                1      0      0     ",
-      "07": "ret                 0      -1     -     ",
-      "08": "set                 0      1      0     ",
-      "09": "table_open_part     1      20     16    # public.test (primary)",
-      "10": "int                 2      -      0     # 7",
-      "11": "table_readi32       3      1      0     ",
-      "12": "addii               4      2      3     ",
-      "13": "push                4      0      0     ",
-      "14": "set_add             0      0      0     ",
-      "15": "table_next          1      10     0     ",
-      "16": "free                1      0      0     ",
-      "17": "ret                 0      -1     -     "
-    }
+  "main": {
+    "00": "push_nulls          1      0      0     ",
+    "01": "jmp                 3      0      0     ",
+    "02": "jmp                 18     0      0     ",
+    "03": "bool                0      1      0     ",
+    "04": "jntr                12     0      0     ",
+    "05": "union               0      0      0     ",
+    "06": "send_all            0      -      0     # public.test",
+    "07": "union_recv          0      0      0     ",
+    "08": "union_set           0      0      -1    ",
+    "09": "var_set             0      0      0     ",
+    "10": "free                0      0      0     ",
+    "11": "jmp                 2      0      0     ",
+    "12": "union               0      0      0     ",
+    "13": "send_all            8      -      0     # public.test",
+    "14": "union_recv          0      0      0     ",
+    "15": "union_set           0      0      -1    ",
+    "16": "var_set             0      0      0     ",
+    "17": "free                0      0      0     ",
+    "18": "close               0      0      0     ",
+    "19": "var                 0      0      0     ",
+    "20": "ret                 0      -1     -     "
+  },
+  "pushdown": {
+    "00": "set                 0      1      0     ",
+    "01": "table_open_part     1      0      6     # public.test (primary)",
+    "02": "table_readi32       2      1      0     ",
+    "03": "push                2      0      0     ",
+    "04": "set_add             0      0      0     ",
+    "05": "table_next          1      2      0     ",
+    "06": "free                1      0      0     ",
+    "07": "ret                 0      -1     -     ",
+    "08": "set                 0      1      0     ",
+    "09": "table_open_part     1      20     16    # public.test (primary)",
+    "10": "int                 2      -      0     # 7",
+    "11": "table_readi32       3      1      0     ",
+    "12": "addii               4      2      3     ",
+    "13": "push                4      0      0     ",
+    "14": "set_add             0      0      0     ",
+    "15": "table_next          1      10     0     ",
+    "16": "free                1      0      0     ",
+    "17": "ret                 0      -1     -     "
   },
   "access": [["public.test", "ro"]]
 }]
@@ -1093,50 +1031,48 @@ declare x int; if true then select id into x from test; else select 7 + id into 
 [1]
 explain declare x int; if false then select id into x from test; else select 7 + id into x from test; end; select x
 [{
-  "bytecode": {
-    "frontend": {
-      "00": "push_nulls          1      0      0     ",
-      "01": "jmp                 3      0      0     ",
-      "02": "jmp                 18     0      0     ",
-      "03": "bool                0      0      0     ",
-      "04": "jntr                12     0      0     ",
-      "05": "union               0      0      0     ",
-      "06": "send_all            0      -      0     # public.test",
-      "07": "union_recv          0      0      0     ",
-      "08": "union_set           0      0      -1    ",
-      "09": "var_set             0      0      0     ",
-      "10": "free                0      0      0     ",
-      "11": "jmp                 2      0      0     ",
-      "12": "union               0      0      0     ",
-      "13": "send_all            8      -      0     # public.test",
-      "14": "union_recv          0      0      0     ",
-      "15": "union_set           0      0      -1    ",
-      "16": "var_set             0      0      0     ",
-      "17": "free                0      0      0     ",
-      "18": "close               0      0      0     ",
-      "19": "var                 0      0      0     ",
-      "20": "ret                 0      -1     -     "
-    },
-    "backend": {
-      "00": "set                 0      1      0     ",
-      "01": "table_open_part     1      0      6     # public.test (primary)",
-      "02": "table_readi32       2      1      0     ",
-      "03": "push                2      0      0     ",
-      "04": "set_add             0      0      0     ",
-      "05": "table_next          1      2      0     ",
-      "06": "free                1      0      0     ",
-      "07": "ret                 0      -1     -     ",
-      "08": "set                 0      1      0     ",
-      "09": "table_open_part     1      20     16    # public.test (primary)",
-      "10": "int                 2      -      0     # 7",
-      "11": "table_readi32       3      1      0     ",
-      "12": "addii               4      2      3     ",
-      "13": "push                4      0      0     ",
-      "14": "set_add             0      0      0     ",
-      "15": "table_next          1      10     0     ",
-      "16": "free                1      0      0     ",
-      "17": "ret                 0      -1     -     "
-    }
+  "main": {
+    "00": "push_nulls          1      0      0     ",
+    "01": "jmp                 3      0      0     ",
+    "02": "jmp                 18     0      0     ",
+    "03": "bool                0      0      0     ",
+    "04": "jntr                12     0      0     ",
+    "05": "union               0      0      0     ",
+    "06": "send_all            0      -      0     # public.test",
+    "07": "union_recv          0      0      0     ",
+    "08": "union_set           0      0      -1    ",
+    "09": "var_set             0      0      0     ",
+    "10": "free                0      0      0     ",
+    "11": "jmp                 2      0      0     ",
+    "12": "union               0      0      0     ",
+    "13": "send_all            8      -      0     # public.test",
+    "14": "union_recv          0      0      0     ",
+    "15": "union_set           0      0      -1    ",
+    "16": "var_set             0      0      0     ",
+    "17": "free                0      0      0     ",
+    "18": "close               0      0      0     ",
+    "19": "var                 0      0      0     ",
+    "20": "ret                 0      -1     -     "
+  },
+  "pushdown": {
+    "00": "set                 0      1      0     ",
+    "01": "table_open_part     1      0      6     # public.test (primary)",
+    "02": "table_readi32       2      1      0     ",
+    "03": "push                2      0      0     ",
+    "04": "set_add             0      0      0     ",
+    "05": "table_next          1      2      0     ",
+    "06": "free                1      0      0     ",
+    "07": "ret                 0      -1     -     ",
+    "08": "set                 0      1      0     ",
+    "09": "table_open_part     1      20     16    # public.test (primary)",
+    "10": "int                 2      -      0     # 7",
+    "11": "table_readi32       3      1      0     ",
+    "12": "addii               4      2      3     ",
+    "13": "push                4      0      0     ",
+    "14": "set_add             0      0      0     ",
+    "15": "table_next          1      10     0     ",
+    "16": "free                1      0      0     ",
+    "17": "ret                 0      -1     -     "
   },
   "access": [["public.test", "ro"]]
 }]
@@ -1145,66 +1081,64 @@ declare x int; if false then select id into x from test; else select 7 + id into
 # test: select from into / if select into var else select into var / select var
 explain declare x int; select id into x from test; if true then select 5 + id into x from test; else select 10 + id into x from test; end; select x
 [{
-  "bytecode": {
-    "frontend": {
-      "00": "push_nulls          1      0      0     ",
-      "01": "union               0      0      0     ",
-      "02": "send_all            0      -      0     # public.test",
-      "03": "union_recv          0      0      0     ",
-      "04": "union_set           0      0      -1    ",
-      "05": "var_set             0      0      0     ",
-      "06": "free                0      0      0     ",
-      "07": "jmp                 9      0      0     ",
-      "08": "jmp                 24     0      0     ",
-      "09": "bool                0      1      0     ",
-      "10": "jntr                18     0      0     ",
-      "11": "union               0      0      0     ",
-      "12": "send_all            8      -      0     # public.test",
-      "13": "union_recv          0      0      0     ",
-      "14": "union_set           0      0      -1    ",
-      "15": "var_set             0      0      0     ",
-      "16": "free                0      0      0     ",
-      "17": "jmp                 8      0      0     ",
-      "18": "union               0      0      0     ",
-      "19": "send_all            18     -      0     # public.test",
-      "20": "union_recv          0      0      0     ",
-      "21": "union_set           0      0      -1    ",
-      "22": "var_set             0      0      0     ",
-      "23": "free                0      0      0     ",
-      "24": "close               0      0      0     ",
-      "25": "var                 0      0      0     ",
-      "26": "ret                 0      -1     -     "
-    },
-    "backend": {
-      "00": "set                 0      1      0     ",
-      "01": "table_open_part     1      0      6     # public.test (primary)",
-      "02": "table_readi32       2      1      0     ",
-      "03": "push                2      0      0     ",
-      "04": "set_add             0      0      0     ",
-      "05": "table_next          1      2      0     ",
-      "06": "free                1      0      0     ",
-      "07": "ret                 0      -1     -     ",
-      "08": "set                 0      1      0     ",
-      "09": "table_open_part     1      20     16    # public.test (primary)",
-      "10": "int                 2      -      0     # 5",
-      "11": "table_readi32       3      1      0     ",
-      "12": "addii               4      2      3     ",
-      "13": "push                4      0      0     ",
-      "14": "set_add             0      0      0     ",
-      "15": "table_next          1      10     0     ",
-      "16": "free                1      0      0     ",
-      "17": "ret                 0      -1     -     ",
-      "18": "set                 0      1      0     ",
-      "19": "table_open_part     1      40     26    # public.test (primary)",
-      "20": "int                 2      -      0     # 10",
-      "21": "table_readi32       3      1      0     ",
-      "22": "addii               4      2      3     ",
-      "23": "push                4      0      0     ",
-      "24": "set_add             0      0      0     ",
-      "25": "table_next          1      20     0     ",
-      "26": "free                1      0      0     ",
-      "27": "ret                 0      -1     -     "
-    }
+  "main": {
+    "00": "push_nulls          1      0      0     ",
+    "01": "union               0      0      0     ",
+    "02": "send_all            0      -      0     # public.test",
+    "03": "union_recv          0      0      0     ",
+    "04": "union_set           0      0      -1    ",
+    "05": "var_set             0      0      0     ",
+    "06": "free                0      0      0     ",
+    "07": "jmp                 9      0      0     ",
+    "08": "jmp                 24     0      0     ",
+    "09": "bool                0      1      0     ",
+    "10": "jntr                18     0      0     ",
+    "11": "union               0      0      0     ",
+    "12": "send_all            8      -      0     # public.test",
+    "13": "union_recv          0      0      0     ",
+    "14": "union_set           0      0      -1    ",
+    "15": "var_set             0      0      0     ",
+    "16": "free                0      0      0     ",
+    "17": "jmp                 8      0      0     ",
+    "18": "union               0      0      0     ",
+    "19": "send_all            18     -      0     # public.test",
+    "20": "union_recv          0      0      0     ",
+    "21": "union_set           0      0      -1    ",
+    "22": "var_set             0      0      0     ",
+    "23": "free                0      0      0     ",
+    "24": "close               0      0      0     ",
+    "25": "var                 0      0      0     ",
+    "26": "ret                 0      -1     -     "
+  },
+  "pushdown": {
+    "00": "set                 0      1      0     ",
+    "01": "table_open_part     1      0      6     # public.test (primary)",
+    "02": "table_readi32       2      1      0     ",
+    "03": "push                2      0      0     ",
+    "04": "set_add             0      0      0     ",
+    "05": "table_next          1      2      0     ",
+    "06": "free                1      0      0     ",
+    "07": "ret                 0      -1     -     ",
+    "08": "set                 0      1      0     ",
+    "09": "table_open_part     1      20     16    # public.test (primary)",
+    "10": "int                 2      -      0     # 5",
+    "11": "table_readi32       3      1      0     ",
+    "12": "addii               4      2      3     ",
+    "13": "push                4      0      0     ",
+    "14": "set_add             0      0      0     ",
+    "15": "table_next          1      10     0     ",
+    "16": "free                1      0      0     ",
+    "17": "ret                 0      -1     -     ",
+    "18": "set                 0      1      0     ",
+    "19": "table_open_part     1      40     26    # public.test (primary)",
+    "20": "int                 2      -      0     # 10",
+    "21": "table_readi32       3      1      0     ",
+    "22": "addii               4      2      3     ",
+    "23": "push                4      0      0     ",
+    "24": "set_add             0      0      0     ",
+    "25": "table_next          1      20     0     ",
+    "26": "free                1      0      0     ",
+    "27": "ret                 0      -1     -     "
   },
   "access": [["public.test", "ro"]]
 }]
@@ -1212,66 +1146,64 @@ declare x int; select id into x from test; if true then select 5 + id into x fro
 [6]
 explain declare x int; select id into x from test; if false then select 5 + id into x from test; else select 10 + id into x from test; end; select x
 [{
-  "bytecode": {
-    "frontend": {
-      "00": "push_nulls          1      0      0     ",
-      "01": "union               0      0      0     ",
-      "02": "send_all            0      -      0     # public.test",
-      "03": "union_recv          0      0      0     ",
-      "04": "union_set           0      0      -1    ",
-      "05": "var_set             0      0      0     ",
-      "06": "free                0      0      0     ",
-      "07": "jmp                 9      0      0     ",
-      "08": "jmp                 24     0      0     ",
-      "09": "bool                0      0      0     ",
-      "10": "jntr                18     0      0     ",
-      "11": "union               0      0      0     ",
-      "12": "send_all            8      -      0     # public.test",
-      "13": "union_recv          0      0      0     ",
-      "14": "union_set           0      0      -1    ",
-      "15": "var_set             0      0      0     ",
-      "16": "free                0      0      0     ",
-      "17": "jmp                 8      0      0     ",
-      "18": "union               0      0      0     ",
-      "19": "send_all            18     -      0     # public.test",
-      "20": "union_recv          0      0      0     ",
-      "21": "union_set           0      0      -1    ",
-      "22": "var_set             0      0      0     ",
-      "23": "free                0      0      0     ",
-      "24": "close               0      0      0     ",
-      "25": "var                 0      0      0     ",
-      "26": "ret                 0      -1     -     "
-    },
-    "backend": {
-      "00": "set                 0      1      0     ",
-      "01": "table_open_part     1      0      6     # public.test (primary)",
-      "02": "table_readi32       2      1      0     ",
-      "03": "push                2      0      0     ",
-      "04": "set_add             0      0      0     ",
-      "05": "table_next          1      2      0     ",
-      "06": "free                1      0      0     ",
-      "07": "ret                 0      -1     -     ",
-      "08": "set                 0      1      0     ",
-      "09": "table_open_part     1      20     16    # public.test (primary)",
-      "10": "int                 2      -      0     # 5",
-      "11": "table_readi32       3      1      0     ",
-      "12": "addii               4      2      3     ",
-      "13": "push                4      0      0     ",
-      "14": "set_add             0      0      0     ",
-      "15": "table_next          1      10     0     ",
-      "16": "free                1      0      0     ",
-      "17": "ret                 0      -1     -     ",
-      "18": "set                 0      1      0     ",
-      "19": "table_open_part     1      40     26    # public.test (primary)",
-      "20": "int                 2      -      0     # 10",
-      "21": "table_readi32       3      1      0     ",
-      "22": "addii               4      2      3     ",
-      "23": "push                4      0      0     ",
-      "24": "set_add             0      0      0     ",
-      "25": "table_next          1      20     0     ",
-      "26": "free                1      0      0     ",
-      "27": "ret                 0      -1     -     "
-    }
+  "main": {
+    "00": "push_nulls          1      0      0     ",
+    "01": "union               0      0      0     ",
+    "02": "send_all            0      -      0     # public.test",
+    "03": "union_recv          0      0      0     ",
+    "04": "union_set           0      0      -1    ",
+    "05": "var_set             0      0      0     ",
+    "06": "free                0      0      0     ",
+    "07": "jmp                 9      0      0     ",
+    "08": "jmp                 24     0      0     ",
+    "09": "bool                0      0      0     ",
+    "10": "jntr                18     0      0     ",
+    "11": "union               0      0      0     ",
+    "12": "send_all            8      -      0     # public.test",
+    "13": "union_recv          0      0      0     ",
+    "14": "union_set           0      0      -1    ",
+    "15": "var_set             0      0      0     ",
+    "16": "free                0      0      0     ",
+    "17": "jmp                 8      0      0     ",
+    "18": "union               0      0      0     ",
+    "19": "send_all            18     -      0     # public.test",
+    "20": "union_recv          0      0      0     ",
+    "21": "union_set           0      0      -1    ",
+    "22": "var_set             0      0      0     ",
+    "23": "free                0      0      0     ",
+    "24": "close               0      0      0     ",
+    "25": "var                 0      0      0     ",
+    "26": "ret                 0      -1     -     "
+  },
+  "pushdown": {
+    "00": "set                 0      1      0     ",
+    "01": "table_open_part     1      0      6     # public.test (primary)",
+    "02": "table_readi32       2      1      0     ",
+    "03": "push                2      0      0     ",
+    "04": "set_add             0      0      0     ",
+    "05": "table_next          1      2      0     ",
+    "06": "free                1      0      0     ",
+    "07": "ret                 0      -1     -     ",
+    "08": "set                 0      1      0     ",
+    "09": "table_open_part     1      20     16    # public.test (primary)",
+    "10": "int                 2      -      0     # 5",
+    "11": "table_readi32       3      1      0     ",
+    "12": "addii               4      2      3     ",
+    "13": "push                4      0      0     ",
+    "14": "set_add             0      0      0     ",
+    "15": "table_next          1      10     0     ",
+    "16": "free                1      0      0     ",
+    "17": "ret                 0      -1     -     ",
+    "18": "set                 0      1      0     ",
+    "19": "table_open_part     1      40     26    # public.test (primary)",
+    "20": "int                 2      -      0     # 10",
+    "21": "table_readi32       3      1      0     ",
+    "22": "addii               4      2      3     ",
+    "23": "push                4      0      0     ",
+    "24": "set_add             0      0      0     ",
+    "25": "table_next          1      20     0     ",
+    "26": "free                1      0      0     ",
+    "27": "ret                 0      -1     -     "
   },
   "access": [["public.test", "ro"]]
 }]
@@ -1280,35 +1212,33 @@ declare x int; select id into x from test; if false then select 5 + id into x fr
 # test: select from into / for in var
 explain declare x int; select id into x from test; for it in x do end
 [{
-  "bytecode": {
-    "frontend": {
-      "00": "push_nulls          1      0      0     ",
-      "01": "union               0      0      0     ",
-      "02": "send_all            0      -      0     # public.test (last)",
-      "03": "union_recv          0      0      0     ",
-      "04": "union_set           0      0      -1    ",
-      "05": "var_set             0      0      0     ",
-      "06": "free                0      0      0     ",
-      "07": "var                 0      0      0     ",
-      "08": "push                0      0      0     ",
-      "09": "set                 0      1      0     ",
-      "10": "set_add             0      0      0     ",
-      "11": "store_open          1      0      13    ",
-      "12": "store_next          1      12     0     ",
-      "13": "free                1      0      0     ",
-      "14": "free                0      0      0     ",
-      "15": "ret                 -1     -1     -     "
-    },
-    "backend": {
-      "00": "set                 0      1      0     ",
-      "01": "table_open_part     1      0      6     # public.test (primary)",
-      "02": "table_readi32       2      1      0     ",
-      "03": "push                2      0      0     ",
-      "04": "set_add             0      0      0     ",
-      "05": "table_next          1      2      0     ",
-      "06": "free                1      0      0     ",
-      "07": "ret                 0      -1     -     "
-    }
+  "main": {
+    "00": "push_nulls          1      0      0     ",
+    "01": "union               0      0      0     ",
+    "02": "send_all            0      -      0     # public.test (last)",
+    "03": "union_recv          0      0      0     ",
+    "04": "union_set           0      0      -1    ",
+    "05": "var_set             0      0      0     ",
+    "06": "free                0      0      0     ",
+    "07": "var                 0      0      0     ",
+    "08": "push                0      0      0     ",
+    "09": "set                 0      1      0     ",
+    "10": "set_add             0      0      0     ",
+    "11": "store_open          1      0      13    ",
+    "12": "store_next          1      12     0     ",
+    "13": "free                1      0      0     ",
+    "14": "free                0      0      0     ",
+    "15": "ret                 -1     -1     -     "
+  },
+  "pushdown": {
+    "00": "set                 0      1      0     ",
+    "01": "table_open_part     1      0      6     # public.test (primary)",
+    "02": "table_readi32       2      1      0     ",
+    "03": "push                2      0      0     ",
+    "04": "set_add             0      0      0     ",
+    "05": "table_next          1      2      0     ",
+    "06": "free                1      0      0     ",
+    "07": "ret                 0      -1     -     "
   },
   "access": [["public.test", "ro"]]
 }]
@@ -1316,33 +1246,31 @@ declare x int; select id into x from test; for it in x do end
 # test: select from into / for do select var
 explain declare x int; select id into x from test; for it in ([1,2,3]) do select x; end
 [{
-  "bytecode": {
-    "frontend": {
-      "00": "push_nulls          1      0      0     ",
-      "01": "union               0      0      0     ",
-      "02": "send_all            0      -      0     # public.test (last)",
-      "03": "union_recv          0      0      0     ",
-      "04": "union_set           0      0      -1    ",
-      "05": "var_set             0      0      0     ",
-      "06": "free                0      0      0     ",
-      "07": "json                0      20     0     ",
-      "08": "json_open           1      0      11    ",
-      "09": "var                 2      0      0     ",
-      "10": "json_next           1      9      0     ",
-      "11": "free                1      0      0     ",
-      "12": "free                0      0      0     ",
-      "13": "ret                 -1     -1     -     "
-    },
-    "backend": {
-      "00": "set                 0      1      0     ",
-      "01": "table_open_part     1      0      6     # public.test (primary)",
-      "02": "table_readi32       2      1      0     ",
-      "03": "push                2      0      0     ",
-      "04": "set_add             0      0      0     ",
-      "05": "table_next          1      2      0     ",
-      "06": "free                1      0      0     ",
-      "07": "ret                 0      -1     -     "
-    }
+  "main": {
+    "00": "push_nulls          1      0      0     ",
+    "01": "union               0      0      0     ",
+    "02": "send_all            0      -      0     # public.test (last)",
+    "03": "union_recv          0      0      0     ",
+    "04": "union_set           0      0      -1    ",
+    "05": "var_set             0      0      0     ",
+    "06": "free                0      0      0     ",
+    "07": "json                0      20     0     ",
+    "08": "json_open           1      0      11    ",
+    "09": "var                 2      0      0     ",
+    "10": "json_next           1      9      0     ",
+    "11": "free                1      0      0     ",
+    "12": "free                0      0      0     ",
+    "13": "ret                 -1     -1     -     "
+  },
+  "pushdown": {
+    "00": "set                 0      1      0     ",
+    "01": "table_open_part     1      0      6     # public.test (primary)",
+    "02": "table_readi32       2      1      0     ",
+    "03": "push                2      0      0     ",
+    "04": "set_add             0      0      0     ",
+    "05": "table_next          1      2      0     ",
+    "06": "free                1      0      0     ",
+    "07": "ret                 0      -1     -     "
   },
   "access": [["public.test", "ro"]]
 }]
@@ -1350,38 +1278,36 @@ declare x int; select id into x from test; for it in ([1,2,3]) do select x; end
 # test: select from into / for do var :=
 explain declare x int; select id into x from test; for it in ([1,2,3]) do x := it::int; end; select x
 [{
-  "bytecode": {
-    "frontend": {
-      "00": "push_nulls          1      0      0     ",
-      "01": "union               0      0      0     ",
-      "02": "send_all            0      -      0     # public.test (last)",
-      "03": "union_recv          0      0      0     ",
-      "04": "union_set           0      0      -1    ",
-      "05": "var_set             0      0      0     ",
-      "06": "free                0      0      0     ",
-      "07": "json                0      20     0     ",
-      "08": "json_open           1      0      15    ",
-      "09": "json_read           2      1      0     ",
-      "10": "push                2      0      0     ",
-      "11": "call                2      -      1     # public.int()",
-      "12": "var_set             0      0      2     ",
-      "13": "free                2      0      0     ",
-      "14": "json_next           1      9      0     ",
-      "15": "free                1      0      0     ",
-      "16": "free                0      0      0     ",
-      "17": "var                 0      0      0     ",
-      "18": "ret                 0      -1     -     "
-    },
-    "backend": {
-      "00": "set                 0      1      0     ",
-      "01": "table_open_part     1      0      6     # public.test (primary)",
-      "02": "table_readi32       2      1      0     ",
-      "03": "push                2      0      0     ",
-      "04": "set_add             0      0      0     ",
-      "05": "table_next          1      2      0     ",
-      "06": "free                1      0      0     ",
-      "07": "ret                 0      -1     -     "
-    }
+  "main": {
+    "00": "push_nulls          1      0      0     ",
+    "01": "union               0      0      0     ",
+    "02": "send_all            0      -      0     # public.test (last)",
+    "03": "union_recv          0      0      0     ",
+    "04": "union_set           0      0      -1    ",
+    "05": "var_set             0      0      0     ",
+    "06": "free                0      0      0     ",
+    "07": "json                0      20     0     ",
+    "08": "json_open           1      0      15    ",
+    "09": "json_read           2      1      0     ",
+    "10": "push                2      0      0     ",
+    "11": "call                2      -      1     # public.int()",
+    "12": "var_set             0      0      2     ",
+    "13": "free                2      0      0     ",
+    "14": "json_next           1      9      0     ",
+    "15": "free                1      0      0     ",
+    "16": "free                0      0      0     ",
+    "17": "var                 0      0      0     ",
+    "18": "ret                 0      -1     -     "
+  },
+  "pushdown": {
+    "00": "set                 0      1      0     ",
+    "01": "table_open_part     1      0      6     # public.test (primary)",
+    "02": "table_readi32       2      1      0     ",
+    "03": "push                2      0      0     ",
+    "04": "set_add             0      0      0     ",
+    "05": "table_next          1      2      0     ",
+    "06": "free                1      0      0     ",
+    "07": "ret                 0      -1     -     "
   },
   "access": [["public.test", "ro"]]
 }]
@@ -1389,45 +1315,43 @@ declare x int; select id into x from test; for it in ([1,2,3]) do x := it::int; 
 [3]
 explain declare x int; declare y int; select id into x from test; for it in ([1,2,3]) do y := x + it::int; end; select x, y
 [{
-  "bytecode": {
-    "frontend": {
-      "00": "push_nulls          2      0      0     ",
-      "01": "union               0      0      0     ",
-      "02": "send_all            0      -      0     # public.test (last)",
-      "03": "union_recv          0      0      0     ",
-      "04": "union_set           0      0      -1    ",
-      "05": "var_set             0      0      0     ",
-      "06": "free                0      0      0     ",
-      "07": "json                0      20     0     ",
-      "08": "json_open           1      0      17    ",
-      "09": "var                 2      0      0     ",
-      "10": "json_read           3      1      0     ",
-      "11": "push                3      0      0     ",
-      "12": "call                3      -      1     # public.int()",
-      "13": "addii               4      2      3     ",
-      "14": "var_set             1      0      4     ",
-      "15": "free                4      0      0     ",
-      "16": "json_next           1      9      0     ",
-      "17": "free                1      0      0     ",
-      "18": "free                0      0      0     ",
-      "19": "set                 0      2      0     ",
-      "20": "var                 1      0      0     ",
-      "21": "push                1      0      0     ",
-      "22": "var                 1      1      0     ",
-      "23": "push                1      0      0     ",
-      "24": "set_add             0      0      0     ",
-      "25": "ret                 0      -1     -     "
-    },
-    "backend": {
-      "00": "set                 0      1      0     ",
-      "01": "table_open_part     1      0      6     # public.test (primary)",
-      "02": "table_readi32       2      1      0     ",
-      "03": "push                2      0      0     ",
-      "04": "set_add             0      0      0     ",
-      "05": "table_next          1      2      0     ",
-      "06": "free                1      0      0     ",
-      "07": "ret                 0      -1     -     "
-    }
+  "main": {
+    "00": "push_nulls          2      0      0     ",
+    "01": "union               0      0      0     ",
+    "02": "send_all            0      -      0     # public.test (last)",
+    "03": "union_recv          0      0      0     ",
+    "04": "union_set           0      0      -1    ",
+    "05": "var_set             0      0      0     ",
+    "06": "free                0      0      0     ",
+    "07": "json                0      20     0     ",
+    "08": "json_open           1      0      17    ",
+    "09": "var                 2      0      0     ",
+    "10": "json_read           3      1      0     ",
+    "11": "push                3      0      0     ",
+    "12": "call                3      -      1     # public.int()",
+    "13": "addii               4      2      3     ",
+    "14": "var_set             1      0      4     ",
+    "15": "free                4      0      0     ",
+    "16": "json_next           1      9      0     ",
+    "17": "free                1      0      0     ",
+    "18": "free                0      0      0     ",
+    "19": "set                 0      2      0     ",
+    "20": "var                 1      0      0     ",
+    "21": "push                1      0      0     ",
+    "22": "var                 1      1      0     ",
+    "23": "push                1      0      0     ",
+    "24": "set_add             0      0      0     ",
+    "25": "ret                 0      -1     -     "
+  },
+  "pushdown": {
+    "00": "set                 0      1      0     ",
+    "01": "table_open_part     1      0      6     # public.test (primary)",
+    "02": "table_readi32       2      1      0     ",
+    "03": "push                2      0      0     ",
+    "04": "set_add             0      0      0     ",
+    "05": "table_next          1      2      0     ",
+    "06": "free                1      0      0     ",
+    "07": "ret                 0      -1     -     "
   },
   "access": [["public.test", "ro"]]
 }]
@@ -1436,38 +1360,36 @@ declare x int; declare y int; select id into x from test; for it in ([1,2,3]) do
 # test: select from into / for / select var
 explain declare x int; select id into x from test; for it in ([1,2,3]) do if true then end; end; select x
 [{
-  "bytecode": {
-    "frontend": {
-      "00": "push_nulls          1      0      0     ",
-      "01": "union               0      0      0     ",
-      "02": "send_all            0      -      0     # public.test (last)",
-      "03": "json                1      20     0     ",
-      "04": "json_open           2      1      11    ",
-      "05": "jmp                 7      0      0     ",
-      "06": "jmp                 10     0      0     ",
-      "07": "bool                3      1      0     ",
-      "08": "jntr                10     3      0     ",
-      "09": "jmp                 6      0      0     ",
-      "10": "json_next           2      5      0     ",
-      "11": "free                2      0      0     ",
-      "12": "free                1      0      0     ",
-      "13": "union_recv          0      0      0     ",
-      "14": "union_set           0      0      -1    ",
-      "15": "var_set             0      0      0     ",
-      "16": "free                0      0      0     ",
-      "17": "var                 0      0      0     ",
-      "18": "ret                 0      -1     -     "
-    },
-    "backend": {
-      "00": "set                 0      1      0     ",
-      "01": "table_open_part     1      0      6     # public.test (primary)",
-      "02": "table_readi32       2      1      0     ",
-      "03": "push                2      0      0     ",
-      "04": "set_add             0      0      0     ",
-      "05": "table_next          1      2      0     ",
-      "06": "free                1      0      0     ",
-      "07": "ret                 0      -1     -     "
-    }
+  "main": {
+    "00": "push_nulls          1      0      0     ",
+    "01": "union               0      0      0     ",
+    "02": "send_all            0      -      0     # public.test (last)",
+    "03": "json                1      20     0     ",
+    "04": "json_open           2      1      11    ",
+    "05": "jmp                 7      0      0     ",
+    "06": "jmp                 10     0      0     ",
+    "07": "bool                3      1      0     ",
+    "08": "jntr                10     3      0     ",
+    "09": "jmp                 6      0      0     ",
+    "10": "json_next           2      5      0     ",
+    "11": "free                2      0      0     ",
+    "12": "free                1      0      0     ",
+    "13": "union_recv          0      0      0     ",
+    "14": "union_set           0      0      -1    ",
+    "15": "var_set             0      0      0     ",
+    "16": "free                0      0      0     ",
+    "17": "var                 0      0      0     ",
+    "18": "ret                 0      -1     -     "
+  },
+  "pushdown": {
+    "00": "set                 0      1      0     ",
+    "01": "table_open_part     1      0      6     # public.test (primary)",
+    "02": "table_readi32       2      1      0     ",
+    "03": "push                2      0      0     ",
+    "04": "set_add             0      0      0     ",
+    "05": "table_next          1      2      0     ",
+    "06": "free                1      0      0     ",
+    "07": "ret                 0      -1     -     "
   },
   "access": [["public.test", "ro"]]
 }]
@@ -1476,37 +1398,35 @@ declare x int; select id into x from test; for it in ([1,2,3]) do if true then e
 # test: select from into / for if var
 explain declare x int; select id into x from test; for it in ([1,2,3]) do if x then end; end;
 [{
-  "bytecode": {
-    "frontend": {
-      "00": "push_nulls          1      0      0     ",
-      "01": "union               0      0      0     ",
-      "02": "send_all            0      -      0     # public.test (last)",
-      "03": "union_recv          0      0      0     ",
-      "04": "union_set           0      0      -1    ",
-      "05": "var_set             0      0      0     ",
-      "06": "free                0      0      0     ",
-      "07": "json                0      20     0     ",
-      "08": "json_open           1      0      15    ",
-      "09": "jmp                 11     0      0     ",
-      "10": "jmp                 14     0      0     ",
-      "11": "var                 2      0      0     ",
-      "12": "jntr                14     2      0     ",
-      "13": "jmp                 10     0      0     ",
-      "14": "json_next           1      9      0     ",
-      "15": "free                1      0      0     ",
-      "16": "free                0      0      0     ",
-      "17": "ret                 -1     -1     -     "
-    },
-    "backend": {
-      "00": "set                 0      1      0     ",
-      "01": "table_open_part     1      0      6     # public.test (primary)",
-      "02": "table_readi32       2      1      0     ",
-      "03": "push                2      0      0     ",
-      "04": "set_add             0      0      0     ",
-      "05": "table_next          1      2      0     ",
-      "06": "free                1      0      0     ",
-      "07": "ret                 0      -1     -     "
-    }
+  "main": {
+    "00": "push_nulls          1      0      0     ",
+    "01": "union               0      0      0     ",
+    "02": "send_all            0      -      0     # public.test (last)",
+    "03": "union_recv          0      0      0     ",
+    "04": "union_set           0      0      -1    ",
+    "05": "var_set             0      0      0     ",
+    "06": "free                0      0      0     ",
+    "07": "json                0      20     0     ",
+    "08": "json_open           1      0      15    ",
+    "09": "jmp                 11     0      0     ",
+    "10": "jmp                 14     0      0     ",
+    "11": "var                 2      0      0     ",
+    "12": "jntr                14     2      0     ",
+    "13": "jmp                 10     0      0     ",
+    "14": "json_next           1      9      0     ",
+    "15": "free                1      0      0     ",
+    "16": "free                0      0      0     ",
+    "17": "ret                 -1     -1     -     "
+  },
+  "pushdown": {
+    "00": "set                 0      1      0     ",
+    "01": "table_open_part     1      0      6     # public.test (primary)",
+    "02": "table_readi32       2      1      0     ",
+    "03": "push                2      0      0     ",
+    "04": "set_add             0      0      0     ",
+    "05": "table_next          1      2      0     ",
+    "06": "free                1      0      0     ",
+    "07": "ret                 0      -1     -     "
   },
   "access": [["public.test", "ro"]]
 }]
@@ -1514,88 +1434,84 @@ declare x int; select id into x from test; for it in ([1,2,3]) do if x then end;
 # test: select from into / for if then var
 explain declare x int; select id into x from test; for it in ([1,2,3]) do if true then select x; end; end;
 [{
-  "bytecode": {
-    "frontend": {
-      "00": "push_nulls          1      0      0     ",
-      "01": "union               0      0      0     ",
-      "02": "send_all            0      -      0     # public.test (last)",
-      "03": "union_recv          0      0      0     ",
-      "04": "union_set           0      0      -1    ",
-      "05": "var_set             0      0      0     ",
-      "06": "free                0      0      0     ",
-      "07": "json                0      20     0     ",
-      "08": "json_open           1      0      16    ",
-      "09": "jmp                 11     0      0     ",
-      "10": "jmp                 15     0      0     ",
-      "11": "bool                2      1      0     ",
-      "12": "jntr                15     2      0     ",
-      "13": "var                 2      0      0     ",
-      "14": "jmp                 10     0      0     ",
-      "15": "json_next           1      9      0     ",
-      "16": "free                1      0      0     ",
-      "17": "free                0      0      0     ",
-      "18": "ret                 -1     -1     -     "
-    },
-    "backend": {
-      "00": "set                 0      1      0     ",
-      "01": "table_open_part     1      0      6     # public.test (primary)",
-      "02": "table_readi32       2      1      0     ",
-      "03": "push                2      0      0     ",
-      "04": "set_add             0      0      0     ",
-      "05": "table_next          1      2      0     ",
-      "06": "free                1      0      0     ",
-      "07": "ret                 0      -1     -     "
-    }
+  "main": {
+    "00": "push_nulls          1      0      0     ",
+    "01": "union               0      0      0     ",
+    "02": "send_all            0      -      0     # public.test (last)",
+    "03": "union_recv          0      0      0     ",
+    "04": "union_set           0      0      -1    ",
+    "05": "var_set             0      0      0     ",
+    "06": "free                0      0      0     ",
+    "07": "json                0      20     0     ",
+    "08": "json_open           1      0      16    ",
+    "09": "jmp                 11     0      0     ",
+    "10": "jmp                 15     0      0     ",
+    "11": "bool                2      1      0     ",
+    "12": "jntr                15     2      0     ",
+    "13": "var                 2      0      0     ",
+    "14": "jmp                 10     0      0     ",
+    "15": "json_next           1      9      0     ",
+    "16": "free                1      0      0     ",
+    "17": "free                0      0      0     ",
+    "18": "ret                 -1     -1     -     "
+  },
+  "pushdown": {
+    "00": "set                 0      1      0     ",
+    "01": "table_open_part     1      0      6     # public.test (primary)",
+    "02": "table_readi32       2      1      0     ",
+    "03": "push                2      0      0     ",
+    "04": "set_add             0      0      0     ",
+    "05": "table_next          1      2      0     ",
+    "06": "free                1      0      0     ",
+    "07": "ret                 0      -1     -     "
   },
   "access": [["public.test", "ro"]]
 }]
 declare x int; select id into x from test; for it in ([1,2,3]) do if true then select x; end; end;
 explain declare x int; declare y int; select id into x from test; for it in ([1,2,3]) do if true then y := x + it::int; end; end; select x, y
 [{
-  "bytecode": {
-    "frontend": {
-      "00": "push_nulls          2      0      0     ",
-      "01": "union               0      0      0     ",
-      "02": "send_all            0      -      0     # public.test (last)",
-      "03": "union_recv          0      0      0     ",
-      "04": "union_set           0      0      -1    ",
-      "05": "var_set             0      0      0     ",
-      "06": "free                0      0      0     ",
-      "07": "json                0      20     0     ",
-      "08": "json_open           1      0      22    ",
-      "09": "jmp                 11     0      0     ",
-      "10": "jmp                 21     0      0     ",
-      "11": "bool                2      1      0     ",
-      "12": "jntr                21     2      0     ",
-      "13": "var                 2      0      0     ",
-      "14": "json_read           3      1      0     ",
-      "15": "push                3      0      0     ",
-      "16": "call                3      -      1     # public.int()",
-      "17": "addii               4      2      3     ",
-      "18": "var_set             1      0      4     ",
-      "19": "free                4      0      0     ",
-      "20": "jmp                 10     0      0     ",
-      "21": "json_next           1      9      0     ",
-      "22": "free                1      0      0     ",
-      "23": "free                0      0      0     ",
-      "24": "set                 0      2      0     ",
-      "25": "var                 1      0      0     ",
-      "26": "push                1      0      0     ",
-      "27": "var                 1      1      0     ",
-      "28": "push                1      0      0     ",
-      "29": "set_add             0      0      0     ",
-      "30": "ret                 0      -1     -     "
-    },
-    "backend": {
-      "00": "set                 0      1      0     ",
-      "01": "table_open_part     1      0      6     # public.test (primary)",
-      "02": "table_readi32       2      1      0     ",
-      "03": "push                2      0      0     ",
-      "04": "set_add             0      0      0     ",
-      "05": "table_next          1      2      0     ",
-      "06": "free                1      0      0     ",
-      "07": "ret                 0      -1     -     "
-    }
+  "main": {
+    "00": "push_nulls          2      0      0     ",
+    "01": "union               0      0      0     ",
+    "02": "send_all            0      -      0     # public.test (last)",
+    "03": "union_recv          0      0      0     ",
+    "04": "union_set           0      0      -1    ",
+    "05": "var_set             0      0      0     ",
+    "06": "free                0      0      0     ",
+    "07": "json                0      20     0     ",
+    "08": "json_open           1      0      22    ",
+    "09": "jmp                 11     0      0     ",
+    "10": "jmp                 21     0      0     ",
+    "11": "bool                2      1      0     ",
+    "12": "jntr                21     2      0     ",
+    "13": "var                 2      0      0     ",
+    "14": "json_read           3      1      0     ",
+    "15": "push                3      0      0     ",
+    "16": "call                3      -      1     # public.int()",
+    "17": "addii               4      2      3     ",
+    "18": "var_set             1      0      4     ",
+    "19": "free                4      0      0     ",
+    "20": "jmp                 10     0      0     ",
+    "21": "json_next           1      9      0     ",
+    "22": "free                1      0      0     ",
+    "23": "free                0      0      0     ",
+    "24": "set                 0      2      0     ",
+    "25": "var                 1      0      0     ",
+    "26": "push                1      0      0     ",
+    "27": "var                 1      1      0     ",
+    "28": "push                1      0      0     ",
+    "29": "set_add             0      0      0     ",
+    "30": "ret                 0      -1     -     "
+  },
+  "pushdown": {
+    "00": "set                 0      1      0     ",
+    "01": "table_open_part     1      0      6     # public.test (primary)",
+    "02": "table_readi32       2      1      0     ",
+    "03": "push                2      0      0     ",
+    "04": "set_add             0      0      0     ",
+    "05": "table_next          1      2      0     ",
+    "06": "free                1      0      0     ",
+    "07": "ret                 0      -1     -     "
   },
   "access": [["public.test", "ro"]]
 }]
@@ -1603,32 +1519,30 @@ declare x int; declare y int; select id into x from test; for it in ([1,2,3]) do
 [[1, 4]]
 explain declare x int := 0; for it in ([1,2,3]) do if true then x := x + it::int; end; end; select x
 [{
-  "bytecode": {
-    "frontend": {
-      "00": "push_nulls          1      0      0     ",
-      "01": "int                 0      -      0     # 0",
-      "02": "var_set             0      0      0     ",
-      "03": "free                0      0      0     ",
-      "04": "json                0      0      0     ",
-      "05": "json_open           1      0      19    ",
-      "06": "jmp                 8      0      0     ",
-      "07": "jmp                 18     0      0     ",
-      "08": "bool                2      1      0     ",
-      "09": "jntr                18     2      0     ",
-      "10": "var                 2      0      0     ",
-      "11": "json_read           3      1      0     ",
-      "12": "push                3      0      0     ",
-      "13": "call                3      -      1     # public.int()",
-      "14": "addii               4      2      3     ",
-      "15": "var_set             0      0      4     ",
-      "16": "free                4      0      0     ",
-      "17": "jmp                 7      0      0     ",
-      "18": "json_next           1      6      0     ",
-      "19": "free                1      0      0     ",
-      "20": "free                0      0      0     ",
-      "21": "var                 0      0      0     ",
-      "22": "ret                 0      -1     -     "
-    }
+  "main": {
+    "00": "push_nulls          1      0      0     ",
+    "01": "int                 0      -      0     # 0",
+    "02": "var_set             0      0      0     ",
+    "03": "free                0      0      0     ",
+    "04": "json                0      0      0     ",
+    "05": "json_open           1      0      19    ",
+    "06": "jmp                 8      0      0     ",
+    "07": "jmp                 18     0      0     ",
+    "08": "bool                2      1      0     ",
+    "09": "jntr                18     2      0     ",
+    "10": "var                 2      0      0     ",
+    "11": "json_read           3      1      0     ",
+    "12": "push                3      0      0     ",
+    "13": "call                3      -      1     # public.int()",
+    "14": "addii               4      2      3     ",
+    "15": "var_set             0      0      4     ",
+    "16": "free                4      0      0     ",
+    "17": "jmp                 7      0      0     ",
+    "18": "json_next           1      6      0     ",
+    "19": "free                1      0      0     ",
+    "20": "free                0      0      0     ",
+    "21": "var                 0      0      0     ",
+    "22": "ret                 0      -1     -     "
   },
   "access": []
 }]
@@ -1636,27 +1550,25 @@ declare x int := 0; for it in ([1,2,3]) do if true then x := x + it::int; end; e
 [6]
 explain declare x int := 0; for it in ([1,2,3]) do x := x + it::int; end; select x
 [{
-  "bytecode": {
-    "frontend": {
-      "00": "push_nulls          1      0      0     ",
-      "01": "int                 0      -      0     # 0",
-      "02": "var_set             0      0      0     ",
-      "03": "free                0      0      0     ",
-      "04": "json                0      0      0     ",
-      "05": "json_open           1      0      14    ",
-      "06": "var                 2      0      0     ",
-      "07": "json_read           3      1      0     ",
-      "08": "push                3      0      0     ",
-      "09": "call                3      -      1     # public.int()",
-      "10": "addii               4      2      3     ",
-      "11": "var_set             0      0      4     ",
-      "12": "free                4      0      0     ",
-      "13": "json_next           1      6      0     ",
-      "14": "free                1      0      0     ",
-      "15": "free                0      0      0     ",
-      "16": "var                 0      0      0     ",
-      "17": "ret                 0      -1     -     "
-    }
+  "main": {
+    "00": "push_nulls          1      0      0     ",
+    "01": "int                 0      -      0     # 0",
+    "02": "var_set             0      0      0     ",
+    "03": "free                0      0      0     ",
+    "04": "json                0      0      0     ",
+    "05": "json_open           1      0      14    ",
+    "06": "var                 2      0      0     ",
+    "07": "json_read           3      1      0     ",
+    "08": "push                3      0      0     ",
+    "09": "call                3      -      1     # public.int()",
+    "10": "addii               4      2      3     ",
+    "11": "var_set             0      0      4     ",
+    "12": "free                4      0      0     ",
+    "13": "json_next           1      6      0     ",
+    "14": "free                1      0      0     ",
+    "15": "free                0      0      0     ",
+    "16": "var                 0      0      0     ",
+    "17": "ret                 0      -1     -     "
   },
   "access": []
 }]
@@ -1665,55 +1577,53 @@ declare x int := 0; for it in ([1,2,3]) do x := x + it::int; end; select x
 # test: select from into / for if if then var
 explain declare x int; declare y int; select id into x from test; for it in ([1,2,3]) do if true then if true then y := x + it::int; end; end; end; select x, y
 [{
-  "bytecode": {
-    "frontend": {
-      "00": "push_nulls          2      0      0     ",
-      "01": "union               0      0      0     ",
-      "02": "send_all            0      -      0     # public.test (last)",
-      "03": "union_recv          0      0      0     ",
-      "04": "union_set           0      0      -1    ",
-      "05": "var_set             0      0      0     ",
-      "06": "free                0      0      0     ",
-      "07": "json                0      20     0     ",
-      "08": "json_open           1      0      27    ",
-      "09": "jmp                 11     0      0     ",
-      "10": "jmp                 26     0      0     ",
-      "11": "bool                2      1      0     ",
-      "12": "jntr                26     2      0     ",
-      "13": "jmp                 15     0      0     ",
-      "14": "jmp                 25     0      0     ",
-      "15": "bool                2      1      0     ",
-      "16": "jntr                25     2      0     ",
-      "17": "var                 2      0      0     ",
-      "18": "json_read           3      1      0     ",
-      "19": "push                3      0      0     ",
-      "20": "call                3      -      1     # public.int()",
-      "21": "addii               4      2      3     ",
-      "22": "var_set             1      0      4     ",
-      "23": "free                4      0      0     ",
-      "24": "jmp                 14     0      0     ",
-      "25": "jmp                 10     0      0     ",
-      "26": "json_next           1      9      0     ",
-      "27": "free                1      0      0     ",
-      "28": "free                0      0      0     ",
-      "29": "set                 0      2      0     ",
-      "30": "var                 1      0      0     ",
-      "31": "push                1      0      0     ",
-      "32": "var                 1      1      0     ",
-      "33": "push                1      0      0     ",
-      "34": "set_add             0      0      0     ",
-      "35": "ret                 0      -1     -     "
-    },
-    "backend": {
-      "00": "set                 0      1      0     ",
-      "01": "table_open_part     1      0      6     # public.test (primary)",
-      "02": "table_readi32       2      1      0     ",
-      "03": "push                2      0      0     ",
-      "04": "set_add             0      0      0     ",
-      "05": "table_next          1      2      0     ",
-      "06": "free                1      0      0     ",
-      "07": "ret                 0      -1     -     "
-    }
+  "main": {
+    "00": "push_nulls          2      0      0     ",
+    "01": "union               0      0      0     ",
+    "02": "send_all            0      -      0     # public.test (last)",
+    "03": "union_recv          0      0      0     ",
+    "04": "union_set           0      0      -1    ",
+    "05": "var_set             0      0      0     ",
+    "06": "free                0      0      0     ",
+    "07": "json                0      20     0     ",
+    "08": "json_open           1      0      27    ",
+    "09": "jmp                 11     0      0     ",
+    "10": "jmp                 26     0      0     ",
+    "11": "bool                2      1      0     ",
+    "12": "jntr                26     2      0     ",
+    "13": "jmp                 15     0      0     ",
+    "14": "jmp                 25     0      0     ",
+    "15": "bool                2      1      0     ",
+    "16": "jntr                25     2      0     ",
+    "17": "var                 2      0      0     ",
+    "18": "json_read           3      1      0     ",
+    "19": "push                3      0      0     ",
+    "20": "call                3      -      1     # public.int()",
+    "21": "addii               4      2      3     ",
+    "22": "var_set             1      0      4     ",
+    "23": "free                4      0      0     ",
+    "24": "jmp                 14     0      0     ",
+    "25": "jmp                 10     0      0     ",
+    "26": "json_next           1      9      0     ",
+    "27": "free                1      0      0     ",
+    "28": "free                0      0      0     ",
+    "29": "set                 0      2      0     ",
+    "30": "var                 1      0      0     ",
+    "31": "push                1      0      0     ",
+    "32": "var                 1      1      0     ",
+    "33": "push                1      0      0     ",
+    "34": "set_add             0      0      0     ",
+    "35": "ret                 0      -1     -     "
+  },
+  "pushdown": {
+    "00": "set                 0      1      0     ",
+    "01": "table_open_part     1      0      6     # public.test (primary)",
+    "02": "table_readi32       2      1      0     ",
+    "03": "push                2      0      0     ",
+    "04": "set_add             0      0      0     ",
+    "05": "table_next          1      2      0     ",
+    "06": "free                1      0      0     ",
+    "07": "ret                 0      -1     -     "
   },
   "access": [["public.test", "ro"]]
 }]

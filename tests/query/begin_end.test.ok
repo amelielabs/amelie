@@ -27,11 +27,9 @@ explain begin; end
 {"msg": "❰explain❱ ⟵ EXPLAIN without command"}
 explain begin; select 1; end
 [{
-  "bytecode": {
-    "frontend": {
-      "00": "int                 0      -      0     # 1",
-      "01": "ret                 0      -1     -     "
-    }
+  "main": {
+    "00": "int                 0      -      0     # 1",
+    "01": "ret                 0      -1     -     "
   },
   "access": []
 }]
@@ -50,12 +48,10 @@ begin; select 1; end; select 1
 # test: begin end last stmt
 explain begin; select 1; select 2; end;
 [{
-  "bytecode": {
-    "frontend": {
-      "00": "int                 0      -      0     # 1",
-      "01": "int                 1      -      0     # 2",
-      "02": "ret                 1      -1     -     "
-    }
+  "main": {
+    "00": "int                 0      -      0     # 1",
+    "01": "int                 1      -      0     # 2",
+    "02": "ret                 1      -1     -     "
   },
   "access": []
 }]

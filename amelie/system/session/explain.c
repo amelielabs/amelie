@@ -67,21 +67,16 @@ explain_call(Udf* udf, Buf* buf)
 	encode_raw(buf, "function", 8);
 	encode_target(buf, &udf->config->schema, &udf->config->name);
 
-	// bytecode
-	encode_raw(buf, "bytecode", 8);
-	encode_obj(buf);
-
-	// frontend section
-	encode_raw(buf, "frontend", 8);
+	// main
+	encode_raw(buf, "main", 4);
 	op_dump(program, &program->code, buf);
 
-	// backend section
+	// pushdown
 	if (code_count(&program->code_backend) > 0)
 	{
-		encode_raw(buf, "backend", 7);
+		encode_raw(buf, "pushdown", 8);
 		op_dump(program, &program->code_backend, buf);
 	}
-	encode_obj_end(buf);
 
 	// access
 	encode_raw(buf, "access", 6);
@@ -102,21 +97,16 @@ explain_run(Explain* self,
 
 	encode_obj(buf);
 
-	// bytecode
-	encode_raw(buf, "bytecode", 8);
-	encode_obj(buf);
-
-	// frontend section
-	encode_raw(buf, "frontend", 8);
+	// main
+	encode_raw(buf, "main", 4);
 	op_dump(program, &program->code, buf);
 
-	// backend section
+	// pushdown
 	if (code_count(&program->code_backend) > 0)
 	{
-		encode_raw(buf, "backend", 7);
+		encode_raw(buf, "pushdown", 8);
 		op_dump(program, &program->code_backend, buf);
 	}
-	encode_obj_end(buf);
 
 	// access
 	auto access = &program->access;

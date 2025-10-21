@@ -3,11 +3,9 @@ connect E0 S0 127.0.0.1:3485
 # test: int
 explain select 0
 [{
-  "bytecode": {
-    "frontend": {
-      "00": "int                 0      -      0     # 0",
-      "01": "ret                 0      -1     -     "
-    }
+  "main": {
+    "00": "int                 0      -      0     # 0",
+    "01": "ret                 0      -1     -     "
   },
   "access": []
 }]
@@ -17,11 +15,9 @@ select 1234
 [1234]
 explain select -1234
 [{
-  "bytecode": {
-    "frontend": {
-      "00": "int                 0      -      0     # -1234",
-      "01": "ret                 0      -1     -     "
-    }
+  "main": {
+    "00": "int                 0      -      0     # -1234",
+    "01": "ret                 0      -1     -     "
   },
   "access": []
 }]
@@ -50,13 +46,11 @@ select 1 = false
 [false]
 explain select 1 = true
 [{
-  "bytecode": {
-    "frontend": {
-      "00": "int                 0      -      0     # 1",
-      "01": "bool                1      1      0     ",
-      "02": "equii               2      0      1     ",
-      "03": "ret                 2      -1     -     "
-    }
+  "main": {
+    "00": "int                 0      -      0     # 1",
+    "01": "bool                1      1      0     ",
+    "02": "equii               2      0      1     ",
+    "03": "ret                 2      -1     -     "
   },
   "access": []
 }]
@@ -69,13 +63,11 @@ select 1 = 0
 [false]
 explain select 1 = 18
 [{
-  "bytecode": {
-    "frontend": {
-      "00": "int                 0      -      0     # 1",
-      "01": "int                 1      -      0     # 18",
-      "02": "equii               2      0      1     ",
-      "03": "ret                 2      -1     -     "
-    }
+  "main": {
+    "00": "int                 0      -      0     # 1",
+    "01": "int                 1      -      0     # 18",
+    "02": "equii               2      0      1     ",
+    "03": "ret                 2      -1     -     "
   },
   "access": []
 }]
@@ -88,13 +80,11 @@ select 1 = 0.14
 [false]
 explain select 1 = 1.0000
 [{
-  "bytecode": {
-    "frontend": {
-      "00": "int                 0      -      0     # 1",
-      "01": "double              1      0      0     # 1",
-      "02": "equif               2      0      1     ",
-      "03": "ret                 2      -1     -     "
-    }
+  "main": {
+    "00": "int                 0      -      0     # 1",
+    "01": "double              1      0      0     # 1",
+    "02": "equif               2      0      1     ",
+    "03": "ret                 2      -1     -     "
   },
   "access": []
 }]
@@ -103,15 +93,13 @@ select 0 = '1970-01-01 00:00:00'::timestamp
 [true]
 explain select 0 = '1970-01-01 00:00:00'::timestamp
 [{
-  "bytecode": {
-    "frontend": {
-      "00": "int                 0      -      0     # 0",
-      "01": "string              1      0      0     # 1970-01-01 00:00:00",
-      "02": "push                1      0      0     ",
-      "03": "call                1      -      1     # public.timestamp()",
-      "04": "equii               2      0      1     ",
-      "05": "ret                 2      -1     -     "
-    }
+  "main": {
+    "00": "int                 0      -      0     # 0",
+    "01": "string              1      0      0     # 1970-01-01 00:00:00",
+    "02": "push                1      0      0     ",
+    "03": "call                1      -      1     # public.timestamp()",
+    "04": "equii               2      0      1     ",
+    "05": "ret                 2      -1     -     "
   },
   "access": []
 }]
@@ -122,13 +110,11 @@ select 1 = null
 [null]
 explain select 1 = null
 [{
-  "bytecode": {
-    "frontend": {
-      "00": "int                 0      -      0     # 1",
-      "01": "null                1      0      0     ",
-      "02": "nullop              2      0      1     ",
-      "03": "ret                 2      -1     -     "
-    }
+  "main": {
+    "00": "int                 0      -      0     # 1",
+    "01": "null                1      0      0     ",
+    "02": "nullop              2      0      1     ",
+    "03": "ret                 2      -1     -     "
   },
   "access": []
 }]
@@ -144,14 +130,12 @@ select 1 <> false
 [true]
 explain select 1 <> true
 [{
-  "bytecode": {
-    "frontend": {
-      "00": "int                 0      -      0     # 1",
-      "01": "bool                1      1      0     ",
-      "02": "equii               2      0      1     ",
-      "03": "not                 0      2      0     ",
-      "04": "ret                 0      -1     -     "
-    }
+  "main": {
+    "00": "int                 0      -      0     # 1",
+    "01": "bool                1      1      0     ",
+    "02": "equii               2      0      1     ",
+    "03": "not                 0      2      0     ",
+    "04": "ret                 0      -1     -     "
   },
   "access": []
 }]
@@ -164,14 +148,12 @@ select 1 <> 0
 [true]
 explain select 1 <> 18
 [{
-  "bytecode": {
-    "frontend": {
-      "00": "int                 0      -      0     # 1",
-      "01": "int                 1      -      0     # 18",
-      "02": "equii               2      0      1     ",
-      "03": "not                 0      2      0     ",
-      "04": "ret                 0      -1     -     "
-    }
+  "main": {
+    "00": "int                 0      -      0     # 1",
+    "01": "int                 1      -      0     # 18",
+    "02": "equii               2      0      1     ",
+    "03": "not                 0      2      0     ",
+    "04": "ret                 0      -1     -     "
   },
   "access": []
 }]
@@ -184,14 +166,12 @@ select 1 <> 0.14
 [true]
 explain select 1 <> 1.0000
 [{
-  "bytecode": {
-    "frontend": {
-      "00": "int                 0      -      0     # 1",
-      "01": "double              1      0      0     # 1",
-      "02": "equif               2      0      1     ",
-      "03": "not                 0      2      0     ",
-      "04": "ret                 0      -1     -     "
-    }
+  "main": {
+    "00": "int                 0      -      0     # 1",
+    "01": "double              1      0      0     # 1",
+    "02": "equif               2      0      1     ",
+    "03": "not                 0      2      0     ",
+    "04": "ret                 0      -1     -     "
   },
   "access": []
 }]
@@ -200,16 +180,14 @@ select 0 <> '1970-01-01 00:00:00'::timestamp
 [false]
 explain select 0 <> '1970-01-01 00:00:00'::timestamp
 [{
-  "bytecode": {
-    "frontend": {
-      "00": "int                 0      -      0     # 0",
-      "01": "string              1      0      0     # 1970-01-01 00:00:00",
-      "02": "push                1      0      0     ",
-      "03": "call                1      -      1     # public.timestamp()",
-      "04": "equii               2      0      1     ",
-      "05": "not                 0      2      0     ",
-      "06": "ret                 0      -1     -     "
-    }
+  "main": {
+    "00": "int                 0      -      0     # 0",
+    "01": "string              1      0      0     # 1970-01-01 00:00:00",
+    "02": "push                1      0      0     ",
+    "03": "call                1      -      1     # public.timestamp()",
+    "04": "equii               2      0      1     ",
+    "05": "not                 0      2      0     ",
+    "06": "ret                 0      -1     -     "
   },
   "access": []
 }]
@@ -220,14 +198,12 @@ select 1 <> null
 [null]
 explain select 1 <> null
 [{
-  "bytecode": {
-    "frontend": {
-      "00": "int                 0      -      0     # 1",
-      "01": "null                1      0      0     ",
-      "02": "nullop              2      0      1     ",
-      "03": "not                 0      2      0     ",
-      "04": "ret                 0      -1     -     "
-    }
+  "main": {
+    "00": "int                 0      -      0     # 1",
+    "01": "null                1      0      0     ",
+    "02": "nullop              2      0      1     ",
+    "03": "not                 0      2      0     ",
+    "04": "ret                 0      -1     -     "
   },
   "access": []
 }]
@@ -253,13 +229,11 @@ select -11 >= -10
 [false]
 explain select -1 >= -10
 [{
-  "bytecode": {
-    "frontend": {
-      "00": "int                 0      -      0     # -1",
-      "01": "int                 1      -      0     # -10",
-      "02": "gteii               2      0      1     ",
-      "03": "ret                 2      -1     -     "
-    }
+  "main": {
+    "00": "int                 0      -      0     # -1",
+    "01": "int                 1      -      0     # -10",
+    "02": "gteii               2      0      1     ",
+    "03": "ret                 2      -1     -     "
   },
   "access": []
 }]
@@ -270,13 +244,11 @@ select 1 >= 1.11
 [false]
 explain select 1 >= 1.11
 [{
-  "bytecode": {
-    "frontend": {
-      "00": "int                 0      -      0     # 1",
-      "01": "double              1      0      0     # 1.11",
-      "02": "gteif               2      0      1     ",
-      "03": "ret                 2      -1     -     "
-    }
+  "main": {
+    "00": "int                 0      -      0     # 1",
+    "01": "double              1      0      0     # 1.11",
+    "02": "gteif               2      0      1     ",
+    "03": "ret                 2      -1     -     "
   },
   "access": []
 }]
@@ -287,15 +259,13 @@ select 0 >= '1970-01-01 00:00:00'::timestamp
 [true]
 explain select 0 >= '1970-01-01 00:00:00'::timestamp
 [{
-  "bytecode": {
-    "frontend": {
-      "00": "int                 0      -      0     # 0",
-      "01": "string              1      0      0     # 1970-01-01 00:00:00",
-      "02": "push                1      0      0     ",
-      "03": "call                1      -      1     # public.timestamp()",
-      "04": "gteii               2      0      1     ",
-      "05": "ret                 2      -1     -     "
-    }
+  "main": {
+    "00": "int                 0      -      0     # 0",
+    "01": "string              1      0      0     # 1970-01-01 00:00:00",
+    "02": "push                1      0      0     ",
+    "03": "call                1      -      1     # public.timestamp()",
+    "04": "gteii               2      0      1     ",
+    "05": "ret                 2      -1     -     "
   },
   "access": []
 }]
@@ -304,13 +274,11 @@ select 1 >= null
 [null]
 explain select 1 >= null
 [{
-  "bytecode": {
-    "frontend": {
-      "00": "int                 0      -      0     # 1",
-      "01": "null                1      0      0     ",
-      "02": "nullop              2      0      1     ",
-      "03": "ret                 2      -1     -     "
-    }
+  "main": {
+    "00": "int                 0      -      0     # 1",
+    "01": "null                1      0      0     ",
+    "02": "nullop              2      0      1     ",
+    "03": "ret                 2      -1     -     "
   },
   "access": []
 }]
@@ -334,13 +302,11 @@ select -11 > -10
 [false]
 explain select -1 > -10
 [{
-  "bytecode": {
-    "frontend": {
-      "00": "int                 0      -      0     # -1",
-      "01": "int                 1      -      0     # -10",
-      "02": "gtii                2      0      1     ",
-      "03": "ret                 2      -1     -     "
-    }
+  "main": {
+    "00": "int                 0      -      0     # -1",
+    "01": "int                 1      -      0     # -10",
+    "02": "gtii                2      0      1     ",
+    "03": "ret                 2      -1     -     "
   },
   "access": []
 }]
@@ -351,13 +317,11 @@ select 1 > 1.11
 [false]
 explain select 1 > 1.11
 [{
-  "bytecode": {
-    "frontend": {
-      "00": "int                 0      -      0     # 1",
-      "01": "double              1      0      0     # 1.11",
-      "02": "gtif                2      0      1     ",
-      "03": "ret                 2      -1     -     "
-    }
+  "main": {
+    "00": "int                 0      -      0     # 1",
+    "01": "double              1      0      0     # 1.11",
+    "02": "gtif                2      0      1     ",
+    "03": "ret                 2      -1     -     "
   },
   "access": []
 }]
@@ -368,15 +332,13 @@ select 0 > '1970-01-01 00:00:00'::timestamp
 [false]
 explain select 0 > '1970-01-01 00:00:00'::timestamp
 [{
-  "bytecode": {
-    "frontend": {
-      "00": "int                 0      -      0     # 0",
-      "01": "string              1      0      0     # 1970-01-01 00:00:00",
-      "02": "push                1      0      0     ",
-      "03": "call                1      -      1     # public.timestamp()",
-      "04": "gtii                2      0      1     ",
-      "05": "ret                 2      -1     -     "
-    }
+  "main": {
+    "00": "int                 0      -      0     # 0",
+    "01": "string              1      0      0     # 1970-01-01 00:00:00",
+    "02": "push                1      0      0     ",
+    "03": "call                1      -      1     # public.timestamp()",
+    "04": "gtii                2      0      1     ",
+    "05": "ret                 2      -1     -     "
   },
   "access": []
 }]
@@ -385,13 +347,11 @@ select 1 > null
 [null]
 explain select 1 > null
 [{
-  "bytecode": {
-    "frontend": {
-      "00": "int                 0      -      0     # 1",
-      "01": "null                1      0      0     ",
-      "02": "nullop              2      0      1     ",
-      "03": "ret                 2      -1     -     "
-    }
+  "main": {
+    "00": "int                 0      -      0     # 1",
+    "01": "null                1      0      0     ",
+    "02": "nullop              2      0      1     ",
+    "03": "ret                 2      -1     -     "
   },
   "access": []
 }]
@@ -415,13 +375,11 @@ select -11 <= -10
 [true]
 explain select -1 <= -10
 [{
-  "bytecode": {
-    "frontend": {
-      "00": "int                 0      -      0     # -1",
-      "01": "int                 1      -      0     # -10",
-      "02": "lteii               2      0      1     ",
-      "03": "ret                 2      -1     -     "
-    }
+  "main": {
+    "00": "int                 0      -      0     # -1",
+    "01": "int                 1      -      0     # -10",
+    "02": "lteii               2      0      1     ",
+    "03": "ret                 2      -1     -     "
   },
   "access": []
 }]
@@ -432,13 +390,11 @@ select 1 <= 1.11
 [true]
 explain select 1 <= 1.11
 [{
-  "bytecode": {
-    "frontend": {
-      "00": "int                 0      -      0     # 1",
-      "01": "double              1      0      0     # 1.11",
-      "02": "lteif               2      0      1     ",
-      "03": "ret                 2      -1     -     "
-    }
+  "main": {
+    "00": "int                 0      -      0     # 1",
+    "01": "double              1      0      0     # 1.11",
+    "02": "lteif               2      0      1     ",
+    "03": "ret                 2      -1     -     "
   },
   "access": []
 }]
@@ -449,15 +405,13 @@ select 0 <= '1970-01-01 00:00:00'::timestamp
 [true]
 explain select 0 <= '1970-01-01 00:00:00'::timestamp
 [{
-  "bytecode": {
-    "frontend": {
-      "00": "int                 0      -      0     # 0",
-      "01": "string              1      0      0     # 1970-01-01 00:00:00",
-      "02": "push                1      0      0     ",
-      "03": "call                1      -      1     # public.timestamp()",
-      "04": "lteii               2      0      1     ",
-      "05": "ret                 2      -1     -     "
-    }
+  "main": {
+    "00": "int                 0      -      0     # 0",
+    "01": "string              1      0      0     # 1970-01-01 00:00:00",
+    "02": "push                1      0      0     ",
+    "03": "call                1      -      1     # public.timestamp()",
+    "04": "lteii               2      0      1     ",
+    "05": "ret                 2      -1     -     "
   },
   "access": []
 }]
@@ -466,13 +420,11 @@ select 1 <= null
 [null]
 explain select 1 <= null
 [{
-  "bytecode": {
-    "frontend": {
-      "00": "int                 0      -      0     # 1",
-      "01": "null                1      0      0     ",
-      "02": "nullop              2      0      1     ",
-      "03": "ret                 2      -1     -     "
-    }
+  "main": {
+    "00": "int                 0      -      0     # 1",
+    "01": "null                1      0      0     ",
+    "02": "nullop              2      0      1     ",
+    "03": "ret                 2      -1     -     "
   },
   "access": []
 }]
@@ -496,13 +448,11 @@ select -11 < -10
 [true]
 explain select -1 < -10
 [{
-  "bytecode": {
-    "frontend": {
-      "00": "int                 0      -      0     # -1",
-      "01": "int                 1      -      0     # -10",
-      "02": "ltii                2      0      1     ",
-      "03": "ret                 2      -1     -     "
-    }
+  "main": {
+    "00": "int                 0      -      0     # -1",
+    "01": "int                 1      -      0     # -10",
+    "02": "ltii                2      0      1     ",
+    "03": "ret                 2      -1     -     "
   },
   "access": []
 }]
@@ -513,13 +463,11 @@ select 1 < 1.11
 [true]
 explain select 1 < 1.11
 [{
-  "bytecode": {
-    "frontend": {
-      "00": "int                 0      -      0     # 1",
-      "01": "double              1      0      0     # 1.11",
-      "02": "ltif                2      0      1     ",
-      "03": "ret                 2      -1     -     "
-    }
+  "main": {
+    "00": "int                 0      -      0     # 1",
+    "01": "double              1      0      0     # 1.11",
+    "02": "ltif                2      0      1     ",
+    "03": "ret                 2      -1     -     "
   },
   "access": []
 }]
@@ -530,15 +478,13 @@ select 0 < '1970-01-01 00:00:00'::timestamp
 [false]
 explain select 0 < '1970-01-01 00:00:00'::timestamp
 [{
-  "bytecode": {
-    "frontend": {
-      "00": "int                 0      -      0     # 0",
-      "01": "string              1      0      0     # 1970-01-01 00:00:00",
-      "02": "push                1      0      0     ",
-      "03": "call                1      -      1     # public.timestamp()",
-      "04": "ltii                2      0      1     ",
-      "05": "ret                 2      -1     -     "
-    }
+  "main": {
+    "00": "int                 0      -      0     # 0",
+    "01": "string              1      0      0     # 1970-01-01 00:00:00",
+    "02": "push                1      0      0     ",
+    "03": "call                1      -      1     # public.timestamp()",
+    "04": "ltii                2      0      1     ",
+    "05": "ret                 2      -1     -     "
   },
   "access": []
 }]
@@ -547,13 +493,11 @@ select 1 < null
 [null]
 explain select 1 < null
 [{
-  "bytecode": {
-    "frontend": {
-      "00": "int                 0      -      0     # 1",
-      "01": "null                1      0      0     ",
-      "02": "nullop              2      0      1     ",
-      "03": "ret                 2      -1     -     "
-    }
+  "main": {
+    "00": "int                 0      -      0     # 1",
+    "01": "null                1      0      0     ",
+    "02": "nullop              2      0      1     ",
+    "03": "ret                 2      -1     -     "
   },
   "access": []
 }]
@@ -565,13 +509,11 @@ select 1 + 1
 [2]
 explain select 1 + 1
 [{
-  "bytecode": {
-    "frontend": {
-      "00": "int                 0      -      0     # 1",
-      "01": "int                 1      -      0     # 1",
-      "02": "addii               2      0      1     ",
-      "03": "ret                 2      -1     -     "
-    }
+  "main": {
+    "00": "int                 0      -      0     # 1",
+    "01": "int                 1      -      0     # 1",
+    "02": "addii               2      0      1     ",
+    "03": "ret                 2      -1     -     "
   },
   "access": []
 }]
@@ -589,13 +531,11 @@ select 1 + 1.5
 [2.5]
 explain select 1 + 1.5
 [{
-  "bytecode": {
-    "frontend": {
-      "00": "int                 0      -      0     # 1",
-      "01": "double              1      0      0     # 1.5",
-      "02": "addif               2      0      1     ",
-      "03": "ret                 2      -1     -     "
-    }
+  "main": {
+    "00": "int                 0      -      0     # 1",
+    "01": "double              1      0      0     # 1.5",
+    "02": "addif               2      0      1     ",
+    "03": "ret                 2      -1     -     "
   },
   "access": []
 }]
@@ -610,13 +550,11 @@ select 1 - 1
 [0]
 explain select 1 - 1
 [{
-  "bytecode": {
-    "frontend": {
-      "00": "int                 0      -      0     # 1",
-      "01": "int                 1      -      0     # 1",
-      "02": "subii               2      0      1     ",
-      "03": "ret                 2      -1     -     "
-    }
+  "main": {
+    "00": "int                 0      -      0     # 1",
+    "01": "int                 1      -      0     # 1",
+    "02": "subii               2      0      1     ",
+    "03": "ret                 2      -1     -     "
   },
   "access": []
 }]
@@ -634,13 +572,11 @@ select 1 - 1.5
 [-0.5]
 explain select 1 - 1.5
 [{
-  "bytecode": {
-    "frontend": {
-      "00": "int                 0      -      0     # 1",
-      "01": "double              1      0      0     # 1.5",
-      "02": "subif               2      0      1     ",
-      "03": "ret                 2      -1     -     "
-    }
+  "main": {
+    "00": "int                 0      -      0     # 1",
+    "01": "double              1      0      0     # 1.5",
+    "02": "subif               2      0      1     ",
+    "03": "ret                 2      -1     -     "
   },
   "access": []
 }]
@@ -655,13 +591,11 @@ select 2 * 2
 [4]
 explain select 2 * 2
 [{
-  "bytecode": {
-    "frontend": {
-      "00": "int                 0      -      0     # 2",
-      "01": "int                 1      -      0     # 2",
-      "02": "mulii               2      0      1     ",
-      "03": "ret                 2      -1     -     "
-    }
+  "main": {
+    "00": "int                 0      -      0     # 2",
+    "01": "int                 1      -      0     # 2",
+    "02": "mulii               2      0      1     ",
+    "03": "ret                 2      -1     -     "
   },
   "access": []
 }]
@@ -679,13 +613,11 @@ select 2 * 1.5
 [3]
 explain select 2 * 1.5
 [{
-  "bytecode": {
-    "frontend": {
-      "00": "int                 0      -      0     # 2",
-      "01": "double              1      0      0     # 1.5",
-      "02": "mulif               2      0      1     ",
-      "03": "ret                 2      -1     -     "
-    }
+  "main": {
+    "00": "int                 0      -      0     # 2",
+    "01": "double              1      0      0     # 1.5",
+    "02": "mulif               2      0      1     ",
+    "03": "ret                 2      -1     -     "
   },
   "access": []
 }]
@@ -700,13 +632,11 @@ select 2 / 2
 [1]
 explain select 2 / 2
 [{
-  "bytecode": {
-    "frontend": {
-      "00": "int                 0      -      0     # 2",
-      "01": "int                 1      -      0     # 2",
-      "02": "divii               2      0      1     ",
-      "03": "ret                 2      -1     -     "
-    }
+  "main": {
+    "00": "int                 0      -      0     # 2",
+    "01": "int                 1      -      0     # 2",
+    "02": "divii               2      0      1     ",
+    "03": "ret                 2      -1     -     "
   },
   "access": []
 }]
@@ -719,13 +649,11 @@ select 35 / 1.5
 [23.3333]
 explain select 35 / 1.5
 [{
-  "bytecode": {
-    "frontend": {
-      "00": "int                 0      -      0     # 35",
-      "01": "double              1      0      0     # 1.5",
-      "02": "divif               2      0      1     ",
-      "03": "ret                 2      -1     -     "
-    }
+  "main": {
+    "00": "int                 0      -      0     # 35",
+    "01": "double              1      0      0     # 1.5",
+    "02": "divif               2      0      1     ",
+    "03": "ret                 2      -1     -     "
   },
   "access": []
 }]
@@ -740,13 +668,11 @@ select 8 % 3
 [2]
 explain select 8 % 3
 [{
-  "bytecode": {
-    "frontend": {
-      "00": "int                 0      -      0     # 8",
-      "01": "int                 1      -      0     # 3",
-      "02": "modii               2      0      1     ",
-      "03": "ret                 2      -1     -     "
-    }
+  "main": {
+    "00": "int                 0      -      0     # 8",
+    "01": "int                 1      -      0     # 3",
+    "02": "modii               2      0      1     ",
+    "03": "ret                 2      -1     -     "
   },
   "access": []
 }]
@@ -763,13 +689,11 @@ select 60 | 13
 [61]
 explain select 60 | 13
 [{
-  "bytecode": {
-    "frontend": {
-      "00": "int                 0      -      0     # 60",
-      "01": "int                 1      -      0     # 13",
-      "02": "borii               2      0      1     ",
-      "03": "ret                 2      -1     -     "
-    }
+  "main": {
+    "00": "int                 0      -      0     # 60",
+    "01": "int                 1      -      0     # 13",
+    "02": "borii               2      0      1     ",
+    "03": "ret                 2      -1     -     "
   },
   "access": []
 }]
@@ -778,13 +702,11 @@ select 60 | null
 [null]
 explain select 60 | null
 [{
-  "bytecode": {
-    "frontend": {
-      "00": "int                 0      -      0     # 60",
-      "01": "null                1      0      0     ",
-      "02": "nullop              2      0      1     ",
-      "03": "ret                 2      -1     -     "
-    }
+  "main": {
+    "00": "int                 0      -      0     # 60",
+    "01": "null                1      0      0     ",
+    "02": "nullop              2      0      1     ",
+    "03": "ret                 2      -1     -     "
   },
   "access": []
 }]
@@ -796,13 +718,11 @@ select 60 & 13
 [12]
 explain select 60 & 13
 [{
-  "bytecode": {
-    "frontend": {
-      "00": "int                 0      -      0     # 60",
-      "01": "int                 1      -      0     # 13",
-      "02": "bandii              2      0      1     ",
-      "03": "ret                 2      -1     -     "
-    }
+  "main": {
+    "00": "int                 0      -      0     # 60",
+    "01": "int                 1      -      0     # 13",
+    "02": "bandii              2      0      1     ",
+    "03": "ret                 2      -1     -     "
   },
   "access": []
 }]
@@ -811,13 +731,11 @@ select 60 & null
 [null]
 explain select 60 & null
 [{
-  "bytecode": {
-    "frontend": {
-      "00": "int                 0      -      0     # 60",
-      "01": "null                1      0      0     ",
-      "02": "nullop              2      0      1     ",
-      "03": "ret                 2      -1     -     "
-    }
+  "main": {
+    "00": "int                 0      -      0     # 60",
+    "01": "null                1      0      0     ",
+    "02": "nullop              2      0      1     ",
+    "03": "ret                 2      -1     -     "
   },
   "access": []
 }]
@@ -829,13 +747,11 @@ select 60 ^ 13
 [49]
 explain select 60 ^ 13
 [{
-  "bytecode": {
-    "frontend": {
-      "00": "int                 0      -      0     # 60",
-      "01": "int                 1      -      0     # 13",
-      "02": "bxorii              2      0      1     ",
-      "03": "ret                 2      -1     -     "
-    }
+  "main": {
+    "00": "int                 0      -      0     # 60",
+    "01": "int                 1      -      0     # 13",
+    "02": "bxorii              2      0      1     ",
+    "03": "ret                 2      -1     -     "
   },
   "access": []
 }]
@@ -844,13 +760,11 @@ select 60 ^ null
 [null]
 explain select 60 ^ null
 [{
-  "bytecode": {
-    "frontend": {
-      "00": "int                 0      -      0     # 60",
-      "01": "null                1      0      0     ",
-      "02": "nullop              2      0      1     ",
-      "03": "ret                 2      -1     -     "
-    }
+  "main": {
+    "00": "int                 0      -      0     # 60",
+    "01": "null                1      0      0     ",
+    "02": "nullop              2      0      1     ",
+    "03": "ret                 2      -1     -     "
   },
   "access": []
 }]
@@ -862,13 +776,11 @@ select 60 << 2
 [240]
 explain select 60 << 2
 [{
-  "bytecode": {
-    "frontend": {
-      "00": "int                 0      -      0     # 60",
-      "01": "int                 1      -      0     # 2",
-      "02": "bshlii              2      0      1     ",
-      "03": "ret                 2      -1     -     "
-    }
+  "main": {
+    "00": "int                 0      -      0     # 60",
+    "01": "int                 1      -      0     # 2",
+    "02": "bshlii              2      0      1     ",
+    "03": "ret                 2      -1     -     "
   },
   "access": []
 }]
@@ -883,13 +795,11 @@ select 60 >> 2
 [15]
 explain select 60 >> 2
 [{
-  "bytecode": {
-    "frontend": {
-      "00": "int                 0      -      0     # 60",
-      "01": "int                 1      -      0     # 2",
-      "02": "bshrii              2      0      1     ",
-      "03": "ret                 2      -1     -     "
-    }
+  "main": {
+    "00": "int                 0      -      0     # 60",
+    "01": "int                 1      -      0     # 2",
+    "02": "bshrii              2      0      1     ",
+    "03": "ret                 2      -1     -     "
   },
   "access": []
 }]
@@ -907,11 +817,9 @@ select -18
 [-18]
 explain select -18
 [{
-  "bytecode": {
-    "frontend": {
-      "00": "int                 0      -      0     # -18",
-      "01": "ret                 0      -1     -     "
-    }
+  "main": {
+    "00": "int                 0      -      0     # -18",
+    "01": "ret                 0      -1     -     "
   },
   "access": []
 }]

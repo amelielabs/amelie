@@ -15,12 +15,10 @@ select 1 is 1
 {"msg": "select 1 is ❰1❱ ⟵ NOT or NULL expected"}
 explain select 1 is null
 [{
-  "bytecode": {
-    "frontend": {
-      "00": "int                 0      -      0     # 1",
-      "01": "is                  1      0      0     ",
-      "02": "ret                 1      -1     -     "
-    }
+  "main": {
+    "00": "int                 0      -      0     # 1",
+    "01": "is                  1      0      0     ",
+    "02": "ret                 1      -1     -     "
   },
   "access": []
 }]
@@ -31,13 +29,11 @@ select null is null
 # test: is not null
 explain select 1 is not null
 [{
-  "bytecode": {
-    "frontend": {
-      "00": "int                 0      -      0     # 1",
-      "01": "is                  1      0      0     ",
-      "02": "not                 0      1      0     ",
-      "03": "ret                 0      -1     -     "
-    }
+  "main": {
+    "00": "int                 0      -      0     # 1",
+    "01": "is                  1      0      0     ",
+    "02": "not                 0      1      0     ",
+    "03": "ret                 0      -1     -     "
   },
   "access": []
 }]

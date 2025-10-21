@@ -36,21 +36,17 @@ select null, null
 [[null, null]]
 explain select 1
 [{
-  "bytecode": {
-    "frontend": {
-      "00": "int                 0      -      0     # 1",
-      "01": "ret                 0      -1     -     "
-    }
+  "main": {
+    "00": "int                 0      -      0     # 1",
+    "01": "ret                 0      -1     -     "
   },
   "access": []
 }]
 explain select [1, 2, 3]
 [{
-  "bytecode": {
-    "frontend": {
-      "00": "json                0      0      0     ",
-      "01": "ret                 0      -1     -     "
-    }
+  "main": {
+    "00": "json                0      0      0     ",
+    "01": "ret                 0      -1     -     "
   },
   "access": []
 }]
@@ -73,24 +69,22 @@ insert into test () values ()
 insert into test () values ()
 explain select * from test
 [{
-  "bytecode": {
-    "frontend": {
-      "00": "union               0      0      0     ",
-      "01": "send_all            0      -      0     # public.test (last)",
-      "02": "union_recv          0      0      0     ",
-      "03": "union_set           0      0      -1    ",
-      "04": "ret                 0      -1     -     "
-    },
-    "backend": {
-      "00": "set                 0      1      0     ",
-      "01": "table_open_part     1      0      6     # public.test (primary)",
-      "02": "table_readi64       2      1      0     ",
-      "03": "push                2      0      0     ",
-      "04": "set_add             0      0      0     ",
-      "05": "table_next          1      2      0     ",
-      "06": "free                1      0      0     ",
-      "07": "ret                 0      -1     -     "
-    }
+  "main": {
+    "00": "union               0      0      0     ",
+    "01": "send_all            0      -      0     # public.test (last)",
+    "02": "union_recv          0      0      0     ",
+    "03": "union_set           0      0      -1    ",
+    "04": "ret                 0      -1     -     "
+  },
+  "pushdown": {
+    "00": "set                 0      1      0     ",
+    "01": "table_open_part     1      0      6     # public.test (primary)",
+    "02": "table_readi64       2      1      0     ",
+    "03": "push                2      0      0     ",
+    "04": "set_add             0      0      0     ",
+    "05": "table_next          1      2      0     ",
+    "06": "free                1      0      0     ",
+    "07": "ret                 0      -1     -     "
   },
   "access": [["public.test", "ro"]]
 }]
@@ -116,26 +110,24 @@ select * from test
 [[0, 0], [1, 0], [2, 0]]
 explain select id, data from test
 [{
-  "bytecode": {
-    "frontend": {
-      "00": "union               0      0      0     ",
-      "01": "send_all            0      -      0     # public.test (last)",
-      "02": "union_recv          0      0      0     ",
-      "03": "union_set           0      0      -1    ",
-      "04": "ret                 0      -1     -     "
-    },
-    "backend": {
-      "00": "set                 0      2      0     ",
-      "01": "table_open_part     1      0      8     # public.test (primary)",
-      "02": "table_readi64       2      1      0     ",
-      "03": "push                2      0      0     ",
-      "04": "table_readi32       2      1      1     ",
-      "05": "push                2      0      0     ",
-      "06": "set_add             0      0      0     ",
-      "07": "table_next          1      2      0     ",
-      "08": "free                1      0      0     ",
-      "09": "ret                 0      -1     -     "
-    }
+  "main": {
+    "00": "union               0      0      0     ",
+    "01": "send_all            0      -      0     # public.test (last)",
+    "02": "union_recv          0      0      0     ",
+    "03": "union_set           0      0      -1    ",
+    "04": "ret                 0      -1     -     "
+  },
+  "pushdown": {
+    "00": "set                 0      2      0     ",
+    "01": "table_open_part     1      0      8     # public.test (primary)",
+    "02": "table_readi64       2      1      0     ",
+    "03": "push                2      0      0     ",
+    "04": "table_readi32       2      1      1     ",
+    "05": "push                2      0      0     ",
+    "06": "set_add             0      0      0     ",
+    "07": "table_next          1      2      0     ",
+    "08": "free                1      0      0     ",
+    "09": "ret                 0      -1     -     "
   },
   "access": [["public.test", "ro"]]
 }]
@@ -159,26 +151,24 @@ select * from test
 }]]
 explain select data.data from test
 [{
-  "bytecode": {
-    "frontend": {
-      "00": "union               0      0      0     ",
-      "01": "send_all            0      -      0     # public.test (last)",
-      "02": "union_recv          0      0      0     ",
-      "03": "union_set           0      0      -1    ",
-      "04": "ret                 0      -1     -     "
-    },
-    "backend": {
-      "00": "set                 0      1      0     ",
-      "01": "table_open_part     1      0      8     # public.test (primary)",
-      "02": "table_readj         2      1      1     ",
-      "03": "string              3      20     0     # data",
-      "04": "dotjs               4      2      3     ",
-      "05": "push                4      0      0     ",
-      "06": "set_add             0      0      0     ",
-      "07": "table_next          1      2      0     ",
-      "08": "free                1      0      0     ",
-      "09": "ret                 0      -1     -     "
-    }
+  "main": {
+    "00": "union               0      0      0     ",
+    "01": "send_all            0      -      0     # public.test (last)",
+    "02": "union_recv          0      0      0     ",
+    "03": "union_set           0      0      -1    ",
+    "04": "ret                 0      -1     -     "
+  },
+  "pushdown": {
+    "00": "set                 0      1      0     ",
+    "01": "table_open_part     1      0      8     # public.test (primary)",
+    "02": "table_readj         2      1      1     ",
+    "03": "string              3      20     0     # data",
+    "04": "dotjs               4      2      3     ",
+    "05": "push                4      0      0     ",
+    "06": "set_add             0      0      0     ",
+    "07": "table_next          1      2      0     ",
+    "08": "free                1      0      0     ",
+    "09": "ret                 0      -1     -     "
   },
   "access": [["public.test", "ro"]]
 }]
@@ -206,26 +196,24 @@ select * from test
 }]]
 explain select data.data.data from test
 [{
-  "bytecode": {
-    "frontend": {
-      "00": "union               0      0      0     ",
-      "01": "send_all            0      -      0     # public.test (last)",
-      "02": "union_recv          0      0      0     ",
-      "03": "union_set           0      0      -1    ",
-      "04": "ret                 0      -1     -     "
-    },
-    "backend": {
-      "00": "set                 0      1      0     ",
-      "01": "table_open_part     1      0      8     # public.test (primary)",
-      "02": "table_readj         2      1      1     ",
-      "03": "string              3      20     0     # data.data",
-      "04": "dotjs               4      2      3     ",
-      "05": "push                4      0      0     ",
-      "06": "set_add             0      0      0     ",
-      "07": "table_next          1      2      0     ",
-      "08": "free                1      0      0     ",
-      "09": "ret                 0      -1     -     "
-    }
+  "main": {
+    "00": "union               0      0      0     ",
+    "01": "send_all            0      -      0     # public.test (last)",
+    "02": "union_recv          0      0      0     ",
+    "03": "union_set           0      0      -1    ",
+    "04": "ret                 0      -1     -     "
+  },
+  "pushdown": {
+    "00": "set                 0      1      0     ",
+    "01": "table_open_part     1      0      8     # public.test (primary)",
+    "02": "table_readj         2      1      1     ",
+    "03": "string              3      20     0     # data.data",
+    "04": "dotjs               4      2      3     ",
+    "05": "push                4      0      0     ",
+    "06": "set_add             0      0      0     ",
+    "07": "table_next          1      2      0     ",
+    "08": "free                1      0      0     ",
+    "09": "ret                 0      -1     -     "
   },
   "access": [["public.test", "ro"]]
 }]
@@ -239,26 +227,24 @@ insert into test () values ()
 insert into test () values ()
 explain select test.id, test.data from test
 [{
-  "bytecode": {
-    "frontend": {
-      "00": "union               0      0      0     ",
-      "01": "send_all            0      -      0     # public.test (last)",
-      "02": "union_recv          0      0      0     ",
-      "03": "union_set           0      0      -1    ",
-      "04": "ret                 0      -1     -     "
-    },
-    "backend": {
-      "00": "set                 0      2      0     ",
-      "01": "table_open_part     1      0      8     # public.test (primary)",
-      "02": "table_readi64       2      1      0     ",
-      "03": "push                2      0      0     ",
-      "04": "table_readi32       2      1      1     ",
-      "05": "push                2      0      0     ",
-      "06": "set_add             0      0      0     ",
-      "07": "table_next          1      2      0     ",
-      "08": "free                1      0      0     ",
-      "09": "ret                 0      -1     -     "
-    }
+  "main": {
+    "00": "union               0      0      0     ",
+    "01": "send_all            0      -      0     # public.test (last)",
+    "02": "union_recv          0      0      0     ",
+    "03": "union_set           0      0      -1    ",
+    "04": "ret                 0      -1     -     "
+  },
+  "pushdown": {
+    "00": "set                 0      2      0     ",
+    "01": "table_open_part     1      0      8     # public.test (primary)",
+    "02": "table_readi64       2      1      0     ",
+    "03": "push                2      0      0     ",
+    "04": "table_readi32       2      1      1     ",
+    "05": "push                2      0      0     ",
+    "06": "set_add             0      0      0     ",
+    "07": "table_next          1      2      0     ",
+    "08": "free                1      0      0     ",
+    "09": "ret                 0      -1     -     "
   },
   "access": [["public.test", "ro"]]
 }]
@@ -272,26 +258,24 @@ insert into test (data) values ({"data": 123})
 insert into test (data) values ({"data": 123})
 explain select test.data.data from test
 [{
-  "bytecode": {
-    "frontend": {
-      "00": "union               0      0      0     ",
-      "01": "send_all            0      -      0     # public.test (last)",
-      "02": "union_recv          0      0      0     ",
-      "03": "union_set           0      0      -1    ",
-      "04": "ret                 0      -1     -     "
-    },
-    "backend": {
-      "00": "set                 0      1      0     ",
-      "01": "table_open_part     1      0      8     # public.test (primary)",
-      "02": "table_readj         2      1      1     ",
-      "03": "string              3      20     0     # data",
-      "04": "dotjs               4      2      3     ",
-      "05": "push                4      0      0     ",
-      "06": "set_add             0      0      0     ",
-      "07": "table_next          1      2      0     ",
-      "08": "free                1      0      0     ",
-      "09": "ret                 0      -1     -     "
-    }
+  "main": {
+    "00": "union               0      0      0     ",
+    "01": "send_all            0      -      0     # public.test (last)",
+    "02": "union_recv          0      0      0     ",
+    "03": "union_set           0      0      -1    ",
+    "04": "ret                 0      -1     -     "
+  },
+  "pushdown": {
+    "00": "set                 0      1      0     ",
+    "01": "table_open_part     1      0      8     # public.test (primary)",
+    "02": "table_readj         2      1      1     ",
+    "03": "string              3      20     0     # data",
+    "04": "dotjs               4      2      3     ",
+    "05": "push                4      0      0     ",
+    "06": "set_add             0      0      0     ",
+    "07": "table_next          1      2      0     ",
+    "08": "free                1      0      0     ",
+    "09": "ret                 0      -1     -     "
   },
   "access": [["public.test", "ro"]]
 }]
@@ -329,26 +313,24 @@ select * from test
 [[0, 0], [1, 0], [2, 0]]
 explain select alias.id, alias.data from test alias
 [{
-  "bytecode": {
-    "frontend": {
-      "00": "union               0      0      0     ",
-      "01": "send_all            0      -      0     # public.test (last)",
-      "02": "union_recv          0      0      0     ",
-      "03": "union_set           0      0      -1    ",
-      "04": "ret                 0      -1     -     "
-    },
-    "backend": {
-      "00": "set                 0      2      0     ",
-      "01": "table_open_part     1      0      8     # public.test (primary)",
-      "02": "table_readi64       2      1      0     ",
-      "03": "push                2      0      0     ",
-      "04": "table_readi32       2      1      1     ",
-      "05": "push                2      0      0     ",
-      "06": "set_add             0      0      0     ",
-      "07": "table_next          1      2      0     ",
-      "08": "free                1      0      0     ",
-      "09": "ret                 0      -1     -     "
-    }
+  "main": {
+    "00": "union               0      0      0     ",
+    "01": "send_all            0      -      0     # public.test (last)",
+    "02": "union_recv          0      0      0     ",
+    "03": "union_set           0      0      -1    ",
+    "04": "ret                 0      -1     -     "
+  },
+  "pushdown": {
+    "00": "set                 0      2      0     ",
+    "01": "table_open_part     1      0      8     # public.test (primary)",
+    "02": "table_readi64       2      1      0     ",
+    "03": "push                2      0      0     ",
+    "04": "table_readi32       2      1      1     ",
+    "05": "push                2      0      0     ",
+    "06": "set_add             0      0      0     ",
+    "07": "table_next          1      2      0     ",
+    "08": "free                1      0      0     ",
+    "09": "ret                 0      -1     -     "
   },
   "access": [["public.test", "ro"]]
 }]
@@ -362,26 +344,24 @@ insert into test (data) values ({"data": 123})
 insert into test (data) values ({"data": 123})
 explain select alias.data.data from test alias
 [{
-  "bytecode": {
-    "frontend": {
-      "00": "union               0      0      0     ",
-      "01": "send_all            0      -      0     # public.test (last)",
-      "02": "union_recv          0      0      0     ",
-      "03": "union_set           0      0      -1    ",
-      "04": "ret                 0      -1     -     "
-    },
-    "backend": {
-      "00": "set                 0      1      0     ",
-      "01": "table_open_part     1      0      8     # public.test (primary)",
-      "02": "table_readj         2      1      1     ",
-      "03": "string              3      20     0     # data",
-      "04": "dotjs               4      2      3     ",
-      "05": "push                4      0      0     ",
-      "06": "set_add             0      0      0     ",
-      "07": "table_next          1      2      0     ",
-      "08": "free                1      0      0     ",
-      "09": "ret                 0      -1     -     "
-    }
+  "main": {
+    "00": "union               0      0      0     ",
+    "01": "send_all            0      -      0     # public.test (last)",
+    "02": "union_recv          0      0      0     ",
+    "03": "union_set           0      0      -1    ",
+    "04": "ret                 0      -1     -     "
+  },
+  "pushdown": {
+    "00": "set                 0      1      0     ",
+    "01": "table_open_part     1      0      8     # public.test (primary)",
+    "02": "table_readj         2      1      1     ",
+    "03": "string              3      20     0     # data",
+    "04": "dotjs               4      2      3     ",
+    "05": "push                4      0      0     ",
+    "06": "set_add             0      0      0     ",
+    "07": "table_next          1      2      0     ",
+    "08": "free                1      0      0     ",
+    "09": "ret                 0      -1     -     "
   },
   "access": [["public.test", "ro"]]
 }]
@@ -399,26 +379,24 @@ select * from test
 [[0, 0], [1, 0], [2, 0]]
 explain select alias.id, alias.data from test alias
 [{
-  "bytecode": {
-    "frontend": {
-      "00": "union               0      0      0     ",
-      "01": "send_all            0      -      0     # public.test (last)",
-      "02": "union_recv          0      0      0     ",
-      "03": "union_set           0      0      -1    ",
-      "04": "ret                 0      -1     -     "
-    },
-    "backend": {
-      "00": "set                 0      2      0     ",
-      "01": "table_open_part     1      0      8     # public.test (primary)",
-      "02": "table_readi64       2      1      0     ",
-      "03": "push                2      0      0     ",
-      "04": "table_readi32       2      1      1     ",
-      "05": "push                2      0      0     ",
-      "06": "set_add             0      0      0     ",
-      "07": "table_next          1      2      0     ",
-      "08": "free                1      0      0     ",
-      "09": "ret                 0      -1     -     "
-    }
+  "main": {
+    "00": "union               0      0      0     ",
+    "01": "send_all            0      -      0     # public.test (last)",
+    "02": "union_recv          0      0      0     ",
+    "03": "union_set           0      0      -1    ",
+    "04": "ret                 0      -1     -     "
+  },
+  "pushdown": {
+    "00": "set                 0      2      0     ",
+    "01": "table_open_part     1      0      8     # public.test (primary)",
+    "02": "table_readi64       2      1      0     ",
+    "03": "push                2      0      0     ",
+    "04": "table_readi32       2      1      1     ",
+    "05": "push                2      0      0     ",
+    "06": "set_add             0      0      0     ",
+    "07": "table_next          1      2      0     ",
+    "08": "free                1      0      0     ",
+    "09": "ret                 0      -1     -     "
   },
   "access": [["public.test", "ro"]]
 }]
@@ -438,19 +416,17 @@ select * from system.users()
 }]
 explain select * from system.users()
 [{
-  "bytecode": {
-    "frontend": {
-      "00": "set                 0      1      0     ",
-      "01": "call                1      -      0     # system.users()",
-      "02": "json_open           2      1      7     ",
-      "03": "json_read           3      2      0     ",
-      "04": "push                3      0      0     ",
-      "05": "set_add             0      0      0     ",
-      "06": "json_next           2      3      0     ",
-      "07": "free                2      0      0     ",
-      "08": "free                1      0      0     ",
-      "09": "ret                 0      -1     -     "
-    }
+  "main": {
+    "00": "set                 0      1      0     ",
+    "01": "call                1      -      0     # system.users()",
+    "02": "json_open           2      1      7     ",
+    "03": "json_read           3      2      0     ",
+    "04": "push                3      0      0     ",
+    "05": "set_add             0      0      0     ",
+    "06": "json_next           2      3      0     ",
+    "07": "free                2      0      0     ",
+    "08": "free                1      0      0     ",
+    "09": "ret                 0      -1     -     "
   },
   "access": []
 }]
@@ -459,21 +435,19 @@ select name from system.users()
 ["test"]
 explain select name from system.users()
 [{
-  "bytecode": {
-    "frontend": {
-      "00": "set                 0      1      0     ",
-      "01": "call                1      -      0     # system.users()",
-      "02": "json_open           2      1      9     ",
-      "03": "json_read           3      2      0     ",
-      "04": "string              4      0      0     # name",
-      "05": "dotjs               5      3      4     ",
-      "06": "push                5      0      0     ",
-      "07": "set_add             0      0      0     ",
-      "08": "json_next           2      3      0     ",
-      "09": "free                2      0      0     ",
-      "10": "free                1      0      0     ",
-      "11": "ret                 0      -1     -     "
-    }
+  "main": {
+    "00": "set                 0      1      0     ",
+    "01": "call                1      -      0     # system.users()",
+    "02": "json_open           2      1      9     ",
+    "03": "json_read           3      2      0     ",
+    "04": "string              4      0      0     # name",
+    "05": "dotjs               5      3      4     ",
+    "06": "push                5      0      0     ",
+    "07": "set_add             0      0      0     ",
+    "08": "json_next           2      3      0     ",
+    "09": "free                2      0      0     ",
+    "10": "free                1      0      0     ",
+    "11": "ret                 0      -1     -     "
   },
   "access": []
 }]
@@ -511,19 +485,17 @@ select * from ({}) t
 # test: select * from ([])
 explain select * from ([]) t
 [{
-  "bytecode": {
-    "frontend": {
-      "00": "set                 0      1      0     ",
-      "01": "json                1      0      0     ",
-      "02": "json_open           2      1      7     ",
-      "03": "json_read           3      2      0     ",
-      "04": "push                3      0      0     ",
-      "05": "set_add             0      0      0     ",
-      "06": "json_next           2      3      0     ",
-      "07": "free                2      0      0     ",
-      "08": "free                1      0      0     ",
-      "09": "ret                 0      -1     -     "
-    }
+  "main": {
+    "00": "set                 0      1      0     ",
+    "01": "json                1      0      0     ",
+    "02": "json_open           2      1      7     ",
+    "03": "json_read           3      2      0     ",
+    "04": "push                3      0      0     ",
+    "05": "set_add             0      0      0     ",
+    "06": "json_next           2      3      0     ",
+    "07": "free                2      0      0     ",
+    "08": "free                1      0      0     ",
+    "09": "ret                 0      -1     -     "
   },
   "access": []
 }]

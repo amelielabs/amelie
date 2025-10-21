@@ -18,23 +18,21 @@ show state
 }]
 explain watch system.state().lsn::int = 1
 [{
-  "bytecode": {
-    "frontend": {
-      "00": "call                0      -      0     # system.state()",
-      "01": "string              1      0      0     # lsn",
-      "02": "dotjs               2      0      1     ",
-      "03": "push                2      0      0     ",
-      "04": "call                0      -      1     # public.int()",
-      "05": "int                 1      -      0     # 1",
-      "06": "equii               2      0      1     ",
-      "07": "jtr                 12     2      0     ",
-      "08": "int                 0      -      0     # 1000",
-      "09": "push                0      0      0     ",
-      "10": "call                0      -      1     # public.sleep()",
-      "11": "jmp                 0      0      0     ",
-      "12": "nop                 0      0      0     ",
-      "13": "ret                 -1     -1     -     "
-    }
+  "main": {
+    "00": "call                0      -      0     # system.state()",
+    "01": "string              1      0      0     # lsn",
+    "02": "dotjs               2      0      1     ",
+    "03": "push                2      0      0     ",
+    "04": "call                0      -      1     # public.int()",
+    "05": "int                 1      -      0     # 1",
+    "06": "equii               2      0      1     ",
+    "07": "jtr                 12     2      0     ",
+    "08": "int                 0      -      0     # 1000",
+    "09": "push                0      0      0     ",
+    "10": "call                0      -      1     # public.sleep()",
+    "11": "jmp                 0      0      0     ",
+    "12": "nop                 0      0      0     ",
+    "13": "ret                 -1     -1     -     "
   },
   "access": []
 }]

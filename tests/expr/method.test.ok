@@ -20,15 +20,13 @@ select "hello"::length()
 [5]
 explain select system.state().directory::length()
 [{
-  "bytecode": {
-    "frontend": {
-      "00": "call                0      -      0     # system.state()",
-      "01": "string              1      0      0     # directory",
-      "02": "dotjs               2      0      1     ",
-      "03": "push                2      0      0     ",
-      "04": "call                0      -      1     # public.length()",
-      "05": "ret                 0      -1     -     "
-    }
+  "main": {
+    "00": "call                0      -      0     # system.state()",
+    "01": "string              1      0      0     # directory",
+    "02": "dotjs               2      0      1     ",
+    "03": "push                2      0      0     ",
+    "04": "call                0      -      1     # public.length()",
+    "05": "ret                 0      -1     -     "
   },
   "access": []
 }]
@@ -60,15 +58,13 @@ select 1::schema.name.name
 {"msg": "select 1::❰schema.name.name❱ ⟵ bad function call"}
 explain select system.state().directory::length
 [{
-  "bytecode": {
-    "frontend": {
-      "00": "call                0      -      0     # system.state()",
-      "01": "string              1      0      0     # directory",
-      "02": "dotjs               2      0      1     ",
-      "03": "push                2      0      0     ",
-      "04": "call                0      -      1     # public.length()",
-      "05": "ret                 0      -1     -     "
-    }
+  "main": {
+    "00": "call                0      -      0     # system.state()",
+    "01": "string              1      0      0     # directory",
+    "02": "dotjs               2      0      1     ",
+    "03": "push                2      0      0     ",
+    "04": "call                0      -      1     # public.length()",
+    "05": "ret                 0      -1     -     "
   },
   "access": []
 }]

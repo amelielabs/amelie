@@ -36,24 +36,22 @@ insert into test values (1, 2)
 insert into test values (2, 1)
 explain update test set data = data + 1
 [{
-  "bytecode": {
-    "frontend": {
-      "00": "send_all            0      -      -1    # public.test (last)",
-      "01": "ret                 -1     -1     -     "
-    },
-    "backend": {
-      "00": "table_open_part     0      0      9     # public.test (primary)",
-      "01": "int                 1      -      0     # 1",
-      "02": "push                1      0      0     ",
-      "03": "table_readi32       1      0      1     ",
-      "04": "int                 2      -      0     # 1",
-      "05": "addii               3      1      2     ",
-      "06": "push                3      0      0     ",
-      "07": "update              0      1      0     ",
-      "08": "table_next          0      1      0     ",
-      "09": "free                0      0      0     ",
-      "10": "ret                 -1     -1     -     "
-    }
+  "main": {
+    "00": "send_all            0      -      -1    # public.test (last)",
+    "01": "ret                 -1     -1     -     "
+  },
+  "pushdown": {
+    "00": "table_open_part     0      0      9     # public.test (primary)",
+    "01": "int                 1      -      0     # 1",
+    "02": "push                1      0      0     ",
+    "03": "table_readi32       1      0      1     ",
+    "04": "int                 2      -      0     # 1",
+    "05": "addii               3      1      2     ",
+    "06": "push                3      0      0     ",
+    "07": "update              0      1      0     ",
+    "08": "table_next          0      1      0     ",
+    "09": "free                0      0      0     ",
+    "10": "ret                 -1     -1     -     "
   },
   "access": [["public.test", "rw"]]
 }]
@@ -87,24 +85,22 @@ insert into test.test values (1, 2)
 insert into test.test values (2, 1)
 explain update test.test set data = data + 1
 [{
-  "bytecode": {
-    "frontend": {
-      "00": "send_all            0      -      -1    # test.test (last)",
-      "01": "ret                 -1     -1     -     "
-    },
-    "backend": {
-      "00": "table_open_part     0      0      9     # test.test (primary)",
-      "01": "int                 1      -      0     # 1",
-      "02": "push                1      0      0     ",
-      "03": "table_readi32       1      0      1     ",
-      "04": "int                 2      -      0     # 1",
-      "05": "addii               3      1      2     ",
-      "06": "push                3      0      0     ",
-      "07": "update              0      1      0     ",
-      "08": "table_next          0      1      0     ",
-      "09": "free                0      0      0     ",
-      "10": "ret                 -1     -1     -     "
-    }
+  "main": {
+    "00": "send_all            0      -      -1    # test.test (last)",
+    "01": "ret                 -1     -1     -     "
+  },
+  "pushdown": {
+    "00": "table_open_part     0      0      9     # test.test (primary)",
+    "01": "int                 1      -      0     # 1",
+    "02": "push                1      0      0     ",
+    "03": "table_readi32       1      0      1     ",
+    "04": "int                 2      -      0     # 1",
+    "05": "addii               3      1      2     ",
+    "06": "push                3      0      0     ",
+    "07": "update              0      1      0     ",
+    "08": "table_next          0      1      0     ",
+    "09": "free                0      0      0     ",
+    "10": "ret                 -1     -1     -     "
   },
   "access": [["test.test", "rw"]]
 }]
@@ -120,30 +116,28 @@ insert into test values (1, 2, 2)
 insert into test values (2, 1, 1)
 explain update test set a = a + 1, b = b - 1
 [{
-  "bytecode": {
-    "frontend": {
-      "00": "send_all            0      -      -1    # public.test (last)",
-      "01": "ret                 -1     -1     -     "
-    },
-    "backend": {
-      "00": "table_open_part     0      0      15    # public.test (primary)",
-      "01": "int                 1      -      0     # 1",
-      "02": "push                1      0      0     ",
-      "03": "table_readi32       1      0      1     ",
-      "04": "int                 2      -      0     # 1",
-      "05": "addii               3      1      2     ",
-      "06": "push                3      0      0     ",
-      "07": "int                 1      -      0     # 2",
-      "08": "push                1      0      0     ",
-      "09": "table_readi32       1      0      2     ",
-      "10": "int                 2      -      0     # 1",
-      "11": "subii               3      1      2     ",
-      "12": "push                3      0      0     ",
-      "13": "update              0      2      0     ",
-      "14": "table_next          0      1      0     ",
-      "15": "free                0      0      0     ",
-      "16": "ret                 -1     -1     -     "
-    }
+  "main": {
+    "00": "send_all            0      -      -1    # public.test (last)",
+    "01": "ret                 -1     -1     -     "
+  },
+  "pushdown": {
+    "00": "table_open_part     0      0      15    # public.test (primary)",
+    "01": "int                 1      -      0     # 1",
+    "02": "push                1      0      0     ",
+    "03": "table_readi32       1      0      1     ",
+    "04": "int                 2      -      0     # 1",
+    "05": "addii               3      1      2     ",
+    "06": "push                3      0      0     ",
+    "07": "int                 1      -      0     # 2",
+    "08": "push                1      0      0     ",
+    "09": "table_readi32       1      0      2     ",
+    "10": "int                 2      -      0     # 1",
+    "11": "subii               3      1      2     ",
+    "12": "push                3      0      0     ",
+    "13": "update              0      2      0     ",
+    "14": "table_next          0      1      0     ",
+    "15": "free                0      0      0     ",
+    "16": "ret                 -1     -1     -     "
   },
   "access": [["public.test", "rw"]]
 }]
@@ -169,32 +163,30 @@ insert into test values (2, {"id": 50})
 update test set data = {"id": data.id::int + 1}
 explain update test set data = {"id": data.id::int + 1}
 [{
-  "bytecode": {
-    "frontend": {
-      "00": "send_all            0      -      -1    # public.test (last)",
-      "01": "ret                 -1     -1     -     "
-    },
-    "backend": {
-      "00": "table_open_part     0      0      17    # public.test (primary)",
-      "01": "int                 1      -      0     # 1",
-      "02": "push                1      0      0     ",
-      "03": "string              1      20     0     # id",
-      "04": "push                1      0      0     ",
-      "05": "table_readj         1      0      1     ",
-      "06": "string              2      23     0     # id",
-      "07": "dotjs               3      1      2     ",
-      "08": "push                3      0      0     ",
-      "09": "call                1      -      1     # public.int()",
-      "10": "int                 2      -      0     # 1",
-      "11": "addii               3      1      2     ",
-      "12": "push                3      0      0     ",
-      "13": "json_obj            1      2      0     ",
-      "14": "push                1      0      0     ",
-      "15": "update              0      1      0     ",
-      "16": "table_next          0      1      0     ",
-      "17": "free                0      0      0     ",
-      "18": "ret                 -1     -1     -     "
-    }
+  "main": {
+    "00": "send_all            0      -      -1    # public.test (last)",
+    "01": "ret                 -1     -1     -     "
+  },
+  "pushdown": {
+    "00": "table_open_part     0      0      17    # public.test (primary)",
+    "01": "int                 1      -      0     # 1",
+    "02": "push                1      0      0     ",
+    "03": "string              1      20     0     # id",
+    "04": "push                1      0      0     ",
+    "05": "table_readj         1      0      1     ",
+    "06": "string              2      23     0     # id",
+    "07": "dotjs               3      1      2     ",
+    "08": "push                3      0      0     ",
+    "09": "call                1      -      1     # public.int()",
+    "10": "int                 2      -      0     # 1",
+    "11": "addii               3      1      2     ",
+    "12": "push                3      0      0     ",
+    "13": "json_obj            1      2      0     ",
+    "14": "push                1      0      0     ",
+    "15": "update              0      1      0     ",
+    "16": "table_next          0      1      0     ",
+    "17": "free                0      0      0     ",
+    "18": "ret                 -1     -1     -     "
   },
   "access": [["public.test", "rw"]]
 }]
@@ -240,34 +232,32 @@ update test set id.path = 0
 {"msg": "update test set ❰id.path❱ ⟵ column test.id used as a part of a key"}
 explain update test set data.id = data.id::int + 1
 [{
-  "bytecode": {
-    "frontend": {
-      "00": "send_all            0      -      -1    # public.test (last)",
-      "01": "ret                 -1     -1     -     "
-    },
-    "backend": {
-      "00": "table_open_part     0      0      19    # public.test (primary)",
-      "01": "int                 1      -      0     # 1",
-      "02": "push                1      0      0     ",
-      "03": "table_readj         1      0      1     ",
-      "04": "push                1      0      0     ",
-      "05": "string              1      20     0     # id",
-      "06": "push                1      0      0     ",
-      "07": "table_readj         1      0      1     ",
-      "08": "string              2      23     0     # id",
-      "09": "dotjs               3      1      2     ",
-      "10": "push                3      0      0     ",
-      "11": "call                1      -      1     # public.int()",
-      "12": "int                 2      -      0     # 1",
-      "13": "addii               3      1      2     ",
-      "14": "push                3      0      0     ",
-      "15": "call                1      -      3     # public.set()",
-      "16": "push                1      0      0     ",
-      "17": "update              0      1      0     ",
-      "18": "table_next          0      1      0     ",
-      "19": "free                0      0      0     ",
-      "20": "ret                 -1     -1     -     "
-    }
+  "main": {
+    "00": "send_all            0      -      -1    # public.test (last)",
+    "01": "ret                 -1     -1     -     "
+  },
+  "pushdown": {
+    "00": "table_open_part     0      0      19    # public.test (primary)",
+    "01": "int                 1      -      0     # 1",
+    "02": "push                1      0      0     ",
+    "03": "table_readj         1      0      1     ",
+    "04": "push                1      0      0     ",
+    "05": "string              1      20     0     # id",
+    "06": "push                1      0      0     ",
+    "07": "table_readj         1      0      1     ",
+    "08": "string              2      23     0     # id",
+    "09": "dotjs               3      1      2     ",
+    "10": "push                3      0      0     ",
+    "11": "call                1      -      1     # public.int()",
+    "12": "int                 2      -      0     # 1",
+    "13": "addii               3      1      2     ",
+    "14": "push                3      0      0     ",
+    "15": "call                1      -      3     # public.set()",
+    "16": "push                1      0      0     ",
+    "17": "update              0      1      0     ",
+    "18": "table_next          0      1      0     ",
+    "19": "free                0      0      0     ",
+    "20": "ret                 -1     -1     -     "
   },
   "access": [["public.test", "rw"]]
 }]
@@ -350,29 +340,27 @@ insert into test values (1, 2)
 insert into test values (2, 1)
 explain update test set data = data + 1 where id = 0
 [{
-  "bytecode": {
-    "frontend": {
-      "00": "send_lookup         0      -      -     # public.test (last)",
-      "01": "ret                 -1     -1     -     "
-    },
-    "backend": {
-      "00": "int                 0      -      0     # 0",
-      "01": "push                0      0      0     ",
-      "02": "table_open_partl    0      0      14    # public.test (primary)",
-      "03": "table_readi32       1      0      0     ",
-      "04": "int                 2      -      0     # 0",
-      "05": "equii               3      1      2     ",
-      "06": "jntr                14     3      0     ",
-      "07": "int                 1      -      0     # 1",
-      "08": "push                1      0      0     ",
-      "09": "table_readi32       1      0      1     ",
-      "10": "int                 2      -      0     # 1",
-      "11": "addii               3      1      2     ",
-      "12": "push                3      0      0     ",
-      "13": "update              0      1      0     ",
-      "14": "free                0      0      0     ",
-      "15": "ret                 -1     -1     -     "
-    }
+  "main": {
+    "00": "send_lookup         0      -      -     # public.test (last)",
+    "01": "ret                 -1     -1     -     "
+  },
+  "pushdown": {
+    "00": "int                 0      -      0     # 0",
+    "01": "push                0      0      0     ",
+    "02": "table_open_partl    0      0      14    # public.test (primary)",
+    "03": "table_readi32       1      0      0     ",
+    "04": "int                 2      -      0     # 0",
+    "05": "equii               3      1      2     ",
+    "06": "jntr                14     3      0     ",
+    "07": "int                 1      -      0     # 1",
+    "08": "push                1      0      0     ",
+    "09": "table_readi32       1      0      1     ",
+    "10": "int                 2      -      0     # 1",
+    "11": "addii               3      1      2     ",
+    "12": "push                3      0      0     ",
+    "13": "update              0      1      0     ",
+    "14": "free                0      0      0     ",
+    "15": "ret                 -1     -1     -     "
   },
   "access": [["public.test", "rw"]]
 }]
@@ -389,30 +377,28 @@ insert into test values (1, 2)
 insert into test values (2, 1)
 explain update test set data = data + 1 where id >= 1
 [{
-  "bytecode": {
-    "frontend": {
-      "00": "send_all            0      -      -1    # public.test (last)",
-      "01": "ret                 -1     -1     -     "
-    },
-    "backend": {
-      "00": "int                 0      -      0     # 1",
-      "01": "push                0      0      0     ",
-      "02": "table_open_part     0      0      15    # public.test (primary)",
-      "03": "table_readi32       1      0      0     ",
-      "04": "int                 2      -      0     # 1",
-      "05": "gteii               3      1      2     ",
-      "06": "jntr                14     3      0     ",
-      "07": "int                 1      -      0     # 1",
-      "08": "push                1      0      0     ",
-      "09": "table_readi32       1      0      1     ",
-      "10": "int                 2      -      0     # 1",
-      "11": "addii               3      1      2     ",
-      "12": "push                3      0      0     ",
-      "13": "update              0      1      0     ",
-      "14": "table_next          0      3      0     ",
-      "15": "free                0      0      0     ",
-      "16": "ret                 -1     -1     -     "
-    }
+  "main": {
+    "00": "send_all            0      -      -1    # public.test (last)",
+    "01": "ret                 -1     -1     -     "
+  },
+  "pushdown": {
+    "00": "int                 0      -      0     # 1",
+    "01": "push                0      0      0     ",
+    "02": "table_open_part     0      0      15    # public.test (primary)",
+    "03": "table_readi32       1      0      0     ",
+    "04": "int                 2      -      0     # 1",
+    "05": "gteii               3      1      2     ",
+    "06": "jntr                14     3      0     ",
+    "07": "int                 1      -      0     # 1",
+    "08": "push                1      0      0     ",
+    "09": "table_readi32       1      0      1     ",
+    "10": "int                 2      -      0     # 1",
+    "11": "addii               3      1      2     ",
+    "12": "push                3      0      0     ",
+    "13": "update              0      1      0     ",
+    "14": "table_next          0      3      0     ",
+    "15": "free                0      0      0     ",
+    "16": "ret                 -1     -1     -     "
   },
   "access": [["public.test", "rw"]]
 }]
@@ -466,32 +452,30 @@ insert into test values (1, 0)
 insert into test values (2, 0)
 explain update test set data = data + 1 returning *
 [{
-  "bytecode": {
-    "frontend": {
-      "00": "union               0      0      0     ",
-      "01": "send_all            0      -      0     # public.test (last)",
-      "02": "union_recv          0      0      0     ",
-      "03": "ret                 0      -1     -     "
-    },
-    "backend": {
-      "00": "set                 0      2      0     ",
-      "01": "table_open_part     1      0      15    # public.test (primary)",
-      "02": "int                 2      -      0     # 1",
-      "03": "push                2      0      0     ",
-      "04": "table_readi32       2      1      1     ",
-      "05": "int                 3      -      0     # 1",
-      "06": "addii               4      2      3     ",
-      "07": "push                4      0      0     ",
-      "08": "update              1      1      0     ",
-      "09": "table_readi32       2      1      0     ",
-      "10": "push                2      0      0     ",
-      "11": "table_readi32       2      1      1     ",
-      "12": "push                2      0      0     ",
-      "13": "set_add             0      0      0     ",
-      "14": "table_next          1      2      0     ",
-      "15": "free                1      0      0     ",
-      "16": "ret                 0      -1     -     "
-    }
+  "main": {
+    "00": "union               0      0      0     ",
+    "01": "send_all            0      -      0     # public.test (last)",
+    "02": "union_recv          0      0      0     ",
+    "03": "ret                 0      -1     -     "
+  },
+  "pushdown": {
+    "00": "set                 0      2      0     ",
+    "01": "table_open_part     1      0      15    # public.test (primary)",
+    "02": "int                 2      -      0     # 1",
+    "03": "push                2      0      0     ",
+    "04": "table_readi32       2      1      1     ",
+    "05": "int                 3      -      0     # 1",
+    "06": "addii               4      2      3     ",
+    "07": "push                4      0      0     ",
+    "08": "update              1      1      0     ",
+    "09": "table_readi32       2      1      0     ",
+    "10": "push                2      0      0     ",
+    "11": "table_readi32       2      1      1     ",
+    "12": "push                2      0      0     ",
+    "13": "set_add             0      0      0     ",
+    "14": "table_next          1      2      0     ",
+    "15": "free                1      0      0     ",
+    "16": "ret                 0      -1     -     "
   },
   "access": [["public.test", "rw"]]
 }]

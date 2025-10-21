@@ -18,12 +18,10 @@ select 1 in ()
 [false]
 explain select 1 in ()
 [{
-  "bytecode": {
-    "frontend": {
-      "00": "int                 0      -      0     # 1",
-      "01": "in                  1      0      0     ",
-      "02": "ret                 1      -1     -     "
-    }
+  "main": {
+    "00": "int                 0      -      0     # 1",
+    "01": "in                  1      0      0     ",
+    "02": "ret                 1      -1     -     "
   },
   "access": []
 }]
@@ -85,26 +83,24 @@ select 0 in (3,5, (select * from test), 0)
 [true]
 explain select 0 in (3,5, (select * from test), 0)
 [{
-  "bytecode": {
-    "frontend": {
-      "00": "int                 0      -      0     # 0",
-      "01": "int                 1      -      0     # 3",
-      "02": "push                1      0      0     ",
-      "03": "int                 1      -      0     # 5",
-      "04": "push                1      0      0     ",
-      "05": "set                 1      1      0     ",
-      "06": "table_open          2      0      11    # public.test (primary)",
-      "07": "table_readi32       3      2      0     ",
-      "08": "push                3      0      0     ",
-      "09": "set_add             1      0      0     ",
-      "10": "table_next          2      7      0     ",
-      "11": "free                2      0      0     ",
-      "12": "push                1      0      0     ",
-      "13": "int                 1      -      0     # 0",
-      "14": "push                1      0      0     ",
-      "15": "in                  1      0      4     ",
-      "16": "ret                 1      -1     -     "
-    }
+  "main": {
+    "00": "int                 0      -      0     # 0",
+    "01": "int                 1      -      0     # 3",
+    "02": "push                1      0      0     ",
+    "03": "int                 1      -      0     # 5",
+    "04": "push                1      0      0     ",
+    "05": "set                 1      1      0     ",
+    "06": "table_open          2      0      11    # public.test (primary)",
+    "07": "table_readi32       3      2      0     ",
+    "08": "push                3      0      0     ",
+    "09": "set_add             1      0      0     ",
+    "10": "table_next          2      7      0     ",
+    "11": "free                2      0      0     ",
+    "12": "push                1      0      0     ",
+    "13": "int                 1      -      0     # 0",
+    "14": "push                1      0      0     ",
+    "15": "in                  1      0      4     ",
+    "16": "ret                 1      -1     -     "
   },
   "access": [["public.test", "ro_exclusive"]]
 }]
