@@ -434,9 +434,13 @@ emit_stmt(Compiler* self, Stmt* stmt)
 		emit_send(self, target, start);
 	} else
 	{
-		// INTO and :=  (only for expressions)
+		// INTO and := (only for expressions)
 		if (stmt->ret && stmt->ret->count_into > 0)
 			emit_into(self, stmt);
+
+		// emit close for last distributed SELECT udf()
+		if (stmt->udfs_sending)
+			emit_close(self, stmt);
 	}
 
 	// set previous stmt

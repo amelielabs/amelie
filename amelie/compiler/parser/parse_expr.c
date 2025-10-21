@@ -276,7 +276,14 @@ expr_func(Stmt* self, Expr* expr, Ast* path, bool with_args)
 		access_add(access, &func->udf->rel, ACCESS_CALL);
 
 		// import access from the udf
-		access_merge(access, &((Program*)func->udf->data)->access);
+		auto access_udf = &((Program*)func->udf->data)->access;
+		access_merge(access, access_udf);
+
+		// mark stmt as having udf call and if the udf access other relations
+		// (requiring close)
+		self->udfs = true;
+		if (access_has_targets(access_udf))
+			self->udfs_sending = true;
 	}
 	if (with_args)
 	{

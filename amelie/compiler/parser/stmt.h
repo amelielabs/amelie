@@ -64,6 +64,8 @@ struct Stmt
 	Str*       cte_name;
 	Columns    cte_columns;
 	bool       is_return;
+	bool       udfs;
+	bool       udfs_sending;
 	Deps       deps;
 	Refs       refs;
 	AstList    select_list;
@@ -77,17 +79,19 @@ static inline Stmt*
 stmt_allocate(Parser* parser, Lex* lex, Block* block)
 {
 	Stmt* self = palloc(sizeof(Stmt));
-	self->ast       = NULL;
-	self->id        = STMT_UNDEF;
-	self->r         = -1;
-	self->ret       = NULL;
-	self->cte_name  = NULL;
-	self->is_return = false;
-	self->next      = NULL;
-	self->prev      = NULL;
-	self->lex       = lex;
-	self->block     = block;
-	self->parser    = parser;
+	self->ast          = NULL;
+	self->id           = STMT_UNDEF;
+	self->r            = -1;
+	self->ret          = NULL;
+	self->cte_name     = NULL;
+	self->is_return    = false;
+	self->udfs         = false;
+	self->udfs_sending = false;
+	self->next         = NULL;
+	self->prev         = NULL;
+	self->lex          = lex;
+	self->block        = block;
+	self->parser       = parser;
 	deps_init(&self->deps);
 	refs_init(&self->refs);
 	columns_init(&self->cte_columns);

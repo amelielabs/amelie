@@ -427,6 +427,10 @@ parse_stmt(Stmt* self)
 	}
 	}
 
+	// mark stmt as sending if it has sending UDF calls
+	if (self->udfs_sending)
+		self->block->stmts.last_send = self;
+
 	// validate RETURN usage
 	if (self->is_return)
 	{

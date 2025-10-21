@@ -151,6 +151,19 @@ access_find(Access* self, Str* schema, Str* name)
 	return NULL;
 }
 
+hot static inline bool
+access_has_targets(Access* self)
+{
+	for (auto i = 0; i < self->list_count; i++)
+	{
+		auto record = access_at(self, i);
+		if (record->type == ACCESS_CALL)
+			continue;
+		return true;
+	}
+	return false;
+}
+
 static inline bool
 access_encode(Access* self, Buf* buf)
 {
