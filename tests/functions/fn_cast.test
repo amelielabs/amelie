@@ -1,211 +1,211 @@
 #
 
-open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "127.0.0.1", "port": 3485 }]
-connect E0 S0 127.0.0.1:3485
+open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "127.0.0.1", "port": 3485 }];
+connect E0 S0 127.0.0.1:3485;
 
 # test: type()
-select 1::type
-select "Hi"::type
-select [1,2,3]::type
-select {}::type
-select (select 1)::type
-select null::type
+select 1::type;
+select "Hi"::type;
+select [1,2,3]::type;
+select {}::type;
+select (select 1)::type;
+select null::type;
 
 # test: int(null)
-select null::int
+select null::int;
 
 # test: int(int)
-select 1::int
-select 1::int(123)
+select 1::int;
+select 1::int(123);
 
 # test: int(double)
-select 3.14::int
+select 3.14::int;
 
 # test: int(bool)
-select true::int
-select false::int
+select true::int;
+select false::int;
 
 # test: int(string)
-select '123'::int
-select '1423423423'::int
-select '1423abc'::int
+select '123'::int;
+select '1423423423'::int;
+select '1423abc'::int;
 
 # test: int(json)
-select 123::json::int
-select 'hi'::json::int
+select 123::json::int;
+select 'hi'::json::int;
 
 # test: int(timestamp)
-select 1722517792056945::timestamp
-select 1722517792056945::timestamp::int
-select 1722517792056945::timestamp::int::timestamp
-select '1 hour'::interval::int
+select 1722517792056945::timestamp;
+select 1722517792056945::timestamp::int;
+select 1722517792056945::timestamp::int::timestamp;
+select '1 hour'::interval::int;
 
 # test: int(date)
-select '2025-01-01'::date::int
+select '2025-01-01'::date::int;
 
 # test: bool(null)
-select null::bool
+select null::bool;
 
 # test: bool(int)
-select 1::bool
-select 0::bool
-select 23431::bool
+select 1::bool;
+select 0::bool;
+select 23431::bool;
 
 # test: bool(double)
-select 3.14::bool
-select 0.14::bool
-select 0.0::bool
+select 3.14::bool;
+select 0.14::bool;
+select 0.0::bool;
 
 # test: bool(json)
-select true::json::bool
-select false::json::bool
-select '1'::json::bool
+select true::json::bool;
+select false::json::bool;
+select '1'::json::bool;
 
 # test: bool(timestamp)
-select 1722517792056945::timestamp::bool
+select 1722517792056945::timestamp::bool;
 
 # test: bool(interval)
-select '1 hour'::interval::bool
-select '0 secs'::interval::bool
+select '1 hour'::interval::bool;
+select '0 secs'::interval::bool;
 
 # test: double(null)
-select 1::double
+select 1::double;
 
 # test: double(int)
-select 1::double
+select 1::double;
 
 # test: double(double)
-select 3.14::double
+select 3.14::double;
 
 # test: double(bool)
-select true::double
-select false::double
+select true::double;
+select false::double;
 
 # test: double(json)
-select 1.56::json::double
+select 1.56::json::double;
 
 # test: double(timestamp)
-select 1722517792056945::timestamp
-select 1722517792056945::timestamp::double
-select 1722517792056945::timestamp::double::timestamp
+select 1722517792056945::timestamp;
+select 1722517792056945::timestamp::double;
+select 1722517792056945::timestamp::double::timestamp;
 
 # test: string(null)
-select null::string
+select null::string;
 
 # test: string(int)
-select 16384::string
+select 16384::string;
 
 # test: string(string)
-select 'hello'::string
+select 'hello'::string;
 
 # test: string(interval)
-select '1 hour'::interval::string
+select '1 hour'::interval::string;
 
 # test: string(timestamp)
-select '2024-07-29 18:40:19'::timestamp::string
+select '2024-07-29 18:40:19'::timestamp::string;
 
 # test: string(date)
-select '2024-07-29'::date::string
+select '2024-07-29'::date::string;
 
 # test: string(json)
-select {"id": 42, "data": [1,2,3]}::string
+select {"id": 42, "data": [1,2,3]}::string;
 
 # test: string(uuid)
-select "00000000-0000-0000-0000-000000000001"::uuid::string
+select "00000000-0000-0000-0000-000000000001"::uuid::string;
 
 # test: json_import(string)
-select '{"id": 42, "data": [1,2,3]}'::json_import
-select '{"id": 42, "data": [1,2,3]}'::json_import::string
-select '{"id": 42, "data": [1,2,3]}'::json_import::string::json_import
-select 123::json_import
+select '{"id": 42, "data": [1,2,3]}'::json_import;
+select '{"id": 42, "data": [1,2,3]}'::json_import::string;
+select '{"id": 42, "data": [1,2,3]}'::json_import::string::json_import;
+select 123::json_import;
 
 # test: json(null)
-select null::json
+select null::json;
 
 # test: json(int)
-select 123::json
-select -123::json
-select (-123)::json
+select 123::json;
+select -123::json;
+select (-123)::json;
 
 # test: json(double)
-select 123.321::json
-select -123.321::json
-select (-123.321)::json
+select 123.321::json;
+select -123.321::json;
+select (-123.321)::json;
 
 # test: json(string)
-select '1'::json
-select '1'::json::type
-select [1,2,3]::vector::string::json
-select '[1,2,3]'::json
+select '1'::json;
+select '1'::json::type;
+select [1,2,3]::vector::string::json;
+select '[1,2,3]'::json;
 
 # test: json(json)
-select [1,2,3]::json
-select {"id":55}::json
+select [1,2,3]::json;
+select {"id":55}::json;
 
 # test: json(timestamp)
-select '2024-07-29 18:40:19'::timestamp::json
+select '2024-07-29 18:40:19'::timestamp::json;
 
 # test: json(interval)
-select '1 hour 55 minutes 5 secs'::interval::json
+select '1 hour 55 minutes 5 secs'::interval::json;
 
 # test: json(date)
-select '2025-01-01'::date::json
+select '2025-01-01'::date::json;
 
 # test: json(vector)
-select [1,2,3]::vector::json
+select [1,2,3]::vector::json;
 
 # test: interval(null)
-select null::interval
+select null::interval;
 
 # test: interval(string)
-select '1 hour 55 minutes 5 secs'::interval
-select '1 hour 55 minutes 5 secs'::interval::string
+select '1 hour 55 minutes 5 secs'::interval;
+select '1 hour 55 minutes 5 secs'::interval::string;
 
 # test: timestamp(null)
-select null::timestamp
+select null::timestamp;
 
 # test: timestamp(string)
-select '2024-07-29 18:40:19'::timestamp
+select '2024-07-29 18:40:19'::timestamp;
 
 # test: timestamp(date)
-select '2024-07-29'::date::timestamp
+select '2024-07-29'::date::timestamp;
 
 # test: date(null)
-select null::date
+select null::date;
 
 # test: date(timestamp)
-select '2024-07-29 18:40:19'::timestamp::date
+select '2024-07-29 18:40:19'::timestamp::date;
 
 # test: date(int)
-select '2024-07-29'::date::int::date
+select '2024-07-29'::date::int::date;
 
 # test: vector(null)
-select null::vector
+select null::vector;
 
 # test: vector(json)
-select []::vector
-select []::vector::length
-select [1.0]::vector
-select [1]::vector
-select [1, 2.0, "test"]::vector
-select [1, 2.0, "test"]::vector
-select [1, 2.0, {}]::vector
-select [1, 2.0, null]::vector
-select [1,2,3]::vector
-select [1,2,3]::vector::type
-select [1,2,3]::vector::length
+select []::vector;
+select []::vector::length;
+select [1.0]::vector;
+select [1]::vector;
+select [1, 2.0, "test"]::vector;
+select [1, 2.0, "test"]::vector;
+select [1, 2.0, {}]::vector;
+select [1, 2.0, null]::vector;
+select [1,2,3]::vector;
+select [1,2,3]::vector::type;
+select [1,2,3]::vector::length;
 
 # test: uuid(string)
-select "00000000-0000-0000-0000-000000000001"::uuid
+select "00000000-0000-0000-0000-000000000001"::uuid;
 
 # test: uuid(uuid)
-select "00000000-0000-0000-0000-000000000001"::uuid::uuid
+select "00000000-0000-0000-0000-000000000001"::uuid::uuid;
 
 # test: uuid(null)
-select null::uuid
+select null::uuid;
 
 # test: uuid(unsupported)
-select 1::uuid
+select 1::uuid;
 
-disconnect S0
-close E0
+disconnect S0;
+close E0;

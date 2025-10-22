@@ -1,146 +1,432 @@
 #
 
-open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "127.0.0.1", "port": 3485 }]
-connect E0 S0 127.0.0.1:3485
+open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "127.0.0.1", "port": 3485 }];
+connect E0 S0 127.0.0.1:3485;
 
 # test: for parsing
-for
-for 1
-for it
-for it 1
-for it in
-for it in 1
-for it in ;
-for it in [1,2,3]
-for it in ([1,2,3]
-for it in (select [1,2,3]
-for it in (select [1,2,3])
-for it in (select [1,2,3]) do
+for end;
+for 1 end;
+for it end;
+for it 1 end;
+for it in end;
+for it in 1 end;
+for it in ; end;
+for it in [1,2,3] end;
+for it in ([1,2,3] end;
+for it in (select [1,2,3] end;
 
 # test: for
-explain for it in (select [1,2,3]) do end
-for it in (select [1,2,3]) do end
-declare n int := 0; for it in (select [1,2,3]) do n := n + 1; end; select n
+explain for it in (select [1,2,3]) do end;
+for it in (select [1,2,3]) do end;
+begin
+	declare n int := 0;
+	for it in (select [1,2,3]) do
+		n := n + 1;
+	end;
+	select n;
+end;
 
 # test: for if
-declare n int := 0; for it in (select [1,2,3,4] as it) do if it::int % 2 = 0 then n := n + 1; end; end; select n
+begin
+	declare n int := 0;
+	for it in (select [1,2,3,4] as it) do
+		if it::int % 2 = 0 then
+			n := n + 1;
+		end;
+	end;
+	select n;
+end;
 
 # test: for for
-declare n int := 0; for i in (select [1,2,3]) do for j in (select [1,2,3]) do n := n + 1; end; end; select n
-explain declare n int := 0; for i in (select [1,2,3] as i) do for j in (select [1,2,3] as j) do n := n + i.i::int + j.j::int; end; end; select n
-declare n int := 0; for i in (select [1,2,3] as i) do for j in (select [1,2,3] as j) do n := n + i.i::int + j.j::int; end; end; select n
+begin
+	declare n int := 0;
+	for i in (select [1,2,3]) do
+		for j in (select [1,2,3]) do
+			n := n + 1;
+		end;
+	end;
+	select n;
+end;
+explain begin
+	declare n int := 0;
+	for i in (select [1,2,3] as i) do
+		for j in (select [1,2,3] as j) do
+			n := n + i.i::int + j.j::int;
+		end;
+	end;
+	select n;
+end;
+begin
+	declare n int := 0;
+	for i in (select [1,2,3] as i) do
+		for j in (select [1,2,3] as j) do
+			n := n + i.i::int + j.j::int;
+		end;
+	end;
+	select n;
+end;
 
 # test: for for for
-declare n int := 0; for i in (select [1,2,3]) do for j in (select [1,2,3]) do for k in (select [1,2,3]) do n := n + 1; end; end; end; select n
-declare n int := 0; for i in (select [1,2,3] as i) do for j in (select [1,2,3] as j) do for k in (select [1,2,3] as k) do n := n + i.i::int + j.j::int + k.k::int; end; end; end; select n
+begin
+	declare n int := 0;
+	for i in (select [1,2,3]) do
+		for j in (select [1,2,3]) do
+			for k in (select [1,2,3]) do
+				n := n + 1;
+			end;
+		end;
+	end;
+	select n;
+end;
+begin
+	declare n int := 0;
+	for i in (select [1,2,3] as i) do
+		for j in (select [1,2,3] as j) do
+			for k in (select [1,2,3] as k) do
+				n := n + i.i::int + j.j::int + k.k::int;
+			end;
+		end;
+	end;
+	select n;
+end;
 
 # test: for in select
-create table test (id int primary key)
-insert into test values (1), (2), (3)
-explain declare n int := 0; for i in (select * from test) do n := n + 1; end; select n
-declare n int := 0; for i in (select * from test) do n := n + 1; end; select n
-declare n int := 0; for i in (select * from test) do n := n + i.id; end; select n
-drop table test
+create table test (id int primary key);
+insert into test values (1), (2), (3);
+explain begin
+	declare n int := 0;
+	for i in (select * from test) do
+		n := n + 1;
+	end;
+	select n;
+end;
+begin declare
+	n int := 0;
+	for i in (select * from test) do
+		n := n + 1;
+	end;
+	select n;
+end;
+begin
+	declare n int := 0;
+	for i in (select * from test) do
+		n := n + i.id;
+	end;
+	select n;
+end;
+drop table test;
 
 # test: for in select for int select
-create table test (id int primary key)
-insert into test values (1), (2), (3)
-explain declare n int; n := 0; for i in (select * from test) do  for j in (select * from test) do n := n + 1; end; end; select n
-declare n int := 0; for i in (select * from test) do for j in (select * from test) do n := n + 1; end; end; select n
-declare n int := 0; for i in (select * from test) do for j in (select * from test) do n := n + i.id + j.id; end; end; select n
-drop table test
+create table test (id int primary key);
+insert into test values (1), (2), (3);
+explain begin
+	declare n int;
+	n := 0;
+	for i in (select * from test) do
+		for j in (select * from test) do
+			n := n + 1;
+		end;
+	end;
+	select n;
+end;
+begin
+	declare n int := 0;
+	for i in (select * from test) do
+		for j in (select * from test) do
+			n := n + 1;
+		end;
+	end;
+	select n;
+end;
+begin
+	declare n int := 0;
+	for i in (select * from test) do
+		for j in (select * from test) do
+			n := n + i.id + j.id;
+		end;
+	end;
+	select n;
+end;
+drop table test;
 
 # test: for (select from (select from))
-create table test (id int primary key)
-insert into test values (1), (2), (3)
-explain declare n int := 0; for i in (select * from (select * from test) x) do n := n + 1; end; select n
-declare n int := 0; for i in (select * from (select * from test) x) do n := n + 1; end; select n
-drop table test
+create table test (id int primary key);
+insert into test values (1), (2), (3);
+explain begin
+	declare n int := 0;
+	for i in (select * from (select * from test) x) do
+		n := n + 1;
+	end;
+	select n;
+end;
+begin
+	declare n int := 0; for i in (select * from (select * from test) x) do
+		n := n + 1;
+	end;
+	select n;
+end;
+drop table test;
 
 # test: for table
-create table test (id int primary key)
-insert into test values (1), (2), (3)
-for i in test do end
-drop table test
+create table test (id int primary key);
+insert into test values (1), (2), (3);
+for i in test do end;
+drop table test;
 
 # test: for var
-declare list json := []; declare x json := [1,2,3]; for it in x do list := list::append(it); end; select list
-declare list json := []; declare x json := [1,2,3]; for it in (x) do list := list::append(it); end; select list
-declare list json := []; declare x json := [1,2,3]; for it in (select x as it) do list := list::append(it); end; select list
+begin
+	declare list json := [];
+	declare x json := [1,2,3];
+	for it in x do
+		list := list::append(it);
+	end;
+	select list;
+end;
+begin
+	declare list json := [];
+	declare x json := [1,2,3];
+	for it in (x) do
+		list := list::append(it);
+	end;
+	select list;
+end;
+begin
+	declare list json := [];
+	declare x json := [1,2,3];
+	for it in (select x as it) do
+		list := list::append(it);
+	end;
+	select list;
+end;
 
-declare x int := 77; declare last int; for it in x do last := it; end; select last
-declare x int := 77; declare last int; for it in (x) do last := it; end; select last
-declare x int := 77; declare last int; for it in (select x as it) do last := it; end; select last
+begin
+	declare x int := 77;
+	declare last int;
+	for it in x do
+		last := it;
+	end;
+	select last;
+end;
+begin
+	declare x int := 77;
+	declare last int;
+	for it in (x) do
+		last := it;
+	end;
+	select last;
+end;
+begin
+	declare x int := 77;
+	declare last int;
+	for it in (select x as it) do
+		last := it;
+	end;
+	select last;
+end;
 
 # test: for var (table)
-create table test (id int primary key)
-insert into test values (1), (2), (3)
+create table test (id int primary key);
+insert into test values (1), (2), (3);
 
 # test: select from var (table)
-declare x table (a int, b int); select id, id * 10 into x from test; for it in x do end
-declare list json := []; declare x table (a int, b int); select id, id * 10 into x from test; for it in x do list := list::append(it.a)::append(it.b); end; select list
+begin
+	declare x table (a int, b int);
+	select id, id * 10 into x from test;
+	for it in x do end;
+end;
+begin
+	declare list json := []
+   	declare x table (a int, b int);
+	select id, id * 10 into x from test;
+	for it in x do
+		list := list::append(it.a)::append(it.b);
+	end;
+	select list;
+end;
 
-drop table test
+drop table test;
 
 # test: for .. select
-create table test (id int primary key)
-insert into test values (1), (2), (3)
-explain declare total int; declare n int; total := 0; for i in (select [1,2,3]) do select count(id) into n from test; total := total + n; end; select total;
-declare total int; declare n int; total := 0; for i in (select [1,2,3]) do select count(id) into n from test; total := total + n; end; select total;
-drop table test
+create table test (id int primary key);
+insert into test values (1), (2), (3);
+explain begin
+	declare total int;
+	declare n int;
+	total := 0;
+	for i in (select [1,2,3]) do
+		select count(id) into n from test;
+		total := total + n;
+	end;
+	select total;
+end;
+begin
+	declare total int; declare n int;
+	total := 0;
+	for i in (select [1,2,3]) do
+		select count(id) into n from test;
+		total := total + n;
+	end;
+	select total;
+end;
+drop table test;
 
 # test: for .. select (push target)
-create table test (id int primary key)
-insert into test values (1), (2), (3)
-explain declare n int := 0; declare r int; for i in ([1,2,3]) do select 1 into r from test where id = i.i::int; n := n + r; end; select n
-declare n int := 0; declare r int; for i in ([1,2,3]) do select 1 into r from test where id = i.i::int; n := n + r; end; select n
-drop table test
+create table test (id int primary key);
+insert into test values (1), (2), (3);
+explain begin
+	declare n int := 0;
+	declare r int;
+	for i in ([1,2,3]) do
+		select 1 into r from test where id = i.i::int;
+		n := n + r;
+	end;
+	select n;
+end;
+begin
+	declare n int := 0;
+	declare r int;
+	for i in ([1,2,3]) do
+		select 1 into r from test where id = i.i::int;
+		n := n + r;
+	end;
+	select n;
+end;
+drop table test;
 
 # test: for .. select (push target agg)
-create table test (id int primary key)
-insert into test values (1), (2), (3)
-explain declare n int := 0; declare r int; for i in ([1,2,3]) do select count(*) into r from test where id = i.i::int; n := n + r; end; select n
-declare n int := 0; declare r int; for i in ([1,2,3]) do select count(*) into r from test where id = i.i::int; n := n + r; end; select n
-drop table test
+create table test (id int primary key);
+insert into test values (1), (2), (3);
+explain begin
+	declare n int := 0;
+	declare r int;
+	for i in ([1,2,3]) do
+		select count(*) into r from test where id = i.i::int;
+		n := n + r;
+	end;
+	select n;
+end;
+begin
+	declare n int := 0;
+	declare r int;
+	for i in ([1,2,3]) do
+		select count(*) into r from test where id = i.i::int;
+		n := n + r;
+	end;
+	select n;
+end;
+drop table test;
 
 # test: for .. select (push var)
-create table test (id int primary key)
-insert into test values (1), (2), (3)
-explain declare n int := 0; declare r int; declare k int; for i in ([1,2,3]) do k := i.i::int; select 1 into r from test where id = k; n := n + r; end; select n
-declare n int := 0; declare r int; declare k int; for i in ([1,2,3]) do k := i.i::int; select 1 into r from test where id = k; n := n + r; end; select n
-drop table test
+create table test (id int primary key);
+insert into test values (1), (2), (3);
+explain begin
+	declare n int := 0;
+	declare r int;
+	declare k int;
+	for i in ([1,2,3]) do
+		k := i.i::int;
+		select 1 into r from test where id = k;
+		n := n + r;
+	end;
+	select n;
+end;
+begin
+	declare n int := 0;
+	declare r int;
+	declare k int;
+	for i in ([1,2,3]) do
+		k := i.i::int;
+		select 1 into r from test where id = k;
+		n := n + r;
+	end;
+	select n;
+end;
+drop table test;
 
 # test: for .. returning
-create table test (id int primary key, data int)
-insert into test values (1, 0), (2, 0), (3, 0)
-explain declare n int := 0; declare r int := 0; for i in ([1,2,3]) do update test set data = id where id = i.i::int returning 1 into r; n := n + r; end; select n
-declare n int := 0; declare r int := 0; for i in ([1,2,3]) do update test set data = id where id = i.i::int returning 1 into r; n := n + r; end; select n
-drop table test
+create table test (id int primary key, data int);
+insert into test values (1, 0), (2, 0), (3, 0);
+explain begin
+	declare n int := 0;
+	declare r int := 0;
+	for i in ([1,2,3]) do
+		update test set data = id where id = i.i::int returning 1 into r;
+		n := n + r;
+	end;
+	select n;
+end;
+begin
+	declare n int := 0;
+	declare r int := 0;
+	for i in ([1,2,3]) do
+		update test set data = id where id = i.i::int returning 1 into r;
+		n := n + r;
+	end;
+	select n;
+end;
+drop table test;
 
 # test: for .. insert
-create table test (id int primary key, data int)
-explain declare v int; for i in ([0,1,2,3,4,5,6,7,8,9]) do v := i::int; insert into test values (v, 0); end; select * from test
-declare v int; for i in ([0,1,2,3,4,5,6,7,8,9]) do v := i::int; insert into test values (v, 0); end; select * from test
+create table test (id int primary key, data int);
+explain begin
+	declare v int;
+	for i in ([0,1,2,3,4,5,6,7,8,9]) do
+		v := i::int;
+		insert into test values (v, 0);
+	end;
+	select * from test;
+end;
+begin
+	declare v int;
+	for i in ([0,1,2,3,4,5,6,7,8,9]) do
+		v := i::int;
+		insert into test values (v, 0);
+	end;
+	select * from test;
+end;
 
-explain declare v int; for i in ([0,1,2,3,4,5,6,7,8,9]) do v := i::int; insert into test values (v, 0) on conflict do update set data = excluded.id; end; select * from test
-declare v int; for i in ([0,1,2,3,4,5,6,7,8,9]) do v := i::int; insert into test values (v, 0) on conflict do update set data = excluded.id; end; select * from test
+explain begin
+	declare v int;
+	for i in ([0,1,2,3,4,5,6,7,8,9]) do
+		v := i::int;
+		insert into test values (v, 0) on conflict do update set data = excluded.id;
+	end;
+	select * from test;
+end;
+begin
+	declare v int;
+	for i in ([0,1,2,3,4,5,6,7,8,9]) do
+		v := i::int;
+		insert into test values (v, 0) on conflict do update set data = excluded.id;
+	end;
+	select * from test;
+end;
 
-truncate test
-declare v int; for i in ([0,1,2,3,0,1,2,3,0,1,2,3,4,5]) do v := i::int; insert into test values (v, 0) on conflict do update set data = data + 1; end; select * from test
-drop table test
+truncate test;
+begin
+	declare v int;
+	for i in ([0,1,2,3,0,1,2,3,0,1,2,3,4,5]) do
+		v := i::int;
+		insert into test values (v, 0) on conflict do update set data = data + 1;
+	end;
+	select * from test;
+end;
+drop table test;
 
 # test: for .. insert (serial)
-create table test (id serial primary key)
-for i in ([0,1,2,3,4,5,6,7,8,9]) do insert into test () values (), (), (); end;
-select * from test;
-drop table test
+create table test (id serial primary key);
+for i in ([0,1,2,3,4,5,6,7,8,9]) do
+	insert into test () values (), (), ();
+end;
+select * from test;;
+drop table test;
 
 # test: for utility
-for i in ([1,2,3]) do show all; end
+for i in ([1,2,3]) do show all; end;
 
 # test: cte for
-with a as (for i in ([1,2,3]) do end) select 1
-with a as (select 1) for i in ([1,2,3]) do end
+with a as (for i in ([1,2,3]) do end) select 1;
+with a as (select 1) for i in ([1,2,3]) do end;
 
-disconnect S0
-close E0
+disconnect S0;
+close E0;

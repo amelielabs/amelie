@@ -1,72 +1,72 @@
-open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "127.0.0.1", "port": 3485 }]
-connect E0 S0 127.0.0.1:3485
+open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "127.0.0.1", "port": 3485 }];
+connect E0 S0 127.0.0.1:3485;
 # test: like parsing
-select like
+select like;
 {"msg": "select ❰like❱ ⟵ bad expression"}
-select like 1
+select like 1;
 {"msg": "select ❰like❱ ⟵ bad expression"}
-select like like
+select like like;
 {"msg": "select ❰like❱ ⟵ bad expression"}
-select 1 like
-{"msg": "select 1 like ⟵ bad expression"}
+select 1 like;
+{"msg": "select 1 like❰;❱ ⟵ bad expression"}
 # test: like
-select 1 like 1
+select 1 like 1;
 {"msg": "select 1 like ❰1❱ ⟵ operation int LIKE int is not supported"}
-select '' like ''
+select '' like '';
 [true]
-select '' like '%'
+select '' like '%';
 [true]
-select '' like '%_'
+select '' like '%_';
 [true]
-select '' like '%_'
+select '' like '%_';
 [true]
-select 'abc' like 'abc'
+select 'abc' like 'abc';
 [true]
-select 'abc' like '_b_'
+select 'abc' like '_b_';
 [true]
-select 'abc' like 'ab_'
+select 'abc' like 'ab_';
 [true]
-select 'abc' like 'abc'
+select 'abc' like 'abc';
 [true]
-select 'abc' like '__c'
+select 'abc' like '__c';
 [true]
-select 'abc' like '___'
+select 'abc' like '___';
 [true]
-select 'abcd' like '___'
+select 'abcd' like '___';
 [false]
-select 'abcd' like 'a'
+select 'abcd' like 'a';
 [false]
-select 'abcd' like 'abc'
+select 'abcd' like 'abc';
 [false]
-select 'abcd' like 'abc'
+select 'abcd' like 'abc';
 [false]
-select 'abcd' like 'abc%'
+select 'abcd' like 'abc%';
 [true]
-select 'abcd' like 'abc%d'
+select 'abcd' like 'abc%d';
 [true]
-select 'abcd' like 'abc%de'
+select 'abcd' like 'abc%de';
 [false]
-select 'hello, world' like 'hello%world'
+select 'hello, world' like 'hello%world';
 [true]
-select 'http://google.com' like '%google%'
+select 'http://google.com' like '%google%';
 [true]
 # test: like escape
-select '%' like '\\%'
+select '%' like '\\%';
 [true]
-select '123 %-%-% day' like '%%-%%-%%'
+select '123 %-%-% day' like '%%-%%-%%';
 [true]
-select '123 %_%_% day' like '%%_%%_%%'
+select '123 %_%_% day' like '%%_%%_%%';
 [true]
 # test: not like
-select not like
+select not like;
 {"msg": "select ❰not❱ ⟵ bad expression"}
-select not
+select not;
 {"msg": "select ❰not❱ ⟵ bad expression"}
-select not like 20
+select not like 20;
 {"msg": "select ❰not❱ ⟵ bad expression"}
-select 'abcd' like 'abc%d'
+select 'abcd' like 'abc%d';
 [true]
-select 'abcd' not like 'abc%d'
+select 'abcd' not like 'abc%d';
 [false]
-disconnect S0
-close E0
+disconnect S0;
+close E0;

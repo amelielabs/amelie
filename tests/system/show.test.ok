@@ -1,38 +1,36 @@
-open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "127.0.0.1", "port": 3485 }]
-connect E0 S0 127.0.0.1:3485
+open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "127.0.0.1", "port": 3485 }];
+connect E0 S0 127.0.0.1:3485;
 # test: show statement parsing
-show
-{"msg": "show ⟵ name expected"}
 show;
 {"msg": "show❰;❱ ⟵ name expected"}
-show all junk
+show all junk;
 {"msg": "show() ⟵ unexpected name argument"}
-show 1234
+show 1234;
 {"msg": "show ❰1234❱ ⟵ name expected"}
 # test: show users
-create user test
-show users abc
+create user test;
+show users abc;
 {"msg": "show() ⟵ unexpected name argument"}
-show users format
-{"msg": "show users format ⟵ string expected"}
-show users format 'json'
+show users format;
+{"msg": "show users format❰;❱ ⟵ string expected"}
+show users format 'json';
 [{"name": "test"}]
 # test: show user
-show user
+show user;
 {"msg": "show() ⟵ name is missing for 'user'"}
-show user unknown
+show user unknown;
 [null]
-show user test
+show user test;
 [{
   "name": "test"
 }]
-show user test format
-{"msg": "show user test format ⟵ string expected"}
-show user test format 'json'
+show user test format;
+{"msg": "show user test format❰;❱ ⟵ string expected"}
+show user test format 'json';
 [{"name": "test"}]
 # test: show schemas
-create schema test
-show schemas
+create schema test;
+show schemas;
 [{
   "name": "system",
   "system": true
@@ -43,34 +41,34 @@ show schemas
   "name": "test",
   "system": false
 }]
-show schema test
+show schema test;
 [{
   "name": "test",
   "system": false
 }]
-show schema test format 'json'
+show schema test format 'json';
 [{"name": "test", "system": false}]
 # test: show tables
-create table test (id int primary key)
-show tables
+create table test (id int primary key);
+show tables;
 [{
   "schema": "public",
   "name": "test",
   "unlogged": false
 }]
 # test: show table
-show table
+show table;
 {"msg": "show() ⟵ name is missing for 'table'"}
-show table test
+show table test;
 [{
   "schema": "public",
   "name": "test",
   "unlogged": false
 }]
-show table test format 'json'
+show table test format 'json';
 [{"schema": "public", "name": "test", "unlogged": false}]
 # test: show wal
-show wal
+show wal;
 [{
   "lsn": 3,
   "lsn_min": 1,
@@ -83,17 +81,17 @@ show wal
   "checkpoint": 1
 }]
 # test: show replicas
-show replicas
+show replicas;
 []
 # test: show replica
-show replica abc
+show replica abc;
 {"msg": "failed to parse uuid"}
-show replica 'abc'
+show replica 'abc';
 {"msg": "failed to parse uuid"}
-show replica '00000000-0000-0000-0000-000000000000'
+show replica '00000000-0000-0000-0000-000000000000';
 [null]
 # test: show state
-select system.state()
+select system.state();
 [{
   "version": "0.7.0",
   "directory": "_output/E0",
@@ -105,14 +103,14 @@ select system.state()
   "psn": 1,
   "read_only": false
 }]
-select system.state().directory
+select system.state().directory;
 ["_output/E0"]
-select system.state()["directory"]
+select system.state()["directory"];
 ["_output/E0"]
-select system.state(123)
+select system.state(123);
 {"msg": "state(❰int❱ ⟵ function has no arguments"}
 # test: show config
-show config
+show config;
 [{
   "uuid": "00000000-0000-0000-0000-000000000000",
   "timezone": "UTC",
@@ -153,7 +151,7 @@ show config
   "checkpoint_sync": false
 }]
 # test: show all
-show all
+show all;
 [{
   "uuid": "00000000-0000-0000-0000-000000000000",
   "timezone": "UTC",
@@ -193,20 +191,20 @@ show all
   "checkpoint_compression": "zstd",
   "checkpoint_sync": false
 }]
-select system.config().uuid
+select system.config().uuid;
 ["00000000-0000-0000-0000-000000000000"]
-select system.config(123)
+select system.config(123);
 {"msg": "config(❰int❱ ⟵ function has no arguments"}
 # test: show name
-show log_enable
+show log_enable;
 [true]
-show "log_enable"
+show "log_enable";
 [true]
 # test: show unknown
-show asdf
+show asdf;
 {"msg": "show() ⟵ option 'asdf' is not found"}
 # test: explain show
-explain show log_enable
+explain show log_enable;
 [{
   "main": {
     "00": "string              0      0      0     # log_enable",
@@ -222,5 +220,5 @@ explain show log_enable
   },
   "access": []
 }]
-disconnect S0
-close E0
+disconnect S0;
+close E0;

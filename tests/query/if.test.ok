@@ -1,22 +1,14 @@
-open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "127.0.0.1", "port": 3485 }]
-connect E0 S0 127.0.0.1:3485
+open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "127.0.0.1", "port": 3485 }];
+connect E0 S0 127.0.0.1:3485;
 # test: if parsing
-if
-{"msg": "if ⟵ bad expression"}
-if 1
-{"msg": "if 1 ⟵ THEN expected"}
-if 1 do
+if end;
+{"msg": "if ❰end❱ ⟵ bad expression"}
+if 1 end;
+{"msg": "if 1 ❰end❱ ⟵ THEN expected"}
+if 1 do end;
 {"msg": "if 1 ❰do❱ ⟵ THEN expected"}
-if 1 then
-{"msg": "if 1 then ⟵ END expected"}
-if 1 then 1
-{"msg": "if 1 then 1 ⟵ unexpected statement"}
-if 1 then select 1
-{"msg": "if 1 then select 1 ⟵ END expected"}
-if 1 then select 1;
-{"msg": "if 1 then select 1; ⟵ END expected"}
 # test: if
-explain if 1 then select 123; end
+explain if 1 then select 123; end;
 [{
   "main": {
     "00": "jmp                 2      0      0     ",
@@ -29,9 +21,9 @@ explain if 1 then select 123; end
   },
   "access": []
 }]
-if 1 then select 123; end
+if 1 then select 123; end;
 # test: if empty
-explain if 1 then end
+explain if 1 then end;
 [{
   "main": {
     "00": "jmp                 2      0      0     ",
@@ -43,18 +35,13 @@ explain if 1 then end
   },
   "access": []
 }]
-if 1 then end
-# test: if else parsing
-if 1 then select 123; else
-{"msg": "if 1 then select 123; else ⟵ END expected"}
-if 1 then select 123; else 1
-{"msg": "if 1 then select 123; else 1 ⟵ unexpected statement"}
-if 1 then select 123; else else
-{"msg": "if 1 then select 123; else ❰else❱ ⟵ END expected"}
-if 1 then select 123; else select 321;
-{"msg": "if 1 then select 123; else select 321; ⟵ END expected"}
+if 1 then end;
 # test: if else
-explain if 1 then select 123; else select 321; end
+explain if 1 then
+	select 123;
+else
+	select 321;
+end;
 [{
   "main": {
     "00": "jmp                 2      0      0     ",
@@ -68,25 +55,26 @@ explain if 1 then select 123; else select 321; end
   },
   "access": []
 }]
-if 1 then select 123; else select 321; end
+if 1 then
+	select 123;
+else
+	select 321;
+end;
 # test: if else else
-if 1 then select 123; else select 321; else select 432; end
-{"msg": "if 1 then select 123; else select 321; ❰else❱ ⟵ END expected"}
-# test: if elsif parsing
-if 1 then select 123; elsif
-{"msg": "if 1 then select 123; elsif ⟵ bad expression"}
-if 1 then select 123; elsif 2
-{"msg": "if 1 then select 123; elsif 2 ⟵ THEN expected"}
-if 1 then select 123; elsif 2 then
-{"msg": "if 1 then select 123; elsif 2 then ⟵ END expected"}
-if 1 then select 123; elsif 2 then 1
-{"msg": "if 1 then select 123; elsif 2 then 1 ⟵ unexpected statement"}
-if 1 then select 123; elsif 2 then select 321
-{"msg": "if 1 then select 123; elsif 2 then select 321 ⟵ END expected"}
-if 1 then select 123; elsif 2 then select 321;
-{"msg": "if 1 then select 123; elsif 2 then select 321; ⟵ END expected"}
+if 1 then
+	select 123;
+else
+	select 321;
+else
+	select 432;
+end;
+{"msg": "if 1 then\n\tselect 123;\nelse\n\tselect 321;\n❰else❱ ⟵ END expected"}
 # test: if elsif
-explain if 1 then select 123; elsif 2 then select 321; end
+explain if 1 then
+	select 123;
+elsif 2 then
+	select 321;
+end;
 [{
   "main": {
     "00": "jmp                 2      0      0     ",
@@ -103,9 +91,19 @@ explain if 1 then select 123; elsif 2 then select 321; end
   },
   "access": []
 }]
-if 1 then select 123; elsif 2 then select 321; end
+if 1 then
+	select 123;
+elsif 2 then
+	select 321;
+end;
 # test: if elsif elsif
-explain if 1 then select 123; elsif 2 then select 321; elsif 3 then select 821; end
+explain if 1 then
+	select 123;
+elsif 2 then
+	select 321;
+elsif 3 then
+	select 821;
+end;
 [{
   "main": {
     "00": "jmp                 2      0      0     ",
@@ -126,13 +124,35 @@ explain if 1 then select 123; elsif 2 then select 321; elsif 3 then select 821; 
   },
   "access": []
 }]
-if 1 then select 123; elsif 2 then select 321; elsif 3 then select 821; end
+if 1 then
+	select 123;
+elsif 2 then
+	select 321;
+elsif 3 then
+	select 821;
+end;
 # test: if elsif else
-if 1 then select 123; elsif 2 then select 321; else
-{"msg": "if 1 then select 123; elsif 2 then select 321; else ⟵ END expected"}
-if 1 then select 123; elsif 2 then select 321; else 1
-{"msg": "if 1 then select 123; elsif 2 then select 321; else 1 ⟵ unexpected statement"}
-explain if 1 then select 123; elsif 2 then select 321; else select 821; end
+if 1 then
+	select 123;
+elsif 2 then
+	select 321;
+else
+end;
+if 1 then
+	select 123;
+elsif 2 then
+	select 321;
+else
+	1;
+end;
+{"msg": "if 1 then\n\tselect 123;\nelsif 2 then\n\tselect 321;\nelse\n\t1❰;❱ ⟵ unexpected statement"}
+explain if 1 then
+	select 123;
+elsif 2 then
+	select 321;
+else
+	select 821;
+end;
 [{
   "main": {
     "00": "jmp                 2      0      0     ",
@@ -150,9 +170,23 @@ explain if 1 then select 123; elsif 2 then select 321; else select 821; end
   },
   "access": []
 }]
-if 1 then select 123; elsif 2 then select 321; else select 821; end
+if 1 then
+	select 123;
+elsif 2 then
+	select 321;
+else
+	select 821;
+end;
 # test: if elsif elsif else
-explain if 1 then select 123; elsif 2 then select 321; elsif 3 then select 821; else select 0; end
+explain if 1 then
+	select 123;
+elsif 2 then
+	select 321;
+elsif 3 then
+	select 821;
+else
+	select 0;
+end;
 [{
   "main": {
     "00": "jmp                 2      0      0     ",
@@ -174,9 +208,25 @@ explain if 1 then select 123; elsif 2 then select 321; elsif 3 then select 821; 
   },
   "access": []
 }]
-if 1 then select 123; elsif 2 then select 321; elsif 3 then select 821; else select 0; end
+if 1 then
+	select 123;
+elsif 2 then
+	select 321;
+elsif 3 then
+	select 821;
+else
+	select 0;
+end;
 # test: if if
-explain declare x int := 0; if 1 then if 2 then x:= 2; end; end; select x
+explain begin;
+	declare x int := 0;
+	if 1 then
+		if 2 then
+			x:= 2;
+		end;
+	end;
+	select x;
+end;
 [{
   "main": {
     "00": "push_nulls          1      0      0     ",
@@ -201,10 +251,28 @@ explain declare x int := 0; if 1 then if 2 then x:= 2; end; end; select x
   },
   "access": []
 }]
-declare x int := 0; if 1 then if 2 then x:= 2; end; end; select x
+begin
+	declare x int := 0;
+	if 1 then
+		if 2 then
+			x:= 2;
+		end;
+	end;
+	select x;
+end;
 [2]
 # test: if if else
-explain declare x int := 0; if 1 then if 0 then x:= 2; else x := 3; end; end; select x
+explain begin
+	declare x int := 0;
+	if 1 then
+		if 0 then
+			x:= 2;
+		else
+			x := 3;
+		end;
+	end;
+	select x;
+end;
 [{
   "main": {
     "00": "push_nulls          1      0      0     ",
@@ -232,10 +300,32 @@ explain declare x int := 0; if 1 then if 0 then x:= 2; else x := 3; end; end; se
   },
   "access": []
 }]
-declare x int := 0; if 1 then if 0 then x:= 2; else x := 3; end; end; select x
+begin
+	declare x int := 0;
+	if 1 then
+		if 0 then
+			x:= 2;
+		else
+			x := 3;
+		end;
+	end;
+	select x;
+end;
 [3]
 # test: if if else else
-explain declare x int := 0; if 1 then if 0 then x:= 2; else x := 3; end; else x:= 4; end; select x
+explain begin
+	declare x int := 0;
+	if 1 then
+		if 0 then
+			x:= 2;
+		else
+			x := 3;
+		end;
+	else
+		x:= 4;
+	end;
+	select x;
+end;
 [{
   "main": {
     "00": "push_nulls          1      0      0     ",
@@ -266,15 +356,54 @@ explain declare x int := 0; if 1 then if 0 then x:= 2; else x := 3; end; else x:
   },
   "access": []
 }]
-declare x int := 0; if 1 then if 0 then x:= 2; else x := 3; end; else x:= 4; end; select x
+begin
+	declare x int := 0;
+	if 1 then
+		if 0 then
+			x:= 2;
+		else
+			x := 3;
+		end;
+	else
+		x:= 4;
+	end;
+	select x;
+end;
 [3]
-declare x int := 0; if 0 then if 0 then x:= 2; else x := 3; end; else x:= 4; end; select x
+begin
+	declare x int := 0;
+	if 0 then
+		if 0 then
+			x:= 2;
+		else
+			x := 3;
+		end;
+	else
+		x:= 4;
+	end;
+	select x;
+end;
 [4]
-declare x int := 0; if 0 then if 0 then x:= 2; end; else x:= 4; end; select x
+begin
+	declare x int := 0;
+	if 0 then
+		if 0 then
+			x:= 2;
+		end;
+	else
+		x:= 4;
+	end;
+	select x;
+end;
 [4]
 # test: if insert
-create table test (id int primary key)
-explain if true then; insert into test values (1); insert into test values (2); end;
+create table test (id int primary key);
+explain begin
+	if true then
+		insert into test values (1);
+		insert into test values (2);
+	end;
+end;
 [{
   "main": {
     "00": "jmp                 2      0      0     ",
@@ -297,11 +426,24 @@ explain if true then; insert into test values (1); insert into test values (2); 
   },
   "access": [["public.test", "rw"]]
 }]
-if true then; insert into test values (1); insert into test values (2); end;
-drop table test
+begin
+	if true then
+		insert into test values (1);
+		insert into test values (2);
+	end;
+end;
+drop table test;
 # test: if insert if insert select
-create table test (id int primary key)
-explain if true then; insert into test values (1); end; if false then insert into test values (2); end; select * from test
+create table test (id int primary key);
+explain begin
+	if true then
+		insert into test values (1);
+	end;
+	if false then
+		insert into test values (2);
+	end;
+	select * from test;
+end;
 [{
   "main": {
     "00": "jmp                 2      0      0     ",
@@ -340,15 +482,38 @@ explain if true then; insert into test values (1); end; if false then insert int
   },
   "access": [["public.test", "rw"]]
 }]
-if true then; insert into test values (1); end; if false then insert into test values (2); end; select * from test
+begin
+	if true then
+		insert into test values (1);
+	end;
+	if false then
+		insert into test values (2);
+	end;
+	select * from test;
+end;
 [1]
-delete from test
-if false then; insert into test values (1); end; if true then insert into test values (2); end; select * from test
+delete from test;
+begin
+	if false then
+		insert into test values (1);
+	end;
+	if true then
+		insert into test values (2);
+	end;
+	select * from test;
+end;
 [2]
-drop table test
+drop table test;
 # test: if insert else insert
-create table test (id int primary key)
-explain if true then; insert into test values (1); else insert into test values (2); end; select * from test
+create table test (id int primary key);
+explain begin
+	if true then
+		insert into test values (1);
+	else
+		insert into test values (2);
+	end;
+	select * from test;
+end;
 [{
   "main": {
     "00": "jmp                 2      0      0     ",
@@ -382,14 +547,38 @@ explain if true then; insert into test values (1); else insert into test values 
   },
   "access": [["public.test", "rw"]]
 }]
-if true then; insert into test values (1); else insert into test values (2); end; select * from test
+begin
+	if true then
+		insert into test values (1);
+	else
+		insert into test values (2);
+	end;
+	select * from test;
+end;
 [1]
-if false then; insert into test values (1); else insert into test values (2); end; select * from test
+begin
+	if false then
+		insert into test values (1);
+	else
+		insert into test values (2);
+	end;
+	select * from test;
+end;
 [1, 2]
-drop table test
+drop table test;
 # test: if insert elsif insert else insert
-create table test (id int primary key)
-explain declare x int := 0; if x = 0 then; insert into test values (0); elsif x = 1 then insert into test values (1); else insert into test values (2); end; select * from test
+create table test (id int primary key);
+explain begin
+	declare x int := 0;
+	if x = 0 then
+		insert into test values (0);
+	elsif x = 1 then
+		insert into test values (1);
+	else
+		insert into test values (2);
+	end;
+	select * from test;
+end;
 [{
   "main": {
     "00": "push_nulls          1      0      0     ",
@@ -438,16 +627,52 @@ explain declare x int := 0; if x = 0 then; insert into test values (0); elsif x 
   },
   "access": [["public.test", "rw"]]
 }]
-declare x int := 0; if x = 0 then; insert into test values (0); elsif x = 1 then insert into test values (1); else insert into test values (2); end; select * from test
+begin
+	declare x int := 0;
+	if x = 0 then
+		insert into test values (0);
+	elsif x = 1 then
+		insert into test values (1);
+	else
+		insert into test values (2);
+	end;
+	select * from test;
+end;
 [0]
-declare x int := 1; if x = 0 then; insert into test values (0); elsif x = 1 then insert into test values (1); else insert into test values (2); end; select * from test
+begin
+	declare x int := 1;
+	if x = 0 then
+		insert into test values (0);
+	elsif x = 1 then
+		insert into test values (1);
+	else
+		insert into test values (2);
+	end;
+	select * from test;
+end;
 [0, 1]
-declare x int := 2; if x = 0 then; insert into test values (0); elsif x = 1 then insert into test values (1); else insert into test values (2); end; select * from test
+begin
+	declare x int := 2;
+	if x = 0 then
+		insert into test values (0);
+	elsif x = 1 then
+		insert into test values (1);
+	else
+		insert into test values (2);
+	end;
+	select * from test;
+end;
 [0, 1, 2]
-drop table test
+drop table test;
 # test: if insert returning
-create table test (id int primary key)
-explain declare x int := 0; if true then; insert into test values (123) returning * into x; end; select x
+create table test (id int primary key);
+explain begin
+	declare x int := 0;
+	if true then
+		insert into test values (123) returning * into x;
+	end;
+	select x;
+end;
 [{
   "main": {
     "00": "push_nulls          1      0      0     ",
@@ -485,12 +710,24 @@ explain declare x int := 0; if true then; insert into test values (123) returnin
   },
   "access": [["public.test", "rw"]]
 }]
-declare x int := 0; if true then; insert into test values (123) returning * into x; end; select x
+begin
+	declare x int := 0;
+	if true then;
+		insert into test values (123) returning * into x;
+	end;
+	select x;
+end;
 [123]
-drop table test
+drop table test;
 # test: if insert var
-create table test (id int primary key)
-explain declare x int := 0; if true then; insert into test values (x); end; select * from test
+create table test (id int primary key);
+explain begin
+	declare x int := 0;
+	if true then
+		insert into test values (x);
+	end;
+	select * from test;
+end;
 [{
   "main": {
     "00": "push_nulls          1      0      0     ",
@@ -526,13 +763,25 @@ explain declare x int := 0; if true then; insert into test values (x); end; sele
   },
   "access": [["public.test", "rw"]]
 }]
-declare x int := 0; if true then; insert into test values (x); end; select * from test
+begin
+	declare x int := 0;
+	if true then
+		insert into test values (x);
+	end;
+	select * from test;
+end;
 [0]
-drop table test
+drop table test;
 # test: if select
-create table test (id int primary key)
-insert into test values (123)
-explain declare x int := 0; if true then select * into x from test; end; select x
+create table test (id int primary key);
+insert into test values (123);
+explain begin
+	declare x int := 0;
+	if true then
+		select * into x from test;
+	end;
+	select x;
+end;
 [{
   "main": {
     "00": "push_nulls          1      0      0     ",
@@ -566,9 +815,21 @@ explain declare x int := 0; if true then select * into x from test; end; select 
   },
   "access": [["public.test", "ro"]]
 }]
-declare x int := 0; if true then select * into x from test; end; select x
+begin
+	declare x int := 0;
+	if true then
+		select * into x from test;
+	end;
+	select x;
+end;
 [123]
-explain declare x int := 0; if true then select count(*) into x from test; end; select x
+explain begin
+	declare x int := 0;
+	if true then
+		select count(*) into x from test;
+	end;
+	select x;
+end;
 [{
   "main": {
     "00": "push_nulls          1      0      0     ",
@@ -621,9 +882,22 @@ explain declare x int := 0; if true then select count(*) into x from test; end; 
   },
   "access": [["public.test", "ro"]]
 }]
-declare x int := 0; if true then select count(*) into x from test; end; select x
+begin
+	declare x int := 0;
+	if true then
+		select count(*) into x from test;
+	end;
+	select x;
+end;
 [1]
-explain declare x int := 0; if false then else select count(*) into x from test; end; select x
+explain begin
+	declare x int := 0;
+	if false then
+	else
+		select count(*) into x from test;
+	end;
+	select x;
+end;
 [{
   "main": {
     "00": "push_nulls          1      0      0     ",
@@ -676,9 +950,24 @@ explain declare x int := 0; if false then else select count(*) into x from test;
   },
   "access": [["public.test", "ro"]]
 }]
-declare x int := 0; if false then else select count(*) into x from test; end; select x
+begin
+	declare x int := 0;
+	if false then
+	else
+		select count(*) into x from test;
+	end;
+	select x;
+end;
 [1]
-explain declare x int := 0; if false then else select count(*) into x from test; end; select 1; select x
+explain begin
+	declare x int := 0;
+	if false then
+	else
+		select count(*) into x from test;
+	end;
+	select 1;
+	select x;
+end;
 [{
   "main": {
     "00": "push_nulls          1      0      0     ",
@@ -732,9 +1021,25 @@ explain declare x int := 0; if false then else select count(*) into x from test;
   },
   "access": [["public.test", "ro"]]
 }]
-declare x int := 0; if false then else select count(*) into x from test; end; select 1; select x
+begin
+	declare x int := 0;
+	if false then
+	else
+		select count(*) into x from test;
+	end;
+	select 1;
+	select x;
+end;
 [1]
-explain declare x int := 0; if false then else select count(*) into x from test; end; select * from test; select x
+explain begin
+	declare x int := 0;
+	if false then
+	else
+		select count(*) into x from test;
+	end;
+	select * from test;
+	select x;
+end;
 [{
   "main": {
     "00": "push_nulls          1      0      0     ",
@@ -796,9 +1101,25 @@ explain declare x int := 0; if false then else select count(*) into x from test;
   },
   "access": [["public.test", "ro"]]
 }]
-declare x int := 0; if false then else select count(*) into x from test; end; select * from test; select x
+begin
+	declare x int := 0;
+	if false then
+	else
+		select count(*) into x from test;
+	end;
+	select * from test;
+	select x;
+end;
 [1]
-explain declare x int := 0; if true then if false then select * into x from test; end; end; select x
+explain begin
+	declare x int := 0;
+	if true then
+		if false then
+			select * into x from test;
+		end;
+	end;
+	select x;
+end;
 [{
   "main": {
     "00": "push_nulls          1      0      0     ",
@@ -837,16 +1158,24 @@ explain declare x int := 0; if true then if false then select * into x from test
   },
   "access": [["public.test", "ro"]]
 }]
-declare x int := 0; if true then if false then select * into x from test; end; end; select x
+begin
+	declare x int := 0;
+	if true then
+		if false then
+			select * into x from test;
+		end;
+	end;
+	select x;
+end;
 [0]
-drop table test
+drop table test;
 # test: if utility
-if true then show all; end
+if true then show all; end;
 {"msg": "if true then ❰show❱ ⟵ utility statement cannot be used here"}
 # test: cte if
-with a as (if true then end) select 1
+with a as (if true then end) select 1;
 {"msg": "with a as (❰if❱ ⟵ statement cannot be used inside CTE"}
-with a as (select 1) if true then end
+with a as (select 1) if true then end;
 {"msg": "with a as (select 1) ❰if❱ ⟵ statement cannot be used inside CTE"}
-disconnect S0
-close E0
+disconnect S0;
+close E0;

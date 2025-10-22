@@ -1,166 +1,166 @@
 #
 
-open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "127.0.0.1", "port": 3485 }]
+open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "127.0.0.1", "port": 3485 }];
 
 # test: POST / (text/plain)
-connect E0 S0 127.0.0.1:3485
-post / text/plain select 1
+connect E0 S0 127.0.0.1:3485;
+post / text/plain select 1;
 
 # test: POST / (application/sql)
-post / application/sql select 1
+post / application/sql select 1;
 
 # test: POST / (application/json) unsupported
-post / application/json [1]
+post / application/json [1];
 
 # test: POST /invalid
-post /abc text/plain select 1
+post /abc text/plain select 1;
 
 # test: POST /v1/execute (text/plain)
-post /v1/execute text/plain select 1
+post /v1/execute text/plain select 1;
 
 # test: POST /v1/execute (application/sql)
-post /v1/execute application/sql select 1
+post /v1/execute application/sql select 1;
 
 # test: POST /v1/db/schema/table (text/plain) not exists
-post /v1/db/public/test text/plain select 1
+post /v1/db/public/test text/plain select 1;
 
 # create table
-create table test (id int primary key, a int, b int)
-create table test2 (id int primary key, a int as (id * 2) stored)
-create table test3 (id int primary key, a int as (a + 1) resolved)
-create table test4 (id serial primary key, a int default 777)
-create table test5 (id serial primary key, data json not null)
-create table test6 (id int primary key as (data.id::int) stored, data json not null)
+create table test (id int primary key, a int, b int);
+create table test2 (id int primary key, a int as (id * 2) stored);
+create table test3 (id int primary key, a int as (a + 1) resolved);
+create table test4 (id serial primary key, a int default 777);
+create table test5 (id serial primary key, data json not null);
+create table test6 (id int primary key as (data.id::int) stored, data json not null);
 
 # test: POST /v1/db/schema/table (text/plain) unsupported
-post /v1/db/public/test text/plain select 1
+post /v1/db/public/test text/plain select 1;
 
 # test: POST /v1/db/schema/table (text/csv)
-post /v1/db/public/test text/csv 0,0,0
-post /v1/db/public/test text/csv 1,0,0
-post /v1/db/public/test text/csv 2,0,0
-select * from test
+post /v1/db/public/test text/csv 0,0,0;
+post /v1/db/public/test text/csv 1,0,0;
+post /v1/db/public/test text/csv 2,0,0;
+select * from test;
 
 # test: POST /v1/db/schema/table (text/csv) column list
-post /v1/db/public/test?columns=id text/csv 3
-post /v1/db/public/test?columns=id text/csv 4
-post /v1/db/public/test?columns=id text/csv 5
+post /v1/db/public/test?columns=id text/csv 3;
+post /v1/db/public/test?columns=id text/csv 4;
+post /v1/db/public/test?columns=id text/csv 5;
 
-post /v1/db/public/test?columns=id,a text/csv 6,0
-post /v1/db/public/test?columns=id,a,b text/csv 7,0,0
+post /v1/db/public/test?columns=id,a text/csv 6,0;
+post /v1/db/public/test?columns=id,a,b text/csv 7,0,0;
 
 # test: POST /v1/db/schema/table (text/csv) column list (duplicate)
-post /v1/db/public/test?columns=id,a,a text/csv 8,0,0
+post /v1/db/public/test?columns=id,a,a text/csv 8,0,0;
 
 # test: POST /v1/db/schema/table (text/csv) column list (unordered)
-post /v1/db/public/test?columns=id,b,a text/csv 8,0,0
-select * from test
+post /v1/db/public/test?columns=id,b,a text/csv 8,0,0;
+select * from test;
 
 # test: POST /v1/db/schema/table (text/csv) (empty column list)
-post /v1/db/public/test4?columns= text/csv
-post /v1/db/public/test4?columns= text/csv
-select * from test4
+post /v1/db/public/test4?columns= text/csv;
+post /v1/db/public/test4?columns= text/csv;
+select * from test4;
 
 # test: POST /v1/db/schema/table (text/csv) (generated columns)
-post /v1/db/public/test2 text/csv 0,null
-post /v1/db/public/test2 text/csv 1,null
-post /v1/db/public/test2 text/csv 2,null
-select * from test2
+post /v1/db/public/test2 text/csv 0,null;
+post /v1/db/public/test2 text/csv 1,null;
+post /v1/db/public/test2 text/csv 2,null;
+select * from test2;
 
 # test: POST /v1/db/schema/table (text/csv) (resolved columns)
-post /v1/db/public/test3 text/csv 0,0
-post /v1/db/public/test3 text/csv 0,0
-post /v1/db/public/test3 text/csv 0,0
-post /v1/db/public/test3 text/csv 1,0
-post /v1/db/public/test3 text/csv 1,0
-post /v1/db/public/test3 text/csv 1,0
-select * from test3
+post /v1/db/public/test3 text/csv 0,0;
+post /v1/db/public/test3 text/csv 0,0;
+post /v1/db/public/test3 text/csv 0,0;
+post /v1/db/public/test3 text/csv 1,0;
+post /v1/db/public/test3 text/csv 1,0;
+post /v1/db/public/test3 text/csv 1,0;
+select * from test3;
 
 # test: POST /v1/db/schema/table (application/jsonl) (array)
-post /v1/db/public/test application/jsonl [9,0,0] [10, null, 123] [11, null, null]
-post /v1/db/public/test application/jsonl [12,
-post /v1/db/public/test application/jsonl [12,0,
-post /v1/db/public/test application/jsonl [12,0]
-post /v1/db/public/test application/jsonl [12,]
-post /v1/db/public/test application/jsonl [12,null]
-post /v1/db/public/test application/jsonl [12,null,]
-post /v1/db/public/test application/jsonl [12,null,'string']
-post /v1/db/public/test application/jsonl [[12,null,0]]
-select * from test
+post /v1/db/public/test application/jsonl [9,0,0] [10, null, 123] [11, null, null];
+post /v1/db/public/test application/jsonl [12,;
+post /v1/db/public/test application/jsonl [12,0,;
+post /v1/db/public/test application/jsonl [12,0];
+post /v1/db/public/test application/jsonl [12,];
+post /v1/db/public/test application/jsonl [12,null];
+post /v1/db/public/test application/jsonl [12,null,];
+post /v1/db/public/test application/jsonl [12,null,'string'];
+post /v1/db/public/test application/jsonl [[12,null,0]];
+select * from test;
 
 # test: POST /v1/db/schema/table (application/jsonl) (array, column list)
-post /v1/db/public/test?columns=id application/jsonl [13]
-post /v1/db/public/test?columns=id,a application/jsonl [14,null]
-select * from test
+post /v1/db/public/test?columns=id application/jsonl [13];
+post /v1/db/public/test?columns=id,a application/jsonl [14,null];
+select * from test;
 
 # test: POST /v1/db/schema/table (application/jsonl) (array, empty column list)
-post /v1/db/public/test4?columns= application/jsonl []
-select * from test4
+post /v1/db/public/test4?columns= application/jsonl [];
+select * from test4;
 
 # test: POST /v1/db/schema/table (application/json) (array)
-post /v1/db/public/test application/json [[15,0,0]]
-post /v1/db/public/test application/json [[16,0,0]
-post /v1/db/public/test application/json [[16,0,0],
-post /v1/db/public/test application/json [[16,0,0],]
-post /v1/db/public/test application/json [[16,0,0], [16,0,7]]
-post /v1/db/public/test application/json [[16,0,0], [17,0,7]] junk
-post /v1/db/public/test application/json 
-post /v1/db/public/test application/json []
-post /v1/db/public/test application/json {}
-select * from test
+post /v1/db/public/test application/json [[15,0,0]];
+post /v1/db/public/test application/json [[16,0,0];
+post /v1/db/public/test application/json [[16,0,0],;
+post /v1/db/public/test application/json [[16,0,0],];
+post /v1/db/public/test application/json [[16,0,0], [16,0,7]];
+post /v1/db/public/test application/json [[16,0,0], [17,0,7]] junk;
+post /v1/db/public/test application/json ;
+post /v1/db/public/test application/json [];
+post /v1/db/public/test application/json {};
+select * from test;
 
 # test: POST /v1/db/schema/table (application/json) (array, column list)
-post /v1/db/public/test?columns=id application/json [[18,0]
-post /v1/db/public/test?columns=id application/json [[18,
-post /v1/db/public/test?columns=id application/json [[]
-post /v1/db/public/test?columns=id application/json [[18], [19]]
-select * from test
+post /v1/db/public/test?columns=id application/json [[18,0];
+post /v1/db/public/test?columns=id application/json [[18,;
+post /v1/db/public/test?columns=id application/json [[];
+post /v1/db/public/test?columns=id application/json [[18], [19]];
+select * from test;
 
 # test: POST /v1/db/schema/table (application/json) (array, empty column list)
-post /v1/db/public/test4?columns= application/json [[], [], []]
-select * from test4
+post /v1/db/public/test4?columns= application/json [[], [], []];
+select * from test4;
 
 # test: POST /v1/db/schema/table (application/jsonl) (obj, empty column list)
-post /v1/db/public/test4?columns= application/jsonl {}
-select * from test4
+post /v1/db/public/test4?columns= application/jsonl {};
+select * from test4;
 
 # test: POST /v1/db/schema/table (application/jsonl) (obj, one column)
-post /v1/db/public/test5?columns=data application/jsonl {"id": 1} {"id": 2} {"id": 3}
-select * format 'json' from test5
+post /v1/db/public/test5?columns=data application/jsonl {"id": 1} {"id": 2} {"id": 3};
+select * format 'json' from test5;
 
 # test: POST /v1/db/schema/table (application/jsonl) (obj, column list)
-post /v1/db/public/test5?columns=id,data application/jsonl {"id": 1} {"id": 2} {"id": 3}
-select * from test5
+post /v1/db/public/test5?columns=id,data application/jsonl {"id": 1} {"id": 2} {"id": 3};
+select * from test5;
 
 # test: POST /v1/db/schema/table (application/jsonl) (obj)
-post /v1/db/public/test application/jsonl {"id": 20}
-post /v1/db/public/test application/jsonl {"id": 20, "a"
-post /v1/db/public/test application/jsonl {"id": 20,
-post /v1/db/public/test application/jsonl {"id": 20, 1
-post /v1/db/public/test application/jsonl {"id": 20, "a"
-post /v1/db/public/test application/jsonl {"id": 20, "a":
-post /v1/db/public/test application/jsonl {"id": 20, "a": 0
-post /v1/db/public/test application/jsonl {"id": 20, "a": 0,
-post /v1/db/public/test application/jsonl {"id": 20, "a": 0, "b"
-post /v1/db/public/test application/jsonl {"id": 20, "a": 0, "b": 0}
-post /v1/db/public/test application/jsonl {"id": 21, "a": 0, "b": 0}
-post /v1/db/public/test application/jsonl {"id": 22, "b": 0}
-post /v1/db/public/test application/jsonl {"id": 23}
-post /v1/db/public/test application/jsonl {"id": 22, "b": 0, "b": 1}
-post /v1/db/public/test application/jsonl {"id": 24} {"id": 25} {"id": 26}
-select * format 'json' from test
+post /v1/db/public/test application/jsonl {"id": 20};
+post /v1/db/public/test application/jsonl {"id": 20, "a";
+post /v1/db/public/test application/jsonl {"id": 20,;
+post /v1/db/public/test application/jsonl {"id": 20, 1;
+post /v1/db/public/test application/jsonl {"id": 20, "a";
+post /v1/db/public/test application/jsonl {"id": 20, "a":;
+post /v1/db/public/test application/jsonl {"id": 20, "a": 0;
+post /v1/db/public/test application/jsonl {"id": 20, "a": 0,;
+post /v1/db/public/test application/jsonl {"id": 20, "a": 0, "b";
+post /v1/db/public/test application/jsonl {"id": 20, "a": 0, "b": 0};
+post /v1/db/public/test application/jsonl {"id": 21, "a": 0, "b": 0};
+post /v1/db/public/test application/jsonl {"id": 22, "b": 0};
+post /v1/db/public/test application/jsonl {"id": 23};
+post /v1/db/public/test application/jsonl {"id": 22, "b": 0, "b": 1};
+post /v1/db/public/test application/jsonl {"id": 24} {"id": 25} {"id": 26};
+select * format 'json' from test;
 
 # test: POST /v1/db/schema/table (application/json) (obj)
-post /v1/db/public/test application/json [{"id": 27}, {"id": 28}]
-select * format 'json' from test
+post /v1/db/public/test application/json [{"id": 27}, {"id": 28}];
+select * format 'json' from test;
 
 # test: POST /v1/db/schema/table (application/json) (obj, one column)
-post /v1/db/public/test5?columns=data application/json [{"id": 4}, {"id": 5}]
-select * format 'json' from test5
+post /v1/db/public/test5?columns=data application/json [{"id": 4}, {"id": 5}];
+select * format 'json' from test5;
 
 # test: POST /v1/db/schema/table (application/json) (obj, one column, generated)
-post /v1/db/public/test6?columns=data application/json [{"id": 1}, {"id": 2, "data": [1,2,3]}]
-select * format 'json' from test6
+post /v1/db/public/test6?columns=data application/json [{"id": 1}, {"id": 2, "data": [1,2,3]}];
+select * format 'json' from test6;
 
-disconnect S0
-close E0
+disconnect S0;
+close E0;

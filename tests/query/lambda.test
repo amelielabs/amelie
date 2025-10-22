@@ -1,98 +1,98 @@
 #
 
-open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "127.0.0.1", "port": 3485 }], "backends": 2
-connect E0 S0 127.0.0.1:3485
+open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "127.0.0.1", "port": 3485 }], "backends": 2;
+connect E0 S0 127.0.0.1:3485;
 
 # test: select ->
-select ->
-select -> 1
-select 1 ->
-select 1 -> 1
+select ->;
+select -> 1;
+select 1 ->;
+select 1 -> 1;
 
 # test: select int -> from table (partitions 1)
-create table test (id int primary key, data int) partitions 1
-insert into test values (0, 0)
-insert into test values (1, 1)
-insert into test values (2, 2)
-insert into test values (3, 1)
-insert into test values (4, 3)
+create table test (id int primary key, data int) partitions 1;
+insert into test values (0, 0);
+insert into test values (1, 1);
+insert into test values (2, 2);
+insert into test values (3, 1);
+insert into test values (4, 3);
 
-select 0 -> id
-select 0 -> id from test
+select 0 -> id;
+select 0 -> id from test;
 
 # test: select int ->, int -> from table
-select 0 -> id, 0 -> data from test
-explain select 0 -> id, 0 -> data from test
+select 0 -> id, 0 -> data from test;
+explain select 0 -> id, 0 -> data from test;
 
 # test: select self
-select self
+select self;
 
 # test: select int -> self from table
-select 0 -> self from test
-select 0 -> self + 1 from test
-explain select 0 -> self + 1 from test
-select 0 -> (self + 1) + self from test
+select 0 -> self from test;
+select 0 -> self + 1 from test;
+explain select 0 -> self + 1 from test;
+select 0 -> (self + 1) + self from test;
 
 # test: select string -> self from table
-select '' -> self || id::string from test
-select '' -> self::concat(id::string) from test
+select '' -> self || id::string from test;
+select '' -> self::concat(id::string) from test;
 
 # test: select [] -> self from table
-select [] -> self::append(id) from test
-select [] -> append(self, id) from test
-select [] -> self::append(id::string) from test
+select [] -> self::append(id) from test;
+select [] -> append(self, id) from test;
+select [] -> self::append(id::string) from test;
 
 # test: select {} -> self from table
-select {} -> self::set('key_' || id::string, data) from test
+select {} -> self::set('key_' || id::string, data) from test;
 
 # test: select int -> from table group by
-select * from test
-select data, 0 -> self + 1 from test group by data
+select * from test;
+select data, 0 -> self + 1 from test group by data;
 
 # test: select column -> from table (unsupported)
-select id -> self + 1 from test
+select id -> self + 1 from test;
 
 # test: select expr -> from table
-select (select 1 + 2) -> self + 1 from test
+select (select 1 + 2) -> self + 1 from test;
 
 select 1 + 2 -> self + 1 from test;
 select null::int -> 1 from test;
 select null::int -> 1 from test where id > 10;
 
 # test: select subquery -> from table
-select (select data from test t where id = 3) -> self + 1 from test
+select (select data from test t where id = 3) -> self + 1 from test;
 
 # test: select (select column -> from table) from table
-select id, (select o.id -> self + 1 from test) from test as o
-select (select o.id -> self + 1 from test) from test as o
+select id, (select o.id -> self + 1 from test) from test as o;
+select (select o.id -> self + 1 from test) from test as o;
 
 # test: select -> / ->
 select (0.0 -> self + id) / (0 -> self + 1) from test;
 
-drop table test
+drop table test;
 
 # test: select int -> self from table (partitions N, unsupported)
-create table test (id int primary key, data int) partitions 2
-insert into test values (0, 0)
-insert into test values (1, 1)
-insert into test values (2, 2)
-insert into test values (3, 1)
-insert into test values (4, 3)
-explain select 0 -> self + 1 from test
-select 0 -> self + 1 from test
-drop table test
+create table test (id int primary key, data int) partitions 2;
+insert into test values (0, 0);
+insert into test values (1, 1);
+insert into test values (2, 2);
+insert into test values (3, 1);
+insert into test values (4, 3);
+explain select 0 -> self + 1 from test;
+select 0 -> self + 1 from test;
+drop table test;
 
 # test: select expr -> from []
-select 0 -> self + value::int from ([1,2,3]) value
+select 0 -> self + value::int from ([1,2,3]) value;
 
 # test: select (expr -> from column) from table
-create table test (id int primary key, data json)
-insert into test values (0, [1,2,3])
-insert into test values (1, [4,5,6])
-insert into test values (2, [7,8,9])
+create table test (id int primary key, data json);
+insert into test values (0, [1,2,3]);
+insert into test values (1, [4,5,6]);
+insert into test values (2, [7,8,9]);
 
-select id, (select 0 -> self + value::int from (test.data) value) from test
-drop table test
+select id, (select 0 -> self + value::int from (test.data) value) from test;
+drop table test;
 
-disconnect S0
-close E0
+disconnect S0;
+close E0;

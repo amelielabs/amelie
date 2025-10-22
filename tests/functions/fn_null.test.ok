@@ -1,48 +1,48 @@
-open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "127.0.0.1", "port": 3485 }]
-connect E0 S0 127.0.0.1:3485
+open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "127.0.0.1", "port": 3485 }];
+connect E0 S0 127.0.0.1:3485;
 # test: coalesce()
-select coalesce()
+select coalesce();
 [null]
-select coalesce(1)
+select coalesce(1);
 [1]
-select coalesce(null)
+select coalesce(null);
 [null]
-select coalesce(null, 1)
+select coalesce(null, 1);
 [1]
-select coalesce(1, null)
+select coalesce(1, null);
 [1]
-select coalesce(1, null, 2)
+select coalesce(1, null, 2);
 [1]
-select null::coalesce
+select null::coalesce;
 [null]
-select 1::coalesce
+select 1::coalesce;
 [1]
-select coalesce('1', null, '2')
+select coalesce('1', null, '2');
 ["1"]
-select coalesce(1, null, 2.5)
+select coalesce(1, null, 2.5);
 {"msg": "select coalesce(1, null, ❰2.5❱ ⟵ argument type must match other arguments"}
-select coalesce('1', null, 2.5)
+select coalesce('1', null, 2.5);
 {"msg": "select coalesce('1', null, ❰2.5❱ ⟵ argument type must match other arguments"}
 # test: nullif()
-select nullif()
+select nullif();
 {"msg": "nullif() ⟵ expected 2 arguments"}
-select nullif(1)
+select nullif(1);
 {"msg": "nullif(int) ⟵ expected 2 arguments"}
-select nullif(1, 2)
+select nullif(1, 2);
 [1]
-select nullif(1, null)
+select nullif(1, null);
 [1]
-select nullif(null, 1)
+select nullif(null, 1);
 [null]
-select nullif(1, 1)
+select nullif(1, 1);
 [null]
-select 1::nullif(1)
+select 1::nullif(1);
 [null]
-select nullif(1, '1')
+select nullif(1, '1');
 {"msg": "select nullif(1, ❰'1'❱ ⟵ argument type must match other arguments"}
-select nullif(1, '1')
+select nullif(1, '1');
 {"msg": "select nullif(1, ❰'1'❱ ⟵ argument type must match other arguments"}
-select nullif(1, 1.5)
+select nullif(1, 1.5);
 {"msg": "select nullif(1, ❰1.5❱ ⟵ argument type must match other arguments"}
-disconnect S0
-close E0
+disconnect S0;
+close E0;

@@ -1,83 +1,83 @@
 #
 
-open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "127.0.0.1", "port": 3485 }], "backends": 3
-connect E0 S0 127.0.0.1:3485
+open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "127.0.0.1", "port": 3485 }], "backends": 3;
+connect E0 S0 127.0.0.1:3485;
 
 # test: select distinct * from table empty
-create table test (id serial primary key, data int default 0)
-explain select distinct * from test
-select distinct * from test
+create table test (id serial primary key, data int default 0);
+explain select distinct * from test;
+select distinct * from test;
 
 # test: select distinct * from table
-insert into test generate 20
-update test set data = id / 2
-select * from test
-select * from test order by id
+insert into test generate 20;
+update test set data = id / 2;
+select * from test;
+select * from test order by id;
 
-explain select distinct * from test
-select distinct * from test
+explain select distinct * from test;
+select distinct * from test;
 
 # test: select distinct from table #2
-explain select distinct id from test
-select distinct id from test
-select distinct data from test
+explain select distinct id from test;
+select distinct id from test;
+select distinct data from test;
 
 # test: select distinct from table #3
-explain select distinct id, data from test
-select distinct id, data from test
+explain select distinct id, data from test;
+select distinct id, data from test;
 
 # test: select distinct from table limit
-explain select distinct data from test limit 4
-select distinct data from test limit 4
+explain select distinct data from test limit 4;
+select distinct data from test limit 4;
 
 # test: select distinct from table limit 0
-explain select distinct data from test limit 0
-select distinct data from test limit 0
+explain select distinct data from test limit 0;
+select distinct data from test limit 0;
 
 # test: select distinct from table limit/offset
-explain select distinct data from test limit 1 offset 1
-select distinct data from test limit 1 offset 0
-select distinct data from test limit 1 offset 1
-select distinct data from test limit 1 offset 2
-select distinct data from test limit 1 offset 3
+explain select distinct data from test limit 1 offset 1;
+select distinct data from test limit 1 offset 0;
+select distinct data from test limit 1 offset 1;
+select distinct data from test limit 1 offset 2;
+select distinct data from test limit 1 offset 3;
 
 # test: select distinct from table offset
-explain select distinct data from test offset 1
-select distinct data from test offset 0
-select distinct data from test offset 1
-select distinct data from test offset 2
-select distinct data from test offset 3
+explain select distinct data from test offset 1;
+select distinct data from test offset 0;
+select distinct data from test offset 1;
+select distinct data from test offset 2;
+select distinct data from test offset 3;
 
 # test: select distinct from table order by
-explain select distinct data from test order by data
-select distinct data from test order by data
+explain select distinct data from test order by data;
+select distinct data from test order by data;
 
 # test: select distinct on
-select distinct
-select distinct 123
-select distinct on
-select distinct on (
-select distinct on (123
-select distinct on (123,
-select distinct on (123,)
-select distinct on (123,)
+select distinct;
+select distinct 123;
+select distinct on;
+select distinct on (;
+select distinct on (123;
+select distinct on (123,;
+select distinct on (123,);
+select distinct on (123,);
 
-explain select * from test order by data
-explain select distinct on (data) * from test
-select distinct on (data) * from test
-select distinct on (id) * from test
+explain select * from test order by data;
+explain select distinct on (data) * from test;
+select distinct on (data) * from test;
+select distinct on (id) * from test;
 
 # test: select distinct on from table order by
-explain select distinct on (data) * from test order by data, id
+explain select distinct on (data) * from test order by data, id;
 
 # test: select distinct * from table table #3
-delete from test
-insert into test values (1, 0), (2, 0), (3, 1), (4, 2), (5, 2)
-select distinct * from test
-select distinct id from test
-select distinct data from test
+delete from test;
+insert into test values (1, 0), (2, 0), (3, 1), (4, 2), (5, 2);
+select distinct * from test;
+select distinct id from test;
+select distinct data from test;
 
-drop table test
+drop table test;
 
-disconnect S0
-close E0
+disconnect S0;
+close E0;

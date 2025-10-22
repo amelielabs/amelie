@@ -1,40 +1,40 @@
-open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "127.0.0.1", "port": 3485 }]
-connect E0 S0 127.0.0.1:3485
+open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "127.0.0.1", "port": 3485 }];
+connect E0 S0 127.0.0.1:3485;
 # test: select statement parsing
-select
-{"msg": "select ⟵ bad expression"}
-select,
+select;
+{"msg": "select❰;❱ ⟵ bad expression"}
+select,;
 {"msg": "select❰,❱ ⟵ bad expression"}
-select null null
+select null null;
 {"msg": "select null ❰null❱ ⟵ ; expected"}
-select null 1
+select null 1;
 {"msg": "select null ❰1❱ ⟵ ; expected"}
-select from
+select from;
 {"msg": "select ❰from❱ ⟵ bad expression"}
-select 1 from
-{"msg": "select 1 from ⟵ target name expected"}
-select 1 from "test"
+select 1 from;
+{"msg": "select 1 from❰;❱ ⟵ target name expected"}
+select 1 from "test";
 {"msg": "select 1 from ❰\"test\"❱ ⟵ target name expected"}
-select 1 from name
+select 1 from name;
 {"msg": "select 1 from ❰name❱ ⟵ relation not found"}
-select 1 from 1 where
+select 1 from 1 where;
 {"msg": "select 1 from ❰1❱ ⟵ target name expected"}
-select 1 from 1 where null
+select 1 from 1 where null;
 {"msg": "select 1 from ❰1❱ ⟵ target name expected"}
 # test: select expr
-select 1
+select 1;
 [1]
-select 1, 2
+select 1, 2;
 [[1, 2]]
-select [1, 2]
+select [1, 2];
 [[1, 2]]
-select {}
+select {};
 [{}]
-select null
+select null;
 [null]
-select null, null
+select null, null;
 [[null, null]]
-explain select 1
+explain select 1;
 [{
   "main": {
     "00": "int                 0      -      0     # 1",
@@ -42,7 +42,7 @@ explain select 1
   },
   "access": []
 }]
-explain select [1, 2, 3]
+explain select [1, 2, 3];
 [{
   "main": {
     "00": "json                0      0      0     ",
@@ -51,23 +51,23 @@ explain select [1, 2, 3]
   "access": []
 }]
 # test: select name
-select name
+select name;
 {"msg": "select ❰name❱ ⟵ column not found"}
-select name.name
+select name.name;
 {"msg": "select ❰name.name❱ ⟵ target not found"}
-select name.name.name
+select name.name.name;
 {"msg": "select ❰name.name.name❱ ⟵ target not found"}
 # test: select *
-select *
+select *;
 {"msg": "select ❰*❱ ⟵ no targets defined"}
-select *, *
+select *, *;
 {"msg": "select ❰*❱ ⟵ no targets defined"}
 # test: select * from table
-create table test (id serial primary key)
-insert into test () values ()
-insert into test () values ()
-insert into test () values ()
-explain select * from test
+create table test (id serial primary key);
+insert into test () values ();
+insert into test () values ();
+insert into test () values ();
+explain select * from test;
 [{
   "main": {
     "00": "union               0      0      0     ",
@@ -88,27 +88,27 @@ explain select * from test
   },
   "access": [["public.test", "ro"]]
 }]
-select * from test
+select * from test;
 [0, 1, 2]
 # test: select *, * from table
-select *, * from test
+select *, * from test;
 [[0, 0], [1, 1], [2, 2]]
 # test: select target.* from table
-select test.* from test
+select test.* from test;
 [0, 1, 2]
-select test.*, *, test.* from test
+select test.*, *, test.* from test;
 [[0, 0, 0], [1, 1, 1], [2, 2, 2]]
-select `test.*` from test
+select `test.*` from test;
 [0, 1, 2]
-drop table test
+drop table test;
 # test: select column from table
-create table test (id serial primary key, data int default 0)
-insert into test () values ()
-insert into test () values ()
-insert into test () values ()
-select * from test
+create table test (id serial primary key, data int default 0);
+insert into test () values ();
+insert into test () values ();
+insert into test () values ();
+select * from test;
 [[0, 0], [1, 0], [2, 0]]
-explain select id, data from test
+explain select id, data from test;
 [{
   "main": {
     "00": "union               0      0      0     ",
@@ -131,17 +131,17 @@ explain select id, data from test
   },
   "access": [["public.test", "ro"]]
 }]
-select id, data from test
+select id, data from test;
 [[0, 0], [1, 0], [2, 0]]
-select `id`, data from test
+select `id`, data from test;
 [[0, 0], [1, 0], [2, 0]]
-drop table test
+drop table test;
 # test: select column.path from table
-create table test (id serial primary key, data json)
-insert into test (data) values ({"data": 123})
-insert into test (data) values ({"data": 123})
-insert into test (`data`) values ({"data": 123})
-select * from test
+create table test (id serial primary key, data json);
+insert into test (data) values ({"data": 123});
+insert into test (data) values ({"data": 123});
+insert into test (`data`) values ({"data": 123});
+select * from test;
 [[0, {
   "data": 123
 }], [1, {
@@ -149,7 +149,7 @@ select * from test
 }], [2, {
   "data": 123
 }]]
-explain select data.data from test
+explain select data.data from test;
 [{
   "main": {
     "00": "union               0      0      0     ",
@@ -172,15 +172,15 @@ explain select data.data from test
   },
   "access": [["public.test", "ro"]]
 }]
-select data.data from test
+select data.data from test;
 [123, 123, 123]
-drop table test
+drop table test;
 # test: select column.path from table #2
-create table test (id serial primary key, data json)
-insert into test (data) values ({"data": {"data": 123}})
-insert into test (data) values ({"data": {"data": 123}})
-insert into test (data) values ({"data": {"data": 123}})
-select * from test
+create table test (id serial primary key, data json);
+insert into test (data) values ({"data": {"data": 123}});
+insert into test (data) values ({"data": {"data": 123}});
+insert into test (data) values ({"data": {"data": 123}});
+select * from test;
 [[0, {
   "data": {
     "data": 123
@@ -194,7 +194,7 @@ select * from test
     "data": 123
   }
 }]]
-explain select data.data.data from test
+explain select data.data.data from test;
 [{
   "main": {
     "00": "union               0      0      0     ",
@@ -217,15 +217,15 @@ explain select data.data.data from test
   },
   "access": [["public.test", "ro"]]
 }]
-select data.data.data from test
+select data.data.data from test;
 [123, 123, 123]
-drop table test
+drop table test;
 # test: select target.column from table
-create table test (id serial primary key, data int default 0)
-insert into test () values ()
-insert into test () values ()
-insert into test () values ()
-explain select test.id, test.data from test
+create table test (id serial primary key, data int default 0);
+insert into test () values ();
+insert into test () values ();
+insert into test () values ();
+explain select test.id, test.data from test;
 [{
   "main": {
     "00": "union               0      0      0     ",
@@ -248,15 +248,15 @@ explain select test.id, test.data from test
   },
   "access": [["public.test", "ro"]]
 }]
-select test.id, test.data from test
+select test.id, test.data from test;
 [[0, 0], [1, 0], [2, 0]]
-drop table test
+drop table test;
 # test: select target.column.path from table
-create table test (id serial primary key, data json)
-insert into test (data) values ({"data": 123})
-insert into test (data) values ({"data": 123})
-insert into test (data) values ({"data": 123})
-explain select test.data.data from test
+create table test (id serial primary key, data json);
+insert into test (data) values ({"data": 123});
+insert into test (data) values ({"data": 123});
+insert into test (data) values ({"data": 123});
+explain select test.data.data from test;
 [{
   "main": {
     "00": "union               0      0      0     ",
@@ -279,9 +279,9 @@ explain select test.data.data from test
   },
   "access": [["public.test", "ro"]]
 }]
-select test.data.data from test
+select test.data.data from test;
 [123, 123, 123]
-select test.data.data, * from test
+select test.data.data, * from test;
 [[123, 0, {
   "data": 123
 }], [123, 1, {
@@ -289,7 +289,7 @@ select test.data.data, * from test
 }], [123, 2, {
   "data": 123
 }]]
-select test.data.data, *, test.* from test
+select test.data.data, *, test.* from test;
 [[123, 0, {
   "data": 123
 }, 0, {
@@ -303,15 +303,15 @@ select test.data.data, *, test.* from test
 }, 2, {
   "data": 123
 }]]
-drop table test
+drop table test;
 # test: select alias.column from table
-create table test (id serial primary key, data int default 0)
-insert into test () values ()
-insert into test () values ()
-insert into test () values ()
-select * from test
+create table test (id serial primary key, data int default 0);
+insert into test () values ();
+insert into test () values ();
+insert into test () values ();
+select * from test;
 [[0, 0], [1, 0], [2, 0]]
-explain select alias.id, alias.data from test alias
+explain select alias.id, alias.data from test alias;
 [{
   "main": {
     "00": "union               0      0      0     ",
@@ -334,15 +334,15 @@ explain select alias.id, alias.data from test alias
   },
   "access": [["public.test", "ro"]]
 }]
-select alias.id, alias.data from test alias
+select alias.id, alias.data from test alias;
 [[0, 0], [1, 0], [2, 0]]
-drop table test
+drop table test;
 # test: select alias.column.path from table
-create table test (id serial primary key, data json)
-insert into test (data) values ({"data": 123})
-insert into test (data) values ({"data": 123})
-insert into test (data) values ({"data": 123})
-explain select alias.data.data from test alias
+create table test (id serial primary key, data json);
+insert into test (data) values ({"data": 123});
+insert into test (data) values ({"data": 123});
+insert into test (data) values ({"data": 123});
+explain select alias.data.data from test alias;
 [{
   "main": {
     "00": "union               0      0      0     ",
@@ -365,19 +365,19 @@ explain select alias.data.data from test alias
   },
   "access": [["public.test", "ro"]]
 }]
-select alias.data.data from test alias
+select alias.data.data from test alias;
 [123, 123, 123]
-select alias.data['data'] from test alias
+select alias.data['data'] from test alias;
 [123, 123, 123]
-drop table test
+drop table test;
 # test: select alias.* from table
-create table test (id serial primary key, data int default 0)
-insert into test () values ()
-insert into test () values ()
-insert into test () values ()
-select * from test
+create table test (id serial primary key, data int default 0);
+insert into test () values ();
+insert into test () values ();
+insert into test () values ();
+select * from test;
 [[0, 0], [1, 0], [2, 0]]
-explain select alias.id, alias.data from test alias
+explain select alias.id, alias.data from test alias;
 [{
   "main": {
     "00": "union               0      0      0     ",
@@ -400,21 +400,21 @@ explain select alias.id, alias.data from test alias
   },
   "access": [["public.test", "ro"]]
 }]
-select alias.id, alias.* from test alias
+select alias.id, alias.* from test alias;
 [[0, 0, 0], [1, 1, 0], [2, 2, 0]]
-drop table test
+drop table test;
 # test: select * from function() (missing)
-select * from unknown()
+select * from unknown();
 {"msg": "select * from ❰unknown❱ ⟵ function not found"}
 # test: select * from function() (unsupported json type)
-select * from system.wal()
+select * from system.wal();
 {"msg": "FROM: json array expected"}
-create user test
-select * from system.users()
+create user test;
+select * from system.users();
 [{
   "name": "test"
 }]
-explain select * from system.users()
+explain select * from system.users();
 [{
   "main": {
     "00": "set                 0      1      0     ",
@@ -431,9 +431,9 @@ explain select * from system.users()
   "access": []
 }]
 # test: select column from function()
-select name from system.users()
+select name from system.users();
 ["test"]
-explain select name from system.users()
+explain select name from system.users();
 [{
   "main": {
     "00": "set                 0      1      0     ",
@@ -451,39 +451,39 @@ explain select name from system.users()
   },
   "access": []
 }]
-select non_exists_column from system.users()
+select non_exists_column from system.users();
 [null]
 # test: select target.column from function()
-select users.name from system.users()
+select users.name from system.users();
 ["test"]
 # test: select alias.column from function()
-select t.name from system.users() t
+select t.name from system.users() t;
 ["test"]
-drop user test
+drop user test;
 # test: select target.column.path from function()
-create table test (id serial primary key)
-select indexes[0].type from system.tables()
+create table test (id serial primary key);
+select indexes[0].type from system.tables();
 [2]
-select tables.indexes[0].type from system.tables()
+select tables.indexes[0].type from system.tables();
 [2]
-select t.indexes[0].type from system.tables() t
+select t.indexes[0].type from system.tables() t;
 [2]
-drop table test
+drop table test;
 # test: select * from (expr)
-select * from (
-{"msg": "select * from ( ⟵ bad expression"}
-select * from (1
-{"msg": "select * from (1 ⟵ ) expected"}
-select * from (1)
-{"msg": "select * from (1) ⟵ subquery must have an alias"}
+select * from (;
+{"msg": "select * from (❰;❱ ⟵ bad expression"}
+select * from (1;
+{"msg": "select * from (1❰;❱ ⟵ ) expected"}
+select * from (1);
+{"msg": "select * from (1)❰;❱ ⟵ subquery must have an alias"}
 # test: select * from (unsupported type)
-select * from (1) t
+select * from (1) t;
 [1]
 # test: select * from ({})
-select * from ({}) t
+select * from ({}) t;
 {"msg": "FROM: json array expected"}
 # test: select * from ([])
-explain select * from ([]) t
+explain select * from ([]) t;
 [{
   "main": {
     "00": "set                 0      1      0     ",
@@ -499,14 +499,14 @@ explain select * from ([]) t
   },
   "access": []
 }]
-select * from ([]) t
+select * from ([]) t;
 []
 # test: select target from ([])
-select t from ([]) t
+select t from ([]) t;
 []
-select t.t from ([]) t
+select t.t from ([]) t;
 []
-select t.x from ([]) t
+select t.x from ([]) t;
 {"msg": "select ❰t.x❱ ⟵ column t.x not found"}
-disconnect S0
-close E0
+disconnect S0;
+close E0;

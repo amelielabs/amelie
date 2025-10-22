@@ -1,123 +1,123 @@
-open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "127.0.0.1", "port": 3485 }]
-connect E0 S0 127.0.0.1:3485
+open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "127.0.0.1", "port": 3485 }];
+connect E0 S0 127.0.0.1:3485;
 # test: create user statement parsing
-create user
-{"msg": "create user ⟵ name expected"}
-create user 123
+create user;
+{"msg": "create user❰;❱ ⟵ name expected"}
+create user 123;
 {"msg": "create user ❰123❱ ⟵ name expected"}
-create user if
-{"msg": "create user if ⟵ NOT expected"}
-create user if not
-{"msg": "create user if not ⟵ EXISTS expected"}
-create user if not 123
+create user if;
+{"msg": "create user if❰;❱ ⟵ NOT expected"}
+create user if not;
+{"msg": "create user if not❰;❱ ⟵ EXISTS expected"}
+create user if not 123;
 {"msg": "create user if not ❰123❱ ⟵ EXISTS expected"}
-create user if not exists
-{"msg": "create user if not exists ⟵ name expected"}
-create user test abc
+create user if not exists;
+{"msg": "create user if not exists❰;❱ ⟵ name expected"}
+create user test abc;
 {"msg": "create user test ❰abc❱ ⟵ ; expected"}
 # test: create user
-create user test
-show users
+create user test;
+show users;
 [{
   "name": "test"
 }]
 # test: create user if not exists
-create user test
+create user test;
 {"msg": "user 'test': already exists"}
-create user if not exists test
+create user if not exists test;
 # test: create user secret
-create user test2 secret
-{"msg": "create user test2 secret ⟵ string expected"}
-create user test2 secret 123
+create user test2 secret;
+{"msg": "create user test2 secret❰;❱ ⟵ string expected"}
+create user test2 secret 123;
 {"msg": "create user test2 secret ❰123❱ ⟵ string expected"}
-create user test2 secret secret
+create user test2 secret secret;
 {"msg": "create user test2 secret ❰secret❱ ⟵ string expected"}
-create user test2 secret "test" abc
+create user test2 secret "test" abc;
 {"msg": "create user test2 secret \"test\" ❰abc❱ ⟵ ; expected"}
-create user test2 secret "test"
-show users
+create user test2 secret "test";
+show users;
 [{
   "name": "test"
 }, {
   "name": "test2"
 }]
 # test: drop user statment parsing
-drop user
-{"msg": "drop user ⟵ name expected"}
-drop user 123
+drop user;
+{"msg": "drop user❰;❱ ⟵ name expected"}
+drop user 123;
 {"msg": "drop user ❰123❱ ⟵ name expected"}
-drop user if
-{"msg": "drop user if ⟵ EXISTS expected"}
-drop user if exists
-{"msg": "drop user if exists ⟵ name expected"}
-drop user if exists 123
+drop user if;
+{"msg": "drop user if❰;❱ ⟵ EXISTS expected"}
+drop user if exists;
+{"msg": "drop user if exists❰;❱ ⟵ name expected"}
+drop user if exists 123;
 {"msg": "drop user if exists ❰123❱ ⟵ name expected"}
-drop user test abc
+drop user test abc;
 {"msg": "drop user test ❰abc❱ ⟵ ; expected"}
 # test: drop user
-drop user test
-show users
+drop user test;
+show users;
 [{
   "name": "test2"
 }]
 # test: drop user if exists
-drop user test
+drop user test;
 {"msg": "user 'test': not exists"}
-drop user if exists test
+drop user if exists test;
 # test: alter user statment parsing
-alter user
-{"msg": "alter user ⟵ name expected"}
-alter user 123
+alter user;
+{"msg": "alter user❰;❱ ⟵ name expected"}
+alter user 123;
 {"msg": "alter user ❰123❱ ⟵ name expected"}
-alter user test
-{"msg": "alter user test ⟵ SECRET expected"}
-alter user test2
-{"msg": "alter user test2 ⟵ SECRET expected"}
-alter user test2 passw
+alter user test;
+{"msg": "alter user test❰;❱ ⟵ SECRET expected"}
+alter user test2;
+{"msg": "alter user test2❰;❱ ⟵ SECRET expected"}
+alter user test2 passw;
 {"msg": "alter user test2 ❰passw❱ ⟵ SECRET expected"}
-alter user test2 secret
-{"msg": "alter user test2 secret ⟵ string expected"}
-alter user test2 secret 123
+alter user test2 secret;
+{"msg": "alter user test2 secret❰;❱ ⟵ string expected"}
+alter user test2 secret 123;
 {"msg": "alter user test2 secret ❰123❱ ⟵ string expected"}
-alter user test2 secret name
+alter user test2 secret name;
 {"msg": "alter user test2 secret ❰name❱ ⟵ string expected"}
-alter user test2 secret "abc" abc
+alter user test2 secret "abc" abc;
 {"msg": "alter user test2 secret \"abc\" ❰abc❱ ⟵ ; expected"}
 # test: alter user
-alter user test2 secret "abc"
-show users
+alter user test2 secret "abc";
+show users;
 [{
   "name": "test2"
 }]
 # test: alter user unset secret
-alter user test2 secret ""
-show users
+alter user test2 secret "";
+show users;
 [{
   "name": "test2"
 }]
 # test: alter user set secret
-alter user test2 secret "abc"
-show users
+alter user test2 secret "abc";
+show users;
 [{
   "name": "test2"
 }]
 # test: recover
-disconnect S0
-close E0
-open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "127.0.0.1", "port": 3485 }]
-connect E0 S0 127.0.0.1:3485
-show users
+disconnect S0;
+close E0;
+open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "127.0.0.1", "port": 3485 }];
+connect E0 S0 127.0.0.1:3485;
+show users;
 [{
   "name": "test2"
 }]
-drop user test2
-show users
+drop user test2;
+show users;
 []
-disconnect S0
-close E0
-open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "127.0.0.1", "port": 3485 }]
-connect E0 S0 127.0.0.1:3485
-show users
+disconnect S0;
+close E0;
+open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "127.0.0.1", "port": 3485 }];
+connect E0 S0 127.0.0.1:3485;
+show users;
 []
-disconnect S0
-close E0
+disconnect S0;
+close E0;

@@ -1,414 +1,414 @@
 #
 
-open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "127.0.0.1", "port": 3485 }]
-connect E0 S0 127.0.0.1:3485
+open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "127.0.0.1", "port": 3485 }];
+connect E0 S0 127.0.0.1:3485;
 
 # test: cast parsing
-select cast
-select cast (
-select cast ( 1
-select cast ()
-select cast (1 as
-select cast (1 as 1
+select cast;
+select cast (;
+select cast ( 1;
+select cast ();
+select cast (1 as;
+select cast (1 as 1;
 
 # test: cast (bool as bool)
-select cast (true as bool)::type
-select cast (true as bool)
-select cast (false as bool)
+select cast (true as bool)::type;
+select cast (true as bool);
+select cast (false as bool);
 
 # test: cast (bool as int)
-select cast (true as int)::type
-select cast (true as int)
-select cast (false as int)
+select cast (true as int)::type;
+select cast (true as int);
+select cast (false as int);
 
 # test: cast (bool as double)
-select cast (true as double)::type
-select cast (true as double)
-select cast (false as double)
+select cast (true as double)::type;
+select cast (true as double);
+select cast (false as double);
 
 # test: cast (bool as string)
-select cast (true as string)::type
-select cast (true as string)
-select cast (false as string)
+select cast (true as string)::type;
+select cast (true as string);
+select cast (false as string);
 
 # test: cast (bool as json)
-select cast (true as json)::type
-select cast (true as json)
-select cast (false as json)
+select cast (true as json)::type;
+select cast (true as json);
+select cast (false as json);
 
 # test: cast (bool as date)
-select cast (true as date)
+select cast (true as date);
 
 # test: cast (bool as timestamp)
-select cast (true as timestamp)
+select cast (true as timestamp);
 
 # test: cast (bool as interval)
-select cast (true as interval)
+select cast (true as interval);
 
 # test: cast (bool as vector)
-select cast (true as vector)
+select cast (true as vector);
 
 # test: cast (bool as uuid)
-select cast (true as uuid)
+select cast (true as uuid);
 
 # test: cast (int as bool)
-select cast (123 as bool)::type
-select cast (123 as bool)
+select cast (123 as bool)::type;
+select cast (123 as bool);
 
 # test: cast (int as int)
-select cast (123 as int)::type
-select cast (123 as int)
+select cast (123 as int)::type;
+select cast (123 as int);
 
 # test: cast (int as double)
-select cast (123 as double)::type
-select cast (123 as double)
+select cast (123 as double)::type;
+select cast (123 as double);
 
 # test: cast (int as string)
-select cast (123 as string)::type
-select cast (123 as string)
+select cast (123 as string)::type;
+select cast (123 as string);
 
 # test: cast (int as json)
-select cast (123 as json)::type
-select cast (123 as json)
+select cast (123 as json)::type;
+select cast (123 as json);
 
 # test: cast (int as date)
-select cast (123 as date)
+select cast (123 as date);
 
 # test: cast (int as timestamp)
-select cast (123 as timestamp)
+select cast (123 as timestamp);
 
 # test: cast (int as interval)
-select cast (123 as interval)
+select cast (123 as interval);
 
 # test: cast (int as vector)
-select cast (123 as vector)
+select cast (123 as vector);
 
 # test: cast (int as uuid)
-select cast (123 as uuid)
+select cast (123 as uuid);
 
 # test: cast (double as bool)
-select cast (123.321 as bool)::type
-select cast (123.321 as bool)
+select cast (123.321 as bool)::type;
+select cast (123.321 as bool);
 
 # test: cast (double as int)
-select cast (123.321 as int)::type
-select cast (123.321 as int)
+select cast (123.321 as int)::type;
+select cast (123.321 as int);
 
 # test: cast (double as double)
-select cast (123.321 as double)::type
-select cast (123.321 as double)
+select cast (123.321 as double)::type;
+select cast (123.321 as double);
 
 # test: cast (double as string)
-select cast (123.321 as string)::type
-select cast (123.321 as string)
+select cast (123.321 as string)::type;
+select cast (123.321 as string);
 
 # test: cast (double as json)
-select cast (123.321 as json)::type
-select cast (123.321 as json)
+select cast (123.321 as json)::type;
+select cast (123.321 as json);
 
 # test: cast (double as date)
-select cast (123.321 as date)
+select cast (123.321 as date);
 
 # test: cast (double as timestamp)
-select cast (123.321 as timestamp)
+select cast (123.321 as timestamp);
 
 # test: cast (double as interval)
-select cast (123.321 as interval)
+select cast (123.321 as interval);
 
 # test: cast (double as vector)
-select cast (123.321 as vector)
+select cast (123.321 as vector);
 
 # test: cast (double as uuid)
-select cast (123.321 as uuid)
+select cast (123.321 as uuid);
 
 # test: cast (string as bool)
-select cast ('string' as bool)::type
-select cast ('string' as bool)
-select cast ('true' as bool)
-select cast ('false' as bool)
+select cast ('string' as bool)::type;
+select cast ('string' as bool);
+select cast ('true' as bool);
+select cast ('false' as bool);
 
 # test: cast (string as int)
-select cast ('string' as int)::type
-select cast ('string' as int)
-select cast ('123' as int)
+select cast ('string' as int)::type;
+select cast ('string' as int);
+select cast ('123' as int);
 
 # test: cast (string as double)
-select cast ('string' as double)::type
-select cast ('string' as double)
-select cast ('123.321' as double)
+select cast ('string' as double)::type;
+select cast ('string' as double);
+select cast ('123.321' as double);
 
 # test: cast (string as string)
-select cast ('string' as string)::type
-select cast ('string' as string)
+select cast ('string' as string)::type;
+select cast ('string' as string);
 
 # test: cast (string as json)
-select cast ('string' as json)::type
-select cast ('string' as json)
+select cast ('string' as json)::type;
+select cast ('string' as json);
 
 # test: cast (string as date)
-select cast ('string' as date)
-select cast ('1970-00-00' as date)
+select cast ('string' as date);
+select cast ('1970-00-00' as date);
 
 # test: cast (string as timestamp)
-select cast ('string' as timestamp)
-select cast ('1970-00-00 00:00:00' as timestamp)
+select cast ('string' as timestamp);
+select cast ('1970-00-00 00:00:00' as timestamp);
 
 # test: cast (string as interval)
-select cast ('string' as interval)
-select cast ('1 days 5 hours' as interval)
+select cast ('string' as interval);
+select cast ('1 days 5 hours' as interval);
 
 # test: cast (string as vector)
-select cast ('string' as vector)
-select cast ('[1,2,3]' as vector)
+select cast ('string' as vector);
+select cast ('[1,2,3]' as vector);
 
 # test: cast (string as uuid)
-select cast ('string' as uuid)
-select cast ('00000000-0000-0000-0000-000000000000' as uuid)
+select cast ('string' as uuid);
+select cast ('00000000-0000-0000-0000-000000000000' as uuid);
 
 # test: cast (json as bool)
-select cast (true::json as bool)::type
-select cast (true::json as bool)
+select cast (true::json as bool)::type;
+select cast (true::json as bool);
 
 # test: cast (json as int)
-select cast (123::json as int)::type
-select cast (123::json as int)
+select cast (123::json as int)::type;
+select cast (123::json as int);
 
 # test: cast (json as double)
-select cast (123.321::json as double)::type
-select cast (123.321::json as double)
+select cast (123.321::json as double)::type;
+select cast (123.321::json as double);
 
 # test: cast (json as string)
-select cast ('str'::json as string)::type
-select cast ('str'::json as string)
+select cast ('str'::json as string)::type;
+select cast ('str'::json as string);
 
 # test: cast (json as json)
-select cast ([1,2,3] as json)::type
-select cast ([1,2,3] as json)
+select cast ([1,2,3] as json)::type;
+select cast ([1,2,3] as json);
 
 # test: cast (json as date)
-select cast ('0001-01-01'::json as date)
+select cast ('0001-01-01'::json as date);
 
 # test: cast (json as timestamp)
-select cast ('1970-01-01 00:00:00'::json as timestamp)
+select cast ('1970-01-01 00:00:00'::json as timestamp);
 
 # test: cast (json as interval)
-select cast ('1 days 5 hours'::json as interval)
+select cast ('1 days 5 hours'::json as interval);
 
 # test: cast (json as vector)
-select cast ([1,2,3] as vector)
+select cast ([1,2,3] as vector);
 
 # test: cast (json as uuid)
-select cast ('00000000-0000-0000-0000-000000000000'::json as uuid)
+select cast ('00000000-0000-0000-0000-000000000000'::json as uuid);
 
 # test: cast (date as bool)
-select cast (date '1970-01-01' as bool)::type
-select cast (date '1970-01-01' as bool)
+select cast (date '1970-01-01' as bool)::type;
+select cast (date '1970-01-01' as bool);
 
 # test: cast (date as int)
-select cast (date '1970-01-01' as int)::type
-select cast (date '1970-01-01' as int)
+select cast (date '1970-01-01' as int)::type;
+select cast (date '1970-01-01' as int);
 
 # test: cast (date as double)
-select cast (date '1970-01-01' as double)::type
-select cast (date '1970-01-01' as double)
+select cast (date '1970-01-01' as double)::type;
+select cast (date '1970-01-01' as double);
 
 # test: cast (date as string)
-select cast (date '1970-01-01' as string)::type
-select cast (date '1970-01-01' as string)
+select cast (date '1970-01-01' as string)::type;
+select cast (date '1970-01-01' as string);
 
 # test: cast (date as json)
-select cast (date '1970-01-01' as json)::type
-select cast (date '1970-01-01' as json)
+select cast (date '1970-01-01' as json)::type;
+select cast (date '1970-01-01' as json);
 
 # test: cast (date as date)
-select cast (date '1970-01-01' as date)
+select cast (date '1970-01-01' as date);
 
 # test: cast (date as timestamp)
-select cast (date '1970-01-01' as timestamp)
+select cast (date '1970-01-01' as timestamp);
 
 # test: cast (date as interval)
-select cast (date '1970-01-01' as interval)
+select cast (date '1970-01-01' as interval);
 
 # test: cast (date as vector)
-select cast (date '1970-01-01' as vector)
+select cast (date '1970-01-01' as vector);
 
 # test: cast (date as uuid)
-select cast (date '1970-01-01' as uuid)
+select cast (date '1970-01-01' as uuid);
 
 # test: cast (timestamp as bool)
-select cast (timestamp '1970-01-01 00:00:00.99' as bool)::type
-select cast (timestamp '1970-01-01 00:00:00.99' as bool)
+select cast (timestamp '1970-01-01 00:00:00.99' as bool)::type;
+select cast (timestamp '1970-01-01 00:00:00.99' as bool);
 
 # test: cast (timestamp as int)
-select cast (timestamp '1970-01-01 00:00:00.99' as int)::type
-select cast (timestamp '1970-01-01 00:00:00.99' as int)
+select cast (timestamp '1970-01-01 00:00:00.99' as int)::type;
+select cast (timestamp '1970-01-01 00:00:00.99' as int);
 
 # test: cast (timestamp as double)
-select cast (timestamp '1970-01-01 00:00:00.99' as double)::type
-select cast (timestamp '1970-01-01 00:00:00.99' as double)
+select cast (timestamp '1970-01-01 00:00:00.99' as double)::type;
+select cast (timestamp '1970-01-01 00:00:00.99' as double);
 
 # test: cast (timestamp as string)
-select cast (timestamp '1970-01-01 00:00:00.99' as string)::type
-select cast (timestamp '1970-01-01 00:00:00.99' as string)
+select cast (timestamp '1970-01-01 00:00:00.99' as string)::type;
+select cast (timestamp '1970-01-01 00:00:00.99' as string);
 
 # test: cast (timestamp as json)
-select cast (timestamp '1970-01-01 00:00:00.99' as json)::type
-select cast (timestamp '1970-01-01 00:00:00.99' as json)
+select cast (timestamp '1970-01-01 00:00:00.99' as json)::type;
+select cast (timestamp '1970-01-01 00:00:00.99' as json);
 
 # test: cast (timestamp as date)
-select cast (timestamp '1970-01-01 00:00:00.99' as date)
+select cast (timestamp '1970-01-01 00:00:00.99' as date);
 
 # test: cast (timestamp as timestamp)
-select cast (timestamp '1970-01-01 00:00:00.99' as timestamp)
+select cast (timestamp '1970-01-01 00:00:00.99' as timestamp);
 
 # test: cast (timestamp as interval)
-select cast (timestamp '1970-01-01 00:00:00.99' as interval)
+select cast (timestamp '1970-01-01 00:00:00.99' as interval);
 
 # test: cast (timestamp as vector)
-select cast (timestamp '1970-01-01 00:00:00.99' as vector)
+select cast (timestamp '1970-01-01 00:00:00.99' as vector);
 
 # test: cast (timestamp as uuid)
-select cast (timestamp '1970-01-01 00:00:00.99' as uuid)
+select cast (timestamp '1970-01-01 00:00:00.99' as uuid);
 
 # test: cast (interval as bool)
-select cast (interval '5 days 5 hours' as bool)::type
-select cast (interval '5 days 5 hours' as bool)
+select cast (interval '5 days 5 hours' as bool)::type;
+select cast (interval '5 days 5 hours' as bool);
 
 # test: cast (interval as int)
-select cast (interval '5 days 5 hours' as int)::type
-select cast (interval '5 days 5 hours' as int)
+select cast (interval '5 days 5 hours' as int)::type;
+select cast (interval '5 days 5 hours' as int);
 
 # test: cast (interval as double)
-select cast (interval '5 days 5 hours' as double)::type
-select cast (interval '5 days 5 hours' as double)
+select cast (interval '5 days 5 hours' as double)::type;
+select cast (interval '5 days 5 hours' as double);
 
 # test: cast (interval as string)
-select cast (interval '5 days 5 hours' as string)::type
-select cast (interval '5 days 5 hours' as string)
+select cast (interval '5 days 5 hours' as string)::type;
+select cast (interval '5 days 5 hours' as string);
 
 # test: cast (interval as json)
-select cast (interval '5 days 5 hours' as json)::type
-select cast (interval '5 days 5 hours' as json)
+select cast (interval '5 days 5 hours' as json)::type;
+select cast (interval '5 days 5 hours' as json);
 
 # test: cast (interval as date)
-select cast (interval '5 days 5 hours' as date)
+select cast (interval '5 days 5 hours' as date);
 
 # test: cast (interval as timestamp)
-select cast (interval '5 days 5 hours' as timestamp)
+select cast (interval '5 days 5 hours' as timestamp);
 
 # test: cast (interval as interval)
-select cast (interval '5 days 5 hours' as interval)
+select cast (interval '5 days 5 hours' as interval);
 
 # test: cast (interval as vector)
-select cast (interval '5 days 5 hours' as vector)
+select cast (interval '5 days 5 hours' as vector);
 
 # test: cast (interval as uuid)
-select cast (interval '5 days 5 hours' as uuid)
+select cast (interval '5 days 5 hours' as uuid);
 
 # test: cast (vector as bool)
-select cast (vector [1,2,3] as bool)::type
-select cast (vector [1,2,3] as bool)
+select cast (vector [1,2,3] as bool)::type;
+select cast (vector [1,2,3] as bool);
 
 # test: cast (vector as int)
-select cast (vector [1,2,3] as int)::type
-select cast (vector [1,2,3] as int)
+select cast (vector [1,2,3] as int)::type;
+select cast (vector [1,2,3] as int);
 
 # test: cast (vector as double)
-select cast (vector [1,2,3] as double)::type
-select cast (vector [1,2,3] as double)
+select cast (vector [1,2,3] as double)::type;
+select cast (vector [1,2,3] as double);
 
 # test: cast (vector as string)
-select cast (vector [1,2,3] as string)::type
-select cast (vector [1,2,3] as string)
+select cast (vector [1,2,3] as string)::type;
+select cast (vector [1,2,3] as string);
 
 # test: cast (vector as json)
-select cast (vector [1,2,3] as json)::type
-select cast (vector [1,2,3] as json)
+select cast (vector [1,2,3] as json)::type;
+select cast (vector [1,2,3] as json);
 
 # test: cast (vector as date)
-select cast (vector [1,2,3] as date)
+select cast (vector [1,2,3] as date);
 
 # test: cast (vector as timestamp)
-select cast (vector [1,2,3] as timestamp)
+select cast (vector [1,2,3] as timestamp);
 
 # test: cast (vector as interval)
-select cast (vector [1,2,3] as interval)
+select cast (vector [1,2,3] as interval);
 
 # test: cast (vector as vector)
-select cast (vector [1,2,3] as vector)
+select cast (vector [1,2,3] as vector);
 
 # test: cast (vector as uuid)
-select cast (vector [1,2,3] as uuid)
+select cast (vector [1,2,3] as uuid);
 
 # test: cast (uuid as bool)
-select cast (uuid '00000000-0000-0000-0000-000000000000' as bool)::type
-select cast (uuid '00000000-0000-0000-0000-000000000000' as bool)
+select cast (uuid '00000000-0000-0000-0000-000000000000' as bool)::type;
+select cast (uuid '00000000-0000-0000-0000-000000000000' as bool);
 
 # test: cast (uuid as int)
-select cast (uuid '00000000-0000-0000-0000-000000000000' as int)::type
-select cast (uuid '00000000-0000-0000-0000-000000000000' as int)
+select cast (uuid '00000000-0000-0000-0000-000000000000' as int)::type;
+select cast (uuid '00000000-0000-0000-0000-000000000000' as int);
 
 # test: cast (uuid as double)
-select cast (uuid '00000000-0000-0000-0000-000000000000' as double)::type
-select cast (uuid '00000000-0000-0000-0000-000000000000' as double)
+select cast (uuid '00000000-0000-0000-0000-000000000000' as double)::type;
+select cast (uuid '00000000-0000-0000-0000-000000000000' as double);
 
 # test: cast (uuid as string)
-select cast (uuid '00000000-0000-0000-0000-000000000000' as string)::type
-select cast (uuid '00000000-0000-0000-0000-000000000000' as string)
+select cast (uuid '00000000-0000-0000-0000-000000000000' as string)::type;
+select cast (uuid '00000000-0000-0000-0000-000000000000' as string);
 
 # test: cast (uuid as json)
-select cast (uuid '00000000-0000-0000-0000-000000000000' as json)::type
-select cast (uuid '00000000-0000-0000-0000-000000000000' as json)
+select cast (uuid '00000000-0000-0000-0000-000000000000' as json)::type;
+select cast (uuid '00000000-0000-0000-0000-000000000000' as json);
 
 # test: cast (uuid as date)
-select cast (uuid '00000000-0000-0000-0000-000000000000' as date)
+select cast (uuid '00000000-0000-0000-0000-000000000000' as date);
 
 # test: cast (uuid as timestamp)
-select cast (uuid '00000000-0000-0000-0000-000000000000' as timestamp)
+select cast (uuid '00000000-0000-0000-0000-000000000000' as timestamp);
 
 # test: cast (uuid as interval)
-select cast (uuid '00000000-0000-0000-0000-000000000000' as interval)
+select cast (uuid '00000000-0000-0000-0000-000000000000' as interval);
 
 # test: cast (uuid as vector)
-select cast (uuid '00000000-0000-0000-0000-000000000000' as vector)
+select cast (uuid '00000000-0000-0000-0000-000000000000' as vector);
 
 # test: cast (uuid as uuid)
-select cast (uuid '00000000-0000-0000-0000-000000000000' as uuid)
+select cast (uuid '00000000-0000-0000-0000-000000000000' as uuid);
 
 # test: cast (null as bool)
-select cast (null as bool)::type
-select cast (null as bool)
+select cast (null as bool)::type;
+select cast (null as bool);
 
 # test: cast (null as int)
-select cast (null as int)::type
-select cast (null as int)
+select cast (null as int)::type;
+select cast (null as int);
 
 # test: cast (null as double)
-select cast (null as double)::type
-select cast (null as double)
+select cast (null as double)::type;
+select cast (null as double);
 
 # test: cast (null as string)
-select cast (null as string)::type
-select cast (null as string)
+select cast (null as string)::type;
+select cast (null as string);
 
 # test: cast (null as json)
-select cast (null as json)::type
-select cast (null as json)
+select cast (null as json)::type;
+select cast (null as json);
 
 # test: cast (null as date)
-select cast (null as date)
+select cast (null as date);
 
 # test: cast (null as timestamp)
-select cast (null as timestamp)
+select cast (null as timestamp);
 
 # test: cast (null as interval)
-select cast (null as interval)
+select cast (null as interval);
 
 # test: cast (null as vector)
-select cast (null as vector)
+select cast (null as vector);
 
 # test: cast (null as uuid)
-select cast (null as uuid)
+select cast (null as uuid);
 
-disconnect S0
-close E0
+disconnect S0;
+close E0;

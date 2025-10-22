@@ -1,18 +1,18 @@
-open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "127.0.0.1", "port": 3485 }], "backends": 3
-connect E0 S0 127.0.0.1:3485
+open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "127.0.0.1", "port": 3485 }], "backends": 3;
+connect E0 S0 127.0.0.1:3485;
 # test: select count(*) from table empty
-create table test_empty (id int primary key, data int, data2 double)
-create table test_null (id int primary key, data int, data2 double)
-insert into test_null values (0, null, null)
-create table test (id int primary key, data int, data2 double)
-insert into test values (0, 0, 0.0)
-insert into test values (1, 0, 0.0)
-insert into test values (2, 1, 1.0)
-insert into test values (3, 1, 1.0)
-insert into test values (4, 2  2.0)
-insert into test values (5, null, null)
-insert into test values (6, 3, 3.1)
-explain select count(*) from test_empty
+create table test_empty (id int primary key, data int, data2 double);
+create table test_null (id int primary key, data int, data2 double);
+insert into test_null values (0, null, null);
+create table test (id int primary key, data int, data2 double);
+insert into test values (0, 0, 0.0);
+insert into test values (1, 0, 0.0);
+insert into test values (2, 1, 1.0);
+insert into test values (3, 1, 1.0);
+insert into test values (4, 2  2.0);
+insert into test values (5, null, null);
+insert into test values (6, 3, 3.1);
+explain select count(*) from test_empty;
 [{
   "main": {
     "00": "union               0      0      0     ",
@@ -52,12 +52,12 @@ explain select count(*) from test_empty
   },
   "access": [["public.test_empty", "ro"]]
 }]
-select count(*) from test_empty
+select count(*) from test_empty;
 [0]
 # test: select count(*) from table
-select * from test
+select * from test;
 [[0, 0, 0], [1, 0, 0], [3, 1, 1], [4, 2, 2], [5, null, null], [6, 3, 3.1], [2, 1, 1]]
-explain select count(*) from test
+explain select count(*) from test;
 [{
   "main": {
     "00": "union               0      0      0     ",
@@ -97,10 +97,10 @@ explain select count(*) from test
   },
   "access": [["public.test", "ro"]]
 }]
-select count(*) from test
+select count(*) from test;
 [7]
 # test: select count(column) from table
-explain select count(id) from test
+explain select count(id) from test;
 [{
   "main": {
     "00": "union               0      0      0     ",
@@ -140,10 +140,10 @@ explain select count(id) from test
   },
   "access": [["public.test", "ro"]]
 }]
-select count(id) from test
+select count(id) from test;
 [7]
 # test: select count(null) from table
-explain select count(data) from test
+explain select count(data) from test;
 [{
   "main": {
     "00": "union               0      0      0     ",
@@ -183,9 +183,9 @@ explain select count(data) from test
   },
   "access": [["public.test", "ro"]]
 }]
-select count(data) from test
+select count(data) from test;
 [6]
-explain select count(data) from test_null
+explain select count(data) from test_null;
 [{
   "main": {
     "00": "union               0      0      0     ",
@@ -225,18 +225,18 @@ explain select count(data) from test_null
   },
   "access": [["public.test_null", "ro"]]
 }]
-select count(data) from test_null
+select count(data) from test_null;
 [0]
 # test: select count(any) from table
-select count('string') from test_null
+select count('string') from test_null;
 [1]
-select count([]) from test_null
+select count([]) from test_null;
 [1]
 # test: select count(distinct *) from table
-explain select count(distinct *) from test
+explain select count(distinct *) from test;
 {"msg": "explain select count(distinct ❰*❱ ⟵ * cannot be used with DISTINCT"}
 # test: select count(distinct) from table
-explain select count(distinct id) from test
+explain select count(distinct id) from test;
 [{
   "main": {
     "00": "union               0      0      0     ",
@@ -278,20 +278,20 @@ explain select count(distinct id) from test
   },
   "access": [["public.test", "ro"]]
 }]
-select count(distinct id) from test
+select count(distinct id) from test;
 [7]
-select count(distinct data) from test
+select count(distinct data) from test;
 [4]
-select count(distinct data2) from test
+select count(distinct data2) from test;
 [4]
-select count(distinct data), count(distinct data2) from test
+select count(distinct data), count(distinct data2) from test;
 [[4, 4]]
-select count(distinct data), count(distinct data2), count(distinct data) from test
+select count(distinct data), count(distinct data2), count(distinct data) from test;
 [[4, 4, 4]]
-select count(distinct 1), count(1), count(distinct null) from test
+select count(distinct 1), count(1), count(distinct null) from test;
 [[1, 7, 0]]
 # test: select sum(column int) from table empty
-explain select sum(id) from test_empty
+explain select sum(id) from test_empty;
 [{
   "main": {
     "00": "union               0      0      0     ",
@@ -331,10 +331,10 @@ explain select sum(id) from test_empty
   },
   "access": [["public.test_empty", "ro"]]
 }]
-select sum(id) from test_empty
+select sum(id) from test_empty;
 [null]
 # test: select sum(column int) from table
-explain select sum(id) from test
+explain select sum(id) from test;
 [{
   "main": {
     "00": "union               0      0      0     ",
@@ -374,12 +374,12 @@ explain select sum(id) from test
   },
   "access": [["public.test", "ro"]]
 }]
-select sum(id) from test
+select sum(id) from test;
 [21]
-select sum(data) from test
+select sum(data) from test;
 [7]
 # test: select sum(column double) from table empty
-explain select sum(data2) from test_empty
+explain select sum(data2) from test_empty;
 [{
   "main": {
     "00": "union               0      0      0     ",
@@ -419,10 +419,10 @@ explain select sum(data2) from test_empty
   },
   "access": [["public.test_empty", "ro"]]
 }]
-select sum(data2) from test_empty
+select sum(data2) from test_empty;
 [null]
 # test: select sum(column double) from table
-explain select sum(data2) from test
+explain select sum(data2) from test;
 [{
   "main": {
     "00": "union               0      0      0     ",
@@ -462,15 +462,15 @@ explain select sum(data2) from test
   },
   "access": [["public.test", "ro"]]
 }]
-select sum(data2) from test_empty
+select sum(data2) from test_empty;
 [null]
 # test: select sum(any) from table
-explain select sum('string') from test
+explain select sum('string') from test;
 {"msg": "explain select sum(❰'string'❱ ⟵ int or double expected"}
-select sum('string') from test
+select sum('string') from test;
 {"msg": "select sum(❰'string'❱ ⟵ int or double expected"}
 # test: select sum(null) from table
-explain select sum(data) from test_null
+explain select sum(data) from test_null;
 [{
   "main": {
     "00": "union               0      0      0     ",
@@ -510,13 +510,13 @@ explain select sum(data) from test_null
   },
   "access": [["public.test_null", "ro"]]
 }]
-select sum(data) from test_null
+select sum(data) from test_null;
 [null]
 # test: select avg(column int) from table empty
-select avg(id) from test_empty
+select avg(id) from test_empty;
 [null]
 # test: select avg(column int) from table
-explain select avg(id) from test
+explain select avg(id) from test;
 [{
   "main": {
     "00": "union               0      0      0     ",
@@ -556,23 +556,23 @@ explain select avg(id) from test
   },
   "access": [["public.test", "ro"]]
 }]
-select avg(id) from test
+select avg(id) from test;
 [3]
-select avg(data) from test
+select avg(data) from test;
 [1]
 # test: select avg(column double) from table empty
-select avg(data2) from test_empty
+select avg(data2) from test_empty;
 [null]
 # test: select avg(column int) from table
-select avg(data2) from test
+select avg(data2) from test;
 [1.18333]
 # test: select avg(any) from table
-explain select avg('string') from test
+explain select avg('string') from test;
 {"msg": "explain select avg(❰'string'❱ ⟵ int or double expected"}
-select avg('string') from test
+select avg('string') from test;
 {"msg": "select avg(❰'string'❱ ⟵ int or double expected"}
 # test: select avg(null) from table
-explain select avg(data2) from test_null
+explain select avg(data2) from test_null;
 [{
   "main": {
     "00": "union               0      0      0     ",
@@ -612,24 +612,24 @@ explain select avg(data2) from test_null
   },
   "access": [["public.test_null", "ro"]]
 }]
-select avg(data2) from test_null
+select avg(data2) from test_null;
 [null]
 # test: select min(column int) from table empty
-select min(id) from test_empty
+select min(id) from test_empty;
 [null]
 # test: select min(column int) from table
-select min(id) from test
+select min(id) from test;
 [0]
-select min(data) from test
+select min(data) from test;
 [0]
 # test: select min(column double) from table empty
-select min(data2) from test_empty
+select min(data2) from test_empty;
 [null]
 # test: select min(column double) from table
-select min(data2) from test
+select min(data2) from test;
 [0]
 # test: select min(null) from table
-explain select min(data2) from test_null
+explain select min(data2) from test_null;
 [{
   "main": {
     "00": "union               0      0      0     ",
@@ -669,24 +669,24 @@ explain select min(data2) from test_null
   },
   "access": [["public.test_null", "ro"]]
 }]
-select min(data2) from test_null
+select min(data2) from test_null;
 [null]
 # test: select max(column int) from table empty
-select max(id) from test_empty
+select max(id) from test_empty;
 [null]
 # test: select max(column int) from table
-select max(id) from test
+select max(id) from test;
 [6]
-select max(data) from test
+select max(data) from test;
 [3]
 # test: select max(column double) from table empty
-select max(data2) from test_empty
+select max(data2) from test_empty;
 [null]
 # test: select max(column double) from table
-select max(data2) from test
+select max(data2) from test;
 [3.1]
 # test: select max(null) from table
-explain select max(data2) from test_null
+explain select max(data2) from test_null;
 [{
   "main": {
     "00": "union               0      0      0     ",
@@ -726,15 +726,15 @@ explain select max(data2) from test_null
   },
   "access": [["public.test_null", "ro"]]
 }]
-select max(data2) from test_null
+select max(data2) from test_null;
 [null]
 # test: select count(*), min(column), max(column) from table
-select count(*), min(id), max(id) from test
+select count(*), min(id), max(id) from test;
 [[7, 0, 6]]
-select count(*), min(id), max(id), avg(id) from test
+select count(*), min(id), max(id), avg(id) from test;
 [[7, 0, 6, 3]]
 # test: select count(*) from table group by column
-explain select id, count(*) from test group by id
+explain select id, count(*) from test group by id;
 [{
   "main": {
     "00": "union               0      0      0     ",
@@ -770,18 +770,18 @@ explain select id, count(*) from test group by id
   },
   "access": [["public.test", "ro"]]
 }]
-select id, count(*) from test group by id
+select id, count(*) from test group by id;
 [[0, 1], [1, 1], [2, 1], [3, 1], [4, 1], [5, 1], [6, 1]]
-select data, count(*) from test group by data
+select data, count(*) from test group by data;
 [[null, 1], [0, 2], [1, 2], [2, 1], [3, 1]]
-select data2, count(*) from test group by data2
+select data2, count(*) from test group by data2;
 [[null, 1], [0, 2], [1, 2], [2, 1], [3.1, 1]]
-select data, count(*) from test_empty group by data
+select data, count(*) from test_empty group by data;
 []
-select data, count(*) from test_null group by data
+select data, count(*) from test_null group by data;
 [[null, 1]]
 # test: select count(*) from table group by 1
-explain select id, count(*) from test group by 1
+explain select id, count(*) from test group by 1;
 [{
   "main": {
     "00": "union               0      0      0     ",
@@ -817,18 +817,18 @@ explain select id, count(*) from test group by 1
   },
   "access": [["public.test", "ro"]]
 }]
-select id, count(*) from test group by 1
+select id, count(*) from test group by 1;
 [[0, 1], [1, 1], [2, 1], [3, 1], [4, 1], [5, 1], [6, 1]]
-select data, count(*) from test group by 1
+select data, count(*) from test group by 1;
 [[null, 1], [0, 2], [1, 2], [2, 1], [3, 1]]
-select data2, count(*) from test group by 1
+select data2, count(*) from test group by 1;
 [[null, 1], [0, 2], [1, 2], [2, 1], [3.1, 1]]
-select data, count(*) from test_empty group by 1
+select data, count(*) from test_empty group by 1;
 []
-select data, count(*) from test_null group by 1
+select data, count(*) from test_null group by 1;
 [[null, 1]]
 # test: select from (select count(*) from table)
-explain select * from (select count(*) from test) t
+explain select * from (select count(*) from test) t;
 [{
   "main": {
     "00": "union               0      0      0     ",
@@ -877,10 +877,10 @@ explain select * from (select count(*) from test) t
   },
   "access": [["public.test", "ro"]]
 }]
-select * from (select count(*) from test) t
+select * from (select count(*) from test) t;
 [7]
 # test: select from (select count(*) from table group by)
-explain select * from (select id, count(*) from test group by id) t
+explain select * from (select id, count(*) from test group by id) t;
 [{
   "main": {
     "00": "union               0      0      0     ",
@@ -927,29 +927,29 @@ explain select * from (select id, count(*) from test group by id) t
   },
   "access": [["public.test", "ro"]]
 }]
-select * from (select id, count(*) from test group by id) t
+select * from (select id, count(*) from test group by id) t;
 [[0, 1], [1, 1], [2, 1], [3, 1], [4, 1], [5, 1], [6, 1]]
-select * from (select data, count(*) from test group by data) t
+select * from (select data, count(*) from test group by data) t;
 [[null, 1], [0, 2], [1, 2], [2, 1], [3, 1]]
-select * from (select data, count(*) from test_empty group by data) t
+select * from (select data, count(*) from test_empty group by data) t;
 []
-select * from (select data, count(*) from test_null group by data) t
+select * from (select data, count(*) from test_null group by data) t;
 [[null, 1]]
 # test: select * from table order by count(*)
-select * from test order by count(*)
+select * from test order by count(*);
 {"msg": "select ❰*❱ ⟵ column test.id must appear in the GROUP BY clause or be used by an aggregate function"}
-select id from test order by count(*)
+select id from test order by count(*);
 {"msg": "select ❰id❱ ⟵ column id must appear in the GROUP BY clause or be used by an aggregate function"}
-select 1 from test order by count(id)
+select 1 from test order by count(id);
 [1]
 # test: select count(*) from table order by 1
-select count(*) from test order by 1
+select count(*) from test order by 1;
 [7]
 # test: select count(*) as from table order by alias
-select count(*) as c from test order by c
+select count(*) as c from test order by c;
 [7]
 # test: select count(*) from table group by column order by column
-explain select id, count(*) from test group by id order by id
+explain select id, count(*) from test group by id order by id;
 [{
   "main": {
     "00": "union               0      0      0     ",
@@ -988,12 +988,12 @@ explain select id, count(*) from test group by id order by id
   },
   "access": [["public.test", "ro"]]
 }]
-select id, count(*) from test group by id order by id
+select id, count(*) from test group by id order by id;
 [[0, 1], [1, 1], [2, 1], [3, 1], [4, 1], [5, 1], [6, 1]]
-select id, count(*) from test group by id order by data
+select id, count(*) from test group by id order by data;
 {"msg": "select id, count(*) from test group by id order by ❰data❱ ⟵ column data must appear in the GROUP BY clause or be used by an aggregate function"}
 # test: select count(*) from table group by 1 order by 1
-explain select id, count(*) from test group by 1 order by 1
+explain select id, count(*) from test group by 1 order by 1;
 [{
   "main": {
     "00": "union               0      0      0     ",
@@ -1032,31 +1032,31 @@ explain select id, count(*) from test group by 1 order by 1
   },
   "access": [["public.test", "ro"]]
 }]
-select id, count(*) from test group by 1 order by 1
+select id, count(*) from test group by 1 order by 1;
 [[0, 1], [1, 1], [2, 1], [3, 1], [4, 1], [5, 1], [6, 1]]
-select data, count(*) from test group by 1 order by 1
+select data, count(*) from test group by 1 order by 1;
 [[null, 1], [0, 2], [1, 2], [2, 1], [3, 1]]
-select data2, count(*) from test group by 1 order by 1
+select data2, count(*) from test group by 1 order by 1;
 [[null, 1], [0, 2], [1, 2], [2, 1], [3.1, 1]]
-select data, count(*) from test_empty group by 1 order by 1
+select data, count(*) from test_empty group by 1 order by 1;
 []
-select data, count(*) from test_null group by 1 order by 1
+select data, count(*) from test_null group by 1 order by 1;
 [[null, 1]]
 # test: select from table having (without group by)
-select * from test having count(id) > 0
+select * from test having count(id) > 0;
 {"msg": "select * from test ❰having❱ ⟵ ; expected"}
-select id from test having count(id) > 0
+select id from test having count(id) > 0;
 {"msg": "select id from test ❰having❱ ⟵ ; expected"}
-select 1 from test having count(id) > 0
+select 1 from test having count(id) > 0;
 {"msg": "select 1 from test ❰having❱ ⟵ ; expected"}
 # test: select from table group by having
-select id, count(*) from test group by 1
+select id, count(*) from test group by 1;
 [[0, 1], [1, 1], [2, 1], [3, 1], [4, 1], [5, 1], [6, 1]]
-select id, count(*) from test group by 1 having id > 5
+select id, count(*) from test group by 1 having id > 5;
 [[6, 1]]
-select id, count(*) from test group by id having id > 5
+select id, count(*) from test group by id having id > 5;
 [[6, 1]]
-explain select id, count(*) from test group by 1 having id > 5
+explain select id, count(*) from test group by 1 having id > 5;
 [{
   "main": {
     "00": "union               0      0      0     ",
@@ -1097,19 +1097,19 @@ explain select id, count(*) from test group by 1 having id > 5
   "access": [["public.test", "ro"]]
 }]
 # test: select from table group by order by having
-select id, count(*) from test group by 1 order by 1
+select id, count(*) from test group by 1 order by 1;
 [[0, 1], [1, 1], [2, 1], [3, 1], [4, 1], [5, 1], [6, 1]]
-select id, count(*) from test group by 1 having id > 5 order by 1
+select id, count(*) from test group by 1 having id > 5 order by 1;
 [[6, 1]]
-select id, count(*) from test group by id having id > 5 order by id
+select id, count(*) from test group by id having id > 5 order by id;
 [[6, 1]]
 # test: select count(*) from table group by having order by
-select id, count(*) from test group by id having id >= 3 and id < 6 order by id
+select id, count(*) from test group by id having id >= 3 and id < 6 order by id;
 [[3, 1], [4, 1], [5, 1]]
-select id, count(*) from test group by 1 having id >= 3 and id < 6 order by 1
+select id, count(*) from test group by 1 having id >= 3 and id < 6 order by 1;
 [[3, 1], [4, 1], [5, 1]]
 # test: select from table group by having count(column)
-explain select id from test group by id having count(id) > 0
+explain select id from test group by id having count(id) > 0;
 [{
   "main": {
     "00": "union               0      0      0     ",
@@ -1147,16 +1147,16 @@ explain select id from test group by id having count(id) > 0
   },
   "access": [["public.test", "ro"]]
 }]
-select id from test group by id having count(id) > 0
+select id from test group by id having count(id) > 0;
 [0, 1, 2, 3, 4, 5, 6]
-select data from test group by data
+select data from test group by data;
 [null, 0, 1, 2, 3]
-select data from test
+select data from test;
 [0, 0, 1, 2, null, 3, 1]
-select data from test group by data having count(data) > 1
+select data from test group by data having count(data) > 1;
 [0, 1]
 # test: select from table group by having count(*)
-explain select id from test group by id having count(*) > 0
+explain select id from test group by id having count(*) > 0;
 [{
   "main": {
     "00": "union               0      0      0     ",
@@ -1194,9 +1194,9 @@ explain select id from test group by id having count(*) > 0
   },
   "access": [["public.test", "ro"]]
 }]
-select id from test group by id having count(*) > 0
+select id from test group by id having count(*) > 0;
 [0, 1, 2, 3, 4, 5, 6]
-explain select id, count(*) from test group by id having count(*) > 0
+explain select id, count(*) from test group by id having count(*) > 0;
 [{
   "main": {
     "00": "union               0      0      0     ",
@@ -1238,9 +1238,9 @@ explain select id, count(*) from test group by id having count(*) > 0
   },
   "access": [["public.test", "ro"]]
 }]
-select id, count(*) from test group by id having count(*) > 0
+select id, count(*) from test group by id having count(*) > 0;
 [[0, 1], [1, 1], [2, 1], [3, 1], [4, 1], [5, 1], [6, 1]]
-explain select id, count(*) from test group by 1 having count(*) > 0
+explain select id, count(*) from test group by 1 having count(*) > 0;
 [{
   "main": {
     "00": "union               0      0      0     ",
@@ -1282,7 +1282,7 @@ explain select id, count(*) from test group by 1 having count(*) > 0
   },
   "access": [["public.test", "ro"]]
 }]
-explain select data, count(*) from test group by data having count(*) > 0
+explain select data, count(*) from test group by data having count(*) > 0;
 [{
   "main": {
     "00": "union               0      0      0     ",
@@ -1324,9 +1324,9 @@ explain select data, count(*) from test group by data having count(*) > 0
   },
   "access": [["public.test", "ro"]]
 }]
-select data, count(*) from test group by data having count(*) > 0
+select data, count(*) from test group by data having count(*) > 0;
 [[null, 1], [0, 2], [1, 2], [2, 1], [3, 1]]
-explain select data, count(*) from test group by 1 having count(*) > 0
+explain select data, count(*) from test group by 1 having count(*) > 0;
 [{
   "main": {
     "00": "union               0      0      0     ",
@@ -1368,7 +1368,7 @@ explain select data, count(*) from test group by 1 having count(*) > 0
   },
   "access": [["public.test", "ro"]]
 }]
-explain select data, count(*) from test group by data having count(*) > 1
+explain select data, count(*) from test group by data having count(*) > 1;
 [{
   "main": {
     "00": "union               0      0      0     ",
@@ -1410,9 +1410,9 @@ explain select data, count(*) from test group by data having count(*) > 1
   },
   "access": [["public.test", "ro"]]
 }]
-select data, count(*) from test group by data having count(*) > 1
+select data, count(*) from test group by data having count(*) > 1;
 [[0, 2], [1, 2]]
-explain select data, count(*) from test group by 1  having count(*) > 1
+explain select data, count(*) from test group by 1  having count(*) > 1;
 [{
   "main": {
     "00": "union               0      0      0     ",
@@ -1455,10 +1455,10 @@ explain select data, count(*) from test group by 1  having count(*) > 1
   "access": [["public.test", "ro"]]
 }]
 # test: select as from table group by having alias (unsupported)
-select data, count(*) as c from test group by data having c > 1
+select data, count(*) as c from test group by data having c > 1;
 {"msg": "select data, count(*) as c from test group by data having ❰c❱ ⟵ column c must appear in the GROUP BY clause or be used by an aggregate function"}
 # test: select distinct from table group by
-explain select data, count(*) from test group by data order by data
+explain select data, count(*) from test group by data order by data;
 [{
   "main": {
     "00": "union               0      0      0     ",
@@ -1497,9 +1497,9 @@ explain select data, count(*) from test group by data order by data
   },
   "access": [["public.test", "ro"]]
 }]
-select data, count(*) from test group by data order by data
+select data, count(*) from test group by data order by data;
 [[null, 1], [0, 2], [1, 2], [2, 1], [3, 1]]
-explain select count(*) from test group by data order by data
+explain select count(*) from test group by data order by data;
 [{
   "main": {
     "00": "union               0      0      0     ",
@@ -1536,33 +1536,33 @@ explain select count(*) from test group by data order by data
   },
   "access": [["public.test", "ro"]]
 }]
-select count(*) from test group by data order by data
+select count(*) from test group by data order by data;
 [1, 2, 2, 1, 1]
-select distinct data from test
+select distinct data from test;
 [null, 0, 1, 2, 3]
-select distinct on (data) data from test
+select distinct on (data) data from test;
 [null, 0, 1, 2, 3]
-select distinct on (data) id from test
+select distinct on (data) id from test;
 [5, 0, 3, 4, 6]
-select distinct data, count(*) from test group by data
+select distinct data, count(*) from test group by data;
 [[null, 1], [0, 2], [1, 2], [2, 1], [3, 1]]
-select distinct count(*), data from test group by data
+select distinct count(*), data from test group by data;
 [[1, null], [1, 2], [1, 3], [2, 0], [2, 1]]
-select distinct count(data), id from test group by id
+select distinct count(data), id from test group by id;
 [[0, 5], [1, 0], [1, 1], [1, 2], [1, 3], [1, 4], [1, 6]]
-select distinct on (count(data)) data from test group by data
+select distinct on (count(data)) data from test group by data;
 {"msg": "select distinct on (❰count❱ ⟵ unexpected aggregate function usage"}
 # test: select count(distinct) from table group by
-select id, count(distinct data), count(distinct data2) from test group by id
+select id, count(distinct data), count(distinct data2) from test group by id;
 [[0, 1, 1], [1, 1, 1], [2, 1, 1], [3, 1, 1], [4, 1, 1], [5, 0, 0], [6, 1, 1]]
-select count(data) from test group by data
+select count(data) from test group by data;
 [0, 2, 2, 1, 1]
-select count(distinct data) from test group by data
+select count(distinct data) from test group by data;
 [0, 1, 1, 1, 1]
-select count(distinct data), count(distinct data2) from test group by true
+select count(distinct data), count(distinct data2) from test group by true;
 [[4, 4]]
-drop table test
-drop table test_empty
-drop table test_null
-disconnect S0
-close E0
+drop table test;
+drop table test_empty;
+drop table test_null;
+disconnect S0;
+close E0;

@@ -1,87 +1,87 @@
-open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "127.0.0.1", "port": 3485 }], "backends": 3
-connect E0 S0 127.0.0.1:3485
+open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "127.0.0.1", "port": 3485 }], "backends": 3;
+connect E0 S0 127.0.0.1:3485;
 # test: default checkpoint
-select system.state().checkpoint
+select system.state().checkpoint;
 [1]
 # test: default checkpoint_compression
-select system.config().checkpoint_compression
+select system.config().checkpoint_compression;
 ["zstd"]
 # test: checkpoint (no data)
-checkpoint
-select system.state().checkpoint
+checkpoint;
+select system.state().checkpoint;
 [1]
 # test: create table
-create table test (id serial primary key)
-select system.state().lsn
+create table test (id serial primary key);
+select system.state().lsn;
 [2]
 # test: checkpoint
-checkpoint
-select system.state().lsn
+checkpoint;
+select system.state().lsn;
 [2]
-select system.state().checkpoint
+select system.state().checkpoint;
 [2]
 # test: restart/recover
-disconnect S0
-close E0
-open E0
-connect E0 S0 127.0.0.1:3485
-select system.state().lsn
+disconnect S0;
+close E0;
+open E0;
+connect E0 S0 127.0.0.1:3485;
+select system.state().lsn;
 [2]
-select system.state().checkpoint
+select system.state().checkpoint;
 [2]
-select * from test
+select * from test;
 []
 # test: insert
-insert into test () values (), (), ()
-select identity_of("public", "test")
+insert into test () values (), (), ();
+select identity_of("public", "test");
 [3]
 # test: restart/recover (checkpoint + wal)
-disconnect S0
-close E0
-open E0
-connect E0 S0 127.0.0.1:3485
-select system.state().lsn
+disconnect S0;
+close E0;
+open E0;
+connect E0 S0 127.0.0.1:3485;
+select system.state().lsn;
 [3]
-select system.state().checkpoint
+select system.state().checkpoint;
 [2]
-select identity_of("public", "test")
+select identity_of("public", "test");
 [3]
-select * from test
+select * from test;
 [0, 1, 2]
 # test: checkpoint
-checkpoint
-select system.state().lsn
+checkpoint;
+select system.state().lsn;
 [3]
-select system.state().checkpoint
+select system.state().checkpoint;
 [3]
 # test: restart/recover (checkpoint)
-disconnect S0
-close E0
-open E0
-connect E0 S0 127.0.0.1:3485
-select system.state().lsn
+disconnect S0;
+close E0;
+open E0;
+connect E0 S0 127.0.0.1:3485;
+select system.state().lsn;
 [3]
-select system.state().checkpoint
+select system.state().checkpoint;
 [3]
-select identity_of("public", "test")
+select identity_of("public", "test");
 [3]
-select * from test
+select * from test;
 [0, 1, 2]
 # test: create schema
-create schema test
-alter table public.test rename to test.test
-select system.state().lsn
+create schema test;
+alter table public.test rename to test.test;
+select system.state().lsn;
 [5]
 # test: restart/recover (checkpoint + wal)
-disconnect S0
-close E0
-open E0
-connect E0 S0 127.0.0.1:3485
-select system.state().lsn
+disconnect S0;
+close E0;
+open E0;
+connect E0 S0 127.0.0.1:3485;
+select system.state().lsn;
 [5]
-select system.state().checkpoint
+select system.state().checkpoint;
 [3]
-show schemas
+show schemas;
 [{
   "name": "system",
   "system": true
@@ -92,26 +92,26 @@ show schemas
   "name": "test",
   "system": false
 }]
-select identity_of("test", "test")
+select identity_of("test", "test");
 [3]
-select * from test.test
+select * from test.test;
 [0, 1, 2]
 # test: checkpoint
-checkpoint
-select system.state().lsn
+checkpoint;
+select system.state().lsn;
 [5]
-select system.state().checkpoint
+select system.state().checkpoint;
 [5]
 # test: restart/recover (checkpoint)
-disconnect S0
-close E0
-open E0
-connect E0 S0 127.0.0.1:3485
-select system.state().lsn
+disconnect S0;
+close E0;
+open E0;
+connect E0 S0 127.0.0.1:3485;
+select system.state().lsn;
 [5]
-select system.state().checkpoint
+select system.state().checkpoint;
 [5]
-show schemas
+show schemas;
 [{
   "name": "system",
   "system": true
@@ -122,28 +122,28 @@ show schemas
   "name": "test",
   "system": false
 }]
-select identity_of("test", "test")
+select identity_of("test", "test");
 [3]
-select * from test.test
+select * from test.test;
 [0, 1, 2]
-disconnect S0
-close E0
+disconnect S0;
+close E0;
 # test: checkpoint (compression none)
-open E1 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "127.0.0.1", "port": 3485 }], "backends": 3, "checkpoint_compression": "none"
-connect E1 S1 127.0.0.1:3485
-show checkpoint_compression
+open E1 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "127.0.0.1", "port": 3485 }], "backends": 3, "checkpoint_compression": "none";
+connect E1 S1 127.0.0.1:3485;
+show checkpoint_compression;
 ["none"]
-create table test (id serial primary key)
-insert into test values (1), (2), (3)
-checkpoint
+create table test (id serial primary key);
+insert into test values (1), (2), (3);
+checkpoint;
 # test: restart/recover (checkpoint)
-disconnect S1
-close E1
-open E1
-connect E1 S1 127.0.0.1:3485
-show checkpoint_compression
+disconnect S1;
+close E1;
+open E1;
+connect E1 S1 127.0.0.1:3485;
+show checkpoint_compression;
 ["none"]
-select * from test
+select * from test;
 [1, 2, 3]
-disconnect S1
-close E1
+disconnect S1;
+close E1;

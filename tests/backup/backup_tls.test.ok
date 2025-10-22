@@ -1,18 +1,18 @@
 # test: prepare server
-open E0 "uuid": "00000000-0000-0000-0000-000000000000", "tls_cert": "./tls/server.crt", "tls_key": "./tls/server.key", "listen": [{ "host": "127.0.0.1", "port": 3480, "tls": true }], "backends": 3
-connect E0 S0 https://127.0.0.1:3480 ./tls/ca.crt
-create table test (id serial primary key)
-insert into test generate 500
+open E0 "uuid": "00000000-0000-0000-0000-000000000000", "tls_cert": "./tls/server.crt", "tls_key": "./tls/server.key", "listen": [{ "host": "127.0.0.1", "port": 3480, "tls": true }], "backends": 3;
+connect E0 S0 https://127.0.0.1:3480 ./tls/ca.crt;
+create table test (id serial primary key);
+insert into test generate 500;
 # test: backup (using https)
-backup E1 "uri": "https://127.0.0.1:3480"
-close E1
+backup E1 "uri": "https://127.0.0.1:3480";
+close E1;
 # test: shutdown previous server
-disconnect S0
-close E0
+disconnect S0;
+close E0;
 # test: restore and validate
-open E1
-connect E1 S1 https://127.0.0.1:3480 ./tls/ca.crt
-show all
+open E1;
+connect E1 S1 https://127.0.0.1:3480 ./tls/ca.crt;
+show all;
 [{
   "uuid": "00000000-0000-0000-0000-000000000000",
   "timezone": "UTC",
@@ -53,7 +53,7 @@ show all
   "checkpoint_compression": "zstd",
   "checkpoint_sync": false
 }]
-show state
+show state;
 [{
   "version": "0.7.0",
   "directory": "_output/E1",
@@ -65,7 +65,7 @@ show state
   "psn": 3,
   "read_only": false
 }]
-select count(*) from test
+select count(*) from test;
 [500]
-disconnect S1
-close E1
+disconnect S1;
+close E1;

@@ -1,34 +1,34 @@
-open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "127.0.0.1", "port": 3485 }]
-connect E0 S0 127.0.0.1:3485
-create table test (id int primary key, a int, b int)
+open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "127.0.0.1", "port": 3485 }];
+connect E0 S0 127.0.0.1:3485;
+create table test (id int primary key, a int, b int);
 # test: create index parsing
-create index
-{"msg": "create index ⟵ name expected"}
-create unique
-{"msg": "create unique ⟵ INDEX expected"}
-create unique table
+create index;
+{"msg": "create index❰;❱ ⟵ name expected"}
+create unique;
+{"msg": "create unique❰;❱ ⟵ INDEX expected"}
+create unique table;
 {"msg": "create unique ❰table❱ ⟵ INDEX expected"}
-create unique index
-{"msg": "create unique index ⟵ name expected"}
-create index 1
+create unique index;
+{"msg": "create unique index❰;❱ ⟵ name expected"}
+create index 1;
 {"msg": "create index ❰1❱ ⟵ name expected"}
-create index i
-{"msg": "create index i ⟵ ON expected"}
-create index i 1
+create index i;
+{"msg": "create index i❰;❱ ⟵ ON expected"}
+create index i 1;
 {"msg": "create index i ❰1❱ ⟵ ON expected"}
-create index i on
-{"msg": "create index i on ⟵ table name expected"}
-create index i on test
-{"msg": "create index i on test ⟵ ( expected"}
-create index i on test 1
+create index i on;
+{"msg": "create index i on❰;❱ ⟵ table name expected"}
+create index i on test;
+{"msg": "create index i on test❰;❱ ⟵ ( expected"}
+create index i on test 1;
 {"msg": "create index i on test ❰1❱ ⟵ ( expected"}
-create index i on test (
-{"msg": "create index i on test ( ⟵ name expected"}
-create index i on test ()
+create index i on test (;
+{"msg": "create index i on test (❰;❱ ⟵ name expected"}
+create index i on test ();
 {"msg": "create index i on test (❰)❱ ⟵ name expected"}
 # test: create index
-create index i on test (a)
-select system.table('test').indexes
+create index i on test (a);
+select system.table('test').indexes;
 [[{
   "name": "primary",
   "type": 2,
@@ -49,10 +49,10 @@ select system.table('test').indexes
   }]
 }]]
 # test: create index if not exists
-create index i on test (a)
+create index i on test (a);
 {"msg": "table 'test' index 'i': already exists"}
-create index if not exists i on test (a)
-select system.table('test').indexes
+create index if not exists i on test (a);
+select system.table('test').indexes;
 [[{
   "name": "primary",
   "type": 2,
@@ -72,10 +72,10 @@ select system.table('test').indexes
     "column": 0
   }]
 }]]
-drop index i on test
+drop index i on test;
 # test: create index (compound key)
-create index i on test (b, a)
-select system.table('test').indexes
+create index i on test (b, a);
+select system.table('test').indexes;
 [[{
   "name": "primary",
   "type": 2,
@@ -97,10 +97,10 @@ select system.table('test').indexes
     "column": 0
   }]
 }]]
-drop index i on test
+drop index i on test;
 # test: create index (key reuse)
-create index i on test (a, a)
-select system.table('test').indexes
+create index i on test (a, a);
+select system.table('test').indexes;
 [[{
   "name": "primary",
   "type": 2,
@@ -122,37 +122,37 @@ select system.table('test').indexes
     "column": 0
   }]
 }]]
-drop index i on test
+drop index i on test;
 # test: create index (unique)
-create unique index i on test (a)
-drop table test
+create unique index i on test (a);
+drop table test;
 # test: create index with parsing
-create table test (id int primary key, a int, b int)
-create index i on test (a) 1
+create table test (id int primary key, a int, b int);
+create index i on test (a) 1;
 {"msg": "create index i on test (a) ❰1❱ ⟵ ; expected"}
-create index i on test (a) with
-{"msg": "create index i on test (a) with ⟵ ( expected"}
-create index i on test (a) with 1
+create index i on test (a) with;
+{"msg": "create index i on test (a) with❰;❱ ⟵ ( expected"}
+create index i on test (a) with 1;
 {"msg": "create index i on test (a) with ❰1❱ ⟵ ( expected"}
-create index i on test (a) with (
-{"msg": "create index i on test (a) with ( ⟵ name expected"}
-create index i on test (a) with (name
+create index i on test (a) with (;
+{"msg": "create index i on test (a) with (❰;❱ ⟵ name expected"}
+create index i on test (a) with (name;
 {"msg": "create index i on test (a) with (❰name❱ ⟵ unrecognized parameter"}
-create index i on test (a) with (name =
+create index i on test (a) with (name =;
 {"msg": "create index i on test (a) with (❰name❱ ⟵ unrecognized parameter"}
-create index i on test (a) with (name = 1
+create index i on test (a) with (name = 1;
 {"msg": "create index i on test (a) with (❰name❱ ⟵ unrecognized parameter"}
-create index i on test (a) with (type = 1
+create index i on test (a) with (type = 1;
 {"msg": "create index i on test (a) with (type = ❰1❱ ⟵ string expected"}
-create index i on test (a) with (type = 'type'
+create index i on test (a) with (type = 'type';
 {"msg": "create index i on test (a) with (type = ❰'type'❱ ⟵ unrecognized index type"}
-create index i on test (a) with (type = 'tree',
-{"msg": "create index i on test (a) with (type = 'tree', ⟵ name expected"}
-create index i on test (a) with (, type = 'tree'
+create index i on test (a) with (type = 'tree',;
+{"msg": "create index i on test (a) with (type = 'tree',❰;❱ ⟵ name expected"}
+create index i on test (a) with (, type = 'tree';
 {"msg": "create index i on test (a) with (❰,❱ ⟵ name expected"}
 # test: create index with
-create index i on test (a) with (type = 'hash')
-select system.table('test').indexes
+create index i on test (a) with (type = 'hash');
+select system.table('test').indexes;
 [[{
   "name": "primary",
   "type": 2,
@@ -172,9 +172,9 @@ select system.table('test').indexes
     "column": 0
   }]
 }]]
-drop index i on test
-create index i on test (a) with (type = 'tree')
-select system.table('test').indexes
+drop index i on test;
+create index i on test (a) with (type = 'tree');
+select system.table('test').indexes;
 [[{
   "name": "primary",
   "type": 2,
@@ -194,33 +194,33 @@ select system.table('test').indexes
     "column": 0
   }]
 }]]
-drop index i on test
-create index i on test (a) with (type = 'unknown')
+drop index i on test;
+create index i on test (a) with (type = 'unknown');
 {"msg": "create index i on test (a) with (type = ❰'unknown'❱ ⟵ unrecognized index type"}
 # test: drop index parsing
-drop index
-{"msg": "drop index ⟵ name expected"}
-drop index 1
+drop index;
+{"msg": "drop index❰;❱ ⟵ name expected"}
+drop index 1;
 {"msg": "drop index ❰1❱ ⟵ name expected"}
-drop index '1'
+drop index '1';
 {"msg": "drop index ❰'1'❱ ⟵ name expected"}
-drop index i
-{"msg": "drop index i ⟵ ON expected"}
-drop index i 1
+drop index i;
+{"msg": "drop index i❰;❱ ⟵ ON expected"}
+drop index i 1;
 {"msg": "drop index i ❰1❱ ⟵ ON expected"}
-drop index i on
-{"msg": "drop index i on ⟵ table name expected"}
-drop index i on 1
+drop index i on;
+{"msg": "drop index i on❰;❱ ⟵ table name expected"}
+drop index i on 1;
 {"msg": "drop index i on ❰1❱ ⟵ table name expected"}
-drop index i on test
+drop index i on test;
 {"msg": "table 'test' index 'i': not exists"}
-drop index i on schema.test
+drop index i on schema.test;
 {"msg": "table 'test': not exists"}
-drop index i on public.test
+drop index i on public.test;
 {"msg": "table 'test' index 'i': not exists"}
 # test: drop index
-create index i on test (a)
-select system.table('test').indexes
+create index i on test (a);
+select system.table('test').indexes;
 [[{
   "name": "primary",
   "type": 2,
@@ -240,8 +240,8 @@ select system.table('test').indexes
     "column": 0
   }]
 }]]
-drop index i on public.test
-select system.table('test').indexes
+drop index i on public.test;
+select system.table('test').indexes;
 [[{
   "name": "primary",
   "type": 2,
@@ -252,45 +252,45 @@ select system.table('test').indexes
   }]
 }]]
 # test: drop index if exists
-drop index i on public.test
+drop index i on public.test;
 {"msg": "table 'test' index 'i': not exists"}
-drop index if exists i on public.test
+drop index if exists i on public.test;
 # test: alter index parsing
-alter
-{"msg": "alter ⟵ USER|SCHEMA|TABLE|INDEX|FUNCTION expected"}
-alter index
-{"msg": "alter index ⟵ name expected"}
-alter index 1
+alter;
+{"msg": "alter❰;❱ ⟵ USER|SCHEMA|TABLE|INDEX|FUNCTION expected"}
+alter index;
+{"msg": "alter index❰;❱ ⟵ name expected"}
+alter index 1;
 {"msg": "alter index ❰1❱ ⟵ name expected"}
-alter index if
-{"msg": "alter index if ⟵ EXISTS expected"}
-alter index if not
+alter index if;
+{"msg": "alter index if❰;❱ ⟵ EXISTS expected"}
+alter index if not;
 {"msg": "alter index if ❰not❱ ⟵ EXISTS expected"}
-alter index if exists
-{"msg": "alter index if exists ⟵ name expected"}
-alter index i
-{"msg": "alter index i ⟵ ON expected"}
-alter index i 1
+alter index if exists;
+{"msg": "alter index if exists❰;❱ ⟵ name expected"}
+alter index i;
+{"msg": "alter index i❰;❱ ⟵ ON expected"}
+alter index i 1;
 {"msg": "alter index i ❰1❱ ⟵ ON expected"}
-alter index i on
-{"msg": "alter index i on ⟵ table name expected"}
-alter index i on test
-{"msg": "alter index i on test ⟵ RENAME expected"}
-alter index i on test 1
+alter index i on;
+{"msg": "alter index i on❰;❱ ⟵ table name expected"}
+alter index i on test;
+{"msg": "alter index i on test❰;❱ ⟵ RENAME expected"}
+alter index i on test 1;
 {"msg": "alter index i on test ❰1❱ ⟵ RENAME expected"}
-alter index i on test rename
-{"msg": "alter index i on test rename ⟵ TO expected"}
-alter index i on test rename 1
+alter index i on test rename;
+{"msg": "alter index i on test rename❰;❱ ⟵ TO expected"}
+alter index i on test rename 1;
 {"msg": "alter index i on test rename ❰1❱ ⟵ TO expected"}
-alter index i on test rename to
-{"msg": "alter index i on test rename to ⟵ name expected"}
-alter index i on test rename to 1
+alter index i on test rename to;
+{"msg": "alter index i on test rename to❰;❱ ⟵ name expected"}
+alter index i on test rename to 1;
 {"msg": "alter index i on test rename to ❰1❱ ⟵ name expected"}
-alter index i on test rename to
-{"msg": "alter index i on test rename to ⟵ name expected"}
+alter index i on test rename to;
+{"msg": "alter index i on test rename to❰;❱ ⟵ name expected"}
 # test: alter index rename
-create index i on test (a)
-select system.table('test').indexes
+create index i on test (a);
+select system.table('test').indexes;
 [[{
   "name": "primary",
   "type": 2,
@@ -310,8 +310,8 @@ select system.table('test').indexes
     "column": 0
   }]
 }]]
-alter index i on test rename to j
-select system.table('test').indexes
+alter index i on test rename to j;
+select system.table('test').indexes;
 [[{
   "name": "primary",
   "type": 2,
@@ -332,11 +332,11 @@ select system.table('test').indexes
   }]
 }]]
 # test: alter index rename if exists
-alter index k on test rename to z
+alter index k on test rename to z;
 {"msg": "table 'test' index 'k': not exists"}
-alter index if exists k on public.test rename to z
+alter index if exists k on public.test rename to z;
 # test: alter index rename (conflict)
-alter index j on test rename to j
+alter index j on test rename to j;
 {"msg": "table 'test' index 'j': already exists"}
-disconnect S0
-close E0
+disconnect S0;
+close E0;

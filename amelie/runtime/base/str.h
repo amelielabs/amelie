@@ -215,12 +215,18 @@ str_shrink(Str* self)
 }
 
 static inline void
-str_chomp(Str* self)
+str_chomp_chr(Str* self, char chr)
 {
 	if (str_empty(self))
 		return;
-	if (self->end[-1] == '\n')
+	if (self->end[-1] == chr)
 		self->end--;
+}
+
+static inline void
+str_chomp(Str* self)
+{
+	str_chomp_chr(self, '\n');
 }
 
 static inline int

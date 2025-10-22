@@ -1,333 +1,333 @@
-open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "127.0.0.1", "port": 3485 }]
-connect E0 S0 127.0.0.1:3485
+open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "127.0.0.1", "port": 3485 }];
+connect E0 S0 127.0.0.1:3485;
 # test: length()
-select ""::length
+select ""::length;
 [0]
-select ""::size
+select ""::size;
 [0]
-select "hello"::length
+select "hello"::length;
 [5]
-select "hello"::size
+select "hello"::size;
 [5]
-select null::size
+select null::size;
 [null]
-select []::size
+select []::size;
 [0]
-select [1,2,3]::size
+select [1,2,3]::size;
 [3]
-select {}::size
+select {}::size;
 [0]
-select {"a": null}::size
+select {"a": null}::size;
 [1]
-select {"a": null, "b": null}::size
+select {"a": null, "b": null}::size;
 [2]
 # test: length(utf8)
-select "hello"::length
+select "hello"::length;
 [5]
-select "привет"::length
+select "привет"::length;
 [6]
-select "こんにちは世界"::length
+select "こんにちは世界"::length;
 [7]
 # test: octet_length()
-select "hello"::octet_length
+select "hello"::octet_length;
 [5]
-select "привет"::octet_length
+select "привет"::octet_length;
 [12]
-select "こんにちは世界"::octet_length
+select "こんにちは世界"::octet_length;
 [21]
-select {"a": null, "b": null}::length
+select {"a": null, "b": null}::length;
 [2]
-select {"a": null, "b": null}::octet_length
+select {"a": null, "b": null}::octet_length;
 [8]
 # test: concat()
-select concat()
+select concat();
 [""]
-select concat(null)
+select concat(null);
 [""]
-select concat(null, null)
+select concat(null, null);
 [""]
-select concat("a", null)
+select concat("a", null);
 ["a"]
-select concat("a", null, "b")
+select concat("a", null, "b");
 ["ab"]
-select concat("a", null, "b")
+select concat("a", null, "b");
 ["ab"]
-select concat("a", null, "b", 3)
+select concat("a", null, "b", 3);
 {"msg": "concat(string, null, string, ❰int❱ ⟵ string expected"}
-select concat("a", null, "b", 3::string)
+select concat("a", null, "b", 3::string);
 ["ab3"]
-select "привет"::concat("мир")
+select "привет"::concat("мир");
 ["приветмир"]
-select "привет"::concat("мир")::size
+select "привет"::concat("мир")::size;
 [9]
 # test: lower()
-select null::lower
+select null::lower;
 [null]
-select ""::lower
+select ""::lower;
 [""]
-select "Hello World"::lower
+select "Hello World"::lower;
 ["hello world"]
-select null::lower
+select null::lower;
 [null]
-select "приHeветllo миWрorld"::lower
+select "приHeветllo миWрorld"::lower;
 ["приheветllo миwрorld"]
 # test: upper()
-select null::upper
+select null::upper;
 [null]
-select ""::upper
+select ""::upper;
 [""]
-select "Hello World"::upper
+select "Hello World"::upper;
 ["HELLO WORLD"]
-select "приHeветllo миWрorld"::upper
+select "приHeветllo миWрorld"::upper;
 ["приHEветLLO миWрORLD"]
 # test: substr()
-select substr(null, 0)
+select substr(null, 0);
 [null]
-select substr("")
+select substr("");
 {"msg": "substr(string) ⟵ unexpected number of arguments"}
-select substr("hi", 0)
+select substr("hi", 0);
 {"msg": "substr(string, ❰int❱ ⟵ position is out of bounds"}
-select substr("hi", 1)
+select substr("hi", 1);
 ["hi"]
-select substr("hi", 2)
+select substr("hi", 2);
 ["i"]
-select substr("hi", 3)
+select substr("hi", 3);
 {"msg": "substr(string, ❰int❱ ⟵ position is out of bounds"}
-select substr("hi", 1, 0)
+select substr("hi", 1, 0);
 [""]
-select substr("hi", 1, 1)
+select substr("hi", 1, 1);
 ["h"]
-select substr("hi", 1, 2)
+select substr("hi", 1, 2);
 ["hi"]
-select substr("hi", 1, 3)
+select substr("hi", 1, 3);
 {"msg": "substr(string, int, ❰int❱ ⟵ position is out of bounds"}
-select "hello"::substr(2)
+select "hello"::substr(2);
 ["ello"]
-select "hello"::substr(2, 1)
+select "hello"::substr(2, 1);
 ["e"]
-select "hello"::substr(2, 2)
+select "hello"::substr(2, 2);
 ["el"]
-select "hello"::substr(2, 3)
+select "hello"::substr(2, 3);
 ["ell"]
-select "hello"::substr(2, 4)
+select "hello"::substr(2, 4);
 ["ello"]
-select "hello"::substr(2, 5)
+select "hello"::substr(2, 5);
 {"msg": "substr(string, int, ❰int❱ ⟵ position is out of bounds"}
-select "привет"::substr(2)
+select "привет"::substr(2);
 ["ривет"]
-select "привет"::substr(2, 0)
+select "привет"::substr(2, 0);
 [""]
-select "привет"::substr(2, 1)
+select "привет"::substr(2, 1);
 ["р"]
-select "привет"::substr(2, 2)
+select "привет"::substr(2, 2);
 ["ри"]
-select "привет"::substr(2, 3)
+select "привет"::substr(2, 3);
 ["рив"]
-select "привет"::substr(2, 4)
+select "привет"::substr(2, 4);
 ["риве"]
-select "привет"::substr(2, 5)
+select "привет"::substr(2, 5);
 ["ривет"]
-select "привет"::substr(2, 10)
+select "привет"::substr(2, 10);
 {"msg": "substr(string, int, ❰int❱ ⟵ position is out of bounds"}
-select "привет"::substr(5, 1)
+select "привет"::substr(5, 1);
 ["е"]
-select "привет"::substr(6, 1)
+select "привет"::substr(6, 1);
 ["т"]
-select "привет"::substr(7, 1)
+select "привет"::substr(7, 1);
 {"msg": "substr(string, ❰int❱ ⟵ position is out of bounds"}
 # test: strpos()
-select null::strpos("")
+select null::strpos("");
 [null]
-select "hello"::strpos("")
+select "hello"::strpos("");
 [0]
-select "hello"::strpos("h")
+select "hello"::strpos("h");
 [1]
-select "hello"::strpos("e")
+select "hello"::strpos("e");
 [2]
-select "hello"::strpos("l")
+select "hello"::strpos("l");
 [3]
-select "hello"::strpos("ll")
+select "hello"::strpos("ll");
 [3]
-select "hello"::strpos("llo")
+select "hello"::strpos("llo");
 [3]
-select "hello"::strpos("lloo")
+select "hello"::strpos("lloo");
 [0]
-select "hello"::strpos("lo")
+select "hello"::strpos("lo");
 [4]
-select "hello"::strpos("o")
+select "hello"::strpos("o");
 [5]
-select "привет"::strpos("п")
+select "привет"::strpos("п");
 [1]
-select "привет"::strpos("р")
+select "привет"::strpos("р");
 [2]
-select "привет"::strpos("и")
+select "привет"::strpos("и");
 [3]
-select "привет"::strpos("ив")
+select "привет"::strpos("ив");
 [3]
-select "привет"::strpos("иве")
+select "привет"::strpos("иве");
 [3]
-select "привет"::strpos("ивее")
+select "привет"::strpos("ивее");
 [0]
-select "привет"::strpos("ет")
+select "привет"::strpos("ет");
 [5]
-select "привет"::strpos("т")
+select "привет"::strpos("т");
 [6]
-select substr("hello", "hello"::strpos("lo"), 2)
+select substr("hello", "hello"::strpos("lo"), 2);
 ["lo"]
 # test: replace()
-select replace('The cat sat on the mat, mat, mat in the corner of the room.','mat','rug')
+select replace('The cat sat on the mat, mat, mat in the corner of the room.','mat','rug');
 ["The cat sat on the rug, rug, rug in the corner of the room."]
-select null::replace("hi", "hello ")
+select null::replace("hi", "hello ");
 [null]
-select "hihi"::replace("hi", "hello ")
+select "hihi"::replace("hi", "hello ");
 ["hello hello "]
-select "hihellohi"::replace("hi", "")
+select "hihellohi"::replace("hi", "");
 ["hello"]
-select "hihellohi"::replace("hello", "")
+select "hihellohi"::replace("hello", "");
 ["hihi"]
-select "hihi"::replace("hi", "")
+select "hihi"::replace("hi", "");
 [""]
-select "hihello"::replace("hello", "X")
+select "hihello"::replace("hello", "X");
 ["hiX"]
-select "hihell"::replace("hello", "X")
+select "hihell"::replace("hello", "X");
 ["hihell"]
-select "hihel"::replace("hello", "X")
+select "hihel"::replace("hello", "X");
 ["hihel"]
-select "hihe"::replace("hello", "X")
+select "hihe"::replace("hello", "X");
 ["hihe"]
-select "hih"::replace("hello", "X")
+select "hih"::replace("hello", "X");
 ["hih"]
-select "hi"::replace("hello", "X")
+select "hi"::replace("hello", "X");
 ["hi"]
-select "hellohi"::replace("hello", "X")
+select "hellohi"::replace("hello", "X");
 ["Xhi"]
-select "hellhi"::replace("hello", "X")
+select "hellhi"::replace("hello", "X");
 ["hellhi"]
-select "helhi"::replace("hello", "X")
+select "helhi"::replace("hello", "X");
 ["helhi"]
-select "hehi"::replace("hello", "X")
+select "hehi"::replace("hello", "X");
 ["hehi"]
-select "hhi"::replace("hello", "X")
+select "hhi"::replace("hello", "X");
 ["hhi"]
-select "hhi"::replace("", "X")
+select "hhi"::replace("", "X");
 {"msg": "replace(string, ❰string❱ ⟵ invalid argument"}
-select "приветпривет"::replace("привет", "й")
+select "приветпривет"::replace("привет", "й");
 ["йй"]
-select "приветпривет"::replace("привет", "")
+select "приветпривет"::replace("привет", "");
 [""]
-select "приветпривет"::replace("привет", "")::size
+select "приветпривет"::replace("привет", "")::size;
 [0]
-select "приветпри"::replace("привет", "й")
+select "приветпри"::replace("привет", "й");
 ["йпри"]
-select "приприветпри"::replace("привет", "й")
+select "приприветпри"::replace("привет", "й");
 ["прийпри"]
-select "при"::replace("привет", "й")
+select "при"::replace("привет", "й");
 ["при"]
-select "вет"::replace("привет", "й")
+select "вет"::replace("привет", "й");
 ["вет"]
-select "__привет-"::replace("привет", "й")
+select "__привет-"::replace("привет", "й");
 ["__й-"]
-select "привет"::replace("привет", "й")
+select "привет"::replace("привет", "й");
 ["й"]
 # test: ltrim()
-select null::ltrim()
+select null::ltrim();
 [null]
-select ""::ltrim()
+select ""::ltrim();
 [""]
-select ""::ltrim("")
+select ""::ltrim("");
 [""]
-select ""::ltrim(null)
+select ""::ltrim(null);
 {"msg": "ltrim(string, ❰null❱ ⟵ expected string"}
-select "  	 123"::ltrim()
+select "  	 123"::ltrim();
 ["123"]
-select "  123"::ltrim(" ")
+select "  123"::ltrim(" ");
 ["123"]
-select "  123  "::ltrim(" 1")
+select "  123  "::ltrim(" 1");
 ["23  "]
-select "$$123"::ltrim("$")
+select "$$123"::ltrim("$");
 ["123"]
-select "$$"::ltrim("$")
+select "$$"::ltrim("$");
 [""]
-select "  привет  "::ltrim(" пр")
+select "  привет  "::ltrim(" пр");
 ["ивет  "]
 # test: rtrim()
-select null::rtrim()
+select null::rtrim();
 [null]
-select ""::rtrim()
+select ""::rtrim();
 [""]
-select ""::rtrim("")
+select ""::rtrim("");
 [""]
-select ""::rtrim(null)
+select ""::rtrim(null);
 {"msg": "rtrim(string, ❰null❱ ⟵ expected string"}
-select "  	 123"::rtrim()
+select "  	 123"::rtrim();
 ["  \t 123"]
-select "  123  "::rtrim(" ")
+select "  123  "::rtrim(" ");
 ["  123"]
-select "  123  "::rtrim(" 13")
+select "  123  "::rtrim(" 13");
 ["  12"]
-select "$$123 $$"::rtrim("$")
+select "$$123 $$"::rtrim("$");
 ["$$123 "]
-select "$$"::rtrim("$")
+select "$$"::rtrim("$");
 [""]
-select "123$"::rtrim("$")
+select "123$"::rtrim("$");
 ["123"]
-select "$"::rtrim("$")
+select "$"::rtrim("$");
 [""]
-select ""::rtrim("$")
+select ""::rtrim("$");
 [""]
-select "  привет  "::rtrim(" пр")
+select "  привет  "::rtrim(" пр");
 ["  привет"]
 # test: trim()
-select null::trim()
+select null::trim();
 [null]
-select ""::trim()
+select ""::trim();
 [""]
-select ""::trim("")
+select ""::trim("");
 [""]
-select ""::trim(null)
+select ""::trim(null);
 {"msg": "trim(string, ❰null❱ ⟵ expected string"}
-select "  	 123"::trim()
+select "  	 123"::trim();
 ["123"]
-select "  123  "::trim(" ")
+select "  123  "::trim(" ");
 ["123"]
-select "  123  "::trim(" 13")
+select "  123  "::trim(" 13");
 ["2"]
-select "$$123 $$"::trim("$")
+select "$$123 $$"::trim("$");
 ["123 "]
-select "$$"::trim("$")
+select "$$"::trim("$");
 [""]
-select "123$"::trim("$")
+select "123$"::trim("$");
 ["123"]
-select "$"::trim("$")
+select "$"::trim("$");
 [""]
-select ""::trim("$")
+select ""::trim("$");
 [""]
-select "  привет  "::trim(" пр")
+select "  привет  "::trim(" пр");
 ["ивет"]
-select "  привет  "::trim(" прет")
+select "  привет  "::trim(" прет");
 ["ив"]
-select "  привет  "::trim(" привет")
+select "  привет  "::trim(" привет");
 [""]
 # test: like()
-select null::like('hello%world')
+select null::like('hello%world');
 [null]
-select 'hello, world'::like('hello%world')
+select 'hello, world'::like('hello%world');
 [true]
-select 'hello, world' like 'hello%world'
+select 'hello, world' like 'hello%world';
 [true]
-select public.like('hello, world', 'hello%world')
+select public.like('hello, world', 'hello%world');
 [true]
-select like('hello, world', 'hello%world')
+select like('hello, world', 'hello%world');
 {"msg": "select ❰like❱ ⟵ bad expression"}
-select public.like('привет, мир', 'привет%мир')
+select public.like('привет, мир', 'привет%мир');
 [true]
-select public.like('привет', 'п%т')
+select public.like('привет', 'п%т');
 [true]
-select public.like('привет, мий', 'прив____ми_')
+select public.like('привет, мий', 'прив____ми_');
 [true]
-select public.like('привет, мHй', 'прив____ми_')
+select public.like('привет, мHй', 'прив____ми_');
 [false]
-select public.like("こんにちは世界", "%にちは%")
+select public.like("こんにちは世界", "%にちは%");
 [true]
-disconnect S0
-close E0
+disconnect S0;
+close E0;

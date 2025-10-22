@@ -1,119 +1,119 @@
 #
 
-open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "127.0.0.1", "port": 3485 }], "backends": 3
-connect E0 S0 127.0.0.1:3485
+open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "127.0.0.1", "port": 3485 }], "backends": 3;
+connect E0 S0 127.0.0.1:3485;
 
-create table ref (id int primary key, data int default 0)
-insert into ref (id) values (1), (2), (3)
+create table ref (id int primary key, data int default 0);
+insert into ref (id) values (1), (2), (3);
 
-create table test (id int primary key, data int default 0)
-insert into test (id) values (1), (2), (3)
+create table test (id int primary key, data int default 0);
+insert into test (id) values (1), (2), (3);
 
 # test: select from table, ref
-explain select test.*, ref.* from test, ref
-select test.*, ref.* from test, ref
+explain select test.*, ref.* from test, ref;
+select test.*, ref.* from test, ref;
 
 # test: select from ref, table
-explain select test.*, ref.* from ref, test
-select test.*, ref.* from ref, test
+explain select test.*, ref.* from ref, test;
+select test.*, ref.* from ref, test;
 
 # test: select from table, table
-explain select t.* from test, test t
-select t.* from test, test t
+explain select t.* from test, test t;
+select t.* from test, test t;
 
 # test: select from table join table
-explain select test.id, ref.id from test join ref on true
-select test.id, ref.id from test join ref on true
+explain select test.id, ref.id from test join ref on true;
+select test.id, ref.id from test join ref on true;
 
 # test: select from table join table on
-explain select test.id, ref.id from test join ref on test.id = ref.id
-select test.id, ref.id from test join ref on test.id = ref.id
+explain select test.id, ref.id from test join ref on test.id = ref.id;
+select test.id, ref.id from test join ref on test.id = ref.id;
 
 # test: select from table join table on #2
-explain select test.id, ref.id from test join ref on test.id = ref.id join ref ref2 on test.id = ref2.id
-select test.id, ref.id from test join ref on test.id = ref.id join ref ref2 on test.id = ref2.id
+explain select test.id, ref.id from test join ref on test.id = ref.id join ref ref2 on test.id = ref2.id;
+select test.id, ref.id from test join ref on test.id = ref.id join ref ref2 on test.id = ref2.id;
 
 # test: select from table join table on #3
-explain select test.id, ref.id from test join ref on test.id = ref.id join ref ref2 on test.id = ref2.id where test.id > 0
-select test.id, ref.id from test join ref on test.id = ref.id join ref ref2 on test.id = ref2.id where test.id > 0
+explain select test.id, ref.id from test join ref on test.id = ref.id join ref ref2 on test.id = ref2.id where test.id > 0;
+select test.id, ref.id from test join ref on test.id = ref.id join ref ref2 on test.id = ref2.id where test.id > 0;
 
 # test: select from table join table on #4
-explain select test.id, ref.id from test, ref where test.id = ref.id
-select test.id, ref.id from test, ref where test.id = ref.id
+explain select test.id, ref.id from test, ref where test.id = ref.id;
+select test.id, ref.id from test, ref where test.id = ref.id;
 
-explain select test.id, ref.id from test, ref where ref.id = test.id
-select test.id, ref.id from test, ref where ref.id = test.id
+explain select test.id, ref.id from test, ref where ref.id = test.id;
+select test.id, ref.id from test, ref where ref.id = test.id;
 
-explain select test.id, ref.id from test, ref where ref.id = 1
-select test.id, ref.id from test, ref where ref.id = 1
+explain select test.id, ref.id from test, ref where ref.id = 1;
+select test.id, ref.id from test, ref where ref.id = 1;
 
-explain select test.id, ref.id from test, ref where ref.id = 1 and test.id = 1
-select test.id, ref.id from test, ref where ref.id = 1 and test.id = 1
+explain select test.id, ref.id from test, ref where ref.id = 1 and test.id = 1;
+select test.id, ref.id from test, ref where ref.id = 1 and test.id = 1;
 
-explain select test.id, ref.id from test, ref where ref.id >= test.id
-select test.id, ref.id from test, ref where ref.id >= test.id
+explain select test.id, ref.id from test, ref where ref.id >= test.id;
+select test.id, ref.id from test, ref where ref.id >= test.id;
 
 # test: select from table join using
-explain select test.id, ref.id from test join ref using
-explain select test.id, ref.id from test join ref using(
-explain select test.id, ref.id from test join ref using(1
-explain select test.id, ref.id from test join ref using(id
+explain select test.id, ref.id from test join ref using;
+explain select test.id, ref.id from test join ref using(;
+explain select test.id, ref.id from test join ref using(1;
+explain select test.id, ref.id from test join ref using(id;
 
-explain select test.id, ref.id from test join ref using(id)
-select test.id, ref.id from test join ref using(id)
+explain select test.id, ref.id from test join ref using(id);
+select test.id, ref.id from test join ref using(id);
 
 # test: select from table join using (not found)
-select test.id, ref.id from test join ref using(unknown)
+select test.id, ref.id from test join ref using(unknown);
 
 # test: select from table join using #2
-explain select test.id, ref.id from test join ref using (id) join ref ref2 using (id) where test.id > 0
-select test.id, ref.id from test join ref using (id) join ref ref2 using (id) where test.id > 0
+explain select test.id, ref.id from test join ref using (id) join ref ref2 using (id) where test.id > 0;
+select test.id, ref.id from test join ref using (id) join ref ref2 using (id) where test.id > 0;
 # unknown
-select test.id, ref.id from test join ref using (id) join ref ref2 using (id2) where test.id > 0
+select test.id, ref.id from test join ref using (id) join ref ref2 using (id2) where test.id > 0;
 
 # test: with (select from table) select from table, cte
-explain with a as (select * from test) select * from test, a where test.id = a.id
-with a as (select * from test) select * from test, a where test.id = a.id
+explain with a as (select * from test) select * from test, a where test.id = a.id;
+with a as (select * from test) select * from test, a where test.id = a.id;
 
 # test: with (select from table) select from table, cte (point lookup)
-explain with a as (select * from test) select * from test, a where test.id = 1
-with a as (select * from test) select * from test, a where test.id = 1
+explain with a as (select * from test) select * from test, a where test.id = 1;
+with a as (select * from test) select * from test, a where test.id = 1;
 
 # test: with (select from table) select from cte, table
-explain with a as (select * from test) select * from a, test where test.id = a.id
-with a as (select * from test) select * from a, test where test.id = a.id
+explain with a as (select * from test) select * from a, test where test.id = a.id;
+with a as (select * from test) select * from a, test where test.id = a.id;
 
 # test: with (select from table) select from cte, table (point lookup)
-explain with a as (select * from test) select * from a, test where test.id = 1
-with a as (select * from test) select * from a, test where test.id = 1
+explain with a as (select * from test) select * from a, test where test.id = 1;
+with a as (select * from test) select * from a, test where test.id = 1;
 
 # test: select from table join group by
-select test.id from test, ref group by test.id
-select test.id from test join ref on (test.id = ref.id) group by test.id
+select test.id from test, ref group by test.id;
+select test.id from test join ref on (test.id = ref.id) group by test.id;
 
-select test.id from test join ref on (test.id = ref.id) group by ref.id
-select id from test join ref on (test.id = ref.id) group by ref.id
-select ref.id from test join ref on (test.id = ref.id) group by id
+select test.id from test join ref on (test.id = ref.id) group by ref.id;
+select id from test join ref on (test.id = ref.id) group by ref.id;
+select ref.id from test join ref on (test.id = ref.id) group by id;
 
-explain select ref.id from test join ref on (test.id = ref.id) group by ref.id
-select ref.id from test join ref on (test.id = ref.id) group by ref.id
-select ref.id, count(*) from test join ref on (test.id = ref.id) group by ref.id
+explain select ref.id from test join ref on (test.id = ref.id) group by ref.id;
+select ref.id from test join ref on (test.id = ref.id) group by ref.id;
+select ref.id, count(*) from test join ref on (test.id = ref.id) group by ref.id;
 
-select ref.id, count(test.id) + count(ref.id) from test join ref on (test.id = ref.id) group by ref.id
+select ref.id, count(test.id) + count(ref.id) from test join ref on (test.id = ref.id) group by ref.id;
 
 # test: select from table join group by path
-create table ref2 (id int primary key, data json)
-insert into ref2 values (1, {"id": 1}), (2, {"id": 2}), (3, {"id": 3})
+create table ref2 (id int primary key, data json);
+insert into ref2 values (1, {"id": 1}), (2, {"id": 2}), (3, {"id": 3});
 
-select ref2.data from test join ref2 on (test.id = ref2.id) group by ref2.id
-select ref2.data.id, ref2.data.id::type from test join ref2 on (test.id = ref2.id) group by ref2.data.id
-select ref2.data.id, ref2.data.id::type from test join ref2 on (test.id = ref2.id) group by 1
+select ref2.data from test join ref2 on (test.id = ref2.id) group by ref2.id;
+select ref2.data.id, ref2.data.id::type from test join ref2 on (test.id = ref2.id) group by ref2.data.id;
+select ref2.data.id, ref2.data.id::type from test join ref2 on (test.id = ref2.id) group by 1;
 
-select ref2.data, ref2.data.id from test join ref2 on (test.id = ref2.id) group by ref2.data
+select ref2.data, ref2.data.id from test join ref2 on (test.id = ref2.id) group by ref2.data;
 
-drop table ref
-drop table ref2
-drop table test
+drop table ref;
+drop table ref2;
+drop table test;
 
-disconnect S0
-close E0
+disconnect S0;
+close E0;

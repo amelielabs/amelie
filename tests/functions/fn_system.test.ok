@@ -1,7 +1,7 @@
-open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "127.0.0.1", "port": 3485 }]
-connect E0 S0 127.0.0.1:3485
+open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "127.0.0.1", "port": 3485 }];
+connect E0 S0 127.0.0.1:3485;
 # test: config()
-select system.config()
+select system.config();
 [{
   "uuid": "00000000-0000-0000-0000-000000000000",
   "timezone": "UTC",
@@ -42,7 +42,7 @@ select system.config()
   "checkpoint_sync": false
 }]
 # test: state()
-select system.state()
+select system.state();
 [{
   "version": "0.7.0",
   "directory": "_output/E0",
@@ -55,21 +55,21 @@ select system.state()
   "read_only": false
 }]
 # test: users()
-select system.users()
+select system.users();
 [[]]
 # test: user()
-select system.user('test')
+select system.user('test');
 [null]
 # test: replicas()
-select system.replicas()
+select system.replicas();
 [[]]
 # test: replica()
-select system.replica('00000000-0000-0000-0000-000000000000')
+select system.replica('00000000-0000-0000-0000-000000000000');
 [null]
-select system.replica(uuid '00000000-0000-0000-0000-000000000000')
+select system.replica(uuid '00000000-0000-0000-0000-000000000000');
 [null]
 # test: repl()
-select system.repl()
+select system.repl();
 [{
   "active": false,
   "role": "primary",
@@ -77,7 +77,7 @@ select system.repl()
   "replicas": []
 }]
 # test: replication()
-select system.replication()
+select system.replication();
 [{
   "active": false,
   "role": "primary",
@@ -85,7 +85,7 @@ select system.replication()
   "replicas": []
 }]
 # test: schemas()
-select system.schemas()
+select system.schemas();
 [[{
   "name": "system",
   "system": true,
@@ -96,24 +96,24 @@ select system.schemas()
   "create": true
 }]]
 # test: schema()
-select system.schema('public')
+select system.schema('public');
 [{
   "name": "public",
   "system": true,
   "create": true
 }]
-select system.schema('public').system
+select system.schema('public').system;
 [true]
 # test: tables()
-select system.tables()
+select system.tables();
 [[]]
 # test: table()
-select system.table('test')
+select system.table('test');
 [null]
-select system.table('test.a')
+select system.table('test.a');
 [null]
 # test: wal()
-select system.wal()
+select system.wal();
 [{
   "lsn": 1,
   "lsn_min": 1,
@@ -126,7 +126,7 @@ select system.wal()
   "checkpoint": 1
 }]
 # test: metrics()
-select system.metrics()::size
+select system.metrics()::size;
 [9]
-disconnect S0
-close E0
+disconnect S0;
+close E0;

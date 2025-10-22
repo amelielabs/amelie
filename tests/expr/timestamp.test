@@ -1,338 +1,338 @@
 #
 
-open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "127.0.0.1", "port": 3485 }]
-connect E0 S0 127.0.0.1:3485
+open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "127.0.0.1", "port": 3485 }];
+connect E0 S0 127.0.0.1:3485;
 
 # test: timestamp parsing
-select '2'::timestamp
-select '2a'::timestamp
-select 'a'::timestamp
-select '_a'::timestamp
-select '_'::timestamp
-select '-'::timestamp
-select '--'::timestamp
-select '-- ::'::timestamp
-select '1969-0-0'::timestamp
-select '1969-0-0 0:0:0'::timestamp
-select '1970-0-0 00:00:00'::timestamp
-select '1970-00-00 00:00:00'::timestamp
-select timestamp '1970-00-00 00:00:00'
-select timestamp('1970-00-00 00:00:00')
+select '2'::timestamp;
+select '2a'::timestamp;
+select 'a'::timestamp;
+select '_a'::timestamp;
+select '_'::timestamp;
+select '-'::timestamp;
+select '--'::timestamp;
+select '-- ::'::timestamp;
+select '1969-0-0'::timestamp;
+select '1969-0-0 0:0:0'::timestamp;
+select '1970-0-0 00:00:00'::timestamp;
+select '1970-00-00 00:00:00'::timestamp;
+select timestamp '1970-00-00 00:00:00';
+select timestamp('1970-00-00 00:00:00');
 
 # test: epoch
-select '1970-01-01 00:00:00'::timestamp
-select timestamp '1970-01-01 00:00:00'
-select timestamp('1970-01-01 00:00:00')
+select '1970-01-01 00:00:00'::timestamp;
+select timestamp '1970-01-01 00:00:00';
+select timestamp('1970-01-01 00:00:00');
 
 # test: day overflow
-select '1970-01-33 00:00:00'::timestamp
+select '1970-01-33 00:00:00'::timestamp;
 
 # test: month overflow
-select '1970-13-01 00:00:00'::timestamp
+select '1970-13-01 00:00:00'::timestamp;
 
 # test: second overflow
-select '1970-01-01 00:00:70'::timestamp
+select '1970-01-01 00:00:70'::timestamp;
 
 # test: minute overflow
-select '1970-01-01 00:70:00'::timestamp
+select '1970-01-01 00:70:00'::timestamp;
 
 # test: hour overflow
-select '1970-01-01 28:00:00'::timestamp
+select '1970-01-01 28:00:00'::timestamp;
 
 # test: 24hour
-select '1970-01-01 24:00:00'::timestamp
+select '1970-01-01 24:00:00'::timestamp;
 
 # test: ms
-select '1970-01-01 00:00:00.'::timestamp
-select '1970-01-01 00:00:00.0'::timestamp
-select '1970-01-01 00:00:00.00'::timestamp
-select '1970-01-01 00:00:00.000'::timestamp
-select '1970-01-01 00:00:00.001'::timestamp
-select '1970-01-01 00:00:00.001'::timestamp()
-select timestamp '1970-01-01 00:00:00.001'
-select timestamp('1970-01-01 00:00:00.001')
+select '1970-01-01 00:00:00.'::timestamp;
+select '1970-01-01 00:00:00.0'::timestamp;
+select '1970-01-01 00:00:00.00'::timestamp;
+select '1970-01-01 00:00:00.000'::timestamp;
+select '1970-01-01 00:00:00.001'::timestamp;
+select '1970-01-01 00:00:00.001'::timestamp();
+select timestamp '1970-01-01 00:00:00.001';
+select timestamp('1970-01-01 00:00:00.001');
 
 # test: us
-select '1970-01-01 00:00:00.0010'::timestamp
-select '1970-01-01 00:00:00.00100'::timestamp
-select '1970-01-01 00:00:00.000001'::timestamp
-select '1970-01-01 00:00:00.000000'::timestamp
-select '1970-01-01 00:00:00.999999'::timestamp
-select timestamp '1970-01-01 00:00:00.999999'
-select timestamp('1970-01-01 00:00:00.999999')
-select timestamp('1970-01-01 00:00:00.999999', 123)
+select '1970-01-01 00:00:00.0010'::timestamp;
+select '1970-01-01 00:00:00.00100'::timestamp;
+select '1970-01-01 00:00:00.000001'::timestamp;
+select '1970-01-01 00:00:00.000000'::timestamp;
+select '1970-01-01 00:00:00.999999'::timestamp;
+select timestamp '1970-01-01 00:00:00.999999';
+select timestamp('1970-01-01 00:00:00.999999');
+select timestamp('1970-01-01 00:00:00.999999', 123);
 
 # test: precision
-select '1970-01-01 00:00:00.1'::timestamp
-select '1970-01-01 00:00:00.10'::timestamp
-select '1970-01-01 00:00:00.100'::timestamp
-select '1970-01-01 00:00:00.01'::timestamp
-select '1970-01-01 00:00:00.010'::timestamp
-select '1970-01-01 00:00:00.001'::timestamp
-select '1970-01-01 00:00:00.0010'::timestamp
-select '1970-01-01 00:00:00.00100'::timestamp
-select '1970-01-01 00:00:00.001000'::timestamp
+select '1970-01-01 00:00:00.1'::timestamp;
+select '1970-01-01 00:00:00.10'::timestamp;
+select '1970-01-01 00:00:00.100'::timestamp;
+select '1970-01-01 00:00:00.01'::timestamp;
+select '1970-01-01 00:00:00.010'::timestamp;
+select '1970-01-01 00:00:00.001'::timestamp;
+select '1970-01-01 00:00:00.0010'::timestamp;
+select '1970-01-01 00:00:00.00100'::timestamp;
+select '1970-01-01 00:00:00.001000'::timestamp;
 
-select '1970-01-01 00:00:00.0001'::timestamp
-select '1970-01-01 00:00:00.00010'::timestamp
-select '1970-01-01 00:00:00.000100'::timestamp
+select '1970-01-01 00:00:00.0001'::timestamp;
+select '1970-01-01 00:00:00.00010'::timestamp;
+select '1970-01-01 00:00:00.000100'::timestamp;
 
-select '1970-01-01 00:00:00.00001'::timestamp
-select '1970-01-01 00:00:00.000010'::timestamp
-select '1970-01-01 00:00:00.000001'::timestamp
+select '1970-01-01 00:00:00.00001'::timestamp;
+select '1970-01-01 00:00:00.000010'::timestamp;
+select '1970-01-01 00:00:00.000001'::timestamp;
 
-select '1970-01-01 00:00:00.0000001'::timestamp
+select '1970-01-01 00:00:00.0000001'::timestamp;
 
 # test: zulu
-select '1970-01-01 00:00:00.999999Z'::timestamp
-select '1970-01-01 00:00:00.999999Zjunk'::timestamp
-select timestamp '1970-01-01 00:00:00.999999Zjunk'
+select '1970-01-01 00:00:00.999999Z'::timestamp;
+select '1970-01-01 00:00:00.999999Zjunk'::timestamp;
+select timestamp '1970-01-01 00:00:00.999999Zjunk';
 
 # test: timezone (hh)
-select '1970-01-01 00:00:00.999999+'::timestamp
-select '1970-01-01 00:00:00.999999+0'::timestamp
-select '1970-01-01 00:00:00.999999+00'::timestamp
-select '1970-01-01 00:00:00.999999-00'::timestamp
-select '1970-01-01 00:00:00.999999-000'::timestamp
+select '1970-01-01 00:00:00.999999+'::timestamp;
+select '1970-01-01 00:00:00.999999+0'::timestamp;
+select '1970-01-01 00:00:00.999999+00'::timestamp;
+select '1970-01-01 00:00:00.999999-00'::timestamp;
+select '1970-01-01 00:00:00.999999-000'::timestamp;
 
 # test: timezone (hhmm)
-select '1970-01-01 00:00:00.999999+0000'::timestamp
-select '1970-01-01 00:00:00.999999-0000'::timestamp
-select '1970-01-01 00:00:00.999999+0030'::timestamp
-select '1970-01-01 00:00:00.999999+1030'::timestamp
-select '1970-01-01 00:00:00.999999+9930'::timestamp
+select '1970-01-01 00:00:00.999999+0000'::timestamp;
+select '1970-01-01 00:00:00.999999-0000'::timestamp;
+select '1970-01-01 00:00:00.999999+0030'::timestamp;
+select '1970-01-01 00:00:00.999999+1030'::timestamp;
+select '1970-01-01 00:00:00.999999+9930'::timestamp;
 
 # test: timezone (hh:mm)
-select '1970-01-01 00:00:00.999999+00:00'::timestamp
-select '1970-01-01 00:00:00.999999-00:00'::timestamp
-select '1970-01-01 00:00:00.999999+00:30'::timestamp
-select '1970-01-01 00:00:00.999999+10:30'::timestamp
-select '1970-01-01 00:00:00.999999+99:30'::timestamp
+select '1970-01-01 00:00:00.999999+00:00'::timestamp;
+select '1970-01-01 00:00:00.999999-00:00'::timestamp;
+select '1970-01-01 00:00:00.999999+00:30'::timestamp;
+select '1970-01-01 00:00:00.999999+10:30'::timestamp;
+select '1970-01-01 00:00:00.999999+99:30'::timestamp;
 
 # test: timezone (ignore)
-select '1970-01-01 00:00:00.999999+00'::timestamp
-select '1970-01-01 00:00:00.999999+01'::timestamp
-select '1970-01-01 00:00:00.999999+02'::timestamp
-select '1970-01-01 00:00:00.999999+03'::timestamp
+select '1970-01-01 00:00:00.999999+00'::timestamp;
+select '1970-01-01 00:00:00.999999+01'::timestamp;
+select '1970-01-01 00:00:00.999999+02'::timestamp;
+select '1970-01-01 00:00:00.999999+03'::timestamp;
 
 # test: convertion (string)
-select '1970-01-01 01:12:59.909090'::timestamp
-select '1970-01-01 01:12:59.909090'::timestamp::string
-select '1970-01-01 01:12:59.909090'::timestamp::string::timestamp
-select '1970-01-01 01:12:59.909090'::timestamp::string::timestamp::string
-select timestamp '1970-01-01 01:12:59.909090'::string::timestamp::string
-select timestamp('1970-01-01 01:12:59.909090')::string::timestamp::string
+select '1970-01-01 01:12:59.909090'::timestamp;
+select '1970-01-01 01:12:59.909090'::timestamp::string;
+select '1970-01-01 01:12:59.909090'::timestamp::string::timestamp;
+select '1970-01-01 01:12:59.909090'::timestamp::string::timestamp::string;
+select timestamp '1970-01-01 01:12:59.909090'::string::timestamp::string;
+select timestamp('1970-01-01 01:12:59.909090')::string::timestamp::string;
 
 # test: convertion (json)
-select ['1970-01-01 01:12:59.909090'::timestamp]
-select ['1970-01-01 01:12:59.909090'::timestamp::string]
-select ['1970-01-01 01:12:59.909090'::timestamp::string::timestamp]
-select ['1970-01-01 01:12:59.909090'::timestamp::string::timestamp::string]
+select ['1970-01-01 01:12:59.909090'::timestamp];
+select ['1970-01-01 01:12:59.909090'::timestamp::string];
+select ['1970-01-01 01:12:59.909090'::timestamp::string::timestamp];
+select ['1970-01-01 01:12:59.909090'::timestamp::string::timestamp::string];
 
 # test: current_timestamp
-select current_timestamp::int > 0
+select current_timestamp::int > 0;
 
 # test: between
-select timestamp '1970-01-01 01:12:59.909090' between timestamp '1970-01-01 01:12:59' and timestamp '1970-01-02 00:00:01'
-select timestamp '1970-01-01 01:12:59.909090' not between timestamp '1970-01-01 01:12:59' and timestamp '1970-01-02 00:00:01'
+select timestamp '1970-01-01 01:12:59.909090' between timestamp '1970-01-01 01:12:59' and timestamp '1970-01-02 00:00:01';
+select timestamp '1970-01-01 01:12:59.909090' not between timestamp '1970-01-01 01:12:59' and timestamp '1970-01-02 00:00:01';
 
 # test: timestamp = int
-select '1970-01-01 00:00:00'::timestamp = 0
-explain select '1970-01-01 00:00:00'::timestamp = 0
-select current_timestamp = 0
+select '1970-01-01 00:00:00'::timestamp = 0;
+explain select '1970-01-01 00:00:00'::timestamp = 0;
+select current_timestamp = 0;
 
 # test: timestamp = timestamp
-select '1970-01-01 01:12:59.909090'::timestamp = '1970-01-01 01:12:59.909090'::timestamp
-select '1970-01-01 01:12:59.909090'::timestamp = '1970-01-01 01:12:59.909099'::timestamp
-explain select '1970-01-01 01:12:59.909090'::timestamp = '1970-01-01 01:12:59.909099'::timestamp
+select '1970-01-01 01:12:59.909090'::timestamp = '1970-01-01 01:12:59.909090'::timestamp;
+select '1970-01-01 01:12:59.909090'::timestamp = '1970-01-01 01:12:59.909099'::timestamp;
+explain select '1970-01-01 01:12:59.909090'::timestamp = '1970-01-01 01:12:59.909099'::timestamp;
 
 # test: timestamp = null
-select '1970-01-01 01:12:59.909090'::timestamp = null
-explain select '1970-01-01 01:12:59.909090'::timestamp = null
+select '1970-01-01 01:12:59.909090'::timestamp = null;
+explain select '1970-01-01 01:12:59.909090'::timestamp = null;
 
 # test: timestamp = unsupported
-explain select '1970-01-01 01:12:59.909090'::timestamp = [1,2,3]
+explain select '1970-01-01 01:12:59.909090'::timestamp = [1,2,3];
 
 # test: timestamp <> int
-select '1970-01-01 00:00:00'::timestamp <> 0
-explain select '1970-01-01 00:00:00'::timestamp <> 0
-select current_timestamp <> 0
+select '1970-01-01 00:00:00'::timestamp <> 0;
+explain select '1970-01-01 00:00:00'::timestamp <> 0;
+select current_timestamp <> 0;
 
 # test: timestamp <> timestamp
-select '1970-01-01 01:12:59.909090'::timestamp <> '1970-01-01 01:12:59.909090'::timestamp
-select '1970-01-01 01:12:59.909090'::timestamp <> '1970-01-01 01:12:59.909099'::timestamp
-explain select '1970-01-01 01:12:59.909090'::timestamp <> '1970-01-01 01:12:59.909099'::timestamp
+select '1970-01-01 01:12:59.909090'::timestamp <> '1970-01-01 01:12:59.909090'::timestamp;
+select '1970-01-01 01:12:59.909090'::timestamp <> '1970-01-01 01:12:59.909099'::timestamp;
+explain select '1970-01-01 01:12:59.909090'::timestamp <> '1970-01-01 01:12:59.909099'::timestamp;
 
 # test: timestamp <> null
-select '1970-01-01 01:12:59.909090'::timestamp <> null
-explain select '1970-01-01 01:12:59.909090'::timestamp <> null
+select '1970-01-01 01:12:59.909090'::timestamp <> null;
+explain select '1970-01-01 01:12:59.909090'::timestamp <> null;
 
 # test: timestamp <> unsupported
-explain select '1970-01-01 01:12:59.909090'::timestamp <> [1,2,3]
+explain select '1970-01-01 01:12:59.909090'::timestamp <> [1,2,3];
 
 # test: timestamp >= int
-select '1970-01-01 00:00:00'::timestamp >= 0
-explain select '1970-01-01 00:00:00'::timestamp >= 0
-select current_timestamp >= 0
+select '1970-01-01 00:00:00'::timestamp >= 0;
+explain select '1970-01-01 00:00:00'::timestamp >= 0;
+select current_timestamp >= 0;
 
 # test: timestamp >= timestamp
-select '1970-01-01 01:12:59.909090'::timestamp >= '1970-01-01 01:12:59.909090'::timestamp
-select '1970-01-01 01:12:58'::timestamp >= '1970-01-01 01:12:59.909090'::timestamp
-select '1970-01-01 01:13:00'::timestamp >= '1970-01-01 01:12:59'::timestamp
-select '1970-01-01 01:12:59.909090'::timestamp >= '1970-01-01 01:12:59.909099'::timestamp
-explain select '1970-01-01 01:12:59.909090'::timestamp >= '1970-01-01 01:12:59.909099'::timestamp
+select '1970-01-01 01:12:59.909090'::timestamp >= '1970-01-01 01:12:59.909090'::timestamp;
+select '1970-01-01 01:12:58'::timestamp >= '1970-01-01 01:12:59.909090'::timestamp;
+select '1970-01-01 01:13:00'::timestamp >= '1970-01-01 01:12:59'::timestamp;
+select '1970-01-01 01:12:59.909090'::timestamp >= '1970-01-01 01:12:59.909099'::timestamp;
+explain select '1970-01-01 01:12:59.909090'::timestamp >= '1970-01-01 01:12:59.909099'::timestamp;
 
 # test: timestamp >= null
-select current_timestamp >= null
+select current_timestamp >= null;
 
 # test: timestamp >= unsupported
-select current_timestamp >= []
+select current_timestamp >= [];
 
 # test: timestamp > timestamp
-select '1970-01-01 01:12:59.909090'::timestamp > '1970-01-01 01:12:59.909090'::timestamp
-select '1970-01-01 01:12:58'::timestamp > '1970-01-01 01:12:59.909090'::timestamp
-select '1970-01-01 01:13:00'::timestamp > '1970-01-01 01:12:59'::timestamp
-select '1970-01-01 01:12:59.909090'::timestamp > '1970-01-01 01:12:59.909099'::timestamp
-explain select '1970-01-01 01:12:59.909090'::timestamp > '1970-01-01 01:12:59.909099'::timestamp
+select '1970-01-01 01:12:59.909090'::timestamp > '1970-01-01 01:12:59.909090'::timestamp;
+select '1970-01-01 01:12:58'::timestamp > '1970-01-01 01:12:59.909090'::timestamp;
+select '1970-01-01 01:13:00'::timestamp > '1970-01-01 01:12:59'::timestamp;
+select '1970-01-01 01:12:59.909090'::timestamp > '1970-01-01 01:12:59.909099'::timestamp;
+explain select '1970-01-01 01:12:59.909090'::timestamp > '1970-01-01 01:12:59.909099'::timestamp;
 
 # test: timestamp > null
-select current_timestamp > null
+select current_timestamp > null;
 
 # test: timestamp > unsupported
-select current_timestamp > []
+select current_timestamp > [];
 
 # test: timestamp <= timestamp
-select '1970-01-01 01:12:59.909090'::timestamp <= '1970-01-01 01:12:59.909090'::timestamp
-select '1970-01-01 01:12:58'::timestamp <= '1970-01-01 01:12:59.909090'::timestamp
-select '1970-01-01 01:13:00'::timestamp <= '1970-01-01 01:12:59'::timestamp
-select '1970-01-01 01:12:59.909090'::timestamp <= '1970-01-01 01:12:59.909099'::timestamp
-explain select '1970-01-01 01:12:59.909090'::timestamp <= '1970-01-01 01:12:59.909099'::timestamp
+select '1970-01-01 01:12:59.909090'::timestamp <= '1970-01-01 01:12:59.909090'::timestamp;
+select '1970-01-01 01:12:58'::timestamp <= '1970-01-01 01:12:59.909090'::timestamp;
+select '1970-01-01 01:13:00'::timestamp <= '1970-01-01 01:12:59'::timestamp;
+select '1970-01-01 01:12:59.909090'::timestamp <= '1970-01-01 01:12:59.909099'::timestamp;
+explain select '1970-01-01 01:12:59.909090'::timestamp <= '1970-01-01 01:12:59.909099'::timestamp;
 
 # test: timestamp <= null
-select current_timestamp <= null
+select current_timestamp <= null;
 
 # test: timestamp <= unsupported
-select current_timestamp <= []
+select current_timestamp <= [];
 
 # test: timestamp < timestamp
-select '1970-01-01 01:12:59.909090'::timestamp < '1970-01-01 01:12:59.909090'::timestamp
-select '1970-01-01 01:12:58'::timestamp < '1970-01-01 01:12:59.909090'::timestamp
-select '1970-01-01 01:13:00'::timestamp < '1970-01-01 01:12:59'::timestamp
-select '1970-01-01 01:12:59.909090'::timestamp < '1970-01-01 01:12:59.909099'::timestamp
-explain select '1970-01-01 01:12:59.909090'::timestamp < '1970-01-01 01:12:59.909099'::timestamp
+select '1970-01-01 01:12:59.909090'::timestamp < '1970-01-01 01:12:59.909090'::timestamp;
+select '1970-01-01 01:12:58'::timestamp < '1970-01-01 01:12:59.909090'::timestamp;
+select '1970-01-01 01:13:00'::timestamp < '1970-01-01 01:12:59'::timestamp;
+select '1970-01-01 01:12:59.909090'::timestamp < '1970-01-01 01:12:59.909099'::timestamp;
+explain select '1970-01-01 01:12:59.909090'::timestamp < '1970-01-01 01:12:59.909099'::timestamp;
 
 # test: timestamp < null
-select current_timestamp < null
+select current_timestamp < null;
 
 # test: timestamp <= unsupported
-select current_timestamp < []
+select current_timestamp < [];
 
 # test: timestamp + interval
-select '1970-01-01 01:12:59.909090'::timestamp + 1
-select '1970-01-01 01:12:59.909090'::timestamp + '1 hour'
-select '1970-01-01 00:00:00.000000'::timestamp + '1 hour'::interval
+select '1970-01-01 01:12:59.909090'::timestamp + 1;
+select '1970-01-01 01:12:59.909090'::timestamp + '1 hour';
+select '1970-01-01 00:00:00.000000'::timestamp + '1 hour'::interval;
 
-select '1970-01-01 00:00:00.000000'::timestamp + '1 year'::interval
-select '1971-01-01 00:00:00.000000'::timestamp + '1 year'::interval
+select '1970-01-01 00:00:00.000000'::timestamp + '1 year'::interval;
+select '1971-01-01 00:00:00.000000'::timestamp + '1 year'::interval;
 
-select '1 year'::interval + '1 year'::interval
-select '1970-01-01 00:00:00.000000'::timestamp + '1 year'::interval + '1 year'::interval
-explain select '1970-01-01 00:00:00.000000'::timestamp + '1 year'::interval + '1 year'::interval
+select '1 year'::interval + '1 year'::interval;
+select '1970-01-01 00:00:00.000000'::timestamp + '1 year'::interval + '1 year'::interval;
+explain select '1970-01-01 00:00:00.000000'::timestamp + '1 year'::interval + '1 year'::interval;
 
 # test: timestamp + null
-select '1970-01-01 01:12:59.909090'::timestamp + null
+select '1970-01-01 01:12:59.909090'::timestamp + null;
 
 # test: timestamp + unsupported
-select '1970-01-01 01:12:59.909090'::timestamp + []
+select '1970-01-01 01:12:59.909090'::timestamp + [];
 
 # test: timestamp - interval
-select '1970-01-01 01:12:59.909090'::timestamp + 1
-select '1970-01-01 01:12:59.909090'::timestamp - '1 hour'
-select '1970-01-01 00:00:00.000000'::timestamp - '1 hour'::interval
-select '1973-01-01 00:00:00.000000'::timestamp - '1 year'::interval
-select '1 year'::interval - '1 year'::interval
-select '1980-01-01 00:00:00.000000'::timestamp - '1 year'::interval - '1 year'::interval
-select '1980-01-01 00:00:00.000000'::timestamp - '-1 year'::interval - '-1 year'::interval
-explain select '1980-01-01 00:00:00.000000'::timestamp - '-1 year'::interval - '-1 year'::interval
+select '1970-01-01 01:12:59.909090'::timestamp + 1;
+select '1970-01-01 01:12:59.909090'::timestamp - '1 hour';
+select '1970-01-01 00:00:00.000000'::timestamp - '1 hour'::interval;
+select '1973-01-01 00:00:00.000000'::timestamp - '1 year'::interval;
+select '1 year'::interval - '1 year'::interval;
+select '1980-01-01 00:00:00.000000'::timestamp - '1 year'::interval - '1 year'::interval;
+select '1980-01-01 00:00:00.000000'::timestamp - '-1 year'::interval - '-1 year'::interval;
+explain select '1980-01-01 00:00:00.000000'::timestamp - '-1 year'::interval - '-1 year'::interval;
 
 # test: timestamp - timestamp
-select '1970-01-01 01:12:59.909090'::timestamp -'1970-01-01 01:12:59.909090'::timestamp
-select '1970-01-01 01:12:59.909090'::timestamp -'1970-01-01 00:12:59.909090'::timestamp
-select '1970-01-01 01:12:59.909090'::timestamp -'1970-01-01 00:00:00.909090'::timestamp
-select '1970-01-01 01:12:59.909090'::timestamp -'1970-01-01 00:00:00'::timestamp
+select '1970-01-01 01:12:59.909090'::timestamp -'1970-01-01 01:12:59.909090'::timestamp;
+select '1970-01-01 01:12:59.909090'::timestamp -'1970-01-01 00:12:59.909090'::timestamp;
+select '1970-01-01 01:12:59.909090'::timestamp -'1970-01-01 00:00:00.909090'::timestamp;
+select '1970-01-01 01:12:59.909090'::timestamp -'1970-01-01 00:00:00'::timestamp;
 
-select '1970-01-01 00:12:59.909090'::timestamp - '1970-01-01 01:12:59.909090'::timestamp
-select '1970-01-01 00:00:00.909090'::timestamp - '1970-01-01 01:12:59.909090'::timestamp
-select '1970-01-01 00:00:00'::timestamp - '1970-01-01 01:12:59.909090'::timestamp
+select '1970-01-01 00:12:59.909090'::timestamp - '1970-01-01 01:12:59.909090'::timestamp;
+select '1970-01-01 00:00:00.909090'::timestamp - '1970-01-01 01:12:59.909090'::timestamp;
+select '1970-01-01 00:00:00'::timestamp - '1970-01-01 01:12:59.909090'::timestamp;
 
 # test: timestamp - null
-select '1970-01-01 01:12:59.909090'::timestamp - null
+select '1970-01-01 01:12:59.909090'::timestamp - null;
 
 # test: timestamp - unsupported
-select '1970-01-01 01:12:59.909090'::timestamp - []
+select '1970-01-01 01:12:59.909090'::timestamp - [];
 
 # test: timestamp min (overflow)
-select '1970-01-01 00:00:00'::timestamp
-select '1970-01-01 00:00:00.999'::timestamp
-select '1970-01-01 00:00:00.999999'::timestamp + interval '1 us'
-select '1969-01-01 00:00:00'::timestamp + interval '1 year'
+select '1970-01-01 00:00:00'::timestamp;
+select '1970-01-01 00:00:00.999'::timestamp;
+select '1970-01-01 00:00:00.999999'::timestamp + interval '1 us';
+select '1969-01-01 00:00:00'::timestamp + interval '1 year';
 
 # min overflow
-select '1970-01-01 00:00:00'::timestamp - interval '1 us'
+select '1970-01-01 00:00:00'::timestamp - interval '1 us';
 
-select '1980-01-01 00:00:00'::timestamp - interval '1 us'
-select '1990-01-01 00:00:00'::timestamp - interval '1 us'
-select '1999-01-01 00:00:00'::timestamp - interval '1 us'
-select '2000-01-01 00:00:00'::timestamp - interval '1 us'
-select '2001-01-01 00:00:00'::timestamp - interval '1 us'
-select '2010-01-01 00:00:00'::timestamp - interval '1 us'
-select '2020-01-01 00:00:00'::timestamp - interval '1 us'
-select '2021-01-01 00:00:00'::timestamp - interval '1 us'
-select '2022-01-01 00:00:00'::timestamp - interval '1 us'
-select '2023-01-01 00:00:00'::timestamp - interval '1 us'
-select '2024-01-01 00:00:00'::timestamp - interval '1 us'
-select '2025-01-01 00:00:00'::timestamp - interval '1 us'
-select '2026-01-01 00:00:00'::timestamp - interval '1 us'
-select '2027-01-01 00:00:00'::timestamp - interval '1 us'
-select '2028-01-01 00:00:00'::timestamp - interval '1 us'
-select '2029-01-01 00:00:00'::timestamp - interval '1 us'
-select '2030-01-01 00:00:00'::timestamp - interval '1 us'
+select '1980-01-01 00:00:00'::timestamp - interval '1 us';
+select '1990-01-01 00:00:00'::timestamp - interval '1 us';
+select '1999-01-01 00:00:00'::timestamp - interval '1 us';
+select '2000-01-01 00:00:00'::timestamp - interval '1 us';
+select '2001-01-01 00:00:00'::timestamp - interval '1 us';
+select '2010-01-01 00:00:00'::timestamp - interval '1 us';
+select '2020-01-01 00:00:00'::timestamp - interval '1 us';
+select '2021-01-01 00:00:00'::timestamp - interval '1 us';
+select '2022-01-01 00:00:00'::timestamp - interval '1 us';
+select '2023-01-01 00:00:00'::timestamp - interval '1 us';
+select '2024-01-01 00:00:00'::timestamp - interval '1 us';
+select '2025-01-01 00:00:00'::timestamp - interval '1 us';
+select '2026-01-01 00:00:00'::timestamp - interval '1 us';
+select '2027-01-01 00:00:00'::timestamp - interval '1 us';
+select '2028-01-01 00:00:00'::timestamp - interval '1 us';
+select '2029-01-01 00:00:00'::timestamp - interval '1 us';
+select '2030-01-01 00:00:00'::timestamp - interval '1 us';
 
-select '2200-01-01 00:00:00'::timestamp - interval '1 us'
+select '2200-01-01 00:00:00'::timestamp - interval '1 us';
 
 # test: timestamp max (overflow)
-select '1970-12-31 23:59:59.999999'::timestamp
-select '1970-12-31 23:59:59.999999'::timestamp + interval '1 us'
+select '1970-12-31 23:59:59.999999'::timestamp;
+select '1970-12-31 23:59:59.999999'::timestamp + interval '1 us';
 
-select '1979-12-31 23:59:59.999999+00'::timestamp + interval '1 us'
-select '1989-12-31 23:59:59.999999+00'::timestamp + interval '1 us'
-select '1999-12-31 23:59:59.999999+00'::timestamp + interval '1 us'
-select '2000-12-31 23:59:59.999999+00'::timestamp + interval '1 us'
-select '2001-12-31 23:59:59.999999+00'::timestamp + interval '1 us'
-select '2019-12-31 23:59:59.999999+00'::timestamp + interval '1 us'
-select '2020-12-31 23:59:59.999999+00'::timestamp + interval '1 us'
-select '2021-12-31 23:59:59.999999+00'::timestamp + interval '1 us'
-select '2022-12-31 23:59:59.999999+00'::timestamp + interval '1 us'
-select '2023-12-31 23:59:59.999999+00'::timestamp + interval '1 us'
-select '2024-12-31 23:59:59.999999+00'::timestamp + interval '1 us'
-select '2025-12-31 23:59:59.999999+00'::timestamp + interval '1 us'
-select '2026-12-31 23:59:59.999999+00'::timestamp + interval '1 us'
-select '2027-12-31 23:59:59.999999+00'::timestamp + interval '1 us'
-select '2028-12-31 23:59:59.999999+00'::timestamp + interval '1 us'
-select '2029-12-31 23:59:59.999999+00'::timestamp + interval '1 us'
+select '1979-12-31 23:59:59.999999+00'::timestamp + interval '1 us';
+select '1989-12-31 23:59:59.999999+00'::timestamp + interval '1 us';
+select '1999-12-31 23:59:59.999999+00'::timestamp + interval '1 us';
+select '2000-12-31 23:59:59.999999+00'::timestamp + interval '1 us';
+select '2001-12-31 23:59:59.999999+00'::timestamp + interval '1 us';
+select '2019-12-31 23:59:59.999999+00'::timestamp + interval '1 us';
+select '2020-12-31 23:59:59.999999+00'::timestamp + interval '1 us';
+select '2021-12-31 23:59:59.999999+00'::timestamp + interval '1 us';
+select '2022-12-31 23:59:59.999999+00'::timestamp + interval '1 us';
+select '2023-12-31 23:59:59.999999+00'::timestamp + interval '1 us';
+select '2024-12-31 23:59:59.999999+00'::timestamp + interval '1 us';
+select '2025-12-31 23:59:59.999999+00'::timestamp + interval '1 us';
+select '2026-12-31 23:59:59.999999+00'::timestamp + interval '1 us';
+select '2027-12-31 23:59:59.999999+00'::timestamp + interval '1 us';
+select '2028-12-31 23:59:59.999999+00'::timestamp + interval '1 us';
+select '2029-12-31 23:59:59.999999+00'::timestamp + interval '1 us';
 
-select '2200-12-31 23:59:59.999999+00'::timestamp + interval '1 us'
-select '3200-12-31 23:59:59.999999+00'::timestamp + interval '1 us'
-select '8200-12-31 23:59:59.999999+00'::timestamp + interval '1 us'
-select '9200-12-31 23:59:59.999999+00'::timestamp + interval '1 us'
+select '2200-12-31 23:59:59.999999+00'::timestamp + interval '1 us';
+select '3200-12-31 23:59:59.999999+00'::timestamp + interval '1 us';
+select '8200-12-31 23:59:59.999999+00'::timestamp + interval '1 us';
+select '9200-12-31 23:59:59.999999+00'::timestamp + interval '1 us';
 
-select 0::timestamp
-select -1::timestamp
+select 0::timestamp;
+select -1::timestamp;
 
 # max overflow
-select '9999-12-31 23:59:59.999999+00'::timestamp + interval '1 us'
-select 253402300799999999::timestamp
-select (253402300799999999 + 1)::timestamp
+select '9999-12-31 23:59:59.999999+00'::timestamp + interval '1 us';
+select 253402300799999999::timestamp;
+select (253402300799999999 + 1)::timestamp;
 
-disconnect S0
-close E0
+disconnect S0;
+close E0;

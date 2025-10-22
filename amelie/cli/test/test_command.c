@@ -275,14 +275,18 @@ test_command(TestSuite* self, Str* cmd)
 	if (str_empty(cmd))
 		return;
 
+	// use command without ; for internal commands
+	Str cmd_nosep = *cmd;
+	str_chomp_chr(&cmd_nosep, ';');
+
 	// match command
 	for (auto i = 0; test_commands[i].name; i++)
 	{
 		auto command = &test_commands[i];
-		if (str_is_prefix(cmd, command->name, command->name_size))
+		if (str_is_prefix(&cmd_nosep, command->name, command->name_size))
 		{
-			str_advance(cmd, command->name_size);
-			command->fn(self, cmd);
+			str_advance(&cmd_nosep, command->name_size);
+			command->fn(self, &cmd_nosep);
 			return;
 		}
 	}

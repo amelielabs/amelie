@@ -1,58 +1,58 @@
-open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "127.0.0.1", "port": 3485 }]
-connect E0 S0 127.0.0.1:3485
+open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "127.0.0.1", "port": 3485 }];
+connect E0 S0 127.0.0.1:3485;
 # test: insert statement parsing
-insert
-{"msg": "insert ⟵ INTO expected"}
-insert junk
+insert;
+{"msg": "insert❰;❱ ⟵ INTO expected"}
+insert junk;
 {"msg": "insert ❰junk❱ ⟵ INTO expected"}
-insert into
-{"msg": "insert into ⟵ target name expected"}
-insert into "name"
+insert into;
+{"msg": "insert into❰;❱ ⟵ target name expected"}
+insert into "name";
 {"msg": "insert into ❰\"name\"❱ ⟵ target name expected"}
-insert into 1
+insert into 1;
 {"msg": "insert into ❰1❱ ⟵ target name expected"}
-insert into name
+insert into name;
 {"msg": "insert into ❰name❱ ⟵ relation not found"}
-create table test (id int primary key)
-insert into test
-{"msg": "insert into test ⟵ 'VALUES | SELECT' expected"}
-insert into test values
-{"msg": "insert into test values ⟵ ( expected"}
-insert into test values(
-{"msg": "insert into test values( ⟵ 'int' expected for column 'id'"}
-insert into test values(,
+create table test (id int primary key);
+insert into test;
+{"msg": "insert into test❰;❱ ⟵ 'VALUES | SELECT' expected"}
+insert into test values;
+{"msg": "insert into test values❰;❱ ⟵ ( expected"}
+insert into test values(;
+{"msg": "insert into test values(❰;❱ ⟵ 'int' expected for column 'id'"}
+insert into test values(,;
 {"msg": "insert into test values(❰,❱ ⟵ 'int' expected for column 'id'"}
-insert into test values(123
-{"msg": "insert into test values(123 ⟵ ) expected"}
-insert into test values(123,
-{"msg": "insert into test values(123, ⟵ row has incorrect number of columns"}
+insert into test values(123;
+{"msg": "insert into test values(123❰;❱ ⟵ ) expected"}
+insert into test values(123,;
+{"msg": "insert into test values(123,❰;❱ ⟵ row has incorrect number of columns"}
 # test: insert type validate
-insert into test values ("123")
+insert into test values ("123");
 {"msg": "insert into test values (❰\"123\"❱ ⟵ 'int' expected for column 'id'"}
-insert into test values (123, 123)
+insert into test values (123, 123);
 {"msg": "insert into test values (123, ❰123❱ ⟵ row has incorrect number of columns"}
-select * from test
+select * from test;
 []
 # test: insert
-insert into test values (123)
+insert into test values (123);
 # test: primary unique key constraint violation
-insert into test values (123)
+insert into test values (123);
 {"msg": "index 'primary': unique key constraint violation"}
 # test: insert schema
-drop table test
-create schema test
-create table test.test (id int primary key)
-insert into test values (123)
+drop table test;
+create schema test;
+create table test.test (id int primary key);
+insert into test values (123);
 {"msg": "insert into ❰test❱ ⟵ relation not found"}
-insert into test.test values (123)
-select * from test
+insert into test.test values (123);
+select * from test;
 {"msg": "select * from ❰test❱ ⟵ relation not found"}
-select * from test.test
+select * from test.test;
 [123]
-drop table test.test
+drop table test.test;
 # test: insert compound key
-create table test (id int, id2 int, primary key (id, id2))
-select system.table('test').columns
+create table test (id int, id2 int, primary key (id, id2));
+select system.table('test').columns;
 [[{
   "name": "id",
   "type": 2,
@@ -64,206 +64,206 @@ select system.table('test').columns
   "type_size": 4,
   "constraints": [["not_null", true], ["default", null]]
 }]]
-insert into test values (123)
+insert into test values (123);
 {"msg": "insert into test values (123❰)❱ ⟵ 'int' expected for column 'id2'"}
-insert into test values (1, 2, 3)
+insert into test values (1, 2, 3);
 {"msg": "insert into test values (1, 2, ❰3❱ ⟵ row has incorrect number of columns"}
-insert into test values (1, 2)
-select * from test
+insert into test values (1, 2);
+select * from test;
 [[1, 2]]
-drop table test
+drop table test;
 # test: insert list
-create table test (id int primary key, data int)
-insert into test (id, data) values ()
+create table test (id int primary key, data int);
+insert into test (id, data) values ();
 {"msg": "insert into test (id, data) values (❰)❱ ⟵ 'int' expected for column 'id'"}
-insert into test (id, data) values (123)
+insert into test (id, data) values (123);
 {"msg": "insert into test (id, data) values (123❰)❱ ⟵ , expected"}
-insert into test (id, data) values (123, 123, 123)
+insert into test (id, data) values (123, 123, 123);
 {"msg": "insert into test (id, data) values (123, 123❰,❱ ⟵ ) expected"}
-insert into test (id, data) values (123, 123)
-select * from test
+insert into test (id, data) values (123, 123);
+select * from test;
 [[123, 123]]
-drop table test
+drop table test;
 # test: insert list column order
-create table test (id int primary key, data int)
-insert into test (data, id) values (123, 123)
+create table test (id int primary key, data int);
+insert into test (data, id) values (123, 123);
 {"msg": "insert into test (data, ❰id❱ ⟵ column list must be in order"}
-insert into test (data, id, data) values (123, 123)
+insert into test (data, id, data) values (123, 123);
 {"msg": "insert into test (data, ❰id❱ ⟵ column list must be in order"}
-select * from test
+select * from test;
 []
-drop table test
+drop table test;
 # test: insert list column reuse
-create table test (id int primary key, data int)
-insert into test (id, id) values (123, 123)
+create table test (id int primary key, data int);
+insert into test (id, id) values (123, 123);
 {"msg": "insert into test (id, ❰id❱ ⟵ column list must be in order"}
-insert into test (id, data) values (123, 123)
-select * from test
+insert into test (id, data) values (123, 123);
+select * from test;
 [[123, 123]]
-drop table test
+drop table test;
 # test: insert list null
-create table test (id int primary key, data int)
-insert into test (id) values (1)
-insert into test (id, data) values (2, null)
-insert into test (id, data) values (null, null)
+create table test (id int primary key, data int);
+insert into test (id) values (1);
+insert into test (id, data) values (2, null);
+insert into test (id, data) values (null, null);
 {"msg": "insert into test (id, data) values (❰null❱ ⟵ column 'id' value cannot be NULL"}
-insert into test values (3, null)
-insert into test values (null, null)
+insert into test values (3, null);
+insert into test values (null, null);
 {"msg": "insert into test values (❰null❱ ⟵ column 'id' value cannot be NULL"}
-select * from test
+select * from test;
 [[1, null], [2, null], [3, null]]
-drop table test
+drop table test;
 # test: insert list null #2
-create table test (data int, id int primary key)
-insert into test (id) values (1)
-select * from test
+create table test (data int, id int primary key);
+insert into test (id) values (1);
+select * from test;
 [[null, 1]]
-drop table test
+drop table test;
 # test: insert list not null
-create table test (id int primary key, data int not null)
-insert into test (id) values (1)
+create table test (id int primary key, data int not null);
+insert into test (id) values (1);
 {"msg": "insert into test (id) values (1❰)❱ ⟵ column 'data' value cannot be NULL"}
-insert into test (id, data) values (2, null)
+insert into test (id, data) values (2, null);
 {"msg": "insert into test (id, data) values (2, ❰null❱ ⟵ column 'data' value cannot be NULL"}
-insert into test values (3, null)
+insert into test values (3, null);
 {"msg": "insert into test values (3, ❰null❱ ⟵ column 'data' value cannot be NULL"}
-insert into test values (null, null)
+insert into test values (null, null);
 {"msg": "insert into test values (❰null❱ ⟵ column 'id' value cannot be NULL"}
-insert into test (id, data) values (2, 2)
-select * from test
+insert into test (id, data) values (2, 2);
+select * from test;
 [[2, 2]]
-drop table test
+drop table test;
 # test: insert list not null key
-create table test (id int primary key, data int)
-insert into test (data) values (123)
+create table test (id int primary key, data int);
+insert into test (data) values (123);
 {"msg": "insert into test (data) values (❰123❱ ⟵ column 'id' value cannot be NULL"}
-insert into test values (null, 123)
+insert into test values (null, 123);
 {"msg": "insert into test values (❰null❱ ⟵ column 'id' value cannot be NULL"}
-select * from test
+select * from test;
 []
-drop table test
+drop table test;
 # test: insert list default
-create table test (id int primary key, data int default 123)
-insert into test (id) values (1)
-select * from test
+create table test (id int primary key, data int default 123);
+insert into test (id) values (1);
+select * from test;
 [[1, 123]]
-drop table test
+drop table test;
 # test: insert list default #2
-create table test (id int primary key, data int default 123)
-insert into test (id) values (1), (2), (3)
-select * from test
+create table test (id int primary key, data int default 123);
+insert into test (id) values (1), (2), (3);
+select * from test;
 [[1, 123], [2, 123], [3, 123]]
-drop table test
+drop table test;
 # test: insert list default key
-create table test (id int default 123 primary key, data int)
-insert into test (data) values (1)
-select * from test
+create table test (id int default 123 primary key, data int);
+insert into test (data) values (1);
+select * from test;
 [[123, 1]]
-insert into test (data) values (1)
+insert into test (data) values (1);
 {"msg": "index 'primary': unique key constraint violation"}
-drop table test
+drop table test;
 # test: insert list default key #2
-create table test (id int default 123 primary key)
-insert into test () values ()
-select * from test
+create table test (id int default 123 primary key);
+insert into test () values ();
+select * from test;
 [123]
-insert into test () values ()
+insert into test () values ();
 {"msg": "index 'primary': unique key constraint violation"}
-drop table test
+drop table test;
 # test: insert list default (keyword)
-create table test (id int primary key, data int default 123)
-insert into test (id) values (DEFAULT)
+create table test (id int primary key, data int default 123);
+insert into test (id) values (DEFAULT);
 {"msg": "insert into test (id) values (❰DEFAULT❱ ⟵ column 'id' value cannot be NULL"}
-select * from test
+select * from test;
 []
-drop table test
+drop table test;
 # test: insert list default (keyword) #2
-create table test (id int primary key, data int default 123)
-insert into test (id, data) values (1, DEFAULT)
-select * from test
+create table test (id int primary key, data int default 123);
+insert into test (id, data) values (1, DEFAULT);
+select * from test;
 [[1, 123]]
-drop table test
+drop table test;
 # test: insert default (keyword)
-create table test (id int primary key, data int default 123)
-insert into test values (DEFAULT, DEFAULT)
+create table test (id int primary key, data int default 123);
+insert into test values (DEFAULT, DEFAULT);
 {"msg": "insert into test values (❰DEFAULT❱ ⟵ column 'id' value cannot be NULL"}
-select * from test
+select * from test;
 []
-drop table test
+drop table test;
 # test: insert default (keyword) #2
-create table test (id int primary key, data int default 123)
-insert into test values (1, DEFAULT)
-select * from test
+create table test (id int primary key, data int default 123);
+insert into test values (1, DEFAULT);
+select * from test;
 [[1, 123]]
-drop table test
+drop table test;
 # test: insert serial
-create table test (id serial primary key)
-insert into test () values ()
-insert into test () values ()
-insert into test () values ()
-select * from test
+create table test (id serial primary key);
+insert into test () values ();
+insert into test () values ();
+insert into test () values ();
+select * from test;
 [0, 1, 2]
-drop table test
+drop table test;
 # test: insert serial #2
-create table test (id serial primary key, data int)
-insert into test (data) values (123)
-insert into test () values ()
-select * from test
+create table test (id serial primary key, data int);
+insert into test (data) values (123);
+insert into test () values ();
+select * from test;
 [[0, 123], [1, null]]
-drop table test
+drop table test;
 # test: insert serial alias
-create table test (id serial primary key)
-insert into test () values ()
-insert into test () values ()
-insert into test () values ()
-select * from test
+create table test (id serial primary key);
+insert into test () values ();
+insert into test () values ();
+insert into test () values ();
+select * from test;
 [0, 1, 2]
-drop table test
+drop table test;
 # test: insert serial directly
-create table test (id serial primary key, data int)
-insert into test (data) values (123)
-insert into test (id, data) values (1, 123)
+create table test (id serial primary key, data int);
+insert into test (data) values (123);
+insert into test (id, data) values (1, 123);
 # test: insert serial directly (conflict)
-insert into test () values ()
+insert into test () values ();
 {"msg": "index 'primary': unique key constraint violation"}
-select * from test
+select * from test;
 [[0, 123], [1, 123]]
-drop table test
+drop table test;
 # test: insert serial null
-create table test (id serial primary key, data int)
-insert into test (id, data) values (null, 123)
-select * from test
+create table test (id serial primary key, data int);
+insert into test (id, data) values (null, 123);
+select * from test;
 [[0, 123]]
-insert into test (data) values (123)
-select * from test
+insert into test (data) values (123);
+select * from test;
 [[0, 123], [1, 123]]
-drop table test
+drop table test;
 # test: insert insert error
-create table test (id int primary key)
-insert into test values (1),(2),(3),(1)
+create table test (id int primary key);
+insert into test values (1),(2),(3),(1);
 {"msg": "index 'primary': unique key constraint violation"}
-select * from test
+select * from test;
 []
-drop table test
+drop table test;
 # test: insert negative
-create table test (id int primary key)
-insert into test values (-1), (-10), (-100), (0), (1), (10), (100)
-select * from test
+create table test (id int primary key);
+insert into test values (-1), (-10), (-100), (0), (1), (10), (100);
+select * from test;
 [-100, -10, -1, 0, 1, 10, 100]
-drop table test
+drop table test;
 # test: insert generate
-create table test (id serial primary key, data int default 0)
-insert into test generate
-{"msg": "insert into test generate ⟵ int expected"}
-insert into test generate "10"
+create table test (id serial primary key, data int default 0);
+insert into test generate;
+{"msg": "insert into test generate❰;❱ ⟵ int expected"}
+insert into test generate "10";
 {"msg": "insert into test generate ❰\"10\"❱ ⟵ int expected"}
-insert into test generate 10
-select * from test
+insert into test generate 10;
+select * from test;
 [[0, 0], [1, 0], [2, 0], [3, 0], [4, 0], [5, 0], [6, 0], [7, 0], [8, 0], [9, 0]]
-drop table test
+drop table test;
 # test: insert returning
-create table test (id int primary key)
-explain insert into test values (1),(2),(3) returning *
+create table test (id int primary key);
+explain insert into test values (1),(2),(3) returning *;
 [{
   "main": {
     "00": "union               0      0      0     ",
@@ -288,14 +288,14 @@ explain insert into test values (1),(2),(3) returning *
   },
   "access": [["public.test", "rw"]]
 }]
-insert into test values (1),(2),(3) returning *
+insert into test values (1),(2),(3) returning *;
 [1, 2, 3]
-insert into test values (1),(2),(3) returning *
+insert into test values (1),(2),(3) returning *;
 {"msg": "unique key constraint violation"}
-drop table test
+drop table test;
 # test: insert returning (serial)
-create table test (id serial primary key)
-explain insert into test () values (), (), () returning *
+create table test (id serial primary key);
+explain insert into test () values (), (), () returning *;
 [{
   "main": {
     "00": "union               0      0      0     ",
@@ -320,96 +320,96 @@ explain insert into test () values (), (), () returning *
   },
   "access": [["public.test", "rw"]]
 }]
-insert into test () values (), (), () returning *
+insert into test () values (), (), () returning *;
 [0, 1, 2]
-insert into test () values (), (), () returning id
+insert into test () values (), (), () returning id;
 [3, 4, 5]
-drop table test
+drop table test;
 # test: insert column (bool)
-create table test (id int primary key, data bool)
-insert into test values (1, true), (2, false)
-insert into test values (3, true), (4, false) returning *
+create table test (id int primary key, data bool);
+insert into test values (1, true), (2, false);
+insert into test values (3, true), (4, false) returning *;
 [[3, true], [4, false]]
-select * from test
+select * from test;
 [[1, true], [2, false], [3, true], [4, false]]
-drop table test
+drop table test;
 # test: insert column (int8)
-create table test (id int primary key, data i8)
-insert into test values (1, 123), (2, 255), (3, 256)
-insert into test values (4, 255), (5, 256) returning *
+create table test (id int primary key, data i8);
+insert into test values (1, 123), (2, 255), (3, 256);
+insert into test values (4, 255), (5, 256) returning *;
 [[4, -1], [5, 0]]
-select * from test
+select * from test;
 [[1, 123], [2, -1], [3, 0], [4, -1], [5, 0]]
-drop table test
+drop table test;
 # test: insert column (int16)
-create table test (id int primary key, data i16)
-insert into test values (1, 123), (2, 256), (3, -32768)
-insert into test values (4, -32768), (5, 123) returning *
+create table test (id int primary key, data i16);
+insert into test values (1, 123), (2, 256), (3, -32768);
+insert into test values (4, -32768), (5, 123) returning *;
 [[4, -32768], [5, 123]]
-select * from test
+select * from test;
 [[1, 123], [2, 256], [3, -32768], [4, -32768], [5, 123]]
-drop table test
+drop table test;
 # test: insert column (int32)
-create table test (id int primary key, data i32)
-insert into test values (1, 123), (2, 256), (3, -32768)
-insert into test values (4, -32768), (5, 2147483647) returning *
+create table test (id int primary key, data i32);
+insert into test values (1, 123), (2, 256), (3, -32768);
+insert into test values (4, -32768), (5, 2147483647) returning *;
 [[4, -32768], [5, 2147483647]]
-select * from test
+select * from test;
 [[1, 123], [2, 256], [3, -32768], [4, -32768], [5, 2147483647]]
-drop table test
+drop table test;
 # test: insert column (int64)
-create table test (id int primary key, data i64)
-insert into test values (1, 123), (2, 256), (3, -32768)
-insert into test values (4, 9223372036854775807) returning *
+create table test (id int primary key, data i64);
+insert into test values (1, 123), (2, 256), (3, -32768);
+insert into test values (4, 9223372036854775807) returning *;
 [[4, 9223372036854775807]]
-select * from test
+select * from test;
 [[1, 123], [2, 256], [3, -32768], [4, 9223372036854775807]]
-drop table test
+drop table test;
 # test: insert column (float)
-create table test (id int primary key, data float)
-insert into test values (1, 123.32), (2, 3.14)
-insert into test values (4, 1.17549e-38), (5, 3.40282e+38) returning *
+create table test (id int primary key, data float);
+insert into test values (1, 123.32), (2, 3.14);
+insert into test values (4, 1.17549e-38), (5, 3.40282e+38) returning *;
 [[4, 1.17549e-38], [5, 3.40282e+38]]
-select * from test
+select * from test;
 [[1, 123.32], [2, 3.14], [4, 1.17549e-38], [5, 3.40282e+38]]
-drop table test
+drop table test;
 # test: insert column (double)
-create table test (id int primary key, data double)
-insert into test values (1, 123.32), (2, 3.14)
-insert into test values (4, 2.2250738585072014e-308), (5, 1.79769e+308) returning *
+create table test (id int primary key, data double);
+insert into test values (1, 123.32), (2, 3.14);
+insert into test values (4, 2.2250738585072014e-308), (5, 1.79769e+308) returning *;
 [[4, 2.22507e-308], [5, 1.79769e+308]]
-select * from test
+select * from test;
 [[1, 123.32], [2, 3.14], [4, 2.22507e-308], [5, 1.79769e+308]]
-drop table test
+drop table test;
 # test: insert column (text)
-create table test (id int primary key, data text)
-insert into test values (1, 'hello world')
-select data from test
+create table test (id int primary key, data text);
+insert into test values (1, 'hello world');
+select data from test;
 ["hello world"]
-drop table test
+drop table test;
 # test: insert column (json)
-create table test (id int primary key, data json)
-insert into test values (1, 1)
-insert into test values (2, 13.4)
-insert into test values (3, 'test')
-insert into test values (4, [1,2,3])
-insert into test values (5, {'id': 48, 'data': [], 'misc': null})
-select * from test
+create table test (id int primary key, data json);
+insert into test values (1, 1);
+insert into test values (2, 13.4);
+insert into test values (3, 'test');
+insert into test values (4, [1,2,3]);
+insert into test values (5, {'id': 48, 'data': [], 'misc': null});
+select * from test;
 [[1, 1], [2, 13.4], [3, "test"], [4, [1, 2, 3]], [5, {
   "id": 48,
   "data": [],
   "misc": null
 }]]
-select data::type from test
+select data::type from test;
 ["json", "json", "json", "json", "json"]
-drop table test
+drop table test;
 # test: insert column (timestamp)
-create table test (id int primary key, ts timestamp)
-insert into test values (0, timestamp "1970-01-01 01:12:59.909090")
-insert into test values (1, timestamp "1970-01-01 01:13:00")
-insert into test values (2, timestamp "1970-01-01 01:13:01")
-insert into test values (3, timestamp '1970-01-01 01:13:01')
-select * from test
+create table test (id int primary key, ts timestamp);
+insert into test values (0, timestamp "1970-01-01 01:12:59.909090");
+insert into test values (1, timestamp "1970-01-01 01:13:00");
+insert into test values (2, timestamp "1970-01-01 01:13:01");
+insert into test values (3, timestamp '1970-01-01 01:13:01');
+select * from test;
 [[0, "1970-01-01 01:12:59.909090+00"], [1, "1970-01-01 01:13:00+00"], [2, "1970-01-01 01:13:01+00"], [3, "1970-01-01 01:13:01+00"]]
 select * from test where ts > "1970-01-01 01:12:59.909090"::timestamp;
 [[1, "1970-01-01 01:13:00+00"], [2, "1970-01-01 01:13:01+00"], [3, "1970-01-01 01:13:01+00"]]
@@ -442,9 +442,9 @@ explain select * from test where ts > "1970-01-01 01:12:59.909090"::timestamp;
   },
   "access": [["public.test", "ro"]]
 }]
-select * from test where ts > timestamp "1970-01-01 01:12:59.909090"
+select * from test where ts > timestamp "1970-01-01 01:12:59.909090";
 [[1, "1970-01-01 01:13:00+00"], [2, "1970-01-01 01:13:01+00"], [3, "1970-01-01 01:13:01+00"]]
-explain select * from test where ts > timestamp "1970-01-01 01:12:59.909090"
+explain select * from test where ts > timestamp "1970-01-01 01:12:59.909090";
 [{
   "main": {
     "00": "union               0      0      0     ",
@@ -474,27 +474,27 @@ explain select * from test where ts > timestamp "1970-01-01 01:12:59.909090"
 select * from test where ts = "1970-01-01 01:13:01"::timestamp;
 [[2, "1970-01-01 01:13:01+00"], [3, "1970-01-01 01:13:01+00"]]
 # test: insert column (timestamp current_timestamp)
-insert into test values (4, current_timestamp)
-select ts::int > 0 from test where id = 4
+insert into test values (4, current_timestamp);
+select ts::int > 0 from test where id = 4;
 [true]
-drop table test
+drop table test;
 # test: insert column (timestamp auto cast)
-create table test (id int primary key, ts timestamp)
-insert into test values (0, "1970-01-01 01:12:59.909090")
-select * from test
+create table test (id int primary key, ts timestamp);
+insert into test values (0, "1970-01-01 01:12:59.909090");
+select * from test;
 [[0, "1970-01-01 01:12:59.909090+00"]]
-select ts::type from test
+select ts::type from test;
 ["timestamp"]
-drop table test
+drop table test;
 # test: insert column (timestamp key)
-create table test (id timestamp primary key)
-insert into test values ("1970-01-01 00:00:01.000001")
-insert into test values ("1970-01-01 00:00:01.000002")
-insert into test values ("1970-01-01 00:00:01.000003")
-insert into test values ("1970-01-01 00:00:02.000000")
-insert into test values ("1970-01-01 00:00:03.000000")
-insert into test values ("1970-01-01 00:00:04.000000")
-explain select * from test
+create table test (id timestamp primary key);
+insert into test values ("1970-01-01 00:00:01.000001");
+insert into test values ("1970-01-01 00:00:01.000002");
+insert into test values ("1970-01-01 00:00:01.000003");
+insert into test values ("1970-01-01 00:00:02.000000");
+insert into test values ("1970-01-01 00:00:03.000000");
+insert into test values ("1970-01-01 00:00:04.000000");
+explain select * from test;
 [{
   "main": {
     "00": "union               0      0      0     ",
@@ -515,13 +515,13 @@ explain select * from test
   },
   "access": [["public.test", "ro"]]
 }]
-select * from test
+select * from test;
 ["1970-01-01 00:00:01.000001+00", "1970-01-01 00:00:01.000002+00", "1970-01-01 00:00:01.000003+00", "1970-01-01 00:00:02+00", "1970-01-01 00:00:03+00", "1970-01-01 00:00:04+00"]
-select * from test order by id
+select * from test order by id;
 ["1970-01-01 00:00:01.000001+00", "1970-01-01 00:00:01.000002+00", "1970-01-01 00:00:01.000003+00", "1970-01-01 00:00:02+00", "1970-01-01 00:00:03+00", "1970-01-01 00:00:04+00"]
-select * from test where id > timestamp '1970-01-01 00:00:01.000002'
+select * from test where id > timestamp '1970-01-01 00:00:01.000002';
 ["1970-01-01 00:00:01.000003+00", "1970-01-01 00:00:02+00", "1970-01-01 00:00:03+00", "1970-01-01 00:00:04+00"]
-explain select * from test where id > timestamp '1970-01-01 00:00:01.000002'
+explain select * from test where id > timestamp '1970-01-01 00:00:01.000002';
 [{
   "main": {
     "00": "union               0      0      0     ",
@@ -548,9 +548,9 @@ explain select * from test where id > timestamp '1970-01-01 00:00:01.000002'
   },
   "access": [["public.test", "ro"]]
 }]
-select * from test where id >= timestamp '1970-01-01 00:00:01.000002'
+select * from test where id >= timestamp '1970-01-01 00:00:01.000002';
 ["1970-01-01 00:00:01.000002+00", "1970-01-01 00:00:01.000003+00", "1970-01-01 00:00:02+00", "1970-01-01 00:00:03+00", "1970-01-01 00:00:04+00"]
-explain select * from test where id >= timestamp '1970-01-01 00:00:01.000002'
+explain select * from test where id >= timestamp '1970-01-01 00:00:01.000002';
 [{
   "main": {
     "00": "union               0      0      0     ",
@@ -577,9 +577,9 @@ explain select * from test where id >= timestamp '1970-01-01 00:00:01.000002'
   },
   "access": [["public.test", "ro"]]
 }]
-select * from test where id < timestamp '1970-01-01 00:00:01.000003'
+select * from test where id < timestamp '1970-01-01 00:00:01.000003';
 ["1970-01-01 00:00:01.000001+00", "1970-01-01 00:00:01.000002+00"]
-explain select * from test where id < timestamp '1970-01-01 00:00:01.000003'
+explain select * from test where id < timestamp '1970-01-01 00:00:01.000003';
 [{
   "main": {
     "00": "union               0      0      0     ",
@@ -608,9 +608,9 @@ explain select * from test where id < timestamp '1970-01-01 00:00:01.000003'
   },
   "access": [["public.test", "ro"]]
 }]
-select * from test where id = timestamp '1970-01-01 00:00:01.000003'
+select * from test where id = timestamp '1970-01-01 00:00:01.000003';
 ["1970-01-01 00:00:01.000003+00"]
-explain select * from test where id = timestamp '1970-01-01 00:00:01.000003'
+explain select * from test where id = timestamp '1970-01-01 00:00:01.000003';
 [{
   "main": {
     "00": "union               0      0      0     ",
@@ -636,17 +636,17 @@ explain select * from test where id = timestamp '1970-01-01 00:00:01.000003'
   },
   "access": [["public.test", "ro"]]
 }]
-drop table test
+drop table test;
 # test: insert column (interval)
-create table test (id int primary key, i interval)
-insert into test values (0, interval "1 year 1 day 10 hour")
-insert into test values (1, interval "1 year 1 day 11 hour")
-insert into test values (2, interval "1 year 1 day 12 hour 500 us")
-select * from test
+create table test (id int primary key, i interval);
+insert into test values (0, interval "1 year 1 day 10 hour");
+insert into test values (1, interval "1 year 1 day 11 hour");
+insert into test values (2, interval "1 year 1 day 12 hour 500 us");
+select * from test;
 [[0, "1 year 1 day 10 hours"], [1, "1 year 1 day 11 hours"], [2, "1 year 1 day 12 hours 500 us"]]
-select * from test where i > "1 year 1 day 10 hour"::interval
+select * from test where i > "1 year 1 day 10 hour"::interval;
 [[1, "1 year 1 day 11 hours"], [2, "1 year 1 day 12 hours 500 us"]]
-explain select * from test where i > "1 year 1 day 10 hour"::interval
+explain select * from test where i > "1 year 1 day 10 hour"::interval;
 [{
   "main": {
     "00": "union               0      0      0     ",
@@ -675,32 +675,32 @@ explain select * from test where i > "1 year 1 day 10 hour"::interval
   },
   "access": [["public.test", "ro"]]
 }]
-select * from test where i = "1 year 1 day 12 hours 500 us"::interval
+select * from test where i = "1 year 1 day 12 hours 500 us"::interval;
 [[2, "1 year 1 day 12 hours 500 us"]]
-drop table test
+drop table test;
 # test: insert column (interval auto cast)
-create table test (id int primary key, i interval)
-insert into test values (0, "1 year 1 day 10 hour")
-select * from test
+create table test (id int primary key, i interval);
+insert into test values (0, "1 year 1 day 10 hour");
+select * from test;
 [[0, "1 year 1 day 10 hours"]]
-drop table test
+drop table test;
 # test: insert column (date)
-create table test (id int primary key, d date)
-insert into test values (0, date "2025-01-01")
-insert into test values (1, date "1970-01-01")
-insert into test values (2, date "9999-12-31")
-insert into test values (3, date "0001-01-01")
-select * from test
+create table test (id int primary key, d date);
+insert into test values (0, date "2025-01-01");
+insert into test values (1, date "1970-01-01");
+insert into test values (2, date "9999-12-31");
+insert into test values (3, date "0001-01-01");
+select * from test;
 [[0, "2025-01-01"], [1, "1970-01-01"], [2, "9999-12-31"], [3, "0001-01-01"]]
-insert into test values (4, date "0001-01-00")
+insert into test values (4, date "0001-01-00");
 {"msg": "insert into test values (4, date ❰\"0001-01-00\"❱ ⟵ invalid date value"}
-select * from test where d > date '2000-01-01'
+select * from test where d > date '2000-01-01';
 [[0, "2025-01-01"], [2, "9999-12-31"]]
-select * from test where d > date '1970-01-01'
+select * from test where d > date '1970-01-01';
 [[0, "2025-01-01"], [2, "9999-12-31"]]
-select * from test where d >= date '1970-01-01'
+select * from test where d >= date '1970-01-01';
 [[0, "2025-01-01"], [1, "1970-01-01"], [2, "9999-12-31"]]
-explain select * from test where d >= date '1970-01-01'
+explain select * from test where d >= date '1970-01-01';
 [{
   "main": {
     "00": "union               0      0      0     ",
@@ -727,65 +727,65 @@ explain select * from test where d >= date '1970-01-01'
   },
   "access": [["public.test", "ro"]]
 }]
-drop table test
+drop table test;
 # test: insert column (date auto cast)
-create table test (id int primary key, d date)
-insert into test values (0, "2025-01-01")
-insert into test values (1, "1970-01-01")
-insert into test values (2, "9999-12-31")
-insert into test values (3, "0001-01-01")
-select * from test
+create table test (id int primary key, d date);
+insert into test values (0, "2025-01-01");
+insert into test values (1, "1970-01-01");
+insert into test values (2, "9999-12-31");
+insert into test values (3, "0001-01-01");
+select * from test;
 [[0, "2025-01-01"], [1, "1970-01-01"], [2, "9999-12-31"], [3, "0001-01-01"]]
-insert into test values (4, "0001-01-00")
+insert into test values (4, "0001-01-00");
 {"msg": "insert into test values (4, ❰\"0001-01-00\"❱ ⟵ invalid date value"}
-drop table test
+drop table test;
 # test: insert column (date current_date)
-create table test (id int primary key, d date)
-insert into test values (0, current_date)
-select count(d) from test
+create table test (id int primary key, d date);
+insert into test values (0, current_date);
+select count(d) from test;
 [1]
-drop table test
+drop table test;
 # test: insert column (vector)
-create table test (id int primary key, vec vector)
-insert into test values (0, [])
-insert into test values (1, [1.0])
-insert into test values (2, [1])
-insert into test values (3, [1.0, 1.1,])
+create table test (id int primary key, vec vector);
+insert into test values (0, []);
+insert into test values (1, [1.0]);
+insert into test values (2, [1]);
+insert into test values (3, [1.0, 1.1,]);
 {"msg": "insert into test values (3, [1.0, 1.1,❰]❱ ⟵ invalid vector value"}
-insert into test values (4, [1.0,)
+insert into test values (4, [1.0,);
 {"msg": "insert into test values (4, [1.0,❰)❱ ⟵ invalid vector value"}
-insert into test values (5, [1.0,])
+insert into test values (5, [1.0,]);
 {"msg": "insert into test values (5, [1.0,❰]❱ ⟵ invalid vector value"}
-insert into test values (6, [1.0, 1.1])
-insert into test values (7, [1.0, 1.1, -2.2, -8])
-insert into test values (8, vector [1.0, 1.1, -2.2, -8])
-select * from test
+insert into test values (6, [1.0, 1.1]);
+insert into test values (7, [1.0, 1.1, -2.2, -8]);
+insert into test values (8, vector [1.0, 1.1, -2.2, -8]);
+select * from test;
 [[0, []], [1, [1]], [2, [1]], [6, [1, 1.1]], [7, [1, 1.1, -2.2, -8]], [8, [1, 1.1, -2.2, -8]]]
-select vec::type from test
+select vec::type from test;
 ["vector", "vector", "vector", "vector", "vector", "vector"]
-drop table test
+drop table test;
 # test: insert column (uuid)
-create table test (id int primary key, uid uuid)
-insert into test values (0, uuid "00000000-0000-0000-0000-000000000000")
-insert into test values (1, uuid "00000000-0000-0000-0000-000000000001")
-insert into test values (2, uuid "00000000-0000-0000-0000-000000000002")
-select uid, uid::type  from test
+create table test (id int primary key, uid uuid);
+insert into test values (0, uuid "00000000-0000-0000-0000-000000000000");
+insert into test values (1, uuid "00000000-0000-0000-0000-000000000001");
+insert into test values (2, uuid "00000000-0000-0000-0000-000000000002");
+select uid, uid::type  from test;
 [["00000000-0000-0000-0000-000000000000", "uuid"], ["00000000-0000-0000-0000-000000000001", "uuid"], ["00000000-0000-0000-0000-000000000002", "uuid"]]
-drop table test
+drop table test;
 # test: insert column (uuid auto cast)
-create table test (id int primary key, uid uuid)
-insert into test values (0, "00000000-0000-0000-0000-000000000000")
-insert into test values (1, "00000000-0000-0000-0000-000000000001")
-insert into test values (2, "00000000-0000-0000-0000-000000000002")
-select uid, uid::type  from test
+create table test (id int primary key, uid uuid);
+insert into test values (0, "00000000-0000-0000-0000-000000000000");
+insert into test values (1, "00000000-0000-0000-0000-000000000001");
+insert into test values (2, "00000000-0000-0000-0000-000000000002");
+select uid, uid::type  from test;
 [["00000000-0000-0000-0000-000000000000", "uuid"], ["00000000-0000-0000-0000-000000000001", "uuid"], ["00000000-0000-0000-0000-000000000002", "uuid"]]
-drop table test
+drop table test;
 # test: insert column (uuid key)
-create table test (id uuid primary key)
-insert into test values (uuid "00000000-0000-0000-0000-000000000000")
-insert into test values (uuid "00000000-0000-0000-0000-000000000001")
-insert into test values (uuid "00000000-0000-0000-0000-000000000002")
-select id, id::type  from test
+create table test (id uuid primary key);
+insert into test values (uuid "00000000-0000-0000-0000-000000000000");
+insert into test values (uuid "00000000-0000-0000-0000-000000000001");
+insert into test values (uuid "00000000-0000-0000-0000-000000000002");
+select id, id::type  from test;
 [["00000000-0000-0000-0000-000000000000", "uuid"], ["00000000-0000-0000-0000-000000000001", "uuid"], ["00000000-0000-0000-0000-000000000002", "uuid"]]
 select id from test where id >= uuid "00000000-0000-0000-0000-000000000000";
 ["00000000-0000-0000-0000-000000000000", "00000000-0000-0000-0000-000000000001", "00000000-0000-0000-0000-000000000002"]
@@ -823,41 +823,57 @@ explain select id from test where id = uuid "00000000-0000-0000-0000-00000000000
   },
   "access": [["public.test", "ro"]]
 }]
-drop table test
+drop table test;
 # test: insert var
-create table test (id uuid primary key)
-insert into test values (x)
+create table test (id uuid primary key);
+insert into test values (x);
 {"msg": "insert into test values (❰x❱ ⟵ variable not found"}
-declare id0 uuid := uuid "00000000-0000-0000-0000-000000000000"; declare id1 uuid := uuid "00000000-0000-0000-0000-000000000001"; insert into test values (id0), (id1)
-select * from test
+begin;
+	declare id0 uuid := uuid "00000000-0000-0000-0000-000000000000";
+	declare id1 uuid := uuid "00000000-0000-0000-0000-000000000001";
+	insert into test values (id0), (id1);
+end;
+select * from test;
 ["00000000-0000-0000-0000-000000000000", "00000000-0000-0000-0000-000000000001"]
 # test: insert var (type mismatch)
-declare x int; insert into test values (x)
-{"msg": "declare x int; insert into test values (❰x❱ ⟵ variable does not match column 'id' type"}
-drop table test
-create table test (id int primary key, data int)
+begin;
+	declare x int;
+	insert into test values (x);
+end;
+{"msg": "begin;\n\tdeclare x int;\n\tinsert into test values (❰x❱ ⟵ variable does not match column 'id' type"}
+drop table test;
+create table test (id int primary key, data int);
 # test: insert var (key null)
-declare x int; insert into test values(x, 0)
+begin;
+	declare x int;
+	insert into test values(x, 0);
+end;
 {"msg": "variable cannot be NULL"}
 # test: insert var (null)
-declare x int; insert into test values(0, x)
+begin;
+	declare x int;
+	insert into test values(0, x);
+end;
 select * from test;
 [[0, null]]
-drop table test
+drop table test;
 # test: insert var (not null)
-create table test (id int primary key, data int not null)
-declare x int; insert into test values(0, x)
+create table test (id int primary key, data int not null);
+begin;
+	declare x int;
+	insert into test values(0, x);
+end;
 {"msg": "variable cannot be NULL"}
-drop table test
+drop table test;
 # test: insert secondary index
-create table test (id int primary key, data int)
-create index i on test (data)
-insert into test values (0, 2)
-insert into test values (1, 1)
-insert into test values (2, 0)
-insert into test values (3, 0)
-insert into test values (4, 0)
-explain select * from test
+create table test (id int primary key, data int);
+create index i on test (data);
+insert into test values (0, 2);
+insert into test values (1, 1);
+insert into test values (2, 0);
+insert into test values (3, 0);
+insert into test values (4, 0);
+explain select * from test;
 [{
   "main": {
     "00": "union               0      0      0     ",
@@ -880,9 +896,9 @@ explain select * from test
   },
   "access": [["public.test", "ro"]]
 }]
-select * from test
+select * from test;
 [[0, 2], [1, 1], [2, 0], [3, 0], [4, 0]]
-explain select * from test use index (i)
+explain select * from test use index (i);
 [{
   "main": {
     "00": "union               0      0      0     ",
@@ -905,37 +921,37 @@ explain select * from test use index (i)
   },
   "access": [["public.test", "ro"]]
 }]
-select * from test use index (i)
+select * from test use index (i);
 [[2, 0], [3, 0], [4, 0], [1, 1], [0, 2]]
-drop index i on test
-drop table test
+drop index i on test;
+drop table test;
 # test: insert secondary index (unique)
-create table test (id int primary key, data int) partitions 1
-create unique index i on test (data)
-insert into test values (0, 0)
-insert into test values (1, 0)
+create table test (id int primary key, data int) partitions 1;
+create unique index i on test (data);
+insert into test values (0, 0);
+insert into test values (1, 0);
 {"msg": "index 'i': unique key constraint violation"}
-drop table test
+drop table test;
 # test: insert unlogged
-create unlogged table test (id int primary key, data int)
-insert into test values (0, 2)
-insert into test values (1, 1)
-insert into test values (2, 0)
-select * from test
+create unlogged table test (id int primary key, data int);
+insert into test values (0, 2);
+insert into test values (1, 1);
+insert into test values (2, 0);
+select * from test;
 [[0, 2], [1, 1], [2, 0]]
-drop table test
+drop table test;
 # test: insert select (columns count mismatch)
-create table test (id int primary key, data int)
-insert into test select 1
+create table test (id int primary key, data int);
+insert into test select 1;
 {"msg": "insert into test ❰select❱ ⟵ SELECT columns must match the INSERT table"}
 # test: insert select (columns types mismatch)
-insert into test select 1, '2'
+insert into test select 1, '2';
 {"msg": "insert into test ❰select❱ ⟵ SELECT columns must match the INSERT table"}
 # test: insert select (columns list unsupported)
-insert into test (id) select 1
+insert into test (id) select 1;
 {"msg": "insert into test (id) ❰select❱ ⟵ SELECT using column list is not supported"}
 # test: insert select expr
-explain insert into test select 1, 0
+explain insert into test select 1, 0;
 [{
   "main": {
     "00": "set                 0      2      0     ",
@@ -954,13 +970,13 @@ explain insert into test select 1, 0
   },
   "access": [["public.test", "rw"]]
 }]
-insert into test select 1, 0
-select * from test
+insert into test select 1, 0;
+select * from test;
 [[1, 0]]
-insert into test select 1, 0
+insert into test select 1, 0;
 {"msg": "index 'primary': unique key constraint violation"}
 # test: insert select from (select expr)
-explain insert into test select * from (select 2, 0) t
+explain insert into test select * from (select 2, 0) t;
 [{
   "main": {
     "00": "set                 0      2      0     ",
@@ -990,13 +1006,13 @@ explain insert into test select * from (select 2, 0) t
   },
   "access": [["public.test", "rw"]]
 }]
-insert into test select * from (select 2, 0) t
-select * from test
+insert into test select * from (select 2, 0) t;
+select * from test;
 [[1, 0], [2, 0]]
 # test: insert select from table
-create table src (id int primary key, data int)
-insert into src values (3, 0), (4, 0), (5, 0)
-explain insert into test select * from src
+create table src (id int primary key, data int);
+insert into src values (3, 0), (4, 0), (5, 0);
+explain insert into test select * from src;
 [{
   "main": {
     "00": "union               0      0      0     ",
@@ -1023,17 +1039,22 @@ explain insert into test select * from src
   },
   "access": [["public.test", "rw"], ["public.src", "ro"]]
 }]
-insert into test select * from src returning *
+insert into test select * from src returning *;
 [[3, 0], [4, 0], [5, 0]]
-select * from test
+select * from test;
 [[1, 0], [2, 0], [3, 0], [4, 0], [5, 0]]
-drop table src
-drop table test
+drop table src;
+drop table test;
 # test: insert select from var
-create table test (id int primary key, data int)
-insert into test values (3, 0), (4, 0), (5, 0)
-declare x table(id int, data int); select * into x from test; delete from test; insert into test select * from x returning *
+create table test (id int primary key, data int);
+insert into test values (3, 0), (4, 0), (5, 0);
+begin
+	declare x table(id int, data int);
+	select * into x from test;
+	delete from test;
+	insert into test select * from x returning *;
+end;
 [[3, 0], [4, 0], [5, 0]]
-drop table test
-disconnect S0
-close E0
+drop table test;
+disconnect S0;
+close E0;

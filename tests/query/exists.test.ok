@@ -1,26 +1,26 @@
-open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "127.0.0.1", "port": 3485 }]
-connect E0 S0 127.0.0.1:3485
+open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "127.0.0.1", "port": 3485 }];
+connect E0 S0 127.0.0.1:3485;
 # test: exists parsing
-select exists
-{"msg": "select exists ⟵ ( expected"}
-select exists 1
+select exists;
+{"msg": "select exists❰;❱ ⟵ ( expected"}
+select exists 1;
 {"msg": "select exists ❰1❱ ⟵ ( expected"}
-select exists (
-{"msg": "select exists ( ⟵ SELECT expected"}
-select exists ()
+select exists (;
+{"msg": "select exists (❰;❱ ⟵ SELECT expected"}
+select exists ();
 {"msg": "select exists (❰)❱ ⟵ SELECT expected"}
-select exists (1)
+select exists (1);
 {"msg": "select exists (❰1❱ ⟵ SELECT expected"}
-select exists (null)
+select exists (null);
 {"msg": "select exists (❰null❱ ⟵ SELECT expected"}
-select exists (false)
+select exists (false);
 {"msg": "select exists (❰false❱ ⟵ SELECT expected"}
-select exists ([])
+select exists ([]);
 {"msg": "select exists (❰[❱ ⟵ SELECT expected"}
 # test: exists (select)
-create table test (id int primary key, data int)
-insert into test values (1, 0), (2, 0)
-explain select exists (select true from test limit 1)
+create table test (id int primary key, data int);
+insert into test values (1, 0), (2, 0);
+explain select exists (select true from test limit 1);
 [{
   "main": {
     "00": "set                 0      1      0     ",
@@ -39,17 +39,17 @@ explain select exists (select true from test limit 1)
   },
   "access": [["public.test", "ro_exclusive"]]
 }]
-select exists (select true from test limit 1)
+select exists (select true from test limit 1);
 [true]
-select exists (select true from test where false)
+select exists (select true from test where false);
 [false]
 # test: exists (select expr)
-select exists (select null)
+select exists (select null);
 [true]
 # test: exists (select) (more then one result)
-select exists (select true from test)
+select exists (select true from test);
 [true]
-explain select exists (select true from test where false)
+explain select exists (select true from test where false);
 [{
   "main": {
     "00": "set                 0      1      0     ",
@@ -67,8 +67,8 @@ explain select exists (select true from test where false)
   "access": [["public.test", "ro_exclusive"]]
 }]
 # test: exists (select) (more then one column)
-select exists (select * from test)
+select exists (select * from test);
 [true]
-drop table test
-disconnect S0
-close E0
+drop table test;
+disconnect S0;
+close E0;

@@ -1,188 +1,188 @@
 #
 
-open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "127.0.0.1", "port": 3485 }]
-connect E0 S0 127.0.0.1:3485
+open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "127.0.0.1", "port": 3485 }];
+connect E0 S0 127.0.0.1:3485;
 
 # test: select (select const)
-select (select 0)
-select (select 1234)
-select (select null)
-select (select "hello")
+select (select 0);
+select (select 1234);
+select (select null);
+select (select "hello");
 
 # test: select (select expr)
-select (select 1 + 1)
-select (select 2 * 2)
-select (select 8 * 8)
-select (select 64 / ( 4 + 4 ))
-select (select 64 / 0)
-select (select 64 % 0)
+select (select 1 + 1);
+select (select 2 * 2);
+select (select 8 * 8);
+select (select 64 / ( 4 + 4 ));
+select (select 64 / 0);
+select (select 64 % 0);
 
 # test: select (select [])
-select (select [])
-select (select [1])
-select (select [1,2,3])
+select (select []);
+select (select [1]);
+select (select [1,2,3]);
 
 # test: select (select function())
-select system.schemas()
-select (select system.schemas())
+select system.schemas();
+select (select system.schemas());
 
 # test: select (select {})
-select (select {})
-select (select {"a": 1})
-select (select {"a": 1, "b": null})
+select (select {});
+select (select {"a": 1});
+select (select {"a": 1, "b": null});
 
 # test: select (select *) from table
-create table test (id int primary key)
-insert into test values (1)
-insert into test values (2)
-insert into test values (3)
+create table test (id int primary key);
+insert into test values (1);
+insert into test values (2);
+insert into test values (3);
 
-select (select *) from test
+select (select *) from test;
 
 # test: select (select target.*) from table
-explain select (select test.*) from test
-select (select test.*) from test
+explain select (select test.*) from test;
+select (select test.*) from test;
 
 # test: select (select alias.*) from table
-select (select t.*) from test t
-select (select t.*) from test
-select (select t) from test t
+select (select t.*) from test t;
+select (select t.*) from test;
+select (select t) from test t;
 
 # test: select (select target.column) from table
-explain select (select test.id) from test
-select (select test.id) from test
-select (select id) from test
+explain select (select test.id) from test;
+select (select test.id) from test;
+select (select id) from test;
 
 # test: select (select alias.column) from table
-explain select (select t.id) from test t
-select (select t.id) from test
-select (select t.id) from test t
+explain select (select t.id) from test t;
+select (select t.id) from test;
+select (select t.id) from test t;
 
-drop table test
+drop table test;
 
 # test: select (select target.path) from table
-create table test (id serial primary key, data json)
-insert into test (data) values({"data": {"id": 1}})
-insert into test (data) values({"data": {"id": 2}})
-insert into test (data) values({"data": {"id": 3}})
+create table test (id serial primary key, data json);
+insert into test (data) values({"data": {"id": 1}});
+insert into test (data) values({"data": {"id": 2}});
+insert into test (data) values({"data": {"id": 3}});
 
-select (select *) from test
-select (select test) from test
-select (select test.data) from test
-select (select test.data.data) from test
-select (select test.data.data.id) from test
+select (select *) from test;
+select (select test) from test;
+select (select test.data) from test;
+select (select test.data.data) from test;
+select (select test.data.data.id) from test;
 
 # test: select (select alias.path) from table
-select (select t) from test t
-select (select t.data) from test t
-select (select t.data.data) from test t
-select (select t.data.data.id) from test t
-drop table test
+select (select t) from test t;
+select (select t.data) from test t;
+select (select t.data.data) from test t;
+select (select t.data.data.id) from test t;
+drop table test;
 
 # test: select from (select expr)
-select * from (select 0) t
-select * from (select null) t
-select * from (select 1, 2) t
+select * from (select 0) t;
+select * from (select null) t;
+select * from (select 1, 2) t;
 
 # test: select * from (select from table)
-create table test (id int primary key)
-insert into test values (1)
-insert into test values (2)
-insert into test values (3)
+create table test (id int primary key);
+insert into test values (1);
+insert into test values (2);
+insert into test values (3);
 
-select * from (select * from test)
-select * from (select * from test) t
-explain select * from (select * from test) t
+select * from (select * from test);
+select * from (select * from test) t;
+explain select * from (select * from test) t;
 
 # test: select target.* from (select from table)
-select test.* from (select * from test)
-select test.* from (select * from test) test
-select test from (select * from test)
+select test.* from (select * from test);
+select test.* from (select * from test) test;
+select test from (select * from test);
 
 # test: select alias.* from (select from table)
-select alias from (select * from test) alias
-select alias.* from (select * from test) alias
+select alias from (select * from test) alias;
+select alias.* from (select * from test) alias;
 
-select alias.* from (select test.* from test) alias
-select alias.* from (select x.* from test x) alias
-select alias.* from (select alias.* from test alias) alias
-select alias.* from (select * from test) alias
-drop table test
+select alias.* from (select test.* from test) alias;
+select alias.* from (select x.* from test x) alias;
+select alias.* from (select alias.* from test alias) alias;
+select alias.* from (select * from test) alias;
+drop table test;
 
-create table test (id serial primary key, obj json)
-insert into test (obj) values({"data": {"id": 1}})
-insert into test (obj) values({"data": {"id": 2}})
-insert into test (obj) values({"data": {"id": 3}})
+create table test (id serial primary key, obj json);
+insert into test (obj) values({"data": {"id": 1}});
+insert into test (obj) values({"data": {"id": 2}});
+insert into test (obj) values({"data": {"id": 3}});
 
 # test: select target.path from (select from table)
-select obj from (select * from test)
-select * from (select * from test) alias
+select obj from (select * from test);
+select * from (select * from test) alias;
 
-select * from (select * from test) alias
-select obj from (select * from test) alias
-select alias.* from (select * from test) alias
-select alias.obj.data from (select * from test) alias
-select alias.obj.data.id from (select * from test) alias
-drop table test
+select * from (select * from test) alias;
+select obj from (select * from test) alias;
+select alias.* from (select * from test) alias;
+select alias.obj.data from (select * from test) alias;
+select alias.obj.data.id from (select * from test) alias;
+drop table test;
 
 # test: select (select from table)
-create table test (id int primary key)
-insert into test values (1)
-insert into test values (2)
-insert into test values (3)
+create table test (id int primary key);
+insert into test values (1);
+insert into test values (2);
+insert into test values (3);
 
-explain select (select * from test)
-select (select * from test)
+explain select (select * from test);
+select (select * from test);
 
 # test: select (select from table) no result
-select (select * from test where false)
+select (select * from test where false);
 
 # test: select (select from table) from table (more then one result)
-explain select (select * from test) from test
-select (select * from test) from test
-select (select * from test t) from test
+explain select (select * from test) from test;
+select (select * from test) from test;
+select (select * from test t) from test;
 
 # test: select (select from table) from table (one result)
-select (select * from test t limit 1) from test
-explain select (select i.* from test i limit 1) from test
+select (select * from test t limit 1) from test;
+explain select (select i.* from test i limit 1) from test;
 
 # test: select (select from table) from table #2
-explain select (select i.* from test i where test.id = i.id) from test
-select (select i.* from test i where test.id = i.id) from test
+explain select (select i.* from test i where test.id = i.id) from test;
+select (select i.* from test i where test.id = i.id) from test;
 
 # test: select (select from table) from table #3
-create table a (id serial primary key, data int default 0)
-create table b (id serial primary key, data int default 1)
+create table a (id serial primary key, data int default 0);
+create table b (id serial primary key, data int default 1);
 
-insert into a () values (), (), ()
-insert into b () values (), (), ()
+insert into a () values (), (), ();
+insert into b () values (), (), ();
 
-select (select * from b where a.id = b.id) from a
-select (select a.* from b where a.id = b.id) from a
-select (select b.* from b where a.id = b.id)::type from a
+select (select * from b where a.id = b.id) from a;
+select (select a.* from b where a.id = b.id) from a;
+select (select b.* from b where a.id = b.id)::type from a;
 
-select (select a.id from b where a.id = b.id) from a
-select (select b.id from b where a.id = b.id)::type from a
+select (select a.id from b where a.id = b.id) from a;
+select (select b.id from b where a.id = b.id)::type from a;
 
 # test: select from table where (select from table)
-explain select * from a where (select true from b where a.id = b.id)
-select * from a where (select true from b where a.id = b.id)
+explain select * from a where (select true from b where a.id = b.id);
+select * from a where (select true from b where a.id = b.id);
 
 # test: select from (select from (select from table))
-select t.x from (select z.id as x from (select id from test) z) t
-explain select t.x from (select z.id as x from (select id from test) z) t
+select t.x from (select z.id as x from (select id from test) z) t;
+explain select t.x from (select z.id as x from (select id from test) z) t;
 
 # test: select from (select from), (select from)
-select * from (select * from a) a, (select * from a) b
+select * from (select * from a) a, (select * from a) b;
 
 # test: select from (select from (select expr)))
-explain select * from (select * from ([1,2,3]) i ) o
-select * from (select * from ([1,2,3]) i ) o
-select count(*) from (select * from ([1,2,3]) i ) o
+explain select * from (select * from ([1,2,3]) i ) o;
+select * from (select * from ([1,2,3]) i ) o;
+select count(*) from (select * from ([1,2,3]) i ) o;
 
-drop table a
-drop table b
-drop table test
+drop table a;
+drop table b;
+drop table test;
 
-disconnect S0
-close E0
+disconnect S0;
+close E0;

@@ -1,13 +1,13 @@
-open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "127.0.0.1", "port": 3485 }]
-connect E0 S0 127.0.0.1:3485
+open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "127.0.0.1", "port": 3485 }];
+connect E0 S0 127.0.0.1:3485;
 # test: and
-select and
+select and;
 {"msg": "select ❰and❱ ⟵ bad expression"}
-select 1 and
+select 1 and;
 {"msg": "select 1 ❰and❱ ⟵ bad expression"}
-select true and true
+select true and true;
 [true]
-explain select true and true
+explain select true and true;
 [{
   "main": {
     "00": "bool                0      1      0     ",
@@ -17,35 +17,35 @@ explain select true and true
   },
   "access": []
 }]
-select true and false
+select true and false;
 [false]
-select true and 0
+select true and 0;
 [false]
-select true and []
+select true and [];
 [true]
-select true and 1.15
+select true and 1.15;
 [true]
-select true and 0.15
+select true and 0.15;
 [true]
 # test: and null
-select null and null
+select null and null;
 [null]
-select true and null
+select true and null;
 [null]
-select false and null
+select false and null;
 [null]
 # test: or
-select or
+select or;
 {"msg": "select ❰or❱ ⟵ bad expression"}
-select 1 or
+select 1 or;
 {"msg": "select 1 ❰or❱ ⟵ bad expression"}
-select true or true
+select true or true;
 [true]
-select false or false
+select false or false;
 [false]
-select false or true
+select false or true;
 [true]
-explain select false or true
+explain select false or true;
 [{
   "main": {
     "00": "bool                0      0      0     ",
@@ -56,27 +56,27 @@ explain select false or true
   "access": []
 }]
 # test: or null
-select null or null
+select null or null;
 [null]
-select true or null
+select true or null;
 [true]
-select false or null
+select false or null;
 [false]
 # test: not
-select not true
+select not true;
 [false]
-select not false
+select not false;
 [true]
-select not (not false)
+select not (not false);
 [false]
-select not []
+select not [];
 {"msg": "select not [❰]❱ ⟵ bad expression"}
-select not 1
+select not 1;
 [false]
-select not 0
+select not 0;
 [true]
 # test: not null
-select not null
+select not null;
 [null]
-disconnect S0
-close E0
+disconnect S0;
+close E0;

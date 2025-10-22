@@ -1,77 +1,76 @@
 #
 
-open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "127.0.0.1", "port": 3485 }]
-connect E0 S0 127.0.0.1:3485
+open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "127.0.0.1", "port": 3485 }];
+connect E0 S0 127.0.0.1:3485;
 
 # test: show statement parsing
-show
 show;
-show all junk
-show 1234
+show all junk;
+show 1234;
 
 # test: show users
-create user test
-show users abc
-show users format
-show users format 'json'
+create user test;
+show users abc;
+show users format;
+show users format 'json';
 
 # test: show user
-show user
-show user unknown
-show user test
-show user test format
-show user test format 'json'
+show user;
+show user unknown;
+show user test;
+show user test format;
+show user test format 'json';
 
 # test: show schemas
-create schema test
-show schemas
-show schema test
-show schema test format 'json'
+create schema test;
+show schemas;
+show schema test;
+show schema test format 'json';
 
 # test: show tables
-create table test (id int primary key)
-show tables
+create table test (id int primary key);
+show tables;
 
 # test: show table
-show table
-show table test
-show table test format 'json'
+show table;
+show table test;
+show table test format 'json';
 
 # test: show wal
-show wal
+show wal;
 
 # test: show replicas
-show replicas
+show replicas;
 
 # test: show replica
-show replica abc
-show replica 'abc'
-show replica '00000000-0000-0000-0000-000000000000'
+show replica abc;
+show replica 'abc';
+show replica '00000000-0000-0000-0000-000000000000';
 
 # test: show state
-select system.state()
-select system.state().directory
-select system.state()["directory"]
-select system.state(123)
+select system.state();
+select system.state().directory;
+select system.state()["directory"];
+select system.state(123);
 
 # test: show config
-show config
+show config;
 
 # test: show all
-show all
+show all;
 
-select system.config().uuid
-select system.config(123)
+select system.config().uuid;
+select system.config(123);
 
 # test: show name
-show log_enable
-show "log_enable"
+show log_enable;
+show "log_enable";
 
 # test: show unknown
-show asdf
+show asdf;
 
 # test: explain show
-explain show log_enable
+explain show log_enable;
 
-disconnect S0
-close E0
+disconnect S0;
+close E0;

@@ -1,21 +1,21 @@
-open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "127.0.0.1", "port": 3485 }]
-connect E0 S0 127.0.0.1:3485
+open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "127.0.0.1", "port": 3485 }];
+connect E0 S0 127.0.0.1:3485;
 # test: case expr
-select case
-{"msg": "select case ⟵ bad expression"}
-select case 1
-{"msg": "select case 1 ⟵ WHEN, ELSE or END expected"}
-select case 1 then
+select case;
+{"msg": "select case❰;❱ ⟵ bad expression"}
+select case 1;
+{"msg": "select case 1❰;❱ ⟵ WHEN, ELSE or END expected"}
+select case 1 then;
 {"msg": "select case 1 ❰then❱ ⟵ WHEN, ELSE or END expected"}
-select case 1 then 1
+select case 1 then 1;
 {"msg": "select case 1 ❰then❱ ⟵ WHEN, ELSE or END expected"}
-select case 1 when 1 then 1
-{"msg": "select case 1 when 1 then 1 ⟵ WHEN, ELSE or END expected"}
-select case 1 when 1 then 1 end
+select case 1 when 1 then 1;
+{"msg": "select case 1 when 1 then 1❰;❱ ⟵ WHEN, ELSE or END expected"}
+select case 1 when 1 then 1 end;
 [1]
-select (case 1 when 1 then 1 end)::type
+select (case 1 when 1 then 1 end)::type;
 ["int"]
-explain select case 1 when 1 then 1 end
+explain select case 1 when 1 then 1 end;
 [{
   "main": {
     "00": "jmp                 2      0      0     ",
@@ -34,11 +34,11 @@ explain select case 1 when 1 then 1 end
   },
   "access": []
 }]
-select case 0 when 1 then 1 when 2 then 2 end
+select case 0 when 1 then 1 when 2 then 2 end;
 [null]
-select (case 0 when 1 then 1 when 2 then 2 end)::type
+select (case 0 when 1 then 1 when 2 then 2 end)::type;
 ["null"]
-explain select case 0 when 1 then 1 when 2 then 2 end
+explain select case 0 when 1 then 1 when 2 then 2 end;
 [{
   "main": {
     "00": "jmp                 2      0      0     ",
@@ -64,27 +64,27 @@ explain select case 0 when 1 then 1 when 2 then 2 end
   },
   "access": []
 }]
-select case 0 when 1 then 1 when 2 then 2 else 'else' end
+select case 0 when 1 then 1 when 2 then 2 else 'else' end;
 {"msg": "select case 0 when 1 then 1 when 2 then 2 else ❰'else'❱ ⟵ CASE expression type mismatch"}
-select (case 0 when 1 then 1 when 2 then 2 else 'else' end)::type
+select (case 0 when 1 then 1 when 2 then 2 else 'else' end)::type;
 {"msg": "select (case 0 when 1 then 1 when 2 then 2 else ❰'else'❱ ⟵ CASE expression type mismatch"}
-explain select case 0 when 1 then 1 when 2 then 2 else 'else' end
+explain select case 0 when 1 then 1 when 2 then 2 else 'else' end;
 {"msg": "explain select case 0 when 1 then 1 when 2 then 2 else ❰'else'❱ ⟵ CASE expression type mismatch"}
-select case [1,2,3] when [1,0] then 1 when [1,2,3] then 2 end
+select case [1,2,3] when [1,0] then 1 when [1,2,3] then 2 end;
 [2]
-select case [1,2,3] when [1,0] then 1 when [1,2,3,4] then 2 end
+select case [1,2,3] when [1,0] then 1 when [1,2,3,4] then 2 end;
 [null]
-select case [1,2,3] when [1,0] then 1 when [1,2,3,4] then 2 else 3 end
+select case [1,2,3] when [1,0] then 1 when [1,2,3,4] then 2 else 3 end;
 [3]
-select case [1,2,3] when [1,0] then 1 when [1,2,3,4] then 2 else 3 else 4 end
+select case [1,2,3] when [1,0] then 1 when [1,2,3,4] then 2 else 3 else 4 end;
 {"msg": "select case [1,2,3] when [1,0] then 1 when [1,2,3,4] then 2 else 3 ❰else❱ ⟵ ELSE is redefined"}
-select case [1,2,3] when [1,0] then 1 when [1,2,3,4] then 2 else 3 else 4 when null then null end
+select case [1,2,3] when [1,0] then 1 when [1,2,3,4] then 2 else 3 else 4 when null then null end;
 {"msg": "select case [1,2,3] when [1,0] then 1 when [1,2,3,4] then 2 else 3 ❰else❱ ⟵ ELSE is redefined"}
-select case null when [1,0] then 1 when [1,2,3,4] then 2 else 3 else 4 when null then null end
+select case null when [1,0] then 1 when [1,2,3,4] then 2 else 3 else 4 when null then null end;
 {"msg": "select case null when [1,0] then 1 when [1,2,3,4] then 2 else 3 ❰else❱ ⟵ ELSE is redefined"}
-select case null when [1,0] then 1 when [1,2,3,4] then 2 else 3 when null then null end
+select case null when [1,0] then 1 when [1,2,3,4] then 2 else 3 when null then null end;
 [3]
-explain select case null when [1,0] then 1 when [1,2,3,4] then 2 else 3 when null then null end
+explain select case null when [1,0] then 1 when [1,2,3,4] then 2 else 3 when null then null end;
 [{
   "main": {
     "00": "jmp                 2      0      0     ",
@@ -117,24 +117,24 @@ explain select case null when [1,0] then 1 when [1,2,3,4] then 2 else 3 when nul
   },
   "access": []
 }]
-select case end
+select case end;
 {"msg": "select case ❰end❱ ⟵ WHEN or ELSE expected"}
-select case else end
+select case else end;
 {"msg": "select case else ❰end❱ ⟵ bad expression"}
-select case else 1 end
+select case else 1 end;
 [1]
-select case null when 1 then 1 when null then 2 else 3 end
+select case null when 1 then 1 when null then 2 else 3 end;
 [3]
 # test: case
-select case
-{"msg": "select case ⟵ bad expression"}
-select case when 1
-{"msg": "select case when 1 ⟵ THEN expected"}
-select case when 1 then 1
-{"msg": "select case when 1 then 1 ⟵ WHEN, ELSE or END expected"}
-select case when 1 then 1 end
+select case;
+{"msg": "select case❰;❱ ⟵ bad expression"}
+select case when 1;
+{"msg": "select case when 1❰;❱ ⟵ THEN expected"}
+select case when 1 then 1;
+{"msg": "select case when 1 then 1❰;❱ ⟵ WHEN, ELSE or END expected"}
+select case when 1 then 1 end;
 [1]
-explain select case when 1 then 1 end
+explain select case when 1 then 1 end;
 [{
   "main": {
     "00": "jmp                 2      0      0     ",
@@ -151,29 +151,29 @@ explain select case when 1 then 1 end
   },
   "access": []
 }]
-select case else
-{"msg": "select case else ⟵ bad expression"}
-select case else end
+select case else;
+{"msg": "select case else❰;❱ ⟵ bad expression"}
+select case else end;
 {"msg": "select case else ❰end❱ ⟵ bad expression"}
-select case else 1 end
+select case else 1 end;
 [1]
-select case when 1=1 then 1 end
+select case when 1=1 then 1 end;
 [1]
-select case when 1=0 then 1 when 1=3 when 1=1 then 'yes' end
+select case when 1=0 then 1 when 1=3 when 1=1 then 'yes' end;
 {"msg": "select case when 1=0 then 1 when 1=3 ❰when❱ ⟵ THEN expected"}
-select case when 1=0 then 1 when 1=3 when 1=1 then 2 end
+select case when 1=0 then 1 when 1=3 when 1=1 then 2 end;
 {"msg": "select case when 1=0 then 1 when 1=3 ❰when❱ ⟵ THEN expected"}
-select case when 1=0 then 1 when 1=3 then 2 when 1=1 then 3 end
+select case when 1=0 then 1 when 1=3 then 2 when 1=1 then 3 end;
 [3]
-select case when 1=0 then 1 when 1=3 then 2 else null end
+select case when 1=0 then 1 when 1=3 then 2 else null end;
 [null]
-select case when 1=0 then 1 when 1=3 then 2 else 3 end
+select case when 1=0 then 1 when 1=3 then 2 else 3 end;
 [3]
-select case when 1=0 then 1 when 1=3 then 2 end
+select case when 1=0 then 1 when 1=3 then 2 end;
 [null]
-select case when [1,2,3] = [1,2,3] then true end
+select case when [1,2,3] = [1,2,3] then true end;
 [true]
-select case when 1=0 then 1 when null then 2 else 3 end
+select case when 1=0 then 1 when null then 2 else 3 end;
 [3]
-disconnect S0
-close E0
+disconnect S0;
+close E0;

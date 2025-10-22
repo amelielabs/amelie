@@ -1,134 +1,134 @@
 #
 
-open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "127.0.0.1", "port": 3485 }]
-connect E0 S0 127.0.0.1:3485
+open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "127.0.0.1", "port": 3485 }];
+connect E0 S0 127.0.0.1:3485;
 
 # test: from use index
-create table test (id int primary key, data int)
-create index i on test (data)
+create table test (id int primary key, data int);
+create index i on test (data);
 
-insert into test values (0, 2)
-insert into test values (1, 1)
-insert into test values (2, 0)
+insert into test values (0, 2);
+insert into test values (1, 1);
+insert into test values (2, 0);
 
-explain select * from test
-select * from test
+explain select * from test;
+select * from test;
 
-select * from test use
-select * from test use 1
-select * from test use index
-select * from test use index 1
-select * from test use index (
-select * from test use index (123
+select * from test use;
+select * from test use 1;
+select * from test use index;
+select * from test use index 1;
+select * from test use index (;
+select * from test use index (123;
 
-explain select * from test use index (i)
-select * from test use index (i)
+explain select * from test use index (i);
+select * from test use index (i);
 
-drop index i on test
-drop table test
+drop index i on test;
+drop table test;
 
 # test: from use heap
-create table test (id int primary key, data int)
-insert into test values (0, 2)
-insert into test values (1, 1)
-insert into test values (2, 0)
-explain select * from test
-explain select * from test use heap
-select * from test use heap
-drop table test
+create table test (id int primary key, data int);
+insert into test values (0, 2);
+insert into test values (1, 1);
+insert into test values (2, 0);
+explain select * from test;
+explain select * from test use heap;
+select * from test use heap;
+drop table test;
 
 # test: from use heap (subquery)
-create table test (id int primary key, data int)
-insert into test values (0, 2)
-insert into test values (1, 1)
-insert into test values (2, 0)
-explain select (select id from test use heap)
-select (select id from test use heap)
-drop table test
+create table test (id int primary key, data int);
+insert into test values (0, 2);
+insert into test values (1, 1);
+insert into test values (2, 0);
+explain select (select id from test use heap);
+select (select id from test use heap);
+drop table test;
 
 # test: hash/hash
-create table test (id int, data int, primary key (id, data)) partitions 1 with (type = 'hash')
-create index i on test (data) with (type = 'hash')
+create table test (id int, data int, primary key (id, data)) partitions 1 with (type = 'hash');
+create index i on test (data) with (type = 'hash');
 
-insert into test values (0, 2)
-insert into test values (1, 1)
-insert into test values (2, 0)
+insert into test values (0, 2);
+insert into test values (1, 1);
+insert into test values (2, 0);
 
 # test: hash/hash (scan)
-explain select * from test
-select * from test
+explain select * from test;
+select * from test;
 
 # test: hash/hash (unique point lookup)
-create unique index j on test (data) with (type = 'hash')
-explain select * from test where data = 2
-select * from test where data = 2
+create unique index j on test (data) with (type = 'hash');
+explain select * from test where data = 2;
+select * from test where data = 2;
 
-explain select * from test where id = 1
-select * from test where id = 1
+explain select * from test where id = 1;
+select * from test where id = 1;
 
-explain select * from test where id = 1 and data = 1
-select * from test where id = 1 and data = 1
+explain select * from test where id = 1 and data = 1;
+select * from test where id = 1 and data = 1;
 
-explain select * from test where data = 1 and id = 1
-select * from test where data = 1 and id = 1
-drop table test
+explain select * from test where data = 1 and id = 1;
+select * from test where data = 1 and id = 1;
+drop table test;
 
 # test: tree/hash
-create table test (id int primary key, data int)
-create index i on test (data) with (type = 'hash')
+create table test (id int primary key, data int);
+create index i on test (data) with (type = 'hash');
 
-insert into test values (0, 2)
-insert into test values (1, 1)
-insert into test values (2, 0)
+insert into test values (0, 2);
+insert into test values (1, 1);
+insert into test values (2, 0);
 
-explain select * from test where id = 1
-select * from test where id = 1
+explain select * from test where id = 1;
+select * from test where id = 1;
 
-explain select * from test where id > 1
-select * from test where id > 1
+explain select * from test where id > 1;
+select * from test where id > 1;
 
-explain select * from test where data > 1
-select * from test where data > 1
+explain select * from test where data > 1;
+select * from test where data > 1;
 
 # test: tree/hash (point lookup)
-explain select * from test where data = 1
-select * from test where data = 1
+explain select * from test where data = 1;
+select * from test where data = 1;
 
-select system.table('test').indexes
-explain select * from test where data = 1 and id = 1
-select * from test where data = 1 and id = 1
+select system.table('test').indexes;
+explain select * from test where data = 1 and id = 1;
+select * from test where data = 1 and id = 1;
 
 # test: tree/hash (hash override)
-explain select * from test where id = 1 and data = 1
-select * from test where id = 1 and data = 1
-drop table test
+explain select * from test where id = 1 and data = 1;
+select * from test where id = 1 and data = 1;
+drop table test;
 
 # test: tree/tree
-create table test (id int primary key, data int)
-create index i on test (data)
+create table test (id int primary key, data int);
+create index i on test (data);
 
-insert into test values (0, 2)
-insert into test values (1, 1)
-insert into test values (2, 0)
+insert into test values (0, 2);
+insert into test values (1, 1);
+insert into test values (2, 0);
 
 # test: tree/tree (scan)
-explain select * from test where id > 1
-select * from test where id > 1
+explain select * from test where id > 1;
+select * from test where id > 1;
 
-explain select * from test where data > 1
-select * from test where data > 1
+explain select * from test where data > 1;
+select * from test where data > 1;
 
 # test: tree/tree (stop condition)
-explain select * from test where data < 1
-select * from test where data < 1
+explain select * from test where data < 1;
+select * from test where data < 1;
 
-explain select * from test where id < 1
-select * from test where id < 1
+explain select * from test where id < 1;
+select * from test where id < 1;
 
-explain select * from test where id < 1 and data < 2
-select * from test where id < 1 and data < 2
+explain select * from test where id < 1 and data < 2;
+select * from test where id < 1 and data < 2;
 
-drop table test
+drop table test;
 
-disconnect S0
-close E0
+disconnect S0;
+close E0;

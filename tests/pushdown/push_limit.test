@@ -1,87 +1,87 @@
 #
 
-open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "127.0.0.1", "port": 3485 }], "backends": 3
-connect E0 S0 127.0.0.1:3485
+open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "127.0.0.1", "port": 3485 }], "backends": 3;
+connect E0 S0 127.0.0.1:3485;
 
 # test: select from table limit
-create table test (id serial primary key)
-insert into test generate 20
-select * from test limit 100
+create table test (id serial primary key);
+insert into test generate 20;
+select * from test limit 100;
 
-explain select * from test limit 1
-select * from test limit 1
-select * from test limit 2
-select * from test limit 3
-select * from test limit 4
-select * from test limit 10
-select * from test limit 20
+explain select * from test limit 1;
+select * from test limit 1;
+select * from test limit 2;
+select * from test limit 3;
+select * from test limit 4;
+select * from test limit 10;
+select * from test limit 20;
 
 # test: select from table limit (type mismatch)
-select * from test limit 'abc'
-select * from test limit null
+select * from test limit 'abc';
+select * from test limit null;
 
 # test: select from table limit 0
-explain select * from test limit 0
-select * from test limit 0
-select * from test limit -1
+explain select * from test limit 0;
+select * from test limit 0;
+select * from test limit -1;
 
 # test: select from table limit offset
-explain select * from test limit 1 offset 0
-select * from test limit 1 offset 0
+explain select * from test limit 1 offset 0;
+select * from test limit 1 offset 0;
 
 # test: select from table limit offset (type mismatch)
-select * from test limit 1 offset 'abc'
-select * from test limit 1 offset null
+select * from test limit 1 offset 'abc';
+select * from test limit 1 offset null;
 
 # test: select from table limit offset #2
-explain select * from test limit 1 offset 1
-select * from test limit 1 offset 1
-select * from test limit 1 offset 2
-select * from test limit 1 offset 3
-select * from test limit 1 offset 4
+explain select * from test limit 1 offset 1;
+select * from test limit 1 offset 1;
+select * from test limit 1 offset 2;
+select * from test limit 1 offset 3;
+select * from test limit 1 offset 4;
 
 # test: select from table limit offset #3
-select * from test limit 2 offset 1
-select * from test limit 2 offset 2
-select * from test limit 2 offset 3
-select * from test limit 2 offset 4
+select * from test limit 2 offset 1;
+select * from test limit 2 offset 2;
+select * from test limit 2 offset 3;
+select * from test limit 2 offset 4;
 
 # test: select from table limit offset #4
-select * from test limit 2 offset 0
-select * from test limit 1 offset -1
+select * from test limit 2 offset 0;
+select * from test limit 1 offset -1;
 
 # test: select from table limit offset #5
-select * from test limit 0 offset 1
-select * from test limit 0 offset 2
-select * from test limit 0 offset 3
-select * from test limit 0 offset 4
+select * from test limit 0 offset 1;
+select * from test limit 0 offset 2;
+select * from test limit 0 offset 3;
+select * from test limit 0 offset 4;
 
 # test: select from table offset
-explain select * from test offset 1
-select * from test offset 1
-select * from test offset 2
-select * from test offset 3
-select * from test offset 4
-select * from test offset 0
-select * from test offset -1
+explain select * from test offset 1;
+select * from test offset 1;
+select * from test offset 2;
+select * from test offset 3;
+select * from test offset 4;
+select * from test offset 0;
+select * from test offset -1;
 
 # test: select from table, table limit
-select test.id, t.id from test, test t
-select test.id, t.id from test, test t limit 1
-select test.id, t.id from test, test t limit 2
-select test.id, t.id from test, test t limit 3
-select test.id, t.id from test, test t limit 4
-select test.id, t.id from test, test t limit 0
-select test.id, t.id from test, test t limit -1
+select test.id, t.id from test, test t;
+select test.id, t.id from test, test t limit 1;
+select test.id, t.id from test, test t limit 2;
+select test.id, t.id from test, test t limit 3;
+select test.id, t.id from test, test t limit 4;
+select test.id, t.id from test, test t limit 0;
+select test.id, t.id from test, test t limit -1;
 
 # test: select from table, table limit offset
-select test.id, t.id from test, test t limit 1 offset 0
-select test.id, t.id from test, test t limit 1 offset 1
-select test.id, t.id from test, test t limit 1 offset 2
-select test.id, t.id from test, test t limit 1 offset 3
-select test.id, t.id from test, test t limit 1 offset 4
-select test.id, t.id from test, test t limit 1 offset -1
-drop table test
+select test.id, t.id from test, test t limit 1 offset 0;
+select test.id, t.id from test, test t limit 1 offset 1;
+select test.id, t.id from test, test t limit 1 offset 2;
+select test.id, t.id from test, test t limit 1 offset 3;
+select test.id, t.id from test, test t limit 1 offset 4;
+select test.id, t.id from test, test t limit 1 offset -1;
+drop table test;
 
-disconnect S0
-close E0
+disconnect S0;
+close E0;

@@ -97,8 +97,10 @@ test_suite_execute(TestSuite* self, Test* test)
 	     str_of(&test->name));
 
 	// read test file
-	auto data = file_import("%s", test_file);
-	defer_buf(data);
+	Separator sep;
+	separator_init(&sep);
+	defer(separator_free, &sep);
+	file_import_stream(&sep.buf, "%s", test_file);
 
 	// create result file
 	unlink(test_result_file);
@@ -112,22 +114,13 @@ test_suite_execute(TestSuite* self, Test* test)
 	self->current_test_file = test_file;
 	self->current = test;
 	self->current_test_started = false;
-	self->current_line = 1;
 
-	Str text;
-	buf_str(data, &text);
-	for (; !str_empty(&text); self->current_line++)
+	Str cmd;
+	for (; separator_read(&sep, &cmd); separator_advance(&sep))
 	{
-		Str cmd;
-		str_split(&text, &cmd, '\n');
-
-		// empty line
+		str_shrink(&cmd);
 		if (str_empty(&cmd))
-		{
-			str_advance(&text, 1);
 			continue;
-		}
-		str_advance(&text, str_size(&cmd));
 
 		// test case or comment
 		if (*cmd.pos == '#')
@@ -208,7 +201,6 @@ test_suite_init(TestSuite* self)
 	self->current_test_result_file = 0;
 	self->current_test_started     = false;
 	self->current_test_file        = NULL;
-	self->current_line             = 0;
 	self->current                  = NULL;
 	self->current_group            = NULL;
 	self->current_session          = NULL;
@@ -242,7 +234,6 @@ test_suite_cleanup(TestSuite* self)
 	self->current_test_file = NULL;
 	self->current_test_ok_file = NULL;
 	self->current_test_result_file = NULL;
-	self->current_line = 0;
 
 	if (fs_exists("%.*s", str_size(&self->option_result_dir),
 	              str_of(&self->option_result_dir)))

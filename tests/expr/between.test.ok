@@ -1,48 +1,48 @@
-open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "127.0.0.1", "port": 3485 }]
-connect E0 S0 127.0.0.1:3485
+open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "127.0.0.1", "port": 3485 }];
+connect E0 S0 127.0.0.1:3485;
 # test: between parsing
-select 1 between
-{"msg": "select 1 between ⟵ const value expected"}
-select 1 between and
+select 1 between;
+{"msg": "select 1 between❰;❱ ⟵ const value expected"}
+select 1 between and;
 {"msg": "select 1 between ❰and❱ ⟵ const value expected"}
-select 1 between 0
-{"msg": "select 1 between 0 ⟵ AND expected"}
-select 1 between 0 1
+select 1 between 0;
+{"msg": "select 1 between 0❰;❱ ⟵ AND expected"}
+select 1 between 0 1;
 {"msg": "select 1 between 0 ❰1❱ ⟵ AND expected"}
-select 1 between 0 or
+select 1 between 0 or;
 {"msg": "select 1 between 0 ❰or❱ ⟵ AND expected"}
-select 1 between 0 and
-{"msg": "select 1 between 0 and ⟵ const value expected"}
-select 1 between 0 and '1'
+select 1 between 0 and;
+{"msg": "select 1 between 0 and❰;❱ ⟵ const value expected"}
+select 1 between 0 and '1';
 {"msg": "select 1 between 0 and ❰'1'❱ ⟵ operation int <= string is not supported"}
 # test: between (int)
-select 1 between 0 and 0
+select 1 between 0 and 0;
 [false]
-select 1 between 0 and 1
+select 1 between 0 and 1;
 [true]
-select 1 between 1 and 1
+select 1 between 1 and 1;
 [true]
-select 1 between 1 and 0
+select 1 between 1 and 0;
 [false]
 # test: between (double)
-select 0.052 between 0.010 and 0.053
+select 0.052 between 0.010 and 0.053;
 [true]
 # test: between (timestamp)
-select timestamp '1970-01-01 01:12:59.909090' between timestamp '1970-01-01 01:12:59' and timestamp '1970-01-02 00:00:01'
+select timestamp '1970-01-01 01:12:59.909090' between timestamp '1970-01-01 01:12:59' and timestamp '1970-01-02 00:00:01';
 [true]
-select timestamp '1970-01-01 01:12:59.909090' not between timestamp '1970-01-01 01:12:59' and timestamp '1970-01-02 00:00:01'
+select timestamp '1970-01-01 01:12:59.909090' not between timestamp '1970-01-01 01:12:59' and timestamp '1970-01-02 00:00:01';
 [false]
 # test: between (interval)
-select interval '1 hour' between interval '55 minutes' and interval '1 hour 10 minutes'
+select interval '1 hour' between interval '55 minutes' and interval '1 hour 10 minutes';
 [true]
-select interval '1 hour' between interval '55 minutes' and interval '55 minutes'
+select interval '1 hour' between interval '55 minutes' and interval '55 minutes';
 [false]
-select interval '1 hour' not between interval '55 minutes' and interval '55 minutes'
+select interval '1 hour' not between interval '55 minutes' and interval '55 minutes';
 [true]
 # test: not between
-select 0.058 between 0.010 and 0.053
+select 0.058 between 0.010 and 0.053;
 [false]
-explain select 0.058 between 0.010 and 0.053
+explain select 0.058 between 0.010 and 0.053;
 [{
   "main": {
     "00": "double              0      0      0     # 0.058",
@@ -56,9 +56,9 @@ explain select 0.058 between 0.010 and 0.053
   },
   "access": []
 }]
-select 0.058 not between 0.010 and 0.053
+select 0.058 not between 0.010 and 0.053;
 [true]
-explain select 0.058 not between 0.010 and 0.053
+explain select 0.058 not between 0.010 and 0.053;
 [{
   "main": {
     "00": "double              0      0      0     # 0.058",
@@ -73,5 +73,5 @@ explain select 0.058 not between 0.010 and 0.053
   },
   "access": []
 }]
-disconnect S0
-close E0
+disconnect S0;
+close E0;

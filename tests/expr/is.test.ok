@@ -1,19 +1,19 @@
-open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "127.0.0.1", "port": 3485 }]
-connect E0 S0 127.0.0.1:3485
+open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "127.0.0.1", "port": 3485 }];
+connect E0 S0 127.0.0.1:3485;
 # test: is null
-select is
+select is;
 {"msg": "select ❰is❱ ⟵ bad expression"}
-select is 1
+select is 1;
 {"msg": "select ❰is❱ ⟵ bad expression"}
-select 1 is
+select 1 is;
 {"msg": "select 1 ❰is❱ ⟵ bad expression"}
-select 1 is
+select 1 is;
 {"msg": "select 1 ❰is❱ ⟵ bad expression"}
-select 1 is not
+select 1 is not;
 {"msg": "select 1 ❰is❱ ⟵ bad expression"}
-select 1 is 1
+select 1 is 1;
 {"msg": "select 1 is ❰1❱ ⟵ NOT or NULL expected"}
-explain select 1 is null
+explain select 1 is null;
 [{
   "main": {
     "00": "int                 0      -      0     # 1",
@@ -22,12 +22,12 @@ explain select 1 is null
   },
   "access": []
 }]
-select 1 is null
+select 1 is null;
 [false]
-select null is null
+select null is null;
 [true]
 # test: is not null
-explain select 1 is not null
+explain select 1 is not null;
 [{
   "main": {
     "00": "int                 0      -      0     # 1",
@@ -37,9 +37,9 @@ explain select 1 is not null
   },
   "access": []
 }]
-select 1 is not null
+select 1 is not null;
 [true]
-select null is not null
+select null is not null;
 [false]
-disconnect S0
-close E0
+disconnect S0;
+close E0;

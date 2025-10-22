@@ -65,6 +65,13 @@ parse_replica_create(Stmt* self)
 		auto name = stmt_next_shadow(self);
 		if (name->id == KEOF)
 			break;
+
+		// ;
+		if (name->id == ';')
+		{
+			stmt_push(self, name);
+			break;
+		}
 		if (name->id != KNAME)
 			stmt_error(self, name, "option name expected");
 

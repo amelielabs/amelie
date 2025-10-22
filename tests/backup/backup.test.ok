@@ -1,50 +1,50 @@
-open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "127.0.0.1", "port": 3480 }], "backends": 3
-connect E0 S0 127.0.0.1:3480
-show listen
+open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "127.0.0.1", "port": 3480 }], "backends": 3;
+connect E0 S0 127.0.0.1:3480;
+show listen;
 [{
   "host": "127.0.0.1",
   "port": 3480
 }]
 # test: backup empty
-backup E1 "uri": "127.0.0.1:3480"
-close E1
-disconnect S0
-close E0
+backup E1 "uri": "127.0.0.1:3480";
+close E1;
+disconnect S0;
+close E0;
 # test: restore empty
-open E1
-connect E1 S0 127.0.0.1:3480
-show uuid
+open E1;
+connect E1 S0 127.0.0.1:3480;
+show uuid;
 ["00000000-0000-0000-0000-000000000000"]
-disconnect S0
-close E1
+disconnect S0;
+close E1;
 # test: backup wal
-open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "127.0.0.1", "port": 3480 }], "backends": 3
-connect E0 S0 127.0.0.1:3480
-create table test (id int primary key)
-insert into test values (1),(2),(3)
-select system.state().lsn
+open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "127.0.0.1", "port": 3480 }], "backends": 3;
+connect E0 S0 127.0.0.1:3480;
+create table test (id int primary key);
+insert into test values (1),(2),(3);
+select system.state().lsn;
 [3]
-backup E2 "uri": "127.0.0.1:3480"
-close E2
-disconnect S0
-close E0
+backup E2 "uri": "127.0.0.1:3480";
+close E2;
+disconnect S0;
+close E0;
 # test: restore wal
-open E2
-connect E2 S0 127.0.0.1:3480
-show uuid
+open E2;
+connect E2 S0 127.0.0.1:3480;
+show uuid;
 ["00000000-0000-0000-0000-000000000000"]
-select * from test
+select * from test;
 [1, 3, 2]
-select system.state().lsn
+select system.state().lsn;
 [3]
-disconnect S0
-close E2
+disconnect S0;
+close E2;
 # test: backup wal #2
-open E0 "wal_size": 0
-connect E0 S0 127.0.0.1:3480
-select system.state().lsn
+open E0 "wal_size": 0;
+connect E0 S0 127.0.0.1:3480;
+select system.state().lsn;
 [3]
-show wal
+show wal;
 [{
   "lsn": 3,
   "lsn_min": 1,
@@ -56,8 +56,8 @@ show wal
   "ops": 0,
   "checkpoint": 1
 }]
-insert into test values (4)
-show wal
+insert into test values (4);
+show wal;
 [{
   "lsn": 4,
   "lsn_min": 1,
@@ -69,20 +69,20 @@ show wal
   "ops": 1,
   "checkpoint": 1
 }]
-backup E3 "uri": "127.0.0.1:3480"
-close E3
-disconnect S0
-close E0
+backup E3 "uri": "127.0.0.1:3480";
+close E3;
+disconnect S0;
+close E0;
 # test: restore wal #2
-open E3 "wal_size": 104857600
-connect E3 S0 127.0.0.1:3480
-show uuid
+open E3 "wal_size": 104857600;
+connect E3 S0 127.0.0.1:3480;
+show uuid;
 ["00000000-0000-0000-0000-000000000000"]
-select * from test
+select * from test;
 [1, 3, 4, 2]
-select system.state().lsn
+select system.state().lsn;
 [4]
-show wal
+show wal;
 [{
   "lsn": 4,
   "lsn_min": 1,
@@ -94,55 +94,55 @@ show wal
   "ops": 0,
   "checkpoint": 1
 }]
-disconnect S0
-close E3
+disconnect S0;
+close E3;
 # test: backup checkpoint
-open E0
-connect E0 S0 127.0.0.1:3480
-select system.state().lsn
+open E0;
+connect E0 S0 127.0.0.1:3480;
+select system.state().lsn;
 [4]
-select system.state().checkpoint
+select system.state().checkpoint;
 [1]
-checkpoint
-select system.state().lsn
+checkpoint;
+select system.state().lsn;
 [4]
-select system.state().checkpoint
+select system.state().checkpoint;
 [4]
-backup E4 "uri": "127.0.0.1:3480"
-close E4
-disconnect S0
-close E0
+backup E4 "uri": "127.0.0.1:3480";
+close E4;
+disconnect S0;
+close E0;
 # test: restore checkpoint
-open E4
-connect E4 S0 127.0.0.1:3480
-select system.state().lsn
+open E4;
+connect E4 S0 127.0.0.1:3480;
+select system.state().lsn;
 [4]
-select system.state().checkpoint
+select system.state().checkpoint;
 [4]
-select * from test
+select * from test;
 [1, 3, 4, 2]
-disconnect S0
-close E4
+disconnect S0;
+close E4;
 # test: backup checkpoint with wal
-open E0
-connect E0 S0 127.0.0.1:3480
-insert into test values (5),(6),(7)
-select system.state().lsn
+open E0;
+connect E0 S0 127.0.0.1:3480;
+insert into test values (5),(6),(7);
+select system.state().lsn;
 [5]
-select system.state().checkpoint
+select system.state().checkpoint;
 [4]
-backup E5 "uri": "127.0.0.1:3480"
-close E5
-disconnect S0
-close E0
+backup E5 "uri": "127.0.0.1:3480";
+close E5;
+disconnect S0;
+close E0;
 # test: restore checkpoint and wal
-open E5
-connect E5 S0 127.0.0.1:3480
-select system.state().lsn
+open E5;
+connect E5 S0 127.0.0.1:3480;
+select system.state().lsn;
 [5]
-select system.state().checkpoint
+select system.state().checkpoint;
 [4]
-select * from test
+select * from test;
 [1, 3, 4, 5, 6, 2, 7]
-disconnect S0
-close E5
+disconnect S0;
+close E5;

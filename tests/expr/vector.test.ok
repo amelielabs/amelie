@@ -1,48 +1,48 @@
-open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "127.0.0.1", "port": 3485 }]
-connect E0 S0 127.0.0.1:3485
+open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "127.0.0.1", "port": 3485 }];
+connect E0 S0 127.0.0.1:3485;
 # test: vector create
-select [1,2,3]::vector
+select [1,2,3]::vector;
 [[1, 2, 3]]
-select [1,2,3]::vector::type
+select [1,2,3]::vector::type;
 ["vector"]
-select [1,2,3]::vector::length
+select [1,2,3]::vector::length;
 [3]
-select ""::vector
+select ""::vector;
 {"msg": "vector(❰string❱ ⟵ unsupported argument type"}
-select [1.0]::vector
+select [1.0]::vector;
 [[1]]
-select [1.0, 1.1, 1.2]::vector
+select [1.0, 1.1, 1.2]::vector;
 [[1, 1.1, 1.2]]
-select []::vector
+select []::vector;
 [[]]
-select []::vector::length
+select []::vector::length;
 [0]
-select vector [1,2,3]
+select vector [1,2,3];
 [[1, 2, 3]]
-select vector [1,2,3]::type
+select vector [1,2,3]::type;
 ["vector"]
-select vector [1,2,3]::length
+select vector [1,2,3]::length;
 [3]
-select vector ""
+select vector "";
 {"msg": "select vector ❰\"\"❱ ⟵ [ expected"}
-select vector [1.0]
+select vector [1.0];
 [[1]]
-select vector [1.0, 1.1, 1.2]
+select vector [1.0, 1.1, 1.2];
 [[1, 1.1, 1.2]]
-select vector []
+select vector [];
 [[]]
-select vector []::length
+select vector []::length;
 [0]
 # test: vector = vector
-select [1.0, 1.1]::vector = [1.0, 1.1]::vector
+select [1.0, 1.1]::vector = [1.0, 1.1]::vector;
 [true]
-select [1.0, 1.1]::vector = [1.0, 1.0]::vector
+select [1.0, 1.1]::vector = [1.0, 1.0]::vector;
 [false]
-select [1.0, 1.1]::vector = [1.0]::vector
+select [1.0, 1.1]::vector = [1.0]::vector;
 [false]
-select [1.0, 1.1]::vector = []::vector
+select [1.0, 1.1]::vector = []::vector;
 [false]
-explain select []::vector = []::vector
+explain select []::vector = []::vector;
 [{
   "main": {
     "00": "json                0      0      0     ",
@@ -56,15 +56,15 @@ explain select []::vector = []::vector
   },
   "access": []
 }]
-select vector [1.0, 1.1] = vector [1.0, 1.1]
+select vector [1.0, 1.1] = vector [1.0, 1.1];
 [true]
-select vector [1.0, 1.1] = vector [1.0, 1.0]
+select vector [1.0, 1.1] = vector [1.0, 1.0];
 [false]
-select vector [1.0, 1.1] = vector [1.0]
+select vector [1.0, 1.1] = vector [1.0];
 [false]
-select vector [1.0, 1.1] = vector []
+select vector [1.0, 1.1] = vector [];
 [false]
-explain select vector [] = vector []
+explain select vector [] = vector [];
 [{
   "main": {
     "00": "vector              0      0      0     ",
@@ -75,9 +75,9 @@ explain select vector [] = vector []
   "access": []
 }]
 # test: vector = null
-select [1.0, 1.1]::vector = null
+select [1.0, 1.1]::vector = null;
 [null]
-explain select [1.0, 1.1]::vector = null
+explain select [1.0, 1.1]::vector = null;
 [{
   "main": {
     "00": "json                0      0      0     ",
@@ -90,18 +90,18 @@ explain select [1.0, 1.1]::vector = null
   "access": []
 }]
 # test: vector = unsupported
-select [1.0, 1.1]::vector = 1
+select [1.0, 1.1]::vector = 1;
 {"msg": "select [1.0, 1.1]::vector = ❰1❱ ⟵ operation vector = int is not supported"}
 # test: vector <> vector
-select [1.0, 1.1]::vector <> [1.0, 1.1]::vector
+select [1.0, 1.1]::vector <> [1.0, 1.1]::vector;
 [false]
-select [1.0, 1.1]::vector <> [1.0, 1.0]::vector
+select [1.0, 1.1]::vector <> [1.0, 1.0]::vector;
 [true]
-select [1.0, 1.1]::vector <> [1.0]::vector
+select [1.0, 1.1]::vector <> [1.0]::vector;
 [true]
-select [1.0, 1.1]::vector <> []::vector
+select [1.0, 1.1]::vector <> []::vector;
 [true]
-explain select []::vector <> []::vector
+explain select []::vector <> []::vector;
 [{
   "main": {
     "00": "json                0      0      0     ",
@@ -117,9 +117,9 @@ explain select []::vector <> []::vector
   "access": []
 }]
 # test: vector <> null
-select [1.0, 1.1]::vector <> null
+select [1.0, 1.1]::vector <> null;
 [null]
-explain select [1.0, 1.1]::vector <> null
+explain select [1.0, 1.1]::vector <> null;
 [{
   "main": {
     "00": "json                0      0      0     ",
@@ -133,16 +133,16 @@ explain select [1.0, 1.1]::vector <> null
   "access": []
 }]
 # test: vector <> unsupported
-select [1.0, 1.1]::vector <> 1
+select [1.0, 1.1]::vector <> 1;
 {"msg": "select [1.0, 1.1]::vector <> ❰1❱ ⟵ operation vector = int is not supported"}
 # test: vector >= vector
-select [1.0, 1.1]::vector >= [1.0, 1.1]::vector
+select [1.0, 1.1]::vector >= [1.0, 1.1]::vector;
 [true]
-select [1.0, 1.2]::vector >= [1.0, 1.1]::vector
+select [1.0, 1.2]::vector >= [1.0, 1.1]::vector;
 [true]
-select [1.0, 1.1]::vector >= [1.0]::vector
+select [1.0, 1.1]::vector >= [1.0]::vector;
 [true]
-explain select [1.0, 1.1]::vector >= [1.0]::vector
+explain select [1.0, 1.1]::vector >= [1.0]::vector;
 [{
   "main": {
     "00": "json                0      0      0     ",
@@ -157,19 +157,19 @@ explain select [1.0, 1.1]::vector >= [1.0]::vector
   "access": []
 }]
 # test: vector >= null
-select [1.0, 1.1]::vector >= null
+select [1.0, 1.1]::vector >= null;
 [null]
 # test: vector >= unsupported
-select [1.0, 1.1]::vector >= []
+select [1.0, 1.1]::vector >= [];
 {"msg": "select [1.0, 1.1]::vector >= ❰[❱ ⟵ operation vector >= json is not supported"}
 # test: vector > vector
-select [1.0, 1.1]::vector > [1.0, 1.1]::vector
+select [1.0, 1.1]::vector > [1.0, 1.1]::vector;
 [false]
-select [1.0, 1.2]::vector > [1.0, 1.1]::vector
+select [1.0, 1.2]::vector > [1.0, 1.1]::vector;
 [true]
-select [1.0, 1.1]::vector > [1.0]::vector
+select [1.0, 1.1]::vector > [1.0]::vector;
 [true]
-explain select [1.0, 1.1]::vector > [1.0]::vector
+explain select [1.0, 1.1]::vector > [1.0]::vector;
 [{
   "main": {
     "00": "json                0      0      0     ",
@@ -184,19 +184,19 @@ explain select [1.0, 1.1]::vector > [1.0]::vector
   "access": []
 }]
 # test: vector > null
-select [1.0, 1.1]::vector > null
+select [1.0, 1.1]::vector > null;
 [null]
 # test: vector > unsupported
-select [1.0, 1.1]::vector > []
+select [1.0, 1.1]::vector > [];
 {"msg": "select [1.0, 1.1]::vector > ❰[❱ ⟵ operation vector > json is not supported"}
 # test: vector <= vector
-select [1.0, 1.1]::vector <= [1.0, 1.1]::vector
+select [1.0, 1.1]::vector <= [1.0, 1.1]::vector;
 [true]
-select [1.0, 1.1]::vector <= [1.0, 1.2]::vector
+select [1.0, 1.1]::vector <= [1.0, 1.2]::vector;
 [true]
-select [1.0, 1.3]::vector <= [1.0, 1.2]::vector
+select [1.0, 1.3]::vector <= [1.0, 1.2]::vector;
 [false]
-explain select [1.0, 1.3]::vector <= [1.0, 1.2]::vector
+explain select [1.0, 1.3]::vector <= [1.0, 1.2]::vector;
 [{
   "main": {
     "00": "json                0      0      0     ",
@@ -211,32 +211,32 @@ explain select [1.0, 1.3]::vector <= [1.0, 1.2]::vector
   "access": []
 }]
 # test: vector <= null
-select [1.0, 1.1]::vector <= null
+select [1.0, 1.1]::vector <= null;
 [null]
 # test: vector <= unsupported
-select [1.0, 1.1]::vector <= []
+select [1.0, 1.1]::vector <= [];
 {"msg": "select [1.0, 1.1]::vector <= ❰[❱ ⟵ operation vector <= json is not supported"}
 # test: vector < vector
-select [1.0, 1.1]::vector < [1.0, 1.1]::vector
+select [1.0, 1.1]::vector < [1.0, 1.1]::vector;
 [false]
-select [1.0, 1.1]::vector < [1.0, 1.2]::vector
+select [1.0, 1.1]::vector < [1.0, 1.2]::vector;
 [true]
-select [1.0, 1.3]::vector < [1.0, 1.2]::vector
+select [1.0, 1.3]::vector < [1.0, 1.2]::vector;
 [false]
-select [1.0, 1.1]::vector < [1.0]::vector
+select [1.0, 1.1]::vector < [1.0]::vector;
 [false]
 # test: vector < null
-select [1.0, 1.1]::vector < null
+select [1.0, 1.1]::vector < null;
 [null]
 # test: vector < unsupported
-select [1.0, 1.1]::vector < []
+select [1.0, 1.1]::vector < [];
 {"msg": "select [1.0, 1.1]::vector < ❰[❱ ⟵ operation vector < json is not supported"}
 # test: vector + vector
-select [1.0, 2.1, 3]::vector + [1, 1, 1]::vector
+select [1.0, 2.1, 3]::vector + [1, 1, 1]::vector;
 [[2, 3.1, 4]]
-select [1.0, 2.1, 3]::vector + [1, 1]::vector
+select [1.0, 2.1, 3]::vector + [1, 1]::vector;
 {"msg": "vector sizes mismatch"}
-explain select [1.0, 2.1, 3]::vector + [1, 1]::vector
+explain select [1.0, 2.1, 3]::vector + [1, 1]::vector;
 [{
   "main": {
     "00": "json                0      0      0     ",
@@ -251,17 +251,17 @@ explain select [1.0, 2.1, 3]::vector + [1, 1]::vector
   "access": []
 }]
 # test: vector + null
-select [1.0, 2.1, 3]::vector + null
+select [1.0, 2.1, 3]::vector + null;
 [null]
 # test: vector + unsupported
-select [1.0, 2.1, 3]::vector + []
+select [1.0, 2.1, 3]::vector + [];
 {"msg": "select [1.0, 2.1, 3]::vector + ❰[❱ ⟵ operation vector + json is not supported"}
 # test: vector - vector
-select [1.0, 2.1, 3]::vector - [1, 1, 1]::vector
+select [1.0, 2.1, 3]::vector - [1, 1, 1]::vector;
 [[0, 1.1, 2]]
-select [1.0, 2.1, 3]::vector - [1, 1]::vector
+select [1.0, 2.1, 3]::vector - [1, 1]::vector;
 {"msg": "vector sizes mismatch"}
-explain select [1.0, 2.1, 3]::vector - [1, 1]::vector
+explain select [1.0, 2.1, 3]::vector - [1, 1]::vector;
 [{
   "main": {
     "00": "json                0      0      0     ",
@@ -276,9 +276,9 @@ explain select [1.0, 2.1, 3]::vector - [1, 1]::vector
   "access": []
 }]
 # test: vector - null
-select [1.0, 2.1, 3]::vector - null
+select [1.0, 2.1, 3]::vector - null;
 [null]
-explain select [1.0, 2.1, 3]::vector - null
+explain select [1.0, 2.1, 3]::vector - null;
 [{
   "main": {
     "00": "json                0      0      0     ",
@@ -291,14 +291,14 @@ explain select [1.0, 2.1, 3]::vector - null
   "access": []
 }]
 # test: vector - unsupported
-select [1.0, 2.1, 3]::vector - []
+select [1.0, 2.1, 3]::vector - [];
 {"msg": "select [1.0, 2.1, 3]::vector - ❰[❱ ⟵ operation vector - json is not supported"}
 # test: vector * vector
-select [1.0, 2.1, 3]::vector * [1.5, 1.5, 1.5]::vector
+select [1.0, 2.1, 3]::vector * [1.5, 1.5, 1.5]::vector;
 [[1.5, 3.15, 4.5]]
-select [1.0, 2.1, 3]::vector * [1.5, 1.5]::vector
+select [1.0, 2.1, 3]::vector * [1.5, 1.5]::vector;
 {"msg": "vector sizes mismatch"}
-explain select [1.0, 2.1, 3]::vector * [1.5, 1.5]::vector
+explain select [1.0, 2.1, 3]::vector * [1.5, 1.5]::vector;
 [{
   "main": {
     "00": "json                0      0      0     ",
@@ -313,23 +313,23 @@ explain select [1.0, 2.1, 3]::vector * [1.5, 1.5]::vector
   "access": []
 }]
 # test: vector * null
-select [1.0, 2.1, 3]::vector * null
+select [1.0, 2.1, 3]::vector * null;
 [null]
 # test: vector * unsupported
-select [1.0, 2.1, 3]::vector * null
+select [1.0, 2.1, 3]::vector * null;
 [null]
 # test: vector [] int
-select [1.0, 1.1, 1.2]::vector[0]
+select [1.0, 1.1, 1.2]::vector[0];
 [1]
-select [1.0, 1.1, 1.2]::vector[1]
+select [1.0, 1.1, 1.2]::vector[1];
 [1.1]
-select [1.0, 1.1, 1.2]::vector[2]
+select [1.0, 1.1, 1.2]::vector[2];
 [1.2]
-select [1.0, 1.1, 1.2]::vector[3]
+select [1.0, 1.1, 1.2]::vector[3];
 {"msg": "[]: vector index is out of bounds"}
-select [1.0, 1.1, 1.2]::vector[-10]
+select [1.0, 1.1, 1.2]::vector[-10];
 {"msg": "[]: vector index is out of bounds"}
-explain select [1.0, 1.1, 1.2]::vector[-10]
+explain select [1.0, 1.1, 1.2]::vector[-10];
 [{
   "main": {
     "00": "json                0      0      0     ",
@@ -342,10 +342,10 @@ explain select [1.0, 1.1, 1.2]::vector[-10]
   "access": []
 }]
 # test: vector [] null
-select [1.0, 1.1, 1.2]::vector[null]
+select [1.0, 1.1, 1.2]::vector[null];
 [null]
 # test: vector [] unsupported
-select [1.0, 1.1, 1.2]::vector[[]]
+select [1.0, 1.1, 1.2]::vector[[]];
 {"msg": "select [1.0, 1.1, 1.2]::vector[❰[❱ ⟵ operation vector [] json is not supported"}
-disconnect S0
-close E0
+disconnect S0;
+close E0;

@@ -1,7 +1,7 @@
-open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "127.0.0.1", "port": 3485 }]
-connect E0 S0 127.0.0.1:3485
+open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "127.0.0.1", "port": 3485 }];
+connect E0 S0 127.0.0.1:3485;
 # test: null
-explain select null
+explain select null;
 [{
   "main": {
     "00": "null                0      0      0     ",
@@ -9,9 +9,9 @@ explain select null
   },
   "access": []
 }]
-select null
+select null;
 [null]
-select null::type
+select null::type;
 ["null"]
-disconnect S0
-close E0
+disconnect S0;
+close E0;

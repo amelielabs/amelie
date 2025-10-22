@@ -1,443 +1,443 @@
 #
 
-open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "127.0.0.1", "port": 3485 }]
-connect E0 S0 127.0.0.1:3485
+open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "127.0.0.1", "port": 3485 }];
+connect E0 S0 127.0.0.1:3485;
 
 # test: insert statement parsing
-insert
-insert junk
-insert into
-insert into "name"
-insert into 1
-insert into name
+insert;
+insert junk;
+insert into;
+insert into "name";
+insert into 1;
+insert into name;
 
-create table test (id int primary key)
+create table test (id int primary key);
 
-insert into test
-insert into test values
-insert into test values(
-insert into test values(,
-insert into test values(123
-insert into test values(123,
+insert into test;
+insert into test values;
+insert into test values(;
+insert into test values(,;
+insert into test values(123;
+insert into test values(123,;
 
 # test: insert type validate
-insert into test values ("123")
-insert into test values (123, 123)
-select * from test
+insert into test values ("123");
+insert into test values (123, 123);
+select * from test;
 
 # test: insert
-insert into test values (123)
+insert into test values (123);
 
 # test: primary unique key constraint violation
-insert into test values (123)
+insert into test values (123);
 
 # test: insert schema
-drop table test
+drop table test;
 
-create schema test
-create table test.test (id int primary key)
-insert into test values (123)
-insert into test.test values (123)
-select * from test
-select * from test.test
-drop table test.test
+create schema test;
+create table test.test (id int primary key);
+insert into test values (123);
+insert into test.test values (123);
+select * from test;
+select * from test.test;
+drop table test.test;
 
 # test: insert compound key
-create table test (id int, id2 int, primary key (id, id2))
-select system.table('test').columns
-insert into test values (123)
-insert into test values (1, 2, 3)
-insert into test values (1, 2)
-select * from test
-drop table test
+create table test (id int, id2 int, primary key (id, id2));
+select system.table('test').columns;
+insert into test values (123);
+insert into test values (1, 2, 3);
+insert into test values (1, 2);
+select * from test;
+drop table test;
 
 # test: insert list
-create table test (id int primary key, data int)
-insert into test (id, data) values ()
-insert into test (id, data) values (123)
-insert into test (id, data) values (123, 123, 123)
-insert into test (id, data) values (123, 123)
-select * from test
-drop table test
+create table test (id int primary key, data int);
+insert into test (id, data) values ();
+insert into test (id, data) values (123);
+insert into test (id, data) values (123, 123, 123);
+insert into test (id, data) values (123, 123);
+select * from test;
+drop table test;
 
 # test: insert list column order
-create table test (id int primary key, data int)
-insert into test (data, id) values (123, 123)
-insert into test (data, id, data) values (123, 123)
-select * from test
-drop table test
+create table test (id int primary key, data int);
+insert into test (data, id) values (123, 123);
+insert into test (data, id, data) values (123, 123);
+select * from test;
+drop table test;
 
 # test: insert list column reuse
-create table test (id int primary key, data int)
-insert into test (id, id) values (123, 123)
-insert into test (id, data) values (123, 123)
-select * from test
-drop table test
+create table test (id int primary key, data int);
+insert into test (id, id) values (123, 123);
+insert into test (id, data) values (123, 123);
+select * from test;
+drop table test;
 
 # test: insert list null
-create table test (id int primary key, data int)
-insert into test (id) values (1)
-insert into test (id, data) values (2, null)
-insert into test (id, data) values (null, null)
-insert into test values (3, null)
-insert into test values (null, null)
-select * from test
-drop table test
+create table test (id int primary key, data int);
+insert into test (id) values (1);
+insert into test (id, data) values (2, null);
+insert into test (id, data) values (null, null);
+insert into test values (3, null);
+insert into test values (null, null);
+select * from test;
+drop table test;
 
 # test: insert list null #2
-create table test (data int, id int primary key)
-insert into test (id) values (1)
-select * from test
-drop table test
+create table test (data int, id int primary key);
+insert into test (id) values (1);
+select * from test;
+drop table test;
 
 # test: insert list not null
-create table test (id int primary key, data int not null)
-insert into test (id) values (1)
-insert into test (id, data) values (2, null)
-insert into test values (3, null)
-insert into test values (null, null)
-insert into test (id, data) values (2, 2)
-select * from test
-drop table test
+create table test (id int primary key, data int not null);
+insert into test (id) values (1);
+insert into test (id, data) values (2, null);
+insert into test values (3, null);
+insert into test values (null, null);
+insert into test (id, data) values (2, 2);
+select * from test;
+drop table test;
 
 # test: insert list not null key
-create table test (id int primary key, data int)
-insert into test (data) values (123)
-insert into test values (null, 123)
-select * from test
-drop table test
+create table test (id int primary key, data int);
+insert into test (data) values (123);
+insert into test values (null, 123);
+select * from test;
+drop table test;
 
 # test: insert list default
-create table test (id int primary key, data int default 123)
-insert into test (id) values (1)
-select * from test
-drop table test
+create table test (id int primary key, data int default 123);
+insert into test (id) values (1);
+select * from test;
+drop table test;
 
 # test: insert list default #2
-create table test (id int primary key, data int default 123)
-insert into test (id) values (1), (2), (3)
-select * from test
-drop table test
+create table test (id int primary key, data int default 123);
+insert into test (id) values (1), (2), (3);
+select * from test;
+drop table test;
 
 # test: insert list default key
-create table test (id int default 123 primary key, data int)
-insert into test (data) values (1)
-select * from test
-insert into test (data) values (1)
-drop table test
+create table test (id int default 123 primary key, data int);
+insert into test (data) values (1);
+select * from test;
+insert into test (data) values (1);
+drop table test;
 
 # test: insert list default key #2
-create table test (id int default 123 primary key)
-insert into test () values ()
-select * from test
-insert into test () values ()
-drop table test
+create table test (id int default 123 primary key);
+insert into test () values ();
+select * from test;
+insert into test () values ();
+drop table test;
 
 # test: insert list default (keyword)
-create table test (id int primary key, data int default 123)
-insert into test (id) values (DEFAULT)
-select * from test
-drop table test
+create table test (id int primary key, data int default 123);
+insert into test (id) values (DEFAULT);
+select * from test;
+drop table test;
 
 # test: insert list default (keyword) #2
-create table test (id int primary key, data int default 123)
-insert into test (id, data) values (1, DEFAULT)
-select * from test
-drop table test
+create table test (id int primary key, data int default 123);
+insert into test (id, data) values (1, DEFAULT);
+select * from test;
+drop table test;
 
 # test: insert default (keyword)
-create table test (id int primary key, data int default 123)
-insert into test values (DEFAULT, DEFAULT)
-select * from test
-drop table test
+create table test (id int primary key, data int default 123);
+insert into test values (DEFAULT, DEFAULT);
+select * from test;
+drop table test;
 
 # test: insert default (keyword) #2
-create table test (id int primary key, data int default 123)
-insert into test values (1, DEFAULT)
-select * from test
-drop table test
+create table test (id int primary key, data int default 123);
+insert into test values (1, DEFAULT);
+select * from test;
+drop table test;
 
 # test: insert serial
-create table test (id serial primary key)
-insert into test () values ()
-insert into test () values ()
-insert into test () values ()
-select * from test
-drop table test
+create table test (id serial primary key);
+insert into test () values ();
+insert into test () values ();
+insert into test () values ();
+select * from test;
+drop table test;
 
 # test: insert serial #2
-create table test (id serial primary key, data int)
-insert into test (data) values (123)
-insert into test () values ()
-select * from test
-drop table test
+create table test (id serial primary key, data int);
+insert into test (data) values (123);
+insert into test () values ();
+select * from test;
+drop table test;
 
 # test: insert serial alias
-create table test (id serial primary key)
-insert into test () values ()
-insert into test () values ()
-insert into test () values ()
-select * from test
-drop table test
+create table test (id serial primary key);
+insert into test () values ();
+insert into test () values ();
+insert into test () values ();
+select * from test;
+drop table test;
 
 # test: insert serial directly
-create table test (id serial primary key, data int)
-insert into test (data) values (123)
-insert into test (id, data) values (1, 123)
+create table test (id serial primary key, data int);
+insert into test (data) values (123);
+insert into test (id, data) values (1, 123);
 
 # test: insert serial directly (conflict)
-insert into test () values ()
-select * from test
-drop table test
+insert into test () values ();
+select * from test;
+drop table test;
 
 # test: insert serial null
-create table test (id serial primary key, data int)
-insert into test (id, data) values (null, 123)
-select * from test
-insert into test (data) values (123)
-select * from test
-drop table test
+create table test (id serial primary key, data int);
+insert into test (id, data) values (null, 123);
+select * from test;
+insert into test (data) values (123);
+select * from test;
+drop table test;
 
 # test: insert insert error
-create table test (id int primary key)
-insert into test values (1),(2),(3),(1)
-select * from test
-drop table test
+create table test (id int primary key);
+insert into test values (1),(2),(3),(1);
+select * from test;
+drop table test;
 
 # test: insert negative
-create table test (id int primary key)
-insert into test values (-1), (-10), (-100), (0), (1), (10), (100)
-select * from test
-drop table test
+create table test (id int primary key);
+insert into test values (-1), (-10), (-100), (0), (1), (10), (100);
+select * from test;
+drop table test;
 
 # test: insert generate
-create table test (id serial primary key, data int default 0)
-insert into test generate
-insert into test generate "10"
-insert into test generate 10
-select * from test
-drop table test
+create table test (id serial primary key, data int default 0);
+insert into test generate;
+insert into test generate "10";
+insert into test generate 10;
+select * from test;
+drop table test;
 
 # test: insert returning
-create table test (id int primary key)
-explain insert into test values (1),(2),(3) returning *
-insert into test values (1),(2),(3) returning *
+create table test (id int primary key);
+explain insert into test values (1),(2),(3) returning *;
+insert into test values (1),(2),(3) returning *;
 # on conflict error
-insert into test values (1),(2),(3) returning *
-drop table test
+insert into test values (1),(2),(3) returning *;
+drop table test;
 
 # test: insert returning (serial)
-create table test (id serial primary key)
-explain insert into test () values (), (), () returning *
-insert into test () values (), (), () returning *
-insert into test () values (), (), () returning id
-drop table test
+create table test (id serial primary key);
+explain insert into test () values (), (), () returning *;
+insert into test () values (), (), () returning *;
+insert into test () values (), (), () returning id;
+drop table test;
 
 # test: insert column (bool)
-create table test (id int primary key, data bool)
-insert into test values (1, true), (2, false)
-insert into test values (3, true), (4, false) returning *
-select * from test
-drop table test
+create table test (id int primary key, data bool);
+insert into test values (1, true), (2, false);
+insert into test values (3, true), (4, false) returning *;
+select * from test;
+drop table test;
 
 # test: insert column (int8)
-create table test (id int primary key, data i8)
-insert into test values (1, 123), (2, 255), (3, 256)
-insert into test values (4, 255), (5, 256) returning *
-select * from test
-drop table test
+create table test (id int primary key, data i8);
+insert into test values (1, 123), (2, 255), (3, 256);
+insert into test values (4, 255), (5, 256) returning *;
+select * from test;
+drop table test;
 
 # test: insert column (int16)
-create table test (id int primary key, data i16)
-insert into test values (1, 123), (2, 256), (3, -32768)
-insert into test values (4, -32768), (5, 123) returning *
-select * from test
-drop table test
+create table test (id int primary key, data i16);
+insert into test values (1, 123), (2, 256), (3, -32768);
+insert into test values (4, -32768), (5, 123) returning *;
+select * from test;
+drop table test;
 
 # test: insert column (int32)
-create table test (id int primary key, data i32)
-insert into test values (1, 123), (2, 256), (3, -32768)
-insert into test values (4, -32768), (5, 2147483647) returning *
-select * from test
-drop table test
+create table test (id int primary key, data i32);
+insert into test values (1, 123), (2, 256), (3, -32768);
+insert into test values (4, -32768), (5, 2147483647) returning *;
+select * from test;
+drop table test;
 
 # test: insert column (int64)
-create table test (id int primary key, data i64)
-insert into test values (1, 123), (2, 256), (3, -32768)
-insert into test values (4, 9223372036854775807) returning *
-select * from test
-drop table test
+create table test (id int primary key, data i64);
+insert into test values (1, 123), (2, 256), (3, -32768);
+insert into test values (4, 9223372036854775807) returning *;
+select * from test;
+drop table test;
 
 # test: insert column (float)
-create table test (id int primary key, data float)
-insert into test values (1, 123.32), (2, 3.14)
-insert into test values (4, 1.17549e-38), (5, 3.40282e+38) returning *
-select * from test
-drop table test
+create table test (id int primary key, data float);
+insert into test values (1, 123.32), (2, 3.14);
+insert into test values (4, 1.17549e-38), (5, 3.40282e+38) returning *;
+select * from test;
+drop table test;
 
 # test: insert column (double)
-create table test (id int primary key, data double)
-insert into test values (1, 123.32), (2, 3.14)
-insert into test values (4, 2.2250738585072014e-308), (5, 1.79769e+308) returning *
-select * from test
-drop table test
+create table test (id int primary key, data double);
+insert into test values (1, 123.32), (2, 3.14);
+insert into test values (4, 2.2250738585072014e-308), (5, 1.79769e+308) returning *;
+select * from test;
+drop table test;
 
 # test: insert column (text)
-create table test (id int primary key, data text)
-insert into test values (1, 'hello world')
-select data from test
-drop table test
+create table test (id int primary key, data text);
+insert into test values (1, 'hello world');
+select data from test;
+drop table test;
 
 # test: insert column (json)
-create table test (id int primary key, data json)
-insert into test values (1, 1)
-insert into test values (2, 13.4)
-insert into test values (3, 'test')
-insert into test values (4, [1,2,3])
-insert into test values (5, {'id': 48, 'data': [], 'misc': null})
-select * from test
-select data::type from test
-drop table test
+create table test (id int primary key, data json);
+insert into test values (1, 1);
+insert into test values (2, 13.4);
+insert into test values (3, 'test');
+insert into test values (4, [1,2,3]);
+insert into test values (5, {'id': 48, 'data': [], 'misc': null});
+select * from test;
+select data::type from test;
+drop table test;
 
 # test: insert column (timestamp)
-create table test (id int primary key, ts timestamp)
-insert into test values (0, timestamp "1970-01-01 01:12:59.909090")
-insert into test values (1, timestamp "1970-01-01 01:13:00")
-insert into test values (2, timestamp "1970-01-01 01:13:01")
-insert into test values (3, timestamp '1970-01-01 01:13:01')
-select * from test
+create table test (id int primary key, ts timestamp);
+insert into test values (0, timestamp "1970-01-01 01:12:59.909090");
+insert into test values (1, timestamp "1970-01-01 01:13:00");
+insert into test values (2, timestamp "1970-01-01 01:13:01");
+insert into test values (3, timestamp '1970-01-01 01:13:01');
+select * from test;
 select * from test where ts > "1970-01-01 01:12:59.909090"::timestamp;
 explain select * from test where ts > "1970-01-01 01:12:59.909090"::timestamp;
 
-select * from test where ts > timestamp "1970-01-01 01:12:59.909090"
-explain select * from test where ts > timestamp "1970-01-01 01:12:59.909090"
+select * from test where ts > timestamp "1970-01-01 01:12:59.909090";
+explain select * from test where ts > timestamp "1970-01-01 01:12:59.909090";
 
 select * from test where ts = "1970-01-01 01:13:01"::timestamp;
 
 # test: insert column (timestamp current_timestamp)
-insert into test values (4, current_timestamp)
-select ts::int > 0 from test where id = 4
-drop table test
+insert into test values (4, current_timestamp);
+select ts::int > 0 from test where id = 4;
+drop table test;
 
 # test: insert column (timestamp auto cast)
-create table test (id int primary key, ts timestamp)
-insert into test values (0, "1970-01-01 01:12:59.909090")
-select * from test
-select ts::type from test
-drop table test
+create table test (id int primary key, ts timestamp);
+insert into test values (0, "1970-01-01 01:12:59.909090");
+select * from test;
+select ts::type from test;
+drop table test;
 
 # test: insert column (timestamp key)
-create table test (id timestamp primary key)
-insert into test values ("1970-01-01 00:00:01.000001")
-insert into test values ("1970-01-01 00:00:01.000002")
-insert into test values ("1970-01-01 00:00:01.000003")
-insert into test values ("1970-01-01 00:00:02.000000")
-insert into test values ("1970-01-01 00:00:03.000000")
-insert into test values ("1970-01-01 00:00:04.000000")
-explain select * from test
+create table test (id timestamp primary key);
+insert into test values ("1970-01-01 00:00:01.000001");
+insert into test values ("1970-01-01 00:00:01.000002");
+insert into test values ("1970-01-01 00:00:01.000003");
+insert into test values ("1970-01-01 00:00:02.000000");
+insert into test values ("1970-01-01 00:00:03.000000");
+insert into test values ("1970-01-01 00:00:04.000000");
+explain select * from test;
 
-select * from test
-select * from test order by id
+select * from test;
+select * from test order by id;
 
-select * from test where id > timestamp '1970-01-01 00:00:01.000002'
-explain select * from test where id > timestamp '1970-01-01 00:00:01.000002'
+select * from test where id > timestamp '1970-01-01 00:00:01.000002';
+explain select * from test where id > timestamp '1970-01-01 00:00:01.000002';
 
-select * from test where id >= timestamp '1970-01-01 00:00:01.000002'
-explain select * from test where id >= timestamp '1970-01-01 00:00:01.000002'
+select * from test where id >= timestamp '1970-01-01 00:00:01.000002';
+explain select * from test where id >= timestamp '1970-01-01 00:00:01.000002';
 
-select * from test where id < timestamp '1970-01-01 00:00:01.000003'
-explain select * from test where id < timestamp '1970-01-01 00:00:01.000003'
+select * from test where id < timestamp '1970-01-01 00:00:01.000003';
+explain select * from test where id < timestamp '1970-01-01 00:00:01.000003';
 
-select * from test where id = timestamp '1970-01-01 00:00:01.000003'
-explain select * from test where id = timestamp '1970-01-01 00:00:01.000003'
-drop table test
+select * from test where id = timestamp '1970-01-01 00:00:01.000003';
+explain select * from test where id = timestamp '1970-01-01 00:00:01.000003';
+drop table test;
 
 # test: insert column (interval)
-create table test (id int primary key, i interval)
-insert into test values (0, interval "1 year 1 day 10 hour")
-insert into test values (1, interval "1 year 1 day 11 hour")
-insert into test values (2, interval "1 year 1 day 12 hour 500 us")
-select * from test
-select * from test where i > "1 year 1 day 10 hour"::interval
-explain select * from test where i > "1 year 1 day 10 hour"::interval
-select * from test where i = "1 year 1 day 12 hours 500 us"::interval
-drop table test
+create table test (id int primary key, i interval);
+insert into test values (0, interval "1 year 1 day 10 hour");
+insert into test values (1, interval "1 year 1 day 11 hour");
+insert into test values (2, interval "1 year 1 day 12 hour 500 us");
+select * from test;
+select * from test where i > "1 year 1 day 10 hour"::interval;
+explain select * from test where i > "1 year 1 day 10 hour"::interval;
+select * from test where i = "1 year 1 day 12 hours 500 us"::interval;
+drop table test;
 
 # test: insert column (interval auto cast)
-create table test (id int primary key, i interval)
-insert into test values (0, "1 year 1 day 10 hour")
-select * from test
-drop table test
+create table test (id int primary key, i interval);
+insert into test values (0, "1 year 1 day 10 hour");
+select * from test;
+drop table test;
 
 # test: insert column (date)
-create table test (id int primary key, d date)
-insert into test values (0, date "2025-01-01")
-insert into test values (1, date "1970-01-01")
-insert into test values (2, date "9999-12-31")
-insert into test values (3, date "0001-01-01")
-select * from test
+create table test (id int primary key, d date);
+insert into test values (0, date "2025-01-01");
+insert into test values (1, date "1970-01-01");
+insert into test values (2, date "9999-12-31");
+insert into test values (3, date "0001-01-01");
+select * from test;
 
-insert into test values (4, date "0001-01-00")
+insert into test values (4, date "0001-01-00");
 
-select * from test where d > date '2000-01-01'
-select * from test where d > date '1970-01-01'
-select * from test where d >= date '1970-01-01'
-explain select * from test where d >= date '1970-01-01'
-drop table test
+select * from test where d > date '2000-01-01';
+select * from test where d > date '1970-01-01';
+select * from test where d >= date '1970-01-01';
+explain select * from test where d >= date '1970-01-01';
+drop table test;
 
 # test: insert column (date auto cast)
-create table test (id int primary key, d date)
-insert into test values (0, "2025-01-01")
-insert into test values (1, "1970-01-01")
-insert into test values (2, "9999-12-31")
-insert into test values (3, "0001-01-01")
-select * from test
-insert into test values (4, "0001-01-00")
-drop table test
+create table test (id int primary key, d date);
+insert into test values (0, "2025-01-01");
+insert into test values (1, "1970-01-01");
+insert into test values (2, "9999-12-31");
+insert into test values (3, "0001-01-01");
+select * from test;
+insert into test values (4, "0001-01-00");
+drop table test;
 
 # test: insert column (date current_date)
-create table test (id int primary key, d date)
-insert into test values (0, current_date)
-select count(d) from test
-drop table test
+create table test (id int primary key, d date);
+insert into test values (0, current_date);
+select count(d) from test;
+drop table test;
 
 # test: insert column (vector)
-create table test (id int primary key, vec vector)
-insert into test values (0, [])
-insert into test values (1, [1.0])
-insert into test values (2, [1])
-insert into test values (3, [1.0, 1.1,])
-insert into test values (4, [1.0,)
-insert into test values (5, [1.0,])
-insert into test values (6, [1.0, 1.1])
-insert into test values (7, [1.0, 1.1, -2.2, -8])
-insert into test values (8, vector [1.0, 1.1, -2.2, -8])
-select * from test
-select vec::type from test
-drop table test
+create table test (id int primary key, vec vector);
+insert into test values (0, []);
+insert into test values (1, [1.0]);
+insert into test values (2, [1]);
+insert into test values (3, [1.0, 1.1,]);
+insert into test values (4, [1.0,);
+insert into test values (5, [1.0,]);
+insert into test values (6, [1.0, 1.1]);
+insert into test values (7, [1.0, 1.1, -2.2, -8]);
+insert into test values (8, vector [1.0, 1.1, -2.2, -8]);
+select * from test;
+select vec::type from test;
+drop table test;
 
 # test: insert column (uuid)
-create table test (id int primary key, uid uuid)
-insert into test values (0, uuid "00000000-0000-0000-0000-000000000000")
-insert into test values (1, uuid "00000000-0000-0000-0000-000000000001")
-insert into test values (2, uuid "00000000-0000-0000-0000-000000000002")
-select uid, uid::type  from test
-drop table test
+create table test (id int primary key, uid uuid);
+insert into test values (0, uuid "00000000-0000-0000-0000-000000000000");
+insert into test values (1, uuid "00000000-0000-0000-0000-000000000001");
+insert into test values (2, uuid "00000000-0000-0000-0000-000000000002");
+select uid, uid::type  from test;
+drop table test;
 
 # test: insert column (uuid auto cast)
-create table test (id int primary key, uid uuid)
-insert into test values (0, "00000000-0000-0000-0000-000000000000")
-insert into test values (1, "00000000-0000-0000-0000-000000000001")
-insert into test values (2, "00000000-0000-0000-0000-000000000002")
-select uid, uid::type  from test
-drop table test
+create table test (id int primary key, uid uuid);
+insert into test values (0, "00000000-0000-0000-0000-000000000000");
+insert into test values (1, "00000000-0000-0000-0000-000000000001");
+insert into test values (2, "00000000-0000-0000-0000-000000000002");
+select uid, uid::type  from test;
+drop table test;
 
 # test: insert column (uuid key)
-create table test (id uuid primary key)
-insert into test values (uuid "00000000-0000-0000-0000-000000000000")
-insert into test values (uuid "00000000-0000-0000-0000-000000000001")
-insert into test values (uuid "00000000-0000-0000-0000-000000000002")
-select id, id::type  from test
+create table test (id uuid primary key);
+insert into test values (uuid "00000000-0000-0000-0000-000000000000");
+insert into test values (uuid "00000000-0000-0000-0000-000000000001");
+insert into test values (uuid "00000000-0000-0000-0000-000000000002");
+select id, id::type  from test;
 
 select id from test where id >= uuid "00000000-0000-0000-0000-000000000000";
 select id from test where id >= uuid "00000000-0000-0000-0000-000000000001";
@@ -446,105 +446,128 @@ select id from test where id > uuid "00000000-0000-0000-0000-000000000002";
 
 select id from test where id = uuid "00000000-0000-0000-0000-000000000002";
 explain select id from test where id = uuid "00000000-0000-0000-0000-000000000002";
-drop table test
+drop table test;
 
 # test: insert var
-create table test (id uuid primary key)
-insert into test values (x)
-declare id0 uuid := uuid "00000000-0000-0000-0000-000000000000"; declare id1 uuid := uuid "00000000-0000-0000-0000-000000000001"; insert into test values (id0), (id1)
-select * from test
+create table test (id uuid primary key);
+insert into test values (x);
+begin;
+	declare id0 uuid := uuid "00000000-0000-0000-0000-000000000000";
+	declare id1 uuid := uuid "00000000-0000-0000-0000-000000000001";
+	insert into test values (id0), (id1);
+end;
+select * from test;
 
 # test: insert var (type mismatch)
-declare x int; insert into test values (x)
-drop table test
+begin;
+	declare x int;
+	insert into test values (x);
+end;
+drop table test;
 
-create table test (id int primary key, data int)
+create table test (id int primary key, data int);
 # test: insert var (key null)
-declare x int; insert into test values(x, 0)
+begin;
+	declare x int;
+	insert into test values(x, 0);
+end;
 
 # test: insert var (null)
-declare x int; insert into test values(0, x)
+begin;
+	declare x int;
+	insert into test values(0, x);
+end;
 select * from test;
-drop table test
+drop table test;
 
 # test: insert var (not null)
-create table test (id int primary key, data int not null)
-declare x int; insert into test values(0, x)
-drop table test
+create table test (id int primary key, data int not null);
+begin;
+	declare x int;
+	insert into test values(0, x);
+end;
+drop table test;
 
 # test: insert secondary index
-create table test (id int primary key, data int)
-create index i on test (data)
+create table test (id int primary key, data int);
+create index i on test (data);
 
-insert into test values (0, 2)
-insert into test values (1, 1)
-insert into test values (2, 0)
-insert into test values (3, 0)
-insert into test values (4, 0)
+insert into test values (0, 2);
+insert into test values (1, 1);
+insert into test values (2, 0);
+insert into test values (3, 0);
+insert into test values (4, 0);
 
-explain select * from test
-select * from test
+explain select * from test;
+select * from test;
 
-explain select * from test use index (i)
-select * from test use index (i)
+explain select * from test use index (i);
+select * from test use index (i);
 
-drop index i on test
-drop table test
+drop index i on test;
+drop table test;
 
 # test: insert secondary index (unique)
-create table test (id int primary key, data int) partitions 1
-create unique index i on test (data)
-insert into test values (0, 0)
+create table test (id int primary key, data int) partitions 1;
+create unique index i on test (data);
+insert into test values (0, 0);
 # conflict
-insert into test values (1, 0)
-drop table test
+insert into test values (1, 0);
+drop table test;
 
 # test: insert unlogged
-create unlogged table test (id int primary key, data int)
-insert into test values (0, 2)
-insert into test values (1, 1)
-insert into test values (2, 0)
-select * from test
-drop table test
+create unlogged table test (id int primary key, data int);
+insert into test values (0, 2);
+insert into test values (1, 1);
+insert into test values (2, 0);
+select * from test;
+drop table test;
 
 # test: insert select (columns count mismatch)
-create table test (id int primary key, data int)
+create table test (id int primary key, data int);
 
-insert into test select 1
+insert into test select 1;
 
 # test: insert select (columns types mismatch)
-insert into test select 1, '2'
+insert into test select 1, '2';
 
 # test: insert select (columns list unsupported)
-insert into test (id) select 1
+insert into test (id) select 1;
 
 # test: insert select expr
-explain insert into test select 1, 0
-insert into test select 1, 0
-select * from test
+explain insert into test select 1, 0;
+insert into test select 1, 0;
+select * from test;
 
 # conflict
-insert into test select 1, 0
+insert into test select 1, 0;
 
 # test: insert select from (select expr)
-explain insert into test select * from (select 2, 0) t
-insert into test select * from (select 2, 0) t
-select * from test
+explain insert into test select * from (select 2, 0) t;
+insert into test select * from (select 2, 0) t;
+select * from test;
 
 # test: insert select from table
-create table src (id int primary key, data int)
-insert into src values (3, 0), (4, 0), (5, 0)
-explain insert into test select * from src
-insert into test select * from src returning *
-select * from test
-drop table src
-drop table test
+create table src (id int primary key, data int);
+insert into src values (3, 0), (4, 0), (5, 0);
+explain insert into test select * from src;
+insert into test select * from src returning *;
+select * from test;
+drop table src;
+drop table test;
 
 # test: insert select from var
-create table test (id int primary key, data int)
-insert into test values (3, 0), (4, 0), (5, 0)
-declare x table(id int, data int); select * into x from test; delete from test; insert into test select * from x returning *
-drop table test
+create table test (id int primary key, data int);
+insert into test values (3, 0), (4, 0), (5, 0);
 
-disconnect S0
-close E0
+begin
+	declare x table(id int, data int);
+	select * into x from test;
+	delete from test;
+	insert into test select * from x returning *;
+end;
+
+drop table test;
+
+disconnect S0;
+close E0;

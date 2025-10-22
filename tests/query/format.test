@@ -1,107 +1,107 @@
 #
 
-open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "127.0.0.1", "port": 3485 }]
-connect E0 S0 127.0.0.1:3485
+open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "127.0.0.1", "port": 3485 }];
+connect E0 S0 127.0.0.1:3485;
 
 # test: default format
-show format
+show format;
 
 # test: json
-disconnect S0
-close E0
-open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "127.0.0.1", "port": 3485 }], "format": "json"
-connect E0 S0 127.0.0.1:3485
+disconnect S0;
+close E0;
+open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "127.0.0.1", "port": 3485 }], "format": "json";
+connect E0 S0 127.0.0.1:3485;
 
-select 123
-select [1,2,3]
-select {"id": 48}
-select [{"id": 48}, {"id": 49}, [1,2,3]]
-show all
-show uuid
+select 123;
+select [1,2,3];
+select {"id": 48};
+select [{"id": 48}, {"id": 49}, [1,2,3]];
+show all;
+show uuid;
 
 # test: json-array
-disconnect S0
-close E0
-open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "127.0.0.1", "port": 3485 }], "format": "json-array"
-connect E0 S0 127.0.0.1:3485
+disconnect S0;
+close E0;
+open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "127.0.0.1", "port": 3485 }], "format": "json-array";
+connect E0 S0 127.0.0.1:3485;
 
-select 123
-select [1,2,3]
-select {"id": 48}
-select [{"id": 48}, {"id": 49}, [1,2,3]]
-show all
-show uuid
+select 123;
+select [1,2,3];
+select {"id": 48};
+select [{"id": 48}, {"id": 49}, [1,2,3]];
+show all;
+show uuid;
 
 # test: json-array-pretty
-disconnect S0
-close E0
-open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "127.0.0.1", "port": 3485 }], "format": "json-array-pretty"
-connect E0 S0 127.0.0.1:3485
+disconnect S0;
+close E0;
+open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "127.0.0.1", "port": 3485 }], "format": "json-array-pretty";
+connect E0 S0 127.0.0.1:3485;
 
-select 123
-select [1,2,3]
-select {"id": 48}
-select [{"id": 48}, {"id": 49}, [1,2,3]]
-show all
-show uuid
+select 123;
+select [1,2,3];
+select {"id": 48};
+select [{"id": 48}, {"id": 49}, [1,2,3]];
+show all;
+show uuid;
 
 # test: json-obj
-disconnect S0
-close E0
-open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "127.0.0.1", "port": 3485 }], "format": "json-obj"
-connect E0 S0 127.0.0.1:3485
+disconnect S0;
+close E0;
+open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "127.0.0.1", "port": 3485 }], "format": "json-obj";
+connect E0 S0 127.0.0.1:3485;
 
-select 123
-select 123 as id
-select [1,2,3]
-select {"id": 48} as json
-select [{"id": 48}, {"id": 49}, [1,2,3]]
-show all
-show uuid
+select 123;
+select 123 as id;
+select [1,2,3];
+select {"id": 48} as json;
+select [{"id": 48}, {"id": 49}, [1,2,3]];
+show all;
+show uuid;
 
 # test: json-obj-pretty
-disconnect S0
-close E0
-open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "127.0.0.1", "port": 3485 }], "format": "json-obj-pretty"
-connect E0 S0 127.0.0.1:3485
+disconnect S0;
+close E0;
+open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "127.0.0.1", "port": 3485 }], "format": "json-obj-pretty";
+connect E0 S0 127.0.0.1:3485;
 
-select 123
-select 123 as id
-select [1,2,3]
-select {"id": 48} as json
-select [{"id": 48}, {"id": 49}, [1,2,3]]
-show all
-show uuid
+select 123;
+select 123 as id;
+select [1,2,3];
+select {"id": 48} as json;
+select [{"id": 48}, {"id": 49}, [1,2,3]];
+show all;
+show uuid;
 
 # test: select format
-disconnect S0
-close E0
-open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "127.0.0.1", "port": 3485 }], "format": "json-pretty"
-connect E0 S0 127.0.0.1:3485
+disconnect S0;
+close E0;
+open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "127.0.0.1", "port": 3485 }], "format": "json-pretty";
+connect E0 S0 127.0.0.1:3485;
 
-select 123
-select 123 format "json-pretty-obj"
-select 123 as id
-select 123 as id format "json-pretty-obj"
-select [1,2,3]
-select [1,2,3] format "json-pretty-obj"
-select {"id": 48} as json
-select {"id": 48} as json format "json-pretty-obj"
-select [{"id": 48}, {"id": 49}, [1,2,3]]
-select [{"id": 48}, {"id": 49}, [1,2,3]] format "json-pretty-obj"
+select 123;
+select 123 format "json-pretty-obj";
+select 123 as id;
+select 123 as id format "json-pretty-obj";
+select [1,2,3];
+select [1,2,3] format "json-pretty-obj";
+select {"id": 48} as json;
+select {"id": 48} as json format "json-pretty-obj";
+select [{"id": 48}, {"id": 49}, [1,2,3]];
+select [{"id": 48}, {"id": 49}, [1,2,3]] format "json-pretty-obj";
 
 # test: select format (duplicate columns)
-select 1 as id, 2 as id format "json-pretty-obj"
-select 1 as id, 2 as id format "json"
-select 1 as id, 2 as id format "json-obj"
+select 1 as id, 2 as id format "json-pretty-obj";
+select 1 as id, 2 as id format "json";
+select 1 as id, 2 as id format "json-obj";
 
 # test: returning format
-create table test (id int primary key)
-insert into test values (1) returning * format "json-obj"
-insert into test values (2) returning id format "json-obj-pretty"
-insert into test values (3) returning id format "json"
-select * from test
-drop table test
+create table test (id int primary key);
+insert into test values (1) returning * format "json-obj";
+insert into test values (2) returning id format "json-obj-pretty";
+insert into test values (3) returning id format "json";
+select * from test;
+drop table test;
 
-disconnect S0
-close E0
+disconnect S0;
+close E0;

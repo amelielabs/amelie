@@ -1,9 +1,9 @@
-open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "127.0.0.1", "port": 3485 }]
-connect E0 S0 127.0.0.1:3485
+open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "127.0.0.1", "port": 3485 }];
+connect E0 S0 127.0.0.1:3485;
 # test: key column
-create table test (id int primary key, data int default 1)
-insert into test (id) values (1), (2), (3)
-explain select * from test where id > 1
+create table test (id int primary key, data int default 1);
+insert into test (id) values (1), (2), (3);
+explain select * from test where id > 1;
 [{
   "main": {
     "00": "union               0      0      0     ",
@@ -32,9 +32,9 @@ explain select * from test where id > 1
   },
   "access": [["public.test", "ro"]]
 }]
-select * from test where id > 1
+select * from test where id > 1;
 [[2, 1], [3, 1]]
-explain select * from test where id >= 1
+explain select * from test where id >= 1;
 [{
   "main": {
     "00": "union               0      0      0     ",
@@ -63,13 +63,13 @@ explain select * from test where id >= 1
   },
   "access": [["public.test", "ro"]]
 }]
-select * from test where id >= 1
+select * from test where id >= 1;
 [[1, 1], [2, 1], [3, 1]]
-drop table test
+drop table test;
 # test: key target.column
-create table test (id int primary key, data int default 1)
-insert into test (id) values (1), (2), (3)
-explain select * from test where test.id > 1
+create table test (id int primary key, data int default 1);
+insert into test (id) values (1), (2), (3);
+explain select * from test where test.id > 1;
 [{
   "main": {
     "00": "union               0      0      0     ",
@@ -98,9 +98,9 @@ explain select * from test where test.id > 1
   },
   "access": [["public.test", "ro"]]
 }]
-select * from test where test.id > 1
+select * from test where test.id > 1;
 [[2, 1], [3, 1]]
-explain select * from test where test.id > -1
+explain select * from test where test.id > -1;
 [{
   "main": {
     "00": "union               0      0      0     ",
@@ -129,13 +129,13 @@ explain select * from test where test.id > -1
   },
   "access": [["public.test", "ro"]]
 }]
-select * from test where test.id > -1
+select * from test where test.id > -1;
 [[1, 1], [2, 1], [3, 1]]
-drop table test
+drop table test;
 # test: key alias.column
-create table test (id int primary key, data int default 1)
-insert into test (id) values (1), (2), (3)
-explain select * from test alias where alias.id > 1
+create table test (id int primary key, data int default 1);
+insert into test (id) values (1), (2), (3);
+explain select * from test alias where alias.id > 1;
 [{
   "main": {
     "00": "union               0      0      0     ",
@@ -164,27 +164,27 @@ explain select * from test alias where alias.id > 1
   },
   "access": [["public.test", "ro"]]
 }]
-select * from test alias where alias.id > 1
+select * from test alias where alias.id > 1;
 [[2, 1], [3, 1]]
-drop table test
+drop table test;
 # test: key column type mismatch
-create table test (id int primary key, data int default 1)
-explain select * from test where id > "hello"
+create table test (id int primary key, data int default 1);
+explain select * from test where id > "hello";
 {"msg": "explain select * from test where id > ❰\"hello\"❱ ⟵ operation int > string is not supported"}
-select * from test where id > "hello"
+select * from test where id > "hello";
 {"msg": "select * from test where id > ❰\"hello\"❱ ⟵ operation int > string is not supported"}
-drop table test
+drop table test;
 # test: key column type mismatch #2
-create table test (id string primary key, data int default 1)
-explain select * from test where id > 1
+create table test (id string primary key, data int default 1);
+explain select * from test where id > 1;
 {"msg": "explain select * from test where id > ❰1❱ ⟵ operation string > int is not supported"}
-select * from test where id > 1
+select * from test where id > 1;
 {"msg": "select * from test where id > ❰1❱ ⟵ operation string > int is not supported"}
-drop table test
+drop table test;
 # test: key gt (start condition)
-create table test (id int primary key, data int default 1)
-insert into test (id) values (1), (2), (3)
-explain select * from test where id > 1
+create table test (id int primary key, data int default 1);
+insert into test (id) values (1), (2), (3);
+explain select * from test where id > 1;
 [{
   "main": {
     "00": "union               0      0      0     ",
@@ -213,10 +213,10 @@ explain select * from test where id > 1
   },
   "access": [["public.test", "ro"]]
 }]
-select * from test where id > 1
+select * from test where id > 1;
 [[2, 1], [3, 1]]
 # test: key gt and gt (same key)
-explain select * from test where id > 1 and id > 1
+explain select * from test where id > 1 and id > 1;
 [{
   "main": {
     "00": "union               0      0      0     ",
@@ -249,10 +249,10 @@ explain select * from test where id > 1 and id > 1
   },
   "access": [["public.test", "ro"]]
 }]
-select * from test where id > 1 and id > 1
+select * from test where id > 1 and id > 1;
 [[2, 1], [3, 1]]
 # test: key gt and gt (less)
-explain select * from test where id > 2 and id > 1
+explain select * from test where id > 2 and id > 1;
 [{
   "main": {
     "00": "union               0      0      0     ",
@@ -285,10 +285,10 @@ explain select * from test where id > 2 and id > 1
   },
   "access": [["public.test", "ro"]]
 }]
-select * from test where id > 2 and id > 1
+select * from test where id > 2 and id > 1;
 [[3, 1]]
 # test: key gt and gt (greater)
-explain select * from test where id > 1 and id > 2
+explain select * from test where id > 1 and id > 2;
 [{
   "main": {
     "00": "union               0      0      0     ",
@@ -321,10 +321,10 @@ explain select * from test where id > 1 and id > 2
   },
   "access": [["public.test", "ro"]]
 }]
-select * from test where id > 1 and id > 2
+select * from test where id > 1 and id > 2;
 [[3, 1]]
 # test: key gt and eq (scan to point lookup)
-explain select * from test where id > 1 and id = 2
+explain select * from test where id > 1 and id = 2;
 [{
   "main": {
     "00": "union               0      0      0     ",
@@ -356,10 +356,10 @@ explain select * from test where id > 1 and id = 2
   },
   "access": [["public.test", "ro"]]
 }]
-select * from test where id > 1 and id = 2
+select * from test where id > 1 and id = 2;
 [[2, 1]]
 # test: key lt (stop condition)
-explain select * from test where id < 1
+explain select * from test where id < 1;
 [{
   "main": {
     "00": "union               0      0      0     ",
@@ -390,9 +390,9 @@ explain select * from test where id < 1
   },
   "access": [["public.test", "ro"]]
 }]
-select * from test where id < 1
+select * from test where id < 1;
 []
-explain select * from test where id <= 2
+explain select * from test where id <= 2;
 [{
   "main": {
     "00": "union               0      0      0     ",
@@ -423,10 +423,10 @@ explain select * from test where id <= 2
   },
   "access": [["public.test", "ro"]]
 }]
-select * from test where id <= 2
+select * from test where id <= 2;
 [[1, 1], [2, 1]]
 # test: key lt and lt (same)
-explain select * from test where id < 1 and id < 1
+explain select * from test where id < 1 and id < 1;
 [{
   "main": {
     "00": "union               0      0      0     ",
@@ -461,10 +461,10 @@ explain select * from test where id < 1 and id < 1
   },
   "access": [["public.test", "ro"]]
 }]
-select * from test where id < 1 and id < 1
+select * from test where id < 1 and id < 1;
 []
 # test: key lt and lt (less)
-explain select * from test where id < 2 and id < 1
+explain select * from test where id < 2 and id < 1;
 [{
   "main": {
     "00": "union               0      0      0     ",
@@ -499,10 +499,10 @@ explain select * from test where id < 2 and id < 1
   },
   "access": [["public.test", "ro"]]
 }]
-select * from test where id < 2 and id < 1
+select * from test where id < 2 and id < 1;
 []
 # test: key lt and lt (greater)
-explain select * from test where id < 1 and id < 2
+explain select * from test where id < 1 and id < 2;
 [{
   "main": {
     "00": "union               0      0      0     ",
@@ -537,10 +537,10 @@ explain select * from test where id < 1 and id < 2
   },
   "access": [["public.test", "ro"]]
 }]
-select * from test where id < 1 and id < 2
+select * from test where id < 1 and id < 2;
 []
 # test: key lt and eq (scan to point lookup)
-explain select * from test where id < 1 and id = 2
+explain select * from test where id < 1 and id = 2;
 [{
   "main": {
     "00": "union               0      0      0     ",
@@ -576,10 +576,10 @@ explain select * from test where id < 1 and id = 2
   },
   "access": [["public.test", "ro"]]
 }]
-select * from test where id < 1 and id = 2
+select * from test where id < 1 and id = 2;
 []
 # test: key gt and lt
-explain select * from test where id > 1 and id < 1
+explain select * from test where id > 1 and id < 1;
 [{
   "main": {
     "00": "union               0      0      0     ",
@@ -616,9 +616,9 @@ explain select * from test where id > 1 and id < 1
   },
   "access": [["public.test", "ro"]]
 }]
-select * from test where id > 1 and id < 1
+select * from test where id > 1 and id < 1;
 []
-explain select * from test where id >= 1 and id <= 2
+explain select * from test where id >= 1 and id <= 2;
 [{
   "main": {
     "00": "union               0      0      0     ",
@@ -655,10 +655,10 @@ explain select * from test where id >= 1 and id <= 2
   },
   "access": [["public.test", "ro"]]
 }]
-select * from test where id >= 1 and id <= 2
+select * from test where id >= 1 and id <= 2;
 [[1, 1], [2, 1]]
 # test: key gt and lt and eq
-explain select * from test where id > 1 and id < 1 and id = 1
+explain select * from test where id > 1 and id < 1 and id = 1;
 [{
   "main": {
     "00": "union               0      0      0     ",
@@ -698,10 +698,10 @@ explain select * from test where id > 1 and id < 1 and id = 1
   },
   "access": [["public.test", "ro"]]
 }]
-select * from test where id > 1 and id < 1 and id = 1
+select * from test where id > 1 and id < 1 and id = 1;
 []
 # test: key gt and lt and eq (non key)
-explain select * from test where id > 1 and id < 1 and data = 1
+explain select * from test where id > 1 and id < 1 and data = 1;
 [{
   "main": {
     "00": "union               0      0      0     ",
@@ -742,10 +742,10 @@ explain select * from test where id > 1 and id < 1 and data = 1
   },
   "access": [["public.test", "ro"]]
 }]
-select * from test where id > 1 and id < 1 and data = 1
+select * from test where id > 1 and id < 1 and data = 1;
 []
 # test: key eq (start condition)
-explain select * from test where id = 1
+explain select * from test where id = 1;
 [{
   "main": {
     "00": "union               0      0      0     ",
@@ -773,18 +773,18 @@ explain select * from test where id = 1
   },
   "access": [["public.test", "ro"]]
 }]
-select * from test where id = 0
+select * from test where id = 0;
 []
-select * from test where id = 1
+select * from test where id = 1;
 [[1, 1]]
-select * from test where id = 2
+select * from test where id = 2;
 [[2, 1]]
-select * from test where id = 3
+select * from test where id = 3;
 [[3, 1]]
-select * from test where id = 4
+select * from test where id = 4;
 []
 # test: key eq (non key)
-explain select * from test where data = 1
+explain select * from test where data = 1;
 [{
   "main": {
     "00": "union               0      0      0     ",
@@ -811,10 +811,10 @@ explain select * from test where data = 1
   },
   "access": [["public.test", "ro"]]
 }]
-select * from test where data = 1
+select * from test where data = 1;
 [[1, 1], [2, 1], [3, 1]]
 # test: key eq and gt
-explain select * from test where id = 1 and id > 0
+explain select * from test where id = 1 and id > 0;
 [{
   "main": {
     "00": "union               0      0      0     ",
@@ -846,10 +846,10 @@ explain select * from test where id = 1 and id > 0
   },
   "access": [["public.test", "ro"]]
 }]
-select * from test where id = 1 and id > 0
+select * from test where id = 1 and id > 0;
 [[1, 1]]
 # test: key eq and gt and lt
-explain select * from test where id = 1 and id > 0 and id < 10
+explain select * from test where id = 1 and id > 0 and id < 10;
 [{
   "main": {
     "00": "union               0      0      0     ",
@@ -889,10 +889,10 @@ explain select * from test where id = 1 and id > 0 and id < 10
   },
   "access": [["public.test", "ro"]]
 }]
-select * from test where id = 1 and id > 0 and id < 10
+select * from test where id = 1 and id > 0 and id < 10;
 [[1, 1]]
 # test: key eq and eq
-explain select * from test where id = 1 and id = 2
+explain select * from test where id = 1 and id = 2;
 [{
   "main": {
     "00": "union               0      0      0     ",
@@ -924,13 +924,13 @@ explain select * from test where id = 1 and id = 2
   },
   "access": [["public.test", "ro"]]
 }]
-select * from test where id = 1 and id = 2
+select * from test where id = 1 and id = 2;
 []
-drop table test
+drop table test;
 # test: key compound gt 1 (start condition)
-create table test (a int, b int, primary key(a, b))
-insert into test values (1, 1), (2, 2), (3, 3)
-explain select * from test where a > 1
+create table test (a int, b int, primary key(a, b));
+insert into test values (1, 1), (2, 2), (3, 3);
+explain select * from test where a > 1;
 [{
   "main": {
     "00": "union               0      0      0     ",
@@ -959,10 +959,10 @@ explain select * from test where a > 1
   },
   "access": [["public.test", "ro"]]
 }]
-select * from test where a > 1
+select * from test where a > 1;
 [[2, 2], [3, 3]]
 # test: key compound gt full (start condition)
-explain select * from test where a > 1 and b > 1
+explain select * from test where a > 1 and b > 1;
 [{
   "main": {
     "00": "union               0      0      0     ",
@@ -997,10 +997,10 @@ explain select * from test where a > 1 and b > 1
   },
   "access": [["public.test", "ro"]]
 }]
-select * from test where a > 1 and b > 1
+select * from test where a > 1 and b > 1;
 [[2, 2], [3, 3]]
 # test: key compound gt and lt (stop condition on inner key)
-explain select * from test where a > 1 and b < 1
+explain select * from test where a > 1 and b < 1;
 [{
   "main": {
     "00": "union               0      0      0     ",
@@ -1033,10 +1033,10 @@ explain select * from test where a > 1 and b < 1
   },
   "access": [["public.test", "ro"]]
 }]
-select * from test where a > 1 and b < 1
+select * from test where a > 1 and b < 1;
 []
 # test: key compound gt and lt and lt (stop condition on outer key)
-explain select * from test where a > 1 and b < 2 and a < 10
+explain select * from test where a > 1 and b < 2 and a < 10;
 [{
   "main": {
     "00": "union               0      0      0     ",
@@ -1077,10 +1077,10 @@ explain select * from test where a > 1 and b < 2 and a < 10
   },
   "access": [["public.test", "ro"]]
 }]
-select * from test where a > 1 and b < 2 and a < 10
+select * from test where a > 1 and b < 2 and a < 10;
 []
 # test: key compound gt and eq
-explain select * from test where a > 1 and b = 10
+explain select * from test where a > 1 and b = 10;
 [{
   "main": {
     "00": "union               0      0      0     ",
@@ -1115,10 +1115,10 @@ explain select * from test where a > 1 and b = 10
   },
   "access": [["public.test", "ro"]]
 }]
-select * from test where a > 1 and b = 10
+select * from test where a > 1 and b = 10;
 []
 # test: key compound gt and eq and eq (inner)
-explain select * from test where a > 1 and b = 10 and b = 20
+explain select * from test where a > 1 and b = 10 and b = 20;
 [{
   "main": {
     "00": "union               0      0      0     ",
@@ -1157,10 +1157,10 @@ explain select * from test where a > 1 and b = 10 and b = 20
   },
   "access": [["public.test", "ro"]]
 }]
-select * from test where a > 1 and b = 10 and b = 20
+select * from test where a > 1 and b = 10 and b = 20;
 []
 # test: key compound gt and eq and eq (outer)
-explain select * from test where a > 1 and b = 10 and a = 20
+explain select * from test where a > 1 and b = 10 and a = 20;
 [{
   "main": {
     "00": "union               0      0      0     ",
@@ -1198,10 +1198,10 @@ explain select * from test where a > 1 and b = 10 and a = 20
   },
   "access": [["public.test", "ro"]]
 }]
-select * from test where a > 1 and b = 10 and a = 20
+select * from test where a > 1 and b = 10 and a = 20;
 []
 # test: key compound eq and eq
-explain select * from test where a = 1 and b = 10
+explain select * from test where a = 1 and b = 10;
 [{
   "main": {
     "00": "union               0      0      0     ",
@@ -1235,10 +1235,10 @@ explain select * from test where a = 1 and b = 10
   },
   "access": [["public.test", "ro"]]
 }]
-select * from test where a = 1 and b = 10
+select * from test where a = 1 and b = 10;
 []
 # test: key compound eq and gt
-explain select * from test where a = 1 and b > 1
+explain select * from test where a = 1 and b > 1;
 [{
   "main": {
     "00": "union               0      0      0     ",
@@ -1273,13 +1273,13 @@ explain select * from test where a = 1 and b > 1
   },
   "access": [["public.test", "ro"]]
 }]
-select * from test where a = 1 and b > 1
+select * from test where a = 1 and b > 1;
 []
-drop table test
+drop table test;
 # test: key between
-create table test (id int primary key, data int default 1)
-insert into test (id) values (1), (2), (3)
-explain select * from test where id between 1 and 2
+create table test (id int primary key, data int default 1);
+insert into test (id) values (1), (2), (3);
+explain select * from test where id between 1 and 2;
 [{
   "main": {
     "00": "union               0      0      0     ",
@@ -1316,9 +1316,9 @@ explain select * from test where id between 1 and 2
   },
   "access": [["public.test", "ro"]]
 }]
-select * from test where id between 1 and 2
+select * from test where id between 1 and 2;
 [[1, 1], [2, 1]]
-explain select * from test where data between 1 and 2
+explain select * from test where data between 1 and 2;
 [{
   "main": {
     "00": "union               0      0      0     ",
@@ -1349,10 +1349,10 @@ explain select * from test where data between 1 and 2
   },
   "access": [["public.test", "ro"]]
 }]
-select * from test where data between 1 and 2
+select * from test where data between 1 and 2;
 [[1, 1], [2, 1], [3, 1]]
 # test: key not between
-explain select * from test where id not between 1 and 2
+explain select * from test where id not between 1 and 2;
 [{
   "main": {
     "00": "union               0      0      0     ",
@@ -1384,8 +1384,8 @@ explain select * from test where id not between 1 and 2
   },
   "access": [["public.test", "ro"]]
 }]
-select * from test where id not between 1 and 2
+select * from test where id not between 1 and 2;
 [[3, 1]]
-drop table test
-disconnect S0
-close E0
+drop table test;
+disconnect S0;
+close E0;

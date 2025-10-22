@@ -1,152 +1,152 @@
-open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "127.0.0.1", "port": 3485 }]
+open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "127.0.0.1", "port": 3485 }];
 # test: POST / (text/plain)
-connect E0 S0 127.0.0.1:3485
-post / text/plain select 1
+connect E0 S0 127.0.0.1:3485;
+post / text/plain select 1;
 [1]
 # test: POST / (application/sql)
-post / application/sql select 1
+post / application/sql select 1;
 [1]
 # test: POST / (application/json) unsupported
-post / application/json [1]
+post / application/json [1];
 {"msg": "unsupported URI path"}
 # test: POST /invalid
-post /abc text/plain select 1
+post /abc text/plain select 1;
 {"msg": "unsupported API operation"}
 # test: POST /v1/execute (text/plain)
-post /v1/execute text/plain select 1
+post /v1/execute text/plain select 1;
 [1]
 # test: POST /v1/execute (application/sql)
-post /v1/execute application/sql select 1
+post /v1/execute application/sql select 1;
 [1]
 # test: POST /v1/db/schema/table (text/plain) not exists
-post /v1/db/public/test text/plain select 1
+post /v1/db/public/test text/plain select 1;
 {"msg": "unsupported API operation"}
-create table test (id int primary key, a int, b int)
-create table test2 (id int primary key, a int as (id * 2) stored)
-create table test3 (id int primary key, a int as (a + 1) resolved)
-create table test4 (id serial primary key, a int default 777)
-create table test5 (id serial primary key, data json not null)
-create table test6 (id int primary key as (data.id::int) stored, data json not null)
+create table test (id int primary key, a int, b int);
+create table test2 (id int primary key, a int as (id * 2) stored);
+create table test3 (id int primary key, a int as (a + 1) resolved);
+create table test4 (id serial primary key, a int default 777);
+create table test5 (id serial primary key, data json not null);
+create table test6 (id int primary key as (data.id::int) stored, data json not null);
 # test: POST /v1/db/schema/table (text/plain) unsupported
-post /v1/db/public/test text/plain select 1
+post /v1/db/public/test text/plain select 1;
 {"msg": "unsupported API operation"}
 # test: POST /v1/db/schema/table (text/csv)
-post /v1/db/public/test text/csv 0,0,0
-post /v1/db/public/test text/csv 1,0,0
-post /v1/db/public/test text/csv 2,0,0
-select * from test
+post /v1/db/public/test text/csv 0,0,0;
+post /v1/db/public/test text/csv 1,0,0;
+post /v1/db/public/test text/csv 2,0,0;
+select * from test;
 [[0, 0, 0], [1, 0, 0], [2, 0, 0]]
 # test: POST /v1/db/schema/table (text/csv) column list
-post /v1/db/public/test?columns=id text/csv 3
-post /v1/db/public/test?columns=id text/csv 4
-post /v1/db/public/test?columns=id text/csv 5
-post /v1/db/public/test?columns=id,a text/csv 6,0
-post /v1/db/public/test?columns=id,a,b text/csv 7,0,0
+post /v1/db/public/test?columns=id text/csv 3;
+post /v1/db/public/test?columns=id text/csv 4;
+post /v1/db/public/test?columns=id text/csv 5;
+post /v1/db/public/test?columns=id,a text/csv 6,0;
+post /v1/db/public/test?columns=id,a,b text/csv 7,0,0;
 # test: POST /v1/db/schema/table (text/csv) column list (duplicate)
-post /v1/db/public/test?columns=id,a,a text/csv 8,0,0
+post /v1/db/public/test?columns=id,a,a text/csv 8,0,0;
 {"msg": "column list must be ordered"}
 # test: POST /v1/db/schema/table (text/csv) column list (unordered)
-post /v1/db/public/test?columns=id,b,a text/csv 8,0,0
+post /v1/db/public/test?columns=id,b,a text/csv 8,0,0;
 {"msg": "column list must be ordered"}
-select * from test
+select * from test;
 [[0, 0, 0], [1, 0, 0], [2, 0, 0], [3, null, null], [4, null, null], [5, null, null], [6, 0, null], [7, 0, 0]]
 # test: POST /v1/db/schema/table (text/csv) (empty column list)
-post /v1/db/public/test4?columns= text/csv
+post /v1/db/public/test4?columns= text/csv;
 {"msg": "CSV import with empty column list is not supported"}
-post /v1/db/public/test4?columns= text/csv
+post /v1/db/public/test4?columns= text/csv;
 {"msg": "CSV import with empty column list is not supported"}
-select * from test4
+select * from test4;
 []
 # test: POST /v1/db/schema/table (text/csv) (generated columns)
-post /v1/db/public/test2 text/csv 0,null
-post /v1/db/public/test2 text/csv 1,null
-post /v1/db/public/test2 text/csv 2,null
-select * from test2
+post /v1/db/public/test2 text/csv 0,null;
+post /v1/db/public/test2 text/csv 1,null;
+post /v1/db/public/test2 text/csv 2,null;
+select * from test2;
 [[0, 0], [1, 2], [2, 4]]
 # test: POST /v1/db/schema/table (text/csv) (resolved columns)
-post /v1/db/public/test3 text/csv 0,0
-post /v1/db/public/test3 text/csv 0,0
-post /v1/db/public/test3 text/csv 0,0
-post /v1/db/public/test3 text/csv 1,0
-post /v1/db/public/test3 text/csv 1,0
-post /v1/db/public/test3 text/csv 1,0
-select * from test3
+post /v1/db/public/test3 text/csv 0,0;
+post /v1/db/public/test3 text/csv 0,0;
+post /v1/db/public/test3 text/csv 0,0;
+post /v1/db/public/test3 text/csv 1,0;
+post /v1/db/public/test3 text/csv 1,0;
+post /v1/db/public/test3 text/csv 1,0;
+select * from test3;
 [[0, 2], [1, 2]]
 # test: POST /v1/db/schema/table (application/jsonl) (array)
-post /v1/db/public/test application/jsonl [9,0,0] [10, null, 123] [11, null, null]
-post /v1/db/public/test application/jsonl [12,
+post /v1/db/public/test application/jsonl [9,0,0] [10, null, 123] [11, null, null];
+post /v1/db/public/test application/jsonl [12,;
 {"msg": " [12, ⟵ 'int' expected for column 'a'"}
-post /v1/db/public/test application/jsonl [12,0,
+post /v1/db/public/test application/jsonl [12,0,;
 {"msg": " [12,0, ⟵ 'int' expected for column 'b'"}
-post /v1/db/public/test application/jsonl [12,0]
+post /v1/db/public/test application/jsonl [12,0];
 {"msg": " [12,0❰]❱ ⟵ , expected"}
-post /v1/db/public/test application/jsonl [12,]
+post /v1/db/public/test application/jsonl [12,];
 {"msg": " [12,❰]❱ ⟵ 'int' expected for column 'a'"}
-post /v1/db/public/test application/jsonl [12,null]
+post /v1/db/public/test application/jsonl [12,null];
 {"msg": " [12,null❰]❱ ⟵ , expected"}
-post /v1/db/public/test application/jsonl [12,null,]
+post /v1/db/public/test application/jsonl [12,null,];
 {"msg": " [12,null,❰]❱ ⟵ 'int' expected for column 'b'"}
-post /v1/db/public/test application/jsonl [12,null,'string']
+post /v1/db/public/test application/jsonl [12,null,'string'];
 {"msg": " [12,null,❰'string'❱ ⟵ 'int' expected for column 'b'"}
-post /v1/db/public/test application/jsonl [[12,null,0]]
+post /v1/db/public/test application/jsonl [[12,null,0]];
 {"msg": " [❰[❱ ⟵ 'int' expected for column 'id'"}
-select * from test
+select * from test;
 [[0, 0, 0], [1, 0, 0], [2, 0, 0], [3, null, null], [4, null, null], [5, null, null], [6, 0, null], [7, 0, 0], [9, 0, 0], [10, null, 123], [11, null, null]]
 # test: POST /v1/db/schema/table (application/jsonl) (array, column list)
-post /v1/db/public/test?columns=id application/jsonl [13]
-post /v1/db/public/test?columns=id,a application/jsonl [14,null]
-select * from test
+post /v1/db/public/test?columns=id application/jsonl [13];
+post /v1/db/public/test?columns=id,a application/jsonl [14,null];
+select * from test;
 [[0, 0, 0], [1, 0, 0], [2, 0, 0], [3, null, null], [4, null, null], [5, null, null], [6, 0, null], [7, 0, 0], [9, 0, 0], [10, null, 123], [11, null, null], [13, null, null], [14, null, null]]
 # test: POST /v1/db/schema/table (application/jsonl) (array, empty column list)
-post /v1/db/public/test4?columns= application/jsonl []
-select * from test4
+post /v1/db/public/test4?columns= application/jsonl [];
+select * from test4;
 [[0, 777]]
 # test: POST /v1/db/schema/table (application/json) (array)
-post /v1/db/public/test application/json [[15,0,0]]
-post /v1/db/public/test application/json [[16,0,0]
+post /v1/db/public/test application/json [[15,0,0]];
+post /v1/db/public/test application/json [[16,0,0];
 {"msg": " [[16,0,0] ⟵ ] expected"}
-post /v1/db/public/test application/json [[16,0,0],
+post /v1/db/public/test application/json [[16,0,0],;
 {"msg": " [[16,0,0], ⟵ json object or array expected"}
-post /v1/db/public/test application/json [[16,0,0],]
+post /v1/db/public/test application/json [[16,0,0],];
 {"msg": " [[16,0,0],❰]❱ ⟵ json object or array expected"}
-post /v1/db/public/test application/json [[16,0,0], [16,0,7]]
+post /v1/db/public/test application/json [[16,0,0], [16,0,7]];
 {"msg": "index 'primary': unique key constraint violation"}
-post /v1/db/public/test application/json [[16,0,0], [17,0,7]] junk
+post /v1/db/public/test application/json [[16,0,0], [17,0,7]] junk;
 {"msg": " [[16,0,0], [17,0,7]] ❰junk❱ ⟵ eof expected"}
-post /v1/db/public/test application/json 
+post /v1/db/public/test application/json ;
 {"msg": "  ⟵ [ expected"}
-post /v1/db/public/test application/json []
+post /v1/db/public/test application/json [];
 {"msg": " [❰]❱ ⟵ json object or array expected"}
-post /v1/db/public/test application/json {}
+post /v1/db/public/test application/json {};
 {"msg": " ❰{❱ ⟵ [ expected"}
-select * from test
+select * from test;
 [[0, 0, 0], [1, 0, 0], [2, 0, 0], [3, null, null], [4, null, null], [5, null, null], [6, 0, null], [7, 0, 0], [9, 0, 0], [10, null, 123], [11, null, null], [13, null, null], [14, null, null], [15, 0, 0]]
 # test: POST /v1/db/schema/table (application/json) (array, column list)
-post /v1/db/public/test?columns=id application/json [[18,0]
+post /v1/db/public/test?columns=id application/json [[18,0];
 {"msg": " [[18❰,❱ ⟵ ] expected"}
-post /v1/db/public/test?columns=id application/json [[18,
+post /v1/db/public/test?columns=id application/json [[18,;
 {"msg": " [[18❰,❱ ⟵ ] expected"}
-post /v1/db/public/test?columns=id application/json [[]
+post /v1/db/public/test?columns=id application/json [[];
 {"msg": " [[❰]❱ ⟵ 'int' expected for column 'id'"}
-post /v1/db/public/test?columns=id application/json [[18], [19]]
-select * from test
+post /v1/db/public/test?columns=id application/json [[18], [19]];
+select * from test;
 [[0, 0, 0], [1, 0, 0], [2, 0, 0], [3, null, null], [4, null, null], [5, null, null], [6, 0, null], [7, 0, 0], [9, 0, 0], [10, null, 123], [11, null, null], [13, null, null], [14, null, null], [15, 0, 0], [18, null, null], [19, null, null]]
 # test: POST /v1/db/schema/table (application/json) (array, empty column list)
-post /v1/db/public/test4?columns= application/json [[], [], []]
-select * from test4
+post /v1/db/public/test4?columns= application/json [[], [], []];
+select * from test4;
 [[0, 777], [1, 777], [2, 777], [3, 777]]
 # test: POST /v1/db/schema/table (application/jsonl) (obj, empty column list)
-post /v1/db/public/test4?columns= application/jsonl {}
-select * from test4
+post /v1/db/public/test4?columns= application/jsonl {};
+select * from test4;
 [[0, 777], [1, 777], [2, 777], [3, 777], [4, 777]]
 # test: POST /v1/db/schema/table (application/jsonl) (obj, one column)
-post /v1/db/public/test5?columns=data application/jsonl {"id": 1} {"id": 2} {"id": 3}
-select * format 'json' from test5
+post /v1/db/public/test5?columns=data application/jsonl {"id": 1} {"id": 2} {"id": 3};
+select * format 'json' from test5;
 [[0, {"id": 1}], [1, {"id": 2}], [2, {"id": 3}]]
 # test: POST /v1/db/schema/table (application/jsonl) (obj, column list)
-post /v1/db/public/test5?columns=id,data application/jsonl {"id": 1} {"id": 2} {"id": 3}
+post /v1/db/public/test5?columns=id,data application/jsonl {"id": 1} {"id": 2} {"id": 3};
 {"msg": " ❰{❱ ⟵ JSON column list must have zero or one value"}
-select * from test5
+select * from test5;
 [[0, {
   "id": 1
 }], [1, {
@@ -155,44 +155,44 @@ select * from test5
   "id": 3
 }]]
 # test: POST /v1/db/schema/table (application/jsonl) (obj)
-post /v1/db/public/test application/jsonl {"id": 20}
-post /v1/db/public/test application/jsonl {"id": 20, "a"
+post /v1/db/public/test application/jsonl {"id": 20};
+post /v1/db/public/test application/jsonl {"id": 20, "a";
 {"msg": " {\"id\": 20, \"a\" ⟵ : expected"}
-post /v1/db/public/test application/jsonl {"id": 20,
+post /v1/db/public/test application/jsonl {"id": 20,;
 {"msg": " {\"id\": 20, ⟵ } expected"}
-post /v1/db/public/test application/jsonl {"id": 20, 1
+post /v1/db/public/test application/jsonl {"id": 20, 1;
 {"msg": " {\"id\": 20, ❰1❱ ⟵ } expected"}
-post /v1/db/public/test application/jsonl {"id": 20, "a"
+post /v1/db/public/test application/jsonl {"id": 20, "a";
 {"msg": " {\"id\": 20, \"a\" ⟵ : expected"}
-post /v1/db/public/test application/jsonl {"id": 20, "a":
+post /v1/db/public/test application/jsonl {"id": 20, "a":;
 {"msg": " {\"id\": 20, \"a\": ⟵ 'int' expected for column 'a'"}
-post /v1/db/public/test application/jsonl {"id": 20, "a": 0
+post /v1/db/public/test application/jsonl {"id": 20, "a": 0;
 {"msg": " {\"id\": 20, \"a\": 0 ⟵ } expected"}
-post /v1/db/public/test application/jsonl {"id": 20, "a": 0,
+post /v1/db/public/test application/jsonl {"id": 20, "a": 0,;
 {"msg": " {\"id\": 20, \"a\": 0, ⟵ } expected"}
-post /v1/db/public/test application/jsonl {"id": 20, "a": 0, "b"
+post /v1/db/public/test application/jsonl {"id": 20, "a": 0, "b";
 {"msg": " {\"id\": 20, \"a\": 0, \"b\" ⟵ : expected"}
-post /v1/db/public/test application/jsonl {"id": 20, "a": 0, "b": 0}
+post /v1/db/public/test application/jsonl {"id": 20, "a": 0, "b": 0};
 {"msg": "index 'primary': unique key constraint violation"}
-post /v1/db/public/test application/jsonl {"id": 21, "a": 0, "b": 0}
-post /v1/db/public/test application/jsonl {"id": 22, "b": 0}
-post /v1/db/public/test application/jsonl {"id": 23}
-post /v1/db/public/test application/jsonl {"id": 22, "b": 0, "b": 1}
+post /v1/db/public/test application/jsonl {"id": 21, "a": 0, "b": 0};
+post /v1/db/public/test application/jsonl {"id": 22, "b": 0};
+post /v1/db/public/test application/jsonl {"id": 23};
+post /v1/db/public/test application/jsonl {"id": 22, "b": 0, "b": 1};
 {"msg": " {\"id\": 22, \"b\": 0, ❰\"b\"❱ ⟵ column value is redefined"}
-post /v1/db/public/test application/jsonl {"id": 24} {"id": 25} {"id": 26}
-select * format 'json' from test
+post /v1/db/public/test application/jsonl {"id": 24} {"id": 25} {"id": 26};
+select * format 'json' from test;
 [[0, 0, 0], [1, 0, 0], [2, 0, 0], [3, null, null], [4, null, null], [5, null, null], [6, 0, null], [7, 0, 0], [9, 0, 0], [10, null, 123], [11, null, null], [13, null, null], [14, null, null], [15, 0, 0], [18, null, null], [19, null, null], [20, null, null], [21, 0, 0], [22, null, 0], [23, null, null], [24, null, null], [25, null, null], [26, null, null]]
 # test: POST /v1/db/schema/table (application/json) (obj)
-post /v1/db/public/test application/json [{"id": 27}, {"id": 28}]
-select * format 'json' from test
+post /v1/db/public/test application/json [{"id": 27}, {"id": 28}];
+select * format 'json' from test;
 [[0, 0, 0], [1, 0, 0], [2, 0, 0], [3, null, null], [4, null, null], [5, null, null], [6, 0, null], [7, 0, 0], [9, 0, 0], [10, null, 123], [11, null, null], [13, null, null], [14, null, null], [15, 0, 0], [18, null, null], [19, null, null], [20, null, null], [21, 0, 0], [22, null, 0], [23, null, null], [24, null, null], [25, null, null], [26, null, null], [27, null, null], [28, null, null]]
 # test: POST /v1/db/schema/table (application/json) (obj, one column)
-post /v1/db/public/test5?columns=data application/json [{"id": 4}, {"id": 5}]
-select * format 'json' from test5
+post /v1/db/public/test5?columns=data application/json [{"id": 4}, {"id": 5}];
+select * format 'json' from test5;
 [[0, {"id": 1}], [1, {"id": 2}], [2, {"id": 3}], [3, {"id": 4}], [4, {"id": 5}]]
 # test: POST /v1/db/schema/table (application/json) (obj, one column, generated)
-post /v1/db/public/test6?columns=data application/json [{"id": 1}, {"id": 2, "data": [1,2,3]}]
-select * format 'json' from test6
+post /v1/db/public/test6?columns=data application/json [{"id": 1}, {"id": 2, "data": [1,2,3]}];
+select * format 'json' from test6;
 [[1, {"id": 1}], [2, {"id": 2, "data": [1, 2, 3]}]]
-disconnect S0
-close E0
+disconnect S0;
+close E0;

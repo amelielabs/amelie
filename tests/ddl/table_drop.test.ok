@@ -1,51 +1,51 @@
-open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "127.0.0.1", "port": 3485 }]
-connect E0 S0 127.0.0.1:3485
+open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "127.0.0.1", "port": 3485 }];
+connect E0 S0 127.0.0.1:3485;
 # test: drop table statement parsing
-drop
-{"msg": "drop ⟵ USER|REPLICA|SCHEMA|TABLE|INDEX|FUNCTION expected"}
-drop 1
+drop;
+{"msg": "drop❰;❱ ⟵ USER|REPLICA|SCHEMA|TABLE|INDEX|FUNCTION expected"}
+drop 1;
 {"msg": "drop ❰1❱ ⟵ USER|REPLICA|SCHEMA|TABLE|INDEX|FUNCTION expected"}
-drop table "name"
+drop table "name";
 {"msg": "drop table ❰\"name\"❱ ⟵ name expected"}
-drop table name junk
+drop table name junk;
 {"msg": "drop table name ❰junk❱ ⟵ ; expected"}
 # test: drop non-existing table
-drop table name
+drop table name;
 {"msg": "table 'name': not exists"}
-drop table if exists test
+drop table if exists test;
 # test: drop table
-create table test(id int primary key)
-select system.table('test').name
+create table test(id int primary key);
+select system.table('test').name;
 ["test"]
-drop table test
-select system.table('test').name
+drop table test;
+select system.table('test').name;
 [null]
 # test: drop table if exists
-create table test(id int primary key)
-select system.table('test').name
+create table test(id int primary key);
+select system.table('test').name;
 ["test"]
-drop table test
-select system.table('test').name
+drop table test;
+select system.table('test').name;
 [null]
-drop table if exists test
-drop table if exists test.test
+drop table if exists test;
+drop table if exists test.test;
 # test: recreate same table after drop
-create table test (id int primary key)
-select system.table('test').name
+create table test (id int primary key);
+select system.table('test').name;
 ["test"]
-drop table test
-create table test (id int primary key)
-select system.table('test').name
+drop table test;
+create table test (id int primary key);
+select system.table('test').name;
 ["test"]
-drop table test
+drop table test;
 # test: drop table schema
-create schema test
-create table test.test (id int primary key)
-drop table test
+create schema test;
+create table test.test (id int primary key);
+drop table test;
 {"msg": "table 'test': not exists"}
-drop table test.test
-drop schema test
-show tables
+drop table test.test;
+drop schema test;
+show tables;
 []
-disconnect S0
-close E0
+disconnect S0;
+close E0;

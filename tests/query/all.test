@@ -1,114 +1,114 @@
 #
 
-open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "127.0.0.1", "port": 3485 }]
-connect E0 S0 127.0.0.1:3485
+open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "127.0.0.1", "port": 3485 }];
+connect E0 S0 127.0.0.1:3485;
 
 # test: all parsing
-select all
-select all (
-select = all
-select 1 = all
-select 1 = all (
-select 1 = all ()
+select all;
+select all (;
+select = all;
+select 1 = all;
+select 1 = all (;
+select 1 = all ();
 
 # test: = all ([])
-select 1 = all([])
-select 1 = all([null])
-select 1 = all([1])
-select 1 = all([1, 2])
-select 1 = all([1, 1])
-select 1 = all([1, 2, null])
-select 1 = all([1, 1, null])
-select 0 = all([1, 2, null])
-select 0 = all([1, 1, null])
+select 1 = all([]);
+select 1 = all([null]);
+select 1 = all([1]);
+select 1 = all([1, 2]);
+select 1 = all([1, 1]);
+select 1 = all([1, 2, null]);
+select 1 = all([1, 1, null]);
+select 0 = all([1, 2, null]);
+select 0 = all([1, 1, null]);
 
 # test: >= all ([])
-select 1 >= all([1,2])
-select 0 >= all([1,2])
-select 1 >= all([1,2, null])
-select 0 >= all([1,2, null])
-select 3 >= all([1,2])
-select 3 >= all([1,2, null])
+select 1 >= all([1,2]);
+select 0 >= all([1,2]);
+select 1 >= all([1,2, null]);
+select 0 >= all([1,2, null]);
+select 3 >= all([1,2]);
+select 3 >= all([1,2, null]);
 
 # test: > all ([])
-select 1 > all([1,2])
-select 0 > all([1,2])
-select 1 > all([1,2, null])
-select 0 > all([1,2, null])
-select 3 > all([1,2])
-select 3 > all([1,2, null])
+select 1 > all([1,2]);
+select 0 > all([1,2]);
+select 1 > all([1,2, null]);
+select 0 > all([1,2, null]);
+select 3 > all([1,2]);
+select 3 > all([1,2, null]);
 
 # test: <= all ([])
-select 1 <= all([1,2])
-select 0 <= all([1,2])
-select 3 <= all([1,2])
-select 1 <= all([1,2, null])
-select 3 <= all([1,2, null])
+select 1 <= all([1,2]);
+select 0 <= all([1,2]);
+select 3 <= all([1,2]);
+select 1 <= all([1,2, null]);
+select 3 <= all([1,2, null]);
 
 # test: < all ([])
-select 1 < all([1,2])
-select 0 < all([1,2])
-select 3 < all([1,2])
-select 1 < all([1,2, null])
-select 3 < all([1,2, null])
+select 1 < all([1,2]);
+select 0 < all([1,2]);
+select 3 < all([1,2]);
+select 1 < all([1,2, null]);
+select 3 < all([1,2, null]);
 
 # test: = all
-create table test (id int primary key, data int)
-select 1 = all(select id from test)
-insert into test values (1, 1)
-select 1 = all(select id from test)
-insert into test values (2, null)
-select 1 = all(select id from test)
-select not (1 = all(select id from test))
+create table test (id int primary key, data int);
+select 1 = all(select id from test);
+insert into test values (1, 1);
+select 1 = all(select id from test);
+insert into test values (2, null);
+select 1 = all(select id from test);
+select not (1 = all(select id from test));
 
-select null = all(select id from test)
-select 1 = all(select id from test)
-select 3 = all(select id from test)
-select 3 = all(select data from test)
+select null = all(select id from test);
+select 1 = all(select id from test);
+select 3 = all(select id from test);
+select 3 = all(select data from test);
 
 # test: >= all
-select 1 >= all(select id from test)
-select 0 >= all(select id from test)
+select 1 >= all(select id from test);
+select 0 >= all(select id from test);
 
-select null >= all(select id from test)
-select 1 >= all(select id from test)
-select 3 >= all(select id from test)
-select 0 >= all(select data from test)
-select 3 >= all(select data from test)
+select null >= all(select id from test);
+select 1 >= all(select id from test);
+select 3 >= all(select id from test);
+select 0 >= all(select data from test);
+select 3 >= all(select data from test);
 
 # test: > all
-select 1 > all(select id from test)
-select 0 > all(select id from test)
-select 3 > all(select id from test)
+select 1 > all(select id from test);
+select 0 > all(select id from test);
+select 3 > all(select id from test);
 
-select null > all(select id from test)
-select 1 > all(select id from test)
-select 3 > all(select id from test)
-select 0 > all(select data from test)
-select 3 > all(select data from test)
+select null > all(select id from test);
+select 1 > all(select id from test);
+select 3 > all(select id from test);
+select 0 > all(select data from test);
+select 3 > all(select data from test);
 
 # test: <= all
-select 1 <= all(select id from test)
-select 0 <= all(select id from test)
-select 3 <= all(select id from test)
+select 1 <= all(select id from test);
+select 0 <= all(select id from test);
+select 3 <= all(select id from test);
 
-select null <= all(select id from test)
-select 1 <= all(select id from test)
-select 3 <= all(select id from test)
-select 3 <= all(select data from test)
-select 0 <= all(select data from test)
+select null <= all(select id from test);
+select 1 <= all(select id from test);
+select 3 <= all(select id from test);
+select 3 <= all(select data from test);
+select 0 <= all(select data from test);
 
 # test: < all
-select 1 < all(select id from test)
-select 0 < all(select id from test)
-select 3 < all(select id from test)
-select 0 < all(select data from test)
+select 1 < all(select id from test);
+select 0 < all(select id from test);
+select 3 < all(select id from test);
+select 0 < all(select data from test);
 
-select null < all(select id from test)
-select 1 < all(select id from test)
-select 0 < all(select id from test)
-select 3 < all(select data from test)
-select 0 < all(select data from test)
+select null < all(select id from test);
+select 1 < all(select id from test);
+select 0 < all(select id from test);
+select 3 < all(select data from test);
+select 0 < all(select data from test);
 
-disconnect S0
-close E0
+disconnect S0;
+close E0;

@@ -1,29 +1,29 @@
 #
 
-open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "127.0.0.1", "port": 3485 }]
-connect E0 S0 127.0.0.1:3485
+open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "127.0.0.1", "port": 3485 }];
+connect E0 S0 127.0.0.1:3485;
 
-create table test (id int primary key, data int default 1)
-insert into test (id) values (1), (2), (3)
+create table test (id int primary key, data int default 1);
+insert into test (id) values (1), (2), (3);
 
 # test: select label
-select 1 name
+select 1 name;
 
 # test: select as label
-select 1 AS name
+select 1 AS name;
 
 # test: select column as from
-create table test (id int primary key)
-select id as x from test
-select id x from test
+create table test (id int primary key);
+select id as x from test;
+select id x from test;
 
 # test: select from (select column as from)
-select t.id from (select id from test) t
-select t.x from (select id as x from test) t
-select t.x from (select z.id as x from (select id from test) z) t
-explain select t.x from (select z.id as x from (select id from test) z) t
+select t.id from (select id from test) t;
+select t.x from (select id as x from test) t;
+select t.x from (select z.id as x from (select id from test) z) t;
+explain select t.x from (select z.id as x from (select id from test) z) t;
 
-drop table test
+drop table test;
 
 ## test: select from expr having label
 #select * name from [1,2,3] group by *
@@ -58,5 +58,5 @@ drop table test
 ## test: select from (select {} from shared) label
 #select t.id from (select {"id": id} from test) t
 
-disconnect S0
-close E0
+disconnect S0;
+close E0;

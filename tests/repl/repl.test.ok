@@ -1,7 +1,7 @@
-open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "127.0.0.1", "port": 3480 }], "backends": 3, "repl_reconnect_ms": 10
-connect E0 S0 127.0.0.1:3480
+open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "127.0.0.1", "port": 3480 }], "backends": 3, "repl_reconnect_ms": 10;
+connect E0 S0 127.0.0.1:3480;
 # test: primary by default
-show repl
+show repl;
 [{
   "active": false,
   "role": "primary",
@@ -9,14 +9,14 @@ show repl
   "replicas": []
 }]
 # test: backup replica
-backup E1 "uri": "127.0.0.1:3480"
-close E1
-open E1 "uuid": "00000000-0000-0000-0000-000000000001", "listen": [{ "host": "127.0.0.1", "port": 3481 }]
-connect E1 S1 127.0.0.1:3481
-switch S1
-show uuid
+backup E1 "uri": "127.0.0.1:3480";
+close E1;
+open E1 "uuid": "00000000-0000-0000-0000-000000000001", "listen": [{ "host": "127.0.0.1", "port": 3481 }];
+connect E1 S1 127.0.0.1:3481;
+switch S1;
+show uuid;
 ["00000000-0000-0000-0000-000000000001"]
-show repl
+show repl;
 [{
   "active": false,
   "role": "primary",
@@ -24,27 +24,27 @@ show repl
   "replicas": []
 }]
 # test: start replica
-start repl
+start repl;
 # test: subscribe (using self id)
-subscribe "00000000-0000-0000-0000-000000000001"
+subscribe "00000000-0000-0000-0000-000000000001";
 {"msg": "repl: primary id cannot match this server id"}
 # test: subscribe
-subscribe "00000000-0000-0000-0000-000000000000"
-show repl
+subscribe "00000000-0000-0000-0000-000000000000";
+show repl;
 [{
   "active": true,
   "role": "replica",
   "primary": "00000000-0000-0000-0000-000000000000",
   "replicas": []
 }]
-select system.state().read_only
+select system.state().read_only;
 [true]
 # test: create replica
-switch S0
-show replicas
+switch S0;
+show replicas;
 []
-create replica "00000000-0000-0000-0000-000000000001" uri "127.0.0.1:3481"
-show replicas
+create replica "00000000-0000-0000-0000-000000000001" uri "127.0.0.1:3481";
+show replicas;
 [{
   "id": "00000000-0000-0000-0000-000000000001",
   "uri": "127.0.0.1:3481",
@@ -53,27 +53,27 @@ show replicas
   "lag": 1
 }]
 # test: start primary
-start repl
+start repl;
 # test: wait for primary connect
-watch system.replica('00000000-0000-0000-0000-000000000001').connected::bool = true
+watch system.replica('00000000-0000-0000-0000-000000000001').connected::bool = true;
 # test: write
-create table test (id int primary key)
-insert into test values (1),(2),(3)
-select system.state().lsn
+create table test (id int primary key);
+insert into test values (1),(2),(3);
+select system.state().lsn;
 [3]
 # test: wait replica sync
-watch system.replica('00000000-0000-0000-0000-000000000001').lsn = system.state().lsn
+watch system.replica('00000000-0000-0000-0000-000000000001').lsn = system.state().lsn;
 # test: stop replica
-disconnect S1
-close E1
+disconnect S1;
+close E1;
 # test: write (replica off)
-insert into test values (4)
-insert into test values (5)
-insert into test values (6)
-select system.state().lsn
+insert into test values (4);
+insert into test values (5);
+insert into test values (6);
+select system.state().lsn;
 [6]
 # test: replica lag
-show replicas
+show replicas;
 [{
   "id": "00000000-0000-0000-0000-000000000001",
   "uri": "127.0.0.1:3481",
@@ -82,17 +82,17 @@ show replicas
   "lag": 3
 }]
 # test: replica disconnected
-switch S0
-watch system.replica('00000000-0000-0000-0000-000000000001').connected::bool = false
+switch S0;
+watch system.replica('00000000-0000-0000-0000-000000000001').connected::bool = false;
 # test: restart replica
-open E1 "uuid": "00000000-0000-0000-0000-000000000001", "listen": [{ "host": "127.0.0.1", "port": 3481 }]
-connect E1 S1 127.0.0.1:3481
+open E1 "uuid": "00000000-0000-0000-0000-000000000001", "listen": [{ "host": "127.0.0.1", "port": 3481 }];
+connect E1 S1 127.0.0.1:3481;
 # test: wait for primary reconnect
-switch S0
-watch system.replica('00000000-0000-0000-0000-000000000001').connected::bool = true
+switch S0;
+watch system.replica('00000000-0000-0000-0000-000000000001').connected::bool = true;
 # test: wait replica sync
-watch system.replica('00000000-0000-0000-0000-000000000001').lsn = system.state().lsn
-show replicas
+watch system.replica('00000000-0000-0000-0000-000000000001').lsn = system.state().lsn;
+show replicas;
 [{
   "id": "00000000-0000-0000-0000-000000000001",
   "uri": "127.0.0.1:3481",
@@ -101,20 +101,20 @@ show replicas
   "lag": 0
 }]
 # test: restart primary
-disconnect S0
-close E0
-open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "127.0.0.1", "port": 3480 }], "backends": 3, "repl_reconnect_ms": 10
-connect E0 S0 127.0.0.1:3480
+disconnect S0;
+close E0;
+open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "127.0.0.1", "port": 3480 }], "backends": 3, "repl_reconnect_ms": 10;
+connect E0 S0 127.0.0.1:3480;
 # test: wait for primary reconnect
-switch S0
-watch system.replica('00000000-0000-0000-0000-000000000001').connected::bool = true
+switch S0;
+watch system.replica('00000000-0000-0000-0000-000000000001').connected::bool = true;
 # test: write
-insert into test values (7)
-insert into test values (8)
-insert into test values (9)
+insert into test values (7);
+insert into test values (8);
+insert into test values (9);
 # test: wait replica sync
-watch system.replica('00000000-0000-0000-0000-000000000001').lsn = system.state().lsn
-show replicas
+watch system.replica('00000000-0000-0000-0000-000000000001').lsn = system.state().lsn;
+show replicas;
 [{
   "id": "00000000-0000-0000-0000-000000000001",
   "uri": "127.0.0.1:3481",
@@ -123,45 +123,45 @@ show replicas
   "lag": 0
 }]
 # test: ensure replica is read-only
-switch S1
-select system.state().read_only
+switch S1;
+select system.state().read_only;
 [true]
-select system.state().lsn
+select system.state().lsn;
 [9]
-insert into test values (10)
+insert into test values (10);
 {"msg": "system is in read-only mode"}
-select system.state().lsn
+select system.state().lsn;
 [9]
-select system.state().psn
+select system.state().psn;
 [3]
-create table test2 (id int primary key)
+create table test2 (id int primary key);
 {"msg": "system is in read-only mode"}
-select system.state().lsn
+select system.state().lsn;
 [9]
-select system.state().psn
+select system.state().psn;
 [6]
 # test: replica read
-select * from test
+select * from test;
 [1, 3, 8, 4, 5, 6, 2, 7, 9]
-show repl
+show repl;
 [{
   "active": true,
   "role": "replica",
   "primary": "00000000-0000-0000-0000-000000000000",
   "replicas": []
 }]
-select system.state().lsn
+select system.state().lsn;
 [9]
 # test: failover (unsubscribe, switch to primary)
-show repl
+show repl;
 [{
   "active": true,
   "role": "replica",
   "primary": "00000000-0000-0000-0000-000000000000",
   "replicas": []
 }]
-unsubscribe
-show repl
+unsubscribe;
+show repl;
 [{
   "active": true,
   "role": "primary",
@@ -169,14 +169,14 @@ show repl
   "replicas": []
 }]
 # test: drop replica
-switch S0
-drop replica "00000000-0000-0000-0000-000000000001"
-show replicas
+switch S0;
+drop replica "00000000-0000-0000-0000-000000000001";
+show replicas;
 []
 # test: subscribe to new primary
-switch S0
-subscribe "00000000-0000-0000-0000-000000000001"
-show repl
+switch S0;
+subscribe "00000000-0000-0000-0000-000000000001";
+show repl;
 [{
   "active": true,
   "role": "replica",
@@ -184,18 +184,18 @@ show repl
   "replicas": []
 }]
 # test: create replica
-switch S1
-create replica "00000000-0000-0000-0000-000000000000" uri "127.0.0.1:3480"
+switch S1;
+create replica "00000000-0000-0000-0000-000000000000" uri "127.0.0.1:3480";
 # test: wait for primary connect
-watch system.replica('00000000-0000-0000-0000-000000000000').connected::bool = true
-watch system.replica('00000000-0000-0000-0000-000000000000').lsn = system.state().lsn
+watch system.replica('00000000-0000-0000-0000-000000000000').connected::bool = true;
+watch system.replica('00000000-0000-0000-0000-000000000000').lsn = system.state().lsn;
 # test: write
-insert into test values (10)
-insert into test values (11)
-insert into test values (12)
+insert into test values (10);
+insert into test values (11);
+insert into test values (12);
 # test: wait replica sync
-watch system.replica('00000000-0000-0000-0000-000000000000').lsn = system.state().lsn
-show replicas
+watch system.replica('00000000-0000-0000-0000-000000000000').lsn = system.state().lsn;
+show replicas;
 [{
   "id": "00000000-0000-0000-0000-000000000000",
   "uri": "127.0.0.1:3480",
@@ -203,9 +203,9 @@ show replicas
   "lsn": 12,
   "lag": 0
 }]
-select * from test
+select * from test;
 [1, 3, 8, 4, 5, 6, 10, 11, 2, 7, 9, 12]
-disconnect S1
-close E1
-disconnect S0
-close E0
+disconnect S1;
+close E1;
+disconnect S0;
+close E0;

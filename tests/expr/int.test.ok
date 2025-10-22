@@ -1,7 +1,7 @@
-open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "127.0.0.1", "port": 3485 }]
-connect E0 S0 127.0.0.1:3485
+open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "127.0.0.1", "port": 3485 }];
+connect E0 S0 127.0.0.1:3485;
 # test: int
-explain select 0
+explain select 0;
 [{
   "main": {
     "00": "int                 0      -      0     # 0",
@@ -9,11 +9,11 @@ explain select 0
   },
   "access": []
 }]
-select 0
+select 0;
 [0]
-select 1234
+select 1234;
 [1234]
-explain select -1234
+explain select -1234;
 [{
   "main": {
     "00": "int                 0      -      0     # -1234",
@@ -21,30 +21,30 @@ explain select -1234
   },
   "access": []
 }]
-select -1234
+select -1234;
 [-1234]
 # test: int limits
-select 4294967295
+select 4294967295;
 [4294967295]
-select -4294967295
+select -4294967295;
 [-4294967295]
-select 9223372036854775807
+select 9223372036854775807;
 [9223372036854775807]
-select -9223372036854775807
+select -9223372036854775807;
 [-9223372036854775807]
 # test: int overflow
-select -92233720368547758077
+select -92233720368547758077;
 {"msg": "select  ⟵ int overflow"}
-select 18446744073709551615
+select 18446744073709551615;
 {"msg": "select  ⟵ int overflow"}
-select 184467440737095516155
+select 184467440737095516155;
 {"msg": "select  ⟵ int overflow"}
 # test: int = bool
-select 1 = true
+select 1 = true;
 [true]
-select 1 = false
+select 1 = false;
 [false]
-explain select 1 = true
+explain select 1 = true;
 [{
   "main": {
     "00": "int                 0      -      0     # 1",
@@ -55,13 +55,13 @@ explain select 1 = true
   "access": []
 }]
 # test: int = int
-select 1 = 1
+select 1 = 1;
 [true]
-select 1 = 123
+select 1 = 123;
 [false]
-select 1 = 0
+select 1 = 0;
 [false]
-explain select 1 = 18
+explain select 1 = 18;
 [{
   "main": {
     "00": "int                 0      -      0     # 1",
@@ -72,13 +72,13 @@ explain select 1 = 18
   "access": []
 }]
 # test: int = double
-select 1 = 1.0
+select 1 = 1.0;
 [true]
-select 1 = 12.3
+select 1 = 12.3;
 [false]
-select 1 = 0.14
+select 1 = 0.14;
 [false]
-explain select 1 = 1.0000
+explain select 1 = 1.0000;
 [{
   "main": {
     "00": "int                 0      -      0     # 1",
@@ -89,9 +89,9 @@ explain select 1 = 1.0000
   "access": []
 }]
 # test: int = timestamp
-select 0 = '1970-01-01 00:00:00'::timestamp
+select 0 = '1970-01-01 00:00:00'::timestamp;
 [true]
-explain select 0 = '1970-01-01 00:00:00'::timestamp
+explain select 0 = '1970-01-01 00:00:00'::timestamp;
 [{
   "main": {
     "00": "int                 0      -      0     # 0",
@@ -103,12 +103,12 @@ explain select 0 = '1970-01-01 00:00:00'::timestamp
   },
   "access": []
 }]
-select 0 = current_timestamp
+select 0 = current_timestamp;
 [false]
 # test: int = null
-select 1 = null
+select 1 = null;
 [null]
-explain select 1 = null
+explain select 1 = null;
 [{
   "main": {
     "00": "int                 0      -      0     # 1",
@@ -119,16 +119,16 @@ explain select 1 = null
   "access": []
 }]
 # test: int = unsupported
-select 1 = [1,2,3]
+select 1 = [1,2,3];
 {"msg": "select 1 = ❰[❱ ⟵ operation int = json is not supported"}
-select 1 = [1,2,3]::vector
+select 1 = [1,2,3]::vector;
 {"msg": "select 1 = [1,2,3]❰::❱ ⟵ operation int = vector is not supported"}
 # test: int <> bool
-select 1 <> true
+select 1 <> true;
 [false]
-select 1 <> false
+select 1 <> false;
 [true]
-explain select 1 <> true
+explain select 1 <> true;
 [{
   "main": {
     "00": "int                 0      -      0     # 1",
@@ -140,13 +140,13 @@ explain select 1 <> true
   "access": []
 }]
 # test: int <> int
-select 1 <> 1
+select 1 <> 1;
 [false]
-select 1 <> 123
+select 1 <> 123;
 [true]
-select 1 <> 0
+select 1 <> 0;
 [true]
-explain select 1 <> 18
+explain select 1 <> 18;
 [{
   "main": {
     "00": "int                 0      -      0     # 1",
@@ -158,13 +158,13 @@ explain select 1 <> 18
   "access": []
 }]
 # test: int <> double
-select 1 <> 1.0
+select 1 <> 1.0;
 [false]
-select 1 <> 12.3
+select 1 <> 12.3;
 [true]
-select 1 <> 0.14
+select 1 <> 0.14;
 [true]
-explain select 1 <> 1.0000
+explain select 1 <> 1.0000;
 [{
   "main": {
     "00": "int                 0      -      0     # 1",
@@ -176,9 +176,9 @@ explain select 1 <> 1.0000
   "access": []
 }]
 # test: int <> timestamp
-select 0 <> '1970-01-01 00:00:00'::timestamp
+select 0 <> '1970-01-01 00:00:00'::timestamp;
 [false]
-explain select 0 <> '1970-01-01 00:00:00'::timestamp
+explain select 0 <> '1970-01-01 00:00:00'::timestamp;
 [{
   "main": {
     "00": "int                 0      -      0     # 0",
@@ -191,12 +191,12 @@ explain select 0 <> '1970-01-01 00:00:00'::timestamp
   },
   "access": []
 }]
-select 0 <> current_timestamp
+select 0 <> current_timestamp;
 [true]
 # test: int <> null
-select 1 <> null
+select 1 <> null;
 [null]
-explain select 1 <> null
+explain select 1 <> null;
 [{
   "main": {
     "00": "int                 0      -      0     # 1",
@@ -208,26 +208,26 @@ explain select 1 <> null
   "access": []
 }]
 # test: int <> unsupported
-select 1 <> [1,2,3]
+select 1 <> [1,2,3];
 {"msg": "select 1 <> ❰[❱ ⟵ operation int = json is not supported"}
-select 1 <> [1,2,3]::vector
+select 1 <> [1,2,3]::vector;
 {"msg": "select 1 <> [1,2,3]❰::❱ ⟵ operation int = vector is not supported"}
 # test: int >= int
-select 1 >= 0
+select 1 >= 0;
 [true]
-select 1 >= 1
+select 1 >= 1;
 [true]
-select 1 >= 2
+select 1 >= 2;
 [false]
-select -1 >= -0
+select -1 >= -0;
 [false]
-select -1 >= 0
+select -1 >= 0;
 [false]
-select -1 >= -10
+select -1 >= -10;
 [true]
-select -11 >= -10
+select -11 >= -10;
 [false]
-explain select -1 >= -10
+explain select -1 >= -10;
 [{
   "main": {
     "00": "int                 0      -      0     # -1",
@@ -238,11 +238,11 @@ explain select -1 >= -10
   "access": []
 }]
 # test: int >= double
-select 1 >= 0.11
+select 1 >= 0.11;
 [true]
-select 1 >= 1.11
+select 1 >= 1.11;
 [false]
-explain select 1 >= 1.11
+explain select 1 >= 1.11;
 [{
   "main": {
     "00": "int                 0      -      0     # 1",
@@ -253,11 +253,11 @@ explain select 1 >= 1.11
   "access": []
 }]
 # test: int >= timestamp
-select 1 >= current_timestamp
+select 1 >= current_timestamp;
 [false]
-select 0 >= '1970-01-01 00:00:00'::timestamp
+select 0 >= '1970-01-01 00:00:00'::timestamp;
 [true]
-explain select 0 >= '1970-01-01 00:00:00'::timestamp
+explain select 0 >= '1970-01-01 00:00:00'::timestamp;
 [{
   "main": {
     "00": "int                 0      -      0     # 0",
@@ -270,9 +270,9 @@ explain select 0 >= '1970-01-01 00:00:00'::timestamp
   "access": []
 }]
 # test: int >= null
-select 1 >= null
+select 1 >= null;
 [null]
-explain select 1 >= null
+explain select 1 >= null;
 [{
   "main": {
     "00": "int                 0      -      0     # 1",
@@ -283,24 +283,24 @@ explain select 1 >= null
   "access": []
 }]
 # test: int >= unsupported
-explain select 1 >= []
+explain select 1 >= [];
 {"msg": "explain select 1 >= ❰[❱ ⟵ operation int >= json is not supported"}
 # test: int > int
-select 1 > 0
+select 1 > 0;
 [true]
-select 1 > 1
+select 1 > 1;
 [false]
-select 1 > 2
+select 1 > 2;
 [false]
-select -1 > -0
+select -1 > -0;
 [false]
-select -1 > 0
+select -1 > 0;
 [false]
-select -1 > -10
+select -1 > -10;
 [true]
-select -11 > -10
+select -11 > -10;
 [false]
-explain select -1 > -10
+explain select -1 > -10;
 [{
   "main": {
     "00": "int                 0      -      0     # -1",
@@ -311,11 +311,11 @@ explain select -1 > -10
   "access": []
 }]
 # test: int > double
-select 1 > 0.11
+select 1 > 0.11;
 [true]
-select 1 > 1.11
+select 1 > 1.11;
 [false]
-explain select 1 > 1.11
+explain select 1 > 1.11;
 [{
   "main": {
     "00": "int                 0      -      0     # 1",
@@ -326,11 +326,11 @@ explain select 1 > 1.11
   "access": []
 }]
 # test: int > timestamp
-select 1 > current_timestamp
+select 1 > current_timestamp;
 [false]
-select 0 > '1970-01-01 00:00:00'::timestamp
+select 0 > '1970-01-01 00:00:00'::timestamp;
 [false]
-explain select 0 > '1970-01-01 00:00:00'::timestamp
+explain select 0 > '1970-01-01 00:00:00'::timestamp;
 [{
   "main": {
     "00": "int                 0      -      0     # 0",
@@ -343,9 +343,9 @@ explain select 0 > '1970-01-01 00:00:00'::timestamp
   "access": []
 }]
 # test: int > null
-select 1 > null
+select 1 > null;
 [null]
-explain select 1 > null
+explain select 1 > null;
 [{
   "main": {
     "00": "int                 0      -      0     # 1",
@@ -356,24 +356,24 @@ explain select 1 > null
   "access": []
 }]
 # test: int > unsupported
-explain select 1 > []
+explain select 1 > [];
 {"msg": "explain select 1 > ❰[❱ ⟵ operation int > json is not supported"}
 # test: int <= int
-select 1 <= 0
+select 1 <= 0;
 [false]
-select 1 <= 1
+select 1 <= 1;
 [true]
-select 1 <= 2
+select 1 <= 2;
 [true]
-select -1 <= -0
+select -1 <= -0;
 [true]
-select -1 <= 0
+select -1 <= 0;
 [true]
-select -1 <= -10
+select -1 <= -10;
 [false]
-select -11 <= -10
+select -11 <= -10;
 [true]
-explain select -1 <= -10
+explain select -1 <= -10;
 [{
   "main": {
     "00": "int                 0      -      0     # -1",
@@ -384,11 +384,11 @@ explain select -1 <= -10
   "access": []
 }]
 # test: int <= double
-select 1 <= 0.11
+select 1 <= 0.11;
 [false]
-select 1 <= 1.11
+select 1 <= 1.11;
 [true]
-explain select 1 <= 1.11
+explain select 1 <= 1.11;
 [{
   "main": {
     "00": "int                 0      -      0     # 1",
@@ -399,11 +399,11 @@ explain select 1 <= 1.11
   "access": []
 }]
 # test: int <= timestamp
-select 1 <= current_timestamp
+select 1 <= current_timestamp;
 [true]
-select 0 <= '1970-01-01 00:00:00'::timestamp
+select 0 <= '1970-01-01 00:00:00'::timestamp;
 [true]
-explain select 0 <= '1970-01-01 00:00:00'::timestamp
+explain select 0 <= '1970-01-01 00:00:00'::timestamp;
 [{
   "main": {
     "00": "int                 0      -      0     # 0",
@@ -416,9 +416,9 @@ explain select 0 <= '1970-01-01 00:00:00'::timestamp
   "access": []
 }]
 # test: int <= null
-select 1 <= null
+select 1 <= null;
 [null]
-explain select 1 <= null
+explain select 1 <= null;
 [{
   "main": {
     "00": "int                 0      -      0     # 1",
@@ -429,24 +429,24 @@ explain select 1 <= null
   "access": []
 }]
 # test: int <= unsupported
-explain select 1 <= []
+explain select 1 <= [];
 {"msg": "explain select 1 <= ❰[❱ ⟵ operation int <= json is not supported"}
 # test: int < int
-select 1 < 0
+select 1 < 0;
 [false]
-select 1 < 1
+select 1 < 1;
 [false]
-select 1 < 2
+select 1 < 2;
 [true]
-select -1 < -0
+select -1 < -0;
 [true]
-select -1 < 0
+select -1 < 0;
 [true]
-select -1 < -10
+select -1 < -10;
 [false]
-select -11 < -10
+select -11 < -10;
 [true]
-explain select -1 < -10
+explain select -1 < -10;
 [{
   "main": {
     "00": "int                 0      -      0     # -1",
@@ -457,11 +457,11 @@ explain select -1 < -10
   "access": []
 }]
 # test: int < double
-select 1 < 0.11
+select 1 < 0.11;
 [false]
-select 1 < 1.11
+select 1 < 1.11;
 [true]
-explain select 1 < 1.11
+explain select 1 < 1.11;
 [{
   "main": {
     "00": "int                 0      -      0     # 1",
@@ -472,11 +472,11 @@ explain select 1 < 1.11
   "access": []
 }]
 # test: int < timestamp
-select 1 < current_timestamp
+select 1 < current_timestamp;
 [true]
-select 0 < '1970-01-01 00:00:00'::timestamp
+select 0 < '1970-01-01 00:00:00'::timestamp;
 [false]
-explain select 0 < '1970-01-01 00:00:00'::timestamp
+explain select 0 < '1970-01-01 00:00:00'::timestamp;
 [{
   "main": {
     "00": "int                 0      -      0     # 0",
@@ -489,9 +489,9 @@ explain select 0 < '1970-01-01 00:00:00'::timestamp
   "access": []
 }]
 # test: int < null
-select 1 < null
+select 1 < null;
 [null]
-explain select 1 < null
+explain select 1 < null;
 [{
   "main": {
     "00": "int                 0      -      0     # 1",
@@ -502,12 +502,12 @@ explain select 1 < null
   "access": []
 }]
 # test: int < unsupported
-explain select 1 < []
+explain select 1 < [];
 {"msg": "explain select 1 < ❰[❱ ⟵ operation int < json is not supported"}
 # test: int + int
-select 1 + 1
+select 1 + 1;
 [2]
-explain select 1 + 1
+explain select 1 + 1;
 [{
   "main": {
     "00": "int                 0      -      0     # 1",
@@ -518,18 +518,18 @@ explain select 1 + 1
   "access": []
 }]
 # test: int + int (overflow)
-select 1 + 4294967295
+select 1 + 4294967295;
 [4294967296]
-select 1 + -4294967295
+select 1 + -4294967295;
 [-4294967294]
-select 1 + 9223372036854775807
+select 1 + 9223372036854775807;
 {"msg": "int + int overflow"}
-select 1 + -9223372036854775807
+select 1 + -9223372036854775807;
 [-9223372036854775806]
 # test: int + double
-select 1 + 1.5
+select 1 + 1.5;
 [2.5]
-explain select 1 + 1.5
+explain select 1 + 1.5;
 [{
   "main": {
     "00": "int                 0      -      0     # 1",
@@ -540,15 +540,15 @@ explain select 1 + 1.5
   "access": []
 }]
 # test: int + null
-select 1 + null
+select 1 + null;
 [null]
 # test: int + unsupported
-select 1 + []
+select 1 + [];
 {"msg": "select 1 + ❰[❱ ⟵ operation int + json is not supported"}
 # test: int - int
-select 1 - 1
+select 1 - 1;
 [0]
-explain select 1 - 1
+explain select 1 - 1;
 [{
   "main": {
     "00": "int                 0      -      0     # 1",
@@ -559,18 +559,18 @@ explain select 1 - 1
   "access": []
 }]
 # test: int - int (overflow)
-select 1 - 4294967295
+select 1 - 4294967295;
 [-4294967294]
-select 1 - -4294967295
+select 1 - -4294967295;
 [4294967296]
-select 1 - 9223372036854775807
+select 1 - 9223372036854775807;
 [-9223372036854775806]
-select 1 - -9223372036854775807
+select 1 - -9223372036854775807;
 {"msg": "int - int overflow"}
 # test: int - double
-select 1 - 1.5
+select 1 - 1.5;
 [-0.5]
-explain select 1 - 1.5
+explain select 1 - 1.5;
 [{
   "main": {
     "00": "int                 0      -      0     # 1",
@@ -581,15 +581,15 @@ explain select 1 - 1.5
   "access": []
 }]
 # test: int - null
-select 1 - null
+select 1 - null;
 [null]
 # test: int - unsupported
-select 1 - []
+select 1 - [];
 {"msg": "select 1 - ❰[❱ ⟵ operation int - json is not supported"}
 # test: int * int
-select 2 * 2
+select 2 * 2;
 [4]
-explain select 2 * 2
+explain select 2 * 2;
 [{
   "main": {
     "00": "int                 0      -      0     # 2",
@@ -600,18 +600,18 @@ explain select 2 * 2
   "access": []
 }]
 # test: int * int (overflow)
-select 4 * 4294967295
+select 4 * 4294967295;
 [17179869180]
-select 4 * -4294967295
+select 4 * -4294967295;
 [-17179869180]
-select 10 * 9223372036854775807
+select 10 * 9223372036854775807;
 {"msg": "int * int overflow"}
-select 10 * -9223372036854775807
+select 10 * -9223372036854775807;
 {"msg": "int * int overflow"}
 # test: int * double
-select 2 * 1.5
+select 2 * 1.5;
 [3]
-explain select 2 * 1.5
+explain select 2 * 1.5;
 [{
   "main": {
     "00": "int                 0      -      0     # 2",
@@ -622,15 +622,15 @@ explain select 2 * 1.5
   "access": []
 }]
 # test: int * null
-select 1 * null
+select 1 * null;
 [null]
 # test: int * unsupported
-select 1 * []
+select 1 * [];
 {"msg": "select 1 * ❰[❱ ⟵ operation int * json is not supported"}
 # test: int / int
-select 2 / 2
+select 2 / 2;
 [1]
-explain select 2 / 2
+explain select 2 / 2;
 [{
   "main": {
     "00": "int                 0      -      0     # 2",
@@ -640,14 +640,14 @@ explain select 2 / 2
   },
   "access": []
 }]
-select 2 / 0
+select 2 / 0;
 {"msg": "zero division"}
-select 4 / 4294967295
+select 4 / 4294967295;
 [0]
 # test: int / double
-select 35 / 1.5
+select 35 / 1.5;
 [23.3333]
-explain select 35 / 1.5
+explain select 35 / 1.5;
 [{
   "main": {
     "00": "int                 0      -      0     # 35",
@@ -658,15 +658,15 @@ explain select 35 / 1.5
   "access": []
 }]
 # test: int / null
-select 1 * null
+select 1 * null;
 [null]
 # test: int / unsupported
-select 1 * []
+select 1 * [];
 {"msg": "select 1 * ❰[❱ ⟵ operation int * json is not supported"}
 # test: int % int
-select 8 % 3
+select 8 % 3;
 [2]
-explain select 8 % 3
+explain select 8 % 3;
 [{
   "main": {
     "00": "int                 0      -      0     # 8",
@@ -676,18 +676,18 @@ explain select 8 % 3
   },
   "access": []
 }]
-select 8 % 0
+select 8 % 0;
 {"msg": "zero division"}
 # test: int % null
-select 1 % null
+select 1 % null;
 [null]
 # test: int % unsupported
-select 1 % []
+select 1 % [];
 {"msg": "select 1 % ❰[❱ ⟵ operation int % json is not supported"}
 # test: int | int
-select 60 | 13
+select 60 | 13;
 [61]
-explain select 60 | 13
+explain select 60 | 13;
 [{
   "main": {
     "00": "int                 0      -      0     # 60",
@@ -698,9 +698,9 @@ explain select 60 | 13
   "access": []
 }]
 # test: int | null
-select 60 | null
+select 60 | null;
 [null]
-explain select 60 | null
+explain select 60 | null;
 [{
   "main": {
     "00": "int                 0      -      0     # 60",
@@ -711,12 +711,12 @@ explain select 60 | null
   "access": []
 }]
 # test: int | unsupported
-select 60 | []
+select 60 | [];
 {"msg": "select 60 | ❰[❱ ⟵ operation int | json is not supported"}
 # test: int & int
-select 60 & 13
+select 60 & 13;
 [12]
-explain select 60 & 13
+explain select 60 & 13;
 [{
   "main": {
     "00": "int                 0      -      0     # 60",
@@ -727,9 +727,9 @@ explain select 60 & 13
   "access": []
 }]
 # test: int & null
-select 60 & null
+select 60 & null;
 [null]
-explain select 60 & null
+explain select 60 & null;
 [{
   "main": {
     "00": "int                 0      -      0     # 60",
@@ -740,12 +740,12 @@ explain select 60 & null
   "access": []
 }]
 # test: int & unsupported
-select 60 & []
+select 60 & [];
 {"msg": "select 60 & ❰[❱ ⟵ operation int & json is not supported"}
 # test: int ^ int
-select 60 ^ 13
+select 60 ^ 13;
 [49]
-explain select 60 ^ 13
+explain select 60 ^ 13;
 [{
   "main": {
     "00": "int                 0      -      0     # 60",
@@ -756,9 +756,9 @@ explain select 60 ^ 13
   "access": []
 }]
 # test: int ^ null
-select 60 ^ null
+select 60 ^ null;
 [null]
-explain select 60 ^ null
+explain select 60 ^ null;
 [{
   "main": {
     "00": "int                 0      -      0     # 60",
@@ -769,12 +769,12 @@ explain select 60 ^ null
   "access": []
 }]
 # test: int ^ unsupported
-select 60 ^ []
+select 60 ^ [];
 {"msg": "select 60 ^ ❰[❱ ⟵ operation int ^ json is not supported"}
 # test: int << int
-select 60 << 2
+select 60 << 2;
 [240]
-explain select 60 << 2
+explain select 60 << 2;
 [{
   "main": {
     "00": "int                 0      -      0     # 60",
@@ -785,15 +785,15 @@ explain select 60 << 2
   "access": []
 }]
 # test: int << null
-select 60 << null
+select 60 << null;
 [null]
 # test: int << unsupported
-select 60 << []
+select 60 << [];
 {"msg": "select 60 << ❰[❱ ⟵ operation int << json is not supported"}
 # test: int >> int
-select 60 >> 2
+select 60 >> 2;
 [15]
-explain select 60 >> 2
+explain select 60 >> 2;
 [{
   "main": {
     "00": "int                 0      -      0     # 60",
@@ -804,18 +804,18 @@ explain select 60 >> 2
   "access": []
 }]
 # test: int >> null
-select 60 >> null
+select 60 >> null;
 [null]
 # test: int >> unsupported
-select 60 >> []
+select 60 >> [];
 {"msg": "select 60 >> ❰[❱ ⟵ operation int >> json is not supported"}
 # test: ~int
-select ~10
+select ~10;
 [-11]
 # test: -int
-select -18
+select -18;
 [-18]
-explain select -18
+explain select -18;
 [{
   "main": {
     "00": "int                 0      -      0     # -18",
@@ -823,5 +823,5 @@ explain select -18
   },
   "access": []
 }]
-disconnect S0
-close E0
+disconnect S0;
+close E0;

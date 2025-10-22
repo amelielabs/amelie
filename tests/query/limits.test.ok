@@ -1,7 +1,7 @@
-open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "127.0.0.1", "port": 3485 }]
-connect E0 S0 127.0.0.1:3485
+open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "127.0.0.1", "port": 3485 }];
+connect E0 S0 127.0.0.1:3485;
 # test: default limits
-select system.config()
+select system.config();
 [{
   "uuid": "00000000-0000-0000-0000-000000000000",
   "timezone": "UTC",
@@ -42,30 +42,30 @@ select system.config()
   "checkpoint_sync": false
 }]
 # test: limit_write
-create table test (id int primary key)
-disconnect S0
-close E0
-open E0 "limit_write": 1
-connect E0 S0 127.0.0.1:3485
-insert into test values (123)
+create table test (id int primary key);
+disconnect S0;
+close E0;
+open E0 "limit_write": 1;
+connect E0 S0 127.0.0.1:3485;
+insert into test values (123);
 {"msg": "transaction log limit reached"}
-disconnect S0
-close E0
-open E0
-connect E0 S0 127.0.0.1:3485
-drop table test
+disconnect S0;
+close E0;
+open E0;
+connect E0 S0 127.0.0.1:3485;
+drop table test;
 # test: limit_send
-disconnect S0
-close E0
-open E0 "limit_send": 0
-connect E0 S0 127.0.0.1:3485
-select system.config()
+disconnect S0;
+close E0;
+open E0 "limit_send": 0;
+connect E0 S0 127.0.0.1:3485;
+select system.config();
 {"msg": "reply limit reached"}
-disconnect S0
-close E0
-open E0
-connect E0 S0 127.0.0.1:3485
-select system.config()
+disconnect S0;
+close E0;
+open E0;
+connect E0 S0 127.0.0.1:3485;
+select system.config();
 [{
   "uuid": "00000000-0000-0000-0000-000000000000",
   "timezone": "UTC",
@@ -106,11 +106,11 @@ select system.config()
   "checkpoint_sync": false
 }]
 # test: limit_recv
-disconnect S0
-close E0
-open E0 "limit_recv": 0
-connect E0 S0 127.0.0.1:3485
-select 1
+disconnect S0;
+close E0;
+open E0 "limit_recv": 0;
+connect E0 S0 127.0.0.1:3485;
+select 1;
 Payload Too Large
-disconnect S0
-close E0
+disconnect S0;
+close E0;

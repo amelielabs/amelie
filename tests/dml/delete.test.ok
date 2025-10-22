@@ -1,48 +1,48 @@
-open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "127.0.0.1", "port": 3485 }]
-connect E0 S0 127.0.0.1:3485
+open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "127.0.0.1", "port": 3485 }];
+connect E0 S0 127.0.0.1:3485;
 # test: delete statement parsing
-delete
-{"msg": "delete ⟵ FROM expected"}
-delete junk
+delete;
+{"msg": "delete❰;❱ ⟵ FROM expected"}
+delete junk;
 {"msg": "delete ❰junk❱ ⟵ FROM expected"}
-delete 1
+delete 1;
 {"msg": "delete ❰1❱ ⟵ FROM expected"}
-delete from 1
+delete from 1;
 {"msg": "delete from ❰1❱ ⟵ target name expected"}
-delete from "name"
+delete from "name";
 {"msg": "delete from ❰\"name\"❱ ⟵ target name expected"}
-delete from test junk
+delete from test junk;
 {"msg": "delete from ❰test❱ ⟵ relation not found"}
-delete from test where true limit
+delete from test where true limit;
 {"msg": "delete from ❰test❱ ⟵ relation not found"}
 # test: delete
-create table test(id int primary key)
-insert into test values (0)
-insert into test values (1)
-insert into test values (2)
-select * from test
+create table test(id int primary key);
+insert into test values (0);
+insert into test values (1);
+insert into test values (2);
+select * from test;
 [0, 1, 2]
-delete from test
-select * from test
+delete from test;
+select * from test;
 []
-drop table test
+drop table test;
 # test: delete schema
-create schema test
-create table test.test(id int primary key, data int)
-insert into test.test values (0, 3)
-insert into test.test values (1, 2)
-insert into test.test values (2, 1)
-delete from test.test
-select * from test.test
+create schema test;
+create table test.test(id int primary key, data int);
+insert into test.test values (0, 3);
+insert into test.test values (1, 2);
+insert into test.test values (2, 1);
+delete from test.test;
+select * from test.test;
 []
-drop table test.test
-drop schema test
+drop table test.test;
+drop schema test;
 # test: delete point-lookup
-create table test(id int primary key)
-insert into test values (0)
-insert into test values (1)
-insert into test values (2)
-explain delete from test where id = 3
+create table test(id int primary key);
+insert into test values (0);
+insert into test values (1);
+insert into test values (2);
+explain delete from test where id = 3;
 [{
   "main": {
     "00": "send_lookup         0      -      -     # public.test (last)",
@@ -62,39 +62,39 @@ explain delete from test where id = 3
   },
   "access": [["public.test", "rw"]]
 }]
-delete from test where id = 3
-select * from test
+delete from test where id = 3;
+select * from test;
 [0, 1, 2]
-delete from test where id = 2
-select * from test
+delete from test where id = 2;
+select * from test;
 [0, 1]
-delete from test where id = 0
-select * from test
+delete from test where id = 0;
+select * from test;
 [1]
-delete from test where id = -1
-select * from test
+delete from test where id = -1;
+select * from test;
 [1]
-delete from test where id = 1
-select * from test
+delete from test where id = 1;
+select * from test;
 []
-drop table test
+drop table test;
 # test: delete range scan
-create table test(id int primary key)
-insert into test values (0)
-insert into test values (1)
-insert into test values (2)
-select * from test
+create table test(id int primary key);
+insert into test values (0);
+insert into test values (1);
+insert into test values (2);
+select * from test;
 [0, 1, 2]
-delete from test where id > 3
-select * from test
+delete from test where id > 3;
+select * from test;
 [0, 1, 2]
-delete from test where id > 2
-select * from test
+delete from test where id > 2;
+select * from test;
 [0, 1, 2]
-delete from test where id >= 2
-select * from test
+delete from test where id >= 2;
+select * from test;
 [0, 1]
-explain delete from test where id > 0 and id < 1
+explain delete from test where id > 0 and id < 1;
 [{
   "main": {
     "00": "send_all            0      -      -1    # public.test (last)",
@@ -123,83 +123,83 @@ explain delete from test where id > 0 and id < 1
   },
   "access": [["public.test", "rw"]]
 }]
-delete from test where id > 0 and id < 1
-select * from test
+delete from test where id > 0 and id < 1;
+select * from test;
 [0, 1]
-delete from test where id > 0 and id <= 1
-select * from test
+delete from test where id > 0 and id <= 1;
+select * from test;
 [0]
-delete from test where id >= 0 and id <= 1
-select * from test
+delete from test where id >= 0 and id <= 1;
+select * from test;
 []
-drop table test
+drop table test;
 # test: delete null
-create table test(id int primary key, data int)
-insert into test values (0, 3)
-insert into test values (1, 2)
-insert into test values (2, null)
-delete from test where data > 0
-select * from test
+create table test(id int primary key, data int);
+insert into test values (0, 3);
+insert into test values (1, 2);
+insert into test values (2, null);
+delete from test where data > 0;
+select * from test;
 [[2, null]]
-drop table test
+drop table test;
 # test: delete insert delete
-create table test(id int primary key, data int)
-insert into test values (0, 3)
-insert into test values (1, 2)
-insert into test values (2, 0)
-delete from test
-select * from test
+create table test(id int primary key, data int);
+insert into test values (0, 3);
+insert into test values (1, 2);
+insert into test values (2, 0);
+delete from test;
+select * from test;
 []
-insert into test values (0, 3)
-insert into test values (1, 2)
-insert into test values (2, 0)
-select * from test
+insert into test values (0, 3);
+insert into test values (1, 2);
+insert into test values (2, 0);
+select * from test;
 [[0, 3], [1, 2], [2, 0]]
-delete from test
-select * from test
+delete from test;
+select * from test;
 []
-insert into test values (0, 3)
-insert into test values (1, 2)
-insert into test values (2, 0)
-select * from test
+insert into test values (0, 3);
+insert into test values (1, 2);
+insert into test values (2, 0);
+select * from test;
 [[0, 3], [1, 2], [2, 0]]
-drop table test
+drop table test;
 # test: delete returning
-create table test(id int primary key)
-insert into test values (0)
-insert into test values (1)
-insert into test values (2)
-delete from test returning *
+create table test(id int primary key);
+insert into test values (0);
+insert into test values (1);
+insert into test values (2);
+delete from test returning *;
 [0, 1, 2]
-select * from test
+select * from test;
 []
-insert into test values (0)
-insert into test values (1)
-insert into test values (2)
-delete from test where id >= 1 returning *
+insert into test values (0);
+insert into test values (1);
+insert into test values (2);
+delete from test where id >= 1 returning *;
 [1, 2]
-select * from test
+select * from test;
 [0]
-delete from test
-delete from test returning *
+delete from test;
+delete from test returning *;
 []
-drop table test
+drop table test;
 # test: delete secondary index
-create table test (id int primary key, data int)
-create index i on test (data)
-insert into test values (0, 2)
-insert into test values (1, 1)
-insert into test values (2, 0)
-delete from test where id = 1
-select * from test
+create table test (id int primary key, data int);
+create index i on test (data);
+insert into test values (0, 2);
+insert into test values (1, 1);
+insert into test values (2, 0);
+delete from test where id = 1;
+select * from test;
 [[0, 2], [2, 0]]
-select * from test use index (i)
+select * from test use index (i);
 [[2, 0], [0, 2]]
-delete from test
-select * from test
+delete from test;
+select * from test;
 []
-select * from test use index (i)
+select * from test use index (i);
 []
-drop table test
-disconnect S0
-close E0
+drop table test;
+disconnect S0;
+close E0;

@@ -1,99 +1,99 @@
 #
 
-open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "127.0.0.1", "port": 3485 }], "backends": 3
-connect E0 S0 127.0.0.1:3485
+open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "127.0.0.1", "port": 3485 }], "backends": 3;
+connect E0 S0 127.0.0.1:3485;
 
 # test: select from table order by
-create table test (id serial primary key)
-insert into test generate 20
-select * from test
+create table test (id serial primary key);
+insert into test generate 20;
+select * from test;
 
-explain select * from test order by id
-select * from test order by id
+explain select * from test order by id;
+select * from test order by id;
 
 # test: select from table order by asc
-explain select * from test order by id asc
-select * from test order by id asc
+explain select * from test order by id asc;
+select * from test order by id asc;
 
 # test: select from table order by desc
-explain select * from test order by id desc
-select * from test order by id desc
+explain select * from test order by id desc;
+select * from test order by id desc;
 
 # test: select from table order by limit
-explain select * from test order by id limit 1
-select * from test order by id limit 1
-select * from test order by id limit 2
-select * from test order by id limit 3
-select * from test order by id limit 4
-select * from test order by id limit 10
-select * from test order by id limit 20
+explain select * from test order by id limit 1;
+select * from test order by id limit 1;
+select * from test order by id limit 2;
+select * from test order by id limit 3;
+select * from test order by id limit 4;
+select * from test order by id limit 10;
+select * from test order by id limit 20;
 
 # test: select from table order by limit 0
-explain select * from test order by id limit 0
-select * from test order by id limit 0
-select * from test order by id limit -1
+explain select * from test order by id limit 0;
+select * from test order by id limit 0;
+select * from test order by id limit -1;
 
 # test: select from table order by desc limit
-explain select * from test order by id desc limit 1
-select * from test order by id desc limit 1
-select * from test order by id desc limit 2
-select * from test order by id desc limit 3
-select * from test order by id desc limit 4
-select * from test order by id desc limit 10
-select * from test order by id desc limit 20
+explain select * from test order by id desc limit 1;
+select * from test order by id desc limit 1;
+select * from test order by id desc limit 2;
+select * from test order by id desc limit 3;
+select * from test order by id desc limit 4;
+select * from test order by id desc limit 10;
+select * from test order by id desc limit 20;
 
 # test: select from table order by limit offset
-explain select * from test order by id limit 1 offset 0
-select * from test order by id limit 1 offset 0
+explain select * from test order by id limit 1 offset 0;
+select * from test order by id limit 1 offset 0;
 
 # test: select from table order by limit offset #2
-explain select * from test order by id limit 1 offset 1
-select * from test order by id limit 1 offset 1
-select * from test order by id limit 1 offset 2
-select * from test order by id limit 1 offset 3
-select * from test order by id limit 1 offset 4
+explain select * from test order by id limit 1 offset 1;
+select * from test order by id limit 1 offset 1;
+select * from test order by id limit 1 offset 2;
+select * from test order by id limit 1 offset 3;
+select * from test order by id limit 1 offset 4;
 
 # test: select from table order by desc limit offset
-explain select * from test order by id desc limit 1 offset 1
-select * from test order by id desc limit 1 offset 1
-select * from test order by id desc limit 1 offset 2
-select * from test order by id desc limit 1 offset 3
-select * from test order by id desc limit 1 offset 4
+explain select * from test order by id desc limit 1 offset 1;
+select * from test order by id desc limit 1 offset 1;
+select * from test order by id desc limit 1 offset 2;
+select * from test order by id desc limit 1 offset 3;
+select * from test order by id desc limit 1 offset 4;
 
 # test: select from table order by offset
-explain select * from test order by id offset 1
-select * from test order by id offset 1
-select * from test order by id offset 2
-select * from test order by id offset 3
-select * from test order by id offset 4
-select * from test order by id offset 0
-select * from test order by id offset -1
+explain select * from test order by id offset 1;
+select * from test order by id offset 1;
+select * from test order by id offset 2;
+select * from test order by id offset 3;
+select * from test order by id offset 4;
+select * from test order by id offset 0;
+select * from test order by id offset -1;
 
 # test: select from table order by desc offset
-explain select * from test order by id desc offset 1
-select * from test order by id desc offset 1
-select * from test order by id desc offset 2
-select * from test order by id desc offset 3
-select * from test order by id desc offset 4
-select * from test order by id desc offset 0
-select * from test order by id desc offset -1
+explain select * from test order by id desc offset 1;
+select * from test order by id desc offset 1;
+select * from test order by id desc offset 2;
+select * from test order by id desc offset 3;
+select * from test order by id desc offset 4;
+select * from test order by id desc offset 0;
+select * from test order by id desc offset -1;
 
 # test: select from table order by int
-select id from test order by 0
-select id from test order by 1
-select id from test order by 2
+select id from test order by 0;
+select id from test order by 1;
+select id from test order by 2;
 
 # test: select from table order by alias
-select id from test order by id
-select id as c from test order by c
-select (id + id) as c from test order by c
-select (id + id) as c from test order by c desc
+select id from test order by id;
+select id as c from test order by c;
+select (id + id) as c from test order by c;
+select (id + id) as c from test order by c desc;
 
 # test: select from table order by alias (conflict)
-select id, id from test order by id
-select id, 123 as id from test order by id
+select id, id from test order by id;
+select id, 123 as id from test order by id;
 
-drop table test
+drop table test;
 
-disconnect S0
-close E0
+disconnect S0;
+close E0;

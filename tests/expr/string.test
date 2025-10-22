@@ -1,122 +1,122 @@
 #
 
-open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "127.0.0.1", "port": 3485 }]
-connect E0 S0 127.0.0.1:3485
+open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "127.0.0.1", "port": 3485 }];
+connect E0 S0 127.0.0.1:3485;
 
 # test: string
-select "hello world"
-explain select "hello world"
+select "hello world";
+explain select "hello world";
 
-select 'hello world'
-select 'hello world'::type
-select ""
-select ''
-select length("hello world")
-select length("")
-select "hello world"::length
-select "hello world"::length()
+select 'hello world';
+select 'hello world'::type;
+select "";
+select '';
+select length("hello world");
+select length("");
+select "hello world"::length;
+select "hello world"::length();
 
 # test: string utf8
-select "привет, мир!"
-select "こんにちは世界"
-select "հểɬľ𝜊 ѡ૦ŗɬď"
+select "привет, мир!";
+select "こんにちは世界";
+select "հểɬľ𝜊 ѡ૦ŗɬď";
 
-select "��OX�&amp;amp;�.~`�Y�{߆�~�&amp;amp;�5�聾����."
+select "��OX�&amp;amp;�.~`�Y�{߆�~�&amp;amp;�5�聾����.";
 
 # test: string = string
-select '1 hour' = '1 hour'
-select '1 hour' = '1 hours'
-explain select '1 hour' = '1 hours'
+select '1 hour' = '1 hour';
+select '1 hour' = '1 hours';
+explain select '1 hour' = '1 hours';
 
 # test: string = null
-select '1 hour' = null
+select '1 hour' = null;
 
 # test: string = unsupported
-select '1 hour' = [1,2,3]
+select '1 hour' = [1,2,3];
 
 # test: string <> string
-select '1 hour' <> '1 hour'
-select '1 hour' <> '1 hours'
-explain select '1 hour' <> '1 hours'
+select '1 hour' <> '1 hour';
+select '1 hour' <> '1 hours';
+explain select '1 hour' <> '1 hours';
 
 # test: string <> null
-select '1 hour' <> null
+select '1 hour' <> null;
 
 # test: string <> unsupported
-select '1 hour' <> [1,2,3]
+select '1 hour' <> [1,2,3];
 
 # test: string >= string
-select '1 hour' >= '1 hours'
-select '1 hour' >= '1 hour'
-explain select '1 hour' >= '1 hour'
+select '1 hour' >= '1 hours';
+select '1 hour' >= '1 hour';
+explain select '1 hour' >= '1 hour';
 
 # test: string >= null
-explain select '1 hour' >= null
+explain select '1 hour' >= null;
 
 # test: string >= unsupported
-explain select '1 hour' >= []
+explain select '1 hour' >= [];
 
 # test: string > string
-select '1 hour' > '1 hours'
-select '1 hour' > '1 hour'
-explain select '1 hour' > '1 hour'
+select '1 hour' > '1 hours';
+select '1 hour' > '1 hour';
+explain select '1 hour' > '1 hour';
 
 # test: string > null
-explain select '1 hour' > null
+explain select '1 hour' > null;
 
 # test: string > unsupported
-explain select '1 hour' > []
+explain select '1 hour' > [];
 
 # test: string <= string
-select '1 hour' <= '1 hours'
-select '1 hour' <= '1 hour'
-explain select '1 hour' <= '1 hour'
+select '1 hour' <= '1 hours';
+select '1 hour' <= '1 hour';
+explain select '1 hour' <= '1 hour';
 
 # test: string <= null
-explain select '1 hour' <= null
+explain select '1 hour' <= null;
 
 # test: string <= unsupported
-explain select '1 hour' <= []
+explain select '1 hour' <= [];
 
 # test: string < string
-select '1 hour' < '1 hours'
-select '1 hour' < '1 hour'
-explain select '1 hour' < '1 hour'
+select '1 hour' < '1 hours';
+select '1 hour' < '1 hour';
+explain select '1 hour' < '1 hour';
 
 # test: string < null
-explain select '1 hour' < null
+explain select '1 hour' < null;
 
 # test: string < unsupported
-explain select '1 hour' < []
+explain select '1 hour' < [];
 
 # test: string || string
-select "hello " || "world"
-explain select "hello " || "world"
+select "hello " || "world";
+explain select "hello " || "world";
 
-select "为云" || "は世界"
-select ("为云" || "は世界")::length
-select "привет " || "мир"
+select "为云" || "は世界";
+select ("为云" || "は世界")::length;
+select "привет " || "мир";
 
 # test: string || null
-select "hello " || null
+select "hello " || null;
 
 # test: string || unsupported
-select "hello " || 1
-select "hello " || []
+select "hello " || 1;
+select "hello " || [];
 
 # test: string LIKE string
-select 'abc' like 'abc'
-select 'abc' like 'abcc'
-explain select 'abc' like 'abc'
+select 'abc' like 'abc';
+select 'abc' like 'abcc';
+explain select 'abc' like 'abc';
 
 # test: string LIKE null
-select 'abc' like null
+select 'abc' like null;
 
 # test: string LIKE unsupported
-select 'abc' like 1
-select 'abc' like "a" || "b" || "c"
-select 'abc' like "a" || "b" || "c"  and true
-select ('abc' like "a" || "b" || "c")  and true
+select 'abc' like 1;
+select 'abc' like "a" || "b" || "c";
+select 'abc' like "a" || "b" || "c"  and true;
+select ('abc' like "a" || "b" || "c")  and true;
 
-disconnect S0
-close E0
+disconnect S0;
+close E0;

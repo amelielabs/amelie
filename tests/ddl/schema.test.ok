@@ -1,7 +1,7 @@
-open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "127.0.0.1", "port": 3485 }]
-connect E0 S0 127.0.0.1:3485
+open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "127.0.0.1", "port": 3485 }];
+connect E0 S0 127.0.0.1:3485;
 # test: ensure system schemas exists
-show schemas
+show schemas;
 [{
   "name": "system",
   "system": true
@@ -10,25 +10,25 @@ show schemas
   "system": true
 }]
 # test: create schema statement parsing
-create
-{"msg": "create ⟵ USER|REPLICA|SCHEMA|TABLE|INDEX|FUNCTION expected"}
-create schema
-{"msg": "create schema ⟵ name expected"}
-create schema 123
+create;
+{"msg": "create❰;❱ ⟵ USER|REPLICA|SCHEMA|TABLE|INDEX|FUNCTION expected"}
+create schema;
+{"msg": "create schema❰;❱ ⟵ name expected"}
+create schema 123;
 {"msg": "create schema ❰123❱ ⟵ name expected"}
-create schema if
-{"msg": "create schema if ⟵ NOT expected"}
-create schema if not
-{"msg": "create schema if not ⟵ EXISTS expected"}
-create schema if not 123
+create schema if;
+{"msg": "create schema if❰;❱ ⟵ NOT expected"}
+create schema if not;
+{"msg": "create schema if not❰;❱ ⟵ EXISTS expected"}
+create schema if not 123;
 {"msg": "create schema if not ❰123❱ ⟵ EXISTS expected"}
-create schema if not exists
-{"msg": "create schema if not exists ⟵ name expected"}
-create schema test abc
+create schema if not exists;
+{"msg": "create schema if not exists❰;❱ ⟵ name expected"}
+create schema test abc;
 {"msg": "create schema test ❰abc❱ ⟵ ; expected"}
 # test: create schema
-create schema test
-show schemas
+create schema test;
+show schemas;
 [{
   "name": "system",
   "system": true
@@ -39,7 +39,7 @@ show schemas
   "name": "test",
   "system": false
 }]
-select system.schemas()
+select system.schemas();
 [[{
   "name": "system",
   "system": true,
@@ -54,10 +54,10 @@ select system.schemas()
   "create": true
 }]]
 # test: create schema if not exists
-create schema test
+create schema test;
 {"msg": "schema 'test': already exists"}
-create schema if not exists test
-show schemas
+create schema if not exists test;
+show schemas;
 [{
   "name": "system",
   "system": true
@@ -69,19 +69,19 @@ show schemas
   "system": false
 }]
 # test: drop schema statement parsing
-drop schema
-{"msg": "drop schema ⟵ name expected"}
-drop schema 123
+drop schema;
+{"msg": "drop schema❰;❱ ⟵ name expected"}
+drop schema 123;
 {"msg": "drop schema ❰123❱ ⟵ name expected"}
-drop schema if
-{"msg": "drop schema if ⟵ EXISTS expected"}
-drop schema if exists
-{"msg": "drop schema if exists ⟵ name expected"}
-drop schema test abc
+drop schema if;
+{"msg": "drop schema if❰;❱ ⟵ EXISTS expected"}
+drop schema if exists;
+{"msg": "drop schema if exists❰;❱ ⟵ name expected"}
+drop schema test abc;
 {"msg": "drop schema test ❰abc❱ ⟵ ; expected"}
 # test: drop schema
-drop schema test
-show schemas
+drop schema test;
+show schemas;
 [{
   "name": "system",
   "system": true
@@ -90,10 +90,10 @@ show schemas
   "system": true
 }]
 # test: drop schema if exists
-drop schema test
+drop schema test;
 {"msg": "schema 'test': not exists"}
-drop schema if exists test
-show schemas
+drop schema if exists test;
+show schemas;
 [{
   "name": "system",
   "system": true
@@ -102,9 +102,9 @@ show schemas
   "system": true
 }]
 # test: drop system schema
-drop schema public
+drop schema public;
 {"msg": "schema 'public': system schema cannot be dropped"}
-show schemas
+show schemas;
 [{
   "name": "system",
   "system": true
@@ -113,28 +113,28 @@ show schemas
   "system": true
 }]
 # test: drop schema with dependency
-create schema test
-create table test.test(id int primary key)
-drop schema test
+create schema test;
+create table test.test(id int primary key);
+drop schema test;
 {"msg": "table 'test' depends on schema 'test"}
-drop table test.test
-drop schema test
+drop table test.test;
+drop schema test;
 # test: alter schema statment parsing
-alter schema
-{"msg": "alter schema ⟵ name expected"}
-alter schema 123
+alter schema;
+{"msg": "alter schema❰;❱ ⟵ name expected"}
+alter schema 123;
 {"msg": "alter schema ❰123❱ ⟵ name expected"}
-alter schema test
-{"msg": "alter schema test ⟵ RENAME expected"}
-alter schema test rename
-{"msg": "alter schema test rename ⟵ TO expected"}
-alter schema test rename to
-{"msg": "alter schema test rename to ⟵ name expected"}
-alter schema test rename "hello"
+alter schema test;
+{"msg": "alter schema test❰;❱ ⟵ RENAME expected"}
+alter schema test rename;
+{"msg": "alter schema test rename❰;❱ ⟵ TO expected"}
+alter schema test rename to;
+{"msg": "alter schema test rename to❰;❱ ⟵ name expected"}
+alter schema test rename "hello";
 {"msg": "alter schema test rename ❰\"hello\"❱ ⟵ TO expected"}
 # test: alter schema rename
-create schema test
-select system.schemas()
+create schema test;
+select system.schemas();
 [[{
   "name": "system",
   "system": true,
@@ -148,8 +148,8 @@ select system.schemas()
   "system": false,
   "create": true
 }]]
-alter schema test rename to test2
-select system.schemas()
+alter schema test rename to test2;
+select system.schemas();
 [[{
   "name": "system",
   "system": true,
@@ -163,7 +163,7 @@ select system.schemas()
   "system": false,
   "create": true
 }]]
-select system.schemas()
+select system.schemas();
 [[{
   "name": "system",
   "system": true,
@@ -178,7 +178,7 @@ select system.schemas()
   "create": true
 }]]
 # test: alter schema system
-alter schema public rename to _public
+alter schema public rename to _public;
 {"msg": "schema 'public': system schema cannot be altered"}
-disconnect S0
-close E0
+disconnect S0;
+close E0;

@@ -1,104 +1,104 @@
 #
 
-open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "127.0.0.1", "port": 3485 }]
-connect E0 S0 127.0.0.1:3485
+open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "127.0.0.1", "port": 3485 }];
+connect E0 S0 127.0.0.1:3485;
 
 # test: any parsing
-select any
-select any
-select = any
-select 1 = any
-select 1 = any (
-select 1 = any ()
+select any;
+select any;
+select = any;
+select 1 = any;
+select 1 = any (;
+select 1 = any ();
 
 # test: = any ([])
-select 1 = any([])
-select 1 = any([null])
-select 1 = any([1])
-select 1 = any([1, 2])
-select 1 = any([1, 2, null])
-select 0 = any([1, 2, null])
+select 1 = any([]);
+select 1 = any([null]);
+select 1 = any([1]);
+select 1 = any([1, 2]);
+select 1 = any([1, 2, null]);
+select 0 = any([1, 2, null]);
 
 # test: >= any ([])
-select 1 >= any([1,2])
-select 0 >= any([1,2])
-select 1 >= any([1,2, null])
-select 0 >= any([1,2, null])
+select 1 >= any([1,2]);
+select 0 >= any([1,2]);
+select 1 >= any([1,2, null]);
+select 0 >= any([1,2, null]);
 
 # test: > any ([])
-select 1 > any([1,2])
-select 0 > any([1,2])
-select 1 > any([1,2, null])
-select 0 > any([1,2, null])
-select 3 > any([1,2])
-select 3 > any([1,2, null])
+select 1 > any([1,2]);
+select 0 > any([1,2]);
+select 1 > any([1,2, null]);
+select 0 > any([1,2, null]);
+select 3 > any([1,2]);
+select 3 > any([1,2, null]);
 
 # test: <= any ([])
-select 1 <= any([1,2])
-select 0 <= any([1,2])
-select 3 <= any([1,2])
-select 1 <= any([1,2, null])
-select 1 <= any([1,2, null])
+select 1 <= any([1,2]);
+select 0 <= any([1,2]);
+select 3 <= any([1,2]);
+select 1 <= any([1,2, null]);
+select 1 <= any([1,2, null]);
 
 # test: < any ([])
-select 1 < any([1,2])
-select 0 < any([1,2])
-select 3 < any([1,2])
-select 1 < any([1,2, null])
-select 3 < any([1,2, null])
+select 1 < any([1,2]);
+select 0 < any([1,2]);
+select 3 < any([1,2]);
+select 1 < any([1,2, null]);
+select 3 < any([1,2, null]);
 
 # test: = any
-create table test (id int primary key, data int)
-select 1 = any(select id from test)
-insert into test values (1, 1)
-select 1 = any(select id from test)
-insert into test values (2, null)
-select 1 = any(select id from test)
-select not (1 = any(select id from test))
+create table test (id int primary key, data int);
+select 1 = any(select id from test);
+insert into test values (1, 1);
+select 1 = any(select id from test);
+insert into test values (2, null);
+select 1 = any(select id from test);
+select not (1 = any(select id from test));
 
-select null = any(select id from test)
-select 1 = any(select id from test)
-select 3 = any(select id from test)
-select 3 = any(select data from test)
+select null = any(select id from test);
+select 1 = any(select id from test);
+select 3 = any(select id from test);
+select 3 = any(select data from test);
 
 # test: >= any
-select 1 >= any(select id from test)
-select 0 >= any(select id from test)
+select 1 >= any(select id from test);
+select 0 >= any(select id from test);
 
-select null >= any(select id from test)
-select 1 >= any(select id from test)
-select 3 >= any(select id from test)
-select 0 >= any(select data from test)
+select null >= any(select id from test);
+select 1 >= any(select id from test);
+select 3 >= any(select id from test);
+select 0 >= any(select data from test);
 
 # test: > any
-select 1 > any(select id from test)
-select 0 > any(select id from test)
-select 3 > any(select id from test)
+select 1 > any(select id from test);
+select 0 > any(select id from test);
+select 3 > any(select id from test);
 
-select null > any(select id from test)
-select 1 > any(select id from test)
-select 3 > any(select id from test)
-select 0 > any(select data from test)
+select null > any(select id from test);
+select 1 > any(select id from test);
+select 3 > any(select id from test);
+select 0 > any(select data from test);
 
 # test: <= any
-select 1 <= any(select id from test)
-select 0 <= any(select id from test)
-select 3 <= any(select id from test)
+select 1 <= any(select id from test);
+select 0 <= any(select id from test);
+select 3 <= any(select id from test);
 
-select null <= any(select id from test)
-select 1 <= any(select id from test)
-select 3 <= any(select id from test)
-select 3 <= any(select data from test)
+select null <= any(select id from test);
+select 1 <= any(select id from test);
+select 3 <= any(select id from test);
+select 3 <= any(select data from test);
 
 # test: < any
-select 1 < any(select id from test)
-select 0 < any(select id from test)
-select 3 < any(select id from test)
+select 1 < any(select id from test);
+select 0 < any(select id from test);
+select 3 < any(select id from test);
 
-select null < any(select id from test)
-select 1 < any(select id from test)
-select 3 < any(select id from test)
-select 3 < any(select data from test)
+select null < any(select id from test);
+select 1 < any(select id from test);
+select 3 < any(select id from test);
+select 3 < any(select data from test);
 
-disconnect S0
-close E0
+disconnect S0;
+close E0;

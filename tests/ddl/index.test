@@ -1,126 +1,126 @@
 #
 
-open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "127.0.0.1", "port": 3485 }]
-connect E0 S0 127.0.0.1:3485
+open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "127.0.0.1", "port": 3485 }];
+connect E0 S0 127.0.0.1:3485;
 
-create table test (id int primary key, a int, b int)
+create table test (id int primary key, a int, b int);
 
 # test: create index parsing
-create index
-create unique
-create unique table
-create unique index
-create index 1
-create index i
-create index i 1
-create index i on
-create index i on test
-create index i on test 1
-create index i on test (
-create index i on test ()
+create index;
+create unique;
+create unique table;
+create unique index;
+create index 1;
+create index i;
+create index i 1;
+create index i on;
+create index i on test;
+create index i on test 1;
+create index i on test (;
+create index i on test ();
 
 # test: create index
-create index i on test (a)
-select system.table('test').indexes
+create index i on test (a);
+select system.table('test').indexes;
 
 # test: create index if not exists
-create index i on test (a)
-create index if not exists i on test (a)
-select system.table('test').indexes
-drop index i on test
+create index i on test (a);
+create index if not exists i on test (a);
+select system.table('test').indexes;
+drop index i on test;
 
 # test: create index (compound key)
-create index i on test (b, a)
-select system.table('test').indexes
-drop index i on test
+create index i on test (b, a);
+select system.table('test').indexes;
+drop index i on test;
 
 # test: create index (key reuse)
-create index i on test (a, a)
-select system.table('test').indexes
-drop index i on test
+create index i on test (a, a);
+select system.table('test').indexes;
+drop index i on test;
 
 # test: create index (unique)
-create unique index i on test (a)
-drop table test
+create unique index i on test (a);
+drop table test;
 
 # test: create index with parsing
-create table test (id int primary key, a int, b int)
-create index i on test (a) 1
-create index i on test (a) with
-create index i on test (a) with 1
-create index i on test (a) with (
-create index i on test (a) with (name
-create index i on test (a) with (name =
-create index i on test (a) with (name = 1
-create index i on test (a) with (type = 1
-create index i on test (a) with (type = 'type'
-create index i on test (a) with (type = 'tree',
-create index i on test (a) with (, type = 'tree'
+create table test (id int primary key, a int, b int);
+create index i on test (a) 1;
+create index i on test (a) with;
+create index i on test (a) with 1;
+create index i on test (a) with (;
+create index i on test (a) with (name;
+create index i on test (a) with (name =;
+create index i on test (a) with (name = 1;
+create index i on test (a) with (type = 1;
+create index i on test (a) with (type = 'type';
+create index i on test (a) with (type = 'tree',;
+create index i on test (a) with (, type = 'tree';
 
 # test: create index with
-create index i on test (a) with (type = 'hash')
-select system.table('test').indexes
-drop index i on test
+create index i on test (a) with (type = 'hash');
+select system.table('test').indexes;
+drop index i on test;
 
-create index i on test (a) with (type = 'tree')
-select system.table('test').indexes
-drop index i on test
+create index i on test (a) with (type = 'tree');
+select system.table('test').indexes;
+drop index i on test;
 
-create index i on test (a) with (type = 'unknown')
+create index i on test (a) with (type = 'unknown');
 
 # test: drop index parsing
-drop index
-drop index 1
-drop index '1'
-drop index i
-drop index i 1
-drop index i on
-drop index i on 1
-drop index i on test
-drop index i on schema.test
-drop index i on public.test
+drop index;
+drop index 1;
+drop index '1';
+drop index i;
+drop index i 1;
+drop index i on;
+drop index i on 1;
+drop index i on test;
+drop index i on schema.test;
+drop index i on public.test;
 
 # test: drop index
-create index i on test (a)
-select system.table('test').indexes
-drop index i on public.test
-select system.table('test').indexes
+create index i on test (a);
+select system.table('test').indexes;
+drop index i on public.test;
+select system.table('test').indexes;
 
 # test: drop index if exists
-drop index i on public.test
-drop index if exists i on public.test
+drop index i on public.test;
+drop index if exists i on public.test;
 
 # test: alter index parsing
-alter
-alter index
-alter index 1
-alter index if
-alter index if not
-alter index if exists
-alter index i
-alter index i 1
-alter index i on
-alter index i on test
-alter index i on test 1
-alter index i on test rename
-alter index i on test rename 1
-alter index i on test rename to
-alter index i on test rename to 1
-alter index i on test rename to
+alter;
+alter index;
+alter index 1;
+alter index if;
+alter index if not;
+alter index if exists;
+alter index i;
+alter index i 1;
+alter index i on;
+alter index i on test;
+alter index i on test 1;
+alter index i on test rename;
+alter index i on test rename 1;
+alter index i on test rename to;
+alter index i on test rename to 1;
+alter index i on test rename to;
 
 # test: alter index rename
-create index i on test (a)
-select system.table('test').indexes
+create index i on test (a);
+select system.table('test').indexes;
 
-alter index i on test rename to j
-select system.table('test').indexes
+alter index i on test rename to j;
+select system.table('test').indexes;
 
 # test: alter index rename if exists
-alter index k on test rename to z
-alter index if exists k on public.test rename to z
+alter index k on test rename to z;
+alter index if exists k on public.test rename to z;
 
 # test: alter index rename (conflict)
-alter index j on test rename to j
+alter index j on test rename to j;
 
-disconnect S0
-close E0
+disconnect S0;
+close E0;

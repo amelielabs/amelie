@@ -1,9 +1,9 @@
-open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "127.0.0.1", "port": 3485 }]
-connect E0 S0 127.0.0.1:3485
+open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "127.0.0.1", "port": 3485 }];
+connect E0 S0 127.0.0.1:3485;
 # test: string
-select "hello world"
+select "hello world";
 ["hello world"]
-explain select "hello world"
+explain select "hello world";
 [{
   "main": {
     "00": "string              0      0      0     # hello world",
@@ -11,37 +11,37 @@ explain select "hello world"
   },
   "access": []
 }]
-select 'hello world'
+select 'hello world';
 ["hello world"]
-select 'hello world'::type
+select 'hello world'::type;
 ["string"]
-select ""
+select "";
 [""]
-select ''
+select '';
 [""]
-select length("hello world")
+select length("hello world");
 [11]
-select length("")
+select length("");
 [0]
-select "hello world"::length
+select "hello world"::length;
 [11]
-select "hello world"::length()
+select "hello world"::length();
 [11]
 # test: string utf8
-select "привет, мир!"
+select "привет, мир!";
 ["привет, мир!"]
-select "こんにちは世界"
+select "こんにちは世界";
 ["こんにちは世界"]
-select "հểɬľ𝜊 ѡ૦ŗɬď"
+select "հểɬľ𝜊 ѡ૦ŗɬď";
 ["հểɬľ𝜊 ѡ૦ŗɬď"]
-select "��OX�&amp;amp;�.~`�Y�{߆�~�&amp;amp;�5�聾����."
+select "��OX�&amp;amp;�.~`�Y�{߆�~�&amp;amp;�5�聾����.";
 ["��OX�&amp;amp;�.~`�Y�{߆�~�&amp;amp;�5�聾����."]
 # test: string = string
-select '1 hour' = '1 hour'
+select '1 hour' = '1 hour';
 [true]
-select '1 hour' = '1 hours'
+select '1 hour' = '1 hours';
 [false]
-explain select '1 hour' = '1 hours'
+explain select '1 hour' = '1 hours';
 [{
   "main": {
     "00": "string              0      0      0     # 1 hour",
@@ -52,17 +52,17 @@ explain select '1 hour' = '1 hours'
   "access": []
 }]
 # test: string = null
-select '1 hour' = null
+select '1 hour' = null;
 [null]
 # test: string = unsupported
-select '1 hour' = [1,2,3]
+select '1 hour' = [1,2,3];
 {"msg": "select '1 hour' = ❰[❱ ⟵ operation string = json is not supported"}
 # test: string <> string
-select '1 hour' <> '1 hour'
+select '1 hour' <> '1 hour';
 [false]
-select '1 hour' <> '1 hours'
+select '1 hour' <> '1 hours';
 [true]
-explain select '1 hour' <> '1 hours'
+explain select '1 hour' <> '1 hours';
 [{
   "main": {
     "00": "string              0      0      0     # 1 hour",
@@ -74,17 +74,17 @@ explain select '1 hour' <> '1 hours'
   "access": []
 }]
 # test: string <> null
-select '1 hour' <> null
+select '1 hour' <> null;
 [null]
 # test: string <> unsupported
-select '1 hour' <> [1,2,3]
+select '1 hour' <> [1,2,3];
 {"msg": "select '1 hour' <> ❰[❱ ⟵ operation string = json is not supported"}
 # test: string >= string
-select '1 hour' >= '1 hours'
+select '1 hour' >= '1 hours';
 [false]
-select '1 hour' >= '1 hour'
+select '1 hour' >= '1 hour';
 [true]
-explain select '1 hour' >= '1 hour'
+explain select '1 hour' >= '1 hour';
 [{
   "main": {
     "00": "string              0      0      0     # 1 hour",
@@ -95,7 +95,7 @@ explain select '1 hour' >= '1 hour'
   "access": []
 }]
 # test: string >= null
-explain select '1 hour' >= null
+explain select '1 hour' >= null;
 [{
   "main": {
     "00": "string              0      0      0     # 1 hour",
@@ -106,14 +106,14 @@ explain select '1 hour' >= null
   "access": []
 }]
 # test: string >= unsupported
-explain select '1 hour' >= []
+explain select '1 hour' >= [];
 {"msg": "explain select '1 hour' >= ❰[❱ ⟵ operation string >= json is not supported"}
 # test: string > string
-select '1 hour' > '1 hours'
+select '1 hour' > '1 hours';
 [false]
-select '1 hour' > '1 hour'
+select '1 hour' > '1 hour';
 [false]
-explain select '1 hour' > '1 hour'
+explain select '1 hour' > '1 hour';
 [{
   "main": {
     "00": "string              0      0      0     # 1 hour",
@@ -124,7 +124,7 @@ explain select '1 hour' > '1 hour'
   "access": []
 }]
 # test: string > null
-explain select '1 hour' > null
+explain select '1 hour' > null;
 [{
   "main": {
     "00": "string              0      0      0     # 1 hour",
@@ -135,14 +135,14 @@ explain select '1 hour' > null
   "access": []
 }]
 # test: string > unsupported
-explain select '1 hour' > []
+explain select '1 hour' > [];
 {"msg": "explain select '1 hour' > ❰[❱ ⟵ operation string > json is not supported"}
 # test: string <= string
-select '1 hour' <= '1 hours'
+select '1 hour' <= '1 hours';
 [true]
-select '1 hour' <= '1 hour'
+select '1 hour' <= '1 hour';
 [true]
-explain select '1 hour' <= '1 hour'
+explain select '1 hour' <= '1 hour';
 [{
   "main": {
     "00": "string              0      0      0     # 1 hour",
@@ -153,7 +153,7 @@ explain select '1 hour' <= '1 hour'
   "access": []
 }]
 # test: string <= null
-explain select '1 hour' <= null
+explain select '1 hour' <= null;
 [{
   "main": {
     "00": "string              0      0      0     # 1 hour",
@@ -164,14 +164,14 @@ explain select '1 hour' <= null
   "access": []
 }]
 # test: string <= unsupported
-explain select '1 hour' <= []
+explain select '1 hour' <= [];
 {"msg": "explain select '1 hour' <= ❰[❱ ⟵ operation string <= json is not supported"}
 # test: string < string
-select '1 hour' < '1 hours'
+select '1 hour' < '1 hours';
 [true]
-select '1 hour' < '1 hour'
+select '1 hour' < '1 hour';
 [false]
-explain select '1 hour' < '1 hour'
+explain select '1 hour' < '1 hour';
 [{
   "main": {
     "00": "string              0      0      0     # 1 hour",
@@ -182,7 +182,7 @@ explain select '1 hour' < '1 hour'
   "access": []
 }]
 # test: string < null
-explain select '1 hour' < null
+explain select '1 hour' < null;
 [{
   "main": {
     "00": "string              0      0      0     # 1 hour",
@@ -193,12 +193,12 @@ explain select '1 hour' < null
   "access": []
 }]
 # test: string < unsupported
-explain select '1 hour' < []
+explain select '1 hour' < [];
 {"msg": "explain select '1 hour' < ❰[❱ ⟵ operation string < json is not supported"}
 # test: string || string
-select "hello " || "world"
+select "hello " || "world";
 ["hello world"]
-explain select "hello " || "world"
+explain select "hello " || "world";
 [{
   "main": {
     "00": "string              0      0      0     # hello ",
@@ -208,26 +208,26 @@ explain select "hello " || "world"
   },
   "access": []
 }]
-select "为云" || "は世界"
+select "为云" || "は世界";
 ["为云は世界"]
-select ("为云" || "は世界")::length
+select ("为云" || "は世界")::length;
 [5]
-select "привет " || "мир"
+select "привет " || "мир";
 ["привет мир"]
 # test: string || null
-select "hello " || null
+select "hello " || null;
 [null]
 # test: string || unsupported
-select "hello " || 1
+select "hello " || 1;
 {"msg": "select \"hello \" || ❰1❱ ⟵ operation string || int is not supported"}
-select "hello " || []
+select "hello " || [];
 {"msg": "select \"hello \" || ❰[❱ ⟵ operation string || json is not supported"}
 # test: string LIKE string
-select 'abc' like 'abc'
+select 'abc' like 'abc';
 [true]
-select 'abc' like 'abcc'
+select 'abc' like 'abcc';
 [false]
-explain select 'abc' like 'abc'
+explain select 'abc' like 'abc';
 [{
   "main": {
     "00": "string              0      0      0     # abc",
@@ -238,16 +238,16 @@ explain select 'abc' like 'abc'
   "access": []
 }]
 # test: string LIKE null
-select 'abc' like null
+select 'abc' like null;
 [null]
 # test: string LIKE unsupported
-select 'abc' like 1
+select 'abc' like 1;
 {"msg": "select 'abc' like ❰1❱ ⟵ operation string LIKE int is not supported"}
-select 'abc' like "a" || "b" || "c"
+select 'abc' like "a" || "b" || "c";
 [true]
-select 'abc' like "a" || "b" || "c"  and true
+select 'abc' like "a" || "b" || "c"  and true;
 {"msg": "select 'abc' like \"a\" || \"b\" || \"c\"  ❰and❱ ⟵ operation string LIKE bool is not supported"}
-select ('abc' like "a" || "b" || "c")  and true
+select ('abc' like "a" || "b" || "c")  and true;
 [true]
-disconnect S0
-close E0
+disconnect S0;
+close E0;

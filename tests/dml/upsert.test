@@ -1,244 +1,270 @@
 #
 
-open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "127.0.0.1", "port": 3485 }]
-connect E0 S0 127.0.0.1:3485
+open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "127.0.0.1", "port": 3485 }];
+connect E0 S0 127.0.0.1:3485;
 
 # test: on conflict parsing
-create table test (id int primary key, data int)
-insert into test values(1, 0) 123
-insert into test values(1, 0) ON
-insert into test values(1, 0) ON 123
-insert into test values(1, 0) on conflict
-insert into test values(1, 0) on conflict 123
-insert into test values(1, 0) on conflict do
-insert into test values(1, 0) on conflict do 123
-insert into test values(1, 0) on conflict do update
-insert into test values(1, 0) on conflict do update set
-insert into test values(1, 0) on conflict do update set 123
-insert into test values(1, 0) on conflict do update set path
-insert into test values(1, 0) on conflict do update set path =
-drop table test
+create table test (id int primary key, data int);
+insert into test values(1, 0) 123;
+insert into test values(1, 0) ON;
+insert into test values(1, 0) ON 123;
+insert into test values(1, 0) on conflict;
+insert into test values(1, 0) on conflict 123;
+insert into test values(1, 0) on conflict do;
+insert into test values(1, 0) on conflict do 123;
+insert into test values(1, 0) on conflict do update;
+insert into test values(1, 0) on conflict do update set;
+insert into test values(1, 0) on conflict do update set 123;
+insert into test values(1, 0) on conflict do update set path;
+insert into test values(1, 0) on conflict do update set path =;
+drop table test;
 
 # test: on conflict do nothing
-create table test (id int primary key, data int)
-insert into test values(1, 0) on conflict do nothing
-insert into test values(1, 0) on conflict do nothing
-insert into test values(1, 0) on conflict do nothing
-explain insert into test values(1, 0), (2, 0), (1, 0) on conflict do nothing
-insert into test values(1, 0), (2, 0), (1, 0) on conflict do nothing
-select * from test
-drop table test
+create table test (id int primary key, data int);
+insert into test values(1, 0) on conflict do nothing;
+insert into test values(1, 0) on conflict do nothing;
+insert into test values(1, 0) on conflict do nothing;
+explain insert into test values(1, 0), (2, 0), (1, 0) on conflict do nothing;
+insert into test values(1, 0), (2, 0), (1, 0) on conflict do nothing;
+select * from test;
+drop table test;
 
 # test: on conflict do error
-create table test (id int primary key, data int)
-insert into test values(1, 0) on conflict do error
-insert into test values(1, 0) on conflict do error
-drop table test
+create table test (id int primary key, data int);
+insert into test values(1, 0) on conflict do error;
+insert into test values(1, 0) on conflict do error;
+drop table test;
 
 # test: on conflict do resolve (without resolved columns)
-create table test (id int primary key, data int)
-explain insert into test values(1, 0) on conflict do nothing
-explain insert into test values(1, 0) on conflict do resolve
-insert into test values(1, 0) on conflict do resolve
-insert into test values(1, 0) on conflict do resolve
-select * from test
-drop table test
+create table test (id int primary key, data int);
+explain insert into test values(1, 0) on conflict do nothing;
+explain insert into test values(1, 0) on conflict do resolve;
+insert into test values(1, 0) on conflict do resolve;
+insert into test values(1, 0) on conflict do resolve;
+select * from test;
+drop table test;
 
 # test: upsert insert
-create table test (id int primary key, data int)
-explain insert into test values(1, 0) on conflict do update set data = data + 1
-insert into test values(1, 0) on conflict do update set data = data + 1
-select * from test
-drop table test
+create table test (id int primary key, data int);
+explain insert into test values(1, 0) on conflict do update set data = data + 1;
+insert into test values(1, 0) on conflict do update set data = data + 1;
+select * from test;
+drop table test;
 
 # test: upsert
-create table test (id int primary key, data int)
-insert into test values(1, 0) on conflict do update set data = data + 1
-select * from test
-insert into test values(1, 0) on conflict do update set data = data + 1
-select * from test
-insert into test values(1, 0) on conflict do update set data = data + 1
-select * from test
-drop table test
+create table test (id int primary key, data int);
+insert into test values(1, 0) on conflict do update set data = data + 1;
+select * from test;
+insert into test values(1, 0) on conflict do update set data = data + 1;
+select * from test;
+insert into test values(1, 0) on conflict do update set data = data + 1;
+select * from test;
+drop table test;
 
 # test: upsert batch
-create table test (id int primary key, data int)
-explain insert into test values (1, 0), (1, 0), (1, 0) on conflict do update set data = data + 1
-insert into test values (1, 0), (1, 0), (1, 0) on conflict do update set data = data + 1
-insert into test values (1, 0), (1, 0), (1, 0) on conflict do update set data = data + 1
-insert into test values (1, 0), (1, 0), (1, 0) on conflict do update set data = data + 1
-select * from test
-drop table test
+create table test (id int primary key, data int);
+explain insert into test values (1, 0), (1, 0), (1, 0) on conflict do update set data = data + 1;
+insert into test values (1, 0), (1, 0), (1, 0) on conflict do update set data = data + 1;
+insert into test values (1, 0), (1, 0), (1, 0) on conflict do update set data = data + 1;
+insert into test values (1, 0), (1, 0), (1, 0) on conflict do update set data = data + 1;
+select * from test;
+drop table test;
 
 # test: upsert where
-create table test (id int primary key, data int)
-insert into test values (1, 0) on conflict do update set data = data + 1
-insert into test values (1, 0) on conflict do update set data = data + 1
-insert into test values (1, 0) on conflict do update set data = data + 1
-select * from test
-explain insert into test values (1, 0) on conflict do update set data = data + 1 where true
-insert into test values (1, 0) on conflict do update set data = data + 1 where true
-select * from test
-insert into test values (1, 0) on conflict do update set data = data + 1 where data < 3
-select * from test
-insert into test values (1, 0) on conflict do update set data = data + 1 where data <= 3
-select * from test
-drop table test
+create table test (id int primary key, data int);
+insert into test values (1, 0) on conflict do update set data = data + 1;
+insert into test values (1, 0) on conflict do update set data = data + 1;
+insert into test values (1, 0) on conflict do update set data = data + 1;
+select * from test;
+explain insert into test values (1, 0) on conflict do update set data = data + 1 where true;
+insert into test values (1, 0) on conflict do update set data = data + 1 where true;
+select * from test;
+insert into test values (1, 0) on conflict do update set data = data + 1 where data < 3;
+select * from test;
+insert into test values (1, 0) on conflict do update set data = data + 1 where data <= 3;
+select * from test;
+drop table test;
 
 # test: upsert excluded
-create table test (id int primary key, data int)
-insert into test values (1, 0)
-insert into test values (1, 123) on conflict do update set data = data + excluded.data
-explain insert into test values (1, 123) on conflict do update set data = data + excluded.data
-select * from test
-drop table test
+create table test (id int primary key, data int);
+insert into test values (1, 0);
+insert into test values (1, 123) on conflict do update set data = data + excluded.data;
+explain insert into test values (1, 123) on conflict do update set data = data + excluded.data;
+select * from test;
+drop table test;
 
 # test: upsert excluded (json)
-create table test (id int primary key, data int, data2 json)
-insert into test values (1, 0, null)
-insert into test values (1, null, {"id": 48}) on conflict do update set data = data + excluded.data2.id::int
-explain insert into test values (1, null, {"id": 48}) on conflict do update set data = data + excluded.data2.id::int
-select * from test
-drop table test
+create table test (id int primary key, data int, data2 json);
+insert into test values (1, 0, null);
+insert into test values (1, null, {"id": 48}) on conflict do update set data = data + excluded.data2.id::int;
+explain insert into test values (1, null, {"id": 48}) on conflict do update set data = data + excluded.data2.id::int;
+select * from test;
+drop table test;
 
 # test: upsert excluded (no target)
-create table test (id int primary key)
-select excluded.id from test
-insert into test values (1)
-select excluded.id from test
-drop table test
+create table test (id int primary key);
+select excluded.id from test;
+insert into test values (1);
+select excluded.id from test;
+drop table test;
 
 # test: upsert null
-create table test (id int primary key, data int)
-insert into test values (1, 0), (2, 0), (3, null) on conflict do update set data = data + 1
-select * from test
-insert into test values (1, 0), (2, 0), (3, 0) on conflict do update set data = data + 1
-select * from test
-drop table test
+create table test (id int primary key, data int);
+insert into test values (1, 0), (2, 0), (3, null) on conflict do update set data = data + 1;
+select * from test;
+insert into test values (1, 0), (2, 0), (3, 0) on conflict do update set data = data + 1;
+select * from test;
+drop table test;
 
 # test: upsert generate
-create table test (id serial primary key, data int default 0)
-insert into test generate 10 on conflict do update set data = data + 1
-select * from test
-alter table test set identity to 0
-insert into test generate 10 on conflict do update set data = data + 1
-select * from test
-drop table test
+create table test (id serial primary key, data int default 0);
+insert into test generate 10 on conflict do update set data = data + 1;
+select * from test;
+alter table test set identity to 0;
+insert into test generate 10 on conflict do update set data = data + 1;
+select * from test;
+drop table test;
 
 # test: upsert var
-create table test (id int primary key, data int default 0)
+create table test (id int primary key, data int default 0);
 
-declare v int := 10; insert into test values (v, 0) on conflict do update set data = data + 1;
-select * from test
+begin;
+	declare v int := 10;
+	insert into test values (v, 0) on conflict do update set data = data + 1;
+	select * from test;
+end;
 
-declare v int := 10; insert into test values (v, 0) on conflict do update set data = data + 1;
-select * from test
+begin;
+	declare v int := 10;
+	insert into test values (v, 0) on conflict do update set data = data + 1;
+	select * from test;
+end;
 
-declare v int := 10; insert into test values (v, 0) on conflict do update set data = data + 1;
-select * from test
+begin;
+	declare v int := 10;
+	insert into test values (v, 0) on conflict do update set data = data + 1;
+	select * from test;
+end;
 
 # test: upsert var excluded
-declare v int := 10; insert into test values (v, 0) on conflict do update set data = excluded.id + data;
-select * from test
+begin;
+	declare v int := 10;
+	insert into test values (v, 0) on conflict do update set data = excluded.id + data;
+	select * from test;
+end;
 
-drop table test
+drop table test;
 
 # test: upsert returning
-create table test (id int primary key, data int)
-insert into test values (1, 0)
-explain insert into test values(1, 0) on conflict do update set data = data + 1 returning *
-insert into test values(1, 0) on conflict do update set data = data + 1 returning *
-insert into test values(1, 0) on conflict do update set data = data + 1 returning *
-insert into test values(1, 0) on conflict do update set data = data + 1 returning *
-select * from test
-drop table test
+create table test (id int primary key, data int);
+insert into test values (1, 0);
+explain insert into test values(1, 0) on conflict do update set data = data + 1 returning *;
+insert into test values(1, 0) on conflict do update set data = data + 1 returning *;
+insert into test values(1, 0) on conflict do update set data = data + 1 returning *;
+insert into test values(1, 0) on conflict do update set data = data + 1 returning *;
+select * from test;
+drop table test;
 
 # test: upsert returning (do nothing)
-create table test (id int primary key, data int)
-insert into test values (1, 0)
-explain insert into test values(1, 0) on conflict do nothing returning *
-insert into test values(1, 0) on conflict do nothing returning *
-insert into test values(1, 0) on conflict do nothing returning *
-insert into test values(1, 0) on conflict do nothing returning *
-select * from test
-drop table test
+create table test (id int primary key, data int);
+insert into test values (1, 0);
+explain insert into test values(1, 0) on conflict do nothing returning *;
+insert into test values(1, 0) on conflict do nothing returning *;
+insert into test values(1, 0) on conflict do nothing returning *;
+insert into test values(1, 0) on conflict do nothing returning *;
+select * from test;
+drop table test;
 
 # test: upsert returning (first row)
-create table test (id int primary key, data int)
-explain insert into test values(1, 0) on conflict do update set data = data + 1 returning *
-insert into test values(1, 0) on conflict do update set data = data + 1 returning *
-insert into test values(1, 0) on conflict do update set data = data + 1 returning *
-insert into test values(1, 0) on conflict do update set data = data + 1 returning *
-select * from test
-drop table test
+create table test (id int primary key, data int);
+explain insert into test values(1, 0) on conflict do update set data = data + 1 returning *;
+insert into test values(1, 0) on conflict do update set data = data + 1 returning *;
+insert into test values(1, 0) on conflict do update set data = data + 1 returning *;
+insert into test values(1, 0) on conflict do update set data = data + 1 returning *;
+select * from test;
+drop table test;
 
 # test: upsert returning (do nothing, first row)
-create table test (id int primary key, data int)
-explain insert into test values(1, 0) on conflict do nothing returning *
-insert into test values(1, 0) on conflict do nothing returning *
-insert into test values(1, 0) on conflict do nothing returning *
-select * from test
-drop table test
+create table test (id int primary key, data int);
+explain insert into test values(1, 0) on conflict do nothing returning *;
+insert into test values(1, 0) on conflict do nothing returning *;
+insert into test values(1, 0) on conflict do nothing returning *;
+select * from test;
+drop table test;
 
 # test: upsert returning (excluded var)
-create table test (id int primary key, data int)
-declare v int := 10; insert into test values (v, 0) on conflict do update set data = excluded.id + data returning excluded.id, id, data
-select * from test
+create table test (id int primary key, data int);
 
-declare v int := 10; insert into test values (v, 0) on conflict do update set data = excluded.id + data returning excluded.id, id, data
-select * from test
+begin;
+	declare v int := 10;
+	insert into test values (v, 0) on conflict do update set data = excluded.id + data returning excluded.id, id, data;
+	select * from test;
+end;
 
-declare v int := 10; insert into test values (v, 0) on conflict do update set data = excluded.id + data returning excluded.id, id, data
-select * from test
+begin;
+	declare v int := 10;
+	insert into test values (v, 0) on conflict do update set data = excluded.id + data returning excluded.id, id, data;
+	select * from test;
+end;
 
-declare v int := 10; insert into test values (v, 0) on conflict do update set data = excluded.id + data returning excluded.id, id, data
-select * from test
-drop table test
+begin;
+	declare v int := 10;
+	insert into test values (v, 0) on conflict do update set data = excluded.id + data returning excluded.id, id, data;
+	select * from test;
+end;
+
+begin;
+	declare v int := 10;
+	insert into test values (v, 0) on conflict do update set data = excluded.id + data returning excluded.id, id, data;
+	select * from test;
+end;
+
+drop table test;
 
 # test: upsert secondary index
-create table test (id int primary key, data int, value int)
-create index i on test (data)
+create table test (id int primary key, data int, value int);
+create index i on test (data);
 
-insert into test values (0, 2, 0)
-insert into test values (1, 1, 0)
-insert into test values (2, 0, 0)
+insert into test values (0, 2, 0);
+insert into test values (1, 1, 0);
+insert into test values (2, 0, 0);
 
-select * from test
-select * from test use index (i)
+select * from test;
+select * from test use index (i);
 
-insert into test values (0, 2, 0) on conflict do update set value = value + 1
-select * from test
-select * from test use index (i)
+insert into test values (0, 2, 0) on conflict do update set value = value + 1;
+select * from test;
+select * from test use index (i);
 
-insert into test values (3, 2, 0) on conflict do update set value = 10
-select * from test
-select * from test use index (i)
-drop table test
+insert into test values (3, 2, 0) on conflict do update set value = 10;
+select * from test;
+select * from test use index (i);
+drop table test;
 
 # test: upsert select
-create table test (id int primary key, data int)
+create table test (id int primary key, data int);
 
-insert into test select 0, 0
-insert into test select 0, 0 on conflict do error
+insert into test select 0, 0;
+insert into test select 0, 0 on conflict do error;
 
-insert into test select 0, 0 on conflict do update set data = data + 1
-insert into test select 0, 0 on conflict do update set data = data + 1
-insert into test select 0, 0 on conflict do update set data = data + 1
-insert into test select 0, 0 on conflict do update set data = data + 1
-select * from test
+insert into test select 0, 0 on conflict do update set data = data + 1;
+insert into test select 0, 0 on conflict do update set data = data + 1;
+insert into test select 0, 0 on conflict do update set data = data + 1;
+insert into test select 0, 0 on conflict do update set data = data + 1;
+select * from test;
 
 # test: upsert select returning
-insert into test select 0, 0 on conflict do update set data = data + 1 returning *
+insert into test select 0, 0 on conflict do update set data = data + 1 returning *;
 
 # test: upsert select from table
-create table src (id int primary key, data int)
-insert into src values (0, 0), (1, 0)
-explain insert into test select * from src on conflict do update set data = data + 1 returning *
-insert into test select * from src on conflict do update set data = data + 1 returning *
-select * from test
-drop table src
+create table src (id int primary key, data int);
+insert into src values (0, 0), (1, 0);
+explain insert into test select * from src on conflict do update set data = data + 1 returning *;
+insert into test select * from src on conflict do update set data = data + 1 returning *;
+select * from test;
+drop table src;
 
-drop table test
+drop table test;
 
-disconnect S0
-close E0
+disconnect S0;
+close E0;

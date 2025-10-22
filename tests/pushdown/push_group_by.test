@@ -1,327 +1,327 @@
 #
 
-open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "127.0.0.1", "port": 3485 }], "backends": 3
-connect E0 S0 127.0.0.1:3485
+open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "127.0.0.1", "port": 3485 }], "backends": 3;
+connect E0 S0 127.0.0.1:3485;
 
 # test: select * from table group by (column not defined)
-create table test (id int primary key, data int)
-explain select * from test group by id
-explain select data from test group by id
-drop table test
+create table test (id int primary key, data int);
+explain select * from test group by id;
+explain select data from test group by id;
+drop table test;
 
 # test: select * from table group by (empty)
-create table test (id int primary key)
-explain select * from test group by id
-drop table test
+create table test (id int primary key);
+explain select * from test group by id;
+drop table test;
 
 # test: select from table group by column
-create table test (id int primary key, data int)
-select * from test group by id
-select id from test group by id
+create table test (id int primary key, data int);
+select * from test group by id;
+select id from test group by id;
 
-insert into test values (0, 0)
-insert into test values (1, 0)
-insert into test values (2, 1)
-insert into test values (3, 1)
-insert into test values (4, 2)
-select * from test
+insert into test values (0, 0);
+insert into test values (1, 0);
+insert into test values (2, 1);
+insert into test values (3, 1);
+insert into test values (4, 2);
+select * from test;
 
-explain select id from test group by id
-select id from test group by id
-select data from test group by data
+explain select id from test group by id;
+select id from test group by id;
+select data from test group by data;
 
 # test: select from table group by keys only
-select data from test group by id
+select data from test group by id;
 
 # test: select from table group by column, column
-select id, data from test group by id, data
-select id, data from test group by data, id
+select id, data from test group by id, data;
+select id, data from test group by data, id;
 
 # test: select expr from table group by
-select id, 100 + id from test group by id
+select id, 100 + id from test group by id;
 
 # test: select from (select from table group by)
-explain select * from (select id from test group by id) t
-select * from (select id from test group by id) t
-select x from (select id, 100 + id as x from test group by id) t
+explain select * from (select id from test group by id) t;
+select * from (select id from test group by id) t;
+select x from (select id, 100 + id as x from test group by id) t;
 
 # test: select from table group by limit
-explain select id from test group by id limit 1
-select id from test group by id limit 2
-select id from test group by id limit 3
-select id from test group by id limit 4
+explain select id from test group by id limit 1;
+select id from test group by id limit 2;
+select id from test group by id limit 3;
+select id from test group by id limit 4;
 
 # test: select from table group by limit/offset
-explain select id from test group by id limit 1 offset 1
-select id from test group by id limit 1 offset 1
-select id from test group by id limit 1 offset 2
-select id from test group by id limit 1 offset 3
-select id from test group by id limit 1 offset 4
+explain select id from test group by id limit 1 offset 1;
+select id from test group by id limit 1 offset 1;
+select id from test group by id limit 1 offset 2;
+select id from test group by id limit 1 offset 3;
+select id from test group by id limit 1 offset 4;
 
 # test: select from table group by offset
-explain select id from test group by id offset 1
-select id from test group by id offset 1
-select id from test group by id offset 2
-select id from test group by id offset 3
-select id from test group by id offset 4
+explain select id from test group by id offset 1;
+select id from test group by id offset 1;
+select id from test group by id offset 2;
+select id from test group by id offset 3;
+select id from test group by id offset 4;
 
 # test: select from (select from table group by limit)
-explain select * from (select id from test group by id limit 1) t
-select * from (select id from test group by id limit 1) t
-select * from (select id from test group by id limit 2) t
-select * from (select id from test group by id limit 3) t
-select * from (select id from test group by id limit 4) t
+explain select * from (select id from test group by id limit 1) t;
+select * from (select id from test group by id limit 1) t;
+select * from (select id from test group by id limit 2) t;
+select * from (select id from test group by id limit 3) t;
+select * from (select id from test group by id limit 4) t;
 
 # test: select from (select from table group by limit/offset)
-explain select * from (select id from test group by id limit 1 offset 1) t
-select * from (select id from test group by id limit 1 offset 1) t
-select * from (select id from test group by id limit 1 offset 2) t
-select * from (select id from test group by id limit 1 offset 3) t
-select * from (select id from test group by id limit 1 offset 4) t
+explain select * from (select id from test group by id limit 1 offset 1) t;
+select * from (select id from test group by id limit 1 offset 1) t;
+select * from (select id from test group by id limit 1 offset 2) t;
+select * from (select id from test group by id limit 1 offset 3) t;
+select * from (select id from test group by id limit 1 offset 4) t;
 
 # test: select from (select from table group by offset)
-explain select * from (select id from test group by id offset 1) t
-select * from (select id from test group by id offset 1) t
-select * from (select id from test group by id offset 2) t
-select * from (select id from test group by id offset 3) t
-select * from (select id from test group by id offset 4) t
+explain select * from (select id from test group by id offset 1) t;
+select * from (select id from test group by id offset 1) t;
+select * from (select id from test group by id offset 2) t;
+select * from (select id from test group by id offset 3) t;
+select * from (select id from test group by id offset 4) t;
 
 # test: select from table group by having
-explain select id from test group by id having id >= 3
-select id from test group by id having id >= 3
-select id from test group by id having id = 0
-select id from test group by id having id = 1
-select id from test group by id having id = 2
-select id from test group by id having id = 3
-select id from test group by id having id = 4
-select id from test group by id having id = 5
-select id from test group by id having id >= 1 and id <= 3
+explain select id from test group by id having id >= 3;
+select id from test group by id having id >= 3;
+select id from test group by id having id = 0;
+select id from test group by id having id = 1;
+select id from test group by id having id = 2;
+select id from test group by id having id = 3;
+select id from test group by id having id = 4;
+select id from test group by id having id = 5;
+select id from test group by id having id >= 1 and id <= 3;
 
 # test: select from table group by having limit
-explain select id from test group by id having id >= 1 limit 1
-select id from test group by id having id >= 1 limit 1
-select id from test group by id having id >= 1 limit 2
+explain select id from test group by id having id >= 1 limit 1;
+select id from test group by id having id >= 1 limit 1;
+select id from test group by id having id >= 1 limit 2;
 
 # test: select from table group by having limit/offset
-explain select id from test group by id having id >= 1 limit 1 offset 1
-select id from test group by id having id >= 1 limit 1 offset 1
-select id from test group by id having id >= 1 limit 1 offset 2
-select id from test group by id having id >= 1 limit 1 offset 3
+explain select id from test group by id having id >= 1 limit 1 offset 1;
+select id from test group by id having id >= 1 limit 1 offset 1;
+select id from test group by id having id >= 1 limit 1 offset 2;
+select id from test group by id having id >= 1 limit 1 offset 3;
 
 # test: select from table group by having offset
-explain select id from test group by id having id >= 1 offset 1
-select id from test group by id having id >= 1 offset 1
-select id from test group by id having id >= 1 offset 2
-select id from test group by id having id >= 1 offset 3
+explain select id from test group by id having id >= 1 offset 1;
+select id from test group by id having id >= 1 offset 1;
+select id from test group by id having id >= 1 offset 2;
+select id from test group by id having id >= 1 offset 3;
 
 # test: select from (select from table group by having)
-explain select * from (select id from test group by id having id >= 3) t
-select * from (select id from test group by id having id >= 3) t
+explain select * from (select id from test group by id having id >= 3) t;
+select * from (select id from test group by id having id >= 3) t;
 
 # test: select from (select from table group by having limit)
-explain select * from (select id from test group by id having id >= 1 limit 1) t
-select * from (select id from test group by id having id >= 1 limit 1) t
-select * from (select id from test group by id having id >= 1 limit 2) t
+explain select * from (select id from test group by id having id >= 1 limit 1) t;
+select * from (select id from test group by id having id >= 1 limit 1) t;
+select * from (select id from test group by id having id >= 1 limit 2) t;
 
 # test: select from (select from table group by having limit/offset)
-explain select * from (select id from test group by id having id >= 1 limit 1 offset 1) t
-select * from (select id from test group by id having id >= 1 limit 1 offset 1) t
-select * from (select id from test group by id having id >= 1 limit 1 offset 2) t
-select * from (select id from test group by id having id >= 1 limit 1 offset 3) t
+explain select * from (select id from test group by id having id >= 1 limit 1 offset 1) t;
+select * from (select id from test group by id having id >= 1 limit 1 offset 1) t;
+select * from (select id from test group by id having id >= 1 limit 1 offset 2) t;
+select * from (select id from test group by id having id >= 1 limit 1 offset 3) t;
 
 # test: select from (select from table group by having offset)
-explain select * from (select id from test group by id having id >= 1 offset 1) t
-select * from (select id from test group by id having id >= 1 offset 1) t
-select * from (select id from test group by id having id >= 1 offset 2) t
-select * from (select id from test group by id having id >= 1 offset 3) t
+explain select * from (select id from test group by id having id >= 1 offset 1) t;
+select * from (select id from test group by id having id >= 1 offset 1) t;
+select * from (select id from test group by id having id >= 1 offset 2) t;
+select * from (select id from test group by id having id >= 1 offset 3) t;
 
 # test: select from table group by order by
-explain select id from test group by id order by id
-select id from test group by id order by id
+explain select id from test group by id order by id;
+select id from test group by id order by id;
 
 # test: select from table group by order by keys only
-select id from test group by id order by data
+select id from test group by id order by data;
 
 # test: select from table group by order by desc
-explain select id from test group by id order by id desc
-select id from test group by id order by id desc
+explain select id from test group by id order by id desc;
+select id from test group by id order by id desc;
 
 # test: select from (select from table group by order by)
-explain select * from (select id from test group by id order by id desc) t
-select * from (select id from test group by id order by id desc) t
+explain select * from (select id from test group by id order by id desc) t;
+select * from (select id from test group by id order by id desc) t;
 
 # test: select from table group by order by asc limit
-explain select id from test group by id order by id asc limit 1
-select id from test group by id order by id asc limit 1
-select id from test group by id order by id asc limit 2
-select id from test group by id order by id asc limit 3
+explain select id from test group by id order by id asc limit 1;
+select id from test group by id order by id asc limit 1;
+select id from test group by id order by id asc limit 2;
+select id from test group by id order by id asc limit 3;
 
 # test: select from table group by order by asc limit/offset
-explain select id from test group by id order by id asc limit 1 offset 1
-select id from test group by id order by id asc limit 1 offset 1
-select id from test group by id order by id asc limit 1 offset 2
-select id from test group by id order by id asc limit 1 offset 3
+explain select id from test group by id order by id asc limit 1 offset 1;
+select id from test group by id order by id asc limit 1 offset 1;
+select id from test group by id order by id asc limit 1 offset 2;
+select id from test group by id order by id asc limit 1 offset 3;
 
 # test: select from table group by order by asc offset
-explain select id from test group by id order by id asc offset 1
-select id from test group by id order by id asc offset 1
-select id from test group by id order by id asc offset 2
-select id from test group by id order by id asc offset 3
+explain select id from test group by id order by id asc offset 1;
+select id from test group by id order by id asc offset 1;
+select id from test group by id order by id asc offset 2;
+select id from test group by id order by id asc offset 3;
 
 # test: select from table group by order by desc limit
-explain select id from test group by id order by id desc limit 1
-select id from test group by id order by id desc limit 1
-select id from test group by id order by id desc limit 2
-select id from test group by id order by id desc limit 3
+explain select id from test group by id order by id desc limit 1;
+select id from test group by id order by id desc limit 1;
+select id from test group by id order by id desc limit 2;
+select id from test group by id order by id desc limit 3;
 
 # test: select from table group by order by desc limit/offset
-explain select id from test group by id order by id desc limit 1 offset 1
-select id from test group by id order by id desc limit 1 offset 1
-select id from test group by id order by id desc limit 1 offset 2
-select id from test group by id order by id desc limit 1 offset 3
+explain select id from test group by id order by id desc limit 1 offset 1;
+select id from test group by id order by id desc limit 1 offset 1;
+select id from test group by id order by id desc limit 1 offset 2;
+select id from test group by id order by id desc limit 1 offset 3;
 
 # test: select from table group by order by desc offset
-explain select id from test group by id order by id desc offset 1
-select id from test group by id order by id desc offset 0
-select id from test group by id order by id desc offset 1
-select id from test group by id order by id desc offset 2
-select id from test group by id order by id desc offset 3
+explain select id from test group by id order by id desc offset 1;
+select id from test group by id order by id desc offset 0;
+select id from test group by id order by id desc offset 1;
+select id from test group by id order by id desc offset 2;
+select id from test group by id order by id desc offset 3;
 
 # test: select from (select from table group by order by asc limit)
-explain select * from (select id from test group by id order by id asc limit 1) t
-select * from (select id from test group by id order by id asc limit 0) t
-select * from (select id from test group by id order by id asc limit 1) t
-select * from (select id from test group by id order by id asc limit 2) t
-select * from (select id from test group by id order by id asc limit 3) t
+explain select * from (select id from test group by id order by id asc limit 1) t;
+select * from (select id from test group by id order by id asc limit 0) t;
+select * from (select id from test group by id order by id asc limit 1) t;
+select * from (select id from test group by id order by id asc limit 2) t;
+select * from (select id from test group by id order by id asc limit 3) t;
 
 # test: select from (select from table group by order by asc limit/offset)
-explain select * from (select id from test group by id order by id asc limit 1 offset 1) t
-select * from (select id from test group by id order by id asc limit 1 offset 1) t
-select * from (select id from test group by id order by id asc limit 1 offset 2) t
-select * from (select id from test group by id order by id asc limit 1 offset 3) t
+explain select * from (select id from test group by id order by id asc limit 1 offset 1) t;
+select * from (select id from test group by id order by id asc limit 1 offset 1) t;
+select * from (select id from test group by id order by id asc limit 1 offset 2) t;
+select * from (select id from test group by id order by id asc limit 1 offset 3) t;
 
 # test: select from (select from table group by order by asc offset)
-explain select * from (select id from test group by id order by id asc offset 1) t
-select * from (select id from test group by id order by id asc offset 0) t
-select * from (select id from test group by id order by id asc offset 1) t
-select * from (select id from test group by id order by id asc offset 2) t
-select * from (select id from test group by id order by id asc offset 3) t
+explain select * from (select id from test group by id order by id asc offset 1) t;
+select * from (select id from test group by id order by id asc offset 0) t;
+select * from (select id from test group by id order by id asc offset 1) t;
+select * from (select id from test group by id order by id asc offset 2) t;
+select * from (select id from test group by id order by id asc offset 3) t;
 
 # test: select from (select from table group by order by desc limit)
-explain select * from (select id from test group by id order by id desc limit 1) t
-select * from (select id from test group by id order by id desc limit 0) t
-select * from (select id from test group by id order by id desc limit 1) t
-select * from (select id from test group by id order by id desc limit 2) t
-select * from (select id from test group by id order by id desc limit 3) t
+explain select * from (select id from test group by id order by id desc limit 1) t;
+select * from (select id from test group by id order by id desc limit 0) t;
+select * from (select id from test group by id order by id desc limit 1) t;
+select * from (select id from test group by id order by id desc limit 2) t;
+select * from (select id from test group by id order by id desc limit 3) t;
 
 # test: select from (select from table group by order by desc limit/offset)
-explain select * from (select id from test group by id order by id desc limit 1 offset 1) t
-select * from (select id from test group by id order by id desc limit 1 offset 1) t
-select * from (select id from test group by id order by id desc limit 1 offset 2) t
-select * from (select id from test group by id order by id desc limit 1 offset 3) t
+explain select * from (select id from test group by id order by id desc limit 1 offset 1) t;
+select * from (select id from test group by id order by id desc limit 1 offset 1) t;
+select * from (select id from test group by id order by id desc limit 1 offset 2) t;
+select * from (select id from test group by id order by id desc limit 1 offset 3) t;
 
 # test: select from (select from table group by order by desc offset)
-explain select * from (select id from test group by id order by id desc offset 1) t
-select * from (select id from test group by id order by id desc offset 0) t
-select * from (select id from test group by id order by id desc offset 1) t
-select * from (select id from test group by id order by id desc offset 2) t
-select * from (select id from test group by id order by id desc offset 3) t
+explain select * from (select id from test group by id order by id desc offset 1) t;
+select * from (select id from test group by id order by id desc offset 0) t;
+select * from (select id from test group by id order by id desc offset 1) t;
+select * from (select id from test group by id order by id desc offset 2) t;
+select * from (select id from test group by id order by id desc offset 3) t;
 
 # test: select from table group by having order by
-explain select data from test where data > 0 group by data having data >= 1 order by data
-select data from test where data > 0 group by data having data >= 1 order by data
+explain select data from test where data > 0 group by data having data >= 1 order by data;
+select data from test where data > 0 group by data having data >= 1 order by data;
 
 # test: select from table group by having order by limit
-explain select data from test where data > 0 group by data having data >= 1 order by data limit 1
-select data from test where data > 0 group by data having data >= 1 order by data limit 1
+explain select data from test where data > 0 group by data having data >= 1 order by data limit 1;
+select data from test where data > 0 group by data having data >= 1 order by data limit 1;
 
 # test: select from table group by having order by limit/offset
-explain select data from test where data > 0 group by data having data >= 1 order by data limit 1 offset 1
-select data from test where data > 0 group by data having data >= 1 order by data limit 1 offset 1
+explain select data from test where data > 0 group by data having data >= 1 order by data limit 1 offset 1;
+select data from test where data > 0 group by data having data >= 1 order by data limit 1 offset 1;
 
 # test: select from table group by having order by offset
-explain select data from test where data > 0 group by data having data >= 1 order by data offset 1
-select data from test where data > 0 group by data having data >= 1 order by data offset 1
+explain select data from test where data > 0 group by data having data >= 1 order by data offset 1;
+select data from test where data > 0 group by data having data >= 1 order by data offset 1;
 
 # test: select from (select from table group by having order by)
-explain select * from (select data from test where data > 0 group by data having data >= 1 order by data) t
-select * from (select data from test where data > 0 group by data having data >= 1 order by data) t
+explain select * from (select data from test where data > 0 group by data having data >= 1 order by data) t;
+select * from (select data from test where data > 0 group by data having data >= 1 order by data) t;
 
 # test: select from (select from table group by having order by limit)
-explain select * from (select data from test where data > 0 group by data having data >= 1 order by data limit 1) t
-select * from (select data from test where data > 0 group by data having data >= 1 order by data limit 1) t
+explain select * from (select data from test where data > 0 group by data having data >= 1 order by data limit 1) t;
+select * from (select data from test where data > 0 group by data having data >= 1 order by data limit 1) t;
 
 # test: select from (select from table group by having order by desc limit)
-explain select * from (select data from test where data > 0 group by data having data >= 1 order by data desc limit 1) t
-select * from (select data from test where data > 0 group by data having data >= 1 order by data desc limit 1) t
+explain select * from (select data from test where data > 0 group by data having data >= 1 order by data desc limit 1) t;
+select * from (select data from test where data > 0 group by data having data >= 1 order by data desc limit 1) t;
 
 # test: select from (select from table group by having order by limit/offset)
-explain select * from (select data from test where data > 0 group by data having data >= 1 order by data limit 1 offset 1) t
-select * from (select data from test where data > 0 group by data having data >= 1 order by data limit 1 offset 1) t
+explain select * from (select data from test where data > 0 group by data having data >= 1 order by data limit 1 offset 1) t;
+select * from (select data from test where data > 0 group by data having data >= 1 order by data limit 1 offset 1) t;
 
 # test: select from (select from table group by having order by offset)
-explain select * from (select data from test where data > 0 group by data having data >= 1 order by data offset 1) t
-select * from (select data from test where data > 0 group by data having data >= 1 order by data offset 1) t
-drop table test
+explain select * from (select data from test where data > 0 group by data having data >= 1 order by data offset 1) t;
+select * from (select data from test where data > 0 group by data having data >= 1 order by data offset 1) t;
+drop table test;
 
 # test: select from table group by (large table)
-create table test (id serial primary key)
-insert into test generate 10000
-explain select * from (select count(*), sum(2 * id) from test group by id) t
-select * from (select count(*), sum(2 * id) from test group by id) t
-explain select count(*) from (select count(*) from test group by id) t
-select count(*) from (select count(*) from test group by id) t
-drop table test
+create table test (id serial primary key);
+insert into test generate 10000;
+explain select * from (select count(*), sum(2 * id) from test group by id) t;
+select * from (select count(*), sum(2 * id) from test group by id) t;
+explain select count(*) from (select count(*) from test group by id) t;
+select count(*) from (select count(*) from test group by id) t;
+drop table test;
 
 # test: select from table group by 1
-create table test (id int primary key, data int)
-insert into test values (0, 0)
-insert into test values (1, 0)
-insert into test values (2, 1)
-insert into test values (3, 1)
-insert into test values (4, 2)
-select * from test
-select id from test group by id
-select data from test group by id
-select data from test group by data
+create table test (id int primary key, data int);
+insert into test values (0, 0);
+insert into test values (1, 0);
+insert into test values (2, 1);
+insert into test values (3, 1);
+insert into test values (4, 2);
+select * from test;
+select id from test group by id;
+select data from test group by id;
+select data from test group by data;
 
-select id from test group by 1
-select data from test group by 1
+select id from test group by 1;
+select data from test group by 1;
 
 # test: select from table group by 1 (expr)
-select data + 25 from test group by 1
+select data + 25 from test group by 1;
 
-select abs(-id + data) from test
-select abs(-id + data) from test group by 1
+select abs(-id + data) from test;
+select abs(-id + data) from test group by 1;
 
 # test: select from table group by 1 (agg)
-select count(id) from test group by 1
+select count(id) from test group by 1;
 
 # test: select from table group by alias
-select id as x, count(*) from test group by x
-select data as x, count(*) from test group by x
+select id as x, count(*) from test group by x;
+select data as x, count(*) from test group by x;
 
 # test: select from table group by alias (expr)
-select abs(-id + data) as x, count(*) from test group by x
+select abs(-id + data) as x, count(*) from test group by x;
 
 # test: select from table group by alias (agg)
-select count(*) as x, abs(-id + data) from test group by x
-drop table test
+select count(*) as x, abs(-id + data) from test group by x;
+drop table test;
 
 # test: select * from table group by vector/interval
-create table test (id int primary key, vec vector, iv interval)
-insert into test values (0, [1,2,3], "1 min 5 sec")
-insert into test values (1, [1,2,3], "1 min 5 sec")
+create table test (id int primary key, vec vector, iv interval);
+insert into test values (0, [1,2,3], "1 min 5 sec");
+insert into test values (1, [1,2,3], "1 min 5 sec");
 
 # test: select * from table group by vector
-select count(*) from test group by vec
-select count(*) from test group by id, vec
+select count(*) from test group by vec;
+select count(*) from test group by id, vec;
 
 # test: select * from table group by interval
-select count(*) from test group by iv
-select count(*) from test group by id,iv
+select count(*) from test group by iv;
+select count(*) from test group by id,iv;
 
-drop table test
+drop table test;
 
-disconnect S0
-close E0
+disconnect S0;
+close E0;

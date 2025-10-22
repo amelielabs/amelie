@@ -1,9 +1,9 @@
-open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "127.0.0.1", "port": 3485 }], "backends": 3
-connect E0 S0 127.0.0.1:3485
-create table test (id int primary key, data int default 0)
-insert into test (id) values (1), (2), (3)
+open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "127.0.0.1", "port": 3485 }], "backends": 3;
+connect E0 S0 127.0.0.1:3485;
+create table test (id int primary key, data int default 0);
+insert into test (id) values (1), (2), (3);
 # test: select (select from table)
-explain select (select id from test)
+explain select (select id from test);
 [{
   "main": {
     "00": "set                 0      1      0     ",
@@ -18,12 +18,12 @@ explain select (select id from test)
   },
   "access": [["public.test", "ro_exclusive"]]
 }]
-select (select id from test)
+select (select id from test);
 [1]
 # test: select (select from table) from table
-create table test2 (id int primary key)
-insert into test2 (id) values (1), (2), (3)
-explain select (select id from test) from test2
+create table test2 (id int primary key);
+insert into test2 (id) values (1), (2), (3);
+explain select (select id from test) from test2;
 [{
   "main": {
     "00": "union               0      0      0     ",
@@ -51,10 +51,10 @@ explain select (select id from test) from test2
   },
   "access": [["public.test", "ro_exclusive"], ["public.test2", "ro"]]
 }]
-select (select id from test) from test2
+select (select id from test) from test2;
 [1, 1, 1]
 # test: select (select from table) from (select from table)
-explain select (select id from test) from (select * from test2) t
+explain select (select id from test) from (select * from test2) t;
 [{
   "main": {
     "00": "union               0      0      0     ",
@@ -91,11 +91,11 @@ explain select (select id from test) from (select * from test2) t
   },
   "access": [["public.test", "ro_exclusive"], ["public.test2", "ro"]]
 }]
-select (select id from test) from (select * from test2) t
+select (select id from test) from (select * from test2) t;
 [1, 1, 1]
-drop table test2
+drop table test2;
 # test: select from (select from table)
-explain select * from (select * from test) t
+explain select * from (select * from test) t;
 [{
   "main": {
     "00": "union               0      0      0     ",
@@ -129,12 +129,12 @@ explain select * from (select * from test) t
   },
   "access": [["public.test", "ro"]]
 }]
-select * from (select * from test) t
+select * from (select * from test) t;
 [[1, 0], [3, 0], [2, 0]]
 # test: select from (select (select from table) from table)
-create table test2 (id int primary key)
-insert into test2 (id) values (1), (2), (3)
-explain select * from (select (select id from test2) from test) t
+create table test2 (id int primary key);
+insert into test2 (id) values (1), (2), (3);
+explain select * from (select (select id from test2) from test) t;
 [{
   "main": {
     "00": "union               0      0      0     ",
@@ -171,11 +171,11 @@ explain select * from (select (select id from test2) from test) t
   },
   "access": [["public.test2", "ro_exclusive"], ["public.test", "ro"]]
 }]
-select * from (select (select id from test2) from test) t
+select * from (select (select id from test2) from test) t;
 [1, 1, 1]
-drop table test2
+drop table test2;
 # test: select from (select (select from table) from table)
-explain select * from (select (select id from test t) from test) g
+explain select * from (select (select id from test t) from test) g;
 [{
   "main": {
     "00": "union               0      0      0     ",
@@ -212,17 +212,17 @@ explain select * from (select (select id from test t) from test) g
   },
   "access": [["public.test", "ro_exclusive"]]
 }]
-select * from (select (select id from test t) from test) g
+select * from (select (select id from test t) from test) g;
 [1, 1, 1]
 # test: select (select expr) from (select from table)
-select (select t.*) from (select * from test) t
+select (select t.*) from (select * from test) t;
 {"msg": "select (❰select❱ ⟵ subquery must return only one column"}
-select (select t.id) from (select * from test) t
+select (select t.id) from (select * from test) t;
 [1, 3, 2]
 # test: select (select from table) from (select from table)
-create table test2 (id int primary key)
-insert into test2 (id) values (1), (2), (3)
-explain select (select t.id from test2) from (select * from test) t
+create table test2 (id int primary key);
+insert into test2 (id) values (1), (2), (3);
+explain select (select t.id from test2) from (select * from test) t;
 [{
   "main": {
     "00": "union               0      0      0     ",
@@ -261,11 +261,11 @@ explain select (select t.id from test2) from (select * from test) t
   },
   "access": [["public.test2", "ro_exclusive"], ["public.test", "ro"]]
 }]
-select (select t.id from test2) from (select * from test) t
+select (select t.id from test2) from (select * from test) t;
 [1, 3, 2]
-drop table test2
+drop table test2;
 # test: select (select from table) from (select from table)
-explain select (select t.id from test z) from (select * from test) t
+explain select (select t.id from test z) from (select * from test) t;
 [{
   "main": {
     "00": "union               0      0      0     ",
@@ -304,12 +304,12 @@ explain select (select t.id from test z) from (select * from test) t
   },
   "access": [["public.test", "ro_exclusive"]]
 }]
-select (select t.id from test z) from (select * from test) t
+select (select t.id from test z) from (select * from test) t;
 [1, 3, 2]
 # test: select from (select from table), (select from table)
-select * from (select id from test) a, (select * from test) b
+select * from (select id from test) a, (select * from test) b;
 [[1, 1, 0], [1, 3, 0], [1, 2, 0], [3, 1, 0], [3, 3, 0], [3, 2, 0], [2, 1, 0], [2, 3, 0], [2, 2, 0]]
-explain select * from (select * from test) a, (select * from test) b
+explain select * from (select * from test) a, (select * from test) b;
 [{
   "main": {
     "00": "union               0      0      0     ",
@@ -367,21 +367,21 @@ explain select * from (select * from test) a, (select * from test) b
   "access": [["public.test", "ro"]]
 }]
 # test: insert returning (select from table) (unsupported)
-explain insert into test (id) values (4) returning (select * from test t)
+explain insert into test (id) values (4) returning (select * from test t);
 {"msg": "explain insert into test (id) values (4) returning (❰select❱ ⟵ unexpected subquery"}
-insert into test (id) values (4) returning (select * from test t)
+insert into test (id) values (4) returning (select * from test t);
 {"msg": "insert into test (id) values (4) returning (❰select❱ ⟵ unexpected subquery"}
 # test: insert returning (select from table) (unsupported)
-create table test_ (id int primary key)
-insert into test_ values (1),(2),(3)
-insert into test (id) values (5) returning (select * from test_)
+create table test_ (id int primary key);
+insert into test_ values (1),(2),(3);
+insert into test (id) values (5) returning (select * from test_);
 {"msg": "insert into test (id) values (5) returning (❰select❱ ⟵ unexpected subquery"}
-drop table test_
+drop table test_;
 # test: insert returning (select from expr) (unsupported)
-insert into test (id) values (6) returning *, select [1,2,3]
+insert into test (id) values (6) returning *, select [1,2,3];
 {"msg": "insert into test (id) values (6) returning *, ❰select❱ ⟵ unexpected subquery"}
-insert into test (id) values (7) returning id, select [1,2,3]
+insert into test (id) values (7) returning id, select [1,2,3];
 {"msg": "insert into test (id) values (7) returning id, ❰select❱ ⟵ unexpected subquery"}
-drop table test
-disconnect S0
-close E0
+drop table test;
+disconnect S0;
+close E0;

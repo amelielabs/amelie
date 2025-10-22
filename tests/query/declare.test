@@ -1,193 +1,429 @@
 #
 
-open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "127.0.0.1", "port": 3485 }]
-connect E0 S0 127.0.0.1:3485
+open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "127.0.0.1", "port": 3485 }];
+connect E0 S0 127.0.0.1:3485;
 
 # test: declare parsing
-declare
-declare 1
-declare name
+declare;
+declare 1;
+declare name;
 
 # test: declare
-declare a int
+declare a int;
 declare a int;
 explain declare a int;
 
 # test: declare begin/end
-declare a int; begin; select a; end;
-
-explain begin; declare a int; select a; end;
-begin; declare a int; select a; end;
+explain begin;
+	declare a int;
+	select a;
+end;
+begin;
+	declare a int;
+	select a;
+end;
 
 # test: declare default
-explain declare a int; select a
-declare a int; select a
-
-explain declare a int; declare b int; select a, b
-declare a int; declare b int; select a, b
-declare a int; declare b json; select a::type, b::type
+explain begin
+	declare a int;
+	select a;
+end;
+begin
+	declare a int;
+	select a;
+end;
+explain begin
+	declare a int;
+	declare b int;
+	select a, b;
+end;
+begin
+	declare a int;
+	declare b int;
+	select a, b;
+end;
+begin
+	declare a int;
+	declare b json;
+	select a::type, b::type;
+end;
 
 # test: declare redefine
-declare a int; declare a int;
+begin
+	declare a int;
+	declare a int;
+end;
 
 # test: declare null
 declare a null;
 
 # test: := operator parsing
-:=
-0 :=
-0 := 0
-'x' := 1
-x :=
+:=;
+0 :=;
+0 := 0;
+'x' := 1;
+x :=;
 
 # test: := expr
-x := 1
-explain x := 1
+x := 1;
+explain x := 1;
 
-declare x int; x := 1
-explain declare x int; x := 1
+begin
+	declare x int;
+	x := 1;
+end;
+explain begin
+	declare x int;
+	x := 1;
+end;
 
 # test: := expr
-declare x int; x := 1; select x
-explain declare x int; x := 1; select x
-declare x int; declare y int; x := 1; y := 2; select x + y
+begin
+	declare x int;
+	x := 1;
+	select x;
+end;
+explain begin
+	declare x int;
+	x := 1;
+	select x;
+end;
+begin
+	declare x int;
+	declare y int;
+	x := 1;
+	y := 2;
+	select x + y;
+end;
 
 # test: := expr (json)
-declare x json; x := {"id": 48}; select x.id
-explain declare x json; x := {"id": 48}; select x.id
+begin
+	declare x json;
+	x := {"id": 48};
+	select x.id;
+end;
+explain begin
+	declare x json;
+	x := {"id": 48};
+	select x.id;
+end;
 
 # test: := expr (null)
-declare x int; x := null; select x
-explain declare x int; x := null; select x
-declare x int; x := null; select x + 10
+begin
+	declare x int;
+	x := null;
+	select x;
+end;
+explain begin
+	declare x int;
+	x := null;
+	select x;
+end;
+begin
+	declare x int;
+	x := null;
+	select x + 10;
+end;
 
 # test: := expr (column shadow)
-create table test (id int primary key)
-insert into test values (1)
+create table test (id int primary key);
+insert into test values (1);
 # this compares two vars
-explain  declare id int; id := 1; select * from test where id = id
-declare id int; id := 1; select * from test where id = id
-explain declare id int; id := 1; select * from test where test.id = id
-declare id int; id := 1; select * from test where test.id = id
-drop table test
+explain begin
+	declare id int;
+	id := 1;
+	select * from test where id = id;
+end;
+begin
+	declare id int;
+	id := 1;
+	select * from test where id = id;
+end;
+explain begin
+	declare id int;
+	id := 1;
+	select * from test where test.id = id;
+end;
+begin
+	declare id int; id := 1;
+	select * from test where test.id = id;
+end;
+drop table test;
 
 # test: insert returning into (1 column)
-create table test (id int primary key)
-insert into test values (1), (2), (3), (4)
+create table test (id int primary key);
+insert into test values (1), (2), (3), (4);
 
 # test: var pushdown
-declare x int; x := 1; select * from test where id = x
-explain declare x int; x := 1; select * from test where id = x
+begin
+	declare x int;
+	x := 1;
+	select * from test where id = x;
+	end;
+explain begin
+	declare x int;
+	x := 1;
+	select * from test where id = x;
+end;
 
 # test: := with cte
-declare x int; x := with a as (select 1) select * from a; select x
+begin
+	declare x int;
+	x := with a as (select 1) select * from a;
+	select x;
+end;
 
 # test: := with cte (assign inside)
-declare x int; with a as (x := select 1) select * from a; select x
-drop table test
+begin
+	declare x int;
+	with a as (x := select 1) select * from a;
+	select x;
+end;
+drop table test;
 
 # test: := ddl
-declare x json; x := show all;
+begin
+	declare x json;
+	x := show all;
+end;
 
 # test: declare := select expr
-declare x int := select 1
-explain declare x int := select 1
+begin
+	declare x int := select 1;
+end;
+explain begin
+	declare x int := select 1;
+end;
 
 # test: select into (not defined)
-select 1 into x; select x
+begin
+	select 1 into x;
+	select x;
+end;
 
 # test: select into
-declare x int; select 1 into x; select x
+begin
+	declare x int;
+	select 1 into x;
+	select x;
+end;
 
 # test: select into (redefine)
-declare x int; select 1 into x; select 2 into x; select x
-declare x int; x := 1; select 2 into x; select x
+begin
+	declare x int;
+	select 1 into x;
+	select 2 into x;
+	select x;
+end;
+begin
+	declare x int;
+	x := 1;
+	select 2 into x;
+	select x;
+end;
 
 # test: select into (cte)
-with a as (select 1 into x) select * from a
-declare x int; with a as (select 1 into x) select * from a
+begin
+	with a as (select 1 into x) select * from a;
+end;
+begin
+	declare x int;
+	with a as (select 1 into x) select * from a;
+end;
 
 # test: select into (subquery)
-declare x int; select (select 1 into x); select x
+begin
+	declare x int;
+	select (select 1 into x);
+	select x;
+end;
 
 # test: select into (var)
-declare x int; x := select 1 into x; select x
+begin
+	declare x int;
+	x := select 1 into x;
+	select x;
+end;
 
 # test: insert returning into (1 column)
-create table test (id int primary key)
-declare x int; insert into test values (1) returning id into x; select x
+create table test (id int primary key);
+begin
+	declare x int;
+	insert into test values (1) returning id into x;
+	select x;
+end;
 
 # test: insert returning into (2 columns, 1 into)
-declare x int; insert into test values (2) returning id, id into x; select x
+begin
+	declare x int;
+	insert into test values (2) returning id, id into x;
+	select x;
+end;
 
 # test: insert returning into (2 columns, 2 into)
-declare x int; declare y int; insert into test values (3) returning id, id + 10 into x, y; select x, y
+begin
+	declare x int;
+	declare y int;
+	insert into test values (3) returning id, id + 10 into x, y;
+	select x, y;
+end;
 
 # test: insert returning into (2 columns, 2 into rewrite)
-declare x int; insert into test values (4) returning id, id + 10 into x, x; select x
+begin
+	declare x int;
+	insert into test values (4) returning id, id + 10 into x, x;
+	select x;
+end;
 
-drop table test
+drop table test;
 
 # test: select from var
-explain declare x json := [1,2,3]; select * from x as it;
-declare x json := [1,2,3]; select * from x as it;
-declare x json := [1,2,3]; select it from x as it;
-declare x json := [1,2,3]; select it.it from x as it;
+explain begin
+	declare x json := [1,2,3];
+	select * from x as it;
+end;
+begin
+	declare x json := [1,2,3];
+	select * from x as it;
+end;
+begin
+	declare x json := [1,2,3];
+	select it from x as it;
+end;
+begin
+	declare x json := [1,2,3];
+	select it.it from x as it;
+end;
 
-explain declare x json := [1,2,3]; select * from (x) as it;
-declare x json := [1,2,3]; select * from (x) as it;
-declare x json := [1,2,3]; select it from (x) as it;
-declare x json := [1,2,3]; select it.it from (x) as it;
+explain begin
+	declare x json := [1,2,3];
+	select * from (x) as it;
+end;
+begin
+	declare x json := [1,2,3];
+	select * from (x) as it;
+end;
+begin
+	declare x json := [1,2,3];
+	select it from (x) as it;
+end;
+begin
+	declare x json := [1,2,3];
+	select it.it from (x) as it;
+end;
 
 # test: declare table parsing
-declare x table
-declare x table 1
-declare x table (
-declare x table ()
-declare x table (id
-declare x table (id int
+declare x table;
+declare x table 1;
+declare x table (;
+declare x table ();
+declare x table (id;
+declare x table (id int;
 
 # test: declare table
-create table test (id int primary key)
-insert into test values (1), (2), (3)
+create table test (id int primary key);
+insert into test values (1), (2), (3);
 
-declare x table (id int); select x::type
-declare x table (id int); select 123 into x; select x
-declare x table (id int); select * into x from test; select x::type
-declare x table (id int); select * into x from test; select x
-drop table test
+begin
+	declare x table (id int);
+	select x::type;
+end;
+begin
+	declare x table (id int);
+	select 123 into x;
+	select x;
+end;
+begin
+	declare x table (id int);
+	select * into x from test;
+	select x::type;
+end;
+begin
+	declare x table (id int);
+	select * into x from test;
+	select x;
+end;
+drop table test;
 
 # test: select into table (mismatch)
-create table test (id int primary key, data int)
-insert into test values (1, 1), (2, 2), (3, 3)
+create table test (id int primary key, data int);
+insert into test values (1, 1), (2, 2), (3, 3);
 
-declare x table (a int, b int); select id into x from test;
+begin
+	declare x table (a int, b int);
+	select id into x from test;
+end;
 
 # test: select into table
-explain declare x table (a int, b int); select * into x from test; select * from x
-declare x table (a int, b int); select * into x from test; select * from x
-declare x table (a int, b int); select * into x from test; select * from x as it
+explain begin
+	declare x table (a int, b int);
+	select * into x from test;
+	select * from x;
+end;
+begin
+	declare x table (a int, b int);
+	select * into x from test;
+	select * from x;
+end;
+begin
+	declare x table (a int, b int);
+	select * into x from test;
+	select * from x as it;
+end;
 
-declare x table (a int, b int); select data, id into x from test; select * from x
-declare x table (a int, b int); select data, id into x from test; select * from x as it
+begin
+	declare x table (a int, b int);
+	select data, id into x from test;
+	select * from x;
+end;
+begin
+	declare x table (a int, b int);
+	select data, id into x from test;
+	select * from x as it;
+end;
 
 # test: select into table (null)
-declare x table (a int, b int); select * into x from test; x := null; select x::type
+begin
+	declare x table (a int, b int);
+	select * into x from test;
+	x := null;
+	select x::type;
+end;
 
 # test: select into table (mix)
-declare x table (a int, b int); declare a int; select * into x, a from test;
-declare x table (a int, b int); declare a int; select * into a, x from test;
+begin
+	declare x table (a int, b int);
+	declare a int;
+	select * into x, a from test;
+end;
+begin
+	declare x table (a int, b int);
+	declare a int;
+	select * into a, x from test;
+end;
 
 # test: select from var (table)
-declare x table (a int, b int); select * into x from test; select * from x as it
-declare x table (a int, b int); select * into x from test; select it.a, it.b from x as it
-drop table test
+begin
+	declare x table (a int, b int);
+	select * into x from test;
+	select * from x as it;
+end;
+begin
+	declare x table (a int, b int);
+	select * into x from test;
+	select it.a, it.b from x as it;
+end;
+drop table test;
 
 # test: := if
-declare x int := if true then end
+begin
+	declare x int := if true then end;
+end;
 
 # test: := for
-declare x int := for i in ([1,2,3]) do end
+begin
+	declare x int := for i in ([1,2,3]) do end;
+end;
 
-disconnect S0
-close E0
+disconnect S0;
+close E0;

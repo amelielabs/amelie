@@ -1,9 +1,9 @@
-open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "127.0.0.1", "port": 3485 }]
-connect E0 S0 127.0.0.1:3485
+open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "127.0.0.1", "port": 3485 }];
+connect E0 S0 127.0.0.1:3485;
 # test: drop schema cascade
-create schema test
-drop schema test cascade
-select system.schemas()
+create schema test;
+drop schema test cascade;
+select system.schemas();
 [[{
   "name": "system",
   "system": true,
@@ -14,20 +14,20 @@ select system.schemas()
   "create": true
 }]]
 # test: drop schema cascade (tables)
-show tables
+show tables;
 []
-create schema test
-create table test.a(id int primary key)
-create table test.b(id int primary key)
-drop schema test cascade
-show tables
+create schema test;
+create table test.a(id int primary key);
+create table test.b(id int primary key);
+drop schema test cascade;
+show tables;
 []
 # test: alter schema rename
-create schema test
-create table test.a(id int primary key)
-create table test.b(id int primary key)
-alter schema test rename to test2
-select system.schemas()
+create schema test;
+create table test.a(id int primary key);
+create table test.b(id int primary key);
+alter schema test rename to test2;
+select system.schemas();
 [[{
   "name": "system",
   "system": true,
@@ -41,9 +41,9 @@ select system.schemas()
   "system": false,
   "create": true
 }]]
-select system.table('test2.a').name
+select system.table('test2.a').name;
 ["a"]
-select system.table('test2.b').name
+select system.table('test2.b').name;
 ["b"]
-disconnect S0
-close E0
+disconnect S0;
+close E0;

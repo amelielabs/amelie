@@ -1,36 +1,36 @@
-open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "127.0.0.1", "port": 3485 }]
-connect E0 S0 127.0.0.1:3485
+open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "127.0.0.1", "port": 3485 }];
+connect E0 S0 127.0.0.1:3485;
 # test: select (select const)
-select (select 0)
+select (select 0);
 [0]
-select (select 1234)
+select (select 1234);
 [1234]
-select (select null)
+select (select null);
 [null]
-select (select "hello")
+select (select "hello");
 ["hello"]
 # test: select (select expr)
-select (select 1 + 1)
+select (select 1 + 1);
 [2]
-select (select 2 * 2)
+select (select 2 * 2);
 [4]
-select (select 8 * 8)
+select (select 8 * 8);
 [64]
-select (select 64 / ( 4 + 4 ))
+select (select 64 / ( 4 + 4 ));
 [8]
-select (select 64 / 0)
+select (select 64 / 0);
 {"msg": "zero division"}
-select (select 64 % 0)
+select (select 64 % 0);
 {"msg": "zero division"}
 # test: select (select [])
-select (select [])
+select (select []);
 [[]]
-select (select [1])
+select (select [1]);
 [[1]]
-select (select [1,2,3])
+select (select [1,2,3]);
 [[1, 2, 3]]
 # test: select (select function())
-select system.schemas()
+select system.schemas();
 [[{
   "name": "system",
   "system": true,
@@ -40,7 +40,7 @@ select system.schemas()
   "system": true,
   "create": true
 }]]
-select (select system.schemas())
+select (select system.schemas());
 [[{
   "name": "system",
   "system": true,
@@ -51,26 +51,26 @@ select (select system.schemas())
   "create": true
 }]]
 # test: select (select {})
-select (select {})
+select (select {});
 [{}]
-select (select {"a": 1})
+select (select {"a": 1});
 [{
   "a": 1
 }]
-select (select {"a": 1, "b": null})
+select (select {"a": 1, "b": null});
 [{
   "a": 1,
   "b": null
 }]
 # test: select (select *) from table
-create table test (id int primary key)
-insert into test values (1)
-insert into test values (2)
-insert into test values (3)
-select (select *) from test
+create table test (id int primary key);
+insert into test values (1);
+insert into test values (2);
+insert into test values (3);
+select (select *) from test;
 [1, 2, 3]
 # test: select (select target.*) from table
-explain select (select test.*) from test
+explain select (select test.*) from test;
 [{
   "main": {
     "00": "union               0      0      0     ",
@@ -91,17 +91,17 @@ explain select (select test.*) from test
   },
   "access": [["public.test", "ro"]]
 }]
-select (select test.*) from test
+select (select test.*) from test;
 [1, 2, 3]
 # test: select (select alias.*) from table
-select (select t.*) from test t
+select (select t.*) from test t;
 [1, 2, 3]
-select (select t.*) from test
+select (select t.*) from test;
 {"msg": "select (select ❰t.*❱ ⟵ target not found"}
-select (select t) from test t
+select (select t) from test t;
 {"msg": "select (select ❰t❱ ⟵ column t.t not found"}
 # test: select (select target.column) from table
-explain select (select test.id) from test
+explain select (select test.id) from test;
 [{
   "main": {
     "00": "union               0      0      0     ",
@@ -122,12 +122,12 @@ explain select (select test.id) from test
   },
   "access": [["public.test", "ro"]]
 }]
-select (select test.id) from test
+select (select test.id) from test;
 [1, 2, 3]
-select (select id) from test
+select (select id) from test;
 [1, 2, 3]
 # test: select (select alias.column) from table
-explain select (select t.id) from test t
+explain select (select t.id) from test t;
 [{
   "main": {
     "00": "union               0      0      0     ",
@@ -148,21 +148,21 @@ explain select (select t.id) from test t
   },
   "access": [["public.test", "ro"]]
 }]
-select (select t.id) from test
+select (select t.id) from test;
 {"msg": "select (select ❰t.id❱ ⟵ target not found"}
-select (select t.id) from test t
+select (select t.id) from test t;
 [1, 2, 3]
-drop table test
+drop table test;
 # test: select (select target.path) from table
-create table test (id serial primary key, data json)
-insert into test (data) values({"data": {"id": 1}})
-insert into test (data) values({"data": {"id": 2}})
-insert into test (data) values({"data": {"id": 3}})
-select (select *) from test
+create table test (id serial primary key, data json);
+insert into test (data) values({"data": {"id": 1}});
+insert into test (data) values({"data": {"id": 2}});
+insert into test (data) values({"data": {"id": 3}});
+select (select *) from test;
 {"msg": "select (❰select❱ ⟵ subquery must return only one column"}
-select (select test) from test
+select (select test) from test;
 {"msg": "select (select ❰test❱ ⟵ column test.test not found"}
-select (select test.data) from test
+select (select test.data) from test;
 [{
   "data": {
     "id": 1
@@ -176,7 +176,7 @@ select (select test.data) from test
     "id": 3
   }
 }]
-select (select test.data.data) from test
+select (select test.data.data) from test;
 [{
   "id": 1
 }, {
@@ -184,12 +184,12 @@ select (select test.data.data) from test
 }, {
   "id": 3
 }]
-select (select test.data.data.id) from test
+select (select test.data.data.id) from test;
 [1, 2, 3]
 # test: select (select alias.path) from table
-select (select t) from test t
+select (select t) from test t;
 {"msg": "select (select ❰t❱ ⟵ column t.t not found"}
-select (select t.data) from test t
+select (select t.data) from test t;
 [{
   "data": {
     "id": 1
@@ -203,7 +203,7 @@ select (select t.data) from test t
     "id": 3
   }
 }]
-select (select t.data.data) from test t
+select (select t.data.data) from test t;
 [{
   "id": 1
 }, {
@@ -211,26 +211,26 @@ select (select t.data.data) from test t
 }, {
   "id": 3
 }]
-select (select t.data.data.id) from test t
+select (select t.data.data.id) from test t;
 [1, 2, 3]
-drop table test
+drop table test;
 # test: select from (select expr)
-select * from (select 0) t
+select * from (select 0) t;
 [0]
-select * from (select null) t
+select * from (select null) t;
 []
-select * from (select 1, 2) t
+select * from (select 1, 2) t;
 [[1, 2]]
 # test: select * from (select from table)
-create table test (id int primary key)
-insert into test values (1)
-insert into test values (2)
-insert into test values (3)
-select * from (select * from test)
-{"msg": "select * from (select * from test) ⟵ subquery must have an alias"}
-select * from (select * from test) t
+create table test (id int primary key);
+insert into test values (1);
+insert into test values (2);
+insert into test values (3);
+select * from (select * from test);
+{"msg": "select * from (select * from test)❰;❱ ⟵ subquery must have an alias"}
+select * from (select * from test) t;
 [1, 2, 3]
-explain select * from (select * from test) t
+explain select * from (select * from test) t;
 [{
   "main": {
     "00": "union               0      0      0     ",
@@ -261,34 +261,34 @@ explain select * from (select * from test) t
   "access": [["public.test", "ro"]]
 }]
 # test: select target.* from (select from table)
-select test.* from (select * from test)
-{"msg": "select test.* from (select * from test) ⟵ subquery must have an alias"}
-select test.* from (select * from test) test
+select test.* from (select * from test);
+{"msg": "select test.* from (select * from test)❰;❱ ⟵ subquery must have an alias"}
+select test.* from (select * from test) test;
 [1, 2, 3]
-select test from (select * from test)
-{"msg": "select test from (select * from test) ⟵ subquery must have an alias"}
+select test from (select * from test);
+{"msg": "select test from (select * from test)❰;❱ ⟵ subquery must have an alias"}
 # test: select alias.* from (select from table)
-select alias from (select * from test) alias
+select alias from (select * from test) alias;
 {"msg": "select ❰alias❱ ⟵ column alias.alias not found"}
-select alias.* from (select * from test) alias
+select alias.* from (select * from test) alias;
 [1, 2, 3]
-select alias.* from (select test.* from test) alias
+select alias.* from (select test.* from test) alias;
 [1, 2, 3]
-select alias.* from (select x.* from test x) alias
+select alias.* from (select x.* from test x) alias;
 [1, 2, 3]
-select alias.* from (select alias.* from test alias) alias
+select alias.* from (select alias.* from test alias) alias;
 [1, 2, 3]
-select alias.* from (select * from test) alias
+select alias.* from (select * from test) alias;
 [1, 2, 3]
-drop table test
-create table test (id serial primary key, obj json)
-insert into test (obj) values({"data": {"id": 1}})
-insert into test (obj) values({"data": {"id": 2}})
-insert into test (obj) values({"data": {"id": 3}})
+drop table test;
+create table test (id serial primary key, obj json);
+insert into test (obj) values({"data": {"id": 1}});
+insert into test (obj) values({"data": {"id": 2}});
+insert into test (obj) values({"data": {"id": 3}});
 # test: select target.path from (select from table)
-select obj from (select * from test)
-{"msg": "select obj from (select * from test) ⟵ subquery must have an alias"}
-select * from (select * from test) alias
+select obj from (select * from test);
+{"msg": "select obj from (select * from test)❰;❱ ⟵ subquery must have an alias"}
+select * from (select * from test) alias;
 [[0, {
   "data": {
     "id": 1
@@ -302,7 +302,7 @@ select * from (select * from test) alias
     "id": 3
   }
 }]]
-select * from (select * from test) alias
+select * from (select * from test) alias;
 [[0, {
   "data": {
     "id": 1
@@ -316,7 +316,7 @@ select * from (select * from test) alias
     "id": 3
   }
 }]]
-select obj from (select * from test) alias
+select obj from (select * from test) alias;
 [{
   "data": {
     "id": 1
@@ -330,7 +330,7 @@ select obj from (select * from test) alias
     "id": 3
   }
 }]
-select alias.* from (select * from test) alias
+select alias.* from (select * from test) alias;
 [[0, {
   "data": {
     "id": 1
@@ -344,7 +344,7 @@ select alias.* from (select * from test) alias
     "id": 3
   }
 }]]
-select alias.obj.data from (select * from test) alias
+select alias.obj.data from (select * from test) alias;
 [{
   "id": 1
 }, {
@@ -352,15 +352,15 @@ select alias.obj.data from (select * from test) alias
 }, {
   "id": 3
 }]
-select alias.obj.data.id from (select * from test) alias
+select alias.obj.data.id from (select * from test) alias;
 [1, 2, 3]
-drop table test
+drop table test;
 # test: select (select from table)
-create table test (id int primary key)
-insert into test values (1)
-insert into test values (2)
-insert into test values (3)
-explain select (select * from test)
+create table test (id int primary key);
+insert into test values (1);
+insert into test values (2);
+insert into test values (3);
+explain select (select * from test);
 [{
   "main": {
     "00": "set                 0      1      0     ",
@@ -375,13 +375,13 @@ explain select (select * from test)
   },
   "access": [["public.test", "ro_exclusive"]]
 }]
-select (select * from test)
+select (select * from test);
 [1]
 # test: select (select from table) no result
-select (select * from test where false)
+select (select * from test where false);
 [null]
 # test: select (select from table) from table (more then one result)
-explain select (select * from test) from test
+explain select (select * from test) from test;
 [{
   "main": {
     "00": "union               0      0      0     ",
@@ -409,14 +409,14 @@ explain select (select * from test) from test
   },
   "access": [["public.test", "ro_exclusive"]]
 }]
-select (select * from test) from test
+select (select * from test) from test;
 [1, 1, 1]
-select (select * from test t) from test
+select (select * from test t) from test;
 [1, 1, 1]
 # test: select (select from table) from table (one result)
-select (select * from test t limit 1) from test
+select (select * from test t limit 1) from test;
 [1, 1, 1]
-explain select (select i.* from test i limit 1) from test
+explain select (select i.* from test i limit 1) from test;
 [{
   "main": {
     "00": "union               0      0      0     ",
@@ -449,7 +449,7 @@ explain select (select i.* from test i limit 1) from test
   "access": [["public.test", "ro_exclusive"]]
 }]
 # test: select (select from table) from table #2
-explain select (select i.* from test i where test.id = i.id) from test
+explain select (select i.* from test i where test.id = i.id) from test;
 [{
   "main": {
     "00": "union               0      0      0     ",
@@ -482,25 +482,25 @@ explain select (select i.* from test i where test.id = i.id) from test
   },
   "access": [["public.test", "ro_exclusive"]]
 }]
-select (select i.* from test i where test.id = i.id) from test
+select (select i.* from test i where test.id = i.id) from test;
 [1, 2, 3]
 # test: select (select from table) from table #3
-create table a (id serial primary key, data int default 0)
-create table b (id serial primary key, data int default 1)
-insert into a () values (), (), ()
-insert into b () values (), (), ()
-select (select * from b where a.id = b.id) from a
+create table a (id serial primary key, data int default 0);
+create table b (id serial primary key, data int default 1);
+insert into a () values (), (), ();
+insert into b () values (), (), ();
+select (select * from b where a.id = b.id) from a;
 {"msg": "select (❰select❱ ⟵ subquery must return only one column"}
-select (select a.* from b where a.id = b.id) from a
+select (select a.* from b where a.id = b.id) from a;
 {"msg": "select (❰select❱ ⟵ subquery must return only one column"}
-select (select b.* from b where a.id = b.id)::type from a
+select (select b.* from b where a.id = b.id)::type from a;
 {"msg": "select (❰select❱ ⟵ subquery must return only one column"}
-select (select a.id from b where a.id = b.id) from a
+select (select a.id from b where a.id = b.id) from a;
 [0, 1, 2]
-select (select b.id from b where a.id = b.id)::type from a
+select (select b.id from b where a.id = b.id)::type from a;
 ["int", "int", "int"]
 # test: select from table where (select from table)
-explain select * from a where (select true from b where a.id = b.id)
+explain select * from a where (select true from b where a.id = b.id);
 [{
   "main": {
     "00": "union               0      0      0     ",
@@ -537,12 +537,12 @@ explain select * from a where (select true from b where a.id = b.id)
   },
   "access": [["public.a", "ro"], ["public.b", "ro_exclusive"]]
 }]
-select * from a where (select true from b where a.id = b.id)
+select * from a where (select true from b where a.id = b.id);
 [[0, 0], [1, 0], [2, 0]]
 # test: select from (select from (select from table))
-select t.x from (select z.id as x from (select id from test) z) t
+select t.x from (select z.id as x from (select id from test) z) t;
 [1, 2, 3]
-explain select t.x from (select z.id as x from (select id from test) z) t
+explain select t.x from (select z.id as x from (select id from test) z) t;
 [{
   "main": {
     "00": "union               0      0      0     ",
@@ -582,10 +582,10 @@ explain select t.x from (select z.id as x from (select id from test) z) t
   "access": [["public.test", "ro"]]
 }]
 # test: select from (select from), (select from)
-select * from (select * from a) a, (select * from a) b
+select * from (select * from a) a, (select * from a) b;
 [[0, 0, 0, 0], [0, 0, 1, 0], [0, 0, 2, 0], [1, 0, 0, 0], [1, 0, 1, 0], [1, 0, 2, 0], [2, 0, 0, 0], [2, 0, 1, 0], [2, 0, 2, 0]]
 # test: select from (select from (select expr)))
-explain select * from (select * from ([1,2,3]) i ) o
+explain select * from (select * from ([1,2,3]) i ) o;
 [{
   "main": {
     "00": "set                 0      1      0     ",
@@ -610,12 +610,12 @@ explain select * from (select * from ([1,2,3]) i ) o
   },
   "access": []
 }]
-select * from (select * from ([1,2,3]) i ) o
+select * from (select * from ([1,2,3]) i ) o;
 [1, 2, 3]
-select count(*) from (select * from ([1,2,3]) i ) o
+select count(*) from (select * from ([1,2,3]) i ) o;
 [3]
-drop table a
-drop table b
-drop table test
-disconnect S0
-close E0
+drop table a;
+drop table b;
+drop table test;
+disconnect S0;
+close E0;

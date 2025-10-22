@@ -1,47 +1,47 @@
 #
 
-open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "127.0.0.1", "port": 3485 }]
-connect E0 S0 127.0.0.1:3485
+open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "127.0.0.1", "port": 3485 }];
+connect E0 S0 127.0.0.1:3485;
 
 # test: as (expr) resolved parsing
-create table test (id int primary key, data int as (1) resolved
+create table test (id int primary key, data int as (1) resolved;
 
 # test: insert on conflict do resolve (without resolved columns)
-create table test (id int primary key, data int)
-insert into test values (0, 0) on conflict do resolve
-insert into test values (0, 0) on conflict do resolve
-select * from test
-drop table test
+create table test (id int primary key, data int);
+insert into test values (0, 0) on conflict do resolve;
+insert into test values (0, 0) on conflict do resolve;
+select * from test;
+drop table test;
 
 # test: insert on conflict do resolve (key column)
-create table test (id int primary key as (42) resolved)
+create table test (id int primary key as (42) resolved);
 
 # test: insert on conflict do resolve
-create table test (id int primary key, data int as (data + 1) resolved)
+create table test (id int primary key, data int as (data + 1) resolved);
 show table test extended;
-insert into test values (0, 0) on conflict do resolve
-insert into test values (0, 0) on conflict do resolve
-insert into test values (0, 0) on conflict do resolve
-insert into test values (0, 0) on conflict do resolve
-select * from test
-drop table test
+insert into test values (0, 0) on conflict do resolve;
+insert into test values (0, 0) on conflict do resolve;
+insert into test values (0, 0) on conflict do resolve;
+insert into test values (0, 0) on conflict do resolve;
+select * from test;
+drop table test;
 
 # test: insert on conflict do resolve (stored and resolved)
-create table test (id int primary key, data int as (777) stored as (data + 1) resolved)
-insert into test values (0, 0) on conflict do resolve
-insert into test values (0, 0) on conflict do resolve
-insert into test values (0, 0) on conflict do resolve
-insert into test values (0, 0) on conflict do resolve
-select * from test
-drop table test
+create table test (id int primary key, data int as (777) stored as (data + 1) resolved);
+insert into test values (0, 0) on conflict do resolve;
+insert into test values (0, 0) on conflict do resolve;
+insert into test values (0, 0) on conflict do resolve;
+insert into test values (0, 0) on conflict do resolve;
+select * from test;
+drop table test;
 
 # test: insert (with resolved columns)
-create table test (id int primary key, hits int default 1 as (hits + 1) resolved)
-insert into test (id) values (0), (1), (2)
-insert into test (id) values (0), (1), (2)
-insert into test (id) values (0), (1), (2)
-select * from test
-drop table test
+create table test (id int primary key, hits int default 1 as (hits + 1) resolved);
+insert into test (id) values (0), (1), (2);
+insert into test (id) values (0), (1), (2);
+insert into test (id) values (0), (1), (2);
+select * from test;
+drop table test;
 
-disconnect S0
-close E0
+disconnect S0;
+close E0;

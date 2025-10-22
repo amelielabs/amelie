@@ -1,38 +1,38 @@
-open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "127.0.0.1", "port": 3485 }]
-connect E0 S0 127.0.0.1:3485
+open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "127.0.0.1", "port": 3485 }];
+connect E0 S0 127.0.0.1:3485;
 # test: on conflict parsing
-create table test (id int primary key, data int)
-insert into test values(1, 0) 123
+create table test (id int primary key, data int);
+insert into test values(1, 0) 123;
 {"msg": "insert into test values(1, 0) ❰123❱ ⟵ ; expected"}
-insert into test values(1, 0) ON
-{"msg": "insert into test values(1, 0) ON ⟵ CONFLICT expected"}
-insert into test values(1, 0) ON 123
+insert into test values(1, 0) ON;
+{"msg": "insert into test values(1, 0) ON❰;❱ ⟵ CONFLICT expected"}
+insert into test values(1, 0) ON 123;
 {"msg": "insert into test values(1, 0) ON ❰123❱ ⟵ CONFLICT expected"}
-insert into test values(1, 0) on conflict
-{"msg": "insert into test values(1, 0) on conflict ⟵ DO expected"}
-insert into test values(1, 0) on conflict 123
+insert into test values(1, 0) on conflict;
+{"msg": "insert into test values(1, 0) on conflict❰;❱ ⟵ DO expected"}
+insert into test values(1, 0) on conflict 123;
 {"msg": "insert into test values(1, 0) on conflict ❰123❱ ⟵ DO expected"}
-insert into test values(1, 0) on conflict do
-{"msg": "insert into test values(1, 0) on conflict do ⟵ 'NOTHING | ERROR | UPDATE | RESOLVE' expected"}
-insert into test values(1, 0) on conflict do 123
+insert into test values(1, 0) on conflict do;
+{"msg": "insert into test values(1, 0) on conflict do❰;❱ ⟵ 'NOTHING | ERROR | UPDATE | RESOLVE' expected"}
+insert into test values(1, 0) on conflict do 123;
 {"msg": "insert into test values(1, 0) on conflict do ❰123❱ ⟵ 'NOTHING | ERROR | UPDATE | RESOLVE' expected"}
-insert into test values(1, 0) on conflict do update
-{"msg": "insert into test values(1, 0) on conflict do update ⟵ SET expected"}
-insert into test values(1, 0) on conflict do update set
-{"msg": "insert into test values(1, 0) on conflict do update set ⟵ column name expected"}
-insert into test values(1, 0) on conflict do update set 123
+insert into test values(1, 0) on conflict do update;
+{"msg": "insert into test values(1, 0) on conflict do update❰;❱ ⟵ SET expected"}
+insert into test values(1, 0) on conflict do update set;
+{"msg": "insert into test values(1, 0) on conflict do update set❰;❱ ⟵ column name expected"}
+insert into test values(1, 0) on conflict do update set 123;
 {"msg": "insert into test values(1, 0) on conflict do update set ❰123❱ ⟵ column name expected"}
-insert into test values(1, 0) on conflict do update set path
-{"msg": "insert into test values(1, 0) on conflict do update set path ⟵ = expected"}
-insert into test values(1, 0) on conflict do update set path =
-{"msg": "insert into test values(1, 0) on conflict do update set path = ⟵ bad expression"}
-drop table test
+insert into test values(1, 0) on conflict do update set path;
+{"msg": "insert into test values(1, 0) on conflict do update set path❰;❱ ⟵ = expected"}
+insert into test values(1, 0) on conflict do update set path =;
+{"msg": "insert into test values(1, 0) on conflict do update set path =❰;❱ ⟵ bad expression"}
+drop table test;
 # test: on conflict do nothing
-create table test (id int primary key, data int)
-insert into test values(1, 0) on conflict do nothing
-insert into test values(1, 0) on conflict do nothing
-insert into test values(1, 0) on conflict do nothing
-explain insert into test values(1, 0), (2, 0), (1, 0) on conflict do nothing
+create table test (id int primary key, data int);
+insert into test values(1, 0) on conflict do nothing;
+insert into test values(1, 0) on conflict do nothing;
+insert into test values(1, 0) on conflict do nothing;
+explain insert into test values(1, 0), (2, 0), (1, 0) on conflict do nothing;
 [{
   "main": {
     "00": "set_ptr             0      -      0     ",
@@ -48,19 +48,19 @@ explain insert into test values(1, 0), (2, 0), (1, 0) on conflict do nothing
   },
   "access": [["public.test", "rw"]]
 }]
-insert into test values(1, 0), (2, 0), (1, 0) on conflict do nothing
-select * from test
+insert into test values(1, 0), (2, 0), (1, 0) on conflict do nothing;
+select * from test;
 [[1, 0], [2, 0]]
-drop table test
+drop table test;
 # test: on conflict do error
-create table test (id int primary key, data int)
-insert into test values(1, 0) on conflict do error
-insert into test values(1, 0) on conflict do error
+create table test (id int primary key, data int);
+insert into test values(1, 0) on conflict do error;
+insert into test values(1, 0) on conflict do error;
 {"msg": "unique key constraint violation"}
-drop table test
+drop table test;
 # test: on conflict do resolve (without resolved columns)
-create table test (id int primary key, data int)
-explain insert into test values(1, 0) on conflict do nothing
+create table test (id int primary key, data int);
+explain insert into test values(1, 0) on conflict do nothing;
 [{
   "main": {
     "00": "set_ptr             0      -      0     ",
@@ -76,7 +76,7 @@ explain insert into test values(1, 0) on conflict do nothing
   },
   "access": [["public.test", "rw"]]
 }]
-explain insert into test values(1, 0) on conflict do resolve
+explain insert into test values(1, 0) on conflict do resolve;
 [{
   "main": {
     "00": "set_ptr             0      -      0     ",
@@ -95,15 +95,15 @@ explain insert into test values(1, 0) on conflict do resolve
   },
   "access": [["public.test", "rw"]]
 }]
-insert into test values(1, 0) on conflict do resolve
-insert into test values(1, 0) on conflict do resolve
+insert into test values(1, 0) on conflict do resolve;
+insert into test values(1, 0) on conflict do resolve;
 {"msg": "unique key constraint violation"}
-select * from test
+select * from test;
 [[1, 0]]
-drop table test
+drop table test;
 # test: upsert insert
-create table test (id int primary key, data int)
-explain insert into test values(1, 0) on conflict do update set data = data + 1
+create table test (id int primary key, data int);
+explain insert into test values(1, 0) on conflict do update set data = data + 1;
 [{
   "main": {
     "00": "set_ptr             0      -      0     ",
@@ -126,25 +126,25 @@ explain insert into test values(1, 0) on conflict do update set data = data + 1
   },
   "access": [["public.test", "rw"]]
 }]
-insert into test values(1, 0) on conflict do update set data = data + 1
-select * from test
+insert into test values(1, 0) on conflict do update set data = data + 1;
+select * from test;
 [[1, 0]]
-drop table test
+drop table test;
 # test: upsert
-create table test (id int primary key, data int)
-insert into test values(1, 0) on conflict do update set data = data + 1
-select * from test
+create table test (id int primary key, data int);
+insert into test values(1, 0) on conflict do update set data = data + 1;
+select * from test;
 [[1, 0]]
-insert into test values(1, 0) on conflict do update set data = data + 1
-select * from test
+insert into test values(1, 0) on conflict do update set data = data + 1;
+select * from test;
 [[1, 1]]
-insert into test values(1, 0) on conflict do update set data = data + 1
-select * from test
+insert into test values(1, 0) on conflict do update set data = data + 1;
+select * from test;
 [[1, 2]]
-drop table test
+drop table test;
 # test: upsert batch
-create table test (id int primary key, data int)
-explain insert into test values (1, 0), (1, 0), (1, 0) on conflict do update set data = data + 1
+create table test (id int primary key, data int);
+explain insert into test values (1, 0), (1, 0), (1, 0) on conflict do update set data = data + 1;
 [{
   "main": {
     "00": "set_ptr             0      -      0     ",
@@ -167,20 +167,20 @@ explain insert into test values (1, 0), (1, 0), (1, 0) on conflict do update set
   },
   "access": [["public.test", "rw"]]
 }]
-insert into test values (1, 0), (1, 0), (1, 0) on conflict do update set data = data + 1
-insert into test values (1, 0), (1, 0), (1, 0) on conflict do update set data = data + 1
-insert into test values (1, 0), (1, 0), (1, 0) on conflict do update set data = data + 1
-select * from test
+insert into test values (1, 0), (1, 0), (1, 0) on conflict do update set data = data + 1;
+insert into test values (1, 0), (1, 0), (1, 0) on conflict do update set data = data + 1;
+insert into test values (1, 0), (1, 0), (1, 0) on conflict do update set data = data + 1;
+select * from test;
 [[1, 8]]
-drop table test
+drop table test;
 # test: upsert where
-create table test (id int primary key, data int)
-insert into test values (1, 0) on conflict do update set data = data + 1
-insert into test values (1, 0) on conflict do update set data = data + 1
-insert into test values (1, 0) on conflict do update set data = data + 1
-select * from test
+create table test (id int primary key, data int);
+insert into test values (1, 0) on conflict do update set data = data + 1;
+insert into test values (1, 0) on conflict do update set data = data + 1;
+insert into test values (1, 0) on conflict do update set data = data + 1;
+select * from test;
 [[1, 2]]
-explain insert into test values (1, 0) on conflict do update set data = data + 1 where true
+explain insert into test values (1, 0) on conflict do update set data = data + 1 where true;
 [{
   "main": {
     "00": "set_ptr             0      -      0     ",
@@ -205,21 +205,21 @@ explain insert into test values (1, 0) on conflict do update set data = data + 1
   },
   "access": [["public.test", "rw"]]
 }]
-insert into test values (1, 0) on conflict do update set data = data + 1 where true
-select * from test
+insert into test values (1, 0) on conflict do update set data = data + 1 where true;
+select * from test;
 [[1, 3]]
-insert into test values (1, 0) on conflict do update set data = data + 1 where data < 3
-select * from test
+insert into test values (1, 0) on conflict do update set data = data + 1 where data < 3;
+select * from test;
 [[1, 3]]
-insert into test values (1, 0) on conflict do update set data = data + 1 where data <= 3
-select * from test
+insert into test values (1, 0) on conflict do update set data = data + 1 where data <= 3;
+select * from test;
 [[1, 4]]
-drop table test
+drop table test;
 # test: upsert excluded
-create table test (id int primary key, data int)
-insert into test values (1, 0)
-insert into test values (1, 123) on conflict do update set data = data + excluded.data
-explain insert into test values (1, 123) on conflict do update set data = data + excluded.data
+create table test (id int primary key, data int);
+insert into test values (1, 0);
+insert into test values (1, 123) on conflict do update set data = data + excluded.data;
+explain insert into test values (1, 123) on conflict do update set data = data + excluded.data;
 [{
   "main": {
     "00": "set_ptr             0      -      0     ",
@@ -242,14 +242,14 @@ explain insert into test values (1, 123) on conflict do update set data = data +
   },
   "access": [["public.test", "rw"]]
 }]
-select * from test
+select * from test;
 [[1, 123]]
-drop table test
+drop table test;
 # test: upsert excluded (json)
-create table test (id int primary key, data int, data2 json)
-insert into test values (1, 0, null)
-insert into test values (1, null, {"id": 48}) on conflict do update set data = data + excluded.data2.id::int
-explain insert into test values (1, null, {"id": 48}) on conflict do update set data = data + excluded.data2.id::int
+create table test (id int primary key, data int, data2 json);
+insert into test values (1, 0, null);
+insert into test values (1, null, {"id": 48}) on conflict do update set data = data + excluded.data2.id::int;
+explain insert into test values (1, null, {"id": 48}) on conflict do update set data = data + excluded.data2.id::int;
 [{
   "main": {
     "00": "set_ptr             0      -      0     ",
@@ -276,56 +276,68 @@ explain insert into test values (1, null, {"id": 48}) on conflict do update set 
   },
   "access": [["public.test", "rw"]]
 }]
-select * from test
+select * from test;
 [[1, 48, null]]
-drop table test
+drop table test;
 # test: upsert excluded (no target)
-create table test (id int primary key)
-select excluded.id from test
+create table test (id int primary key);
+select excluded.id from test;
 []
-insert into test values (1)
-select excluded.id from test
+insert into test values (1);
+select excluded.id from test;
 {"msg": "unexpected EXCLUDED usage"}
-drop table test
+drop table test;
 # test: upsert null
-create table test (id int primary key, data int)
-insert into test values (1, 0), (2, 0), (3, null) on conflict do update set data = data + 1
-select * from test
+create table test (id int primary key, data int);
+insert into test values (1, 0), (2, 0), (3, null) on conflict do update set data = data + 1;
+select * from test;
 [[1, 0], [2, 0], [3, null]]
-insert into test values (1, 0), (2, 0), (3, 0) on conflict do update set data = data + 1
-select * from test
+insert into test values (1, 0), (2, 0), (3, 0) on conflict do update set data = data + 1;
+select * from test;
 [[1, 1], [2, 1], [3, null]]
-drop table test
+drop table test;
 # test: upsert generate
-create table test (id serial primary key, data int default 0)
-insert into test generate 10 on conflict do update set data = data + 1
-select * from test
+create table test (id serial primary key, data int default 0);
+insert into test generate 10 on conflict do update set data = data + 1;
+select * from test;
 [[0, 0], [1, 0], [2, 0], [3, 0], [4, 0], [5, 0], [6, 0], [7, 0], [8, 0], [9, 0]]
-alter table test set identity to 0
-insert into test generate 10 on conflict do update set data = data + 1
-select * from test
+alter table test set identity to 0;
+insert into test generate 10 on conflict do update set data = data + 1;
+select * from test;
 [[0, 1], [1, 1], [2, 1], [3, 1], [4, 1], [5, 1], [6, 1], [7, 1], [8, 1], [9, 1]]
-drop table test
+drop table test;
 # test: upsert var
-create table test (id int primary key, data int default 0)
-declare v int := 10; insert into test values (v, 0) on conflict do update set data = data + 1;
-select * from test
+create table test (id int primary key, data int default 0);
+begin;
+	declare v int := 10;
+	insert into test values (v, 0) on conflict do update set data = data + 1;
+	select * from test;
+end;
 [[10, 0]]
-declare v int := 10; insert into test values (v, 0) on conflict do update set data = data + 1;
-select * from test
+begin;
+	declare v int := 10;
+	insert into test values (v, 0) on conflict do update set data = data + 1;
+	select * from test;
+end;
 [[10, 1]]
-declare v int := 10; insert into test values (v, 0) on conflict do update set data = data + 1;
-select * from test
+begin;
+	declare v int := 10;
+	insert into test values (v, 0) on conflict do update set data = data + 1;
+	select * from test;
+end;
 [[10, 2]]
 # test: upsert var excluded
-declare v int := 10; insert into test values (v, 0) on conflict do update set data = excluded.id + data;
-select * from test
+begin;
+	declare v int := 10;
+	insert into test values (v, 0) on conflict do update set data = excluded.id + data;
+	select * from test;
+end;
 [[10, 12]]
-drop table test
+drop table test;
 # test: upsert returning
-create table test (id int primary key, data int)
-insert into test values (1, 0)
-explain insert into test values(1, 0) on conflict do update set data = data + 1 returning *
+create table test (id int primary key, data int);
+insert into test values (1, 0);
+explain insert into test values(1, 0) on conflict do update set data = data + 1 returning *;
 [{
   "main": {
     "00": "union               0      0      0     ",
@@ -356,19 +368,19 @@ explain insert into test values(1, 0) on conflict do update set data = data + 1 
   },
   "access": [["public.test", "rw"]]
 }]
-insert into test values(1, 0) on conflict do update set data = data + 1 returning *
+insert into test values(1, 0) on conflict do update set data = data + 1 returning *;
 [[1, 1]]
-insert into test values(1, 0) on conflict do update set data = data + 1 returning *
+insert into test values(1, 0) on conflict do update set data = data + 1 returning *;
 [[1, 2]]
-insert into test values(1, 0) on conflict do update set data = data + 1 returning *
+insert into test values(1, 0) on conflict do update set data = data + 1 returning *;
 [[1, 3]]
-select * from test
+select * from test;
 [[1, 3]]
-drop table test
+drop table test;
 # test: upsert returning (do nothing)
-create table test (id int primary key, data int)
-insert into test values (1, 0)
-explain insert into test values(1, 0) on conflict do nothing returning *
+create table test (id int primary key, data int);
+insert into test values (1, 0);
+explain insert into test values(1, 0) on conflict do nothing returning *;
 [{
   "main": {
     "00": "union               0      0      0     ",
@@ -392,18 +404,18 @@ explain insert into test values(1, 0) on conflict do nothing returning *
   },
   "access": [["public.test", "rw"]]
 }]
-insert into test values(1, 0) on conflict do nothing returning *
+insert into test values(1, 0) on conflict do nothing returning *;
 [[1, 0]]
-insert into test values(1, 0) on conflict do nothing returning *
+insert into test values(1, 0) on conflict do nothing returning *;
 [[1, 0]]
-insert into test values(1, 0) on conflict do nothing returning *
+insert into test values(1, 0) on conflict do nothing returning *;
 [[1, 0]]
-select * from test
+select * from test;
 [[1, 0]]
-drop table test
+drop table test;
 # test: upsert returning (first row)
-create table test (id int primary key, data int)
-explain insert into test values(1, 0) on conflict do update set data = data + 1 returning *
+create table test (id int primary key, data int);
+explain insert into test values(1, 0) on conflict do update set data = data + 1 returning *;
 [{
   "main": {
     "00": "union               0      0      0     ",
@@ -434,18 +446,18 @@ explain insert into test values(1, 0) on conflict do update set data = data + 1 
   },
   "access": [["public.test", "rw"]]
 }]
-insert into test values(1, 0) on conflict do update set data = data + 1 returning *
+insert into test values(1, 0) on conflict do update set data = data + 1 returning *;
 [[1, 0]]
-insert into test values(1, 0) on conflict do update set data = data + 1 returning *
+insert into test values(1, 0) on conflict do update set data = data + 1 returning *;
 [[1, 1]]
-insert into test values(1, 0) on conflict do update set data = data + 1 returning *
+insert into test values(1, 0) on conflict do update set data = data + 1 returning *;
 [[1, 2]]
-select * from test
+select * from test;
 [[1, 2]]
-drop table test
+drop table test;
 # test: upsert returning (do nothing, first row)
-create table test (id int primary key, data int)
-explain insert into test values(1, 0) on conflict do nothing returning *
+create table test (id int primary key, data int);
+explain insert into test values(1, 0) on conflict do nothing returning *;
 [{
   "main": {
     "00": "union               0      0      0     ",
@@ -469,71 +481,79 @@ explain insert into test values(1, 0) on conflict do nothing returning *
   },
   "access": [["public.test", "rw"]]
 }]
-insert into test values(1, 0) on conflict do nothing returning *
+insert into test values(1, 0) on conflict do nothing returning *;
 [[1, 0]]
-insert into test values(1, 0) on conflict do nothing returning *
+insert into test values(1, 0) on conflict do nothing returning *;
 [[1, 0]]
-select * from test
+select * from test;
 [[1, 0]]
-drop table test
+drop table test;
 # test: upsert returning (excluded var)
-create table test (id int primary key, data int)
-declare v int := 10; insert into test values (v, 0) on conflict do update set data = excluded.id + data returning excluded.id, id, data
-[[10, 10, 0]]
-select * from test
+create table test (id int primary key, data int);
+begin;
+	declare v int := 10;
+	insert into test values (v, 0) on conflict do update set data = excluded.id + data returning excluded.id, id, data;
+	select * from test;
+end;
 [[10, 0]]
-declare v int := 10; insert into test values (v, 0) on conflict do update set data = excluded.id + data returning excluded.id, id, data
-[[10, 10, 10]]
-select * from test
+begin;
+	declare v int := 10;
+	insert into test values (v, 0) on conflict do update set data = excluded.id + data returning excluded.id, id, data;
+	select * from test;
+end;
 [[10, 10]]
-declare v int := 10; insert into test values (v, 0) on conflict do update set data = excluded.id + data returning excluded.id, id, data
-[[10, 10, 20]]
-select * from test
+begin;
+	declare v int := 10;
+	insert into test values (v, 0) on conflict do update set data = excluded.id + data returning excluded.id, id, data;
+	select * from test;
+end;
 [[10, 20]]
-declare v int := 10; insert into test values (v, 0) on conflict do update set data = excluded.id + data returning excluded.id, id, data
-[[10, 10, 30]]
-select * from test
+begin;
+	declare v int := 10;
+	insert into test values (v, 0) on conflict do update set data = excluded.id + data returning excluded.id, id, data;
+	select * from test;
+end;
 [[10, 30]]
-drop table test
+drop table test;
 # test: upsert secondary index
-create table test (id int primary key, data int, value int)
-create index i on test (data)
-insert into test values (0, 2, 0)
-insert into test values (1, 1, 0)
-insert into test values (2, 0, 0)
-select * from test
+create table test (id int primary key, data int, value int);
+create index i on test (data);
+insert into test values (0, 2, 0);
+insert into test values (1, 1, 0);
+insert into test values (2, 0, 0);
+select * from test;
 [[0, 2, 0], [1, 1, 0], [2, 0, 0]]
-select * from test use index (i)
+select * from test use index (i);
 [[2, 0, 0], [1, 1, 0], [0, 2, 0]]
-insert into test values (0, 2, 0) on conflict do update set value = value + 1
-select * from test
+insert into test values (0, 2, 0) on conflict do update set value = value + 1;
+select * from test;
 [[0, 2, 1], [1, 1, 0], [2, 0, 0]]
-select * from test use index (i)
+select * from test use index (i);
 [[2, 0, 0], [1, 1, 0], [0, 2, 1]]
-insert into test values (3, 2, 0) on conflict do update set value = 10
-select * from test
+insert into test values (3, 2, 0) on conflict do update set value = 10;
+select * from test;
 [[0, 2, 1], [1, 1, 0], [2, 0, 0], [3, 2, 0]]
-select * from test use index (i)
+select * from test use index (i);
 [[2, 0, 0], [1, 1, 0], [0, 2, 1], [3, 2, 0]]
-drop table test
+drop table test;
 # test: upsert select
-create table test (id int primary key, data int)
-insert into test select 0, 0
-insert into test select 0, 0 on conflict do error
+create table test (id int primary key, data int);
+insert into test select 0, 0;
+insert into test select 0, 0 on conflict do error;
 {"msg": "unique key constraint violation"}
-insert into test select 0, 0 on conflict do update set data = data + 1
-insert into test select 0, 0 on conflict do update set data = data + 1
-insert into test select 0, 0 on conflict do update set data = data + 1
-insert into test select 0, 0 on conflict do update set data = data + 1
-select * from test
+insert into test select 0, 0 on conflict do update set data = data + 1;
+insert into test select 0, 0 on conflict do update set data = data + 1;
+insert into test select 0, 0 on conflict do update set data = data + 1;
+insert into test select 0, 0 on conflict do update set data = data + 1;
+select * from test;
 [[0, 4]]
 # test: upsert select returning
-insert into test select 0, 0 on conflict do update set data = data + 1 returning *
+insert into test select 0, 0 on conflict do update set data = data + 1 returning *;
 [[0, 5]]
 # test: upsert select from table
-create table src (id int primary key, data int)
-insert into src values (0, 0), (1, 0)
-explain insert into test select * from src on conflict do update set data = data + 1 returning *
+create table src (id int primary key, data int);
+insert into src values (0, 0), (1, 0);
+explain insert into test select * from src on conflict do update set data = data + 1 returning *;
 [{
   "main": {
     "00": "union               0      0      0     ",
@@ -578,11 +598,11 @@ explain insert into test select * from src on conflict do update set data = data
   },
   "access": [["public.test", "rw"], ["public.src", "ro"]]
 }]
-insert into test select * from src on conflict do update set data = data + 1 returning *
+insert into test select * from src on conflict do update set data = data + 1 returning *;
 [[0, 6], [1, 0]]
-select * from test
+select * from test;
 [[0, 6], [1, 0]]
-drop table src
-drop table test
-disconnect S0
-close E0
+drop table src;
+drop table test;
+disconnect S0;
+close E0;

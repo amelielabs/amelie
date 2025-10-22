@@ -1,21 +1,22 @@
-open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "127.0.0.1", "port": 3485 }]
-connect E0 S0 127.0.0.1:3485
+open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "127.0.0.1", "port": 3485 }];
+connect E0 S0 127.0.0.1:3485;
 # test: declare parsing
-declare
-{"msg": "declare ⟵ name expected"}
-declare 1
+declare;
+{"msg": "declare❰;❱ ⟵ name expected"}
+declare 1;
 {"msg": "declare ❰1❱ ⟵ name expected"}
-declare name
-{"msg": "declare name ⟵ unrecognized data type"}
+declare name;
+{"msg": "declare name❰;❱ ⟵ unrecognized data type"}
 # test: declare
-declare a int
+declare a int;
 declare a int;
 explain declare a int;
 {"msg": "❰explain❱ ⟵ EXPLAIN without command"}
 # test: declare begin/end
-declare a int; begin; select a; end;
-{"msg": "declare a int; begin❰;❱ ⟵ unsupported statement"}
-explain begin; declare a int; select a; end;
+explain begin;
+	declare a int;
+	select a;
+end;
 [{
   "main": {
     "00": "push_nulls          1      0      0     ",
@@ -24,10 +25,16 @@ explain begin; declare a int; select a; end;
   },
   "access": []
 }]
-begin; declare a int; select a; end;
+begin;
+	declare a int;
+	select a;
+end;
 [null]
 # test: declare default
-explain declare a int; select a
+explain begin
+	declare a int;
+	select a;
+end;
 [{
   "main": {
     "00": "push_nulls          1      0      0     ",
@@ -36,9 +43,16 @@ explain declare a int; select a
   },
   "access": []
 }]
-declare a int; select a
+begin
+	declare a int;
+	select a;
+end;
 [null]
-explain declare a int; declare b int; select a, b
+explain begin
+	declare a int;
+	declare b int;
+	select a, b;
+end;
 [{
   "main": {
     "00": "push_nulls          2      0      0     ",
@@ -52,34 +66,51 @@ explain declare a int; declare b int; select a, b
   },
   "access": []
 }]
-declare a int; declare b int; select a, b
+begin
+	declare a int;
+	declare b int;
+	select a, b;
+end;
 [[null, null]]
-declare a int; declare b json; select a::type, b::type
+begin
+	declare a int;
+	declare b json;
+	select a::type, b::type;
+end;
 [["null", "null"]]
 # test: declare redefine
-declare a int; declare a int;
-{"msg": "declare a int; declare ❰a❱ ⟵ variable redefined"}
+begin
+	declare a int;
+	declare a int;
+end;
+{"msg": "begin\n\tdeclare a int;\n\tdeclare ❰a❱ ⟵ variable redefined"}
 # test: declare null
 declare a null;
 {"msg": "declare a ❰null❱ ⟵ unrecognized data type"}
 # test: := operator parsing
-:=
-{"msg": ":= ⟵ unexpected statement"}
-0 :=
+:=;
+{"msg": ":=❰;❱ ⟵ unexpected statement"}
+0 :=;
 {"msg": "0 ❰:=❱ ⟵ unexpected statement"}
-0 := 0
+0 := 0;
 {"msg": "0 ❰:=❱ ⟵ unexpected statement"}
-'x' := 1
+'x' := 1;
 {"msg": "'x' ❰:=❱ ⟵ unexpected statement"}
-x :=
-{"msg": "x := ⟵ bad expression"}
+x :=;
+{"msg": "x :=❰;❱ ⟵ bad expression"}
 # test: := expr
-x := 1
-{"msg": "x := 1 ⟵ variable 'x' not found"}
-explain x := 1
-{"msg": "explain x := 1 ⟵ variable 'x' not found"}
-declare x int; x := 1
-explain declare x int; x := 1
+x := 1;
+{"msg": "x := 1❰;❱ ⟵ variable 'x' not found"}
+explain x := 1;
+{"msg": "explain x := 1❰;❱ ⟵ variable 'x' not found"}
+begin
+	declare x int;
+	x := 1;
+end;
+explain begin
+	declare x int;
+	x := 1;
+end;
 [{
   "main": {
     "00": "push_nulls          1      0      0     ",
@@ -91,9 +122,17 @@ explain declare x int; x := 1
   "access": []
 }]
 # test: := expr
-declare x int; x := 1; select x
+begin
+	declare x int;
+	x := 1;
+	select x;
+end;
 [1]
-explain declare x int; x := 1; select x
+explain begin
+	declare x int;
+	x := 1;
+	select x;
+end;
 [{
   "main": {
     "00": "push_nulls          1      0      0     ",
@@ -105,12 +144,26 @@ explain declare x int; x := 1; select x
   },
   "access": []
 }]
-declare x int; declare y int; x := 1; y := 2; select x + y
+begin
+	declare x int;
+	declare y int;
+	x := 1;
+	y := 2;
+	select x + y;
+end;
 [3]
 # test: := expr (json)
-declare x json; x := {"id": 48}; select x.id
+begin
+	declare x json;
+	x := {"id": 48};
+	select x.id;
+end;
 [48]
-explain declare x json; x := {"id": 48}; select x.id
+explain begin
+	declare x json;
+	x := {"id": 48};
+	select x.id;
+end;
 [{
   "main": {
     "00": "push_nulls          1      0      0     ",
@@ -125,9 +178,17 @@ explain declare x json; x := {"id": 48}; select x.id
   "access": []
 }]
 # test: := expr (null)
-declare x int; x := null; select x
+begin
+	declare x int;
+	x := null;
+	select x;
+end;
 [null]
-explain declare x int; x := null; select x
+explain begin
+	declare x int;
+	x := null;
+	select x;
+end;
 [{
   "main": {
     "00": "push_nulls          1      0      0     ",
@@ -139,12 +200,20 @@ explain declare x int; x := null; select x
   },
   "access": []
 }]
-declare x int; x := null; select x + 10
+begin
+	declare x int;
+	x := null;
+	select x + 10;
+end;
 [null]
 # test: := expr (column shadow)
-create table test (id int primary key)
-insert into test values (1)
-explain  declare id int; id := 1; select * from test where id = id
+create table test (id int primary key);
+insert into test values (1);
+explain begin
+	declare id int;
+	id := 1;
+	select * from test where id = id;
+end;
 [{
   "main": {
     "00": "push_nulls          1      0      0     ",
@@ -177,9 +246,17 @@ explain  declare id int; id := 1; select * from test where id = id
   },
   "access": [["public.test", "ro"]]
 }]
-declare id int; id := 1; select * from test where id = id
+begin
+	declare id int;
+	id := 1;
+	select * from test where id = id;
+end;
 [1]
-explain declare id int; id := 1; select * from test where test.id = id
+explain begin
+	declare id int;
+	id := 1;
+	select * from test where test.id = id;
+end;
 [{
   "main": {
     "00": "push_nulls          1      0      0     ",
@@ -213,16 +290,27 @@ explain declare id int; id := 1; select * from test where test.id = id
   },
   "access": [["public.test", "ro"]]
 }]
-declare id int; id := 1; select * from test where test.id = id
+begin
+	declare id int; id := 1;
+	select * from test where test.id = id;
+end;
 [1]
-drop table test
+drop table test;
 # test: insert returning into (1 column)
-create table test (id int primary key)
-insert into test values (1), (2), (3), (4)
+create table test (id int primary key);
+insert into test values (1), (2), (3), (4);
 # test: var pushdown
-declare x int; x := 1; select * from test where id = x
+begin
+	declare x int;
+	x := 1;
+	select * from test where id = x;
+	end;
 [1]
-explain declare x int; x := 1; select * from test where id = x
+explain begin
+	declare x int;
+	x := 1;
+	select * from test where id = x;
+end;
 [{
   "main": {
     "00": "push_nulls          1      0      0     ",
@@ -257,58 +345,123 @@ explain declare x int; x := 1; select * from test where id = x
   "access": [["public.test", "ro"]]
 }]
 # test: := with cte
-declare x int; x := with a as (select 1) select * from a; select x
-{"msg": "declare x int; x := ❰with❱ ⟵ bad expression"}
+begin
+	declare x int;
+	x := with a as (select 1) select * from a;
+	select x;
+end;
+{"msg": "begin\n\tdeclare x int;\n\tx := ❰with❱ ⟵ bad expression"}
 # test: := with cte (assign inside)
-declare x int; with a as (x := select 1) select * from a; select x
-{"msg": "declare x int; with a as (x ❰:=❱ ⟵ unexpected statement"}
-drop table test
+begin
+	declare x int;
+	with a as (x := select 1) select * from a;
+	select x;
+end;
+{"msg": "begin\n\tdeclare x int;\n\twith a as (x ❰:=❱ ⟵ unexpected statement"}
+drop table test;
 # test: := ddl
-declare x json; x := show all;
-{"msg": "declare x json; x := ❰show❱ ⟵ bad expression"}
+begin
+	declare x json;
+	x := show all;
+end;
+{"msg": "begin\n\tdeclare x json;\n\tx := ❰show❱ ⟵ bad expression"}
 # test: declare := select expr
-declare x int := select 1
-{"msg": "declare x int := ❰select❱ ⟵ unexpected subquery"}
-explain declare x int := select 1
-{"msg": "explain declare x int := ❰select❱ ⟵ unexpected subquery"}
+begin
+	declare x int := select 1;
+end;
+{"msg": "begin\n\tdeclare x int := ❰select❱ ⟵ unexpected subquery"}
+explain begin
+	declare x int := select 1;
+end;
+{"msg": "explain begin\n\tdeclare x int := ❰select❱ ⟵ unexpected subquery"}
 # test: select into (not defined)
-select 1 into x; select x
-{"msg": "select 1 into x❰;❱ ⟵ variable 'x' not found"}
+begin
+	select 1 into x;
+	select x;
+end;
+{"msg": "begin\n\tselect 1 into x❰;❱ ⟵ variable 'x' not found"}
 # test: select into
-declare x int; select 1 into x; select x
+begin
+	declare x int;
+	select 1 into x;
+	select x;
+end;
 [1]
 # test: select into (redefine)
-declare x int; select 1 into x; select 2 into x; select x
+begin
+	declare x int;
+	select 1 into x;
+	select 2 into x;
+	select x;
+end;
 [2]
-declare x int; x := 1; select 2 into x; select x
+begin
+	declare x int;
+	x := 1;
+	select 2 into x;
+	select x;
+end;
 [2]
 # test: select into (cte)
-with a as (select 1 into x) select * from a
-{"msg": "with a as (select 1 ❰into❱ ⟵ INTO cannot be used with CTE"}
-declare x int; with a as (select 1 into x) select * from a
-{"msg": "declare x int; with a as (select 1 ❰into❱ ⟵ INTO cannot be used with CTE"}
+begin
+	with a as (select 1 into x) select * from a;
+end;
+{"msg": "begin\n\twith a as (select 1 ❰into❱ ⟵ INTO cannot be used with CTE"}
+begin
+	declare x int;
+	with a as (select 1 into x) select * from a;
+end;
+{"msg": "begin\n\tdeclare x int;\n\twith a as (select 1 ❰into❱ ⟵ INTO cannot be used with CTE"}
 # test: select into (subquery)
-declare x int; select (select 1 into x); select x
-{"msg": "declare x int; select (select 1 ❰into❱ ⟵ INTO cannot be used inside subquery"}
+begin
+	declare x int;
+	select (select 1 into x);
+	select x;
+end;
+{"msg": "begin\n\tdeclare x int;\n\tselect (select 1 ❰into❱ ⟵ INTO cannot be used inside subquery"}
 # test: select into (var)
-declare x int; x := select 1 into x; select x
-{"msg": "declare x int; x := ❰select❱ ⟵ unexpected subquery"}
+begin
+	declare x int;
+	x := select 1 into x;
+	select x;
+end;
+{"msg": "begin\n\tdeclare x int;\n\tx := ❰select❱ ⟵ unexpected subquery"}
 # test: insert returning into (1 column)
-create table test (id int primary key)
-declare x int; insert into test values (1) returning id into x; select x
+create table test (id int primary key);
+begin
+	declare x int;
+	insert into test values (1) returning id into x;
+	select x;
+end;
 [1]
 # test: insert returning into (2 columns, 1 into)
-declare x int; insert into test values (2) returning id, id into x; select x
+begin
+	declare x int;
+	insert into test values (2) returning id, id into x;
+	select x;
+end;
 [2]
 # test: insert returning into (2 columns, 2 into)
-declare x int; declare y int; insert into test values (3) returning id, id + 10 into x, y; select x, y
+begin
+	declare x int;
+	declare y int;
+	insert into test values (3) returning id, id + 10 into x, y;
+	select x, y;
+end;
 [[3, 13]]
 # test: insert returning into (2 columns, 2 into rewrite)
-declare x int; insert into test values (4) returning id, id + 10 into x, x; select x
+begin
+	declare x int;
+	insert into test values (4) returning id, id + 10 into x, x;
+	select x;
+end;
 [14]
-drop table test
+drop table test;
 # test: select from var
-explain declare x json := [1,2,3]; select * from x as it;
+explain begin
+	declare x json := [1,2,3];
+	select * from x as it;
+end;
 [{
   "main": {
     "00": "push_nulls          1      0      0     ",
@@ -328,13 +481,25 @@ explain declare x json := [1,2,3]; select * from x as it;
   },
   "access": []
 }]
-declare x json := [1,2,3]; select * from x as it;
+begin
+	declare x json := [1,2,3];
+	select * from x as it;
+end;
 [1, 2, 3]
-declare x json := [1,2,3]; select it from x as it;
+begin
+	declare x json := [1,2,3];
+	select it from x as it;
+end;
 [1, 2, 3]
-declare x json := [1,2,3]; select it.it from x as it;
+begin
+	declare x json := [1,2,3];
+	select it.it from x as it;
+end;
 [1, 2, 3]
-explain declare x json := [1,2,3]; select * from (x) as it;
+explain begin
+	declare x json := [1,2,3];
+	select * from (x) as it;
+end;
 [{
   "main": {
     "00": "push_nulls          1      0      0     ",
@@ -354,44 +519,75 @@ explain declare x json := [1,2,3]; select * from (x) as it;
   },
   "access": []
 }]
-declare x json := [1,2,3]; select * from (x) as it;
+begin
+	declare x json := [1,2,3];
+	select * from (x) as it;
+end;
 [1, 2, 3]
-declare x json := [1,2,3]; select it from (x) as it;
+begin
+	declare x json := [1,2,3];
+	select it from (x) as it;
+end;
 [1, 2, 3]
-declare x json := [1,2,3]; select it.it from (x) as it;
+begin
+	declare x json := [1,2,3];
+	select it.it from (x) as it;
+end;
 [1, 2, 3]
 # test: declare table parsing
-declare x table
-{"msg": "declare x table ⟵ ( expected"}
-declare x table 1
+declare x table;
+{"msg": "declare x table❰;❱ ⟵ ( expected"}
+declare x table 1;
 {"msg": "declare x table ❰1❱ ⟵ ( expected"}
-declare x table (
-{"msg": "declare x table ( ⟵ name expected"}
-declare x table ()
+declare x table (;
+{"msg": "declare x table (❰;❱ ⟵ name expected"}
+declare x table ();
 {"msg": "declare x table (❰)❱ ⟵ name expected"}
-declare x table (id
-{"msg": "declare x table (id ⟵ unrecognized data type"}
-declare x table (id int
-{"msg": "declare x table (id int ⟵ ) expected"}
+declare x table (id;
+{"msg": "declare x table (id❰;❱ ⟵ unrecognized data type"}
+declare x table (id int;
+{"msg": "declare x table (id int❰;❱ ⟵ ) expected"}
 # test: declare table
-create table test (id int primary key)
-insert into test values (1), (2), (3)
-declare x table (id int); select x::type
+create table test (id int primary key);
+insert into test values (1), (2), (3);
+begin
+	declare x table (id int);
+	select x::type;
+end;
 ["null"]
-declare x table (id int); select 123 into x; select x
+begin
+	declare x table (id int);
+	select 123 into x;
+	select x;
+end;
 [123]
-declare x table (id int); select * into x from test; select x::type
+begin
+	declare x table (id int);
+	select * into x from test;
+	select x::type;
+end;
 ["store"]
-declare x table (id int); select * into x from test; select x
+begin
+	declare x table (id int);
+	select * into x from test;
+	select x;
+end;
 [1, 2, 3]
-drop table test
+drop table test;
 # test: select into table (mismatch)
-create table test (id int primary key, data int)
-insert into test values (1, 1), (2, 2), (3, 3)
-declare x table (a int, b int); select id into x from test;
-{"msg": "declare x table (a int, b int); ❰select❱ ⟵ variable table columns mismatch"}
+create table test (id int primary key, data int);
+insert into test values (1, 1), (2, 2), (3, 3);
+begin
+	declare x table (a int, b int);
+	select id into x from test;
+end;
+{"msg": "begin\n\tdeclare x table (a int, b int);\n\t❰select❱ ⟵ variable table columns mismatch"}
 # test: select into table
-explain declare x table (a int, b int); select * into x from test; select * from x
+explain begin
+	declare x table (a int, b int);
+	select * into x from test;
+	select * from x;
+end;
 [{
   "main": {
     "00": "push_nulls          1      0      0     ",
@@ -427,33 +623,74 @@ explain declare x table (a int, b int); select * into x from test; select * from
   },
   "access": [["public.test", "ro"]]
 }]
-declare x table (a int, b int); select * into x from test; select * from x
+begin
+	declare x table (a int, b int);
+	select * into x from test;
+	select * from x;
+end;
 [[1, 1], [2, 2], [3, 3]]
-declare x table (a int, b int); select * into x from test; select * from x as it
+begin
+	declare x table (a int, b int);
+	select * into x from test;
+	select * from x as it;
+end;
 [[1, 1], [2, 2], [3, 3]]
-declare x table (a int, b int); select data, id into x from test; select * from x
+begin
+	declare x table (a int, b int);
+	select data, id into x from test;
+	select * from x;
+end;
 [[1, 1], [2, 2], [3, 3]]
-declare x table (a int, b int); select data, id into x from test; select * from x as it
+begin
+	declare x table (a int, b int);
+	select data, id into x from test;
+	select * from x as it;
+end;
 [[1, 1], [2, 2], [3, 3]]
 # test: select into table (null)
-declare x table (a int, b int); select * into x from test; x := null; select x::type
+begin
+	declare x table (a int, b int);
+	select * into x from test;
+	x := null;
+	select x::type;
+end;
 ["null"]
 # test: select into table (mix)
-declare x table (a int, b int); declare a int; select * into x, a from test;
-{"msg": "declare x table (a int, b int); declare a int; ❰select❱ ⟵ INTO accept only one table variable"}
-declare x table (a int, b int); declare a int; select * into a, x from test;
-{"msg": "declare x table (a int, b int); declare a int; ❰select❱ ⟵ INTO accept only one table variable"}
+begin
+	declare x table (a int, b int);
+	declare a int;
+	select * into x, a from test;
+end;
+{"msg": "begin\n\tdeclare x table (a int, b int);\n\tdeclare a int;\n\t❰select❱ ⟵ INTO accept only one table variable"}
+begin
+	declare x table (a int, b int);
+	declare a int;
+	select * into a, x from test;
+end;
+{"msg": "begin\n\tdeclare x table (a int, b int);\n\tdeclare a int;\n\t❰select❱ ⟵ INTO accept only one table variable"}
 # test: select from var (table)
-declare x table (a int, b int); select * into x from test; select * from x as it
+begin
+	declare x table (a int, b int);
+	select * into x from test;
+	select * from x as it;
+end;
 [[1, 1], [2, 2], [3, 3]]
-declare x table (a int, b int); select * into x from test; select it.a, it.b from x as it
+begin
+	declare x table (a int, b int);
+	select * into x from test;
+	select it.a, it.b from x as it;
+end;
 [[1, 1], [2, 2], [3, 3]]
-drop table test
+drop table test;
 # test: := if
-declare x int := if true then end
-{"msg": "declare x int := ❰if❱ ⟵ bad expression"}
+begin
+	declare x int := if true then end;
+end;
+{"msg": "begin\n\tdeclare x int := ❰if❱ ⟵ bad expression"}
 # test: := for
-declare x int := for i in ([1,2,3]) do end
-{"msg": "declare x int := ❰for❱ ⟵ bad expression"}
-disconnect S0
-close E0
+begin
+	declare x int := for i in ([1,2,3]) do end;
+end;
+{"msg": "begin\n\tdeclare x int := ❰for❱ ⟵ bad expression"}
+disconnect S0;
+close E0;

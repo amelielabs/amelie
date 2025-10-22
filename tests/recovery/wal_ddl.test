@@ -1,345 +1,345 @@
 #
 
-open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "127.0.0.1", "port": 3485 }], "backends": 3
-connect E0 S0 127.0.0.1:3485
+open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "127.0.0.1", "port": 3485 }], "backends": 3;
+connect E0 S0 127.0.0.1:3485;
 
 # test: create table
-create table test (id serial primary key, data int default 0)
-select system.state().lsn
-select identity_of("public", "test")
+create table test (id serial primary key, data int default 0);
+select system.state().lsn;
+select identity_of("public", "test");
 
 # test: restart
-disconnect S0
-close E0
-open E0
-connect E0 S0 127.0.0.1:3485
+disconnect S0;
+close E0;
+open E0;
+connect E0 S0 127.0.0.1:3485;
 
 # test: validate state
-select system.state().lsn
-select identity_of("public", "test")
+select system.state().lsn;
+select identity_of("public", "test");
 
 # test: alter table rename
-alter table test rename to test2
-select system.state().lsn
-select identity_of("public", "test")
-select identity_of("public", "test2")
+alter table test rename to test2;
+select system.state().lsn;
+select identity_of("public", "test");
+select identity_of("public", "test2");
 
 # test: restart
-disconnect S0
-close E0
-open E0
-connect E0 S0 127.0.0.1:3485
+disconnect S0;
+close E0;
+open E0;
+connect E0 S0 127.0.0.1:3485;
 
 # test: validate state
-select system.state().lsn
-select identity_of("public", "test")
-select identity_of("public", "test2")
+select system.state().lsn;
+select identity_of("public", "test");
+select identity_of("public", "test2");
 
 # test: alter table set unlogged
-alter table test2 set unlogged
-select system.table('test2').unlogged
+alter table test2 set unlogged;
+select system.table('test2').unlogged;
 
 # test: restart
-disconnect S0
-close E0
-open E0
-connect E0 S0 127.0.0.1:3485
+disconnect S0;
+close E0;
+open E0;
+connect E0 S0 127.0.0.1:3485;
 
 # test: validate state
-select system.table('test2').unlogged
-select system.state().lsn
+select system.table('test2').unlogged;
+select system.state().lsn;
 
-insert into test2 () values ()
-insert into test2 () values ()
-insert into test2 () values ()
+insert into test2 () values ();
+insert into test2 () values ();
+insert into test2 () values ();
 
 # test: alter table set logged
-alter table test2 set logged
-select system.table('test2').unlogged
+alter table test2 set logged;
+select system.table('test2').unlogged;
 
 # test: restart
-disconnect S0
-close E0
-open E0
-connect E0 S0 127.0.0.1:3485
+disconnect S0;
+close E0;
+open E0;
+connect E0 S0 127.0.0.1:3485;
 
 # test: validate state
-select system.state().lsn
-select * from test2
+select system.state().lsn;
+select * from test2;
 
 # test: alter table column add
-insert into test2() values (), (), ()
-select * from test2
-select system.state().lsn
-select identity_of("public", "test2")
-alter table test2 add column obj json
-select * from test2
-select obj from test2
+insert into test2() values (), (), ();
+select * from test2;
+select system.state().lsn;
+select identity_of("public", "test2");
+alter table test2 add column obj json;
+select * from test2;
+select obj from test2;
 
 # test: restart
-disconnect S0
-close E0
-open E0
-connect E0 S0 127.0.0.1:3485
+disconnect S0;
+close E0;
+open E0;
+connect E0 S0 127.0.0.1:3485;
 
 # test: validate state
-select system.state().lsn
-select identity_of("public", "test2")
-select * from test2
+select system.state().lsn;
+select identity_of("public", "test2");
+select * from test2;
 
 # test: alter table column rename
-alter table test2 rename column data to abc
-select * from test2
-select data from test2
-select abc from test2
+alter table test2 rename column data to abc;
+select * from test2;
+select data from test2;
+select abc from test2;
 
 # test: restart
-disconnect S0
-close E0
-open E0
-connect E0 S0 127.0.0.1:3485
+disconnect S0;
+close E0;
+open E0;
+connect E0 S0 127.0.0.1:3485;
 
 # test: validate state
-select system.state().lsn
-select identity_of("public", "test2")
-select data from test2
-select abc from test2
+select system.state().lsn;
+select identity_of("public", "test2");
+select data from test2;
+select abc from test2;
 
 # test: alter table set default
-alter table test2 set column abc default 123
-select system.table('test2').columns
+alter table test2 set column abc default 123;
+select system.table('test2').columns;
 
 # test: restart
-disconnect S0
-close E0
-open E0
-connect E0 S0 127.0.0.1:3485
+disconnect S0;
+close E0;
+open E0;
+connect E0 S0 127.0.0.1:3485;
 
 # test: validate state
-select system.state().lsn
-select system.table('test2').columns
+select system.state().lsn;
+select system.table('test2').columns;
 
 # test: alter table unset default
-alter table test2 unset column abc default
-select system.table('test2').columns
+alter table test2 unset column abc default;
+select system.table('test2').columns;
 
 # test: restart
-disconnect S0
-close E0
-open E0
-connect E0 S0 127.0.0.1:3485
+disconnect S0;
+close E0;
+open E0;
+connect E0 S0 127.0.0.1:3485;
 
 # test: validate state
-select system.state().lsn
-select system.table('test2').columns
+select system.state().lsn;
+select system.table('test2').columns;
 
 # test: restart
-disconnect S0
-close E0
-open E0
-connect E0 S0 127.0.0.1:3485
+disconnect S0;
+close E0;
+open E0;
+connect E0 S0 127.0.0.1:3485;
 
 # test: validate state
-select system.state().lsn
-select system.table('test2').columns
+select system.state().lsn;
+select system.table('test2').columns;
 
 # test: alter table set stored
-alter table test2 set column abc as (1 + 1) stored
-select system.table('test2').columns
+alter table test2 set column abc as (1 + 1) stored;
+select system.table('test2').columns;
 
 # test: restart
-disconnect S0
-close E0
-open E0
-connect E0 S0 127.0.0.1:3485
+disconnect S0;
+close E0;
+open E0;
+connect E0 S0 127.0.0.1:3485;
 
 # test: validate state
-select system.state().lsn
-select system.table('test2').columns
+select system.state().lsn;
+select system.table('test2').columns;
 
 # test: alter table unset stored
-alter table test2 unset column abc as stored
-select system.table('test2').columns
+alter table test2 unset column abc as stored;
+select system.table('test2').columns;
 
 # test: restart
-disconnect S0
-close E0
-open E0
-connect E0 S0 127.0.0.1:3485
+disconnect S0;
+close E0;
+open E0;
+connect E0 S0 127.0.0.1:3485;
 
 # test: validate state
-select system.state().lsn
-select system.table('test2').columns
+select system.state().lsn;
+select system.table('test2').columns;
 
 # test: alter table set resolved
-alter table test2 set column abc as (1 + 1) resolved
-select system.table('test2').columns
+alter table test2 set column abc as (1 + 1) resolved;
+select system.table('test2').columns;
 
 # test: restart
-disconnect S0
-close E0
-open E0
-connect E0 S0 127.0.0.1:3485
+disconnect S0;
+close E0;
+open E0;
+connect E0 S0 127.0.0.1:3485;
 
 # test: validate state
-select system.state().lsn
-select system.table('test2').columns
+select system.state().lsn;
+select system.table('test2').columns;
 
 # test: alter table unset resolved
-alter table test2 unset column abc as resolved
-select system.table('test2').columns
+alter table test2 unset column abc as resolved;
+select system.table('test2').columns;
 
 # test: restart
-disconnect S0
-close E0
-open E0
-connect E0 S0 127.0.0.1:3485
+disconnect S0;
+close E0;
+open E0;
+connect E0 S0 127.0.0.1:3485;
 
 # test: validate state
-select system.state().lsn
-select system.table('test2').columns
+select system.state().lsn;
+select system.table('test2').columns;
 
 # test: alter table column drop
-alter table test2 drop column abc
-select abc from test2
-select * from test2
+alter table test2 drop column abc;
+select abc from test2;
+select * from test2;
 
 # test: restart
-disconnect S0
-close E0
-open E0
-connect E0 S0 127.0.0.1:3485
+disconnect S0;
+close E0;
+open E0;
+connect E0 S0 127.0.0.1:3485;
 
 # test: validate state
-select system.state().lsn
-select identity_of("public", "test2")
-select * from test2
+select system.state().lsn;
+select identity_of("public", "test2");
+select * from test2;
 
 # test: create index
-create index i on test2 (id)
-select * from test2 use index (i)
+create index i on test2 (id);
+select * from test2 use index (i);
 
 # test: restart
-disconnect S0
-close E0
-open E0
-connect E0 S0 127.0.0.1:3485
+disconnect S0;
+close E0;
+open E0;
+connect E0 S0 127.0.0.1:3485;
 
 # test: validate state
-select system.state().lsn
-select identity_of("public", "test2")
-select * from test2 use index (i)
+select system.state().lsn;
+select identity_of("public", "test2");
+select * from test2 use index (i);
 
 # test: alter index rename
-alter index i on test2 rename to i2
-select system.state().lsn
-select * from test2 use index (i2)
+alter index i on test2 rename to i2;
+select system.state().lsn;
+select * from test2 use index (i2);
 
 # test: restart
-disconnect S0
-close E0
-open E0
-connect E0 S0 127.0.0.1:3485
+disconnect S0;
+close E0;
+open E0;
+connect E0 S0 127.0.0.1:3485;
 
 # test: validate state
-select system.state().lsn
-select identity_of("public", "test2")
-select * from test2 use index (i2)
+select system.state().lsn;
+select identity_of("public", "test2");
+select * from test2 use index (i2);
 
 # test: drop index
-drop index i2 on test2
-select * from test2 use index (i)
-select * from test2 use index (i2)
-select * from test2
+drop index i2 on test2;
+select * from test2 use index (i);
+select * from test2 use index (i2);
+select * from test2;
 
 # test: restart
-disconnect S0
-close E0
-open E0
-connect E0 S0 127.0.0.1:3485
+disconnect S0;
+close E0;
+open E0;
+connect E0 S0 127.0.0.1:3485;
 
 # test: validate state
-select system.state().lsn
-select identity_of("public", "test2")
-select * from test2 use index (i)
-select * from test2 use index (i2)
-select * from test2
+select system.state().lsn;
+select identity_of("public", "test2");
+select * from test2 use index (i);
+select * from test2 use index (i2);
+select * from test2;
 
 # test: truncate
-truncate test2
-select * from test2
+truncate test2;
+select * from test2;
 
 # test: restart
-disconnect S0
-close E0
-open E0
-connect E0 S0 127.0.0.1:3485
+disconnect S0;
+close E0;
+open E0;
+connect E0 S0 127.0.0.1:3485;
 
 # test: validate state
-select system.state().lsn
-select identity_of("public", "test2")
-select * from test2
+select system.state().lsn;
+select identity_of("public", "test2");
+select * from test2;
 
 # test: drop table
-drop table test2
-select system.state().lsn
-select identity_of("public", "test2")
+drop table test2;
+select system.state().lsn;
+select identity_of("public", "test2");
 
 # test: restart
-disconnect S0
-close E0
-open E0
-connect E0 S0 127.0.0.1:3485
+disconnect S0;
+close E0;
+open E0;
+connect E0 S0 127.0.0.1:3485;
 
 # test: validate state
-select system.state().lsn
-select * from test2
-show tables
+select system.state().lsn;
+select * from test2;
+show tables;
 
 # test: create schema
-create schema test
-show schemas
-select system.state().lsn
+create schema test;
+show schemas;
+select system.state().lsn;
 
 # test: restart
-disconnect S0
-close E0
-open E0
-connect E0 S0 127.0.0.1:3485
+disconnect S0;
+close E0;
+open E0;
+connect E0 S0 127.0.0.1:3485;
 
 # test: validate state
-select system.state().lsn
-show schemas
+select system.state().lsn;
+show schemas;
 
 # test: alter schema rename
-alter schema test rename to test2
-show schemas
-select system.state().lsn
+alter schema test rename to test2;
+show schemas;
+select system.state().lsn;
 
 # test: restart
-disconnect S0
-close E0
-open E0
-connect E0 S0 127.0.0.1:3485
+disconnect S0;
+close E0;
+open E0;
+connect E0 S0 127.0.0.1:3485;
 
 # test: validate state
-select system.state().lsn
-show schemas
+select system.state().lsn;
+show schemas;
 
 # test: drop schema
-drop schema test2
-select system.state().lsn
-show schemas
+drop schema test2;
+select system.state().lsn;
+show schemas;
 
 # test: restart
-disconnect S0
-close E0
-open E0
-connect E0 S0 127.0.0.1:3485
+disconnect S0;
+close E0;
+open E0;
+connect E0 S0 127.0.0.1:3485;
 
 # test: validate state
-select system.state().lsn
-show schemas
+select system.state().lsn;
+show schemas;
 
-disconnect S0
-close E0
+disconnect S0;
+close E0;

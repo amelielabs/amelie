@@ -117,9 +117,11 @@ separator_skip_string(Separator* self)
 static inline bool
 separator_match(Separator* self, char* with, int size)
 {
-	// todo: check <ws or first> before keyword
+	// <ws | ;> keyword <ws | ;>
+	if (self->pos != (char*)self->buf.start && self->pos[-1] != ';' &&
+	    !isspace(self->pos[-1]))
+		return false;
 
-	// keyword <ws | symbol>
 	if ((self->end - self->pos) < (size + 1))
 		return false;
 	if (strncasecmp(self->pos, with, size) != 0)
@@ -153,7 +155,21 @@ separator_next(Separator* self)
 		case 'i':
 		case 'I':
 			if (separator_match(self, "if", 2))
+			{
+				if (separator_skip(self))
+					return SEPARATOR_EOF;
+				// if ;
+				if (*self->pos == ';')
+					continue;
+				// if exists
+				// if not
+				if (separator_match(self, "exists", 6))
+					continue;
+				if (separator_match(self, "not", 3))
+					continue;
+
 				return SEPARATOR_IF;
+			}
 			break;
 		// CASE
 		case 'c':
@@ -230,6 +246,7 @@ separator_read(Separator* self, Str* block)
 		return true;
 	}
 
+	int in_case = 0;
 	int level = 0;
 	for (;;)
 	{
@@ -237,11 +254,18 @@ separator_read(Separator* self, Str* block)
 		switch (rc) {
 		case SEPARATOR_BEGIN:
 		case SEPARATOR_IF:
-		case SEPARATOR_CASE:
 		case SEPARATOR_FOR:
 			level++;
 			continue;
+		case SEPARATOR_CASE:
+			// skip case expression
+			in_case++;
+			continue;
 		case SEPARATOR_END:
+			if (in_case) {
+				in_case--;
+				continue;
+			}
 			level--;
 			// error
 			if (level < 0)

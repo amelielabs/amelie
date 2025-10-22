@@ -1,344 +1,344 @@
 #
 
-open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "127.0.0.1", "port": 3485 }]
-connect E0 S0 127.0.0.1:3485
+open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "127.0.0.1", "port": 3485 }];
+connect E0 S0 127.0.0.1:3485;
 
 # test: int
-explain select 0
-select 0
-select 1234
-explain select -1234
-select -1234
+explain select 0;
+select 0;
+select 1234;
+explain select -1234;
+select -1234;
 
 # test: int limits
-select 4294967295
-select -4294967295
-select 9223372036854775807
-select -9223372036854775807
+select 4294967295;
+select -4294967295;
+select 9223372036854775807;
+select -9223372036854775807;
 
 # test: int overflow
-select -92233720368547758077
+select -92233720368547758077;
 
 # UINT64_MAX
-select 18446744073709551615
-select 184467440737095516155
+select 18446744073709551615;
+select 184467440737095516155;
 
 # test: int = bool
-select 1 = true
-select 1 = false
-explain select 1 = true
+select 1 = true;
+select 1 = false;
+explain select 1 = true;
 
 # test: int = int
-select 1 = 1
-select 1 = 123
-select 1 = 0
-explain select 1 = 18
+select 1 = 1;
+select 1 = 123;
+select 1 = 0;
+explain select 1 = 18;
 
 # test: int = double
-select 1 = 1.0
-select 1 = 12.3
-select 1 = 0.14
-explain select 1 = 1.0000
+select 1 = 1.0;
+select 1 = 12.3;
+select 1 = 0.14;
+explain select 1 = 1.0000;
 
 # test: int = timestamp
-select 0 = '1970-01-01 00:00:00'::timestamp
-explain select 0 = '1970-01-01 00:00:00'::timestamp
-select 0 = current_timestamp
+select 0 = '1970-01-01 00:00:00'::timestamp;
+explain select 0 = '1970-01-01 00:00:00'::timestamp;
+select 0 = current_timestamp;
 
 # test: int = null
-select 1 = null
-explain select 1 = null
+select 1 = null;
+explain select 1 = null;
 
 # test: int = unsupported
-select 1 = [1,2,3]
-select 1 = [1,2,3]::vector
+select 1 = [1,2,3];
+select 1 = [1,2,3]::vector;
 
 # test: int <> bool
-select 1 <> true
-select 1 <> false
-explain select 1 <> true
+select 1 <> true;
+select 1 <> false;
+explain select 1 <> true;
 
 # test: int <> int
-select 1 <> 1
-select 1 <> 123
-select 1 <> 0
-explain select 1 <> 18
+select 1 <> 1;
+select 1 <> 123;
+select 1 <> 0;
+explain select 1 <> 18;
 
 # test: int <> double
-select 1 <> 1.0
-select 1 <> 12.3
-select 1 <> 0.14
-explain select 1 <> 1.0000
+select 1 <> 1.0;
+select 1 <> 12.3;
+select 1 <> 0.14;
+explain select 1 <> 1.0000;
 
 # test: int <> timestamp
-select 0 <> '1970-01-01 00:00:00'::timestamp
-explain select 0 <> '1970-01-01 00:00:00'::timestamp
-select 0 <> current_timestamp
+select 0 <> '1970-01-01 00:00:00'::timestamp;
+explain select 0 <> '1970-01-01 00:00:00'::timestamp;
+select 0 <> current_timestamp;
 
 # test: int <> null
-select 1 <> null
-explain select 1 <> null
+select 1 <> null;
+explain select 1 <> null;
 
 # test: int <> unsupported
-select 1 <> [1,2,3]
-select 1 <> [1,2,3]::vector
+select 1 <> [1,2,3];
+select 1 <> [1,2,3]::vector;
 
 # test: int >= int
-select 1 >= 0
-select 1 >= 1
-select 1 >= 2
-select -1 >= -0
-select -1 >= 0
-select -1 >= -10
-select -11 >= -10
-explain select -1 >= -10
+select 1 >= 0;
+select 1 >= 1;
+select 1 >= 2;
+select -1 >= -0;
+select -1 >= 0;
+select -1 >= -10;
+select -11 >= -10;
+explain select -1 >= -10;
 
 # test: int >= double
-select 1 >= 0.11
-select 1 >= 1.11
-explain select 1 >= 1.11
+select 1 >= 0.11;
+select 1 >= 1.11;
+explain select 1 >= 1.11;
 
 # test: int >= timestamp
-select 1 >= current_timestamp
-select 0 >= '1970-01-01 00:00:00'::timestamp
-explain select 0 >= '1970-01-01 00:00:00'::timestamp
+select 1 >= current_timestamp;
+select 0 >= '1970-01-01 00:00:00'::timestamp;
+explain select 0 >= '1970-01-01 00:00:00'::timestamp;
 
 # test: int >= null
-select 1 >= null
-explain select 1 >= null
+select 1 >= null;
+explain select 1 >= null;
 
 # test: int >= unsupported
-explain select 1 >= []
+explain select 1 >= [];
 
 # test: int > int
-select 1 > 0
-select 1 > 1
-select 1 > 2
-select -1 > -0
-select -1 > 0
-select -1 > -10
-select -11 > -10
-explain select -1 > -10
+select 1 > 0;
+select 1 > 1;
+select 1 > 2;
+select -1 > -0;
+select -1 > 0;
+select -1 > -10;
+select -11 > -10;
+explain select -1 > -10;
 
 # test: int > double
-select 1 > 0.11
-select 1 > 1.11
-explain select 1 > 1.11
+select 1 > 0.11;
+select 1 > 1.11;
+explain select 1 > 1.11;
 
 # test: int > timestamp
-select 1 > current_timestamp
-select 0 > '1970-01-01 00:00:00'::timestamp
-explain select 0 > '1970-01-01 00:00:00'::timestamp
+select 1 > current_timestamp;
+select 0 > '1970-01-01 00:00:00'::timestamp;
+explain select 0 > '1970-01-01 00:00:00'::timestamp;
 
 # test: int > null
-select 1 > null
-explain select 1 > null
+select 1 > null;
+explain select 1 > null;
 
 # test: int > unsupported
-explain select 1 > []
+explain select 1 > [];
 
 # test: int <= int
-select 1 <= 0
-select 1 <= 1
-select 1 <= 2
-select -1 <= -0
-select -1 <= 0
-select -1 <= -10
-select -11 <= -10
-explain select -1 <= -10
+select 1 <= 0;
+select 1 <= 1;
+select 1 <= 2;
+select -1 <= -0;
+select -1 <= 0;
+select -1 <= -10;
+select -11 <= -10;
+explain select -1 <= -10;
 
 # test: int <= double
-select 1 <= 0.11
-select 1 <= 1.11
-explain select 1 <= 1.11
+select 1 <= 0.11;
+select 1 <= 1.11;
+explain select 1 <= 1.11;
 
 # test: int <= timestamp
-select 1 <= current_timestamp
-select 0 <= '1970-01-01 00:00:00'::timestamp
-explain select 0 <= '1970-01-01 00:00:00'::timestamp
+select 1 <= current_timestamp;
+select 0 <= '1970-01-01 00:00:00'::timestamp;
+explain select 0 <= '1970-01-01 00:00:00'::timestamp;
 
 # test: int <= null
-select 1 <= null
-explain select 1 <= null
+select 1 <= null;
+explain select 1 <= null;
 
 # test: int <= unsupported
-explain select 1 <= []
+explain select 1 <= [];
 
 # test: int < int
-select 1 < 0
-select 1 < 1
-select 1 < 2
-select -1 < -0
-select -1 < 0
-select -1 < -10
-select -11 < -10
-explain select -1 < -10
+select 1 < 0;
+select 1 < 1;
+select 1 < 2;
+select -1 < -0;
+select -1 < 0;
+select -1 < -10;
+select -11 < -10;
+explain select -1 < -10;
 
 # test: int < double
-select 1 < 0.11
-select 1 < 1.11
-explain select 1 < 1.11
+select 1 < 0.11;
+select 1 < 1.11;
+explain select 1 < 1.11;
 
 # test: int < timestamp
-select 1 < current_timestamp
-select 0 < '1970-01-01 00:00:00'::timestamp
-explain select 0 < '1970-01-01 00:00:00'::timestamp
+select 1 < current_timestamp;
+select 0 < '1970-01-01 00:00:00'::timestamp;
+explain select 0 < '1970-01-01 00:00:00'::timestamp;
 
 # test: int < null
-select 1 < null
-explain select 1 < null
+select 1 < null;
+explain select 1 < null;
 
 # test: int < unsupported
-explain select 1 < []
+explain select 1 < [];
 
 # test: int + int
-select 1 + 1
-explain select 1 + 1
+select 1 + 1;
+explain select 1 + 1;
 
 # test: int + int (overflow)
-select 1 + 4294967295
-select 1 + -4294967295
-select 1 + 9223372036854775807
-select 1 + -9223372036854775807
+select 1 + 4294967295;
+select 1 + -4294967295;
+select 1 + 9223372036854775807;
+select 1 + -9223372036854775807;
 
 # test: int + double
-select 1 + 1.5
-explain select 1 + 1.5
+select 1 + 1.5;
+explain select 1 + 1.5;
 
 # test: int + null
-select 1 + null
+select 1 + null;
 
 # test: int + unsupported
-select 1 + []
+select 1 + [];
 
 # test: int - int
-select 1 - 1
-explain select 1 - 1
+select 1 - 1;
+explain select 1 - 1;
 
 # test: int - int (overflow)
-select 1 - 4294967295
-select 1 - -4294967295
-select 1 - 9223372036854775807
-select 1 - -9223372036854775807
+select 1 - 4294967295;
+select 1 - -4294967295;
+select 1 - 9223372036854775807;
+select 1 - -9223372036854775807;
 
 # test: int - double
-select 1 - 1.5
-explain select 1 - 1.5
+select 1 - 1.5;
+explain select 1 - 1.5;
 
 # test: int - null
-select 1 - null
+select 1 - null;
 
 # test: int - unsupported
-select 1 - []
+select 1 - [];
 
 # test: int * int
-select 2 * 2
-explain select 2 * 2
+select 2 * 2;
+explain select 2 * 2;
 
 # test: int * int (overflow)
-select 4 * 4294967295
-select 4 * -4294967295
+select 4 * 4294967295;
+select 4 * -4294967295;
 
-select 10 * 9223372036854775807
-select 10 * -9223372036854775807
+select 10 * 9223372036854775807;
+select 10 * -9223372036854775807;
 
 # test: int * double
-select 2 * 1.5
-explain select 2 * 1.5
+select 2 * 1.5;
+explain select 2 * 1.5;
 
 # test: int * null
-select 1 * null
+select 1 * null;
 
 # test: int * unsupported
-select 1 * []
+select 1 * [];
 
 # test: int / int
-select 2 / 2
-explain select 2 / 2
+select 2 / 2;
+explain select 2 / 2;
 
-select 2 / 0
-select 4 / 4294967295
+select 2 / 0;
+select 4 / 4294967295;
 
 # test: int / double
-select 35 / 1.5
-explain select 35 / 1.5
+select 35 / 1.5;
+explain select 35 / 1.5;
 
 # test: int / null
-select 1 * null
+select 1 * null;
 
 # test: int / unsupported
-select 1 * []
+select 1 * [];
 
 # test: int % int
-select 8 % 3
-explain select 8 % 3
-select 8 % 0
+select 8 % 3;
+explain select 8 % 3;
+select 8 % 0;
 
 # test: int % null
-select 1 % null
+select 1 % null;
 
 # test: int % unsupported
-select 1 % []
+select 1 % [];
 
 # test: int | int
-select 60 | 13
-explain select 60 | 13
+select 60 | 13;
+explain select 60 | 13;
 
 # test: int | null
-select 60 | null
-explain select 60 | null
+select 60 | null;
+explain select 60 | null;
 
 # test: int | unsupported
-select 60 | []
+select 60 | [];
 
 # test: int & int
-select 60 & 13
-explain select 60 & 13
+select 60 & 13;
+explain select 60 & 13;
 
 # test: int & null
-select 60 & null
-explain select 60 & null
+select 60 & null;
+explain select 60 & null;
 
 # test: int & unsupported
-select 60 & []
+select 60 & [];
 
 # test: int ^ int
-select 60 ^ 13
-explain select 60 ^ 13
+select 60 ^ 13;
+explain select 60 ^ 13;
 
 # test: int ^ null
-select 60 ^ null
-explain select 60 ^ null
+select 60 ^ null;
+explain select 60 ^ null;
 
 # test: int ^ unsupported
-select 60 ^ []
+select 60 ^ [];
 
 # test: int << int
-select 60 << 2
-explain select 60 << 2
+select 60 << 2;
+explain select 60 << 2;
 
 # test: int << null
-select 60 << null
+select 60 << null;
 
 # test: int << unsupported
-select 60 << []
+select 60 << [];
 
 # test: int >> int
-select 60 >> 2
-explain select 60 >> 2
+select 60 >> 2;
+explain select 60 >> 2;
 
 # test: int >> null
-select 60 >> null
+select 60 >> null;
 
 # test: int >> unsupported
-select 60 >> []
+select 60 >> [];
 
 # test: ~int
-select ~10
+select ~10;
 
 # test: -int
-select -18
-explain select -18
+select -18;
+explain select -18;
 
-disconnect S0
-close E0
+disconnect S0;
+close E0;

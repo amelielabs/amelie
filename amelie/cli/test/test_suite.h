@@ -21,7 +21,6 @@ struct TestSuite
 	char*        current_test_ok_file;
 	char*        current_test_result_file;
 	bool         current_test_started;
-	int          current_line;
 	TestGroup*   current_group;
 	Test*        current;
 	TestSession* current_session;
@@ -52,8 +51,7 @@ test_log(TestSuite* self, Str* data)
 static inline void
 test_error(TestSuite* self, const char* msg)
 {
-	error("%s:%d: %s\n", self->current_test_file,
-	      self->current_line, msg);
+	error("%s: %s\n", self->current_test_file, msg);
 }
 
 static inline int

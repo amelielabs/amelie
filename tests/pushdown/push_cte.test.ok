@@ -1,69 +1,69 @@
-open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "127.0.0.1", "port": 3485 }], "backends": 3
-connect E0 S0 127.0.0.1:3485
+open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "127.0.0.1", "port": 3485 }], "backends": 3;
+connect E0 S0 127.0.0.1:3485;
 # test: cte parsing
-with
-{"msg": "with ⟵ name expected"}
-with 1
+with;
+{"msg": "with❰;❱ ⟵ name expected"}
+with 1;
 {"msg": "with ❰1❱ ⟵ name expected"}
-with test
-{"msg": "with test ⟵ AS expected"}
-with test 1
+with test;
+{"msg": "with test❰;❱ ⟵ AS expected"}
+with test 1;
 {"msg": "with test ❰1❱ ⟵ AS expected"}
-with test as
-{"msg": "with test as ⟵ ( expected"}
-with test as 1
+with test as;
+{"msg": "with test as❰;❱ ⟵ ( expected"}
+with test as 1;
 {"msg": "with test as ❰1❱ ⟵ ( expected"}
-with test (
-{"msg": "with test ( ⟵ name expected"}
-with test (1
+with test (;
+{"msg": "with test (❰;❱ ⟵ name expected"}
+with test (1;
 {"msg": "with test (❰1❱ ⟵ name expected"}
-with test (name
-{"msg": "with test (name ⟵ ) expected"}
-with test (name,
-{"msg": "with test (name, ⟵ name expected"}
-with test (name,,
+with test (name;
+{"msg": "with test (name❰;❱ ⟵ ) expected"}
+with test (name,;
+{"msg": "with test (name,❰;❱ ⟵ name expected"}
+with test (name,,;
 {"msg": "with test (name,❰,❱ ⟵ name expected"}
-with test (name,)
+with test (name,);
 {"msg": "with test (name,❰)❱ ⟵ name expected"}
-with test (name,
-{"msg": "with test (name, ⟵ name expected"}
-with test (name)
-{"msg": "with test (name) ⟵ AS expected"}
-with test as (
-{"msg": "with test as ( ⟵ unexpected end of statement"}
+with test (name,;
+{"msg": "with test (name,❰;❱ ⟵ name expected"}
+with test (name);
+{"msg": "with test (name)❰;❱ ⟵ AS expected"}
+with test as (;
+{"msg": "with test as (; ⟵ unexpected statement"}
 # test: with () (no stmt)
-with test as ()
-{"msg": "with test as () ⟵ unexpected statement"}
+with test as ();
+{"msg": "with test as ()❰;❱ ⟵ unexpected statement"}
 # test: with(select expr) (no main stmt)
-with test as (select 1)
-{"msg": "with test as (select 1) ⟵ unexpected end of statement"}
+with test as (select 1);
+{"msg": "with test as (select 1); ⟵ unexpected statement"}
 # test: with(select expr), select expr (cte not used)
-with test as (select 1) select 2
+with test as (select 1) select 2;
 [2]
 # test: with(select expr), select * from cte
-with a as (select 1) select * from a
+with a as (select 1) select * from a;
 [1]
-with a as (select 1, 2) select * from a
+with a as (select 1, 2) select * from a;
 [[1, 2]]
-with a as (select 1, 2, 3) select * from a
+with a as (select 1, 2, 3) select * from a;
 [[1, 2, 3]]
 # test: with(select expr as), select * from cte
-with a as (select 1 as a) select * from a
+with a as (select 1 as a) select * from a;
 [1]
-with a as (select 1 as a, 2 as b) select * from a
+with a as (select 1 as a, 2 as b) select * from a;
 [[1, 2]]
 # test: with(select expr as), select column from cte
-with a as (select 1 as a) select a from a
+with a as (select 1 as a) select a from a;
 [1]
-with a as (select 1 as a, 2 as b) select a, b from a
+with a as (select 1 as a, 2 as b) select a, b from a;
 [[1, 2]]
 # test: with(select expr as), select target.column from cte
-with a as (select 1 as a, 2 as b) select a.a, a.b from a
+with a as (select 1 as a, 2 as b) select a.a, a.b from a;
 [[1, 2]]
 # test: with(select * from table) select expr (cte not used)
-create table test (id int primary key)
-insert into test values (1),(2),(3)
-explain with a as (select * from test) select 2
+create table test (id int primary key);
+insert into test values (1),(2),(3);
+explain with a as (select * from test) select 2;
 [{
   "main": {
     "00": "union               0      0      0     ",
@@ -83,13 +83,13 @@ explain with a as (select * from test) select 2
   },
   "access": [["public.test", "ro"]]
 }]
-with a as (select * from test) select 2
+with a as (select * from test) select 2;
 [2]
-drop table test
+drop table test;
 # test: with(select * from table), select * from cte
-create table test (id int primary key)
-insert into test values (1),(2),(3)
-explain with a as (select * from test) select * from a
+create table test (id int primary key);
+insert into test values (1),(2),(3);
+explain with a as (select * from test) select * from a;
 [{
   "main": {
     "00": "union               0      0      0     ",
@@ -119,13 +119,13 @@ explain with a as (select * from test) select * from a
   },
   "access": [["public.test", "ro"]]
 }]
-with a as (select * from test) select * from a
+with a as (select * from test) select * from a;
 [1, 3, 2]
-drop table test
+drop table test;
 # test: with(select * from table), select column from cte
-create table test (id int primary key)
-insert into test values (1),(2),(3)
-explain with a as (select * from test) select id from a
+create table test (id int primary key);
+insert into test values (1),(2),(3);
+explain with a as (select * from test) select id from a;
 [{
   "main": {
     "00": "union               0      0      0     ",
@@ -155,13 +155,13 @@ explain with a as (select * from test) select id from a
   },
   "access": [["public.test", "ro"]]
 }]
-with a as (select * from test) select id from a
+with a as (select * from test) select id from a;
 [1, 3, 2]
-drop table test
+drop table test;
 # test: with(select * from table), select target.column from cte
-create table test (id int primary key)
-insert into test values (1),(2),(3)
-explain with a as (select * from test) select a.id from a
+create table test (id int primary key);
+insert into test values (1),(2),(3);
+explain with a as (select * from test) select a.id from a;
 [{
   "main": {
     "00": "union               0      0      0     ",
@@ -191,13 +191,13 @@ explain with a as (select * from test) select a.id from a
   },
   "access": [["public.test", "ro"]]
 }]
-with a as (select * from test) select a.id from a
+with a as (select * from test) select a.id from a;
 [1, 3, 2]
-drop table test
+drop table test;
 # test: with(select column from table), select column from cte
-create table test (id int primary key)
-insert into test values (1),(2),(3)
-explain with a as (select id from test) select id from a
+create table test (id int primary key);
+insert into test values (1),(2),(3);
+explain with a as (select id from test) select id from a;
 [{
   "main": {
     "00": "union               0      0      0     ",
@@ -227,15 +227,15 @@ explain with a as (select id from test) select id from a
   },
   "access": [["public.test", "ro"]]
 }]
-with a as (select id from test) select id from a
+with a as (select id from test) select id from a;
 [1, 3, 2]
-drop table test
+drop table test;
 # test: with(select column as from table), select column from cte
-create table test (id int primary key)
-insert into test values (1),(2),(3)
-explain with a as (select id as x from test) select id from a
+create table test (id int primary key);
+insert into test values (1),(2),(3);
+explain with a as (select id as x from test) select id from a;
 {"msg": "explain with a as (select id as x from test) select ❰id❱ ⟵ column a.id not found"}
-explain with a as (select id as x from test) select x from a
+explain with a as (select id as x from test) select x from a;
 [{
   "main": {
     "00": "union               0      0      0     ",
@@ -265,23 +265,23 @@ explain with a as (select id as x from test) select x from a
   },
   "access": [["public.test", "ro"]]
 }]
-with a as (select id as x from test) select x from a
+with a as (select id as x from test) select x from a;
 [1, 3, 2]
-drop table test
+drop table test;
 # test: with(select column, column from table), select * from cte (conflict)
-create table test (id int primary key)
-insert into test values (1),(2),(3)
-with a as (select id, id from test) select * from a
+create table test (id int primary key);
+insert into test values (1),(2),(3);
+with a as (select id, id from test) select * from a;
 {"msg": "with a as (select id, id from test) select ❰*❱ ⟵ column a.id is ambiguous"}
-with a as (select id, id as x from test) select * from a
+with a as (select id, id as x from test) select * from a;
 [[1, 1], [3, 3], [2, 2]]
-drop table test
+drop table test;
 # test: with(select * from table), select * from cte
-create table test (id int primary key)
-insert into test values (1),(2),(3)
-with a as (select * from test) select * from a
+create table test (id int primary key);
+insert into test values (1),(2),(3);
+with a as (select * from test) select * from a;
 [1, 3, 2]
-explain with a as (select * from test) select * from a
+explain with a as (select * from test) select * from a;
 [{
   "main": {
     "00": "union               0      0      0     ",
@@ -311,13 +311,13 @@ explain with a as (select * from test) select * from a
   },
   "access": [["public.test", "ro"]]
 }]
-drop table test
+drop table test;
 # test: with(select * from table), select * from table
-create table test (id int primary key)
-insert into test values (1),(2),(3)
-with a as (select * from test) select * from test
+create table test (id int primary key);
+insert into test values (1),(2),(3);
+with a as (select * from test) select * from test;
 [1, 3, 2]
-explain with a as (select * from test) select * from test
+explain with a as (select * from test) select * from test;
 [{
   "main": {
     "00": "union               0      0      0     ",
@@ -348,13 +348,13 @@ explain with a as (select * from test) select * from test
   },
   "access": [["public.test", "ro"]]
 }]
-drop table test
+drop table test;
 # test: with(select * from table), select * from table
-create table test (id int primary key)
-insert into test values (1),(2),(3)
-with a as (select * from test) select * from test
+create table test (id int primary key);
+insert into test values (1),(2),(3);
+with a as (select * from test) select * from test;
 [1, 3, 2]
-explain with a as (select * from test) select * from test
+explain with a as (select * from test) select * from test;
 [{
   "main": {
     "00": "union               0      0      0     ",
@@ -385,11 +385,11 @@ explain with a as (select * from test) select * from test
   },
   "access": [["public.test", "ro"]]
 }]
-drop table test
+drop table test;
 # test: with(select expr), select * from table join
-create table test (id int primary key)
-insert into test values (1),(2),(3)
-explain with a as (select [4,5,6]) select test.*, a.* from test, a
+create table test (id int primary key);
+insert into test values (1),(2),(3);
+explain with a as (select [4,5,6]) select test.*, a.* from test, a;
 [{
   "main": {
     "00": "json                0      0      0     ",
@@ -419,13 +419,13 @@ explain with a as (select [4,5,6]) select test.*, a.* from test, a
   },
   "access": [["public.test", "ro"]]
 }]
-with a as (select [4,5,6]) select test.*, a.* from test, a
+with a as (select [4,5,6]) select test.*, a.* from test, a;
 [[1, 4], [1, 5], [1, 6], [3, 4], [3, 5], [3, 6], [2, 4], [2, 5], [2, 6]]
-drop table test
+drop table test;
 # test: with(select expr), select * from table join
-create table test (id int primary key)
-insert into test values (1),(2),(3)
-explain with a as (select [4,5,6]) select test.*, a.* from test, a
+create table test (id int primary key);
+insert into test values (1),(2),(3);
+explain with a as (select [4,5,6]) select test.*, a.* from test, a;
 [{
   "main": {
     "00": "json                0      0      0     ",
@@ -455,13 +455,13 @@ explain with a as (select [4,5,6]) select test.*, a.* from test, a
   },
   "access": [["public.test", "ro"]]
 }]
-with a as (select [4,5,6]) select test.*, a.* from test, a
+with a as (select [4,5,6]) select test.*, a.* from test, a;
 [[1, 4], [1, 5], [1, 6], [3, 4], [3, 5], [3, 6], [2, 4], [2, 5], [2, 6]]
-drop table test
+drop table test;
 # test: with(select * from table), select from table join
-create table test (id int primary key)
-insert into test values (1),(2),(3)
-explain with a as (select * from test) select test.* from test join a on test.id = a.id
+create table test (id int primary key);
+insert into test values (1),(2),(3);
+explain with a as (select * from test) select test.* from test join a on test.id = a.id;
 [{
   "main": {
     "00": "union               0      0      0     ",
@@ -504,13 +504,13 @@ explain with a as (select * from test) select test.* from test join a on test.id
   },
   "access": [["public.test", "ro"]]
 }]
-with a as (select * from test) select test.* from test join a on test.id = a.id
+with a as (select * from test) select test.* from test join a on test.id = a.id;
 [1, 3, 2]
-drop table test
+drop table test;
 # test: with(select string from table), select from table join
-create table test (id int primary key, data string)
-insert into test values (1, '1'),(2, '2'),(3, '3')
-explain with a as (select data from test) select test.* from test join a on test.data = a.data
+create table test (id int primary key, data string);
+insert into test values (1, '1'),(2, '2'),(3, '3');
+explain with a as (select data from test) select test.* from test join a on test.data = a.data;
 [{
   "main": {
     "00": "union               0      0      0     ",
@@ -555,11 +555,11 @@ explain with a as (select data from test) select test.* from test join a on test
   },
   "access": [["public.test", "ro"]]
 }]
-with a as (select data from test) select test.* from test join a on test.data = a.data
+with a as (select data from test) select test.* from test join a on test.data = a.data;
 [[1, "1"], [3, "3"], [2, "2"]]
-drop table test
+drop table test;
 # test: with (columns) as (select expr), select * from cte
-explain with z (a,b,c) as (select 4,5,6) select * from z
+explain with z (a,b,c) as (select 4,5,6) select * from z;
 [{
   "main": {
     "00": "set                 0      3      0     ",
@@ -587,28 +587,28 @@ explain with z (a,b,c) as (select 4,5,6) select * from z
   },
   "access": []
 }]
-with z (a,b,c) as (select 4,5,6) select * from z
+with z (a,b,c) as (select 4,5,6) select * from z;
 [[4, 5, 6]]
 # test: with (columns) as (select expr), select column from cte
-with z (a,b,c) as (select 4,5,6) select a,b,c from z
+with z (a,b,c) as (select 4,5,6) select a,b,c from z;
 [[4, 5, 6]]
 # test: with (columns) as (select expr), select target.column from cte
-with z (a,b,c) as (select 4,5,6) select z.a, z.b, z.c from z
+with z (a,b,c) as (select 4,5,6) select z.a, z.b, z.c from z;
 [[4, 5, 6]]
 # test: with (columns) as (select expr), select column from cte group by
-with z as (select 4 as a,5,6) select a from z group by a
+with z as (select 4 as a,5,6) select a from z group by a;
 [4]
-with z (a,b,c) as (select 4,5,6) select a from z group by a
+with z (a,b,c) as (select 4,5,6) select a from z group by a;
 [4]
 # test: with (columns) as (select expr), select * from cte (redefined)
-explain with z (a,a) as (select 4,5,6) select * from z
+explain with z (a,a) as (select 4,5,6) select * from z;
 {"msg": "explain with z (a,❰a❱ ⟵ argument redefined"}
 # test: a(table), b(a)
-create table test (id int primary key)
-insert into test values (1),(2),(3)
-with a as (select * from test), b as (select * from a) select * from b
+create table test (id int primary key);
+insert into test values (1),(2),(3);
+with a as (select * from test), b as (select * from a) select * from b;
 [1, 3, 2]
-explain with a as (select * from test), b as (select * from a) select * from b
+explain with a as (select * from test), b as (select * from a) select * from b;
 [{
   "main": {
     "00": "union               0      0      0     ",
@@ -647,13 +647,13 @@ explain with a as (select * from test), b as (select * from a) select * from b
   },
   "access": [["public.test", "ro"]]
 }]
-drop table test
+drop table test;
 # test: a(table), b(expr), c(a)
-create table test (id int primary key)
-insert into test values (1),(2),(3)
-with a as (select * from test), b as (select [1,2,3]), c as (select * from a) select * from c
+create table test (id int primary key);
+insert into test values (1),(2),(3);
+with a as (select * from test), b as (select [1,2,3]), c as (select * from a) select * from c;
 [1, 3, 2]
-explain with a as (select * from test), b as (select [1,2,3]), c as (select * from a) select * from c
+explain with a as (select * from test), b as (select [1,2,3]), c as (select * from a) select * from c;
 [{
   "main": {
     "00": "union               0      0      0     ",
@@ -693,13 +693,13 @@ explain with a as (select * from test), b as (select [1,2,3]), c as (select * fr
   },
   "access": [["public.test", "ro"]]
 }]
-drop table test
+drop table test;
 # test: a(table), b(expr), c(table)
-create table test (id int primary key)
-insert into test values (1),(2),(3)
-with a as (select * from test), b as (select [1,2,3]), c as (select * from test) select * from c
+create table test (id int primary key);
+insert into test values (1),(2),(3);
+with a as (select * from test), b as (select [1,2,3]), c as (select * from test) select * from c;
 [1, 3, 2]
-explain with a as (select * from test), b as (select [1,2,3]), c as (select * from test) select * from c
+explain with a as (select * from test), b as (select [1,2,3]), c as (select * from test) select * from c;
 [{
   "main": {
     "00": "union               0      0      0     ",
@@ -740,13 +740,13 @@ explain with a as (select * from test), b as (select [1,2,3]), c as (select * fr
   },
   "access": [["public.test", "ro"]]
 }]
-drop table test
+drop table test;
 # test: a(table), b(table), c(expr)
-create table test (id int primary key)
-insert into test values (1),(2),(3)
-with a as (select * from test), b as (select * from test), c as (select [1,2,3]) select * from c
+create table test (id int primary key);
+insert into test values (1),(2),(3);
+with a as (select * from test), b as (select * from test), c as (select [1,2,3]) select * from c;
 [1, 2, 3]
-explain with a as (select * from test), b as (select * from test), c as (select [1,2,3]) select * from c
+explain with a as (select * from test), b as (select * from test), c as (select [1,2,3]) select * from c;
 [{
   "main": {
     "00": "union               0      0      0     ",
@@ -785,13 +785,13 @@ explain with a as (select * from test), b as (select * from test), c as (select 
   },
   "access": [["public.test", "ro"]]
 }]
-drop table test
+drop table test;
 # test: a(table), b(table), c(expr), d(table)
-create table test (id int primary key)
-insert into test values (1),(2),(3)
-with a as (select * from test), b as (select * from test), c as (select [1,2,3]), d as (select * from test) select * from d
+create table test (id int primary key);
+insert into test values (1),(2),(3);
+with a as (select * from test), b as (select * from test), c as (select [1,2,3]), d as (select * from test) select * from d;
 [1, 3, 2]
-explain with a as (select * from test), b as (select * from test), c as (select [1,2,3]), d as (select * from test) select * from d
+explain with a as (select * from test), b as (select * from test), c as (select [1,2,3]), d as (select * from test) select * from d;
 [{
   "main": {
     "00": "union               0      0      0     ",
@@ -842,13 +842,13 @@ explain with a as (select * from test), b as (select * from test), c as (select 
   },
   "access": [["public.test", "ro"]]
 }]
-drop table test
+drop table test;
 # test: a(expr), b(table), c(expr)
-create table test (id int primary key)
-insert into test values (1),(2),(3)
-with a as (select [1,2,3]), b as (select * from test), c as (select [1,2,3]) select b.*, c.* from b,c
+create table test (id int primary key);
+insert into test values (1),(2),(3);
+with a as (select [1,2,3]), b as (select * from test), c as (select [1,2,3]) select b.*, c.* from b,c;
 [[1, 1], [1, 2], [1, 3], [3, 1], [3, 2], [3, 3], [2, 1], [2, 2], [2, 3]]
-explain with a as (select [1,2,3]), b as (select * from test), c as (select [1,2,3]) select b.*, c.* from b,c
+explain with a as (select [1,2,3]), b as (select * from test), c as (select [1,2,3]) select b.*, c.* from b,c;
 [{
   "main": {
     "00": "json                0      0      0     ",
@@ -887,13 +887,13 @@ explain with a as (select [1,2,3]), b as (select * from test), c as (select [1,2
   },
   "access": [["public.test", "ro"]]
 }]
-drop table test
+drop table test;
 # test: a(expr), b(table), c(table)
-create table test (id int primary key)
-insert into test values (1),(2),(3)
-with a as (select [1,2,3]), b as (select * from test), c as (select * from test) select * from c
+create table test (id int primary key);
+insert into test values (1),(2),(3);
+with a as (select [1,2,3]), b as (select * from test), c as (select * from test) select * from c;
 [1, 3, 2]
-explain with a as (select [1,2,3]), b as (select * from test), c as (select * from test) select * from c
+explain with a as (select [1,2,3]), b as (select * from test), c as (select * from test) select * from c;
 [{
   "main": {
     "00": "json                0      0      0     ",
@@ -934,13 +934,13 @@ explain with a as (select [1,2,3]), b as (select * from test), c as (select * fr
   },
   "access": [["public.test", "ro"]]
 }]
-drop table test
+drop table test;
 # test: a(table), b(a), c(table)
-create table test (id int primary key)
-insert into test values (1),(2),(3)
-with a as (select * from test), b as (select * from a), c as (select * from test) select * from c
+create table test (id int primary key);
+insert into test values (1),(2),(3);
+with a as (select * from test), b as (select * from a), c as (select * from test) select * from c;
 [1, 3, 2]
-explain with a as (select * from test), b as (select * from a), c as (select * from test) select * from c
+explain with a as (select * from test), b as (select * from a), c as (select * from test) select * from c;
 [{
   "main": {
     "00": "union               0      0      0     ",
@@ -991,12 +991,12 @@ explain with a as (select * from test), b as (select * from a), c as (select * f
   },
   "access": [["public.test", "ro"]]
 }]
-drop table test
-create table test (id int primary key)
-insert into test values (1),(2),(3)
-with a as (select * from test), b as (select * from a), c as (select * from test) select * from c
+drop table test;
+create table test (id int primary key);
+insert into test values (1),(2),(3);
+with a as (select * from test), b as (select * from a), c as (select * from test) select * from c;
 [1, 3, 2]
-explain with a as (select * from test), b as (select * from a), c as (select * from test) select * from c
+explain with a as (select * from test), b as (select * from a), c as (select * from test) select * from c;
 [{
   "main": {
     "00": "union               0      0      0     ",
@@ -1047,24 +1047,24 @@ explain with a as (select * from test), b as (select * from a), c as (select * f
   },
   "access": [["public.test", "ro"]]
 }]
-drop table test
+drop table test;
 # test: a(expr), stmt, b(expr), stmt
-create table test (id int primary key)
-insert into test values (1),(2),(3)
-with a as (select [1,2,3]) select * from a; with b as (select * from test) select b.*, a.* from b,a
+create table test (id int primary key);
+insert into test values (1),(2),(3);
+begin with a as (select [1,2,3]) select * from a; with b as (select * from test) select b.*, a.* from b,a; end;
 [[1, 1], [1, 2], [1, 3], [3, 1], [3, 2], [3, 3], [2, 1], [2, 2], [2, 3]]
-drop table test
+drop table test;
 # test: a(expr), a(expr) (cte redefined)
-create table test (id int primary key)
-insert into test values (1),(2),(3)
-with a as (select [4,5,6]); with a as (select * from test); select * from a
-{"msg": "with a as (select [4,5,6]); ❰with❱ ⟵ unexpected statement"}
-drop table test
+create table test (id int primary key);
+insert into test values (1),(2),(3);
+begin with a as (select [4,5,6]); with a as (select * from test); select * from a; end;
+{"msg": "begin with a as (select [4,5,6]); ❰with❱ ⟵ unexpected statement"}
+drop table test;
 # test: with(insert returning), select * from cte
-create table test (id int primary key, data int)
-with a as (insert into test values (2, 0) returning *) select * from a
+create table test (id int primary key, data int);
+begin with a as (insert into test values (2, 0) returning *) select * from a; end;
 [[2, 0]]
-explain with a as (insert into test values (2, 0) returning *) select * from a
+explain begin with a as (insert into test values (2, 0) returning *) select * from a; end;
 [{
   "main": {
     "00": "union               0      0      0     ",
@@ -1102,15 +1102,15 @@ explain with a as (insert into test values (2, 0) returning *) select * from a
   },
   "access": [["public.test", "rw"]]
 }]
-drop table test
+drop table test;
 # test: with(update returning), select * from cte
-create table test (id int primary key, data int)
-insert into test values (0, 0)
-insert into test values (1, 0)
-insert into test values (2, 0)
-with a as (update test set data = data + 1 returning *) select * from a
+create table test (id int primary key, data int);
+insert into test values (0, 0);
+insert into test values (1, 0);
+insert into test values (2, 0);
+with a as (update test set data = data + 1 returning *) select * from a;
 [[0, 1], [1, 1], [2, 1]]
-explain with a as (update test set data = data + 1 returning *) select * from a
+explain with a as (update test set data = data + 1 returning *) select * from a;
 [{
   "main": {
     "00": "union               0      0      0     ",
@@ -1150,15 +1150,15 @@ explain with a as (update test set data = data + 1 returning *) select * from a
   },
   "access": [["public.test", "rw"]]
 }]
-drop table test
+drop table test;
 # test: with(delete returning), select * from cte
-create table test (id int primary key, data int)
-insert into test values (0, 0)
-insert into test values (1, 0)
-insert into test values (2, 0)
-with a as (delete from test returning *) select * from a
+create table test (id int primary key, data int);
+insert into test values (0, 0);
+insert into test values (1, 0);
+insert into test values (2, 0);
+with a as (delete from test returning *) select * from a;
 [[0, 0], [1, 0], [2, 0]]
-explain with a as (delete from test returning *) select * from a
+explain with a as (delete from test returning *) select * from a;
 [{
   "main": {
     "00": "union               0      0      0     ",
@@ -1192,6 +1192,6 @@ explain with a as (delete from test returning *) select * from a
   },
   "access": [["public.test", "rw"]]
 }]
-drop table test
-disconnect S0
-close E0
+drop table test;
+disconnect S0;
+close E0;

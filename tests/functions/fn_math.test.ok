@@ -1,135 +1,135 @@
-open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "127.0.0.1", "port": 3485 }]
-connect E0 S0 127.0.0.1:3485
+open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "127.0.0.1", "port": 3485 }];
+connect E0 S0 127.0.0.1:3485;
 # test: abs()
-select abs(485)
+select abs(485);
 [485]
-select abs(-485)
+select abs(-485);
 [485]
 # test: fabs()
-select fabs(13.485)
+select fabs(13.485);
 [13.485]
-select fabs(-13.485)
+select fabs(-13.485);
 [13.485]
 # test: round()
-select 13.485::round
+select 13.485::round;
 [13]
 # test: sign()
-select 13.485::sign
+select 13.485::sign;
 [1]
-select 485::sign
+select 485::sign;
 [1]
-select 0::sign
+select 0::sign;
 [0]
-select -10::sign
+select -10::sign;
 [-1]
 # test: ceil()
-select 42::ceil
+select 42::ceil;
 {"msg": "ceil(❰int❱ ⟵ expected double"}
-select 42.2::ceil
+select 42.2::ceil;
 [43]
-select ceil(-42.8)
+select ceil(-42.8);
 [-42]
 # test: floor()
-select floor(42.8)
+select floor(42.8);
 [42]
-select floor(-42.8)
+select floor(-42.8);
 [-43]
 # test: exp()
-select exp(1)
+select exp(1);
 {"msg": "exp(❰int❱ ⟵ expected double"}
-select exp(1.0)
+select exp(1.0);
 [2.71828]
-select 1.0::exp
+select 1.0::exp;
 [2.71828]
 # test: mod()
-select mod(9, 4)
+select mod(9, 4);
 [1]
 # test: fmod()
-select fmod(30.0, 3.6)
+select fmod(30.0, 3.6);
 [1.2]
 # test: pi()
-select pi()
+select pi();
 [3.14159]
 # test: pow()
-select pow(9, 3)
+select pow(9, 3);
 [729]
 # test: fpow()
-select fpow(9.1, 3.2)
+select fpow(9.1, 3.2);
 [1172.01]
 # test: trunc()
-select trunc(42.8)
+select trunc(42.8);
 [42]
-select trunc(-48.8023)
+select trunc(-48.8023);
 [-48]
 # test: sqrt()
-select sqrt(2)
+select sqrt(2);
 [1.41421]
-select sqrt(2.0)
+select sqrt(2.0);
 [1.41421]
-select sqrt(2.3)
+select sqrt(2.3);
 [1.51658]
-select sqrt(-2.3)
+select sqrt(-2.3);
 {"msg": "sqrt(double) ⟵ operation failed"}
 # test: acos()
-select acos(1)
+select acos(1);
 [0]
 # test: acosh()
-select acosh(1)
+select acosh(1);
 [0]
 # test: asin()
-select asin(1)
+select asin(1);
 [1.5708]
 # test: asinh()
-select asinh(1)
+select asinh(1);
 [0.881374]
 # test: atan()
-select atan(1)
+select atan(1);
 [0.785398]
 # test: atanh()
-select atanh(0.5)
+select atanh(0.5);
 [0.549306]
 # test: atan2()
-select atan2(1, 0)
+select atan2(1, 0);
 [1.5708]
 # test: ln()
-select ln(2.0)
+select ln(2.0);
 [0.693147]
 # test: log()
-select log(1000)
+select log(1000);
 [3]
 # test: log10()
-select log10(1000)
+select log10(1000);
 [3]
 # test: log2()
-select log2(8)
+select log2(8);
 [3]
 # test: greatest()
-select greatest()
+select greatest();
 [null]
-select greatest(1)
+select greatest(1);
 [1]
-select greatest(null)
+select greatest(null);
 [null]
-select greatest(null, 1)
+select greatest(null, 1);
 [1]
-select greatest(null, 1, 3)
+select greatest(null, 1, 3);
 [3]
-select greatest(8, null, 1, 3)
+select greatest(8, null, 1, 3);
 [8]
-select greatest(8, null, '1', 3)
+select greatest(8, null, '1', 3);
 {"msg": "select greatest(8, null, ❰'1'❱ ⟵ argument type must match other arguments"}
 # test: least()
-select least()
+select least();
 [null]
-select least(1)
+select least(1);
 [1]
-select least(null)
+select least(null);
 [null]
-select least(null, 1)
+select least(null, 1);
 [1]
-select least(null, 1, 3)
+select least(null, 1, 3);
 [1]
-select least(8.1, null, 1, 3)
+select least(8.1, null, 1, 3);
 {"msg": "select least(8.1, null, ❰1❱ ⟵ argument type must match other arguments"}
-disconnect S0
-close E0
+disconnect S0;
+close E0;

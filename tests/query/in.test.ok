@@ -1,22 +1,22 @@
-open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "127.0.0.1", "port": 3485 }]
-connect E0 S0 127.0.0.1:3485
+open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "127.0.0.1", "port": 3485 }];
+connect E0 S0 127.0.0.1:3485;
 # test: in expr
-select 1 in
-{"msg": "select 1 in ⟵ ( expected"}
-select in
+select 1 in;
+{"msg": "select 1 in❰;❱ ⟵ ( expected"}
+select in;
 {"msg": "select ❰in❱ ⟵ bad expression"}
-select in true
+select in true;
 {"msg": "select ❰in❱ ⟵ bad expression"}
-select 1 in true
+select 1 in true;
 {"msg": "select 1 in ❰true❱ ⟵ ( expected"}
-select 1 in [
+select 1 in [;
 {"msg": "select 1 in ❰[❱ ⟵ ( expected"}
-select 1 in (
-{"msg": "select 1 in ( ⟵ bad expression"}
+select 1 in (;
+{"msg": "select 1 in (❰;❱ ⟵ bad expression"}
 # test: in (empty set)
-select 1 in ()
+select 1 in ();
 [false]
-explain select 1 in ()
+explain select 1 in ();
 [{
   "main": {
     "00": "int                 0      -      0     # 1",
@@ -26,62 +26,62 @@ explain select 1 in ()
   "access": []
 }]
 # test: in
-select 1 in (3, 1, 2)
+select 1 in (3, 1, 2);
 [true]
-select 1 in (1, 2, 3)
+select 1 in (1, 2, 3);
 [true]
-select 1 in (3, 2, 1)
+select 1 in (3, 2, 1);
 [true]
-select 1 in (1)
+select 1 in (1);
 [true]
-select 1 in (0)
+select 1 in (0);
 [false]
 # test: in null
-select null in (3, 1, 2)
+select null in (3, 1, 2);
 [null]
-select 1 in (null, 1, 2)
+select 1 in (null, 1, 2);
 [true]
-select 1 in (3, null, 2)
+select 1 in (3, null, 2);
 [null]
-select 1 in (3, 1, null)
+select 1 in (3, 1, null);
 [true]
 # test: in (select from table)
-create table test (id int primary key)
-insert into test values (1), (2), (3)
-select 1 in (select * from test)
+create table test (id int primary key);
+insert into test values (1), (2), (3);
+select 1 in (select * from test);
 [true]
-select 1 in (select id from test)
+select 1 in (select id from test);
 [true]
-select 0 in (select id from test)
+select 0 in (select id from test);
 [false]
-drop table test
+drop table test;
 # test: in (select null from table)
-create table test (id int primary key, data int)
-insert into test values (1, 1), (2, 2)
-select 1 in (select * from test)
+create table test (id int primary key, data int);
+insert into test values (1, 1), (2, 2);
+select 1 in (select * from test);
 {"msg": "select 1 in (❰select❱ ⟵ subquery must return one column"}
-select 1 in (select data from test)
+select 1 in (select data from test);
 [true]
-select 3 in (select data from test)
+select 3 in (select data from test);
 [false]
-insert into test values (3, null)
-select 1 in (select data from test)
+insert into test values (3, null);
+select 1 in (select data from test);
 [true]
-select 3 in (select data from test)
+select 3 in (select data from test);
 [null]
-drop table test
+drop table test;
 # test: in (value, select from table, ...)
-create table test (id int primary key)
-insert into test values (1), (2), (3)
-select 1 in (0, select * from test)
+create table test (id int primary key);
+insert into test values (1), (2), (3);
+select 1 in (0, select * from test);
 [true]
-select 1 in (1, select * from test)
+select 1 in (1, select * from test);
 [true]
-select 0 in ((select * from test), 0)
+select 0 in ((select * from test), 0);
 [true]
-select 0 in (3,5, (select * from test), 0)
+select 0 in (3,5, (select * from test), 0);
 [true]
-explain select 0 in (3,5, (select * from test), 0)
+explain select 0 in (3,5, (select * from test), 0);
 [{
   "main": {
     "00": "int                 0      -      0     # 0",
@@ -104,23 +104,23 @@ explain select 0 in (3,5, (select * from test), 0)
   },
   "access": [["public.test", "ro_exclusive"]]
 }]
-select 0 in (3,5, (select * from test))
+select 0 in (3,5, (select * from test));
 [false]
-select 0 in (3,5, (select * from test), null)
+select 0 in (3,5, (select * from test), null);
 [null]
-drop table test
+drop table test;
 # test: not in
-select 1 not in (3, 1, 2)
+select 1 not in (3, 1, 2);
 [false]
-select 1 not in (1, 2, 3)
+select 1 not in (1, 2, 3);
 [false]
-select 1 not in (3, 2, 1)
+select 1 not in (3, 2, 1);
 [false]
-select 1 not in (1)
+select 1 not in (1);
 [false]
-select 1 not in (0)
+select 1 not in (0);
 [true]
-select 1 not in (0,2,3)
+select 1 not in (0,2,3);
 [true]
-disconnect S0
-close E0
+disconnect S0;
+close E0;

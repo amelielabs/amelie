@@ -1,7 +1,7 @@
-open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "127.0.0.1", "port": 3485 }]
-connect E0 S0 127.0.0.1:3485
+open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "127.0.0.1", "port": 3485 }];
+connect E0 S0 127.0.0.1:3485;
 # test: return (last stmt)
-explain select 1
+explain select 1;
 [{
   "main": {
     "00": "int                 0      -      0     # 1",
@@ -9,7 +9,7 @@ explain select 1
   },
   "access": []
 }]
-explain select 1; select 2
+explain begin select 1; select 2; end;
 [{
   "main": {
     "00": "int                 0      -      0     # 1",
@@ -18,7 +18,7 @@ explain select 1; select 2
   },
   "access": []
 }]
-explain select 1; select 2; select 3
+explain begin select 1; select 2; select 3; end;
 [{
   "main": {
     "00": "int                 0      -      0     # 1",
@@ -28,7 +28,7 @@ explain select 1; select 2; select 3
   },
   "access": []
 }]
-select 1; select 2;
+begin select 1; select 2; end;
 [2]
 # test: return (last stmt, if)
 explain if true then end;
@@ -44,7 +44,7 @@ explain if true then end;
   "access": []
 }]
 if true then end;
-explain if true then end; select 1
+explain begin if true then end; select 1; end;
 [{
   "main": {
     "00": "jmp                 2      0      0     ",
@@ -57,9 +57,9 @@ explain if true then end; select 1
   },
   "access": []
 }]
-if true then end; select 1
+begin if true then end; select 1; end;
 [1]
-explain if true then select 1; end; select 2
+explain begin if true then select 1; end; select 2; end;
 [{
   "main": {
     "00": "jmp                 2      0      0     ",
@@ -73,10 +73,10 @@ explain if true then select 1; end; select 2
   },
   "access": []
 }]
-if true then select 1; end; select 2
+begin if true then select 1; end; select 2; end;
 [2]
 # test: return (last stmt select into)
-explain declare x int; select 123 into x;
+explain begin declare x int; select 123 into x; end;
 [{
   "main": {
     "00": "push_nulls          1      0      0     ",
@@ -87,26 +87,30 @@ explain declare x int; select 123 into x;
   },
   "access": []
 }]
-declare x int; select 123 into x;
+begin declare x int; select 123 into x; end;
 # test: return var
 return x;
 {"msg": "return ❰x❱ ⟵ column not found"}
-declare x int; return x;
+begin declare x int; return x; end;
 [null]
-declare x int := 123; return x;
+begin declare x int := 123; return x; end;
 [123]
 # test: return var format
-declare x int := 123; return x format
-{"msg": "declare x int := 123; return x format ⟵ string expected"}
-declare x int := 123; return x format 'json-obj';
+begin declare x int := 123; return x format; end;
+{"msg": "begin declare x int := 123; return x format❰;❱ ⟵ string expected"}
+begin declare x int := 123; return x format 'json-obj'; end;
 [{"col1": 123}]
 # test: return from cte
-declare x int; with a as (return x) select 1
-{"msg": "declare x int; with a as (return ❰x❱ ⟵ statement cannot be used inside CTE"}
-declare x int; with a as (select 1) return x
-{"msg": "declare x int; with a as (select 1) return ❰x❱ ⟵ statement cannot be used inside CTE"}
+begin declare x int; with a as (return x) select 1; end;
+{"msg": "begin declare x int; with a as (return ❰x❱ ⟵ statement cannot be used inside CTE"}
+begin declare x int; with a as (select 1) return x; end;
+{"msg": "begin declare x int; with a as (select 1) return ❰x❱ ⟵ statement cannot be used inside CTE"}
 # test: return return
-explain declare x int := 0; return x; return x;
+explain begin
+	declare x int := 0;
+	return x;
+	return x;
+end;
 [{
   "main": {
     "00": "push_nulls          1      0      0     ",
@@ -120,10 +124,20 @@ explain declare x int := 0; return x; return x;
   },
   "access": []
 }]
-declare x int := 0; return x; return x;
+begin
+	declare x int := 0;
+	return x;
+	return x;
+end;
 [0]
 # test: if return
-explain declare x int; if true then x := 12; return x; end;
+explain begin
+	declare x int;
+	if true then
+		x := 12;
+		return x;
+	end;
+end;
 [{
   "main": {
     "00": "push_nulls          1      0      0     ",
@@ -141,10 +155,23 @@ explain declare x int; if true then x := 12; return x; end;
   },
   "access": []
 }]
-declare x int; if true then x := 12; return x; end;
+begin
+	declare x int;
+	if true then
+		x := 12;
+		return x;
+	end;
+end;
 [12]
 # test: if return return
-explain declare x int; if true then x := 12; return x; end; return x
+explain begin
+	declare x int;
+	if true then
+		x := 12;
+		return x;
+	end;
+	return x;
+end;
 [{
   "main": {
     "00": "push_nulls          1      0      0     ",
@@ -163,9 +190,23 @@ explain declare x int; if true then x := 12; return x; end; return x
   },
   "access": []
 }]
-declare x int; if true then x := 12; return x; end; return x
+begin
+	declare x int;
+	if true then
+		x := 12;
+		return x;
+	end;
+	return x;
+end;
 [12]
-explain declare x int; if false then x := 12; return x; end; return x
+explain begin
+	declare x int;
+	if false then
+		x := 12;
+		return x;
+	end;
+	return x;
+end;
 [{
   "main": {
     "00": "push_nulls          1      0      0     ",
@@ -184,12 +225,27 @@ explain declare x int; if false then x := 12; return x; end; return x
   },
   "access": []
 }]
-declare x int; if false then x := 12; return x; end; return x
+begin
+	declare x int;
+	if false then
+		x := 12;
+		return x;
+	end;
+	return x;
+end;
 [null]
 # test: if return return (dep)
-create table test (id int primary key)
-insert into test values (1), (2), (3)
-explain declare x int; select id into x from test; if true then x := x + 1; return x; end; return x
+create table test (id int primary key);
+insert into test values (1), (2), (3);
+explain begin
+	declare x int;
+	select id into x from test;
+	if true then
+		x := x + 1;
+		return x;
+	end;
+	return x;
+end;
 [{
   "main": {
     "00": "push_nulls          1      0      0     ",
@@ -226,9 +282,25 @@ explain declare x int; select id into x from test; if true then x := x + 1; retu
   },
   "access": [["public.test", "ro"]]
 }]
-declare x int; select id into x from test; if true then x := x + 1; return x; end; return x
+begin
+	declare x int;
+	select id into x from test;
+	if true then
+		x := x + 1;
+		return x;
+	end;
+	return x;
+end;
 [2]
-explain declare x int; select id into x from test; if false then x := x + 1; return x; end; return x
+explain begin
+	declare x int;
+	select id into x from test;
+	if false then
+		x := x + 1;
+		return x;
+	end;
+	return x;
+end;
 [{
   "main": {
     "00": "push_nulls          1      0      0     ",
@@ -265,9 +337,24 @@ explain declare x int; select id into x from test; if false then x := x + 1; ret
   },
   "access": [["public.test", "ro"]]
 }]
-declare x int; select id into x from test; if false then x := x + 1; return x; end; return x
+begin
+	declare x int;
+	select id into x from test;
+	if false then
+		x := x + 1;
+		return x;
+	end;
+	return x;
+end;
 [1]
-explain declare x int; if true then select id into x from test; return x; end; return x
+explain begin
+	declare x int;
+	if true then
+		select id into x from test;
+		return x;
+	end;
+	return x;
+end;
 [{
   "main": {
     "00": "push_nulls          1      0      0     ",
@@ -300,9 +387,23 @@ explain declare x int; if true then select id into x from test; return x; end; r
   },
   "access": [["public.test", "ro"]]
 }]
-declare x int; if true then select id into x from test; return x; end; return x
+begin
+	declare x int;
+	if true then
+		select id into x from test;
+		return x;
+	end;
+	return x;
+end;
 [1]
-explain declare x int; if false then select id into x from test; return x; end; return x
+explain begin
+	declare x int;
+	if false then
+		select id into x from test;
+		return x;
+	end;
+	return x;
+end;
 [{
   "main": {
     "00": "push_nulls          1      0      0     ",
@@ -335,10 +436,26 @@ explain declare x int; if false then select id into x from test; return x; end; 
   },
   "access": [["public.test", "ro"]]
 }]
-declare x int; if false then select id into x from test; return x; end; return x
+begin
+	declare x int;
+	if false then
+		select id into x from test;
+		return x;
+	end;
+	return x;
+end;
 [null]
 # test: for if return
-explain declare x int := 0; for i in (select id from test) do if i.id > 2 then return x; end; x := x + 1; end; select x
+explain begin
+	declare x int := 0;
+	for i in (select id from test) do
+		if i.id > 2 then
+			return x;
+		end;
+		x := x + 1;
+	end;
+	select x;
+end;
 [{
   "main": {
     "00": "push_nulls          1      0      0     ",
@@ -383,17 +500,53 @@ explain declare x int := 0; for i in (select id from test) do if i.id > 2 then r
   },
   "access": [["public.test", "ro"]]
 }]
-declare x int := 0; for i in (select id from test) do if i.id > 2 then return x; end; x := x + 1; end; select x
+begin
+	declare x int := 0;
+	for i in (select id from test) do
+		if i.id > 2 then
+			return x;
+		end;
+		x := x + 1;
+	end;
+	select x;
+end;
 [2]
-insert into test values (4), (5)
-declare x int := 0; for i in (select id from test) do if i.id > 2 then return x; end; x := x + 1; end; select x
+insert into test values (4), (5);
+begin
+	declare x int := 0;
+	for i in (select id from test) do
+		if i.id > 2 then
+			return x;
+		end;
+		x := x + 1;
+	end;
+	select x;
+end;
 [2]
-declare x int := 0; for i in ([1,2,3,4]) do if i::int > 2 then return x; end; x := x + 1; end; select x
+begin
+	declare x int := 0;
+	for i in ([1,2,3,4]) do
+		if i::int > 2 then
+			return x;
+		end;
+		x := x + 1;
+	end;
+	select x;
+end;
 [2]
-declare x int := 0; for i in ([1,2,3,4]) do if i::int > 2 then return select x; end; x := x + 1; end; select x
+begin
+	declare x int := 0;
+	for i in ([1,2,3,4]) do
+		if i::int > 2 then
+			return select x;
+		end;
+		x := x + 1;
+	end;
+	select x;
+end;
 [2]
 # test: return insert
-explain return insert into test values (6)
+explain return insert into test values (6);
 [{
   "main": {
     "00": "set_ptr             0      -      0     ",
@@ -406,8 +559,11 @@ explain return insert into test values (6)
   },
   "access": [["public.test", "rw"]]
 }]
-return insert into test values (6)
-explain return insert into test values (6); select 1
+return insert into test values (6);
+explain begin
+	return insert into test values (6);
+	select 1;
+end;
 [{
   "main": {
     "00": "set_ptr             0      -      0     ",
@@ -422,10 +578,13 @@ explain return insert into test values (6); select 1
   },
   "access": [["public.test", "rw"]]
 }]
-return insert into test values (6); select 1
+begin
+	return insert into test values (6);
+	select 1;
+end;
 {"msg": "index 'primary': unique key constraint violation"}
 # test: return insert returning
-explain return insert into test values (7) returning *
+explain return insert into test values (7) returning *;
 [{
   "main": {
     "00": "union               0      0      0     ",
@@ -450,9 +609,12 @@ explain return insert into test values (7) returning *
   },
   "access": [["public.test", "rw"]]
 }]
-return insert into test values (7) returning *
+return insert into test values (7) returning *;
 [7]
-explain return insert into test values (8) returning *; select 1
+explain begin
+	return insert into test values (8) returning *;
+	select 1;
+end;
 [{
   "main": {
     "00": "union               0      0      0     ",
@@ -479,10 +641,18 @@ explain return insert into test values (8) returning *; select 1
   },
   "access": [["public.test", "rw"]]
 }]
-return insert into test values (8) returning *; select 1
+begin
+	return insert into test values (8) returning *;
+	select 1;
+end;
 [8]
 # test: if return insert returning
-explain if true then return insert into test values (9) returning *; end; select 0;
+explain begin
+	if true then
+		return insert into test values (9) returning *;
+	end;
+	select 0;
+end;
 [{
   "main": {
     "00": "jmp                 2      0      0     ",
@@ -515,12 +685,22 @@ explain if true then return insert into test values (9) returning *; end; select
   },
   "access": [["public.test", "rw"]]
 }]
-if true then return insert into test values (9) returning *; end; select 0;
+begin
+	if true then
+		return insert into test values (9) returning *;
+	end;
+	select 0;
+end;
 [9]
-if false then return insert into test values (9) returning *; end; select 0;
+begin
+	if false then
+		return insert into test values (9) returning *;
+	end;
+	select 0;
+end;
 [0]
 # test: return select
-explain return select 1 as a, 2 as b
+explain return select 1 as a, 2 as b;
 [{
   "main": {
     "00": "set                 0      2      0     ",
@@ -533,11 +713,11 @@ explain return select 1 as a, 2 as b
   },
   "access": []
 }]
-return select 1 as a, 2 as b
+return select 1 as a, 2 as b;
 [[1, 2]]
-return select 1 as a, 2 as b format 'json-obj'
+return select 1 as a, 2 as b format 'json-obj';
 [{"a": 1, "b": 2}]
-return select system.tables()
+return select system.tables();
 [[{
   "schema": "public",
   "name": "test",
@@ -563,36 +743,76 @@ return select system.tables()
     "max": 8096
   }]
 }]]
-declare list json := []; for it in system.tables() do list := list::append([it.schema, it.name]); end; return list
+begin
+	declare list json := [];
+	for it in system.tables() do
+		list := list::append([it.schema, it.name]);
+	end;
+	return list;
+end;
 [[["public", "test"]]]
-select `schema`, name from system.tables()
+select `schema`, name from system.tables();
 [["public", "test"]]
-declare list json := []; for it in system.tables() do list := list::append({"schema": it.schema, "name": it.name}); end; return list
+begin
+	declare list json := [];
+	for it in system.tables() do
+		list := list::append({"schema": it.schema, "name": it.name});
+	end;
+	return list;
+end;
 [[{
   "schema": "public",
   "name": "test"
 }]]
-declare list json := []; for it in system.tables() do list := list::append({"schema": it.schema, "name": it.name}); end; select list
+begin
+	declare list json := [];
+	for it in system.tables() do
+		list := list::append({"schema": it.schema, "name": it.name});
+	end;
+	select list;
+end;
 [[{
   "schema": "public",
   "name": "test"
 }]]
-declare list json := []; for it in system.tables() do list := list::append({"schema": it.schema, "name": it.name}); end; select list
+begin
+	declare list json := [];
+	for it in system.tables() do
+		list := list::append({"schema": it.schema, "name": it.name});
+	end;
+	select list;
+end;
 [[{
   "schema": "public",
   "name": "test"
 }]]
-select [] -> self::append({"schema": it.schema, "name": it.name}) from system.tables() as it
+select [] -> self::append({"schema": it.schema, "name": it.name}) from system.tables() as it;
 [[{
   "schema": "public",
   "name": "test"
 }]]
-declare list json; select [] -> self::append({"schema": it.schema, "name": it.name}) into list from system.tables() as it; return list
+begin
+	declare list json;
+	select
+		[] -> self::append({"schema": it.schema, "name": it.name})
+	into
+		list from system.tables() as it;
+	return list;
+end;
 [[{
   "schema": "public",
   "name": "test"
 }]]
-declare list json; select [] -> append(self, {"schema": it.schema, "name": it.name}) into list from system.tables() as it; return list
+begin
+	declare list json;
+	select
+		[] -> append(self, {"schema": it.schema, "name": it.name})
+	into
+		list
+	from
+		system.tables() as it;
+	return list;
+end;
 [[{
   "schema": "public",
   "name": "test"
@@ -606,7 +826,11 @@ explain return;
   "access": []
 }]
 return;
-explain select 123; return; select 7;
+explain begin
+	select 123;
+	return;
+	select 7;
+end;
 [{
   "main": {
     "00": "int                 0      -      0     # 123",
@@ -616,8 +840,19 @@ explain select 123; return; select 7;
   },
   "access": []
 }]
-select 123; return; select 7;
-declare x int := 0; for i in ([1,2,3]) do x := i::int; return; end; select x;
+begin
+	select 123;
+	return;
+	select 7;
+end;
+begin
+	declare x int := 0;
+	for i in ([1,2,3]) do
+		x := i::int;
+		return;
+	end;
+	select x;
+end;
 # test: return expr
 explain return 123;
 [{
@@ -635,6 +870,6 @@ return select 123;
 [123]
 return select (select 123);
 [123]
-drop table test
-disconnect S0
-close E0
+drop table test;
+disconnect S0;
+close E0;

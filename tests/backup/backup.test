@@ -1,122 +1,122 @@
 #
 
-open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "127.0.0.1", "port": 3480 }], "backends": 3
-connect E0 S0 127.0.0.1:3480
-show listen
+open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "127.0.0.1", "port": 3480 }], "backends": 3;
+connect E0 S0 127.0.0.1:3480;
+show listen;
 
 # test: backup empty
-backup E1 "uri": "127.0.0.1:3480"
-close E1
+backup E1 "uri": "127.0.0.1:3480";
+close E1;
 
-disconnect S0
-close E0
+disconnect S0;
+close E0;
 
 # test: restore empty
-open E1
-connect E1 S0 127.0.0.1:3480
+open E1;
+connect E1 S0 127.0.0.1:3480;
 
-show uuid
+show uuid;
 
-disconnect S0
-close E1
+disconnect S0;
+close E1;
 
 # test: backup wal
-open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "127.0.0.1", "port": 3480 }], "backends": 3
-connect E0 S0 127.0.0.1:3480
+open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "127.0.0.1", "port": 3480 }], "backends": 3;
+connect E0 S0 127.0.0.1:3480;
 
-create table test (id int primary key)
-insert into test values (1),(2),(3)
-select system.state().lsn
+create table test (id int primary key);
+insert into test values (1),(2),(3);
+select system.state().lsn;
 
-backup E2 "uri": "127.0.0.1:3480"
-close E2
+backup E2 "uri": "127.0.0.1:3480";
+close E2;
 
-disconnect S0
-close E0
+disconnect S0;
+close E0;
 
 # test: restore wal
-open E2
-connect E2 S0 127.0.0.1:3480
-show uuid
-select * from test
-select system.state().lsn
-disconnect S0
-close E2
+open E2;
+connect E2 S0 127.0.0.1:3480;
+show uuid;
+select * from test;
+select system.state().lsn;
+disconnect S0;
+close E2;
 
 # test: backup wal #2
-open E0 "wal_size": 0
-connect E0 S0 127.0.0.1:3480
+open E0 "wal_size": 0;
+connect E0 S0 127.0.0.1:3480;
 
-select system.state().lsn
-show wal
+select system.state().lsn;
+show wal;
 
-insert into test values (4)
-show wal
+insert into test values (4);
+show wal;
 
-backup E3 "uri": "127.0.0.1:3480"
-close E3
+backup E3 "uri": "127.0.0.1:3480";
+close E3;
 
-disconnect S0
-close E0
+disconnect S0;
+close E0;
 
 # test: restore wal #2
-open E3 "wal_size": 104857600
-connect E3 S0 127.0.0.1:3480
-show uuid
-select * from test
-select system.state().lsn
-show wal
-disconnect S0
-close E3
+open E3 "wal_size": 104857600;
+connect E3 S0 127.0.0.1:3480;
+show uuid;
+select * from test;
+select system.state().lsn;
+show wal;
+disconnect S0;
+close E3;
 
 # test: backup checkpoint
-open E0
-connect E0 S0 127.0.0.1:3480
+open E0;
+connect E0 S0 127.0.0.1:3480;
 
-select system.state().lsn
-select system.state().checkpoint
-checkpoint
-select system.state().lsn
-select system.state().checkpoint
+select system.state().lsn;
+select system.state().checkpoint;
+checkpoint;
+select system.state().lsn;
+select system.state().checkpoint;
 
-backup E4 "uri": "127.0.0.1:3480"
-close E4
+backup E4 "uri": "127.0.0.1:3480";
+close E4;
 
-disconnect S0
-close E0
+disconnect S0;
+close E0;
 
 # test: restore checkpoint
-open E4
-connect E4 S0 127.0.0.1:3480
+open E4;
+connect E4 S0 127.0.0.1:3480;
 
-select system.state().lsn
-select system.state().checkpoint
-select * from test
+select system.state().lsn;
+select system.state().checkpoint;
+select * from test;
 
-disconnect S0
-close E4
+disconnect S0;
+close E4;
 
 # test: backup checkpoint with wal
-open E0
-connect E0 S0 127.0.0.1:3480
+open E0;
+connect E0 S0 127.0.0.1:3480;
 
-insert into test values (5),(6),(7)
-select system.state().lsn
-select system.state().checkpoint
+insert into test values (5),(6),(7);
+select system.state().lsn;
+select system.state().checkpoint;
 
-backup E5 "uri": "127.0.0.1:3480"
-close E5
+backup E5 "uri": "127.0.0.1:3480";
+close E5;
 
-disconnect S0
-close E0
+disconnect S0;
+close E0;
 
 # test: restore checkpoint and wal
-open E5
-connect E5 S0 127.0.0.1:3480
+open E5;
+connect E5 S0 127.0.0.1:3480;
 
-select system.state().lsn
-select system.state().checkpoint
-select * from test
+select system.state().lsn;
+select system.state().checkpoint;
+select * from test;
 
-disconnect S0
-close E5
+disconnect S0;
+close E5;

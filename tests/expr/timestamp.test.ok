@@ -1,209 +1,209 @@
-open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "127.0.0.1", "port": 3485 }]
-connect E0 S0 127.0.0.1:3485
+open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "127.0.0.1", "port": 3485 }];
+connect E0 S0 127.0.0.1:3485;
 # test: timestamp parsing
-select '2'::timestamp
+select '2'::timestamp;
 {"msg": "invalid timestamp '2'"}
-select '2a'::timestamp
+select '2a'::timestamp;
 {"msg": "invalid timestamp '2a'"}
-select 'a'::timestamp
+select 'a'::timestamp;
 {"msg": "invalid timestamp 'a'"}
-select '_a'::timestamp
+select '_a'::timestamp;
 {"msg": "invalid timestamp '_a'"}
-select '_'::timestamp
+select '_'::timestamp;
 {"msg": "invalid timestamp '_'"}
-select '-'::timestamp
+select '-'::timestamp;
 {"msg": "invalid timestamp '-'"}
-select '--'::timestamp
+select '--'::timestamp;
 {"msg": "invalid timestamp '--'"}
-select '-- ::'::timestamp
+select '-- ::'::timestamp;
 {"msg": "invalid timestamp '-- ::'"}
-select '1969-0-0'::timestamp
+select '1969-0-0'::timestamp;
 {"msg": "invalid timestamp '1969-0-0'"}
-select '1969-0-0 0:0:0'::timestamp
+select '1969-0-0 0:0:0'::timestamp;
 {"msg": "invalid timestamp '1969-0-0 0:0:0'"}
-select '1970-0-0 00:00:00'::timestamp
+select '1970-0-0 00:00:00'::timestamp;
 {"msg": "invalid timestamp '1970-0-0 00:00:00'"}
-select '1970-00-00 00:00:00'::timestamp
+select '1970-00-00 00:00:00'::timestamp;
 {"msg": "invalid timestamp '1970-00-00 00:00:00'"}
-select timestamp '1970-00-00 00:00:00'
+select timestamp '1970-00-00 00:00:00';
 {"msg": "select timestamp ❰'1970-00-00 00:00:00'❱ ⟵ invalid timestamp value"}
-select timestamp('1970-00-00 00:00:00')
+select timestamp('1970-00-00 00:00:00');
 {"msg": "invalid timestamp '1970-00-00 00:00:00'"}
 # test: epoch
-select '1970-01-01 00:00:00'::timestamp
+select '1970-01-01 00:00:00'::timestamp;
 ["1970-01-01 00:00:00+00"]
-select timestamp '1970-01-01 00:00:00'
+select timestamp '1970-01-01 00:00:00';
 ["1970-01-01 00:00:00+00"]
-select timestamp('1970-01-01 00:00:00')
+select timestamp('1970-01-01 00:00:00');
 ["1970-01-01 00:00:00+00"]
 # test: day overflow
-select '1970-01-33 00:00:00'::timestamp
+select '1970-01-33 00:00:00'::timestamp;
 {"msg": "invalid timestamp '1970-01-33 00:00:00'"}
 # test: month overflow
-select '1970-13-01 00:00:00'::timestamp
+select '1970-13-01 00:00:00'::timestamp;
 {"msg": "invalid timestamp '1970-13-01 00:00:00'"}
 # test: second overflow
-select '1970-01-01 00:00:70'::timestamp
+select '1970-01-01 00:00:70'::timestamp;
 ["1970-01-01 00:01:10+00"]
 # test: minute overflow
-select '1970-01-01 00:70:00'::timestamp
+select '1970-01-01 00:70:00'::timestamp;
 ["1970-01-01 01:10:00+00"]
 # test: hour overflow
-select '1970-01-01 28:00:00'::timestamp
+select '1970-01-01 28:00:00'::timestamp;
 ["1970-01-02 04:00:00+00"]
 # test: 24hour
-select '1970-01-01 24:00:00'::timestamp
+select '1970-01-01 24:00:00'::timestamp;
 ["1970-01-02 00:00:00+00"]
 # test: ms
-select '1970-01-01 00:00:00.'::timestamp
+select '1970-01-01 00:00:00.'::timestamp;
 {"msg": "invalid timestamp '1970-01-01 00:00:00.'"}
-select '1970-01-01 00:00:00.0'::timestamp
+select '1970-01-01 00:00:00.0'::timestamp;
 ["1970-01-01 00:00:00+00"]
-select '1970-01-01 00:00:00.00'::timestamp
+select '1970-01-01 00:00:00.00'::timestamp;
 ["1970-01-01 00:00:00+00"]
-select '1970-01-01 00:00:00.000'::timestamp
+select '1970-01-01 00:00:00.000'::timestamp;
 ["1970-01-01 00:00:00+00"]
-select '1970-01-01 00:00:00.001'::timestamp
+select '1970-01-01 00:00:00.001'::timestamp;
 ["1970-01-01 00:00:00.001+00"]
-select '1970-01-01 00:00:00.001'::timestamp()
+select '1970-01-01 00:00:00.001'::timestamp();
 ["1970-01-01 00:00:00.001+00"]
-select timestamp '1970-01-01 00:00:00.001'
+select timestamp '1970-01-01 00:00:00.001';
 ["1970-01-01 00:00:00.001+00"]
-select timestamp('1970-01-01 00:00:00.001')
+select timestamp('1970-01-01 00:00:00.001');
 ["1970-01-01 00:00:00.001+00"]
 # test: us
-select '1970-01-01 00:00:00.0010'::timestamp
+select '1970-01-01 00:00:00.0010'::timestamp;
 ["1970-01-01 00:00:00.001+00"]
-select '1970-01-01 00:00:00.00100'::timestamp
+select '1970-01-01 00:00:00.00100'::timestamp;
 ["1970-01-01 00:00:00.001+00"]
-select '1970-01-01 00:00:00.000001'::timestamp
+select '1970-01-01 00:00:00.000001'::timestamp;
 ["1970-01-01 00:00:00.000001+00"]
-select '1970-01-01 00:00:00.000000'::timestamp
+select '1970-01-01 00:00:00.000000'::timestamp;
 ["1970-01-01 00:00:00+00"]
-select '1970-01-01 00:00:00.999999'::timestamp
+select '1970-01-01 00:00:00.999999'::timestamp;
 ["1970-01-01 00:00:00.999999+00"]
-select timestamp '1970-01-01 00:00:00.999999'
+select timestamp '1970-01-01 00:00:00.999999';
 ["1970-01-01 00:00:00.999999+00"]
-select timestamp('1970-01-01 00:00:00.999999')
+select timestamp('1970-01-01 00:00:00.999999');
 ["1970-01-01 00:00:00.999999+00"]
-select timestamp('1970-01-01 00:00:00.999999', 123)
+select timestamp('1970-01-01 00:00:00.999999', 123);
 {"msg": "timestamp(string, ❰int❱ ⟵ expected string"}
 # test: precision
-select '1970-01-01 00:00:00.1'::timestamp
+select '1970-01-01 00:00:00.1'::timestamp;
 ["1970-01-01 00:00:00.100+00"]
-select '1970-01-01 00:00:00.10'::timestamp
+select '1970-01-01 00:00:00.10'::timestamp;
 ["1970-01-01 00:00:00.100+00"]
-select '1970-01-01 00:00:00.100'::timestamp
+select '1970-01-01 00:00:00.100'::timestamp;
 ["1970-01-01 00:00:00.100+00"]
-select '1970-01-01 00:00:00.01'::timestamp
+select '1970-01-01 00:00:00.01'::timestamp;
 ["1970-01-01 00:00:00.010+00"]
-select '1970-01-01 00:00:00.010'::timestamp
+select '1970-01-01 00:00:00.010'::timestamp;
 ["1970-01-01 00:00:00.010+00"]
-select '1970-01-01 00:00:00.001'::timestamp
+select '1970-01-01 00:00:00.001'::timestamp;
 ["1970-01-01 00:00:00.001+00"]
-select '1970-01-01 00:00:00.0010'::timestamp
+select '1970-01-01 00:00:00.0010'::timestamp;
 ["1970-01-01 00:00:00.001+00"]
-select '1970-01-01 00:00:00.00100'::timestamp
+select '1970-01-01 00:00:00.00100'::timestamp;
 ["1970-01-01 00:00:00.001+00"]
-select '1970-01-01 00:00:00.001000'::timestamp
+select '1970-01-01 00:00:00.001000'::timestamp;
 ["1970-01-01 00:00:00.001+00"]
-select '1970-01-01 00:00:00.0001'::timestamp
+select '1970-01-01 00:00:00.0001'::timestamp;
 ["1970-01-01 00:00:00.000100+00"]
-select '1970-01-01 00:00:00.00010'::timestamp
+select '1970-01-01 00:00:00.00010'::timestamp;
 ["1970-01-01 00:00:00.000100+00"]
-select '1970-01-01 00:00:00.000100'::timestamp
+select '1970-01-01 00:00:00.000100'::timestamp;
 ["1970-01-01 00:00:00.000100+00"]
-select '1970-01-01 00:00:00.00001'::timestamp
+select '1970-01-01 00:00:00.00001'::timestamp;
 ["1970-01-01 00:00:00.000010+00"]
-select '1970-01-01 00:00:00.000010'::timestamp
+select '1970-01-01 00:00:00.000010'::timestamp;
 ["1970-01-01 00:00:00.000010+00"]
-select '1970-01-01 00:00:00.000001'::timestamp
+select '1970-01-01 00:00:00.000001'::timestamp;
 ["1970-01-01 00:00:00.000001+00"]
-select '1970-01-01 00:00:00.0000001'::timestamp
+select '1970-01-01 00:00:00.0000001'::timestamp;
 {"msg": "invalid timestamp '1970-01-01 00:00:00.0000001'"}
 # test: zulu
-select '1970-01-01 00:00:00.999999Z'::timestamp
+select '1970-01-01 00:00:00.999999Z'::timestamp;
 ["1970-01-01 00:00:00.999999+00"]
-select '1970-01-01 00:00:00.999999Zjunk'::timestamp
+select '1970-01-01 00:00:00.999999Zjunk'::timestamp;
 {"msg": "invalid timestamp '1970-01-01 00:00:00.999999Zjunk'"}
-select timestamp '1970-01-01 00:00:00.999999Zjunk'
+select timestamp '1970-01-01 00:00:00.999999Zjunk';
 {"msg": "select timestamp ❰'1970-01-01 00:00:00.999999Zjunk'❱ ⟵ invalid timestamp value"}
 # test: timezone (hh)
-select '1970-01-01 00:00:00.999999+'::timestamp
+select '1970-01-01 00:00:00.999999+'::timestamp;
 {"msg": "invalid timestamp '1970-01-01 00:00:00.999999+'"}
-select '1970-01-01 00:00:00.999999+0'::timestamp
+select '1970-01-01 00:00:00.999999+0'::timestamp;
 {"msg": "invalid timestamp '1970-01-01 00:00:00.999999+0'"}
-select '1970-01-01 00:00:00.999999+00'::timestamp
+select '1970-01-01 00:00:00.999999+00'::timestamp;
 ["1970-01-01 00:00:00.999999+00"]
-select '1970-01-01 00:00:00.999999-00'::timestamp
+select '1970-01-01 00:00:00.999999-00'::timestamp;
 ["1970-01-01 00:00:00.999999+00"]
-select '1970-01-01 00:00:00.999999-000'::timestamp
+select '1970-01-01 00:00:00.999999-000'::timestamp;
 {"msg": "invalid timestamp '1970-01-01 00:00:00.999999-000'"}
 # test: timezone (hhmm)
-select '1970-01-01 00:00:00.999999+0000'::timestamp
+select '1970-01-01 00:00:00.999999+0000'::timestamp;
 ["1970-01-01 00:00:00.999999+00"]
-select '1970-01-01 00:00:00.999999-0000'::timestamp
+select '1970-01-01 00:00:00.999999-0000'::timestamp;
 ["1970-01-01 00:00:00.999999+00"]
-select '1970-01-01 00:00:00.999999+0030'::timestamp
+select '1970-01-01 00:00:00.999999+0030'::timestamp;
 {"msg": "timestamp overflow"}
-select '1970-01-01 00:00:00.999999+1030'::timestamp
+select '1970-01-01 00:00:00.999999+1030'::timestamp;
 {"msg": "timestamp overflow"}
-select '1970-01-01 00:00:00.999999+9930'::timestamp
+select '1970-01-01 00:00:00.999999+9930'::timestamp;
 {"msg": "invalid timestamp '1970-01-01 00:00:00.999999+9930'"}
 # test: timezone (hh:mm)
-select '1970-01-01 00:00:00.999999+00:00'::timestamp
+select '1970-01-01 00:00:00.999999+00:00'::timestamp;
 ["1970-01-01 00:00:00.999999+00"]
-select '1970-01-01 00:00:00.999999-00:00'::timestamp
+select '1970-01-01 00:00:00.999999-00:00'::timestamp;
 ["1970-01-01 00:00:00.999999+00"]
-select '1970-01-01 00:00:00.999999+00:30'::timestamp
+select '1970-01-01 00:00:00.999999+00:30'::timestamp;
 {"msg": "timestamp overflow"}
-select '1970-01-01 00:00:00.999999+10:30'::timestamp
+select '1970-01-01 00:00:00.999999+10:30'::timestamp;
 {"msg": "timestamp overflow"}
-select '1970-01-01 00:00:00.999999+99:30'::timestamp
+select '1970-01-01 00:00:00.999999+99:30'::timestamp;
 {"msg": "invalid timestamp '1970-01-01 00:00:00.999999+99:30'"}
 # test: timezone (ignore)
-select '1970-01-01 00:00:00.999999+00'::timestamp
+select '1970-01-01 00:00:00.999999+00'::timestamp;
 ["1970-01-01 00:00:00.999999+00"]
-select '1970-01-01 00:00:00.999999+01'::timestamp
+select '1970-01-01 00:00:00.999999+01'::timestamp;
 {"msg": "timestamp overflow"}
-select '1970-01-01 00:00:00.999999+02'::timestamp
+select '1970-01-01 00:00:00.999999+02'::timestamp;
 {"msg": "timestamp overflow"}
-select '1970-01-01 00:00:00.999999+03'::timestamp
+select '1970-01-01 00:00:00.999999+03'::timestamp;
 {"msg": "timestamp overflow"}
 # test: convertion (string)
-select '1970-01-01 01:12:59.909090'::timestamp
+select '1970-01-01 01:12:59.909090'::timestamp;
 ["1970-01-01 01:12:59.909090+00"]
-select '1970-01-01 01:12:59.909090'::timestamp::string
+select '1970-01-01 01:12:59.909090'::timestamp::string;
 ["1970-01-01 01:12:59.909090+00"]
-select '1970-01-01 01:12:59.909090'::timestamp::string::timestamp
+select '1970-01-01 01:12:59.909090'::timestamp::string::timestamp;
 ["1970-01-01 01:12:59.909090+00"]
-select '1970-01-01 01:12:59.909090'::timestamp::string::timestamp::string
+select '1970-01-01 01:12:59.909090'::timestamp::string::timestamp::string;
 ["1970-01-01 01:12:59.909090+00"]
-select timestamp '1970-01-01 01:12:59.909090'::string::timestamp::string
+select timestamp '1970-01-01 01:12:59.909090'::string::timestamp::string;
 ["1970-01-01 01:12:59.909090+00"]
-select timestamp('1970-01-01 01:12:59.909090')::string::timestamp::string
+select timestamp('1970-01-01 01:12:59.909090')::string::timestamp::string;
 ["1970-01-01 01:12:59.909090+00"]
 # test: convertion (json)
-select ['1970-01-01 01:12:59.909090'::timestamp]
+select ['1970-01-01 01:12:59.909090'::timestamp];
 [["1970-01-01 01:12:59.909090+00"]]
-select ['1970-01-01 01:12:59.909090'::timestamp::string]
+select ['1970-01-01 01:12:59.909090'::timestamp::string];
 [["1970-01-01 01:12:59.909090+00"]]
-select ['1970-01-01 01:12:59.909090'::timestamp::string::timestamp]
+select ['1970-01-01 01:12:59.909090'::timestamp::string::timestamp];
 [["1970-01-01 01:12:59.909090+00"]]
-select ['1970-01-01 01:12:59.909090'::timestamp::string::timestamp::string]
+select ['1970-01-01 01:12:59.909090'::timestamp::string::timestamp::string];
 [["1970-01-01 01:12:59.909090+00"]]
 # test: current_timestamp
-select current_timestamp::int > 0
+select current_timestamp::int > 0;
 [true]
 # test: between
-select timestamp '1970-01-01 01:12:59.909090' between timestamp '1970-01-01 01:12:59' and timestamp '1970-01-02 00:00:01'
+select timestamp '1970-01-01 01:12:59.909090' between timestamp '1970-01-01 01:12:59' and timestamp '1970-01-02 00:00:01';
 [true]
-select timestamp '1970-01-01 01:12:59.909090' not between timestamp '1970-01-01 01:12:59' and timestamp '1970-01-02 00:00:01'
+select timestamp '1970-01-01 01:12:59.909090' not between timestamp '1970-01-01 01:12:59' and timestamp '1970-01-02 00:00:01';
 [false]
 # test: timestamp = int
-select '1970-01-01 00:00:00'::timestamp = 0
+select '1970-01-01 00:00:00'::timestamp = 0;
 [true]
-explain select '1970-01-01 00:00:00'::timestamp = 0
+explain select '1970-01-01 00:00:00'::timestamp = 0;
 [{
   "main": {
     "00": "string              0      0      0     # 1970-01-01 00:00:00",
@@ -215,14 +215,14 @@ explain select '1970-01-01 00:00:00'::timestamp = 0
   },
   "access": []
 }]
-select current_timestamp = 0
+select current_timestamp = 0;
 [false]
 # test: timestamp = timestamp
-select '1970-01-01 01:12:59.909090'::timestamp = '1970-01-01 01:12:59.909090'::timestamp
+select '1970-01-01 01:12:59.909090'::timestamp = '1970-01-01 01:12:59.909090'::timestamp;
 [true]
-select '1970-01-01 01:12:59.909090'::timestamp = '1970-01-01 01:12:59.909099'::timestamp
+select '1970-01-01 01:12:59.909090'::timestamp = '1970-01-01 01:12:59.909099'::timestamp;
 [false]
-explain select '1970-01-01 01:12:59.909090'::timestamp = '1970-01-01 01:12:59.909099'::timestamp
+explain select '1970-01-01 01:12:59.909090'::timestamp = '1970-01-01 01:12:59.909099'::timestamp;
 [{
   "main": {
     "00": "string              0      0      0     # 1970-01-01 01:12:59.909090",
@@ -237,9 +237,9 @@ explain select '1970-01-01 01:12:59.909090'::timestamp = '1970-01-01 01:12:59.90
   "access": []
 }]
 # test: timestamp = null
-select '1970-01-01 01:12:59.909090'::timestamp = null
+select '1970-01-01 01:12:59.909090'::timestamp = null;
 [null]
-explain select '1970-01-01 01:12:59.909090'::timestamp = null
+explain select '1970-01-01 01:12:59.909090'::timestamp = null;
 [{
   "main": {
     "00": "string              0      0      0     # 1970-01-01 01:12:59.909090",
@@ -252,12 +252,12 @@ explain select '1970-01-01 01:12:59.909090'::timestamp = null
   "access": []
 }]
 # test: timestamp = unsupported
-explain select '1970-01-01 01:12:59.909090'::timestamp = [1,2,3]
+explain select '1970-01-01 01:12:59.909090'::timestamp = [1,2,3];
 {"msg": "explain select '1970-01-01 01:12:59.909090'::timestamp = ❰[❱ ⟵ operation timestamp = json is not supported"}
 # test: timestamp <> int
-select '1970-01-01 00:00:00'::timestamp <> 0
+select '1970-01-01 00:00:00'::timestamp <> 0;
 [false]
-explain select '1970-01-01 00:00:00'::timestamp <> 0
+explain select '1970-01-01 00:00:00'::timestamp <> 0;
 [{
   "main": {
     "00": "string              0      0      0     # 1970-01-01 00:00:00",
@@ -270,14 +270,14 @@ explain select '1970-01-01 00:00:00'::timestamp <> 0
   },
   "access": []
 }]
-select current_timestamp <> 0
+select current_timestamp <> 0;
 [true]
 # test: timestamp <> timestamp
-select '1970-01-01 01:12:59.909090'::timestamp <> '1970-01-01 01:12:59.909090'::timestamp
+select '1970-01-01 01:12:59.909090'::timestamp <> '1970-01-01 01:12:59.909090'::timestamp;
 [false]
-select '1970-01-01 01:12:59.909090'::timestamp <> '1970-01-01 01:12:59.909099'::timestamp
+select '1970-01-01 01:12:59.909090'::timestamp <> '1970-01-01 01:12:59.909099'::timestamp;
 [true]
-explain select '1970-01-01 01:12:59.909090'::timestamp <> '1970-01-01 01:12:59.909099'::timestamp
+explain select '1970-01-01 01:12:59.909090'::timestamp <> '1970-01-01 01:12:59.909099'::timestamp;
 [{
   "main": {
     "00": "string              0      0      0     # 1970-01-01 01:12:59.909090",
@@ -293,9 +293,9 @@ explain select '1970-01-01 01:12:59.909090'::timestamp <> '1970-01-01 01:12:59.9
   "access": []
 }]
 # test: timestamp <> null
-select '1970-01-01 01:12:59.909090'::timestamp <> null
+select '1970-01-01 01:12:59.909090'::timestamp <> null;
 [null]
-explain select '1970-01-01 01:12:59.909090'::timestamp <> null
+explain select '1970-01-01 01:12:59.909090'::timestamp <> null;
 [{
   "main": {
     "00": "string              0      0      0     # 1970-01-01 01:12:59.909090",
@@ -309,12 +309,12 @@ explain select '1970-01-01 01:12:59.909090'::timestamp <> null
   "access": []
 }]
 # test: timestamp <> unsupported
-explain select '1970-01-01 01:12:59.909090'::timestamp <> [1,2,3]
+explain select '1970-01-01 01:12:59.909090'::timestamp <> [1,2,3];
 {"msg": "explain select '1970-01-01 01:12:59.909090'::timestamp <> ❰[❱ ⟵ operation timestamp = json is not supported"}
 # test: timestamp >= int
-select '1970-01-01 00:00:00'::timestamp >= 0
+select '1970-01-01 00:00:00'::timestamp >= 0;
 [true]
-explain select '1970-01-01 00:00:00'::timestamp >= 0
+explain select '1970-01-01 00:00:00'::timestamp >= 0;
 [{
   "main": {
     "00": "string              0      0      0     # 1970-01-01 00:00:00",
@@ -326,18 +326,18 @@ explain select '1970-01-01 00:00:00'::timestamp >= 0
   },
   "access": []
 }]
-select current_timestamp >= 0
+select current_timestamp >= 0;
 [true]
 # test: timestamp >= timestamp
-select '1970-01-01 01:12:59.909090'::timestamp >= '1970-01-01 01:12:59.909090'::timestamp
+select '1970-01-01 01:12:59.909090'::timestamp >= '1970-01-01 01:12:59.909090'::timestamp;
 [true]
-select '1970-01-01 01:12:58'::timestamp >= '1970-01-01 01:12:59.909090'::timestamp
+select '1970-01-01 01:12:58'::timestamp >= '1970-01-01 01:12:59.909090'::timestamp;
 [false]
-select '1970-01-01 01:13:00'::timestamp >= '1970-01-01 01:12:59'::timestamp
+select '1970-01-01 01:13:00'::timestamp >= '1970-01-01 01:12:59'::timestamp;
 [true]
-select '1970-01-01 01:12:59.909090'::timestamp >= '1970-01-01 01:12:59.909099'::timestamp
+select '1970-01-01 01:12:59.909090'::timestamp >= '1970-01-01 01:12:59.909099'::timestamp;
 [false]
-explain select '1970-01-01 01:12:59.909090'::timestamp >= '1970-01-01 01:12:59.909099'::timestamp
+explain select '1970-01-01 01:12:59.909090'::timestamp >= '1970-01-01 01:12:59.909099'::timestamp;
 [{
   "main": {
     "00": "string              0      0      0     # 1970-01-01 01:12:59.909090",
@@ -352,21 +352,21 @@ explain select '1970-01-01 01:12:59.909090'::timestamp >= '1970-01-01 01:12:59.9
   "access": []
 }]
 # test: timestamp >= null
-select current_timestamp >= null
+select current_timestamp >= null;
 [null]
 # test: timestamp >= unsupported
-select current_timestamp >= []
+select current_timestamp >= [];
 {"msg": "select current_timestamp >= ❰[❱ ⟵ operation timestamp >= json is not supported"}
 # test: timestamp > timestamp
-select '1970-01-01 01:12:59.909090'::timestamp > '1970-01-01 01:12:59.909090'::timestamp
+select '1970-01-01 01:12:59.909090'::timestamp > '1970-01-01 01:12:59.909090'::timestamp;
 [false]
-select '1970-01-01 01:12:58'::timestamp > '1970-01-01 01:12:59.909090'::timestamp
+select '1970-01-01 01:12:58'::timestamp > '1970-01-01 01:12:59.909090'::timestamp;
 [false]
-select '1970-01-01 01:13:00'::timestamp > '1970-01-01 01:12:59'::timestamp
+select '1970-01-01 01:13:00'::timestamp > '1970-01-01 01:12:59'::timestamp;
 [true]
-select '1970-01-01 01:12:59.909090'::timestamp > '1970-01-01 01:12:59.909099'::timestamp
+select '1970-01-01 01:12:59.909090'::timestamp > '1970-01-01 01:12:59.909099'::timestamp;
 [false]
-explain select '1970-01-01 01:12:59.909090'::timestamp > '1970-01-01 01:12:59.909099'::timestamp
+explain select '1970-01-01 01:12:59.909090'::timestamp > '1970-01-01 01:12:59.909099'::timestamp;
 [{
   "main": {
     "00": "string              0      0      0     # 1970-01-01 01:12:59.909090",
@@ -381,21 +381,21 @@ explain select '1970-01-01 01:12:59.909090'::timestamp > '1970-01-01 01:12:59.90
   "access": []
 }]
 # test: timestamp > null
-select current_timestamp > null
+select current_timestamp > null;
 [null]
 # test: timestamp > unsupported
-select current_timestamp > []
+select current_timestamp > [];
 {"msg": "select current_timestamp > ❰[❱ ⟵ operation timestamp > json is not supported"}
 # test: timestamp <= timestamp
-select '1970-01-01 01:12:59.909090'::timestamp <= '1970-01-01 01:12:59.909090'::timestamp
+select '1970-01-01 01:12:59.909090'::timestamp <= '1970-01-01 01:12:59.909090'::timestamp;
 [true]
-select '1970-01-01 01:12:58'::timestamp <= '1970-01-01 01:12:59.909090'::timestamp
+select '1970-01-01 01:12:58'::timestamp <= '1970-01-01 01:12:59.909090'::timestamp;
 [true]
-select '1970-01-01 01:13:00'::timestamp <= '1970-01-01 01:12:59'::timestamp
+select '1970-01-01 01:13:00'::timestamp <= '1970-01-01 01:12:59'::timestamp;
 [false]
-select '1970-01-01 01:12:59.909090'::timestamp <= '1970-01-01 01:12:59.909099'::timestamp
+select '1970-01-01 01:12:59.909090'::timestamp <= '1970-01-01 01:12:59.909099'::timestamp;
 [true]
-explain select '1970-01-01 01:12:59.909090'::timestamp <= '1970-01-01 01:12:59.909099'::timestamp
+explain select '1970-01-01 01:12:59.909090'::timestamp <= '1970-01-01 01:12:59.909099'::timestamp;
 [{
   "main": {
     "00": "string              0      0      0     # 1970-01-01 01:12:59.909090",
@@ -410,21 +410,21 @@ explain select '1970-01-01 01:12:59.909090'::timestamp <= '1970-01-01 01:12:59.9
   "access": []
 }]
 # test: timestamp <= null
-select current_timestamp <= null
+select current_timestamp <= null;
 [null]
 # test: timestamp <= unsupported
-select current_timestamp <= []
+select current_timestamp <= [];
 {"msg": "select current_timestamp <= ❰[❱ ⟵ operation timestamp <= json is not supported"}
 # test: timestamp < timestamp
-select '1970-01-01 01:12:59.909090'::timestamp < '1970-01-01 01:12:59.909090'::timestamp
+select '1970-01-01 01:12:59.909090'::timestamp < '1970-01-01 01:12:59.909090'::timestamp;
 [false]
-select '1970-01-01 01:12:58'::timestamp < '1970-01-01 01:12:59.909090'::timestamp
+select '1970-01-01 01:12:58'::timestamp < '1970-01-01 01:12:59.909090'::timestamp;
 [true]
-select '1970-01-01 01:13:00'::timestamp < '1970-01-01 01:12:59'::timestamp
+select '1970-01-01 01:13:00'::timestamp < '1970-01-01 01:12:59'::timestamp;
 [false]
-select '1970-01-01 01:12:59.909090'::timestamp < '1970-01-01 01:12:59.909099'::timestamp
+select '1970-01-01 01:12:59.909090'::timestamp < '1970-01-01 01:12:59.909099'::timestamp;
 [true]
-explain select '1970-01-01 01:12:59.909090'::timestamp < '1970-01-01 01:12:59.909099'::timestamp
+explain select '1970-01-01 01:12:59.909090'::timestamp < '1970-01-01 01:12:59.909099'::timestamp;
 [{
   "main": {
     "00": "string              0      0      0     # 1970-01-01 01:12:59.909090",
@@ -439,27 +439,27 @@ explain select '1970-01-01 01:12:59.909090'::timestamp < '1970-01-01 01:12:59.90
   "access": []
 }]
 # test: timestamp < null
-select current_timestamp < null
+select current_timestamp < null;
 [null]
 # test: timestamp <= unsupported
-select current_timestamp < []
+select current_timestamp < [];
 {"msg": "select current_timestamp < ❰[❱ ⟵ operation timestamp < json is not supported"}
 # test: timestamp + interval
-select '1970-01-01 01:12:59.909090'::timestamp + 1
+select '1970-01-01 01:12:59.909090'::timestamp + 1;
 {"msg": "select '1970-01-01 01:12:59.909090'::timestamp + ❰1❱ ⟵ operation timestamp + int is not supported"}
-select '1970-01-01 01:12:59.909090'::timestamp + '1 hour'
+select '1970-01-01 01:12:59.909090'::timestamp + '1 hour';
 {"msg": "select '1970-01-01 01:12:59.909090'::timestamp + ❰'1 hour'❱ ⟵ operation timestamp + string is not supported"}
-select '1970-01-01 00:00:00.000000'::timestamp + '1 hour'::interval
+select '1970-01-01 00:00:00.000000'::timestamp + '1 hour'::interval;
 ["1970-01-01 01:00:00+00"]
-select '1970-01-01 00:00:00.000000'::timestamp + '1 year'::interval
+select '1970-01-01 00:00:00.000000'::timestamp + '1 year'::interval;
 ["1971-01-01 00:00:00+00"]
-select '1971-01-01 00:00:00.000000'::timestamp + '1 year'::interval
+select '1971-01-01 00:00:00.000000'::timestamp + '1 year'::interval;
 ["1972-01-01 00:00:00+00"]
-select '1 year'::interval + '1 year'::interval
+select '1 year'::interval + '1 year'::interval;
 ["2 years"]
-select '1970-01-01 00:00:00.000000'::timestamp + '1 year'::interval + '1 year'::interval
+select '1970-01-01 00:00:00.000000'::timestamp + '1 year'::interval + '1 year'::interval;
 ["1972-01-01 00:00:00+00"]
-explain select '1970-01-01 00:00:00.000000'::timestamp + '1 year'::interval + '1 year'::interval
+explain select '1970-01-01 00:00:00.000000'::timestamp + '1 year'::interval + '1 year'::interval;
 [{
   "main": {
     "00": "string              0      0      0     # 1970-01-01 00:00:00.000000",
@@ -478,27 +478,27 @@ explain select '1970-01-01 00:00:00.000000'::timestamp + '1 year'::interval + '1
   "access": []
 }]
 # test: timestamp + null
-select '1970-01-01 01:12:59.909090'::timestamp + null
+select '1970-01-01 01:12:59.909090'::timestamp + null;
 [null]
 # test: timestamp + unsupported
-select '1970-01-01 01:12:59.909090'::timestamp + []
+select '1970-01-01 01:12:59.909090'::timestamp + [];
 {"msg": "select '1970-01-01 01:12:59.909090'::timestamp + ❰[❱ ⟵ operation timestamp + json is not supported"}
 # test: timestamp - interval
-select '1970-01-01 01:12:59.909090'::timestamp + 1
+select '1970-01-01 01:12:59.909090'::timestamp + 1;
 {"msg": "select '1970-01-01 01:12:59.909090'::timestamp + ❰1❱ ⟵ operation timestamp + int is not supported"}
-select '1970-01-01 01:12:59.909090'::timestamp - '1 hour'
+select '1970-01-01 01:12:59.909090'::timestamp - '1 hour';
 {"msg": "select '1970-01-01 01:12:59.909090'::timestamp - ❰'1 hour'❱ ⟵ operation timestamp - string is not supported"}
-select '1970-01-01 00:00:00.000000'::timestamp - '1 hour'::interval
+select '1970-01-01 00:00:00.000000'::timestamp - '1 hour'::interval;
 {"msg": "timestamp overflow"}
-select '1973-01-01 00:00:00.000000'::timestamp - '1 year'::interval
+select '1973-01-01 00:00:00.000000'::timestamp - '1 year'::interval;
 ["1972-01-01 00:00:00+00"]
-select '1 year'::interval - '1 year'::interval
+select '1 year'::interval - '1 year'::interval;
 [""]
-select '1980-01-01 00:00:00.000000'::timestamp - '1 year'::interval - '1 year'::interval
+select '1980-01-01 00:00:00.000000'::timestamp - '1 year'::interval - '1 year'::interval;
 ["1980-01-01 00:00:00+00"]
-select '1980-01-01 00:00:00.000000'::timestamp - '-1 year'::interval - '-1 year'::interval
+select '1980-01-01 00:00:00.000000'::timestamp - '-1 year'::interval - '-1 year'::interval;
 ["1980-01-01 00:00:00+00"]
-explain select '1980-01-01 00:00:00.000000'::timestamp - '-1 year'::interval - '-1 year'::interval
+explain select '1980-01-01 00:00:00.000000'::timestamp - '-1 year'::interval - '-1 year'::interval;
 [{
   "main": {
     "00": "string              0      0      0     # 1980-01-01 00:00:00.000000",
@@ -517,127 +517,127 @@ explain select '1980-01-01 00:00:00.000000'::timestamp - '-1 year'::interval - '
   "access": []
 }]
 # test: timestamp - timestamp
-select '1970-01-01 01:12:59.909090'::timestamp -'1970-01-01 01:12:59.909090'::timestamp
+select '1970-01-01 01:12:59.909090'::timestamp -'1970-01-01 01:12:59.909090'::timestamp;
 [""]
-select '1970-01-01 01:12:59.909090'::timestamp -'1970-01-01 00:12:59.909090'::timestamp
+select '1970-01-01 01:12:59.909090'::timestamp -'1970-01-01 00:12:59.909090'::timestamp;
 ["1 hour"]
-select '1970-01-01 01:12:59.909090'::timestamp -'1970-01-01 00:00:00.909090'::timestamp
+select '1970-01-01 01:12:59.909090'::timestamp -'1970-01-01 00:00:00.909090'::timestamp;
 ["1 hour 12 minutes 59 seconds"]
-select '1970-01-01 01:12:59.909090'::timestamp -'1970-01-01 00:00:00'::timestamp
+select '1970-01-01 01:12:59.909090'::timestamp -'1970-01-01 00:00:00'::timestamp;
 ["1 hour 12 minutes 59 seconds 909 ms 90 us"]
-select '1970-01-01 00:12:59.909090'::timestamp - '1970-01-01 01:12:59.909090'::timestamp
+select '1970-01-01 00:12:59.909090'::timestamp - '1970-01-01 01:12:59.909090'::timestamp;
 ["-1 hour"]
-select '1970-01-01 00:00:00.909090'::timestamp - '1970-01-01 01:12:59.909090'::timestamp
+select '1970-01-01 00:00:00.909090'::timestamp - '1970-01-01 01:12:59.909090'::timestamp;
 ["-1 hour -12 minutes -59 seconds"]
-select '1970-01-01 00:00:00'::timestamp - '1970-01-01 01:12:59.909090'::timestamp
+select '1970-01-01 00:00:00'::timestamp - '1970-01-01 01:12:59.909090'::timestamp;
 ["-1 hour -12 minutes -59 seconds -909 ms -90 us"]
 # test: timestamp - null
-select '1970-01-01 01:12:59.909090'::timestamp - null
+select '1970-01-01 01:12:59.909090'::timestamp - null;
 [null]
 # test: timestamp - unsupported
-select '1970-01-01 01:12:59.909090'::timestamp - []
+select '1970-01-01 01:12:59.909090'::timestamp - [];
 {"msg": "select '1970-01-01 01:12:59.909090'::timestamp - ❰[❱ ⟵ operation timestamp - json is not supported"}
 # test: timestamp min (overflow)
-select '1970-01-01 00:00:00'::timestamp
+select '1970-01-01 00:00:00'::timestamp;
 ["1970-01-01 00:00:00+00"]
-select '1970-01-01 00:00:00.999'::timestamp
+select '1970-01-01 00:00:00.999'::timestamp;
 ["1970-01-01 00:00:00.999+00"]
-select '1970-01-01 00:00:00.999999'::timestamp + interval '1 us'
+select '1970-01-01 00:00:00.999999'::timestamp + interval '1 us';
 ["1970-01-01 00:00:01+00"]
-select '1969-01-01 00:00:00'::timestamp + interval '1 year'
+select '1969-01-01 00:00:00'::timestamp + interval '1 year';
 {"msg": "invalid timestamp '1969-01-01 00:00:00'"}
-select '1970-01-01 00:00:00'::timestamp - interval '1 us'
+select '1970-01-01 00:00:00'::timestamp - interval '1 us';
 {"msg": "timestamp overflow"}
-select '1980-01-01 00:00:00'::timestamp - interval '1 us'
+select '1980-01-01 00:00:00'::timestamp - interval '1 us';
 ["1979-12-31 23:59:59.999999+00"]
-select '1990-01-01 00:00:00'::timestamp - interval '1 us'
+select '1990-01-01 00:00:00'::timestamp - interval '1 us';
 ["1989-12-31 23:59:59.999999+00"]
-select '1999-01-01 00:00:00'::timestamp - interval '1 us'
+select '1999-01-01 00:00:00'::timestamp - interval '1 us';
 ["1998-12-31 23:59:59.999999+00"]
-select '2000-01-01 00:00:00'::timestamp - interval '1 us'
+select '2000-01-01 00:00:00'::timestamp - interval '1 us';
 ["1999-12-31 23:59:59.999999+00"]
-select '2001-01-01 00:00:00'::timestamp - interval '1 us'
+select '2001-01-01 00:00:00'::timestamp - interval '1 us';
 ["2000-12-31 23:59:59.999999+00"]
-select '2010-01-01 00:00:00'::timestamp - interval '1 us'
+select '2010-01-01 00:00:00'::timestamp - interval '1 us';
 ["2009-12-31 23:59:59.999999+00"]
-select '2020-01-01 00:00:00'::timestamp - interval '1 us'
+select '2020-01-01 00:00:00'::timestamp - interval '1 us';
 ["2019-12-31 23:59:59.999999+00"]
-select '2021-01-01 00:00:00'::timestamp - interval '1 us'
+select '2021-01-01 00:00:00'::timestamp - interval '1 us';
 ["2020-12-31 23:59:59.999999+00"]
-select '2022-01-01 00:00:00'::timestamp - interval '1 us'
+select '2022-01-01 00:00:00'::timestamp - interval '1 us';
 ["2021-12-31 23:59:59.999999+00"]
-select '2023-01-01 00:00:00'::timestamp - interval '1 us'
+select '2023-01-01 00:00:00'::timestamp - interval '1 us';
 ["2022-12-31 23:59:59.999999+00"]
-select '2024-01-01 00:00:00'::timestamp - interval '1 us'
+select '2024-01-01 00:00:00'::timestamp - interval '1 us';
 ["2023-12-31 23:59:59.999999+00"]
-select '2025-01-01 00:00:00'::timestamp - interval '1 us'
+select '2025-01-01 00:00:00'::timestamp - interval '1 us';
 ["2024-12-31 23:59:59.999999+00"]
-select '2026-01-01 00:00:00'::timestamp - interval '1 us'
+select '2026-01-01 00:00:00'::timestamp - interval '1 us';
 ["2025-12-31 23:59:59.999999+00"]
-select '2027-01-01 00:00:00'::timestamp - interval '1 us'
+select '2027-01-01 00:00:00'::timestamp - interval '1 us';
 ["2026-12-31 23:59:59.999999+00"]
-select '2028-01-01 00:00:00'::timestamp - interval '1 us'
+select '2028-01-01 00:00:00'::timestamp - interval '1 us';
 ["2027-12-31 23:59:59.999999+00"]
-select '2029-01-01 00:00:00'::timestamp - interval '1 us'
+select '2029-01-01 00:00:00'::timestamp - interval '1 us';
 ["2028-12-31 23:59:59.999999+00"]
-select '2030-01-01 00:00:00'::timestamp - interval '1 us'
+select '2030-01-01 00:00:00'::timestamp - interval '1 us';
 ["2029-12-31 23:59:59.999999+00"]
-select '2200-01-01 00:00:00'::timestamp - interval '1 us'
+select '2200-01-01 00:00:00'::timestamp - interval '1 us';
 ["2199-12-31 23:59:59.999999+00"]
 # test: timestamp max (overflow)
-select '1970-12-31 23:59:59.999999'::timestamp
+select '1970-12-31 23:59:59.999999'::timestamp;
 ["1970-12-31 23:59:59.999999+00"]
-select '1970-12-31 23:59:59.999999'::timestamp + interval '1 us'
+select '1970-12-31 23:59:59.999999'::timestamp + interval '1 us';
 ["1971-01-01 00:00:00+00"]
-select '1979-12-31 23:59:59.999999+00'::timestamp + interval '1 us'
+select '1979-12-31 23:59:59.999999+00'::timestamp + interval '1 us';
 ["1980-01-01 00:00:00+00"]
-select '1989-12-31 23:59:59.999999+00'::timestamp + interval '1 us'
+select '1989-12-31 23:59:59.999999+00'::timestamp + interval '1 us';
 ["1990-01-01 00:00:00+00"]
-select '1999-12-31 23:59:59.999999+00'::timestamp + interval '1 us'
+select '1999-12-31 23:59:59.999999+00'::timestamp + interval '1 us';
 ["2000-01-01 00:00:00+00"]
-select '2000-12-31 23:59:59.999999+00'::timestamp + interval '1 us'
+select '2000-12-31 23:59:59.999999+00'::timestamp + interval '1 us';
 ["2001-01-01 00:00:00+00"]
-select '2001-12-31 23:59:59.999999+00'::timestamp + interval '1 us'
+select '2001-12-31 23:59:59.999999+00'::timestamp + interval '1 us';
 ["2002-01-01 00:00:00+00"]
-select '2019-12-31 23:59:59.999999+00'::timestamp + interval '1 us'
+select '2019-12-31 23:59:59.999999+00'::timestamp + interval '1 us';
 ["2020-01-01 00:00:00+00"]
-select '2020-12-31 23:59:59.999999+00'::timestamp + interval '1 us'
+select '2020-12-31 23:59:59.999999+00'::timestamp + interval '1 us';
 ["2021-01-01 00:00:00+00"]
-select '2021-12-31 23:59:59.999999+00'::timestamp + interval '1 us'
+select '2021-12-31 23:59:59.999999+00'::timestamp + interval '1 us';
 ["2022-01-01 00:00:00+00"]
-select '2022-12-31 23:59:59.999999+00'::timestamp + interval '1 us'
+select '2022-12-31 23:59:59.999999+00'::timestamp + interval '1 us';
 ["2023-01-01 00:00:00+00"]
-select '2023-12-31 23:59:59.999999+00'::timestamp + interval '1 us'
+select '2023-12-31 23:59:59.999999+00'::timestamp + interval '1 us';
 ["2024-01-01 00:00:00+00"]
-select '2024-12-31 23:59:59.999999+00'::timestamp + interval '1 us'
+select '2024-12-31 23:59:59.999999+00'::timestamp + interval '1 us';
 ["2025-01-01 00:00:00+00"]
-select '2025-12-31 23:59:59.999999+00'::timestamp + interval '1 us'
+select '2025-12-31 23:59:59.999999+00'::timestamp + interval '1 us';
 ["2026-01-01 00:00:00+00"]
-select '2026-12-31 23:59:59.999999+00'::timestamp + interval '1 us'
+select '2026-12-31 23:59:59.999999+00'::timestamp + interval '1 us';
 ["2027-01-01 00:00:00+00"]
-select '2027-12-31 23:59:59.999999+00'::timestamp + interval '1 us'
+select '2027-12-31 23:59:59.999999+00'::timestamp + interval '1 us';
 ["2028-01-01 00:00:00+00"]
-select '2028-12-31 23:59:59.999999+00'::timestamp + interval '1 us'
+select '2028-12-31 23:59:59.999999+00'::timestamp + interval '1 us';
 ["2029-01-01 00:00:00+00"]
-select '2029-12-31 23:59:59.999999+00'::timestamp + interval '1 us'
+select '2029-12-31 23:59:59.999999+00'::timestamp + interval '1 us';
 ["2030-01-01 00:00:00+00"]
-select '2200-12-31 23:59:59.999999+00'::timestamp + interval '1 us'
+select '2200-12-31 23:59:59.999999+00'::timestamp + interval '1 us';
 ["2201-01-01 00:00:00+00"]
-select '3200-12-31 23:59:59.999999+00'::timestamp + interval '1 us'
+select '3200-12-31 23:59:59.999999+00'::timestamp + interval '1 us';
 ["3201-01-01 00:00:00+00"]
-select '8200-12-31 23:59:59.999999+00'::timestamp + interval '1 us'
+select '8200-12-31 23:59:59.999999+00'::timestamp + interval '1 us';
 ["8201-01-01 00:00:00+00"]
-select '9200-12-31 23:59:59.999999+00'::timestamp + interval '1 us'
+select '9200-12-31 23:59:59.999999+00'::timestamp + interval '1 us';
 ["9201-01-01 00:00:00+00"]
-select 0::timestamp
+select 0::timestamp;
 ["1970-01-01 00:00:00+00"]
-select -1::timestamp
+select -1::timestamp;
 {"msg": "timestamp overflow"}
-select '9999-12-31 23:59:59.999999+00'::timestamp + interval '1 us'
+select '9999-12-31 23:59:59.999999+00'::timestamp + interval '1 us';
 {"msg": "timestamp overflow"}
-select 253402300799999999::timestamp
+select 253402300799999999::timestamp;
 ["9999-12-31 23:59:59.999999+00"]
-select (253402300799999999 + 1)::timestamp
+select (253402300799999999 + 1)::timestamp;
 {"msg": "timestamp overflow"}
-disconnect S0
-close E0
+disconnect S0;
+close E0;

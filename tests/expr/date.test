@@ -1,205 +1,205 @@
 #
 
-open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "127.0.0.1", "port": 3485 }]
-connect E0 S0 127.0.0.1:3485
+open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "127.0.0.1", "port": 3485 }];
+connect E0 S0 127.0.0.1:3485;
 
 # test: date parsing
-select '-'::date
-select '--'::date
-select '-- ::'::date
-select '1969'::date
-select '1969-'::date
-select '1969-1'::date
-select '1969-1-'::date
-select '1969-1-0'::date
-select '19-1-0'::date
-select '1970-1-1'::date
-select date '1970-00-00 00:00:00'
-select date ('1970-00-00 00:00:00')
+select '-'::date;
+select '--'::date;
+select '-- ::'::date;
+select '1969'::date;
+select '1969-'::date;
+select '1969-1'::date;
+select '1969-1-'::date;
+select '1969-1-0'::date;
+select '19-1-0'::date;
+select '1970-1-1'::date;
+select date '1970-00-00 00:00:00';
+select date ('1970-00-00 00:00:00');
 
-select '1970-01-01'::date
-select '1970-01-01'::date::type
-select date '1970-01-01'
+select '1970-01-01'::date;
+select '1970-01-01'::date::type;
+select date '1970-01-01';
 
 # test: casting (string)
-select '1970-01-01'::date
-select '1970-01-01'::date::string
-select '1970-01-01'::date::string::date
-select '1970-01-01'::date::string::date::string
-select date '1970-01-01'::string::date::string
+select '1970-01-01'::date;
+select '1970-01-01'::date::string;
+select '1970-01-01'::date::string::date;
+select '1970-01-01'::date::string::date::string;
+select date '1970-01-01'::string::date::string;
 
 # test: casting (json)
-select ['1970-01-01'::date]
-select ['1970-01-01'::date::string]
-select ['1970-01-01'::date::string::date]
-select ['1970-01-01'::date::string::date::string]
+select ['1970-01-01'::date];
+select ['1970-01-01'::date::string];
+select ['1970-01-01'::date::string::date];
+select ['1970-01-01'::date::string::date::string];
 
 # test: current_date
-select current_date::type
-select current_date = now()::date
+select current_date::type;
+select current_date = now()::date;
 
 # test: encoding
-explain select [current_date]
-explain select [date '1970-01-01']
-select [date '1970-01-01']
+explain select [current_date];
+explain select [date '1970-01-01'];
+select [date '1970-01-01'];
 
 # test: between
-select now()::date between date '0001-01-01' and date '9999-12-31'
-explain select now()::date between date '0001-01-01' and date '9999-12-31'
+select now()::date between date '0001-01-01' and date '9999-12-31';
+explain select now()::date between date '0001-01-01' and date '9999-12-31';
 
-explain select date '1970-01-01' between date '1970-01-01' and date '1970-01-01'
-select date '1970-01-01' between date '1970-01-01' and date '1970-01-01'
-select date '1970-01-01' between date '1970-01-01' and date '1971-01-01'
-select date '1972-01-01' between date '1970-01-01' and date '1971-01-01'
+explain select date '1970-01-01' between date '1970-01-01' and date '1970-01-01';
+select date '1970-01-01' between date '1970-01-01' and date '1970-01-01';
+select date '1970-01-01' between date '1970-01-01' and date '1971-01-01';
+select date '1972-01-01' between date '1970-01-01' and date '1971-01-01';
 
 # test: date = int
-select date '1970-01-01' = 123
-select date '1970-01-01' = '1970-01-01'::date::int
+select date '1970-01-01' = 123;
+select date '1970-01-01' = '1970-01-01'::date::int;
 
 # test: date = date
-select date '1970-01-01' = '1970-01-01'::date
+select date '1970-01-01' = '1970-01-01'::date;
 
 # test: date = null
-select date '1970-01-01' = null
+select date '1970-01-01' = null;
 
 # test: date = unsupported
-select date '1970-01-01' = 3.14
+select date '1970-01-01' = 3.14;
 
 # test: date <> int
-select date '1970-01-01' <> 123
-select date '1970-01-01' <> '1970-01-01'::date::int
+select date '1970-01-01' <> 123;
+select date '1970-01-01' <> '1970-01-01'::date::int;
 
 # test: date <> date
-select date '1970-01-01' <> '1970-01-01'::date
+select date '1970-01-01' <> '1970-01-01'::date;
 
 # test: date <> null
-select date '1970-01-01' <> null
+select date '1970-01-01' <> null;
 
 # test: date <> unsupported
-select date '1970-01-01' <> 3.14
+select date '1970-01-01' <> 3.14;
 
 # test: date >= int
-select date '1970-01-01' >= 123
-select date '1970-01-01' >= '1970-01-01'::date::int
-select date '1970-01-01' >= '1969-01-01'::date::int
+select date '1970-01-01' >= 123;
+select date '1970-01-01' >= '1970-01-01'::date::int;
+select date '1970-01-01' >= '1969-01-01'::date::int;
 
 # test: date >= date
-select date '1970-01-01' >= '1970-01-01'::date
-select date '1969-01-01' >= '1970-01-01'::date
+select date '1970-01-01' >= '1970-01-01'::date;
+select date '1969-01-01' >= '1970-01-01'::date;
 
 # test: date >= null
-select date '1970-01-01' >= null
+select date '1970-01-01' >= null;
 
 # test: date >= unsupported
-select date '1970-01-01' >= '123'
+select date '1970-01-01' >= '123';
 
 # test: date > int
-select date '1970-01-01' > 123
-select date '1970-01-01' > '1970-01-01'::date::int
-select date '1970-01-01' > '1969-01-01'::date::int
+select date '1970-01-01' > 123;
+select date '1970-01-01' > '1970-01-01'::date::int;
+select date '1970-01-01' > '1969-01-01'::date::int;
 
 # test: date > date
-select date '1970-01-01' > '1970-01-01'::date
-select date '1969-01-01' > '1970-01-01'::date
-select date '1970-01-01' > '1969-01-01'::date
+select date '1970-01-01' > '1970-01-01'::date;
+select date '1969-01-01' > '1970-01-01'::date;
+select date '1970-01-01' > '1969-01-01'::date;
 
 # test: date > null
-select date '1970-01-01' > null
+select date '1970-01-01' > null;
 
 # test: date > unsupported
-select date '1970-01-01' > 3.14
+select date '1970-01-01' > 3.14;
 
 # test: date <= int
-select date '1970-01-01' <= 123
-select date '1970-01-01' <= '1970-01-01'::date::int
-select date '1970-01-01' <= '1969-01-01'::date::int
+select date '1970-01-01' <= 123;
+select date '1970-01-01' <= '1970-01-01'::date::int;
+select date '1970-01-01' <= '1969-01-01'::date::int;
 
 # test: date <= date
-select date '1970-01-01' <= '1970-01-01'::date
-select date '1969-01-01' <= '1970-01-01'::date
-select date '1970-01-01' <= '1969-01-01'::date
+select date '1970-01-01' <= '1970-01-01'::date;
+select date '1969-01-01' <= '1970-01-01'::date;
+select date '1970-01-01' <= '1969-01-01'::date;
 
 # test: date <= null
-select date '1970-01-01' <= null
+select date '1970-01-01' <= null;
 
 # test: date <= unsupported
-select date '1970-01-01' <= 3.14
+select date '1970-01-01' <= 3.14;
 
 # test: date + int = date
-select date '1970-01-01' + 10
-select date '1970-01-01' + 35
-select (date '1970-01-01' + 35)::type
+select date '1970-01-01' + 10;
+select date '1970-01-01' + 35;
+select (date '1970-01-01' + 35)::type;
 
 # test: int + date = date
-select 10 + date '1970-01-01'
-select 35 + date '1970-01-01'
-select (35 + date '1970-01-01')::type
+select 10 + date '1970-01-01';
+select 35 + date '1970-01-01';
+select (35 + date '1970-01-01')::type;
 
 # test: date - int = date
-select date '1970-01-01' - 10
-select date '1970-01-01' - 35
-select (date '1970-01-01' - 35)::type
+select date '1970-01-01' - 10;
+select date '1970-01-01' - 35;
+select (date '1970-01-01' - 35)::type;
 
 # test: int - date (unsupported)
-select 10 - date '1970-01-01'
+select 10 - date '1970-01-01';
 
 # test: date - date = int
-select current_date - current_date
-select date '1970-05-13' - date '1970-01-01'
-select date '1970-01-01' - date '1970-05-13'
+select current_date - current_date;
+select date '1970-05-13' - date '1970-01-01';
+select date '1970-01-01' - date '1970-05-13';
 
-select date '2025-12-31' - date '2025-01-01'
-select date '2024-12-31' - date '2024-01-01'
-select date '2023-12-31' - date '2023-01-01'
-select date '2022-12-31' - date '2022-01-01'
-select date '2021-12-31' - date '2021-01-01'
-select date '2020-12-31' - date '2020-01-01'
+select date '2025-12-31' - date '2025-01-01';
+select date '2024-12-31' - date '2024-01-01';
+select date '2023-12-31' - date '2023-01-01';
+select date '2022-12-31' - date '2022-01-01';
+select date '2021-12-31' - date '2021-01-01';
+select date '2020-12-31' - date '2020-01-01';
 
-select date '9999-12-31' - date '0001-01-01'
+select date '9999-12-31' - date '0001-01-01';
 
 # test: date + interval = timestamp
-select date '1970-01-01' + interval '1 us'
-select date '1970-01-01' + interval '55 years 10 secs'
-select (date '1970-01-01' + interval '55 years 10 secs')::type
+select date '1970-01-01' + interval '1 us';
+select date '1970-01-01' + interval '55 years 10 secs';
+select (date '1970-01-01' + interval '55 years 10 secs')::type;
 
 # test: date + interval = timestamp (timestamp overflow)
-select date '9999-12-31' + interval '1 us'
-select date '9999-12-31' + interval '1 day'
+select date '9999-12-31' + interval '1 us';
+select date '9999-12-31' + interval '1 day';
 
 # test: interval + date = timestamp
-select interval '1 us' + date '1970-01-01'
-select interval '55 years 10 secs' + date '1970-01-01'
-select (interval '55 years 10 secs' + date '1970-01-01')::type
+select interval '1 us' + date '1970-01-01';
+select interval '55 years 10 secs' + date '1970-01-01';
+select (interval '55 years 10 secs' + date '1970-01-01')::type;
 
 # test: interval + date = timestamp (timestamp overflow)
-select interval '1 us' + date '9999-12-31'
-select interval '1 day' + date '9999-12-31'
+select interval '1 us' + date '9999-12-31';
+select interval '1 day' + date '9999-12-31';
 
 # test: date - interval = timestamp
-select date '1970-01-02' - interval '1 us'
-select date '2025-01-01' - interval '55 years'
-select (date '2025-01-01' - interval '55 years')::type
+select date '1970-01-02' - interval '1 us';
+select date '2025-01-01' - interval '55 years';
+select (date '2025-01-01' - interval '55 years')::type;
 
 # test: date - interval = timestamp (overflow)
-select date '1970-01-01' - interval '1 us'
+select date '1970-01-01' - interval '1 us';
 
 # test: date min (0001-01-01)
-select date '0001-01-01'
-select date '0001-01-01'::int
+select date '0001-01-01';
+select date '0001-01-01'::int;
 
-select date '0000-01-01'
+select date '0000-01-01';
 
 # test: date min overflow
-select (date '0001-01-01'::int - 1)::date
+select (date '0001-01-01'::int - 1)::date;
 
 # test: date max (9999-12-31)
-select date '9999-12-31'
-select date '9999-12-31'::int
+select date '9999-12-31';
+select date '9999-12-31'::int;
 
-select date '10000-01-01'
+select date '10000-01-01';
 
 # test: date max overflow
-select (date '9999-12-31'::int + 1)::date
+select (date '9999-12-31'::int + 1)::date;
 
-disconnect S0
-close E0
+disconnect S0;
+close E0;

@@ -1,227 +1,227 @@
 #
 
-open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "127.0.0.1", "port": 3485 }]
-connect E0 S0 127.0.0.1:3485
+open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "127.0.0.1", "port": 3485 }];
+connect E0 S0 127.0.0.1:3485;
 
 # test: year
-select '1 year'::interval
-select '2 years'::interval
-select '2 year'::interval
-select '200 years'::interval
-select interval '200 years'
+select '1 year'::interval;
+select '2 years'::interval;
+select '2 year'::interval;
+select '200 years'::interval;
+select interval '200 years';
 
 # test: month
-select '1 month'::interval
-select '1 months'::interval
-select '3 months'::interval
-select '5 years 3 months'::interval
-select '3 months 5 years'::interval
-select interval '3 months 5 years'
+select '1 month'::interval;
+select '1 months'::interval;
+select '3 months'::interval;
+select '5 years 3 months'::interval;
+select '3 months 5 years'::interval;
+select interval '3 months 5 years';
 
 # test: week
-select '5 weeks'::interval
-select '5 week'::interval
-select '1 week'::interval
-select '1 year 3 weeks'::interval
-select '1 week 2 weeks 3 weeks'::interval
-select interval '1 week 2 weeks 3 weeks'
+select '5 weeks'::interval;
+select '5 week'::interval;
+select '1 week'::interval;
+select '1 year 3 weeks'::interval;
+select '1 week 2 weeks 3 weeks'::interval;
+select interval '1 week 2 weeks 3 weeks';
 
 # test: day
-select '1 week 15 days'::interval
-select '15 days'::interval
-select '1 day'::interval
-select '15 years 10 days'::interval
-select '15 years 500 days'::interval
+select '1 week 15 days'::interval;
+select '15 days'::interval;
+select '1 day'::interval;
+select '15 years 10 days'::interval;
+select '15 years 500 days'::interval;
 
-select '15 years 6 days'::interval
-select '15 years 7 days'::interval
-select '15 years 8 days'::interval
-select '15 years 9 days'::interval
-select interval '15 years 9 days'
+select '15 years 6 days'::interval;
+select '15 years 7 days'::interval;
+select '15 years 8 days'::interval;
+select '15 years 9 days'::interval;
+select interval '15 years 9 days';
 
 # test: hour
-select '15 years 28 hours'::interval
-select '15 years 27 hours'::interval
-select '15 years 26 hours'::interval
-select '15 years 25 hours'::interval
-select '15 years 24 hours'::interval
-select '15 years 23 hours'::interval
-select interval('15 years 23 hours')
-select interval '15 years 23 hours'
+select '15 years 28 hours'::interval;
+select '15 years 27 hours'::interval;
+select '15 years 26 hours'::interval;
+select '15 years 25 hours'::interval;
+select '15 years 24 hours'::interval;
+select '15 years 23 hours'::interval;
+select interval('15 years 23 hours');
+select interval '15 years 23 hours';
 
 # test: minute
-select '15 years 70 minutes'::interval
-select '15 years 1 minute'::interval
-select '15 years 125 minutes'::interval
-select '8 minutes'::interval
-select interval('8 minutes')
-select interval '8 minutes'
+select '15 years 70 minutes'::interval;
+select '15 years 1 minute'::interval;
+select '15 years 125 minutes'::interval;
+select '8 minutes'::interval;
+select interval('8 minutes');
+select interval '8 minutes';
 
 # test: second
-select '8 minutes 70 seconds'::interval
-select '8 minutes 60 seconds'::interval
-select '3 seconds'::interval
+select '8 minutes 70 seconds'::interval;
+select '8 minutes 60 seconds'::interval;
+select '3 seconds'::interval;
 
 # test: milliseconds
-select '3 milliseconds'::interval
-select '3 millisecond'::interval
-select '3 ms'::interval
-select '1 minute 3 ms'::interval
+select '3 milliseconds'::interval;
+select '3 millisecond'::interval;
+select '3 ms'::interval;
+select '1 minute 3 ms'::interval;
 
 # test: microseconds
-select '3 microseconds'::interval
-select '3 microsecond'::interval
-select '3 us'::interval
-select '1 minute 3 ms 10 us'::interval
-select '50000 us'::interval
+select '3 microseconds'::interval;
+select '3 microsecond'::interval;
+select '3 us'::interval;
+select '1 minute 3 ms 10 us'::interval;
+select '50000 us'::interval;
 
 # test: convertion (string)
-select '1 hour 5 minutes 6 seconds'::interval
-select '1 hour 5 minutes 6 seconds'::interval::string
-select '1 hour 5 minutes 6 seconds'::interval::string::interval
-select '1 hour 5 minutes 6 seconds'::interval::string::interval::string
-select interval('1 hour 5 minutes 6 seconds')::string::interval::string
+select '1 hour 5 minutes 6 seconds'::interval;
+select '1 hour 5 minutes 6 seconds'::interval::string;
+select '1 hour 5 minutes 6 seconds'::interval::string::interval;
+select '1 hour 5 minutes 6 seconds'::interval::string::interval::string;
+select interval('1 hour 5 minutes 6 seconds')::string::interval::string;
 
-select interval '1 hour 5 minutes 6 seconds' ::string::interval::string
-select (interval '1 hour 5 minutes 6 seconds')::string::interval::string
+select interval '1 hour 5 minutes 6 seconds' ::string::interval::string;
+select (interval '1 hour 5 minutes 6 seconds')::string::interval::string;
 
 # test: convertion (json)
-select ['5 hours 6 seconds'::interval, '1 years'::interval]
-select {"key": "5 hours 6 second"::interval}
+select ['5 hours 6 seconds'::interval, '1 years'::interval];
+select {"key": "5 hours 6 second"::interval};
 
 # test: zero
-select '0 hour'::interval
-select '0 hour'::interval::string
-select '0 hour'::interval::string::interval
-select ''::interval::string::interval
+select '0 hour'::interval;
+select '0 hour'::interval::string;
+select '0 hour'::interval::string::interval;
+select ''::interval::string::interval;
 
 # test: negative
-select '-1 hour'::interval
-select '-1 hours'::interval
-select '-1 hour 10 minutes'::interval
-select '-1 hour 10 minutes 5 seconds'::interval
-select '-1 hour 10 minutes -5 seconds'::interval
+select '-1 hour'::interval;
+select '-1 hours'::interval;
+select '-1 hour 10 minutes'::interval;
+select '-1 hour 10 minutes 5 seconds'::interval;
+select '-1 hour 10 minutes -5 seconds'::interval;
 
 # test: between
-select interval '1 hour' between interval '55 minutes' and interval '1 hour 10 minutes'
-select interval '1 hour' between interval '55 minutes' and interval '55 minutes'
-select interval '1 hour' not between interval '55 minutes' and interval '55 minutes'
+select interval '1 hour' between interval '55 minutes' and interval '1 hour 10 minutes';
+select interval '1 hour' between interval '55 minutes' and interval '55 minutes';
+select interval '1 hour' not between interval '55 minutes' and interval '55 minutes';
 
 # test: interval = interval
-select '1 hour'::interval = '1 hours'::interval
-select '1 hour'::interval = '1 hours 10 seconds'::interval
-explain select  '1 hour'::interval = '1 hours 10 seconds'::interval
+select '1 hour'::interval = '1 hours'::interval;
+select '1 hour'::interval = '1 hours 10 seconds'::interval;
+explain select  '1 hour'::interval = '1 hours 10 seconds'::interval;
 
 # test: interval = null
-select '1 hour'::interval = null
-explain select  '1 hour'::interval = null
+select '1 hour'::interval = null;
+explain select  '1 hour'::interval = null;
 
 # test: interval = unsupported
-select '1 hour'::interval = [1,2,3]
+select '1 hour'::interval = [1,2,3];
 
 # test: interval <> interval
-select '1 hour'::interval <> '1 hours'::interval
-select '1 hour'::interval <> '1 hours 10 seconds'::interval
-explain select  '1 hour'::interval <> '1 hours 10 seconds'::interval
+select '1 hour'::interval <> '1 hours'::interval;
+select '1 hour'::interval <> '1 hours 10 seconds'::interval;
+explain select  '1 hour'::interval <> '1 hours 10 seconds'::interval;
 
 # test: interval <> null
-select '1 hour'::interval <> null
-explain select  '1 hour'::interval <> null
+select '1 hour'::interval <> null;
+explain select  '1 hour'::interval <> null;
 
 # test: interval <> unsupported
-select '1 hour'::interval <> [1,2,3]
+select '1 hour'::interval <> [1,2,3];
 
 # test: interval >= interval
-select '1 hour'::interval >= '1 hour'::interval
-select '60 minutes'::interval >= '1 hour'::interval
-select '59 minutes'::interval >= '1 hour'::interval
-select '61 minutes'::interval >= '1 hour'::interval
-explain select '61 minutes'::interval >= '1 hour'::interval
+select '1 hour'::interval >= '1 hour'::interval;
+select '60 minutes'::interval >= '1 hour'::interval;
+select '59 minutes'::interval >= '1 hour'::interval;
+select '61 minutes'::interval >= '1 hour'::interval;
+explain select '61 minutes'::interval >= '1 hour'::interval;
 
 # test: interval >= null
-select '1 hour'::interval >= null
-explain select '1 hour'::interval >= null
+select '1 hour'::interval >= null;
+explain select '1 hour'::interval >= null;
 
 # test: interval >= unsupported
-select '1 hour'::interval >= null
+select '1 hour'::interval >= null;
 
 # test: interval > interval
-select '1 hour'::interval > '1 hour'::interval
-select '60 minutes'::interval > '1 hour'::interval
-select '59 minutes'::interval > '1 hour'::interval
-select '61 minutes'::interval > '1 hour'::interval
-explain select '61 minutes'::interval > '1 hour'::interval
+select '1 hour'::interval > '1 hour'::interval;
+select '60 minutes'::interval > '1 hour'::interval;
+select '59 minutes'::interval > '1 hour'::interval;
+select '61 minutes'::interval > '1 hour'::interval;
+explain select '61 minutes'::interval > '1 hour'::interval;
 
 # test: interval > null
-select '1 hour'::interval > null
-explain select '1 hour'::interval > null
+select '1 hour'::interval > null;
+explain select '1 hour'::interval > null;
 
 # test: interval > unsupported
-select '1 hour'::interval > null
+select '1 hour'::interval > null;
 
 # test: interval <= interval
-select '1 hour'::interval <= '1 hour'::interval
-select '60 minutes'::interval <= '1 hour'::interval
-select '59 minutes'::interval <= '1 hour'::interval
-select '61 minutes'::interval <= '1 hour'::interval
-explain select '61 minutes'::interval <= '1 hour'::interval
+select '1 hour'::interval <= '1 hour'::interval;
+select '60 minutes'::interval <= '1 hour'::interval;
+select '59 minutes'::interval <= '1 hour'::interval;
+select '61 minutes'::interval <= '1 hour'::interval;
+explain select '61 minutes'::interval <= '1 hour'::interval;
 
 # test: interval <= null
-select '1 hour'::interval <= null
-explain select '1 hour'::interval <= null
+select '1 hour'::interval <= null;
+explain select '1 hour'::interval <= null;
 
 # test: interval <= unsupported
-select '1 hour'::interval <= null
+select '1 hour'::interval <= null;
 
 # test: interval < interval
-select '1 hour'::interval < '1 hour'::interval
-select '60 minutes'::interval < '1 hour'::interval
-select '59 minutes'::interval < '1 hour'::interval
-select '61 minutes'::interval < '1 hour'::interval
-explain select '61 minutes'::interval < '1 hour'::interval
+select '1 hour'::interval < '1 hour'::interval;
+select '60 minutes'::interval < '1 hour'::interval;
+select '59 minutes'::interval < '1 hour'::interval;
+select '61 minutes'::interval < '1 hour'::interval;
+explain select '61 minutes'::interval < '1 hour'::interval;
 
 # test: interval < null
-select '1 hour'::interval < null
-explain select '1 hour'::interval < null
+select '1 hour'::interval < null;
+explain select '1 hour'::interval < null;
 
 # test: interval < unsupported
-select '1 hour'::interval < null
+select '1 hour'::interval < null;
 
 # test: interval + interval
-select  '1 hour'::interval + '2 hours'::interval
-select ('1 hour'::interval + '2 hours'::interval)::string
-select ('1 hour'::interval + '2 hours'::interval)::string::interval
-select  '1 hour'::interval + '-2 hours'::interval
-select  '5 days 1 hour'::interval + '-2 hours'::interval
-explain select  '5 days 1 hour'::interval + '-2 hours'::interval
+select  '1 hour'::interval + '2 hours'::interval;
+select ('1 hour'::interval + '2 hours'::interval)::string;
+select ('1 hour'::interval + '2 hours'::interval)::string::interval;
+select  '1 hour'::interval + '-2 hours'::interval;
+select  '5 days 1 hour'::interval + '-2 hours'::interval;
+explain select  '5 days 1 hour'::interval + '-2 hours'::interval;
 
 # test: interval + timestamp
-select '1 hour'::interval + '1970-01-01 00:00:00.000000'::timestamp
-explain select '1 hour'::interval + '1970-01-01 00:00:00.000000'::timestamp
+select '1 hour'::interval + '1970-01-01 00:00:00.000000'::timestamp;
+explain select '1 hour'::interval + '1970-01-01 00:00:00.000000'::timestamp;
 
 # test: interval + null
-select '1 hour'::interval + null
+select '1 hour'::interval + null;
 
 # test: interval + unsupported
-select '1 hour'::interval + []
+select '1 hour'::interval + [];
 
 # test: interval - interval
-select  '1 hour'::interval - '2 hours'::interval
-select  '10 hour'::interval - '2 hours'::interval
-select  '1 year 1 day 10 hour'::interval - '2 hours'::interval
-select  '1 year 1 day 10 hour'::interval - '1 year 2 hours'::interval
+select  '1 hour'::interval - '2 hours'::interval;
+select  '10 hour'::interval - '2 hours'::interval;
+select  '1 year 1 day 10 hour'::interval - '2 hours'::interval;
+select  '1 year 1 day 10 hour'::interval - '1 year 2 hours'::interval;
 
 # test: interval - timestamp
 
 # not supported
-select '1 hour'::interval - '1970-01-01 00:00:00.000000'::timestamp
+select '1 hour'::interval - '1970-01-01 00:00:00.000000'::timestamp;
 
 # test: -interval
-select '1 hour 5 minutes 6 seconds'::interval
-select - '1 hour 5 minutes 6 seconds'::interval
+select '1 hour 5 minutes 6 seconds'::interval;
+select - '1 hour 5 minutes 6 seconds'::interval;
 
-select interval '1 hour 5 minutes 6 seconds'
-select - interval '1 hour 5 minutes 6 seconds'
+select interval '1 hour 5 minutes 6 seconds';
+select - interval '1 hour 5 minutes 6 seconds';
 
-disconnect S0
-close E0
+disconnect S0;
+close E0;

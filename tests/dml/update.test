@@ -1,320 +1,320 @@
 #
 
-open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "127.0.0.1", "port": 3485 }]
-connect E0 S0 127.0.0.1:3485
+open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "127.0.0.1", "port": 3485 }];
+connect E0 S0 127.0.0.1:3485;
 
 # test: update statement parsing
-create table test(id int primary key)
-update
+create table test(id int primary key);
+update;
 update;
 update 1;
-update "name"
-update test
-update test "path"
-update test 1
-update test path
-update test set path
-update test set path /
-update test set path =
-update test set path = expr
-update test set id = id expr
-drop table test
+update "name";
+update test;
+update test "path";
+update test 1;
+update test path;
+update test set path;
+update test set path /;
+update test set path =;
+update test set path = expr;
+update test set id = id expr;
+drop table test;
 
 # test: update
-create table test(id int primary key, data int)
-insert into test values (0, 3)
-insert into test values (1, 2)
-insert into test values (2, 1)
-explain update test set data = data + 1
-update test set data = data + 1
-select * from test
-drop table test
+create table test(id int primary key, data int);
+insert into test values (0, 3);
+insert into test values (1, 2);
+insert into test values (2, 1);
+explain update test set data = data + 1;
+update test set data = data + 1;
+select * from test;
+drop table test;
 
 # test: update default (null)
-create table test(id int primary key, data int)
-insert into test values (0, 3)
-insert into test values (1, 2)
-insert into test values (2, 1)
-update test set data = default
-select * from test
-drop table test
+create table test(id int primary key, data int);
+insert into test values (0, 3);
+insert into test values (1, 2);
+insert into test values (2, 1);
+update test set data = default;
+select * from test;
+drop table test;
 
 # test: update default
-create table test(id int primary key, data int default 123)
-insert into test values (0, 3)
-insert into test values (1, 2)
-insert into test values (2, 1)
-update test set data = default
-select * from test
-drop table test
+create table test(id int primary key, data int default 123);
+insert into test values (0, 3);
+insert into test values (1, 2);
+insert into test values (2, 1);
+update test set data = default;
+select * from test;
+drop table test;
 
 # test: update schema
-create schema test
-create table test.test(id int primary key, data int)
-insert into test.test values (0, 3)
-insert into test.test values (1, 2)
-insert into test.test values (2, 1)
-explain update test.test set data = data + 1
-update test.test set data = data + 1
-select * from test.test
-drop table test.test
-drop schema test
+create schema test;
+create table test.test(id int primary key, data int);
+insert into test.test values (0, 3);
+insert into test.test values (1, 2);
+insert into test.test values (2, 1);
+explain update test.test set data = data + 1;
+update test.test set data = data + 1;
+select * from test.test;
+drop table test.test;
+drop schema test;
 
 # test: update multiple ops
-create table test(id int primary key, a int, b int)
-insert into test values (0, 3, 3)
-insert into test values (1, 2, 2)
-insert into test values (2, 1, 1)
-explain update test set a = a + 1, b = b - 1
-update test set a = a + 1, b = b - 1
-select * from test
-drop table test
+create table test(id int primary key, a int, b int);
+insert into test values (0, 3, 3);
+insert into test values (1, 2, 2);
+insert into test values (2, 1, 1);
+explain update test set a = a + 1, b = b - 1;
+update test set a = a + 1, b = b - 1;
+select * from test;
+drop table test;
 
 # test: update same column twice
-create table test(id int primary key, data int)
-insert into test values (0, 3)
-insert into test values (1, 2)
-insert into test values (2, 1)
-update test set data = data + 1, data = data + 1
-select * from test
-drop table test
+create table test(id int primary key, data int);
+insert into test values (0, 3);
+insert into test values (1, 2);
+insert into test values (2, 1);
+update test set data = data + 1, data = data + 1;
+select * from test;
+drop table test;
 
 # test: update json
-create table test(id int primary key, data json)
-insert into test values (0, {"id": 48})
-insert into test values (1, {"id": 49})
-insert into test values (2, {"id": 50})
-update test set data = {"id": data.id::int + 1}
-explain update test set data = {"id": data.id::int + 1}
-select * from test
-drop table test
+create table test(id int primary key, data json);
+insert into test values (0, {"id": 48});
+insert into test values (1, {"id": 49});
+insert into test values (2, {"id": 50});
+update test set data = {"id": data.id::int + 1};
+explain update test set data = {"id": data.id::int + 1};
+select * from test;
+drop table test;
 
 # test: update json rewrite
-create table test(id serial primary key, data json)
-insert into test (data) values ({"id": 48})
-insert into test (data) values ({"id": 49})
-insert into test (data) values ({"id": 50})
-update test set data = {"id": id}
-select * from test
-drop table test
+create table test(id serial primary key, data json);
+insert into test (data) values ({"id": 48});
+insert into test (data) values ({"id": 49});
+insert into test (data) values ({"id": 50});
+update test set data = {"id": id};
+select * from test;
+drop table test;
 
 # test: update json rewrite #2
-create table test(id serial primary key, data json)
-insert into test (data) values ({"id": 48})
-insert into test (data) values ({"id": 49})
-insert into test (data) values ({"id": 50})
-update test set data = [id, data.id]
-select * from test
-drop table test
+create table test(id serial primary key, data json);
+insert into test (data) values ({"id": 48});
+insert into test (data) values ({"id": 49});
+insert into test (data) values ({"id": 50});
+update test set data = [id, data.id];
+select * from test;
+drop table test;
 
 # test: update json path
-create table test(id int primary key, data json)
-insert into test values (0, {"id": 48})
-insert into test values (1, {"id": 49})
-insert into test values (2, {"id": 50})
+create table test(id int primary key, data json);
+insert into test values (0, {"id": 48});
+insert into test values (1, {"id": 49});
+insert into test values (2, {"id": 50});
 
 # error
-update test set id.path = 0
+update test set id.path = 0;
 
-explain update test set data.id = data.id::int + 1
-update test set data.id = data.id::int + 1
-select * from test
+explain update test set data.id = data.id::int + 1;
+update test set data.id = data.id::int + 1;
+select * from test;
 
-update test set data.data = []
-select * from test
+update test set data.data = [];
+select * from test;
 
-update test set data.data = data.data::append(1,2,3)
-select * from test
+update test set data.data = data.data::append(1,2,3);
+select * from test;
 
-update test set data.nested = {}
-update test set data.nested.list = data.data::append(1,2,3)
-select data from test
+update test set data.nested = {};
+update test set data.nested.list = data.data::append(1,2,3);
+select data from test;
 
 # test: update json path default (unsupported)
-update test set data.nested.list = default
-drop table test
+update test set data.nested.list = default;
+drop table test;
 
 # test: update key
-create table test(id int primary key)
-insert into test values (0)
-insert into test values (1)
-insert into test values (2)
-update test set id = id + 1
-select * from test
-drop table test
+create table test(id int primary key);
+insert into test values (0);
+insert into test values (1);
+insert into test values (2);
+update test set id = id + 1;
+select * from test;
+drop table test;
 
 # test: update point-lookup
-create table test(id int primary key, data int)
-insert into test values (0, 3)
-insert into test values (1, 2)
-insert into test values (2, 1)
-explain update test set data = data + 1 where id = 0
-update test set data = data + 1 where id = 0
-update test set data = data + 1 where id = 1
-update test set data = data + 1 where id = 2
-select * from test
-drop table test
+create table test(id int primary key, data int);
+insert into test values (0, 3);
+insert into test values (1, 2);
+insert into test values (2, 1);
+explain update test set data = data + 1 where id = 0;
+update test set data = data + 1 where id = 0;
+update test set data = data + 1 where id = 1;
+update test set data = data + 1 where id = 2;
+select * from test;
+drop table test;
 
 # test: update range scan
-create table test(id int primary key, data int)
-insert into test values (0, 3)
-insert into test values (1, 2)
-insert into test values (2, 1)
-explain update test set data = data + 1 where id >= 1
-update test set data = data + 1 where id > 2
-select * from test
-update test set data = data + 1 where id >= 2
-select * from test
-update test set data = data + 1 where id >= 1
-select * from test
-drop table test
+create table test(id int primary key, data int);
+insert into test values (0, 3);
+insert into test values (1, 2);
+insert into test values (2, 1);
+explain update test set data = data + 1 where id >= 1;
+update test set data = data + 1 where id > 2;
+select * from test;
+update test set data = data + 1 where id >= 2;
+select * from test;
+update test set data = data + 1 where id >= 1;
+select * from test;
+drop table test;
 
 # test: update null
-create table test(id int primary key, data int)
-insert into test values (0, 3)
-insert into test values (1, 2)
-insert into test values (2, null)
-update test set data = data + 1
-select * from test
-update test set data = id where data is null
-select * from test
-drop table test
+create table test(id int primary key, data int);
+insert into test values (0, 3);
+insert into test values (1, 2);
+insert into test values (2, null);
+update test set data = data + 1;
+select * from test;
+update test set data = id where data is null;
+select * from test;
+drop table test;
 
 # test: update set null
-create table test(id int primary key, data int)
-insert into test values (0, 1)
-update test set data = data + 1
-select * from test
-update test set data = null
-select * from test
-drop table test
+create table test(id int primary key, data int);
+insert into test values (0, 1);
+update test set data = data + 1;
+select * from test;
+update test set data = null;
+select * from test;
+drop table test;
 
 # test: update set null (not null)
-create table test(id int primary key, data int not null)
-insert into test values (0, 1)
-update test set data = data + 1
-select * from test
-update test set data = null
-select * from test
-drop table test
+create table test(id int primary key, data int not null);
+insert into test values (0, 1);
+update test set data = data + 1;
+select * from test;
+update test set data = null;
+select * from test;
+drop table test;
 
 # test: update returning
-create table test(id int primary key, data int)
-insert into test values (0, 0)
-insert into test values (1, 0)
-insert into test values (2, 0)
-explain update test set data = data + 1 returning *
-update test set data = data + 1 returning *
-update test set data = data + 1 returning *
-update test set data = data + 1 returning *
-select * from test
-drop table test
+create table test(id int primary key, data int);
+insert into test values (0, 0);
+insert into test values (1, 0);
+insert into test values (2, 0);
+explain update test set data = data + 1 returning *;
+update test set data = data + 1 returning *;
+update test set data = data + 1 returning *;
+update test set data = data + 1 returning *;
+select * from test;
+drop table test;
 
 # test: update column (int8)
-create table test (id int primary key, data i8)
-insert into test values (1, 123), (2, 255), (3, 256)
-update test set data = data + 1
-select * from test
-drop table test
+create table test (id int primary key, data i8);
+insert into test values (1, 123), (2, 255), (3, 256);
+update test set data = data + 1;
+select * from test;
+drop table test;
 
 # test: update column (int16)
-create table test (id int primary key, data i16)
-insert into test values (1, 123), (2, 256), (3, -32768)
-update test set data = data + 1
-select * from test
-drop table test
+create table test (id int primary key, data i16);
+insert into test values (1, 123), (2, 256), (3, -32768);
+update test set data = data + 1;
+select * from test;
+drop table test;
 
 # test: update column (int32)
-create table test (id int primary key, data i32)
-insert into test values (1, 123), (2, 256), (3, -32768)
-update test set data = data + 1
-select * from test
-drop table test
+create table test (id int primary key, data i32);
+insert into test values (1, 123), (2, 256), (3, -32768);
+update test set data = data + 1;
+select * from test;
+drop table test;
 
 # test: update column (int64)
-create table test (id int primary key, data i64)
-insert into test values (1, 123), (2, 256), (3, -32768)
-update test set data = data + 1
-select * from test
-drop table test
+create table test (id int primary key, data i64);
+insert into test values (1, 123), (2, 256), (3, -32768);
+update test set data = data + 1;
+select * from test;
+drop table test;
 
 # test: update column (float)
-create table test (id int primary key, data float)
-insert into test values (1, 123.32), (2, 3.14)
-update test set data = data + 0.01
-select * from test
-drop table test
+create table test (id int primary key, data float);
+insert into test values (1, 123.32), (2, 3.14);
+update test set data = data + 0.01;
+select * from test;
+drop table test;
 
 # test: update column (double)
-create table test (id int primary key, data double)
-insert into test values (1, 123.32), (2, 3.14)
-update test set data = data + 0.01
-select * from test
-drop table test
+create table test (id int primary key, data double);
+insert into test values (1, 123.32), (2, 3.14);
+update test set data = data + 0.01;
+select * from test;
+drop table test;
 
 # test: update column (text)
-create table test (id int primary key, data text)
-insert into test values (1, 'hello')
-update test set data = data || " world"
-update test set data = data || " world"
-update test set data = data || " world"
-select data from test
-drop table test
+create table test (id int primary key, data text);
+insert into test values (1, 'hello');
+update test set data = data || " world";
+update test set data = data || " world";
+update test set data = data || " world";
+select data from test;
+drop table test;
 
 # test: update column (json)
-create table test (id int primary key, data json)
-insert into test values (1, null)
-update test set data = data::append(1,2,3)
-select * from test
-drop table test
+create table test (id int primary key, data json);
+insert into test values (1, null);
+update test set data = data::append(1,2,3);
+select * from test;
+drop table test;
 
 # test: update column (timestamp)
-create table test (id int primary key, ts timestamp)
-insert into test values (0, "1970-01-01 01:12:59.909090")
-update test set ts = ts + interval '5 days'
-select * from test
-drop table test
+create table test (id int primary key, ts timestamp);
+insert into test values (0, "1970-01-01 01:12:59.909090");
+update test set ts = ts + interval '5 days';
+select * from test;
+drop table test;
 
 # test: update column (interval)
-create table test (id int primary key, i interval)
-insert into test values (0, "1 year 1 day 10 hour")
-update test set i = i + interval '5 days'
-select * from test
-drop table test
+create table test (id int primary key, i interval);
+insert into test values (0, "1 year 1 day 10 hour");
+update test set i = i + interval '5 days';
+select * from test;
+drop table test;
 
 # test: update column (date)
-create table test (id int primary key, d date)
-insert into test values (0, "1970-01-01")
-update test set d = d + 5
-select * from test
-drop table test
+create table test (id int primary key, d date);
+insert into test values (0, "1970-01-01");
+update test set d = d + 5;
+select * from test;
+drop table test;
 
 # test: update column (vector)
-create table test (id int primary key, vec vector)
-insert into test values (3, [1.0, 1.1])
-update test set vec = vec + [1.0, 1.1]::vector
-select * from test
-drop table test
+create table test (id int primary key, vec vector);
+insert into test values (3, [1.0, 1.1]);
+update test set vec = vec + [1.0, 1.1]::vector;
+select * from test;
+drop table test;
 
 # test: update secondary index
-create table test (id int primary key, data int, value int)
-create index i on test (data)
+create table test (id int primary key, data int, value int);
+create index i on test (data);
 
-insert into test values (0, 2, 0)
-insert into test values (1, 1, 0)
-insert into test values (2, 0, 0)
+insert into test values (0, 2, 0);
+insert into test values (1, 1, 0);
+insert into test values (2, 0, 0);
 
-select * from test
-select * from test use index (i)
+select * from test;
+select * from test use index (i);
 
-update test set value = data
+update test set value = data;
 
-select * from test
-select * from test use index (i)
+select * from test;
+select * from test use index (i);
 
 # test: update secondary index (key)
-update test set data = id
-drop table test
+update test set data = id;
+drop table test;
 
-disconnect S0
-close E0
+disconnect S0;
+close E0;

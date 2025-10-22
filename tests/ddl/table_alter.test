@@ -1,370 +1,369 @@
 #
 
-open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "127.0.0.1", "port": 3485 }]
-connect E0 S0 127.0.0.1:3485
+open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "127.0.0.1", "port": 3485 }];
+connect E0 S0 127.0.0.1:3485;
 
 # test: alter table statement parsing
-alter
-alter table
-alter table 123
-alter table if
-alter table if ex
-alter table if exists
-alter table if exists 123
+alter;
+alter table;
+alter table 123;
+alter table if;
+alter table if exists;
+alter table if exists 123;
 
 # test: alter table if exists
-alter table test rename to test2
-alter table if exists test rename to test2
+alter table test rename to test2;
+alter table if exists test rename to test2;
 
 # test: alter table no command
-create table test (id int primary key)
-alter table test
+create table test (id int primary key);
+alter table test;
 
 # test: rename
-alter table test rename
-alter table test rename to
-alter table test rename to asf junk
-alter table test rename to abc
-select system.table('abc').name
+alter table test rename;
+alter table test rename to;
+alter table test rename to asf junk;
+alter table test rename to abc;
+select system.table('abc').name;
 
 # test: rename table exists
-create table test (id int primary key)
-alter table abc rename to test
-drop table test
+create table test (id int primary key);
+alter table abc rename to test;
+drop table test;
 
 # test: rename schema not exists
-alter table abc rename to test.test
+alter table abc rename to test.test;
 
 # test: rename schema system
-alter table abc rename to system.test
+alter table abc rename to system.test;
 
 # test: rename schema
-alter table abc rename to public.test
-select system.table('abc').name
-select system.table('test').name
-create schema test
-alter table public.test rename to test.test
-alter table test.test rename to public.test
-select system.table('test').name
-drop table test
+alter table abc rename to public.test;
+select system.table('abc').name;
+select system.table('test').name;
+create schema test;
+alter table public.test rename to test.test;
+alter table test.test rename to public.test;
+select system.table('test').name;
+drop table test;
 
 # test: set identity
-create table test (id serial primary key, data int default 0)
-insert into test () values ()
-insert into test () values ()
-insert into test () values ()
-select * from test
-alter table test set
-alter table test set identity 
-alter table test set identity 123
-alter table test set identity =
-alter table test set identity to
-alter table test set identity to "123"
-alter table test set identity to 0
-insert into test () values ()
-insert into test () values ()
-insert into test () values ()
-insert into test () values ()
-select * from test
-alter table test set identity to 0
-insert into test () values ()
-select * from test
-drop table test
+create table test (id serial primary key, data int default 0);
+insert into test () values ();
+insert into test () values ();
+insert into test () values ();
+select * from test;
+alter table test set;
+alter table test set identity ;
+alter table test set identity 123;
+alter table test set identity =;
+alter table test set identity to;
+alter table test set identity to "123";
+alter table test set identity to 0;
+insert into test () values ();
+insert into test () values ();
+insert into test () values ();
+insert into test () values ();
+select * from test;
+alter table test set identity to 0;
+insert into test () values ();
+select * from test;
+drop table test;
 
 # test: set identity if exists
-alter table if exists test set identity to 0
-alter table test set identity to 0
+alter table if exists test set identity to 0;
+alter table test set identity to 0;
 
 # test: set unlogged
-create table test (id int primary key)
-select system.table('test').unlogged
+create table test (id int primary key);
+select system.table('test').unlogged;
 
-alter table test set unlogged
-select system.table('test').unlogged
+alter table test set unlogged;
+select system.table('test').unlogged;
 
 # test: set logged
-alter table test set logged
-select system.table('test').unlogged
-drop table test
+alter table test set logged;
+select system.table('test').unlogged;
+drop table test;
 
 # test: rename column parsing
-alter table rename
-alter table test rename
-alter table test rename column
-alter table test rename column 1
-alter table test rename column data
-alter table test rename column data
-alter table test rename column data to
-alter table test rename column data to 1
+alter table rename;
+alter table test rename;
+alter table test rename column;
+alter table test rename column 1;
+alter table test rename column data;
+alter table test rename column data;
+alter table test rename column data to;
+alter table test rename column data to 1;
 
 # test: rename column
-create table test (id serial primary key, data int default 0)
-select system.table('test').columns
-alter table test rename column data to data2
-select system.table('test').columns
-select data2 from test
-drop table test
+create table test (id serial primary key, data int default 0);
+select system.table('test').columns;
+alter table test rename column data to data2;
+select system.table('test').columns;
+select data2 from test;
+drop table test;
 
 # test: rename column #2
-create table test (id int primary key)
-insert into test values (1),(2),(3)
-select system.table('test').columns
-alter table test rename column id to id2
-select system.table('test').columns
-select * from test
-select id2 from test
-drop table test
+create table test (id int primary key);
+insert into test values (1),(2),(3);
+select system.table('test').columns;
+alter table test rename column id to id2;
+select system.table('test').columns;
+select * from test;
+select id2 from test;
+drop table test;
 
 # test: rename column (already exists)
-create table test (id serial primary key, data int default 0)
-select system.table('test').columns
-alter table test rename column data to data
-select system.table('test').columns
-drop table test
+create table test (id serial primary key, data int default 0);
+select system.table('test').columns;
+alter table test rename column data to data;
+select system.table('test').columns;
+drop table test;
 
 # test: rename column (if table exists)
-alter table if exists test rename column id to id2
+alter table if exists test rename column id to id2;
 
 # test: rename column (if column exists)
-create table test (id int primary key, data int default 0)
-alter table if exists test rename column if exists id to id2
-drop table test
+create table test (id int primary key, data int default 0);
+alter table if exists test rename column if exists id to id2;
+drop table test;
 
 # test: add column parsing
-create table test (id int primary key)
-alter table
-alter table test
-alter table test add
-alter table test add 1
-alter table test add column
-drop table test
+create table test (id int primary key);
+alter table;
+alter table test;
+alter table test add;
+alter table test add 1;
+alter table test add column;
+drop table test;
 
 # test: add column already exists
-create table test (id int primary key, data int)
-alter table test add column data int
-drop table test
+create table test (id int primary key, data int);
+alter table test add column data int;
+drop table test;
 
 # test: add column (if table exists)
-alter table test add column data int
-alter table if exists test add column data int
+alter table test add column data int;
+alter table if exists test add column data int;
 
 # test: add column (if column exists)
-create table test (id int primary key, data int)
-alter table test add column if not exists data int
-drop table test
+create table test (id int primary key, data int);
+alter table test add column if not exists data int;
+drop table test;
 
 # test: add column primary key
-create table test (id int primary key)
-alter table test add column data int primary key
-drop table test
+create table test (id int primary key);
+alter table test add column data int primary key;
+drop table test;
 
 # test: add column (empty table)
-create table test (id int primary key)
-select system.table('test').columns
-alter table test add column data int
-select system.table('test').columns
-insert into test values (1,1), (2,2), (3,3)
-select data from test
-drop table test
+create table test (id int primary key);
+select system.table('test').columns;
+alter table test add column data int;
+select system.table('test').columns;
+insert into test values (1,1), (2,2), (3,3);
+select data from test;
+drop table test;
 
 # test: add column (null by default)
-create table test (id int primary key)
-insert into test values (1),(2),(3)
-alter table test add column data int
-select system.table('test').columns
-select data from test
-insert into test values (4,4), (5,5), (6,6)
-select data from test
-drop table test
+create table test (id int primary key);
+insert into test values (1),(2),(3);
+alter table test add column data int;
+select system.table('test').columns;
+select data from test;
+insert into test values (4,4), (5,5), (6,6);
+select data from test;
+drop table test;
 
 # test: add column (not null without default) (not supported)
-create table test (id int primary key)
-insert into test values (1),(2),(3)
-alter table test add column data int not null
-select system.table('test').columns
-drop table test
+create table test (id int primary key);
+insert into test values (1),(2),(3);
+alter table test add column data int not null;
+select system.table('test').columns;
+drop table test;
 
 # test: add column (default)
-create table test (id int primary key)
-insert into test values (1),(2),(3)
-alter table test add column data int default 123
-select system.table('test').columns
-select data from test
-insert into test values (4,4), (5,5), (6,6)
-select data from test
-insert into test (id) values (7), (8), (9)
-select data from test
-drop table test
+create table test (id int primary key);
+insert into test values (1),(2),(3);
+alter table test add column data int default 123;
+select system.table('test').columns;
+select data from test;
+insert into test values (4,4), (5,5), (6,6);
+select data from test;
+insert into test (id) values (7), (8), (9);
+select data from test;
+drop table test;
 
 # test: add column (default not null) (not supported)
-create table test (id int primary key)
-insert into test values (1),(2),(3)
-alter table test add column data int not null default 123
-select system.table('test').columns
-drop table test
+create table test (id int primary key);
+insert into test values (1),(2),(3);
+alter table test add column data int not null default 123;
+select system.table('test').columns;
+drop table test;
 
 # test: add column (serial)
-create table test (id int primary key)
-insert into test values (1),(2),(3)
-alter table test add column data serial
-select system.table('test').columns
-select data from test
-insert into test (id) values (4), (5), (6)
-select data from test
-drop table test
+create table test (id int primary key);
+insert into test values (1),(2),(3);
+alter table test add column data serial;
+select system.table('test').columns;
+select data from test;
+insert into test (id) values (4), (5), (6);
+select data from test;
+drop table test;
 
 # test: add column (serial already exists)
-create table test (id serial primary key)
-alter table test add column data serial
-drop table test
+create table test (id serial primary key);
+alter table test add column data serial;
+drop table test;
 
 # test: drop column parsing
-create table test (id int primary key)
-alter table
-alter table test
-alter table test drop
-alter table test drop column
-alter table test drop column 1
-drop table test
+create table test (id int primary key);
+alter table;
+alter table test;
+alter table test drop;
+alter table test drop column;
+alter table test drop column 1;
+drop table test;
 
 # test: drop column (if table exists)
-alter table test drop column data
-alter table if exists test drop column data
+alter table test drop column data;
+alter table if exists test drop column data;
 
 # test: drop column (if column exists)
-create table test (id int primary key)
-alter table test drop column data
-alter table test drop column if exists data
-drop table test
+create table test (id int primary key);
+alter table test drop column data;
+alter table test drop column if exists data;
+drop table test;
 
 # test: drop column (primary key)
-create table test (id int primary key)
-alter table test drop column id
-drop table test
+create table test (id int primary key);
+alter table test drop column id;
+drop table test;
 
 # test: drop column (secondary key)
-create table test (id int primary key, data int)
-create index i on test (data)
-alter table test drop column data
-drop table test
+create table test (id int primary key, data int);
+create index i on test (data);
+alter table test drop column data;
+drop table test;
 
 # test: drop column (empty)
-create table test (id int primary key, a int)
-select system.table('test').columns
-alter table test drop column a
-select system.table('test').columns
-drop table test
+create table test (id int primary key, a int);
+select system.table('test').columns;
+alter table test drop column a;
+select system.table('test').columns;
+drop table test;
 
 # test: drop column (empty, reorder)
-create table test (id int primary key, a int, b int)
-select system.table('test').columns
-alter table test drop column a
-select system.table('test').columns
-drop table test
+create table test (id int primary key, a int, b int);
+select system.table('test').columns;
+alter table test drop column a;
+select system.table('test').columns;
+drop table test;
 
 # test: drop column
-create table test (id int primary key, a text, b int)
-select system.table('test').columns
+create table test (id int primary key, a text, b int);
+select system.table('test').columns;
 
-insert into test values (1,"id",1), (2,"a",2), (3,"b",3)
-select * from test
-select a from test
-select b from test
+insert into test values (1,"id",1), (2,"a",2), (3,"b",3);
+select * from test;
+select a from test;
+select b from test;
 
-alter table test drop column a
-select system.table('test').columns
+alter table test drop column a;
+select system.table('test').columns;
 
-select * from test
-select a from test
-select b from test
+select * from test;
+select a from test;
+select b from test;
 
-select system.table('test').columns
-alter table test drop column b
-select system.table('test').columns
+select system.table('test').columns;
+alter table test drop column b;
+select system.table('test').columns;
 
-select * from test
-select id from test
-select a from test
-select b from test
+select * from test;
+select id from test;
+select a from test;
+select b from test;
 
-drop table test
+drop table test;
 
 # test: drop column (key order)
-create table test (a text, b int, id int primary key)
-select system.table('test').columns
+create table test (a text, b int, id int primary key);
+select system.table('test').columns;
 
-insert into test values ("id",1, 1), ("a",2, 2), ("b",3, 3)
-select * from test
-select id from test
-select a from test
-select b from test
+insert into test values ("id",1, 1), ("a",2, 2), ("b",3, 3);
+select * from test;
+select id from test;
+select a from test;
+select b from test;
 
-alter table test drop column a
-select system.table('test').columns
+alter table test drop column a;
+select system.table('test').columns;
 
-select * from test
-select id from test
-select a from test
-select b from test
+select * from test;
+select id from test;
+select a from test;
+select b from test;
 
-select system.table('test').columns
-alter table test drop column b
-select system.table('test').columns
+select system.table('test').columns;
+alter table test drop column b;
+select system.table('test').columns;
 
-select * from test
-select id from test
-select a from test
-select b from test
-drop table test
+select * from test;
+select id from test;
+select a from test;
+select b from test;
+drop table test;
 
 # test: drop column (unref keys)
-create table test (id int primary key, b int)
-create index i on test (b)
-alter table test drop column b
-drop index i on test
-alter table test drop column b
-drop table test
+create table test (id int primary key, b int);
+create index i on test (b);
+alter table test drop column b;
+drop index i on test;
+alter table test drop column b;
+drop table test;
 
 # test: set default
-create table test (id int primary key, data int)
-alter table test set column data default 0
-insert into test (id) values (0)
-select * from test
-select system.table('test').columns
+create table test (id int primary key, data int);
+alter table test set column data default 0;
+insert into test (id) values (0);
+select * from test;
+select system.table('test').columns;
 
 # test: unset default
-alter table test unset column data default
-insert into test (id) values (1)
-select * from test
-select system.table('test').columns
+alter table test unset column data default;
+insert into test (id) values (1);
+select * from test;
+select system.table('test').columns;
 
 # test: set stored
-alter table test set column data as (1 + 1) stored
-insert into test (id) values (3)
-select * from test
-select system.table('test').columns
+alter table test set column data as (1 + 1) stored;
+insert into test (id) values (3);
+select * from test;
+select system.table('test').columns;
 
 # test: unset stored
-alter table test unset column data as stored
-insert into test (id) values (4)
-select * from test
-select system.table('test').columns
+alter table test unset column data as stored;
+insert into test (id) values (4);
+select * from test;
+select system.table('test').columns;
 
 # test: set resolved
-alter table test set column data default 0
-alter table test set column data as (data + 1) resolved
-insert into test (id) values (5)
-insert into test (id) values (5)
-insert into test (id) values (5)
-select * from test
-select system.table('test').columns
+alter table test set column data default 0;
+alter table test set column data as (data + 1) resolved;
+insert into test (id) values (5);
+insert into test (id) values (5);
+insert into test (id) values (5);
+select * from test;
+select system.table('test').columns;
 
 # test: unset resolved
-alter table test unset column data as resolved
-insert into test (id) values (5)
-select * from test
-select system.table('test').columns
-drop table test
+alter table test unset column data as resolved;
+insert into test (id) values (5);
+select * from test;
+select system.table('test').columns;
+drop table test;
 
-disconnect S0
-close E0
+disconnect S0;
+close E0;

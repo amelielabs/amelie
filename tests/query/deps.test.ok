@@ -1,7 +1,7 @@
-open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "127.0.0.1", "port": 3485 }]
-connect E0 S0 127.0.0.1:3485
+open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "127.0.0.1", "port": 3485 }];
+connect E0 S0 127.0.0.1:3485;
 # test: select var
-explain declare x int; select x
+explain begin declare x int; select x; end;
 [{
   "main": {
     "00": "push_nulls          1      0      0     ",
@@ -10,10 +10,10 @@ explain declare x int; select x
   },
   "access": []
 }]
-declare x int; select x
+begin declare x int; select x; end;
 [null]
 # test: select var expr
-explain declare x int := 0; select x
+explain begin declare x int := 0; select x; end;
 [{
   "main": {
     "00": "push_nulls          1      0      0     ",
@@ -25,9 +25,13 @@ explain declare x int := 0; select x
   },
   "access": []
 }]
-declare x int := 0; select x
+begin declare x int := 0; select x; end;
 [0]
-explain declare x int := 0; select x; x:= 15; select x
+explain begin
+	declare x int := 0;
+	select x; x:= 15;
+	select x;
+end;
 [{
   "main": {
     "00": "push_nulls          1      0      0     ",
@@ -43,10 +47,19 @@ explain declare x int := 0; select x; x:= 15; select x
   },
   "access": []
 }]
-declare x int := 0; select x; x:= 15; select x
+begin
+	declare x int := 0;
+	select x;
+	x := 15;
+	select x;
+end;
 [15]
 # test: select into expr
-explain declare x int; select 123 into x; select x
+explain begin
+	declare x int;
+	select 123 into x;
+	select x;
+end;
 [{
   "main": {
     "00": "push_nulls          1      0      0     ",
@@ -58,9 +71,19 @@ explain declare x int; select 123 into x; select x
   },
   "access": []
 }]
-declare x int; select 123 into x; select x
+begin
+	declare x int;
+	select 123 into x;
+	select x;
+end;
 [123]
-explain declare x int; select 123 into x; select x; select 15 into x; select x
+explain begin
+	declare x int;
+	select 123 into x;
+	select x;
+	select 15 into x;
+	select x;
+end;
 [{
   "main": {
     "00": "push_nulls          1      0      0     ",
@@ -76,12 +99,21 @@ explain declare x int; select 123 into x; select x; select 15 into x; select x
   },
   "access": []
 }]
-declare x int; select 123 into x; select x; select 15 into x; select x
+begin
+	declare x int;
+	select 123 into x;
+	select x;
+	select 15 into x;
+	select x;
+end;
 [15]
 # test: select from into (no recv)
-create table test (id int primary key)
-insert into test values (1), (2), (3)
-explain declare x int; select id into x from test
+create table test (id int primary key);
+insert into test values (1), (2), (3);
+explain begin
+	declare x int;
+	select id into x from test;
+end;
 [{
   "main": {
     "00": "push_nulls          1      0      0     ",
@@ -105,9 +137,16 @@ explain declare x int; select id into x from test
   },
   "access": [["public.test", "ro"]]
 }]
-declare x int; select id into x from test
+begin
+	declare x int;
+	select id into x from test;
+end;
 # test: select from into / select var
-explain declare x int; select id into x from test; select x
+explain begin
+	declare x int;
+	select id into x from test;
+	select x;
+end;
 [{
   "main": {
     "00": "push_nulls          1      0      0     ",
@@ -132,10 +171,19 @@ explain declare x int; select id into x from test; select x
   },
   "access": [["public.test", "ro"]]
 }]
-declare x int; select id into x from test; select x
+begin
+	declare x int;
+	select id into x from test;
+	select x;
+end;
 [1]
 # test: select from into / select expr / select var
-explain declare x int; select id into x from test; select 123; select x
+explain begin
+	declare x int;
+	select id into x from test;
+	select 123;
+	select x;
+end;
 [{
   "main": {
     "00": "push_nulls          1      0      0     ",
@@ -161,10 +209,20 @@ explain declare x int; select id into x from test; select 123; select x
   },
   "access": [["public.test", "ro"]]
 }]
-declare x int; select id into x from test; select 123; select x
+begin
+	declare x int;
+	select id into x from test;
+	select 123;
+	select x;
+end;
 [1]
 # test: select from into / select from / select var
-explain declare x int; select id into x from test; select * from test; select x
+explain begin
+	declare x int;
+	select id into x from test;
+	select * from test;
+	select x;
+end;
 [{
   "main": {
     "00": "push_nulls          1      0      0     ",
@@ -199,10 +257,20 @@ explain declare x int; select id into x from test; select * from test; select x
   },
   "access": [["public.test", "ro"]]
 }]
-declare x int; select id into x from test; select * from test; select x
+begin
+	declare x int;
+	select id into x from test;
+	select * from test;
+	select x;
+end;
 [1]
 # test: select from into / select expr / select from var
-explain declare x int; select id into x from test; select 123; select * from x
+explain begin
+	declare x int;
+	select id into x from test;
+	select 123;
+	select * from x;
+end;
 [{
   "main": {
     "00": "push_nulls          1      0      0     ",
@@ -239,10 +307,19 @@ explain declare x int; select id into x from test; select 123; select * from x
   },
   "access": [["public.test", "ro"]]
 }]
-declare x int; select id into x from test; select 123; select * from x
+begin
+	declare x int;
+	select id into x from test;
+	select 123;
+	select * from x;
+end;
 [1]
 # test: select from into / select from into
-explain declare x int; select id into x from test; select 123 into x from test
+explain begin
+	declare x int;
+	select id into x from test;
+	select 123 into x from test;
+end;
 [{
   "main": {
     "00": "push_nulls          1      0      0     ",
@@ -280,9 +357,18 @@ explain declare x int; select id into x from test; select 123 into x from test
   },
   "access": [["public.test", "ro"]]
 }]
-declare x int; select id into x from test; select 123 into x from test
+begin
+	declare x int;
+	select id into x from test;
+	select 123 into x from test;
+end;
 # test: select from into / select from into / select var
-explain declare x int; select id into x from test; select 123 into x from test; select x
+explain begin
+	declare x int;
+	select id into x from test;
+	select 123 into x from test;
+	select x;
+end;
 [{
   "main": {
     "00": "push_nulls          1      0      0     ",
@@ -321,10 +407,19 @@ explain declare x int; select id into x from test; select 123 into x from test; 
   },
   "access": [["public.test", "ro"]]
 }]
-declare x int; select id into x from test; select 123 into x from test; select x
+begin
+	declare x int;
+	select id into x from test;
+	select 123 into x from test;
+	select x;
+end;
 [123]
 # test: select expr into / select from into
-explain declare x int; select 123 into x; select id into x from test
+explain begin
+	declare x int;
+	select 123 into x;
+	select id into x from test;
+end;
 [{
   "main": {
     "00": "push_nulls          1      0      0     ",
@@ -351,9 +446,18 @@ explain declare x int; select 123 into x; select id into x from test
   },
   "access": [["public.test", "ro"]]
 }]
-declare x int; select 123 into x; select id into x from test
+begin
+	declare x int;
+	select 123 into x;
+	select id into x from test;
+end;
 # test: select expr into / select from into / select var
-explain declare x int; select 123 into x; select id into x from test; select x
+explain begin
+	declare x int;
+	select 123 into x;
+	select id into x from test;
+	select x;
+end;
 [{
   "main": {
     "00": "push_nulls          1      0      0     ",
@@ -381,10 +485,20 @@ explain declare x int; select 123 into x; select id into x from test; select x
   },
   "access": [["public.test", "ro"]]
 }]
-declare x int; select 123 into x; select id into x from test; select x
+begin
+	declare x int;
+	select 123 into x;
+	select id into x from test;
+	select x;
+end;
 [1]
 # test: select from into / if / select var
-explain declare x int; select id into x from test; if true then end; select x
+explain begin
+	declare x int;
+	select id into x from test;
+	if true then end;
+	select x;
+end;
 [{
   "main": {
     "00": "push_nulls          1      0      0     ",
@@ -414,10 +528,20 @@ explain declare x int; select id into x from test; if true then end; select x
   },
   "access": [["public.test", "ro"]]
 }]
-declare x int; select id into x from test; if true then end; select x
+begin
+	declare x int;
+	select id into x from test;
+	if true then end;
+	select x;
+end;
 [1]
 # test: select from into / if var / select var
-explain declare x int; select id into x from test; if x then end; select x
+explain begin
+	declare x int;
+	select id into x from test;
+	if x then end;
+	select x;
+end;
 [{
   "main": {
     "00": "push_nulls          1      0      0     ",
@@ -447,10 +571,22 @@ explain declare x int; select id into x from test; if x then end; select x
   },
   "access": [["public.test", "ro"]]
 }]
-declare x int; select id into x from test; if x then end; select x
+begin
+	declare x int;
+	select id into x from test;
+	if x then end;
+	select x;
+end;
 [1]
 # test: select from into / if then select var / select var
-explain declare x int; select id into x from test; if true then select x; end; select x
+explain begin
+	declare x int;
+	select id into x from test;
+	if true then
+		select x;
+	end;
+	select x;
+end;
 [{
   "main": {
     "00": "push_nulls          1      0      0     ",
@@ -481,10 +617,24 @@ explain declare x int; select id into x from test; if true then select x; end; s
   },
   "access": [["public.test", "ro"]]
 }]
-declare x int; select id into x from test; if true then select x; end; select x
+begin
+	declare x int;
+	select id into x from test;
+	if true then
+		select x;
+	end;
+	select x;
+end;
 [1]
 # test: select from into / if then var := / select var
-explain declare x int; select id into x from test; if true then x := 7; end; select x
+explain begin
+	declare x int;
+	select id into x from test;
+	if true then
+		x := 7;
+	end;
+	select x;
+end;
 [{
   "main": {
     "00": "push_nulls          1      0      0     ",
@@ -517,10 +667,25 @@ explain declare x int; select id into x from test; if true then x := 7; end; sel
   },
   "access": [["public.test", "ro"]]
 }]
-declare x int; select id into x from test; if true then x := 7; end; select x
+begin
+	declare x int;
+	select id into x from test;
+	if true then
+		x := 7;
+	end;
+	select x;
+end;
 [7]
 # test: select from into / if then := var / select var
-explain declare x int; declare y int; select id into x from test; if true then y := x; end; select x, y
+explain begin
+	declare x int;
+	declare y int;
+	select id into x from test;
+	if true then
+		y := x;
+	end;
+	select x, y;
+end;
 [{
   "main": {
     "00": "push_nulls          2      0      0     ",
@@ -558,10 +723,23 @@ explain declare x int; declare y int; select id into x from test; if true then y
   },
   "access": [["public.test", "ro"]]
 }]
-declare x int; declare y int; select id into x from test; if true then y := x; end; select x, y
+begin
+	declare x int;
+	declare y int;
+	select id into x from test;
+	if true then
+		y := x;
+	end;
+	select x, y;
+end;
 [[1, 1]]
 # test: select from into / if .. else select var / select var
-explain declare x int; select id into x from test; if false then else select x; end; select x
+explain begin
+	declare x int;
+	select id into x from test;
+	if false then else select x; end;
+	select x;
+end;
 [{
   "main": {
     "00": "push_nulls          1      0      0     ",
@@ -592,9 +770,19 @@ explain declare x int; select id into x from test; if false then else select x; 
   },
   "access": [["public.test", "ro"]]
 }]
-declare x int; select id into x from test; if false then else select x; end; select x
+begin
+	declare x int;
+	select id into x from test;
+	if false then else select x; end;
+	select x;
+end;
 [1]
-explain declare x int; select id into x from test; if false then select 1; else select x; end; select x
+explain begin
+	declare x int;
+	select id into x from test;
+	if false then select 1; else select x; end;
+	select x;
+end;
 [{
   "main": {
     "00": "push_nulls          1      0      0     ",
@@ -626,10 +814,20 @@ explain declare x int; select id into x from test; if false then select 1; else 
   },
   "access": [["public.test", "ro"]]
 }]
-declare x int; select id into x from test; if false then else select x; end; select x
+begin
+	declare x int;
+	select id into x from test;
+	if false then select 1; else select x; end;
+	select x;
+end;
 [1]
 # test: select from into / if .. else var := / select var
-explain declare x int; select id into x from test; if false then else x := 7; end; select x
+explain begin
+	declare x int;
+	select id into x from test;
+	if false then else x := 7; end;
+	select x;
+end;
 [{
   "main": {
     "00": "push_nulls          1      0      0     ",
@@ -662,9 +860,19 @@ explain declare x int; select id into x from test; if false then else x := 7; en
   },
   "access": [["public.test", "ro"]]
 }]
-declare x int; select id into x from test; if false then else x := 7; end; select x
+begin
+	declare x int;
+	select id into x from test;
+	if false then else x := 7; end;
+	select x;
+end;
 [7]
-explain declare x int; select id into x from test; if false then select 1; else x := 7; end; select x
+explain begin
+	declare x int;
+	select id into x from test;
+	if false then select 1; else x := 7; end;
+	select x;
+end;
 [{
   "main": {
     "00": "push_nulls          1      0      0     ",
@@ -698,10 +906,21 @@ explain declare x int; select id into x from test; if false then select 1; else 
   },
   "access": [["public.test", "ro"]]
 }]
-declare x int; select id into x from test; if false then select 1; else x := 7; end; select x
+begin
+	declare x int;
+	select id into x from test;
+	if false then select 1; else x := 7; end;
+	select x;
+end;
 [7]
 # test: select from into / if .. else := var / select var
-explain declare x int; declare y int; select id into x from test; if false then else y := x; end; select x, y
+explain begin
+	declare x int;
+	declare y int;
+	select id into x from test;
+	if false then else y := x; end;
+	select x, y;
+end;
 [{
   "main": {
     "00": "push_nulls          2      0      0     ",
@@ -739,9 +958,21 @@ explain declare x int; declare y int; select id into x from test; if false then 
   },
   "access": [["public.test", "ro"]]
 }]
-declare x int; declare y int; select id into x from test; if false then else y := x; end; select x, y
+begin
+	declare x int;
+	declare y int;
+	select id into x from test;
+	if false then else y := x; end;
+	select x, y;
+end;
 [[1, 1]]
-explain declare x int; declare y int; select id into x from test; if false then select 1; else y := x; end; select x, y
+explain begin
+	declare x int;
+	declare y int;
+	select id into x from test;
+	if false then select 1; else y := x; end;
+	select x, y;
+end;
 [{
   "main": {
     "00": "push_nulls          2      0      0     ",
@@ -780,10 +1011,21 @@ explain declare x int; declare y int; select id into x from test; if false then 
   },
   "access": [["public.test", "ro"]]
 }]
-declare x int; declare y int; select id into x from test; if false then select 1; else y := x; end; select x, y
+begin
+	declare x int;
+	declare y int;
+	select id into x from test;
+	if false then select 1; else y := x; end;
+	select x, y;
+end;
 [[1, 1]]
 # test: select from into / if if var / select var
-explain declare x int; select id into x from test; if true then if x then end; end; select x
+explain begin
+	declare x int;
+	select id into x from test;
+	if true then if x then end; end;
+	select x;
+end;
 [{
   "main": {
     "00": "push_nulls          1      0      0     ",
@@ -818,10 +1060,24 @@ explain declare x int; select id into x from test; if true then if x then end; e
   },
   "access": [["public.test", "ro"]]
 }]
-declare x int; select id into x from test; if true then if x then end; end; select x
+begin
+	declare x int;
+	select id into x from test;
+	if true then if x then end; end;
+	select x;
+end;
 [1]
 # test: select from into / if then if select var / select var
-explain declare x int; select id into x from test; if true then if true then select x; end; end; select x
+explain begin
+	declare x int;
+	select id into x from test;
+	if true then	
+   		if true then
+			select x;
+		end;
+	end;
+	select x;
+end;
 [{
   "main": {
     "00": "push_nulls          1      0      0     ",
@@ -857,10 +1113,28 @@ explain declare x int; select id into x from test; if true then if true then sel
   },
   "access": [["public.test", "ro"]]
 }]
-declare x int; select id into x from test; if true then if true then select x; end; end; select x
+begin
+	declare x int;
+	select id into x from test;
+	if true then	
+   		if true then
+			select x;
+		end;
+	end;
+	select x;
+end;
 [1]
 # test: select from into / if then if select into var / select var
-explain declare x int; select id into x from test; if true then if true then select 123 into x; end; end; select x
+explain begin
+	declare x int;
+	select id into x from test;
+	if true then
+		if true then
+			select 123 into x;
+		end;
+	end;
+	select x;
+end;
 [{
   "main": {
     "00": "push_nulls          1      0      0     ",
@@ -898,9 +1172,28 @@ explain declare x int; select id into x from test; if true then if true then sel
   },
   "access": [["public.test", "ro"]]
 }]
-declare x int; select id into x from test; if true then if true then select 123 into x; end; end; select x
+begin
+	declare x int;
+	select id into x from test;
+	if true then
+		if true then
+			select 123 into x;
+		end;
+	end;
+	select x;
+end;
 [123]
-explain declare x int; declare y int; select id into x from test; if true then if true then select 123 into y; x := x + y; end; end; select x
+explain begin declare x int;
+	declare y int;
+	select id into x from test;
+	if true then
+		if true then
+			select 123 into y;
+			x := x + y;
+		end;
+	end;
+	select x;
+end;
 [{
   "main": {
     "00": "push_nulls          2      0      0     ",
@@ -943,10 +1236,26 @@ explain declare x int; declare y int; select id into x from test; if true then i
   },
   "access": [["public.test", "ro"]]
 }]
-declare x int; declare y int; select id into x from test; if true then if true then select 123 into y; x := x + y; end; end; select x
+begin declare x int;
+	declare y int;
+	select id into x from test;
+	if true then
+		if true then
+			select 123 into y;
+			x := x + y;
+		end;
+	end;
+	select x;
+end;
 [124]
 # test: if select into var / select var
-explain declare x int; if true then select * into x from test; end; select x
+explain begin
+	declare x int;
+	if true then
+		select * into x from test;
+	end;
+	select x;
+end;
 [{
   "main": {
     "00": "push_nulls          1      0      0     ",
@@ -977,10 +1286,24 @@ explain declare x int; if true then select * into x from test; end; select x
   },
   "access": [["public.test", "ro"]]
 }]
-declare x int; if true then select * into x from test; end; select x
+begin
+	declare x int;
+	if true then
+		select * into x from test;
+	end;
+	select x;
+end;
 [1]
 # test: if select into var else select into var / select var
-explain declare x int; if true then select id into x from test; else select 7 + id into x from test; end; select x
+explain begin
+	declare x int;
+	if true then
+		select id into x from test;
+	else
+		select 7 + id into x from test;
+	end;
+	select x;
+end;
 [{
   "main": {
     "00": "push_nulls          1      0      0     ",
@@ -1027,9 +1350,25 @@ explain declare x int; if true then select id into x from test; else select 7 + 
   },
   "access": [["public.test", "ro"]]
 }]
-declare x int; if true then select id into x from test; else select 7 + id into x from test; end; select x
+begin
+	declare x int;
+	if true then
+		select id into x from test;
+	else
+		select 7 + id into x from test;
+	end;
+	select x;
+end;
 [1]
-explain declare x int; if false then select id into x from test; else select 7 + id into x from test; end; select x
+explain begin
+	declare x int;
+	if false then
+		select id into x from test;
+	else
+		select 7 + id into x from test;
+	end;
+	select x;
+end;
 [{
   "main": {
     "00": "push_nulls          1      0      0     ",
@@ -1076,10 +1415,27 @@ explain declare x int; if false then select id into x from test; else select 7 +
   },
   "access": [["public.test", "ro"]]
 }]
-declare x int; if false then select id into x from test; else select 7 + id into x from test; end; select x
+begin
+	declare x int;
+	if false then
+		select id into x from test;
+	else
+		select 7 + id into x from test;
+	end;
+	select x;
+end;
 [8]
 # test: select from into / if select into var else select into var / select var
-explain declare x int; select id into x from test; if true then select 5 + id into x from test; else select 10 + id into x from test; end; select x
+explain begin
+	declare x int;
+	select id into x from test;
+	if true then
+		select 5 + id into x from test;
+	else
+		select 10 + id into x from test;
+	end;
+	select x;
+end;
 [{
   "main": {
     "00": "push_nulls          1      0      0     ",
@@ -1142,9 +1498,27 @@ explain declare x int; select id into x from test; if true then select 5 + id in
   },
   "access": [["public.test", "ro"]]
 }]
-declare x int; select id into x from test; if true then select 5 + id into x from test; else select 10 + id into x from test; end; select x
+begin
+	declare x int;
+	select id into x from test;
+	if true then
+		select 5 + id into x from test;
+	else
+		select 10 + id into x from test;
+	end;
+	select x;
+end;
 [6]
-explain declare x int; select id into x from test; if false then select 5 + id into x from test; else select 10 + id into x from test; end; select x
+explain begin
+	declare x int;
+	select id into x from test;
+	if false then
+		select 5 + id into x from test;
+	else
+		select 10 + id into x from test;
+	end;
+	select x;
+end;
 [{
   "main": {
     "00": "push_nulls          1      0      0     ",
@@ -1207,10 +1581,23 @@ explain declare x int; select id into x from test; if false then select 5 + id i
   },
   "access": [["public.test", "ro"]]
 }]
-declare x int; select id into x from test; if false then select 5 + id into x from test; else select 10 + id into x from test; end; select x
+begin
+	declare x int;
+	select id into x from test;
+	if false then
+		select 5 + id into x from test;
+	else
+		select 10 + id into x from test;
+	end;
+	select x;
+end;
 [11]
 # test: select from into / for in var
-explain declare x int; select id into x from test; for it in x do end
+explain begin
+	declare x int;
+	select id into x from test;
+	for it in x do end;
+end;
 [{
   "main": {
     "00": "push_nulls          1      0      0     ",
@@ -1242,9 +1629,19 @@ explain declare x int; select id into x from test; for it in x do end
   },
   "access": [["public.test", "ro"]]
 }]
-declare x int; select id into x from test; for it in x do end
+begin
+	declare x int;
+	select id into x from test;
+	for it in x do end;
+end;
 # test: select from into / for do select var
-explain declare x int; select id into x from test; for it in ([1,2,3]) do select x; end
+explain begin
+	declare x int;
+	select id into x from test;
+	for it in ([1,2,3]) do
+		select x;
+	end;
+end;
 [{
   "main": {
     "00": "push_nulls          1      0      0     ",
@@ -1274,9 +1671,22 @@ explain declare x int; select id into x from test; for it in ([1,2,3]) do select
   },
   "access": [["public.test", "ro"]]
 }]
-declare x int; select id into x from test; for it in ([1,2,3]) do select x; end
+begin
+	declare x int;
+	select id into x from test;
+	for it in ([1,2,3]) do
+		select x;
+	end;
+end;
 # test: select from into / for do var :=
-explain declare x int; select id into x from test; for it in ([1,2,3]) do x := it::int; end; select x
+explain begin
+	declare x int;
+	select id into x from test;
+	for it in ([1,2,3]) do
+		x := it::int;
+	end;
+	select x;
+end;
 [{
   "main": {
     "00": "push_nulls          1      0      0     ",
@@ -1311,9 +1721,24 @@ explain declare x int; select id into x from test; for it in ([1,2,3]) do x := i
   },
   "access": [["public.test", "ro"]]
 }]
-declare x int; select id into x from test; for it in ([1,2,3]) do x := it::int; end; select x
+begin
+	declare x int;
+	select id into x from test;
+	for it in ([1,2,3]) do
+		x := it::int;
+	end;
+	select x;
+end;
 [3]
-explain declare x int; declare y int; select id into x from test; for it in ([1,2,3]) do y := x + it::int; end; select x, y
+explain begin
+	declare x int;
+	declare y int;
+	select id into x from test;
+	for it in ([1,2,3]) do
+		y := x + it::int;
+	end;
+	select x, y;
+end;
 [{
   "main": {
     "00": "push_nulls          2      0      0     ",
@@ -1355,10 +1780,25 @@ explain declare x int; declare y int; select id into x from test; for it in ([1,
   },
   "access": [["public.test", "ro"]]
 }]
-declare x int; declare y int; select id into x from test; for it in ([1,2,3]) do y := x + it::int; end; select x, y
+begin
+	declare x int;
+	declare y int;
+	select id into x from test;
+	for it in ([1,2,3]) do
+		y := x + it::int;
+	end;
+	select x, y;
+end;
 [[1, 4]]
 # test: select from into / for / select var
-explain declare x int; select id into x from test; for it in ([1,2,3]) do if true then end; end; select x
+explain begin
+	declare x int;
+	select id into x from test;
+	for it in ([1,2,3]) do
+		if true then end;
+	end;
+	select x;
+end;
 [{
   "main": {
     "00": "push_nulls          1      0      0     ",
@@ -1393,10 +1833,23 @@ explain declare x int; select id into x from test; for it in ([1,2,3]) do if tru
   },
   "access": [["public.test", "ro"]]
 }]
-declare x int; select id into x from test; for it in ([1,2,3]) do if true then end; end; select x
+begin
+	declare x int;
+	select id into x from test;
+	for it in ([1,2,3]) do
+		if true then end;
+	end;
+	select x;
+end;
 [1]
 # test: select from into / for if var
-explain declare x int; select id into x from test; for it in ([1,2,3]) do if x then end; end;
+explain begin
+	declare x int;
+	select id into x from test;
+	for it in ([1,2,3]) do
+		if x then end;
+	end;
+end;
 [{
   "main": {
     "00": "push_nulls          1      0      0     ",
@@ -1430,9 +1883,21 @@ explain declare x int; select id into x from test; for it in ([1,2,3]) do if x t
   },
   "access": [["public.test", "ro"]]
 }]
-declare x int; select id into x from test; for it in ([1,2,3]) do if x then end; end;
+begin
+	declare x int;
+	select id into x from test;
+	for it in ([1,2,3]) do
+		if x then end;
+	end;
+end;
 # test: select from into / for if then var
-explain declare x int; select id into x from test; for it in ([1,2,3]) do if true then select x; end; end;
+explain begin
+	declare x int;
+	select id into x from test;
+	for it in ([1,2,3]) do
+		if true then select x; end;
+	end;
+end;
 [{
   "main": {
     "00": "push_nulls          1      0      0     ",
@@ -1467,8 +1932,24 @@ explain declare x int; select id into x from test; for it in ([1,2,3]) do if tru
   },
   "access": [["public.test", "ro"]]
 }]
-declare x int; select id into x from test; for it in ([1,2,3]) do if true then select x; end; end;
-explain declare x int; declare y int; select id into x from test; for it in ([1,2,3]) do if true then y := x + it::int; end; end; select x, y
+begin
+	declare x int;
+	select id into x from test;
+	for it in ([1,2,3]) do
+		if true then select x; end;
+	end;
+end;
+explain begin
+	declare x int;
+	declare y int;
+	select id into x from test;
+	for it in ([1,2,3]) do
+		if true then
+			y := x + it::int;
+		end;
+	end;
+	select x, y;
+end;
 [{
   "main": {
     "00": "push_nulls          2      0      0     ",
@@ -1515,9 +1996,27 @@ explain declare x int; declare y int; select id into x from test; for it in ([1,
   },
   "access": [["public.test", "ro"]]
 }]
-declare x int; declare y int; select id into x from test; for it in ([1,2,3]) do if true then y := x + it::int; end; end; select x, y
+begin
+	declare x int;
+	declare y int;
+	select id into x from test;
+	for it in ([1,2,3]) do
+		if true then
+			y := x + it::int;
+		end;
+	end;
+	select x, y;
+end;
 [[1, 4]]
-explain declare x int := 0; for it in ([1,2,3]) do if true then x := x + it::int; end; end; select x
+explain begin
+	declare x int := 0;
+	for it in ([1,2,3]) do
+		if true then
+			x := x + it::int;
+		end;
+	end;
+	select x;
+end;
 [{
   "main": {
     "00": "push_nulls          1      0      0     ",
@@ -1546,9 +2045,23 @@ explain declare x int := 0; for it in ([1,2,3]) do if true then x := x + it::int
   },
   "access": []
 }]
-declare x int := 0; for it in ([1,2,3]) do if true then x := x + it::int; end; end; select x
+begin
+	declare x int := 0;
+	for it in ([1,2,3]) do
+		if true then
+			x := x + it::int;
+		end;
+	end;
+	select x;
+end;
 [6]
-explain declare x int := 0; for it in ([1,2,3]) do x := x + it::int; end; select x
+explain begin
+	declare x int := 0;
+	for it in ([1,2,3]) do
+		x := x + it::int;
+	end;
+	select x;
+end;
 [{
   "main": {
     "00": "push_nulls          1      0      0     ",
@@ -1572,10 +2085,28 @@ explain declare x int := 0; for it in ([1,2,3]) do x := x + it::int; end; select
   },
   "access": []
 }]
-declare x int := 0; for it in ([1,2,3]) do x := x + it::int; end; select x
+begin
+	declare x int := 0;
+	for it in ([1,2,3]) do
+		x := x + it::int;
+	end;
+	select x;
+end;
 [6]
 # test: select from into / for if if then var
-explain declare x int; declare y int; select id into x from test; for it in ([1,2,3]) do if true then if true then y := x + it::int; end; end; end; select x, y
+explain begin
+	declare x int;
+	declare y int;
+	select id into x from test;
+	for it in ([1,2,3]) do
+		if true then
+			if true then
+				y := x + it::int;
+			end;
+		end;
+	end;
+	select x, y;
+end;
 [{
   "main": {
     "00": "push_nulls          2      0      0     ",
@@ -1627,8 +2158,20 @@ explain declare x int; declare y int; select id into x from test; for it in ([1,
   },
   "access": [["public.test", "ro"]]
 }]
-declare x int; declare y int; select id into x from test; for it in ([1,2,3]) do if true then if true then y := x + it::int; end; end; end; select x, y
+begin
+	declare x int;
+	declare y int;
+	select id into x from test;
+	for it in ([1,2,3]) do
+		if true then
+			if true then
+				y := x + it::int;
+			end;
+		end;
+	end;
+	select x, y;
+end;
 [[1, 4]]
-drop table test
-disconnect S0
-close E0
+drop table test;
+disconnect S0;
+close E0;
