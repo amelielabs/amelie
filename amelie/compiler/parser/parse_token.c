@@ -45,6 +45,7 @@ parse_token_create(Stmt* self)
 	// CREATE TOKEN name [EXPIRE interval]
 	auto stmt = ast_token_create_allocate();
 	self->ast = &stmt->ast;
+	self->ret = &stmt->ret;
 
 	// name
 	stmt->user = stmt_expect(self, KNAME);
@@ -55,4 +56,13 @@ parse_token_create(Stmt* self)
 		// value
 		stmt->expire = stmt_expect(self, KSTRING);
 	}
+
+	// set returning column
+	auto column = column_allocate();
+	column_set_name(column, &stmt->user->string);
+	column_set_type(column, TYPE_JSON, -1);
+	columns_add(&stmt->ret.columns, column);
+
+	// set format
+	stmt->ret.format = *self->parser->local->format;
 }

@@ -13,7 +13,7 @@ explain select * from test;
     "01": "send_all            0      -      0     # public.test (last)",
     "02": "union_recv          0      0      0     ",
     "03": "union_set           0      0      -1    ",
-    "04": "ret                 0      -1     -     "
+    "04": "ret                 0      0      -     "
   },
   "pushdown": {
     "00": "set                 0      2      0     ",
@@ -25,7 +25,7 @@ explain select * from test;
     "06": "set_add             0      0      0     ",
     "07": "table_next          1      2      0     ",
     "08": "free                1      0      0     ",
-    "09": "ret                 0      -1     -     "
+    "09": "ret                 0      0      -     "
   },
   "access": [["public.test", "ro"]]
 }]
@@ -50,7 +50,7 @@ explain select * from test use index (i);
     "01": "send_all            0      -      0     # public.test (last)",
     "02": "union_recv          0      0      0     ",
     "03": "union_set           0      0      -1    ",
-    "04": "ret                 0      -1     -     "
+    "04": "ret                 0      0      -     "
   },
   "pushdown": {
     "00": "set                 0      2      0     ",
@@ -62,7 +62,7 @@ explain select * from test use index (i);
     "06": "set_add             0      0      0     ",
     "07": "table_next          1      2      0     ",
     "08": "free                1      0      0     ",
-    "09": "ret                 0      -1     -     "
+    "09": "ret                 0      0      -     "
   },
   "access": [["public.test", "ro"]]
 }]
@@ -82,7 +82,7 @@ explain select * from test;
     "01": "send_all            0      -      0     # public.test (last)",
     "02": "union_recv          0      0      0     ",
     "03": "union_set           0      0      -1    ",
-    "04": "ret                 0      -1     -     "
+    "04": "ret                 0      0      -     "
   },
   "pushdown": {
     "00": "set                 0      2      0     ",
@@ -94,7 +94,7 @@ explain select * from test;
     "06": "set_add             0      0      0     ",
     "07": "table_next          1      2      0     ",
     "08": "free                1      0      0     ",
-    "09": "ret                 0      -1     -     "
+    "09": "ret                 0      0      -     "
   },
   "access": [["public.test", "ro"]]
 }]
@@ -105,7 +105,7 @@ explain select * from test use heap;
     "01": "send_all            0      -      0     # public.test (last)",
     "02": "union_recv          0      0      0     ",
     "03": "union_set           0      0      -1    ",
-    "04": "ret                 0      -1     -     "
+    "04": "ret                 0      0      -     "
   },
   "pushdown": {
     "00": "set                 0      2      0     ",
@@ -117,7 +117,7 @@ explain select * from test use heap;
     "06": "set_add             0      0      0     ",
     "07": "table_next          1      2      0     ",
     "08": "free                1      0      0     ",
-    "09": "ret                 0      -1     -     "
+    "09": "ret                 0      0      -     "
   },
   "access": [["public.test", "ro"]]
 }]
@@ -148,7 +148,7 @@ explain select * from test;
     "01": "send_all            0      -      0     # public.test (last)",
     "02": "union_recv          0      0      0     ",
     "03": "union_set           0      0      -1    ",
-    "04": "ret                 0      -1     -     "
+    "04": "ret                 0      0      -     "
   },
   "pushdown": {
     "00": "set                 0      2      0     ",
@@ -160,7 +160,7 @@ explain select * from test;
     "06": "set_add             0      0      0     ",
     "07": "table_next          1      2      0     ",
     "08": "free                1      0      0     ",
-    "09": "ret                 0      -1     -     "
+    "09": "ret                 0      0      -     "
   },
   "access": [["public.test", "ro"]]
 }]
@@ -175,7 +175,7 @@ explain select * from test where data = 2;
     "01": "send_all            0      -      0     # public.test (last)",
     "02": "union_recv          0      0      0     ",
     "03": "union_set           0      0      -1    ",
-    "04": "ret                 0      -1     -     "
+    "04": "ret                 0      0      -     "
   },
   "pushdown": {
     "00": "set                 0      2      0     ",
@@ -192,7 +192,7 @@ explain select * from test where data = 2;
     "11": "push                2      0      0     ",
     "12": "set_add             0      0      0     ",
     "13": "free                1      0      0     ",
-    "14": "ret                 0      -1     -     "
+    "14": "ret                 0      0      -     "
   },
   "access": [["public.test", "ro"]]
 }]
@@ -205,7 +205,7 @@ explain select * from test where id = 1;
     "01": "send_all            0      -      0     # public.test (last)",
     "02": "union_recv          0      0      0     ",
     "03": "union_set           0      0      -1    ",
-    "04": "ret                 0      -1     -     "
+    "04": "ret                 0      0      -     "
   },
   "pushdown": {
     "00": "set                 0      2      0     ",
@@ -223,7 +223,7 @@ explain select * from test where id = 1;
     "12": "set_add             0      0      0     ",
     "13": "table_next          1      4      0     ",
     "14": "free                1      0      0     ",
-    "15": "ret                 0      -1     -     "
+    "15": "ret                 0      0      -     "
   },
   "access": [["public.test", "ro"]]
 }]
@@ -236,7 +236,7 @@ explain select * from test where id = 1 and data = 1;
     "01": "send_lookup         0      -      -     # public.test (last)",
     "02": "union_recv          0      0      0     ",
     "03": "union_set           0      0      -1    ",
-    "04": "ret                 0      -1     -     "
+    "04": "ret                 0      0      -     "
   },
   "pushdown": {
     "00": "set                 0      2      0     ",
@@ -259,7 +259,7 @@ explain select * from test where id = 1 and data = 1;
     "17": "push                2      0      0     ",
     "18": "set_add             0      0      0     ",
     "19": "free                1      0      0     ",
-    "20": "ret                 0      -1     -     "
+    "20": "ret                 0      0      -     "
   },
   "access": [["public.test", "ro"]]
 }]
@@ -272,7 +272,7 @@ explain select * from test where data = 1 and id = 1;
     "01": "send_lookup         0      -      -     # public.test (last)",
     "02": "union_recv          0      0      0     ",
     "03": "union_set           0      0      -1    ",
-    "04": "ret                 0      -1     -     "
+    "04": "ret                 0      0      -     "
   },
   "pushdown": {
     "00": "set                 0      2      0     ",
@@ -295,7 +295,7 @@ explain select * from test where data = 1 and id = 1;
     "17": "push                2      0      0     ",
     "18": "set_add             0      0      0     ",
     "19": "free                1      0      0     ",
-    "20": "ret                 0      -1     -     "
+    "20": "ret                 0      0      -     "
   },
   "access": [["public.test", "ro"]]
 }]
@@ -315,7 +315,7 @@ explain select * from test where id = 1;
     "01": "send_lookup         0      -      -     # public.test (last)",
     "02": "union_recv          0      0      0     ",
     "03": "union_set           0      0      -1    ",
-    "04": "ret                 0      -1     -     "
+    "04": "ret                 0      0      -     "
   },
   "pushdown": {
     "00": "set                 0      2      0     ",
@@ -332,7 +332,7 @@ explain select * from test where id = 1;
     "11": "push                2      0      0     ",
     "12": "set_add             0      0      0     ",
     "13": "free                1      0      0     ",
-    "14": "ret                 0      -1     -     "
+    "14": "ret                 0      0      -     "
   },
   "access": [["public.test", "ro"]]
 }]
@@ -345,7 +345,7 @@ explain select * from test where id > 1;
     "01": "send_all            0      -      0     # public.test (last)",
     "02": "union_recv          0      0      0     ",
     "03": "union_set           0      0      -1    ",
-    "04": "ret                 0      -1     -     "
+    "04": "ret                 0      0      -     "
   },
   "pushdown": {
     "00": "set                 0      2      0     ",
@@ -363,7 +363,7 @@ explain select * from test where id > 1;
     "12": "set_add             0      0      0     ",
     "13": "table_next          1      4      0     ",
     "14": "free                1      0      0     ",
-    "15": "ret                 0      -1     -     "
+    "15": "ret                 0      0      -     "
   },
   "access": [["public.test", "ro"]]
 }]
@@ -376,7 +376,7 @@ explain select * from test where data > 1;
     "01": "send_all            0      -      0     # public.test (last)",
     "02": "union_recv          0      0      0     ",
     "03": "union_set           0      0      -1    ",
-    "04": "ret                 0      -1     -     "
+    "04": "ret                 0      0      -     "
   },
   "pushdown": {
     "00": "set                 0      2      0     ",
@@ -392,7 +392,7 @@ explain select * from test where data > 1;
     "10": "set_add             0      0      0     ",
     "11": "table_next          1      2      0     ",
     "12": "free                1      0      0     ",
-    "13": "ret                 0      -1     -     "
+    "13": "ret                 0      0      -     "
   },
   "access": [["public.test", "ro"]]
 }]
@@ -406,7 +406,7 @@ explain select * from test where data = 1;
     "01": "send_all            0      -      0     # public.test (last)",
     "02": "union_recv          0      0      0     ",
     "03": "union_set           0      0      -1    ",
-    "04": "ret                 0      -1     -     "
+    "04": "ret                 0      0      -     "
   },
   "pushdown": {
     "00": "set                 0      2      0     ",
@@ -422,7 +422,7 @@ explain select * from test where data = 1;
     "10": "set_add             0      0      0     ",
     "11": "table_next          1      2      0     ",
     "12": "free                1      0      0     ",
-    "13": "ret                 0      -1     -     "
+    "13": "ret                 0      0      -     "
   },
   "access": [["public.test", "ro"]]
 }]
@@ -455,7 +455,7 @@ explain select * from test where data = 1 and id = 1;
     "01": "send_lookup         0      -      -     # public.test (last)",
     "02": "union_recv          0      0      0     ",
     "03": "union_set           0      0      -1    ",
-    "04": "ret                 0      -1     -     "
+    "04": "ret                 0      0      -     "
   },
   "pushdown": {
     "00": "set                 0      2      0     ",
@@ -479,7 +479,7 @@ explain select * from test where data = 1 and id = 1;
     "18": "set_add             0      0      0     ",
     "19": "table_next          1      6      0     ",
     "20": "free                1      0      0     ",
-    "21": "ret                 0      -1     -     "
+    "21": "ret                 0      0      -     "
   },
   "access": [["public.test", "ro"]]
 }]
@@ -493,7 +493,7 @@ explain select * from test where id = 1 and data = 1;
     "01": "send_lookup         0      -      -     # public.test (last)",
     "02": "union_recv          0      0      0     ",
     "03": "union_set           0      0      -1    ",
-    "04": "ret                 0      -1     -     "
+    "04": "ret                 0      0      -     "
   },
   "pushdown": {
     "00": "set                 0      2      0     ",
@@ -517,7 +517,7 @@ explain select * from test where id = 1 and data = 1;
     "18": "set_add             0      0      0     ",
     "19": "table_next          1      6      0     ",
     "20": "free                1      0      0     ",
-    "21": "ret                 0      -1     -     "
+    "21": "ret                 0      0      -     "
   },
   "access": [["public.test", "ro"]]
 }]
@@ -538,7 +538,7 @@ explain select * from test where id > 1;
     "01": "send_all            0      -      0     # public.test (last)",
     "02": "union_recv          0      0      0     ",
     "03": "union_set           0      0      -1    ",
-    "04": "ret                 0      -1     -     "
+    "04": "ret                 0      0      -     "
   },
   "pushdown": {
     "00": "set                 0      2      0     ",
@@ -556,7 +556,7 @@ explain select * from test where id > 1;
     "12": "set_add             0      0      0     ",
     "13": "table_next          1      4      0     ",
     "14": "free                1      0      0     ",
-    "15": "ret                 0      -1     -     "
+    "15": "ret                 0      0      -     "
   },
   "access": [["public.test", "ro"]]
 }]
@@ -569,7 +569,7 @@ explain select * from test where data > 1;
     "01": "send_all            0      -      0     # public.test (last)",
     "02": "union_recv          0      0      0     ",
     "03": "union_set           0      0      -1    ",
-    "04": "ret                 0      -1     -     "
+    "04": "ret                 0      0      -     "
   },
   "pushdown": {
     "00": "set                 0      2      0     ",
@@ -587,7 +587,7 @@ explain select * from test where data > 1;
     "12": "set_add             0      0      0     ",
     "13": "table_next          1      4      0     ",
     "14": "free                1      0      0     ",
-    "15": "ret                 0      -1     -     "
+    "15": "ret                 0      0      -     "
   },
   "access": [["public.test", "ro"]]
 }]
@@ -601,7 +601,7 @@ explain select * from test where data < 1;
     "01": "send_all            0      -      0     # public.test (last)",
     "02": "union_recv          0      0      0     ",
     "03": "union_set           0      0      -1    ",
-    "04": "ret                 0      -1     -     "
+    "04": "ret                 0      0      -     "
   },
   "pushdown": {
     "00": "set                 0      2      0     ",
@@ -621,7 +621,7 @@ explain select * from test where data < 1;
     "14": "set_add             0      0      0     ",
     "15": "table_next          1      2      0     ",
     "16": "free                1      0      0     ",
-    "17": "ret                 0      -1     -     "
+    "17": "ret                 0      0      -     "
   },
   "access": [["public.test", "ro"]]
 }]
@@ -634,7 +634,7 @@ explain select * from test where id < 1;
     "01": "send_all            0      -      0     # public.test (last)",
     "02": "union_recv          0      0      0     ",
     "03": "union_set           0      0      -1    ",
-    "04": "ret                 0      -1     -     "
+    "04": "ret                 0      0      -     "
   },
   "pushdown": {
     "00": "set                 0      2      0     ",
@@ -654,7 +654,7 @@ explain select * from test where id < 1;
     "14": "set_add             0      0      0     ",
     "15": "table_next          1      2      0     ",
     "16": "free                1      0      0     ",
-    "17": "ret                 0      -1     -     "
+    "17": "ret                 0      0      -     "
   },
   "access": [["public.test", "ro"]]
 }]
@@ -667,7 +667,7 @@ explain select * from test where id < 1 and data < 2;
     "01": "send_all            0      -      0     # public.test (last)",
     "02": "union_recv          0      0      0     ",
     "03": "union_set           0      0      -1    ",
-    "04": "ret                 0      -1     -     "
+    "04": "ret                 0      0      -     "
   },
   "pushdown": {
     "00": "set                 0      2      0     ",
@@ -691,7 +691,7 @@ explain select * from test where id < 1 and data < 2;
     "18": "set_add             0      0      0     ",
     "19": "table_next          1      2      0     ",
     "20": "free                1      0      0     ",
-    "21": "ret                 0      -1     -     "
+    "21": "ret                 0      0      -     "
   },
   "access": [["public.test", "ro"]]
 }]

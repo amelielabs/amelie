@@ -9,7 +9,7 @@ explain select distinct * from test;
     "01": "send_all            0      -      0     # public.test (last)",
     "02": "union_recv          0      0      0     ",
     "03": "union_set           0      1      -1    ",
-    "04": "ret                 0      -1     -     "
+    "04": "ret                 0      0      -     "
   },
   "pushdown": {
     "00": "set_ordered         0      2      2     ",
@@ -26,7 +26,7 @@ explain select distinct * from test;
     "11": "table_next          1      2      0     ",
     "12": "free                1      0      0     ",
     "13": "set_sort            0      0      0     ",
-    "14": "ret                 0      -1     -     "
+    "14": "ret                 0      0      -     "
   },
   "access": [["public.test", "ro"]]
 }]
@@ -46,7 +46,7 @@ explain select distinct * from test;
     "01": "send_all            0      -      0     # public.test (last)",
     "02": "union_recv          0      0      0     ",
     "03": "union_set           0      1      -1    ",
-    "04": "ret                 0      -1     -     "
+    "04": "ret                 0      0      -     "
   },
   "pushdown": {
     "00": "set_ordered         0      2      2     ",
@@ -63,7 +63,7 @@ explain select distinct * from test;
     "11": "table_next          1      2      0     ",
     "12": "free                1      0      0     ",
     "13": "set_sort            0      0      0     ",
-    "14": "ret                 0      -1     -     "
+    "14": "ret                 0      0      -     "
   },
   "access": [["public.test", "ro"]]
 }]
@@ -77,7 +77,7 @@ explain select distinct id from test;
     "01": "send_all            0      -      0     # public.test (last)",
     "02": "union_recv          0      0      0     ",
     "03": "union_set           0      1      -1    ",
-    "04": "ret                 0      -1     -     "
+    "04": "ret                 0      0      -     "
   },
   "pushdown": {
     "00": "set_ordered         0      1      1     ",
@@ -90,7 +90,7 @@ explain select distinct id from test;
     "07": "table_next          1      2      0     ",
     "08": "free                1      0      0     ",
     "09": "set_sort            0      0      0     ",
-    "10": "ret                 0      -1     -     "
+    "10": "ret                 0      0      -     "
   },
   "access": [["public.test", "ro"]]
 }]
@@ -106,7 +106,7 @@ explain select distinct id, data from test;
     "01": "send_all            0      -      0     # public.test (last)",
     "02": "union_recv          0      0      0     ",
     "03": "union_set           0      1      -1    ",
-    "04": "ret                 0      -1     -     "
+    "04": "ret                 0      0      -     "
   },
   "pushdown": {
     "00": "set_ordered         0      2      2     ",
@@ -123,7 +123,7 @@ explain select distinct id, data from test;
     "11": "table_next          1      2      0     ",
     "12": "free                1      0      0     ",
     "13": "set_sort            0      0      0     ",
-    "14": "ret                 0      -1     -     "
+    "14": "ret                 0      0      -     "
   },
   "access": [["public.test", "ro"]]
 }]
@@ -138,7 +138,7 @@ explain select distinct data from test limit 4;
     "02": "union_recv          0      0      0     ",
     "03": "int                 1      -      0     # 4",
     "04": "union_set           0      1      1     ",
-    "05": "ret                 0      -1     -     "
+    "05": "ret                 0      0      -     "
   },
   "pushdown": {
     "00": "set_ordered         0      1      1     ",
@@ -151,7 +151,7 @@ explain select distinct data from test limit 4;
     "07": "table_next          1      2      0     ",
     "08": "free                1      0      0     ",
     "09": "set_sort            0      0      0     ",
-    "10": "ret                 0      -1     -     "
+    "10": "ret                 0      0      -     "
   },
   "access": [["public.test", "ro"]]
 }]
@@ -166,7 +166,7 @@ explain select distinct data from test limit 0;
     "02": "union_recv          0      0      0     ",
     "03": "int                 1      -      0     # 0",
     "04": "union_set           0      1      1     ",
-    "05": "ret                 0      -1     -     "
+    "05": "ret                 0      0      -     "
   },
   "pushdown": {
     "00": "set_ordered         0      1      1     ",
@@ -179,7 +179,7 @@ explain select distinct data from test limit 0;
     "07": "table_next          1      2      0     ",
     "08": "free                1      0      0     ",
     "09": "set_sort            0      0      0     ",
-    "10": "ret                 0      -1     -     "
+    "10": "ret                 0      0      -     "
   },
   "access": [["public.test", "ro"]]
 }]
@@ -195,7 +195,7 @@ explain select distinct data from test limit 1 offset 1;
     "03": "int                 1      -      0     # 1",
     "04": "int                 2      -      0     # 1",
     "05": "union_set           0      1      1     ",
-    "06": "ret                 0      -1     -     "
+    "06": "ret                 0      0      -     "
   },
   "pushdown": {
     "00": "set_ordered         0      1      1     ",
@@ -208,7 +208,7 @@ explain select distinct data from test limit 1 offset 1;
     "07": "table_next          1      2      0     ",
     "08": "free                1      0      0     ",
     "09": "set_sort            0      0      0     ",
-    "10": "ret                 0      -1     -     "
+    "10": "ret                 0      0      -     "
   },
   "access": [["public.test", "ro"]]
 }]
@@ -229,7 +229,7 @@ explain select distinct data from test offset 1;
     "02": "union_recv          0      0      0     ",
     "03": "int                 1      -      0     # 1",
     "04": "union_set           0      1      -1    ",
-    "05": "ret                 0      -1     -     "
+    "05": "ret                 0      0      -     "
   },
   "pushdown": {
     "00": "set_ordered         0      1      1     ",
@@ -242,7 +242,7 @@ explain select distinct data from test offset 1;
     "07": "table_next          1      2      0     ",
     "08": "free                1      0      0     ",
     "09": "set_sort            0      0      0     ",
-    "10": "ret                 0      -1     -     "
+    "10": "ret                 0      0      -     "
   },
   "access": [["public.test", "ro"]]
 }]
@@ -283,7 +283,7 @@ explain select * from test order by data;
     "01": "send_all            0      -      0     # public.test (last)",
     "02": "union_recv          0      0      0     ",
     "03": "union_set           0      0      -1    ",
-    "04": "ret                 0      -1     -     "
+    "04": "ret                 0      0      -     "
   },
   "pushdown": {
     "00": "set_ordered         0      2      1     ",
@@ -298,7 +298,7 @@ explain select * from test order by data;
     "09": "table_next          1      2      0     ",
     "10": "free                1      0      0     ",
     "11": "set_sort            0      0      0     ",
-    "12": "ret                 0      -1     -     "
+    "12": "ret                 0      0      -     "
   },
   "access": [["public.test", "ro"]]
 }]
@@ -309,7 +309,7 @@ explain select distinct on (data) * from test;
     "01": "send_all            0      -      0     # public.test (last)",
     "02": "union_recv          0      0      0     ",
     "03": "union_set           0      1      -1    ",
-    "04": "ret                 0      -1     -     "
+    "04": "ret                 0      0      -     "
   },
   "pushdown": {
     "00": "set_ordered         0      2      1     ",
@@ -324,7 +324,7 @@ explain select distinct on (data) * from test;
     "09": "table_next          1      2      0     ",
     "10": "free                1      0      0     ",
     "11": "set_sort            0      0      0     ",
-    "12": "ret                 0      -1     -     "
+    "12": "ret                 0      0      -     "
   },
   "access": [["public.test", "ro"]]
 }]

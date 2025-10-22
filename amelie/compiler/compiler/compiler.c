@@ -358,7 +358,7 @@ emit_stmt_backend(Compiler* self, Stmt* stmt)
 	}
 
 	// CRET
-	op5(self, CRET, r, -1, 0, 0, 0);
+	op1(self, CRET, r);
 	if (r != -1)
 		runpin(self, r);
 	return start;
@@ -562,12 +562,7 @@ emit_return(Compiler* self, Stmt* stmt)
 {
 	compiler_switch_frontend(self);
 
-	auto     r          = -1;
-	auto     var        = -1;
-	auto     var_is_arg = false;
-	Columns* columns    = NULL;
-	Str*     fmt        = NULL;
-
+	auto r = -1;
 	if (stmt->id == STMT_RETURN)
 	{
 		// null
@@ -575,18 +570,16 @@ emit_return(Compiler* self, Stmt* stmt)
 	if (stmt->ret)
 	{
 		emit_recv(self, stmt);
-		r       =  stmt->r;
-		columns = &stmt->ret->columns;
-		fmt     = &stmt->ret->format;
+		r =  stmt->r;
 
+		// validate return type
 		auto udf = stmt->block->ns->udf;
 		if (udf && udf->type != rtype(self, r))
-			stmt_error(stmt, stmt->ast, "RETURN does not match function type");
+			stmt_error(stmt, stmt->ast, "RETURN type '%s' mismatch function type '%s'",
+			           type_of(rtype(self, r)),
+			           type_of(udf->type));
 	}
-
-	op5(self, CRET, r, var, var_is_arg,
-	    (intptr_t)columns,
-	    (intptr_t)fmt);
+	op1(self, CRET, r);
 }
 
 hot static void

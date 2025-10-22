@@ -38,7 +38,7 @@ explain select 1;
 [{
   "main": {
     "00": "int                 0      -      0     # 1",
-    "01": "ret                 0      -1     -     "
+    "01": "ret                 0      0      -     "
   },
   "access": []
 }]
@@ -46,7 +46,7 @@ explain select [1, 2, 3];
 [{
   "main": {
     "00": "json                0      0      0     ",
-    "01": "ret                 0      -1     -     "
+    "01": "ret                 0      0      -     "
   },
   "access": []
 }]
@@ -74,7 +74,7 @@ explain select * from test;
     "01": "send_all            0      -      0     # public.test (last)",
     "02": "union_recv          0      0      0     ",
     "03": "union_set           0      0      -1    ",
-    "04": "ret                 0      -1     -     "
+    "04": "ret                 0      0      -     "
   },
   "pushdown": {
     "00": "set                 0      1      0     ",
@@ -84,7 +84,7 @@ explain select * from test;
     "04": "set_add             0      0      0     ",
     "05": "table_next          1      2      0     ",
     "06": "free                1      0      0     ",
-    "07": "ret                 0      -1     -     "
+    "07": "ret                 0      0      -     "
   },
   "access": [["public.test", "ro"]]
 }]
@@ -115,7 +115,7 @@ explain select id, data from test;
     "01": "send_all            0      -      0     # public.test (last)",
     "02": "union_recv          0      0      0     ",
     "03": "union_set           0      0      -1    ",
-    "04": "ret                 0      -1     -     "
+    "04": "ret                 0      0      -     "
   },
   "pushdown": {
     "00": "set                 0      2      0     ",
@@ -127,7 +127,7 @@ explain select id, data from test;
     "06": "set_add             0      0      0     ",
     "07": "table_next          1      2      0     ",
     "08": "free                1      0      0     ",
-    "09": "ret                 0      -1     -     "
+    "09": "ret                 0      0      -     "
   },
   "access": [["public.test", "ro"]]
 }]
@@ -156,7 +156,7 @@ explain select data.data from test;
     "01": "send_all            0      -      0     # public.test (last)",
     "02": "union_recv          0      0      0     ",
     "03": "union_set           0      0      -1    ",
-    "04": "ret                 0      -1     -     "
+    "04": "ret                 0      0      -     "
   },
   "pushdown": {
     "00": "set                 0      1      0     ",
@@ -168,7 +168,7 @@ explain select data.data from test;
     "06": "set_add             0      0      0     ",
     "07": "table_next          1      2      0     ",
     "08": "free                1      0      0     ",
-    "09": "ret                 0      -1     -     "
+    "09": "ret                 0      0      -     "
   },
   "access": [["public.test", "ro"]]
 }]
@@ -201,7 +201,7 @@ explain select data.data.data from test;
     "01": "send_all            0      -      0     # public.test (last)",
     "02": "union_recv          0      0      0     ",
     "03": "union_set           0      0      -1    ",
-    "04": "ret                 0      -1     -     "
+    "04": "ret                 0      0      -     "
   },
   "pushdown": {
     "00": "set                 0      1      0     ",
@@ -213,7 +213,7 @@ explain select data.data.data from test;
     "06": "set_add             0      0      0     ",
     "07": "table_next          1      2      0     ",
     "08": "free                1      0      0     ",
-    "09": "ret                 0      -1     -     "
+    "09": "ret                 0      0      -     "
   },
   "access": [["public.test", "ro"]]
 }]
@@ -232,7 +232,7 @@ explain select test.id, test.data from test;
     "01": "send_all            0      -      0     # public.test (last)",
     "02": "union_recv          0      0      0     ",
     "03": "union_set           0      0      -1    ",
-    "04": "ret                 0      -1     -     "
+    "04": "ret                 0      0      -     "
   },
   "pushdown": {
     "00": "set                 0      2      0     ",
@@ -244,7 +244,7 @@ explain select test.id, test.data from test;
     "06": "set_add             0      0      0     ",
     "07": "table_next          1      2      0     ",
     "08": "free                1      0      0     ",
-    "09": "ret                 0      -1     -     "
+    "09": "ret                 0      0      -     "
   },
   "access": [["public.test", "ro"]]
 }]
@@ -263,7 +263,7 @@ explain select test.data.data from test;
     "01": "send_all            0      -      0     # public.test (last)",
     "02": "union_recv          0      0      0     ",
     "03": "union_set           0      0      -1    ",
-    "04": "ret                 0      -1     -     "
+    "04": "ret                 0      0      -     "
   },
   "pushdown": {
     "00": "set                 0      1      0     ",
@@ -275,7 +275,7 @@ explain select test.data.data from test;
     "06": "set_add             0      0      0     ",
     "07": "table_next          1      2      0     ",
     "08": "free                1      0      0     ",
-    "09": "ret                 0      -1     -     "
+    "09": "ret                 0      0      -     "
   },
   "access": [["public.test", "ro"]]
 }]
@@ -318,7 +318,7 @@ explain select alias.id, alias.data from test alias;
     "01": "send_all            0      -      0     # public.test (last)",
     "02": "union_recv          0      0      0     ",
     "03": "union_set           0      0      -1    ",
-    "04": "ret                 0      -1     -     "
+    "04": "ret                 0      0      -     "
   },
   "pushdown": {
     "00": "set                 0      2      0     ",
@@ -330,7 +330,7 @@ explain select alias.id, alias.data from test alias;
     "06": "set_add             0      0      0     ",
     "07": "table_next          1      2      0     ",
     "08": "free                1      0      0     ",
-    "09": "ret                 0      -1     -     "
+    "09": "ret                 0      0      -     "
   },
   "access": [["public.test", "ro"]]
 }]
@@ -349,7 +349,7 @@ explain select alias.data.data from test alias;
     "01": "send_all            0      -      0     # public.test (last)",
     "02": "union_recv          0      0      0     ",
     "03": "union_set           0      0      -1    ",
-    "04": "ret                 0      -1     -     "
+    "04": "ret                 0      0      -     "
   },
   "pushdown": {
     "00": "set                 0      1      0     ",
@@ -361,7 +361,7 @@ explain select alias.data.data from test alias;
     "06": "set_add             0      0      0     ",
     "07": "table_next          1      2      0     ",
     "08": "free                1      0      0     ",
-    "09": "ret                 0      -1     -     "
+    "09": "ret                 0      0      -     "
   },
   "access": [["public.test", "ro"]]
 }]
@@ -384,7 +384,7 @@ explain select alias.id, alias.data from test alias;
     "01": "send_all            0      -      0     # public.test (last)",
     "02": "union_recv          0      0      0     ",
     "03": "union_set           0      0      -1    ",
-    "04": "ret                 0      -1     -     "
+    "04": "ret                 0      0      -     "
   },
   "pushdown": {
     "00": "set                 0      2      0     ",
@@ -396,7 +396,7 @@ explain select alias.id, alias.data from test alias;
     "06": "set_add             0      0      0     ",
     "07": "table_next          1      2      0     ",
     "08": "free                1      0      0     ",
-    "09": "ret                 0      -1     -     "
+    "09": "ret                 0      0      -     "
   },
   "access": [["public.test", "ro"]]
 }]
@@ -426,7 +426,7 @@ explain select * from system.users();
     "06": "json_next           2      3      0     ",
     "07": "free                2      0      0     ",
     "08": "free                1      0      0     ",
-    "09": "ret                 0      -1     -     "
+    "09": "ret                 0      0      -     "
   },
   "access": []
 }]
@@ -447,7 +447,7 @@ explain select name from system.users();
     "08": "json_next           2      3      0     ",
     "09": "free                2      0      0     ",
     "10": "free                1      0      0     ",
-    "11": "ret                 0      -1     -     "
+    "11": "ret                 0      0      -     "
   },
   "access": []
 }]
@@ -495,7 +495,7 @@ explain select * from ([]) t;
     "06": "json_next           2      3      0     ",
     "07": "free                2      0      0     ",
     "08": "free                1      0      0     ",
-    "09": "ret                 0      -1     -     "
+    "09": "ret                 0      0      -     "
   },
   "access": []
 }]

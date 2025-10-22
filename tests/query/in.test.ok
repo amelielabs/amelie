@@ -21,7 +21,7 @@ explain select 1 in ();
   "main": {
     "00": "int                 0      -      0     # 1",
     "01": "in                  1      0      0     ",
-    "02": "ret                 1      -1     -     "
+    "02": "ret                 1      0      -     "
   },
   "access": []
 }]
@@ -100,7 +100,7 @@ explain select 0 in (3,5, (select * from test), 0);
     "13": "int                 1      -      0     # 0",
     "14": "push                1      0      0     ",
     "15": "in                  1      0      4     ",
-    "16": "ret                 1      -1     -     "
+    "16": "ret                 1      0      -     "
   },
   "access": [["public.test", "ro_exclusive"]]
 }]

@@ -54,7 +54,7 @@ explain select 0.0 = false;
     "00": "double              0      0      0     # 0",
     "01": "bool                1      0      0     ",
     "02": "equfi               2      0      1     ",
-    "03": "ret                 2      -1     -     "
+    "03": "ret                 2      0      -     "
   },
   "access": []
 }]
@@ -71,7 +71,7 @@ explain select 1.0000 = 1;
     "00": "double              0      0      0     # 1",
     "01": "int                 1      -      0     # 1",
     "02": "equfi               2      0      1     ",
-    "03": "ret                 2      -1     -     "
+    "03": "ret                 2      0      -     "
   },
   "access": []
 }]
@@ -88,7 +88,7 @@ explain select 12.3 = 12.4;
     "00": "double              0      0      0     # 12.3",
     "01": "double              1      8      0     # 12.4",
     "02": "equff               2      0      1     ",
-    "03": "ret                 2      -1     -     "
+    "03": "ret                 2      0      -     "
   },
   "access": []
 }]
@@ -101,7 +101,7 @@ explain select 12.3 = null;
     "00": "double              0      0      0     # 12.3",
     "01": "null                1      0      0     ",
     "02": "nullop              2      0      1     ",
-    "03": "ret                 2      -1     -     "
+    "03": "ret                 2      0      -     "
   },
   "access": []
 }]
@@ -126,7 +126,7 @@ explain select 0.0 <> false;
     "01": "bool                1      0      0     ",
     "02": "equfi               2      0      1     ",
     "03": "not                 0      2      0     ",
-    "04": "ret                 0      -1     -     "
+    "04": "ret                 0      0      -     "
   },
   "access": []
 }]
@@ -144,7 +144,7 @@ explain select 1.0000 <> 1;
     "01": "int                 1      -      0     # 1",
     "02": "equfi               2      0      1     ",
     "03": "not                 0      2      0     ",
-    "04": "ret                 0      -1     -     "
+    "04": "ret                 0      0      -     "
   },
   "access": []
 }]
@@ -162,7 +162,7 @@ explain select 12.3 <> 12.4;
     "01": "double              1      8      0     # 12.4",
     "02": "equff               2      0      1     ",
     "03": "not                 0      2      0     ",
-    "04": "ret                 0      -1     -     "
+    "04": "ret                 0      0      -     "
   },
   "access": []
 }]
@@ -176,7 +176,7 @@ explain select 12.3 <> null;
     "01": "null                1      0      0     ",
     "02": "nullop              2      0      1     ",
     "03": "not                 0      2      0     ",
-    "04": "ret                 0      -1     -     "
+    "04": "ret                 0      0      -     "
   },
   "access": []
 }]
@@ -196,7 +196,7 @@ explain select 11.1 >= 1;
     "00": "double              0      0      0     # 11.1",
     "01": "int                 1      -      0     # 1",
     "02": "gtefi               2      0      1     ",
-    "03": "ret                 2      -1     -     "
+    "03": "ret                 2      0      -     "
   },
   "access": []
 }]
@@ -213,7 +213,7 @@ explain select 1.11 >= 1.13;
     "00": "double              0      0      0     # 1.11",
     "01": "double              1      8      0     # 1.13",
     "02": "gteff               2      0      1     ",
-    "03": "ret                 2      -1     -     "
+    "03": "ret                 2      0      -     "
   },
   "access": []
 }]
@@ -226,7 +226,7 @@ explain select 0.11 >= null;
     "00": "double              0      0      0     # 0.11",
     "01": "null                1      0      0     ",
     "02": "nullop              2      0      1     ",
-    "03": "ret                 2      -1     -     "
+    "03": "ret                 2      0      -     "
   },
   "access": []
 }]
@@ -246,7 +246,7 @@ explain select 11.1 > 1;
     "00": "double              0      0      0     # 11.1",
     "01": "int                 1      -      0     # 1",
     "02": "gtfi                2      0      1     ",
-    "03": "ret                 2      -1     -     "
+    "03": "ret                 2      0      -     "
   },
   "access": []
 }]
@@ -263,7 +263,7 @@ explain select 1.11 > 1.13;
     "00": "double              0      0      0     # 1.11",
     "01": "double              1      8      0     # 1.13",
     "02": "gtff                2      0      1     ",
-    "03": "ret                 2      -1     -     "
+    "03": "ret                 2      0      -     "
   },
   "access": []
 }]
@@ -276,7 +276,7 @@ explain select 0.11 > null;
     "00": "double              0      0      0     # 0.11",
     "01": "null                1      0      0     ",
     "02": "nullop              2      0      1     ",
-    "03": "ret                 2      -1     -     "
+    "03": "ret                 2      0      -     "
   },
   "access": []
 }]
@@ -296,7 +296,7 @@ explain select 11.1 <= 1;
     "00": "double              0      0      0     # 11.1",
     "01": "int                 1      -      0     # 1",
     "02": "ltefi               2      0      1     ",
-    "03": "ret                 2      -1     -     "
+    "03": "ret                 2      0      -     "
   },
   "access": []
 }]
@@ -313,7 +313,7 @@ explain select 1.11 <= 1.13;
     "00": "double              0      0      0     # 1.11",
     "01": "double              1      8      0     # 1.13",
     "02": "lteff               2      0      1     ",
-    "03": "ret                 2      -1     -     "
+    "03": "ret                 2      0      -     "
   },
   "access": []
 }]
@@ -326,7 +326,7 @@ explain select 0.11 <= null;
     "00": "double              0      0      0     # 0.11",
     "01": "null                1      0      0     ",
     "02": "nullop              2      0      1     ",
-    "03": "ret                 2      -1     -     "
+    "03": "ret                 2      0      -     "
   },
   "access": []
 }]
@@ -346,7 +346,7 @@ explain select 11.1 < 1;
     "00": "double              0      0      0     # 11.1",
     "01": "int                 1      -      0     # 1",
     "02": "ltfi                2      0      1     ",
-    "03": "ret                 2      -1     -     "
+    "03": "ret                 2      0      -     "
   },
   "access": []
 }]
@@ -363,7 +363,7 @@ explain select 1.11 < 1.13;
     "00": "double              0      0      0     # 1.11",
     "01": "double              1      8      0     # 1.13",
     "02": "ltff                2      0      1     ",
-    "03": "ret                 2      -1     -     "
+    "03": "ret                 2      0      -     "
   },
   "access": []
 }]
@@ -376,7 +376,7 @@ explain select 0.11 < null;
     "00": "double              0      0      0     # 0.11",
     "01": "null                1      0      0     ",
     "02": "nullop              2      0      1     ",
-    "03": "ret                 2      -1     -     "
+    "03": "ret                 2      0      -     "
   },
   "access": []
 }]
@@ -392,7 +392,7 @@ explain select 1.5 + 1;
     "00": "double              0      0      0     # 1.5",
     "01": "int                 1      -      0     # 1",
     "02": "addfi               2      0      1     ",
-    "03": "ret                 2      -1     -     "
+    "03": "ret                 2      0      -     "
   },
   "access": []
 }]
@@ -405,7 +405,7 @@ explain select 1.5 + 1.5;
     "00": "double              0      0      0     # 1.5",
     "01": "double              1      8      0     # 1.5",
     "02": "addff               2      0      1     ",
-    "03": "ret                 2      -1     -     "
+    "03": "ret                 2      0      -     "
   },
   "access": []
 }]
@@ -424,7 +424,7 @@ explain select 1.5 - 1;
     "00": "double              0      0      0     # 1.5",
     "01": "int                 1      -      0     # 1",
     "02": "subfi               2      0      1     ",
-    "03": "ret                 2      -1     -     "
+    "03": "ret                 2      0      -     "
   },
   "access": []
 }]
@@ -437,7 +437,7 @@ explain select 1.5 - 1.5;
     "00": "double              0      0      0     # 1.5",
     "01": "double              1      8      0     # 1.5",
     "02": "subff               2      0      1     ",
-    "03": "ret                 2      -1     -     "
+    "03": "ret                 2      0      -     "
   },
   "access": []
 }]
@@ -456,7 +456,7 @@ explain select 1.5 * 2;
     "00": "double              0      0      0     # 1.5",
     "01": "int                 1      -      0     # 2",
     "02": "mulfi               2      0      1     ",
-    "03": "ret                 2      -1     -     "
+    "03": "ret                 2      0      -     "
   },
   "access": []
 }]
@@ -472,7 +472,7 @@ explain select 1.5 * 1.5;
     "00": "double              0      0      0     # 1.5",
     "01": "double              1      8      0     # 1.5",
     "02": "mulff               2      0      1     ",
-    "03": "ret                 2      -1     -     "
+    "03": "ret                 2      0      -     "
   },
   "access": []
 }]
@@ -491,7 +491,7 @@ explain select 3.5 / 2;
     "00": "double              0      0      0     # 3.5",
     "01": "int                 1      -      0     # 2",
     "02": "divfi               2      0      1     ",
-    "03": "ret                 2      -1     -     "
+    "03": "ret                 2      0      -     "
   },
   "access": []
 }]
@@ -506,7 +506,7 @@ explain select 3.5 / 1.5;
     "00": "double              0      0      0     # 3.5",
     "01": "double              1      8      0     # 1.5",
     "02": "divff               2      0      1     ",
-    "03": "ret                 2      -1     -     "
+    "03": "ret                 2      0      -     "
   },
   "access": []
 }]
@@ -525,7 +525,7 @@ explain select -18.8;
 [{
   "main": {
     "00": "double              0      0      0     # -18.8",
-    "01": "ret                 0      -1     -     "
+    "01": "ret                 0      0      -     "
   },
   "access": []
 }]

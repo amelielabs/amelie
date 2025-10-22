@@ -25,7 +25,7 @@ explain select [-123];
 [{
   "main": {
     "00": "json                0      0      0     ",
-    "01": "ret                 0      -1     -     "
+    "01": "ret                 0      0      -     "
   },
   "access": []
 }]
@@ -38,7 +38,7 @@ explain select [-123.321];
 [{
   "main": {
     "00": "json                0      0      0     ",
-    "01": "ret                 0      -1     -     "
+    "01": "ret                 0      0      -     "
   },
   "access": []
 }]
@@ -67,7 +67,7 @@ explain select [[1,2,3], 5, [7]];
 [{
   "main": {
     "00": "json                0      0      0     ",
-    "01": "ret                 0      -1     -     "
+    "01": "ret                 0      0      -     "
   },
   "access": []
 }]
@@ -112,7 +112,7 @@ explain select {"a": 0, "b": 1};
 [{
   "main": {
     "00": "json                0      0      0     ",
-    "01": "ret                 0      -1     -     "
+    "01": "ret                 0      0      -     "
   },
   "access": []
 }]
@@ -177,7 +177,7 @@ explain select {"menu":{"id":"file","value":"File","popup":{"menuitem":[{"value"
 [{
   "main": {
     "00": "json                0      0      0     ",
-    "01": "ret                 0      -1     -     "
+    "01": "ret                 0      0      -     "
   },
   "access": []
 }]
@@ -231,7 +231,7 @@ explain select {"glossary":{"title":"example glossary","GlossDiv":{"title":"S","
 [{
   "main": {
     "00": "json                0      0      0     ",
-    "01": "ret                 0      -1     -     "
+    "01": "ret                 0      0      -     "
   },
   "access": []
 }]
@@ -288,7 +288,7 @@ explain select {"web-app":{"servlet":[{"servlet-name":"cofaxCDS","servlet-class"
 [{
   "main": {
     "00": "json                0      0      0     ",
-    "01": "ret                 0      -1     -     "
+    "01": "ret                 0      0      -     "
   },
   "access": []
 }]
@@ -489,7 +489,7 @@ explain select {"id":"2489651045","type":"CreateEvent","actor":{"id":665991,"log
 [{
   "main": {
     "00": "json                0      0      0     ",
-    "01": "ret                 0      -1     -     "
+    "01": "ret                 0      0      -     "
   },
   "access": []
 }]
@@ -552,7 +552,7 @@ explain select {"id":"2489651126","type":"IssuesEvent","actor":{"id":10162972,"l
 [{
   "main": {
     "00": "json                0      0      0     ",
-    "01": "ret                 0      -1     -     "
+    "01": "ret                 0      0      -     "
   },
   "access": []
 }]
@@ -685,7 +685,7 @@ explain select {"id":"2489660418","type":"PushEvent","actor":{"id":250019,"login
 [{
   "main": {
     "00": "json                0      0      0     ",
-    "01": "ret                 0      -1     -     "
+    "01": "ret                 0      0      -     "
   },
   "access": []
 }]
@@ -783,7 +783,7 @@ explain select [1,2,3] = [1,2,3,4];
     "00": "json                0      0      0     ",
     "01": "json                1      5      0     ",
     "02": "equjj               2      0      1     ",
-    "03": "ret                 2      -1     -     "
+    "03": "ret                 2      0      -     "
   },
   "access": []
 }]
@@ -795,7 +795,7 @@ explain select {"id": 48, "data": 55} = {"id": 48, "data": 55};
     "00": "json                0      0      0     ",
     "01": "json                1      14     0     ",
     "02": "equjj               2      0      1     ",
-    "03": "ret                 2      -1     -     "
+    "03": "ret                 2      0      -     "
   },
   "access": []
 }]
@@ -814,7 +814,7 @@ explain select [null][0] = null;
     "02": "idxji               2      0      1     ",
     "03": "null                0      0      0     ",
     "04": "nullop              1      2      0     ",
-    "05": "ret                 1      -1     -     "
+    "05": "ret                 1      0      -     "
   },
   "access": []
 }]
@@ -833,7 +833,7 @@ explain select [1,2,3] <> [1,2,3,4];
     "01": "json                1      5      0     ",
     "02": "equjj               2      0      1     ",
     "03": "not                 0      2      0     ",
-    "04": "ret                 0      -1     -     "
+    "04": "ret                 0      0      -     "
   },
   "access": []
 }]
@@ -846,7 +846,7 @@ explain select {"id": 48, "data": 55} <> {"id": 48, "data": 55};
     "01": "json                1      14     0     ",
     "02": "equjj               2      0      1     ",
     "03": "not                 0      2      0     ",
-    "04": "ret                 0      -1     -     "
+    "04": "ret                 0      0      -     "
   },
   "access": []
 }]
@@ -866,7 +866,7 @@ explain select [null][0] <> null;
     "03": "null                0      0      0     ",
     "04": "nullop              1      2      0     ",
     "05": "not                 0      1      0     ",
-    "06": "ret                 0      -1     -     "
+    "06": "ret                 0      0      -     "
   },
   "access": []
 }]
@@ -884,7 +884,7 @@ explain select {"id":48}.id;
     "00": "json                0      0      0     ",
     "01": "string              1      7      0     # id",
     "02": "dotjs               2      0      1     ",
-    "03": "ret                 2      -1     -     "
+    "03": "ret                 2      0      -     "
   },
   "access": []
 }]
@@ -894,7 +894,7 @@ explain select {"id":48}["id"];
     "00": "json                0      0      0     ",
     "01": "string              1      7      0     # id",
     "02": "idxjs               2      0      1     ",
-    "03": "ret                 2      -1     -     "
+    "03": "ret                 2      0      -     "
   },
   "access": []
 }]
@@ -915,7 +915,7 @@ explain select {"a": 0, "b": {"c": 18}}.b.c;
     "00": "json                0      0      0     ",
     "01": "string              1      12     0     # b.c",
     "02": "dotjs               2      0      1     ",
-    "03": "ret                 2      -1     -     "
+    "03": "ret                 2      0      -     "
   },
   "access": []
 }]
@@ -946,7 +946,7 @@ explain select [1,2,3][-1];
     "00": "json                0      0      0     ",
     "01": "int                 1      -      0     # -1",
     "02": "idxji               2      0      1     ",
-    "03": "ret                 2      -1     -     "
+    "03": "ret                 2      0      -     "
   },
   "access": []
 }]
@@ -980,7 +980,7 @@ explain select [[1,2,3], 5, [7]][1];
     "00": "json                0      0      0     ",
     "01": "int                 1      -      0     # 1",
     "02": "idxji               2      0      1     ",
-    "03": "ret                 2      -1     -     "
+    "03": "ret                 2      0      -     "
   },
   "access": []
 }]

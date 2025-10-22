@@ -1885,20 +1885,8 @@ ccall_udf:
 	op_next;
 
 cret:
-	// [result, var, is_arg, columns, fmt]
-	if (op->a != -1) {
-		a = &r[op->a];
-	} else
-	if (op->b != -1) {
-		if (op->c)
-			a = &self->args[op->b];
-		else
-			a = stack_get(stack, op->b);
-	} else {
-		a = NULL;
-	}
-	ret->value   = a;
-	ret->columns = (Columns*)op->d;
-	ret->fmt     = (Str*)op->e;
+	// [result]
+	if (op->a != -1)
+		ret->value = &r[op->a];
 	return;
 }

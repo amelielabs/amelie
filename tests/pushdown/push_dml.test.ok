@@ -7,11 +7,11 @@ explain insert into test (id) values (1), (2), (3);
   "main": {
     "00": "set_ptr             0      -      0     ",
     "01": "send_shard          0      -      0     # public.test (last)",
-    "02": "ret                 -1     -1     -     "
+    "02": "ret                 -1     0      -     "
   },
   "pushdown": {
     "00": "insert              -      0      0     # public.test",
-    "01": "ret                 -1     -1     -     "
+    "01": "ret                 -1     0      -     "
   },
   "access": [["public.test", "rw"]]
 }]
@@ -23,14 +23,14 @@ explain delete from test;
 [{
   "main": {
     "00": "send_all            0      -      -1    # public.test (last)",
-    "01": "ret                 -1     -1     -     "
+    "01": "ret                 -1     0      -     "
   },
   "pushdown": {
     "00": "table_open_part     0      0      3     # public.test (primary)",
     "01": "delete              0      0      0     ",
     "02": "table_next          0      1      0     ",
     "03": "free                0      0      0     ",
-    "04": "ret                 -1     -1     -     "
+    "04": "ret                 -1     0      -     "
   },
   "access": [["public.test", "rw"]]
 }]
@@ -43,7 +43,7 @@ explain update test set data = id;
 [{
   "main": {
     "00": "send_all            0      -      -1    # public.test (last)",
-    "01": "ret                 -1     -1     -     "
+    "01": "ret                 -1     0      -     "
   },
   "pushdown": {
     "00": "table_open_part     0      0      7     # public.test (primary)",
@@ -54,7 +54,7 @@ explain update test set data = id;
     "05": "update              0      1      0     ",
     "06": "table_next          0      1      0     ",
     "07": "free                0      0      0     ",
-    "08": "ret                 -1     -1     -     "
+    "08": "ret                 -1     0      -     "
   },
   "access": [["public.test", "rw"]]
 }]
@@ -67,7 +67,7 @@ explain insert into test (id) values (1), (2), (3) on conflict do update set dat
   "main": {
     "00": "set_ptr             0      -      0     ",
     "01": "send_shard          0      -      0     # public.test (last)",
-    "02": "ret                 -1     -1     -     "
+    "02": "ret                 -1     0      -     "
   },
   "pushdown": {
     "00": "table_prepare       0      -      0     # public.test",
@@ -81,7 +81,7 @@ explain insert into test (id) values (1), (2), (3) on conflict do update set dat
     "08": "update              0      1      0     ",
     "09": "upsert              0      2      -1    ",
     "10": "free                0      0      0     ",
-    "11": "ret                 -1     -1     -     "
+    "11": "ret                 -1     0      -     "
   },
   "access": [["public.test", "rw"]]
 }]

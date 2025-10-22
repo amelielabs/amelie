@@ -303,13 +303,10 @@ emit_utility(Compiler* self)
 	program->utility = true;
 
 	int r = -1;
-	Str* fmt = NULL;
 	switch (stmt->id) {
 	// system
 	case STMT_SHOW:
 	{
-		auto arg = ast_show_of(stmt->ast);
-		fmt = &arg->format;
 		r = emit_show(self);
 
 		// shared lock
@@ -347,7 +344,6 @@ emit_utility(Compiler* self)
 			encode_string(data, &str);
 		}
 		r = op2(self, CUSER_CREATE_TOKEN, rpin(self, TYPE_JSON), offset);
-		fmt = self->parser.local->format;
 
 		// shared lock
 		program->lock = LOCK_SHARED;
@@ -429,7 +425,7 @@ emit_utility(Compiler* self)
 	}
 
 	// CRET
-	op5(self, CRET, r, -1, 0, 0, (intptr_t)fmt);
+	op1(self, CRET, r);
 	if (r != -1)
 		runpin(self, r);
 }

@@ -37,6 +37,8 @@ struct QueryContext
 	Program* program;
 	Str*     text;
 	Str*     uri;
+	Columns* returning;
+	Str*     returning_fmt;
 };
 
 static inline void
@@ -48,11 +50,13 @@ query_context_init(QueryContext* self)
 static inline void
 query_context_set(QueryContext* self, Program* program, Str* text, Str* uri)
 {
-	self->explain = false;
-	self->profile = false;
-	self->program = program;
-	self->text    = text;
-	self->uri     = uri;
+	self->explain       = false;
+	self->profile       = false;
+	self->program       = program;
+	self->text          = text;
+	self->uri           = uri;
+	self->returning     = NULL;
+	self->returning_fmt = NULL;
 }
 
 static inline Query*

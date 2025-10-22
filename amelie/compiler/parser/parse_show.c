@@ -45,6 +45,7 @@ parse_show(Stmt* self)
 	// SHOW <SECTION> [name] [IN|FROM schema] [extended] [FORMAT type]
 	auto stmt = ast_show_allocate();
 	self->ast = &stmt->ast;
+	self->ret = &stmt->ret;
 
 	// section | option name
 	auto name = stmt_next_shadow(self);
@@ -90,5 +91,11 @@ parse_show(Stmt* self)
 	char* fmt = palloc(str_size(spec) + 8);
 	memcpy(fmt, spec->pos, str_size(spec));
 	memcpy(fmt + str_size(spec), "-unwrap", 8);
-	str_set_cstr(&stmt->format, fmt);
+	str_set_cstr(&stmt->ret.format, fmt);
+
+	// set returning column
+	auto column = column_allocate();
+	column_set_name(column, &stmt->section);
+	column_set_type(column, TYPE_JSON, -1);
+	columns_add(&stmt->ret.columns, column);
 }

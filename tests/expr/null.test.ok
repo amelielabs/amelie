@@ -5,7 +5,7 @@ explain select null;
 [{
   "main": {
     "00": "null                0      0      0     ",
-    "01": "ret                 0      -1     -     "
+    "01": "ret                 0      0      -     "
   },
   "access": []
 }]

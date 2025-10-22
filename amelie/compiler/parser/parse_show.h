@@ -16,12 +16,12 @@ typedef struct AstSet  AstSet;
 
 struct AstShow
 {
-	Ast  ast;
-	Str  section;
-	Str  name;
-	Str  schema;
-	Str  format;
-	bool extended;
+	Ast       ast;
+	Returning ret;
+	Str       section;
+	Str       name;
+	Str       schema;
+	bool      extended;
 };
 
 static inline AstShow*
@@ -34,6 +34,7 @@ static inline AstShow*
 ast_show_allocate(void)
 {
 	AstShow* self = ast_allocate(0, sizeof(AstShow));
+	returning_init(&self->ret);
 	return self;
 }
 

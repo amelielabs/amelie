@@ -134,6 +134,10 @@ parse_stmt(Stmt* self)
 	auto return_ = stmt_if(self, KRETURN);
 	if (return_)
 	{
+		// ensure return called by function
+		if (! self->block->ns->udf)
+			stmt_error(self, return_, "RETURN can be used only within UDF");
+
 		self->is_return = true;
 		auto semicolon = stmt_if(self, ';');
 		if (semicolon)
@@ -437,7 +441,7 @@ parse_stmt(Stmt* self)
 		// return stmt
 		// return expr
 
-		// ensure stmt must be returning
+		// ensure stmt is returning
 		if (! self->ret)
 			stmt_error(self, ast, "RETURN statement must return data");
 	}

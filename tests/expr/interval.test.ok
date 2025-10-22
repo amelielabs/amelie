@@ -179,7 +179,7 @@ explain select  '1 hour'::interval = '1 hours 10 seconds'::interval;
     "04": "push                1      0      0     ",
     "05": "call                1      -      1     # public.interval()",
     "06": "equll               2      0      1     ",
-    "07": "ret                 2      -1     -     "
+    "07": "ret                 2      0      -     "
   },
   "access": []
 }]
@@ -194,7 +194,7 @@ explain select  '1 hour'::interval = null;
     "02": "call                0      -      1     # public.interval()",
     "03": "null                1      0      0     ",
     "04": "nullop              2      0      1     ",
-    "05": "ret                 2      -1     -     "
+    "05": "ret                 2      0      -     "
   },
   "access": []
 }]
@@ -217,7 +217,7 @@ explain select  '1 hour'::interval <> '1 hours 10 seconds'::interval;
     "05": "call                1      -      1     # public.interval()",
     "06": "equll               2      0      1     ",
     "07": "not                 0      2      0     ",
-    "08": "ret                 0      -1     -     "
+    "08": "ret                 0      0      -     "
   },
   "access": []
 }]
@@ -233,7 +233,7 @@ explain select  '1 hour'::interval <> null;
     "03": "null                1      0      0     ",
     "04": "nullop              2      0      1     ",
     "05": "not                 0      2      0     ",
-    "06": "ret                 0      -1     -     "
+    "06": "ret                 0      0      -     "
   },
   "access": []
 }]
@@ -259,7 +259,7 @@ explain select '61 minutes'::interval >= '1 hour'::interval;
     "04": "push                1      0      0     ",
     "05": "call                1      -      1     # public.interval()",
     "06": "gtell               2      0      1     ",
-    "07": "ret                 2      -1     -     "
+    "07": "ret                 2      0      -     "
   },
   "access": []
 }]
@@ -274,7 +274,7 @@ explain select '1 hour'::interval >= null;
     "02": "call                0      -      1     # public.interval()",
     "03": "null                1      0      0     ",
     "04": "nullop              2      0      1     ",
-    "05": "ret                 2      -1     -     "
+    "05": "ret                 2      0      -     "
   },
   "access": []
 }]
@@ -300,7 +300,7 @@ explain select '61 minutes'::interval > '1 hour'::interval;
     "04": "push                1      0      0     ",
     "05": "call                1      -      1     # public.interval()",
     "06": "gtll                2      0      1     ",
-    "07": "ret                 2      -1     -     "
+    "07": "ret                 2      0      -     "
   },
   "access": []
 }]
@@ -315,7 +315,7 @@ explain select '1 hour'::interval > null;
     "02": "call                0      -      1     # public.interval()",
     "03": "null                1      0      0     ",
     "04": "nullop              2      0      1     ",
-    "05": "ret                 2      -1     -     "
+    "05": "ret                 2      0      -     "
   },
   "access": []
 }]
@@ -341,7 +341,7 @@ explain select '61 minutes'::interval <= '1 hour'::interval;
     "04": "push                1      0      0     ",
     "05": "call                1      -      1     # public.interval()",
     "06": "ltell               2      0      1     ",
-    "07": "ret                 2      -1     -     "
+    "07": "ret                 2      0      -     "
   },
   "access": []
 }]
@@ -356,7 +356,7 @@ explain select '1 hour'::interval <= null;
     "02": "call                0      -      1     # public.interval()",
     "03": "null                1      0      0     ",
     "04": "nullop              2      0      1     ",
-    "05": "ret                 2      -1     -     "
+    "05": "ret                 2      0      -     "
   },
   "access": []
 }]
@@ -382,7 +382,7 @@ explain select '61 minutes'::interval < '1 hour'::interval;
     "04": "push                1      0      0     ",
     "05": "call                1      -      1     # public.interval()",
     "06": "ltll                2      0      1     ",
-    "07": "ret                 2      -1     -     "
+    "07": "ret                 2      0      -     "
   },
   "access": []
 }]
@@ -397,7 +397,7 @@ explain select '1 hour'::interval < null;
     "02": "call                0      -      1     # public.interval()",
     "03": "null                1      0      0     ",
     "04": "nullop              2      0      1     ",
-    "05": "ret                 2      -1     -     "
+    "05": "ret                 2      0      -     "
   },
   "access": []
 }]
@@ -425,7 +425,7 @@ explain select  '5 days 1 hour'::interval + '-2 hours'::interval;
     "04": "push                1      0      0     ",
     "05": "call                1      -      1     # public.interval()",
     "06": "addll               2      0      1     ",
-    "07": "ret                 2      -1     -     "
+    "07": "ret                 2      0      -     "
   },
   "access": []
 }]
@@ -442,7 +442,7 @@ explain select '1 hour'::interval + '1970-01-01 00:00:00.000000'::timestamp;
     "04": "push                1      0      0     ",
     "05": "call                1      -      1     # public.timestamp()",
     "06": "addlt               2      0      1     ",
-    "07": "ret                 2      -1     -     "
+    "07": "ret                 2      0      -     "
   },
   "access": []
 }]

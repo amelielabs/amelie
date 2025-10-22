@@ -90,8 +90,17 @@ query_compiler_parse(Query* query, QueryContext* ctx)
 	ctx->explain = compiler->parser.explain;
 	ctx->profile = compiler->parser.profile;
 
-	if (! compiler_stmt(compiler))
+	auto stmt = compiler_stmt(compiler);
+	if (! stmt)
 		return;
+
+	// set returning columns and format
+	auto last = compiler_main(compiler)->stmts.list_tail;
+	if (last->ret && last->ret->columns.count > 0)
+	{
+		ctx->returning     = &last->ret->columns;
+		ctx->returning_fmt = &last->ret->format;
+	}
 
 	// generate bytecode
 	compiler_emit(compiler);
@@ -107,8 +116,16 @@ query_compiler_parse_endpoint(Query* query, QueryContext* ctx, EndpointType type
 	// parse SQL statements
 	compiler_parse_import(compiler, ctx->text, ctx->uri, type);
 
-	if (! compiler_stmt(compiler))
+	auto stmt = compiler_stmt(compiler);
+	if (! stmt)
 		return;
+
+	// set returning columns and format
+	if (stmt->ret && stmt->ret->columns.count > 0)
+	{
+		ctx->returning     = &stmt->ret->columns;
+		ctx->returning_fmt = &stmt->ret->format;
+	}
 
 	// generate bytecode
 	compiler_emit(compiler);

@@ -12,7 +12,7 @@ explain select test.*, ref.* from test, ref;
     "01": "send_all            0      -      0     # public.test (last)",
     "02": "union_recv          0      0      0     ",
     "03": "union_set           0      0      -1    ",
-    "04": "ret                 0      -1     -     "
+    "04": "ret                 0      0      -     "
   },
   "pushdown": {
     "00": "set                 0      4      0     ",
@@ -31,7 +31,7 @@ explain select test.*, ref.* from test, ref;
     "13": "free                2      0      0     ",
     "14": "table_next          1      2      0     ",
     "15": "free                1      0      0     ",
-    "16": "ret                 0      -1     -     "
+    "16": "ret                 0      0      -     "
   },
   "access": [["public.test", "ro"], ["public.ref", "ro_exclusive"]]
 }]
@@ -45,7 +45,7 @@ explain select test.*, ref.* from ref, test;
     "01": "send_all            0      -      0     # public.ref (last)",
     "02": "union_recv          0      0      0     ",
     "03": "union_set           0      0      -1    ",
-    "04": "ret                 0      -1     -     "
+    "04": "ret                 0      0      -     "
   },
   "pushdown": {
     "00": "set                 0      4      0     ",
@@ -64,7 +64,7 @@ explain select test.*, ref.* from ref, test;
     "13": "free                2      0      0     ",
     "14": "table_next          1      2      0     ",
     "15": "free                1      0      0     ",
-    "16": "ret                 0      -1     -     "
+    "16": "ret                 0      0      -     "
   },
   "access": [["public.ref", "ro"], ["public.test", "ro_exclusive"]]
 }]
@@ -78,7 +78,7 @@ explain select t.* from test, test t;
     "01": "send_all            0      -      0     # public.test (last)",
     "02": "union_recv          0      0      0     ",
     "03": "union_set           0      0      -1    ",
-    "04": "ret                 0      -1     -     "
+    "04": "ret                 0      0      -     "
   },
   "pushdown": {
     "00": "set                 0      2      0     ",
@@ -93,7 +93,7 @@ explain select t.* from test, test t;
     "09": "free                2      0      0     ",
     "10": "table_next          1      2      0     ",
     "11": "free                1      0      0     ",
-    "12": "ret                 0      -1     -     "
+    "12": "ret                 0      0      -     "
   },
   "access": [["public.test", "ro_exclusive"]]
 }]
@@ -107,7 +107,7 @@ explain select test.id, ref.id from test join ref on true;
     "01": "send_all            0      -      0     # public.test (last)",
     "02": "union_recv          0      0      0     ",
     "03": "union_set           0      0      -1    ",
-    "04": "ret                 0      -1     -     "
+    "04": "ret                 0      0      -     "
   },
   "pushdown": {
     "00": "set                 0      2      0     ",
@@ -124,7 +124,7 @@ explain select test.id, ref.id from test join ref on true;
     "11": "free                2      0      0     ",
     "12": "table_next          1      2      0     ",
     "13": "free                1      0      0     ",
-    "14": "ret                 0      -1     -     "
+    "14": "ret                 0      0      -     "
   },
   "access": [["public.test", "ro"], ["public.ref", "ro_exclusive"]]
 }]
@@ -138,7 +138,7 @@ explain select test.id, ref.id from test join ref on test.id = ref.id;
     "01": "send_all            0      -      0     # public.test (last)",
     "02": "union_recv          0      0      0     ",
     "03": "union_set           0      0      -1    ",
-    "04": "ret                 0      -1     -     "
+    "04": "ret                 0      0      -     "
   },
   "pushdown": {
     "00": "set                 0      2      0     ",
@@ -158,7 +158,7 @@ explain select test.id, ref.id from test join ref on test.id = ref.id;
     "14": "free                2      0      0     ",
     "15": "table_next          1      2      0     ",
     "16": "free                1      0      0     ",
-    "17": "ret                 0      -1     -     "
+    "17": "ret                 0      0      -     "
   },
   "access": [["public.test", "ro"], ["public.ref", "ro_exclusive"]]
 }]
@@ -172,7 +172,7 @@ explain select test.id, ref.id from test join ref on test.id = ref.id join ref r
     "01": "send_all            0      -      0     # public.test (last)",
     "02": "union_recv          0      0      0     ",
     "03": "union_set           0      0      -1    ",
-    "04": "ret                 0      -1     -     "
+    "04": "ret                 0      0      -     "
   },
   "pushdown": {
     "00": "set                 0      2      0     ",
@@ -200,7 +200,7 @@ explain select test.id, ref.id from test join ref on test.id = ref.id join ref r
     "22": "free                2      0      0     ",
     "23": "table_next          1      2      0     ",
     "24": "free                1      0      0     ",
-    "25": "ret                 0      -1     -     "
+    "25": "ret                 0      0      -     "
   },
   "access": [["public.test", "ro"], ["public.ref", "ro_exclusive"]]
 }]
@@ -214,7 +214,7 @@ explain select test.id, ref.id from test join ref on test.id = ref.id join ref r
     "01": "send_all            0      -      0     # public.test (last)",
     "02": "union_recv          0      0      0     ",
     "03": "union_set           0      0      -1    ",
-    "04": "ret                 0      -1     -     "
+    "04": "ret                 0      0      -     "
   },
   "pushdown": {
     "00": "set                 0      2      0     ",
@@ -248,7 +248,7 @@ explain select test.id, ref.id from test join ref on test.id = ref.id join ref r
     "28": "free                2      0      0     ",
     "29": "table_next          1      4      0     ",
     "30": "free                1      0      0     ",
-    "31": "ret                 0      -1     -     "
+    "31": "ret                 0      0      -     "
   },
   "access": [["public.test", "ro"], ["public.ref", "ro_exclusive"]]
 }]
@@ -262,7 +262,7 @@ explain select test.id, ref.id from test, ref where test.id = ref.id;
     "01": "send_all            0      -      0     # public.test (last)",
     "02": "union_recv          0      0      0     ",
     "03": "union_set           0      0      -1    ",
-    "04": "ret                 0      -1     -     "
+    "04": "ret                 0      0      -     "
   },
   "pushdown": {
     "00": "set                 0      2      0     ",
@@ -282,7 +282,7 @@ explain select test.id, ref.id from test, ref where test.id = ref.id;
     "14": "free                2      0      0     ",
     "15": "table_next          1      2      0     ",
     "16": "free                1      0      0     ",
-    "17": "ret                 0      -1     -     "
+    "17": "ret                 0      0      -     "
   },
   "access": [["public.test", "ro"], ["public.ref", "ro_exclusive"]]
 }]
@@ -295,7 +295,7 @@ explain select test.id, ref.id from test, ref where ref.id = test.id;
     "01": "send_all            0      -      0     # public.test (last)",
     "02": "union_recv          0      0      0     ",
     "03": "union_set           0      0      -1    ",
-    "04": "ret                 0      -1     -     "
+    "04": "ret                 0      0      -     "
   },
   "pushdown": {
     "00": "set                 0      2      0     ",
@@ -315,7 +315,7 @@ explain select test.id, ref.id from test, ref where ref.id = test.id;
     "14": "free                2      0      0     ",
     "15": "table_next          1      2      0     ",
     "16": "free                1      0      0     ",
-    "17": "ret                 0      -1     -     "
+    "17": "ret                 0      0      -     "
   },
   "access": [["public.test", "ro"], ["public.ref", "ro_exclusive"]]
 }]
@@ -328,7 +328,7 @@ explain select test.id, ref.id from test, ref where ref.id = 1;
     "01": "send_all            0      -      0     # public.test (last)",
     "02": "union_recv          0      0      0     ",
     "03": "union_set           0      0      -1    ",
-    "04": "ret                 0      -1     -     "
+    "04": "ret                 0      0      -     "
   },
   "pushdown": {
     "00": "set                 0      2      0     ",
@@ -348,7 +348,7 @@ explain select test.id, ref.id from test, ref where ref.id = 1;
     "14": "free                2      0      0     ",
     "15": "table_next          1      2      0     ",
     "16": "free                1      0      0     ",
-    "17": "ret                 0      -1     -     "
+    "17": "ret                 0      0      -     "
   },
   "access": [["public.test", "ro"], ["public.ref", "ro_exclusive"]]
 }]
@@ -361,7 +361,7 @@ explain select test.id, ref.id from test, ref where ref.id = 1 and test.id = 1;
     "01": "send_lookup         0      -      -     # public.test (last)",
     "02": "union_recv          0      0      0     ",
     "03": "union_set           0      0      -1    ",
-    "04": "ret                 0      -1     -     "
+    "04": "ret                 0      0      -     "
   },
   "pushdown": {
     "00": "set                 0      2      0     ",
@@ -386,7 +386,7 @@ explain select test.id, ref.id from test, ref where ref.id = 1 and test.id = 1;
     "19": "set_add             0      0      0     ",
     "20": "free                2      0      0     ",
     "21": "free                1      0      0     ",
-    "22": "ret                 0      -1     -     "
+    "22": "ret                 0      0      -     "
   },
   "access": [["public.test", "ro"], ["public.ref", "ro_exclusive"]]
 }]
@@ -399,7 +399,7 @@ explain select test.id, ref.id from test, ref where ref.id >= test.id;
     "01": "send_all            0      -      0     # public.test (last)",
     "02": "union_recv          0      0      0     ",
     "03": "union_set           0      0      -1    ",
-    "04": "ret                 0      -1     -     "
+    "04": "ret                 0      0      -     "
   },
   "pushdown": {
     "00": "set                 0      2      0     ",
@@ -420,7 +420,7 @@ explain select test.id, ref.id from test, ref where ref.id >= test.id;
     "15": "free                2      0      0     ",
     "16": "table_next          1      2      0     ",
     "17": "free                1      0      0     ",
-    "18": "ret                 0      -1     -     "
+    "18": "ret                 0      0      -     "
   },
   "access": [["public.test", "ro"], ["public.ref", "ro_exclusive"]]
 }]
@@ -442,7 +442,7 @@ explain select test.id, ref.id from test join ref using(id);
     "01": "send_all            0      -      0     # public.test (last)",
     "02": "union_recv          0      0      0     ",
     "03": "union_set           0      0      -1    ",
-    "04": "ret                 0      -1     -     "
+    "04": "ret                 0      0      -     "
   },
   "pushdown": {
     "00": "set                 0      2      0     ",
@@ -462,7 +462,7 @@ explain select test.id, ref.id from test join ref using(id);
     "14": "free                2      0      0     ",
     "15": "table_next          1      2      0     ",
     "16": "free                1      0      0     ",
-    "17": "ret                 0      -1     -     "
+    "17": "ret                 0      0      -     "
   },
   "access": [["public.test", "ro"], ["public.ref", "ro_exclusive"]]
 }]
@@ -479,7 +479,7 @@ explain select test.id, ref.id from test join ref using (id) join ref ref2 using
     "01": "send_all            0      -      0     # public.test (last)",
     "02": "union_recv          0      0      0     ",
     "03": "union_set           0      0      -1    ",
-    "04": "ret                 0      -1     -     "
+    "04": "ret                 0      0      -     "
   },
   "pushdown": {
     "00": "set                 0      2      0     ",
@@ -513,7 +513,7 @@ explain select test.id, ref.id from test join ref using (id) join ref ref2 using
     "28": "free                2      0      0     ",
     "29": "table_next          1      4      0     ",
     "30": "free                1      0      0     ",
-    "31": "ret                 0      -1     -     "
+    "31": "ret                 0      0      -     "
   },
   "access": [["public.test", "ro"], ["public.ref", "ro_exclusive"]]
 }]
@@ -534,7 +534,7 @@ explain with a as (select * from test) select * from test, a where test.id = a.i
     "06": "send_all            10     -      1     # public.test (last)",
     "07": "union_recv          1      0      0     ",
     "08": "union_set           1      0      -1    ",
-    "09": "ret                 1      -1     -     "
+    "09": "ret                 1      0      -     "
   },
   "pushdown": {
     "00": "set                 0      2      0     ",
@@ -546,7 +546,7 @@ explain with a as (select * from test) select * from test, a where test.id = a.i
     "06": "set_add             0      0      0     ",
     "07": "table_next          1      2      0     ",
     "08": "free                1      0      0     ",
-    "09": "ret                 0      -1     -     ",
+    "09": "ret                 0      0      -     ",
     "10": "set                 1      4      0     ",
     "11": "table_open_part     2      20     31    # public.test (primary)",
     "12": "ref                 3      0      0     ",
@@ -569,7 +569,7 @@ explain with a as (select * from test) select * from test, a where test.id = a.i
     "29": "free                3      0      0     ",
     "30": "table_next          2      12     0     ",
     "31": "free                2      0      0     ",
-    "32": "ret                 1      -1     -     "
+    "32": "ret                 1      0      -     "
   },
   "access": [["public.test", "ro"]]
 }]
@@ -588,7 +588,7 @@ explain with a as (select * from test) select * from test, a where test.id = 1;
     "06": "send_lookup         10     -      -     # public.test (last)",
     "07": "union_recv          1      0      0     ",
     "08": "union_set           1      0      -1    ",
-    "09": "ret                 1      -1     -     "
+    "09": "ret                 1      0      -     "
   },
   "pushdown": {
     "00": "set                 0      2      0     ",
@@ -600,7 +600,7 @@ explain with a as (select * from test) select * from test, a where test.id = 1;
     "06": "set_add             0      0      0     ",
     "07": "table_next          1      2      0     ",
     "08": "free                1      0      0     ",
-    "09": "ret                 0      -1     -     ",
+    "09": "ret                 0      0      -     ",
     "10": "set                 1      4      0     ",
     "11": "int                 2      -      0     # 1",
     "12": "push                2      0      0     ",
@@ -624,7 +624,7 @@ explain with a as (select * from test) select * from test, a where test.id = 1;
     "30": "free                4      0      0     ",
     "31": "free                3      0      0     ",
     "32": "free                2      0      0     ",
-    "33": "ret                 1      -1     -     "
+    "33": "ret                 1      0      -     "
   },
   "access": [["public.test", "ro"]]
 }]
@@ -661,7 +661,7 @@ explain with a as (select * from test) select * from a, test where test.id = a.i
     "24": "store_next          3      7      0     ",
     "25": "free                3      0      0     ",
     "26": "free                2      0      0     ",
-    "27": "ret                 1      -1     -     "
+    "27": "ret                 1      0      -     "
   },
   "pushdown": {
     "00": "set                 0      2      0     ",
@@ -673,7 +673,7 @@ explain with a as (select * from test) select * from a, test where test.id = a.i
     "06": "set_add             0      0      0     ",
     "07": "table_next          1      2      0     ",
     "08": "free                1      0      0     ",
-    "09": "ret                 0      -1     -     "
+    "09": "ret                 0      0      -     "
   },
   "access": [["public.test", "ro_exclusive"]]
 }]
@@ -710,7 +710,7 @@ explain with a as (select * from test) select * from a, test where test.id = 1;
     "24": "store_next          3      7      0     ",
     "25": "free                3      0      0     ",
     "26": "free                2      0      0     ",
-    "27": "ret                 1      -1     -     "
+    "27": "ret                 1      0      -     "
   },
   "pushdown": {
     "00": "set                 0      2      0     ",
@@ -722,7 +722,7 @@ explain with a as (select * from test) select * from a, test where test.id = 1;
     "06": "set_add             0      0      0     ",
     "07": "table_next          1      2      0     ",
     "08": "free                1      0      0     ",
-    "09": "ret                 0      -1     -     "
+    "09": "ret                 0      0      -     "
   },
   "access": [["public.test", "ro_exclusive"]]
 }]
@@ -755,7 +755,7 @@ explain select ref.id from test join ref on (test.id = ref.id) group by ref.id;
     "10": "store_next          2      7      0     ",
     "11": "free                2      0      0     ",
     "12": "free                0      0      0     ",
-    "13": "ret                 1      -1     -     "
+    "13": "ret                 1      0      -     "
   },
   "pushdown": {
     "00": "set_ordered         0      0      1     ",
@@ -774,7 +774,7 @@ explain select ref.id from test join ref on (test.id = ref.id) group by ref.id;
     "13": "table_next          1      2      0     ",
     "14": "free                1      0      0     ",
     "15": "set_sort            0      0      0     ",
-    "16": "ret                 0      -1     -     "
+    "16": "ret                 0      0      -     "
   },
   "access": [["public.test", "ro"], ["public.ref", "ro_exclusive"]]
 }]

@@ -46,7 +46,7 @@ explain delete from test where id = 3;
 [{
   "main": {
     "00": "send_lookup         0      -      -     # public.test (last)",
-    "01": "ret                 -1     -1     -     "
+    "01": "ret                 -1     0      -     "
   },
   "pushdown": {
     "00": "int                 0      -      0     # 3",
@@ -58,7 +58,7 @@ explain delete from test where id = 3;
     "06": "jntr                8      3      0     ",
     "07": "delete              0      0      0     ",
     "08": "free                0      0      0     ",
-    "09": "ret                 -1     -1     -     "
+    "09": "ret                 -1     0      -     "
   },
   "access": [["public.test", "rw"]]
 }]
@@ -98,7 +98,7 @@ explain delete from test where id > 0 and id < 1;
 [{
   "main": {
     "00": "send_all            0      -      -1    # public.test (last)",
-    "01": "ret                 -1     -1     -     "
+    "01": "ret                 -1     0      -     "
   },
   "pushdown": {
     "00": "int                 0      -      0     # 0",
@@ -119,7 +119,7 @@ explain delete from test where id > 0 and id < 1;
     "15": "delete              0      0      0     ",
     "16": "table_next          0      3      0     ",
     "17": "free                0      0      0     ",
-    "18": "ret                 -1     -1     -     "
+    "18": "ret                 -1     0      -     "
   },
   "access": [["public.test", "rw"]]
 }]

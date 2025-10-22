@@ -215,11 +215,15 @@ session_execute_distributed(Session* self, Content* output)
 		explain_end(&explain->time_commit_us);
 		explain_run(explain, program, &self->local,
 		            output, true);
-	} else
-	{
-		if (ret.value)
-			content_write(output, ret.fmt, ret.columns, ret.value);
+		return;
 	}
+
+	// write result into content
+	if (ret.value && context->returning)
+		content_write(output,
+		              context->returning_fmt,
+		              context->returning,
+		              ret.value);
 }
 
 hot static inline void
@@ -271,11 +275,23 @@ session_execute_utility(Session* self, Content* output)
 		explain_start(&explain->time_commit_us);
 	} else
 	{
+		/*
 		if (ret.value)
 		{
 			Str column;
 			str_set(&column, "result", 6);
-			content_write_json(output, ret.fmt, &column, ret.value);
+			content_write_json(output, self->local.format, &column, ret.value);
+		}
+		*/
+		// write result into content
+		if (ret.value && context->returning)
+		{
+			Str column;
+			str_set(&column, "result", 6);
+			content_write_json(output,
+			                   context->returning_fmt,
+			                   &column,
+			                   ret.value);
 		}
 	}
 

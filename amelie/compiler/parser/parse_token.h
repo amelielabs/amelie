@@ -15,9 +15,10 @@ typedef struct AstTokenCreate AstTokenCreate;
 
 struct AstTokenCreate
 {
-	Ast  ast;
-	Ast* user;
-	Ast* expire;
+	Ast       ast;
+	Returning ret;
+	Ast*      user;
+	Ast*      expire;
 };
 
 static inline AstTokenCreate*
@@ -33,6 +34,7 @@ ast_token_create_allocate(void)
 	self = ast_allocate(0, sizeof(AstTokenCreate));
 	self->user   = NULL;
 	self->expire = NULL;
+	returning_init(&self->ret);
 	return self;
 }
 

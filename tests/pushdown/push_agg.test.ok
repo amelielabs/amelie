@@ -28,7 +28,7 @@ explain select count(*) from test_empty;
     "10": "store_next          2      7      0     ",
     "11": "free                2      0      0     ",
     "12": "free                0      0      0     ",
-    "13": "ret                 1      -1     -     "
+    "13": "ret                 1      0      -     "
   },
   "pushdown": {
     "00": "set_ordered         0      1      1     ",
@@ -48,7 +48,7 @@ explain select count(*) from test_empty;
     "14": "push                2      0      0     ",
     "15": "set_agg             0      1      27    ",
     "16": "set_sort            0      0      0     ",
-    "17": "ret                 0      -1     -     "
+    "17": "ret                 0      0      -     "
   },
   "access": [["public.test_empty", "ro"]]
 }]
@@ -73,7 +73,7 @@ explain select count(*) from test;
     "10": "store_next          2      7      0     ",
     "11": "free                2      0      0     ",
     "12": "free                0      0      0     ",
-    "13": "ret                 1      -1     -     "
+    "13": "ret                 1      0      -     "
   },
   "pushdown": {
     "00": "set_ordered         0      1      1     ",
@@ -93,7 +93,7 @@ explain select count(*) from test;
     "14": "push                2      0      0     ",
     "15": "set_agg             0      1      21    ",
     "16": "set_sort            0      0      0     ",
-    "17": "ret                 0      -1     -     "
+    "17": "ret                 0      0      -     "
   },
   "access": [["public.test", "ro"]]
 }]
@@ -116,7 +116,7 @@ explain select count(id) from test;
     "10": "store_next          2      7      0     ",
     "11": "free                2      0      0     ",
     "12": "free                0      0      0     ",
-    "13": "ret                 1      -1     -     "
+    "13": "ret                 1      0      -     "
   },
   "pushdown": {
     "00": "set_ordered         0      1      1     ",
@@ -136,7 +136,7 @@ explain select count(id) from test;
     "14": "push                2      0      0     ",
     "15": "set_agg             0      1      21    ",
     "16": "set_sort            0      0      0     ",
-    "17": "ret                 0      -1     -     "
+    "17": "ret                 0      0      -     "
   },
   "access": [["public.test", "ro"]]
 }]
@@ -159,7 +159,7 @@ explain select count(data) from test;
     "10": "store_next          2      7      0     ",
     "11": "free                2      0      0     ",
     "12": "free                0      0      0     ",
-    "13": "ret                 1      -1     -     "
+    "13": "ret                 1      0      -     "
   },
   "pushdown": {
     "00": "set_ordered         0      1      1     ",
@@ -179,7 +179,7 @@ explain select count(data) from test;
     "14": "push                2      0      0     ",
     "15": "set_agg             0      1      21    ",
     "16": "set_sort            0      0      0     ",
-    "17": "ret                 0      -1     -     "
+    "17": "ret                 0      0      -     "
   },
   "access": [["public.test", "ro"]]
 }]
@@ -201,7 +201,7 @@ explain select count(data) from test_null;
     "10": "store_next          2      7      0     ",
     "11": "free                2      0      0     ",
     "12": "free                0      0      0     ",
-    "13": "ret                 1      -1     -     "
+    "13": "ret                 1      0      -     "
   },
   "pushdown": {
     "00": "set_ordered         0      1      1     ",
@@ -221,7 +221,7 @@ explain select count(data) from test_null;
     "14": "push                2      0      0     ",
     "15": "set_agg             0      1      26    ",
     "16": "set_sort            0      0      0     ",
-    "17": "ret                 0      -1     -     "
+    "17": "ret                 0      0      -     "
   },
   "access": [["public.test_null", "ro"]]
 }]
@@ -252,7 +252,7 @@ explain select count(distinct id) from test;
     "10": "store_next          2      7      0     ",
     "11": "free                2      0      0     ",
     "12": "free                0      0      0     ",
-    "13": "ret                 1      -1     -     "
+    "13": "ret                 1      0      -     "
   },
   "pushdown": {
     "00": "set_ordered         0      1      1     ",
@@ -274,7 +274,7 @@ explain select count(distinct id) from test;
     "16": "push                2      0      0     ",
     "17": "set_agg             0      1      24    ",
     "18": "set_sort            0      0      0     ",
-    "19": "ret                 0      -1     -     "
+    "19": "ret                 0      0      -     "
   },
   "access": [["public.test", "ro"]]
 }]
@@ -307,7 +307,7 @@ explain select sum(id) from test_empty;
     "10": "store_next          2      7      0     ",
     "11": "free                2      0      0     ",
     "12": "free                0      0      0     ",
-    "13": "ret                 1      -1     -     "
+    "13": "ret                 1      0      -     "
   },
   "pushdown": {
     "00": "set_ordered         0      1      1     ",
@@ -327,7 +327,7 @@ explain select sum(id) from test_empty;
     "14": "push                2      0      0     ",
     "15": "set_agg             0      1      27    ",
     "16": "set_sort            0      0      0     ",
-    "17": "ret                 0      -1     -     "
+    "17": "ret                 0      0      -     "
   },
   "access": [["public.test_empty", "ro"]]
 }]
@@ -350,7 +350,7 @@ explain select sum(id) from test;
     "10": "store_next          2      7      0     ",
     "11": "free                2      0      0     ",
     "12": "free                0      0      0     ",
-    "13": "ret                 1      -1     -     "
+    "13": "ret                 1      0      -     "
   },
   "pushdown": {
     "00": "set_ordered         0      1      1     ",
@@ -370,7 +370,7 @@ explain select sum(id) from test;
     "14": "push                2      0      0     ",
     "15": "set_agg             0      1      21    ",
     "16": "set_sort            0      0      0     ",
-    "17": "ret                 0      -1     -     "
+    "17": "ret                 0      0      -     "
   },
   "access": [["public.test", "ro"]]
 }]
@@ -395,7 +395,7 @@ explain select sum(data2) from test_empty;
     "10": "store_next          2      7      0     ",
     "11": "free                2      0      0     ",
     "12": "free                0      0      0     ",
-    "13": "ret                 1      -1     -     "
+    "13": "ret                 1      0      -     "
   },
   "pushdown": {
     "00": "set_ordered         0      1      1     ",
@@ -415,7 +415,7 @@ explain select sum(data2) from test_empty;
     "14": "push                2      0      0     ",
     "15": "set_agg             0      1      27    ",
     "16": "set_sort            0      0      0     ",
-    "17": "ret                 0      -1     -     "
+    "17": "ret                 0      0      -     "
   },
   "access": [["public.test_empty", "ro"]]
 }]
@@ -438,7 +438,7 @@ explain select sum(data2) from test;
     "10": "store_next          2      7      0     ",
     "11": "free                2      0      0     ",
     "12": "free                0      0      0     ",
-    "13": "ret                 1      -1     -     "
+    "13": "ret                 1      0      -     "
   },
   "pushdown": {
     "00": "set_ordered         0      1      1     ",
@@ -458,7 +458,7 @@ explain select sum(data2) from test;
     "14": "push                2      0      0     ",
     "15": "set_agg             0      1      21    ",
     "16": "set_sort            0      0      0     ",
-    "17": "ret                 0      -1     -     "
+    "17": "ret                 0      0      -     "
   },
   "access": [["public.test", "ro"]]
 }]
@@ -486,7 +486,7 @@ explain select sum(data) from test_null;
     "10": "store_next          2      7      0     ",
     "11": "free                2      0      0     ",
     "12": "free                0      0      0     ",
-    "13": "ret                 1      -1     -     "
+    "13": "ret                 1      0      -     "
   },
   "pushdown": {
     "00": "set_ordered         0      1      1     ",
@@ -506,7 +506,7 @@ explain select sum(data) from test_null;
     "14": "push                2      0      0     ",
     "15": "set_agg             0      1      26    ",
     "16": "set_sort            0      0      0     ",
-    "17": "ret                 0      -1     -     "
+    "17": "ret                 0      0      -     "
   },
   "access": [["public.test_null", "ro"]]
 }]
@@ -532,7 +532,7 @@ explain select avg(id) from test;
     "10": "store_next          2      7      0     ",
     "11": "free                2      0      0     ",
     "12": "free                0      0      0     ",
-    "13": "ret                 1      -1     -     "
+    "13": "ret                 1      0      -     "
   },
   "pushdown": {
     "00": "set_ordered         0      1      1     ",
@@ -552,7 +552,7 @@ explain select avg(id) from test;
     "14": "push                2      0      0     ",
     "15": "set_agg             0      1      21    ",
     "16": "set_sort            0      0      0     ",
-    "17": "ret                 0      -1     -     "
+    "17": "ret                 0      0      -     "
   },
   "access": [["public.test", "ro"]]
 }]
@@ -588,7 +588,7 @@ explain select avg(data2) from test_null;
     "10": "store_next          2      7      0     ",
     "11": "free                2      0      0     ",
     "12": "free                0      0      0     ",
-    "13": "ret                 1      -1     -     "
+    "13": "ret                 1      0      -     "
   },
   "pushdown": {
     "00": "set_ordered         0      1      1     ",
@@ -608,7 +608,7 @@ explain select avg(data2) from test_null;
     "14": "push                2      0      0     ",
     "15": "set_agg             0      1      26    ",
     "16": "set_sort            0      0      0     ",
-    "17": "ret                 0      -1     -     "
+    "17": "ret                 0      0      -     "
   },
   "access": [["public.test_null", "ro"]]
 }]
@@ -645,7 +645,7 @@ explain select min(data2) from test_null;
     "10": "store_next          2      7      0     ",
     "11": "free                2      0      0     ",
     "12": "free                0      0      0     ",
-    "13": "ret                 1      -1     -     "
+    "13": "ret                 1      0      -     "
   },
   "pushdown": {
     "00": "set_ordered         0      1      1     ",
@@ -665,7 +665,7 @@ explain select min(data2) from test_null;
     "14": "push                2      0      0     ",
     "15": "set_agg             0      1      26    ",
     "16": "set_sort            0      0      0     ",
-    "17": "ret                 0      -1     -     "
+    "17": "ret                 0      0      -     "
   },
   "access": [["public.test_null", "ro"]]
 }]
@@ -702,7 +702,7 @@ explain select max(data2) from test_null;
     "10": "store_next          2      7      0     ",
     "11": "free                2      0      0     ",
     "12": "free                0      0      0     ",
-    "13": "ret                 1      -1     -     "
+    "13": "ret                 1      0      -     "
   },
   "pushdown": {
     "00": "set_ordered         0      1      1     ",
@@ -722,7 +722,7 @@ explain select max(data2) from test_null;
     "14": "push                2      0      0     ",
     "15": "set_agg             0      1      26    ",
     "16": "set_sort            0      0      0     ",
-    "17": "ret                 0      -1     -     "
+    "17": "ret                 0      0      -     "
   },
   "access": [["public.test_null", "ro"]]
 }]
@@ -752,7 +752,7 @@ explain select id, count(*) from test group by id;
     "12": "store_next          2      7      0     ",
     "13": "free                2      0      0     ",
     "14": "free                0      0      0     ",
-    "15": "ret                 1      -1     -     "
+    "15": "ret                 1      0      -     "
   },
   "pushdown": {
     "00": "set_ordered         0      1      1     ",
@@ -766,7 +766,7 @@ explain select id, count(*) from test group by id;
     "08": "table_next          1      2      0     ",
     "09": "free                1      0      0     ",
     "10": "set_sort            0      0      0     ",
-    "11": "ret                 0      -1     -     "
+    "11": "ret                 0      0      -     "
   },
   "access": [["public.test", "ro"]]
 }]
@@ -799,7 +799,7 @@ explain select id, count(*) from test group by 1;
     "12": "store_next          2      7      0     ",
     "13": "free                2      0      0     ",
     "14": "free                0      0      0     ",
-    "15": "ret                 1      -1     -     "
+    "15": "ret                 1      0      -     "
   },
   "pushdown": {
     "00": "set_ordered         0      1      1     ",
@@ -813,7 +813,7 @@ explain select id, count(*) from test group by 1;
     "08": "table_next          1      2      0     ",
     "09": "free                1      0      0     ",
     "10": "set_sort            0      0      0     ",
-    "11": "ret                 0      -1     -     "
+    "11": "ret                 0      0      -     "
   },
   "access": [["public.test", "ro"]]
 }]
@@ -853,7 +853,7 @@ explain select * from (select count(*) from test) t;
     "19": "store_next          3      16     0     ",
     "20": "free                3      0      0     ",
     "21": "free                2      0      0     ",
-    "22": "ret                 0      -1     -     "
+    "22": "ret                 0      0      -     "
   },
   "pushdown": {
     "00": "set_ordered         0      1      1     ",
@@ -873,7 +873,7 @@ explain select * from (select count(*) from test) t;
     "14": "push                2      0      0     ",
     "15": "set_agg             0      1      21    ",
     "16": "set_sort            0      0      0     ",
-    "17": "ret                 0      -1     -     "
+    "17": "ret                 0      0      -     "
   },
   "access": [["public.test", "ro"]]
 }]
@@ -909,7 +909,7 @@ explain select * from (select id, count(*) from test group by id) t;
     "23": "store_next          3      18     0     ",
     "24": "free                3      0      0     ",
     "25": "free                2      0      0     ",
-    "26": "ret                 0      -1     -     "
+    "26": "ret                 0      0      -     "
   },
   "pushdown": {
     "00": "set_ordered         0      1      1     ",
@@ -923,7 +923,7 @@ explain select * from (select id, count(*) from test group by id) t;
     "08": "table_next          1      2      0     ",
     "09": "free                1      0      0     ",
     "10": "set_sort            0      0      0     ",
-    "11": "ret                 0      -1     -     "
+    "11": "ret                 0      0      -     "
   },
   "access": [["public.test", "ro"]]
 }]
@@ -970,7 +970,7 @@ explain select id, count(*) from test group by id order by id;
     "15": "free                2      0      0     ",
     "16": "free                0      0      0     ",
     "17": "set_sort            1      0      0     ",
-    "18": "ret                 1      -1     -     "
+    "18": "ret                 1      0      -     "
   },
   "pushdown": {
     "00": "set_ordered         0      1      1     ",
@@ -984,7 +984,7 @@ explain select id, count(*) from test group by id order by id;
     "08": "table_next          1      2      0     ",
     "09": "free                1      0      0     ",
     "10": "set_sort            0      0      0     ",
-    "11": "ret                 0      -1     -     "
+    "11": "ret                 0      0      -     "
   },
   "access": [["public.test", "ro"]]
 }]
@@ -1014,7 +1014,7 @@ explain select id, count(*) from test group by 1 order by 1;
     "15": "free                2      0      0     ",
     "16": "free                0      0      0     ",
     "17": "set_sort            1      0      0     ",
-    "18": "ret                 1      -1     -     "
+    "18": "ret                 1      0      -     "
   },
   "pushdown": {
     "00": "set_ordered         0      1      1     ",
@@ -1028,7 +1028,7 @@ explain select id, count(*) from test group by 1 order by 1;
     "08": "table_next          1      2      0     ",
     "09": "free                1      0      0     ",
     "10": "set_sort            0      0      0     ",
-    "11": "ret                 0      -1     -     "
+    "11": "ret                 0      0      -     "
   },
   "access": [["public.test", "ro"]]
 }]
@@ -1078,7 +1078,7 @@ explain select id, count(*) from test group by 1 having id > 5;
     "16": "store_next          2      7      0     ",
     "17": "free                2      0      0     ",
     "18": "free                0      0      0     ",
-    "19": "ret                 1      -1     -     "
+    "19": "ret                 1      0      -     "
   },
   "pushdown": {
     "00": "set_ordered         0      1      1     ",
@@ -1092,7 +1092,7 @@ explain select id, count(*) from test group by 1 having id > 5;
     "08": "table_next          1      2      0     ",
     "09": "free                1      0      0     ",
     "10": "set_sort            0      0      0     ",
-    "11": "ret                 0      -1     -     "
+    "11": "ret                 0      0      -     "
   },
   "access": [["public.test", "ro"]]
 }]
@@ -1129,7 +1129,7 @@ explain select id from test group by id having count(id) > 0;
     "14": "store_next          2      7      0     ",
     "15": "free                2      0      0     ",
     "16": "free                0      0      0     ",
-    "17": "ret                 1      -1     -     "
+    "17": "ret                 1      0      -     "
   },
   "pushdown": {
     "00": "set_ordered         0      1      1     ",
@@ -1143,7 +1143,7 @@ explain select id from test group by id having count(id) > 0;
     "08": "table_next          1      2      0     ",
     "09": "free                1      0      0     ",
     "10": "set_sort            0      0      0     ",
-    "11": "ret                 0      -1     -     "
+    "11": "ret                 0      0      -     "
   },
   "access": [["public.test", "ro"]]
 }]
@@ -1176,7 +1176,7 @@ explain select id from test group by id having count(*) > 0;
     "14": "store_next          2      7      0     ",
     "15": "free                2      0      0     ",
     "16": "free                0      0      0     ",
-    "17": "ret                 1      -1     -     "
+    "17": "ret                 1      0      -     "
   },
   "pushdown": {
     "00": "set_ordered         0      1      1     ",
@@ -1190,7 +1190,7 @@ explain select id from test group by id having count(*) > 0;
     "08": "table_next          1      2      0     ",
     "09": "free                1      0      0     ",
     "10": "set_sort            0      0      0     ",
-    "11": "ret                 0      -1     -     "
+    "11": "ret                 0      0      -     "
   },
   "access": [["public.test", "ro"]]
 }]
@@ -1218,7 +1218,7 @@ explain select id, count(*) from test group by id having count(*) > 0;
     "16": "store_next          2      7      0     ",
     "17": "free                2      0      0     ",
     "18": "free                0      0      0     ",
-    "19": "ret                 1      -1     -     "
+    "19": "ret                 1      0      -     "
   },
   "pushdown": {
     "00": "set_ordered         0      2      1     ",
@@ -1234,7 +1234,7 @@ explain select id, count(*) from test group by id having count(*) > 0;
     "10": "table_next          1      2      0     ",
     "11": "free                1      0      0     ",
     "12": "set_sort            0      0      0     ",
-    "13": "ret                 0      -1     -     "
+    "13": "ret                 0      0      -     "
   },
   "access": [["public.test", "ro"]]
 }]
@@ -1262,7 +1262,7 @@ explain select id, count(*) from test group by 1 having count(*) > 0;
     "16": "store_next          2      7      0     ",
     "17": "free                2      0      0     ",
     "18": "free                0      0      0     ",
-    "19": "ret                 1      -1     -     "
+    "19": "ret                 1      0      -     "
   },
   "pushdown": {
     "00": "set_ordered         0      2      1     ",
@@ -1278,7 +1278,7 @@ explain select id, count(*) from test group by 1 having count(*) > 0;
     "10": "table_next          1      2      0     ",
     "11": "free                1      0      0     ",
     "12": "set_sort            0      0      0     ",
-    "13": "ret                 0      -1     -     "
+    "13": "ret                 0      0      -     "
   },
   "access": [["public.test", "ro"]]
 }]
@@ -1304,7 +1304,7 @@ explain select data, count(*) from test group by data having count(*) > 0;
     "16": "store_next          2      7      0     ",
     "17": "free                2      0      0     ",
     "18": "free                0      0      0     ",
-    "19": "ret                 1      -1     -     "
+    "19": "ret                 1      0      -     "
   },
   "pushdown": {
     "00": "set_ordered         0      2      1     ",
@@ -1320,7 +1320,7 @@ explain select data, count(*) from test group by data having count(*) > 0;
     "10": "table_next          1      2      0     ",
     "11": "free                1      0      0     ",
     "12": "set_sort            0      0      0     ",
-    "13": "ret                 0      -1     -     "
+    "13": "ret                 0      0      -     "
   },
   "access": [["public.test", "ro"]]
 }]
@@ -1348,7 +1348,7 @@ explain select data, count(*) from test group by 1 having count(*) > 0;
     "16": "store_next          2      7      0     ",
     "17": "free                2      0      0     ",
     "18": "free                0      0      0     ",
-    "19": "ret                 1      -1     -     "
+    "19": "ret                 1      0      -     "
   },
   "pushdown": {
     "00": "set_ordered         0      2      1     ",
@@ -1364,7 +1364,7 @@ explain select data, count(*) from test group by 1 having count(*) > 0;
     "10": "table_next          1      2      0     ",
     "11": "free                1      0      0     ",
     "12": "set_sort            0      0      0     ",
-    "13": "ret                 0      -1     -     "
+    "13": "ret                 0      0      -     "
   },
   "access": [["public.test", "ro"]]
 }]
@@ -1390,7 +1390,7 @@ explain select data, count(*) from test group by data having count(*) > 1;
     "16": "store_next          2      7      0     ",
     "17": "free                2      0      0     ",
     "18": "free                0      0      0     ",
-    "19": "ret                 1      -1     -     "
+    "19": "ret                 1      0      -     "
   },
   "pushdown": {
     "00": "set_ordered         0      2      1     ",
@@ -1406,7 +1406,7 @@ explain select data, count(*) from test group by data having count(*) > 1;
     "10": "table_next          1      2      0     ",
     "11": "free                1      0      0     ",
     "12": "set_sort            0      0      0     ",
-    "13": "ret                 0      -1     -     "
+    "13": "ret                 0      0      -     "
   },
   "access": [["public.test", "ro"]]
 }]
@@ -1434,7 +1434,7 @@ explain select data, count(*) from test group by 1  having count(*) > 1;
     "16": "store_next          2      7      0     ",
     "17": "free                2      0      0     ",
     "18": "free                0      0      0     ",
-    "19": "ret                 1      -1     -     "
+    "19": "ret                 1      0      -     "
   },
   "pushdown": {
     "00": "set_ordered         0      2      1     ",
@@ -1450,7 +1450,7 @@ explain select data, count(*) from test group by 1  having count(*) > 1;
     "10": "table_next          1      2      0     ",
     "11": "free                1      0      0     ",
     "12": "set_sort            0      0      0     ",
-    "13": "ret                 0      -1     -     "
+    "13": "ret                 0      0      -     "
   },
   "access": [["public.test", "ro"]]
 }]
@@ -1479,7 +1479,7 @@ explain select data, count(*) from test group by data order by data;
     "15": "free                2      0      0     ",
     "16": "free                0      0      0     ",
     "17": "set_sort            1      0      0     ",
-    "18": "ret                 1      -1     -     "
+    "18": "ret                 1      0      -     "
   },
   "pushdown": {
     "00": "set_ordered         0      1      1     ",
@@ -1493,7 +1493,7 @@ explain select data, count(*) from test group by data order by data;
     "08": "table_next          1      2      0     ",
     "09": "free                1      0      0     ",
     "10": "set_sort            0      0      0     ",
-    "11": "ret                 0      -1     -     "
+    "11": "ret                 0      0      -     "
   },
   "access": [["public.test", "ro"]]
 }]
@@ -1518,7 +1518,7 @@ explain select count(*) from test group by data order by data;
     "13": "free                2      0      0     ",
     "14": "free                0      0      0     ",
     "15": "set_sort            1      0      0     ",
-    "16": "ret                 1      -1     -     "
+    "16": "ret                 1      0      -     "
   },
   "pushdown": {
     "00": "set_ordered         0      1      1     ",
@@ -1532,7 +1532,7 @@ explain select count(*) from test group by data order by data;
     "08": "table_next          1      2      0     ",
     "09": "free                1      0      0     ",
     "10": "set_sort            0      0      0     ",
-    "11": "ret                 0      -1     -     "
+    "11": "ret                 0      0      -     "
   },
   "access": [["public.test", "ro"]]
 }]

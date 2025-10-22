@@ -15,15 +15,11 @@ typedef struct Return Return;
 
 struct Return
 {
-	Value*   value;
-	Columns* columns;
-	Str*     fmt;
+	Value* value;
 };
 
 static inline void
 return_init(Return* self)
 {
-	self->value   = NULL;
-	self->columns = NULL;
-	self->fmt     = NULL;
+	self->value = NULL;
 }

@@ -37,14 +37,14 @@ explain insert into test values(1, 0), (2, 0), (1, 0) on conflict do nothing;
   "main": {
     "00": "set_ptr             0      -      0     ",
     "01": "send_shard          0      -      0     # public.test (last)",
-    "02": "ret                 -1     -1     -     "
+    "02": "ret                 -1     0      -     "
   },
   "pushdown": {
     "00": "table_prepare       0      -      0     # public.test",
     "01": "jmp                 2      0      0     ",
     "02": "upsert              0      2      -1    ",
     "03": "free                0      0      0     ",
-    "04": "ret                 -1     -1     -     "
+    "04": "ret                 -1     0      -     "
   },
   "access": [["public.test", "rw"]]
 }]
@@ -65,14 +65,14 @@ explain insert into test values(1, 0) on conflict do nothing;
   "main": {
     "00": "set_ptr             0      -      0     ",
     "01": "send_shard          0      -      0     # public.test (last)",
-    "02": "ret                 -1     -1     -     "
+    "02": "ret                 -1     0      -     "
   },
   "pushdown": {
     "00": "table_prepare       0      -      0     # public.test",
     "01": "jmp                 2      0      0     ",
     "02": "upsert              0      2      -1    ",
     "03": "free                0      0      0     ",
-    "04": "ret                 -1     -1     -     "
+    "04": "ret                 -1     0      -     "
   },
   "access": [["public.test", "rw"]]
 }]
@@ -81,7 +81,7 @@ explain insert into test values(1, 0) on conflict do resolve;
   "main": {
     "00": "set_ptr             0      -      0     ",
     "01": "send_shard          0      -      0     # public.test (last)",
-    "02": "ret                 -1     -1     -     "
+    "02": "ret                 -1     0      -     "
   },
   "pushdown": {
     "00": "table_prepare       0      -      0     # public.test",
@@ -91,7 +91,7 @@ explain insert into test values(1, 0) on conflict do resolve;
     "04": "call                1      -      1     # public.error()",
     "05": "upsert              0      2      -1    ",
     "06": "free                0      0      0     ",
-    "07": "ret                 -1     -1     -     "
+    "07": "ret                 -1     0      -     "
   },
   "access": [["public.test", "rw"]]
 }]
@@ -108,7 +108,7 @@ explain insert into test values(1, 0) on conflict do update set data = data + 1;
   "main": {
     "00": "set_ptr             0      -      0     ",
     "01": "send_shard          0      -      0     # public.test (last)",
-    "02": "ret                 -1     -1     -     "
+    "02": "ret                 -1     0      -     "
   },
   "pushdown": {
     "00": "table_prepare       0      -      0     # public.test",
@@ -122,7 +122,7 @@ explain insert into test values(1, 0) on conflict do update set data = data + 1;
     "08": "update              0      1      0     ",
     "09": "upsert              0      2      -1    ",
     "10": "free                0      0      0     ",
-    "11": "ret                 -1     -1     -     "
+    "11": "ret                 -1     0      -     "
   },
   "access": [["public.test", "rw"]]
 }]
@@ -149,7 +149,7 @@ explain insert into test values (1, 0), (1, 0), (1, 0) on conflict do update set
   "main": {
     "00": "set_ptr             0      -      0     ",
     "01": "send_shard          0      -      0     # public.test (last)",
-    "02": "ret                 -1     -1     -     "
+    "02": "ret                 -1     0      -     "
   },
   "pushdown": {
     "00": "table_prepare       0      -      0     # public.test",
@@ -163,7 +163,7 @@ explain insert into test values (1, 0), (1, 0), (1, 0) on conflict do update set
     "08": "update              0      1      0     ",
     "09": "upsert              0      2      -1    ",
     "10": "free                0      0      0     ",
-    "11": "ret                 -1     -1     -     "
+    "11": "ret                 -1     0      -     "
   },
   "access": [["public.test", "rw"]]
 }]
@@ -185,7 +185,7 @@ explain insert into test values (1, 0) on conflict do update set data = data + 1
   "main": {
     "00": "set_ptr             0      -      0     ",
     "01": "send_shard          0      -      0     # public.test (last)",
-    "02": "ret                 -1     -1     -     "
+    "02": "ret                 -1     0      -     "
   },
   "pushdown": {
     "00": "table_prepare       0      -      0     # public.test",
@@ -201,7 +201,7 @@ explain insert into test values (1, 0) on conflict do update set data = data + 1
     "10": "update              0      1      0     ",
     "11": "upsert              0      2      -1    ",
     "12": "free                0      0      0     ",
-    "13": "ret                 -1     -1     -     "
+    "13": "ret                 -1     0      -     "
   },
   "access": [["public.test", "rw"]]
 }]
@@ -224,7 +224,7 @@ explain insert into test values (1, 123) on conflict do update set data = data +
   "main": {
     "00": "set_ptr             0      -      0     ",
     "01": "send_shard          0      -      0     # public.test (last)",
-    "02": "ret                 -1     -1     -     "
+    "02": "ret                 -1     0      -     "
   },
   "pushdown": {
     "00": "table_prepare       0      -      0     # public.test",
@@ -238,7 +238,7 @@ explain insert into test values (1, 123) on conflict do update set data = data +
     "08": "update              0      1      0     ",
     "09": "upsert              0      2      -1    ",
     "10": "free                0      0      0     ",
-    "11": "ret                 -1     -1     -     "
+    "11": "ret                 -1     0      -     "
   },
   "access": [["public.test", "rw"]]
 }]
@@ -254,7 +254,7 @@ explain insert into test values (1, null, {"id": 48}) on conflict do update set 
   "main": {
     "00": "set_ptr             0      -      0     ",
     "01": "send_shard          0      -      0     # public.test (last)",
-    "02": "ret                 -1     -1     -     "
+    "02": "ret                 -1     0      -     "
   },
   "pushdown": {
     "00": "table_prepare       0      -      0     # public.test",
@@ -272,7 +272,7 @@ explain insert into test values (1, null, {"id": 48}) on conflict do update set 
     "12": "update              0      1      0     ",
     "13": "upsert              0      2      -1    ",
     "14": "free                0      0      0     ",
-    "15": "ret                 -1     -1     -     "
+    "15": "ret                 -1     0      -     "
   },
   "access": [["public.test", "rw"]]
 }]
@@ -344,7 +344,7 @@ explain insert into test values(1, 0) on conflict do update set data = data + 1 
     "01": "set_ptr             1      -      0     ",
     "02": "send_shard          0      -      1     # public.test (last)",
     "03": "union_recv          0      0      0     ",
-    "04": "ret                 0      -1     -     "
+    "04": "ret                 0      0      -     "
   },
   "pushdown": {
     "00": "set                 0      2      0     ",
@@ -364,7 +364,7 @@ explain insert into test values(1, 0) on conflict do update set data = data + 1 
     "14": "set_add             0      0      0     ",
     "15": "upsert              1      3      10    ",
     "16": "free                1      0      0     ",
-    "17": "ret                 0      -1     -     "
+    "17": "ret                 0      0      -     "
   },
   "access": [["public.test", "rw"]]
 }]
@@ -387,7 +387,7 @@ explain insert into test values(1, 0) on conflict do nothing returning *;
     "01": "set_ptr             1      -      0     ",
     "02": "send_shard          0      -      1     # public.test (last)",
     "03": "union_recv          0      0      0     ",
-    "04": "ret                 0      -1     -     "
+    "04": "ret                 0      0      -     "
   },
   "pushdown": {
     "00": "set                 0      2      0     ",
@@ -400,7 +400,7 @@ explain insert into test values(1, 0) on conflict do nothing returning *;
     "07": "set_add             0      0      0     ",
     "08": "upsert              1      3      3     ",
     "09": "free                1      0      0     ",
-    "10": "ret                 0      -1     -     "
+    "10": "ret                 0      0      -     "
   },
   "access": [["public.test", "rw"]]
 }]
@@ -422,7 +422,7 @@ explain insert into test values(1, 0) on conflict do update set data = data + 1 
     "01": "set_ptr             1      -      0     ",
     "02": "send_shard          0      -      1     # public.test (last)",
     "03": "union_recv          0      0      0     ",
-    "04": "ret                 0      -1     -     "
+    "04": "ret                 0      0      -     "
   },
   "pushdown": {
     "00": "set                 0      2      0     ",
@@ -442,7 +442,7 @@ explain insert into test values(1, 0) on conflict do update set data = data + 1 
     "14": "set_add             0      0      0     ",
     "15": "upsert              1      3      10    ",
     "16": "free                1      0      0     ",
-    "17": "ret                 0      -1     -     "
+    "17": "ret                 0      0      -     "
   },
   "access": [["public.test", "rw"]]
 }]
@@ -464,7 +464,7 @@ explain insert into test values(1, 0) on conflict do nothing returning *;
     "01": "set_ptr             1      -      0     ",
     "02": "send_shard          0      -      1     # public.test (last)",
     "03": "union_recv          0      0      0     ",
-    "04": "ret                 0      -1     -     "
+    "04": "ret                 0      0      -     "
   },
   "pushdown": {
     "00": "set                 0      2      0     ",
@@ -477,7 +477,7 @@ explain insert into test values(1, 0) on conflict do nothing returning *;
     "07": "set_add             0      0      0     ",
     "08": "upsert              1      3      3     ",
     "09": "free                1      0      0     ",
-    "10": "ret                 0      -1     -     "
+    "10": "ret                 0      0      -     "
   },
   "access": [["public.test", "rw"]]
 }]
@@ -564,7 +564,7 @@ explain insert into test select * from src on conflict do update set data = data
     "05": "dup                 2      0      0     ",
     "06": "send_shard          10     -      2     # public.test (last)",
     "07": "union_recv          1      0      0     ",
-    "08": "ret                 1      -1     -     "
+    "08": "ret                 1      0      -     "
   },
   "pushdown": {
     "00": "set                 0      2      0     ",
@@ -576,7 +576,7 @@ explain insert into test select * from src on conflict do update set data = data
     "06": "set_add             0      0      0     ",
     "07": "table_next          1      2      0     ",
     "08": "free                1      0      0     ",
-    "09": "ret                 0      -1     -     ",
+    "09": "ret                 0      0      -     ",
     "10": "set                 1      2      0     ",
     "11": "table_prepare       2      -      0     # public.test",
     "12": "jmp                 25     0      0     ",
@@ -594,7 +594,7 @@ explain insert into test select * from src on conflict do update set data = data
     "24": "set_add             1      0      0     ",
     "25": "upsert              2      13     20    ",
     "26": "free                2      0      0     ",
-    "27": "ret                 1      -1     -     "
+    "27": "ret                 1      0      -     "
   },
   "access": [["public.test", "rw"], ["public.src", "ro"]]
 }]

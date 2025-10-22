@@ -21,7 +21,7 @@ end;
   "main": {
     "00": "push_nulls          1      0      0     ",
     "01": "var                 0      0      0     ",
-    "02": "ret                 0      -1     -     "
+    "02": "ret                 0      0      -     "
   },
   "access": []
 }]
@@ -39,7 +39,7 @@ end;
   "main": {
     "00": "push_nulls          1      0      0     ",
     "01": "var                 0      0      0     ",
-    "02": "ret                 0      -1     -     "
+    "02": "ret                 0      0      -     "
   },
   "access": []
 }]
@@ -62,7 +62,7 @@ end;
     "04": "var                 1      1      0     ",
     "05": "push                1      0      0     ",
     "06": "set_add             0      0      0     ",
-    "07": "ret                 0      -1     -     "
+    "07": "ret                 0      0      -     "
   },
   "access": []
 }]
@@ -117,7 +117,7 @@ end;
     "01": "int                 0      -      0     # 1",
     "02": "var_set             0      0      0     ",
     "03": "free                0      0      0     ",
-    "04": "ret                 -1     -1     -     "
+    "04": "ret                 -1     0      -     "
   },
   "access": []
 }]
@@ -140,7 +140,7 @@ end;
     "02": "var_set             0      0      0     ",
     "03": "free                0      0      0     ",
     "04": "var                 0      0      0     ",
-    "05": "ret                 0      -1     -     "
+    "05": "ret                 0      0      -     "
   },
   "access": []
 }]
@@ -173,7 +173,7 @@ end;
     "04": "var                 0      0      0     ",
     "05": "string              1      7      0     # id",
     "06": "dotjs               2      0      1     ",
-    "07": "ret                 2      -1     -     "
+    "07": "ret                 2      0      -     "
   },
   "access": []
 }]
@@ -196,7 +196,7 @@ end;
     "02": "var_set             0      0      0     ",
     "03": "free                0      0      0     ",
     "04": "var                 0      0      0     ",
-    "05": "ret                 0      -1     -     "
+    "05": "ret                 0      0      -     "
   },
   "access": []
 }]
@@ -228,7 +228,7 @@ end;
     "09": "send_all            0      -      0     # public.test (last)",
     "10": "union_recv          0      0      0     ",
     "11": "union_set           0      0      -1    ",
-    "12": "ret                 0      -1     -     "
+    "12": "ret                 0      0      -     "
   },
   "pushdown": {
     "00": "set                 0      1      0     ",
@@ -242,7 +242,7 @@ end;
     "08": "set_add             0      0      0     ",
     "09": "table_next          1      2      0     ",
     "10": "free                1      0      0     ",
-    "11": "ret                 0      -1     -     "
+    "11": "ret                 0      0      -     "
   },
   "access": [["public.test", "ro"]]
 }]
@@ -271,7 +271,7 @@ end;
     "09": "send_lookup_by      0      -      -     # public.test (last)",
     "10": "union_recv          0      0      0     ",
     "11": "union_set           0      0      -1    ",
-    "12": "ret                 0      -1     -     "
+    "12": "ret                 0      0      -     "
   },
   "pushdown": {
     "00": "set                 0      1      0     ",
@@ -286,7 +286,7 @@ end;
     "09": "push                2      0      0     ",
     "10": "set_add             0      0      0     ",
     "11": "free                1      0      0     ",
-    "12": "ret                 0      -1     -     "
+    "12": "ret                 0      0      -     "
   },
   "access": [["public.test", "ro"]]
 }]
@@ -325,7 +325,7 @@ end;
     "09": "send_lookup_by      0      -      -     # public.test (last)",
     "10": "union_recv          0      0      0     ",
     "11": "union_set           0      0      -1    ",
-    "12": "ret                 0      -1     -     "
+    "12": "ret                 0      0      -     "
   },
   "pushdown": {
     "00": "set                 0      1      0     ",
@@ -340,7 +340,7 @@ end;
     "09": "push                2      0      0     ",
     "10": "set_add             0      0      0     ",
     "11": "free                1      0      0     ",
-    "12": "ret                 0      -1     -     "
+    "12": "ret                 0      0      -     "
   },
   "access": [["public.test", "ro"]]
 }]
@@ -477,7 +477,7 @@ end;
     "10": "json_next           2      7      0     ",
     "11": "free                2      0      0     ",
     "12": "free                1      0      0     ",
-    "13": "ret                 0      -1     -     "
+    "13": "ret                 0      0      -     "
   },
   "access": []
 }]
@@ -515,7 +515,7 @@ end;
     "10": "json_next           2      7      0     ",
     "11": "free                2      0      0     ",
     "12": "free                1      0      0     ",
-    "13": "ret                 0      -1     -     "
+    "13": "ret                 0      0      -     "
   },
   "access": []
 }]
@@ -607,7 +607,7 @@ end;
     "14": "store_next          2      9      0     ",
     "15": "free                2      0      0     ",
     "16": "free                1      0      0     ",
-    "17": "ret                 0      -1     -     "
+    "17": "ret                 0      0      -     "
   },
   "pushdown": {
     "00": "set                 0      2      0     ",
@@ -619,7 +619,7 @@ end;
     "06": "set_add             0      0      0     ",
     "07": "table_next          1      2      0     ",
     "08": "free                1      0      0     ",
-    "09": "ret                 0      -1     -     "
+    "09": "ret                 0      0      -     "
   },
   "access": [["public.test", "ro"]]
 }]

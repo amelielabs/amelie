@@ -84,7 +84,11 @@ restore_replay(Db* self, Tr* tr, int type, uint8_t** pos)
 		defer(udf_config_free, config);
 
 		// create udf
-		udf_mgr_create(&self->catalog.udf_mgr, tr, config, false);
+		auto catalog = &self->catalog;
+		udf_mgr_create(&catalog->udf_mgr, tr, config, false);
+
+		auto udf = udf_mgr_find(&catalog->udf_mgr, &config->schema, &config->name, true);
+		catalog->iface->udf_compile(catalog, udf);
 		break;
 	}
 	}
