@@ -4,12 +4,12 @@ connect E0 S0 127.0.0.1:3485;
 begin end;
 begin begin;
 end end;
-{"msg": "begin begin❰;❱ ⟵ unsupported statement"}
+{"msg": "begin ❰begin❱ ⟵ cannot be used here"}
 # test: commit
 commit;
-{"msg": "commit❰;❱ ⟵ unsupported statement"}
+{"msg": "❰commit❱ ⟵ cannot be used here"}
 begin commit end;
-{"msg": "begin commit ❰end❱ ⟵ unsupported statement"}
+{"msg": "begin ❰commit❱ ⟵ cannot be used here"}
 # test: begin end
 begin select 1 end;
 {"msg": "begin select 1 ❰end❱ ⟵ ; expected"}

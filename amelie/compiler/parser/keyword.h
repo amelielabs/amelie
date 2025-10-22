@@ -105,6 +105,7 @@ enum
 	KEXISTS,
 	KEXPIRE,
 	KEXTENDED,
+	KEXECUTE,
 
 	// f
 	KFALSE,

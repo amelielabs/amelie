@@ -108,6 +108,13 @@ parse_stmt_free(Stmt* stmt)
 			set_cache_push(stmt->parser->values_cache, ast->values);
 		break;
 	}
+	case STMT_EXECUTE:
+	{
+		auto ast = ast_execute_of(stmt->ast);
+		if (ast->args)
+			set_cache_push(stmt->parser->values_cache, ast->args);
+		break;
+	}
 	default:
 		break;
 	}
@@ -404,9 +411,10 @@ parse_stmt(Stmt* self)
 		break;
 	}
 
+	case KEXECUTE:
 	case KBEGIN:
 	case KCOMMIT:
-		stmt_error(self, NULL, "unsupported statement");
+		stmt_error(self, ast, "cannot be used here");
 		break;
 
 	case KEOF:
@@ -426,7 +434,7 @@ parse_stmt(Stmt* self)
 			break;
 		}
 
-		stmt_error(self, NULL, "unexpected statement");
+		stmt_error(self, ast, "unexpected statement");
 		break;
 	}
 	}
@@ -552,21 +560,33 @@ parse(Parser* self, Program* program, Str* str)
 	if (lex_if(lex, KPROFILE))
 		self->profile = true;
 
-	// [BEGIN]
-	auto begin = lex_if(lex, KBEGIN) != NULL;
-
 	// create main namespace and the main block
 	auto ns    = namespaces_add(&self->nss, NULL, NULL);
 	auto block = blocks_add(&ns->blocks, NULL);
 
-	// stmt [; stmt]
-	parse_block(self, block);
-
-	// [END [;]]
-	if (begin)
+	// EXECUTE | BEGIN
+	if (lex_if(lex, KEXECUTE))
 	{
-		lex_expect(lex, KEND);
+		// EXECUTE [schema.]function_name(args, ...)
+		auto stmt = stmt_allocate(self, lex, block);
+		stmt->id = STMT_EXECUTE;
+		stmts_add(&block->stmts, stmt);
+		parse_execute(stmt);
 		lex_if(lex, ';');
+	} else
+	{
+		// [BEGIN]
+		auto begin = lex_if(lex, KBEGIN) != NULL;
+
+		// stmt [; stmt]
+		parse_block(self, block);
+
+		// [END [;]]
+		if (begin)
+		{
+			lex_expect(lex, KEND);
+			lex_if(lex, ';');
+		}
 	}
 
 	// EOF

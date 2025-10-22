@@ -89,13 +89,13 @@ declare a null;
 {"msg": "declare a ❰null❱ ⟵ unrecognized data type"}
 # test: := operator parsing
 :=;
-{"msg": ":=❰;❱ ⟵ unexpected statement"}
+{"msg": "❰:=❱ ⟵ unexpected statement"}
 0 :=;
-{"msg": "0 ❰:=❱ ⟵ unexpected statement"}
+{"msg": "❰0❱ ⟵ unexpected statement"}
 0 := 0;
-{"msg": "0 ❰:=❱ ⟵ unexpected statement"}
+{"msg": "❰0❱ ⟵ unexpected statement"}
 'x' := 1;
-{"msg": "'x' ❰:=❱ ⟵ unexpected statement"}
+{"msg": "❰'x'❱ ⟵ unexpected statement"}
 x :=;
 {"msg": "x :=❰;❱ ⟵ bad expression"}
 # test: := expr
@@ -357,7 +357,7 @@ begin
 	with a as (x := select 1) select * from a;
 	select x;
 end;
-{"msg": "begin\n\tdeclare x int;\n\twith a as (x ❰:=❱ ⟵ unexpected statement"}
+{"msg": "begin\n\tdeclare x int;\n\twith a as (❰x❱ ⟵ unexpected statement"}
 drop table test;
 # test: := ddl
 begin

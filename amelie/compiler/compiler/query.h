@@ -37,6 +37,8 @@ struct QueryContext
 	Program* program;
 	Str*     text;
 	Str*     uri;
+	Udf*     execute;
+	Value*   args;
 	Columns* returning;
 	Str*     returning_fmt;
 };
@@ -55,6 +57,8 @@ query_context_set(QueryContext* self, Program* program, Str* text, Str* uri)
 	self->program       = program;
 	self->text          = text;
 	self->uri           = uri;
+	self->execute       = NULL;
+	self->args          = NULL;
 	self->returning     = NULL;
 	self->returning_fmt = NULL;
 }

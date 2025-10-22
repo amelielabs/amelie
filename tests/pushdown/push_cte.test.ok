@@ -30,13 +30,13 @@ with test (name,;
 with test (name);
 {"msg": "with test (name)❰;❱ ⟵ AS expected"}
 with test as (;
-{"msg": "with test as (; ⟵ unexpected statement"}
+{"msg": "with test as (❰;❱ ⟵ unexpected statement"}
 # test: with () (no stmt)
 with test as ();
-{"msg": "with test as ()❰;❱ ⟵ unexpected statement"}
+{"msg": "with test as (❰)❱ ⟵ unexpected statement"}
 # test: with(select expr) (no main stmt)
 with test as (select 1);
-{"msg": "with test as (select 1); ⟵ unexpected statement"}
+{"msg": "with test as (select 1)❰;❱ ⟵ unexpected statement"}
 # test: with(select expr), select expr (cte not used)
 with test as (select 1) select 2;
 [2]
@@ -1058,7 +1058,7 @@ drop table test;
 create table test (id int primary key);
 insert into test values (1),(2),(3);
 begin with a as (select [4,5,6]); with a as (select * from test); select * from a; end;
-{"msg": "begin with a as (select [4,5,6]); ❰with❱ ⟵ unexpected statement"}
+{"msg": "begin with a as (select [4,5,6])❰;❱ ⟵ unexpected statement"}
 drop table test;
 # test: with(insert returning), select * from cte
 create table test (id int primary key, data int);

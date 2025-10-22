@@ -145,7 +145,7 @@ elsif 2 then
 else
 	1;
 end;
-{"msg": "if 1 then\n\tselect 123;\nelsif 2 then\n\tselect 321;\nelse\n\t1❰;❱ ⟵ unexpected statement"}
+{"msg": "if 1 then\n\tselect 123;\nelsif 2 then\n\tselect 321;\nelse\n\t❰1❱ ⟵ unexpected statement"}
 explain if 1 then
 	select 123;
 elsif 2 then

@@ -606,6 +606,10 @@ emit_block(Compiler* self, Block* block)
 			break;
 		case STMT_RETURN:
 			break;
+		case STMT_EXECUTE:
+			// never handled here
+			abort();
+			break;
 		default:
 			emit_stmt(self, stmt);
 			break;

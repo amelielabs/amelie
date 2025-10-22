@@ -102,6 +102,17 @@ query_compiler_parse(Query* query, QueryContext* ctx)
 		ctx->returning_fmt = &last->ret->format;
 	}
 
+	// update context to pass EXECUTE arguments
+	if (stmt->id == STMT_EXECUTE)
+	{
+		auto execute = ast_execute_of(stmt->ast);
+		auto udf = execute->udf;
+		ctx->program = (Program*)udf->data;
+		ctx->execute = udf;
+		ctx->args    = set_value(execute->args, 0);
+		return;
+	}
+
 	// generate bytecode
 	compiler_emit(compiler);
 }
@@ -121,10 +132,22 @@ query_compiler_parse_endpoint(Query* query, QueryContext* ctx, EndpointType type
 		return;
 
 	// set returning columns and format
-	if (stmt->ret && stmt->ret->columns.count > 0)
+	auto last = compiler_main(compiler)->stmts.list_tail;
+	if (last->ret && last->ret->columns.count > 0)
 	{
-		ctx->returning     = &stmt->ret->columns;
-		ctx->returning_fmt = &stmt->ret->format;
+		ctx->returning     = &last->ret->columns;
+		ctx->returning_fmt = &last->ret->format;
+	}
+
+	// update context to pass EXECUTE arguments
+	if (stmt->id == STMT_EXECUTE)
+	{
+		auto execute = ast_execute_of(stmt->ast);
+		auto udf = execute->udf;
+		ctx->program = (Program*)udf->data;
+		ctx->execute = udf;
+		ctx->args     = set_value(execute->args, 0);
+		return;
 	}
 
 	// generate bytecode

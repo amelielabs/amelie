@@ -93,6 +93,7 @@ Keyword keywords[] =
 	{ KEXISTS,                "exists",                6  },
 	{ KEXPIRE,                "expire",                6  },
 	{ KEXTENDED,              "extended",              8  },
+	{ KEXECUTE,               "execute",               7  },
 
 	// f
 	{ KFALSE,                 "false",                 5  },
