@@ -294,7 +294,7 @@ set(AMELIE_SOURCES_COMPILER
     ${AMELIE_ROOT}/compiler/compiler/emit_watch.c
     ${AMELIE_ROOT}/compiler/compiler/emit_utility.c
     ${AMELIE_ROOT}/compiler/compiler/pushdown.c
-    ${AMELIE_ROOT}/compiler/compiler/ql.c)
+    ${AMELIE_ROOT}/compiler/compiler/query.c)
 
 set(AMELIE_SOURCES_SYSTEM
     ${AMELIE_ROOT}/system/frontend/frontend.c

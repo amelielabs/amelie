@@ -15,18 +15,18 @@ typedef struct Session Session;
 
 struct Session
 {
-	Vm        vm;
-	Program*  program;
-	Ql*       ql;
-	QlContext ql_context;
-	QlMgr     ql_mgr;
-	Dtr       dtr;
-	Explain   explain;
-	int       lock_type;
-	Lock*     lock;
-	Lock*     lock_ref;
-	Local     local;
-	Frontend* frontend;
+	Vm           vm;
+	Program*     program;
+	Query*       query;
+	QueryContext query_context;
+	QueryMgr     query_mgr;
+	Dtr          dtr;
+	Explain      explain;
+	int          lock_type;
+	Lock*        lock;
+	Lock*        lock_ref;
+	Local        local;
+	Frontend*    frontend;
 };
 
 Session*

@@ -47,7 +47,7 @@ Session*
 session_create(Frontend* frontend)
 {
 	auto self = (Session*)am_malloc(sizeof(Session));
-	self->ql        = NULL;
+	self->query     = NULL;
 	self->program   = program_allocate();
 	self->lock_type = LOCK_NONE;
 	self->lock      = NULL;
@@ -58,41 +58,41 @@ session_create(Frontend* frontend)
 	vm_init(&self->vm, NULL, &self->dtr);
 	dtr_init(&self->dtr, &self->local, share()->core_mgr);
 
-	// register query languages based on the supported content types
-	auto ql_mgr = &self->ql_mgr;
-	ql_mgr_init(ql_mgr);
-	ql_context_init(&self->ql_context);
+	// register query types based on the supported content types
+	auto query_mgr = &self->query_mgr;
+	query_mgr_init(query_mgr);
+	query_context_init(&self->query_context);
 
 	// text/plain
 	Str type;
 	str_set(&type, "text/plain", 10);
-	ql_mgr_add(ql_mgr, &self->local, &ql_sql_if, &type);
+	query_mgr_add(query_mgr, &self->local, &query_sql_if, &type);
 
 	// application/sql
 	str_set(&type, "application/sql", 15);
-	ql_mgr_add(ql_mgr, &self->local, &ql_sql_if, &type);
+	query_mgr_add(query_mgr, &self->local, &query_sql_if, &type);
 
 	// text/csv
 	str_set(&type, "text/csv", 8);
-	ql_mgr_add(ql_mgr, &self->local, &ql_csv_if, &type);
+	query_mgr_add(query_mgr, &self->local, &query_csv_if, &type);
 
 	// application/json
 	str_set(&type, "application/json", 16);
-	ql_mgr_add(ql_mgr, &self->local, &ql_json_if, &type);
+	query_mgr_add(query_mgr, &self->local, &query_json_if, &type);
 
 	// application/jsonl
 	str_set(&type, "application/jsonl", 17);
-	ql_mgr_add(ql_mgr, &self->local, &ql_jsonl_if, &type);
+	query_mgr_add(query_mgr, &self->local, &query_jsonl_if, &type);
 	return self;
 }
 
 static inline void
-session_reset_ql(Session* self)
+session_reset_query(Session* self)
 {
-	if (self->ql)
+	if (self->query)
 	{
-		ql_reset(self->ql);
-		self->ql = NULL;
+		query_reset(self->query);
+		self->query = NULL;
 	}
 	palloc_reset();
 }
@@ -100,7 +100,7 @@ session_reset_ql(Session* self)
 static inline void
 session_reset(Session* self)
 {
-	assert(! self->ql);
+	assert(! self->query);
 	vm_reset(&self->vm);
 	program_reset(self->program);
 	dtr_reset(&self->dtr);
@@ -113,7 +113,7 @@ session_free(Session *self)
 	assert(self->lock_type == LOCK_NONE);
 	session_reset(self);
 	vm_free(&self->vm);
-	ql_mgr_free(&self->ql_mgr);
+	query_mgr_free(&self->query_mgr);
 	program_free(self->program);
 	dtr_free(&self->dtr);
 	local_free(&self->local);
@@ -164,7 +164,7 @@ session_unlock(Session* self)
 hot static inline void
 session_execute_distributed(Session* self, Content* output)
 {
-	auto context = &self->ql_context;
+	auto context = &self->query_context;
 	auto program = context->program;
 	auto explain = &self->explain;
 	auto dtr     = &self->dtr;
@@ -225,7 +225,7 @@ session_execute_distributed(Session* self, Content* output)
 hot static inline void
 session_execute_utility(Session* self, Content* output)
 {
-	auto context = &self->ql_context;
+	auto context = &self->query_context;
 	auto program = context->program;
 	reg_prepare(&self->vm.r, program->code.regs);
 
@@ -325,20 +325,20 @@ session_execute_main(Session* self,
 	// POST /v1/db/schema/relation
 
 	// find query parser based on the content type
-	self->ql = ql_mgr_find(&self->ql_mgr, content_type);
-	if (unlikely(! self->ql))
+	self->query = query_mgr_find(&self->query_mgr, content_type);
+	if (unlikely(! self->query))
 		error("unsupported API operation");
 
-	// parse and compile request program
-	if (self->ql->iface == &ql_sql_if)
+	// parse and compile query
+	if (self->query->iface == &query_sql_if)
 	{
 		if (unlikely(!str_is(url, "/", 1) &&
 		             !str_is(url, "/v1/execute", 11)))
 			error("unsupported API operation");
 	}
-	auto context = &self->ql_context;
-	ql_context_set(context, self->program, text, url);
-	ql_parse(self->ql, context);
+	auto context = &self->query_context;
+	query_context_set(context, self->program, text, url);
+	query_parse(self->query, context);
 
 	auto program = context->program;
 	if (program_empty(program))
@@ -390,7 +390,7 @@ session_execute(Session* self,
 		session_unlock(self);
 	);
 
-	session_reset_ql(self);
+	session_reset_query(self);
 
 	if (on_error)
 	{

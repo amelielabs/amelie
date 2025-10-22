@@ -35,6 +35,6 @@
 #include "compiler/emit_utility.h"
 #include "compiler/pushdown.h"
 
-// query language
-#include "compiler/ql.h"
-#include "compiler/ql_mgr.h"
+// query
+#include "compiler/query.h"
+#include "compiler/query_mgr.h"
