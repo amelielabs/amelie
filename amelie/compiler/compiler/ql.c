@@ -77,14 +77,17 @@ ql_compiler_reset(Ql* ql)
 }
 
 static inline void
-ql_compiler_parse(Ql* ql, Program* program, Str* text)
+ql_compiler_parse(Ql* ql, QlContext* context)
 {
 	auto self = (QlCompiler*)ql;
 	auto compiler = &self->compiler;
-	compiler_set(compiler, program);
+	compiler_set(compiler, context->program);
 
 	// parse SQL statements
-	compiler_parse(compiler, text);
+	compiler_parse(compiler, context->text);
+
+	context->explain = compiler->parser.explain;
+	context->profile = compiler->parser.profile;
 
 	if (! compiler_stmt(compiler))
 		return;
@@ -94,18 +97,14 @@ ql_compiler_parse(Ql* ql, Program* program, Str* text)
 }
 
 static inline void
-ql_compiler_parse_endpoint(Ql*          ql,
-                           Program*     program,
-                           Str*         text,
-                           Str*         uri,
-                           EndpointType type)
+ql_compiler_parse_endpoint(Ql* ql, QlContext* context, EndpointType type)
 {
 	auto self = (QlCompiler*)ql;
 	auto compiler = &self->compiler;
-	compiler_set(compiler, program);
+	compiler_set(compiler, context->program);
 
 	// parse SQL statements
-	compiler_parse_import(compiler, text, uri, type);
+	compiler_parse_import(compiler, context->text, context->uri, type);
 
 	if (! compiler_stmt(compiler))
 		return;
@@ -122,10 +121,9 @@ ql_sql_create(Local* local, Str* content_type)
 }
 
 static void
-ql_sql_parse(Ql* ql, Program* program, Str* text, Str* uri)
+ql_sql_parse(Ql* ql, QlContext* context)
 {
-	unused(uri);
-	ql_compiler_parse(ql, program, text);
+	ql_compiler_parse(ql, context);
 }
 
 QlIf ql_sql_if =
@@ -144,9 +142,9 @@ ql_csv_create(Local* local, Str* content_type)
 }
 
 static void
-ql_csv_parse(Ql* ql, Program* program, Str* text, Str* uri)
+ql_csv_parse(Ql* ql, QlContext* context)
 {
-	ql_compiler_parse_endpoint(ql, program, text, uri, ENDPOINT_CSV);
+	ql_compiler_parse_endpoint(ql, context, ENDPOINT_CSV);
 }
 
 QlIf ql_csv_if =
@@ -165,9 +163,9 @@ ql_json_create(Local* local, Str* content_type)
 }
 
 static void
-ql_json_parse(Ql* ql, Program* program, Str* text, Str* uri)
+ql_json_parse(Ql* ql, QlContext* context)
 {
-	ql_compiler_parse_endpoint(ql, program, text, uri, ENDPOINT_JSON);
+	ql_compiler_parse_endpoint(ql, context, ENDPOINT_JSON);
 }
 
 QlIf ql_json_if =
@@ -186,9 +184,9 @@ ql_jsonl_create(Local* local, Str* content_type)
 }
 
 static void
-ql_jsonl_parse(Ql* ql, Program* program, Str* text, Str* uri)
+ql_jsonl_parse(Ql* ql, QlContext* context)
 {
-	ql_compiler_parse_endpoint(ql, program, text, uri, ENDPOINT_JSONL);
+	ql_compiler_parse_endpoint(ql, context, ENDPOINT_JSONL);
 }
 
 QlIf ql_jsonl_if =

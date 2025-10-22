@@ -18,6 +18,7 @@ struct Session
 	Vm        vm;
 	Program*  program;
 	Ql*       ql;
+	QlContext ql_context;
 	QlMgr     ql_mgr;
 	Dtr       dtr;
 	Explain   explain;

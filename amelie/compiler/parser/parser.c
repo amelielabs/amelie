@@ -42,6 +42,8 @@
 void
 parser_init(Parser* self, Local* local, SetCache* values_cache)
 {
+	self->explain      = false;
+	self->profile      = false;
 	self->program      = NULL;
 	self->values_cache = values_cache;
 	self->local        = local;
@@ -54,6 +56,8 @@ parser_init(Parser* self, Local* local, SetCache* values_cache)
 void
 parser_reset(Parser* self)
 {
+	self->explain = false;
+	self->profile = false;
 	self->program = NULL;
 	for (auto ns = self->nss.list; ns; ns = ns->next)
 	{

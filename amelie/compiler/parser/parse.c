@@ -535,18 +535,18 @@ parse(Parser* self, Program* program, Str* str)
 	if (explain)
 	{
 		// EXPLAIN(PROFILE)
-		self->program->explain = true;
+		self->explain = true;
 		if (lex_if(lex, '('))
 		{
 			lex_expect(lex, KPROFILE);
 			lex_expect(lex, ')');
-			self->program->explain = false;
-			self->program->profile = true;
+			self->explain = false;
+			self->profile = true;
 		}
 
 	} else
 	if (lex_if(lex, KPROFILE))
-		self->program->profile = true;
+		self->profile = true;
 
 	// [BEGIN]
 	auto begin = lex_if(lex, KBEGIN) != NULL;
@@ -572,7 +572,7 @@ parse(Parser* self, Program* program, Str* str)
 
 	// ensure EXPLAIN has a command
 	if (unlikely(! block->stmts.count))
-		if (self->program->explain || self->program->profile)
+		if (self->explain || self->profile)
 			lex_error(lex, explain, "EXPLAIN without command");
 
 	// ensure main stmt is not utility when using CTE

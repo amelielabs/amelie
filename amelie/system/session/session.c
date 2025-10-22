@@ -61,6 +61,7 @@ session_create(Frontend* frontend)
 	// register query languages based on the supported content types
 	auto ql_mgr = &self->ql_mgr;
 	ql_mgr_init(ql_mgr);
+	ql_context_init(&self->ql_context);
 
 	// text/plain
 	Str type;
@@ -163,7 +164,8 @@ session_unlock(Session* self)
 hot static inline void
 session_execute_distributed(Session* self, Content* output)
 {
-	auto program = self->program;
+	auto context = &self->ql_context;
+	auto program = context->program;
 	auto explain = &self->explain;
 	auto dtr     = &self->dtr;
 
@@ -173,7 +175,7 @@ session_execute_distributed(Session* self, Content* output)
 	dtr_create(dtr, program);
 
 	// [PROFILE]
-	if (program->profile)
+	if (context->profile)
 		explain_start(&explain->time_run_us);
 
 	// execute coordinator
@@ -198,7 +200,7 @@ session_execute_distributed(Session* self, Content* output)
 	if (on_error)
 		error = error_create(&am_self()->error);
 
-	if (program->profile)
+	if (context->profile)
 	{
 		explain_end(&explain->time_run_us);
 		explain_start(&explain->time_commit_us);
@@ -208,7 +210,7 @@ session_execute_distributed(Session* self, Content* output)
 	commit(share()->commit, dtr, error);
 
 	// explain profile
-	if (program->profile)
+	if (context->profile)
 	{
 		explain_end(&explain->time_commit_us);
 		explain_run(explain, program, &self->local,
@@ -223,12 +225,13 @@ session_execute_distributed(Session* self, Content* output)
 hot static inline void
 session_execute_utility(Session* self, Content* output)
 {
-	auto program = self->program;
+	auto context = &self->ql_context;
+	auto program = context->program;
 	reg_prepare(&self->vm.r, program->code.regs);
 
 	// [PROFILE]
 	auto explain = &self->explain;
-	if (program->profile)
+	if (context->profile)
 		explain_start(&explain->time_run_us);
 
 	// execute utility/ddl transaction
@@ -262,7 +265,7 @@ session_execute_utility(Session* self, Content* output)
 		rethrow();
 	}
 
-	if (program->profile)
+	if (context->profile)
 	{
 		explain_end(&explain->time_run_us);
 		explain_start(&explain->time_commit_us);
@@ -299,7 +302,7 @@ session_execute_utility(Session* self, Content* output)
 	tr_commit(&tr);
 
 	// explain profile
-	if (program->profile)
+	if (context->profile)
 	{
 		explain_end(&explain->time_commit_us);
 		explain_run(explain, program, &self->local,
@@ -327,20 +330,22 @@ session_execute_main(Session* self,
 		error("unsupported API operation");
 
 	// parse and compile request program
-	auto program = self->program;
 	if (self->ql->iface == &ql_sql_if)
 	{
 		if (unlikely(!str_is(url, "/", 1) &&
 		             !str_is(url, "/v1/execute", 11)))
 			error("unsupported API operation");
 	}
-	ql_parse(self->ql, program, text, url);
+	auto context = &self->ql_context;
+	ql_context_set(context, self->program, text, url);
+	ql_parse(self->ql, context);
 
+	auto program = context->program;
 	if (program_empty(program))
 		return;
 
 	// [EXPLAIN]
-	if (program->explain)
+	if (context->explain)
 	{
 		explain_run(&self->explain, program,
 		            &self->local,

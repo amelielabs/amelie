@@ -11,15 +11,16 @@
 // AGPL-3.0 Licensed.
 //
 
-typedef struct QlIf QlIf;
-typedef struct Ql   Ql;
+typedef struct QlIf      QlIf;
+typedef struct Ql        Ql;
+typedef struct QlContext QlContext;
 
 struct QlIf
 {
 	Ql*  (*create)(Local*, Str*);
 	void (*free)(Ql*);
 	void (*reset)(Ql*);
-	void (*parse)(Ql*, Program*, Str*, Str*);
+	void (*parse)(Ql*, QlContext*);
 };
 
 struct Ql
@@ -28,6 +29,31 @@ struct Ql
 	Str   content_type;
 	List  link;
 };
+
+struct QlContext
+{
+	bool     explain;
+	bool     profile;
+	Program* program;
+	Str*     text;
+	Str*     uri;
+};
+
+static inline void
+ql_context_init(QlContext* self)
+{
+	memset(self, 0, sizeof(*self));
+}
+
+static inline void
+ql_context_set(QlContext* self, Program* program, Str* text, Str* uri)
+{
+	self->explain = false;
+	self->profile = false;
+	self->program = program;
+	self->text    = text;
+	self->uri     = uri;
+}
 
 static inline Ql*
 ql_allocate(QlIf* iface, Local* local, Str* content_type)
@@ -48,9 +74,9 @@ ql_reset(Ql* self)
 }
 
 static inline void
-ql_parse(Ql* self, Program* program, Str* text, Str* uri)
+ql_parse(Ql* self, QlContext* context)
 {
-	self->iface->parse(self, program, text, uri);
+	self->iface->parse(self, context);
 }
 
 extern QlIf ql_sql_if;

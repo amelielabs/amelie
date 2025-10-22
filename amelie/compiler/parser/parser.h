@@ -16,6 +16,8 @@ typedef struct Parser Parser;
 struct Parser
 {
 	Namespaces nss;
+	bool       explain;
+	bool       profile;
 	Program*   program;
 	SetCache*  values_cache;
 	Uri        uri;

@@ -24,8 +24,6 @@ struct Program
 	bool     snapshot;
 	bool     repl;
 	bool     utility;
-	bool     explain;
-	bool     profile;
 };
 
 static inline Program*
@@ -37,8 +35,6 @@ program_allocate(void)
 	self->snapshot  = false;
 	self->repl      = false;
 	self->utility   = false;
-	self->explain   = false;
-	self->profile   = false;
 	code_init(&self->code);
 	code_init(&self->code_backend);
 	code_data_init(&self->code_data);
@@ -64,8 +60,6 @@ program_reset(Program* self)
 	self->snapshot  = false;
 	self->repl      = false;
 	self->utility   = false;
-	self->explain   = false;
-	self->profile   = false;
 	code_reset(&self->code);
 	code_reset(&self->code_backend);
 	code_data_reset(&self->code_data);
