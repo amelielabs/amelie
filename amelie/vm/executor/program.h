@@ -19,6 +19,7 @@ struct Program
 	Code     code_backend;
 	CodeData code_data;
 	Access   access;
+	SetList  sets;
 	int      lock;
 	int      send_last;
 	bool     snapshot;
@@ -39,12 +40,14 @@ program_allocate(void)
 	code_init(&self->code_backend);
 	code_data_init(&self->code_data);
 	access_init(&self->access);
+	set_list_init(&self->sets);
 	return self;
 }
 
 static inline void
 program_free(Program* self)
 {
+	assert(! self->sets.list_count);
 	code_free(&self->code);
 	code_free(&self->code_backend);
 	code_data_free(&self->code_data);
@@ -53,7 +56,7 @@ program_free(Program* self)
 }
 
 static inline void
-program_reset(Program* self)
+program_reset(Program* self, SetCache* cache)
 {
 	self->lock      = LOCK_SHARED;
 	self->send_last = -1;
@@ -64,6 +67,7 @@ program_reset(Program* self)
 	code_reset(&self->code_backend);
 	code_data_reset(&self->code_data);
 	access_reset(&self->access);
+	set_cache_push_list(cache, &self->sets);
 }
 
 static inline bool

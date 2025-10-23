@@ -49,14 +49,17 @@ struct QueryCompiler
 };
 
 static inline Query*
-query_compiler_create(Local* local, QueryIf* iface, Str* content_type)
+query_compiler_create(QueryIf*  iface,
+                      Local*    local,
+                      SetCache* set_cache,
+                      Str*      content_type)
 {
 	auto self  = (QueryCompiler*)am_malloc(sizeof(QueryCompiler));
 	auto query = &self->query;
 	query->iface = iface;
 	str_copy(&query->content_type, content_type);
 	list_init(&query->link);
-	compiler_init(&self->compiler, local);
+	compiler_init(&self->compiler, local, set_cache);
 	return &self->query;
 }
 
@@ -156,9 +159,9 @@ query_compiler_parse_endpoint(Query* query, QueryContext* ctx, EndpointType type
 
 // sql
 static Query*
-query_sql_create(Local* local, Str* content_type)
+query_sql_create(Local* local, SetCache* set_cache, Str* content_type)
 {
-	return query_compiler_create(local, &query_sql_if, content_type);
+	return query_compiler_create(&query_sql_if, local, set_cache, content_type);
 }
 
 static void
@@ -177,9 +180,9 @@ QueryIf query_sql_if =
 
 // csv
 static Query*
-query_csv_create(Local* local, Str* content_type)
+query_csv_create(Local* local, SetCache* set_cache, Str* content_type)
 {
-	return query_compiler_create(local, &query_csv_if, content_type);
+	return query_compiler_create(&query_csv_if, local, set_cache, content_type);
 }
 
 static void
@@ -198,9 +201,9 @@ QueryIf query_csv_if =
 
 // json
 static Query*
-query_json_create(Local* local, Str* content_type)
+query_json_create(Local* local, SetCache* set_cache, Str* content_type)
 {
-	return query_compiler_create(local, &query_json_if, content_type);
+	return query_compiler_create(&query_json_if, local, set_cache, content_type);
 }
 
 static void
@@ -219,9 +222,9 @@ QueryIf query_json_if =
 
 // jsonl
 static Query*
-query_jsonl_create(Local* local, Str* content_type)
+query_jsonl_create(Local* local, SetCache* set_cache, Str* content_type)
 {
-	return query_compiler_create(local, &query_jsonl_if, content_type);
+	return query_compiler_create(&query_jsonl_if, local, set_cache, content_type);
 }
 
 static void

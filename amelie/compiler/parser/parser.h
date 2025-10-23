@@ -19,7 +19,7 @@ struct Parser
 	bool       explain;
 	bool       profile;
 	Program*   program;
-	SetCache*  values_cache;
+	SetCache*  set_cache;
 	Uri        uri;
 	Json       json;
 	Lex        lex;

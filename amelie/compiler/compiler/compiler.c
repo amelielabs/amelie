@@ -41,16 +41,16 @@
 #include <amelie_compiler.h>
 
 void
-compiler_init(Compiler* self, Local* local)
+compiler_init(Compiler* self, Local* local, SetCache* set_cache)
 {
 	self->program   = NULL;
+	self->set_cache = set_cache;
 	self->current   = NULL;
 	self->code      = NULL;
 	self->code_data = NULL;
 	self->origin    = ORIGIN_FRONTEND;
 	self->sends     = 0;
-	set_cache_init(&self->values_cache);
-	parser_init(&self->parser, local, &self->values_cache);
+	parser_init(&self->parser, local, self->set_cache);
 	rmap_init(&self->map);
 }
 
@@ -58,7 +58,6 @@ void
 compiler_free(Compiler* self)
 {
 	parser_free(&self->parser);
-	set_cache_free(&self->values_cache);
 	rmap_free(&self->map);
 }
 
@@ -567,7 +566,7 @@ emit_return(Compiler* self, Stmt* stmt)
 	{
 		// null
 	} else
-	if (stmt->ret)
+	if (stmt->ret && stmt->ret->columns.count > 0)
 	{
 		emit_recv(self, stmt);
 		r =  stmt->r;

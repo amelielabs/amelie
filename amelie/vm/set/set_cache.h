@@ -57,13 +57,25 @@ set_cache_push(SetCache* self, Set* set)
 	self->list_count++;
 }
 
+static inline void
+set_cache_push_list(SetCache* self, SetList* list)
+{
+	list_foreach_safe(&list->list)
+	{
+		auto set = list_at(Set, link);
+		set_cache_push(self, set);
+	}
+	set_list_init(list);
+}
+
 static inline Set*
-set_cache_create(SetCache* self)
+set_cache_create(SetCache* self, SetList* into)
 {
 	auto set = set_cache_pop(self);
 	if (set)
 		list_init(&set->link);
 	else
 		set = set_create();
+	set_list_add(into, set);
 	return set;
 }

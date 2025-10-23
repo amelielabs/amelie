@@ -15,12 +15,16 @@ typedef struct QueryMgr QueryMgr;
 
 struct QueryMgr
 {
-	List list;
+	List      list;
+	SetCache* set_cache;
+	Local*    local;
 };
 
 static inline void
-query_mgr_init(QueryMgr* self)
+query_mgr_init(QueryMgr* self, Local* local, SetCache* set_cache)
 {
+	self->set_cache = set_cache;
+	self->local     = local;
 	list_init(&self->list);
 }
 
@@ -35,9 +39,9 @@ query_mgr_free(QueryMgr* self)
 }
 
 static inline void
-query_mgr_add(QueryMgr* self, Local* local, QueryIf* iface, Str* content_type)
+query_mgr_add(QueryMgr* self, QueryIf* iface, Str* content_type)
 {
-	auto ql = query_allocate(iface, local, content_type);
+	auto ql = query_allocate(iface, self->local, self->set_cache, content_type);
 	list_append(&self->list, &ql->link);
 }
 

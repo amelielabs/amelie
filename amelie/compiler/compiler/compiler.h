@@ -22,11 +22,11 @@ struct Compiler
 	int          sends;
 	Rmap         map;
 	Program*     program;
+	SetCache*    set_cache;
 	Parser       parser;
-	SetCache     values_cache;
 };
 
-void compiler_init(Compiler*, Local*);
+void compiler_init(Compiler*, Local*, SetCache*);
 void compiler_free(Compiler*);
 void compiler_reset(Compiler*);
 void compiler_set(Compiler*, Program*);

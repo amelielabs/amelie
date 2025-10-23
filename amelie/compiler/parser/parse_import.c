@@ -276,7 +276,7 @@ parse_import(Parser* self, Program* program, Str* str, Str* uri,
 	access_add(&self->program->access, &table->rel, ACCESS_RW);
 
 	// prepare result set
-	insert->values = set_cache_create(stmt->parser->values_cache);
+	insert->values = set_cache_create(self->set_cache, &self->program->sets);
 	set_prepare(insert->values, columns->count, 0, NULL);
 
 	// parse rows according to the content type

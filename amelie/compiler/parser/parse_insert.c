@@ -243,7 +243,8 @@ parse_insert(Stmt* self)
 	auto columns = target->columns;
 
 	// prepare values
-	stmt->values = set_cache_create(self->parser->values_cache);
+	auto parser = self->parser;
+	stmt->values = set_cache_create(parser->set_cache, &parser->program->sets);
 	set_prepare(stmt->values, columns->count, 0, NULL);
 
 	// GENERATE
@@ -273,7 +274,7 @@ parse_insert(Stmt* self)
 
 			// rewrite INSERT INTO SELECT as separate statement, columns will be
 			// validated during the emit
-			auto select = stmt_allocate(self->parser, &self->parser->lex, self->block);
+			auto select = stmt_allocate(parser, &parser->lex, self->block);
 			select->id  = STMT_SELECT;
 			stmts_insert(&self->block->stmts, self, select);
 			deps_add_stmt(&self->deps, select);

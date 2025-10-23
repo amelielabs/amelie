@@ -101,8 +101,12 @@ catalog_if_udf_compile(Catalog* self, Udf* udf)
 	auto program = program_allocate();
 	errdefer(program_free, program);
 
+	SetCache set_cache;
+	set_cache_init(&set_cache);
+	defer(set_cache_free, &set_cache);
+
 	Compiler compiler;
-	compiler_init(&compiler, &local);
+	compiler_init(&compiler, &local, &set_cache);
 	defer(compiler_free, &compiler);
 	compiler_set(&compiler, program);
 
@@ -120,11 +124,16 @@ static void
 catalog_if_udf_free(Udf* udf)
 {
 	Program* program = udf->data;
-	if (program)
-	{
-		program_free(program);
-		udf->data = NULL;
-	}
+	if (! program)
+		return;
+
+	SetCache set_cache;
+	set_cache_init(&set_cache);
+	defer(set_cache_free, &set_cache);
+	program_reset(program, &set_cache);
+	program_free(program);
+
+	udf->data = NULL;
 }
 
 static bool

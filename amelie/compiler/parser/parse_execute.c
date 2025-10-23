@@ -94,7 +94,8 @@ parse_execute(Stmt* self)
 	auto udf = stmt->udf;
 
 	// prepare arguments
-	stmt->args = set_cache_create(self->parser->values_cache);
+	auto parser = self->parser;
+	stmt->args = set_cache_create(parser->set_cache, &parser->program->sets);
 	set_prepare(stmt->args, udf->config->args.count, 0, NULL);
 
 	// (args)

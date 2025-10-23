@@ -20,6 +20,7 @@ struct Session
 	Query*       query;
 	QueryContext query_context;
 	QueryMgr     query_mgr;
+	SetCache     set_cache;
 	Dtr          dtr;
 	Explain      explain;
 	int          lock_type;

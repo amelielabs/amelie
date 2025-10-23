@@ -40,13 +40,13 @@
 #include <amelie_parser.h>
 
 void
-parser_init(Parser* self, Local* local, SetCache* values_cache)
+parser_init(Parser* self, Local* local, SetCache* set_cache)
 {
-	self->explain      = false;
-	self->profile      = false;
-	self->program      = NULL;
-	self->values_cache = values_cache;
-	self->local        = local;
+	self->explain   = false;
+	self->profile   = false;
+	self->program   = NULL;
+	self->set_cache = set_cache;
+	self->local     = local;
 	namespaces_init(&self->nss);
 	lex_init(&self->lex, keywords_alpha);
 	uri_init(&self->uri);

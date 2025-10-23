@@ -101,20 +101,6 @@ parse_stmt_free(Stmt* stmt)
 			udf_config_free(ast->config);
 		break;
 	}
-	case STMT_INSERT:
-	{
-		auto ast = ast_insert_of(stmt->ast);
-		if (ast->values)
-			set_cache_push(stmt->parser->values_cache, ast->values);
-		break;
-	}
-	case STMT_EXECUTE:
-	{
-		auto ast = ast_execute_of(stmt->ast);
-		if (ast->args)
-			set_cache_push(stmt->parser->values_cache, ast->args);
-		break;
-	}
 	default:
 		break;
 	}

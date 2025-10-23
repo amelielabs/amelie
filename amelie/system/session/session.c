@@ -56,33 +56,34 @@ session_create(Frontend* frontend)
 	local_init(&self->local);
 	explain_init(&self->explain);
 	vm_init(&self->vm, NULL, &self->dtr);
+	set_cache_init(&self->set_cache);
 	dtr_init(&self->dtr, &self->local, share()->core_mgr);
 
 	// register query types based on the supported content types
 	auto query_mgr = &self->query_mgr;
-	query_mgr_init(query_mgr);
+	query_mgr_init(query_mgr, &self->local, &self->set_cache);
 	query_context_init(&self->query_context);
 
 	// text/plain
 	Str type;
 	str_set(&type, "text/plain", 10);
-	query_mgr_add(query_mgr, &self->local, &query_sql_if, &type);
+	query_mgr_add(query_mgr, &query_sql_if, &type);
 
 	// application/sql
 	str_set(&type, "application/sql", 15);
-	query_mgr_add(query_mgr, &self->local, &query_sql_if, &type);
+	query_mgr_add(query_mgr, &query_sql_if, &type);
 
 	// text/csv
 	str_set(&type, "text/csv", 8);
-	query_mgr_add(query_mgr, &self->local, &query_csv_if, &type);
+	query_mgr_add(query_mgr, &query_csv_if, &type);
 
 	// application/json
 	str_set(&type, "application/json", 16);
-	query_mgr_add(query_mgr, &self->local, &query_json_if, &type);
+	query_mgr_add(query_mgr, &query_json_if, &type);
 
 	// application/jsonl
 	str_set(&type, "application/jsonl", 17);
-	query_mgr_add(query_mgr, &self->local, &query_jsonl_if, &type);
+	query_mgr_add(query_mgr, &query_jsonl_if, &type);
 	return self;
 }
 
@@ -102,7 +103,7 @@ session_reset(Session* self)
 {
 	assert(! self->query);
 	vm_reset(&self->vm);
-	program_reset(self->program);
+	program_reset(self->program, &self->set_cache);
 	dtr_reset(&self->dtr);
 	explain_reset(&self->explain);
 }
@@ -115,6 +116,7 @@ session_free(Session *self)
 	vm_free(&self->vm);
 	query_mgr_free(&self->query_mgr);
 	program_free(self->program);
+	set_cache_free(&self->set_cache);
 	dtr_free(&self->dtr);
 	local_free(&self->local);
 	am_free(self);

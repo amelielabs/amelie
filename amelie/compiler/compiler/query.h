@@ -17,7 +17,7 @@ typedef struct QueryContext QueryContext;
 
 struct QueryIf
 {
-	Query* (*create)(Local*, Str*);
+	Query* (*create)(Local*, SetCache*, Str*);
 	void   (*free)(Query*);
 	void   (*reset)(Query*);
 	void   (*parse)(Query*, QueryContext*);
@@ -64,9 +64,12 @@ query_context_set(QueryContext* self, Program* program, Str* text, Str* uri)
 }
 
 static inline Query*
-query_allocate(QueryIf* iface, Local* local, Str* content_type)
+query_allocate(QueryIf*  iface,
+               Local*    local,
+               SetCache* set_cache,
+               Str*      content_type)
 {
-	return iface->create(local, content_type);
+	return iface->create(local, set_cache, content_type);
 }
 
 static inline void
