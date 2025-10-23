@@ -46,17 +46,35 @@ bench_decre_create(Bench* self, BenchClient* client)
 		buf_str(&buf, &str);
 		bench_client_execute(client, &str);
 	}
-}
 
-hot static inline void
-decre_transaction(Buf* buf, int from, int to, double amount)
-{
-	buf_printf(buf, "UPDATE __bench.test SET money = money - %f WHERE id = %d;",
-	           amount, from);
-	buf_printf(buf, "UPDATE __bench.test SET money = money + %f WHERE id = %d;",
-	           amount, to);
-	buf_printf(buf, "INSERT INTO __bench.history (src, dst, amount) VALUES (%d, %d, %f);",
-	           from, to, amount);
+	// create benchmark functions
+	char func[] =
+	"create function __bench.debit_credit(src int, dst int, amount double)"
+	"begin"
+	"	update __bench.test set money = money - amount"
+	"	where id = src;"
+	""
+	"	update __bench.test set money = money + amount"
+	"	where id = dst;"
+	""
+	"	insert into __bench.history (src, dst, amount)"
+	"	values (src, dst, amount);"
+	"end;";
+
+	char func_batch[] =
+	"create function __bench.debit_credit_batch(batch int, total int)"
+	"begin"
+	"	while batch > 0 do"
+	"		select __bench.debit_credit(random() \% total, random() \% total, 1.0);"
+	"		batch := batch - 1;"
+	"	end;"
+	"end;";
+
+	str_set_cstr(&str, func);
+	bench_client_execute(client, &str);
+
+	str_set_cstr(&str, func_batch);
+	bench_client_execute(client, &str);
 }
 
 hot static void
@@ -72,15 +90,8 @@ bench_decre_main(BenchWorker* self, BenchClient* client)
 	while (! self->shutdown)
 	{
 		buf_reset(&buf);
-		for (auto i = 0ul; i < batch; i++)
-		{
-			uint64_t random = random_generate(&runtime()->random);
-			uint32_t a = random;
-			uint32_t b = random >> 32;
-			int from = a % total;
-			int to   = b % total;
-			decre_transaction(&buf, from, to, 1.0);
-		}
+		buf_printf(&buf, "execute __bench.debit_credit_batch(%d, %d);", batch, total);
+
 		Str cmd;
 		buf_str(&buf, &cmd);
 		bench_client_execute(client, &cmd);

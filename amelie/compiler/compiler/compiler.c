@@ -617,6 +617,10 @@ emit_while(Compiler* self, Stmt* stmt)
 	auto _stop = op_pos(self);
 	op_set_jmp(self, _stop_jmp, _stop);
 
+	// set snapshot if loop is using send command
+	if (whilea->block->stmts.last_send)
+		self->program->snapshot = true;
+
 	// mark last sending operation in the main block
 	emit_close(self, stmt);
 
