@@ -53,6 +53,7 @@
 // control structures
 #include "parser/parse_if.h"
 #include "parser/parse_for.h"
+#include "parser/parse_while.h"
 
 // system
 #include "parser/parse_system.h"

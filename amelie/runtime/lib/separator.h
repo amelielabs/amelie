@@ -20,6 +20,7 @@ typedef enum
 	SEPARATOR_IF,
 	SEPARATOR_CASE,
 	SEPARATOR_FOR,
+	SEPARATOR_WHILE,
 	SEPARATOR_END,
 	SEPARATOR_SEMICOLON
 } SeparatorToken;
@@ -183,6 +184,12 @@ separator_next(Separator* self)
 			if (separator_match(self, "for", 3))
 				return SEPARATOR_FOR;
 			break;
+		// WHILE
+		case 'w':
+		case 'W':
+			if (separator_match(self, "while", 5))
+				return SEPARATOR_WHILE;
+			break;
 		// END
 		case 'e':
 		case 'E':
@@ -255,6 +262,7 @@ separator_read(Separator* self, Str* block)
 		case SEPARATOR_BEGIN:
 		case SEPARATOR_IF:
 		case SEPARATOR_FOR:
+		case SEPARATOR_WHILE:
 			level++;
 			continue;
 		case SEPARATOR_CASE:

@@ -217,6 +217,7 @@ Keyword keywords[] =
 	// w
 	{ KWHEN,                  "when",                  4  },
 	{ KWHERE,                 "where",                 5  },
+	{ KWHILE,                 "while",                 5  },
 	{ KWITH,                  "with",                  4  },
 	{ KWATCH,                 "watch",                 5  },
 	{ KWORKERS,               "workers",               7  },

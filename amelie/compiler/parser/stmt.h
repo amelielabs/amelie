@@ -52,6 +52,7 @@ typedef enum
 	STMT_SELECT,
 	STMT_IF,
 	STMT_FOR,
+	STMT_WHILE,
 	STMT_RETURN
 } StmtId;
 

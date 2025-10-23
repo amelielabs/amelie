@@ -572,6 +572,59 @@ emit_for(Compiler* self, Stmt* stmt)
 }
 
 hot static void
+emit_while(Compiler* self, Stmt* stmt)
+{
+	auto stmt_prev = self->current;
+	self->current = stmt;
+
+	auto whilea = ast_while_of(stmt->ast);
+	compiler_switch_frontend(self);
+
+	// jmp to start
+	auto _start_jmp = op_pos(self);
+	op1(self, CJMP, 0 /* _start */);
+
+	// _stop_jmp
+	auto _stop_jmp = op_pos(self);
+	op1(self, CJMP, 0 /* _stop */);
+
+	// _start
+	auto _start = op_pos(self);
+	op_set_jmp(self, _start_jmp, _start);
+
+	// _start:
+	//   expr
+	//   jntr _stop
+	//   block
+	//   jmp _start
+	//
+	// _stop:
+	//
+
+	// expr
+	auto r = emit_expr(self, &whilea->from, whilea->expr);
+
+	// jntr _stop
+	op2(self, CJNTR, _stop_jmp, r);
+	runpin(self, r);
+
+	// block
+	emit_block(self, whilea->block);
+
+	op1(self, CJMP, _start_jmp);
+
+	// _stop
+	auto _stop = op_pos(self);
+	op_set_jmp(self, _stop_jmp, _stop);
+
+	// mark last sending operation in the main block
+	emit_close(self, stmt);
+
+	// set previous stmt
+	self->current = stmt_prev;
+}
+
+hot static void
 emit_return(Compiler* self, Stmt* stmt)
 {
 	compiler_switch_frontend(self);
@@ -617,6 +670,9 @@ emit_block(Compiler* self, Block* block)
 			break;
 		case STMT_FOR:
 			emit_for(self, stmt);
+			break;
+		case STMT_WHILE:
+			emit_while(self, stmt);
 			break;
 		case STMT_RETURN:
 			break;

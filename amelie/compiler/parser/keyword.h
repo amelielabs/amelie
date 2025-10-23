@@ -231,6 +231,7 @@ enum
 	// w
 	KWHEN,
 	KWHERE,
+	KWHILE,
 	KWITH,
 	KWATCH,
 	KWORKERS,

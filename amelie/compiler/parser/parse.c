@@ -397,6 +397,14 @@ parse_stmt(Stmt* self)
 		break;
 	}
 
+	case KWHILE:
+	{
+		self->id = STMT_WHILE;
+		if (parse_while(self))
+			self->block->stmts.last_send = self;
+		break;
+	}
+
 	case KEXECUTE:
 	case KBEGIN:
 	case KCOMMIT:
