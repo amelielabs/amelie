@@ -121,9 +121,16 @@ emit_send(Compiler* self, Target* target, int start)
 	while (ref)
 	{
 		if (ref->ast) {
-			auto r = emit_expr(self, ref->from, ref->ast);
-			op3(self, CPUSH_REF, r, 0, ref->not_null);
-			runpin(self, r);
+			if (ref->ast->id == KVAR)
+			{
+				auto var = ref->ast->var;
+				op3(self, CPUSH_VAR, var->order, var->is_arg, ref->not_null);
+			} else
+			{
+				auto r = emit_expr(self, ref->from, ref->ast);
+				op3(self, CPUSH_REF, r, 0, ref->not_null);
+				runpin(self, r);
+			}
 		} else {
 			op3(self, CPUSH_REF, ref->r, 1, ref->not_null);
 		}
@@ -179,9 +186,17 @@ emit_send(Compiler* self, Target* target, int start)
 				for (auto i = 0; i < path->match_start; i++)
 				{
 					auto value = path->keys[i].start;
-					auto rexpr = emit_expr(self, target->from, value);
-					op1(self, CPUSH, rexpr);
-					runpin(self, rexpr);
+
+					if (value->id == KVAR)
+					{
+						auto var = value->var;
+						op3(self, CPUSH_VAR, var->order, var->is_arg, false);
+					} else
+					{
+						auto rexpr = emit_expr(self, target->from, value);
+						op1(self, CPUSH, rexpr);
+						runpin(self, rexpr);
+					}
 				}
 
 				// CSEND_LOOKUP_BY

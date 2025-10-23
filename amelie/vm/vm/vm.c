@@ -130,6 +130,7 @@ vm_run(Vm*       self,
 		// stack
 		&&cpush,
 		&&cpush_ref,
+		&&cpush_var,
 		&&cpush_nulls,
 		&&cpop,
 
@@ -481,7 +482,7 @@ cpush:
 cpush_ref:
 	// [value, dup, not_null]
 	if (unlikely(op->c && r[op->a].type == TYPE_NULL))
-		error("variable cannot be NULL");
+		error("argument cannot be NULL");
 	if (op->b)
 	{
 		a = stack_push(stack);
@@ -492,6 +493,19 @@ cpush_ref:
 		*stack_push(stack) = r[op->a];
 		value_reset(&r[op->a]);
 	}
+	op_next;
+
+cpush_var:
+	// [var, is_arg, not_null]
+	b = stack_push(stack);
+	if (op->b)
+		a = &self->args[op->a];
+	else
+		a = stack_get(stack, op->a);
+	if (unlikely(op->c && a->type == TYPE_NULL))
+		error("variable cannot be NULL");
+	value_init(b);
+	value_copy(b, a);
 	op_next;
 
 cpush_nulls:

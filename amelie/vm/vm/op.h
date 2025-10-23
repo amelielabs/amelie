@@ -31,6 +31,7 @@ enum
 	// stack
 	CPUSH,
 	CPUSH_REF,
+	CPUSH_VAR,
 	CPUSH_NULLS,
 	CPOP,
 
