@@ -162,18 +162,7 @@ tpcb_execute(BenchClient* client,
 {
 	auto buf = buf_create();
 	defer_buf(buf);
-
-	buf_printf(buf, "UPDATE __bench.accounts SET abalance = abalance + %d WHERE aid = %d;",
-	           delta, aid);
-	buf_printf(buf, "SELECT abalance FROM __bench.accounts WHERE aid = %d;", aid);
-	buf_printf(buf, "UPDATE __bench.tellers SET tbalance = tbalance + %d WHERE tid = %d;",
-	           delta, tid);
-	buf_printf(buf, "UPDATE __bench.branches SET bbalance = bbalance + %d WHERE bid = %d;",
-	           delta, bid);
-	buf_printf(buf, "INSERT INTO __bench.history (tid, bid, aid, delta, time, filler) "
-	           "VALUES (%d, %d, %d, %d, current_timestamp, '                                                  ');",
-	           tid, bid, aid, delta);
-
+	buf_printf(buf, "execute __bench.tpcb(%d, %d, %d, %d);", bid, tid, aid, delta);
 	Str cmd;
 	buf_str(buf, &cmd);
 	bench_client_execute(client, &cmd);
@@ -217,6 +206,28 @@ bench_tpcb_create(Bench* self, BenchClient* client)
 			bench_client_execute(client, &str);
 		}
 	}
+
+	// create benchmark function
+	char func[] =
+	"create function __bench.tpcb(bid int, tid int, aid int, delta int)"
+	"begin"
+	"	update __bench.accounts a"
+	"	set abalance = a.abalance + delta"
+	"	where a.aid = aid;"
+	""
+	"	select abalance from __bench.accounts a"
+	"	where a.aid = aid;"
+	""
+	"	update __bench.tellers t"
+	"	set tbalance = t.tbalance + delta"
+	"	where t.tid = tid;"
+	""
+	"	insert into __bench.history(tid, bid, aid, delta, time, filler)"
+	"	values(tid, bid, aid, delta, current_timestamp, '                                                  ');"
+	"end;";
+
+	str_set_cstr(&str, func);
+	bench_client_execute(client, &str);
 
 	info("preparing data.");
 
