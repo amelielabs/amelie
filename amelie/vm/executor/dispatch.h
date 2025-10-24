@@ -15,6 +15,7 @@ typedef struct Dispatch Dispatch;
 
 struct Dispatch
 {
+	int       order;
 	List      list; 
 	int       list_count;
 	Complete  complete;
@@ -27,6 +28,7 @@ static inline Dispatch*
 dispatch_allocate(void)
 {
 	auto self = (Dispatch*)am_malloc(sizeof(Dispatch));
+	self->order      = 0;
 	self->list_count = 0;
 	self->returning  = false;
 	self->close      = false;

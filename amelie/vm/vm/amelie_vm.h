@@ -14,10 +14,11 @@
 // bytecode
 #include "vm/op.h"
 
-// call/return
-#include "vm/return.h"
+// dispatch context
+#include "vm/send.h"
 
 // vm
+#include "vm/return.h"
 #include "vm/vm.h"
 #include "vm/command.h"
 #include "vm/command_utility.h"

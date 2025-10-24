@@ -9,11 +9,10 @@ insert into test values (2, 0);
 explain select * from test;
 [{
   "main": {
-    "00": "union               0      0      0     ",
-    "01": "send_all            0      -      0     # public.test (last)",
-    "02": "union_recv          0      0      0     ",
-    "03": "union_set           0      0      -1    ",
-    "04": "ret                 0      0      -     "
+    "00": "send_all            0      0      20    # public.test (last)",
+    "01": "recv                1      0      0     ",
+    "02": "union_set           1      0      -1    ",
+    "03": "ret                 1      0      -     "
   },
   "pushdown": {
     "00": "set                 0      2      0     ",
@@ -46,11 +45,10 @@ select * from test use index (123;
 explain select * from test use index (i);
 [{
   "main": {
-    "00": "union               0      0      0     ",
-    "01": "send_all            0      -      0     # public.test (last)",
-    "02": "union_recv          0      0      0     ",
-    "03": "union_set           0      0      -1    ",
-    "04": "ret                 0      0      -     "
+    "00": "send_all            0      0      14    # public.test (last)",
+    "01": "recv                1      0      0     ",
+    "02": "union_set           1      0      -1    ",
+    "03": "ret                 1      0      -     "
   },
   "pushdown": {
     "00": "set                 0      2      0     ",
@@ -78,11 +76,10 @@ insert into test values (2, 0);
 explain select * from test;
 [{
   "main": {
-    "00": "union               0      0      0     ",
-    "01": "send_all            0      -      0     # public.test (last)",
-    "02": "union_recv          0      0      0     ",
-    "03": "union_set           0      0      -1    ",
-    "04": "ret                 0      0      -     "
+    "00": "send_all            0      0      20    # public.test (last)",
+    "01": "recv                1      0      0     ",
+    "02": "union_set           1      0      -1    ",
+    "03": "ret                 1      0      -     "
   },
   "pushdown": {
     "00": "set                 0      2      0     ",
@@ -101,11 +98,10 @@ explain select * from test;
 explain select * from test use heap;
 [{
   "main": {
-    "00": "union               0      0      0     ",
-    "01": "send_all            0      -      0     # public.test (last)",
-    "02": "union_recv          0      0      0     ",
-    "03": "union_set           0      0      -1    ",
-    "04": "ret                 0      0      -     "
+    "00": "send_all            0      0      12    # public.test (last)",
+    "01": "recv                1      0      0     ",
+    "02": "union_set           1      0      -1    ",
+    "03": "ret                 1      0      -     "
   },
   "pushdown": {
     "00": "set                 0      2      0     ",
@@ -144,11 +140,10 @@ insert into test values (2, 0);
 explain select * from test;
 [{
   "main": {
-    "00": "union               0      0      0     ",
-    "01": "send_all            0      -      0     # public.test (last)",
-    "02": "union_recv          0      0      0     ",
-    "03": "union_set           0      0      -1    ",
-    "04": "ret                 0      0      -     "
+    "00": "send_all            0      0      20    # public.test (last)",
+    "01": "recv                1      0      0     ",
+    "02": "union_set           1      0      -1    ",
+    "03": "ret                 1      0      -     "
   },
   "pushdown": {
     "00": "set                 0      2      0     ",
@@ -171,11 +166,10 @@ create unique index j on test (data) with (type = 'hash');
 explain select * from test where data = 2;
 [{
   "main": {
-    "00": "union               0      0      0     ",
-    "01": "send_all            0      -      0     # public.test (last)",
-    "02": "union_recv          0      0      0     ",
-    "03": "union_set           0      0      -1    ",
-    "04": "ret                 0      0      -     "
+    "00": "send_all            0      0      14    # public.test (last)",
+    "01": "recv                1      0      0     ",
+    "02": "union_set           1      0      -1    ",
+    "03": "ret                 1      0      -     "
   },
   "pushdown": {
     "00": "set                 0      2      0     ",
@@ -201,11 +195,10 @@ select * from test where data = 2;
 explain select * from test where id = 1;
 [{
   "main": {
-    "00": "union               0      0      0     ",
-    "01": "send_all            0      -      0     # public.test (last)",
-    "02": "union_recv          0      0      0     ",
-    "03": "union_set           0      0      -1    ",
-    "04": "ret                 0      0      -     "
+    "00": "send_all            0      0      20    # public.test (last)",
+    "01": "recv                1      0      0     ",
+    "02": "union_set           1      0      -1    ",
+    "03": "ret                 1      0      -     "
   },
   "pushdown": {
     "00": "set                 0      2      0     ",
@@ -232,11 +225,10 @@ select * from test where id = 1;
 explain select * from test where id = 1 and data = 1;
 [{
   "main": {
-    "00": "union               0      0      0     ",
-    "01": "send_lookup         0      -      -     # public.test (last)",
-    "02": "union_recv          0      0      0     ",
-    "03": "union_set           0      0      -1    ",
-    "04": "ret                 0      0      -     "
+    "00": "send_lookup         0      -      0     # public.test (last)",
+    "01": "recv                1      0      0     ",
+    "02": "union_set           1      0      -1    ",
+    "03": "ret                 1      0      -     "
   },
   "pushdown": {
     "00": "set                 0      2      0     ",
@@ -268,11 +260,10 @@ select * from test where id = 1 and data = 1;
 explain select * from test where data = 1 and id = 1;
 [{
   "main": {
-    "00": "union               0      0      0     ",
-    "01": "send_lookup         0      -      -     # public.test (last)",
-    "02": "union_recv          0      0      0     ",
-    "03": "union_set           0      0      -1    ",
-    "04": "ret                 0      0      -     "
+    "00": "send_lookup         0      -      0     # public.test (last)",
+    "01": "recv                1      0      0     ",
+    "02": "union_set           1      0      -1    ",
+    "03": "ret                 1      0      -     "
   },
   "pushdown": {
     "00": "set                 0      2      0     ",
@@ -311,11 +302,10 @@ insert into test values (2, 0);
 explain select * from test where id = 1;
 [{
   "main": {
-    "00": "union               0      0      0     ",
-    "01": "send_lookup         0      -      -     # public.test (last)",
-    "02": "union_recv          0      0      0     ",
-    "03": "union_set           0      0      -1    ",
-    "04": "ret                 0      0      -     "
+    "00": "send_lookup         0      -      0     # public.test (last)",
+    "01": "recv                1      0      0     ",
+    "02": "union_set           1      0      -1    ",
+    "03": "ret                 1      0      -     "
   },
   "pushdown": {
     "00": "set                 0      2      0     ",
@@ -341,11 +331,10 @@ select * from test where id = 1;
 explain select * from test where id > 1;
 [{
   "main": {
-    "00": "union               0      0      0     ",
-    "01": "send_all            0      -      0     # public.test (last)",
-    "02": "union_recv          0      0      0     ",
-    "03": "union_set           0      0      -1    ",
-    "04": "ret                 0      0      -     "
+    "00": "send_all            0      0      20    # public.test (last)",
+    "01": "recv                1      0      0     ",
+    "02": "union_set           1      0      -1    ",
+    "03": "ret                 1      0      -     "
   },
   "pushdown": {
     "00": "set                 0      2      0     ",
@@ -372,11 +361,10 @@ select * from test where id > 1;
 explain select * from test where data > 1;
 [{
   "main": {
-    "00": "union               0      0      0     ",
-    "01": "send_all            0      -      0     # public.test (last)",
-    "02": "union_recv          0      0      0     ",
-    "03": "union_set           0      0      -1    ",
-    "04": "ret                 0      0      -     "
+    "00": "send_all            0      0      20    # public.test (last)",
+    "01": "recv                1      0      0     ",
+    "02": "union_set           1      0      -1    ",
+    "03": "ret                 1      0      -     "
   },
   "pushdown": {
     "00": "set                 0      2      0     ",
@@ -402,11 +390,10 @@ select * from test where data > 1;
 explain select * from test where data = 1;
 [{
   "main": {
-    "00": "union               0      0      0     ",
-    "01": "send_all            0      -      0     # public.test (last)",
-    "02": "union_recv          0      0      0     ",
-    "03": "union_set           0      0      -1    ",
-    "04": "ret                 0      0      -     "
+    "00": "send_all            0      0      20    # public.test (last)",
+    "01": "recv                1      0      0     ",
+    "02": "union_set           1      0      -1    ",
+    "03": "ret                 1      0      -     "
   },
   "pushdown": {
     "00": "set                 0      2      0     ",
@@ -451,11 +438,10 @@ select system.table('test').indexes;
 explain select * from test where data = 1 and id = 1;
 [{
   "main": {
-    "00": "union               0      0      0     ",
-    "01": "send_lookup         0      -      -     # public.test (last)",
-    "02": "union_recv          0      0      0     ",
-    "03": "union_set           0      0      -1    ",
-    "04": "ret                 0      0      -     "
+    "00": "send_lookup         0      -      0     # public.test (last)",
+    "01": "recv                1      0      0     ",
+    "02": "union_set           1      0      -1    ",
+    "03": "ret                 1      0      -     "
   },
   "pushdown": {
     "00": "set                 0      2      0     ",
@@ -489,11 +475,10 @@ select * from test where data = 1 and id = 1;
 explain select * from test where id = 1 and data = 1;
 [{
   "main": {
-    "00": "union               0      0      0     ",
-    "01": "send_lookup         0      -      -     # public.test (last)",
-    "02": "union_recv          0      0      0     ",
-    "03": "union_set           0      0      -1    ",
-    "04": "ret                 0      0      -     "
+    "00": "send_lookup         0      -      0     # public.test (last)",
+    "01": "recv                1      0      0     ",
+    "02": "union_set           1      0      -1    ",
+    "03": "ret                 1      0      -     "
   },
   "pushdown": {
     "00": "set                 0      2      0     ",
@@ -534,11 +519,10 @@ insert into test values (2, 0);
 explain select * from test where id > 1;
 [{
   "main": {
-    "00": "union               0      0      0     ",
-    "01": "send_all            0      -      0     # public.test (last)",
-    "02": "union_recv          0      0      0     ",
-    "03": "union_set           0      0      -1    ",
-    "04": "ret                 0      0      -     "
+    "00": "send_all            0      0      20    # public.test (last)",
+    "01": "recv                1      0      0     ",
+    "02": "union_set           1      0      -1    ",
+    "03": "ret                 1      0      -     "
   },
   "pushdown": {
     "00": "set                 0      2      0     ",
@@ -565,11 +549,10 @@ select * from test where id > 1;
 explain select * from test where data > 1;
 [{
   "main": {
-    "00": "union               0      0      0     ",
-    "01": "send_all            0      -      0     # public.test (last)",
-    "02": "union_recv          0      0      0     ",
-    "03": "union_set           0      0      -1    ",
-    "04": "ret                 0      0      -     "
+    "00": "send_all            0      0      14    # public.test (last)",
+    "01": "recv                1      0      0     ",
+    "02": "union_set           1      0      -1    ",
+    "03": "ret                 1      0      -     "
   },
   "pushdown": {
     "00": "set                 0      2      0     ",
@@ -597,11 +580,10 @@ select * from test where data > 1;
 explain select * from test where data < 1;
 [{
   "main": {
-    "00": "union               0      0      0     ",
-    "01": "send_all            0      -      0     # public.test (last)",
-    "02": "union_recv          0      0      0     ",
-    "03": "union_set           0      0      -1    ",
-    "04": "ret                 0      0      -     "
+    "00": "send_all            0      0      14    # public.test (last)",
+    "01": "recv                1      0      0     ",
+    "02": "union_set           1      0      -1    ",
+    "03": "ret                 1      0      -     "
   },
   "pushdown": {
     "00": "set                 0      2      0     ",
@@ -630,11 +612,10 @@ select * from test where data < 1;
 explain select * from test where id < 1;
 [{
   "main": {
-    "00": "union               0      0      0     ",
-    "01": "send_all            0      -      0     # public.test (last)",
-    "02": "union_recv          0      0      0     ",
-    "03": "union_set           0      0      -1    ",
-    "04": "ret                 0      0      -     "
+    "00": "send_all            0      0      20    # public.test (last)",
+    "01": "recv                1      0      0     ",
+    "02": "union_set           1      0      -1    ",
+    "03": "ret                 1      0      -     "
   },
   "pushdown": {
     "00": "set                 0      2      0     ",
@@ -663,11 +644,10 @@ select * from test where id < 1;
 explain select * from test where id < 1 and data < 2;
 [{
   "main": {
-    "00": "union               0      0      0     ",
-    "01": "send_all            0      -      0     # public.test (last)",
-    "02": "union_recv          0      0      0     ",
-    "03": "union_set           0      0      -1    ",
-    "04": "ret                 0      0      -     "
+    "00": "send_all            0      0      20    # public.test (last)",
+    "01": "recv                1      0      0     ",
+    "02": "union_set           1      0      -1    ",
+    "03": "ret                 1      0      -     "
   },
   "pushdown": {
     "00": "set                 0      2      0     ",

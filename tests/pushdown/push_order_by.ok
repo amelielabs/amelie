@@ -8,11 +8,10 @@ select * from test;
 explain select * from test order by id;
 [{
   "main": {
-    "00": "union               0      0      0     ",
-    "01": "send_all            0      -      0     # public.test (last)",
-    "02": "union_recv          0      0      0     ",
-    "03": "union_set           0      0      -1    ",
-    "04": "ret                 0      0      -     "
+    "00": "send_all            0      0      21    # public.test (last)",
+    "01": "recv                1      0      0     ",
+    "02": "union_set           1      0      -1    ",
+    "03": "ret                 1      0      -     "
   },
   "pushdown": {
     "00": "set_ordered         0      1      1     ",
@@ -35,11 +34,10 @@ select * from test order by id;
 explain select * from test order by id asc;
 [{
   "main": {
-    "00": "union               0      0      0     ",
-    "01": "send_all            0      -      0     # public.test (last)",
-    "02": "union_recv          0      0      0     ",
-    "03": "union_set           0      0      -1    ",
-    "04": "ret                 0      0      -     "
+    "00": "send_all            0      0      21    # public.test (last)",
+    "01": "recv                1      0      0     ",
+    "02": "union_set           1      0      -1    ",
+    "03": "ret                 1      0      -     "
   },
   "pushdown": {
     "00": "set_ordered         0      1      1     ",
@@ -62,11 +60,10 @@ select * from test order by id asc;
 explain select * from test order by id desc;
 [{
   "main": {
-    "00": "union               0      0      0     ",
-    "01": "send_all            0      -      0     # public.test (last)",
-    "02": "union_recv          0      0      0     ",
-    "03": "union_set           0      0      -1    ",
-    "04": "ret                 0      0      -     "
+    "00": "send_all            0      0      21    # public.test (last)",
+    "01": "recv                1      0      0     ",
+    "02": "union_set           1      0      -1    ",
+    "03": "ret                 1      0      -     "
   },
   "pushdown": {
     "00": "set_ordered         0      1      1     ",
@@ -89,12 +86,11 @@ select * from test order by id desc;
 explain select * from test order by id limit 1;
 [{
   "main": {
-    "00": "union               0      0      0     ",
-    "01": "send_all            0      -      0     # public.test (last)",
-    "02": "union_recv          0      0      0     ",
-    "03": "int                 1      -      0     # 1",
-    "04": "union_set           0      0      1     ",
-    "05": "ret                 0      0      -     "
+    "00": "send_all            0      0      21    # public.test (last)",
+    "01": "recv                1      0      0     ",
+    "02": "int                 0      -      0     # 1",
+    "03": "union_set           1      0      0     ",
+    "04": "ret                 1      0      -     "
   },
   "pushdown": {
     "00": "set_ordered         0      1      1     ",
@@ -127,12 +123,11 @@ select * from test order by id limit 20;
 explain select * from test order by id limit 0;
 [{
   "main": {
-    "00": "union               0      0      0     ",
-    "01": "send_all            0      -      0     # public.test (last)",
-    "02": "union_recv          0      0      0     ",
-    "03": "int                 1      -      0     # 0",
-    "04": "union_set           0      0      1     ",
-    "05": "ret                 0      0      -     "
+    "00": "send_all            0      0      21    # public.test (last)",
+    "01": "recv                1      0      0     ",
+    "02": "int                 0      -      0     # 0",
+    "03": "union_set           1      0      0     ",
+    "04": "ret                 1      0      -     "
   },
   "pushdown": {
     "00": "set_ordered         0      1      1     ",
@@ -157,12 +152,11 @@ select * from test order by id limit -1;
 explain select * from test order by id desc limit 1;
 [{
   "main": {
-    "00": "union               0      0      0     ",
-    "01": "send_all            0      -      0     # public.test (last)",
-    "02": "union_recv          0      0      0     ",
-    "03": "int                 1      -      0     # 1",
-    "04": "union_set           0      0      1     ",
-    "05": "ret                 0      0      -     "
+    "00": "send_all            0      0      21    # public.test (last)",
+    "01": "recv                1      0      0     ",
+    "02": "int                 0      -      0     # 1",
+    "03": "union_set           1      0      0     ",
+    "04": "ret                 1      0      -     "
   },
   "pushdown": {
     "00": "set_ordered         0      1      1     ",
@@ -195,13 +189,12 @@ select * from test order by id desc limit 20;
 explain select * from test order by id limit 1 offset 0;
 [{
   "main": {
-    "00": "union               0      0      0     ",
-    "01": "send_all            0      -      0     # public.test (last)",
-    "02": "union_recv          0      0      0     ",
-    "03": "int                 1      -      0     # 1",
-    "04": "int                 2      -      0     # 0",
-    "05": "union_set           0      0      1     ",
-    "06": "ret                 0      0      -     "
+    "00": "send_all            0      0      21    # public.test (last)",
+    "01": "recv                1      0      0     ",
+    "02": "int                 0      -      0     # 1",
+    "03": "int                 2      -      0     # 0",
+    "04": "union_set           1      0      0     ",
+    "05": "ret                 1      0      -     "
   },
   "pushdown": {
     "00": "set_ordered         0      1      1     ",
@@ -224,13 +217,12 @@ select * from test order by id limit 1 offset 0;
 explain select * from test order by id limit 1 offset 1;
 [{
   "main": {
-    "00": "union               0      0      0     ",
-    "01": "send_all            0      -      0     # public.test (last)",
-    "02": "union_recv          0      0      0     ",
-    "03": "int                 1      -      0     # 1",
-    "04": "int                 2      -      0     # 1",
-    "05": "union_set           0      0      1     ",
-    "06": "ret                 0      0      -     "
+    "00": "send_all            0      0      21    # public.test (last)",
+    "01": "recv                1      0      0     ",
+    "02": "int                 0      -      0     # 1",
+    "03": "int                 2      -      0     # 1",
+    "04": "union_set           1      0      0     ",
+    "05": "ret                 1      0      -     "
   },
   "pushdown": {
     "00": "set_ordered         0      1      1     ",
@@ -259,13 +251,12 @@ select * from test order by id limit 1 offset 4;
 explain select * from test order by id desc limit 1 offset 1;
 [{
   "main": {
-    "00": "union               0      0      0     ",
-    "01": "send_all            0      -      0     # public.test (last)",
-    "02": "union_recv          0      0      0     ",
-    "03": "int                 1      -      0     # 1",
-    "04": "int                 2      -      0     # 1",
-    "05": "union_set           0      0      1     ",
-    "06": "ret                 0      0      -     "
+    "00": "send_all            0      0      21    # public.test (last)",
+    "01": "recv                1      0      0     ",
+    "02": "int                 0      -      0     # 1",
+    "03": "int                 2      -      0     # 1",
+    "04": "union_set           1      0      0     ",
+    "05": "ret                 1      0      -     "
   },
   "pushdown": {
     "00": "set_ordered         0      1      1     ",
@@ -294,12 +285,11 @@ select * from test order by id desc limit 1 offset 4;
 explain select * from test order by id offset 1;
 [{
   "main": {
-    "00": "union               0      0      0     ",
-    "01": "send_all            0      -      0     # public.test (last)",
-    "02": "union_recv          0      0      0     ",
-    "03": "int                 1      -      0     # 1",
-    "04": "union_set           0      0      -1    ",
-    "05": "ret                 0      0      -     "
+    "00": "send_all            0      0      21    # public.test (last)",
+    "01": "recv                1      0      0     ",
+    "02": "int                 0      -      0     # 1",
+    "03": "union_set           1      0      -1    ",
+    "04": "ret                 1      0      -     "
   },
   "pushdown": {
     "00": "set_ordered         0      1      1     ",
@@ -332,12 +322,11 @@ select * from test order by id offset -1;
 explain select * from test order by id desc offset 1;
 [{
   "main": {
-    "00": "union               0      0      0     ",
-    "01": "send_all            0      -      0     # public.test (last)",
-    "02": "union_recv          0      0      0     ",
-    "03": "int                 1      -      0     # 1",
-    "04": "union_set           0      0      -1    ",
-    "05": "ret                 0      0      -     "
+    "00": "send_all            0      0      21    # public.test (last)",
+    "01": "recv                1      0      0     ",
+    "02": "int                 0      -      0     # 1",
+    "03": "union_set           1      0      -1    ",
+    "04": "ret                 1      0      -     "
   },
   "pushdown": {
     "00": "set_ordered         0      1      1     ",

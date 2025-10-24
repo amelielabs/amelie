@@ -26,22 +26,21 @@ select 0 -> id, 0 -> data from test;
 explain select 0 -> id, 0 -> data from test;
 [{
   "main": {
-    "00": "union               0      0      0     ",
-    "01": "send_all            0      -      0     # public.test (last)",
-    "02": "union_recv          0      0      0     ",
-    "03": "union_set           0      1      -1    ",
-    "04": "union_set_aggs      0      21     0     ",
-    "05": "set                 1      2      0     ",
-    "06": "store_open          2      0      13    ",
-    "07": "store_read          3      2      0     ",
-    "08": "push                3      0      0     ",
-    "09": "store_read          3      2      1     ",
-    "10": "push                3      0      0     ",
-    "11": "set_add             1      0      0     ",
-    "12": "store_next          2      7      0     ",
-    "13": "free                2      0      0     ",
-    "14": "free                0      0      0     ",
-    "15": "ret                 1      0      -     "
+    "00": "send_all            0      0      29    # public.test (last)",
+    "01": "recv                1      0      0     ",
+    "02": "union_set           1      1      -1    ",
+    "03": "union_set_aggs      1      21     0     ",
+    "04": "set                 0      2      0     ",
+    "05": "store_open          2      1      12    ",
+    "06": "store_read          3      2      0     ",
+    "07": "push                3      0      0     ",
+    "08": "store_read          3      2      1     ",
+    "09": "push                3      0      0     ",
+    "10": "set_add             0      0      0     ",
+    "11": "store_next          2      6      0     ",
+    "12": "free                2      0      0     ",
+    "13": "free                1      0      0     ",
+    "14": "ret                 0      0      -     "
   },
   "pushdown": {
     "00": "set_ordered         0      2      1     ",
@@ -84,20 +83,19 @@ select 0 -> self + 1 from test;
 explain select 0 -> self + 1 from test;
 [{
   "main": {
-    "00": "union               0      0      0     ",
-    "01": "send_all            0      -      0     # public.test (last)",
-    "02": "union_recv          0      0      0     ",
-    "03": "union_set           0      1      -1    ",
-    "04": "union_set_aggs      0      21     0     ",
-    "05": "set                 1      1      0     ",
-    "06": "store_open          2      0      11    ",
-    "07": "store_read          3      2      0     ",
-    "08": "push                3      0      0     ",
-    "09": "set_add             1      0      0     ",
-    "10": "store_next          2      7      0     ",
-    "11": "free                2      0      0     ",
-    "12": "free                0      0      0     ",
-    "13": "ret                 1      0      -     "
+    "00": "send_all            0      0      25    # public.test (last)",
+    "01": "recv                1      0      0     ",
+    "02": "union_set           1      1      -1    ",
+    "03": "union_set_aggs      1      21     0     ",
+    "04": "set                 0      1      0     ",
+    "05": "store_open          2      1      10    ",
+    "06": "store_read          3      2      0     ",
+    "07": "push                3      0      0     ",
+    "08": "set_add             0      0      0     ",
+    "09": "store_next          2      6      0     ",
+    "10": "free                2      0      0     ",
+    "11": "free                1      0      0     ",
+    "12": "ret                 0      0      -     "
   },
   "pushdown": {
     "00": "set_ordered         0      1      1     ",
@@ -189,20 +187,19 @@ insert into test values (4, 3);
 explain select 0 -> self + 1 from test;
 [{
   "main": {
-    "00": "union               0      0      0     ",
-    "01": "send_all            0      -      0     # public.test (last)",
-    "02": "union_recv          0      0      0     ",
-    "03": "union_set           0      1      -1    ",
-    "04": "union_set_aggs      0      21     0     ",
-    "05": "set                 1      1      0     ",
-    "06": "store_open          2      0      11    ",
-    "07": "store_read          3      2      0     ",
-    "08": "push                3      0      0     ",
-    "09": "set_add             1      0      0     ",
-    "10": "store_next          2      7      0     ",
-    "11": "free                2      0      0     ",
-    "12": "free                0      0      0     ",
-    "13": "ret                 1      0      -     "
+    "00": "send_all            0      0      25    # public.test (last)",
+    "01": "recv                1      0      0     ",
+    "02": "union_set           1      1      -1    ",
+    "03": "union_set_aggs      1      21     0     ",
+    "04": "set                 0      1      0     ",
+    "05": "store_open          2      1      10    ",
+    "06": "store_read          3      2      0     ",
+    "07": "push                3      0      0     ",
+    "08": "set_add             0      0      0     ",
+    "09": "store_next          2      6      0     ",
+    "10": "free                2      0      0     ",
+    "11": "free                1      0      0     ",
+    "12": "ret                 0      0      -     "
   },
   "pushdown": {
     "00": "set_ordered         0      1      1     ",

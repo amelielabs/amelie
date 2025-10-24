@@ -205,7 +205,7 @@ enum
 	CUNION_SET,
 	CUNION_ADD,
 	CUNION_SET_AGGS,
-	CUNION_RECV,
+	CRECV,
 
 	// table cursor
 	CTABLE_OPEN,

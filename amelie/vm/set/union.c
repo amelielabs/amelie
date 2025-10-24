@@ -71,7 +71,6 @@ union_create(void)
 	self->distinct       = false;
 	self->aggs           = NULL;
 	self->child          = NULL;
-	self->dispatch       = NULL;
 	list_init(&self->list);
 	return self;
 }

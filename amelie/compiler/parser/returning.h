@@ -24,7 +24,6 @@ struct Returning
 	Columns columns;
 	Str     format;
 	int     r;
-	bool    r_recv;
 };
 
 static inline void
@@ -38,7 +37,6 @@ returning_init(Returning* self)
 	self->count          = 0;
 	self->count_into     = 0;
 	self->r              = -1;
-	self->r_recv         = false;
 	columns_init(&self->columns);
 	str_init(&self->format);
 }

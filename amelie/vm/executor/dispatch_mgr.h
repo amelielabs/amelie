@@ -16,7 +16,7 @@ typedef struct Dtr         Dtr;
 
 struct DispatchMgr
 {
-	List          list;
+	Buf           list;
 	int           list_count;
 	DispatchCache cache;
 	ReqCache      cache_req;
@@ -28,6 +28,13 @@ struct DispatchMgr
 	Msg           close;
 	Dtr*          dtr;
 };
+
+hot always_inline static inline Dispatch*
+dispatch_mgr_at(DispatchMgr* self, int order)
+{
+	assert(order < self->list_count);
+	return ((Dispatch**)self->list.start)[order];
+}
 
 hot always_inline static inline Ctr*
 dispatch_mgr_ctr(DispatchMgr* self, int order)
@@ -50,9 +57,9 @@ dispatch_mgr_init(DispatchMgr* self, CoreMgr* core_mgr, Dtr* dtr)
 	self->core_mgr   = core_mgr;
 	self->dtr        = dtr;
 	self->is_write   = false;
-	list_init(&self->list);
 	dispatch_cache_init(&self->cache);
 	req_cache_init(&self->cache_req);
+	buf_init(&self->list);
 	buf_init(&self->ctrs);
 	msg_init(&self->close, MSG_STOP);
 	complete_init(&self->complete);
@@ -61,12 +68,12 @@ dispatch_mgr_init(DispatchMgr* self, CoreMgr* core_mgr, Dtr* dtr)
 static inline void
 dispatch_mgr_reset(DispatchMgr* self)
 {
-	list_foreach_safe(&self->list)
+	for (auto i = 0; i < self->list_count; i++)
 	{
-		auto dispatch = list_at(Dispatch, link);
+		auto dispatch = dispatch_mgr_at(self, i);
 		dispatch_cache_push(&self->cache, dispatch, &self->cache_req);
 	}
-	list_init(&self->list);
+	buf_reset(&self->list);
 	self->list_count = 0;
 
 	for (auto i = 0; i < self->ctrs_count; i++)
@@ -95,6 +102,7 @@ dispatch_mgr_free(DispatchMgr* self)
 {
 	dispatch_mgr_reset(self);
 	dispatch_mgr_free_ctrs(self);
+	buf_free(&self->list);
 	buf_free(&self->ctrs);
 	dispatch_cache_free(&self->cache);
 	req_cache_free(&self->cache_req);
@@ -150,7 +158,9 @@ hot static inline void
 dispatch_mgr_send(DispatchMgr* self, Dispatch* dispatch)
 {
 	// add dispatch
-	list_append(&self->list, &dispatch->link);
+	dispatch->order = self->list_count;
+
+	buf_write(&self->list, &dispatch, sizeof(Dispatch**));
 	self->list_count++;
 
 	// send requests

@@ -22,7 +22,6 @@ struct Union
 	int*    aggs;
 	int64_t limit;
 	int64_t offset;
-	void*   dispatch;
 	Union*  child;
 };
 

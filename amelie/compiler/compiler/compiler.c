@@ -114,6 +114,7 @@ emit_send(Compiler* self, Target* target, int start)
 {
 	auto stmt = self->current;
 	auto ret  = stmt->ret;
+	assert(stmt->rdispatch == -1);
 
 	// push references
 	auto refs_count = stmt->refs.count;
@@ -137,23 +138,22 @@ emit_send(Compiler* self, Target* target, int start)
 		ref = ref->next;
 	}
 
-	// prepare union to use for the distributed operation result
-	auto rret = -1;
-	if (ret && returning_has(ret))
-	{
-		rret   = op1(self, CUNION, rpin(self, TYPE_STORE));
-		ret->r = rret;
-	}
-
-	// table target pushdown
-	auto table = target->from_table;
-
 	// set snapshot if two or more stmts are sending data
 	// and using tables
 	auto program = self->program;
 	if (self->sends > 0)
 		program->snapshot = true;
 	self->sends++;
+
+	// create send context
+	int  send_offset;
+	auto send = send_create(&program->code_data, &send_offset);
+	send->start      = start;
+	send->has_result = ret && returning_has(ret);
+	send->table      = target->from_table;
+
+	// prepare statement dispatch order register
+	auto rdispatch = rpin(self, TYPE_INT);
 
 	// INSERT
 	if (stmt->id == STMT_INSERT)
@@ -162,7 +162,7 @@ emit_send(Compiler* self, Target* target, int start)
 		auto r = emit_insert_store(self);
 
 		// CSEND_SHARD
-		op5(self, CSEND_SHARD, start, (intptr_t)table, r, rret, refs_count);
+		op4(self, CSEND_SHARD, rdispatch, r, refs_count, send_offset);
 		runpin(self, r);
 	} else
 	{
@@ -179,7 +179,7 @@ emit_send(Compiler* self, Target* target, int start)
 				uint32_t hash = path_create_hash(path);
 
 				// CSEND_LOOKUP
-				op5(self, CSEND_LOOKUP, start, (intptr_t)table, hash, rret, refs_count);
+				op4(self, CSEND_LOOKUP, rdispatch, hash, refs_count, send_offset);
 			} else
 			{
 				// match exact partition using the point lookup exprs
@@ -200,16 +200,21 @@ emit_send(Compiler* self, Target* target, int start)
 				}
 
 				// CSEND_LOOKUP_BY
-				op4(self, CSEND_LOOKUP_BY, start, (intptr_t)table, rret, refs_count);
+				op3(self, CSEND_LOOKUP_BY, rdispatch, refs_count, send_offset);
 			}
 		} else
 		{
 			// send to all table partitions (one or more)
 
 			// CSEND_ALL
-			op4(self, CSEND_ALL, start, (intptr_t)table, rret, refs_count);
+			op3(self, CSEND_ALL, rdispatch, refs_count, send_offset);
 		}
 	}
+
+	if (send->has_result)
+		stmt->rdispatch = rdispatch;
+	else
+		runpin(self, rdispatch);
 
 	// mark last sending operation in the main block
 	auto block = compiler_main(self);
@@ -287,16 +292,18 @@ static void
 emit_recv(Compiler* self, Stmt* stmt)
 {
 	// Select or DML Returning with target
-	auto ret = stmt->ret;
-	if (!ret || ret->r == -1 || ret->r_recv)
+	if (stmt->rdispatch == -1)
 		return;
+	auto ret = stmt->ret;
+	assert(ret);
 
-	// CUNION_RECV
+	// CRECV
 	//
-	// receive results and add them to the union
+	// create union and receive results
 	//
-	op1(self, CUNION_RECV, ret->r);
-	ret->r_recv = true;
+	ret->r = op2(self, CRECV, rpin(self, TYPE_STORE), stmt->rdispatch);
+	runpin(self, stmt->rdispatch);
+	stmt->rdispatch = -1;
 
 	auto stmt_prev = self->current;
 	self->current = stmt;

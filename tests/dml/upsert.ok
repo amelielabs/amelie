@@ -35,8 +35,8 @@ insert into test values(1, 0) on conflict do nothing;
 explain insert into test values(1, 0), (2, 0), (1, 0) on conflict do nothing;
 [{
   "main": {
-    "00": "set_ptr             0      -      0     ",
-    "01": "send_shard          0      -      0     # public.test (last)",
+    "00": "set_ptr             1      -      0     ",
+    "01": "send_shard          0      1      0     # public.test (last)",
     "02": "ret                 -1     0      -     "
   },
   "pushdown": {
@@ -63,8 +63,8 @@ create table test (id int primary key, data int);
 explain insert into test values(1, 0) on conflict do nothing;
 [{
   "main": {
-    "00": "set_ptr             0      -      0     ",
-    "01": "send_shard          0      -      0     # public.test (last)",
+    "00": "set_ptr             1      -      0     ",
+    "01": "send_shard          0      1      0     # public.test (last)",
     "02": "ret                 -1     0      -     "
   },
   "pushdown": {
@@ -79,8 +79,8 @@ explain insert into test values(1, 0) on conflict do nothing;
 explain insert into test values(1, 0) on conflict do resolve;
 [{
   "main": {
-    "00": "set_ptr             0      -      0     ",
-    "01": "send_shard          0      -      0     # public.test (last)",
+    "00": "set_ptr             1      -      0     ",
+    "01": "send_shard          0      1      0     # public.test (last)",
     "02": "ret                 -1     0      -     "
   },
   "pushdown": {
@@ -106,8 +106,8 @@ create table test (id int primary key, data int);
 explain insert into test values(1, 0) on conflict do update set data = data + 1;
 [{
   "main": {
-    "00": "set_ptr             0      -      0     ",
-    "01": "send_shard          0      -      0     # public.test (last)",
+    "00": "set_ptr             1      -      0     ",
+    "01": "send_shard          0      1      0     # public.test (last)",
     "02": "ret                 -1     0      -     "
   },
   "pushdown": {
@@ -147,8 +147,8 @@ create table test (id int primary key, data int);
 explain insert into test values (1, 0), (1, 0), (1, 0) on conflict do update set data = data + 1;
 [{
   "main": {
-    "00": "set_ptr             0      -      0     ",
-    "01": "send_shard          0      -      0     # public.test (last)",
+    "00": "set_ptr             1      -      0     ",
+    "01": "send_shard          0      1      0     # public.test (last)",
     "02": "ret                 -1     0      -     "
   },
   "pushdown": {
@@ -183,8 +183,8 @@ select * from test;
 explain insert into test values (1, 0) on conflict do update set data = data + 1 where true;
 [{
   "main": {
-    "00": "set_ptr             0      -      0     ",
-    "01": "send_shard          0      -      0     # public.test (last)",
+    "00": "set_ptr             1      -      0     ",
+    "01": "send_shard          0      1      0     # public.test (last)",
     "02": "ret                 -1     0      -     "
   },
   "pushdown": {
@@ -222,8 +222,8 @@ insert into test values (1, 123) on conflict do update set data = data + exclude
 explain insert into test values (1, 123) on conflict do update set data = data + excluded.data;
 [{
   "main": {
-    "00": "set_ptr             0      -      0     ",
-    "01": "send_shard          0      -      0     # public.test (last)",
+    "00": "set_ptr             1      -      0     ",
+    "01": "send_shard          0      1      0     # public.test (last)",
     "02": "ret                 -1     0      -     "
   },
   "pushdown": {
@@ -252,8 +252,8 @@ insert into test values (1, null, {"id": 48}) on conflict do update set data = d
 explain insert into test values (1, null, {"id": 48}) on conflict do update set data = data + excluded.data2.id::int;
 [{
   "main": {
-    "00": "set_ptr             0      -      0     ",
-    "01": "send_shard          0      -      0     # public.test (last)",
+    "00": "set_ptr             1      -      0     ",
+    "01": "send_shard          0      1      0     # public.test (last)",
     "02": "ret                 -1     0      -     "
   },
   "pushdown": {
@@ -340,11 +340,10 @@ insert into test values (1, 0);
 explain insert into test values(1, 0) on conflict do update set data = data + 1 returning *;
 [{
   "main": {
-    "00": "union               0      0      0     ",
-    "01": "set_ptr             1      -      0     ",
-    "02": "send_shard          0      -      1     # public.test (last)",
-    "03": "union_recv          0      0      0     ",
-    "04": "ret                 0      0      -     "
+    "00": "set_ptr             1      -      0     ",
+    "01": "send_shard          0      1      0     # public.test (last)",
+    "02": "recv                1      0      0     ",
+    "03": "ret                 1      0      -     "
   },
   "pushdown": {
     "00": "set                 0      2      0     ",
@@ -383,11 +382,10 @@ insert into test values (1, 0);
 explain insert into test values(1, 0) on conflict do nothing returning *;
 [{
   "main": {
-    "00": "union               0      0      0     ",
-    "01": "set_ptr             1      -      0     ",
-    "02": "send_shard          0      -      1     # public.test (last)",
-    "03": "union_recv          0      0      0     ",
-    "04": "ret                 0      0      -     "
+    "00": "set_ptr             1      -      0     ",
+    "01": "send_shard          0      1      0     # public.test (last)",
+    "02": "recv                1      0      0     ",
+    "03": "ret                 1      0      -     "
   },
   "pushdown": {
     "00": "set                 0      2      0     ",
@@ -418,11 +416,10 @@ create table test (id int primary key, data int);
 explain insert into test values(1, 0) on conflict do update set data = data + 1 returning *;
 [{
   "main": {
-    "00": "union               0      0      0     ",
-    "01": "set_ptr             1      -      0     ",
-    "02": "send_shard          0      -      1     # public.test (last)",
-    "03": "union_recv          0      0      0     ",
-    "04": "ret                 0      0      -     "
+    "00": "set_ptr             1      -      0     ",
+    "01": "send_shard          0      1      0     # public.test (last)",
+    "02": "recv                1      0      0     ",
+    "03": "ret                 1      0      -     "
   },
   "pushdown": {
     "00": "set                 0      2      0     ",
@@ -460,11 +457,10 @@ create table test (id int primary key, data int);
 explain insert into test values(1, 0) on conflict do nothing returning *;
 [{
   "main": {
-    "00": "union               0      0      0     ",
-    "01": "set_ptr             1      -      0     ",
-    "02": "send_shard          0      -      1     # public.test (last)",
-    "03": "union_recv          0      0      0     ",
-    "04": "ret                 0      0      -     "
+    "00": "set_ptr             1      -      0     ",
+    "01": "send_shard          0      1      0     # public.test (last)",
+    "02": "recv                1      0      0     ",
+    "03": "ret                 1      0      -     "
   },
   "pushdown": {
     "00": "set                 0      2      0     ",
@@ -556,15 +552,13 @@ insert into src values (0, 0), (1, 0);
 explain insert into test select * from src on conflict do update set data = data + 1 returning *;
 [{
   "main": {
-    "00": "union               0      0      0     ",
-    "01": "send_all            0      -      0     # public.src",
-    "02": "union_recv          0      0      0     ",
-    "03": "union_set           0      0      -1    ",
-    "04": "union               1      0      0     ",
-    "05": "dup                 2      0      0     ",
-    "06": "send_shard          10     -      2     # public.test (last)",
-    "07": "union_recv          1      0      0     ",
-    "08": "ret                 1      0      -     "
+    "00": "send_all            0      0      19    # public.src",
+    "01": "recv                1      0      0     ",
+    "02": "union_set           1      0      -1    ",
+    "03": "dup                 2      1      0     ",
+    "04": "send_shard          0      2      0     # public.test (last)",
+    "05": "recv                2      0      0     ",
+    "06": "ret                 2      0      -     "
   },
   "pushdown": {
     "00": "set                 0      2      0     ",
@@ -577,7 +571,7 @@ explain insert into test select * from src on conflict do update set data = data
     "07": "table_next          1      2      0     ",
     "08": "free                1      0      0     ",
     "09": "ret                 0      0      -     ",
-    "10": "set                 1      2      0     ",
+    "10": "set                 0      2      0     ",
     "11": "table_prepare       2      -      0     # public.test",
     "12": "jmp                 25     0      0     ",
     "13": "int                 3      -      0     # 1",
@@ -591,10 +585,10 @@ explain insert into test select * from src on conflict do update set data = data
     "21": "push                3      0      0     ",
     "22": "table_readi32       3      2      1     ",
     "23": "push                3      0      0     ",
-    "24": "set_add             1      0      0     ",
+    "24": "set_add             0      0      0     ",
     "25": "upsert              2      13     20    ",
     "26": "free                2      0      0     ",
-    "27": "ret                 1      0      -     "
+    "27": "ret                 0      0      -     "
   },
   "access": [["public.test", "rw"], ["public.src", "ro"]]
 }]

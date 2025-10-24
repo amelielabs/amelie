@@ -304,7 +304,7 @@ vm_run(Vm*       self,
 		&&cunion_set,
 		&&cunion_add,
 		&&cunion_set_aggs,
-		&&cunion_recv,
+		&&crecv,
 
 		// table cursor
 		&&ctable_open,
@@ -1497,9 +1497,9 @@ cunion_set_aggs:
 	union_set_aggs((Union*)r[op->a].store, (int*)code_data_at(code_data, op->b));
 	op_next;
 
-cunion_recv:
-	// [union]
-	cunion_recv(self, op);
+crecv:
+	// [union, rdispatch]
+	crecv(self, op);
 	op_next;
 
 // table cursor

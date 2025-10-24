@@ -62,6 +62,7 @@ struct Stmt
 	Ast*       ast;
 	StmtId     id;
 	int        r;
+	int        rdispatch;
 	Returning* ret;
 	Str*       cte_name;
 	Columns    cte_columns;
@@ -84,6 +85,7 @@ stmt_allocate(Parser* parser, Lex* lex, Block* block)
 	self->ast          = NULL;
 	self->id           = STMT_UNDEF;
 	self->r            = -1;
+	self->rdispatch    = -1;
 	self->ret          = NULL;
 	self->cte_name     = NULL;
 	self->is_return    = false;

@@ -5,8 +5,8 @@ create table test (id int primary key, data int default 0);
 explain insert into test (id) values (1), (2), (3);
 [{
   "main": {
-    "00": "set_ptr             0      -      0     ",
-    "01": "send_shard          0      -      0     # public.test (last)",
+    "00": "set_ptr             1      -      0     ",
+    "01": "send_shard          0      1      0     # public.test (last)",
     "02": "ret                 -1     0      -     "
   },
   "pushdown": {
@@ -22,7 +22,7 @@ select * from test;
 explain delete from test;
 [{
   "main": {
-    "00": "send_all            0      -      -1    # public.test (last)",
+    "00": "send_all            0      0      20    # public.test (last)",
     "01": "ret                 -1     0      -     "
   },
   "pushdown": {
@@ -42,7 +42,7 @@ insert into test (id) values (1), (2), (3);
 explain update test set data = id;
 [{
   "main": {
-    "00": "send_all            0      -      -1    # public.test (last)",
+    "00": "send_all            0      0      20    # public.test (last)",
     "01": "ret                 -1     0      -     "
   },
   "pushdown": {
@@ -65,8 +65,8 @@ select * from test;
 explain insert into test (id) values (1), (2), (3) on conflict do update set data = data + 1;
 [{
   "main": {
-    "00": "set_ptr             0      -      0     ",
-    "01": "send_shard          0      -      0     # public.test (last)",
+    "00": "set_ptr             1      -      0     ",
+    "01": "send_shard          0      1      0     # public.test (last)",
     "02": "ret                 -1     0      -     "
   },
   "pushdown": {

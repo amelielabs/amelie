@@ -229,7 +229,7 @@ OpDesc ops[] =
 	{ CUNION_SET, "union_set" },
 	{ CUNION_ADD, "union_add" },
 	{ CUNION_SET_AGGS, "union_set_aggs" },
-	{ CUNION_RECV, "union_recv" },
+	{ CRECV, "recv" },
 
 	// table cursor
 	{ CTABLE_OPEN, "table_open" },
@@ -393,11 +393,10 @@ op_dump(Program* self, Code* code, Buf* buf)
 			op_write(output, op, true, false, true, NULL);
 			break;
 		case CSEND_SHARD:
-		case CSEND_ALL:
 		{
 			auto is_last = self->send_last == code_posof(code, op);
-			auto table = (Table*)op->b;
-			op_write(output, op, true, false, true,
+			auto table = send_at(data, op->d)->table;
+			op_write(output, op, true, true, true,
 			         "%.*s.%.*s%s",
 			         str_size(&table->config->schema),
 			         str_of(&table->config->schema),
@@ -407,11 +406,24 @@ op_dump(Program* self, Code* code, Buf* buf)
 			break;
 		}
 		case CSEND_LOOKUP:
-		case CSEND_LOOKUP_BY:
 		{
 			auto is_last = self->send_last == code_posof(code, op);
-			auto table = (Table*)op->b;
-			op_write(output, op, true, false, false,
+			auto table = send_at(data, op->d)->table;
+			op_write(output, op, true, false, true,
+			         "%.*s.%.*s%s",
+			         str_size(&table->config->schema),
+			         str_of(&table->config->schema),
+			         str_size(&table->config->name),
+			         str_of(&table->config->name),
+			         is_last? " (last)": "");
+			break;
+		}
+		case CSEND_LOOKUP_BY:
+		case CSEND_ALL:
+		{
+			auto is_last = self->send_last == code_posof(code, op);
+			auto table = send_at(data, op->c)->table;
+			op_write(output, op, true, true, true,
 			         "%.*s.%.*s%s",
 			         str_size(&table->config->schema),
 			         str_of(&table->config->schema),

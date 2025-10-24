@@ -45,7 +45,7 @@ insert into test values (2);
 explain delete from test where id = 3;
 [{
   "main": {
-    "00": "send_lookup         0      -      -     # public.test (last)",
+    "00": "send_lookup         0      -      0     # public.test (last)",
     "01": "ret                 -1     0      -     "
   },
   "pushdown": {
@@ -97,7 +97,7 @@ select * from test;
 explain delete from test where id > 0 and id < 1;
 [{
   "main": {
-    "00": "send_all            0      -      -1    # public.test (last)",
+    "00": "send_all            0      0      20    # public.test (last)",
     "01": "ret                 -1     0      -     "
   },
   "pushdown": {
