@@ -1,0 +1,182 @@
+#
+
+open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "127.0.0.1", "port": 3485 }];
+connect E0 S0 127.0.0.1:3485;
+
+# test: while parsing
+while end;
+while 1 end;
+while do end;
+
+# test: while
+explain begin
+	declare i int := 0;
+	while i < 3 do
+		i := i + 1;
+	end;
+	select i;
+end;
+begin
+	declare i int := 0;
+	while i < 3 do
+		i := i + 1;
+	end;
+	select i;
+end;
+
+# test: while while
+explain begin
+	declare i int := 0;
+	declare j int := 0;
+	declare n int := 0;
+	while i < 3 do
+		j := 0;
+		while j < 3 do
+			j := j + 1;
+			n := n + 1;
+		end;
+		i := i + 1;
+	end;
+	select i, j, n;
+end;
+begin
+	declare i int := 0;
+	declare j int := 0;
+	declare n int := 0;
+	while i < 3 do
+		j := 0;
+		while j < 3 do
+			j := j + 1;
+			n := n + 1;
+		end;
+		i := i + 1;
+	end;
+	select i, j, n;
+end;
+
+# test: while if
+begin
+	declare i int := 0;
+	declare n int := 0;
+	while i < 4 do
+		if i % 2 = 0 then
+			n := n + 1;
+		end;
+		i := i + 1;
+	end;
+	select n;
+end;
+
+# test: while var
+create table test (id int primary key);
+insert into test values (4);
+explain begin
+	declare i int := 0;
+	declare x int := 0;
+	declare n int := 0;
+	select id into x from test;
+	while i < x do
+		if i % 2 = 0 then
+			n := n + 1;
+		end;
+		i := i + 1;
+	end;
+	select n, x;
+end;
+begin
+	declare i int := 0;
+	declare x int := 0;
+	declare n int := 0;
+	select id into x from test;
+	while i < x do
+		if i % 2 = 0 then
+			n := n + 1;
+		end;
+		i := i + 1;
+	end;
+	select n, x;
+end;
+
+# test: while select
+while select 123 do end;
+
+# test: while do insert
+begin
+	declare i int := 0;
+	declare x int := 0;
+	select max(id) into x from test;
+	while i < x do
+		insert into test values (i);
+		i := i + 1;
+	end;
+	select x;
+end;
+select * from test;
+
+# test: while do insert returning
+explain begin
+	declare i int := 0;
+	select max(id) into i from test;
+
+	i := i + 1;
+	declare x int := i + 10;
+	while i < x do
+		insert into test values (i) returning *;
+		i := i + 1;
+	end;
+	select x;
+end;
+begin
+	declare i int := 0;
+	select max(id) into i from test;
+
+	i := i + 1;
+	declare x int := i + 10;
+	while i < x do
+		insert into test values (i) returning *;
+		i := i + 1;
+	end;
+	select x;
+end;
+select * from test;
+
+# test: while do insert returning into
+explain begin
+	declare i int := 0;
+	select max(id) into i from test;
+
+	i := i + 1;
+	declare x int := i + 10;
+	declare l int := 0;
+
+	while i < x do
+		insert into test values (i) returning id into l;
+		i := i + 1;
+	end;
+	select x, l;
+end;
+begin
+	declare i int := 0;
+	select max(id) into i from test;
+
+	i := i + 1;
+	declare x int := i + 10;
+	declare l int := 0;
+
+	while i < x do
+		insert into test values (i) returning id into l;
+		i := i + 1;
+	end;
+	select x, l;
+end;
+select * from test;
+
+# test: while utility
+while true do show all; end;
+
+# test: cte while
+with a as (while true do end) select 1;
+with a as (select 1) while true do end;
+
+disconnect S0;
+close E0;

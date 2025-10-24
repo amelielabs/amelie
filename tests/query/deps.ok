@@ -2172,6 +2172,223 @@ begin
 	select x, y;
 end;
 [[1, 4]]
+# test: select from into / while var do var
+explain begin
+	declare x int;
+	select id into x from test;
+	while x do
+		x := x - 1;
+	end;
+end;
+[{
+  "main": {
+    "00": "push_nulls          1      0      0     ",
+    "01": "union               0      0      0     ",
+    "02": "send_all            0      -      0     # public.test (last)",
+    "03": "union_recv          0      0      0     ",
+    "04": "union_set           0      0      -1    ",
+    "05": "var_set             0      0      0     ",
+    "06": "free                0      0      0     ",
+    "07": "jmp                 9      0      0     ",
+    "08": "jmp                 17     0      0     ",
+    "09": "var                 0      0      0     ",
+    "10": "jntr                8      0      0     ",
+    "11": "var                 0      0      0     ",
+    "12": "int                 1      -      0     # 1",
+    "13": "subii               2      0      1     ",
+    "14": "var_set             0      0      2     ",
+    "15": "free                2      0      0     ",
+    "16": "jmp                 7      0      0     ",
+    "17": "ret                 -1     0      -     "
+  },
+  "pushdown": {
+    "00": "set                 0      1      0     ",
+    "01": "table_open_part     1      0      6     # public.test (primary)",
+    "02": "table_readi32       2      1      0     ",
+    "03": "push                2      0      0     ",
+    "04": "set_add             0      0      0     ",
+    "05": "table_next          1      2      0     ",
+    "06": "free                1      0      0     ",
+    "07": "ret                 0      0      -     "
+  },
+  "access": [["public.test", "ro"]]
+}]
+begin
+	declare x int;
+	select id into x from test;
+	while x do
+		x := x - 1;
+	end;
+end;
+# test: select from into / while do var :=
+explain begin
+	declare x int;
+	declare y int;
+	select id into x from test;
+	while x do
+		y := x + 1;
+		x := x - 1;
+	end;
+	select x, y;
+end;
+[{
+  "main": {
+    "00": "push_nulls          2      0      0     ",
+    "01": "union               0      0      0     ",
+    "02": "send_all            0      -      0     # public.test (last)",
+    "03": "union_recv          0      0      0     ",
+    "04": "union_set           0      0      -1    ",
+    "05": "var_set             0      0      0     ",
+    "06": "free                0      0      0     ",
+    "07": "jmp                 9      0      0     ",
+    "08": "jmp                 22     0      0     ",
+    "09": "var                 0      0      0     ",
+    "10": "jntr                8      0      0     ",
+    "11": "var                 0      0      0     ",
+    "12": "int                 1      -      0     # 1",
+    "13": "addii               2      0      1     ",
+    "14": "var_set             1      0      2     ",
+    "15": "free                2      0      0     ",
+    "16": "var                 0      0      0     ",
+    "17": "int                 1      -      0     # 1",
+    "18": "subii               2      0      1     ",
+    "19": "var_set             0      0      2     ",
+    "20": "free                2      0      0     ",
+    "21": "jmp                 7      0      0     ",
+    "22": "set                 0      2      0     ",
+    "23": "var                 1      0      0     ",
+    "24": "push                1      0      0     ",
+    "25": "var                 1      1      0     ",
+    "26": "push                1      0      0     ",
+    "27": "set_add             0      0      0     ",
+    "28": "ret                 0      0      -     "
+  },
+  "pushdown": {
+    "00": "set                 0      1      0     ",
+    "01": "table_open_part     1      0      6     # public.test (primary)",
+    "02": "table_readi32       2      1      0     ",
+    "03": "push                2      0      0     ",
+    "04": "set_add             0      0      0     ",
+    "05": "table_next          1      2      0     ",
+    "06": "free                1      0      0     ",
+    "07": "ret                 0      0      -     "
+  },
+  "access": [["public.test", "ro"]]
+}]
+begin
+	declare x int;
+	declare y int;
+	select id into x from test;
+	while x do
+		y := x + 1;
+		x := x - 1;
+	end;
+	select x, y;
+end;
+[[0, 2]]
+# test: while / insert
+explain begin
+	declare x int := 4;
+	while x < 8 do
+		insert into test values (x);
+		x := x + 1;
+	end;
+end;
+[{
+  "main": {
+    "00": "push_nulls          1      0      0     ",
+    "01": "int                 0      -      0     # 4",
+    "02": "var_set             0      0      0     ",
+    "03": "free                0      0      0     ",
+    "04": "jmp                 6      0      0     ",
+    "05": "jmp                 19     0      0     ",
+    "06": "var                 0      0      0     ",
+    "07": "int                 1      -      0     # 8",
+    "08": "ltii                2      0      1     ",
+    "09": "jntr                5      2      0     ",
+    "10": "push_var            0      0      1     ",
+    "11": "set_ptr             0      -      0     ",
+    "12": "send_shard          0      -      0     # public.test",
+    "13": "var                 0      0      0     ",
+    "14": "int                 1      -      0     # 1",
+    "15": "addii               2      0      1     ",
+    "16": "var_set             0      0      2     ",
+    "17": "free                2      0      0     ",
+    "18": "jmp                 4      0      0     ",
+    "19": "close               0      0      0     ",
+    "20": "ret                 -1     0      -     "
+  },
+  "pushdown": {
+    "00": "insert              -      0      0     # public.test",
+    "01": "ret                 -1     0      -     "
+  },
+  "access": [["public.test", "rw"]]
+}]
+begin
+	declare x int := 4;
+	while x < 8 do
+		insert into test values (x);
+		x := x + 1;
+	end;
+end;
+explain begin
+	declare x int := 8;
+	while x < 10 do
+		insert into test values (x);
+		x := x + 1;
+	end;
+	select * from test;
+end;
+[{
+  "main": {
+    "00": "push_nulls          1      0      0     ",
+    "01": "int                 0      -      0     # 8",
+    "02": "var_set             0      0      0     ",
+    "03": "free                0      0      0     ",
+    "04": "jmp                 6      0      0     ",
+    "05": "jmp                 19     0      0     ",
+    "06": "var                 0      0      0     ",
+    "07": "int                 1      -      0     # 10",
+    "08": "ltii                2      0      1     ",
+    "09": "jntr                5      2      0     ",
+    "10": "push_var            0      0      1     ",
+    "11": "set_ptr             0      -      0     ",
+    "12": "send_shard          0      -      0     # public.test",
+    "13": "var                 0      0      0     ",
+    "14": "int                 1      -      0     # 1",
+    "15": "addii               2      0      1     ",
+    "16": "var_set             0      0      2     ",
+    "17": "free                2      0      0     ",
+    "18": "jmp                 4      0      0     ",
+    "19": "union               0      0      0     ",
+    "20": "send_all            2      -      0     # public.test (last)",
+    "21": "union_recv          0      0      0     ",
+    "22": "union_set           0      0      -1    ",
+    "23": "ret                 0      0      -     "
+  },
+  "pushdown": {
+    "00": "insert              -      0      0     # public.test",
+    "01": "ret                 -1     0      -     ",
+    "02": "set                 0      1      0     ",
+    "03": "table_open_part     1      0      8     # public.test (primary)",
+    "04": "table_readi32       2      1      0     ",
+    "05": "push                2      0      0     ",
+    "06": "set_add             0      0      0     ",
+    "07": "table_next          1      4      0     ",
+    "08": "free                1      0      0     ",
+    "09": "ret                 0      0      -     "
+  },
+  "access": [["public.test", "rw"]]
+}]
+begin
+	declare x int := 8;
+	while x < 10 do
+		insert into test values (x);
+		x := x + 1;
+	end;
+	select * from test;
+end;
+[1, 2, 3, 4, 5, 6, 7, 8, 9]
 drop table test;
 disconnect S0;
 close E0;

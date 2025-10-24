@@ -98,6 +98,7 @@ test declare
 test deps
 test if
 test for
+test while
 #test return
 
 # pushdown

@@ -716,6 +716,78 @@ begin
 	select x, y;
 end;
 
+
+# test: select from into / while var do var
+explain begin
+	declare x int;
+	select id into x from test;
+	while x do
+		x := x - 1;
+	end;
+end;
+begin
+	declare x int;
+	select id into x from test;
+	while x do
+		x := x - 1;
+	end;
+end;
+
+# test: select from into / while do var :=
+explain begin
+	declare x int;
+	declare y int;
+	select id into x from test;
+	while x do
+		y := x + 1;
+		x := x - 1;
+	end;
+	select x, y;
+end;
+begin
+	declare x int;
+	declare y int;
+	select id into x from test;
+	while x do
+		y := x + 1;
+		x := x - 1;
+	end;
+	select x, y;
+end;
+
+# test: while / insert
+explain begin
+	declare x int := 4;
+	while x < 8 do
+		insert into test values (x);
+		x := x + 1;
+	end;
+end;
+begin
+	declare x int := 4;
+	while x < 8 do
+		insert into test values (x);
+		x := x + 1;
+	end;
+end;
+
+explain begin
+	declare x int := 8;
+	while x < 10 do
+		insert into test values (x);
+		x := x + 1;
+	end;
+	select * from test;
+end;
+begin
+	declare x int := 8;
+	while x < 10 do
+		insert into test values (x);
+		x := x + 1;
+	end;
+	select * from test;
+end;
+
 drop table test;
 
 disconnect S0;
