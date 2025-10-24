@@ -15,9 +15,9 @@
 #include "json/json.h"
 #include "json/json_op.h"
 #include "json/json_compare.h"
+#include "json/escape.h"
 #include "json/encode.h"
 #include "json/decode.h"
-#include "json/escape.h"
 
 // json parser
 #include "json/json_parser.h"

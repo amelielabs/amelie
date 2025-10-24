@@ -58,7 +58,7 @@ json_export_as(Buf* data, Timezone* timezone, bool pretty, int deep, uint8_t** p
 		Str str;
 		json_read_string(pos, &str);
 		buf_write(data, "\"", 1);
-		escape_string_raw(data, &str);
+		unescape_str(data, &str);
 		buf_write(data, "\"", 1);
 		break;
 	}

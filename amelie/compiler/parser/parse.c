@@ -608,9 +608,17 @@ parse_udf(Parser* self, Program* program, Udf* udf)
 {
 	self->program = program;
 
+	// escape udf text before parsing
+	auto buf = buf_create();
+	defer_buf(buf);
+	escape_str(buf, &udf->config->text);
+
+	Str text;
+	buf_str(buf, &text);
+
 	// prepare parser
 	auto lex = &self->lex;
-	lex_start(&self->lex, &udf->config->text);
+	lex_start(&self->lex, &text);
 
 	// BEGIN
 	lex_expect(lex, KBEGIN);

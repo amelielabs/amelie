@@ -27,7 +27,7 @@ ast_encode(Ast* self, Lex* lex, Local* local, Buf* buf)
 		break;
 	case KSTRING:
 		if (self->string_escape)
-			escape_string(buf, &self->string);
+			encode_string_escape(buf, &self->string);
 		else
 			encode_string(buf, &self->string);
 		break;

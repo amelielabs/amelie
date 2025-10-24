@@ -12,10 +12,8 @@
 //
 
 hot static inline void
-escape_string(Buf* self, Str* string)
+escape_str(Buf* self, Str* string)
 {
-	int offset = buf_size(self);
-	encode_string32(self, str_size(string));
 	buf_reserve(self, str_size(string));
 
 	uint8_t* start  = self->position;
@@ -70,14 +68,10 @@ escape_string(Buf* self, Str* string)
 
 	int new_size = result - start;
 	buf_advance(self, new_size);
-
-	// update generated string size
-	start = self->start + offset;
-	json_write_string32(&start, new_size);
 }
 
 hot static inline void
-escape_string_raw(Buf* self, Str* raw)
+unescape_str(Buf* self, Str* raw)
 {
 	auto end = raw->end;
 	for (auto pos = raw->pos; pos < end; pos++)
