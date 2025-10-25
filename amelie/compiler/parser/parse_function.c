@@ -40,7 +40,7 @@
 #include <amelie_parser.h>
 
 static void
-parse_function_args(Stmt* self, AstFunctionCreate* stmt)
+parse_function_args(Stmt* self, Columns* columns)
 {
 	// ()
 	stmt_expect(self, '(');
@@ -53,7 +53,7 @@ parse_function_args(Stmt* self, AstFunctionCreate* stmt)
 		auto name = stmt_expect(self, KNAME);
 
 		// ensure arg does not exists
-		auto arg = columns_find(&stmt->config->args, &name->string);
+		auto arg = columns_find(columns, &name->string);
 		if (arg)
 			stmt_error(self, name, "argument redefined");
 
@@ -61,7 +61,7 @@ parse_function_args(Stmt* self, AstFunctionCreate* stmt)
 		arg = column_allocate();
 		column_set_name(arg, &name->string);
 		encode_null(&arg->constraints.value);
-		columns_add(&stmt->config->args, arg);
+		columns_add(columns, arg);
 
 		// type
 		int type_size;
@@ -82,7 +82,8 @@ parse_function_args(Stmt* self, AstFunctionCreate* stmt)
 void
 parse_function_create(Stmt* self, bool or_replace)
 {
-	// CREATE [OR REPLACE] FUNCTION [schema.]name (args) [RETURN type]
+	// CREATE [OR REPLACE] FUNCTION [schema.]name (args)
+	// [RETURN type [(args)]]
 	// BEGIN
 	//   block
 	// END
@@ -104,18 +105,35 @@ parse_function_create(Stmt* self, bool or_replace)
 	udf_config_set_name(stmt->config, &name);
 
 	// (args)
-	parse_function_args(self, stmt);
+	parse_function_args(self, &stmt->config->args);
 
 	// [RETURN]
 	auto ret = stmt_if(self, KRETURN);
 	if (ret)
 	{
 		// type
+		auto ast = stmt_next_shadow(self);
+		if (ast->id != KNAME)
+			stmt_error(self, ast, "unrecognized data type");
+
 		int type_size;
 		int type;
-		if (parse_type(self, &type, &type_size))
-			stmt_error(self, ret, "serial type cannot be used here");
+		if (str_is_case(&ast->string, "table", 5))
+			type = TYPE_STORE;
+		else
+			type = type_read(&ast->string, &type_size);
+		if (type == -1)
+			stmt_error(self, ast, "unrecognized data type");
+
 		udf_config_set_type(stmt->config, type);
+
+		// [(args)]
+		if (type == TYPE_STORE)
+		{
+			parse_function_args(self, &stmt->config->returning);
+			if (! stmt->config->returning.count)
+				stmt_error(self, NULL, "invalid number of returning columns");
+		}
 	}
 
 	// create new namespace

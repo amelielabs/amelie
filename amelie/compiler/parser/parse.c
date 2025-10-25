@@ -120,26 +120,60 @@ parse_stmt_free(Stmt* stmt)
 	}
 }
 
-hot void
-parse_stmt(Stmt* self)
+hot static bool
+parse_stmt_return(Stmt* self)
 {
-	// [RETURN stmt | expr | ;]
 	auto return_ = stmt_if(self, KRETURN);
-	if (return_)
-	{
-		// ensure return called by function
-		if (! self->block->ns->udf)
-			stmt_error(self, return_, "RETURN can be used only within UDF");
+	if (! return_)
+		return false;
 
-		self->is_return = true;
+	self->is_return = true;
+
+	// ensure return called by function
+	if (! self->block->ns->udf)
+		stmt_error(self, return_, "RETURN can be used only within UDF");
+
+	// RETURN var;
+	auto name = stmt_if(self, KNAME);
+	if (name)
+	{
 		auto semicolon = stmt_if(self, ';');
 		if (semicolon)
 		{
-			self->id = STMT_RETURN;
+			// find variable by name
+			auto var = namespace_find_var(self->block->ns, &name->string);
+			if (! var)
+				stmt_error(self, name, "variable not found");
+			name->id  = KVAR;
+			name->var = var;
+			if (var->writer)
+				deps_add_var(&self->deps, var->writer, var);
+
+			self->id  = STMT_RETURN;
+			self->ast = name;
 			stmt_push(self, semicolon);
-			return;
+			return true;
 		}
 	}
+
+	// RETURN;
+	auto semicolon = stmt_if(self, ';');
+	if (semicolon)
+	{
+		self->id = STMT_RETURN;
+		stmt_push(self, semicolon);
+		return true;
+	}
+
+	return false;
+}
+
+hot void
+parse_stmt(Stmt* self)
+{
+	// [RETURN var | stmt | expr | ;]
+	if (parse_stmt_return(self))
+		return;
 
 	// stmt
 	auto ast = stmt_next(self);

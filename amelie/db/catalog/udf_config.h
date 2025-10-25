@@ -20,6 +20,7 @@ struct UdfConfig
 	Str     text;
 	Columns args;
 	int64_t type;
+	Columns returning;
 };
 
 static inline UdfConfig*
@@ -32,6 +33,7 @@ udf_config_allocate(void)
 	str_init(&self->name);
 	str_init(&self->text);
 	columns_init(&self->args);
+	columns_init(&self->returning);
 	return self;
 }
 
@@ -42,6 +44,7 @@ udf_config_free(UdfConfig* self)
 	str_free(&self->name);
 	str_free(&self->text);
 	columns_free(&self->args);
+	columns_free(&self->returning);
 	am_free(self);
 }
 
@@ -80,6 +83,7 @@ udf_config_copy(UdfConfig* self)
 	udf_config_set_text(copy, &self->text);
 	udf_config_set_type(copy, self->type);
 	columns_copy(&copy->args, &self->args);
+	columns_copy(&copy->returning, &self->returning);
 	return copy;
 }
 
@@ -89,17 +93,20 @@ udf_config_read(uint8_t** pos)
 	auto self = udf_config_allocate();
 	errdefer(udf_config_free, self);
 	uint8_t* args = NULL;
+	uint8_t* returning = NULL;
 	Decode obj[] =
 	{
-		{ DECODE_STRING, "schema", &self->schema },
-		{ DECODE_STRING, "name",   &self->name   },
-		{ DECODE_STRING, "text",   &self->text   },
-		{ DECODE_ARRAY,  "args",   &args         },
-		{ DECODE_INT,    "type",   &self->type   },
-		{ 0,              NULL,     NULL         },
+		{ DECODE_STRING, "schema",    &self->schema },
+		{ DECODE_STRING, "name",      &self->name   },
+		{ DECODE_STRING, "text",      &self->text   },
+		{ DECODE_ARRAY,  "args",      &args         },
+		{ DECODE_INT,    "type",      &self->type   },
+		{ DECODE_ARRAY,  "returning", &returning    },
+		{ 0,              NULL,        NULL         },
 	};
 	decode_obj(obj, "udf", pos);
 	columns_read(&self->args, &args);
+	columns_read(&self->returning, &returning);
 	return self;
 }
 
@@ -128,6 +135,10 @@ udf_config_write(UdfConfig* self, Buf* buf)
 	// args
 	encode_raw(buf, "args", 4);
 	columns_write(&self->args, buf);
+
+	// args
+	encode_raw(buf, "returning", 9);
+	columns_write(&self->returning, buf);
 
 	encode_obj_end(buf);
 }

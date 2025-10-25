@@ -113,6 +113,10 @@ query_compiler_parse(Query* query, QueryContext* ctx)
 		ctx->program = (Program*)udf->data;
 		ctx->execute = udf;
 		ctx->args    = set_value(execute->args, 0);
+
+		// set udf returning columns, for table results
+		if (udf->config->type == TYPE_STORE)
+			ctx->returning = &udf->config->returning;
 		return;
 	}
 
@@ -150,6 +154,10 @@ query_compiler_parse_endpoint(Query* query, QueryContext* ctx, EndpointType type
 		ctx->program = (Program*)udf->data;
 		ctx->execute = udf;
 		ctx->args     = set_value(execute->args, 0);
+
+		// set udf returning columns, for table results
+		if (udf->config->type == TYPE_STORE)
+			ctx->returning = &udf->config->returning;
 		return;
 	}
 

@@ -639,24 +639,58 @@ hot static void
 emit_return(Compiler* self, Stmt* stmt)
 {
 	compiler_switch_frontend(self);
+	emit_recv(self, stmt);
 
-	auto r = -1;
+	// return from main
+	auto udf = stmt->block->ns->udf;
+	if (! udf)
+	{
+		auto r = -1;
+		if (stmt->ret && stmt->ret->columns.count > 0)
+			r = stmt->r;
+		op1(self, CRET, r);
+		return;
+	}
+
+	// return from function
+
+	// return;
+	if (stmt->id == STMT_RETURN && !stmt->ast)
+	{
+		op1(self, CRET, -1);
+		return;
+	}
+
+	// return var | stmt;
+	int      r;
+	int      type;
+	Columns* columns;
 	if (stmt->id == STMT_RETURN)
 	{
-		// null
+		auto var = stmt->ast->var;
+		r = op3(self, CVAR, rpin(self, var->type), var->order, var->is_arg);
+		columns = &var->columns;
 	} else
-	if (stmt->ret && stmt->ret->columns.count > 0)
 	{
-		emit_recv(self, stmt);
-		r =  stmt->r;
-
-		// validate return type
-		auto udf = stmt->block->ns->udf;
-		if (udf && udf->type != rtype(self, r))
-			stmt_error(stmt, stmt->ast, "RETURN type '%s' mismatch function type '%s'",
-			           type_of(rtype(self, r)),
-			           type_of(udf->type));
+		assert(stmt->ret && stmt->ret->columns.count > 0);
+		r = stmt->r;
+		columns = &stmt->ret->columns;
 	}
+	type = rtype(self, r);
+
+	// validate return type
+	if (udf->type != type)
+		stmt_error(stmt, stmt->ast,
+		           "RETURN type '%s' mismatch function type '%s'",
+		           type_of(type)),
+		           type_of(udf->type);
+
+	// validate returning columns
+	if (udf->type == TYPE_STORE && !columns_compare(&udf->returning, columns))
+		stmt_error(stmt, stmt->ast,
+		           "RETURN columns mismatch function returning columns");
+
+	// CRET
 	op1(self, CRET, r);
 }
 
