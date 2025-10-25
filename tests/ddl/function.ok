@@ -527,6 +527,8 @@ explain select [1,2,3]::reverse;
 }]
 select [1,2,3]::reverse;
 [[3, 2, 1]]
+select [1,2,3]::reverse::reverse;
+[[1, 2, 3]]
 explain execute reverse([1,2,3]);
 [{
   "main": {

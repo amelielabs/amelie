@@ -67,17 +67,75 @@ show table test;
 }]
 show table test format 'json';
 [{"schema": "public", "name": "test", "unlogged": false}]
+# test: show functions
+create function test_fn (id int) return json
+begin
+	return {
+		"a": 2 + 2,
+		"b": id
+	};
+end;
+select test_fn(123);
+[{
+  "a": 4,
+  "b": 123
+}]
+select test_fn(123).a;
+[4]
+select 123::test_fn().a;
+[4]
+show functions;
+[{
+  "schema": "public",
+  "name": "test_fn"
+}]
+show functions extended;
+[{
+  "schema": "public",
+  "name": "test_fn",
+  "text": "begin\n\treturn {\n\t\t\"a\": 2 + 2,\n\t\t\"b\": id\n\t};\nend",
+  "type": 5,
+  "args": [{
+    "name": "id",
+    "type": 2,
+    "type_size": 4,
+    "constraints": [["default", null]]
+  }],
+  "returning": []
+}]
+# test: show function;
+show function;
+{"msg": "show() ⟵ name is missing for 'function'"}
+show function test_fn;
+[{
+  "schema": "public",
+  "name": "test_fn"
+}]
+show function test_fn extended;
+[{
+  "schema": "public",
+  "name": "test_fn",
+  "text": "begin\n\treturn {\n\t\t\"a\": 2 + 2,\n\t\t\"b\": id\n\t};\nend",
+  "type": 5,
+  "args": [{
+    "name": "id",
+    "type": 2,
+    "type_size": 4,
+    "constraints": [["default", null]]
+  }],
+  "returning": []
+}]
 # test: show wal
 show wal;
 [{
-  "lsn": 3,
+  "lsn": 4,
   "lsn_min": 1,
   "files": 1,
   "slots": 0,
   "slots_min": -1,
-  "writes": 2,
-  "writes_bytes": 314,
-  "ops": 2,
+  "writes": 3,
+  "writes_bytes": 514,
+  "ops": 3,
   "checkpoint": 1
 }]
 # test: show replicas
@@ -99,7 +157,7 @@ select system.state();
   "frontends": 1,
   "backends": 1,
   "checkpoint": 1,
-  "lsn": 3,
+  "lsn": 4,
   "psn": 1,
   "read_only": false
 }]

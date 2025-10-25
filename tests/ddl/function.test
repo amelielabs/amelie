@@ -242,6 +242,7 @@ begin
 end;
 explain select [1,2,3]::reverse;
 select [1,2,3]::reverse;
+select [1,2,3]::reverse::reverse;
 
 explain execute reverse([1,2,3]);
 execute reverse([1,2,3]);

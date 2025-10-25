@@ -112,6 +112,14 @@ select system.table('test');
 [null]
 select system.table('test.a');
 [null]
+# test: functions()
+select system.functions();
+[[]]
+# test: function()
+select system.function('test');
+[null]
+select system.function('test.a');
+[null]
 # test: wal()
 select system.wal();
 [{

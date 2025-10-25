@@ -36,6 +36,25 @@ show table;
 show table test;
 show table test format 'json';
 
+# test: show functions
+create function test_fn (id int) return json
+begin
+	return {
+		"a": 2 + 2,
+		"b": id
+	};
+end;
+select test_fn(123);
+select test_fn(123).a;
+select 123::test_fn().a;
+show functions;
+show functions extended;
+
+# test: show function;
+show function;
+show function test_fn;
+show function test_fn extended;
+
 # test: show wal
 show wal;
 
