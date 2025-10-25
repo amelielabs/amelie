@@ -1,0 +1,763 @@
+open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "127.0.0.1", "port": 3485 }];
+connect E0 S0 127.0.0.1:3485;
+# test: create function parsing
+create function;
+{"msg": "create function❰;❱ ⟵ name expected"}
+create function test;
+{"msg": "create function test❰;❱ ⟵ ( expected"}
+create function test (;
+{"msg": "create function test (❰;❱ ⟵ name expected"}
+create function test (1;
+{"msg": "create function test (❰1❱ ⟵ name expected"}
+create function test (x;
+{"msg": "create function test (x❰;❱ ⟵ unrecognized data type"}
+create function test (x 1;
+{"msg": "create function test (x ❰1❱ ⟵ unrecognized data type"}
+create function test (x int;
+{"msg": "create function test (x int❰;❱ ⟵ ) expected"}
+create function test (x int,;
+{"msg": "create function test (x int,❰;❱ ⟵ name expected"}
+create function test (x int, int;
+{"msg": "create function test (x int, int❰;❱ ⟵ unrecognized data type"}
+create function test (x int, y;
+{"msg": "create function test (x int, y❰;❱ ⟵ unrecognized data type"}
+create function test (x int, y);
+{"msg": "create function test (x int, y❰)❱ ⟵ unrecognized data type"}
+create function test (x int);
+{"msg": "create function test (x int)❰;❱ ⟵ BEGIN expected"}
+create function test (x int) 1;
+{"msg": "create function test (x int) ❰1❱ ⟵ BEGIN expected"}
+# test: create function (empty, no return)
+create function test () begin end;
+show functions extended;
+[{
+  "schema": "public",
+  "name": "test",
+  "text": "begin end",
+  "type": 0,
+  "args": [],
+  "returning": []
+}]
+explain select test();
+[{
+  "main": {
+    "00": "call_udf            0      -      -     # public.test()",
+    "01": "ret                 0      0      -     "
+  },
+  "access": [["public.test", "call"]],
+  "calls": [{
+    "function": "public.test",
+    "main": {
+      "00": "ret                 -1     0      -     "
+    },
+    "access": []
+  }]
+}]
+select test();
+[null]
+explain execute test();
+[{
+  "main": {
+    "00": "ret                 -1     0      -     "
+  },
+  "access": []
+}]
+execute test();
+drop function test;
+# test: create function return (empty)
+create function test () return int
+begin
+end;
+explain select test();
+[{
+  "main": {
+    "00": "call_udf            0      -      -     # public.test()",
+    "01": "ret                 0      0      -     "
+  },
+  "access": [["public.test", "call"]],
+  "calls": [{
+    "function": "public.test",
+    "main": {
+      "00": "ret                 -1     0      -     "
+    },
+    "access": []
+  }]
+}]
+select test();
+[null]
+select test()::type;
+["null"]
+explain execute test();
+[{
+  "main": {
+    "00": "ret                 -1     0      -     "
+  },
+  "access": []
+}]
+execute test();
+select test() + 123;
+[null]
+drop function test;
+# test: create function return (return explicit)
+create function test () return int
+begin
+	return 123;
+end;
+explain select test();
+[{
+  "main": {
+    "00": "call_udf            0      -      -     # public.test()",
+    "01": "ret                 0      0      -     "
+  },
+  "access": [["public.test", "call"]],
+  "calls": [{
+    "function": "public.test",
+    "main": {
+      "00": "int                 0      -      0     # 123",
+      "01": "ret                 0      0      -     "
+    },
+    "access": []
+  }]
+}]
+select test();
+[123]
+explain execute test();
+[{
+  "main": {
+    "00": "int                 0      -      0     # 123",
+    "01": "ret                 0      0      -     "
+  },
+  "access": []
+}]
+execute test();
+[123]
+select test() + 123;
+[246]
+drop function test;
+# test: create function return (no return)
+create function test () return int
+begin
+	select 123;
+end;
+explain select test();
+[{
+  "main": {
+    "00": "call_udf            0      -      -     # public.test()",
+    "01": "ret                 0      0      -     "
+  },
+  "access": [["public.test", "call"]],
+  "calls": [{
+    "function": "public.test",
+    "main": {
+      "00": "int                 0      -      0     # 123",
+      "01": "ret                 -1     0      -     "
+    },
+    "access": []
+  }]
+}]
+select test();
+[null]
+explain execute test();
+[{
+  "main": {
+    "00": "int                 0      -      0     # 123",
+    "01": "ret                 -1     0      -     "
+  },
+  "access": []
+}]
+execute test();
+select test() + 123;
+[null]
+drop function test;
+# test: create function return (return stmt)
+create function test () return int
+begin
+	return select 123;
+end;
+explain select test();
+[{
+  "main": {
+    "00": "call_udf            0      -      -     # public.test()",
+    "01": "ret                 0      0      -     "
+  },
+  "access": [["public.test", "call"]],
+  "calls": [{
+    "function": "public.test",
+    "main": {
+      "00": "int                 0      -      0     # 123",
+      "01": "ret                 0      0      -     "
+    },
+    "access": []
+  }]
+}]
+select test();
+[123]
+explain execute test();
+[{
+  "main": {
+    "00": "int                 0      -      0     # 123",
+    "01": "ret                 0      0      -     "
+  },
+  "access": []
+}]
+execute test();
+[123]
+select test() + 123;
+[246]
+drop function test;
+# test: create function return (return type mismatch)
+create function test () return int
+begin
+	return '123';
+end;
+{"msg": "begin\n\treturn ❰'123'❱ ⟵ RETURN type 'string' mismatch function type 'int'"}
+create function test () return int
+begin
+	return select '123';
+end;
+{"msg": "begin\n\treturn ❰select❱ ⟵ RETURN type 'string' mismatch function type 'int'"}
+create function test ()
+begin
+	return '123';
+end;
+{"msg": "begin\n\treturn ❰'123'❱ ⟵ RETURN type 'string' mismatch function type 'null'"}
+create function test ()
+begin
+	return select '123';
+end;
+{"msg": "begin\n\treturn ❰select❱ ⟵ RETURN type 'string' mismatch function type 'null'"}
+create function test ()
+begin
+	return null;
+end;
+select test();
+[null]
+execute test();
+drop function test;
+create function test ()
+begin
+	return;
+end;
+select test();
+[null]
+select test();
+[null]
+execute test();
+drop function test;
+create function test ()
+begin
+	select null;
+end;
+select test();
+[null]
+execute test();
+drop function test;
+# test: create function return (return table parse)
+create function test () return table;
+{"msg": "create function test () return table❰;❱ ⟵ ( expected"}
+create function test () return table(;
+{"msg": "create function test () return table(❰;❱ ⟵ name expected"}
+create function test () return table(1;
+{"msg": "create function test () return table(❰1❱ ⟵ name expected"}
+create function test () return table(a;
+{"msg": "create function test () return table(a❰;❱ ⟵ unrecognized data type"}
+create function test () return table(a a;
+{"msg": "create function test () return table(a ❰a❱ ⟵ unrecognized data type"}
+create function test () return table(a int;
+{"msg": "create function test () return table(a int❰;❱ ⟵ ) expected"}
+create function test () return table(a int,;
+{"msg": "create function test () return table(a int,❰;❱ ⟵ name expected"}
+create function test () return table(a int,,;
+{"msg": "create function test () return table(a int,❰,❱ ⟵ name expected"}
+create function test () return table(a int,);
+{"msg": "create function test () return table(a int,❰)❱ ⟵ name expected"}
+# test: create function return (return table)
+create function test () return table(a int)
+begin
+end;
+drop function test;
+create function test () return table(a int, b int)
+begin
+end;
+drop function test;
+create function test () return table(a int, b int, c int)
+begin
+end;
+show functions extended;
+[{
+  "schema": "public",
+  "name": "test",
+  "text": "begin\nend",
+  "type": 13,
+  "args": [],
+  "returning": [{
+    "name": "a",
+    "type": 2,
+    "type_size": 4,
+    "constraints": [["default", null]]
+  }, {
+    "name": "b",
+    "type": 2,
+    "type_size": 4,
+    "constraints": [["default", null]]
+  }, {
+    "name": "c",
+    "type": 2,
+    "type_size": 4,
+    "constraints": [["default", null]]
+  }]
+}]
+drop function test;
+create function test () return table(a int, a int)
+begin
+end;
+{"msg": "create function test () return table(a int, ❰a❱ ⟵ argument redefined"}
+# test: create function (var return null)
+create function test () return int
+begin
+	declare x int;
+	return x;
+end;
+select test();
+[null]
+drop function test;
+# test: create function (var return)
+create function test () return int
+begin
+	declare x int := 123;
+	return x;
+end;
+select test();
+[123]
+drop function test;
+# test: create function (var redefined)
+create function test () return int
+begin
+	declare x int;
+	declare x int;
+	return x;
+end;
+{"msg": "create function test () return int\nbegin\n\tdeclare x int;\n\tdeclare ❰x❱ ⟵ variable redefined"}
+# test: create function (arg return)
+create function test (x int) return int
+begin
+	return x;
+end;
+explain select test(123);
+[{
+  "main": {
+    "00": "int                 0      -      0     # 123",
+    "01": "push                0      0      0     ",
+    "02": "call_udf            0      -      -     # public.test()",
+    "03": "ret                 0      0      -     "
+  },
+  "access": [["public.test", "call"]],
+  "calls": [{
+    "function": "public.test",
+    "main": {
+      "00": "var                 0      0      1     ",
+      "01": "ret                 0      0      -     "
+    },
+    "access": []
+  }]
+}]
+select test(123);
+[123]
+execute test(123);
+[123]
+drop function test;
+# test: create function (arg redefined)
+create function test (x int, x int) return int
+begin
+	return x;
+end;
+{"msg": "create function test (x int, ❰x❱ ⟵ argument redefined"}
+# test: create function (arg/var redefined)
+create function test (x int) return int
+begin
+	declare x int;
+end;
+{"msg": "create function test (x int) return int\nbegin\n\tdeclare ❰x❱ ⟵ variable redefined"}
+# test: create function
+create function test (x int) return int
+begin
+	declare total int := 0;
+	declare i int := 0;
+	while i < x do
+		total := total + i;
+		i := i + 1;
+	end;
+	return total;
+end;
+explain select test(10);
+[{
+  "main": {
+    "00": "int                 0      -      0     # 10",
+    "01": "push                0      0      0     ",
+    "02": "call_udf            0      -      -     # public.test()",
+    "03": "ret                 0      0      -     "
+  },
+  "access": [["public.test", "call"]],
+  "calls": [{
+    "function": "public.test",
+    "main": {
+      "00": "push_nulls          2      0      0     ",
+      "01": "int                 0      -      0     # 0",
+      "02": "var_set             0      0      0     ",
+      "03": "free                0      0      0     ",
+      "04": "int                 0      -      0     # 0",
+      "05": "var_set             1      0      0     ",
+      "06": "free                0      0      0     ",
+      "07": "var                 0      1      0     ",
+      "08": "var                 1      0      1     ",
+      "09": "ltii                2      0      1     ",
+      "10": "jntr                22     2      0     ",
+      "11": "var                 0      0      0     ",
+      "12": "var                 1      1      0     ",
+      "13": "addii               2      0      1     ",
+      "14": "var_set             0      0      2     ",
+      "15": "free                2      0      0     ",
+      "16": "var                 0      1      0     ",
+      "17": "int                 1      -      0     # 1",
+      "18": "addii               2      0      1     ",
+      "19": "var_set             1      0      2     ",
+      "20": "free                2      0      0     ",
+      "21": "jmp                 7      0      0     ",
+      "22": "var                 0      0      0     ",
+      "23": "ret                 0      0      -     "
+    },
+    "access": []
+  }]
+}]
+select test(10);
+[45]
+explain execute test(10);
+[{
+  "main": {
+    "00": "push_nulls          2      0      0     ",
+    "01": "int                 0      -      0     # 0",
+    "02": "var_set             0      0      0     ",
+    "03": "free                0      0      0     ",
+    "04": "int                 0      -      0     # 0",
+    "05": "var_set             1      0      0     ",
+    "06": "free                0      0      0     ",
+    "07": "var                 0      1      0     ",
+    "08": "var                 1      0      1     ",
+    "09": "ltii                2      0      1     ",
+    "10": "jntr                22     2      0     ",
+    "11": "var                 0      0      0     ",
+    "12": "var                 1      1      0     ",
+    "13": "addii               2      0      1     ",
+    "14": "var_set             0      0      2     ",
+    "15": "free                2      0      0     ",
+    "16": "var                 0      1      0     ",
+    "17": "int                 1      -      0     # 1",
+    "18": "addii               2      0      1     ",
+    "19": "var_set             1      0      2     ",
+    "20": "free                2      0      0     ",
+    "21": "jmp                 7      0      0     ",
+    "22": "var                 0      0      0     ",
+    "23": "ret                 0      0      -     "
+  },
+  "access": []
+}]
+execute test(10);
+[45]
+# test: create function (json)
+create function reverse(array json) return json
+begin
+	declare rev json;
+	select [] -> self::push(it) into rev from (array) it;
+	return rev;
+end;
+explain select [1,2,3]::reverse;
+[{
+  "main": {
+    "00": "json                0      0      0     ",
+    "01": "push                0      0      0     ",
+    "02": "call_udf            0      -      -     # public.reverse()",
+    "03": "ret                 0      0      -     "
+  },
+  "access": [["public.reverse", "call"]],
+  "calls": [{
+    "function": "public.reverse",
+    "main": {
+      "00": "push_nulls          1      0      0     ",
+      "01": "set                 0      1      0     ",
+      "02": "set                 1      1      1     ",
+      "03": "json                2      0      0     ",
+      "04": "var                 3      0      1     ",
+      "05": "json_open           4      3      19    ",
+      "06": "bool                5      1      0     ",
+      "07": "push                5      0      0     ",
+      "08": "set_get             5      1      0     ",
+      "09": "int                 6      -      0     # 0",
+      "10": "push                6      0      0     ",
+      "11": "self                6      1      5     ",
+      "12": "push                6      0      0     ",
+      "13": "json_read           6      4      0     ",
+      "14": "push                6      0      0     ",
+      "15": "call                6      -      2     # public.push()",
+      "16": "push                6      0      0     ",
+      "17": "set_agg             1      5      2     ",
+      "18": "json_next           4      6      0     ",
+      "19": "free                4      0      0     ",
+      "20": "free                3      0      0     ",
+      "21": "bool                3      1      0     ",
+      "22": "push                3      0      0     ",
+      "23": "set_get             3      1      0     ",
+      "24": "null                4      0      0     ",
+      "25": "push                4      0      0     ",
+      "26": "set_agg             1      3      2     ",
+      "27": "free                2      0      0     ",
+      "28": "store_open          2      1      33    ",
+      "29": "store_read          3      2      0     ",
+      "30": "push                3      0      0     ",
+      "31": "set_add             0      0      0     ",
+      "32": "store_next          2      29     0     ",
+      "33": "free                2      0      0     ",
+      "34": "free                1      0      0     ",
+      "35": "var_set             0      0      0     ",
+      "36": "free                0      0      0     ",
+      "37": "var                 0      0      0     ",
+      "38": "ret                 0      0      -     "
+    },
+    "access": []
+  }]
+}]
+select [1,2,3]::reverse;
+[[3, 2, 1]]
+explain execute reverse([1,2,3]);
+[{
+  "main": {
+    "00": "push_nulls          1      0      0     ",
+    "01": "set                 0      1      0     ",
+    "02": "set                 1      1      1     ",
+    "03": "json                2      0      0     ",
+    "04": "var                 3      0      1     ",
+    "05": "json_open           4      3      19    ",
+    "06": "bool                5      1      0     ",
+    "07": "push                5      0      0     ",
+    "08": "set_get             5      1      0     ",
+    "09": "int                 6      -      0     # 0",
+    "10": "push                6      0      0     ",
+    "11": "self                6      1      5     ",
+    "12": "push                6      0      0     ",
+    "13": "json_read           6      4      0     ",
+    "14": "push                6      0      0     ",
+    "15": "call                6      -      2     # public.push()",
+    "16": "push                6      0      0     ",
+    "17": "set_agg             1      5      2     ",
+    "18": "json_next           4      6      0     ",
+    "19": "free                4      0      0     ",
+    "20": "free                3      0      0     ",
+    "21": "bool                3      1      0     ",
+    "22": "push                3      0      0     ",
+    "23": "set_get             3      1      0     ",
+    "24": "null                4      0      0     ",
+    "25": "push                4      0      0     ",
+    "26": "set_agg             1      3      2     ",
+    "27": "free                2      0      0     ",
+    "28": "store_open          2      1      33    ",
+    "29": "store_read          3      2      0     ",
+    "30": "push                3      0      0     ",
+    "31": "set_add             0      0      0     ",
+    "32": "store_next          2      29     0     ",
+    "33": "free                2      0      0     ",
+    "34": "free                1      0      0     ",
+    "35": "var_set             0      0      0     ",
+    "36": "free                0      0      0     ",
+    "37": "var                 0      0      0     ",
+    "38": "ret                 0      0      -     "
+  },
+  "access": []
+}]
+execute reverse([1,2,3]);
+[[3, 2, 1]]
+drop function reverse;
+create function reverse(array json) return json
+begin
+	declare rev json := [];
+	for it in (array) do
+		rev := rev::push(it);
+	end;
+	return rev;
+end;
+show functions extended;
+[{
+  "schema": "public",
+  "name": "test",
+  "text": "begin\n\tdeclare total int := 0;\n\tdeclare i int := 0;\n\twhile i < x do\n\t\ttotal := total + i;\n\t\ti := i + 1;\n\tend;\n\treturn total;\nend",
+  "type": 2,
+  "args": [{
+    "name": "x",
+    "type": 2,
+    "type_size": 4,
+    "constraints": [["default", null]]
+  }],
+  "returning": []
+}, {
+  "schema": "public",
+  "name": "reverse",
+  "text": "begin\n\tdeclare rev json := [];\n\tfor it in (array) do\n\t\trev := rev::push(it);\n\tend;\n\treturn rev;\nend",
+  "type": 5,
+  "args": [{
+    "name": "array",
+    "type": 5,
+    "type_size": 0,
+    "constraints": [["default", null]]
+  }],
+  "returning": []
+}]
+explain select [1,2,3]::reverse;
+[{
+  "main": {
+    "00": "json                0      0      0     ",
+    "01": "push                0      0      0     ",
+    "02": "call_udf            0      -      -     # public.reverse()",
+    "03": "ret                 0      0      -     "
+  },
+  "access": [["public.reverse", "call"]],
+  "calls": [{
+    "function": "public.reverse",
+    "main": {
+      "00": "push_nulls          1      0      0     ",
+      "01": "json                0      0      0     ",
+      "02": "var_set             0      0      0     ",
+      "03": "free                0      0      0     ",
+      "04": "var                 0      0      1     ",
+      "05": "json_open           1      0      14    ",
+      "06": "var                 2      0      0     ",
+      "07": "push                2      0      0     ",
+      "08": "json_read           2      1      0     ",
+      "09": "push                2      0      0     ",
+      "10": "call                2      -      2     # public.push()",
+      "11": "var_set             0      0      2     ",
+      "12": "free                2      0      0     ",
+      "13": "json_next           1      6      0     ",
+      "14": "free                1      0      0     ",
+      "15": "free                0      0      0     ",
+      "16": "var                 0      0      0     ",
+      "17": "ret                 0      0      -     "
+    },
+    "access": []
+  }]
+}]
+select [1,2,3]::reverse;
+[[3, 2, 1]]
+explain execute reverse([1,2,3]);
+[{
+  "main": {
+    "00": "push_nulls          1      0      0     ",
+    "01": "json                0      0      0     ",
+    "02": "var_set             0      0      0     ",
+    "03": "free                0      0      0     ",
+    "04": "var                 0      0      1     ",
+    "05": "json_open           1      0      14    ",
+    "06": "var                 2      0      0     ",
+    "07": "push                2      0      0     ",
+    "08": "json_read           2      1      0     ",
+    "09": "push                2      0      0     ",
+    "10": "call                2      -      2     # public.push()",
+    "11": "var_set             0      0      2     ",
+    "12": "free                2      0      0     ",
+    "13": "json_next           1      6      0     ",
+    "14": "free                1      0      0     ",
+    "15": "free                0      0      0     ",
+    "16": "var                 0      0      0     ",
+    "17": "ret                 0      0      -     "
+  },
+  "access": []
+}]
+execute reverse([1,2,3]);
+[[3, 2, 1]]
+drop function reverse;
+# test: create function (schema explicit)
+create function public.test() begin end;
+{"msg": "udf 'test': already exists"}
+create schema test;
+create function test.test() begin end;
+show function test.test extended;
+[{
+  "schema": "test",
+  "name": "test",
+  "text": "begin end",
+  "type": 0,
+  "args": [],
+  "returning": []
+}]
+drop function test.test;
+drop schema test;
+# test: create function (schema system)
+create function system.test() begin end;
+{"msg": "system schema 'system' cannot be used to create objects"}
+# test: create function (schema does not exists)
+create function abc.test() begin end;
+{"msg": "schema 'abc': not exists"}
+# test: drop function
+drop function;
+{"msg": "drop function❰;❱ ⟵ name expected"}
+drop function test;
+drop function test;
+{"msg": "udf 'test': not exists"}
+# test: drop function if exists
+drop function if exists test;
+drop function if exists public.test;
+# test: alter function statement parsing
+alter;
+{"msg": "alter❰;❱ ⟵ USER|SCHEMA|TABLE|INDEX|FUNCTION expected"}
+alter function;
+{"msg": "alter function❰;❱ ⟵ name expected"}
+alter function 123;
+{"msg": "alter function ❰123❱ ⟵ name expected"}
+alter function if;
+{"msg": "alter function if❰;❱ ⟵ EXISTS expected"}
+alter function if exists;
+{"msg": "alter function if exists❰;❱ ⟵ name expected"}
+alter function if exists 123;
+{"msg": "alter function if exists ❰123❱ ⟵ name expected"}
+# test: alter function if exists
+create function test() begin end;
+alter function test rename to test2;
+alter function if exists test rename to test2;
+show functions;
+[{
+  "schema": "public",
+  "name": "test2"
+}]
+# test: alter function rename
+alter function test rename;
+{"msg": "alter function test rename❰;❱ ⟵ name expected"}
+alter function test rename to;
+{"msg": "alter function test rename to❰;❱ ⟵ name expected"}
+alter function test rename to asf junk;
+{"msg": "alter function test rename to asf ❰junk❱ ⟵ ; expected"}
+alter function test2 rename to abc;
+select system.function('abc').name;
+["abc"]
+# test: alter function rename function exists
+create function test() begin end;
+alter function abc rename to test;
+{"msg": "udf 'test': already exists"}
+# test: alter function rename schema not exists
+alter function abc rename to test.test;
+{"msg": "schema 'test': not exists"}
+# test: alter function rename schema system
+alter function abc rename to system.test;
+{"msg": "system schema <system> cannot be used to create objects"}
+# test: alter function rename schema
+drop function test;
+alter function abc rename to public.test;
+select system.function('abc').name;
+[null]
+select system.function('test').name;
+["test"]
+create schema test;
+alter function public.test rename to test.test;
+alter function test.test rename to public.test;
+select system.function('test').name;
+["test"]
+drop function test;
+drop schema test;
+disconnect S0;
+close E0;

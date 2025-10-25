@@ -1,0 +1,341 @@
+#
+
+open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "127.0.0.1", "port": 3485 }];
+connect E0 S0 127.0.0.1:3485;
+
+# test: create function parsing
+create function;
+create function test;
+create function test (;
+create function test (1;
+create function test (x;
+create function test (x 1;
+create function test (x int;
+create function test (x int,;
+create function test (x int, int;
+create function test (x int, y;
+create function test (x int, y);
+create function test (x int);
+create function test (x int) 1;
+
+# test: create function (empty, no return)
+create function test () begin end;
+show functions extended;
+
+explain select test();
+select test();
+
+explain execute test();
+execute test();
+
+drop function test;
+
+# test: create function return (empty)
+create function test () return int
+begin
+end;
+
+explain select test();
+select test();
+select test()::type;
+
+explain execute test();
+execute test();
+
+select test() + 123;
+drop function test;
+
+# test: create function return (return explicit)
+create function test () return int
+begin
+	return 123;
+end;
+
+explain select test();
+select test();
+
+explain execute test();
+execute test();
+
+select test() + 123;
+drop function test;
+
+# test: create function return (no return)
+create function test () return int
+begin
+	select 123;
+end;
+
+explain select test();
+select test();
+
+explain execute test();
+execute test();
+
+select test() + 123;
+drop function test;
+
+# test: create function return (return stmt)
+create function test () return int
+begin
+	return select 123;
+end;
+
+explain select test();
+select test();
+
+explain execute test();
+execute test();
+
+select test() + 123;
+drop function test;
+
+# test: create function return (return type mismatch)
+create function test () return int
+begin
+	return '123';
+end;
+
+create function test () return int
+begin
+	return select '123';
+end;
+
+create function test ()
+begin
+	return '123';
+end;
+
+create function test ()
+begin
+	return select '123';
+end;
+
+create function test ()
+begin
+	return null;
+end;
+select test();
+execute test();
+drop function test;
+
+create function test ()
+begin
+	return;
+end;
+select test();
+select test();
+execute test();
+drop function test;
+
+create function test ()
+begin
+	select null;
+end;
+select test();
+execute test();
+drop function test;
+
+# test: create function return (return table parse)
+create function test () return table;
+create function test () return table(;
+create function test () return table(1;
+create function test () return table(a;
+create function test () return table(a a;
+create function test () return table(a int;
+create function test () return table(a int,;
+create function test () return table(a int,,;
+create function test () return table(a int,);
+
+# test: create function return (return table)
+create function test () return table(a int)
+begin
+end;
+drop function test;
+
+create function test () return table(a int, b int)
+begin
+end;
+drop function test;
+
+create function test () return table(a int, b int, c int)
+begin
+end;
+show functions extended;
+drop function test;
+
+create function test () return table(a int, a int)
+begin
+end;
+
+# test: create function (var return null)
+create function test () return int
+begin
+	declare x int;
+	return x;
+end;
+select test();
+drop function test;
+
+# test: create function (var return)
+create function test () return int
+begin
+	declare x int := 123;
+	return x;
+end;
+select test();
+drop function test;
+
+# test: create function (var redefined)
+create function test () return int
+begin
+	declare x int;
+	declare x int;
+	return x;
+end;
+
+# test: create function (arg return)
+create function test (x int) return int
+begin
+	return x;
+end;
+explain select test(123);
+select test(123);
+execute test(123);
+drop function test;
+
+# test: create function (arg redefined)
+create function test (x int, x int) return int
+begin
+	return x;
+end;
+
+# test: create function (arg/var redefined)
+create function test (x int) return int
+begin
+	declare x int;
+end;
+
+# test: create function
+create function test (x int) return int
+begin
+	declare total int := 0;
+	declare i int := 0;
+	while i < x do
+		total := total + i;
+		i := i + 1;
+	end;
+	return total;
+end;
+explain select test(10);
+select test(10);
+
+explain execute test(10);
+execute test(10);
+
+# test: create function (json)
+create function reverse(array json) return json
+begin
+	declare rev json;
+	select [] -> self::push(it) into rev from (array) it;
+	return rev;
+end;
+explain select [1,2,3]::reverse;
+select [1,2,3]::reverse;
+
+explain execute reverse([1,2,3]);
+execute reverse([1,2,3]);
+drop function reverse;
+
+create function reverse(array json) return json
+begin
+	declare rev json := [];
+	for it in (array) do
+		rev := rev::push(it);
+	end;
+	return rev;
+end;
+
+show functions extended;
+
+explain select [1,2,3]::reverse;
+select [1,2,3]::reverse;
+
+explain execute reverse([1,2,3]);
+execute reverse([1,2,3]);
+drop function reverse;
+
+# test: create function (schema explicit)
+create function public.test() begin end;
+
+create schema test;
+create function test.test() begin end;
+show function test.test extended;
+drop function test.test;
+drop schema test;
+
+# test: create function (schema system)
+create function system.test() begin end;
+
+# test: create function (schema does not exists)
+create function abc.test() begin end;
+
+# test: drop function
+drop function;
+
+drop function test;
+drop function test;
+
+# test: drop function if exists
+drop function if exists test;
+drop function if exists public.test;
+
+# test: alter function statement parsing
+alter;
+alter function;
+alter function 123;
+alter function if;
+alter function if exists;
+alter function if exists 123;
+
+# test: alter function if exists
+create function test() begin end;
+
+alter function test rename to test2;
+alter function if exists test rename to test2;
+
+show functions;
+
+# test: alter function rename
+alter function test rename;
+alter function test rename to;
+alter function test rename to asf junk;
+alter function test2 rename to abc;
+select system.function('abc').name;
+
+# test: alter function rename function exists
+create function test() begin end;
+alter function abc rename to test;
+
+# test: alter function rename schema not exists
+alter function abc rename to test.test;
+
+# test: alter function rename schema system
+alter function abc rename to system.test;
+
+# test: alter function rename schema
+drop function test;
+
+alter function abc rename to public.test;
+select system.function('abc').name;
+select system.function('test').name;
+
+create schema test;
+alter function public.test rename to test.test;
+alter function test.test rename to public.test;
+select system.function('test').name;
+drop function test;
+drop schema test;
+
+disconnect S0;
+close E0;

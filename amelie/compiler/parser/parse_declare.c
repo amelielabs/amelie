@@ -122,8 +122,7 @@ parse_declare(Parser* self, Block* block)
 	auto var = vars_find(&block->ns->vars, &name->string);
 	if (var)
 		lex_error(lex, name, "variable redefined");
-	var = vars_add(&block->ns->vars, &name->string);
-	var->type = type;
+	var = vars_add(&block->ns->vars, &name->string, type, false);
 
 	// var table(column, ...)
 	if (var->type == TYPE_STORE)

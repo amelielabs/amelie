@@ -149,6 +149,30 @@ fn_table(Fn* self)
 }
 
 static void
+fn_functions(Fn* self)
+{
+	fn_expect(self, 0);
+	auto buf = udf_mgr_list(&share()->db->catalog.udf_mgr, NULL, NULL, true);
+	value_set_json_buf(self->result, buf);
+}
+
+static void
+fn_function(Fn* self)
+{
+	fn_expect(self, 1);
+	fn_expect_arg(self, 0, TYPE_STRING);
+	Str name = self->argv[0].string;
+	Str schema;
+	str_init(&schema);
+	if (str_split(&name, &schema, '.'))
+		str_advance(&name, str_size(&schema) + 1);
+	else
+		str_set(&schema, "public", 6);
+	auto buf = udf_mgr_list(&share()->db->catalog.udf_mgr, &schema, &name, true);
+	value_set_json_buf(self->result, buf);
+}
+
+static void
 fn_wal(Fn* self)
 {
 	fn_expect(self, 0);
@@ -431,6 +455,14 @@ fn_system_register(FunctionMgr* self)
 
 	// system.table()
 	func = function_allocate(TYPE_JSON, "system", "table", fn_table);
+	function_mgr_add(self, func);
+
+	// system.functions()
+	func = function_allocate(TYPE_JSON, "system", "functions", fn_functions);
+	function_mgr_add(self, func);
+
+	// system.function()
+	func = function_allocate(TYPE_JSON, "system", "function", fn_function);
 	function_mgr_add(self, func);
 
 	// system.wal()

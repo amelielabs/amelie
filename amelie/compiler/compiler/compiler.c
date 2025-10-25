@@ -682,8 +682,8 @@ emit_return(Compiler* self, Stmt* stmt)
 	if (udf->type != type)
 		stmt_error(stmt, stmt->ast,
 		           "RETURN type '%s' mismatch function type '%s'",
-		           type_of(type)),
-		           type_of(udf->type);
+		           type_of(type),
+		           type_of(udf->type));
 
 	// validate returning columns
 	if (udf->type == TYPE_STORE && !columns_compare(&udf->returning, columns))

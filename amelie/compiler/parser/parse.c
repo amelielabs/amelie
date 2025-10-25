@@ -664,9 +664,7 @@ parse_udf(Parser* self, Program* program, Udf* udf)
 	list_foreach(&udf->config->args.list)
 	{
 		auto column = list_at(Column, link);
-		auto var = vars_add(&ns->vars, &column->name);
-		var->type = column->type;
-		var->is_arg = true;
+		vars_add(&ns->vars, &column->name, column->type, true);
 	}
 
 	auto block = blocks_add(&ns->blocks, NULL);
@@ -683,20 +681,18 @@ parse_udf(Parser* self, Program* program, Udf* udf)
 	if (block->stmts.count_utility > 1)
 		lex_error(lex, end, "utility commands are not supported with UDF");
 
+	// automatically add return statement at the end
 	if (block->stmts.count > 0)
 	{
 		// mark last stmt as return
 		auto last = block->stmts.list_tail;
-		if (! last->is_return)
-			last->is_return = true;
-	} else
-	{
-		// automatically add return statement at the end
-
-		// RETURN;
-		auto stmt = stmt_allocate(self, lex, block);
-		stmt->is_return = true;
-		stmt->id = STMT_RETURN;
-		stmts_add(&block->stmts, stmt);
+		if (last->is_return)
+			return;
 	}
+
+	// RETURN;
+	auto stmt = stmt_allocate(self, lex, block);
+	stmt->is_return = true;
+	stmt->id = STMT_RETURN;
+	stmts_add(&block->stmts, stmt);
 }

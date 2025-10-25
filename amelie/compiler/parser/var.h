@@ -59,13 +59,23 @@ vars_find(Vars* self, Str* name)
 	return NULL;
 }
 
+static inline int
+vars_count(Vars* self, bool is_arg)
+{
+	auto count = 0;
+	for (auto var = self->list; var; var = var->next)
+		if (var->is_arg == is_arg)
+			count++;
+	return count;
+}
+
 static inline Var*
-vars_add(Vars* self, Str* name)
+vars_add(Vars* self, Str* name, Type type, bool is_arg)
 {
 	auto var = (Var*)palloc(sizeof(Var));
-	var->order  = self->count;
-	var->type   = TYPE_NULL;
-	var->is_arg = false;
+	var->order  = vars_count(self, is_arg);
+	var->type   = type;
+	var->is_arg = is_arg;
 	var->name   = name;
 	var->writer = NULL;
 	var->next   = NULL;

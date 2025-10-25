@@ -104,6 +104,14 @@ parse_function_create(Stmt* self, bool or_replace)
 	udf_config_set_schema(stmt->config, &schema);
 	udf_config_set_name(stmt->config, &name);
 
+	// ensure schema exists and not system
+	auto schema_obj =
+		schema_mgr_find(&share()->db->catalog.schema_mgr,
+		                &schema, true);
+	if (! schema_obj->config->create)
+		error("system schema '%.*s' cannot be used to create objects",
+		      str_size(&schema), str_of(&schema));
+
 	// (args)
 	parse_function_args(self, &stmt->config->args);
 
@@ -144,9 +152,7 @@ parse_function_create(Stmt* self, bool or_replace)
 	list_foreach(&stmt->config->args.list)
 	{
 		auto column = list_at(Column, link);
-		auto var = vars_add(&ns->vars, &column->name);
-		var->type = column->type;
-		var->is_arg = true;
+		vars_add(&ns->vars, &column->name, column->type, true);
 	}
 
 	// BEGIN
