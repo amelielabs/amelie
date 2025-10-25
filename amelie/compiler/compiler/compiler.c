@@ -110,7 +110,7 @@ emit_close(Compiler* self, Stmt* stmt)
 }
 
 static void
-emit_send(Compiler* self, Target* target, int start)
+emit_send(Compiler* self, Target* target, int type, int start)
 {
 	auto stmt = self->current;
 	auto ret  = stmt->ret;
@@ -148,6 +148,7 @@ emit_send(Compiler* self, Target* target, int start)
 	// create send context
 	int  send_offset;
 	auto send = send_create(&program->code_data, &send_offset);
+	send->type       = type;
 	send->start      = start;
 	send->has_result = ret && returning_has(ret);
 	send->table      = target->from_table;
@@ -395,24 +396,28 @@ emit_stmt(Compiler* self, Stmt* stmt)
 
 	// generate frontend code
 	compiler_switch_frontend(self);
+	int send = -1;
 	Target* target = NULL;
 	switch (stmt->id) {
 	case STMT_INSERT:
 	{
 		auto insert = ast_insert_of(stmt->ast);
 		target = from_first(&insert->from);
+		send   = SEND_INSERT;
 		break;
 	}
 	case STMT_UPDATE:
 	{
 		auto update = ast_update_of(stmt->ast);
 		target = from_first(&update->from);
+		send   = SEND_UPDATE;
 		break;
 	}
 	case STMT_DELETE:
 	{
 		auto delete = ast_delete_of(stmt->ast);
 		target = from_first(&delete->from);
+		send   = SEND_DELETE;
 		break;
 	}
 	case STMT_SELECT:
@@ -426,7 +431,10 @@ emit_stmt(Compiler* self, Stmt* stmt)
 		// execute on one or more backends, process the result on frontend
 		//
 		if (select->pushdown)
+		{
+			send = SEND_SELECT;
 			break;
+		}
 
 		// select (select from table)
 		// select expr
@@ -451,7 +459,7 @@ emit_stmt(Compiler* self, Stmt* stmt)
 
 	// generate frontend send command based on the target
 	if (target) {
-		emit_send(self, target, start);
+		emit_send(self, target, send, start);
 	} else
 	{
 		// INTO and := (only for expressions)

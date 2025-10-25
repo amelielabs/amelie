@@ -73,7 +73,7 @@ select (select *) from test;
 explain select (select test.*) from test;
 [{
   "main": {
-    "00": "send_all            0      0      20    # public.test (last)",
+    "00": "send_all            0      0      20    # public.test (select, closing)",
     "01": "recv                1      0      -1    ",
     "02": "ret                 1      0      -     "
   },
@@ -102,7 +102,7 @@ select (select t) from test t;
 explain select (select test.id) from test;
 [{
   "main": {
-    "00": "send_all            0      0      20    # public.test (last)",
+    "00": "send_all            0      0      20    # public.test (select, closing)",
     "01": "recv                1      0      -1    ",
     "02": "ret                 1      0      -     "
   },
@@ -126,7 +126,7 @@ select (select id) from test;
 explain select (select t.id) from test t;
 [{
   "main": {
-    "00": "send_all            0      0      20    # public.test (last)",
+    "00": "send_all            0      0      20    # public.test (select, closing)",
     "01": "recv                1      0      -1    ",
     "02": "ret                 1      0      -     "
   },
@@ -227,7 +227,7 @@ select * from (select * from test) t;
 explain select * from (select * from test) t;
 [{
   "main": {
-    "00": "send_all            0      0      20    # public.test",
+    "00": "send_all            0      0      20    # public.test (select)",
     "01": "recv                1      0      -1    ",
     "02": "set                 0      1      0     ",
     "03": "dup                 2      1      0     ",
@@ -376,7 +376,7 @@ select (select * from test where false);
 explain select (select * from test) from test;
 [{
   "main": {
-    "00": "send_all            0      0      40    # public.test (last)",
+    "00": "send_all            0      0      40    # public.test (select, closing)",
     "01": "recv                1      0      -1    ",
     "02": "ret                 1      0      -     "
   },
@@ -409,7 +409,7 @@ select (select * from test t limit 1) from test;
 explain select (select i.* from test i limit 1) from test;
 [{
   "main": {
-    "00": "send_all            0      0      40    # public.test (last)",
+    "00": "send_all            0      0      40    # public.test (select, closing)",
     "01": "recv                1      0      -1    ",
     "02": "ret                 1      0      -     "
   },
@@ -440,7 +440,7 @@ explain select (select i.* from test i limit 1) from test;
 explain select (select i.* from test i where test.id = i.id) from test;
 [{
   "main": {
-    "00": "send_all            0      0      40    # public.test (last)",
+    "00": "send_all            0      0      40    # public.test (select, closing)",
     "01": "recv                1      0      -1    ",
     "02": "ret                 1      0      -     "
   },
@@ -489,7 +489,7 @@ select (select b.id from b where a.id = b.id)::type from a;
 explain select * from a where (select true from b where a.id = b.id);
 [{
   "main": {
-    "00": "send_all            0      0      34    # public.a (last)",
+    "00": "send_all            0      0      34    # public.a (select, closing)",
     "01": "recv                1      0      -1    ",
     "02": "ret                 1      0      -     "
   },
@@ -529,7 +529,7 @@ select t.x from (select z.id as x from (select id from test) z) t;
 explain select t.x from (select z.id as x from (select id from test) z) t;
 [{
   "main": {
-    "00": "send_all            0      0      20    # public.test",
+    "00": "send_all            0      0      20    # public.test (select)",
     "01": "recv                1      0      -1    ",
     "02": "set                 0      1      0     ",
     "03": "dup                 2      1      0     ",

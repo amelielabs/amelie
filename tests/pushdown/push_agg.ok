@@ -15,7 +15,7 @@ insert into test values (6, 3, 3.1);
 explain select count(*) from test_empty;
 [{
   "main": {
-    "00": "send_all            0      0      31    # public.test_empty (last)",
+    "00": "send_all            0      0      31    # public.test_empty (select, closing)",
     "01": "recv_aggs           1      0      27    ",
     "02": "set                 2      1      0     ",
     "03": "store_open          3      1      8     ",
@@ -57,7 +57,7 @@ select * from test;
 explain select count(*) from test;
 [{
   "main": {
-    "00": "send_all            0      0      25    # public.test (last)",
+    "00": "send_all            0      0      25    # public.test (select, closing)",
     "01": "recv_aggs           1      0      21    ",
     "02": "set                 2      1      0     ",
     "03": "store_open          3      1      8     ",
@@ -97,7 +97,7 @@ select count(*) from test;
 explain select count(id) from test;
 [{
   "main": {
-    "00": "send_all            0      0      25    # public.test (last)",
+    "00": "send_all            0      0      25    # public.test (select, closing)",
     "01": "recv_aggs           1      0      21    ",
     "02": "set                 2      1      0     ",
     "03": "store_open          3      1      8     ",
@@ -137,7 +137,7 @@ select count(id) from test;
 explain select count(data) from test;
 [{
   "main": {
-    "00": "send_all            0      0      25    # public.test (last)",
+    "00": "send_all            0      0      25    # public.test (select, closing)",
     "01": "recv_aggs           1      0      21    ",
     "02": "set                 2      1      0     ",
     "03": "store_open          3      1      8     ",
@@ -176,7 +176,7 @@ select count(data) from test;
 explain select count(data) from test_null;
 [{
   "main": {
-    "00": "send_all            0      0      30    # public.test_null (last)",
+    "00": "send_all            0      0      30    # public.test_null (select, closing)",
     "01": "recv_aggs           1      0      26    ",
     "02": "set                 2      1      0     ",
     "03": "store_open          3      1      8     ",
@@ -224,7 +224,7 @@ explain select count(distinct *) from test;
 explain select count(distinct id) from test;
 [{
   "main": {
-    "00": "send_all            0      0      28    # public.test (last)",
+    "00": "send_all            0      0      28    # public.test (select, closing)",
     "01": "recv_aggs           1      0      24    ",
     "02": "set                 2      1      0     ",
     "03": "store_open          3      1      8     ",
@@ -276,7 +276,7 @@ select count(distinct 1), count(1), count(distinct null) from test;
 explain select sum(id) from test_empty;
 [{
   "main": {
-    "00": "send_all            0      0      31    # public.test_empty (last)",
+    "00": "send_all            0      0      31    # public.test_empty (select, closing)",
     "01": "recv_aggs           1      0      27    ",
     "02": "set                 2      1      0     ",
     "03": "store_open          3      1      8     ",
@@ -316,7 +316,7 @@ select sum(id) from test_empty;
 explain select sum(id) from test;
 [{
   "main": {
-    "00": "send_all            0      0      25    # public.test (last)",
+    "00": "send_all            0      0      25    # public.test (select, closing)",
     "01": "recv_aggs           1      0      21    ",
     "02": "set                 2      1      0     ",
     "03": "store_open          3      1      8     ",
@@ -358,7 +358,7 @@ select sum(data) from test;
 explain select sum(data2) from test_empty;
 [{
   "main": {
-    "00": "send_all            0      0      31    # public.test_empty (last)",
+    "00": "send_all            0      0      31    # public.test_empty (select, closing)",
     "01": "recv_aggs           1      0      27    ",
     "02": "set                 2      1      0     ",
     "03": "store_open          3      1      8     ",
@@ -398,7 +398,7 @@ select sum(data2) from test_empty;
 explain select sum(data2) from test;
 [{
   "main": {
-    "00": "send_all            0      0      25    # public.test (last)",
+    "00": "send_all            0      0      25    # public.test (select, closing)",
     "01": "recv_aggs           1      0      21    ",
     "02": "set                 2      1      0     ",
     "03": "store_open          3      1      8     ",
@@ -443,7 +443,7 @@ select sum('string') from test;
 explain select sum(data) from test_null;
 [{
   "main": {
-    "00": "send_all            0      0      30    # public.test_null (last)",
+    "00": "send_all            0      0      30    # public.test_null (select, closing)",
     "01": "recv_aggs           1      0      26    ",
     "02": "set                 2      1      0     ",
     "03": "store_open          3      1      8     ",
@@ -486,7 +486,7 @@ select avg(id) from test_empty;
 explain select avg(id) from test;
 [{
   "main": {
-    "00": "send_all            0      0      25    # public.test (last)",
+    "00": "send_all            0      0      25    # public.test (select, closing)",
     "01": "recv_aggs           1      0      21    ",
     "02": "set                 2      1      0     ",
     "03": "store_open          3      1      8     ",
@@ -539,7 +539,7 @@ select avg('string') from test;
 explain select avg(data2) from test_null;
 [{
   "main": {
-    "00": "send_all            0      0      30    # public.test_null (last)",
+    "00": "send_all            0      0      30    # public.test_null (select, closing)",
     "01": "recv_aggs           1      0      26    ",
     "02": "set                 2      1      0     ",
     "03": "store_open          3      1      8     ",
@@ -593,7 +593,7 @@ select min(data2) from test;
 explain select min(data2) from test_null;
 [{
   "main": {
-    "00": "send_all            0      0      30    # public.test_null (last)",
+    "00": "send_all            0      0      30    # public.test_null (select, closing)",
     "01": "recv_aggs           1      0      26    ",
     "02": "set                 2      1      0     ",
     "03": "store_open          3      1      8     ",
@@ -647,7 +647,7 @@ select max(data2) from test;
 explain select max(data2) from test_null;
 [{
   "main": {
-    "00": "send_all            0      0      30    # public.test_null (last)",
+    "00": "send_all            0      0      30    # public.test_null (select, closing)",
     "01": "recv_aggs           1      0      26    ",
     "02": "set                 2      1      0     ",
     "03": "store_open          3      1      8     ",
@@ -692,7 +692,7 @@ select count(*), min(id), max(id), avg(id) from test;
 explain select id, count(*) from test group by id;
 [{
   "main": {
-    "00": "send_all            0      0      25    # public.test (last)",
+    "00": "send_all            0      0      25    # public.test (select, closing)",
     "01": "recv_aggs           1      0      21    ",
     "02": "set                 2      2      0     ",
     "03": "store_open          3      1      10    ",
@@ -736,7 +736,7 @@ select data, count(*) from test_null group by data;
 explain select id, count(*) from test group by 1;
 [{
   "main": {
-    "00": "send_all            0      0      25    # public.test (last)",
+    "00": "send_all            0      0      25    # public.test (select, closing)",
     "01": "recv_aggs           1      0      21    ",
     "02": "set                 2      2      0     ",
     "03": "store_open          3      1      10    ",
@@ -780,7 +780,7 @@ select data, count(*) from test_null group by 1;
 explain select * from (select count(*) from test) t;
 [{
   "main": {
-    "00": "send_all            0      0      25    # public.test",
+    "00": "send_all            0      0      25    # public.test (select)",
     "01": "recv_aggs           1      0      21    ",
     "02": "set                 2      1      0     ",
     "03": "store_open          3      1      8     ",
@@ -829,7 +829,7 @@ select * from (select count(*) from test) t;
 explain select * from (select id, count(*) from test group by id) t;
 [{
   "main": {
-    "00": "send_all            0      0      25    # public.test",
+    "00": "send_all            0      0      25    # public.test (select)",
     "01": "recv_aggs           1      0      21    ",
     "02": "set                 2      2      0     ",
     "03": "store_open          3      1      10    ",
@@ -895,7 +895,7 @@ select count(*) as c from test order by c;
 explain select id, count(*) from test group by id order by id;
 [{
   "main": {
-    "00": "send_all            0      0      25    # public.test (last)",
+    "00": "send_all            0      0      25    # public.test (select, closing)",
     "01": "recv_aggs           1      0      21    ",
     "02": "set_ordered         2      2      1     ",
     "03": "store_open          3      1      12    ",
@@ -936,7 +936,7 @@ select id, count(*) from test group by id order by data;
 explain select id, count(*) from test group by 1 order by 1;
 [{
   "main": {
-    "00": "send_all            0      0      25    # public.test (last)",
+    "00": "send_all            0      0      25    # public.test (select, closing)",
     "01": "recv_aggs           1      0      21    ",
     "02": "set_ordered         2      2      1     ",
     "03": "store_open          3      1      12    ",
@@ -996,7 +996,7 @@ select id, count(*) from test group by id having id > 5;
 explain select id, count(*) from test group by 1 having id > 5;
 [{
   "main": {
-    "00": "send_all            0      0      25    # public.test (last)",
+    "00": "send_all            0      0      25    # public.test (select, closing)",
     "01": "recv_aggs           1      0      21    ",
     "02": "set                 2      2      0     ",
     "03": "store_open          3      1      14    ",
@@ -1046,7 +1046,7 @@ select id, count(*) from test group by 1 having id >= 3 and id < 6 order by 1;
 explain select id from test group by id having count(id) > 0;
 [{
   "main": {
-    "00": "send_all            0      0      25    # public.test (last)",
+    "00": "send_all            0      0      25    # public.test (select, closing)",
     "01": "recv_aggs           1      0      21    ",
     "02": "set                 2      1      0     ",
     "03": "store_open          3      1      12    ",
@@ -1090,7 +1090,7 @@ select data from test group by data having count(data) > 1;
 explain select id from test group by id having count(*) > 0;
 [{
   "main": {
-    "00": "send_all            0      0      25    # public.test (last)",
+    "00": "send_all            0      0      25    # public.test (select, closing)",
     "01": "recv_aggs           1      0      21    ",
     "02": "set                 2      1      0     ",
     "03": "store_open          3      1      12    ",
@@ -1127,7 +1127,7 @@ select id from test group by id having count(*) > 0;
 explain select id, count(*) from test group by id having count(*) > 0;
 [{
   "main": {
-    "00": "send_all            0      0      29    # public.test (last)",
+    "00": "send_all            0      0      29    # public.test (select, closing)",
     "01": "recv_aggs           1      0      21    ",
     "02": "set                 2      2      0     ",
     "03": "store_open          3      1      14    ",
@@ -1168,7 +1168,7 @@ select id, count(*) from test group by id having count(*) > 0;
 explain select id, count(*) from test group by 1 having count(*) > 0;
 [{
   "main": {
-    "00": "send_all            0      0      29    # public.test (last)",
+    "00": "send_all            0      0      29    # public.test (select, closing)",
     "01": "recv_aggs           1      0      21    ",
     "02": "set                 2      2      0     ",
     "03": "store_open          3      1      14    ",
@@ -1207,7 +1207,7 @@ explain select id, count(*) from test group by 1 having count(*) > 0;
 explain select data, count(*) from test group by data having count(*) > 0;
 [{
   "main": {
-    "00": "send_all            0      0      29    # public.test (last)",
+    "00": "send_all            0      0      29    # public.test (select, closing)",
     "01": "recv_aggs           1      0      21    ",
     "02": "set                 2      2      0     ",
     "03": "store_open          3      1      14    ",
@@ -1248,7 +1248,7 @@ select data, count(*) from test group by data having count(*) > 0;
 explain select data, count(*) from test group by 1 having count(*) > 0;
 [{
   "main": {
-    "00": "send_all            0      0      29    # public.test (last)",
+    "00": "send_all            0      0      29    # public.test (select, closing)",
     "01": "recv_aggs           1      0      21    ",
     "02": "set                 2      2      0     ",
     "03": "store_open          3      1      14    ",
@@ -1287,7 +1287,7 @@ explain select data, count(*) from test group by 1 having count(*) > 0;
 explain select data, count(*) from test group by data having count(*) > 1;
 [{
   "main": {
-    "00": "send_all            0      0      29    # public.test (last)",
+    "00": "send_all            0      0      29    # public.test (select, closing)",
     "01": "recv_aggs           1      0      21    ",
     "02": "set                 2      2      0     ",
     "03": "store_open          3      1      14    ",
@@ -1328,7 +1328,7 @@ select data, count(*) from test group by data having count(*) > 1;
 explain select data, count(*) from test group by 1  having count(*) > 1;
 [{
   "main": {
-    "00": "send_all            0      0      29    # public.test (last)",
+    "00": "send_all            0      0      29    # public.test (select, closing)",
     "01": "recv_aggs           1      0      21    ",
     "02": "set                 2      2      0     ",
     "03": "store_open          3      1      14    ",
@@ -1371,7 +1371,7 @@ select data, count(*) as c from test group by data having c > 1;
 explain select data, count(*) from test group by data order by data;
 [{
   "main": {
-    "00": "send_all            0      0      25    # public.test (last)",
+    "00": "send_all            0      0      25    # public.test (select, closing)",
     "01": "recv_aggs           1      0      21    ",
     "02": "set_ordered         2      2      1     ",
     "03": "store_open          3      1      12    ",
@@ -1409,7 +1409,7 @@ select data, count(*) from test group by data order by data;
 explain select count(*) from test group by data order by data;
 [{
   "main": {
-    "00": "send_all            0      0      25    # public.test (last)",
+    "00": "send_all            0      0      25    # public.test (select, closing)",
     "01": "recv_aggs           1      0      21    ",
     "02": "set_ordered         2      1      1     ",
     "03": "store_open          3      1      10    ",

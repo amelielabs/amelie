@@ -348,6 +348,20 @@ op_write(Buf* output, Op* op, bool a, bool b, bool c, char *fmt, ...)
 	}
 }
 
+static void
+op_dump_send(Program* self, Code* code, Op* op, Buf* buf, Send* send,
+             bool a, bool b, bool c)
+{
+	auto is_last = self->send_last == code_posof(code, op);
+	auto config = send->table->config;
+	op_write(buf, op, a, b, c,
+	         "%.*s.%.*s (%s%s)",
+	         str_size(&config->schema), str_of(&config->schema),
+	         str_size(&config->name), str_of(&config->name),
+	         send_of(send),
+	         is_last ? ", closing" : "");
+}
+
 void
 op_dump(Program* self, Code* code, Buf* buf)
 {
@@ -391,45 +405,18 @@ op_dump(Program* self, Code* code, Buf* buf)
 			op_write(output, op, true, false, true, NULL);
 			break;
 		case CSEND_SHARD:
-		{
-			auto is_last = self->send_last == code_posof(code, op);
-			auto table = send_at(data, op->d)->table;
-			op_write(output, op, true, true, true,
-			         "%.*s.%.*s%s",
-			         str_size(&table->config->schema),
-			         str_of(&table->config->schema),
-			         str_size(&table->config->name),
-			         str_of(&table->config->name),
-			         is_last? " (last)": "");
+			op_dump_send(self, code, op, output, send_at(data, op->d),
+			             true, true, true);
 			break;
-		}
 		case CSEND_LOOKUP:
-		{
-			auto is_last = self->send_last == code_posof(code, op);
-			auto table = send_at(data, op->d)->table;
-			op_write(output, op, true, false, true,
-			         "%.*s.%.*s%s",
-			         str_size(&table->config->schema),
-			         str_of(&table->config->schema),
-			         str_size(&table->config->name),
-			         str_of(&table->config->name),
-			         is_last? " (last)": "");
+			op_dump_send(self, code, op, output, send_at(data, op->d),
+			             true, false, true);
 			break;
-		}
 		case CSEND_LOOKUP_BY:
 		case CSEND_ALL:
-		{
-			auto is_last = self->send_last == code_posof(code, op);
-			auto table = send_at(data, op->c)->table;
-			op_write(output, op, true, true, true,
-			         "%.*s.%.*s%s",
-			         str_size(&table->config->schema),
-			         str_of(&table->config->schema),
-			         str_size(&table->config->name),
-			         str_of(&table->config->name),
-			         is_last? " (last)": "");
+			op_dump_send(self, code, op, output, send_at(data, op->c),
+			             true, true, true);
 			break;
-		}
 		case CINSERT:
 		{
 			auto table = (Table*)op->a;

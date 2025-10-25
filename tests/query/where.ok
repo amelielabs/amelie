@@ -11,7 +11,7 @@ insert into test () values ();
 explain select * from test where id >= 0;
 [{
   "main": {
-    "00": "send_all            0      0      20    # public.test (last)",
+    "00": "send_all            0      0      20    # public.test (select, closing)",
     "01": "recv                1      0      -1    ",
     "02": "ret                 1      0      -     "
   },
@@ -56,7 +56,7 @@ explain select * from test where data.data >= 0;
 explain select * from test where data.data::int >= 0;
 [{
   "main": {
-    "00": "send_all            0      0      25    # public.test (last)",
+    "00": "send_all            0      0      25    # public.test (select, closing)",
     "01": "recv                1      0      -1    ",
     "02": "ret                 1      0      -     "
   },
@@ -113,7 +113,7 @@ select * from test;
 explain select * from test where data.data.data::int >= 0;
 [{
   "main": {
-    "00": "send_all            0      0      30    # public.test (last)",
+    "00": "send_all            0      0      30    # public.test (select, closing)",
     "01": "recv                1      0      -1    ",
     "02": "ret                 1      0      -     "
   },
@@ -162,7 +162,7 @@ insert into test () values ();
 explain select * from test where test.id >= 0;
 [{
   "main": {
-    "00": "send_all            0      0      20    # public.test (last)",
+    "00": "send_all            0      0      20    # public.test (select, closing)",
     "01": "recv                1      0      -1    ",
     "02": "ret                 1      0      -     "
   },
@@ -197,7 +197,7 @@ insert into test (data) values ({"data": 123});
 explain select * from test where test.data.data::int >= 0;
 [{
   "main": {
-    "00": "send_all            0      0      25    # public.test (last)",
+    "00": "send_all            0      0      25    # public.test (select, closing)",
     "01": "recv                1      0      -1    ",
     "02": "ret                 1      0      -     "
   },
@@ -240,7 +240,7 @@ insert into test () values ();
 explain select * from test alias where alias.id >= 0;
 [{
   "main": {
-    "00": "send_all            0      0      20    # public.test (last)",
+    "00": "send_all            0      0      20    # public.test (select, closing)",
     "01": "recv                1      0      -1    ",
     "02": "ret                 1      0      -     "
   },
@@ -275,7 +275,7 @@ insert into test (data) values ({"data": 123});
 explain select * from test alias where alias.data.data::int >= 0;
 [{
   "main": {
-    "00": "send_all            0      0      25    # public.test (last)",
+    "00": "send_all            0      0      25    # public.test (select, closing)",
     "01": "recv                1      0      -1    ",
     "02": "ret                 1      0      -     "
   },
@@ -324,7 +324,7 @@ insert into test values (1), (2), (3);
 explain select * from test where true;
 [{
   "main": {
-    "00": "send_all            0      0      20    # public.test (last)",
+    "00": "send_all            0      0      20    # public.test (select, closing)",
     "01": "recv                1      0      -1    ",
     "02": "ret                 1      0      -     "
   },
@@ -353,7 +353,7 @@ insert into test values (1), (2), (3);
 explain select * from test where id >= 0;
 [{
   "main": {
-    "00": "send_all            0      0      20    # public.test (last)",
+    "00": "send_all            0      0      20    # public.test (select, closing)",
     "01": "recv                1      0      -1    ",
     "02": "ret                 1      0      -     "
   },
@@ -400,7 +400,7 @@ select * from test where id > 9;
 explain select * from test where id <= 0;
 [{
   "main": {
-    "00": "send_all            0      0      20    # public.test (last)",
+    "00": "send_all            0      0      20    # public.test (select, closing)",
     "01": "recv                1      0      -1    ",
     "02": "ret                 1      0      -     "
   },
@@ -438,7 +438,7 @@ select * from test where id <= 8;
 explain select * from test where id < 0;
 [{
   "main": {
-    "00": "send_all            0      0      20    # public.test (last)",
+    "00": "send_all            0      0      20    # public.test (select, closing)",
     "01": "recv                1      0      -1    ",
     "02": "ret                 1      0      -     "
   },
@@ -479,7 +479,7 @@ insert into test values (1), (2), (3);
 explain select * from test where id = 2;
 [{
   "main": {
-    "00": "send_lookup         0      -      0     # public.test (last)",
+    "00": "send_lookup         0      -      0     # public.test (select, closing)",
     "01": "recv                1      0      -1    ",
     "02": "ret                 1      0      -     "
   },

@@ -6,7 +6,7 @@ insert into test (id) values (1), (2), (3);
 explain select * from test;
 [{
   "main": {
-    "00": "send_all            0      0      20    # public.test (last)",
+    "00": "send_all            0      0      20    # public.test (select, closing)",
     "01": "recv                1      0      -1    ",
     "02": "ret                 1      0      -     "
   },
@@ -30,7 +30,7 @@ select * from test;
 explain select * from test where id > 1;
 [{
   "main": {
-    "00": "send_all            0      0      20    # public.test (last)",
+    "00": "send_all            0      0      20    # public.test (select, closing)",
     "01": "recv                1      0      -1    ",
     "02": "ret                 1      0      -     "
   },
@@ -64,7 +64,7 @@ select * from test where id > 3;
 explain select * from test where id = 1;
 [{
   "main": {
-    "00": "send_lookup         0      -      0     # public.test (last)",
+    "00": "send_lookup         0      -      0     # public.test (select, closing)",
     "01": "recv                1      0      -1    ",
     "02": "ret                 1      0      -     "
   },
@@ -104,7 +104,7 @@ select (select test.id) from test;
 explain select (select (select (test.id))) from test;
 [{
   "main": {
-    "00": "send_all            0      0      20    # public.test (last)",
+    "00": "send_all            0      0      20    # public.test (select, closing)",
     "01": "recv                1      0      -1    ",
     "02": "ret                 1      0      -     "
   },
@@ -125,7 +125,7 @@ select (select (select (test.id))) from test;
 explain select (select (select test.id)) from test;
 [{
   "main": {
-    "00": "send_all            0      0      20    # public.test (last)",
+    "00": "send_all            0      0      20    # public.test (select, closing)",
     "01": "recv                1      0      -1    ",
     "02": "ret                 1      0      -     "
   },
@@ -147,7 +147,7 @@ select (select (select test.id)) from test;
 explain select (select (select id from test t)) from test;
 [{
   "main": {
-    "00": "send_all            0      0      40    # public.test (last)",
+    "00": "send_all            0      0      40    # public.test (select, closing)",
     "01": "recv                1      0      -1    ",
     "02": "ret                 1      0      -     "
   },
@@ -176,7 +176,7 @@ insert into ref (id) values (1), (2), (3);
 explain select (select (select id from ref)) from test;
 [{
   "main": {
-    "00": "send_all            0      0      39    # public.test (last)",
+    "00": "send_all            0      0      39    # public.test (select, closing)",
     "01": "recv                1      0      -1    ",
     "02": "ret                 1      0      -     "
   },
@@ -207,7 +207,7 @@ explain select * from test where (select * from test t);
 explain select * from test where (select id from test t);
 [{
   "main": {
-    "00": "send_all            0      0      40    # public.test (last)",
+    "00": "send_all            0      0      40    # public.test (select, closing)",
     "01": "recv                1      0      -1    ",
     "02": "ret                 1      0      -     "
   },
@@ -238,7 +238,7 @@ explain select * from test where (select id from test t);
 explain select * from test where (select id from ref);
 [{
   "main": {
-    "00": "send_all            0      0      39    # public.test (last)",
+    "00": "send_all            0      0      39    # public.test (select, closing)",
     "01": "recv                1      0      -1    ",
     "02": "ret                 1      0      -     "
   },
@@ -271,7 +271,7 @@ select * from test where (select id from ref);
 explain select * from test where exists (select 1 from ref where test.id = ref.id);
 [{
   "main": {
-    "00": "send_all            0      0      39    # public.test (last)",
+    "00": "send_all            0      0      39    # public.test (select, closing)",
     "01": "recv                1      0      -1    ",
     "02": "ret                 1      0      -     "
   },

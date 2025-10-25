@@ -8,7 +8,7 @@ select * from test;
 explain select * from test order by id;
 [{
   "main": {
-    "00": "send_all            0      0      21    # public.test (last)",
+    "00": "send_all            0      0      21    # public.test (select, closing)",
     "01": "recv                1      0      -1    ",
     "02": "ret                 1      0      -     "
   },
@@ -33,7 +33,7 @@ select * from test order by id;
 explain select * from test order by id asc;
 [{
   "main": {
-    "00": "send_all            0      0      21    # public.test (last)",
+    "00": "send_all            0      0      21    # public.test (select, closing)",
     "01": "recv                1      0      -1    ",
     "02": "ret                 1      0      -     "
   },
@@ -58,7 +58,7 @@ select * from test order by id asc;
 explain select * from test order by id desc;
 [{
   "main": {
-    "00": "send_all            0      0      21    # public.test (last)",
+    "00": "send_all            0      0      21    # public.test (select, closing)",
     "01": "recv                1      0      -1    ",
     "02": "ret                 1      0      -     "
   },
@@ -83,7 +83,7 @@ select * from test order by id desc;
 explain select * from test order by id limit 1;
 [{
   "main": {
-    "00": "send_all            0      0      21    # public.test (last)",
+    "00": "send_all            0      0      21    # public.test (select, closing)",
     "01": "int                 1      -      0     # 1",
     "02": "recv                2      0      1     ",
     "03": "ret                 2      0      -     "
@@ -119,7 +119,7 @@ select * from test order by id limit 20;
 explain select * from test order by id limit 0;
 [{
   "main": {
-    "00": "send_all            0      0      21    # public.test (last)",
+    "00": "send_all            0      0      21    # public.test (select, closing)",
     "01": "int                 1      -      0     # 0",
     "02": "recv                2      0      1     ",
     "03": "ret                 2      0      -     "
@@ -147,7 +147,7 @@ select * from test order by id limit -1;
 explain select * from test order by id desc limit 1;
 [{
   "main": {
-    "00": "send_all            0      0      21    # public.test (last)",
+    "00": "send_all            0      0      21    # public.test (select, closing)",
     "01": "int                 1      -      0     # 1",
     "02": "recv                2      0      1     ",
     "03": "ret                 2      0      -     "
@@ -183,7 +183,7 @@ select * from test order by id desc limit 20;
 explain select * from test order by id limit 1 offset 0;
 [{
   "main": {
-    "00": "send_all            0      0      21    # public.test (last)",
+    "00": "send_all            0      0      21    # public.test (select, closing)",
     "01": "int                 1      -      0     # 1",
     "02": "int                 2      -      0     # 0",
     "03": "recv                3      0      1     ",
@@ -210,7 +210,7 @@ select * from test order by id limit 1 offset 0;
 explain select * from test order by id limit 1 offset 1;
 [{
   "main": {
-    "00": "send_all            0      0      21    # public.test (last)",
+    "00": "send_all            0      0      21    # public.test (select, closing)",
     "01": "int                 1      -      0     # 1",
     "02": "int                 2      -      0     # 1",
     "03": "recv                3      0      1     ",
@@ -243,7 +243,7 @@ select * from test order by id limit 1 offset 4;
 explain select * from test order by id desc limit 1 offset 1;
 [{
   "main": {
-    "00": "send_all            0      0      21    # public.test (last)",
+    "00": "send_all            0      0      21    # public.test (select, closing)",
     "01": "int                 1      -      0     # 1",
     "02": "int                 2      -      0     # 1",
     "03": "recv                3      0      1     ",
@@ -276,7 +276,7 @@ select * from test order by id desc limit 1 offset 4;
 explain select * from test order by id offset 1;
 [{
   "main": {
-    "00": "send_all            0      0      21    # public.test (last)",
+    "00": "send_all            0      0      21    # public.test (select, closing)",
     "01": "int                 1      -      0     # 1",
     "02": "recv                2      0      -1    ",
     "03": "ret                 2      0      -     "
@@ -312,7 +312,7 @@ select * from test order by id offset -1;
 explain select * from test order by id desc offset 1;
 [{
   "main": {
-    "00": "send_all            0      0      21    # public.test (last)",
+    "00": "send_all            0      0      21    # public.test (select, closing)",
     "01": "int                 1      -      0     # 1",
     "02": "recv                2      0      -1    ",
     "03": "ret                 2      0      -     "

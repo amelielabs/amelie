@@ -222,7 +222,7 @@ end;
     "03": "free                0      0      0     ",
     "04": "push_var            0      0      0     ",
     "05": "push_var            0      0      0     ",
-    "06": "send_all            0      2      20    # public.test (last)",
+    "06": "send_all            0      2      20    # public.test (select, closing)",
     "07": "recv                1      0      -1    ",
     "08": "ret                 1      0      -     "
   },
@@ -261,7 +261,7 @@ end;
     "03": "free                0      0      0     ",
     "04": "push_var            0      0      0     ",
     "05": "push_var            0      0      0     ",
-    "06": "send_lookup_by      0      1      20    # public.test (last)",
+    "06": "send_lookup_by      0      1      20    # public.test (select, closing)",
     "07": "recv                1      0      -1    ",
     "08": "ret                 1      0      -     "
   },
@@ -311,7 +311,7 @@ end;
     "03": "free                0      0      0     ",
     "04": "push_var            0      0      0     ",
     "05": "push_var            0      0      0     ",
-    "06": "send_lookup_by      0      1      20    # public.test (last)",
+    "06": "send_lookup_by      0      1      20    # public.test (select, closing)",
     "07": "recv                1      0      -1    ",
     "08": "ret                 1      0      -     "
   },
@@ -579,7 +579,7 @@ end;
 [{
   "main": {
     "00": "push_nulls          1      0      0     ",
-    "01": "send_all            0      0      20    # public.test (last)",
+    "01": "send_all            0      0      20    # public.test (select, closing)",
     "02": "recv                1      0      -1    ",
     "03": "var_mov             0      0      1     ",
     "04": "set                 0      2      0     ",

@@ -5,7 +5,7 @@ create table test (id serial primary key, data int default 0);
 explain select distinct * from test;
 [{
   "main": {
-    "00": "send_all            0      0      22    # public.test (last)",
+    "00": "send_all            0      0      22    # public.test (select, closing)",
     "01": "recv                1      0      -1    ",
     "02": "ret                 1      0      -     "
   },
@@ -40,7 +40,7 @@ select * from test order by id;
 explain select distinct * from test;
 [{
   "main": {
-    "00": "send_all            0      0      22    # public.test (last)",
+    "00": "send_all            0      0      22    # public.test (select, closing)",
     "01": "recv                1      0      -1    ",
     "02": "ret                 1      0      -     "
   },
@@ -69,7 +69,7 @@ select distinct * from test;
 explain select distinct id from test;
 [{
   "main": {
-    "00": "send_all            0      0      21    # public.test (last)",
+    "00": "send_all            0      0      21    # public.test (select, closing)",
     "01": "recv                1      0      -1    ",
     "02": "ret                 1      0      -     "
   },
@@ -96,7 +96,7 @@ select distinct data from test;
 explain select distinct id, data from test;
 [{
   "main": {
-    "00": "send_all            0      0      22    # public.test (last)",
+    "00": "send_all            0      0      22    # public.test (select, closing)",
     "01": "recv                1      0      -1    ",
     "02": "ret                 1      0      -     "
   },
@@ -125,7 +125,7 @@ select distinct id, data from test;
 explain select distinct data from test limit 4;
 [{
   "main": {
-    "00": "send_all            0      0      21    # public.test (last)",
+    "00": "send_all            0      0      21    # public.test (select, closing)",
     "01": "int                 1      -      0     # 4",
     "02": "recv                2      0      1     ",
     "03": "ret                 2      0      -     "
@@ -151,7 +151,7 @@ select distinct data from test limit 4;
 explain select distinct data from test limit 0;
 [{
   "main": {
-    "00": "send_all            0      0      21    # public.test (last)",
+    "00": "send_all            0      0      21    # public.test (select, closing)",
     "01": "int                 1      -      0     # 0",
     "02": "recv                2      0      1     ",
     "03": "ret                 2      0      -     "
@@ -177,7 +177,7 @@ select distinct data from test limit 0;
 explain select distinct data from test limit 1 offset 1;
 [{
   "main": {
-    "00": "send_all            0      0      21    # public.test (last)",
+    "00": "send_all            0      0      21    # public.test (select, closing)",
     "01": "int                 1      -      0     # 1",
     "02": "int                 2      -      0     # 1",
     "03": "recv                3      0      1     ",
@@ -210,7 +210,7 @@ select distinct data from test limit 1 offset 3;
 explain select distinct data from test offset 1;
 [{
   "main": {
-    "00": "send_all            0      0      21    # public.test (last)",
+    "00": "send_all            0      0      21    # public.test (select, closing)",
     "01": "int                 1      -      0     # 1",
     "02": "recv                2      0      -1    ",
     "03": "ret                 2      0      -     "
@@ -263,7 +263,7 @@ select distinct on (123,);
 explain select * from test order by data;
 [{
   "main": {
-    "00": "send_all            0      0      21    # public.test (last)",
+    "00": "send_all            0      0      21    # public.test (select, closing)",
     "01": "recv                1      0      -1    ",
     "02": "ret                 1      0      -     "
   },
@@ -287,7 +287,7 @@ explain select * from test order by data;
 explain select distinct on (data) * from test;
 [{
   "main": {
-    "00": "send_all            0      0      21    # public.test (last)",
+    "00": "send_all            0      0      21    # public.test (select, closing)",
     "01": "recv                1      0      -1    ",
     "02": "ret                 1      0      -     "
   },

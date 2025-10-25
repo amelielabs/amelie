@@ -267,7 +267,7 @@ explain insert into test values (1),(2),(3) returning *;
 [{
   "main": {
     "00": "set_ptr             1      -      0     ",
-    "01": "send_shard          0      1      0     # public.test (last)",
+    "01": "send_shard          0      1      0     # public.test (insert, closing)",
     "02": "recv                1      0      -1    ",
     "03": "ret                 1      0      -     "
   },
@@ -298,7 +298,7 @@ explain insert into test () values (), (), () returning *;
 [{
   "main": {
     "00": "set_ptr             1      -      0     ",
-    "01": "send_shard          0      1      0     # public.test (last)",
+    "01": "send_shard          0      1      0     # public.test (insert, closing)",
     "02": "recv                1      0      -1    ",
     "03": "ret                 1      0      -     "
   },
@@ -414,7 +414,7 @@ select * from test where ts > "1970-01-01 01:12:59.909090"::timestamp;
 explain select * from test where ts > "1970-01-01 01:12:59.909090"::timestamp;
 [{
   "main": {
-    "00": "send_all            0      0      47    # public.test (last)",
+    "00": "send_all            0      0      47    # public.test (select, closing)",
     "01": "recv                1      0      -1    ",
     "02": "ret                 1      0      -     "
   },
@@ -443,7 +443,7 @@ select * from test where ts > timestamp "1970-01-01 01:12:59.909090";
 explain select * from test where ts > timestamp "1970-01-01 01:12:59.909090";
 [{
   "main": {
-    "00": "send_all            0      0      20    # public.test (last)",
+    "00": "send_all            0      0      20    # public.test (select, closing)",
     "01": "recv                1      0      -1    ",
     "02": "ret                 1      0      -     "
   },
@@ -491,7 +491,7 @@ insert into test values ("1970-01-01 00:00:04.000000");
 explain select * from test;
 [{
   "main": {
-    "00": "send_all            0      0      20    # public.test (last)",
+    "00": "send_all            0      0      20    # public.test (select, closing)",
     "01": "recv                1      0      -1    ",
     "02": "ret                 1      0      -     "
   },
@@ -516,7 +516,7 @@ select * from test where id > timestamp '1970-01-01 00:00:01.000002';
 explain select * from test where id > timestamp '1970-01-01 00:00:01.000002';
 [{
   "main": {
-    "00": "send_all            0      0      20    # public.test (last)",
+    "00": "send_all            0      0      20    # public.test (select, closing)",
     "01": "recv                1      0      -1    ",
     "02": "ret                 1      0      -     "
   },
@@ -543,7 +543,7 @@ select * from test where id >= timestamp '1970-01-01 00:00:01.000002';
 explain select * from test where id >= timestamp '1970-01-01 00:00:01.000002';
 [{
   "main": {
-    "00": "send_all            0      0      20    # public.test (last)",
+    "00": "send_all            0      0      20    # public.test (select, closing)",
     "01": "recv                1      0      -1    ",
     "02": "ret                 1      0      -     "
   },
@@ -570,7 +570,7 @@ select * from test where id < timestamp '1970-01-01 00:00:01.000003';
 explain select * from test where id < timestamp '1970-01-01 00:00:01.000003';
 [{
   "main": {
-    "00": "send_all            0      0      20    # public.test (last)",
+    "00": "send_all            0      0      20    # public.test (select, closing)",
     "01": "recv                1      0      -1    ",
     "02": "ret                 1      0      -     "
   },
@@ -599,7 +599,7 @@ select * from test where id = timestamp '1970-01-01 00:00:01.000003';
 explain select * from test where id = timestamp '1970-01-01 00:00:01.000003';
 [{
   "main": {
-    "00": "send_lookup         0      -      0     # public.test (last)",
+    "00": "send_lookup         0      -      0     # public.test (select, closing)",
     "01": "recv                1      0      -1    ",
     "02": "ret                 1      0      -     "
   },
@@ -633,7 +633,7 @@ select * from test where i > "1 year 1 day 10 hour"::interval;
 explain select * from test where i > "1 year 1 day 10 hour"::interval;
 [{
   "main": {
-    "00": "send_all            0      0      41    # public.test (last)",
+    "00": "send_all            0      0      41    # public.test (select, closing)",
     "01": "recv                1      0      -1    ",
     "02": "ret                 1      0      -     "
   },
@@ -685,7 +685,7 @@ select * from test where d >= date '1970-01-01';
 explain select * from test where d >= date '1970-01-01';
 [{
   "main": {
-    "00": "send_all            0      0      20    # public.test (last)",
+    "00": "send_all            0      0      20    # public.test (select, closing)",
     "01": "recv                1      0      -1    ",
     "02": "ret                 1      0      -     "
   },
@@ -780,7 +780,7 @@ select id from test where id = uuid "00000000-0000-0000-0000-000000000002";
 explain select id from test where id = uuid "00000000-0000-0000-0000-000000000002";
 [{
   "main": {
-    "00": "send_lookup         0      -      0     # public.test (last)",
+    "00": "send_lookup         0      -      0     # public.test (select, closing)",
     "01": "recv                1      0      -1    ",
     "02": "ret                 1      0      -     "
   },
@@ -854,7 +854,7 @@ insert into test values (4, 0);
 explain select * from test;
 [{
   "main": {
-    "00": "send_all            0      0      20    # public.test (last)",
+    "00": "send_all            0      0      20    # public.test (select, closing)",
     "01": "recv                1      0      -1    ",
     "02": "ret                 1      0      -     "
   },
@@ -877,7 +877,7 @@ select * from test;
 explain select * from test use index (i);
 [{
   "main": {
-    "00": "send_all            0      0      14    # public.test (last)",
+    "00": "send_all            0      0      14    # public.test (select, closing)",
     "01": "recv                1      0      -1    ",
     "02": "ret                 1      0      -     "
   },
@@ -935,7 +935,7 @@ explain insert into test select 1, 0;
     "04": "push                1      0      0     ",
     "05": "set_add             0      0      0     ",
     "06": "dup                 2      0      0     ",
-    "07": "send_shard          1      2      0     # public.test (last)",
+    "07": "send_shard          1      2      0     # public.test (insert, closing)",
     "08": "ret                 -1     0      -     "
   },
   "pushdown": {
@@ -971,7 +971,7 @@ explain insert into test select * from (select 2, 0) t;
     "15": "free                3      0      0     ",
     "16": "free                2      0      0     ",
     "17": "dup                 3      1      0     ",
-    "18": "send_shard          2      3      0     # public.test (last)",
+    "18": "send_shard          2      3      0     # public.test (insert, closing)",
     "19": "ret                 -1     0      -     "
   },
   "pushdown": {
@@ -989,10 +989,10 @@ insert into src values (3, 0), (4, 0), (5, 0);
 explain insert into test select * from src;
 [{
   "main": {
-    "00": "send_all            0      0      19    # public.src",
+    "00": "send_all            0      0      19    # public.src (select)",
     "01": "recv                1      0      -1    ",
     "02": "dup                 2      1      0     ",
-    "03": "send_shard          0      2      0     # public.test (last)",
+    "03": "send_shard          0      2      0     # public.test (insert, closing)",
     "04": "ret                 -1     0      -     "
   },
   "pushdown": {

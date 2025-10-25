@@ -45,7 +45,7 @@ select id, embedding::cos_distance(vector [1,3,1,2,0]) from test order by 2 desc
 explain select id, embedding::cos_distance(vector [1,3,1,2,0]) from test order by 2 desc;
 [{
   "main": {
-    "00": "send_all            0      0      45    # public.test (last)",
+    "00": "send_all            0      0      45    # public.test (select, closing)",
     "01": "recv                1      0      -1    ",
     "02": "ret                 1      0      -     "
   },
@@ -79,7 +79,7 @@ select id from test order by embedding::cos_distance(vector [1,3,1,2,0]) desc li
 explain select id from test order by embedding::cos_distance(vector [1,3,1,2,0]) desc limit 1;
 [{
   "main": {
-    "00": "send_all            0      0      45    # public.test (last)",
+    "00": "send_all            0      0      45    # public.test (select, closing)",
     "01": "int                 1      -      0     # 1",
     "02": "recv                2      0      1     ",
     "03": "ret                 2      0      -     "

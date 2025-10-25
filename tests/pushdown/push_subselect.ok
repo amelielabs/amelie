@@ -26,7 +26,7 @@ insert into test2 (id) values (1), (2), (3);
 explain select (select id from test) from test2;
 [{
   "main": {
-    "00": "send_all            0      0      41    # public.test2 (last)",
+    "00": "send_all            0      0      41    # public.test2 (select, closing)",
     "01": "recv                1      0      -1    ",
     "02": "ret                 1      0      -     "
   },
@@ -55,13 +55,13 @@ select (select id from test) from test2;
 explain select (select id from test) from (select * from test2) t;
 [{
   "main": {
-    "00": "send_all            0      0      21    # public.test2",
+    "00": "send_all            0      0      21    # public.test2 (select)",
     "01": "recv                1      0      -1    ",
     "02": "set                 0      1      0     ",
     "03": "dup                 2      1      0     ",
     "04": "store_open          3      2      16    ",
     "05": "set                 4      1      0     ",
-    "06": "table_open          5      37     11    # public.test (primary)",
+    "06": "table_open          5      45     11    # public.test (primary)",
     "07": "table_readi32       6      5      0     ",
     "08": "push                6      0      0     ",
     "09": "set_add             4      0      0     ",
@@ -94,7 +94,7 @@ drop table test2;
 explain select * from (select * from test) t;
 [{
   "main": {
-    "00": "send_all            0      0      20    # public.test",
+    "00": "send_all            0      0      20    # public.test (select)",
     "01": "recv                1      0      -1    ",
     "02": "set                 0      2      0     ",
     "03": "dup                 2      1      0     ",
@@ -131,7 +131,7 @@ insert into test2 (id) values (1), (2), (3);
 explain select * from (select (select id from test2) from test) t;
 [{
   "main": {
-    "00": "send_all            0      0      41    # public.test",
+    "00": "send_all            0      0      41    # public.test (select)",
     "01": "recv                1      0      -1    ",
     "02": "set                 0      1      0     ",
     "03": "dup                 2      1      0     ",
@@ -170,7 +170,7 @@ drop table test2;
 explain select * from (select (select id from test t) from test) g;
 [{
   "main": {
-    "00": "send_all            0      0      40    # public.test",
+    "00": "send_all            0      0      40    # public.test (select)",
     "01": "recv                1      0      -1    ",
     "02": "set                 0      1      0     ",
     "03": "dup                 2      1      0     ",
@@ -215,13 +215,13 @@ insert into test2 (id) values (1), (2), (3);
 explain select (select t.id from test2) from (select * from test) t;
 [{
   "main": {
-    "00": "send_all            0      0      20    # public.test",
+    "00": "send_all            0      0      20    # public.test (select)",
     "01": "recv                1      0      -1    ",
     "02": "set                 0      1      0     ",
     "03": "dup                 2      1      0     ",
     "04": "store_open          3      2      16    ",
     "05": "set                 4      1      0     ",
-    "06": "table_open          5      36     11    # public.test2 (primary)",
+    "06": "table_open          5      44     11    # public.test2 (primary)",
     "07": "store_read          6      3      0     ",
     "08": "push                6      0      0     ",
     "09": "set_add             4      0      0     ",
@@ -256,13 +256,13 @@ drop table test2;
 explain select (select t.id from test z) from (select * from test) t;
 [{
   "main": {
-    "00": "send_all            0      0      20    # public.test",
+    "00": "send_all            0      0      20    # public.test (select)",
     "01": "recv                1      0      -1    ",
     "02": "set                 0      1      0     ",
     "03": "dup                 2      1      0     ",
     "04": "store_open          3      2      16    ",
     "05": "set                 4      1      0     ",
-    "06": "table_open          5      36     11    # public.test (primary)",
+    "06": "table_open          5      44     11    # public.test (primary)",
     "07": "store_read          6      3      0     ",
     "08": "push                6      0      0     ",
     "09": "set_add             4      0      0     ",
@@ -298,8 +298,8 @@ select * from (select id from test) a, (select * from test) b;
 explain select * from (select * from test) a, (select * from test) b;
 [{
   "main": {
-    "00": "send_all            0      0      20    # public.test",
-    "01": "send_all            1      0      56    # public.test",
+    "00": "send_all            0      0      20    # public.test (select)",
+    "01": "send_all            1      0      64    # public.test (select)",
     "02": "recv                2      0      -1    ",
     "03": "recv                0      1      -1    ",
     "04": "set                 1      4      0     ",
@@ -336,7 +336,7 @@ explain select * from (select * from test) a, (select * from test) b;
     "08": "free                1      0      0     ",
     "09": "ret                 0      0      -     ",
     "10": "set                 1      2      0     ",
-    "11": "table_open_part     2      36     18    # public.test (primary)",
+    "11": "table_open_part     2      44     18    # public.test (primary)",
     "12": "table_readi32       3      2      0     ",
     "13": "push                3      0      0     ",
     "14": "table_readi32       3      2      1     ",

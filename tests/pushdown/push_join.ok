@@ -8,7 +8,7 @@ insert into test (id) values (1), (2), (3);
 explain select test.*, ref.* from test, ref;
 [{
   "main": {
-    "00": "send_all            0      0      39    # public.test (last)",
+    "00": "send_all            0      0      39    # public.test (select, closing)",
     "01": "recv                1      0      -1    ",
     "02": "ret                 1      0      -     "
   },
@@ -39,7 +39,7 @@ select test.*, ref.* from test, ref;
 explain select test.*, ref.* from ref, test;
 [{
   "main": {
-    "00": "send_all            0      0      39    # public.ref (last)",
+    "00": "send_all            0      0      39    # public.ref (select, closing)",
     "01": "recv                1      0      -1    ",
     "02": "ret                 1      0      -     "
   },
@@ -70,7 +70,7 @@ select test.*, ref.* from ref, test;
 explain select t.* from test, test t;
 [{
   "main": {
-    "00": "send_all            0      0      40    # public.test (last)",
+    "00": "send_all            0      0      40    # public.test (select, closing)",
     "01": "recv                1      0      -1    ",
     "02": "ret                 1      0      -     "
   },
@@ -97,7 +97,7 @@ select t.* from test, test t;
 explain select test.id, ref.id from test join ref on true;
 [{
   "main": {
-    "00": "send_all            0      0      39    # public.test (last)",
+    "00": "send_all            0      0      39    # public.test (select, closing)",
     "01": "recv                1      0      -1    ",
     "02": "ret                 1      0      -     "
   },
@@ -126,7 +126,7 @@ select test.id, ref.id from test join ref on true;
 explain select test.id, ref.id from test join ref on test.id = ref.id;
 [{
   "main": {
-    "00": "send_all            0      0      39    # public.test (last)",
+    "00": "send_all            0      0      39    # public.test (select, closing)",
     "01": "recv                1      0      -1    ",
     "02": "ret                 1      0      -     "
   },
@@ -158,7 +158,7 @@ select test.id, ref.id from test join ref on test.id = ref.id;
 explain select test.id, ref.id from test join ref on test.id = ref.id join ref ref2 on test.id = ref2.id;
 [{
   "main": {
-    "00": "send_all            0      0      58    # public.test (last)",
+    "00": "send_all            0      0      58    # public.test (select, closing)",
     "01": "recv                1      0      -1    ",
     "02": "ret                 1      0      -     "
   },
@@ -198,7 +198,7 @@ select test.id, ref.id from test join ref on test.id = ref.id join ref ref2 on t
 explain select test.id, ref.id from test join ref on test.id = ref.id join ref ref2 on test.id = ref2.id where test.id > 0;
 [{
   "main": {
-    "00": "send_all            0      0      58    # public.test (last)",
+    "00": "send_all            0      0      58    # public.test (select, closing)",
     "01": "recv                1      0      -1    ",
     "02": "ret                 1      0      -     "
   },
@@ -244,7 +244,7 @@ select test.id, ref.id from test join ref on test.id = ref.id join ref ref2 on t
 explain select test.id, ref.id from test, ref where test.id = ref.id;
 [{
   "main": {
-    "00": "send_all            0      0      39    # public.test (last)",
+    "00": "send_all            0      0      39    # public.test (select, closing)",
     "01": "recv                1      0      -1    ",
     "02": "ret                 1      0      -     "
   },
@@ -275,7 +275,7 @@ select test.id, ref.id from test, ref where test.id = ref.id;
 explain select test.id, ref.id from test, ref where ref.id = test.id;
 [{
   "main": {
-    "00": "send_all            0      0      39    # public.test (last)",
+    "00": "send_all            0      0      39    # public.test (select, closing)",
     "01": "recv                1      0      -1    ",
     "02": "ret                 1      0      -     "
   },
@@ -306,7 +306,7 @@ select test.id, ref.id from test, ref where ref.id = test.id;
 explain select test.id, ref.id from test, ref where ref.id = 1;
 [{
   "main": {
-    "00": "send_all            0      0      39    # public.test (last)",
+    "00": "send_all            0      0      39    # public.test (select, closing)",
     "01": "recv                1      0      -1    ",
     "02": "ret                 1      0      -     "
   },
@@ -337,7 +337,7 @@ select test.id, ref.id from test, ref where ref.id = 1;
 explain select test.id, ref.id from test, ref where ref.id = 1 and test.id = 1;
 [{
   "main": {
-    "00": "send_lookup         0      -      0     # public.test (last)",
+    "00": "send_lookup         0      -      0     # public.test (select, closing)",
     "01": "recv                1      0      -1    ",
     "02": "ret                 1      0      -     "
   },
@@ -373,7 +373,7 @@ select test.id, ref.id from test, ref where ref.id = 1 and test.id = 1;
 explain select test.id, ref.id from test, ref where ref.id >= test.id;
 [{
   "main": {
-    "00": "send_all            0      0      39    # public.test (last)",
+    "00": "send_all            0      0      39    # public.test (select, closing)",
     "01": "recv                1      0      -1    ",
     "02": "ret                 1      0      -     "
   },
@@ -414,7 +414,7 @@ explain select test.id, ref.id from test join ref using(id;
 explain select test.id, ref.id from test join ref using(id);
 [{
   "main": {
-    "00": "send_all            0      0      39    # public.test (last)",
+    "00": "send_all            0      0      39    # public.test (select, closing)",
     "01": "recv                1      0      -1    ",
     "02": "ret                 1      0      -     "
   },
@@ -449,7 +449,7 @@ select test.id, ref.id from test join ref using(unknown);
 explain select test.id, ref.id from test join ref using (id) join ref ref2 using (id) where test.id > 0;
 [{
   "main": {
-    "00": "send_all            0      0      58    # public.test (last)",
+    "00": "send_all            0      0      58    # public.test (select, closing)",
     "01": "recv                1      0      -1    ",
     "02": "ret                 1      0      -     "
   },
@@ -497,10 +497,10 @@ select test.id, ref.id from test join ref using (id) join ref ref2 using (id2) w
 explain with a as (select * from test) select * from test, a where test.id = a.id;
 [{
   "main": {
-    "00": "send_all            0      0      20    # public.test",
+    "00": "send_all            0      0      20    # public.test (select)",
     "01": "recv                1      0      -1    ",
     "02": "push_ref            1      1      0     ",
-    "03": "send_all            0      1      56    # public.test (last)",
+    "03": "send_all            0      1      64    # public.test (select, closing)",
     "04": "recv                2      0      -1    ",
     "05": "ret                 2      0      -     "
   },
@@ -516,7 +516,7 @@ explain with a as (select * from test) select * from test, a where test.id = a.i
     "08": "free                1      0      0     ",
     "09": "ret                 0      0      -     ",
     "10": "set                 0      4      0     ",
-    "11": "table_open_part     2      36     31    # public.test (primary)",
+    "11": "table_open_part     2      44     31    # public.test (primary)",
     "12": "ref                 3      0      0     ",
     "13": "store_open          4      3      28    ",
     "14": "table_readi32       5      2      0     ",
@@ -547,10 +547,10 @@ with a as (select * from test) select * from test, a where test.id = a.id;
 explain with a as (select * from test) select * from test, a where test.id = 1;
 [{
   "main": {
-    "00": "send_all            0      0      20    # public.test",
+    "00": "send_all            0      0      20    # public.test (select)",
     "01": "recv                1      0      -1    ",
     "02": "push_ref            1      1      0     ",
-    "03": "send_lookup         0      -      1     # public.test (last)",
+    "03": "send_lookup         0      -      1     # public.test (select, closing)",
     "04": "recv                2      0      -1    ",
     "05": "ret                 2      0      -     "
   },
@@ -568,7 +568,7 @@ explain with a as (select * from test) select * from test, a where test.id = 1;
     "10": "set                 0      4      0     ",
     "11": "int                 2      -      0     # 1",
     "12": "push                2      0      0     ",
-    "13": "table_open_partl    2      36     32    # public.test (primary)",
+    "13": "table_open_partl    2      44     32    # public.test (primary)",
     "14": "ref                 3      0      0     ",
     "15": "store_open          4      3      30    ",
     "16": "table_readi32       5      2      0     ",
@@ -598,14 +598,14 @@ with a as (select * from test) select * from test, a where test.id = 1;
 explain with a as (select * from test) select * from a, test where test.id = a.id;
 [{
   "main": {
-    "00": "send_all            0      0      20    # public.test (last)",
+    "00": "send_all            0      0      20    # public.test (select, closing)",
     "01": "recv                1      0      -1    ",
     "02": "set                 0      4      0     ",
     "03": "dup                 2      1      0     ",
     "04": "store_open          3      2      23    ",
     "05": "store_read          4      3      0     ",
     "06": "push                4      0      0     ",
-    "07": "table_openl         4      36     21    # public.test (primary)",
+    "07": "table_openl         4      44     21    # public.test (primary)",
     "08": "table_readi32       5      4      0     ",
     "09": "store_read          6      3      0     ",
     "10": "equii               7      5      6     ",
@@ -645,14 +645,14 @@ with a as (select * from test) select * from a, test where test.id = a.id;
 explain with a as (select * from test) select * from a, test where test.id = 1;
 [{
   "main": {
-    "00": "send_all            0      0      20    # public.test (last)",
+    "00": "send_all            0      0      20    # public.test (select, closing)",
     "01": "recv                1      0      -1    ",
     "02": "set                 0      4      0     ",
     "03": "dup                 2      1      0     ",
     "04": "store_open          3      2      23    ",
     "05": "int                 4      -      0     # 1",
     "06": "push                4      0      0     ",
-    "07": "table_openl         4      36     21    # public.test (primary)",
+    "07": "table_openl         4      44     21    # public.test (primary)",
     "08": "table_readi32       5      4      0     ",
     "09": "int                 6      -      0     # 1",
     "10": "equii               7      5      6     ",
@@ -702,7 +702,7 @@ select ref.id from test join ref on (test.id = ref.id) group by id;
 explain select ref.id from test join ref on (test.id = ref.id) group by ref.id;
 [{
   "main": {
-    "00": "send_all            0      0      40    # public.test (last)",
+    "00": "send_all            0      0      40    # public.test (select, closing)",
     "01": "recv_aggs           1      0      40    ",
     "02": "set                 2      1      0     ",
     "03": "store_open          3      1      8     ",

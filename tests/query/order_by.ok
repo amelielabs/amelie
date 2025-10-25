@@ -8,7 +8,7 @@ insert into test values (3, 2);
 explain select * from test order by data;
 [{
   "main": {
-    "00": "send_all            0      0      21    # public.test (last)",
+    "00": "send_all            0      0      21    # public.test (select, closing)",
     "01": "recv                1      0      -1    ",
     "02": "ret                 1      0      -     "
   },

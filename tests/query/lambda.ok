@@ -26,7 +26,7 @@ select 0 -> id, 0 -> data from test;
 explain select 0 -> id, 0 -> data from test;
 [{
   "main": {
-    "00": "send_all            0      0      29    # public.test (last)",
+    "00": "send_all            0      0      29    # public.test (select, closing)",
     "01": "recv_aggs           1      0      21    ",
     "02": "set                 2      2      0     ",
     "03": "store_open          3      1      10    ",
@@ -81,7 +81,7 @@ select 0 -> self + 1 from test;
 explain select 0 -> self + 1 from test;
 [{
   "main": {
-    "00": "send_all            0      0      25    # public.test (last)",
+    "00": "send_all            0      0      25    # public.test (select, closing)",
     "01": "recv_aggs           1      0      21    ",
     "02": "set                 2      1      0     ",
     "03": "store_open          3      1      8     ",
@@ -183,7 +183,7 @@ insert into test values (4, 3);
 explain select 0 -> self + 1 from test;
 [{
   "main": {
-    "00": "send_all            0      0      25    # public.test (last)",
+    "00": "send_all            0      0      25    # public.test (select, closing)",
     "01": "recv_aggs           1      0      21    ",
     "02": "set                 2      1      0     ",
     "03": "store_open          3      1      8     ",

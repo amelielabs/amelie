@@ -25,7 +25,7 @@ select t.x from (select z.id as x from (select id from test) z) t;
 explain select t.x from (select z.id as x from (select id from test) z) t;
 [{
   "main": {
-    "00": "send_all            0      0      20    # public.test",
+    "00": "send_all            0      0      20    # public.test (select)",
     "01": "recv                1      0      -1    ",
     "02": "set                 0      1      0     ",
     "03": "dup                 2      1      0     ",
