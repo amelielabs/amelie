@@ -698,14 +698,6 @@ emit_case(Compiler* self, From* from, Ast* ast)
 	// END
 	int rresult = rpin(self, TYPE_NULL);
 
-	// jmp to start
-	int _start_jmp = op_pos(self);
-	op1(self, CJMP, 0 /* _start */);
-
-	// _stop_jmp
-	int _stop_jmp = op_pos(self);
-	op1(self, CJMP, 0 /* _stop */);
-
 	// foreach when
 		// if cs->expr
 			// expr
@@ -725,9 +717,9 @@ emit_case(Compiler* self, From* from, Ast* ast)
 		// ELSE result
 	// _stop
 
-	// _start
-	int _start = op_pos(self);
-	op_set_jmp(self, _start_jmp, _start);
+	// save jntrs positions
+	int  jntr_stop_count = 0;
+	int* jntr_stop = palloc(sizeof(int) * cs->when.count);
 
 	auto node = cs->when.list;
 	for (; node; node = node->next)
@@ -765,7 +757,9 @@ emit_case(Compiler* self, From* from, Ast* ast)
 		op2(self, CMOV, rresult, rthen);
 		runpin(self, rthen);
 
-		op1(self, CJMP, _stop_jmp);
+		/// jmp _stop
+		jntr_stop[jntr_stop_count++] = op_pos(self);
+		op1(self, CJMP, 0 /* _stop */);
 
 		// _next
 		op_at(self, _next_jntr)->a = op_pos(self);
@@ -792,10 +786,11 @@ emit_case(Compiler* self, From* from, Ast* ast)
 	op2(self, CMOV, rresult, relse);
 	runpin(self, relse);
 
-	// _stop
-	int _stop = op_pos(self);
-	op_set_jmp(self, _stop_jmp, _stop);
-	op0(self, CNOP);
+	// _stop (resolve jmps to _stop)
+	auto _stop = op_pos(self);
+	for (auto i = 0; i < jntr_stop_count; i++)
+		op_set_jmp(self, jntr_stop[i], _stop);
+
 	return rresult;
 }
 

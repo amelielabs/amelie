@@ -47,6 +47,7 @@ parse_if_block(Stmt* self)
 
 	// IF expr
 	auto cond = ast_if_cond_allocate();
+	cond->order = stmt->conds.count;
 	ast_list_add(&stmt->conds, &cond->ast);
 
 	Expr ctx;

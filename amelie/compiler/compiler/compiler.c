@@ -479,18 +479,6 @@ emit_if(Compiler* self, Stmt* stmt)
 	auto ifa = ast_if_of(stmt->ast);
 	compiler_switch_frontend(self);
 
-	// jmp to start
-	auto _start_jmp = op_pos(self);
-	op1(self, CJMP, 0 /* _start */);
-
-	// _stop_jmp
-	auto _stop_jmp = op_pos(self);
-	op1(self, CJMP, 0 /* _stop */);
-
-	// _start
-	auto _start = op_pos(self);
-	op_set_jmp(self, _start_jmp, _start);
-
 	// foreach cond
 	//   stmt
 	//   jntr _next
@@ -500,12 +488,16 @@ emit_if(Compiler* self, Stmt* stmt)
 	// else_block
 	// _stop
 	//
+
+	// save jntrs positions
+	int  jntr_stop_count = 0;
+	int* jntr_stop = palloc(sizeof(int) * ifa->conds.count);
+
 	auto ref = ifa->conds.list;
 	for (; ref; ref = ref->next)
 	{
-		auto cond = ast_if_cond_of(ref->ast);
-
 		// IF expr
+		auto cond = ast_if_cond_of(ref->ast);
 		auto r = emit_expr(self, &ifa->from, cond->expr);
 
 		// jntr _next
@@ -518,7 +510,14 @@ emit_if(Compiler* self, Stmt* stmt)
 		// block
 		emit_block(self, cond->block);
 
-		op1(self, CJMP, _stop_jmp);
+		// do not generate jmp for the last if block
+		if (ref->next || ifa->cond_else)
+		{
+			// jmp _stop (save jmp position)
+			jntr_stop[cond->order] = op_pos(self);
+			jntr_stop_count++;
+			op1(self, CJMP, 0 /* _stop */);
+		}
 
 		// _next
 		op_set_jmp(self, _next_jntr, op_pos(self));
@@ -529,9 +528,10 @@ emit_if(Compiler* self, Stmt* stmt)
 	if (ifa->cond_else)
 		emit_block(self, ifa->cond_else);
 
-	// _stop
+	// _stop (resolve jmps to _stop)
 	auto _stop = op_pos(self);
-	op_set_jmp(self, _stop_jmp, _stop);
+	for (auto i = 0; i < jntr_stop_count; i++)
+		op_set_jmp(self, jntr_stop[i], _stop);
 
 	// mark last sending operation in the main block
 	emit_close(self, stmt);
@@ -586,18 +586,6 @@ emit_while(Compiler* self, Stmt* stmt)
 	auto whilea = ast_while_of(stmt->ast);
 	compiler_switch_frontend(self);
 
-	// jmp to start
-	auto _start_jmp = op_pos(self);
-	op1(self, CJMP, 0 /* _start */);
-
-	// _stop_jmp
-	auto _stop_jmp = op_pos(self);
-	op1(self, CJMP, 0 /* _stop */);
-
-	// _start
-	auto _start = op_pos(self);
-	op_set_jmp(self, _start_jmp, _start);
-
 	// _start:
 	//   expr
 	//   jntr _stop
@@ -607,17 +595,22 @@ emit_while(Compiler* self, Stmt* stmt)
 	// _stop:
 	//
 
+	// _start
+	auto _start = op_pos(self);
+
 	// expr
 	auto r = emit_expr(self, &whilea->from, whilea->expr);
 
 	// jntr _stop
-	op2(self, CJNTR, _stop_jmp, r);
+	auto _stop_jmp = op_pos(self);
+	op2(self, CJNTR, 0, /* _stop */ r);
 	runpin(self, r);
 
 	// block
 	emit_block(self, whilea->block);
 
-	op1(self, CJMP, _start_jmp);
+	// jmp _start
+	op1(self, CJMP, _start);
 
 	// _stop
 	auto _stop = op_pos(self);

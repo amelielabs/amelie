@@ -17,6 +17,7 @@ typedef struct AstIf     AstIf;
 struct AstIfCond
 {
 	Ast    ast;
+	int    order;
 	Ast*   expr;
 	Block* block;
 };
@@ -40,6 +41,7 @@ ast_if_cond_allocate(void)
 {
 	AstIfCond* self;
 	self = ast_allocate(0, sizeof(AstIfCond));
+	self->order = 0;
 	self->expr  = NULL;
 	self->block = NULL;
 	return self;
