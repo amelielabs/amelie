@@ -9,9 +9,8 @@ explain select * from test order by data;
 [{
   "main": {
     "00": "send_all            0      0      21    # public.test (last)",
-    "01": "recv                1      0      0     ",
-    "02": "union_set           1      0      -1    ",
-    "03": "ret                 1      0      -     "
+    "01": "recv                1      0      -1    ",
+    "02": "ret                 1      0      -     "
   },
   "pushdown": {
     "00": "set_ordered         0      2      1     ",

@@ -202,10 +202,8 @@ enum
 
 	// union
 	CUNION,
-	CUNION_SET,
-	CUNION_ADD,
-	CUNION_SET_AGGS,
 	CRECV,
+	CRECV_AGGS,
 
 	// table cursor
 	CTABLE_OPEN,

@@ -301,10 +301,8 @@ vm_run(Vm*       self,
 
 		// union
 		&&cunion,
-		&&cunion_set,
-		&&cunion_add,
-		&&cunion_set_aggs,
 		&&crecv,
+		&&crecv_aggs,
 
 		// table cursor
 		&&ctable_open,
@@ -1477,29 +1475,18 @@ cself:
 	op_next;
 
 cunion:
-	// [union]
-	value_set_store(&r[op->a], &union_create()->store);
-	op_next;
-
-cunion_set:
-	// [union, distinct, limit, offset]
-	cunion_set(self, op);
-	op_next;
-
-cunion_add:
-	// [union, set]
-	union_add((Union*)r[op->a].store, (Set*)r[op->b].store);
-	value_reset(&r[op->b]);
-	op_next;
-
-cunion_set_aggs:
-	// [union, aggs]
-	union_set_aggs((Union*)r[op->a].store, (int*)code_data_at(code_data, op->b));
+	// [union, rset, distinct, limit, offset]
+	cunion(self, op);
 	op_next;
 
 crecv:
-	// [union, rdispatch]
+	// [union, rdispatch, distinct, rlimit, roffset]
 	crecv(self, op);
+	op_next;
+
+crecv_aggs:
+	// [union, rdispatch, aggs]
+	crecv_aggs(self, op);
 	op_next;
 
 // table cursor

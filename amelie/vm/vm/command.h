@@ -17,8 +17,10 @@ void csend_lookup_by(Vm*, Op*);
 void csend_all(Vm*, Op*);
 void cclose(Vm*, Op*);
 
+void cunion(Vm*, Op*);
 void crecv(Vm*, Op*);
-void cunion_set(Vm*, Op*);
+void crecv_aggs(Vm*, Op*);
+
 void cvar_set(Vm*, Op*);
 
 Op*  ctable_open(Vm*, Op*, bool, bool);

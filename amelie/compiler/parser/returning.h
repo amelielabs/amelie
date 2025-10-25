@@ -23,7 +23,6 @@ struct Returning
 	int     count_into;
 	Columns columns;
 	Str     format;
-	int     r;
 };
 
 static inline void
@@ -36,7 +35,6 @@ returning_init(Returning* self)
 	self->list_tail      = NULL;
 	self->count          = 0;
 	self->count_into     = 0;
-	self->r              = -1;
 	columns_init(&self->columns);
 	str_init(&self->format);
 }

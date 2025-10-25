@@ -226,10 +226,8 @@ OpDesc ops[] =
 
 	// union
 	{ CUNION, "union" },
-	{ CUNION_SET, "union_set" },
-	{ CUNION_ADD, "union_add" },
-	{ CUNION_SET_AGGS, "union_set_aggs" },
 	{ CRECV, "recv" },
+	{ CRECV_AGGS, "recv_aggs" },
 
 	// table cursor
 	{ CTABLE_OPEN, "table_open" },

@@ -342,7 +342,7 @@ explain insert into test values(1, 0) on conflict do update set data = data + 1 
   "main": {
     "00": "set_ptr             1      -      0     ",
     "01": "send_shard          0      1      0     # public.test (last)",
-    "02": "recv                1      0      0     ",
+    "02": "recv                1      0      -1    ",
     "03": "ret                 1      0      -     "
   },
   "pushdown": {
@@ -384,7 +384,7 @@ explain insert into test values(1, 0) on conflict do nothing returning *;
   "main": {
     "00": "set_ptr             1      -      0     ",
     "01": "send_shard          0      1      0     # public.test (last)",
-    "02": "recv                1      0      0     ",
+    "02": "recv                1      0      -1    ",
     "03": "ret                 1      0      -     "
   },
   "pushdown": {
@@ -418,7 +418,7 @@ explain insert into test values(1, 0) on conflict do update set data = data + 1 
   "main": {
     "00": "set_ptr             1      -      0     ",
     "01": "send_shard          0      1      0     # public.test (last)",
-    "02": "recv                1      0      0     ",
+    "02": "recv                1      0      -1    ",
     "03": "ret                 1      0      -     "
   },
   "pushdown": {
@@ -459,7 +459,7 @@ explain insert into test values(1, 0) on conflict do nothing returning *;
   "main": {
     "00": "set_ptr             1      -      0     ",
     "01": "send_shard          0      1      0     # public.test (last)",
-    "02": "recv                1      0      0     ",
+    "02": "recv                1      0      -1    ",
     "03": "ret                 1      0      -     "
   },
   "pushdown": {
@@ -553,12 +553,11 @@ explain insert into test select * from src on conflict do update set data = data
 [{
   "main": {
     "00": "send_all            0      0      19    # public.src",
-    "01": "recv                1      0      0     ",
-    "02": "union_set           1      0      -1    ",
-    "03": "dup                 2      1      0     ",
-    "04": "send_shard          0      2      0     # public.test (last)",
-    "05": "recv                2      0      0     ",
-    "06": "ret                 2      0      -     "
+    "01": "recv                1      0      -1    ",
+    "02": "dup                 2      1      0     ",
+    "03": "send_shard          0      2      0     # public.test (last)",
+    "04": "recv                2      0      -1    ",
+    "05": "ret                 2      0      -     "
   },
   "pushdown": {
     "00": "set                 0      2      0     ",

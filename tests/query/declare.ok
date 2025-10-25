@@ -223,9 +223,8 @@ end;
     "04": "push_var            0      0      0     ",
     "05": "push_var            0      0      0     ",
     "06": "send_all            0      2      20    # public.test (last)",
-    "07": "recv                1      0      0     ",
-    "08": "union_set           1      0      -1    ",
-    "09": "ret                 1      0      -     "
+    "07": "recv                1      0      -1    ",
+    "08": "ret                 1      0      -     "
   },
   "pushdown": {
     "00": "set                 0      1      0     ",
@@ -263,9 +262,8 @@ end;
     "04": "push_var            0      0      0     ",
     "05": "push_var            0      0      0     ",
     "06": "send_lookup_by      0      1      20    # public.test (last)",
-    "07": "recv                1      0      0     ",
-    "08": "union_set           1      0      -1    ",
-    "09": "ret                 1      0      -     "
+    "07": "recv                1      0      -1    ",
+    "08": "ret                 1      0      -     "
   },
   "pushdown": {
     "00": "set                 0      1      0     ",
@@ -314,9 +312,8 @@ end;
     "04": "push_var            0      0      0     ",
     "05": "push_var            0      0      0     ",
     "06": "send_lookup_by      0      1      20    # public.test (last)",
-    "07": "recv                1      0      0     ",
-    "08": "union_set           1      0      -1    ",
-    "09": "ret                 1      0      -     "
+    "07": "recv                1      0      -1    ",
+    "08": "ret                 1      0      -     "
   },
   "pushdown": {
     "00": "set                 0      1      0     ",
@@ -583,21 +580,20 @@ end;
   "main": {
     "00": "push_nulls          1      0      0     ",
     "01": "send_all            0      0      20    # public.test (last)",
-    "02": "recv                1      0      0     ",
-    "03": "union_set           1      0      -1    ",
-    "04": "var_mov             0      0      1     ",
-    "05": "set                 0      2      0     ",
-    "06": "var                 1      0      0     ",
-    "07": "store_open          2      1      14    ",
-    "08": "store_read          3      2      0     ",
-    "09": "push                3      0      0     ",
-    "10": "store_read          3      2      1     ",
-    "11": "push                3      0      0     ",
-    "12": "set_add             0      0      0     ",
-    "13": "store_next          2      8      0     ",
-    "14": "free                2      0      0     ",
-    "15": "free                1      0      0     ",
-    "16": "ret                 0      0      -     "
+    "02": "recv                1      0      -1    ",
+    "03": "var_mov             0      0      1     ",
+    "04": "set                 0      2      0     ",
+    "05": "var                 1      0      0     ",
+    "06": "store_open          2      1      13    ",
+    "07": "store_read          3      2      0     ",
+    "08": "push                3      0      0     ",
+    "09": "store_read          3      2      1     ",
+    "10": "push                3      0      0     ",
+    "11": "set_add             0      0      0     ",
+    "12": "store_next          2      7      0     ",
+    "13": "free                2      0      0     ",
+    "14": "free                1      0      0     ",
+    "15": "ret                 0      0      -     "
   },
   "pushdown": {
     "00": "set                 0      2      0     ",

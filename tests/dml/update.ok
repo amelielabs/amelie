@@ -454,7 +454,7 @@ explain update test set data = data + 1 returning *;
 [{
   "main": {
     "00": "send_all            0      0      20    # public.test (last)",
-    "01": "recv                1      0      0     ",
+    "01": "recv                1      0      -1    ",
     "02": "ret                 1      0      -     "
   },
   "pushdown": {

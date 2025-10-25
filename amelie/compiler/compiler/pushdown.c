@@ -253,7 +253,6 @@ pushdown_recv_group_by_order_by(Compiler* self, AstSelect* select)
 
 	runpin(self, select->rset_agg);
 	select->rset_agg = -1;
-	select->ret.r = -1;
 
 	auto target_group = from_first(&select->from_group);
 	target_group->r = -1;
@@ -278,14 +277,13 @@ pushdown_recv_group_by(Compiler* self, AstSelect* select)
 {
 	// recv ordered aggregate sets, enable aggregates states merge
 	// during union iteration
-	auto runion = select->ret.r;
+
+	// CRECV_AGGS
+	int runion = op3(self, CRECV_AGGS, rpin(self, TYPE_STORE),
+	                 self->current->rdispatch,
+	                 select->aggs);
+
 	select->rset_agg = runion;
-
-	// CUNION_SET
-	op4(self, CUNION_SET, runion, true, -1, -1);
-
-	// CUNION_SET_AGGS (enable aggregate merge)
-	op2(self, CUNION_SET_AGGS, runion, select->aggs);
 
 	auto target_group = from_first(&select->from_group);
 	target_group->r = runion;
@@ -311,7 +309,7 @@ pushdown_recv_group_by(Compiler* self, AstSelect* select)
 	     select);
 
 	runpin(self, runion);
-	select->ret.r = -1;
+
 	select->rset_agg = -1;
 	target_group->r = -1;
 
@@ -334,9 +332,6 @@ pushdown_recv(Compiler* self, Ast* ast)
 	// SELECT FROM [WHERE] LIMIT/OFFSET
 	// SELECT FROM [WHERE]
 
-	//  apply distinct/limit/offset to the result union
-	auto runion = select->ret.r;
-
 	// limit
 	int rlimit = -1;
 	if (select->expr_limit)
@@ -347,10 +342,16 @@ pushdown_recv(Compiler* self, Ast* ast)
 	if (select->expr_offset)
 		roffset = emit_expr(self, &select->from, select->expr_offset);
 
-	// CUNION_SET
-	op4(self, CUNION_SET, runion, select->distinct, rlimit, roffset);
+	// CRECV
+	int runion = op5(self, CRECV, rpin(self, TYPE_STORE),
+	                 self->current->rdispatch,
+	                 rlimit,
+	                 roffset,
+	                 select->distinct);
+
 	if (rlimit != -1)
 		runpin(self, rlimit);
+
 	if (roffset != -1)
 		runpin(self, roffset);
 

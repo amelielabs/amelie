@@ -71,9 +71,8 @@ explain select * from test;
 [{
   "main": {
     "00": "send_all            0      0      20    # public.test (last)",
-    "01": "recv                1      0      0     ",
-    "02": "union_set           1      0      -1    ",
-    "03": "ret                 1      0      -     "
+    "01": "recv                1      0      -1    ",
+    "02": "ret                 1      0      -     "
   },
   "pushdown": {
     "00": "set                 0      1      0     ",
@@ -111,9 +110,8 @@ explain select id, data from test;
 [{
   "main": {
     "00": "send_all            0      0      20    # public.test (last)",
-    "01": "recv                1      0      0     ",
-    "02": "union_set           1      0      -1    ",
-    "03": "ret                 1      0      -     "
+    "01": "recv                1      0      -1    ",
+    "02": "ret                 1      0      -     "
   },
   "pushdown": {
     "00": "set                 0      2      0     ",
@@ -151,9 +149,8 @@ explain select data.data from test;
 [{
   "main": {
     "00": "send_all            0      0      25    # public.test (last)",
-    "01": "recv                1      0      0     ",
-    "02": "union_set           1      0      -1    ",
-    "03": "ret                 1      0      -     "
+    "01": "recv                1      0      -1    ",
+    "02": "ret                 1      0      -     "
   },
   "pushdown": {
     "00": "set                 0      1      0     ",
@@ -195,9 +192,8 @@ explain select data.data.data from test;
 [{
   "main": {
     "00": "send_all            0      0      30    # public.test (last)",
-    "01": "recv                1      0      0     ",
-    "02": "union_set           1      0      -1    ",
-    "03": "ret                 1      0      -     "
+    "01": "recv                1      0      -1    ",
+    "02": "ret                 1      0      -     "
   },
   "pushdown": {
     "00": "set                 0      1      0     ",
@@ -225,9 +221,8 @@ explain select test.id, test.data from test;
 [{
   "main": {
     "00": "send_all            0      0      20    # public.test (last)",
-    "01": "recv                1      0      0     ",
-    "02": "union_set           1      0      -1    ",
-    "03": "ret                 1      0      -     "
+    "01": "recv                1      0      -1    ",
+    "02": "ret                 1      0      -     "
   },
   "pushdown": {
     "00": "set                 0      2      0     ",
@@ -255,9 +250,8 @@ explain select test.data.data from test;
 [{
   "main": {
     "00": "send_all            0      0      25    # public.test (last)",
-    "01": "recv                1      0      0     ",
-    "02": "union_set           1      0      -1    ",
-    "03": "ret                 1      0      -     "
+    "01": "recv                1      0      -1    ",
+    "02": "ret                 1      0      -     "
   },
   "pushdown": {
     "00": "set                 0      1      0     ",
@@ -309,9 +303,8 @@ explain select alias.id, alias.data from test alias;
 [{
   "main": {
     "00": "send_all            0      0      20    # public.test (last)",
-    "01": "recv                1      0      0     ",
-    "02": "union_set           1      0      -1    ",
-    "03": "ret                 1      0      -     "
+    "01": "recv                1      0      -1    ",
+    "02": "ret                 1      0      -     "
   },
   "pushdown": {
     "00": "set                 0      2      0     ",
@@ -339,9 +332,8 @@ explain select alias.data.data from test alias;
 [{
   "main": {
     "00": "send_all            0      0      25    # public.test (last)",
-    "01": "recv                1      0      0     ",
-    "02": "union_set           1      0      -1    ",
-    "03": "ret                 1      0      -     "
+    "01": "recv                1      0      -1    ",
+    "02": "ret                 1      0      -     "
   },
   "pushdown": {
     "00": "set                 0      1      0     ",
@@ -373,9 +365,8 @@ explain select alias.id, alias.data from test alias;
 [{
   "main": {
     "00": "send_all            0      0      20    # public.test (last)",
-    "01": "recv                1      0      0     ",
-    "02": "union_set           1      0      -1    ",
-    "03": "ret                 1      0      -     "
+    "01": "recv                1      0      -1    ",
+    "02": "ret                 1      0      -     "
   },
   "pushdown": {
     "00": "set                 0      2      0     ",

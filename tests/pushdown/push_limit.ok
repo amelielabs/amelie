@@ -9,10 +9,9 @@ explain select * from test limit 1;
 [{
   "main": {
     "00": "send_all            0      0      20    # public.test (last)",
-    "01": "recv                1      0      0     ",
-    "02": "int                 0      -      0     # 1",
-    "03": "union_set           1      0      0     ",
-    "04": "ret                 1      0      -     "
+    "01": "int                 1      -      0     # 1",
+    "02": "recv                2      0      1     ",
+    "03": "ret                 2      0      -     "
   },
   "pushdown": {
     "00": "set                 0      1      0     ",
@@ -52,10 +51,9 @@ explain select * from test limit 0;
 [{
   "main": {
     "00": "send_all            0      0      20    # public.test (last)",
-    "01": "recv                1      0      0     ",
-    "02": "int                 0      -      0     # 0",
-    "03": "union_set           1      0      0     ",
-    "04": "ret                 1      0      -     "
+    "01": "int                 1      -      0     # 0",
+    "02": "recv                2      0      1     ",
+    "03": "ret                 2      0      -     "
   },
   "pushdown": {
     "00": "set                 0      1      0     ",
@@ -82,11 +80,10 @@ explain select * from test limit 1 offset 0;
 [{
   "main": {
     "00": "send_all            0      0      20    # public.test (last)",
-    "01": "recv                1      0      0     ",
-    "02": "int                 0      -      0     # 1",
-    "03": "int                 2      -      0     # 0",
-    "04": "union_set           1      0      0     ",
-    "05": "ret                 1      0      -     "
+    "01": "int                 1      -      0     # 1",
+    "02": "int                 2      -      0     # 0",
+    "03": "recv                3      0      1     ",
+    "04": "ret                 3      0      -     "
   },
   "pushdown": {
     "00": "set                 0      1      0     ",
@@ -118,11 +115,10 @@ explain select * from test limit 1 offset 1;
 [{
   "main": {
     "00": "send_all            0      0      20    # public.test (last)",
-    "01": "recv                1      0      0     ",
-    "02": "int                 0      -      0     # 1",
-    "03": "int                 2      -      0     # 1",
-    "04": "union_set           1      0      0     ",
-    "05": "ret                 1      0      -     "
+    "01": "int                 1      -      0     # 1",
+    "02": "int                 2      -      0     # 1",
+    "03": "recv                3      0      1     ",
+    "04": "ret                 3      0      -     "
   },
   "pushdown": {
     "00": "set                 0      1      0     ",
@@ -178,10 +174,9 @@ explain select * from test offset 1;
 [{
   "main": {
     "00": "send_all            0      0      20    # public.test (last)",
-    "01": "recv                1      0      0     ",
-    "02": "int                 0      -      0     # 1",
-    "03": "union_set           1      0      -1    ",
-    "04": "ret                 1      0      -     "
+    "01": "int                 1      -      0     # 1",
+    "02": "recv                2      0      -1    ",
+    "03": "ret                 2      0      -     "
   },
   "pushdown": {
     "00": "set                 0      1      0     ",

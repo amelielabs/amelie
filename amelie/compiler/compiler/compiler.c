@@ -297,23 +297,22 @@ emit_recv(Compiler* self, Stmt* stmt)
 	auto ret = stmt->ret;
 	assert(ret);
 
-	// CRECV
-	//
-	// create union and receive results
-	//
-	ret->r = op2(self, CRECV, rpin(self, TYPE_STORE), stmt->rdispatch);
-	runpin(self, stmt->rdispatch);
-	stmt->rdispatch = -1;
-
 	auto stmt_prev = self->current;
 	self->current = stmt;
 
 	// process pushdown result
-	if (stmt->id == STMT_SELECT) {
+	//
+	// create union and receive results
+	//
+	if (stmt->id == STMT_SELECT)
 		stmt->r = pushdown_recv(self, stmt->ast);
-	} else {
-		stmt->r = ret->r;
-	}
+	else
+		// DML returning
+		stmt->r = op5(self, CRECV, rpin(self, TYPE_STORE), stmt->rdispatch,
+		              -1, -1, false);
+
+	runpin(self, stmt->rdispatch);
+	stmt->rdispatch = -1;
 
 	// handle INTO and := after receive
 	if (ret->count_into > 0)

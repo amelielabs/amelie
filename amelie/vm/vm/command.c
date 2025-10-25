@@ -266,17 +266,90 @@ cclose(Vm* self, Op* op)
 		dispatch_mgr_close(&self->dtr->dispatch_mgr);
 }
 
-hot void
-crecv(Vm* self, Op* op)
+void
+cunion(Vm* self, Op* op)
 {
-	// [union, rdispatch]
-
-	// create union, wait result sets and populate
+	// [union, rset, distinct, limit, offset]
 	auto result = union_create();
 	value_set_store(reg_at(&self->r, op->a), &result->store);
 
+	// [union, set]
+	auto set = reg_at(&self->r, op->b);
+	union_add(result, (Set*)set->store);
+	value_reset(set);
+
+	// distinct
+	bool distinct = op->c;
+
+	// limit
+	int64_t limit = INT64_MAX;
+	if (op->d != -1)
+	{
+		if (unlikely(reg_at(&self->r, op->d)->type != TYPE_INT))
+			error("LIMIT: integer type expected");
+		limit = reg_at(&self->r, op->d)->integer;
+		if (unlikely(limit < 0))
+			error("LIMIT: positive integer value expected");
+	}
+
+	// offset
+	int64_t offset = 0;
+	if (op->e != -1)
+	{
+		if (unlikely(reg_at(&self->r, op->e)->type != TYPE_INT))
+			error("OFFSET: integer type expected");
+		offset = reg_at(&self->r, op->e)->integer;
+		if (unlikely(offset < 0))
+			error("OFFSET: positive integer value expected");
+	}
+
+	union_set(result, distinct, limit, offset);
+}
+
+hot static void
+crecv_as(Vm*  self,
+         int  runion,
+         int  rdispatch,
+         int  rlimit,
+         int  roffset,
+         bool distinct,
+         int  aggs)
+{
+	// create union
+	auto result = union_create();
+	value_set_store(reg_at(&self->r, runion), &result->store);
+
+	// limit
+	int64_t limit = INT64_MAX;
+	if (rlimit != -1)
+	{
+		if (unlikely(reg_at(&self->r, rlimit)->type != TYPE_INT))
+			error("LIMIT: integer type expected");
+		limit = reg_at(&self->r, rlimit)->integer;
+		if (unlikely(limit < 0))
+			error("LIMIT: positive integer value expected");
+	}
+
+	// offset
+	int64_t offset = 0;
+	if (roffset != -1)
+	{
+		if (unlikely(reg_at(&self->r, roffset)->type != TYPE_INT))
+			error("OFFSET: integer type expected");
+		offset = reg_at(&self->r, roffset)->integer;
+		if (unlikely(offset < 0))
+			error("OFFSET: positive integer value expected");
+	}
+
+	// set limit/offset and distinct
+	union_set(result, distinct, limit, offset);
+
+	// set aggs
+	if (aggs != -1)
+		union_set_aggs(result, (int*)code_data_at(self->code_data, aggs));
+
 	// get dispatch
-	auto dispatch_order = reg_at(&self->r, op->b)->integer;
+	auto dispatch_order = reg_at(&self->r, rdispatch)->integer;
 	auto dispatch = dispatch_mgr_at(&self->dtr->dispatch_mgr, dispatch_order);
 	assert(dispatch);
 
@@ -317,37 +390,17 @@ crecv(Vm* self, Op* op)
 }
 
 hot void
-cunion_set(Vm* self, Op* op)
+crecv(Vm* self, Op* op)
 {
-	// [union, distinct, limit, offset]
-	auto ref = (Union*)reg_at(&self->r, op->a)->store;
+	// [runion, rdispatch, rlimit, roffset, distinct]
+	crecv_as(self, op->a, op->b, op->c, op->d, op->e, -1);
+}
 
-	// distinct
-	bool distinct = op->b;
-
-	// limit
-	int64_t limit = INT64_MAX;
-	if (op->c != -1)
-	{
-		if (unlikely(reg_at(&self->r, op->c)->type != TYPE_INT))
-			error("LIMIT: integer type expected");
-		limit = reg_at(&self->r, op->c)->integer;
-		if (unlikely(limit < 0))
-			error("LIMIT: positive integer value expected");
-	}
-
-	// offset
-	int64_t offset = 0;
-	if (op->d != -1)
-	{
-		if (unlikely(reg_at(&self->r, op->d)->type != TYPE_INT))
-			error("OFFSET: integer type expected");
-		offset = reg_at(&self->r, op->d)->integer;
-		if (unlikely(offset < 0))
-			error("OFFSET: positive integer value expected");
-	}
-
-	union_set(ref, distinct, limit, offset);
+hot void
+crecv_aggs(Vm* self, Op* op)
+{
+	// [union, rdispatch, aggs]
+	crecv_as(self, op->a, op->b, -1, -1, true, op->c);
 }
 
 void
