@@ -47,7 +47,8 @@ program_allocate(void)
 static inline void
 program_free(Program* self)
 {
-	assert(! self->sets.list_count);
+	if (self->sets.list_count)
+		set_list_free(&self->sets);
 	code_free(&self->code);
 	code_free(&self->code_backend);
 	code_data_free(&self->code_data);

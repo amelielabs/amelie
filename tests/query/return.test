@@ -3,13 +3,13 @@
 open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "127.0.0.1", "port": 3485 }];
 connect E0 S0 127.0.0.1:3485;
 
-# test: return (last stmt)
+# test: return main implicit by last stmt
 explain select 1;
 explain begin select 1; select 2; end;
 explain begin select 1; select 2; select 3; end;
 begin select 1; select 2; end;
 
-# test: return (last stmt, if)
+# test: return main implicity, if
 explain if true then end;
 if true then end;
 
@@ -19,48 +19,242 @@ begin if true then end; select 1; end;
 explain begin if true then select 1; end; select 2; end;
 begin if true then select 1; end; select 2; end;
 
-# test: return (last stmt select into)
+# test: return main implicit select into
 explain begin declare x int; select 123 into x; end;
 begin declare x int; select 123 into x; end;
 
-# test: return var
-return x;
+# test: return main implicit var dep
+begin declare x int := 123; select x; end;
+create table test (id int primary key);
+insert into test values (1), (2), (3);
+explain begin declare x int; select id into x from test; select x; end;
+begin declare x int; select id into x from test; select x; end;
+drop table test;
+
+# test: return main explicit
+return;
+return 123;
+return select 123;
 begin declare x int; return x; end;
-begin declare x int := 123; return x; end;
 
-# test: return var format
-begin declare x int := 123; return x format; end;
-begin declare x int := 123; return x format 'json-obj'; end;
-
-## test: return var table
-#declare x table (a int, b int); select 1, 2 into x; return x
-#declare x table (a int, b int); select 1, 2 into x; return x format 'json-obj'
-#declare x table (a int, b int); select 1, 2 into x; select x format 'json-obj'
-
-# test: return from cte
+# test: return main explicit cte
 begin declare x int; with a as (return x) select 1; end;
 begin declare x int; with a as (select 1) return x; end;
 
-# test: return return
-explain begin
-	declare x int := 0;
-	return x;
+# test: return without type, no return
+create function test() begin end;
+explain select test();
+select test();
+drop function test;
+
+# test: return with type, no return
+create function test() return int
+begin end;
+explain select test();
+select test();
+drop function test;
+
+# test: return with type, stmt no return
+create function test() return int
+begin
+	select '123';
+end;
+explain select test();
+select test();
+drop function test;
+
+# test: return no type
+create function test()
+begin
+	return 123;
+end;
+
+# test: return;
+create function test()
+begin
+	return;
+end;
+explain select test();
+select test();
+drop function test;
+
+# test: return; with type
+create function test() return int
+begin
+	return;
+end;
+explain select test();
+select test();
+drop function test;
+
+# test: return null without type
+create function test()
+begin
+	return null;
+end;
+explain select test();
+select test();
+drop function test;
+
+# test: return null with type null
+create function test() return null
+begin
+	return null;
+end;
+
+# test: return null with type
+create function test() return int
+begin
+	return null;
+end;
+explain select test();
+select test();
+drop function test;
+
+# test: return type check
+create function test() return int
+begin
+	return 123;
+end;
+explain select test();
+select test();
+drop function test;
+
+create function test() return int
+begin
+	return '123';
+end;
+
+# test: return table parsing
+create function test() return table;
+create function test() return table(;
+create function test() return table(a;
+create function test() return table(a,;
+create function test() return table(a 1;
+create function test() return table(a int 1;
+create function test() return table(a int,;
+create function test() return table(a int,,;
+create function test() return table(a int,);
+create function test() return table(a int);
+
+# test: return table without return
+create function test() return table(a int)
+begin
+end;
+explain select test();
+select test();
+drop function test;
+
+# test: return table return null
+create function test() return table(a int)
+begin
+	return;
+end;
+explain select test();
+select test();
+drop function test;
+
+create function test() return table(a int)
+begin
+	return null;
+end;
+explain select test();
+select test();
+drop function test;
+
+# test: return table
+create function test() return table(a int, b int)
+begin
+	return select 1, 2;
+end;
+explain select test();
+select test();
+
+explain execute test();
+execute test();
+drop function test;
+
+# test: return table var null
+create function test() return table(a int, b int)
+begin
+	declare x table (x int, y int);
 	return x;
 end;
+explain select test();
+select test();
+explain execute test();
+execute test();
+drop function test;
+
+# test: return table var
+create function test() return table(a int, b int)
+begin
+	declare x table (x int, y int);
+	select 1,2 into x;
+	return x;
+end;
+explain select test();
+select test();
+explain execute test();
+execute test();
+drop function test;
+
+# test: return table var type mismatch
+create function test() return table(a int, b int)
+begin
+	declare x table (x int, y string);
+	select 1,2 into x;
+	return x;
+end;
+create function test() return table(a int, b int)
+begin
+	declare x table (x int);
+	select 1 into x;
+	return x;
+end;
+create function test() return table(a int)
+begin
+	declare x table (x int, y string);
+	select 1,2 into x;
+	return x;
+end;
+
+# test: return var
+create function test() return int
+begin
+	declare x int;
+	return x;
+end;
+explain select test();
+select test();
+explain execute test();
+execute test();
+drop function test;
+
+create function test() return int
+begin
+	declare x int := 123;
+	return x;
+end;
+explain select test();
+select test();
+explain execute test();
+execute test();
+drop function test;
+
+# test: return return
+create function test() return int
 begin
 	declare x int := 0;
 	return x;
 	return x;
 end;
+explain select test();
+select test();
+drop function test;
 
 # test: if return
-explain begin
-	declare x int;
-	if true then
-		x := 12;
-		return x;
-	end;
-end;
+create function test() return int
 begin
 	declare x int;
 	if true then
@@ -68,16 +262,12 @@ begin
 		return x;
 	end;
 end;
+explain select test();
+select test();
+drop function test;
 
 # test: if return return
-explain begin
-	declare x int;
-	if true then
-		x := 12;
-		return x;
-	end;
-	return x;
-end;
+create function test() return int
 begin
 	declare x int;
 	if true then
@@ -86,15 +276,11 @@ begin
 	end;
 	return x;
 end;
+explain select test();
+select test();
+drop function test;
 
-explain begin
-	declare x int;
-	if false then
-		x := 12;
-		return x;
-	end;
-	return x;
-end;
+create function test() return int
 begin
 	declare x int;
 	if false then
@@ -103,97 +289,73 @@ begin
 	end;
 	return x;
 end;
+explain select test();
+select test();
+drop function test;
 
 # test: if return return (dep)
-create table test (id int primary key);
-insert into test values (1), (2), (3);
+create table src (id int primary key);
+insert into src values (1), (2), (3);
 
-explain begin
+create function test() return int
+begin
 	declare x int;
-	select id into x from test;
+	select id into x from src;
 	if true then
 		x := x + 1;
 		return x;
 	end;
 	return x;
 end;
-begin
-	declare x int;
-	select id into x from test;
-	if true then
-		x := x + 1;
-		return x;
-	end;
-	return x;
-end;
+explain select test();
+select test();
+drop function test;
 
-explain begin
-	declare x int;
-	select id into x from test;
-	if false then
-		x := x + 1;
-		return x;
-	end;
-	return x;
-end;
+create function test() return int
 begin
 	declare x int;
-	select id into x from test;
+	select id into x from src;
 	if false then
 		x := x + 1;
 		return x;
 	end;
 	return x;
 end;
+explain select test();
+select test();
+drop function test;
 
-explain begin
-	declare x int;
-	if true then
-		select id into x from test;
-		return x;
-	end;
-	return x;
-end;
+create function test() return int
 begin
 	declare x int;
 	if true then
-		select id into x from test;
+		select id into x from src;
 		return x;
 	end;
 	return x;
 end;
+explain select test();
+select test();
+drop function test;
 
-explain begin
-	declare x int;
-	if false then
-		select id into x from test;
-		return x;
-	end;
-	return x;
-end;
+create function test() return int
 begin
 	declare x int;
 	if false then
-		select id into x from test;
+		select id into x from src;
 		return x;
 	end;
 	return x;
 end;
+explain select test();
+select test();
+drop function test;
 
 # test: for if return
-explain begin
-	declare x int := 0;
-	for i in (select id from test) do
-		if i.id > 2 then
-			return x;
-		end;
-		x := x + 1;
-	end;
-	select x;
-end;
+create function test() return int
 begin
 	declare x int := 0;
-	for i in (select id from test) do
+	for i in (select id from src) do
 		if i.id > 2 then
 			return x;
 		end;
@@ -201,12 +363,16 @@ begin
 	end;
 	select x;
 end;
+explain select test();
+select test();
+drop function test;
 
-insert into test values (4), (5);
+insert into src values (4), (5);
 
+create function test() return int
 begin
 	declare x int := 0;
-	for i in (select id from test) do
+	for i in (select id from src) do
 		if i.id > 2 then
 			return x;
 		end;
@@ -214,6 +380,11 @@ begin
 	end;
 	select x;
 end;
+explain select test();
+select test();
+drop function test;
+
+create function test() return int
 begin
 	declare x int := 0;
 	for i in ([1,2,3,4]) do
@@ -224,6 +395,11 @@ begin
 	end;
 	select x;
 end;
+explain select test();
+select test();
+drop function test;
+
+create function test() return int
 begin
 	declare x int := 0;
 	for i in ([1,2,3,4]) do
@@ -234,59 +410,78 @@ begin
 	end;
 	select x;
 end;
+explain select test();
+select test();
+drop function test;
 
 # test: return insert
-explain return insert into test values (6);
-return insert into test values (6);
-
-explain begin
-	return insert into test values (6);
-	select 1;
-end;
+create function test() return int
 begin
-	return insert into test values (6);
+	return insert into src values (6);
 	select 1;
 end;
+explain select test();
+select test();
+drop function test;
 
 # test: return insert returning
-explain return insert into test values (7) returning *;
-return insert into test values (7) returning *;
-
-explain begin
-	return insert into test values (8) returning *;
-	select 1;
-end;
+create function test() return int
 begin
-	return insert into test values (8) returning *;
+	return insert into src values (8) returning *;
 	select 1;
 end;
+
+# test: return insert returning into
+create function test() return int
+begin
+	declare x int;
+	return insert into src values (8) returning * into x;
+	select 1;
+end;
+explain select test();
+select test();
+drop function test;
+
+create function test() return int
+begin
+	declare x int;
+	insert into src values (9) returning id into x;
+	return x;
+end;
+explain select test();
+select test();
+drop function test;
 
 # test: if return insert returning
-explain begin
-	if true then
-		return insert into test values (9) returning *;
-	end;
-	select 0;
-end;
+create function test() return int
 begin
+	declare x int;
 	if true then
-		return insert into test values (9) returning *;
+		insert into src values (10) returning * into x;
+		return x;
 	end;
-	select 0;
+	return select 0;
 end;
+explain select test();
+select test();
+drop function test;
+
+# test: if return insert returning
+create function test() return int
 begin
+	declare x int;
 	if false then
-		return insert into test values (9) returning *;
+		insert into src values (10) returning * into x;
+		return x;
 	end;
-	select 0;
+	return select 0;
 end;
+explain select test();
+select test();
+drop function test;
 
 # test: return select
-explain return select 1 as a, 2 as b;
-return select 1 as a, 2 as b;
-return select 1 as a, 2 as b format 'json-obj';
-return select system.tables();
-
+create function test() return json
 begin
 	declare list json := [];
 	for it in system.tables() do
@@ -294,9 +489,13 @@ begin
 	end;
 	return list;
 end;
+explain select test();
+select test();
+drop function test;
 
 select `schema`, name from system.tables();
 
+create function test() return json
 begin
 	declare list json := [];
 	for it in system.tables() do
@@ -304,24 +503,19 @@ begin
 	end;
 	return list;
 end;
-begin
-	declare list json := [];
-	for it in system.tables() do
-		list := list::append({"schema": it.schema, "name": it.name});
-	end;
-	select list;
-end;
+explain select test();
+select test();
+drop function test;
 
-begin
-	declare list json := [];
-	for it in system.tables() do
-		list := list::append({"schema": it.schema, "name": it.name});
-	end;
-	select list;
-end;
+select
+[] -> self::append ({
+	"schema": it.schema,
+	"name": it.name
+})
+from
+	system.tables() as it;
 
-select [] -> self::append({"schema": it.schema, "name": it.name}) from system.tables() as it;
-
+create function test() return json
 begin
 	declare list json;
 	select
@@ -330,7 +524,11 @@ begin
 		list from system.tables() as it;
 	return list;
 end;
+explain select test();
+select test();
+drop function test;
 
+create function test() return json
 begin
 	declare list json;
 	select
@@ -341,39 +539,43 @@ begin
 		system.tables() as it;
 	return list;
 end;
+explain select test();
+select test();
+drop function test;
 
-# test: return ;
-explain return;
-return;
-
-explain begin
-	select 123;
-	return;
-	select 7;
-end;
+create function test() return table (id int)
 begin
-	select 123;
-	return;
-	select 7;
+	declare x table (id int);
+	select * into x from src;
+	return x;
 end;
+explain select test();
+select test();
+drop function test;
 
+# test: return expr
+create function test(arg int) return int
+begin
+	return arg * arg;
+end;
+explain select test();
+explain select test(123);
+select test(123);
+drop function test;
+
+create function test(mul int) return int
 begin
 	declare x int := 0;
 	for i in ([1,2,3]) do
 		x := i::int;
-		return;
 	end;
-	select x;
+	return x * mul;
 end;
+explain select test(-1);
+select test(-1);
+drop function test;
 
-# test: return expr
-explain return 123;
-return 123;
-return 2 * 2;
-return select 123;
-return select (select 123);
-
-drop table test;
+drop table src;
 
 disconnect S0;
 close E0;

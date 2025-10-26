@@ -154,6 +154,7 @@ parse_stmt_return(Stmt* self)
 			stmt_push(self, semicolon);
 			return true;
 		}
+		stmt_push(self, name);
 	}
 
 	// RETURN;

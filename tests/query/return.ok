@@ -1,11 +1,11 @@
 open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "127.0.0.1", "port": 3485 }];
 connect E0 S0 127.0.0.1:3485;
-# test: return (last stmt)
+# test: return main implicit by last stmt
 explain select 1;
 [{
   "main": {
     "00": "int                 0      -      0     # 1",
-    "01": "ret                 0      -1     -     "
+    "01": "ret                 0      0      -     "
   },
   "access": []
 }]
@@ -14,7 +14,7 @@ explain begin select 1; select 2; end;
   "main": {
     "00": "int                 0      -      0     # 1",
     "01": "int                 1      -      0     # 2",
-    "02": "ret                 1      -1     -     "
+    "02": "ret                 1      0      -     "
   },
   "access": []
 }]
@@ -24,22 +24,19 @@ explain begin select 1; select 2; select 3; end;
     "00": "int                 0      -      0     # 1",
     "01": "int                 1      -      0     # 2",
     "02": "int                 2      -      0     # 3",
-    "03": "ret                 2      -1     -     "
+    "03": "ret                 2      0      -     "
   },
   "access": []
 }]
 begin select 1; select 2; end;
 [2]
-# test: return (last stmt, if)
+# test: return main implicity, if
 explain if true then end;
 [{
   "main": {
-    "00": "jmp                 2      0      0     ",
-    "01": "jmp                 5      0      0     ",
-    "02": "bool                0      1      0     ",
-    "03": "jntr                5      0      0     ",
-    "04": "jmp                 1      0      0     ",
-    "05": "ret                 -1     -1     -     "
+    "00": "bool                0      1      0     ",
+    "01": "jntr                2      0      0     ",
+    "02": "ret                 -1     0      -     "
   },
   "access": []
 }]
@@ -47,13 +44,10 @@ if true then end;
 explain begin if true then end; select 1; end;
 [{
   "main": {
-    "00": "jmp                 2      0      0     ",
-    "01": "jmp                 5      0      0     ",
-    "02": "bool                0      1      0     ",
-    "03": "jntr                5      0      0     ",
-    "04": "jmp                 1      0      0     ",
-    "05": "int                 0      -      0     # 1",
-    "06": "ret                 0      -1     -     "
+    "00": "bool                0      1      0     ",
+    "01": "jntr                2      0      0     ",
+    "02": "int                 0      -      0     # 1",
+    "03": "ret                 0      0      -     "
   },
   "access": []
 }]
@@ -62,20 +56,17 @@ begin if true then end; select 1; end;
 explain begin if true then select 1; end; select 2; end;
 [{
   "main": {
-    "00": "jmp                 2      0      0     ",
-    "01": "jmp                 6      0      0     ",
-    "02": "bool                0      1      0     ",
-    "03": "jntr                6      0      0     ",
-    "04": "int                 0      -      0     # 1",
-    "05": "jmp                 1      0      0     ",
-    "06": "int                 1      -      0     # 2",
-    "07": "ret                 1      -1     -     "
+    "00": "bool                0      1      0     ",
+    "01": "jntr                3      0      0     ",
+    "02": "int                 0      -      0     # 1",
+    "03": "int                 1      -      0     # 2",
+    "04": "ret                 1      0      -     "
   },
   "access": []
 }]
 begin if true then select 1; end; select 2; end;
 [2]
-# test: return (last stmt select into)
+# test: return main implicit select into
 explain begin declare x int; select 123 into x; end;
 [{
   "main": {
@@ -83,78 +74,613 @@ explain begin declare x int; select 123 into x; end;
     "01": "int                 0      -      0     # 123",
     "02": "var_set             0      0      0     ",
     "03": "free                0      0      0     ",
-    "04": "ret                 -1     -1     -     "
+    "04": "ret                 -1     0      -     "
   },
   "access": []
 }]
 begin declare x int; select 123 into x; end;
-# test: return var
-return x;
-{"msg": "return ❰x❱ ⟵ column not found"}
-begin declare x int; return x; end;
-[null]
-begin declare x int := 123; return x; end;
+# test: return main implicit var dep
+begin declare x int := 123; select x; end;
 [123]
-# test: return var format
-begin declare x int := 123; return x format; end;
-{"msg": "begin declare x int := 123; return x format❰;❱ ⟵ string expected"}
-begin declare x int := 123; return x format 'json-obj'; end;
-[{"col1": 123}]
-# test: return from cte
-begin declare x int; with a as (return x) select 1; end;
-{"msg": "begin declare x int; with a as (return ❰x❱ ⟵ statement cannot be used inside CTE"}
-begin declare x int; with a as (select 1) return x; end;
-{"msg": "begin declare x int; with a as (select 1) return ❰x❱ ⟵ statement cannot be used inside CTE"}
-# test: return return
-explain begin
-	declare x int := 0;
-	return x;
-	return x;
-end;
+create table test (id int primary key);
+insert into test values (1), (2), (3);
+explain begin declare x int; select id into x from test; select x; end;
 [{
   "main": {
     "00": "push_nulls          1      0      0     ",
-    "01": "int                 0      -      0     # 0",
+    "01": "send_all            0      0      20    # public.test (select, closing)",
+    "02": "recv                1      0      -1    ",
+    "03": "var_set             0      0      1     ",
+    "04": "free                1      0      0     ",
+    "05": "var                 0      0      0     ",
+    "06": "ret                 0      0      -     "
+  },
+  "pushdown": {
+    "00": "set                 0      1      0     ",
+    "01": "table_open_part     1      0      6     # public.test (primary)",
+    "02": "table_readi32       2      1      0     ",
+    "03": "push                2      0      0     ",
+    "04": "set_add             0      0      0     ",
+    "05": "table_next          1      2      0     ",
+    "06": "free                1      0      0     ",
+    "07": "ret                 0      0      -     "
+  },
+  "access": [["public.test", "ro"]]
+}]
+begin declare x int; select id into x from test; select x; end;
+[1]
+drop table test;
+# test: return main explicit
+return;
+{"msg": "❰return❱ ⟵ RETURN can be used only within UDF"}
+return 123;
+{"msg": "❰return❱ ⟵ RETURN can be used only within UDF"}
+return select 123;
+{"msg": "❰return❱ ⟵ RETURN can be used only within UDF"}
+begin declare x int; return x; end;
+{"msg": "begin declare x int; ❰return❱ ⟵ RETURN can be used only within UDF"}
+# test: return main explicit cte
+begin declare x int; with a as (return x) select 1; end;
+{"msg": "begin declare x int; with a as (❰return❱ ⟵ RETURN can be used only within UDF"}
+begin declare x int; with a as (select 1) return x; end;
+{"msg": "begin declare x int; with a as (select 1) ❰return❱ ⟵ RETURN can be used only within UDF"}
+# test: return without type, no return
+create function test() begin end;
+explain select test();
+[{
+  "main": {
+    "00": "call_udf            0      -      -     # public.test()",
+    "01": "ret                 0      0      -     "
+  },
+  "access": [["public.test", "call"]],
+  "calls": [{
+    "function": "public.test",
+    "main": {
+      "00": "ret                 -1     0      -     "
+    },
+    "access": []
+  }]
+}]
+select test();
+[null]
+drop function test;
+# test: return with type, no return
+create function test() return int
+begin end;
+explain select test();
+[{
+  "main": {
+    "00": "call_udf            0      -      -     # public.test()",
+    "01": "ret                 0      0      -     "
+  },
+  "access": [["public.test", "call"]],
+  "calls": [{
+    "function": "public.test",
+    "main": {
+      "00": "ret                 -1     0      -     "
+    },
+    "access": []
+  }]
+}]
+select test();
+[null]
+drop function test;
+# test: return with type, stmt no return
+create function test() return int
+begin
+	select '123';
+end;
+explain select test();
+[{
+  "main": {
+    "00": "call_udf            0      -      -     # public.test()",
+    "01": "ret                 0      0      -     "
+  },
+  "access": [["public.test", "call"]],
+  "calls": [{
+    "function": "public.test",
+    "main": {
+      "00": "string              0      0      0     # 123",
+      "01": "ret                 -1     0      -     "
+    },
+    "access": []
+  }]
+}]
+select test();
+[null]
+drop function test;
+# test: return no type
+create function test()
+begin
+	return 123;
+end;
+{"msg": "begin\n\treturn ❰123❱ ⟵ RETURN type 'int' mismatch function type 'null'"}
+# test: return;
+create function test()
+begin
+	return;
+end;
+explain select test();
+[{
+  "main": {
+    "00": "call_udf            0      -      -     # public.test()",
+    "01": "ret                 0      0      -     "
+  },
+  "access": [["public.test", "call"]],
+  "calls": [{
+    "function": "public.test",
+    "main": {
+      "00": "ret                 -1     0      -     "
+    },
+    "access": []
+  }]
+}]
+select test();
+[null]
+drop function test;
+# test: return; with type
+create function test() return int
+begin
+	return;
+end;
+explain select test();
+[{
+  "main": {
+    "00": "call_udf            0      -      -     # public.test()",
+    "01": "ret                 0      0      -     "
+  },
+  "access": [["public.test", "call"]],
+  "calls": [{
+    "function": "public.test",
+    "main": {
+      "00": "ret                 -1     0      -     "
+    },
+    "access": []
+  }]
+}]
+select test();
+[null]
+drop function test;
+# test: return null without type
+create function test()
+begin
+	return null;
+end;
+explain select test();
+[{
+  "main": {
+    "00": "call_udf            0      -      -     # public.test()",
+    "01": "ret                 0      0      -     "
+  },
+  "access": [["public.test", "call"]],
+  "calls": [{
+    "function": "public.test",
+    "main": {
+      "00": "null                0      0      0     ",
+      "01": "ret                 0      0      -     "
+    },
+    "access": []
+  }]
+}]
+select test();
+[null]
+drop function test;
+# test: return null with type null
+create function test() return null
+begin
+	return null;
+end;
+{"msg": "create function test() return ❰null❱ ⟵ unrecognized data type"}
+# test: return null with type
+create function test() return int
+begin
+	return null;
+end;
+explain select test();
+[{
+  "main": {
+    "00": "call_udf            0      -      -     # public.test()",
+    "01": "ret                 0      0      -     "
+  },
+  "access": [["public.test", "call"]],
+  "calls": [{
+    "function": "public.test",
+    "main": {
+      "00": "null                0      0      0     ",
+      "01": "ret                 0      0      -     "
+    },
+    "access": []
+  }]
+}]
+select test();
+[null]
+drop function test;
+# test: return type check
+create function test() return int
+begin
+	return 123;
+end;
+explain select test();
+[{
+  "main": {
+    "00": "call_udf            0      -      -     # public.test()",
+    "01": "ret                 0      0      -     "
+  },
+  "access": [["public.test", "call"]],
+  "calls": [{
+    "function": "public.test",
+    "main": {
+      "00": "int                 0      -      0     # 123",
+      "01": "ret                 0      0      -     "
+    },
+    "access": []
+  }]
+}]
+select test();
+[123]
+drop function test;
+create function test() return int
+begin
+	return '123';
+end;
+{"msg": "begin\n\treturn ❰'123'❱ ⟵ RETURN type 'string' mismatch function type 'int'"}
+# test: return table parsing
+create function test() return table;
+{"msg": "create function test() return table❰;❱ ⟵ ( expected"}
+create function test() return table(;
+{"msg": "create function test() return table(❰;❱ ⟵ name expected"}
+create function test() return table(a;
+{"msg": "create function test() return table(a❰;❱ ⟵ unrecognized data type"}
+create function test() return table(a,;
+{"msg": "create function test() return table(a❰,❱ ⟵ unrecognized data type"}
+create function test() return table(a 1;
+{"msg": "create function test() return table(a ❰1❱ ⟵ unrecognized data type"}
+create function test() return table(a int 1;
+{"msg": "create function test() return table(a int ❰1❱ ⟵ ) expected"}
+create function test() return table(a int,;
+{"msg": "create function test() return table(a int,❰;❱ ⟵ name expected"}
+create function test() return table(a int,,;
+{"msg": "create function test() return table(a int,❰,❱ ⟵ name expected"}
+create function test() return table(a int,);
+{"msg": "create function test() return table(a int,❰)❱ ⟵ name expected"}
+create function test() return table(a int);
+{"msg": "create function test() return table(a int)❰;❱ ⟵ BEGIN expected"}
+# test: return table without return
+create function test() return table(a int)
+begin
+end;
+explain select test();
+[{
+  "main": {
+    "00": "call_udf            0      -      -     # public.test()",
+    "01": "ret                 0      0      -     "
+  },
+  "access": [["public.test", "call"]],
+  "calls": [{
+    "function": "public.test",
+    "main": {
+      "00": "ret                 -1     0      -     "
+    },
+    "access": []
+  }]
+}]
+select test();
+[null]
+drop function test;
+# test: return table return null
+create function test() return table(a int)
+begin
+	return;
+end;
+explain select test();
+[{
+  "main": {
+    "00": "call_udf            0      -      -     # public.test()",
+    "01": "ret                 0      0      -     "
+  },
+  "access": [["public.test", "call"]],
+  "calls": [{
+    "function": "public.test",
+    "main": {
+      "00": "ret                 -1     0      -     "
+    },
+    "access": []
+  }]
+}]
+select test();
+[null]
+drop function test;
+create function test() return table(a int)
+begin
+	return null;
+end;
+explain select test();
+[{
+  "main": {
+    "00": "call_udf            0      -      -     # public.test()",
+    "01": "ret                 0      0      -     "
+  },
+  "access": [["public.test", "call"]],
+  "calls": [{
+    "function": "public.test",
+    "main": {
+      "00": "null                0      0      0     ",
+      "01": "ret                 0      0      -     "
+    },
+    "access": []
+  }]
+}]
+select test();
+[null]
+drop function test;
+# test: return table
+create function test() return table(a int, b int)
+begin
+	return select 1, 2;
+end;
+explain select test();
+[{
+  "main": {
+    "00": "call_udf            0      -      -     # public.test()",
+    "01": "ret                 0      0      -     "
+  },
+  "access": [["public.test", "call"]],
+  "calls": [{
+    "function": "public.test",
+    "main": {
+      "00": "set                 0      2      0     ",
+      "01": "int                 1      -      0     # 1",
+      "02": "push                1      0      0     ",
+      "03": "int                 1      -      0     # 2",
+      "04": "push                1      0      0     ",
+      "05": "set_add             0      0      0     ",
+      "06": "ret                 0      0      -     "
+    },
+    "access": []
+  }]
+}]
+select test();
+[1]
+explain execute test();
+[{
+  "main": {
+    "00": "set                 0      2      0     ",
+    "01": "int                 1      -      0     # 1",
+    "02": "push                1      0      0     ",
+    "03": "int                 1      -      0     # 2",
+    "04": "push                1      0      0     ",
+    "05": "set_add             0      0      0     ",
+    "06": "ret                 0      0      -     "
+  },
+  "access": []
+}]
+execute test();
+[[1, 2]]
+drop function test;
+# test: return table var null
+create function test() return table(a int, b int)
+begin
+	declare x table (x int, y int);
+	return x;
+end;
+explain select test();
+[{
+  "main": {
+    "00": "call_udf            0      -      -     # public.test()",
+    "01": "ret                 0      0      -     "
+  },
+  "access": [["public.test", "call"]],
+  "calls": [{
+    "function": "public.test",
+    "main": {
+      "00": "push_nulls          1      0      0     ",
+      "01": "var                 0      0      0     ",
+      "02": "ret                 0      0      -     "
+    },
+    "access": []
+  }]
+}]
+select test();
+[null]
+explain execute test();
+[{
+  "main": {
+    "00": "push_nulls          1      0      0     ",
+    "01": "var                 0      0      0     ",
+    "02": "ret                 0      0      -     "
+  },
+  "access": []
+}]
+execute test();
+[[null, null]]
+drop function test;
+# test: return table var
+create function test() return table(a int, b int)
+begin
+	declare x table (x int, y int);
+	select 1,2 into x;
+	return x;
+end;
+explain select test();
+[{
+  "main": {
+    "00": "call_udf            0      -      -     # public.test()",
+    "01": "ret                 0      0      -     "
+  },
+  "access": [["public.test", "call"]],
+  "calls": [{
+    "function": "public.test",
+    "main": {
+      "00": "push_nulls          1      0      0     ",
+      "01": "set                 0      2      0     ",
+      "02": "int                 1      -      0     # 1",
+      "03": "push                1      0      0     ",
+      "04": "int                 1      -      0     # 2",
+      "05": "push                1      0      0     ",
+      "06": "set_add             0      0      0     ",
+      "07": "var_mov             0      0      0     ",
+      "08": "var                 0      0      0     ",
+      "09": "ret                 0      0      -     "
+    },
+    "access": []
+  }]
+}]
+select test();
+[1]
+explain execute test();
+[{
+  "main": {
+    "00": "push_nulls          1      0      0     ",
+    "01": "set                 0      2      0     ",
+    "02": "int                 1      -      0     # 1",
+    "03": "push                1      0      0     ",
+    "04": "int                 1      -      0     # 2",
+    "05": "push                1      0      0     ",
+    "06": "set_add             0      0      0     ",
+    "07": "var_mov             0      0      0     ",
+    "08": "var                 0      0      0     ",
+    "09": "ret                 0      0      -     "
+  },
+  "access": []
+}]
+execute test();
+[[1, 2]]
+drop function test;
+# test: return table var type mismatch
+create function test() return table(a int, b int)
+begin
+	declare x table (x int, y string);
+	select 1,2 into x;
+	return x;
+end;
+{"msg": "begin\n\tdeclare x table (x int, y string);\n\t❰select❱ ⟵ variable table columns mismatch"}
+create function test() return table(a int, b int)
+begin
+	declare x table (x int);
+	select 1 into x;
+	return x;
+end;
+{"msg": "begin\n\tdeclare x table (x int);\n\tselect 1 into x;\n\treturn ❰x❱ ⟵ RETURN columns mismatch function returning columns"}
+create function test() return table(a int)
+begin
+	declare x table (x int, y string);
+	select 1,2 into x;
+	return x;
+end;
+{"msg": "begin\n\tdeclare x table (x int, y string);\n\t❰select❱ ⟵ variable table columns mismatch"}
+# test: return var
+create function test() return int
+begin
+	declare x int;
+	return x;
+end;
+explain select test();
+[{
+  "main": {
+    "00": "call_udf            0      -      -     # public.test()",
+    "01": "ret                 0      0      -     "
+  },
+  "access": [["public.test", "call"]],
+  "calls": [{
+    "function": "public.test",
+    "main": {
+      "00": "push_nulls          1      0      0     ",
+      "01": "var                 0      0      0     ",
+      "02": "ret                 0      0      -     "
+    },
+    "access": []
+  }]
+}]
+select test();
+[null]
+explain execute test();
+[{
+  "main": {
+    "00": "push_nulls          1      0      0     ",
+    "01": "var                 0      0      0     ",
+    "02": "ret                 0      0      -     "
+  },
+  "access": []
+}]
+execute test();
+[null]
+drop function test;
+create function test() return int
+begin
+	declare x int := 123;
+	return x;
+end;
+explain select test();
+[{
+  "main": {
+    "00": "call_udf            0      -      -     # public.test()",
+    "01": "ret                 0      0      -     "
+  },
+  "access": [["public.test", "call"]],
+  "calls": [{
+    "function": "public.test",
+    "main": {
+      "00": "push_nulls          1      0      0     ",
+      "01": "int                 0      -      0     # 123",
+      "02": "var_set             0      0      0     ",
+      "03": "free                0      0      0     ",
+      "04": "var                 0      0      0     ",
+      "05": "ret                 0      0      -     "
+    },
+    "access": []
+  }]
+}]
+select test();
+[123]
+explain execute test();
+[{
+  "main": {
+    "00": "push_nulls          1      0      0     ",
+    "01": "int                 0      -      0     # 123",
     "02": "var_set             0      0      0     ",
     "03": "free                0      0      0     ",
     "04": "var                 0      0      0     ",
-    "05": "ret                 0      -1     -     ",
-    "06": "var                 1      0      0     ",
-    "07": "ret                 1      -1     -     "
+    "05": "ret                 0      0      -     "
   },
   "access": []
 }]
+execute test();
+[123]
+drop function test;
+# test: return return
+create function test() return int
 begin
 	declare x int := 0;
 	return x;
 	return x;
 end;
+explain select test();
+[{
+  "main": {
+    "00": "call_udf            0      -      -     # public.test()",
+    "01": "ret                 0      0      -     "
+  },
+  "access": [["public.test", "call"]],
+  "calls": [{
+    "function": "public.test",
+    "main": {
+      "00": "push_nulls          1      0      0     ",
+      "01": "int                 0      -      0     # 0",
+      "02": "var_set             0      0      0     ",
+      "03": "free                0      0      0     ",
+      "04": "var                 0      0      0     ",
+      "05": "ret                 0      0      -     ",
+      "06": "var                 1      0      0     ",
+      "07": "ret                 1      0      -     "
+    },
+    "access": []
+  }]
+}]
+select test();
 [0]
+drop function test;
 # test: if return
-explain begin
-	declare x int;
-	if true then
-		x := 12;
-		return x;
-	end;
-end;
-[{
-  "main": {
-    "00": "push_nulls          1      0      0     ",
-    "01": "jmp                 3      0      0     ",
-    "02": "jmp                 11     0      0     ",
-    "03": "bool                0      1      0     ",
-    "04": "jntr                11     0      0     ",
-    "05": "int                 0      -      0     # 12",
-    "06": "var_set             0      0      0     ",
-    "07": "free                0      0      0     ",
-    "08": "var                 0      0      0     ",
-    "09": "ret                 0      -1     -     ",
-    "10": "jmp                 2      0      0     ",
-    "11": "ret                 -1     -1     -     "
-  },
-  "access": []
-}]
+create function test() return int
 begin
 	declare x int;
 	if true then
@@ -162,34 +688,34 @@ begin
 		return x;
 	end;
 end;
+explain select test();
+[{
+  "main": {
+    "00": "call_udf            0      -      -     # public.test()",
+    "01": "ret                 0      0      -     "
+  },
+  "access": [["public.test", "call"]],
+  "calls": [{
+    "function": "public.test",
+    "main": {
+      "00": "push_nulls          1      0      0     ",
+      "01": "bool                0      1      0     ",
+      "02": "jntr                8      0      0     ",
+      "03": "int                 0      -      0     # 12",
+      "04": "var_set             0      0      0     ",
+      "05": "free                0      0      0     ",
+      "06": "var                 0      0      0     ",
+      "07": "ret                 0      0      -     ",
+      "08": "ret                 -1     0      -     "
+    },
+    "access": []
+  }]
+}]
+select test();
 [12]
+drop function test;
 # test: if return return
-explain begin
-	declare x int;
-	if true then
-		x := 12;
-		return x;
-	end;
-	return x;
-end;
-[{
-  "main": {
-    "00": "push_nulls          1      0      0     ",
-    "01": "jmp                 3      0      0     ",
-    "02": "jmp                 11     0      0     ",
-    "03": "bool                0      1      0     ",
-    "04": "jntr                11     0      0     ",
-    "05": "int                 0      -      0     # 12",
-    "06": "var_set             0      0      0     ",
-    "07": "free                0      0      0     ",
-    "08": "var                 0      0      0     ",
-    "09": "ret                 0      -1     -     ",
-    "10": "jmp                 2      0      0     ",
-    "11": "var                 1      0      0     ",
-    "12": "ret                 1      -1     -     "
-  },
-  "access": []
-}]
+create function test() return int
 begin
 	declare x int;
 	if true then
@@ -198,33 +724,34 @@ begin
 	end;
 	return x;
 end;
+explain select test();
+[{
+  "main": {
+    "00": "call_udf            0      -      -     # public.test()",
+    "01": "ret                 0      0      -     "
+  },
+  "access": [["public.test", "call"]],
+  "calls": [{
+    "function": "public.test",
+    "main": {
+      "00": "push_nulls          1      0      0     ",
+      "01": "bool                0      1      0     ",
+      "02": "jntr                8      0      0     ",
+      "03": "int                 0      -      0     # 12",
+      "04": "var_set             0      0      0     ",
+      "05": "free                0      0      0     ",
+      "06": "var                 0      0      0     ",
+      "07": "ret                 0      0      -     ",
+      "08": "var                 1      0      0     ",
+      "09": "ret                 1      0      -     "
+    },
+    "access": []
+  }]
+}]
+select test();
 [12]
-explain begin
-	declare x int;
-	if false then
-		x := 12;
-		return x;
-	end;
-	return x;
-end;
-[{
-  "main": {
-    "00": "push_nulls          1      0      0     ",
-    "01": "jmp                 3      0      0     ",
-    "02": "jmp                 11     0      0     ",
-    "03": "bool                0      0      0     ",
-    "04": "jntr                11     0      0     ",
-    "05": "int                 0      -      0     # 12",
-    "06": "var_set             0      0      0     ",
-    "07": "free                0      0      0     ",
-    "08": "var                 0      0      0     ",
-    "09": "ret                 0      -1     -     ",
-    "10": "jmp                 2      0      0     ",
-    "11": "var                 1      0      0     ",
-    "12": "ret                 1      -1     -     "
-  },
-  "access": []
-}]
+drop function test;
+create function test() return int
 begin
 	declare x int;
 	if false then
@@ -233,222 +760,247 @@ begin
 	end;
 	return x;
 end;
+explain select test();
+[{
+  "main": {
+    "00": "call_udf            0      -      -     # public.test()",
+    "01": "ret                 0      0      -     "
+  },
+  "access": [["public.test", "call"]],
+  "calls": [{
+    "function": "public.test",
+    "main": {
+      "00": "push_nulls          1      0      0     ",
+      "01": "bool                0      0      0     ",
+      "02": "jntr                8      0      0     ",
+      "03": "int                 0      -      0     # 12",
+      "04": "var_set             0      0      0     ",
+      "05": "free                0      0      0     ",
+      "06": "var                 0      0      0     ",
+      "07": "ret                 0      0      -     ",
+      "08": "var                 1      0      0     ",
+      "09": "ret                 1      0      -     "
+    },
+    "access": []
+  }]
+}]
+select test();
 [null]
+drop function test;
 # test: if return return (dep)
-create table test (id int primary key);
-insert into test values (1), (2), (3);
-explain begin
-	declare x int;
-	select id into x from test;
-	if true then
-		x := x + 1;
-		return x;
-	end;
-	return x;
-end;
-[{
-  "main": {
-    "00": "push_nulls          1      0      0     ",
-    "01": "union               0      0      0     ",
-    "02": "send_all            0      -      0     # public.test (last)",
-    "03": "union_recv          0      0      0     ",
-    "04": "union_set           0      0      -1    ",
-    "05": "var_set             0      0      0     ",
-    "06": "free                0      0      0     ",
-    "07": "jmp                 9      0      0     ",
-    "08": "jmp                 19     0      0     ",
-    "09": "bool                0      1      0     ",
-    "10": "jntr                19     0      0     ",
-    "11": "var                 0      0      0     ",
-    "12": "int                 1      -      0     # 1",
-    "13": "addii               2      0      1     ",
-    "14": "var_set             0      0      2     ",
-    "15": "free                2      0      0     ",
-    "16": "var                 0      0      0     ",
-    "17": "ret                 0      -1     -     ",
-    "18": "jmp                 8      0      0     ",
-    "19": "var                 1      0      0     ",
-    "20": "ret                 1      -1     -     "
-  },
-  "pushdown": {
-    "00": "set                 0      1      0     ",
-    "01": "table_open_part     1      0      6     # public.test (primary)",
-    "02": "table_readi32       2      1      0     ",
-    "03": "push                2      0      0     ",
-    "04": "set_add             0      0      0     ",
-    "05": "table_next          1      2      0     ",
-    "06": "free                1      0      0     ",
-    "07": "ret                 0      -1     -     "
-  },
-  "access": [["public.test", "ro"]]
-}]
+create table src (id int primary key);
+insert into src values (1), (2), (3);
+create function test() return int
 begin
 	declare x int;
-	select id into x from test;
+	select id into x from src;
 	if true then
 		x := x + 1;
 		return x;
 	end;
 	return x;
 end;
+explain select test();
+[{
+  "main": {
+    "00": "call_udf            0      -      -     # public.test()",
+    "01": "close               0      0      0     ",
+    "02": "ret                 0      0      -     "
+  },
+  "access": [["public.test", "call"], ["public.src", "ro"]],
+  "calls": [{
+    "function": "public.test",
+    "main": {
+      "00": "push_nulls          1      0      0     ",
+      "01": "send_all            0      0      19    # public.src (select, closing)",
+      "02": "recv                1      0      -1    ",
+      "03": "var_set             0      0      1     ",
+      "04": "free                1      0      0     ",
+      "05": "bool                0      1      0     ",
+      "06": "jntr                14     0      0     ",
+      "07": "var                 0      0      0     ",
+      "08": "int                 1      -      0     # 1",
+      "09": "addii               2      0      1     ",
+      "10": "var_set             0      0      2     ",
+      "11": "free                2      0      0     ",
+      "12": "var                 0      0      0     ",
+      "13": "ret                 0      0      -     ",
+      "14": "var                 1      0      0     ",
+      "15": "ret                 1      0      -     "
+    },
+    "pushdown": {
+      "00": "set                 0      1      0     ",
+      "01": "table_open_part     1      0      6     # public.src (primary)",
+      "02": "table_readi32       2      1      0     ",
+      "03": "push                2      0      0     ",
+      "04": "set_add             0      0      0     ",
+      "05": "table_next          1      2      0     ",
+      "06": "free                1      0      0     ",
+      "07": "ret                 0      0      -     "
+    },
+    "access": [["public.src", "ro"]]
+  }]
+}]
+select test();
 [2]
-explain begin
+drop function test;
+create function test() return int
+begin
 	declare x int;
-	select id into x from test;
+	select id into x from src;
 	if false then
 		x := x + 1;
 		return x;
 	end;
 	return x;
 end;
+explain select test();
 [{
   "main": {
-    "00": "push_nulls          1      0      0     ",
-    "01": "union               0      0      0     ",
-    "02": "send_all            0      -      0     # public.test (last)",
-    "03": "union_recv          0      0      0     ",
-    "04": "union_set           0      0      -1    ",
-    "05": "var_set             0      0      0     ",
-    "06": "free                0      0      0     ",
-    "07": "jmp                 9      0      0     ",
-    "08": "jmp                 19     0      0     ",
-    "09": "bool                0      0      0     ",
-    "10": "jntr                19     0      0     ",
-    "11": "var                 0      0      0     ",
-    "12": "int                 1      -      0     # 1",
-    "13": "addii               2      0      1     ",
-    "14": "var_set             0      0      2     ",
-    "15": "free                2      0      0     ",
-    "16": "var                 0      0      0     ",
-    "17": "ret                 0      -1     -     ",
-    "18": "jmp                 8      0      0     ",
-    "19": "var                 1      0      0     ",
-    "20": "ret                 1      -1     -     "
+    "00": "call_udf            0      -      -     # public.test()",
+    "01": "close               0      0      0     ",
+    "02": "ret                 0      0      -     "
   },
-  "pushdown": {
-    "00": "set                 0      1      0     ",
-    "01": "table_open_part     1      0      6     # public.test (primary)",
-    "02": "table_readi32       2      1      0     ",
-    "03": "push                2      0      0     ",
-    "04": "set_add             0      0      0     ",
-    "05": "table_next          1      2      0     ",
-    "06": "free                1      0      0     ",
-    "07": "ret                 0      -1     -     "
-  },
-  "access": [["public.test", "ro"]]
+  "access": [["public.test", "call"], ["public.src", "ro"]],
+  "calls": [{
+    "function": "public.test",
+    "main": {
+      "00": "push_nulls          1      0      0     ",
+      "01": "send_all            0      0      19    # public.src (select, closing)",
+      "02": "recv                1      0      -1    ",
+      "03": "var_set             0      0      1     ",
+      "04": "free                1      0      0     ",
+      "05": "bool                0      0      0     ",
+      "06": "jntr                14     0      0     ",
+      "07": "var                 0      0      0     ",
+      "08": "int                 1      -      0     # 1",
+      "09": "addii               2      0      1     ",
+      "10": "var_set             0      0      2     ",
+      "11": "free                2      0      0     ",
+      "12": "var                 0      0      0     ",
+      "13": "ret                 0      0      -     ",
+      "14": "var                 1      0      0     ",
+      "15": "ret                 1      0      -     "
+    },
+    "pushdown": {
+      "00": "set                 0      1      0     ",
+      "01": "table_open_part     1      0      6     # public.src (primary)",
+      "02": "table_readi32       2      1      0     ",
+      "03": "push                2      0      0     ",
+      "04": "set_add             0      0      0     ",
+      "05": "table_next          1      2      0     ",
+      "06": "free                1      0      0     ",
+      "07": "ret                 0      0      -     "
+    },
+    "access": [["public.src", "ro"]]
+  }]
 }]
-begin
-	declare x int;
-	select id into x from test;
-	if false then
-		x := x + 1;
-		return x;
-	end;
-	return x;
-end;
+select test();
 [1]
-explain begin
-	declare x int;
-	if true then
-		select id into x from test;
-		return x;
-	end;
-	return x;
-end;
-[{
-  "main": {
-    "00": "push_nulls          1      0      0     ",
-    "01": "jmp                 3      0      0     ",
-    "02": "jmp                 14     0      0     ",
-    "03": "bool                0      1      0     ",
-    "04": "jntr                14     0      0     ",
-    "05": "union               0      0      0     ",
-    "06": "send_all            0      -      0     # public.test",
-    "07": "union_recv          0      0      0     ",
-    "08": "union_set           0      0      -1    ",
-    "09": "var_set             0      0      0     ",
-    "10": "free                0      0      0     ",
-    "11": "var                 0      0      0     ",
-    "12": "ret                 0      -1     -     ",
-    "13": "jmp                 2      0      0     ",
-    "14": "close               0      0      0     ",
-    "15": "var                 1      0      0     ",
-    "16": "ret                 1      -1     -     "
-  },
-  "pushdown": {
-    "00": "set                 0      1      0     ",
-    "01": "table_open_part     1      0      6     # public.test (primary)",
-    "02": "table_readi32       2      1      0     ",
-    "03": "push                2      0      0     ",
-    "04": "set_add             0      0      0     ",
-    "05": "table_next          1      2      0     ",
-    "06": "free                1      0      0     ",
-    "07": "ret                 0      -1     -     "
-  },
-  "access": [["public.test", "ro"]]
-}]
+drop function test;
+create function test() return int
 begin
 	declare x int;
 	if true then
-		select id into x from test;
+		select id into x from src;
 		return x;
 	end;
 	return x;
 end;
-[1]
-explain begin
-	declare x int;
-	if false then
-		select id into x from test;
-		return x;
-	end;
-	return x;
-end;
+explain select test();
 [{
   "main": {
-    "00": "push_nulls          1      0      0     ",
-    "01": "jmp                 3      0      0     ",
-    "02": "jmp                 14     0      0     ",
-    "03": "bool                0      0      0     ",
-    "04": "jntr                14     0      0     ",
-    "05": "union               0      0      0     ",
-    "06": "send_all            0      -      0     # public.test",
-    "07": "union_recv          0      0      0     ",
-    "08": "union_set           0      0      -1    ",
-    "09": "var_set             0      0      0     ",
-    "10": "free                0      0      0     ",
-    "11": "var                 0      0      0     ",
-    "12": "ret                 0      -1     -     ",
-    "13": "jmp                 2      0      0     ",
-    "14": "close               0      0      0     ",
-    "15": "var                 1      0      0     ",
-    "16": "ret                 1      -1     -     "
+    "00": "call_udf            0      -      -     # public.test()",
+    "01": "close               0      0      0     ",
+    "02": "ret                 0      0      -     "
   },
-  "pushdown": {
-    "00": "set                 0      1      0     ",
-    "01": "table_open_part     1      0      6     # public.test (primary)",
-    "02": "table_readi32       2      1      0     ",
-    "03": "push                2      0      0     ",
-    "04": "set_add             0      0      0     ",
-    "05": "table_next          1      2      0     ",
-    "06": "free                1      0      0     ",
-    "07": "ret                 0      -1     -     "
-  },
-  "access": [["public.test", "ro"]]
+  "access": [["public.test", "call"], ["public.src", "ro"]],
+  "calls": [{
+    "function": "public.test",
+    "main": {
+      "00": "push_nulls          1      0      0     ",
+      "01": "bool                0      1      0     ",
+      "02": "jntr                9      0      0     ",
+      "03": "send_all            0      0      19    # public.src (select)",
+      "04": "recv                1      0      -1    ",
+      "05": "var_set             0      0      1     ",
+      "06": "free                1      0      0     ",
+      "07": "var                 0      0      0     ",
+      "08": "ret                 0      0      -     ",
+      "09": "close               0      0      0     ",
+      "10": "var                 1      0      0     ",
+      "11": "ret                 1      0      -     "
+    },
+    "pushdown": {
+      "00": "set                 0      1      0     ",
+      "01": "table_open_part     1      0      6     # public.src (primary)",
+      "02": "table_readi32       2      1      0     ",
+      "03": "push                2      0      0     ",
+      "04": "set_add             0      0      0     ",
+      "05": "table_next          1      2      0     ",
+      "06": "free                1      0      0     ",
+      "07": "ret                 0      0      -     "
+    },
+    "access": [["public.src", "ro"]]
+  }]
 }]
+select test();
+[1]
+drop function test;
+create function test() return int
 begin
 	declare x int;
 	if false then
-		select id into x from test;
+		select id into x from src;
 		return x;
 	end;
 	return x;
 end;
+explain select test();
+[{
+  "main": {
+    "00": "call_udf            0      -      -     # public.test()",
+    "01": "close               0      0      0     ",
+    "02": "ret                 0      0      -     "
+  },
+  "access": [["public.test", "call"], ["public.src", "ro"]],
+  "calls": [{
+    "function": "public.test",
+    "main": {
+      "00": "push_nulls          1      0      0     ",
+      "01": "bool                0      0      0     ",
+      "02": "jntr                9      0      0     ",
+      "03": "send_all            0      0      19    # public.src (select)",
+      "04": "recv                1      0      -1    ",
+      "05": "var_set             0      0      1     ",
+      "06": "free                1      0      0     ",
+      "07": "var                 0      0      0     ",
+      "08": "ret                 0      0      -     ",
+      "09": "close               0      0      0     ",
+      "10": "var                 1      0      0     ",
+      "11": "ret                 1      0      -     "
+    },
+    "pushdown": {
+      "00": "set                 0      1      0     ",
+      "01": "table_open_part     1      0      6     # public.src (primary)",
+      "02": "table_readi32       2      1      0     ",
+      "03": "push                2      0      0     ",
+      "04": "set_add             0      0      0     ",
+      "05": "table_next          1      2      0     ",
+      "06": "free                1      0      0     ",
+      "07": "ret                 0      0      -     "
+    },
+    "access": [["public.src", "ro"]]
+  }]
+}]
+select test();
 [null]
+drop function test;
 # test: for if return
-explain begin
+create function test() return int
+begin
 	declare x int := 0;
-	for i in (select id from test) do
+	for i in (select id from src) do
 		if i.id > 2 then
 			return x;
 		end;
@@ -456,53 +1008,63 @@ explain begin
 	end;
 	select x;
 end;
+explain select test();
 [{
   "main": {
-    "00": "push_nulls          1      0      0     ",
-    "01": "int                 0      -      0     # 0",
-    "02": "var_set             0      0      0     ",
-    "03": "free                0      0      0     ",
-    "04": "union               0      0      0     ",
-    "05": "send_all            0      -      0     # public.test",
-    "06": "union_recv          0      0      0     ",
-    "07": "union_set           0      0      -1    ",
-    "08": "dup                 1      0      0     ",
-    "09": "store_open          2      1      25    ",
-    "10": "jmp                 12     0      0     ",
-    "11": "jmp                 19     0      0     ",
-    "12": "store_read          3      2      0     ",
-    "13": "int                 4      -      0     # 2",
-    "14": "gtii                5      3      4     ",
-    "15": "jntr                19     5      0     ",
-    "16": "var                 3      0      0     ",
-    "17": "ret                 3      -1     -     ",
-    "18": "jmp                 11     0      0     ",
-    "19": "var                 4      0      0     ",
-    "20": "int                 5      -      0     # 1",
-    "21": "addii               6      4      5     ",
-    "22": "var_set             0      0      6     ",
-    "23": "free                6      0      0     ",
-    "24": "store_next          2      10     0     ",
-    "25": "free                2      0      0     ",
-    "26": "free                1      0      0     ",
-    "27": "var                 1      0      0     ",
-    "28": "ret                 1      -1     -     "
+    "00": "call_udf            0      -      -     # public.test()",
+    "01": "close               0      0      0     ",
+    "02": "ret                 0      0      -     "
   },
-  "pushdown": {
-    "00": "set                 0      1      0     ",
-    "01": "table_open_part     1      0      6     # public.test (primary)",
-    "02": "table_readi32       2      1      0     ",
-    "03": "push                2      0      0     ",
-    "04": "set_add             0      0      0     ",
-    "05": "table_next          1      2      0     ",
-    "06": "free                1      0      0     ",
-    "07": "ret                 0      -1     -     "
-  },
-  "access": [["public.test", "ro"]]
+  "access": [["public.test", "call"], ["public.src", "ro"]],
+  "calls": [{
+    "function": "public.test",
+    "main": {
+      "00": "push_nulls          1      0      0     ",
+      "01": "int                 0      -      0     # 0",
+      "02": "var_set             0      0      0     ",
+      "03": "free                0      0      0     ",
+      "04": "send_all            0      0      19    # public.src (select)",
+      "05": "recv                1      0      -1    ",
+      "06": "dup                 0      1      0     ",
+      "07": "store_open          2      0      20    ",
+      "08": "store_read          3      2      0     ",
+      "09": "int                 4      -      0     # 2",
+      "10": "gtii                5      3      4     ",
+      "11": "jntr                14     5      0     ",
+      "12": "var                 3      0      0     ",
+      "13": "ret                 3      0      -     ",
+      "14": "var                 4      0      0     ",
+      "15": "int                 5      -      0     # 1",
+      "16": "addii               6      4      5     ",
+      "17": "var_set             0      0      6     ",
+      "18": "free                6      0      0     ",
+      "19": "store_next          2      8      0     ",
+      "20": "free                2      0      0     ",
+      "21": "free                0      0      0     ",
+      "22": "var                 0      0      0     ",
+      "23": "ret                 -1     0      -     "
+    },
+    "pushdown": {
+      "00": "set                 0      1      0     ",
+      "01": "table_open_part     1      0      6     # public.src (primary)",
+      "02": "table_readi32       2      1      0     ",
+      "03": "push                2      0      0     ",
+      "04": "set_add             0      0      0     ",
+      "05": "table_next          1      2      0     ",
+      "06": "free                1      0      0     ",
+      "07": "ret                 0      0      -     "
+    },
+    "access": [["public.src", "ro"]]
+  }]
 }]
+select test();
+[2]
+drop function test;
+insert into src values (4), (5);
+create function test() return int
 begin
 	declare x int := 0;
-	for i in (select id from test) do
+	for i in (select id from src) do
 		if i.id > 2 then
 			return x;
 		end;
@@ -510,19 +1072,59 @@ begin
 	end;
 	select x;
 end;
+explain select test();
+[{
+  "main": {
+    "00": "call_udf            0      -      -     # public.test()",
+    "01": "close               0      0      0     ",
+    "02": "ret                 0      0      -     "
+  },
+  "access": [["public.test", "call"], ["public.src", "ro"]],
+  "calls": [{
+    "function": "public.test",
+    "main": {
+      "00": "push_nulls          1      0      0     ",
+      "01": "int                 0      -      0     # 0",
+      "02": "var_set             0      0      0     ",
+      "03": "free                0      0      0     ",
+      "04": "send_all            0      0      19    # public.src (select)",
+      "05": "recv                1      0      -1    ",
+      "06": "dup                 0      1      0     ",
+      "07": "store_open          2      0      20    ",
+      "08": "store_read          3      2      0     ",
+      "09": "int                 4      -      0     # 2",
+      "10": "gtii                5      3      4     ",
+      "11": "jntr                14     5      0     ",
+      "12": "var                 3      0      0     ",
+      "13": "ret                 3      0      -     ",
+      "14": "var                 4      0      0     ",
+      "15": "int                 5      -      0     # 1",
+      "16": "addii               6      4      5     ",
+      "17": "var_set             0      0      6     ",
+      "18": "free                6      0      0     ",
+      "19": "store_next          2      8      0     ",
+      "20": "free                2      0      0     ",
+      "21": "free                0      0      0     ",
+      "22": "var                 0      0      0     ",
+      "23": "ret                 -1     0      -     "
+    },
+    "pushdown": {
+      "00": "set                 0      1      0     ",
+      "01": "table_open_part     1      0      6     # public.src (primary)",
+      "02": "table_readi32       2      1      0     ",
+      "03": "push                2      0      0     ",
+      "04": "set_add             0      0      0     ",
+      "05": "table_next          1      2      0     ",
+      "06": "free                1      0      0     ",
+      "07": "ret                 0      0      -     "
+    },
+    "access": [["public.src", "ro"]]
+  }]
+}]
+select test();
 [2]
-insert into test values (4), (5);
-begin
-	declare x int := 0;
-	for i in (select id from test) do
-		if i.id > 2 then
-			return x;
-		end;
-		x := x + 1;
-	end;
-	select x;
-end;
-[2]
+drop function test;
+create function test() return int
 begin
 	declare x int := 0;
 	for i in ([1,2,3,4]) do
@@ -533,7 +1135,48 @@ begin
 	end;
 	select x;
 end;
+explain select test();
+[{
+  "main": {
+    "00": "call_udf            0      -      -     # public.test()",
+    "01": "ret                 0      0      -     "
+  },
+  "access": [["public.test", "call"]],
+  "calls": [{
+    "function": "public.test",
+    "main": {
+      "00": "push_nulls          1      0      0     ",
+      "01": "int                 0      -      0     # 0",
+      "02": "var_set             0      0      0     ",
+      "03": "free                0      0      0     ",
+      "04": "json                0      0      0     ",
+      "05": "json_open           1      0      20    ",
+      "06": "json_read           2      1      0     ",
+      "07": "push                2      0      0     ",
+      "08": "call                2      -      1     # public.int()",
+      "09": "int                 3      -      0     # 2",
+      "10": "gtii                4      2      3     ",
+      "11": "jntr                14     4      0     ",
+      "12": "var                 2      0      0     ",
+      "13": "ret                 2      0      -     ",
+      "14": "var                 3      0      0     ",
+      "15": "int                 4      -      0     # 1",
+      "16": "addii               5      3      4     ",
+      "17": "var_set             0      0      5     ",
+      "18": "free                5      0      0     ",
+      "19": "json_next           1      6      0     ",
+      "20": "free                1      0      0     ",
+      "21": "free                0      0      0     ",
+      "22": "var                 0      0      0     ",
+      "23": "ret                 -1     0      -     "
+    },
+    "access": []
+  }]
+}]
+select test();
 [2]
+drop function test;
+create function test() return int
 begin
 	declare x int := 0;
 	for i in ([1,2,3,4]) do
@@ -544,205 +1187,293 @@ begin
 	end;
 	select x;
 end;
-[2]
-# test: return insert
-explain return insert into test values (6);
+explain select test();
 [{
   "main": {
-    "00": "set_ptr             0      -      0     ",
-    "01": "send_shard          0      -      0     # public.test (last)",
-    "02": "ret                 -1     -1     -     "
+    "00": "call_udf            0      -      -     # public.test()",
+    "01": "ret                 0      0      -     "
   },
-  "pushdown": {
-    "00": "insert              -      0      0     # public.test",
-    "01": "ret                 -1     -1     -     "
-  },
-  "access": [["public.test", "rw"]]
-}]
-return insert into test values (6);
-explain begin
-	return insert into test values (6);
-	select 1;
-end;
-[{
-  "main": {
-    "00": "set_ptr             0      -      0     ",
-    "01": "send_shard          0      -      0     # public.test (last)",
-    "02": "ret                 -1     -1     -     ",
-    "03": "int                 0      -      0     # 1",
-    "04": "ret                 0      -1     -     "
-  },
-  "pushdown": {
-    "00": "insert              -      0      0     # public.test",
-    "01": "ret                 -1     -1     -     "
-  },
-  "access": [["public.test", "rw"]]
-}]
-begin
-	return insert into test values (6);
-	select 1;
-end;
-{"msg": "index 'primary': unique key constraint violation"}
-# test: return insert returning
-explain return insert into test values (7) returning *;
-[{
-  "main": {
-    "00": "union               0      0      0     ",
-    "01": "set_ptr             1      -      0     ",
-    "02": "send_shard          0      -      1     # public.test (last)",
-    "03": "union_recv          0      0      0     ",
-    "04": "ret                 0      -1     -     "
-  },
-  "pushdown": {
-    "00": "set                 0      1      0     ",
-    "01": "table_prepare       1      -      0     # public.test",
-    "02": "jmp                 9      0      0     ",
-    "03": "string              2      0      0     # unique key constraint violation",
-    "04": "push                2      0      0     ",
-    "05": "call                2      -      1     # public.error()",
-    "06": "table_readi32       2      1      0     ",
-    "07": "push                2      0      0     ",
-    "08": "set_add             0      0      0     ",
-    "09": "upsert              1      3      6     ",
-    "10": "free                1      0      0     ",
-    "11": "ret                 0      -1     -     "
-  },
-  "access": [["public.test", "rw"]]
-}]
-return insert into test values (7) returning *;
-[7]
-explain begin
-	return insert into test values (8) returning *;
-	select 1;
-end;
-[{
-  "main": {
-    "00": "union               0      0      0     ",
-    "01": "set_ptr             1      -      0     ",
-    "02": "send_shard          0      -      1     # public.test (last)",
-    "03": "union_recv          0      0      0     ",
-    "04": "ret                 0      -1     -     ",
-    "05": "int                 1      -      0     # 1",
-    "06": "ret                 1      -1     -     "
-  },
-  "pushdown": {
-    "00": "set                 0      1      0     ",
-    "01": "table_prepare       1      -      0     # public.test",
-    "02": "jmp                 9      0      0     ",
-    "03": "string              2      0      0     # unique key constraint violation",
-    "04": "push                2      0      0     ",
-    "05": "call                2      -      1     # public.error()",
-    "06": "table_readi32       2      1      0     ",
-    "07": "push                2      0      0     ",
-    "08": "set_add             0      0      0     ",
-    "09": "upsert              1      3      6     ",
-    "10": "free                1      0      0     ",
-    "11": "ret                 0      -1     -     "
-  },
-  "access": [["public.test", "rw"]]
-}]
-begin
-	return insert into test values (8) returning *;
-	select 1;
-end;
-[8]
-# test: if return insert returning
-explain begin
-	if true then
-		return insert into test values (9) returning *;
-	end;
-	select 0;
-end;
-[{
-  "main": {
-    "00": "jmp                 2      0      0     ",
-    "01": "jmp                 10     0      0     ",
-    "02": "bool                0      1      0     ",
-    "03": "jntr                10     0      0     ",
-    "04": "union               0      0      0     ",
-    "05": "set_ptr             1      -      0     ",
-    "06": "send_shard          0      -      1     # public.test",
-    "07": "union_recv          0      0      0     ",
-    "08": "ret                 0      -1     -     ",
-    "09": "jmp                 1      0      0     ",
-    "10": "close               0      0      0     ",
-    "11": "int                 1      -      0     # 0",
-    "12": "ret                 1      -1     -     "
-  },
-  "pushdown": {
-    "00": "set                 0      1      0     ",
-    "01": "table_prepare       1      -      0     # public.test",
-    "02": "jmp                 9      0      0     ",
-    "03": "string              2      0      0     # unique key constraint violation",
-    "04": "push                2      0      0     ",
-    "05": "call                2      -      1     # public.error()",
-    "06": "table_readi32       2      1      0     ",
-    "07": "push                2      0      0     ",
-    "08": "set_add             0      0      0     ",
-    "09": "upsert              1      3      6     ",
-    "10": "free                1      0      0     ",
-    "11": "ret                 0      -1     -     "
-  },
-  "access": [["public.test", "rw"]]
-}]
-begin
-	if true then
-		return insert into test values (9) returning *;
-	end;
-	select 0;
-end;
-[9]
-begin
-	if false then
-		return insert into test values (9) returning *;
-	end;
-	select 0;
-end;
-[0]
-# test: return select
-explain return select 1 as a, 2 as b;
-[{
-  "main": {
-    "00": "set                 0      2      0     ",
-    "01": "int                 1      -      0     # 1",
-    "02": "push                1      0      0     ",
-    "03": "int                 1      -      0     # 2",
-    "04": "push                1      0      0     ",
-    "05": "set_add             0      0      0     ",
-    "06": "ret                 0      -1     -     "
-  },
-  "access": []
-}]
-return select 1 as a, 2 as b;
-[[1, 2]]
-return select 1 as a, 2 as b format 'json-obj';
-[{"a": 1, "b": 2}]
-return select system.tables();
-[[{
-  "schema": "public",
-  "name": "test",
-  "unlogged": false,
-  "columns": [{
-    "name": "id",
-    "type": 2,
-    "type_size": 4,
-    "constraints": [["not_null", true], ["default", null]]
-  }],
-  "indexes": [{
-    "name": "primary",
-    "type": 2,
-    "unique": true,
-    "primary": true,
-    "keys": [{
-      "column": 0
-    }]
-  }],
-  "partitions": [{
-    "id": 1,
-    "min": 0,
-    "max": 8096
+  "access": [["public.test", "call"]],
+  "calls": [{
+    "function": "public.test",
+    "main": {
+      "00": "push_nulls          1      0      0     ",
+      "01": "int                 0      -      0     # 0",
+      "02": "var_set             0      0      0     ",
+      "03": "free                0      0      0     ",
+      "04": "json                0      0      0     ",
+      "05": "json_open           1      0      20    ",
+      "06": "json_read           2      1      0     ",
+      "07": "push                2      0      0     ",
+      "08": "call                2      -      1     # public.int()",
+      "09": "int                 3      -      0     # 2",
+      "10": "gtii                4      2      3     ",
+      "11": "jntr                14     4      0     ",
+      "12": "var                 2      0      0     ",
+      "13": "ret                 2      0      -     ",
+      "14": "var                 3      0      0     ",
+      "15": "int                 4      -      0     # 1",
+      "16": "addii               5      3      4     ",
+      "17": "var_set             0      0      5     ",
+      "18": "free                5      0      0     ",
+      "19": "json_next           1      6      0     ",
+      "20": "free                1      0      0     ",
+      "21": "free                0      0      0     ",
+      "22": "var                 0      0      0     ",
+      "23": "ret                 -1     0      -     "
+    },
+    "access": []
   }]
-}]]
+}]
+select test();
+[2]
+drop function test;
+# test: return insert
+create function test() return int
+begin
+	return insert into src values (6);
+	select 1;
+end;
+explain select test();
+[{
+  "main": {
+    "00": "call_udf            0      -      -     # public.test()",
+    "01": "close               0      0      0     ",
+    "02": "ret                 0      0      -     "
+  },
+  "access": [["public.test", "call"], ["public.src", "rw"]],
+  "calls": [{
+    "function": "public.test",
+    "main": {
+      "00": "set_ptr             1      -      0     ",
+      "01": "send_shard          0      1      0     # public.src (insert, closing)",
+      "02": "ret                 -1     0      -     ",
+      "03": "int                 0      -      0     # 1",
+      "04": "ret                 -1     0      -     "
+    },
+    "pushdown": {
+      "00": "insert              -      0      0     # public.src",
+      "01": "ret                 -1     0      -     "
+    },
+    "access": [["public.src", "rw"]]
+  }]
+}]
+select test();
+[null]
+drop function test;
+# test: return insert returning
+create function test() return int
+begin
+	return insert into src values (8) returning *;
+	select 1;
+end;
+{"msg": "begin\n\treturn ❰insert❱ ⟵ RETURN type 'store' mismatch function type 'int'"}
+# test: return insert returning into
+create function test() return int
+begin
+	declare x int;
+	return insert into src values (8) returning * into x;
+	select 1;
+end;
+explain select test();
+[{
+  "main": {
+    "00": "call_udf            0      -      -     # public.test()",
+    "01": "close               0      0      0     ",
+    "02": "ret                 0      0      -     "
+  },
+  "access": [["public.test", "call"], ["public.src", "rw"]],
+  "calls": [{
+    "function": "public.test",
+    "main": {
+      "00": "push_nulls          1      0      0     ",
+      "01": "set_ptr             1      -      0     ",
+      "02": "send_shard          0      1      0     # public.src (insert, closing)",
+      "03": "recv                1      0      -1    ",
+      "04": "var_set             0      0      1     ",
+      "05": "free                1      0      0     ",
+      "06": "ret                 -1     0      -     ",
+      "07": "int                 0      -      0     # 1",
+      "08": "ret                 -1     0      -     "
+    },
+    "pushdown": {
+      "00": "set                 0      1      0     ",
+      "01": "table_prepare       1      -      0     # public.src",
+      "02": "jmp                 9      0      0     ",
+      "03": "string              2      0      0     # unique key constraint violation",
+      "04": "push                2      0      0     ",
+      "05": "call                2      -      1     # public.error()",
+      "06": "table_readi32       2      1      0     ",
+      "07": "push                2      0      0     ",
+      "08": "set_add             0      0      0     ",
+      "09": "upsert              1      3      6     ",
+      "10": "free                1      0      0     ",
+      "11": "ret                 0      0      -     "
+    },
+    "access": [["public.src", "rw"]]
+  }]
+}]
+select test();
+[null]
+drop function test;
+create function test() return int
+begin
+	declare x int;
+	insert into src values (9) returning id into x;
+	return x;
+end;
+explain select test();
+[{
+  "main": {
+    "00": "call_udf            0      -      -     # public.test()",
+    "01": "close               0      0      0     ",
+    "02": "ret                 0      0      -     "
+  },
+  "access": [["public.test", "call"], ["public.src", "rw"]],
+  "calls": [{
+    "function": "public.test",
+    "main": {
+      "00": "push_nulls          1      0      0     ",
+      "01": "set_ptr             1      -      0     ",
+      "02": "send_shard          0      1      0     # public.src (insert, closing)",
+      "03": "recv                1      0      -1    ",
+      "04": "var_set             0      0      1     ",
+      "05": "free                1      0      0     ",
+      "06": "var                 0      0      0     ",
+      "07": "ret                 0      0      -     "
+    },
+    "pushdown": {
+      "00": "set                 0      1      0     ",
+      "01": "table_prepare       1      -      0     # public.src",
+      "02": "jmp                 9      0      0     ",
+      "03": "string              2      0      0     # unique key constraint violation",
+      "04": "push                2      0      0     ",
+      "05": "call                2      -      1     # public.error()",
+      "06": "table_readi32       2      1      0     ",
+      "07": "push                2      0      0     ",
+      "08": "set_add             0      0      0     ",
+      "09": "upsert              1      3      6     ",
+      "10": "free                1      0      0     ",
+      "11": "ret                 0      0      -     "
+    },
+    "access": [["public.src", "rw"]]
+  }]
+}]
+select test();
+[9]
+drop function test;
+# test: if return insert returning
+create function test() return int
+begin
+	declare x int;
+	if true then
+		insert into src values (10) returning * into x;
+		return x;
+	end;
+	return select 0;
+end;
+explain select test();
+[{
+  "main": {
+    "00": "call_udf            0      -      -     # public.test()",
+    "01": "close               0      0      0     ",
+    "02": "ret                 0      0      -     "
+  },
+  "access": [["public.test", "call"], ["public.src", "rw"]],
+  "calls": [{
+    "function": "public.test",
+    "main": {
+      "00": "push_nulls          1      0      0     ",
+      "01": "bool                0      1      0     ",
+      "02": "jntr                10     0      0     ",
+      "03": "set_ptr             1      -      0     ",
+      "04": "send_shard          0      1      0     # public.src (insert)",
+      "05": "recv                1      0      -1    ",
+      "06": "var_set             0      0      1     ",
+      "07": "free                1      0      0     ",
+      "08": "var                 0      0      0     ",
+      "09": "ret                 0      0      -     ",
+      "10": "close               0      0      0     ",
+      "11": "int                 1      -      0     # 0",
+      "12": "ret                 1      0      -     "
+    },
+    "pushdown": {
+      "00": "set                 0      1      0     ",
+      "01": "table_prepare       1      -      0     # public.src",
+      "02": "jmp                 9      0      0     ",
+      "03": "string              2      0      0     # unique key constraint violation",
+      "04": "push                2      0      0     ",
+      "05": "call                2      -      1     # public.error()",
+      "06": "table_readi32       2      1      0     ",
+      "07": "push                2      0      0     ",
+      "08": "set_add             0      0      0     ",
+      "09": "upsert              1      3      6     ",
+      "10": "free                1      0      0     ",
+      "11": "ret                 0      0      -     "
+    },
+    "access": [["public.src", "rw"]]
+  }]
+}]
+select test();
+[10]
+drop function test;
+# test: if return insert returning
+create function test() return int
+begin
+	declare x int;
+	if false then
+		insert into src values (10) returning * into x;
+		return x;
+	end;
+	return select 0;
+end;
+explain select test();
+[{
+  "main": {
+    "00": "call_udf            0      -      -     # public.test()",
+    "01": "close               0      0      0     ",
+    "02": "ret                 0      0      -     "
+  },
+  "access": [["public.test", "call"], ["public.src", "rw"]],
+  "calls": [{
+    "function": "public.test",
+    "main": {
+      "00": "push_nulls          1      0      0     ",
+      "01": "bool                0      0      0     ",
+      "02": "jntr                10     0      0     ",
+      "03": "set_ptr             1      -      0     ",
+      "04": "send_shard          0      1      0     # public.src (insert)",
+      "05": "recv                1      0      -1    ",
+      "06": "var_set             0      0      1     ",
+      "07": "free                1      0      0     ",
+      "08": "var                 0      0      0     ",
+      "09": "ret                 0      0      -     ",
+      "10": "close               0      0      0     ",
+      "11": "int                 1      -      0     # 0",
+      "12": "ret                 1      0      -     "
+    },
+    "pushdown": {
+      "00": "set                 0      1      0     ",
+      "01": "table_prepare       1      -      0     # public.src",
+      "02": "jmp                 9      0      0     ",
+      "03": "string              2      0      0     # unique key constraint violation",
+      "04": "push                2      0      0     ",
+      "05": "call                2      -      1     # public.error()",
+      "06": "table_readi32       2      1      0     ",
+      "07": "push                2      0      0     ",
+      "08": "set_add             0      0      0     ",
+      "09": "upsert              1      3      6     ",
+      "10": "free                1      0      0     ",
+      "11": "ret                 0      0      -     "
+    },
+    "access": [["public.src", "rw"]]
+  }]
+}]
+select test();
+[0]
+drop function test;
+# test: return select
+create function test() return json
 begin
 	declare list json := [];
 	for it in system.tables() do
@@ -750,9 +1481,52 @@ begin
 	end;
 	return list;
 end;
-[[["public", "test"]]]
+explain select test();
+[{
+  "main": {
+    "00": "call_udf            0      -      -     # public.test()",
+    "01": "ret                 0      0      -     "
+  },
+  "access": [["public.test", "call"]],
+  "calls": [{
+    "function": "public.test",
+    "main": {
+      "00": "push_nulls          1      0      0     ",
+      "01": "json                0      0      0     ",
+      "02": "var_set             0      0      0     ",
+      "03": "free                0      0      0     ",
+      "04": "call                0      -      0     # system.tables()",
+      "05": "json_open           1      0      22    ",
+      "06": "var                 2      0      0     ",
+      "07": "push                2      0      0     ",
+      "08": "json_read           2      1      0     ",
+      "09": "string              3      2      0     # schema",
+      "10": "dotjs               4      2      3     ",
+      "11": "push                4      0      0     ",
+      "12": "json_read           2      1      0     ",
+      "13": "string              3      9      0     # name",
+      "14": "dotjs               4      2      3     ",
+      "15": "push                4      0      0     ",
+      "16": "json_array          2      2      0     ",
+      "17": "push                2      0      0     ",
+      "18": "call                2      -      2     # public.append()",
+      "19": "var_set             0      0      2     ",
+      "20": "free                2      0      0     ",
+      "21": "json_next           1      6      0     ",
+      "22": "free                1      0      0     ",
+      "23": "free                0      0      0     ",
+      "24": "var                 0      0      0     ",
+      "25": "ret                 0      0      -     "
+    },
+    "access": []
+  }]
+}]
+select test();
+[[["public", "src"]]]
+drop function test;
 select `schema`, name from system.tables();
-[["public", "test"]]
+[["public", "src"]]
+create function test() return json
 begin
 	declare list json := [];
 	for it in system.tables() do
@@ -760,37 +1534,68 @@ begin
 	end;
 	return list;
 end;
+explain select test();
+[{
+  "main": {
+    "00": "call_udf            0      -      -     # public.test()",
+    "01": "ret                 0      0      -     "
+  },
+  "access": [["public.test", "call"]],
+  "calls": [{
+    "function": "public.test",
+    "main": {
+      "00": "push_nulls          1      0      0     ",
+      "01": "json                0      0      0     ",
+      "02": "var_set             0      0      0     ",
+      "03": "free                0      0      0     ",
+      "04": "call                0      -      0     # system.tables()",
+      "05": "json_open           1      0      26    ",
+      "06": "var                 2      0      0     ",
+      "07": "push                2      0      0     ",
+      "08": "string              2      2      0     # schema",
+      "09": "push                2      0      0     ",
+      "10": "json_read           2      1      0     ",
+      "11": "string              3      9      0     # schema",
+      "12": "dotjs               4      2      3     ",
+      "13": "push                4      0      0     ",
+      "14": "string              2      16     0     # name",
+      "15": "push                2      0      0     ",
+      "16": "json_read           2      1      0     ",
+      "17": "string              3      21     0     # name",
+      "18": "dotjs               4      2      3     ",
+      "19": "push                4      0      0     ",
+      "20": "json_obj            2      4      0     ",
+      "21": "push                2      0      0     ",
+      "22": "call                2      -      2     # public.append()",
+      "23": "var_set             0      0      2     ",
+      "24": "free                2      0      0     ",
+      "25": "json_next           1      6      0     ",
+      "26": "free                1      0      0     ",
+      "27": "free                0      0      0     ",
+      "28": "var                 0      0      0     ",
+      "29": "ret                 0      0      -     "
+    },
+    "access": []
+  }]
+}]
+select test();
 [[{
   "schema": "public",
-  "name": "test"
+  "name": "src"
 }]]
-begin
-	declare list json := [];
-	for it in system.tables() do
-		list := list::append({"schema": it.schema, "name": it.name});
-	end;
-	select list;
-end;
+drop function test;
+select
+[] -> self::append ({
+	"schema": it.schema,
+	"name": it.name
+})
+from
+	system.tables() as it;
 [[{
   "schema": "public",
-  "name": "test"
+  "name": "src"
 }]]
-begin
-	declare list json := [];
-	for it in system.tables() do
-		list := list::append({"schema": it.schema, "name": it.name});
-	end;
-	select list;
-end;
-[[{
-  "schema": "public",
-  "name": "test"
-}]]
-select [] -> self::append({"schema": it.schema, "name": it.name}) from system.tables() as it;
-[[{
-  "schema": "public",
-  "name": "test"
-}]]
+create function test() return json
 begin
 	declare list json;
 	select
@@ -799,10 +1604,78 @@ begin
 		list from system.tables() as it;
 	return list;
 end;
+explain select test();
+[{
+  "main": {
+    "00": "call_udf            0      -      -     # public.test()",
+    "01": "ret                 0      0      -     "
+  },
+  "access": [["public.test", "call"]],
+  "calls": [{
+    "function": "public.test",
+    "main": {
+      "00": "push_nulls          1      0      0     ",
+      "01": "set                 0      1      0     ",
+      "02": "set                 1      1      1     ",
+      "03": "json                2      0      0     ",
+      "04": "call                3      -      0     # system.tables()",
+      "05": "json_open           4      3      31    ",
+      "06": "bool                5      1      0     ",
+      "07": "push                5      0      0     ",
+      "08": "set_get             5      1      0     ",
+      "09": "int                 6      -      0     # 0",
+      "10": "push                6      0      0     ",
+      "11": "self                6      1      5     ",
+      "12": "push                6      0      0     ",
+      "13": "string              6      6      0     # schema",
+      "14": "push                6      0      0     ",
+      "15": "json_read           6      4      0     ",
+      "16": "string              7      13     0     # schema",
+      "17": "dotjs               8      6      7     ",
+      "18": "push                8      0      0     ",
+      "19": "string              6      20     0     # name",
+      "20": "push                6      0      0     ",
+      "21": "json_read           6      4      0     ",
+      "22": "string              7      25     0     # name",
+      "23": "dotjs               8      6      7     ",
+      "24": "push                8      0      0     ",
+      "25": "json_obj            6      4      0     ",
+      "26": "push                6      0      0     ",
+      "27": "call                6      -      2     # public.append()",
+      "28": "push                6      0      0     ",
+      "29": "set_agg             1      5      2     ",
+      "30": "json_next           4      6      0     ",
+      "31": "free                4      0      0     ",
+      "32": "free                3      0      0     ",
+      "33": "bool                3      1      0     ",
+      "34": "push                3      0      0     ",
+      "35": "set_get             3      1      0     ",
+      "36": "null                4      0      0     ",
+      "37": "push                4      0      0     ",
+      "38": "set_agg             1      3      2     ",
+      "39": "free                2      0      0     ",
+      "40": "store_open          2      1      45    ",
+      "41": "store_read          3      2      0     ",
+      "42": "push                3      0      0     ",
+      "43": "set_add             0      0      0     ",
+      "44": "store_next          2      41     0     ",
+      "45": "free                2      0      0     ",
+      "46": "free                1      0      0     ",
+      "47": "var_set             0      0      0     ",
+      "48": "free                0      0      0     ",
+      "49": "var                 0      0      0     ",
+      "50": "ret                 0      0      -     "
+    },
+    "access": []
+  }]
+}]
+select test();
 [[{
   "schema": "public",
-  "name": "test"
+  "name": "src"
 }]]
+drop function test;
+create function test() return json
 begin
 	declare list json;
 	select
@@ -813,63 +1686,192 @@ begin
 		system.tables() as it;
 	return list;
 end;
-[[{
-  "schema": "public",
-  "name": "test"
-}]]
-# test: return ;
-explain return;
+explain select test();
 [{
   "main": {
-    "00": "ret                 -1     -1     -     "
+    "00": "call_udf            0      -      -     # public.test()",
+    "01": "ret                 0      0      -     "
   },
-  "access": []
+  "access": [["public.test", "call"]],
+  "calls": [{
+    "function": "public.test",
+    "main": {
+      "00": "push_nulls          1      0      0     ",
+      "01": "set                 0      1      0     ",
+      "02": "set                 1      1      1     ",
+      "03": "json                2      0      0     ",
+      "04": "call                3      -      0     # system.tables()",
+      "05": "json_open           4      3      31    ",
+      "06": "bool                5      1      0     ",
+      "07": "push                5      0      0     ",
+      "08": "set_get             5      1      0     ",
+      "09": "int                 6      -      0     # 0",
+      "10": "push                6      0      0     ",
+      "11": "self                6      1      5     ",
+      "12": "push                6      0      0     ",
+      "13": "string              6      6      0     # schema",
+      "14": "push                6      0      0     ",
+      "15": "json_read           6      4      0     ",
+      "16": "string              7      13     0     # schema",
+      "17": "dotjs               8      6      7     ",
+      "18": "push                8      0      0     ",
+      "19": "string              6      20     0     # name",
+      "20": "push                6      0      0     ",
+      "21": "json_read           6      4      0     ",
+      "22": "string              7      25     0     # name",
+      "23": "dotjs               8      6      7     ",
+      "24": "push                8      0      0     ",
+      "25": "json_obj            6      4      0     ",
+      "26": "push                6      0      0     ",
+      "27": "call                6      -      2     # public.append()",
+      "28": "push                6      0      0     ",
+      "29": "set_agg             1      5      2     ",
+      "30": "json_next           4      6      0     ",
+      "31": "free                4      0      0     ",
+      "32": "free                3      0      0     ",
+      "33": "bool                3      1      0     ",
+      "34": "push                3      0      0     ",
+      "35": "set_get             3      1      0     ",
+      "36": "null                4      0      0     ",
+      "37": "push                4      0      0     ",
+      "38": "set_agg             1      3      2     ",
+      "39": "free                2      0      0     ",
+      "40": "store_open          2      1      45    ",
+      "41": "store_read          3      2      0     ",
+      "42": "push                3      0      0     ",
+      "43": "set_add             0      0      0     ",
+      "44": "store_next          2      41     0     ",
+      "45": "free                2      0      0     ",
+      "46": "free                1      0      0     ",
+      "47": "var_set             0      0      0     ",
+      "48": "free                0      0      0     ",
+      "49": "var                 0      0      0     ",
+      "50": "ret                 0      0      -     "
+    },
+    "access": []
+  }]
 }]
-return;
-explain begin
-	select 123;
-	return;
-	select 7;
+select test();
+[[{
+  "schema": "public",
+  "name": "src"
+}]]
+drop function test;
+create function test() return table (id int)
+begin
+	declare x table (id int);
+	select * into x from src;
+	return x;
 end;
+explain select test();
+[{
+  "main": {
+    "00": "call_udf            0      -      -     # public.test()",
+    "01": "close               0      0      0     ",
+    "02": "ret                 0      0      -     "
+  },
+  "access": [["public.test", "call"], ["public.src", "ro"]],
+  "calls": [{
+    "function": "public.test",
+    "main": {
+      "00": "push_nulls          1      0      0     ",
+      "01": "send_all            0      0      19    # public.src (select, closing)",
+      "02": "recv                1      0      -1    ",
+      "03": "var_mov             0      0      1     ",
+      "04": "var                 0      0      0     ",
+      "05": "ret                 0      0      -     "
+    },
+    "pushdown": {
+      "00": "set                 0      1      0     ",
+      "01": "table_open_part     1      0      6     # public.src (primary)",
+      "02": "table_readi32       2      1      0     ",
+      "03": "push                2      0      0     ",
+      "04": "set_add             0      0      0     ",
+      "05": "table_next          1      2      0     ",
+      "06": "free                1      0      0     ",
+      "07": "ret                 0      0      -     "
+    },
+    "access": [["public.src", "ro"]]
+  }]
+}]
+select test();
+[1, 2, 3, 4, 5, 6, 8, 9, 10]
+drop function test;
+# test: return expr
+create function test(arg int) return int
+begin
+	return arg * arg;
+end;
+explain select test();
+{"msg": "explain select ❰test❱ ⟵ invalid number of arguments"}
+explain select test(123);
 [{
   "main": {
     "00": "int                 0      -      0     # 123",
-    "01": "ret                 -1     -1     -     ",
-    "02": "int                 1      -      0     # 7",
-    "03": "ret                 1      -1     -     "
+    "01": "push                0      0      0     ",
+    "02": "call_udf            0      -      -     # public.test()",
+    "03": "ret                 0      0      -     "
   },
-  "access": []
+  "access": [["public.test", "call"]],
+  "calls": [{
+    "function": "public.test",
+    "main": {
+      "00": "var                 0      0      1     ",
+      "01": "var                 1      0      1     ",
+      "02": "mulii               2      0      1     ",
+      "03": "ret                 2      0      -     "
+    },
+    "access": []
+  }]
 }]
-begin
-	select 123;
-	return;
-	select 7;
-end;
+select test(123);
+[15129]
+drop function test;
+create function test(mul int) return int
 begin
 	declare x int := 0;
 	for i in ([1,2,3]) do
 		x := i::int;
-		return;
 	end;
-	select x;
+	return x * mul;
 end;
-# test: return expr
-explain return 123;
+explain select test(-1);
 [{
   "main": {
-    "00": "int                 0      -      0     # 123",
-    "01": "ret                 0      -1     -     "
+    "00": "int                 0      -      0     # -1",
+    "01": "push                0      0      0     ",
+    "02": "call_udf            0      -      -     # public.test()",
+    "03": "ret                 0      0      -     "
   },
-  "access": []
+  "access": [["public.test", "call"]],
+  "calls": [{
+    "function": "public.test",
+    "main": {
+      "00": "push_nulls          1      0      0     ",
+      "01": "int                 0      -      0     # 0",
+      "02": "var_set             0      0      0     ",
+      "03": "free                0      0      0     ",
+      "04": "json                0      0      0     ",
+      "05": "json_open           1      0      12    ",
+      "06": "json_read           2      1      0     ",
+      "07": "push                2      0      0     ",
+      "08": "call                2      -      1     # public.int()",
+      "09": "var_set             0      0      2     ",
+      "10": "free                2      0      0     ",
+      "11": "json_next           1      6      0     ",
+      "12": "free                1      0      0     ",
+      "13": "free                0      0      0     ",
+      "14": "var                 0      0      0     ",
+      "15": "var                 1      0      1     ",
+      "16": "mulii               2      0      1     ",
+      "17": "ret                 2      0      -     "
+    },
+    "access": []
+  }]
 }]
-return 123;
-[123]
-return 2 * 2;
-[4]
-return select 123;
-[123]
-return select (select 123);
-[123]
-drop table test;
+select test(-1);
+[-3]
+drop function test;
+drop table src;
 disconnect S0;
 close E0;

@@ -669,26 +669,34 @@ emit_return(Compiler* self, Stmt* stmt)
 	{
 		auto var = stmt->ast->var;
 		r = op3(self, CVAR, rpin(self, var->type), var->order, var->is_arg);
+		type = rtype(self, r);
 		columns = &var->columns;
 	} else
 	{
-		assert(stmt->ret && stmt->ret->columns.count > 0);
-		r = stmt->r;
+		if (stmt->ret && stmt->ret->columns.count > 0)
+			r = stmt->r;
+		else
+			r = -1;
 		columns = &stmt->ret->columns;
 	}
-	type = rtype(self, r);
+	if (r != -1)
+		type = rtype(self, r);
+	else
+		type = TYPE_NULL;
 
 	// validate return type
-	if (udf->type != type)
-		stmt_error(stmt, stmt->ast,
-		           "RETURN type '%s' mismatch function type '%s'",
-		           type_of(type),
-		           type_of(udf->type));
+	if (type != TYPE_NULL)
+	{
+		if (udf->type != type)
+			stmt_error(stmt, stmt->ast, "RETURN type '%s' mismatch function type '%s'",
+			           type_of(type),
+			           type_of(udf->type));
 
-	// validate returning columns
-	if (udf->type == TYPE_STORE && !columns_compare(&udf->returning, columns))
-		stmt_error(stmt, stmt->ast,
-		           "RETURN columns mismatch function returning columns");
+		// validate returning columns
+		if (udf->type == TYPE_STORE && !columns_compare(&udf->returning, columns))
+			stmt_error(stmt, stmt->ast,
+			           "RETURN columns mismatch function returning columns");
+	}
 
 	// CRET
 	op1(self, CRET, r);

@@ -27,6 +27,17 @@ set_list_init(SetList* self)
 }
 
 static inline void
+set_list_free(SetList* self)
+{
+	list_foreach_safe(&self->list)
+	{
+		auto set = list_at(Set, link);
+		store_free(&set->store);
+	}
+	set_list_init(self);
+}
+
+static inline void
 set_list_add(SetList* self, Set* set)
 {
 	list_init(&set->link);

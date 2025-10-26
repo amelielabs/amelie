@@ -99,7 +99,7 @@ test deps
 test if
 test for
 test while
-#test return
+test return
 
 # pushdown
 directory pushdown
