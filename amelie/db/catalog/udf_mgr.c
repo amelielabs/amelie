@@ -48,7 +48,7 @@ udf_mgr_create(UdfMgr*    self,
 	if (current)
 	{
 		if (! if_not_exists)
-			error("udf '%.*s': already exists", str_size(&config->name),
+			error("function '%.*s': already exists", str_size(&config->name),
 			      str_of(&config->name));
 		return false;
 	}
@@ -74,7 +74,7 @@ udf_mgr_drop(UdfMgr* self, Tr* tr, Str* schema, Str* name,
 	if (! udf)
 	{
 		if (! if_exists)
-			error("udf '%.*s': not exists", str_size(name),
+			error("function '%.*s': not exists", str_size(name),
 			      str_of(name));
 		return false;
 	}
@@ -122,14 +122,14 @@ udf_mgr_rename(UdfMgr* self,
 	if (! udf)
 	{
 		if (! if_exists)
-			error("udf '%.*s': not exists", str_size(name),
+			error("function '%.*s': not exists", str_size(name),
 			      str_of(name));
 		return false;
 	}
 
 	// ensure new udf does not exists
 	if (udf_mgr_find(self, schema_new, name_new, false))
-		error("udf '%.*s': already exists", str_size(name_new),
+		error("function '%.*s': already exists", str_size(name_new),
 		      str_of(name_new));
 
 	// update udf
@@ -170,7 +170,7 @@ udf_mgr_find(UdfMgr* self, Str* schema, Str* name,
 	if (! relation)
 	{
 		if (error_if_not_exists)
-			error("udf '%.*s': not exists", str_size(name),
+			error("function '%.*s': not exists", str_size(name),
 			      str_of(name));
 		return NULL;
 	}

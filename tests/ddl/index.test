@@ -90,6 +90,16 @@ select system.table('test').indexes;
 drop index i on public.test;
 drop index if exists i on public.test;
 
+# test: drop index with udf dep
+create index i on test (a);
+create function dep() begin insert into test values (1,2,3); end;
+show functions extended;
+drop index i on test;
+
+# test: drop index after udf drop
+drop function dep;
+drop index i on test;
+
 # test: alter index parsing
 alter;
 alter index;

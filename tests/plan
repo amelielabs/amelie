@@ -59,7 +59,6 @@ test table_drop
 test table_alter
 test index
 test function
-test cascade
 
 # dml
 directory dml

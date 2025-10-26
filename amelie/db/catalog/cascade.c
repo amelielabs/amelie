@@ -41,7 +41,7 @@ cascade_validate(Catalog* self, Str* schema)
 	{
 		auto udf = udf_of(list_at(Relation, link));
 		if (str_compare(&udf->config->schema, schema))
-			error("udf '%.*s' depends on schema '%.*s", str_size(&udf->config->name),
+			error("function '%.*s' depends on schema '%.*s", str_size(&udf->config->name),
 			      str_of(&udf->config->name),
 			      str_size(schema), str_of(schema));
 	}
@@ -57,7 +57,7 @@ cascade_validate_udfs_external(Catalog* self, Str* schema)
 		if (str_compare(&udf->config->schema, schema))
 			continue;
 		if (self->iface->udf_depends(udf, schema, NULL))
-			error("udf '%.*s.%.*s' depends on schema '%.*s", str_size(&udf->config->schema),
+			error("function '%.*s.%.*s' depends on schema '%.*s", str_size(&udf->config->schema),
 			      str_of(&udf->config->schema),
 			      str_size(&udf->config->name),
 			      str_of(&udf->config->name),
@@ -73,7 +73,7 @@ cascade_validate_udfs(Catalog* self, Str* schema)
 	{
 		auto udf = udf_of(list_at(Relation, link));
 		if (self->iface->udf_depends(udf, schema, NULL))
-			error("udf '%.*s.%.*s' depends on schema '%.*s", str_size(&udf->config->schema),
+			error("function '%.*s.%.*s' depends on schema '%.*s", str_size(&udf->config->schema),
 			      str_of(&udf->config->schema),
 			      str_size(&udf->config->name),
 			      str_of(&udf->config->name),

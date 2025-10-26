@@ -139,9 +139,14 @@ catalog_if_udf_free(Udf* udf)
 static bool
 catalog_if_udf_depends(Udf* udf, Str* schema, Str* name)
 {
-	(void)udf;
-	(void)schema;
-	(void)name;
+	Program* program = udf->data;
+	assert(program);
+	if (! name) {
+		if (access_find_schema(&program->access, schema))
+			return true;
+	}
+	if (access_find(&program->access, schema, name))
+		return true;
 	return false;
 }
 

@@ -725,5 +725,41 @@ select system.table('test').columns;
   "constraints": [["default", 0]]
 }]]
 drop table test;
+# test: rename with udf dep
+create table test (id int primary key, data int);
+create function dep() begin insert into test values (1, 2); end;
+show functions extended;
+[{
+  "schema": "public",
+  "name": "dep",
+  "text": "begin insert into test values (1, 2); end",
+  "type": 0,
+  "args": [],
+  "returning": []
+}]
+alter table test rename to test2;
+{"msg": "function 'public.dep' depends on relation 'public.test"}
+# test: rename after udf drop
+drop function dep;
+alter table test rename to test2;
+drop table test2;
+# test: rename column with udf dep
+create table test (id int primary key, data int);
+create function dep() begin insert into test values (1, 2); end;
+show functions extended;
+[{
+  "schema": "public",
+  "name": "dep",
+  "text": "begin insert into test values (1, 2); end",
+  "type": 0,
+  "args": [],
+  "returning": []
+}]
+alter table test rename column data to data2;
+{"msg": "function 'public.dep' depends on relation 'public.test"}
+# test: rename column after udf drop
+drop function dep;
+alter table test rename column data to data2;
+drop table test;
 disconnect S0;
 close E0;

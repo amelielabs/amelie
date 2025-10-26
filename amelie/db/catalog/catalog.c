@@ -133,7 +133,7 @@ catalog_validate_udfs(Catalog* self, Str* schema, Str* name)
 	{
 		auto udf = udf_of(list_at(Relation, link));
 		if (self->iface->udf_depends(udf, schema, name))
-			error("udf '%.*s.%.*s' depends on relation '%.*s.%.*s",
+			error("function '%.*s.%.*s' depends on relation '%.*s.%.*s",
 			      str_size(udf->rel.schema), str_of(udf->rel.schema),
 			      str_size(udf->rel.name), str_of(udf->rel.name),
 			      str_size(schema), str_of(schema),
@@ -295,6 +295,9 @@ catalog_execute(Catalog* self, Tr* tr, uint8_t* op, int flags)
 		if (! table_new)
 			break;
 
+		// ensure no other udfs depend on the table
+		catalog_validate_udfs(self, &schema, &name);
+
 		// build new table with new column
 		auto table = table_mgr_find(&self->table_mgr, &schema, &name, true);
 		auto column = columns_find(&table->config->columns, &name_column);
@@ -310,6 +313,9 @@ catalog_execute(Catalog* self, Tr* tr, uint8_t* op, int flags)
 		Str name_column;
 		Str name_column_new;
 		table_op_column_set_read(op, &schema, &name, &name_column, &name_column_new);
+
+		// ensure no other udfs depend on the table
+		catalog_validate_udfs(self, &schema, &name);
 
 		auto if_exists = ddl_if_exists(flags);
 		auto if_column_exists = ddl_if_column_exists(flags);
@@ -364,6 +370,9 @@ catalog_execute(Catalog* self, Tr* tr, uint8_t* op, int flags)
 		Str name_index;
 		table_op_index_drop_read(op, &schema, &name, &name_index);
 
+		// ensure no other udfs depend on the table
+		catalog_validate_udfs(self, &schema, &name);
+
 		auto table = table_mgr_find(&self->table_mgr, &schema, &name, true);
 		auto if_exists = ddl_if_exists(flags);
 		write = table_index_drop(table, tr, &name_index, if_exists);
@@ -376,6 +385,9 @@ catalog_execute(Catalog* self, Tr* tr, uint8_t* op, int flags)
 		Str name_index;
 		Str name_index_new;
 		table_op_index_rename_read(op, &schema, &name, &name_index, &name_index_new);
+
+		// ensure no other udfs depend on the table
+		catalog_validate_udfs(self, &schema, &name);
 
 		auto table = table_mgr_find(&self->table_mgr, &schema, &name, true);
 		auto if_exists = ddl_if_exists(flags);

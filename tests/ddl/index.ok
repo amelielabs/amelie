@@ -255,6 +255,23 @@ select system.table('test').indexes;
 drop index i on public.test;
 {"msg": "table 'test' index 'i': not exists"}
 drop index if exists i on public.test;
+# test: drop index with udf dep
+create index i on test (a);
+create function dep() begin insert into test values (1,2,3); end;
+show functions extended;
+[{
+  "schema": "public",
+  "name": "dep",
+  "text": "begin insert into test values (1,2,3); end",
+  "type": 0,
+  "args": [],
+  "returning": []
+}]
+drop index i on test;
+{"msg": "function 'public.dep' depends on relation 'public.test"}
+# test: drop index after udf drop
+drop function dep;
+drop index i on test;
 # test: alter index parsing
 alter;
 {"msg": "alter❰;❱ ⟵ USER|SCHEMA|TABLE|INDEX|FUNCTION expected"}

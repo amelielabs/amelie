@@ -47,5 +47,22 @@ drop table test.test;
 drop schema test;
 show tables;
 []
+# test: drop table with udf dep
+create table test (id int primary key);
+create function dep() begin insert into test values (123); end;
+show functions extended;
+[{
+  "schema": "public",
+  "name": "dep",
+  "text": "begin insert into test values (123); end",
+  "type": 0,
+  "args": [],
+  "returning": []
+}]
+drop table test;
+{"msg": "function 'public.dep' depends on relation 'public.test"}
+# test: drop table after udf drop
+drop function dep;
+drop table test;
 disconnect S0;
 close E0;

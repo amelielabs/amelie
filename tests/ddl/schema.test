@@ -47,12 +47,43 @@ show schemas;
 drop schema public;
 show schemas;
 
+# test: drop schema cascade
+create schema test;
+drop schema test cascade;
+select system.schemas();
+
+# test: drop schema cascade (tables)
+show tables;
+
+create schema test;
+create table test.a(id int primary key);
+create table test.b(id int primary key);
+drop schema test cascade;
+show tables;
+
 # test: drop schema with dependency
 create schema test;
 create table test.test(id int primary key);
+create function test.fn() begin end;
 drop schema test;
 drop table test.test;
 drop schema test;
+drop function test.fn;
+drop schema test;
+
+# test: drop schema with udf dep
+create schema test;
+create table test.test(id int primary key);
+create function fn()
+begin
+	select * from test.test;
+end;
+drop schema test;
+drop schema test cascade; # external schema dep
+
+drop function fn;
+drop schema test;
+drop schema test cascade;
 
 # test: alter schema statment parsing
 alter schema;
@@ -68,10 +99,33 @@ select system.schemas();
 
 alter schema test rename to test2;
 select system.schemas();
-select system.schemas();
+drop schema test2;
 
 # test: alter schema system
 alter schema public rename to _public;
+
+# test: alter schema rename cascade
+create schema test;
+create table test.a(id int primary key);
+create table test.b(id int primary key);
+
+alter schema test rename to test2;
+select system.schemas();
+select system.table('test2.a').name;
+select system.table('test2.b').name;
+drop schema test2 cascade;
+
+# test: alter schema rename with udf dep
+create schema test;
+create table test.test(id int primary key);
+create function fn()
+begin
+	select * from test.test;
+end;
+alter schema test rename to test2;
+drop function fn;
+alter schema test rename to test2;
+drop schema test2 cascade;
 
 disconnect S0;
 close E0;

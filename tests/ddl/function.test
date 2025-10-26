@@ -291,6 +291,16 @@ drop function test;
 drop function if exists test;
 drop function if exists public.test;
 
+# test: drop function with udf dep
+create function test_dep() begin end;
+create function test() begin select test_dep(); end;
+explain select test();
+drop function test_dep;
+
+# test: drop function after dep drop
+drop function test;
+drop function test_dep;
+
 # test: alter function statement parsing
 alter;
 alter function;
@@ -337,6 +347,16 @@ alter function test.test rename to public.test;
 select system.function('test').name;
 drop function test;
 drop schema test;
+
+# test: alter function rename with udf dep
+create function test_dep() begin end;
+create function test() begin select test_dep(); end;
+alter function test_dep rename to test_dep2;
+
+# test: alter function rename after after dep drop
+drop function test;
+alter function test_dep rename to test_dep2;
+drop function test_dep2;
 
 disconnect S0;
 close E0;

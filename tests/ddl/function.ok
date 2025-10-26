@@ -676,7 +676,7 @@ execute reverse([1,2,3]);
 drop function reverse;
 # test: create function (schema explicit)
 create function public.test() begin end;
-{"msg": "udf 'test': already exists"}
+{"msg": "function 'test': already exists"}
 create schema test;
 create function test.test() begin end;
 show function test.test extended;
@@ -701,10 +701,40 @@ drop function;
 {"msg": "drop function❰;❱ ⟵ name expected"}
 drop function test;
 drop function test;
-{"msg": "udf 'test': not exists"}
+{"msg": "function 'test': not exists"}
 # test: drop function if exists
 drop function if exists test;
 drop function if exists public.test;
+# test: drop function with udf dep
+create function test_dep() begin end;
+create function test() begin select test_dep(); end;
+explain select test();
+[{
+  "main": {
+    "00": "call_udf            0      -      -     # public.test()",
+    "01": "ret                 0      0      -     "
+  },
+  "access": [["public.test", "call"], ["public.test_dep", "call"]],
+  "calls": [{
+    "function": "public.test",
+    "main": {
+      "00": "call_udf            0      -      -     # public.test_dep()",
+      "01": "ret                 -1     0      -     "
+    },
+    "access": [["public.test_dep", "call"]]
+  }, {
+    "function": "public.test_dep",
+    "main": {
+      "00": "ret                 -1     0      -     "
+    },
+    "access": []
+  }]
+}]
+drop function test_dep;
+{"msg": "function 'public.test' depends on relation 'public.test_dep"}
+# test: drop function after dep drop
+drop function test;
+drop function test_dep;
 # test: alter function statement parsing
 alter;
 {"msg": "alter❰;❱ ⟵ USER|SCHEMA|TABLE|INDEX|FUNCTION expected"}
@@ -740,7 +770,7 @@ select system.function('abc').name;
 # test: alter function rename function exists
 create function test() begin end;
 alter function abc rename to test;
-{"msg": "udf 'test': already exists"}
+{"msg": "function 'test': already exists"}
 # test: alter function rename schema not exists
 alter function abc rename to test.test;
 {"msg": "schema 'test': not exists"}
@@ -761,5 +791,14 @@ select system.function('test').name;
 ["test"]
 drop function test;
 drop schema test;
+# test: alter function rename with udf dep
+create function test_dep() begin end;
+create function test() begin select test_dep(); end;
+alter function test_dep rename to test_dep2;
+{"msg": "function 'public.test' depends on relation 'public.test_dep"}
+# test: alter function rename after after dep drop
+drop function test;
+alter function test_dep rename to test_dep2;
+drop function test_dep2;
 disconnect S0;
 close E0;

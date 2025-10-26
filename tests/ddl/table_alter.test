@@ -365,5 +365,27 @@ select * from test;
 select system.table('test').columns;
 drop table test;
 
+# test: rename with udf dep
+create table test (id int primary key, data int);
+create function dep() begin insert into test values (1, 2); end;
+show functions extended;
+alter table test rename to test2;
+
+# test: rename after udf drop
+drop function dep;
+alter table test rename to test2;
+drop table test2;
+
+# test: rename column with udf dep
+create table test (id int primary key, data int);
+create function dep() begin insert into test values (1, 2); end;
+show functions extended;
+alter table test rename column data to data2;
+
+# test: rename column after udf drop
+drop function dep;
+alter table test rename column data to data2;
+drop table test;
+
 disconnect S0;
 close E0;
