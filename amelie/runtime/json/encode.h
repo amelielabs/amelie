@@ -74,12 +74,12 @@ encode_string32(Buf* self, int size)
 }
 
 hot static inline void
-encode_string_escape(Buf* self, Str* string)
+encode_string_unescape(Buf* self, Str* string)
 {
 	auto offset = buf_size(self);
 	encode_string32(self, str_size(string));
 	buf_reserve(self, str_size(string));
-	escape_str(self, string);
+	unescape_str(self, string);
 
 	// update generated string size
 	auto start = self->start + offset;

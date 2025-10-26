@@ -91,7 +91,7 @@ json_keyword(Json* self, const char* name, int name_size)
 }
 
 hot static inline void
-json_string_read(Json* self, Str* str, int string_end)
+json_string_read(Json* self, Str* str, int string_end, bool* unescape)
 {
 	// "
 	self->pos++;
@@ -111,6 +111,7 @@ json_string_read(Json* self, Str* str, int string_end)
 			error("unterminated JSON string");
 		if (*self->pos == '\\') {
 			slash = !slash;
+			*unescape = true;
 		} else {
 			slash = false;
 		}
@@ -125,12 +126,12 @@ json_string_read(Json* self, Str* str, int string_end)
 }
 
 hot static inline bool
-json_string(Json* self, Str* str)
+json_string(Json* self, Str* str, bool* unescape)
 {
 	auto next = json_next(self);
 	if (next != '\"' && next != '\'')
 		return false;
-	json_string_read(self, str, next);
+	json_string_read(self, str, next, unescape);
 	return true;
 }
 
@@ -193,9 +194,13 @@ json_const(Json* self)
 	case '"':
 	case '\'':
 	{
+		bool unescape = false;
 		Str str;
-		json_string_read(self, &str, *self->pos);
-		encode_string(self->buf, &str);
+		json_string_read(self, &str, *self->pos, &unescape);
+		if (unescape)
+			encode_string_unescape(self->buf, &str);
+		else
+			encode_string(self->buf, &str);
 		return;
 	}
 	case 'n':
@@ -358,10 +363,14 @@ json_parse(Json* self, Str* text, Buf* buf)
 		case JSON_MAP_KEY:
 		{
 			// "key"
+			bool unescape = false;
 			Str str;
-			if (! json_string(self, &str))
+			if (! json_string(self, &str, &unescape))
 				error("JSON object key expected");
-			encode_string(self->buf, &str);
+			if (unescape)
+				encode_string_unescape(self->buf, &str);
+			else
+				encode_string(self->buf, &str);
 			// ':'
 			next = json_next(self);
 			if (next != ':')

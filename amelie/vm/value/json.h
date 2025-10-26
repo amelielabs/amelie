@@ -167,7 +167,7 @@ value_export(Value* self, Timezone* tz, bool pretty, Buf* buf)
 		break;
 	case TYPE_STRING:
 		buf_write(buf, "\"", 1);
-		unescape_str(buf, &self->string);
+		escape_str(buf, &self->string);
 		buf_write(buf, "\"", 1);
 		break;
 	case TYPE_JSON:

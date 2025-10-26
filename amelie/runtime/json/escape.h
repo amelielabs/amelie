@@ -12,7 +12,7 @@
 //
 
 hot static inline void
-escape_str(Buf* self, Str* string)
+unescape_str(Buf* self, Str* string)
 {
 	buf_reserve(self, str_size(string));
 
@@ -71,7 +71,7 @@ escape_str(Buf* self, Str* string)
 }
 
 hot static inline void
-unescape_str(Buf* self, Str* raw)
+escape_str(Buf* self, Str* raw)
 {
 	auto end = raw->end;
 	for (auto pos = raw->pos; pos < end; pos++)

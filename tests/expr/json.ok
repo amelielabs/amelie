@@ -674,7 +674,7 @@ select {"id":"2489651126","type":"IssuesEvent","actor":{"id":10162972,"login":"s
       "created_at": "2015-01-01T15:00:09Z",
       "updated_at": "2015-01-01T15:00:09Z",
       "closed_at": null,
-      "body": "Steps to reproduce:\\r\\n- Go to Android/data/me.scheimi.sgit/files/repo.\\r\\n- Remove a repository.\\r\\n- Go back to SGit\\r\\n\\r\\nOutput:\\r\\n- SGit cannot detect that the repo has been deleted and still show the repo in the user interface. \\r\\n- When choose that repo, the toast message shows that \\r\\n\\\"Repositoy not found (there may be something wrong with this repo)."
+      "body": "Steps to reproduce:\r\n- Go to Android/data/me.scheimi.sgit/files/repo.\r\n- Remove a repository.\r\n- Go back to SGit\r\n\r\nOutput:\r\n- SGit cannot detect that the repo has been deleted and still show the repo in the user interface. \r\n- When choose that repo, the toast message shows that \r\n\"Repositoy not found (there may be something wrong with this repo)."
     }
   },
   "public": true,
@@ -757,7 +757,7 @@ select {"id":"2489660418","type":"PushEvent","actor":{"id":250019,"login":"tarek
         "email": "da0b52b0ab43721cda3399320ca940a5a0e571ee@ziade.org",
         "name": "Tarek Ziade"
       },
-      "message": "simpler non-flash version\\\\",
+      "message": "simpler non-flash version\\",
       "distinct": true,
       "url": "https://api.github.com/repos/tarekziade/foule.es/commits/966cd52661b707db6d8753a016afcce9d788013a"
     }]

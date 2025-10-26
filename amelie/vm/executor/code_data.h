@@ -124,6 +124,6 @@ static inline int
 code_data_add_string_unescape(CodeData* self, Str* string)
 {
 	int offset = code_data_pos(self);
-	encode_string_escape(&self->data, string);
+	encode_string_unescape(&self->data, string);
 	return offset;
 }
