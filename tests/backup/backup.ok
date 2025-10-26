@@ -24,6 +24,16 @@ create table test (id int primary key);
 insert into test values (1),(2),(3);
 select system.state().lsn;
 [3]
+create function reverse(array json) return json
+begin
+	declare rev json := [];
+	for it in (array) do
+		rev := rev::push(it);
+	end;
+	return rev;
+end;
+select system.state().lsn;
+[4]
 backup E2 "uri": "127.0.0.1:3480";
 close E2;
 disconnect S0;
@@ -35,18 +45,20 @@ show uuid;
 ["00000000-0000-0000-0000-000000000000"]
 select * from test;
 [1, 3, 2]
+select [1,2,3]::reverse;
+[[3, 2, 1]]
 select system.state().lsn;
-[3]
+[4]
 disconnect S0;
 close E2;
 # test: backup wal #2
 open E0 "wal_size": 0;
 connect E0 S0 127.0.0.1:3480;
 select system.state().lsn;
-[3]
+[4]
 show wal;
 [{
-  "lsn": 3,
+  "lsn": 4,
   "lsn_min": 1,
   "files": 1,
   "slots": 0,
@@ -59,7 +71,7 @@ show wal;
 insert into test values (4);
 show wal;
 [{
-  "lsn": 4,
+  "lsn": 5,
   "lsn_min": 1,
   "files": 2,
   "slots": 0,
@@ -80,11 +92,13 @@ show uuid;
 ["00000000-0000-0000-0000-000000000000"]
 select * from test;
 [1, 3, 4, 2]
+select [1,2,3]::reverse;
+[[3, 2, 1]]
 select system.state().lsn;
-[4]
+[5]
 show wal;
 [{
-  "lsn": 4,
+  "lsn": 5,
   "lsn_min": 1,
   "files": 2,
   "slots": 0,
@@ -100,14 +114,14 @@ close E3;
 open E0;
 connect E0 S0 127.0.0.1:3480;
 select system.state().lsn;
-[4]
+[5]
 select system.state().checkpoint;
 [1]
 checkpoint;
 select system.state().lsn;
-[4]
+[5]
 select system.state().checkpoint;
-[4]
+[5]
 backup E4 "uri": "127.0.0.1:3480";
 close E4;
 disconnect S0;
@@ -116,11 +130,13 @@ close E0;
 open E4;
 connect E4 S0 127.0.0.1:3480;
 select system.state().lsn;
-[4]
+[5]
 select system.state().checkpoint;
-[4]
+[5]
 select * from test;
 [1, 3, 4, 2]
+select [1,2,3]::reverse;
+[[3, 2, 1]]
 disconnect S0;
 close E4;
 # test: backup checkpoint with wal
@@ -128,9 +144,9 @@ open E0;
 connect E0 S0 127.0.0.1:3480;
 insert into test values (5),(6),(7);
 select system.state().lsn;
-[5]
+[6]
 select system.state().checkpoint;
-[4]
+[5]
 backup E5 "uri": "127.0.0.1:3480";
 close E5;
 disconnect S0;
@@ -139,10 +155,12 @@ close E0;
 open E5;
 connect E5 S0 127.0.0.1:3480;
 select system.state().lsn;
-[5]
+[6]
 select system.state().checkpoint;
-[4]
+[5]
 select * from test;
 [1, 3, 4, 5, 6, 2, 7]
+select [1,2,3]::reverse;
+[[3, 2, 1]]
 disconnect S0;
 close E5;

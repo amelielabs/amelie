@@ -28,6 +28,16 @@ create table test (id int primary key);
 insert into test values (1),(2),(3);
 select system.state().lsn;
 
+create function reverse(array json) return json
+begin
+	declare rev json := [];
+	for it in (array) do
+		rev := rev::push(it);
+	end;
+	return rev;
+end;
+select system.state().lsn;
+
 backup E2 "uri": "127.0.0.1:3480";
 close E2;
 
@@ -39,6 +49,7 @@ open E2;
 connect E2 S0 127.0.0.1:3480;
 show uuid;
 select * from test;
+select [1,2,3]::reverse;
 select system.state().lsn;
 disconnect S0;
 close E2;
@@ -64,6 +75,7 @@ open E3 "wal_size": 104857600;
 connect E3 S0 127.0.0.1:3480;
 show uuid;
 select * from test;
+select [1,2,3]::reverse;
 select system.state().lsn;
 show wal;
 disconnect S0;
@@ -92,6 +104,7 @@ connect E4 S0 127.0.0.1:3480;
 select system.state().lsn;
 select system.state().checkpoint;
 select * from test;
+select [1,2,3]::reverse;
 
 disconnect S0;
 close E4;
@@ -117,6 +130,7 @@ connect E5 S0 127.0.0.1:3480;
 select system.state().lsn;
 select system.state().checkpoint;
 select * from test;
+select [1,2,3]::reverse;
 
 disconnect S0;
 close E5;

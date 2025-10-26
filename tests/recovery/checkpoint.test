@@ -62,6 +62,45 @@ select system.state().checkpoint;
 select identity_of("public", "test");
 select * from test;
 
+# test: create function
+create function reverse(array json) return json
+begin
+	declare rev json := [];
+	for it in (array) do
+		rev := rev::push(it);
+	end;
+	return rev;
+end;
+show functions extended;
+select [1,2,3]::reverse;
+
+# test: restart/recover (checkpoint + wal)
+disconnect S0;
+close E0;
+open E0;
+connect E0 S0 127.0.0.1:3485;
+
+select system.state().lsn;
+select system.state().checkpoint;
+show functions extended;
+select [1,2,3]::reverse;
+
+# test: checkpoint
+checkpoint;
+select system.state().lsn;
+select system.state().checkpoint;
+
+# test: restart/recover (checkpoint)
+disconnect S0;
+close E0;
+open E0;
+connect E0 S0 127.0.0.1:3485;
+
+select system.state().lsn;
+select system.state().checkpoint;
+show functions extended;
+select [1,2,3]::reverse;
+
 # test: create schema
 create schema test;
 alter table public.test rename to test.test;

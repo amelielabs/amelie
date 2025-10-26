@@ -609,5 +609,107 @@ show schemas;
   "name": "public",
   "system": true
 }]
+# test: create function
+create function reverse(array json) return json
+begin
+	declare rev json := [];
+	for it in (array) do
+		rev := rev::push(it);
+	end;
+	return rev;
+end;
+select system.state().lsn;
+[24]
+show functions extended;
+[{
+  "schema": "public",
+  "name": "reverse",
+  "text": "begin\n\tdeclare rev json := [];\n\tfor it in (array) do\n\t\trev := rev::push(it);\n\tend;\n\treturn rev;\nend",
+  "type": 5,
+  "args": [{
+    "name": "array",
+    "type": 5,
+    "type_size": 0,
+    "constraints": [["default", null]]
+  }],
+  "returning": []
+}]
+select [1,2,3]::reverse;
+[[3, 2, 1]]
+# test: restart
+disconnect S0;
+close E0;
+open E0;
+connect E0 S0 127.0.0.1:3485;
+# test: validate state
+select system.state().lsn;
+[24]
+show functions extended;
+[{
+  "schema": "public",
+  "name": "reverse",
+  "text": "begin\n\tdeclare rev json := [];\n\tfor it in (array) do\n\t\trev := rev::push(it);\n\tend;\n\treturn rev;\nend",
+  "type": 5,
+  "args": [{
+    "name": "array",
+    "type": 5,
+    "type_size": 0,
+    "constraints": [["default", null]]
+  }],
+  "returning": []
+}]
+select [1,2,3]::reverse;
+[[3, 2, 1]]
+# test: alter fnction rename
+alter function reverse rename to reverse2;
+show functions;
+[{
+  "schema": "public",
+  "name": "reverse2"
+}]
+select system.state().lsn;
+[25]
+select [1,2,3]::reverse2;
+[[3, 2, 1]]
+# test: restart
+disconnect S0;
+close E0;
+open E0;
+connect E0 S0 127.0.0.1:3485;
+# test: validate state
+select system.state().lsn;
+[25]
+show functions extended;
+[{
+  "schema": "public",
+  "name": "reverse2",
+  "text": "begin\n\tdeclare rev json := [];\n\tfor it in (array) do\n\t\trev := rev::push(it);\n\tend;\n\treturn rev;\nend",
+  "type": 5,
+  "args": [{
+    "name": "array",
+    "type": 5,
+    "type_size": 0,
+    "constraints": [["default", null]]
+  }],
+  "returning": []
+}]
+select [1,2,3]::reverse2;
+[[3, 2, 1]]
+# test: drop function
+drop function reverse2;
+select system.state().lsn;
+[26]
+show functions extended;
+[]
+# test: restart
+disconnect S0;
+close E0;
+open E0;
+connect E0 S0 127.0.0.1:3485;
+# test: validate state
+show functions extended;
+[]
+select system.state().lsn;
+[26]
 disconnect S0;
 close E0;

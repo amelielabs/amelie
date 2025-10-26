@@ -67,20 +67,101 @@ select identity_of("public", "test");
 [3]
 select * from test;
 [0, 1, 2]
-# test: create schema
-create schema test;
-alter table public.test rename to test.test;
-select system.state().lsn;
-[5]
+# test: create function
+create function reverse(array json) return json
+begin
+	declare rev json := [];
+	for it in (array) do
+		rev := rev::push(it);
+	end;
+	return rev;
+end;
+show functions extended;
+[{
+  "schema": "public",
+  "name": "reverse",
+  "text": "begin\n\tdeclare rev json := [];\n\tfor it in (array) do\n\t\trev := rev::push(it);\n\tend;\n\treturn rev;\nend",
+  "type": 5,
+  "args": [{
+    "name": "array",
+    "type": 5,
+    "type_size": 0,
+    "constraints": [["default", null]]
+  }],
+  "returning": []
+}]
+select [1,2,3]::reverse;
+[[3, 2, 1]]
 # test: restart/recover (checkpoint + wal)
 disconnect S0;
 close E0;
 open E0;
 connect E0 S0 127.0.0.1:3485;
 select system.state().lsn;
-[5]
+[4]
 select system.state().checkpoint;
 [3]
+show functions extended;
+[{
+  "schema": "public",
+  "name": "reverse",
+  "text": "begin\n\tdeclare rev json := [];\n\tfor it in (array) do\n\t\trev := rev::push(it);\n\tend;\n\treturn rev;\nend",
+  "type": 5,
+  "args": [{
+    "name": "array",
+    "type": 5,
+    "type_size": 0,
+    "constraints": [["default", null]]
+  }],
+  "returning": []
+}]
+select [1,2,3]::reverse;
+[[3, 2, 1]]
+# test: checkpoint
+checkpoint;
+select system.state().lsn;
+[4]
+select system.state().checkpoint;
+[4]
+# test: restart/recover (checkpoint)
+disconnect S0;
+close E0;
+open E0;
+connect E0 S0 127.0.0.1:3485;
+select system.state().lsn;
+[4]
+select system.state().checkpoint;
+[4]
+show functions extended;
+[{
+  "schema": "public",
+  "name": "reverse",
+  "text": "begin\n\tdeclare rev json := [];\n\tfor it in (array) do\n\t\trev := rev::push(it);\n\tend;\n\treturn rev;\nend",
+  "type": 5,
+  "args": [{
+    "name": "array",
+    "type": 5,
+    "type_size": 0,
+    "constraints": [["default", null]]
+  }],
+  "returning": []
+}]
+select [1,2,3]::reverse;
+[[3, 2, 1]]
+# test: create schema
+create schema test;
+alter table public.test rename to test.test;
+select system.state().lsn;
+[6]
+# test: restart/recover (checkpoint + wal)
+disconnect S0;
+close E0;
+open E0;
+connect E0 S0 127.0.0.1:3485;
+select system.state().lsn;
+[6]
+select system.state().checkpoint;
+[4]
 show schemas;
 [{
   "name": "system",
@@ -99,18 +180,18 @@ select * from test.test;
 # test: checkpoint
 checkpoint;
 select system.state().lsn;
-[5]
+[6]
 select system.state().checkpoint;
-[5]
+[6]
 # test: restart/recover (checkpoint)
 disconnect S0;
 close E0;
 open E0;
 connect E0 S0 127.0.0.1:3485;
 select system.state().lsn;
-[5]
+[6]
 select system.state().checkpoint;
-[5]
+[6]
 show schemas;
 [{
   "name": "system",

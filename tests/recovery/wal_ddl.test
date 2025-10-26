@@ -341,5 +341,62 @@ connect E0 S0 127.0.0.1:3485;
 select system.state().lsn;
 show schemas;
 
+# test: create function
+create function reverse(array json) return json
+begin
+	declare rev json := [];
+	for it in (array) do
+		rev := rev::push(it);
+	end;
+	return rev;
+end;
+select system.state().lsn;
+
+show functions extended;
+select [1,2,3]::reverse;
+
+# test: restart
+disconnect S0;
+close E0;
+open E0;
+connect E0 S0 127.0.0.1:3485;
+
+# test: validate state
+select system.state().lsn;
+show functions extended;
+select [1,2,3]::reverse;
+
+# test: alter fnction rename
+alter function reverse rename to reverse2;
+show functions;
+select system.state().lsn;
+select [1,2,3]::reverse2;
+
+# test: restart
+disconnect S0;
+close E0;
+open E0;
+connect E0 S0 127.0.0.1:3485;
+
+# test: validate state
+select system.state().lsn;
+show functions extended;
+select [1,2,3]::reverse2;
+
+# test: drop function
+drop function reverse2;
+select system.state().lsn;
+show functions extended;
+
+# test: restart
+disconnect S0;
+close E0;
+open E0;
+connect E0 S0 127.0.0.1:3485;
+
+# test: validate state
+show functions extended;
+select system.state().lsn;
+
 disconnect S0;
 close E0;
