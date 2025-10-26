@@ -1,0 +1,259 @@
+open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "127.0.0.1", "port": 3485 }];
+connect E0 S0 127.0.0.1:3485;
+# test: execute parsing
+create function reverse(array json) return json
+begin
+	declare rev json := [];
+	for it in (array) do
+		rev := rev::push(it);
+	end;
+	return rev;
+end;
+execute;
+{"msg": "execute❰;❱ ⟵ function name expected"}
+execute 1;
+{"msg": "execute ❰1❱ ⟵ function name expected"}
+execute test;
+{"msg": "execute ❰test❱ ⟵ function not found"}
+execute reverse(;
+{"msg": "unexpected JSON token"}
+execute reverse(1;
+{"msg": "execute reverse(1❰;❱ ⟵ ) expected"}
+execute reverse(1, ;
+{"msg": "execute reverse(1, ❰;❱ ⟵ EXECUTE arguments mismatch"}
+execute reverse(1, );
+{"msg": "execute reverse(1, ❰)❱ ⟵ EXECUTE arguments mismatch"}
+# test: execute
+explain execute reverse([1,2,3]);
+[{
+  "main": {
+    "00": "push_nulls          1      0      0     ",
+    "01": "json                0      0      0     ",
+    "02": "var_set             0      0      0     ",
+    "03": "free                0      0      0     ",
+    "04": "var                 0      0      1     ",
+    "05": "json_open           1      0      14    ",
+    "06": "var                 2      0      0     ",
+    "07": "push                2      0      0     ",
+    "08": "json_read           2      1      0     ",
+    "09": "push                2      0      0     ",
+    "10": "call                2      -      2     # public.push()",
+    "11": "var_set             0      0      2     ",
+    "12": "free                2      0      0     ",
+    "13": "json_next           1      6      0     ",
+    "14": "free                1      0      0     ",
+    "15": "free                0      0      0     ",
+    "16": "var                 0      0      0     ",
+    "17": "ret                 0      0      -     "
+  },
+  "access": []
+}]
+execute reverse([1,2,3]);
+[[3, 2, 1]]
+execute reverse(null);
+[[]]
+execute reverse([]);
+[[]]
+# test: execute return table
+create function test() return table (a int, b int)
+begin
+	return select 1, 2;
+end;
+execute test();
+[[1, 2]]
+drop function test;
+# test: execute (stmt)
+begin execute reverse([1,2,3]); end;
+{"msg": "begin ❰execute❱ ⟵ cannot be used here"}
+# test: execute (inside cte)
+begin declare x int; with a as (execute reverse([1,2,3])) select 1; end;
+{"msg": "begin declare x int; with a as (❰execute❱ ⟵ cannot be used here"}
+begin declare x int; with a as (select 1) execute reverse([1,2,3]); end;
+{"msg": "begin declare x int; with a as (select 1) ❰execute❱ ⟵ cannot be used here"}
+# test: select udf() parsing
+select reverse(;
+{"msg": "select reverse(❰;❱ ⟵ bad expression"}
+select reverse(1;
+{"msg": "select reverse(1❰;❱ ⟵ ) expected"}
+select reverse(a;
+{"msg": "select reverse(a❰;❱ ⟵ ) expected"}
+select reverse(a,;
+{"msg": "select reverse(a,❰;❱ ⟵ bad expression"}
+select reverse(a,);
+{"msg": "select reverse(a,❰)❱ ⟵ bad expression"}
+select reverse();
+{"msg": "select ❰reverse❱ ⟵ invalid number of arguments"}
+# test: select udf()
+explain select reverse([1,2,3]);
+[{
+  "main": {
+    "00": "json                0      0      0     ",
+    "01": "push                0      0      0     ",
+    "02": "call_udf            0      -      -     # public.reverse()",
+    "03": "ret                 0      0      -     "
+  },
+  "access": [["public.reverse", "call"]],
+  "calls": [{
+    "function": "public.reverse",
+    "main": {
+      "00": "push_nulls          1      0      0     ",
+      "01": "json                0      0      0     ",
+      "02": "var_set             0      0      0     ",
+      "03": "free                0      0      0     ",
+      "04": "var                 0      0      1     ",
+      "05": "json_open           1      0      14    ",
+      "06": "var                 2      0      0     ",
+      "07": "push                2      0      0     ",
+      "08": "json_read           2      1      0     ",
+      "09": "push                2      0      0     ",
+      "10": "call                2      -      2     # public.push()",
+      "11": "var_set             0      0      2     ",
+      "12": "free                2      0      0     ",
+      "13": "json_next           1      6      0     ",
+      "14": "free                1      0      0     ",
+      "15": "free                0      0      0     ",
+      "16": "var                 0      0      0     ",
+      "17": "ret                 0      0      -     "
+    },
+    "access": []
+  }]
+}]
+select reverse([1,2,3]);
+[[3, 2, 1]]
+select [1,2,3]::reverse;
+[[3, 2, 1]]
+select [1,2,3]::reverse();
+[[3, 2, 1]]
+select [1,2,3]::reverse::reverse;
+[[1, 2, 3]]
+# test: select udf() (closing)
+create table test (id int primary key);
+insert into test values (1), (2), (3);
+create function fn() return int
+begin
+	declare x int;
+	select * into x from test;
+	return x;
+end;
+explain begin
+	select 1;
+	select fn();
+	select 1;
+end;
+[{
+  "main": {
+    "00": "int                 0      -      0     # 1",
+    "01": "call_udf            1      -      -     # public.fn()",
+    "02": "close               0      0      0     ",
+    "03": "int                 2      -      0     # 1",
+    "04": "ret                 2      0      -     "
+  },
+  "access": [["public.fn", "call"], ["public.test", "ro"]],
+  "calls": [{
+    "function": "public.fn",
+    "main": {
+      "00": "push_nulls          1      0      0     ",
+      "01": "send_all            0      0      20    # public.test (select, closing)",
+      "02": "recv                1      0      -1    ",
+      "03": "var_set             0      0      1     ",
+      "04": "free                1      0      0     ",
+      "05": "var                 0      0      0     ",
+      "06": "ret                 0      0      -     "
+    },
+    "pushdown": {
+      "00": "set                 0      1      0     ",
+      "01": "table_open_part     1      0      6     # public.test (primary)",
+      "02": "table_readi32       2      1      0     ",
+      "03": "push                2      0      0     ",
+      "04": "set_add             0      0      0     ",
+      "05": "table_next          1      2      0     ",
+      "06": "free                1      0      0     ",
+      "07": "ret                 0      0      -     "
+    },
+    "access": [["public.test", "ro"]]
+  }]
+}]
+begin
+	select 1;
+	select fn();
+	select 1;
+end;
+[1]
+select fn();
+[1]
+drop function fn;
+drop table test;
+# test: select udf() (nested)
+create function a(id int) return int
+begin
+	return id;
+end;
+create function b(id int) return int
+begin
+	return select a(id);
+end;
+create function c(id int) return int
+begin
+	return select b(id);
+end;
+explain select c(123);
+[{
+  "main": {
+    "00": "int                 0      -      0     # 123",
+    "01": "push                0      0      0     ",
+    "02": "call_udf            0      -      -     # public.c()",
+    "03": "ret                 0      0      -     "
+  },
+  "access": [["public.c", "call"], ["public.b", "call"], ["public.a", "call"]],
+  "calls": [{
+    "function": "public.c",
+    "main": {
+      "00": "var                 0      0      1     ",
+      "01": "push                0      0      0     ",
+      "02": "call_udf            0      -      -     # public.b()",
+      "03": "ret                 0      0      -     "
+    },
+    "access": [["public.b", "call"], ["public.a", "call"]]
+  }, {
+    "function": "public.b",
+    "main": {
+      "00": "var                 0      0      1     ",
+      "01": "push                0      0      0     ",
+      "02": "call_udf            0      -      -     # public.a()",
+      "03": "ret                 0      0      -     "
+    },
+    "access": [["public.a", "call"]]
+  }, {
+    "function": "public.a",
+    "main": {
+      "00": "var                 0      0      1     ",
+      "01": "ret                 0      0      -     "
+    },
+    "access": []
+  }]
+}]
+select c(123);
+[123]
+drop function c;
+drop function b;
+drop function a;
+# test: select udf() (inside cte)
+begin declare x int; with a as (select reverse([1,2,3])) select * from a; end;
+[3, 2, 1]
+begin declare x int; with a as (select 1) select reverse([1,2,3]); end;
+[[3, 2, 1]]
+# test: select udf() from expr (unsupported)
+select x::reverse() from ([1,2,3]) x;
+{"msg": "select x❰::❱ ⟵ UDF cannot be called with FROM clause"}
+# test: select udf() from table (unsupported)
+create table test (id int primary key);
+select x::reverse() from test;
+{"msg": "select x❰::❱ ⟵ UDF cannot be called with FROM clause"}
+select * from test where reverse(null);
+{"msg": "select * from test where ❰reverse❱ ⟵ UDF cannot be used here"}
+drop table test;
+# test: select from udf() (unsupported)
+select * from reverse(null);
+{"msg": "select * from ❰reverse❱ ⟵ function not found"}
+disconnect S0;
+close E0;

@@ -800,5 +800,11 @@ alter function test_dep rename to test_dep2;
 drop function test;
 alter function test_dep rename to test_dep2;
 drop function test_dep2;
+# test: recursion direct
+create function test(x int) return int
+begin
+	select test(123);
+end;
+{"msg": "create function test(x int) return int\nbegin\n\tselect ❰test❱ ⟵ function not found"}
 disconnect S0;
 close E0;

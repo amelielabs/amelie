@@ -1,0 +1,124 @@
+#
+
+open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "127.0.0.1", "port": 3485 }];
+connect E0 S0 127.0.0.1:3485;
+
+# test: execute parsing
+create function reverse(array json) return json
+begin
+	declare rev json := [];
+	for it in (array) do
+		rev := rev::push(it);
+	end;
+	return rev;
+end;
+
+execute;
+execute 1;
+execute test;
+execute reverse(;
+execute reverse(1;
+execute reverse(1, ;
+execute reverse(1, );
+
+# test: execute
+explain execute reverse([1,2,3]);
+execute reverse([1,2,3]);
+execute reverse(null);
+execute reverse([]);
+
+# test: execute return table
+create function test() return table (a int, b int)
+begin
+	return select 1, 2;
+end;
+execute test();
+drop function test;
+
+# test: execute (stmt)
+begin execute reverse([1,2,3]); end;
+
+# test: execute (inside cte)
+begin declare x int; with a as (execute reverse([1,2,3])) select 1; end;
+begin declare x int; with a as (select 1) execute reverse([1,2,3]); end;
+
+# test: select udf() parsing
+select reverse(;
+select reverse(1;
+select reverse(a;
+select reverse(a,;
+select reverse(a,);
+select reverse();
+
+# test: select udf()
+explain select reverse([1,2,3]);
+select reverse([1,2,3]);
+select [1,2,3]::reverse;
+select [1,2,3]::reverse();
+select [1,2,3]::reverse::reverse;
+
+# test: select udf() (closing)
+create table test (id int primary key);
+insert into test values (1), (2), (3);
+create function fn() return int
+begin
+	declare x int;
+	select * into x from test;
+	return x;
+end;
+
+explain begin
+	select 1;
+	select fn();
+	select 1;
+end;
+begin
+	select 1;
+	select fn();
+	select 1;
+end;
+select fn();
+drop function fn;
+drop table test;
+
+# test: select udf() (nested)
+create function a(id int) return int
+begin
+	return id;
+end;
+
+create function b(id int) return int
+begin
+	return select a(id);
+end;
+
+create function c(id int) return int
+begin
+	return select b(id);
+end;
+
+explain select c(123);
+select c(123);
+
+drop function c;
+drop function b;
+drop function a;
+
+# test: select udf() (inside cte)
+begin declare x int; with a as (select reverse([1,2,3])) select * from a; end;
+begin declare x int; with a as (select 1) select reverse([1,2,3]); end;
+
+# test: select udf() from expr (unsupported)
+select x::reverse() from ([1,2,3]) x;
+
+# test: select udf() from table (unsupported)
+create table test (id int primary key);
+select x::reverse() from test;
+select * from test where reverse(null);
+drop table test;
+
+# test: select from udf() (unsupported)
+select * from reverse(null);
+
+disconnect S0;
+close E0;
