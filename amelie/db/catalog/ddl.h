@@ -39,37 +39,38 @@ enum
 
 	// udf
 	DDL_UDF_CREATE,
+	DDL_UDF_REPLACE,
 	DDL_UDF_DROP,
 	DDL_UDF_RENAME
 };
 
 enum
 {
-	DDL_IF_NOT_EXISTS        = 1,
-	DDL_IF_EXISTS            = 2,
-	DDL_IF_COLUMN_NOT_EXISTS = 4,
-	DDL_IF_COLUMN_EXISTS     = 8
+	DDL_IF_NOT_EXISTS        = 1 << 0,
+	DDL_IF_EXISTS            = 1 << 1,
+	DDL_IF_COLUMN_NOT_EXISTS = 1 << 2,
+	DDL_IF_COLUMN_EXISTS     = 1 << 3
 };
 
-always_inline static inline bool
+static inline bool
 ddl_if_not_exists(int flags)
 {
 	return (flags & DDL_IF_NOT_EXISTS) > 0;
 }
 
-always_inline static inline bool
+static inline bool
 ddl_if_exists(int flags)
 {
 	return (flags & DDL_IF_EXISTS) > 0;
 }
 
-always_inline static inline bool
+static inline bool
 ddl_if_column_exists(int flags)
 {
 	return (flags & DDL_IF_COLUMN_EXISTS) > 0;
 }
 
-always_inline static inline bool
+static inline bool
 ddl_if_column_not_exists(int flags)
 {
 	return (flags & DDL_IF_COLUMN_NOT_EXISTS) > 0;

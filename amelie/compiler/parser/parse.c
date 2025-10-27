@@ -230,8 +230,9 @@ parse_stmt(Stmt* self)
 	case KCREATE:
 	{
 		// [UNIQUE | UNLOGGED]
-		bool unique   = false;
-		bool unlogged = false;
+		bool unique     = false;
+		bool unlogged   = false;
+		bool or_replace = false;
 		for (auto stop = false; !stop ;)
 		{
 			auto mod = stmt_next(self);
@@ -241,6 +242,10 @@ parse_stmt(Stmt* self)
 				break;
 			case KUNLOGGED:
 				unlogged = true;
+				break;
+			case KOR:
+				stmt_expect(self, KREPLACE);
+				or_replace = true;
 				break;
 			default:
 				stmt_push(self, mod);
@@ -258,6 +263,12 @@ parse_stmt(Stmt* self)
 		if (unlogged)
 		{
 			auto next = stmt_expect(self, KTABLE);
+			stmt_push(self, next);
+		}
+
+		if (or_replace)
+		{
+			auto next = stmt_expect(self, KFUNCTION);
 			stmt_push(self, next);
 		}
 
@@ -295,7 +306,7 @@ parse_stmt(Stmt* self)
 		if (stmt_if(self, KFUNCTION))
 		{
 			self->id = STMT_CREATE_FUNCTION;
-			parse_function_create(self, false);
+			parse_function_create(self, or_replace);
 		} else
 		{
 			stmt_error(self, NULL, "USER|REPLICA|SCHEMA|TABLE|INDEX|FUNCTION expected");

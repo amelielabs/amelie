@@ -660,17 +660,44 @@ show functions extended;
 }]
 select [1,2,3]::reverse;
 [[3, 2, 1]]
-# test: alter fnction rename
-alter function reverse rename to reverse2;
-show functions;
-[{
-  "schema": "public",
-  "name": "reverse2"
-}]
+# test: create or replace function
+create or replace function reverse(array json) return json
+begin
+	declare rev json := [];
+	for it in (array) do
+		rev := rev::push(-it);
+	end;
+	return rev;
+end;
+{"msg": "begin\n\tdeclare rev json := [];\n\tfor it in (array) do\n\t\trev := rev::push(-❰it❱ ⟵ unsupported operation type json"}
+select [1,2,3]::reverse;
+[[3, 2, 1]]
+create or replace function reverse(array json) return json
+begin
+	declare rev json := [];
+	for it in (array) do
+		rev := rev::push(-it::int);
+	end;
+	return rev;
+end;
 select system.state().lsn;
 [25]
-select [1,2,3]::reverse2;
-[[3, 2, 1]]
+show functions extended;
+[{
+  "schema": "public",
+  "name": "reverse",
+  "text": "begin\n\tdeclare rev json := [];\n\tfor it in (array) do\n\t\trev := rev::push(-it::int);\n\tend;\n\treturn rev;\nend",
+  "type": 5,
+  "args": [{
+    "name": "array",
+    "type": 5,
+    "type_size": 0,
+    "constraints": [["default", null]]
+  }],
+  "returning": []
+}]
+select [1,2,3]::reverse;
+[[-3, -2, -1]]
 # test: restart
 disconnect S0;
 close E0;
@@ -682,8 +709,43 @@ select system.state().lsn;
 show functions extended;
 [{
   "schema": "public",
+  "name": "reverse",
+  "text": "begin\n\tdeclare rev json := [];\n\tfor it in (array) do\n\t\trev := rev::push(-it::int);\n\tend;\n\treturn rev;\nend",
+  "type": 5,
+  "args": [{
+    "name": "array",
+    "type": 5,
+    "type_size": 0,
+    "constraints": [["default", null]]
+  }],
+  "returning": []
+}]
+select [1,2,3]::reverse;
+[[-3, -2, -1]]
+# test: alter function rename
+alter function reverse rename to reverse2;
+show functions;
+[{
+  "schema": "public",
+  "name": "reverse2"
+}]
+select system.state().lsn;
+[26]
+select [1,2,3]::reverse2;
+[[-3, -2, -1]]
+# test: restart
+disconnect S0;
+close E0;
+open E0;
+connect E0 S0 127.0.0.1:3485;
+# test: validate state
+select system.state().lsn;
+[26]
+show functions extended;
+[{
+  "schema": "public",
   "name": "reverse2",
-  "text": "begin\n\tdeclare rev json := [];\n\tfor it in (array) do\n\t\trev := rev::push(it);\n\tend;\n\treturn rev;\nend",
+  "text": "begin\n\tdeclare rev json := [];\n\tfor it in (array) do\n\t\trev := rev::push(-it::int);\n\tend;\n\treturn rev;\nend",
   "type": 5,
   "args": [{
     "name": "array",
@@ -694,11 +756,11 @@ show functions extended;
   "returning": []
 }]
 select [1,2,3]::reverse2;
-[[3, 2, 1]]
+[[-3, -2, -1]]
 # test: drop function
 drop function reverse2;
 select system.state().lsn;
-[26]
+[27]
 show functions extended;
 []
 # test: restart
@@ -710,6 +772,6 @@ connect E0 S0 127.0.0.1:3485;
 show functions extended;
 []
 select system.state().lsn;
-[26]
+[27]
 disconnect S0;
 close E0;

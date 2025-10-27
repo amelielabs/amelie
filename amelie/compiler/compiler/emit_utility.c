@@ -227,7 +227,10 @@ emit_ddl(Compiler* self)
 	case STMT_CREATE_FUNCTION:
 	{
 		auto arg = ast_function_create_of(stmt->ast);
-		offset = udf_op_create(data, arg->config);
+		if (arg->or_replace)
+			offset = udf_op_replace(data, arg->config);
+		else
+			offset = udf_op_create(data, arg->config);
 		flags = 0;
 		break;
 	}

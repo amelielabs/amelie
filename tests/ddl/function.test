@@ -280,8 +280,56 @@ create function system.test() begin end;
 
 # test: create function (schema does not exists)
 create function abc.test() begin end;
+drop function test;
+
+# test: create or replace function (not exists)
+create or replace function test() return int
+begin
+	return 123;
+end;
+show functions extended;
+select test();
+
+# test: create or replace function
+create or replace function test() return int
+begin
+	return 321;
+end;
+show functions extended;
+select test();
+
+# test: create or replace function (return type mismatch)
+create or replace function test() return string
+begin
+	return 'string';
+end;
+select test();
+
+# test: create or replace function (arg mismatch)
+create or replace function test(id int) return int
+begin
+	return id;
+end;
+select test();
+
+# test: create or replace function (with dep)
+create function dep () return int
+begin
+	return select test();
+end;
+select dep();
+
+create or replace function test() return int
+begin
+	return 777;
+end;
+select dep();
+
+drop function dep;
+drop function test;
 
 # test: drop function
+create function test () begin end;
 drop function;
 
 drop function test;

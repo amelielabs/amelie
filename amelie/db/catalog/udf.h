@@ -35,18 +35,24 @@ udf_free(Udf* self)
 }
 
 static inline Udf*
-udf_allocate(UdfConfig* config, UdfFree free, void* free_arg)
+udf_allocate_as(UdfConfig* config, void* data, UdfFree free, void* free_arg)
 {
 	auto self = (Udf*)am_malloc(sizeof(Udf));
 	self->free     = free;
 	self->free_arg = free_arg;
-	self->data     = NULL;
-	self->config   = udf_config_copy(config);
+	self->data     = data;
+	self->config   = config;
 	relation_init(&self->rel);
 	relation_set_schema(&self->rel, &self->config->schema);
 	relation_set_name(&self->rel, &self->config->name);
 	relation_set_free_function(&self->rel, (RelationFree)udf_free);
 	return self;
+}
+
+static inline Udf*
+udf_allocate(UdfConfig* config, UdfFree free, void* free_arg)
+{
+	return udf_allocate_as(udf_config_copy(config), NULL, free, free_arg);
 }
 
 static inline Udf*

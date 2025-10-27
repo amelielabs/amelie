@@ -36,6 +36,30 @@ udf_op_create_read(uint8_t* op)
 }
 
 static inline int
+udf_op_replace(Buf* self, UdfConfig* config)
+{
+	// [op, config]
+	auto offset = buf_size(self);
+	encode_array(self);
+	encode_integer(self, DDL_UDF_REPLACE);
+	udf_config_write(config, self);
+	encode_array_end(self);
+	return offset;
+}
+
+static inline UdfConfig*
+udf_op_replace_read(uint8_t* op)
+{
+	int64_t cmd;
+	json_read_array(&op);
+	json_read_integer(&op, &cmd);
+	assert(cmd == DDL_UDF_REPLACE);
+	auto config = udf_config_read(&op);
+	json_read_array_end(&op);
+	return config;
+}
+
+static inline int
 udf_op_drop(Buf* self, Str* schema, Str* name)
 {
 	// [op, schema, name]

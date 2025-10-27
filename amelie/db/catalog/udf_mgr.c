@@ -59,6 +59,94 @@ udf_mgr_create(UdfMgr*    self,
 	return true;
 }
 
+static void
+replace_if_commit(Log* self, LogOp* op)
+{
+	// free previous config and data by constructing
+	// temprorary udf object
+	UdfMgr* mgr = op->iface_arg;
+	auto relation = log_relation_of(self, op);
+	auto data = (void**)relation->data;
+	auto tmp = udf_allocate_as(data[0], data[1], mgr->free, mgr->free_arg);
+	udf_free(tmp);
+}
+
+static void
+replace_if_abort(Log* self, LogOp* op)
+{
+	// free current config and data by constructing
+	// temprorary udf object
+	UdfMgr* mgr = op->iface_arg;
+	auto relation = log_relation_of(self, op);
+	auto udf = udf_of(relation->relation);
+
+	auto tmp = udf_allocate_as(udf->config, udf->data, mgr->free, mgr->free_arg);
+	udf_free(tmp);
+
+	// set previous config and data
+	auto data = (void**)relation->data;
+	udf->config = data[0];
+	udf->data   = data[1];
+
+	// update relation data
+	relation_set_schema(&udf->rel, &udf->config->schema);
+	relation_set_name(&udf->rel, &udf->config->name);
+}
+
+static LogIf replace_if =
+{
+	.commit = replace_if_commit,
+	.abort  = replace_if_abort
+};
+
+void
+udf_mgr_replace_validate(UdfMgr* self, UdfConfig* config, Udf* udf)
+{
+	unused(self);
+
+	// validate arguments
+	if (! columns_compare(&udf->config->args, &config->args))
+		error("function replacement '%.*s' arguments mismatch",
+		      str_size(&config->name), str_of(&config->name));
+
+	// validate return type
+	if (udf->config->type != config->type)
+		error("function replacement '%.*s' return type mismatch",
+		      str_size(&config->name), str_of(&config->name));
+
+	// validate returning columns
+	if (! columns_compare(&udf->config->returning, &config->returning))
+		error("function replacement '%.*s' returning columns mismatch",
+		      str_size(&config->name), str_of(&config->name));
+}
+
+void
+udf_mgr_replace(UdfMgr* self,
+                Tr*     tr,
+                Udf*    udf,
+                Udf*    udf_new)
+{
+	// save previous udf config and data
+	assert(udf->data);
+	assert(udf_new->data);
+
+	// update log
+	log_relation(&tr->log, &replace_if, self, &udf->rel);
+
+	buf_write(&tr->log.data, &udf->config, sizeof(void**));
+	buf_write(&tr->log.data, &udf->data, sizeof(void**));
+
+	// swap udf data and config
+	udf->config = udf_new->config;
+	udf->data   = udf_new->data;
+	udf_new->config = NULL;
+	udf_new->data   = NULL;
+
+	// update relation data
+	relation_set_schema(&udf->rel, &udf->config->schema);
+	relation_set_name(&udf->rel, &udf->config->name);
+}
+
 void
 udf_mgr_drop_of(UdfMgr* self, Tr* tr, Udf* udf)
 {

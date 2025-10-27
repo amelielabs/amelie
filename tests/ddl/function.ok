@@ -696,7 +696,72 @@ create function system.test() begin end;
 # test: create function (schema does not exists)
 create function abc.test() begin end;
 {"msg": "schema 'abc': not exists"}
+drop function test;
+# test: create or replace function (not exists)
+create or replace function test() return int
+begin
+	return 123;
+end;
+show functions extended;
+[{
+  "schema": "public",
+  "name": "test",
+  "text": "begin\n\treturn 123;\nend",
+  "type": 2,
+  "args": [],
+  "returning": []
+}]
+select test();
+[123]
+# test: create or replace function
+create or replace function test() return int
+begin
+	return 321;
+end;
+show functions extended;
+[{
+  "schema": "public",
+  "name": "test",
+  "text": "begin\n\treturn 321;\nend",
+  "type": 2,
+  "args": [],
+  "returning": []
+}]
+select test();
+[321]
+# test: create or replace function (return type mismatch)
+create or replace function test() return string
+begin
+	return 'string';
+end;
+{"msg": "function replacement 'test' return type mismatch"}
+select test();
+[321]
+# test: create or replace function (arg mismatch)
+create or replace function test(id int) return int
+begin
+	return id;
+end;
+{"msg": "function replacement 'test' arguments mismatch"}
+select test();
+[321]
+# test: create or replace function (with dep)
+create function dep () return int
+begin
+	return select test();
+end;
+select dep();
+[321]
+create or replace function test() return int
+begin
+	return 777;
+end;
+select dep();
+[777]
+drop function dep;
+drop function test;
 # test: drop function
+create function test () begin end;
 drop function;
 {"msg": "drop function❰;❱ ⟵ name expected"}
 drop function test;

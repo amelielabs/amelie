@@ -399,13 +399,49 @@ catalog_execute(Catalog* self, Tr* tr, uint8_t* op, int flags)
 		auto config = udf_op_create_read(op);
 		defer(udf_config_free, config);
 
-		auto if_not_exists = ddl_if_not_exists(flags);
-		write = udf_mgr_create(&self->udf_mgr, tr, config, if_not_exists);
+		// create or replace
+		write = udf_mgr_create(&self->udf_mgr, tr, config, false);
 
 		// compile on creation
 		if (write)
 		{
 			auto udf = udf_mgr_find(&self->udf_mgr, &config->schema, &config->name, true);
+			self->iface->udf_compile(self, udf);
+		}
+		break;
+	}
+	case DDL_UDF_REPLACE:
+	{
+		auto config = udf_op_replace_read(op);
+		defer(udf_config_free, config);
+
+		// allow to replace udf only if it has identical arguments
+		// and return type
+
+		// create or replace
+		auto udf = udf_mgr_find(&self->udf_mgr, &config->schema, &config->name, false);
+		if (udf)
+		{
+			// validate types
+			udf_mgr_replace_validate(&self->udf_mgr, config, udf);
+
+			// create and compile new udf
+			auto replace = udf_allocate(config, self->udf_mgr.free, self->udf_mgr.free_arg);
+			defer(udf_free, replace);
+			self->iface->udf_compile(self, replace);
+
+			udf_mgr_replace(&self->udf_mgr, tr, udf, replace);
+			write = true;
+			break;
+		}
+
+		// create
+		write = udf_mgr_create(&self->udf_mgr, tr, config, false);
+
+		// compile on creation
+		if (write)
+		{
+			udf = udf_mgr_find(&self->udf_mgr, &config->schema, &config->name, true);
 			self->iface->udf_compile(self, udf);
 		}
 		break;
