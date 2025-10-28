@@ -40,21 +40,6 @@
 #include <amelie_parser.h>
 #include <amelie_compiler.h>
 
-typedef struct Scan Scan;
-
-struct Scan
-{
-	Ast*         expr_where;
-	int          roffset;
-	int          rlimit;
-	ScanFunction on_match;
-	void*        on_match_arg;
-	Buf          breaks;
-	Buf          continues;
-	From*        from;
-	Compiler*    compiler;
-};
-
 static inline int
 scan_key(Scan* self, Target* target)
 {
@@ -135,7 +120,7 @@ scan_on_match(Scan* self)
 	}
 
 	// aggregation / expr against current cursor position
-	self->on_match(cp, self->from, self->on_match_arg);
+	self->on_match(self);
 
 	// _next:
 	int _next = op_pos(cp);
@@ -208,6 +193,7 @@ scan_table(Scan* self, Target* target)
 		scan_on_match(self);
 
 	// table_next
+	int _next = op_pos(cp);
 
 	// do not iterate further for point-lookups on unique index
 	if (! (point_lookup && index->unique))
@@ -227,7 +213,7 @@ scan_table(Scan* self, Target* target)
 	if (! target->prev)
 	{
 		op_set_jmp_list(cp, &self->breaks, _eof);
-		op_set_jmp_list(cp, &self->continues, _where);
+		op_set_jmp_list(cp, &self->continues, _next);
 	}
 
 	// close cursor
@@ -268,6 +254,7 @@ scan_table_heap(Scan* self, Target* target)
 		scan_on_match(self);
 
 	// table_next
+	int _next = op_pos(cp);
 	op2(cp, CTABLE_NEXT, target->rcursor, _where);
 
 	// _eof:
@@ -280,7 +267,7 @@ scan_table_heap(Scan* self, Target* target)
 	if (! target->prev)
 	{
 		op_set_jmp_list(cp, &self->breaks, _eof);
-		op_set_jmp_list(cp, &self->continues, _where);
+		op_set_jmp_list(cp, &self->continues, _next);
 	}
 
 	// close cursor
@@ -392,6 +379,7 @@ scan_expr(Scan* self, Target* target)
 		scan_on_match(self);
 
 	// cursor next
+	int _next = op_pos(cp);
 	op2(cp, cursor_next, target->rcursor, _where);
 
 	// _eof:
@@ -404,7 +392,7 @@ scan_expr(Scan* self, Target* target)
 	if (! target->prev)
 	{
 		op_set_jmp_list(cp, &self->breaks, _eof);
-		op_set_jmp_list(cp, &self->continues, _where);
+		op_set_jmp_list(cp, &self->continues, _next);
 	}
 
 	// close cursor

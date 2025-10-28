@@ -57,10 +57,11 @@ explain begin if true then select 1; end; select 2; end;
 [{
   "main": {
     "00": "bool                0      1      0     ",
-    "01": "jntr                3      0      0     ",
+    "01": "jntr                4      0      0     ",
     "02": "int                 0      -      0     # 1",
-    "03": "int                 1      -      0     # 2",
-    "04": "ret                 1      0      -     "
+    "03": "free                0      0      0     ",
+    "04": "int                 0      -      0     # 2",
+    "05": "ret                 0      0      -     "
   },
   "access": []
 }]

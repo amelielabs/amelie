@@ -158,7 +158,7 @@ parse_function_create(Stmt* self, bool or_replace)
 	// BEGIN
 	auto begin = stmt_expect(self, KBEGIN);
 
-	auto block = blocks_add(&ns->blocks, self->block);
+	auto block = blocks_add(&ns->blocks, self->block, self);
 	parse_block(parser, block);
 
 	// END

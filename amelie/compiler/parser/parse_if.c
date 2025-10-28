@@ -59,7 +59,7 @@ parse_if_block(Stmt* self)
 	stmt_expect(self, KTHEN);
 
 	// block
-	cond->block = blocks_add(&self->block->ns->blocks, self->block);
+	cond->block = blocks_add(&self->block->ns->blocks, self->block, self);
 	cond->block->from = &stmt->from;
 	parse_block(parser, cond->block);
 	return cond;
@@ -93,7 +93,7 @@ parse_if(Stmt* self)
 		if (stmt_if(self, KELSE))
 		{
 			// block
-			stmt->cond_else = blocks_add(&self->block->ns->blocks, self->block);
+			stmt->cond_else = blocks_add(&self->block->ns->blocks, self->block, self);
 			parse_block(self->parser, stmt->cond_else);
 		}
 
@@ -107,7 +107,7 @@ parse_if(Stmt* self)
 	// this is necessary to receive all vars stmts before executing
 	// the if blocks
 	//
-	block_copy_deps(self, first->block);
+	block_copy_deps(self, first->block, true);
 
 	// return true if any of the blocks send data
 	auto ref = stmt->conds.list;

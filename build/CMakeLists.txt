@@ -256,6 +256,7 @@ set(AMELIE_SOURCES_COMPILER
     ${AMELIE_ROOT}/compiler/parser/parse_if.c
     ${AMELIE_ROOT}/compiler/parser/parse_for.c
     ${AMELIE_ROOT}/compiler/parser/parse_while.c
+    ${AMELIE_ROOT}/compiler/parser/parse_break.c
     ${AMELIE_ROOT}/compiler/parser/parse_show.c
     ${AMELIE_ROOT}/compiler/parser/parse_system.c
     ${AMELIE_ROOT}/compiler/parser/parse_user.c

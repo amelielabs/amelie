@@ -64,7 +64,7 @@ parse_for(Stmt* self)
 		stmt_expect(self, KDO);
 
 	// block
-	stmt->block = blocks_add(&self->block->ns->blocks, self->block);
+	stmt->block = blocks_add(&self->block->ns->blocks, self->block, self);
 	stmt->block->from = &stmt->from;
 	parse_block(self->parser, stmt->block);
 
@@ -77,7 +77,7 @@ parse_for(Stmt* self)
 	// this is necessary to receive all vars stmts before executing
 	// the for blocks
 	//
-	block_copy_deps(self, stmt->block);
+	block_copy_deps(self, stmt->block, false);
 
 	// if for block sends data
 	return stmt->block->stmts.last_send != NULL;

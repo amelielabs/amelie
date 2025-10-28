@@ -53,6 +53,8 @@ typedef enum
 	STMT_IF,
 	STMT_FOR,
 	STMT_WHILE,
+	STMT_BREAK,
+	STMT_CONTINUE,
 	STMT_RETURN
 } StmtId;
 
@@ -67,6 +69,7 @@ struct Stmt
 	Str*       cte_name;
 	Columns    cte_columns;
 	bool       is_return;
+	bool       is_break;
 	bool       udfs;
 	bool       udfs_sending;
 	Deps       deps;
@@ -89,6 +92,7 @@ stmt_allocate(Parser* parser, Lex* lex, Block* block)
 	self->ret          = NULL;
 	self->cte_name     = NULL;
 	self->is_return    = false;
+	self->is_break     = false;
 	self->udfs         = false;
 	self->udfs_sending = false;
 	self->next         = NULL;

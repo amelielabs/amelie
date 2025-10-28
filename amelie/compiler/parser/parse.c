@@ -101,6 +101,13 @@ parse_stmt_free(Stmt* stmt)
 			udf_config_free(ast->config);
 		break;
 	}
+	case STMT_WHILE:
+	{
+		auto ast = ast_while_of(stmt->ast);
+		buf_free(&ast->breaks);
+		buf_free(&ast->continues);
+		break;
+	}
 	default:
 		break;
 	}
@@ -451,6 +458,20 @@ parse_stmt(Stmt* self)
 		break;
 	}
 
+	case KBREAK:
+	{
+		self->id = STMT_BREAK;
+		parse_break(self);
+		break;
+	}
+
+	case KCONTINUE:
+	{
+		self->id = STMT_CONTINUE;
+		parse_break(self);
+		break;
+	}
+
 	case KEXECUTE:
 	case KBEGIN:
 	case KCOMMIT:
@@ -602,7 +623,7 @@ parse(Parser* self, Program* program, Str* str)
 
 	// create main namespace and the main block
 	auto ns    = namespaces_add(&self->nss, NULL, NULL);
-	auto block = blocks_add(&ns->blocks, NULL);
+	auto block = blocks_add(&ns->blocks, NULL, NULL);
 
 	// EXECUTE | BEGIN
 	if (lex_if(lex, KEXECUTE))
@@ -671,7 +692,7 @@ parse_udf(Parser* self, Program* program, Udf* udf)
 		vars_add(&ns->vars, &column->name, column->type, true);
 	}
 
-	auto block = blocks_add(&ns->blocks, NULL);
+	auto block = blocks_add(&ns->blocks, NULL, NULL);
 	parse_block(self, block);
 
 	// END

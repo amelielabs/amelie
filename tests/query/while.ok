@@ -287,7 +287,7 @@ end;
     "26": "var                 0      0      0     ",
     "27": "var                 1      1      0     ",
     "28": "ltii                2      0      1     ",
-    "29": "jntr                40     2      0     ",
+    "29": "jntr                41     2      0     ",
     "30": "push_var            0      0      1     ",
     "31": "set_ptr             1      -      0     ",
     "32": "send_shard          0      1      1     # public.test (insert)",
@@ -297,10 +297,11 @@ end;
     "36": "var_set             0      0      3     ",
     "37": "free                3      0      0     ",
     "38": "recv                1      0      -1    ",
-    "39": "jmp                 26     0      0     ",
-    "40": "close               0      0      0     ",
-    "41": "var                 0      1      0     ",
-    "42": "ret                 0      0      -     "
+    "39": "free                1      0      0     ",
+    "40": "jmp                 26     0      0     ",
+    "41": "close               0      0      0     ",
+    "42": "var                 0      1      0     ",
+    "43": "ret                 0      0      -     "
   },
   "pushdown": {
     "00": "set_ordered         0      1      1     ",
@@ -481,5 +482,247 @@ with a as (while true do end) select 1;
 {"msg": "with a as (❰while❱ ⟵ statement cannot be used inside CTE"}
 with a as (select 1) while true do end;
 {"msg": "with a as (select 1) ❰while❱ ⟵ statement cannot be used inside CTE"}
+# test: break without loop
+break;
+{"msg": "❰break❱ ⟵ used out of loop"}
+if true then break; end;
+{"msg": "if true then ❰break❱ ⟵ used out of loop"}
+# test: while break
+begin
+	while true do
+		break;
+	end;
+	select 123;
+end;
+[123]
+# test: while if break
+explain begin
+	declare i int := 0;
+	while true do
+		if i = 10 then
+			break;
+		end;
+		i := i + 1;
+	end;
+	select i;
+end;
+[{
+  "main": {
+    "00": "push_nulls          1      0      0     ",
+    "01": "int                 0      -      0     # 0",
+    "02": "var_set             0      0      0     ",
+    "03": "free                0      0      0     ",
+    "04": "bool                0      1      0     ",
+    "05": "jntr                17     0      0     ",
+    "06": "var                 0      0      0     ",
+    "07": "int                 1      -      0     # 10",
+    "08": "equii               2      0      1     ",
+    "09": "jntr                11     2      0     ",
+    "10": "jmp                 17     0      0     ",
+    "11": "var                 0      0      0     ",
+    "12": "int                 1      -      0     # 1",
+    "13": "addii               2      0      1     ",
+    "14": "var_set             0      0      2     ",
+    "15": "free                2      0      0     ",
+    "16": "jmp                 4      0      0     ",
+    "17": "var                 0      0      0     ",
+    "18": "ret                 0      0      -     "
+  },
+  "access": []
+}]
+begin
+	declare i int := 0;
+	while true do
+		if i = 10 then
+			break;
+		end;
+		i := i + 1;
+	end;
+	select i;
+end;
+[10]
+# test: while while break
+explain begin
+	declare i int := 0;
+	while true do
+		while true do
+			break;
+			i := i + 1;
+		end;
+		break;
+		i := i + 1;
+	end;
+	select i;
+end;
+[{
+  "main": {
+    "00": "push_nulls          1      0      0     ",
+    "01": "int                 0      -      0     # 0",
+    "02": "var_set             0      0      0     ",
+    "03": "free                0      0      0     ",
+    "04": "bool                0      1      0     ",
+    "05": "jntr                22     0      0     ",
+    "06": "bool                0      1      0     ",
+    "07": "jntr                15     0      0     ",
+    "08": "jmp                 15     0      0     ",
+    "09": "var                 0      0      0     ",
+    "10": "int                 1      -      0     # 1",
+    "11": "addii               2      0      1     ",
+    "12": "var_set             0      0      2     ",
+    "13": "free                2      0      0     ",
+    "14": "jmp                 6      0      0     ",
+    "15": "jmp                 22     0      0     ",
+    "16": "var                 0      0      0     ",
+    "17": "int                 1      -      0     # 1",
+    "18": "addii               2      0      1     ",
+    "19": "var_set             0      0      2     ",
+    "20": "free                2      0      0     ",
+    "21": "jmp                 4      0      0     ",
+    "22": "var                 0      0      0     ",
+    "23": "ret                 0      0      -     "
+  },
+  "access": []
+}]
+begin
+	declare i int := 0;
+	while true do
+		while true do
+			break;
+			i := i + 1;
+		end;
+		break;
+		i := i + 1;
+	end;
+	select i;
+end;
+[0]
+# test: continue without loop
+continue;
+{"msg": "❰continue❱ ⟵ used out of loop"}
+if true then continue; end;
+{"msg": "if true then ❰continue❱ ⟵ used out of loop"}
+# test: while if continue
+explain begin
+	declare i int := 0;
+	while true do
+		if i < 10 then
+			i := i + 1;
+			continue;
+		end;
+		break;
+	end;
+	select i;
+end;
+[{
+  "main": {
+    "00": "push_nulls          1      0      0     ",
+    "01": "int                 0      -      0     # 0",
+    "02": "var_set             0      0      0     ",
+    "03": "free                0      0      0     ",
+    "04": "bool                0      1      0     ",
+    "05": "jntr                18     0      0     ",
+    "06": "var                 0      0      0     ",
+    "07": "int                 1      -      0     # 10",
+    "08": "ltii                2      0      1     ",
+    "09": "jntr                16     2      0     ",
+    "10": "var                 0      0      0     ",
+    "11": "int                 1      -      0     # 1",
+    "12": "addii               2      0      1     ",
+    "13": "var_set             0      0      2     ",
+    "14": "free                2      0      0     ",
+    "15": "jmp                 4      0      0     ",
+    "16": "jmp                 18     0      0     ",
+    "17": "jmp                 4      0      0     ",
+    "18": "var                 0      0      0     ",
+    "19": "ret                 0      0      -     "
+  },
+  "access": []
+}]
+begin
+	declare i int := 0;
+	while true do
+		if i < 10 then
+			i := i + 1;
+			continue;
+		end;
+		break;
+	end;
+	select i;
+end;
+[10]
+# test: while while continue
+explain begin
+	declare i int := 0;
+	declare j int := 0;
+	while i < 10 do
+		while true do
+			if j < 10 then
+				j := j + 1;
+				continue;
+			end;
+		end;
+		i := i + 1;
+	end;
+	select i, j;
+end;
+[{
+  "main": {
+    "00": "push_nulls          2      0      0     ",
+    "01": "int                 0      -      0     # 0",
+    "02": "var_set             0      0      0     ",
+    "03": "free                0      0      0     ",
+    "04": "int                 0      -      0     # 0",
+    "05": "var_set             1      0      0     ",
+    "06": "free                0      0      0     ",
+    "07": "var                 0      0      0     ",
+    "08": "int                 1      -      0     # 10",
+    "09": "ltii                2      0      1     ",
+    "10": "jntr                30     2      0     ",
+    "11": "bool                0      1      0     ",
+    "12": "jntr                24     0      0     ",
+    "13": "var                 0      1      0     ",
+    "14": "int                 1      -      0     # 10",
+    "15": "ltii                2      0      1     ",
+    "16": "jntr                23     2      0     ",
+    "17": "var                 0      1      0     ",
+    "18": "int                 1      -      0     # 1",
+    "19": "addii               2      0      1     ",
+    "20": "var_set             1      0      2     ",
+    "21": "free                2      0      0     ",
+    "22": "jmp                 11     0      0     ",
+    "23": "jmp                 11     0      0     ",
+    "24": "var                 0      0      0     ",
+    "25": "int                 1      -      0     # 1",
+    "26": "addii               2      0      1     ",
+    "27": "var_set             0      0      2     ",
+    "28": "free                2      0      0     ",
+    "29": "jmp                 7      0      0     ",
+    "30": "set                 0      2      0     ",
+    "31": "var                 1      0      0     ",
+    "32": "push                1      0      0     ",
+    "33": "var                 1      1      0     ",
+    "34": "push                1      0      0     ",
+    "35": "set_add             0      0      0     ",
+    "36": "ret                 0      0      -     "
+  },
+  "access": []
+}]
+begin
+	declare i int := 0;
+	declare j int := 0;
+	while i < 10 do
+		while true do
+			if j < 10 then
+				j := j + 1;
+				continue;
+			end;
+			break;
+		end;
+		j := 0;
+		i := i + 1;
+	end;
+	select i, j;
+end;
+[[10, 0]]
 disconnect S0;
 close E0;

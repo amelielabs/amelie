@@ -41,10 +41,11 @@
 #include <amelie_compiler.h>
 
 static inline void
-emit_insert_store_generated_on_match(Compiler* self, From* from, void* arg)
+emit_insert_store_generated_on_match(Scan* self)
 {
-	AstInsert* insert = arg;
-	auto target = from_first(&insert->from_generated);
+	auto       cp     = self->compiler;
+	AstInsert* insert = self->on_match_arg;
+	auto       target = from_first(&insert->from_generated);
 
 	// generate and push to the stack each generated column expression
 	auto count = 0;
@@ -54,31 +55,31 @@ emit_insert_store_generated_on_match(Compiler* self, From* from, void* arg)
 		auto column = op->l->column;
 
 		// push column order
-		int rexpr = op2(self, CINT, rpin(self, TYPE_INT), column->order);
-		op1(self, CPUSH, rexpr);
-		runpin(self, rexpr);
+		int rexpr = op2(cp, CINT, rpin(cp, TYPE_INT), column->order);
+		op1(cp, CPUSH, rexpr);
+		runpin(cp, rexpr);
 
 		// push expr
-		rexpr = emit_expr(self, from, op->r);
-		int type = rtype(self, rexpr);
+		rexpr = emit_expr(cp, self->from, op->r);
+		int type = rtype(cp, rexpr);
 
 		// ensure that the expression type is compatible
 		// with the column
 		if (unlikely(type != TYPE_NULL && column->type != type))
-			stmt_error(self->current, &insert->ast,
+			stmt_error(cp->current, &insert->ast,
 			           "column '%.*s.%.*s' generated expression type '%s' does not match column type '%s'",
 			           str_size(&target->name), str_of(&target->name),
 			           str_size(&column->name), str_of(&column->name),
 			           type_of(type),
 			           type_of(column->type));
 
-		op1(self, CPUSH, rexpr);
-		runpin(self, rexpr);
+		op1(cp, CPUSH, rexpr);
+		runpin(cp, rexpr);
 		count++;
 	}
 
 	// CUPDATE_STORE
-	op2(self, CUPDATE_STORE, target->rcursor, count);
+	op2(cp, CUPDATE_STORE, target->rcursor, count);
 }
 
 static int

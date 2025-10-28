@@ -109,7 +109,7 @@ pushdown_group_by(Compiler* self, AstSelect* select)
 	//
 	// force create empty record by processing one NULL value
 	if (! select->expr_group_by_has)
-		emit_select_on_match_aggregate_empty(self, &select->from, select);
+		emit_select_on_match_aggregate_empty(self, select);
 
 	// CSET_SORT
 	op1(self, CSET_SORT, select->rset_agg);

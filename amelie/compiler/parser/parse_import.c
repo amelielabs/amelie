@@ -250,7 +250,7 @@ parse_import(Parser* self, Program* program, Str* str, Str* uri,
 
 	// create main namespace and the main block
 	auto ns    = namespaces_add(&self->nss, NULL, NULL);
-	auto block = blocks_add(&ns->blocks, NULL);
+	auto block = blocks_add(&ns->blocks, NULL, NULL);
 
 	// prepare insert stmt
 	auto stmt = stmt_allocate(self, &self->lex, block);

@@ -57,12 +57,13 @@ emit_select_expr(Compiler* self, From* from, AstSelect* select)
 }
 
 void
-emit_select_on_match(Compiler* self, From* from, void* arg)
+emit_select_on_match(Scan* self)
 {
-	AstSelect* select = arg;
+	auto       cp     = self->compiler;
+	AstSelect* select = self->on_match_arg;
 
 	// push expressions
-	emit_select_expr(self, from, select);
+	emit_select_expr(cp, self->from, select);
 
 	// push order by key (if any)
 	auto node = select->expr_order_by.list;
@@ -70,24 +71,25 @@ emit_select_on_match(Compiler* self, From* from, void* arg)
 	{
 		auto order = ast_order_of(node->ast);
 		int rexpr_order_by;
-		rexpr_order_by = emit_expr(self, from, order->expr);
-		op1(self, CPUSH, rexpr_order_by);
-		runpin(self, rexpr_order_by);
+		rexpr_order_by = emit_expr(cp, self->from, order->expr);
+		op1(cp, CPUSH, rexpr_order_by);
+		runpin(cp, rexpr_order_by);
 		node = node->next;
 	}
 
 	// add to the returning set
-	op1(self, CSET_ADD, select->rset);
+	op1(cp, CSET_ADD, select->rset);
 }
 
 void
-emit_select_on_match_aggregate(Compiler* self, From* from, void* arg)
+emit_select_on_match_aggregate(Scan* self)
 {
-	AstSelect* select = arg;
+	auto       cp     = self->compiler;
+	AstSelect* select = self->on_match_arg;
 
 	// create a list of aggs based on type
-	select->aggs = code_data_pos(self->code_data);
-	buf_claim(&self->code_data->data, sizeof(int) * select->expr_aggs.count);
+	select->aggs = code_data_pos(cp->code_data);
+	buf_claim(&cp->code_data->data, sizeof(int) * select->expr_aggs.count);
 
 	// get existing or create a new row by key, return
 	// the row reference
@@ -98,16 +100,16 @@ emit_select_on_match_aggregate(Compiler* self, From* from, void* arg)
 	{
 		auto group = ast_group_of(node->ast);
 		// expr
-		auto rexpr = emit_expr(self, from, group->expr);
-		auto rt = rtype(self, rexpr);
+		auto rexpr = emit_expr(cp, self->from, group->expr);
+		auto rt = rtype(cp, rexpr);
 		column_set_type(group->column, rt, type_sizeof(rt));
-		op1(self, CPUSH, rexpr);
-		runpin(self, rexpr);
+		op1(cp, CPUSH, rexpr);
+		runpin(cp, rexpr);
 	}
 
 	// CSET_GET
 	select->rset_agg_row =
-		op2(self, CSET_GET, rpin(self, TYPE_INT), select->rset_agg);
+		op2(cp, CSET_GET, rpin(cp, TYPE_INT), select->rset_agg);
 
 	// push aggs
 	node = select->expr_aggs.list;
@@ -117,18 +119,18 @@ emit_select_on_match_aggregate(Compiler* self, From* from, void* arg)
 		agg->select = &select->ast;
 
 		// expr
-		auto rexpr = emit_expr(self, from, agg->expr);
-		auto rt = rtype(self, rexpr);
+		auto rexpr = emit_expr(cp, self->from, agg->expr);
+		auto rt = rtype(cp, rexpr);
 		column_set_type(agg->column, rt, type_sizeof(rt));
-		op1(self, CPUSH, rexpr);
-		runpin(self, rexpr);
+		op1(cp, CPUSH, rexpr);
+		runpin(cp, rexpr);
 
 		// lambda
-		int* aggs = (int*)code_data_at(self->code_data, select->aggs);
+		int* aggs = (int*)code_data_at(cp->code_data, select->aggs);
 		if (! agg->function)
 		{
 			if (rt != agg->expr_seed_type)
-				stmt_error(self->current, agg->expr, "lambda expression type mismatch");
+				stmt_error(cp->current, agg->expr, "lambda expression type mismatch");
 			agg->id = AGG_LAMBDA;
 			aggs[agg->order] = AGG_LAMBDA;
 			continue;
@@ -148,7 +150,7 @@ emit_select_on_match_aggregate(Compiler* self, From* from, void* arg)
 			if (rt == TYPE_DOUBLE)
 				agg->id = AGG_DOUBLE_MIN;
 			else
-				stmt_error(self->current, agg->expr, "int or double expected");
+				stmt_error(cp->current, agg->expr, "int or double expected");
 			break;
 		case KMAX:
 			if (rt == TYPE_INT || rt == TYPE_NULL)
@@ -157,7 +159,7 @@ emit_select_on_match_aggregate(Compiler* self, From* from, void* arg)
 			if (rt == TYPE_DOUBLE)
 				agg->id = AGG_DOUBLE_MAX;
 			else
-				stmt_error(self->current, agg->expr, "int or double expected");
+				stmt_error(cp->current, agg->expr, "int or double expected");
 			break;
 		case KSUM:
 			if (rt == TYPE_INT || rt == TYPE_NULL)
@@ -166,7 +168,7 @@ emit_select_on_match_aggregate(Compiler* self, From* from, void* arg)
 			if (rt == TYPE_DOUBLE)
 				agg->id = AGG_DOUBLE_SUM;
 			else
-				stmt_error(self->current, agg->expr, "int or double expected");
+				stmt_error(cp->current, agg->expr, "int or double expected");
 			break;
 		case KAVG:
 			if (rt == TYPE_INT || rt == TYPE_NULL)
@@ -175,7 +177,7 @@ emit_select_on_match_aggregate(Compiler* self, From* from, void* arg)
 			if (rt == TYPE_DOUBLE)
 				agg->id = AGG_DOUBLE_AVG;
 			else
-				stmt_error(self->current, agg->expr, "int or double expected");
+				stmt_error(cp->current, agg->expr, "int or double expected");
 			break;
 		}
 		aggs[agg->order] = agg->id;
@@ -183,19 +185,19 @@ emit_select_on_match_aggregate(Compiler* self, From* from, void* arg)
 
 	// CSET_AGG
 	if (select->expr_aggs.count > 0)
-		op3(self, CSET_AGG, select->rset_agg,
+		op3(cp, CSET_AGG, select->rset_agg,
 		    select->rset_agg_row,
 		    select->aggs);
 
-	runpin(self, select->rset_agg_row);
+	runpin(cp, select->rset_agg_row);
 	select->rset_agg_row = -1;
 }
 
 void
-emit_select_on_match_aggregate_empty(Compiler* self, From* from, void* arg)
+emit_select_on_match_aggregate_empty(Compiler* self, AstSelect* select)
 {
 	// process NULL values for the aggregate
-	AstSelect* select = arg;
+	auto from = &select->from;
 
 	// push group by keys
 	auto node = select->expr_group_by.list;
@@ -330,7 +332,7 @@ emit_select_group_by_scan(Compiler* self, AstSelect* select,
 	//
 	// force create empty record by processing one NULL value
 	if (! select->expr_group_by_has)
-		emit_select_on_match_aggregate_empty(self, &select->from, select);
+		emit_select_on_match_aggregate_empty(self, select);
 
 	// free seed values
 	node = select->expr_aggs.list;

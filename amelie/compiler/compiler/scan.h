@@ -11,7 +11,22 @@
 // AGPL-3.0 Licensed.
 //
 
-typedef void (*ScanFunction)(Compiler*, From*, void*);
+typedef struct Scan Scan;
+
+typedef void (*ScanFunction)(Scan*);
+
+struct Scan
+{
+	Ast*         expr_where;
+	int          roffset;
+	int          rlimit;
+	ScanFunction on_match;
+	void*        on_match_arg;
+	Buf          breaks;
+	Buf          continues;
+	From*        from;
+	Compiler*    compiler;
+};
 
 void scan(Compiler*, From*, Ast*, Ast*, Ast*,
           ScanFunction, void*);

@@ -20,6 +20,7 @@ struct Block
 	Stmts      stmts;
 	From*      from;
 	Namespace* ns;
+	Stmt*      parent_stmt;
 	Block*     parent;
 	Block*     next;
 };
@@ -42,13 +43,14 @@ blocks_init(Blocks* self, Namespace* ns)
 }
 
 static inline Block*
-blocks_add(Blocks* self, Block* parent)
+blocks_add(Blocks* self, Block* parent, Stmt* parent_stmt)
 {
 	auto block = (Block*)palloc(sizeof(Block));
-	block->parent = parent;
-	block->next   = NULL;
-	block->ns     = self->ns;
-	block->from   = NULL;
+	block->parent      = parent;
+	block->parent_stmt = parent_stmt;
+	block->next        = NULL;
+	block->ns          = self->ns;
+	block->from        = NULL;
 	stmts_init(&block->stmts);
 	if (self->list == NULL)
 		self->list = block;
@@ -105,7 +107,7 @@ block_find_from(From* self)
 }
 
 hot static inline void
-block_copy_deps(Stmt* self, Block* start)
+block_copy_deps(Stmt* self, Block* start, bool derive_break)
 {
 	// search and copy all inner blocks deps of the statements
 	// of the current block stmt
@@ -114,6 +116,13 @@ block_copy_deps(Stmt* self, Block* start)
 	{
 		for (auto block = start; block; block = block->next)
 		{
+			// mark that inner block has break/continue statements
+			if (derive_break)
+			{
+				if (block->stmts.count_break || block->stmts.count_continue)
+					self->is_break = true;
+			}
+
 			auto inner = block->stmts.list;
 			for (; inner; inner = inner->next)
 			{

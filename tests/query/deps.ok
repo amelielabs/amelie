@@ -562,10 +562,11 @@ end;
     "03": "var_set             0      0      1     ",
     "04": "free                1      0      0     ",
     "05": "bool                0      1      0     ",
-    "06": "jntr                8      0      0     ",
+    "06": "jntr                9      0      0     ",
     "07": "var                 0      0      0     ",
-    "08": "var                 1      0      0     ",
-    "09": "ret                 1      0      -     "
+    "08": "free                0      0      0     ",
+    "09": "var                 0      0      0     ",
+    "10": "ret                 0      0      -     "
   },
   "pushdown": {
     "00": "set                 0      1      0     ",
@@ -701,10 +702,11 @@ end;
     "04": "free                1      0      0     ",
     "05": "bool                0      0      0     ",
     "06": "jntr                8      0      0     ",
-    "07": "jmp                 9      0      0     ",
+    "07": "jmp                 10     0      0     ",
     "08": "var                 0      0      0     ",
-    "09": "var                 1      0      0     ",
-    "10": "ret                 1      0      -     "
+    "09": "free                0      0      0     ",
+    "10": "var                 0      0      0     ",
+    "11": "ret                 0      0      -     "
   },
   "pushdown": {
     "00": "set                 0      1      0     ",
@@ -739,12 +741,14 @@ end;
     "03": "var_set             0      0      1     ",
     "04": "free                1      0      0     ",
     "05": "bool                0      0      0     ",
-    "06": "jntr                9      0      0     ",
+    "06": "jntr                10     0      0     ",
     "07": "int                 0      -      0     # 1",
-    "08": "jmp                 10     0      0     ",
-    "09": "var                 1      0      0     ",
-    "10": "var                 2      0      0     ",
-    "11": "ret                 2      0      -     "
+    "08": "free                0      0      0     ",
+    "09": "jmp                 12     0      0     ",
+    "10": "var                 0      0      0     ",
+    "11": "free                0      0      0     ",
+    "12": "var                 0      0      0     ",
+    "13": "ret                 0      0      -     "
   },
   "pushdown": {
     "00": "set                 0      1      0     ",
@@ -821,14 +825,15 @@ end;
     "03": "var_set             0      0      1     ",
     "04": "free                1      0      0     ",
     "05": "bool                0      0      0     ",
-    "06": "jntr                9      0      0     ",
+    "06": "jntr                10     0      0     ",
     "07": "int                 0      -      0     # 1",
-    "08": "jmp                 12     0      0     ",
-    "09": "int                 1      -      0     # 7",
-    "10": "var_set             0      0      1     ",
-    "11": "free                1      0      0     ",
-    "12": "var                 1      0      0     ",
-    "13": "ret                 1      0      -     "
+    "08": "free                0      0      0     ",
+    "09": "jmp                 13     0      0     ",
+    "10": "int                 0      -      0     # 7",
+    "11": "var_set             0      0      0     ",
+    "12": "free                0      0      0     ",
+    "13": "var                 0      0      0     ",
+    "14": "ret                 0      0      -     "
   },
   "pushdown": {
     "00": "set                 0      1      0     ",
@@ -913,19 +918,20 @@ end;
     "03": "var_set             0      0      1     ",
     "04": "free                1      0      0     ",
     "05": "bool                0      0      0     ",
-    "06": "jntr                9      0      0     ",
+    "06": "jntr                10     0      0     ",
     "07": "int                 0      -      0     # 1",
-    "08": "jmp                 12     0      0     ",
-    "09": "var                 1      0      0     ",
-    "10": "var_set             1      0      1     ",
-    "11": "free                1      0      0     ",
-    "12": "set                 1      2      0     ",
-    "13": "var                 2      0      0     ",
-    "14": "push                2      0      0     ",
-    "15": "var                 2      1      0     ",
-    "16": "push                2      0      0     ",
-    "17": "set_add             1      0      0     ",
-    "18": "ret                 1      0      -     "
+    "08": "free                0      0      0     ",
+    "09": "jmp                 13     0      0     ",
+    "10": "var                 0      0      0     ",
+    "11": "var_set             1      0      0     ",
+    "12": "free                0      0      0     ",
+    "13": "set                 0      2      0     ",
+    "14": "var                 1      0      0     ",
+    "15": "push                1      0      0     ",
+    "16": "var                 1      1      0     ",
+    "17": "push                1      0      0     ",
+    "18": "set_add             0      0      0     ",
+    "19": "ret                 0      0      -     "
   },
   "pushdown": {
     "00": "set                 0      1      0     ",
@@ -1006,12 +1012,13 @@ end;
     "03": "var_set             0      0      1     ",
     "04": "free                1      0      0     ",
     "05": "bool                0      1      0     ",
-    "06": "jntr                10     0      0     ",
+    "06": "jntr                11     0      0     ",
     "07": "bool                0      1      0     ",
-    "08": "jntr                10     0      0     ",
+    "08": "jntr                11     0      0     ",
     "09": "var                 0      0      0     ",
-    "10": "var                 1      0      0     ",
-    "11": "ret                 1      0      -     "
+    "10": "free                0      0      0     ",
+    "11": "var                 0      0      0     ",
+    "12": "ret                 0      0      -     "
   },
   "pushdown": {
     "00": "set                 0      1      0     ",
@@ -1511,12 +1518,13 @@ end;
     "03": "var_set             0      0      1     ",
     "04": "free                1      0      0     ",
     "05": "json                0      44     0     ",
-    "06": "json_open           1      0      9     ",
+    "06": "json_open           1      0      10    ",
     "07": "var                 2      0      0     ",
-    "08": "json_next           1      7      0     ",
-    "09": "free                1      0      0     ",
-    "10": "free                0      0      0     ",
-    "11": "ret                 -1     0      -     "
+    "08": "free                2      0      0     ",
+    "09": "json_next           1      7      0     ",
+    "10": "free                1      0      0     ",
+    "11": "free                0      0      0     ",
+    "12": "ret                 -1     0      -     "
   },
   "pushdown": {
     "00": "set                 0      1      0     ",
@@ -1751,14 +1759,15 @@ end;
     "03": "var_set             0      0      1     ",
     "04": "free                1      0      0     ",
     "05": "json                0      44     0     ",
-    "06": "json_open           1      0      11    ",
+    "06": "json_open           1      0      12    ",
     "07": "bool                2      1      0     ",
-    "08": "jntr                10     2      0     ",
+    "08": "jntr                11     2      0     ",
     "09": "var                 2      0      0     ",
-    "10": "json_next           1      7      0     ",
-    "11": "free                1      0      0     ",
-    "12": "free                0      0      0     ",
-    "13": "ret                 -1     0      -     "
+    "10": "free                2      0      0     ",
+    "11": "json_next           1      7      0     ",
+    "12": "free                1      0      0     ",
+    "13": "free                0      0      0     ",
+    "14": "ret                 -1     0      -     "
   },
   "pushdown": {
     "00": "set                 0      1      0     ",
@@ -2199,6 +2208,635 @@ begin
 	select * from test;
 end;
 [1, 2, 3, 4, 5, 6, 7, 8, 9]
+# test: select from into / while break
+explain begin
+	declare x int;
+	select id into x from test;
+	while true do
+		break;
+	end;
+	select x;
+end;
+[{
+  "main": {
+    "00": "push_nulls          1      0      0     ",
+    "01": "send_all            0      0      20    # public.test (select, closing)",
+    "02": "bool                1      1      0     ",
+    "03": "jntr                6      1      0     ",
+    "04": "jmp                 6      0      0     ",
+    "05": "jmp                 2      0      0     ",
+    "06": "recv                1      0      -1    ",
+    "07": "var_set             0      0      1     ",
+    "08": "free                1      0      0     ",
+    "09": "var                 0      0      0     ",
+    "10": "ret                 0      0      -     "
+  },
+  "pushdown": {
+    "00": "set                 0      1      0     ",
+    "01": "table_open_part     1      0      6     # public.test (primary)",
+    "02": "table_readi32       2      1      0     ",
+    "03": "push                2      0      0     ",
+    "04": "set_add             0      0      0     ",
+    "05": "table_next          1      2      0     ",
+    "06": "free                1      0      0     ",
+    "07": "ret                 0      0      -     "
+  },
+  "access": [["public.test", "ro"]]
+}]
+begin
+	declare x int;
+	select id into x from test;
+	while true do
+		break;
+	end;
+	select x;
+end;
+[1]
+# test: select from into / while if break
+explain begin
+	declare x int;
+	select id into x from test;
+	while true do
+		if true then
+			break;
+		end;
+	end;
+	select x;
+end;
+[{
+  "main": {
+    "00": "push_nulls          1      0      0     ",
+    "01": "send_all            0      0      20    # public.test (select, closing)",
+    "02": "bool                1      1      0     ",
+    "03": "jntr                8      1      0     ",
+    "04": "bool                1      1      0     ",
+    "05": "jntr                7      1      0     ",
+    "06": "jmp                 8      0      0     ",
+    "07": "jmp                 2      0      0     ",
+    "08": "recv                1      0      -1    ",
+    "09": "var_set             0      0      1     ",
+    "10": "free                1      0      0     ",
+    "11": "var                 0      0      0     ",
+    "12": "ret                 0      0      -     "
+  },
+  "pushdown": {
+    "00": "set                 0      1      0     ",
+    "01": "table_open_part     1      0      6     # public.test (primary)",
+    "02": "table_readi32       2      1      0     ",
+    "03": "push                2      0      0     ",
+    "04": "set_add             0      0      0     ",
+    "05": "table_next          1      2      0     ",
+    "06": "free                1      0      0     ",
+    "07": "ret                 0      0      -     "
+  },
+  "access": [["public.test", "ro"]]
+}]
+begin
+	declare x int;
+	select id into x from test;
+	while true do
+		if true then
+			break;
+		end;
+	end;
+	select x;
+end;
+[1]
+# test: while select from into / break
+explain begin
+	declare x int;
+	while true do
+		select id into x from test;
+		break;
+		x := null;
+	end;
+	select x;
+end;
+[{
+  "main": {
+    "00": "push_nulls          1      0      0     ",
+    "01": "bool                0      1      0     ",
+    "02": "jntr                12     0      0     ",
+    "03": "send_all            0      0      20    # public.test (select)",
+    "04": "recv                1      0      -1    ",
+    "05": "var_set             0      0      1     ",
+    "06": "free                1      0      0     ",
+    "07": "jmp                 12     0      0     ",
+    "08": "null                0      0      0     ",
+    "09": "var_set             0      0      0     ",
+    "10": "free                0      0      0     ",
+    "11": "jmp                 1      0      0     ",
+    "12": "close               0      0      0     ",
+    "13": "var                 0      0      0     ",
+    "14": "ret                 0      0      -     "
+  },
+  "pushdown": {
+    "00": "set                 0      1      0     ",
+    "01": "table_open_part     1      0      6     # public.test (primary)",
+    "02": "table_readi32       2      1      0     ",
+    "03": "push                2      0      0     ",
+    "04": "set_add             0      0      0     ",
+    "05": "table_next          1      2      0     ",
+    "06": "free                1      0      0     ",
+    "07": "ret                 0      0      -     "
+  },
+  "access": [["public.test", "ro"]]
+}]
+begin
+	declare x int;
+	while true do
+		select id into x from test;
+		break;
+		x := null;
+	end;
+	select x;
+end;
+[1]
+# test: while select from into / if break
+explain begin
+	declare x int;
+	while true do
+		select id into x from test;
+		if true then
+			break;
+		end;
+		x := null;
+	end;
+	select x;
+end;
+[{
+  "main": {
+    "00": "push_nulls          1      0      0     ",
+    "01": "bool                0      1      0     ",
+    "02": "jntr                14     0      0     ",
+    "03": "send_all            0      0      20    # public.test (select)",
+    "04": "recv                1      0      -1    ",
+    "05": "var_set             0      0      1     ",
+    "06": "free                1      0      0     ",
+    "07": "bool                0      1      0     ",
+    "08": "jntr                10     0      0     ",
+    "09": "jmp                 14     0      0     ",
+    "10": "null                0      0      0     ",
+    "11": "var_set             0      0      0     ",
+    "12": "free                0      0      0     ",
+    "13": "jmp                 1      0      0     ",
+    "14": "close               0      0      0     ",
+    "15": "var                 0      0      0     ",
+    "16": "ret                 0      0      -     "
+  },
+  "pushdown": {
+    "00": "set                 0      1      0     ",
+    "01": "table_open_part     1      0      6     # public.test (primary)",
+    "02": "table_readi32       2      1      0     ",
+    "03": "push                2      0      0     ",
+    "04": "set_add             0      0      0     ",
+    "05": "table_next          1      2      0     ",
+    "06": "free                1      0      0     ",
+    "07": "ret                 0      0      -     "
+  },
+  "access": [["public.test", "ro"]]
+}]
+begin
+	declare x int;
+	while true do
+		select id into x from test;
+		if true then
+			break;
+		end;
+		x := null;
+	end;
+	select x;
+end;
+[1]
+# test: while select from into / if if break
+explain begin
+	declare x int;
+	while true do
+		select id into x from test;
+		if true then
+			if true then
+				break;
+			end;
+		end;
+		x := null;
+	end;
+	select x;
+end;
+[{
+  "main": {
+    "00": "push_nulls          1      0      0     ",
+    "01": "bool                0      1      0     ",
+    "02": "jntr                16     0      0     ",
+    "03": "send_all            0      0      20    # public.test (select)",
+    "04": "recv                1      0      -1    ",
+    "05": "var_set             0      0      1     ",
+    "06": "free                1      0      0     ",
+    "07": "bool                0      1      0     ",
+    "08": "jntr                12     0      0     ",
+    "09": "bool                0      1      0     ",
+    "10": "jntr                12     0      0     ",
+    "11": "jmp                 16     0      0     ",
+    "12": "null                0      0      0     ",
+    "13": "var_set             0      0      0     ",
+    "14": "free                0      0      0     ",
+    "15": "jmp                 1      0      0     ",
+    "16": "close               0      0      0     ",
+    "17": "var                 0      0      0     ",
+    "18": "ret                 0      0      -     "
+  },
+  "pushdown": {
+    "00": "set                 0      1      0     ",
+    "01": "table_open_part     1      0      6     # public.test (primary)",
+    "02": "table_readi32       2      1      0     ",
+    "03": "push                2      0      0     ",
+    "04": "set_add             0      0      0     ",
+    "05": "table_next          1      2      0     ",
+    "06": "free                1      0      0     ",
+    "07": "ret                 0      0      -     "
+  },
+  "access": [["public.test", "ro"]]
+}]
+begin
+	declare x int;
+	while true do
+		select id into x from test;
+		if true then
+			if true then
+				break;
+			end;
+		end;
+		x := null;
+	end;
+	select x;
+end;
+[1]
+# test: while select from into / if if continue
+explain begin
+	declare i int := 0;
+	declare x int;
+
+	while true do
+		if i = 3 then
+			break;
+		end;
+		i := i + 1;
+		select id into x from test;
+		if true then
+			if true then
+				continue;
+			end;
+		end;
+		x := null;
+	end;
+	select i, x;
+end;
+[{
+  "main": {
+    "00": "push_nulls          2      0      0     ",
+    "01": "int                 0      -      0     # 0",
+    "02": "var_set             0      0      0     ",
+    "03": "free                0      0      0     ",
+    "04": "bool                0      1      0     ",
+    "05": "jntr                29     0      0     ",
+    "06": "var                 0      0      0     ",
+    "07": "int                 1      -      0     # 3",
+    "08": "equii               2      0      1     ",
+    "09": "jntr                11     2      0     ",
+    "10": "jmp                 29     0      0     ",
+    "11": "var                 0      0      0     ",
+    "12": "int                 1      -      0     # 1",
+    "13": "addii               2      0      1     ",
+    "14": "var_set             0      0      2     ",
+    "15": "free                2      0      0     ",
+    "16": "send_all            0      0      20    # public.test (select)",
+    "17": "recv                1      0      -1    ",
+    "18": "var_set             1      0      1     ",
+    "19": "free                1      0      0     ",
+    "20": "bool                0      1      0     ",
+    "21": "jntr                25     0      0     ",
+    "22": "bool                0      1      0     ",
+    "23": "jntr                25     0      0     ",
+    "24": "jmp                 4      0      0     ",
+    "25": "null                0      0      0     ",
+    "26": "var_set             1      0      0     ",
+    "27": "free                0      0      0     ",
+    "28": "jmp                 4      0      0     ",
+    "29": "close               0      0      0     ",
+    "30": "set                 0      2      0     ",
+    "31": "var                 1      0      0     ",
+    "32": "push                1      0      0     ",
+    "33": "var                 1      1      0     ",
+    "34": "push                1      0      0     ",
+    "35": "set_add             0      0      0     ",
+    "36": "ret                 0      0      -     "
+  },
+  "pushdown": {
+    "00": "set                 0      1      0     ",
+    "01": "table_open_part     1      0      6     # public.test (primary)",
+    "02": "table_readi32       2      1      0     ",
+    "03": "push                2      0      0     ",
+    "04": "set_add             0      0      0     ",
+    "05": "table_next          1      2      0     ",
+    "06": "free                1      0      0     ",
+    "07": "ret                 0      0      -     "
+  },
+  "access": [["public.test", "ro"]]
+}]
+begin
+	declare i int := 0;
+	declare x int;
+
+	while true do
+		if i = 3 then
+			break;
+		end;
+		i := i + 1;
+		select id into x from test;
+		if true then
+			if true then
+				continue;
+			end;
+		end;
+		x := null;
+	end;
+	select i, x;
+end;
+[[3, 1]]
+# test: select from into / for break
+explain begin
+	declare x int;
+	select id into x from test;
+	for i in ([]) do
+		break;
+	end;
+	select x;
+end;
+[{
+  "main": {
+    "00": "push_nulls          1      0      0     ",
+    "01": "send_all            0      0      20    # public.test (select, closing)",
+    "02": "json                1      44     0     ",
+    "03": "json_open           2      1      6     ",
+    "04": "jmp                 6      0      0     ",
+    "05": "json_next           2      4      0     ",
+    "06": "free                2      0      0     ",
+    "07": "free                1      0      0     ",
+    "08": "recv                1      0      -1    ",
+    "09": "var_set             0      0      1     ",
+    "10": "free                1      0      0     ",
+    "11": "var                 0      0      0     ",
+    "12": "ret                 0      0      -     "
+  },
+  "pushdown": {
+    "00": "set                 0      1      0     ",
+    "01": "table_open_part     1      0      6     # public.test (primary)",
+    "02": "table_readi32       2      1      0     ",
+    "03": "push                2      0      0     ",
+    "04": "set_add             0      0      0     ",
+    "05": "table_next          1      2      0     ",
+    "06": "free                1      0      0     ",
+    "07": "ret                 0      0      -     "
+  },
+  "access": [["public.test", "ro"]]
+}]
+begin
+	declare x int;
+	select id into x from test;
+	for i in ([]) do
+		break;
+	end;
+	select x;
+end;
+[1]
+# test: select from into / for if break
+explain begin
+	declare x int;
+	select id into x from test;
+	for i in ([]) do
+		if true then
+			break;
+		end;
+	end;
+	select x;
+end;
+[{
+  "main": {
+    "00": "push_nulls          1      0      0     ",
+    "01": "send_all            0      0      20    # public.test (select, closing)",
+    "02": "json                1      44     0     ",
+    "03": "json_open           2      1      8     ",
+    "04": "bool                3      1      0     ",
+    "05": "jntr                7      3      0     ",
+    "06": "jmp                 8      0      0     ",
+    "07": "json_next           2      4      0     ",
+    "08": "free                2      0      0     ",
+    "09": "free                1      0      0     ",
+    "10": "recv                1      0      -1    ",
+    "11": "var_set             0      0      1     ",
+    "12": "free                1      0      0     ",
+    "13": "var                 0      0      0     ",
+    "14": "ret                 0      0      -     "
+  },
+  "pushdown": {
+    "00": "set                 0      1      0     ",
+    "01": "table_open_part     1      0      6     # public.test (primary)",
+    "02": "table_readi32       2      1      0     ",
+    "03": "push                2      0      0     ",
+    "04": "set_add             0      0      0     ",
+    "05": "table_next          1      2      0     ",
+    "06": "free                1      0      0     ",
+    "07": "ret                 0      0      -     "
+  },
+  "access": [["public.test", "ro"]]
+}]
+begin
+	declare x int;
+	select id into x from test;
+	for i in ([]) do
+		if true then
+			break;
+		end;
+	end;
+	select x;
+end;
+[1]
+# test: for select from into / break
+explain begin
+	declare x int;
+	for i in ([1]) do
+		select id into x from test;
+		break;
+	end;
+	select x;
+end;
+[{
+  "main": {
+    "00": "push_nulls          1      0      0     ",
+    "01": "json                0      0      0     ",
+    "02": "json_open           1      0      9     ",
+    "03": "send_all            2      0      23    # public.test (select)",
+    "04": "recv                3      2      -1    ",
+    "05": "var_set             0      0      3     ",
+    "06": "free                3      0      0     ",
+    "07": "jmp                 9      0      0     ",
+    "08": "json_next           1      3      0     ",
+    "09": "free                1      0      0     ",
+    "10": "free                0      0      0     ",
+    "11": "close               0      0      0     ",
+    "12": "var                 0      0      0     ",
+    "13": "ret                 0      0      -     "
+  },
+  "pushdown": {
+    "00": "set                 2      1      0     ",
+    "01": "table_open_part     3      3      6     # public.test (primary)",
+    "02": "table_readi32       4      3      0     ",
+    "03": "push                4      0      0     ",
+    "04": "set_add             2      0      0     ",
+    "05": "table_next          3      2      0     ",
+    "06": "free                3      0      0     ",
+    "07": "ret                 2      0      -     "
+  },
+  "access": [["public.test", "ro"]]
+}]
+begin
+	declare x int;
+	for i in ([1]) do
+		select id into x from test;
+		break;
+	end;
+	select x;
+end;
+[1]
+# test: for select from into / if break
+explain begin
+	declare p int;
+	declare x int;
+	for i in ([1]) do
+		select id into x from test;
+		if true then
+			break;
+		end;
+		p := 123;
+	end;
+	select x, p;
+end;
+[{
+  "main": {
+    "00": "push_nulls          2      0      0     ",
+    "01": "json                0      0      0     ",
+    "02": "json_open           1      0      14    ",
+    "03": "send_all            2      0      23    # public.test (select)",
+    "04": "recv                3      2      -1    ",
+    "05": "var_set             1      0      3     ",
+    "06": "free                3      0      0     ",
+    "07": "bool                2      1      0     ",
+    "08": "jntr                10     2      0     ",
+    "09": "jmp                 14     0      0     ",
+    "10": "int                 2      -      0     # 123",
+    "11": "var_set             0      0      2     ",
+    "12": "free                2      0      0     ",
+    "13": "json_next           1      3      0     ",
+    "14": "free                1      0      0     ",
+    "15": "free                0      0      0     ",
+    "16": "close               0      0      0     ",
+    "17": "set                 0      2      0     ",
+    "18": "var                 1      1      0     ",
+    "19": "push                1      0      0     ",
+    "20": "var                 1      0      0     ",
+    "21": "push                1      0      0     ",
+    "22": "set_add             0      0      0     ",
+    "23": "ret                 0      0      -     "
+  },
+  "pushdown": {
+    "00": "set                 2      1      0     ",
+    "01": "table_open_part     3      3      6     # public.test (primary)",
+    "02": "table_readi32       4      3      0     ",
+    "03": "push                4      0      0     ",
+    "04": "set_add             2      0      0     ",
+    "05": "table_next          3      2      0     ",
+    "06": "free                3      0      0     ",
+    "07": "ret                 2      0      -     "
+  },
+  "access": [["public.test", "ro"]]
+}]
+begin
+	declare p int;
+	declare x int;
+	for i in ([1]) do
+		select id into x from test;
+		if true then
+			break;
+		end;
+		p := 123;
+	end;
+	select x, p;
+end;
+[[1, null]]
+# test: for select from into / if continue
+explain begin
+	declare p int;
+	declare x int;
+	for i in ([1, 2]) do
+		select id into x from test;
+		if true then
+			continue;
+		end;
+		p := 123;
+	end;
+	select x, p;
+end;
+[{
+  "main": {
+    "00": "push_nulls          2      0      0     ",
+    "01": "json                0      0      0     ",
+    "02": "json_open           1      0      14    ",
+    "03": "send_all            2      0      24    # public.test (select)",
+    "04": "recv                3      2      -1    ",
+    "05": "var_set             1      0      3     ",
+    "06": "free                3      0      0     ",
+    "07": "bool                2      1      0     ",
+    "08": "jntr                10     2      0     ",
+    "09": "jmp                 13     0      0     ",
+    "10": "int                 2      -      0     # 123",
+    "11": "var_set             0      0      2     ",
+    "12": "free                2      0      0     ",
+    "13": "json_next           1      3      0     ",
+    "14": "free                1      0      0     ",
+    "15": "free                0      0      0     ",
+    "16": "close               0      0      0     ",
+    "17": "set                 0      2      0     ",
+    "18": "var                 1      1      0     ",
+    "19": "push                1      0      0     ",
+    "20": "var                 1      0      0     ",
+    "21": "push                1      0      0     ",
+    "22": "set_add             0      0      0     ",
+    "23": "ret                 0      0      -     "
+  },
+  "pushdown": {
+    "00": "set                 2      1      0     ",
+    "01": "table_open_part     3      4      6     # public.test (primary)",
+    "02": "table_readi32       4      3      0     ",
+    "03": "push                4      0      0     ",
+    "04": "set_add             2      0      0     ",
+    "05": "table_next          3      2      0     ",
+    "06": "free                3      0      0     ",
+    "07": "ret                 2      0      -     "
+  },
+  "access": [["public.test", "ro"]]
+}]
+begin
+	declare p int;
+	declare x int;
+	for i in ([1, 2]) do
+		select id into x from test;
+		if true then
+			continue;
+		end;
+		p := 123;
+	end;
+	select x, p;
+end;
+[[1, null]]
 drop table test;
 disconnect S0;
 close E0;

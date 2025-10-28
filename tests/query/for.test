@@ -428,5 +428,132 @@ for i in ([1,2,3]) do show all; end;
 with a as (for i in ([1,2,3]) do end) select 1;
 with a as (select 1) for i in ([1,2,3]) do end;
 
+# test: for break
+explain begin
+	declare last int;
+	for i in ([0,1,2,3]) do
+		last := i::int;
+		break;
+	end;
+	select last;
+end;
+begin
+	declare last int;
+	for i in ([0,1,2,3]) do
+		last := i::int;
+		break;
+	end;
+	select last;
+end;
+
+# test: for if break
+explain begin
+	declare last int := 0;
+	for i in ([0,1,2,3]) do
+		last := i::int;
+		if last = 3 then
+			break;
+		end;
+	end;
+	select last;
+end;
+begin
+	declare last int := 0;
+	for i in ([0,1,2,3]) do
+		last := i::int;
+		if last = 3 then
+			break;
+		end;
+	end;
+	select last;
+end;
+
+# test: for for if break
+explain begin
+	declare last int := 0;
+	declare loops int := 0;
+	for i in ([0,1,2,3]) do
+		for j in ([0,1,2,3]) do
+			last := j::int;
+			if last = 3 then
+				break;
+			end;
+		end;
+		loops := loops + 1;
+	end;
+	select loops, last;
+end;
+
+begin
+	declare last int := 0;
+	declare loops int := 0;
+	for i in ([0,1,2,3]) do
+		for j in ([0,1,2,3]) do
+			last := j::int;
+			if last = 3 then
+				break;
+			end;
+		end;
+		loops := loops + 1;
+	end;
+	select loops, last;
+end;
+
+# test: for if continue
+explain begin
+	declare last int;
+	for i in ([0,1,2,3]) do
+		if i::int < 2 then
+			continue;
+		end;
+		last := i::int;
+		break;
+	end;
+	select last;
+end;
+begin
+	declare last int;
+	for i in ([0,1,2,3]) do
+		if i::int < 2 then
+			continue;
+		end;
+		last := i::int;
+		break;
+	end;
+	select last;
+end;
+
+# test: for for if continue
+explain begin
+	declare last int := 0;
+	declare loops int := 0;
+	for i in ([0,1,2,3]) do
+		for j in ([0,1,2,3]) do
+			if j::int < 2 then
+				continue;
+			end;
+			last := j::int;
+			break;
+		end;
+		loops := loops + 1;
+	end;
+	select loops, last;
+end;
+begin
+	declare last int := 0;
+	declare loops int := 0;
+	for i in ([0,1,2,3]) do
+		for j in ([0,1,2,3]) do
+			if j::int < 2 then
+				continue;
+			end;
+			last := j::int;
+			break;
+		end;
+		loops := loops + 1;
+	end;
+	select loops, last;
+end;
+
 disconnect S0;
 close E0;

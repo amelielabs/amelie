@@ -18,6 +18,8 @@ struct AstWhile
 	Ast    ast;
 	Ast*   expr;
 	Block* block;
+	Buf    breaks;
+	Buf    continues;
 	From   from;
 };
 
@@ -34,6 +36,8 @@ ast_while_allocate(Block* block)
 	self = ast_allocate(0, sizeof(AstWhile));
 	self->expr  = NULL;
 	self->block = NULL;
+	buf_init(&self->breaks);
+	buf_init(&self->continues);
 	from_init(&self->from, block);
 	return self;
 }

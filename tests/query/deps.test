@@ -788,6 +788,289 @@ begin
 	select * from test;
 end;
 
+# test: select from into / while break
+
+# ensure into happens after while
+explain begin
+	declare x int;
+	select id into x from test;
+	while true do
+		break;
+	end;
+	select x;
+end;
+begin
+	declare x int;
+	select id into x from test;
+	while true do
+		break;
+	end;
+	select x;
+end;
+
+# test: select from into / while if break
+
+# ensure into happens after while
+explain begin
+	declare x int;
+	select id into x from test;
+	while true do
+		if true then
+			break;
+		end;
+	end;
+	select x;
+end;
+begin
+	declare x int;
+	select id into x from test;
+	while true do
+		if true then
+			break;
+		end;
+	end;
+	select x;
+end;
+
+# test: while select from into / break
+
+# ensure into happens before break inside loop
+explain begin
+	declare x int;
+	while true do
+		select id into x from test;
+		break;
+		x := null;
+	end;
+	select x;
+end;
+begin
+	declare x int;
+	while true do
+		select id into x from test;
+		break;
+		x := null;
+	end;
+	select x;
+end;
+
+# test: while select from into / if break
+
+# ensure into happens before IF inside loop
+explain begin
+	declare x int;
+	while true do
+		select id into x from test;
+		if true then
+			break;
+		end;
+		x := null;
+	end;
+	select x;
+end;
+begin
+	declare x int;
+	while true do
+		select id into x from test;
+		if true then
+			break;
+		end;
+		x := null;
+	end;
+	select x;
+end;
+
+# test: while select from into / if if break
+
+# ensure into happens before IF inside loop
+explain begin
+	declare x int;
+	while true do
+		select id into x from test;
+		if true then
+			if true then
+				break;
+			end;
+		end;
+		x := null;
+	end;
+	select x;
+end;
+begin
+	declare x int;
+	while true do
+		select id into x from test;
+		if true then
+			if true then
+				break;
+			end;
+		end;
+		x := null;
+	end;
+	select x;
+end;
+
+# test: while select from into / if if continue
+
+# ensure into happens before IF inside loop
+explain begin
+	declare i int := 0;
+	declare x int;
+
+	while true do
+		if i = 3 then
+			break;
+		end;
+		i := i + 1;
+		select id into x from test;
+		if true then
+			if true then
+				continue;
+			end;
+		end;
+		x := null;
+	end;
+	select i, x;
+end;
+begin
+	declare i int := 0;
+	declare x int;
+
+	while true do
+		if i = 3 then
+			break;
+		end;
+		i := i + 1;
+		select id into x from test;
+		if true then
+			if true then
+				continue;
+			end;
+		end;
+		x := null;
+	end;
+	select i, x;
+end;
+
+# test: select from into / for break
+
+# ensure into happens after for
+explain begin
+	declare x int;
+	select id into x from test;
+	for i in ([]) do
+		break;
+	end;
+	select x;
+end;
+begin
+	declare x int;
+	select id into x from test;
+	for i in ([]) do
+		break;
+	end;
+	select x;
+end;
+
+# test: select from into / for if break
+
+# ensure into happens after while
+explain begin
+	declare x int;
+	select id into x from test;
+	for i in ([]) do
+		if true then
+			break;
+		end;
+	end;
+	select x;
+end;
+begin
+	declare x int;
+	select id into x from test;
+	for i in ([]) do
+		if true then
+			break;
+		end;
+	end;
+	select x;
+end;
+
+# test: for select from into / break
+explain begin
+	declare x int;
+	for i in ([1]) do
+		select id into x from test;
+		break;
+	end;
+	select x;
+end;
+begin
+	declare x int;
+	for i in ([1]) do
+		select id into x from test;
+		break;
+	end;
+	select x;
+end;
+
+# test: for select from into / if break
+
+# ensure recv before if
+explain begin
+	declare p int;
+	declare x int;
+	for i in ([1]) do
+		select id into x from test;
+		if true then
+			break;
+		end;
+		p := 123;
+	end;
+	select x, p;
+end;
+begin
+	declare p int;
+	declare x int;
+	for i in ([1]) do
+		select id into x from test;
+		if true then
+			break;
+		end;
+		p := 123;
+	end;
+	select x, p;
+end;
+
+# test: for select from into / if continue
+
+# ensure recv before if
+explain begin
+	declare p int;
+	declare x int;
+	for i in ([1, 2]) do
+		select id into x from test;
+		if true then
+			continue;
+		end;
+		p := 123;
+	end;
+	select x, p;
+end;
+
+begin
+	declare p int;
+	declare x int;
+	for i in ([1, 2]) do
+		select id into x from test;
+		if true then
+			continue;
+		end;
+		p := 123;
+	end;
+	select x, p;
+end;
+
 drop table test;
 
 disconnect S0;

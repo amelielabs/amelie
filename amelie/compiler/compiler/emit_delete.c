@@ -41,38 +41,37 @@
 #include <amelie_compiler.h>
 
 static inline void
-emit_delete_on_match(Compiler* self, From* from, void* arg)
+emit_delete_on_match(Scan* self)
 {
-	unused(self);
-	unused(arg);
-
 	// DELETE by cursor
-	auto target = from_first(from);
-	op1(self, CDELETE, target->rcursor);
+	auto target = from_first(self->from);
+	op1(self->compiler, CDELETE, target->rcursor);
 }
 
 static inline void
-emit_delete_on_match_returning(Compiler* self, From* from, void* arg)
+emit_delete_on_match_returning(Scan* self)
 {
+	auto       cp     = self->compiler;
+	AstDelete* delete = self->on_match_arg;
+
 	// push expr and set column type
-	AstDelete* delete = arg;
 	for (auto as = delete->ret.list; as; as = as->next)
 	{
 		auto column = as->r->column;
 		// expr
-		int rexpr = emit_expr(self, from, as->l);
-		int rt = rtype(self, rexpr);
+		int rexpr = emit_expr(cp, self->from, as->l);
+		int rt = rtype(cp, rexpr);
 		column_set_type(column, rt, type_sizeof(rt));
-		op1(self, CPUSH, rexpr);
-		runpin(self, rexpr);
+		op1(cp, CPUSH, rexpr);
+		runpin(cp, rexpr);
 	}
 
 	// add to the returning set
-	op1(self, CSET_ADD, delete->rset);
+	op1(cp, CSET_ADD, delete->rset);
 
 	// DELETE by cursor
-	auto target = from_first(from);
-	op1(self, CDELETE, target->rcursor);
+	auto target = from_first(self->from);
+	op1(cp, CDELETE, target->rcursor);
 }
 
 hot int

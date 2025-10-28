@@ -549,11 +549,12 @@ emit_if(Compiler* self, Stmt* stmt)
 }
 
 static void
-emit_for_on_match(Compiler* self, From* from, void* arg)
+emit_for_on_match(Scan* self)
 {
-	unused(from);
-	AstFor* fora = arg;
-	emit_block(self, fora->block);
+	AstFor* fora = self->on_match_arg;
+	fora->breaks    = &self->breaks;
+	fora->continues = &self->continues;
+	emit_block(self->compiler, fora->block);
 }
 
 hot static void
@@ -624,6 +625,10 @@ emit_while(Compiler* self, Stmt* stmt)
 	auto _stop = op_pos(self);
 	op_set_jmp(self, _stop_jmp, _stop);
 
+	// resolve nested breaks/continues
+	op_set_jmp_list(self, &whilea->breaks, _stop);
+	op_set_jmp_list(self, &whilea->continues, _start);
+
 	// set snapshot if loop is using send command
 	if (whilea->block->stmts.last_send)
 		self->program->snapshot = true;
@@ -633,6 +638,61 @@ emit_while(Compiler* self, Stmt* stmt)
 
 	// set previous stmt
 	self->current = stmt_prev;
+}
+
+hot static void
+emit_break(Compiler* self, Stmt* stmt)
+{
+	compiler_switch_frontend(self);
+
+	// find parent loop stmt
+	Buf*  breaks    = NULL;
+	Buf*  continues = NULL;
+	Stmt* parent    = NULL;
+
+	auto  block = stmt->block;
+	while (block && block->parent_stmt)
+	{
+		auto ref = block->parent_stmt;
+		if (ref->id == STMT_WHILE)
+		{
+			auto whilea = ast_while_of(ref->ast);
+			breaks    = &whilea->breaks;
+			continues = &whilea->continues;
+			parent    = ref;
+			break;
+		}
+
+		if (ref->id == STMT_FOR)
+		{
+			auto fora = ast_for_of(ref->ast);
+			breaks    = fora->breaks;
+			continues = fora->continues;
+			parent    = ref;
+			break;
+		}
+
+		block = block->parent;
+	}
+	if (! parent)
+		stmt_error(stmt, stmt->ast, "used out of loop");
+
+	// emit jmp, it will be resolved by the loop end
+	switch (stmt->id) {
+	case STMT_BREAK:
+		// jmp _stop
+		op_pos_add(self, breaks);
+		op1(self, CJMP, 0 /* _stop */);
+		break;
+	case STMT_CONTINUE:
+		// jmp _start
+		op_pos_add(self, continues);
+		op1(self, CJMP, 0 /* _start */);
+		break;
+	default:
+		abort();
+		break;
+	}
 }
 
 hot static void
@@ -703,6 +763,23 @@ emit_return(Compiler* self, Stmt* stmt)
 }
 
 hot static void
+emit_end(Compiler* self, Block* block)
+{
+	auto stmt = block->stmts.list;
+	for (; stmt; stmt = stmt->next)
+	{
+		// ensure all statement received and freed
+		emit_recv(self, stmt);
+		if (stmt->r != -1 && !stmt->is_return)
+		{
+			op1(self, CFREE, stmt->r);
+			runpin(self, stmt->r);
+			stmt->r = -1;
+		}
+	}
+}
+
+hot static void
 emit_block(Compiler* self, Block* block)
 {
 	auto stmt_prev = self->current;
@@ -717,6 +794,11 @@ emit_block(Compiler* self, Block* block)
 		for (auto dep = stmt->deps.list; dep; dep = dep->next)
 			emit_recv(self, dep->stmt);
 
+		// recv all and finilize all statement in the block
+		// before executing block containing break/continue statement
+		if (stmt->is_break)
+			emit_end(self, block);
+
 		switch (stmt->id) {
 		case STMT_IF:
 			emit_if(self, stmt);
@@ -726,6 +808,10 @@ emit_block(Compiler* self, Block* block)
 			break;
 		case STMT_WHILE:
 			emit_while(self, stmt);
+			break;
+		case STMT_BREAK:
+		case STMT_CONTINUE:
+			emit_break(self, stmt);
 			break;
 		case STMT_RETURN:
 			break;
@@ -743,17 +829,12 @@ emit_block(Compiler* self, Block* block)
 			emit_return(self, stmt);
 	}
 
-	// on block exit (not main)
+	// cleanup block (not main)
 	if (block != compiler_main(self))
 	{
-		// ensure all pending returning statements are received
 		auto last = block->stmts.list_tail;
-		if (last && !last->is_return)
-		{
-			stmt = block->stmts.list;
-			for (; stmt; stmt = stmt->next)
-				emit_recv(self, stmt);
-		}
+		if (last && !last->is_return && !last->is_break)
+			emit_end(self, block);
 	}
 
 	// set previous stmt

@@ -17,6 +17,8 @@ struct AstFor
 {
 	Ast    ast;
 	Block* block;
+	Buf*   breaks;
+	Buf*   continues;
 	From   from;
 };
 
@@ -31,7 +33,9 @@ ast_for_allocate(Block* block)
 {
 	AstFor* self;
 	self = ast_allocate(0, sizeof(AstFor));
-	self->block = NULL;
+	self->block     = NULL;
+	self->breaks    = NULL;
+	self->continues = NULL;
 	from_init(&self->from, block);
 	return self;
 }
