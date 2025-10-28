@@ -416,10 +416,12 @@ cnop:
 	op_next;
 
 cjmp:
+	// [jmp]
 	op = code_at(code, op->a);
 	op_jmp;
 
 cjtr:
+	// [jmp, value]
 	rc = value_is_true(&r[op->b]);
 	value_free(&r[op->b]);
 	if (rc)
@@ -430,6 +432,7 @@ cjtr:
 	op_next;
 
 cjntr:
+	// [jmp, value]
 	rc = value_is_true(&r[op->b]);
 	value_free(&r[op->b]);
 	if (! rc)
@@ -440,19 +443,19 @@ cjntr:
 	op_next;
 
 cjgted:
-	// [value, jmp]
-	if (--r[op->a].integer >= 0)
+	// [jmp value]
+	if (--r[op->b].integer >= 0)
 	{
-		op = code_at(code, op->b);
+		op = code_at(code, op->a);
 		op_jmp;
 	}
 	op_next;
 
 cjltd:
-	// [value, jmp]
-	if (--r[op->a].integer < 0)
+	// [jmp, value]
+	if (--r[op->b].integer < 0)
 	{
-		op = code_at(code, op->b);
+		op = code_at(code, op->a);
 		op_jmp;
 	}
 	op_next;

@@ -25,17 +25,15 @@ explain select exists (select true from test limit 1);
   "main": {
     "00": "set                 0      1      0     ",
     "01": "int                 1      -      0     # 1",
-    "02": "table_open          2      0      10    # public.test (primary)",
-    "03": "jmp                 5      0      0     ",
-    "04": "jmp                 10     0      0     ",
-    "05": "cjltd               1      4      0     ",
-    "06": "bool                3      1      0     ",
-    "07": "push                3      0      0     ",
-    "08": "set_add             0      0      0     ",
-    "09": "table_next          2      5      0     ",
-    "10": "free                2      0      0     ",
-    "11": "exists              1      0      0     ",
-    "12": "ret                 1      0      -     "
+    "02": "table_open          2      0      8     # public.test (primary)",
+    "03": "cjltd               8      1      0     ",
+    "04": "bool                3      1      0     ",
+    "05": "push                3      0      0     ",
+    "06": "set_add             0      0      0     ",
+    "07": "table_next          2      3      0     ",
+    "08": "free                2      0      0     ",
+    "09": "exists              1      0      0     ",
+    "10": "ret                 1      0      -     "
   },
   "access": [["public.test", "ro_exclusive"]]
 }]

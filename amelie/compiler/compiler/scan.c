@@ -40,17 +40,20 @@
 #include <amelie_parser.h>
 #include <amelie_compiler.h>
 
-typedef struct
+typedef struct Scan Scan;
+
+struct Scan
 {
 	Ast*         expr_where;
 	int          roffset;
 	int          rlimit;
-	int          eof;
 	ScanFunction on_match;
 	void*        on_match_arg;
+	Buf          breaks;
+	Buf          continues;
 	From*        from;
 	Compiler*    compiler;
-} Scan;
+};
 
 static inline int
 scan_key(Scan* self, Target* target)
@@ -122,10 +125,14 @@ scan_on_match(Scan* self)
 	if (self->roffset != -1)
 	{
 		_offset_jmp = op_pos(cp);
-		op2(cp, CJGTED, self->roffset, 0 /* _next */);
+		op2(cp, CJGTED, 0 /* _next */, self->roffset);
 	}
 	if (self->rlimit != -1)
-		op2(cp, CJLTD, self->rlimit, self->eof);
+	{
+		// break on limit
+		op_pos_add(cp, &self->breaks);
+		op2(cp, CJLTD, 0 /* _eof */, self->rlimit);
+	}
 
 	// aggregation / expr against current cursor position
 	self->on_match(cp, self->from, self->on_match_arg);
@@ -136,7 +143,7 @@ scan_on_match(Scan* self)
 		code_at(cp->code, _where_jntr)->a = _next;
 
 	if (self->roffset != -1)
-		code_at(cp->code, _offset_jmp)->b = _next;
+		code_at(cp->code, _offset_jmp)->a = _next;
 }
 
 static inline void
@@ -187,20 +194,6 @@ scan_table(Scan* self, Target* target)
 	                      name_offset, 0 /* _eof */,
 	                      keys_count);
 
-	// handle outer target eof jmp (for limit)
-	if (self->rlimit != -1 && !target->prev)
-	{
-		// jmp to _where
-		int _start = op_pos(cp);
-		op1(cp, CJMP, 0 /* _where */);
-
-		// jmp to _eof
-		self->eof = op_pos(cp);
-		op1(cp, CJMP, 0 /* _eof */);
-
-		code_at(cp->code, _start)->a = op_pos(cp);
-	}
-
 	// _where:
 	int _where = op_pos(cp);
 
@@ -230,9 +223,12 @@ scan_table(Scan* self, Target* target)
 	for (auto order = 0; order < path->match_stop; order++)
 		code_at(cp->code, scan_stop_jntr[order])->a = _eof;
 
-	// set outer target eof jmp for limit
-	if (self->rlimit != -1 && !target->prev)
-		code_at(cp->code, self->eof)->a = _eof;
+	// resolve outer target break/continue
+	if (! target->prev)
+	{
+		op_set_jmp_list(cp, &self->breaks, _eof);
+		op_set_jmp_list(cp, &self->continues, _where);
+	}
 
 	// close cursor
 	op1(cp, CFREE, target->rcursor);
@@ -264,20 +260,6 @@ scan_table_heap(Scan* self, Target* target)
 	target->rcursor = op4(cp, CTABLE_OPEN_HEAP, rpin(cp, TYPE_CURSOR),
 	                      name_offset, 0 /* _eof */, 0);
 
-	// handle outer target eof jmp (for limit)
-	if (self->rlimit != -1 && !target->prev)
-	{
-		// jmp to _where
-		int _start = op_pos(cp);
-		op1(cp, CJMP, 0 /* _where */);
-
-		// jmp to _eof
-		self->eof = op_pos(cp);
-		op1(cp, CJMP, 0 /* _eof */);
-
-		code_at(cp->code, _start)->a = op_pos(cp);
-	}
-
 	// _where:
 	int _where = op_pos(cp);
 	if (target->next)
@@ -294,9 +276,12 @@ scan_table_heap(Scan* self, Target* target)
 	// set table_open to _eof
 	code_at(cp->code, _open)->c = _eof;
 
-	// set outer target eof jmp for limit
-	if (self->rlimit != -1 && !target->prev)
-		code_at(cp->code, self->eof)->a = _eof;
+	// resolve outer target break/continue
+	if (! target->prev)
+	{
+		op_set_jmp_list(cp, &self->breaks, _eof);
+		op_set_jmp_list(cp, &self->continues, _where);
+	}
 
 	// close cursor
 	op1(cp, CFREE, target->rcursor);
@@ -399,20 +384,6 @@ scan_expr(Scan* self, Target* target)
 	target->rcursor = op3(cp, cursor_open, rpin(cp, cursor_type),
 	                      target->r, 0 /* _eof */);
 
-	// handle outer target eof jmp (for limit)
-	if (self->rlimit != -1 && !target->prev)
-	{
-		// jmp to _where
-		int _start = op_pos(cp);
-		op1(cp, CJMP, 0 /* _where */);
-
-		// jmp to _eof
-		self->eof = op_pos(cp);
-		op1(cp, CJMP, 0 /* _eof */);
-
-		code_at(cp->code, _start)->a = op_pos(cp);
-	}
-
 	// _where:
 	int _where = op_pos(cp);
 	if (target->next)
@@ -429,9 +400,12 @@ scan_expr(Scan* self, Target* target)
 	// set open to _eof
 	code_at(cp->code, _open)->c = _eof;
 
-	// set outer target eof jmp for limit
-	if (self->rlimit != -1 && !target->prev)
-		code_at(cp->code, self->eof)->a = _eof;
+	// resolve outer target break/continue
+	if (! target->prev)
+	{
+		op_set_jmp_list(cp, &self->breaks, _eof);
+		op_set_jmp_list(cp, &self->continues, _where);
+	}
 
 	// close cursor
 	op1(cp, CFREE, target->rcursor);
@@ -472,12 +446,16 @@ scan(Compiler*    compiler,
 		.expr_where   = expr_where,
 		.roffset      = -1,
 		.rlimit       = -1,
-		.eof          = -1,
 		.on_match     = on_match,
 		.on_match_arg = on_match_arg,
 		.from         = from,
 		.compiler     = compiler
 	};
+	buf_init(&self.breaks);
+	buf_init(&self.continues);
+
+	defer_buf(&self.breaks);
+	defer_buf(&self.continues);
 
 	// prepare scan path using where expression per target
 	path_prepare(from, expr_where);

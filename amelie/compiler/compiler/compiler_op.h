@@ -76,6 +76,13 @@ op_pos(Compiler* self)
 	return code_count(self->code);
 }
 
+static inline void
+op_pos_add(Compiler* self, Buf* list)
+{
+	int pos = op_pos(self);
+	buf_write(list, &pos, sizeof(pos));
+}
+
 static inline Op*
 op_at(Compiler* self, int pos)
 {
@@ -86,4 +93,13 @@ static inline void
 op_set_jmp(Compiler* self, int pos, int to)
 {
 	code_at(self->code, pos)->a = to;
+}
+
+static inline void
+op_set_jmp_list(Compiler* self, Buf* list, int to)
+{
+	auto pos = (int*)list->start;
+	auto end = (int*)list->position;
+	for (; pos < end; pos++)
+		op_set_jmp(self, *pos, to);
 }
