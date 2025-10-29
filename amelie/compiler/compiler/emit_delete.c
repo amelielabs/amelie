@@ -58,12 +58,8 @@ emit_delete_on_match_returning(Scan* self)
 	for (auto as = delete->ret.list; as; as = as->next)
 	{
 		auto column = as->r->column;
-		// expr
-		int rexpr = emit_expr(cp, self->from, as->l);
-		int rt = rtype(cp, rexpr);
-		column_set_type(column, rt, type_sizeof(rt));
-		op1(cp, CPUSH, rexpr);
-		runpin(cp, rexpr);
+		auto type = emit_push(cp, self->from, as->l);
+		column_set_type(column, type, type_sizeof(type));
 	}
 
 	// add to the returning set

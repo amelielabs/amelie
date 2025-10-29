@@ -32,18 +32,17 @@ explain execute reverse([1,2,3]);
     "02": "var_set             0      0      0     ",
     "03": "free                0      0      0     ",
     "04": "var                 0      0      1     ",
-    "05": "json_open           1      0      14    ",
-    "06": "var                 2      0      0     ",
-    "07": "push                2      0      0     ",
-    "08": "json_read           2      1      0     ",
-    "09": "push                2      0      0     ",
-    "10": "call                2      -      2     # public.push()",
-    "11": "var_set             0      0      2     ",
-    "12": "free                2      0      0     ",
-    "13": "json_next           1      6      0     ",
-    "14": "free                0      0      0     ",
-    "15": "var                 0      0      0     ",
-    "16": "ret                 0      0      -     "
+    "05": "json_open           1      0      13    ",
+    "06": "push_var            0      0      0     ",
+    "07": "json_read           2      1      0     ",
+    "08": "push                2      0      0     ",
+    "09": "call                2      -      2     # public.push()",
+    "10": "var_set             0      0      2     ",
+    "11": "free                2      0      0     ",
+    "12": "json_next           1      6      0     ",
+    "13": "free                0      0      0     ",
+    "14": "var                 0      0      0     ",
+    "15": "ret                 0      0      -     "
   },
   "access": []
 }]
@@ -100,18 +99,17 @@ explain select reverse([1,2,3]);
       "02": "var_set             0      0      0     ",
       "03": "free                0      0      0     ",
       "04": "var                 0      0      1     ",
-      "05": "json_open           1      0      14    ",
-      "06": "var                 2      0      0     ",
-      "07": "push                2      0      0     ",
-      "08": "json_read           2      1      0     ",
-      "09": "push                2      0      0     ",
-      "10": "call                2      -      2     # public.push()",
-      "11": "var_set             0      0      2     ",
-      "12": "free                2      0      0     ",
-      "13": "json_next           1      6      0     ",
-      "14": "free                0      0      0     ",
-      "15": "var                 0      0      0     ",
-      "16": "ret                 0      0      -     "
+      "05": "json_open           1      0      13    ",
+      "06": "push_var            0      0      0     ",
+      "07": "json_read           2      1      0     ",
+      "08": "push                2      0      0     ",
+      "09": "call                2      -      2     # public.push()",
+      "10": "var_set             0      0      2     ",
+      "11": "free                2      0      0     ",
+      "12": "json_next           1      6      0     ",
+      "13": "free                0      0      0     ",
+      "14": "var                 0      0      0     ",
+      "15": "ret                 0      0      -     "
     },
     "access": []
   }]
@@ -206,19 +204,17 @@ explain select c(123);
   "calls": [{
     "function": "public.c",
     "main": {
-      "00": "var                 0      0      1     ",
-      "01": "push                0      0      0     ",
-      "02": "call_udf            0      -      -     # public.b()",
-      "03": "ret                 0      0      -     "
+      "00": "push_var            0      1      0     ",
+      "01": "call_udf            0      -      -     # public.b()",
+      "02": "ret                 0      0      -     "
     },
     "access": [["public.b", "call"], ["public.a", "call"]]
   }, {
     "function": "public.b",
     "main": {
-      "00": "var                 0      0      1     ",
-      "01": "push                0      0      0     ",
-      "02": "call_udf            0      -      -     # public.a()",
-      "03": "ret                 0      0      -     "
+      "00": "push_var            0      1      0     ",
+      "01": "call_udf            0      -      -     # public.a()",
+      "02": "ret                 0      0      -     "
     },
     "access": [["public.a", "call"]]
   }, {

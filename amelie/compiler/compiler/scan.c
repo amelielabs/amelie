@@ -56,9 +56,7 @@ scan_key(Scan* self, Target* target)
 		if (! ref->start)
 			break;
 
-		int rexpr = emit_expr(cp, self->from, ref->start);
-		op1(cp, CPUSH, rexpr);
-		runpin(cp, rexpr);
+		emit_push(cp, self->from, ref->start);
 		count++;
 	}
 

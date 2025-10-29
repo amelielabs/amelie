@@ -132,11 +132,8 @@ emit_upsert(Compiler* self, Ast* ast)
 		{
 			auto column = as->r->column;
 			// expr
-			int rexpr = emit_expr(self, &insert->from, as->l);
-			int rt = rtype(self, rexpr);
-			column_set_type(column, rt, type_sizeof(rt));
-			op1(self, CPUSH, rexpr);
-			runpin(self, rexpr);
+			auto type = emit_push(self, &insert->from, as->l);
+			column_set_type(column, type, type_sizeof(type));
 		}
 
 		// add to the returning set

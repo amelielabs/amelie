@@ -58,6 +58,22 @@ emit_free(Compiler* self, int r)
 	return -1;
 }
 
+int
+emit_push(Compiler* self, From* from, Ast* ast)
+{
+	if (ast->id == KVAR && self->origin == ORIGIN_FRONTEND)
+	{
+		auto var = ast->var;
+		op3(self, CPUSH_VAR, var->order, var->is_arg, false);
+		return var->type;
+	}
+	auto r = emit_expr(self, from, ast);
+	auto type = rtype(self, r);
+	op1(self, CPUSH, r);
+	runpin(self, r);
+	return type;
+}
+
 hot int
 emit_string(Compiler* self, Str* string, bool escape)
 {
@@ -85,13 +101,8 @@ emit_json(Compiler* self, From* from, Ast* ast)
 
 	// push arguments
 	auto current = args->ast.l;
-	while (current)
-	{
-		int r = emit_expr(self, from, current);
-		op1(self, CPUSH, r);
-		runpin(self, r);
-		current = current->next;
-	}
+	for (; current; current = current->next)
+		emit_push(self, from, current);
 
 	// op
 	int op;
@@ -502,19 +513,12 @@ emit_udf(Compiler* self, From* from, Ast* ast)
 	list_foreach(&udf->config->args.list)
 	{
 		auto column = list_at(Column, link);
-		auto r = emit_expr(self, from, current);
-
-		// validate expression type
-		auto type = rtype(self, r);
+		auto type = emit_push(self, from, current);
 		if (type != TYPE_NULL && type != column->type)
 			stmt_error(self->current, current, "argument '%.*s' expects %s",
 			           str_size(&column->name),
 			           str_of(&column->name),
 			           type_of(column->type));
-
-		op1(self, CPUSH, r);
-		runpin(self, r);
-
 		current = current->next;
 	}
 
@@ -559,18 +563,14 @@ emit_udf_method(Compiler* self, From* from, Ast* ast)
 			ast = expr;
 		else
 			ast = current;
-		auto r = emit_expr(self, from, ast);
 
-		// validate expression type
-		auto type = rtype(self, r);
+		// push and validate the expression type
+		auto type = emit_push(self, from, ast);
 		if (type != TYPE_NULL && type != column->type)
 			stmt_error(self->current, current, "argument '%.*s' expects %s",
 			           str_size(&column->name),
 			           str_of(&column->name),
 			           type_of(column->type));
-
-		op1(self, CPUSH, r);
-		runpin(self, r);
 
 		if (is_first)
 			continue;
@@ -584,9 +584,8 @@ emit_udf_method(Compiler* self, From* from, Ast* ast)
 }
 
 hot static inline bool
-emit_func_typederive(Compiler* self, int r, int* type)
+emit_func_typederive(int this, int* type)
 {
-	auto this = rtype(self, r);
 	if (this == TYPE_NULL)
 		return true;
 	if (*type == TYPE_NULL)
@@ -605,16 +604,13 @@ emit_func(Compiler* self, From* from, Ast* ast)
 	auto fn = func->fn;
 	auto fn_type = fn->type;
 	auto current = args->l;
-	while (current)
+	for (; current; current = current->next)
 	{
-		int r = emit_expr(self, from, current);
+		auto type = emit_push(self, from, current);
 		// ensure that the function has identical types, if type is derived
 		if (fn->flags & FN_DERIVE)
-			if (! emit_func_typederive(self, r, &fn_type))
+			if (! emit_func_typederive(type, &fn_type))
 				stmt_error(self->current, current, "argument type must match other arguments");
-		op1(self, CPUSH, r);
-		runpin(self, r);
-		current = current->next;
 	}
 
 	// register function call, if it has context
@@ -639,27 +635,22 @@ emit_method(Compiler* self, From* from, Ast* ast)
 	auto fn_type = fn->type;
 
 	// use expression as the first argument to the call
-	int r = emit_expr(self, from, expr);
+	auto type = emit_push(self, from, expr);
 	if (fn->flags & FN_DERIVE)
-		emit_func_typederive(self, r, &fn_type);
-	op1(self, CPUSH, r);
-	runpin(self, r);
+		emit_func_typederive(type, &fn_type);
 
 	// push the rest of the arguments
 	int argc = 1;
 	if (args)
 	{
 		auto current = args->l;
-		while (current)
+		for (; current; current = current->next)
 		{
-			r = emit_expr(self, from, current);
+			type = emit_push(self, from, current);
 			// ensure that the function has identical types, if type is derived
 			if (fn->flags & FN_DERIVE)
-				if (! emit_func_typederive(self, r, &fn_type))
+				if (! emit_func_typederive(type, &fn_type))
 					stmt_error(self->current, current, "argument type must match other arguments");
-			op1(self, CPUSH, r);
-			runpin(self, r);
-			current = current->next;
 		}
 		argc += args->integer;
 	}
@@ -842,18 +833,17 @@ emit_in(Compiler* self, From* from, Ast* ast)
 	auto current = args->l;
 	while (current)
 	{
-		int r;
 		if (current->id == KSELECT)
 		{
 			auto select = ast_select_of(current);
 			if (select->ret.columns.count > 1)
 				stmt_error(self->current, &select->ast, "subquery must return one column");
-			r = emit_select(self, current, true);
+			auto r = emit_select(self, current, true);
+			op1(self, CPUSH, r);
+			runpin(self, r);
 		} else {
-			r = emit_expr(self, from, current);
+			emit_push(self, from, current);
 		}
-		op1(self, CPUSH, r);
-		runpin(self, r);
 		current = current->next;
 	}
 
@@ -937,13 +927,8 @@ emit_at_timezone(Compiler* self, From* from, Ast* ast)
 	assert(fn);
 
 	// push arguments
-	int r = emit_expr(self, from, ast->l);
-	op1(self, CPUSH, r);
-	runpin(self, r);
-
-	r = emit_expr(self, from, ast->r);
-	op1(self, CPUSH, r);
-	runpin(self, r);
+	emit_push(self, from, ast->l);
+	emit_push(self, from, ast->r);
 
 	// CALL
 	return op4(self, CCALL, rpin(self, fn->type), (intptr_t)fn, 2, -1);
@@ -1025,7 +1010,7 @@ emit_expr(Compiler* self, From* from, Ast* ast)
 	// variable
 	case KVAR:
 	{
-		// SELECT var
+		// var + var
 		auto var = ast->var;
 		if (self->origin == ORIGIN_BACKEND)
 		{

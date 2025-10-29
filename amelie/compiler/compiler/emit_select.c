@@ -47,12 +47,8 @@ emit_select_expr(Compiler* self, From* from, AstSelect* select)
 	for (auto as = select->ret.list; as; as = as->next)
 	{
 		auto column = as->r->column;
-		// expr
-		int rexpr = emit_expr(self, from, as->l);
-		int rt = rtype(self, rexpr);
-		column_set_type(column, rt, type_sizeof(rt));
-		op1(self, CPUSH, rexpr);
-		runpin(self, rexpr);
+		auto type = emit_push(self, from, as->l);
+		column_set_type(column, type, type_sizeof(type));
 	}
 }
 
@@ -67,15 +63,8 @@ emit_select_on_match(Scan* self)
 
 	// push order by key (if any)
 	auto node = select->expr_order_by.list;
-	while (node)
-	{
-		auto order = ast_order_of(node->ast);
-		int rexpr_order_by;
-		rexpr_order_by = emit_expr(cp, self->from, order->expr);
-		op1(cp, CPUSH, rexpr_order_by);
-		runpin(cp, rexpr_order_by);
-		node = node->next;
-	}
+	for (; node; node = node->next)
+		emit_push(cp, self->from, ast_order_of(node->ast)->expr);
 
 	// add to the returning set
 	op1(cp, CSET_ADD, select->rset);
@@ -99,12 +88,8 @@ emit_select_on_match_aggregate(Scan* self)
 	for (; node; node = node->next)
 	{
 		auto group = ast_group_of(node->ast);
-		// expr
-		auto rexpr = emit_expr(cp, self->from, group->expr);
-		auto rt = rtype(cp, rexpr);
-		column_set_type(group->column, rt, type_sizeof(rt));
-		op1(cp, CPUSH, rexpr);
-		runpin(cp, rexpr);
+		auto type = emit_push(cp, self->from, group->expr);
+		column_set_type(group->column, type, type_sizeof(type));
 	}
 
 	// CSET_GET
@@ -118,12 +103,9 @@ emit_select_on_match_aggregate(Scan* self)
 		auto agg = ast_agg_of(node->ast);
 		agg->select = &select->ast;
 
-		// expr
-		auto rexpr = emit_expr(cp, self->from, agg->expr);
-		auto rt = rtype(cp, rexpr);
+		// push expr and set type
+		auto rt = emit_push(cp, self->from, agg->expr);
 		column_set_type(agg->column, rt, type_sizeof(rt));
-		op1(cp, CPUSH, rexpr);
-		runpin(cp, rexpr);
 
 		// lambda
 		int* aggs = (int*)code_data_at(cp->code_data, select->aggs);
@@ -204,11 +186,8 @@ emit_select_on_match_aggregate_empty(Compiler* self, AstSelect* select)
 	while (node)
 	{
 		auto group = ast_group_of(node->ast);
-		auto rexpr = emit_expr(self, from, group->expr);
-		auto rt = rtype(self, rexpr);
-		column_set_type(group->column, rt, type_sizeof(rt));
-		op1(self, CPUSH, rexpr);
-		runpin(self, rexpr);
+		auto type = emit_push(self, from, group->expr);
+		column_set_type(group->column, type, type_sizeof(type));
 		node = node->next;
 	}
 
@@ -221,11 +200,8 @@ emit_select_on_match_aggregate_empty(Compiler* self, AstSelect* select)
 	while (node)
 	{
 		auto agg = ast_agg_of(node->ast);
-		auto rexpr = op1(self, CNULL, rpin(self, TYPE_NULL));
-		auto rt = rtype(self, rexpr);
-		column_set_type(agg->column, rt, type_sizeof(rt));
-		op1(self, CPUSH, rexpr);
-		runpin(self, rexpr);
+		op1(self, CPUSH_NULLS, 1);
+		column_set_type(agg->column, TYPE_NULL, -1);
 		node = node->next;
 	}
 

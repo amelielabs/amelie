@@ -58,13 +58,11 @@ explain select 0 -> id, 0 -> data from test;
     "14": "bool                1      1      0     ",
     "15": "push                1      0      0     ",
     "16": "set_get             1      0      0     ",
-    "17": "null                2      0      0     ",
-    "18": "push                2      0      0     ",
-    "19": "null                2      0      0     ",
-    "20": "push                2      0      0     ",
-    "21": "set_agg             0      1      21    ",
-    "22": "set_sort            0      0      0     ",
-    "23": "ret                 0      0      -     "
+    "17": "push_nulls          1      0      0     ",
+    "18": "push_nulls          1      0      0     ",
+    "19": "set_agg             0      1      21    ",
+    "20": "set_sort            0      0      0     ",
+    "21": "ret                 0      0      -     "
   },
   "access": [["public.test", "ro"]]
 }]
@@ -108,11 +106,10 @@ explain select 0 -> self + 1 from test;
     "13": "bool                1      1      0     ",
     "14": "push                1      0      0     ",
     "15": "set_get             1      0      0     ",
-    "16": "null                2      0      0     ",
-    "17": "push                2      0      0     ",
-    "18": "set_agg             0      1      21    ",
-    "19": "set_sort            0      0      0     ",
-    "20": "ret                 0      0      -     "
+    "16": "push_nulls          1      0      0     ",
+    "17": "set_agg             0      1      21    ",
+    "18": "set_sort            0      0      0     ",
+    "19": "ret                 0      0      -     "
   },
   "access": [["public.test", "ro"]]
 }]
@@ -207,11 +204,10 @@ explain select 0 -> self + 1 from test;
     "13": "bool                1      1      0     ",
     "14": "push                1      0      0     ",
     "15": "set_get             1      0      0     ",
-    "16": "null                2      0      0     ",
-    "17": "push                2      0      0     ",
-    "18": "set_agg             0      1      21    ",
-    "19": "set_sort            0      0      0     ",
-    "20": "ret                 0      0      -     "
+    "16": "push_nulls          1      0      0     ",
+    "17": "set_agg             0      1      21    ",
+    "18": "set_sort            0      0      0     ",
+    "19": "ret                 0      0      -     "
   },
   "access": [["public.test", "ro"]]
 }]

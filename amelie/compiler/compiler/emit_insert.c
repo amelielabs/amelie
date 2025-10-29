@@ -60,8 +60,7 @@ emit_insert_store_generated_on_match(Scan* self)
 		runpin(cp, rexpr);
 
 		// push expr
-		rexpr = emit_expr(cp, self->from, op->r);
-		int type = rtype(cp, rexpr);
+		auto type = emit_push(cp, self->from, op->r);
 
 		// ensure that the expression type is compatible
 		// with the column
@@ -72,9 +71,6 @@ emit_insert_store_generated_on_match(Scan* self)
 			           str_size(&column->name), str_of(&column->name),
 			           type_of(type),
 			           type_of(column->type));
-
-		op1(cp, CPUSH, rexpr);
-		runpin(cp, rexpr);
 		count++;
 	}
 
@@ -98,14 +94,11 @@ emit_insert_store_rows(Compiler* self)
 		list_foreach(&columns->list)
 		{
 			auto column = list_at(Column, link);
-			int rexpr   = emit_expr(self, &insert->from, col);
-			int type    = rtype(self, rexpr);
+			auto type = emit_push(self, &insert->from, col);
 			if (unlikely(type != TYPE_NULL && column->type != type))
 				stmt_error(stmt, row->ast, "'%s' expected for column '%.*s'",
 				           type_of(column->type),
 				           str_size(&column->name), str_of(&column->name));
-			op1(self, CPUSH, rexpr);
-			runpin(self, rexpr);
 			col = col->next;
 		}
 		op1(self, CSET_ADD, rset);

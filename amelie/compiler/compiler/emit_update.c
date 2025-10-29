@@ -122,14 +122,13 @@ emit_update_target(Compiler* self, From* from, Ast* expr)
 			buf_write_buf(&self->code_data->data, &column->constraints.value);
 			rexpr = op2(self, CJSON, rpin(self, column->type), offset);
 			type  = column->type;
+			op1(self, CPUSH, rexpr);
+			runpin(self, rexpr);
 		} else
 		{
 			// SET column = expr
-			rexpr = emit_expr(self, from, op->r);
-			type  = rtype(self, rexpr);
+			type = emit_push(self, from, op->r);
 		}
-		op1(self, CPUSH, rexpr);
-		runpin(self, rexpr);
 
 		// ensure that the expression type is compatible
 		// with the column
@@ -166,13 +165,8 @@ emit_update_on_match_returning(Scan* self)
 	for (auto as = update->ret.list; as; as = as->next)
 	{
 		auto column = as->r->column;
-
-		// expr
-		int rexpr = emit_expr(cp, self->from, as->l);
-		int rt = rtype(cp, rexpr);
-		column_set_type(column, rt, type_sizeof(rt));
-		op1(cp, CPUSH, rexpr);
-		runpin(cp, rexpr);
+		auto type = emit_push(cp, self->from, as->l);
+		column_set_type(column, type, type_sizeof(type));
 	}
 
 	// add to the returning set

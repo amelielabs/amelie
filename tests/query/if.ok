@@ -787,11 +787,10 @@ end;
     "10": "bool                1      1      0     ",
     "11": "push                1      0      0     ",
     "12": "set_get             1      0      0     ",
-    "13": "null                2      0      0     ",
-    "14": "push                2      0      0     ",
-    "15": "set_agg             0      1      21    ",
-    "16": "set_sort            0      0      0     ",
-    "17": "ret                 0      0      -     "
+    "13": "push_nulls          1      0      0     ",
+    "14": "set_agg             0      1      21    ",
+    "15": "set_sort            0      0      0     ",
+    "16": "ret                 0      0      -     "
   },
   "access": [["public.test", "ro"]]
 }]
@@ -849,11 +848,10 @@ end;
     "10": "bool                1      1      0     ",
     "11": "push                1      0      0     ",
     "12": "set_get             1      0      0     ",
-    "13": "null                2      0      0     ",
-    "14": "push                2      0      0     ",
-    "15": "set_agg             0      1      21    ",
-    "16": "set_sort            0      0      0     ",
-    "17": "ret                 0      0      -     "
+    "13": "push_nulls          1      0      0     ",
+    "14": "set_agg             0      1      21    ",
+    "15": "set_sort            0      0      0     ",
+    "16": "ret                 0      0      -     "
   },
   "access": [["public.test", "ro"]]
 }]
@@ -914,11 +912,10 @@ end;
     "10": "bool                1      1      0     ",
     "11": "push                1      0      0     ",
     "12": "set_get             1      0      0     ",
-    "13": "null                2      0      0     ",
-    "14": "push                2      0      0     ",
-    "15": "set_agg             0      1      21    ",
-    "16": "set_sort            0      0      0     ",
-    "17": "ret                 0      0      -     "
+    "13": "push_nulls          1      0      0     ",
+    "14": "set_agg             0      1      21    ",
+    "15": "set_sort            0      0      0     ",
+    "16": "ret                 0      0      -     "
   },
   "access": [["public.test", "ro"]]
 }]
@@ -979,19 +976,18 @@ end;
     "10": "bool                1      1      0     ",
     "11": "push                1      0      0     ",
     "12": "set_get             1      0      0     ",
-    "13": "null                2      0      0     ",
-    "14": "push                2      0      0     ",
-    "15": "set_agg             0      1      21    ",
-    "16": "set_sort            0      0      0     ",
-    "17": "ret                 0      0      -     ",
-    "18": "set                 0      1      0     ",
-    "19": "table_open_part     1      49     24    # public.test (primary)",
-    "20": "table_readi32       2      1      0     ",
-    "21": "push                2      0      0     ",
-    "22": "set_add             0      0      0     ",
-    "23": "table_next          1      20     0     ",
-    "24": "free                1      0      0     ",
-    "25": "ret                 0      0      -     "
+    "13": "push_nulls          1      0      0     ",
+    "14": "set_agg             0      1      21    ",
+    "15": "set_sort            0      0      0     ",
+    "16": "ret                 0      0      -     ",
+    "17": "set                 0      1      0     ",
+    "18": "table_open_part     1      49     23    # public.test (primary)",
+    "19": "table_readi32       2      1      0     ",
+    "20": "push                2      0      0     ",
+    "21": "set_add             0      0      0     ",
+    "22": "table_next          1      19     0     ",
+    "23": "free                1      0      0     ",
+    "24": "ret                 0      0      -     "
   },
   "access": [["public.test", "ro"]]
 }]

@@ -175,22 +175,9 @@ emit_send(Compiler* self, Target* target, int type, int start)
 				op4(self, CSEND_LOOKUP, rdispatch, hash, refs_count, send_offset);
 			} else
 			{
-				// match exact partition using the point lookup exprs
+				// push keys for point lookup to match the exact partition
 				for (auto i = 0; i < path->match_start; i++)
-				{
-					auto value = path->keys[i].start;
-
-					if (value->id == KVAR)
-					{
-						auto var = value->var;
-						op3(self, CPUSH_VAR, var->order, var->is_arg, false);
-					} else
-					{
-						auto rexpr = emit_expr(self, target->from, value);
-						op1(self, CPUSH, rexpr);
-						runpin(self, rexpr);
-					}
-				}
+					emit_push(self, target->from, path->keys[i].start);
 
 				// CSEND_LOOKUP_BY
 				op3(self, CSEND_LOOKUP_BY, rdispatch, refs_count, send_offset);

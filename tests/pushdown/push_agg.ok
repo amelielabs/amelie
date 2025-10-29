@@ -41,11 +41,10 @@ explain select count(*) from test_empty;
     "10": "bool                1      1      0     ",
     "11": "push                1      0      0     ",
     "12": "set_get             1      0      0     ",
-    "13": "null                2      0      0     ",
-    "14": "push                2      0      0     ",
-    "15": "set_agg             0      1      27    ",
-    "16": "set_sort            0      0      0     ",
-    "17": "ret                 0      0      -     "
+    "13": "push_nulls          1      0      0     ",
+    "14": "set_agg             0      1      27    ",
+    "15": "set_sort            0      0      0     ",
+    "16": "ret                 0      0      -     "
   },
   "access": [["public.test_empty", "ro"]]
 }]
@@ -83,11 +82,10 @@ explain select count(*) from test;
     "10": "bool                1      1      0     ",
     "11": "push                1      0      0     ",
     "12": "set_get             1      0      0     ",
-    "13": "null                2      0      0     ",
-    "14": "push                2      0      0     ",
-    "15": "set_agg             0      1      21    ",
-    "16": "set_sort            0      0      0     ",
-    "17": "ret                 0      0      -     "
+    "13": "push_nulls          1      0      0     ",
+    "14": "set_agg             0      1      21    ",
+    "15": "set_sort            0      0      0     ",
+    "16": "ret                 0      0      -     "
   },
   "access": [["public.test", "ro"]]
 }]
@@ -123,11 +121,10 @@ explain select count(id) from test;
     "10": "bool                1      1      0     ",
     "11": "push                1      0      0     ",
     "12": "set_get             1      0      0     ",
-    "13": "null                2      0      0     ",
-    "14": "push                2      0      0     ",
-    "15": "set_agg             0      1      21    ",
-    "16": "set_sort            0      0      0     ",
-    "17": "ret                 0      0      -     "
+    "13": "push_nulls          1      0      0     ",
+    "14": "set_agg             0      1      21    ",
+    "15": "set_sort            0      0      0     ",
+    "16": "ret                 0      0      -     "
   },
   "access": [["public.test", "ro"]]
 }]
@@ -163,11 +160,10 @@ explain select count(data) from test;
     "10": "bool                1      1      0     ",
     "11": "push                1      0      0     ",
     "12": "set_get             1      0      0     ",
-    "13": "null                2      0      0     ",
-    "14": "push                2      0      0     ",
-    "15": "set_agg             0      1      21    ",
-    "16": "set_sort            0      0      0     ",
-    "17": "ret                 0      0      -     "
+    "13": "push_nulls          1      0      0     ",
+    "14": "set_agg             0      1      21    ",
+    "15": "set_sort            0      0      0     ",
+    "16": "ret                 0      0      -     "
   },
   "access": [["public.test", "ro"]]
 }]
@@ -202,11 +198,10 @@ explain select count(data) from test_null;
     "10": "bool                1      1      0     ",
     "11": "push                1      0      0     ",
     "12": "set_get             1      0      0     ",
-    "13": "null                2      0      0     ",
-    "14": "push                2      0      0     ",
-    "15": "set_agg             0      1      26    ",
-    "16": "set_sort            0      0      0     ",
-    "17": "ret                 0      0      -     "
+    "13": "push_nulls          1      0      0     ",
+    "14": "set_agg             0      1      26    ",
+    "15": "set_sort            0      0      0     ",
+    "16": "ret                 0      0      -     "
   },
   "access": [["public.test_null", "ro"]]
 }]
@@ -252,11 +247,10 @@ explain select count(distinct id) from test;
     "12": "bool                1      1      0     ",
     "13": "push                1      0      0     ",
     "14": "set_get             1      0      0     ",
-    "15": "null                2      0      0     ",
-    "16": "push                2      0      0     ",
-    "17": "set_agg             0      1      24    ",
-    "18": "set_sort            0      0      0     ",
-    "19": "ret                 0      0      -     "
+    "15": "push_nulls          1      0      0     ",
+    "16": "set_agg             0      1      24    ",
+    "17": "set_sort            0      0      0     ",
+    "18": "ret                 0      0      -     "
   },
   "access": [["public.test", "ro"]]
 }]
@@ -302,11 +296,10 @@ explain select sum(id) from test_empty;
     "10": "bool                1      1      0     ",
     "11": "push                1      0      0     ",
     "12": "set_get             1      0      0     ",
-    "13": "null                2      0      0     ",
-    "14": "push                2      0      0     ",
-    "15": "set_agg             0      1      27    ",
-    "16": "set_sort            0      0      0     ",
-    "17": "ret                 0      0      -     "
+    "13": "push_nulls          1      0      0     ",
+    "14": "set_agg             0      1      27    ",
+    "15": "set_sort            0      0      0     ",
+    "16": "ret                 0      0      -     "
   },
   "access": [["public.test_empty", "ro"]]
 }]
@@ -342,11 +335,10 @@ explain select sum(id) from test;
     "10": "bool                1      1      0     ",
     "11": "push                1      0      0     ",
     "12": "set_get             1      0      0     ",
-    "13": "null                2      0      0     ",
-    "14": "push                2      0      0     ",
-    "15": "set_agg             0      1      21    ",
-    "16": "set_sort            0      0      0     ",
-    "17": "ret                 0      0      -     "
+    "13": "push_nulls          1      0      0     ",
+    "14": "set_agg             0      1      21    ",
+    "15": "set_sort            0      0      0     ",
+    "16": "ret                 0      0      -     "
   },
   "access": [["public.test", "ro"]]
 }]
@@ -384,11 +376,10 @@ explain select sum(data2) from test_empty;
     "10": "bool                1      1      0     ",
     "11": "push                1      0      0     ",
     "12": "set_get             1      0      0     ",
-    "13": "null                2      0      0     ",
-    "14": "push                2      0      0     ",
-    "15": "set_agg             0      1      27    ",
-    "16": "set_sort            0      0      0     ",
-    "17": "ret                 0      0      -     "
+    "13": "push_nulls          1      0      0     ",
+    "14": "set_agg             0      1      27    ",
+    "15": "set_sort            0      0      0     ",
+    "16": "ret                 0      0      -     "
   },
   "access": [["public.test_empty", "ro"]]
 }]
@@ -424,11 +415,10 @@ explain select sum(data2) from test;
     "10": "bool                1      1      0     ",
     "11": "push                1      0      0     ",
     "12": "set_get             1      0      0     ",
-    "13": "null                2      0      0     ",
-    "14": "push                2      0      0     ",
-    "15": "set_agg             0      1      21    ",
-    "16": "set_sort            0      0      0     ",
-    "17": "ret                 0      0      -     "
+    "13": "push_nulls          1      0      0     ",
+    "14": "set_agg             0      1      21    ",
+    "15": "set_sort            0      0      0     ",
+    "16": "ret                 0      0      -     "
   },
   "access": [["public.test", "ro"]]
 }]
@@ -469,11 +459,10 @@ explain select sum(data) from test_null;
     "10": "bool                1      1      0     ",
     "11": "push                1      0      0     ",
     "12": "set_get             1      0      0     ",
-    "13": "null                2      0      0     ",
-    "14": "push                2      0      0     ",
-    "15": "set_agg             0      1      26    ",
-    "16": "set_sort            0      0      0     ",
-    "17": "ret                 0      0      -     "
+    "13": "push_nulls          1      0      0     ",
+    "14": "set_agg             0      1      26    ",
+    "15": "set_sort            0      0      0     ",
+    "16": "ret                 0      0      -     "
   },
   "access": [["public.test_null", "ro"]]
 }]
@@ -512,11 +501,10 @@ explain select avg(id) from test;
     "10": "bool                1      1      0     ",
     "11": "push                1      0      0     ",
     "12": "set_get             1      0      0     ",
-    "13": "null                2      0      0     ",
-    "14": "push                2      0      0     ",
-    "15": "set_agg             0      1      21    ",
-    "16": "set_sort            0      0      0     ",
-    "17": "ret                 0      0      -     "
+    "13": "push_nulls          1      0      0     ",
+    "14": "set_agg             0      1      21    ",
+    "15": "set_sort            0      0      0     ",
+    "16": "ret                 0      0      -     "
   },
   "access": [["public.test", "ro"]]
 }]
@@ -565,11 +553,10 @@ explain select avg(data2) from test_null;
     "10": "bool                1      1      0     ",
     "11": "push                1      0      0     ",
     "12": "set_get             1      0      0     ",
-    "13": "null                2      0      0     ",
-    "14": "push                2      0      0     ",
-    "15": "set_agg             0      1      26    ",
-    "16": "set_sort            0      0      0     ",
-    "17": "ret                 0      0      -     "
+    "13": "push_nulls          1      0      0     ",
+    "14": "set_agg             0      1      26    ",
+    "15": "set_sort            0      0      0     ",
+    "16": "ret                 0      0      -     "
   },
   "access": [["public.test_null", "ro"]]
 }]
@@ -619,11 +606,10 @@ explain select min(data2) from test_null;
     "10": "bool                1      1      0     ",
     "11": "push                1      0      0     ",
     "12": "set_get             1      0      0     ",
-    "13": "null                2      0      0     ",
-    "14": "push                2      0      0     ",
-    "15": "set_agg             0      1      26    ",
-    "16": "set_sort            0      0      0     ",
-    "17": "ret                 0      0      -     "
+    "13": "push_nulls          1      0      0     ",
+    "14": "set_agg             0      1      26    ",
+    "15": "set_sort            0      0      0     ",
+    "16": "ret                 0      0      -     "
   },
   "access": [["public.test_null", "ro"]]
 }]
@@ -673,11 +659,10 @@ explain select max(data2) from test_null;
     "10": "bool                1      1      0     ",
     "11": "push                1      0      0     ",
     "12": "set_get             1      0      0     ",
-    "13": "null                2      0      0     ",
-    "14": "push                2      0      0     ",
-    "15": "set_agg             0      1      26    ",
-    "16": "set_sort            0      0      0     ",
-    "17": "ret                 0      0      -     "
+    "13": "push_nulls          1      0      0     ",
+    "14": "set_agg             0      1      26    ",
+    "15": "set_sort            0      0      0     ",
+    "16": "ret                 0      0      -     "
   },
   "access": [["public.test_null", "ro"]]
 }]
@@ -815,11 +800,10 @@ explain select * from (select count(*) from test) t;
     "10": "bool                1      1      0     ",
     "11": "push                1      0      0     ",
     "12": "set_get             1      0      0     ",
-    "13": "null                2      0      0     ",
-    "14": "push                2      0      0     ",
-    "15": "set_agg             0      1      21    ",
-    "16": "set_sort            0      0      0     ",
-    "17": "ret                 0      0      -     "
+    "13": "push_nulls          1      0      0     ",
+    "14": "set_agg             0      1      21    ",
+    "15": "set_sort            0      0      0     ",
+    "16": "ret                 0      0      -     "
   },
   "access": [["public.test", "ro"]]
 }]
