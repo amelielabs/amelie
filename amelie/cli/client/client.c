@@ -55,6 +55,38 @@ cli_cmd_logout(int argc, char** argv)
 }
 
 static void
+cli_cmd_client_print_error(Client* client)
+{
+	auto reply = &client->reply;
+	auto code  = &reply->options[HTTP_CODE];
+	auto msg   = &reply->options[HTTP_MSG];
+
+	Str content;
+	buf_str(&reply->content, &content);
+	if (str_empty(&content))
+	{
+		printf("error: %.*s %.*s\n", str_size(code), str_of(code),
+		       str_size(msg), str_of(msg));
+		return;
+	}
+
+	// read error message
+	Json json;
+	json_init(&json);
+	defer(json_free, &json);
+	json_parse(&json, &content, NULL);
+
+	// {msg: string}
+	auto pos = json.buf->start;
+	json_read_obj(&pos);
+	// msg
+	json_skip(&pos);
+	Str text;
+	json_read_string(&pos, &text);
+	printf("error: %.*s\n", str_size(&text), str_of(&text));
+}
+
+static void
 cli_cmd_client_execute(Client* client, Str* content)
 {
 	auto request = &client->request;
@@ -80,21 +112,24 @@ cli_cmd_client_execute(Client* client, Str* content)
 		error("unexpected eof");
 	http_read_content(reply, &client->readahead, &reply->content);
 
+	// 400 Bad Request
 	// 403 Forbidden
 	// 413 Payload Too Large
-	if (str_is(&reply->options[HTTP_CODE], "403", 3) ||
+	if (str_is(&reply->options[HTTP_CODE], "400", 3) ||
+	    str_is(&reply->options[HTTP_CODE], "403", 3) ||
 	    str_is(&reply->options[HTTP_CODE], "413", 3))
 	{
-		auto code = &reply->options[HTTP_CODE];
-		auto msg  = &reply->options[HTTP_MSG];
-		printf("%.*s %.*s\n", str_size(code), str_of(code),
-			   str_size(msg), str_of(msg));
+		cli_cmd_client_print_error(client);
 		return;
 	}
 
-	// print
-	if (! str_is(&reply->options[HTTP_CODE], "204", 3))
-		printf("%.*s\n", buf_size(&reply->content), reply->content.start);
+	// 204 No Content
+	if (str_is(&reply->options[HTTP_CODE], "204", 3))
+		return;
+
+	// 200 OK
+	printf("%.*s\n", buf_size(&reply->content),
+	       reply->content.start);
 }
 
 static void
@@ -155,7 +190,6 @@ cli_cmd_client_main(Client* client, Console* cons)
 			separator_advance(&sep);
 		}
 	}
-
 }
 
 void
