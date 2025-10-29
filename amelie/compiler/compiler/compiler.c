@@ -49,7 +49,6 @@ compiler_init(Compiler* self, Local* local, SetCache* set_cache)
 	self->code      = NULL;
 	self->code_data = NULL;
 	self->origin    = ORIGIN_FRONTEND;
-	self->sends     = 0;
 	parser_init(&self->parser, local, self->set_cache);
 	rmap_init(&self->map);
 }
@@ -67,7 +66,6 @@ compiler_reset(Compiler* self)
 	self->program   = NULL;
 	self->code      = NULL;
 	self->code_data = NULL;
-	self->sends     = 0;
 	self->current   = NULL;
 	parser_reset(&self->parser);
 	rmap_reset(&self->map);
@@ -138,14 +136,8 @@ emit_send(Compiler* self, Target* target, int type, int start)
 		ref = ref->next;
 	}
 
-	// set snapshot if two or more stmts are sending data
-	// and using tables
-	auto program = self->program;
-	if (self->sends > 0)
-		program->snapshot = true;
-	self->sends++;
-
 	// create send context
+	auto program = self->program;
 	int  send_offset;
 	auto send = send_create(&program->code_data, &send_offset);
 	send->type       = type;
@@ -860,6 +852,12 @@ compiler_emit(Compiler* self)
 	}
 
 	// set the max number of registers used
-	code_set_regs(&self->program->code, self->map.count);
-	code_set_regs(&self->program->code_backend, self->map.count);
+	auto program = self->program;
+	code_set_regs(&program->code, self->map.count);
+	code_set_regs(&program->code_backend, self->map.count);
+
+	// set snapshot if the program access tables more than once,
+	// this includes nested udf calls
+	if (program->access.tables > 1)
+		program->snapshot = true;
 }

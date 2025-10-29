@@ -33,6 +33,7 @@ struct Access
 {
 	Buf list;
 	int list_count;
+	int tables;
 };
 
 static inline AccessRecord*
@@ -44,6 +45,7 @@ access_at(Access* self, int order)
 static inline void
 access_init(Access* self)
 {
+	self->tables = 0;
 	self->list_count = 0;
 	buf_init(&self->list);
 }
@@ -57,6 +59,7 @@ access_free(Access* self)
 static inline void
 access_reset(Access* self)
 {
+	self->tables = 0;
 	self->list_count = 0;
 	buf_reset(&self->list);
 }
@@ -64,6 +67,10 @@ access_reset(Access* self)
 hot static inline void
 access_add(Access* self, Relation* rel, AccessType type)
 {
+	// keep the total non unique number of accesses to tables
+	if (type != ACCESS_CALL)
+		self->tables++;
+
 	// find and upgrade access to the relation
 	for (auto i = 0; i < self->list_count; i++)
 	{

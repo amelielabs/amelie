@@ -19,7 +19,6 @@ struct Compiler
 	Code*        code;
 	CodeData*    code_data;
 	TargetOrigin origin;
-	int          sends;
 	Rmap         map;
 	Program*     program;
 	SetCache*    set_cache;
