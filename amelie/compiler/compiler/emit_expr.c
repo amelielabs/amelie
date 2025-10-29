@@ -466,15 +466,11 @@ emit_self(Compiler* self, Ast* ast)
 	// read aggregate state, return seed value if the
 	// state is null
 
-	// push agg order
-	auto r = op2(self, CINT, rpin(self, TYPE_INT), agg->order);
-	op1(self, CPUSH, r);
-	runpin(self, r);
-
 	// CSELF
-	return op4(self, CSELF, rpin(self, agg->expr_seed_type),
+	return op5(self, CSELF, rpin(self, agg->expr_seed_type),
 	           select->rset_agg,
-	           select->rset_agg_row, agg->rseed);
+	           select->rset_agg_row, agg->rseed,
+	           agg->order);
 }
 
 hot static inline int

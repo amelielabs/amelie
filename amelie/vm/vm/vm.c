@@ -1466,11 +1466,10 @@ cset_agg:
 	op_next;
 
 cself:
-	// [result, set, row, seed]
+	// [result, set, row, seed, agg_order]
 	set = (Set*)r[op->b].store;
 	// return aggregate state or seed, if the state is null
-	a = stack_pop(stack);
-	b = set_column(set, r[op->c].integer, a->integer);
+	b = set_column(set, r[op->c].integer, op->e);
 	if (likely(b->type != TYPE_NULL))
 		value_copy(&r[op->a], b);
 	else
