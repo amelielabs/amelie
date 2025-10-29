@@ -100,9 +100,7 @@ pushdown_group_by(Compiler* self, AstSelect* select)
 		auto agg = ast_agg_of(node->ast);
 		if (! agg->expr_seed)
 			continue;
-		op1(self, CFREE, agg->rseed);
-		runpin(self, agg->rseed);
-		agg->rseed = -1;
+		agg->rseed = emit_free(self, agg->rseed);
 	}
 
 	// select aggr [without group by]

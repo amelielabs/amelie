@@ -55,18 +55,16 @@ explain select 0 -> id, 0 -> data from test;
     "11": "set_agg             0      4      21    ",
     "12": "table_next          3      4      0     ",
     "13": "free                3      0      0     ",
-    "14": "free                1      0      0     ",
-    "15": "free                2      0      0     ",
-    "16": "bool                1      1      0     ",
-    "17": "push                1      0      0     ",
-    "18": "set_get             1      0      0     ",
+    "14": "bool                1      1      0     ",
+    "15": "push                1      0      0     ",
+    "16": "set_get             1      0      0     ",
+    "17": "null                2      0      0     ",
+    "18": "push                2      0      0     ",
     "19": "null                2      0      0     ",
     "20": "push                2      0      0     ",
-    "21": "null                2      0      0     ",
-    "22": "push                2      0      0     ",
-    "23": "set_agg             0      1      21    ",
-    "24": "set_sort            0      0      0     ",
-    "25": "ret                 0      0      -     "
+    "21": "set_agg             0      1      21    ",
+    "22": "set_sort            0      0      0     ",
+    "23": "ret                 0      0      -     "
   },
   "access": [["public.test", "ro"]]
 }]
@@ -109,15 +107,14 @@ explain select 0 -> self + 1 from test;
     "12": "set_agg             0      3      21    ",
     "13": "table_next          2      3      0     ",
     "14": "free                2      0      0     ",
-    "15": "free                1      0      0     ",
-    "16": "bool                1      1      0     ",
-    "17": "push                1      0      0     ",
-    "18": "set_get             1      0      0     ",
-    "19": "null                2      0      0     ",
-    "20": "push                2      0      0     ",
-    "21": "set_agg             0      1      21    ",
-    "22": "set_sort            0      0      0     ",
-    "23": "ret                 0      0      -     "
+    "15": "bool                1      1      0     ",
+    "16": "push                1      0      0     ",
+    "17": "set_get             1      0      0     ",
+    "18": "null                2      0      0     ",
+    "19": "push                2      0      0     ",
+    "20": "set_agg             0      1      21    ",
+    "21": "set_sort            0      0      0     ",
+    "22": "ret                 0      0      -     "
   },
   "access": [["public.test", "ro"]]
 }]
@@ -211,15 +208,14 @@ explain select 0 -> self + 1 from test;
     "12": "set_agg             0      3      21    ",
     "13": "table_next          2      3      0     ",
     "14": "free                2      0      0     ",
-    "15": "free                1      0      0     ",
-    "16": "bool                1      1      0     ",
-    "17": "push                1      0      0     ",
-    "18": "set_get             1      0      0     ",
-    "19": "null                2      0      0     ",
-    "20": "push                2      0      0     ",
-    "21": "set_agg             0      1      21    ",
-    "22": "set_sort            0      0      0     ",
-    "23": "ret                 0      0      -     "
+    "15": "bool                1      1      0     ",
+    "16": "push                1      0      0     ",
+    "17": "set_get             1      0      0     ",
+    "18": "null                2      0      0     ",
+    "19": "push                2      0      0     ",
+    "20": "set_agg             0      1      21    ",
+    "21": "set_sort            0      0      0     ",
+    "22": "ret                 0      0      -     "
   },
   "access": [["public.test", "ro"]]
 }]

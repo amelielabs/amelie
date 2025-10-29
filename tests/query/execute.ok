@@ -41,10 +41,9 @@ explain execute reverse([1,2,3]);
     "11": "var_set             0      0      2     ",
     "12": "free                2      0      0     ",
     "13": "json_next           1      6      0     ",
-    "14": "free                1      0      0     ",
-    "15": "free                0      0      0     ",
-    "16": "var                 0      0      0     ",
-    "17": "ret                 0      0      -     "
+    "14": "free                0      0      0     ",
+    "15": "var                 0      0      0     ",
+    "16": "ret                 0      0      -     "
   },
   "access": []
 }]
@@ -110,10 +109,9 @@ explain select reverse([1,2,3]);
       "11": "var_set             0      0      2     ",
       "12": "free                2      0      0     ",
       "13": "json_next           1      6      0     ",
-      "14": "free                1      0      0     ",
-      "15": "free                0      0      0     ",
-      "16": "var                 0      0      0     ",
-      "17": "ret                 0      0      -     "
+      "14": "free                0      0      0     ",
+      "15": "var                 0      0      0     ",
+      "16": "ret                 0      0      -     "
     },
     "access": []
   }]

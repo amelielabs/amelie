@@ -40,6 +40,24 @@
 #include <amelie_parser.h>
 #include <amelie_compiler.h>
 
+int
+emit_free(Compiler* self, int r)
+{
+	auto type = rtype(self, r);
+	switch (type) {
+	case TYPE_STRING:
+	case TYPE_JSON:
+	case TYPE_VECTOR:
+	case TYPE_STORE:
+	case TYPE_CURSOR:
+	case TYPE_CURSOR_STORE:
+		op1(self, CFREE, r);
+		break;
+	}
+	runpin(self, r);
+	return -1;
+}
+
 hot int
 emit_string(Compiler* self, Str* string, bool escape)
 {

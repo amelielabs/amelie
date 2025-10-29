@@ -116,8 +116,7 @@ end;
     "00": "push_nulls          1      0      0     ",
     "01": "int                 0      -      0     # 1",
     "02": "var_set             0      0      0     ",
-    "03": "free                0      0      0     ",
-    "04": "ret                 -1     0      -     "
+    "03": "ret                 -1     0      -     "
   },
   "access": []
 }]
@@ -138,9 +137,8 @@ end;
     "00": "push_nulls          1      0      0     ",
     "01": "int                 0      -      0     # 1",
     "02": "var_set             0      0      0     ",
-    "03": "free                0      0      0     ",
-    "04": "var                 0      0      0     ",
-    "05": "ret                 0      0      -     "
+    "03": "var                 0      0      0     ",
+    "04": "ret                 0      0      -     "
   },
   "access": []
 }]
@@ -194,9 +192,8 @@ end;
     "00": "push_nulls          1      0      0     ",
     "01": "null                0      0      0     ",
     "02": "var_set             0      0      0     ",
-    "03": "free                0      0      0     ",
-    "04": "var                 0      0      0     ",
-    "05": "ret                 0      0      -     "
+    "03": "var                 0      0      0     ",
+    "04": "ret                 0      0      -     "
   },
   "access": []
 }]
@@ -219,12 +216,11 @@ end;
     "00": "push_nulls          1      0      0     ",
     "01": "int                 0      -      0     # 1",
     "02": "var_set             0      0      0     ",
-    "03": "free                0      0      0     ",
+    "03": "push_var            0      0      0     ",
     "04": "push_var            0      0      0     ",
-    "05": "push_var            0      0      0     ",
-    "06": "send_all            0      2      20    # public.test (select, closing)",
-    "07": "recv                1      0      -1    ",
-    "08": "ret                 1      0      -     "
+    "05": "send_all            0      2      20    # public.test (select, closing)",
+    "06": "recv                1      0      -1    ",
+    "07": "ret                 1      0      -     "
   },
   "pushdown": {
     "00": "set                 0      1      0     ",
@@ -258,12 +254,11 @@ end;
     "00": "push_nulls          1      0      0     ",
     "01": "int                 0      -      0     # 1",
     "02": "var_set             0      0      0     ",
-    "03": "free                0      0      0     ",
+    "03": "push_var            0      0      0     ",
     "04": "push_var            0      0      0     ",
-    "05": "push_var            0      0      0     ",
-    "06": "send_lookup_by      0      1      20    # public.test (select, closing)",
-    "07": "recv                1      0      -1    ",
-    "08": "ret                 1      0      -     "
+    "05": "send_lookup_by      0      1      20    # public.test (select, closing)",
+    "06": "recv                1      0      -1    ",
+    "07": "ret                 1      0      -     "
   },
   "pushdown": {
     "00": "set                 0      1      0     ",
@@ -308,12 +303,11 @@ end;
     "00": "push_nulls          1      0      0     ",
     "01": "int                 0      -      0     # 1",
     "02": "var_set             0      0      0     ",
-    "03": "free                0      0      0     ",
+    "03": "push_var            0      0      0     ",
     "04": "push_var            0      0      0     ",
-    "05": "push_var            0      0      0     ",
-    "06": "send_lookup_by      0      1      20    # public.test (select, closing)",
-    "07": "recv                1      0      -1    ",
-    "08": "ret                 1      0      -     "
+    "05": "send_lookup_by      0      1      20    # public.test (select, closing)",
+    "06": "recv                1      0      -1    ",
+    "07": "ret                 1      0      -     "
   },
   "pushdown": {
     "00": "set                 0      1      0     ",
@@ -463,9 +457,8 @@ end;
     "08": "push                3      0      0     ",
     "09": "set_add             0      0      0     ",
     "10": "json_next           2      7      0     ",
-    "11": "free                2      0      0     ",
-    "12": "free                1      0      0     ",
-    "13": "ret                 0      0      -     "
+    "11": "free                1      0      0     ",
+    "12": "ret                 0      0      -     "
   },
   "access": []
 }]
@@ -501,9 +494,8 @@ end;
     "08": "push                3      0      0     ",
     "09": "set_add             0      0      0     ",
     "10": "json_next           2      7      0     ",
-    "11": "free                2      0      0     ",
-    "12": "free                1      0      0     ",
-    "13": "ret                 0      0      -     "
+    "11": "free                1      0      0     ",
+    "12": "ret                 0      0      -     "
   },
   "access": []
 }]

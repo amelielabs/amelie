@@ -284,9 +284,7 @@ emit_into(Compiler* self, Stmt* stmt)
 	}
 
 	// CFREE
-	op1(self, CFREE, stmt->r);
-	runpin(self, stmt->r);
-	stmt->r = -1;
+	stmt->r = emit_free(self, stmt->r);
 }
 
 static void
@@ -771,11 +769,7 @@ emit_end(Compiler* self, Block* block)
 		// ensure all statement received and freed
 		emit_recv(self, stmt);
 		if (stmt->r != -1 && !stmt->is_return)
-		{
-			op1(self, CFREE, stmt->r);
-			runpin(self, stmt->r);
-			stmt->r = -1;
-		}
+			stmt->r = emit_free(self, stmt->r);
 	}
 }
 

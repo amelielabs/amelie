@@ -12,10 +12,9 @@ explain if 1 then select 123; end;
 [{
   "main": {
     "00": "int                 0      -      0     # 1",
-    "01": "jntr                4      0      0     ",
+    "01": "jntr                3      0      0     ",
     "02": "int                 0      -      0     # 123",
-    "03": "free                0      0      0     ",
-    "04": "ret                 -1     0      -     "
+    "03": "ret                 -1     0      -     "
   },
   "access": []
 }]
@@ -40,13 +39,11 @@ end;
 [{
   "main": {
     "00": "int                 0      -      0     # 1",
-    "01": "jntr                5      0      0     ",
+    "01": "jntr                4      0      0     ",
     "02": "int                 0      -      0     # 123",
-    "03": "free                0      0      0     ",
-    "04": "jmp                 7      0      0     ",
-    "05": "int                 0      -      0     # 321",
-    "06": "free                0      0      0     ",
-    "07": "ret                 -1     0      -     "
+    "03": "jmp                 5      0      0     ",
+    "04": "int                 0      -      0     # 321",
+    "05": "ret                 -1     0      -     "
   },
   "access": []
 }]
@@ -73,15 +70,13 @@ end;
 [{
   "main": {
     "00": "int                 0      -      0     # 1",
-    "01": "jntr                5      0      0     ",
+    "01": "jntr                4      0      0     ",
     "02": "int                 0      -      0     # 123",
-    "03": "free                0      0      0     ",
-    "04": "jmp                 9      0      0     ",
-    "05": "int                 0      -      0     # 2",
-    "06": "jntr                9      0      0     ",
-    "07": "int                 0      -      0     # 321",
-    "08": "free                0      0      0     ",
-    "09": "ret                 -1     0      -     "
+    "03": "jmp                 7      0      0     ",
+    "04": "int                 0      -      0     # 2",
+    "05": "jntr                7      0      0     ",
+    "06": "int                 0      -      0     # 321",
+    "07": "ret                 -1     0      -     "
   },
   "access": []
 }]
@@ -101,20 +96,17 @@ end;
 [{
   "main": {
     "00": "int                 0      -      0     # 1",
-    "01": "jntr                5      0      0     ",
+    "01": "jntr                4      0      0     ",
     "02": "int                 0      -      0     # 123",
-    "03": "free                0      0      0     ",
-    "04": "jmp                 14     0      0     ",
-    "05": "int                 0      -      0     # 2",
-    "06": "jntr                10     0      0     ",
-    "07": "int                 0      -      0     # 321",
-    "08": "free                0      0      0     ",
-    "09": "jmp                 14     0      0     ",
-    "10": "int                 0      -      0     # 3",
-    "11": "jntr                14     0      0     ",
-    "12": "int                 0      -      0     # 821",
-    "13": "free                0      0      0     ",
-    "14": "ret                 -1     0      -     "
+    "03": "jmp                 11     0      0     ",
+    "04": "int                 0      -      0     # 2",
+    "05": "jntr                8      0      0     ",
+    "06": "int                 0      -      0     # 321",
+    "07": "jmp                 11     0      0     ",
+    "08": "int                 0      -      0     # 3",
+    "09": "jntr                11     0      0     ",
+    "10": "int                 0      -      0     # 821",
+    "11": "ret                 -1     0      -     "
   },
   "access": []
 }]
@@ -150,18 +142,15 @@ end;
 [{
   "main": {
     "00": "int                 0      -      0     # 1",
-    "01": "jntr                5      0      0     ",
+    "01": "jntr                4      0      0     ",
     "02": "int                 0      -      0     # 123",
-    "03": "free                0      0      0     ",
-    "04": "jmp                 12     0      0     ",
-    "05": "int                 0      -      0     # 2",
-    "06": "jntr                10     0      0     ",
-    "07": "int                 0      -      0     # 321",
-    "08": "free                0      0      0     ",
-    "09": "jmp                 12     0      0     ",
-    "10": "int                 0      -      0     # 821",
-    "11": "free                0      0      0     ",
-    "12": "ret                 -1     0      -     "
+    "03": "jmp                 9      0      0     ",
+    "04": "int                 0      -      0     # 2",
+    "05": "jntr                8      0      0     ",
+    "06": "int                 0      -      0     # 321",
+    "07": "jmp                 9      0      0     ",
+    "08": "int                 0      -      0     # 821",
+    "09": "ret                 -1     0      -     "
   },
   "access": []
 }]
@@ -185,23 +174,19 @@ end;
 [{
   "main": {
     "00": "int                 0      -      0     # 1",
-    "01": "jntr                5      0      0     ",
+    "01": "jntr                4      0      0     ",
     "02": "int                 0      -      0     # 123",
-    "03": "free                0      0      0     ",
-    "04": "jmp                 17     0      0     ",
-    "05": "int                 0      -      0     # 2",
-    "06": "jntr                10     0      0     ",
-    "07": "int                 0      -      0     # 321",
-    "08": "free                0      0      0     ",
-    "09": "jmp                 17     0      0     ",
-    "10": "int                 0      -      0     # 3",
-    "11": "jntr                15     0      0     ",
-    "12": "int                 0      -      0     # 821",
-    "13": "free                0      0      0     ",
-    "14": "jmp                 17     0      0     ",
-    "15": "int                 0      -      0     # 0",
-    "16": "free                0      0      0     ",
-    "17": "ret                 -1     0      -     "
+    "03": "jmp                 13     0      0     ",
+    "04": "int                 0      -      0     # 2",
+    "05": "jntr                8      0      0     ",
+    "06": "int                 0      -      0     # 321",
+    "07": "jmp                 13     0      0     ",
+    "08": "int                 0      -      0     # 3",
+    "09": "jntr                12     0      0     ",
+    "10": "int                 0      -      0     # 821",
+    "11": "jmp                 13     0      0     ",
+    "12": "int                 0      -      0     # 0",
+    "13": "ret                 -1     0      -     "
   },
   "access": []
 }]
@@ -229,16 +214,14 @@ end;
     "00": "push_nulls          1      0      0     ",
     "01": "int                 0      -      0     # 0",
     "02": "var_set             0      0      0     ",
-    "03": "free                0      0      0     ",
-    "04": "int                 0      -      0     # 1",
-    "05": "jntr                11     0      0     ",
-    "06": "int                 0      -      0     # 2",
-    "07": "jntr                11     0      0     ",
-    "08": "int                 0      -      0     # 2",
-    "09": "var_set             0      0      0     ",
-    "10": "free                0      0      0     ",
-    "11": "var                 0      0      0     ",
-    "12": "ret                 0      0      -     "
+    "03": "int                 0      -      0     # 1",
+    "04": "jntr                9      0      0     ",
+    "05": "int                 0      -      0     # 2",
+    "06": "jntr                9      0      0     ",
+    "07": "int                 0      -      0     # 2",
+    "08": "var_set             0      0      0     ",
+    "09": "var                 0      0      0     ",
+    "10": "ret                 0      0      -     "
   },
   "access": []
 }]
@@ -269,20 +252,17 @@ end;
     "00": "push_nulls          1      0      0     ",
     "01": "int                 0      -      0     # 0",
     "02": "var_set             0      0      0     ",
-    "03": "free                0      0      0     ",
-    "04": "int                 0      -      0     # 1",
-    "05": "jntr                15     0      0     ",
-    "06": "int                 0      -      0     # 0",
-    "07": "jntr                12     0      0     ",
-    "08": "int                 0      -      0     # 2",
-    "09": "var_set             0      0      0     ",
-    "10": "free                0      0      0     ",
-    "11": "jmp                 15     0      0     ",
-    "12": "int                 0      -      0     # 3",
-    "13": "var_set             0      0      0     ",
-    "14": "free                0      0      0     ",
-    "15": "var                 0      0      0     ",
-    "16": "ret                 0      0      -     "
+    "03": "int                 0      -      0     # 1",
+    "04": "jntr                12     0      0     ",
+    "05": "int                 0      -      0     # 0",
+    "06": "jntr                10     0      0     ",
+    "07": "int                 0      -      0     # 2",
+    "08": "var_set             0      0      0     ",
+    "09": "jmp                 12     0      0     ",
+    "10": "int                 0      -      0     # 3",
+    "11": "var_set             0      0      0     ",
+    "12": "var                 0      0      0     ",
+    "13": "ret                 0      0      -     "
   },
   "access": []
 }]
@@ -317,24 +297,20 @@ end;
     "00": "push_nulls          1      0      0     ",
     "01": "int                 0      -      0     # 0",
     "02": "var_set             0      0      0     ",
-    "03": "free                0      0      0     ",
-    "04": "int                 0      -      0     # 1",
-    "05": "jntr                16     0      0     ",
-    "06": "int                 0      -      0     # 0",
-    "07": "jntr                12     0      0     ",
-    "08": "int                 0      -      0     # 2",
-    "09": "var_set             0      0      0     ",
-    "10": "free                0      0      0     ",
-    "11": "jmp                 15     0      0     ",
-    "12": "int                 0      -      0     # 3",
-    "13": "var_set             0      0      0     ",
-    "14": "free                0      0      0     ",
-    "15": "jmp                 19     0      0     ",
-    "16": "int                 0      -      0     # 4",
-    "17": "var_set             0      0      0     ",
-    "18": "free                0      0      0     ",
-    "19": "var                 0      0      0     ",
-    "20": "ret                 0      0      -     "
+    "03": "int                 0      -      0     # 1",
+    "04": "jntr                13     0      0     ",
+    "05": "int                 0      -      0     # 0",
+    "06": "jntr                10     0      0     ",
+    "07": "int                 0      -      0     # 2",
+    "08": "var_set             0      0      0     ",
+    "09": "jmp                 12     0      0     ",
+    "10": "int                 0      -      0     # 3",
+    "11": "var_set             0      0      0     ",
+    "12": "jmp                 15     0      0     ",
+    "13": "int                 0      -      0     # 4",
+    "14": "var_set             0      0      0     ",
+    "15": "var                 0      0      0     ",
+    "16": "ret                 0      0      -     "
   },
   "access": []
 }]
@@ -551,26 +527,25 @@ end;
     "00": "push_nulls          1      0      0     ",
     "01": "int                 0      -      0     # 0",
     "02": "var_set             0      0      0     ",
-    "03": "free                0      0      0     ",
-    "04": "var                 0      0      0     ",
-    "05": "int                 1      -      0     # 0",
-    "06": "equii               2      0      1     ",
-    "07": "jntr                11     2      0     ",
-    "08": "set_ptr             1      -      0     ",
-    "09": "send_shard          0      1      0     # public.test (insert)",
-    "10": "jmp                 20     0      0     ",
-    "11": "var                 0      0      0     ",
-    "12": "int                 1      -      0     # 1",
-    "13": "equii               2      0      1     ",
-    "14": "jntr                18     2      0     ",
-    "15": "set_ptr             1      -      0     ",
-    "16": "send_shard          0      1      0     # public.test (insert)",
-    "17": "jmp                 20     0      0     ",
-    "18": "set_ptr             1      -      0     ",
-    "19": "send_shard          0      1      0     # public.test (insert)",
-    "20": "send_all            0      0      92    # public.test (select, closing)",
-    "21": "recv                1      0      -1    ",
-    "22": "ret                 1      0      -     "
+    "03": "var                 0      0      0     ",
+    "04": "int                 1      -      0     # 0",
+    "05": "equii               2      0      1     ",
+    "06": "jntr                10     2      0     ",
+    "07": "set_ptr             1      -      0     ",
+    "08": "send_shard          0      1      0     # public.test (insert)",
+    "09": "jmp                 19     0      0     ",
+    "10": "var                 0      0      0     ",
+    "11": "int                 1      -      0     # 1",
+    "12": "equii               2      0      1     ",
+    "13": "jntr                17     2      0     ",
+    "14": "set_ptr             1      -      0     ",
+    "15": "send_shard          0      1      0     # public.test (insert)",
+    "16": "jmp                 19     0      0     ",
+    "17": "set_ptr             1      -      0     ",
+    "18": "send_shard          0      1      0     # public.test (insert)",
+    "19": "send_all            0      0      92    # public.test (select, closing)",
+    "20": "recv                1      0      -1    ",
+    "21": "ret                 1      0      -     "
   },
   "pushdown": {
     "00": "insert              -      0      0     # public.test",
@@ -641,17 +616,16 @@ end;
     "00": "push_nulls          1      0      0     ",
     "01": "int                 0      -      0     # 0",
     "02": "var_set             0      0      0     ",
-    "03": "free                0      0      0     ",
-    "04": "bool                0      1      0     ",
-    "05": "jntr                11     0      0     ",
-    "06": "set_ptr             1      -      0     ",
-    "07": "send_shard          0      1      0     # public.test (insert)",
-    "08": "recv                1      0      -1    ",
-    "09": "var_set             0      0      1     ",
-    "10": "free                1      0      0     ",
-    "11": "close               0      0      0     ",
-    "12": "var                 0      0      0     ",
-    "13": "ret                 0      0      -     "
+    "03": "bool                0      1      0     ",
+    "04": "jntr                10     0      0     ",
+    "05": "set_ptr             1      -      0     ",
+    "06": "send_shard          0      1      0     # public.test (insert)",
+    "07": "recv                1      0      -1    ",
+    "08": "var_set             0      0      1     ",
+    "09": "free                1      0      0     ",
+    "10": "close               0      0      0     ",
+    "11": "var                 0      0      0     ",
+    "12": "ret                 0      0      -     "
   },
   "pushdown": {
     "00": "set                 0      1      0     ",
@@ -692,15 +666,14 @@ end;
     "00": "push_nulls          1      0      0     ",
     "01": "int                 0      -      0     # 0",
     "02": "var_set             0      0      0     ",
-    "03": "free                0      0      0     ",
-    "04": "bool                0      1      0     ",
-    "05": "jntr                9      0      0     ",
-    "06": "push_var            0      0      1     ",
-    "07": "set_ptr             1      -      0     ",
-    "08": "send_shard          0      1      1     # public.test (insert)",
-    "09": "send_all            0      0      44    # public.test (select, closing)",
-    "10": "recv                1      0      -1    ",
-    "11": "ret                 1      0      -     "
+    "03": "bool                0      1      0     ",
+    "04": "jntr                8      0      0     ",
+    "05": "push_var            0      0      1     ",
+    "06": "set_ptr             1      -      0     ",
+    "07": "send_shard          0      1      1     # public.test (insert)",
+    "08": "send_all            0      0      44    # public.test (select, closing)",
+    "09": "recv                1      0      -1    ",
+    "10": "ret                 1      0      -     "
   },
   "pushdown": {
     "00": "insert              -      0      0     # public.test",
@@ -740,16 +713,15 @@ end;
     "00": "push_nulls          1      0      0     ",
     "01": "int                 0      -      0     # 0",
     "02": "var_set             0      0      0     ",
-    "03": "free                0      0      0     ",
-    "04": "bool                0      1      0     ",
-    "05": "jntr                10     0      0     ",
-    "06": "send_all            0      0      20    # public.test (select)",
-    "07": "recv                1      0      -1    ",
-    "08": "var_set             0      0      1     ",
-    "09": "free                1      0      0     ",
-    "10": "close               0      0      0     ",
-    "11": "var                 0      0      0     ",
-    "12": "ret                 0      0      -     "
+    "03": "bool                0      1      0     ",
+    "04": "jntr                9      0      0     ",
+    "05": "send_all            0      0      20    # public.test (select)",
+    "06": "recv                1      0      -1    ",
+    "07": "var_set             0      0      1     ",
+    "08": "free                1      0      0     ",
+    "09": "close               0      0      0     ",
+    "10": "var                 0      0      0     ",
+    "11": "ret                 0      0      -     "
   },
   "pushdown": {
     "00": "set                 0      1      0     ",
@@ -783,9 +755,70 @@ end;
     "00": "push_nulls          1      0      0     ",
     "01": "int                 0      -      0     # 0",
     "02": "var_set             0      0      0     ",
-    "03": "free                0      0      0     ",
-    "04": "bool                0      1      0     ",
-    "05": "jntr                18     0      0     ",
+    "03": "bool                0      1      0     ",
+    "04": "jntr                17     0      0     ",
+    "05": "send_all            0      0      25    # public.test (select)",
+    "06": "recv_aggs           1      0      21    ",
+    "07": "set                 2      1      0     ",
+    "08": "store_open          3      1      13    ",
+    "09": "count               4      3      0     ",
+    "10": "push                4      0      0     ",
+    "11": "set_add             2      0      0     ",
+    "12": "store_next          3      9      0     ",
+    "13": "free                3      0      0     ",
+    "14": "free                1      0      0     ",
+    "15": "var_set             0      0      2     ",
+    "16": "free                2      0      0     ",
+    "17": "close               0      0      0     ",
+    "18": "var                 0      0      0     ",
+    "19": "ret                 0      0      -     "
+  },
+  "pushdown": {
+    "00": "set_ordered         0      1      1     ",
+    "01": "table_open_part     1      1      9     # public.test (primary)",
+    "02": "bool                2      1      0     ",
+    "03": "push                2      0      0     ",
+    "04": "set_get             2      0      0     ",
+    "05": "int                 3      -      0     # 1",
+    "06": "push                3      0      0     ",
+    "07": "set_agg             0      2      21    ",
+    "08": "table_next          1      2      0     ",
+    "09": "free                1      0      0     ",
+    "10": "bool                1      1      0     ",
+    "11": "push                1      0      0     ",
+    "12": "set_get             1      0      0     ",
+    "13": "null                2      0      0     ",
+    "14": "push                2      0      0     ",
+    "15": "set_agg             0      1      21    ",
+    "16": "set_sort            0      0      0     ",
+    "17": "ret                 0      0      -     "
+  },
+  "access": [["public.test", "ro"]]
+}]
+begin
+	declare x int := 0;
+	if true then
+		select count(*) into x from test;
+	end;
+	select x;
+end;
+[1]
+explain begin
+	declare x int := 0;
+	if false then
+	else
+		select count(*) into x from test;
+	end;
+	select x;
+end;
+[{
+  "main": {
+    "00": "push_nulls          1      0      0     ",
+    "01": "int                 0      -      0     # 0",
+    "02": "var_set             0      0      0     ",
+    "03": "bool                0      0      0     ",
+    "04": "jntr                6      0      0     ",
+    "05": "jmp                 18     0      0     ",
     "06": "send_all            0      0      25    # public.test (select)",
     "07": "recv_aggs           1      0      21    ",
     "08": "set                 2      1      0     ",
@@ -826,69 +859,6 @@ end;
 }]
 begin
 	declare x int := 0;
-	if true then
-		select count(*) into x from test;
-	end;
-	select x;
-end;
-[1]
-explain begin
-	declare x int := 0;
-	if false then
-	else
-		select count(*) into x from test;
-	end;
-	select x;
-end;
-[{
-  "main": {
-    "00": "push_nulls          1      0      0     ",
-    "01": "int                 0      -      0     # 0",
-    "02": "var_set             0      0      0     ",
-    "03": "free                0      0      0     ",
-    "04": "bool                0      0      0     ",
-    "05": "jntr                7      0      0     ",
-    "06": "jmp                 19     0      0     ",
-    "07": "send_all            0      0      25    # public.test (select)",
-    "08": "recv_aggs           1      0      21    ",
-    "09": "set                 2      1      0     ",
-    "10": "store_open          3      1      15    ",
-    "11": "count               4      3      0     ",
-    "12": "push                4      0      0     ",
-    "13": "set_add             2      0      0     ",
-    "14": "store_next          3      11     0     ",
-    "15": "free                3      0      0     ",
-    "16": "free                1      0      0     ",
-    "17": "var_set             0      0      2     ",
-    "18": "free                2      0      0     ",
-    "19": "close               0      0      0     ",
-    "20": "var                 0      0      0     ",
-    "21": "ret                 0      0      -     "
-  },
-  "pushdown": {
-    "00": "set_ordered         0      1      1     ",
-    "01": "table_open_part     1      1      9     # public.test (primary)",
-    "02": "bool                2      1      0     ",
-    "03": "push                2      0      0     ",
-    "04": "set_get             2      0      0     ",
-    "05": "int                 3      -      0     # 1",
-    "06": "push                3      0      0     ",
-    "07": "set_agg             0      2      21    ",
-    "08": "table_next          1      2      0     ",
-    "09": "free                1      0      0     ",
-    "10": "bool                1      1      0     ",
-    "11": "push                1      0      0     ",
-    "12": "set_get             1      0      0     ",
-    "13": "null                2      0      0     ",
-    "14": "push                2      0      0     ",
-    "15": "set_agg             0      1      21    ",
-    "16": "set_sort            0      0      0     ",
-    "17": "ret                 0      0      -     "
-  },
-  "access": [["public.test", "ro"]]
-}]
-begin
-	declare x int := 0;
 	if false then
 	else
 		select count(*) into x from test;
@@ -910,26 +880,25 @@ end;
     "00": "push_nulls          1      0      0     ",
     "01": "int                 0      -      0     # 0",
     "02": "var_set             0      0      0     ",
-    "03": "free                0      0      0     ",
-    "04": "bool                0      0      0     ",
-    "05": "jntr                7      0      0     ",
-    "06": "jmp                 19     0      0     ",
-    "07": "send_all            0      0      25    # public.test (select)",
-    "08": "recv_aggs           1      0      21    ",
-    "09": "set                 2      1      0     ",
-    "10": "store_open          3      1      15    ",
-    "11": "count               4      3      0     ",
-    "12": "push                4      0      0     ",
-    "13": "set_add             2      0      0     ",
-    "14": "store_next          3      11     0     ",
-    "15": "free                3      0      0     ",
-    "16": "free                1      0      0     ",
-    "17": "var_set             0      0      2     ",
-    "18": "free                2      0      0     ",
-    "19": "close               0      0      0     ",
-    "20": "int                 0      -      0     # 1",
-    "21": "var                 1      0      0     ",
-    "22": "ret                 1      0      -     "
+    "03": "bool                0      0      0     ",
+    "04": "jntr                6      0      0     ",
+    "05": "jmp                 18     0      0     ",
+    "06": "send_all            0      0      25    # public.test (select)",
+    "07": "recv_aggs           1      0      21    ",
+    "08": "set                 2      1      0     ",
+    "09": "store_open          3      1      14    ",
+    "10": "count               4      3      0     ",
+    "11": "push                4      0      0     ",
+    "12": "set_add             2      0      0     ",
+    "13": "store_next          3      10     0     ",
+    "14": "free                3      0      0     ",
+    "15": "free                1      0      0     ",
+    "16": "var_set             0      0      2     ",
+    "17": "free                2      0      0     ",
+    "18": "close               0      0      0     ",
+    "19": "int                 0      -      0     # 1",
+    "20": "var                 1      0      0     ",
+    "21": "ret                 1      0      -     "
   },
   "pushdown": {
     "00": "set_ordered         0      1      1     ",
@@ -977,25 +946,24 @@ end;
     "00": "push_nulls          1      0      0     ",
     "01": "int                 0      -      0     # 0",
     "02": "var_set             0      0      0     ",
-    "03": "free                0      0      0     ",
-    "04": "bool                0      0      0     ",
-    "05": "jntr                7      0      0     ",
-    "06": "jmp                 19     0      0     ",
-    "07": "send_all            0      0      25    # public.test (select)",
-    "08": "recv_aggs           1      0      21    ",
-    "09": "set                 2      1      0     ",
-    "10": "store_open          3      1      15    ",
-    "11": "count               4      3      0     ",
-    "12": "push                4      0      0     ",
-    "13": "set_add             2      0      0     ",
-    "14": "store_next          3      11     0     ",
-    "15": "free                3      0      0     ",
-    "16": "free                1      0      0     ",
-    "17": "var_set             0      0      2     ",
-    "18": "free                2      0      0     ",
-    "19": "send_all            0      0      69    # public.test (select, closing)",
-    "20": "var                 1      0      0     ",
-    "21": "ret                 1      0      -     "
+    "03": "bool                0      0      0     ",
+    "04": "jntr                6      0      0     ",
+    "05": "jmp                 18     0      0     ",
+    "06": "send_all            0      0      25    # public.test (select)",
+    "07": "recv_aggs           1      0      21    ",
+    "08": "set                 2      1      0     ",
+    "09": "store_open          3      1      14    ",
+    "10": "count               4      3      0     ",
+    "11": "push                4      0      0     ",
+    "12": "set_add             2      0      0     ",
+    "13": "store_next          3      10     0     ",
+    "14": "free                3      0      0     ",
+    "15": "free                1      0      0     ",
+    "16": "var_set             0      0      2     ",
+    "17": "free                2      0      0     ",
+    "18": "send_all            0      0      69    # public.test (select, closing)",
+    "19": "var                 1      0      0     ",
+    "20": "ret                 1      0      -     "
   },
   "pushdown": {
     "00": "set_ordered         0      1      1     ",
@@ -1051,18 +1019,17 @@ end;
     "00": "push_nulls          1      0      0     ",
     "01": "int                 0      -      0     # 0",
     "02": "var_set             0      0      0     ",
-    "03": "free                0      0      0     ",
-    "04": "bool                0      1      0     ",
-    "05": "jntr                12     0      0     ",
-    "06": "bool                0      0      0     ",
-    "07": "jntr                12     0      0     ",
-    "08": "send_all            0      0      20    # public.test (select)",
-    "09": "recv                1      0      -1    ",
-    "10": "var_set             0      0      1     ",
-    "11": "free                1      0      0     ",
-    "12": "close               0      0      0     ",
-    "13": "var                 0      0      0     ",
-    "14": "ret                 0      0      -     "
+    "03": "bool                0      1      0     ",
+    "04": "jntr                11     0      0     ",
+    "05": "bool                0      0      0     ",
+    "06": "jntr                11     0      0     ",
+    "07": "send_all            0      0      20    # public.test (select)",
+    "08": "recv                1      0      -1    ",
+    "09": "var_set             0      0      1     ",
+    "10": "free                1      0      0     ",
+    "11": "close               0      0      0     ",
+    "12": "var                 0      0      0     ",
+    "13": "ret                 0      0      -     "
   },
   "pushdown": {
     "00": "set                 0      1      0     ",

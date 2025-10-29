@@ -217,9 +217,7 @@ scan_table(Scan* self, Target* target)
 	}
 
 	// close cursor
-	op1(cp, CFREE, target->rcursor);
-	runpin(cp, target->rcursor);
-	target->rcursor = -1;
+	target->rcursor = emit_free(cp, target->rcursor);
 }
 
 static inline void
@@ -271,9 +269,7 @@ scan_table_heap(Scan* self, Target* target)
 	}
 
 	// close cursor
-	op1(cp, CFREE, target->rcursor);
-	runpin(cp, target->rcursor);
-	target->rcursor = -1;
+	target->rcursor = emit_free(cp, target->rcursor);
 }
 
 static inline void
@@ -395,15 +391,9 @@ scan_expr(Scan* self, Target* target)
 		op_set_jmp_list(cp, &self->continues, _next);
 	}
 
-	// close cursor
-	op1(cp, CFREE, target->rcursor);
-	runpin(cp, target->rcursor);
-	target->rcursor = -1;
-
-	// free target value
-	op1(cp, CFREE, target->r);
-	runpin(cp, target->r);
-	target->r = -1;
+	// close and cursor and target
+	target->rcursor = emit_free(cp, target->rcursor);
+	target->r = emit_free(cp, target->r);
 }
 
 static inline void

@@ -406,9 +406,8 @@ explain select * from system.users();
     "04": "push                3      0      0     ",
     "05": "set_add             0      0      0     ",
     "06": "json_next           2      3      0     ",
-    "07": "free                2      0      0     ",
-    "08": "free                1      0      0     ",
-    "09": "ret                 0      0      -     "
+    "07": "free                1      0      0     ",
+    "08": "ret                 0      0      -     "
   },
   "access": []
 }]
@@ -427,9 +426,8 @@ explain select name from system.users();
     "06": "push                5      0      0     ",
     "07": "set_add             0      0      0     ",
     "08": "json_next           2      3      0     ",
-    "09": "free                2      0      0     ",
-    "10": "free                1      0      0     ",
-    "11": "ret                 0      0      -     "
+    "09": "free                1      0      0     ",
+    "10": "ret                 0      0      -     "
   },
   "access": []
 }]
@@ -475,9 +473,8 @@ explain select * from ([]) t;
     "04": "push                3      0      0     ",
     "05": "set_add             0      0      0     ",
     "06": "json_next           2      3      0     ",
-    "07": "free                2      0      0     ",
-    "08": "free                1      0      0     ",
-    "09": "ret                 0      0      -     "
+    "07": "free                1      0      0     ",
+    "08": "ret                 0      0      -     "
   },
   "access": []
 }]
