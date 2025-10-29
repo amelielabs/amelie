@@ -25,15 +25,14 @@ explain select exists (select true from test limit 1);
   "main": {
     "00": "set                 0      1      0     ",
     "01": "int                 1      -      0     # 1",
-    "02": "table_open          2      0      8     # public.test (primary)",
-    "03": "cjltd               8      1      0     ",
-    "04": "bool                3      1      0     ",
-    "05": "push                3      0      0     ",
-    "06": "set_add             0      0      0     ",
-    "07": "table_next          2      3      0     ",
-    "08": "free                2      0      0     ",
-    "09": "exists              1      0      0     ",
-    "10": "ret                 1      0      -     "
+    "02": "table_open          2      0      7     # public.test (primary)",
+    "03": "cjltd               7      1      0     ",
+    "04": "push_bool           1      0      0     ",
+    "05": "set_add             0      0      0     ",
+    "06": "table_next          2      3      0     ",
+    "07": "free                2      0      0     ",
+    "08": "exists              1      0      0     ",
+    "09": "ret                 1      0      -     "
   },
   "access": [["public.test", "ro_exclusive"]]
 }]
@@ -51,16 +50,15 @@ explain select exists (select true from test where false);
 [{
   "main": {
     "00": "set                 0      1      0     ",
-    "01": "table_open          1      0      8     # public.test (primary)",
+    "01": "table_open          1      0      7     # public.test (primary)",
     "02": "bool                2      0      0     ",
-    "03": "jntr                7      2      0     ",
-    "04": "bool                2      1      0     ",
-    "05": "push                2      0      0     ",
-    "06": "set_add             0      0      0     ",
-    "07": "table_next          1      2      0     ",
-    "08": "free                1      0      0     ",
-    "09": "exists              1      0      0     ",
-    "10": "ret                 1      0      -     "
+    "03": "jntr                6      2      0     ",
+    "04": "push_bool           1      0      0     ",
+    "05": "set_add             0      0      0     ",
+    "06": "table_next          1      2      0     ",
+    "07": "free                1      0      0     ",
+    "08": "exists              1      0      0     ",
+    "09": "ret                 1      0      -     "
   },
   "access": [["public.test", "ro_exclusive"]]
 }]

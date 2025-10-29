@@ -85,22 +85,19 @@ explain select 0 in (3,5, (select * from test), 0);
 [{
   "main": {
     "00": "int                 0      -      0     # 0",
-    "01": "int                 1      -      0     # 3",
-    "02": "push                1      0      0     ",
-    "03": "int                 1      -      0     # 5",
-    "04": "push                1      0      0     ",
-    "05": "set                 1      1      0     ",
-    "06": "table_open          2      0      11    # public.test (primary)",
-    "07": "table_readi32       3      2      0     ",
-    "08": "push                3      0      0     ",
-    "09": "set_add             1      0      0     ",
-    "10": "table_next          2      7      0     ",
-    "11": "free                2      0      0     ",
-    "12": "push                1      0      0     ",
-    "13": "int                 1      -      0     # 0",
-    "14": "push                1      0      0     ",
-    "15": "in                  1      0      4     ",
-    "16": "ret                 1      0      -     "
+    "01": "push_int            -      0      0     # 3",
+    "02": "push_int            -      0      0     # 5",
+    "03": "set                 1      1      0     ",
+    "04": "table_open          2      0      9     # public.test (primary)",
+    "05": "table_readi32       3      2      0     ",
+    "06": "push                3      0      0     ",
+    "07": "set_add             1      0      0     ",
+    "08": "table_next          2      5      0     ",
+    "09": "free                2      0      0     ",
+    "10": "push                1      0      0     ",
+    "11": "push_int            -      0      0     # 0",
+    "12": "in                  1      0      4     ",
+    "13": "ret                 1      0      -     "
   },
   "access": [["public.test", "ro_exclusive"]]
 }]

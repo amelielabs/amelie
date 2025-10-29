@@ -34,10 +34,9 @@ end;
 [{
   "main": {
     "00": "send_all            0      0      20    # public.test (delete, closing)",
-    "01": "string              0      44     0     # abort",
-    "02": "push                0      0      0     ",
-    "03": "call                0      -      1     # public.error()",
-    "04": "ret                 0      0      -     "
+    "01": "push_string         44     0      0     # abort",
+    "02": "call                0      -      1     # public.error()",
+    "03": "ret                 0      0      -     "
   },
   "pushdown": {
     "00": "table_open_part     0      0      3     # public.test (primary)",
@@ -63,10 +62,9 @@ end;
 [{
   "main": {
     "00": "send_all            0      0      20    # public.test (update, closing)",
-    "01": "string              0      44     0     # abort",
-    "02": "push                0      0      0     ",
-    "03": "call                0      -      1     # public.error()",
-    "04": "ret                 0      0      -     "
+    "01": "push_string         44     0      0     # abort",
+    "02": "call                0      -      1     # public.error()",
+    "03": "ret                 0      0      -     "
   },
   "pushdown": {
     "00": "table_open_part     0      0      7     # public.test (primary)",
@@ -97,10 +95,9 @@ end;
   "main": {
     "00": "set_ptr             1      -      0     ",
     "01": "send_shard          0      1      0     # public.test (insert, closing)",
-    "02": "string              0      24     0     # abort",
-    "03": "push                0      0      0     ",
-    "04": "call                0      -      1     # public.error()",
-    "05": "ret                 0      0      -     "
+    "02": "push_string         24     0      0     # abort",
+    "03": "call                0      -      1     # public.error()",
+    "04": "ret                 0      0      -     "
   },
   "pushdown": {
     "00": "table_prepare       0      -      0     # public.test",
@@ -168,10 +165,9 @@ end;
     "01": "send_all            0      0      58    # public.b (update)",
     "02": "send_all            0      0      99    # public.a (select)",
     "03": "send_all            1      0      140   # public.b (select, closing)",
-    "04": "string              2      164    0     # abort",
-    "05": "push                2      0      0     ",
-    "06": "call                2      -      1     # public.error()",
-    "07": "ret                 2      0      -     "
+    "04": "push_string         164    0      0     # abort",
+    "05": "call                2      -      1     # public.error()",
+    "06": "ret                 2      0      -     "
   },
   "pushdown": {
     "00": "table_open_part     0      0      7     # public.a (primary)",
@@ -240,10 +236,9 @@ end;
     "01": "send_shard          0      1      0     # public.a (insert)",
     "02": "send_all            0      0      41    # public.b (update)",
     "03": "send_all            0      0      82    # public.a (select, closing)",
-    "04": "string              1      106    0     # abort",
-    "05": "push                1      0      0     ",
-    "06": "call                1      -      1     # public.error()",
-    "07": "ret                 1      0      -     "
+    "04": "push_string         106    0      0     # abort",
+    "05": "call                1      -      1     # public.error()",
+    "06": "ret                 1      0      -     "
   },
   "pushdown": {
     "00": "table_prepare       0      -      0     # public.a",

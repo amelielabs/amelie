@@ -58,22 +58,6 @@ emit_free(Compiler* self, int r)
 	return -1;
 }
 
-int
-emit_push(Compiler* self, From* from, Ast* ast)
-{
-	if (ast->id == KVAR && self->origin == ORIGIN_FRONTEND)
-	{
-		auto var = ast->var;
-		op3(self, CPUSH_VAR, var->order, var->is_arg, false);
-		return var->type;
-	}
-	auto r = emit_expr(self, from, ast);
-	auto type = rtype(self, r);
-	op1(self, CPUSH, r);
-	runpin(self, r);
-	return type;
-}
-
 hot int
 emit_string(Compiler* self, Str* string, bool escape)
 {
@@ -1222,4 +1206,112 @@ emit_expr(Compiler* self, From* from, Ast* ast)
 
 	assert(0);
 	return -1;
+}
+
+int
+emit_push(Compiler* self, From* from, Ast* ast)
+{
+	// use optimized push if possible
+	switch (ast->id) {
+	case KNULL:
+		op1(self, CPUSH_NULLS, 1);
+		return TYPE_NULL;
+	case KTRUE:
+		op1(self, CPUSH_BOOL, 1);
+		return TYPE_BOOL;
+	case KFALSE:
+		op1(self, CPUSH_BOOL, 0);
+		return TYPE_BOOL;
+	case KINT:
+		op1(self, CPUSH_INT, ast->integer);
+		return TYPE_INT;
+	case KREAL:
+		op1(self, CPUSH_DOUBLE, code_data_add_double(self->code_data, ast->real));
+		return TYPE_DOUBLE;
+	case KSTRING:
+	{
+		int offset;
+		if (ast->string_escape)
+			offset = code_data_add_string_unescape(self->code_data, &ast->string);
+		else
+			offset = code_data_add_string(self->code_data, &ast->string);
+		op1(self, CPUSH_STRING, offset);
+		return TYPE_STRING;
+	}
+	case KTIMESTAMP:
+	{
+		Timestamp ts;
+		timestamp_init(&ts);
+		if (unlikely(error_catch( timestamp_set(&ts, &ast->string) )))
+			stmt_error(self->current, ast, "invalid timestamp value");
+		op1(self, CPUSH_TIMESTAMP, timestamp_get_unixtime(&ts, self->parser.local->timezone));
+		return TYPE_TIMESTAMP;
+	}
+	case KCURRENT_TIMESTAMP:
+		op1(self, CPUSH_TIMESTAMP, self->parser.local->time_us);
+		return TYPE_TIMESTAMP;
+	case KINTERVAL:
+	{
+		int offset = code_data_offset(self->code_data);
+		auto iv = (Interval*)buf_claim(&self->code_data->data, sizeof(Interval));
+		interval_init(iv);
+		if (unlikely(error_catch( interval_set(iv, &ast->string) )))
+			stmt_error(self->current, ast, "invalid interval value");
+		op1(self, CPUSH_INTERVAL, offset);
+		return TYPE_INTERVAL;
+	}
+	case KDATE:
+	{
+		int julian;
+		if (unlikely(error_catch( julian = date_set(&ast->string) )))
+			stmt_error(self->current, ast, "invalid date value");
+		op1(self, CPUSH_DATE, julian);
+		return TYPE_DATE;
+	}
+	case KCURRENT_DATE:
+		op1(self, CPUSH_DATE, timestamp_date(self->parser.local->time_us));
+		return TYPE_DATE;
+	case KVECTOR:
+		op1(self, CPUSH_VECTOR, ast->integer);
+		return TYPE_VECTOR;
+	case KUUID:
+	{
+		int offset = code_data_offset(self->code_data);
+		auto uuid = (Uuid*)buf_claim(&self->code_data->data, sizeof(Uuid));
+		uuid_init(uuid);
+		if (uuid_set_nothrow(uuid, &ast->string) == -1)
+			stmt_error(self->current, ast, "invalid uuid value");
+		op1(self, CPUSH_UUID, offset);
+		return TYPE_UUID;
+	}
+	case '{':
+	case KARRAY:
+	{
+		assert(ast->l->id == KARGS);
+		auto args = ast_args_of(ast->l);
+		if (! args->constable)
+			break;
+		int offset = code_data_offset(self->code_data);
+		ast_encode(ast, &self->parser.lex, self->parser.local, &self->code_data->data);
+		op1(self, CPUSH_JSON, offset);
+		return TYPE_JSON;
+	}
+	case KVAR:
+	{
+		if (self->origin == ORIGIN_FRONTEND)
+		{
+			auto var = ast->var;
+			op3(self, CPUSH_VAR, var->order, var->is_arg, false);
+			return var->type;
+		}
+		break;
+	}
+	}
+
+	// expr + push
+	auto r = emit_expr(self, from, ast);
+	auto type = rtype(self, r);
+	op1(self, CPUSH, r);
+	runpin(self, r);
+	return type;
 }

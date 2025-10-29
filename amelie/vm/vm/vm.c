@@ -132,6 +132,16 @@ vm_run(Vm*       self,
 		&&cpush_ref,
 		&&cpush_var,
 		&&cpush_nulls,
+		&&cpush_bool,
+		&&cpush_int,
+		&&cpush_double,
+		&&cpush_string,
+		&&cpush_json,
+		&&cpush_interval,
+		&&cpush_timestamp,
+		&&cpush_date,
+		&&cpush_vector,
+		&&cpush_uuid,
 		&&cpop,
 
 		// consts
@@ -476,6 +486,7 @@ cmov:
 	op_next;
 
 cpush:
+	// [value]
 	*stack_push(stack) = r[op->a];
 	value_reset(&r[op->a]);
 	op_next;
@@ -513,6 +524,77 @@ cpush_nulls:
 	// [count]
 	for (rc = 0; rc < op->a; rc++)
 		value_init(stack_push(stack));
+	op_next;
+
+cpush_bool:
+	// [value, value]
+	a = stack_push(stack);
+	value_init(a);
+	value_set_bool(a, op->a);
+	op_next;
+
+cpush_int:
+	// [value]
+	a = stack_push(stack);
+	value_init(a);
+	value_set_int(a, op->a);
+	op_next;
+
+cpush_double:
+	// [value]
+	a = stack_push(stack);
+	value_init(a);
+	value_set_double(a, code_data_at_double(code_data, op->a));
+	op_next;
+
+cpush_string:
+	// [value]
+	code_data_at_string(code_data, op->a, &string);
+	a = stack_push(stack);
+	value_init(a);
+	value_set_string(a, &string, NULL);
+	op_next;
+
+cpush_json:
+	// [value]
+	a = stack_push(stack);
+	value_init(a);
+	value_decode(a, code_data_at(code_data, op->a), NULL);
+	op_next;
+
+cpush_interval:
+	// [value]
+	a = stack_push(stack);
+	value_init(a);
+	value_set_interval(a, (Interval*)code_data_at(code_data, op->a));
+	op_next;
+
+cpush_timestamp:
+	// [value]
+	a = stack_push(stack);
+	value_init(a);
+	value_set_timestamp(a, op->a);
+	op_next;
+
+cpush_date:
+	// [value]
+	a = stack_push(stack);
+	value_init(a);
+	value_set_date(a, op->a);
+	op_next;
+
+cpush_vector:
+	// [value]
+	a = stack_push(stack);
+	value_init(a);
+	value_set_vector(a, (Vector*)code_data_at(code_data, op->a), NULL);
+	op_next;
+
+cpush_uuid:
+	// [value]
+	a = stack_push(stack);
+	value_init(a);
+	value_set_uuid(a, (Uuid*)code_data_at(code_data, op->a));
 	op_next;
 
 cpop:

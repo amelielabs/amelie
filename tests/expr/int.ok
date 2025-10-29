@@ -95,11 +95,10 @@ explain select 0 = '1970-01-01 00:00:00'::timestamp;
 [{
   "main": {
     "00": "int                 0      -      0     # 0",
-    "01": "string              1      0      0     # 1970-01-01 00:00:00",
-    "02": "push                1      0      0     ",
-    "03": "call                1      -      1     # public.timestamp()",
-    "04": "equii               2      0      1     ",
-    "05": "ret                 2      0      -     "
+    "01": "push_string         0      0      0     # 1970-01-01 00:00:00",
+    "02": "call                1      -      1     # public.timestamp()",
+    "03": "equii               2      0      1     ",
+    "04": "ret                 2      0      -     "
   },
   "access": []
 }]
@@ -182,12 +181,11 @@ explain select 0 <> '1970-01-01 00:00:00'::timestamp;
 [{
   "main": {
     "00": "int                 0      -      0     # 0",
-    "01": "string              1      0      0     # 1970-01-01 00:00:00",
-    "02": "push                1      0      0     ",
-    "03": "call                1      -      1     # public.timestamp()",
-    "04": "equii               2      0      1     ",
-    "05": "not                 0      2      0     ",
-    "06": "ret                 0      0      -     "
+    "01": "push_string         0      0      0     # 1970-01-01 00:00:00",
+    "02": "call                1      -      1     # public.timestamp()",
+    "03": "equii               2      0      1     ",
+    "04": "not                 0      2      0     ",
+    "05": "ret                 0      0      -     "
   },
   "access": []
 }]
@@ -261,11 +259,10 @@ explain select 0 >= '1970-01-01 00:00:00'::timestamp;
 [{
   "main": {
     "00": "int                 0      -      0     # 0",
-    "01": "string              1      0      0     # 1970-01-01 00:00:00",
-    "02": "push                1      0      0     ",
-    "03": "call                1      -      1     # public.timestamp()",
-    "04": "gteii               2      0      1     ",
-    "05": "ret                 2      0      -     "
+    "01": "push_string         0      0      0     # 1970-01-01 00:00:00",
+    "02": "call                1      -      1     # public.timestamp()",
+    "03": "gteii               2      0      1     ",
+    "04": "ret                 2      0      -     "
   },
   "access": []
 }]
@@ -334,11 +331,10 @@ explain select 0 > '1970-01-01 00:00:00'::timestamp;
 [{
   "main": {
     "00": "int                 0      -      0     # 0",
-    "01": "string              1      0      0     # 1970-01-01 00:00:00",
-    "02": "push                1      0      0     ",
-    "03": "call                1      -      1     # public.timestamp()",
-    "04": "gtii                2      0      1     ",
-    "05": "ret                 2      0      -     "
+    "01": "push_string         0      0      0     # 1970-01-01 00:00:00",
+    "02": "call                1      -      1     # public.timestamp()",
+    "03": "gtii                2      0      1     ",
+    "04": "ret                 2      0      -     "
   },
   "access": []
 }]
@@ -407,11 +403,10 @@ explain select 0 <= '1970-01-01 00:00:00'::timestamp;
 [{
   "main": {
     "00": "int                 0      -      0     # 0",
-    "01": "string              1      0      0     # 1970-01-01 00:00:00",
-    "02": "push                1      0      0     ",
-    "03": "call                1      -      1     # public.timestamp()",
-    "04": "lteii               2      0      1     ",
-    "05": "ret                 2      0      -     "
+    "01": "push_string         0      0      0     # 1970-01-01 00:00:00",
+    "02": "call                1      -      1     # public.timestamp()",
+    "03": "lteii               2      0      1     ",
+    "04": "ret                 2      0      -     "
   },
   "access": []
 }]
@@ -480,11 +475,10 @@ explain select 0 < '1970-01-01 00:00:00'::timestamp;
 [{
   "main": {
     "00": "int                 0      -      0     # 0",
-    "01": "string              1      0      0     # 1970-01-01 00:00:00",
-    "02": "push                1      0      0     ",
-    "03": "call                1      -      1     # public.timestamp()",
-    "04": "ltii                2      0      1     ",
-    "05": "ret                 2      0      -     "
+    "01": "push_string         0      0      0     # 1970-01-01 00:00:00",
+    "02": "call                1      -      1     # public.timestamp()",
+    "03": "ltii                2      0      1     ",
+    "04": "ret                 2      0      -     "
   },
   "access": []
 }]

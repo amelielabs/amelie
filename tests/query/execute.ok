@@ -85,10 +85,9 @@ select reverse();
 explain select reverse([1,2,3]);
 [{
   "main": {
-    "00": "json                0      0      0     ",
-    "01": "push                0      0      0     ",
-    "02": "call_udf            0      -      -     # public.reverse()",
-    "03": "ret                 0      0      -     "
+    "00": "push_json           0      0      0     ",
+    "01": "call_udf            0      -      -     # public.reverse()",
+    "02": "ret                 0      0      -     "
   },
   "access": [["public.reverse", "call"]],
   "calls": [{
@@ -195,10 +194,9 @@ end;
 explain select c(123);
 [{
   "main": {
-    "00": "int                 0      -      0     # 123",
-    "01": "push                0      0      0     ",
-    "02": "call_udf            0      -      -     # public.c()",
-    "03": "ret                 0      0      -     "
+    "00": "push_int            -      0      0     # 123",
+    "01": "call_udf            0      -      -     # public.c()",
+    "02": "ret                 0      0      -     "
   },
   "access": [["public.c", "call"], ["public.b", "call"], ["public.a", "call"]],
   "calls": [{

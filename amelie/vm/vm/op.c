@@ -58,6 +58,16 @@ OpDesc ops[] =
 	{ CPUSH_REF, "push_ref" },
 	{ CPUSH_VAR, "push_var" },
 	{ CPUSH_NULLS, "push_nulls" },
+	{ CPUSH_BOOL, "push_bool" },
+	{ CPUSH_INT, "push_int" },
+	{ CPUSH_DOUBLE, "push_double" },
+	{ CPUSH_STRING, "push_string" },
+	{ CPUSH_JSON, "push_json" },
+	{ CPUSH_INTERVAL, "push_interval" },
+	{ CPUSH_TIMESTAMP, "push_timestamp" },
+	{ CPUSH_DATE, "push_date" },
+	{ CPUSH_VECTOR, "push_vector" },
+	{ CPUSH_UUID, "push_uuid" },
 	{ CPOP, "pop" },
 
 	// consts
@@ -381,10 +391,24 @@ op_dump(Program* self, Code* code, Buf* buf)
 
 		buf_reset(output);
 		switch (op->op) {
+		case CPUSH_INT:
+		case CPUSH_TIMESTAMP:
+		{
+			op_write(output, op, false, true, true, "%" PRIi64, op->a);
+			break;
+		}
 		case CINT:
 		case CTIMESTAMP:
 		{
 			op_write(output, op, true, false, true, "%" PRIi64, op->b);
+			break;
+		}
+		case CPUSH_STRING:
+		{
+			Str str;
+			code_data_at_string(data, op->a, &str);
+			op_write(output, op, true, true, true, "%.*s",
+			         str_size(&str), str_of(&str));
 			break;
 		}
 		case CSTRING:
@@ -393,6 +417,12 @@ op_dump(Program* self, Code* code, Buf* buf)
 			code_data_at_string(data, op->b, &str);
 			op_write(output, op, true, true, true, "%.*s",
 			         str_size(&str), str_of(&str));
+			break;
+		}
+		case CPUSH_DOUBLE:
+		{
+			double dbl = code_data_at_double(data, op->a);
+			op_write(output, op, true, true, true, "%g", dbl);
 			break;
 		}
 		case CDOUBLE:
