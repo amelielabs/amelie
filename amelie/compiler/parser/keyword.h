@@ -22,7 +22,6 @@ enum
 	KREAL,
 	KINT,
 	KSTRING,
-	KARGID,
 
 	// lexer operations
 	KSHL,

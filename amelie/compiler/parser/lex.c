@@ -111,9 +111,6 @@ lex_error_expect(Lex* self, Ast* ast, int id)
 		case KSTRING:
 			ref = "string";
 			break;
-		case KARGID:
-			ref = "argument";
-			break;
 		// lexer operations
 		case KSHL:
 			ref = "<<";
@@ -242,21 +239,6 @@ lex_next(Lex* self)
 		break;
 	}
 	auto start = self->pos;
-
-	// argument
-	if (*self->pos == '$')
-	{
-		self->pos++;
-		if (unlikely(self->pos == self->end || !isdigit(*self->pos)))
-			lex_return_error(self, ast, start, "bad argument definition");
-
-		// $<int>
-		while (self->pos < self->end && isdigit(*self->pos)) {
-			ast->integer = (ast->integer * 10) + *self->pos - '0';
-			self->pos++;
-		}
-		return lex_return(self, ast, KARGID, start);
-	}
 
 	// -
 	auto minus = *self->pos == '-';

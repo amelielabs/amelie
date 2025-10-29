@@ -121,7 +121,6 @@ priority_map[KEYWORD_MAX] =
 	[KTRUE]                    = priority_value,
 	[KFALSE]                   = priority_value,
 	[KNULL]                    = priority_value,
-	[KARGID]                   = priority_value,
 	[KNAME]                    = priority_value,
 	[KNAME_COMPOUND]           = priority_value,
 	[KVAR]                     = priority_value
@@ -687,10 +686,6 @@ expr_value(Stmt* self, Expr* expr, Ast* value)
 		value->pos_end   = spec->pos_end;
 		break;
 	}
-
-	// request argument
-	case KARGID:
-		break;
 
 	// name
 	case KNAME:
