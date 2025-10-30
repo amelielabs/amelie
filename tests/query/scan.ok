@@ -725,6 +725,34 @@ select * from test where id = 3;
 [[3, 1]]
 select * from test where id = 4;
 []
+# test: key eq (start condition const cast)
+explain select * from test where id = 3::int;
+[{
+  "main": {
+    "00": "send_lookup         0      -      0     # public.test (select, closing)",
+    "01": "recv                1      0      -1    ",
+    "02": "ret                 1      0      -     "
+  },
+  "pushdown": {
+    "00": "set                 0      2      0     ",
+    "01": "push_value          -      0      0     # int",
+    "02": "table_open_partl    1      0      12    # public.test (primary)",
+    "03": "table_readi32       2      1      0     ",
+    "04": "value               3      -      0     # int",
+    "05": "equii               4      2      3     ",
+    "06": "jntr                12     4      0     ",
+    "07": "table_readi32       2      1      0     ",
+    "08": "push                2      0      0     ",
+    "09": "table_readi32       2      1      1     ",
+    "10": "push                2      0      0     ",
+    "11": "set_add             0      0      0     ",
+    "12": "free                1      0      0     ",
+    "13": "ret                 0      0      -     "
+  },
+  "access": [["public.test", "ro"]]
+}]
+select * from test where id = 3::int;
+[[3, 1]]
 # test: key eq (non key)
 explain select * from test where data = 1;
 [{

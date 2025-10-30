@@ -111,6 +111,10 @@ select * from test where id = 2;
 select * from test where id = 3;
 select * from test where id = 4;
 
+# test: key eq (start condition const cast)
+explain select * from test where id = 3::int;
+select * from test where id = 3::int;
+
 # test: key eq (non key)
 explain select * from test where data = 1;
 select * from test where data = 1;

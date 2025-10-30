@@ -76,6 +76,7 @@ ops_extract(AstList* self, Ast* expr)
 		    value->id == KSTRING    ||
 		    value->id == KTIMESTAMP ||
 		    value->id == KUUID      ||
+		    value->id == KVALUE     ||
 		    value->id == KVAR       ||
 		    value->id == KNAME      ||
 		    value->id == KNAME_COMPOUND)

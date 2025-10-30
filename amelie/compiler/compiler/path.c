@@ -230,6 +230,10 @@ path_key(Path* self, Block* block, PathKey* key, AstList* ops)
 			if (unlikely(column->type != TYPE_UUID))
 				continue;
 			break;
+		case KVALUE:
+			if (unlikely(column->type != set_value(value->set, 0)->type))
+				continue;
+			break;
 		case KVAR:
 			unused(block);
 			if (unlikely(column->type != value->var->type))
@@ -316,7 +320,14 @@ path_create_hash(Path* self)
 	uint32_t hash = 0;
 	for (auto i = 0; i < self->match_start; i++)
 	{
-		auto    value = self->keys[i].start;
+		auto value = self->keys[i].start;
+		if (value->id == KVALUE)
+		{
+			hash = value_hash(set_value(value->set, 0),
+			                  self->keys[i].key->column->type_size,
+			                  hash);
+			continue;
+		}
 		void*   data;
 		int     data_size;
 		int32_t integer_32;
