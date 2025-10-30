@@ -145,10 +145,10 @@ select (select 1 + 2) -> self + 1 from test;
 [8]
 select 1 + 2 -> self + 1 from test;
 [8]
+select null -> 1 from test;
+{"msg": "select null -> ❰1❱ ⟵ lambda expression type mismatch"}
 select null::int -> 1 from test;
-[1]
-select null::int -> 1 from test where id > 10;
-[null]
+{"msg": "select null::int -> ❰1❱ ⟵ lambda expression type mismatch"}
 # test: select subquery -> from table
 select (select data from test t where id = 3) -> self + 1 from test;
 [6]

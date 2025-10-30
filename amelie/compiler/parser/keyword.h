@@ -48,6 +48,7 @@ enum
 	KAGGR,
 	KAGGRKEY,
 	KVAR,
+	KVALUE,
 
 	// keywords
 	KKEYWORD,

@@ -23,6 +23,7 @@ struct Ast
 		double  real;
 		Column* column;
 		Var*    var;
+		Set*    set;
 		struct {
 			Str  string;
 			bool string_escape;

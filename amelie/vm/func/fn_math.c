@@ -717,11 +717,13 @@ fn_math_register(FunctionMgr* self)
 
 	// public.greatest()
 	func = function_allocate(TYPE_NULL, "public", "greatest", fn_greatest);
+	function_unset(func, FN_CONST);
 	function_set(func, FN_DERIVE);
 	function_mgr_add(self, func);
 
 	// public.least()
 	func = function_allocate(TYPE_NULL, "public", "least", fn_least);
+	function_unset(func, FN_CONST);
 	function_set(func, FN_DERIVE);
 	function_mgr_add(self, func);
 }

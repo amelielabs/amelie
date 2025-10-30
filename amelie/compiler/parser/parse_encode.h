@@ -99,6 +99,12 @@ ast_encode(Ast* self, Lex* lex, Local* local, Buf* buf)
 		encode_obj_end(buf);
 		break;
 	}
+
+	// precomputed value
+	case KVALUE:
+		value_encode(set_value(self->set, 0), local->timezone, buf);
+		break;
+
 	default:
 		lex_error(lex, self, "unexpected JSON value");
 		break;
@@ -137,4 +143,118 @@ ast_decode(Ast* self, uint8_t* json)
 		return -1;
 	}
 	return 0;
+}
+
+static inline void
+parse_encode_value(Stmt* self, Ast* ast, Value* value)
+{
+	switch (ast->id) {
+	// consts
+	case KNULL:
+		value_set_null(value);
+		break;
+	case KREAL:
+		value_set_double(value, ast->real);
+		break;
+	case KINT:
+		value_set_int(value, ast->integer);
+		break;
+	case KSTRING:
+		if (ast->string_escape)
+		{
+			auto buf = buf_create();
+			errdefer(buf_free, buf);
+			unescape_str(buf, &ast->string);
+			value_set_string_buf(value, buf);
+		} else {
+			value_set_string(value, &ast->string, NULL);
+		}
+		break;
+	case KTRUE:
+		value_set_bool(value, true);
+		break;
+	case KFALSE:
+		value_set_bool(value, false);
+		break;
+	case KNEG:
+		if (ast->l->id == KINT)
+			value_set_int(value, -ast->l->integer);
+		else
+		if (ast->l->id == KREAL)
+			value_set_double(value, -ast->l->real);
+		else
+			abort();
+		break;
+	case KUUID:
+	{
+		value_init(value);
+		value->type = TYPE_UUID;
+		auto uuid = &value->uuid;
+		uuid_init(uuid);
+		if (uuid_set_nothrow(uuid, &ast->string) == -1)
+			stmt_error(self, ast, "invalid uuid value");
+		break;
+	}
+
+	// time-related consts
+	case KINTERVAL:
+	{
+		value_init(value);
+		value->type = TYPE_INTERVAL;
+		auto iv = &value->interval;
+		interval_init(iv);
+		if (unlikely(error_catch( interval_set(iv, &ast->string) )))
+			stmt_error(self, ast, "invalid interval value");
+		break;
+	}
+	case KTIMESTAMP:
+	{
+		Timestamp ts;
+		timestamp_init(&ts);
+		if (unlikely(error_catch( timestamp_set(&ts, &ast->string) )))
+			stmt_error(self, ast, "invalid timestamp value");
+		value_set_timestamp(value, timestamp_get_unixtime(&ts, self->parser->local->timezone));
+		break;
+	}
+	case KDATE:
+	{
+		int julian;
+		if (unlikely(error_catch( julian = date_set(&ast->string) )))
+			stmt_error(self, ast, "invalid date value");
+		value_set_date(value, julian);
+		break;
+	}
+	case KCURRENT_TIMESTAMP:
+	{
+		value_set_timestamp(value, self->parser->local->time_us);
+		break;
+	}
+	case KCURRENT_DATE:
+	{
+		value_set_date(value, timestamp_date(self->parser->local->time_us));
+		break;
+	}
+
+	// json
+	case '{':
+	case KARRAY:
+	{
+		auto args = ast_args_of(ast->l);
+		assert(args->constable);
+		auto buf = buf_create();
+		errdefer(buf_free, buf);
+		ast_encode(ast, &self->parser->lex, self->parser->local, buf);
+		value_set_json_buf(value, buf);
+		break;
+	}
+
+	// precomputed value
+	case KVALUE:
+		value_copy(value, set_value(ast->set, 0));
+		break;
+
+	default:
+		abort();
+		break;
+	}
 }

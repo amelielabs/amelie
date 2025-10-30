@@ -126,6 +126,9 @@ priority_map[KEYWORD_MAX] =
 	[KVAR]                     = priority_value
 };
 
+static Ast*
+expr_func_constify(Stmt*, Ast*, Ast*);
+
 hot static inline void
 expr_pop(Stmt* self, AstStack* ops, AstStack* result)
 {
@@ -144,6 +147,15 @@ expr_pop(Stmt* self, AstStack* ops, AstStack* result)
 		if (unlikely(head->r == NULL || head->l == NULL))
 			stmt_error(self, head, "bad expression");
 	}
+
+	// apply method constify, if possible
+	if (head->id == KMETHOD)
+	{
+		auto value = expr_func_constify(self, head->r, head->l);
+		if (value->id == KVALUE)
+			head = value;
+	}
+
 	ast_push(result, head);
 }
 
@@ -162,7 +174,7 @@ expr_operator(Stmt* self, AstStack* ops, AstStack* result, Ast* op, int prio)
 }
 
 hot static inline bool
-expr_is_constable(Ast* self)
+expr_is_const(Ast* self)
 {
 	switch (self->id) {
 	// consts
@@ -190,6 +202,9 @@ expr_is_constable(Ast* self)
 	case '{':
 	case KARRAY:
 		return ast_args_of(self->l)->constable;
+	// precomputed value
+	case KVALUE:
+		return true;
 	}
 	return false;
 }
@@ -217,7 +232,7 @@ parse_expr_args(Stmt* self, Expr* expr, int endtoken, bool obj_separator)
 		count++;
 
 		// check if the argument can be encoded during compilation
-		if (! expr_is_constable(ast))
+		if (! expr_is_const(ast))
 			constable = false;
 
 		// :
@@ -243,6 +258,89 @@ done:;
 	args->ast.integer = count;
 	args->constable   = constable;
 	return &args->ast;
+}
+
+static Ast*
+expr_func_constify(Stmt* self, Ast* ast, Ast* first_arg)
+{
+	// try to execute function during compile time, if possible
+	auto func = ast_func_of(ast);
+	if (! (func->fn && func->fn->flags & FN_CONST))
+		return ast;
+
+	// ensure that args are constable
+	auto parser = self->parser;
+	auto args   = func->ast.r;
+	auto argc   = 0;
+	if (first_arg)
+	{
+		if (! expr_is_const(first_arg))
+			return ast;
+		argc++;
+	}
+	if (args)
+	{
+		if (! ast_args_of(args)->constable)
+			return ast;
+		argc += args->integer;
+	}
+
+	// reserve arguments and result
+	auto argv = set_cache_create(parser->set_cache, &parser->program->sets);
+	set_prepare(argv, argc, 0, NULL);
+	set_reserve(argv);
+
+	// emit arguments and reserve result
+	if (argc > 0)
+	{
+		auto arg_pos = 0;
+		if (first_arg)
+		{
+			auto value = set_value(argv, arg_pos);
+			value_init(value);
+			parse_encode_value(self, first_arg, value);
+			arg_pos++;
+		}
+		if (args)
+		{
+			auto arg = args->l;
+			for (; arg; arg = arg->next)
+			{
+				auto value = set_value(argv, arg_pos);
+				value_init(value);
+				parse_encode_value(self, arg, value);
+				arg_pos++;
+			}
+		}
+	}
+
+	// result
+	auto result = set_cache_create(parser->set_cache, &parser->program->sets);
+	set_prepare(result, 1, 0, NULL);
+	set_reserve(result);
+
+	auto result_value = set_value(result, 0);
+	value_init(result_value);
+
+	// execute function
+	Fn fn;
+	fn.argc     = argc;
+	fn.argv     = set_value(argv, 0);
+	fn.result   = result_value;
+	fn.action   = FN_EXECUTE;
+	fn.function = func->fn;
+	fn.local    = self->parser->local;
+	fn.context  = NULL;
+	func->fn->function(&fn);
+
+	// free args
+	set_list_unlink(&parser->program->sets, argv);
+	set_cache_push(parser->set_cache, argv);
+
+	// return result as KVALUE
+	ast->id  = KVALUE;
+	ast->set = result;
+	return ast;
 }
 
 static Ast*
@@ -284,6 +382,7 @@ expr_func(Stmt* self, Expr* expr, Ast* path, bool with_args)
 		if (access_has_targets(access_udf))
 			self->udfs_sending = true;
 	}
+
 	if (with_args)
 	{
 		auto args = parse_expr_args(self, expr, ')', false);
@@ -443,6 +542,12 @@ expr_extract(Stmt* self, Expr* expr, Ast* value)
 	value->r = &ast_args_allocate()->ast;
 	value->r->l       = field;
 	value->r->integer = 2;
+
+	if (expr_is_const(time))
+	{
+		ast_args_of(value->r)->constable = true;
+		return expr_func_constify(self, value, NULL);
+	}
 	return value;
 }
 
@@ -456,6 +561,8 @@ expr_cast(Stmt* self, Expr* expr)
 	auto args = &ast_args_allocate()->ast;
 	args->l       = parse_expr(self, expr);
 	args->integer = 1;
+	if (expr_is_const(args->l))
+		ast_args_of(args)->constable = true;
 
 	// AS
 	stmt_expect(self, KAS);
@@ -511,7 +618,7 @@ expr_cast(Stmt* self, Expr* expr)
 
 	auto call = expr_func(self, expr, name, false);
 	call->r = args;
-	return call;
+	return expr_func_constify(self, call, NULL);
 }
 
 hot static inline Ast*
@@ -559,6 +666,7 @@ expr_value(Stmt* self, Expr* expr, Ast* value)
 		stmt_expect(self, '(');
 		value->id = KNAME;
 		value = expr_func(self, expr, value, true);
+		value = expr_func_constify(self, value, NULL);
 		break;
 	}
 
@@ -618,6 +726,7 @@ expr_value(Stmt* self, Expr* expr, Ast* value)
 		{
 			value->id = KNAME;
 			value = expr_func(self, expr, value, true);
+			value = expr_func_constify(self, value, NULL);
 			break;
 		}
 		// interval 'spec'
@@ -634,6 +743,7 @@ expr_value(Stmt* self, Expr* expr, Ast* value)
 		{
 			value->id = KNAME;
 			value = expr_func(self, expr, value, true);
+			value = expr_func_constify(self, value, NULL);
 			break;
 		}
 		// timestamp 'spec'
@@ -650,6 +760,7 @@ expr_value(Stmt* self, Expr* expr, Ast* value)
 		{
 			value->id = KNAME;
 			value = expr_func(self, expr, value, true);
+			value = expr_func_constify(self, value, NULL);
 			break;
 		}
 		// date 'spec'
@@ -677,6 +788,7 @@ expr_value(Stmt* self, Expr* expr, Ast* value)
 		{
 			value->id = KNAME;
 			value = expr_func(self, expr, value, true);
+			value = expr_func_constify(self, value, NULL);
 			break;
 		}
 		// uuid 'spec'
@@ -693,6 +805,7 @@ expr_value(Stmt* self, Expr* expr, Ast* value)
 		// function(expr, ...)
 		if (stmt_if(self,'(')) {
 			value = expr_func(self, expr, value, true);
+			value = expr_func_constify(self, value, NULL);
 			break;
 		}
 
@@ -715,6 +828,7 @@ expr_value(Stmt* self, Expr* expr, Ast* value)
 		if (stmt_if(self,'('))
 		{
 			value = expr_func(self, expr, value, true);
+			value = expr_func_constify(self, value, NULL);
 			break;
 		}
 

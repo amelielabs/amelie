@@ -43,6 +43,7 @@ enum
 	CPUSH_DATE,
 	CPUSH_VECTOR,
 	CPUSH_UUID,
+	CPUSH_VALUE,
 	CPOP,
 
 	// consts
@@ -59,6 +60,7 @@ enum
 	CDATE,
 	CVECTOR,
 	CUUID,
+	CVALUE,
 
 	// argument
 	CEXCLUDED,

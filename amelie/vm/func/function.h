@@ -19,8 +19,9 @@ typedef void (*FunctionMain)(Fn*);
 enum
 {
 	FN_NONE    = 0,
-	FN_DERIVE  = 1 << 1,
-	FN_CONTEXT = 1 << 2
+	FN_DERIVE  = 1 << 0,
+	FN_CONTEXT = 1 << 1,
+	FN_CONST   = 1 << 2
 };
 
 struct Function
@@ -43,7 +44,7 @@ function_allocate(int          type,
 	Function* self = am_malloc(sizeof(Function));
 	self->type     = type;
 	self->function = function;
-	self->flags    = FN_NONE;
+	self->flags    = FN_CONST;
 	str_init(&self->schema);
 	str_init(&self->name);
 	str_set_cstr(&self->schema, schema);
@@ -63,4 +64,10 @@ static inline void
 function_set(Function* self, int flags)
 {
 	self->flags |= flags;
+}
+
+static inline void
+function_unset(Function* self, int flags)
+{
+	self->flags &= ~flags;
 }

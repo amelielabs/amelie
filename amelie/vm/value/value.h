@@ -121,12 +121,26 @@ value_set_string(Value* self, Str* value, Buf* buf)
 }
 
 always_inline hot static inline void
+value_set_string_buf(Value* self, Buf* buf)
+{
+	self->type = TYPE_STRING;
+	self->buf  = buf;
+	buf_str(buf, &self->string);
+}
+
+always_inline hot static inline void
 value_set_json(Value* self, uint8_t* json, int json_size, Buf* buf)
 {
 	self->type      = TYPE_JSON;
 	self->json      = json;
 	self->json_size = json_size;
 	self->buf       = buf;
+}
+
+always_inline hot static inline void
+value_set_json_buf(Value* self, Buf* buf)
+{
+	value_set_json(self, buf->start, buf_size(buf), buf);
 }
 
 always_inline hot static inline void
@@ -148,12 +162,6 @@ value_set_interval(Value* self, Interval* value)
 {
 	self->type     = TYPE_INTERVAL;
 	self->interval = *value;
-}
-
-always_inline hot static inline void
-value_set_json_buf(Value* self, Buf* buf)
-{
-	value_set_json(self, buf->start, buf_size(buf), buf);
 }
 
 always_inline hot static inline void

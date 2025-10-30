@@ -68,6 +68,7 @@ OpDesc ops[] =
 	{ CPUSH_DATE, "push_date" },
 	{ CPUSH_VECTOR, "push_vector" },
 	{ CPUSH_UUID, "push_uuid" },
+	{ CPUSH_VALUE, "push_value" },
 	{ CPOP, "pop" },
 
 	// consts
@@ -84,6 +85,7 @@ OpDesc ops[] =
 	{ CDATE, "date" },
 	{ CVECTOR, "vector" },
 	{ CUUID, "uuid" },
+	{ CVALUE, "value" },
 
 	// argument
 	{ CEXCLUDED, "excluded" },
@@ -431,6 +433,15 @@ op_dump(Program* self, Code* code, Buf* buf)
 			op_write(output, op, true, true, true, "%g", dbl);
 			break;
 		}
+
+		case CPUSH_VALUE:
+		{
+			auto value = (Value*)op->a;
+			op_write(output, op, false, true, true, "%s",
+			         type_of(value->type));
+			break;
+		}
+
 		case CSET_PTR:
 			op_write(output, op, true, false, true, NULL);
 			break;
@@ -526,6 +537,13 @@ op_dump(Program* self, Code* code, Buf* buf)
 			         str_of(&udf->config->schema),
 			         str_size(&udf->config->name),
 			         str_of(&udf->config->name));
+			break;
+		}
+		case CVALUE:
+		{
+			auto value = (Value*)op->b;
+			op_write(output, op, true, false, true, "%s",
+			         type_of(value->type));
 			break;
 		}
 		case CRET:

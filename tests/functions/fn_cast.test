@@ -117,6 +117,7 @@ select "00000000-0000-0000-0000-000000000001"::uuid::string;
 select '{"id": 42, "data": [1,2,3]}'::json_import;
 select '{"id": 42, "data": [1,2,3]}'::json_import::string;
 select '{"id": 42, "data": [1,2,3]}'::json_import::string::json_import;
+explain select '{"id": 42, "data": [1,2,3]}'::json_import::string::json_import;
 select 123::json_import;
 
 # test: json(null)

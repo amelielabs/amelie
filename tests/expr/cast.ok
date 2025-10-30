@@ -20,6 +20,14 @@ select cast (true as bool);
 [true]
 select cast (false as bool);
 [false]
+explain select cast (false as bool);
+[{
+  "main": {
+    "00": "value               0      -      0     # bool",
+    "01": "ret                 0      0      -     "
+  },
+  "access": []
+}]
 # test: cast (bool as int)
 select cast (true as int)::type;
 ["int"]
@@ -94,6 +102,14 @@ select cast (123 as date);
 # test: cast (int as timestamp)
 select cast (123 as timestamp);
 ["1970-01-01 00:00:00.000123+00"]
+explain select cast (123 as timestamp);
+[{
+  "main": {
+    "00": "value               0      -      0     # timestamp",
+    "01": "ret                 0      0      -     "
+  },
+  "access": []
+}]
 # test: cast (int as interval)
 select cast (123 as interval);
 {"msg": "interval(❰int❱ ⟵ unsupported argument type"}
@@ -201,6 +217,14 @@ select cast ('string' as uuid);
 {"msg": "failed to parse uuid"}
 select cast ('00000000-0000-0000-0000-000000000000' as uuid);
 ["00000000-0000-0000-0000-000000000000"]
+explain select cast ('00000000-0000-0000-0000-000000000000' as uuid);
+[{
+  "main": {
+    "00": "value               0      -      0     # uuid",
+    "01": "ret                 0      0      -     "
+  },
+  "access": []
+}]
 # test: cast (json as bool)
 select cast (true::json as bool)::type;
 ["bool"]

@@ -85,6 +85,14 @@ select [1,2,3]::pop_back::pop_back::pop_back;
 [[]]
 select [1,2,3]::pop_back::pop_back::pop_back::pop_back;
 [[]]
+explain select [1,2,3]::pop_back::pop_back::pop_back::pop_back;
+[{
+  "main": {
+    "00": "value               0      -      0     # json",
+    "01": "ret                 0      0      -     "
+  },
+  "access": []
+}]
 # test: put()
 select put(null);
 {"msg": "put(null) ⟵ expected 3 arguments"}
@@ -143,6 +151,14 @@ select []::append(1)::append(2)::append(3)::remove(0)::remove(0)::remove(0);
 [[]]
 select []::append(1,2,3)::remove(0)::remove(0)::remove(0);
 [[]]
+explain select []::append(1,2,3)::remove(0)::remove(0)::remove(0);
+[{
+  "main": {
+    "00": "value               0      -      0     # json",
+    "01": "ret                 0      0      -     "
+  },
+  "access": []
+}]
 # test: set()
 select set(null, "id", 42);
 [null]
@@ -157,6 +173,16 @@ select {}::set("id", 42)::set("data", [1,2,3]);
 }]
 select {}::set("id", 42)::set("data", {"misc": null}).data.misc;
 [null]
+explain select {}::set("id", 42)::set("data", {"misc": null}).data.misc;
+[{
+  "main": {
+    "00": "value               0      -      0     # json",
+    "01": "string              1      0      0     # data.misc",
+    "02": "dotjs               2      0      1     ",
+    "03": "ret                 2      0      -     "
+  },
+  "access": []
+}]
 select set({"a": 0}, "a", 1);
 [{
   "a": 1
@@ -233,6 +259,14 @@ select set({"a": {"b": 22}, "c": 88}, "a.b", 34);
 }]
 select set({"a": {"b": 22}, "c": 88}, "a.b", 34)::size;
 [2]
+explain select set({"a": {"b": 22}, "c": 88}, "a.b", 34)::size;
+[{
+  "main": {
+    "00": "value               0      -      0     # int",
+    "01": "ret                 0      0      -     "
+  },
+  "access": []
+}]
 select set([], 0, 1);
 {"msg": "set(❰json❱ ⟵ json object expected"}
 # test: unset()
@@ -255,6 +289,14 @@ select {"a": 1, "b": 2, "c": 3}::unset("a")::unset("c")::unset("b");
 select {"a": 1, "b": 2, "c": 3}::unset("a")::unset("c")::unset("b")::set("a", 42);
 [{
   "a": 42
+}]
+explain select {"a": 1, "b": 2, "c": 3}::unset("a")::unset("c")::unset("b")::set("a", 42);
+[{
+  "main": {
+    "00": "value               0      -      0     # json",
+    "01": "ret                 0      0      -     "
+  },
+  "access": []
 }]
 select unset({}, "a");
 [{}]
@@ -308,6 +350,14 @@ select unset({"a": {"b": {"c": {"d": 0, "v": 77}}}}, "a.b.c.d");
     }
   }
 }]
+explain select unset({"a": {"b": {"c": {"d": 0, "v": 77}}}}, "a.b.c.d");
+[{
+  "main": {
+    "00": "value               0      -      0     # json",
+    "01": "ret                 0      0      -     "
+  },
+  "access": []
+}]
 select unset([1], 0);
 {"msg": "unset(❰json❱ ⟵ json object expected"}
 # test: has()
@@ -317,6 +367,14 @@ select {"id": null}::has("id");
 [true]
 select {"id": null, "data": {"misc": true}}::has("data.misc");
 [true]
+explain select {"id": null, "data": {"misc": true}}::has("data.misc");
+[{
+  "main": {
+    "00": "value               0      -      0     # bool",
+    "01": "ret                 0      0      -     "
+  },
+  "access": []
+}]
 select has({"a": 0}, "a");
 [true]
 select has({"a": 0}, "b");
@@ -325,5 +383,13 @@ select has({"a": {"b": 777}}, "a.b");
 [true]
 select has({"a": {"b": 777}}, "a.c");
 [false]
+explain select has({"a": {"b": 777}}, "a.c");
+[{
+  "main": {
+    "00": "value               0      -      0     # bool",
+    "01": "ret                 0      0      -     "
+  },
+  "access": []
+}]
 disconnect S0;
 close E0;

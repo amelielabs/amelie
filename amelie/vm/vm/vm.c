@@ -142,6 +142,7 @@ vm_run(Vm*       self,
 		&&cpush_date,
 		&&cpush_vector,
 		&&cpush_uuid,
+		&&cpush_value,
 		&&cpop,
 
 		// consts
@@ -158,6 +159,7 @@ vm_run(Vm*       self,
 		&&cdate,
 		&&cvector,
 		&&cuuid,
+		&&cvalue,
 
 		// upsert
 		&&cexcluded,
@@ -597,6 +599,13 @@ cpush_uuid:
 	value_set_uuid(a, (Uuid*)code_data_at(code_data, op->a));
 	op_next;
 
+cpush_value:
+	// [value*]
+	a = stack_push(stack);
+	value_init(a);
+	value_copy(a, (Value*)op->a);
+	op_next;
+
 cpop:
 	value_free(stack_pop(stack));
 	op_next;
@@ -654,6 +663,12 @@ cvector:
 
 cuuid:
 	value_set_uuid(&r[op->a], (Uuid*)code_data_at(code_data, op->b));
+	op_next;
+
+cvalue:
+	// [result, value*]
+	b = (Value*)op->b;
+	value_copy(&r[op->a], b);
 	op_next;
 
 cexcluded:

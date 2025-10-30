@@ -820,7 +820,7 @@ explain select [null][0] = null;
 }]
 # test: json = unsupported
 select [1,2,3] = [1,2,3]::vector;
-{"msg": "select [1,2,3] = [1,2,3]❰::❱ ⟵ operation json = vector is not supported"}
+{"msg": "select [1,2,3] = [1,2,3]::❰vector❱ ⟵ operation json = vector is not supported"}
 # test: json <> json
 select [1,2,3] <> [1,2,3];
 [false]
@@ -872,7 +872,7 @@ explain select [null][0] <> null;
 }]
 # test: json <> unsupported
 select [1,2,3] <> [1,2,3]::vector;
-{"msg": "select [1,2,3] <> [1,2,3]❰::❱ ⟵ operation json = vector is not supported"}
+{"msg": "select [1,2,3] <> [1,2,3]::❰vector❱ ⟵ operation json = vector is not supported"}
 # test: json [] string
 select {"id":48}.id;
 [48]

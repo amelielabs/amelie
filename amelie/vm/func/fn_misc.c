@@ -269,18 +269,22 @@ fn_misc_register(FunctionMgr* self)
 	// public.error()
 	Function* func;
 	func = function_allocate(TYPE_NULL, "public", "error", fn_throw);
+	function_unset(func, FN_CONST);
 	function_mgr_add(self, func);
 
 	// public.sleep()
 	func = function_allocate(TYPE_NULL, "public", "sleep", fn_sleep);
+	function_unset(func, FN_CONST);
 	function_mgr_add(self, func);
 
 	// public.random()
 	func = function_allocate(TYPE_INT, "public", "random", fn_random);
+	function_unset(func, FN_CONST);
 	function_mgr_add(self, func);
 
 	// public.random_uuid()
 	func = function_allocate(TYPE_UUID, "public", "random_uuid", fn_random_uuid);
+	function_unset(func, FN_CONST);
 	function_mgr_add(self, func);
 
 	// public.md5()
@@ -301,6 +305,7 @@ fn_misc_register(FunctionMgr* self)
 
 	// public.identity_of()
 	func = function_allocate(TYPE_INT, "public", "identity_of", fn_identity_of);
+	function_unset(func, FN_CONST);
 	function_mgr_add(self, func);
 
 	// public.jwt()

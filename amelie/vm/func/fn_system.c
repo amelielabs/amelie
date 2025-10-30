@@ -407,73 +407,91 @@ fn_system_register(FunctionMgr* self)
 	// system.config()
 	Function* func;
 	func = function_allocate(TYPE_JSON, "system", "config", fn_config);
+	function_unset(func, FN_CONST);
 	function_mgr_add(self, func);
 
 	// system.state()
 	func = function_allocate(TYPE_JSON, "system", "state", fn_state);
+	function_unset(func, FN_CONST);
 	function_mgr_add(self, func);
 
 	// system.users()
 	func = function_allocate(TYPE_JSON, "system", "users", fn_users);
+	function_unset(func, FN_CONST);
 	function_mgr_add(self, func);
 
 	// system.user()
 	func = function_allocate(TYPE_JSON, "system", "user", fn_user);
+	function_unset(func, FN_CONST);
 	function_mgr_add(self, func);
 
 	// system.replicas()
 	func = function_allocate(TYPE_JSON, "system", "replicas", fn_replicas);
+	function_unset(func, FN_CONST);
 	function_mgr_add(self, func);
 
 	// system.replica()
 	func = function_allocate(TYPE_JSON, "system", "replica", fn_replica);
+	function_unset(func, FN_CONST);
 	function_mgr_add(self, func);
 
 	// system.replica(uuid)
 	func = function_allocate(TYPE_JSON, "system", "replica", fn_replica);
+	function_unset(func, FN_CONST);
 	function_mgr_add(self, func);
 
 	// system.repl()
 	func = function_allocate(TYPE_JSON, "system", "repl", fn_repl);
+	function_unset(func, FN_CONST);
 	function_mgr_add(self, func);
 
 	// system.replication()
 	func = function_allocate(TYPE_JSON, "system", "replication", fn_repl);
+	function_unset(func, FN_CONST);
 	function_mgr_add(self, func);
 
 	// system.schemas()
 	func = function_allocate(TYPE_JSON, "system", "schemas", fn_schemas);
+	function_unset(func, FN_CONST);
 	function_mgr_add(self, func);
 
 	// system.schema()
 	func = function_allocate(TYPE_JSON, "system", "schema", fn_schema);
+	function_unset(func, FN_CONST);
 	function_mgr_add(self, func);
 
 	// system.tables()
 	func = function_allocate(TYPE_JSON, "system", "tables", fn_tables);
+	function_unset(func, FN_CONST);
 	function_mgr_add(self, func);
 
 	// system.table()
 	func = function_allocate(TYPE_JSON, "system", "table", fn_table);
+	function_unset(func, FN_CONST);
 	function_mgr_add(self, func);
 
 	// system.functions()
 	func = function_allocate(TYPE_JSON, "system", "functions", fn_functions);
+	function_unset(func, FN_CONST);
 	function_mgr_add(self, func);
 
 	// system.function()
 	func = function_allocate(TYPE_JSON, "system", "function", fn_function);
+	function_unset(func, FN_CONST);
 	function_mgr_add(self, func);
 
 	// system.wal()
 	func = function_allocate(TYPE_JSON, "system", "wal", fn_wal);
+	function_unset(func, FN_CONST);
 	function_mgr_add(self, func);
 
 	// system.metrics()
 	func = function_allocate(TYPE_JSON, "system", "metrics", fn_metrics);
+	function_unset(func, FN_CONST);
 	function_mgr_add(self, func);
 
 	// system.show()
 	func = function_allocate(TYPE_JSON, "system", "show", fn_show);
+	function_unset(func, FN_CONST);
 	function_mgr_add(self, func);
 }

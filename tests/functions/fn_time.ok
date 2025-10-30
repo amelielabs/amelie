@@ -32,9 +32,25 @@ select '2020-02-11 15:44:17'::timestamp::date_bin('100 ms'::interval);
 ["2020-02-11 15:44:17+00"]
 select '2020-02-11 15:44:17'::timestamp::date_bin('250 us'::interval);
 ["2020-02-11 15:44:17+00"]
+explain select '2020-02-11 15:44:17'::timestamp::date_bin('250 us'::interval);
+[{
+  "main": {
+    "00": "value               0      -      0     # timestamp",
+    "01": "ret                 0      0      -     "
+  },
+  "access": []
+}]
 # test: date_bin(negative interval)
 select date_bin(INTERVAL '-15 minutes', TIMESTAMP '2020-02-11 15:44:17', TIMESTAMP '2001-01-01 00:00:00');
 {"msg": "date_bin(interval, timestamp, timestamp) ⟵ invalid interval"}
+explain select date_bin(INTERVAL '15 minutes', TIMESTAMP '2020-02-11 15:44:17', TIMESTAMP '2001-01-01 00:00:00');
+[{
+  "main": {
+    "00": "value               0      -      0     # timestamp",
+    "01": "ret                 0      0      -     "
+  },
+  "access": []
+}]
 # test: date_bin(month)
 select date_bin(INTERVAL '1 month 15 minutes', TIMESTAMP '2020-02-11 15:44:17', TIMESTAMP '2001-01-01 00:00:00');
 {"msg": "date_bin(interval, timestamp, timestamp) ⟵ month and year intervals are not supported"}
@@ -299,6 +315,14 @@ select extract('min' FROM INTERVAL '12 years 5 month 3 days 2 hr 47 min 33 sec 5
 [47]
 select EXTRACT(min FROM INTERVAL '12 years 5 month 3 days 2 hr 47 min 33 sec 500 ms');
 [47]
+explain select EXTRACT(min FROM INTERVAL '12 years 5 month 3 days 2 hr 47 min 33 sec 500 ms');
+[{
+  "main": {
+    "00": "value               0      -      0     # int",
+    "01": "ret                 0      0      -     "
+  },
+  "access": []
+}]
 # test: extract from timestamp
 select extract(us FROM TIMESTAMP '2001-01-16 20:38:40.123456');
 [123456]

@@ -320,6 +320,7 @@ fn_time_register(FunctionMgr* self)
 	// public.now()
 	Function* func;
 	func = function_allocate(TYPE_TIMESTAMP, "public", "now", fn_now);
+	function_unset(func, FN_CONST);
 	function_mgr_add(self, func);
 
 	// public.at_timezone()

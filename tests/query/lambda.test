@@ -56,8 +56,9 @@ select id -> self + 1 from test;
 select (select 1 + 2) -> self + 1 from test;
 
 select 1 + 2 -> self + 1 from test;
+
+select null -> 1 from test;
 select null::int -> 1 from test;
-select null::int -> 1 from test where id > 10;
 
 # test: select subquery -> from table
 select (select data from test t where id = 3) -> self + 1 from test;

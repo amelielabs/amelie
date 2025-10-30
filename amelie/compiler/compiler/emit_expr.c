@@ -991,6 +991,13 @@ emit_expr(Compiler* self, From* from, Ast* ast)
 	case KARRAY:
 		return emit_json(self, from, ast);
 
+	// precomputed value
+	case KVALUE:
+	{
+		auto value = set_value(ast->set, 0);
+		return op2(self, CVALUE, rpin(self, value->type), (intptr_t)value);
+	}
+
 	// variable
 	case KVAR:
 	{
@@ -1295,6 +1302,12 @@ emit_push(Compiler* self, From* from, Ast* ast)
 		ast_encode(ast, &self->parser.lex, self->parser.local, &self->code_data->data);
 		op1(self, CPUSH_JSON, offset);
 		return TYPE_JSON;
+	}
+	case KVALUE:
+	{
+		auto value = set_value(ast->set, 0);
+		op1(self, CPUSH_VALUE, (intptr_t)value);
+		return value->type;
 	}
 	case KVAR:
 	{

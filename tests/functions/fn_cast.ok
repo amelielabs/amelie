@@ -146,6 +146,14 @@ select '{"id": 42, "data": [1,2,3]}'::json_import::string::json_import;
   "id": 42,
   "data": [1, 2, 3]
 }]
+explain select '{"id": 42, "data": [1,2,3]}'::json_import::string::json_import;
+[{
+  "main": {
+    "00": "value               0      -      0     # json",
+    "01": "ret                 0      0      -     "
+  },
+  "access": []
+}]
 select 123::json_import;
 {"msg": "json_import(❰int❱ ⟵ unsupported argument type"}
 # test: json(null)

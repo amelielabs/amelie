@@ -44,3 +44,10 @@ set_list_add(SetList* self, Set* set)
 	list_append(&self->list, &set->link);
 	self->list_count++;
 }
+
+static inline void
+set_list_unlink(SetList* self, Set* set)
+{
+	list_unlink(&set->link);
+	self->list_count--;
+}
