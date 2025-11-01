@@ -101,7 +101,7 @@ path_ops_add(PathOps* self, Ast* expr, int start, int end)
 		auto and = ast(KAND);
 		and->l = gte;
 		and->r = lte;
-		and->integer = end;
+		and->integer = expr->r->integer;
 		path_ops_add(self, and, start, end);
 	}
 	default:

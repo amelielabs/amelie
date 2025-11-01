@@ -1009,6 +1009,11 @@ parse_op(Stmt*     self, Expr* expr,
 	}
 	case KBETWEEN:
 	{
+		// save last position in the names list
+		auto between_end = 0;
+		if (expr && expr->names)
+			between_end = expr->names->count;
+
 		// expr [NOT] BETWEEN x AND y
 		ast->integer = !not;
 		auto x = expr_value_between(self);
@@ -1020,6 +1025,7 @@ parse_op(Stmt*     self, Expr* expr,
 		//            x     y
 		r->l = x;
 		r->r = y;
+		r->integer = between_end;
 		ast_push(result, r);
 		break;
 	}
