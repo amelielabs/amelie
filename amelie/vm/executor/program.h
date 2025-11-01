@@ -19,6 +19,7 @@ struct Program
 	Code     code_backend;
 	CodeData code_data;
 	Access   access;
+	Buf      explain;
 	SetList  sets;
 	int      lock;
 	int      send_last;
@@ -40,6 +41,7 @@ program_allocate(void)
 	code_init(&self->code_backend);
 	code_data_init(&self->code_data);
 	access_init(&self->access);
+	buf_init(&self->explain);
 	set_list_init(&self->sets);
 	return self;
 }
@@ -53,6 +55,7 @@ program_free(Program* self)
 	code_free(&self->code_backend);
 	code_data_free(&self->code_data);
 	access_free(&self->access);
+	buf_free(&self->explain);
 	am_free(self);
 }
 
@@ -68,6 +71,7 @@ program_reset(Program* self, SetCache* cache)
 	code_reset(&self->code_backend);
 	code_data_reset(&self->code_data);
 	access_reset(&self->access);
+	buf_reset(&self->explain);
 	set_cache_push_list(cache, &self->sets);
 }
 

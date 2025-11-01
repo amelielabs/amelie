@@ -440,6 +440,7 @@ select test();
 [1]
 explain execute test();
 [{
+  "function": "public.test",
   "main": {
     "00": "set                 0      2      0     ",
     "01": "push_int            -      0      0     # 1",
@@ -479,6 +480,7 @@ select test();
 [null]
 explain execute test();
 [{
+  "function": "public.test",
   "main": {
     "00": "push_nulls          1      0      0     ",
     "01": "var                 0      0      0     ",
@@ -522,6 +524,7 @@ select test();
 [1]
 explain execute test();
 [{
+  "function": "public.test",
   "main": {
     "00": "push_nulls          1      0      0     ",
     "01": "set                 0      2      0     ",
@@ -586,6 +589,7 @@ select test();
 [null]
 explain execute test();
 [{
+  "function": "public.test",
   "main": {
     "00": "push_nulls          1      0      0     ",
     "01": "var                 0      0      0     ",
@@ -624,6 +628,7 @@ select test();
 [123]
 explain execute test();
 [{
+  "function": "public.test",
   "main": {
     "00": "push_nulls          1      0      0     ",
     "01": "int                 0      -      0     # 123",

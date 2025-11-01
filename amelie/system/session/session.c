@@ -54,7 +54,7 @@ session_create(Frontend* frontend)
 	self->lock_ref  = NULL;
 	self->frontend  = frontend;
 	local_init(&self->local);
-	explain_init(&self->explain);
+	profile_init(&self->profile);
 	vm_init(&self->vm, NULL, &self->dtr);
 	set_cache_init(&self->set_cache);
 	dtr_init(&self->dtr, &self->local, share()->core_mgr);
@@ -105,7 +105,7 @@ session_reset(Session* self)
 	vm_reset(&self->vm);
 	program_reset(self->program, &self->set_cache);
 	dtr_reset(&self->dtr);
-	explain_reset(&self->explain);
+	profile_reset(&self->profile);
 }
 
 void
@@ -168,7 +168,7 @@ session_execute_distributed(Session* self, Content* output)
 {
 	auto context = &self->query_context;
 	auto program = context->program;
-	auto explain = &self->explain;
+	auto profile = &self->profile;
 	auto dtr     = &self->dtr;
 
 	reg_prepare(&self->vm.r, program->code.regs);
@@ -178,7 +178,7 @@ session_execute_distributed(Session* self, Content* output)
 
 	// [PROFILE]
 	if (context->profile)
-		explain_start(&explain->time_run_us);
+		profile_start(&profile->time_run_us);
 
 	// execute coordinator
 	Return ret;
@@ -204,21 +204,12 @@ session_execute_distributed(Session* self, Content* output)
 
 	if (context->profile)
 	{
-		explain_end(&explain->time_run_us);
-		explain_start(&explain->time_commit_us);
+		profile_end(&profile->time_run_us);
+		profile_start(&profile->time_commit_us);
 	}
 
 	// coordinate wal write and group commit, handle group abort
 	commit(share()->commit, dtr, error);
-
-	// explain profile
-	if (context->profile)
-	{
-		explain_end(&explain->time_commit_us);
-		explain_run(explain, program, &self->local,
-		            output, true);
-		return;
-	}
 
 	// write result into content
 	if (ret.value && context->returning)
@@ -226,6 +217,13 @@ session_execute_distributed(Session* self, Content* output)
 		              context->returning_fmt,
 		              context->returning,
 		              ret.value);
+
+	// explain profile
+	if (context->profile)
+	{
+		profile_end(&profile->time_commit_us);
+		profile_create(profile, program, &self->local, output);
+	}
 }
 
 hot static inline void
@@ -236,9 +234,9 @@ session_execute_utility(Session* self, Content* output)
 	reg_prepare(&self->vm.r, program->code.regs);
 
 	// [PROFILE]
-	auto explain = &self->explain;
+	auto profile = &self->profile;
 	if (context->profile)
-		explain_start(&explain->time_run_us);
+		profile_start(&profile->time_run_us);
 
 	// execute utility/ddl transaction
 	Tr tr;
@@ -273,8 +271,8 @@ session_execute_utility(Session* self, Content* output)
 
 	if (context->profile)
 	{
-		explain_end(&explain->time_run_us);
-		explain_start(&explain->time_commit_us);
+		profile_end(&profile->time_run_us);
+		profile_start(&profile->time_commit_us);
 	} else
 	{
 		// write result into content
@@ -311,12 +309,11 @@ session_execute_utility(Session* self, Content* output)
 	// commit
 	tr_commit(&tr);
 
-	// explain profile
+	// profile
 	if (context->profile)
 	{
-		explain_end(&explain->time_commit_us);
-		explain_run(explain, program, &self->local,
-		            output, true);
+		profile_end(&profile->time_commit_us);
+		profile_create(profile, program, &self->local, output);
 	}
 }
 
@@ -357,9 +354,11 @@ session_execute_main(Session* self,
 	// [EXPLAIN]
 	if (context->explain)
 	{
-		explain_run(&self->explain, program,
-		            &self->local,
-		            output, false);
+		content_reset(output);
+		Str name;
+		str_set(&name, "explain", 7);
+		content_write_json_buf(output, self->local.format, &name,
+		                       &program->explain);
 		return;
 	}
 

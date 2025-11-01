@@ -122,6 +122,10 @@ query_compiler_parse(Query* query, QueryContext* ctx)
 
 	// generate bytecode
 	compiler_emit(compiler);
+
+	// generate explain
+	if (ctx->explain || ctx->profile)
+		explain(compiler, NULL, NULL);
 }
 
 static inline void
@@ -163,6 +167,10 @@ query_compiler_parse_endpoint(Query* query, QueryContext* ctx, EndpointType type
 
 	// generate bytecode
 	compiler_emit(compiler);
+
+	// generate explain
+	if (ctx->explain || ctx->profile)
+		explain(compiler, NULL, NULL);
 }
 
 // sql

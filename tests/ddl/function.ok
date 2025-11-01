@@ -57,6 +57,7 @@ select test();
 [null]
 explain execute test();
 [{
+  "function": "public.test",
   "main": {
     "00": "ret                 -1     0      -     "
   },
@@ -89,6 +90,7 @@ select test()::type;
 ["null"]
 explain execute test();
 [{
+  "function": "public.test",
   "main": {
     "00": "ret                 -1     0      -     "
   },
@@ -123,6 +125,7 @@ select test();
 [123]
 explain execute test();
 [{
+  "function": "public.test",
   "main": {
     "00": "int                 0      -      0     # 123",
     "01": "ret                 0      0      -     "
@@ -159,6 +162,7 @@ select test();
 [null]
 explain execute test();
 [{
+  "function": "public.test",
   "main": {
     "00": "int                 0      -      0     # 123",
     "01": "ret                 -1     0      -     "
@@ -194,6 +198,7 @@ select test();
 [123]
 explain execute test();
 [{
+  "function": "public.test",
   "main": {
     "00": "int                 0      -      0     # 123",
     "01": "ret                 0      0      -     "
@@ -427,6 +432,7 @@ select test(10);
 [45]
 explain execute test(10);
 [{
+  "function": "public.test",
   "main": {
     "00": "push_nulls          2      0      0     ",
     "01": "int                 0      -      0     # 0",
@@ -514,6 +520,7 @@ select [1,2,3]::reverse::reverse;
 [[1, 2, 3]]
 explain execute reverse([1,2,3]);
 [{
+  "function": "public.reverse",
   "main": {
     "00": "push_nulls          1      0      0     ",
     "01": "set                 0      1      0     ",
@@ -623,6 +630,7 @@ select [1,2,3]::reverse;
 [[3, 2, 1]]
 explain execute reverse([1,2,3]);
 [{
+  "function": "public.reverse",
   "main": {
     "00": "push_nulls          1      0      0     ",
     "01": "json                0      0      0     ",

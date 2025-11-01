@@ -116,6 +116,9 @@ catalog_if_udf_compile(Catalog* self, Udf* udf)
 	// generate bytecode
 	compiler_emit(&compiler);
 
+	// generate explain for udf
+	explain(&compiler, &udf->config->schema, &udf->config->name);
+
 	// assign udf program
 	udf->data = program;
 }

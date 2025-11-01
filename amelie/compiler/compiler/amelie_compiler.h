@@ -36,6 +36,9 @@
 #include "compiler/emit_utility.h"
 #include "compiler/pushdown.h"
 
+// explain
+#include "compiler/explain.h"
+
 // query
 #include "compiler/query.h"
 #include "compiler/query_mgr.h"

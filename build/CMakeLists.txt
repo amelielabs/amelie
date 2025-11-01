@@ -284,6 +284,7 @@ set(AMELIE_SOURCES_COMPILER
     ${AMELIE_ROOT}/compiler/parser/parse.c
     ${AMELIE_ROOT}/compiler/parser/parser.c
     ${AMELIE_ROOT}/compiler/compiler/compiler.c
+    ${AMELIE_ROOT}/compiler/compiler/explain.c
     ${AMELIE_ROOT}/compiler/compiler/cast.c
     ${AMELIE_ROOT}/compiler/compiler/path.c
     ${AMELIE_ROOT}/compiler/compiler/path_prepare.c
@@ -307,7 +308,6 @@ set(AMELIE_SOURCES_SYSTEM
     ${AMELIE_ROOT}/system/backend/backend.c
     ${AMELIE_ROOT}/system/backend/build.c
     ${AMELIE_ROOT}/system/backend/replay.c
-    ${AMELIE_ROOT}/system/session/explain.c
     ${AMELIE_ROOT}/system/session/session.c
     ${AMELIE_ROOT}/system/system/repository.c
     ${AMELIE_ROOT}/system/system/system.c

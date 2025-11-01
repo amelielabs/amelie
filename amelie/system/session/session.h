@@ -22,7 +22,7 @@ struct Session
 	QueryMgr     query_mgr;
 	SetCache     set_cache;
 	Dtr          dtr;
-	Explain      explain;
+	Profile      profile;
 	int          lock_type;
 	Lock*        lock;
 	Lock*        lock_ref;

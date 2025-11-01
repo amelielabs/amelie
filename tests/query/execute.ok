@@ -26,6 +26,7 @@ execute reverse(1, );
 # test: execute
 explain execute reverse([1,2,3]);
 [{
+  "function": "public.reverse",
   "main": {
     "00": "push_nulls          1      0      0     ",
     "01": "json                0      0      0     ",

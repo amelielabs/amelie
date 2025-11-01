@@ -11,5 +11,4 @@
 // AGPL-3.0 Licensed.
 //
 
-#include "session/profile.h"
-#include "session/session.h"
+void explain(Compiler*, Str*, Str*);
