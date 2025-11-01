@@ -75,8 +75,9 @@ parse_delete(Stmt* self)
 	{
 		Expr ctx;
 		expr_init(&ctx);
-		ctx.select  = true;
-		ctx.from = &stmt->from;
+		ctx.select = true;
+		ctx.names  = &stmt->from.list_names;
+		ctx.from   = &stmt->from;
 		stmt->expr_where = parse_expr(self, &ctx);
 	}
 

@@ -18,6 +18,8 @@ struct From
 	Target* list;
 	Target* list_tail;
 	int     count;
+	Ast*    join_on;
+	AstList list_names;
 	Block*  block;
 	From*   outer;
 };
@@ -28,8 +30,10 @@ from_init(From* self, Block* block)
 	self->list      = NULL;
 	self->list_tail = NULL;
 	self->count     = 0;
+	self->join_on   = NULL;
 	self->block     = block;
 	self->outer     = NULL;
+	ast_list_init(&self->list_names);
 }
 
 static inline void

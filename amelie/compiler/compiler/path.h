@@ -38,11 +38,10 @@ struct Path
 	int      type;
 	Target*  target;
 	int      match_start;
-	int      match_start_columns;
-	int      match_start_vars;
+	int      match_start_exprs;
 	int      match_stop;
 	PathKey  keys[];
 };
 
-Path*    path_create(Target*, Block*, Keys*, AstList*);
+Path*    path_create(Target*, Block* block, Keys*, PathOps*);
 uint32_t path_create_hash(Path*);

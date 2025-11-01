@@ -173,8 +173,8 @@ expr_operator(Stmt* self, AstStack* ops, AstStack* result, Ast* op, int prio)
 	ast_push(ops, op);
 }
 
-hot static inline bool
-expr_is_const(Ast* self)
+hot bool
+parse_expr_is_const(Ast* self)
 {
 	switch (self->id) {
 	// consts
@@ -232,7 +232,7 @@ parse_expr_args(Stmt* self, Expr* expr, int endtoken, bool obj_separator)
 		count++;
 
 		// check if the argument can be encoded during compilation
-		if (! expr_is_const(ast))
+		if (! parse_expr_is_const(ast))
 			constable = false;
 
 		// :
@@ -274,7 +274,7 @@ expr_func_constify(Stmt* self, Ast* ast, Ast* first_arg)
 	auto argc   = 0;
 	if (first_arg)
 	{
-		if (! expr_is_const(first_arg))
+		if (! parse_expr_is_const(first_arg))
 			return ast;
 		argc++;
 	}
@@ -543,7 +543,7 @@ expr_extract(Stmt* self, Expr* expr, Ast* value)
 	value->r->l       = field;
 	value->r->integer = 2;
 
-	if (expr_is_const(time))
+	if (parse_expr_is_const(time))
 	{
 		ast_args_of(value->r)->constable = true;
 		return expr_func_constify(self, value, NULL);
@@ -561,7 +561,7 @@ expr_cast(Stmt* self, Expr* expr)
 	auto args = &ast_args_allocate()->ast;
 	args->l       = parse_expr(self, expr);
 	args->integer = 1;
-	if (expr_is_const(args->l))
+	if (parse_expr_is_const(args->l))
 		ast_args_of(args)->constable = true;
 
 	// AS
@@ -811,12 +811,18 @@ expr_value(Stmt* self, Expr* expr, Ast* value)
 
 		// find variable by name
 		auto var = namespace_find_var(self->block->ns, &value->string);
-		if (! var)
+		if (var)
+		{
+			value->id  = KVAR;
+			value->var = var;
+			if (var->writer)
+				deps_add_var(&self->deps, var->writer, var);
 			break;
-		value->id  = KVAR;
-		value->var = var;
-		if (var->writer)
-			deps_add_var(&self->deps, var->writer, var);
+		}
+
+		// collect names, if necessary
+		if (expr && expr->names)
+			ast_list_add(expr->names, value);
 		break;
 	}
 
@@ -838,16 +844,22 @@ expr_value(Stmt* self, Expr* expr, Ast* value)
 
 		// find variable by name
 		auto var = namespace_find_var(self->block->ns, &name);
-		if (! var)
-			break;
-		value->id  = KVAR;
-		value->var = var;
-		if (var->writer)
-			deps_add_var(&self->deps, var->writer, var);
+		if (var)
+		{
+			value->id  = KVAR;
+			value->var = var;
+			if (var->writer)
+				deps_add_var(&self->deps, var->writer, var);
 
-		// .path
-		self->lex->pos = name.end;
-		self->lex->backlog = NULL;
+			// .path
+			self->lex->pos = name.end;
+			self->lex->backlog = NULL;
+			break;
+		}
+
+		// collect names, if necessary
+		if (expr && expr->names)
+			ast_list_add(expr->names, value);
 		break;
 	}
 
@@ -959,6 +971,14 @@ parse_op(Stmt*     self, Expr* expr,
 
 	bool unary = false;
 	switch (ast->id) {
+	case KAND:
+	{
+		unary = true;
+		// save last position in the names list
+		if (expr && expr->names)
+			ast->integer = expr->names->count;
+		break;
+	}
 	case '=':
 	case KNEQU:
 	case KGTE:

@@ -45,12 +45,11 @@ path_allocate(Target* target, Keys* keys)
 {
 	Path* self;
 	self = palloc(sizeof(Path) + sizeof(PathKey) * keys->list_count);
-	self->type                = PATH_SCAN;
-	self->target              = target;
-	self->match_start         = 0;
-	self->match_start_columns = 0;
-	self->match_start_vars    = 0;
-	self->match_stop          = 0;
+	self->type              = PATH_SCAN;
+	self->target            = target;
+	self->match_start       = 0;
+	self->match_start_exprs = 0;
+	self->match_stop        = 0;
 	list_foreach(&keys->list)
 	{
 		auto key = list_at(Key, link);
@@ -194,88 +193,97 @@ path_column(Path* self, Str* string)
 	return column;
 }
 
-static inline void
-path_key(Path* self, Block* block, PathKey* key, AstList* ops)
+static inline bool
+path_value(Path* self, Ast* key, PathOps* ops, PathOp* op)
 {
-	auto node = ops->list;
-	for (; node; node = node->next)
+	// compare op->start/end names and ensure they are outer columns,
+	// additionally skip the key reference
+	auto ref_order = 0;
+	auto ref = ops->names->list;
+	while (ref && ref_order < op->names_start)
 	{
-		// match the key against the expression
-		auto op = node->ast;
-		Ast* value;
-		if (path_key_compare(self, key, op->l))
-			value = op->r;
-		else
-		if (path_key_compare(self, key, op->r))
-			value = op->l;
-		else
-			continue;
-
-		// validate value according to the key type
-		auto column = key->key->column;
-		switch (value->id) {
-		case KINT:
-			if (unlikely(column->type != TYPE_INT))
-				continue;
-			break;
-		case KSTRING:
-			if (unlikely(column->type != TYPE_STRING))
-				continue;
-			break;
-		case KTIMESTAMP:
-			if (unlikely(column->type != TYPE_TIMESTAMP))
-				continue;
-			break;
-		case KUUID:
-			if (unlikely(column->type != TYPE_UUID))
-				continue;
-			break;
-		case KVALUE:
-			if (unlikely(column->type != set_value(value->set, 0)->type))
-				continue;
-			break;
-		case KVAR:
-			unused(block);
-			if (unlikely(column->type != value->var->type))
-				continue;
-			break;
-		case KNAME_COMPOUND:
+		ref = ref->next;
+		ref_order++;
+	}
+	while (ref && ref_order < op->names_end)
+	{
+		// allow only ther outer target columns
+		if (ref->ast == key) {
+			// skip the reference key
+		} else
+		if (ref->ast->id == KNAME_COMPOUND)
 		{
-			// match outer target [target.]column and find the column
-			auto match = path_column(self, &value->string);
-			if (! match)
-				continue;
-			if (column->type != match->type)
-				continue;
-			// todo: json var support
-			break;
+			// match the outer column
+			if (! path_column(self, &ref->ast->string))
+				return false;
+		} else {
+			// do not allow same target column references
+			assert(ref->ast->id == KNAME);
+			return false;
 		}
+
+		// todo: json var support
+		ref = ref->next;
+		ref_order++;
+	}
+	return true;
+}
+
+static inline void
+path_key(Path* self, PathKey* key, PathOps* ops)
+{
+	auto op = ops->list;
+	for (; op; op = op->next)
+	{
+		Ast* expr = op->op;
+
+		// match the key against the expression
+		Ast* expr_key;
+		Ast* expr_value;
+		if (path_key_compare(self, key, expr->l))
+		{
+			expr_key   = expr->l;
+			expr_value = expr->r;
+		} else
+		if (path_key_compare(self, key, expr->r))
+		{
+			expr_key   = expr->r;
+			expr_value = expr->l;
+		} else {
+			continue;
 		}
+
+		// validate all names used during the operation, ensure
+		// they are outer columns
+		if (ops->names)
+			if (! path_value(self, expr_key, ops, op))
+				continue;
 
 		// apply equ or range operation to the key
-		switch (op->id) {
+		switch (expr->id) {
 		case '>':
 		case KGTE:
 		case '=':
-			if (! path_start(key, op, value))
+			if (! path_start(key, expr, expr_value))
 				break;
-			key->start_op = op;
-			key->start = value;
+			key->start_op = expr;
+			key->start    = expr_value;
 			break;
 		case '<':
 		case KLTE:
-			if (! path_stop(key, op, value))
+			if (! path_stop(key, expr, expr_value))
 				break;
-			key->stop_op = op;
-			key->stop = value;
+			key->stop_op = expr;
+			key->stop    = expr_value;
 			break;
 		}
 	}
 }
 
 Path*
-path_create(Target* target, Block* block, Keys* keys, AstList* ops)
+path_create(Target* target, Block* block, Keys* keys, PathOps* ops)
 {
+	unused(block);
 	auto self = path_allocate(target, keys);
 	auto match_eq = 0;
 	auto match_last_start = -1;
@@ -284,17 +292,15 @@ path_create(Target* target, Block* block, Keys* keys, AstList* ops)
 	{
 		auto key = list_at(Key, link);
 		auto key_path = &self->keys[key->order];
-		path_key(self, block, key_path, ops);
+		path_key(self, key_path, ops);
 
 		// count sequential number of matches from start
 		if (key_path->start && (match_last_start == (key->order - 1)))
 		{
 			match_last_start = key->order;
 			self->match_start++;
-			if (key_path->start->id == KNAME_COMPOUND)
-				self->match_start_columns++;
-			if (key_path->start->id == KVAR)
-				self->match_start_vars++;
+			if (parse_expr_is_const(key_path->start))
+				self->match_start_exprs++;
 			if (key_path->start_op->id == '=')
 				match_eq++;
 		}

@@ -278,6 +278,7 @@ parse_from(Stmt* self, From* from, AccessType access, bool subquery)
 	// FROM name | expr
 	parse_from_add(self, from, access, NULL, subquery);
 
+	Ast* join_on = NULL;
 	for (;;)
 	{
 		// ,
@@ -317,56 +318,81 @@ parse_from(Stmt* self, From* from, AccessType access, bool subquery)
 			join = JOIN_RIGHT;
 		}
 
-		// <name|expr> ON expr
-		if (join != JOIN_NONE)
+		if (join == JOIN_NONE)
+			break;
+
+		if (join == JOIN_LEFT || join == JOIN_RIGHT)
+			stmt_error(self, NULL, "outer joins currently are not supported");
+
+		// JOIN target
+		auto target = parse_from_add(self, from, ACCESS_RO_EXCLUSIVE, NULL, subquery);
+
+		// save the names count for AND before processing the next expression
+		auto names_count = from->list_names.count;
+
+		// ON expr
+		auto next = stmt_next(self);
+		switch (next->id) {
+		case KON:
 		{
-			if (join == JOIN_LEFT || join == JOIN_RIGHT)
-				stmt_error(self, NULL, "outer joins currently are not supported");
-
-			// <name|expr>
-			auto target = parse_from_add(self, from, ACCESS_RO_EXCLUSIVE, NULL, subquery);
-
-			// ON
-			if (stmt_if(self, KON))
-			{
-				// expr
-				Expr ctx;
-				expr_init(&ctx);
-				ctx.from = from;
-				target->join_on = parse_expr(self, &ctx);
-				target->join    = join;
-				continue;
-			}
-
+			// ON expr
+			Expr ctx;
+			expr_init(&ctx);
+			ctx.from  = from;
+			ctx.names = &from->list_names;
+			target->join_on = parse_expr(self, &ctx);
+			target->join    = join;
+			break;
+		}
+		case KUSING:
+		{
 			// USING (column)
-			if (stmt_if(self, KUSING))
-			{
-				stmt_expect(self, '(');
-				auto name = stmt_expect(self, KNAME);
-				stmt_expect(self, ')');
+			stmt_expect(self, '(');
+			auto name = stmt_expect(self, KNAME);
+			stmt_expect(self, ')');
 
-				// outer.column = target.column
-				auto equ = ast('=');
-				equ->l = ast(KNAME_COMPOUND);
-				equ->l->pos_start = name->pos_start;
-				equ->l->pos_end   = name->pos_end;
+			// outer.column = target.column
+			auto equ = ast('=');
+			equ->l = ast(KNAME_COMPOUND);
+			equ->l->pos_start = name->pos_start;
+			equ->l->pos_end   = name->pos_end;
 
-				equ->r = ast(KNAME_COMPOUND);
-				equ->r->pos_start = name->pos_start;
-				equ->r->pos_end   = name->pos_end;
+			equ->r = ast(KNAME_COMPOUND);
+			equ->r->pos_start = name->pos_start;
+			equ->r->pos_end   = name->pos_end;
 
-				parse_set_target_column(&equ->l->string, &target->prev->name, &name->string);
-				parse_set_target_column(&equ->r->string, &target->name, &name->string);
+			parse_set_target_column(&equ->l->string, &target->prev->name, &name->string);
+			parse_set_target_column(&equ->r->string, &target->name, &name->string);
 
-				target->join_on = equ;
-				target->join    = join;
-				continue;
-			}
+			target->join_on = equ;
+			target->join    = join;
 
+			ast_list_add(&from->list_names, equ->l);
+			ast_list_add(&from->list_names, equ->r);
+			break;
+		}
+		default:
 			stmt_error(self, NULL, "ON or USING expected");
-			continue;
+			break;
 		}
 
-		break;
+		// combine join expressions together
+		//
+		// JOIN ON expr AND ...
+		if (target->join_on)
+		{
+			if (join_on == NULL) {
+				join_on = target->join_on;
+			} else
+			{
+				auto and = ast(KAND);
+				and->l = join_on;
+				and->r = target->join_on;
+				and->integer = names_count;
+				join_on = and;
+			}
+		}
 	}
+
+	from->join_on = join_on;
 }

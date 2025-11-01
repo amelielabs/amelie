@@ -164,6 +164,10 @@ parse_select(Stmt* self, From* outer, bool subquery)
 		           subquery);
 	}
 
+	// save the names count after join for AND expression below before
+	// processing WHERE expression
+	auto names_count = select->from.list_names.count;
+
 	// [WHERE]
 	if (stmt_if(self, KWHERE))
 	{
@@ -171,15 +175,31 @@ parse_select(Stmt* self, From* outer, bool subquery)
 		expr_init(&ctx_where);
 		ctx_where.select = true;
 		ctx_where.subquery = subquery;
+		ctx_where.names = &select->from.list_names;
 		ctx_where.from = &select->from;
 		select->expr_where = parse_expr(self, &ctx_where);
 	}
 
-	// use as WHERE expr or combine JOIN ON (expr) together with
-	// WHERE expr per target
-	if (from_is_join(&select->from))
-		select->expr_where =
-			parse_from_join_on_and_where(&select->from, select->expr_where);
+	//
+	// [join on AND where]
+	//
+	// use JOIN ON expression (combined for all targets) as the
+	// WHERE expression or combine WHERE AND JOIN ON
+	// expressions together
+	//
+	auto join_on = select->from.join_on;
+	if (join_on)
+	{
+		if (select->expr_where) {
+			auto and = ast(KAND);
+			and->l = join_on;
+			and->r = select->expr_where;
+			and->integer = names_count;
+			select->expr_where = and;
+		} else {
+			select->expr_where = join_on;
+		}
+	}
 
 	// [GROUP BY]
 	if (stmt_if(self, KGROUP))

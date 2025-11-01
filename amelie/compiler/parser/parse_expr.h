@@ -19,6 +19,7 @@ struct Expr
 	bool     subquery;
 	bool     udf;
 	AstList* aggs;
+	AstList* names;
 	Ast*     lambda;
 	Ast*     as;
 	From*    from;
@@ -31,10 +32,12 @@ expr_init(Expr* self)
 	self->subquery = false;
 	self->udf      = false;
 	self->aggs     = NULL;
+	self->names    = NULL;
 	self->as       = NULL;
 	self->lambda   = NULL;
 	self->from     = NULL;
 }
 
+bool parse_expr_is_const(Ast*);
 Ast* parse_expr_args(Stmt*, Expr*, int, bool);
 Ast* parse_expr(Stmt*, Expr*);

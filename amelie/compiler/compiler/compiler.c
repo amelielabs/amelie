@@ -164,9 +164,9 @@ emit_send(Compiler* self, Target* target, int type, int start)
 		// point-lookup or range scan
 		//
 		auto path = target->path_primary;
-		if (path->type == PATH_LOOKUP && !path->match_start_columns)
+		if (path->type == PATH_LOOKUP)
 		{
-			if (! path->match_start_vars)
+			if (path->match_start_exprs == path->match_start)
 			{
 				// match exact partition using the point lookup const key hash
 				uint32_t hash = path_create_hash(path);

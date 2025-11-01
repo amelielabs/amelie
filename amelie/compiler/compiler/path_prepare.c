@@ -40,79 +40,6 @@
 #include <amelie_parser.h>
 #include <amelie_compiler.h>
 
-hot static inline void
-ops_extract(AstList* self, Ast* expr)
-{
-	switch (expr->id) {
-	case KAND:
-	{
-		ops_extract(self, expr->l);
-		ops_extract(self, expr->r);
-		break;
-	}
-	case KOR:
-	{
-		// skipped
-		break;
-	}
-	case KGTE:
-	case KLTE:
-	case '>':
-	case '<':
-	case '=':
-	{
-		// [target.]name = value | [target.]name
-		Ast* value;
-		if (expr->l->id == KNAME || expr->l->id == KNAME_COMPOUND ||
-		    expr->l->id == KVAR)
-			value = expr->r;
-		else
-		if (expr->r->id == KNAME || expr->r->id == KNAME_COMPOUND ||
-		    expr->r->id == KVAR)
-			value = expr->l;
-		else
-			break;
-		if (value->id == KINT       ||
-		    value->id == KSTRING    ||
-		    value->id == KTIMESTAMP ||
-		    value->id == KUUID      ||
-		    value->id == KVALUE     ||
-		    value->id == KVAR       ||
-		    value->id == KNAME      ||
-		    value->id == KNAME_COMPOUND)
-		{
-			ast_list_add(self, expr);
-		}
-		break;
-	}
-	case KBETWEEN:
-	{
-		// NOT BETWEEN
-		if (! expr->integer)
-			break;
-
-		auto x = expr->r->l;
-		auto y = expr->r->r;
-
-		// expr >= x AND expr <= y
-		auto gte = ast(KGTE);
-		gte->l = expr->l;
-		gte->r = x;
-
-		auto lte = ast(KLTE);
-		lte->l = expr->l;
-		lte->r = y;
-
-		auto and = ast(KAND);
-		and->l = gte;
-		and->r = lte;
-		ops_extract(self, and);
-	}
-	default:
-		break;
-	}
-}
-
 static bool
 path_prepare_match(Path*        prev_path,
                    IndexConfig* prev,
@@ -148,7 +75,7 @@ path_prepare_match(Path*        prev_path,
 }
 
 static void
-path_prepare_target(Target* target, Block* block, AstList* ops)
+path_prepare_target(Target* target, Block* block, PathOps* ops)
 {
 	auto table = target->from_table;
 	assert(table);
@@ -201,13 +128,13 @@ path_prepare_target(Target* target, Block* block, AstList* ops)
 }
 
 void
-path_prepare(From* from, Ast* expr)
+path_prepare(From* from, Ast* expr, AstList* expr_names)
 {
 	// get a list of conditions
-	AstList ops;
-	ast_list_init(&ops);
+	PathOps ops;
+	path_ops_init(&ops, expr_names);
 	if (expr)
-		ops_extract(&ops, expr);
+		path_ops_create(&ops, expr);
 
 	// create paths for table scans
 	for (auto target = from->list; target; target = target->next)

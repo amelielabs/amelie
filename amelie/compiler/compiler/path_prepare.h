@@ -11,4 +11,4 @@
 // AGPL-3.0 Licensed.
 //
 
-void path_prepare(From*, Ast*);
+void path_prepare(From*, Ast*, AstList*);

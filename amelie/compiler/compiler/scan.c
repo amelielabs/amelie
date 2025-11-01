@@ -434,7 +434,7 @@ scan(Compiler*    compiler,
 	defer_buf(&self.continues);
 
 	// prepare scan path using where expression per target
-	path_prepare(from, expr_where);
+	path_prepare(from, expr_where, &from->list_names);
 
 	// limit
 	if (expr_limit)
