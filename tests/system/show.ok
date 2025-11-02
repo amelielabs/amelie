@@ -11,10 +11,14 @@ show 1234;
 create user test;
 show users abc;
 {"msg": "show() ⟵ unexpected name argument"}
-show users format;
-{"msg": "show users format❰;❱ ⟵ string expected"}
-show users format 'json';
+show users;
+[{
+  "name": "test"
+}]
+prefer return=json;
+show users;
 [{"name": "test"}]
+prefer;
 # test: show user
 show user;
 {"msg": "show() ⟵ name is missing for 'user'"}
@@ -24,10 +28,14 @@ show user test;
 [{
   "name": "test"
 }]
-show user test format;
-{"msg": "show user test format❰;❱ ⟵ string expected"}
-show user test format 'json';
+show user test;
+[{
+  "name": "test"
+}]
+prefer return=json;
+show user test;
 [{"name": "test"}]
+prefer;
 # test: show schemas
 create schema test;
 show schemas;
@@ -46,8 +54,10 @@ show schema test;
   "name": "test",
   "system": false
 }]
-show schema test format 'json';
+prefer return=json;
+show schema test;
 [{"name": "test", "system": false}]
+prefer;
 # test: show tables
 create table test (id int primary key);
 show tables;
@@ -65,8 +75,10 @@ show table test;
   "name": "test",
   "unlogged": false
 }]
-show table test format 'json';
+prefer return=json;
+show table test;
 [{"schema": "public", "name": "test", "unlogged": false}]
+prefer;
 # test: show functions
 create function test_fn (id int) return json
 begin

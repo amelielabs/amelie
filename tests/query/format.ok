@@ -199,41 +199,50 @@ disconnect S0;
 close E0;
 open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "127.0.0.1", "port": 3485 }], "format": "json-pretty";
 connect E0 S0 127.0.0.1:3485;
+prefer return=json-pretty-obj;
 select 123;
-[123]
-select 123 format "json-pretty-obj";
 [{
   "col1": 123
 }]
+prefer;
+select 123;
+[123]
 select 123 as id;
 [123]
-select 123 as id format "json-pretty-obj";
+prefer return=json-pretty-obj;
+select 123 as id;
 [{
   "id": 123
 }]
+prefer;
 select [1,2,3];
 [[1, 2, 3]]
-select [1,2,3] format "json-pretty-obj";
+prefer return=json-pretty-obj;
+select [1,2,3];
 [{
   "col1": [1, 2, 3]
 }]
+prefer;
 select {"id": 48} as json;
 [{
   "id": 48
 }]
-select {"id": 48} as json format "json-pretty-obj";
+prefer return=json-pretty-obj;
+select {"id": 48} as json;
 [{
   "json": {
     "id": 48
   }
 }]
+prefer;
 select [{"id": 48}, {"id": 49}, [1,2,3]];
 [[{
   "id": 48
 }, {
   "id": 49
 }, [1, 2, 3]]]
-select [{"id": 48}, {"id": 49}, [1,2,3]] format "json-pretty-obj";
+prefer return=json-pretty-obj;
+select [{"id": 48}, {"id": 49}, [1,2,3]];
 [{
   "col1": [{
     "id": 48
@@ -241,25 +250,33 @@ select [{"id": 48}, {"id": 49}, [1,2,3]] format "json-pretty-obj";
     "id": 49
   }, [1, 2, 3]]
 }]
+prefer;
 # test: select format (duplicate columns)
-select 1 as id, 2 as id format "json-pretty-obj";
+prefer return=json-pretty-obj;
+select 1 as id, 2 as id;
 [{
   "id": 1,
   "id": 2
 }]
-select 1 as id, 2 as id format "json";
+prefer return=json;
+select 1 as id, 2 as id;
 [[1, 2]]
-select 1 as id, 2 as id format "json-obj";
+prefer return=json-obj;
+select 1 as id, 2 as id;
 [{"id": 1, "id": 2}]
+prefer;
 # test: returning format
 create table test (id int primary key);
-insert into test values (1) returning * format "json-obj";
+prefer return=json-obj;
+insert into test values (1) returning *;
 [{"id": 1}]
-insert into test values (2) returning id format "json-obj-pretty";
+prefer return=json-obj-pretty;
+insert into test values (2) returning id;
 [{
   "id": 2
 }]
-insert into test values (3) returning id format "json";
+prefer return=json;
+insert into test values (3) returning id;
 [3]
 select * from test;
 [1, 2, 3]

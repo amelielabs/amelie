@@ -83,7 +83,7 @@ content_write(Content* self, Str* spec, Columns* columns, Value* value)
 }
 
 void
-content_write_json(Content* self, Str* spec, Str* name, Value* value)
+content_write_json(Content* self, Str* spec, bool unwrap, Str* name, Value* value)
 {
 	// prepare columns
 	Columns columns;
@@ -94,17 +94,23 @@ content_write_json(Content* self, Str* spec, Str* name, Value* value)
 	column_set_type(column, TYPE_JSON, 0);
 	columns_add(&columns, column);
 
-	// write content
-	content_write(self, spec, &columns, value);
+	// set content type
+	content_set_type(self, spec);
+
+	// set unwrap
+	self->fmt.opt_unwrap = unwrap;
+
+	// create content
+	self->content_type->func(self, &columns, value);
 }
 
 void
-content_write_json_buf(Content* self, Str* spec, Str* name, Buf* buf)
+content_write_json_buf(Content* self, Str* spec, bool unwrap, Str* name, Buf* buf)
 {
 	Value value;
 	value_set_json_buf(&value, buf);
 
-	content_write_json(self, spec, name, &value);
+	content_write_json(self, spec, unwrap, name, &value);
 }
 
 void

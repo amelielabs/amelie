@@ -97,13 +97,10 @@ query_compiler_parse(Query* query, QueryContext* ctx)
 	if (! stmt)
 		return;
 
-	// set returning columns and format
+	// set returning columns
 	auto last = compiler_main(compiler)->stmts.list_tail;
 	if (last->ret && last->ret->columns.count > 0)
-	{
-		ctx->returning     = &last->ret->columns;
-		ctx->returning_fmt = &last->ret->format;
-	}
+		ctx->returning = &last->ret->columns;
 
 	// update context to pass EXECUTE arguments
 	if (stmt->id == STMT_EXECUTE)
@@ -142,13 +139,10 @@ query_compiler_parse_endpoint(Query* query, QueryContext* ctx, EndpointType type
 	if (! stmt)
 		return;
 
-	// set returning columns and format
+	// set returning columns
 	auto last = compiler_main(compiler)->stmts.list_tail;
 	if (last->ret && last->ret->columns.count > 0)
-	{
-		ctx->returning     = &last->ret->columns;
-		ctx->returning_fmt = &last->ret->format;
-	}
+		ctx->returning = &last->ret->columns;
 
 	// update context to pass EXECUTE arguments
 	if (stmt->id == STMT_EXECUTE)

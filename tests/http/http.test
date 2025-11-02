@@ -126,7 +126,9 @@ select * from test4;
 
 # test: POST /v1/db/schema/table (application/jsonl) (obj, one column)
 post /v1/db/public/test5?columns=data application/jsonl {"id": 1} {"id": 2} {"id": 3};
-select * format 'json' from test5;
+prefer return=json;
+select * from test5;
+prefer;
 
 # test: POST /v1/db/schema/table (application/jsonl) (obj, column list)
 post /v1/db/public/test5?columns=id,data application/jsonl {"id": 1} {"id": 2} {"id": 3};
@@ -148,19 +150,27 @@ post /v1/db/public/test application/jsonl {"id": 22, "b": 0};
 post /v1/db/public/test application/jsonl {"id": 23};
 post /v1/db/public/test application/jsonl {"id": 22, "b": 0, "b": 1};
 post /v1/db/public/test application/jsonl {"id": 24} {"id": 25} {"id": 26};
-select * format 'json' from test;
+prefer return=json;
+select * from test;
+prefer;
 
 # test: POST /v1/db/schema/table (application/json) (obj)
 post /v1/db/public/test application/json [{"id": 27}, {"id": 28}];
-select * format 'json' from test;
+prefer return=json;
+select * from test;
+prefer;
 
 # test: POST /v1/db/schema/table (application/json) (obj, one column)
 post /v1/db/public/test5?columns=data application/json [{"id": 4}, {"id": 5}];
-select * format 'json' from test5;
+prefer return=json;
+select * from test5;
+prefer;
 
 # test: POST /v1/db/schema/table (application/json) (obj, one column, generated)
 post /v1/db/public/test6?columns=data application/json [{"id": 1}, {"id": 2, "data": [1,2,3]}];
-select * format 'json' from test6;
+prefer return=json;
+select * from test6;
+prefer;
 
 disconnect S0;
 close E0;

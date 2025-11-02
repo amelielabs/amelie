@@ -96,6 +96,10 @@ frontend_client(Frontend* self, Client* client)
 	content_init(&output);
 	content_set(&output, &client->reply.content);
 
+	Prefer prefer;
+	prefer_init(&prefer);
+	defer(prefer_free, &prefer);
+
 	// create sesssion
 	auto ctl = self->iface;
 	auto session = ctl->session_create(self, self->iface_arg);
@@ -147,6 +151,12 @@ frontend_client(Frontend* self, Client* client)
 			continue;
 		}
 
+		// Prefer header
+		prefer_reset(&prefer);
+		auto pref = http_find(request, "Prefer", 6);
+		if (pref)
+			prefer_set(&prefer, &pref->value);
+
 		Str content;
 		buf_str(&request->content, &content);
 
@@ -156,6 +166,7 @@ frontend_client(Frontend* self, Client* client)
 		                                     &request->options[HTTP_URL],
 		                                     &content,
 		                                     &content_type->value,
+		                                     &prefer,
 		                                     &output);
 		if (unlikely(on_error))
 		{

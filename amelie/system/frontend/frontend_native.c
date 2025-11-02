@@ -72,7 +72,10 @@ frontend_native(Frontend* self, Native* native)
 		{
 			content_set(&output, &req->content);
 			content_reset(&output);
-			error = ctl->session_execute(session, &url, &req->cmd, &content_type, &output);
+			error = ctl->session_execute(session, &url, &req->cmd,
+			                             &content_type,
+			                             NULL,
+			                             &output);
 			break;
 		}
 		}

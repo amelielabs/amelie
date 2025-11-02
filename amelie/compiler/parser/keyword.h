@@ -113,7 +113,6 @@ enum
 	KFALSE,
 	KFROM,
 	KFOR,
-	KFORMAT,
 	KFUNCTION,
 
 	// g

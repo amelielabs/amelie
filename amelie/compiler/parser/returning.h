@@ -22,7 +22,6 @@ struct Returning
 	int     count;
 	int     count_into;
 	Columns columns;
-	Str     format;
 };
 
 static inline void
@@ -36,7 +35,6 @@ returning_init(Returning* self)
 	self->count          = 0;
 	self->count_into     = 0;
 	columns_init(&self->columns);
-	str_init(&self->format);
 }
 
 static inline void

@@ -42,9 +42,6 @@
 void
 parse_returning(Returning* self, Stmt* stmt, Expr* ctx)
 {
-	// set returning format
-	self->format = *stmt->parser->local->format;
-
 	// * | target.* | expr [AS] [name], ...
 	for (;;)
 	{
@@ -115,13 +112,6 @@ parse_returning(Returning* self, Stmt* stmt, Expr* ctx)
 			continue;
 
 		break;
-	}
-
-	// [FORMAT type]
-	if (stmt_if(stmt, KFORMAT))
-	{
-		auto type = stmt_expect(stmt, KSTRING);
-		self->format = type->string;
 	}
 
 	// [INTO name, ...]

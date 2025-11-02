@@ -224,7 +224,7 @@ parse_insert(Stmt* self)
 	// INSERT INTO name [(column_list)]
 	// [GENERATE | VALUES (value, ..), ... | SELECT ...]
 	// [ON CONFLICT DO NOTHING | ERROR | UPDATE | RESOLVE]
-	// [RETURNING expr [FORMAT name]]
+	// [RETURNING expr]
 	auto stmt = ast_insert_allocate(self->block);
 	self->ast = &stmt->ast;
 	self->ret = &stmt->ret;

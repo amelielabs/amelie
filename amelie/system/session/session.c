@@ -106,6 +106,7 @@ session_reset(Session* self)
 	program_reset(self->program, &self->set_cache);
 	dtr_reset(&self->dtr);
 	profile_reset(&self->profile);
+	local_reset(&self->local);
 }
 
 void
@@ -120,6 +121,46 @@ session_free(Session *self)
 	dtr_free(&self->dtr);
 	local_free(&self->local);
 	am_free(self);
+}
+
+static void
+session_configure(Session* self, Prefer* prefer)
+{
+	auto local = &self->local;
+
+	// update transaction time
+	local_update_time(local);
+
+	if (! prefer)
+		return;
+
+	// configure session preferences
+	auto opt = (PreferOpt*)prefer->opts.start;
+	auto end = (PreferOpt*)prefer->opts.position;
+	for (; opt < end; opt++)
+	{
+		// timezone
+		if (str_is_case(&opt->name, "timezone", 8))
+		{
+			auto tz = timezone_mgr_find(&runtime()->timezone_mgr, &opt->value);
+			if (tz)
+				local->timezone = tz;
+			continue;
+		}
+
+		// return
+		if (str_is_case(&opt->name, "return", 6))
+		{
+			if (str_is_case(&opt->value, "minimal", 7))
+				str_set(&local->format, "json-array", 10);
+			else
+			if (str_is_case(&opt->value, "representation", 14))
+				str_set(&local->format, "json-obj-pretty", 15);
+			else
+				local->format = opt->value;
+			continue;
+		}
+	}
 }
 
 void
@@ -213,8 +254,7 @@ session_execute_distributed(Session* self, Content* output)
 
 	// write result into content
 	if (ret.value && context->returning)
-		content_write(output,
-		              context->returning_fmt,
+		content_write(output, &self->local.format,
 		              context->returning,
 		              ret.value);
 
@@ -280,8 +320,7 @@ session_execute_utility(Session* self, Content* output)
 		{
 			Str column;
 			str_set(&column, "result", 6);
-			content_write_json(output,
-			                   context->returning_fmt,
+			content_write_json(output, &self->local.format, true,
 			                   &column,
 			                   ret.value);
 		}
@@ -324,9 +363,6 @@ session_execute_main(Session* self,
                      Str*     content_type,
                      Content* output)
 {
-	// set transaction time
-	local_update_time(&self->local);
-
 	// POST /
 	// POST /v1/execute
 	// POST /v1/db/schema/relation
@@ -357,7 +393,7 @@ session_execute_main(Session* self,
 		content_reset(output);
 		Str name;
 		str_set(&name, "explain", 7);
-		content_write_json_buf(output, self->local.format, &name,
+		content_write_json_buf(output, &self->local.format, false, &name,
 		                       &program->explain);
 		return;
 	}
@@ -377,20 +413,23 @@ session_execute(Session* self,
                 Str*     url,
                 Str*     text,
                 Str*     content_type,
+                Prefer*  prefer,
                 Content* output)
 {
 	cancel_pause();
+	content_set_local(output, &self->local);
 
 	// execute request based on the content-type
 	auto on_error = error_catch
 	(
-		// prepare session state for execution
+		// reset session session state
 		session_reset(self);
-
-		content_set_local(output, &self->local);
 
 		// take shared session lock (for catalog access)
 		session_lock(self, LOCK_SHARED);
+
+		// configure session before execution
+		session_configure(self, prefer);
 
 		// parse and execute request
 		session_execute_main(self, url, text, content_type, output);

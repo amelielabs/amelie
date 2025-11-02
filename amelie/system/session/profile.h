@@ -95,5 +95,5 @@ profile_create(Profile* self,
 	content_reset(content);
 	Str name;
 	str_set(&name, "profile", 7);
-	content_write_json_buf(content, local->format, &name, buf);
+	content_write_json_buf(content, &local->format, false, &name, buf);
 }

@@ -44,7 +44,7 @@ parse_delete(Stmt* self)
 {
 	// DELETE FROM name
 	// [WHERE expr]
-	// [RETURNING expr [FORMAT name]]
+	// [RETURNING expr]
 	auto stmt = ast_delete_allocate();
 	self->ast = &stmt->ast;
 	self->ret = &stmt->ret;

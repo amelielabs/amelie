@@ -79,27 +79,55 @@ close E0;
 open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "127.0.0.1", "port": 3485 }], "format": "json-pretty";
 connect E0 S0 127.0.0.1:3485;
 
+prefer return=json-pretty-obj;
 select 123;
-select 123 format "json-pretty-obj";
+
+prefer;
+select 123;
+
 select 123 as id;
-select 123 as id format "json-pretty-obj";
+prefer return=json-pretty-obj;
+select 123 as id;
+prefer;
+
 select [1,2,3];
-select [1,2,3] format "json-pretty-obj";
+prefer return=json-pretty-obj;
+select [1,2,3];
+prefer;
+
 select {"id": 48} as json;
-select {"id": 48} as json format "json-pretty-obj";
+prefer return=json-pretty-obj;
+select {"id": 48} as json;
+prefer;
+
 select [{"id": 48}, {"id": 49}, [1,2,3]];
-select [{"id": 48}, {"id": 49}, [1,2,3]] format "json-pretty-obj";
+prefer return=json-pretty-obj;
+select [{"id": 48}, {"id": 49}, [1,2,3]];
+prefer;
 
 # test: select format (duplicate columns)
-select 1 as id, 2 as id format "json-pretty-obj";
-select 1 as id, 2 as id format "json";
-select 1 as id, 2 as id format "json-obj";
+prefer return=json-pretty-obj;
+select 1 as id, 2 as id;
+
+prefer return=json;
+select 1 as id, 2 as id;
+
+prefer return=json-obj;
+select 1 as id, 2 as id;
+prefer;
 
 # test: returning format
 create table test (id int primary key);
-insert into test values (1) returning * format "json-obj";
-insert into test values (2) returning id format "json-obj-pretty";
-insert into test values (3) returning id format "json";
+
+prefer return=json-obj;
+insert into test values (1) returning *;
+
+prefer return=json-obj-pretty;
+insert into test values (2) returning id;
+
+prefer return=json;
+insert into test values (3) returning id;
+
 select * from test;
 drop table test;
 

@@ -42,7 +42,7 @@
 void
 parse_show(Stmt* self)
 {
-	// SHOW <SECTION> [name] [IN|FROM schema] [extended] [FORMAT type]
+	// SHOW <SECTION> [name] [IN|FROM schema] [extended]
 	auto stmt = ast_show_allocate();
 	self->ast = &stmt->ast;
 	self->ret = &stmt->ret;
@@ -76,22 +76,6 @@ parse_show(Stmt* self)
 
 	// [EXTENDED]
 	stmt->extended = stmt_if(self, KEXTENDED) != NULL;
-
-	// [FORMAT type]
-	Str* spec;
-	if (stmt_if(self, KFORMAT))
-	{
-		auto type = stmt_expect(self, KSTRING);
-		spec = &type->string;
-	} else {
-		spec = self->parser->local->format;
-	}
-
-	// force include -unwrap to avoid double [] wrap
-	char* fmt = palloc(str_size(spec) + 8);
-	memcpy(fmt, spec->pos, str_size(spec));
-	memcpy(fmt + str_size(spec), "-unwrap", 8);
-	str_set_cstr(&stmt->ret.format, fmt);
 
 	// set returning column
 	auto column = column_allocate();

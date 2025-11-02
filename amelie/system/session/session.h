@@ -35,5 +35,5 @@ session_create(Frontend*);
 void session_free(Session*);
 void session_lock(Session*, int);
 void session_unlock(Session*);
-bool session_execute(Session*, Str*, Str*, Str*, Content*);
+bool session_execute(Session*, Str*, Str*, Str*, Prefer*, Content*);
 void session_execute_replay(Session*, Primary*, Buf*);

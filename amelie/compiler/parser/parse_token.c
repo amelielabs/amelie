@@ -62,7 +62,4 @@ parse_token_create(Stmt* self)
 	column_set_name(column, &stmt->user->string);
 	column_set_type(column, TYPE_JSON, -1);
 	columns_add(&stmt->ret.columns, column);
-
-	// set format
-	stmt->ret.format = *self->parser->local->format;
 }

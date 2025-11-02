@@ -173,7 +173,7 @@ parse_update(Stmt* self)
 {
 	// UPDATE name SET column = expr [, ... ]
 	// [WHERE expr]
-	// [RETURNING expr [FORMAT name]]
+	// [RETURNING expr]
 	auto stmt = ast_update_allocate(self->block);
 	self->ast = &stmt->ast;
 	self->ret = &stmt->ret;

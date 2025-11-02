@@ -101,7 +101,6 @@ Keyword keywords[] =
 	{ KFALSE,                 "false",                 5  },
 	{ KFROM,                  "from",                  4  },
 	{ KFOR,                   "for",                   3  },
-	{ KFORMAT,                "format",                6  },
 	{ KFUNCTION,              "function",              8  },
 
 	// g

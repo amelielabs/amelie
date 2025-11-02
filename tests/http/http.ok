@@ -141,8 +141,10 @@ select * from test4;
 [[0, 777], [1, 777], [2, 777], [3, 777], [4, 777]]
 # test: POST /v1/db/schema/table (application/jsonl) (obj, one column)
 post /v1/db/public/test5?columns=data application/jsonl {"id": 1} {"id": 2} {"id": 3};
-select * format 'json' from test5;
+prefer return=json;
+select * from test5;
 [[0, {"id": 1}], [1, {"id": 2}], [2, {"id": 3}]]
+prefer;
 # test: POST /v1/db/schema/table (application/jsonl) (obj, column list)
 post /v1/db/public/test5?columns=id,data application/jsonl {"id": 1} {"id": 2} {"id": 3};
 {"msg": " ❰{❱ ⟵ JSON column list must have zero or one value"}
@@ -180,19 +182,27 @@ post /v1/db/public/test application/jsonl {"id": 23};
 post /v1/db/public/test application/jsonl {"id": 22, "b": 0, "b": 1};
 {"msg": " {\"id\": 22, \"b\": 0, ❰\"b\"❱ ⟵ column value is redefined"}
 post /v1/db/public/test application/jsonl {"id": 24} {"id": 25} {"id": 26};
-select * format 'json' from test;
+prefer return=json;
+select * from test;
 [[0, 0, 0], [1, 0, 0], [2, 0, 0], [3, null, null], [4, null, null], [5, null, null], [6, 0, null], [7, 0, 0], [9, 0, 0], [10, null, 123], [11, null, null], [13, null, null], [14, null, null], [15, 0, 0], [18, null, null], [19, null, null], [20, null, null], [21, 0, 0], [22, null, 0], [23, null, null], [24, null, null], [25, null, null], [26, null, null]]
+prefer;
 # test: POST /v1/db/schema/table (application/json) (obj)
 post /v1/db/public/test application/json [{"id": 27}, {"id": 28}];
-select * format 'json' from test;
+prefer return=json;
+select * from test;
 [[0, 0, 0], [1, 0, 0], [2, 0, 0], [3, null, null], [4, null, null], [5, null, null], [6, 0, null], [7, 0, 0], [9, 0, 0], [10, null, 123], [11, null, null], [13, null, null], [14, null, null], [15, 0, 0], [18, null, null], [19, null, null], [20, null, null], [21, 0, 0], [22, null, 0], [23, null, null], [24, null, null], [25, null, null], [26, null, null], [27, null, null], [28, null, null]]
+prefer;
 # test: POST /v1/db/schema/table (application/json) (obj, one column)
 post /v1/db/public/test5?columns=data application/json [{"id": 4}, {"id": 5}];
-select * format 'json' from test5;
+prefer return=json;
+select * from test5;
 [[0, {"id": 1}], [1, {"id": 2}], [2, {"id": 3}], [3, {"id": 4}], [4, {"id": 5}]]
+prefer;
 # test: POST /v1/db/schema/table (application/json) (obj, one column, generated)
 post /v1/db/public/test6?columns=data application/json [{"id": 1}, {"id": 2, "data": [1,2,3]}];
-select * format 'json' from test6;
+prefer return=json;
+select * from test6;
 [[1, {"id": 1}], [2, {"id": 2, "data": [1, 2, 3]}]]
+prefer;
 disconnect S0;
 close E0;

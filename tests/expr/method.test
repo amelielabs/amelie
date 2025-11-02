@@ -18,6 +18,7 @@ select "hello"::length();
 
 explain select system.state().directory::length();
 select system.state().directory::length();
+select system.state().directory;
 
 select [null]::put(0, 123);
 select put([null], 0, 123);

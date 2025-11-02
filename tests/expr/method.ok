@@ -32,6 +32,8 @@ explain select system.state().directory::length();
 }]
 select system.state().directory::length();
 [10]
+select system.state().directory;
+["_output/E0"]
 select [null]::put(0, 123);
 [[123]]
 select put([null], 0, 123);

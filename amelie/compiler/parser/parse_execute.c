@@ -109,7 +109,4 @@ parse_execute(Stmt* self)
 	column_set_name(column, &name);
 	column_set_type(column, udf->config->type, -1);
 	columns_add(&stmt->ret.columns, column);
-
-	// set format
-	stmt->ret.format = *self->parser->local->format;
 }

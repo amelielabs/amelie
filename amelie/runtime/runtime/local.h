@@ -17,7 +17,7 @@ struct Local
 {
 	Timezone* timezone;
 	uint64_t  time_us;
-	Str*      format;
+	Str       format;
 };
 
 static inline void
@@ -26,13 +26,21 @@ local_init(Local* self)
 	// derive default configuration
 	self->timezone = runtime()->timezone;
 	self->time_us  = 0;
-	self->format   = &config()->format.string;
+	self->format   = config()->format.string;
 }
 
 static inline void
 local_free(Local* self)
 {
 	unused(self);
+}
+
+static inline void
+local_reset(Local* self)
+{
+	// derive default configuration
+	self->timezone = runtime()->timezone;
+	self->format   = config()->format.string;
 }
 
 static inline void

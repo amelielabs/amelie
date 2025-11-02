@@ -181,9 +181,10 @@ frontend_if_session_execute(void*    ptr,
                             Str*     url,
                             Str*     text,
                             Str*     content_type,
+                            Prefer*  prefer,
                             Content* output)
 {
-	return session_execute(ptr, url, text, content_type, output);
+	return session_execute(ptr, url, text, content_type, prefer, output);
 }
 
 static void

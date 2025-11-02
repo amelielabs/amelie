@@ -225,6 +225,14 @@ test_command_disconnect(TestSuite* self, Str* arg)
 }
 
 static void
+test_command_prefer(TestSuite* self, Str* arg)
+{
+	if (! self->current_session)
+		test_error(self, "session is not defined");
+	test_session_prefer(self->current_session, arg);
+}
+
+static void
 test_command_post(TestSuite* self, Str* arg)
 {
 	// post <path> <content_type> <content>
@@ -263,6 +271,7 @@ test_commands[] =
 	{ "backup",     6,  test_command_backup      },
 	{ "connect",    7,  test_command_connect     },
 	{ "disconnect", 10, test_command_disconnect  },
+	{ "prefer",     6,  test_command_prefer      },
 	{ "post",       4,  test_command_post        },
 	{ "switch",     6,  test_command_switch      },
 	{  NULL,        0,  NULL                     }

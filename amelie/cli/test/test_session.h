@@ -18,6 +18,7 @@ struct TestSession
 	Str      name;
 	Client*  client;
 	Remote   remote;
+	Str      prefer;
 	TestEnv* env;
 	List     link;
 };
@@ -30,6 +31,7 @@ test_session_create(Str* name, TestEnv* env)
 	self->env    = env;
 	remote_init(&self->remote);
 	str_copy(&self->name, name);
+	str_init(&self->prefer);
 	list_init(&self->link);
 	return self;
 }
@@ -45,7 +47,15 @@ test_session_free(TestSession* self)
 	}
 	remote_free(&self->remote);
 	str_free(&self->name);
+	str_free(&self->prefer);
 	am_free(self);
+}
+
+static inline void
+test_session_prefer(TestSession* self, Str* prefer)
+{
+	str_free(&self->prefer);
+	str_copy(&self->prefer, prefer);
 }
 
 static inline void
@@ -70,14 +80,18 @@ test_session_execute(TestSession* self,
 	auto client  = self->client;
 	auto request = &client->request;
 	auto reply   = &client->reply;
+	auto prefer  = &self->prefer;
 	auto token   = remote_get(client->remote, REMOTE_TOKEN);
 
 	// request
 	http_write_request(request, "POST %.*s", str_size(path), str_of(path));
 	if (! str_empty(token))
 		http_write(request, "Authorization", "Bearer %.*s", str_size(token), str_of(token));
+	if (! str_empty(prefer))
+		http_write(request, "Prefer", "%.*s", str_size(prefer), str_of(prefer));
 	http_write(request, "Content-Type", "%.*s", str_size(content_type), str_of(content_type));
 	http_write(request, "Content-Length", "%d", str_size(content));
+
 	http_write_end(request);
 	tcp_write_pair_str(&client->tcp, &request->raw, content);
 

@@ -134,7 +134,6 @@ parse_select(Stmt* self, From* outer, bool subquery)
 {
 	// SELECT [DISTINCT] expr, ...
 	// [INTO name]
-	// [FORMAT name]
 	// [FROM name, [...]]
 	// [GROUP BY]
 	// [WHERE expr]
@@ -240,13 +239,6 @@ parse_select(Stmt* self, From* outer, bool subquery)
 			stmt_error(self, select->expr_offset, "integer type expected");
 		if (select->expr_offset->integer < 0)
 			stmt_error(self, select->expr_offset, "positive integer value expected");
-	}
-
-	// [FORMAT type]
-	if (stmt_if(self, KFORMAT))
-	{
-		auto type = stmt_expect(self, KSTRING);
-		select->ret.format = type->string;
 	}
 
 	// add group by target

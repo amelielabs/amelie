@@ -64,5 +64,13 @@ select {"time": "2024-07-29 18:40:19+03"::timestamp};
 select {"time": "2024-07-29 18:40:19"::timestamp};
 select {"time": timestamp "2024-07-29 18:40:19"};
 
+# test: timestamp prefer
+select "2024-07-29 18:40:19"::timestamp;
+
+prefer timezone=Asia/Tokyo;
+select "2024-07-29 18:40:19"::timestamp;
+select '2024-07-29 18:40:19'::timestamp::at_timezone('Asia/Tokyo');
+prefer;
+
 disconnect S0;
 close E0;

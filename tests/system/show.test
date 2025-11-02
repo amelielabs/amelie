@@ -11,21 +11,30 @@ show 1234;
 # test: show users
 create user test;
 show users abc;
-show users format;
-show users format 'json';
+show users;
+
+prefer return=json;
+show users;
+prefer;
 
 # test: show user
 show user;
 show user unknown;
 show user test;
-show user test format;
-show user test format 'json';
+show user test;
+
+prefer return=json;
+show user test;
+prefer;
 
 # test: show schemas
 create schema test;
 show schemas;
 show schema test;
-show schema test format 'json';
+
+prefer return=json;
+show schema test;
+prefer;
 
 # test: show tables
 create table test (id int primary key);
@@ -34,7 +43,10 @@ show tables;
 # test: show table
 show table;
 show table test;
-show table test format 'json';
+
+prefer return=json;
+show table test;
+prefer;
 
 # test: show functions
 create function test_fn (id int) return json
