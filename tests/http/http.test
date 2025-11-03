@@ -172,5 +172,35 @@ prefer return=json;
 select * from test6;
 prefer;
 
+# test: POST /v1/db/schema/function (text/csv)
+create function test_fn(a int, b int, c int) return int
+begin
+	return a + b + c;
+end;
+post /v1/db/public/test_fn text/csv 1,2,3;
+
+# test: POST /v1/db/schema/function (text/csv) column list
+post /v1/db/public/test_fn?columns=a text/csv 1,2,3;
+post /v1/db/public/test_fn?columns=a text/csv 4;
+
+# test: POST /v1/db/schema/function (application/json) (array)
+post /v1/db/public/test_fn application/json [1,2,3];
+post /v1/db/public/test_fn application/json [[1,2,3], [1,2,3]];
+
+# test: POST /v1/db/schema/function (application/json) (array, column list)
+post /v1/db/public/test_fn?columns=a application/json [13];
+
+# test: POST /v1/db/schema/function (application/json) (obj, empty)
+post /v1/db/public/test_fn application/json {};
+
+# test: POST /v1/db/schema/function (application/json) (obj)
+post /v1/db/public/test_fn application/json {"a": 1, "b": 2, "c": 3};
+
+# test: POST /v1/db/schema/function (application/jsonl) (array)
+post /v1/db/public/test_fn application/jsonl [1,2,3];
+
+# test: POST /v1/db/schema/function (application/jsonl) (obj)
+post /v1/db/public/test_fn application/jsonl {"a": 1, "b": 2, "c": 3};
+
 disconnect S0;
 close E0;

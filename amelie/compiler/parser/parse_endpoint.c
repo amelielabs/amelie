@@ -42,7 +42,7 @@
 static inline bool
 parse_endpoint_path(Str* self, Str* schema, Str* name)
 {
-	// /v1/db/schema/table
+	// /v1/db/schema/relation
 	if (unlikely(str_empty(self)))
 		return false;
 
@@ -90,7 +90,7 @@ parse_endpoint_column(char** pos, char* end, Str* name)
 static void
 parse_endpoint_columns(Endpoint* endpoint, Str* value)
 {
-	endpoint->columns_has = true;
+	endpoint->columns_list_has = true;
 	if (str_empty(value))
 		return;
 
@@ -98,7 +98,7 @@ parse_endpoint_columns(Endpoint* endpoint, Str* value)
 	auto pos = value->pos;
 	auto end = value->end;
 
-	auto columns = table_columns(endpoint->table);
+	auto columns = endpoint->columns;
 	Ast* last = NULL;
 
 	Str name;
@@ -114,19 +114,19 @@ parse_endpoint_columns(Endpoint* endpoint, Str* value)
 
 		Ast* ref = ast(0);
 		ref->column = column;
-		if (endpoint->columns == NULL)
-			endpoint->columns = ref;
+		if (endpoint->columns_list == NULL)
+			endpoint->columns_list = ref;
 		else
 			last->next = ref;
 		last = ref;
-		endpoint->columns_count++;
+		endpoint->columns_list_count++;
 	}
 }
 
 void
 parse_endpoint(Endpoint* endpoint)
 {
-	// POST /v1/db/schema/table <?columns=...>
+	// POST /v1/db/schema/relation <?columns=...>
 	auto uri = endpoint->uri;
 
 	// get target name
@@ -137,8 +137,20 @@ parse_endpoint(Endpoint* endpoint)
 	if (unlikely(! parse_endpoint_path(&uri->path, &schema, &name)))
 		error("unsupported URI path");
 
-	// find table
-	endpoint->table = table_mgr_find(&share()->db->catalog.table_mgr, &schema, &name, true);
+	// find udf
+	endpoint->udf = udf_mgr_find(&share()->db->catalog.udf_mgr, &schema, &name, false);
+	if (endpoint->udf)
+	{
+		endpoint->columns = &endpoint->udf->config->args;
+		endpoint->values  = NULL;
+
+	} else
+	{
+		// find table
+		endpoint->table   = table_mgr_find(&share()->db->catalog.table_mgr, &schema, &name, true);
+		endpoint->columns = &endpoint->table->config->columns;
+		endpoint->values  = NULL;
+	}
 
 	// validate arguments
 	list_foreach(&uri->args)
@@ -148,7 +160,7 @@ parse_endpoint(Endpoint* endpoint)
 		// columns=
 		if (str_is(&arg->name, "columns", 7))
 		{
-			if (unlikely(endpoint->columns_has))
+			if (unlikely(endpoint->columns_list_has))
 				error("columns argument redefined");
 
 			parse_endpoint_columns(endpoint, &arg->value);

@@ -23,9 +23,12 @@ typedef enum
 struct Endpoint
 {
 	EndpointType type;
-	Ast*         columns;
-	int          columns_count;
-	bool         columns_has;
+	Columns*     columns;
+	Ast*         columns_list;
+	int          columns_list_count;
+	bool         columns_list_has;
+	Set*         values;
+	Udf*         udf;
 	Table*       table;
 	Uri*         uri;
 };
@@ -33,10 +36,12 @@ struct Endpoint
 static inline void
 endpoint_init(Endpoint* self, Uri* uri, EndpointType type)
 {
-	self->type          = type;
-	self->columns       = NULL;
-	self->columns_count = 0;
-	self->columns_has   = false;
-	self->table         = false;
-	self->uri           = uri;
+	self->type               = type;
+	self->columns            = NULL;
+	self->columns_list       = NULL;
+	self->columns_list_count = 0;
+	self->columns_list_has   = false;
+	self->udf                = NULL;
+	self->table              = NULL;
+	self->uri                = uri;
 }
