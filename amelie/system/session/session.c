@@ -124,43 +124,24 @@ session_free(Session *self)
 }
 
 static void
-session_configure(Session* self, Prefer* prefer)
+session_configure(Session* self, Str* timezone, Str* format)
 {
 	auto local = &self->local;
 
+	// set timezone
+	if (timezone)
+	{
+		auto tz = timezone_mgr_find(&runtime()->timezone_mgr, timezone);
+		if (tz)
+			local->timezone = tz;
+	}
+
+	// set format
+	if (format)
+		local->format = *format;
+
 	// update transaction time
 	local_update_time(local);
-
-	if (! prefer)
-		return;
-
-	// configure session preferences
-	auto opt = (PreferOpt*)prefer->opts.start;
-	auto end = (PreferOpt*)prefer->opts.position;
-	for (; opt < end; opt++)
-	{
-		// timezone
-		if (str_is_case(&opt->name, "timezone", 8))
-		{
-			auto tz = timezone_mgr_find(&runtime()->timezone_mgr, &opt->value);
-			if (tz)
-				local->timezone = tz;
-			continue;
-		}
-
-		// return
-		if (str_is_case(&opt->name, "return", 6))
-		{
-			if (str_is_case(&opt->value, "minimal", 7))
-				str_set(&local->format, "json-array", 10);
-			else
-			if (str_is_case(&opt->value, "representation", 14))
-				str_set(&local->format, "json-obj-pretty", 15);
-			else
-				local->format = opt->value;
-			continue;
-		}
-	}
 }
 
 void
@@ -413,7 +394,8 @@ session_execute(Session* self,
                 Str*     url,
                 Str*     text,
                 Str*     content_type,
-                Prefer*  prefer,
+                Str*     timezone,
+                Str*     format,
                 Content* output)
 {
 	cancel_pause();
@@ -429,7 +411,7 @@ session_execute(Session* self,
 		session_lock(self, LOCK_SHARED);
 
 		// configure session before execution
-		session_configure(self, prefer);
+		session_configure(self, timezone, format);
 
 		// parse and execute request
 		session_execute_main(self, url, text, content_type, output);

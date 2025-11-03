@@ -75,6 +75,7 @@ frontend_native(Frontend* self, Native* native)
 			error = ctl->session_execute(session, &url, &req->cmd,
 			                             &content_type,
 			                             NULL,
+			                             NULL,
 			                             &output);
 			break;
 		}

@@ -22,15 +22,19 @@ struct PreferOpt
 
 struct Prefer
 {
-	Str header;
-	int opts_count;
-	Buf opts;
+	Str  header;
+	int  opts_count;
+	Buf  opts;
+	Str* opt_timezone;
+	Str* opt_return;
 };
 
 static inline void
 prefer_init(Prefer* self)
 {
-	self->opts_count = 0;
+	self->opt_timezone = NULL;
+	self->opt_return   = NULL;
+	self->opts_count   = 0;
 	buf_init(&self->opts);
 	str_init(&self->header);
 }
@@ -44,7 +48,9 @@ prefer_free(Prefer* self)
 static inline void
 prefer_reset(Prefer* self)
 {
-	self->opts_count = 0;
+	self->opt_timezone = NULL;
+	self->opt_return   = NULL;
+	self->opts_count   = 0;
 	buf_reset(&self->opts);
 	str_init(&self->header);
 }
@@ -116,4 +122,28 @@ prefer_set(Prefer* self, Str* header)
 
 error:
 	prefer_reset(self);
+}
+
+hot static inline void
+prefer_process(Prefer* self)
+{
+	// configure session preferences
+	auto opt = (PreferOpt*)self->opts.start;
+	auto end = (PreferOpt*)self->opts.position;
+	for (; opt < end; opt++)
+	{
+		// timezone
+		if (str_is_case(&opt->name, "timezone", 8))
+		{
+			self->opt_timezone = &opt->value;
+			continue;
+		}
+
+		// return
+		if (str_is_case(&opt->name, "return", 6))
+		{
+			self->opt_return = &opt->value;
+			continue;
+		}
+	}
 }

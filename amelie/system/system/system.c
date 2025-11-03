@@ -181,10 +181,13 @@ frontend_if_session_execute(void*    ptr,
                             Str*     url,
                             Str*     text,
                             Str*     content_type,
-                            Prefer*  prefer,
+                            Str*     timezone,
+                            Str*     format,
                             Content* output)
 {
-	return session_execute(ptr, url, text, content_type, prefer, output);
+	return session_execute(ptr, url, text, content_type,
+	                       timezone, format,
+	                       output);
 }
 
 static void

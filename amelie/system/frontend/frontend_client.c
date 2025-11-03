@@ -151,11 +151,19 @@ frontend_client(Frontend* self, Client* client)
 			continue;
 		}
 
+		Str* timezone = NULL;
+		Str* format   = NULL;
+
 		// Prefer header
-		prefer_reset(&prefer);
 		auto pref = http_find(request, "Prefer", 6);
 		if (pref)
+		{
+			prefer_reset(&prefer);
 			prefer_set(&prefer, &pref->value);
+			prefer_process(&prefer);
+			timezone = prefer.opt_timezone;
+			format   = prefer.opt_return;
+		}
 
 		Str content;
 		buf_str(&request->content, &content);
@@ -166,7 +174,8 @@ frontend_client(Frontend* self, Client* client)
 		                                     &request->options[HTTP_URL],
 		                                     &content,
 		                                     &content_type->value,
-		                                     &prefer,
+		                                     timezone,
+		                                     format,
 		                                     &output);
 		if (unlikely(on_error))
 		{
