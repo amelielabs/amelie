@@ -281,5 +281,12 @@ insert into test values (3) returning id;
 select * from test;
 [1, 2, 3]
 drop table test;
+# test: invalid format
+prefer return=xyz-123;
+select 123 as x;
+{"msg": "unrecognized format flag '123'"}
+prefer;
+select 123 as x;
+[123]
 disconnect S0;
 close E0;

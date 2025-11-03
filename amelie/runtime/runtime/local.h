@@ -48,3 +48,20 @@ local_update_time(Local* self)
 {
 	self->time_us = time_us();
 }
+
+static inline void
+local_encode_opt(Local* self, Buf* buf, Opt* opt)
+{
+	// replace timezone/format with local settings
+	if (opt == &config()->timezone)
+	{
+		encode_string(buf, &self->timezone->name);
+		return;
+	}
+	if (opt == &config()->format)
+	{
+		encode_string(buf, &self->format);
+		return;
+	}
+	opt_encode(opt, buf);
+}

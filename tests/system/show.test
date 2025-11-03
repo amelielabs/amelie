@@ -103,5 +103,13 @@ show asdf;
 # test: explain show
 explain show log_enable;
 
+# test: show (local shadow)
+prefer timezone=Asia/Tokyo, return=json;
+show all;
+show timezone;
+prefer;
+show all;
+show timezone;
+
 disconnect S0;
 close E0;

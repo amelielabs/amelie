@@ -286,7 +286,7 @@ fn_show(Fn* self)
 			fn_error_noargs(self, "option '%.*s' is not found", str_size(section),
 			                  str_of(section));
 		buf = buf_create();
-		opt_encode(opt, buf);
+		local_encode_opt(self->local, buf, opt);
 		value_set_json_buf(self->result, buf);
 		return;
 	}
@@ -391,7 +391,17 @@ fn_show(Fn* self)
 	case SHOW_ALL:
 	case SHOW_CONFIG:
 	{
-		buf = opts_list(&config()->opts);
+		buf = buf_create();
+		encode_obj(buf);
+		list_foreach(&config()->opts.list)
+		{
+			auto opt = list_at(Opt, link);
+			if (opt_is(opt, OPT_H) || opt_is(opt, OPT_S))
+				continue;
+			encode_string(buf, &opt->name);
+			local_encode_opt(self->local, buf, opt);
+		}
+		encode_obj_end(buf);
 		break;
 	}
 	default:
