@@ -118,6 +118,9 @@ parse_returning(Returning* self, Stmt* stmt, Expr* ctx)
 	auto into = stmt_if(stmt, KINTO);
 	if (into)
 	{
+		if (stmt->is_return)
+			stmt_error(stmt, into, "INTO and RETURN cannot be used together");
+
 		if (stmt->cte_name)
 			stmt_error(stmt, into, "INTO cannot be used with CTE");
 

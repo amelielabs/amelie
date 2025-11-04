@@ -296,6 +296,7 @@ enum
 	CVAR,
 	CVAR_MOV,
 	CVAR_SET,
+	CFIRST,
 	CREF,
 
 	// call/return

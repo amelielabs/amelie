@@ -724,15 +724,30 @@ emit_return(Compiler* self, Stmt* stmt)
 	// validate return type
 	if (type != TYPE_NULL)
 	{
+		if (type == TYPE_STORE)
+		{
+			if (udf->type == TYPE_STORE)
+			{
+				if (! columns_compare(&udf->returning, columns))
+					stmt_error(stmt, stmt->ast,
+					           "RETURN columns mismatch function returning columns");
+			} else
+			{
+				if (columns->count != 1)
+					stmt_error(stmt, stmt->ast, "RETURN expect one column");
+
+				// get first column from the the store
+				auto first = columns_first(columns);
+				type = first->type;
+				auto rfirst = op2(self, CFIRST, rpin(self, type), r);
+				runpin(self, r);
+				r = rfirst;
+			}
+		}
 		if (udf->type != type)
 			stmt_error(stmt, stmt->ast, "RETURN type '%s' mismatch function type '%s'",
 			           type_of(type),
 			           type_of(udf->type));
-
-		// validate returning columns
-		if (udf->type == TYPE_STORE && !columns_compare(&udf->returning, columns))
-			stmt_error(stmt, stmt->ast,
-			           "RETURN columns mismatch function returning columns");
 	}
 
 	// CRET

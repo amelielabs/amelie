@@ -320,6 +320,7 @@ OpDesc ops[] =
 	{ CVAR, "var" },
 	{ CVAR_MOV, "var_mov" },
 	{ CVAR_SET, "var_set" },
+	{ CFIRST, "first" },
 	{ CREF, "ref" },
 
 	// call / return

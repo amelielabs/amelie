@@ -430,6 +430,9 @@ begin
 	return insert into src values (8) returning *;
 	select 1;
 end;
+explain select test();
+select test();
+drop function test;
 
 # test: return insert returning into
 create function test() return int
@@ -438,9 +441,6 @@ begin
 	return insert into src values (8) returning * into x;
 	select 1;
 end;
-explain select test();
-select test();
-drop function test;
 
 create function test() return int
 begin
@@ -551,6 +551,13 @@ begin
 end;
 explain select test();
 select test();
+drop function test;
+
+create function test(array json) return json
+begin
+	return select [] -> self::push(it) from (array) it;
+end;
+select [1,2,3]::test;
 drop function test;
 
 # test: return expr

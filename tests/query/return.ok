@@ -1245,14 +1245,6 @@ begin
 	return insert into src values (8) returning *;
 	select 1;
 end;
-{"msg": "begin\n\treturn ❰insert❱ ⟵ RETURN type 'store' mismatch function type 'int'"}
-# test: return insert returning into
-create function test() return int
-begin
-	declare x int;
-	return insert into src values (8) returning * into x;
-	select 1;
-end;
 explain select test();
 [{
   "main": {
@@ -1264,15 +1256,13 @@ explain select test();
   "calls": [{
     "function": "public.test",
     "main": {
-      "00": "push_nulls          1      0      0     ",
-      "01": "set_ptr             1      -      0     ",
-      "02": "send_shard          0      1      0     # public.src (insert, closing)",
-      "03": "recv                1      0      -1    ",
-      "04": "var_set             0      0      1     ",
-      "05": "free                1      0      0     ",
-      "06": "ret                 -1     0      -     ",
-      "07": "int                 0      -      0     # 1",
-      "08": "ret                 -1     0      -     "
+      "00": "set_ptr             1      -      0     ",
+      "01": "send_shard          0      1      0     # public.src (insert, closing)",
+      "02": "recv                1      0      -1    ",
+      "03": "first               0      1      0     ",
+      "04": "ret                 0      0      -     ",
+      "05": "int                 1      -      0     # 1",
+      "06": "ret                 -1     0      -     "
     },
     "pushdown": {
       "00": "set                 0      1      0     ",
@@ -1292,8 +1282,16 @@ explain select test();
   }]
 }]
 select test();
-[null]
+[8]
 drop function test;
+# test: return insert returning into
+create function test() return int
+begin
+	declare x int;
+	return insert into src values (8) returning * into x;
+	select 1;
+end;
+{"msg": "create function test() return int\nbegin\n\tdeclare x int;\n\treturn insert into src values (8) returning * ❰into❱ ⟵ INTO and RETURN cannot be used together"}
 create function test() return int
 begin
 	declare x int;
@@ -1752,6 +1750,13 @@ explain select test();
 }]
 select test();
 [1, 2, 3, 4, 5, 6, 8, 9, 10]
+drop function test;
+create function test(array json) return json
+begin
+	return select [] -> self::push(it) from (array) it;
+end;
+select [1,2,3]::test;
+[[3, 2, 1]]
 drop function test;
 # test: return expr
 create function test(arg int) return int

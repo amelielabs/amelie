@@ -22,6 +22,7 @@ void crecv(Vm*, Op*);
 void crecv_aggs(Vm*, Op*);
 
 void cvar_set(Vm*, Op*);
+void cfirst(Vm*, Op*);
 
 Op*  ctable_open(Vm*, Op*, bool, bool);
 Op*  ctable_open_heap(Vm*, Op*);

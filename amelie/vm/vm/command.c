@@ -416,17 +416,49 @@ cvar_set(Vm* self, Op* op)
 
 	// value
 	auto src = reg_at(&self->r, op->c);
-	if (src->type == TYPE_STORE)
+	if (src->type != TYPE_STORE)
 	{
-		auto store = src->store;
+		value_copy(var, src);
+		return;
+	}
+
+	// set or union
+	auto store = src->store;
+	if (store->type == STORE_SET)
+	{
+		auto set = (Set*)store;
+		if (set->count >= 1)
+			value_copy(var, set_row(set, 0) + op->d);
+	} else
+	{
 		auto it = store_iterator(store);
 		defer(store_iterator_close, it);
 		if (store_iterator_has(it))
 			value_copy(var, it->current + op->d);
-		else
-			value_set_null(var);
-	} else {
-		value_copy(var, src);
+	}
+}
+
+void
+cfirst(Vm* self, Op* op)
+{
+	// [result, store]
+	auto result = reg_at(&self->r, op->a);
+	value_set_null(result);
+
+	// set or union
+	auto src   = reg_at(&self->r, op->b);
+	auto store = src->store;
+	if (store->type == STORE_SET)
+	{
+		auto set = (Set*)store;
+		if (set->count >= 1)
+			value_copy(result, set_value(set, 0));
+	} else
+	{
+		auto it = store_iterator(store);
+		defer(store_iterator_close, it);
+		if (store_iterator_has(it))
+			value_copy(result, it->current);
 	}
 }
 

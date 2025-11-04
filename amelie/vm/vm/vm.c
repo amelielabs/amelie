@@ -395,6 +395,7 @@ vm_run(Vm*       self,
 		&&cvar,
 		&&cvar_mov,
 		&&cvar_set,
+		&&cfirst,
 		&&cref,
 
 		// call / return
@@ -1957,6 +1958,11 @@ cvar_mov:
 cvar_set:
 	// [var, is_arg, value, column]
 	cvar_set(self, op);
+	op_next;
+
+cfirst:
+	// [result, store]
+	cfirst(self, op);
 	op_next;
 
 cref:
