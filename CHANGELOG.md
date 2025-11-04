@@ -1,5 +1,74 @@
 # Amelie Changelog.
 
+## 0.7.0 (04-11-2025)
+
+This major release introduces full-featured support for User-Defined Functions (UDF), similar in
+spirit to PostgreSQL PL/SQL and other relational databases.
+
+CREATE/DROP/ALTER FUNCTION.
+
+It is now possible and recommended to organize work using functions. Functions are multi-statement,
+have full support for control structures, variables, arguments, and are fully transactional.
+Functions can execute other functions. Functions cannot execute DDL commands.
+
+Functions are designed to increase performance marginally. They are stored in compiled form,
+ready for execution without the necessity for replanning and parsing. All functions are strictly typed
+and parallel in nature. Each function consists of two bytecode sections - main and pushdown
+(code intended for parallel execution).
+
+CONTROL STRUCTURES.
+
+This release introduces support for all common control structures:
+
+ - if/elsif/else
+ - while
+ - for
+ - break/continue
+ - return
+ - execute
+
+FULLY ASYNC AND PARALLEL EXECUTION.
+
+The main complexity lies in optimizing functions to reduce round-trip and ideally execute
+everything without wait times.
+
+Amelie is using several techniques, including delayed result processing and delayed variable
+assignments (until subsequent use), as well as identifying last sending statements to
+notify the backend about early completion.
+
+All non-returning statements do not require execution confirmation until the transaction
+is completed in full.
+
+GROUP CONFIRMATION AND COMMIT PROTOCOL.
+
+This release introduces some smart techniques to dramatically reduce IPC between backend
+workers by introducing GROUP CONFIRMATIONS. The goal is to scale, minimize wait times, and
+context switches at all levels. Amelie is using similar techniques as low-latency trading
+systems, such as fast IPC queues (LMAX style), etc.
+
+Amelie introduces a delayed COMMIT/ABORT protocol, similar in spirit to consensus protocols,
+such as Raft, where transactions have meta-information about the commit state
+(log state) from the primary.
+
+COMPILE TIME EXECUTION.
+
+Starting from this release, Amelie will execute almost all built-in functions during
+compile time if the function arguments can be calculated during compilation. This is primarily
+used for casting, but also supports complex manipulations, such as modifying JSON.
+
+HTTP API AND PREFER HEADER SUPPORT.
+
+This release adds support for the HTTP API to execute functions and also introduces support
+for the HTTP Prefer header.
+
+It is now possible to pass the timezone and the preferred return format information directly
+during remote execution.
+
+PLANNER IMPROVEMENTS.
+
+This release features significantly improved logic for processing and matching index keys,
+as well as understanding outer targets and allowing expressions to be used as keys, where possible.
+
 ## 0.6.0 (19-09-2025)
 
 This release introduces a way to use embedded Amelie as a client driver for remote connections
