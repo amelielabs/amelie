@@ -34,3 +34,6 @@
 // operations
 #include "value/like.h"
 #include "value/compare.h"
+
+// null
+#include "value/null.h"

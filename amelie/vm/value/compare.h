@@ -82,24 +82,3 @@ value_is_true(Value* a)
 	}
 	return true;
 }
-
-always_inline hot static inline bool
-value_is_unary(Value* result, Value* a)
-{
-	if (likely(a->type != TYPE_NULL))
-		return true;
-	value_free(a);
-	value_set_null(result);
-	return false;
-}
-
-always_inline hot static inline bool
-value_is(Value* result, Value* a, Value* b)
-{
-	if (unlikely(a->type != TYPE_NULL && b->type != TYPE_NULL))
-		return true;
-	value_free(a);
-	value_free(b);
-	value_set_null(result);
-	return false;
-}

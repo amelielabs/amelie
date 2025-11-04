@@ -696,7 +696,7 @@ cis:
 	op_next;
 
 cand:
-	if (likely(value_is(&r[op->a], &r[op->b], &r[op->c])))
+	if (likely(value_null(&r[op->a], &r[op->b], &r[op->c])))
 	{
 		value_set_bool(&r[op->a], value_is_true(&r[op->b]) && value_is_true(&r[op->c]));
 		value_free(&r[op->b]);
@@ -717,7 +717,7 @@ cor:
 	op_next;
 
 cnot:
-	if (likely(value_is_unary(&r[op->a], &r[op->b])))
+	if (likely(value_nullu(&r[op->a], &r[op->b])))
 	{
 		value_set_bool(&r[op->a], !value_is_true(&r[op->b]));
 		value_free(&r[op->b]);
@@ -725,63 +725,63 @@ cnot:
 	op_next;
 
 cborii:
-	if (likely(value_is(&r[op->a], &r[op->b], &r[op->c])))
+	if (likely(value_null_fast(&r[op->a], &r[op->b], &r[op->c])))
 		value_set_int(&r[op->a], r[op->b].integer | r[op->c].integer);
 	op_next;
 
 cbandii:
-	if (likely(value_is(&r[op->a], &r[op->b], &r[op->c])))
+	if (likely(value_null_fast(&r[op->a], &r[op->b], &r[op->c])))
 		value_set_int(&r[op->a], r[op->b].integer & r[op->c].integer);
 	op_next;
 
 cbxorii:
-	if (likely(value_is(&r[op->a], &r[op->b], &r[op->c])))
+	if (likely(value_null_fast(&r[op->a], &r[op->b], &r[op->c])))
 		value_set_int(&r[op->a], r[op->b].integer ^ r[op->c].integer);
 	op_next;
 
 cshlii:
-	if (likely(value_is(&r[op->a], &r[op->b], &r[op->c])))
+	if (likely(value_null_fast(&r[op->a], &r[op->b], &r[op->c])))
 		value_set_int(&r[op->a], r[op->b].integer << r[op->c].integer);
 	op_next;
 
 cshrii:
-	if (likely(value_is(&r[op->a], &r[op->b], &r[op->c])))
+	if (likely(value_null_fast(&r[op->a], &r[op->b], &r[op->c])))
 		value_set_int(&r[op->a], r[op->b].integer >> r[op->c].integer);
 	op_next;
 
 cbinvi:
-	if (likely(value_is_unary(&r[op->a], &r[op->b])))
+	if (likely(value_nullu(&r[op->a], &r[op->b])))
 		value_set_int(&r[op->a], ~r[op->b].integer);
 	op_next;
 
 // equ
 cequii:
-	if (likely(value_is(&r[op->a], &r[op->b], &r[op->c])))
+	if (likely(value_null_fast(&r[op->a], &r[op->b], &r[op->c])))
 		value_set_bool(&r[op->a], r[op->b].integer == r[op->c].integer);
 	op_next;
 
 cequif:
-	if (likely(value_is(&r[op->a], &r[op->b], &r[op->c])))
+	if (likely(value_null_fast(&r[op->a], &r[op->b], &r[op->c])))
 		value_set_bool(&r[op->a], r[op->b].integer == r[op->c].dbl);
 	op_next;
 
 cequfi:
-	if (likely(value_is(&r[op->a], &r[op->b], &r[op->c])))
+	if (likely(value_null_fast(&r[op->a], &r[op->b], &r[op->c])))
 		value_set_bool(&r[op->a], r[op->b].dbl == r[op->c].integer);
 	op_next;
 
 cequff:
-	if (likely(value_is(&r[op->a], &r[op->b], &r[op->c])))
+	if (likely(value_null_fast(&r[op->a], &r[op->b], &r[op->c])))
 		value_set_bool(&r[op->a], r[op->b].dbl == r[op->c].dbl);
 	op_next;
 
 cequll:
-	if (likely(value_is(&r[op->a], &r[op->b], &r[op->c])))
+	if (likely(value_null_fast(&r[op->a], &r[op->b], &r[op->c])))
 		value_set_bool(&r[op->a], !interval_compare(&r[op->b].interval, &r[op->c].interval));
 	op_next;
 
 cequss:
-	if (likely(value_is(&r[op->a], &r[op->b], &r[op->c])))
+	if (likely(value_null(&r[op->a], &r[op->b], &r[op->c])))
 	{
 		value_set_bool(&r[op->a], !str_compare_fn(&r[op->b].string, &r[op->c].string));
 		value_free(&r[op->b]);
@@ -790,7 +790,7 @@ cequss:
 	op_next;
 
 cequjj:
-	if (likely(value_is(&r[op->a], &r[op->b], &r[op->c])))
+	if (likely(value_null(&r[op->a], &r[op->b], &r[op->c])))
 	{
 		value_set_bool(&r[op->a], !json_compare(r[op->b].json, r[op->c].json));
 		value_free(&r[op->b]);
@@ -799,7 +799,7 @@ cequjj:
 	op_next;
 
 cequvv:
-	if (likely(value_is(&r[op->a], &r[op->b], &r[op->c])))
+	if (likely(value_null(&r[op->a], &r[op->b], &r[op->c])))
 	{
 		value_set_bool(&r[op->a], !vector_compare(r[op->b].vector, r[op->c].vector));
 		value_free(&r[op->b]);
@@ -808,38 +808,38 @@ cequvv:
 	op_next;
 
 cequuu:
-	if (likely(value_is(&r[op->a], &r[op->b], &r[op->c])))
+	if (likely(value_null_fast(&r[op->a], &r[op->b], &r[op->c])))
 		value_set_bool(&r[op->a], !uuid_compare(&r[op->b].uuid, &r[op->c].uuid));
 	op_next;
 
 // gte
 cgteii:
-	if (likely(value_is(&r[op->a], &r[op->b], &r[op->c])))
+	if (likely(value_null_fast(&r[op->a], &r[op->b], &r[op->c])))
 		value_set_bool(&r[op->a], r[op->b].integer >= r[op->c].integer);
 	op_next;
 
 cgteif:
-	if (likely(value_is(&r[op->a], &r[op->b], &r[op->c])))
+	if (likely(value_null_fast(&r[op->a], &r[op->b], &r[op->c])))
 		value_set_bool(&r[op->a], r[op->b].integer >= r[op->c].dbl);
 	op_next;
 
 cgtefi:
-	if (likely(value_is(&r[op->a], &r[op->b], &r[op->c])))
+	if (likely(value_null_fast(&r[op->a], &r[op->b], &r[op->c])))
 		value_set_bool(&r[op->a], r[op->b].dbl >= r[op->c].integer);
 	op_next;
 
 cgteff:
-	if (likely(value_is(&r[op->a], &r[op->b], &r[op->c])))
+	if (likely(value_null_fast(&r[op->a], &r[op->b], &r[op->c])))
 		value_set_bool(&r[op->a], r[op->b].dbl >= r[op->c].dbl);
 	op_next;
 
 cgtell:
-	if (likely(value_is(&r[op->a], &r[op->b], &r[op->c])))
+	if (likely(value_null_fast(&r[op->a], &r[op->b], &r[op->c])))
 		value_set_bool(&r[op->a], interval_compare(&r[op->b].interval, &r[op->c].interval) >= 0);
 	op_next;
 
 cgtess:
-	if (likely(value_is(&r[op->a], &r[op->b], &r[op->c])))
+	if (likely(value_null(&r[op->a], &r[op->b], &r[op->c])))
 	{
 		value_set_bool(&r[op->a], str_compare_fn(&r[op->b].string, &r[op->c].string) >= 0);
 		value_free(&r[op->b]);
@@ -848,7 +848,7 @@ cgtess:
 	op_next;
 
 cgtevv:
-	if (likely(value_is(&r[op->a], &r[op->b], &r[op->c])))
+	if (likely(value_null(&r[op->a], &r[op->b], &r[op->c])))
 	{
 		value_set_bool(&r[op->a], vector_compare(r[op->b].vector, r[op->c].vector) >= 0);
 		value_free(&r[op->b]);
@@ -857,38 +857,38 @@ cgtevv:
 	op_next;
 
 cgteuu:
-	if (likely(value_is(&r[op->a], &r[op->b], &r[op->c])))
+	if (likely(value_null_fast(&r[op->a], &r[op->b], &r[op->c])))
 		value_set_bool(&r[op->a], uuid_compare(&r[op->b].uuid, &r[op->c].uuid) >= 0);
 	op_next;
 
 // gt
 cgtii:
-	if (likely(value_is(&r[op->a], &r[op->b], &r[op->c])))
+	if (likely(value_null_fast(&r[op->a], &r[op->b], &r[op->c])))
 		value_set_bool(&r[op->a], r[op->b].integer > r[op->c].integer);
 	op_next;
 
 cgtif:
-	if (likely(value_is(&r[op->a], &r[op->b], &r[op->c])))
+	if (likely(value_null_fast(&r[op->a], &r[op->b], &r[op->c])))
 		value_set_bool(&r[op->a], r[op->b].integer > r[op->c].dbl);
 	op_next;
 
 cgtfi:
-	if (likely(value_is(&r[op->a], &r[op->b], &r[op->c])))
+	if (likely(value_null_fast(&r[op->a], &r[op->b], &r[op->c])))
 		value_set_bool(&r[op->a], r[op->b].dbl > r[op->c].integer);
 	op_next;
 
 cgtff:
-	if (likely(value_is(&r[op->a], &r[op->b], &r[op->c])))
+	if (likely(value_null_fast(&r[op->a], &r[op->b], &r[op->c])))
 		value_set_bool(&r[op->a], r[op->b].dbl > r[op->c].dbl);
 	op_next;
 
 cgtll:
-	if (likely(value_is(&r[op->a], &r[op->b], &r[op->c])))
+	if (likely(value_null_fast(&r[op->a], &r[op->b], &r[op->c])))
 		value_set_bool(&r[op->a], interval_compare(&r[op->b].interval, &r[op->c].interval) > 0);
 	op_next;
 
 cgtss:
-	if (likely(value_is(&r[op->a], &r[op->b], &r[op->c])))
+	if (likely(value_null(&r[op->a], &r[op->b], &r[op->c])))
 	{
 		value_set_bool(&r[op->a], str_compare_fn(&r[op->b].string, &r[op->c].string) > 0);
 		value_free(&r[op->b]);
@@ -897,7 +897,7 @@ cgtss:
 	op_next;
 
 cgtvv:
-	if (likely(value_is(&r[op->a], &r[op->b], &r[op->c])))
+	if (likely(value_null(&r[op->a], &r[op->b], &r[op->c])))
 	{
 		value_set_bool(&r[op->a], vector_compare(r[op->b].vector, r[op->c].vector) > 0);
 		value_free(&r[op->b]);
@@ -906,38 +906,38 @@ cgtvv:
 	op_next;
 
 cgtuu:
-	if (likely(value_is(&r[op->a], &r[op->b], &r[op->c])))
+	if (likely(value_null_fast(&r[op->a], &r[op->b], &r[op->c])))
 		value_set_bool(&r[op->a], uuid_compare(&r[op->b].uuid, &r[op->c].uuid) > 0);
 	op_next;
 
 // lte
 clteii:
-	if (likely(value_is(&r[op->a], &r[op->b], &r[op->c])))
+	if (likely(value_null_fast(&r[op->a], &r[op->b], &r[op->c])))
 		value_set_bool(&r[op->a], r[op->b].integer <= r[op->c].integer);
 	op_next;
 
 clteif:
-	if (likely(value_is(&r[op->a], &r[op->b], &r[op->c])))
+	if (likely(value_null_fast(&r[op->a], &r[op->b], &r[op->c])))
 		value_set_bool(&r[op->a], r[op->b].integer <= r[op->c].dbl);
 	op_next;
 
 cltefi:
-	if (likely(value_is(&r[op->a], &r[op->b], &r[op->c])))
+	if (likely(value_null_fast(&r[op->a], &r[op->b], &r[op->c])))
 		value_set_bool(&r[op->a], r[op->b].dbl <= r[op->c].integer);
 	op_next;
 
 clteff:
-	if (likely(value_is(&r[op->a], &r[op->b], &r[op->c])))
+	if (likely(value_null_fast(&r[op->a], &r[op->b], &r[op->c])))
 		value_set_bool(&r[op->a], r[op->b].dbl <= r[op->c].dbl);
 	op_next;
 
 cltell:
-	if (likely(value_is(&r[op->a], &r[op->b], &r[op->c])))
+	if (likely(value_null_fast(&r[op->a], &r[op->b], &r[op->c])))
 		value_set_bool(&r[op->a], interval_compare(&r[op->b].interval, &r[op->c].interval) <= 0);
 	op_next;
 
 cltess:
-	if (likely(value_is(&r[op->a], &r[op->b], &r[op->c])))
+	if (likely(value_null(&r[op->a], &r[op->b], &r[op->c])))
 	{
 		value_set_bool(&r[op->a], str_compare_fn(&r[op->b].string, &r[op->c].string) <= 0);
 		value_free(&r[op->b]);
@@ -946,7 +946,7 @@ cltess:
 	op_next;
 
 cltevv:
-	if (likely(value_is(&r[op->a], &r[op->b], &r[op->c])))
+	if (likely(value_null(&r[op->a], &r[op->b], &r[op->c])))
 	{
 		value_set_bool(&r[op->a], vector_compare(r[op->b].vector, r[op->c].vector) <= 0);
 		value_free(&r[op->b]);
@@ -955,38 +955,38 @@ cltevv:
 	op_next;
 
 clteuu:
-	if (likely(value_is(&r[op->a], &r[op->b], &r[op->c])))
+	if (likely(value_null_fast(&r[op->a], &r[op->b], &r[op->c])))
 		value_set_bool(&r[op->a], uuid_compare(&r[op->b].uuid, &r[op->c].uuid) <= 0);
 	op_next;
 
 // lt
 cltii:
-	if (likely(value_is(&r[op->a], &r[op->b], &r[op->c])))
+	if (likely(value_null_fast(&r[op->a], &r[op->b], &r[op->c])))
 		value_set_bool(&r[op->a], r[op->b].integer < r[op->c].integer);
 	op_next;
 
 cltif:
-	if (likely(value_is(&r[op->a], &r[op->b], &r[op->c])))
+	if (likely(value_null_fast(&r[op->a], &r[op->b], &r[op->c])))
 		value_set_bool(&r[op->a], r[op->b].integer < r[op->c].dbl);
 	op_next;
 
 cltfi:
-	if (likely(value_is(&r[op->a], &r[op->b], &r[op->c])))
+	if (likely(value_null_fast(&r[op->a], &r[op->b], &r[op->c])))
 		value_set_bool(&r[op->a], r[op->b].dbl < r[op->c].integer);
 	op_next;
 
 cltff:
-	if (likely(value_is(&r[op->a], &r[op->b], &r[op->c])))
+	if (likely(value_null_fast(&r[op->a], &r[op->b], &r[op->c])))
 		value_set_bool(&r[op->a], r[op->b].dbl < r[op->c].dbl);
 	op_next;
 
 cltll:
-	if (likely(value_is(&r[op->a], &r[op->b], &r[op->c])))
+	if (likely(value_null_fast(&r[op->a], &r[op->b], &r[op->c])))
 		value_set_bool(&r[op->a], interval_compare(&r[op->b].interval, &r[op->c].interval) < 0);
 	op_next;
 
 cltss:
-	if (likely(value_is(&r[op->a], &r[op->b], &r[op->c])))
+	if (likely(value_null(&r[op->a], &r[op->b], &r[op->c])))
 	{
 		value_set_bool(&r[op->a], str_compare_fn(&r[op->b].string, &r[op->c].string) < 0);
 		value_free(&r[op->b]);
@@ -995,7 +995,7 @@ cltss:
 	op_next;
 
 cltvv:
-	if (likely(value_is(&r[op->a], &r[op->b], &r[op->c])))
+	if (likely(value_null(&r[op->a], &r[op->b], &r[op->c])))
 	{
 		value_set_bool(&r[op->a], vector_compare(r[op->b].vector, r[op->c].vector) < 0);
 		value_free(&r[op->b]);
@@ -1004,13 +1004,13 @@ cltvv:
 	op_next;
 
 cltuu:
-	if (likely(value_is(&r[op->a], &r[op->b], &r[op->c])))
+	if (likely(value_null_fast(&r[op->a], &r[op->b], &r[op->c])))
 		value_set_bool(&r[op->a], uuid_compare(&r[op->b].uuid, &r[op->c].uuid) < 0);
 	op_next;
 
 // add
 caddii:
-	if (likely(value_is(&r[op->a], &r[op->b], &r[op->c])))
+	if (likely(value_null_fast(&r[op->a], &r[op->b], &r[op->c])))
 	{
 		if (unlikely(int64_add_overflow(&rc, r[op->b].integer, r[op->c].integer)))
 			error("int + int overflow");
@@ -1019,7 +1019,7 @@ caddii:
 	op_next;
 
 caddif:
-	if (likely(value_is(&r[op->a], &r[op->b], &r[op->c])))
+	if (likely(value_null_fast(&r[op->a], &r[op->b], &r[op->c])))
 	{
 		if (unlikely(double_add_overflow(&dbl, r[op->b].integer, r[op->c].dbl)))
 			error("int + double overflow");
@@ -1028,7 +1028,7 @@ caddif:
 	op_next;
 
 caddfi:
-	if (likely(value_is(&r[op->a], &r[op->b], &r[op->c])))
+	if (likely(value_null_fast(&r[op->a], &r[op->b], &r[op->c])))
 	{
 		if (unlikely(double_add_overflow(&dbl, r[op->b].dbl, r[op->c].integer)))
 			error("double + int overflow");
@@ -1037,7 +1037,7 @@ caddfi:
 	op_next;
 
 caddff:
-	if (likely(value_is(&r[op->a], &r[op->b], &r[op->c])))
+	if (likely(value_null_fast(&r[op->a], &r[op->b], &r[op->c])))
 	{
 		if (unlikely(double_add_overflow(&dbl, r[op->b].dbl, r[op->c].dbl)))
 			error("double + double overflow");
@@ -1046,7 +1046,7 @@ caddff:
 	op_next;
 
 caddtl:
-	if (likely(value_is(&r[op->a], &r[op->b], &r[op->c])))
+	if (likely(value_null_fast(&r[op->a], &r[op->b], &r[op->c])))
 	{
 		timestamp_init(&ts);
 		timestamp_set_unixtime(&ts, r[op->b].integer);
@@ -1056,7 +1056,7 @@ caddtl:
 	op_next;
 
 caddll:
-	if (likely(value_is(&r[op->a], &r[op->b], &r[op->c])))
+	if (likely(value_null_fast(&r[op->a], &r[op->b], &r[op->c])))
 	{
 		interval_add(&iv, &r[op->b].interval, &r[op->c].interval);
 		value_set_interval(&r[op->a], &iv);
@@ -1064,7 +1064,7 @@ caddll:
 	op_next;
 
 caddlt:
-	if (likely(value_is(&r[op->a], &r[op->b], &r[op->c])))
+	if (likely(value_null_fast(&r[op->a], &r[op->b], &r[op->c])))
 	{
 		timestamp_init(&ts);
 		timestamp_set_unixtime(&ts, r[op->c].integer);
@@ -1074,17 +1074,17 @@ caddlt:
 	op_next;
 
 cadddi:
-	if (likely(value_is(&r[op->a], &r[op->b], &r[op->c])))
+	if (likely(value_null_fast(&r[op->a], &r[op->b], &r[op->c])))
 		value_set_date(&r[op->a], date_add(r[op->b].integer, r[op->c].integer));
 	op_next;
 
 caddid:
-	if (likely(value_is(&r[op->a], &r[op->b], &r[op->c])))
+	if (likely(value_null_fast(&r[op->a], &r[op->b], &r[op->c])))
 		value_set_date(&r[op->a], date_add(r[op->c].integer, r[op->b].integer));
 	op_next;
 
 cadddl:
-	if (likely(value_is(&r[op->a], &r[op->b], &r[op->c])))
+	if (likely(value_null_fast(&r[op->a], &r[op->b], &r[op->c])))
 	{
 		// convert julian to timestamp add interval and convert to unixtime
 		timestamp_init(&ts);
@@ -1095,7 +1095,7 @@ cadddl:
 	op_next;
 
 caddld:
-	if (likely(value_is(&r[op->a], &r[op->b], &r[op->c])))
+	if (likely(value_null_fast(&r[op->a], &r[op->b], &r[op->c])))
 	{
 		timestamp_init(&ts);
 		timestamp_set_date(&ts, r[op->c].integer);
@@ -1105,7 +1105,7 @@ caddld:
 	op_next;
 
 caddvv:
-	if (likely(value_is(&r[op->a], &r[op->b], &r[op->c])))
+	if (likely(value_null(&r[op->a], &r[op->b], &r[op->c])))
 	{
 		if (unlikely(r[op->b].vector->size != r[op->c].vector->size))
 			error("vector sizes mismatch");
@@ -1121,7 +1121,7 @@ caddvv:
 
 // sub
 csubii:
-	if (likely(value_is(&r[op->a], &r[op->b], &r[op->c])))
+	if (likely(value_null_fast(&r[op->a], &r[op->b], &r[op->c])))
 	{
 		if (unlikely(int64_sub_overflow(&rc, r[op->b].integer, r[op->c].integer)))
 			error("int - int overflow");
@@ -1130,7 +1130,7 @@ csubii:
 	op_next;
 
 csubif:
-	if (likely(value_is(&r[op->a], &r[op->b], &r[op->c])))
+	if (likely(value_null_fast(&r[op->a], &r[op->b], &r[op->c])))
 	{
 		if (unlikely(double_sub_overflow(&dbl, r[op->b].integer, r[op->c].dbl)))
 			error("int - double overflow");
@@ -1139,7 +1139,7 @@ csubif:
 	op_next;
 
 csubfi:
-	if (likely(value_is(&r[op->a], &r[op->b], &r[op->c])))
+	if (likely(value_null_fast(&r[op->a], &r[op->b], &r[op->c])))
 	{
 		if (unlikely(double_sub_overflow(&dbl, r[op->b].dbl, r[op->c].integer)))
 			error("double - int overflow");
@@ -1148,7 +1148,7 @@ csubfi:
 	op_next;
 
 csubff:
-	if (likely(value_is(&r[op->a], &r[op->b], &r[op->c])))
+	if (likely(value_null_fast(&r[op->a], &r[op->b], &r[op->c])))
 	{
 		if (unlikely(double_sub_overflow(&dbl, r[op->b].dbl, r[op->c].dbl)))
 			error("double - double overflow");
@@ -1157,7 +1157,7 @@ csubff:
 	op_next;
 
 csubtl:
-	if (likely(value_is(&r[op->a], &r[op->b], &r[op->c])))
+	if (likely(value_null_fast(&r[op->a], &r[op->b], &r[op->c])))
 	{
 		timestamp_init(&ts);
 		timestamp_set_unixtime(&ts, r[op->b].integer);
@@ -1167,7 +1167,7 @@ csubtl:
 	op_next;
 
 csubtt:
-	if (likely(value_is(&r[op->a], &r[op->b], &r[op->c])))
+	if (likely(value_null_fast(&r[op->a], &r[op->b], &r[op->c])))
 	{
 		interval_init(&iv);
 		iv.us = r[op->b].integer - r[op->c].integer;
@@ -1176,7 +1176,7 @@ csubtt:
 	op_next;
 
 csubll:
-	if (likely(value_is(&r[op->a], &r[op->b], &r[op->c])))
+	if (likely(value_null_fast(&r[op->a], &r[op->b], &r[op->c])))
 	{
 		interval_sub(&iv, &r[op->b].interval, &r[op->c].interval);
 		value_set_interval(&r[op->a], &iv);
@@ -1184,12 +1184,12 @@ csubll:
 	op_next;
 
 csubdi:
-	if (likely(value_is(&r[op->a], &r[op->b], &r[op->c])))
+	if (likely(value_null_fast(&r[op->a], &r[op->b], &r[op->c])))
 		value_set_date(&r[op->a], date_sub(r[op->b].integer, r[op->c].integer));
 	op_next;
 
 csubdl:
-	if (likely(value_is(&r[op->a], &r[op->b], &r[op->c])))
+	if (likely(value_null_fast(&r[op->a], &r[op->b], &r[op->c])))
 	{
 		// convert julian to timestamp sub interval and convert to unixtime
 		timestamp_init(&ts);
@@ -1200,7 +1200,7 @@ csubdl:
 	op_next;
 
 csubvv:
-	if (likely(value_is(&r[op->a], &r[op->b], &r[op->c])))
+	if (likely(value_null(&r[op->a], &r[op->b], &r[op->c])))
 	{
 		if (unlikely(r[op->b].vector->size != r[op->c].vector->size))
 			error("vector sizes mismatch");
@@ -1216,7 +1216,7 @@ csubvv:
 
 // mul
 cmulii:
-	if (likely(value_is(&r[op->a], &r[op->b], &r[op->c])))
+	if (likely(value_null_fast(&r[op->a], &r[op->b], &r[op->c])))
 	{
 		if (unlikely(int64_mul_overflow(&rc, r[op->b].integer, r[op->c].integer)))
 			error("int * int overflow");
@@ -1225,7 +1225,7 @@ cmulii:
 	op_next;
 
 cmulif:
-	if (likely(value_is(&r[op->a], &r[op->b], &r[op->c])))
+	if (likely(value_null_fast(&r[op->a], &r[op->b], &r[op->c])))
 	{
 		if (unlikely(double_mul_overflow(&dbl, r[op->b].integer, r[op->c].dbl)))
 			error("int * double overflow");
@@ -1234,7 +1234,7 @@ cmulif:
 	op_next;
 
 cmulfi:
-	if (likely(value_is(&r[op->a], &r[op->b], &r[op->c])))
+	if (likely(value_null_fast(&r[op->a], &r[op->b], &r[op->c])))
 	{
 		if (unlikely(double_mul_overflow(&dbl, r[op->b].dbl, r[op->c].integer)))
 			error("double * int overflow");
@@ -1243,7 +1243,7 @@ cmulfi:
 	op_next;
 
 cmulff:
-	if (likely(value_is(&r[op->a], &r[op->b], &r[op->c])))
+	if (likely(value_null_fast(&r[op->a], &r[op->b], &r[op->c])))
 	{
 		if (unlikely(double_mul_overflow(&dbl, r[op->b].dbl, r[op->c].dbl)))
 			error("double * double overflow");
@@ -1252,7 +1252,7 @@ cmulff:
 	op_next;
 
 cmulvv:
-	if (likely(value_is(&r[op->a], &r[op->b], &r[op->c])))
+	if (likely(value_null(&r[op->a], &r[op->b], &r[op->c])))
 	{
 		if (unlikely(r[op->b].vector->size != r[op->c].vector->size))
 			error("vector sizes mismatch");
@@ -1268,7 +1268,7 @@ cmulvv:
 
 // div
 cdivii:
-	if (likely(value_is(&r[op->a], &r[op->b], &r[op->c])))
+	if (likely(value_null_fast(&r[op->a], &r[op->b], &r[op->c])))
 	{
 		if (unlikely(r[op->c].integer == 0))
 			error("zero division");
@@ -1277,7 +1277,7 @@ cdivii:
 	op_next;
 
 cdivif:
-	if (likely(value_is(&r[op->a], &r[op->b], &r[op->c])))
+	if (likely(value_null_fast(&r[op->a], &r[op->b], &r[op->c])))
 	{
 		if (unlikely(r[op->c].dbl == 0))
 			error("zero division");
@@ -1288,7 +1288,7 @@ cdivif:
 	op_next;
 
 cdivfi:
-	if (likely(value_is(&r[op->a], &r[op->b], &r[op->c])))
+	if (likely(value_null_fast(&r[op->a], &r[op->b], &r[op->c])))
 	{
 		if (unlikely(r[op->c].integer == 0))
 			error("zero division");
@@ -1299,7 +1299,7 @@ cdivfi:
 	op_next;
 
 cdivff:
-	if (likely(value_is(&r[op->a], &r[op->b], &r[op->c])))
+	if (likely(value_null_fast(&r[op->a], &r[op->b], &r[op->c])))
 	{
 		if (unlikely(r[op->c].dbl == 0))
 			error("zero division");
@@ -1311,7 +1311,7 @@ cdivff:
 
 // mod
 cmodii:
-	if (likely(value_is(&r[op->a], &r[op->b], &r[op->c])))
+	if (likely(value_null_fast(&r[op->a], &r[op->b], &r[op->c])))
 	{
 		if (unlikely(r[op->c].integer == 0))
 			error("zero division");
@@ -1321,17 +1321,17 @@ cmodii:
 
 // neg
 cnegi:
-	if (likely(value_is_unary(&r[op->a], &r[op->b])))
+	if (likely(value_nullu_fast(&r[op->a], &r[op->b])))
 		value_set_int(&r[op->a], -r[op->b].integer);
 	op_next;
 
 cnegf:
-	if (likely(value_is_unary(&r[op->a], &r[op->b])))
+	if (likely(value_nullu_fast(&r[op->a], &r[op->b])))
 		value_set_double(&r[op->a], -r[op->b].dbl);
 	op_next;
 
 cnegl:
-	if (likely(value_is_unary(&r[op->a], &r[op->b])))
+	if (likely(value_nullu_fast(&r[op->a], &r[op->b])))
 	{
 		interval_neg(&iv, &r[op->b].interval);
 		value_set_interval(&r[op->a], &iv);
@@ -1340,7 +1340,7 @@ cnegl:
 
 // cat
 ccatss:
-	if (likely(value_is(&r[op->a], &r[op->b], &r[op->c])))
+	if (likely(value_null(&r[op->a], &r[op->b], &r[op->c])))
 	{
 		buf = buf_create();
 		buf_write_str(buf, &r[op->b].string);
@@ -1354,7 +1354,7 @@ ccatss:
 
 cidxjs:
 	// [result, object, pos]
-	if (likely(value_is(&r[op->a], &r[op->b], &r[op->c])))
+	if (likely(value_null(&r[op->a], &r[op->b], &r[op->c])))
 	{
 		// {}['path']
 		a = &r[op->a];
@@ -1383,7 +1383,7 @@ cidxjs:
 
 cidxji:
 	// [result, array, pos]
-	if (likely(value_is(&r[op->a], &r[op->b], &r[op->c])))
+	if (likely(value_null(&r[op->a], &r[op->b], &r[op->c])))
 	{
 		// [][pos]
 		a = &r[op->a];
@@ -1413,7 +1413,7 @@ cidxji:
 
 cidxvi:
 	// [][pos]
-	if (likely(value_is(&r[op->a], &r[op->b], &r[op->c])))
+	if (likely(value_null(&r[op->a], &r[op->b], &r[op->c])))
 	{
 		a = &r[op->a];
 		b = &r[op->b];
@@ -1428,7 +1428,7 @@ cidxvi:
 
 cdotjs:
 	// [result, object, pos]
-	if (likely(value_is(&r[op->a], &r[op->b], &r[op->c])))
+	if (likely(value_null(&r[op->a], &r[op->b], &r[op->c])))
 	{
 		// {}.path
 		a = &r[op->a];
@@ -1456,7 +1456,7 @@ cdotjs:
 	op_next;
 
 clikess:
-	if (likely(value_is(&r[op->a], &r[op->b], &r[op->c])))
+	if (likely(value_null(&r[op->a], &r[op->b], &r[op->c])))
 	{
 		value_like(&r[op->a], &r[op->b], &r[op->c]);
 		value_free(&r[op->b]);
@@ -1471,7 +1471,7 @@ cin:
 	op_next;
 
 call:
-	if (likely(value_is(&r[op->a], &r[op->b], &r[op->c])))
+	if (likely(value_null(&r[op->a], &r[op->b], &r[op->c])))
 	{
 		value_all(&r[op->a], &r[op->b], &r[op->c], op->d);
 		value_free(&r[op->b]);
@@ -1480,7 +1480,7 @@ call:
 	op_next;
 
 cany:
-	if (likely(value_is(&r[op->a], &r[op->b], &r[op->c])))
+	if (likely(value_null(&r[op->a], &r[op->b], &r[op->c])))
 	{
 		value_any(&r[op->a], &r[op->b], &r[op->c], op->d);
 		value_free(&r[op->b]);
