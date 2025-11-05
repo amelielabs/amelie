@@ -53,11 +53,11 @@ emit_upsert(Compiler* self, Ast* ast)
 	// create returning set
 	int rset = -1;
 	if (returning_has(&insert->ret))
-		rset = op3(self, CSET, rpin(self, TYPE_STORE), insert->ret.count, 0);
+		rset = op3pin(self, CSET, TYPE_STORE, insert->ret.count, 0);
 
 	// CTABLE_PREPARE
-	target->rcursor = op2(self, CTABLE_PREPARE, rpin(self, TYPE_CURSOR),
-	                      (intptr_t)table);
+	target->rcursor = op2pin(self, CTABLE_PREPARE, TYPE_CURSOR,
+	                         (intptr_t)table);
 
 	// jmp _start
 	int jmp_start = op_pos(self);
@@ -111,7 +111,7 @@ emit_upsert(Compiler* self, Ast* ast)
 		runpin(self, r);
 
 		// CALL
-		r = op4(self, CCALL, rpin(self, func->type), (intptr_t)func, 1, -1);
+		r = op4pin(self, CCALL, func->type, (intptr_t)func, 1, -1);
 		runpin(self, r);
 		break;
 	}

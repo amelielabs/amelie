@@ -109,7 +109,7 @@ emit_update_target(Compiler* self, From* from, Ast* expr)
 		auto column = op->l->column;
 
 		// push column order
-		int rexpr = op2(self, CINT, rpin(self, TYPE_INT), column->order);
+		int rexpr = op2pin(self, CINT, TYPE_INT, column->order);
 		op1(self, CPUSH, rexpr);
 		runpin(self, rexpr);
 
@@ -120,7 +120,7 @@ emit_update_target(Compiler* self, From* from, Ast* expr)
 			// SET column = DEFAULT
 			int offset = code_data_offset(self->code_data);
 			buf_write_buf(&self->code_data->data, &column->constraints.value);
-			rexpr = op2(self, CJSON, rpin(self, column->type), offset);
+			rexpr = op2pin(self, CJSON, column->type, offset);
 			type  = column->type;
 			op1(self, CPUSH, rexpr);
 			runpin(self, rexpr);
@@ -198,9 +198,7 @@ emit_update(Compiler* self, Ast* ast)
 	// RETURNING expr
 
 	// create returning set
-	update->rset =
-		op3(self, CSET, rpin(self, TYPE_STORE),
-		    update->ret.count, 0);
+	update->rset = op3pin(self, CSET, TYPE_STORE, update->ret.count, 0);
 
 	scan(self, &update->from,
 	     NULL,

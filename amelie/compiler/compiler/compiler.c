@@ -286,8 +286,8 @@ emit_recv(Compiler* self, Stmt* stmt)
 		stmt->r = pushdown_recv(self, stmt->ast);
 	else
 		// DML returning
-		stmt->r = op5(self, CRECV, rpin(self, TYPE_STORE), stmt->rdispatch,
-		              -1, -1, false);
+		stmt->r = op5pin(self, CRECV, TYPE_STORE, stmt->rdispatch,
+		                 -1, -1, false);
 
 	runpin(self, stmt->rdispatch);
 	stmt->rdispatch = -1;
@@ -705,7 +705,7 @@ emit_return(Compiler* self, Stmt* stmt)
 	if (stmt->id == STMT_RETURN)
 	{
 		auto var = stmt->ast->var;
-		r = op3(self, CVAR, rpin(self, var->type), var->order, var->is_arg);
+		r = op3pin(self, CVAR, var->type, var->order, var->is_arg);
 		type = rtype(self, r);
 		columns = &var->columns;
 	} else
@@ -739,7 +739,7 @@ emit_return(Compiler* self, Stmt* stmt)
 				// get first column from the the store
 				auto first = columns_first(columns);
 				type = first->type;
-				auto rfirst = op2(self, CFIRST, rpin(self, type), r);
+				auto rfirst = op2pin(self, CFIRST, type, r);
 				runpin(self, r);
 				r = rfirst;
 			}

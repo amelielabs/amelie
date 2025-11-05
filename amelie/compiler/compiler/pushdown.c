@@ -50,10 +50,10 @@ pushdown_group_by(Compiler* self, AstSelect* select)
 	// CSET_ORDERED
 	int offset = emit_select_order_by_data(self, select, true);
 	int rset;
-	rset = op4(self, CSET_ORDERED, rpin(self, TYPE_STORE),
-	           select->expr_aggs.count,
-	           select->expr_group_by.count,
-	           offset);
+	rset = op4pin(self, CSET_ORDERED, TYPE_STORE,
+	              select->expr_aggs.count,
+	              select->expr_group_by.count,
+	              offset);
 	select->rset_agg = rset;
 
 	// create second ordered agg set to handle count(distinct)
@@ -66,8 +66,7 @@ pushdown_group_by(Compiler* self, AstSelect* select)
 		memset(order, true, sizeof(bool) * count);
 
 		// CSET_ORDERED
-		auto rset_child = op4(self, CSET_ORDERED, rpin(self, TYPE_STORE), 0,
-		                      count, offset);
+		auto rset_child = op4pin(self, CSET_ORDERED, TYPE_STORE, 0, count, offset);
 
 		// CSET_ASSIGN (set child set)
 		op2(self, CSET_ASSIGN, rset, rset_child);
@@ -121,10 +120,10 @@ pushdown_order_by(Compiler* self, AstSelect* select)
 	int  offset = emit_select_order_by_data(self, select, false);
 
 	// CSET_ORDERED
-	select->rset = op4(self, CSET_ORDERED, rpin(self, TYPE_STORE),
-	                   select->ret.count,
-	                   select->expr_order_by.count,
-	                   offset);
+	select->rset = op4pin(self, CSET_ORDERED, TYPE_STORE,
+	                      select->ret.count,
+	                      select->expr_order_by.count,
+	                      offset);
 
 	// push limit as limit = limit + offset if possible
 #if 0
@@ -172,7 +171,7 @@ static inline int
 pushdown_limit(Compiler* self, AstSelect* select)
 {
 	// create result set
-	select->rset = op3(self, CSET, rpin(self, TYPE_STORE), select->ret.count, 0);
+	select->rset = op3pin(self, CSET, TYPE_STORE, select->ret.count, 0);
 
 	// push limit as limit = limit + offset
 	Ast* limit = NULL;
@@ -231,10 +230,10 @@ pushdown_recv_group_by_order_by(Compiler* self, AstSelect* select)
 {
 	// create ordered data set
 	int offset = emit_select_order_by_data(self, select, false);
-	int rset = op4(self, CSET_ORDERED, rpin(self, TYPE_STORE),
-	               select->ret.count,
-	               select->expr_order_by.count,
-	               offset);
+	int rset = op4pin(self, CSET_ORDERED, TYPE_STORE,
+	                  select->ret.count,
+	                  select->expr_order_by.count,
+	                  offset);
 	select->rset = rset;
 
 	// scan over agg set
@@ -277,9 +276,9 @@ pushdown_recv_group_by(Compiler* self, AstSelect* select)
 	// during union iteration
 
 	// CRECV_AGGS
-	int runion = op3(self, CRECV_AGGS, rpin(self, TYPE_STORE),
-	                 self->current->rdispatch,
-	                 select->aggs);
+	int runion = op3pin(self, CRECV_AGGS, TYPE_STORE,
+	                    self->current->rdispatch,
+	                    select->aggs);
 
 	select->rset_agg = runion;
 
@@ -291,7 +290,7 @@ pushdown_recv_group_by(Compiler* self, AstSelect* select)
 		return pushdown_recv_group_by_order_by(self, select);
 
 	// create set
-	int rset = op3(self, CSET, rpin(self, TYPE_STORE), select->ret.count, 0);
+	int rset = op3pin(self, CSET, TYPE_STORE, select->ret.count, 0);
 	select->rset = rset;
 
 	// scan over the agg set
@@ -341,11 +340,11 @@ pushdown_recv(Compiler* self, Ast* ast)
 		roffset = emit_expr(self, &select->from, select->expr_offset);
 
 	// CRECV
-	int runion = op5(self, CRECV, rpin(self, TYPE_STORE),
-	                 self->current->rdispatch,
-	                 rlimit,
-	                 roffset,
-	                 select->distinct);
+	int runion = op5pin(self, CRECV, TYPE_STORE,
+	                    self->current->rdispatch,
+	                    rlimit,
+	                    roffset,
+	                    select->distinct);
 
 	if (rlimit != -1)
 		runpin(self, rlimit);

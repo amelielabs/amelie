@@ -43,8 +43,24 @@ op1(Compiler* self, uint8_t id, int64_t a)
 }
 
 static inline int64_t
+op1pin(Compiler* self, uint8_t id, int type)
+{
+	auto a = rpin(self, type);
+	code_add(self->code, id, a, 0, 0, 0, 0);
+	return a;
+}
+
+static inline int64_t
 op2(Compiler* self, uint8_t id, int64_t a, int64_t b)
 {
+	code_add(self->code, id, a, b, 0, 0, 0);
+	return a;
+}
+
+static inline int64_t
+op2pin(Compiler* self, uint8_t id, int type, int64_t b)
+{
+	auto a = rpin(self, type);
 	code_add(self->code, id, a, b, 0, 0, 0);
 	return a;
 }
@@ -57,6 +73,14 @@ op3(Compiler* self, uint8_t id, int64_t a, int64_t b, int64_t c)
 }
 
 static inline int64_t
+op3pin(Compiler* self, uint8_t id, int type, int64_t b, int64_t c)
+{
+	auto a = rpin(self, type);
+	code_add(self->code, id, a, b, c, 0, 0);
+	return a;
+}
+
+static inline int64_t
 op4(Compiler* self, uint8_t id, int64_t a, int64_t b, int64_t c, int64_t d)
 {
 	code_add(self->code, id, a, b, c, d, 0);
@@ -64,8 +88,24 @@ op4(Compiler* self, uint8_t id, int64_t a, int64_t b, int64_t c, int64_t d)
 }
 
 static inline int64_t
+op4pin(Compiler* self, uint8_t id, int type, int64_t b, int64_t c, int64_t d)
+{
+	auto a = rpin(self, type);
+	code_add(self->code, id, a, b, c, d, 0);
+	return a;
+}
+
+static inline int64_t
 op5(Compiler* self, uint8_t id, int64_t a, int64_t b, int64_t c, int64_t d, int64_t e)
 {
+	code_add(self->code, id, a, b, c, d, e);
+	return a;
+}
+
+static inline int64_t
+op5pin(Compiler* self, uint8_t id, int type, int64_t b, int64_t c, int64_t d, int64_t e)
+{
+	auto a = rpin(self, type);
 	code_add(self->code, id, a, b, c, d, e);
 	return a;
 }

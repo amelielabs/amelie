@@ -55,7 +55,7 @@ emit_insert_store_generated_on_match(Scan* self)
 		auto column = op->l->column;
 
 		// push column order
-		int rexpr = op2(cp, CINT, rpin(cp, TYPE_INT), column->order);
+		int rexpr = op2pin(cp, CINT, TYPE_INT, column->order);
 		op1(cp, CPUSH, rexpr);
 		runpin(cp, rexpr);
 
@@ -87,7 +87,7 @@ emit_insert_store_rows(Compiler* self)
 	auto columns = table_columns(table);
 
 	// emit rows
-	auto rset = op3(self, CSET, rpin(self, TYPE_STORE), columns->count, 0);
+	auto rset = op3pin(self, CSET, TYPE_STORE, columns->count, 0);
 	for (auto row = insert->rows.list; row; row = row->next)
 	{
 		auto col = row->ast;
@@ -103,7 +103,7 @@ emit_insert_store_rows(Compiler* self)
 		}
 		op1(self, CSET_ADD, rset);
 	}
-	return op2(self, CDUP, rpin(self, TYPE_STORE), rset);
+	return op2pin(self, CDUP, TYPE_STORE, rset);
 }
 
 int
@@ -127,7 +127,7 @@ emit_insert_store(Compiler* self)
 		if (! columns_compare(columns, columns_select))
 			stmt_error(stmt, insert->select->ast, "SELECT columns must match the INSERT table");
 
-		r = op2(self, CDUP, rpin(self, TYPE_STORE), insert->select->r);
+		r = op2pin(self, CDUP, TYPE_STORE, insert->select->r);
 	} else
 	{
 		if (insert->rows.count > 0)
@@ -135,14 +135,14 @@ emit_insert_store(Compiler* self)
 			r = emit_insert_store_rows(self);
 		else
 			// use rows set created during parsing
-			r = op2(self, CSET_PTR, rpin(self, TYPE_STORE), (intptr_t)insert->values);
+			r = op2pin(self, CSET_PTR, TYPE_STORE, (intptr_t)insert->values);
 	}
 
 	// scan over insert values to generate and apply stored columns
 	if (columns->count_stored > 0)
 	{
 		// store_open( rvalues )
-		auto values_dup = op2(self, CDUP, rpin(self, TYPE_STORE), r);
+		auto values_dup = op2pin(self, CDUP, TYPE_STORE, r);
 		from_first(&insert->from_generated)->r = values_dup;
 		scan(self, &insert->from_generated,
 		     NULL,

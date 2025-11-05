@@ -93,8 +93,7 @@ emit_select_on_match_aggregate(Scan* self)
 	}
 
 	// CSET_GET
-	select->rset_agg_row =
-		op2(cp, CSET_GET, rpin(cp, TYPE_INT), select->rset_agg);
+	select->rset_agg_row = op2pin(cp, CSET_GET, TYPE_INT, select->rset_agg);
 
 	// push aggs
 	node = select->expr_aggs.list;
@@ -192,8 +191,7 @@ emit_select_on_match_aggregate_empty(Compiler* self, AstSelect* select)
 	}
 
 	// CSET_GET
-	select->rset_agg_row =
-		op2(self, CSET_GET, rpin(self, TYPE_INT), select->rset_agg);
+	select->rset_agg_row = op2pin(self, CSET_GET, TYPE_INT, select->rset_agg);
 
 	// push aggs
 	node = select->expr_aggs.list;
@@ -255,11 +253,11 @@ emit_select_union(Compiler* self, AstSelect* select)
 		roffset = emit_expr(self, &select->from, select->expr_offset);
 
 	// CUNION
-	int runion = op5(self, CUNION, rpin(self, TYPE_STORE),
-	                 select->rset,
-	                 select->distinct,
-	                 rlimit,
-	                 roffset);
+	int runion = op5pin(self, CUNION, TYPE_STORE,
+	                    select->rset,
+	                    select->distinct,
+	                    rlimit,
+	                    roffset);
 
 	runpin(self, select->rset);
 	select->rset = -1;
@@ -280,9 +278,9 @@ emit_select_group_by_scan(Compiler* self, AstSelect* select,
 {
 	// create agg set
 	int rset;
-	rset = op3(self, CSET, rpin(self, TYPE_STORE),
-	           select->expr_aggs.count,
-	           select->expr_group_by.count);
+	rset = op3pin(self, CSET, TYPE_STORE,
+	              select->expr_aggs.count,
+	              select->expr_group_by.count);
 	select->rset_agg = rset;
 
 	// emit aggs seed expressions
@@ -354,7 +352,7 @@ emit_select_group_by(Compiler* self, AstSelect* select)
 	if (select->expr_order_by.count == 0)
 	{
 		// create result set
-		select->rset = op3(self, CSET, rpin(self, TYPE_STORE), select->ret.count, 0);
+		select->rset = op3pin(self, CSET, TYPE_STORE, select->ret.count, 0);
 		rresult = select->rset;
 
 		// generate group by scan using limit/offset
@@ -364,10 +362,10 @@ emit_select_group_by(Compiler* self, AstSelect* select)
 	{
 		// write order by key types
 		int offset = emit_select_order_by_data(self, select, false);
-		select->rset = op4(self, CSET_ORDERED, rpin(self, TYPE_STORE),
-		                   select->ret.count,
-		                   select->expr_order_by.count,
-		                   offset);
+		select->rset = op4pin(self, CSET_ORDERED, TYPE_STORE,
+		                      select->ret.count,
+		                      select->expr_order_by.count,
+		                      offset);
 
 		// generate group by scan
 		emit_select_group_by_scan(self, select, NULL, NULL);
@@ -393,10 +391,10 @@ emit_select_order_by(Compiler* self, AstSelect* select)
 	// create ordered set
 	int offset = emit_select_order_by_data(self, select, false);
 
-	select->rset = op4(self, CSET_ORDERED, rpin(self, TYPE_STORE),
-	                   select->ret.count,
-	                   select->expr_order_by.count,
-	                   offset);
+	select->rset = op4pin(self, CSET_ORDERED, TYPE_STORE,
+	                      select->ret.count,
+	                      select->expr_order_by.count,
+	                      offset);
 
 	// scan for table/expression and joins
 	scan(self,
@@ -424,7 +422,7 @@ emit_select_scan(Compiler* self, AstSelect* select)
 	//
 
 	// create result set
-	int rresult = op3(self, CSET, rpin(self, TYPE_STORE), select->ret.count, 0);
+	int rresult = op3pin(self, CSET, TYPE_STORE, select->ret.count, 0);
 	select->rset = rresult;
 
 	// scan for table/expression and joins
@@ -460,7 +458,7 @@ emit_select(Compiler* self, Ast* ast, bool emit_store)
 		} else
 		{
 			// create result set
-			rresult = op3(self, CSET, rpin(self, TYPE_STORE), select->ret.count, 0);
+			rresult = op3pin(self, CSET, TYPE_STORE, select->ret.count, 0);
 			select->rset = rresult;
 
 			// push expressions

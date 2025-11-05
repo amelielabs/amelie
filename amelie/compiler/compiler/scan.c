@@ -173,9 +173,9 @@ scan_table(Scan* self, Target* target)
 	}
 
 	// create table cursor
-	target->rcursor = op4(cp, open_op, rpin(cp, TYPE_CURSOR),
-	                      name_offset, 0 /* _eof */,
-	                      keys_count);
+	target->rcursor = op4pin(cp, open_op, TYPE_CURSOR,
+	                         name_offset, 0 /* _eof */,
+	                         keys_count);
 
 	// _where:
 	int _where = op_pos(cp);
@@ -239,8 +239,8 @@ scan_table_heap(Scan* self, Target* target)
 
 	// table_open
 	int _open = op_pos(cp);
-	target->rcursor = op4(cp, CTABLE_OPEN_HEAP, rpin(cp, TYPE_CURSOR),
-	                      name_offset, 0 /* _eof */, 0);
+	target->rcursor = op4pin(cp, CTABLE_OPEN_HEAP, TYPE_CURSOR,
+	                         name_offset, 0 /* _eof */, 0);
 
 	// _where:
 	int _where = op_pos(cp);
@@ -301,9 +301,9 @@ scan_expr(Scan* self, Target* target)
 			if (cp->origin == ORIGIN_BACKEND)
 			{
 				auto ref = refs_add(&cp->current->refs, self->from, NULL, r);
-				r = op2(cp, CREF, rpin(cp, type), ref->order);
+				r = op2pin(cp, CREF, type, ref->order);
 			} else {
-				r = op2(cp, CDUP, rpin(cp, type), r);
+				r = op2pin(cp, CDUP, type, r);
 			}
 
 			// futher object access will be using cursor created on backend
@@ -317,9 +317,9 @@ scan_expr(Scan* self, Target* target)
 			if (cp->origin == ORIGIN_BACKEND)
 			{
 				auto ref = refs_add(&cp->current->refs, self->from, target->ast, -1);
-				r = op2(cp, CREF, rpin(cp, type), ref->order);
+				r = op2pin(cp, CREF, type, ref->order);
 			} else {
-				r = op3(cp, CVAR, rpin(cp, type), var->order, var->is_arg);
+				r = op3pin(cp, CVAR, type, var->order, var->is_arg);
 			}
 
 			// futher object access will be using cursor created on backend
@@ -336,7 +336,7 @@ scan_expr(Scan* self, Target* target)
 		{
 			op1(cp, CPUSH, r);
 			runpin(cp, r);
-			r = op3(cp, CSET, rpin(cp, TYPE_STORE), 1, 0);
+			r = op3pin(cp, CSET, TYPE_STORE, 1, 0);
 			op1(cp, CSET_ADD, r);
 		}
 		target->r = r;
@@ -362,8 +362,7 @@ scan_expr(Scan* self, Target* target)
 
 	// open SET/MERGE or JSON cursor
 	auto _open = op_pos(cp);
-	target->rcursor = op3(cp, cursor_open, rpin(cp, cursor_type),
-	                      target->r, 0 /* _eof */);
+	target->rcursor = op3pin(cp, cursor_open, cursor_type, target->r, 0 /* _eof */);
 
 	// _where:
 	int _where = op_pos(cp);

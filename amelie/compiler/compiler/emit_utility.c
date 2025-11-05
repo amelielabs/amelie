@@ -285,11 +285,11 @@ emit_show(Compiler* self)
 	op1(self, CPUSH, r);
 	runpin(self, r);
 
-	r = op2(self, CBOOL, rpin(self, TYPE_BOOL), arg->extended);
+	r = op2pin(self, CBOOL, TYPE_BOOL, arg->extended);
 	op1(self, CPUSH, r);
 	runpin(self, r);
 
-	r = op4(self, CCALL, rpin(self, fn->type), (intptr_t)fn, 4, -1);
+	r = op4pin(self, CCALL, fn->type, (intptr_t)fn, 4, -1);
 	return r;
 }
 
@@ -346,7 +346,7 @@ emit_utility(Compiler* self)
 			str_set_cstr(&str, "1 year");
 			encode_string(data, &str);
 		}
-		r = op2(self, CUSER_CREATE_TOKEN, rpin(self, TYPE_JSON), offset);
+		r = op2pin(self, CUSER_CREATE_TOKEN, TYPE_JSON, offset);
 
 		// shared lock
 		program->lock = LOCK_SHARED;

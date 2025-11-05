@@ -66,7 +66,7 @@ emit_string(Compiler* self, Str* string, bool escape)
 		offset = code_data_add_string_unescape(self->code_data, string);
 	else
 		offset = code_data_add_string(self->code_data, string);
-	return op2(self, CSTRING, rpin(self, TYPE_STRING), offset);
+	return op2pin(self, CSTRING, TYPE_STRING, offset);
 }
 
 hot static inline int
@@ -80,7 +80,7 @@ emit_json(Compiler* self, From* from, Ast* ast)
 	{
 		int offset = code_data_offset(self->code_data);
 		ast_encode(ast, &self->parser.lex, self->parser.local, &self->code_data->data);
-		return op2(self, CJSON, rpin(self, TYPE_JSON), offset);
+		return op2pin(self, CJSON, TYPE_JSON, offset);
 	}
 
 	// push arguments
@@ -94,7 +94,7 @@ emit_json(Compiler* self, From* from, Ast* ast)
 		op = CJSON_ARRAY;
 	else
 		op = CJSON_OBJ;
-	return op2(self, op, rpin(self, TYPE_JSON), args->ast.integer);
+	return op2pin(self, op, TYPE_JSON, args->ast.integer);
 }
 
 hot static inline int
@@ -135,12 +135,12 @@ emit_column(Compiler* self,
 			type = column->type;
 		else
 			type = TYPE_JSON;
-		return op2(self, CREF, rpin(self, type), ref->order);
+		return op2pin(self, CREF, type, ref->order);
 	}
 
 	// read excluded column
 	if (unlikely(excluded))
-		return op2(self, CEXCLUDED, rpin(self, column->type), column->order);
+		return op2pin(self, CEXCLUDED, column->type, column->order);
 
 	// generate cursor read based on the target
 	int r;
@@ -206,15 +206,14 @@ emit_column(Compiler* self,
 			abort();
 			break;
 		}
-		r = op3(self, op, rpin(self, column->type),
-		        target->rcursor, column->order);
+		r = op3pin(self, op, column->type, target->rcursor, column->order);
 	} else
 	{
 		assert(target->r != -1);
 		auto rt = rtype(self, target->r);
 		if (rt == TYPE_JSON)
 		{
-			r = op2(self, CJSON_READ, rpin(self, TYPE_JSON), target->rcursor);
+			r = op2pin(self, CJSON_READ, TYPE_JSON, target->rcursor);
 			if (! column)
 			{
 				// handle as {}.column for json target
@@ -226,12 +225,12 @@ emit_column(Compiler* self,
 		} else
 		if (rt == TYPE_STORE)
 		{
-			r = op3(self, CSTORE_READ, rpin(self, column->type),
-			        target->rcursor, column->order);
+			r = op3pin(self, CSTORE_READ, column->type, target->rcursor,
+			           column->order);
 		} else
 		if (rt == TYPE_NULL)
 		{
-			r = op1(self, CNULL, rpin(self, column->type));
+			r = op1pin(self, CNULL, column->type);
 		} else {
 			error("unsupported operation");
 		}
@@ -394,8 +393,8 @@ emit_aggregate(Compiler* self, From* from, Ast* ast)
 	if (agg->id == AGG_LAMBDA)
 	{
 		assert(agg->expr_seed_type != -1);
-		return op3(self, CSTORE_READ, rpin(self, agg->expr_seed_type),
-		           target->rcursor, agg->order);
+		return op3pin(self, CSTORE_READ, agg->expr_seed_type,
+		              target->rcursor, agg->order);
 	}
 	switch (agg->id) {
 	case AGG_INT_COUNT:
@@ -427,8 +426,8 @@ emit_aggregate(Compiler* self, From* from, Ast* ast)
 		abort();
 		break;
 	}
-	return op3(self, agg_op, rpin(self, agg_type), target->rcursor,
-	           agg->order);
+	return op3pin(self, agg_op, agg_type, target->rcursor,
+	              agg->order);
 }
 
 hot static inline int
@@ -447,8 +446,8 @@ emit_aggregate_key(Compiler* self, From* from, Ast* ast)
 	assert(column->type != -1);
 
 	// read aggregate key value
-	return op3(self, CSTORE_READ, rpin(self, column->type), target->rcursor,
-	           column->order);
+	return op3pin(self, CSTORE_READ, column->type, target->rcursor,
+	              column->order);
 }
 
 hot static inline int
@@ -462,10 +461,10 @@ emit_self(Compiler* self, Ast* ast)
 	// state is null
 
 	// CSELF
-	return op5(self, CSELF, rpin(self, agg->expr_seed_type),
-	           select->rset_agg,
-	           select->rset_agg_row, agg->rseed,
-	           agg->order);
+	return op5pin(self, CSELF, agg->expr_seed_type,
+	              select->rset_agg,
+	              select->rset_agg_row, agg->rseed,
+	              agg->order);
 }
 
 hot static inline int
@@ -507,8 +506,7 @@ emit_udf(Compiler* self, From* from, Ast* ast)
 	}
 
 	// CALL_UDF
-	return op2(self, CCALL_UDF, rpin(self, udf->config->type),
-	           (intptr_t)udf);
+	return op2pin(self, CCALL_UDF, udf->config->type, (intptr_t)udf);
 }
 
 hot int
@@ -563,8 +561,7 @@ emit_udf_method(Compiler* self, From* from, Ast* ast)
 	}
 
 	// CALL_UDF
-	return op2(self, CCALL_UDF, rpin(self, udf->config->type),
-	           (intptr_t)udf);
+	return op2pin(self, CCALL_UDF, udf->config->type, (intptr_t)udf);
 }
 
 hot static inline bool
@@ -603,8 +600,8 @@ emit_func(Compiler* self, From* from, Ast* ast)
 		call_id = code_data_add_fn(self->code_data, fn);
 
 	// CALL
-	return op4(self, CCALL, rpin(self, fn_type), (intptr_t)fn,
-	           args->integer, call_id);
+	return op4pin(self, CCALL, fn_type, (intptr_t)fn,
+	              args->integer, call_id);
 }
 
 hot static inline int
@@ -645,7 +642,7 @@ emit_method(Compiler* self, From* from, Ast* ast)
 		call_id = code_data_add_fn(self->code_data, fn);
 
 	// CALL
-	return op4(self, CCALL, rpin(self, fn_type), (intptr_t)fn, argc, call_id);
+	return op4pin(self, CCALL, fn_type, (intptr_t)fn, argc, call_id);
 }
 
 hot static inline int
@@ -770,7 +767,7 @@ emit_case(Compiler* self, From* from, Ast* ast)
 			stmt_error(self->current, cs->expr_else, "CASE expression type mismatch");
 	} else
 	{
-		relse = op1(self, CNULL, rpin(self, TYPE_NULL));
+		relse = op1pin(self, CNULL, TYPE_NULL);
 	}
 	op2(self, CMOV, rresult, relse);
 	runpin(self, relse);
@@ -789,14 +786,14 @@ emit_is(Compiler* self, From* from, Ast* ast)
 	if (!ast->r || ast->r->id != KNULL)
 		stmt_error(self->current, ast->r, "NOT or NULL expected");
 	auto rexpr = emit_expr(self, from, ast->l);
-	auto rresult = op2(self, CIS, rpin(self, TYPE_BOOL), rexpr);
+	auto rresult = op2pin(self, CIS, TYPE_BOOL, rexpr);
 	runpin(self, rexpr);
 
 	// [not]
 	if (! ast->integer)
 	{
 		int rc;
-		rc = op2(self, CNOT, rpin(self, TYPE_BOOL), rresult);
+		rc = op2pin(self, CNOT, TYPE_BOOL, rresult);
 		runpin(self, rresult);
 		rresult = rc;
 	}
@@ -832,13 +829,13 @@ emit_in(Compiler* self, From* from, Ast* ast)
 	}
 
 	// IN
-	int rin = op3(self, CIN, rpin(self, TYPE_BOOL), rexpr, args->integer);
+	int rin = op3pin(self, CIN, TYPE_BOOL, rexpr, args->integer);
 	runpin(self, rexpr);
 
 	// [not]
 	if (! ast->integer)
 	{
-		auto rc = op2(self, CNOT, rpin(self, TYPE_BOOL), rin);
+		auto rc = op2pin(self, CNOT, TYPE_BOOL, rin);
 		runpin(self, rin);
 		rin = rc;
 	}
@@ -883,10 +880,10 @@ emit_match(Compiler* self, From* from, Ast* ast)
 	int rc;
 	switch (ast->id) {
 	case KANY:
-		rc = op4(self, CANY, rpin(self, TYPE_BOOL), a, b, op);
+		rc = op4pin(self, CANY, TYPE_BOOL, a, b, op);
 		break;
 	case KALL:
-		rc = op4(self, CALL, rpin(self, TYPE_BOOL), a, b, op);
+		rc = op4pin(self, CALL, TYPE_BOOL, a, b, op);
 		break;
 	default:
 		abort();
@@ -915,7 +912,7 @@ emit_at_timezone(Compiler* self, From* from, Ast* ast)
 	emit_push(self, from, ast->r);
 
 	// CALL
-	return op4(self, CCALL, rpin(self, fn->type), (intptr_t)fn, 2, -1);
+	return op4pin(self, CCALL, fn->type, (intptr_t)fn, 2, -1);
 }
 
 hot int
@@ -924,16 +921,16 @@ emit_expr(Compiler* self, From* from, Ast* ast)
 	switch (ast->id) {
 	// consts
 	case KNULL:
-		return op1(self, CNULL, rpin(self, TYPE_NULL));
+		return op1pin(self, CNULL, TYPE_NULL);
 	case KTRUE:
-		return op2(self, CBOOL, rpin(self, TYPE_BOOL), 1);
+		return op2pin(self, CBOOL, TYPE_BOOL, 1);
 	case KFALSE:
-		return op2(self, CBOOL, rpin(self, TYPE_BOOL), 0);
+		return op2pin(self, CBOOL, TYPE_BOOL, 0);
 	case KINT:
-		return op2(self, CINT, rpin(self, TYPE_INT), ast->integer);
+		return op2pin(self, CINT, TYPE_INT, ast->integer);
 	case KREAL:
-		return op2(self, CDOUBLE, rpin(self, TYPE_DOUBLE),
-		           code_data_add_double(self->code_data, ast->real));
+		return op2pin(self, CDOUBLE, TYPE_DOUBLE,
+		              code_data_add_double(self->code_data, ast->real));
 	case KSTRING:
 		return emit_string(self, &ast->string, ast->string_escape);
 
@@ -944,8 +941,8 @@ emit_expr(Compiler* self, From* from, Ast* ast)
 		timestamp_init(&ts);
 		if (unlikely(error_catch( timestamp_set(&ts, &ast->string) )))
 			stmt_error(self->current, ast, "invalid timestamp value");
-		return op2(self, CTIMESTAMP, rpin(self, TYPE_TIMESTAMP),
-		           timestamp_get_unixtime(&ts, self->parser.local->timezone));
+		return op2pin(self, CTIMESTAMP, TYPE_TIMESTAMP,
+		              timestamp_get_unixtime(&ts, self->parser.local->timezone));
 	}
 	case KINTERVAL:
 	{
@@ -954,26 +951,25 @@ emit_expr(Compiler* self, From* from, Ast* ast)
 		interval_init(iv);
 		if (unlikely(error_catch( interval_set(iv, &ast->string) )))
 			stmt_error(self->current, ast, "invalid interval value");
-		return op2(self, CINTERVAL, rpin(self, TYPE_INTERVAL), offset);
+		return op2pin(self, CINTERVAL, TYPE_INTERVAL, offset);
 	}
 	case KDATE:
 	{
 		int julian;
 		if (unlikely(error_catch( julian = date_set(&ast->string) )))
 			stmt_error(self->current, ast, "invalid date value");
-		return op2(self, CDATE, rpin(self, TYPE_DATE), julian);
+		return op2pin(self, CDATE, TYPE_DATE, julian);
 	}
 	case KCURRENT_TIMESTAMP:
-		return op2(self, CTIMESTAMP, rpin(self, TYPE_TIMESTAMP),
-		           self->parser.local->time_us);
+		return op2pin(self, CTIMESTAMP, TYPE_TIMESTAMP,
+		              self->parser.local->time_us);
 	case KCURRENT_DATE:
-		return op2(self, CDATE, rpin(self, TYPE_DATE),
-		           timestamp_date(self->parser.local->time_us));
+		return op2pin(self, CDATE, TYPE_DATE,
+		              timestamp_date(self->parser.local->time_us));
 
 	// vector
 	case KVECTOR:
-		return op2(self, CVECTOR, rpin(self, TYPE_VECTOR),
-		           ast->integer);
+		return op2pin(self, CVECTOR, TYPE_VECTOR, ast->integer);
 
 	// uuid
 	case KUUID:
@@ -983,7 +979,7 @@ emit_expr(Compiler* self, From* from, Ast* ast)
 		uuid_init(uuid);
 		if (uuid_set_nothrow(uuid, &ast->string) == -1)
 			stmt_error(self->current, ast, "invalid uuid value");
-		return op2(self, CUUID, rpin(self, TYPE_UUID), offset);
+		return op2pin(self, CUUID, TYPE_UUID, offset);
 	}
 
 	// json
@@ -995,7 +991,7 @@ emit_expr(Compiler* self, From* from, Ast* ast)
 	case KVALUE:
 	{
 		auto value = set_value(ast->set, 0);
-		return op2(self, CVALUE, rpin(self, value->type), (intptr_t)value);
+		return op2pin(self, CVALUE, value->type, (intptr_t)value);
 	}
 
 	// variable
@@ -1007,9 +1003,9 @@ emit_expr(Compiler* self, From* from, Ast* ast)
 		{
 			// create reference, if variable is accessed from backend
 			auto ref = refs_add(&self->current->refs, from, ast, -1);
-			return op2(self, CREF, rpin(self, var->type), ref->order);
+			return op2pin(self, CREF, var->type, ref->order);
 		}
-		auto r = op3(self, CVAR, rpin(self, var->type), var->order, var->is_arg);
+		auto r = op3pin(self, CVAR, var->type, var->order, var->is_arg);
 		return r;
 	}
 
@@ -1035,7 +1031,7 @@ emit_expr(Compiler* self, From* from, Ast* ast)
 	case KNEQU:
 	{
 		auto r = emit_operator(self, from, ast, OP_EQU);
-		auto rnot = op2(self, CNOT, rpin(self, TYPE_BOOL), r);
+		auto rnot = op2pin(self, CNOT, TYPE_BOOL, r);
 		runpin(self, r);
 		return rnot;
 	}
@@ -1071,7 +1067,7 @@ emit_expr(Compiler* self, From* from, Ast* ast)
 		if (ast->integer)
 			return r;
 		// [not]
-		auto rnot = op2(self, CNOT, rpin(self, TYPE_BOOL), r);
+		auto rnot = op2pin(self, CNOT, TYPE_BOOL, r);
 		runpin(self, r);
 		return rnot;
 	}
@@ -1093,8 +1089,7 @@ emit_expr(Compiler* self, From* from, Ast* ast)
 		int l = emit_expr(self, from, ast->l);
 		int r = emit_expr(self, from, ast->r);
 		int rc;
-		rc = op3(self, ast->id == KAND? CAND: COR,
-		         rpin(self, TYPE_BOOL), l, r);
+		rc = op3pin(self, ast->id == KAND? CAND: COR, TYPE_BOOL, l, r);
 		runpin(self, l);
 		runpin(self, r);
 		return rc;
@@ -1102,7 +1097,7 @@ emit_expr(Compiler* self, From* from, Ast* ast)
 	case KNOT:
 	{
 		int r = emit_expr(self, from, ast->l);
-		auto rnot = op2(self, CNOT, rpin(self, TYPE_BOOL), r);
+		auto rnot = op2pin(self, CNOT, TYPE_BOOL, r);
 		runpin(self, r);
 		return rnot;
 	}
@@ -1114,13 +1109,13 @@ emit_expr(Compiler* self, From* from, Ast* ast)
 		int rt = rtype(self, r);
 		int rneg = -1;
 		if (rt == TYPE_INT)
-			rneg = op2(self, CNEGI, rpin(self, TYPE_INT), r);
+			rneg = op2pin(self, CNEGI, TYPE_INT, r);
 		else
 		if (rt == TYPE_DOUBLE)
-			rneg = op2(self, CNEGF, rpin(self, TYPE_DOUBLE), r);
+			rneg = op2pin(self, CNEGF, TYPE_DOUBLE, r);
 		else
 		if (rt == TYPE_INTERVAL)
-			rneg = op2(self, CNEGL, rpin(self, TYPE_INTERVAL), r);
+			rneg = op2pin(self, CNEGL, TYPE_INTERVAL, r);
 		else
 			stmt_error(self->current, ast->l, "unsupported operation type %s", type_of(rt));
 		runpin(self, r);
@@ -1132,7 +1127,7 @@ emit_expr(Compiler* self, From* from, Ast* ast)
 		int rt = rtype(self, r);
 		if (rt != TYPE_INT)
 			stmt_error(self->current, ast->l, "unsupported operation type %s", type_of(rt));
-		auto rinv = op2(self, CBINVI, rpin(self, TYPE_INT), r);
+		auto rinv = op2pin(self, CBINVI, TYPE_INT, r);
 		runpin(self, r);
 		return rinv;
 	}
@@ -1166,7 +1161,7 @@ emit_expr(Compiler* self, From* from, Ast* ast)
 		if (rtype(self, r) == TYPE_STORE)
 		{
 			// return first column of the first row and free the set
-			rresult = op2(self, CSET_RESULT, rpin(self, columns_first(columns)->type), r);
+			rresult = op2pin(self, CSET_RESULT, columns_first(columns)->type, r);
 			runpin(self, r);
 		}
 		return rresult;
@@ -1197,7 +1192,7 @@ emit_expr(Compiler* self, From* from, Ast* ast)
 	case KEXISTS:
 	{
 		auto r = emit_select(self, ast->r, true);
-		auto rc = op2(self, CEXISTS, rpin(self, TYPE_BOOL), r);
+		auto rc = op2pin(self, CEXISTS,  TYPE_BOOL, r);
 		runpin(self, r);
 		return rc;
 	}

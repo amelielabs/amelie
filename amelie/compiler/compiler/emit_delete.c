@@ -95,9 +95,7 @@ emit_delete(Compiler* self, Ast* ast)
 	// RETURNING expr
 
 	// create returning set
-	delete->rset =
-		op3(self, CSET, rpin(self, TYPE_STORE),
-		    delete->ret.count, 0);
+	delete->rset = op3pin(self, CSET, TYPE_STORE, delete->ret.count, 0);
 
 	scan(self, &delete->from,
 	     NULL,

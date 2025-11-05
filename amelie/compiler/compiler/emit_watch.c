@@ -67,12 +67,12 @@ emit_watch(Compiler* self, Ast* ast)
 	assert(func);
 
 	// call sleep(1000)
-	int r = op2(self, CINT, rpin(self, TYPE_INT), 1000);
+	int r = op2pin(self, CINT, TYPE_INT, 1000);
 	op1(self, CPUSH, r);
 	runpin(self, r);
 
 	// CALL
-	r = op4(self, CCALL, rpin(self, func->type), (intptr_t)func, 1, -1);
+	r = op4pin(self, CCALL, func->type, (intptr_t)func, 1, -1);
 
 	// jmp _start
 	op1(self, CJMP, _start);
