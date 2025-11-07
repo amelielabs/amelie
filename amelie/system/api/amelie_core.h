@@ -39,6 +39,7 @@
 #include <amelie_func.h>
 #include <amelie_vm.h>
 #include <amelie_parser.h>
+#include <amelie_planner.h>
 #include <amelie_compiler.h>
 #include <amelie_frontend.h>
 #include <amelie_backend.h>

@@ -19,9 +19,6 @@
 #include "compiler/compiler_op.h"
 
 // scan
-#include "compiler/path_op.h"
-#include "compiler/path.h"
-#include "compiler/path_prepare.h"
 #include "compiler/scan.h"
 
 // emit

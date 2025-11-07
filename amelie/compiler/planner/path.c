@@ -38,7 +38,7 @@
 #include <amelie_func.h>
 #include <amelie_vm.h>
 #include <amelie_parser.h>
-#include <amelie_compiler.h>
+#include <amelie_planner.h>
 
 static Path*
 path_allocate(Target* target, Keys* keys)
