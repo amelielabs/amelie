@@ -321,7 +321,7 @@ cmd_scan_aggs(Compiler* self, Plan* plan, Command* ref)
 	select->rset_agg = plan->r;
 
 	// create second ordered agg set to handle count(distinct)
-	if (cmd->child && ast_agg_has_distinct(&select->expr_aggs))
+	if (cmd->child && select->distinct_count)
 	{
 		// set is using following keys [group_by_keys, agg_order, expr]
 		auto offset = code_data_pos(self->code_data);

@@ -56,15 +56,3 @@ ast_agg_allocate(Ast* function, int order,
 	self->column         = NULL;
 	return self;
 }
-
-static inline bool
-ast_agg_has_distinct(AstList* list)
-{
-	for (auto node = list->list; node; node = node->next)
-	{
-		auto agg = ast_agg_of(node->ast);
-		if (agg->distinct)
-			return true;
-	}
-	return false;
-}

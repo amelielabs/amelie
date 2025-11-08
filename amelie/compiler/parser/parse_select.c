@@ -211,6 +211,17 @@ parse_select(Stmt* self, From* outer, bool subquery)
 			select->expr_having = parse_expr(self, &ctx);
 	}
 
+	// set distinct count
+	for (auto node = select->expr_aggs.list; node; node = node->next)
+	{
+		auto agg = ast_agg_of(node->ast);
+		if (agg->distinct)
+		{
+			select->distinct_count = true;
+			break;
+		}
+	}
+
 	// [ORDER BY]
 	if (stmt_if(self, KORDER))
 	{
