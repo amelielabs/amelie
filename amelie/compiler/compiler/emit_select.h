@@ -11,10 +11,5 @@
 // AGPL-3.0 Licensed.
 //
 
-void emit_select_on_match(Scan*);
-void emit_select_on_match_aggregate(Scan*);
-void emit_select_on_match_aggregate_empty(Compiler*, AstSelect*);
-
-int  emit_select_order_by_data(Compiler*, AstSelect*, bool);
-int  emit_select_union(Compiler*, AstSelect*);
-int  emit_select(Compiler*, Ast*, bool);
+int emit_select(Compiler*, Ast*, bool);
+int emit_select_recv(Compiler*, Ast*);

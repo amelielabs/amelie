@@ -12,6 +12,7 @@
 //
 
 typedef struct AstSelect AstSelect;
+typedef struct Plan      Plan;
 
 struct AstSelect
 {
@@ -31,10 +32,11 @@ struct AstSelect
 	From      from_group;
 	Columns   from_group_columns;
 	Target*   pushdown;
-	int       rset;
+	Plan*     plan;
 	int       rset_agg;
 	int       rset_agg_row;
 	int       aggs;
+	Program*  program;
 };
 
 static inline AstSelect*
@@ -56,10 +58,11 @@ ast_select_allocate(Stmt* stmt, From* outer, Block* block)
 	self->distinct          = false;
 	self->distinct_on       = false;
 	self->pushdown          = NULL;
-	self->rset              = -1;
+	self->plan              = NULL;
 	self->rset_agg          = -1;
 	self->rset_agg_row      = -1;
 	self->aggs              = -1;
+	self->program           = stmt->parser->program;
 	returning_init(&self->ret);
 	ast_list_init(&self->expr_aggs);
 	ast_list_init(&self->expr_group_by);

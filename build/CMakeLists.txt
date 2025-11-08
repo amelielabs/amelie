@@ -103,7 +103,7 @@ include_directories("${AMELIE_ROOT}/vm/vm")
 # compiler
 include_directories("${AMELIE_ROOT}/compiler")
 include_directories("${AMELIE_ROOT}/compiler/parser")
-include_directories("${AMELIE_ROOT}/compiler/planner")
+include_directories("${AMELIE_ROOT}/compiler/plan")
 include_directories("${AMELIE_ROOT}/compiler/compiler")
 
 # system
@@ -284,8 +284,9 @@ set(AMELIE_SOURCES_COMPILER
     ${AMELIE_ROOT}/compiler/parser/parse_execute.c
     ${AMELIE_ROOT}/compiler/parser/parse.c
     ${AMELIE_ROOT}/compiler/parser/parser.c
-    ${AMELIE_ROOT}/compiler/planner/path.c
-    ${AMELIE_ROOT}/compiler/planner/path_prepare.c
+    ${AMELIE_ROOT}/compiler/plan/path.c
+    ${AMELIE_ROOT}/compiler/plan/path_prepare.c
+    ${AMELIE_ROOT}/compiler/plan/plan.c
     ${AMELIE_ROOT}/compiler/compiler/compiler.c
     ${AMELIE_ROOT}/compiler/compiler/explain.c
     ${AMELIE_ROOT}/compiler/compiler/cast.c
@@ -298,7 +299,6 @@ set(AMELIE_SOURCES_COMPILER
     ${AMELIE_ROOT}/compiler/compiler/emit_select.c
     ${AMELIE_ROOT}/compiler/compiler/emit_watch.c
     ${AMELIE_ROOT}/compiler/compiler/emit_utility.c
-    ${AMELIE_ROOT}/compiler/compiler/pushdown.c
     ${AMELIE_ROOT}/compiler/compiler/query.c)
 
 set(AMELIE_SOURCES_SYSTEM

@@ -11,6 +11,14 @@
 // AGPL-3.0 Licensed.
 //
 
-#include "planner/path_op.h"
-#include "planner/path.h"
-#include "planner/path_prepare.h"
+typedef struct Plan Plan;
+
+struct Plan
+{
+	AstSelect* select;
+	List       list;
+	List       list_recv;
+	int        r;
+};
+
+Plan* plan_create(Ast*, bool);

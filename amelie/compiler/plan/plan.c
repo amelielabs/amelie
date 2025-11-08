@@ -1,0 +1,328 @@
+
+//
+// amelie.
+//
+// Real-Time SQL OLTP Database.
+//
+// Copyright (c) 2024 Dmitry Simonenko.
+// Copyright (c) 2024 Amelie Labs.
+//
+// AGPL-3.0 Licensed.
+//
+
+#include <amelie_base.h>
+#include <amelie_os.h>
+#include <amelie_lib.h>
+#include <amelie_json.h>
+#include <amelie_runtime.h>
+#include <amelie_user.h>
+#include <amelie_auth.h>
+#include <amelie_http.h>
+#include <amelie_client.h>
+#include <amelie_server.h>
+#include <amelie_row.h>
+#include <amelie_heap.h>
+#include <amelie_transaction.h>
+#include <amelie_index.h>
+#include <amelie_partition.h>
+#include <amelie_checkpoint.h>
+#include <amelie_catalog.h>
+#include <amelie_wal.h>
+#include <amelie_db.h>
+#include <amelie_backup.h>
+#include <amelie_repl.h>
+#include <amelie_value.h>
+#include <amelie_set.h>
+#include <amelie_content.h>
+#include <amelie_executor.h>
+#include <amelie_func.h>
+#include <amelie_vm.h>
+#include <amelie_parser.h>
+#include <amelie_plan.h>
+
+static inline void
+plan_expr(Plan* self)
+{
+	// SELECT expr
+	plan_add_expr(self, false);
+}
+
+static inline void
+plan_expr_set(Plan* self)
+{
+	// SELECT expr, ...
+	plan_add_expr_set(self, false);
+}
+
+static inline void
+plan_group_by(Plan* self)
+{
+	// SELECT FROM GROUP BY
+	auto select = self->select;
+
+	// SCAN_AGGS
+	plan_add_scan_aggs(self, false, false, false);
+
+	// PIPE (group_target->r = aggs)
+	plan_add_pipe(self, false);
+
+	// SCAN (scan aggs and emit exprs)
+	plan_add_scan(self, false,
+	              select->expr_limit,
+	              select->expr_offset,
+	              select->expr_having,
+	              &select->from_group,
+	              false);
+}
+
+static inline void
+plan_group_by_order_by(Plan* self)
+{
+	// SELECT FROM GROUP BY ORDER BY
+	auto select = self->select;
+
+	// SCAN_AGGS
+	plan_add_scan_aggs(self, false, false, false);
+
+	// PIPE (group_target->r = aggs)
+	plan_add_pipe(self, false);
+
+	// SCAN (scan aggs and emit exprs)
+	plan_add_scan(self, false, NULL, NULL, select->expr_having,
+	              &select->from_group, true);
+
+	// SORT
+	plan_add_sort(self, false);
+
+	// UNION
+	plan_add_union(self, false);
+}
+
+static inline void
+plan_order_by(Plan* self)
+{
+	// SELECT FROM ORDER BY
+	auto select = self->select;
+
+	// SCAN
+	plan_add_scan(self, false, NULL, NULL, select->expr_where,
+	              &select->from, true);
+
+	// SORT
+	plan_add_sort(self, false);
+
+	// UNION
+	plan_add_union(self, false);
+}
+
+static inline void
+plan_scan(Plan* self)
+{
+	// SELECT FROM
+	// SELECT FROM JOIN ON
+	auto select = self->select;
+
+	// SCAN (table/expression and joins)
+	plan_add_scan(self, false,
+	              select->expr_limit,
+	              select->expr_offset,
+	              select->expr_where,
+	              &select->from,
+	              false);
+}
+
+static void
+plan_main(Plan* self, bool emit_store)
+{
+	// SELECT expr[, ...]
+	auto select = self->select;
+	if (from_empty(&select->from))
+	{
+		if (emit_store || select->ret.count > 1)
+			plan_expr_set(self);
+		else
+			plan_expr(self);
+		return;
+	}
+
+	// SELECT FROM GROUP BY [WHERE] [HAVING] [ORDER BY] [LIMIT/OFFSET]
+	// SELECT aggregate FROM
+	if (! from_empty(&select->from_group))
+	{
+		if (select->expr_order_by.count == 0)
+			plan_group_by(self);
+		else
+			plan_group_by_order_by(self);
+		return;
+	}
+
+	// SELECT FROM [WHERE] ORDER BY [LIMIT/OFFSET]
+	// SELECT DISTINCT FROM
+	if (select->expr_order_by.count > 0)
+	{
+		plan_order_by(self);
+		return;
+	}
+
+	// SELECT FROM [WHERE] LIMIT/OFFSET
+	// SELECT FROM [WHERE]
+	return plan_scan(self);
+}
+
+static void
+plan_pushdown_group_by(Plan* self)
+{
+	// SELECT FROM GROUP BY
+	auto select = self->select;
+
+	// SCAN_AGGS (ORDERED)
+	plan_add_scan_aggs(self, false, true, true);
+
+	// SORT
+	plan_add_sort(self, false);
+
+	// ----
+
+	// RECV_AGGS
+	plan_add_recv_aggs(self, true);
+
+	// PIPE (group_target->r = union)
+	plan_add_pipe(self, true);
+
+	// SCAN (aggs and emit select exprs)
+	plan_add_scan(self, true,
+	              select->expr_limit,
+	              select->expr_offset,
+	              select->expr_having,
+	              &select->from_group,
+	              false);
+}
+
+static void
+plan_pushdown_group_by_order_by(Plan* self)
+{
+	// SELECT FROM GROUP BY ORDER BY
+	auto select = self->select;
+
+	// SCAN_AGGS (ORDERED)
+	plan_add_scan_aggs(self, false, true, true);
+
+	// SORT
+	plan_add_sort(self, false);
+
+	// ----
+
+	// RECV_AGGS
+	plan_add_recv_aggs(self, true);
+
+	// PIPE (group_target->r = union)
+	plan_add_pipe(self, true);
+
+	// SCAN (aggs and emit select exprs)
+	plan_add_scan(self, true, NULL, NULL, select->expr_having,
+	              &select->from_group, true);
+
+	// SORT
+	plan_add_sort(self, true);
+
+	// no distinct/limit/offset (return set)
+	if (select->distinct    == false &&
+	    select->expr_limit  == NULL  &&
+	    select->expr_offset == NULL)
+		return;
+
+	// UNION
+	plan_add_union(self, true);
+}
+
+static void
+plan_pushdown_order_by(Plan* self)
+{
+	// SELECT FROM ORDER BY
+	auto select = self->select;
+
+	// SCAN (table scan, ORDERED)
+	plan_add_scan(self, false, NULL, NULL, select->expr_where,
+	              &select->from, true);
+
+	// SORT
+	plan_add_sort(self, false);
+
+	// ----
+
+	// RECV
+	plan_add_recv(self, true);
+}
+
+static void
+plan_pushdown_scan(Plan* self)
+{
+	// SELECT FROM
+	auto select = self->select;
+
+	// push limit as limit = limit + offset
+	Ast* limit = NULL;
+	if (select->expr_limit && select->expr_offset)
+	{
+		limit = ast('+');
+		limit->l = select->expr_limit;
+		limit->r = select->expr_offset;
+	} else
+	if (select->expr_limit) {
+		limit = select->expr_limit;
+	}
+
+	// SCAN
+	plan_add_scan(self, false, limit, NULL, select->expr_where,
+	              &select->from, false);
+
+	// ----
+
+	// RECV
+	plan_add_recv(self, true);
+}
+
+static void
+plan_pushdown(Plan* self)
+{
+	// SELECT FROM GROUP BY [WHERE] [HAVING] [ORDER BY] [LIMIT/OFFSET]
+	// SELECT aggregate FROM
+	auto select = self->select;
+	if (! from_empty(&select->from_group))
+	{
+		if (select->expr_order_by.count == 0)
+			plan_pushdown_group_by(self);
+		else
+			plan_pushdown_group_by_order_by(self);
+		return;
+	}
+
+	// SELECT FROM [WHERE] ORDER BY [LIMIT/OFFSET]
+	// SELECT DISTINCT FROM
+	if (select->expr_order_by.count > 0)
+	{
+		plan_pushdown_order_by(self);
+		return;
+	}
+
+	// SELECT FROM [WHERE] ORDER BY [LIMIT/OFFSET]
+	// SELECT FROM [WHERE] LIMIT/OFFSET
+	// SELECT FROM [WHERE]
+	plan_pushdown_scan(self);
+}
+
+Plan*
+plan_create(Ast* ast, bool emit_store)
+{
+	auto self = (Plan*)palloc(sizeof(Plan));
+	self->select = ast_select_of(ast);
+	self->r      = -1;
+	list_init(&self->list);
+	list_init(&self->list_recv);
+
+	if (self->select->pushdown)
+		plan_pushdown(self);
+	else
+		plan_main(self, emit_store);
+	return self;
+}

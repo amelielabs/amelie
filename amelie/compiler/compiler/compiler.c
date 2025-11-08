@@ -38,7 +38,7 @@
 #include <amelie_func.h>
 #include <amelie_vm.h>
 #include <amelie_parser.h>
-#include <amelie_planner.h>
+#include <amelie_plan.h>
 #include <amelie_compiler.h>
 
 void
@@ -284,7 +284,7 @@ emit_recv(Compiler* self, Stmt* stmt)
 	// create union and receive results
 	//
 	if (stmt->id == STMT_SELECT)
-		stmt->r = pushdown_recv(self, stmt->ast);
+		stmt->r = emit_select_recv(self, stmt->ast);
 	else
 		// DML returning
 		stmt->r = op5pin(self, CRECV, TYPE_STORE, stmt->rdispatch,
@@ -338,7 +338,7 @@ emit_stmt_backend(Compiler* self, Stmt* stmt)
 			//
 			// execute on one or more backends, process the result on frontend
 			//
-			r = pushdown(self, stmt->ast);
+			r = emit_select(self, stmt->ast, false);
 			break;
 		}
 
