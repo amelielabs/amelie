@@ -108,10 +108,10 @@ bench_init(Bench* self, Remote* remote)
 	{
 		{ "type",      OPT_STRING, OPT_C,       &self->type,     "tpcb", 0     },
 		{ "threads",   OPT_INT,    OPT_C|OPT_Z, &self->threads,   NULL,  1     },
-		{ "clients",   OPT_INT,    OPT_C|OPT_Z, &self->clients,   NULL,  12    },
+		{ "clients",   OPT_INT,    OPT_C|OPT_Z, &self->clients,   NULL,  32    },
 		{ "time",      OPT_INT,    OPT_C|OPT_Z, &self->time,      NULL,  10    },
 		{ "scale",     OPT_INT,    OPT_C|OPT_Z, &self->scale,     NULL,  1     },
-		{ "batch",     OPT_INT,    OPT_C|OPT_Z, &self->batch,     NULL,  500   },
+		{ "batch",     OPT_INT,    OPT_C|OPT_Z, &self->batch,     NULL,  64    },
 		{ "init",      OPT_INT,    OPT_C,       &self->init,      NULL,  1     },
 		{ "unlogged",  OPT_BOOL,   OPT_C,       &self->unlogged,  NULL,  false },
 		{ "histogram", OPT_BOOL,   OPT_C,       &self->histogram, NULL,  false },

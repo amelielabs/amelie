@@ -239,8 +239,7 @@ parse_encode_value(Stmt* self, Ast* ast, Value* value)
 	case '{':
 	case KARRAY:
 	{
-		auto args = ast_args_of(ast->l);
-		assert(args->constable);
+		assert(ast_args_of(ast->l)->constable);
 		auto buf = buf_create();
 		errdefer(buf_free, buf);
 		ast_encode(ast, &self->parser->lex, self->parser->local, buf);

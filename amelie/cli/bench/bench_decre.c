@@ -87,15 +87,13 @@ bench_decre_main(BenchWorker* self, BenchClient* client)
 	Buf buf;
 	buf_init(&buf);
 	defer_buf(&buf);
+	buf_printf(&buf, "execute __bench.debit_credit_batch(%d, %d);", batch, total);
+	Str cmd;
+	buf_str(&buf, &cmd);
+
 	while (! self->shutdown)
 	{
-		buf_reset(&buf);
-		buf_printf(&buf, "execute __bench.debit_credit_batch(%d, %d);", batch, total);
-
-		Str cmd;
-		buf_str(&buf, &cmd);
 		bench_client_execute(client, &cmd);
-
 		atomic_u64_add(&bench->transactions, batch);
 		atomic_u64_add(&bench->writes, 3 * batch);
 	}

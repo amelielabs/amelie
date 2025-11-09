@@ -179,10 +179,12 @@ plan_main(Plan* self, bool emit_store)
 	auto order_by = &select->expr_order_by;
 	if (! from_empty(from_group))
 	{
-		if (order_by->count == 0)
-			plan_group_by(self);
-		else
+		if (order_by->count > 0)
+		{
 			plan_group_by_order_by(self);
+			return;
+		}
+		plan_group_by(self);
 		return;
 	}
 

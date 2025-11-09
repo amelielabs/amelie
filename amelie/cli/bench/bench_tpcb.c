@@ -215,9 +215,6 @@ bench_tpcb_create(Bench* self, BenchClient* client)
 	"	set abalance = a.abalance + delta"
 	"	where a.aid = aid;"
 	""
-	"	select abalance from __bench.accounts a"
-	"	where a.aid = aid;"
-	""
 	"	update __bench.tellers t"
 	"	set tbalance = t.tbalance + delta"
 	"	where t.tid = tid;"
@@ -226,7 +223,25 @@ bench_tpcb_create(Bench* self, BenchClient* client)
 	"	values(tid, bid, aid, delta, current_timestamp, '                                                  ');"
 	"end;";
 
+	char func_batch[] =
+	"create function __bench.tpcb_batch(batch int, scale int)  "
+	"begin"
+	"	declare n_branches int := 1      * scale;"
+	"	declare n_tellers  int := 10     * scale;"
+	" 	declare n_accounts int := 100000 * scale;"
+	"	while batch > 0 do"
+	"		select __bench.tpcb(random() \% n_branches,"
+	"		                    random() \% n_tellers,"
+	"		                    random() \% n_accounts,"
+	"		                    -5000 + (random() % 10000));"
+	"		batch := batch - 1;"
+	"	end;"
+	"end;";
+
 	str_set_cstr(&str, func);
+	bench_client_execute(client, &str);
+
+	str_set_cstr(&str, func_batch);
 	bench_client_execute(client, &str);
 
 	info("preparing data.");
@@ -287,13 +302,35 @@ bench_tpcb_create(Bench* self, BenchClient* client)
 hot static void
 bench_tpcb_main(BenchWorker* self, BenchClient* client)
 {
-	auto bench  = self->bench;
+	auto bench = self->bench;
+	int batch = opt_int_of(&bench->batch);
+	int scale = opt_int_of(&bench->scale);
+	Buf buf;
+	buf_init(&buf);
+	defer_buf(&buf);
+	buf_printf(&buf, "execute __bench.tpcb_batch(%d, %d);", batch, scale);
+	Str cmd;
+	buf_str(&buf, &cmd);
+	while (! self->shutdown)
+	{
+		bench_client_execute(client, &cmd);
+		atomic_u64_add(&bench->transactions, batch);
+		atomic_u64_add(&bench->writes, 3 * batch);
+	}
 
+#if 0
 	int  scale    = opt_int_of(&bench->scale);
 	auto accounts = tpcb_accounts * scale;
 	auto branches = tpcb_branches * scale;
 	auto tellers  = tpcb_tellers  * scale;
 
+	Buf buf;
+	buf_init(&buf);
+	defer_buf(&buf);
+	buf_reserve(&buf, 512);
+
+	Str cmd;
+	buf_str(&buf, &cmd);
 	while (! self->shutdown)
 	{
 		uint64_t random = random_generate(&runtime()->random);
@@ -305,11 +342,14 @@ bench_tpcb_main(BenchWorker* self, BenchClient* client)
 		int tid    = c % tellers;
 		int delta  = -5000 + (c % 10000); // -5000 to 5000
 
-		tpcb_execute(client, bid, tid, aid, delta);
+		buf_reset(&buf);
+		buf_printf(&buf, "execute __bench.tpcb(%d, %d, %d, %d);", bid, tid, aid, delta);
+		bench_client_execute(client, &cmd);
 
 		atomic_u64_add(&bench->transactions, 1);
-		atomic_u64_add(&bench->writes, 4);
+		atomic_u64_add(&bench->writes, 3);
 	}
+#endif
 }
 
 BenchIf bench_tpcb =
