@@ -313,6 +313,7 @@ vm_run(Vm*       self,
 
 		// union
 		&&cunion,
+		&&cunion_aggs,
 		&&crecv,
 		&&crecv_aggs,
 
@@ -1577,6 +1578,11 @@ cself:
 cunion:
 	// [union, rset, distinct, limit, offset]
 	cunion(self, op);
+	op_next;
+
+cunion_aggs:
+	// [union, rset, aggs]
+	cunion_aggs(self, op);
 	op_next;
 
 crecv:

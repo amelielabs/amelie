@@ -426,6 +426,22 @@ cmd_union(Compiler* self, Plan* plan, Command* ref)
 }
 
 static void
+cmd_union_aggs(Compiler* self, Plan* plan, Command* ref)
+{
+	unused(ref);
+	auto select = plan->select;
+	assert(plan->r != -1);
+
+	// CUNION_AGGS
+	auto runion = op3pin(self, CUNION_AGGS, TYPE_STORE,
+	                     plan->r,
+	                     select->aggs);
+
+	runpin(self, plan->r);
+	plan->r = runion;
+}
+
+static void
 cmd_recv(Compiler* self, Plan* plan, Command* ref)
 {
 	unused(ref);
@@ -472,14 +488,15 @@ typedef void (*PlanFunction)(Compiler*, Plan*, Command*);
 static PlanFunction cmds[] =
 {
 	[COMMAND_EXPR]      = cmd_expr,
-	[COMMAND_EXPR_SET]  = cmd_expr_set,
-	[COMMAND_SCAN]      = cmd_scan,
-	[COMMAND_SCAN_AGGS] = cmd_scan_aggs,
-	[COMMAND_PIPE]      = cmd_pipe,
-	[COMMAND_SORT]      = cmd_sort,
-	[COMMAND_UNION]     = cmd_union,
-	[COMMAND_RECV]      = cmd_recv,
-	[COMMAND_RECV_AGGS] = cmd_recv_aggs
+	[COMMAND_EXPR_SET]   = cmd_expr_set,
+	[COMMAND_SCAN]       = cmd_scan,
+	[COMMAND_SCAN_AGGS]  = cmd_scan_aggs,
+	[COMMAND_PIPE]       = cmd_pipe,
+	[COMMAND_SORT]       = cmd_sort,
+	[COMMAND_UNION]      = cmd_union,
+	[COMMAND_UNION_AGGS] = cmd_union_aggs,
+	[COMMAND_RECV]       = cmd_recv,
+	[COMMAND_RECV_AGGS]  = cmd_recv_aggs
 };
 
 static int

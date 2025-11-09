@@ -306,6 +306,35 @@ cunion(Vm* self, Op* op)
 	union_set(result, distinct, limit, offset);
 }
 
+void
+cunion_aggs(Vm* self, Op* op)
+{
+	// [union, rset, aggs]
+	auto result = union_create();
+	value_set_store(reg_at(&self->r, op->a), &result->store);
+
+	union_set(result, true, INT64_MAX, 0);
+	union_set_aggs(result, (int*)code_data_at(self->code_data, op->c));
+
+	// create child union out of the set child
+	auto src = reg_at(&self->r, op->b);
+	auto set = (Set*)src->store;
+	if (set->child)
+	{
+		auto child = set->child;
+		set_assign(set, NULL);
+
+		auto ref = union_create();
+		union_set(ref, true, INT64_MAX, 0);
+		union_add(ref, child);
+		union_assign(result, ref);
+	}
+
+	// move set to the union
+	union_add(result, set);
+	value_reset(src);
+}
+
 hot static void
 crecv_as(Vm*  self,
          int  runion,
@@ -460,6 +489,7 @@ cfirst(Vm* self, Op* op)
 		if (store_iterator_has(it))
 			value_copy(result, it->current);
 	}
+	value_free(src);
 }
 
 hot Op*

@@ -60,8 +60,22 @@ plan_group_by(Plan* self)
 	// SELECT FROM GROUP BY
 	auto select = self->select;
 
-	// SCAN_AGGS
-	plan_add_scan_aggs(self, false, false, false);
+	// select count(distinct)
+	if (select->distinct_count)
+	{
+		// SCAN_AGGS (ordered)
+		plan_add_scan_aggs(self, false, true, true);
+
+		// SORT
+		plan_add_sort(self, false);
+
+		// UNION_AGGS
+		plan_add_union_aggs(self, false);
+	} else
+	{
+		// SCAN_AGGS
+		plan_add_scan_aggs(self, false, false, false);
+	}
 
 	// PIPE (group_target->r = aggs)
 	plan_add_pipe(self, false);
@@ -81,8 +95,22 @@ plan_group_by_order_by(Plan* self)
 	// SELECT FROM GROUP BY ORDER BY
 	auto select = self->select;
 
-	// SCAN_AGGS
-	plan_add_scan_aggs(self, false, false, false);
+	// select count(distinct)
+	if (select->distinct_count)
+	{
+		// SCAN_AGGS (ordered)
+		plan_add_scan_aggs(self, false, true, true);
+
+		// SORT
+		plan_add_sort(self, false);
+
+		// UNION_AGGS
+		plan_add_union_aggs(self, false);
+	} else
+	{
+		// SCAN_AGGS
+		plan_add_scan_aggs(self, false, false, false);
+	}
 
 	// PIPE (group_target->r = aggs)
 	plan_add_pipe(self, false);

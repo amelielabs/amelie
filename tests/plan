@@ -86,6 +86,7 @@ test planner
 test subselect
 test as
 test order_by
+test distinct
 test exists
 test in
 test any

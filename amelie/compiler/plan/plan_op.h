@@ -82,6 +82,13 @@ plan_add_union(Plan* self, bool recv)
 }
 
 static inline void
+plan_add_union_aggs(Plan* self, bool recv)
+{
+	auto cmd = command_allocate(COMMAND_UNION_AGGS, sizeof(Command));
+	plan_add(self, recv, cmd);
+}
+
+static inline void
 plan_add_recv(Plan* self, bool recv)
 {
 	auto cmd = command_allocate(COMMAND_RECV, sizeof(Command));
