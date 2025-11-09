@@ -307,7 +307,6 @@ vm_run(Vm*       self,
 		&&cset_sort,
 		&&cset_add,
 		&&cset_get,
-		&&cset_result,
 		&&cset_agg,
 		&&cself,
 
@@ -1543,17 +1542,6 @@ cset_get:
 	rc = set_get(set, stack_at(stack, set->count_keys), true);
 	value_set_int(&r[op->a], rc);
 	stack_popn(stack, set->count_keys);
-	op_next;
-
-cset_result:
-	// [result, set]
-	set = (Set*)r[op->b].store;
-	// return first row column and free set
-	if (! set->count_rows)
-		value_set_null(&r[op->a]);
-	else
-		value_move(&r[op->a], set_column(set, 0, 0));
-	value_free(&r[op->b]);
 	op_next;
 
 cset_agg:

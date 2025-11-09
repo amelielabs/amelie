@@ -232,7 +232,6 @@ OpDesc ops[] =
 	{ CSET_SORT, "set_sort" },
 	{ CSET_ADD, "set_add" },
 	{ CSET_GET, "set_get" },
-	{ CSET_RESULT, "set_result" },
 	{ CSET_AGG, "set_agg" },
 	{ CSELF, "self" },
 

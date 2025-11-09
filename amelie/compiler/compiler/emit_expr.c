@@ -1162,7 +1162,7 @@ emit_expr(Compiler* self, From* from, Ast* ast)
 		if (rtype(self, r) == TYPE_STORE)
 		{
 			// return first column of the first row and free the set
-			rresult = op2pin(self, CSET_RESULT, columns_first(columns)->type, r);
+			rresult = op2pin(self, CFIRST, columns_first(columns)->type, r);
 			runpin(self, r);
 		}
 		return rresult;

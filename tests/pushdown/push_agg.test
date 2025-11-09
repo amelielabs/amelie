@@ -266,6 +266,10 @@ select count(distinct data) from test group by data;
 
 select count(distinct data), count(distinct data2) from test group by true;
 
+# test: select (select count(distinct) from table group by)
+explain select (select count(distinct data) from test group by id);
+select (select count(distinct data) from test group by id);
+
 drop table test;
 drop table test_empty;
 drop table test_null;

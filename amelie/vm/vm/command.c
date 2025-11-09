@@ -481,13 +481,13 @@ cfirst(Vm* self, Op* op)
 	{
 		auto set = (Set*)store;
 		if (set->count >= 1)
-			value_copy(result, set_value(set, 0));
+			value_move(result, set_value(set, 0));
 	} else
 	{
 		auto it = store_iterator(store);
 		defer(store_iterator_close, it);
 		if (store_iterator_has(it))
-			value_copy(result, it->current);
+			value_move(result, it->current);
 	}
 	value_free(src);
 }

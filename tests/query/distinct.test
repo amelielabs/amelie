@@ -38,6 +38,7 @@ select count(distinct it) from ([1,2,3,1]) it group by it;
 
 select count(it) from ([1,2,3,1,2]) it group by it;
 select count(distinct it) from ([1,2,3,1,2]) it group by it;
+select it, count(distinct it) from ([1,2,3,1,2]) it group by it;
 
 # test: select count(distinct) from expr group by order by
 explain select count(distinct it) from ([1,2,3]) it group by it order by 1;
@@ -57,6 +58,9 @@ select count(distinct it) from ([1,2,3,1]) it group by it order by 1;
 select count(it) from ([1,2,3,1,2]) it group by it order by 1;
 select count(distinct it) from ([1,2,3,1,2]) it group by it order by 1;
 
+select it, count(it) from ([1,2,3,1,2]) it group by it order by 2;
+select it, count(distinct it) from ([1,2,3,1,2]) it group by it order by 2;
+
 # test: select count(distinct) from expr order by
 explain select count(distinct it) from ([1,2,3]) it order by 1;
 select count(it) from ([1,2,3,1,2]) it order by 1;
@@ -65,9 +69,13 @@ select count(distinct it) from ([1,2,3,1,2]) it order by 1;
 # test: select (select count(distinct))
 select (select count(distinct it) from ([1,2,3,1,2]) it);
 
-## test: select (select distinct)
-#explain select (select distinct it from ([1,2,3,1,2]) it);
-#select (select distinct it from ([1,2,3,1,2]) it);
+# test: select (select count(distinct) group by)
+explain select (select count(distinct it) from ([1,2,3,1,2]) it group by it);
+select (select count(distinct it) from ([1,2,3,1,2]) it group by it);
+
+# test: select (select distinct)
+explain select (select distinct it from ([1,2,3,1,2]) it);
+select (select distinct it from ([1,2,3,1,2]) it);
 
 disconnect S0;
 close E0;
