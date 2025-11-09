@@ -133,7 +133,7 @@ index_tree_merge_allocate(void)
 static inline void
 index_tree_merge_add(IndexTreeMerge* self, IndexTree* index)
 {
-	auto it = (TreeIterator*)buf_claim(&self->list, sizeof(TreeIterator));
+	auto it = (TreeIterator*)buf_emplace(&self->list, sizeof(TreeIterator));
 	tree_iterator_init(it, &index->tree);
 	self->list_count++;
 }

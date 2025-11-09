@@ -948,7 +948,7 @@ emit_expr(Compiler* self, From* from, Ast* ast)
 	case KINTERVAL:
 	{
 		int offset = code_data_offset(self->code_data);
-		auto iv = (Interval*)buf_claim(&self->code_data->data, sizeof(Interval));
+		auto iv = (Interval*)buf_emplace(&self->code_data->data, sizeof(Interval));
 		interval_init(iv);
 		if (unlikely(error_catch( interval_set(iv, &ast->string) )))
 			stmt_error(self->current, ast, "invalid interval value");
@@ -976,7 +976,7 @@ emit_expr(Compiler* self, From* from, Ast* ast)
 	case KUUID:
 	{
 		int offset = code_data_offset(self->code_data);
-		auto uuid = (Uuid*)buf_claim(&self->code_data->data, sizeof(Uuid));
+		auto uuid = (Uuid*)buf_emplace(&self->code_data->data, sizeof(Uuid));
 		uuid_init(uuid);
 		if (uuid_set_nothrow(uuid, &ast->string) == -1)
 			stmt_error(self->current, ast, "invalid uuid value");
@@ -1256,7 +1256,7 @@ emit_push(Compiler* self, From* from, Ast* ast)
 	case KINTERVAL:
 	{
 		int offset = code_data_offset(self->code_data);
-		auto iv = (Interval*)buf_claim(&self->code_data->data, sizeof(Interval));
+		auto iv = (Interval*)buf_emplace(&self->code_data->data, sizeof(Interval));
 		interval_init(iv);
 		if (unlikely(error_catch( interval_set(iv, &ast->string) )))
 			stmt_error(self->current, ast, "invalid interval value");
@@ -1280,7 +1280,7 @@ emit_push(Compiler* self, From* from, Ast* ast)
 	case KUUID:
 	{
 		int offset = code_data_offset(self->code_data);
-		auto uuid = (Uuid*)buf_claim(&self->code_data->data, sizeof(Uuid));
+		auto uuid = (Uuid*)buf_emplace(&self->code_data->data, sizeof(Uuid));
 		uuid_init(uuid);
 		if (uuid_set_nothrow(uuid, &ast->string) == -1)
 			stmt_error(self->current, ast, "invalid uuid value");

@@ -55,7 +55,7 @@ loader_client_main(Loader* self, BenchClient* client)
 {
 	auto filler = buf_create();
 	defer_buf(filler);
-	buf_claim(filler, 100);
+	buf_emplace(filler, 100);
 	memset(filler->start, ' ', 100);
 
 	Buf buf;
@@ -248,7 +248,7 @@ bench_tpcb_create(Bench* self, BenchClient* client)
 
 	auto filler = buf_create();
 	defer_buf(filler);
-	buf_claim(filler, 100);
+	buf_emplace(filler, 100);
 	memset(filler->start, ' ', 100);
 
 	auto batch = opt_int_of(&self->batch);

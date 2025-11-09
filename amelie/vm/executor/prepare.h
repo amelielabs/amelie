@@ -45,7 +45,7 @@ prepare_reset(Prepare* self, CoreMgr* core_mgr)
 {
 	buf_reset(&self->cores);
 	auto size = sizeof(Core*) * core_mgr->cores_count;
-	buf_claim(&self->cores, size);
+	buf_emplace(&self->cores, size);
 	memset(self->cores.start, 0, size);
 
 	self->id_max     = 0;

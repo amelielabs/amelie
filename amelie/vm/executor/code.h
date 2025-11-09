@@ -83,7 +83,7 @@ code_add(Code*    self,
          uint64_t d,
          uint64_t e)
 {
-	auto op = (Op*)buf_claim(&self->code, sizeof(Op));
+	auto op = (Op*)buf_emplace(&self->code, sizeof(Op));
 	op->op = id;
 	op->a  = a;
 	op->b  = b;

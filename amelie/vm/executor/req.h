@@ -109,7 +109,7 @@ req_reset(Req* self)
 static inline void
 req_copy_refs(Req* self, Value* refs, int refs_count)
 {
-	auto to = (Value*)buf_claim(&self->refs, sizeof(Value) * refs_count);
+	auto to = (Value*)buf_emplace(&self->refs, sizeof(Value) * refs_count);
 	for (auto i = 0; i < refs_count; i++)
 	{
 		value_init(&to[i]);

@@ -59,7 +59,7 @@ fn_mgr_prepare(FnMgr* self, Local* local, CodeData* data)
 	auto count = code_data_count_fn(data);
 	if (count == 0)
 		return;
-	buf_claim(&self->context, count * sizeof(void*));
+	buf_emplace(&self->context, count * sizeof(void*));
 	memset(self->context.start, 0, buf_size(&self->context));
 }
 

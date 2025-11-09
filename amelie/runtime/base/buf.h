@@ -153,7 +153,7 @@ buf_str(Buf* self, Str* str)
 }
 
 static inline void*
-buf_claim(Buf* self, int size)
+buf_emplace(Buf* self, int size)
 {
 	buf_reserve(self, size);
 	auto pos = self->position;

@@ -33,7 +33,7 @@ static inline Send*
 send_create(CodeData* data, int* offset)
 {
 	*offset = code_data_pos(data);
-	auto send = (Send*)buf_claim(&data->data, sizeof(Send));
+	auto send = (Send*)buf_emplace(&data->data, sizeof(Send));
 	return send;
 }
 

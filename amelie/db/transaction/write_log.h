@@ -56,7 +56,7 @@ write_log_add(WriteLog* self, int cmd, uint64_t partition, Row* row)
 	}
 	if (unlikely(! hdr))
 	{
-		hdr = buf_claim(&self->meta, sizeof(*hdr));
+		hdr = buf_emplace(&self->meta, sizeof(*hdr));
 		hdr->cmd       = cmd;
 		hdr->size      = 0;
 		hdr->crc       = 0;
@@ -76,7 +76,7 @@ hot static inline void
 write_log_add_op(WriteLog* self, int cmd, uint8_t* op)
 {
 	// prepare command header
-	auto hdr = (RecordCmd*)buf_claim(&self->meta, sizeof(RecordCmd));
+	auto hdr = (RecordCmd*)buf_emplace(&self->meta, sizeof(RecordCmd));
 	hdr->cmd       = cmd;
 	hdr->size      = json_sizeof(op);
 	hdr->crc       = 0;

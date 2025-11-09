@@ -82,7 +82,7 @@ access_add(Access* self, Relation* rel, AccessType type)
 			return;
 		}
 	}
-	auto record = (AccessRecord*)buf_claim(&self->list, sizeof(AccessRecord));
+	auto record = (AccessRecord*)buf_emplace(&self->list, sizeof(AccessRecord));
 	record->rel  = rel;
 	record->type = type;
 	self->list_count++;

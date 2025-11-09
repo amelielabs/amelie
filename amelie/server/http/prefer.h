@@ -85,7 +85,7 @@ prefer_set(Prefer* self, Str* header)
 			pos++;
 
 		self->opts_count++;
-		auto opt = (PreferOpt*)buf_claim(&self->opts, sizeof(PreferOpt));
+		auto opt = (PreferOpt*)buf_emplace(&self->opts, sizeof(PreferOpt));
 		str_set(&opt->name, start, pos - start);
 		str_init(&opt->value);
 		if (pos == end)

@@ -119,7 +119,7 @@ index_hash_merge_allocate(void)
 static inline void
 index_hash_merge_add(IndexHashMerge* self, IndexHash* index)
 {
-	auto it = (HashIterator*)buf_claim(&self->list, sizeof(HashIterator));
+	auto it = (HashIterator*)buf_emplace(&self->list, sizeof(HashIterator));
 	hash_iterator_init(it, &index->hash);
 	self->list_count++;
 }

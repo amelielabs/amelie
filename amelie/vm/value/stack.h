@@ -48,7 +48,7 @@ always_inline hot static inline Value*
 stack_push(Stack* self)
 {
 	self->stack_size++;
-	return buf_claim(&self->stack, sizeof(Value));
+	return buf_emplace(&self->stack, sizeof(Value));
 }
 
 always_inline hot static inline Value*

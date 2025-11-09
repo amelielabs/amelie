@@ -1111,7 +1111,7 @@ caddvv:
 		if (unlikely(r[op->b].vector->size != r[op->c].vector->size))
 			error("vector sizes mismatch");
 		buf = buf_create();
-		vector = (Vector*)buf_claim(buf, vector_size(r[op->b].vector));
+		vector = (Vector*)buf_emplace(buf, vector_size(r[op->b].vector));
 		vector_init(vector, r[op->b].vector->size);
 		vector_add(vector, r[op->b].vector, r[op->c].vector);
 		value_set_vector_buf(&r[op->a], buf);
@@ -1206,7 +1206,7 @@ csubvv:
 		if (unlikely(r[op->b].vector->size != r[op->c].vector->size))
 			error("vector sizes mismatch");
 		buf = buf_create();
-		vector = (Vector*)buf_claim(buf, vector_size(r[op->b].vector));
+		vector = (Vector*)buf_emplace(buf, vector_size(r[op->b].vector));
 		vector_init(vector, r[op->b].vector->size);
 		vector_sub(vector, r[op->b].vector, r[op->c].vector);
 		value_set_vector_buf(&r[op->a], buf);
@@ -1258,7 +1258,7 @@ cmulvv:
 		if (unlikely(r[op->b].vector->size != r[op->c].vector->size))
 			error("vector sizes mismatch");
 		buf = buf_create();
-		vector = (Vector*)buf_claim(buf, vector_size(r[op->b].vector));
+		vector = (Vector*)buf_emplace(buf, vector_size(r[op->b].vector));
 		vector_init(vector, r[op->b].vector->size);
 		vector_mul(vector, r[op->b].vector, r[op->c].vector);
 		value_set_vector_buf(&r[op->a], buf);

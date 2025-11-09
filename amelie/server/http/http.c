@@ -193,7 +193,7 @@ http_read(Http* self, Readahead* readahead, bool request)
 			break;
 		}
 
-		auto header = (HttpHeader*)buf_claim(&self->headers, sizeof(HttpHeader));
+		auto header = (HttpHeader*)buf_emplace(&self->headers, sizeof(HttpHeader));
 		self->headers_count++;
 
 		// <name>: value\r\n

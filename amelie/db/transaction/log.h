@@ -125,7 +125,7 @@ log_row(Log*   self,
         Row*   row_prev)
 {
 	// op
-	LogOp* op = buf_claim(&self->op, sizeof(LogOp));
+	LogOp* op = buf_emplace(&self->op, sizeof(LogOp));
 	op->cmd       = cmd;
 	op->iface     = iface;
 	op->iface_arg = iface_arg;
@@ -133,7 +133,7 @@ log_row(Log*   self,
 	self->count++;
 
 	// row data
-	LogRow* ref = buf_claim(&self->data, sizeof(LogRow));
+	LogRow* ref = buf_emplace(&self->data, sizeof(LogRow));
 	ref->row      = row;
 	ref->row_prev = row_prev;
 	return ref;
@@ -155,7 +155,7 @@ log_relation(Log*   self,
              void*  relation)
 {
 	// op
-	LogOp* op = buf_claim(&self->op, sizeof(LogOp));
+	LogOp* op = buf_emplace(&self->op, sizeof(LogOp));
 	op->cmd       = CMD_DDL;
 	op->iface     = iface;
 	op->iface_arg = iface_arg;
@@ -164,7 +164,7 @@ log_relation(Log*   self,
 	self->count_relation++;
 
 	// relation data
-	LogRelation* ref = buf_claim(&self->data, sizeof(LogRelation));
+	LogRelation* ref = buf_emplace(&self->data, sizeof(LogRelation));
 	ref->relation = relation;
 	return ref;
 }

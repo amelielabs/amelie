@@ -67,7 +67,7 @@ page_mgr_allocate(PageMgr* self)
 	uint8_t* pointer = vfs_mmap(-1, self->page_size);
 	if (unlikely(pointer == NULL))
 		error_system();
-	Page* page = buf_claim(&self->list, sizeof(Page));
+	Page* page = buf_emplace(&self->list, sizeof(Page));
 	page->pointer = pointer;
 	self->list_count++;
 	return page;

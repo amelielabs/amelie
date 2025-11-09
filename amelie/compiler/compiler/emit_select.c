@@ -74,7 +74,7 @@ on_match_aggs(Scan* self)
 
 	// create a list of aggs based on type
 	select->aggs = code_data_pos(cp->code_data);
-	buf_claim(&cp->code_data->data, sizeof(int) * select->expr_aggs.count);
+	buf_emplace(&cp->code_data->data, sizeof(int) * select->expr_aggs.count);
 
 	// get existing or create a new row by key, return
 	// the row reference
@@ -216,12 +216,12 @@ emit_order(Compiler* self, AstSelect* select, bool use_group_by)
 	if (use_group_by)
 	{
 		auto size  = sizeof(bool) * select->expr_group_by.count;
-		auto order = (bool*)buf_claim(&self->code_data->data, size);
+		auto order = (bool*)buf_emplace(&self->code_data->data, size);
 		memset(order, true, size);
 	} else
 	{
 		// write order by asc/desc flags
-		auto order = (bool*)buf_claim(&self->code_data->data, sizeof(bool) * select->expr_order_by.count);
+		auto order = (bool*)buf_emplace(&self->code_data->data, sizeof(bool) * select->expr_order_by.count);
 		auto node = select->expr_order_by.list;
 		while (node)
 		{
@@ -327,7 +327,7 @@ cmd_scan_aggs(Compiler* self, Plan* plan, Command* ref)
 		// set is using following keys [group_by_keys, agg_order, expr]
 		auto offset = code_data_pos(self->code_data);
 		auto count  = select->expr_group_by.count + 1 + 1;
-		auto order  = (bool*)buf_claim(&self->code_data->data, sizeof(bool) * count);
+		auto order  = (bool*)buf_emplace(&self->code_data->data, sizeof(bool) * count);
 		memset(order, true, sizeof(bool) * count);
 
 		// CSET_ORDERED

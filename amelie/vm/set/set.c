@@ -129,7 +129,7 @@ set_add_as(Set* self, bool keys_only, Value* values)
 		buf_write(&self->set_index, &row, sizeof(row));
 
 	// reserve and write row values (columns and keys)
-	buf_claim(&self->set, sizeof(Value) * self->count_columns_row);
+	buf_emplace(&self->set, sizeof(Value) * self->count_columns_row);
 
 	// copy all values or keys only
 	if (keys_only)
@@ -278,7 +278,7 @@ set_reserve(Set* self)
 
 	// reserve row values
 	auto values_size = sizeof(Value) * self->count_columns_row;
-	auto values = (Value*)buf_claim(&self->set, values_size);
+	auto values = (Value*)buf_emplace(&self->set, values_size);
 	memset(values, 0, values_size);
 
 	self->count += self->count_columns_row;

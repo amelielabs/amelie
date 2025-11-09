@@ -26,7 +26,7 @@ row_allocate_buf(Buf* buf, int columns, int data_size)
 {
 	int  size_factor;
 	auto size = row_measure(columns, data_size, &size_factor);
-	auto self = (Row*)buf_claim(buf, size);
+	auto self = (Row*)buf_emplace(buf, size);
 	row_init(self, size_factor, size);
 	return self;
 }
