@@ -128,6 +128,40 @@ plan_pushdown_order_by(Plan* self)
 }
 
 static void
+plan_pushdown_order_by_index(Plan* self)
+{
+	// SELECT FROM ORDER BY
+	auto select = self->select;
+
+	// pushdown limit
+	//
+	// push limit as limit = limit + offset
+	Ast* limit = NULL;
+	if (select->expr_limit && select->expr_offset)
+	{
+		limit = ast('+');
+		limit->l = select->expr_limit;
+		limit->r = select->expr_offset;
+	} else
+	if (select->expr_limit) {
+		limit = select->expr_limit;
+	}
+
+	// SCAN_ORDERED (table scan)
+	plan_add_scan_ordered(self, limit, NULL, select->expr_where,
+	                      &select->from);
+
+	// the result set is ordered by index, no explicit
+	// SORT command needed
+
+	// ----
+	plan_switch(self, true);
+
+	// RECV
+	plan_add_recv(self);
+}
+
+static void
 plan_pushdown_scan(Plan* self)
 {
 	// SELECT FROM
@@ -161,10 +195,14 @@ plan_pushdown(Plan* self)
 {
 	// SELECT FROM GROUP BY [WHERE] [HAVING] [ORDER BY] [LIMIT/OFFSET]
 	// SELECT aggregate FROM
-	auto select = self->select;
-	if (! from_empty(&select->from_group))
+	auto select     = self->select;
+	auto from       = &select->from;
+	auto from_group = &select->from_group;
+
+	auto order_by = &select->expr_order_by;
+	if (! from_empty(from_group))
 	{
-		if (select->expr_order_by.count == 0)
+		if (order_by->count == 0)
 			plan_pushdown_group_by(self);
 		else
 			plan_pushdown_group_by_order_by(self);
@@ -173,8 +211,20 @@ plan_pushdown(Plan* self)
 
 	// SELECT FROM [WHERE] ORDER BY [LIMIT/OFFSET]
 	// SELECT DISTINCT FROM
-	if (select->expr_order_by.count > 0)
+	if (order_by->count > 0)
 	{
+		// optimize scan if the order by matches the table index keys
+		auto first = from_first(from);
+		if (! from_is_join(from))
+		{
+			auto index = first->from_index;
+			if (index->type == INDEX_TREE && ast_order_list_match_index(order_by, first))
+			{
+				plan_pushdown_order_by_index(self);
+				return;
+			}
+		}
+
 		plan_pushdown_order_by(self);
 		return;
 	}

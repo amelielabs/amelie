@@ -22,8 +22,7 @@ explain select * from test order by id;
     "06": "set_add             0      0      0     ",
     "07": "table_next          1      2      0     ",
     "08": "free                1      0      0     ",
-    "09": "set_sort            0      0      0     ",
-    "10": "ret                 0      0      -     "
+    "09": "ret                 0      0      -     "
   },
   "access": [["public.test", "ro"]]
 }]
@@ -47,8 +46,7 @@ explain select * from test order by id asc;
     "06": "set_add             0      0      0     ",
     "07": "table_next          1      2      0     ",
     "08": "free                1      0      0     ",
-    "09": "set_sort            0      0      0     ",
-    "10": "ret                 0      0      -     "
+    "09": "ret                 0      0      -     "
   },
   "access": [["public.test", "ro"]]
 }]
@@ -90,16 +88,17 @@ explain select * from test order by id limit 1;
   },
   "pushdown": {
     "00": "set_ordered         0      1      1     ",
-    "01": "table_open_part     1      1      8     # public.test (primary)",
-    "02": "table_readi64       2      1      0     ",
-    "03": "push                2      0      0     ",
-    "04": "table_readi64       2      1      0     ",
-    "05": "push                2      0      0     ",
-    "06": "set_add             0      0      0     ",
-    "07": "table_next          1      2      0     ",
-    "08": "free                1      0      0     ",
-    "09": "set_sort            0      0      0     ",
-    "10": "ret                 0      0      -     "
+    "01": "int                 1      -      0     # 1",
+    "02": "table_open_part     2      1      10    # public.test (primary)",
+    "03": "cjltd               10     1      0     ",
+    "04": "table_readi64       3      2      0     ",
+    "05": "push                3      0      0     ",
+    "06": "table_readi64       3      2      0     ",
+    "07": "push                3      0      0     ",
+    "08": "set_add             0      0      0     ",
+    "09": "table_next          2      3      0     ",
+    "10": "free                2      0      0     ",
+    "11": "ret                 0      0      -     "
   },
   "access": [["public.test", "ro"]]
 }]
@@ -126,16 +125,17 @@ explain select * from test order by id limit 0;
   },
   "pushdown": {
     "00": "set_ordered         0      1      1     ",
-    "01": "table_open_part     1      1      8     # public.test (primary)",
-    "02": "table_readi64       2      1      0     ",
-    "03": "push                2      0      0     ",
-    "04": "table_readi64       2      1      0     ",
-    "05": "push                2      0      0     ",
-    "06": "set_add             0      0      0     ",
-    "07": "table_next          1      2      0     ",
-    "08": "free                1      0      0     ",
-    "09": "set_sort            0      0      0     ",
-    "10": "ret                 0      0      -     "
+    "01": "int                 1      -      0     # 0",
+    "02": "table_open_part     2      1      10    # public.test (primary)",
+    "03": "cjltd               10     1      0     ",
+    "04": "table_readi64       3      2      0     ",
+    "05": "push                3      0      0     ",
+    "06": "table_readi64       3      2      0     ",
+    "07": "push                3      0      0     ",
+    "08": "set_add             0      0      0     ",
+    "09": "table_next          2      3      0     ",
+    "10": "free                2      0      0     ",
+    "11": "ret                 0      0      -     "
   },
   "access": [["public.test", "ro"]]
 }]
@@ -191,16 +191,19 @@ explain select * from test order by id limit 1 offset 0;
   },
   "pushdown": {
     "00": "set_ordered         0      1      1     ",
-    "01": "table_open_part     1      1      8     # public.test (primary)",
-    "02": "table_readi64       2      1      0     ",
-    "03": "push                2      0      0     ",
-    "04": "table_readi64       2      1      0     ",
-    "05": "push                2      0      0     ",
-    "06": "set_add             0      0      0     ",
-    "07": "table_next          1      2      0     ",
-    "08": "free                1      0      0     ",
-    "09": "set_sort            0      0      0     ",
-    "10": "ret                 0      0      -     "
+    "01": "int                 1      -      0     # 1",
+    "02": "int                 2      -      0     # 0",
+    "03": "addii               3      1      2     ",
+    "04": "table_open_part     1      1      12    # public.test (primary)",
+    "05": "cjltd               12     3      0     ",
+    "06": "table_readi64       2      1      0     ",
+    "07": "push                2      0      0     ",
+    "08": "table_readi64       2      1      0     ",
+    "09": "push                2      0      0     ",
+    "10": "set_add             0      0      0     ",
+    "11": "table_next          1      5      0     ",
+    "12": "free                1      0      0     ",
+    "13": "ret                 0      0      -     "
   },
   "access": [["public.test", "ro"]]
 }]
@@ -218,16 +221,19 @@ explain select * from test order by id limit 1 offset 1;
   },
   "pushdown": {
     "00": "set_ordered         0      1      1     ",
-    "01": "table_open_part     1      1      8     # public.test (primary)",
-    "02": "table_readi64       2      1      0     ",
-    "03": "push                2      0      0     ",
-    "04": "table_readi64       2      1      0     ",
-    "05": "push                2      0      0     ",
-    "06": "set_add             0      0      0     ",
-    "07": "table_next          1      2      0     ",
-    "08": "free                1      0      0     ",
-    "09": "set_sort            0      0      0     ",
-    "10": "ret                 0      0      -     "
+    "01": "int                 1      -      0     # 1",
+    "02": "int                 2      -      0     # 1",
+    "03": "addii               3      1      2     ",
+    "04": "table_open_part     1      1      12    # public.test (primary)",
+    "05": "cjltd               12     3      0     ",
+    "06": "table_readi64       2      1      0     ",
+    "07": "push                2      0      0     ",
+    "08": "table_readi64       2      1      0     ",
+    "09": "push                2      0      0     ",
+    "10": "set_add             0      0      0     ",
+    "11": "table_next          1      5      0     ",
+    "12": "free                1      0      0     ",
+    "13": "ret                 0      0      -     "
   },
   "access": [["public.test", "ro"]]
 }]
@@ -291,8 +297,7 @@ explain select * from test order by id offset 1;
     "06": "set_add             0      0      0     ",
     "07": "table_next          1      2      0     ",
     "08": "free                1      0      0     ",
-    "09": "set_sort            0      0      0     ",
-    "10": "ret                 0      0      -     "
+    "09": "ret                 0      0      -     "
   },
   "access": [["public.test", "ro"]]
 }]
