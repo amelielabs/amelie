@@ -63,8 +63,8 @@ plan_group_by(Plan* self)
 	// select count(distinct)
 	if (select->distinct_count)
 	{
-		// SCAN_AGGS (ordered)
-		plan_add_scan_aggs(self, true, true);
+		// SCAN_AGGS_ORDERED
+		plan_add_scan_aggs_ordered(self);
 
 		// SORT
 		plan_add_sort(self);
@@ -74,7 +74,7 @@ plan_group_by(Plan* self)
 	} else
 	{
 		// SCAN_AGGS
-		plan_add_scan_aggs(self, false, false);
+		plan_add_scan_aggs(self);
 	}
 
 	// PIPE (group_target->r = aggs)
@@ -85,8 +85,7 @@ plan_group_by(Plan* self)
 	              select->expr_limit,
 	              select->expr_offset,
 	              select->expr_having,
-	              &select->from_group,
-	              false);
+	              &select->from_group);
 }
 
 static inline void
@@ -98,8 +97,8 @@ plan_group_by_order_by(Plan* self)
 	// select count(distinct)
 	if (select->distinct_count)
 	{
-		// SCAN_AGGS (ordered)
-		plan_add_scan_aggs(self, true, true);
+		// SCAN_AGGS_ORDERED
+		plan_add_scan_aggs_ordered(self);
 
 		// SORT
 		plan_add_sort(self);
@@ -109,15 +108,15 @@ plan_group_by_order_by(Plan* self)
 	} else
 	{
 		// SCAN_AGGS
-		plan_add_scan_aggs(self, false, false);
+		plan_add_scan_aggs(self);
 	}
 
 	// PIPE (group_target->r = aggs)
 	plan_add_pipe(self);
 
-	// SCAN (scan aggs and emit exprs)
-	plan_add_scan(self, NULL, NULL, select->expr_having,
-	              &select->from_group, true);
+	// SCAN_ORDERED (scan aggs and emit exprs)
+	plan_add_scan_ordered(self, NULL, NULL, select->expr_having,
+	                      &select->from_group);
 
 	// SORT
 	plan_add_sort(self);
@@ -132,9 +131,9 @@ plan_order_by(Plan* self)
 	// SELECT FROM ORDER BY
 	auto select = self->select;
 
-	// SCAN
-	plan_add_scan(self, NULL, NULL, select->expr_where,
-	              &select->from, true);
+	// SCAN_ORDERED
+	plan_add_scan_ordered(self, NULL, NULL, select->expr_where,
+	                      &select->from);
 
 	// SORT
 	plan_add_sort(self);
@@ -155,8 +154,7 @@ plan_scan(Plan* self)
 	              select->expr_limit,
 	              select->expr_offset,
 	              select->expr_where,
-	              &select->from,
-	              false);
+	              &select->from);
 }
 
 static void
@@ -203,8 +201,8 @@ plan_pushdown_group_by(Plan* self)
 	// SELECT FROM GROUP BY
 	auto select = self->select;
 
-	// SCAN_AGGS (ORDERED)
-	plan_add_scan_aggs(self, true, true);
+	// SCAN_AGGS_ORDERED
+	plan_add_scan_aggs_ordered(self);
 
 	// SORT
 	plan_add_sort(self);
@@ -223,8 +221,7 @@ plan_pushdown_group_by(Plan* self)
 	              select->expr_limit,
 	              select->expr_offset,
 	              select->expr_having,
-	              &select->from_group,
-	              false);
+	              &select->from_group);
 }
 
 static void
@@ -233,8 +230,8 @@ plan_pushdown_group_by_order_by(Plan* self)
 	// SELECT FROM GROUP BY ORDER BY
 	auto select = self->select;
 
-	// SCAN_AGGS (ORDERED)
-	plan_add_scan_aggs(self, true, true);
+	// SCAN_AGGS_ORDERED
+	plan_add_scan_aggs_ordered(self);
 
 	// SORT
 	plan_add_sort(self);
@@ -248,9 +245,9 @@ plan_pushdown_group_by_order_by(Plan* self)
 	// PIPE (group_target->r = union)
 	plan_add_pipe(self);
 
-	// SCAN (aggs and emit select exprs)
-	plan_add_scan(self, NULL, NULL, select->expr_having,
-	              &select->from_group, true);
+	// SCAN_ORDERED (aggs and emit select exprs)
+	plan_add_scan_ordered(self, NULL, NULL, select->expr_having,
+	                      &select->from_group);
 
 	// SORT
 	plan_add_sort(self);
@@ -271,9 +268,9 @@ plan_pushdown_order_by(Plan* self)
 	// SELECT FROM ORDER BY
 	auto select = self->select;
 
-	// SCAN (table scan, ORDERED)
-	plan_add_scan(self, NULL, NULL, select->expr_where,
-	              &select->from, true);
+	// SCAN_ORDERED (table scan)
+	plan_add_scan_ordered(self, NULL, NULL, select->expr_where,
+	                      &select->from);
 
 	// SORT
 	plan_add_sort(self);
@@ -305,7 +302,7 @@ plan_pushdown_scan(Plan* self)
 
 	// SCAN
 	plan_add_scan(self, limit, NULL, select->expr_where,
-	              &select->from, false);
+	              &select->from);
 
 	// ----
 	plan_switch(self, true);

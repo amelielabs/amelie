@@ -11,16 +11,17 @@
 // AGPL-3.0 Licensed.
 //
 
-typedef struct Command         Command;
-typedef struct CommandScanAggs CommandScanAggs;
-typedef struct CommandScan     CommandScan;
+typedef struct Command     Command;
+typedef struct CommandScan CommandScan;
 
 typedef enum
 {
 	COMMAND_EXPR,
 	COMMAND_EXPR_SET,
 	COMMAND_SCAN,
+	COMMAND_SCAN_ORDERED,
 	COMMAND_SCAN_AGGS,
+	COMMAND_SCAN_AGGS_ORDERED,
 	COMMAND_PIPE,
 	COMMAND_SORT,
 	COMMAND_UNION,
@@ -35,13 +36,6 @@ struct Command
 	List      link;
 };
 
-struct CommandScanAggs
-{
-	Command cmd;
-	bool    ordered;
-	bool    child;
-};
-
 struct CommandScan
 {
 	Command cmd;
@@ -49,7 +43,6 @@ struct CommandScan
 	Ast*    expr_offset;
 	Ast*    expr_where;
 	From*   from;
-	bool    ordered;
 };
 
 static inline void*

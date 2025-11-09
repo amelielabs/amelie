@@ -275,7 +275,7 @@ cmd_scan(Compiler* self, Plan* plan, Command* ref)
 
 	// create result set
 	auto select = plan->select;
-	if (cmd->ordered)
+	if (ref->id == COMMAND_SCAN_ORDERED)
 	{
 		auto offset = emit_order(self, select, false);
 		plan->r = op4pin(self, CSET_ORDERED, TYPE_STORE,
@@ -301,11 +301,10 @@ cmd_scan(Compiler* self, Plan* plan, Command* ref)
 static void
 cmd_scan_aggs(Compiler* self, Plan* plan, Command* ref)
 {
-	auto cmd = (CommandScanAggs*)ref;
 	auto select = plan->select;
 
 	// create result agg set
-	if (cmd->ordered)
+	if (ref->id == COMMAND_SCAN_AGGS_ORDERED)
 	{
 		auto offset = emit_order(self, select, true);
 		plan->r = op4pin(self, CSET_ORDERED, TYPE_STORE,
@@ -321,8 +320,10 @@ cmd_scan_aggs(Compiler* self, Plan* plan, Command* ref)
 	select->rset_agg = plan->r;
 
 	// create second ordered agg set to handle count(distinct)
-	if (cmd->child && select->distinct_count)
+	if (select->distinct_count)
 	{
+		assert(ref->id == COMMAND_SCAN_AGGS_ORDERED);
+
 		// set is using following keys [group_by_keys, agg_order, expr]
 		auto offset = code_data_pos(self->code_data);
 		auto count  = select->expr_group_by.count + 1 + 1;
@@ -487,16 +488,18 @@ typedef void (*PlanFunction)(Compiler*, Plan*, Command*);
 
 static PlanFunction cmds[] =
 {
-	[COMMAND_EXPR]      = cmd_expr,
-	[COMMAND_EXPR_SET]   = cmd_expr_set,
-	[COMMAND_SCAN]       = cmd_scan,
-	[COMMAND_SCAN_AGGS]  = cmd_scan_aggs,
-	[COMMAND_PIPE]       = cmd_pipe,
-	[COMMAND_SORT]       = cmd_sort,
-	[COMMAND_UNION]      = cmd_union,
-	[COMMAND_UNION_AGGS] = cmd_union_aggs,
-	[COMMAND_RECV]       = cmd_recv,
-	[COMMAND_RECV_AGGS]  = cmd_recv_aggs
+	[COMMAND_EXPR]              = cmd_expr,
+	[COMMAND_EXPR_SET]          = cmd_expr_set,
+	[COMMAND_SCAN]              = cmd_scan,
+	[COMMAND_SCAN_ORDERED]      = cmd_scan,
+	[COMMAND_SCAN_AGGS]         = cmd_scan_aggs,
+	[COMMAND_SCAN_AGGS_ORDERED] = cmd_scan_aggs,
+	[COMMAND_PIPE]              = cmd_pipe,
+	[COMMAND_SORT]              = cmd_sort,
+	[COMMAND_UNION]             = cmd_union,
+	[COMMAND_UNION_AGGS]        = cmd_union_aggs,
+	[COMMAND_RECV]              = cmd_recv,
+	[COMMAND_RECV_AGGS]         = cmd_recv_aggs
 };
 
 static int

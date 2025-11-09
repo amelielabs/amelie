@@ -35,29 +35,55 @@ plan_add_expr_set(Plan* self)
 }
 
 static inline void
-plan_add_scan(Plan* self,
-              Ast*  expr_limit,
-              Ast*  expr_offset,
-              Ast*  expr_where,
-              From* from,
-              bool  ordered)
+plan_add_scan_as(Plan*     self,
+                 CommandId id,
+                 Ast*      expr_limit,
+                 Ast*      expr_offset,
+                 Ast*      expr_where,
+                 From*     from)
 {
-	auto cmd = (CommandScan*)command_allocate(COMMAND_SCAN, sizeof(CommandScan));
+	auto cmd = (CommandScan*)command_allocate(id, sizeof(CommandScan));
 	plan_add(self, &cmd->cmd);
 	cmd->expr_limit  = expr_limit;
 	cmd->expr_offset = expr_offset;
 	cmd->expr_where  = expr_where;
 	cmd->from        = from;
-	cmd->ordered     = ordered;
 }
 
 static inline void
-plan_add_scan_aggs(Plan* self, bool ordered, bool child)
+plan_add_scan(Plan* self,
+              Ast*  expr_limit,
+              Ast*  expr_offset,
+              Ast*  expr_where,
+              From* from)
 {
-	auto cmd = (CommandScanAggs*)command_allocate(COMMAND_SCAN_AGGS, sizeof(CommandScanAggs));
-	plan_add(self, &cmd->cmd);
-	cmd->ordered = ordered;
-	cmd->child   = child;
+	plan_add_scan_as(self, COMMAND_SCAN, expr_limit, expr_offset,
+	                 expr_where, from);
+}
+
+static inline void
+plan_add_scan_ordered(Plan* self,
+                      Ast*  expr_limit,
+                      Ast*  expr_offset,
+                      Ast*  expr_where,
+                      From* from)
+{
+	plan_add_scan_as(self, COMMAND_SCAN_ORDERED, expr_limit, expr_offset,
+	                 expr_where, from);
+}
+
+static inline void
+plan_add_scan_aggs(Plan* self)
+{
+	auto cmd = command_allocate(COMMAND_SCAN_AGGS, sizeof(Command));
+	plan_add(self, cmd);
+}
+
+static inline void
+plan_add_scan_aggs_ordered(Plan* self)
+{
+	auto cmd = command_allocate(COMMAND_SCAN_AGGS_ORDERED, sizeof(Command));
+	plan_add(self, cmd);
 }
 
 static inline void
