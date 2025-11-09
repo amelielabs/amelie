@@ -44,14 +44,14 @@ static inline void
 plan_expr(Plan* self)
 {
 	// SELECT expr
-	plan_add_expr(self, false);
+	plan_add_expr(self);
 }
 
 static inline void
 plan_expr_set(Plan* self)
 {
 	// SELECT expr, ...
-	plan_add_expr_set(self, false);
+	plan_add_expr_set(self);
 }
 
 static inline void
@@ -64,24 +64,24 @@ plan_group_by(Plan* self)
 	if (select->distinct_count)
 	{
 		// SCAN_AGGS (ordered)
-		plan_add_scan_aggs(self, false, true, true);
+		plan_add_scan_aggs(self, true, true);
 
 		// SORT
-		plan_add_sort(self, false);
+		plan_add_sort(self);
 
 		// UNION_AGGS
-		plan_add_union_aggs(self, false);
+		plan_add_union_aggs(self);
 	} else
 	{
 		// SCAN_AGGS
-		plan_add_scan_aggs(self, false, false, false);
+		plan_add_scan_aggs(self, false, false);
 	}
 
 	// PIPE (group_target->r = aggs)
-	plan_add_pipe(self, false);
+	plan_add_pipe(self);
 
 	// SCAN (scan aggs and emit exprs)
-	plan_add_scan(self, false,
+	plan_add_scan(self,
 	              select->expr_limit,
 	              select->expr_offset,
 	              select->expr_having,
@@ -99,31 +99,31 @@ plan_group_by_order_by(Plan* self)
 	if (select->distinct_count)
 	{
 		// SCAN_AGGS (ordered)
-		plan_add_scan_aggs(self, false, true, true);
+		plan_add_scan_aggs(self, true, true);
 
 		// SORT
-		plan_add_sort(self, false);
+		plan_add_sort(self);
 
 		// UNION_AGGS
-		plan_add_union_aggs(self, false);
+		plan_add_union_aggs(self);
 	} else
 	{
 		// SCAN_AGGS
-		plan_add_scan_aggs(self, false, false, false);
+		plan_add_scan_aggs(self, false, false);
 	}
 
 	// PIPE (group_target->r = aggs)
-	plan_add_pipe(self, false);
+	plan_add_pipe(self);
 
 	// SCAN (scan aggs and emit exprs)
-	plan_add_scan(self, false, NULL, NULL, select->expr_having,
+	plan_add_scan(self, NULL, NULL, select->expr_having,
 	              &select->from_group, true);
 
 	// SORT
-	plan_add_sort(self, false);
+	plan_add_sort(self);
 
 	// UNION
-	plan_add_union(self, false);
+	plan_add_union(self);
 }
 
 static inline void
@@ -133,14 +133,14 @@ plan_order_by(Plan* self)
 	auto select = self->select;
 
 	// SCAN
-	plan_add_scan(self, false, NULL, NULL, select->expr_where,
+	plan_add_scan(self, NULL, NULL, select->expr_where,
 	              &select->from, true);
 
 	// SORT
-	plan_add_sort(self, false);
+	plan_add_sort(self);
 
 	// UNION
-	plan_add_union(self, false);
+	plan_add_union(self);
 }
 
 static inline void
@@ -151,7 +151,7 @@ plan_scan(Plan* self)
 	auto select = self->select;
 
 	// SCAN (table/expression and joins)
-	plan_add_scan(self, false,
+	plan_add_scan(self,
 	              select->expr_limit,
 	              select->expr_offset,
 	              select->expr_where,
@@ -204,21 +204,22 @@ plan_pushdown_group_by(Plan* self)
 	auto select = self->select;
 
 	// SCAN_AGGS (ORDERED)
-	plan_add_scan_aggs(self, false, true, true);
+	plan_add_scan_aggs(self, true, true);
 
 	// SORT
-	plan_add_sort(self, false);
+	plan_add_sort(self);
 
 	// ----
+	plan_switch(self, true);
 
 	// RECV_AGGS
-	plan_add_recv_aggs(self, true);
+	plan_add_recv_aggs(self);
 
 	// PIPE (group_target->r = union)
-	plan_add_pipe(self, true);
+	plan_add_pipe(self);
 
 	// SCAN (aggs and emit select exprs)
-	plan_add_scan(self, true,
+	plan_add_scan(self,
 	              select->expr_limit,
 	              select->expr_offset,
 	              select->expr_having,
@@ -233,25 +234,26 @@ plan_pushdown_group_by_order_by(Plan* self)
 	auto select = self->select;
 
 	// SCAN_AGGS (ORDERED)
-	plan_add_scan_aggs(self, false, true, true);
+	plan_add_scan_aggs(self, true, true);
 
 	// SORT
-	plan_add_sort(self, false);
+	plan_add_sort(self);
 
 	// ----
+	plan_switch(self, true);
 
 	// RECV_AGGS
-	plan_add_recv_aggs(self, true);
+	plan_add_recv_aggs(self);
 
 	// PIPE (group_target->r = union)
-	plan_add_pipe(self, true);
+	plan_add_pipe(self);
 
 	// SCAN (aggs and emit select exprs)
-	plan_add_scan(self, true, NULL, NULL, select->expr_having,
+	plan_add_scan(self, NULL, NULL, select->expr_having,
 	              &select->from_group, true);
 
 	// SORT
-	plan_add_sort(self, true);
+	plan_add_sort(self);
 
 	// no distinct/limit/offset (return set)
 	if (select->distinct    == false &&
@@ -260,7 +262,7 @@ plan_pushdown_group_by_order_by(Plan* self)
 		return;
 
 	// UNION
-	plan_add_union(self, true);
+	plan_add_union(self);
 }
 
 static void
@@ -270,16 +272,17 @@ plan_pushdown_order_by(Plan* self)
 	auto select = self->select;
 
 	// SCAN (table scan, ORDERED)
-	plan_add_scan(self, false, NULL, NULL, select->expr_where,
+	plan_add_scan(self, NULL, NULL, select->expr_where,
 	              &select->from, true);
 
 	// SORT
-	plan_add_sort(self, false);
+	plan_add_sort(self);
 
 	// ----
+	plan_switch(self, true);
 
 	// RECV
-	plan_add_recv(self, true);
+	plan_add_recv(self);
 }
 
 static void
@@ -301,13 +304,14 @@ plan_pushdown_scan(Plan* self)
 	}
 
 	// SCAN
-	plan_add_scan(self, false, limit, NULL, select->expr_where,
+	plan_add_scan(self, limit, NULL, select->expr_where,
 	              &select->from, false);
 
 	// ----
+	plan_switch(self, true);
 
 	// RECV
-	plan_add_recv(self, true);
+	plan_add_recv(self);
 }
 
 static void
@@ -345,6 +349,7 @@ plan_create(Ast* ast, bool emit_store)
 	auto self = (Plan*)palloc(sizeof(Plan));
 	self->select = ast_select_of(ast);
 	self->r      = -1;
+	self->recv   = false;
 	list_init(&self->list);
 	list_init(&self->list_recv);
 

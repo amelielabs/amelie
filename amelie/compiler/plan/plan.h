@@ -18,7 +18,14 @@ struct Plan
 	AstSelect* select;
 	List       list;
 	List       list_recv;
+	bool       recv;
 	int        r;
 };
+
+static inline void
+plan_switch(Plan* self, bool recv)
+{
+	self->recv = recv;
+}
 
 Plan* plan_create(Ast*, bool);
