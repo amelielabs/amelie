@@ -4,6 +4,7 @@ open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "12
 connect E0 S0 127.0.0.1:3485;
 
 # test: select distinct from expr
+explain select distinct it from ([1,2,3,1,2]) it;
 select distinct it from ([1,2,3,1,2]) it;
 
 # test: select count(distinct) from expr

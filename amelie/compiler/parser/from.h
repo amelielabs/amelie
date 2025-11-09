@@ -73,7 +73,7 @@ from_is_expr(From* self)
 	for (auto target = self->list; target; target = target->next)
 		if (target->type == TARGET_TABLE)
 			return false;
-	return false;
+	return true;
 }
 
 static inline bool

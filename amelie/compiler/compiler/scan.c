@@ -434,7 +434,10 @@ scan(Compiler*    compiler,
 	defer_buf(&self.continues);
 
 	// prepare scan path using where expression per target
-	path_prepare(from, expr_where, &from->list_names);
+	//
+	// only for DML scans
+	//
+	path_prepare(from, expr_where);
 
 	// limit
 	if (expr_limit)

@@ -31,6 +31,22 @@ select * from test order by data desc, id;
 select * from test order by id, data;
 select * from test order by id desc, data;
 
+# test: select (select order by key)
+explain select id from test order by id;
+select id from test order by id;
+
+explain select (select id from test order by id);
+select (select id from test order by id);
+select (select id from test order by id asc);
+
+# test: select (select order by key desc)
+explain select (select id from test order by id desc);
+select (select id from test order by id desc);
+
+# test: select (select order by)
+explain select (select id from test order by data);
+select (select id from test order by data);
+
 drop table test;
 
 disconnect S0;

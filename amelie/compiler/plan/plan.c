@@ -161,8 +161,11 @@ static void
 plan_main(Plan* self, bool emit_store)
 {
 	// SELECT expr[, ...]
-	auto select = self->select;
-	if (from_empty(&select->from))
+	auto select     = self->select;
+	auto from       = &select->from;
+	auto from_group = &select->from_group;
+
+	if (from_empty(from))
 	{
 		if (emit_store || select->ret.count > 1)
 			plan_expr_set(self);
@@ -173,9 +176,10 @@ plan_main(Plan* self, bool emit_store)
 
 	// SELECT FROM GROUP BY [WHERE] [HAVING] [ORDER BY] [LIMIT/OFFSET]
 	// SELECT aggregate FROM
-	if (! from_empty(&select->from_group))
+	auto order_by = &select->expr_order_by;
+	if (! from_empty(from_group))
 	{
-		if (select->expr_order_by.count == 0)
+		if (order_by->count == 0)
 			plan_group_by(self);
 		else
 			plan_group_by_order_by(self);
@@ -184,173 +188,47 @@ plan_main(Plan* self, bool emit_store)
 
 	// SELECT FROM [WHERE] ORDER BY [LIMIT/OFFSET]
 	// SELECT DISTINCT FROM
-	if (select->expr_order_by.count > 0)
+	if (order_by->count > 0)
 	{
+		// use plain scan if the order by matches the table index keys
+		auto first = from_first(from);
+		if (!from_is_join(from) && !from_is_expr(from))
+		{
+			auto index = first->from_index;
+			if (index->type == INDEX_TREE && ast_order_list_match_index(order_by, first))
+			{
+				plan_scan(self);
+				return;
+			}
+		}
+
 		plan_order_by(self);
 		return;
 	}
 
 	// SELECT FROM [WHERE] LIMIT/OFFSET
 	// SELECT FROM [WHERE]
-	return plan_scan(self);
-}
-
-static void
-plan_pushdown_group_by(Plan* self)
-{
-	// SELECT FROM GROUP BY
-	auto select = self->select;
-
-	// SCAN_AGGS_ORDERED
-	plan_add_scan_aggs_ordered(self);
-
-	// SORT
-	plan_add_sort(self);
-
-	// ----
-	plan_switch(self, true);
-
-	// RECV_AGGS
-	plan_add_recv_aggs(self);
-
-	// PIPE (group_target->r = union)
-	plan_add_pipe(self);
-
-	// SCAN (aggs and emit select exprs)
-	plan_add_scan(self,
-	              select->expr_limit,
-	              select->expr_offset,
-	              select->expr_having,
-	              &select->from_group);
-}
-
-static void
-plan_pushdown_group_by_order_by(Plan* self)
-{
-	// SELECT FROM GROUP BY ORDER BY
-	auto select = self->select;
-
-	// SCAN_AGGS_ORDERED
-	plan_add_scan_aggs_ordered(self);
-
-	// SORT
-	plan_add_sort(self);
-
-	// ----
-	plan_switch(self, true);
-
-	// RECV_AGGS
-	plan_add_recv_aggs(self);
-
-	// PIPE (group_target->r = union)
-	plan_add_pipe(self);
-
-	// SCAN_ORDERED (aggs and emit select exprs)
-	plan_add_scan_ordered(self, NULL, NULL, select->expr_having,
-	                      &select->from_group);
-
-	// SORT
-	plan_add_sort(self);
-
-	// no distinct/limit/offset (return set)
-	if (select->distinct    == false &&
-	    select->expr_limit  == NULL  &&
-	    select->expr_offset == NULL)
-		return;
-
-	// UNION
-	plan_add_union(self);
-}
-
-static void
-plan_pushdown_order_by(Plan* self)
-{
-	// SELECT FROM ORDER BY
-	auto select = self->select;
-
-	// SCAN_ORDERED (table scan)
-	plan_add_scan_ordered(self, NULL, NULL, select->expr_where,
-	                      &select->from);
-
-	// SORT
-	plan_add_sort(self);
-
-	// ----
-	plan_switch(self, true);
-
-	// RECV
-	plan_add_recv(self);
-}
-
-static void
-plan_pushdown_scan(Plan* self)
-{
-	// SELECT FROM
-	auto select = self->select;
-
-	// push limit as limit = limit + offset
-	Ast* limit = NULL;
-	if (select->expr_limit && select->expr_offset)
-	{
-		limit = ast('+');
-		limit->l = select->expr_limit;
-		limit->r = select->expr_offset;
-	} else
-	if (select->expr_limit) {
-		limit = select->expr_limit;
-	}
-
-	// SCAN
-	plan_add_scan(self, limit, NULL, select->expr_where,
-	              &select->from);
-
-	// ----
-	plan_switch(self, true);
-
-	// RECV
-	plan_add_recv(self);
-}
-
-static void
-plan_pushdown(Plan* self)
-{
-	// SELECT FROM GROUP BY [WHERE] [HAVING] [ORDER BY] [LIMIT/OFFSET]
-	// SELECT aggregate FROM
-	auto select = self->select;
-	if (! from_empty(&select->from_group))
-	{
-		if (select->expr_order_by.count == 0)
-			plan_pushdown_group_by(self);
-		else
-			plan_pushdown_group_by_order_by(self);
-		return;
-	}
-
-	// SELECT FROM [WHERE] ORDER BY [LIMIT/OFFSET]
-	// SELECT DISTINCT FROM
-	if (select->expr_order_by.count > 0)
-	{
-		plan_pushdown_order_by(self);
-		return;
-	}
-
-	// SELECT FROM [WHERE] ORDER BY [LIMIT/OFFSET]
-	// SELECT FROM [WHERE] LIMIT/OFFSET
-	// SELECT FROM [WHERE]
-	plan_pushdown_scan(self);
+	plan_scan(self);
 }
 
 Plan*
 plan_create(Ast* ast, bool emit_store)
 {
+	auto select = ast_select_of(ast);
 	auto self = (Plan*)palloc(sizeof(Plan));
-	self->select = ast_select_of(ast);
+	self->select = select;
 	self->r      = -1;
 	self->recv   = false;
 	list_init(&self->list);
 	list_init(&self->list_recv);
 
-	if (self->select->pushdown)
+	// prepare scan path using where expression per target
+	//
+	// path created only for tables
+	//
+	path_prepare(&select->from, select->expr_where);
+
+	if (select->pushdown)
 		plan_pushdown(self);
 	else
 		plan_main(self, emit_store);

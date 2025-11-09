@@ -287,6 +287,7 @@ set(AMELIE_SOURCES_COMPILER
     ${AMELIE_ROOT}/compiler/plan/path.c
     ${AMELIE_ROOT}/compiler/plan/path_prepare.c
     ${AMELIE_ROOT}/compiler/plan/plan.c
+    ${AMELIE_ROOT}/compiler/plan/plan_pushdown.c
     ${AMELIE_ROOT}/compiler/compiler/compiler.c
     ${AMELIE_ROOT}/compiler/compiler/explain.c
     ${AMELIE_ROOT}/compiler/compiler/cast.c

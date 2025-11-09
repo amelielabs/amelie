@@ -128,16 +128,16 @@ path_prepare_target(Target* target, Block* block, PathOps* ops)
 }
 
 void
-path_prepare(From* from, Ast* expr, AstList* expr_names)
+path_prepare(From* from, Ast* expr)
 {
 	// get a list of conditions
 	PathOps ops;
-	path_ops_init(&ops, expr_names);
+	path_ops_init(&ops, &from->list_names);
 	if (expr)
 		path_ops_create(&ops, expr);
 
 	// create paths for table scans
 	for (auto target = from->list; target; target = target->next)
-		if (target_is_table(target))
+		if (target_is_table(target) && !target->path)
 			path_prepare_target(target, from->block, &ops);
 }

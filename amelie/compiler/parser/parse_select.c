@@ -433,7 +433,7 @@ parse_select_resolve_order_by(Stmt* self, AstSelect* select)
 			auto column   = columns_find_noconflict(&select->ret.columns, ref, &conflict);
 			if (column)
 			{
-				// replace order by <name> to the select expression
+				// replace order by <name> with the select expression
 				auto expr = returning_find(&select->ret, column->order + 1);
 				assert(expr);
 				order->expr = expr->l;

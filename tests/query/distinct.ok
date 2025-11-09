@@ -1,6 +1,25 @@
 open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "127.0.0.1", "port": 3485 }];
 connect E0 S0 127.0.0.1:3485;
 # test: select distinct from expr
+explain select distinct it from ([1,2,3,1,2]) it;
+[{
+  "main": {
+    "00": "set_ordered         0      1      1     ",
+    "01": "json                1      1      0     ",
+    "02": "json_open           2      1      9     ",
+    "03": "json_read           3      2      0     ",
+    "04": "push                3      0      0     ",
+    "05": "json_read           3      2      0     ",
+    "06": "push                3      0      0     ",
+    "07": "set_add             0      0      0     ",
+    "08": "json_next           2      3      0     ",
+    "09": "free                1      0      0     ",
+    "10": "set_sort            0      0      0     ",
+    "11": "union               1      0      1     ",
+    "12": "ret                 1      0      -     "
+  },
+  "access": []
+}]
 select distinct it from ([1,2,3,1,2]) it;
 [1, 2, 3]
 # test: select count(distinct) from expr

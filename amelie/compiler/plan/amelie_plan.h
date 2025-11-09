@@ -19,4 +19,5 @@
 // plan
 #include "plan/command.h"
 #include "plan/plan.h"
+#include "plan/plan_pushdown.h"
 #include "plan/plan_op.h"
