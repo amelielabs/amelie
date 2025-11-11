@@ -34,7 +34,7 @@ select -9223372036854775807;
 [-9223372036854775807]
 # test: int overflow
 select -92233720368547758077;
-{"msg": "select  ⟵ int overflow"}
+{"msg": "select - ⟵ int overflow"}
 select 18446744073709551615;
 {"msg": "select  ⟵ int overflow"}
 select 184467440737095516155;

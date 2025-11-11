@@ -57,6 +57,11 @@ parse_vector(Stmt* self, Buf* buf)
 	{
 		auto ast = stmt_next(self);
 
+		// -
+		auto minus = ast->id == '-';
+		if (minus)
+			ast = stmt_next(self);
+
 		// int or float
 		float value = 0;
 		if (likely(ast->id == KINT))
@@ -66,6 +71,9 @@ parse_vector(Stmt* self, Buf* buf)
 			value = ast->real;
 		else
 			stmt_error(self, ast, "invalid vector value");
+		if (minus)
+			value = -value;
+
 		buf_write_float(buf, value);
 		count++;
 
@@ -118,22 +126,34 @@ parse_value(Stmt* self, From* from, Column* column, Value* value)
 		return ast;
 	case TYPE_INT:
 	{
+		int minus = 1;
+		if (ast->id == '-')
+		{
+			minus = -1;
+			ast = stmt_next(self);
+		}
 		if (likely(ast->id == KINT))
-			value_set_int(value, ast->integer);
+			value_set_int(value, ast->integer * minus);
 		else
 		if (ast->id == KREAL)
-			value_set_int(value, ast->real);
+			value_set_int(value, ast->real * minus);
 		else
 			break;
 		return ast;
 	}
 	case TYPE_DOUBLE:
 	{
+		int minus = 1;
+		if (ast->id == '-')
+		{
+			minus = -1;
+			ast = stmt_next(self);
+		}
 		if (likely(ast->id == KINT))
-			value_set_double(value, ast->integer);
+			value_set_double(value, ast->integer * minus);
 		else
 		if (ast->id == KREAL)
-			value_set_double(value, ast->real);
+			value_set_double(value, ast->real * minus);
 		else
 			break;
 		return ast;

@@ -669,7 +669,7 @@ begin
 	end;
 	return rev;
 end;
-{"msg": "begin\n\tdeclare rev json := [];\n\tfor it in (array) do\n\t\trev := rev::push(-❰it❱ ⟵ unsupported operation type json"}
+{"msg": "begin\n\tdeclare rev json := [];\n\tfor it in (array) do\n\t\trev := rev::push(-❰it❱ ⟵ unsupported operation -json"}
 select [1,2,3]::reverse;
 [[3, 2, 1]]
 create or replace function reverse(array json) return json

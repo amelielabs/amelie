@@ -926,10 +926,30 @@ parse_unary(Stmt*     self, Expr* expr,
 		expr_operator(self, ops, result, ast, 11);
 		break;
 	case '-':
+	{
 		// - expr
+		auto next = stmt_next(self);
+		if (next->id == KINT)
+		{
+			ast->id = KINT;
+			ast->integer = -next->integer;
+			ast->pos_end = next->pos_end;
+			ast_push(result, ast);
+			break;
+		}
+		if (next->id == KREAL)
+		{
+			ast->id = KREAL;
+			ast->real = -next->real;
+			ast->pos_end = next->pos_end;
+			ast_push(result, ast);
+			break;
+		}
+		stmt_push(self, next);
 		ast->id = KNEG;
 		expr_operator(self, ops, result, ast, 11);
 		break;
+	}
 	case '~':
 		// ~ expr
 		expr_operator(self, ops, result, ast, 11);

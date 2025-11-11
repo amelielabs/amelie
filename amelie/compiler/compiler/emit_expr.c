@@ -1118,7 +1118,8 @@ emit_expr(Compiler* self, From* from, Ast* ast)
 		if (rt == TYPE_INTERVAL)
 			rneg = op2pin(self, CNEGL, TYPE_INTERVAL, r);
 		else
-			stmt_error(self->current, ast->l, "unsupported operation type %s", type_of(rt));
+			stmt_error(self->current, ast->l, "unsupported operation -%s",
+			           type_of(rt));
 		runpin(self, r);
 		return rneg;
 	}
@@ -1127,7 +1128,8 @@ emit_expr(Compiler* self, From* from, Ast* ast)
 		int r = emit_expr(self, from, ast->l);
 		int rt = rtype(self, r);
 		if (rt != TYPE_INT)
-			stmt_error(self->current, ast->l, "unsupported operation type %s", type_of(rt));
+			stmt_error(self->current, ast->l, "unsupported operation ~%s",
+			           type_of(rt));
 		auto rinv = op2pin(self, CBINVI, TYPE_INT, r);
 		runpin(self, r);
 		return rinv;

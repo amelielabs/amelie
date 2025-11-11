@@ -240,11 +240,6 @@ lex_next(Lex* self)
 	}
 	auto start = self->pos;
 
-	// -
-	auto minus = *self->pos == '-';
-	if (minus)
-		self->pos++;
-
 	// integer or float
 	if (isdigit(*self->pos))
 	{
@@ -266,13 +261,9 @@ lex_next(Lex* self)
 
 			self->pos++;
 		}
-		if (minus)
-			ast->integer = -ast->integer;
 		return lex_return(self, ast, KINT, start);
 
-reread_as_float:
-		if (minus)
-			self->pos--;
+reread_as_float:;
 		char* end = NULL;
 		errno = 0;
 		ast->real = strtod(start, &end);
@@ -281,10 +272,6 @@ reread_as_float:
 		self->pos = end;
 		return lex_return(self, ast, KREAL, start);
 	}
-
-	// -
-	if (minus)
-		self->pos--;
 
 	// symbols
 	if (ispunct(*self->pos) &&
