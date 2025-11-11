@@ -33,6 +33,7 @@ extern void cli_cmd_import(int, char**);
 extern void cli_cmd_top(int, char**);
 extern void cli_cmd_bench(int, char**);
 extern void cli_cmd_test(int, char**);
+extern void cli_cmd_slt(int, char**);
 
 static struct CliCmd
 cli_commands[] =
@@ -49,6 +50,7 @@ cli_commands[] =
 	{ cli_cmd_top,    "top",    "Get information about remote server" },
 	{ cli_cmd_bench,  "bench",  "Run benchmarks on a server"          },
 	{ cli_cmd_test,   "test",   "Run tests"                           },
+	{ cli_cmd_slt,    "slt",    "Run slt tests"                       },
 	{ NULL,            NULL,     NULL                                 },
 };
 

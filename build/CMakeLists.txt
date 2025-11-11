@@ -121,6 +121,7 @@ include_directories("${AMELIE_ROOT}/cli/server")
 include_directories("${AMELIE_ROOT}/cli/client")
 include_directories("${AMELIE_ROOT}/cli/bench")
 include_directories("${AMELIE_ROOT}/cli/test")
+include_directories("${AMELIE_ROOT}/cli/slt")
 
 # sources
 set(AMELIE_SOURCES_RUNTIME
@@ -336,7 +337,9 @@ set(AMELIE_SOURCES_CLI
     ${AMELIE_ROOT}/cli/test/test_plan.c
     ${AMELIE_ROOT}/cli/test/test_suite.c
     ${AMELIE_ROOT}/cli/test/test_command.c
-    ${AMELIE_ROOT}/cli/test/test_main.c)
+    ${AMELIE_ROOT}/cli/test/test_main.c
+    ${AMELIE_ROOT}/cli/slt/slt.c
+    ${AMELIE_ROOT}/cli/slt/slt_main.c)
 
 set(AMELIE_SOURCES_MAIN
     ${AMELIE_ROOT}/cli/cli/main.c)

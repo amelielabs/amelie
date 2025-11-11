@@ -201,6 +201,24 @@ str_arg(Str* self, Str* arg)
 	arg->end = self->pos;
 }
 
+static inline Str*
+str_gets(Str* self, Str* line)
+{
+	if (str_empty(self))
+		return NULL;
+
+	auto start = self->pos;
+	for (; self->pos < self->end; self->pos++)
+		if (*self->pos == '\n')
+			break;
+	str_set(line, start, self->pos - start);
+
+	// \n
+	if (self->pos != self->end)
+		self->pos++;
+	return line;
+}
+
 static inline void
 str_shrink(Str* self)
 {
