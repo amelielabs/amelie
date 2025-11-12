@@ -23,7 +23,7 @@ enum
 struct Error
 {
 	int         code;
-	char        text[256];
+	char        text[512];
 	int         text_len;
 	const char* file;
 	const char* function;

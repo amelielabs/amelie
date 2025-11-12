@@ -82,10 +82,6 @@ path_ops_add(PathOps* self, Ast* expr, int start, int end)
 	}
 	case KBETWEEN:
 	{
-		// NOT BETWEEN
-		if (! expr->integer)
-			break;
-
 		auto x = expr->r->l;
 		auto y = expr->r->r;
 
@@ -101,7 +97,7 @@ path_ops_add(PathOps* self, Ast* expr, int start, int end)
 		auto and = ast(KAND);
 		and->l = gte;
 		and->r = lte;
-		and->integer = expr->r->integer;
+		and->integer = expr->integer;
 		path_ops_add(self, and, start, end);
 	}
 	default:

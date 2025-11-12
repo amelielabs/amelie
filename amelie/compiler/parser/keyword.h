@@ -49,6 +49,7 @@ enum
 	KAGGRKEY,
 	KVAR,
 	KVALUE,
+	KNOT_BETWEEN,
 
 	// keywords
 	KKEYWORD,

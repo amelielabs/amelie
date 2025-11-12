@@ -19,7 +19,6 @@ struct Coroutine
 	Context      context;
 	ContextStack stack;
 	ExceptionMgr exception_mgr;
-	Error        error;
 	Arena        arena;
 	bool         cancel;
 	int          cancel_pause;
@@ -32,6 +31,7 @@ struct Coroutine
 	Event        on_exit;
 	List         link_ready;
 	List         link;
+	Error        error;
 };
 
 static inline void

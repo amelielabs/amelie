@@ -60,6 +60,7 @@ priority_map[KEYWORD_MAX] =
 	[KLTE]                     = 4,
 	['>']                      = 4,
 	['<']                      = 4,
+	[KNOT_BETWEEN]             = 4,
 	[KBETWEEN]                 = 4,
 	[KIN]                      = 4,
 	[KAT]                      = 4,
@@ -871,43 +872,6 @@ expr_value(Stmt* self, Expr* expr, Ast* value)
 	return value;
 }
 
-hot static inline Ast*
-expr_value_between(Stmt* self)
-{
-	auto value = stmt_next(self);
-	switch (value->id) {
-	case KREAL:
-	case KINT:
-	case KSTRING:
-		break;
-	case KINTERVAL:
-	{
-		// interval 'spec'
-		auto spec = stmt_expect(self, KSTRING);
-		value->string = spec->string;
-		break;
-	}
-	case KTIMESTAMP:
-	{
-		// timestamp 'spec'
-		auto spec = stmt_expect(self, KSTRING);
-		value->string = spec->string;
-		break;
-	}
-	case KDATE:
-	{
-		// date 'spec'
-		auto spec = stmt_expect(self, KSTRING);
-		value->string = spec->string;
-		break;
-	}
-	default:
-		stmt_error(self, value, "const value expected");
-		break;
-	}
-	return value;
-}
-
 hot static inline bool
 parse_unary(Stmt*     self, Expr* expr,
             AstStack* ops,
@@ -975,15 +939,22 @@ parse_op(Stmt*     self, Expr* expr,
 		// expr NOT IN
 		// expr NOT LIKE
 		if (stmt_if(self, KBETWEEN))
-			ast->id = KBETWEEN;
-		else
+		{
+			ast->id  = KNOT_BETWEEN;
+			priority = 4;
+		} else
 		if (stmt_if(self, KIN))
-			ast->id = KIN;
-		else
+		{
+			ast->id  = KIN;
+			priority = 4;
+		} else
 		if (stmt_if(self, KLIKE))
-			ast->id = KLIKE;
-		else
+		{
+			ast->id  = KLIKE;
+			priority = 3;
+		} else {
 			stmt_error(self, ast, "NOT 'IN or BETWEEN or LIKE' expected");
+		}
 	}
 
 	// operator
@@ -1027,26 +998,31 @@ parse_op(Stmt*     self, Expr* expr,
 		unary = true;
 		break;
 	}
+	case KNOT_BETWEEN:
 	case KBETWEEN:
 	{
+		// expr NOT BETWEEN expr AND expr
+		// expr BETWEEN expr AND expr
+
 		// save last position in the names list
 		auto between_end = 0;
 		if (expr && expr->names)
 			between_end = expr->names->count;
+		ast->integer = between_end;
 
-		// expr [NOT] BETWEEN x AND y
-		ast->integer = !not;
-		auto x = expr_value_between(self);
-		auto r = stmt_expect(self, KAND);
-		auto y = expr_value_between(self);
-		//
-		//    . BETWEEN .
-		// expr       . AND .
-		//            x     y
-		r->l = x;
-		r->r = y;
-		r->integer = between_end;
-		ast_push(result, r);
+		// exclude AND and OR from parsing
+		Expr lr_expr;
+		if (expr)
+			lr_expr = *expr;
+		else
+			expr_init(&lr_expr);
+		lr_expr.and_or = false;
+
+		auto l = parse_expr(self, &lr_expr);
+		auto and = stmt_expect(self, KAND);
+		and->l = l;
+		and->r = parse_expr(self, &lr_expr);
+		ast_push(result, and);
 		break;
 	}
 	case KIS:
@@ -1151,6 +1127,15 @@ parse_expr(Stmt* self, Expr* expr)
 	while (! done)
 	{
 		auto ast = stmt_next(self);
+
+		// handle explicit stop on AND or OR
+		if (expr && !expr->and_or)
+		{
+			if (ast->id == KAND || ast->id == KOR) {
+				stmt_push(self, ast);
+				break;
+			}
+		}
 
 		int priority = priority_map[ast->id];
 		if (priority == 0)

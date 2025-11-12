@@ -2,9 +2,9 @@ open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "12
 connect E0 S0 127.0.0.1:3485;
 # test: between parsing
 select 1 between;
-{"msg": "select 1 between❰;❱ ⟵ const value expected"}
+{"msg": "select 1 between❰;❱ ⟵ bad expression"}
 select 1 between and;
-{"msg": "select 1 between ❰and❱ ⟵ const value expected"}
+{"msg": "select 1 between ❰and❱ ⟵ bad expression"}
 select 1 between 0;
 {"msg": "select 1 between 0❰;❱ ⟵ AND expected"}
 select 1 between 0 1;
@@ -12,7 +12,7 @@ select 1 between 0 1;
 select 1 between 0 or;
 {"msg": "select 1 between 0 ❰or❱ ⟵ AND expected"}
 select 1 between 0 and;
-{"msg": "select 1 between 0 and❰;❱ ⟵ const value expected"}
+{"msg": "select 1 between 0 and❰;❱ ⟵ bad expression"}
 select 1 between 0 and '1';
 {"msg": "select 1 between 0 and ❰'1'❱ ⟵ operation int <= string is not supported"}
 # test: between (int)

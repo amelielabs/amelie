@@ -649,13 +649,17 @@ emit_method(Compiler* self, From* from, Ast* ast)
 hot static inline int
 emit_between(Compiler* self, From* from, Ast* ast)
 {
-	//    . BETWEEN .
-	// expr       . AND .
-	//            x     y
+	//     BETWEEN
+	// expr        AND
+	//            x   y
 	auto expr = ast->l;
-	auto x = ast->r->l;
-	auto y = ast->r->r;
+	auto r    = ast->r;
+	if (r->id != KAND)
+		stmt_error(self->current, r, "AND expected");
+
 	// expr >= x AND expr <= y
+	auto x = r->l;
+	auto y = r->r;
 	Ast gte;
 	gte.id = KGTE;
 	gte.l  = expr;
@@ -672,7 +676,7 @@ emit_between(Compiler* self, From* from, Ast* ast)
 	not.id = KNOT;
 	not.l  = &and;
 	not.r  = NULL;
-	auto op = !ast->integer ? &not : &and;
+	auto op = ast->id == KNOT_BETWEEN ? &not : &and;
 	return emit_expr(self, from, op);
 }
 
@@ -1175,6 +1179,7 @@ emit_expr(Compiler* self, From* from, Ast* ast)
 		return emit_case(self, from, ast);
 
 	// between
+	case KNOT_BETWEEN:
 	case KBETWEEN:
 		return emit_between(self, from, ast);
 
