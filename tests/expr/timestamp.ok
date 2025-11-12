@@ -430,9 +430,9 @@ explain select '1970-01-01 00:00:00.000000'::timestamp + '1 year'::interval + '1
   "main": {
     "00": "value               0      -      0     # timestamp",
     "01": "value               1      -      0     # interval",
-    "02": "value               2      -      0     # interval",
-    "03": "addll               3      1      2     ",
-    "04": "addtl               1      0      3     ",
+    "02": "addtl               2      0      1     ",
+    "03": "value               0      -      0     # interval",
+    "04": "addtl               1      2      0     ",
     "05": "ret                 1      0      -     "
   },
   "access": []
@@ -455,17 +455,17 @@ select '1973-01-01 00:00:00.000000'::timestamp - '1 year'::interval;
 select '1 year'::interval - '1 year'::interval;
 [""]
 select '1980-01-01 00:00:00.000000'::timestamp - '1 year'::interval - '1 year'::interval;
-["1980-01-01 00:00:00+00"]
+["1978-01-01 00:00:00+00"]
 select '1980-01-01 00:00:00.000000'::timestamp - '-1 year'::interval - '-1 year'::interval;
-["1980-01-01 00:00:00+00"]
+["1982-01-01 00:00:00+00"]
 explain select '1980-01-01 00:00:00.000000'::timestamp - '-1 year'::interval - '-1 year'::interval;
 [{
   "main": {
     "00": "value               0      -      0     # timestamp",
     "01": "value               1      -      0     # interval",
-    "02": "value               2      -      0     # interval",
-    "03": "subll               3      1      2     ",
-    "04": "subtl               1      0      3     ",
+    "02": "subtl               2      0      1     ",
+    "03": "value               0      -      0     # interval",
+    "04": "subtl               1      2      0     ",
     "05": "ret                 1      0      -     "
   },
   "access": []

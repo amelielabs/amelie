@@ -168,8 +168,11 @@ expr_operator(Stmt* self, AstStack* ops, AstStack* result, Ast* op, int prio)
 	// move operation to the result stack
 	//
 	auto head = ast_head(ops);
-	if (head && prio <= head->priority)
+	while (head && prio <= head->priority)
+	{
 		expr_pop(self, ops, result);
+		head = ast_head(ops);
+	}
 	op->priority = prio;
 	ast_push(ops, op);
 }
