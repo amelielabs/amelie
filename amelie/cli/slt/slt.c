@@ -14,9 +14,8 @@
 #include <amelie.h>
 #include <amelie_cli.h>
 #include <amelie_cli_slt.h>
-#include <openssl/evp.h>
 
-static inline int
+static int
 slt_sh(const char* fmt, ...)
 {
 	va_list args;
@@ -32,80 +31,11 @@ void
 slt_init(Slt* self)
 {
 	self->dir       = NULL;
-	self->line      = 1;
 	self->threshold = 8;
 	self->session   = NULL;
 	self->env       = NULL;
-	json_init(&self->json);
-}
-
-static void
-slt_read(Slt* self, SltCommand* cmd, Str* stream)
-{
-	// command \n
-	// [line] \n | eof
-	//  ...
-	// [----]
-	// [line] \n | eof
-	//  ...
-	// \n | eof
-	//
-	slt_command_reset(cmd);
-
-	auto body = &cmd->body;
-	str_set(body, stream->pos, 0);
-
-	// command
-	cmd->line = self->line;
-	if (! str_gets(stream, &cmd->command))
-		return;
-	self->line++;
-
-	// [query]
-	auto query = &cmd->query;
-	str_set(query, stream->pos, 0);
-	for (;;)
-	{
-		// eof
-		Str line;
-		if (! str_gets(stream, &line))
-			return;
-		self->line++;
-
-		// \n
-		if (str_empty(&line))
-			return;
-
-		// ----
-		if (str_is(&line, "----", 4))
-			break;
-
-		// line (including \n)
-		auto end = line.end + 1;
-		query->end = end;
-		body->end = end;
-	}
-
-	// [result]
-	auto result = &cmd->result;
-	str_set(result, stream->pos, 0);
-	for (;;)
-	{
-		// eof
-		Str line;
-		if (! str_gets(stream, &line))
-			return;
-		self->line++;
-
-		// \n
-		if (str_empty(&line))
-			return;
-
-		// line (including \n)
-		auto end = line.end + 1;
-		result->end = end;
-		body->end = end;
-	}
+	slt_parser_init(&self->parser);
+	slt_result_init(&self->result);
 }
 
 static void
@@ -161,141 +91,40 @@ slt_close(Slt* self)
 		amelie_free(self->env);
 		self->env = NULL;
 	}
-	json_free(&self->json);
+	slt_result_free(&self->result);
+	slt_parser_free(&self->parser);
 }
 
 static void
-slt_log(SltCommand* cmd)
-{
-	info("---- (line %d)", cmd->line);
-	info("%.*s", (int)str_size(&cmd->body), str_of(&cmd->body));
-}
-
-static void
-slt_error(SltCommand* cmd, amelie_arg_t* msg)
-{
-	slt_log(cmd);
-	error("%.*s", (int)msg->data_size, msg->data);
-}
-
-static void
-slt_export(Buf* buf, uint8_t** pos, int* count)
-{
-	json_read_array(pos);
-	while (! json_read_array_end(pos))
-	{
-		if (json_is_array(*pos))
-		{
-			slt_export(buf, pos, count);
-			continue;
-		}
-		if (json_is_bool(*pos))
-		{
-			buf_printf(buf, "%d\n", **pos == JSON_TRUE);
-		} else
-		if (json_is_integer(*pos))
-		{
-			int64_t value;
-			json_read_integer(pos, &value);
-			buf_printf(buf, "%" PRIi64 "\n", value);
-		} else
-		if (json_is_real(*pos))
-		{
-			double value;
-			json_read_real(pos, &value);
-			buf_printf(buf, "%.3f\n", value);
-		} else
-		if (json_is_string(*pos))
-		{
-			// todo: print control chars as @
-			Str value;
-			json_read_string(pos, &value);
-			if (str_empty(&value))
-				buf_printf(buf, "(empty)\n");
-			else
-				buf_printf(buf, "%.*s\n", (int)str_size(&value),
-				           str_of(&value));
-		} else
-		if (json_is_null(*pos))
-		{
-			buf_printf(buf, "NULL\n");
-		} else {
-			error("unsupported type in result");
-		}
-		(*count)++;
-	}
-}
-
-static inline void
-slt_md5(Buf* input, char output[33])
-{
-	auto ctx = EVP_MD_CTX_new();
-	unsigned char digest[EVP_MAX_MD_SIZE];
-	unsigned int  digest_len;
-	EVP_DigestInit_ex2(ctx, EVP_md5(), NULL);
-	EVP_DigestUpdate(ctx, buf_cstr(input), buf_size(input));
-	EVP_DigestFinal_ex(ctx, digest, &digest_len);
-	EVP_MD_CTX_free(ctx);
-    const char* hex = "0123456789abcdef";
-	for (unsigned int i = 0, j = 0; i < digest_len; i++)
-	{
-        output[j++] = hex[(digest[i] >> 4) & 0x0F];
-        output[j++] = hex[(digest[i]) & 0x0F];
-	}
-	output[32] = 0;
-}
-
-static void
-slt_diff(Slt* self, SltCommand* cmd, amelie_arg_t* msg)
+slt_compare(Slt* self, SltCmd* cmd, amelie_arg_t* msg)
 {
 	// empty result
-	Str content;
-	str_set(&content, msg->data, msg->data_size);
-	if (str_empty(&content))
+	Str data;
+	str_set(&data, msg->data, msg->data_size);
+	if (str_empty(&data))
 	{
 		if (str_empty(&cmd->result))
 			return;
-		slt_log(cmd);
-		error("result mismatch (empty result)");
+		slt_cmd_error(cmd, "result mismatch (empty result)");
 		return;
 	}
 
-	// prepare result
-	int  result_count = 0;
-	auto result = buf_create();
-	defer_buf(result);
-
-	// convert json result into text
-	auto json = &self->json;
-	json_reset(json);
-	json_parse(json, &content, NULL);
-	auto pos = json->buf->start;
-	slt_export(result, &pos, &result_count);
-
-	// convert result into md5 string on the threshold reach
-	if (result_count > self->threshold)
-	{
-		char digest[33];
-		slt_md5(result, digest);
-		buf_reset(result);
-		buf_printf(result, "%d values hashing to %s\n",
-		           result_count, digest);
-	}
-
-	// compare result
-	if (str_is(&cmd->result, buf_cstr(result), buf_size(result)))
+	// process and compare result
+	auto result = &self->result;
+	slt_result_reset(result);
+	slt_result_create(result, cmd->sort, self->threshold, cmd->columns, &data);
+	if (slt_result_compare(result, &cmd->result))
 		return;
 
-	// error
-	slt_log(cmd);
-
-	info(">>>> (%d values)", result_count);
-	info("%.*s", (int)buf_size(result), buf_cstr(result));
+	// mismatch
+	slt_cmd_log(cmd);
+	info(">>>> (%d values)", result->count);
+	info("%.*s", (int)buf_size(&result->result), buf_cstr(&result->result));
 	error("result mismatch");
 }
 
 static void
-slt_execute(Slt* self, SltCommand* cmd)
+slt_execute(Slt* self, SltCmd* cmd)
 {
 	auto query = buf_create();
 	defer_buf(query);
@@ -317,24 +146,30 @@ slt_execute(Slt* self, SltCommand* cmd)
 	                status != 204;
 	switch (cmd->type) {
 	case SLT_QUERY:
+	{
 		if (is_error)
-			slt_error(cmd, &result);
-		slt_diff(self, cmd, &result);
-		break;
+			break;
+		slt_compare(self, cmd, &result);
+		return;
+	}
 	case SLT_STATEMENT_OK:
+	{
 		if (is_error)
-			slt_error(cmd, &result);
-		break;
+			break;
+		return;
+	}
 	case SLT_STATEMENT_ERROR:
+	{
 		if (! is_error)
-		{
-			slt_log(cmd);
-			error("error expected");
-		}
-		break;
+			slt_cmd_error(cmd, "command succeeded, but error expected");
+		return;
+	}
 	default:
 		abort();
 	}
+
+	slt_cmd_log(cmd);
+	error("%.*s", (int)result.data_size, result.data);
 }
 
 void
@@ -343,40 +178,31 @@ slt_start(Slt* self, Str* dir, Str* file)
 	// create repository and start runtime
 	slt_open(self, dir);
 
-	auto buf = file_import("%.*s", (int)str_size(file), str_of(file));
-	defer_buf(buf);
-	Str stream;
-	buf_str(buf, &stream);
+	// read file
+	auto parser = &self->parser;
+	slt_parser_open(parser, file);
 
 	// process commands
-	SltCommand cmd;
-	slt_command_init(&cmd);
-
 	int processed = 0;
 	for (;; processed++)
 	{
-		// todo: [skipif | onlyif \n]
-		slt_read(self, &cmd, &stream);
-		if (str_empty(&cmd.command))
+		auto cmd = slt_parser_next(parser);
+		if (! cmd)
 			break;
-
-		// find command
-		slt_command_match(&cmd);
-
-		// process system commands
-		switch (cmd.type) {
+		switch (cmd->type) {
+		case SLT_QUERY:
+		case SLT_STATEMENT_OK:
+		case SLT_STATEMENT_ERROR:
+			slt_execute(self, cmd);
+			break;
 		case SLT_HASH_THRESHOLD:
-			// todo: set threshold
+			self->threshold = cmd->value;
 			break;	
 		case SLT_HALT:
-			slt_log(&cmd);
+			slt_cmd_log(cmd);
 			return;
-		case SLT_UNDEF:
-			slt_log(&cmd);
-			error("unknown command");
-			break;
 		default:
-			slt_execute(self, &cmd);
+			slt_cmd_error_invalid(cmd);
 			break;
 		}
 	}

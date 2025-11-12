@@ -15,12 +15,12 @@ typedef struct Slt Slt;
 
 struct Slt
 {
-	Str*              dir;
-	int               line;
-	int               threshold;
-	Json              json;
+	SltParser         parser;
+	SltResult         result;
 	amelie_session_t* session;
 	amelie_t*         env;
+	int               threshold;
+	Str*              dir;
 };
 
 void slt_init(Slt*);

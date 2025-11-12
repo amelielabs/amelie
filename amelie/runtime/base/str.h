@@ -190,15 +190,20 @@ str_split(Str* self, Str* chunk, char token)
 static inline void
 str_arg(Str* self, Str* arg)
 {
-	str_init(arg);
+	if (arg)
+		str_init(arg);
 	while (!str_empty(self) && isspace(*self->pos))
 		str_advance(self, 1);
 	if (str_empty(self))
 		return;
-	arg->pos = self->pos;
+	auto start = self->pos;
 	while (!str_empty(self) && !isspace(*self->pos))
 		str_advance(self, 1);
-	arg->end = self->pos;
+	if (arg)
+	{
+		arg->pos = start;
+		arg->end = self->pos;
+	}
 }
 
 static inline Str*

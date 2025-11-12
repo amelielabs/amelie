@@ -338,6 +338,8 @@ set(AMELIE_SOURCES_CLI
     ${AMELIE_ROOT}/cli/test/test_suite.c
     ${AMELIE_ROOT}/cli/test/test_command.c
     ${AMELIE_ROOT}/cli/test/test_main.c
+    ${AMELIE_ROOT}/cli/slt/slt_parser.c
+    ${AMELIE_ROOT}/cli/slt/slt_result.c
     ${AMELIE_ROOT}/cli/slt/slt.c
     ${AMELIE_ROOT}/cli/slt/slt_main.c)
 
