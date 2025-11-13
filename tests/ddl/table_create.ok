@@ -215,6 +215,26 @@ select system.table('test').columns;
   "constraints": [["default", null]]
 }]]
 drop table test;
+# test: column varchar
+create table test(id int primary key, a varchar, b varchar(123));
+select system.table('test').columns;
+[[{
+  "name": "id",
+  "type": 2,
+  "type_size": 4,
+  "constraints": [["not_null", true], ["default", null]]
+}, {
+  "name": "a",
+  "type": 4,
+  "type_size": 0,
+  "constraints": [["default", null]]
+}, {
+  "name": "b",
+  "type": 4,
+  "type_size": 0,
+  "constraints": [["default", null]]
+}]]
+drop table test;
 # test: column json
 create table test(id int primary key, a json, b json);
 select system.table('test').columns;

@@ -72,6 +72,11 @@ create table test(id int primary key, a text, b string);
 select system.table('test').columns;
 drop table test;
 
+# test: column varchar
+create table test(id int primary key, a varchar, b varchar(123));
+select system.table('test').columns;
+drop table test;
+
 # test: column json
 create table test(id int primary key, a json, b json);
 select system.table('test').columns;

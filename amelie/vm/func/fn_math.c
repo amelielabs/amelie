@@ -42,6 +42,11 @@ fn_abs(Fn* self)
 {
 	auto arg = &self->argv[0];
 	fn_expect(self, 1);
+	if (unlikely(arg->type == TYPE_NULL))
+	{
+		value_set_null(self->result);
+		return;
+	}
 	fn_expect_arg(self, 0, TYPE_INT);
 	value_set_int(self->result, llabs(arg->integer));
 }
@@ -51,6 +56,11 @@ fn_fabs(Fn* self)
 {
 	auto arg = &self->argv[0];
 	fn_expect(self, 1);
+	if (unlikely(arg->type == TYPE_NULL))
+	{
+		value_set_null(self->result);
+		return;
+	}
 	fn_expect_arg(self, 0, TYPE_DOUBLE);
 	value_set_double(self->result, fabs(arg->dbl));
 }

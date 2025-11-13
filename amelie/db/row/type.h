@@ -176,8 +176,9 @@ type_read(Str* name, int* type_size)
 		type = TYPE_DOUBLE;
 		*type_size = sizeof(double);
 	} else
-	if (str_is_case(name, "text", 4) ||
-	    str_is_case(name, "string", 6))
+	if (str_is_case(name, "text", 4)   ||
+	    str_is_case(name, "string", 6) ||
+	    str_is_case(name, "varchar", 7))
 	{
 		type = TYPE_STRING;
 	} else

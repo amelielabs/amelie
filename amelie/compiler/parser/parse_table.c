@@ -50,6 +50,16 @@ parse_type(Stmt* self, int* type, int* type_size)
 	if (*type == -1)
 		stmt_error(self, ast, "unrecognized data type");
 
+	// VARCHAR [(size)]
+	if (str_is_case(&ast->string, "varchar", 7))
+	{
+		if (stmt_if(self, '('))
+		{
+			stmt_expect(self, KINT);
+			stmt_expect(self, ')');
+		}
+		return false;
+	}
 	return str_is_case(&ast->string, "serial", 6);
 }
 
