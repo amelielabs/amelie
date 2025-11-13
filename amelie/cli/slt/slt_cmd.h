@@ -26,8 +26,8 @@ typedef enum
 typedef enum
 {
 	SLT_SORT_NONE,
-	SLT_SORT_ROW,
-	SLT_SORT_VALUE
+	SLT_SORT_VALUE,
+	SLT_SORT_ROW
 } SltSort;
 
 struct SltCmd

@@ -11,24 +11,25 @@
 // AGPL-3.0 Licensed.
 //
 
-typedef struct SltResult      SltResult;
-typedef struct SltResultValue SltResultValue;
+typedef struct SltValue  SltValue;
+typedef struct SltResult SltResult;
+
+struct SltValue
+{
+	int offset;
+	int size;
+};
 
 struct SltResult
 {
 	SltSort sort;
 	int     columns;
+	Buf     output;
+	Buf     output_index;
 	Buf     result;
-	Buf     result_index;
 	int     count;
 	int     threshold;
 	Json    json;
-};
-
-struct SltResultValue
-{
-	int offset;
-	int size;
 };
 
 static inline void
@@ -38,16 +39,18 @@ slt_result_init(SltResult* self)
 	self->columns   = 0;
 	self->count     = 0;
 	self->threshold = 0;
+	buf_init(&self->output);
+	buf_init(&self->output_index);
 	buf_init(&self->result);
-	buf_init(&self->result_index);
 	json_init(&self->json);
 }
 
 static inline void
 slt_result_free(SltResult* self)
 {
+	buf_free(&self->output);
+	buf_free(&self->output_index);
 	buf_free(&self->result);
-	buf_free(&self->result_index);
 	json_free(&self->json);
 }
 
@@ -58,8 +61,9 @@ slt_result_reset(SltResult* self)
 	self->columns   = 0;
 	self->count     = 0;
 	self->threshold = 0;
+	buf_reset(&self->output);
+	buf_reset(&self->output_index);
 	buf_reset(&self->result);
-	buf_reset(&self->result_index);
 	json_reset(&self->json);
 }
 
