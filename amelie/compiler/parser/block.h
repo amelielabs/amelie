@@ -106,6 +106,38 @@ block_find_from(From* self)
 	return NULL;
 }
 
+static inline Column*
+block_find_column(From* self, Target** match_target, Str* name, bool* conflict)
+{
+	Column* match = NULL;
+	for (; self; self = self->block->from)
+	{
+		auto from = self;
+		while (from && from_empty(from))
+			from = from->outer;
+		if (! from)
+			continue;
+		for (auto target = from->list; target; target = target->next)
+		{
+			auto column = columns_find_noconflict(target->columns, name, conflict);
+			if (! column)
+			{
+				if (*conflict)
+					return NULL;
+				continue;
+			}
+			if (match)
+			{
+				*conflict = true;
+				return NULL;
+			}
+			*match_target = target;
+			match = column;
+		}
+	}
+	return match;
+}
+
 hot static inline void
 block_copy_deps(Stmt* self, Block* start, bool derive_break)
 {

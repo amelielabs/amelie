@@ -182,5 +182,14 @@ select t from ([]) t;
 select t.t from ([]) t;
 select t.x from ([]) t;
 
+# test: select name from a,b (name resolve)
+create table a (x int primary key);
+create table b (y int primary key);
+insert into a values (1);
+insert into b values (2);
+select x, y from a, b;
+drop table a;
+drop table b;
+
 disconnect S0;
 close E0;

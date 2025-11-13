@@ -99,52 +99,50 @@ emit_json(Compiler* self, From* from, Ast* ast)
 }
 
 hot static inline int
+emit_column_path(Compiler* self, Ast* ast, int r, Str* path)
+{
+	// {}.path
+	if (path && !str_empty(path))
+	{
+		if (rtype(self, r) != TYPE_JSON)
+			stmt_error(self->current, ast, "column is not a json");
+
+		// column.path
+		auto rstring = emit_string(self, path, false);
+		auto rdot = cast_operator(self, ast, OP_DOT, r, rstring);
+		runpin(self, r);
+		r = rdot;
+	}
+	return r;
+}
+
+hot static inline int
 emit_column(Compiler* self,
             From*     from,
             Target*   target,
+            bool      target_excluded,
             Ast*      ast,
             Column*   column,
-            Str*      name,
-            bool      excluded)
+            Str*      path)
 {
-	// target.column_name
-	bool column_conflict = false;
-	if (! column)
-	{
-		// find unique column name in the target
-		column = columns_find_noconflict(target->columns, name, &column_conflict);
-		if (!column && target->type != TARGET_FUNCTION)
-		{
-			if (column_conflict)
-				stmt_error(self->current, ast,
-				           "column %.*s.%.*s is ambiguous",
-				           str_size(&target->name), str_of(&target->name),
-				           str_size(name), str_of(name));
-			else
-				stmt_error(self->current, ast, "column %.*s.%.*s not found",
-				           str_size(&target->name), str_of(&target->name),
-				           str_size(name), str_of(name));
-		}
-	}
+	assert(column);
 
 	// create reference, if frontend target column is accessed from backend
 	if (self->origin == ORIGIN_BACKEND && target->origin == ORIGIN_FRONTEND)
 	{
 		auto ref = refs_add(&self->current->refs, from, ast, -1);
-		int type = -1;
-		if (column)
-			type = column->type;
-		else
-			type = TYPE_JSON;
-		return op2pin(self, CREF, type, ref->order);
+		return op2pin(self, CREF, column->type, ref->order);
 	}
 
-	// read excluded column
-	if (unlikely(excluded))
-		return op2pin(self, CEXCLUDED, column->type, column->order);
+	// exclude.column[.path]
+	int r;
+	if (target_excluded)
+	{
+		r = op2pin(self, CEXCLUDED, column->type, column->order);
+		return emit_column_path(self, ast, r, path);
+	}
 
 	// generate cursor read based on the target
-	int r;
 	if (target->type == TARGET_TABLE)
 	{
 		int op;
@@ -215,14 +213,6 @@ emit_column(Compiler* self,
 		if (rt == TYPE_JSON)
 		{
 			r = op2pin(self, CJSON_READ, TYPE_JSON, target->rcursor);
-			if (! column)
-			{
-				// handle as {}.column for json target
-				auto rstring = emit_string(self, name, false);
-				auto rdot = cast_operator(self, ast, OP_DOT, r, rstring);
-				runpin(self, r);
-				r = rdot;
-			}
 		} else
 		if (rt == TYPE_STORE)
 		{
@@ -236,46 +226,105 @@ emit_column(Compiler* self,
 			error("unsupported operation");
 		}
 	}
-	return r;
+
+	// {}.path
+	return emit_column_path(self, ast, r, path);
+}
+
+hot static inline int
+emit_column_json(Compiler* self, Target* target, Ast* ast, Str* path)
+{
+	assert(target->rcursor != -1);
+	assert(rtype(self, target->rcursor) == TYPE_CURSOR_JSON);
+
+	// access column as {}.path
+	auto rstring = emit_string(self, path, false);
+	auto r = op2pin(self, CJSON_READ, TYPE_JSON, target->rcursor);
+	auto rdot = cast_operator(self, ast, OP_DOT, r, rstring);
+	runpin(self, r);
+	return rdot;
+}
+
+hot static inline int
+emit_column_json_find(Compiler* self, From* from, Ast* ast, Str* path)
+{
+	// find first target
+	auto outer = block_find_from(from);
+	if (!outer || from_is_join(outer))
+		return -1;
+	// ensure access if it is json scan
+	auto target = from_first(outer);
+	if (target->rcursor == -1 ||
+	    rtype(self, target->rcursor) != TYPE_CURSOR_JSON)
+		return -1;
+	return emit_column_json(self, target, ast, path);
 }
 
 hot static inline int
 emit_name(Compiler* self, From* from, Ast* ast)
 {
-	// SELECT name
-	auto name = &ast->string;
+	auto    name = &ast->string;
+	bool    column_conflict = false;
+	Column* column = NULL;
 
-	from = block_find_from(from);
 	if (! from)
+	{
+		// handle as {}.name for the first json target
+		auto r = emit_column_json_find(self, from, ast, &ast->string);
+		if (r != -1)
+			return r;
 		stmt_error(self->current, ast, "column not found");
-
-	// SELECT name FROM
-	if (from_is_join(from))
-		stmt_error(self->current, ast, "column requires explicit target name");
-
-	auto target = from_first(from);
+	}
 
 	// SELECT name FROM GROUP BY name
-	auto group_by_column = NULL;
-	if (target->type == TARGET_GROUP_BY)
+	auto target = from_first(from);
+	if (target && target->type == TARGET_GROUP_BY)
 	{
 		auto group = ast_group_resolve_column(target->from_group_by, name);
 		if (! group)
 			stmt_error(self->current, ast, "column %.*s must appear in the GROUP BY clause "
 			           "or be used by an aggregate function",
 			           str_size(name), str_of(name));
-		group_by_column = group->column;
+		column = group->column;
+	} else
+	{
+		column = block_find_column(from, &target, name, &column_conflict);
 	}
 
-	return emit_column(self, from, target, ast, group_by_column,
-	                   name, false);
+	if (! column)
+	{
+		if (column_conflict)
+			stmt_error(self->current, ast, "column name is ambiguous",
+			           str_size(name), str_of(name));
+
+		// handle as {}.name for the first json target
+		auto r = emit_column_json_find(self, from, ast, &ast->string);
+		if (r != -1)
+			return r;
+
+		stmt_error(self->current, ast, "column not found");
+	}
+
+	return emit_column(self, from, target, false, ast, column, NULL);
 }
 
 hot static inline int
 emit_name_compound(Compiler* self, From* from, Ast* ast)
 {
-	// target.column[.path]
+	// target.column
+	// target.column.path
+	// target.path
 	// column.path
+	if (! from)
+	{
+		// try to access first json target
+		auto r = emit_column_json_find(self, from, ast, &ast->string);
+		if (r != -1)
+			return r;
+		stmt_error(self->current, ast, "column not found");
+	}
+
+	// get target name
 	Str name;
 	str_split(&ast->string, &name, '.');
 
@@ -283,97 +332,103 @@ emit_name_compound(Compiler* self, From* from, Ast* ast)
 	str_init(&path);
 	str_set_str(&path, &ast->string);
 
-	// check if the first path is a target name
-	Target* target = NULL;
-	Column* group_by_column = NULL;
-
-	// excluded.column
-	bool excluded = false;
-	if (unlikely(str_is_case(&name, "excluded", 8)))
+	// SELECT name FROM GROUP BY name
+	auto target_excluded = false;
+	auto target = from_first(from);
+	if (target && target->type == TARGET_GROUP_BY)
 	{
-		// exclude prefix
-		str_advance(&path, 9);
-		if (str_split(&path, &name, '.'))
-			str_advance(&path, str_size(&name) + 1);
-		else
-			str_advance(&path, str_size(&name));
-		excluded = true;
-		if (from == NULL     ||
-		    from->count != 1 ||
-		    from_first(from)->type != TARGET_TABLE)
-			stmt_error(self->current, ast, "cannot be used outside of INSERT ON CONFLICT DO UPDATE statement");
+		// instead of searching for targets, use path to match the group by
+		// expression and use its column
+
+		// group by name can be a prefix of the path, in case of json columns
+		auto group = ast_group_resolve_column_prefix(target->from_group_by, &path);
+		if (! group)
+			stmt_error(self->current, ast, "column %.*s must appear in the GROUP BY clause "
+			           "or be used by an aggregate function",
+			           str_size(&path), str_of(&path));
+
+		// use group by name as a prefix for the path
+		str_advance(&path, str_size(&group->expr->string));
+		if (!str_empty(&path) && *path.pos == '.')
+			str_advance(&path, 1);
+
+		return emit_column(self, from, target, false, ast, group->column, &path);
+	}
+
+	// excluded.column[.path]
+	auto r = -1;
+	if (str_is_case(&name, "excluded", 8))
+	{
+		target_excluded = true;
 		target = from_first(from);
+		if (!target || target->type != TARGET_TABLE || from_is_join(from))
+			stmt_error(self->current, ast,
+			           "cannot be used outside of INSERT ON CONFLICT DO UPDATE statement");
 	} else
 	{
-		// find target
-		if (from && from->count == 1)
-			target = from_first(from);
-
-		if (target && target->type == TARGET_GROUP_BY)
+		// find target by name
+		target = block_find_target(from, &name);
+		if (! target)
 		{
-			// SELECT [target.]name[.path] FROM GROUP BY [target.]name[.path]
+			// try to find outer target matching the column
 
-			// instead of searching for targets, use path to match the group by
-			// expression and use its column
-
-			// group by name can be a prefix of the path, in case of json columns
-			auto group = ast_group_resolve_column_prefix(target->from_group_by, &path);
-			if (! group)
-				stmt_error(self->current, ast, "column %.*s must appear in the GROUP BY clause "
-				           "or be used by an aggregate function",
-				           str_size(&path), str_of(&path));
-
-			// use group by name as a prefix for the path
-			str_advance(&path, str_size(&group->expr->string));
-			if (!str_empty(&path) && *path.pos == '.')
-				str_advance(&path, 1);
-
-			group_by_column = group->column;
-		} else
-		{
-			// find target by name or use as a column with json path
-			Target* match;
-			if (target && str_compare(&target->name, &name))
-				match = target;
-			else
-				match = block_find_target(from, &name);
-			if (match)
-			{
-				// target.column
-				target = match;
-
-				// exclude target name from the path
-				str_advance(&path, str_size(&name) + 1);
-
-				if (str_split(&path, &name, '.'))
-					str_advance(&path, str_size(&name) + 1);
-				else
-					str_advance(&path, str_size(&name));
-			} else
+			// column[.path]
+			bool column_conflict = false;
+			auto column = block_find_column(from, &target, &name, &column_conflict);
+			if (column)
 			{
 				// exclude column name from the path
 				str_advance(&path, str_size(&name) + 1);
+				return emit_column(self, from, target, target_excluded, ast, column, &path);
 			}
-		}
 
-		if (! target)
+			// found conflicting column names accross targets
+			if (column_conflict)
+				stmt_error(self->current, ast, "column requires explicit target name");
+
+			// no target and column found by the name
+
+			// try to access first json target
+			r = emit_column_json_find(self, from, ast, &ast->string);
+			if (r != -1)
+				return r;
+
 			stmt_error(self->current, ast, "target not found");
+		}
 	}
 
-	// column[.path]
-	auto rcolumn = emit_column(self, from, target, ast, group_by_column,
-	                           &name, excluded);
+	// target is found, search for column
+	assert(target);
 
-	if (str_empty(&path))
-		return rcolumn;
+	// exclude target name from the path
+	str_advance(&path, str_size(&name) + 1);
 
-	// ensure column is a json
-	if (rtype(self, rcolumn) != TYPE_JSON)
-		stmt_error(self->current, ast, "column is not a json");
+	// exclude column name from the path
+	Str path_with_column = path;
+	if (str_split(&path, &name, '.'))
+		str_advance(&path, str_size(&name) + 1);
+	else
+		str_advance(&path, str_size(&name));
 
-	// column.path
-	int rstring = emit_string(self, &path, false);
-	return cast_operator(self, ast, OP_DOT, rcolumn, rstring);
+	// find column
+	bool column_conflict = false;
+	auto column = columns_find_noconflict(target->columns, &name, &column_conflict);
+	if (column)
+		return emit_column(self, from, target, target_excluded, ast, column, &path);
+
+	if (column_conflict)
+		stmt_error(self->current, ast,
+		           "column name %.*s.%.*s is ambiguous",
+		           str_size(&target->name), str_of(&target->name),
+		           str_size(&name), str_of(&name));
+
+	// target.path
+	if (rtype(self, target->r) != TYPE_JSON)
+		stmt_error(self->current, ast, "column %.*s.%.*s not found",
+		           str_size(&target->name), str_of(&target->name),
+		           str_size(&name), str_of(&name));
+
+	return emit_column_json(self, target, ast, &path_with_column);
 }
 
 hot static inline int

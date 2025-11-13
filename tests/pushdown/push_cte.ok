@@ -225,7 +225,7 @@ drop table test;
 create table test (id int primary key);
 insert into test values (1),(2),(3);
 explain with a as (select id as x from test) select id from a;
-{"msg": "explain with a as (select id as x from test) select ❰id❱ ⟵ column a.id not found"}
+{"msg": "explain with a as (select id as x from test) select ❰id❱ ⟵ column not found"}
 explain with a as (select id as x from test) select x from a;
 [{
   "main": {
@@ -261,7 +261,7 @@ drop table test;
 create table test (id int primary key);
 insert into test values (1),(2),(3);
 with a as (select id, id from test) select * from a;
-{"msg": "with a as (select id, id from test) select ❰*❱ ⟵ column a.id is ambiguous"}
+{"msg": "with a as (select id, id from test) select ❰*❱ ⟵ column name a.id is ambiguous"}
 with a as (select id, id as x from test) select * from a;
 [[1, 1], [3, 3], [2, 2]]
 drop table test;

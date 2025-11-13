@@ -30,11 +30,12 @@ ast_delete_of(Ast* ast)
 }
 
 static inline AstDelete*
-ast_delete_allocate(void)
+ast_delete_allocate(Block* block)
 {
 	AstDelete* self;
 	self = ast_allocate(0, sizeof(AstDelete));
 	returning_init(&self->ret);
+	from_init(&self->from, block);
 	return self;
 }
 

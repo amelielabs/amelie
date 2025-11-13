@@ -691,7 +691,7 @@ select test.id from test join ref on (test.id = ref.id) group by ref.id;
 select id from test join ref on (test.id = ref.id) group by ref.id;
 {"msg": "select ❰id❱ ⟵ column id must appear in the GROUP BY clause or be used by an aggregate function"}
 select ref.id from test join ref on (test.id = ref.id) group by id;
-{"msg": "select ref.id from test join ref on (test.id = ref.id) group by ❰id❱ ⟵ column requires explicit target name"}
+{"msg": "select ref.id from test join ref on (test.id = ref.id) group by ❰id❱ ⟵ column name is ambiguous"}
 explain select ref.id from test join ref on (test.id = ref.id) group by ref.id;
 [{
   "main": {

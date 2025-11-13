@@ -96,9 +96,13 @@ select a, b from (select 1 as a, 2 as b) t;
 [[1, 2]]
 # test: select * from (select expr as) (conflict)
 explain select * from (select 1 as a, 2 as a) t;
-{"msg": "explain select ❰*❱ ⟵ column t.a is ambiguous"}
+{"msg": "explain select ❰*❱ ⟵ column name t.a is ambiguous"}
+select * from (select 1 as a, 2 as a) t;
+{"msg": "select ❰*❱ ⟵ column name t.a is ambiguous"}
 # test: select column from (select expr as) (conflict)
 explain select a from (select 1 as a, 2 as a) t;
-{"msg": "explain select ❰a❱ ⟵ column t.a is ambiguous"}
+{"msg": "explain select ❰a❱ ⟵ column name is ambiguous"}
+select a from (select 1 as a, 2 as a) t;
+{"msg": "select ❰a❱ ⟵ column name is ambiguous"}
 disconnect S0;
 close E0;

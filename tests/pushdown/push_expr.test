@@ -19,9 +19,11 @@ select a, b from (select 1 as a, 2 as b) t;
 
 # test: select * from (select expr as) (conflict)
 explain select * from (select 1 as a, 2 as a) t;
+select * from (select 1 as a, 2 as a) t;
 
 # test: select column from (select expr as) (conflict)
 explain select a from (select 1 as a, 2 as a) t;
+select a from (select 1 as a, 2 as a) t;
 
 disconnect S0;
 close E0;

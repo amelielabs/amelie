@@ -97,7 +97,7 @@ select (select t.*) from test t;
 select (select t.*) from test;
 {"msg": "select (select ❰t.*❱ ⟵ target not found"}
 select (select t) from test t;
-{"msg": "select (select ❰t❱ ⟵ column t.t not found"}
+{"msg": "select (select ❰t❱ ⟵ column not found"}
 # test: select (select target.column) from table
 explain select (select test.id) from test;
 [{
@@ -155,7 +155,7 @@ insert into test (data) values({"data": {"id": 3}});
 select (select *) from test;
 {"msg": "select (❰select❱ ⟵ subquery must return only one column"}
 select (select test) from test;
-{"msg": "select (select ❰test❱ ⟵ column test.test not found"}
+{"msg": "select (select ❰test❱ ⟵ column not found"}
 select (select test.data) from test;
 [{
   "data": {
@@ -182,7 +182,7 @@ select (select test.data.data.id) from test;
 [1, 2, 3]
 # test: select (select alias.path) from table
 select (select t) from test t;
-{"msg": "select (select ❰t❱ ⟵ column t.t not found"}
+{"msg": "select (select ❰t❱ ⟵ column not found"}
 select (select t.data) from test t;
 [{
   "data": {
@@ -261,7 +261,7 @@ select test from (select * from test);
 {"msg": "select test from (select * from test)❰;❱ ⟵ subquery must have an alias"}
 # test: select alias.* from (select from table)
 select alias from (select * from test) alias;
-{"msg": "select ❰alias❱ ⟵ column alias.alias not found"}
+{"msg": "select ❰alias❱ ⟵ column not found"}
 select alias.* from (select * from test) alias;
 [1, 2, 3]
 select alias.* from (select test.* from test) alias;
