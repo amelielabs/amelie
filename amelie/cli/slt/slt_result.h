@@ -27,6 +27,7 @@ struct SltResult
 	Buf     output;
 	Buf     output_index;
 	Buf     result;
+	Buf     result_hash;
 	int     count;
 	int     threshold;
 	Json    json;
@@ -42,6 +43,7 @@ slt_result_init(SltResult* self)
 	buf_init(&self->output);
 	buf_init(&self->output_index);
 	buf_init(&self->result);
+	buf_init(&self->result_hash);
 	json_init(&self->json);
 }
 
@@ -51,6 +53,7 @@ slt_result_free(SltResult* self)
 	buf_free(&self->output);
 	buf_free(&self->output_index);
 	buf_free(&self->result);
+	buf_free(&self->result_hash);
 	json_free(&self->json);
 }
 
@@ -64,6 +67,7 @@ slt_result_reset(SltResult* self)
 	buf_reset(&self->output);
 	buf_reset(&self->output_index);
 	buf_reset(&self->result);
+	buf_reset(&self->result_hash);
 	json_reset(&self->json);
 }
 

@@ -35,6 +35,7 @@ struct SltCmd
 	SltType type;
 	Str     cmd;
 	Str     query;
+	Str     query_label;
 	Str     result;
 	Str     body;
 	int     line;

@@ -17,10 +17,11 @@ struct Slt
 {
 	SltParser         parser;
 	SltResult         result;
-	amelie_session_t* session;
-	amelie_t*         env;
+	SltHash           hash;
 	int               threshold;
 	Str*              dir;
+	amelie_session_t* session;
+	amelie_t*         env;
 };
 
 void slt_init(Slt*);

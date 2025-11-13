@@ -36,6 +36,7 @@ slt_init(Slt* self)
 	self->env       = NULL;
 	slt_parser_init(&self->parser);
 	slt_result_init(&self->result);
+	slt_hash_init(&self->hash);
 }
 
 static void
@@ -93,6 +94,7 @@ slt_close(Slt* self)
 	}
 	slt_result_free(&self->result);
 	slt_parser_free(&self->parser);
+	slt_hash_free(&self->hash);
 }
 
 static void
@@ -113,14 +115,27 @@ slt_compare(Slt* self, SltCmd* cmd, amelie_arg_t* msg)
 	auto result = &self->result;
 	slt_result_reset(result);
 	slt_result_create(result, cmd->sort, self->threshold, cmd->columns, &data);
-	if (slt_result_compare(result, &cmd->result))
+
+	// compare result
+	if (! slt_result_compare(result, &cmd->result))
+	{
+		slt_cmd_log(cmd);
+		info(">>>> (%d values)", result->count);
+		info("%.*s", (int)buf_size(&result->result), buf_cstr(&result->result));
+		error("result mismatch");
+	}
+
+	// compare previous command result by label
+	if (str_empty(&cmd->query_label))
 		return;
 
-	// mismatch
-	slt_cmd_log(cmd);
-	info(">>>> (%d values)", result->count);
-	info("%.*s", (int)buf_size(&result->result), buf_cstr(&result->result));
-	error("result mismatch");
+	if (! slt_hash_add(&self->hash, &cmd->query_label, &result->result_hash))
+	{
+		slt_cmd_log(cmd);
+		info(">>>> (%d values)", result->count);
+		info("%.*s", (int)buf_size(&result->result), buf_cstr(&result->result));
+		error("hash mismatch with the previous label");
+	}
 }
 
 static void

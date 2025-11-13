@@ -14,4 +14,5 @@
 #include "slt/slt_cmd.h"
 #include "slt/slt_parser.h"
 #include "slt/slt_result.h"
+#include "slt/slt_hash.h"
 #include "slt/slt.h"

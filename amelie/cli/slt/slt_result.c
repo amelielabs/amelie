@@ -152,15 +152,16 @@ slt_result_write(SltResult* self)
 		buf_write(&self->result, "\n", 1);
 	}
 
-	// convert result into md5 string on the threshold reach
+	// create md5 hash of result (for threshold and labels)
+	buf_reserve(&self->result_hash, 33);
+	slt_md5(result, buf_cstr(&self->result_hash));
+
+	// use hash result on the threshold reach
 	if (self->count <= self->threshold)
 		return;
-
-	char digest[33];
-	slt_md5(result, digest);
 	buf_reset(result);
-	buf_printf(result, "%d values hashing to %s\n",
-			   self->count, digest);
+	buf_printf(&self->result, "%d values hashing to %s\n", self->count,
+	           buf_cstr(&self->result_hash));
 }
 
 void

@@ -112,7 +112,7 @@ slt_parser_match(SltParser* self)
 {
 	auto cmd = &self->cmd;
 
-	// query columns sort
+	// query columns sort label
 	if (str_is_prefix(&cmd->cmd, "query", 5))
 	{
 		cmd->type = SLT_QUERY;
@@ -123,6 +123,7 @@ slt_parser_match(SltParser* self)
 		str_arg(&argv, NULL);
 		str_arg(&argv, &columns);
 		str_arg(&argv, &sort);
+		str_arg(&argv, &cmd->query_label);
 
 		// set columns
 		if (str_empty(&columns))
