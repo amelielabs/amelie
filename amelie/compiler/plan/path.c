@@ -155,7 +155,28 @@ path_stop(PathKey* self, Ast* op, Ast* value)
 }
 
 static inline Column*
-path_column(Path* self, Str* string)
+path_column(Path* self, Str* name)
+{
+	// search outer targets (excluding self)
+	bool column_conflict = false;
+	auto target = self->target->prev;
+	while (target)
+	{
+		// find unique column name in the target
+		auto column = columns_find_noconflict(target->columns, name, &column_conflict);
+		if (column)
+			return column;
+		target = target->prev;
+	}
+
+	// search outer from targets
+	target = NULL;
+	return block_find_column(self->target->from->outer, &target, name,
+	                         &column_conflict);
+}
+
+static inline Column*
+path_column_compound(Path* self, Str* string)
 {
 	// match outer target [target.]name and find the column
 	Str name;
@@ -211,14 +232,18 @@ path_value(Path* self, Ast* key, PathOps* ops, PathOp* op)
 		if (ref->ast == key) {
 			// skip the reference key
 		} else
-		if (ref->ast->id == KNAME_COMPOUND)
+		if (ref->ast->id == KNAME)
 		{
 			// match the outer column
 			if (! path_column(self, &ref->ast->string))
 				return false;
+		} else
+		if (ref->ast->id == KNAME_COMPOUND)
+		{
+			// match the outer column
+			if (! path_column_compound(self, &ref->ast->string))
+				return false;
 		} else {
-			// do not allow same target column references
-			assert(ref->ast->id == KNAME);
 			return false;
 		}
 
