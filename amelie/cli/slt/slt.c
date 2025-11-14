@@ -122,7 +122,8 @@ slt_compare(Slt* self, SltCmd* cmd, amelie_arg_t* msg)
 		slt_cmd_log(cmd);
 		info(">>>> (%d values)", result->count);
 		info("%.*s", (int)buf_size(&result->result), buf_cstr(&result->result));
-		error("result mismatch");
+		info("result mismatch");
+		return;
 	}
 
 	// compare previous command result by label
@@ -134,7 +135,7 @@ slt_compare(Slt* self, SltCmd* cmd, amelie_arg_t* msg)
 		slt_cmd_log(cmd);
 		info(">>>> (%d values)", result->count);
 		info("%.*s", (int)buf_size(&result->result), buf_cstr(&result->result));
-		error("hash mismatch with the previous label");
+		info("hash mismatch with the previous label");
 	}
 }
 

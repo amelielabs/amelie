@@ -286,21 +286,52 @@ path_key(Path* self, PathKey* key, PathOps* ops)
 
 		// apply equ or range operation to the key
 		switch (expr->id) {
-		case '>':
-		case KGTE:
 		case '=':
 			if (! path_start(key, expr, expr_value))
 				break;
 			key->start_op = expr;
 			key->start    = expr_value;
 			break;
-		case '<':
-		case KLTE:
+		case '>':
+		case KGTE:
+		{
+			// key > expr
+			if (expr_key == expr->l)
+			{
+				if (! path_start(key, expr, expr_value))
+					break;
+				key->start_op = expr;
+				key->start    = expr_value;
+				break;
+			}
+
+			// expr > key (key < expr)
 			if (! path_stop(key, expr, expr_value))
 				break;
 			key->stop_op = expr;
 			key->stop    = expr_value;
 			break;
+		}
+		case '<':
+		case KLTE:
+		{
+			// key < expr
+			if (expr_key == expr->l)
+			{
+				if (! path_stop(key, expr, expr_value))
+					break;
+				key->stop_op = expr;
+				key->stop    = expr_value;
+				break;
+			}
+
+			// expr < key (key > expr)
+			if (! path_start(key, expr, expr_value))
+				break;
+			key->start_op = expr;
+			key->start    = expr_value;
+			break;
+		}
 		}
 	}
 }
