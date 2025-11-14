@@ -65,7 +65,7 @@ slt_open(Slt* self, Str* dir)
 		"--wal_sync_on_write=false",
 		"--checkpoint_sync=false",
 		"--frontends=1",
-		"--backends=3",
+		"--backends=1",
 		"--listen=[]"
 	};
 	self->env = amelie_init();
@@ -145,7 +145,7 @@ slt_execute(Slt* self, SltCmd* cmd)
 	defer_buf(query);
 	buf_write_str(query, &cmd->query);
 	buf_write(query, "\0", 1);
-	
+
 	// execute query
 	auto req = amelie_execute(self->session, buf_cstr(query), 0, NULL, NULL, NULL);
 	if (! req)

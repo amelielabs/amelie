@@ -41,6 +41,8 @@ slt_parser_open(SltParser* self, Str* path)
 static void
 slt_parser_read(SltParser* self)
 {
+	// [skipif \n]
+	// [onlyif \n]
 	// command \n
 	// [line] \n | eof
 	//  ...
@@ -54,11 +56,43 @@ slt_parser_read(SltParser* self)
 	auto body   = &cmd->body;
 	str_set(body, stream->pos, 0);
 
-	// command
+	/// set line
 	cmd->line = self->stream_line;
-	if (! str_gets(stream, &cmd->cmd))
-		return;
-	self->stream_line++;
+
+	// [skipif | onlyif]
+	Str line;
+	for (;;)
+	{
+		if (! str_gets(stream, &line))
+			return;
+		self->stream_line++;
+
+		// skipif name
+		if (str_is_prefix(&line, "skipif", 6))
+		{
+			Str value;
+			str_arg(&line, NULL);
+			str_arg(&line, &value);
+			if (str_is(&value, "amelie", 6))
+				cmd->skip = true;
+			continue;
+		}
+
+		// onlyif name
+		if (str_is_prefix(&line, "onlyif", 6))
+		{
+			Str value;
+			str_arg(&line, NULL);
+			str_arg(&line, &value);
+			if (! str_is(&value, "amelie", 6))
+				cmd->skip = true;
+			continue;
+		}
+		break;
+	}
+
+	// command
+	cmd->cmd = line;
 
 	// [query]
 	auto query = &cmd->query;
@@ -66,7 +100,6 @@ slt_parser_read(SltParser* self)
 	for (;;)
 	{
 		// eof
-		Str line;
 		if (! str_gets(stream, &line))
 			return;
 		self->stream_line++;
@@ -91,7 +124,6 @@ slt_parser_read(SltParser* self)
 	for (;;)
 	{
 		// eof
-		Str line;
 		if (! str_gets(stream, &line))
 			return;
 		self->stream_line++;
@@ -195,14 +227,18 @@ SltCmd*
 slt_parser_next(SltParser* self)
 {
 	auto cmd = &self->cmd;
-	slt_cmd_reset(cmd);
+	for (;;)
+	{
+		slt_cmd_reset(cmd);
+		slt_parser_read(self);
 
-	// todo: [skipif | onlyif \n]
-	slt_parser_read(self);
+		// eof
+		if (str_empty(&cmd->cmd))
+			return NULL;
 
-	// eof
-	if (str_empty(&cmd->cmd))
-		return NULL;
+		if (! cmd->skip)
+			break;
+	}
 
 	// find command
 	slt_parser_match(self);

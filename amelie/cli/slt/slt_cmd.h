@@ -39,6 +39,7 @@ struct SltCmd
 	Str     result;
 	Str     body;
 	int     line;
+	bool    skip;
 	union {
 		struct {
 			int     columns;
