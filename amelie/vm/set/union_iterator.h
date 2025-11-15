@@ -110,7 +110,7 @@ union_iterator_next_distinct(UnionIterator* self)
 		{
 			// merge aggregates (merge duplicates)
 			if (self->ref->aggs)
-				agg_merge(first, next, set->count_columns, self->ref->aggs);
+				agg_merge_row(first, next, set->count_columns, self->ref->aggs);
 			continue;
 		}
 		break;
@@ -136,13 +136,10 @@ union_iterator_next_distinct(UnionIterator* self)
 		if (! set_compare_keys_n(first + set->count_columns, next, set->count_keys))
 			break;
 
-		// calculate unique count(distinct) values
-		int  agg_order = next[set->count_keys].integer;
-		auto agg = &first[agg_order];
-		if (agg->type == TYPE_INT)
-			agg->integer++;
-		else
-			value_set_int(agg, 1);
+		// process aggregate
+		auto agg_order = next[set->count_keys].integer;
+		agg_write(&self->ref->aggs[agg_order], &first[agg_order],
+		          &next[set->count_keys + 1]);
 
 		store_iterator_next(self->distinct_aggs);
 	}

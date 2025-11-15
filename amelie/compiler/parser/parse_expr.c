@@ -408,10 +408,17 @@ expr_aggregate(Stmt* self, Expr* expr, Ast* function)
 	// (
 	stmt_expect(self, '(');
 
-	// [DISTINCT]
-	auto distinct = stmt_if(self, KDISTINCT);
-	if (distinct && function->id != KCOUNT)
-		stmt_error(self, distinct, "is not supported");
+	// [DISTINCT | ALL]
+	bool distinct = false;
+	if (stmt_if(self, KDISTINCT))
+		distinct = true;
+	else
+	if (stmt_if(self, KALL))
+		distinct = false;
+
+	// ignore distinct for min/max
+	if (distinct && (function->id == KMIN || function->id == KMAX))
+		distinct = false;
 
 	// expr
 	Ast* arg  = NULL;

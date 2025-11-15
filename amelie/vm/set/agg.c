@@ -35,7 +35,153 @@
 #include <amelie_set.h>
 
 hot void
-agg_merge(Value* src, Value* row, int columns, Agg* aggs)
+agg_write(Agg* self, Value* src, Value* data)
+{
+	switch (self->type) {
+	case AGG_INT_COUNT:
+	{
+		if (likely(src->type == TYPE_INT))
+			src->integer++;
+		else
+			value_set_int(src, 1);
+		break;
+	}
+	case AGG_INT_MIN:
+	{
+		int64_t value = data->integer;
+		if (likely(src->type == TYPE_INT))
+		{
+			if (value < src->integer)
+				src->integer = value;
+		} else {
+			value_set_int(src, value);
+		}
+		break;
+	}
+	case AGG_INT_MAX:
+	{
+		int64_t value = data->integer;
+		if (likely(src->type == TYPE_INT))
+		{
+			if (value > src->integer)
+				src->integer = value;
+		} else {
+			value_set_int(src, value);
+		}
+		break;
+	}
+	case AGG_INT_SUM:
+	{
+		int64_t value = data->integer;
+		if (likely(src->type == TYPE_INT))
+			src->integer += value;
+		else
+			value_set_int(src, value);
+		break;
+	}
+	case AGG_INT_AVG:
+	{
+		int64_t value = data->integer;
+		if (unlikely(src->type == TYPE_NULL))
+		{
+			src->type = TYPE_AVG;
+			avg_init(&src->avg);
+		}
+		avg_add_int(&src->avg, value, 1);
+		break;
+	}
+	case AGG_DOUBLE_MIN:
+	{
+		double value = data->dbl;
+		if (likely(src->type == TYPE_DOUBLE))
+		{
+			if (value < src->dbl)
+				src->dbl = value;
+		} else {
+			value_set_double(src, value);
+		}
+		break;
+	}
+	case AGG_DOUBLE_MAX:
+	{
+		double value = data->dbl;
+		if (likely(src->type == TYPE_DOUBLE))
+		{
+			if (value > src->dbl)
+				src->dbl = value;
+		} else {
+			value_set_double(src, value);
+		}
+		break;
+	}
+	case AGG_DOUBLE_SUM:
+	{
+		double value = data->dbl;
+		if (likely(src->type == TYPE_DOUBLE))
+			src->dbl += value;
+		else
+			value_set_double(src, value);
+		break;
+	}
+	case AGG_DOUBLE_AVG:
+	{
+		double value = data->dbl;
+		if (unlikely(src->type == TYPE_NULL))
+		{
+			src->type = TYPE_AVG;
+			avg_init(&src->avg);
+		}
+		avg_add_double(&src->avg, value, 1);
+		break;
+	}
+	case AGG_LAMBDA:
+	{
+		value_move(src, data);
+		break;
+	}
+	default:
+		abort();
+	}
+}
+
+hot void
+agg_write_row(Agg* aggs, Set* set, Value* row, int src_ref)
+{
+	// process aggregates values
+	auto src = set_row(set, src_ref);
+	for (int col = 0; col < set->count_columns; col++)
+	{
+		// skip nulls
+		if (row[col].type == TYPE_NULL)
+			continue;
+
+		// handle distict aggregates
+		if (aggs[col].distinct)
+		{
+			// write distinct_aggs set row as [src->keys, col, row_expr]
+			assert(set->distinct_aggs);
+
+			// keys
+			auto crow = set_reserve(set->distinct_aggs);
+			auto keys = set->count_keys;
+			for (int key = 0; key < keys; key++)
+				value_copy(&crow[key], &src[set->count_columns + key]);
+
+			// column (agg order)
+			value_set_int(&crow[keys], col);
+
+			// expr
+			value_copy(&crow[keys + 1], &row[col]);
+			continue;
+		}
+
+		// compute aggregate
+		agg_write(&aggs[col], &src[col], &row[col]);
+	}
+}
+
+hot void
+agg_merge_row(Value* src, Value* row, int columns, Agg* aggs)
 {
 	// merge aggregate states
 	for (int col = 0; col < columns; col++)
@@ -94,143 +240,5 @@ agg_merge(Value* src, Value* row, int columns, Agg* aggs)
 		}
 
 		value_set_null(&row[col]);
-	}
-}
-
-hot void
-agg_write(Set* self, Value* row, int src_ref, Agg* aggs)
-{
-	// process aggregates values
-	auto src = set_row(self, src_ref);
-	for (int col = 0; col < self->count_columns; col++)
-	{
-		if (row[col].type == TYPE_NULL)
-			continue;
-
-		// handle distict aggregates
-		if (aggs[col].distinct)
-		{
-			// write distinct_aggs set row as [src->keys, col, row_expr]
-			assert(self->distinct_aggs);
-
-			// keys
-			auto crow = set_reserve(self->distinct_aggs);
-			auto keys = self->count_keys;
-			for (int key = 0; key < keys; key++)
-				value_copy(&crow[key], &src[self->count_columns + key]);
-
-			// column (agg order)
-			value_set_int(&crow[keys], col);
-
-			// expr
-			value_copy(&crow[keys + 1], &row[col]);
-			continue;
-		}
-
-		switch (aggs[col].type) {
-		case AGG_INT_COUNT:
-		{
-			if (likely(src[col].type == TYPE_INT))
-				src[col].integer++;
-			else
-				value_set_int(&src[col], 1);
-			break;
-		}
-		case AGG_INT_MIN:
-		{
-			int64_t value = row[col].integer;
-			if (likely(src[col].type == TYPE_INT))
-			{
-				if (value < src[col].integer)
-					src[col].integer = value;
-			} else {
-				value_set_int(&src[col], value);
-			}
-			break;
-		}
-		case AGG_INT_MAX:
-		{
-			int64_t value = row[col].integer;
-			if (likely(src[col].type == TYPE_INT))
-			{
-				if (value > src[col].integer)
-					src[col].integer = value;
-			} else {
-				value_set_int(&src[col], value);
-			}
-			break;
-		}
-		case AGG_INT_SUM:
-		{
-			int64_t value = row[col].integer;
-			if (likely(src[col].type == TYPE_INT))
-				src[col].integer += value;
-			else
-				value_set_int(&src[col], value);
-			break;
-		}
-		case AGG_INT_AVG:
-		{
-			int64_t value = row[col].integer;
-			if (unlikely(src[col].type == TYPE_NULL))
-			{
-				src[col].type = TYPE_AVG;
-				avg_init(&src[col].avg);
-			}
-			avg_add_int(&src[col].avg, value, 1);
-			break;
-		}
-		case AGG_DOUBLE_MIN:
-		{
-			double value = row[col].dbl;
-			if (likely(src[col].type == TYPE_DOUBLE))
-			{
-				if (value < src[col].dbl)
-					src[col].dbl = value;
-			} else {
-				value_set_double(&src[col], value);
-			}
-			break;
-		}
-		case AGG_DOUBLE_MAX:
-		{
-			double value = row[col].dbl;
-			if (likely(src[col].type == TYPE_DOUBLE))
-			{
-				if (value > src[col].dbl)
-					src[col].dbl = value;
-			} else {
-				value_set_double(&src[col], value);
-			}
-			break;
-		}
-		case AGG_DOUBLE_SUM:
-		{
-			double value = row[col].dbl;
-			if (likely(src[col].type == TYPE_DOUBLE))
-				src[col].dbl += value;
-			else
-				value_set_double(&src[col], value);
-			break;
-		}
-		case AGG_DOUBLE_AVG:
-		{
-			double value = row[col].dbl;
-			if (unlikely(src[col].type == TYPE_NULL))
-			{
-				src[col].type = TYPE_AVG;
-				avg_init(&src[col].avg);
-			}
-			avg_add_double(&src[col].avg, value, 1);
-			break;
-		}
-		case AGG_LAMBDA:
-		{
-			value_move(&src[col], &row[col]);
-			break;
-		}
-		default:
-			abort();
-		}
 	}
 }

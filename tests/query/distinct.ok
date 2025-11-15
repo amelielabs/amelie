@@ -22,6 +22,13 @@ explain select distinct it from ([1,2,3,1,2]) it;
 }]
 select distinct it from ([1,2,3,1,2]) it;
 [1, 2, 3]
+# test: select count(all) from expr
+select count(all *) from ([1,2,3]) it;
+[3]
+select count(all it) from ([1,2,3]) it;
+[3]
+select count(it) from ([1,2,3]) it;
+[3]
 # test: select count(distinct) from expr
 explain select count(distinct it) from ([1,2,3]) it;
 [{
@@ -226,6 +233,37 @@ select count(it) from ([1,2,3,1,2]) it order by 1;
 [5]
 select count(distinct it) from ([1,2,3,1,2]) it order by 1;
 [3]
+# test: select count(distinct) from expr group by
+explain select count(distinct it) from ([1,2,3]) it group by it;
+[{
+  "main": {
+    "00": "set_ordered         0      1      1     ",
+    "01": "set_ordered         1      0      3     ",
+    "02": "set_distinct_aggs   0      1      0     ",
+    "03": "json                1      4      0     ",
+    "04": "json_open           2      1      12    ",
+    "05": "json_read           3      2      0     ",
+    "06": "push                3      0      0     ",
+    "07": "set_get             3      0      0     ",
+    "08": "json_read           4      2      0     ",
+    "09": "push                4      0      0     ",
+    "10": "set_agg             0      3      9     ",
+    "11": "json_next           2      5      0     ",
+    "12": "free                1      0      0     ",
+    "13": "set_sort            0      0      0     ",
+    "14": "union_aggs          1      0      9     ",
+    "15": "set                 0      1      0     ",
+    "16": "store_open          2      1      21    ",
+    "17": "count               3      2      0     ",
+    "18": "push                3      0      0     ",
+    "19": "set_add             0      0      0     ",
+    "20": "store_next          2      17     0     ",
+    "21": "free                2      0      0     ",
+    "22": "free                1      0      0     ",
+    "23": "ret                 0      0      -     "
+  },
+  "access": []
+}]
 # test: select (select count(distinct))
 select (select count(distinct it) from ([1,2,3,1,2]) it);
 [3]
@@ -286,5 +324,455 @@ explain select (select distinct it from ([1,2,3,1,2]) it);
 }]
 select (select distinct it from ([1,2,3,1,2]) it);
 [1]
+# test: select sum(all) from expr
+select sum(it::int) from ([1,2,3,3,1]) it;
+[10]
+select sum(all it::int) from ([1,2,3,3,1]) it;
+[10]
+# test: select sum(distinct) from expr
+explain select sum(distinct it::int) from ([1,2,3,3,1]) it;
+[{
+  "main": {
+    "00": "set_ordered         0      1      1     ",
+    "01": "set_ordered         1      0      3     ",
+    "02": "set_distinct_aggs   0      1      0     ",
+    "03": "json                1      4      0     ",
+    "04": "json_open           2      1      13    ",
+    "05": "push_bool           1      0      0     ",
+    "06": "set_get             3      0      0     ",
+    "07": "json_read           4      2      0     ",
+    "08": "push                4      0      0     ",
+    "09": "call                4      -      1     # public.int()",
+    "10": "push                4      0      0     ",
+    "11": "set_agg             0      3      11    ",
+    "12": "json_next           2      5      0     ",
+    "13": "free                1      0      0     ",
+    "14": "push_bool           1      0      0     ",
+    "15": "set_get             1      0      0     ",
+    "16": "push_nulls          1      0      0     ",
+    "17": "set_agg             0      1      11    ",
+    "18": "set_sort            0      0      0     ",
+    "19": "union_aggs          1      0      11    ",
+    "20": "set                 0      1      0     ",
+    "21": "store_open          2      1      26    ",
+    "22": "agg                 3      2      0     ",
+    "23": "push                3      0      0     ",
+    "24": "set_add             0      0      0     ",
+    "25": "store_next          2      22     0     ",
+    "26": "free                2      0      0     ",
+    "27": "free                1      0      0     ",
+    "28": "ret                 0      0      -     "
+  },
+  "access": []
+}]
+select sum(distinct it::int) from ([1,2,3,3,1]) it;
+[6]
+explain select sum(distinct it::double) from ([1,2,3,3,1]) it;
+[{
+  "main": {
+    "00": "set_ordered         0      1      1     ",
+    "01": "set_ordered         1      0      3     ",
+    "02": "set_distinct_aggs   0      1      0     ",
+    "03": "json                1      4      0     ",
+    "04": "json_open           2      1      13    ",
+    "05": "push_bool           1      0      0     ",
+    "06": "set_get             3      0      0     ",
+    "07": "json_read           4      2      0     ",
+    "08": "push                4      0      0     ",
+    "09": "call                4      -      1     # public.double()",
+    "10": "push                4      0      0     ",
+    "11": "set_agg             0      3      11    ",
+    "12": "json_next           2      5      0     ",
+    "13": "free                1      0      0     ",
+    "14": "push_bool           1      0      0     ",
+    "15": "set_get             1      0      0     ",
+    "16": "push_nulls          1      0      0     ",
+    "17": "set_agg             0      1      11    ",
+    "18": "set_sort            0      0      0     ",
+    "19": "union_aggs          1      0      11    ",
+    "20": "set                 0      1      0     ",
+    "21": "store_open          2      1      26    ",
+    "22": "agg                 3      2      0     ",
+    "23": "push                3      0      0     ",
+    "24": "set_add             0      0      0     ",
+    "25": "store_next          2      22     0     ",
+    "26": "free                2      0      0     ",
+    "27": "free                1      0      0     ",
+    "28": "ret                 0      0      -     "
+  },
+  "access": []
+}]
+select sum(distinct it::double) from ([1,2,3,3,1]) it;
+[6]
+# test: select sum(distinct) from expr group by
+explain select sum(it::int) from ([1,2,3,3,1]) it group by it;
+[{
+  "main": {
+    "00": "set                 0      1      1     ",
+    "01": "json                1      0      0     ",
+    "02": "json_open           2      1      12    ",
+    "03": "json_read           3      2      0     ",
+    "04": "push                3      0      0     ",
+    "05": "set_get             3      0      0     ",
+    "06": "json_read           4      2      0     ",
+    "07": "push                4      0      0     ",
+    "08": "call                4      -      1     # public.int()",
+    "09": "push                4      0      0     ",
+    "10": "set_agg             0      3      7     ",
+    "11": "json_next           2      3      0     ",
+    "12": "free                1      0      0     ",
+    "13": "set                 1      1      0     ",
+    "14": "store_open          2      0      19    ",
+    "15": "agg                 3      2      0     ",
+    "16": "push                3      0      0     ",
+    "17": "set_add             1      0      0     ",
+    "18": "store_next          2      15     0     ",
+    "19": "free                2      0      0     ",
+    "20": "free                0      0      0     ",
+    "21": "ret                 1      0      -     "
+  },
+  "access": []
+}]
+select sum(it::int) from ([1,2,3,3,1]) it group by it;
+[2, 2, 6]
+explain select sum(distinct it::int) from ([1,2,3,3,1]) it group by it;
+[{
+  "main": {
+    "00": "set_ordered         0      1      1     ",
+    "01": "set_ordered         1      0      3     ",
+    "02": "set_distinct_aggs   0      1      0     ",
+    "03": "json                1      4      0     ",
+    "04": "json_open           2      1      14    ",
+    "05": "json_read           3      2      0     ",
+    "06": "push                3      0      0     ",
+    "07": "set_get             3      0      0     ",
+    "08": "json_read           4      2      0     ",
+    "09": "push                4      0      0     ",
+    "10": "call                4      -      1     # public.int()",
+    "11": "push                4      0      0     ",
+    "12": "set_agg             0      3      11    ",
+    "13": "json_next           2      5      0     ",
+    "14": "free                1      0      0     ",
+    "15": "set_sort            0      0      0     ",
+    "16": "union_aggs          1      0      11    ",
+    "17": "set                 0      1      0     ",
+    "18": "store_open          2      1      23    ",
+    "19": "agg                 3      2      0     ",
+    "20": "push                3      0      0     ",
+    "21": "set_add             0      0      0     ",
+    "22": "store_next          2      19     0     ",
+    "23": "free                2      0      0     ",
+    "24": "free                1      0      0     ",
+    "25": "ret                 0      0      -     "
+  },
+  "access": []
+}]
+select sum(distinct it::int) from ([1,2,3,3,1]) it group by it;
+[1, 2, 3]
+# test: select sum(distinct) from expr group by order by
+explain select sum(it::int) from ([1,2,3,3,1]) it group by it order by 1;
+[{
+  "main": {
+    "00": "set                 0      1      1     ",
+    "01": "json                1      0      0     ",
+    "02": "json_open           2      1      12    ",
+    "03": "json_read           3      2      0     ",
+    "04": "push                3      0      0     ",
+    "05": "set_get             3      0      0     ",
+    "06": "json_read           4      2      0     ",
+    "07": "push                4      0      0     ",
+    "08": "call                4      -      1     # public.int()",
+    "09": "push                4      0      0     ",
+    "10": "set_agg             0      3      7     ",
+    "11": "json_next           2      3      0     ",
+    "12": "free                1      0      0     ",
+    "13": "set_ordered         1      1      1     ",
+    "14": "store_open          2      0      21    ",
+    "15": "agg                 3      2      0     ",
+    "16": "push                3      0      0     ",
+    "17": "agg                 3      2      0     ",
+    "18": "push                3      0      0     ",
+    "19": "set_add             1      0      0     ",
+    "20": "store_next          2      15     0     ",
+    "21": "free                2      0      0     ",
+    "22": "free                0      0      0     ",
+    "23": "set_sort            1      0      0     ",
+    "24": "union               0      1      0     ",
+    "25": "ret                 0      0      -     "
+  },
+  "access": []
+}]
+select sum(it::int) from ([1,2,3,3,1]) it group by it order by 1;
+[2, 2, 6]
+explain select sum(distinct it::int) from ([1,2,3,3,1]) it group by it order by 1;
+[{
+  "main": {
+    "00": "set_ordered         0      1      1     ",
+    "01": "set_ordered         1      0      3     ",
+    "02": "set_distinct_aggs   0      1      0     ",
+    "03": "json                1      4      0     ",
+    "04": "json_open           2      1      14    ",
+    "05": "json_read           3      2      0     ",
+    "06": "push                3      0      0     ",
+    "07": "set_get             3      0      0     ",
+    "08": "json_read           4      2      0     ",
+    "09": "push                4      0      0     ",
+    "10": "call                4      -      1     # public.int()",
+    "11": "push                4      0      0     ",
+    "12": "set_agg             0      3      11    ",
+    "13": "json_next           2      5      0     ",
+    "14": "free                1      0      0     ",
+    "15": "set_sort            0      0      0     ",
+    "16": "union_aggs          1      0      11    ",
+    "17": "set_ordered         0      1      1     ",
+    "18": "store_open          2      1      25    ",
+    "19": "agg                 3      2      0     ",
+    "20": "push                3      0      0     ",
+    "21": "agg                 3      2      0     ",
+    "22": "push                3      0      0     ",
+    "23": "set_add             0      0      0     ",
+    "24": "store_next          2      19     0     ",
+    "25": "free                2      0      0     ",
+    "26": "free                1      0      0     ",
+    "27": "set_sort            0      0      0     ",
+    "28": "union               1      0      0     ",
+    "29": "ret                 1      0      -     "
+  },
+  "access": []
+}]
+select sum(distinct it::int) from ([1,2,3,3,1]) it group by it order by 1;
+[1, 2, 3]
+# test: select avg(all) from expr
+select avg(it::int) from ([1,2,3,3,1]) it;
+[2]
+select avg(all it::int) from ([1,2,3,3,1]) it;
+[2]
+# test: select avg(distinct) from expr
+explain select avg(distinct it::int) from ([1,2,3,3,1]) it;
+[{
+  "main": {
+    "00": "set_ordered         0      1      1     ",
+    "01": "set_ordered         1      0      3     ",
+    "02": "set_distinct_aggs   0      1      0     ",
+    "03": "json                1      4      0     ",
+    "04": "json_open           2      1      13    ",
+    "05": "push_bool           1      0      0     ",
+    "06": "set_get             3      0      0     ",
+    "07": "json_read           4      2      0     ",
+    "08": "push                4      0      0     ",
+    "09": "call                4      -      1     # public.int()",
+    "10": "push                4      0      0     ",
+    "11": "set_agg             0      3      11    ",
+    "12": "json_next           2      5      0     ",
+    "13": "free                1      0      0     ",
+    "14": "push_bool           1      0      0     ",
+    "15": "set_get             1      0      0     ",
+    "16": "push_nulls          1      0      0     ",
+    "17": "set_agg             0      1      11    ",
+    "18": "set_sort            0      0      0     ",
+    "19": "union_aggs          1      0      11    ",
+    "20": "set                 0      1      0     ",
+    "21": "store_open          2      1      26    ",
+    "22": "avgi                3      2      0     ",
+    "23": "push                3      0      0     ",
+    "24": "set_add             0      0      0     ",
+    "25": "store_next          2      22     0     ",
+    "26": "free                2      0      0     ",
+    "27": "free                1      0      0     ",
+    "28": "ret                 0      0      -     "
+  },
+  "access": []
+}]
+select avg(distinct it::int) from ([1,2,3,3,1]) it;
+[2]
+explain select avg(distinct it::double) from ([1,2,3,3,1]) it;
+[{
+  "main": {
+    "00": "set_ordered         0      1      1     ",
+    "01": "set_ordered         1      0      3     ",
+    "02": "set_distinct_aggs   0      1      0     ",
+    "03": "json                1      4      0     ",
+    "04": "json_open           2      1      13    ",
+    "05": "push_bool           1      0      0     ",
+    "06": "set_get             3      0      0     ",
+    "07": "json_read           4      2      0     ",
+    "08": "push                4      0      0     ",
+    "09": "call                4      -      1     # public.double()",
+    "10": "push                4      0      0     ",
+    "11": "set_agg             0      3      11    ",
+    "12": "json_next           2      5      0     ",
+    "13": "free                1      0      0     ",
+    "14": "push_bool           1      0      0     ",
+    "15": "set_get             1      0      0     ",
+    "16": "push_nulls          1      0      0     ",
+    "17": "set_agg             0      1      11    ",
+    "18": "set_sort            0      0      0     ",
+    "19": "union_aggs          1      0      11    ",
+    "20": "set                 0      1      0     ",
+    "21": "store_open          2      1      26    ",
+    "22": "avgf                3      2      0     ",
+    "23": "push                3      0      0     ",
+    "24": "set_add             0      0      0     ",
+    "25": "store_next          2      22     0     ",
+    "26": "free                2      0      0     ",
+    "27": "free                1      0      0     ",
+    "28": "ret                 0      0      -     "
+  },
+  "access": []
+}]
+select avg(distinct it::double) from ([1,2,3,3,1]) it;
+[2]
+# test: select avg(distinct) from expr group by
+explain select avg(it::int) from ([1,2,3,3,1]) it group by it;
+[{
+  "main": {
+    "00": "set                 0      1      1     ",
+    "01": "json                1      0      0     ",
+    "02": "json_open           2      1      12    ",
+    "03": "json_read           3      2      0     ",
+    "04": "push                3      0      0     ",
+    "05": "set_get             3      0      0     ",
+    "06": "json_read           4      2      0     ",
+    "07": "push                4      0      0     ",
+    "08": "call                4      -      1     # public.int()",
+    "09": "push                4      0      0     ",
+    "10": "set_agg             0      3      7     ",
+    "11": "json_next           2      3      0     ",
+    "12": "free                1      0      0     ",
+    "13": "set                 1      1      0     ",
+    "14": "store_open          2      0      19    ",
+    "15": "avgi                3      2      0     ",
+    "16": "push                3      0      0     ",
+    "17": "set_add             1      0      0     ",
+    "18": "store_next          2      15     0     ",
+    "19": "free                2      0      0     ",
+    "20": "free                0      0      0     ",
+    "21": "ret                 1      0      -     "
+  },
+  "access": []
+}]
+select avg(it::int) from ([1,2,3,3,1]) it group by it;
+[1, 2, 3]
+explain select avg(distinct it::int) from ([1,2,3,3,1]) it group by it;
+[{
+  "main": {
+    "00": "set_ordered         0      1      1     ",
+    "01": "set_ordered         1      0      3     ",
+    "02": "set_distinct_aggs   0      1      0     ",
+    "03": "json                1      4      0     ",
+    "04": "json_open           2      1      14    ",
+    "05": "json_read           3      2      0     ",
+    "06": "push                3      0      0     ",
+    "07": "set_get             3      0      0     ",
+    "08": "json_read           4      2      0     ",
+    "09": "push                4      0      0     ",
+    "10": "call                4      -      1     # public.int()",
+    "11": "push                4      0      0     ",
+    "12": "set_agg             0      3      11    ",
+    "13": "json_next           2      5      0     ",
+    "14": "free                1      0      0     ",
+    "15": "set_sort            0      0      0     ",
+    "16": "union_aggs          1      0      11    ",
+    "17": "set                 0      1      0     ",
+    "18": "store_open          2      1      23    ",
+    "19": "avgi                3      2      0     ",
+    "20": "push                3      0      0     ",
+    "21": "set_add             0      0      0     ",
+    "22": "store_next          2      19     0     ",
+    "23": "free                2      0      0     ",
+    "24": "free                1      0      0     ",
+    "25": "ret                 0      0      -     "
+  },
+  "access": []
+}]
+select avg(distinct it::int) from ([1,2,3,3,1]) it group by it;
+[1, 2, 3]
+# test: select avg(distinct) from expr group by order by
+explain select avg(it::int) from ([1,2,3,3,1]) it group by it order by 1;
+[{
+  "main": {
+    "00": "set                 0      1      1     ",
+    "01": "json                1      0      0     ",
+    "02": "json_open           2      1      12    ",
+    "03": "json_read           3      2      0     ",
+    "04": "push                3      0      0     ",
+    "05": "set_get             3      0      0     ",
+    "06": "json_read           4      2      0     ",
+    "07": "push                4      0      0     ",
+    "08": "call                4      -      1     # public.int()",
+    "09": "push                4      0      0     ",
+    "10": "set_agg             0      3      7     ",
+    "11": "json_next           2      3      0     ",
+    "12": "free                1      0      0     ",
+    "13": "set_ordered         1      1      1     ",
+    "14": "store_open          2      0      21    ",
+    "15": "avgi                3      2      0     ",
+    "16": "push                3      0      0     ",
+    "17": "avgi                3      2      0     ",
+    "18": "push                3      0      0     ",
+    "19": "set_add             1      0      0     ",
+    "20": "store_next          2      15     0     ",
+    "21": "free                2      0      0     ",
+    "22": "free                0      0      0     ",
+    "23": "set_sort            1      0      0     ",
+    "24": "union               0      1      0     ",
+    "25": "ret                 0      0      -     "
+  },
+  "access": []
+}]
+select avg(it::int) from ([1,2,3,3,1]) it group by it order by 1;
+[1, 2, 3]
+explain select avg(distinct it::int) from ([1,2,3,3,1]) it group by it order by 1;
+[{
+  "main": {
+    "00": "set_ordered         0      1      1     ",
+    "01": "set_ordered         1      0      3     ",
+    "02": "set_distinct_aggs   0      1      0     ",
+    "03": "json                1      4      0     ",
+    "04": "json_open           2      1      14    ",
+    "05": "json_read           3      2      0     ",
+    "06": "push                3      0      0     ",
+    "07": "set_get             3      0      0     ",
+    "08": "json_read           4      2      0     ",
+    "09": "push                4      0      0     ",
+    "10": "call                4      -      1     # public.int()",
+    "11": "push                4      0      0     ",
+    "12": "set_agg             0      3      11    ",
+    "13": "json_next           2      5      0     ",
+    "14": "free                1      0      0     ",
+    "15": "set_sort            0      0      0     ",
+    "16": "union_aggs          1      0      11    ",
+    "17": "set_ordered         0      1      1     ",
+    "18": "store_open          2      1      25    ",
+    "19": "avgi                3      2      0     ",
+    "20": "push                3      0      0     ",
+    "21": "avgi                3      2      0     ",
+    "22": "push                3      0      0     ",
+    "23": "set_add             0      0      0     ",
+    "24": "store_next          2      19     0     ",
+    "25": "free                2      0      0     ",
+    "26": "free                1      0      0     ",
+    "27": "set_sort            0      0      0     ",
+    "28": "union               1      0      0     ",
+    "29": "ret                 1      0      -     "
+  },
+  "access": []
+}]
+select avg(distinct it::int) from ([1,2,3,3,1]) it group by it order by 1;
+[1, 2, 3]
+# test: select min(distinct) from expr
+select min(it::int) from ([1,2,3,3,1]) it;
+[1]
+select min(all it::int) from ([1,2,3,3,1]) it;
+[1]
+select min(distinct it::int) from ([1,2,3,3,1]) it;
+[1]
+# test: select max(distinct) from expr
+select max(it::int) from ([1,2,3,3,1]) it;
+[3]
+select max(all it::int) from ([1,2,3,3,1]) it;
+[3]
+select max(distinct it::int) from ([1,2,3,3,1]) it;
+[3]
 disconnect S0;
 close E0;

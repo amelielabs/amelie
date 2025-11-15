@@ -16,7 +16,6 @@ typedef struct Agg Agg;
 typedef enum
 {
 	AGG_INT_COUNT,
-	AGG_INT_COUNT_DISTINCT,
 	AGG_INT_MIN,
 	AGG_INT_MAX,
 	AGG_INT_SUM,
@@ -40,8 +39,6 @@ agg_nameof(int id)
 	switch (id) {
 	case AGG_INT_COUNT:
 		return "count";
-	case AGG_INT_COUNT_DISTINCT:
-		return "count_distinct";
 	case AGG_INT_MIN:
 	case AGG_DOUBLE_MIN:
 		return "min";
@@ -58,5 +55,6 @@ agg_nameof(int id)
 	return NULL;
 }
 
-void agg_merge(Value*, Value*, int, Agg*);
-void agg_write(Set*, Value*, int, Agg*);
+void agg_write(Agg*, Value*, Value*);
+void agg_write_row(Agg*, Set*, Value*, int);
+void agg_merge_row(Value*, Value*, int, Agg*);
