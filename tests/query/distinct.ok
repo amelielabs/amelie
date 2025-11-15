@@ -28,7 +28,7 @@ explain select count(distinct it) from ([1,2,3]) it;
   "main": {
     "00": "set_ordered         0      1      1     ",
     "01": "set_ordered         1      0      3     ",
-    "02": "set_assign          0      1      0     ",
+    "02": "set_distinct_aggs   0      1      0     ",
     "03": "json                1      4      0     ",
     "04": "json_open           2      1      11    ",
     "05": "push_bool           1      0      0     ",
@@ -78,7 +78,7 @@ explain select count(distinct it) from ([1,2,3]) it group by it;
   "main": {
     "00": "set_ordered         0      1      1     ",
     "01": "set_ordered         1      0      3     ",
-    "02": "set_assign          0      1      0     ",
+    "02": "set_distinct_aggs   0      1      0     ",
     "03": "json                1      4      0     ",
     "04": "json_open           2      1      12    ",
     "05": "json_read           3      2      0     ",
@@ -131,7 +131,7 @@ explain select count(distinct it) from ([1,2,3]) it group by it order by 1;
   "main": {
     "00": "set_ordered         0      1      1     ",
     "01": "set_ordered         1      0      3     ",
-    "02": "set_assign          0      1      0     ",
+    "02": "set_distinct_aggs   0      1      0     ",
     "03": "json                1      4      0     ",
     "04": "json_open           2      1      12    ",
     "05": "json_read           3      2      0     ",
@@ -190,7 +190,7 @@ explain select count(distinct it) from ([1,2,3]) it order by 1;
   "main": {
     "00": "set_ordered         0      1      1     ",
     "01": "set_ordered         1      0      3     ",
-    "02": "set_assign          0      1      0     ",
+    "02": "set_distinct_aggs   0      1      0     ",
     "03": "json                1      4      0     ",
     "04": "json_open           2      1      11    ",
     "05": "push_bool           1      0      0     ",
@@ -235,7 +235,7 @@ explain select (select count(distinct it) from ([1,2,3,1,2]) it group by it);
   "main": {
     "00": "set_ordered         0      1      1     ",
     "01": "set_ordered         1      0      3     ",
-    "02": "set_assign          0      1      0     ",
+    "02": "set_distinct_aggs   0      1      0     ",
     "03": "json                1      4      0     ",
     "04": "json_open           2      1      12    ",
     "05": "json_read           3      2      0     ",

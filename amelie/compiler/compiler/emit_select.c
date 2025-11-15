@@ -331,11 +331,11 @@ cmd_scan_aggs(Compiler* self, Plan* plan, Command* ref)
 		memset(order, true, sizeof(bool) * count);
 
 		// CSET_ORDERED
-		auto rset_child = op4pin(self, CSET_ORDERED, TYPE_STORE, 0, count, offset);
+		auto rset_aggs_distinct = op4pin(self, CSET_ORDERED, TYPE_STORE, 0, count, offset);
 
-		// CSET_ASSIGN (set child set)
-		op2(self, CSET_ASSIGN, plan->r, rset_child);
-		runpin(self, rset_child);
+		// CSET_DISTINCT_AGGS
+		op2(self, CSET_DISTINCT_AGGS, plan->r, rset_aggs_distinct);
+		runpin(self, rset_aggs_distinct);
 	}
 
 	// emit aggs seed expressions

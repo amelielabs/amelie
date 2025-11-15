@@ -302,7 +302,7 @@ vm_run(Vm*       self,
 		// set
 		&&cset,
 		&&cset_ordered,
-		&&cset_assign,
+		&&cset_distinct_aggs,
 		&&cset_ptr,
 		&&cset_sort,
 		&&cset_add,
@@ -1509,10 +1509,10 @@ cset_ordered:
 	value_set_store(&r[op->a], &set->store);
 	op_next;
 
-cset_assign:
-	// [set, child_set]
+cset_distinct_aggs:
+	// [set, distinct_aggs_set]
 	set = (Set*)r[op->a].store;
-	set_assign(set, (Set*)r[op->b].store);
+	set_set_distinct_aggs(set, (Set*)r[op->b].store);
 	value_reset(&r[op->b]);
 	op_next;
 

@@ -115,11 +115,11 @@ agg_write(Set* self, Value* row, int src_ref, int* aggs)
 		}
 		case AGG_INT_COUNT_DISTINCT:
 		{
-			// write child set row as [src->keys, col, row_expr]
-			assert(self->child);
+			// write distinct_aggs set row as [src->keys, col, row_expr]
+			assert(self->distinct_aggs);
 
 			// keys
-			auto crow = set_reserve(self->child);
+			auto crow = set_reserve(self->distinct_aggs);
 			auto keys = self->count_keys;
 			for (int key = 0; key < keys; key++)
 				value_copy(&crow[key], &src[self->count_columns + key]);

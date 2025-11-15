@@ -38,8 +38,8 @@ static void
 union_free(Store* store)
 {
 	auto self = (Union*)store;
-	if (self->child)
-		union_free(&self->child->store);
+	if (self->distinct_aggs)
+		store_free(&self->distinct_aggs->store);
 	list_foreach_safe(&self->list)
 	{
 		auto set = list_at(Set, link);
@@ -52,10 +52,11 @@ static StoreIterator*
 union_iterator(Store* store)
 {
 	auto self = (Union*)store;
-	StoreIterator* child = NULL;
-	if (self->child)
-		child = union_iterator_allocate(self->child, NULL);
-	return union_iterator_allocate(self, child);
+	// create second iterator to handle distinct aggs merge
+	StoreIterator* it = NULL;
+	if (self->distinct_aggs)
+		it = union_iterator_allocate(self->distinct_aggs, NULL);
+	return union_iterator_allocate(self, it);
 }
 
 Union*
@@ -69,8 +70,8 @@ union_create(void)
 	self->limit          = INT64_MAX;
 	self->offset         = 0;
 	self->distinct       = false;
+	self->distinct_aggs  = NULL;
 	self->aggs           = NULL;
-	self->child          = NULL;
 	list_init(&self->list);
 	return self;
 }

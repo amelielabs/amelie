@@ -29,7 +29,7 @@ struct UnionIterator
 	int            list_count;
 	int64_t        limit;
 	Union*         ref;
-	StoreIterator* child;
+	StoreIterator* distinct_aggs;
 };
 
 always_inline static inline UnionIterator*
@@ -116,19 +116,19 @@ union_iterator_next_distinct(UnionIterator* self)
 		break;
 	}
 
-	if (! self->child)
+	if (! self->distinct_aggs)
 		return first;
 
 	// merge count(distinct) aggregate states
 
-	// do merge join main set with the child set (distinct) to calculate
-	// unique entries for count(distinct) aggs
+	// do merge join main set with the distinct aggs set to calculate
+	// unique entries for distinct aggs
 
-	// set:       [aggs, keys]
-	// set child: [keys, agg_order, expr]
+	// set:      [aggs, keys]
+	// set aggs: [keys, agg_order, expr]
 	for (;;)
 	{
-		auto next = self->child->current;
+		auto next = self->distinct_aggs->current;
 		if (unlikely(! next))
 			break;
 
@@ -144,7 +144,7 @@ union_iterator_next_distinct(UnionIterator* self)
 		else
 			value_set_int(agg, 1);
 
-		store_iterator_next(self->child);
+		store_iterator_next(self->distinct_aggs);
 	}
 
 	return first;
@@ -177,8 +177,8 @@ static inline void
 union_iterator_close(StoreIterator* arg)
 {
 	auto self = union_iterator_of(arg);
-	if (self->child)
-		store_iterator_close(self->child);
+	if (self->distinct_aggs)
+		store_iterator_close(self->distinct_aggs);
 	if (self->list)
 		buf_free(self->list);
 	am_free(arg);
@@ -229,18 +229,18 @@ union_iterator_open(UnionIterator* self)
 }
 
 static inline StoreIterator*
-union_iterator_allocate(Union* ref, StoreIterator* child)
+union_iterator_allocate(Union* ref, StoreIterator* distinct_aggs)
 {
 	UnionIterator* self = am_malloc(sizeof(*self));
-	self->it.next    = union_iterator_next;
-	self->it.close   = union_iterator_close;
-	self->it.current = NULL;
-	self->current_it = NULL;
-	self->list       = NULL;
-	self->list_count = 0;
-	self->limit      = INT64_MAX;
-	self->ref        = ref;
-	self->child      = child;
+	self->it.next       = union_iterator_next;
+	self->it.close      = union_iterator_close;
+	self->it.current    = NULL;
+	self->current_it    = NULL;
+	self->list          = NULL;
+	self->list_count    = 0;
+	self->limit         = INT64_MAX;
+	self->ref           = ref;
+	self->distinct_aggs = distinct_aggs;
 	errdefer(union_iterator_close, self);
 
 	union_iterator_open(self);

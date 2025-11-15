@@ -38,8 +38,8 @@ static void
 set_free(Store* store)
 {
 	auto self = (Set*)store;
-	if (self->child)
-		set_free(&self->child->store);
+	if (self->distinct_aggs)
+		store_free(&self->distinct_aggs->store);
 	for (auto i = 0; i < self->count; i++)
 		value_free(set_value(self, i));
 	buf_free(&self->set);
@@ -67,7 +67,7 @@ set_create(void)
 	self->count_columns_row = 0;
 	self->count_columns     = 0;
 	self->count_keys        = 0;
-	self->child             = NULL;
+	self->distinct_aggs     = NULL;
 	buf_init(&self->set);
 	buf_init(&self->set_index);
 	set_hash_init(&self->hash);
@@ -101,14 +101,14 @@ set_reset(Set* self)
 	buf_reset(&self->set);
 	buf_reset(&self->set_index);
 	set_hash_reset(&self->hash);
-	assert(! self->child);
+	assert(! self->distinct_aggs);
 }
 
 void
-set_assign(Set* self, Set* child)
+set_set_distinct_aggs(Set* self, Set* distinct_aggs)
 {
-	assert(!child || !self->child);
-	self->child = child;
+	assert(!self->distinct_aggs || !distinct_aggs);
+	self->distinct_aggs = distinct_aggs;
 }
 
 hot static int
@@ -292,6 +292,6 @@ set_sort(Set* self)
 	qsort_r(self->set_index.start, self->count_rows, sizeof(uint32_t),
 	        set_cmp, self);
 
-	if (self->child)
-		set_sort(self->child);
+	if (self->distinct_aggs)
+		set_sort(self->distinct_aggs);
 }

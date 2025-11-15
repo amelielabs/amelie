@@ -19,25 +19,25 @@ struct Union
 	List    list;
 	int     list_count;
 	bool    distinct;
+	Union*  distinct_aggs;
 	int*    aggs;
 	int64_t limit;
 	int64_t offset;
-	Union*  child;
 };
 
 Union* union_create(void);
 
 static inline void
-union_assign(Union* self, Union* child)
-{
-	assert(! self->child);
-	self->child = child;
-}
-
-static inline void
 union_set_aggs(Union* self, int* aggs)
 {
 	self->aggs = aggs;
+}
+
+static inline void
+union_set_distinct_aggs(Union* self, Union* distinct_aggs)
+{
+	assert(! self->distinct_aggs);
+	self->distinct_aggs = distinct_aggs;
 }
 
 static inline void

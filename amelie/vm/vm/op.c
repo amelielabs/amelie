@@ -227,7 +227,7 @@ OpDesc ops[] =
 	// set
 	{ CSET, "set" },
 	{ CSET_ORDERED, "set_ordered" },
-	{ CSET_ASSIGN, "set_assign" },
+	{ CSET_DISTINCT_AGGS, "set_distinct_aggs" },
 	{ CSET_PTR, "set_ptr" },
 	{ CSET_SORT, "set_sort" },
 	{ CSET_ADD, "set_add" },

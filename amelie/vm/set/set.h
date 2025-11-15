@@ -25,7 +25,7 @@ struct Set
 	int     count_columns_row;
 	int     count_columns;
 	int     count_keys;
-	Set*    child;
+	Set*    distinct_aggs;
 	List    link;
 };
 
@@ -76,7 +76,7 @@ set_key(Set* self, int pos, int key)
 Set*   set_create(void);
 void   set_prepare(Set*, int, int, bool*);
 void   set_reset(Set*);
-void   set_assign(Set*, Set*);
+void   set_set_distinct_aggs(Set*, Set*);
 void   set_add(Set*, Value*);
 int    set_get(Set*, Value*, bool);
 Value* set_reserve(Set*);

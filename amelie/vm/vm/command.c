@@ -319,15 +319,13 @@ cunion_aggs(Vm* self, Op* op)
 	// create child union out of the set child
 	auto src = reg_at(&self->r, op->b);
 	auto set = (Set*)src->store;
-	if (set->child)
+	if (set->distinct_aggs)
 	{
-		auto child = set->child;
-		set_assign(set, NULL);
-
-		auto ref = union_create();
-		union_set(ref, true, INT64_MAX, 0);
-		union_add(ref, child);
-		union_assign(result, ref);
+		auto distinct_aggs = union_create();
+		union_set(distinct_aggs, true, INT64_MAX, 0);
+		union_add(distinct_aggs, set->distinct_aggs);
+		union_set_distinct_aggs(result, distinct_aggs);
+		set_set_distinct_aggs(set, NULL);
 	}
 
 	// move set to the union
@@ -397,20 +395,19 @@ crecv_as(Vm*  self,
 		if (value->type == TYPE_STORE)
 		{
 			auto set = (Set*)value->store;
-			// create child union out of set childs
-			if (set->child)
-			{
-				if (! result->child)
-				{
-					auto ref = union_create();
-					union_set(ref, true, INT64_MAX, 0);
-					union_assign(result, ref);
-				}
-				auto child = set->child;
-				set_assign(set, NULL);
-				union_add(result->child, child);
-			}
 			union_add(result, set);
+			// create distinct_aggs union out of sets
+			if (set->distinct_aggs)
+			{
+				if (! result->distinct_aggs)
+				{
+					auto distinct_aggs = union_create();
+					union_set(distinct_aggs, true, INT64_MAX, 0);
+					union_set_distinct_aggs(result, distinct_aggs);
+				}
+				union_add(result->distinct_aggs, set->distinct_aggs);
+				set_set_distinct_aggs(set, NULL);
+			}
 			value_reset(value);
 		}
 	}

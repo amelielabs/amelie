@@ -222,7 +222,7 @@ explain select count(distinct id) from test;
   "pushdown": {
     "00": "set_ordered         0      1      1     ",
     "01": "set_ordered         1      0      3     ",
-    "02": "set_assign          0      1      0     ",
+    "02": "set_distinct_aggs   0      1      0     ",
     "03": "table_open_part     1      4      10    # public.test (primary)",
     "04": "push_bool           1      0      0     ",
     "05": "set_get             2      0      0     ",
@@ -1399,7 +1399,7 @@ explain select (select count(distinct data) from test group by id);
   "main": {
     "00": "set_ordered         0      1      1     ",
     "01": "set_ordered         1      0      3     ",
-    "02": "set_assign          0      1      0     ",
+    "02": "set_distinct_aggs   0      1      0     ",
     "03": "table_open          1      4      11    # public.test (primary)",
     "04": "table_readi32       2      1      0     ",
     "05": "push                2      0      0     ",
