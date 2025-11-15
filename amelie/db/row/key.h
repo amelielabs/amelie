@@ -18,6 +18,7 @@ struct Key
 	int     order;
 	Column* column;
 	int64_t ref;
+	bool    asc;
 	List    link;
 };
 
@@ -26,6 +27,7 @@ key_allocate(void)
 {
 	Key* self = am_malloc(sizeof(Key));
 	self->order  = -1;
+	self->asc    = true;
 	self->column = NULL;
 	list_init(&self->link);
 	return self;
@@ -43,11 +45,18 @@ key_set_ref(Key* self, int value)
 	self->ref = value;
 }
 
+static inline void
+key_set_asc(Key* self, bool value)
+{
+	self->asc = value;
+}
+
 static inline Key*
 key_copy(Key* self)
 {
 	auto copy = key_allocate();
 	key_set_ref(copy, self->ref);
+	key_set_asc(copy, self->asc);
 	return copy;
 }
 
@@ -58,8 +67,9 @@ key_read(uint8_t** pos)
 	errdefer(key_free, self);
 	Decode obj[] =
 	{
-		{ DECODE_INT, "column", &self->ref  },
-		{ 0,           NULL,    NULL        },
+		{ DECODE_INT,  "column", &self->ref },
+		{ DECODE_BOOL, "asc",    &self->asc },
+		{ 0,            NULL,     NULL      },
 	};
 	decode_obj(obj, "key", pos);
 	return self;
@@ -73,6 +83,10 @@ key_write(Key* self, Buf* buf)
 	// column
 	encode_raw(buf, "column", 6);
 	encode_integer(buf, self->ref);
+
+	// asc
+	encode_raw(buf, "asc", 3);
+	encode_bool(buf, self->asc);
 
 	encode_obj_end(buf);
 }

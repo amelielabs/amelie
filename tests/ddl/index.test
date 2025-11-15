@@ -41,6 +41,11 @@ drop index i on test;
 
 # test: create index (unique)
 create unique index i on test (a);
+
+# test: create index (asc/desc)
+create unique index j on test (a asc, b desc, id);
+select system.table('test').indexes;
+
 drop table test;
 
 # test: create index with parsing

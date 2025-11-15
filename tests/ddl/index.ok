@@ -35,7 +35,8 @@ select system.table('test').indexes;
   "unique": true,
   "primary": true,
   "keys": [{
-    "column": 0
+    "column": 0,
+    "asc": true
   }]
 }, {
   "name": "i",
@@ -43,9 +44,11 @@ select system.table('test').indexes;
   "unique": false,
   "primary": false,
   "keys": [{
-    "column": 1
+    "column": 1,
+    "asc": true
   }, {
-    "column": 0
+    "column": 0,
+    "asc": true
   }]
 }]]
 # test: create index if not exists
@@ -59,7 +62,8 @@ select system.table('test').indexes;
   "unique": true,
   "primary": true,
   "keys": [{
-    "column": 0
+    "column": 0,
+    "asc": true
   }]
 }, {
   "name": "i",
@@ -67,9 +71,11 @@ select system.table('test').indexes;
   "unique": false,
   "primary": false,
   "keys": [{
-    "column": 1
+    "column": 1,
+    "asc": true
   }, {
-    "column": 0
+    "column": 0,
+    "asc": true
   }]
 }]]
 drop index i on test;
@@ -82,7 +88,8 @@ select system.table('test').indexes;
   "unique": true,
   "primary": true,
   "keys": [{
-    "column": 0
+    "column": 0,
+    "asc": true
   }]
 }, {
   "name": "i",
@@ -90,11 +97,14 @@ select system.table('test').indexes;
   "unique": false,
   "primary": false,
   "keys": [{
-    "column": 2
+    "column": 2,
+    "asc": true
   }, {
-    "column": 1
+    "column": 1,
+    "asc": true
   }, {
-    "column": 0
+    "column": 0,
+    "asc": true
   }]
 }]]
 drop index i on test;
@@ -107,7 +117,8 @@ select system.table('test').indexes;
   "unique": true,
   "primary": true,
   "keys": [{
-    "column": 0
+    "column": 0,
+    "asc": true
   }]
 }, {
   "name": "i",
@@ -115,16 +126,56 @@ select system.table('test').indexes;
   "unique": false,
   "primary": false,
   "keys": [{
-    "column": 1
+    "column": 1,
+    "asc": true
   }, {
-    "column": 1
+    "column": 1,
+    "asc": true
   }, {
-    "column": 0
+    "column": 0,
+    "asc": true
   }]
 }]]
 drop index i on test;
 # test: create index (unique)
 create unique index i on test (a);
+# test: create index (asc/desc)
+create unique index j on test (a asc, b desc, id);
+select system.table('test').indexes;
+[[{
+  "name": "primary",
+  "type": 2,
+  "unique": true,
+  "primary": true,
+  "keys": [{
+    "column": 0,
+    "asc": true
+  }]
+}, {
+  "name": "i",
+  "type": 2,
+  "unique": true,
+  "primary": false,
+  "keys": [{
+    "column": 1,
+    "asc": true
+  }]
+}, {
+  "name": "j",
+  "type": 2,
+  "unique": true,
+  "primary": false,
+  "keys": [{
+    "column": 1,
+    "asc": true
+  }, {
+    "column": 2,
+    "asc": false
+  }, {
+    "column": 0,
+    "asc": true
+  }]
+}]]
 drop table test;
 # test: create index with parsing
 create table test (id int primary key, a int, b int);
@@ -159,7 +210,8 @@ select system.table('test').indexes;
   "unique": true,
   "primary": true,
   "keys": [{
-    "column": 0
+    "column": 0,
+    "asc": true
   }]
 }, {
   "name": "i",
@@ -167,9 +219,11 @@ select system.table('test').indexes;
   "unique": false,
   "primary": false,
   "keys": [{
-    "column": 1
+    "column": 1,
+    "asc": true
   }, {
-    "column": 0
+    "column": 0,
+    "asc": true
   }]
 }]]
 drop index i on test;
@@ -181,7 +235,8 @@ select system.table('test').indexes;
   "unique": true,
   "primary": true,
   "keys": [{
-    "column": 0
+    "column": 0,
+    "asc": true
   }]
 }, {
   "name": "i",
@@ -189,9 +244,11 @@ select system.table('test').indexes;
   "unique": false,
   "primary": false,
   "keys": [{
-    "column": 1
+    "column": 1,
+    "asc": true
   }, {
-    "column": 0
+    "column": 0,
+    "asc": true
   }]
 }]]
 drop index i on test;
@@ -227,7 +284,8 @@ select system.table('test').indexes;
   "unique": true,
   "primary": true,
   "keys": [{
-    "column": 0
+    "column": 0,
+    "asc": true
   }]
 }, {
   "name": "i",
@@ -235,9 +293,11 @@ select system.table('test').indexes;
   "unique": false,
   "primary": false,
   "keys": [{
-    "column": 1
+    "column": 1,
+    "asc": true
   }, {
-    "column": 0
+    "column": 0,
+    "asc": true
   }]
 }]]
 drop index i on public.test;
@@ -248,7 +308,8 @@ select system.table('test').indexes;
   "unique": true,
   "primary": true,
   "keys": [{
-    "column": 0
+    "column": 0,
+    "asc": true
   }]
 }]]
 # test: drop index if exists
@@ -314,7 +375,8 @@ select system.table('test').indexes;
   "unique": true,
   "primary": true,
   "keys": [{
-    "column": 0
+    "column": 0,
+    "asc": true
   }]
 }, {
   "name": "i",
@@ -322,9 +384,11 @@ select system.table('test').indexes;
   "unique": false,
   "primary": false,
   "keys": [{
-    "column": 1
+    "column": 1,
+    "asc": true
   }, {
-    "column": 0
+    "column": 0,
+    "asc": true
   }]
 }]]
 alter index i on test rename to j;
@@ -335,7 +399,8 @@ select system.table('test').indexes;
   "unique": true,
   "primary": true,
   "keys": [{
-    "column": 0
+    "column": 0,
+    "asc": true
   }]
 }, {
   "name": "j",
@@ -343,9 +408,11 @@ select system.table('test').indexes;
   "unique": false,
   "primary": false,
   "keys": [{
-    "column": 1
+    "column": 1,
+    "asc": true
   }, {
-    "column": 0
+    "column": 0,
+    "asc": true
   }]
 }]]
 # test: alter index rename if exists

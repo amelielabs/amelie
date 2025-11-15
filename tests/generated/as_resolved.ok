@@ -38,7 +38,8 @@ show table test extended;
     "unique": true,
     "primary": true,
     "keys": [{
-      "column": 0
+      "column": 0,
+      "asc": true
     }]
   }],
   "partitions": [{

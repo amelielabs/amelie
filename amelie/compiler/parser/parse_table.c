@@ -86,12 +86,21 @@ parse_key(Stmt* self, Keys* keys)
 		    (column->type == TYPE_INT && column->type_size < 4))
 			stmt_error(self, name, "supported key types are int32, int64, uuid, timestamp or text");
 
+		// [ASC|DESC]
+		bool asc = true;
+		if (stmt_if(self, KASC))
+			asc = true;
+		else
+		if (stmt_if(self, KDESC))
+			asc = false;
+
 		// force column not_null constraint
 		constraints_set_not_null(&column->constraints, true);
 
 		// create key
 		auto key = key_allocate();
 		key_set_ref(key, column->order);
+		key_set_asc(key, asc);
 		keys_add(keys, key);
 
 		// ,
