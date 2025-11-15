@@ -3,6 +3,10 @@
 open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "127.0.0.1", "port": 3485 }];
 connect E0 S0 127.0.0.1:3485;
 
+# test: select all from expr
+explain select all it from ([1,2,3,1,2]) it;
+select all it from ([1,2,3,1,2]) it;
+
 # test: select distinct from expr
 explain select distinct it from ([1,2,3,1,2]) it;
 select distinct it from ([1,2,3,1,2]) it;

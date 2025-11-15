@@ -132,7 +132,7 @@ parse_select_distinct(Stmt* self, AstSelect* select)
 hot AstSelect*
 parse_select(Stmt* self, From* outer, bool subquery)
 {
-	// SELECT [DISTINCT] expr, ...
+	// SELECT [ALL | DISTINCT] expr, ...
 	// [INTO name]
 	// [FROM name, [...]]
 	// [GROUP BY]
@@ -141,9 +141,10 @@ parse_select(Stmt* self, From* outer, bool subquery)
 	// [LIMIT expr] [OFFSET expr]
 	auto select = ast_select_allocate(self, outer, self->block);
 
-	// [DISTINCT]
-	if (stmt_if(self, KDISTINCT))
-		parse_select_distinct(self, select);
+	// [ALL | DISTINCT]
+	if (! stmt_if(self, KALL))
+		if (stmt_if(self, KDISTINCT))
+			parse_select_distinct(self, select);
 
 	// * | expr [AS] [name], ...
 	Expr ctx;
