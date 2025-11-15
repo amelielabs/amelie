@@ -74,7 +74,7 @@ on_match_aggs(Scan* self)
 
 	// create a list of aggs based on type
 	select->aggs = code_data_pos(cp->code_data);
-	buf_emplace(&cp->code_data->data, sizeof(int) * select->expr_aggs.count);
+	buf_emplace(&cp->code_data->data, sizeof(Agg) * select->expr_aggs.count);
 
 	// get existing or create a new row by key, return
 	// the row reference
@@ -103,22 +103,20 @@ on_match_aggs(Scan* self)
 		column_set_type(agg->column, rt, type_sizeof(rt));
 
 		// lambda
-		auto aggs = (int*)code_data_at(cp->code_data, select->aggs);
+		auto aggs = (Agg*)code_data_at(cp->code_data, select->aggs);
+		aggs[agg->order].distinct = agg->distinct;
 		if (! agg->function)
 		{
 			if (rt != agg->expr_seed_type)
 				stmt_error(cp->current, agg->expr, "lambda expression type mismatch");
 			agg->id = AGG_LAMBDA;
-			aggs[agg->order] = AGG_LAMBDA;
+			aggs[agg->order].type = AGG_LAMBDA;
 			continue;
 		}
 
 		switch (agg->function->id) {
 		case KCOUNT:
-			if (agg->distinct)
-				agg->id = AGG_INT_COUNT_DISTINCT;
-			else
-				agg->id = AGG_INT_COUNT;
+			agg->id = AGG_INT_COUNT;
 			break;
 		case KMIN:
 			if (rt == TYPE_INT || rt == TYPE_NULL)
@@ -157,7 +155,7 @@ on_match_aggs(Scan* self)
 				stmt_error(cp->current, agg->expr, "int or double expected");
 			break;
 		}
-		aggs[agg->order] = agg->id;
+		aggs[agg->order].type = agg->id;
 	}
 
 	// CSET_AGG
@@ -319,8 +317,8 @@ cmd_scan_aggs(Compiler* self, Plan* plan, Command* ref)
 
 	select->rset_agg = plan->r;
 
-	// create second ordered agg set to handle count(distinct)
-	if (select->distinct_count)
+	// create second ordered agg set to process distinct aggregates
+	if (select->distinct_aggs)
 	{
 		assert(ref->id == COMMAND_SCAN_AGGS_ORDERED);
 

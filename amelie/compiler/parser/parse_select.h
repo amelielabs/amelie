@@ -28,7 +28,7 @@ struct AstSelect
 	AstList   expr_order_by;
 	bool      distinct;
 	bool      distinct_on;
-	bool      distinct_count;
+	bool      distinct_aggs;
 	From      from;
 	From      from_group;
 	Columns   from_group_columns;
@@ -58,7 +58,7 @@ ast_select_allocate(Stmt* stmt, From* outer, Block* block)
 	self->expr_group_by_has = false;
 	self->distinct          = false;
 	self->distinct_on       = false;
-	self->distinct_count    = false;
+	self->distinct_aggs     = false;
 	self->pushdown          = NULL;
 	self->plan              = NULL;
 	self->rset_agg          = -1;

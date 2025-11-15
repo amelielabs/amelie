@@ -35,7 +35,7 @@
 #include <amelie_set.h>
 
 hot void
-agg_merge(Value* src, Value* row, int columns, int* aggs)
+agg_merge(Value* src, Value* row, int columns, Agg* aggs)
 {
 	// merge aggregate states
 	for (int col = 0; col < columns; col++)
@@ -48,12 +48,13 @@ agg_merge(Value* src, Value* row, int columns, int* aggs)
 		if (row[col].type == TYPE_NULL)
 			continue;
 
-		switch (aggs[col]) {
+		// skip distinct aggs here
+		if (aggs[col].distinct)
+			continue;
+
+		switch (aggs[col].type) {
 		case AGG_INT_COUNT:
 			src[col].integer += row[col].integer;
-			break;
-		case AGG_INT_COUNT_DISTINCT:
-			// do nothing here
 			break;
 		case AGG_INT_MIN:
 			if (row[col].integer < src[col].integer)
@@ -88,6 +89,8 @@ agg_merge(Value* src, Value* row, int columns, int* aggs)
 		case AGG_LAMBDA:
 			error("distributed operation with lambda is not supported");
 			break;
+		default:
+			abort();
 		}
 
 		value_set_null(&row[col]);
@@ -95,7 +98,7 @@ agg_merge(Value* src, Value* row, int columns, int* aggs)
 }
 
 hot void
-agg_write(Set* self, Value* row, int src_ref, int* aggs)
+agg_write(Set* self, Value* row, int src_ref, Agg* aggs)
 {
 	// process aggregates values
 	auto src = set_row(self, src_ref);
@@ -104,16 +107,8 @@ agg_write(Set* self, Value* row, int src_ref, int* aggs)
 		if (row[col].type == TYPE_NULL)
 			continue;
 
-		switch (aggs[col]) {
-		case AGG_INT_COUNT:
-		{
-			if (likely(src[col].type == TYPE_INT))
-				src[col].integer++;
-			else
-				value_set_int(&src[col], 1);
-			break;
-		}
-		case AGG_INT_COUNT_DISTINCT:
+		// handle distict aggregates
+		if (aggs[col].distinct)
 		{
 			// write distinct_aggs set row as [src->keys, col, row_expr]
 			assert(self->distinct_aggs);
@@ -129,6 +124,16 @@ agg_write(Set* self, Value* row, int src_ref, int* aggs)
 
 			// expr
 			value_copy(&crow[keys + 1], &row[col]);
+			continue;
+		}
+
+		switch (aggs[col].type) {
+		case AGG_INT_COUNT:
+		{
+			if (likely(src[col].type == TYPE_INT))
+				src[col].integer++;
+			else
+				value_set_int(&src[col], 1);
 			break;
 		}
 		case AGG_INT_MIN:
@@ -224,6 +229,8 @@ agg_write(Set* self, Value* row, int src_ref, int* aggs)
 			value_move(&src[col], &row[col]);
 			break;
 		}
+		default:
+			abort();
 		}
 	}
 }

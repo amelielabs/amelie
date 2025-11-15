@@ -1873,7 +1873,7 @@ insert into test generate 10000;
 explain select * from (select count(*), sum(2 * id) from test group by id) t;
 [{
   "main": {
-    "00": "send_all            0      0      29    # public.test (select)",
+    "00": "send_all            0      0      37    # public.test (select)",
     "01": "recv_aggs           1      0      21    ",
     "02": "set                 2      2      0     ",
     "03": "store_open          3      1      10    ",
@@ -1922,7 +1922,7 @@ select * from (select count(*), sum(2 * id) from test group by id) t;
 explain select count(*) from (select count(*) from test group by id) t;
 [{
   "main": {
-    "00": "send_all            0      0      25    # public.test (select)",
+    "00": "send_all            0      0      29    # public.test (select)",
     "01": "recv_aggs           1      0      21    ",
     "02": "set                 2      1      0     ",
     "03": "store_open          3      1      8     ",
@@ -1938,14 +1938,14 @@ explain select count(*) from (select count(*) from test group by id) t;
     "13": "push_bool           1      0      0     ",
     "14": "set_get             4      0      0     ",
     "15": "push_int            -      0      0     # 1",
-    "16": "set_agg             0      4      49    ",
+    "16": "set_agg             0      4      53    ",
     "17": "store_next          3      13     0     ",
     "18": "free                3      0      0     ",
     "19": "free                1      0      0     ",
     "20": "push_bool           1      0      0     ",
     "21": "set_get             1      0      0     ",
     "22": "push_nulls          1      0      0     ",
-    "23": "set_agg             0      1      49    ",
+    "23": "set_agg             0      1      53    ",
     "24": "set                 1      1      0     ",
     "25": "store_open          3      0      30    ",
     "26": "count               4      3      0     ",

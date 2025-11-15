@@ -314,7 +314,7 @@ cunion_aggs(Vm* self, Op* op)
 	value_set_store(reg_at(&self->r, op->a), &result->store);
 
 	union_set(result, true, INT64_MAX, 0);
-	union_set_aggs(result, (int*)code_data_at(self->code_data, op->c));
+	union_set_aggs(result, (Agg*)code_data_at(self->code_data, op->c));
 
 	// create child union out of the set child
 	auto src = reg_at(&self->r, op->b);
@@ -373,7 +373,7 @@ crecv_as(Vm*  self,
 
 	// set aggs
 	if (aggs != -1)
-		union_set_aggs(result, (int*)code_data_at(self->code_data, aggs));
+		union_set_aggs(result, (Agg*)code_data_at(self->code_data, aggs));
 
 	// get dispatch
 	auto dispatch_order = reg_at(&self->r, rdispatch)->integer;

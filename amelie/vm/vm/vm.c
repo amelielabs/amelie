@@ -1548,7 +1548,7 @@ cset_agg:
 	// [set, row, aggs]
 	set = (Set*)r[op->a].store;
 	agg_write(set, stack_at(stack, set->count_columns), r[op->b].integer,
-	          (int*)code_data_at(code_data, op->c));
+	          (Agg*)code_data_at(code_data, op->c));
 	stack_popn(stack, set->count_columns);
 	op_next;
 

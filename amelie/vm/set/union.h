@@ -20,7 +20,7 @@ struct Union
 	int     list_count;
 	bool    distinct;
 	Union*  distinct_aggs;
-	int*    aggs;
+	Agg*    aggs;
 	int64_t limit;
 	int64_t offset;
 };
@@ -28,7 +28,7 @@ struct Union
 Union* union_create(void);
 
 static inline void
-union_set_aggs(Union* self, int* aggs)
+union_set_aggs(Union* self, Agg* aggs)
 {
 	self->aggs = aggs;
 }

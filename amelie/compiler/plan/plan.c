@@ -60,8 +60,8 @@ plan_group_by(Plan* self)
 	// SELECT FROM GROUP BY
 	auto select = self->select;
 
-	// select count(distinct)
-	if (select->distinct_count)
+	// select agg(distinct)
+	if (select->distinct_aggs)
 	{
 		// SCAN_AGGS_ORDERED
 		plan_add_scan_aggs_ordered(self);
@@ -94,8 +94,8 @@ plan_group_by_order_by(Plan* self)
 	// SELECT FROM GROUP BY ORDER BY
 	auto select = self->select;
 
-	// select count(distinct)
-	if (select->distinct_count)
+	// select agg(distinct)
+	if (select->distinct_aggs)
 	{
 		// SCAN_AGGS_ORDERED
 		plan_add_scan_aggs_ordered(self);

@@ -454,7 +454,6 @@ emit_aggregate(Compiler* self, From* from, Ast* ast)
 	}
 	switch (agg->id) {
 	case AGG_INT_COUNT:
-	case AGG_INT_COUNT_DISTINCT:
 		agg_op   = CCOUNT;
 		agg_type = TYPE_INT;
 		break;

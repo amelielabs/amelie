@@ -11,7 +11,9 @@
 // AGPL-3.0 Licensed.
 //
 
-enum
+typedef struct Agg Agg;
+
+typedef enum
 {
 	AGG_INT_COUNT,
 	AGG_INT_COUNT_DISTINCT,
@@ -24,6 +26,12 @@ enum
 	AGG_DOUBLE_SUM,
 	AGG_DOUBLE_AVG,
 	AGG_LAMBDA
+} AggType;
+
+struct Agg
+{
+	AggType type;
+	bool    distinct;
 };
 
 static inline const char*
@@ -50,5 +58,5 @@ agg_nameof(int id)
 	return NULL;
 }
 
-void agg_merge(Value*, Value*, int, int*);
-void agg_write(Set*, Value*, int, int*);
+void agg_merge(Value*, Value*, int, Agg*);
+void agg_write(Set*, Value*, int, Agg*);
