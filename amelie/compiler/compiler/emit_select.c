@@ -299,41 +299,24 @@ cmd_scan(Compiler* self, Plan* plan, Command* ref)
 static void
 cmd_scan_aggs(Compiler* self, Plan* plan, Command* ref)
 {
+	unused(ref);
 	auto select = plan->select;
 
 	// create result agg set
-	if (ref->id == COMMAND_SCAN_AGGS_ORDERED)
-	{
-		auto offset = emit_order(self, select, true);
-		plan->r = op4pin(self, CSET_ORDERED, TYPE_STORE,
-		                 select->expr_aggs.count,
-		                 select->expr_group_by.count,
-		                 offset);
-	} else {
-		plan->r = op3pin(self, CSET, TYPE_STORE,
-		                 select->expr_aggs.count,
-		                 select->expr_group_by.count);
-	}
+	plan->r = op3pin(self, CSET, TYPE_STORE, select->expr_aggs.count,
+	                 select->expr_group_by.count);
 
 	select->rset_agg = plan->r;
 
-	// create second ordered agg set to process distinct aggregates
+	// create and assign distinct set to the parent set to
+	// process distinct aggregates
 	if (select->distinct_aggs)
 	{
-		assert(ref->id == COMMAND_SCAN_AGGS_ORDERED);
+		// [group_by_keys, expr, agg_order] = row_pos
 
-		// set is using following keys [group_by_keys, agg_order, expr]
-		auto offset = code_data_pos(self->code_data);
-		auto count  = select->expr_group_by.count + 1 + 1;
-		auto order  = (bool*)buf_emplace(&self->code_data->data, sizeof(bool) * count);
-		memset(order, true, sizeof(bool) * count);
-
-		// CSET_ORDERED
-		auto rset_aggs_distinct = op4pin(self, CSET_ORDERED, TYPE_STORE, 0, count, offset);
-
-		// CSET_DISTINCT_AGGS
-		op2(self, CSET_DISTINCT_AGGS, plan->r, rset_aggs_distinct);
-		runpin(self, rset_aggs_distinct);
+		// CSET_DISTINCT
+		op3(self, CSET_DISTINCT, select->rset_agg, 1, // row_pos
+		    select->expr_group_by.count + 1 + 1);
 	}
 
 	// emit aggs seed expressions
@@ -425,19 +408,14 @@ cmd_union(Compiler* self, Plan* plan, Command* ref)
 }
 
 static void
-cmd_union_aggs(Compiler* self, Plan* plan, Command* ref)
+cmd_set_agg_merge(Compiler* self, Plan* plan, Command* ref)
 {
 	unused(ref);
 	auto select = plan->select;
 	assert(plan->r != -1);
 
-	// CUNION_AGGS
-	auto runion = op3pin(self, CUNION_AGGS, TYPE_STORE,
-	                     plan->r,
-	                     select->aggs);
-
-	runpin(self, plan->r);
-	plan->r = runion;
+	// CSET_AGG_MERGE
+	op2(self, CSET_AGG_MERGE, plan->r, select->aggs);
 }
 
 static void
@@ -486,18 +464,17 @@ typedef void (*PlanFunction)(Compiler*, Plan*, Command*);
 
 static PlanFunction cmds[] =
 {
-	[COMMAND_EXPR]              = cmd_expr,
-	[COMMAND_EXPR_SET]          = cmd_expr_set,
-	[COMMAND_SCAN]              = cmd_scan,
-	[COMMAND_SCAN_ORDERED]      = cmd_scan,
-	[COMMAND_SCAN_AGGS]         = cmd_scan_aggs,
-	[COMMAND_SCAN_AGGS_ORDERED] = cmd_scan_aggs,
-	[COMMAND_PIPE]              = cmd_pipe,
-	[COMMAND_SORT]              = cmd_sort,
-	[COMMAND_UNION]             = cmd_union,
-	[COMMAND_UNION_AGGS]        = cmd_union_aggs,
-	[COMMAND_RECV]              = cmd_recv,
-	[COMMAND_RECV_AGGS]         = cmd_recv_aggs
+	[COMMAND_EXPR]          = cmd_expr,
+	[COMMAND_EXPR_SET]      = cmd_expr_set,
+	[COMMAND_SCAN]          = cmd_scan,
+	[COMMAND_SCAN_ORDERED]  = cmd_scan,
+	[COMMAND_SCAN_AGGS]     = cmd_scan_aggs,
+	[COMMAND_PIPE]          = cmd_pipe,
+	[COMMAND_SORT]          = cmd_sort,
+	[COMMAND_UNION]         = cmd_union,
+	[COMMAND_SET_AGG_MERGE] = cmd_set_agg_merge,
+	[COMMAND_RECV]          = cmd_recv,
+	[COMMAND_RECV_AGGS]     = cmd_recv_aggs
 };
 
 static int

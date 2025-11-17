@@ -23,13 +23,12 @@ struct UnionSet
 
 struct UnionIterator
 {
-	StoreIterator  it;
-	UnionSet*      current_it;
-	Buf*           list;
-	int            list_count;
-	int64_t        limit;
-	Union*         ref;
-	StoreIterator* distinct_aggs;
+	StoreIterator it;
+	UnionSet*     current_it;
+	Buf*          list;
+	int           list_count;
+	int64_t       limit;
+	Union*        ref;
 };
 
 always_inline static inline UnionIterator*
@@ -107,43 +106,9 @@ union_iterator_next_distinct(UnionIterator* self)
 		if (unlikely(! next))
 			break;
 		if (! set_compare(set, first, next))
-		{
-			// merge aggregates (merge duplicates)
-			if (self->ref->aggs)
-				agg_merge_row(first, next, set->count_columns, self->ref->aggs);
 			continue;
-		}
 		break;
 	}
-
-	if (! self->distinct_aggs)
-		return first;
-
-	// merge count(distinct) aggregate states
-
-	// do merge join main set with the distinct aggs set to calculate
-	// unique entries for distinct aggs
-
-	// set:      [aggs, keys]
-	// set aggs: [keys, agg_order, expr]
-	for (;;)
-	{
-		auto next = self->distinct_aggs->current;
-		if (unlikely(! next))
-			break;
-
-		// compare only group by keys
-		if (! set_compare_keys_n(first + set->count_columns, next, set->count_keys))
-			break;
-
-		// process aggregate
-		auto agg_order = next[set->count_keys].integer;
-		agg_write(&self->ref->aggs[agg_order], &first[agg_order],
-		          &next[set->count_keys + 1]);
-
-		store_iterator_next(self->distinct_aggs);
-	}
-
 	return first;
 }
 
@@ -174,8 +139,6 @@ static inline void
 union_iterator_close(StoreIterator* arg)
 {
 	auto self = union_iterator_of(arg);
-	if (self->distinct_aggs)
-		store_iterator_close(self->distinct_aggs);
 	if (self->list)
 		buf_free(self->list);
 	am_free(arg);
@@ -226,7 +189,7 @@ union_iterator_open(UnionIterator* self)
 }
 
 static inline StoreIterator*
-union_iterator_allocate(Union* ref, StoreIterator* distinct_aggs)
+union_iterator_allocate(Union* ref)
 {
 	UnionIterator* self = am_malloc(sizeof(*self));
 	self->it.next       = union_iterator_next;
@@ -237,7 +200,6 @@ union_iterator_allocate(Union* ref, StoreIterator* distinct_aggs)
 	self->list_count    = 0;
 	self->limit         = INT64_MAX;
 	self->ref           = ref;
-	self->distinct_aggs = distinct_aggs;
 	errdefer(union_iterator_close, self);
 
 	union_iterator_open(self);

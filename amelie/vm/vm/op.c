@@ -227,19 +227,19 @@ OpDesc ops[] =
 	// set
 	{ CSET, "set" },
 	{ CSET_ORDERED, "set_ordered" },
-	{ CSET_DISTINCT_AGGS, "set_distinct_aggs" },
+	{ CSET_DISTINCT, "set_distinct" },
 	{ CSET_PTR, "set_ptr" },
 	{ CSET_SORT, "set_sort" },
 	{ CSET_ADD, "set_add" },
 	{ CSET_GET, "set_get" },
 	{ CSET_AGG, "set_agg" },
+	{ CSET_AGG_MERGE, "set_agg_merge" },
 	{ CSELF, "self" },
 
 	// union
 	{ CUNION, "union" },
-	{ CUNION_AGGS, "union_aggs" },
-	{ CRECV, "recv" },
 	{ CRECV_AGGS, "recv_aggs" },
+	{ CRECV, "recv" },
 
 	// table cursor
 	{ CTABLE_OPEN, "table_open" },

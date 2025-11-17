@@ -302,19 +302,19 @@ vm_run(Vm*       self,
 		// set
 		&&cset,
 		&&cset_ordered,
-		&&cset_distinct_aggs,
+		&&cset_distinct,
 		&&cset_ptr,
 		&&cset_sort,
 		&&cset_add,
 		&&cset_get,
 		&&cset_agg,
+		&&cset_agg_merge,
 		&&cself,
 
 		// union
 		&&cunion,
-		&&cunion_aggs,
-		&&crecv,
 		&&crecv_aggs,
+		&&crecv,
 
 		// table cursor
 		&&ctable_open,
@@ -1509,11 +1509,12 @@ cset_ordered:
 	value_set_store(&r[op->a], &set->store);
 	op_next;
 
-cset_distinct_aggs:
-	// [set, distinct_aggs_set]
-	set = (Set*)r[op->a].store;
-	set_set_distinct_aggs(set, (Set*)r[op->b].store);
-	value_reset(&r[op->b]);
+cset_distinct:
+	// [set, cols, keys]
+	// create new set and set as distinct to the parent set
+	set = set_create();
+	set_prepare(set, op->b, op->c, NULL);
+	set_set_distinct_aggs((Set*)r[op->a].store, set);
 	op_next;
 
 cset_ptr:
@@ -1539,7 +1540,7 @@ cset_get:
 	// get existing or create new row by key,
 	// return the row reference
 	set = (Set*)r[op->b].store;
-	rc = set_get(set, stack_at(stack, set->count_keys), true);
+	rc = set_upsert(set, stack_at(stack, set->count_keys), 0, NULL);
 	value_set_int(&r[op->a], rc);
 	stack_popn(stack, set->count_keys);
 	op_next;
@@ -1547,10 +1548,17 @@ cset_get:
 cset_agg:
 	// [set, row, aggs]
 	set = (Set*)r[op->a].store;
-	agg_write_row((Agg*)code_data_at(code_data, op->c), set,
-	              stack_at(stack, set->count_columns),
-	              r[op->b].integer);
+	agg_write((Agg*)code_data_at(code_data, op->c),
+	          stack_at(stack, set->count_columns),
+	          set,
+	          r[op->b].integer);
 	stack_popn(stack, set->count_columns);
+	op_next;
+
+cset_agg_merge:
+	// [set, aggs]
+	a = &r[op->a];
+	agg_merge_sets((Agg*)code_data_at(self->code_data, op->b), &a, 1);
 	op_next;
 
 cself:
@@ -1569,19 +1577,14 @@ cunion:
 	cunion(self, op);
 	op_next;
 
-cunion_aggs:
-	// [union, rset, aggs]
-	cunion_aggs(self, op);
+crecv_aggs:
+	// [set, rdispatch, aggs]
+	crecv_aggs(self, op);
 	op_next;
 
 crecv:
 	// [union, rdispatch, distinct, rlimit, roffset]
 	crecv(self, op);
-	op_next;
-
-crecv_aggs:
-	// [union, rdispatch, aggs]
-	crecv_aggs(self, op);
 	op_next;
 
 // table cursor

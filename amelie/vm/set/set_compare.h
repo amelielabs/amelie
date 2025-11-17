@@ -26,9 +26,9 @@ set_compare(Set* self, Value* row_a, Value* row_b)
 }
 
 hot static inline bool
-set_compare_keys_n(Value* key_a, Value* key_b, int count)
+set_compare_keys(Set* self, Value* key_a, Value* key_b)
 {
-	for (int i = 0; i < count; i++)
+	for (int i = 0; i < self->count_keys; i++)
 	{
 		int rc = value_compare(&key_a[i], &key_b[i]);
 		if (rc != 0)
@@ -38,7 +38,13 @@ set_compare_keys_n(Value* key_a, Value* key_b, int count)
 }
 
 hot static inline bool
-set_compare_keys(Set* self, Value* key_a, Value* key_b)
+set_compare_keys_ptr(Set* self, Value* key_a, Value** key_b)
 {
-	return set_compare_keys_n(key_a, key_b, self->count_keys);
+	for (int i = 0; i < self->count_keys; i++)
+	{
+		int rc = value_compare(&key_a[i], key_b[i]);
+		if (rc != 0)
+			return false;
+	}
+	return true;
 }

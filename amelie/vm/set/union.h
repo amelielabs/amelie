@@ -19,25 +19,16 @@ struct Union
 	List    list;
 	int     list_count;
 	bool    distinct;
-	Union*  distinct_aggs;
-	Agg*    aggs;
 	int64_t limit;
 	int64_t offset;
 };
 
-Union* union_create(void);
-
 static inline void
-union_set_aggs(Union* self, Agg* aggs)
+union_set(Union* self, bool distinct, int64_t limit, int64_t offset)
 {
-	self->aggs = aggs;
-}
-
-static inline void
-union_set_distinct_aggs(Union* self, Union* distinct_aggs)
-{
-	assert(! self->distinct_aggs);
-	self->distinct_aggs = distinct_aggs;
+	self->limit    = limit;
+	self->offset   = offset;
+	self->distinct = distinct;
 }
 
 static inline void
@@ -48,10 +39,4 @@ union_add(Union* self, Set* set)
 	self->list_count++;
 }
 
-static inline void
-union_set(Union* self, bool distinct, int64_t limit, int64_t offset)
-{
-	self->limit    = limit;
-	self->offset   = offset;
-	self->distinct = distinct;
-}
+Union* union_create(void);

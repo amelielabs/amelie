@@ -55,6 +55,5 @@ agg_nameof(int id)
 	return NULL;
 }
 
-void agg_write(Agg*, Value*, Value*);
-void agg_write_row(Agg*, Set*, Value*, int);
-void agg_merge_row(Value*, Value*, int, Agg*);
+void agg_write(Agg*, Value*, Set*, int);
+void agg_merge_sets(Agg*, Value**, int);

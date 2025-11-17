@@ -46,11 +46,8 @@ plan_pushdown_group_by(Plan* self)
 	// SELECT FROM GROUP BY
 	auto select = self->select;
 
-	// SCAN_AGGS_ORDERED
-	plan_add_scan_aggs_ordered(self);
-
-	// SORT
-	plan_add_sort(self);
+	// SCAN_AGGS
+	plan_add_scan_aggs(self);
 
 	// ----
 	plan_switch(self, true);
@@ -58,7 +55,7 @@ plan_pushdown_group_by(Plan* self)
 	// RECV_AGGS
 	plan_add_recv_aggs(self);
 
-	// PIPE (group_target->r = union)
+	// PIPE (group_target->r = set)
 	plan_add_pipe(self);
 
 	// SCAN (aggs and emit select exprs)
@@ -75,11 +72,8 @@ plan_pushdown_group_by_order_by(Plan* self)
 	// SELECT FROM GROUP BY ORDER BY
 	auto select = self->select;
 
-	// SCAN_AGGS_ORDERED
-	plan_add_scan_aggs_ordered(self);
-
-	// SORT
-	plan_add_sort(self);
+	// SCAN_AGGS
+	plan_add_scan_aggs(self);
 
 	// ----
 	plan_switch(self, true);
@@ -87,7 +81,7 @@ plan_pushdown_group_by_order_by(Plan* self)
 	// RECV_AGGS
 	plan_add_recv_aggs(self);
 
-	// PIPE (group_target->r = union)
+	// PIPE (group_target->r = set)
 	plan_add_pipe(self);
 
 	// SCAN_ORDERED (aggs and emit select exprs)

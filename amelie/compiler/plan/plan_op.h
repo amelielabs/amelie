@@ -80,13 +80,6 @@ plan_add_scan_aggs(Plan* self)
 }
 
 static inline void
-plan_add_scan_aggs_ordered(Plan* self)
-{
-	auto cmd = command_allocate(COMMAND_SCAN_AGGS_ORDERED, sizeof(Command));
-	plan_add(self, cmd);
-}
-
-static inline void
 plan_add_pipe(Plan* self)
 {
 	auto cmd = command_allocate(COMMAND_PIPE, sizeof(Command));
@@ -108,9 +101,9 @@ plan_add_union(Plan* self)
 }
 
 static inline void
-plan_add_union_aggs(Plan* self)
+plan_add_set_agg_merge(Plan* self)
 {
-	auto cmd = command_allocate(COMMAND_UNION_AGGS, sizeof(Command));
+	auto cmd = command_allocate(COMMAND_SET_AGG_MERGE, sizeof(Command));
 	plan_add(self, cmd);
 }
 

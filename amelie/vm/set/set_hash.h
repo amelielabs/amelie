@@ -38,6 +38,7 @@ set_hash_free(SetHash* self)
 {
 	if (self->hash)
 		am_free(self->hash);
+	set_hash_init(self);
 }
 
 static inline void
@@ -85,4 +86,50 @@ set_hash_resize(SetHash* self)
 	}
 	set_hash_free(self);
 	*self = hash;
+}
+
+hot static inline uint32_t
+set_hash_value(Value* value, uint32_t hash)
+{
+	int   data_size = 0;
+	void* data = NULL;
+	switch (value->type) {
+	case TYPE_INT:
+	case TYPE_BOOL:
+	case TYPE_TIMESTAMP:
+	case TYPE_DATE:
+		data = &value->integer;
+		data_size = sizeof(value->integer);
+		break;
+	case TYPE_INTERVAL:
+		data = &value->interval;
+		data_size = sizeof(value->interval);
+		break;
+	case TYPE_DOUBLE:
+		data = &value->dbl;
+		data_size = sizeof(value->dbl);
+		break;
+	case TYPE_STRING:
+		data = str_of(&value->string);
+		data_size = str_size(&value->string);
+		break;
+	case TYPE_JSON:
+		data = value->json;
+		data_size = value->json_size;
+		break;
+	case TYPE_VECTOR:
+		data = value->vector;
+		data_size = vector_size(value->vector);
+		break;
+	case TYPE_UUID:
+		data = &value->uuid;
+		data_size = sizeof(&value->uuid);
+		break;
+	case TYPE_NULL:
+		break;
+	default:
+		error("GROUP BY: unsupported key type");
+		break;
+	}
+	return hash ^= hash_fnv(data, data_size);
 }
