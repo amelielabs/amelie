@@ -169,7 +169,7 @@ set_upsert(Set*  self, Value* keys, uint32_t hash_value,
 	// create or resize hash
 	auto hash = &self->hash;
 	if (unlikely(! hash->hash))
-		set_hash_create(hash, 256);
+		set_hash_create(hash, 64);
 
 	if (unlikely(self->count_rows >= (hash->hash_size / 2)))
 		set_hash_resize(hash);
@@ -221,7 +221,7 @@ set_upsert_ptr(Set*  self, Value** keys, uint32_t hash_value,
 	// create or resize hash
 	auto hash = &self->hash;
 	if (unlikely(! hash->hash))
-		set_hash_create(hash, 256);
+		set_hash_create(hash, 64);
 
 	if (unlikely(self->count_rows >= (hash->hash_size / 2)))
 		set_hash_resize(hash);

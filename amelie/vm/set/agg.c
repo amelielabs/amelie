@@ -333,10 +333,12 @@ agg_merge_sets(Agg* aggs, Value** values, int count)
 		for (auto order = 1; order < count; order++)
 		{
 			auto with = (Set*)values[order]->store;
-			agg_merge_set(aggs, set, with);
-			if (set->distinct_aggs)
-				agg_merge_set_distinct(aggs, set, with);
-
+			if (with->count > 0)
+			{
+				agg_merge_set(aggs, set, with);
+				if (set->distinct_aggs)
+					agg_merge_set_distinct(aggs, set, with);
+			}
 			set_free(with, false);
 			value_reset(values[order]);
 		}
