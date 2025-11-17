@@ -37,18 +37,24 @@ union_iterator_of(StoreIterator* self)
 	return (UnionIterator*)self;
 }
 
+hot static inline void
+union_iterator_advance(UnionSet* set)
+{
+	auto current = set;
+	current->pos++;
+	if (likely(current->pos < current->set->count_rows))
+		current->current = set_row_of(current->set, current->pos);
+	else
+		current->current = NULL;
+}
+
 hot static inline Value*
 union_iterator_step(UnionIterator* self)
 {
 	auto list = (UnionSet*)self->list->start;
 	if (self->current_it)
 	{
-		auto current = self->current_it;
-		current->pos++;
-		if (likely(current->pos < current->set->count_rows))
-			current->current = set_row_of(current->set, current->pos);
-		else
-			current->current = NULL;
+		union_iterator_advance(self->current_it);
 		self->current_it = NULL;
 	}
 
@@ -110,6 +116,136 @@ union_iterator_next_distinct(UnionIterator* self)
 		break;
 	}
 	return first;
+}
+
+hot static inline Value*
+union_iterator_next_join(UnionIterator* self)
+{
+	// return unique records which matches all sets
+	auto list = (UnionSet*)self->list->start;
+	if (self->current_it)
+	{
+		// advance all
+		for (auto pos = 0; pos < self->list_count; pos++)
+			union_iterator_advance(&list[pos]);
+		self->current_it = NULL;
+	}
+
+	for (;;)
+	{
+		auto      matches = 0;
+		UnionSet* min_iterator = NULL;
+		Value*    min = NULL;
+		for (auto pos = 0; pos < self->list_count; pos++)
+		{
+			auto current = &list[pos];
+			auto row = current->current;
+			if (! row)
+			{
+				// stop on any end
+				return NULL;
+			}
+
+			if (min == NULL)
+			{
+				min_iterator = current;
+				min = row;
+				continue;
+			}
+
+			int rc;
+			rc = set_compare(current->set, min, row);
+			switch (rc) {
+			case 0:
+				matches++;
+				break;
+			case 1:
+				min_iterator = current;
+				min = row;
+				break;
+			case -1:
+				break;
+			}
+		}
+
+		// match
+		if (matches == self->list_count)
+		{
+			self->current_it = min_iterator;
+			return min;
+		}
+
+		// iterate min
+		union_iterator_advance(min_iterator);
+	}
+
+	// unreach
+	return NULL;
+}
+
+hot static inline Value*
+union_iterator_next_except(UnionIterator* self)
+{
+	// return unique records which exists in the first set only
+	auto list = (UnionSet*)self->list->start;
+	if (self->current_it)
+	{
+		union_iterator_advance(self->current_it);
+		self->current_it = NULL;
+	}
+
+	for (;;)
+	{
+		auto      matches = 0;
+		UnionSet* min_iterator = NULL;
+		Value*    min = NULL;
+		for (auto pos = 0; pos < self->list_count; pos++)
+		{
+			auto current = &list[pos];
+			auto row = current->current;
+			if (! row)
+			{
+				// stop on first set end
+				if (pos == 0)
+					return NULL;
+				continue;
+			}
+
+			if (min == NULL)
+			{
+				min_iterator = current;
+				min = row;
+				continue;
+			}
+
+			int rc;
+			rc = set_compare(current->set, min, row);
+			switch (rc) {
+			case 0:
+				matches++;
+				break;
+			case 1:
+				min_iterator = current;
+				min = row;
+				break;
+			case -1:
+				break;
+			}
+
+			// unique first set record
+			if (!matches && min_iterator == &list[0])
+			{
+				self->current_it = min_iterator;
+				return min;
+			}
+
+			// iterate min
+			union_iterator_advance(min_iterator);
+		}
+	}
+
+	// unreach
+	return NULL;
 }
 
 hot static inline void
