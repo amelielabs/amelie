@@ -154,7 +154,7 @@ plan_main(Plan* self, bool emit_store)
 
 	// SELECT FROM GROUP BY [WHERE] [HAVING] [ORDER BY] [LIMIT/OFFSET]
 	// SELECT aggregate FROM
-	auto order_by = &select->expr_order_by;
+	auto order_by = &select->order_by;
 	if (! from_empty(from_group))
 	{
 		if (order_by->count > 0)

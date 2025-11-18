@@ -46,7 +46,7 @@ parse_select_group_by(Stmt* self, AstSelect* select)
 	Expr ctx;
 	expr_init(&ctx);
 
-	auto list = &select->expr_group_by;
+	auto list = &select->group_by;
 	for (;;)
 	{
 		auto expr = parse_expr(self, &ctx);
@@ -69,7 +69,7 @@ parse_select_order_by(Stmt* self, AstSelect* select)
 	expr_init(&ctx);
 	ctx.aggs = &select->expr_aggs;
 
-	auto list = &select->expr_order_by;
+	auto list = &select->order_by;
 	for (;;)
 	{
 		// expr
@@ -116,8 +116,8 @@ parse_select_distinct(Stmt* self, AstSelect* select)
 		auto expr = parse_expr(self, &ctx);
 
 		// set distinct expr as order by key
-		auto order = ast_order_allocate(select->expr_order_by.count, expr, true);
-		ast_list_add(&select->expr_order_by, &order->ast);
+		auto order = ast_order_allocate(select->order_by.count, expr, true);
+		ast_list_add(&select->order_by, &order->ast);
 
 		// ,
 		if (stmt_if(self, ','))
@@ -135,8 +135,9 @@ parse_select(Stmt* self, From* outer, bool subquery)
 	// SELECT [ALL | DISTINCT] expr, ...
 	// [INTO name]
 	// [FROM name, [...]]
-	// [GROUP BY]
 	// [WHERE expr]
+	// [GROUP BY]
+	// [HAVING]
 	// [ORDER BY]
 	// [LIMIT expr] [OFFSET expr]
 	auto select = ast_select_allocate(self, outer, self->block);
@@ -254,21 +255,21 @@ parse_select(Stmt* self, From* outer, bool subquery)
 	}
 
 	// add group by target
-	if (select->expr_group_by.count > 0 || select->expr_aggs.count > 0)
+	if (select->group_by.count > 0 || select->expr_aggs.count > 0)
 	{
 		if (from_empty(&select->from))
 			stmt_error(self, NULL, "no targets to use with GROUP BY or aggregation");
 
 		// add at least one group by key
-		auto list = &select->expr_group_by;
+		auto list = &select->group_by;
 		if (! list->count)
 		{
 			auto expr = ast(KTRUE);
 			auto group = ast_group_allocate(list->count, expr);
 			ast_list_add(list, &group->ast);
-			select->expr_group_by_has = false;
+			select->group_by_has = false;
 		} else {
-			select->expr_group_by_has = true;
+			select->group_by_has = true;
 		}
 
 		// create group by target to scan agg set
@@ -276,7 +277,7 @@ parse_select(Stmt* self, From* outer, bool subquery)
 		target->type          = TARGET_GROUP_BY;
 		target->ast           = from_first(&select->from)->ast;
 		target->name          = from_first(&select->from)->name;
-		target->from_group_by = &select->expr_group_by;
+		target->from_group_by = &select->group_by;
 		target->columns       = &select->from_group_columns;
 		from_add(&select->from_group, target);
 
@@ -346,7 +347,7 @@ parse_select_resolve_group_by(AstSelect* select)
 	}
 
 	// add columns for keys
-	node = select->expr_group_by.list;
+	node = select->group_by.list;
 	for (; node; node = node->next)
 	{
 		auto group = ast_group_of(node->ast);
@@ -364,7 +365,7 @@ parse_select_resolve_group_by(AstSelect* select)
 static void
 parse_select_resolve_group_by_alias(Stmt* self, AstSelect* select)
 {
-	auto node = select->expr_group_by.list;
+	auto node = select->group_by.list;
 	for (; node; node = node->next)
 	{
 		auto group = ast_group_of(node->ast);
@@ -409,7 +410,7 @@ parse_select_resolve_group_by_alias(Stmt* self, AstSelect* select)
 static void
 parse_select_resolve_order_by(Stmt* self, AstSelect* select)
 {
-	auto node = select->expr_order_by.list;
+	auto node = select->order_by.list;
 	while (node)
 	{
 		auto order = ast_order_of(node->ast);
@@ -462,8 +463,8 @@ parse_select_resolve(Stmt* self)
 			// set distinct expressions as order by keys
 			for (auto as = select->ret.list; as; as = as->next)
 			{
-				auto order = ast_order_allocate(select->expr_order_by.count, as->l, true);
-				ast_list_add(&select->expr_order_by, &order->ast);
+				auto order = ast_order_allocate(select->order_by.count, as->l, true);
+				ast_list_add(&select->order_by, &order->ast);
 			}
 		}
 
@@ -475,7 +476,7 @@ parse_select_resolve(Stmt* self)
 		}
 
 		// resolve ORDER BY alias/int cases
-		if (select->expr_order_by.count > 0)
+		if (select->order_by.count > 0)
 			parse_select_resolve_order_by(self, select);
 	}
 }

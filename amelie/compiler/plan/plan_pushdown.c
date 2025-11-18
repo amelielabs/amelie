@@ -193,7 +193,7 @@ plan_pushdown(Plan* self)
 	auto from       = &select->from;
 	auto from_group = &select->from_group;
 
-	auto order_by = &select->expr_order_by;
+	auto order_by = &select->order_by;
 	if (! from_empty(from_group))
 	{
 		if (order_by->count > 0)

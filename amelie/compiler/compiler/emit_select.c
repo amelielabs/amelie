@@ -57,7 +57,7 @@ on_match(Scan* self)
 	}
 
 	// push order by key (if any)
-	auto node = select->expr_order_by.list;
+	auto node = select->order_by.list;
 	for (; node; node = node->next)
 		emit_push(cp, self->from, ast_order_of(node->ast)->expr);
 
@@ -80,7 +80,7 @@ on_match_aggs(Scan* self)
 	// the row reference
 
 	// push group by keys
-	auto node = select->expr_group_by.list;
+	auto node = select->group_by.list;
 	for (; node; node = node->next)
 	{
 		auto group = ast_group_of(node->ast);
@@ -175,7 +175,7 @@ on_match_aggs_empty(Compiler* self, AstSelect* select)
 	auto from = &select->from;
 
 	// push group by keys
-	auto node = select->expr_group_by.list;
+	auto node = select->group_by.list;
 	while (node)
 	{
 		auto group = ast_group_of(node->ast);
@@ -213,14 +213,14 @@ emit_order(Compiler* self, AstSelect* select, bool use_group_by)
 	int order_offset = code_data_pos(self->code_data);
 	if (use_group_by)
 	{
-		auto size  = sizeof(bool) * select->expr_group_by.count;
+		auto size  = sizeof(bool) * select->group_by.count;
 		auto order = (bool*)buf_emplace(&self->code_data->data, size);
 		memset(order, true, size);
 	} else
 	{
 		// write order by asc/desc flags
-		auto order = (bool*)buf_emplace(&self->code_data->data, sizeof(bool) * select->expr_order_by.count);
-		auto node = select->expr_order_by.list;
+		auto order = (bool*)buf_emplace(&self->code_data->data, sizeof(bool) * select->order_by.count);
+		auto node = select->order_by.list;
 		while (node)
 		{
 			auto ref = ast_order_of(node->ast);
@@ -278,7 +278,7 @@ cmd_scan(Compiler* self, Plan* plan, Command* ref)
 		auto offset = emit_order(self, select, false);
 		plan->r = op4pin(self, CSET_ORDERED, TYPE_STORE,
 		                 select->ret.count,
-		                 select->expr_order_by.count,
+		                 select->order_by.count,
 		                 offset);
 	} else {
 		plan->r = op3pin(self, CSET, TYPE_STORE,
@@ -304,7 +304,7 @@ cmd_scan_aggs(Compiler* self, Plan* plan, Command* ref)
 
 	// create result agg set
 	plan->r = op3pin(self, CSET, TYPE_STORE, select->expr_aggs.count,
-	                 select->expr_group_by.count);
+	                 select->group_by.count);
 
 	select->rset_agg = plan->r;
 
@@ -316,7 +316,7 @@ cmd_scan_aggs(Compiler* self, Plan* plan, Command* ref)
 
 		// CSET_DISTINCT
 		op3(self, CSET_DISTINCT, select->rset_agg, 1, // row_pos
-		    select->expr_group_by.count + 1 + 1);
+		    select->group_by.count + 1 + 1);
 	}
 
 	// emit aggs seed expressions
@@ -341,7 +341,7 @@ cmd_scan_aggs(Compiler* self, Plan* plan, Command* ref)
 	// select aggr [without group by]
 	//
 	// force create empty record by processing one NULL value
-	if (! select->expr_group_by_has)
+	if (! select->group_by_has)
 		on_match_aggs_empty(self, select);
 
 	// free seed values
