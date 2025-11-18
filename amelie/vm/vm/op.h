@@ -214,6 +214,7 @@ enum
 
 	// union
 	CUNION,
+	CUNION_ADD,
 	CRECV_AGGS,
 	CRECV,
 

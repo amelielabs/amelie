@@ -269,36 +269,31 @@ cclose(Vm* self, Op* op)
 void
 cunion(Vm* self, Op* op)
 {
-	// [union, rset, distinct, limit, offset]
+	// [union, distinct, limit, offset]
 	auto result = union_create();
 	value_set_store(reg_at(&self->r, op->a), &result->store);
 
-	// [union, set]
-	auto set = reg_at(&self->r, op->b);
-	union_add(result, (Set*)set->store);
-	value_reset(set);
-
 	// distinct
-	bool distinct = op->c;
+	bool distinct = op->b;
 
 	// limit
 	int64_t limit = INT64_MAX;
-	if (op->d != -1)
+	if (op->c != -1)
 	{
-		if (unlikely(reg_at(&self->r, op->d)->type != TYPE_INT))
+		if (unlikely(reg_at(&self->r, op->c)->type != TYPE_INT))
 			error("LIMIT: integer type expected");
-		limit = reg_at(&self->r, op->d)->integer;
+		limit = reg_at(&self->r, op->c)->integer;
 		if (unlikely(limit < 0))
 			error("LIMIT: positive integer value expected");
 	}
 
 	// offset
 	int64_t offset = 0;
-	if (op->e != -1)
+	if (op->d != -1)
 	{
-		if (unlikely(reg_at(&self->r, op->e)->type != TYPE_INT))
+		if (unlikely(reg_at(&self->r, op->d)->type != TYPE_INT))
 			error("OFFSET: integer type expected");
-		offset = reg_at(&self->r, op->e)->integer;
+		offset = reg_at(&self->r, op->d)->integer;
 		if (unlikely(offset < 0))
 			error("OFFSET: positive integer value expected");
 	}

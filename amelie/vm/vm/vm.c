@@ -313,6 +313,7 @@ vm_run(Vm*       self,
 
 		// union
 		&&cunion,
+		&&cunion_add,
 		&&crecv_aggs,
 		&&crecv,
 
@@ -1573,8 +1574,14 @@ cself:
 	op_next;
 
 cunion:
-	// [union, rset, distinct, limit, offset]
+	// [union, distinct, limit, offset]
 	cunion(self, op);
+	op_next;
+
+cunion_add:
+	// [union, rset]
+	union_add((Union*)r[op->a].store, (Set*)r[op->b].store);
+	value_reset(&r[op->b]);
 	op_next;
 
 crecv_aggs:

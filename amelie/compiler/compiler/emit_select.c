@@ -391,11 +391,13 @@ cmd_union(Compiler* self, Plan* plan, Command* ref)
 		roffset = emit_expr(self, &select->from, select->expr_offset);
 
 	// CUNION
-	auto runion = op5pin(self, CUNION, TYPE_STORE,
-	                     plan->r,
+	auto runion = op4pin(self, CUNION, TYPE_STORE,
 	                     select->distinct,
 	                     rlimit,
 	                     roffset);
+
+	// CUNION_ADD
+	op2(self, CUNION_ADD, runion, plan->r);
 
 	runpin(self, plan->r);
 	plan->r = runion;

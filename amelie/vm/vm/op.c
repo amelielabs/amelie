@@ -238,6 +238,7 @@ OpDesc ops[] =
 
 	// union
 	{ CUNION, "union" },
+	{ CUNION_ADD, "union_add" },
 	{ CRECV_AGGS, "recv_aggs" },
 	{ CRECV, "recv" },
 
