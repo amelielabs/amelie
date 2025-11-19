@@ -14,10 +14,9 @@
 // set
 #include "set/set_hash.h"
 #include "set/set.h"
+#include "set/set_iterator.h"
 #include "set/set_list.h"
 #include "set/set_cache.h"
-#include "set/set_compare.h"
-#include "set/set_iterator.h"
 
 // aggregate
 #include "set/agg.h"

@@ -268,8 +268,9 @@ explain insert into test values (1),(2),(3) returning *;
   "main": {
     "00": "set_ptr             1      -      0     ",
     "01": "send_shard          0      1      0     # public.test (insert, closing)",
-    "02": "recv                1      0      -1    ",
-    "03": "ret                 1      0      -     "
+    "02": "union               1      0      0     ",
+    "03": "recv                1      0      0     ",
+    "04": "ret                 1      0      -     "
   },
   "pushdown": {
     "00": "set                 0      1      0     ",
@@ -299,8 +300,9 @@ explain insert into test () values (), (), () returning *;
   "main": {
     "00": "set_ptr             1      -      0     ",
     "01": "send_shard          0      1      0     # public.test (insert, closing)",
-    "02": "recv                1      0      -1    ",
-    "03": "ret                 1      0      -     "
+    "02": "union               1      0      0     ",
+    "03": "recv                1      0      0     ",
+    "04": "ret                 1      0      -     "
   },
   "pushdown": {
     "00": "set                 0      1      0     ",
@@ -415,8 +417,9 @@ explain select * from test where ts > "1970-01-01 01:12:59.909090"::timestamp;
 [{
   "main": {
     "00": "send_all            0      0      20    # public.test (select, closing)",
-    "01": "recv                1      0      -1    ",
-    "02": "ret                 1      0      -     "
+    "01": "union               1      0      0     ",
+    "02": "recv                1      0      0     ",
+    "03": "ret                 1      0      -     "
   },
   "pushdown": {
     "00": "set                 0      2      0     ",
@@ -442,8 +445,9 @@ explain select * from test where ts > timestamp "1970-01-01 01:12:59.909090";
 [{
   "main": {
     "00": "send_all            0      0      20    # public.test (select, closing)",
-    "01": "recv                1      0      -1    ",
-    "02": "ret                 1      0      -     "
+    "01": "union               1      0      0     ",
+    "02": "recv                1      0      0     ",
+    "03": "ret                 1      0      -     "
   },
   "pushdown": {
     "00": "set                 0      2      0     ",
@@ -490,8 +494,9 @@ explain select * from test;
 [{
   "main": {
     "00": "send_all            0      0      20    # public.test (select, closing)",
-    "01": "recv                1      0      -1    ",
-    "02": "ret                 1      0      -     "
+    "01": "union               1      0      0     ",
+    "02": "recv                1      0      0     ",
+    "03": "ret                 1      0      -     "
   },
   "pushdown": {
     "00": "set                 0      1      0     ",
@@ -515,8 +520,9 @@ explain select * from test where id > timestamp '1970-01-01 00:00:01.000002';
 [{
   "main": {
     "00": "send_all            0      0      20    # public.test (select, closing)",
-    "01": "recv                1      0      -1    ",
-    "02": "ret                 1      0      -     "
+    "01": "union               1      0      0     ",
+    "02": "recv                1      0      0     ",
+    "03": "ret                 1      0      -     "
   },
   "pushdown": {
     "00": "set                 0      1      0     ",
@@ -541,8 +547,9 @@ explain select * from test where id >= timestamp '1970-01-01 00:00:01.000002';
 [{
   "main": {
     "00": "send_all            0      0      20    # public.test (select, closing)",
-    "01": "recv                1      0      -1    ",
-    "02": "ret                 1      0      -     "
+    "01": "union               1      0      0     ",
+    "02": "recv                1      0      0     ",
+    "03": "ret                 1      0      -     "
   },
   "pushdown": {
     "00": "set                 0      1      0     ",
@@ -567,8 +574,9 @@ explain select * from test where id < timestamp '1970-01-01 00:00:01.000003';
 [{
   "main": {
     "00": "send_all            0      0      20    # public.test (select, closing)",
-    "01": "recv                1      0      -1    ",
-    "02": "ret                 1      0      -     "
+    "01": "union               1      0      0     ",
+    "02": "recv                1      0      0     ",
+    "03": "ret                 1      0      -     "
   },
   "pushdown": {
     "00": "set                 0      1      0     ",
@@ -596,8 +604,9 @@ explain select * from test where id = timestamp '1970-01-01 00:00:01.000003';
 [{
   "main": {
     "00": "send_lookup         0      -      0     # public.test (select, closing)",
-    "01": "recv                1      0      -1    ",
-    "02": "ret                 1      0      -     "
+    "01": "union               1      0      0     ",
+    "02": "recv                1      0      0     ",
+    "03": "ret                 1      0      -     "
   },
   "pushdown": {
     "00": "set                 0      1      0     ",
@@ -629,8 +638,9 @@ explain select * from test where i > "1 year 1 day 10 hour"::interval;
 [{
   "main": {
     "00": "send_all            0      0      20    # public.test (select, closing)",
-    "01": "recv                1      0      -1    ",
-    "02": "ret                 1      0      -     "
+    "01": "union               1      0      0     ",
+    "02": "recv                1      0      0     ",
+    "03": "ret                 1      0      -     "
   },
   "pushdown": {
     "00": "set                 0      2      0     ",
@@ -679,8 +689,9 @@ explain select * from test where d >= date '1970-01-01';
 [{
   "main": {
     "00": "send_all            0      0      20    # public.test (select, closing)",
-    "01": "recv                1      0      -1    ",
-    "02": "ret                 1      0      -     "
+    "01": "union               1      0      0     ",
+    "02": "recv                1      0      0     ",
+    "03": "ret                 1      0      -     "
   },
   "pushdown": {
     "00": "set                 0      2      0     ",
@@ -774,8 +785,9 @@ explain select id from test where id = uuid "00000000-0000-0000-0000-00000000000
 [{
   "main": {
     "00": "send_lookup         0      -      0     # public.test (select, closing)",
-    "01": "recv                1      0      -1    ",
-    "02": "ret                 1      0      -     "
+    "01": "union               1      0      0     ",
+    "02": "recv                1      0      0     ",
+    "03": "ret                 1      0      -     "
   },
   "pushdown": {
     "00": "set                 0      1      0     ",
@@ -847,8 +859,9 @@ explain select * from test;
 [{
   "main": {
     "00": "send_all            0      0      20    # public.test (select, closing)",
-    "01": "recv                1      0      -1    ",
-    "02": "ret                 1      0      -     "
+    "01": "union               1      0      0     ",
+    "02": "recv                1      0      0     ",
+    "03": "ret                 1      0      -     "
   },
   "pushdown": {
     "00": "set                 0      2      0     ",
@@ -870,8 +883,9 @@ explain select * from test use index (i);
 [{
   "main": {
     "00": "send_all            0      0      14    # public.test (select, closing)",
-    "01": "recv                1      0      -1    ",
-    "02": "ret                 1      0      -     "
+    "01": "union               1      0      0     ",
+    "02": "recv                1      0      0     ",
+    "03": "ret                 1      0      -     "
   },
   "pushdown": {
     "00": "set                 0      2      0     ",
@@ -978,10 +992,11 @@ explain insert into test select * from src;
 [{
   "main": {
     "00": "send_all            0      0      19    # public.src (select)",
-    "01": "recv                1      0      -1    ",
-    "02": "dup                 2      1      0     ",
-    "03": "send_shard          0      2      0     # public.test (insert, closing)",
-    "04": "ret                 -1     0      -     "
+    "01": "union               1      0      0     ",
+    "02": "recv                1      0      0     ",
+    "03": "dup                 2      1      0     ",
+    "04": "send_shard          0      2      0     # public.test (insert, closing)",
+    "05": "ret                 -1     0      -     "
   },
   "pushdown": {
     "00": "set                 0      2      0     ",

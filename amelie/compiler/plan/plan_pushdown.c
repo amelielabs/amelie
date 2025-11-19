@@ -117,8 +117,8 @@ plan_pushdown_order_by(Plan* self)
 	// ----
 	plan_switch(self, true);
 
-	// RECV
-	plan_add_recv(self);
+	// RECV_ORDERED
+	plan_add_recv_ordered(self);
 }
 
 static void
@@ -152,7 +152,7 @@ plan_pushdown_order_by_index(Plan* self)
 	plan_switch(self, true);
 
 	// RECV
-	plan_add_recv(self);
+	plan_add_recv_ordered(self);
 }
 
 static void

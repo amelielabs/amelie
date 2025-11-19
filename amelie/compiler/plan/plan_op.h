@@ -115,6 +115,13 @@ plan_add_recv(Plan* self)
 }
 
 static inline void
+plan_add_recv_ordered(Plan* self)
+{
+	auto cmd = command_allocate(COMMAND_RECV_ORDERED, sizeof(Command));
+	plan_add(self, cmd);
+}
+
+static inline void
 plan_add_recv_aggs(Plan* self)
 {
 	auto cmd = command_allocate(COMMAND_RECV_AGGS, sizeof(Command));

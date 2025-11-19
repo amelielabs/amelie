@@ -9,8 +9,9 @@ explain select test.*, ref.* from test, ref;
 [{
   "main": {
     "00": "send_all            0      0      39    # public.test (select, closing)",
-    "01": "recv                1      0      -1    ",
-    "02": "ret                 1      0      -     "
+    "01": "union               1      0      0     ",
+    "02": "recv                1      0      0     ",
+    "03": "ret                 1      0      -     "
   },
   "pushdown": {
     "00": "set                 0      4      0     ",
@@ -40,8 +41,9 @@ explain select test.*, ref.* from ref, test;
 [{
   "main": {
     "00": "send_all            0      0      39    # public.ref (select, closing)",
-    "01": "recv                1      0      -1    ",
-    "02": "ret                 1      0      -     "
+    "01": "union               1      0      0     ",
+    "02": "recv                1      0      0     ",
+    "03": "ret                 1      0      -     "
   },
   "pushdown": {
     "00": "set                 0      4      0     ",
@@ -71,8 +73,9 @@ explain select t.* from test, test t;
 [{
   "main": {
     "00": "send_all            0      0      40    # public.test (select, closing)",
-    "01": "recv                1      0      -1    ",
-    "02": "ret                 1      0      -     "
+    "01": "union               1      0      0     ",
+    "02": "recv                1      0      0     ",
+    "03": "ret                 1      0      -     "
   },
   "pushdown": {
     "00": "set                 0      2      0     ",
@@ -98,8 +101,9 @@ explain select test.id, ref.id from test join ref on true;
 [{
   "main": {
     "00": "send_all            0      0      39    # public.test (select, closing)",
-    "01": "recv                1      0      -1    ",
-    "02": "ret                 1      0      -     "
+    "01": "union               1      0      0     ",
+    "02": "recv                1      0      0     ",
+    "03": "ret                 1      0      -     "
   },
   "pushdown": {
     "00": "set                 0      2      0     ",
@@ -127,8 +131,9 @@ explain select test.id, ref.id from test join ref on test.id = ref.id;
 [{
   "main": {
     "00": "send_all            0      0      39    # public.test (select, closing)",
-    "01": "recv                1      0      -1    ",
-    "02": "ret                 1      0      -     "
+    "01": "union               1      0      0     ",
+    "02": "recv                1      0      0     ",
+    "03": "ret                 1      0      -     "
   },
   "pushdown": {
     "00": "set                 0      2      0     ",
@@ -159,8 +164,9 @@ explain select test.id, ref.id from test join ref on test.id = ref.id join ref r
 [{
   "main": {
     "00": "send_all            0      0      58    # public.test (select, closing)",
-    "01": "recv                1      0      -1    ",
-    "02": "ret                 1      0      -     "
+    "01": "union               1      0      0     ",
+    "02": "recv                1      0      0     ",
+    "03": "ret                 1      0      -     "
   },
   "pushdown": {
     "00": "set                 0      2      0     ",
@@ -199,8 +205,9 @@ explain select test.id, ref.id from test join ref on test.id = ref.id join ref r
 [{
   "main": {
     "00": "send_all            0      0      58    # public.test (select, closing)",
-    "01": "recv                1      0      -1    ",
-    "02": "ret                 1      0      -     "
+    "01": "union               1      0      0     ",
+    "02": "recv                1      0      0     ",
+    "03": "ret                 1      0      -     "
   },
   "pushdown": {
     "00": "set                 0      2      0     ",
@@ -244,8 +251,9 @@ explain select test.id, ref.id from test, ref where test.id = ref.id;
 [{
   "main": {
     "00": "send_all            0      0      39    # public.test (select, closing)",
-    "01": "recv                1      0      -1    ",
-    "02": "ret                 1      0      -     "
+    "01": "union               1      0      0     ",
+    "02": "recv                1      0      0     ",
+    "03": "ret                 1      0      -     "
   },
   "pushdown": {
     "00": "set                 0      2      0     ",
@@ -275,8 +283,9 @@ explain select test.id, ref.id from test, ref where ref.id = test.id;
 [{
   "main": {
     "00": "send_all            0      0      39    # public.test (select, closing)",
-    "01": "recv                1      0      -1    ",
-    "02": "ret                 1      0      -     "
+    "01": "union               1      0      0     ",
+    "02": "recv                1      0      0     ",
+    "03": "ret                 1      0      -     "
   },
   "pushdown": {
     "00": "set                 0      2      0     ",
@@ -306,8 +315,9 @@ explain select test.id, ref.id from test, ref where ref.id = 1;
 [{
   "main": {
     "00": "send_all            0      0      39    # public.test (select, closing)",
-    "01": "recv                1      0      -1    ",
-    "02": "ret                 1      0      -     "
+    "01": "union               1      0      0     ",
+    "02": "recv                1      0      0     ",
+    "03": "ret                 1      0      -     "
   },
   "pushdown": {
     "00": "set                 0      2      0     ",
@@ -336,8 +346,9 @@ explain select test.id, ref.id from test, ref where ref.id = 1 and test.id = 1;
 [{
   "main": {
     "00": "send_lookup         0      -      0     # public.test (select, closing)",
-    "01": "recv                1      0      -1    ",
-    "02": "ret                 1      0      -     "
+    "01": "union               1      0      0     ",
+    "02": "recv                1      0      0     ",
+    "03": "ret                 1      0      -     "
   },
   "pushdown": {
     "00": "set                 0      2      0     ",
@@ -370,8 +381,9 @@ explain select test.id, ref.id from test, ref where ref.id >= test.id;
 [{
   "main": {
     "00": "send_all            0      0      39    # public.test (select, closing)",
-    "01": "recv                1      0      -1    ",
-    "02": "ret                 1      0      -     "
+    "01": "union               1      0      0     ",
+    "02": "recv                1      0      0     ",
+    "03": "ret                 1      0      -     "
   },
   "pushdown": {
     "00": "set                 0      2      0     ",
@@ -411,8 +423,9 @@ explain select test.id, ref.id from test join ref using(id);
 [{
   "main": {
     "00": "send_all            0      0      39    # public.test (select, closing)",
-    "01": "recv                1      0      -1    ",
-    "02": "ret                 1      0      -     "
+    "01": "union               1      0      0     ",
+    "02": "recv                1      0      0     ",
+    "03": "ret                 1      0      -     "
   },
   "pushdown": {
     "00": "set                 0      2      0     ",
@@ -446,8 +459,9 @@ explain select test.id, ref.id from test join ref using (id) join ref ref2 using
 [{
   "main": {
     "00": "send_all            0      0      58    # public.test (select, closing)",
-    "01": "recv                1      0      -1    ",
-    "02": "ret                 1      0      -     "
+    "01": "union               1      0      0     ",
+    "02": "recv                1      0      0     ",
+    "03": "ret                 1      0      -     "
   },
   "pushdown": {
     "00": "set                 0      2      0     ",
@@ -493,11 +507,13 @@ explain with a as (select * from test) select * from test, a where test.id = a.i
 [{
   "main": {
     "00": "send_all            0      0      20    # public.test (select)",
-    "01": "recv                1      0      -1    ",
-    "02": "push_ref            1      1      0     ",
-    "03": "send_all            0      1      64    # public.test (select, closing)",
-    "04": "recv                2      0      -1    ",
-    "05": "ret                 2      0      -     "
+    "01": "union               1      0      0     ",
+    "02": "recv                1      0      0     ",
+    "03": "push_ref            1      1      0     ",
+    "04": "send_all            0      1      64    # public.test (select, closing)",
+    "05": "union               2      0      0     ",
+    "06": "recv                2      0      0     ",
+    "07": "ret                 2      0      -     "
   },
   "pushdown": {
     "00": "set                 0      2      0     ",
@@ -543,11 +559,13 @@ explain with a as (select * from test) select * from test, a where test.id = 1;
 [{
   "main": {
     "00": "send_all            0      0      20    # public.test (select)",
-    "01": "recv                1      0      -1    ",
-    "02": "push_ref            1      1      0     ",
-    "03": "send_lookup         0      -      1     # public.test (select, closing)",
-    "04": "recv                2      0      -1    ",
-    "05": "ret                 2      0      -     "
+    "01": "union               1      0      0     ",
+    "02": "recv                1      0      0     ",
+    "03": "push_ref            1      1      0     ",
+    "04": "send_lookup         0      -      1     # public.test (select, closing)",
+    "05": "union               2      0      0     ",
+    "06": "recv                2      0      0     ",
+    "07": "ret                 2      0      -     "
   },
   "pushdown": {
     "00": "set                 0      2      0     ",
@@ -593,31 +611,32 @@ explain with a as (select * from test) select * from a, test where test.id = a.i
 [{
   "main": {
     "00": "send_all            0      0      20    # public.test (select, closing)",
-    "01": "recv                1      0      -1    ",
-    "02": "set                 0      4      0     ",
-    "03": "dup                 2      1      0     ",
-    "04": "store_open          3      2      23    ",
-    "05": "store_read          4      3      0     ",
-    "06": "push                4      0      0     ",
-    "07": "table_openl         4      44     21    # public.test (primary)",
-    "08": "table_readi32       5      4      0     ",
-    "09": "store_read          6      3      0     ",
-    "10": "equii               7      5      6     ",
-    "11": "jntr                21     7      0     ",
-    "12": "store_read          5      3      0     ",
-    "13": "push                5      0      0     ",
-    "14": "store_read          5      3      1     ",
-    "15": "push                5      0      0     ",
-    "16": "table_readi32       5      4      0     ",
-    "17": "push                5      0      0     ",
-    "18": "table_readi32       5      4      1     ",
-    "19": "push                5      0      0     ",
-    "20": "set_add             0      0      0     ",
-    "21": "free                4      0      0     ",
-    "22": "store_next          3      5      0     ",
-    "23": "free                3      0      0     ",
-    "24": "free                2      0      0     ",
-    "25": "ret                 0      0      -     "
+    "01": "union               1      0      0     ",
+    "02": "recv                1      0      0     ",
+    "03": "set                 0      4      0     ",
+    "04": "dup                 2      1      0     ",
+    "05": "store_open          3      2      24    ",
+    "06": "store_read          4      3      0     ",
+    "07": "push                4      0      0     ",
+    "08": "table_openl         4      44     22    # public.test (primary)",
+    "09": "table_readi32       5      4      0     ",
+    "10": "store_read          6      3      0     ",
+    "11": "equii               7      5      6     ",
+    "12": "jntr                22     7      0     ",
+    "13": "store_read          5      3      0     ",
+    "14": "push                5      0      0     ",
+    "15": "store_read          5      3      1     ",
+    "16": "push                5      0      0     ",
+    "17": "table_readi32       5      4      0     ",
+    "18": "push                5      0      0     ",
+    "19": "table_readi32       5      4      1     ",
+    "20": "push                5      0      0     ",
+    "21": "set_add             0      0      0     ",
+    "22": "free                4      0      0     ",
+    "23": "store_next          3      6      0     ",
+    "24": "free                3      0      0     ",
+    "25": "free                2      0      0     ",
+    "26": "ret                 0      0      -     "
   },
   "pushdown": {
     "00": "set                 0      2      0     ",
@@ -640,30 +659,31 @@ explain with a as (select * from test) select * from a, test where test.id = 1;
 [{
   "main": {
     "00": "send_all            0      0      20    # public.test (select, closing)",
-    "01": "recv                1      0      -1    ",
-    "02": "set                 0      4      0     ",
-    "03": "dup                 2      1      0     ",
-    "04": "store_open          3      2      22    ",
-    "05": "push_int            -      0      0     # 1",
-    "06": "table_openl         4      44     20    # public.test (primary)",
-    "07": "table_readi32       5      4      0     ",
-    "08": "int                 6      -      0     # 1",
-    "09": "equii               7      5      6     ",
-    "10": "jntr                20     7      0     ",
-    "11": "store_read          5      3      0     ",
-    "12": "push                5      0      0     ",
-    "13": "store_read          5      3      1     ",
-    "14": "push                5      0      0     ",
-    "15": "table_readi32       5      4      0     ",
-    "16": "push                5      0      0     ",
-    "17": "table_readi32       5      4      1     ",
-    "18": "push                5      0      0     ",
-    "19": "set_add             0      0      0     ",
-    "20": "free                4      0      0     ",
-    "21": "store_next          3      5      0     ",
-    "22": "free                3      0      0     ",
-    "23": "free                2      0      0     ",
-    "24": "ret                 0      0      -     "
+    "01": "union               1      0      0     ",
+    "02": "recv                1      0      0     ",
+    "03": "set                 0      4      0     ",
+    "04": "dup                 2      1      0     ",
+    "05": "store_open          3      2      23    ",
+    "06": "push_int            -      0      0     # 1",
+    "07": "table_openl         4      44     21    # public.test (primary)",
+    "08": "table_readi32       5      4      0     ",
+    "09": "int                 6      -      0     # 1",
+    "10": "equii               7      5      6     ",
+    "11": "jntr                21     7      0     ",
+    "12": "store_read          5      3      0     ",
+    "13": "push                5      0      0     ",
+    "14": "store_read          5      3      1     ",
+    "15": "push                5      0      0     ",
+    "16": "table_readi32       5      4      0     ",
+    "17": "push                5      0      0     ",
+    "18": "table_readi32       5      4      1     ",
+    "19": "push                5      0      0     ",
+    "20": "set_add             0      0      0     ",
+    "21": "free                4      0      0     ",
+    "22": "store_next          3      6      0     ",
+    "23": "free                3      0      0     ",
+    "24": "free                2      0      0     ",
+    "25": "ret                 0      0      -     "
   },
   "pushdown": {
     "00": "set                 0      2      0     ",

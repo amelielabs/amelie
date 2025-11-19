@@ -238,6 +238,8 @@ OpDesc ops[] =
 
 	// union
 	{ CUNION, "union" },
+	{ CUNION_LIMIT, "union_limit" },
+	{ CUNION_OFFSET, "union_offset" },
 	{ CUNION_ADD, "union_add" },
 	{ CRECV_AGGS, "recv_aggs" },
 	{ CRECV, "recv" },

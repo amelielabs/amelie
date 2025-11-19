@@ -82,3 +82,41 @@ value_is_true(Value* a)
 	}
 	return true;
 }
+
+hot static inline int
+store_compare(Store* self, Value* row_a, Value* row_b)
+{
+	for (int i = 0; i < self->keys; i++)
+	{
+		auto key_a = row_a + self->columns + i;
+		auto key_b = row_b + self->columns + i;
+		int rc = value_compare(key_a, key_b);
+		if (rc != 0)
+			return self->keys_order[i] ? rc : -rc;
+	}
+	return 0;
+}
+
+hot static inline bool
+store_compare_keys(Store* self, Value* key_a, Value* key_b)
+{
+	for (int i = 0; i < self->keys; i++)
+	{
+		int rc = value_compare(&key_a[i], &key_b[i]);
+		if (rc != 0)
+			return false;
+	}
+	return true;
+}
+
+hot static inline bool
+store_compare_keys_ptr(Store* self, Value* key_a, Value** key_b)
+{
+	for (int i = 0; i < self->keys; i++)
+	{
+		int rc = value_compare(&key_a[i], key_b[i]);
+		if (rc != 0)
+			return false;
+	}
+	return true;
+}

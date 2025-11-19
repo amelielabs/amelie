@@ -284,11 +284,18 @@ emit_recv(Compiler* self, Stmt* stmt)
 	// create union and receive results
 	//
 	if (stmt->id == STMT_SELECT)
+	{
 		stmt->r = emit_select_recv(self, stmt->ast);
-	else
+	} else
+	{
 		// DML returning
-		stmt->r = op5pin(self, CRECV, TYPE_STORE, stmt->rdispatch,
-		                 -1, -1, false);
+
+		// CUNION
+		stmt->r = op2pin(self, CUNION, TYPE_STORE, UNION_ALL);
+
+		// CRECV
+		op2(self, CRECV, stmt->r, stmt->rdispatch);
+	}
 
 	runpin(self, stmt->rdispatch);
 	stmt->rdispatch = -1;

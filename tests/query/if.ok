@@ -410,8 +410,9 @@ end;
     "06": "set_ptr             1      -      0     ",
     "07": "send_shard          0      1      0     # public.test (insert)",
     "08": "send_all            0      0      68    # public.test (select, closing)",
-    "09": "recv                1      0      -1    ",
-    "10": "ret                 1      0      -     "
+    "09": "union               1      0      0     ",
+    "10": "recv                1      0      0     ",
+    "11": "ret                 1      0      -     "
   },
   "pushdown": {
     "00": "insert              -      0      0     # public.test",
@@ -471,8 +472,9 @@ end;
     "05": "set_ptr             1      -      0     ",
     "06": "send_shard          0      1      0     # public.test (insert)",
     "07": "send_all            0      0      68    # public.test (select, closing)",
-    "08": "recv                1      0      -1    ",
-    "09": "ret                 1      0      -     "
+    "08": "union               1      0      0     ",
+    "09": "recv                1      0      0     ",
+    "10": "ret                 1      0      -     "
   },
   "pushdown": {
     "00": "insert              -      0      0     # public.test",
@@ -544,8 +546,9 @@ end;
     "17": "set_ptr             1      -      0     ",
     "18": "send_shard          0      1      0     # public.test (insert)",
     "19": "send_all            0      0      92    # public.test (select, closing)",
-    "20": "recv                1      0      -1    ",
-    "21": "ret                 1      0      -     "
+    "20": "union               1      0      0     ",
+    "21": "recv                1      0      0     ",
+    "22": "ret                 1      0      -     "
   },
   "pushdown": {
     "00": "insert              -      0      0     # public.test",
@@ -617,15 +620,16 @@ end;
     "01": "int                 0      -      0     # 0",
     "02": "var_set             0      0      0     ",
     "03": "bool                0      1      0     ",
-    "04": "jntr                10     0      0     ",
+    "04": "jntr                11     0      0     ",
     "05": "set_ptr             1      -      0     ",
     "06": "send_shard          0      1      0     # public.test (insert)",
-    "07": "recv                1      0      -1    ",
-    "08": "var_set             0      0      1     ",
-    "09": "free                1      0      0     ",
-    "10": "close               0      0      0     ",
-    "11": "var                 0      0      0     ",
-    "12": "ret                 0      0      -     "
+    "07": "union               1      0      0     ",
+    "08": "recv                1      0      0     ",
+    "09": "var_set             0      0      1     ",
+    "10": "free                1      0      0     ",
+    "11": "close               0      0      0     ",
+    "12": "var                 0      0      0     ",
+    "13": "ret                 0      0      -     "
   },
   "pushdown": {
     "00": "set                 0      1      0     ",
@@ -672,8 +676,9 @@ end;
     "06": "set_ptr             1      -      0     ",
     "07": "send_shard          0      1      1     # public.test (insert)",
     "08": "send_all            0      0      44    # public.test (select, closing)",
-    "09": "recv                1      0      -1    ",
-    "10": "ret                 1      0      -     "
+    "09": "union               1      0      0     ",
+    "10": "recv                1      0      0     ",
+    "11": "ret                 1      0      -     "
   },
   "pushdown": {
     "00": "insert              -      0      0     # public.test",
@@ -714,14 +719,15 @@ end;
     "01": "int                 0      -      0     # 0",
     "02": "var_set             0      0      0     ",
     "03": "bool                0      1      0     ",
-    "04": "jntr                9      0      0     ",
+    "04": "jntr                10     0      0     ",
     "05": "send_all            0      0      20    # public.test (select)",
-    "06": "recv                1      0      -1    ",
-    "07": "var_set             0      0      1     ",
-    "08": "free                1      0      0     ",
-    "09": "close               0      0      0     ",
-    "10": "var                 0      0      0     ",
-    "11": "ret                 0      0      -     "
+    "06": "union               1      0      0     ",
+    "07": "recv                1      0      0     ",
+    "08": "var_set             0      0      1     ",
+    "09": "free                1      0      0     ",
+    "10": "close               0      0      0     ",
+    "11": "var                 0      0      0     ",
+    "12": "ret                 0      0      -     "
   },
   "pushdown": {
     "00": "set                 0      1      0     ",
@@ -1000,16 +1006,17 @@ end;
     "01": "int                 0      -      0     # 0",
     "02": "var_set             0      0      0     ",
     "03": "bool                0      1      0     ",
-    "04": "jntr                11     0      0     ",
+    "04": "jntr                12     0      0     ",
     "05": "bool                0      0      0     ",
-    "06": "jntr                11     0      0     ",
+    "06": "jntr                12     0      0     ",
     "07": "send_all            0      0      20    # public.test (select)",
-    "08": "recv                1      0      -1    ",
-    "09": "var_set             0      0      1     ",
-    "10": "free                1      0      0     ",
-    "11": "close               0      0      0     ",
-    "12": "var                 0      0      0     ",
-    "13": "ret                 0      0      -     "
+    "08": "union               1      0      0     ",
+    "09": "recv                1      0      0     ",
+    "10": "var_set             0      0      1     ",
+    "11": "free                1      0      0     ",
+    "12": "close               0      0      0     ",
+    "13": "var                 0      0      0     ",
+    "14": "ret                 0      0      -     "
   },
   "pushdown": {
     "00": "set                 0      1      0     ",

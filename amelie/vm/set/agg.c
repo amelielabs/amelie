@@ -149,7 +149,7 @@ agg_write(Agg* aggs, Value* values, Set* set, int set_row_pos)
 {
 	// process aggregates values from stack
 	auto row = set_row(set, set_row_pos);
-	for (int col = 0; col < set->count_columns; col++)
+	for (int col = 0; col < set->store.columns; col++)
 	{
 		if (values[col].type == TYPE_NULL)
 			continue;
@@ -160,18 +160,19 @@ agg_write(Agg* aggs, Value* values, Set* set, int set_row_pos)
 			// [group_by, agg_expr, agg_order] = row_pos
 
 			// group_by
-			Value* keys[set->count_keys + 2];
-			for (int i = 0; i < set->count_keys; i++)
+			auto   keys_count = set->store.keys;
+			Value* keys[keys_count + 2];
+			for (int i = 0; i < keys_count; i++)
 				keys[i] = set_key(set, set_row_pos, i);
 
 			// agg_expr
-			keys[set->count_keys] = &values[col];
+			keys[keys_count] = &values[col];
 
 			// agg_order
 			Value order;
 			value_init(&order);
 			value_set_int(&order, col);
-			keys[set->count_keys + 1] = &order;
+			keys[keys_count + 1] = &order;
 
 			// create or get the distinct record
 			bool exists;
@@ -260,7 +261,7 @@ agg_merge_set(Agg* aggs, Set* set, Set* with)
 		auto row        = set_row(set, row_ref);
 
 		// merge states
-		for (int col = 0; col < set->count_columns; col++)
+		for (int col = 0; col < set->store.columns; col++)
 		{
 			if (aggs[col].distinct)
 				continue;
@@ -268,7 +269,7 @@ agg_merge_set(Agg* aggs, Set* set, Set* with)
 		}
 
 		// free with row
-		for (auto i = 0; i < with->count_columns_row; i++)
+		for (auto i = 0; i < with->store.columns_row; i++)
 			value_free(at_row + i);
 	}
 }
@@ -308,14 +309,14 @@ agg_merge_set_distinct(Agg* aggs, Set* set, Set* with)
 			value_set_int(set_column(distinct_set, ref, 0), row_pos);
 
 			// compute aggregate
-			auto agg_order = &at_key[distinct_with->count_keys - 1];
-			auto agg_expr  = &at_key[distinct_with->count_keys - 2];
+			auto agg_order = &at_key[distinct_with->store.keys - 1];
+			auto agg_expr  = &at_key[distinct_with->store.keys - 2];
 			auto state     = set_column(set, row_pos, agg_order->integer);
 			agg_compute(&aggs[agg_order->integer], state, agg_expr);
 		}
 
 		// free with row
-		for (auto i = 0; i < with->count_columns_row; i++)
+		for (auto i = 0; i < with->store.columns_row; i++)
 			value_free(at_row + i);
 	}
 }

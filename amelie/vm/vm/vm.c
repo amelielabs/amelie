@@ -313,6 +313,8 @@ vm_run(Vm*       self,
 
 		// union
 		&&cunion,
+		&&cunion_limit,
+		&&cunion_offset,
 		&&cunion_add,
 		&&crecv_aggs,
 		&&crecv,
@@ -1532,8 +1534,8 @@ cset_sort:
 cset_add:
 	// [set]
 	set = (Set*)r[op->a].store;
-	set_add(set, stack_at(stack, set->count_columns_row));
-	stack_popn(stack, set->count_columns_row);
+	set_add(set, stack_at(stack, set->store.columns_row));
+	stack_popn(stack, set->store.columns_row);
 	op_next;
 
 cset_get:
@@ -1541,19 +1543,19 @@ cset_get:
 	// get existing or create new row by key,
 	// return the row reference
 	set = (Set*)r[op->b].store;
-	rc = set_upsert(set, stack_at(stack, set->count_keys), 0, NULL);
+	rc = set_upsert(set, stack_at(stack, set->store.keys), 0, NULL);
 	value_set_int(&r[op->a], rc);
-	stack_popn(stack, set->count_keys);
+	stack_popn(stack, set->store.keys);
 	op_next;
 
 cset_agg:
 	// [set, row, aggs]
 	set = (Set*)r[op->a].store;
 	agg_write((Agg*)code_data_at(code_data, op->c),
-	          stack_at(stack, set->count_columns),
+	          stack_at(stack, set->store.columns),
 	          set,
 	          r[op->b].integer);
-	stack_popn(stack, set->count_columns);
+	stack_popn(stack, set->store.columns);
 	op_next;
 
 cset_agg_merge:
@@ -1574,13 +1576,23 @@ cself:
 	op_next;
 
 cunion:
-	// [union, distinct, limit, offset]
-	cunion(self, op);
+	// [union, type]
+	value_set_store(&r[op->a], &union_create(op->b)->store);
+	op_next;
+
+cunion_limit:
+	// [union, limit]
+	cunion_limit(self, op);
+	op_next;
+
+cunion_offset:
+	// [union, offset]
+	cunion_offset(self, op);
 	op_next;
 
 cunion_add:
-	// [union, rset]
-	union_add((Union*)r[op->a].store, (Set*)r[op->b].store);
+	// [union, store]
+	union_add((Union*)r[op->a].store, r[op->b].store);
 	value_reset(&r[op->b]);
 	op_next;
 
@@ -1590,7 +1602,7 @@ crecv_aggs:
 	op_next;
 
 crecv:
-	// [union, rdispatch, distinct, rlimit, roffset]
+	// [union, rdispatch]
 	crecv(self, op);
 	op_next;
 

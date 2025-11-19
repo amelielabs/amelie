@@ -17,7 +17,8 @@ void csend_lookup_by(Vm*, Op*);
 void csend_all(Vm*, Op*);
 void cclose(Vm*, Op*);
 
-void cunion(Vm*, Op*);
+void cunion_limit(Vm*, Op*);
+void cunion_offset(Vm*, Op*);
 void crecv_aggs(Vm*, Op*);
 void crecv(Vm*, Op*);
 

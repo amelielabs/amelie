@@ -150,11 +150,12 @@ end;
     "main": {
       "00": "push_nulls          1      0      0     ",
       "01": "send_all            0      0      20    # public.test (select, closing)",
-      "02": "recv                1      0      -1    ",
-      "03": "var_set             0      0      1     ",
-      "04": "free                1      0      0     ",
-      "05": "var                 0      0      0     ",
-      "06": "ret                 0      0      -     "
+      "02": "union               1      0      0     ",
+      "03": "recv                1      0      0     ",
+      "04": "var_set             0      0      1     ",
+      "05": "free                1      0      0     ",
+      "06": "var                 0      0      0     ",
+      "07": "ret                 0      0      -     "
     },
     "pushdown": {
       "00": "set                 0      1      0     ",

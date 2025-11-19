@@ -19,12 +19,8 @@ struct Set
 	Buf     set;
 	Buf     set_index;
 	SetHash hash;
-	bool*   ordered;
 	int     count;
 	int     count_rows;
-	int     count_columns_row;
-	int     count_columns;
-	int     count_keys;
 	Set*    distinct_aggs;
 	List    link;
 };
@@ -38,7 +34,7 @@ set_value(Set* self, int pos)
 always_inline static inline Value*
 set_row(Set* self, int pos)
 {
-	return set_value(self, self->count_columns_row * pos);
+	return set_value(self, self->store.columns_row * pos);
 }
 
 always_inline static inline Value*
@@ -50,7 +46,7 @@ set_row_ordered(Set* self, int pos)
 always_inline static inline Value*
 set_row_of(Set* self, int pos)
 {
-	if (self->ordered)
+	if (store_ordered(&self->store))
 		return set_row_ordered(self, pos);
 	return set_row(self, pos);
 }
@@ -70,14 +66,14 @@ set_column_of(Set* self, int pos, int column)
 always_inline static inline Value*
 set_key(Set* self, int pos, int key)
 {
-	return set_row(self, pos) + self->count_columns + key;
+	return set_row(self, pos) + self->store.columns + key;
 }
 
 Set*   set_create(void);
-void   set_free(Set*, bool);
 void   set_prepare(Set*, int, int, bool*);
-void   set_set_distinct_aggs(Set*, Set*);
+void   set_free(Set*, bool);
 void   set_reset(Set*);
+void   set_set_distinct_aggs(Set*, Set*);
 void   set_sort(Set*);
 Value* set_reserve(Set*);
 void   set_add(Set*, Value*);

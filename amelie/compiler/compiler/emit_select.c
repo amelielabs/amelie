@@ -380,33 +380,36 @@ cmd_union(Compiler* self, Plan* plan, Command* ref)
 	auto select = plan->select;
 	assert(plan->r != -1);
 
-	// limit
-	auto rlimit = -1;
-	if (select->expr_limit)
-		rlimit = emit_expr(self, &select->from, select->expr_limit);
-
-	// offset
-	auto roffset = -1;
-	if (select->expr_offset)
-		roffset = emit_expr(self, &select->from, select->expr_offset);
+	UnionType type = UNION_ORDERED;
+	if (select->distinct)
+		type = UNION_ORDERED_DISTINCT;
 
 	// CUNION
-	auto runion = op4pin(self, CUNION, TYPE_STORE,
-	                     select->distinct,
-	                     rlimit,
-	                     roffset);
+	auto runion = op2pin(self, CUNION, TYPE_STORE, type);
+
+	// limit
+	if (select->expr_limit)
+	{
+		/// CUNION_LIMIT
+		auto r = emit_expr(self, &select->from, select->expr_limit);
+		op2(self, CUNION_LIMIT, runion, r);
+		runpin(self, r);
+	}
+
+	// offset
+	if (select->expr_offset)
+	{
+		/// CUNION_OFFSET
+		auto r = emit_expr(self, &select->from, select->expr_offset);
+		op2(self, CUNION_OFFSET, runion, r);
+		runpin(self, r);
+	}
 
 	// CUNION_ADD
 	op2(self, CUNION_ADD, runion, plan->r);
-
 	runpin(self, plan->r);
+
 	plan->r = runion;
-
-	if (rlimit != -1)
-		runpin(self, rlimit);
-
-	if (roffset != -1)
-		runpin(self, roffset);
 }
 
 static void
@@ -426,28 +429,41 @@ cmd_recv(Compiler* self, Plan* plan, Command* ref)
 	unused(ref);
 	auto select = plan->select;
 
+	// set union type
+	UnionType type = UNION_ALL;
+	if (ref->id == COMMAND_RECV_ORDERED)
+	{
+		if (select->distinct)
+			type = UNION_ORDERED_DISTINCT;
+		else
+			type = UNION_ORDERED;
+	}
+
+	// CUNION
+	auto runion = op2pin(self, CUNION, TYPE_STORE, type);
+
 	// limit
-	auto rlimit = -1;
 	if (select->expr_limit)
-		rlimit = emit_expr(self, &select->from, select->expr_limit);
+	{
+		/// CUNION_LIMIT
+		auto r = emit_expr(self, &select->from, select->expr_limit);
+		op2(self, CUNION_LIMIT, runion, r);
+		runpin(self, r);
+	}
 
 	// offset
-	auto roffset = -1;
 	if (select->expr_offset)
-		roffset = emit_expr(self, &select->from, select->expr_offset);
+	{
+		/// CUNION_OFFSET
+		auto r = emit_expr(self, &select->from, select->expr_offset);
+		op2(self, CUNION_OFFSET, runion, r);
+		runpin(self, r);
+	}
 
 	// CRECV
-	plan->r = op5pin(self, CRECV, TYPE_STORE,
-	                 self->current->rdispatch,
-	                 rlimit,
-	                 roffset,
-	                 select->distinct);
+	op2(self, CRECV, runion, self->current->rdispatch);
 
-	if (rlimit != -1)
-		runpin(self, rlimit);
-
-	if (roffset != -1)
-		runpin(self, roffset);
+	plan->r = runion;
 }
 
 static void
@@ -476,6 +492,7 @@ static PlanFunction cmds[] =
 	[COMMAND_UNION]         = cmd_union,
 	[COMMAND_SET_AGG_MERGE] = cmd_set_agg_merge,
 	[COMMAND_RECV]          = cmd_recv,
+	[COMMAND_RECV_ORDERED]  = cmd_recv,
 	[COMMAND_RECV_AGGS]     = cmd_recv_aggs
 };
 

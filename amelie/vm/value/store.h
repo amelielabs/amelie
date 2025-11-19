@@ -23,6 +23,10 @@ struct Store
 {
 	atomic_u32      refs;
 	int             type;
+	int             columns_row;
+	int             columns;
+	int             keys;
+	bool*           keys_order;
 	StoreIterator* (*iterator)(Store*);
 	void           (*free)(Store*);
 };
@@ -30,10 +34,26 @@ struct Store
 static inline void
 store_init(Store* self, int type)
 {
-	self->refs     = 0;
-	self->type     = type;
-	self->iterator = NULL;
-	self->free     = NULL;
+	self->refs        = 0;
+	self->type        = type;
+	self->columns_row = 0;
+	self->columns     = 0;
+	self->keys        = 0;
+	self->keys_order  = NULL;
+	self->iterator    = NULL;
+	self->free        = NULL;
+}
+
+static inline void
+store_set(Store* self,
+          int    columns,
+          int    keys,
+          bool*  keys_order)
+{
+	self->columns_row = columns + keys;
+	self->columns     = columns;
+	self->keys        = keys;
+	self->keys_order  = keys_order;
 }
 
 static inline void
@@ -53,4 +73,10 @@ static inline StoreIterator*
 store_iterator(Store* self)
 {
 	return self->iterator(self);
+}
+
+static inline bool
+store_ordered(Store* self)
+{
+	return self->keys_order != NULL;
 }

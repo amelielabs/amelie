@@ -13,30 +13,36 @@
 
 typedef struct Union Union;
 
+typedef enum
+{
+	UNION_ALL,
+	UNION_ORDERED,
+	UNION_ORDERED_DISTINCT,
+	UNION_JOIN,
+	UNION_EXCEPT
+} UnionType;
+
 struct Union
 {
-	Store   store;
-	List    list;
-	int     list_count;
-	bool    distinct;
-	int64_t limit;
-	int64_t offset;
+	Store     store;
+	UnionType type;
+	Buf*      list;
+	int       list_count;
+	int64_t   limit;
+	int64_t   offset;
 };
 
+Union* union_create(UnionType);
+void   union_add(Union*, Store*);
+
 static inline void
-union_set(Union* self, bool distinct, int64_t limit, int64_t offset)
+union_set_limit(Union* self, int64_t value)
 {
-	self->limit    = limit;
-	self->offset   = offset;
-	self->distinct = distinct;
+	self->limit = value;
 }
 
 static inline void
-union_add(Union* self, Set* set)
+union_set_offset(Union* self, int64_t value)
 {
-	// all set properties must match (keys, columns and order)
-	list_append(&self->list, &set->link);
-	self->list_count++;
+	self->offset = value;
 }
-
-Union* union_create(void);

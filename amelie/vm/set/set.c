@@ -67,15 +67,11 @@ set_create(void)
 {
 	Set* self = am_malloc(sizeof(Set));
 	store_init(&self->store, STORE_SET);
-	self->store.free        = set_free_store;
-	self->store.iterator    = set_iterator;
-	self->ordered           = NULL;
-	self->count             = 0;
-	self->count_rows        = 0;
-	self->count_columns_row = 0;
-	self->count_columns     = 0;
-	self->count_keys        = 0;
-	self->distinct_aggs     = NULL;
+	self->store.free     = set_free_store;
+	self->store.iterator = set_iterator;
+	self->count          = 0;
+	self->count_rows     = 0;
+	self->distinct_aggs  = NULL;
 	buf_init(&self->set);
 	buf_init(&self->set_index);
 	set_hash_init(&self->hash);
@@ -84,15 +80,23 @@ set_create(void)
 }
 
 void
-set_prepare(Set*  self, int count_columns, int count_keys,
-            bool* ordered)
+set_prepare(Set* self, int columns, int keys, bool* keys_order)
 {
-	self->ordered           = ordered;
-	self->count             = 0;
-	self->count_rows        = 0;
-	self->count_columns_row = count_columns + count_keys;
-	self->count_columns     = count_columns;
-	self->count_keys        = count_keys;
+	store_set(&self->store, columns, keys, keys_order);
+}
+
+void
+set_reset(Set* self)
+{
+	for (auto i = 0; i < self->count; i++)
+		value_free(set_value(self, i));
+	self->count      = 0;
+	self->count_rows = 0;
+	buf_reset(&self->set);
+	buf_reset(&self->set_index);
+	set_hash_reset(&self->hash);
+	assert(! self->distinct_aggs);
+	store_set(&self->store, 0, 0, NULL);
 }
 
 void
@@ -102,30 +106,13 @@ set_set_distinct_aggs(Set* self, Set* distinct_aggs)
 	self->distinct_aggs = distinct_aggs;
 }
 
-void
-set_reset(Set* self)
-{
-	for (auto i = 0; i < self->count; i++)
-		value_free(set_value(self, i));
-	self->ordered           = NULL;
-	self->count             = 0;
-	self->count_rows        = 0;
-	self->count_columns_row = 0;
-	self->count_columns     = 0;
-	self->count_keys        = 0;
-	buf_reset(&self->set);
-	buf_reset(&self->set_index);
-	set_hash_reset(&self->hash);
-	assert(! self->distinct_aggs);
-}
-
 hot static int
 set_cmp(const void* p1, const void* p2, void* arg)
 {
 	Set* self = arg;
 	auto row_a = set_row(self, *(uint32_t*)p1);
 	auto row_b = set_row(self, *(uint32_t*)p2);
-	return set_compare(arg, row_a, row_b);
+	return store_compare(&self->store, row_a, row_b);
 }
 
 hot void
@@ -140,15 +127,15 @@ set_reserve(Set* self)
 {
 	// save row position, if keys are in use
 	uint32_t row = self->count_rows;
-	if (self->ordered)
+	if (store_ordered(&self->store))
 		buf_write(&self->set_index, &row, sizeof(row));
 
 	// reserve row values
-	auto values_size = sizeof(Value) * self->count_columns_row;
+	auto values_size = sizeof(Value) * self->store.columns_row;
 	auto values = (Value*)buf_emplace(&self->set, values_size);
 	memset(values, 0, values_size);
 
-	self->count += self->count_columns_row;
+	self->count += self->store.columns_row;
 	self->count_rows++;
 	return values;
 }
@@ -158,7 +145,7 @@ set_add(Set* self, Value* values)
 {
 	uint32_t row = self->count_rows;
 	set_reserve(self);
-	for (auto i = 0; i < self->count_columns_row; i++)
+	for (auto i = 0; i < self->store.columns_row; i++)
 		value_copy(set_column(self, row, i), &values[i]);
 }
 
@@ -177,7 +164,7 @@ set_upsert(Set*  self, Value* keys, uint32_t hash_value,
 	// calculate hash value for the keys
 	if (hash_value == 0)
 	{
-		for (int i = 0; i < self->count_keys; i++)
+		for (int i = 0; i < self->store.keys; i++)
 			hash_value = set_hash_value(&keys[i], hash_value);
 	}
 
@@ -192,7 +179,7 @@ set_upsert(Set*  self, Value* keys, uint32_t hash_value,
 		if (ref->hash == hash_value)
 		{
 			auto keys_src = set_key(self, ref->row, 0);
-			if (set_compare_keys(self, keys_src, keys))
+			if (store_compare_keys(&self->store, keys_src, keys))
 				break;
 		}
 		pos = (pos + 1) % hash->hash_size;
@@ -207,7 +194,7 @@ set_upsert(Set*  self, Value* keys, uint32_t hash_value,
 		ref->hash = hash_value;
 		ref->row  = self->count_rows;
 		set_reserve(self);
-		for (auto i = 0; i < self->count_keys; i++)
+		for (auto i = 0; i < self->store.keys; i++)
 			value_copy(set_key(self, ref->row, i), &keys[i]);
 	}
 
@@ -229,7 +216,7 @@ set_upsert_ptr(Set*  self, Value** keys, uint32_t hash_value,
 	// calculate hash value for the keys
 	if (hash_value == 0)
 	{
-		for (int i = 0; i < self->count_keys; i++)
+		for (int i = 0; i < self->store.keys; i++)
 			hash_value = set_hash_value(keys[i], hash_value);
 	}
 
@@ -244,7 +231,7 @@ set_upsert_ptr(Set*  self, Value** keys, uint32_t hash_value,
 		if (ref->hash == hash_value)
 		{
 			auto keys_src = set_key(self, ref->row, 0);
-			if (set_compare_keys_ptr(self, keys_src, keys))
+			if (store_compare_keys_ptr(&self->store, keys_src, keys))
 				break;
 		}
 		pos = (pos + 1) % hash->hash_size;
@@ -259,7 +246,7 @@ set_upsert_ptr(Set*  self, Value** keys, uint32_t hash_value,
 		ref->hash = hash_value;
 		ref->row  = self->count_rows;
 		set_reserve(self);
-		for (auto i = 0; i < self->count_keys; i++)
+		for (auto i = 0; i < self->store.keys; i++)
 			value_copy(set_key(self, ref->row, i), keys[i]);
 	}
 
