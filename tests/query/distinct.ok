@@ -175,9 +175,7 @@ explain select count(distinct it) from ([1,2,3]) it group by it order by 1;
     "21": "free                2      0      0     ",
     "22": "free                0      0      0     ",
     "23": "set_sort            1      0      0     ",
-    "24": "union               0      1      0     ",
-    "25": "union_add           0      1      0     ",
-    "26": "ret                 0      0      -     "
+    "24": "ret                 1      0      -     "
   },
   "access": []
 }]
@@ -236,9 +234,7 @@ explain select count(distinct it) from ([1,2,3]) it order by 1;
     "24": "free                2      0      0     ",
     "25": "free                0      0      0     ",
     "26": "set_sort            1      0      0     ",
-    "27": "union               0      1      0     ",
-    "28": "union_add           0      1      0     ",
-    "29": "ret                 0      0      -     "
+    "27": "ret                 1      0      -     "
   },
   "access": []
 }]
@@ -503,9 +499,7 @@ explain select sum(it::int) from ([1,2,3,3,1]) it group by it order by 1;
     "22": "free                2      0      0     ",
     "23": "free                0      0      0     ",
     "24": "set_sort            1      0      0     ",
-    "25": "union               0      1      0     ",
-    "26": "union_add           0      1      0     ",
-    "27": "ret                 0      0      -     "
+    "25": "ret                 1      0      -     "
   },
   "access": []
 }]
@@ -540,9 +534,7 @@ explain select sum(distinct it::int) from ([1,2,3,3,1]) it group by it order by 
     "23": "free                2      0      0     ",
     "24": "free                0      0      0     ",
     "25": "set_sort            1      0      0     ",
-    "26": "union               0      1      0     ",
-    "27": "union_add           0      1      0     ",
-    "28": "ret                 0      0      -     "
+    "26": "ret                 1      0      -     "
   },
   "access": []
 }]
@@ -717,9 +709,7 @@ explain select avg(it::int) from ([1,2,3,3,1]) it group by it order by 1;
     "22": "free                2      0      0     ",
     "23": "free                0      0      0     ",
     "24": "set_sort            1      0      0     ",
-    "25": "union               0      1      0     ",
-    "26": "union_add           0      1      0     ",
-    "27": "ret                 0      0      -     "
+    "25": "ret                 1      0      -     "
   },
   "access": []
 }]
@@ -754,9 +744,7 @@ explain select avg(distinct it::int) from ([1,2,3,3,1]) it group by it order by 
     "23": "free                2      0      0     ",
     "24": "free                0      0      0     ",
     "25": "set_sort            1      0      0     ",
-    "26": "union               0      1      0     ",
-    "27": "union_add           0      1      0     ",
-    "28": "ret                 0      0      -     "
+    "26": "ret                 1      0      -     "
   },
   "access": []
 }]

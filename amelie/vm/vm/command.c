@@ -407,7 +407,7 @@ cvar_set(Vm* self, Op* op)
 	{
 		auto set = (Set*)store;
 		if (set->count >= 1)
-			value_copy(var, set_row(set, 0) + op->d);
+			value_copy(var, set_row_of(set, 0) + op->d);
 	} else
 	{
 		auto it = store_iterator(store);
@@ -431,7 +431,7 @@ cfirst(Vm* self, Op* op)
 	{
 		auto set = (Set*)store;
 		if (set->count >= 1)
-			value_move(result, set_value(set, 0));
+			value_move(result, set_row_of(set, 0));
 	} else
 	{
 		auto it = store_iterator(store);

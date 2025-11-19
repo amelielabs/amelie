@@ -99,6 +99,12 @@ plan_group_by_order_by(Plan* self)
 	// SORT
 	plan_add_sort(self);
 
+	// no distinct/limit/offset (return ordered set)
+	if (select->distinct    == false &&
+	    select->expr_limit  == NULL  &&
+	    select->expr_offset == NULL)
+		return;
+
 	// UNION
 	plan_add_union(self);
 }
@@ -115,6 +121,12 @@ plan_order_by(Plan* self)
 
 	// SORT
 	plan_add_sort(self);
+
+	// no distinct/limit/offset (return ordered set)
+	if (select->distinct    == false &&
+	    select->expr_limit  == NULL  &&
+	    select->expr_offset == NULL)
+		return;
 
 	// UNION
 	plan_add_union(self);

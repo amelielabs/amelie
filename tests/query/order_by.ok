@@ -115,10 +115,8 @@ explain select (select id from test order by id desc);
     "07": "table_next          1      2      0     ",
     "08": "free                1      0      0     ",
     "09": "set_sort            0      0      0     ",
-    "10": "union               1      1      0     ",
-    "11": "union_add           1      0      0     ",
-    "12": "first               0      1      0     ",
-    "13": "ret                 0      0      -     "
+    "10": "first               1      0      0     ",
+    "11": "ret                 1      0      -     "
   },
   "access": [["public.test", "ro_exclusive"]]
 }]
@@ -138,10 +136,8 @@ explain select (select id from test order by data);
     "07": "table_next          1      2      0     ",
     "08": "free                1      0      0     ",
     "09": "set_sort            0      0      0     ",
-    "10": "union               1      1      0     ",
-    "11": "union_add           1      0      0     ",
-    "12": "first               0      1      0     ",
-    "13": "ret                 0      0      -     "
+    "10": "first               1      0      0     ",
+    "11": "ret                 1      0      -     "
   },
   "access": [["public.test", "ro_exclusive"]]
 }]
