@@ -79,7 +79,7 @@ table_find_index(Table* self, Str* name, bool error_if_not_exists)
 	list_foreach(&self->config->indexes)
 	{
 		auto config = list_at(IndexConfig, link);
-		if (str_compare(&config->name, name))
+		if (str_compare_case(&config->name, name))
 			return config;
 	}
 	if (error_if_not_exists)

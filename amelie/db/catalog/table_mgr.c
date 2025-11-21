@@ -186,7 +186,7 @@ table_mgr_list(TableMgr* self, Str* schema, Str* name, bool extended)
 	list_foreach(&self->mgr.list)
 	{
 		auto table = table_of(list_at(Relation, link));
-		if (schema && !str_compare(&table->config->schema, schema))
+		if (schema && !str_compare_case(&table->config->schema, schema))
 			continue;
 		if (extended)
 			table_config_write(table->config, buf);

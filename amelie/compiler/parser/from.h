@@ -86,7 +86,7 @@ static inline Target*
 from_match(From* self, Str* name)
 {
 	for (auto target = self->list; target; target = target->next)
-		if (str_compare(&target->name, name))
+		if (str_compare_case(&target->name, name))
 			return target;
 	return NULL;
 }

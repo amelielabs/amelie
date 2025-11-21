@@ -47,7 +47,7 @@ ast_group_resolve_column(AstList* list, Str* name)
 		if (group->expr->id != KNAME &&
 		    group->expr->id != KNAME_COMPOUND)
 			continue;
-		if (str_compare(&group->expr->string, name))
+		if (str_compare_case(&group->expr->string, name))
 			return group;
 	}
 	return NULL;
@@ -62,7 +62,7 @@ ast_group_resolve_column_prefix(AstList* list, Str* name)
 		auto group = ast_group_of(node->ast);
 		if (group->expr->id != KNAME_COMPOUND)
 			continue;
-		if (str_compare_prefix(name, &group->expr->string))
+		if (str_compare_prefix_case(name, &group->expr->string))
 			return group;
 	}
 	return NULL;

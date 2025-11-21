@@ -81,10 +81,10 @@ table_mgr_rename(TableMgr* self,
 	encode_string(&tr->log.data, &table->config->name);
 
 	// set new table name
-	if (! str_compare(&table->config->schema, schema_new))
+	if (! str_compare_case(&table->config->schema, schema_new))
 		table_config_set_schema(table->config, schema_new);
 
-	if (! str_compare(&table->config->name, name_new))
+	if (! str_compare_case(&table->config->name, name_new))
 		table_config_set_name(table->config, name_new);
 
 	return true;

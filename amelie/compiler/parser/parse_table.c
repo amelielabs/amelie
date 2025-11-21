@@ -421,7 +421,7 @@ parse_table_with(Stmt* self, AstTableCreate* stmt, IndexConfig* index_config)
 		auto key = stmt_expect(self, KNAME);
 
 		unused(stmt);
-		if (str_is(&key->string, "type", 4))
+		if (str_is_case(&key->string, "type", 4))
 		{
 			// =
 			stmt_expect(self, '=');

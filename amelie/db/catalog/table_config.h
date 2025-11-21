@@ -246,7 +246,7 @@ table_config_find(TableConfig* self, Str* name)
 	list_foreach(&self->indexes)
 	{
 		auto config = list_at(IndexConfig, link);
-		if (str_compare(&config->name, name))
+		if (str_compare_case(&config->name, name))
 			return config;
 	}
 	return NULL;

@@ -128,25 +128,25 @@ constraints_read(Constraints* self, uint8_t** pos)
 		Str name;
 		json_read_string(pos, &name);
 
-		if (str_is(&name, "not_null", 8))
+		if (str_is_case(&name, "not_null", 8))
 			json_read_bool(pos, &self->not_null);
 		else
-		if (str_is(&name, "out", 3))
+		if (str_is_case(&name, "out", 3))
 			json_read_bool(pos, &self->out);
 		else
-		if (str_is(&name, "as_identity", 11))
+		if (str_is_case(&name, "as_identity", 11))
 			json_read_integer(pos, &self->as_identity);
 		else
-		if (str_is(&name, "as_identity_modulo", 18))
+		if (str_is_case(&name, "as_identity_modulo", 18))
 			json_read_integer(pos, &self->as_identity_modulo);
 		else
-		if (str_is(&name, "as_stored", 9))
+		if (str_is_case(&name, "as_stored", 9))
 			json_read_string_copy(pos, &self->as_stored);
 		else
-		if (str_is(&name, "as_resolved", 11))
+		if (str_is_case(&name, "as_resolved", 11))
 			json_read_string_copy(pos, &self->as_resolved);
 		else
-		if (str_is(&name, "default", 7))
+		if (str_is_case(&name, "default", 7))
 		{
 			auto start = *pos;
 			json_skip(pos);

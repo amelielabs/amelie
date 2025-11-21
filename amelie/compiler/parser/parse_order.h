@@ -57,7 +57,7 @@ ast_order_list_match_index(AstList* exprs, Target* target)
 		if (order->expr->id == KNAME)
 		{
 			// compare key name
-			if (! str_compare(&key->column->name, &order->expr->string))
+			if (! str_compare_case(&key->column->name, &order->expr->string))
 				return false;
 		} else
 		if (order->expr->id == KNAME_COMPOUND)
@@ -69,11 +69,11 @@ ast_order_list_match_index(AstList* exprs, Target* target)
 			str_advance(&name_key, str_size(&name) + 1);
 
 			// compare target name
-			if (! str_compare(&name, &target->name))
+			if (! str_compare_case(&name, &target->name))
 				return false;
 
 			// compare key name
-			if (! str_compare(&key->column->name, &name_key))
+			if (! str_compare_case(&key->column->name, &name_key))
 				return false;
 		} else {
 			return false;

@@ -30,7 +30,7 @@ cascade_validate(Catalog* self, Str* schema)
 	list_foreach(&self->table_mgr.mgr.list)
 	{
 		auto table = table_of(list_at(Relation, link));
-		if (str_compare(&table->config->schema, schema))
+		if (str_compare_case(&table->config->schema, schema))
 			error("table '%.*s' depends on schema '%.*s", str_size(&table->config->name),
 			      str_of(&table->config->name),
 			      str_size(schema), str_of(schema));
@@ -40,7 +40,7 @@ cascade_validate(Catalog* self, Str* schema)
 	list_foreach(&self->udf_mgr.mgr.list)
 	{
 		auto udf = udf_of(list_at(Relation, link));
-		if (str_compare(&udf->config->schema, schema))
+		if (str_compare_case(&udf->config->schema, schema))
 			error("function '%.*s' depends on schema '%.*s", str_size(&udf->config->name),
 			      str_of(&udf->config->name),
 			      str_size(schema), str_of(schema));
@@ -54,7 +54,7 @@ cascade_validate_udfs_external(Catalog* self, Str* schema)
 	list_foreach(&self->udf_mgr.mgr.list)
 	{
 		auto udf = udf_of(list_at(Relation, link));
-		if (str_compare(&udf->config->schema, schema))
+		if (str_compare_case(&udf->config->schema, schema))
 			continue;
 		if (self->iface->udf_depends(udf, schema, NULL))
 			error("function '%.*s.%.*s' depends on schema '%.*s", str_size(&udf->config->schema),
@@ -88,7 +88,7 @@ cascade_drop(Catalog* self, Tr* tr, Str* schema)
 	list_foreach_safe(&self->table_mgr.mgr.list)
 	{
 		auto table = table_of(list_at(Relation, link));
-		if (str_compare(&table->config->schema, schema))
+		if (str_compare_case(&table->config->schema, schema))
 			table_mgr_drop_of(&self->table_mgr, tr, table);
 	}
 
@@ -96,7 +96,7 @@ cascade_drop(Catalog* self, Tr* tr, Str* schema)
 	list_foreach_safe(&self->udf_mgr.mgr.list)
 	{
 		auto udf = udf_of(list_at(Relation, link));
-		if (str_compare(&udf->config->schema, schema))
+		if (str_compare_case(&udf->config->schema, schema))
 			udf_mgr_drop_of(&self->udf_mgr, tr, udf);
 	}
 }
@@ -143,7 +143,7 @@ cascade_rename(Catalog* self, Tr* tr, Str* schema, Str* schema_new)
 	list_foreach_safe(&self->table_mgr.mgr.list)
 	{
 		auto table = table_of(list_at(Relation, link));
-		if (str_compare(&table->config->schema, schema))
+		if (str_compare_case(&table->config->schema, schema))
 			table_mgr_rename(&self->table_mgr, tr, &table->config->schema,
 			                 &table->config->name,
 			                 schema_new,
@@ -154,7 +154,7 @@ cascade_rename(Catalog* self, Tr* tr, Str* schema, Str* schema_new)
 	list_foreach_safe(&self->udf_mgr.mgr.list)
 	{
 		auto udf = udf_of(list_at(Relation, link));
-		if (str_compare(&udf->config->schema, schema))
+		if (str_compare_case(&udf->config->schema, schema))
 			udf_mgr_rename(&self->udf_mgr, tr, &udf->config->schema,
 			               &udf->config->name,
 			               schema_new,

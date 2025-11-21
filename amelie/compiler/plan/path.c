@@ -93,7 +93,7 @@ path_key_compare(Path* self, PathKey* key, Ast* ast)
 	// column
 	auto column = key->key->column;
 	if (ast->id == KNAME)
-		return str_compare(&ast->string, &column->name);
+		return str_compare_case(&ast->string, &column->name);
 
 	// [target.]column
 	if (ast->id != KNAME_COMPOUND)
@@ -105,14 +105,14 @@ path_key_compare(Path* self, PathKey* key, Ast* ast)
 	str_split(&ast->string, &name, '.');
 
 	// [target.]
-	if (! str_compare(&self->target->name, &name))
+	if (! str_compare_case(&self->target->name, &name))
 		return false;
 
 	str_advance(&path, str_size(&name) + 1);
 
 	// skip target name
 	str_split(&path, &name, '.');
-	return str_compare(&name, &column->name);
+	return str_compare_case(&name, &column->name);
 }
 
 static inline bool
@@ -190,7 +190,7 @@ path_column_compound(Path* self, Str* string)
 	auto target = self->target->prev;
 	while (target)
 	{
-		if (str_compare(&target->name, &name))
+		if (str_compare_case(&target->name, &name))
 			break;
 		target = target->prev;
 	}

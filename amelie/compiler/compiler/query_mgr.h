@@ -51,7 +51,7 @@ query_mgr_find(QueryMgr* self, Str* content_type)
 	list_foreach(&self->list)
 	{
 		auto ql = list_at(Query, link);
-		if (str_compare(&ql->content_type, content_type))
+		if (str_compare_case(&ql->content_type, content_type))
 			return ql;
 	}
 	return NULL;

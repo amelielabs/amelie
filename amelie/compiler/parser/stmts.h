@@ -68,7 +68,7 @@ stmts_find(Stmts* self, Str* name)
 	{
 		if (! stmt->cte_name)
 			continue;
-		if (str_compare(stmt->cte_name, name))
+		if (str_compare_case(stmt->cte_name, name))
 			return stmt;
 	}
 	return NULL;

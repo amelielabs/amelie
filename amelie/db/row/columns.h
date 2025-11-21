@@ -123,7 +123,7 @@ columns_find(Columns* self, Str* name)
 	list_foreach(&self->list)
 	{
 		auto column = list_at(Column, link);
-		if (str_compare(&column->name, name))
+		if (str_compare_case(&column->name, name))
 			return column;
 	}
 	return NULL;
@@ -136,7 +136,7 @@ columns_find_noconflict(Columns* self, Str* name, bool* conflict)
 	list_foreach(&self->list)
 	{
 		auto column = list_at(Column, link);
-		if (str_compare(&column->name, name))
+		if (str_compare_case(&column->name, name))
 		{
 			if (match)
 			{

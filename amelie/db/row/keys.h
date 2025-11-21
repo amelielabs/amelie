@@ -81,7 +81,7 @@ keys_find(Keys* self, Str* name)
 	list_foreach(&self->list)
 	{
 		auto key = list_at(Key, link);
-		if (str_compare(&key->column->name, name))
+		if (str_compare_case(&key->column->name, name))
 			return key;
 	}
 	return NULL;

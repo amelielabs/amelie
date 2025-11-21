@@ -53,7 +53,7 @@ parse_index_with(Stmt* self, IndexConfig* index_config)
 	{
 		// key
 		auto key = stmt_expect(self, KNAME);
-		if (str_is(&key->string, "type", 4))
+		if (str_is_case(&key->string, "type", 4))
 		{
 			// =
 			stmt_expect(self, '=');

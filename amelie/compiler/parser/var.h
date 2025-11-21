@@ -53,7 +53,7 @@ vars_find(Vars* self, Str* name)
 {
 	for (auto var = self->list; var; var = var->next)
 	{
-		if (str_compare(var->name, name))
+		if (str_compare_case(var->name, name))
 			return var;
 	}
 	return NULL;

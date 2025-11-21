@@ -125,6 +125,12 @@ str_is_prefix(Str* self, const void* string, int size)
 }
 
 static inline bool
+str_is_prefix_case(Str* self, const void* string, int size)
+{
+	return str_size(self) >= size && !memcmp(self->pos, string, size);
+}
+
+static inline bool
 str_is_cstr(Str* self, const void* string)
 {
 	return str_is(self, string, strlen(string));
@@ -137,6 +143,12 @@ str_is_case(Str* self, const char* string, int size)
 }
 
 static inline bool
+str_compare_case(Str* self, Str* with)
+{
+	return str_is_case(self, str_of(with), str_size(with));
+}
+
+static inline bool
 str_compare(Str* self, Str* with)
 {
 	return str_is(self, str_of(with), str_size(with));
@@ -146,6 +158,12 @@ static inline bool
 str_compare_prefix(Str* self, Str* prefix)
 {
 	return str_is_prefix(self, str_of(prefix), str_size(prefix));
+}
+
+static inline bool
+str_compare_prefix_case(Str* self, Str* prefix)
+{
+	return str_is_prefix_case(self, str_of(prefix), str_size(prefix));
 }
 
 hot static inline int

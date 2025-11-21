@@ -60,9 +60,9 @@ relation_mgr_get(RelationMgr* self, Str* schema, Str* name)
 	list_foreach(&self->list)
 	{
 		auto relation = list_at(Relation, link);
-		if (schema && !str_compare(relation->schema, schema))
+		if (schema && !str_compare_case(relation->schema, schema))
 			continue;
-		if (str_compare(relation->name, name))
+		if (str_compare_case(relation->name, name))
 			return relation;
 	}
 	return NULL;

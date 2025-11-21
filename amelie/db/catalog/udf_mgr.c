@@ -228,10 +228,10 @@ udf_mgr_rename(UdfMgr* self,
 	encode_string(&tr->log.data, &udf->config->name);
 
 	// set new name
-	if (! str_compare(&udf->config->schema, schema_new))
+	if (! str_compare_case(&udf->config->schema, schema_new))
 		udf_config_set_schema(udf->config, schema_new);
 
-	if (! str_compare(&udf->config->name, name_new))
+	if (! str_compare_case(&udf->config->name, name_new))
 		udf_config_set_name(udf->config, name_new);
 
 	return true;
@@ -289,7 +289,7 @@ udf_mgr_list(UdfMgr* self, Str* schema, Str* name, bool extended)
 	list_foreach(&self->mgr.list)
 	{
 		auto udf = udf_of(list_at(Relation, link));
-		if (schema && !str_compare(&udf->config->schema, schema))
+		if (schema && !str_compare_case(&udf->config->schema, schema))
 			continue;
 		if (extended)
 			udf_config_write(udf->config, buf);
