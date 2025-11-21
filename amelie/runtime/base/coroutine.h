@@ -60,6 +60,7 @@ static inline void
 coroutine_free(Coroutine* self)
 {
 	arena_free(&self->arena);
+	error_free(&self->error);
 	context_stack_free(&self->stack);
 	am_free(self);
 }
@@ -102,9 +103,6 @@ coroutine_cancel_resume(Coroutine* self)
 	{
 		self->cancel_pause_recv = 0;
 		self->cancel = true;
-		error_throw(&self->error, &self->exception_mgr,
-		            source_file,
-		            source_function,
-		            source_line, CANCEL, "cancelled");
+		error_as(CANCEL, "cancelled");
 	}
 }

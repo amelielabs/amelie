@@ -158,8 +158,8 @@ task_create(Task*        self,
 	rc = task_create_nothrow(self, name, main, main_arg,
 	                         am_runtime,
 	                         am_share,
-	                         am_task->log_write,
-	                         am_task->log_write_arg,
+	                         am_task->log.write,
+	                         am_task->log.write_arg,
 	                         am_task->buf_mgr);
 	if (unlikely(rc == -1))
 		error_system();

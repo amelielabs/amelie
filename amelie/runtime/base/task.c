@@ -201,9 +201,8 @@ task_init(Task* self)
 	self->main_arg         = NULL;
 	self->main_arg_runtime = NULL;
 	self->main_coroutine   = NULL;
-	self->log_write        = NULL;
-	self->log_write_arg    = NULL;
 	self->name[0]          = 0;
+	task_log_init(&self->log);
 	coroutine_mgr_init(&self->coroutine_mgr, 4096 * 32); // 128kb
 	timer_mgr_init(&self->timer_mgr);
 	poller_init(&self->poller);
@@ -221,6 +220,7 @@ task_free(Task* self)
 	bus_free(&self->bus);
 	poller_free(&self->poller);
 	cond_free(&self->status);
+	task_log_free(&self->log);
 }
 
 bool
@@ -236,8 +236,8 @@ task_create_nothrow(Task*        self,
                     void*        main_arg,
                     void*        main_arg_runtime,
                     void*        main_arg_share,
-                    LogFunction  log,
-                    void*        log_arg,
+                    TaskLogWrite log_write,
+                    void*        log_write_arg,
                     BufMgr*      buf_mgr)
 {
 	// set arguments
@@ -245,10 +245,11 @@ task_create_nothrow(Task*        self,
 	self->main_arg         = main_arg;
 	self->main_arg_runtime = main_arg_runtime;
 	self->main_arg_share   = main_arg_share;
-	self->log_write        = log;
-	self->log_write_arg    = log_arg;
 	self->buf_mgr          = buf_mgr;
 	snprintf(self->name, sizeof(self->name), "%s", name);
+
+	// set logger iface
+	task_log_set(&self->log, log_write, log_write_arg);
 
 	// prepare poller
 	int rc = poller_create(&self->poller);

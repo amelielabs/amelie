@@ -219,12 +219,13 @@ buf_write_str(Buf* self, Str* str)
 static inline void
 buf_vprintf(Buf* self, const char* fmt, va_list args)
 {
-	char tmp[512];
-	int  tmp_len;
-	tmp_len = vsnprintf(tmp, sizeof(tmp), fmt, args);
-	buf_reserve(self, tmp_len + 1);
-	buf_append(self, tmp, tmp_len);
-	*self->position = 0;
+	va_list args_copy;
+	va_copy(args_copy, args);
+	auto size = vsnprintf(NULL, 0, fmt, args) + 1;
+	buf_reserve(self, size);
+	vsnprintf((char*)self->position, size, fmt, args_copy);
+	buf_advance(self, size - 1);
+	va_end(args_copy);
 }
 
 static inline void

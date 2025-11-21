@@ -25,8 +25,7 @@ struct Task
 	void*        main_arg_runtime;
 	void*        main_arg_share;
 	Coroutine*   main_coroutine;
-	LogFunction  log_write;
-	void*        log_write_arg;
+	TaskLog      log;
 	char         name[9];
 	Cond         status;
 	Thread       thread;
@@ -47,7 +46,7 @@ void task_free(Task*);
 bool task_active(Task*);
 int  task_create_nothrow(Task*, char*,
                          MainFunction, void*, void*, void*,
-                         LogFunction, void*,
+                         TaskLogWrite, void*,
                          BufMgr*);
 void task_execute(Task*, MainFunction, void*);
 void task_wait(Task*);

@@ -27,26 +27,15 @@
 	__exception.triggered; \
 })
 
-// throw
-#define rethrow() \
-	exception_mgr_throw(&am_self()->exception_mgr)
+no_return static inline void
+rethrow(void)
+{
+	exception_mgr_throw(&am_self()->exception_mgr);
+}
 
-// error
-#define error_as(code, fmt, ...) \
-	report_throw(source_file, \
-	             source_function, \
-	             source_line, code, fmt, ## __VA_ARGS__)
-
-#define error(fmt, ...) \
-	error_as(ERROR, fmt, ## __VA_ARGS__)
-
-#define error_system() \
-	error_as(ERROR, "%s(): %s (errno: %d)", source_function, \
-	         strerror(errno), errno)
-
-// cancel
-#define cancellation_point() \
-({ \
-	if (unlikely(am_self()->cancel)) \
-		error_as(CANCEL, "cancelled"); \
-})
+static inline void
+cancellation_point(void)
+{
+	if (unlikely(am_self()->cancel))
+		error_as(CANCEL, "cancelled");
+}

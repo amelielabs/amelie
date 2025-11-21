@@ -71,52 +71,47 @@ logger_set_timezone(Logger *self, Timezone* timezone)
 }
 
 void
-logger_write(void*       arg,
-             const char* file,
-             const char* function,
-             int         line,
-             const char* prefix,
-             const char* text)
+logger_write(TaskLog* arg, const char* fmt, va_list args)
 {
-	Logger* self = arg;
+	Logger* self = arg->write_arg;
 
-	unused(file);
-	unused(function);
-	unused(line);
-
-	if (! self->enable)
-		return;
-
-	int  buf_len = 0;
-	char buf[1024];
-
-	if (self->fd == -1 && self->cli && self->to_stdout)
-		goto print_stdout;
+	auto buf = &arg->buf;
+	buf_reset(buf);
 
 	// timestamp
+	buf_reserve(buf, 64);
 	if (self->timezone)
 	{
 		timer_mgr_reset(&am_task->timer_mgr);
 		auto time = time_us();
-		buf_len = timestamp_get(time, self->timezone, buf, sizeof(buf));
-		buf[buf_len++] = ' ';
+		auto rc = timestamp_get(time, self->timezone, buf_cstr(buf), 64);
+		buf_advance(buf, rc);
+		buf_write(buf, " ", 1);
 	}
 
-	// message
-	buf_len += snprintf(buf + buf_len, sizeof(buf) - buf_len, " %s%s\n",
-	                    prefix, text);
+	// msg
+	auto timestamp_offset = buf_size(buf);
+	buf_vprintf(buf, fmt, args);
+	buf_write(buf, "\n", 1);
 
 	// write to the log file
 	if (self->fd != -1)
-		vfs_write(self->fd, buf, buf_len);
+		vfs_write(self->fd, buf->start, buf_size(buf));
 
-print_stdout:
-	// cli print (simplified output)
+	if (! self->to_stdout)
+		return;
+
+	// do not print timestamp for cli
+	auto data = buf->start;
+	auto data_size = buf_size(buf);
 	if (self->cli)
-		buf_len = snprintf(buf, sizeof(buf), "%s%s%s", prefix, text,
-		                   self->cli_lf ? "\n" : "");
+	{
+		data += timestamp_offset;
+		data_size -= timestamp_offset;
+		if (! self->cli_lf)
+			data_size--;
+	}
 
-	// print
-	if (self->to_stdout)
-		vfs_write(STDOUT_FILENO, buf, buf_len);
+	// write to stdout
+	vfs_write(STDOUT_FILENO, data, data_size);
 }

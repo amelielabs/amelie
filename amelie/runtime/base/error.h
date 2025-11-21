@@ -22,12 +22,11 @@ enum
 
 struct Error
 {
-	int         code;
-	char        text[512];
-	int         text_len;
-	const char* file;
-	const char* function;
-	int         line;
+	int   code;
+	char* file;
+	char* function;
+	int   line;
+	Buf   text;
 };
 
 static inline void
@@ -37,28 +36,60 @@ error_init(Error* self)
 }
 
 static inline void
+error_free(Error* self)
+{
+	buf_free_memory(&self->text);
+}
+
+static inline void
+error_reset(Error* self)
+{
+	self->code     = 0;
+	self->file     = NULL;
+	self->function = NULL;
+	self->line     = 0;
+	buf_reset(&self->text);
+}
+
+static inline void
+error_setv(Error*      self,
+           const char* file,
+           const char* function,
+           int         line,
+           int         code,
+           const char* fmt,
+           va_list     fmt_args)
+{
+	self->code     = code;
+	self->file     = (char*)file;
+	self->function = (char*)function;
+	self->line     = line;
+	buf_reset(&self->text);
+	buf_vprintf(&self->text, fmt, fmt_args);
+}
+
+static inline void
 error_set(Error*      self,
           const char* file,
           const char* function,
           int         line,
           int         code,
-          const char* text)
+          const char* fmt,
+          ...)
 {
-	self->code     = code;
-	self->file     = file;
-	self->function = function;
-	self->line     = line;
-	self->text_len = snprintf(self->text, sizeof(self->text), "%s", text);
+	va_list args;
+	va_start(args, fmt);
+	error_setv(self, file, function, line, code, fmt, args);
+	va_end(args);
 }
 
-static inline void no_return
-error_throw(Error*        self,
-            ExceptionMgr* mgr,
-            const char*   file,
-            const char*   function, int line,
-            int           code,
-            const char*   text)
+static inline void
+error_copy(Error* self, Error* from)
 {
-	error_set(self, file, function, line, code, text);
-	exception_mgr_throw(mgr);
+	self->code     = from->code;
+	self->file     = from->file;
+	self->function = from->function;
+	self->line     = from->line;
+	buf_reset(&self->text);
+	buf_write_buf(&self->text, &from->text);
 }

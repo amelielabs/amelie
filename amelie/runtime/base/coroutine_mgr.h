@@ -135,6 +135,7 @@ coroutine_mgr_create(CoroutineMgr* self,
 		list_init(&coro->link);
 		event_init(&coro->on_exit);
 		arena_reset(&coro->arena);
+		error_reset(&coro->error);
 	} else
 	{
 		coro = am_malloc(sizeof(Coroutine));

@@ -135,6 +135,6 @@ void
 content_write_json_error(Content* self, Error* error)
 {
 	Str msg;
-	str_set(&msg, error->text, error->text_len);
+	buf_str(&error->text, &msg);
 	content_write_json_error_as(self, &msg);
 }

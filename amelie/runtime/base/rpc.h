@@ -54,7 +54,7 @@ rpc_execute(Rpc* self,
             void  *callback_arg)
 {
 	if (error_catch( callback(self, callback_arg) ))
-		*self->error = am_self()->error;
+		error_copy(self->error, &am_self()->error);
 	rpc_done(self);
 }
 

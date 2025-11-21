@@ -30,5 +30,4 @@ void logger_set_cli(Logger*, bool, bool);
 void logger_set_to_stdout(Logger*, bool);
 void logger_set_timezone(Logger*, Timezone*);
 void logger_close(Logger*);
-void logger_write(void*, const char*, const char*, int,
-                  const char*, const char*);
+void logger_write(TaskLog*, const char*, va_list);

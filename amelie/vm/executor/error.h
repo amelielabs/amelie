@@ -17,7 +17,7 @@ error_create(Error* error)
 	auto self = buf_create();
 	encode_obj(self);
 	encode_raw(self, "msg", 3);
-	encode_raw(self, error->text, error->text_len);
+	encode_buf(self, &error->text);
 	encode_obj_end(self);
 	return self;
 }
@@ -55,14 +55,11 @@ rethrow_buf(Buf* buf)
 	Str text;
 	json_read_string(&pos, &text);
 
-	char sz[1024];
-	snprintf(sz, sizeof(sz), "%.*s", str_size(&text), str_of(&text));
-
-	auto self = am_self();
-	error_throw(&self->error,
-	            &self->exception_mgr,
-	            source_file,
-	            source_function,
-	            source_line,
-	            ERROR, sz);
+	error_set(&am_self()->error,
+	          source_file,
+	          source_function,
+	          source_line,
+	          0, "%.*s", str_size(&text),
+	          str_of(&text));
+	rethrow();
 }

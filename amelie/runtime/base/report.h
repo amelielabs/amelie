@@ -11,20 +11,13 @@
 // AGPL-3.0 Licensed.
 //
 
-typedef void (*LogFunction)(void* arg,
-                            const char* file,
-                            const char* function, int line,
-                            const char* prefix,
-                            const char* text);
-
 void
 report(const char* file,
        const char* function, int line,
-       const char* prefix,
        const char* fmt, ...);
 
 void no_return
-report_throw(const char* file,
+report_error(const char* file,
              const char* function, int line,
              int         code,
              const char* fmt, ...);
@@ -38,12 +31,7 @@ report_panic(const char* file,
 #define info(fmt, ...) \
 	report(source_file, \
 	       source_function, \
-	       source_line, "", fmt, ## __VA_ARGS__)
-
-#define debug(fmt, ...) \
-	report(source_file, \
-	       source_function, \
-	       source_line, "", fmt, ## __VA_ARGS__)
+	       source_line, fmt, ## __VA_ARGS__)
 
 // panic
 #define panic(fmt, ...) \
@@ -53,3 +41,16 @@ report_panic(const char* file,
 
 #define oom() \
 	panic("memory allocation failed")
+
+// error
+#define error_as(code, fmt, ...) \
+	report_error(source_file, \
+	             source_function, \
+	             source_line, code, fmt, ## __VA_ARGS__)
+
+#define error(fmt, ...) \
+	error_as(ERROR, fmt, ## __VA_ARGS__)
+
+#define error_system() \
+	error_as(ERROR, "%s(): %s (errno: %d)", source_function, \
+	         strerror(errno), errno)
