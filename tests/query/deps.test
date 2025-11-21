@@ -1073,5 +1073,25 @@ end;
 
 drop table test;
 
+# test: insert var / select
+create table test (id int primary key);
+insert into test values (1), (2), (3);
+
+explain begin
+	declare id int;
+	select max(test.id) + 1 into id from test;
+	insert into test values (id);
+	select * from test;
+end;
+
+begin
+	declare id int;
+	select max(test.id) + 1 into id from test;
+	insert into test values (id);
+	select * from test;
+end;
+
+drop table test;
+
 disconnect S0;
 close E0;

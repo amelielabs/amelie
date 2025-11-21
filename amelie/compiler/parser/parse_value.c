@@ -111,6 +111,8 @@ parse_value(Stmt* self, From* from, Column* column, Value* value)
 			           str_size(&column->name), str_of(&column->name));
 		ast->id  = KVAR;
 		ast->var = var;
+		if (var->writer)
+			deps_add_var(&self->deps, var->writer, var);
 
 		auto ref = refs_add(&self->refs, from, ast, -1);
 		ref->not_null = column->constraints.not_null;

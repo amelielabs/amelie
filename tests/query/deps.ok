@@ -2812,5 +2812,75 @@ begin
 end;
 [[1, null]]
 drop table test;
+# test: insert var / select
+create table test (id int primary key);
+insert into test values (1), (2), (3);
+explain begin
+	declare id int;
+	select max(test.id) + 1 into id from test;
+	insert into test values (id);
+	select * from test;
+end;
+[{
+  "main": {
+    "00": "push_nulls          1      0      0     ",
+    "01": "send_all            0      0      28    # public.test (select)",
+    "02": "recv_aggs           1      0      20    ",
+    "03": "set                 2      1      0     ",
+    "04": "store_open          3      1      11    ",
+    "05": "agg                 4      3      0     ",
+    "06": "int                 5      -      0     # 1",
+    "07": "addii               6      4      5     ",
+    "08": "push                6      0      0     ",
+    "09": "set_add             2      0      0     ",
+    "10": "store_next          3      5      0     ",
+    "11": "free                3      0      0     ",
+    "12": "free                1      0      0     ",
+    "13": "var_set             0      0      2     ",
+    "14": "free                2      0      0     ",
+    "15": "push_var            0      0      1     ",
+    "16": "set_ptr             1      -      0     ",
+    "17": "send_shard          0      1      1     # public.test (insert)",
+    "18": "send_all            0      0      96    # public.test (select, closing)",
+    "19": "union               1      0      0     ",
+    "20": "recv                1      0      0     ",
+    "21": "ret                 1      0      -     "
+  },
+  "pushdown": {
+    "00": "set                 0      1      1     ",
+    "01": "table_open_part     1      0      8     # public.test (primary)",
+    "02": "push_bool           1      0      0     ",
+    "03": "set_get             2      0      0     ",
+    "04": "table_readi32       3      1      0     ",
+    "05": "push                3      0      0     ",
+    "06": "set_agg             0      2      20    ",
+    "07": "table_next          1      2      0     ",
+    "08": "free                1      0      0     ",
+    "09": "push_bool           1      0      0     ",
+    "10": "set_get             1      0      0     ",
+    "11": "push_nulls          1      0      0     ",
+    "12": "set_agg             0      1      20    ",
+    "13": "ret                 0      0      -     ",
+    "14": "insert              -      0      0     # public.test",
+    "15": "ret                 -1     0      -     ",
+    "16": "set                 0      1      0     ",
+    "17": "table_open_part     1      76     22    # public.test (primary)",
+    "18": "table_readi32       2      1      0     ",
+    "19": "push                2      0      0     ",
+    "20": "set_add             0      0      0     ",
+    "21": "table_next          1      18     0     ",
+    "22": "free                1      0      0     ",
+    "23": "ret                 0      0      -     "
+  },
+  "access": [["public.test", "rw"]]
+}]
+begin
+	declare id int;
+	select max(test.id) + 1 into id from test;
+	insert into test values (id);
+	select * from test;
+end;
+[1, 2, 3, 4]
+drop table test;
 disconnect S0;
 close E0;
