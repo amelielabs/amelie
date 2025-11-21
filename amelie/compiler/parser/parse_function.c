@@ -64,10 +64,8 @@ parse_function_args(Stmt* self, Columns* columns)
 		columns_add(columns, arg);
 
 		// type
-		int type_size;
-		int type;
-		if (parse_type(self, &type, &type_size))
-			stmt_error(self, name, "serial type cannot be used here");
+		int  type_size;
+		auto type = parse_type(self->lex, &type_size);
 		column_set_type(arg, type, type_size);
 
 		// ,
@@ -119,19 +117,21 @@ parse_function_create(Stmt* self, bool or_replace)
 	auto ret = stmt_if(self, KRETURN);
 	if (ret)
 	{
-		// type
+		// table | type
 		auto ast = stmt_next_shadow(self);
 		if (ast->id != KNAME)
 			stmt_error(self, ast, "unrecognized data type");
 
-		int type_size;
 		int type;
 		if (str_is_case(&ast->string, "table", 5))
+		{
 			type = TYPE_STORE;
-		else
-			type = type_read(&ast->string, &type_size);
-		if (type == -1)
-			stmt_error(self, ast, "unrecognized data type");
+		} else
+		{
+			stmt_push(self, ast);
+			int type_size;
+			type = parse_type(self->lex, &type_size);
+		}
 
 		udf_config_set_type(stmt->config, type);
 

@@ -49,6 +49,7 @@
 #include "parser/parse_case.h"
 #include "parser/parse_expr.h"
 #include "parser/parse_encode.h"
+#include "parser/parse_type.h"
 
 // control structures
 #include "parser/parse_if.h"

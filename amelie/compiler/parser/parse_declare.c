@@ -104,19 +104,21 @@ parse_declare(Parser* self, Block* block)
 	auto lex = &self->lex;
 	auto name = lex_expect(lex, KNAME);
 
-	// type
+	// table | type
 	auto ast = lex_next_shadow(lex);
 	if (ast->id != KNAME)
 		lex_error(lex, ast, "unrecognized data type");
 
-	int type_size;
 	int type;
 	if (str_is_case(&ast->string, "table", 5))
+	{
 		type = TYPE_STORE;
-	else
-		type = type_read(&ast->string, &type_size);
-	if (type == -1)
-		lex_error(lex, ast, "unrecognized data type");
+	} else
+	{
+		lex_push(lex, ast);
+		int type_size;
+		type = parse_type(lex, &type_size);
+	}
 
 	// create variable
 	auto var = vars_find(&block->ns->vars, &name->string);

@@ -158,8 +158,7 @@ type_read(Str* name, int* type_size)
 	} else
 	if (str_is_case(name, "int64", 5)  ||
 	    str_is_case(name, "i64", 3)    ||
-	    str_is_case(name, "bigint", 6) ||
-	    str_is_case(name, "serial", 6))
+	    str_is_case(name, "bigint", 6))
 	{
 		type = TYPE_INT;
 		*type_size = sizeof(int64_t);
@@ -176,9 +175,10 @@ type_read(Str* name, int* type_size)
 		type = TYPE_DOUBLE;
 		*type_size = sizeof(double);
 	} else
-	if (str_is_case(name, "text", 4)   ||
-	    str_is_case(name, "string", 6) ||
-	    str_is_case(name, "varchar", 7))
+	if (str_is_case(name, "text", 4)    ||
+	    str_is_case(name, "string", 6)  ||
+	    str_is_case(name, "varchar", 7) ||
+	    str_is_case(name, "char", 4))
 	{
 		type = TYPE_STRING;
 	} else

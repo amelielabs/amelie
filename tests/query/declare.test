@@ -13,6 +13,12 @@ declare a int;
 declare a int;
 explain declare a int;
 
+# test: declare char/varchar
+declare c char;
+declare c char(123);
+declare c varchar;
+declare c varchar(123);
+
 # test: declare begin/end
 explain begin;
 	declare a int;

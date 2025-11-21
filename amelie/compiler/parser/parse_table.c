@@ -39,30 +39,6 @@
 #include <amelie_vm.h>
 #include <amelie_parser.h>
 
-bool
-parse_type(Stmt* self, int* type, int* type_size)
-{
-	auto ast = stmt_next_shadow(self);
-	if (ast->id != KNAME)
-		stmt_error(self, ast, "unrecognized data type");
-
-	*type = type_read(&ast->string, type_size);
-	if (*type == -1)
-		stmt_error(self, ast, "unrecognized data type");
-
-	// VARCHAR [(size)]
-	if (str_is_case(&ast->string, "varchar", 7))
-	{
-		if (stmt_if(self, '('))
-		{
-			stmt_expect(self, KINT);
-			stmt_expect(self, ')');
-		}
-		return false;
-	}
-	return str_is_case(&ast->string, "serial", 6);
-}
-
 void
 parse_key(Stmt* self, Keys* keys)
 {
@@ -367,11 +343,23 @@ parse_columns(Stmt* self, Columns* columns, Keys* keys)
 		column_set_name(column, &name->string);
 		columns_add(columns, column);
 
-		// type | SERIAL
+		// SERIAL | type
+		auto ast = stmt_next_shadow(self);
+		if (ast->id != KNAME)
+			stmt_error(self, ast, "unrecognized data type");
+
 		int type_size;
 		int type;
-		if (parse_type(self, &type, &type_size))
+		if (str_is_case(&ast->string, "serial", 6))
+		{
+			type = TYPE_INT;
+			type_size = sizeof(int64_t);
 			constraints_set_as_identity(&column->constraints, IDENTITY_SERIAL);
+		} else
+		{
+			stmt_push(self, ast);
+			type = parse_type(self->lex, &type_size);
+		}
 		column_set_type(column, type, type_size);
 
 		// [PRIMARY KEY | NOT NULL | DEFAULT | AS]
@@ -619,11 +607,23 @@ parse_table_alter(Stmt* self)
 		auto column = stmt->column;
 		column_set_name(column, &name->string);
 
-		// type | SERIAL
+		// SERIAL | type
+		auto ast = stmt_next_shadow(self);
+		if (ast->id != KNAME)
+			stmt_error(self, ast, "unrecognized data type");
+
 		int type_size;
 		int type;
-		if (parse_type(self, &type, &type_size))
+		if (str_is_case(&ast->string, "serial", 6))
+		{
+			type = TYPE_INT;
+			type_size = sizeof(int64_t);
 			constraints_set_as_identity(&column->constraints, IDENTITY_SERIAL);
+		} else
+		{
+			stmt_push(self, ast);
+			type = parse_type(self->lex, &type_size);
+		}
 		column_set_type(column, type, type_size);
 
 		// [NOT NULL | DEFAULT | AS]

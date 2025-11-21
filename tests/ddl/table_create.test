@@ -72,8 +72,8 @@ create table test(id int primary key, a text, b string);
 select system.table('test').columns;
 drop table test;
 
-# test: column varchar
-create table test(id int primary key, a varchar, b varchar(123));
+# test: column varchar/char
+create table test(id int primary key, a varchar, b varchar(123), c char(123), d char);
 select system.table('test').columns;
 drop table test;
 

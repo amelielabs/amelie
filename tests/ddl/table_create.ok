@@ -215,8 +215,8 @@ select system.table('test').columns;
   "constraints": [["default", null]]
 }]]
 drop table test;
-# test: column varchar
-create table test(id int primary key, a varchar, b varchar(123));
+# test: column varchar/char
+create table test(id int primary key, a varchar, b varchar(123), c char(123), d char);
 select system.table('test').columns;
 [[{
   "name": "id",
@@ -230,6 +230,16 @@ select system.table('test').columns;
   "constraints": [["default", null]]
 }, {
   "name": "b",
+  "type": 4,
+  "type_size": 0,
+  "constraints": [["default", null]]
+}, {
+  "name": "c",
+  "type": 4,
+  "type_size": 0,
+  "constraints": [["default", null]]
+}, {
+  "name": "d",
   "type": 4,
   "type_size": 0,
   "constraints": [["default", null]]
