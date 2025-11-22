@@ -39,56 +39,31 @@
 #include <amelie_vm.h>
 #include <amelie_parser.h>
 
-static void
-parse_index_with(Stmt* self, IndexConfig* index_config)
+void
+parse_index_using(Stmt* self, IndexConfig* index_config)
 {
-	// [WITH]
-	if (! stmt_if(self, KWITH))
+	// [USING type]
+	if (! stmt_if(self, KUSING))
 		return;
+	auto type = stmt_next_shadow(self);
+	if (type->id != KNAME)
+		stmt_error(self, type, "index type expected");
 
-	// (
-	stmt_expect(self, '(');
-
-	for (;;)
-	{
-		// key
-		auto key = stmt_expect(self, KNAME);
-		if (str_is_case(&key->string, "type", 4))
-		{
-			// =
-			stmt_expect(self, '=');
-
-			// string
-			auto value = stmt_expect(self, KSTRING);
-
-			// tree | hash
-			if (str_is_cstr(&value->string, "tree"))
-				index_config_set_type(index_config, INDEX_TREE);
-			else
-			if (str_is_cstr(&value->string, "hash"))
-				index_config_set_type(index_config, INDEX_HASH);
-			else
-				stmt_error(self, value, "unrecognized index type");
-
-		} else {
-			stmt_error(self, key, "unrecognized parameter");
-		}
-
-		// ,
-		if (stmt_if(self, ','))
-			continue;
-
-		// )
-		if (stmt_if(self, ')'))
-			break;
-	}
+	// tree | hash
+	if (str_is_case(&type->string, "tree", 4))
+		index_config_set_type(index_config, INDEX_TREE);
+	else
+	if (str_is_case(&type->string, "hash", 4))
+		index_config_set_type(index_config, INDEX_HASH);
+	else
+		stmt_error(self, type, "unrecognized index type");
 }
 
 void
 parse_index_create(Stmt* self, bool unique)
 {
 	// CREATE [UNIQUE] INDEX [IF NOT EXISTS] name ON table_name (keys)
-	// [WITH (...)]
+	// [USING type]
 	auto stmt = ast_index_create_allocate();
 	self->ast = &stmt->ast;
 
@@ -131,8 +106,8 @@ parse_index_create(Stmt* self, bool unique)
 	if (! config->unique)
 		keys_copy_distinct(&config->keys, table_keys(table));
 
-	// [WITH (options)]
-	parse_index_with(self, stmt->config);
+	// [USING type]
+	parse_index_using(self, stmt->config);
 }
 
 void

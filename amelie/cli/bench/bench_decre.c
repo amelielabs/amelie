@@ -21,10 +21,10 @@ bench_decre_create(Bench* self, BenchClient* client)
 	unused(self);
 
 	Str str;
-	str_set_cstr(&str, "create table __bench.test (id serial primary key, money double default 100.0) with (type = 'hash')");
+	str_set_cstr(&str, "create table __bench.test (id serial primary key using hash, money double default 100.0)");
 	bench_client_execute(client, &str);
 
-	str_set_cstr(&str, "create table __bench.history (id serial primary key, src int, dst int, amount double) with (type = 'tree')");
+	str_set_cstr(&str, "create table __bench.history (id serial primary key using hash, src int, dst int, amount double)");
 	bench_client_execute(client, &str);
 
 	if (opt_int_of(&self->unlogged))
@@ -52,10 +52,10 @@ bench_decre_create(Bench* self, BenchClient* client)
 	"create function __bench.debit_credit(src int, dst int, amount double)"
 	"begin"
 	"	update __bench.test set money = money - amount"
-	"	where id = src;"
+	"	 where id = src;"
 	""
 	"	update __bench.test set money = money + amount"
-	"	where id = dst;"
+	"	 where id = dst;"
 	""
 	"	insert into __bench.history (src, dst, amount)"
 	"	values (src, dst, amount);"

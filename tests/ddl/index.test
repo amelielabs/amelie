@@ -48,30 +48,18 @@ select system.table('test').indexes;
 
 drop table test;
 
-# test: create index with parsing
+# test: create index using
 create table test (id int primary key, a int, b int);
-create index i on test (a) 1;
-create index i on test (a) with;
-create index i on test (a) with 1;
-create index i on test (a) with (;
-create index i on test (a) with (name;
-create index i on test (a) with (name =;
-create index i on test (a) with (name = 1;
-create index i on test (a) with (type = 1;
-create index i on test (a) with (type = 'type';
-create index i on test (a) with (type = 'tree',;
-create index i on test (a) with (, type = 'tree';
-
-# test: create index with
-create index i on test (a) with (type = 'hash');
+create index i on test (a) using;
+create index i on test (a) using hash;
 select system.table('test').indexes;
 drop index i on test;
 
-create index i on test (a) with (type = 'tree');
+create index i on test (a) using tree;
 select system.table('test').indexes;
 drop index i on test;
 
-create index i on test (a) with (type = 'unknown');
+create index i on test (a) using unknown;
 
 # test: drop index parsing
 drop index;

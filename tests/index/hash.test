@@ -4,7 +4,7 @@ open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "12
 connect E0 S0 127.0.0.1:3485;
 
 # test: hash consistency
-create table test (id int primary key, data int default 0) with (type = 'hash');
+create table test (id int primary key using hash, data int default 0);
 create index i on test (id);
 
 insert into test (id) values ( 1025 );
@@ -3107,7 +3107,7 @@ select * from test;
 drop table test;
 
 # test: hash insert/abort
-create table test (id serial primary key) with (type = 'hash');
+create table test (id serial primary key using hash);
 create index i on test (id);
 begin insert into test generate 1025; select error("abort"); end;
 select * from test;

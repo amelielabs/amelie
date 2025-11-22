@@ -43,7 +43,7 @@ truncate test;
 truncate if exists test;
 
 # test: truncate (hash)
-create table test (id int primary key) with (type='hash');
+create table test (id int primary key using hash);
 insert into test values (1),(2),(3),(4);
 select * from test;
 truncate test;

@@ -175,9 +175,9 @@ bench_tpcb_create(Bench* self, BenchClient* client)
 
 	char* ddl[] =
 	{
-		"create table __bench.branches (bid int primary key, bbalance int, filler text) with (type = \"hash\")",
-		"create table __bench.tellers (tid int primary key, bid int, tbalance int, filler text) with (type = \"hash\")",
-		"create table __bench.accounts (aid int primary key, bid int, abalance int, filler text) with (type = \"hash\")",
+		"create table __bench.branches (bid int primary key using hash, bbalance int, filler text)",
+		"create table __bench.tellers (tid int primary key using hash, bid int, tbalance int, filler text)",
+		"create table __bench.accounts (aid int primary key using hash, bid int, abalance int, filler text)",
 		"create table __bench.history (tid int, bid int, aid int, delta int, time timestamp, seq serial primary key, filler text)",
 		 NULL
 	};

@@ -119,7 +119,7 @@ drop table b;
 drop table ref;
 
 # test: update abort (drop sync)
-create table test (id int primary key, data int default 0) with (type = 'tree');
+create table test (id int primary key using tree, data int default 0);
 insert into test (id) values ( 1025 );
 insert into test (id) values ( 1024 );
 insert into test (id) values ( 1023 );

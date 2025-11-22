@@ -91,10 +91,11 @@ parse_key(Stmt* self, Keys* keys)
 static inline bool
 parse_primary_key(Stmt* self)
 {
-	// PRIMARY KEY
+	// PRIMARY KEY [USING type]
 	if (! stmt_if(self, KPRIMARY))
 		return false;
 	stmt_expect(self, KKEY);
+	parse_index_using(self, ast_table_create_of(self->ast)->config_index);
 	return true;
 }
 
@@ -183,7 +184,7 @@ parse_constraints(Stmt* self, Keys* keys, Column* column)
 			break;
 		}
 
-		// PRIMARY KEY
+		// PRIMARY KEY [USING type]
 		case KPRIMARY:
 		{
 			stmt_expect(self, KKEY);
@@ -214,6 +215,9 @@ parse_constraints(Stmt* self, Keys* keys, Column* column)
 
 			if (! str_empty(&cons->as_resolved))
 				stmt_error(self, name, "cannot be used together with RESOLVED");
+
+			// [USING type]
+			parse_index_using(self, ast_table_create_of(self->ast)->config_index);
 			break;
 		}
 
@@ -320,12 +324,11 @@ parse_columns(Stmt* self, Columns* columns, Keys* keys)
 	Column* identity = NULL;
 	for (;;)
 	{
-		// PRIMARY KEY (columns)
+		// PRIMARY KEY (columns) [USING type]
 		if (parse_primary_key(self))
 		{
 			parse_key(self, keys);
-
-			// )
+			parse_index_using(self, ast_table_create_of(self->ast)->config_index);
 			break;
 		}
 
@@ -406,53 +409,6 @@ parse_columns(Stmt* self, Columns* columns, Keys* keys)
 }
 
 static void
-parse_table_with(Stmt* self, AstTableCreate* stmt, IndexConfig* index_config)
-{
-	// [WITH]
-	if (! stmt_if(self, KWITH))
-		return;
-
-	// (
-	stmt_expect(self, '(');
-
-	for (;;)
-	{
-		// key
-		auto key = stmt_expect(self, KNAME);
-
-		unused(stmt);
-		if (str_is_case(&key->string, "type", 4))
-		{
-			// =
-			stmt_expect(self, '=');
-
-			// string
-			auto value = stmt_expect(self, KSTRING);
-
-			// tree | hash
-			if (str_is_cstr(&value->string, "tree"))
-				index_config_set_type(index_config, INDEX_TREE);
-			else
-			if (str_is_cstr(&value->string, "hash"))
-				index_config_set_type(index_config, INDEX_HASH);
-			else
-				stmt_error(self, value, "unrecognized index type");
-
-		} else {
-			stmt_error(self, key, "unrecognized parameter");
-		}
-
-		// ,
-		if (stmt_if(self, ','))
-			continue;
-
-		// )
-		if (stmt_if(self, ')'))
-			break;
-	}
-}
-
-static void
 parse_table_finilize(AstTableCreate* self)
 {
 	// ensure schema exists and not system
@@ -502,7 +458,6 @@ parse_table_create(Stmt* self, bool unlogged)
 {
 	// CREATE [UNLOGGED] TABLE [IF NOT EXISTS] name (key)
 	// [PARTITIONS n]
-	// [WITH()]
 	auto stmt = ast_table_create_allocate();
 	self->ast = &stmt->ast;
 
@@ -516,24 +471,26 @@ parse_table_create(Stmt* self, bool unlogged)
 		stmt_error(self, NULL, "name expected");
 
 	// create table config
-	stmt->config = table_config_allocate();
-	table_config_set_unlogged(stmt->config, unlogged);
-	table_config_set_schema(stmt->config, &schema);
-	table_config_set_name(stmt->config, &name);
+	auto config = table_config_allocate();
+	stmt->config = config;
+	table_config_set_unlogged(config, unlogged);
+	table_config_set_schema(config, &schema);
+	table_config_set_name(config, &name);
 
 	// create primary index config
-	auto index_config = index_config_allocate(&stmt->config->columns);
-	table_config_add_index(stmt->config, index_config);
+	auto config_index = index_config_allocate(&config->columns);
+	stmt->config_index = config_index;
+	table_config_add_index(config, config_index);
 
 	Str index_name;
 	str_set_cstr(&index_name, "primary");
-	index_config_set_name(index_config, &index_name);
-	index_config_set_type(index_config, INDEX_TREE);
-	index_config_set_unique(index_config, true);
-	index_config_set_primary(index_config, true);
+	index_config_set_name(config_index, &index_name);
+	index_config_set_type(config_index, INDEX_TREE);
+	index_config_set_unique(config_index, true);
+	index_config_set_primary(config_index, true);
 
 	// (columns)
-	parse_columns(self, &stmt->config->columns, &index_config->keys);
+	parse_columns(self, &config->columns, &config_index->keys);
 
 	// [PARTITIONS]
 	if (stmt_if(self, KPARTITIONS))
@@ -543,9 +500,6 @@ parse_table_create(Stmt* self, bool unlogged)
 	} else {
 		stmt->partitions = opt_int_of(&config()->backends);
 	}
-
-	// [WITH]
-	parse_table_with(self, stmt, index_config);
 
 	// define partitions
 	parse_table_finilize(stmt);

@@ -47,8 +47,8 @@ select (select id from test use heap);
 drop table test;
 
 # test: hash/hash
-create table test (id int, data int, primary key (id, data)) partitions 1 with (type = 'hash');
-create index i on test (data) with (type = 'hash');
+create table test (id int, data int, primary key (id, data) using hash) partitions 1;
+create index i on test (data) using hash;
 
 insert into test values (0, 2);
 insert into test values (1, 1);
@@ -59,7 +59,7 @@ explain select * from test;
 select * from test;
 
 # test: hash/hash (unique point lookup)
-create unique index j on test (data) with (type = 'hash');
+create unique index j on test (data) using hash;
 explain select * from test where data = 2;
 select * from test where data = 2;
 
@@ -75,7 +75,7 @@ drop table test;
 
 # test: tree/hash
 create table test (id int primary key, data int);
-create index i on test (data) with (type = 'hash');
+create index i on test (data) using hash;
 
 insert into test values (0, 2);
 insert into test values (1, 1);

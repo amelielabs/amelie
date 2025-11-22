@@ -25,8 +25,8 @@ bench_resolved_create(Bench* self, BenchClient* client)
 	             "    ts   timestamp as ( current_timestamp::date_bin('3 sec'::interval) ) stored,"
 	             "    id   int random (10000),"
 	             "    hits int default 0 as ( hits + 1 ) resolved,"
-	             "    primary key(ts, id)"
-	             ") with (type = 'hash')");
+	             "    primary key(ts, id) using hash"
+	             ")");
 	bench_client_execute(client, &str);
 	if (opt_int_of(&self->unlogged))
 	{

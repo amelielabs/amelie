@@ -618,20 +618,14 @@ create table test (id serial primary key, data serial);
 # test: constraint serial as identity
 create table test (id serial primary key as identity);
 {"msg": "create table test (id serial primary key as ❰identity❱ ⟵ IDENTITY defined twice"}
-# test: with parsing
-create table test (id int primary key) with;
-{"msg": "create table test (id int primary key) with❰;❱ ⟵ ( expected"}
-create table test (id int primary key) with (;
-{"msg": "create table test (id int primary key) with (❰;❱ ⟵ name expected"}
-create table test (id int primary key) with (,;
-{"msg": "create table test (id int primary key) with (❰,❱ ⟵ name expected"}
-create table test (id int primary key) with (abc;
-{"msg": "create table test (id int primary key) with (❰abc❱ ⟵ unrecognized parameter"}
-create table test (id int primary key) with (abc = 10);
-{"msg": "create table test (id int primary key) with (❰abc❱ ⟵ unrecognized parameter"}
-create table test (id int primary key) with (abc = "");
-{"msg": "create table test (id int primary key) with (❰abc❱ ⟵ unrecognized parameter"}
-# test: with
-create table test (id int primary key) with (type = "hash");
+# test: primary key using
+create table test (id int primary key using);
+{"msg": "create table test (id int primary key using❰)❱ ⟵ index type expected"}
+create table test (id int primary key using unknown);
+{"msg": "create table test (id int primary key using ❰unknown❱ ⟵ unrecognized index type"}
+create table test (id int primary key using tree);
+drop table test;
+create table test (id int primary key using hash);
+drop table test;
 disconnect S0;
 close E0;

@@ -273,16 +273,15 @@ create table test (id serial primary key, data serial);
 # test: constraint serial as identity
 create table test (id serial primary key as identity);
 
-# test: with parsing
-create table test (id int primary key) with;
-create table test (id int primary key) with (;
-create table test (id int primary key) with (,;
-create table test (id int primary key) with (abc;
-create table test (id int primary key) with (abc = 10);
-create table test (id int primary key) with (abc = "");
+# test: primary key using
+create table test (id int primary key using);
+create table test (id int primary key using unknown);
 
-# test: with
-create table test (id int primary key) with (type = "hash");
+create table test (id int primary key using tree);
+drop table test;
+
+create table test (id int primary key using hash);
+drop table test;
 
 disconnect S0;
 close E0;
