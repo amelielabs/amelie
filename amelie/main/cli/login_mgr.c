@@ -179,10 +179,8 @@ login_mgr_set(LoginMgr* self, Remote* remote, Opts* opts,
 	    !strncmp(argv[0], "/", 1))
 	{
 		// directory path
-		char path[PATH_MAX];
-		snprintf(path, sizeof(path), "%s/socket", argv[0]);
 		Str str;
-		str_set_cstr(&str, path);
+		str_set_cstr(&str, argv[0]);
 		remote_set(remote, REMOTE_PATH, &str);
 		arg = 1;
 	} else

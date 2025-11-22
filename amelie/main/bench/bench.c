@@ -215,12 +215,6 @@ bench_run(Bench* self)
 		if (str_empty(path))
 			error("a repository path must be specified for the embeddable db benchmark");
 
-		// get the directory name from the socket path <path>/socket
-		if (str_size(path) < 7 || memcmp(path->end - 7, "/socket", 7) != 0)
-			error("invalid repository path");
-		str_truncate(path, 7);
-		*path->end = 0;
-
 		// open the repository
 		self->amelie = amelie_init();
 		if (! self->amelie)

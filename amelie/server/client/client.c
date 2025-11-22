@@ -125,7 +125,7 @@ client_connect_to_path(Client* self, Str* path)
 	struct sockaddr*   addr = (struct sockaddr*)&addr_un;
 	memset(&addr_un, 0, sizeof(addr_un));
 	addr_un.sun_family = AF_UNIX;
-	snprintf(addr_un.sun_path, sizeof(addr_un.sun_path) - 1, "%.*s",
+	snprintf(addr_un.sun_path, sizeof(addr_un.sun_path) - 1, "%.*s/socket",
 	         str_size(path), str_of(path));
 
 	// connect
@@ -134,7 +134,7 @@ client_connect_to_path(Client* self, Str* path)
 	// connected
 	bool log_connections = opt_int_of(&config()->log_connections);
 	if (log_connections)
-		info("connected to %.*s", str_size(path), str_of(path));
+		info("connected to %.*s/socket", str_size(path), str_of(path));
 }
 
 static void
