@@ -114,14 +114,14 @@ include_directories("${AMELIE_ROOT}/system/session")
 include_directories("${AMELIE_ROOT}/system/system")
 include_directories("${AMELIE_ROOT}/system/api")
 
-# cli
-include_directories("${AMELIE_ROOT}/cli")
-include_directories("${AMELIE_ROOT}/cli/cli")
-include_directories("${AMELIE_ROOT}/cli/server")
-include_directories("${AMELIE_ROOT}/cli/client")
-include_directories("${AMELIE_ROOT}/cli/bench")
-include_directories("${AMELIE_ROOT}/cli/test")
-include_directories("${AMELIE_ROOT}/cli/slt")
+# main
+include_directories("${AMELIE_ROOT}/main")
+include_directories("${AMELIE_ROOT}/main/cli")
+include_directories("${AMELIE_ROOT}/main/server")
+include_directories("${AMELIE_ROOT}/main/client")
+include_directories("${AMELIE_ROOT}/main/bench")
+include_directories("${AMELIE_ROOT}/main/test")
+include_directories("${AMELIE_ROOT}/main/test_slt")
 
 # sources
 set(AMELIE_SOURCES_RUNTIME
@@ -317,35 +317,6 @@ set(AMELIE_SOURCES_SYSTEM
     ${AMELIE_ROOT}/system/system/system_metrics.c
     ${AMELIE_ROOT}/system/api/amelie.c)
 
-set(AMELIE_SOURCES_CLI
-    ${AMELIE_ROOT}/cli/cli/daemon.c
-    ${AMELIE_ROOT}/cli/cli/login_mgr.c
-    ${AMELIE_ROOT}/cli/cli/cli.c
-    ${AMELIE_ROOT}/cli/server/server.c
-    ${AMELIE_ROOT}/cli/client/import.c
-    ${AMELIE_ROOT}/cli/client/client.c
-    ${AMELIE_ROOT}/cli/client/top.c
-    ${AMELIE_ROOT}/cli/bench/bench_client.c
-    ${AMELIE_ROOT}/cli/bench/bench.c
-    ${AMELIE_ROOT}/cli/bench/bench_insert.c
-    ${AMELIE_ROOT}/cli/bench/bench_upsert.c
-    ${AMELIE_ROOT}/cli/bench/bench_resolved.c
-    ${AMELIE_ROOT}/cli/bench/bench_tpcb.c
-    ${AMELIE_ROOT}/cli/bench/bench_import.c
-    ${AMELIE_ROOT}/cli/bench/bench_decre.c
-    ${AMELIE_ROOT}/cli/bench/bench_main.c
-    ${AMELIE_ROOT}/cli/test/test_plan.c
-    ${AMELIE_ROOT}/cli/test/test_suite.c
-    ${AMELIE_ROOT}/cli/test/test_command.c
-    ${AMELIE_ROOT}/cli/test/test_main.c
-    ${AMELIE_ROOT}/cli/slt/slt_parser.c
-    ${AMELIE_ROOT}/cli/slt/slt_result.c
-    ${AMELIE_ROOT}/cli/slt/slt.c
-    ${AMELIE_ROOT}/cli/slt/slt_main.c)
-
-set(AMELIE_SOURCES_MAIN
-    ${AMELIE_ROOT}/cli/cli/main.c)
-
 set(AMELIE_SOURCES
     ${AMELIE_SOURCES_RUNTIME}
     ${AMELIE_SOURCES_SERVER}
@@ -353,8 +324,34 @@ set(AMELIE_SOURCES
     ${AMELIE_SOURCES_REPL}
     ${AMELIE_SOURCES_VM}
     ${AMELIE_SOURCES_COMPILER}
-    ${AMELIE_SOURCES_SYSTEM}
-    ${AMELIE_SOURCES_CLI})
+    ${AMELIE_SOURCES_SYSTEM})
+
+set(AMELIE_SOURCES_MAIN
+    ${AMELIE_ROOT}/main/cli/daemon.c
+    ${AMELIE_ROOT}/main/cli/login_mgr.c
+    ${AMELIE_ROOT}/main/cli/cli.c
+    ${AMELIE_ROOT}/main/cli/main.c
+    ${AMELIE_ROOT}/main/server/server.c
+    ${AMELIE_ROOT}/main/client/import.c
+    ${AMELIE_ROOT}/main/client/client.c
+    ${AMELIE_ROOT}/main/client/top.c
+    ${AMELIE_ROOT}/main/bench/bench_client.c
+    ${AMELIE_ROOT}/main/bench/bench.c
+    ${AMELIE_ROOT}/main/bench/bench_insert.c
+    ${AMELIE_ROOT}/main/bench/bench_upsert.c
+    ${AMELIE_ROOT}/main/bench/bench_resolved.c
+    ${AMELIE_ROOT}/main/bench/bench_tpcb.c
+    ${AMELIE_ROOT}/main/bench/bench_import.c
+    ${AMELIE_ROOT}/main/bench/bench_decre.c
+    ${AMELIE_ROOT}/main/bench/bench_main.c
+    ${AMELIE_ROOT}/main/test/test_plan.c
+    ${AMELIE_ROOT}/main/test/test_suite.c
+    ${AMELIE_ROOT}/main/test/test_command.c
+    ${AMELIE_ROOT}/main/test/test_main.c
+    ${AMELIE_ROOT}/main/test_slt/slt_parser.c
+    ${AMELIE_ROOT}/main/test_slt/slt_result.c
+    ${AMELIE_ROOT}/main/test_slt/slt.c
+    ${AMELIE_ROOT}/main/test_slt/slt_main.c)
 
 set(AMELIE_SOURCES_UNIT
     ${CMAKE_SOURCE_DIR}/tests/unit/test_task.c
@@ -385,17 +382,17 @@ set(AMELIE_UNIT_STATIC_LINK "$<LINK_LIBRARY:WHOLE_ARCHIVE,amelie_unit_static>")
 
 # libamelie.so
 file(TOUCH libamelie_so.c)
-add_library(amelie SHARED libamelie_so.c)
-set_target_properties(amelie PROPERTIES OUTPUT_NAME amelie)
-target_link_libraries(amelie ${AMELIE_STATIC_LINK})
-target_link_libraries(amelie ${AMELIE_LIBRARIES})
+add_library(amelie_so SHARED libamelie_so.c)
+set_target_properties(amelie_so PROPERTIES OUTPUT_NAME amelie)
+target_link_libraries(amelie_so ${AMELIE_STATIC_LINK})
+target_link_libraries(amelie_so ${AMELIE_LIBRARIES})
 
 # amelie
-add_executable(amelie_cli ${AMELIE_SOURCES_MAIN})
-target_link_libraries(amelie_cli ${AMELIE_STATIC_LINK})
-target_link_libraries(amelie_cli ${AMELIE_UNIT_STATIC_LINK})
-target_link_libraries(amelie_cli ${AMELIE_LIBRARIES})
-set_target_properties(amelie_cli PROPERTIES ENABLE_EXPORTS ON OUTPUT_NAME amelie)
+add_executable(amelie ${AMELIE_SOURCES_MAIN})
+target_link_libraries(amelie ${AMELIE_STATIC_LINK})
+target_link_libraries(amelie ${AMELIE_UNIT_STATIC_LINK})
+target_link_libraries(amelie ${AMELIE_LIBRARIES})
+set_target_properties(amelie PROPERTIES ENABLE_EXPORTS ON OUTPUT_NAME amelie)
 
 # examples
 add_executable(example_cli EXCLUDE_FROM_ALL

@@ -11,8 +11,8 @@
 // AGPL-3.0 Licensed.
 //
 
-#include "slt/slt_cmd.h"
-#include "slt/slt_parser.h"
-#include "slt/slt_result.h"
-#include "slt/slt_hash.h"
-#include "slt/slt.h"
+#include "test_slt/slt_cmd.h"
+#include "test_slt/slt_parser.h"
+#include "test_slt/slt_result.h"
+#include "test_slt/slt_hash.h"
+#include "test_slt/slt.h"

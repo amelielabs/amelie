@@ -16,7 +16,7 @@
 #include <amelie_cli_slt.h>
 
 void
-cli_cmd_slt(int argc, char** argv)
+cli_cmd_test_slt(int argc, char** argv)
 {
 	opt_int_set(&config()->log_connections, false);
 

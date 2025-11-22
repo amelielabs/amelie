@@ -33,25 +33,25 @@ extern void cli_cmd_import(int, char**);
 extern void cli_cmd_top(int, char**);
 extern void cli_cmd_bench(int, char**);
 extern void cli_cmd_test(int, char**);
-extern void cli_cmd_slt(int, char**);
+extern void cli_cmd_test_slt(int, char**);
 
 static struct CliCmd
 cli_commands[] =
 {
 	// server
-	{ cli_cmd_init,   "init",   "Create a database repository"        },
-	{ cli_cmd_start,  "start",  "Start a server"                      },
-	{ cli_cmd_stop,   "stop",   "Stop a server"                       },
-	{ cli_cmd_backup, "backup", "Create backup of a remote server"    },
-	{ cli_cmd_login,  "login",  "Create or update login information"  },
-	{ cli_cmd_logout, "logout", "Delete login information"            },
-	{ cli_cmd_client, "client", "Connect to a remote server"          },
-	{ cli_cmd_import, "import", "Import data to a remote server"      },
-	{ cli_cmd_top,    "top",    "Get information about remote server" },
-	{ cli_cmd_bench,  "bench",  "Run benchmarks on a server"          },
-	{ cli_cmd_test,   "test",   "Run tests"                           },
-	{ cli_cmd_slt,    "slt",    "Run slt tests"                       },
-	{ NULL,            NULL,     NULL                                 },
+	{ cli_cmd_init,     "init",     "Create a database repository"        },
+	{ cli_cmd_start,    "start",    "Start a server"                      },
+	{ cli_cmd_stop,     "stop",     "Stop a server"                       },
+	{ cli_cmd_backup,   "backup",   "Create backup of a remote server"    },
+	{ cli_cmd_login,    "login",    "Create or update login information"  },
+	{ cli_cmd_logout,   "logout",   "Delete login information"            },
+	{ cli_cmd_client,   "client",   "Connect to a remote server"          },
+	{ cli_cmd_import,   "import",   "Import data to a remote server"      },
+	{ cli_cmd_top,      "top",      "Get information about remote server" },
+	{ cli_cmd_bench,    "bench",    "Run benchmarks on a server"          },
+	{ cli_cmd_test,     "test",     "Run tests"                           },
+	{ cli_cmd_test_slt, "test_slt", "Run slt tests"                       },
+	{ NULL,              NULL,       NULL                                 },
 };
 
 static void
