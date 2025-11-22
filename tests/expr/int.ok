@@ -36,9 +36,9 @@ select -9223372036854775807;
 select -92233720368547758077;
 {"msg": "select - ⟵ int overflow"}
 select 18446744073709551615;
-{"msg": "select  ⟵ int overflow"}
+{"msg": "select ⟵ int overflow"}
 select 184467440737095516155;
-{"msg": "select  ⟵ int overflow"}
+{"msg": "select ⟵ int overflow"}
 # test: int = bool
 select 1 = true;
 [true]

@@ -75,9 +75,9 @@ select * from test3;
 # test: POST /v1/db/schema/table (application/jsonl) (array)
 post /v1/db/public/test application/jsonl [9,0,0] [10, null, 123] [11, null, null];
 post /v1/db/public/test application/jsonl [12,;
-{"msg": " [12, ⟵ 'int' expected for column 'a'"}
+{"msg": "[12, ⟵ 'int' expected for column 'a'"}
 post /v1/db/public/test application/jsonl [12,0,;
-{"msg": " [12,0, ⟵ 'int' expected for column 'b'"}
+{"msg": "[12,0, ⟵ 'int' expected for column 'b'"}
 post /v1/db/public/test application/jsonl [12,0];
 {"msg": " [12,0❰]❱ ⟵ , expected"}
 post /v1/db/public/test application/jsonl [12,];
@@ -104,9 +104,9 @@ select * from test4;
 # test: POST /v1/db/schema/table (application/json) (array)
 post /v1/db/public/test application/json [[15,0,0]];
 post /v1/db/public/test application/json [[16,0,0];
-{"msg": " [[16,0,0] ⟵ ] expected"}
+{"msg": "[[16,0,0] ⟵ ] expected"}
 post /v1/db/public/test application/json [[16,0,0],;
-{"msg": " [[16,0,0], ⟵ json object or array expected"}
+{"msg": "[[16,0,0], ⟵ json object or array expected"}
 post /v1/db/public/test application/json [[16,0,0],];
 {"msg": " [[16,0,0],❰]❱ ⟵ json object or array expected"}
 post /v1/db/public/test application/json [[16,0,0], [16,0,7]];
@@ -114,7 +114,7 @@ post /v1/db/public/test application/json [[16,0,0], [16,0,7]];
 post /v1/db/public/test application/json [[16,0,0], [17,0,7]] junk;
 {"msg": " [[16,0,0], [17,0,7]] ❰junk❱ ⟵ eof expected"}
 post /v1/db/public/test application/json ;
-{"msg": "  ⟵ [ expected"}
+{"msg": " ⟵ [ expected"}
 post /v1/db/public/test application/json [];
 {"msg": " [❰]❱ ⟵ json object or array expected"}
 post /v1/db/public/test application/json {};
@@ -159,21 +159,21 @@ select * from test5;
 # test: POST /v1/db/schema/table (application/jsonl) (obj)
 post /v1/db/public/test application/jsonl {"id": 20};
 post /v1/db/public/test application/jsonl {"id": 20, "a";
-{"msg": " {\"id\": 20, \"a\" ⟵ : expected"}
+{"msg": "{\"id\": 20, \"a\" ⟵ : expected"}
 post /v1/db/public/test application/jsonl {"id": 20,;
-{"msg": " {\"id\": 20, ⟵ } expected"}
+{"msg": "{\"id\": 20, ⟵ } expected"}
 post /v1/db/public/test application/jsonl {"id": 20, 1;
 {"msg": " {\"id\": 20, ❰1❱ ⟵ } expected"}
 post /v1/db/public/test application/jsonl {"id": 20, "a";
-{"msg": " {\"id\": 20, \"a\" ⟵ : expected"}
+{"msg": "{\"id\": 20, \"a\" ⟵ : expected"}
 post /v1/db/public/test application/jsonl {"id": 20, "a":;
-{"msg": " {\"id\": 20, \"a\": ⟵ 'int' expected for column 'a'"}
+{"msg": "{\"id\": 20, \"a\": ⟵ 'int' expected for column 'a'"}
 post /v1/db/public/test application/jsonl {"id": 20, "a": 0;
-{"msg": " {\"id\": 20, \"a\": 0 ⟵ } expected"}
+{"msg": "{\"id\": 20, \"a\": 0 ⟵ } expected"}
 post /v1/db/public/test application/jsonl {"id": 20, "a": 0,;
-{"msg": " {\"id\": 20, \"a\": 0, ⟵ } expected"}
+{"msg": "{\"id\": 20, \"a\": 0, ⟵ } expected"}
 post /v1/db/public/test application/jsonl {"id": 20, "a": 0, "b";
-{"msg": " {\"id\": 20, \"a\": 0, \"b\" ⟵ : expected"}
+{"msg": "{\"id\": 20, \"a\": 0, \"b\" ⟵ : expected"}
 post /v1/db/public/test application/jsonl {"id": 20, "a": 0, "b": 0};
 {"msg": "index 'primary': unique key constraint violation"}
 post /v1/db/public/test application/jsonl {"id": 21, "a": 0, "b": 0};

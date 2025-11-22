@@ -120,8 +120,20 @@ content_write_json_error_as(Content* self, Str* text)
 	auto buf = buf_create();
 	defer_buf(buf);
 	encode_obj(buf);
+
+	// msg (truncate large error msg)
 	encode_raw(buf, "msg", 3);
-	encode_string(buf, text);
+	const int text_max = 512;
+	if (str_size(text) > text_max)
+	{
+		encode_string32(buf, 4 + text_max);
+		buf_reserve(buf, 4 + text_max);
+		buf_write(buf, "...\n", 4);
+		buf_write(buf, text->end - text_max, text_max);
+	} else
+	{
+		encode_string(buf, text);
+	}
 	encode_obj_end(buf);
 
 	uint8_t* pos = buf->start;

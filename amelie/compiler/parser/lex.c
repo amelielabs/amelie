@@ -75,7 +75,10 @@ lex_error(Lex* self, Ast* ast, const char* error)
 	str_set(&tk, self->start + ast->pos_start, ast->pos_end - ast->pos_start);
 
 	if (ast->id == KEOF)
+	{
+		str_shrink(&before);
 		error("%.*s ⟵ %s", str_size(&before), str_of(&before), error);
+	}
 
 	error("%.*s❰%.*s❱ ⟵ %s", str_size(&before), str_of(&before),
 	      str_size(&tk), str_of(&tk), error);
