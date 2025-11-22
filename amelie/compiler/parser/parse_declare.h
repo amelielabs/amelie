@@ -11,6 +11,4 @@
 // AGPL-3.0 Licensed.
 //
 
-void parse_declare_columns(Parser*, Columns*);
-void parse_declare(Parser*, Block*);
-void parse_assign(Parser*, Block*);
+void parse_declare_or_assign(Parser*, Block*);

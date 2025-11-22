@@ -39,7 +39,21 @@
 #include <amelie_vm.h>
 #include <amelie_parser.h>
 
-void
+static void
+parse_assign(Parser* self, Block* block, Str* name)
+{
+	// SELECT expr INTO var
+	auto stmt = stmt_allocate(self, &self->lex, block);
+	stmts_add(&block->stmts, stmt);
+
+	auto select = parse_select_expr(stmt, name);
+	stmt->id  = STMT_SELECT;
+	stmt->ast = &select->ast;
+	stmt->ret = &select->ret;
+	parse_select_resolve(stmt);
+}
+
+static void
 parse_declare_columns(Parser* self, Columns* columns)
 {
 	auto lex = &self->lex;
@@ -84,38 +98,25 @@ parse_declare_columns(Parser* self, Columns* columns)
 }
 
 static void
-parse_assign_stmt(Parser* self, Block* block, Str* name)
+parse_declare(Parser* self, Block* block, Ast* name, Ast* name_type)
 {
-	// SELECT expr INTO var
-	auto stmt = stmt_allocate(self, &self->lex, block);
-	stmts_add(&block->stmts, stmt);
-
-	auto select = parse_select_expr(stmt, name);
-	stmt->id  = STMT_SELECT;
-	stmt->ast = &select->ast;
-	stmt->ret = &select->ret;
-	parse_select_resolve(stmt);
-}
-
-void
-parse_declare(Parser* self, Block* block)
-{
-	// name
 	auto lex = &self->lex;
-	auto name = lex_expect(lex, KNAME);
 
-	// table | type
-	auto ast = lex_next_shadow(lex);
-	if (ast->id != KNAME)
-		lex_error(lex, ast, "unrecognized data type");
+	// validate block for declare
+	if (block != block->ns->blocks.list)
+		lex_error(lex, name, "variable cannot be defined here");
+
+	// type
+	if (name_type->id != KNAME)
+		lex_error(lex, name_type, "unrecognized data type");
 
 	int type;
-	if (str_is_case(&ast->string, "table", 5))
+	if (str_is_case(&name_type->string, "table", 5))
 	{
 		type = TYPE_STORE;
 	} else
 	{
-		lex_push(lex, ast);
+		lex_push(lex, name_type);
 		int type_size;
 		type = parse_type(lex, &type_size);
 	}
@@ -129,25 +130,37 @@ parse_declare(Parser* self, Block* block)
 	// var table(column, ...)
 	if (var->type == TYPE_STORE)
 		parse_declare_columns(self, &var->columns);
-
-	// := | = expr
-	if (lex_if(lex, KASSIGN) || lex_if(lex, '='))
-		parse_assign_stmt(self, block, var->name);
 }
 
 void
-parse_assign(Parser* self, Block* block)
+parse_declare_or_assign(Parser* self, Block* block)
 {
-	// var := | = expr
+	// [DECLARE] var type
+	// [DECLARE] var type = expr
+	// var = expr
+	auto lex = &self->lex;
+
+	// [DECLARE]
+	auto declare = lex_if(lex, KDECLARE);
 
 	// name
-	auto lex = &self->lex;
 	auto name = lex_expect(lex, KNAME);
 
 	// := | =
-	if (! lex_if(lex, KASSIGN))
-		lex_expect(lex, '=');
+	auto ast = lex_next_shadow(lex);
+	if (ast->id == KASSIGN || ast->id == '=')
+	{
+		if (declare)
+			lex_error(lex, ast, "data type expected");
 
-	// expr
-	parse_assign_stmt(self, block, &name->string);
+		parse_assign(self, block, &name->string);
+		return;
+	}
+
+	// type
+	parse_declare(self, block, name, ast);
+
+	// [:= | =]
+	if (lex_if(lex, KASSIGN) || lex_if(lex, '='))
+		parse_assign(self, block, &name->string);
 }

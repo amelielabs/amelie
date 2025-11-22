@@ -543,25 +543,19 @@ parse_block(Parser* self, Block* block)
 			parse_with(self, block);
 			break;
 		case KDECLARE:
-			// [DECLARE var type ;]
-			// [DECLARE var type := expr]
-			if (block != block->ns->blocks.list)
-				lex_error(lex, next, "DECLARE cannot be used here");
-			parse_declare(self, block);
-			break;
 		case KNAME:
-			// var := expr
+			// [DECLARE] var type
+			// [DECLARE] var type = expr
+			// var = expr
 			lex_push(lex, next);
-			parse_assign(self, block);
+			parse_declare_or_assign(self, block);
 			break;
-
 		case KEND:
 		case KELSE:
 		case KELSIF:
 			// block end
 			lex_push(lex, next);
 			return;
-
 		case KEOF:
 			return;
 

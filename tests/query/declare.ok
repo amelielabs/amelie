@@ -7,6 +7,8 @@ declare 1;
 {"msg": "declare ❰1❱ ⟵ name expected"}
 declare name;
 {"msg": "declare name❰;❱ ⟵ unrecognized data type"}
+declare a =;
+{"msg": "declare a ❰=❱ ⟵ data type expected"}
 # test: declare
 declare a int;
 declare a int;
@@ -90,6 +92,29 @@ end;
 # test: declare null
 declare a null;
 {"msg": "declare a ❰null❱ ⟵ unrecognized data type"}
+# test: declare implicit
+a int;
+begin
+	a int;
+	a = 10;
+	select a;
+end;
+[10]
+begin
+	a int = 10;
+	b int;
+	b = 123;
+	select a + b;
+end;
+[133]
+begin
+	a int = 10;
+	b int;
+	b = 123;
+	b = b + a;
+	select b;
+end;
+[133]
 # test: = operator parsing
 =;
 {"msg": "❰=❱ ⟵ unexpected statement"}
