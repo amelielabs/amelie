@@ -63,6 +63,26 @@ end;
 # test: declare null
 declare a null;
 
+# test: = operator parsing
+=;
+0 =;
+0 = 0;
+'x' = 1;
+x =;
+
+# test: = expr
+begin
+	declare x int;
+	x = 1;
+	select x;
+end;
+
+# test: = expr
+begin
+	declare x int = 120 + 3;
+	select x;
+end;
+
 # test: := operator parsing
 :=;
 0 :=;

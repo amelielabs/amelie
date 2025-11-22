@@ -130,22 +130,23 @@ parse_declare(Parser* self, Block* block)
 	if (var->type == TYPE_STORE)
 		parse_declare_columns(self, &var->columns);
 
-	// := expr
-	if (lex_if(lex, KASSIGN))
+	// := | = expr
+	if (lex_if(lex, KASSIGN) || lex_if(lex, '='))
 		parse_assign_stmt(self, block, var->name);
 }
 
 void
 parse_assign(Parser* self, Block* block)
 {
-	// var := expr
+	// var := | = expr
 
 	// name
 	auto lex = &self->lex;
 	auto name = lex_expect(lex, KNAME);
 
-	// :=
-	lex_expect(lex, KASSIGN);
+	// := | =
+	if (! lex_if(lex, KASSIGN))
+		lex_expect(lex, '=');
 
 	// expr
 	parse_assign_stmt(self, block, &name->string);

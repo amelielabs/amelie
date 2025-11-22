@@ -90,6 +90,30 @@ end;
 # test: declare null
 declare a null;
 {"msg": "declare a ❰null❱ ⟵ unrecognized data type"}
+# test: = operator parsing
+=;
+{"msg": "❰=❱ ⟵ unexpected statement"}
+0 =;
+{"msg": "❰0❱ ⟵ unexpected statement"}
+0 = 0;
+{"msg": "❰0❱ ⟵ unexpected statement"}
+'x' = 1;
+{"msg": "❰'x'❱ ⟵ unexpected statement"}
+x =;
+{"msg": "x =❰;❱ ⟵ bad expression"}
+# test: = expr
+begin
+	declare x int;
+	x = 1;
+	select x;
+end;
+[1]
+# test: = expr
+begin
+	declare x int = 120 + 3;
+	select x;
+end;
+[123]
 # test: := operator parsing
 :=;
 {"msg": "❰:=❱ ⟵ unexpected statement"}
