@@ -265,7 +265,7 @@ main_runtime(void* arg, int argc, char** argv)
 }
 
 static void
-wait_for_signal(void)
+main_wait_for_signal(void)
 {
 	// wait signal for completion
 	sigset_t mask;
@@ -278,14 +278,31 @@ wait_for_signal(void)
 	sigwait(&mask, &signo);
 }
 
+static int
+main_daemonize(int argc, char** argv)
+{
+	// amelie start .. --daemon=
+	if (argc <= 1 || strcmp(argv[1], "start") != 0)
+		return 0;
+	auto daemonize = false;
+	for (auto i = 2; i < argc; i++)
+		if (! strcmp(argv[i], "--daemon=true"))
+			daemonize = true;
+	if (! daemonize)
+		return 0;
+	return daemon(1, 0);
+}
+
 int
 main(int argc, char* argv[])
 {
+	if (main_daemonize(argc, argv) == -1)
+		return EXIT_FAILURE;
 	Runtime runtime;
 	runtime_init(&runtime);
 	auto status = runtime_start(&runtime, main_runtime, NULL, argc, argv);
 	if (status == RUNTIME_OK)
-		wait_for_signal();
+		main_wait_for_signal();
 	runtime_stop(&runtime);
 	runtime_free(&runtime);
 	return status == RUNTIME_ERROR? EXIT_FAILURE: EXIT_SUCCESS;

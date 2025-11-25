@@ -140,8 +140,7 @@ opts_set_argv(Opts* self, int argc, char** argv)
 		}
 
 		// --daemon (handled by runner)
-		if (str_is_cstr(&name, "daemon") ||
-		    str_is_cstr(&name, "daemon=true") ||
+		if (str_is_cstr(&name, "daemon=true") ||
 		    str_is_cstr(&name, "daemon=false"))
 			continue;
 
