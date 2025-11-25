@@ -15,26 +15,88 @@
 #include <amelie_lib.h>
 #include <amelie_json.h>
 #include <amelie_runtime.h>
+#include <amelie_user.h>
+#include <amelie_auth.h>
+#include <amelie_http.h>
+#include <amelie_client.h>
+#include <amelie_server.h>
+#include <amelie_row.h>
+#include <amelie_heap.h>
+#include <amelie_transaction.h>
+#include <amelie_index.h>
+#include <amelie_partition.h>
+#include <amelie_checkpoint.h>
+#include <amelie_catalog.h>
+#include <amelie_wal.h>
+#include <amelie_db.h>
+#include <amelie_backup.h>
+#include <amelie_repl.h>
+#include <amelie_value.h>
+#include <amelie_set.h>
+#include <amelie_content.h>
+#include <amelie_executor.h>
+#include <amelie_func.h>
+#include <amelie_vm.h>
+#include <amelie_parser.h>
+#include <amelie_plan.h>
+#include <amelie_compiler.h>
+#include <amelie_frontend.h>
+#include <amelie_backend.h>
+#include <amelie_session.h>
+#include <amelie_system.h>
 
-static bool
-repository_create(char* directory)
+static void
+repo_create(Repo* self, char* directory)
 {
 	// set directory
 	opt_string_set_raw(&state()->directory, directory, strlen(directory));
 
 	// create directory if not exists
-	auto bootstrap = !fs_exists("%s", state_directory());
-	if (bootstrap)
+	self->bootstrap = !fs_exists("%s", state_directory());
+	if (self->bootstrap)
 	{
 		fs_mkdir(0755, "%s", state_directory());
 		fs_mkdir(0755, "%s/certs", state_directory());
 	}
 
-	return bootstrap;
+	// open directory fd
+	self->fd = vfs_open(directory, O_DIRECTORY|O_RDONLY, 0755);
+	if (self->fd == -1)
+		error_system();
+
+	// take exclusive directory lock
+	auto rc = vfs_flock_exclusive(self->fd);
+	if (rc == -1)
+	{
+		if (errno == EWOULDBLOCK)
+			error("database already started");
+		else
+			error_system();
+	}
+}
+
+static void
+repo_pidfile_create(void)
+{
+	char path[PATH_MAX];
+	snprintf(path, sizeof(path), "%s/pid", state_directory());
+
+	auto fd = vfs_open(path, O_TRUNC|O_CREAT|O_WRONLY, 0644);
+	if (fd == -1)
+		error_system();
+
+	char pid[32];
+	auto pid_len = snprintf(pid, sizeof(pid), "%d", getpid());
+
+	auto rc = vfs_write(fd, pid, pid_len);
+	vfs_close(fd);
+	if (rc != pid_len)
+		error("pid file '%s' write error (%s)", path,
+		      strerror(errno));
 }
 
 static Buf*
-repository_version_create(void)
+repo_version_buf_create(void)
 {
 	// {}
 	auto buf = buf_create();
@@ -49,9 +111,9 @@ repository_version_create(void)
 }
 
 static void
-repository_version_save(const char* path)
+repo_version_create(const char* path)
 {
-	auto buf = repository_version_create();
+	auto buf = repo_version_buf_create();
 	defer_buf(buf);
 
 	// convert to json
@@ -70,7 +132,7 @@ repository_version_save(const char* path)
 }
 
 static void
-repository_version_open(const char* path)
+repo_version_open(const char* path)
 {
 	// read version file
 	auto version_buf = file_import("%s", path);
@@ -99,7 +161,7 @@ repository_version_open(const char* path)
 	// compare versions
 	auto version_current = &state()->version.string;
 	if (! str_compare(&version, version_current))
-		error("current version '%.*s' does not match repository version '%.*s'",
+		error("current version '%.*s' does not match repo version '%.*s'",
 		      str_size(version_current),
 		      str_of(version_current),
 		      str_size(&version),
@@ -107,7 +169,7 @@ repository_version_open(const char* path)
 }
 
 static void
-repository_bootstrap_server(void)
+repo_bootstrap_server(void)
 {
 	Buf buf;
 	buf_init(&buf);
@@ -134,7 +196,7 @@ repository_bootstrap_server(void)
 }
 
 static void
-repository_bootstrap(void)
+repo_bootstrap(void)
 {
 	auto config = config();
 
@@ -154,11 +216,11 @@ repository_bootstrap(void)
 
 	// set default server listen
 	if (! opt_json_is_set(&config->listen))
-		repository_bootstrap_server();
+		repo_bootstrap_server();
 }
 
 static void
-repository_open_client_mode(int argc, char** argv)
+repo_open_client_mode(int argc, char** argv)
 {
 	auto runtime = runtime();
 	auto config  = config();
@@ -169,7 +231,7 @@ repository_open_client_mode(int argc, char** argv)
 	logger_set_cli(logger, false, false);
 
 	// set default settings
-	repository_bootstrap();
+	repo_bootstrap();
 
 	// set options
 	opts_set_argv(&config->opts, argc, argv);
@@ -186,21 +248,32 @@ repository_open_client_mode(int argc, char** argv)
 	logger_set_timezone(logger, runtime->timezone);
 }
 
-bool
-repository_open(char* directory, int argc, char** argv)
+void
+repo_init(Repo* self)
+{
+	self->fd        = -1;
+	self->bootstrap = false;
+}
+
+void
+repo_open(Repo* self, char* directory, int argc, char** argv)
 {
 	if (! directory)
 	{
-		repository_open_client_mode(argc, argv);
-		return true;
+		repo_open_client_mode(argc, argv);
+		self->bootstrap = true;
+		return;
 	}
 
 	auto runtime = runtime();
 	auto config  = config();
 	auto state   = state();
 
-	// create base directory, if not exists
-	auto bootstrap = repository_create(directory);
+	// open or create base directory, take exclusive lock
+	repo_create(self, directory);
+
+	// rewrite pid file
+	repo_pidfile_create();
 
 	// open log with default settings
 	auto logger = &runtime->logger;
@@ -212,25 +285,25 @@ repository_open(char* directory, int argc, char** argv)
 
 	// read version file
 	snprintf(path, sizeof(path), "%s/version.json", state_directory());
-	if (bootstrap)
+	if (self->bootstrap)
 	{
 		// create version file
-		repository_version_save(path);
+		repo_version_create(path);
 	} else
 	{
 		// read and validate version file
-		repository_version_open(path);
+		repo_version_open(path);
 	}
 
 	// read config file
 	snprintf(path, sizeof(path), "%s/config.json", state_directory());
-	if (bootstrap)
+	if (self->bootstrap)
 	{
 		// set options first, to properly generate config
 		opts_set_argv(&config->opts, argc, argv);
 
 		// set default settings
-		repository_bootstrap();
+		repo_bootstrap();
 
 		// create config file
 		config_save(config, path);
@@ -245,7 +318,7 @@ repository_open(char* directory, int argc, char** argv)
 
 	// read state file
 	snprintf(path, sizeof(path), "%s/state.json", state_directory());
-	if (bootstrap)
+	if (self->bootstrap)
 	{
 		// create state file
 		state_save(state, path);
@@ -273,6 +346,14 @@ repository_open(char* directory, int argc, char** argv)
 	if (!str_is(cp, "zstd", 4) && !str_is(cp, "none", 4))
 		error("invalid checkpoint_compression type %.*s",
 		      str_size(cp), str_of(cp));
+}
 
-	return bootstrap;
+void
+repo_close(Repo* self)
+{
+	if (self->fd != -1)
+	{
+		vfs_close(self->fd);
+		self->fd = -1;
+	}
 }

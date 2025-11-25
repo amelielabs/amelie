@@ -12,12 +12,13 @@
 
 #include <amelie_core.h>
 #include <amelie.h>
-#include <amelie_cli.h>
-#include <amelie_cli_slt.h>
+#include <amelie_main.h>
+#include <amelie_main_slt.h>
 
 void
-cli_cmd_test_slt(int argc, char** argv)
+cmd_test_slt(Main* self)
 {
+	main_advance(self, -2);
 	opt_int_set(&config()->log_connections, false);
 
 	Slt slt;
@@ -29,7 +30,7 @@ cli_cmd_test_slt(int argc, char** argv)
 	str_init(&file);
 
 	int opt;
-	while ((opt = getopt(argc + 1, argv - 1, "o:t:h")) != -1) {
+	while ((opt = getopt(self->argc, self->argv, "o:t:h")) != -1) {
 		switch (opt) {
 		case 'o':
 			str_set_cstr(&dir, optarg);
@@ -39,7 +40,7 @@ cli_cmd_test_slt(int argc, char** argv)
 			break;
 		case 'h':
 		default:
-			error("usage: %s [-t test] [-h]", argv[0]);
+			error("usage: amelie slt [-t test] [-h]");
 			break;
 		}
 	}

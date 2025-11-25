@@ -116,9 +116,7 @@ include_directories("${AMELIE_ROOT}/system/api")
 
 # main
 include_directories("${AMELIE_ROOT}/main")
-include_directories("${AMELIE_ROOT}/main/cli")
-include_directories("${AMELIE_ROOT}/main/server")
-include_directories("${AMELIE_ROOT}/main/client")
+include_directories("${AMELIE_ROOT}/main/main")
 include_directories("${AMELIE_ROOT}/main/bench")
 include_directories("${AMELIE_ROOT}/main/test")
 include_directories("${AMELIE_ROOT}/main/test_slt")
@@ -312,7 +310,7 @@ set(AMELIE_SOURCES_SYSTEM
     ${AMELIE_ROOT}/system/backend/build.c
     ${AMELIE_ROOT}/system/backend/replay.c
     ${AMELIE_ROOT}/system/session/session.c
-    ${AMELIE_ROOT}/system/system/repository.c
+    ${AMELIE_ROOT}/system/system/repo.c
     ${AMELIE_ROOT}/system/system/system.c
     ${AMELIE_ROOT}/system/system/system_metrics.c
     ${AMELIE_ROOT}/system/api/amelie.c)
@@ -327,15 +325,13 @@ set(AMELIE_SOURCES
     ${AMELIE_SOURCES_SYSTEM})
 
 set(AMELIE_SOURCES_MAIN
-    ${AMELIE_ROOT}/main/cli/daemon.c
-    ${AMELIE_ROOT}/main/cli/login_mgr.c
-    ${AMELIE_ROOT}/main/cli/cli.c
-    ${AMELIE_ROOT}/main/cli/main.c
-    ${AMELIE_ROOT}/main/server/server.c
-    ${AMELIE_ROOT}/main/client/import.c
-    ${AMELIE_ROOT}/main/client/client.c
-    ${AMELIE_ROOT}/main/client/top.c
-    ${AMELIE_ROOT}/main/bench/bench_client.c
+    ${AMELIE_ROOT}/main/main/bookmark_mgr.c
+    ${AMELIE_ROOT}/main/main/main.c
+    ${AMELIE_ROOT}/main/main/main_configure.c
+    ${AMELIE_ROOT}/main/main/main_client.c
+    ${AMELIE_ROOT}/main/main/main_cli.c
+    ${AMELIE_ROOT}/main/main/main_command.c
+    ${AMELIE_ROOT}/main/main/import.c
     ${AMELIE_ROOT}/main/bench/bench.c
     ${AMELIE_ROOT}/main/bench/bench_insert.c
     ${AMELIE_ROOT}/main/bench/bench_upsert.c

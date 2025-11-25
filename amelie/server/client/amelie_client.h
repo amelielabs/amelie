@@ -13,8 +13,8 @@
 
 // remote client
 #include "client/client.h"
+#include "client/client_io.h"
 #include "client/client_mgr.h"
-#include "client/client_reply.h"
 
 // native
 #include "client/request.h"

@@ -48,7 +48,7 @@ runtime_free(Runtime* self)
 typedef struct
 {
 	RuntimeMain main;
-	char*       directory;
+	void*       main_arg;
 	int         argc;
 	char**      argv;
 } RuntimeArgs;
@@ -103,7 +103,7 @@ runtime_main(void* arg)
 	auto on_error = error_catch
 	(
 		runtime_prepare(self);
-		args->main(args->directory, args->argc, args->argv);
+		args->main(args->main_arg, args->argc, args->argv);
 	);
 	runtime_shutdown(self);
 
@@ -115,14 +115,14 @@ runtime_main(void* arg)
 }
 
 RuntimeStatus
-runtime_start(Runtime* self, RuntimeMain main, char* directory, int argc, char** argv)
+runtime_start(Runtime* self, RuntimeMain main, void* main_arg, int argc, char** argv)
 {
 	RuntimeArgs args =
 	{
-		.main      = main,
-		.directory = directory,
-		.argc      = argc,
-		.argv      = argv,
+		.main     = main,
+		.main_arg = main_arg,
+		.argc     = argc,
+		.argv     = argv,
 	};
 	int rc;
 	rc = task_create_nothrow(&self->task, "main", runtime_main, &args, self, NULL,

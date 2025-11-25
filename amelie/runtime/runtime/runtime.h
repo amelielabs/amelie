@@ -14,7 +14,7 @@
 typedef struct RuntimeIf RuntimeIf;
 typedef struct Runtime   Runtime;
 
-typedef void (*RuntimeMain)(char*, int, char**);
+typedef void (*RuntimeMain)(void*, int, char**);
 
 typedef enum
 {
@@ -46,7 +46,7 @@ struct Runtime
 
 void          runtime_init(Runtime*);
 void          runtime_free(Runtime*);
-RuntimeStatus runtime_start(Runtime*, RuntimeMain, char*, int, char**);
+RuntimeStatus runtime_start(Runtime*, RuntimeMain, void*, int, char**);
 void          runtime_stop(Runtime*);
 
 static inline bool

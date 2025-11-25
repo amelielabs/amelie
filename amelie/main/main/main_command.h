@@ -11,5 +11,4 @@
 // AGPL-3.0 Licensed.
 //
 
-#include "client/import.h"
-#include "client/top.h"
+extern MainCmd main_commands[];

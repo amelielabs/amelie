@@ -12,24 +12,24 @@
 
 #include <amelie_core.h>
 #include <amelie.h>
-#include <amelie_cli.h>
-#include <amelie_cli_bench.h>
+#include <amelie_main.h>
+#include <amelie_main_bench.h>
 
 static void
 bench_connection(void* arg)
 {
 	BenchWorker* self = arg;
-	auto client = bench_client_create(self->bench->iface_client, self->bench->amelie);
-	defer(bench_client_free, client);
+	auto client = main_client_create(self->bench->main);
+	defer(main_client_free, client);
 
 	// meassure histogram
 	if (opt_int_of(&self->bench->histogram))
-		bench_client_set(client, &self->histogram);
+		main_client_set(client, &self->histogram);
 
 	error_catch
 	(
 		// create client and connect
-		bench_client_connect(client, self->bench->remote);
+		main_client_connect(client);
 
 		// process
 		self->bench->iface->main(self, client);
@@ -95,13 +95,11 @@ bench_worker_stop(BenchWorker* self)
 }
 
 void
-bench_init(Bench* self, Remote* remote)
+bench_init(Bench* self, Main* main)
 {
 	memset(self, 0, sizeof(*self));
-	self->iface        = NULL;
-	self->iface_client = &bench_client_http;
-	self->amelie       = NULL;
-	self->remote       = remote;
+	self->iface = NULL;
+	self->main  = main;
 	opts_init(&self->opts);
 	list_init(&self->list);
 	OptsDef defs[] =
@@ -115,7 +113,6 @@ bench_init(Bench* self, Remote* remote)
 		{ "init",      OPT_INT,    OPT_C,       &self->init,      NULL,  1     },
 		{ "unlogged",  OPT_BOOL,   OPT_C,       &self->unlogged,  NULL,  false },
 		{ "histogram", OPT_BOOL,   OPT_C,       &self->histogram, NULL,  false },
-		{ "api",       OPT_BOOL,   OPT_C,       &self->api,       NULL,  false },
 		{  NULL,       0,          0,            NULL,            NULL,  0     }
 	};
 	opts_define(&self->opts, defs);
@@ -130,23 +127,21 @@ bench_free(Bench* self)
 		bench_worker_free(worker);
 	}
 	opts_free(&self->opts);
-	if (self->amelie)
-		amelie_free(self->amelie);
 }
 
 static void
-bench_service_execute(Bench* self, BenchClient* client, bool create)
+bench_service_execute(Bench* self, MainClient* client, bool create)
 {
 	// drop test schema if exists
 	Str str;
 	str_set_cstr(&str, "drop schema if exists __bench cascade");
-	bench_client_execute(client, &str);
+	main_client_execute(client, &str, NULL);
 
 	if (create)
 	{
 		// create test schema and run benchmark
 		str_set_cstr(&str, "create schema __bench");
-		bench_client_execute(client, &str);
+		main_client_execute(client, &str, NULL);
 
 		self->iface->create(self, client);
 	}
@@ -155,13 +150,11 @@ bench_service_execute(Bench* self, BenchClient* client, bool create)
 static void
 bench_service(Bench* self, bool create)
 {
-	auto client = bench_client_create(self->iface_client, self->amelie);
-	defer(bench_client_free, client);
+	auto client = main_client_create(self->main);
+	defer(main_client_free, client);
 	error_catch
 	(
-		// create client and connect
-		bench_client_connect(client, self->remote);
-
+		main_client_connect(client);
 		bench_service_execute(self, client, create);
 	);
 }
@@ -180,7 +173,6 @@ bench_run(Bench* self)
 	auto init               = opt_int_of(&self->init);
 	auto unlogged           = opt_int_of(&self->unlogged);
 	auto histogram          = opt_int_of(&self->histogram);
-	auto api                = opt_int_of(&self->api);
 
 	// set benchmark
 	if (str_is_cstr(type, "tpcb"))
@@ -205,32 +197,9 @@ bench_run(Bench* self)
 		      str_of(type));
 
 	// hello
+	info("");
 	info("amelie benchmark.");
 	info("");
-
-	// using embeddable database benchmark
-	if (api)
-	{
-		auto path = remote_get(self->remote, REMOTE_PATH);
-		if (str_empty(path))
-			error("a repository path must be specified for the embeddable db benchmark");
-
-		// open the repository
-		self->amelie = amelie_init();
-		if (! self->amelie)
-			error("amelie_init() failed");
-		int   argc   = 1;
-		char* argv[] = {
-			"--log_to_stdout=false",
-		};
-		auto rc = amelie_open(self->amelie, str_of(path), argc, argv);
-		if (rc == -1)
-			error("amelie_open() failed");
-
-		// update client interface
-		self->iface_client = &bench_client_api;
-	}
-
 	info("type:      %.*s", str_size(type), str_of(type));
 	info("time:      %" PRIu64 " sec", time);
 	info("threads:   %" PRIu64, workers);
@@ -240,7 +209,6 @@ bench_run(Bench* self)
 	info("init:      %" PRIu64, init);
 	info("unlogged:  %" PRIu64, unlogged);
 	info("histogram: %" PRIu64, histogram);
-	info("api:       %" PRIu64, api);
 	info("");
 
 	// prepare workers
@@ -307,6 +275,7 @@ bench_run(Bench* self)
 	info("writes:       %.2f millions writes (%" PRIu64 ")",
 	     self->writes / 1000000.0,
 	     self->writes);
+	info("");
 
 	if (histogram)
 	{

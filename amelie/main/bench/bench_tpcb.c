@@ -12,8 +12,8 @@
 
 #include <amelie_core.h>
 #include <amelie.h>
-#include <amelie_cli.h>
-#include <amelie_cli_bench.h>
+#include <amelie_main.h>
+#include <amelie_main_bench.h>
 
 static const int tpcb_branches = 1;
 static const int tpcb_tellers  = 10;
@@ -51,7 +51,7 @@ loader_init(Loader*   self, Bench* bench,
 }
 
 static void
-loader_client_main(Loader* self, BenchClient* client)
+loader_client_main(Loader* self, MainClient* client)
 {
 	auto filler = buf_create();
 	defer_buf(filler);
@@ -81,7 +81,7 @@ loader_client_main(Loader* self, BenchClient* client)
 		}
 		Str str;
 		buf_str(&buf, &str);
-		bench_client_execute(client, &str);
+		main_client_execute(client, &str, NULL);
 
 		(*self->writes) += batch;
 		(*self->transactions)++;
@@ -91,16 +91,12 @@ loader_client_main(Loader* self, BenchClient* client)
 static void
 loader_main(void* arg)
 {
-	auto self = (Loader*)arg;
-
-	auto client = bench_client_create(self->bench->iface_client, self->bench->amelie);
-	defer(bench_client_free, client);
+	auto self   = (Loader*)arg;
+	auto client = main_client_create(self->bench->main);
+	defer(main_client_free, client);
 	error_catch
 	(
-		// create client and connect
-		bench_client_connect(client, self->bench->remote);
-
-		// process
+		main_client_connect(client);
 		loader_client_main(self, client);
 	);
 
@@ -155,21 +151,21 @@ bench_tpcb_load(Bench* self, int scale, int batch, int clients)
 }
 
 hot static inline void
-tpcb_execute(BenchClient* client,
-             int          bid,
-             int          tid,
-             int          aid, int delta)
+tpcb_execute(MainClient* client,
+             int         bid,
+             int         tid,
+             int         aid, int delta)
 {
 	auto buf = buf_create();
 	defer_buf(buf);
 	buf_printf(buf, "execute __bench.tpcb(%d, %d, %d, %d);", bid, tid, aid, delta);
 	Str cmd;
 	buf_str(buf, &cmd);
-	bench_client_execute(client, &cmd);
+	main_client_execute(client, &cmd, NULL);
 }
 
 static void
-bench_tpcb_create(Bench* self, BenchClient* client)
+bench_tpcb_create(Bench* self, MainClient* client)
 {
 	info("preparing tables.");
 
@@ -187,7 +183,7 @@ bench_tpcb_create(Bench* self, BenchClient* client)
 	for (auto i = 0; ddl[i]; i++)
 	{
 		str_set_cstr(&str, ddl[i]);
-		bench_client_execute(client, &str);
+		main_client_execute(client, &str, NULL);
 	}
 
 	if (opt_int_of(&self->unlogged))
@@ -203,7 +199,7 @@ bench_tpcb_create(Bench* self, BenchClient* client)
 		for (auto i = 0; ddl_unlogged[i]; i++)
 		{
 			str_set_cstr(&str, ddl_unlogged[i]);
-			bench_client_execute(client, &str);
+			main_client_execute(client, &str, NULL);
 		}
 	}
 
@@ -239,10 +235,10 @@ bench_tpcb_create(Bench* self, BenchClient* client)
 	"end;";
 
 	str_set_cstr(&str, func);
-	bench_client_execute(client, &str);
+	main_client_execute(client, &str, NULL);
 
 	str_set_cstr(&str, func_batch);
-	bench_client_execute(client, &str);
+	main_client_execute(client, &str, NULL);
 
 	info("preparing data.");
 
@@ -263,7 +259,7 @@ bench_tpcb_create(Bench* self, BenchClient* client)
 		           i,
 		           buf_size(filler), filler->start);
 		buf_str(buf, &str);
-		bench_client_execute(client, &str);
+		main_client_execute(client, &str, NULL);
 	}
 
 	for (auto i = 0ul; i < tpcb_tellers * scale; i++)
@@ -273,7 +269,7 @@ bench_tpcb_create(Bench* self, BenchClient* client)
 		           i, i / tpcb_tellers,
 		           buf_size(filler), filler->start);
 		buf_str(buf, &str);
-		bench_client_execute(client, &str);
+		main_client_execute(client, &str, NULL);
 	}
 
 	if (scale == 1)
@@ -285,7 +281,7 @@ bench_tpcb_create(Bench* self, BenchClient* client)
 			           i, i / tpcb_accounts,
 			           buf_size(filler), filler->start);
 			buf_str(buf, &str);
-			bench_client_execute(client, &str);
+			main_client_execute(client, &str, NULL);
 		}
 	} else {
 		auto clients = opt_int_of(&self->clients);
@@ -300,7 +296,7 @@ bench_tpcb_create(Bench* self, BenchClient* client)
 }
 
 hot static void
-bench_tpcb_main(BenchWorker* self, BenchClient* client)
+bench_tpcb_main(BenchWorker* self, MainClient* client)
 {
 	auto bench = self->bench;
 	int batch = opt_int_of(&bench->batch);
@@ -313,7 +309,7 @@ bench_tpcb_main(BenchWorker* self, BenchClient* client)
 	buf_str(&buf, &cmd);
 	while (! self->shutdown)
 	{
-		bench_client_execute(client, &cmd);
+		main_client_execute(client, &cmd, NULL);
 		atomic_u64_add(&bench->transactions, batch);
 		atomic_u64_add(&bench->writes, 3 * batch);
 	}

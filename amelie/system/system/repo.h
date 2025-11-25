@@ -11,13 +11,14 @@
 // AGPL-3.0 Licensed.
 //
 
-// daemon
-#include "cli/daemon.h"
+typedef struct Repo Repo;
 
-// home
-#include "cli/login.h"
-#include "cli/login_mgr.h"
-#include "cli/home.h"
+struct Repo
+{
+	int  fd;
+	bool bootstrap;
+};
 
-// cli
-#include "cli/cli.h"
+void repo_init(Repo*);
+void repo_open(Repo*, char*, int, char**);
+void repo_close(Repo*);

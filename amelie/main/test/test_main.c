@@ -11,21 +11,25 @@
 //
 
 #include <amelie_core.h>
-#include <amelie_cli.h>
-#include <amelie_cli_test.h>
+#include <amelie.h>
+#include <amelie_main.h>
+#include <amelie_main_test.h>
 
 void
-cli_cmd_test(int argc, char** argv)
+cmd_test(Main* self)
 {
+	main_advance(self, -2);
 	logger_set_cli(&runtime()->logger, true, false);
 
 	TestSuite suite;
 	test_suite_init(&suite);
+	defer(test_suite_free, &suite);
+
 	str_set_cstr(&suite.option_result_dir, "_output");
 	str_set_cstr(&suite.option_plan_file, "plan");
 
 	int opt;
-	while ((opt = getopt(argc + 1, argv - 1, "o:t:g:hf")) != -1) {
+	while ((opt = getopt(self->argc, self->argv, "o:t:g:hf")) != -1) {
 		switch (opt) {
 		case 'o':
 			str_set_cstr(&suite.option_result_dir, optarg);
@@ -41,7 +45,7 @@ cli_cmd_test(int argc, char** argv)
 			break;
 		case 'h':
 		default:
-			error("usage: %s [-o output_dir] [-t test] [-g group] [-h] [-f]\n", argv[0]);
+			error("usage: amelie test [-o output_dir] [-t test] [-g group] [-h] [-f]\n");
 			break;
 		}
 	}
@@ -51,5 +55,4 @@ cli_cmd_test(int argc, char** argv)
 		test_suite_run(&suite);
 	);
 	test_suite_cleanup(&suite);
-	test_suite_free(&suite);
 }

@@ -12,5 +12,6 @@
 //
 
 #include <amelie_core.h>
-#include <amelie_cli.h>
-#include <amelie_cli_test.h>
+#include <amelie.h>
+#include <amelie_main.h>
+#include <amelie_main_test.h>

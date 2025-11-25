@@ -11,4 +11,4 @@
 // AGPL-3.0 Licensed.
 //
 
-void cli_main(char*, int, char**);
+void main_cli(Main*);

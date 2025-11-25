@@ -266,7 +266,8 @@ file_import(const char* fmt, ...)
 	file_init(&file);
 	defer(file_close, &file);
 	file_open_rdonly(&file, path);
-	file_pread_buf(&file, buf, file.size, 0);
+	if (file.size > 0)
+		file_pread_buf(&file, buf, file.size, 0);
 	return buf;
 }
 

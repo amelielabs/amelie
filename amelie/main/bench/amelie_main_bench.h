@@ -12,7 +12,6 @@
 //
 
 // benchmark
-#include "bench/bench_client.h"
 #include "bench/bench.h"
 #include "bench/bench_insert.h"
 #include "bench/bench_upsert.h"

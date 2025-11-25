@@ -11,85 +11,18 @@
 //
 
 #include <amelie_core.h>
-#include <amelie_cli.h>
-#include <amelie_cli_client.h>
-
-static ImportClient*
-import_client_allocate(void)
-{
-	auto self = (ImportClient*)am_malloc(sizeof(ImportClient));
-	self->client  = client_create();
-	self->pending = false;
-	list_init(&self->link);
-	return self;
-}
-
-static void
-import_client_free(ImportClient* self)
-{
-	client_free(self->client);
-	am_free(self);
-}
-
-static inline void
-import_client_send(ImportClient* self, Str* path, Str* content_type, Str* content)
-{
-	auto client  = self->client;
-	auto request = &client->request;
-
-	// POST /v1/db/schema/table
-	http_write_request(request, "POST %.*s", str_size(path), str_of(path));
-	auto token = remote_get(client->remote, REMOTE_TOKEN);
-	if (! str_empty(token))
-		http_write(request, "Authorization", "Bearer %.*s", str_size(token), str_of(token));
-	http_write(request, "Content-Type", "%.*s", str_size(content_type), str_of(content_type));
-	http_write(request, "Content-Length", "%d", str_size(content));
-	http_write_end(request);
-	tcp_write_pair_str(&client->tcp, &request->raw, content);
-
-	self->pending++;
-}
-
-static inline void
-import_client_recv(ImportClient* self, Import* import)
-{
-	auto client = self->client;
-	auto reply  = &client->reply;
-	if (self->pending == 0)
-		return;
-
-	// reply
-	http_reset(reply);
-	auto eof = http_read(reply, &client->readahead, false);
-	if (eof)
-		error("unexpected eof");
-	http_read_content(reply, &client->readahead, &reply->content);
-
-	self->pending--;
-	if (unlikely(str_is_prefix(&reply->options[HTTP_CODE], "4", 1)))
-		import->errors++;
-
-	/*
-	if (unlikely(str_is_prefix(&reply->options[HTTP_CODE], "4", 1)))
-	{
-		auto code = &reply->options[HTTP_CODE];
-		auto msg  = &reply->options[HTTP_MSG];
-		info("%.*s %.*s", str_size(code), str_of(code),
-		     str_size(msg), str_of(msg));
-		// todo: show content
-	}
-	*/
-}
+#include <amelie.h>
+#include <amelie_main.h>
 
 void
-import_init(Import* self, Remote* remote)
+import_init(Import* self, Main* main)
 {
 	self->rows             = 0;
 	self->errors           = 0;
 	self->report_time      = 0;
 	self->report_processed = 0;
 	self->report_rows      = 0;
-	self->remote           = remote;
+	self->main             = main;
 	self->forward          = NULL;
 	list_init(&self->clients_list);
 
@@ -249,10 +182,9 @@ import_connect(Import* self)
 	int count = opt_int_of(&self->clients);
 	while (count-- > 0)
 	{
-		auto client = import_client_allocate();
+		auto client = main_client_create(self->main);
 		list_append(&self->clients_list, &client->link);
-		client_set_remote(client->client, self->remote);
-		client_connect(client->client);
+		main_client_connect(client);
 	}
 }
 
@@ -261,44 +193,54 @@ import_disconnect(Import* self)
 {
 	list_foreach_safe(&self->clients_list)
 	{
-		auto client = list_at(ImportClient, link);
-		client_close(client->client);
-		import_client_free(client);
+		auto client = list_at(MainClient, link);
+		main_client_free(client);
+	}
+}
+
+static void
+import_sync(Import* self, MainClient* client)
+{
+	while (client->pending > 0)
+	{
+		auto code = client->iface->recv(client, NULL);
+		if (code != 200 && code != 204)
+			self->errors++;
+	}
+}
+
+static void
+import_sync_all(Import* self)
+{
+	list_foreach(&self->clients_list)
+	{
+		auto client = list_at(MainClient, link);
+		import_sync(self, client);
 	}
 }
 
 static void
 import_send(Import* self, Buf* buf)
 {
-	ImportClient* next;
+	MainClient* next;
 	if (!self->forward || list_is_last(&self->clients_list, &self->forward->link))
 	{
 		auto first = list_first(&self->clients_list);
-		next = container_of(first, ImportClient, link);
+		next = container_of(first, MainClient, link);
 	} else {
-		next = container_of(self->forward->link.next, ImportClient, link);
+		next = container_of(self->forward->link.next, MainClient, link);
 	}
 
 	// read reply from previous request
-	import_client_recv(next, self);
+	import_sync(self, next);
 
 	// POST /schema/table
 	Str content;
 	buf_str(buf, &content);
-	import_client_send(next, &self->path, &self->content_type, &content);
+
+	next->iface->send_import(next, &self->path, &self->content_type, &content);
 
 	self->forward = next;
-}
-
-static void
-import_sync(Import* self)
-{
-	list_foreach(&self->clients_list)
-	{
-		auto client = list_at(ImportClient, link);
-		while (client->pending > 0)
-			import_client_recv(client, self);
-	}
 }
 
 hot static inline void
@@ -387,7 +329,7 @@ import_file(Import* self, char* path)
 	}
 
 	// read the rest of replies
-	import_sync(self);
+	import_sync_all(self);
 
 	// report
 	import_report(self, path);
@@ -421,8 +363,11 @@ import_main(Import* self, int argc, char** argv)
 }
 
 void
-import_run(Import* self, int argc, char** argv)
+import_run(Import* self)
 {
+	auto argc = self->main->argc;
+	auto argv = self->main->argv;
+
 	// validate clients and batch size
 	if (!opt_int_of(&self->clients) ||
 	    !opt_int_of(&self->batch))

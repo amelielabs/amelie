@@ -138,7 +138,6 @@ console_open(Console* self)
 	// prepare terminal
 	struct termios term = self->term;
 	term.c_iflag &= ~(BRKINT | ICRNL | INPCK | ISTRIP | IXON);
-	term.c_oflag &= ~(OPOST);
 	term.c_lflag &= ~(ECHO | ICANON | IEXTEN | ISIG);
 	term.c_cflag |=  (CS8);
 	term.c_cc[VMIN]  = 1;

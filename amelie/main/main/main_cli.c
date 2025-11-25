@@ -1,0 +1,138 @@
+
+//
+// amelie.
+//
+// Real-Time SQL OLTP Database.
+//
+// Copyright (c) 2024 Dmitry Simonenko.
+// Copyright (c) 2024 Amelie Labs.
+//
+// AGPL-3.0 Licensed.
+//
+
+#include <amelie_core.h>
+#include <amelie.h>
+#include <amelie_main.h>
+
+static void
+main_execute(MainClient* client, Str* request)
+{
+	Str  reply;
+	auto code = main_client_execute(client, request, &reply);
+	switch (code) {
+	case 200:
+		// 200 OK
+		printf("%.*s\n", str_size(&reply), str_of(&reply));
+		break;
+	case 204:
+		// 204 No Content
+		break;
+	default:
+	{
+		// 400 Bad Request
+		// 403 Forbidden
+		// 413 Payload Too Large
+		if (str_empty(&reply))
+		{
+			printf("error: %d\n", code);
+			break;
+		}
+
+		// read error message
+		Json json;
+		json_init(&json);
+		defer(json_free, &json);
+		json_parse(&json, &reply, NULL);
+
+		// {msg: string}
+		auto pos = json.buf->start;
+		json_read_obj(&pos);
+		// msg
+		json_skip(&pos);
+		Str text;
+		json_read_string(&pos, &text);
+		printf("error: %.*s\n", str_size(&text), str_of(&text));
+		break;
+	}
+	}
+}
+
+static void
+main_console(Main* self, MainClient* client)
+{
+	auto name = remote_get(&self->remote, REMOTE_NAME);
+	auto uri  = remote_get(&self->remote, REMOTE_URI);
+	auto path = remote_get(&self->remote, REMOTE_PATH);
+
+	Separator sep;
+	separator_init(&sep);
+	defer(separator_free, &sep);
+
+	// set prompt
+	Str* prompt_text;
+	if (! str_empty(name))
+		prompt_text = name;
+	else
+	if (! str_empty(path))
+		prompt_text = path;
+	else
+		prompt_text = uri;
+
+	char prompt_str[128];
+	snprintf(prompt_str, sizeof(prompt_str), "%.*s> ", str_size(prompt_text),
+	         str_of(prompt_text));
+	Str prompt;
+	str_set_cstr(&prompt, prompt_str);
+
+	char prompt_str_pending[128];
+	snprintf(prompt_str_pending, sizeof(prompt_str_pending), "%.*s- ",
+	         str_size(prompt_text), str_of(prompt_text));
+	Str prompt_pending;
+	str_set_cstr(&prompt_pending, prompt_str_pending);
+
+	// read and execute commands
+	for (;;)
+	{
+		// >
+		auto prompt_ptr = &prompt;
+		if (separator_pending(&sep))
+			prompt_ptr = &prompt_pending;
+
+		Str input;
+		str_init(&input);
+		if (! console(&self->console, prompt_ptr, &input))
+		{
+			if (separator_read_leftover(&sep, &input))
+				main_execute(client, &input);
+			break;
+		}
+		defer(str_free, &input);
+
+		// split commands using ; and begin/end stmts
+		Str content;
+		separator_write(&sep, &input);
+		while (separator_read(&sep, &content))
+		{
+			main_execute(client, &content);
+			separator_advance(&sep);
+		}
+	}
+}
+
+void
+main_cli(Main* self)
+{
+	opt_int_set(&config()->log_connections, false);
+
+	// parse command line and open database
+	main_open(self, MAIN_OPEN_ANY, NULL);
+	defer(main_close, self);
+
+	// create client and connect
+	auto client = main_client_create(self);
+	defer(main_client_free, client);
+	main_client_connect(client);
+
+	// read commands
+	main_console(self, client);
+}

@@ -11,4 +11,4 @@
 // AGPL-3.0 Licensed.
 //
 
-bool repository_open(char*, int, char**);
+void main_configure(Main*, Opts*);

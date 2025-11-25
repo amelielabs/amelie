@@ -11,7 +11,6 @@
 //
 
 #include <amelie_test.h>
-#include <amelie.h>
 
 void
 test_api_init(void* arg)

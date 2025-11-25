@@ -12,8 +12,8 @@
 
 #include <amelie_core.h>
 #include <amelie.h>
-#include <amelie_cli.h>
-#include <amelie_cli_slt.h>
+#include <amelie_main.h>
+#include <amelie_main_slt.h>
 
 static int
 slt_sh(const char* fmt, ...)

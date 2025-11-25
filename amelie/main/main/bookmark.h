@@ -11,18 +11,18 @@
 // AGPL-3.0 Licensed.
 //
 
-typedef struct Login Login;
+typedef struct Bookmark Bookmark;
 
-struct Login
+struct Bookmark
 {
 	Remote remote;
 	List   link;
 };
 
-static inline Login*
-login_allocate(void)
+static inline Bookmark*
+bookmark_allocate(void)
 {
-	Login* self;
+	Bookmark* self;
 	self = am_malloc(sizeof(*self));
 	remote_init(&self->remote);
 	list_init(&self->link);
@@ -30,31 +30,31 @@ login_allocate(void)
 }
 
 static inline void
-login_free(Login* self)
+bookmark_free(Bookmark* self)
 {
 	remote_free(&self->remote);
 	am_free(self);
 }
 
 static inline void
-login_set_remote(Login* self, Remote* remote)
+bookmark_set_remote(Bookmark* self, Remote* remote)
 {
 	remote_copy(&self->remote, remote);
 }
 
-static inline Login*
-login_copy(Login* self)
+static inline Bookmark*
+bookmark_copy(Bookmark* self)
 {
-	auto copy = login_allocate();
-	login_set_remote(copy, &self->remote);
+	auto copy = bookmark_allocate();
+	bookmark_set_remote(copy, &self->remote);
 	return copy;
 }
 
-static inline Login*
-login_read(uint8_t** pos)
+static inline Bookmark*
+bookmark_read(uint8_t** pos)
 {
-	auto self = login_allocate();
-	errdefer(login_free, self);
+	auto self = bookmark_allocate();
+	errdefer(bookmark_free, self);
 	Decode obj[REMOTE_MAX + 1];
 	for (int id = 0; id < REMOTE_MAX; id++)
 	{
@@ -63,12 +63,12 @@ login_read(uint8_t** pos)
 		obj[id].value = remote_get(&self->remote, id);
 	}
 	memset(&obj[REMOTE_MAX], 0, sizeof(Decode));
-	decode_obj(obj, "login", pos);
+	decode_obj(obj, "bookmark", pos);
 	return self;
 }
 
 static inline void
-login_write(Login* self, Buf* buf)
+bookmark_write(Bookmark* self, Buf* buf)
 {
 	encode_obj(buf);
 	for (int id = 0; id < REMOTE_MAX; id++)

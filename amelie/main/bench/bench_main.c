@@ -12,32 +12,22 @@
 
 #include <amelie_core.h>
 #include <amelie.h>
-#include <amelie_cli.h>
-#include <amelie_cli_bench.h>
+#include <amelie_main.h>
+#include <amelie_main_bench.h>
 
 void
-cli_cmd_bench(int argc, char** argv)
+cmd_bench(Main* self)
 {
-	// amelie bench name
-	Home home;
-	home_init(&home);
-	defer(home_free, &home);
-	home_open(&home);
-
+	// amelie bench name [options]
 	opt_int_set(&config()->log_connections, false);
 
-	Remote remote;
-	remote_init(&remote);
-	defer(remote_free, &remote);
-
 	Bench bench;
-	bench_init(&bench, &remote);
+	bench_init(&bench, self);
 	defer(bench_free, &bench);
 
-	// prepare remote
-	error_catch
-	(
-		login_mgr_set(&home.login_mgr, &remote, &bench.opts, argc, argv);
-		bench_run(&bench);
-	);
+	// parse command line and open database
+	main_open(self, MAIN_OPEN_ANY, &bench.opts);
+	defer(main_close, self);
+
+	bench_run(&bench);
 }

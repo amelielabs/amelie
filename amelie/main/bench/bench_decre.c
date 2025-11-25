@@ -12,27 +12,27 @@
 
 #include <amelie_core.h>
 #include <amelie.h>
-#include <amelie_cli.h>
-#include <amelie_cli_bench.h>
+#include <amelie_main.h>
+#include <amelie_main_bench.h>
 
 static void
-bench_decre_create(Bench* self, BenchClient* client)
+bench_decre_create(Bench* self, MainClient* client)
 {
 	unused(self);
 
 	Str str;
 	str_set_cstr(&str, "create table __bench.test (id serial primary key using hash, money double default 100.0)");
-	bench_client_execute(client, &str);
+	main_client_execute(client, &str, NULL);
 
 	str_set_cstr(&str, "create table __bench.history (id serial primary key using hash, src int, dst int, amount double)");
-	bench_client_execute(client, &str);
+	main_client_execute(client, &str, NULL);
 
 	if (opt_int_of(&self->unlogged))
 	{
 		str_set_cstr(&str, "alter table __bench.test set unlogged");
-		bench_client_execute(client, &str);
+		main_client_execute(client, &str, NULL);
 		str_set_cstr(&str, "alter table __bench.history set unlogged");
-		bench_client_execute(client, &str);
+		main_client_execute(client, &str, NULL);
 	}
 	Buf buf;
 	buf_init(&buf);
@@ -44,7 +44,7 @@ bench_decre_create(Bench* self, BenchClient* client)
 		buf_reset(&buf);
 		buf_printf(&buf, "insert into __bench.test generate 500");
 		buf_str(&buf, &str);
-		bench_client_execute(client, &str);
+		main_client_execute(client, &str, NULL);
 	}
 
 	// create benchmark functions
@@ -71,14 +71,14 @@ bench_decre_create(Bench* self, BenchClient* client)
 	"end;";
 
 	str_set_cstr(&str, func);
-	bench_client_execute(client, &str);
+	main_client_execute(client, &str, NULL);
 
 	str_set_cstr(&str, func_batch);
-	bench_client_execute(client, &str);
+	main_client_execute(client, &str, NULL);
 }
 
 hot static void
-bench_decre_main(BenchWorker* self, BenchClient* client)
+bench_decre_main(BenchWorker* self, MainClient* client)
 {
 	auto bench = self->bench;
 	auto total = 100000ul;
@@ -93,7 +93,7 @@ bench_decre_main(BenchWorker* self, BenchClient* client)
 
 	while (! self->shutdown)
 	{
-		bench_client_execute(client, &cmd);
+		main_client_execute(client, &cmd, NULL);
 		atomic_u64_add(&bench->transactions, batch);
 		atomic_u64_add(&bench->writes, 3 * batch);
 	}

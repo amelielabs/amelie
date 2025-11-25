@@ -11,8 +11,9 @@
 //
 
 #include <amelie_core.h>
-#include <amelie_cli.h>
-#include <amelie_cli_test.h>
+#include <amelie.h>
+#include <amelie_main.h>
+#include <amelie_main_test.h>
 #include <dlfcn.h>
 
 static void
@@ -76,7 +77,7 @@ test_command_open(TestSuite* self, Str* arg)
 	int   argc = 14;
 	char* argv[17] =
 	{
-		"amelie-test",
+		"amelie",
 		"start",
 		path,
 		"--log_enable=true",
@@ -102,7 +103,7 @@ test_command_open(TestSuite* self, Str* arg)
 		argc++;
 	}
 
-	int rc = runtime_start(&env->runtime, cli_main, NULL, argc, argv);
+	int rc = runtime_start(&env->runtime, main_runtime, NULL, argc, argv);
 	if (rc == -1)
 		test_error(self, "start failed");
 }
@@ -136,6 +137,9 @@ test_command_backup(TestSuite* self, Str* arg)
 	if (str_empty(&name))
 		test_error(self, "backup <name> expected");
 
+	if (str_empty(arg))
+		test_error(self, "backup <name> <args> expected");
+
 	auto env = test_plan_find_env(&self->plan, &name);
 	if (env)
 		test_error(self, "env name redefined");
@@ -155,29 +159,25 @@ test_command_backup(TestSuite* self, Str* arg)
 	         str_size(&name),
 	         str_of(&name));
 
-	// backup <path> --json {remote options}
-	int   argc = 4;
-	char* argv[6] =
-	{
-		"amelie-test",
-		"backup",
-		path,
-		"--debug=0"
-	};
-
+	// backup --json {remote options} <path>
 	char options[1024];
 	str_chomp(arg);
-	if (! str_empty(arg))
-	{
-		snprintf(options, sizeof(options), "--json={%.*s}",
-		         str_size(arg), str_of(arg));
-		argv[argc] = options;
-		argc++;
-	}
+	snprintf(options, sizeof(options), "--json={%.*s}",
+	         str_size(arg), str_of(arg));
 
-	int rc = runtime_start(&env->runtime, cli_main, NULL, argc, argv);
+	int   argc = 5;
+	char* argv[5] =
+	{
+		"amelie",
+		"backup"
+	};
+	argv[2] = options;
+	argv[3] = "--debug=0";
+	argv[4] = path;
+
+	int rc = runtime_start(&env->runtime, main_runtime, NULL, argc, argv);
 	if (rc == -1)
-		test_error(self, "%start failed");
+		test_error(self, "start failed");
 }
 
 static void

@@ -119,17 +119,22 @@ amelie_free(void* ptr)
 }
 
 static void
-amelie_main(char* directory, int argc, char** argv)
+amelie_main(void* arg, int argc, char** argv)
 {
+	Repo repo;
+	repo_init(&repo);
+	defer(repo_close, &repo);
+
 	System* system = NULL;
 	auto on_error = error_catch
 	(
 		// create or open repository
-		auto bootstrap = repository_open(directory, argc, argv);
+		auto directory = arg;
+		repo_open(&repo, directory, argc, argv);
 
 		// create system object
 		system = system_create();
-		system_start(system, bootstrap);
+		system_start(system, repo.bootstrap);
 
 		// notify start completion
 		cond_signal(&am_task->status, RUNTIME_OK);
@@ -153,7 +158,8 @@ amelie_open(amelie_t* self, const char* path, int argc, char** argv)
 	// ensure amelie_open() was not called previously
 	if (unlikely(runtime_started(&self->runtime)))
 		return -1;
-	auto status = runtime_start(&self->runtime, amelie_main, (char*)path, argc, argv);
+	auto status = runtime_start(&self->runtime, amelie_main, (void*)path,
+	                            argc, argv);
 	return status == RUNTIME_OK? 0: -1;
 }
 
