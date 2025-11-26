@@ -195,7 +195,7 @@ wal_truncate(Wal* self, uint64_t lsn)
 	if (id == UINT64_MAX)
 		id = id_mgr_min(&self->list);
 
-	info("truncate wals (%" PRIu64 " lsn)", lsn);
+	info("wal: truncate wals (%" PRIu64 " lsn)", lsn);
 
 	auto file = wal_file_allocate(id);
 	defer(wal_file_close, file);
@@ -232,7 +232,7 @@ wal_truncate(Wal* self, uint64_t lsn)
 	if (offset != file->file.size)
 	{
 		wal_file_truncate(file, offset);
-		info("wals/%" PRIu64 " (truncated to %" PRIu64 " bytes)",
+		info(" %" PRIu64 " (truncated to %" PRIu64 " bytes)",
 		     id, offset);
 	}
 
@@ -246,10 +246,10 @@ wal_truncate(Wal* self, uint64_t lsn)
 		snprintf(path, sizeof(path), "%s/wals/%" PRIu64,
 		         state_directory(), id);
 		fs_unlink("%s", path);
-		info("wals/%" PRIu64 " (file removed)", id);
+		info(" %" PRIu64 " (file removed)", id);
 	}
 
-	info("complete");
+	info("");
 }
 
 void

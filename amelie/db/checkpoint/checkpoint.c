@@ -112,9 +112,7 @@ checkpoint_part(Checkpoint* self, Part* part)
 	         self->lsn,
 	         part->config->id);
 	auto size = heap_file_write(&part->heap, path);
-	info("checkpoints/%" PRIu64 "/%" PRIu64 " (%.2f MiB)",
-	     self->lsn,
-	     part->config->id,
+	info("│ %05" PRIu64 " (%.2f MiB)", part->config->id,
 	     (double)size / 1024 / 1024);
 }
 
@@ -211,7 +209,7 @@ checkpoint_run(Checkpoint* self)
 	         state_directory(), self->lsn);
 
 	info("");
-	info("⟶ checkpoint %" PRIu64 " (using %d workers)",
+	info("checkpoint: checkpoints/%" PRIu64 "/ (using %d workers)",
 	     self->lsn, self->workers_count);
 	fs_mkdir(0755, "%s", path);
 
@@ -259,9 +257,9 @@ checkpoint_wait(Checkpoint* self)
 	fs_rename(path, "%s/checkpoints/%" PRIu64, state_directory(), self->lsn);
 
 	// done
+	info("");
 
 	// register checkpoint
 	checkpoint_mgr_add(self->mgr, self->lsn);
 	opt_int_set(&state()->checkpoint, self->lsn);
-	info("complete");
 }

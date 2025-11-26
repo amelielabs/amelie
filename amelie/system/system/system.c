@@ -297,7 +297,8 @@ system_recover(System* self)
 {
 	// ask each backend to recover last checkpoint partitions in parallel
 	int workers = opt_int_of(&config()->backends);
-	info("⟶ recovery (checkpoint %" PRIu64 ", using %d backends)",
+	info("");
+	info("recover: checkpoints/%" PRIu64 "/ (using %d backends)",
 	     state_checkpoint(), workers);
 
 	Build build;
@@ -306,12 +307,14 @@ system_recover(System* self)
 	build_run(&build);
 
 	// replay wals
+	info("");
+	info("recover: wals/");
+
 	Recover recover;
 	recover_init(&recover, &self->db, false);
 	defer(recover_free, &recover);
 	recover_wal(&recover);
-
-	info("complete");
+	info("");
 }
 
 static void
@@ -337,11 +340,10 @@ system_start(System* self, bool bootstrap)
 	info("amelie %.*s", str_size(version), str_of(version));
 
 	// show system options
-	info("");
 	if (bootstrap || opt_int_of(&config()->log_options))
 	{
-		opts_print(&config()->opts);
 		info("");
+		opts_print(&config()->opts);
 	}
 
 	// start system in the client mode without repository

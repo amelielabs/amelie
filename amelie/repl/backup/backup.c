@@ -274,8 +274,8 @@ backup_next(Backup* self)
 	int64_t size;
 	json_read_integer(pos, &size);
 	json_read_array_end(pos);
-	info("%.*s (%" PRIu64 " bytes)", str_size(&name),
-	     str_of(&name), size);
+	info("│ %.*s (%.2f MiB)", str_size(&name), str_of(&name),
+	     (double)size / 1024 / 1024);
 
 	// on the last state, send preloaded state file content
 	Buf* buf = NULL;
@@ -320,8 +320,11 @@ backup_main(void* arg)
 	auto    client = self->client;
 	auto    tcp    = &client->tcp;
 
+	char addr[128];
+	tcp_getpeername(&client->tcp, addr, sizeof(addr));
+
 	info("");
-	info("⟶ backup");
+	info("backup: from %s", addr);
 	error_catch
 	(
 		tcp_attach(tcp);
@@ -330,7 +333,7 @@ backup_main(void* arg)
 	tcp_detach(tcp);
 
 	event_signal(&self->on_complete);
-	info("complete");
+	info("");
 }
 
 void

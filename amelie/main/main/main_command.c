@@ -77,6 +77,7 @@ cmd_backup(Main* self)
 		logger_set_to_stdout(&runtime()->logger, false);
 
 	// create backup
+	opt_int_set(&config()->log_connections, false);
 	restore(&self->remote, self->argv[0]);
 }
 
@@ -92,6 +93,7 @@ cmd_import(Main* self)
 	defer(main_close, self);
 
 	logger_set_cli(&runtime()->logger, true, false);
+
 	opt_int_set(&config()->log_connections, false);
 	import_run(&import);
 }

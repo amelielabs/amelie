@@ -76,7 +76,7 @@ build_run(Build* self)
 	{
 		auto config = self->table->config;
 		info("");
-		info("⟶ create index %.*s on %.*s.%.*s",
+		info("alter: create index %.*s on %.*s.%.*s",
 		     str_size(&self->index->name),
 		     str_of(&self->index->name),
 		     str_size(&config->schema),
@@ -89,7 +89,7 @@ build_run(Build* self)
 	{
 		auto config = self->table->config;
 		info("");
-		info("⟶ alter table %.*s.%.*s add column %.*s",
+		info("alter: alter table %.*s.%.*s add column %.*s",
 		     str_size(&config->schema),
 		     str_of(&config->schema),
 		     str_size(&config->name),
@@ -102,7 +102,7 @@ build_run(Build* self)
 	{
 		auto config = self->table->config;
 		info("");
-		info("⟶ alter table %.*s.%.*s drop column %.*s",
+		info("alter: alter table %.*s.%.*s drop column %.*s",
 		     str_size(&config->schema),
 		     str_of(&config->schema),
 		     str_size(&config->name),
@@ -152,7 +152,7 @@ build_run(Build* self)
 
 	if (self->type != BUILD_RECOVER &&
 	    self->type != BUILD_NONE)
-		info("complete");
+		info(" ");
 }
 
 void

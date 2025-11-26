@@ -62,7 +62,7 @@ recover_cmd(Recover* self, RecordCmd* cmd, uint8_t** pos)
 		// find partition by id
 		auto part = part_mgr_find(&db->part_mgr, cmd->partition);
 		if (! part)
-			error("failed to find partition %" PRIu64, cmd->partition);
+			error("recover: failed to find partition %" PRIu64, cmd->partition);
 		auto end = *pos + cmd->size;
 		while (*pos < end)
 		{
@@ -77,7 +77,7 @@ recover_cmd(Recover* self, RecordCmd* cmd, uint8_t** pos)
 		// find partition by id
 		auto part = part_mgr_find(&db->part_mgr, cmd->partition);
 		if (! part)
-			error("failed to find partition %" PRIu64, cmd->partition);
+			error("recover: failed to find partition %" PRIu64, cmd->partition);
 		auto end = *pos + cmd->size;
 		while (*pos < end)
 		{
@@ -187,8 +187,9 @@ recover_wal_main(Recover* self)
 		if (! wal_cursor_active(&cursor))
 			break;
 
-		info("wals/%" PRIu64 " (%.2f MiB, %" PRIu64 " rows)",
-		     id, (double)self->size / 1024 / 1024, self->ops);
+		info("│ %" PRIu64 " (%.2f MiB, %" PRIu64 " rows)", id,
+		     (double)self->size / 1024 / 1024,
+		     self->ops);
 
 		id = id_mgr_next(&wal_mgr->wal.list, cursor.file->id);
 		if (id == UINT64_MAX)

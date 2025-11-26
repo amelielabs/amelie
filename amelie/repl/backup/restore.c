@@ -231,12 +231,10 @@ restore_next(Restore* self)
 	if (step != self->step || step >= self->step_total )
 		error("backup Am-Step order is invalid");
 
-	info("[%3" PRIi64 "/%3" PRIi64 "] %.*s (%" PRIu64 " bytes)",
-	     self->step + 1,
-	     self->step_total,
+	info("%s/%.*s (%.2f MiB)", state_directory(),
 	     str_size(&am_file->value),
 	     str_of(&am_file->value),
-	     len);
+	     (double)len / 1024 / 1024);
 
 	// create and transfer file
 	char path[PATH_MAX];
@@ -274,5 +272,4 @@ restore(Remote* remote, char* directory)
 	restore_start(&restore);
 	for (; restore.step < restore.step_total; restore.step++)
 		restore_next(&restore);
-	info("complete");
 }
