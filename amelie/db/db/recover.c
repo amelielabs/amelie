@@ -187,7 +187,7 @@ recover_wal_main(Recover* self)
 		if (! wal_cursor_active(&cursor))
 			break;
 
-		info("│ %" PRIu64 " (%.2f MiB, %" PRIu64 " rows)", id,
+		info(" wals/%" PRIu64 " (%.2f MiB, %" PRIu64 " rows)", id,
 		     (double)self->size / 1024 / 1024,
 		     self->ops);
 

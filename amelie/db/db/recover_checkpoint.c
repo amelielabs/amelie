@@ -55,7 +55,8 @@ recover_partition(Part* self)
 	}
 
 	double total = (double)size / 1024 / 1024;
-	info("│ %05" PRIu64 " (%.2f MiB, %" PRIu64 " rows)",
+	info(" %" PRIu64"/%05" PRIu64 " (%.2f MiB, %" PRIu64 " rows)",
+	     checkpoint,
 	     self->config->id, total, count);
 }
 

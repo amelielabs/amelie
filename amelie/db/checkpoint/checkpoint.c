@@ -112,7 +112,9 @@ checkpoint_part(Checkpoint* self, Part* part)
 	         self->lsn,
 	         part->config->id);
 	auto size = heap_file_write(&part->heap, path);
-	info("│ %05" PRIu64 " (%.2f MiB)", part->config->id,
+	info(" %" PRIu64"/%05" PRIu64 " (%.2f MiB)",
+	     self->lsn,
+	     part->config->id,
 	     (double)size / 1024 / 1024);
 }
 

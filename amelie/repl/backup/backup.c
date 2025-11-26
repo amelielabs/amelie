@@ -274,7 +274,7 @@ backup_next(Backup* self)
 	int64_t size;
 	json_read_integer(pos, &size);
 	json_read_array_end(pos);
-	info("│ %.*s (%.2f MiB)", str_size(&name), str_of(&name),
+	info(" %.*s (%.2f MiB)", str_size(&name), str_of(&name),
 	     (double)size / 1024 / 1024);
 
 	// on the last state, send preloaded state file content
@@ -324,7 +324,7 @@ backup_main(void* arg)
 	tcp_getpeername(&client->tcp, addr, sizeof(addr));
 
 	info("");
-	info("backup: from %s", addr);
+	info("backup: sending to %s", addr);
 	error_catch
 	(
 		tcp_attach(tcp);

@@ -107,5 +107,5 @@ part_build(PartBuild* self)
 		count = part_build_column_drop(self, it);
 		break;
 	}
-	info("│ %05" PRIu64 " (%" PRIu64 " rows)", id, count);
+	info(" %05" PRIu64 " (%" PRIu64 " rows)", id, count);
 }
