@@ -272,21 +272,21 @@ import_report(Import* self, char* path)
 		if (total_mib == 0)
 			percent = 100;
 
-		printf("%.*s %d%% (%d MiB / %d MiB) %d MiB/sec, %d rows/sec, %" PRIu64 " errors\r",
-		       str_size(&reader->file.path),
-		       str_of(&reader->file.path),
-		       (int)percent, (int)done_mib, (int)total_mib,
-		       processed_sec,
-		       rows_sec,
-		       self->errors);
+		info("%.*s %d%% (%d MiB / %d MiB) %d MiB/sec, %d rows/sec, %" PRIu64 " errors\r",
+		     str_size(&reader->file.path),
+		     str_of(&reader->file.path),
+		     (int)percent, (int)done_mib, (int)total_mib,
+		     processed_sec,
+		     rows_sec,
+		     self->errors);
 	} else
 	{
 		auto done_mib = reader->offset_file / 1024 / 1024;
-		printf("pipe (%d MiB) %d MiB/sec, %d rows/sec, %" PRIu64 " errors\r",
-		       (int)done_mib,
-		       processed_sec,
-		       rows_sec,
-		       self->errors);
+		info("pipe (%d MiB) %d MiB/sec, %d rows/sec, %" PRIu64 " errors\r",
+		     (int)done_mib,
+		     processed_sec,
+		     rows_sec,
+		     self->errors);
 	}
 
 	self->report_time      = time;
@@ -333,7 +333,7 @@ import_file(Import* self, char* path)
 
 	// report
 	import_report(self, path);
-	printf("\n");
+	info("\n");
 
 	reader_close(reader);
 }

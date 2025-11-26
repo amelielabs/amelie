@@ -22,7 +22,7 @@ main_execute(MainClient* client, Str* request)
 	switch (code) {
 	case 200:
 		// 200 OK
-		printf("%.*s\n", str_size(&reply), str_of(&reply));
+		info("%.*s", str_size(&reply), str_of(&reply));
 		break;
 	case 204:
 		// 204 No Content
@@ -34,7 +34,7 @@ main_execute(MainClient* client, Str* request)
 		// 413 Payload Too Large
 		if (str_empty(&reply))
 		{
-			printf("error: %d\n", code);
+			info("error: %d", code);
 			break;
 		}
 
@@ -51,7 +51,7 @@ main_execute(MainClient* client, Str* request)
 		json_skip(&pos);
 		Str text;
 		json_read_string(&pos, &text);
-		printf("error: %.*s\n", str_size(&text), str_of(&text));
+		info("error: %.*s", str_size(&text), str_of(&text));
 		break;
 	}
 	}

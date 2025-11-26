@@ -91,6 +91,7 @@ cmd_import(Main* self)
 	main_open(self, MAIN_OPEN_REMOTE, &import.opts);
 	defer(main_close, self);
 
+	logger_set_cli(&runtime()->logger, true, false);
 	opt_int_set(&config()->log_connections, false);
 	import_run(&import);
 }
