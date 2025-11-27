@@ -42,7 +42,7 @@
 void
 parse_show(Stmt* self)
 {
-	// SHOW <SECTION> [name] [IN|FROM schema] [extended]
+	// SHOW <SECTION> [name] [IN|FROM db] [extended]
 	auto stmt = ast_show_allocate();
 	self->ast = &stmt->ast;
 	self->ret = &stmt->ret;
@@ -61,17 +61,17 @@ parse_show(Stmt* self)
 	if (name->id == KNAME_COMPOUND)
 	{
 		stmt->name = name->string;
-		str_split(&stmt->name, &stmt->schema, '.');
-		str_advance(&stmt->name, str_size(&stmt->schema) + 1);
+		str_split(&stmt->name, &stmt->db, '.');
+		str_advance(&stmt->name, str_size(&stmt->db) + 1);
 	} else {
 		stmt_push(self, name);
 	}
 
-	// [IN | FROM schema]
+	// [IN | FROM db]
 	if (stmt_if(self, KIN) || stmt_if(self, KFROM))
 	{
-		auto schema = stmt_expect(self, KNAME);
-		stmt->schema = schema->string;
+		auto db = stmt_expect(self, KNAME);
+		stmt->db = db->string;
 	}
 
 	// [EXTENDED]

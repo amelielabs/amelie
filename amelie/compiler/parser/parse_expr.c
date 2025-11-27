@@ -350,21 +350,21 @@ expr_func_constify(Stmt* self, Ast* ast, Ast* first_arg)
 static Ast*
 expr_func(Stmt* self, Expr* expr, Ast* path, bool with_args)
 {
-	// [schema.]function_name[(expr, ...)]
+	// function_name[(expr, ...)]
 	auto func = ast_func_allocate();
 
-	// read schema/name
-	Str schema;
-	Str name;
-	if (! parse_target_path(path, &schema, &name))
-		stmt_error(self, path, "bad function call");
+	// name
+	auto name = stmt_expect(self, KNAME);
 
 	// find and call function
-	func->fn = function_mgr_find(share()->function_mgr, &schema, &name);
+	func->fn = function_mgr_find(share()->function_mgr, &name->string);
 	if (! func->fn)
 	{
 		// find udf
-		func->udf = udf_mgr_find(&share()->db->catalog.udf_mgr, &schema, &name, false);
+		func->udf = udf_mgr_find(&share()->storage->catalog.udf_mgr,
+		                         &self->parser->local->db,
+		                         &name->string,
+		                         false);
 		if (! func->udf)
 			stmt_error(self, path, "function not found");
 

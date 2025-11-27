@@ -40,9 +40,9 @@
 #include <amelie_parser.h>
 
 static inline bool
-parse_endpoint_path(Str* self, Str* schema, Str* name)
+parse_endpoint_path(Str* self, Str* db, Str* name)
 {
-	// /v1/db/schema/relation
+	// /v1/db/db_name/relation
 	if (unlikely(str_empty(self)))
 		return false;
 
@@ -54,14 +54,14 @@ parse_endpoint_path(Str* self, Str* schema, Str* name)
 		return false;
 	pos += 7;
 
-	// schema
+	// db
 	auto start = pos;
 	while (pos < end && *pos != '/')
 		pos++;
 	if (unlikely(pos == end))
 		return false;
-	str_set(schema, start, pos - start);
-	if (unlikely(str_empty(schema)))
+	str_set(db, start, pos - start);
+	if (unlikely(str_empty(db)))
 		return false;
 	pos++;
 
@@ -126,19 +126,19 @@ parse_endpoint_columns(Endpoint* endpoint, Str* value)
 void
 parse_endpoint(Endpoint* endpoint)
 {
-	// POST /v1/db/schema/relation <?columns=...>
+	// POST /v1/db/db_name/relation <?columns=...>
 	auto uri = endpoint->uri;
 
 	// get target name
-	Str schema;
+	Str db;
 	Str name;
-	str_init(&schema);
+	str_init(&db);
 	str_init(&name);
-	if (unlikely(! parse_endpoint_path(&uri->path, &schema, &name)))
+	if (unlikely(! parse_endpoint_path(&uri->path, &db, &name)))
 		error("unsupported URI path");
 
 	// find udf
-	endpoint->udf = udf_mgr_find(&share()->db->catalog.udf_mgr, &schema, &name, false);
+	endpoint->udf = udf_mgr_find(&share()->storage->catalog.udf_mgr, &db, &name, false);
 	if (endpoint->udf)
 	{
 		endpoint->columns = &endpoint->udf->config->args;
@@ -147,7 +147,7 @@ parse_endpoint(Endpoint* endpoint)
 	} else
 	{
 		// find table
-		endpoint->table   = table_mgr_find(&share()->db->catalog.table_mgr, &schema, &name, true);
+		endpoint->table   = table_mgr_find(&share()->storage->catalog.table_mgr, &db, &name, true);
 		endpoint->columns = &endpoint->table->config->columns;
 		endpoint->values  = NULL;
 	}

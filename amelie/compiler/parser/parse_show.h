@@ -20,7 +20,7 @@ struct AstShow
 	Returning ret;
 	Str       section;
 	Str       name;
-	Str       schema;
+	Str       db;
 	bool      extended;
 };
 

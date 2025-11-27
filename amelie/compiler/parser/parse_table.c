@@ -411,15 +411,6 @@ parse_columns(Stmt* self, Columns* columns, Keys* keys)
 static void
 parse_table_finilize(AstTableCreate* self)
 {
-	// ensure schema exists and not system
-	auto schema = schema_mgr_find(&share()->db->catalog.schema_mgr,
-	                              &self->config->schema,
-	                              true);
-	if (! schema->config->create)
-		error("system schema <%.*s> cannot be used to create objects",
-		      str_size(&schema->config->name),
-		      str_of(&schema->config->name));
-
 	// create partition for each backend
 	if (self->partitions < 1 || self->partitions >= PARTITION_MAX)
 		error("table has invalid partitions number");
@@ -465,17 +456,14 @@ parse_table_create(Stmt* self, bool unlogged)
 	stmt->if_not_exists = parse_if_not_exists(self);
 
 	// name
-	Str schema;
-	Str name;
-	if (! parse_target(self, &schema, &name))
-		stmt_error(self, NULL, "name expected");
+	auto name = stmt_expect(self, KNAME);
 
 	// create table config
 	auto config = table_config_allocate();
 	stmt->config = config;
 	table_config_set_unlogged(config, unlogged);
-	table_config_set_schema(config, &schema);
-	table_config_set_name(config, &name);
+	table_config_set_db(config, &self->parser->local->db);
+	table_config_set_name(config, &name->string);
 
 	// create primary index config
 	auto config_index = index_config_allocate(&config->columns);
@@ -516,22 +504,22 @@ parse_table_drop(Stmt* self)
 	stmt->if_exists = parse_if_exists(self);
 
 	// name
-	if (! parse_target(self, &stmt->schema, &stmt->name))
-		stmt_error(self, NULL, "name expected");
+	auto name  = stmt_expect(self, KNAME);
+	stmt->name = name->string;
 }
 
 void
 parse_table_alter(Stmt* self)
 {
-	// ALTER TABLE [IF EXISTS] [schema.]name RENAME TO [schema.]name
-	// ALTER TABLE [IF EXISTS] [schema.]name SET IDENTITY TO value
-	// ALTER TABLE [IF EXISTS] [schema.]name ADD COLUMN [IF NOT EXISTS] name type [constraint]
-	// ALTER TABLE [IF EXISTS] [schema.]name DROP COLUMN [IF EXISTS] name
-	// ALTER TABLE [IF EXISTS] [schema.]name RENAME COLUMN [IF EXISTS] name TO name
-	// ALTER TABLE [IF EXISTS] [schema.]name SET COLUMN [IF EXISTS] name DEFAULT const
-	// ALTER TABLE [IF EXISTS] [schema.]name SET COLUMN [IF EXISTS] name AS (expr) <STORED|RESOLVED>
-	// ALTER TABLE [IF EXISTS] [schema.]name UNSET COLUMN [IF EXISTS] name DEFAULT
-	// ALTER TABLE [IF EXISTS] [schema.]name UNSET COLUMN [IF EXISTS] name AS <IDENTITY|STORED|RESOLVED>
+	// ALTER TABLE [IF EXISTS] name RENAME TO name
+	// ALTER TABLE [IF EXISTS] name SET IDENTITY TO value
+	// ALTER TABLE [IF EXISTS] name ADD COLUMN [IF NOT EXISTS] name type [constraint]
+	// ALTER TABLE [IF EXISTS] name DROP COLUMN [IF EXISTS] name
+	// ALTER TABLE [IF EXISTS] name RENAME COLUMN [IF EXISTS] name TO name
+	// ALTER TABLE [IF EXISTS] name SET COLUMN [IF EXISTS] name DEFAULT const
+	// ALTER TABLE [IF EXISTS] name SET COLUMN [IF EXISTS] name AS (expr) <STORED|RESOLVED>
+	// ALTER TABLE [IF EXISTS] name UNSET COLUMN [IF EXISTS] name DEFAULT
+	// ALTER TABLE [IF EXISTS] name UNSET COLUMN [IF EXISTS] name AS <IDENTITY|STORED|RESOLVED>
 	auto stmt = ast_table_alter_allocate();
 	self->ast = &stmt->ast;
 
@@ -539,9 +527,7 @@ parse_table_alter(Stmt* self)
 	stmt->if_exists = parse_if_exists(self);
 
 	// name
-	auto target = parse_target(self, &stmt->schema, &stmt->name);
-	if (! target)
-		stmt_error(self, NULL, "name expected");
+	auto target = stmt_expect(self, KNAME);
 
 	// [ADD COLUMN]
 	if (stmt_if(self, KADD))
@@ -636,8 +622,8 @@ parse_table_alter(Stmt* self)
 		stmt_expect(self, KTO);
 
 		// name
-		if (! parse_target(self, &stmt->schema_new, &stmt->name_new))
-			stmt_error(self, NULL, "name expected");
+		auto name_new  = stmt_expect(self, KNAME);
+		stmt->name_new = name_new->string;
 		stmt->type = TABLE_ALTER_RENAME;
 		return;
 	}
@@ -688,8 +674,8 @@ parse_table_alter(Stmt* self)
 			if (stmt_if(self, KDEFAULT))
 			{
 				// find table and column
-				auto table  = table_mgr_find(&share()->db->catalog.table_mgr,
-				                             &stmt->schema,
+				auto table  = table_mgr_find(&share()->storage->catalog.table_mgr,
+				                             &self->parser->local->db,
 				                             &stmt->name, false);
 				if (! table)
 					stmt_error(self, target, "table not found");
@@ -793,7 +779,7 @@ parse_table_alter(Stmt* self)
 void
 parse_table_truncate(Stmt* self)
 {
-	// TRUNCATE [IF EXISTS] [schema.]name
+	// TRUNCATE [IF EXISTS] name
 	auto stmt = ast_table_truncate_allocate();
 	self->ast = &stmt->ast;
 
@@ -801,6 +787,6 @@ parse_table_truncate(Stmt* self)
 	stmt->if_exists = parse_if_exists(self);
 
 	// name
-	if (! parse_target(self, &stmt->schema, &stmt->name))
-		stmt_error(self, NULL, "name expected");
+	auto name  = stmt_expect(self, KNAME);
+	stmt->name = name->string;
 }

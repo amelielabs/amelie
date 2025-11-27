@@ -74,23 +74,20 @@ parse_args(Stmt* self, Udf* udf, Set* args)
 void
 parse_execute(Stmt* self)
 {
-	// EXECUTE [schema.]function_name[(expr, ...)]
+	// EXECUTE function_name[(expr, ...)]
 	auto stmt = ast_execute_allocate();
 	self->ast = &stmt->ast;
 	self->ret = &stmt->ret;
 
-	// read schema/name
-	auto path = stmt_next(self);
-	stmt_push(self, path);
-	Str schema;
-	Str name;
-	if (! parse_target(self, &schema, &name))
-		stmt_error(self, path, "function name expected");
+	// read name
+	auto name = stmt_expect(self, KNAME);
 
 	// find function
-	stmt->udf = udf_mgr_find(&share()->db->catalog.udf_mgr, &schema, &name, false);
+	stmt->udf = udf_mgr_find(&share()->storage->catalog.udf_mgr,
+	                         &self->parser->local->db,
+	                         &name->string, false);
 	if (! stmt->udf)
-		stmt_error(self, path, "function not found");
+		stmt_error(self, name, "function not found");
 	auto udf = stmt->udf;
 
 	// prepare arguments
@@ -106,7 +103,7 @@ parse_execute(Stmt* self)
 		return;
 
 	auto column = column_allocate();
-	column_set_name(column, &name);
+	column_set_name(column, &name->string);
 	column_set_type(column, udf->config->type, -1);
 	columns_add(&stmt->ret.columns, column);
 }

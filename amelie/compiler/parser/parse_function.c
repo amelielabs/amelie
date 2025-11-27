@@ -80,7 +80,7 @@ parse_function_args(Stmt* self, Columns* columns)
 void
 parse_function_create(Stmt* self, bool or_replace)
 {
-	// CREATE [OR REPLACE] FUNCTION [schema.]name (args)
+	// CREATE [OR REPLACE] FUNCTION name (args)
 	// [RETURN type [(args)]]
 	// BEGIN
 	//   block
@@ -95,20 +95,9 @@ parse_function_create(Stmt* self, bool or_replace)
 	stmt->config = udf_config_allocate();
 
 	// name
-	Str schema;
-	Str name;
-	if (! parse_target(self, &schema, &name))
-		stmt_error(self, NULL, "name expected");
-	udf_config_set_schema(stmt->config, &schema);
-	udf_config_set_name(stmt->config, &name);
-
-	// ensure schema exists and not system
-	auto schema_obj =
-		schema_mgr_find(&share()->db->catalog.schema_mgr,
-		                &schema, true);
-	if (! schema_obj->config->create)
-		error("system schema '%.*s' cannot be used to create objects",
-		      str_size(&schema), str_of(&schema));
+	auto name = stmt_expect(self, KNAME);
+	udf_config_set_db(stmt->config, &self->parser->local->db);
+	udf_config_set_name(stmt->config, &name->string);
 
 	// (args)
 	parse_function_args(self, &stmt->config->args);
@@ -184,14 +173,14 @@ parse_function_drop(Stmt* self)
 	stmt->if_exists = parse_if_exists(self);
 
 	// name
-	if (! parse_target(self, &stmt->schema, &stmt->name))
-		stmt_error(self, NULL, "name expected");
+	auto name  = stmt_expect(self, KNAME);
+	stmt->name = name->string;
 }
 
 void
 parse_function_alter(Stmt* self)
 {
-	// ALTER FUNCTION [IF EXISTS] [schema.]name RENAME [schema.]name
+	// ALTER FUNCTION [IF EXISTS] name RENAME name
 	auto stmt = ast_function_alter_allocate();
 	self->ast = &stmt->ast;
 
@@ -199,8 +188,8 @@ parse_function_alter(Stmt* self)
 	stmt->if_exists = parse_if_exists(self);
 
 	// name
-	if (! parse_target(self, &stmt->schema, &stmt->name))
-		stmt_error(self, NULL, "name expected");
+	auto name  = stmt_expect(self, KNAME);
+	stmt->name = name->string;
 
 	// RENAME
 	stmt_expect(self, KRENAME);
@@ -209,6 +198,6 @@ parse_function_alter(Stmt* self)
 	stmt_if(self, KTO);
 
 	// name
-	if (! parse_target(self, &stmt->schema_new, &stmt->name_new))
-		stmt_error(self, NULL, "name expected");
+	auto name_new  = stmt_expect(self, KNAME);
+	stmt->name_new = name_new->string;
 }

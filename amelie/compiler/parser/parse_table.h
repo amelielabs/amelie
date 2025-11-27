@@ -29,7 +29,6 @@ struct AstTableDrop
 {
 	Ast  ast;
 	bool if_exists;
-	Str  schema;
 	Str  name;
 };
 
@@ -37,7 +36,6 @@ struct AstTableTruncate
 {
 	Ast  ast;
 	bool if_exists;
-	Str  schema;
 	Str  name;
 };
 
@@ -66,8 +64,6 @@ struct AstTableAlter
 	bool    if_column_exists;
 	bool    if_column_not_exists;
 	int     type;
-	Str     schema;
-	Str     schema_new;
 	Str     name;
 	Str     name_new;
 	Str     column_name;
@@ -104,7 +100,6 @@ ast_table_drop_allocate(void)
 	AstTableDrop* self;
 	self = ast_allocate(0, sizeof(AstTableDrop));
 	self->if_exists = false;
-	str_init(&self->schema);
 	str_init(&self->name);
 	return self;
 }
@@ -121,7 +116,6 @@ ast_table_truncate_allocate(void)
 	AstTableTruncate* self;
 	self = ast_allocate(0, sizeof(AstTableTruncate));
 	self->if_exists = false;
-	str_init(&self->schema);
 	str_init(&self->name);
 	return self;
 }
@@ -145,8 +139,6 @@ ast_table_alter_allocate(void)
 	self->value_buf            = NULL;
 	self->identity             = NULL;
 	self->unlogged             = false;
-	str_init(&self->schema);
-	str_init(&self->schema_new);
 	str_init(&self->name);
 	str_init(&self->name_new);
 	str_init(&self->column_name);

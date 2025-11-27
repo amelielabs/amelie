@@ -76,14 +76,15 @@ parse_index_create(Stmt* self, bool unique)
 	// ON
 	stmt_expect(self, KON);
 
-	// [schema.table_name]
-	auto target = parse_target(self, &stmt->table_schema, &stmt->table_name);
-	if (! target)
-		stmt_error(self, NULL, "table name expected");
+	// table_name
+	auto target = stmt_expect(self, KNAME);
+	stmt->table_name = target->string;
 
 	// find table
-	auto table = table_mgr_find(&share()->db->catalog.table_mgr, &stmt->table_schema,
-	                            &stmt->table_name, false);
+	auto table = table_mgr_find(&share()->storage->catalog.table_mgr,
+	                            &self->parser->local->db,
+	                            &stmt->table_name,
+	                            false);
 	if (! table)
 		stmt_error(self, target, "table not found");
 
@@ -127,9 +128,9 @@ parse_index_drop(Stmt* self)
 	// ON
 	stmt_expect(self, KON);
 
-	// [schema.table_name]
-	if (! parse_target(self, &stmt->table_schema, &stmt->table_name))
-		stmt_error(self, NULL, "table name expected");
+	// table
+	auto name_table  = stmt_expect(self, KNAME);
+	stmt->table_name = name_table->string;
 }
 
 void
@@ -149,9 +150,9 @@ parse_index_alter(Stmt* self)
 	// ON
 	stmt_expect(self, KON);
 
-	// [schema.table_name]
-	if (! parse_target(self, &stmt->table_schema, &stmt->table_name))
-		stmt_error(self, NULL, "table name expected");
+	// table
+	auto name_table  = stmt_expect(self, KNAME);
+	stmt->table_name = name_table->string;
 
 	// RENAME
 	stmt_expect(self, KRENAME);

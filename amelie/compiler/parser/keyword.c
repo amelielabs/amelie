@@ -84,6 +84,7 @@ Keyword keywords[] =
 	{ KDEBUG,                 "debug",                 5  },
 	{ KDEFAULT,               "default",               7  },
 	{ KDATE,                  "date",                  4  },
+	{ KDATABASE,              "database",              8  },
 
 	// e
 	{ KEXTRACT,               "extract",               7  },
@@ -184,7 +185,6 @@ Keyword keywords[] =
 	{ KSTOP,                  "stop",                  4  },
 	{ KSUBSCRIBE,             "subscribe",             9  },
 	{ KSWITCH,                "switch",                6  },
-	{ KSCHEMA,                "schema",                6  },
 	{ KSECRET,                "secret",                6  },
 	{ KSTORED,                "stored",                6  },
 

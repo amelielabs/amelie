@@ -40,30 +40,28 @@
 #include <amelie_parser.h>
 
 void
-parse_schema_create(Stmt* self)
+parse_db_create(Stmt* self)
 {
-	// CREATE SCHEMA [IF NOT EXISTS] name
-	auto stmt = ast_schema_create_allocate();
+	// CREATE DATABASE [IF NOT EXISTS] name
+	auto stmt = ast_db_create_allocate();
 	self->ast = &stmt->ast;
 
 	// if not exists
 	stmt->if_not_exists = parse_if_not_exists(self);
 
-	// create schema config
-	stmt->config = schema_config_allocate();
-	schema_config_set_system(stmt->config, false);
-	schema_config_set_create(stmt->config, true);
+	// create db config
+	stmt->config = db_config_allocate();
 
 	// name
 	auto name = stmt_expect(self, KNAME);
-	schema_config_set_name(stmt->config, &name->string);
+	db_config_set_name(stmt->config, &name->string);
 }
 
 void
-parse_schema_drop(Stmt* self)
+parse_db_drop(Stmt* self)
 {
-	// DROP SCHEMA [IF EXISTS] name [CASCADE]
-	auto stmt = ast_schema_drop_allocate();
+	// DROP DATABASE [IF EXISTS] name [CASCADE]
+	auto stmt = ast_db_drop_allocate();
 	self->ast = &stmt->ast;
 
 	// if exists
@@ -78,10 +76,10 @@ parse_schema_drop(Stmt* self)
 }
 
 void
-parse_schema_alter(Stmt* self)
+parse_db_alter(Stmt* self)
 {
-	// ALTER SCHEMA [IF EXISTS] name RENAME name
-	auto stmt = ast_schema_alter_allocate();
+	// ALTER DATABASE [IF EXISTS] name RENAME name
+	auto stmt = ast_db_alter_allocate();
 	self->ast = &stmt->ast;
 
 	// if exists

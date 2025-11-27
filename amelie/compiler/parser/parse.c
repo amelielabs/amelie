@@ -64,11 +64,11 @@ parse_stmt_free(Stmt* stmt)
 			replica_config_free(ast->config);
 		break;
 	}
-	case STMT_CREATE_SCHEMA:
+	case STMT_CREATE_DB:
 	{
-		auto ast = ast_schema_create_of(stmt->ast);
+		auto ast = ast_db_create_of(stmt->ast);
 		if (ast->config)
-			schema_config_free(ast->config);
+			db_config_free(ast->config);
 		break;
 	}
 	case STMT_CREATE_TABLE:
@@ -279,7 +279,7 @@ parse_stmt(Stmt* self)
 			stmt_push(self, next);
 		}
 
-		// CREATE USER | TOKEN | REPLICA | SCHEMA | TABLE | INDEX | FUNCTION
+		// CREATE USER | TOKEN | REPLICA | DATABASE | TABLE | INDEX | FUNCTION
 		if (stmt_if(self, KUSER))
 		{
 			self->id = STMT_CREATE_USER;
@@ -295,10 +295,10 @@ parse_stmt(Stmt* self)
 			self->id = STMT_CREATE_REPLICA;
 			parse_replica_create(self);
 		} else
-		if (stmt_if(self, KSCHEMA))
+		if (stmt_if(self, KDATABASE))
 		{
-			self->id = STMT_CREATE_SCHEMA;
-			parse_schema_create(self);
+			self->id = STMT_CREATE_DB;
+			parse_db_create(self);
 		} else
 		if (stmt_if(self, KTABLE))
 		{
@@ -316,14 +316,14 @@ parse_stmt(Stmt* self)
 			parse_function_create(self, or_replace);
 		} else
 		{
-			stmt_error(self, NULL, "USER|REPLICA|SCHEMA|TABLE|INDEX|FUNCTION expected");
+			stmt_error(self, NULL, "USER|REPLICA|DATABASE|TABLE|INDEX|FUNCTION expected");
 		}
 		break;
 	}
 
 	case KDROP:
 	{
-		// DROP USER | REPLICA | SCHEMA | TABLE | INDEX | FUNCTION
+		// DROP USER | REPLICA | DATABASE | TABLE | INDEX | FUNCTION
 		if (stmt_if(self, KUSER))
 		{
 			self->id = STMT_DROP_USER;
@@ -334,10 +334,10 @@ parse_stmt(Stmt* self)
 			self->id = STMT_DROP_REPLICA;
 			parse_replica_drop(self);
 		} else
-		if (stmt_if(self, KSCHEMA))
+		if (stmt_if(self, KDATABASE))
 		{
-			self->id = STMT_DROP_SCHEMA;
-			parse_schema_drop(self);
+			self->id = STMT_DROP_DB;
+			parse_db_drop(self);
 		} else
 		if (stmt_if(self, KTABLE))
 		{
@@ -354,23 +354,23 @@ parse_stmt(Stmt* self)
 			self->id = STMT_DROP_FUNCTION;
 			parse_function_drop(self);
 		} else {
-			stmt_error(self, NULL, "USER|REPLICA|SCHEMA|TABLE|INDEX|FUNCTION expected");
+			stmt_error(self, NULL, "USER|REPLICA|DATABASE|TABLE|INDEX|FUNCTION expected");
 		}
 		break;
 	}
 
 	case KALTER:
 	{
-		// ALTER USER | SCHEMA | TABLE | INDEX | FUNCTION
+		// ALTER USER | DATABASE | TABLE | INDEX | FUNCTION
 		if (stmt_if(self, KUSER))
 		{
 			self->id = STMT_ALTER_USER;
 			parse_user_alter(self);
 		} else
-		if (stmt_if(self, KSCHEMA))
+		if (stmt_if(self, KDATABASE))
 		{
-			self->id = STMT_ALTER_SCHEMA;
-			parse_schema_alter(self);
+			self->id = STMT_ALTER_DB;
+			parse_db_alter(self);
 		} else
 		if (stmt_if(self, KTABLE))
 		{
@@ -387,7 +387,7 @@ parse_stmt(Stmt* self)
 			self->id = STMT_ALTER_FUNCTION;
 			parse_function_alter(self);
 		} else {
-			stmt_error(self, NULL, "USER|SCHEMA|TABLE|INDEX|FUNCTION expected");
+			stmt_error(self, NULL, "USER|DATABASE|TABLE|INDEX|FUNCTION expected");
 		}
 		break;
 	}
@@ -622,7 +622,7 @@ parse(Parser* self, Program* program, Str* str)
 	// EXECUTE | BEGIN
 	if (lex_if(lex, KEXECUTE))
 	{
-		// EXECUTE [schema.]function_name(args, ...)
+		// EXECUTE function_name(args, ...)
 		auto stmt = stmt_allocate(self, lex, block);
 		stmt->id = STMT_EXECUTE;
 		stmts_add(&block->stmts, stmt);
@@ -693,7 +693,7 @@ parse_udf(Parser* self, Program* program, Udf* udf)
 	auto end = lex_expect(lex, KEND);
 
 	// ensure udf has no recursion
-	if (access_find(&program->access, &udf->config->schema, &udf->config->name))
+	if (access_find(&program->access, &udf->config->db, &udf->config->name))
 		lex_error(lex, end, "UDF recursion is not supported");
 
 	// ensure main stmt is not utility when using CTE

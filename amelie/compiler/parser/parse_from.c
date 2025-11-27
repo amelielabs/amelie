@@ -105,13 +105,8 @@ parse_from_target(Stmt* self, From* from, AccessType access, bool subquery)
 	}
 
 	// FROM name [(args)]
-	// FROM schema.name [(args)]
-	Str  schema;
-	Str  name;
-	auto expr = parse_target(self, &schema, &name);
-	if (! expr)
-		stmt_error(self, NULL, "target name expected");
-	target->ast = expr;
+	auto name = stmt_expect(self, KNAME);
+	target->ast = name;
 
 	// function()
 	if ((self->id == STMT_SELECT || self->id == STMT_FOR) &&
@@ -119,9 +114,9 @@ parse_from_target(Stmt* self, From* from, AccessType access, bool subquery)
 	{
 		// find function
 		auto func = ast_func_allocate();
-		func->fn = function_mgr_find(share()->function_mgr, &schema, &name);
+		func->fn = function_mgr_find(share()->function_mgr, &name->string);
 		if (! func->fn)
-			stmt_error(self, expr, "function not found");
+			stmt_error(self, name, "function not found");
 
 		// parse args ()
 		func->ast.r = parse_expr_args(self, NULL, ')', false);
@@ -139,7 +134,7 @@ parse_from_target(Stmt* self, From* from, AccessType access, bool subquery)
 	}
 
 	// var
-	auto var = namespace_find_var(self->block->ns, &name);
+	auto var = namespace_find_var(self->block->ns, &name->string);
 	if (var)
 	{
 		target->type     = TARGET_VAR;
@@ -161,11 +156,11 @@ parse_from_target(Stmt* self, From* from, AccessType access, bool subquery)
 	}
 
 	// cte
-	auto stmt = block_find_cte(self->block, &name);
+	auto stmt = block_find_cte(self->block, &name->string);
 	if (stmt)
 	{
 		if (stmt == self)
-			stmt_error(self, expr, "recursive CTE are not supported");
+			stmt_error(self, name, "recursive CTE are not supported");
 		target->type      = TARGET_STMT;
 		target->from_stmt = stmt;
 		target->columns   = &stmt->cte_columns;
@@ -175,7 +170,9 @@ parse_from_target(Stmt* self, From* from, AccessType access, bool subquery)
 	}
 
 	// table
-	auto table = table_mgr_find(&share()->db->catalog.table_mgr, &schema, &name, false);
+	auto table = table_mgr_find(&share()->storage->catalog.table_mgr,
+	                            &self->parser->local->db,
+	                            &name->string, false);
 	if (table)
 	{
 		target->type        = TARGET_TABLE;
@@ -192,11 +189,11 @@ parse_from_target(Stmt* self, From* from, AccessType access, bool subquery)
 			if (stmt_if(self, KINDEX))
 			{
 				stmt_expect(self, '(');
-				auto name = stmt_next_shadow(self);
-				if (name->id != KNAME)
-					stmt_error(self, name, "<index name> expected");
+				auto name_index = stmt_next_shadow(self);
+				if (name_index->id != KNAME)
+					stmt_error(self, name_index, "<index name> expected");
 				stmt_expect(self, ')');
-				target->from_index = table_find_index(target->from_table, &name->string, true);
+				target->from_index = table_find_index(target->from_table, &name_index->string, true);
 			} else
 			if (stmt_if(self, KHEAP))
 			{
@@ -208,7 +205,7 @@ parse_from_target(Stmt* self, From* from, AccessType access, bool subquery)
 		return target;
 	}
 
-	stmt_error(self, expr, "relation not found");
+	stmt_error(self, name, "relation not found");
 	return NULL;
 }
 
@@ -217,7 +214,7 @@ parse_from_add(Stmt* self, From* from, AccessType access,
                Str*  as,
                bool  subquery)
 {
-	// FROM [schema.]name | (SELECT) [AS] [alias] [USE INDEX (name)]
+	// FROM name | (SELECT) [AS] [alias] [USE INDEX (name)]
 	auto target = parse_from_target(self, from, access, subquery);
 
 	// [AS] [alias]
@@ -272,8 +269,8 @@ parse_from_add(Stmt* self, From* from, AccessType access,
 void
 parse_from(Stmt* self, From* from, AccessType access, bool subquery)
 {
-	// FROM <[schema.]name | (SELECT)> [AS] [alias]> [, ...]
-	// FROM <[schema.]name | (SELECT)> [AS] [alias]> [JOIN <..> ON (expr) ...]
+	// FROM <name | (SELECT)> [AS] [alias]> [, ...]
+	// FROM <name | (SELECT)> [AS] [alias]> [JOIN <..> ON (expr) ...]
 
 	// FROM name | expr
 	parse_from_add(self, from, access, NULL, subquery);

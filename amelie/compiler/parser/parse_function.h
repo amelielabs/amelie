@@ -26,7 +26,6 @@ struct AstFunctionDrop
 {
 	Ast  ast;
 	bool if_exists;
-	Str  schema;
 	Str  name;
 };
 
@@ -34,9 +33,7 @@ struct AstFunctionAlter
 {
 	Ast  ast;
 	bool if_exists;
-	Str  schema;
 	Str  name;
-	Str  schema_new;
 	Str  name_new;
 };
 
@@ -68,7 +65,6 @@ ast_function_drop_allocate(void)
 	AstFunctionDrop* self;
 	self = ast_allocate(0, sizeof(AstFunctionDrop));
 	self->if_exists = false;
-	str_init(&self->schema);
 	str_init(&self->name);
 	return self;
 }
@@ -85,9 +81,7 @@ ast_function_alter_allocate(void)
 	AstFunctionAlter* self;
 	self = ast_allocate(0, sizeof(AstFunctionAlter));
 	self->if_exists = false;
-	str_init(&self->schema);
 	str_init(&self->name);
-	str_init(&self->schema_new);
 	str_init(&self->name_new);
 	return self;
 }
