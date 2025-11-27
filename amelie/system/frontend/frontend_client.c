@@ -50,7 +50,7 @@ static void
 frontend_client_primary(Frontend* self, Client* client, void* session)
 {
 	Recover recover;
-	recover_init(&recover, share()->db, true);
+	recover_init(&recover, share()->storage, true);
 	defer(recover_free, &recover);
 
 	void* args[] = {self, session};
@@ -122,7 +122,7 @@ frontend_client(Frontend* self, Client* client)
 		if (service)
 		{
 			if (str_is(&service->value, "backup", 6))
-				backup(share()->db, client);
+				backup(share()->storage, client);
 			else
 			if (str_is(&service->value, "repl", 4))
 				frontend_client_primary(self, client, session);

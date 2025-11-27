@@ -25,7 +25,7 @@ struct Compiler
 	Parser       parser;
 };
 
-void compiler_init(Compiler*, Local*, Str*, SetCache*);
+void compiler_init(Compiler*, Local*, SetCache*);
 void compiler_free(Compiler*);
 void compiler_reset(Compiler*);
 void compiler_set(Compiler*, Program*);

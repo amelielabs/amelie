@@ -76,11 +76,9 @@ build_run(Build* self)
 	{
 		auto config = self->table->config;
 		info("");
-		info("alter: create index %.*s on %.*s.%.*s",
+		info("alter: create index %.*s on %.*s",
 		     str_size(&self->index->name),
 		     str_of(&self->index->name),
-		     str_size(&config->schema),
-		     str_of(&config->schema),
 		     str_size(&config->name),
 		     str_of(&config->name));
 		break;
@@ -89,9 +87,7 @@ build_run(Build* self)
 	{
 		auto config = self->table->config;
 		info("");
-		info("alter: alter table %.*s.%.*s add column %.*s",
-		     str_size(&config->schema),
-		     str_of(&config->schema),
+		info("alter: alter table %.*s add column %.*s",
 		     str_size(&config->name),
 		     str_of(&config->name),
 		     str_size(&self->column->name),
@@ -102,9 +98,7 @@ build_run(Build* self)
 	{
 		auto config = self->table->config;
 		info("");
-		info("alter: alter table %.*s.%.*s drop column %.*s",
-		     str_size(&config->schema),
-		     str_of(&config->schema),
+		info("alter: alter table %.*s drop column %.*s",
 		     str_size(&config->name),
 		     str_of(&config->name),
 		     str_size(&self->column->name),
@@ -161,7 +155,7 @@ build_execute(Build* self, Core* worker)
 	switch (self->type) {
 	case BUILD_RECOVER:
 		// restore last checkpoint partitions related to the worker
-		recover_checkpoint(share()->db, worker);
+		recover_checkpoint(share()->storage, worker);
 		break;
 	case BUILD_INDEX:
 	{
@@ -173,7 +167,7 @@ build_execute(Build* self, Core* worker)
 		PartBuild pb;
 		part_build_init(&pb, PART_BUILD_INDEX, part, NULL, NULL,
 		                self->index,
-		                &config->schema, &config->name);
+		                &config->db, &config->name);
 		part_build(&pb);
 		break;
 	}
@@ -189,7 +183,7 @@ build_execute(Build* self, Core* worker)
 		PartBuild pb;
 		part_build_init(&pb, PART_BUILD_COLUMN_ADD, part, part_dest, self->column,
 		                NULL,
-		                &config->schema, &config->name);
+		                &config->db, &config->name);
 		part_build(&pb);
 		break;
 	}
@@ -205,7 +199,7 @@ build_execute(Build* self, Core* worker)
 		PartBuild pb;
 		part_build_init(&pb, PART_BUILD_COLUMN_DROP, part, part_dest, self->column,
 		                NULL,
-		                &config->schema, &config->name);
+		                &config->db, &config->name);
 		part_build(&pb);
 		break;
 	}

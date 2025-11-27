@@ -18,6 +18,7 @@ struct Local
 	Timezone* timezone;
 	uint64_t  time_us;
 	Str       format;
+	Str       db;
 };
 
 static inline void
@@ -27,6 +28,7 @@ local_init(Local* self)
 	self->timezone = runtime()->timezone;
 	self->time_us  = 0;
 	self->format   = config()->format.string;
+	str_init(&self->db);
 }
 
 static inline void
@@ -41,6 +43,7 @@ local_reset(Local* self)
 	// derive default configuration
 	self->timezone = runtime()->timezone;
 	self->format   = config()->format.string;
+	str_init(&self->db);
 }
 
 static inline void

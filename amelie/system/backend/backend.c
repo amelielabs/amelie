@@ -46,7 +46,7 @@
 hot static void
 backend_replay(Tr* tr, Buf* arg)
 {
-	auto db = share()->db;
+	auto storage = share()->storage;
 	for (auto pos = arg->start; pos < arg->position;)
 	{
 		// command
@@ -63,7 +63,7 @@ backend_replay(Tr* tr, Buf* arg)
 				error("replay: record command crc mismatch");
 
 		// partition
-		auto part = part_mgr_find(&db->part_mgr, cmd->partition);
+		auto part = part_mgr_find(&storage->part_mgr, cmd->partition);
 		if (! part)
 			error("failed to find partition %" PRIu64, cmd->partition);
 
