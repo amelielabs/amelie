@@ -49,7 +49,7 @@ static void
 fn_state(Fn* self)
 {
 	fn_expect(self, 0);
-	auto buf = db_state(share()->db);
+	auto buf = storage_state(share()->storage);
 	value_set_json_buf(self->result, buf);
 }
 
@@ -108,19 +108,19 @@ fn_repl(Fn* self)
 }
 
 static void
-fn_schemas(Fn* self)
+fn_databases(Fn* self)
 {
 	fn_expect(self, 0);
-	auto buf = schema_mgr_list(&share()->db->catalog.schema_mgr, NULL, true);
+	auto buf = db_mgr_list(&share()->storage->catalog.db_mgr, NULL, true);
 	value_set_json_buf(self->result, buf);
 }
 
 static void
-fn_schema(Fn* self)
+fn_database(Fn* self)
 {
 	fn_expect(self, 1);
 	fn_expect_arg(self, 0, TYPE_STRING);
-	auto buf = schema_mgr_list(&share()->db->catalog.schema_mgr, &self->argv[0].string, true);
+	auto buf = db_mgr_list(&share()->storage->catalog.db_mgr, &self->argv[0].string, true);
 	value_set_json_buf(self->result, buf);
 }
 
@@ -128,7 +128,7 @@ static void
 fn_tables(Fn* self)
 {
 	fn_expect(self, 0);
-	auto buf = table_mgr_list(&share()->db->catalog.table_mgr, NULL, NULL, true);
+	auto buf = table_mgr_list(&share()->storage->catalog.table_mgr, NULL, NULL, true);
 	value_set_json_buf(self->result, buf);
 }
 
@@ -138,13 +138,13 @@ fn_table(Fn* self)
 	fn_expect(self, 1);
 	fn_expect_arg(self, 0, TYPE_STRING);
 	Str name = self->argv[0].string;
-	Str schema;
-	str_init(&schema);
-	if (str_split(&name, &schema, '.'))
-		str_advance(&name, str_size(&schema) + 1);
+	Str db;
+	str_init(&db);
+	if (str_split(&name, &db, '.'))
+		str_advance(&name, str_size(&db) + 1);
 	else
-		str_set(&schema, "public", 6);
-	auto buf = table_mgr_list(&share()->db->catalog.table_mgr, &schema, &name, true);
+		str_set(&db, "main", 4);
+	auto buf = table_mgr_list(&share()->storage->catalog.table_mgr, &db, &name, true);
 	value_set_json_buf(self->result, buf);
 }
 
@@ -152,7 +152,7 @@ static void
 fn_functions(Fn* self)
 {
 	fn_expect(self, 0);
-	auto buf = udf_mgr_list(&share()->db->catalog.udf_mgr, NULL, NULL, true);
+	auto buf = udf_mgr_list(&share()->storage->catalog.udf_mgr, NULL, NULL, true);
 	value_set_json_buf(self->result, buf);
 }
 
@@ -162,13 +162,13 @@ fn_function(Fn* self)
 	fn_expect(self, 1);
 	fn_expect_arg(self, 0, TYPE_STRING);
 	Str name = self->argv[0].string;
-	Str schema;
-	str_init(&schema);
-	if (str_split(&name, &schema, '.'))
-		str_advance(&name, str_size(&schema) + 1);
+	Str db;
+	str_init(&db);
+	if (str_split(&name, &db, '.'))
+		str_advance(&name, str_size(&db) + 1);
 	else
-		str_set(&schema, "public", 6);
-	auto buf = udf_mgr_list(&share()->db->catalog.udf_mgr, &schema, &name, true);
+		str_set(&db, "main", 4);
+	auto buf = udf_mgr_list(&share()->storage->catalog.udf_mgr, &db, &name, true);
 	value_set_json_buf(self->result, buf);
 }
 
@@ -176,7 +176,7 @@ static void
 fn_wal(Fn* self)
 {
 	fn_expect(self, 0);
-	auto buf = wal_status(&share()->db->wal_mgr.wal);
+	auto buf = wal_status(&share()->storage->wal_mgr.wal);
 	value_set_json_buf(self->result, buf);
 }
 
@@ -198,8 +198,8 @@ enum
 	SHOW_REPL,
 	SHOW_WAL,
 	SHOW_METRICS,
-	SHOW_SCHEMAS,
-	SHOW_SCHEMA,
+	SHOW_DATABASES,
+	SHOW_DATABASE,
 	SHOW_TABLES,
 	SHOW_TABLE,
 	SHOW_FUNCTIONS,
@@ -229,8 +229,8 @@ static ShowCmd show_cmds[] =
 	{ SHOW_REPL,      "replication", 11, false  },
 	{ SHOW_WAL,       "wal",         3,  false  },
 	{ SHOW_METRICS,   "metrics",     7,  false  },
-	{ SHOW_SCHEMAS,   "schemas",     7,  false  },
-	{ SHOW_SCHEMA,    "schema",      6,  true   },
+	{ SHOW_DATABASES, "databases",   9,  false  },
+	{ SHOW_DATABASE,  "database",    8,  true   },
 	{ SHOW_TABLES,    "tables",      6,  false  },
 	{ SHOW_TABLE,     "table",       5,  true   },
 	{ SHOW_FUNCTIONS, "functions",   9,  false  },
@@ -256,7 +256,7 @@ show_cmd_find(Str* name)
 static void
 fn_show(Fn* self)
 {
-	// [section, name, schema, extended]
+	// [section, name, db, extended]
 	fn_expect(self, 4);
 	fn_expect_arg(self, 0, TYPE_STRING);
 	fn_expect_arg(self, 1, TYPE_STRING);
@@ -265,7 +265,7 @@ fn_show(Fn* self)
 
 	Str* section  = &self->argv[0].string;
 	Str* name     = &self->argv[1].string;
-	Str* schema   = &self->argv[2].string;
+	Str* db       = &self->argv[2].string;
 	bool extended =  self->argv[3].integer;
 
 	// match command
@@ -302,7 +302,7 @@ fn_show(Fn* self)
 			fn_error_noargs(self, "unexpected name argument");
 	}
 
-	auto catalog = &share()->db->catalog;
+	auto catalog = &share()->storage->catalog;
 	switch (cmd->id) {
 	case SHOW_USERS:
 	{
@@ -333,7 +333,7 @@ fn_show(Fn* self)
 	}
 	case SHOW_WAL:
 	{
-		buf = wal_status(&share()->db->wal_mgr.wal);
+		buf = wal_status(&share()->storage->wal_mgr.wal);
 		break;
 	}
 	case SHOW_METRICS:
@@ -341,51 +341,51 @@ fn_show(Fn* self)
 		rpc(&runtime()->task, MSG_SHOW_METRICS, 1, &buf);
 		break;
 	}
-	case SHOW_SCHEMAS:
+	case SHOW_DATABASES:
 	{
-		buf = schema_mgr_list(&catalog->schema_mgr, NULL, extended);
+		buf = db_mgr_list(&catalog->db_mgr, NULL, extended);
 		break;
 	}
-	case SHOW_SCHEMA:
+	case SHOW_DATABASE:
 	{
-		buf = schema_mgr_list(&catalog->schema_mgr, name, extended);
+		buf = db_mgr_list(&catalog->db_mgr, name, extended);
 		break;
 	}
 	case SHOW_TABLES:
 	{
-		Str* schema_ref = NULL;
-		if (! str_empty(schema))
-			schema_ref = schema;
-		buf = table_mgr_list(&catalog->table_mgr, schema_ref, NULL, extended);
+		Str* db_ref = NULL;
+		if (! str_empty(db))
+			db_ref = db;
+		buf = table_mgr_list(&catalog->table_mgr, db_ref, NULL, extended);
 		break;
 	}
 	case SHOW_TABLE:
 	{
-		Str* schema_ref = NULL;
-		if (! str_empty(schema))
-			schema_ref = schema;
-		buf = table_mgr_list(&catalog->table_mgr, schema_ref, name, extended);
+		Str* db_ref = NULL;
+		if (! str_empty(db))
+			db_ref = db;
+		buf = table_mgr_list(&catalog->table_mgr, db_ref, name, extended);
 		break;
 	}
 	case SHOW_FUNCTIONS:
 	{
-		Str* schema_ref = NULL;
-		if (! str_empty(schema))
-			schema_ref = schema;
-		buf = udf_mgr_list(&catalog->udf_mgr, schema_ref, NULL, extended);
+		Str* db_ref = NULL;
+		if (! str_empty(db))
+			db_ref = db;
+		buf = udf_mgr_list(&catalog->udf_mgr, db_ref, NULL, extended);
 		break;
 	}
 	case SHOW_FUNCTION:
 	{
-		Str* schema_ref = NULL;
-		if (! str_empty(schema))
-			schema_ref = schema;
-		buf = udf_mgr_list(&catalog->udf_mgr, schema_ref, name, extended);
+		Str* db_ref = NULL;
+		if (! str_empty(db))
+			db_ref = db;
+		buf = udf_mgr_list(&catalog->udf_mgr, db_ref, name, extended);
 		break;
 	}
 	case SHOW_STATE:
 	{
-		buf = db_state(share()->db);
+		buf = storage_state(share()->storage);
 		break;
 	}
 	case SHOW_ALL:
@@ -414,94 +414,94 @@ fn_show(Fn* self)
 void
 fn_system_register(FunctionMgr* self)
 {
-	// system.config()
+	// config()
 	Function* func;
-	func = function_allocate(TYPE_JSON, "system", "config", fn_config);
+	func = function_allocate(TYPE_JSON, "config", fn_config);
 	function_unset(func, FN_CONST);
 	function_mgr_add(self, func);
 
-	// system.state()
-	func = function_allocate(TYPE_JSON, "system", "state", fn_state);
+	// state()
+	func = function_allocate(TYPE_JSON, "state", fn_state);
 	function_unset(func, FN_CONST);
 	function_mgr_add(self, func);
 
-	// system.users()
-	func = function_allocate(TYPE_JSON, "system", "users", fn_users);
+	// users()
+	func = function_allocate(TYPE_JSON, "users", fn_users);
 	function_unset(func, FN_CONST);
 	function_mgr_add(self, func);
 
-	// system.user()
-	func = function_allocate(TYPE_JSON, "system", "user", fn_user);
+	// user()
+	func = function_allocate(TYPE_JSON, "user", fn_user);
 	function_unset(func, FN_CONST);
 	function_mgr_add(self, func);
 
-	// system.replicas()
-	func = function_allocate(TYPE_JSON, "system", "replicas", fn_replicas);
+	// replicas()
+	func = function_allocate(TYPE_JSON, "replicas", fn_replicas);
 	function_unset(func, FN_CONST);
 	function_mgr_add(self, func);
 
-	// system.replica()
-	func = function_allocate(TYPE_JSON, "system", "replica", fn_replica);
+	// replica()
+	func = function_allocate(TYPE_JSON, "replica", fn_replica);
 	function_unset(func, FN_CONST);
 	function_mgr_add(self, func);
 
-	// system.replica(uuid)
-	func = function_allocate(TYPE_JSON, "system", "replica", fn_replica);
+	// replica(uuid)
+	func = function_allocate(TYPE_JSON, "replica", fn_replica);
 	function_unset(func, FN_CONST);
 	function_mgr_add(self, func);
 
-	// system.repl()
-	func = function_allocate(TYPE_JSON, "system", "repl", fn_repl);
+	// repl()
+	func = function_allocate(TYPE_JSON, "repl", fn_repl);
 	function_unset(func, FN_CONST);
 	function_mgr_add(self, func);
 
-	// system.replication()
-	func = function_allocate(TYPE_JSON, "system", "replication", fn_repl);
+	// replication()
+	func = function_allocate(TYPE_JSON, "replication", fn_repl);
 	function_unset(func, FN_CONST);
 	function_mgr_add(self, func);
 
-	// system.schemas()
-	func = function_allocate(TYPE_JSON, "system", "schemas", fn_schemas);
+	// databases()
+	func = function_allocate(TYPE_JSON, "databases", fn_databases);
 	function_unset(func, FN_CONST);
 	function_mgr_add(self, func);
 
-	// system.schema()
-	func = function_allocate(TYPE_JSON, "system", "schema", fn_schema);
+	// database()
+	func = function_allocate(TYPE_JSON, "database", fn_database);
 	function_unset(func, FN_CONST);
 	function_mgr_add(self, func);
 
-	// system.tables()
-	func = function_allocate(TYPE_JSON, "system", "tables", fn_tables);
+	// tables()
+	func = function_allocate(TYPE_JSON, "tables", fn_tables);
 	function_unset(func, FN_CONST);
 	function_mgr_add(self, func);
 
-	// system.table()
-	func = function_allocate(TYPE_JSON, "system", "table", fn_table);
+	// table()
+	func = function_allocate(TYPE_JSON, "table", fn_table);
 	function_unset(func, FN_CONST);
 	function_mgr_add(self, func);
 
-	// system.functions()
-	func = function_allocate(TYPE_JSON, "system", "functions", fn_functions);
+	// functions()
+	func = function_allocate(TYPE_JSON, "functions", fn_functions);
 	function_unset(func, FN_CONST);
 	function_mgr_add(self, func);
 
-	// system.function()
-	func = function_allocate(TYPE_JSON, "system", "function", fn_function);
+	// function()
+	func = function_allocate(TYPE_JSON, "function", fn_function);
 	function_unset(func, FN_CONST);
 	function_mgr_add(self, func);
 
-	// system.wal()
-	func = function_allocate(TYPE_JSON, "system", "wal", fn_wal);
+	// wal()
+	func = function_allocate(TYPE_JSON, "wal", fn_wal);
 	function_unset(func, FN_CONST);
 	function_mgr_add(self, func);
 
-	// system.metrics()
-	func = function_allocate(TYPE_JSON, "system", "metrics", fn_metrics);
+	// metrics()
+	func = function_allocate(TYPE_JSON, "metrics", fn_metrics);
 	function_unset(func, FN_CONST);
 	function_mgr_add(self, func);
 
-	// system.show()
-	func = function_allocate(TYPE_JSON, "system", "show", fn_show);
+	// show()
+	func = function_allocate(TYPE_JSON, "show", fn_show);
 	function_unset(func, FN_CONST);
 	function_mgr_add(self, func);
 }

@@ -478,56 +478,56 @@ fn_like(Fn* self)
 void
 fn_string_register(FunctionMgr* self)
 {
-	// public.size()
+	// size()
 	Function* func;
-	func = function_allocate(TYPE_INT, "public", "size", fn_length);
+	func = function_allocate(TYPE_INT, "size", fn_length);
 	function_mgr_add(self, func);
 
-	// public.length()
-	func = function_allocate(TYPE_INT, "public", "length", fn_length);
+	// length()
+	func = function_allocate(TYPE_INT, "length", fn_length);
 	function_mgr_add(self, func);
 
-	// public.octet_length()
-	func = function_allocate(TYPE_INT, "public", "octet_length", fn_octet_length);
+	// octet_length()
+	func = function_allocate(TYPE_INT, "octet_length", fn_octet_length);
 	function_mgr_add(self, func);
 
-	// public.concat()
-	func = function_allocate(TYPE_STRING, "public", "concat", fn_concat);
+	// concat()
+	func = function_allocate(TYPE_STRING, "concat", fn_concat);
 	function_mgr_add(self, func);
 
-	// public.lower()
-	func = function_allocate(TYPE_STRING, "public", "lower", fn_lower);
+	// lower()
+	func = function_allocate(TYPE_STRING, "lower", fn_lower);
 	function_mgr_add(self, func);
 
-	// public.upper()
-	func = function_allocate(TYPE_STRING, "public", "upper", fn_upper);
+	// upper()
+	func = function_allocate(TYPE_STRING, "upper", fn_upper);
 	function_mgr_add(self, func);
 
-	// public.substr()
-	func = function_allocate(TYPE_STRING, "public", "substr", fn_substr);
+	// substr()
+	func = function_allocate(TYPE_STRING, "substr", fn_substr);
 	function_mgr_add(self, func);
 
-	// public.strpos()
-	func = function_allocate(TYPE_INT, "public", "strpos", fn_strpos);
+	// strpos()
+	func = function_allocate(TYPE_INT, "strpos", fn_strpos);
 	function_mgr_add(self, func);
 
-	// public.replace()
-	func = function_allocate(TYPE_STRING, "public", "replace", fn_replace);
+	// replace()
+	func = function_allocate(TYPE_STRING, "replace", fn_replace);
 	function_mgr_add(self, func);
 
-	// public.ltrim()
-	func = function_allocate(TYPE_STRING, "public", "ltrim", fn_ltrim);
+	// ltrim()
+	func = function_allocate(TYPE_STRING, "ltrim", fn_ltrim);
 	function_mgr_add(self, func);
 
-	// public.rtrim()
-	func = function_allocate(TYPE_STRING, "public", "rtrim", fn_rtrim);
+	// rtrim()
+	func = function_allocate(TYPE_STRING, "rtrim", fn_rtrim);
 	function_mgr_add(self, func);
 
-	// public.trim()
-	func = function_allocate(TYPE_STRING, "public", "trim", fn_trim);
+	// trim()
+	func = function_allocate(TYPE_STRING, "trim", fn_trim);
 	function_mgr_add(self, func);
 
-	// public.like()
-	func = function_allocate(TYPE_BOOL, "public", "like", fn_like);
+	// like()
+	func = function_allocate(TYPE_BOOL, "like", fn_like);
 	function_mgr_add(self, func);
 }

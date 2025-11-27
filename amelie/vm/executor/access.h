@@ -134,24 +134,24 @@ access_try(Access* self, Access* with)
 }
 
 hot static inline AccessRecord*
-access_find_schema(Access* self, Str* schema)
+access_find_db(Access* self, Str* db)
 {
 	for (auto i = 0; i < self->list_count; i++)
 	{
 		auto record = access_at(self, i);
-		if (str_compare(record->rel->schema, schema))
+		if (str_compare(record->rel->db, db))
 			return record;
 	}
 	return NULL;
 }
 
 hot static inline AccessRecord*
-access_find(Access* self, Str* schema, Str* name)
+access_find(Access* self, Str* db, Str* name)
 {
 	for (auto i = 0; i < self->list_count; i++)
 	{
 		auto record = access_at(self, i);
-		if (str_compare(record->rel->schema, schema) &&
+		if (str_compare(record->rel->db, db) &&
 		    str_compare(record->rel->name, name))
 			return record;
 	}
@@ -180,7 +180,7 @@ access_encode(Access* self, Buf* buf)
 	{
 		auto record = access_at(self, i);
 		encode_array(buf);
-		encode_target(buf, record->rel->schema, record->rel->name);
+		encode_target(buf, record->rel->db, record->rel->name);
 		switch (record->type) {
 		case ACCESS_RO:
 			encode_raw(buf, "ro", 2);

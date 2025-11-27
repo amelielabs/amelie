@@ -25,4 +25,4 @@ void function_mgr_free(FunctionMgr*);
 void function_mgr_add(FunctionMgr*, Function*);
 void function_mgr_del(FunctionMgr*, Function*);
 Function*
-function_mgr_find(FunctionMgr*, Str*, Str*);
+function_mgr_find(FunctionMgr*, Str*);

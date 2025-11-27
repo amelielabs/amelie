@@ -204,44 +204,44 @@ fn_has(Fn* self)
 void
 fn_json_register(FunctionMgr* self)
 {
-	// public.append()
+	// append()
 	Function* func;
-	func = function_allocate(TYPE_JSON, "public", "append", fn_append);
+	func = function_allocate(TYPE_JSON, "append", fn_append);
 	function_mgr_add(self, func);
 
-	// public.push_back()
-	func = function_allocate(TYPE_JSON, "public", "push_back", fn_append);
+	// push_back()
+	func = function_allocate(TYPE_JSON, "push_back", fn_append);
 	function_mgr_add(self, func);
 
-	// public.push()
-	func = function_allocate(TYPE_JSON, "public", "push", fn_push);
+	// push()
+	func = function_allocate(TYPE_JSON, "push", fn_push);
 	function_mgr_add(self, func);
 
-	// public.pop()
-	func = function_allocate(TYPE_JSON, "public", "pop", fn_pop);
+	// pop()
+	func = function_allocate(TYPE_JSON, "pop", fn_pop);
 	function_mgr_add(self, func);
 
-	// public.pop_back()
-	func = function_allocate(TYPE_JSON, "public", "pop_back", fn_pop_back);
+	// pop_back()
+	func = function_allocate(TYPE_JSON, "pop_back", fn_pop_back);
 	function_mgr_add(self, func);
 
-	// public.put()
-	func = function_allocate(TYPE_JSON, "public", "put", fn_put);
+	// put()
+	func = function_allocate(TYPE_JSON, "put", fn_put);
 	function_mgr_add(self, func);
 
-	// public.remove()
-	func = function_allocate(TYPE_JSON, "public", "remove", fn_remove);
+	// remove()
+	func = function_allocate(TYPE_JSON, "remove", fn_remove);
 	function_mgr_add(self, func);
 
-	// public.set()
-	func = function_allocate(TYPE_JSON, "public", "set", fn_set);
+	// set()
+	func = function_allocate(TYPE_JSON, "set", fn_set);
 	function_mgr_add(self, func);
 
-	// public.unset()
-	func = function_allocate(TYPE_JSON, "public", "unset", fn_unset);
+	// unset()
+	func = function_allocate(TYPE_JSON, "unset", fn_unset);
 	function_mgr_add(self, func);
 
-	// public.has()
-	func = function_allocate(TYPE_BOOL, "public", "has", fn_has);
+	// has()
+	func = function_allocate(TYPE_BOOL, "has", fn_has);
 	function_mgr_add(self, func);
 }

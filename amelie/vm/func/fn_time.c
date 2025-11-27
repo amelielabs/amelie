@@ -317,29 +317,29 @@ fn_generate_series(Fn* self)
 void
 fn_time_register(FunctionMgr* self)
 {
-	// public.now()
+	// now()
 	Function* func;
-	func = function_allocate(TYPE_TIMESTAMP, "public", "now", fn_now);
+	func = function_allocate(TYPE_TIMESTAMP, "now", fn_now);
 	function_unset(func, FN_CONST);
 	function_mgr_add(self, func);
 
-	// public.at_timezone()
-	func = function_allocate(TYPE_STRING, "public", "at_timezone", fn_at_timezone);
+	// at_timezone()
+	func = function_allocate(TYPE_STRING, "at_timezone", fn_at_timezone);
 	function_mgr_add(self, func);
 
-	// public.date_bin()
-	func = function_allocate(TYPE_TIMESTAMP, "public", "date_bin", fn_date_bin);
+	// date_bin()
+	func = function_allocate(TYPE_TIMESTAMP, "date_bin", fn_date_bin);
 	function_mgr_add(self, func);
 
-	// public.date_trunc()
-	func = function_allocate(TYPE_TIMESTAMP, "public", "date_trunc", fn_date_trunc);
+	// date_trunc()
+	func = function_allocate(TYPE_TIMESTAMP, "date_trunc", fn_date_trunc);
 	function_mgr_add(self, func);
 
-	// public.interval_trunc()
-	func = function_allocate(TYPE_INTERVAL, "public", "interval_trunc", fn_interval_trunc);
+	// interval_trunc()
+	func = function_allocate(TYPE_INTERVAL, "interval_trunc", fn_interval_trunc);
 	function_mgr_add(self, func);
 
-	// public.extract()
-	func = function_allocate(TYPE_INT, "public", "extract", fn_extract);
+	// extract()
+	func = function_allocate(TYPE_INT, "extract", fn_extract);
 	function_mgr_add(self, func);
 }

@@ -58,8 +58,8 @@ fn_cos_distance(Fn* self)
 void
 fn_vector_register(FunctionMgr* self)
 {
-	// public.cos_distance()
+	// cos_distance()
 	Function* func;
-	func = function_allocate(TYPE_DOUBLE, "public", "cos_distance", fn_cos_distance);
+	func = function_allocate(TYPE_DOUBLE, "cos_distance", fn_cos_distance);
 	function_mgr_add(self, func);
 }

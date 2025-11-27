@@ -498,52 +498,52 @@ fn_uuid(Fn* self)
 void
 fn_cast_register(FunctionMgr* self)
 {
-	// public.type()
+	// type()
 	Function* func;
-	func = function_allocate(TYPE_STRING, "public", "type", fn_type);
+	func = function_allocate(TYPE_STRING, "type", fn_type);
 	function_mgr_add(self, func);
 
-	// public.int()
-	func = function_allocate(TYPE_INT, "public", "int", fn_int);
+	// int()
+	func = function_allocate(TYPE_INT, "int", fn_int);
 	function_mgr_add(self, func);
 
-	// public.bool()
-	func = function_allocate(TYPE_BOOL, "public", "bool", fn_bool);
+	// bool()
+	func = function_allocate(TYPE_BOOL, "bool", fn_bool);
 	function_mgr_add(self, func);
 
-	// public.double()
-	func = function_allocate(TYPE_DOUBLE, "public", "double", fn_double);
+	// double()
+	func = function_allocate(TYPE_DOUBLE, "double", fn_double);
 	function_mgr_add(self, func);
 
-	// public.string()
-	func = function_allocate(TYPE_STRING, "public", "string", fn_string);
+	// string()
+	func = function_allocate(TYPE_STRING, "string", fn_string);
 	function_mgr_add(self, func);
 
-	// public.json()
-	func = function_allocate(TYPE_JSON, "public", "json", fn_json);
+	// json()
+	func = function_allocate(TYPE_JSON, "json", fn_json);
 	function_mgr_add(self, func);
 
-	// public.json_import()
-	func = function_allocate(TYPE_JSON, "public", "json_import", fn_json_import);
+	// json_import()
+	func = function_allocate(TYPE_JSON, "json_import", fn_json_import);
 	function_mgr_add(self, func);
 
-	// public.interval()
-	func = function_allocate(TYPE_INTERVAL, "public", "interval", fn_interval);
+	// interval()
+	func = function_allocate(TYPE_INTERVAL, "interval", fn_interval);
 	function_mgr_add(self, func);
 
-	// public.timestamp()
-	func = function_allocate(TYPE_TIMESTAMP, "public", "timestamp", fn_timestamp);
+	// timestamp()
+	func = function_allocate(TYPE_TIMESTAMP, "timestamp", fn_timestamp);
 	function_mgr_add(self, func);
 
-	// public.date()
-	func = function_allocate(TYPE_DATE, "public", "date", fn_date);
+	// date()
+	func = function_allocate(TYPE_DATE, "date", fn_date);
 	function_mgr_add(self, func);
 
-	// public.vector()
-	func = function_allocate(TYPE_VECTOR, "public", "vector", fn_vector);
+	// vector()
+	func = function_allocate(TYPE_VECTOR, "vector", fn_vector);
 	function_mgr_add(self, func);
 
-	// public.uuid()
-	func = function_allocate(TYPE_UUID, "public", "uuid", fn_uuid);
+	// uuid()
+	func = function_allocate(TYPE_UUID, "uuid", fn_uuid);
 	function_mgr_add(self, func);
 }

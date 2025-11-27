@@ -70,7 +70,7 @@ commit_process(Commit* self, DtrQueue* queue)
 {
 	// get a list of completed distributed transactions (one or more) and
 	// a list of last executed transactions per core
-	auto wal = &self->db->wal_mgr;
+	auto wal = &self->storage->wal_mgr;
 	auto prepare = &self->prepare;
 	prepare_reset(prepare, self->core_mgr);
 	for (;;)
@@ -191,9 +191,9 @@ commit(Commit* self, Dtr* dtr, Buf* error)
 }
 
 void
-commit_init(Commit* self, Db* db, CoreMgr* core_mgr, Executor* executor)
+commit_init(Commit* self, Storage* storage, CoreMgr* core_mgr, Executor* executor)
 {
-	self->db       = db;
+	self->storage  = storage;
 	self->core_mgr = core_mgr;
 	self->executor = executor;
 	prepare_init(&self->prepare);

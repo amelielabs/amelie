@@ -26,7 +26,6 @@ enum
 
 struct Function
 {
-	Str           schema;
 	Str           name;
 	int           type;
 	int           flags;
@@ -37,7 +36,6 @@ struct Function
 
 static inline Function*
 function_allocate(int          type,
-                  const char*  schema,
                   const char*  name,
                   FunctionMain function)
 {
@@ -45,9 +43,6 @@ function_allocate(int          type,
 	self->type     = type;
 	self->function = function;
 	self->flags    = FN_CONST;
-	str_init(&self->schema);
-	str_init(&self->name);
-	str_set_cstr(&self->schema, schema);
 	str_set_cstr(&self->name, name);
 	list_init(&self->link);
 	hashtable_node_init(&self->link_ht);

@@ -200,7 +200,7 @@ fn_identity_of(Fn* self)
 	fn_expect(self, 2);
 	fn_expect_arg(self, 0, TYPE_STRING);
 	fn_expect_arg(self, 0, TYPE_STRING);
-	auto table = table_mgr_find(&share()->db->catalog.table_mgr,
+	auto table = table_mgr_find(&share()->storage->catalog.table_mgr,
 	                            &argv[0].string,
 	                            &argv[1].string, true);
 	value_set_int(self->result, sequence_get(&table->seq));
@@ -266,49 +266,49 @@ fn_jwt(Fn* self)
 void
 fn_misc_register(FunctionMgr* self)
 {
-	// public.error()
+	// error()
 	Function* func;
-	func = function_allocate(TYPE_NULL, "public", "error", fn_throw);
+	func = function_allocate(TYPE_NULL, "error", fn_throw);
 	function_unset(func, FN_CONST);
 	function_mgr_add(self, func);
 
-	// public.sleep()
-	func = function_allocate(TYPE_NULL, "public", "sleep", fn_sleep);
+	// sleep()
+	func = function_allocate(TYPE_NULL, "sleep", fn_sleep);
 	function_unset(func, FN_CONST);
 	function_mgr_add(self, func);
 
-	// public.random()
-	func = function_allocate(TYPE_INT, "public", "random", fn_random);
+	// random()
+	func = function_allocate(TYPE_INT, "random", fn_random);
 	function_unset(func, FN_CONST);
 	function_mgr_add(self, func);
 
-	// public.random_uuid()
-	func = function_allocate(TYPE_UUID, "public", "random_uuid", fn_random_uuid);
+	// random_uuid()
+	func = function_allocate(TYPE_UUID, "random_uuid", fn_random_uuid);
 	function_unset(func, FN_CONST);
 	function_mgr_add(self, func);
 
-	// public.md5()
-	func = function_allocate(TYPE_STRING, "public", "md5", fn_md5);
+	// md5()
+	func = function_allocate(TYPE_STRING, "md5", fn_md5);
 	function_mgr_add(self, func);
 
-	// public.sha1()
-	func = function_allocate(TYPE_STRING, "public", "sha1", fn_sha1);
+	// sha1()
+	func = function_allocate(TYPE_STRING, "sha1", fn_sha1);
 	function_mgr_add(self, func);
 
-	// public.encode()
-	func = function_allocate(TYPE_STRING, "public", "encode", fn_encode);
+	// encode()
+	func = function_allocate(TYPE_STRING, "encode", fn_encode);
 	function_mgr_add(self, func);
 
-	// public.decode()
-	func = function_allocate(TYPE_STRING, "public", "decode", fn_decode);
+	// decode()
+	func = function_allocate(TYPE_STRING, "decode", fn_decode);
 	function_mgr_add(self, func);
 
-	// public.identity_of()
-	func = function_allocate(TYPE_INT, "public", "identity_of", fn_identity_of);
+	// identity_of()
+	func = function_allocate(TYPE_INT, "identity_of", fn_identity_of);
 	function_unset(func, FN_CONST);
 	function_mgr_add(self, func);
 
-	// public.jwt()
-	func = function_allocate(TYPE_STRING, "public", "jwt", fn_jwt);
+	// jwt()
+	func = function_allocate(TYPE_STRING, "jwt", fn_jwt);
 	function_mgr_add(self, func);
 }

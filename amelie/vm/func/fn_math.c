@@ -600,139 +600,139 @@ fn_least(Fn* self)
 void
 fn_math_register(FunctionMgr* self)
 {
-	// public.abs()
+	// abs()
 	Function* func;
-	func = function_allocate(TYPE_INT, "public", "abs", fn_abs);
+	func = function_allocate(TYPE_INT, "abs", fn_abs);
 	function_mgr_add(self, func);
 
-	// public.fabs()
-	func = function_allocate(TYPE_DOUBLE, "public", "fabs", fn_fabs);
+	// fabs()
+	func = function_allocate(TYPE_DOUBLE, "fabs", fn_fabs);
 	function_mgr_add(self, func);
 
-	// public.round()
-	func = function_allocate(TYPE_INT, "public", "round", fn_round);
+	// round()
+	func = function_allocate(TYPE_INT, "round", fn_round);
 	function_mgr_add(self, func);
 
-	// public.sign()
-	func = function_allocate(TYPE_INT, "public", "sign", fn_sign);
+	// sign()
+	func = function_allocate(TYPE_INT, "sign", fn_sign);
 	function_mgr_add(self, func);
 
-	// public.ceil()
-	func = function_allocate(TYPE_DOUBLE, "public", "ceil", fn_ceil);
+	// ceil()
+	func = function_allocate(TYPE_DOUBLE, "ceil", fn_ceil);
 	function_mgr_add(self, func);
 
-	// public.exp()
-	func = function_allocate(TYPE_DOUBLE, "public", "exp", fn_exp);
+	// exp()
+	func = function_allocate(TYPE_DOUBLE, "exp", fn_exp);
 	function_mgr_add(self, func);
 
-	// public.floor()
-	func = function_allocate(TYPE_DOUBLE, "public", "floor", fn_floor);
+	// floor()
+	func = function_allocate(TYPE_DOUBLE, "floor", fn_floor);
 	function_mgr_add(self, func);
 
-	// public.mod()
-	func = function_allocate(TYPE_INT, "public", "mod", fn_mod);
+	// mod()
+	func = function_allocate(TYPE_INT, "mod", fn_mod);
 	function_mgr_add(self, func);
 
-	// public.fmod()
-	func = function_allocate(TYPE_DOUBLE, "public", "fmod", fn_fmod);
+	// fmod()
+	func = function_allocate(TYPE_DOUBLE, "fmod", fn_fmod);
 	function_mgr_add(self, func);
 
-	// public.pow()
-	func = function_allocate(TYPE_INT, "public", "pow", fn_pow);
+	// pow()
+	func = function_allocate(TYPE_INT, "pow", fn_pow);
 	function_mgr_add(self, func);
 
-	// public.fpow()
-	func = function_allocate(TYPE_DOUBLE, "public", "fpow", fn_fpow);
+	// fpow()
+	func = function_allocate(TYPE_DOUBLE, "fpow", fn_fpow);
 	function_mgr_add(self, func);
 
-	// public.trunc()
-	func = function_allocate(TYPE_DOUBLE, "public", "trunc", fn_trunc);
+	// trunc()
+	func = function_allocate(TYPE_DOUBLE, "trunc", fn_trunc);
 	function_mgr_add(self, func);
 
-	// public.pi()
-	func = function_allocate(TYPE_DOUBLE, "public", "pi", fn_pi);
+	// pi()
+	func = function_allocate(TYPE_DOUBLE, "pi", fn_pi);
 	function_mgr_add(self, func);
 
-	// public.sqrt()
-	func = function_allocate(TYPE_DOUBLE, "public", "sqrt", fn_sqrt);
+	// sqrt()
+	func = function_allocate(TYPE_DOUBLE, "sqrt", fn_sqrt);
 	function_mgr_add(self, func);
 
-	// public.acos()
-	func = function_allocate(TYPE_DOUBLE, "public", "acos", fn_acos);
+	// acos()
+	func = function_allocate(TYPE_DOUBLE, "acos", fn_acos);
 	function_mgr_add(self, func);
 
-	// public.acosh()
-	func = function_allocate(TYPE_DOUBLE, "public", "acosh", fn_acosh);
+	// acosh()
+	func = function_allocate(TYPE_DOUBLE, "acosh", fn_acosh);
 	function_mgr_add(self, func);
 
-	// public.asin()
-	func = function_allocate(TYPE_DOUBLE, "public", "asin", fn_asin);
+	// asin()
+	func = function_allocate(TYPE_DOUBLE, "asin", fn_asin);
 	function_mgr_add(self, func);
 
-	// public.asinh()
-	func = function_allocate(TYPE_DOUBLE, "public", "asinh", fn_asinh);
+	// asinh()
+	func = function_allocate(TYPE_DOUBLE, "asinh", fn_asinh);
 	function_mgr_add(self, func);
 
-	// public.atan()
-	func = function_allocate(TYPE_DOUBLE, "public", "atan", fn_atan);
+	// atan()
+	func = function_allocate(TYPE_DOUBLE, "atan", fn_atan);
 	function_mgr_add(self, func);
 
-	// public.atanh()
-	func = function_allocate(TYPE_DOUBLE, "public", "atanh", fn_atanh);
+	// atanh()
+	func = function_allocate(TYPE_DOUBLE, "atanh", fn_atanh);
 	function_mgr_add(self, func);
 
-	// public.atan2()
-	func = function_allocate(TYPE_DOUBLE, "public", "atan2", fn_atan2);
+	// atan2()
+	func = function_allocate(TYPE_DOUBLE, "atan2", fn_atan2);
 	function_mgr_add(self, func);
 
-	// public.cos()
-	func = function_allocate(TYPE_DOUBLE, "public", "cos", fn_cos);
+	// cos()
+	func = function_allocate(TYPE_DOUBLE, "cos", fn_cos);
 	function_mgr_add(self, func);
 
-	// public.cosh()
-	func = function_allocate(TYPE_DOUBLE, "public", "cosh", fn_cosh);
+	// cosh()
+	func = function_allocate(TYPE_DOUBLE, "cosh", fn_cosh);
 	function_mgr_add(self, func);
 
-	// public.sin()
-	func = function_allocate(TYPE_DOUBLE, "public", "sin", fn_sin);
+	// sin()
+	func = function_allocate(TYPE_DOUBLE, "sin", fn_sin);
 	function_mgr_add(self, func);
 
-	// public.sinh()
-	func = function_allocate(TYPE_DOUBLE, "public", "sinh", fn_sinh);
+	// sinh()
+	func = function_allocate(TYPE_DOUBLE, "sinh", fn_sinh);
 	function_mgr_add(self, func);
 
-	// public.tan()
-	func = function_allocate(TYPE_DOUBLE, "public", "tan", fn_tan);
+	// tan()
+	func = function_allocate(TYPE_DOUBLE, "tan", fn_tan);
 	function_mgr_add(self, func);
 
-	// public.tanh()
-	func = function_allocate(TYPE_DOUBLE, "public", "tanh", fn_tanh);
+	// tanh()
+	func = function_allocate(TYPE_DOUBLE, "tanh", fn_tanh);
 	function_mgr_add(self, func);
 
-	// public.ln()
-	func = function_allocate(TYPE_DOUBLE, "public", "ln", fn_ln);
+	// ln()
+	func = function_allocate(TYPE_DOUBLE, "ln", fn_ln);
 	function_mgr_add(self, func);
 
-	// public.log()
-	func = function_allocate(TYPE_DOUBLE, "public", "log", fn_log);
+	// log()
+	func = function_allocate(TYPE_DOUBLE, "log", fn_log);
 	function_mgr_add(self, func);
 
-	// public.log10()
-	func = function_allocate(TYPE_DOUBLE, "public", "log10", fn_log);
+	// log10()
+	func = function_allocate(TYPE_DOUBLE, "log10", fn_log);
 	function_mgr_add(self, func);
 
-	// public.log2()
-	func = function_allocate(TYPE_DOUBLE, "public", "log2", fn_log2);
+	// log2()
+	func = function_allocate(TYPE_DOUBLE, "log2", fn_log2);
 	function_mgr_add(self, func);
 
-	// public.greatest()
-	func = function_allocate(TYPE_NULL, "public", "greatest", fn_greatest);
+	// greatest()
+	func = function_allocate(TYPE_NULL, "greatest", fn_greatest);
 	function_unset(func, FN_CONST);
 	function_set(func, FN_DERIVE);
 	function_mgr_add(self, func);
 
-	// public.least()
-	func = function_allocate(TYPE_NULL, "public", "least", fn_least);
+	// least()
+	func = function_allocate(TYPE_NULL, "least", fn_least);
 	function_unset(func, FN_CONST);
 	function_set(func, FN_DERIVE);
 	function_mgr_add(self, func);

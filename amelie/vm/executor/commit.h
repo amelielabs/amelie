@@ -18,11 +18,11 @@ struct Commit
 	Prepare   prepare;
 	Executor* executor;
 	CoreMgr*  core_mgr;
-	Db*       db;
+	Storage*  storage;
 	Task      task;
 };
 
-void commit_init(Commit*, Db*, CoreMgr*, Executor*);
+void commit_init(Commit*, Storage*, CoreMgr*, Executor*);
 void commit_free(Commit*);
 void commit_start(Commit*);
 void commit_stop(Commit*);

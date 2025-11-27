@@ -68,10 +68,8 @@ function_mgr_add(FunctionMgr* self, Function* func)
 		hashtable_create(&self->ht, 256);
 	hashtable_reserve(&self->ht);
 
-	// hash by schema/name
-	uint32_t hash;
-	hash = hash_murmur3_32(str_u8(&func->schema), str_size(&func->schema), 0);
-	hash = hash_murmur3_32(str_u8(&func->name), str_size(&func->name), hash);
+	// hash by name
+	auto hash = hash_murmur3_32(str_u8(&func->name), str_size(&func->name), 0);
 	func->link_ht.hash = hash;
 	hashtable_set(&self->ht, &func->link_ht);
 }
@@ -88,20 +86,16 @@ function_mgr_del(FunctionMgr* self, Function* func)
 hot static inline bool
 function_mgr_cmp(HashtableNode* node, void* ptr)
 {
-	Str** target = ptr;
+	Str* name = ptr;
 	auto func = container_of(node, Function, link_ht);
-	return (str_compare(&func->schema, target[0]) &&
-	        str_compare(&func->name,   target[1]));
+	return str_compare(&func->name, name);
 }
 
 hot Function*
-function_mgr_find(FunctionMgr* self, Str* schema, Str* name)
+function_mgr_find(FunctionMgr* self, Str* name)
 {
-	uint32_t hash;
-	hash = hash_murmur3_32(str_u8(schema), str_size(schema), 0);
-	hash = hash_murmur3_32(str_u8(name), str_size(name), hash);
-	Str* target[] = { schema, name };
-	auto node = hashtable_get(&self->ht, hash, function_mgr_cmp, target);
+	auto hash = hash_murmur3_32(str_u8(name), str_size(name), 0);
+	auto node = hashtable_get(&self->ht, hash, function_mgr_cmp, name);
 	if (likely(node))
 		return container_of(node, Function, link_ht);
 	return NULL;

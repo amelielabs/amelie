@@ -66,15 +66,15 @@ fn_nullif(Fn* self)
 void
 fn_null_register(FunctionMgr* self)
 {
-	// public.coalesce()
+	// coalesce()
 	Function* func;
-	func = function_allocate(TYPE_NULL, "public", "coalesce", fn_coalesce);
+	func = function_allocate(TYPE_NULL, "coalesce", fn_coalesce);
 	function_unset(func, FN_CONST);
 	function_set(func, FN_DERIVE);
 	function_mgr_add(self, func);
 
-	// public.nullif()
-	func = function_allocate(TYPE_NULL, "public", "nullif", fn_nullif);
+	// nullif()
+	func = function_allocate(TYPE_NULL, "nullif", fn_nullif);
 	function_unset(func, FN_CONST);
 	function_set(func, FN_DERIVE);
 	function_mgr_add(self, func);
