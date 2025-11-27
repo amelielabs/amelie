@@ -40,16 +40,18 @@
 #include <amelie_parser.h>
 
 static void
-parse_assign(Parser* self, Block* block, Str* name)
+parse_assign(Parser* self, Block* block, Ast* name)
 {
 	// SELECT expr INTO var
 	auto stmt = stmt_allocate(self, &self->lex, block);
 	stmts_add(&block->stmts, stmt);
 
-	auto select = parse_select_expr(stmt, name);
+	auto select = parse_select_expr(stmt, &name->string);
 	stmt->id  = STMT_SELECT;
 	stmt->ast = &select->ast;
 	stmt->ret = &select->ret;
+	select->ast.pos_start = name->pos_start;
+	select->ast.pos_end   = name->pos_end;
 	parse_select_resolve(stmt);
 }
 
@@ -153,7 +155,7 @@ parse_declare_or_assign(Parser* self, Block* block)
 		if (declare)
 			lex_error(lex, ast, "data type expected");
 
-		parse_assign(self, block, &name->string);
+		parse_assign(self, block, name);
 		return;
 	}
 
@@ -162,5 +164,5 @@ parse_declare_or_assign(Parser* self, Block* block)
 
 	// [:= | =]
 	if (lex_if(lex, KASSIGN) || lex_if(lex, '='))
-		parse_assign(self, block, &name->string);
+		parse_assign(self, block, name);
 }

@@ -245,7 +245,7 @@ emit_into(Compiler* self, Stmt* stmt)
 		auto column = list_at(Column, link);
 
 		// all variables must be resolved at this point
-		auto var  = ref->var;
+		auto var = ref->var;
 		if (var->type == TYPE_STORE)
 			stmt_error(self->current, stmt->ast, "INTO accept only one table variable");
 

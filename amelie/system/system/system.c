@@ -329,7 +329,6 @@ system_bootstrap(System* self)
 	checkpoint_begin(&cp, 1, 1);
 	checkpoint_run(&cp);
 	checkpoint_wait(&cp);
-	info("");
 }
 
 void
