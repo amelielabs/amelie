@@ -43,7 +43,7 @@ udf_allocate_as(UdfConfig* config, void* data, UdfFree free, void* free_arg)
 	self->data     = data;
 	self->config   = config;
 	relation_init(&self->rel);
-	relation_set_schema(&self->rel, &self->config->schema);
+	relation_set_db(&self->rel, &self->config->db);
 	relation_set_name(&self->rel, &self->config->name);
 	relation_set_free_function(&self->rel, (RelationFree)udf_free);
 	return self;

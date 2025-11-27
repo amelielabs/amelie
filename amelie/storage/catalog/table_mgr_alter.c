@@ -36,11 +36,11 @@ rename_if_abort(Log* self, LogOp* op)
 	auto relation = log_relation_of(self, op);
 	auto table = table_of(relation->relation);
 	uint8_t* pos = relation->data;
-	Str schema;
+	Str db;
 	Str name;
-	json_read_string(&pos, &schema);
+	json_read_string(&pos, &db);
 	json_read_string(&pos, &name);
-	table_config_set_schema(table->config, &schema);
+	table_config_set_db(table->config, &db);
 	table_config_set_name(table->config, &name);
 }
 
@@ -53,13 +53,13 @@ static LogIf rename_if =
 bool
 table_mgr_rename(TableMgr* self,
                  Tr*       tr,
-                 Str*      schema,
+                 Str*      db,
                  Str*      name,
-                 Str*      schema_new,
+                 Str*      db_new,
                  Str*      name_new,
                  bool      if_exists)
 {
-	auto table = table_mgr_find(self, schema, name, false);
+	auto table = table_mgr_find(self, db, name, false);
 	if (! table)
 	{
 		if (! if_exists)
@@ -69,7 +69,7 @@ table_mgr_rename(TableMgr* self,
 	}
 
 	// ensure new table does not exists
-	if (table_mgr_find(self, schema_new, name_new, false))
+	if (table_mgr_find(self, db_new, name_new, false))
 		error("table '%.*s': already exists", str_size(name_new),
 		      str_of(name_new));
 
@@ -77,12 +77,12 @@ table_mgr_rename(TableMgr* self,
 	log_relation(&tr->log, &rename_if, NULL, &table->rel);
 
 	// save previous name
-	encode_string(&tr->log.data, &table->config->schema);
+	encode_string(&tr->log.data, &table->config->db);
 	encode_string(&tr->log.data, &table->config->name);
 
 	// set new table name
-	if (! str_compare_case(&table->config->schema, schema_new))
-		table_config_set_schema(table->config, schema_new);
+	if (! str_compare_case(&table->config->db, db_new))
+		table_config_set_db(table->config, db_new);
 
 	if (! str_compare_case(&table->config->name, name_new))
 		table_config_set_name(table->config, name_new);
@@ -117,12 +117,12 @@ static LogIf set_identity_if =
 bool
 table_mgr_set_identity(TableMgr* self,
                        Tr*       tr,
-                       Str*      schema,
+                       Str*      db,
                        Str*      name,
                        int64_t   value,
                        bool      if_exists)
 {
-	auto table = table_mgr_find(self, schema, name, false);
+	auto table = table_mgr_find(self, db, name, false);
 	if (! table)
 	{
 		if (! if_exists)
@@ -166,12 +166,12 @@ static LogIf set_unlogged_if =
 bool
 table_mgr_set_unlogged(TableMgr* self,
                        Tr*       tr,
-                       Str*      schema,
+                       Str*      db,
                        Str*      name,
                        bool      value,
                        bool      if_exists)
 {
-	auto table = table_mgr_find(self, schema, name, false);
+	auto table = table_mgr_find(self, db, name, false);
 	if (! table)
 	{
 		if (! if_exists)
@@ -215,14 +215,14 @@ static LogIf column_rename_if =
 bool
 table_mgr_column_rename(TableMgr* self,
                         Tr*       tr,
-                        Str*      schema,
+                        Str*      db,
                         Str*      name,
                         Str*      name_column,
                         Str*      name_column_new,
                         bool      if_exists,
                         bool      if_column_exists)
 {
-	auto table = table_mgr_find(self, schema, name, false);
+	auto table = table_mgr_find(self, db, name, false);
 	if (! table)
 	{
 		if (! if_exists)
@@ -271,7 +271,7 @@ column_add_if_commit(Log* self, LogOp* op)
 	TableMgr* mgr = op->iface_arg;
 	auto relation = log_relation_of(self, op);
 	auto table  = table_of(relation->relation);
-	auto prev   = table_mgr_find(mgr, &table->config->schema,
+	auto prev   = table_mgr_find(mgr, &table->config->db,
 	                             &table->config->name,
 	                              true);
 	relation_mgr_replace(&mgr->mgr, &prev->rel, &table->rel);
@@ -301,13 +301,13 @@ static LogIf column_add_if =
 Table*
 table_mgr_column_add(TableMgr* self,
                      Tr*       tr,
-                     Str*      schema,
+                     Str*      db,
                      Str*      name,
                      Column*   column,
                      bool      if_exists,
                      bool      if_not_exists)
 {
-	auto table = table_mgr_find(self, schema, name, false);
+	auto table = table_mgr_find(self, db, name, false);
 	if (! table)
 	{
 		if (! if_exists)
@@ -352,13 +352,13 @@ table_mgr_column_add(TableMgr* self,
 Table*
 table_mgr_column_drop(TableMgr* self,
                       Tr*       tr,
-                      Str*      schema,
+                      Str*      db,
                       Str*      name,
                       Str*      name_column,
                       bool      if_exists,
                       bool      if_column_exists)
 {
-	auto table = table_mgr_find(self, schema, name, false);
+	auto table = table_mgr_find(self, db, name, false);
 	if (! table)
 	{
 		if (! if_exists)
@@ -437,7 +437,7 @@ static LogIf column_set_if =
 bool
 table_mgr_column_set(TableMgr* self,
                      Tr*       tr,
-                     Str*      schema,
+                     Str*      db,
                      Str*      name,
                      Str*      name_column,
                      Str*      value,
@@ -445,7 +445,7 @@ table_mgr_column_set(TableMgr* self,
                      bool      if_exists,
                      bool      if_column_exists)
 {
-	auto table = table_mgr_find(self, schema, name, false);
+	auto table = table_mgr_find(self, db, name, false);
 	if (! table)
 	{
 		if (! if_exists)

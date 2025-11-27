@@ -14,11 +14,11 @@
 // ddl
 #include "catalog/ddl.h"
 
-// schema
-#include "catalog/schema_config.h"
-#include "catalog/schema.h"
-#include "catalog/schema_op.h"
-#include "catalog/schema_mgr.h"
+// db
+#include "catalog/db_config.h"
+#include "catalog/db.h"
+#include "catalog/db_op.h"
+#include "catalog/db_mgr.h"
 
 // table
 #include "catalog/table_config.h"

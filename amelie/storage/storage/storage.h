@@ -11,9 +11,9 @@
 // AGPL-3.0 Licensed.
 //
 
-typedef struct Db Db;
+typedef struct Storage Storage;
 
-struct Db
+struct Storage
 {
 	Catalog       catalog;
 	PartMgr       part_mgr;
@@ -22,8 +22,8 @@ struct Db
 	Checkpointer  checkpointer;
 };
 
-void db_init(Db*, CatalogIf*, void*, PartAttach, void*);
-void db_free(Db*);
-void db_open(Db*);
-void db_close(Db*);
-Buf* db_state(Db*);
+void storage_init(Storage*, CatalogIf*, void*, PartAttach, void*);
+void storage_free(Storage*);
+void storage_open(Storage*);
+void storage_close(Storage*);
+Buf* storage_state(Storage*);

@@ -44,7 +44,7 @@ udf_mgr_create(UdfMgr*    self,
                bool       if_not_exists)
 {
 	// make sure udf does not exists
-	auto current = udf_mgr_find(self, &config->schema, &config->name, false);
+	auto current = udf_mgr_find(self, &config->db, &config->name, false);
 	if (current)
 	{
 		if (! if_not_exists)
@@ -89,7 +89,7 @@ replace_if_abort(Log* self, LogOp* op)
 	udf->data   = data[1];
 
 	// update relation data
-	relation_set_schema(&udf->rel, &udf->config->schema);
+	relation_set_db(&udf->rel, &udf->config->db);
 	relation_set_name(&udf->rel, &udf->config->name);
 }
 
@@ -143,7 +143,7 @@ udf_mgr_replace(UdfMgr* self,
 	udf_new->data   = NULL;
 
 	// update relation data
-	relation_set_schema(&udf->rel, &udf->config->schema);
+	relation_set_db(&udf->rel, &udf->config->db);
 	relation_set_name(&udf->rel, &udf->config->name);
 }
 
@@ -155,10 +155,10 @@ udf_mgr_drop_of(UdfMgr* self, Tr* tr, Udf* udf)
 }
 
 bool
-udf_mgr_drop(UdfMgr* self, Tr* tr, Str* schema, Str* name,
+udf_mgr_drop(UdfMgr* self, Tr* tr, Str* db, Str* name,
              bool    if_exists)
 {
-	auto udf = udf_mgr_find(self, schema, name, false);
+	auto udf = udf_mgr_find(self, db, name, false);
 	if (! udf)
 	{
 		if (! if_exists)
@@ -183,11 +183,11 @@ rename_if_abort(Log* self, LogOp* op)
 	auto relation = log_relation_of(self, op);
 	auto udf = udf_of(relation->relation);
 	uint8_t* pos = relation->data;
-	Str schema;
+	Str db;
 	Str name;
-	json_read_string(&pos, &schema);
+	json_read_string(&pos, &db);
 	json_read_string(&pos, &name);
-	udf_config_set_schema(udf->config, &schema);
+	udf_config_set_db(udf->config, &db);
 	udf_config_set_name(udf->config, &name);
 }
 
@@ -200,13 +200,13 @@ static LogIf rename_if =
 bool
 udf_mgr_rename(UdfMgr* self,
                Tr*     tr,
-               Str*    schema,
+               Str*    db,
                Str*    name,
-               Str*    schema_new,
+               Str*    db_new,
                Str*    name_new,
                bool    if_exists)
 {
-	auto udf = udf_mgr_find(self, schema, name, false);
+	auto udf = udf_mgr_find(self, db, name, false);
 	if (! udf)
 	{
 		if (! if_exists)
@@ -216,7 +216,7 @@ udf_mgr_rename(UdfMgr* self,
 	}
 
 	// ensure new udf does not exists
-	if (udf_mgr_find(self, schema_new, name_new, false))
+	if (udf_mgr_find(self, db_new, name_new, false))
 		error("function '%.*s': already exists", str_size(name_new),
 		      str_of(name_new));
 
@@ -224,12 +224,12 @@ udf_mgr_rename(UdfMgr* self,
 	log_relation(&tr->log, &rename_if, NULL, &udf->rel);
 
 	// save previous name
-	encode_string(&tr->log.data, &udf->config->schema);
+	encode_string(&tr->log.data, &udf->config->db);
 	encode_string(&tr->log.data, &udf->config->name);
 
 	// set new name
-	if (! str_compare_case(&udf->config->schema, schema_new))
-		udf_config_set_schema(udf->config, schema_new);
+	if (! str_compare_case(&udf->config->db, db_new))
+		udf_config_set_db(udf->config, db_new);
 
 	if (! str_compare_case(&udf->config->name, name_new))
 		udf_config_set_name(udf->config, name_new);
@@ -251,10 +251,10 @@ udf_mgr_dump(UdfMgr* self, Buf* buf)
 }
 
 Udf*
-udf_mgr_find(UdfMgr* self, Str* schema, Str* name,
+udf_mgr_find(UdfMgr* self, Str* db, Str* name,
              bool    error_if_not_exists)
 {
-	auto relation = relation_mgr_get(&self->mgr, schema, name);
+	auto relation = relation_mgr_get(&self->mgr, db, name);
 	if (! relation)
 	{
 		if (error_if_not_exists)
@@ -266,13 +266,13 @@ udf_mgr_find(UdfMgr* self, Str* schema, Str* name,
 }
 
 Buf*
-udf_mgr_list(UdfMgr* self, Str* schema, Str* name, bool extended)
+udf_mgr_list(UdfMgr* self, Str* db, Str* name, bool extended)
 {
 	auto buf = buf_create();
-	if (schema && name)
+	if (db && name)
 	{
 		// show udf
-		auto udf = udf_mgr_find(self, schema, name, false);
+		auto udf = udf_mgr_find(self, db, name, false);
 		if (udf) {
 			if (extended)
 				udf_config_write(udf->config, buf);
@@ -289,7 +289,7 @@ udf_mgr_list(UdfMgr* self, Str* schema, Str* name, bool extended)
 	list_foreach(&self->mgr.list)
 	{
 		auto udf = udf_of(list_at(Relation, link));
-		if (schema && !str_compare_case(&udf->config->schema, schema))
+		if (db && !str_compare_case(&udf->config->db, db))
 			continue;
 		if (extended)
 			udf_config_write(udf->config, buf);

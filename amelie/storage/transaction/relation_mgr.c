@@ -55,12 +55,12 @@ relation_mgr_delete(RelationMgr* self, Relation* relation)
 }
 
 Relation*
-relation_mgr_get(RelationMgr* self, Str* schema, Str* name)
+relation_mgr_get(RelationMgr* self, Str* db, Str* name)
 {
 	list_foreach(&self->list)
 	{
 		auto relation = list_at(Relation, link);
-		if (schema && !str_compare_case(relation->schema, schema))
+		if (db && !str_compare_case(relation->db, db))
 			continue;
 		if (str_compare_case(relation->name, name))
 			return relation;

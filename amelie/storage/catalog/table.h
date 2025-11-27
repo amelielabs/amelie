@@ -42,7 +42,7 @@ table_allocate(TableConfig* config, PartMgr* part_mgr)
 	sequence_init(&self->seq);
 	part_list_init(&self->part_list);
 	relation_init(&self->rel);
-	relation_set_schema(&self->rel, &self->config->schema);
+	relation_set_db(&self->rel, &self->config->db);
 	relation_set_name(&self->rel, &self->config->name);
 	relation_set_free_function(&self->rel, (RelationFree)table_free);
 	return self;

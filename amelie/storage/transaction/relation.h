@@ -17,7 +17,7 @@ typedef void (*RelationFree)(Relation*);
 
 struct Relation
 {
-	Str*         schema;
+	Str*         db;
 	Str*         name;
 	RelationFree free_function;
 	List         link;
@@ -26,16 +26,16 @@ struct Relation
 static inline void
 relation_init(Relation* self)
 {
-	self->schema        = NULL;
+	self->db            = NULL;
 	self->name          = NULL;
 	self->free_function = NULL;
 	list_init(&self->link);
 }
 
 static inline void
-relation_set_schema(Relation* self, Str* schema)
+relation_set_db(Relation* self, Str* db)
 {
-	self->schema = schema;
+	self->db = db;
 }
 
 static inline void

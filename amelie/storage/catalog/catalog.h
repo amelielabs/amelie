@@ -21,12 +21,12 @@ struct CatalogIf
 	void (*build_column_drop)(Catalog*, Table*, Table*, Column*);
 	void (*udf_compile)(Catalog*, Udf*);
 	void (*udf_free)(Udf*);
-	bool (*udf_depends)(Udf*, Str*, Str*);
+	bool (*udf_depends)(Udf*, Str*);
 };
 
 struct Catalog
 {
-	SchemaMgr  schema_mgr;
+	DbMgr      db_mgr;
 	TableMgr   table_mgr;
 	UdfMgr     udf_mgr;
 	CatalogIf* iface;

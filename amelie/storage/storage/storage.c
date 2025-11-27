@@ -26,21 +26,21 @@
 #include <amelie_storage.h>
 
 void
-db_init(Db*        self,
-        CatalogIf* iface,
-        void*      iface_arg,
-        PartAttach attach,
-        void*      attach_arg)
+storage_init(Storage*   self,
+             CatalogIf* iface,
+             void*      iface_arg,
+             PartAttach attach,
+             void*      attach_arg)
 {
 	part_mgr_init(&self->part_mgr, attach, attach_arg);
 	catalog_init(&self->catalog, &self->part_mgr, iface, iface_arg);
-	checkpoint_mgr_init(&self->checkpoint_mgr, &db_checkpoint_if, self);
+	checkpoint_mgr_init(&self->checkpoint_mgr, &storage_checkpoint_if, self);
 	checkpointer_init(&self->checkpointer, &self->checkpoint_mgr);
 	wal_mgr_init(&self->wal_mgr);
 }
 
 void
-db_free(Db* self)
+storage_free(Storage* self)
 {
 	catalog_free(&self->catalog);
 	part_mgr_free(&self->part_mgr);
@@ -49,18 +49,18 @@ db_free(Db* self)
 }
 
 void
-db_open(Db* self)
+storage_open(Storage* self)
 {
 	// prepare system catalog
 	catalog_open(&self->catalog);
 
 	// read directory and restore last checkpoint catalog
-	// (schemas, tables)
+	// (databases, tables)
 	checkpoint_mgr_open(&self->checkpoint_mgr);
 }
 
 void
-db_close(Db* self)
+storage_close(Storage* self)
 {
 	// stop checkpointer service
 	checkpointer_stop(&self->checkpointer);
@@ -76,7 +76,7 @@ db_close(Db* self)
 }
 
 Buf*
-db_state(Db* self)
+storage_state(Storage* self)
 {
 	unused(self);
 

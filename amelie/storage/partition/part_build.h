@@ -27,7 +27,7 @@ struct PartBuild
 	Part*         part_dest;
 	Column*       column;
 	IndexConfig*  index;
-	Str*          schema;
+	Str*          db;
 	Str*          name;
 };
 
@@ -38,7 +38,7 @@ part_build_init(PartBuild*    self,
                 Part*         part_dest,
                 Column*       column,
                 IndexConfig*  index,
-                Str*          schema,
+                Str*          db,
                 Str*          name)
 {
 	self->type      = type;
@@ -46,7 +46,7 @@ part_build_init(PartBuild*    self,
 	self->part_dest = part_dest;
 	self->column    = column;
 	self->index     = index;
-	self->schema    = schema;
+	self->db        = db;
 	self->name      = name;
 }
 

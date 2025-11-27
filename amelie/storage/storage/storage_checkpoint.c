@@ -26,15 +26,15 @@
 #include <amelie_storage.h>
 
 static Buf*
-db_checkpoint_catalog_dump(void* arg)
+storage_checkpoint_catalog_dump(void* arg)
 {
-	// { schemas, tables, udfs }
+	// { databases, tables, udfs }
 	Catalog* self = arg;
 	auto buf = buf_create();
 	encode_obj(buf);
 
-	encode_raw(buf, "schemas", 7);
-	schema_mgr_dump(&self->schema_mgr, buf);
+	encode_raw(buf, "databases", 9);
+	db_mgr_dump(&self->db_mgr, buf);
 
 	encode_raw(buf, "tables", 6);
 	table_mgr_dump(&self->table_mgr, buf);
@@ -48,23 +48,23 @@ db_checkpoint_catalog_dump(void* arg)
 
 enum
 {
-	RESTORE_SCHEMA,
+	RESTORE_DB,
 	RESTORE_TABLE,
 	RESTORE_UDF
 };
 
 static void
-restore_replay(Db* self, Tr* tr, int type, uint8_t** pos)
+restore_replay(Storage* self, Tr* tr, int type, uint8_t** pos)
 {
 	switch (type) {
-	case RESTORE_SCHEMA:
+	case RESTORE_DB:
 	{
-		// read schema config
-		auto config = schema_config_read(pos);
-		defer(schema_config_free, config);
+		// read db config
+		auto config = db_config_read(pos);
+		defer(db_config_free, config);
 
-		// create schema
-		schema_mgr_create(&self->catalog.schema_mgr, tr, config, false);
+		// create db
+		db_mgr_create(&self->catalog.db_mgr, tr, config, false);
 		break;
 	}
 	case RESTORE_TABLE:
@@ -87,7 +87,7 @@ restore_replay(Db* self, Tr* tr, int type, uint8_t** pos)
 		auto catalog = &self->catalog;
 		udf_mgr_create(&catalog->udf_mgr, tr, config, false);
 
-		auto udf = udf_mgr_find(&catalog->udf_mgr, &config->schema, &config->name, true);
+		auto udf = udf_mgr_find(&catalog->udf_mgr, &config->db, &config->name, true);
 		catalog->iface->udf_compile(catalog, udf);
 		break;
 	}
@@ -95,7 +95,7 @@ restore_replay(Db* self, Tr* tr, int type, uint8_t** pos)
 }
 
 static void
-restore_object(Db* self, int type, uint8_t** pos)
+restore_object(Storage* self, int type, uint8_t** pos)
 {
 	Tr tr;
 	tr_init(&tr);
@@ -116,26 +116,26 @@ restore_object(Db* self, int type, uint8_t** pos)
 }
 
 static void
-db_checkpoint_catalog_restore(uint8_t** pos, void* arg)
+storage_checkpoint_catalog_restore(uint8_t** pos, void* arg)
 {
-	// { schemas, tables }
-	Db* self = arg;
-	uint8_t* pos_schemas = NULL;
-	uint8_t* pos_tables  = NULL;
-	uint8_t* pos_udfs   = NULL;
+	// { databases, tables }
+	Storage* self = arg;
+	uint8_t* pos_databases = NULL;
+	uint8_t* pos_tables    = NULL;
+	uint8_t* pos_udfs      = NULL;
 	Decode obj[] =
 	{
-		{ DECODE_ARRAY, "schemas", &pos_schemas },
-		{ DECODE_ARRAY, "tables",  &pos_tables  },
-		{ DECODE_ARRAY, "udfs",    &pos_udfs    },
-		{ 0,             NULL,      NULL        },
+		{ DECODE_ARRAY, "databases", &pos_databases },
+		{ DECODE_ARRAY, "tables",    &pos_tables    },
+		{ DECODE_ARRAY, "udfs",      &pos_udfs      },
+		{ 0,             NULL,        NULL          },
 	};
 	decode_obj(obj, "catalog", pos);
 
-	// schemas
-	json_read_array(&pos_schemas);
-	while (! json_read_array_end(&pos_schemas))
-		restore_object(self, RESTORE_SCHEMA, &pos_schemas);
+	// databases
+	json_read_array(&pos_databases);
+	while (! json_read_array_end(&pos_databases))
+		restore_object(self, RESTORE_DB, &pos_databases);
 
 	// tables
 	json_read_array(&pos_tables);
@@ -149,9 +149,9 @@ db_checkpoint_catalog_restore(uint8_t** pos, void* arg)
 }
 
 static void
-db_checkpoint_add(Checkpoint* cp, void* arg)
+storage_checkpoint_add(Checkpoint* cp, void* arg)
 {
-	Db* self = arg;
+	Storage* self = arg;
 	list_foreach(&self->catalog.table_mgr.mgr.list)
 	{
 		auto table = table_of(list_at(Relation, link));
@@ -164,17 +164,17 @@ db_checkpoint_add(Checkpoint* cp, void* arg)
 }
 
 static void
-db_checkpoint_complete(void* arg)
+storage_checkpoint_complete(void* arg)
 {
-	Db* self = arg;
+	Storage* self = arg;
 	checkpoint_mgr_gc(&self->checkpoint_mgr);
 	wal_mgr_gc(&self->wal_mgr);
 }
 
-CheckpointIf db_checkpoint_if =
+CheckpointIf storage_checkpoint_if =
 {
-	.catalog_dump    = db_checkpoint_catalog_dump,
-	.catalog_restore = db_checkpoint_catalog_restore,
-	.add             = db_checkpoint_add,
-	.complete        = db_checkpoint_complete
+	.catalog_dump    = storage_checkpoint_catalog_dump,
+	.catalog_restore = storage_checkpoint_catalog_restore,
+	.add             = storage_checkpoint_add,
+	.complete        = storage_checkpoint_complete
 };

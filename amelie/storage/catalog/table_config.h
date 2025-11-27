@@ -15,7 +15,7 @@ typedef struct TableConfig TableConfig;
 
 struct TableConfig
 {
-	Str     schema;
+	Str     db;
 	Str     name;
 	bool    unlogged;
 	Columns columns;
@@ -33,7 +33,7 @@ table_config_allocate(void)
 	self->unlogged         = false;
 	self->indexes_count    = 0;
 	self->partitions_count = 0;
-	str_init(&self->schema);
+	str_init(&self->db);
 	str_init(&self->name);
 	columns_init(&self->columns);
 	list_init(&self->indexes);
@@ -44,7 +44,7 @@ table_config_allocate(void)
 static inline void
 table_config_free(TableConfig* self)
 {
-	str_free(&self->schema);
+	str_free(&self->db);
 	str_free(&self->name);
 
 	list_foreach_safe(&self->indexes)
@@ -64,10 +64,10 @@ table_config_free(TableConfig* self)
 }
 
 static inline void
-table_config_set_schema(TableConfig* self, Str* schema)
+table_config_set_db(TableConfig* self, Str* db)
 {
-	str_free(&self->schema);
-	str_copy(&self->schema, schema);
+	str_free(&self->db);
+	str_copy(&self->db, db);
 }
 
 static inline void
@@ -108,7 +108,7 @@ static inline TableConfig*
 table_config_copy(TableConfig* self)
 {
 	auto copy = table_config_allocate();
-	table_config_set_schema(copy, &self->schema);
+	table_config_set_db(copy, &self->db);
 	table_config_set_name(copy, &self->name);
 	table_config_set_unlogged(copy, self->unlogged);
 	columns_copy(&copy->columns, &self->columns);
@@ -144,7 +144,7 @@ table_config_read(uint8_t** pos)
 	uint8_t* pos_partitions = NULL;
 	Decode obj[] =
 	{
-		{ DECODE_STRING, "schema",     &self->schema     },
+		{ DECODE_STRING, "db",         &self->db         },
 		{ DECODE_STRING, "name",       &self->name       },
 		{ DECODE_ARRAY,  "columns",    &pos_columns      },
 		{ DECODE_BOOL,   "unlogged",   &self->unlogged   },
@@ -182,9 +182,9 @@ table_config_write(TableConfig* self, Buf* buf)
 	// obj
 	encode_obj(buf);
 
-	// schema
-	encode_raw(buf, "schema", 6);
-	encode_string(buf, &self->schema);
+	// db
+	encode_raw(buf, "db", 2);
+	encode_string(buf, &self->db);
 
 	// name
 	encode_raw(buf, "name", 4);
@@ -226,9 +226,9 @@ table_config_write_compact(TableConfig* self, Buf* buf)
 	// obj
 	encode_obj(buf);
 
-	// schema
-	encode_raw(buf, "schema", 6);
-	encode_string(buf, &self->schema);
+	// db
+	encode_raw(buf, "db", 2);
+	encode_string(buf, &self->db);
 
 	// name
 	encode_raw(buf, "name", 4);

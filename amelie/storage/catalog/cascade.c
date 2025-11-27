@@ -24,129 +24,75 @@
 #include <amelie_catalog.h>
 
 static void
-cascade_validate(Catalog* self, Str* schema)
+cascade_db_drop_execute(Catalog* self, Tr* tr, Str* db, bool drop)
 {
-	// tables
-	list_foreach(&self->table_mgr.mgr.list)
-	{
-		auto table = table_of(list_at(Relation, link));
-		if (str_compare_case(&table->config->schema, schema))
-			error("table '%.*s' depends on schema '%.*s", str_size(&table->config->name),
-			      str_of(&table->config->name),
-			      str_size(schema), str_of(schema));
-	}
+	// validate or drop all objects matching the database
 
-	// udfs
-	list_foreach(&self->udf_mgr.mgr.list)
-	{
-		auto udf = udf_of(list_at(Relation, link));
-		if (str_compare_case(&udf->config->schema, schema))
-			error("function '%.*s' depends on schema '%.*s", str_size(&udf->config->name),
-			      str_of(&udf->config->name),
-			      str_size(schema), str_of(schema));
-	}
-}
-
-static void
-cascade_validate_udfs_external(Catalog* self, Str* schema)
-{
-	// ensure that no external schema udfs depend on the schema
-	list_foreach(&self->udf_mgr.mgr.list)
-	{
-		auto udf = udf_of(list_at(Relation, link));
-		if (str_compare_case(&udf->config->schema, schema))
-			continue;
-		if (self->iface->udf_depends(udf, schema, NULL))
-			error("function '%.*s.%.*s' depends on schema '%.*s", str_size(&udf->config->schema),
-			      str_of(&udf->config->schema),
-			      str_size(&udf->config->name),
-			      str_of(&udf->config->name),
-			      str_size(schema), str_of(schema));
-	}
-}
-
-static void
-cascade_validate_udfs(Catalog* self, Str* schema)
-{
-	// ensure that no udfs depends on the schema
-	list_foreach(&self->udf_mgr.mgr.list)
-	{
-		auto udf = udf_of(list_at(Relation, link));
-		if (self->iface->udf_depends(udf, schema, NULL))
-			error("function '%.*s.%.*s' depends on schema '%.*s", str_size(&udf->config->schema),
-			      str_of(&udf->config->schema),
-			      str_size(&udf->config->name),
-			      str_of(&udf->config->name),
-			      str_size(schema), str_of(schema));
-	}
-}
-
-static void
-cascade_drop(Catalog* self, Tr* tr, Str* schema)
-{
 	// tables
 	list_foreach_safe(&self->table_mgr.mgr.list)
 	{
 		auto table = table_of(list_at(Relation, link));
-		if (str_compare_case(&table->config->schema, schema))
+		if (! str_compare_case(&table->config->db, db))
+			continue;
+		if (drop)
 			table_mgr_drop_of(&self->table_mgr, tr, table);
+		else
+			error("table '%.*s' depends on db '%.*s",
+			      str_size(&table->config->name), str_of(&table->config->name),
+			      str_size(db), str_of(db));
 	}
 
 	// udfs
 	list_foreach_safe(&self->udf_mgr.mgr.list)
 	{
 		auto udf = udf_of(list_at(Relation, link));
-		if (str_compare_case(&udf->config->schema, schema))
+		if (! str_compare_case(&udf->config->db, db))
+			continue;
+		if (drop)
 			udf_mgr_drop_of(&self->udf_mgr, tr, udf);
+		else
+			error("function '%.*s' depends on db '%.*s",
+			      str_size(&udf->config->name), str_of(&udf->config->name),
+			      str_size(db), str_of(db));
 	}
 }
 
 bool
-cascade_schema_drop(Catalog* self, Tr* tr, Str* name,
-                    bool     cascade,
-                    bool     if_exists)
+cascade_db_drop(Catalog* self, Tr* tr, Str* name,
+                bool     cascade,
+                bool     if_exists)
 {
-	auto schema = schema_mgr_find(&self->schema_mgr, name, false);
-	if (! schema)
+	auto db = db_mgr_find(&self->db_mgr, name, false);
+	if (! db)
 	{
 		if (! if_exists)
-			error("schema '%.*s': not exists", str_size(name),
+			error("db '%.*s': not exists", str_size(name),
 			      str_of(name));
 		return false;
 	}
 
-	if (schema->config->system)
-		error("schema '%.*s': system schema cannot be dropped", str_size(name),
+	if (db->config->main)
+		error("db '%.*s': main db cannot be dropped", str_size(name),
 		      str_of(name));
 
-	// ensure no dependencies from other schemas
-	cascade_validate_udfs_external(self, name);
+	// validate or drop all objects matching the database
+	cascade_db_drop_execute(self, tr, name, cascade);
 
-	if (cascade)
-	{
-		// drop all dependencies
-		cascade_drop(self, tr, name);
-	} else
-	{
-		// ensure no dependencies
-		cascade_validate(self, name);
-	}
-
-	schema_mgr_drop(&self->schema_mgr, tr, name, false);
+	db_mgr_drop(&self->db_mgr, tr, name, false);
 	return true;
 }
 
 static void
-cascade_rename(Catalog* self, Tr* tr, Str* schema, Str* schema_new)
+cascade_db_rename_execute(Catalog* self, Tr* tr, Str* db, Str* db_new)
 {
 	// tables
 	list_foreach_safe(&self->table_mgr.mgr.list)
 	{
 		auto table = table_of(list_at(Relation, link));
-		if (str_compare_case(&table->config->schema, schema))
-			table_mgr_rename(&self->table_mgr, tr, &table->config->schema,
+		if (str_compare_case(&table->config->db, db))
+			table_mgr_rename(&self->table_mgr, tr, &table->config->db,
 			                 &table->config->name,
-			                 schema_new,
+			                 db_new,
 			                 &table->config->name, false);
 	}
 
@@ -154,39 +100,37 @@ cascade_rename(Catalog* self, Tr* tr, Str* schema, Str* schema_new)
 	list_foreach_safe(&self->udf_mgr.mgr.list)
 	{
 		auto udf = udf_of(list_at(Relation, link));
-		if (str_compare_case(&udf->config->schema, schema))
-			udf_mgr_rename(&self->udf_mgr, tr, &udf->config->schema,
+		if (str_compare_case(&udf->config->db, db))
+			udf_mgr_rename(&self->udf_mgr, tr, &udf->config->db,
 			               &udf->config->name,
-			               schema_new,
+			               db_new,
 			               &udf->config->name, false);
 	}
 }
 
 bool
-cascade_schema_rename(Catalog* self, Tr* tr, Str* name,
-                      Str*     name_new,
-                      bool     if_exists)
+cascade_db_rename(Catalog* self, Tr* tr,
+                  Str*     name,
+                  Str*     name_new,
+                  bool     if_exists)
 {
-	auto schema = schema_mgr_find(&self->schema_mgr, name, false);
-	if (! schema)
+	auto db = db_mgr_find(&self->db_mgr, name, false);
+	if (! db)
 	{
 		if (! if_exists)
-			error("schema '%.*s': not exists", str_size(name),
+			error("db '%.*s': not exists", str_size(name),
 			      str_of(name));
 		return false;
 	}
 
-	if (schema->config->system)
-		error("schema '%.*s': system schema cannot be altered", str_size(name),
+	if (db->config->main)
+		error("db '%.*s': main db cannot be renamed", str_size(name),
 		      str_of(name));
 
-	// ensure that no udfs depends on the schema
-	cascade_validate_udfs(self, name);
+	// rename all database objects
+	cascade_db_rename_execute(self, tr, name, name_new);
 
-	// rename schema on all dependable objects
-	cascade_rename(self, tr, name, name_new);
-
-	// rename schema last
-	schema_mgr_rename(&self->schema_mgr, tr, name, name_new, false);
+	// rename db
+	db_mgr_rename(&self->db_mgr, tr, name, name_new, false);
 	return true;
 }

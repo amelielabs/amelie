@@ -21,7 +21,6 @@
 #include <amelie_index.h>
 #include <amelie_partition.h>
 #include <amelie_checkpoint.h>
-#include <amelie_catalog.h>
 
 void
 checkpoint_init(Checkpoint* self, CheckpointMgr* mgr)

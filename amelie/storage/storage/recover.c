@@ -26,12 +26,12 @@
 #include <amelie_storage.h>
 
 void
-recover_init(Recover* self, Db* db, bool write_wal)
+recover_init(Recover* self, Storage* storage, bool write_wal)
 {
 	self->ops       = 0;
 	self->size      = 0;
 	self->write_wal = write_wal;
-	self->db        = db;
+	self->storage   = storage;
 	tr_init(&self->tr);
 	write_init(&self->write);
 	write_list_init(&self->write_list);
@@ -54,13 +54,13 @@ recover_reset_stats(Recover* self)
 hot static void
 recover_cmd(Recover* self, RecordCmd* cmd, uint8_t** pos)
 {
-	auto db = self->db;
+	auto storage = self->storage;
 	auto tr = &self->tr;
 	switch (cmd->cmd) {
 	case CMD_REPLACE:
 	{
 		// find partition by id
-		auto part = part_mgr_find(&db->part_mgr, cmd->partition);
+		auto part = part_mgr_find(&storage->part_mgr, cmd->partition);
 		if (! part)
 			error("recover: failed to find partition %" PRIu64, cmd->partition);
 		auto end = *pos + cmd->size;
@@ -75,7 +75,7 @@ recover_cmd(Recover* self, RecordCmd* cmd, uint8_t** pos)
 	case CMD_DELETE:
 	{
 		// find partition by id
-		auto part = part_mgr_find(&db->part_mgr, cmd->partition);
+		auto part = part_mgr_find(&storage->part_mgr, cmd->partition);
 		if (! part)
 			error("recover: failed to find partition %" PRIu64, cmd->partition);
 		auto end = *pos + cmd->size;
@@ -90,7 +90,7 @@ recover_cmd(Recover* self, RecordCmd* cmd, uint8_t** pos)
 	case CMD_DDL:
 	{
 		// replay ddl command
-		catalog_execute(&db->catalog, tr, *pos, 0);
+		catalog_execute(&storage->catalog, tr, *pos, 0);
 		json_skip(pos);
 		break;
 	}
@@ -127,7 +127,7 @@ recover_next_record(Recover* self, Record* record)
 		write_add(write, &self->tr.log.write_log);
 		write_list_reset(write_list);
 		write_list_add(write_list, write);
-		wal_mgr_write(&self->db->wal_mgr, write_list);
+		wal_mgr_write(&self->storage->wal_mgr, write_list);
 	} else
 	{
 		state_lsn_follow(record->lsn);
@@ -162,7 +162,7 @@ recover_wal_main(Recover* self)
 {
 	// open wal files and maybe truncate wal files according
 	// to the wal_truncate option
-	auto wal_mgr = &self->db->wal_mgr;
+	auto wal_mgr = &self->storage->wal_mgr;
 	wal_mgr_start(wal_mgr);
 
 	// replay wals starting from the last checkpoint

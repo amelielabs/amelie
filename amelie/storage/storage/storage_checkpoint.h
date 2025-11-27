@@ -11,4 +11,4 @@
 // AGPL-3.0 Licensed.
 //
 
-extern CheckpointIf db_checkpoint_if;
+extern CheckpointIf storage_checkpoint_if;

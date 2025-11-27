@@ -36,92 +36,92 @@ table_op_create_read(uint8_t* op)
 }
 
 static inline int
-table_op_drop(Buf* self, Str* schema, Str* name)
+table_op_drop(Buf* self, Str* db, Str* name)
 {
-	// [op, schema, name]
+	// [op, db, name]
 	auto offset = buf_size(self);
 	encode_array(self);
 	encode_integer(self, DDL_TABLE_DROP);
-	encode_string(self, schema);
+	encode_string(self, db);
 	encode_string(self, name);
 	encode_array_end(self);
 	return offset;
 }
 
 static inline void
-table_op_drop_read(uint8_t* op, Str* schema, Str* name)
+table_op_drop_read(uint8_t* op, Str* db, Str* name)
 {
 	int64_t cmd;
 	json_read_array(&op);
 	json_read_integer(&op, &cmd);
 	assert(cmd == DDL_TABLE_DROP);
-	json_read_string(&op, schema);
+	json_read_string(&op, db);
 	json_read_string(&op, name);
 	json_read_array_end(&op);
 }
 
 static inline int
-table_op_rename(Buf* self, Str* schema, Str* name, Str* schema_new, Str* name_new)
+table_op_rename(Buf* self, Str* db, Str* name, Str* db_new, Str* name_new)
 {
-	// [op, schema, name, schema_new, name_new]
+	// [op, db, name, db_new, name_new]
 	auto offset = buf_size(self);
 	encode_array(self);
 	encode_integer(self, DDL_TABLE_RENAME);
-	encode_string(self, schema);
+	encode_string(self, db);
 	encode_string(self, name);
-	encode_string(self, schema_new);
+	encode_string(self, db_new);
 	encode_string(self, name_new);
 	encode_array_end(self);
 	return offset;
 }
 
 static inline void
-table_op_rename_read(uint8_t* op, Str* schema, Str* name, Str* schema_new, Str* name_new)
+table_op_rename_read(uint8_t* op, Str* db, Str* name, Str* db_new, Str* name_new)
 {
 	int64_t cmd;
 	json_read_array(&op);
 	json_read_integer(&op, &cmd);
 	assert(cmd == DDL_TABLE_RENAME);
-	json_read_string(&op, schema);
+	json_read_string(&op, db);
 	json_read_string(&op, name);
-	json_read_string(&op, schema_new);
+	json_read_string(&op, db_new);
 	json_read_string(&op, name_new);
 	json_read_array_end(&op);
 }
 
 static inline int
-table_op_truncate(Buf* self, Str* schema, Str* name)
+table_op_truncate(Buf* self, Str* db, Str* name)
 {
-	// [op, schema, name]
+	// [op, db, name]
 	auto offset = buf_size(self);
 	encode_array(self);
 	encode_integer(self, DDL_TABLE_TRUNCATE);
-	encode_string(self, schema);
+	encode_string(self, db);
 	encode_string(self, name);
 	encode_array_end(self);
 	return offset;
 }
 
 static inline void
-table_op_truncate_read(uint8_t* op, Str* schema, Str* name)
+table_op_truncate_read(uint8_t* op, Str* db, Str* name)
 {
 	int64_t cmd;
 	json_read_array(&op);
 	json_read_integer(&op, &cmd);
 	assert(cmd == DDL_TABLE_TRUNCATE);
-	json_read_string(&op, schema);
+	json_read_string(&op, db);
 	json_read_string(&op, name);
 	json_read_array_end(&op);
 }
 
 static inline int
-table_op_set_identity(Buf* self, Str* schema, Str* name, int64_t value)
+table_op_set_identity(Buf* self, Str* db, Str* name, int64_t value)
 {
-	// [op, schema, name, value]
+	// [op, db, name, value]
 	auto offset = buf_size(self);
 	encode_array(self);
 	encode_integer(self, DDL_TABLE_SET_IDENTITY);
-	encode_string(self, schema);
+	encode_string(self, db);
 	encode_string(self, name);
 	encode_integer(self, value);
 	encode_array_end(self);
@@ -129,26 +129,26 @@ table_op_set_identity(Buf* self, Str* schema, Str* name, int64_t value)
 }
 
 static inline void
-table_op_set_identity_read(uint8_t* op, Str* schema, Str* name, int64_t* value)
+table_op_set_identity_read(uint8_t* op, Str* db, Str* name, int64_t* value)
 {
 	int64_t cmd;
 	json_read_array(&op);
 	json_read_integer(&op, &cmd);
 	assert(cmd == DDL_TABLE_SET_IDENTITY);
-	json_read_string(&op, schema);
+	json_read_string(&op, db);
 	json_read_string(&op, name);
 	json_read_integer(&op, value);
 	json_read_array_end(&op);
 }
 
 static inline int
-table_op_set_unlogged(Buf* self, Str* schema, Str* name, bool value)
+table_op_set_unlogged(Buf* self, Str* db, Str* name, bool value)
 {
-	// [op, schema, name, value]
+	// [op, db, name, value]
 	auto offset = buf_size(self);
 	encode_array(self);
 	encode_integer(self, DDL_TABLE_SET_UNLOGGED);
-	encode_string(self, schema);
+	encode_string(self, db);
 	encode_string(self, name);
 	encode_bool(self, value);
 	encode_array_end(self);
@@ -156,26 +156,26 @@ table_op_set_unlogged(Buf* self, Str* schema, Str* name, bool value)
 }
 
 static inline void
-table_op_set_unlogged_read(uint8_t* op, Str* schema, Str* name, bool* value)
+table_op_set_unlogged_read(uint8_t* op, Str* db, Str* name, bool* value)
 {
 	int64_t cmd;
 	json_read_array(&op);
 	json_read_integer(&op, &cmd);
 	assert(cmd == DDL_TABLE_SET_UNLOGGED);
-	json_read_string(&op, schema);
+	json_read_string(&op, db);
 	json_read_string(&op, name);
 	json_read_bool(&op, value);
 	json_read_array_end(&op);
 }
 
 static inline int
-table_op_column_add(Buf* self, Str* schema, Str* name, Column* column)
+table_op_column_add(Buf* self, Str* db, Str* name, Column* column)
 {
-	// [op, schema, name, column]
+	// [op, db, name, column]
 	auto offset = buf_size(self);
 	encode_array(self);
 	encode_integer(self, DDL_TABLE_COLUMN_ADD);
-	encode_string(self, schema);
+	encode_string(self, db);
 	encode_string(self, name);
 	column_write(column, self);
 	encode_array_end(self);
@@ -183,13 +183,13 @@ table_op_column_add(Buf* self, Str* schema, Str* name, Column* column)
 }
 
 static inline Column*
-table_op_column_add_read(uint8_t* op, Str* schema, Str* name)
+table_op_column_add_read(uint8_t* op, Str* db, Str* name)
 {
 	int64_t cmd;
 	json_read_array(&op);
 	json_read_integer(&op, &cmd);
 	assert(cmd == DDL_TABLE_COLUMN_ADD);
-	json_read_string(&op, schema);
+	json_read_string(&op, db);
 	json_read_string(&op, name);
 	auto column = column_read(&op);
 	json_read_array_end(&op);
@@ -197,13 +197,13 @@ table_op_column_add_read(uint8_t* op, Str* schema, Str* name)
 }
 
 static inline int
-table_op_column_drop(Buf* self, Str* schema, Str* name, Str* name_column)
+table_op_column_drop(Buf* self, Str* db, Str* name, Str* name_column)
 {
-	// [op, schema, name, column]
+	// [op, db, name, column]
 	auto offset = buf_size(self);
 	encode_array(self);
 	encode_integer(self, DDL_TABLE_COLUMN_DROP);
-	encode_string(self, schema);
+	encode_string(self, db);
 	encode_string(self, name);
 	encode_string(self, name_column);
 	encode_array_end(self);
@@ -211,26 +211,26 @@ table_op_column_drop(Buf* self, Str* schema, Str* name, Str* name_column)
 }
 
 static inline void
-table_op_column_drop_read(uint8_t* op, Str* schema, Str* name, Str* name_column)
+table_op_column_drop_read(uint8_t* op, Str* db, Str* name, Str* name_column)
 {
 	int64_t cmd;
 	json_read_array(&op);
 	json_read_integer(&op, &cmd);
 	assert(cmd == DDL_TABLE_COLUMN_DROP);
-	json_read_string(&op, schema);
+	json_read_string(&op, db);
 	json_read_string(&op, name);
 	json_read_string(&op, name_column);
 	json_read_array_end(&op);
 }
 
 static inline int
-table_op_column_set(Buf* self, int op, Str* schema, Str* name, Str* column, Str* value)
+table_op_column_set(Buf* self, int op, Str* db, Str* name, Str* column, Str* value)
 {
-	// [op, schema, name, column, value]
+	// [op, db, name, column, value]
 	auto offset = buf_size(self);
 	encode_array(self);
 	encode_integer(self, op);
-	encode_string(self, schema);
+	encode_string(self, db);
 	encode_string(self, name);
 	encode_string(self, column);
 	encode_string(self, value);
@@ -239,12 +239,12 @@ table_op_column_set(Buf* self, int op, Str* schema, Str* name, Str* column, Str*
 }
 
 static inline int
-table_op_column_set_read(uint8_t* op, Str* schema, Str* name, Str* column, Str* value)
+table_op_column_set_read(uint8_t* op, Str* db, Str* name, Str* column, Str* value)
 {
 	int64_t cmd;
 	json_read_array(&op);
 	json_read_integer(&op, &cmd);
-	json_read_string(&op, schema);
+	json_read_string(&op, db);
 	json_read_string(&op, name);
 	json_read_string(&op, column);
 	json_read_string(&op, value);
@@ -253,15 +253,15 @@ table_op_column_set_read(uint8_t* op, Str* schema, Str* name, Str* column, Str* 
 }
 
 static inline int
-table_op_column_rename(Buf* self, Str* schema, Str* name,
+table_op_column_rename(Buf* self, Str* db, Str* name,
                        Str* name_column,
                        Str* name_column_new)
 {
-	// [op, schema, name, column]
+	// [op, db, name, column]
 	auto offset = buf_size(self);
 	encode_array(self);
 	encode_integer(self, DDL_TABLE_COLUMN_RENAME);
-	encode_string(self, schema);
+	encode_string(self, db);
 	encode_string(self, name);
 	encode_string(self, name_column);
 	encode_string(self, name_column_new);
@@ -270,7 +270,7 @@ table_op_column_rename(Buf* self, Str* schema, Str* name,
 }
 
 static inline void
-table_op_column_rename_read(uint8_t* op, Str* schema, Str* name,
+table_op_column_rename_read(uint8_t* op, Str* db, Str* name,
                             Str* name_column,
                             Str* name_column_new)
 {
@@ -278,7 +278,7 @@ table_op_column_rename_read(uint8_t* op, Str* schema, Str* name,
 	json_read_array(&op);
 	json_read_integer(&op, &cmd);
 	assert(cmd == DDL_TABLE_COLUMN_RENAME);
-	json_read_string(&op, schema);
+	json_read_string(&op, db);
 	json_read_string(&op, name);
 	json_read_string(&op, name_column);
 	json_read_string(&op, name_column_new);
@@ -286,13 +286,13 @@ table_op_column_rename_read(uint8_t* op, Str* schema, Str* name,
 }
 
 static inline int
-table_op_index_create(Buf* self, Str* schema, Str* name, IndexConfig* config)
+table_op_index_create(Buf* self, Str* db, Str* name, IndexConfig* config)
 {
-	// [op, schema, name, config]
+	// [op, db, name, config]
 	auto offset = buf_size(self);
 	encode_array(self);
 	encode_integer(self, DDL_INDEX_CREATE);
-	encode_string(self, schema);
+	encode_string(self, db);
 	encode_string(self, name);
 	index_config_write(config, self);
 	encode_array_end(self);
@@ -300,13 +300,13 @@ table_op_index_create(Buf* self, Str* schema, Str* name, IndexConfig* config)
 }
 
 static inline uint8_t*
-table_op_index_create_read(uint8_t* op, Str* schema, Str* name)
+table_op_index_create_read(uint8_t* op, Str* db, Str* name)
 {
 	int64_t cmd;
 	json_read_array(&op);
 	json_read_integer(&op, &cmd);
 	assert(cmd == DDL_INDEX_CREATE);
-	json_read_string(&op, schema);
+	json_read_string(&op, db);
 	json_read_string(&op, name);
 	auto config_pos = op;
 	json_read_array_end(&op);
@@ -314,13 +314,13 @@ table_op_index_create_read(uint8_t* op, Str* schema, Str* name)
 }
 
 static inline int
-table_op_index_drop(Buf* self, Str* schema, Str* name, Str* name_index)
+table_op_index_drop(Buf* self, Str* db, Str* name, Str* name_index)
 {
-	// [op, schema, name, name_index]
+	// [op, db, name, name_index]
 	auto offset = buf_size(self);
 	encode_array(self);
 	encode_integer(self, DDL_INDEX_DROP);
-	encode_string(self, schema);
+	encode_string(self, db);
 	encode_string(self, name);
 	encode_string(self, name_index);
 	encode_array_end(self);
@@ -328,28 +328,28 @@ table_op_index_drop(Buf* self, Str* schema, Str* name, Str* name_index)
 }
 
 static inline void
-table_op_index_drop_read(uint8_t* op, Str* schema, Str* name, Str* name_index)
+table_op_index_drop_read(uint8_t* op, Str* db, Str* name, Str* name_index)
 {
 	int64_t cmd;
 	json_read_array(&op);
 	json_read_integer(&op, &cmd);
 	assert(cmd == DDL_INDEX_DROP);
-	json_read_string(&op, schema);
+	json_read_string(&op, db);
 	json_read_string(&op, name);
 	json_read_string(&op, name_index);
 	json_read_array_end(&op);
 }
 
 static inline int
-table_op_index_rename(Buf* self, Str* schema, Str* name,
+table_op_index_rename(Buf* self, Str* db, Str* name,
                       Str* name_index,
                       Str* name_index_new)
 {
-	// [op, schema, name, name_index, name_index_new]
+	// [op, db, name, name_index, name_index_new]
 	auto offset = buf_size(self);
 	encode_array(self);
 	encode_integer(self, DDL_INDEX_RENAME);
-	encode_string(self, schema);
+	encode_string(self, db);
 	encode_string(self, name);
 	encode_string(self, name_index);
 	encode_string(self, name_index_new);
@@ -358,7 +358,7 @@ table_op_index_rename(Buf* self, Str* schema, Str* name,
 }
 
 static inline void
-table_op_index_rename_read(uint8_t* op, Str* schema, Str* name,
+table_op_index_rename_read(uint8_t* op, Str* db, Str* name,
                            Str*     name_index,
                            Str*     name_index_new)
 {
@@ -366,7 +366,7 @@ table_op_index_rename_read(uint8_t* op, Str* schema, Str* name,
 	json_read_array(&op);
 	json_read_integer(&op, &cmd);
 	assert(cmd == DDL_INDEX_RENAME);
-	json_read_string(&op, schema);
+	json_read_string(&op, db);
 	json_read_string(&op, name);
 	json_read_string(&op, name_index);
 	json_read_string(&op, name_index_new);

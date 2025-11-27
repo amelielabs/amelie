@@ -43,7 +43,7 @@ table_mgr_create(TableMgr*    self,
                  bool         if_not_exists)
 {
 	// make sure table does not exists
-	auto current = table_mgr_find(self, &config->schema, &config->name, false);
+	auto current = table_mgr_find(self, &config->db, &config->name, false);
 	if (current)
 	{
 		if (! if_not_exists)
@@ -74,10 +74,10 @@ table_mgr_drop_of(TableMgr* self, Tr* tr, Table* table)
 }
 
 bool
-table_mgr_drop(TableMgr* self, Tr* tr, Str* schema, Str* name,
+table_mgr_drop(TableMgr* self, Tr* tr, Str* db, Str* name,
                bool if_exists)
 {
-	auto table = table_mgr_find(self, schema, name, false);
+	auto table = table_mgr_find(self, db, name, false);
 	if (! table)
 	{
 		if (! if_exists)
@@ -114,11 +114,11 @@ static LogIf truncate_if =
 bool
 table_mgr_truncate(TableMgr* self,
                    Tr*       tr,
-                   Str*      schema,
+                   Str*      db,
                    Str*      name,
                    bool      if_exists)
 {
-	auto table = table_mgr_find(self, schema, name, false);
+	auto table = table_mgr_find(self, db, name, false);
 	if (! table)
 	{
 		if (! if_exists)
@@ -148,10 +148,10 @@ table_mgr_dump(TableMgr* self, Buf* buf)
 }
 
 Table*
-table_mgr_find(TableMgr* self, Str* schema, Str* name,
+table_mgr_find(TableMgr* self, Str* db, Str* name,
                bool error_if_not_exists)
 {
-	auto relation = relation_mgr_get(&self->mgr, schema, name);
+	auto relation = relation_mgr_get(&self->mgr, db, name);
 	if (! relation)
 	{
 		if (error_if_not_exists)
@@ -163,13 +163,13 @@ table_mgr_find(TableMgr* self, Str* schema, Str* name,
 }
 
 Buf*
-table_mgr_list(TableMgr* self, Str* schema, Str* name, bool extended)
+table_mgr_list(TableMgr* self, Str* db, Str* name, bool extended)
 {
 	auto buf = buf_create();
-	if (schema && name)
+	if (db && name)
 	{
 		// show table
-		auto table = table_mgr_find(self, schema, name, false);
+		auto table = table_mgr_find(self, db, name, false);
 		if (table) {
 			if (extended)
 				table_config_write(table->config, buf);
@@ -186,7 +186,7 @@ table_mgr_list(TableMgr* self, Str* schema, Str* name, bool extended)
 	list_foreach(&self->mgr.list)
 	{
 		auto table = table_of(list_at(Relation, link));
-		if (schema && !str_compare_case(&table->config->schema, schema))
+		if (db && !str_compare_case(&table->config->db, db))
 			continue;
 		if (extended)
 			table_config_write(table->config, buf);

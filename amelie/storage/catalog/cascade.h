@@ -11,5 +11,5 @@
 // AGPL-3.0 Licensed.
 //
 
-bool cascade_schema_drop(Catalog*, Tr*, Str*, bool, bool);
-bool cascade_schema_rename(Catalog*, Tr*, Str*, Str*, bool);
+bool cascade_db_drop(Catalog*, Tr*, Str*, bool, bool);
+bool cascade_db_rename(Catalog*, Tr*, Str*, Str*, bool);

@@ -13,10 +13,10 @@
 
 enum
 {
-	// schema
-	DDL_SCHEMA_CREATE,
-	DDL_SCHEMA_DROP,
-	DDL_SCHEMA_RENAME,
+	// database
+	DDL_DB_CREATE,
+	DDL_DB_DROP,
+	DDL_DB_RENAME,
 
 	// table
 	DDL_TABLE_CREATE,

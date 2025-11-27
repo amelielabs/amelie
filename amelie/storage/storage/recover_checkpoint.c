@@ -61,7 +61,7 @@ recover_partition(Part* self)
 }
 
 hot void
-recover_checkpoint(Db* self, Core* core)
+recover_checkpoint(Storage* self, Core* core)
 {
 	list_foreach(&self->catalog.table_mgr.mgr.list)
 	{
