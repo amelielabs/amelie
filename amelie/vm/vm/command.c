@@ -449,15 +449,15 @@ ctable_open(Vm* self, Op* op, bool point_lookup, bool open_part)
 
 	// read names
 	uint8_t* pos = code_data_at(self->code_data, op->b);
-	Str name_schema;
+	Str name_db;
 	Str name_table;
 	Str name_index;
-	json_read_string(&pos, &name_schema);
+	json_read_string(&pos, &name_db);
 	json_read_string(&pos, &name_table);
 	json_read_string(&pos, &name_index);
 
 	// find table, partition and index
-	auto table = table_mgr_find(&share()->db->catalog.table_mgr, &name_schema, &name_table, true);
+	auto table = table_mgr_find(&share()->storage->catalog.table_mgr, &name_db, &name_table, true);
 	auto index = table_find_index(table, &name_index, true);
 	auto keys  = &index->keys;
 	auto keys_count = op->d;
@@ -498,13 +498,13 @@ ctable_open_heap(Vm* self, Op* op)
 
 	// read names
 	uint8_t* pos = code_data_at(self->code_data, op->b);
-	Str name_schema;
+	Str name_db;
 	Str name_table;
-	json_read_string(&pos, &name_schema);
+	json_read_string(&pos, &name_db);
 	json_read_string(&pos, &name_table);
 
 	// find table and partition
-	auto table = table_mgr_find(&share()->db->catalog.table_mgr, &name_schema, &name_table, true);
+	auto table = table_mgr_find(&share()->storage->catalog.table_mgr, &name_db, &name_table, true);
 	auto part  = part_list_match(&table->part_list, self->core);
 
 	// open cursor

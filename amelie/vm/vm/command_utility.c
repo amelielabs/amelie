@@ -202,5 +202,5 @@ cddl(Vm* self, Op* op)
 	unused(self);
 	auto pos = code_data_at(self->code_data, op->a);
 	auto flags = op->b;
-	catalog_execute(&share()->db->catalog, self->tr, pos, flags);
+	catalog_execute(&share()->storage->catalog, self->tr, pos, flags);
 }

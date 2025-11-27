@@ -372,7 +372,7 @@ op_dump_send(Program* self, Code* code, Op* op, Buf* buf, Send* send,
 	auto config = send->table->config;
 	op_write(buf, op, a, b, c,
 	         "%.*s.%.*s (%s%s)",
-	         str_size(&config->schema), str_of(&config->schema),
+	         str_size(&config->db), str_of(&config->db),
 	         str_size(&config->name), str_of(&config->name),
 	         send_of(send),
 	         is_last ? ", closing" : "");
@@ -467,8 +467,8 @@ op_dump(Program* self, Code* code, Buf* buf)
 			auto table = (Table*)op->a;
 			op_write(output, op, false, true, true,
 			         "%.*s.%.*s",
-			         str_size(&table->config->schema),
-			         str_of(&table->config->schema),
+			         str_size(&table->config->db),
+			         str_of(&table->config->db),
 			         str_size(&table->config->name),
 			         str_of(&table->config->name));
 			break;
@@ -478,17 +478,17 @@ op_dump(Program* self, Code* code, Buf* buf)
 		case CTABLE_OPEN_PART:
 		case CTABLE_OPEN_PARTL:
 		{
-			Str name_schema;
+			Str name_db;
 			Str name_table;
 			Str name_index;
 			uint8_t* ref = code_data_at(data, op->b);
-			json_read_string(&ref, &name_schema);
+			json_read_string(&ref, &name_db);
 			json_read_string(&ref, &name_table);
 			json_read_string(&ref, &name_index);
 			op_write(output, op, true, true, true,
 			         "%.*s.%.*s (%.*s)",
-			         str_size(&name_schema),
-			         str_of(&name_schema),
+			         str_size(&name_db),
+			         str_of(&name_db),
 			         str_size(&name_table),
 			         str_of(&name_table),
 			         str_size(&name_index),
@@ -497,15 +497,15 @@ op_dump(Program* self, Code* code, Buf* buf)
 		}
 		case CTABLE_OPEN_HEAP:
 		{
-			Str name_schema;
+			Str name_db;
 			Str name_table;
 			uint8_t* ref = code_data_at(data, op->b);
-			json_read_string(&ref, &name_schema);
+			json_read_string(&ref, &name_db);
 			json_read_string(&ref, &name_table);
 			op_write(output, op, true, true, true,
 			         "%.*s.%.*s",
-			         str_size(&name_schema),
-			         str_of(&name_schema),
+			         str_size(&name_db),
+			         str_of(&name_db),
 			         str_size(&name_table),
 			         str_of(&name_table));
 			break;
@@ -515,8 +515,8 @@ op_dump(Program* self, Code* code, Buf* buf)
 			auto table = (Table*)op->b;
 			op_write(output, op, true, false, true,
 			         "%.*s.%.*s",
-			         str_size(&table->config->schema),
-			         str_of(&table->config->schema),
+			         str_size(&table->config->db),
+			         str_of(&table->config->db),
 			         str_size(&table->config->name),
 			         str_of(&table->config->name));
 			break;
@@ -525,9 +525,7 @@ op_dump(Program* self, Code* code, Buf* buf)
 		{
 			auto function = (Function*)op->b;
 			op_write(output, op, true, false, true,
-			         "%.*s.%.*s()",
-			         str_size(&function->schema),
-			         str_of(&function->schema),
+			         "%.*s()",
 			         str_size(&function->name),
 			         str_of(&function->name));
 			break;
@@ -537,8 +535,8 @@ op_dump(Program* self, Code* code, Buf* buf)
 			auto udf = (Udf*)op->b;
 			op_write(output, op, true, false, false,
 			         "%.*s.%.*s()",
-			         str_size(&udf->config->schema),
-			         str_of(&udf->config->schema),
+			         str_size(&udf->config->db),
+			         str_of(&udf->config->db),
 			         str_size(&udf->config->name),
 			         str_of(&udf->config->name));
 			break;
