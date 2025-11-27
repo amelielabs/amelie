@@ -32,7 +32,7 @@
 #include <amelie_backup.h>
 
 void
-backup_init(Backup* self, Db* db)
+backup_init(Backup* self, Storage* storage)
 {
 	self->state_step       = 0;
 	self->state_step_total = 0;
@@ -40,7 +40,7 @@ backup_init(Backup* self, Db* db)
 	self->state_file       = NULL;
 	self->snapshot         = false;
 	self->client           = NULL;
-	self->db               = db;
+	self->storage          = storage;
 	event_init(&self->on_complete);
 	wal_slot_init(&self->wal_slot);
 	buf_init(&self->state);
@@ -50,10 +50,10 @@ backup_init(Backup* self, Db* db)
 void
 backup_free(Backup* self)
 {
-	auto db = self->db;
-	wal_del(&db->wal_mgr.wal, &self->wal_slot);
+	auto storage = self->storage;
+	wal_del(&storage->wal_mgr.wal, &self->wal_slot);
 	if (self->snapshot)
-		id_mgr_delete(&db->checkpoint_mgr.list_snapshot, 0);
+		id_mgr_delete(&storage->checkpoint_mgr.list_snapshot, 0);
 	if (self->state_file)
 		buf_free(self->state_file);
 	buf_free(&self->state);
@@ -100,16 +100,16 @@ backup_list(Buf* self, char* name)
 static int
 backup_prepare_files(Backup* self, uint64_t checkpoint)
 {
-	auto db  = self->db;
-	auto buf = &self->state;
+	auto storage = self->storage;
+	auto buf     = &self->state;
 
 	encode_array(buf);
 
 	// include checkpoint files
-	checkpoint_mgr_list(&db->checkpoint_mgr, checkpoint, buf);
+	checkpoint_mgr_list(&storage->checkpoint_mgr, checkpoint, buf);
 
 	// create wal snapshot and include wal files
-	wal_snapshot(&db->wal_mgr.wal, &self->wal_slot, buf);
+	wal_snapshot(&storage->wal_mgr.wal, &self->wal_slot, buf);
 
 	// include certs files
 	backup_list(buf, "certs");
@@ -130,8 +130,8 @@ static uint64_t
 backup_prepare(Backup* self)
 {
 	// add checkpoint snapshot
-	auto db  = self->db;
-	auto checkpoint = checkpoint_mgr_snapshot(&db->checkpoint_mgr);
+	auto storage    = self->storage;
+	auto checkpoint = checkpoint_mgr_snapshot(&storage->checkpoint_mgr);
 	self->snapshot = true;
 
 	// create wal snapshot and prepare files
@@ -357,11 +357,11 @@ backup_run(Backup* self, Client* client)
 }
 
 void
-backup(Db* db, Client* client)
+backup(Storage* storage, Client* client)
 {
 	// processs backup and wait for completion
 	Backup backup;
-	backup_init(&backup, db);
+	backup_init(&backup, storage);
 	error_catch(
 		backup_run(&backup, client);
 	);

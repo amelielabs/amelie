@@ -25,10 +25,10 @@ struct Backup
 	Client*  client;
 	Event    on_complete;
 	Task     task;
-	Db*      db;
+	Storage* storage;
 };
 
-void backup_init(Backup*, Db*);
+void backup_init(Backup*, Storage*);
 void backup_free(Backup*);
 void backup_run(Backup*, Client*);
-void backup(Db*, Client*);
+void backup(Storage*, Client*);
