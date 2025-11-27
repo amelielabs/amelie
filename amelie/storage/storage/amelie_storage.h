@@ -11,10 +11,10 @@
 // AGPL-3.0 Licensed.
 //
 
-// db
-#include "db/db.h"
-#include "db/db_checkpoint.h"
+// storage
+#include "storage/storage.h"
+#include "storage/storage_checkpoint.h"
 
 // recover
-#include "db/recover_checkpoint.h"
-#include "db/recover.h"
+#include "storage/recover_checkpoint.h"
+#include "storage/recover.h"

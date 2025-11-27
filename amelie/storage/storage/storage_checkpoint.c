@@ -23,7 +23,7 @@
 #include <amelie_checkpoint.h>
 #include <amelie_catalog.h>
 #include <amelie_wal.h>
-#include <amelie_db.h>
+#include <amelie_storage.h>
 
 static Buf*
 db_checkpoint_catalog_dump(void* arg)

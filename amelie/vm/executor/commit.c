@@ -27,7 +27,7 @@
 #include <amelie_checkpoint.h>
 #include <amelie_catalog.h>
 #include <amelie_wal.h>
-#include <amelie_db.h>
+#include <amelie_storage.h>
 #include <amelie_value.h>
 #include <amelie_set.h>
 #include <amelie_content.h>

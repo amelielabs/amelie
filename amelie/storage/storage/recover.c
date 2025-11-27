@@ -23,7 +23,7 @@
 #include <amelie_checkpoint.h>
 #include <amelie_catalog.h>
 #include <amelie_wal.h>
-#include <amelie_db.h>
+#include <amelie_storage.h>
 
 void
 recover_init(Recover* self, Db* db, bool write_wal)
