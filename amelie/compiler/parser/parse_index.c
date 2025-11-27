@@ -82,7 +82,7 @@ parse_index_create(Stmt* self, bool unique)
 
 	// find table
 	auto table = table_mgr_find(&share()->storage->catalog.table_mgr,
-	                            &self->parser->local->db,
+	                            self->parser->db,
 	                            &stmt->table_name,
 	                            false);
 	if (! table)

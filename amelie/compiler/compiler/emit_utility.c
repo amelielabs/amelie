@@ -45,6 +45,7 @@ static void
 emit_alter_table(Compiler* self)
 {
 	auto stmt   = compiler_stmt(self);
+	auto db     = self->parser.db;
 	auto data   = &self->code_data->data;
 	auto arg    = ast_table_alter_of(stmt->ast);
 	auto offset = 0;
@@ -52,30 +53,25 @@ emit_alter_table(Compiler* self)
 	switch (arg->type) {
 	case TABLE_ALTER_RENAME:
 	{
-		offset = table_op_rename(data, &arg->schema, &arg->name,
-		                         &arg->schema_new,
-		                         &arg->name_new);
+		offset = table_op_rename(data, db, &arg->name, db, &arg->name_new);
 		flags = arg->if_exists ? DDL_IF_EXISTS : 0;
 		break;
 	}
 	case TABLE_ALTER_SET_IDENTITY:
 	{
-		offset = table_op_set_identity(data, &arg->schema, &arg->name,
-		                               arg->identity->integer);
+		offset = table_op_set_identity(data, db, &arg->name, arg->identity->integer);
 		flags = arg->if_exists ? DDL_IF_EXISTS : 0;
 		break;
 	}
 	case TABLE_ALTER_SET_UNLOGGED:
 	{
-		offset = table_op_set_unlogged(data, &arg->schema, &arg->name,
-		                               arg->unlogged);
+		offset = table_op_set_unlogged(data, db, &arg->name, arg->unlogged);
 		flags = arg->if_exists ? DDL_IF_EXISTS : 0;
 		break;
 	}
 	case TABLE_ALTER_COLUMN_RENAME:
 	{
-		offset = table_op_column_rename(data, &arg->schema, &arg->name,
-		                                &arg->column_name,
+		offset = table_op_column_rename(data, db, &arg->name, &arg->column_name,
 		                                &arg->name_new);
 		flags = arg->if_exists ? DDL_IF_EXISTS : 0;
 		if (arg->if_column_exists)
@@ -84,7 +80,7 @@ emit_alter_table(Compiler* self)
 	}
 	case TABLE_ALTER_COLUMN_ADD:
 	{
-		offset = table_op_column_add(data, &arg->schema, &arg->name, arg->column);
+		offset = table_op_column_add(data, db, &arg->name, arg->column);
 		flags = arg->if_exists ? DDL_IF_EXISTS : 0;
 		if (arg->if_column_not_exists)
 			flags |= DDL_IF_COLUMN_NOT_EXISTS;
@@ -92,7 +88,7 @@ emit_alter_table(Compiler* self)
 	}
 	case TABLE_ALTER_COLUMN_DROP:
 	{
-		offset = table_op_column_drop(data, &arg->schema, &arg->name, &arg->column_name);
+		offset = table_op_column_drop(data, db, &arg->name, &arg->column_name);
 		flags = arg->if_exists ? DDL_IF_EXISTS : 0;
 		if (arg->if_column_exists)
 			flags |= DDL_IF_COLUMN_EXISTS;
@@ -102,7 +98,7 @@ emit_alter_table(Compiler* self)
 	case TABLE_ALTER_COLUMN_UNSET_DEFAULT:
 	{
 		offset = table_op_column_set(data, DDL_TABLE_COLUMN_SET_DEFAULT,
-		                             &arg->schema, &arg->name,
+		                             db, &arg->name,
 		                             &arg->column_name,
 		                             &arg->value);
 		flags = arg->if_exists ? DDL_IF_EXISTS : 0;
@@ -114,7 +110,7 @@ emit_alter_table(Compiler* self)
 	case TABLE_ALTER_COLUMN_UNSET_STORED:
 	{
 		offset = table_op_column_set(data, DDL_TABLE_COLUMN_SET_STORED,
-		                             &arg->schema, &arg->name,
+		                             db, &arg->name,
 		                             &arg->column_name,
 		                             &arg->value);
 		flags = arg->if_exists ? DDL_IF_EXISTS : 0;
@@ -126,7 +122,7 @@ emit_alter_table(Compiler* self)
 	case TABLE_ALTER_COLUMN_UNSET_RESOLVED:
 	{
 		offset = table_op_column_set(data, DDL_TABLE_COLUMN_SET_RESOLVED,
-		                             &arg->schema, &arg->name,
+		                             db, &arg->name,
 		                             &arg->column_name,
 		                             &arg->value);
 		flags = arg->if_exists ? DDL_IF_EXISTS : 0;
@@ -145,29 +141,30 @@ static void
 emit_ddl(Compiler* self)
 {
 	auto stmt   = compiler_stmt(self);
+	auto db     = self->parser.db;
 	auto data   = &self->code_data->data;
 	auto offset = 0;
 	auto flags  = 0;
 	switch (stmt->id) {
-	// schema	
-	case STMT_CREATE_SCHEMA:
+	// database
+	case STMT_CREATE_DB:
 	{
-		auto arg = ast_schema_create_of(stmt->ast);
-		offset = schema_op_create(data, arg->config);
+		auto arg = ast_db_create_of(stmt->ast);
+		offset = db_op_create(data, arg->config);
 		flags = arg->if_not_exists ? DDL_IF_NOT_EXISTS : 0;
 		break;
 	}
-	case STMT_DROP_SCHEMA:
+	case STMT_DROP_DB:
 	{
-		auto arg = ast_schema_drop_of(stmt->ast);
-		offset = schema_op_drop(data, &arg->name->string, arg->cascade);
+		auto arg = ast_db_drop_of(stmt->ast);
+		offset = db_op_drop(data, &arg->name->string, arg->cascade);
 		flags = arg->if_exists ? DDL_IF_EXISTS : 0;
 		break;
 	}
-	case STMT_ALTER_SCHEMA:
+	case STMT_ALTER_DB:
 	{
-		auto arg = ast_schema_alter_of(stmt->ast);
-		offset = schema_op_rename(data, &arg->name->string, &arg->name_new->string);
+		auto arg = ast_db_alter_of(stmt->ast);
+		offset = db_op_rename(data, &arg->name->string, &arg->name_new->string);
 		flags = arg->if_exists ? DDL_IF_EXISTS : 0;
 		break;
 	}
@@ -183,7 +180,7 @@ emit_ddl(Compiler* self)
 	case STMT_DROP_TABLE:
 	{
 		auto arg = ast_table_drop_of(stmt->ast);
-		offset = table_op_drop(data, &arg->schema, &arg->name);
+		offset = table_op_drop(data, db, &arg->name);
 		flags = arg->if_exists ? DDL_IF_EXISTS : 0;
 		break;
 	}
@@ -195,7 +192,7 @@ emit_ddl(Compiler* self)
 	case STMT_TRUNCATE:
 	{
 		auto arg = ast_table_truncate_of(stmt->ast);
-		offset = table_op_truncate(data, &arg->schema, &arg->name);
+		offset = table_op_truncate(data, db, &arg->name);
 		flags = arg->if_exists ? DDL_IF_EXISTS : 0;
 		break;
 	}
@@ -204,22 +201,22 @@ emit_ddl(Compiler* self)
 	case STMT_CREATE_INDEX:
 	{
 		auto arg = ast_index_create_of(stmt->ast);
-		offset = table_op_index_create(data, &arg->table_schema, &arg->table_name, arg->config);
+		offset = table_op_index_create(data, db, &arg->table_name, arg->config);
 		flags = arg->if_not_exists ? DDL_IF_NOT_EXISTS : 0;
 		break;
 	}
 	case STMT_DROP_INDEX:
 	{
 		auto arg = ast_index_drop_of(stmt->ast);
-		offset = table_op_index_drop(data, &arg->table_schema, &arg->table_name, &arg->name);
+		offset = table_op_index_drop(data, db, &arg->table_name, &arg->name);
 		flags = arg->if_exists ? DDL_IF_EXISTS : 0;
 		break;
 	}
 	case STMT_ALTER_INDEX:
 	{
 		auto arg = ast_index_alter_of(stmt->ast);
-		offset = table_op_index_rename(data, &arg->table_schema, &arg->table_name,
-		                               &arg->name, &arg->name_new);
+		offset = table_op_index_rename(data, db, &arg->table_name, &arg->name,
+		                               &arg->name_new);
 		flags = arg->if_exists ? DDL_IF_EXISTS : 0;
 		break;
 	}
@@ -238,16 +235,14 @@ emit_ddl(Compiler* self)
 	case STMT_DROP_FUNCTION:
 	{
 		auto arg = ast_function_drop_of(stmt->ast);
-		offset = udf_op_drop(data, &arg->schema, &arg->name);
+		offset = udf_op_drop(data, db, &arg->name);
 		flags = arg->if_exists ? DDL_IF_EXISTS : 0;
 		break;
 	}
 	case STMT_ALTER_FUNCTION:
 	{
 		auto arg = ast_function_alter_of(stmt->ast);
-		offset = udf_op_rename(data, &arg->schema, &arg->name,
-		                       &arg->schema_new,
-		                       &arg->name_new);
+		offset = udf_op_rename(data, db, &arg->name, db, &arg->name_new);
 		flags = arg->if_exists ? DDL_IF_EXISTS : 0;
 		break;
 	}
@@ -265,15 +260,13 @@ emit_show(Compiler* self)
 	auto stmt = compiler_stmt(self);
 	auto arg  = ast_show_of(stmt->ast);
 
-	// find system.show() function
-	Str schema;
-	str_set(&schema, "system", 6);
+	// find show() function
 	Str name;
 	str_set(&name, "show", 4);
-	auto fn = function_mgr_find(share()->function_mgr, &schema, &name);
+	auto fn = function_mgr_find(share()->function_mgr, &name);
 	assert(fn);
 
-	// system.show(section, name, schema, extended)
+	// show(section, name, db, extended)
 	int r = emit_string(self, &arg->section, false);
 	op1(self, CPUSH, r);
 	runpin(self, r);
@@ -282,7 +275,7 @@ emit_show(Compiler* self)
 	op1(self, CPUSH, r);
 	runpin(self, r);
 
-	r = emit_string(self, &arg->schema, false);
+	r = emit_string(self, self->parser.db, false);
 	op1(self, CPUSH, r);
 	runpin(self, r);
 

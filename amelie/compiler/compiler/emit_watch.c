@@ -59,12 +59,10 @@ emit_watch(Compiler* self, Ast* ast)
 	op2(self, CJTR, 0 /* _end */, rexpr);
 	runpin(self, rexpr);
 
-	// get public.sleep()
-	Str schema;
-	str_set(&schema, "public", 6);
+	// find sleep()
 	Str name;
 	str_set(&name, "sleep", 5);
-	auto func = function_mgr_find(share()->function_mgr, &schema, &name);
+	auto func = function_mgr_find(share()->function_mgr, &name);
 	assert(func);
 
 	// call sleep(1000)

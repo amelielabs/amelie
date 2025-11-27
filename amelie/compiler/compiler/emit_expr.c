@@ -956,14 +956,12 @@ emit_match(Compiler* self, From* from, Ast* ast)
 hot static inline int
 emit_at_timezone(Compiler* self, From* from, Ast* ast)
 {
-	// public.at_timezone(time, timezone)
-	Str schema;
-	str_set(&schema, "public", 6);
+	// at_timezone(time, timezone)
 	Str name;
 	str_set(&name, "at_timezone", 11);
 
 	// find and call function
-	auto fn = function_mgr_find(share()->function_mgr, &schema, &name);
+	auto fn = function_mgr_find(share()->function_mgr, &name);
 	assert(fn);
 
 	// push arguments

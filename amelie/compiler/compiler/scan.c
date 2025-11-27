@@ -145,10 +145,10 @@ scan_table(Scan* self, Target* target)
 	// set target origin
 	target_set_origin(target, cp->origin);
 
-	// save schema, table and index name
+	// save db, table and index name
 	auto name_offset = code_data_offset(cp->code_data);
 	auto data = &cp->code_data->data;
-	encode_string(data, &table->config->schema);
+	encode_string(data, &table->config->db);
 	encode_string(data, &table->config->name);
 	encode_string(data, &index->name);
 
@@ -228,10 +228,10 @@ scan_table_heap(Scan* self, Target* target)
 	// set target origin
 	target_set_origin(target, cp->origin);
 
-	// save schema, table (no index)
+	// save db, table (no index)
 	auto name_offset = code_data_offset(cp->code_data);
 	auto data = &cp->code_data->data;
-	encode_string(data, &table->config->schema);
+	encode_string(data, &table->config->db);
 	encode_string(data, &table->config->name);
 
 	// ensure target does not require full table access

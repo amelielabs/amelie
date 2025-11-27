@@ -96,7 +96,7 @@ parse_function_create(Stmt* self, bool or_replace)
 
 	// name
 	auto name = stmt_expect(self, KNAME);
-	udf_config_set_db(stmt->config, &self->parser->local->db);
+	udf_config_set_db(stmt->config, self->parser->db);
 	udf_config_set_name(stmt->config, &name->string);
 
 	// (args)

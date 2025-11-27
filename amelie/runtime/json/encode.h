@@ -87,15 +87,15 @@ encode_string_unescape(Buf* self, Str* string)
 }
 
 always_inline hot static inline void
-encode_target(Buf* self, Str* schema, Str* name)
+encode_target(Buf* self, Str* db, Str* name)
 {
-	//  schema.name
-	auto size = str_size(schema) + 1 + str_size(name);
+	//  db.name
+	auto size = str_size(db) + 1 + str_size(name);
 	auto size_string = json_size_string(size);
 	auto pos = buf_reserve(self, size_string);
 	json_write_raw(pos, NULL, size);
-	memcpy(*pos, str_of(schema), str_size(schema));
-	*pos += str_size(schema);
+	memcpy(*pos, str_of(db), str_size(db));
+	*pos += str_size(db);
 	memcpy(*pos, ".", 1);
 	*pos += 1;
 	memcpy(*pos, str_of(name), str_size(name));

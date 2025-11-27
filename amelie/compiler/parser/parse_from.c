@@ -171,7 +171,7 @@ parse_from_target(Stmt* self, From* from, AccessType access, bool subquery)
 
 	// table
 	auto table = table_mgr_find(&share()->storage->catalog.table_mgr,
-	                            &self->parser->local->db,
+	                            self->parser->db,
 	                            &name->string, false);
 	if (table)
 	{

@@ -96,12 +96,10 @@ emit_upsert(Compiler* self, Ast* ast)
 	}
 	case ON_CONFLICT_ERROR:
 	{
-		// get public.error()
-		Str schema;
-		str_set(&schema, "public", 6);
+		// find error()
 		Str name;
 		str_set(&name, "error", 5);
-		auto func = function_mgr_find(share()->function_mgr, &schema, &name);
+		auto func = function_mgr_find(share()->function_mgr, &name);
 		assert(func);
 
 		// call error()

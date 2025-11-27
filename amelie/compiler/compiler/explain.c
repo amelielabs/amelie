@@ -42,7 +42,7 @@
 #include <amelie_compiler.h>
 
 void
-explain(Compiler* self, Str* schema, Str* function)
+explain(Compiler* self, Str* db, Str* function)
 {
 	auto program = self->program;
 	auto buf = &self->program->explain;
@@ -53,7 +53,7 @@ explain(Compiler* self, Str* schema, Str* function)
 	if (function)
 	{
 		encode_raw(buf, "function", 8);
-		encode_target(buf, schema, function);
+		encode_target(buf, db, function);
 	}
 
 	// main

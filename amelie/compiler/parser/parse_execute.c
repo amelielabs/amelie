@@ -84,7 +84,7 @@ parse_execute(Stmt* self)
 
 	// find function
 	stmt->udf = udf_mgr_find(&share()->storage->catalog.udf_mgr,
-	                         &self->parser->local->db,
+	                         self->parser->db,
 	                         &name->string, false);
 	if (! stmt->udf)
 		stmt_error(self, name, "function not found");
