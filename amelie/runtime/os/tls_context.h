@@ -15,12 +15,17 @@ typedef struct TlsContext TlsContext;
 
 struct TlsContext
 {
-	bool    client;
-	void*   ctx;
-	Remote* remote;
+	void* ctx;
+	bool  client;
+	Str*  file_cert;
+	Str*  file_key;
+	Str*  file_ca;
+	Str*  path_ca;
+	Str*  server;
 };
 
 void tls_context_init(TlsContext*);
 void tls_context_free(TlsContext*);
+void tls_context_set(TlsContext*, bool, Str*, Str*, Str*, Str*, Str*);
 bool tls_context_created(TlsContext*);
-void tls_context_create(TlsContext*, bool, Remote*);
+void tls_context_create(TlsContext*);

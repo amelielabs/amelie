@@ -269,6 +269,7 @@ http_read_content(Http* self, Readahead* readahead, Buf* content)
 	http_read_content_limit(self, readahead, content, UINT64_MAX);
 }
 
+#if 0
 hot void
 http_write_request(Http* self, char* fmt, ...)
 {
@@ -306,4 +307,97 @@ hot void
 http_write_end(Http* self)
 {
 	buf_write(&self->raw, "\r\n", 2);
+}
+#endif
+
+hot void
+http_request(Http* self, Endpoint* endpoint, uint64_t size)
+{
+	// request
+	auto raw = &self->raw;
+	buf_reset(raw);
+
+	// POST /v1/db/<db_name>/tables/<name>
+	// POST /v1/db/<db_name>/functions/<name>
+	// POST /v1/db/<db_name>
+	auto db       = opt_string_of(&endpoint->db);
+	auto table    = opt_string_of(&endpoint->table);
+	auto function = opt_string_of(&endpoint->function);
+
+	// POST
+	buf_write(raw, "POST /v1/db/", 12);
+	buf_write_str(raw, db);
+	if (! str_empty(table))
+	{
+		buf_write(raw, "tables/", 7);
+		buf_write_str(raw, table);
+	} else
+	if (! str_empty(function))
+	{
+		buf_write(raw, "functions/", 10);
+		buf_write_str(raw, function);
+	}
+	buf_write(raw, " HTTP/1.1\r\n", 11);
+
+	// token
+	auto token = opt_string_of(&endpoint->token);
+	if (! str_empty(token))
+	{
+		buf_write(raw, "Authorization: Bearer ", 21);
+		buf_write_str(raw, token);
+		buf_write(raw, "\r\n", 2);
+	}
+
+	// content-type
+	auto content_type = opt_string_of(&endpoint->content_type);
+	buf_write(raw, "Content-Type: ", 14);
+	buf_write_str(raw, content_type);
+	buf_write(raw, "\r\n", 2);
+
+	// content-length
+	if (size > 0)
+	{
+		buf_write(raw, "Content-Length: ", 16);
+		buf_printf(raw, "%" PRIu64, size);
+		buf_write(raw, "\r\n", 2);
+	}
+
+	// todo: Prefer
+
+	// end
+	buf_write(raw, "\r\n", 2);
+}
+
+hot void
+http_reply(Http*    self, Endpoint* endpoint,
+           char*    msg,
+           int      msg_size,
+           uint64_t size)
+{
+	// reply
+	auto raw = &self->raw;
+	buf_reset(raw);
+
+	// HTTP/1.1 <code msg>
+	buf_write(raw, "HTTP/1.1 ", 9);
+	buf_write(raw, msg, msg_size);
+	buf_write(raw, "\r\n", 2);
+
+	// content
+	if (size > 0)
+	{
+		// content-type (using accept)
+		auto accept = opt_string_of(&endpoint->accept);
+		buf_write(raw, "Content-Type: ", 14);
+		buf_write_str(raw, accept);
+		buf_write(raw, "\r\n", 2);
+
+		// content-length
+		buf_write(raw, "Content-Length: ", 16);
+		buf_printf(raw, "%" PRIu64, size);
+		buf_write(raw, "\r\n", 2);
+	}
+
+	// end
+	buf_write(raw, "\r\n", 2);
 }

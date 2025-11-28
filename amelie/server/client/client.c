@@ -24,8 +24,9 @@ client_create(void)
 {
 	Client* self;
 	self = am_malloc(sizeof(Client));
+	self->endpoint     = NULL;
 	self->coroutine_id = UINT64_MAX;
-	self->host         = NULL;
+	self->accepted     = false;
 	self->auth         = false;
 	self->arg          = NULL;
 	msg_init(&self->msg, MSG_CLIENT);
@@ -33,7 +34,6 @@ client_create(void)
 	http_init(&self->reply);
 	tls_context_init(&self->tls_context);
 	readahead_init(&self->readahead, &self->tcp, 16 * 1024);
-	uri_init(&self->uri);
 	tcp_init(&self->tcp, &state()->sent_bytes.integer,
 	         &state()->recv_bytes.integer);
 	list_init(&self->link);
@@ -48,7 +48,6 @@ client_free(Client* self)
 	readahead_free(&self->readahead);
 	client_close(self);
 	tls_context_free(&self->tls_context);
-	uri_free(&self->uri);
 	tcp_free(&self->tcp);
 	am_free(self);
 }
@@ -62,12 +61,9 @@ client_set_coroutine_name(Client* self)
 }
 
 void
-client_set_remote(Client* self, Remote* remote)
+client_set_endpoint(Client* self, Endpoint* endpoint)
 {
-	self->remote = remote;
-	auto uri = remote_get(remote, REMOTE_URI);
-	if (! str_empty(uri))
-		uri_set(&self->uri, uri, false);
+	self->endpoint = endpoint;
 }
 
 void
@@ -100,6 +96,7 @@ client_accept(Client* self)
 
 	// handshake
 	tcp_connect_fd(&self->tcp);
+	self->accepted = true;
 
 	// hello
 	bool log_connections = opt_int_of(&config()->log_connections);
@@ -130,6 +127,7 @@ client_connect_to_path(Client* self, Str* path)
 
 	// connect
 	tcp_connect(&self->tcp, addr);
+	self->accepted = false;
 
 	// connected
 	bool log_connections = opt_int_of(&config()->log_connections);
@@ -138,18 +136,26 @@ client_connect_to_path(Client* self, Str* path)
 }
 
 static void
-client_connect_to(Client* self, UriHost* host)
+client_connect_to(Client* self, Str* host, int port)
 {
 	// resolve host address
 	struct addrinfo* addr = NULL;
-	resolve(&runtime()->resolver, str_of(&host->host), host->port, &addr);
+	resolve(&runtime()->resolver, str_of(host), port, &addr);
 	defer(freeaddrinfo, addr);
 
 	// prepare for https connection
-	if (self->uri.proto == URI_HTTPS) {
+	auto endpoint = self->endpoint;
+	if (endpoint->proto.integer == PROTO_HTTPS)
+	{
 		if (! tls_context_created(&self->tls_context))
 		{
-			tls_context_create(&self->tls_context, true, self->remote);
+			tls_context_set(&self->tls_context, true,
+			                opt_string_of(&endpoint->tls_cert),
+			                opt_string_of(&endpoint->tls_key),
+			                opt_string_of(&endpoint->tls_ca),
+			                opt_string_of(&endpoint->tls_capath),
+			                opt_string_of(&endpoint->tls_server));
+			tls_context_create(&self->tls_context);
 			tcp_set_tls(&self->tcp, &self->tls_context);
 		}
 	}
@@ -158,44 +164,36 @@ client_connect_to(Client* self, UriHost* host)
 	tcp_connect(&self->tcp, addr->ai_addr);
 
 	// connected
-	self->host = host;
 	bool log_connections = opt_int_of(&config()->log_connections);
 	if (log_connections)
-		info("connected to %s:%d", str_of(&host->host), host->port);
+		info("connected to %s:%d", str_of(host), port);
 }
 
 void
 client_connect(Client* self)
 {
 	// unix socket
-	auto path = remote_get(self->remote, REMOTE_PATH);
-	if (! str_empty(path))
+	auto endpoint = self->endpoint;
+	auto path = &endpoint->path;
+	if (opt_string_is_set(path))
 	{
-		client_connect_to_path(self, path);
+		client_connect_to_path(self, &path->string);
 		return;
 	}
 
-	// tcp
-	list_foreach(&self->uri.hosts)
+	// tcp connection
+	auto host = &endpoint->host;
+	if (opt_string_is_set(host))
 	{
-		auto host = list_at(UriHost, link);
-
-		if (error_catch( client_connect_to(self, host) ))
+		auto port = endpoint->port.integer;
+		if (error_catch( client_connect_to(self, &host->string, port) ))
 		{
-			// reset and try next host
 			client_close(self);
-
-			// generate only one error for a single host
-			if (self->uri.hosts_count == 1)
-				rethrow();
+			rethrow();
 		}
-
-		if (self->host)
-			break;
 	}
 
-	if (self->host == NULL)
-		error("failed to connect to any host");
+	error("client: host or unix path is not set");
 }
 
 void
@@ -204,19 +202,19 @@ client_close(Client* self)
 	bool log_connections = opt_int_of(&config()->log_connections);
 	if (log_connections && tcp_connected(&self->tcp))
 	{
-		if (self->host != NULL)
-		{
-			info("disconnected from %s:%d", str_of(&self->host->host),
-			     self->host->port);
-		}
-		else
+		if (self->accepted)
 		{
 			char addr[128];
 			tcp_getpeername(&self->tcp, addr, sizeof(addr));
 			info("disconnected from %s", addr);
 		}
+		else {
+			auto endpoint = self->endpoint;
+			info("disconnected from %s:%d",
+			     str_of(opt_string_of(&endpoint->host)),
+			     (int)endpoint->port.integer);
+		}
 	}
-	self->host = NULL;
 	tcp_close(&self->tcp);
 	http_reset(&self->request);
 	http_reset(&self->reply);

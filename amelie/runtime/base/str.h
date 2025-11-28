@@ -307,3 +307,11 @@ str_copy(Str* self, Str* src)
 {
 	str_dup(self, str_of(src), str_size(src));
 }
+
+static inline Str*
+str_nullif(Str* self)
+{
+	if (!self || str_empty(self))
+		return NULL;
+	return self;
+}

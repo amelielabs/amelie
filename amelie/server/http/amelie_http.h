@@ -11,6 +11,9 @@
 // AGPL-3.0 Licensed.
 //
 
+// endpoint
+#include "http/endpoint.h"
+
 // uri
 #include "http/uri.h"
 

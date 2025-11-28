@@ -130,7 +130,8 @@ opt_string_set(Opt* self, Str* str)
 {
 	assert(self->type == OPT_STRING);
 	str_free(&self->string);
-	str_copy(&self->string, str);
+	if (! str_empty(str))
+		str_copy(&self->string, str);
 }
 
 static inline void
@@ -138,7 +139,8 @@ opt_string_set_raw(Opt* self, const char* value, int size)
 {
 	assert(self->type == OPT_STRING);
 	str_free(&self->string);
-	str_dup(&self->string, value, size);
+	if (size > 0)
+		str_dup(&self->string, value, size);
 }
 
 static inline void

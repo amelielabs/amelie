@@ -18,51 +18,13 @@
 #include <amelie_user.h>
 #include <amelie_http.h>
 
-void
-uri_init(Uri* self)
+typedef struct Uri Uri;
+
+struct Uri
 {
-	self->proto       = URI_HTTP;
-	self->hosts_count = 0;
-	self->args_count  = 0;
-	self->pos         = NULL;
-	str_init(&self->user);
-	str_init(&self->password);
-	str_init(&self->path);
-	str_init(&self->uri);
-	list_init(&self->hosts);
-	list_init(&self->args);
-}
-
-void
-uri_free(Uri* self)
-{
-	list_foreach_safe(&self->hosts)
-	{
-		auto host = list_at(UriHost, link);
-		str_free(&host->host);
-		am_free(host);
-	}
-
-	list_foreach_safe(&self->args)
-	{
-		auto arg = list_at(UriArg, link);
-		str_free(&arg->name);
-		str_free(&arg->value);
-		am_free(arg);
-	}
-
-	str_free(&self->user);
-	str_free(&self->password);
-	str_free(&self->path);
-	str_free(&self->uri);
-}
-
-void
-uri_reset(Uri* self)
-{
-	uri_free(self);
-	uri_init(self);
-}
+	char*     pos;
+	Endpoint* endpoint;
+};
 
 static inline void
 uri_error(void)
@@ -75,12 +37,12 @@ uri_parse_protocol(Uri* self)
 {
 	if (! strncmp(self->pos, "http://", 7))
 	{
-		self->proto = URI_HTTP;
+		opt_int_set(&self->endpoint->proto, PROTO_HTTP);
 		self->pos += 7;
 	} else
 	if (! strncmp(self->pos, "https://", 8))
 	{
-		self->proto = URI_HTTPS;
+		opt_int_set(&self->endpoint->proto, PROTO_HTTPS);
 		self->pos += 8;
 	} else
 	{
@@ -101,107 +63,101 @@ uri_parse_user(Uri* self)
 	if (unlikely(at == self->pos))
 		uri_error();
 
-	char* sep = memchr(self->pos, ':', at - self->pos);
+	auto endpoint = self->endpoint;
+	auto sep = (char*)memchr(self->pos, ':', at - self->pos);
 	if (sep)
 	{
 		// user:password
-		str_dup(&self->user, self->pos, sep - self->pos);
+		opt_string_set_raw(&endpoint->user, self->pos, sep - self->pos);
 		sep++;
-		str_dup(&self->password, sep, at - sep);
+		opt_string_set_raw(&endpoint->secret, sep, at - sep);
 	} else
 	{
 		// user
-		str_dup(&self->user, self->pos, at - self->pos);
+		opt_string_set_raw(&endpoint->user, self->pos, at - self->pos);
 	}
 	self->pos = at + 1;
-}
-
-static inline UriHost*
-uri_add_host(Uri* self)
-{
-	auto host = (UriHost*)am_malloc(sizeof(UriHost));
-	memset(host, 0, sizeof(*host));
-	host->port = 3485;
-	str_init(&host->host);
-	list_init(&host->link);
-	list_append(&self->hosts, &host->link);
-	self->hosts_count++;
-	return host;
 }
 
 static inline void
 uri_parse_host(Uri* self)
 {
-	// hostname[:port] [, ...] [/]
-	for (;;)
+	// hostname[:port] [/]
+
+	// hostname
+	auto name      = self->pos;
+	int  name_size = 0;
+	if (*name == '[')
 	{
-		auto host = uri_add_host(self);
-
-		// hostname
-		char *name = self->pos;
-		int   name_size = 0;
-		if (*name == '[')
-		{
-			// [name]
-			name++;
+		// [name]
+		name++;
+		self->pos++;
+		while (*self->pos && *self->pos != ']')
 			self->pos++;
-			while (*self->pos && *self->pos != ']')
-				self->pos++;
-			if (unlikely(! *self->pos))
-				uri_error();
-			name_size = self->pos - name;
-			self->pos++;
-
-		} else
-		{
-			// name[:,/]
-			while (*self->pos &&
-			       *self->pos != ':' &&
-			       *self->pos != ',' &&
-			       *self->pos != '/')
-				self->pos++;
-			name_size = self->pos - name;
-		}
-		if (name_size == 0)
+		if (unlikely(! *self->pos))
 			uri_error();
-		str_dup(&host->host, name, name_size);
+		name_size = self->pos - name;
+		self->pos++;
 
-		// [:port]
-		if (*self->pos == ':')
-		{
+	} else
+	{
+		// name[:,/]
+		while (*self->pos &&
+		       *self->pos != ':' &&
+		       *self->pos != ',' &&
+		       *self->pos != '/')
 			self->pos++;
-			int32_t port = 0;
-			auto start = self->pos;
-			while (*self->pos && isdigit(*self->pos))
-			{
-				if (unlikely(int32_mul_add_overflow(&port, port, 10, *self->pos - '0')))
-					uri_error();
-				self->pos++;
-			}
-			if (start == self->pos)
-				uri_error();
-
-			host->port = port;
-		}
-
-		// /
-		if (*self->pos == '/') {
-			self->pos++;
-			break;
-		}
-
-		// ,
-		if (*self->pos == ',') {
-			self->pos++;
-			continue;
-		}
-
-		// eof
-		if (! *self->pos)
-			return;
-
-		uri_error();
+		name_size = self->pos - name;
 	}
+	if (name_size == 0)
+		uri_error();
+
+	// set host
+	opt_string_set_raw(&self->endpoint->host, name, name_size);
+
+	// [:port]
+	if (*self->pos == ':')
+	{
+		self->pos++;
+		int32_t port = 0;
+		auto start = self->pos;
+		while (*self->pos && isdigit(*self->pos))
+		{
+			if (unlikely(int32_mul_add_overflow(&port, port, 10, *self->pos - '0')))
+				uri_error();
+			self->pos++;
+		}
+		if (start == self->pos)
+			uri_error();
+
+		// set port
+		opt_int_set(&self->endpoint->port, port);
+	}
+
+	// /
+	if (*self->pos == '/') {
+		self->pos++;
+		return;
+	}
+
+	// eof
+	if (! *self->pos)
+		return;
+
+	uri_error();
+}
+
+static inline void
+uri_parse_db(Uri* self)
+{
+	// /db
+	int  name_size = 0;
+	auto name = self->pos;
+	while (*self->pos && *self->pos != '?')
+		self->pos++;
+	name_size = self->pos - name;
+	if (name_size > 0)
+		opt_string_set_raw(&self->endpoint->db, name, name_size);
 }
 
 static inline int
@@ -220,15 +176,14 @@ decode_hex(char digit)
 }
 
 hot static inline void
-decode(Str* str, char* data, int data_size)
+decode(Buf* buf, char* data, int data_size)
 {
-	char *start = am_malloc(data_size + 1);
-	char *pos = start;
 	int i = 0;
 	while (i < data_size)
 	{
 		char to_write;
-		if (data[i] == '%') {
+		if (data[i] == '%')
+		{
 			if ((data_size - i) < 3)
 				error("failed to parse uri, incorrect percent value");
 			int a = decode_hex(data[i + 1]);
@@ -239,23 +194,56 @@ decode(Str* str, char* data, int data_size)
 			to_write = data[i];
 			i++;
 		}
-		*pos = to_write;
-		pos++;
+		buf_write(buf, &to_write, 1);
 	}
-	*pos = 0;
-	str_set_allocated(str, start, pos - start);
 }
 
-static inline UriArg*
-uri_add_arg(Uri* self)
+static inline void
+uri_parse_args_set(Uri* self, Buf* buf, int name_size, int value_size)
 {
-	auto arg = (UriArg*)am_malloc(sizeof(UriArg));
-	str_init(&arg->name);
-	str_init(&arg->value);
-	list_init(&arg->link);
-	list_append(&self->args, &arg->link);
-	self->args_count++;
-	return arg;
+	Str name;
+	str_set(&name, buf_cstr(buf), name_size);
+	Str value;
+	str_set(&value, buf_cstr(buf) + name_size, value_size);
+
+	// find and set endpoint option
+	auto opt = opts_find(&self->endpoint->opts, &name);
+	if (! opt)
+		error("unknown uri argument '%.*s'", name_size, name);
+
+	switch (opt->type) {
+	case OPT_BOOL:
+	{
+		bool to = true;
+		if (! str_empty(&value))
+		{
+			if (str_is_case(&value, "true", 4))
+				to = true;
+			else
+			if (str_is_case(&value, "false", 5))
+				to = false;
+			else
+				error("bool value expected for uri argument '%.*s'",
+				      name_size, name);
+		}
+		opt_int_set(opt, to);
+		break;
+	}
+	case OPT_INT:
+	{
+		int64_t to = 0;
+		if (str_empty(&value) || str_toint(&value, &to) == -1)
+			error("integer value expected for uri argument '%.*s'",
+			      name_size, name);
+		opt_int_set(opt, to);
+		break;
+	}
+	case OPT_STRING:
+		opt_string_set(opt, &value);
+		break;
+	default:
+		abort();
+	}
 }
 
 static inline void
@@ -270,14 +258,15 @@ uri_parse_args(Uri* self)
 		uri_error();
 	self->pos++;
 
+	auto buf = buf_create();
+	defer_buf(buf);
 	for (;;)
 	{
-		// create new argument object
-		auto arg = uri_add_arg(self);
+		buf_reset(buf);
 
 		// name =
-		int   name_size;
-		char* name = self->pos;
+		int  name_size;
+		auto name = self->pos;
 		while (*self->pos && *self->pos != '=')
 			self->pos++;
 		if (*self->pos != '=')
@@ -286,7 +275,8 @@ uri_parse_args(Uri* self)
 		if (name_size == 0)
 			uri_error();
 		self->pos++;
-		decode(&arg->name, name, name_size);
+		decode(buf, name, name_size);
+		name_size = buf_size(buf);
 
 		// value [& ...]
 		int   value_size;
@@ -295,7 +285,13 @@ uri_parse_args(Uri* self)
 			self->pos++;
 		value_size = self->pos - value;
 		if (value_size > 0)
-			decode(&arg->value, value, value_size);
+		{
+			decode(buf, value, value_size);
+			value_size = buf_size(buf) - name_size;
+		}
+
+		// match end set endpoint argument
+		uri_parse_args_set(self, buf, name_size, value_size);
 
 		// eof
 		if (! *self->pos)
@@ -307,103 +303,53 @@ uri_parse_args(Uri* self)
 	}
 }
 
-static inline void
-uri_parse_path(Uri* self)
+void
+uri_parse(Endpoint* endpoint, Str* spec)
 {
-	// /path
-	int   path_size = 0;
-	char* path = self->pos;
-	while (*self->pos && *self->pos != '?')
-		self->pos++;
-	path_size = self->pos - path;
-	if (path_size > 0)
-		str_dup(&self->path, path, path_size);
-}
+	// proto://[user:password@]host[:port]/db?arg=...&...
 
-static inline void
-uri_parse(Uri* self, Str* spec, bool path_only)
-{
 	// set uri
-	str_copy(&self->uri, spec);
-	self->pos = self->uri.pos;
+	opt_string_set(&endpoint->uri, spec);
+	Uri self = {
+		.pos      = opt_string_of(&endpoint->uri)->pos,
+		.endpoint = endpoint
+	};
 
-	if (path_only)
-	{
-		// /
-		if (str_empty(spec) || *self->pos != '/')
-			uri_error();
-	} else
-	{
-		// [http://]
-		uri_parse_protocol(self);
+	// [http://]
+	uri_parse_protocol(&self);
 
-		// [user[:password]@]
-		uri_parse_user(self);
+	// [user[:password]@]
+	uri_parse_user(&self);
 
-		// hostname[:port] [, ...] [/]
-		uri_parse_host(self);
-	}
+	// hostname[:port] [, ...] [/]
+	uri_parse_host(&self);
 
-	// [/path]
-	uri_parse_path(self);
+	// [/db]
+	uri_parse_db(&self);
 
 	// ?name=value[& ...]
-	uri_parse_args(self);
+	uri_parse_args(&self);
 }
 
 void
-uri_set(Uri* self, Str* spec, bool path_only)
+uri_parse_endpoint(Endpoint* endpoint, Str* spec)
 {
-	uri_reset(self);
-	uri_parse(self, spec, path_only);
-}
+	// /db?arg=...&...
 
-UriArg*
-uri_find(Uri* self, Str* name)
-{
-	list_foreach(&self->args)
-	{
-		auto arg = list_at(UriArg, link);
-		if (str_compare(&arg->name, name))
-			return arg;
-	}
-	return NULL;
-}
+	// set uri
+	opt_string_set(&endpoint->uri, spec);
+	Uri self = {
+		.pos      = opt_string_of(&endpoint->uri)->pos,
+		.endpoint = endpoint
+	};
 
-void
-uri_export(Uri* self, Remote* remote)
-{
-	// convert uri into remote
-	assert(self->hosts_count > 0);
+	// /
+	if (str_empty(spec) || *self.pos != '/')
+		uri_error();
 
-	// set user/password
-	if (! str_empty(&self->user))
-		remote_set(remote, REMOTE_USER, &self->user);
-	if (! str_empty(&self->password))
-		remote_set(remote, REMOTE_SECRET, &self->password);
+	// [/db]
+	uri_parse_db(&self);
 
-	// create short remote uri <proto>://host:port
-	auto host = container_of(self->hosts.next, UriHost, link);
-	Buf uri;
-	buf_init(&uri);
-	defer_buf(&uri);
-	buf_printf(&uri, "%s", self->proto == URI_HTTP? "http://": "https://");
-	buf_write_str(&uri, &host->host);
-	buf_printf(&uri, ":%d", host->port);
-	Str uri_str;
-	buf_str(&uri, &uri_str);
-	remote_set(remote, REMOTE_URI, &uri_str);
-
-	// process arguments as remote options
-	list_foreach_safe(&self->args)
-	{
-		auto arg = list_at(UriArg, link);
-		auto id = remote_idof(&arg->name);
-		if (id == -1          ||
-		    id == REMOTE_NAME ||
-		    id == REMOTE_URI  ||
-		    id == REMOTE_PATH)
-			continue;
-		remote_set(remote, id, &arg->value);
-	}
+	// ?name=value[& ...]
+	uri_parse_args(&self);
 }

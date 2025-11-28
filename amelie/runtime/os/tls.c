@@ -82,11 +82,10 @@ tls_create(Tls* self, Fd* fd)
 	SSL_set_options(ssl, SSL_OP_IGNORE_UNEXPECTED_EOF);
 
 	// set server name
-	auto server = remote_get_cstr(self->context->remote, REMOTE_SERVER);
-	if (server)
+	if (self->context->server)
 	{
 		int rc;
-		rc = SSL_set_tlsext_host_name(ssl, server);
+		rc = SSL_set_tlsext_host_name(ssl, str_of(self->context->server));
 		if (rc != 1)
 			tls_lib_error(0, "SSL_setlsext_host_name()");
 	}
@@ -243,9 +242,9 @@ tls_handshake(Tls* self)
 	// verify server name against certficiate common name
 	if (self->context->client)
 	{
-		auto server = remote_get_cstr(self->context->remote, REMOTE_SERVER);
+		auto server = self->context->server;
 		if (server)
-			tls_verify_common_name(self, server);
+			tls_verify_common_name(self, str_of(server));
 	}
 
 	// verify certificate

@@ -24,9 +24,13 @@
 void
 tls_context_init(TlsContext* self)
 {
-	self->client = false;
-	self->ctx    = NULL;
-	self->remote = NULL;
+	self->ctx       = NULL;
+	self->client    = false;
+	self->file_cert = NULL;
+	self->file_key  = NULL;
+	self->file_ca   = NULL;
+	self->path_ca   = NULL;
+	self->server    = NULL;
 }
 
 void
@@ -36,6 +40,23 @@ tls_context_free(TlsContext* self)
 		SSL_CTX_free(self->ctx);
 }
 
+void
+tls_context_set(TlsContext* self,
+                bool        client,
+                Str*        file_cert,
+                Str*        file_key,
+                Str*        file_ca,
+                Str*        path_ca,
+                Str*        server)
+{
+	self->client    = client;
+	self->file_cert = str_nullif(file_cert);
+	self->file_key  = str_nullif(file_key);
+	self->file_ca   = str_nullif(file_ca);
+	self->path_ca   = str_nullif(path_ca);
+	self->server    = str_nullif(server);
+}
+
 bool
 tls_context_created(TlsContext* self)
 {
@@ -43,14 +64,11 @@ tls_context_created(TlsContext* self)
 }
 
 void
-tls_context_create(TlsContext* self, bool client, Remote* remote)
+tls_context_create(TlsContext* self)
 {
-	self->client = client;
-	self->remote = remote;
-
 	SSL_CTX* ctx = NULL;
 	SSL_METHOD* method = NULL;
-	if (client)
+	if (self->client)
 		method = (SSL_METHOD *)SSLv23_client_method();
 	else
 		method = (SSL_METHOD *)SSLv23_server_method();
@@ -66,24 +84,22 @@ tls_context_create(TlsContext* self, bool client, Remote* remote)
 	SSL_CTX_set_mode(ctx, SSL_MODE_RELEASE_BUFFERS);
 
 	// certficate file
-	auto cert = remote_get_cstr(remote, REMOTE_FILE_CERT);
 	int rc;
-	if (cert)
+	if (self->file_cert)
 	{
-		rc = SSL_CTX_use_certificate_chain_file(ctx, cert);
+		rc = SSL_CTX_use_certificate_chain_file(ctx, str_of(self->file_cert));
 		if (! rc)
 			tls_lib_error(0, "SSL_CTX_use_certificate_chafile()");
 	}
 
 	// key file
-	auto key = remote_get_cstr(remote, REMOTE_FILE_KEY);
-	if (key)
+	if (self->file_key)
 	{
-		rc = SSL_CTX_use_PrivateKey_file(ctx, key, SSL_FILETYPE_PEM);
+		rc = SSL_CTX_use_PrivateKey_file(ctx, str_of(self->file_key), SSL_FILETYPE_PEM);
 		if (rc != 1)
 			tls_lib_error(0, "SSL_CTX_use_PrivateKey_file()");
 	}
-	if (cert && key)
+	if (self->file_cert && self->file_key)
 	{
 		rc = SSL_CTX_check_private_key(ctx);
 		if (rc != 1)
@@ -91,11 +107,15 @@ tls_context_create(TlsContext* self, bool client, Remote* remote)
 	}
 
 	// ca file and ca_path
-	auto ca_path = remote_get_cstr(remote, REMOTE_PATH_CA);
-	auto ca_file = remote_get_cstr(remote, REMOTE_FILE_CA);
-	if (ca_file || ca_path)
+	if (self->file_ca || self->path_ca)
 	{
-		rc = SSL_CTX_load_verify_locations(ctx, ca_file, ca_path);
+		char* file_ca = NULL;
+		char* path_ca = NULL;
+		if (self->file_ca)
+			file_ca = str_of(self->file_ca);
+		if (self->path_ca)
+			path_ca = str_of(self->path_ca);
+		rc = SSL_CTX_load_verify_locations(ctx, file_ca, path_ca);
 		if (rc != 1)
 			tls_lib_error(0, "SSL_CTX_load_verify_locations()");
 		int verify;

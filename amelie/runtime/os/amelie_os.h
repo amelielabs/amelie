@@ -20,9 +20,6 @@
 #include "os/fs.h"
 #include "os/file.h"
 
-// remote id
-#include "os/remote.h"
-
 // tls
 #include "os/tls_lib.h"
 #include "os/tls_context.h"

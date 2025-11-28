@@ -211,6 +211,32 @@ server_configure(Server* self)
 	}
 }
 
+/*
+static inline void
+remote_set_path(Remote* self, int id, const char* directory, Str* name)
+{
+	// relative to the cwd
+	auto relative = str_is_prefix(name, "./", 2) ||
+	                str_is_prefix(name, "../", 3);
+
+	// absolute or relative file path
+	if (*str_of(name) == '/' || relative)
+	{
+		remote_set(self, id, name);
+		return;
+	}
+
+	// relative to the directory
+	char path[PATH_MAX];
+	int  path_size;
+	path_size = snprintf(path, sizeof(path), "%s/%.*s", directory,
+	                     str_size(name), str_of(name));
+	Str dir_path;
+	str_set(&dir_path, path, path_size);
+	remote_set(self, id, &dir_path);
+}
+*/
+
 static void
 server_configure_tls(Server* self)
 {

@@ -11,51 +11,7 @@
 // AGPL-3.0 Licensed.
 //
 
-typedef struct PreferOpt PreferOpt;
-typedef struct Prefer    Prefer;
-
-struct PreferOpt
-{
-	Str name;
-	Str value;
-};
-
-struct Prefer
-{
-	Str  header;
-	int  opts_count;
-	Buf  opts;
-	Str* opt_timezone;
-	Str* opt_return;
-};
-
-static inline void
-prefer_init(Prefer* self)
-{
-	self->opt_timezone = NULL;
-	self->opt_return   = NULL;
-	self->opts_count   = 0;
-	buf_init(&self->opts);
-	str_init(&self->header);
-}
-
-static inline void
-prefer_free(Prefer* self)
-{
-	buf_free(&self->opts);
-}
-
-static inline void
-prefer_reset(Prefer* self)
-{
-	self->opt_timezone = NULL;
-	self->opt_return   = NULL;
-	self->opts_count   = 0;
-	buf_reset(&self->opts);
-	str_init(&self->header);
-}
-
-static inline bool
+hot static inline bool
 prefer_ws(char** pos, char* end)
 {
 	while (*pos < end && isspace(**pos))
@@ -64,11 +20,20 @@ prefer_ws(char** pos, char* end)
 }
 
 hot static inline void
-prefer_set(Prefer* self, Str* header)
+prefer_set(Endpoint* self, Str* name, Str* value)
 {
-	self->header = *header;
+	// timezone / return
+	if (str_is_case(name, "timezone", 8))
+		opt_string_set(&self->timezone, value);
+	else
+	if (str_is_case(name, "return", 6))
+		opt_string_set(&self->ret, value);
+}
 
-	// parse header
+hot static inline void
+prefer_parse(Endpoint* self, Str* header)
+{
+	// parse Prefer header
 	auto pos = header->pos;
 	auto end = header->end;
 
@@ -83,11 +48,11 @@ prefer_set(Prefer* self, Str* header)
 		auto start = pos;
 		while (pos < end && !isspace(*pos) && *pos != ',' && *pos != '=')
 			pos++;
+		Str name;
+		str_set(&name, start, pos - start);
 
-		self->opts_count++;
-		auto opt = (PreferOpt*)buf_emplace(&self->opts, sizeof(PreferOpt));
-		str_set(&opt->name, start, pos - start);
-		str_init(&opt->value);
+		Str value;
+		str_init(&value);
 		if (pos == end)
 			break;
 
@@ -106,8 +71,12 @@ prefer_set(Prefer* self, Str* header)
 			start = pos;
 			while (pos < end && !isspace(*pos) && *pos != ',')
 				pos++;
-			str_set(&opt->value, start, pos - start);
+
+			str_set(&value, start, pos - start);
 		}
+
+		// set option
+		prefer_set(self, &name, &value);
 
 		// [space]
 		if (prefer_ws(&pos, end))
@@ -118,32 +87,8 @@ prefer_set(Prefer* self, Str* header)
 			goto error;
 		pos++;
 	}
-	return;
 
 error:
-	prefer_reset(self);
-}
-
-hot static inline void
-prefer_process(Prefer* self)
-{
-	// configure session preferences
-	auto opt = (PreferOpt*)self->opts.start;
-	auto end = (PreferOpt*)self->opts.position;
-	for (; opt < end; opt++)
-	{
-		// timezone
-		if (str_is_case(&opt->name, "timezone", 8))
-		{
-			self->opt_timezone = &opt->value;
-			continue;
-		}
-
-		// return
-		if (str_is_case(&opt->name, "return", 6))
-		{
-			self->opt_return = &opt->value;
-			continue;
-		}
-	}
+	// ignore
+	return;
 }
