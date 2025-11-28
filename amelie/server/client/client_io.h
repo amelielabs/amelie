@@ -15,7 +15,8 @@ static inline void
 client_send(Client* self, Str* content)
 {
 	auto request = &self->request;
-	http_request(request, self->endpoint, str_size(content));
+	http_begin_request(request, self->endpoint, str_size(content));
+	http_end(request);
 	tcp_write_pair_str(&self->tcp, &request->raw, content);
 }
 
@@ -49,7 +50,8 @@ static inline void
 client_200(Client* self, Buf* content)
 {
 	auto reply = &self->reply;
-	http_reply(reply, self->endpoint, "200 OK", 6, buf_size(content));
+	http_begin_reply(reply, self->endpoint, "200 OK", 6, buf_size(content));
+	http_end(reply);
 	tcp_write_pair(&self->tcp, &reply->raw, content);
 }
 
@@ -57,7 +59,8 @@ static inline void
 client_204(Client* self)
 {
 	auto reply = &self->reply;
-	http_reply(reply, self->endpoint, "204 No Content", 14, 0);
+	http_begin_reply(reply, self->endpoint, "204 No Content", 14, 0);
+	http_end(reply);
 	tcp_write_buf(&self->tcp, &reply->raw);
 }
 
@@ -65,7 +68,9 @@ static inline void
 client_400(Client* self, Buf* content)
 {
 	auto reply = &self->reply;
-	http_reply(reply, self->endpoint, "400 Bad Request", 15, buf_size(content));
+	http_begin_reply(reply, self->endpoint, "400 Bad Request", 15,
+	                 buf_size(content));
+	http_end(reply);
 	tcp_write_pair(&self->tcp, &reply->raw, content);
 }
 
@@ -73,7 +78,8 @@ static inline void
 client_403(Client* self)
 {
 	auto reply = &self->reply;
-	http_reply(reply, self->endpoint, "403 Forbidden", 13, 0);
+	http_begin_reply(reply, self->endpoint, "403 Forbidden", 13, 0);
+	http_end(reply);
 	tcp_write_buf(&self->tcp, &reply->raw);
 }
 
@@ -81,6 +87,7 @@ static inline void
 client_413(Client* self)
 {
 	auto reply = &self->reply;
-	http_reply(reply, self->endpoint, "413 Payload Too Large", 21, 0);
+	http_begin_reply(reply, self->endpoint, "413 Payload Too Large", 21, 0);
+	http_end(reply);
 	tcp_write_buf(&self->tcp, &reply->raw);
 }

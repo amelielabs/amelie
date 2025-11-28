@@ -311,7 +311,7 @@ http_write_end(Http* self)
 #endif
 
 hot void
-http_request(Http* self, Endpoint* endpoint, uint64_t size)
+http_begin_request(Http* self, Endpoint* endpoint, uint64_t size)
 {
 	// request
 	auto raw = &self->raw;
@@ -320,22 +320,27 @@ http_request(Http* self, Endpoint* endpoint, uint64_t size)
 	// POST /v1/db/<db_name>/tables/<name>
 	// POST /v1/db/<db_name>/functions/<name>
 	// POST /v1/db/<db_name>
+	// POST / (services)
 	auto db       = opt_string_of(&endpoint->db);
 	auto table    = opt_string_of(&endpoint->table);
 	auto function = opt_string_of(&endpoint->function);
 
 	// POST
-	buf_write(raw, "POST /v1/db/", 12);
-	buf_write_str(raw, db);
-	if (! str_empty(table))
+	buf_write(raw, "POST /", 6);
+	if (! str_empty(db))
 	{
-		buf_write(raw, "tables/", 7);
-		buf_write_str(raw, table);
-	} else
-	if (! str_empty(function))
-	{
-		buf_write(raw, "functions/", 10);
-		buf_write_str(raw, function);
+		buf_write(raw, "v1/db/", 6);
+		buf_write_str(raw, db);
+		if (! str_empty(table))
+		{
+			buf_write(raw, "tables/", 7);
+			buf_write_str(raw, table);
+		} else
+		if (! str_empty(function))
+		{
+			buf_write(raw, "functions/", 10);
+			buf_write_str(raw, function);
+		}
 	}
 	buf_write(raw, " HTTP/1.1\r\n", 11);
 
@@ -363,16 +368,13 @@ http_request(Http* self, Endpoint* endpoint, uint64_t size)
 	}
 
 	// todo: Prefer
-
-	// end
-	buf_write(raw, "\r\n", 2);
 }
 
 hot void
-http_reply(Http*    self, Endpoint* endpoint,
-           char*    msg,
-           int      msg_size,
-           uint64_t size)
+http_begin_reply(Http*    self, Endpoint* endpoint,
+                 char*    msg,
+                 int      msg_size,
+                 uint64_t size)
 {
 	// reply
 	auto raw = &self->raw;
@@ -397,7 +399,11 @@ http_reply(Http*    self, Endpoint* endpoint,
 		buf_printf(raw, "%" PRIu64, size);
 		buf_write(raw, "\r\n", 2);
 	}
+}
 
+void
+http_end(Http* self)
+{
 	// end
-	buf_write(raw, "\r\n", 2);
+	buf_write(&self->raw, "\r\n", 2);
 }
