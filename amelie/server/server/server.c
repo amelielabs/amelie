@@ -211,61 +211,60 @@ server_configure(Server* self)
 	}
 }
 
-/*
 static inline void
-remote_set_path(Remote* self, int id, const char* directory, Str* name)
+server_set_path(Str* self, Str* path)
 {
 	// relative to the cwd
-	auto relative = str_is_prefix(name, "./", 2) ||
-	                str_is_prefix(name, "../", 3);
+	auto relative = str_is_prefix(path, "./", 2) ||
+	                str_is_prefix(path, "../", 3);
 
 	// absolute or relative file path
-	if (*str_of(name) == '/' || relative)
+	if (*str_of(path) == '/' || relative)
 	{
-		remote_set(self, id, name);
+		str_copy(self, path);
 		return;
 	}
 
 	// relative to the directory
-	char path[PATH_MAX];
-	int  path_size;
-	path_size = snprintf(path, sizeof(path), "%s/%.*s", directory,
-	                     str_size(name), str_of(name));
-	Str dir_path;
-	str_set(&dir_path, path, path_size);
-	remote_set(self, id, &dir_path);
+	char relpath[PATH_MAX];
+	auto relpath_size =
+		snprintf(relpath, sizeof(relpath), "%s/%.*s", state_directory(),
+		         str_size(path), str_of(path));
+	str_dup(self, relpath, relpath_size);
 }
-*/
 
 static void
 server_configure_tls(Server* self)
 {
 	// configure and create server tls context
-	auto remote = &self->tls_remote;
 
 	// tls_capath
 	if (opt_string_is_set(&config()->tls_capath))
-		remote_set_path(remote, REMOTE_PATH_CA, state_directory(),
-		                &config()->tls_capath.string);
+		server_set_path(&self->tls_capath, &config()->tls_capath.string);
 
 	// tls_ca
 	if (opt_string_is_set(&config()->tls_ca))
-		remote_set_path(remote, REMOTE_FILE_CA, state_directory(),
-		                &config()->tls_ca.string);
+		server_set_path(&self->tls_ca, &config()->tls_ca.string);
 
 	// tls_cert
 	if (opt_string_is_set(&config()->tls_cert))
-		remote_set_path(remote, REMOTE_FILE_CERT, state_directory(),
-		                &config()->tls_cert.string);
+		server_set_path(&self->tls_cert, &config()->tls_cert.string);
 
 	// tls_key
 	if (opt_string_is_set(&config()->tls_key))
-		remote_set_path(remote, REMOTE_FILE_KEY, state_directory(),
-		                &config()->tls_key.string);
+		server_set_path(&self->tls_key, &config()->tls_key.string);
 
 	// create tls context
-	if (opt_string_is_set(&config()->tls_cert))
-		tls_context_create(&self->tls, false, remote);
+	if (str_empty(&self->tls_cert))
+		return;
+
+	tls_context_set(&self->tls, false,
+	                &self->tls_cert,
+	                &self->tls_key,
+	                &self->tls_ca,
+	                &self->tls_capath,
+	                &self->tls_server);
+	tls_context_create(&self->tls);
 }
 
 void
@@ -276,7 +275,11 @@ server_init(Server* self)
 	self->listen_count   = 0;
 	self->config_count   = 0;
 	tls_context_init(&self->tls);
-	remote_init(&self->tls_remote);
+	str_init(&self->tls_capath);
+	str_init(&self->tls_ca);
+	str_init(&self->tls_cert);
+	str_init(&self->tls_key);
+	str_init(&self->tls_server);
 	list_init(&self->listen);
 	list_init(&self->config);
 }
@@ -295,7 +298,11 @@ server_free(Server* self)
 		server_config_free(config);
 	}
 	tls_context_free(&self->tls);
-	remote_free(&self->tls_remote);
+	str_free(&self->tls_capath);
+	str_free(&self->tls_ca);
+	str_free(&self->tls_cert);
+	str_free(&self->tls_key);
+	str_free(&self->tls_server);
 }
 
 void
