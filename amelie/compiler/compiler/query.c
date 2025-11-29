@@ -41,6 +41,7 @@
 #include <amelie_plan.h>
 #include <amelie_compiler.h>
 
+#if 0
 typedef struct QueryCompiler QueryCompiler;
 
 struct QueryCompiler
@@ -251,3 +252,4 @@ QueryIf query_jsonl_if =
 	.reset  = query_compiler_reset,
 	.parse  = query_jsonl_parse
 };
+#endif

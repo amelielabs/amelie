@@ -34,7 +34,3 @@
 
 // explain
 #include "compiler/explain.h"
-
-// query
-#include "compiler/query.h"
-#include "compiler/query_mgr.h"

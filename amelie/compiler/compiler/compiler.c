@@ -93,10 +93,9 @@ compiler_parse_udf(Compiler* self, Udf* udf)
 }
 
 void
-compiler_parse_import(Compiler*    self, Str* text, Str* uri,
-                      EndpointType type)
+compiler_parse_endpoint(Compiler* self, Endpoint* endpoint, Str* text)
 {
-	parse_import(&self->parser, self->program, text, uri, type);
+	parse_endpoint(&self->parser, self->program, endpoint, text);
 }
 
 static void

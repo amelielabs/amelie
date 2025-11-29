@@ -20,7 +20,6 @@ struct Parser
 	bool       profile;
 	Program*   program;
 	SetCache*  set_cache;
-	Uri        uri;
 	Json       json;
 	Lex        lex;
 	Str*       db;

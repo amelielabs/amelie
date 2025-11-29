@@ -11,6 +11,7 @@
 // AGPL-3.0 Licensed.
 //
 
+#if 0
 typedef struct QueryIf      QueryIf;
 typedef struct Query        Query;
 typedef struct QueryContext QueryContext;
@@ -92,3 +93,4 @@ extern QueryIf query_sql_if;
 extern QueryIf query_csv_if;
 extern QueryIf query_json_if;
 extern QueryIf query_jsonl_if;
+#endif

@@ -86,13 +86,11 @@
 #include "parser/parse_group.h"
 #include "parser/parse_select.h"
 
-// import
-#include "parser/endpoint.h"
-#include "parser/parse_endpoint.h"
-#include "parser/parse_import.h"
-
 // parse
 #include "parser/parse_declare.h"
 #include "parser/parse_with.h"
 #include "parser/parse_execute.h"
 #include "parser/parse.h"
+
+// endpoint
+#include "parser/parse_endpoint.h"

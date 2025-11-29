@@ -57,53 +57,9 @@ parse_replica_create(Stmt* self)
 	uuid_set(&uuid, &id->string);
 	replica_config_set_id(stmt->config, &uuid);
 
-	// options
-	auto remote = &stmt->config->remote;
-	for (;;)
-	{
-		// name
-		auto name = stmt_next_shadow(self);
-		if (name->id == KEOF)
-			break;
-
-		// ;
-		if (name->id == ';')
-		{
-			stmt_push(self, name);
-			break;
-		}
-		if (name->id != KNAME)
-			stmt_error(self, name, "option name expected");
-
-		// [=]
-		stmt_if(self, '=');
-
-		// string
-		auto value = stmt_expect(self, KSTRING);
-		if (str_is_case(&name->string, "uri", 3))
-			remote_set(remote, REMOTE_URI, &value->string);
-		else
-		if (str_is_case(&name->string, "tls_ca", 6))
-			remote_set(remote, REMOTE_FILE_CA, &value->string);
-		else
-		if (str_is_case(&name->string, "tls_capath", 10))
-			remote_set(remote, REMOTE_PATH_CA, &value->string);
-		else
-		if (str_is_case(&name->string, "tls_cert", 8))
-			remote_set(remote, REMOTE_FILE_CERT, &value->string);
-		else
-		if (str_is_case(&name->string, "tls_key", 7))
-			remote_set(remote, REMOTE_FILE_KEY, &value->string);
-		else
-		if (str_is_case(&name->string, "token", 5))
-			remote_set(remote, REMOTE_TOKEN, &value->string);
-		else
-			stmt_error(self, name, "unrecognized option");
-	}
-
-	// validate options
-	if (str_empty(remote_get(remote, REMOTE_URI)))
-		stmt_error(self, NULL, "URI is not defined");
+	// uri
+	auto uri = stmt_expect(self, KSTRING);
+	uri_parse(&stmt->config->endpoint, &uri->string);
 }
 
 void

@@ -50,7 +50,6 @@ parser_init(Parser* self, Local* local, SetCache* set_cache)
 	self->local     = local;
 	namespaces_init(&self->nss);
 	lex_init(&self->lex, keywords_alpha);
-	uri_init(&self->uri);
 	json_init(&self->json);
 }
 
@@ -77,7 +76,6 @@ parser_reset(Parser* self)
 	namespaces_init(&self->nss);
 
 	lex_reset(&self->lex);
-	uri_reset(&self->uri);
 	json_reset(&self->json);
 }
 
@@ -85,6 +83,5 @@ void
 parser_free(Parser* self)
 {
 	parser_reset(self);
-	uri_free(&self->uri);
 	json_free(&self->json);
 }
