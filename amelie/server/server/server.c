@@ -239,19 +239,19 @@ server_configure_tls(Server* self)
 	// configure and create server tls context
 
 	// tls_capath
-	if (opt_string_is_set(&config()->tls_capath))
+	if (! opt_string_empty(&config()->tls_capath))
 		server_set_path(&self->tls_capath, &config()->tls_capath.string);
 
 	// tls_ca
-	if (opt_string_is_set(&config()->tls_ca))
+	if (! opt_string_empty(&config()->tls_ca))
 		server_set_path(&self->tls_ca, &config()->tls_ca.string);
 
 	// tls_cert
-	if (opt_string_is_set(&config()->tls_cert))
+	if (! opt_string_empty(&config()->tls_cert))
 		server_set_path(&self->tls_cert, &config()->tls_cert.string);
 
 	// tls_key
-	if (opt_string_is_set(&config()->tls_key))
+	if (! opt_string_empty(&config()->tls_key))
 		server_set_path(&self->tls_key, &config()->tls_key.string);
 
 	// create tls context

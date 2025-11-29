@@ -458,10 +458,10 @@ uri_export(Endpoint* self, Buf* buf)
 	}
 
 	// [user[:password]@]
-	if (! opt_string_is_set(&self->user))
+	if (opt_string_empty(&self->user))
 	{
 		buf_write_str(buf, &self->user.string);
-		if (! opt_string_is_set(&self->secret))
+		if (opt_string_empty(&self->secret))
 		{
 			buf_write(buf, ":", 1);
 			buf_write_str(buf, &self->user.string);
@@ -472,7 +472,7 @@ uri_export(Endpoint* self, Buf* buf)
 	if (self->proto.integer != PROTO_AMELIE)
 	{
 		// hostname[:port]
-		if (! opt_string_is_set(&self->host))
+		if (opt_string_empty(&self->host))
 		{
 			buf_write_str(buf, &self->host.string);
 			buf_write(buf, ":", 1);
@@ -484,7 +484,7 @@ uri_export(Endpoint* self, Buf* buf)
 	}
 
 	// db
-	if (! opt_string_is_set(&self->db))
+	if (opt_string_empty(&self->db))
 		buf_write_str(buf, &self->db.string);
 
 	// ?name=value[& ...]

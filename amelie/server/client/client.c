@@ -175,7 +175,7 @@ client_connect(Client* self)
 	// unix socket
 	auto endpoint = self->endpoint;
 	auto path = &endpoint->path;
-	if (opt_string_is_set(path))
+	if (! opt_string_empty(path))
 	{
 		client_connect_to_path(self, &path->string);
 		return;
@@ -183,7 +183,7 @@ client_connect(Client* self)
 
 	// tcp connection
 	auto host = &endpoint->host;
-	if (opt_string_is_set(host))
+	if (! opt_string_empty(host))
 	{
 		auto port = endpoint->port.integer;
 		if (error_catch( client_connect_to(self, &host->string, port) ))

@@ -154,7 +154,7 @@ frontend_client(Frontend* self, Client* client)
 		frontend_endpoint(client);
 
 		// handle backup or primary server connection
-		if (opt_string_is_set(&endpoint.service))
+		if (! opt_string_empty(&endpoint.service))
 		{
 			auto service = &endpoint.service.string;
 			if (str_is(service, "backup", 6))
@@ -166,8 +166,8 @@ frontend_client(Frontend* self, Client* client)
 		}
 
 		// ensure there are a content type and access headers
-		if (!opt_string_is_set(&endpoint.content_type) ||
-		    !opt_string_is_set(&endpoint.accept))
+		if (opt_string_empty(&endpoint.content_type) ||
+		    opt_string_empty(&endpoint.accept))
 		{
 			// 403 Forbidden
 			client_403(client);

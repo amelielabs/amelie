@@ -119,10 +119,10 @@ opt_int_of(Opt* self)
 
 // string
 static inline bool
-opt_string_is_set(Opt* self)
+opt_string_empty(Opt* self)
 {
 	assert(self->type == OPT_STRING);
-	return !str_empty(&self->string);
+	return str_empty(&self->string);
 }
 
 static inline void
