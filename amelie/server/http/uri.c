@@ -331,10 +331,78 @@ uri_parse(Endpoint* endpoint, Str* spec)
 	uri_parse_args(&self);
 }
 
+static inline void
+uri_next(Uri* self, Str* value)
+{
+	// value[/]
+	auto start = self->pos;
+	while (*self->pos && *self->pos != '/')
+		self->pos++;
+	str_set(value, start, self->pos - start);
+}
+
+static inline void
+uri_parse_endpoint_db(Uri* self)
+{
+	auto endpoint = self->endpoint;
+
+	// db_name
+	Str value;
+	uri_next(self, &value);
+	if (str_empty(&value))
+		goto error;
+	opt_string_set(&endpoint->db, &value);
+	if (! *self->pos)
+		return;
+	// [/]
+	self->pos++;
+
+	// db_name/?
+	if (!*self->pos || *self->pos == '?')
+		return;
+
+	// db_name/tables/name[/]
+	// db_name/functions/name[/]
+	uri_next(self, &value);
+	if (str_empty(&value))
+		goto error;
+	auto is_table = false;
+	if (str_is(&value, "tables", 6))
+		is_table = true;
+	else
+	if (! str_is(&value, "functions", 9))
+		is_table = false;
+	else
+		goto error;
+	if (! *self->pos)
+		return;
+	self->pos++;
+
+	// name[/]
+	uri_next(self, &value);
+	if (str_empty(&value))
+		goto error;
+	if (is_table)
+		opt_string_set(&endpoint->table, &value);
+	else
+		opt_string_set(&endpoint->function, &value);
+	if (! *self->pos)
+		return;
+	self->pos++;
+	return;
+
+error:
+	error("failed to parse uri endpoint");
+}
+
 void
 uri_parse_endpoint(Endpoint* endpoint, Str* spec)
 {
-	// /db?arg=...&...
+	// /v1/db/<db_name>/tables/<name> [/?...]
+	// /v1/db/<db_name>/functions/<name> [/?...]
+	// /v1/db/<db_name> [/?...]
+	// /v1/backup
+	// /v1/repl
 
 	// set uri
 	opt_string_set(&endpoint->uri, spec);
@@ -343,12 +411,22 @@ uri_parse_endpoint(Endpoint* endpoint, Str* spec)
 		.endpoint = endpoint
 	};
 
-	// /
-	if (str_empty(spec) || *self.pos != '/')
-		uri_error();
-
-	// [/db]
-	uri_parse_db(&self);
+	// /v1/db/
+	if (likely(str_is_prefix(spec, "/v1/db/", 7)))
+	{
+		self.pos += 7;
+		uri_parse_endpoint_db(&self);
+	} else
+	if (str_is(spec, "/v1/backup", 10))
+	{
+		str_set(&endpoint->service.string, "backup", 6);
+	} else
+	if (str_is(spec, "/v1/repl", 8))
+	{
+		str_set(&endpoint->service.string, "repl", 4);
+	} else {
+		error("failed to parse uri endpoint");
+	}
 
 	// ?name=value[& ...]
 	uri_parse_args(&self);
