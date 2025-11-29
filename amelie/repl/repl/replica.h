@@ -44,7 +44,7 @@ replica_free(Replica* self)
 static inline void
 replica_start(Replica* self)
 {
-	streamer_start(&self->streamer, &self->config->id, &self->config->remote);
+	streamer_start(&self->streamer, &self->config->id, &self->config->endpoint);
 }
 
 static inline void
@@ -63,8 +63,11 @@ replica_status(Replica* self, Buf* buf)
 	encode_uuid(buf, &self->config->id);
 
 	// uri
+	auto uri = buf_create();
+	defer_buf(uri);
+	uri_export(&self->config->endpoint, uri);
 	encode_raw(buf, "uri", 3);
-	encode_string(buf, remote_get(&self->config->remote, REMOTE_URI));
+	encode_buf(buf, uri);
 
 	// connected
 	encode_raw(buf, "connected", 9);

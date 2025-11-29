@@ -83,7 +83,7 @@ config_prepare(Config* self)
 void
 config_save(Config* self, const char* path)
 {
-	// get a list of optiables
+	// get a list of options
 	auto buf = opts_list_persistent(&self->opts);
 	defer_buf(buf);
 

@@ -269,53 +269,12 @@ http_read_content(Http* self, Readahead* readahead, Buf* content)
 	http_read_content_limit(self, readahead, content, UINT64_MAX);
 }
 
-#if 0
-hot void
-http_write_request(Http* self, char* fmt, ...)
-{
-	auto raw = &self->raw;
-	buf_reset(raw);
-	va_list args;
-	va_start(args, fmt);
-	buf_vprintf(raw, fmt, args);
-	va_end(args);
-	buf_write(raw, " HTTP/1.1\r\n", 11);
-}
-
-hot void
-http_write_reply(Http* self, int code, char* msg)
-{
-	auto raw = &self->raw;
-	buf_reset(raw);
-	buf_printf(raw, "HTTP/1.1 %d %s\r\n", code, msg);
-}
-
-hot void
-http_write(Http* self, char* name, char* fmt, ...)
-{
-	auto raw = &self->raw;
-	buf_write(raw, name, strlen(name));
-	buf_write(raw, ": ", 2);
-	va_list args;
-	va_start(args, fmt);
-	buf_vprintf(raw, fmt, args);
-	va_end(args);
-	buf_write(raw, "\r\n", 2);
-}
-
-hot void
-http_write_end(Http* self)
-{
-	buf_write(&self->raw, "\r\n", 2);
-}
-#endif
-
-hot void
+hot Buf*
 http_begin_request(Http* self, Endpoint* endpoint, uint64_t size)
 {
 	// request
-	auto raw = &self->raw;
-	buf_reset(raw);
+	auto buf = &self->raw;
+	buf_reset(buf);
 
 	// POST /v1/db/<db_name>/tables/<name>
 	// POST /v1/db/<db_name>/functions/<name>
@@ -325,89 +284,91 @@ http_begin_request(Http* self, Endpoint* endpoint, uint64_t size)
 	auto table    = opt_string_of(&endpoint->table);
 	auto function = opt_string_of(&endpoint->function);
 
-	buf_write(raw, "POST /", 6);
+	buf_write(buf, "POST /", 6);
 	if (! str_empty(db))
 	{
-		buf_write(raw, "v1/db/", 6);
-		buf_write_str(raw, db);
+		buf_write(buf, "v1/db/", 6);
+		buf_write_str(buf, db);
 		if (! str_empty(table))
 		{
-			buf_write(raw, "tables/", 7);
-			buf_write_str(raw, table);
+			buf_write(buf, "tables/", 7);
+			buf_write_str(buf, table);
 		} else
 		if (! str_empty(function))
 		{
-			buf_write(raw, "functions/", 10);
-			buf_write_str(raw, function);
+			buf_write(buf, "functions/", 10);
+			buf_write_str(buf, function);
 		}
 	}
-	buf_write(raw, " HTTP/1.1\r\n", 11);
+	buf_write(buf, " HTTP/1.1\r\n", 11);
 
 	// token
 	auto token = opt_string_of(&endpoint->token);
 	if (! str_empty(token))
 	{
-		buf_write(raw, "Authorization: Bearer ", 21);
-		buf_write_str(raw, token);
-		buf_write(raw, "\r\n", 2);
+		buf_write(buf, "Authorization: Bearer ", 21);
+		buf_write_str(buf, token);
+		buf_write(buf, "\r\n", 2);
 	}
 
 	// content-type
 	auto content_type = opt_string_of(&endpoint->content_type);
 	if (! str_empty(content_type))
 	{
-		buf_write(raw, "Content-Type: ", 14);
-		buf_write_str(raw, content_type);
-		buf_write(raw, "\r\n", 2);
+		buf_write(buf, "Content-Type: ", 14);
+		buf_write_str(buf, content_type);
+		buf_write(buf, "\r\n", 2);
 	}
 
 	// content-length
 	if (size > 0)
 	{
-		buf_write(raw, "Content-Length: ", 16);
-		buf_printf(raw, "%" PRIu64, size);
-		buf_write(raw, "\r\n", 2);
+		buf_write(buf, "Content-Length: ", 16);
+		buf_printf(buf, "%" PRIu64, size);
+		buf_write(buf, "\r\n", 2);
 	}
 
 	// todo: Prefer
+	return buf;
 }
 
-hot void
+hot Buf*
 http_begin_reply(Http*    self, Endpoint* endpoint,
                  char*    msg,
                  int      msg_size,
                  uint64_t size)
 {
 	// reply
-	auto raw = &self->raw;
-	buf_reset(raw);
+	auto buf = &self->raw;
+	buf_reset(buf);
 
 	// HTTP/1.1 <code msg>
-	buf_write(raw, "HTTP/1.1 ", 9);
-	buf_write(raw, msg, msg_size);
-	buf_write(raw, "\r\n", 2);
+	buf_write(buf, "HTTP/1.1 ", 9);
+	buf_write(buf, msg, msg_size);
+	buf_write(buf, "\r\n", 2);
 
 	// accept
 	auto accept = opt_string_of(&endpoint->accept);
 	if (! str_empty(accept))
 	{
-		buf_write(raw, "Content-Type: ", 14);
-		buf_write_str(raw, accept);
-		buf_write(raw, "\r\n", 2);
+		buf_write(buf, "Content-Type: ", 14);
+		buf_write_str(buf, accept);
+		buf_write(buf, "\r\n", 2);
 	}
 
 	// content-length
 	if (size > 0)
 	{
-		buf_write(raw, "Content-Length: ", 16);
-		buf_printf(raw, "%" PRIu64, size);
-		buf_write(raw, "\r\n", 2);
+		buf_write(buf, "Content-Length: ", 16);
+		buf_printf(buf, "%" PRIu64, size);
+		buf_write(buf, "\r\n", 2);
 	}
+
+	return buf;
 }
 
 void
-http_end(Http* self)
+http_end(Buf* buf)
 {
-	// end
-	buf_write(&self->raw, "\r\n", 2);
+	buf_write(buf, "\r\n", 2);
 }

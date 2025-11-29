@@ -156,30 +156,30 @@ backup_join(Backup* self)
 		rethrow();
 
 	// prepare backup state reply
-	auto buf = buf_create();
-	defer_buf(buf);
-	encode_obj(buf);
+	auto data = buf_create();
+	defer_buf(data);
+	encode_obj(data);
 	// checkpoint
-	encode_raw(buf, "checkpoint", 10);
-	encode_integer(buf, checkpoint);
+	encode_raw(data, "checkpoint", 10);
+	encode_integer(data, checkpoint);
 	// steps
-	encode_raw(buf, "steps", 5);
-	encode_integer(buf, self->state_step_total);
-	encode_obj_end(buf);
+	encode_raw(data, "steps", 5);
+	encode_integer(data, self->state_step_total);
+	encode_obj_end(data);
 
 	// send reply
 	auto client = self->client;
-	auto reply = &client->reply;
-	auto pos = buf->start;
+	auto reply  = &client->reply;
+	auto pos    = data->start;
 	json_export_pretty(&reply->content, runtime()->timezone, &pos);
 
 	// reply application/json
-	http_begin_reply(reply, client->endpoint, "200 OK", 6,
-	                 buf_size(&reply->content));
-	buf_write(&reply->raw, "Am-Service: backup\r\n", 20);
-	buf_write(&reply->raw, "Am-Version: 1\r\n", 15);
-	http_end(reply);
-	tcp_write_pair(&client->tcp, &reply->raw, &reply->content);
+	auto buf = http_begin_reply(reply, client->endpoint, "200 OK", 6,
+	                            buf_size(&reply->content));
+	buf_write(buf, "Am-Service: backup\r\n", 20);
+	buf_write(buf, "Am-Version: 1\r\n", 15);
+	http_end(buf);
+	tcp_write_pair(&client->tcp, buf, &reply->content);
 }
 
 static inline void
@@ -215,13 +215,13 @@ backup_send_file(Backup* self, Str* name, int64_t size, Buf* data)
 	auto tcp    = &client->tcp;
 
 	// reply application/octet-stream
-	http_begin_reply(reply, client->endpoint, "200 OK", 6, size);
-	buf_write(&reply->raw,  "Am-Service: backup\r\n", 20);
-	buf_write(&reply->raw,  "Am-Version: 1\r\n", 15);
-	buf_printf(&reply->raw, "Am-Step: %d\r\n", self->state_step);
-	buf_printf(&reply->raw, "Am-File: %.*s\r\n", str_size(name), str_of(name));
-	http_end(reply);
-	tcp_write_buf(tcp, &reply->raw);
+	auto buf = http_begin_reply(reply, client->endpoint, "200 OK", 6, size);
+	buf_write(buf,  "Am-Service: backup\r\n", 20);
+	buf_write(buf,  "Am-Version: 1\r\n", 15);
+	buf_printf(buf, "Am-Step: %d\r\n", self->state_step);
+	buf_printf(buf, "Am-File: %.*s\r\n", str_size(name), str_of(name));
+	http_end(buf);
+	tcp_write_buf(tcp, buf);
 
 	// send preloaded data, if provided
 	if (data)
@@ -231,7 +231,7 @@ backup_send_file(Backup* self, Str* name, int64_t size, Buf* data)
 	}
 
 	// transfer file content
-	auto buf = &reply->content;
+	buf = &reply->content;
 	File file;
 	file_init(&file);
 	defer(file_close, &file);

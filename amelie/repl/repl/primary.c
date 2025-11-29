@@ -50,14 +50,15 @@ primary_write(Primary* self)
 {
 	auto client = self->client;
 	auto reply  = &client->reply;
-	auto id = &config()->uuid.string;
-	http_write_reply(reply, 200, "OK");
-	http_write(reply, "Am-Service", "repl");
-	http_write(reply, "Am-Version", "1");
-	http_write(reply, "Am-Id", "%.*s", str_size(id), str_of(id));
-	http_write(reply, "Am-Lsn", "%" PRIu64, state_lsn());
-	http_write_end(reply);
-	tcp_write_buf(&client->tcp, &reply->raw);
+	auto id     = &config()->uuid.string;
+
+	auto buf = http_begin_reply(reply, client->endpoint, "200 OK", 6, 0);
+	buf_write(buf,  "Am-Service: repl\r\n", 18);
+	buf_write(buf,  "Am-Version: 1\r\n", 15);
+	buf_printf(buf, "Am-Id: %.*s\r\n", str_size(id), str_of(id));
+	buf_printf(buf, "Am-Lsn: %" PRIu64 "\r\n", state_lsn());
+	http_end(buf);
+	tcp_write_buf(&client->tcp, buf);
 }
 
 static inline bool

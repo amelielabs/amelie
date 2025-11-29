@@ -107,11 +107,11 @@ restore_start(Restore* self)
 	// POST /
 	// accept application/json
 	auto request = &client->request;
-	http_begin_request(request, client->endpoint, 0);
-	buf_write(&request->raw, "Am-Service: backup\r\n", 20);
-	buf_write(&request->raw, "Am-Version: 1\r\n", 15);
-	http_end(request);
-	tcp_write_buf(tcp, &request->raw);
+	auto buf = http_begin_request(request, client->endpoint, 0);
+	buf_write(buf, "Am-Service: backup\r\n", 20);
+	buf_write(buf, "Am-Version: 1\r\n", 15);
+	http_end(buf);
+	tcp_write_buf(tcp, buf);
 
 	// read backup state
 	auto reply = &client->reply;
@@ -172,12 +172,12 @@ restore_next(Restore* self)
 	// POST /
 	// accept application/octet-stream
 	auto request = &client->request;
-	http_begin_request(request, client->endpoint, 0);
-	buf_write(&request->raw,  "Am-Service: backup\r\n", 20);
-	buf_write(&request->raw,  "Am-Version: 1\r\n", 15);
-	buf_printf(&request->raw, "Am-Step: %" PRIu64 "\r\n", self->step);
-	http_end(request);
-	tcp_write_buf(tcp, &request->raw);
+	auto buf = http_begin_request(request, client->endpoint, 0);
+	buf_write(buf,  "Am-Service: backup\r\n", 20);
+	buf_write(buf,  "Am-Version: 1\r\n", 15);
+	buf_printf(buf, "Am-Step: %" PRIu64 "\r\n", self->step);
+	http_end(buf);
+	tcp_write_buf(tcp, buf);
 
 	// read response
 	auto reply = &client->reply;

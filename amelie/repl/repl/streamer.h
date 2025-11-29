@@ -21,7 +21,7 @@ struct Streamer
 	WalCursor  wal_cursor;
 	WalSlot*   wal_slot;
 	Wal*       wal;
-	Remote*    remote;
+	Endpoint*  endpoint;
 	char       replica_id[UUID_SZ];
 	Task       task;
 	List       link;
@@ -29,5 +29,5 @@ struct Streamer
 
 void streamer_init(Streamer*, Wal*, WalSlot*);
 void streamer_free(Streamer*);
-void streamer_start(Streamer*, Uuid*, Remote*);
+void streamer_start(Streamer*, Uuid*, Endpoint*);
 void streamer_stop(Streamer*);

@@ -353,3 +353,47 @@ uri_parse_endpoint(Endpoint* endpoint, Str* spec)
 	// ?name=value[& ...]
 	uri_parse_args(&self);
 }
+
+void
+uri_export(Endpoint* self, Buf* buf)
+{
+	// export endpoint as uri connection string
+
+	// proto://
+	if (self->proto.integer == PROTO_HTTP)
+		buf_write(buf, "http://", 7);
+	else
+		buf_write(buf, "https://", 8);
+
+	// [user[:password]@]
+	if (! opt_string_is_set(&self->user))
+	{
+		buf_write_str(buf, &self->user.string);
+		if (! opt_string_is_set(&self->secret))
+		{
+			buf_write(buf, ":", 1);
+			buf_write_str(buf, &self->user.string);
+		}
+		buf_write(buf, "@", 1);
+	}
+
+	// hostname[:port]
+	if (! opt_string_is_set(&self->host))
+	{
+		buf_write_str(buf, &self->host.string);
+		buf_write(buf, ":", 1);
+		buf_printf(buf, "%d", self->port.integer);
+	}
+
+	// /
+	buf_write(buf, "/", 1);
+	if (! opt_string_is_set(&self->db))
+	{
+		buf_write_str(buf, &self->db.string);
+	}
+
+	// ?name=value[& ...]
+		// todo: ...
+		// user, password, token
+		// tls, table, function, timezone, ret, debug
+}

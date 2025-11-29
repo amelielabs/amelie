@@ -72,26 +72,24 @@ static inline void
 streamer_write(Streamer* self, Buf* content)
 {
 	// push updates to the replica node
-	auto client = self->client;
-	auto request = &client->request;
-	auto id = &config()->uuid.string;
-	auto token = remote_get(self->remote, REMOTE_TOKEN);
-	http_write_request(request, "POST /");
-	if (! str_empty(token))
-		http_write(request, "Authorization", "Bearer %.*s", str_size(token), str_of(token));
-	http_write(request, "Content-Length", "%d", content ? buf_size(content) : 0);
-	http_write(request, "Content-Type", "application/octet-stream");
-	http_write(request, "Am-Service", "repl");
-	http_write(request, "Am-Version", "1");
-	http_write(request, "Am-Id", "%.*s", str_size(id), str_of(id));
-	if (content)
-		http_write(request, "Am-Lsn", "%" PRIu64, self->wal_slot->lsn);
-	http_write_end(request);
+	auto client  = self->client;
+	auto id      = &config()->uuid.string;
 
+	// POST /
+	//
+	// application/octet-stream
+	auto request = &client->request;
+	auto buf = http_begin_request(request, client->endpoint, content? buf_size(content): 0);
+	buf_write(buf,  "Am-Service: repl\r\n", 18);
+	buf_write(buf,  "Am-Version: 1\r\n", 15);
+	buf_printf(buf, "Am-Id: %.*s\r\n", str_size(id), str_of(id));
 	if (content)
-		tcp_write_pair(&client->tcp, &request->raw, content);
+		buf_printf(buf, "Am-Lsn: %" PRIu64 "\r\n", self->wal_slot->lsn);
+	http_end(buf);
+	if (content)
+		tcp_write_pair(&client->tcp, buf, content);
 	else
-		tcp_write_buf(&client->tcp, &request->raw);
+		tcp_write_buf(&client->tcp, buf);
 }
 
 static inline uint64_t
@@ -236,7 +234,7 @@ streamer_main(void* arg)
 	error_catch
 	(
 		self->client = client_create();
-		client_set_remote(self->client, self->remote);
+		client_set_endpoint(self->client, self->endpoint);
 		streamer_process(self);
 	);
 
@@ -280,7 +278,7 @@ streamer_init(Streamer* self, Wal* wal, WalSlot* wal_slot)
 	self->lsn           = 0;
 	self->wal           = wal;
 	self->wal_slot      = wal_slot;
-	self->remote        = NULL;
+	self->endpoint      = NULL;
 	self->replica_id[0] = 0;
 	wal_cursor_init(&self->wal_cursor);
 	task_init(&self->task);
@@ -294,10 +292,10 @@ streamer_free(Streamer* self)
 }
 
 void
-streamer_start(Streamer* self, Uuid* id, Remote* remote)
+streamer_start(Streamer* self, Uuid* id, Endpoint* endpoint)
 {
 	uuid_get(id, self->replica_id, sizeof(self->replica_id));
-	self->remote = remote;
+	self->endpoint = endpoint;
 	task_create(&self->task, "streamer", streamer_task_main, self);
 }
 

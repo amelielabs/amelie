@@ -15,8 +15,8 @@ typedef struct ReplicaConfig ReplicaConfig;
 
 struct ReplicaConfig
 {
-	Uuid   id;
-	Remote remote;
+	Uuid     id;
+	Endpoint endpoint;
 };
 
 static inline ReplicaConfig*
@@ -25,14 +25,14 @@ replica_config_allocate(void)
 	ReplicaConfig* self;
 	self = am_malloc(sizeof(*self));
 	uuid_init(&self->id);
-	remote_init(&self->remote);
+	endpoint_init(&self->endpoint);
 	return self;
 }
 
 static inline void
 replica_config_free(ReplicaConfig* self)
 {
-	remote_free(&self->remote);
+	endpoint_free(&self->endpoint);
 	am_free(self);
 }
 
@@ -43,9 +43,9 @@ replica_config_set_id(ReplicaConfig* self, Uuid* id)
 }
 
 static inline void
-replica_config_set_remote(ReplicaConfig* self, Remote* remote)
+replica_config_set_endpoint(ReplicaConfig* self, Endpoint* endpoint)
 {
-	remote_copy(&self->remote, remote);
+	endpoint_copy(&self->endpoint, endpoint);
 }
 
 static inline ReplicaConfig*
@@ -53,7 +53,7 @@ replica_config_copy(ReplicaConfig* self)
 {
 	auto copy = replica_config_allocate();
 	replica_config_set_id(copy, &self->id);
-	replica_config_set_remote(copy, &self->remote);
+	replica_config_set_endpoint(copy, &self->endpoint);
 	return copy;
 }
 
@@ -62,18 +62,15 @@ replica_config_read(uint8_t** pos)
 {
 	auto self = replica_config_allocate();
 	errdefer(replica_config_free, self);
+	uint8_t* endpoint = NULL;
 	Decode obj[] =
 	{
-		{ DECODE_UUID,   "id",         &self->id                                   },
-		{ DECODE_STRING, "uri",        remote_get(&self->remote, REMOTE_URI)       },
-		{ DECODE_STRING, "tls_capath", remote_get(&self->remote, REMOTE_PATH_CA)   },
-		{ DECODE_STRING, "tls_ca",     remote_get(&self->remote, REMOTE_FILE_CA)   },
-		{ DECODE_STRING, "tls_cert",   remote_get(&self->remote, REMOTE_FILE_CERT) },
-		{ DECODE_STRING, "tls_key",    remote_get(&self->remote, REMOTE_FILE_KEY)  },
-		{ DECODE_STRING, "token",      remote_get(&self->remote, REMOTE_TOKEN)     },
-		{ 0,              NULL,        NULL                                        },
+		{ DECODE_UUID, "id",       &self->id },
+		{ DECODE_OBJ,  "endpoint", &endpoint },
+		{ 0,            NULL,      NULL      },
 	};
 	decode_obj(obj, "replica", pos);
+	endpoint_read(&self->endpoint, &endpoint);
 	return self;
 }
 
@@ -87,28 +84,8 @@ replica_config_write(ReplicaConfig* self, Buf* buf)
 	encode_raw(buf, "id", 2);
 	encode_uuid(buf, &self->id);
 
-	// uri
-	encode_raw(buf, "uri", 3);
-	encode_string(buf, remote_get(&self->remote, REMOTE_URI));
-
-	// tls_capath
-	encode_raw(buf, "tls_capath", 10);
-	encode_string(buf, remote_get(&self->remote, REMOTE_PATH_CA));
-
-	// tls_ca
-	encode_raw(buf, "tls_ca", 6);
-	encode_string(buf, remote_get(&self->remote, REMOTE_FILE_CA));
-
-	// tls_cert
-	encode_raw(buf, "tls_cert", 8);
-	encode_string(buf, remote_get(&self->remote, REMOTE_FILE_CERT));
-
-	// tls_key
-	encode_raw(buf, "tls_key", 7);
-	encode_string(buf, remote_get(&self->remote, REMOTE_FILE_KEY));
-
-	// token
-	encode_raw(buf, "token", 5);
-	encode_string(buf, remote_get(&self->remote, REMOTE_TOKEN));
+	// endpoint
+	encode_raw(buf, "endpoint", 8);
+	endpoint_write(&self->endpoint, buf);
 	encode_obj_end(buf);
 }

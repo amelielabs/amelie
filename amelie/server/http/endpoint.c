@@ -48,9 +48,10 @@ endpoint_init(Endpoint* self)
 		{ "db",           OPT_STRING,  OPT_C, &self->db,           NULL, 0    },
 		{ "table",        OPT_STRING,  OPT_C, &self->table,        NULL, 0    },
 		{ "function",     OPT_STRING,  OPT_C, &self->function,     NULL, 0    },
+		{ "columns",      OPT_STRING,  OPT_C, &self->columns,      NULL, 0    },
+		// args
 		{ "timezone",     OPT_STRING,  OPT_C, &self->timezone,     NULL, 0    },
 		{ "return",       OPT_STRING,  OPT_C, &self->ret,          NULL, 0    },
-		{ "columns",      OPT_STRING,  OPT_C, &self->columns,      NULL, 0    },
 		// misc
 		{ "name",         OPT_STRING,  OPT_C, &self->name,         NULL, 0    },
 		{ "debug",        OPT_BOOL,    OPT_C, &self->debug,        NULL, 0    },
@@ -77,4 +78,24 @@ endpoint_reset(Endpoint* self)
 			opt->integer = 0;
 	}
 	self->port.integer = 3485;
+}
+
+void
+endpoint_copy(Endpoint* self, Endpoint* from)
+{
+	opts_copy(&self->opts, &from->opts);
+}
+
+void
+endpoint_read(Endpoint* self, uint8_t** pos)
+{
+	opts_set_json(&self->opts, pos);
+}
+
+void
+endpoint_write(Endpoint* self, Buf* buf)
+{
+	auto opts = opts_list_persistent(&self->opts);
+	defer_buf(opts);
+	buf_write_buf(buf, opts);
 }

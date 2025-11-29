@@ -45,10 +45,10 @@ struct Endpoint
 	Opt  db;
 	Opt  table;
 	Opt  function;
+	Opt  columns;
 	// args
 	Opt  timezone;
 	Opt  ret;
-	Opt  columns;
 	// misc
 	Opt  name;
 	Opt  debug;
@@ -58,3 +58,6 @@ struct Endpoint
 void endpoint_init(Endpoint*);
 void endpoint_free(Endpoint*);
 void endpoint_reset(Endpoint*);
+void endpoint_copy(Endpoint*, Endpoint*);
+void endpoint_read(Endpoint*, uint8_t**);
+void endpoint_write(Endpoint*, Buf*);
