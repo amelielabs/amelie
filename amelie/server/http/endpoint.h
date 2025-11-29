@@ -17,6 +17,7 @@ enum
 {
 	PROTO_HTTP,
 	PROTO_HTTPS,
+	PROTO_AMELIE
 };
 
 struct Endpoint

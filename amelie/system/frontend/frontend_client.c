@@ -86,19 +86,52 @@ forbidden:
 	return false;
 }
 
+hot static inline void
+frontend_endpoint(Client* client)
+{
+	auto request  = &client->request;
+	auto endpoint = client->endpoint;
+	endpoint_reset(endpoint);
+
+	// POST /v1/db/<db_name>/tables/<name>
+	// POST /v1/db/<db_name>/functions/<name>
+	// POST /v1/db/<db_name>
+	// POST /v1/backup
+	// POST /v1/repl
+
+	// parse uri endpoint
+	uri_parse_endpoint(endpoint, &request->options[HTTP_URL]);
+
+	// set content-type
+	auto content_type = http_find(request, "Content-Type", 12);
+	if (content_type)
+		endpoint->content_type.string = content_type->value;
+
+	// set accept
+	auto accept = http_find(request, "Accept", 6);
+	if (accept)
+		endpoint->accept.string = accept->value;
+
+	// find and parse Prefer header
+	auto prefer = http_find(request, "Prefer", 6);
+	if (prefer)
+		prefer_parse(endpoint, &prefer->value);
+}
+
 void
 frontend_client(Frontend* self, Client* client)
 {
 	auto readahead = &client->readahead;
 	auto request   = &client->request;
 
+	Endpoint endpoint;
+	endpoint_init(&endpoint);
+	defer(endpoint_free, &endpoint);
+	client_set_endpoint(client, &endpoint);
+
 	Content output;
 	content_init(&output);
 	content_set(&output, &client->reply.content);
-
-	Prefer prefer;
-	prefer_init(&prefer);
-	defer(prefer_free, &prefer);
 
 	// create sesssion
 	auto ctl = self->iface;
@@ -117,21 +150,24 @@ frontend_client(Frontend* self, Client* client)
 		if (! frontend_auth(self, client))
 			break;
 
+		// parse endpoint
+		frontend_endpoint(client);
+
 		// handle backup or primary server connection
-		auto service = http_find(request, "Am-Service", 10);
-		if (service)
+		if (opt_string_is_set(&endpoint.service))
 		{
-			if (str_is(&service->value, "backup", 6))
+			auto service = &endpoint.service.string;
+			if (str_is(service, "backup", 6))
 				backup(share()->storage, client);
 			else
-			if (str_is(&service->value, "repl", 4))
+			if (str_is(service, "repl", 4))
 				frontend_client_primary(self, client, session);
 			break;
 		}
 
-		// ensure there is a content type
-		auto content_type = http_find(request, "Content-Type", 12);
-		if (unlikely(! content_type))
+		// ensure there are a content type and access headers
+		if (!opt_string_is_set(&endpoint.content_type) ||
+		    !opt_string_is_set(&endpoint.accept))
 		{
 			// 403 Forbidden
 			client_403(client);
@@ -151,36 +187,16 @@ frontend_client(Frontend* self, Client* client)
 			continue;
 		}
 
-		Str* timezone = NULL;
-		Str* format   = NULL;
-
-		// Prefer header
-		auto pref = http_find(request, "Prefer", 6);
-		if (pref)
-		{
-			prefer_reset(&prefer);
-			prefer_set(&prefer, &pref->value);
-			prefer_process(&prefer);
-			timezone = prefer.opt_timezone;
-			format   = prefer.opt_return;
-		}
-
 		Str content;
 		buf_str(&request->content, &content);
 
 		// execute request
 		content_reset(&output);
-		auto on_error = ctl->session_execute(session,
-		                                     &request->options[HTTP_URL],
-		                                     &content,
-		                                     &content_type->value,
-		                                     timezone,
-		                                     format,
-		                                     &output);
+		auto on_error = ctl->session_execute(session, &endpoint, &content, &output);
 		if (unlikely(on_error))
 		{
 			// 400 Bad Request
-			client_400(client, output.content, output.content_type->mime);
+			client_400(client, output.content);
 		} else
 		{
 			// 204 No Content
@@ -188,7 +204,7 @@ frontend_client(Frontend* self, Client* client)
 			if (buf_empty(output.content))
 				client_204(client);
 			else
-				client_200(client, output.content, output.content_type->mime);
+				client_200(client, output.content);
 		}
 	}
 }

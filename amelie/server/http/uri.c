@@ -45,6 +45,11 @@ uri_parse_protocol(Uri* self)
 		opt_int_set(&self->endpoint->proto, PROTO_HTTPS);
 		self->pos += 8;
 	} else
+	if (! strncmp(self->pos, "amelie://", 9))
+	{
+		opt_int_set(&self->endpoint->proto, PROTO_AMELIE);
+		self->pos += 9;
+	} else
 	{
 		// unsupported protocol
 		char *protocol = strstr(self->pos, "://");
@@ -306,7 +311,8 @@ uri_parse_args(Uri* self)
 void
 uri_parse(Endpoint* endpoint, Str* spec)
 {
-	// proto://[user:password@]host[:port]/db?arg=...&...
+	// http://[user:password@]host[:port]/db?arg=...&...
+	// amelie://[user:password@]db?arg=...&...
 
 	// set uri
 	opt_string_set(&endpoint->uri, spec);
@@ -315,16 +321,17 @@ uri_parse(Endpoint* endpoint, Str* spec)
 		.endpoint = endpoint
 	};
 
-	// [http://]
+	// [proto://]
 	uri_parse_protocol(&self);
 
 	// [user[:password]@]
 	uri_parse_user(&self);
 
-	// hostname[:port] [, ...] [/]
-	uri_parse_host(&self);
+	// hostname[:port] [/]
+	if (endpoint->proto.integer != PROTO_AMELIE)
+		uri_parse_host(&self);
 
-	// [/db]
+	// [db]
 	uri_parse_db(&self);
 
 	// ?name=value[& ...]
@@ -438,10 +445,17 @@ uri_export(Endpoint* self, Buf* buf)
 	// export endpoint as uri connection string
 
 	// proto://
-	if (self->proto.integer == PROTO_HTTP)
+	switch (self->proto.integer) {
+	case PROTO_HTTP:
 		buf_write(buf, "http://", 7);
-	else
+		break;
+	case PROTO_HTTPS:
 		buf_write(buf, "https://", 8);
+		break;
+	case PROTO_AMELIE:
+		buf_write(buf, "amelie://", 9);
+		break;
+	}
 
 	// [user[:password]@]
 	if (! opt_string_is_set(&self->user))
@@ -455,20 +469,23 @@ uri_export(Endpoint* self, Buf* buf)
 		buf_write(buf, "@", 1);
 	}
 
-	// hostname[:port]
-	if (! opt_string_is_set(&self->host))
+	if (self->proto.integer != PROTO_AMELIE)
 	{
-		buf_write_str(buf, &self->host.string);
-		buf_write(buf, ":", 1);
-		buf_printf(buf, "%d", self->port.integer);
+		// hostname[:port]
+		if (! opt_string_is_set(&self->host))
+		{
+			buf_write_str(buf, &self->host.string);
+			buf_write(buf, ":", 1);
+			buf_printf(buf, "%d", self->port.integer);
+		}
+
+		// /
+		buf_write(buf, "/", 1);
 	}
 
-	// /
-	buf_write(buf, "/", 1);
+	// db
 	if (! opt_string_is_set(&self->db))
-	{
 		buf_write_str(buf, &self->db.string);
-	}
 
 	// ?name=value[& ...]
 		// todo: ...

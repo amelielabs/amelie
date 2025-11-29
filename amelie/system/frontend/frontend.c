@@ -69,10 +69,7 @@ native_main(void* arg)
 
 	// process native connection
 	native_attach(native);
-	if (str_empty(&native->uri))
-		frontend_native(self, native);
-	else
-		frontend_relay(self, native);
+	frontend_native(self, native);
 }
 
 static void
