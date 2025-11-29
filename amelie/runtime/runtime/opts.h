@@ -33,6 +33,7 @@ struct OptsDef
 void opts_init(Opts*);
 void opts_free(Opts*);
 void opts_define(Opts*, OptsDef*);
+void opts_copy(Opts*, Opts*);
 bool opts_set_json(Opts*, uint8_t**);
 bool opts_set(Opts*, Str*);
 bool opts_set_argv(Opts*, int, char**);

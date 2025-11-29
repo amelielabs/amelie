@@ -64,6 +64,31 @@ opts_define(Opts* self, OptsDef* defs)
 	}
 }
 
+void
+opts_copy(Opts* self, Opts* from)
+{
+	// copy values only, opts must be identical
+	auto from_it = from->list.next;
+	list_foreach(&self->list)
+	{
+		auto opt = list_at(Opt, link);
+		auto opt_from = container_of(from_it, Opt, link);
+		switch (opt->type) {
+		case OPT_BOOL:
+		case OPT_INT:
+			opt_int_set(opt, opt_from->integer);
+			break;
+		case OPT_STRING:
+			opt_string_set(opt, &opt_from->string);
+			break;
+		case OPT_JSON:
+			opt_json_set_str(opt, &opt_from->string);
+			break;
+		}
+		from_it = from_it->next;
+	}
+}
+
 Opt*
 opts_find(Opts* self, Str* name)
 {

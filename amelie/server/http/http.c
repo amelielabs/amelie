@@ -325,7 +325,6 @@ http_begin_request(Http* self, Endpoint* endpoint, uint64_t size)
 	auto table    = opt_string_of(&endpoint->table);
 	auto function = opt_string_of(&endpoint->function);
 
-	// POST
 	buf_write(raw, "POST /", 6);
 	if (! str_empty(db))
 	{
@@ -355,9 +354,12 @@ http_begin_request(Http* self, Endpoint* endpoint, uint64_t size)
 
 	// content-type
 	auto content_type = opt_string_of(&endpoint->content_type);
-	buf_write(raw, "Content-Type: ", 14);
-	buf_write_str(raw, content_type);
-	buf_write(raw, "\r\n", 2);
+	if (! str_empty(content_type))
+	{
+		buf_write(raw, "Content-Type: ", 14);
+		buf_write_str(raw, content_type);
+		buf_write(raw, "\r\n", 2);
+	}
 
 	// content-length
 	if (size > 0)
@@ -385,16 +387,18 @@ http_begin_reply(Http*    self, Endpoint* endpoint,
 	buf_write(raw, msg, msg_size);
 	buf_write(raw, "\r\n", 2);
 
-	// content
-	if (size > 0)
+	// accept
+	auto accept = opt_string_of(&endpoint->accept);
+	if (! str_empty(accept))
 	{
-		// content-type (using accept)
-		auto accept = opt_string_of(&endpoint->accept);
 		buf_write(raw, "Content-Type: ", 14);
 		buf_write_str(raw, accept);
 		buf_write(raw, "\r\n", 2);
+	}
 
-		// content-length
+	// content-length
+	if (size > 0)
+	{
 		buf_write(raw, "Content-Length: ", 16);
 		buf_printf(raw, "%" PRIu64, size);
 		buf_write(raw, "\r\n", 2);

@@ -35,22 +35,22 @@ typedef struct Restore Restore;
 
 struct Restore
 {
-	int64_t checkpoint;
-	int64_t step;
-	int64_t step_total;
-	Client* client;
-	Remote* remote;
-	Buf     state;
+	int64_t   checkpoint;
+	int64_t   step;
+	int64_t   step_total;
+	Client*   client;
+	Endpoint* endpoint;
+	Buf       state;
 };
 
 static void
-restore_init(Restore* self, Remote* remote)
+restore_init(Restore* self, Endpoint* endpoint)
 {
 	self->checkpoint  = 0;
 	self->step        = 0;
 	self->step_total  = 0;
 	self->client      = NULL;
-	self->remote      = remote;
+	self->endpoint    = endpoint;
 	buf_init(&self->state);
 }
 
@@ -68,7 +68,7 @@ restore_connect(Restore* self)
 	self->client = client_create();
 	auto client = self->client;
 	client->readahead.readahead = 256 * 1024;
-	client_set_remote(client, self->remote);
+	client_set_endpoint(client, self->endpoint);
 	client_connect(client);
 }
 
@@ -101,18 +101,16 @@ restore_start(Restore* self)
 	auto client    = self->client;
 	auto tcp       = &client->tcp;
 	auto readahead = &client->readahead;
-	auto token     = remote_get(self->remote, REMOTE_TOKEN);
 
 	// begin backup
 
 	// POST /
+	// accept application/json
 	auto request = &client->request;
-	http_write_request(request, "POST /");
-	if (! str_empty(token))
-		http_write(request, "Authorization", "Bearer %.*s", str_size(token), str_of(token));
-	http_write(request, "Am-Service", "backup");
-	http_write(request, "Am-Version", "1");
-	http_write_end(request);
+	http_begin_request(request, client->endpoint, 0);
+	buf_write(&request->raw, "Am-Service: backup\r\n", 20);
+	buf_write(&request->raw, "Am-Version: 1\r\n", 15);
+	http_end(request);
 	tcp_write_buf(tcp, &request->raw);
 
 	// read backup state
@@ -168,19 +166,17 @@ restore_next(Restore* self)
 	auto client    = self->client;
 	auto tcp       = &client->tcp;
 	auto readahead = &client->readahead;
-	auto token     = remote_get(self->remote, REMOTE_TOKEN);
 
 	// request next step
 
 	// POST /
+	// accept application/octet-stream
 	auto request = &client->request;
-	http_write_request(request, "POST /");
-	if (! str_empty(token))
-		http_write(request, "Authorization", "Bearer %.*s", str_size(token), str_of(token));
-	http_write(request, "Am-Service", "backup");
-	http_write(request, "Am-Version", "1");
-	http_write(request, "Am-Step", "%" PRIi64, self->step);
-	http_write_end(request);
+	http_begin_request(request, client->endpoint, 0);
+	buf_write(&request->raw,  "Am-Service: backup\r\n", 20);
+	buf_write(&request->raw,  "Am-Version: 1\r\n", 15);
+	buf_printf(&request->raw, "Am-Step: %" PRIu64 "\r\n", self->step);
+	http_end(request);
 	tcp_write_buf(tcp, &request->raw);
 
 	// read response
@@ -260,12 +256,12 @@ restore_next(Restore* self)
 }
 
 void
-restore(Remote* remote, char* directory)
+restore(Endpoint* endpoint, char* directory)
 {
 	coroutine_set_name(am_self(), "restore");
 
 	Restore restore;
-	restore_init(&restore, remote);
+	restore_init(&restore, endpoint);
 	defer(restore_free, &restore);
 	restore_create(directory);
 	restore_connect(&restore);

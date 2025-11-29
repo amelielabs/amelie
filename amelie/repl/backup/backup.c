@@ -170,14 +170,15 @@ backup_join(Backup* self)
 	// send reply
 	auto client = self->client;
 	auto reply = &client->reply;
-	uint8_t* pos = buf->start;
+	auto pos = buf->start;
 	json_export_pretty(&reply->content, runtime()->timezone, &pos);
-	http_write_reply(reply, 200, "OK");
-	http_write(reply, "Content-Length", "%d", buf_size(&reply->content));
-	http_write(reply, "Content-Type", "application/json");
-	http_write(reply, "Am-Service", "backup");
-	http_write(reply, "Am-Version", "1");
-	http_write_end(reply);
+
+	// reply application/json
+	http_begin_reply(reply, client->endpoint, "200 OK", 6,
+	                 buf_size(&reply->content));
+	buf_write(&reply->raw, "Am-Service: backup\r\n", 20);
+	buf_write(&reply->raw, "Am-Version: 1\r\n", 15);
+	http_end(reply);
 	tcp_write_pair(&client->tcp, &reply->raw, &reply->content);
 }
 
@@ -212,14 +213,14 @@ backup_send_file(Backup* self, Str* name, int64_t size, Buf* data)
 	auto client = self->client;
 	auto reply  = &client->reply;
 	auto tcp    = &client->tcp;
-	http_write_reply(reply, 200, "OK");
-	http_write(reply, "Content-Length", "%" PRIu64, size);
-	http_write(reply, "Content-Type", "application/octet-stream");
-	http_write(reply, "Am-Service", "backup");
-	http_write(reply, "Am-Version", "1");
-	http_write(reply, "Am-Step", "%d", self->state_step);
-	http_write(reply, "Am-File", "%.*s", str_size(name), str_of(name));
-	http_write_end(reply);
+
+	// reply application/octet-stream
+	http_begin_reply(reply, client->endpoint, "200 OK", 6, size);
+	buf_write(&reply->raw,  "Am-Service: backup\r\n", 20);
+	buf_write(&reply->raw,  "Am-Version: 1\r\n", 15);
+	buf_printf(&reply->raw, "Am-Step: %d\r\n", self->state_step);
+	buf_printf(&reply->raw, "Am-File: %.*s\r\n", str_size(name), str_of(name));
+	http_end(reply);
 	tcp_write_buf(tcp, &reply->raw);
 
 	// send preloaded data, if provided
