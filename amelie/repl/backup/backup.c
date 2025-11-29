@@ -176,30 +176,8 @@ backup_join(Backup* self)
 	// reply application/json
 	auto buf = http_begin_reply(reply, client->endpoint, "200 OK", 6,
 	                            buf_size(&reply->content));
-	buf_write(buf, "Am-Service: backup\r\n", 20);
-	buf_write(buf, "Am-Version: 1\r\n", 15);
 	http_end(buf);
 	tcp_write_pair(&client->tcp, buf, &reply->content);
-}
-
-static inline void
-backup_validate_headers(Client* client)
-{
-	auto request = &client->request;
-
-	// Am-Service
-	auto am_service = http_find(request, "Am-Service", 10);
-	if (unlikely(! am_service))
-		error("backup Am-Service field is missing");
-	if (unlikely(! str_is(&am_service->value, "backup", 6)))
-		error("backup Am-Service is invalid");
-
-	// Am-Version
-	auto am_version = http_find(request, "Am-Version", 10);
-	if (unlikely(! am_version))
-		error("backup Am-Version field is missing");
-	if (unlikely(! str_is(&am_version->value, "1", 1)))
-		error("backup Am-Version is invalid");
 }
 
 static void
@@ -216,8 +194,6 @@ backup_send_file(Backup* self, Str* name, int64_t size, Buf* data)
 
 	// reply application/octet-stream
 	auto buf = http_begin_reply(reply, client->endpoint, "200 OK", 6, size);
-	buf_write(buf,  "Am-Service: backup\r\n", 20);
-	buf_write(buf,  "Am-Version: 1\r\n", 15);
 	buf_printf(buf, "Am-Step: %d\r\n", self->state_step);
 	buf_printf(buf, "Am-File: %.*s\r\n", str_size(name), str_of(name));
 	http_end(buf);
@@ -293,9 +269,6 @@ backup_next(Backup* self)
 static inline void
 backup_process(Backup* self, Client* client)
 {
-	// validate headers
-	backup_validate_headers(client);
-
 	// create and send backup state
 	backup_join(self);
 
@@ -309,7 +282,6 @@ backup_process(Backup* self, Client* client)
 		if (eof)
 			break;
 		http_read_content(request, readahead, &request->content);
-		backup_validate_headers(client);
 		backup_next(self);
 	}
 }

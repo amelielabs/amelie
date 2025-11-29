@@ -108,8 +108,6 @@ restore_start(Restore* self)
 	// accept application/json
 	auto request = &client->request;
 	auto buf = http_begin_request(request, client->endpoint, 0);
-	buf_write(buf, "Am-Service: backup\r\n", 20);
-	buf_write(buf, "Am-Version: 1\r\n", 15);
 	http_end(buf);
 	tcp_write_buf(tcp, buf);
 
@@ -122,20 +120,6 @@ restore_start(Restore* self)
 	if (! str_is(&reply->options[HTTP_CODE], "200", 3))
 		error("unexpected reply code");
 	http_read_content(reply, readahead, &reply->content);
-
-	// Am-Service
-	auto am_service = http_find(reply, "Am-Service", 10);
-	if (unlikely(! am_service))
-		error("backup Am-Service field is missing");
-	if (unlikely(! str_is(&am_service->value, "backup", 6)))
-		error("backup Am-Service is invalid");
-
-	// Am-Version
-	auto am_version = http_find(reply, "Am-Version", 10);
-	if (unlikely(! am_version))
-		error("backup Am-Version field is missing");
-	if (unlikely(! str_is(&am_version->value, "1", 1)))
-		error("backup Am-Version is invalid");
 
 	// parse state
 	Str text;
@@ -173,8 +157,6 @@ restore_next(Restore* self)
 	// accept application/octet-stream
 	auto request = &client->request;
 	auto buf = http_begin_request(request, client->endpoint, 0);
-	buf_write(buf,  "Am-Service: backup\r\n", 20);
-	buf_write(buf,  "Am-Version: 1\r\n", 15);
 	buf_printf(buf, "Am-Step: %" PRIu64 "\r\n", self->step);
 	http_end(buf);
 	tcp_write_buf(tcp, buf);
@@ -188,19 +170,7 @@ restore_next(Restore* self)
 	if (! str_is(&reply->options[HTTP_CODE], "200", 3))
 		error("unexpected reply code");
 
-	// Am-Service
-	auto am_service = http_find(reply, "Am-Service", 10);
-	if (unlikely(! am_service))
-		error("backup Am-Service field is missing");
-	if (unlikely(! str_is(&am_service->value, "backup", 6)))
-		error("backup Am-Service is invalid");
-
-	// Am-Version
-	auto am_version = http_find(reply, "Am-Version", 10);
-	if (unlikely(! am_version))
-		error("backup Am-Version field is missing");
-	if (unlikely(! str_is(&am_version->value, "1", 1)))
-		error("backup Am-Version is invalid");
+	// todo: validate endpoint /v1/backup
 
 	// Am-Step
 	auto am_step = http_find(reply, "Am-Step", 7);

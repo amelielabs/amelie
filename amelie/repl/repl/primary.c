@@ -53,8 +53,6 @@ primary_write(Primary* self)
 	auto id     = &config()->uuid.string;
 
 	auto buf = http_begin_reply(reply, client->endpoint, "200 OK", 6, 0);
-	buf_write(buf,  "Am-Service: repl\r\n", 18);
-	buf_write(buf,  "Am-Version: 1\r\n", 15);
 	buf_printf(buf, "Am-Id: %.*s\r\n", str_size(id), str_of(id));
 	buf_printf(buf, "Am-Lsn: %" PRIu64 "\r\n", state_lsn());
 	http_end(buf);
@@ -118,20 +116,6 @@ primary_next(Primary* self)
 	auto primary_id = &state()->repl_primary.string;
 	if (str_empty(primary_id))
 		error("server is not a replica");
-
-	// Am-Service
-	auto am_service = http_find(request, "Am-Service", 10);
-	if (unlikely(! am_service))
-		error("primary Am-Service field is missing");
-	if (unlikely(! str_is(&am_service->value, "repl", 4)))
-		error("primary Am-Service is invalid");
-
-	// Am-Version
-	auto am_version = http_find(request, "Am-Version", 10);
-	if (unlikely(! am_version))
-		error("primary Am-Version field is missing");
-	if (unlikely(! str_is(&am_version->value, "1", 1)))
-		error("primary Am-Version is invalid");
 
 	// Am-Id
 	auto am_id = http_find(request, "Am-Id", 5);

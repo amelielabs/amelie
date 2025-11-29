@@ -80,8 +80,6 @@ streamer_write(Streamer* self, Buf* content)
 	// application/octet-stream
 	auto request = &client->request;
 	auto buf = http_begin_request(request, client->endpoint, content? buf_size(content): 0);
-	buf_write(buf,  "Am-Service: repl\r\n", 18);
-	buf_write(buf,  "Am-Version: 1\r\n", 15);
 	buf_printf(buf, "Am-Id: %.*s\r\n", str_size(id), str_of(id));
 	if (content)
 		buf_printf(buf, "Am-Lsn: %" PRIu64 "\r\n", self->wal_slot->lsn);
@@ -107,19 +105,7 @@ streamer_read(Streamer* self)
 		error("unexpected reply code");
 	http_read_content(reply, &client->readahead, &reply->content);
 
-	// Am-Service
-	auto am_service = http_find(reply, "Am-Service", 10);
-	if (unlikely(! am_service))
-		error("replica Am-Service field is missing");
-	if (unlikely(! str_is(&am_service->value, "repl", 4)))
-		error("replica Am-Service is invalid");
-
-	// Am-Version
-	auto am_version = http_find(reply, "Am-Version", 10);
-	if (unlikely(! am_version))
-		error("replica Am-Version field is missing");
-	if (unlikely(! str_is(&am_version->value, "1", 1)))
-		error("replica Am-Version is invalid");
+	// todo: validate endpoint /v1/repl
 
 	// Am-Id
 	auto am_id = http_find(reply, "Am-Id", 5);
