@@ -52,7 +52,7 @@ endpoint_init(Endpoint* self)
 		{ "columns",      OPT_STRING,  OPT_C, &self->columns,      NULL, 0    },
 		// args
 		{ "timezone",     OPT_STRING,  OPT_C, &self->timezone,     NULL, 0    },
-		{ "return",       OPT_STRING,  OPT_C, &self->ret,          NULL, 0    },
+		{ "format",       OPT_STRING,  OPT_C, &self->format,       NULL, 0    },
 		// misc
 		{ "name",         OPT_STRING,  OPT_C, &self->name,         NULL, 0    },
 		{ "debug",        OPT_BOOL,    OPT_C, &self->debug,        NULL, 0    },

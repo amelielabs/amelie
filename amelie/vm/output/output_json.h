@@ -11,4 +11,4 @@
 // AGPL-3.0 Licensed.
 //
 
-void content_json(Content*, Columns*, Value*);
+extern OutputIf output_json;

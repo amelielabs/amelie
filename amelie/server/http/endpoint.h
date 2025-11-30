@@ -50,7 +50,7 @@ struct Endpoint
 	Opt  columns;
 	// args
 	Opt  timezone;
-	Opt  ret;
+	Opt  format;
 	// misc
 	Opt  name;
 	Opt  debug;

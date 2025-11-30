@@ -27,7 +27,7 @@ prefer_set(Endpoint* self, Str* name, Str* value)
 		opt_string_set(&self->timezone, value);
 	else
 	if (str_is_case(name, "return", 6))
-		opt_string_set(&self->ret, value);
+		opt_string_set(&self->format, value);
 }
 
 hot static inline void

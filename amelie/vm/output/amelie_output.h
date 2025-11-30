@@ -11,6 +11,5 @@
 // AGPL-3.0 Licensed.
 //
 
-#include "output/content_fmt.h"
-#include "output/content.h"
-#include "output/content_json.h"
+#include "output/output.h"
+#include "output/output_json.h"
