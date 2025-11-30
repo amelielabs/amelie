@@ -30,7 +30,7 @@
 #include <amelie_storage.h>
 #include <amelie_value.h>
 #include <amelie_set.h>
-#include <amelie_content.h>
+#include <amelie_output.h>
 #include <amelie_executor.h>
 
 static void
