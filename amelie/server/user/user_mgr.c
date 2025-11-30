@@ -45,7 +45,7 @@ void
 user_mgr_open(UserMgr* self)
 {
 	auto users = &state()->users;
-	if (! opt_json_is_set(users))
+	if (opt_json_empty(users))
 		return;
 	auto pos = opt_json_of(users);
 	if (json_is_null(pos))

@@ -27,8 +27,8 @@ struct System
 	BackendMgr  backend_mgr;
 	bool        lock;
 	RpcQueue    lock_queue;
-	// db
-	Db          db;
+	// storage
+	Storage     storage;
 	// server
 	Server      server;
 	UserMgr     user_mgr;

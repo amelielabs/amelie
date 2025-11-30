@@ -194,7 +194,7 @@ server_configure(Server* self)
 {
 	// listen is not defined or null
 	auto listen = &config()->listen;
-	if (! opt_json_is_set(listen))
+	if (opt_json_empty(listen))
 		return;
 	auto pos = opt_json_of(listen);
 	if (json_is_null(pos))

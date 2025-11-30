@@ -34,7 +34,7 @@
 #include <amelie_repl.h>
 #include <amelie_value.h>
 #include <amelie_set.h>
-#include <amelie_content.h>
+#include <amelie_output.h>
 #include <amelie_executor.h>
 #include <amelie_func.h>
 #include <amelie_vm.h>

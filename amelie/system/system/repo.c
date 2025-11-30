@@ -201,7 +201,7 @@ repo_bootstrap(void)
 	auto config = config();
 
 	// generate uuid, unless it is set
-	if (! opt_string_is_set(&config->uuid))
+	if (opt_string_empty(&config->uuid))
 	{
 		Uuid uuid;
 		uuid_generate(&uuid, &runtime()->random);
@@ -211,11 +211,11 @@ repo_bootstrap(void)
 	}
 
 	// set default timezone using system timezone
-	if (! opt_string_is_set(&config->timezone))
+	if (opt_string_empty(&config->timezone))
 		opt_string_set(&config->timezone, &runtime()->timezone_mgr.system->name);
 
 	// set default server listen
-	if (! opt_json_is_set(&config->listen))
+	if (opt_json_empty(&config->listen))
 		repo_bootstrap_server();
 }
 

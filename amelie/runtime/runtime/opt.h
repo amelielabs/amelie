@@ -158,10 +158,10 @@ opt_string_of(Opt* self)
 
 // data
 static inline bool
-opt_json_is_set(Opt* self)
+opt_json_empty(Opt* self)
 {
 	assert(self->type == OPT_JSON);
-	return !str_empty(&self->string);
+	return str_empty(&self->string);
 }
 
 static inline void
@@ -308,7 +308,7 @@ opt_encode(Opt* self, Buf* buf)
 		encode_string(buf, &self->string);
 		break;
 	case OPT_JSON:
-		if (opt_json_is_set(self))
+		if (! opt_json_empty(self))
 			buf_write_str(buf, &self->string);
 		else
 			encode_null(buf);

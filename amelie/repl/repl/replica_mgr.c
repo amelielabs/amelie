@@ -74,7 +74,7 @@ void
 replica_mgr_open(ReplicaMgr* self)
 {
 	auto replicas = &state()->replicas;
-	if (! opt_json_is_set(replicas))
+	if (opt_json_empty(replicas))
 		return;
 	auto pos = opt_json_of(replicas);
 	if (json_is_null(pos))

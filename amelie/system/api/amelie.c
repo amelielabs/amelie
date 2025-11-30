@@ -170,11 +170,8 @@ amelie_connect(amelie_t* self, const char* uri)
 	if (unlikely(! runtime_started(&self->runtime)))
 		return NULL;
 
-	// if amelie started without repository, ensure that the
-	// client has the uri argument set
-	if (str_empty(opt_string_of(&self->runtime.state.directory)))
-		if (! uri)
-			return NULL;
+	if (unlikely(! uri))
+		return NULL;
 
 	auto session = (amelie_session_t*)am_malloc(sizeof(amelie_session_t));
 	session->type            = AMELIE_OBJ_SESSION;
@@ -248,8 +245,8 @@ amelie_wait(amelie_request_t* self, uint32_t time_ms, amelie_arg_t* result)
 		return 408;
 	if (result)
 	{
-		result->data = buf_cstr(&self->request.content);
-		result->data_size = buf_size(&self->request.content);
+		result->data = buf_cstr(&self->request.output);
+		result->data_size = buf_size(&self->request.output);
 	}
 	return self->request.code;
 }

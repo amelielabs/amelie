@@ -97,6 +97,7 @@ catalog_if_udf_compile(Catalog* self, Udf* udf)
 
 	Local local;
 	local_init(&local);
+	local.db = udf->config->db;
 	local_update_time(&local);
 
 	auto program = program_allocate();
@@ -118,7 +119,7 @@ catalog_if_udf_compile(Catalog* self, Udf* udf)
 	compiler_emit(&compiler);
 
 	// generate explain for udf
-	explain(&compiler, &udf->config->schema, &udf->config->name);
+	explain(&compiler, &udf->config->db, &udf->config->name);
 
 	// assign udf program
 	udf->data = program;
@@ -141,15 +142,11 @@ catalog_if_udf_free(Udf* udf)
 }
 
 static bool
-catalog_if_udf_depends(Udf* udf, Str* schema, Str* name)
+catalog_if_udf_depends(Udf* udf, Str* name)
 {
 	Program* program = udf->data;
 	assert(program);
-	if (! name) {
-		if (access_find_schema(&program->access, schema))
-			return true;
-	}
-	if (access_find(&program->access, schema, name))
+	if (access_find(&program->access, &udf->config->db, name))
 		return true;
 	return false;
 }
@@ -178,17 +175,12 @@ frontend_if_session_free(void* ptr)
 }
 
 static bool
-frontend_if_session_execute(void*    ptr,
-                            Str*     url,
-                            Str*     text,
-                            Str*     content_type,
-                            Str*     timezone,
-                            Str*     format,
-                            Content* output)
+frontend_if_session_execute(void*     ptr,
+                            Endpoint* endpoint,
+                            Str*      content,
+                            Output*   output)
 {
-	return session_execute(ptr, url, text, content_type,
-	                       timezone, format,
-	                       output);
+	return session_execute(ptr, endpoint, content, output);
 }
 
 static void
@@ -244,7 +236,7 @@ system_create(void)
 	share->repl         = &self->repl;
 	share->function_mgr = &self->function_mgr;
 	share->user_mgr     = &self->user_mgr;
-	share->db           = &self->db;
+	share->storage      = &self->storage;
 
 	// share shared context globally
 	am_share = share;
@@ -257,18 +249,18 @@ system_create(void)
 	frontend_mgr_init(&self->frontend_mgr);
 	backend_mgr_init(&self->backend_mgr);
 	executor_init(&self->executor);
-	commit_init(&self->commit, &self->db, &self->backend_mgr.core_mgr,
+	commit_init(&self->commit, &self->storage, &self->backend_mgr.core_mgr,
 	            &self->executor);
 	rpc_queue_init(&self->lock_queue);
 
 	// vm
 	function_mgr_init(&self->function_mgr);
 
-	// db
-	db_init(&self->db, &catalog_if, self, system_attach, self);
+	// storage
+	storage_init(&self->storage, &catalog_if, self, system_attach, self);
 
 	// replication
-	repl_init(&self->repl, &self->db);
+	repl_init(&self->repl, &self->storage);
 	return self;
 }
 
@@ -278,7 +270,7 @@ system_free(System* self)
 	repl_free(&self->repl);
 	commit_free(&self->commit);
 	executor_free(&self->executor);
-	db_free(&self->db);
+	storage_free(&self->storage);
 	function_mgr_free(&self->function_mgr);
 	server_free(&self->server);
 	user_mgr_free(&self->user_mgr);
@@ -311,7 +303,7 @@ system_recover(System* self)
 	info("recover: wals/");
 
 	Recover recover;
-	recover_init(&recover, &self->db, false);
+	recover_init(&recover, &self->storage, false);
 	defer(recover_free, &recover);
 	recover_wal(&recover);
 	info("");
@@ -324,7 +316,7 @@ system_bootstrap(System* self)
 
 	// create initial checkpoint
 	Checkpoint cp;
-	checkpoint_init(&cp, &self->db.checkpoint_mgr);
+	checkpoint_init(&cp, &self->storage.checkpoint_mgr);
 	defer(checkpoint_free, &cp);
 	checkpoint_begin(&cp, 1, 1);
 	checkpoint_run(&cp);
@@ -369,7 +361,7 @@ system_start(System* self, bool bootstrap)
 	commit_start(&self->commit);
 
 	// create system object and objects from last snapshot (including backends)
-	db_open(&self->db);
+	storage_open(&self->storage);
 
 	// do parallel recover of snapshots and wal
 	system_recover(self);
@@ -379,10 +371,10 @@ system_start(System* self, bool bootstrap)
 		system_bootstrap(self);
 
 	// start checkpointer service
-	checkpointer_start(&self->db.checkpointer);
+	checkpointer_start(&self->storage.checkpointer);
 
 	// start periodic async wal fsync
-	wal_periodic_start(&self->db.wal_mgr.wal_periodic);
+	wal_periodic_start(&self->storage.wal_mgr.wal_periodic);
 
 	// start frontends
 	int workers = opt_int_of(&config()->frontends);
@@ -429,8 +421,8 @@ system_stop(System* self)
 	// stop backends
 	backend_mgr_stop(&self->backend_mgr);
 
-	// close db
-	db_close(&self->db);
+	// stop storage
+	storage_close(&self->storage);
 }
 
 static void
@@ -521,7 +513,7 @@ system_main(System* self)
 			system_unlock(self, rpc);
 			break;
 		case MSG_CHECKPOINT:
-			checkpointer_request(&self->db.checkpointer, rpc);
+			checkpointer_request(&self->storage.checkpointer, rpc);
 			break;
 		default:
 			rpc_execute(rpc, system_rpc, self);
