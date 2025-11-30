@@ -51,9 +51,9 @@ static OutputType output_types[] =
 };
 
 void
-output_init(Output* self, Buf* buf)
+output_init(Output* self)
 {
-	self->buf            = buf;
+	self->buf            = NULL;
 	self->iface          = NULL;
 	self->timezone       = NULL;
 	self->format_pretty  = true;
@@ -64,7 +64,13 @@ output_init(Output* self, Buf* buf)
 void
 output_reset(Output* self)
 {
-	output_init(self, self->buf);
+	output_init(self);
+}
+
+void
+output_set_buf(Output* self, Buf* buf)
+{
+	self->buf = buf;
 }
 
 static inline char*

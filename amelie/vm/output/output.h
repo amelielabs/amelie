@@ -31,9 +31,10 @@ struct Output
 	Endpoint* endpoint;
 };
 
-void output_init(Output*, Buf*);
+void output_init(Output*);
 void output_reset(Output*);
 void output_set(Output*, Endpoint*);
+void output_set_buf(Output*, Buf*);
 
 static inline void
 output_write(Output* self, Columns* columns, Value* value)

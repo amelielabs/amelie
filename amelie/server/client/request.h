@@ -29,7 +29,7 @@ struct Request
 	RequestType   type;
 	bool          complete;
 	int           code;
-	Buf           content;
+	Buf           output;
 	Str           cmd;
 	RequestNotify on_complete;
 	void*         on_complete_arg;
@@ -44,7 +44,7 @@ request_init(Request* self)
 	self->code            = 0;
 	self->on_complete     = NULL;
 	self->on_complete_arg = NULL;
-	buf_init(&self->content);
+	buf_init(&self->output);
 	str_init(&self->cmd);
 	mutex_init(&self->lock);
 	cond_var_init(&self->cond_var);
@@ -54,7 +54,7 @@ request_init(Request* self)
 static inline void
 request_free(Request* self)
 {
-	buf_free_memory(&self->content);
+	buf_free_memory(&self->output);
 	mutex_free(&self->lock);
 	cond_var_free(&self->cond_var);
 }
@@ -68,7 +68,7 @@ request_reset(Request* self)
 	self->on_complete     = NULL;
 	self->on_complete_arg = NULL;
 	str_init(&self->cmd);
-	buf_reset(&self->content);
+	buf_reset(&self->output);
 }
 
 static inline void

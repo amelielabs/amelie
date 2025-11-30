@@ -46,6 +46,7 @@ struct Relay
 	void*     session;
 	Client*   client;
 	bool      connected;
+	Output    output;
 	Endpoint  endpoint;
 	Frontend* fe;
 };
@@ -57,6 +58,7 @@ relay_init(Relay* self, Frontend* fe)
 	self->client    = NULL;
 	self->connected = false;
 	self->fe        = fe;
+	output_init(&self->output);
 	endpoint_init(&self->endpoint);
 }
 
@@ -75,8 +77,12 @@ relay_connect(Relay* self, Str* uri)
 {
 	endpoint_reset(&self->endpoint);
 
-	// parse uri
+	// parse uri and configure endpoint
 	uri_parse(&self->endpoint, uri);
+
+	// configure output
+	output_reset(&self->output);
+	output_set(&self->output, &self->endpoint);
 
 	// create native session or remote connection
 	if (self->endpoint.proto.integer == PROTO_AMELIE)
@@ -97,10 +103,11 @@ relay_connect(Relay* self, Str* uri)
 }
 
 hot static inline int
-relay_execute_session(Relay* self, Str* command, Content* output)
+relay_execute_session(Relay* self, Str* command)
 {
 	auto ctl      = self->fe->iface;
-	auto is_error = ctl->session_execute(self->session, &self->endpoint, command, output);
+	auto is_error = ctl->session_execute(self->session, &self->endpoint, command,
+	                                     &self->output);
 	auto code     = 0;
 	if (is_error)
 	{
@@ -110,7 +117,7 @@ relay_execute_session(Relay* self, Str* command, Content* output)
 	{
 		// 204 No Content
 		// 200 OK
-		if (buf_empty(output->content))
+		if (buf_empty(self->output.buf))
 			code = 204;
 		else
 			code = 200;
@@ -119,33 +126,35 @@ relay_execute_session(Relay* self, Str* command, Content* output)
 }
 
 hot static inline int
-relay_execute_client(Relay* self, Str* command, Content* output)
+relay_execute_client(Relay* self, Str* command)
 {
 	auto client = self->client;
-	client_execute(client, command, output->content);
+	client_execute(client, command, self->output.buf);
 	int64_t code = 0;
 	str_toint(&client->reply.options[HTTP_CODE], &code);
 	return code;
 }
 
 hot static inline int
-relay_execute(Relay* self, Str* uri, Str* command, Content* output)
+relay_execute(Relay* self, Str* uri, Request* req)
 {
-	content_reset(output);
 	auto code = 0;
 	auto on_error = error_catch
 	(
 		if (! self->connected)
 			relay_connect(self, uri);
+
+		output_set_buf(&self->output, &req->output);
 		if (self->endpoint.proto.integer == PROTO_AMELIE)
-			code = relay_execute_session(self, command, output);
+			code = relay_execute_session(self, &req->cmd);
 		else
-			code = relay_execute_client(self, command, output);
+			code = relay_execute_client(self, &req->cmd);
 	);
 	if (on_error)
 	{
-		content_reset(output);
-		content_write_json_error(output, &am_self()->error);
+		buf_reset(&req->output);
+		output_set_buf(&self->output, &req->output);
+		output_write_error(&self->output, &am_self()->error);
 
 		// 502 Bad Gateway (connection or IO error)
 		code = 502;
@@ -160,30 +169,20 @@ frontend_native(Frontend* self, Native* native)
 	Relay relay;
 	relay_init(&relay, self);
 	defer(relay_free, &relay);
-
-	Content output;
-	content_init(&output);
 	for (auto connected = true; connected;)
 	{
+		auto code = 0;
 		auto req  = request_queue_pop(&native->queue);
 		assert(req);
-		auto code = 0;
 		switch (req->type) {
 		case REQUEST_CONNECT:
-		{
 			break;
-		}
 		case REQUEST_DISCONNECT:
-		{
 			connected = false;
 			break;
-		}
 		case REQUEST_EXECUTE:
-		{
-			content_set(&output, &req->content);
-			code = relay_execute(&relay, &native->uri, &req->cmd, &output);
+			code = relay_execute(&relay, &native->uri, req);
 			break;
-		}
 		}
 		request_complete(req, code);
 	}

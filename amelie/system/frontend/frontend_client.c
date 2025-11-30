@@ -123,15 +123,15 @@ frontend_client(Frontend* self, Client* client)
 {
 	auto readahead = &client->readahead;
 	auto request   = &client->request;
+	auto reply     = &client->reply.content;
 
 	Endpoint endpoint;
 	endpoint_init(&endpoint);
 	defer(endpoint_free, &endpoint);
 	client_set_endpoint(client, &endpoint);
 
-	Content output;
-	content_init(&output);
-	content_set(&output, &client->reply.content);
+	Output output;
+	output_init(&output);
 
 	// create sesssion
 	auto ctl = self->iface;
@@ -150,7 +150,7 @@ frontend_client(Frontend* self, Client* client)
 		if (! frontend_auth(self, client))
 			break;
 
-		// parse endpoint
+		// parse endpoint and prepare output
 		frontend_endpoint(client);
 
 		// handle backup or primary server connection
@@ -174,6 +174,12 @@ frontend_client(Frontend* self, Client* client)
 			continue;
 		}
 
+		// configure output mime (using Accept) and format
+		buf_reset(reply);
+		output_reset(&output);
+		output_set_buf(&output, reply);
+		output_set(&output, &endpoint);
+
 		// read content
 		auto limit = opt_int_of(&config()->limit_recv);
 		auto limit_reached =
@@ -191,20 +197,19 @@ frontend_client(Frontend* self, Client* client)
 		buf_str(&request->content, &content);
 
 		// execute request
-		content_reset(&output);
 		auto on_error = ctl->session_execute(session, &endpoint, &content, &output);
 		if (unlikely(on_error))
 		{
 			// 400 Bad Request
-			client_400(client, output.content);
+			client_400(client, output.buf);
 		} else
 		{
 			// 204 No Content
 			// 200 OK
-			if (buf_empty(output.content))
+			if (buf_empty(output.buf))
 				client_204(client);
 			else
-				client_200(client, output.content);
+				client_200(client, output.buf);
 		}
 	}
 }
