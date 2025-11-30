@@ -44,12 +44,17 @@
 void
 compiler_init(Compiler* self, Local* local, SetCache* set_cache)
 {
-	self->program   = NULL;
-	self->set_cache = set_cache;
-	self->current   = NULL;
-	self->code      = NULL;
-	self->code_data = NULL;
-	self->origin    = ORIGIN_FRONTEND;
+	self->program           = NULL;
+	self->program_args      = NULL;
+	self->program_returning = NULL;
+	self->program_udf       = NULL;
+	self->program_explain   = NULL;
+	self->program_profile   = NULL;
+	self->set_cache         = set_cache;
+	self->current           = NULL;
+	self->code              = NULL;
+	self->code_data         = NULL;
+	self->origin            = ORIGIN_FRONTEND;
 	parser_init(&self->parser, local, self->set_cache);
 	rmap_init(&self->map);
 }
@@ -64,10 +69,15 @@ compiler_free(Compiler* self)
 void
 compiler_reset(Compiler* self)
 {
-	self->program   = NULL;
-	self->code      = NULL;
-	self->code_data = NULL;
-	self->current   = NULL;
+	self->program           = NULL;
+	self->program_args      = NULL;
+	self->program_returning = NULL;
+	self->program_udf       = NULL;
+	self->program_explain   = NULL;
+	self->program_profile   = NULL;
+	self->code              = NULL;
+	self->code_data         = NULL;
+	self->current           = NULL;
 	parser_reset(&self->parser);
 	rmap_reset(&self->map);
 }
@@ -80,22 +90,59 @@ compiler_set(Compiler* self, Program* program)
 	self->code_data = &self->program->code_data;
 }
 
+static void
+compiler_parse_complete(Compiler* self)
+{
+	auto stmt = compiler_stmt(self);
+	if (! stmt)
+		return;
+
+	// set explain/profile
+	self->program_explain = self->parser.explain;
+	self->program_profile = self->parser.profile;
+
+	// set returning columns
+	auto ret = compiler_main(self)->stmts.list_tail->ret;
+	if (ret && ret->columns.count > 0)
+		self->program_returning = &ret->columns;
+
+	// handle EXECUTE
+	//
+	// replace program with the udf program
+	//
+	if (stmt->id != STMT_EXECUTE)
+		return;
+
+	auto execute = ast_execute_of(stmt->ast);
+	auto udf     = execute->udf;
+	self->program      = (Program*)udf->data;
+	self->program_udf  = udf;
+	self->program_args = set_value(execute->args, 0);
+
+	// set udf returning columns for table results
+	if (udf->config->type == TYPE_STORE)
+		self->program_returning = &udf->config->returning;
+}
+
 void
 compiler_parse(Compiler* self, Str* text)
 {
 	parse(&self->parser, self->program, text);
+	compiler_parse_complete(self);
 }
 
 void
 compiler_parse_udf(Compiler* self, Udf* udf)
 {
 	parse_udf(&self->parser, self->program, udf);
+	compiler_parse_complete(self);
 }
 
 void
 compiler_parse_endpoint(Compiler* self, Endpoint* endpoint, Str* text)
 {
 	parse_endpoint(&self->parser, self->program, endpoint, text);
+	compiler_parse_complete(self);
 }
 
 static void

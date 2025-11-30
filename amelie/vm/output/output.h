@@ -26,6 +26,7 @@ struct Output
 	Buf*      buf;
 	OutputIf* iface;
 	Timezone* timezone;
+	Str       format;
 	bool      format_pretty;
 	bool      format_minimal;
 	Endpoint* endpoint;

@@ -15,25 +15,21 @@ typedef struct Session Session;
 
 struct Session
 {
-	Vm           vm;
-	Program*     program;
-	Query*       query;
-	QueryContext query_context;
-	QueryMgr     query_mgr;
-	SetCache     set_cache;
-	Dtr          dtr;
-	Profile      profile;
-	int          lock_type;
-	Lock*        lock;
-	Lock*        lock_ref;
-	Local        local;
-	Frontend*    frontend;
+	Compiler  compiler;
+	Vm        vm;
+	Program*  program;
+	SetCache  set_cache;
+	Dtr       dtr;
+	Profile   profile;
+	int       lock_type;
+	Lock*     lock;
+	Lock*     lock_ref;
+	Local     local;
+	Frontend* frontend;
 };
 
-Session*
-session_create(Frontend*);
-void session_free(Session*);
-void session_lock(Session*, int);
-void session_unlock(Session*);
-bool session_execute(Session*, Str*, Str*, Str*, Str*, Str*, Content*);
-void session_execute_replay(Session*, Primary*, Buf*);
+Session* session_create(Frontend*);
+void     session_free(Session*);
+void     session_lock(Session*, int);
+void     session_unlock(Session*);
+bool     session_execute(Session*, Endpoint*, Str*, Output*);

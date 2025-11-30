@@ -138,13 +138,12 @@ relay_execute_client(Relay* self, Str* command)
 hot static inline int
 relay_execute(Relay* self, Str* uri, Request* req)
 {
+	output_set_buf(&self->output, &req->output);
 	auto code = 0;
 	auto on_error = error_catch
 	(
 		if (! self->connected)
 			relay_connect(self, uri);
-
-		output_set_buf(&self->output, &req->output);
 		if (self->endpoint.proto.integer == PROTO_AMELIE)
 			code = relay_execute_session(self, &req->cmd);
 		else
@@ -153,7 +152,6 @@ relay_execute(Relay* self, Str* uri, Request* req)
 	if (on_error)
 	{
 		buf_reset(&req->output);
-		output_set_buf(&self->output, &req->output);
 		output_write_error(&self->output, &am_self()->error);
 
 		// 502 Bad Gateway (connection or IO error)

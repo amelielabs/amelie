@@ -59,12 +59,20 @@ output_init(Output* self)
 	self->format_pretty  = true;
 	self->format_minimal = true;
 	self->endpoint       = NULL;
+	str_init(&self->format);
 }
 
 void
 output_reset(Output* self)
 {
-	output_init(self);
+	self->iface          = NULL;
+	self->timezone       = NULL;
+	self->format_pretty  = true;
+	self->format_minimal = true;
+	self->endpoint       = NULL;
+	if (self->buf)
+		buf_reset(self->buf);
+	str_init(&self->format);
 }
 
 void
@@ -99,15 +107,15 @@ static void
 output_set_format(Output* self)
 {
 	// use config or prefered format
-	auto format = config()->format.string;
+	self->format = config()->format.string;
 	auto format_prefer = &self->endpoint->format.string;
 	if (! str_empty(format_prefer))
-		format = *format_prefer;
+		self->format = *format_prefer;
 
 	// name[-name ...]
 	Str  name;
-	auto pos     = format.pos;
-	auto pos_end = format.end;
+	auto pos     = self->format.pos;
+	auto pos_end = self->format.end;
 	while ((pos = output_set_format_next(&name, pos, pos_end)))
 	{
 		if (str_is_case(&name, "minimal", 7)) {

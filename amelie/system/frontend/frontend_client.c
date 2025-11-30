@@ -132,6 +132,7 @@ frontend_client(Frontend* self, Client* client)
 
 	Output output;
 	output_init(&output);
+	output_set_buf(&output, reply);
 
 	// create sesssion
 	auto ctl = self->iface;
@@ -175,9 +176,7 @@ frontend_client(Frontend* self, Client* client)
 		}
 
 		// configure output mime (using Accept) and format
-		buf_reset(reply);
 		output_reset(&output);
-		output_set_buf(&output, reply);
 		output_set(&output, &endpoint);
 
 		// read content

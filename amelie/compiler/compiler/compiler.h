@@ -21,6 +21,11 @@ struct Compiler
 	TargetOrigin origin;
 	Rmap         map;
 	Program*     program;
+	Value*       program_args;
+	Columns*     program_returning;
+	Udf*         program_udf;
+	bool         program_explain;
+	bool         program_profile;
 	SetCache*    set_cache;
 	Parser       parser;
 };

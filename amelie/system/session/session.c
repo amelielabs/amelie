@@ -48,61 +48,30 @@ Session*
 session_create(Frontend* frontend)
 {
 	auto self = (Session*)am_malloc(sizeof(Session));
-	self->query     = NULL;
 	self->program   = program_allocate();
 	self->lock_type = LOCK_NONE;
 	self->lock      = NULL;
 	self->lock_ref  = NULL;
 	self->frontend  = frontend;
 	local_init(&self->local);
-	profile_init(&self->profile);
-	vm_init(&self->vm, NULL, &self->dtr);
 	set_cache_init(&self->set_cache);
+	compiler_init(&self->compiler, &self->local, &self->set_cache);
+	vm_init(&self->vm, NULL, &self->dtr);
+	profile_init(&self->profile);
 	dtr_init(&self->dtr, &self->local, share()->core_mgr);
-
-	// register query types based on the supported content types
-	auto query_mgr = &self->query_mgr;
-	query_mgr_init(query_mgr, &self->local, &self->set_cache);
-	query_context_init(&self->query_context);
-
-	// text/plain
-	Str type;
-	str_set(&type, "text/plain", 10);
-	query_mgr_add(query_mgr, &query_sql_if, &type);
-
-	// application/sql
-	str_set(&type, "application/sql", 15);
-	query_mgr_add(query_mgr, &query_sql_if, &type);
-
-	// text/csv
-	str_set(&type, "text/csv", 8);
-	query_mgr_add(query_mgr, &query_csv_if, &type);
-
-	// application/json
-	str_set(&type, "application/json", 16);
-	query_mgr_add(query_mgr, &query_json_if, &type);
-
-	// application/jsonl
-	str_set(&type, "application/jsonl", 17);
-	query_mgr_add(query_mgr, &query_jsonl_if, &type);
 	return self;
 }
 
 static inline void
 session_reset_query(Session* self)
 {
-	if (self->query)
-	{
-		query_reset(self->query);
-		self->query = NULL;
-	}
+	compiler_reset(&self->compiler);
 	palloc_reset();
 }
 
 static inline void
 session_reset(Session* self)
 {
-	assert(! self->query);
 	vm_reset(&self->vm);
 	program_reset(self->program, &self->set_cache);
 	dtr_reset(&self->dtr);
@@ -114,9 +83,10 @@ void
 session_free(Session *self)
 {
 	assert(self->lock_type == LOCK_NONE);
+	session_reset_query(self);
 	session_reset(self);
+	compiler_free(&self->compiler);
 	vm_free(&self->vm);
-	query_mgr_free(&self->query_mgr);
 	program_free(self->program);
 	set_cache_free(&self->set_cache);
 	dtr_free(&self->dtr);
@@ -125,21 +95,13 @@ session_free(Session *self)
 }
 
 static void
-session_configure(Session* self, Str* timezone, Str* format)
+session_set(Session* self, Endpoint* endpoint, Output* output)
 {
+	// set timezone / format
 	auto local = &self->local;
-
-	// set timezone
-	if (timezone)
-	{
-		auto tz = timezone_mgr_find(&runtime()->timezone_mgr, timezone);
-		if (tz)
-			local->timezone = tz;
-	}
-
-	// set format
-	if (format)
-		local->format = *format;
+	local->timezone = output->timezone;
+	local->format   = output->format;
+	local->db       = endpoint->db.string;
 
 	// update transaction time
 	local_update_time(local);
@@ -187,12 +149,12 @@ session_unlock(Session* self)
 }
 
 hot static inline void
-session_execute_distributed(Session* self, Content* output)
+session_execute_distributed(Session* self, Output* output)
 {
-	auto context = &self->query_context;
-	auto program = context->program;
-	auto profile = &self->profile;
-	auto dtr     = &self->dtr;
+	auto compiler = &self->compiler;
+	auto program  = compiler->program;
+	auto profile  = &self->profile;
+	auto dtr      = &self->dtr;
 
 	reg_prepare(&self->vm.r, program->code.regs);
 
@@ -200,7 +162,7 @@ session_execute_distributed(Session* self, Content* output)
 	dtr_create(dtr, program);
 
 	// [PROFILE]
-	if (context->profile)
+	if (compiler->program_profile)
 		profile_start(&profile->time_run_us);
 
 	// execute coordinator
@@ -215,7 +177,7 @@ session_execute_distributed(Session* self, Content* output)
 		       &program->code_data,
 		       NULL,
 		       NULL,
-		       context->args,
+		       compiler->program_args,
 		       &ret,
 		       true,
 		       0);
@@ -225,7 +187,7 @@ session_execute_distributed(Session* self, Content* output)
 	if (on_error)
 		error = error_create(&am_self()->error);
 
-	if (context->profile)
+	if (compiler->program_profile)
 	{
 		profile_end(&profile->time_run_us);
 		profile_start(&profile->time_commit_us);
@@ -234,30 +196,29 @@ session_execute_distributed(Session* self, Content* output)
 	// coordinate wal write and group commit, handle group abort
 	commit(share()->commit, dtr, error);
 
-	// write result into content
-	if (ret.value && context->returning)
-		content_write(output, &self->local.format,
-		              context->returning,
-		              ret.value);
+	// write result
+	auto returning = compiler->program_returning;
+	if (returning && ret.value)
+		output_write(output, returning, ret.value);
 
 	// explain profile
-	if (context->profile)
+	if (compiler->program_profile)
 	{
 		profile_end(&profile->time_commit_us);
-		profile_create(profile, program, &self->local, output);
+		profile_create(profile, program, output);
 	}
 }
 
 hot static inline void
-session_execute_utility(Session* self, Content* output)
+session_execute_utility(Session* self, Output* output)
 {
-	auto context = &self->query_context;
-	auto program = context->program;
+	auto compiler = &self->compiler;
+	auto program  = compiler->program;
 	reg_prepare(&self->vm.r, program->code.regs);
 
 	// [PROFILE]
 	auto profile = &self->profile;
-	if (context->profile)
+	if (compiler->program_profile)
 		profile_start(&profile->time_run_us);
 
 	// execute utility/ddl transaction
@@ -291,20 +252,18 @@ session_execute_utility(Session* self, Content* output)
 		rethrow();
 	}
 
-	if (context->profile)
+	if (compiler->program_profile)
 	{
 		profile_end(&profile->time_run_us);
 		profile_start(&profile->time_commit_us);
 	} else
 	{
-		// write result into content
-		if (ret.value && context->returning)
+		// write result
+		if (ret.value && compiler->program_returning)
 		{
 			Str column;
 			str_set(&column, "result", 6);
-			content_write_json(output, &self->local.format, true,
-			                   &column,
-			                   ret.value);
+			output_write_json(output, &column, ret.value->json, true);
 		}
 	}
 
@@ -324,59 +283,64 @@ session_execute_utility(Session* self, Content* output)
 		WriteList write_list;
 		write_list_init(&write_list);
 		write_list_add(&write_list, &write);
-		wal_mgr_write(&share()->db->wal_mgr, &write_list);
+		wal_mgr_write(&share()->storage->wal_mgr, &write_list);
 	}
 
 	// commit
 	tr_commit(&tr);
 
 	// profile
-	if (context->profile)
+	if (compiler->program_profile)
 	{
 		profile_end(&profile->time_commit_us);
-		profile_create(profile, program, &self->local, output);
+		profile_create(profile, program, output);
 	}
 }
 
 hot static void
-session_execute_main(Session* self,
-                     Str*     url,
-                     Str*     text,
-                     Str*     content_type,
-                     Content* output)
+session_endpoint(Session*  self,
+                 Endpoint* endpoint,
+                 Str*      content,
+                 Output*   output)
 {
-	// POST /
-	// POST /v1/execute
-	// POST /v1/db/schema/relation
+	// POST /v1/db/<db_name>
+	// POST /v1/db/<db_name>/tables/<name>
+	// POST /v1/db/<db_name>/functions/<name>
+	auto db = &endpoint->db.string;
+	if (unlikely(str_empty(db)))
+		error("database is not specified");
 
-	// find query parser based on the content type
-	self->query = query_mgr_find(&self->query_mgr, content_type);
-	if (unlikely(! self->query))
-		error("unsupported API operation");
-
-	// parse and compile query
-	if (self->query->iface == &query_sql_if)
+	// parse request
+	auto compiler = &self->compiler;
+	compiler_set(compiler, self->program);
+	if (str_empty(&endpoint->table.string) &&
+	    str_empty(&endpoint->function.string))
 	{
-		if (unlikely(!str_is(url, "/", 1) &&
-		             !str_is(url, "/v1/execute", 11)))
-			error("unsupported API operation");
+		// validate content-type
+		auto content_type = &endpoint->content_type.string;
+		if (! str_is(content_type, "plain/text", 10))
+			error("unsupported operation content-type");
+		compiler_parse(compiler, content);
+	} else
+	{
+		// parse and translate request into statements
+		compiler_parse_endpoint(compiler, endpoint, content);
 	}
-	auto context = &self->query_context;
-	query_context_set(context, self->program, text, url);
-	query_parse(self->query, context);
 
-	auto program = context->program;
+	// generate bytecode (unless EXECUTE)
+	if (! compiler->program_udf)
+		compiler_emit(compiler);
+
+	auto program = compiler->program;
 	if (program_empty(program))
 		return;
 
 	// [EXPLAIN]
-	if (context->explain)
+	if (compiler->program_explain)
 	{
-		content_reset(output);
-		Str name;
-		str_set(&name, "explain", 7);
-		content_write_json_buf(output, &self->local.format, false, &name,
-		                       &program->explain);
+		Str column;
+		str_set(&column, "explain", 7);
+		output_write_json(output, &column, program->explain.start, false);
 		return;
 	}
 
@@ -391,16 +355,12 @@ session_execute_main(Session* self,
 }
 
 hot bool
-session_execute(Session* self,
-                Str*     url,
-                Str*     text,
-                Str*     content_type,
-                Str*     timezone,
-                Str*     format,
-                Content* output)
+session_execute(Session*  self,
+                Endpoint* endpoint,
+                Str*      content,
+                Output*   output)
 {
 	cancel_pause();
-	content_set_local(output, &self->local);
 
 	// execute request based on the content-type
 	auto on_error = error_catch
@@ -411,11 +371,11 @@ session_execute(Session* self,
 		// take shared session lock (for catalog access)
 		session_lock(self, LOCK_SHARED);
 
-		// configure session before execution
-		session_configure(self, timezone, format);
+		// set local settings
+		session_set(self, endpoint, output);
 
 		// parse and execute request
-		session_execute_main(self, url, text, content_type, output);
+		session_endpoint(self, endpoint, content, output);
 
 		// done
 		session_unlock(self);
@@ -425,60 +385,12 @@ session_execute(Session* self,
 
 	if (on_error)
 	{
-		content_reset(output);
-		content_write_json_error(output, &am_self()->error);
+		buf_reset(output->buf);
+		output_write_error(output, &am_self()->error);
 		session_unlock(self);
 	}
 
 	// cancellation point
 	cancel_resume();
 	return on_error;
-}
-
-void
-session_execute_replay(Session* self, Primary* primary, Buf* data)
-{
-	// take shared lock
-	session_lock(self, LOCK_SHARED);
-	defer(session_unlock, self);
-
-	// validate request fields and check current replication state
-
-	// first join request has no data
-	if (! primary_next(primary))
-		return;
-
-	// switch distributed transaction to replication state to write wal
-	// while in read-only mode
-	auto dtr = &self->dtr;
-	auto program = self->program;
-	program->repl = true;
-
-	// replay writes
-	auto pos = data->start;
-	auto end = data->position;
-	while (pos < end)
-	{
-		auto record = (Record*)pos;
-		if (opt_int_of(&config()->wal_crc))
-			if (unlikely(! record_validate(record)))
-				error("repl: record crc mismatch, system LSN is: %" PRIu64,
-				      state_lsn());
-
-		if (likely(record_cmd_is_dml(record_cmd(record))))
-		{
-			// execute DML
-			dtr_reset(dtr);
-			dtr_create(dtr, program);
-			replay(dtr, record);
-		} else
-		{
-			// upgrade to exclusive lock
-			session_lock(self, LOCK_EXCLUSIVE);
-
-			// execute DDL
-			recover_next(primary->recover, record);
-		}
-		pos += record->size;
-	}
 }

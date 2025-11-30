@@ -11,6 +11,4 @@
 // AGPL-3.0 Licensed.
 //
 
-#include "session/profile.h"
-#include "session/session.h"
-#include "session/session_replay.h"
+void session_execute_replay(Session*, Primary*, Buf*);

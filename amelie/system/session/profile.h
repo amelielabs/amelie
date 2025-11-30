@@ -46,7 +46,7 @@ profile_end(uint64_t* metric)
 }
 
 static inline void
-profile_write(Profile* self, Content* content, Buf* buf)
+profile_write(Profile* self, Output* output, Buf* buf)
 {
 	encode_obj(buf);
 	uint64_t time_us = self->time_run_us + self->time_commit_us;
@@ -65,7 +65,7 @@ profile_write(Profile* self, Content* content, Buf* buf)
 
 	// sent_total
 	encode_raw(buf, "sent_total", 10);
-	encode_integer(buf, buf_size(content->content));
+	encode_integer(buf, buf_size(output->buf));
 
 	encode_obj_end(buf);
 }
@@ -73,8 +73,7 @@ profile_write(Profile* self, Content* content, Buf* buf)
 static inline void
 profile_create(Profile* self,
                Program* program,
-               Local*   local,
-               Content* content)
+               Output*  output)
 {
 	auto buf = buf_create();
 	defer_buf(buf);
@@ -87,13 +86,14 @@ profile_create(Profile* self,
 
 	// profile
 	encode_raw(buf, "profile", 7);
-	profile_write(self, content, buf);
+	profile_write(self, output, buf);
 
 	encode_obj_end(buf);
 
-	// set new content
-	content_reset(content);
-	Str name;
-	str_set(&name, "profile", 7);
-	content_write_json_buf(content, &local->format, false, &name, buf);
+	// set new output
+	buf_reset(output->buf);
+
+	Str column;
+	str_set(&column, "profile", 7);
+	output_write_json(output, &column, buf->start, false);
 }
