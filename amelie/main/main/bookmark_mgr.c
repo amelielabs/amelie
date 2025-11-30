@@ -79,7 +79,7 @@ bookmark_mgr_sync(BookmarkMgr* self, const char* path)
 	list_foreach(&self->list)
 	{
 		auto bookmark = list_at(Bookmark, link);
-		encode_string(&buf, remote_get(&bookmark->remote, REMOTE_NAME));
+		encode_string(&buf, opt_string_of(&bookmark->endpoint.name));
 		bookmark_write(bookmark, &buf);
 	}
 	encode_obj_end(&buf);
@@ -123,7 +123,7 @@ bookmark_mgr_find(BookmarkMgr* self, Str* name)
 	list_foreach(&self->list)
 	{
 		auto bookmark = list_at(Bookmark, link);
-		if (str_compare(remote_get(&bookmark->remote, REMOTE_NAME), name))
+		if (str_compare(opt_string_of(&bookmark->endpoint.name), name))
 			return bookmark;
 	}
 	return NULL;

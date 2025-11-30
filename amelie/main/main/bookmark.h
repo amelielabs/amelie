@@ -15,8 +15,8 @@ typedef struct Bookmark Bookmark;
 
 struct Bookmark
 {
-	Remote remote;
-	List   link;
+	Endpoint endpoint;
+	List     link;
 };
 
 static inline Bookmark*
@@ -24,7 +24,7 @@ bookmark_allocate(void)
 {
 	Bookmark* self;
 	self = am_malloc(sizeof(*self));
-	remote_init(&self->remote);
+	endpoint_init(&self->endpoint);
 	list_init(&self->link);
 	return self;
 }
@@ -32,21 +32,21 @@ bookmark_allocate(void)
 static inline void
 bookmark_free(Bookmark* self)
 {
-	remote_free(&self->remote);
+	endpoint_free(&self->endpoint);
 	am_free(self);
 }
 
 static inline void
-bookmark_set_remote(Bookmark* self, Remote* remote)
+bookmark_set_endpoint(Bookmark* self, Endpoint* endpoint)
 {
-	remote_copy(&self->remote, remote);
+	endpoint_copy(&self->endpoint, endpoint);
 }
 
 static inline Bookmark*
 bookmark_copy(Bookmark* self)
 {
 	auto copy = bookmark_allocate();
-	bookmark_set_remote(copy, &self->remote);
+	bookmark_set_endpoint(copy, &self->endpoint);
 	return copy;
 }
 
@@ -55,26 +55,12 @@ bookmark_read(uint8_t** pos)
 {
 	auto self = bookmark_allocate();
 	errdefer(bookmark_free, self);
-	Decode obj[REMOTE_MAX + 1];
-	for (int id = 0; id < REMOTE_MAX; id++)
-	{
-		obj[id].flags = DECODE_STRING;
-		obj[id].key   = remote_nameof(id);
-		obj[id].value = remote_get(&self->remote, id);
-	}
-	memset(&obj[REMOTE_MAX], 0, sizeof(Decode));
-	decode_obj(obj, "bookmark", pos);
+	endpoint_read(&self->endpoint, pos);
 	return self;
 }
 
 static inline void
 bookmark_write(Bookmark* self, Buf* buf)
 {
-	encode_obj(buf);
-	for (int id = 0; id < REMOTE_MAX; id++)
-	{
-		encode_cstr(buf, remote_nameof(id));
-		encode_string(buf, remote_get(&self->remote, id));
-	}
-	encode_obj_end(buf);
+	endpoint_write(&self->endpoint, buf);
 }

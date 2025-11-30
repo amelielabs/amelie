@@ -60,9 +60,9 @@ main_execute(MainClient* client, Str* request)
 static void
 main_console(Main* self, MainClient* client)
 {
-	auto name = remote_get(&self->remote, REMOTE_NAME);
-	auto uri  = remote_get(&self->remote, REMOTE_URI);
-	auto path = remote_get(&self->remote, REMOTE_PATH);
+	auto name = opt_string_of(&self->endpoint.name);
+	auto uri  = opt_string_of(&self->endpoint.uri);
+	auto path = opt_string_of(&self->endpoint.path);
 
 	Separator sep;
 	separator_init(&sep);

@@ -39,7 +39,7 @@ main_init(Main* self, int argc, char** argv)
 	self->argv   = argv;
 	console_init(&self->console);
 	bookmark_mgr_init(&self->bookmark_mgr);
-	remote_init(&self->remote);
+	endpoint_init(&self->endpoint);
 }
 
 void
@@ -47,7 +47,7 @@ main_free(Main* self)
 {
 	console_free(&self->console);
 	bookmark_mgr_free(&self->bookmark_mgr);
-	remote_free(&self->remote);
+	endpoint_free(&self->endpoint);
 }
 
 static inline void
@@ -104,8 +104,8 @@ main_save(Main* self)
 static int
 main_access(Main* self)
 {
-	// choose how to connect based on the remote configuration
-	auto path = remote_get(&self->remote, REMOTE_PATH);
+	// choose how to connect
+	auto path = opt_string_of(&self->endpoint.path);
 	if (str_empty(path))
 		return MAIN_REMOTE;
 
@@ -137,7 +137,7 @@ main_open(Main* self, MainOpen type, Opts* opts)
 	if (type == MAIN_OPEN_HOME)
 		return;
 
-	// process command line, set remote and options
+	// process command line, set endpoint and options
 	main_configure(self, opts);
 
 	// set the database access type
@@ -183,7 +183,7 @@ main_open(Main* self, MainOpen type, Opts* opts)
 		// ensure directory does not exists
 		if (type == MAIN_OPEN_LOCAL_NEW)
 		{
-			auto path = remote_get(&self->remote, REMOTE_PATH);
+			auto path = opt_string_of(&self->endpoint.path);
 			if (fs_exists("%s", str_of(path)))
 				error("database directory already exists");
 		}
@@ -199,7 +199,7 @@ main_open(Main* self, MainOpen type, Opts* opts)
 		self->env = amelie_init();
 		if (! self->env)
 			error("amelie_init() failed");
-		auto path = remote_get(&self->remote, REMOTE_PATH);
+		auto path = opt_string_of(&self->endpoint.path);
 		auto rc = amelie_open(self->env, str_of(path), self->argc, self->argv);
 		if (rc == -1)
 			error("amelie_open() failed");

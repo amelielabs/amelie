@@ -46,7 +46,7 @@ cmd_stop(Main* self)
 	defer(main_close, self);
 
 	// <path>/pid
-	auto path = remote_get(&self->remote, REMOTE_PATH);
+	auto path = opt_string_of(&self->endpoint.path);
 	auto buf = file_import("%s/pid", str_of(path));
 	defer_buf(buf);
 
@@ -73,14 +73,15 @@ cmd_backup(Main* self)
 		error("usage: amelie backup <path, uri, bookmark> <directory>");
 
 	// disable log output
-	if (str_is_cstr(remote_get(&self->remote, REMOTE_DEBUG), "0"))
+	if (! self->endpoint.debug.integer)
 		logger_set_to_stdout(&runtime()->logger, false);
 
 	// create backup
 	opt_int_set(&config()->log_connections, false);
-	restore(&self->remote, self->argv[0]);
+	restore(&self->endpoint, self->argv[0]);
 }
 
+/*
 static void
 cmd_import(Main* self)
 {
@@ -97,6 +98,7 @@ cmd_import(Main* self)
 	opt_int_set(&config()->log_connections, false);
 	import_run(&import);
 }
+*/
 
 static void
 cmd_bookmark(Main* self)
@@ -125,13 +127,13 @@ cmd_bookmark(Main* self)
 	// create new bookmark
 	auto ref = bookmark_allocate();
 	bookmark_mgr_add(&self->bookmark_mgr, ref);
-	remote_copy(&ref->remote, &self->remote);
-	remote_set(&ref->remote, REMOTE_NAME, &name);
+	endpoint_copy(&ref->endpoint, &self->endpoint);
+	opt_string_set(&ref->endpoint.name, &name);
 }
 
-extern void cmd_bench(Main*);
+/*extern void cmd_bench(Main*);*/
 extern void cmd_test(Main*);
-extern void cmd_test_slt(Main*);
+/*extern void cmd_test_slt(Main*);*/
 
 MainCmd
 main_commands[] =
@@ -140,10 +142,10 @@ main_commands[] =
 	{ cmd_start,    "start",    "Start database"                      },
 	{ cmd_stop,     "stop",     "Stop database"                       },
 	{ cmd_backup,   "backup",   "Create database backup"              },
-	{ cmd_import,   "import",   "Import data files into the database" },
+	/*{ cmd_import,   "import",   "Import data files into the database" },*/
 	{ cmd_bookmark, "bookmark", "Create, update or delete bookmark"   },
-	{ cmd_bench,    "bench",    "Run benchmarks"                      },
+	/*{ cmd_bench,    "bench",    "Run benchmarks"                      },*/
 	{ cmd_test,     "test",     "Run tests"                           },
-	{ cmd_test_slt, "test_slt", "Run slt tests"                       },
+	/*{ cmd_test_slt, "test_slt", "Run slt tests"                       },*/
 	{ NULL,          NULL,       NULL                                 },
 };

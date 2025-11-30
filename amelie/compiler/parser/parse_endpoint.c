@@ -493,3 +493,12 @@ parse_import(Parser* self, Program* program, Str* str, Str* uri,
 		parse_import_udf(self, &endpoint);
 }
 #endif
+
+void
+parse_endpoint(Parser* self, Program* program, Endpoint* endpoint, Str* content)
+{
+	(void)self;
+	(void)program;
+	(void)endpoint;
+	(void)content;
+}

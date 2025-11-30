@@ -224,6 +224,7 @@ test_command_disconnect(TestSuite* self, Str* arg)
 		self->current_session = NULL;
 }
 
+/*
 static void
 test_command_prefer(TestSuite* self, Str* arg)
 {
@@ -246,6 +247,7 @@ test_command_post(TestSuite* self, Str* arg)
 	test_session_execute(self->current_session, &path, &content_type, arg,
 	                     &self->current_test_result);
 }
+*/
 
 static void
 test_command_switch(TestSuite* self, Str* arg)
@@ -271,8 +273,6 @@ test_commands[] =
 	{ "backup",     6,  test_command_backup      },
 	{ "connect",    7,  test_command_connect     },
 	{ "disconnect", 10, test_command_disconnect  },
-	{ "prefer",     6,  test_command_prefer      },
-	{ "post",       4,  test_command_post        },
 	{ "switch",     6,  test_command_switch      },
 	{  NULL,        0,  NULL                     }
 };
@@ -304,13 +304,5 @@ test_command(TestSuite* self, Str* cmd)
 	if (! self->current_session)
 		test_error(self, "session is not defined");
 
-	// POST /
-	Str path;
-	str_set_cstr(&path, "/");
-
-	Str content_type;
-	str_set_cstr(&content_type, "text/plain");
-
-	test_session_execute(self->current_session, &path, &content_type, cmd,
-	                     &self->current_test_result);
+	test_session_execute(self->current_session, cmd, &self->current_test_result);
 }

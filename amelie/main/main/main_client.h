@@ -20,7 +20,6 @@ struct MainClientIf
 	void        (*free)(MainClient*);
 	void        (*connect)(MainClient*);
 	void        (*send)(MainClient*, Str*);
-	void        (*send_import)(MainClient*, Str*, Str*, Str*);
 	int         (*recv)(MainClient*, Str*);
 };
 
@@ -83,6 +82,7 @@ main_client_execute(MainClient* self, Str* cmd, Str* reply)
 	return code;
 }
 
+/*
 static inline int
 main_client_execute_import(MainClient* self, Str* path, Str* content_type, Str* content)
 {
@@ -98,3 +98,4 @@ main_client_execute_import(MainClient* self, Str* path, Str* content_type, Str* 
 	}
 	return code;
 }
+*/

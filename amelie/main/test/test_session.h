@@ -17,8 +17,7 @@ struct TestSession
 {
 	Str      name;
 	Client*  client;
-	Remote   remote;
-	Str      prefer;
+	Endpoint endpoint;
 	TestEnv* env;
 	List     link;
 };
@@ -29,9 +28,8 @@ test_session_create(Str* name, TestEnv* env)
 	TestSession* self = am_malloc(sizeof(*self));
 	self->client = NULL;
 	self->env    = env;
-	remote_init(&self->remote);
+	endpoint_init(&self->endpoint);
 	str_copy(&self->name, name);
-	str_init(&self->prefer);
 	list_init(&self->link);
 	return self;
 }
@@ -45,78 +43,50 @@ test_session_free(TestSession* self)
 		client_close(self->client);
 		client_free(self->client);
 	}
-	remote_free(&self->remote);
+	endpoint_free(&self->endpoint);
 	str_free(&self->name);
-	str_free(&self->prefer);
 	am_free(self);
-}
-
-static inline void
-test_session_prefer(TestSession* self, Str* prefer)
-{
-	str_free(&self->prefer);
-	str_copy(&self->prefer, prefer);
 }
 
 static inline void
 test_session_connect(TestSession* self, Str* uri, Str* cafile)
 {
 	// create client and connect
-	remote_set(&self->remote, REMOTE_URI, uri);
+	auto endpoint = &self->endpoint;
+	uri_parse(endpoint, uri);
 	if (cafile && !str_empty(cafile))
-		remote_set(&self->remote, REMOTE_FILE_CA, cafile);
+		opt_string_set(&endpoint->tls_ca, cafile);
+
+	// set defaults
+	if (opt_string_empty(&endpoint->content_type))
+		opt_string_set_raw(&endpoint->content_type, "plain/text", 10);
+	if (opt_string_empty(&endpoint->accept))
+		opt_string_set_raw(&endpoint->content_type, "application/json", 16);
+
 	self->client = client_create();
-	client_set_remote(self->client, &self->remote);
+	client_set_endpoint(self->client, &self->endpoint);
 	client_connect(self->client);
 }
 
 static inline void
-test_session_execute(TestSession* self,
-                     Str*         path,
-                     Str*         content_type,
-                     Str*         content,
-                     File*        output)
+test_session_execute(TestSession* self, Str* content, File* output)
 {
-	auto client  = self->client;
-	auto request = &client->request;
-	auto reply   = &client->reply;
-	auto prefer  = &self->prefer;
-	auto token   = remote_get(client->remote, REMOTE_TOKEN);
+	auto client = self->client;
+	auto reply  = &client->reply;
+	client_execute(client, content, &reply->content);
 
-	// request
-	http_write_request(request, "POST %.*s", str_size(path), str_of(path));
-	if (! str_empty(token))
-		http_write(request, "Authorization", "Bearer %.*s", str_size(token), str_of(token));
-	if (! str_empty(prefer))
-		http_write(request, "Prefer", "%.*s", str_size(prefer), str_of(prefer));
-	http_write(request, "Content-Type", "%.*s", str_size(content_type), str_of(content_type));
-	http_write(request, "Content-Length", "%d", str_size(content));
-
-	http_write_end(request);
-	tcp_write_pair_str(&client->tcp, &request->raw, content);
-
-	// reply
-	http_reset(reply);
-	auto eof = http_read(reply, &client->readahead, false);
-	if (eof)
-		error("unexpected eof");
-	http_read_content(reply, &client->readahead, &reply->content);
-
-	// 403 Forbidden
-	// 413 Payload Too Large
-	if (str_is(&reply->options[HTTP_CODE], "403", 3) ||
-	    str_is(&reply->options[HTTP_CODE], "413", 3))
-	{
-		auto msg = &reply->options[HTTP_MSG];
-		file_write(output, str_of(msg), str_size(msg));
-		file_write(output, "\n", 1);
-		return;
-	}
-
-	// print
-	if (! str_is(&reply->options[HTTP_CODE], "204", 3))
+	if (buf_size(&reply->content))
 	{
 		file_write(output, reply->content.start, buf_size(&reply->content));
 		file_write(output, "\n", 1);
 	}
+
+	int64_t code;
+	str_toint(&reply->options[HTTP_CODE], &code);
+	if (code == 200 || code == 204)
+		return;
+
+	auto msg = &reply->options[HTTP_MSG];
+	file_write(output, str_of(msg), str_size(msg));
+	file_write(output, "\n", 1);
 }

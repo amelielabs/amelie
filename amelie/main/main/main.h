@@ -45,7 +45,7 @@ struct Main
 {
 	Console     console;
 	BookmarkMgr bookmark_mgr;
-	Remote      remote;
+	Endpoint    endpoint;
 	MainAccess  access;
 	amelie_t*   env;
 	int         argc;

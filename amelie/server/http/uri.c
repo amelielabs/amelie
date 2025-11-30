@@ -490,5 +490,7 @@ uri_export(Endpoint* self, Buf* buf)
 	// ?name=value[& ...]
 		// todo: ...
 		// user, password, token
-		// tls, table, function, timezone, ret, debug
+		// tls, table, function, timezone, format, debug
+
+	buf_write(buf, "\0", 1);
 }

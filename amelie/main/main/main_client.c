@@ -51,7 +51,7 @@ static void
 main_remote_connect(MainClient* ptr)
 {
 	auto self = (MainRemote*)ptr;
-	client_set_remote(self->client, &self->obj.main->remote);
+	client_set_endpoint(self->client, &self->obj.main->endpoint);
 	client_connect(self->client);
 }
 
@@ -60,14 +60,6 @@ main_remote_send(MainClient* ptr, Str* command)
 {
 	auto self = (MainRemote*)ptr;
 	client_send(self->client, command);
-	self->obj.pending++;
-}
-
-hot static void
-main_remote_send_import(MainClient* ptr, Str* path, Str* content_type, Str* content)
-{
-	auto self = (MainRemote*)ptr;
-	client_send_import(self->client, path, content_type, content);
 	self->obj.pending++;
 }
 
@@ -84,12 +76,11 @@ main_remote_recv(MainClient* ptr, Str* reply)
 
 MainClientIf main_remote =
 {
-	.create      = main_remote_create,
-	.free        = main_remote_free,
-	.connect     = main_remote_connect,
-	.send        = main_remote_send,
-	.send_import = main_remote_send_import,
-	.recv        = main_remote_recv
+	.create  = main_remote_create,
+	.free    = main_remote_free,
+	.connect = main_remote_connect,
+	.send    = main_remote_send,
+	.recv    = main_remote_recv
 };
 
 typedef struct MainLocal MainLocal;
@@ -142,7 +133,24 @@ static void
 main_local_connect(MainClient* ptr)
 {
 	auto self = (MainLocal*)ptr;
-	self->session = amelie_connect(self->obj.main->env, NULL);
+	auto endpoint = &self->obj.main->endpoint;
+
+	// create native connection string amelie://db?opts...
+	Endpoint local;
+	endpoint_init(&local);
+	defer(endpoint_free, &local);
+	endpoint_copy(&local, endpoint);
+
+	opt_int_set(&local.proto, PROTO_AMELIE);
+	opt_free(&local.path);
+	opt_free(&local.host);
+
+	// export uri
+	auto buf = buf_create();
+	defer_buf(buf);
+	uri_export(&local, buf);
+
+	self->session = amelie_connect(self->obj.main->env, buf_cstr(buf));
 	if (unlikely(! self->session))
 		error("amelie_connect() failed");
 	event_attach(&self->event);
@@ -167,16 +175,6 @@ main_local_send(MainClient* ptr, Str* cmd)
 	self->obj.pending++;
 }
 
-hot static void
-main_local_send_import(MainClient* ptr, Str* path, Str* content_type, Str* content)
-{
-	unused(ptr);
-	unused(path);
-	unused(content_type);
-	unused(content);
-	error("operation is not supported");
-}
-
 hot static int
 main_local_recv(MainClient* ptr, Str* reply)
 {
@@ -194,10 +192,9 @@ main_local_recv(MainClient* ptr, Str* reply)
 
 MainClientIf main_local =
 {
-	.create      = main_local_create,
-	.free        = main_local_free,
-	.connect     = main_local_connect,
-	.send        = main_local_send,
-	.send_import = main_local_send_import,
-	.recv        = main_local_recv
+	.create  = main_local_create,
+	.free    = main_local_free,
+	.connect = main_local_connect,
+	.send    = main_local_send,
+	.recv    = main_local_recv
 };
