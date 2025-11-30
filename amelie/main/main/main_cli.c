@@ -17,6 +17,9 @@
 static void
 main_execute(MainClient* client, Str* request)
 {
+	if (str_empty(request))
+		return;
+
 	Str  reply;
 	auto code = main_client_execute(client, request, &reply);
 	switch (code) {

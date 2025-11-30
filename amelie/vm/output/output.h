@@ -29,11 +29,11 @@ struct Output
 	Str       format;
 	bool      format_pretty;
 	bool      format_minimal;
-	Endpoint* endpoint;
 };
 
 void output_init(Output*);
 void output_reset(Output*);
+void output_set_default(Output*);
 void output_set(Output*, Endpoint*);
 void output_set_buf(Output*, Buf*);
 

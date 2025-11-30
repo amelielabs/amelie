@@ -110,9 +110,20 @@ main_configure(Main* self, Opts* opts)
 	if (str_empty(uri) && str_empty(path))
 		error("uri or path is not defined");
 
-	auto db   = opt_string_of(&endpoint->db);
+	// set default db
+	auto db = opt_string_of(&endpoint->db);
 	if (str_empty(db))
-		error("database name is not defined");
+		opt_string_set_raw(&endpoint->db, "main", 4);
+
+	// set default content_type
+	auto content_type = opt_string_of(&endpoint->content_type);
+	if (str_empty(content_type))
+		opt_string_set_raw(&endpoint->content_type, "plain/text", 10);
+
+	// set default accept
+	auto accept = opt_string_of(&endpoint->accept);
+	if (str_empty(accept))
+		opt_string_set_raw(&endpoint->accept, "application/json", 16);
 
 	// generate auth token
 	auto user   = opt_string_of(&endpoint->user);

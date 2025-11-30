@@ -138,7 +138,8 @@ relay_execute_client(Relay* self, Str* command)
 hot static inline int
 relay_execute(Relay* self, Str* uri, Request* req)
 {
-	output_set_buf(&self->output, &req->output);
+	auto output = &self->output;
+	output_set_buf(output, &req->output);
 	auto code = 0;
 	auto on_error = error_catch
 	(
@@ -152,7 +153,9 @@ relay_execute(Relay* self, Str* uri, Request* req)
 	if (on_error)
 	{
 		buf_reset(&req->output);
-		output_write_error(&self->output, &am_self()->error);
+		output_reset(output);
+		output_set_default(output);
+		output_write_error(output, &am_self()->error);
 
 		// 502 Bad Gateway (connection or IO error)
 		code = 502;

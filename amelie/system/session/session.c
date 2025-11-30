@@ -328,7 +328,8 @@ session_endpoint(Session*  self,
 	}
 
 	// generate bytecode (unless EXECUTE)
-	if (! compiler->program_udf)
+	auto stmt = compiler_stmt(compiler);
+	if (stmt && !compiler->program_udf)
 		compiler_emit(compiler);
 
 	auto program = compiler->program;

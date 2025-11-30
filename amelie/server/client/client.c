@@ -183,17 +183,15 @@ client_connect(Client* self)
 
 	// tcp connection
 	auto host = &endpoint->host;
-	if (! opt_string_empty(host))
-	{
-		auto port = endpoint->port.integer;
-		if (error_catch( client_connect_to(self, &host->string, port) ))
-		{
-			client_close(self);
-			rethrow();
-		}
-	}
+	if (opt_string_empty(host))
+		error("client: host or unix path is not set");
 
-	error("client: host or unix path is not set");
+	auto port = endpoint->port.integer;
+	if (error_catch( client_connect_to(self, &host->string, port) ))
+	{
+		client_close(self);
+		rethrow();
+	}
 }
 
 void

@@ -442,10 +442,11 @@ uri_parse_endpoint(Endpoint* endpoint, Str* spec)
 void
 uri_export(Endpoint* self, Buf* buf)
 {
-	// export endpoint as uri connection string
+	// create connection string
 
 	// proto://
-	switch (self->proto.integer) {
+	auto proto = self->proto.integer;
+	switch (proto) {
 	case PROTO_HTTP:
 		buf_write(buf, "http://", 7);
 		break;
@@ -458,10 +459,10 @@ uri_export(Endpoint* self, Buf* buf)
 	}
 
 	// [user[:password]@]
-	if (opt_string_empty(&self->user))
+	if (! opt_string_empty(&self->user))
 	{
 		buf_write_str(buf, &self->user.string);
-		if (opt_string_empty(&self->secret))
+		if (! opt_string_empty(&self->secret))
 		{
 			buf_write(buf, ":", 1);
 			buf_write_str(buf, &self->user.string);
@@ -469,28 +470,60 @@ uri_export(Endpoint* self, Buf* buf)
 		buf_write(buf, "@", 1);
 	}
 
-	if (self->proto.integer != PROTO_AMELIE)
+	// [hostname[:port]]
+	if (proto != PROTO_AMELIE)
 	{
-		// hostname[:port]
-		if (opt_string_empty(&self->host))
+		if (! opt_string_empty(&self->host))
 		{
 			buf_write_str(buf, &self->host.string);
 			buf_write(buf, ":", 1);
 			buf_printf(buf, "%d", self->port.integer);
 		}
-
-		// /
 		buf_write(buf, "/", 1);
 	}
 
 	// db
-	if (opt_string_empty(&self->db))
+	if (! opt_string_empty(&self->db))
 		buf_write_str(buf, &self->db.string);
 
-	// ?name=value[& ...]
-		// todo: ...
-		// user, password, token
-		// tls, table, function, timezone, format, debug
+	// arguments
+	char start_symbol = '?';
+	list_foreach(&self->opts.list)
+	{
+		// write option based on the protocol
+		auto opt = list_at(Opt, link);
+		if (opt == &self->proto  ||
+		    opt == &self->user   ||
+		    opt == &self->secret ||
+		    opt == &self->host   ||
+		    opt == &self->port   ||
+		    opt == &self->path   ||
+		    opt == &self->uri    ||
+		    opt == &self->db     ||
+		    opt == &self->name   ||
+		    opt == &self->debug)
+			continue;
+
+		if (proto != PROTO_AMELIE)
+			if (opt == &self->tls_capath ||
+			    opt == &self->tls_ca     ||
+			    opt == &self->tls_cert   ||
+			    opt == &self->tls_key    ||
+			    opt == &self->tls_server)
+				continue;
+
+		assert(opt->type == OPT_STRING);
+		auto value = opt_string_of(opt);
+		if (str_empty(value))
+			continue;
+
+		buf_printf(buf, "%c%s=%.*s", start_symbol,
+		           str_of(&opt->name),
+		           str_size(value),
+		           str_of(value));
+
+		start_symbol = '&';
+	}
 
 	buf_write(buf, "\0", 1);
 }

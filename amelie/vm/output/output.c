@@ -58,7 +58,6 @@ output_init(Output* self)
 	self->timezone       = NULL;
 	self->format_pretty  = true;
 	self->format_minimal = true;
-	self->endpoint       = NULL;
 	str_init(&self->format);
 }
 
@@ -69,7 +68,6 @@ output_reset(Output* self)
 	self->timezone       = NULL;
 	self->format_pretty  = true;
 	self->format_minimal = true;
-	self->endpoint       = NULL;
 	if (self->buf)
 		buf_reset(self->buf);
 	str_init(&self->format);
@@ -104,11 +102,11 @@ output_set_format_next(Str* name, char* pos, char* pos_end)
 }
 
 static void
-output_set_format(Output* self)
+output_set_format(Output* self, Endpoint* endpoint)
 {
 	// use config or prefered format
 	self->format = config()->format.string;
-	auto format_prefer = &self->endpoint->format.string;
+	auto format_prefer = &endpoint->format.string;
 	if (! str_empty(format_prefer))
 		self->format = *format_prefer;
 
@@ -134,12 +132,12 @@ output_set_format(Output* self)
 }
 
 static void
-output_set_tz(Output* self)
+output_set_tz(Output* self, Endpoint* endpoint)
 {
 	self->timezone = runtime()->timezone;
 
 	// set endpoint timezone
-	auto timezone = &self->endpoint->timezone.string;
+	auto timezone = &endpoint->timezone.string;
 	if (! str_empty(timezone))
 	{
 		auto tz = timezone_mgr_find(&runtime()->timezone_mgr, timezone);
@@ -151,8 +149,6 @@ output_set_tz(Output* self)
 void
 output_set(Output* self, Endpoint* endpoint)
 {
-	self->endpoint = endpoint;
-
 	// find and set the output iface
 	auto accept = &endpoint->accept.string;
 	for (auto i = 0; output_types[i].mime; i++)
@@ -169,8 +165,16 @@ output_set(Output* self, Endpoint* endpoint)
 		      str_of(accept));
 
 	// read format and set options
-	output_set_format(self);
+	output_set_format(self, endpoint);
 
 	// set timezone
-	output_set_tz(self);
+	output_set_tz(self, endpoint);
+}
+
+void
+output_set_default(Output* self)
+{
+	self->iface    = output_types[0].iface;
+	self->format   = config()->format.string;
+	self->timezone = runtime()->timezone;
 }

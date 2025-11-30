@@ -328,6 +328,15 @@ http_begin_request(Http* self, Endpoint* endpoint, uint64_t size)
 		buf_write(buf, "\r\n", 2);
 	}
 
+	// accept
+	auto accept = opt_string_of(&endpoint->accept);
+	if (! str_empty(accept))
+	{
+		buf_write(buf, "Accept: ", 8);
+		buf_write_str(buf, accept);
+		buf_write(buf, "\r\n", 2);
+	}
+
 	// todo: Prefer
 	return buf;
 }

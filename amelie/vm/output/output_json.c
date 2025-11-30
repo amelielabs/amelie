@@ -213,9 +213,8 @@ output_json_write_error(Output* self, Error* error)
 	}
 	encode_obj_end(buf);
 
-	Str column;
-	str_set(&column, "error", 5);
-	output_json_write_json(self, &column, buf->start, false);
+	auto pos = buf->start;
+	json_export_as(self->buf, self->timezone, self->format_pretty, 0, &pos);
 }
 
 OutputIf output_json =
