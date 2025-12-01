@@ -58,10 +58,12 @@ test_session_connect(TestSession* self, Str* uri, Str* cafile)
 		opt_string_set(&endpoint->tls_ca, cafile);
 
 	// set defaults
+	if (opt_string_empty(&endpoint->db))
+		opt_string_set_raw(&endpoint->db, "main", 4);
 	if (opt_string_empty(&endpoint->content_type))
 		opt_string_set_raw(&endpoint->content_type, "plain/text", 10);
 	if (opt_string_empty(&endpoint->accept))
-		opt_string_set_raw(&endpoint->content_type, "application/json", 16);
+		opt_string_set_raw(&endpoint->accept, "application/json", 16);
 
 	self->client = client_create();
 	client_set_endpoint(self->client, &self->endpoint);
@@ -86,7 +88,10 @@ test_session_execute(TestSession* self, Str* content, File* output)
 	if (code == 200 || code == 204)
 		return;
 
-	auto msg = &reply->options[HTTP_MSG];
-	file_write(output, str_of(msg), str_size(msg));
-	file_write(output, "\n", 1);
+	if (buf_empty(&reply->content))
+	{
+		auto msg = &reply->options[HTTP_MSG];
+		file_write(output, str_of(msg), str_size(msg));
+		file_write(output, "\n", 1);
+	}
 }

@@ -68,5 +68,7 @@ compiler_main(Compiler* self)
 static inline Stmt*
 compiler_stmt(Compiler* self)
 {
+	if (! compiler_namespace(self))
+		return NULL;
 	return compiler_main(self)->stmts.list;
 }

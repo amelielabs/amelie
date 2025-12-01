@@ -111,11 +111,8 @@ frontend_endpoint(Client* client)
 	auto accept = http_find(request, "Accept", 6);
 	if (accept)
 		endpoint->accept.string = accept->value;
-
-	// find and parse Prefer header
-	auto prefer = http_find(request, "Prefer", 6);
-	if (prefer)
-		prefer_parse(endpoint, &prefer->value);
+	else
+		str_set(&endpoint->accept.string, "application/json", 16);
 }
 
 void

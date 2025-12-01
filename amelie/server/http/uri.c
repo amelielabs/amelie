@@ -343,7 +343,7 @@ uri_next(Uri* self, Str* value)
 {
 	// value[/]
 	auto start = self->pos;
-	while (*self->pos && *self->pos != '/')
+	while (*self->pos && *self->pos != '/' && *self->pos !='?')
 		self->pos++;
 	str_set(value, start, self->pos - start);
 }
@@ -359,9 +359,12 @@ uri_parse_endpoint_db(Uri* self)
 	if (str_empty(&value))
 		goto error;
 	opt_string_set(&endpoint->db, &value);
-	if (! *self->pos)
+
+	// db_name?
+	if (!*self->pos || *self->pos == '?')
 		return;
-	// [/]
+
+	// /
 	self->pos++;
 
 	// db_name/?
@@ -381,11 +384,11 @@ uri_parse_endpoint_db(Uri* self)
 		is_table = false;
 	else
 		goto error;
-	if (! *self->pos)
-		return;
+	if (!*self->pos || *self->pos == '?')
+		goto error;
 	self->pos++;
 
-	// name[/]
+	// name
 	uri_next(self, &value);
 	if (str_empty(&value))
 		goto error;
@@ -393,8 +396,12 @@ uri_parse_endpoint_db(Uri* self)
 		opt_string_set(&endpoint->table, &value);
 	else
 		opt_string_set(&endpoint->function, &value);
-	if (! *self->pos)
+
+	// name?
+	if (!*self->pos || *self->pos == '?')
 		return;
+
+	// name/
 	self->pos++;
 	return;
 
@@ -437,6 +444,18 @@ uri_parse_endpoint(Endpoint* endpoint, Str* spec)
 
 	// ?name=value[& ...]
 	uri_parse_args(&self);
+}
+
+void
+uri_export_arg(Opt* opt, Buf* buf, bool* first)
+{
+	if (opt_string_empty(opt))
+		return;
+	// [?|&]name=value
+	buf_printf(buf, "%c%s=%.*s", *first? '?': '&',
+	           str_of(&opt->name),
+	           str_size(&opt->string), str_of(&opt->string));
+	*first = false;
 }
 
 void
@@ -487,43 +506,22 @@ uri_export(Endpoint* self, Buf* buf)
 		buf_write_str(buf, &self->db.string);
 
 	// arguments
-	char start_symbol = '?';
-	list_foreach(&self->opts.list)
+	bool first = true;
+	if (proto == PROTO_AMELIE)
 	{
-		// write option based on the protocol
-		auto opt = list_at(Opt, link);
-		if (opt == &self->proto  ||
-		    opt == &self->user   ||
-		    opt == &self->secret ||
-		    opt == &self->host   ||
-		    opt == &self->port   ||
-		    opt == &self->path   ||
-		    opt == &self->uri    ||
-		    opt == &self->db     ||
-		    opt == &self->name   ||
-		    opt == &self->debug)
-			continue;
-
-		if (proto != PROTO_AMELIE)
-			if (opt == &self->tls_capath ||
-			    opt == &self->tls_ca     ||
-			    opt == &self->tls_cert   ||
-			    opt == &self->tls_key    ||
-			    opt == &self->tls_server)
-				continue;
-
-		assert(opt->type == OPT_STRING);
-		auto value = opt_string_of(opt);
-		if (str_empty(value))
-			continue;
-
-		buf_printf(buf, "%c%s=%.*s", start_symbol,
-		           str_of(&opt->name),
-		           str_size(value),
-		           str_of(value));
-
-		start_symbol = '&';
+		uri_export_arg(&self->content_type, buf, &first);
+		uri_export_arg(&self->accept, buf, &first);
+		uri_export_arg(&self->tls_capath, buf, &first);
+		uri_export_arg(&self->tls_ca, buf, &first);
+		uri_export_arg(&self->tls_cert, buf, &first);
+		uri_export_arg(&self->tls_key, buf, &first);
+		uri_export_arg(&self->tls_server, buf, &first);
 	}
+	uri_export_arg(&self->table, buf, &first);
+	uri_export_arg(&self->function, buf, &first);
+	uri_export_arg(&self->columns, buf, &first);
+	uri_export_arg(&self->timezone, buf, &first);
+	uri_export_arg(&self->format, buf, &first);
 
 	buf_write(buf, "\0", 1);
 }

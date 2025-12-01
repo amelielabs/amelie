@@ -19,4 +19,3 @@
 
 // http parser
 #include "http/http.h"
-#include "http/prefer.h"

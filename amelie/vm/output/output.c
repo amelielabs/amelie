@@ -104,6 +104,10 @@ output_set_format_next(Str* name, char* pos, char* pos_end)
 static void
 output_set_format(Output* self, Endpoint* endpoint)
 {
+	// reset
+	self->format_pretty  = false;
+	self->format_minimal = false;
+
 	// use config or prefered format
 	self->format = config()->format.string;
 	auto format_prefer = &endpoint->format.string;

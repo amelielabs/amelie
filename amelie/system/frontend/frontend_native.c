@@ -75,10 +75,21 @@ relay_free(Relay* self)
 static inline void
 relay_connect(Relay* self, Str* uri)
 {
-	endpoint_reset(&self->endpoint);
+	auto endpoint = &self->endpoint;
+	endpoint_reset(endpoint);
 
 	// parse uri and configure endpoint
-	uri_parse(&self->endpoint, uri);
+	uri_parse(endpoint, uri);
+
+	// set missing defaults
+	if (opt_string_empty(&endpoint->db))
+		opt_string_set_raw(&endpoint->db, "main", 4);
+
+	if (opt_string_empty(&endpoint->content_type))
+		opt_string_set_raw(&endpoint->content_type, "plain/text", 10);
+
+	if (opt_string_empty(&endpoint->accept))
+		opt_string_set_raw(&endpoint->accept, "application/json", 16);
 
 	// configure output
 	output_reset(&self->output);
@@ -153,9 +164,8 @@ relay_execute(Relay* self, Str* uri, Request* req)
 	if (on_error)
 	{
 		buf_reset(&req->output);
-		output_reset(output);
-		output_set_default(output);
-		output_write_error(output, &am_self()->error);
+		if (output->iface)
+			output_write_error(output, &am_self()->error);
 
 		// 502 Bad Gateway (connection or IO error)
 		code = 502;

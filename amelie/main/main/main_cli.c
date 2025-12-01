@@ -40,7 +40,9 @@ main_execute(MainClient* client, Str* request)
 			info("error: %d", code);
 			break;
 		}
+		info("error: %.*s", str_size(&reply), str_of(&reply));
 
+#if 0
 		// read error message
 		Json json;
 		json_init(&json);
@@ -55,6 +57,7 @@ main_execute(MainClient* client, Str* request)
 		Str text;
 		json_read_string(&pos, &text);
 		info("error: %.*s", str_size(&text), str_of(&text));
+#endif
 		break;
 	}
 	}

@@ -105,6 +105,11 @@ session_set(Session* self, Endpoint* endpoint, Output* output)
 
 	// update transaction time
 	local_update_time(local);
+
+	// validate database
+	if (str_empty(&local->db))
+		error("database is not defined");
+	db_mgr_find(&share()->storage->catalog.db_mgr, &local->db, true);
 }
 
 void
@@ -337,6 +342,10 @@ session_endpoint(Session*  self,
 		return;
 
 	// [EXPLAIN]
+	if (compiler->program_explain || compiler->program_profile)
+		explain(compiler, NULL, NULL);
+
+	// explain output
 	if (compiler->program_explain)
 	{
 		Str column;

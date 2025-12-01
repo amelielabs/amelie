@@ -371,8 +371,7 @@ op_dump_send(Program* self, Code* code, Op* op, Buf* buf, Send* send,
 	auto is_last = self->send_last == code_posof(code, op);
 	auto config = send->table->config;
 	op_write(buf, op, a, b, c,
-	         "%.*s.%.*s (%s%s)",
-	         str_size(&config->db), str_of(&config->db),
+	         "%.*s (%s%s)",
 	         str_size(&config->name), str_of(&config->name),
 	         send_of(send),
 	         is_last ? ", closing" : "");
@@ -466,10 +465,7 @@ op_dump(Program* self, Code* code, Buf* buf)
 		{
 			auto table = (Table*)op->a;
 			op_write(output, op, false, true, true,
-			         "%.*s.%.*s",
-			         str_size(&table->config->db),
-			         str_of(&table->config->db),
-			         str_size(&table->config->name),
+			         "%.*s", str_size(&table->config->name),
 			         str_of(&table->config->name));
 			break;
 		}
@@ -486,9 +482,7 @@ op_dump(Program* self, Code* code, Buf* buf)
 			json_read_string(&ref, &name_table);
 			json_read_string(&ref, &name_index);
 			op_write(output, op, true, true, true,
-			         "%.*s.%.*s (%.*s)",
-			         str_size(&name_db),
-			         str_of(&name_db),
+			         "%.*s (%.*s)",
 			         str_size(&name_table),
 			         str_of(&name_table),
 			         str_size(&name_index),
@@ -503,10 +497,7 @@ op_dump(Program* self, Code* code, Buf* buf)
 			json_read_string(&ref, &name_db);
 			json_read_string(&ref, &name_table);
 			op_write(output, op, true, true, true,
-			         "%.*s.%.*s",
-			         str_size(&name_db),
-			         str_of(&name_db),
-			         str_size(&name_table),
+			         "%.*s", str_size(&name_table),
 			         str_of(&name_table));
 			break;
 		}
@@ -514,10 +505,7 @@ op_dump(Program* self, Code* code, Buf* buf)
 		{
 			auto table = (Table*)op->b;
 			op_write(output, op, true, false, true,
-			         "%.*s.%.*s",
-			         str_size(&table->config->db),
-			         str_of(&table->config->db),
-			         str_size(&table->config->name),
+			         "%.*s", str_size(&table->config->name),
 			         str_of(&table->config->name));
 			break;
 		}
@@ -525,8 +513,7 @@ op_dump(Program* self, Code* code, Buf* buf)
 		{
 			auto function = (Function*)op->b;
 			op_write(output, op, true, false, true,
-			         "%.*s()",
-			         str_size(&function->name),
+			         "%.*s()", str_size(&function->name),
 			         str_of(&function->name));
 			break;
 		}
@@ -534,10 +521,7 @@ op_dump(Program* self, Code* code, Buf* buf)
 		{
 			auto udf = (Udf*)op->b;
 			op_write(output, op, true, false, false,
-			         "%.*s.%.*s()",
-			         str_size(&udf->config->db),
-			         str_of(&udf->config->db),
-			         str_size(&udf->config->name),
+			         "%.*s()", str_size(&udf->config->name),
 			         str_of(&udf->config->name));
 			break;
 		}

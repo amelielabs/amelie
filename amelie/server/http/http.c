@@ -291,15 +291,25 @@ http_begin_request(Http* self, Endpoint* endpoint, uint64_t size)
 		buf_write_str(buf, db);
 		if (! str_empty(table))
 		{
-			buf_write(buf, "tables/", 7);
+			buf_write(buf, "/tables/", 8);
 			buf_write_str(buf, table);
 		} else
 		if (! str_empty(function))
 		{
-			buf_write(buf, "functions/", 10);
+			buf_write(buf, "/functions/", 11);
 			buf_write_str(buf, function);
 		}
 	}
+
+	// arguments
+	//
+	// columns, timezone, format
+	//
+	bool first = true;
+	uri_export_arg(&endpoint->columns, buf, &first);
+	uri_export_arg(&endpoint->timezone, buf, &first);
+	uri_export_arg(&endpoint->format, buf, &first);
+
 	buf_write(buf, " HTTP/1.1\r\n", 11);
 
 	// token
@@ -337,7 +347,6 @@ http_begin_request(Http* self, Endpoint* endpoint, uint64_t size)
 		buf_write(buf, "\r\n", 2);
 	}
 
-	// todo: Prefer
 	return buf;
 }
 
