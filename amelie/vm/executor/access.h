@@ -180,7 +180,7 @@ access_encode(Access* self, Buf* buf)
 	{
 		auto record = access_at(self, i);
 		encode_array(buf);
-		encode_target(buf, record->rel->db, record->rel->name);
+		encode_string(buf, record->rel->name);
 		switch (record->type) {
 		case ACCESS_RO:
 			encode_raw(buf, "ro", 2);

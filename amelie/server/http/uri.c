@@ -434,10 +434,12 @@ uri_parse_endpoint(Endpoint* endpoint, Str* spec)
 	if (str_is(spec, "/v1/backup", 10))
 	{
 		str_set(&endpoint->service.string, "backup", 6);
+		self.pos += 10;
 	} else
 	if (str_is(spec, "/v1/repl", 8))
 	{
 		str_set(&endpoint->service.string, "repl", 4);
+		self.pos += 8;
 	} else {
 		error("failed to parse uri endpoint");
 	}
@@ -522,6 +524,4 @@ uri_export(Endpoint* self, Buf* buf)
 	uri_export_arg(&self->columns, buf, &first);
 	uri_export_arg(&self->timezone, buf, &first);
 	uri_export_arg(&self->format, buf, &first);
-
-	buf_write(buf, "\0", 1);
 }

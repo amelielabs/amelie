@@ -131,7 +131,7 @@ test_command_close(TestSuite* self, Str* arg)
 static void
 test_command_backup(TestSuite* self, Str* arg)
 {
-	// backup <name> [options]
+	// backup <name> <uri>
 	Str name;
 	str_arg(arg, &name);
 	if (str_empty(&name))
@@ -159,11 +159,11 @@ test_command_backup(TestSuite* self, Str* arg)
 	         str_size(&name),
 	         str_of(&name));
 
-	// backup --json {remote options} <path>
-	char options[1024];
+	// backup <uri> <path>
+	char uri[1024];
 	str_chomp(arg);
-	snprintf(options, sizeof(options), "--json={%.*s}",
-	         str_size(arg), str_of(arg));
+	str_shrink(arg);
+	snprintf(uri, sizeof(uri), "%.*s", str_size(arg), str_of(arg));
 
 	int   argc = 5;
 	char* argv[5] =
@@ -171,8 +171,8 @@ test_command_backup(TestSuite* self, Str* arg)
 		"amelie",
 		"backup"
 	};
-	argv[2] = options;
-	argv[3] = "--debug=0";
+	argv[2] = uri;
+	argv[3] = "--debug=false";
 	argv[4] = path;
 
 	int rc = runtime_start(&env->runtime, main_runtime, NULL, argc, argv);

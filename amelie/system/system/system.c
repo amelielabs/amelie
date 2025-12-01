@@ -119,7 +119,7 @@ catalog_if_udf_compile(Catalog* self, Udf* udf)
 	compiler_emit(&compiler);
 
 	// generate explain for udf
-	explain(&compiler, &udf->config->db, &udf->config->name);
+	explain(&compiler, &udf->config->name);
 
 	// assign udf program
 	udf->data = program;

@@ -104,8 +104,12 @@ restore_start(Restore* self)
 
 	// begin backup
 
-	// POST /
+	// POST /v1/backup
+	//
 	// accept application/json
+	//
+	opt_string_set_raw(&client->endpoint->service, "backup", 6);
+
 	auto request = &client->request;
 	auto buf = http_begin_request(request, client->endpoint, 0);
 	http_end(buf);
@@ -153,7 +157,8 @@ restore_next(Restore* self)
 
 	// request next step
 
-	// POST /
+	// POST /v1/backup
+	//
 	// accept application/octet-stream
 	auto request = &client->request;
 	auto buf = http_begin_request(request, client->endpoint, 0);
@@ -186,12 +191,15 @@ restore_next(Restore* self)
 		error("backup Am-File field is missing");
 
 	// read content header
+
+	// content-length might be missing for empty files
+	int64_t len = 0;
 	auto content_len = http_find(reply, "Content-Length", 14);
-	if (! content_len)
-		error("response Content-Length is missing");
-	int64_t len;
-	if (str_toint(&content_len->value, &len) == -1)
-		error("failed to parse Content-Length");
+	if (content_len)
+	{
+		if (str_toint(&content_len->value, &len) == -1)
+			error("failed to parse Content-Length");
+	}
 
 	// expect correct step
 	if (step != self->step || step >= self->step_total )

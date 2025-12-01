@@ -343,7 +343,7 @@ session_endpoint(Session*  self,
 
 	// [EXPLAIN]
 	if (compiler->program_explain || compiler->program_profile)
-		explain(compiler, NULL, NULL);
+		explain(compiler, NULL);
 
 	// explain output
 	if (compiler->program_explain)

@@ -149,6 +149,7 @@ main_local_connect(MainClient* ptr)
 	auto buf = buf_create();
 	defer_buf(buf);
 	uri_export(&local, buf);
+	buf_write(buf, "\0", 1);
 
 	self->session = amelie_connect(self->obj.main->env, buf_cstr(buf));
 	if (unlikely(! self->session))

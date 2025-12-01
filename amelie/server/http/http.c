@@ -279,12 +279,18 @@ http_begin_request(Http* self, Endpoint* endpoint, uint64_t size)
 	// POST /v1/db/<db_name>/tables/<name>
 	// POST /v1/db/<db_name>/functions/<name>
 	// POST /v1/db/<db_name>
-	// POST / (services)
+	// POST /v1/<service>
+	auto service  = opt_string_of(&endpoint->service);
 	auto db       = opt_string_of(&endpoint->db);
 	auto table    = opt_string_of(&endpoint->table);
 	auto function = opt_string_of(&endpoint->function);
 
 	buf_write(buf, "POST /", 6);
+	if (! str_empty(service))
+	{
+		buf_write(buf, "v1/", 3);
+		buf_write_str(buf, service);
+	} else
 	if (! str_empty(db))
 	{
 		buf_write(buf, "v1/db/", 6);

@@ -528,6 +528,7 @@ parse_table_alter(Stmt* self)
 
 	// name
 	auto target = stmt_expect(self, KNAME);
+	stmt->name = target->string;
 
 	// [ADD COLUMN]
 	if (stmt_if(self, KADD))

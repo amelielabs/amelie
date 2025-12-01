@@ -98,6 +98,7 @@ priority_map[KEYWORD_MAX] =
 	[KRANDOM]                  = priority_value,
 	[KREPLACE]                 = priority_value,
 	[KSET]                     = priority_value,
+	[KSHOW]                    = priority_value,
 	[KUNSET]                   = priority_value,
 	[KEXTRACT]                 = priority_value,
 	[KCAST]                    = priority_value,
@@ -665,6 +666,7 @@ expr_value(Stmt* self, Expr* expr, Ast* value)
 		break;
 
 	// functions (keyword conflicts)
+	case KSHOW:
 	case KSET:
 	case KUNSET:
 	case KRANDOM:

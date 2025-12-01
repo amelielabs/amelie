@@ -167,14 +167,18 @@ output_json_write_json(Output* self, Str* column, uint8_t* pos, bool unwrap)
 	{
 		// {
 		buf_write(buf, "{", 1);
-		if (self->format_pretty)
-			buf_write(buf, "\n", 1);
 
 		// column: value
-		buf_write(buf, "  \"", 3);
+		if (self->format_pretty)
+		{
+			buf_write(buf, "\n", 1);
+			buf_write(buf, "  \"", 3);
+		} else {
+			buf_write(buf, "\"", 1);
+		}
 		buf_write_str(buf, column);
 		buf_write(buf, "\": ", 3);
-		json_export_as(buf, self->timezone, self->format_pretty, 1, &pos);
+		json_export_as(buf, self->timezone, self->format_pretty, 0, &pos);
 
 		// }
 		if (self->format_pretty)

@@ -44,6 +44,9 @@ parse_from_target(Stmt* self, From* from, AccessType access, bool subquery)
 {
 	auto target = target_allocate();
 
+	// force read keywords as names
+	stmt_push(self, stmt_next_shadow(self));
+
 	// FROM (SELECT | expr)
 	if (stmt_if(self, '('))
 	{
