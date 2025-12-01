@@ -266,24 +266,26 @@ emit_show(Compiler* self)
 	auto fn = function_mgr_find(share()->function_mgr, &name);
 	assert(fn);
 
-	// show(section, name, db, extended)
-	int r = emit_string(self, &arg->section, false);
+	// show(section[, name, extended])
+	auto argc = 1;
+	auto r = emit_string(self, &arg->section, false);
 	op1(self, CPUSH, r);
 	runpin(self, r);
-
-	r = emit_string(self, &arg->name, false);
-	op1(self, CPUSH, r);
-	runpin(self, r);
-
-	r = emit_string(self, self->parser.db, false);
-	op1(self, CPUSH, r);
-	runpin(self, r);
-
-	r = op2pin(self, CBOOL, TYPE_BOOL, arg->extended);
-	op1(self, CPUSH, r);
-	runpin(self, r);
-
-	r = op4pin(self, CCALL, fn->type, (intptr_t)fn, 4, -1);
+	if (! str_empty(&arg->name))
+	{
+		r = emit_string(self, &arg->name, false);
+		op1(self, CPUSH, r);
+		runpin(self, r);
+		argc++;
+	}
+	if (arg->extended)
+	{
+		r = op2pin(self, CBOOL, TYPE_BOOL, arg->extended);
+		op1(self, CPUSH, r);
+		runpin(self, r);
+		argc++;
+	}
+	r = op4pin(self, CCALL, fn->type, (intptr_t)fn, argc, -1);
 	return r;
 }
 

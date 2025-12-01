@@ -37,158 +37,6 @@
 #include <amelie_executor.h>
 #include <amelie_func.h>
 
-static void
-fn_config(Fn* self)
-{
-	fn_expect(self, 0);
-	auto buf = opts_list(&config()->opts);
-	value_set_json_buf(self->result, buf);
-}
-
-static void
-fn_state(Fn* self)
-{
-	fn_expect(self, 0);
-	auto buf = storage_state(share()->storage);
-	value_set_json_buf(self->result, buf);
-}
-
-static void
-fn_users(Fn* self)
-{
-	fn_expect(self, 0);
-	auto buf = user_mgr_list(share()->user_mgr, NULL);
-	value_set_json_buf(self->result, buf);
-}
-
-static void
-fn_user(Fn* self)
-{
-	fn_expect(self, 1);
-	fn_expect_arg(self, 0, TYPE_STRING);
-	auto buf = user_mgr_list(share()->user_mgr, &self->argv[0].string);
-	value_set_json_buf(self->result, buf);
-}
-
-static void
-fn_replicas(Fn* self)
-{
-	fn_expect(self, 0);
-	auto buf = replica_mgr_list(&share()->repl->replica_mgr, NULL);
-	value_set_json_buf(self->result, buf);
-}
-
-static void
-fn_replica(Fn* self)
-{
-	auto argv = self->argv;
-	fn_expect(self, 1);
-	if (argv[0].type == TYPE_STRING)
-	{
-		Uuid id;
-		uuid_set(&id, &argv[0].string);
-		auto buf = replica_mgr_list(&share()->repl->replica_mgr, &id);
-		value_set_json_buf(self->result, buf);
-	} else
-	if (argv[0].type == TYPE_UUID)
-	{
-		auto buf = replica_mgr_list(&share()->repl->replica_mgr, &argv[0].uuid);
-		value_set_json_buf(self->result, buf);
-	} else {
-		fn_unsupported(self, 0);
-	}
-}
-
-static void
-fn_repl(Fn* self)
-{
-	fn_expect(self, 0);
-	auto buf = repl_status(share()->repl);
-	value_set_json_buf(self->result, buf);
-}
-
-static void
-fn_databases(Fn* self)
-{
-	fn_expect(self, 0);
-	auto buf = db_mgr_list(&share()->storage->catalog.db_mgr, NULL, true);
-	value_set_json_buf(self->result, buf);
-}
-
-static void
-fn_database(Fn* self)
-{
-	fn_expect(self, 1);
-	fn_expect_arg(self, 0, TYPE_STRING);
-	auto buf = db_mgr_list(&share()->storage->catalog.db_mgr, &self->argv[0].string, true);
-	value_set_json_buf(self->result, buf);
-}
-
-static void
-fn_tables(Fn* self)
-{
-	fn_expect(self, 0);
-	auto buf = table_mgr_list(&share()->storage->catalog.table_mgr, NULL, NULL, true);
-	value_set_json_buf(self->result, buf);
-}
-
-static void
-fn_table(Fn* self)
-{
-	fn_expect(self, 1);
-	fn_expect_arg(self, 0, TYPE_STRING);
-	Str name = self->argv[0].string;
-	Str db;
-	str_init(&db);
-	if (str_split(&name, &db, '.'))
-		str_advance(&name, str_size(&db) + 1);
-	else
-		str_set(&db, "main", 4);
-	auto buf = table_mgr_list(&share()->storage->catalog.table_mgr, &db, &name, true);
-	value_set_json_buf(self->result, buf);
-}
-
-static void
-fn_functions(Fn* self)
-{
-	fn_expect(self, 0);
-	auto buf = udf_mgr_list(&share()->storage->catalog.udf_mgr, NULL, NULL, true);
-	value_set_json_buf(self->result, buf);
-}
-
-static void
-fn_function(Fn* self)
-{
-	fn_expect(self, 1);
-	fn_expect_arg(self, 0, TYPE_STRING);
-	Str name = self->argv[0].string;
-	Str db;
-	str_init(&db);
-	if (str_split(&name, &db, '.'))
-		str_advance(&name, str_size(&db) + 1);
-	else
-		str_set(&db, "main", 4);
-	auto buf = udf_mgr_list(&share()->storage->catalog.udf_mgr, &db, &name, true);
-	value_set_json_buf(self->result, buf);
-}
-
-static void
-fn_wal(Fn* self)
-{
-	fn_expect(self, 0);
-	auto buf = wal_status(&share()->storage->wal_mgr.wal);
-	value_set_json_buf(self->result, buf);
-}
-
-static void
-fn_metrics(Fn* self)
-{
-	fn_expect(self, 0);
-	Buf* buf;
-	rpc(&runtime()->task, MSG_SHOW_METRICS, 1, &buf);
-	value_set_json_buf(self->result, buf);
-}
-
 enum
 {
 	SHOW_USERS,
@@ -256,17 +104,47 @@ show_cmd_find(Str* name)
 static void
 fn_show(Fn* self)
 {
-	// [section, name, db, extended]
-	fn_expect(self, 4);
-	fn_expect_arg(self, 0, TYPE_STRING);
-	fn_expect_arg(self, 1, TYPE_STRING);
-	fn_expect_arg(self, 2, TYPE_STRING);
-	fn_expect_arg(self, 3, TYPE_BOOL);
-
-	Str* section  = &self->argv[0].string;
-	Str* name     = &self->argv[1].string;
-	Str* db       = &self->argv[2].string;
-	bool extended =  self->argv[3].integer;
+	auto db = &self->local->db;
+	// [section, name, extended]
+	Str  section_none;
+	Str* section  = NULL;
+	Str* name     = NULL;
+	bool extended = false;
+	switch (self->argc) {
+	case 0:
+		section = &section_none;
+		break;
+	case 1:
+		// [section]
+		fn_expect_arg(self, 0, TYPE_STRING);
+		section = &self->argv[0].string;
+		break;
+	case 2:
+		// [section, name | bool]
+		fn_expect_arg(self, 0, TYPE_STRING);
+		section = &self->argv[0].string;
+		if (self->argv[1].type == TYPE_STRING)
+			name = &self->argv[1].string;
+		else
+		if (self->argv[1].type == TYPE_BOOL)
+			extended = self->argv[1].integer;
+		else
+			fn_error_arg(self, 1, "string or bool expected");
+		break;
+	case 3:
+		// [section, name, bool]
+		fn_expect_arg(self, 0, TYPE_STRING);
+		fn_expect_arg(self, 1, TYPE_STRING);
+		fn_expect_arg(self, 2, TYPE_BOOL);
+		section  = &self->argv[0].string;
+		name     = &self->argv[1].string;
+		extended = self->argv[2].integer;
+		break;
+	default:
+		fn_error_noargs(self, "invalid number of arguments");
+		break;
+	}
+	str_set(&section_none, "all", 3);
 
 	// match command
 	Buf* buf = NULL;
@@ -276,7 +154,7 @@ fn_show(Fn* self)
 		// config option
 		if (str_empty(section))
 			fn_error_noargs(self, "section name is not defined");
-		if (! str_empty(name))
+		if (name && !str_empty(name))
 			fn_error_noargs(self, "unexpected name argument");
 
 		auto opt = opts_find(&config()->opts, section);
@@ -293,12 +171,12 @@ fn_show(Fn* self)
 
 	// ensure argument is set
 	if (cmd->has_arg) {
-		if (str_empty(name))
+		if (!name || str_empty(name))
 			fn_error_noargs(self, "name is missing for '%.*s'",
 			                str_size(section),
 			                str_of(section));
 	} else {
-		if (! str_empty(name))
+		if (name && !str_empty(name))
 			fn_error_noargs(self, "unexpected name argument");
 	}
 
@@ -353,34 +231,22 @@ fn_show(Fn* self)
 	}
 	case SHOW_TABLES:
 	{
-		Str* db_ref = NULL;
-		if (! str_empty(db))
-			db_ref = db;
-		buf = table_mgr_list(&catalog->table_mgr, db_ref, NULL, extended);
+		buf = table_mgr_list(&catalog->table_mgr, db, NULL, extended);
 		break;
 	}
 	case SHOW_TABLE:
 	{
-		Str* db_ref = NULL;
-		if (! str_empty(db))
-			db_ref = db;
-		buf = table_mgr_list(&catalog->table_mgr, db_ref, name, extended);
+		buf = table_mgr_list(&catalog->table_mgr, db, name, extended);
 		break;
 	}
 	case SHOW_FUNCTIONS:
 	{
-		Str* db_ref = NULL;
-		if (! str_empty(db))
-			db_ref = db;
-		buf = udf_mgr_list(&catalog->udf_mgr, db_ref, NULL, extended);
+		buf = udf_mgr_list(&catalog->udf_mgr, db, NULL, extended);
 		break;
 	}
 	case SHOW_FUNCTION:
 	{
-		Str* db_ref = NULL;
-		if (! str_empty(db))
-			db_ref = db;
-		buf = udf_mgr_list(&catalog->udf_mgr, db_ref, name, extended);
+		buf = udf_mgr_list(&catalog->udf_mgr, db, name, extended);
 		break;
 	}
 	case SHOW_STATE:
@@ -414,94 +280,8 @@ fn_show(Fn* self)
 void
 fn_system_register(FunctionMgr* self)
 {
-	// config()
-	Function* func;
-	func = function_allocate(TYPE_JSON, "config", fn_config);
-	function_unset(func, FN_CONST);
-	function_mgr_add(self, func);
-
-	// state()
-	func = function_allocate(TYPE_JSON, "state", fn_state);
-	function_unset(func, FN_CONST);
-	function_mgr_add(self, func);
-
-	// users()
-	func = function_allocate(TYPE_JSON, "users", fn_users);
-	function_unset(func, FN_CONST);
-	function_mgr_add(self, func);
-
-	// user()
-	func = function_allocate(TYPE_JSON, "user", fn_user);
-	function_unset(func, FN_CONST);
-	function_mgr_add(self, func);
-
-	// replicas()
-	func = function_allocate(TYPE_JSON, "replicas", fn_replicas);
-	function_unset(func, FN_CONST);
-	function_mgr_add(self, func);
-
-	// replica()
-	func = function_allocate(TYPE_JSON, "replica", fn_replica);
-	function_unset(func, FN_CONST);
-	function_mgr_add(self, func);
-
-	// replica(uuid)
-	func = function_allocate(TYPE_JSON, "replica", fn_replica);
-	function_unset(func, FN_CONST);
-	function_mgr_add(self, func);
-
-	// repl()
-	func = function_allocate(TYPE_JSON, "repl", fn_repl);
-	function_unset(func, FN_CONST);
-	function_mgr_add(self, func);
-
-	// replication()
-	func = function_allocate(TYPE_JSON, "replication", fn_repl);
-	function_unset(func, FN_CONST);
-	function_mgr_add(self, func);
-
-	// databases()
-	func = function_allocate(TYPE_JSON, "databases", fn_databases);
-	function_unset(func, FN_CONST);
-	function_mgr_add(self, func);
-
-	// database()
-	func = function_allocate(TYPE_JSON, "database", fn_database);
-	function_unset(func, FN_CONST);
-	function_mgr_add(self, func);
-
-	// tables()
-	func = function_allocate(TYPE_JSON, "tables", fn_tables);
-	function_unset(func, FN_CONST);
-	function_mgr_add(self, func);
-
-	// table()
-	func = function_allocate(TYPE_JSON, "table", fn_table);
-	function_unset(func, FN_CONST);
-	function_mgr_add(self, func);
-
-	// functions()
-	func = function_allocate(TYPE_JSON, "functions", fn_functions);
-	function_unset(func, FN_CONST);
-	function_mgr_add(self, func);
-
-	// function()
-	func = function_allocate(TYPE_JSON, "function", fn_function);
-	function_unset(func, FN_CONST);
-	function_mgr_add(self, func);
-
-	// wal()
-	func = function_allocate(TYPE_JSON, "wal", fn_wal);
-	function_unset(func, FN_CONST);
-	function_mgr_add(self, func);
-
-	// metrics()
-	func = function_allocate(TYPE_JSON, "metrics", fn_metrics);
-	function_unset(func, FN_CONST);
-	function_mgr_add(self, func);
-
 	// show()
-	func = function_allocate(TYPE_JSON, "show", fn_show);
+	auto func = function_allocate(TYPE_JSON, "show", fn_show);
 	function_unset(func, FN_CONST);
 	function_mgr_add(self, func);
 }
