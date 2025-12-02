@@ -33,10 +33,10 @@ directory functions
 group functions
 test fn_cast
 test fn_json
-#test fn_string
+test fn_string
 test fn_regexp
 test fn_misc
-#test fn_time
+test fn_time
 test fn_vector
 test fn_math
 test fn_null

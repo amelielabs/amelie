@@ -199,14 +199,17 @@ select "  привет  "::trim(" привет");
 select null::like('hello%world');
 select 'hello, world'::like('hello%world');
 select 'hello, world' like 'hello%world';
-select like('hello, world', 'hello%world');
-select like('hello, world', 'hello%world');
 
-select like('привет, мир', 'привет%мир');
-select like('привет', 'п%т');
-select like('привет, мий', 'прив____ми_');
-select like('привет, мHй', 'прив____ми_');
-select like("こんにちは世界", "%にちは%");
+select `like`('hello, world', 'hello%world');
+select `like`('hello, world', 'hello%world');
+select `like`('привет, мир', 'привет%мир');
+select `like`('привет', 'п%т');
+select `like`('привет, мий', 'прив____ми_');
+select `like`('привет, мHй', 'прив____ми_');
+select `like`("こんにちは世界", "%にちは%");
+
+select "こんにちは世界"::like("%にちは%");
+select "こんにちは世界" like "%にちは%";
 
 disconnect S0;
 close E0;

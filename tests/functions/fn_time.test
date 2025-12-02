@@ -152,18 +152,18 @@ select '2001-02-16 20:38:40'::timestamp::date_trunc('day');
 select '2001-02-16 20:38:40'::timestamp::date_trunc('1 day'::interval);
 
 # test: extract(timestamp year)
-select extract('year', TIMESTAMP '2001-01-16 20:38:40');
-select extract('year', TIMESTAMP '2011-12-16 20:38:40');
-select extract(null, TIMESTAMP '2011-12-16 20:38:40');
+select `extract`('year', TIMESTAMP '2001-01-16 20:38:40');
+select `extract`('year', TIMESTAMP '2011-12-16 20:38:40');
+select `extract`(null, TIMESTAMP '2011-12-16 20:38:40');
 
 # test: extract(timestamp month)
-select extract('month', TIMESTAMP '2001-01-16 20:38:40');
+select `extract`('month', TIMESTAMP '2001-01-16 20:38:40');
 
 # test: extract(timestamp week)
-select extract('week', TIMESTAMP '2001-01-16 20:38:40');
+select `extract`('week', TIMESTAMP '2001-01-16 20:38:40');
 
 # test: extract(timestamp day)
-select extract('day', TIMESTAMP '2001-01-16 20:38:40');
+select `extract`('day', TIMESTAMP '2001-01-16 20:38:40');
 
 # test: extract(timestamp hour)
 disconnect S0;
@@ -171,19 +171,19 @@ close E0;
 open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "127.0.0.1", "port": 3485 }], "timezone": "utc";
 connect E0 S0 127.0.0.1:3485;
 
-select extract('hour', TIMESTAMP '2001-01-16 20:38:40');
-select extract('hour', TIMESTAMP '2001-01-16 20:38:40+00');
-select extract('hour', TIMESTAMP '2001-01-16 20:38:40+01');
-select extract('hour', TIMESTAMP '2001-01-16 20:38:40+02');
+select `extract`('hour', TIMESTAMP '2001-01-16 20:38:40');
+select `extract`('hour', TIMESTAMP '2001-01-16 20:38:40+00');
+select `extract`('hour', TIMESTAMP '2001-01-16 20:38:40+01');
+select `extract`('hour', TIMESTAMP '2001-01-16 20:38:40+02');
 
-select extract('hour', TIMESTAMP '2001-01-16 20:38:40+02', 'UTC');
-select extract('hour', TIMESTAMP '2001-01-16 20:38:40+02', 'Asia/Famagusta');
+select `extract`('hour', TIMESTAMP '2001-01-16 20:38:40+02', 'UTC');
+select `extract`('hour', TIMESTAMP '2001-01-16 20:38:40+02', 'Asia/Famagusta');
 
 disconnect S0;
 close E0;
 open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "127.0.0.1", "port": 3485 }], "timezone": "Asia/Famagusta";
 connect E0 S0 127.0.0.1:3485;
-select extract('hour', TIMESTAMP '2001-01-16 20:38:40+02');
+select `extract`('hour', TIMESTAMP '2001-01-16 20:38:40+02');
 
 disconnect S0;
 close E0;
@@ -191,57 +191,57 @@ open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "12
 connect E0 S0 127.0.0.1:3485;
 
 # test: extract(timestamp minute)
-select extract('min', TIMESTAMP '2001-01-16 20:38:40');
+select `extract`('min', TIMESTAMP '2001-01-16 20:38:40');
 
 # test: extract(timestamp second)
-select extract('sec', TIMESTAMP '2001-01-16 20:38:40.123456');
+select `extract`('sec', TIMESTAMP '2001-01-16 20:38:40.123456');
 
 # test: extract(timestamp ms)
-select extract('ms', TIMESTAMP '2001-01-16 20:38:40.123456');
+select `extract`('ms', TIMESTAMP '2001-01-16 20:38:40.123456');
 
 # test: extract(timestamp us)
-select extract('us', TIMESTAMP '2001-01-16 20:38:40.123456');
+select `extract`('us', TIMESTAMP '2001-01-16 20:38:40.123456');
 select TIMESTAMP '2001-01-16 20:38:40.123456'::extract('us');
 
 # test: extract(interval year)
-select extract('year', INTERVAL '12 years 5 month 3 days 2 hr 47 min 33 sec 500 ms 400 us');
+select `extract`('year', INTERVAL '12 years 5 month 3 days 2 hr 47 min 33 sec 500 ms 400 us');
 
 # test: extract(interval month)
-select extract('month', INTERVAL '12 years 5 month 3 days 2 hr 47 min 33 sec 500 ms 400 us');
+select `extract`('month', INTERVAL '12 years 5 month 3 days 2 hr 47 min 33 sec 500 ms 400 us');
 
 # test: extract(interval day)
-select extract('day', INTERVAL '12 years 5 month 3 days 2 hr 47 min 33 sec 500 ms 400 us');
+select `extract`('day', INTERVAL '12 years 5 month 3 days 2 hr 47 min 33 sec 500 ms 400 us');
 
 # test: extract(interval hour)
-select extract('hour', INTERVAL '12 years 5 month 3 days 2 hr 47 min 33 sec 500 ms 400 us');
+select `extract`('hour', INTERVAL '12 years 5 month 3 days 2 hr 47 min 33 sec 500 ms 400 us');
 
 # test: extract(interval minute)
-select extract('min', INTERVAL '12 years 5 month 3 days 2 hr 47 min 33 sec 500 ms 400 us');
+select `extract`('min', INTERVAL '12 years 5 month 3 days 2 hr 47 min 33 sec 500 ms 400 us');
 
 # test: extract(interval second)
-select extract('sec', INTERVAL '12 years 5 month 3 days 2 hr 47 min 33 sec 500 ms 400 us');
+select `extract`('sec', INTERVAL '12 years 5 month 3 days 2 hr 47 min 33 sec 500 ms 400 us');
 
 # test: extract(interval ms)
-select extract('ms', INTERVAL '12 years 5 month 3 days 2 hr 47 min 33 sec 500 ms 400 us');
+select `extract`('ms', INTERVAL '12 years 5 month 3 days 2 hr 47 min 33 sec 500 ms 400 us');
 
 # test: extract(interval us)
-select extract('us', INTERVAL '12 years 5 month 3 days 2 hr 47 min 33 sec 500 ms 400 us');
+select `extract`('us', INTERVAL '12 years 5 month 3 days 2 hr 47 min 33 sec 500 ms 400 us');
 select INTERVAL '12 years 5 month 3 days 2 hr 47 min 33 sec 500 ms'::extract('us');
 
 # test: extract(date year)
-select extract('year', DATE '2001-01-16');
+select `extract`('year', DATE '2001-01-16');
 select '2001-01-16'::date::extract('year');
 
 # test: extract(date month)
-select extract('month', DATE '2001-01-16');
+select `extract`('month', DATE '2001-01-16');
 select '2001-01-16'::date::extract('month');
 
 # test: extract(date day)
-select extract('day', DATE '2001-01-16');
+select `extract`('day', DATE '2001-01-16');
 select '2001-01-16'::date::extract('day');
 
 # test: extract(date unsupported)
-select extract('sec', DATE '2001-01-16');
+select `extract`('sec', DATE '2001-01-16');
 
 # test: extract from interval
 select extract(min FROM INTERVAL '12 years 5 month 3 days 2 hr 47 min 33 sec 500 ms');

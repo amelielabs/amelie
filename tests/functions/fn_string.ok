@@ -315,19 +315,23 @@ select 'hello, world'::like('hello%world');
 [true]
 select 'hello, world' like 'hello%world';
 [true]
-select public.like('hello, world', 'hello%world');
+select `like`('hello, world', 'hello%world');
 [true]
-select like('hello, world', 'hello%world');
-{"msg": "select ❰like❱ ⟵ bad expression"}
-select public.like('привет, мир', 'привет%мир');
+select `like`('hello, world', 'hello%world');
 [true]
-select public.like('привет', 'п%т');
+select `like`('привет, мир', 'привет%мир');
 [true]
-select public.like('привет, мий', 'прив____ми_');
+select `like`('привет', 'п%т');
 [true]
-select public.like('привет, мHй', 'прив____ми_');
+select `like`('привет, мий', 'прив____ми_');
+[true]
+select `like`('привет, мHй', 'прив____ми_');
 [false]
-select public.like("こんにちは世界", "%にちは%");
+select `like`("こんにちは世界", "%にちは%");
+[true]
+select "こんにちは世界"::like("%にちは%");
+[true]
+select "こんにちは世界" like "%にちは%";
 [true]
 disconnect S0;
 close E0;
