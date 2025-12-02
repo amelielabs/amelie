@@ -5,7 +5,7 @@ connect E0 S0 127.0.0.1:3480;
 show listen;
 
 # test: backup empty
-backup E1 "uri": "127.0.0.1:3480";
+backup E1 http://127.0.0.1:3480;
 close E1;
 
 disconnect S0;
@@ -26,7 +26,7 @@ connect E0 S0 127.0.0.1:3480;
 
 create table test (id int primary key);
 insert into test values (1),(2),(3);
-select system.state().lsn;
+select show('state').lsn;
 
 create function reverse(array json) return json
 begin
@@ -36,9 +36,9 @@ begin
 	end;
 	return rev;
 end;
-select system.state().lsn;
+select show('state').lsn;
 
-backup E2 "uri": "127.0.0.1:3480";
+backup E2 http://127.0.0.1:3480;
 close E2;
 
 disconnect S0;
@@ -50,7 +50,7 @@ connect E2 S0 127.0.0.1:3480;
 show uuid;
 select * from test;
 select [1,2,3]::reverse;
-select system.state().lsn;
+select show('state').lsn;
 disconnect S0;
 close E2;
 
@@ -58,13 +58,13 @@ close E2;
 open E0 "wal_size": 0;
 connect E0 S0 127.0.0.1:3480;
 
-select system.state().lsn;
+select show('state').lsn;
 show wal;
 
 insert into test values (4);
 show wal;
 
-backup E3 "uri": "127.0.0.1:3480";
+backup E3 http://127.0.0.1:3480;
 close E3;
 
 disconnect S0;
@@ -76,7 +76,7 @@ connect E3 S0 127.0.0.1:3480;
 show uuid;
 select * from test;
 select [1,2,3]::reverse;
-select system.state().lsn;
+select show('state').lsn;
 show wal;
 disconnect S0;
 close E3;
@@ -85,13 +85,13 @@ close E3;
 open E0;
 connect E0 S0 127.0.0.1:3480;
 
-select system.state().lsn;
-select system.state().checkpoint;
+select show('state').lsn;
+select show('state').checkpoint;
 checkpoint;
-select system.state().lsn;
-select system.state().checkpoint;
+select show('state').lsn;
+select show('state').checkpoint;
 
-backup E4 "uri": "127.0.0.1:3480";
+backup E4 http://127.0.0.1:3480;
 close E4;
 
 disconnect S0;
@@ -101,8 +101,8 @@ close E0;
 open E4;
 connect E4 S0 127.0.0.1:3480;
 
-select system.state().lsn;
-select system.state().checkpoint;
+select show('state').lsn;
+select show('state').checkpoint;
 select * from test;
 select [1,2,3]::reverse;
 
@@ -114,10 +114,10 @@ open E0;
 connect E0 S0 127.0.0.1:3480;
 
 insert into test values (5),(6),(7);
-select system.state().lsn;
-select system.state().checkpoint;
+select show('state').lsn;
+select show('state').checkpoint;
 
-backup E5 "uri": "127.0.0.1:3480";
+backup E5 http://127.0.0.1:3480;
 close E5;
 
 disconnect S0;
@@ -127,8 +127,8 @@ close E0;
 open E5;
 connect E5 S0 127.0.0.1:3480;
 
-select system.state().lsn;
-select system.state().checkpoint;
+select show('state').lsn;
+select show('state').checkpoint;
 select * from test;
 select [1,2,3]::reverse;
 

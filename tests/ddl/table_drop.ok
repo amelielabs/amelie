@@ -2,9 +2,9 @@ open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "12
 connect E0 S0 127.0.0.1:3485;
 # test: drop table statement parsing
 drop;
-{"msg": "drop❰;❱ ⟵ USER|REPLICA|SCHEMA|TABLE|INDEX|FUNCTION expected"}
+{"msg": "drop❰;❱ ⟵ USER|REPLICA|DATABASE|TABLE|INDEX|FUNCTION expected"}
 drop 1;
-{"msg": "drop ❰1❱ ⟵ USER|REPLICA|SCHEMA|TABLE|INDEX|FUNCTION expected"}
+{"msg": "drop ❰1❱ ⟵ USER|REPLICA|DATABASE|TABLE|INDEX|FUNCTION expected"}
 drop table "name";
 {"msg": "drop table ❰\"name\"❱ ⟵ name expected"}
 drop table name junk;
@@ -15,44 +15,34 @@ drop table name;
 drop table if exists test;
 # test: drop table
 create table test(id int primary key);
-select system.table('test').name;
+select show('table', 'test', true).name;
 ["test"]
 drop table test;
-select system.table('test').name;
+select show('table', 'test', true).name;
 [null]
 # test: drop table if exists
 create table test(id int primary key);
-select system.table('test').name;
+select show('table', 'test', true).name;
 ["test"]
 drop table test;
-select system.table('test').name;
+select show('table', 'test', true).name;
 [null]
 drop table if exists test;
-drop table if exists test.test;
 # test: recreate same table after drop
 create table test (id int primary key);
-select system.table('test').name;
+select show('table', 'test', true).name;
 ["test"]
 drop table test;
 create table test (id int primary key);
-select system.table('test').name;
+select show('table', 'test', true).name;
 ["test"]
 drop table test;
-# test: drop table schema
-create schema test;
-create table test.test (id int primary key);
-drop table test;
-{"msg": "table 'test': not exists"}
-drop table test.test;
-drop schema test;
-show tables;
-[]
 # test: drop table with udf dep
 create table test (id int primary key);
 create function dep() begin insert into test values (123); end;
 show functions extended;
 [{
-  "schema": "public",
+  "db": "main",
   "name": "dep",
   "text": "begin insert into test values (123); end",
   "type": 0,
@@ -60,7 +50,7 @@ show functions extended;
   "returning": []
 }]
 drop table test;
-{"msg": "function 'public.dep' depends on relation 'public.test"}
+{"msg": "function 'dep' depends on relation 'test"}
 # test: drop table after udf drop
 drop function dep;
 drop table test;

@@ -8,7 +8,7 @@ select * from test limit 100;
 explain select * from test limit 1;
 [{
   "main": {
-    "00": "send_all            0      0      20    # public.test (select, closing)",
+    "00": "send_all            0      0      18    # test (select, closing)",
     "01": "union               1      0      0     ",
     "02": "int                 2      -      0     # 1",
     "03": "union_limit         1      2      0     ",
@@ -18,7 +18,7 @@ explain select * from test limit 1;
   "pushdown": {
     "00": "set                 0      1      0     ",
     "01": "int                 1      -      0     # 1",
-    "02": "table_open_part     2      0      8     # public.test (primary)",
+    "02": "table_open_part     2      0      8     # test (primary)",
     "03": "cjltd               8      1      0     ",
     "04": "table_readi64       3      2      0     ",
     "05": "push                3      0      0     ",
@@ -27,7 +27,7 @@ explain select * from test limit 1;
     "08": "free                2      0      0     ",
     "09": "ret                 0      0      -     "
   },
-  "access": [["public.test", "ro"]]
+  "access": [["test", "ro"]]
 }]
 select * from test limit 1;
 [0]
@@ -50,7 +50,7 @@ select * from test limit null;
 explain select * from test limit 0;
 [{
   "main": {
-    "00": "send_all            0      0      20    # public.test (select, closing)",
+    "00": "send_all            0      0      18    # test (select, closing)",
     "01": "union               1      0      0     ",
     "02": "int                 2      -      0     # 0",
     "03": "union_limit         1      2      0     ",
@@ -60,7 +60,7 @@ explain select * from test limit 0;
   "pushdown": {
     "00": "set                 0      1      0     ",
     "01": "int                 1      -      0     # 0",
-    "02": "table_open_part     2      0      8     # public.test (primary)",
+    "02": "table_open_part     2      0      8     # test (primary)",
     "03": "cjltd               8      1      0     ",
     "04": "table_readi64       3      2      0     ",
     "05": "push                3      0      0     ",
@@ -69,7 +69,7 @@ explain select * from test limit 0;
     "08": "free                2      0      0     ",
     "09": "ret                 0      0      -     "
   },
-  "access": [["public.test", "ro"]]
+  "access": [["test", "ro"]]
 }]
 select * from test limit 0;
 []
@@ -79,7 +79,7 @@ select * from test limit -1;
 explain select * from test limit 1 offset 0;
 [{
   "main": {
-    "00": "send_all            0      0      20    # public.test (select, closing)",
+    "00": "send_all            0      0      18    # test (select, closing)",
     "01": "union               1      0      0     ",
     "02": "int                 2      -      0     # 1",
     "03": "union_limit         1      2      0     ",
@@ -93,7 +93,7 @@ explain select * from test limit 1 offset 0;
     "01": "int                 1      -      0     # 1",
     "02": "int                 2      -      0     # 0",
     "03": "addii               3      1      2     ",
-    "04": "table_open_part     1      0      10    # public.test (primary)",
+    "04": "table_open_part     1      0      10    # test (primary)",
     "05": "cjltd               10     3      0     ",
     "06": "table_readi64       2      1      0     ",
     "07": "push                2      0      0     ",
@@ -102,7 +102,7 @@ explain select * from test limit 1 offset 0;
     "10": "free                1      0      0     ",
     "11": "ret                 0      0      -     "
   },
-  "access": [["public.test", "ro"]]
+  "access": [["test", "ro"]]
 }]
 select * from test limit 1 offset 0;
 [0]
@@ -115,7 +115,7 @@ select * from test limit 1 offset null;
 explain select * from test limit 1 offset 1;
 [{
   "main": {
-    "00": "send_all            0      0      20    # public.test (select, closing)",
+    "00": "send_all            0      0      18    # test (select, closing)",
     "01": "union               1      0      0     ",
     "02": "int                 2      -      0     # 1",
     "03": "union_limit         1      2      0     ",
@@ -129,7 +129,7 @@ explain select * from test limit 1 offset 1;
     "01": "int                 1      -      0     # 1",
     "02": "int                 2      -      0     # 1",
     "03": "addii               3      1      2     ",
-    "04": "table_open_part     1      0      10    # public.test (primary)",
+    "04": "table_open_part     1      0      10    # test (primary)",
     "05": "cjltd               10     3      0     ",
     "06": "table_readi64       2      1      0     ",
     "07": "push                2      0      0     ",
@@ -138,7 +138,7 @@ explain select * from test limit 1 offset 1;
     "10": "free                1      0      0     ",
     "11": "ret                 0      0      -     "
   },
-  "access": [["public.test", "ro"]]
+  "access": [["test", "ro"]]
 }]
 select * from test limit 1 offset 1;
 [1]
@@ -175,7 +175,7 @@ select * from test limit 0 offset 4;
 explain select * from test offset 1;
 [{
   "main": {
-    "00": "send_all            0      0      20    # public.test (select, closing)",
+    "00": "send_all            0      0      18    # test (select, closing)",
     "01": "union               1      0      0     ",
     "02": "int                 2      -      0     # 1",
     "03": "union_offset        1      2      0     ",
@@ -184,7 +184,7 @@ explain select * from test offset 1;
   },
   "pushdown": {
     "00": "set                 0      1      0     ",
-    "01": "table_open_part     1      0      6     # public.test (primary)",
+    "01": "table_open_part     1      0      6     # test (primary)",
     "02": "table_readi64       2      1      0     ",
     "03": "push                2      0      0     ",
     "04": "set_add             0      0      0     ",
@@ -192,7 +192,7 @@ explain select * from test offset 1;
     "06": "free                1      0      0     ",
     "07": "ret                 0      0      -     "
   },
-  "access": [["public.test", "ro"]]
+  "access": [["test", "ro"]]
 }]
 select * from test offset 1;
 [1, 6, 7, 8, 14, 15, 17, 2, 9, 10, 12, 18, 19, 3, 4, 5, 11, 13, 16]

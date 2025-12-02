@@ -8,15 +8,15 @@ insert into test (id) values (1), (2), (3);
 explain select test.*, ref.* from test, ref;
 [{
   "main": {
-    "00": "send_all            0      0      39    # public.test (select, closing)",
+    "00": "send_all            0      0      35    # test (select, closing)",
     "01": "union               1      0      0     ",
     "02": "recv                1      0      0     ",
     "03": "ret                 1      0      -     "
   },
   "pushdown": {
     "00": "set                 0      4      0     ",
-    "01": "table_open_part     1      0      15    # public.test (primary)",
-    "02": "table_open          2      20     13    # public.ref (primary)",
+    "01": "table_open_part     1      0      15    # test (primary)",
+    "02": "table_open          2      18     13    # ref (primary)",
     "03": "table_readi32       3      1      0     ",
     "04": "push                3      0      0     ",
     "05": "table_readi32       3      1      1     ",
@@ -32,7 +32,7 @@ explain select test.*, ref.* from test, ref;
     "15": "free                1      0      0     ",
     "16": "ret                 0      0      -     "
   },
-  "access": [["public.test", "ro"], ["public.ref", "ro_exclusive"]]
+  "access": [["test", "ro"], ["ref", "ro_exclusive"]]
 }]
 select test.*, ref.* from test, ref;
 [[1, 0, 1, 0], [1, 0, 2, 0], [1, 0, 3, 0], [3, 0, 1, 0], [3, 0, 2, 0], [3, 0, 3, 0], [2, 0, 1, 0], [2, 0, 2, 0], [2, 0, 3, 0]]
@@ -40,15 +40,15 @@ select test.*, ref.* from test, ref;
 explain select test.*, ref.* from ref, test;
 [{
   "main": {
-    "00": "send_all            0      0      39    # public.ref (select, closing)",
+    "00": "send_all            0      0      35    # ref (select, closing)",
     "01": "union               1      0      0     ",
     "02": "recv                1      0      0     ",
     "03": "ret                 1      0      -     "
   },
   "pushdown": {
     "00": "set                 0      4      0     ",
-    "01": "table_open_part     1      0      15    # public.ref (primary)",
-    "02": "table_open          2      19     13    # public.test (primary)",
+    "01": "table_open_part     1      0      15    # ref (primary)",
+    "02": "table_open          2      17     13    # test (primary)",
     "03": "table_readi32       3      2      0     ",
     "04": "push                3      0      0     ",
     "05": "table_readi32       3      2      1     ",
@@ -64,7 +64,7 @@ explain select test.*, ref.* from ref, test;
     "15": "free                1      0      0     ",
     "16": "ret                 0      0      -     "
   },
-  "access": [["public.ref", "ro"], ["public.test", "ro_exclusive"]]
+  "access": [["ref", "ro"], ["test", "ro_exclusive"]]
 }]
 select test.*, ref.* from ref, test;
 [[1, 0, 1, 0], [2, 0, 1, 0], [3, 0, 1, 0], [1, 0, 3, 0], [2, 0, 3, 0], [3, 0, 3, 0], [1, 0, 2, 0], [2, 0, 2, 0], [3, 0, 2, 0]]
@@ -72,15 +72,15 @@ select test.*, ref.* from ref, test;
 explain select t.* from test, test t;
 [{
   "main": {
-    "00": "send_all            0      0      40    # public.test (select, closing)",
+    "00": "send_all            0      0      36    # test (select, closing)",
     "01": "union               1      0      0     ",
     "02": "recv                1      0      0     ",
     "03": "ret                 1      0      -     "
   },
   "pushdown": {
     "00": "set                 0      2      0     ",
-    "01": "table_open_part     1      0      11    # public.test (primary)",
-    "02": "table_open          2      20     9     # public.test (primary)",
+    "01": "table_open_part     1      0      11    # test (primary)",
+    "02": "table_open          2      18     9     # test (primary)",
     "03": "table_readi32       3      2      0     ",
     "04": "push                3      0      0     ",
     "05": "table_readi32       3      2      1     ",
@@ -92,7 +92,7 @@ explain select t.* from test, test t;
     "11": "free                1      0      0     ",
     "12": "ret                 0      0      -     "
   },
-  "access": [["public.test", "ro_exclusive"]]
+  "access": [["test", "ro_exclusive"]]
 }]
 select t.* from test, test t;
 [[1, 0], [2, 0], [3, 0], [1, 0], [2, 0], [3, 0], [1, 0], [2, 0], [3, 0]]
@@ -100,15 +100,15 @@ select t.* from test, test t;
 explain select test.id, ref.id from test join ref on true;
 [{
   "main": {
-    "00": "send_all            0      0      39    # public.test (select, closing)",
+    "00": "send_all            0      0      35    # test (select, closing)",
     "01": "union               1      0      0     ",
     "02": "recv                1      0      0     ",
     "03": "ret                 1      0      -     "
   },
   "pushdown": {
     "00": "set                 0      2      0     ",
-    "01": "table_open_part     1      0      13    # public.test (primary)",
-    "02": "table_open          2      20     11    # public.ref (primary)",
+    "01": "table_open_part     1      0      13    # test (primary)",
+    "02": "table_open          2      18     11    # ref (primary)",
     "03": "bool                3      1      0     ",
     "04": "jntr                10     3      0     ",
     "05": "table_readi32       3      1      0     ",
@@ -122,7 +122,7 @@ explain select test.id, ref.id from test join ref on true;
     "13": "free                1      0      0     ",
     "14": "ret                 0      0      -     "
   },
-  "access": [["public.test", "ro"], ["public.ref", "ro_exclusive"]]
+  "access": [["test", "ro"], ["ref", "ro_exclusive"]]
 }]
 select test.id, ref.id from test join ref on true;
 [[1, 1], [1, 2], [1, 3], [3, 1], [3, 2], [3, 3], [2, 1], [2, 2], [2, 3]]
@@ -130,17 +130,17 @@ select test.id, ref.id from test join ref on true;
 explain select test.id, ref.id from test join ref on test.id = ref.id;
 [{
   "main": {
-    "00": "send_all            0      0      39    # public.test (select, closing)",
+    "00": "send_all            0      0      35    # test (select, closing)",
     "01": "union               1      0      0     ",
     "02": "recv                1      0      0     ",
     "03": "ret                 1      0      -     "
   },
   "pushdown": {
     "00": "set                 0      2      0     ",
-    "01": "table_open_part     1      0      16    # public.test (primary)",
+    "01": "table_open_part     1      0      16    # test (primary)",
     "02": "table_readi32       2      1      0     ",
     "03": "push                2      0      0     ",
-    "04": "table_openl         2      20     14    # public.ref (primary)",
+    "04": "table_openl         2      18     14    # ref (primary)",
     "05": "table_readi32       3      1      0     ",
     "06": "table_readi32       4      2      0     ",
     "07": "equii               5      3      4     ",
@@ -155,7 +155,7 @@ explain select test.id, ref.id from test join ref on test.id = ref.id;
     "16": "free                1      0      0     ",
     "17": "ret                 0      0      -     "
   },
-  "access": [["public.test", "ro"], ["public.ref", "ro_exclusive"]]
+  "access": [["test", "ro"], ["ref", "ro_exclusive"]]
 }]
 select test.id, ref.id from test join ref on test.id = ref.id;
 [[1, 1], [3, 3], [2, 2]]
@@ -163,20 +163,20 @@ select test.id, ref.id from test join ref on test.id = ref.id;
 explain select test.id, ref.id from test join ref on test.id = ref.id join ref ref2 on test.id = ref2.id;
 [{
   "main": {
-    "00": "send_all            0      0      58    # public.test (select, closing)",
+    "00": "send_all            0      0      52    # test (select, closing)",
     "01": "union               1      0      0     ",
     "02": "recv                1      0      0     ",
     "03": "ret                 1      0      -     "
   },
   "pushdown": {
     "00": "set                 0      2      0     ",
-    "01": "table_open_part     1      0      24    # public.test (primary)",
+    "01": "table_open_part     1      0      24    # test (primary)",
     "02": "table_readi32       2      1      0     ",
     "03": "push                2      0      0     ",
-    "04": "table_openl         2      20     22    # public.ref (primary)",
+    "04": "table_openl         2      18     22    # ref (primary)",
     "05": "table_readi32       3      1      0     ",
     "06": "push                3      0      0     ",
-    "07": "table_openl         3      39     21    # public.ref (primary)",
+    "07": "table_openl         3      35     21    # ref (primary)",
     "08": "table_readi32       4      1      0     ",
     "09": "table_readi32       5      2      0     ",
     "10": "equii               6      4      5     ",
@@ -196,7 +196,7 @@ explain select test.id, ref.id from test join ref on test.id = ref.id join ref r
     "24": "free                1      0      0     ",
     "25": "ret                 0      0      -     "
   },
-  "access": [["public.test", "ro"], ["public.ref", "ro_exclusive"]]
+  "access": [["test", "ro"], ["ref", "ro_exclusive"]]
 }]
 select test.id, ref.id from test join ref on test.id = ref.id join ref ref2 on test.id = ref2.id;
 [[1, 1], [3, 3], [2, 2]]
@@ -204,7 +204,7 @@ select test.id, ref.id from test join ref on test.id = ref.id join ref ref2 on t
 explain select test.id, ref.id from test join ref on test.id = ref.id join ref ref2 on test.id = ref2.id where test.id > 0;
 [{
   "main": {
-    "00": "send_all            0      0      58    # public.test (select, closing)",
+    "00": "send_all            0      0      52    # test (select, closing)",
     "01": "union               1      0      0     ",
     "02": "recv                1      0      0     ",
     "03": "ret                 1      0      -     "
@@ -212,13 +212,13 @@ explain select test.id, ref.id from test join ref on test.id = ref.id join ref r
   "pushdown": {
     "00": "set                 0      2      0     ",
     "01": "push_int            -      0      0     # 0",
-    "02": "table_open_part     1      0      29    # public.test (primary)",
+    "02": "table_open_part     1      0      29    # test (primary)",
     "03": "table_readi32       2      1      0     ",
     "04": "push                2      0      0     ",
-    "05": "table_openl         2      20     27    # public.ref (primary)",
+    "05": "table_openl         2      18     27    # ref (primary)",
     "06": "table_readi32       3      1      0     ",
     "07": "push                3      0      0     ",
-    "08": "table_openl         3      39     26    # public.ref (primary)",
+    "08": "table_openl         3      35     26    # ref (primary)",
     "09": "table_readi32       4      1      0     ",
     "10": "table_readi32       5      2      0     ",
     "11": "equii               6      4      5     ",
@@ -242,7 +242,7 @@ explain select test.id, ref.id from test join ref on test.id = ref.id join ref r
     "29": "free                1      0      0     ",
     "30": "ret                 0      0      -     "
   },
-  "access": [["public.test", "ro"], ["public.ref", "ro_exclusive"]]
+  "access": [["test", "ro"], ["ref", "ro_exclusive"]]
 }]
 select test.id, ref.id from test join ref on test.id = ref.id join ref ref2 on test.id = ref2.id where test.id > 0;
 [[1, 1], [3, 3], [2, 2]]
@@ -250,17 +250,17 @@ select test.id, ref.id from test join ref on test.id = ref.id join ref ref2 on t
 explain select test.id, ref.id from test, ref where test.id = ref.id;
 [{
   "main": {
-    "00": "send_all            0      0      39    # public.test (select, closing)",
+    "00": "send_all            0      0      35    # test (select, closing)",
     "01": "union               1      0      0     ",
     "02": "recv                1      0      0     ",
     "03": "ret                 1      0      -     "
   },
   "pushdown": {
     "00": "set                 0      2      0     ",
-    "01": "table_open_part     1      0      16    # public.test (primary)",
+    "01": "table_open_part     1      0      16    # test (primary)",
     "02": "table_readi32       2      1      0     ",
     "03": "push                2      0      0     ",
-    "04": "table_openl         2      20     14    # public.ref (primary)",
+    "04": "table_openl         2      18     14    # ref (primary)",
     "05": "table_readi32       3      1      0     ",
     "06": "table_readi32       4      2      0     ",
     "07": "equii               5      3      4     ",
@@ -275,24 +275,24 @@ explain select test.id, ref.id from test, ref where test.id = ref.id;
     "16": "free                1      0      0     ",
     "17": "ret                 0      0      -     "
   },
-  "access": [["public.test", "ro"], ["public.ref", "ro_exclusive"]]
+  "access": [["test", "ro"], ["ref", "ro_exclusive"]]
 }]
 select test.id, ref.id from test, ref where test.id = ref.id;
 [[1, 1], [3, 3], [2, 2]]
 explain select test.id, ref.id from test, ref where ref.id = test.id;
 [{
   "main": {
-    "00": "send_all            0      0      39    # public.test (select, closing)",
+    "00": "send_all            0      0      35    # test (select, closing)",
     "01": "union               1      0      0     ",
     "02": "recv                1      0      0     ",
     "03": "ret                 1      0      -     "
   },
   "pushdown": {
     "00": "set                 0      2      0     ",
-    "01": "table_open_part     1      0      16    # public.test (primary)",
+    "01": "table_open_part     1      0      16    # test (primary)",
     "02": "table_readi32       2      1      0     ",
     "03": "push                2      0      0     ",
-    "04": "table_openl         2      20     14    # public.ref (primary)",
+    "04": "table_openl         2      18     14    # ref (primary)",
     "05": "table_readi32       3      2      0     ",
     "06": "table_readi32       4      1      0     ",
     "07": "equii               5      3      4     ",
@@ -307,23 +307,23 @@ explain select test.id, ref.id from test, ref where ref.id = test.id;
     "16": "free                1      0      0     ",
     "17": "ret                 0      0      -     "
   },
-  "access": [["public.test", "ro"], ["public.ref", "ro_exclusive"]]
+  "access": [["test", "ro"], ["ref", "ro_exclusive"]]
 }]
 select test.id, ref.id from test, ref where ref.id = test.id;
 [[1, 1], [3, 3], [2, 2]]
 explain select test.id, ref.id from test, ref where ref.id = 1;
 [{
   "main": {
-    "00": "send_all            0      0      39    # public.test (select, closing)",
+    "00": "send_all            0      0      35    # test (select, closing)",
     "01": "union               1      0      0     ",
     "02": "recv                1      0      0     ",
     "03": "ret                 1      0      -     "
   },
   "pushdown": {
     "00": "set                 0      2      0     ",
-    "01": "table_open_part     1      0      15    # public.test (primary)",
+    "01": "table_open_part     1      0      15    # test (primary)",
     "02": "push_int            -      0      0     # 1",
-    "03": "table_openl         2      20     13    # public.ref (primary)",
+    "03": "table_openl         2      18     13    # ref (primary)",
     "04": "table_readi32       3      2      0     ",
     "05": "int                 4      -      0     # 1",
     "06": "equii               5      3      4     ",
@@ -338,14 +338,14 @@ explain select test.id, ref.id from test, ref where ref.id = 1;
     "15": "free                1      0      0     ",
     "16": "ret                 0      0      -     "
   },
-  "access": [["public.test", "ro"], ["public.ref", "ro_exclusive"]]
+  "access": [["test", "ro"], ["ref", "ro_exclusive"]]
 }]
 select test.id, ref.id from test, ref where ref.id = 1;
 [[1, 1], [3, 1], [2, 1]]
 explain select test.id, ref.id from test, ref where ref.id = 1 and test.id = 1;
 [{
   "main": {
-    "00": "send_lookup         0      -      0     # public.test (select, closing)",
+    "00": "send_lookup         0      -      0     # test (select, closing)",
     "01": "union               1      0      0     ",
     "02": "recv                1      0      0     ",
     "03": "ret                 1      0      -     "
@@ -353,9 +353,9 @@ explain select test.id, ref.id from test, ref where ref.id = 1 and test.id = 1;
   "pushdown": {
     "00": "set                 0      2      0     ",
     "01": "push_int            -      0      0     # 1",
-    "02": "table_open_partl    1      0      19    # public.test (primary)",
+    "02": "table_open_partl    1      0      19    # test (primary)",
     "03": "push_int            -      0      0     # 1",
-    "04": "table_openl         2      20     18    # public.ref (primary)",
+    "04": "table_openl         2      18     18    # ref (primary)",
     "05": "table_readi32       3      2      0     ",
     "06": "int                 4      -      0     # 1",
     "07": "equii               5      3      4     ",
@@ -373,24 +373,24 @@ explain select test.id, ref.id from test, ref where ref.id = 1 and test.id = 1;
     "19": "free                1      0      0     ",
     "20": "ret                 0      0      -     "
   },
-  "access": [["public.test", "ro"], ["public.ref", "ro_exclusive"]]
+  "access": [["test", "ro"], ["ref", "ro_exclusive"]]
 }]
 select test.id, ref.id from test, ref where ref.id = 1 and test.id = 1;
 [[1, 1]]
 explain select test.id, ref.id from test, ref where ref.id >= test.id;
 [{
   "main": {
-    "00": "send_all            0      0      39    # public.test (select, closing)",
+    "00": "send_all            0      0      35    # test (select, closing)",
     "01": "union               1      0      0     ",
     "02": "recv                1      0      0     ",
     "03": "ret                 1      0      -     "
   },
   "pushdown": {
     "00": "set                 0      2      0     ",
-    "01": "table_open_part     1      0      17    # public.test (primary)",
+    "01": "table_open_part     1      0      17    # test (primary)",
     "02": "table_readi32       2      1      0     ",
     "03": "push                2      0      0     ",
-    "04": "table_open          2      20     15    # public.ref (primary)",
+    "04": "table_open          2      18     15    # ref (primary)",
     "05": "table_readi32       3      2      0     ",
     "06": "table_readi32       4      1      0     ",
     "07": "gteii               5      3      4     ",
@@ -406,7 +406,7 @@ explain select test.id, ref.id from test, ref where ref.id >= test.id;
     "17": "free                1      0      0     ",
     "18": "ret                 0      0      -     "
   },
-  "access": [["public.test", "ro"], ["public.ref", "ro_exclusive"]]
+  "access": [["test", "ro"], ["ref", "ro_exclusive"]]
 }]
 select test.id, ref.id from test, ref where ref.id >= test.id;
 [[1, 1], [1, 2], [1, 3], [3, 3], [2, 2], [2, 3]]
@@ -422,17 +422,17 @@ explain select test.id, ref.id from test join ref using(id;
 explain select test.id, ref.id from test join ref using(id);
 [{
   "main": {
-    "00": "send_all            0      0      39    # public.test (select, closing)",
+    "00": "send_all            0      0      35    # test (select, closing)",
     "01": "union               1      0      0     ",
     "02": "recv                1      0      0     ",
     "03": "ret                 1      0      -     "
   },
   "pushdown": {
     "00": "set                 0      2      0     ",
-    "01": "table_open_part     1      0      16    # public.test (primary)",
+    "01": "table_open_part     1      0      16    # test (primary)",
     "02": "table_readi32       2      1      0     ",
     "03": "push                2      0      0     ",
-    "04": "table_openl         2      20     14    # public.ref (primary)",
+    "04": "table_openl         2      18     14    # ref (primary)",
     "05": "table_readi32       3      1      0     ",
     "06": "table_readi32       4      2      0     ",
     "07": "equii               5      3      4     ",
@@ -447,7 +447,7 @@ explain select test.id, ref.id from test join ref using(id);
     "16": "free                1      0      0     ",
     "17": "ret                 0      0      -     "
   },
-  "access": [["public.test", "ro"], ["public.ref", "ro_exclusive"]]
+  "access": [["test", "ro"], ["ref", "ro_exclusive"]]
 }]
 select test.id, ref.id from test join ref using(id);
 [[1, 1], [3, 3], [2, 2]]
@@ -458,7 +458,7 @@ select test.id, ref.id from test join ref using(unknown);
 explain select test.id, ref.id from test join ref using (id) join ref ref2 using (id) where test.id > 0;
 [{
   "main": {
-    "00": "send_all            0      0      58    # public.test (select, closing)",
+    "00": "send_all            0      0      52    # test (select, closing)",
     "01": "union               1      0      0     ",
     "02": "recv                1      0      0     ",
     "03": "ret                 1      0      -     "
@@ -466,13 +466,13 @@ explain select test.id, ref.id from test join ref using (id) join ref ref2 using
   "pushdown": {
     "00": "set                 0      2      0     ",
     "01": "push_int            -      0      0     # 0",
-    "02": "table_open_part     1      0      29    # public.test (primary)",
+    "02": "table_open_part     1      0      29    # test (primary)",
     "03": "table_readi32       2      1      0     ",
     "04": "push                2      0      0     ",
-    "05": "table_openl         2      20     27    # public.ref (primary)",
+    "05": "table_openl         2      18     27    # ref (primary)",
     "06": "table_readi32       3      2      0     ",
     "07": "push                3      0      0     ",
-    "08": "table_openl         3      39     26    # public.ref (primary)",
+    "08": "table_openl         3      35     26    # ref (primary)",
     "09": "table_readi32       4      1      0     ",
     "10": "table_readi32       5      2      0     ",
     "11": "equii               6      4      5     ",
@@ -496,7 +496,7 @@ explain select test.id, ref.id from test join ref using (id) join ref ref2 using
     "29": "free                1      0      0     ",
     "30": "ret                 0      0      -     "
   },
-  "access": [["public.test", "ro"], ["public.ref", "ro_exclusive"]]
+  "access": [["test", "ro"], ["ref", "ro_exclusive"]]
 }]
 select test.id, ref.id from test join ref using (id) join ref ref2 using (id) where test.id > 0;
 [[1, 1], [3, 3], [2, 2]]
@@ -506,18 +506,18 @@ select test.id, ref.id from test join ref using (id) join ref ref2 using (id2) w
 explain with a as (select * from test) select * from test, a where test.id = a.id;
 [{
   "main": {
-    "00": "send_all            0      0      20    # public.test (select)",
+    "00": "send_all            0      0      18    # test (select)",
     "01": "union               1      0      0     ",
     "02": "recv                1      0      0     ",
     "03": "push_ref            1      1      0     ",
-    "04": "send_all            0      1      64    # public.test (select, closing)",
+    "04": "send_all            0      1      60    # test (select, closing)",
     "05": "union               2      0      0     ",
     "06": "recv                2      0      0     ",
     "07": "ret                 2      0      -     "
   },
   "pushdown": {
     "00": "set                 0      2      0     ",
-    "01": "table_open_part     1      0      8     # public.test (primary)",
+    "01": "table_open_part     1      0      8     # test (primary)",
     "02": "table_readi32       2      1      0     ",
     "03": "push                2      0      0     ",
     "04": "table_readi32       2      1      1     ",
@@ -527,7 +527,7 @@ explain with a as (select * from test) select * from test, a where test.id = a.i
     "08": "free                1      0      0     ",
     "09": "ret                 0      0      -     ",
     "10": "set                 0      4      0     ",
-    "11": "table_open_part     2      44     31    # public.test (primary)",
+    "11": "table_open_part     2      42     31    # test (primary)",
     "12": "ref                 3      0      0     ",
     "13": "store_open          4      3      28    ",
     "14": "table_readi32       5      2      0     ",
@@ -550,7 +550,7 @@ explain with a as (select * from test) select * from test, a where test.id = a.i
     "31": "free                2      0      0     ",
     "32": "ret                 0      0      -     "
   },
-  "access": [["public.test", "ro"]]
+  "access": [["test", "ro"]]
 }]
 with a as (select * from test) select * from test, a where test.id = a.id;
 [[1, 0, 1, 0], [3, 0, 3, 0], [2, 0, 2, 0]]
@@ -558,18 +558,18 @@ with a as (select * from test) select * from test, a where test.id = a.id;
 explain with a as (select * from test) select * from test, a where test.id = 1;
 [{
   "main": {
-    "00": "send_all            0      0      20    # public.test (select)",
+    "00": "send_all            0      0      18    # test (select)",
     "01": "union               1      0      0     ",
     "02": "recv                1      0      0     ",
     "03": "push_ref            1      1      0     ",
-    "04": "send_lookup         0      -      1     # public.test (select, closing)",
+    "04": "send_lookup         0      -      1     # test (select, closing)",
     "05": "union               2      0      0     ",
     "06": "recv                2      0      0     ",
     "07": "ret                 2      0      -     "
   },
   "pushdown": {
     "00": "set                 0      2      0     ",
-    "01": "table_open_part     1      0      8     # public.test (primary)",
+    "01": "table_open_part     1      0      8     # test (primary)",
     "02": "table_readi32       2      1      0     ",
     "03": "push                2      0      0     ",
     "04": "table_readi32       2      1      1     ",
@@ -580,7 +580,7 @@ explain with a as (select * from test) select * from test, a where test.id = 1;
     "09": "ret                 0      0      -     ",
     "10": "set                 0      4      0     ",
     "11": "push_int            -      0      0     # 1",
-    "12": "table_open_partl    2      44     31    # public.test (primary)",
+    "12": "table_open_partl    2      42     31    # test (primary)",
     "13": "ref                 3      0      0     ",
     "14": "store_open          4      3      29    ",
     "15": "table_readi32       5      2      0     ",
@@ -602,7 +602,7 @@ explain with a as (select * from test) select * from test, a where test.id = 1;
     "31": "free                2      0      0     ",
     "32": "ret                 0      0      -     "
   },
-  "access": [["public.test", "ro"]]
+  "access": [["test", "ro"]]
 }]
 with a as (select * from test) select * from test, a where test.id = 1;
 [[1, 0, 1, 0], [1, 0, 3, 0], [1, 0, 2, 0]]
@@ -610,7 +610,7 @@ with a as (select * from test) select * from test, a where test.id = 1;
 explain with a as (select * from test) select * from a, test where test.id = a.id;
 [{
   "main": {
-    "00": "send_all            0      0      20    # public.test (select, closing)",
+    "00": "send_all            0      0      18    # test (select, closing)",
     "01": "union               1      0      0     ",
     "02": "recv                1      0      0     ",
     "03": "set                 0      4      0     ",
@@ -618,7 +618,7 @@ explain with a as (select * from test) select * from a, test where test.id = a.i
     "05": "store_open          3      2      24    ",
     "06": "store_read          4      3      0     ",
     "07": "push                4      0      0     ",
-    "08": "table_openl         4      44     22    # public.test (primary)",
+    "08": "table_openl         4      42     22    # test (primary)",
     "09": "table_readi32       5      4      0     ",
     "10": "store_read          6      3      0     ",
     "11": "equii               7      5      6     ",
@@ -640,7 +640,7 @@ explain with a as (select * from test) select * from a, test where test.id = a.i
   },
   "pushdown": {
     "00": "set                 0      2      0     ",
-    "01": "table_open_part     1      0      8     # public.test (primary)",
+    "01": "table_open_part     1      0      8     # test (primary)",
     "02": "table_readi32       2      1      0     ",
     "03": "push                2      0      0     ",
     "04": "table_readi32       2      1      1     ",
@@ -650,7 +650,7 @@ explain with a as (select * from test) select * from a, test where test.id = a.i
     "08": "free                1      0      0     ",
     "09": "ret                 0      0      -     "
   },
-  "access": [["public.test", "ro_exclusive"]]
+  "access": [["test", "ro_exclusive"]]
 }]
 with a as (select * from test) select * from a, test where test.id = a.id;
 [[1, 0, 1, 0], [3, 0, 3, 0], [2, 0, 2, 0]]
@@ -658,14 +658,14 @@ with a as (select * from test) select * from a, test where test.id = a.id;
 explain with a as (select * from test) select * from a, test where test.id = 1;
 [{
   "main": {
-    "00": "send_all            0      0      20    # public.test (select, closing)",
+    "00": "send_all            0      0      18    # test (select, closing)",
     "01": "union               1      0      0     ",
     "02": "recv                1      0      0     ",
     "03": "set                 0      4      0     ",
     "04": "dup                 2      1      0     ",
     "05": "store_open          3      2      23    ",
     "06": "push_int            -      0      0     # 1",
-    "07": "table_openl         4      44     21    # public.test (primary)",
+    "07": "table_openl         4      42     21    # test (primary)",
     "08": "table_readi32       5      4      0     ",
     "09": "int                 6      -      0     # 1",
     "10": "equii               7      5      6     ",
@@ -687,7 +687,7 @@ explain with a as (select * from test) select * from a, test where test.id = 1;
   },
   "pushdown": {
     "00": "set                 0      2      0     ",
-    "01": "table_open_part     1      0      8     # public.test (primary)",
+    "01": "table_open_part     1      0      8     # test (primary)",
     "02": "table_readi32       2      1      0     ",
     "03": "push                2      0      0     ",
     "04": "table_readi32       2      1      1     ",
@@ -697,7 +697,7 @@ explain with a as (select * from test) select * from a, test where test.id = 1;
     "08": "free                1      0      0     ",
     "09": "ret                 0      0      -     "
   },
-  "access": [["public.test", "ro_exclusive"]]
+  "access": [["test", "ro_exclusive"]]
 }]
 with a as (select * from test) select * from a, test where test.id = 1;
 [[1, 0, 1, 0], [3, 0, 1, 0], [2, 0, 1, 0]]
@@ -715,8 +715,8 @@ select ref.id from test join ref on (test.id = ref.id) group by id;
 explain select ref.id from test join ref on (test.id = ref.id) group by ref.id;
 [{
   "main": {
-    "00": "send_all            0      0      39    # public.test (select, closing)",
-    "01": "recv_aggs           1      0      39    ",
+    "00": "send_all            0      0      35    # test (select, closing)",
+    "01": "recv_aggs           1      0      35    ",
     "02": "set                 2      1      0     ",
     "03": "store_open          3      1      8     ",
     "04": "store_read          4      3      0     ",
@@ -729,10 +729,10 @@ explain select ref.id from test join ref on (test.id = ref.id) group by ref.id;
   },
   "pushdown": {
     "00": "set                 0      0      1     ",
-    "01": "table_open_part     1      0      14    # public.test (primary)",
+    "01": "table_open_part     1      0      14    # test (primary)",
     "02": "table_readi32       2      1      0     ",
     "03": "push                2      0      0     ",
-    "04": "table_openl         2      20     12    # public.ref (primary)",
+    "04": "table_openl         2      18     12    # ref (primary)",
     "05": "table_readi32       3      1      0     ",
     "06": "table_readi32       4      2      0     ",
     "07": "equii               5      3      4     ",
@@ -745,7 +745,7 @@ explain select ref.id from test join ref on (test.id = ref.id) group by ref.id;
     "14": "free                1      0      0     ",
     "15": "ret                 0      0      -     "
   },
-  "access": [["public.test", "ro"], ["public.ref", "ro_exclusive"]]
+  "access": [["test", "ro"], ["ref", "ro_exclusive"]]
 }]
 select ref.id from test join ref on (test.id = ref.id) group by ref.id;
 [1, 3, 2]

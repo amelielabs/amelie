@@ -66,13 +66,13 @@ insert into test values (1),(2),(3);
 explain with a as (select * from test) select 2;
 [{
   "main": {
-    "00": "send_all            0      0      20    # public.test (select, closing)",
+    "00": "send_all            0      0      18    # test (select, closing)",
     "01": "int                 1      -      0     # 2",
     "02": "ret                 1      0      -     "
   },
   "pushdown": {
     "00": "set                 0      1      0     ",
-    "01": "table_open_part     1      0      6     # public.test (primary)",
+    "01": "table_open_part     1      0      6     # test (primary)",
     "02": "table_readi32       2      1      0     ",
     "03": "push                2      0      0     ",
     "04": "set_add             0      0      0     ",
@@ -80,7 +80,7 @@ explain with a as (select * from test) select 2;
     "06": "free                1      0      0     ",
     "07": "ret                 0      0      -     "
   },
-  "access": [["public.test", "ro"]]
+  "access": [["test", "ro"]]
 }]
 with a as (select * from test) select 2;
 [2]
@@ -91,7 +91,7 @@ insert into test values (1),(2),(3);
 explain with a as (select * from test) select * from a;
 [{
   "main": {
-    "00": "send_all            0      0      20    # public.test (select, closing)",
+    "00": "send_all            0      0      18    # test (select, closing)",
     "01": "union               1      0      0     ",
     "02": "recv                1      0      0     ",
     "03": "set                 0      1      0     ",
@@ -107,7 +107,7 @@ explain with a as (select * from test) select * from a;
   },
   "pushdown": {
     "00": "set                 0      1      0     ",
-    "01": "table_open_part     1      0      6     # public.test (primary)",
+    "01": "table_open_part     1      0      6     # test (primary)",
     "02": "table_readi32       2      1      0     ",
     "03": "push                2      0      0     ",
     "04": "set_add             0      0      0     ",
@@ -115,7 +115,7 @@ explain with a as (select * from test) select * from a;
     "06": "free                1      0      0     ",
     "07": "ret                 0      0      -     "
   },
-  "access": [["public.test", "ro"]]
+  "access": [["test", "ro"]]
 }]
 with a as (select * from test) select * from a;
 [1, 3, 2]
@@ -126,7 +126,7 @@ insert into test values (1),(2),(3);
 explain with a as (select * from test) select id from a;
 [{
   "main": {
-    "00": "send_all            0      0      20    # public.test (select, closing)",
+    "00": "send_all            0      0      18    # test (select, closing)",
     "01": "union               1      0      0     ",
     "02": "recv                1      0      0     ",
     "03": "set                 0      1      0     ",
@@ -142,7 +142,7 @@ explain with a as (select * from test) select id from a;
   },
   "pushdown": {
     "00": "set                 0      1      0     ",
-    "01": "table_open_part     1      0      6     # public.test (primary)",
+    "01": "table_open_part     1      0      6     # test (primary)",
     "02": "table_readi32       2      1      0     ",
     "03": "push                2      0      0     ",
     "04": "set_add             0      0      0     ",
@@ -150,7 +150,7 @@ explain with a as (select * from test) select id from a;
     "06": "free                1      0      0     ",
     "07": "ret                 0      0      -     "
   },
-  "access": [["public.test", "ro"]]
+  "access": [["test", "ro"]]
 }]
 with a as (select * from test) select id from a;
 [1, 3, 2]
@@ -161,7 +161,7 @@ insert into test values (1),(2),(3);
 explain with a as (select * from test) select a.id from a;
 [{
   "main": {
-    "00": "send_all            0      0      20    # public.test (select, closing)",
+    "00": "send_all            0      0      18    # test (select, closing)",
     "01": "union               1      0      0     ",
     "02": "recv                1      0      0     ",
     "03": "set                 0      1      0     ",
@@ -177,7 +177,7 @@ explain with a as (select * from test) select a.id from a;
   },
   "pushdown": {
     "00": "set                 0      1      0     ",
-    "01": "table_open_part     1      0      6     # public.test (primary)",
+    "01": "table_open_part     1      0      6     # test (primary)",
     "02": "table_readi32       2      1      0     ",
     "03": "push                2      0      0     ",
     "04": "set_add             0      0      0     ",
@@ -185,7 +185,7 @@ explain with a as (select * from test) select a.id from a;
     "06": "free                1      0      0     ",
     "07": "ret                 0      0      -     "
   },
-  "access": [["public.test", "ro"]]
+  "access": [["test", "ro"]]
 }]
 with a as (select * from test) select a.id from a;
 [1, 3, 2]
@@ -196,7 +196,7 @@ insert into test values (1),(2),(3);
 explain with a as (select id from test) select id from a;
 [{
   "main": {
-    "00": "send_all            0      0      20    # public.test (select, closing)",
+    "00": "send_all            0      0      18    # test (select, closing)",
     "01": "union               1      0      0     ",
     "02": "recv                1      0      0     ",
     "03": "set                 0      1      0     ",
@@ -212,7 +212,7 @@ explain with a as (select id from test) select id from a;
   },
   "pushdown": {
     "00": "set                 0      1      0     ",
-    "01": "table_open_part     1      0      6     # public.test (primary)",
+    "01": "table_open_part     1      0      6     # test (primary)",
     "02": "table_readi32       2      1      0     ",
     "03": "push                2      0      0     ",
     "04": "set_add             0      0      0     ",
@@ -220,7 +220,7 @@ explain with a as (select id from test) select id from a;
     "06": "free                1      0      0     ",
     "07": "ret                 0      0      -     "
   },
-  "access": [["public.test", "ro"]]
+  "access": [["test", "ro"]]
 }]
 with a as (select id from test) select id from a;
 [1, 3, 2]
@@ -233,7 +233,7 @@ explain with a as (select id as x from test) select id from a;
 explain with a as (select id as x from test) select x from a;
 [{
   "main": {
-    "00": "send_all            0      0      20    # public.test (select, closing)",
+    "00": "send_all            0      0      18    # test (select, closing)",
     "01": "union               1      0      0     ",
     "02": "recv                1      0      0     ",
     "03": "set                 0      1      0     ",
@@ -249,7 +249,7 @@ explain with a as (select id as x from test) select x from a;
   },
   "pushdown": {
     "00": "set                 0      1      0     ",
-    "01": "table_open_part     1      0      6     # public.test (primary)",
+    "01": "table_open_part     1      0      6     # test (primary)",
     "02": "table_readi32       2      1      0     ",
     "03": "push                2      0      0     ",
     "04": "set_add             0      0      0     ",
@@ -257,7 +257,7 @@ explain with a as (select id as x from test) select x from a;
     "06": "free                1      0      0     ",
     "07": "ret                 0      0      -     "
   },
-  "access": [["public.test", "ro"]]
+  "access": [["test", "ro"]]
 }]
 with a as (select id as x from test) select x from a;
 [1, 3, 2]
@@ -278,7 +278,7 @@ with a as (select * from test) select * from a;
 explain with a as (select * from test) select * from a;
 [{
   "main": {
-    "00": "send_all            0      0      20    # public.test (select, closing)",
+    "00": "send_all            0      0      18    # test (select, closing)",
     "01": "union               1      0      0     ",
     "02": "recv                1      0      0     ",
     "03": "set                 0      1      0     ",
@@ -294,7 +294,7 @@ explain with a as (select * from test) select * from a;
   },
   "pushdown": {
     "00": "set                 0      1      0     ",
-    "01": "table_open_part     1      0      6     # public.test (primary)",
+    "01": "table_open_part     1      0      6     # test (primary)",
     "02": "table_readi32       2      1      0     ",
     "03": "push                2      0      0     ",
     "04": "set_add             0      0      0     ",
@@ -302,7 +302,7 @@ explain with a as (select * from test) select * from a;
     "06": "free                1      0      0     ",
     "07": "ret                 0      0      -     "
   },
-  "access": [["public.test", "ro"]]
+  "access": [["test", "ro"]]
 }]
 drop table test;
 # test: with(select * from table), select * from table
@@ -313,15 +313,15 @@ with a as (select * from test) select * from test;
 explain with a as (select * from test) select * from test;
 [{
   "main": {
-    "00": "send_all            0      0      20    # public.test (select)",
-    "01": "send_all            1      0      64    # public.test (select, closing)",
+    "00": "send_all            0      0      18    # test (select)",
+    "01": "send_all            1      0      60    # test (select, closing)",
     "02": "union               2      0      0     ",
     "03": "recv                2      1      0     ",
     "04": "ret                 2      0      -     "
   },
   "pushdown": {
     "00": "set                 0      1      0     ",
-    "01": "table_open_part     1      0      6     # public.test (primary)",
+    "01": "table_open_part     1      0      6     # test (primary)",
     "02": "table_readi32       2      1      0     ",
     "03": "push                2      0      0     ",
     "04": "set_add             0      0      0     ",
@@ -329,7 +329,7 @@ explain with a as (select * from test) select * from test;
     "06": "free                1      0      0     ",
     "07": "ret                 0      0      -     ",
     "08": "set                 1      1      0     ",
-    "09": "table_open_part     2      44     14    # public.test (primary)",
+    "09": "table_open_part     2      42     14    # test (primary)",
     "10": "table_readi32       3      2      0     ",
     "11": "push                3      0      0     ",
     "12": "set_add             1      0      0     ",
@@ -337,7 +337,7 @@ explain with a as (select * from test) select * from test;
     "14": "free                2      0      0     ",
     "15": "ret                 1      0      -     "
   },
-  "access": [["public.test", "ro"]]
+  "access": [["test", "ro"]]
 }]
 drop table test;
 # test: with(select * from table), select * from table
@@ -348,15 +348,15 @@ with a as (select * from test) select * from test;
 explain with a as (select * from test) select * from test;
 [{
   "main": {
-    "00": "send_all            0      0      20    # public.test (select)",
-    "01": "send_all            1      0      64    # public.test (select, closing)",
+    "00": "send_all            0      0      18    # test (select)",
+    "01": "send_all            1      0      60    # test (select, closing)",
     "02": "union               2      0      0     ",
     "03": "recv                2      1      0     ",
     "04": "ret                 2      0      -     "
   },
   "pushdown": {
     "00": "set                 0      1      0     ",
-    "01": "table_open_part     1      0      6     # public.test (primary)",
+    "01": "table_open_part     1      0      6     # test (primary)",
     "02": "table_readi32       2      1      0     ",
     "03": "push                2      0      0     ",
     "04": "set_add             0      0      0     ",
@@ -364,7 +364,7 @@ explain with a as (select * from test) select * from test;
     "06": "free                1      0      0     ",
     "07": "ret                 0      0      -     ",
     "08": "set                 1      1      0     ",
-    "09": "table_open_part     2      44     14    # public.test (primary)",
+    "09": "table_open_part     2      42     14    # test (primary)",
     "10": "table_readi32       3      2      0     ",
     "11": "push                3      0      0     ",
     "12": "set_add             1      0      0     ",
@@ -372,7 +372,7 @@ explain with a as (select * from test) select * from test;
     "14": "free                2      0      0     ",
     "15": "ret                 1      0      -     "
   },
-  "access": [["public.test", "ro"]]
+  "access": [["test", "ro"]]
 }]
 drop table test;
 # test: with(select expr), select * from table join
@@ -383,14 +383,14 @@ explain with a as (select [4,5,6]) select test.*, a.* from test, a;
   "main": {
     "00": "json                0      0      0     ",
     "01": "push_ref            0      1      0     ",
-    "02": "send_all            1      1      25    # public.test (select, closing)",
+    "02": "send_all            1      1      23    # test (select, closing)",
     "03": "union               2      0      0     ",
     "04": "recv                2      1      0     ",
     "05": "ret                 2      0      -     "
   },
   "pushdown": {
     "00": "set                 1      2      0     ",
-    "01": "table_open_part     2      5      12    # public.test (primary)",
+    "01": "table_open_part     2      5      12    # test (primary)",
     "02": "ref                 3      0      0     ",
     "03": "json_open           4      3      10    ",
     "04": "table_readi32       5      2      0     ",
@@ -404,7 +404,7 @@ explain with a as (select [4,5,6]) select test.*, a.* from test, a;
     "12": "free                2      0      0     ",
     "13": "ret                 1      0      -     "
   },
-  "access": [["public.test", "ro"]]
+  "access": [["test", "ro"]]
 }]
 with a as (select [4,5,6]) select test.*, a.* from test, a;
 [[1, 4], [1, 5], [1, 6], [3, 4], [3, 5], [3, 6], [2, 4], [2, 5], [2, 6]]
@@ -417,14 +417,14 @@ explain with a as (select [4,5,6]) select test.*, a.* from test, a;
   "main": {
     "00": "json                0      0      0     ",
     "01": "push_ref            0      1      0     ",
-    "02": "send_all            1      1      25    # public.test (select, closing)",
+    "02": "send_all            1      1      23    # test (select, closing)",
     "03": "union               2      0      0     ",
     "04": "recv                2      1      0     ",
     "05": "ret                 2      0      -     "
   },
   "pushdown": {
     "00": "set                 1      2      0     ",
-    "01": "table_open_part     2      5      12    # public.test (primary)",
+    "01": "table_open_part     2      5      12    # test (primary)",
     "02": "ref                 3      0      0     ",
     "03": "json_open           4      3      10    ",
     "04": "table_readi32       5      2      0     ",
@@ -438,7 +438,7 @@ explain with a as (select [4,5,6]) select test.*, a.* from test, a;
     "12": "free                2      0      0     ",
     "13": "ret                 1      0      -     "
   },
-  "access": [["public.test", "ro"]]
+  "access": [["test", "ro"]]
 }]
 with a as (select [4,5,6]) select test.*, a.* from test, a;
 [[1, 4], [1, 5], [1, 6], [3, 4], [3, 5], [3, 6], [2, 4], [2, 5], [2, 6]]
@@ -449,18 +449,18 @@ insert into test values (1),(2),(3);
 explain with a as (select * from test) select test.* from test join a on test.id = a.id;
 [{
   "main": {
-    "00": "send_all            0      0      20    # public.test (select)",
+    "00": "send_all            0      0      18    # test (select)",
     "01": "union               1      0      0     ",
     "02": "recv                1      0      0     ",
     "03": "push_ref            1      1      0     ",
-    "04": "send_all            0      1      64    # public.test (select, closing)",
+    "04": "send_all            0      1      60    # test (select, closing)",
     "05": "union               2      0      0     ",
     "06": "recv                2      0      0     ",
     "07": "ret                 2      0      -     "
   },
   "pushdown": {
     "00": "set                 0      1      0     ",
-    "01": "table_open_part     1      0      6     # public.test (primary)",
+    "01": "table_open_part     1      0      6     # test (primary)",
     "02": "table_readi32       2      1      0     ",
     "03": "push                2      0      0     ",
     "04": "set_add             0      0      0     ",
@@ -468,7 +468,7 @@ explain with a as (select * from test) select test.* from test join a on test.id
     "06": "free                1      0      0     ",
     "07": "ret                 0      0      -     ",
     "08": "set                 0      1      0     ",
-    "09": "table_open_part     2      44     23    # public.test (primary)",
+    "09": "table_open_part     2      42     23    # test (primary)",
     "10": "ref                 3      0      0     ",
     "11": "store_open          4      3      20    ",
     "12": "table_readi32       5      2      0     ",
@@ -485,7 +485,7 @@ explain with a as (select * from test) select test.* from test join a on test.id
     "23": "free                2      0      0     ",
     "24": "ret                 0      0      -     "
   },
-  "access": [["public.test", "ro"]]
+  "access": [["test", "ro"]]
 }]
 with a as (select * from test) select test.* from test join a on test.id = a.id;
 [1, 3, 2]
@@ -496,18 +496,18 @@ insert into test values (1, '1'),(2, '2'),(3, '3');
 explain with a as (select data from test) select test.* from test join a on test.data = a.data;
 [{
   "main": {
-    "00": "send_all            0      0      20    # public.test (select)",
+    "00": "send_all            0      0      18    # test (select)",
     "01": "union               1      0      0     ",
     "02": "recv                1      0      0     ",
     "03": "push_ref            1      1      0     ",
-    "04": "send_all            0      1      64    # public.test (select, closing)",
+    "04": "send_all            0      1      60    # test (select, closing)",
     "05": "union               2      0      0     ",
     "06": "recv                2      0      0     ",
     "07": "ret                 2      0      -     "
   },
   "pushdown": {
     "00": "set                 0      1      0     ",
-    "01": "table_open_part     1      0      6     # public.test (primary)",
+    "01": "table_open_part     1      0      6     # test (primary)",
     "02": "table_reads         2      1      1     ",
     "03": "push                2      0      0     ",
     "04": "set_add             0      0      0     ",
@@ -515,7 +515,7 @@ explain with a as (select data from test) select test.* from test join a on test
     "06": "free                1      0      0     ",
     "07": "ret                 0      0      -     ",
     "08": "set                 0      2      0     ",
-    "09": "table_open_part     2      44     25    # public.test (primary)",
+    "09": "table_open_part     2      42     25    # test (primary)",
     "10": "ref                 3      0      0     ",
     "11": "store_open          4      3      22    ",
     "12": "table_reads         5      2      1     ",
@@ -534,7 +534,7 @@ explain with a as (select data from test) select test.* from test join a on test
     "25": "free                2      0      0     ",
     "26": "ret                 0      0      -     "
   },
-  "access": [["public.test", "ro"]]
+  "access": [["test", "ro"]]
 }]
 with a as (select data from test) select test.* from test join a on test.data = a.data;
 [[1, "1"], [3, "3"], [2, "2"]]
@@ -589,7 +589,7 @@ with a as (select * from test), b as (select * from a) select * from b;
 explain with a as (select * from test), b as (select * from a) select * from b;
 [{
   "main": {
-    "00": "send_all            0      0      20    # public.test (select, closing)",
+    "00": "send_all            0      0      18    # test (select, closing)",
     "01": "union               1      0      0     ",
     "02": "recv                1      0      0     ",
     "03": "set                 0      1      0     ",
@@ -614,7 +614,7 @@ explain with a as (select * from test), b as (select * from a) select * from b;
   },
   "pushdown": {
     "00": "set                 0      1      0     ",
-    "01": "table_open_part     1      0      6     # public.test (primary)",
+    "01": "table_open_part     1      0      6     # test (primary)",
     "02": "table_readi32       2      1      0     ",
     "03": "push                2      0      0     ",
     "04": "set_add             0      0      0     ",
@@ -622,7 +622,7 @@ explain with a as (select * from test), b as (select * from a) select * from b;
     "06": "free                1      0      0     ",
     "07": "ret                 0      0      -     "
   },
-  "access": [["public.test", "ro"]]
+  "access": [["test", "ro"]]
 }]
 drop table test;
 # test: a(table), b(expr), c(a)
@@ -633,8 +633,8 @@ with a as (select * from test), b as (select [1,2,3]), c as (select * from a) se
 explain with a as (select * from test), b as (select [1,2,3]), c as (select * from a) select * from c;
 [{
   "main": {
-    "00": "send_all            0      0      20    # public.test (select, closing)",
-    "01": "json                1      44     0     ",
+    "00": "send_all            0      0      18    # test (select, closing)",
+    "01": "json                1      42     0     ",
     "02": "union               2      0      0     ",
     "03": "recv                2      0      0     ",
     "04": "set                 0      1      0     ",
@@ -659,7 +659,7 @@ explain with a as (select * from test), b as (select [1,2,3]), c as (select * fr
   },
   "pushdown": {
     "00": "set                 0      1      0     ",
-    "01": "table_open_part     1      0      6     # public.test (primary)",
+    "01": "table_open_part     1      0      6     # test (primary)",
     "02": "table_readi32       2      1      0     ",
     "03": "push                2      0      0     ",
     "04": "set_add             0      0      0     ",
@@ -667,7 +667,7 @@ explain with a as (select * from test), b as (select [1,2,3]), c as (select * fr
     "06": "free                1      0      0     ",
     "07": "ret                 0      0      -     "
   },
-  "access": [["public.test", "ro"]]
+  "access": [["test", "ro"]]
 }]
 drop table test;
 # test: a(table), b(expr), c(table)
@@ -678,9 +678,9 @@ with a as (select * from test), b as (select [1,2,3]), c as (select * from test)
 explain with a as (select * from test), b as (select [1,2,3]), c as (select * from test) select * from c;
 [{
   "main": {
-    "00": "send_all            0      0      20    # public.test (select)",
-    "01": "json                1      44     0     ",
-    "02": "send_all            2      0      69    # public.test (select, closing)",
+    "00": "send_all            0      0      18    # test (select)",
+    "01": "json                1      42     0     ",
+    "02": "send_all            2      0      65    # test (select, closing)",
     "03": "union               3      0      0     ",
     "04": "recv                3      2      0     ",
     "05": "set                 2      1      0     ",
@@ -696,7 +696,7 @@ explain with a as (select * from test), b as (select [1,2,3]), c as (select * fr
   },
   "pushdown": {
     "00": "set                 0      1      0     ",
-    "01": "table_open_part     1      0      6     # public.test (primary)",
+    "01": "table_open_part     1      0      6     # test (primary)",
     "02": "table_readi32       2      1      0     ",
     "03": "push                2      0      0     ",
     "04": "set_add             0      0      0     ",
@@ -704,7 +704,7 @@ explain with a as (select * from test), b as (select [1,2,3]), c as (select * fr
     "06": "free                1      0      0     ",
     "07": "ret                 0      0      -     ",
     "08": "set                 2      1      0     ",
-    "09": "table_open_part     3      49     14    # public.test (primary)",
+    "09": "table_open_part     3      47     14    # test (primary)",
     "10": "table_readi32       4      3      0     ",
     "11": "push                4      0      0     ",
     "12": "set_add             2      0      0     ",
@@ -712,7 +712,7 @@ explain with a as (select * from test), b as (select [1,2,3]), c as (select * fr
     "14": "free                3      0      0     ",
     "15": "ret                 2      0      -     "
   },
-  "access": [["public.test", "ro"]]
+  "access": [["test", "ro"]]
 }]
 drop table test;
 # test: a(table), b(table), c(expr)
@@ -723,9 +723,9 @@ with a as (select * from test), b as (select * from test), c as (select [1,2,3])
 explain with a as (select * from test), b as (select * from test), c as (select [1,2,3]) select * from c;
 [{
   "main": {
-    "00": "send_all            0      0      20    # public.test (select)",
-    "01": "send_all            1      0      64    # public.test (select, closing)",
-    "02": "json                2      88     0     ",
+    "00": "send_all            0      0      18    # test (select)",
+    "01": "send_all            1      0      60    # test (select, closing)",
+    "02": "json                2      84     0     ",
     "03": "set                 3      1      0     ",
     "04": "dup                 4      2      0     ",
     "05": "json_open           5      4      10    ",
@@ -738,7 +738,7 @@ explain with a as (select * from test), b as (select * from test), c as (select 
   },
   "pushdown": {
     "00": "set                 0      1      0     ",
-    "01": "table_open_part     1      0      6     # public.test (primary)",
+    "01": "table_open_part     1      0      6     # test (primary)",
     "02": "table_readi32       2      1      0     ",
     "03": "push                2      0      0     ",
     "04": "set_add             0      0      0     ",
@@ -746,7 +746,7 @@ explain with a as (select * from test), b as (select * from test), c as (select 
     "06": "free                1      0      0     ",
     "07": "ret                 0      0      -     ",
     "08": "set                 1      1      0     ",
-    "09": "table_open_part     2      44     14    # public.test (primary)",
+    "09": "table_open_part     2      42     14    # test (primary)",
     "10": "table_readi32       3      2      0     ",
     "11": "push                3      0      0     ",
     "12": "set_add             1      0      0     ",
@@ -754,7 +754,7 @@ explain with a as (select * from test), b as (select * from test), c as (select 
     "14": "free                2      0      0     ",
     "15": "ret                 1      0      -     "
   },
-  "access": [["public.test", "ro"]]
+  "access": [["test", "ro"]]
 }]
 drop table test;
 # test: a(table), b(table), c(expr), d(table)
@@ -765,10 +765,10 @@ with a as (select * from test), b as (select * from test), c as (select [1,2,3])
 explain with a as (select * from test), b as (select * from test), c as (select [1,2,3]), d as (select * from test) select * from d;
 [{
   "main": {
-    "00": "send_all            0      0      20    # public.test (select)",
-    "01": "send_all            1      0      64    # public.test (select)",
-    "02": "json                2      88     0     ",
-    "03": "send_all            3      0      113   # public.test (select, closing)",
+    "00": "send_all            0      0      18    # test (select)",
+    "01": "send_all            1      0      60    # test (select)",
+    "02": "json                2      84     0     ",
+    "03": "send_all            3      0      107   # test (select, closing)",
     "04": "union               4      0      0     ",
     "05": "recv                4      3      0     ",
     "06": "set                 3      1      0     ",
@@ -784,7 +784,7 @@ explain with a as (select * from test), b as (select * from test), c as (select 
   },
   "pushdown": {
     "00": "set                 0      1      0     ",
-    "01": "table_open_part     1      0      6     # public.test (primary)",
+    "01": "table_open_part     1      0      6     # test (primary)",
     "02": "table_readi32       2      1      0     ",
     "03": "push                2      0      0     ",
     "04": "set_add             0      0      0     ",
@@ -792,7 +792,7 @@ explain with a as (select * from test), b as (select * from test), c as (select 
     "06": "free                1      0      0     ",
     "07": "ret                 0      0      -     ",
     "08": "set                 1      1      0     ",
-    "09": "table_open_part     2      44     14    # public.test (primary)",
+    "09": "table_open_part     2      42     14    # test (primary)",
     "10": "table_readi32       3      2      0     ",
     "11": "push                3      0      0     ",
     "12": "set_add             1      0      0     ",
@@ -800,7 +800,7 @@ explain with a as (select * from test), b as (select * from test), c as (select 
     "14": "free                2      0      0     ",
     "15": "ret                 1      0      -     ",
     "16": "set                 3      1      0     ",
-    "17": "table_open_part     4      93     22    # public.test (primary)",
+    "17": "table_open_part     4      89     22    # test (primary)",
     "18": "table_readi32       5      4      0     ",
     "19": "push                5      0      0     ",
     "20": "set_add             3      0      0     ",
@@ -808,7 +808,7 @@ explain with a as (select * from test), b as (select * from test), c as (select 
     "22": "free                4      0      0     ",
     "23": "ret                 3      0      -     "
   },
-  "access": [["public.test", "ro"]]
+  "access": [["test", "ro"]]
 }]
 drop table test;
 # test: a(expr), b(table), c(expr)
@@ -820,8 +820,8 @@ explain with a as (select [1,2,3]), b as (select * from test), c as (select [1,2
 [{
   "main": {
     "00": "json                0      0      0     ",
-    "01": "send_all            1      0      25    # public.test (select, closing)",
-    "02": "json                2      49     0     ",
+    "01": "send_all            1      0      23    # test (select, closing)",
+    "02": "json                2      47     0     ",
     "03": "union               3      0      0     ",
     "04": "recv                3      1      0     ",
     "05": "set                 1      2      0     ",
@@ -843,7 +843,7 @@ explain with a as (select [1,2,3]), b as (select * from test), c as (select [1,2
   },
   "pushdown": {
     "00": "set                 1      1      0     ",
-    "01": "table_open_part     2      5      6     # public.test (primary)",
+    "01": "table_open_part     2      5      6     # test (primary)",
     "02": "table_readi32       3      2      0     ",
     "03": "push                3      0      0     ",
     "04": "set_add             1      0      0     ",
@@ -851,7 +851,7 @@ explain with a as (select [1,2,3]), b as (select * from test), c as (select [1,2
     "06": "free                2      0      0     ",
     "07": "ret                 1      0      -     "
   },
-  "access": [["public.test", "ro"]]
+  "access": [["test", "ro"]]
 }]
 drop table test;
 # test: a(expr), b(table), c(table)
@@ -863,8 +863,8 @@ explain with a as (select [1,2,3]), b as (select * from test), c as (select * fr
 [{
   "main": {
     "00": "json                0      0      0     ",
-    "01": "send_all            1      0      25    # public.test (select)",
-    "02": "send_all            2      0      69    # public.test (select, closing)",
+    "01": "send_all            1      0      23    # test (select)",
+    "02": "send_all            2      0      65    # test (select, closing)",
     "03": "union               3      0      0     ",
     "04": "recv                3      2      0     ",
     "05": "set                 2      1      0     ",
@@ -880,7 +880,7 @@ explain with a as (select [1,2,3]), b as (select * from test), c as (select * fr
   },
   "pushdown": {
     "00": "set                 1      1      0     ",
-    "01": "table_open_part     2      5      6     # public.test (primary)",
+    "01": "table_open_part     2      5      6     # test (primary)",
     "02": "table_readi32       3      2      0     ",
     "03": "push                3      0      0     ",
     "04": "set_add             1      0      0     ",
@@ -888,7 +888,7 @@ explain with a as (select [1,2,3]), b as (select * from test), c as (select * fr
     "06": "free                2      0      0     ",
     "07": "ret                 1      0      -     ",
     "08": "set                 2      1      0     ",
-    "09": "table_open_part     3      49     14    # public.test (primary)",
+    "09": "table_open_part     3      47     14    # test (primary)",
     "10": "table_readi32       4      3      0     ",
     "11": "push                4      0      0     ",
     "12": "set_add             2      0      0     ",
@@ -896,7 +896,7 @@ explain with a as (select [1,2,3]), b as (select * from test), c as (select * fr
     "14": "free                3      0      0     ",
     "15": "ret                 2      0      -     "
   },
-  "access": [["public.test", "ro"]]
+  "access": [["test", "ro"]]
 }]
 drop table test;
 # test: a(table), b(a), c(table)
@@ -907,7 +907,7 @@ with a as (select * from test), b as (select * from a), c as (select * from test
 explain with a as (select * from test), b as (select * from a), c as (select * from test) select * from c;
 [{
   "main": {
-    "00": "send_all            0      0      20    # public.test (select)",
+    "00": "send_all            0      0      18    # test (select)",
     "01": "union               1      0      0     ",
     "02": "recv                1      0      0     ",
     "03": "set                 0      1      0     ",
@@ -919,7 +919,7 @@ explain with a as (select * from test), b as (select * from a), c as (select * f
     "09": "store_next          3      6      0     ",
     "10": "free                3      0      0     ",
     "11": "free                2      0      0     ",
-    "12": "send_all            2      0      64    # public.test (select, closing)",
+    "12": "send_all            2      0      60    # test (select, closing)",
     "13": "union               3      0      0     ",
     "14": "recv                3      2      0     ",
     "15": "set                 2      1      0     ",
@@ -935,7 +935,7 @@ explain with a as (select * from test), b as (select * from a), c as (select * f
   },
   "pushdown": {
     "00": "set                 0      1      0     ",
-    "01": "table_open_part     1      0      6     # public.test (primary)",
+    "01": "table_open_part     1      0      6     # test (primary)",
     "02": "table_readi32       2      1      0     ",
     "03": "push                2      0      0     ",
     "04": "set_add             0      0      0     ",
@@ -943,7 +943,7 @@ explain with a as (select * from test), b as (select * from a), c as (select * f
     "06": "free                1      0      0     ",
     "07": "ret                 0      0      -     ",
     "08": "set                 2      1      0     ",
-    "09": "table_open_part     3      44     14    # public.test (primary)",
+    "09": "table_open_part     3      42     14    # test (primary)",
     "10": "table_readi32       4      3      0     ",
     "11": "push                4      0      0     ",
     "12": "set_add             2      0      0     ",
@@ -951,7 +951,7 @@ explain with a as (select * from test), b as (select * from a), c as (select * f
     "14": "free                3      0      0     ",
     "15": "ret                 2      0      -     "
   },
-  "access": [["public.test", "ro"]]
+  "access": [["test", "ro"]]
 }]
 drop table test;
 create table test (id int primary key);
@@ -961,7 +961,7 @@ with a as (select * from test), b as (select * from a), c as (select * from test
 explain with a as (select * from test), b as (select * from a), c as (select * from test) select * from c;
 [{
   "main": {
-    "00": "send_all            0      0      20    # public.test (select)",
+    "00": "send_all            0      0      18    # test (select)",
     "01": "union               1      0      0     ",
     "02": "recv                1      0      0     ",
     "03": "set                 0      1      0     ",
@@ -973,7 +973,7 @@ explain with a as (select * from test), b as (select * from a), c as (select * f
     "09": "store_next          3      6      0     ",
     "10": "free                3      0      0     ",
     "11": "free                2      0      0     ",
-    "12": "send_all            2      0      64    # public.test (select, closing)",
+    "12": "send_all            2      0      60    # test (select, closing)",
     "13": "union               3      0      0     ",
     "14": "recv                3      2      0     ",
     "15": "set                 2      1      0     ",
@@ -989,7 +989,7 @@ explain with a as (select * from test), b as (select * from a), c as (select * f
   },
   "pushdown": {
     "00": "set                 0      1      0     ",
-    "01": "table_open_part     1      0      6     # public.test (primary)",
+    "01": "table_open_part     1      0      6     # test (primary)",
     "02": "table_readi32       2      1      0     ",
     "03": "push                2      0      0     ",
     "04": "set_add             0      0      0     ",
@@ -997,7 +997,7 @@ explain with a as (select * from test), b as (select * from a), c as (select * f
     "06": "free                1      0      0     ",
     "07": "ret                 0      0      -     ",
     "08": "set                 2      1      0     ",
-    "09": "table_open_part     3      44     14    # public.test (primary)",
+    "09": "table_open_part     3      42     14    # test (primary)",
     "10": "table_readi32       4      3      0     ",
     "11": "push                4      0      0     ",
     "12": "set_add             2      0      0     ",
@@ -1005,7 +1005,7 @@ explain with a as (select * from test), b as (select * from a), c as (select * f
     "14": "free                3      0      0     ",
     "15": "ret                 2      0      -     "
   },
-  "access": [["public.test", "ro"]]
+  "access": [["test", "ro"]]
 }]
 drop table test;
 # test: a(expr), stmt, b(expr), stmt
@@ -1028,7 +1028,7 @@ explain begin with a as (insert into test values (2, 0) returning *) select * fr
 [{
   "main": {
     "00": "set_ptr             1      -      0     ",
-    "01": "send_shard          0      1      0     # public.test (insert, closing)",
+    "01": "send_shard          0      1      0     # test (insert, closing)",
     "02": "union               1      0      0     ",
     "03": "recv                1      0      0     ",
     "04": "set                 0      2      0     ",
@@ -1046,11 +1046,11 @@ explain begin with a as (insert into test values (2, 0) returning *) select * fr
   },
   "pushdown": {
     "00": "set                 0      2      0     ",
-    "01": "table_prepare       1      -      0     # public.test",
+    "01": "table_prepare       1      -      0     # test",
     "02": "jmp                 11     0      0     ",
     "03": "string              2      0      0     # unique key constraint violation",
     "04": "push                2      0      0     ",
-    "05": "call                2      -      1     # public.error()",
+    "05": "call                2      -      1     # error()",
     "06": "table_readi32       2      1      0     ",
     "07": "push                2      0      0     ",
     "08": "table_readi32       2      1      1     ",
@@ -1060,7 +1060,7 @@ explain begin with a as (insert into test values (2, 0) returning *) select * fr
     "12": "free                1      0      0     ",
     "13": "ret                 0      0      -     "
   },
-  "access": [["public.test", "rw"]]
+  "access": [["test", "rw"]]
 }]
 drop table test;
 # test: with(update returning), select * from cte
@@ -1073,7 +1073,7 @@ with a as (update test set data = data + 1 returning *) select * from a;
 explain with a as (update test set data = data + 1 returning *) select * from a;
 [{
   "main": {
-    "00": "send_all            0      0      20    # public.test (update, closing)",
+    "00": "send_all            0      0      18    # test (update, closing)",
     "01": "union               1      0      0     ",
     "02": "recv                1      0      0     ",
     "03": "set                 0      2      0     ",
@@ -1091,7 +1091,7 @@ explain with a as (update test set data = data + 1 returning *) select * from a;
   },
   "pushdown": {
     "00": "set                 0      2      0     ",
-    "01": "table_open_part     1      0      15    # public.test (primary)",
+    "01": "table_open_part     1      0      15    # test (primary)",
     "02": "int                 2      -      0     # 1",
     "03": "push                2      0      0     ",
     "04": "table_readi32       2      1      1     ",
@@ -1108,7 +1108,7 @@ explain with a as (update test set data = data + 1 returning *) select * from a;
     "15": "free                1      0      0     ",
     "16": "ret                 0      0      -     "
   },
-  "access": [["public.test", "rw"]]
+  "access": [["test", "rw"]]
 }]
 drop table test;
 # test: with(delete returning), select * from cte
@@ -1121,7 +1121,7 @@ with a as (delete from test returning *) select * from a;
 explain with a as (delete from test returning *) select * from a;
 [{
   "main": {
-    "00": "send_all            0      0      20    # public.test (delete, closing)",
+    "00": "send_all            0      0      18    # test (delete, closing)",
     "01": "union               1      0      0     ",
     "02": "recv                1      0      0     ",
     "03": "set                 0      2      0     ",
@@ -1139,7 +1139,7 @@ explain with a as (delete from test returning *) select * from a;
   },
   "pushdown": {
     "00": "set                 0      2      0     ",
-    "01": "table_open_part     1      0      9     # public.test (primary)",
+    "01": "table_open_part     1      0      9     # test (primary)",
     "02": "table_readi32       2      1      0     ",
     "03": "push                2      0      0     ",
     "04": "table_readi32       2      1      1     ",
@@ -1150,7 +1150,7 @@ explain with a as (delete from test returning *) select * from a;
     "09": "free                1      0      0     ",
     "10": "ret                 0      0      -     "
   },
-  "access": [["public.test", "rw"]]
+  "access": [["test", "rw"]]
 }]
 drop table test;
 disconnect S0;

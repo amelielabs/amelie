@@ -1,248 +1,216 @@
 open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "127.0.0.1", "port": 3485 }];
 connect E0 S0 127.0.0.1:3485;
-# test: ensure system schemas exists
-show schemas;
+# test: ensure system databases exists
+show databases;
 [{
-  "name": "system",
-  "system": true
-}, {
-  "name": "public",
-  "system": true
+  "name": "main"
 }]
-# test: create schema statement parsing
+# test: create database statement parsing
 create;
-{"msg": "create❰;❱ ⟵ USER|REPLICA|SCHEMA|TABLE|INDEX|FUNCTION expected"}
-create schema;
-{"msg": "create schema❰;❱ ⟵ name expected"}
-create schema 123;
-{"msg": "create schema ❰123❱ ⟵ name expected"}
-create schema if;
-{"msg": "create schema if❰;❱ ⟵ NOT expected"}
-create schema if not;
-{"msg": "create schema if not❰;❱ ⟵ EXISTS expected"}
-create schema if not 123;
-{"msg": "create schema if not ❰123❱ ⟵ EXISTS expected"}
-create schema if not exists;
-{"msg": "create schema if not exists❰;❱ ⟵ name expected"}
-create schema test abc;
-{"msg": "create schema test ❰abc❱ ⟵ ; expected"}
-# test: create schema
-create schema test;
-show schemas;
+{"msg": "create❰;❱ ⟵ USER|REPLICA|DATABASE|TABLE|INDEX|FUNCTION expected"}
+create database;
+{"msg": "create database❰;❱ ⟵ name expected"}
+create database 123;
+{"msg": "create database ❰123❱ ⟵ name expected"}
+create database if;
+{"msg": "create database if❰;❱ ⟵ NOT expected"}
+create database if not;
+{"msg": "create database if not❰;❱ ⟵ EXISTS expected"}
+create database if not 123;
+{"msg": "create database if not ❰123❱ ⟵ EXISTS expected"}
+create database if not exists;
+{"msg": "create database if not exists❰;❱ ⟵ name expected"}
+create database test abc;
+{"msg": "create database test ❰abc❱ ⟵ ; expected"}
+# test: create database
+create database test;
+show databases;
 [{
-  "name": "system",
-  "system": true
+  "name": "main"
 }, {
-  "name": "public",
-  "system": true
-}, {
-  "name": "test",
-  "system": false
+  "name": "test"
 }]
-select system.schemas();
+select show('databases');
 [[{
-  "name": "system",
-  "system": true,
-  "create": false
+  "name": "main"
 }, {
-  "name": "public",
-  "system": true,
-  "create": true
-}, {
-  "name": "test",
-  "system": false,
-  "create": true
+  "name": "test"
 }]]
-# test: create schema if not exists
-create schema test;
-{"msg": "schema 'test': already exists"}
-create schema if not exists test;
-show schemas;
+# test: create database if not exists
+create database test;
+{"msg": "db 'test': already exists"}
+create database if not exists test;
+show databases;
 [{
-  "name": "system",
-  "system": true
+  "name": "main"
 }, {
-  "name": "public",
-  "system": true
-}, {
-  "name": "test",
-  "system": false
+  "name": "test"
 }]
-# test: drop schema statement parsing
-drop schema;
-{"msg": "drop schema❰;❱ ⟵ name expected"}
-drop schema 123;
-{"msg": "drop schema ❰123❱ ⟵ name expected"}
-drop schema if;
-{"msg": "drop schema if❰;❱ ⟵ EXISTS expected"}
-drop schema if exists;
-{"msg": "drop schema if exists❰;❱ ⟵ name expected"}
-drop schema test abc;
-{"msg": "drop schema test ❰abc❱ ⟵ ; expected"}
-# test: drop schema
-drop schema test;
-show schemas;
+# test: drop database statement parsing
+drop database;
+{"msg": "drop database❰;❱ ⟵ name expected"}
+drop database 123;
+{"msg": "drop database ❰123❱ ⟵ name expected"}
+drop database if;
+{"msg": "drop database if❰;❱ ⟵ EXISTS expected"}
+drop database if exists;
+{"msg": "drop database if exists❰;❱ ⟵ name expected"}
+drop database test abc;
+{"msg": "drop database test ❰abc❱ ⟵ ; expected"}
+# test: drop database
+drop database test;
+show databases;
 [{
-  "name": "system",
-  "system": true
-}, {
-  "name": "public",
-  "system": true
+  "name": "main"
 }]
-# test: drop schema if exists
-drop schema test;
-{"msg": "schema 'test': not exists"}
-drop schema if exists test;
-show schemas;
+# test: drop database if exists
+drop database test;
+{"msg": "db 'test': not exists"}
+drop database if exists test;
+show databases;
 [{
-  "name": "system",
-  "system": true
-}, {
-  "name": "public",
-  "system": true
+  "name": "main"
 }]
-# test: drop system schema
-drop schema public;
-{"msg": "schema 'public': system schema cannot be dropped"}
-show schemas;
+# test: drop main database
+drop database main;
+{"msg": "db 'main': system db cannot be dropped"}
+show databases;
 [{
-  "name": "system",
-  "system": true
-}, {
-  "name": "public",
-  "system": true
+  "name": "main"
 }]
-# test: drop schema cascade
-create schema test;
-drop schema test cascade;
-select system.schemas();
-[[{
-  "name": "system",
-  "system": true,
-  "create": false
+# test: drop database cascade
+create database test;
+drop database test cascade;
+show databases;
+[{
+  "name": "main"
+}]
+# test: drop connected database
+create database test;
+show databases;
+[{
+  "name": "main"
 }, {
-  "name": "public",
-  "system": true,
-  "create": true
-}]]
-# test: drop schema cascade (tables)
+  "name": "test"
+}]
+connect E0 S1 127.0.0.1:3485/test;
+switch S1;
+drop database test;
+select 1;
+{"msg": "db 'test': not exists"}
+disconnect S1;
+switch S0;
+# test: drop database cascade (with relations)
+create database test;
+connect E0 S1 127.0.0.1:3485/test;
+switch S1;
+create table a(id int primary key);
+create table b(id int primary key);
+create function fn() begin select * from a; end;
+drop database test;
+{"msg": "table 'a' depends on db 'test"}
+drop database test cascade;
+select 1;
+{"msg": "db 'test': not exists"}
+disconnect S1;
+switch S0;
 show tables;
 []
-create schema test;
-create table test.a(id int primary key);
-create table test.b(id int primary key);
-drop schema test cascade;
+show functions;
+[]
+show databases;
+[{
+  "name": "main"
+}]
+# test: alter database statment parsing
+alter database;
+{"msg": "alter database❰;❱ ⟵ name expected"}
+alter database 123;
+{"msg": "alter database ❰123❱ ⟵ name expected"}
+alter database test;
+{"msg": "alter database test❰;❱ ⟵ RENAME expected"}
+alter database test rename;
+{"msg": "alter database test rename❰;❱ ⟵ TO expected"}
+alter database test rename to;
+{"msg": "alter database test rename to❰;❱ ⟵ name expected"}
+alter database test rename "hello";
+{"msg": "alter database test rename ❰\"hello\"❱ ⟵ TO expected"}
+# test: alter database rename
+create database test;
+show databases;
+[{
+  "name": "main"
+}, {
+  "name": "test"
+}]
+alter database test rename to test2;
+show databases;
+[{
+  "name": "main"
+}, {
+  "name": "test2"
+}]
+drop database test2;
+# test: alter database main
+alter database main rename to _public;
+{"msg": "db 'main': system db cannot be renamed"}
+# test: alter database rename cascade (udf dep)
+create database test;
+connect E0 S1 127.0.0.1:3485/test;
+switch S1;
+create table a(id int primary key);
+insert into a values (1), (2), (3);
+create table b(id int primary key);
+create function fn() return int
+begin
+	total int = 0;
+	select count(*) into total from a;
+	return total;
+end;
+select fn();
+[3]
+alter database test rename to test2;
+{"msg": "function 'fn' is using database 'test"}
+drop function fn;
+# test: alter database rename cascade
+alter database test rename to test2;
+select 1;
+{"msg": "db 'test': not exists"}
+disconnect S1;
+connect E0 S1 127.0.0.1:3485/test2;
+switch S1;
+show tables;
+[{
+  "db": "test2",
+  "name": "a",
+  "unlogged": false
+}, {
+  "db": "test2",
+  "name": "b",
+  "unlogged": false
+}]
+show functions;
+[]
+show databases;
+[{
+  "name": "main"
+}, {
+  "name": "test2"
+}]
+disconnect S1;
+switch S0;
 show tables;
 []
-# test: drop schema with dependency
-create schema test;
-create table test.test(id int primary key);
-create function test.fn() begin end;
-drop schema test;
-{"msg": "table 'test' depends on schema 'test"}
-drop table test.test;
-drop schema test;
-{"msg": "function 'fn' depends on schema 'test"}
-drop function test.fn;
-drop schema test;
-# test: drop schema with udf dep
-create schema test;
-create table test.test(id int primary key);
-create function fn()
-begin
-	select * from test.test;
-end;
-drop schema test;
-{"msg": "function 'public.fn' depends on schema 'test"}
-drop schema test cascade;
-{"msg": "function 'public.fn' depends on schema 'test"}
-drop function fn;
-drop schema test;
-{"msg": "table 'test' depends on schema 'test"}
-drop schema test cascade;
-# test: alter schema statment parsing
-alter schema;
-{"msg": "alter schema❰;❱ ⟵ name expected"}
-alter schema 123;
-{"msg": "alter schema ❰123❱ ⟵ name expected"}
-alter schema test;
-{"msg": "alter schema test❰;❱ ⟵ RENAME expected"}
-alter schema test rename;
-{"msg": "alter schema test rename❰;❱ ⟵ TO expected"}
-alter schema test rename to;
-{"msg": "alter schema test rename to❰;❱ ⟵ name expected"}
-alter schema test rename "hello";
-{"msg": "alter schema test rename ❰\"hello\"❱ ⟵ TO expected"}
-# test: alter schema rename
-create schema test;
-select system.schemas();
-[[{
-  "name": "system",
-  "system": true,
-  "create": false
+show functions;
+[]
+show databases;
+[{
+  "name": "main"
 }, {
-  "name": "public",
-  "system": true,
-  "create": true
-}, {
-  "name": "test",
-  "system": false,
-  "create": true
-}]]
-alter schema test rename to test2;
-select system.schemas();
-[[{
-  "name": "system",
-  "system": true,
-  "create": false
-}, {
-  "name": "public",
-  "system": true,
-  "create": true
-}, {
-  "name": "test2",
-  "system": false,
-  "create": true
-}]]
-drop schema test2;
-# test: alter schema system
-alter schema public rename to _public;
-{"msg": "schema 'public': system schema cannot be altered"}
-# test: alter schema rename cascade
-create schema test;
-create table test.a(id int primary key);
-create table test.b(id int primary key);
-alter schema test rename to test2;
-select system.schemas();
-[[{
-  "name": "system",
-  "system": true,
-  "create": false
-}, {
-  "name": "public",
-  "system": true,
-  "create": true
-}, {
-  "name": "test2",
-  "system": false,
-  "create": true
-}]]
-select system.table('test2.a').name;
-["a"]
-select system.table('test2.b').name;
-["b"]
-drop schema test2 cascade;
-# test: alter schema rename with udf dep
-create schema test;
-create table test.test(id int primary key);
-create function fn()
-begin
-	select * from test.test;
-end;
-alter schema test rename to test2;
-{"msg": "function 'public.fn' depends on schema 'test"}
-drop function fn;
-alter schema test rename to test2;
-drop schema test2 cascade;
+  "name": "test2"
+}]
+drop database test2;
+{"msg": "table 'a' depends on db 'test2"}
+drop database test2 cascade;
 disconnect S0;
 close E0;

@@ -12,15 +12,15 @@ select null 1;
 select from;
 {"msg": "select ❰from❱ ⟵ bad expression"}
 select 1 from;
-{"msg": "select 1 from❰;❱ ⟵ target name expected"}
+{"msg": "select 1 from❰;❱ ⟵ name expected"}
 select 1 from "test";
-{"msg": "select 1 from ❰\"test\"❱ ⟵ target name expected"}
+{"msg": "select 1 from ❰\"test\"❱ ⟵ name expected"}
 select 1 from name;
 {"msg": "select 1 from ❰name❱ ⟵ relation not found"}
 select 1 from 1 where;
-{"msg": "select 1 from ❰1❱ ⟵ target name expected"}
+{"msg": "select 1 from ❰1❱ ⟵ name expected"}
 select 1 from 1 where null;
-{"msg": "select 1 from ❰1❱ ⟵ target name expected"}
+{"msg": "select 1 from ❰1❱ ⟵ name expected"}
 # test: select expr
 select 1;
 [1]
@@ -70,14 +70,14 @@ insert into test () values ();
 explain select * from test;
 [{
   "main": {
-    "00": "send_all            0      0      20    # public.test (select, closing)",
+    "00": "send_all            0      0      18    # test (select, closing)",
     "01": "union               1      0      0     ",
     "02": "recv                1      0      0     ",
     "03": "ret                 1      0      -     "
   },
   "pushdown": {
     "00": "set                 0      1      0     ",
-    "01": "table_open_part     1      0      6     # public.test (primary)",
+    "01": "table_open_part     1      0      6     # test (primary)",
     "02": "table_readi64       2      1      0     ",
     "03": "push                2      0      0     ",
     "04": "set_add             0      0      0     ",
@@ -85,7 +85,7 @@ explain select * from test;
     "06": "free                1      0      0     ",
     "07": "ret                 0      0      -     "
   },
-  "access": [["public.test", "ro"]]
+  "access": [["test", "ro"]]
 }]
 select * from test;
 [0, 1, 2]
@@ -110,14 +110,14 @@ select * from test;
 explain select id, data from test;
 [{
   "main": {
-    "00": "send_all            0      0      20    # public.test (select, closing)",
+    "00": "send_all            0      0      18    # test (select, closing)",
     "01": "union               1      0      0     ",
     "02": "recv                1      0      0     ",
     "03": "ret                 1      0      -     "
   },
   "pushdown": {
     "00": "set                 0      2      0     ",
-    "01": "table_open_part     1      0      8     # public.test (primary)",
+    "01": "table_open_part     1      0      8     # test (primary)",
     "02": "table_readi64       2      1      0     ",
     "03": "push                2      0      0     ",
     "04": "table_readi32       2      1      1     ",
@@ -127,7 +127,7 @@ explain select id, data from test;
     "08": "free                1      0      0     ",
     "09": "ret                 0      0      -     "
   },
-  "access": [["public.test", "ro"]]
+  "access": [["test", "ro"]]
 }]
 select id, data from test;
 [[0, 0], [1, 0], [2, 0]]
@@ -150,16 +150,16 @@ select * from test;
 explain select data.data from test;
 [{
   "main": {
-    "00": "send_all            0      0      25    # public.test (select, closing)",
+    "00": "send_all            0      0      23    # test (select, closing)",
     "01": "union               1      0      0     ",
     "02": "recv                1      0      0     ",
     "03": "ret                 1      0      -     "
   },
   "pushdown": {
     "00": "set                 0      1      0     ",
-    "01": "table_open_part     1      0      8     # public.test (primary)",
+    "01": "table_open_part     1      0      8     # test (primary)",
     "02": "table_readj         2      1      1     ",
-    "03": "string              3      20     0     # data",
+    "03": "string              3      18     0     # data",
     "04": "dotjs               4      2      3     ",
     "05": "push                4      0      0     ",
     "06": "set_add             0      0      0     ",
@@ -167,7 +167,7 @@ explain select data.data from test;
     "08": "free                1      0      0     ",
     "09": "ret                 0      0      -     "
   },
-  "access": [["public.test", "ro"]]
+  "access": [["test", "ro"]]
 }]
 select data.data from test;
 [123, 123, 123]
@@ -194,16 +194,16 @@ select * from test;
 explain select data.data.data from test;
 [{
   "main": {
-    "00": "send_all            0      0      30    # public.test (select, closing)",
+    "00": "send_all            0      0      28    # test (select, closing)",
     "01": "union               1      0      0     ",
     "02": "recv                1      0      0     ",
     "03": "ret                 1      0      -     "
   },
   "pushdown": {
     "00": "set                 0      1      0     ",
-    "01": "table_open_part     1      0      8     # public.test (primary)",
+    "01": "table_open_part     1      0      8     # test (primary)",
     "02": "table_readj         2      1      1     ",
-    "03": "string              3      20     0     # data.data",
+    "03": "string              3      18     0     # data.data",
     "04": "dotjs               4      2      3     ",
     "05": "push                4      0      0     ",
     "06": "set_add             0      0      0     ",
@@ -211,7 +211,7 @@ explain select data.data.data from test;
     "08": "free                1      0      0     ",
     "09": "ret                 0      0      -     "
   },
-  "access": [["public.test", "ro"]]
+  "access": [["test", "ro"]]
 }]
 select data.data.data from test;
 [123, 123, 123]
@@ -224,14 +224,14 @@ insert into test () values ();
 explain select test.id, test.data from test;
 [{
   "main": {
-    "00": "send_all            0      0      20    # public.test (select, closing)",
+    "00": "send_all            0      0      18    # test (select, closing)",
     "01": "union               1      0      0     ",
     "02": "recv                1      0      0     ",
     "03": "ret                 1      0      -     "
   },
   "pushdown": {
     "00": "set                 0      2      0     ",
-    "01": "table_open_part     1      0      8     # public.test (primary)",
+    "01": "table_open_part     1      0      8     # test (primary)",
     "02": "table_readi64       2      1      0     ",
     "03": "push                2      0      0     ",
     "04": "table_readi32       2      1      1     ",
@@ -241,7 +241,7 @@ explain select test.id, test.data from test;
     "08": "free                1      0      0     ",
     "09": "ret                 0      0      -     "
   },
-  "access": [["public.test", "ro"]]
+  "access": [["test", "ro"]]
 }]
 select test.id, test.data from test;
 [[0, 0], [1, 0], [2, 0]]
@@ -254,16 +254,16 @@ insert into test (data) values ({"data": 123});
 explain select test.data.data from test;
 [{
   "main": {
-    "00": "send_all            0      0      25    # public.test (select, closing)",
+    "00": "send_all            0      0      23    # test (select, closing)",
     "01": "union               1      0      0     ",
     "02": "recv                1      0      0     ",
     "03": "ret                 1      0      -     "
   },
   "pushdown": {
     "00": "set                 0      1      0     ",
-    "01": "table_open_part     1      0      8     # public.test (primary)",
+    "01": "table_open_part     1      0      8     # test (primary)",
     "02": "table_readj         2      1      1     ",
-    "03": "string              3      20     0     # data",
+    "03": "string              3      18     0     # data",
     "04": "dotjs               4      2      3     ",
     "05": "push                4      0      0     ",
     "06": "set_add             0      0      0     ",
@@ -271,7 +271,7 @@ explain select test.data.data from test;
     "08": "free                1      0      0     ",
     "09": "ret                 0      0      -     "
   },
-  "access": [["public.test", "ro"]]
+  "access": [["test", "ro"]]
 }]
 select test.data.data from test;
 [123, 123, 123]
@@ -308,14 +308,14 @@ select * from test;
 explain select alias.id, alias.data from test alias;
 [{
   "main": {
-    "00": "send_all            0      0      20    # public.test (select, closing)",
+    "00": "send_all            0      0      18    # test (select, closing)",
     "01": "union               1      0      0     ",
     "02": "recv                1      0      0     ",
     "03": "ret                 1      0      -     "
   },
   "pushdown": {
     "00": "set                 0      2      0     ",
-    "01": "table_open_part     1      0      8     # public.test (primary)",
+    "01": "table_open_part     1      0      8     # test (primary)",
     "02": "table_readi64       2      1      0     ",
     "03": "push                2      0      0     ",
     "04": "table_readi32       2      1      1     ",
@@ -325,7 +325,7 @@ explain select alias.id, alias.data from test alias;
     "08": "free                1      0      0     ",
     "09": "ret                 0      0      -     "
   },
-  "access": [["public.test", "ro"]]
+  "access": [["test", "ro"]]
 }]
 select alias.id, alias.data from test alias;
 [[0, 0], [1, 0], [2, 0]]
@@ -338,16 +338,16 @@ insert into test (data) values ({"data": 123});
 explain select alias.data.data from test alias;
 [{
   "main": {
-    "00": "send_all            0      0      25    # public.test (select, closing)",
+    "00": "send_all            0      0      23    # test (select, closing)",
     "01": "union               1      0      0     ",
     "02": "recv                1      0      0     ",
     "03": "ret                 1      0      -     "
   },
   "pushdown": {
     "00": "set                 0      1      0     ",
-    "01": "table_open_part     1      0      8     # public.test (primary)",
+    "01": "table_open_part     1      0      8     # test (primary)",
     "02": "table_readj         2      1      1     ",
-    "03": "string              3      20     0     # data",
+    "03": "string              3      18     0     # data",
     "04": "dotjs               4      2      3     ",
     "05": "push                4      0      0     ",
     "06": "set_add             0      0      0     ",
@@ -355,7 +355,7 @@ explain select alias.data.data from test alias;
     "08": "free                1      0      0     ",
     "09": "ret                 0      0      -     "
   },
-  "access": [["public.test", "ro"]]
+  "access": [["test", "ro"]]
 }]
 select alias.data.data from test alias;
 [123, 123, 123]
@@ -372,14 +372,14 @@ select * from test;
 explain select alias.id, alias.data from test alias;
 [{
   "main": {
-    "00": "send_all            0      0      20    # public.test (select, closing)",
+    "00": "send_all            0      0      18    # test (select, closing)",
     "01": "union               1      0      0     ",
     "02": "recv                1      0      0     ",
     "03": "ret                 1      0      -     "
   },
   "pushdown": {
     "00": "set                 0      2      0     ",
-    "01": "table_open_part     1      0      8     # public.test (primary)",
+    "01": "table_open_part     1      0      8     # test (primary)",
     "02": "table_readi64       2      1      0     ",
     "03": "push                2      0      0     ",
     "04": "table_readi32       2      1      1     ",
@@ -389,7 +389,7 @@ explain select alias.id, alias.data from test alias;
     "08": "free                1      0      0     ",
     "09": "ret                 0      0      -     "
   },
-  "access": [["public.test", "ro"]]
+  "access": [["test", "ro"]]
 }]
 select alias.id, alias.* from test alias;
 [[0, 0, 0], [1, 1, 0], [2, 2, 0]]
@@ -398,64 +398,61 @@ drop table test;
 select * from unknown();
 {"msg": "select * from ❰unknown❱ ⟵ function not found"}
 # test: select * from function() (unsupported json type)
-select * from system.wal();
+select * from show('wal');
 {"msg": "FROM: json array expected"}
 create user test;
-select * from system.users();
+select * from show('users');
 [{
   "name": "test"
 }]
-explain select * from system.users();
+explain select * from show('users');
 [{
   "main": {
     "00": "set                 0      1      0     ",
-    "01": "call                1      -      0     # system.users()",
-    "02": "json_open           2      1      7     ",
-    "03": "json_read           3      2      0     ",
-    "04": "push                3      0      0     ",
-    "05": "set_add             0      0      0     ",
-    "06": "json_next           2      3      0     ",
-    "07": "free                1      0      0     ",
-    "08": "ret                 0      0      -     "
+    "01": "push_string         0      0      0     # users",
+    "02": "call                1      -      1     # show()",
+    "03": "json_open           2      1      8     ",
+    "04": "json_read           3      2      0     ",
+    "05": "push                3      0      0     ",
+    "06": "set_add             0      0      0     ",
+    "07": "json_next           2      4      0     ",
+    "08": "free                1      0      0     ",
+    "09": "ret                 0      0      -     "
   },
   "access": []
 }]
 # test: select column from function()
-select name from system.users();
+select name from show('users');
 ["test"]
-explain select name from system.users();
+explain select name from show('users');
 [{
   "main": {
     "00": "set                 0      1      0     ",
-    "01": "call                1      -      0     # system.users()",
-    "02": "json_open           2      1      9     ",
-    "03": "string              3      0      0     # name",
-    "04": "json_read           4      2      0     ",
-    "05": "dotjs               5      4      3     ",
-    "06": "push                5      0      0     ",
-    "07": "set_add             0      0      0     ",
-    "08": "json_next           2      3      0     ",
-    "09": "free                1      0      0     ",
-    "10": "ret                 0      0      -     "
+    "01": "push_string         0      0      0     # users",
+    "02": "call                1      -      1     # show()",
+    "03": "json_open           2      1      10    ",
+    "04": "string              3      6      0     # name",
+    "05": "json_read           4      2      0     ",
+    "06": "dotjs               5      4      3     ",
+    "07": "push                5      0      0     ",
+    "08": "set_add             0      0      0     ",
+    "09": "json_next           2      4      0     ",
+    "10": "free                1      0      0     ",
+    "11": "ret                 0      0      -     "
   },
   "access": []
 }]
-select non_exists_column from system.users();
+select non_exists_column from show('users');
 [null]
-# test: select target.column from function()
-select users.name from system.users();
-["test"]
 # test: select alias.column from function()
-select t.name from system.users() t;
+select t.name from show('users') t;
 ["test"]
 drop user test;
 # test: select target.column.path from function()
 create table test (id serial primary key);
-select indexes[0].type from system.tables();
+select indexes[0].type from show('tables', true);
 [2]
-select tables.indexes[0].type from system.tables();
-[2]
-select t.indexes[0].type from system.tables() t;
+select t.indexes[0].type from show('tables', true) t;
 [2]
 drop table test;
 # test: select * from (expr)

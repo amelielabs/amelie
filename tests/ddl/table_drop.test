@@ -15,33 +15,24 @@ drop table if exists test;
 
 # test: drop table
 create table test(id int primary key);
-select system.table('test').name;
+select show('table', 'test', true).name;
 drop table test;
-select system.table('test').name;
+select show('table', 'test', true).name;
 
 # test: drop table if exists
 create table test(id int primary key);
-select system.table('test').name;
+select show('table', 'test', true).name;
 drop table test;
-select system.table('test').name;
+select show('table', 'test', true).name;
 drop table if exists test;
-drop table if exists test.test;
 
 # test: recreate same table after drop
 create table test (id int primary key);
-select system.table('test').name;
+select show('table', 'test', true).name;
 drop table test;
 create table test (id int primary key);
-select system.table('test').name;
+select show('table', 'test', true).name;
 drop table test;
-
-# test: drop table schema
-create schema test;
-create table test.test (id int primary key);
-drop table test;
-drop table test.test;
-drop schema test;
-show tables;
 
 # test: drop table with udf dep
 create table test (id int primary key);

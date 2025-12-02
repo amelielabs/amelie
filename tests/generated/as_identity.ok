@@ -13,7 +13,7 @@ create table test (id int primary key, data int as identity;
 {"msg": "create table test (id int primary key, data int as identity❰;❱ ⟵ ) expected"}
 # test: as identity primary key
 create table test (id int primary key as identity);
-select system.table('test').columns;
+select show('table', 'test', true).columns;
 [[{
   "name": "id",
   "type": 2,

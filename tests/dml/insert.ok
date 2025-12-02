@@ -6,11 +6,11 @@ insert;
 insert junk;
 {"msg": "insert ❰junk❱ ⟵ INTO expected"}
 insert into;
-{"msg": "insert into❰;❱ ⟵ target name expected"}
+{"msg": "insert into❰;❱ ⟵ name expected"}
 insert into "name";
-{"msg": "insert into ❰\"name\"❱ ⟵ target name expected"}
+{"msg": "insert into ❰\"name\"❱ ⟵ name expected"}
 insert into 1;
-{"msg": "insert into ❰1❱ ⟵ target name expected"}
+{"msg": "insert into ❰1❱ ⟵ name expected"}
 insert into name;
 {"msg": "insert into ❰name❱ ⟵ relation not found"}
 create table test (id int primary key);
@@ -38,21 +38,10 @@ insert into test values (123);
 # test: primary unique key constraint violation
 insert into test values (123);
 {"msg": "index 'primary': unique key constraint violation"}
-# test: insert schema
 drop table test;
-create schema test;
-create table test.test (id int primary key);
-insert into test values (123);
-{"msg": "insert into ❰test❱ ⟵ relation not found"}
-insert into test.test values (123);
-select * from test;
-{"msg": "select * from ❰test❱ ⟵ relation not found"}
-select * from test.test;
-[123]
-drop table test.test;
 # test: insert compound key
 create table test (id int, id2 int, primary key (id, id2));
-select system.table('test').columns;
+select show('table', 'test', true).columns;
 [[{
   "name": "id",
   "type": 2,
@@ -267,18 +256,18 @@ explain insert into test values (1),(2),(3) returning *;
 [{
   "main": {
     "00": "set_ptr             1      -      0     ",
-    "01": "send_shard          0      1      0     # public.test (insert, closing)",
+    "01": "send_shard          0      1      0     # test (insert, closing)",
     "02": "union               1      0      0     ",
     "03": "recv                1      0      0     ",
     "04": "ret                 1      0      -     "
   },
   "pushdown": {
     "00": "set                 0      1      0     ",
-    "01": "table_prepare       1      -      0     # public.test",
+    "01": "table_prepare       1      -      0     # test",
     "02": "jmp                 9      0      0     ",
     "03": "string              2      0      0     # unique key constraint violation",
     "04": "push                2      0      0     ",
-    "05": "call                2      -      1     # public.error()",
+    "05": "call                2      -      1     # error()",
     "06": "table_readi32       2      1      0     ",
     "07": "push                2      0      0     ",
     "08": "set_add             0      0      0     ",
@@ -286,7 +275,7 @@ explain insert into test values (1),(2),(3) returning *;
     "10": "free                1      0      0     ",
     "11": "ret                 0      0      -     "
   },
-  "access": [["public.test", "rw"]]
+  "access": [["test", "rw"]]
 }]
 insert into test values (1),(2),(3) returning *;
 [1, 2, 3]
@@ -299,18 +288,18 @@ explain insert into test () values (), (), () returning *;
 [{
   "main": {
     "00": "set_ptr             1      -      0     ",
-    "01": "send_shard          0      1      0     # public.test (insert, closing)",
+    "01": "send_shard          0      1      0     # test (insert, closing)",
     "02": "union               1      0      0     ",
     "03": "recv                1      0      0     ",
     "04": "ret                 1      0      -     "
   },
   "pushdown": {
     "00": "set                 0      1      0     ",
-    "01": "table_prepare       1      -      0     # public.test",
+    "01": "table_prepare       1      -      0     # test",
     "02": "jmp                 9      0      0     ",
     "03": "string              2      0      0     # unique key constraint violation",
     "04": "push                2      0      0     ",
-    "05": "call                2      -      1     # public.error()",
+    "05": "call                2      -      1     # error()",
     "06": "table_readi64       2      1      0     ",
     "07": "push                2      0      0     ",
     "08": "set_add             0      0      0     ",
@@ -318,7 +307,7 @@ explain insert into test () values (), (), () returning *;
     "10": "free                1      0      0     ",
     "11": "ret                 0      0      -     "
   },
-  "access": [["public.test", "rw"]]
+  "access": [["test", "rw"]]
 }]
 insert into test () values (), (), () returning *;
 [0, 1, 2]
@@ -416,14 +405,14 @@ select * from test where ts > "1970-01-01 01:12:59.909090"::timestamp;
 explain select * from test where ts > "1970-01-01 01:12:59.909090"::timestamp;
 [{
   "main": {
-    "00": "send_all            0      0      20    # public.test (select, closing)",
+    "00": "send_all            0      0      18    # test (select, closing)",
     "01": "union               1      0      0     ",
     "02": "recv                1      0      0     ",
     "03": "ret                 1      0      -     "
   },
   "pushdown": {
     "00": "set                 0      2      0     ",
-    "01": "table_open_part     1      0      12    # public.test (primary)",
+    "01": "table_open_part     1      0      12    # test (primary)",
     "02": "table_readt         2      1      1     ",
     "03": "value               3      -      0     # timestamp",
     "04": "gtii                4      2      3     ",
@@ -437,21 +426,21 @@ explain select * from test where ts > "1970-01-01 01:12:59.909090"::timestamp;
     "12": "free                1      0      0     ",
     "13": "ret                 0      0      -     "
   },
-  "access": [["public.test", "ro"]]
+  "access": [["test", "ro"]]
 }]
 select * from test where ts > timestamp "1970-01-01 01:12:59.909090";
 [[1, "1970-01-01 01:13:00+00"], [2, "1970-01-01 01:13:01+00"], [3, "1970-01-01 01:13:01+00"]]
 explain select * from test where ts > timestamp "1970-01-01 01:12:59.909090";
 [{
   "main": {
-    "00": "send_all            0      0      20    # public.test (select, closing)",
+    "00": "send_all            0      0      18    # test (select, closing)",
     "01": "union               1      0      0     ",
     "02": "recv                1      0      0     ",
     "03": "ret                 1      0      -     "
   },
   "pushdown": {
     "00": "set                 0      2      0     ",
-    "01": "table_open_part     1      0      12    # public.test (primary)",
+    "01": "table_open_part     1      0      12    # test (primary)",
     "02": "table_readt         2      1      1     ",
     "03": "timestamp           3      -      0     # 4379909090",
     "04": "gtii                4      2      3     ",
@@ -465,7 +454,7 @@ explain select * from test where ts > timestamp "1970-01-01 01:12:59.909090";
     "12": "free                1      0      0     ",
     "13": "ret                 0      0      -     "
   },
-  "access": [["public.test", "ro"]]
+  "access": [["test", "ro"]]
 }]
 select * from test where ts = "1970-01-01 01:13:01"::timestamp;
 [[2, "1970-01-01 01:13:01+00"], [3, "1970-01-01 01:13:01+00"]]
@@ -493,14 +482,14 @@ insert into test values ("1970-01-01 00:00:04.000000");
 explain select * from test;
 [{
   "main": {
-    "00": "send_all            0      0      20    # public.test (select, closing)",
+    "00": "send_all            0      0      18    # test (select, closing)",
     "01": "union               1      0      0     ",
     "02": "recv                1      0      0     ",
     "03": "ret                 1      0      -     "
   },
   "pushdown": {
     "00": "set                 0      1      0     ",
-    "01": "table_open_part     1      0      6     # public.test (primary)",
+    "01": "table_open_part     1      0      6     # test (primary)",
     "02": "table_readt         2      1      0     ",
     "03": "push                2      0      0     ",
     "04": "set_add             0      0      0     ",
@@ -508,7 +497,7 @@ explain select * from test;
     "06": "free                1      0      0     ",
     "07": "ret                 0      0      -     "
   },
-  "access": [["public.test", "ro"]]
+  "access": [["test", "ro"]]
 }]
 select * from test;
 ["1970-01-01 00:00:01.000001+00", "1970-01-01 00:00:01.000002+00", "1970-01-01 00:00:01.000003+00", "1970-01-01 00:00:02+00", "1970-01-01 00:00:03+00", "1970-01-01 00:00:04+00"]
@@ -519,7 +508,7 @@ select * from test where id > timestamp '1970-01-01 00:00:01.000002';
 explain select * from test where id > timestamp '1970-01-01 00:00:01.000002';
 [{
   "main": {
-    "00": "send_all            0      0      20    # public.test (select, closing)",
+    "00": "send_all            0      0      18    # test (select, closing)",
     "01": "union               1      0      0     ",
     "02": "recv                1      0      0     ",
     "03": "ret                 1      0      -     "
@@ -527,7 +516,7 @@ explain select * from test where id > timestamp '1970-01-01 00:00:01.000002';
   "pushdown": {
     "00": "set                 0      1      0     ",
     "01": "push_timestamp      -      0      0     # 1000002",
-    "02": "table_open_part     1      0      11    # public.test (primary)",
+    "02": "table_open_part     1      0      11    # test (primary)",
     "03": "table_readt         2      1      0     ",
     "04": "timestamp           3      -      0     # 1000002",
     "05": "gtii                4      2      3     ",
@@ -539,14 +528,14 @@ explain select * from test where id > timestamp '1970-01-01 00:00:01.000002';
     "11": "free                1      0      0     ",
     "12": "ret                 0      0      -     "
   },
-  "access": [["public.test", "ro"]]
+  "access": [["test", "ro"]]
 }]
 select * from test where id >= timestamp '1970-01-01 00:00:01.000002';
 ["1970-01-01 00:00:01.000002+00", "1970-01-01 00:00:01.000003+00", "1970-01-01 00:00:02+00", "1970-01-01 00:00:03+00", "1970-01-01 00:00:04+00"]
 explain select * from test where id >= timestamp '1970-01-01 00:00:01.000002';
 [{
   "main": {
-    "00": "send_all            0      0      20    # public.test (select, closing)",
+    "00": "send_all            0      0      18    # test (select, closing)",
     "01": "union               1      0      0     ",
     "02": "recv                1      0      0     ",
     "03": "ret                 1      0      -     "
@@ -554,7 +543,7 @@ explain select * from test where id >= timestamp '1970-01-01 00:00:01.000002';
   "pushdown": {
     "00": "set                 0      1      0     ",
     "01": "push_timestamp      -      0      0     # 1000002",
-    "02": "table_open_part     1      0      11    # public.test (primary)",
+    "02": "table_open_part     1      0      11    # test (primary)",
     "03": "table_readt         2      1      0     ",
     "04": "timestamp           3      -      0     # 1000002",
     "05": "gteii               4      2      3     ",
@@ -566,21 +555,21 @@ explain select * from test where id >= timestamp '1970-01-01 00:00:01.000002';
     "11": "free                1      0      0     ",
     "12": "ret                 0      0      -     "
   },
-  "access": [["public.test", "ro"]]
+  "access": [["test", "ro"]]
 }]
 select * from test where id < timestamp '1970-01-01 00:00:01.000003';
 ["1970-01-01 00:00:01.000001+00", "1970-01-01 00:00:01.000002+00"]
 explain select * from test where id < timestamp '1970-01-01 00:00:01.000003';
 [{
   "main": {
-    "00": "send_all            0      0      20    # public.test (select, closing)",
+    "00": "send_all            0      0      18    # test (select, closing)",
     "01": "union               1      0      0     ",
     "02": "recv                1      0      0     ",
     "03": "ret                 1      0      -     "
   },
   "pushdown": {
     "00": "set                 0      1      0     ",
-    "01": "table_open_part     1      0      14    # public.test (primary)",
+    "01": "table_open_part     1      0      14    # test (primary)",
     "02": "table_readt         2      1      0     ",
     "03": "timestamp           3      -      0     # 1000003",
     "04": "ltii                4      2      3     ",
@@ -596,14 +585,14 @@ explain select * from test where id < timestamp '1970-01-01 00:00:01.000003';
     "14": "free                1      0      0     ",
     "15": "ret                 0      0      -     "
   },
-  "access": [["public.test", "ro"]]
+  "access": [["test", "ro"]]
 }]
 select * from test where id = timestamp '1970-01-01 00:00:01.000003';
 ["1970-01-01 00:00:01.000003+00"]
 explain select * from test where id = timestamp '1970-01-01 00:00:01.000003';
 [{
   "main": {
-    "00": "send_lookup         0      -      0     # public.test (select, closing)",
+    "00": "send_lookup         0      -      0     # test (select, closing)",
     "01": "union               1      0      0     ",
     "02": "recv                1      0      0     ",
     "03": "ret                 1      0      -     "
@@ -611,7 +600,7 @@ explain select * from test where id = timestamp '1970-01-01 00:00:01.000003';
   "pushdown": {
     "00": "set                 0      1      0     ",
     "01": "push_timestamp      -      0      0     # 1000003",
-    "02": "table_open_partl    1      0      10    # public.test (primary)",
+    "02": "table_open_partl    1      0      10    # test (primary)",
     "03": "table_readt         2      1      0     ",
     "04": "timestamp           3      -      0     # 1000003",
     "05": "equii               4      2      3     ",
@@ -622,7 +611,7 @@ explain select * from test where id = timestamp '1970-01-01 00:00:01.000003';
     "10": "free                1      0      0     ",
     "11": "ret                 0      0      -     "
   },
-  "access": [["public.test", "ro"]]
+  "access": [["test", "ro"]]
 }]
 drop table test;
 # test: insert column (interval)
@@ -637,14 +626,14 @@ select * from test where i > "1 year 1 day 10 hour"::interval;
 explain select * from test where i > "1 year 1 day 10 hour"::interval;
 [{
   "main": {
-    "00": "send_all            0      0      20    # public.test (select, closing)",
+    "00": "send_all            0      0      18    # test (select, closing)",
     "01": "union               1      0      0     ",
     "02": "recv                1      0      0     ",
     "03": "ret                 1      0      -     "
   },
   "pushdown": {
     "00": "set                 0      2      0     ",
-    "01": "table_open_part     1      0      12    # public.test (primary)",
+    "01": "table_open_part     1      0      12    # test (primary)",
     "02": "table_readl         2      1      1     ",
     "03": "value               3      -      0     # interval",
     "04": "gtll                4      2      3     ",
@@ -658,7 +647,7 @@ explain select * from test where i > "1 year 1 day 10 hour"::interval;
     "12": "free                1      0      0     ",
     "13": "ret                 0      0      -     "
   },
-  "access": [["public.test", "ro"]]
+  "access": [["test", "ro"]]
 }]
 select * from test where i = "1 year 1 day 12 hours 500 us"::interval;
 [[2, "1 year 1 day 12 hours 500 us"]]
@@ -688,14 +677,14 @@ select * from test where d >= date '1970-01-01';
 explain select * from test where d >= date '1970-01-01';
 [{
   "main": {
-    "00": "send_all            0      0      20    # public.test (select, closing)",
+    "00": "send_all            0      0      18    # test (select, closing)",
     "01": "union               1      0      0     ",
     "02": "recv                1      0      0     ",
     "03": "ret                 1      0      -     "
   },
   "pushdown": {
     "00": "set                 0      2      0     ",
-    "01": "table_open_part     1      0      12    # public.test (primary)",
+    "01": "table_open_part     1      0      12    # test (primary)",
     "02": "table_readd         2      1      1     ",
     "03": "date                3      2440588 0     ",
     "04": "gteii               4      2      3     ",
@@ -709,7 +698,7 @@ explain select * from test where d >= date '1970-01-01';
     "12": "free                1      0      0     ",
     "13": "ret                 0      0      -     "
   },
-  "access": [["public.test", "ro"]]
+  "access": [["test", "ro"]]
 }]
 drop table test;
 # test: insert column (date auto cast)
@@ -784,17 +773,17 @@ select id from test where id = uuid "00000000-0000-0000-0000-000000000002";
 explain select id from test where id = uuid "00000000-0000-0000-0000-000000000002";
 [{
   "main": {
-    "00": "send_lookup         0      -      0     # public.test (select, closing)",
+    "00": "send_lookup         0      -      0     # test (select, closing)",
     "01": "union               1      0      0     ",
     "02": "recv                1      0      0     ",
     "03": "ret                 1      0      -     "
   },
   "pushdown": {
     "00": "set                 0      1      0     ",
-    "01": "push_uuid           20     0      0     ",
-    "02": "table_open_partl    1      0      10    # public.test (primary)",
+    "01": "push_uuid           18     0      0     ",
+    "02": "table_open_partl    1      0      10    # test (primary)",
     "03": "table_readu         2      1      0     ",
-    "04": "uuid                3      36     0     ",
+    "04": "uuid                3      34     0     ",
     "05": "equuu               4      2      3     ",
     "06": "jntr                10     4      0     ",
     "07": "table_readu         2      1      0     ",
@@ -803,7 +792,7 @@ explain select id from test where id = uuid "00000000-0000-0000-0000-00000000000
     "10": "free                1      0      0     ",
     "11": "ret                 0      0      -     "
   },
-  "access": [["public.test", "ro"]]
+  "access": [["test", "ro"]]
 }]
 drop table test;
 # test: insert var
@@ -858,14 +847,14 @@ insert into test values (4, 0);
 explain select * from test;
 [{
   "main": {
-    "00": "send_all            0      0      20    # public.test (select, closing)",
+    "00": "send_all            0      0      18    # test (select, closing)",
     "01": "union               1      0      0     ",
     "02": "recv                1      0      0     ",
     "03": "ret                 1      0      -     "
   },
   "pushdown": {
     "00": "set                 0      2      0     ",
-    "01": "table_open_part     1      0      8     # public.test (primary)",
+    "01": "table_open_part     1      0      8     # test (primary)",
     "02": "table_readi32       2      1      0     ",
     "03": "push                2      0      0     ",
     "04": "table_readi32       2      1      1     ",
@@ -875,21 +864,21 @@ explain select * from test;
     "08": "free                1      0      0     ",
     "09": "ret                 0      0      -     "
   },
-  "access": [["public.test", "ro"]]
+  "access": [["test", "ro"]]
 }]
 select * from test;
 [[0, 2], [1, 1], [2, 0], [3, 0], [4, 0]]
 explain select * from test use index (i);
 [{
   "main": {
-    "00": "send_all            0      0      14    # public.test (select, closing)",
+    "00": "send_all            0      0      12    # test (select, closing)",
     "01": "union               1      0      0     ",
     "02": "recv                1      0      0     ",
     "03": "ret                 1      0      -     "
   },
   "pushdown": {
     "00": "set                 0      2      0     ",
-    "01": "table_open_part     1      0      8     # public.test (i)",
+    "01": "table_open_part     1      0      8     # test (i)",
     "02": "table_readi32       2      1      0     ",
     "03": "push                2      0      0     ",
     "04": "table_readi32       2      1      1     ",
@@ -899,7 +888,7 @@ explain select * from test use index (i);
     "08": "free                1      0      0     ",
     "09": "ret                 0      0      -     "
   },
-  "access": [["public.test", "ro"]]
+  "access": [["test", "ro"]]
 }]
 select * from test use index (i);
 [[2, 0], [3, 0], [4, 0], [1, 1], [0, 2]]
@@ -939,14 +928,14 @@ explain insert into test select 1, 0;
     "02": "push_int            -      0      0     # 0",
     "03": "set_add             0      0      0     ",
     "04": "dup                 2      0      0     ",
-    "05": "send_shard          1      2      0     # public.test (insert, closing)",
+    "05": "send_shard          1      2      0     # test (insert, closing)",
     "06": "ret                 -1     0      -     "
   },
   "pushdown": {
-    "00": "insert              -      0      0     # public.test",
+    "00": "insert              -      0      0     # test",
     "01": "ret                 -1     0      -     "
   },
-  "access": [["public.test", "rw"]]
+  "access": [["test", "rw"]]
 }]
 insert into test select 1, 0;
 select * from test;
@@ -973,14 +962,14 @@ explain insert into test select * from (select 2, 0) t;
     "13": "free                3      0      0     ",
     "14": "free                2      0      0     ",
     "15": "dup                 3      1      0     ",
-    "16": "send_shard          2      3      0     # public.test (insert, closing)",
+    "16": "send_shard          2      3      0     # test (insert, closing)",
     "17": "ret                 -1     0      -     "
   },
   "pushdown": {
-    "00": "insert              -      0      0     # public.test",
+    "00": "insert              -      0      0     # test",
     "01": "ret                 -1     0      -     "
   },
-  "access": [["public.test", "rw"]]
+  "access": [["test", "rw"]]
 }]
 insert into test select * from (select 2, 0) t;
 select * from test;
@@ -991,16 +980,16 @@ insert into src values (3, 0), (4, 0), (5, 0);
 explain insert into test select * from src;
 [{
   "main": {
-    "00": "send_all            0      0      19    # public.src (select)",
+    "00": "send_all            0      0      17    # src (select)",
     "01": "union               1      0      0     ",
     "02": "recv                1      0      0     ",
     "03": "dup                 2      1      0     ",
-    "04": "send_shard          0      2      0     # public.test (insert, closing)",
+    "04": "send_shard          0      2      0     # test (insert, closing)",
     "05": "ret                 -1     0      -     "
   },
   "pushdown": {
     "00": "set                 0      2      0     ",
-    "01": "table_open_part     1      0      8     # public.src (primary)",
+    "01": "table_open_part     1      0      8     # src (primary)",
     "02": "table_readi32       2      1      0     ",
     "03": "push                2      0      0     ",
     "04": "table_readi32       2      1      1     ",
@@ -1009,10 +998,10 @@ explain insert into test select * from src;
     "07": "table_next          1      2      0     ",
     "08": "free                1      0      0     ",
     "09": "ret                 0      0      -     ",
-    "10": "insert              -      0      0     # public.test",
+    "10": "insert              -      0      0     # test",
     "11": "ret                 -1     0      -     "
   },
-  "access": [["public.test", "rw"], ["public.src", "ro"]]
+  "access": [["test", "rw"], ["src", "ro"]]
 }]
 insert into test select * from src returning *;
 [[3, 0], [4, 0], [5, 0]]

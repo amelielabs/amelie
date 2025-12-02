@@ -265,21 +265,6 @@ select [1,2,3]::reverse;
 explain execute reverse([1,2,3]);
 execute reverse([1,2,3]);
 drop function reverse;
-
-# test: create function (schema explicit)
-create function public.test() begin end;
-
-create schema test;
-create function test.test() begin end;
-show function test.test extended;
-drop function test.test;
-drop schema test;
-
-# test: create function (schema system)
-create function system.test() begin end;
-
-# test: create function (schema does not exists)
-create function abc.test() begin end;
 drop function test;
 
 # test: create or replace function (not exists)
@@ -337,7 +322,6 @@ drop function test;
 
 # test: drop function if exists
 drop function if exists test;
-drop function if exists public.test;
 
 # test: drop function with udf dep
 create function test_dep() begin end;
@@ -370,31 +354,12 @@ alter function test rename;
 alter function test rename to;
 alter function test rename to asf junk;
 alter function test2 rename to abc;
-select system.function('abc').name;
+select show('function', 'abc', true).name;
 
 # test: alter function rename function exists
 create function test() begin end;
 alter function abc rename to test;
-
-# test: alter function rename schema not exists
-alter function abc rename to test.test;
-
-# test: alter function rename schema system
-alter function abc rename to system.test;
-
-# test: alter function rename schema
 drop function test;
-
-alter function abc rename to public.test;
-select system.function('abc').name;
-select system.function('test').name;
-
-create schema test;
-alter function public.test rename to test.test;
-alter function test.test rename to public.test;
-select system.function('test').name;
-drop function test;
-drop schema test;
 
 # test: alter function rename with udf dep
 create function test_dep() begin end;

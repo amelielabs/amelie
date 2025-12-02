@@ -5,8 +5,8 @@ connect E0 S0 127.0.0.1:3485;
 
 # test: create wal on start
 show wal;
-select system.wal();
-select system.state().lsn;
+select show('wal');
+select show('state').lsn;
 show all;
 
 # test: restart
@@ -16,14 +16,14 @@ open E0;
 connect E0 S0 127.0.0.1:3485;
 
 show wal;
-select system.wal();
-select system.state().lsn;
+select show('wal');
+select show('state').lsn;
 show all;
 
 # test: create table
 create table test (id serial primary key, data int default 0);
-select system.state().lsn;
-select identity_of("public", "test");
+select show('state').lsn;
+select identity_of("test");
 
 # test: restart
 disconnect S0;
@@ -32,13 +32,13 @@ open E0;
 connect E0 S0 127.0.0.1:3485;
 
 # test: validate state
-select system.state().lsn;
-select identity_of("public", "test");
+select show('state').lsn;
+select identity_of("test");
 
 # test: insert
 insert into test () values (), (), ();
-select system.state().lsn;
-select identity_of("public", "test");
+select show('state').lsn;
+select identity_of("test");
 select * from test;
 
 # test: restart
@@ -48,14 +48,14 @@ open E0;
 connect E0 S0 127.0.0.1:3485;
 
 # test: validate state
-select system.state().lsn;
-select identity_of("public", "test");
+select show('state').lsn;
+select identity_of("test");
 select * from test;
 
 # test: update
 update test set data = id;
-select system.state().lsn;
-select identity_of("public", "test");
+select show('state').lsn;
+select identity_of("test");
 select * from test;
 
 # test: restart
@@ -65,14 +65,14 @@ open E0;
 connect E0 S0 127.0.0.1:3485;
 
 # test: validate state
-select system.state().lsn;
-select identity_of("public", "test");
+select show('state').lsn;
+select identity_of("test");
 select * from test;
 
 # test: upsert
 insert into test values (2, 0) on conflict do update set data = data + 1;
-select system.state().lsn;
-select identity_of("public", "test");
+select show('state').lsn;
+select identity_of("test");
 select * from test;
 
 # test: restart
@@ -82,14 +82,14 @@ open E0;
 connect E0 S0 127.0.0.1:3485;
 
 # test: validate state
-select system.state().lsn;
-select identity_of("public", "test");
+select show('state').lsn;
+select identity_of("test");
 select * from test;
 
 # test: delete
 delete from test where id in (0, 1);
-select system.state().lsn;
-select identity_of("public", "test");
+select show('state').lsn;
+select identity_of("test");
 select * from test;
 
 # test: restart
@@ -99,8 +99,8 @@ open E0;
 connect E0 S0 127.0.0.1:3485;
 
 # test: validate state
-select system.state().lsn;
-select identity_of("public", "test");
+select show('state').lsn;
+select identity_of("test");
 select * from test;
 
 disconnect S0;

@@ -3,129 +3,148 @@
 open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "127.0.0.1", "port": 3485 }];
 connect E0 S0 127.0.0.1:3485;
 
-# test: ensure system schemas exists
-show schemas;
+# test: ensure system databases exists
+show databases;
 
-# test: create schema statement parsing
+# test: create database statement parsing
 create;
-create schema;
-create schema 123;
-create schema if;
-create schema if not;
-create schema if not 123;
-create schema if not exists;
-create schema test abc;
+create database;
+create database 123;
+create database if;
+create database if not;
+create database if not 123;
+create database if not exists;
+create database test abc;
 
-# test: create schema
-create schema test;
+# test: create database
+create database test;
 
-show schemas;
-select system.schemas();
+show databases;
+select show('databases');
 
-# test: create schema if not exists
-create schema test;
-create schema if not exists test;
-show schemas;
+# test: create database if not exists
+create database test;
+create database if not exists test;
+show databases;
 
-# test: drop schema statement parsing
-drop schema;
-drop schema 123;
-drop schema if;
-drop schema if exists;
-drop schema test abc;
+# test: drop database statement parsing
+drop database;
+drop database 123;
+drop database if;
+drop database if exists;
+drop database test abc;
 
-# test: drop schema
-drop schema test;
-show schemas;
+# test: drop database
+drop database test;
+show databases;
 
-# test: drop schema if exists
-drop schema test;
-drop schema if exists test;
-show schemas;
+# test: drop database if exists
+drop database test;
+drop database if exists test;
+show databases;
 
-# test: drop system schema
-drop schema public;
-show schemas;
+# test: drop main database
+drop database main;
+show databases;
 
-# test: drop schema cascade
-create schema test;
-drop schema test cascade;
-select system.schemas();
+# test: drop database cascade
+create database test;
+drop database test cascade;
+show databases;
 
-# test: drop schema cascade (tables)
+# test: drop connected database
+create database test;
+show databases;
+
+connect E0 S1 127.0.0.1:3485/test;
+switch S1;
+drop database test;
+select 1;
+
+disconnect S1;
+switch S0;
+
+# test: drop database cascade (with relations)
+create database test;
+connect E0 S1 127.0.0.1:3485/test;
+switch S1;
+
+create table a(id int primary key);
+create table b(id int primary key);
+create function fn() begin select * from a; end;
+
+drop database test;
+drop database test cascade;
+select 1;
+
+disconnect S1;
+switch S0;
+
 show tables;
+show functions;
+show databases;
 
-create schema test;
-create table test.a(id int primary key);
-create table test.b(id int primary key);
-drop schema test cascade;
+# test: alter database statment parsing
+alter database;
+alter database 123;
+alter database test;
+alter database test rename;
+alter database test rename to;
+alter database test rename "hello";
+
+# test: alter database rename
+create database test;
+show databases;
+
+alter database test rename to test2;
+show databases;
+drop database test2;
+
+# test: alter database main
+alter database main rename to _public;
+
+# test: alter database rename cascade (udf dep)
+create database test;
+connect E0 S1 127.0.0.1:3485/test;
+switch S1;
+
+create table a(id int primary key);
+insert into a values (1), (2), (3);
+
+create table b(id int primary key);
+create function fn() return int
+begin
+	total int = 0;
+	select count(*) into total from a;
+	return total;
+end;
+select fn();
+
+# error
+alter database test rename to test2;
+drop function fn;
+
+# test: alter database rename cascade
+alter database test rename to test2;
+select 1;
+
+disconnect S1;
+connect E0 S1 127.0.0.1:3485/test2;
+switch S1;
+
 show tables;
+show functions;
+show databases;
 
-# test: drop schema with dependency
-create schema test;
-create table test.test(id int primary key);
-create function test.fn() begin end;
-drop schema test;
-drop table test.test;
-drop schema test;
-drop function test.fn;
-drop schema test;
+disconnect S1;
+switch S0;
 
-# test: drop schema with udf dep
-create schema test;
-create table test.test(id int primary key);
-create function fn()
-begin
-	select * from test.test;
-end;
-drop schema test;
-drop schema test cascade; # external schema dep
+show tables;
+show functions;
+show databases;
 
-drop function fn;
-drop schema test;
-drop schema test cascade;
-
-# test: alter schema statment parsing
-alter schema;
-alter schema 123;
-alter schema test;
-alter schema test rename;
-alter schema test rename to;
-alter schema test rename "hello";
-
-# test: alter schema rename
-create schema test;
-select system.schemas();
-
-alter schema test rename to test2;
-select system.schemas();
-drop schema test2;
-
-# test: alter schema system
-alter schema public rename to _public;
-
-# test: alter schema rename cascade
-create schema test;
-create table test.a(id int primary key);
-create table test.b(id int primary key);
-
-alter schema test rename to test2;
-select system.schemas();
-select system.table('test2.a').name;
-select system.table('test2.b').name;
-drop schema test2 cascade;
-
-# test: alter schema rename with udf dep
-create schema test;
-create table test.test(id int primary key);
-create function fn()
-begin
-	select * from test.test;
-end;
-alter schema test rename to test2;
-drop function fn;
-alter schema test rename to test2;
-drop schema test2 cascade;
+drop database test2;
+drop database test2 cascade;
 
 disconnect S0;
 close E0;

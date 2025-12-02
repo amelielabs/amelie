@@ -484,8 +484,8 @@ drop function test;
 create function test() return json
 begin
 	declare list json := [];
-	for it in system.tables() do
-		list := list::append([it.schema, it.name]);
+	for it in (show('tables')) do
+		list := list::append([it.db, it.name]);
 	end;
 	return list;
 end;
@@ -493,13 +493,13 @@ explain select test();
 select test();
 drop function test;
 
-select `schema`, name from system.tables();
+select `db`, name from show('tables');
 
 create function test() return json
 begin
 	declare list json := [];
-	for it in system.tables() do
-		list := list::append({"schema": it.schema, "name": it.name});
+	for it in (show('tables')) do
+		list := list::append({"schema": it.db, "name": it.name});
 	end;
 	return list;
 end;
@@ -509,19 +509,19 @@ drop function test;
 
 select
 [] -> self::append ({
-	"schema": it.schema,
+	"schema": it.db,
 	"name": it.name
 })
 from
-	system.tables() as it;
+	show('tables') as it;
 
 create function test() return json
 begin
 	declare list json;
 	select
-		[] -> self::append({"schema": it.schema, "name": it.name})
+		[] -> self::append({"schema": it.db, "name": it.name})
 	into
-		list from system.tables() as it;
+		list from show('tables') as it;
 	return list;
 end;
 explain select test();
@@ -531,12 +531,9 @@ drop function test;
 create function test() return json
 begin
 	declare list json;
-	select
-		[] -> append(self, {"schema": it.schema, "name": it.name})
-	into
-		list
-	from
-		system.tables() as it;
+	select [] -> append(self, {"schema": it.db, "name": it.name})
+	  into list
+	  from show('tables') as it;
 	return list;
 end;
 explain select test();

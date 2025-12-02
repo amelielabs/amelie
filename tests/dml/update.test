@@ -48,18 +48,6 @@ update test set data = default;
 select * from test;
 drop table test;
 
-# test: update schema
-create schema test;
-create table test.test(id int primary key, data int);
-insert into test.test values (0, 3);
-insert into test.test values (1, 2);
-insert into test.test values (2, 1);
-explain update test.test set data = data + 1;
-update test.test set data = data + 1;
-select * from test.test;
-drop table test.test;
-drop schema test;
-
 # test: update multiple ops
 create table test(id int primary key, a int, b int);
 insert into test values (0, 3, 3);

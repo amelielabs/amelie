@@ -85,16 +85,16 @@ select {"time": timestamp "2024-07-29 18:40:19"};
 [{
   "time": "2024-07-29 18:40:19"
 }]
-# test: timestamp prefer
+# test: timestamp uri
 select "2024-07-29 18:40:19"::timestamp;
 ["2024-07-29 18:40:19+03"]
-prefer timezone=Asia/Tokyo;
+disconnect S0;
+connect E0 S0 http://127.0.0.1:3485/main?timezone=Asia/Tokyo;
 show timezone;
 ["Asia/Tokyo"]
 select "2024-07-29 18:40:19"::timestamp;
 ["2024-07-29 18:40:19+09"]
 select '2024-07-29 18:40:19'::timestamp::at_timezone('Asia/Tokyo');
 ["2024-07-29 18:40:19+09"]
-prefer;
 disconnect S0;
 close E0;

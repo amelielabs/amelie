@@ -221,7 +221,7 @@ select {"menu":{"id":"file","value":"File","popup":{"menuitem":[{"value":"New","
     }
   }
 }]
-select public.json_import( public.string( {"menu":{"id":"file","value":"File","popup":{"menuitem":[{"value":"New","onclick":"CreateNewDoc()"},{"value":"Open","onclick":"OpenDoc()"},{"value":"Close","onclick":"CloseDoc()"}]}}} ) ).menu.popup.menuitem[0];
+select json_import( string( {"menu":{"id":"file","value":"File","popup":{"menuitem":[{"value":"New","onclick":"CreateNewDoc()"},{"value":"Open","onclick":"OpenDoc()"},{"value":"Close","onclick":"CloseDoc()"}]}}} ) ).menu.popup.menuitem[0];
 [{
   "value": "New",
   "onclick": "CreateNewDoc()"

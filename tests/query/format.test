@@ -6,10 +6,10 @@ connect E0 S0 127.0.0.1:3485;
 # test: default format
 show format;
 
-# test: json
+# test: minimal
 disconnect S0;
 close E0;
-open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "127.0.0.1", "port": 3485 }], "format": "json";
+open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "127.0.0.1", "port": 3485 }], "format": "minmal";
 connect E0 S0 127.0.0.1:3485;
 
 select 123;
@@ -19,10 +19,10 @@ select [{"id": 48}, {"id": 49}, [1,2,3]];
 show all;
 show uuid;
 
-# test: json-array
+# test: full
 disconnect S0;
 close E0;
-open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "127.0.0.1", "port": 3485 }], "format": "json-array";
+open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "127.0.0.1", "port": 3485 }], "format": "full";
 connect E0 S0 127.0.0.1:3485;
 
 select 123;
@@ -32,10 +32,10 @@ select [{"id": 48}, {"id": 49}, [1,2,3]];
 show all;
 show uuid;
 
-# test: json-array-pretty
+# test: minimal-pretty
 disconnect S0;
 close E0;
-open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "127.0.0.1", "port": 3485 }], "format": "json-array-pretty";
+open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "127.0.0.1", "port": 3485 }], "format": "minimal-pretty";
 connect E0 S0 127.0.0.1:3485;
 
 select 123;
@@ -45,24 +45,10 @@ select [{"id": 48}, {"id": 49}, [1,2,3]];
 show all;
 show uuid;
 
-# test: json-obj
+# test: full-pretty
 disconnect S0;
 close E0;
-open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "127.0.0.1", "port": 3485 }], "format": "json-obj";
-connect E0 S0 127.0.0.1:3485;
-
-select 123;
-select 123 as id;
-select [1,2,3];
-select {"id": 48} as json;
-select [{"id": 48}, {"id": 49}, [1,2,3]];
-show all;
-show uuid;
-
-# test: json-obj-pretty
-disconnect S0;
-close E0;
-open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "127.0.0.1", "port": 3485 }], "format": "json-obj-pretty";
+open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "127.0.0.1", "port": 3485 }], "format": "full-pretty";
 connect E0 S0 127.0.0.1:3485;
 
 select 123;
@@ -76,7 +62,7 @@ show uuid;
 # test: select format
 disconnect S0;
 close E0;
-open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "127.0.0.1", "port": 3485 }], "format": "json-pretty";
+open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "127.0.0.1", "port": 3485 }];
 connect E0 S0 127.0.0.1:3485;
 
 prefer return=json-pretty-obj;

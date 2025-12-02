@@ -1,69 +1,69 @@
 open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "127.0.0.1", "port": 3485 }], "backends": 3;
 connect E0 S0 127.0.0.1:3485;
 # test: default checkpoint
-select system.state().checkpoint;
+select show('state').checkpoint;
 [1]
 # test: default checkpoint_compression
-select system.config().checkpoint_compression;
+select show().checkpoint_compression;
 ["zstd"]
 # test: checkpoint (no data)
 checkpoint;
-select system.state().checkpoint;
+select show('state').checkpoint;
 [1]
 # test: create table
 create table test (id serial primary key);
-select system.state().lsn;
+select show('state').lsn;
 [2]
 # test: checkpoint
 checkpoint;
-select system.state().lsn;
+select show('state').lsn;
 [2]
-select system.state().checkpoint;
+select show('state').checkpoint;
 [2]
 # test: restart/recover
 disconnect S0;
 close E0;
 open E0;
 connect E0 S0 127.0.0.1:3485;
-select system.state().lsn;
+select show('state').lsn;
 [2]
-select system.state().checkpoint;
+select show('state').checkpoint;
 [2]
 select * from test;
 []
 # test: insert
 insert into test () values (), (), ();
-select identity_of("public", "test");
+select identity_of("test");
 [3]
 # test: restart/recover (checkpoint + wal)
 disconnect S0;
 close E0;
 open E0;
 connect E0 S0 127.0.0.1:3485;
-select system.state().lsn;
+select show('state').lsn;
 [3]
-select system.state().checkpoint;
+select show('state').checkpoint;
 [2]
-select identity_of("public", "test");
+select identity_of("test");
 [3]
 select * from test;
 [0, 1, 2]
 # test: checkpoint
 checkpoint;
-select system.state().lsn;
+select show('state').lsn;
 [3]
-select system.state().checkpoint;
+select show('state').checkpoint;
 [3]
 # test: restart/recover (checkpoint)
 disconnect S0;
 close E0;
 open E0;
 connect E0 S0 127.0.0.1:3485;
-select system.state().lsn;
+select show('state').lsn;
 [3]
-select system.state().checkpoint;
+select show('state').checkpoint;
 [3]
-select identity_of("public", "test");
+select identity_of("test");
 [3]
 select * from test;
 [0, 1, 2]
@@ -78,7 +78,7 @@ begin
 end;
 show functions extended;
 [{
-  "schema": "public",
+  "db": "main",
   "name": "reverse",
   "text": "begin\n\tdeclare rev json := [];\n\tfor it in (array) do\n\t\trev := rev::push(it);\n\tend;\n\treturn rev;\nend",
   "type": 5,
@@ -97,13 +97,13 @@ disconnect S0;
 close E0;
 open E0;
 connect E0 S0 127.0.0.1:3485;
-select system.state().lsn;
+select show('state').lsn;
 [4]
-select system.state().checkpoint;
+select show('state').checkpoint;
 [3]
 show functions extended;
 [{
-  "schema": "public",
+  "db": "main",
   "name": "reverse",
   "text": "begin\n\tdeclare rev json := [];\n\tfor it in (array) do\n\t\trev := rev::push(it);\n\tend;\n\treturn rev;\nend",
   "type": 5,
@@ -119,22 +119,22 @@ select [1,2,3]::reverse;
 [[3, 2, 1]]
 # test: checkpoint
 checkpoint;
-select system.state().lsn;
+select show('state').lsn;
 [4]
-select system.state().checkpoint;
+select show('state').checkpoint;
 [4]
 # test: restart/recover (checkpoint)
 disconnect S0;
 close E0;
 open E0;
 connect E0 S0 127.0.0.1:3485;
-select system.state().lsn;
+select show('state').lsn;
 [4]
-select system.state().checkpoint;
+select show('state').checkpoint;
 [4]
 show functions extended;
 [{
-  "schema": "public",
+  "db": "main",
   "name": "reverse",
   "text": "begin\n\tdeclare rev json := [];\n\tfor it in (array) do\n\t\trev := rev::push(it);\n\tend;\n\treturn rev;\nend",
   "type": 5,
@@ -159,7 +159,7 @@ begin
 end;
 show functions extended;
 [{
-  "schema": "public",
+  "db": "main",
   "name": "reverse",
   "text": "begin\n\tdeclare rev json := [];\n\tfor it in (array) do\n\t\trev := rev::push(-it::int);\n\tend;\n\treturn rev;\nend",
   "type": 5,
@@ -178,13 +178,13 @@ disconnect S0;
 close E0;
 open E0;
 connect E0 S0 127.0.0.1:3485;
-select system.state().lsn;
+select show('state').lsn;
 [5]
-select system.state().checkpoint;
+select show('state').checkpoint;
 [4]
 show functions extended;
 [{
-  "schema": "public",
+  "db": "main",
   "name": "reverse",
   "text": "begin\n\tdeclare rev json := [];\n\tfor it in (array) do\n\t\trev := rev::push(-it::int);\n\tend;\n\treturn rev;\nend",
   "type": 5,
@@ -200,22 +200,22 @@ select [1,2,3]::reverse;
 [[-3, -2, -1]]
 # test: checkpoint
 checkpoint;
-select system.state().lsn;
+select show('state').lsn;
 [5]
-select system.state().checkpoint;
+select show('state').checkpoint;
 [5]
 # test: restart/recover (checkpoint)
 disconnect S0;
 close E0;
 open E0;
 connect E0 S0 127.0.0.1:3485;
-select system.state().lsn;
+select show('state').lsn;
 [5]
-select system.state().checkpoint;
+select show('state').checkpoint;
 [5]
 show functions extended;
 [{
-  "schema": "public",
+  "db": "main",
   "name": "reverse",
   "text": "begin\n\tdeclare rev json := [];\n\tfor it in (array) do\n\t\trev := rev::push(-it::int);\n\tend;\n\treturn rev;\nend",
   "type": 5,
@@ -229,65 +229,50 @@ show functions extended;
 }]
 select [1,2,3]::reverse;
 [[-3, -2, -1]]
-# test: create schema
-create schema test;
-alter table public.test rename to test.test;
-select system.state().lsn;
-[7]
+# test: create database
+create database test;
+select show('state').lsn;
+[6]
 # test: restart/recover (checkpoint + wal)
 disconnect S0;
 close E0;
 open E0;
 connect E0 S0 127.0.0.1:3485;
-select system.state().lsn;
-[7]
-select system.state().checkpoint;
+select show('state').lsn;
+[6]
+select show('state').checkpoint;
 [5]
-show schemas;
+show databases;
 [{
-  "name": "system",
-  "system": true
+  "name": "main"
 }, {
-  "name": "public",
-  "system": true
-}, {
-  "name": "test",
-  "system": false
+  "name": "test"
 }]
-select identity_of("test", "test");
+select identity_of("test");
 [3]
-select * from test.test;
-[0, 1, 2]
 # test: checkpoint
 checkpoint;
-select system.state().lsn;
-[7]
-select system.state().checkpoint;
-[7]
+select show('state').lsn;
+[6]
+select show('state').checkpoint;
+[6]
 # test: restart/recover (checkpoint)
 disconnect S0;
 close E0;
 open E0;
 connect E0 S0 127.0.0.1:3485;
-select system.state().lsn;
-[7]
-select system.state().checkpoint;
-[7]
-show schemas;
+select show('state').lsn;
+[6]
+select show('state').checkpoint;
+[6]
+show databases;
 [{
-  "name": "system",
-  "system": true
+  "name": "main"
 }, {
-  "name": "public",
-  "system": true
-}, {
-  "name": "test",
-  "system": false
+  "name": "test"
 }]
-select identity_of("test", "test");
+select identity_of("test");
 [3]
-select * from test.test;
-[0, 1, 2]
 disconnect S0;
 close E0;
 # test: checkpoint (compression none)

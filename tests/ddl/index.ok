@@ -17,7 +17,7 @@ create index i;
 create index i 1;
 {"msg": "create index i ❰1❱ ⟵ ON expected"}
 create index i on;
-{"msg": "create index i on❰;❱ ⟵ table name expected"}
+{"msg": "create index i on❰;❱ ⟵ name expected"}
 create index i on test;
 {"msg": "create index i on test❰;❱ ⟵ ( expected"}
 create index i on test 1;
@@ -28,7 +28,7 @@ create index i on test ();
 {"msg": "create index i on test (❰)❱ ⟵ name expected"}
 # test: create index
 create index i on test (a);
-select system.table('test').indexes;
+select show('table', 'test', true).indexes;
 [[{
   "name": "primary",
   "type": 2,
@@ -55,7 +55,7 @@ select system.table('test').indexes;
 create index i on test (a);
 {"msg": "table 'test' index 'i': already exists"}
 create index if not exists i on test (a);
-select system.table('test').indexes;
+select show('table', 'test', true).indexes;
 [[{
   "name": "primary",
   "type": 2,
@@ -81,7 +81,7 @@ select system.table('test').indexes;
 drop index i on test;
 # test: create index (compound key)
 create index i on test (b, a);
-select system.table('test').indexes;
+select show('table', 'test', true).indexes;
 [[{
   "name": "primary",
   "type": 2,
@@ -110,7 +110,7 @@ select system.table('test').indexes;
 drop index i on test;
 # test: create index (key reuse)
 create index i on test (a, a);
-select system.table('test').indexes;
+select show('table', 'test', true).indexes;
 [[{
   "name": "primary",
   "type": 2,
@@ -141,7 +141,7 @@ drop index i on test;
 create unique index i on test (a);
 # test: create index (asc/desc)
 create unique index j on test (a asc, b desc, id);
-select system.table('test').indexes;
+select show('table', 'test', true).indexes;
 [[{
   "name": "primary",
   "type": 2,
@@ -182,7 +182,7 @@ create table test (id int primary key, a int, b int);
 create index i on test (a) using;
 {"msg": "create index i on test (a) using❰;❱ ⟵ index type expected"}
 create index i on test (a) using hash;
-select system.table('test').indexes;
+select show('table', 'test', true).indexes;
 [[{
   "name": "primary",
   "type": 2,
@@ -207,7 +207,7 @@ select system.table('test').indexes;
 }]]
 drop index i on test;
 create index i on test (a) using tree;
-select system.table('test').indexes;
+select show('table', 'test', true).indexes;
 [[{
   "name": "primary",
   "type": 2,
@@ -245,18 +245,14 @@ drop index i;
 drop index i 1;
 {"msg": "drop index i ❰1❱ ⟵ ON expected"}
 drop index i on;
-{"msg": "drop index i on❰;❱ ⟵ table name expected"}
+{"msg": "drop index i on❰;❱ ⟵ name expected"}
 drop index i on 1;
-{"msg": "drop index i on ❰1❱ ⟵ table name expected"}
+{"msg": "drop index i on ❰1❱ ⟵ name expected"}
 drop index i on test;
-{"msg": "table 'test' index 'i': not exists"}
-drop index i on schema.test;
-{"msg": "table 'test': not exists"}
-drop index i on public.test;
 {"msg": "table 'test' index 'i': not exists"}
 # test: drop index
 create index i on test (a);
-select system.table('test').indexes;
+select show('table', 'test', true).indexes;
 [[{
   "name": "primary",
   "type": 2,
@@ -279,8 +275,8 @@ select system.table('test').indexes;
     "asc": true
   }]
 }]]
-drop index i on public.test;
-select system.table('test').indexes;
+drop index i on test;
+select show('table', 'test', true).indexes;
 [[{
   "name": "primary",
   "type": 2,
@@ -292,15 +288,15 @@ select system.table('test').indexes;
   }]
 }]]
 # test: drop index if exists
-drop index i on public.test;
+drop index i on test;
 {"msg": "table 'test' index 'i': not exists"}
-drop index if exists i on public.test;
+drop index if exists i on test;
 # test: drop index with udf dep
 create index i on test (a);
 create function dep() begin insert into test values (1,2,3); end;
 show functions extended;
 [{
-  "schema": "public",
+  "db": "main",
   "name": "dep",
   "text": "begin insert into test values (1,2,3); end",
   "type": 0,
@@ -308,13 +304,13 @@ show functions extended;
   "returning": []
 }]
 drop index i on test;
-{"msg": "function 'public.dep' depends on relation 'public.test"}
+{"msg": "function 'dep' depends on relation 'test"}
 # test: drop index after udf drop
 drop function dep;
 drop index i on test;
 # test: alter index parsing
 alter;
-{"msg": "alter❰;❱ ⟵ USER|SCHEMA|TABLE|INDEX|FUNCTION expected"}
+{"msg": "alter❰;❱ ⟵ USER|DATABASE|TABLE|INDEX|FUNCTION expected"}
 alter index;
 {"msg": "alter index❰;❱ ⟵ name expected"}
 alter index 1;
@@ -330,7 +326,7 @@ alter index i;
 alter index i 1;
 {"msg": "alter index i ❰1❱ ⟵ ON expected"}
 alter index i on;
-{"msg": "alter index i on❰;❱ ⟵ table name expected"}
+{"msg": "alter index i on❰;❱ ⟵ name expected"}
 alter index i on test;
 {"msg": "alter index i on test❰;❱ ⟵ RENAME expected"}
 alter index i on test 1;
@@ -347,7 +343,7 @@ alter index i on test rename to;
 {"msg": "alter index i on test rename to❰;❱ ⟵ name expected"}
 # test: alter index rename
 create index i on test (a);
-select system.table('test').indexes;
+select show('table', 'test', true).indexes;
 [[{
   "name": "primary",
   "type": 2,
@@ -371,7 +367,7 @@ select system.table('test').indexes;
   }]
 }]]
 alter index i on test rename to j;
-select system.table('test').indexes;
+select show('table', 'test', true).indexes;
 [[{
   "name": "primary",
   "type": 2,
@@ -397,7 +393,7 @@ select system.table('test').indexes;
 # test: alter index rename if exists
 alter index k on test rename to z;
 {"msg": "table 'test' index 'k': not exists"}
-alter index if exists k on public.test rename to z;
+alter index if exists k on test rename to z;
 # test: alter index rename (conflict)
 alter index j on test rename to j;
 {"msg": "table 'test' index 'j': already exists"}

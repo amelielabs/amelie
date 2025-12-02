@@ -1,11 +1,11 @@
 open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "127.0.0.1", "port": 3485 }];
 connect E0 S0 127.0.0.1:3485;
 # test: default limits
-select system.config();
+select show();
 [{
   "uuid": "00000000-0000-0000-0000-000000000000",
   "timezone": "UTC",
-  "format": "json-pretty",
+  "format": "pretty-minimal",
   "log_enable": true,
   "log_to_file": true,
   "log_to_stdout": false,
@@ -59,17 +59,17 @@ disconnect S0;
 close E0;
 open E0 "limit_send": 0;
 connect E0 S0 127.0.0.1:3485;
-select system.config();
+select show();
 {"msg": "reply limit reached"}
 disconnect S0;
 close E0;
 open E0;
 connect E0 S0 127.0.0.1:3485;
-select system.config();
+select show();
 [{
   "uuid": "00000000-0000-0000-0000-000000000000",
   "timezone": "UTC",
-  "format": "json-pretty",
+  "format": "pretty-minimal",
   "log_enable": true,
   "log_to_file": true,
   "log_to_stdout": false,

@@ -21,17 +21,6 @@ delete from test;
 select * from test;
 drop table test;
 
-# test: delete schema
-create schema test;
-create table test.test(id int primary key, data int);
-insert into test.test values (0, 3);
-insert into test.test values (1, 2);
-insert into test.test values (2, 1);
-delete from test.test;
-select * from test.test;
-drop table test.test;
-drop schema test;
-
 # test: delete point-lookup
 create table test(id int primary key);
 insert into test values (0);

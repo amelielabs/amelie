@@ -5,8 +5,8 @@ connect E0 S0 127.0.0.1:3485;
 
 # test: create table
 create table test (id serial primary key, data int default 0);
-select system.state().lsn;
-select identity_of("public", "test");
+select show('state').lsn;
+select identity_of("test");
 
 # test: restart
 disconnect S0;
@@ -15,14 +15,14 @@ open E0;
 connect E0 S0 127.0.0.1:3485;
 
 # test: validate state
-select system.state().lsn;
-select identity_of("public", "test");
+select show('state').lsn;
+select identity_of("test");
 
 # test: alter table rename
 alter table test rename to test2;
-select system.state().lsn;
-select identity_of("public", "test");
-select identity_of("public", "test2");
+select show('state').lsn;
+select identity_of("test");
+select identity_of("test2");
 
 # test: restart
 disconnect S0;
@@ -31,13 +31,13 @@ open E0;
 connect E0 S0 127.0.0.1:3485;
 
 # test: validate state
-select system.state().lsn;
-select identity_of("public", "test");
-select identity_of("public", "test2");
+select show('state').lsn;
+select identity_of("test");
+select identity_of("test2");
 
 # test: alter table set unlogged
 alter table test2 set unlogged;
-select system.table('test2').unlogged;
+select show('table', 'test2', true).unlogged;
 
 # test: restart
 disconnect S0;
@@ -46,8 +46,8 @@ open E0;
 connect E0 S0 127.0.0.1:3485;
 
 # test: validate state
-select system.table('test2').unlogged;
-select system.state().lsn;
+select show('table', 'test2', true).unlogged;
+select show('state').lsn;
 
 insert into test2 () values ();
 insert into test2 () values ();
@@ -55,7 +55,7 @@ insert into test2 () values ();
 
 # test: alter table set logged
 alter table test2 set logged;
-select system.table('test2').unlogged;
+select show('table', 'test2', true).unlogged;
 
 # test: restart
 disconnect S0;
@@ -64,14 +64,14 @@ open E0;
 connect E0 S0 127.0.0.1:3485;
 
 # test: validate state
-select system.state().lsn;
+select show('state').lsn;
 select * from test2;
 
 # test: alter table column add
 insert into test2() values (), (), ();
 select * from test2;
-select system.state().lsn;
-select identity_of("public", "test2");
+select show('state').lsn;
+select identity_of("test2");
 alter table test2 add column obj json;
 select * from test2;
 select obj from test2;
@@ -83,8 +83,8 @@ open E0;
 connect E0 S0 127.0.0.1:3485;
 
 # test: validate state
-select system.state().lsn;
-select identity_of("public", "test2");
+select show('state').lsn;
+select identity_of("test2");
 select * from test2;
 
 # test: alter table column rename
@@ -100,14 +100,14 @@ open E0;
 connect E0 S0 127.0.0.1:3485;
 
 # test: validate state
-select system.state().lsn;
-select identity_of("public", "test2");
+select show('state').lsn;
+select identity_of("test2");
 select data from test2;
 select abc from test2;
 
 # test: alter table set default
 alter table test2 set column abc default 123;
-select system.table('test2').columns;
+select show('table', 'test2', true).columns;
 
 # test: restart
 disconnect S0;
@@ -116,12 +116,12 @@ open E0;
 connect E0 S0 127.0.0.1:3485;
 
 # test: validate state
-select system.state().lsn;
-select system.table('test2').columns;
+select show('state').lsn;
+select show('table', 'test2', true).columns;
 
 # test: alter table unset default
 alter table test2 unset column abc default;
-select system.table('test2').columns;
+select show('table', 'test2', true).columns;
 
 # test: restart
 disconnect S0;
@@ -130,8 +130,8 @@ open E0;
 connect E0 S0 127.0.0.1:3485;
 
 # test: validate state
-select system.state().lsn;
-select system.table('test2').columns;
+select show('state').lsn;
+select show('table', 'test2', true).columns;
 
 # test: restart
 disconnect S0;
@@ -140,12 +140,12 @@ open E0;
 connect E0 S0 127.0.0.1:3485;
 
 # test: validate state
-select system.state().lsn;
-select system.table('test2').columns;
+select show('state').lsn;
+select show('table', 'test2', true).columns;
 
 # test: alter table set stored
 alter table test2 set column abc as (1 + 1) stored;
-select system.table('test2').columns;
+select show('table', 'test2', true).columns;
 
 # test: restart
 disconnect S0;
@@ -154,12 +154,12 @@ open E0;
 connect E0 S0 127.0.0.1:3485;
 
 # test: validate state
-select system.state().lsn;
-select system.table('test2').columns;
+select show('state').lsn;
+select show('table', 'test2', true).columns;
 
 # test: alter table unset stored
 alter table test2 unset column abc as stored;
-select system.table('test2').columns;
+select show('table', 'test2', true).columns;
 
 # test: restart
 disconnect S0;
@@ -168,12 +168,12 @@ open E0;
 connect E0 S0 127.0.0.1:3485;
 
 # test: validate state
-select system.state().lsn;
-select system.table('test2').columns;
+select show('state').lsn;
+select show('table', 'test2', true).columns;
 
 # test: alter table set resolved
 alter table test2 set column abc as (1 + 1) resolved;
-select system.table('test2').columns;
+select show('table', 'test2', true).columns;
 
 # test: restart
 disconnect S0;
@@ -182,12 +182,12 @@ open E0;
 connect E0 S0 127.0.0.1:3485;
 
 # test: validate state
-select system.state().lsn;
-select system.table('test2').columns;
+select show('state').lsn;
+select show('table', 'test2', true).columns;
 
 # test: alter table unset resolved
 alter table test2 unset column abc as resolved;
-select system.table('test2').columns;
+select show('table', 'test2', true).columns;
 
 # test: restart
 disconnect S0;
@@ -196,8 +196,8 @@ open E0;
 connect E0 S0 127.0.0.1:3485;
 
 # test: validate state
-select system.state().lsn;
-select system.table('test2').columns;
+select show('state').lsn;
+select show('table', 'test2', true).columns;
 
 # test: alter table column drop
 alter table test2 drop column abc;
@@ -211,8 +211,8 @@ open E0;
 connect E0 S0 127.0.0.1:3485;
 
 # test: validate state
-select system.state().lsn;
-select identity_of("public", "test2");
+select show('state').lsn;
+select identity_of("test2");
 select * from test2;
 
 # test: create index
@@ -226,13 +226,13 @@ open E0;
 connect E0 S0 127.0.0.1:3485;
 
 # test: validate state
-select system.state().lsn;
-select identity_of("public", "test2");
+select show('state').lsn;
+select identity_of("test2");
 select * from test2 use index (i);
 
 # test: alter index rename
 alter index i on test2 rename to i2;
-select system.state().lsn;
+select show('state').lsn;
 select * from test2 use index (i2);
 
 # test: restart
@@ -242,8 +242,8 @@ open E0;
 connect E0 S0 127.0.0.1:3485;
 
 # test: validate state
-select system.state().lsn;
-select identity_of("public", "test2");
+select show('state').lsn;
+select identity_of("test2");
 select * from test2 use index (i2);
 
 # test: drop index
@@ -259,8 +259,8 @@ open E0;
 connect E0 S0 127.0.0.1:3485;
 
 # test: validate state
-select system.state().lsn;
-select identity_of("public", "test2");
+select show('state').lsn;
+select identity_of("test2");
 select * from test2 use index (i);
 select * from test2 use index (i2);
 select * from test2;
@@ -276,14 +276,14 @@ open E0;
 connect E0 S0 127.0.0.1:3485;
 
 # test: validate state
-select system.state().lsn;
-select identity_of("public", "test2");
+select show('state').lsn;
+select identity_of("test2");
 select * from test2;
 
 # test: drop table
 drop table test2;
-select system.state().lsn;
-select identity_of("public", "test2");
+select show('state').lsn;
+select identity_of("test2");
 
 # test: restart
 disconnect S0;
@@ -292,14 +292,14 @@ open E0;
 connect E0 S0 127.0.0.1:3485;
 
 # test: validate state
-select system.state().lsn;
+select show('state').lsn;
 select * from test2;
 show tables;
 
-# test: create schema
-create schema test;
-show schemas;
-select system.state().lsn;
+# test: create database
+create database test;
+show databases;
+select show('state').lsn;
 
 # test: restart
 disconnect S0;
@@ -308,28 +308,13 @@ open E0;
 connect E0 S0 127.0.0.1:3485;
 
 # test: validate state
-select system.state().lsn;
-show schemas;
+select show('state').lsn;
+show databases;
 
-# test: alter schema rename
-alter schema test rename to test2;
-show schemas;
-select system.state().lsn;
-
-# test: restart
-disconnect S0;
-close E0;
-open E0;
-connect E0 S0 127.0.0.1:3485;
-
-# test: validate state
-select system.state().lsn;
-show schemas;
-
-# test: drop schema
-drop schema test2;
-select system.state().lsn;
-show schemas;
+# test: alter database rename
+alter database test rename to test2;
+show databases;
+select show('state').lsn;
 
 # test: restart
 disconnect S0;
@@ -338,8 +323,23 @@ open E0;
 connect E0 S0 127.0.0.1:3485;
 
 # test: validate state
-select system.state().lsn;
-show schemas;
+select show('state').lsn;
+show databases;
+
+# test: drop database
+drop database test2;
+select show('state').lsn;
+show databases;
+
+# test: restart
+disconnect S0;
+close E0;
+open E0;
+connect E0 S0 127.0.0.1:3485;
+
+# test: validate state
+select show('state').lsn;
+show databases;
 
 # test: create function
 create function reverse(array json) return json
@@ -350,7 +350,7 @@ begin
 	end;
 	return rev;
 end;
-select system.state().lsn;
+select show('state').lsn;
 
 show functions extended;
 select [1,2,3]::reverse;
@@ -362,7 +362,7 @@ open E0;
 connect E0 S0 127.0.0.1:3485;
 
 # test: validate state
-select system.state().lsn;
+select show('state').lsn;
 show functions extended;
 select [1,2,3]::reverse;
 
@@ -387,7 +387,7 @@ begin
 	end;
 	return rev;
 end;
-select system.state().lsn;
+select show('state').lsn;
 
 show functions extended;
 select [1,2,3]::reverse;
@@ -399,14 +399,14 @@ open E0;
 connect E0 S0 127.0.0.1:3485;
 
 # test: validate state
-select system.state().lsn;
+select show('state').lsn;
 show functions extended;
 select [1,2,3]::reverse;
 
 # test: alter function rename
 alter function reverse rename to reverse2;
 show functions;
-select system.state().lsn;
+select show('state').lsn;
 select [1,2,3]::reverse2;
 
 # test: restart
@@ -416,13 +416,13 @@ open E0;
 connect E0 S0 127.0.0.1:3485;
 
 # test: validate state
-select system.state().lsn;
+select show('state').lsn;
 show functions extended;
 select [1,2,3]::reverse2;
 
 # test: drop function
 drop function reverse2;
-select system.state().lsn;
+select show('state').lsn;
 show functions extended;
 
 # test: restart
@@ -433,7 +433,7 @@ connect E0 S0 127.0.0.1:3485;
 
 # test: validate state
 show functions extended;
-select system.state().lsn;
+select show('state').lsn;
 
 disconnect S0;
 close E0;

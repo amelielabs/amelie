@@ -5,7 +5,7 @@ connect E0 S0 127.0.0.1:3485;
 
 # test: table create partitions default
 create table test (id int primary key, data int default 0);
-select system.table('test').partitions::length = 3;
+select show('table', 'test', true).partitions::length = 3;
 drop table test;
 
 # test: table create partitions (0)
@@ -14,17 +14,17 @@ create table test (id int primary key) partitions 0;
 
 # test: table create partitions (> backends)
 create table test (id int primary key) partitions 4;
-select system.table('test').partitions::length = 4;
+select show('table', 'test', true).partitions::length = 4;
 drop table test;
 
 # test: table create partitions (= backends)
 create table test (id int primary key) partitions 3;
-select system.table('test').partitions::length = 3;
+select show('table', 'test', true).partitions::length = 3;
 drop table test;
 
 # test: table create partitions (1)
 create table test (id int primary key) partitions 1;
-select system.table('test').partitions::length = 1;
+select show('table', 'test', true).partitions::length = 1;
 drop table test;
 
 disconnect S0;

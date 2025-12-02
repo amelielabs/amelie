@@ -15,10 +15,6 @@ show users;
 [{
   "name": "test"
 }]
-prefer return=json;
-show users;
-[{"name": "test"}]
-prefer;
 # test: show user
 show user;
 {"msg": "show() ⟵ name is missing for 'user'"}
@@ -32,37 +28,24 @@ show user test;
 [{
   "name": "test"
 }]
-prefer return=json;
-show user test;
-[{"name": "test"}]
-prefer;
-# test: show schemas
-create schema test;
-show schemas;
+# test: show databases
+create database test;
+show databases;
 [{
-  "name": "system",
-  "system": true
+  "name": "main"
 }, {
-  "name": "public",
-  "system": true
-}, {
-  "name": "test",
-  "system": false
+  "name": "test"
 }]
-show schema test;
+show database test;
 [{
-  "name": "test",
-  "system": false
+  "name": "test"
 }]
-prefer return=json;
-show schema test;
-[{"name": "test", "system": false}]
-prefer;
+drop database test;
 # test: show tables
 create table test (id int primary key);
 show tables;
 [{
-  "schema": "public",
+  "db": "main",
   "name": "test",
   "unlogged": false
 }]
@@ -71,14 +54,10 @@ show table;
 {"msg": "show() ⟵ name is missing for 'table'"}
 show table test;
 [{
-  "schema": "public",
+  "db": "main",
   "name": "test",
   "unlogged": false
 }]
-prefer return=json;
-show table test;
-[{"schema": "public", "name": "test", "unlogged": false}]
-prefer;
 # test: show functions
 create function test_fn (id int) return json
 begin
@@ -98,12 +77,12 @@ select 123::test_fn().a;
 [4]
 show functions;
 [{
-  "schema": "public",
+  "db": "main",
   "name": "test_fn"
 }]
 show functions extended;
 [{
-  "schema": "public",
+  "db": "main",
   "name": "test_fn",
   "text": "begin\n\treturn {\n\t\t\"a\": 2 + 2,\n\t\t\"b\": id\n\t};\nend",
   "type": 5,
@@ -120,12 +99,12 @@ show function;
 {"msg": "show() ⟵ name is missing for 'function'"}
 show function test_fn;
 [{
-  "schema": "public",
+  "db": "main",
   "name": "test_fn"
 }]
 show function test_fn extended;
 [{
-  "schema": "public",
+  "db": "main",
   "name": "test_fn",
   "text": "begin\n\treturn {\n\t\t\"a\": 2 + 2,\n\t\t\"b\": id\n\t};\nend",
   "type": 5,
@@ -140,14 +119,14 @@ show function test_fn extended;
 # test: show wal
 show wal;
 [{
-  "lsn": 4,
+  "lsn": 5,
   "lsn_min": 1,
   "files": 1,
   "slots": 0,
   "slots_min": -1,
-  "writes": 3,
-  "writes_bytes": 519,
-  "ops": 3,
+  "writes": 4,
+  "writes_bytes": 537,
+  "ops": 4,
   "checkpoint": 1
 }]
 # test: show replicas
@@ -161,7 +140,7 @@ show replica 'abc';
 show replica '00000000-0000-0000-0000-000000000000';
 [null]
 # test: show state
-select system.state();
+show state;
 [{
   "version": "0.8.0",
   "directory": "_output/E0",
@@ -169,22 +148,30 @@ select system.state();
   "frontends": 1,
   "backends": 1,
   "checkpoint": 1,
-  "lsn": 4,
+  "lsn": 5,
   "psn": 1,
   "read_only": false
 }]
-select system.state().directory;
+select show('state');
+[{
+  "version": "0.8.0",
+  "directory": "_output/E0",
+  "uuid": "00000000-0000-0000-0000-000000000000",
+  "frontends": 1,
+  "backends": 1,
+  "checkpoint": 1,
+  "lsn": 5,
+  "psn": 1,
+  "read_only": false
+}]
+select show('state').directory;
 ["_output/E0"]
-select system.state()["directory"];
-["_output/E0"]
-select system.state(123);
-{"msg": "state(❰int❱ ⟵ function has no arguments"}
 # test: show config
 show config;
 [{
   "uuid": "00000000-0000-0000-0000-000000000000",
   "timezone": "UTC",
-  "format": "json-pretty",
+  "format": "pretty-minimal",
   "log_enable": true,
   "log_to_file": true,
   "log_to_stdout": false,
@@ -225,7 +212,7 @@ show all;
 [{
   "uuid": "00000000-0000-0000-0000-000000000000",
   "timezone": "UTC",
-  "format": "json-pretty",
+  "format": "pretty-minimal",
   "log_enable": true,
   "log_to_file": true,
   "log_to_stdout": false,
@@ -261,10 +248,10 @@ show all;
   "checkpoint_compression": "zstd",
   "checkpoint_sync": false
 }]
-select system.config().uuid;
+select show('config').uuid;
 ["00000000-0000-0000-0000-000000000000"]
-select system.config(123);
-{"msg": "config(❰int❱ ⟵ function has no arguments"}
+select show('config', '123');
+{"msg": "show() ⟵ unexpected name argument"}
 # test: show name
 show log_enable;
 [true]
@@ -279,65 +266,16 @@ explain show log_enable;
   "main": {
     "00": "string              0      0      0     # log_enable",
     "01": "push                0      0      0     ",
-    "02": "string              0      11     0     # ",
-    "03": "push                0      0      0     ",
-    "04": "string              0      12     0     # ",
-    "05": "push                0      0      0     ",
-    "06": "bool                0      0      0     ",
-    "07": "push                0      0      0     ",
-    "08": "call                0      -      4     # system.show()",
-    "09": "ret                 0      0      -     "
+    "02": "call                0      -      1     # show()",
+    "03": "ret                 0      0      -     "
   },
   "access": []
 }]
-# test: show (local shadow)
-prefer timezone=Asia/Tokyo, return=json;
+disconnect S0;
+connect E0 S0 127.0.0.1:3485/main?timezone=Asia/Tokyo&format=full;
 show all;
-[{"uuid": "00000000-0000-0000-0000-000000000000", "timezone": "Asia/Tokyo", "format": "json", "log_enable": true, "log_to_file": true, "log_to_stdout": false, "log_connections": true, "log_options": true, "tls_capath": "", "tls_ca": "", "tls_cert": "", "tls_key": "", "listen": [{"host": "127.0.0.1", "port": 3485}], "limit_send": 3145728, "limit_recv": 1048576, "limit_write": 0, "frontends": 1, "backends": 1, "cpu_affinity": true, "wal_worker": false, "wal_crc": true, "wal_sync_on_create": false, "wal_sync_on_close": false, "wal_sync_on_write": false, "wal_sync_interval": "1 sec", "wal_size": 67108864, "wal_truncate": 0, "repl_readahead": 262144, "repl_reconnect_ms": 3000, "checkpoint_interval": "5 min", "checkpoint_workers": 3, "checkpoint_crc": true, "checkpoint_compression": "zstd", "checkpoint_sync": false}]
+[{"result": {"uuid": "00000000-0000-0000-0000-000000000000", "timezone": "Asia/Tokyo", "format": "full", "log_enable": true, "log_to_file": true, "log_to_stdout": false, "log_connections": true, "log_options": true, "tls_capath": "", "tls_ca": "", "tls_cert": "", "tls_key": "", "listen": [{"host": "127.0.0.1", "port": 3485}], "limit_send": 3145728, "limit_recv": 1048576, "limit_write": 0, "frontends": 1, "backends": 1, "cpu_affinity": true, "wal_worker": false, "wal_crc": true, "wal_sync_on_create": false, "wal_sync_on_close": false, "wal_sync_on_write": false, "wal_sync_interval": "1 sec", "wal_size": 67108864, "wal_truncate": 0, "repl_readahead": 262144, "repl_reconnect_ms": 3000, "checkpoint_interval": "5 min", "checkpoint_workers": 3, "checkpoint_crc": true, "checkpoint_compression": "zstd", "checkpoint_sync": false}}]
 show timezone;
-["Asia/Tokyo"]
-prefer;
-show all;
-[{
-  "uuid": "00000000-0000-0000-0000-000000000000",
-  "timezone": "UTC",
-  "format": "json-pretty",
-  "log_enable": true,
-  "log_to_file": true,
-  "log_to_stdout": false,
-  "log_connections": true,
-  "log_options": true,
-  "tls_capath": "",
-  "tls_ca": "",
-  "tls_cert": "",
-  "tls_key": "",
-  "listen": [{
-    "host": "127.0.0.1",
-    "port": 3485
-  }],
-  "limit_send": 3145728,
-  "limit_recv": 1048576,
-  "limit_write": 0,
-  "frontends": 1,
-  "backends": 1,
-  "cpu_affinity": true,
-  "wal_worker": false,
-  "wal_crc": true,
-  "wal_sync_on_create": false,
-  "wal_sync_on_close": false,
-  "wal_sync_on_write": false,
-  "wal_sync_interval": "1 sec",
-  "wal_size": 67108864,
-  "wal_truncate": 0,
-  "repl_readahead": 262144,
-  "repl_reconnect_ms": 3000,
-  "checkpoint_interval": "5 min",
-  "checkpoint_workers": 3,
-  "checkpoint_crc": true,
-  "checkpoint_compression": "zstd",
-  "checkpoint_sync": false
-}]
-show timezone;
-["UTC"]
+[{"result": "Asia/Tokyo"}]
 disconnect S0;
 close E0;

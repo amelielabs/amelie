@@ -6,33 +6,31 @@ create replica;
 create replica 123;
 {"msg": "create replica ❰123❱ ⟵ string expected"}
 create replica "00000000-0000-0000-0000-000000000000";
-{"msg": "create replica \"00000000-0000-0000-0000-000000000000\"❰;❱ ⟵ URI is not defined"}
+{"msg": "create replica \"00000000-0000-0000-0000-000000000000\"❰;❱ ⟵ string expected"}
 create replica "00000000-0000-0000-0000-000000000000" 1;
-{"msg": "create replica \"00000000-0000-0000-0000-000000000000\" ❰1❱ ⟵ option name expected"}
+{"msg": "create replica \"00000000-0000-0000-0000-000000000000\" ❰1❱ ⟵ string expected"}
 create replica "00000000-0000-0000-0000-000000000000";
-{"msg": "create replica \"00000000-0000-0000-0000-000000000000\"❰;❱ ⟵ URI is not defined"}
-create replica "00000000-0000-0000-0000-000000000000" "127.0.0.1";
-{"msg": "create replica \"00000000-0000-0000-0000-000000000000\" ❰\"127.0.0.1\"❱ ⟵ option name expected"}
+{"msg": "create replica \"00000000-0000-0000-0000-000000000000\"❰;❱ ⟵ string expected"}
 # test: create replica
-create replica "00000000-0000-0000-0000-000000000000" uri "127.0.0.1";
+create replica "00000000-0000-0000-0000-000000000000" "127.0.0.1";
 show replicas;
 [{
   "id": "00000000-0000-0000-0000-000000000000",
-  "uri": "127.0.0.1",
+  "uri": "http://127.0.0.1:3485/",
   "connected": false,
   "lsn": 0,
   "lag": 1
 }]
 # test: create replica if not exists
-create replica if not exists "00000000-0000-0000-0000-000000000000" uri "127.0.0.1";
-select system.replicas();
-[[{
+create replica if not exists "00000000-0000-0000-0000-000000000000" "127.0.0.1";
+show replicas;
+[{
   "id": "00000000-0000-0000-0000-000000000000",
-  "uri": "127.0.0.1",
+  "uri": "http://127.0.0.1:3485/",
   "connected": false,
   "lsn": 0,
   "lag": 1
-}]]
+}]
 # test: drop replica statement parsing
 drop replica;
 {"msg": "drop replica❰;❱ ⟵ string expected"}
@@ -49,18 +47,18 @@ drop replica if exists "00000000-0000-0000-0000-000000000000";
 drop replica "00000000-0000-0000-0000-000000000000";
 {"msg": "replica '00000000-0000-0000-0000-000000000000': not exists"}
 # test: recover
-create replica "00000000-0000-0000-0000-000000000000" uri "127.0.0.1";
-create replica "00000000-0000-0000-0000-000000000001" uri "127.0.0.1";
+create replica "00000000-0000-0000-0000-000000000000" "127.0.0.1";
+create replica "00000000-0000-0000-0000-000000000001" "127.0.0.1";
 show replicas;
 [{
   "id": "00000000-0000-0000-0000-000000000000",
-  "uri": "127.0.0.1",
+  "uri": "http://127.0.0.1:3485/",
   "connected": false,
   "lsn": 0,
   "lag": 1
 }, {
   "id": "00000000-0000-0000-0000-000000000001",
-  "uri": "127.0.0.1",
+  "uri": "http://127.0.0.1:3485/",
   "connected": false,
   "lsn": 0,
   "lag": 1
@@ -72,13 +70,13 @@ connect E0 S0 127.0.0.1:3480;
 show replicas;
 [{
   "id": "00000000-0000-0000-0000-000000000000",
-  "uri": "127.0.0.1",
+  "uri": "http://127.0.0.1:3485/",
   "connected": false,
   "lsn": 0,
   "lag": 1
 }, {
   "id": "00000000-0000-0000-0000-000000000001",
-  "uri": "127.0.0.1",
+  "uri": "http://127.0.0.1:3485/",
   "connected": false,
   "lsn": 0,
   "lag": 1

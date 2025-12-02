@@ -1,11 +1,11 @@
 open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "127.0.0.1", "port": 3485 }];
 connect E0 S0 127.0.0.1:3485;
-# test: config()
-select system.config();
+# test: config
+select show();
 [{
   "uuid": "00000000-0000-0000-0000-000000000000",
   "timezone": "UTC",
-  "format": "json-pretty",
+  "format": "pretty-minimal",
   "log_enable": true,
   "log_to_file": true,
   "log_to_stdout": false,
@@ -41,8 +41,88 @@ select system.config();
   "checkpoint_compression": "zstd",
   "checkpoint_sync": false
 }]
-# test: state()
-select system.state();
+select show('config');
+[{
+  "uuid": "00000000-0000-0000-0000-000000000000",
+  "timezone": "UTC",
+  "format": "pretty-minimal",
+  "log_enable": true,
+  "log_to_file": true,
+  "log_to_stdout": false,
+  "log_connections": true,
+  "log_options": true,
+  "tls_capath": "",
+  "tls_ca": "",
+  "tls_cert": "",
+  "tls_key": "",
+  "listen": [{
+    "host": "127.0.0.1",
+    "port": 3485
+  }],
+  "limit_send": 3145728,
+  "limit_recv": 1048576,
+  "limit_write": 0,
+  "frontends": 1,
+  "backends": 1,
+  "cpu_affinity": true,
+  "wal_worker": false,
+  "wal_crc": true,
+  "wal_sync_on_create": false,
+  "wal_sync_on_close": false,
+  "wal_sync_on_write": false,
+  "wal_sync_interval": "1 sec",
+  "wal_size": 67108864,
+  "wal_truncate": 0,
+  "repl_readahead": 262144,
+  "repl_reconnect_ms": 3000,
+  "checkpoint_interval": "5 min",
+  "checkpoint_workers": 3,
+  "checkpoint_crc": true,
+  "checkpoint_compression": "zstd",
+  "checkpoint_sync": false
+}]
+select show('all');
+[{
+  "uuid": "00000000-0000-0000-0000-000000000000",
+  "timezone": "UTC",
+  "format": "pretty-minimal",
+  "log_enable": true,
+  "log_to_file": true,
+  "log_to_stdout": false,
+  "log_connections": true,
+  "log_options": true,
+  "tls_capath": "",
+  "tls_ca": "",
+  "tls_cert": "",
+  "tls_key": "",
+  "listen": [{
+    "host": "127.0.0.1",
+    "port": 3485
+  }],
+  "limit_send": 3145728,
+  "limit_recv": 1048576,
+  "limit_write": 0,
+  "frontends": 1,
+  "backends": 1,
+  "cpu_affinity": true,
+  "wal_worker": false,
+  "wal_crc": true,
+  "wal_sync_on_create": false,
+  "wal_sync_on_close": false,
+  "wal_sync_on_write": false,
+  "wal_sync_interval": "1 sec",
+  "wal_size": 67108864,
+  "wal_truncate": 0,
+  "repl_readahead": 262144,
+  "repl_reconnect_ms": 3000,
+  "checkpoint_interval": "5 min",
+  "checkpoint_workers": 3,
+  "checkpoint_crc": true,
+  "checkpoint_compression": "zstd",
+  "checkpoint_sync": false
+}]
+# test: state
+select show('state');
 [{
   "version": "0.8.0",
   "directory": "_output/E0",
@@ -54,74 +134,60 @@ select system.state();
   "psn": 0,
   "read_only": false
 }]
-# test: users()
-select system.users();
+# test: users
+select show('users');
 [[]]
-# test: user()
-select system.user('test');
+# test: user
+select show('user', 'test');
 [null]
-# test: replicas()
-select system.replicas();
+# test: replicas
+select show('replicas');
 [[]]
-# test: replica()
-select system.replica('00000000-0000-0000-0000-000000000000');
+# test: replica
+select show('replica', '00000000-0000-0000-0000-000000000000');
 [null]
-select system.replica(uuid '00000000-0000-0000-0000-000000000000');
-[null]
-# test: repl()
-select system.repl();
+select show('replica', uuid '00000000-0000-0000-0000-000000000000');
+{"msg": "show(string, ❰uuid❱ ⟵ string or bool expected"}
+# test: repl
+select show('repl');
 [{
   "active": false,
   "role": "primary",
   "primary": null,
   "replicas": []
 }]
-# test: replication()
-select system.replication();
+# test: replication
+select show('replication');
 [{
   "active": false,
   "role": "primary",
   "primary": null,
   "replicas": []
 }]
-# test: schemas()
-select system.schemas();
+# test: databases
+select show('databases');
 [[{
-  "name": "system",
-  "system": true,
-  "create": false
-}, {
-  "name": "public",
-  "system": true,
-  "create": true
+  "name": "main"
 }]]
-# test: schema()
-select system.schema('public');
+# test: database
+select show('database', 'main');
 [{
-  "name": "public",
-  "system": true,
-  "create": true
+  "name": "main"
 }]
-select system.schema('public').system;
-[true]
-# test: tables()
-select system.tables();
+# test: tables
+select show('tables');
 [[]]
-# test: table()
-select system.table('test');
+# test: table
+select show('table', 'test');
 [null]
-select system.table('test.a');
-[null]
-# test: functions()
-select system.functions();
+# test: functions
+select show('functions');
 [[]]
-# test: function()
-select system.function('test');
+# test: function
+select show('function', 'test');
 [null]
-select system.function('test.a');
-[null]
-# test: wal()
-select system.wal();
+# test: wal
+select show('wal');
 [{
   "lsn": 1,
   "lsn_min": 1,
@@ -133,8 +199,8 @@ select system.wal();
   "ops": 0,
   "checkpoint": 1
 }]
-# test: metrics()
-select system.metrics()::size;
+# test: metrics
+select show('metrics')::size;
 [9]
 disconnect S0;
 close E0;

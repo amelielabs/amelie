@@ -74,11 +74,11 @@ test_api_connect(void* arg)
 	auto rc = amelie_open(amelie, path, argc, argv);
 	test(! rc);
 
-	auto session1 = amelie_connect(amelie, NULL);
+	auto session1 = amelie_connect(amelie, "amelie://");
 	test(session1);
 	amelie_free(session1);
 
-	auto session2 = amelie_connect(amelie, NULL);
+	auto session2 = amelie_connect(amelie, "amelie://main");
 	test(session2);
 	amelie_free(session2);
 
@@ -111,7 +111,7 @@ test_api_execute(void* arg)
 	auto rc = amelie_open(amelie, path, argc, argv);
 	test(! rc);
 
-	auto session = amelie_connect(amelie, NULL);
+	auto session = amelie_connect(amelie, "amelie://");
 	test(session);
 
 	auto req = amelie_execute(session, "create table test (id int primary key)", 0, NULL, NULL, NULL);
@@ -142,7 +142,7 @@ test_api_execute(void* arg)
 	rc = amelie_open(amelie, path, argc, argv);
 	test(! rc);
 
-	session = amelie_connect(amelie, NULL);
+	session = amelie_connect(amelie, "amelie://");
 	test(session);
 
 	result.data = NULL;
@@ -183,7 +183,7 @@ test_api_execute_error(void* arg)
 	auto rc = amelie_open(amelie, path, argc, argv);
 	test(! rc);
 
-	auto session = amelie_connect(amelie, NULL);
+	auto session = amelie_connect(amelie, "amelie://");
 	test(session);
 
 	auto req = amelie_execute(session, "select abcd", 0, NULL, NULL, NULL);

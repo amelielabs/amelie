@@ -5,7 +5,7 @@ show all;
 [{
   "uuid": "abc00000-0000-0000-0000-000000000000",
   "timezone": "UTC",
-  "format": "json-pretty",
+  "format": "pretty-minimal",
   "log_enable": true,
   "log_to_file": true,
   "log_to_stdout": false,
@@ -62,7 +62,7 @@ show all;
 [{
   "uuid": "abc00000-0000-0000-0000-000000000000",
   "timezone": "UTC",
-  "format": "json-pretty",
+  "format": "pretty-minimal",
   "log_enable": true,
   "log_to_file": true,
   "log_to_stdout": false,

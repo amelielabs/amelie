@@ -9,15 +9,14 @@ create replica 123;
 create replica "00000000-0000-0000-0000-000000000000";
 create replica "00000000-0000-0000-0000-000000000000" 1;
 create replica "00000000-0000-0000-0000-000000000000";
-create replica "00000000-0000-0000-0000-000000000000" "127.0.0.1";
 
 # test: create replica
-create replica "00000000-0000-0000-0000-000000000000" uri "127.0.0.1";
+create replica "00000000-0000-0000-0000-000000000000" "127.0.0.1";
 show replicas;
 
 # test: create replica if not exists
-create replica if not exists "00000000-0000-0000-0000-000000000000" uri "127.0.0.1";
-select system.replicas();
+create replica if not exists "00000000-0000-0000-0000-000000000000" "127.0.0.1";
+show replicas;
 
 # test: drop replica statement parsing
 drop replica;
@@ -33,8 +32,8 @@ drop replica if exists "00000000-0000-0000-0000-000000000000";
 drop replica "00000000-0000-0000-0000-000000000000";
 
 # test: recover
-create replica "00000000-0000-0000-0000-000000000000" uri "127.0.0.1";
-create replica "00000000-0000-0000-0000-000000000001" uri "127.0.0.1";
+create replica "00000000-0000-0000-0000-000000000000" "127.0.0.1";
+create replica "00000000-0000-0000-0000-000000000001" "127.0.0.1";
 show replicas;
 
 disconnect S0;

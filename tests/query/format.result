@@ -1,0 +1,11 @@
+open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "127.0.0.1", "port": 3485 }];
+connect E0 S0 127.0.0.1:3485;
+# test: default format
+show format;
+["pretty-minimal"]
+# test: json
+disconnect S0;
+close E0;
+open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "127.0.0.1", "port": 3485 }], "format": "json";
+connect E0 S0 127.0.0.1:3485;
+select 123;

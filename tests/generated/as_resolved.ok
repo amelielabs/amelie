@@ -18,7 +18,7 @@ create table test (id int primary key as (42) resolved);
 create table test (id int primary key, data int as (data + 1) resolved);
 show table test extended;
 [{
-  "schema": "public",
+  "db": "main",
   "name": "test",
   "unlogged": false,
   "columns": [{

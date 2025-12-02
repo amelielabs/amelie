@@ -7,7 +7,7 @@ connect E0 S0 127.0.0.1:3480;
 show repl;
 
 # test: backup replica
-backup E1 "uri": "127.0.0.1:3480";
+backup E1 http://127.0.0.1:3480;
 close E1;
 
 open E1 "uuid": "00000000-0000-0000-0000-000000000001", "listen": [{ "host": "127.0.0.1", "port": 3481 }];
@@ -26,29 +26,29 @@ subscribe "00000000-0000-0000-0000-000000000001";
 # test: subscribe
 subscribe "00000000-0000-0000-0000-000000000000";
 show repl;
-select system.state().read_only;
+select show('state').read_only;
 
 # test: create replica
 switch S0;
 show replicas;
 
-create replica "00000000-0000-0000-0000-000000000001" uri "127.0.0.1:3481";
+create replica "00000000-0000-0000-0000-000000000001" "127.0.0.1:3481";
 show replicas;
 
 # test: start primary
 start repl;
 
 # test: wait for primary connect
-watch system.replica('00000000-0000-0000-0000-000000000001').connected::bool = true;
+watch show('replica', '00000000-0000-0000-0000-000000000001').connected::bool = true;
 
 # test: write
 create table test (id int primary key);
 insert into test values (1),(2),(3);
 
-select system.state().lsn;
+select show('state').lsn;
 
 # test: wait replica sync
-watch system.replica('00000000-0000-0000-0000-000000000001').lsn = system.state().lsn;
+watch show('replica', '00000000-0000-0000-0000-000000000001').lsn = show('state').lsn;
 
 # test: stop replica
 disconnect S1;
@@ -59,14 +59,14 @@ insert into test values (4);
 insert into test values (5);
 insert into test values (6);
 
-select system.state().lsn;
+select show('state').lsn;
 
 # test: replica lag
 show replicas;
 
 # test: replica disconnected
 switch S0;
-watch system.replica('00000000-0000-0000-0000-000000000001').connected::bool = false;
+watch show('replica', '00000000-0000-0000-0000-000000000001').connected::bool = false;
 
 # test: restart replica
 open E1 "uuid": "00000000-0000-0000-0000-000000000001", "listen": [{ "host": "127.0.0.1", "port": 3481 }];
@@ -74,10 +74,10 @@ connect E1 S1 127.0.0.1:3481;
 
 # test: wait for primary reconnect
 switch S0;
-watch system.replica('00000000-0000-0000-0000-000000000001').connected::bool = true;
+watch show('replica', '00000000-0000-0000-0000-000000000001').connected::bool = true;
 
 # test: wait replica sync
-watch system.replica('00000000-0000-0000-0000-000000000001').lsn = system.state().lsn;
+watch show('replica', '00000000-0000-0000-0000-000000000001').lsn = show('state').lsn;
 show replicas;
 
 # test: restart primary
@@ -89,7 +89,7 @@ connect E0 S0 127.0.0.1:3480;
 
 # test: wait for primary reconnect
 switch S0;
-watch system.replica('00000000-0000-0000-0000-000000000001').connected::bool = true;
+watch show('replica', '00000000-0000-0000-0000-000000000001').connected::bool = true;
 
 # test: write
 insert into test values (7);
@@ -97,26 +97,26 @@ insert into test values (8);
 insert into test values (9);
 
 # test: wait replica sync
-watch system.replica('00000000-0000-0000-0000-000000000001').lsn = system.state().lsn;
+watch show('replica', '00000000-0000-0000-0000-000000000001').lsn = show('state').lsn;
 show replicas;
 
 # test: ensure replica is read-only
 switch S1;
 
-select system.state().read_only;
-select system.state().lsn;
+select show('state').read_only;
+select show('state').lsn;
 insert into test values (10);
-select system.state().lsn;
+select show('state').lsn;
 
-select system.state().psn;
+select show('state').psn;
 create table test2 (id int primary key);
-select system.state().lsn;
-select system.state().psn;
+select show('state').lsn;
+select show('state').psn;
 
 # test: replica read
 select * from test;
 show repl;
-select system.state().lsn;
+select show('state').lsn;
 
 # test: failover (unsubscribe, switch to primary)
 show repl;
@@ -135,11 +135,11 @@ show repl;
 
 # test: create replica
 switch S1;
-create replica "00000000-0000-0000-0000-000000000000" uri "127.0.0.1:3480";
+create replica "00000000-0000-0000-0000-000000000000" "127.0.0.1:3480";
 
 # test: wait for primary connect
-watch system.replica('00000000-0000-0000-0000-000000000000').connected::bool = true;
-watch system.replica('00000000-0000-0000-0000-000000000000').lsn = system.state().lsn;
+watch show('replica', '00000000-0000-0000-0000-000000000000').connected::bool = true;
+watch show('replica', '00000000-0000-0000-0000-000000000000').lsn = show('state').lsn;
 
 # test: write
 insert into test values (10);
@@ -147,7 +147,7 @@ insert into test values (11);
 insert into test values (12);
 
 # test: wait replica sync
-watch system.replica('00000000-0000-0000-0000-000000000000').lsn = system.state().lsn;
+watch show('replica', '00000000-0000-0000-0000-000000000000').lsn = show('state').lsn;
 show replicas;
 select * from test;
 

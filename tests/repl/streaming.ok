@@ -1,7 +1,7 @@
 open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "127.0.0.1", "port": 3480 }], "backends": 3, "repl_reconnect_ms": 10;
 connect E0 S0 127.0.0.1:3480;
 # test: create replica
-backup E1 "uri": "127.0.0.1:3480";
+backup E1 http://127.0.0.1:3480;
 close E1;
 open E1 "uuid": "00000000-0000-0000-0000-000000000001", "listen": [{ "host": "127.0.0.1", "port": 3481 }];
 connect E1 S1 127.0.0.1:3481;
@@ -9,10 +9,10 @@ switch S1;
 start repl;
 subscribe "00000000-0000-0000-0000-000000000000";
 switch S0;
-create replica "00000000-0000-0000-0000-000000000001" uri "127.0.0.1:3481";
+create replica "00000000-0000-0000-0000-000000000001" "127.0.0.1:3481";
 start repl;
 # test: wait for primary connect
-watch system.replica("00000000-0000-0000-0000-000000000001").connected::bool = true;
+watch show('replica', "00000000-0000-0000-0000-000000000001").connected::bool = true;
 # test: write
 create table test (id int primary key);
 insert into test values ( 1 );
@@ -10015,7 +10015,7 @@ insert into test values ( 9997 );
 insert into test values ( 9998 );
 insert into test values ( 9999 );
 # test: wait replica sync
-watch system.replica("00000000-0000-0000-0000-000000000001").lsn = system.state().lsn;
+watch show('replica', "00000000-0000-0000-0000-000000000001").lsn = show('state').lsn;
 show repl;
 [{
   "active": true,
@@ -10023,19 +10023,19 @@ show repl;
   "primary": null,
   "replicas": [{
     "id": "00000000-0000-0000-0000-000000000001",
-    "uri": "127.0.0.1:3481",
+    "uri": "http://127.0.0.1:3481/",
     "connected": true,
     "lsn": 10001,
     "lag": 0
   }]
 }]
 # test: validate
-select system.state().lsn;
+select show('state').lsn;
 [10001]
 select count(*) from test;
 [9999]
 switch S1;
-select system.state().lsn;
+select show('state').lsn;
 [10001]
 select count(*) from test;
 [9999]
@@ -10047,7 +10047,7 @@ select count(*) from test;
 select count(*) from test use index(i);
 [9999]
 # test: wait replica sync
-watch system.replica("00000000-0000-0000-0000-000000000001").lsn = system.state().lsn;
+watch show('replica', "00000000-0000-0000-0000-000000000001").lsn = show('state').lsn;
 show repl;
 [{
   "active": true,
@@ -10055,7 +10055,7 @@ show repl;
   "primary": null,
   "replicas": [{
     "id": "00000000-0000-0000-0000-000000000001",
-    "uri": "127.0.0.1:3481",
+    "uri": "http://127.0.0.1:3481/",
     "connected": true,
     "lsn": 10002,
     "lag": 0
@@ -10072,7 +10072,7 @@ alter table test add column data int default 1;
 select count(data) from test;
 [0]
 # test: wait replica sync
-watch system.replica("00000000-0000-0000-0000-000000000001").lsn = system.state().lsn;
+watch show('replica', "00000000-0000-0000-0000-000000000001").lsn = show('state').lsn;
 show repl;
 [{
   "active": true,
@@ -10080,7 +10080,7 @@ show repl;
   "primary": null,
   "replicas": [{
     "id": "00000000-0000-0000-0000-000000000001",
-    "uri": "127.0.0.1:3481",
+    "uri": "http://127.0.0.1:3481/",
     "connected": true,
     "lsn": 10003,
     "lag": 0
@@ -10097,7 +10097,7 @@ select count(data) from test;
 select count(id) from test;
 [9999]
 # test: wait replica sync
-watch system.replica("00000000-0000-0000-0000-000000000001").lsn = system.state().lsn;
+watch show('replica', "00000000-0000-0000-0000-000000000001").lsn = show('state').lsn;
 show repl;
 [{
   "active": true,
@@ -10105,7 +10105,7 @@ show repl;
   "primary": null,
   "replicas": [{
     "id": "00000000-0000-0000-0000-000000000001",
-    "uri": "127.0.0.1:3481",
+    "uri": "http://127.0.0.1:3481/",
     "connected": true,
     "lsn": 10004,
     "lag": 0
@@ -10122,7 +10122,7 @@ alter table test rename column id to id2;
 select count(id2) from test;
 [9999]
 # test: wait replica sync
-watch system.replica("00000000-0000-0000-0000-000000000001").lsn = system.state().lsn;
+watch show('replica', "00000000-0000-0000-0000-000000000001").lsn = show('state').lsn;
 show repl;
 [{
   "active": true,
@@ -10130,7 +10130,7 @@ show repl;
   "primary": null,
   "replicas": [{
     "id": "00000000-0000-0000-0000-000000000001",
-    "uri": "127.0.0.1:3481",
+    "uri": "http://127.0.0.1:3481/",
     "connected": true,
     "lsn": 10005,
     "lag": 0
@@ -10141,9 +10141,9 @@ select count(id2) from test;
 [9999]
 # test: ddl (truncate)
 switch S0;
-truncate public.test;
+truncate test;
 # test: wait replica sync
-watch system.replica("00000000-0000-0000-0000-000000000001").lsn = system.state().lsn;
+watch show('replica', "00000000-0000-0000-0000-000000000001").lsn = show('state').lsn;
 show repl;
 [{
   "active": true,
@@ -10151,7 +10151,7 @@ show repl;
   "primary": null,
   "replicas": [{
     "id": "00000000-0000-0000-0000-000000000001",
-    "uri": "127.0.0.1:3481",
+    "uri": "http://127.0.0.1:3481/",
     "connected": true,
     "lsn": 10006,
     "lag": 0
@@ -10171,7 +10171,7 @@ insert into test values (7);
 insert into test values (8);
 insert into test values (9);
 insert into test values (10);
-watch system.replica("00000000-0000-0000-0000-000000000001").lsn = system.state().lsn;
+watch show('replica', "00000000-0000-0000-0000-000000000001").lsn = show('state').lsn;
 show repl;
 [{
   "active": true,
@@ -10179,7 +10179,7 @@ show repl;
   "primary": null,
   "replicas": [{
     "id": "00000000-0000-0000-0000-000000000001",
-    "uri": "127.0.0.1:3481",
+    "uri": "http://127.0.0.1:3481/",
     "connected": true,
     "lsn": 10016,
     "lag": 0
@@ -10192,10 +10192,10 @@ select count(id2) from test;
 switch S0;
 create table test2 (id serial primary key);
 insert into test2 () values (), (), (), ();
-select identity_of("public", "test2");
+select identity_of("test2");
 [4]
 # test: wait replica sync
-watch system.replica("00000000-0000-0000-0000-000000000001").lsn = system.state().lsn;
+watch show('replica', "00000000-0000-0000-0000-000000000001").lsn = show('state').lsn;
 show repl;
 [{
   "active": true,
@@ -10203,20 +10203,20 @@ show repl;
   "primary": null,
   "replicas": [{
     "id": "00000000-0000-0000-0000-000000000001",
-    "uri": "127.0.0.1:3481",
+    "uri": "http://127.0.0.1:3481/",
     "connected": true,
     "lsn": 10018,
     "lag": 0
   }]
 }]
 switch S1;
-select identity_of("public", "test2");
+select identity_of("test2");
 [4]
 # test: create table (partitions extended)
 switch S0;
 create table test3 (id serial primary key) partitions 8;
 # test: wait replica sync
-watch system.replica("00000000-0000-0000-0000-000000000001").lsn = system.state().lsn;
+watch show('replica', "00000000-0000-0000-0000-000000000001").lsn = show('state').lsn;
 show repl;
 [{
   "active": true,
@@ -10224,14 +10224,14 @@ show repl;
   "primary": null,
   "replicas": [{
     "id": "00000000-0000-0000-0000-000000000001",
-    "uri": "127.0.0.1:3481",
+    "uri": "http://127.0.0.1:3481/",
     "connected": true,
     "lsn": 10019,
     "lag": 0
   }]
 }]
 switch S1;
-select system.state().backends::int = 8;
+select show('state').backends::int = 8;
 [true]
 disconnect S1;
 close E1;

@@ -16,26 +16,27 @@ show state;
   "psn": 0,
   "read_only": false
 }]
-explain watch system.state().lsn::int = 1;
+explain watch show('state').lsn::int = 1;
 [{
   "main": {
-    "00": "call                0      -      0     # system.state()",
-    "01": "string              1      0      0     # lsn",
-    "02": "dotjs               2      0      1     ",
-    "03": "push                2      0      0     ",
-    "04": "call                0      -      1     # public.int()",
-    "05": "int                 1      -      0     # 1",
-    "06": "equii               2      0      1     ",
-    "07": "jtr                 12     2      0     ",
-    "08": "int                 0      -      0     # 1000",
-    "09": "push                0      0      0     ",
-    "10": "call                0      -      1     # public.sleep()",
-    "11": "jmp                 0      0      0     ",
-    "12": "nop                 0      0      0     ",
-    "13": "ret                 -1     0      -     "
+    "00": "push_string         0      0      0     # state",
+    "01": "call                0      -      1     # show()",
+    "02": "string              1      6      0     # lsn",
+    "03": "dotjs               2      0      1     ",
+    "04": "push                2      0      0     ",
+    "05": "call                0      -      1     # int()",
+    "06": "int                 1      -      0     # 1",
+    "07": "equii               2      0      1     ",
+    "08": "jtr                 13     2      0     ",
+    "09": "int                 0      -      0     # 1000",
+    "10": "push                0      0      0     ",
+    "11": "call                0      -      1     # sleep()",
+    "12": "jmp                 0      0      0     ",
+    "13": "nop                 0      0      0     ",
+    "14": "ret                 -1     0      -     "
   },
   "access": []
 }]
-watch system.state().lsn::int = 1;
+watch show('state').lsn::int = 1;
 disconnect S0;
 close E0;

@@ -4,7 +4,7 @@ open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "12
 connect E0 S0 127.0.0.1:3485;
 
 # test: default limits
-select system.config();
+select show();
 
 # test: limit_write
 create table test (id int primary key);
@@ -29,14 +29,14 @@ close E0;
 open E0 "limit_send": 0;
 connect E0 S0 127.0.0.1:3485;
 
-select system.config();
+select show();
 
 disconnect S0;
 close E0;
 open E0;
 connect E0 S0 127.0.0.1:3485;
 
-select system.config();
+select show();
 
 # test: limit_recv
 disconnect S0;

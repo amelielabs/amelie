@@ -8,14 +8,14 @@ select * from test;
 explain select * from test order by id;
 [{
   "main": {
-    "00": "send_all            0      0      21    # public.test (select, closing)",
+    "00": "send_all            0      0      19    # test (select, closing)",
     "01": "union               1      1      0     ",
     "02": "recv                1      0      0     ",
     "03": "ret                 1      0      -     "
   },
   "pushdown": {
     "00": "set_ordered         0      1      1     ",
-    "01": "table_open_part     1      1      8     # public.test (primary)",
+    "01": "table_open_part     1      1      8     # test (primary)",
     "02": "table_readi64       2      1      0     ",
     "03": "push                2      0      0     ",
     "04": "table_readi64       2      1      0     ",
@@ -25,7 +25,7 @@ explain select * from test order by id;
     "08": "free                1      0      0     ",
     "09": "ret                 0      0      -     "
   },
-  "access": [["public.test", "ro"]]
+  "access": [["test", "ro"]]
 }]
 select * from test order by id;
 [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19]
@@ -33,14 +33,14 @@ select * from test order by id;
 explain select * from test order by id asc;
 [{
   "main": {
-    "00": "send_all            0      0      21    # public.test (select, closing)",
+    "00": "send_all            0      0      19    # test (select, closing)",
     "01": "union               1      1      0     ",
     "02": "recv                1      0      0     ",
     "03": "ret                 1      0      -     "
   },
   "pushdown": {
     "00": "set_ordered         0      1      1     ",
-    "01": "table_open_part     1      1      8     # public.test (primary)",
+    "01": "table_open_part     1      1      8     # test (primary)",
     "02": "table_readi64       2      1      0     ",
     "03": "push                2      0      0     ",
     "04": "table_readi64       2      1      0     ",
@@ -50,7 +50,7 @@ explain select * from test order by id asc;
     "08": "free                1      0      0     ",
     "09": "ret                 0      0      -     "
   },
-  "access": [["public.test", "ro"]]
+  "access": [["test", "ro"]]
 }]
 select * from test order by id asc;
 [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19]
@@ -58,14 +58,14 @@ select * from test order by id asc;
 explain select * from test order by id desc;
 [{
   "main": {
-    "00": "send_all            0      0      21    # public.test (select, closing)",
+    "00": "send_all            0      0      19    # test (select, closing)",
     "01": "union               1      1      0     ",
     "02": "recv                1      0      0     ",
     "03": "ret                 1      0      -     "
   },
   "pushdown": {
     "00": "set_ordered         0      1      1     ",
-    "01": "table_open_part     1      1      8     # public.test (primary)",
+    "01": "table_open_part     1      1      8     # test (primary)",
     "02": "table_readi64       2      1      0     ",
     "03": "push                2      0      0     ",
     "04": "table_readi64       2      1      0     ",
@@ -76,7 +76,7 @@ explain select * from test order by id desc;
     "09": "set_sort            0      0      0     ",
     "10": "ret                 0      0      -     "
   },
-  "access": [["public.test", "ro"]]
+  "access": [["test", "ro"]]
 }]
 select * from test order by id desc;
 [19, 18, 17, 16, 15, 14, 13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1, 0]
@@ -84,7 +84,7 @@ select * from test order by id desc;
 explain select * from test order by id limit 1;
 [{
   "main": {
-    "00": "send_all            0      0      21    # public.test (select, closing)",
+    "00": "send_all            0      0      19    # test (select, closing)",
     "01": "union               1      1      0     ",
     "02": "int                 2      -      0     # 1",
     "03": "union_limit         1      2      0     ",
@@ -94,7 +94,7 @@ explain select * from test order by id limit 1;
   "pushdown": {
     "00": "set_ordered         0      1      1     ",
     "01": "int                 1      -      0     # 1",
-    "02": "table_open_part     2      1      10    # public.test (primary)",
+    "02": "table_open_part     2      1      10    # test (primary)",
     "03": "cjltd               10     1      0     ",
     "04": "table_readi64       3      2      0     ",
     "05": "push                3      0      0     ",
@@ -105,7 +105,7 @@ explain select * from test order by id limit 1;
     "10": "free                2      0      0     ",
     "11": "ret                 0      0      -     "
   },
-  "access": [["public.test", "ro"]]
+  "access": [["test", "ro"]]
 }]
 select * from test order by id limit 1;
 [0]
@@ -123,7 +123,7 @@ select * from test order by id limit 20;
 explain select * from test order by id limit 0;
 [{
   "main": {
-    "00": "send_all            0      0      21    # public.test (select, closing)",
+    "00": "send_all            0      0      19    # test (select, closing)",
     "01": "union               1      1      0     ",
     "02": "int                 2      -      0     # 0",
     "03": "union_limit         1      2      0     ",
@@ -133,7 +133,7 @@ explain select * from test order by id limit 0;
   "pushdown": {
     "00": "set_ordered         0      1      1     ",
     "01": "int                 1      -      0     # 0",
-    "02": "table_open_part     2      1      10    # public.test (primary)",
+    "02": "table_open_part     2      1      10    # test (primary)",
     "03": "cjltd               10     1      0     ",
     "04": "table_readi64       3      2      0     ",
     "05": "push                3      0      0     ",
@@ -144,7 +144,7 @@ explain select * from test order by id limit 0;
     "10": "free                2      0      0     ",
     "11": "ret                 0      0      -     "
   },
-  "access": [["public.test", "ro"]]
+  "access": [["test", "ro"]]
 }]
 select * from test order by id limit 0;
 []
@@ -154,7 +154,7 @@ select * from test order by id limit -1;
 explain select * from test order by id desc limit 1;
 [{
   "main": {
-    "00": "send_all            0      0      21    # public.test (select, closing)",
+    "00": "send_all            0      0      19    # test (select, closing)",
     "01": "union               1      1      0     ",
     "02": "int                 2      -      0     # 1",
     "03": "union_limit         1      2      0     ",
@@ -163,7 +163,7 @@ explain select * from test order by id desc limit 1;
   },
   "pushdown": {
     "00": "set_ordered         0      1      1     ",
-    "01": "table_open_part     1      1      8     # public.test (primary)",
+    "01": "table_open_part     1      1      8     # test (primary)",
     "02": "table_readi64       2      1      0     ",
     "03": "push                2      0      0     ",
     "04": "table_readi64       2      1      0     ",
@@ -174,7 +174,7 @@ explain select * from test order by id desc limit 1;
     "09": "set_sort            0      0      0     ",
     "10": "ret                 0      0      -     "
   },
-  "access": [["public.test", "ro"]]
+  "access": [["test", "ro"]]
 }]
 select * from test order by id desc limit 1;
 [19]
@@ -192,7 +192,7 @@ select * from test order by id desc limit 20;
 explain select * from test order by id limit 1 offset 0;
 [{
   "main": {
-    "00": "send_all            0      0      21    # public.test (select, closing)",
+    "00": "send_all            0      0      19    # test (select, closing)",
     "01": "union               1      1      0     ",
     "02": "int                 2      -      0     # 1",
     "03": "union_limit         1      2      0     ",
@@ -206,7 +206,7 @@ explain select * from test order by id limit 1 offset 0;
     "01": "int                 1      -      0     # 1",
     "02": "int                 2      -      0     # 0",
     "03": "addii               3      1      2     ",
-    "04": "table_open_part     1      1      12    # public.test (primary)",
+    "04": "table_open_part     1      1      12    # test (primary)",
     "05": "cjltd               12     3      0     ",
     "06": "table_readi64       2      1      0     ",
     "07": "push                2      0      0     ",
@@ -217,7 +217,7 @@ explain select * from test order by id limit 1 offset 0;
     "12": "free                1      0      0     ",
     "13": "ret                 0      0      -     "
   },
-  "access": [["public.test", "ro"]]
+  "access": [["test", "ro"]]
 }]
 select * from test order by id limit 1 offset 0;
 [0]
@@ -225,7 +225,7 @@ select * from test order by id limit 1 offset 0;
 explain select * from test order by id limit 1 offset 1;
 [{
   "main": {
-    "00": "send_all            0      0      21    # public.test (select, closing)",
+    "00": "send_all            0      0      19    # test (select, closing)",
     "01": "union               1      1      0     ",
     "02": "int                 2      -      0     # 1",
     "03": "union_limit         1      2      0     ",
@@ -239,7 +239,7 @@ explain select * from test order by id limit 1 offset 1;
     "01": "int                 1      -      0     # 1",
     "02": "int                 2      -      0     # 1",
     "03": "addii               3      1      2     ",
-    "04": "table_open_part     1      1      12    # public.test (primary)",
+    "04": "table_open_part     1      1      12    # test (primary)",
     "05": "cjltd               12     3      0     ",
     "06": "table_readi64       2      1      0     ",
     "07": "push                2      0      0     ",
@@ -250,7 +250,7 @@ explain select * from test order by id limit 1 offset 1;
     "12": "free                1      0      0     ",
     "13": "ret                 0      0      -     "
   },
-  "access": [["public.test", "ro"]]
+  "access": [["test", "ro"]]
 }]
 select * from test order by id limit 1 offset 1;
 [1]
@@ -264,7 +264,7 @@ select * from test order by id limit 1 offset 4;
 explain select * from test order by id desc limit 1 offset 1;
 [{
   "main": {
-    "00": "send_all            0      0      21    # public.test (select, closing)",
+    "00": "send_all            0      0      19    # test (select, closing)",
     "01": "union               1      1      0     ",
     "02": "int                 2      -      0     # 1",
     "03": "union_limit         1      2      0     ",
@@ -275,7 +275,7 @@ explain select * from test order by id desc limit 1 offset 1;
   },
   "pushdown": {
     "00": "set_ordered         0      1      1     ",
-    "01": "table_open_part     1      1      8     # public.test (primary)",
+    "01": "table_open_part     1      1      8     # test (primary)",
     "02": "table_readi64       2      1      0     ",
     "03": "push                2      0      0     ",
     "04": "table_readi64       2      1      0     ",
@@ -286,7 +286,7 @@ explain select * from test order by id desc limit 1 offset 1;
     "09": "set_sort            0      0      0     ",
     "10": "ret                 0      0      -     "
   },
-  "access": [["public.test", "ro"]]
+  "access": [["test", "ro"]]
 }]
 select * from test order by id desc limit 1 offset 1;
 [18]
@@ -300,7 +300,7 @@ select * from test order by id desc limit 1 offset 4;
 explain select * from test order by id offset 1;
 [{
   "main": {
-    "00": "send_all            0      0      21    # public.test (select, closing)",
+    "00": "send_all            0      0      19    # test (select, closing)",
     "01": "union               1      1      0     ",
     "02": "int                 2      -      0     # 1",
     "03": "union_offset        1      2      0     ",
@@ -309,7 +309,7 @@ explain select * from test order by id offset 1;
   },
   "pushdown": {
     "00": "set_ordered         0      1      1     ",
-    "01": "table_open_part     1      1      8     # public.test (primary)",
+    "01": "table_open_part     1      1      8     # test (primary)",
     "02": "table_readi64       2      1      0     ",
     "03": "push                2      0      0     ",
     "04": "table_readi64       2      1      0     ",
@@ -319,7 +319,7 @@ explain select * from test order by id offset 1;
     "08": "free                1      0      0     ",
     "09": "ret                 0      0      -     "
   },
-  "access": [["public.test", "ro"]]
+  "access": [["test", "ro"]]
 }]
 select * from test order by id offset 1;
 [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19]
@@ -337,7 +337,7 @@ select * from test order by id offset -1;
 explain select * from test order by id desc offset 1;
 [{
   "main": {
-    "00": "send_all            0      0      21    # public.test (select, closing)",
+    "00": "send_all            0      0      19    # test (select, closing)",
     "01": "union               1      1      0     ",
     "02": "int                 2      -      0     # 1",
     "03": "union_offset        1      2      0     ",
@@ -346,7 +346,7 @@ explain select * from test order by id desc offset 1;
   },
   "pushdown": {
     "00": "set_ordered         0      1      1     ",
-    "01": "table_open_part     1      1      8     # public.test (primary)",
+    "01": "table_open_part     1      1      8     # test (primary)",
     "02": "table_readi64       2      1      0     ",
     "03": "push                2      0      0     ",
     "04": "table_readi64       2      1      0     ",
@@ -357,7 +357,7 @@ explain select * from test order by id desc offset 1;
     "09": "set_sort            0      0      0     ",
     "10": "ret                 0      0      -     "
   },
-  "access": [["public.test", "ro"]]
+  "access": [["test", "ro"]]
 }]
 select * from test order by id desc offset 1;
 [18, 17, 16, 15, 14, 13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1, 0]

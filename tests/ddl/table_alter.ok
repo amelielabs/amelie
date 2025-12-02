@@ -2,7 +2,7 @@ open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "12
 connect E0 S0 127.0.0.1:3485;
 # test: alter table statement parsing
 alter;
-{"msg": "alter❰;❱ ⟵ USER|SCHEMA|TABLE|INDEX|FUNCTION expected"}
+{"msg": "alter❰;❱ ⟵ USER|DATABASE|TABLE|INDEX|FUNCTION expected"}
 alter table;
 {"msg": "alter table❰;❱ ⟵ name expected"}
 alter table 123;
@@ -29,30 +29,12 @@ alter table test rename to;
 alter table test rename to asf junk;
 {"msg": "alter table test rename to asf ❰junk❱ ⟵ ; expected"}
 alter table test rename to abc;
-select system.table('abc').name;
+select show('table', 'abc', true).name;
 ["abc"]
 # test: rename table exists
 create table test (id int primary key);
 alter table abc rename to test;
 {"msg": "table 'test': already exists"}
-drop table test;
-# test: rename schema not exists
-alter table abc rename to test.test;
-{"msg": "schema 'test': not exists"}
-# test: rename schema system
-alter table abc rename to system.test;
-{"msg": "system schema <system> cannot be used to create objects"}
-# test: rename schema
-alter table abc rename to public.test;
-select system.table('abc').name;
-[null]
-select system.table('test').name;
-["test"]
-create schema test;
-alter table public.test rename to test.test;
-alter table test.test rename to public.test;
-select system.table('test').name;
-["test"]
 drop table test;
 # test: set identity
 create table test (id serial primary key, data int default 0);
@@ -95,14 +77,14 @@ alter table test set identity to 0;
 {"msg": "table 'test': not exists"}
 # test: set unlogged
 create table test (id int primary key);
-select system.table('test').unlogged;
+select show('table', 'test', true).unlogged;
 [false]
 alter table test set unlogged;
-select system.table('test').unlogged;
+select show('table', 'test', true).unlogged;
 [true]
 # test: set logged
 alter table test set logged;
-select system.table('test').unlogged;
+select show('table', 'test', true).unlogged;
 [false]
 drop table test;
 # test: rename column parsing
@@ -124,7 +106,7 @@ alter table test rename column data to 1;
 {"msg": "alter table test rename column data to ❰1❱ ⟵ name expected"}
 # test: rename column
 create table test (id serial primary key, data int default 0);
-select system.table('test').columns;
+select show('table', 'test', true).columns;
 [[{
   "name": "id",
   "type": 2,
@@ -137,7 +119,7 @@ select system.table('test').columns;
   "constraints": [["default", 0]]
 }]]
 alter table test rename column data to data2;
-select system.table('test').columns;
+select show('table', 'test', true).columns;
 [[{
   "name": "id",
   "type": 2,
@@ -155,7 +137,7 @@ drop table test;
 # test: rename column #2
 create table test (id int primary key);
 insert into test values (1),(2),(3);
-select system.table('test').columns;
+select show('table', 'test', true).columns;
 [[{
   "name": "id",
   "type": 2,
@@ -163,7 +145,7 @@ select system.table('test').columns;
   "constraints": [["not_null", true], ["default", null]]
 }]]
 alter table test rename column id to id2;
-select system.table('test').columns;
+select show('table', 'test', true).columns;
 [[{
   "name": "id2",
   "type": 2,
@@ -177,7 +159,7 @@ select id2 from test;
 drop table test;
 # test: rename column (already exists)
 create table test (id serial primary key, data int default 0);
-select system.table('test').columns;
+select show('table', 'test', true).columns;
 [[{
   "name": "id",
   "type": 2,
@@ -191,7 +173,7 @@ select system.table('test').columns;
 }]]
 alter table test rename column data to data;
 {"msg": "table 'test': column 'data' already exists"}
-select system.table('test').columns;
+select show('table', 'test', true).columns;
 [[{
   "name": "id",
   "type": 2,
@@ -243,7 +225,7 @@ alter table test add column data int primary key;
 drop table test;
 # test: add column (empty table)
 create table test (id int primary key);
-select system.table('test').columns;
+select show('table', 'test', true).columns;
 [[{
   "name": "id",
   "type": 2,
@@ -251,7 +233,7 @@ select system.table('test').columns;
   "constraints": [["not_null", true], ["default", null]]
 }]]
 alter table test add column data int;
-select system.table('test').columns;
+select show('table', 'test', true).columns;
 [[{
   "name": "id",
   "type": 2,
@@ -271,7 +253,7 @@ drop table test;
 create table test (id int primary key);
 insert into test values (1),(2),(3);
 alter table test add column data int;
-select system.table('test').columns;
+select show('table', 'test', true).columns;
 [[{
   "name": "id",
   "type": 2,
@@ -294,7 +276,7 @@ create table test (id int primary key);
 insert into test values (1),(2),(3);
 alter table test add column data int not null;
 {"msg": "alter table test add column data int not null❰;❱ ⟵ NOT NULL currently not supported with ALTER"}
-select system.table('test').columns;
+select show('table', 'test', true).columns;
 [[{
   "name": "id",
   "type": 2,
@@ -306,7 +288,7 @@ drop table test;
 create table test (id int primary key);
 insert into test values (1),(2),(3);
 alter table test add column data int default 123;
-select system.table('test').columns;
+select show('table', 'test', true).columns;
 [[{
   "name": "id",
   "type": 2,
@@ -332,7 +314,7 @@ create table test (id int primary key);
 insert into test values (1),(2),(3);
 alter table test add column data int not null default 123;
 {"msg": "alter table test add column data int not null default 123❰;❱ ⟵ NOT NULL currently not supported with ALTER"}
-select system.table('test').columns;
+select show('table', 'test', true).columns;
 [[{
   "name": "id",
   "type": 2,
@@ -344,7 +326,7 @@ drop table test;
 create table test (id int primary key);
 insert into test values (1),(2),(3);
 alter table test add column data serial;
-select system.table('test').columns;
+select show('table', 'test', true).columns;
 [[{
   "name": "id",
   "type": 2,
@@ -403,7 +385,7 @@ alter table test drop column data;
 drop table test;
 # test: drop column (empty)
 create table test (id int primary key, a int);
-select system.table('test').columns;
+select show('table', 'test', true).columns;
 [[{
   "name": "id",
   "type": 2,
@@ -416,7 +398,7 @@ select system.table('test').columns;
   "constraints": [["default", null]]
 }]]
 alter table test drop column a;
-select system.table('test').columns;
+select show('table', 'test', true).columns;
 [[{
   "name": "id",
   "type": 2,
@@ -426,7 +408,7 @@ select system.table('test').columns;
 drop table test;
 # test: drop column (empty, reorder)
 create table test (id int primary key, a int, b int);
-select system.table('test').columns;
+select show('table', 'test', true).columns;
 [[{
   "name": "id",
   "type": 2,
@@ -444,7 +426,7 @@ select system.table('test').columns;
   "constraints": [["default", null]]
 }]]
 alter table test drop column a;
-select system.table('test').columns;
+select show('table', 'test', true).columns;
 [[{
   "name": "id",
   "type": 2,
@@ -459,7 +441,7 @@ select system.table('test').columns;
 drop table test;
 # test: drop column
 create table test (id int primary key, a text, b int);
-select system.table('test').columns;
+select show('table', 'test', true).columns;
 [[{
   "name": "id",
   "type": 2,
@@ -484,7 +466,7 @@ select a from test;
 select b from test;
 [1, 2, 3]
 alter table test drop column a;
-select system.table('test').columns;
+select show('table', 'test', true).columns;
 [[{
   "name": "id",
   "type": 2,
@@ -502,7 +484,7 @@ select a from test;
 {"msg": "select ❰a❱ ⟵ column not found"}
 select b from test;
 [1, 2, 3]
-select system.table('test').columns;
+select show('table', 'test', true).columns;
 [[{
   "name": "id",
   "type": 2,
@@ -515,7 +497,7 @@ select system.table('test').columns;
   "constraints": [["default", null]]
 }]]
 alter table test drop column b;
-select system.table('test').columns;
+select show('table', 'test', true).columns;
 [[{
   "name": "id",
   "type": 2,
@@ -533,7 +515,7 @@ select b from test;
 drop table test;
 # test: drop column (key order)
 create table test (a text, b int, id int primary key);
-select system.table('test').columns;
+select show('table', 'test', true).columns;
 [[{
   "name": "a",
   "type": 4,
@@ -560,7 +542,7 @@ select a from test;
 select b from test;
 [1, 2, 3]
 alter table test drop column a;
-select system.table('test').columns;
+select show('table', 'test', true).columns;
 [[{
   "name": "b",
   "type": 2,
@@ -580,7 +562,7 @@ select a from test;
 {"msg": "select ❰a❱ ⟵ column not found"}
 select b from test;
 [1, 2, 3]
-select system.table('test').columns;
+select show('table', 'test', true).columns;
 [[{
   "name": "b",
   "type": 2,
@@ -593,7 +575,7 @@ select system.table('test').columns;
   "constraints": [["not_null", true], ["default", null]]
 }]]
 alter table test drop column b;
-select system.table('test').columns;
+select show('table', 'test', true).columns;
 [[{
   "name": "id",
   "type": 2,
@@ -623,7 +605,7 @@ alter table test set column data default 0;
 insert into test (id) values (0);
 select * from test;
 [[0, 0]]
-select system.table('test').columns;
+select show('table', 'test', true).columns;
 [[{
   "name": "id",
   "type": 2,
@@ -640,7 +622,7 @@ alter table test unset column data default;
 insert into test (id) values (1);
 select * from test;
 [[0, 0], [1, null]]
-select system.table('test').columns;
+select show('table', 'test', true).columns;
 [[{
   "name": "id",
   "type": 2,
@@ -657,7 +639,7 @@ alter table test set column data as (1 + 1) stored;
 insert into test (id) values (3);
 select * from test;
 [[0, 0], [1, null], [3, 2]]
-select system.table('test').columns;
+select show('table', 'test', true).columns;
 [[{
   "name": "id",
   "type": 2,
@@ -674,7 +656,7 @@ alter table test unset column data as stored;
 insert into test (id) values (4);
 select * from test;
 [[0, 0], [1, null], [3, 2], [4, null]]
-select system.table('test').columns;
+select show('table', 'test', true).columns;
 [[{
   "name": "id",
   "type": 2,
@@ -694,7 +676,7 @@ insert into test (id) values (5);
 insert into test (id) values (5);
 select * from test;
 [[0, 0], [1, null], [3, 2], [4, null], [5, 2]]
-select system.table('test').columns;
+select show('table', 'test', true).columns;
 [[{
   "name": "id",
   "type": 2,
@@ -712,7 +694,7 @@ insert into test (id) values (5);
 {"msg": "index 'primary': unique key constraint violation"}
 select * from test;
 [[0, 0], [1, null], [3, 2], [4, null], [5, 2]]
-select system.table('test').columns;
+select show('table', 'test', true).columns;
 [[{
   "name": "id",
   "type": 2,
@@ -730,7 +712,7 @@ create table test (id int primary key, data int);
 create function dep() begin insert into test values (1, 2); end;
 show functions extended;
 [{
-  "schema": "public",
+  "db": "main",
   "name": "dep",
   "text": "begin insert into test values (1, 2); end",
   "type": 0,
@@ -738,7 +720,7 @@ show functions extended;
   "returning": []
 }]
 alter table test rename to test2;
-{"msg": "function 'public.dep' depends on relation 'public.test"}
+{"msg": "function 'dep' depends on relation 'test"}
 # test: rename after udf drop
 drop function dep;
 alter table test rename to test2;
@@ -748,7 +730,7 @@ create table test (id int primary key, data int);
 create function dep() begin insert into test values (1, 2); end;
 show functions extended;
 [{
-  "schema": "public",
+  "db": "main",
   "name": "dep",
   "text": "begin insert into test values (1, 2); end",
   "type": 0,
@@ -756,7 +738,7 @@ show functions extended;
   "returning": []
 }]
 alter table test rename column data to data2;
-{"msg": "function 'public.dep' depends on relation 'public.test"}
+{"msg": "function 'dep' depends on relation 'test"}
 # test: rename column after udf drop
 drop function dep;
 alter table test rename column data to data2;

@@ -23,8 +23,8 @@ select (select [1]);
 select (select [1,2,3]);
 
 # test: select (select function())
-select system.schemas();
-select (select system.schemas());
+select show('databases');
+select select (show('databases'));
 
 # test: select (select {})
 select (select {});

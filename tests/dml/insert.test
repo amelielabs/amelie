@@ -30,21 +30,11 @@ insert into test values (123);
 
 # test: primary unique key constraint violation
 insert into test values (123);
-
-# test: insert schema
 drop table test;
-
-create schema test;
-create table test.test (id int primary key);
-insert into test values (123);
-insert into test.test values (123);
-select * from test;
-select * from test.test;
-drop table test.test;
 
 # test: insert compound key
 create table test (id int, id2 int, primary key (id, id2));
-select system.table('test').columns;
+select show('table', 'test', true).columns;
 insert into test values (123);
 insert into test values (1, 2, 3);
 insert into test values (1, 2);

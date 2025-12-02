@@ -13,28 +13,17 @@ create user test;
 show users abc;
 show users;
 
-prefer return=json;
-show users;
-prefer;
-
 # test: show user
 show user;
 show user unknown;
 show user test;
 show user test;
 
-prefer return=json;
-show user test;
-prefer;
-
-# test: show schemas
-create schema test;
-show schemas;
-show schema test;
-
-prefer return=json;
-show schema test;
-prefer;
+# test: show databases
+create database test;
+show databases;
+show database test;
+drop database test;
 
 # test: show tables
 create table test (id int primary key);
@@ -43,10 +32,6 @@ show tables;
 # test: show table
 show table;
 show table test;
-
-prefer return=json;
-show table test;
-prefer;
 
 # test: show functions
 create function test_fn (id int) return json
@@ -79,10 +64,9 @@ show replica 'abc';
 show replica '00000000-0000-0000-0000-000000000000';
 
 # test: show state
-select system.state();
-select system.state().directory;
-select system.state()["directory"];
-select system.state(123);
+show state;
+select show('state');
+select show('state').directory;
 
 # test: show config
 show config;
@@ -90,8 +74,8 @@ show config;
 # test: show all
 show all;
 
-select system.config().uuid;
-select system.config(123);
+select show('config').uuid;
+select show('config', '123');
 
 # test: show name
 show log_enable;
@@ -103,11 +87,9 @@ show asdf;
 # test: explain show
 explain show log_enable;
 
-# test: show (local shadow)
-prefer timezone=Asia/Tokyo, return=json;
-show all;
-show timezone;
-prefer;
+## test: show (local shadow)
+disconnect S0;
+connect E0 S0 127.0.0.1:3485/main?timezone=Asia/Tokyo&format=full;
 show all;
 show timezone;
 

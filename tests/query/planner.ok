@@ -9,14 +9,14 @@ insert into test values (2, 0);
 explain select * from test;
 [{
   "main": {
-    "00": "send_all            0      0      20    # public.test (select, closing)",
+    "00": "send_all            0      0      18    # test (select, closing)",
     "01": "union               1      0      0     ",
     "02": "recv                1      0      0     ",
     "03": "ret                 1      0      -     "
   },
   "pushdown": {
     "00": "set                 0      2      0     ",
-    "01": "table_open_part     1      0      8     # public.test (primary)",
+    "01": "table_open_part     1      0      8     # test (primary)",
     "02": "table_readi32       2      1      0     ",
     "03": "push                2      0      0     ",
     "04": "table_readi32       2      1      1     ",
@@ -26,7 +26,7 @@ explain select * from test;
     "08": "free                1      0      0     ",
     "09": "ret                 0      0      -     "
   },
-  "access": [["public.test", "ro"]]
+  "access": [["test", "ro"]]
 }]
 select * from test;
 [[0, 2], [1, 1], [2, 0]]
@@ -45,14 +45,14 @@ select * from test use index (123;
 explain select * from test use index (i);
 [{
   "main": {
-    "00": "send_all            0      0      14    # public.test (select, closing)",
+    "00": "send_all            0      0      12    # test (select, closing)",
     "01": "union               1      0      0     ",
     "02": "recv                1      0      0     ",
     "03": "ret                 1      0      -     "
   },
   "pushdown": {
     "00": "set                 0      2      0     ",
-    "01": "table_open_part     1      0      8     # public.test (i)",
+    "01": "table_open_part     1      0      8     # test (i)",
     "02": "table_readi32       2      1      0     ",
     "03": "push                2      0      0     ",
     "04": "table_readi32       2      1      1     ",
@@ -62,7 +62,7 @@ explain select * from test use index (i);
     "08": "free                1      0      0     ",
     "09": "ret                 0      0      -     "
   },
-  "access": [["public.test", "ro"]]
+  "access": [["test", "ro"]]
 }]
 select * from test use index (i);
 [[2, 0], [1, 1], [0, 2]]
@@ -76,14 +76,14 @@ insert into test values (2, 0);
 explain select * from test;
 [{
   "main": {
-    "00": "send_all            0      0      20    # public.test (select, closing)",
+    "00": "send_all            0      0      18    # test (select, closing)",
     "01": "union               1      0      0     ",
     "02": "recv                1      0      0     ",
     "03": "ret                 1      0      -     "
   },
   "pushdown": {
     "00": "set                 0      2      0     ",
-    "01": "table_open_part     1      0      8     # public.test (primary)",
+    "01": "table_open_part     1      0      8     # test (primary)",
     "02": "table_readi32       2      1      0     ",
     "03": "push                2      0      0     ",
     "04": "table_readi32       2      1      1     ",
@@ -93,19 +93,19 @@ explain select * from test;
     "08": "free                1      0      0     ",
     "09": "ret                 0      0      -     "
   },
-  "access": [["public.test", "ro"]]
+  "access": [["test", "ro"]]
 }]
 explain select * from test use heap;
 [{
   "main": {
-    "00": "send_all            0      0      12    # public.test (select, closing)",
+    "00": "send_all            0      0      10    # test (select, closing)",
     "01": "union               1      0      0     ",
     "02": "recv                1      0      0     ",
     "03": "ret                 1      0      -     "
   },
   "pushdown": {
     "00": "set                 0      2      0     ",
-    "01": "table_open_heap     1      0      8     # public.test",
+    "01": "table_open_heap     1      0      8     # test",
     "02": "table_readi32       2      1      0     ",
     "03": "push                2      0      0     ",
     "04": "table_readi32       2      1      1     ",
@@ -115,7 +115,7 @@ explain select * from test use heap;
     "08": "free                1      0      0     ",
     "09": "ret                 0      0      -     "
   },
-  "access": [["public.test", "ro"]]
+  "access": [["test", "ro"]]
 }]
 select * from test use heap;
 [[0, 2], [1, 1], [2, 0]]
@@ -140,14 +140,14 @@ insert into test values (2, 0);
 explain select * from test;
 [{
   "main": {
-    "00": "send_all            0      0      20    # public.test (select, closing)",
+    "00": "send_all            0      0      18    # test (select, closing)",
     "01": "union               1      0      0     ",
     "02": "recv                1      0      0     ",
     "03": "ret                 1      0      -     "
   },
   "pushdown": {
     "00": "set                 0      2      0     ",
-    "01": "table_open_part     1      0      8     # public.test (primary)",
+    "01": "table_open_part     1      0      8     # test (primary)",
     "02": "table_readi32       2      1      0     ",
     "03": "push                2      0      0     ",
     "04": "table_readi32       2      1      1     ",
@@ -157,7 +157,7 @@ explain select * from test;
     "08": "free                1      0      0     ",
     "09": "ret                 0      0      -     "
   },
-  "access": [["public.test", "ro"]]
+  "access": [["test", "ro"]]
 }]
 select * from test;
 [[1, 1], [0, 2], [2, 0]]
@@ -166,7 +166,7 @@ create unique index j on test (data) using hash;
 explain select * from test where data = 2;
 [{
   "main": {
-    "00": "send_all            0      0      14    # public.test (select, closing)",
+    "00": "send_all            0      0      12    # test (select, closing)",
     "01": "union               1      0      0     ",
     "02": "recv                1      0      0     ",
     "03": "ret                 1      0      -     "
@@ -174,7 +174,7 @@ explain select * from test where data = 2;
   "pushdown": {
     "00": "set                 0      2      0     ",
     "01": "push_int            -      0      0     # 2",
-    "02": "table_open_partl    1      0      12    # public.test (j)",
+    "02": "table_open_partl    1      0      12    # test (j)",
     "03": "table_readi32       2      1      1     ",
     "04": "int                 3      -      0     # 2",
     "05": "equii               4      2      3     ",
@@ -187,14 +187,14 @@ explain select * from test where data = 2;
     "12": "free                1      0      0     ",
     "13": "ret                 0      0      -     "
   },
-  "access": [["public.test", "ro"]]
+  "access": [["test", "ro"]]
 }]
 select * from test where data = 2;
 [[0, 2]]
 explain select * from test where id = 1;
 [{
   "main": {
-    "00": "send_all            0      0      20    # public.test (select, closing)",
+    "00": "send_all            0      0      18    # test (select, closing)",
     "01": "union               1      0      0     ",
     "02": "recv                1      0      0     ",
     "03": "ret                 1      0      -     "
@@ -202,7 +202,7 @@ explain select * from test where id = 1;
   "pushdown": {
     "00": "set                 0      2      0     ",
     "01": "push_int            -      0      0     # 1",
-    "02": "table_open_part     1      0      13    # public.test (primary)",
+    "02": "table_open_part     1      0      13    # test (primary)",
     "03": "table_readi32       2      1      0     ",
     "04": "int                 3      -      0     # 1",
     "05": "equii               4      2      3     ",
@@ -216,14 +216,14 @@ explain select * from test where id = 1;
     "13": "free                1      0      0     ",
     "14": "ret                 0      0      -     "
   },
-  "access": [["public.test", "ro"]]
+  "access": [["test", "ro"]]
 }]
 select * from test where id = 1;
 [[1, 1]]
 explain select * from test where id = 1 and data = 1;
 [{
   "main": {
-    "00": "send_lookup         0      -      0     # public.test (select, closing)",
+    "00": "send_lookup         0      -      0     # test (select, closing)",
     "01": "union               1      0      0     ",
     "02": "recv                1      0      0     ",
     "03": "ret                 1      0      -     "
@@ -232,7 +232,7 @@ explain select * from test where id = 1 and data = 1;
     "00": "set                 0      2      0     ",
     "01": "push_int            -      0      0     # 1",
     "02": "push_int            -      0      0     # 1",
-    "03": "table_open_partl    1      0      17    # public.test (primary)",
+    "03": "table_open_partl    1      0      17    # test (primary)",
     "04": "table_readi32       2      1      0     ",
     "05": "int                 3      -      0     # 1",
     "06": "equii               4      2      3     ",
@@ -249,14 +249,14 @@ explain select * from test where id = 1 and data = 1;
     "17": "free                1      0      0     ",
     "18": "ret                 0      0      -     "
   },
-  "access": [["public.test", "ro"]]
+  "access": [["test", "ro"]]
 }]
 select * from test where id = 1 and data = 1;
 [[1, 1]]
 explain select * from test where data = 1 and id = 1;
 [{
   "main": {
-    "00": "send_lookup         0      -      0     # public.test (select, closing)",
+    "00": "send_lookup         0      -      0     # test (select, closing)",
     "01": "union               1      0      0     ",
     "02": "recv                1      0      0     ",
     "03": "ret                 1      0      -     "
@@ -265,7 +265,7 @@ explain select * from test where data = 1 and id = 1;
     "00": "set                 0      2      0     ",
     "01": "push_int            -      0      0     # 1",
     "02": "push_int            -      0      0     # 1",
-    "03": "table_open_partl    1      0      17    # public.test (primary)",
+    "03": "table_open_partl    1      0      17    # test (primary)",
     "04": "table_readi32       2      1      1     ",
     "05": "int                 3      -      0     # 1",
     "06": "equii               4      2      3     ",
@@ -282,7 +282,7 @@ explain select * from test where data = 1 and id = 1;
     "17": "free                1      0      0     ",
     "18": "ret                 0      0      -     "
   },
-  "access": [["public.test", "ro"]]
+  "access": [["test", "ro"]]
 }]
 select * from test where data = 1 and id = 1;
 [[1, 1]]
@@ -296,7 +296,7 @@ insert into test values (2, 0);
 explain select * from test where id = 1;
 [{
   "main": {
-    "00": "send_lookup         0      -      0     # public.test (select, closing)",
+    "00": "send_lookup         0      -      0     # test (select, closing)",
     "01": "union               1      0      0     ",
     "02": "recv                1      0      0     ",
     "03": "ret                 1      0      -     "
@@ -304,7 +304,7 @@ explain select * from test where id = 1;
   "pushdown": {
     "00": "set                 0      2      0     ",
     "01": "push_int            -      0      0     # 1",
-    "02": "table_open_partl    1      0      12    # public.test (primary)",
+    "02": "table_open_partl    1      0      12    # test (primary)",
     "03": "table_readi32       2      1      0     ",
     "04": "int                 3      -      0     # 1",
     "05": "equii               4      2      3     ",
@@ -317,14 +317,14 @@ explain select * from test where id = 1;
     "12": "free                1      0      0     ",
     "13": "ret                 0      0      -     "
   },
-  "access": [["public.test", "ro"]]
+  "access": [["test", "ro"]]
 }]
 select * from test where id = 1;
 [[1, 1]]
 explain select * from test where id > 1;
 [{
   "main": {
-    "00": "send_all            0      0      20    # public.test (select, closing)",
+    "00": "send_all            0      0      18    # test (select, closing)",
     "01": "union               1      0      0     ",
     "02": "recv                1      0      0     ",
     "03": "ret                 1      0      -     "
@@ -332,7 +332,7 @@ explain select * from test where id > 1;
   "pushdown": {
     "00": "set                 0      2      0     ",
     "01": "push_int            -      0      0     # 1",
-    "02": "table_open_part     1      0      13    # public.test (primary)",
+    "02": "table_open_part     1      0      13    # test (primary)",
     "03": "table_readi32       2      1      0     ",
     "04": "int                 3      -      0     # 1",
     "05": "gtii                4      2      3     ",
@@ -346,21 +346,21 @@ explain select * from test where id > 1;
     "13": "free                1      0      0     ",
     "14": "ret                 0      0      -     "
   },
-  "access": [["public.test", "ro"]]
+  "access": [["test", "ro"]]
 }]
 select * from test where id > 1;
 [[2, 0]]
 explain select * from test where data > 1;
 [{
   "main": {
-    "00": "send_all            0      0      20    # public.test (select, closing)",
+    "00": "send_all            0      0      18    # test (select, closing)",
     "01": "union               1      0      0     ",
     "02": "recv                1      0      0     ",
     "03": "ret                 1      0      -     "
   },
   "pushdown": {
     "00": "set                 0      2      0     ",
-    "01": "table_open_part     1      0      12    # public.test (primary)",
+    "01": "table_open_part     1      0      12    # test (primary)",
     "02": "table_readi32       2      1      1     ",
     "03": "int                 3      -      0     # 1",
     "04": "gtii                4      2      3     ",
@@ -374,7 +374,7 @@ explain select * from test where data > 1;
     "12": "free                1      0      0     ",
     "13": "ret                 0      0      -     "
   },
-  "access": [["public.test", "ro"]]
+  "access": [["test", "ro"]]
 }]
 select * from test where data > 1;
 [[0, 2]]
@@ -382,14 +382,14 @@ select * from test where data > 1;
 explain select * from test where data = 1;
 [{
   "main": {
-    "00": "send_all            0      0      20    # public.test (select, closing)",
+    "00": "send_all            0      0      18    # test (select, closing)",
     "01": "union               1      0      0     ",
     "02": "recv                1      0      0     ",
     "03": "ret                 1      0      -     "
   },
   "pushdown": {
     "00": "set                 0      2      0     ",
-    "01": "table_open_part     1      0      12    # public.test (primary)",
+    "01": "table_open_part     1      0      12    # test (primary)",
     "02": "table_readi32       2      1      1     ",
     "03": "int                 3      -      0     # 1",
     "04": "equii               4      2      3     ",
@@ -403,11 +403,11 @@ explain select * from test where data = 1;
     "12": "free                1      0      0     ",
     "13": "ret                 0      0      -     "
   },
-  "access": [["public.test", "ro"]]
+  "access": [["test", "ro"]]
 }]
 select * from test where data = 1;
 [[1, 1]]
-select system.table('test').indexes;
+select show('table', 'test', true).indexes;
 [[{
   "name": "primary",
   "type": 2,
@@ -433,7 +433,7 @@ select system.table('test').indexes;
 explain select * from test where data = 1 and id = 1;
 [{
   "main": {
-    "00": "send_lookup         0      -      0     # public.test (select, closing)",
+    "00": "send_lookup         0      -      0     # test (select, closing)",
     "01": "union               1      0      0     ",
     "02": "recv                1      0      0     ",
     "03": "ret                 1      0      -     "
@@ -442,7 +442,7 @@ explain select * from test where data = 1 and id = 1;
     "00": "set                 0      2      0     ",
     "01": "push_int            -      0      0     # 1",
     "02": "push_int            -      0      0     # 1",
-    "03": "table_open_partl    1      0      18    # public.test (i)",
+    "03": "table_open_partl    1      0      18    # test (i)",
     "04": "table_readi32       2      1      1     ",
     "05": "int                 3      -      0     # 1",
     "06": "equii               4      2      3     ",
@@ -460,7 +460,7 @@ explain select * from test where data = 1 and id = 1;
     "18": "free                1      0      0     ",
     "19": "ret                 0      0      -     "
   },
-  "access": [["public.test", "ro"]]
+  "access": [["test", "ro"]]
 }]
 select * from test where data = 1 and id = 1;
 [[1, 1]]
@@ -468,7 +468,7 @@ select * from test where data = 1 and id = 1;
 explain select * from test where id = 1 and data = 1;
 [{
   "main": {
-    "00": "send_lookup         0      -      0     # public.test (select, closing)",
+    "00": "send_lookup         0      -      0     # test (select, closing)",
     "01": "union               1      0      0     ",
     "02": "recv                1      0      0     ",
     "03": "ret                 1      0      -     "
@@ -477,7 +477,7 @@ explain select * from test where id = 1 and data = 1;
     "00": "set                 0      2      0     ",
     "01": "push_int            -      0      0     # 1",
     "02": "push_int            -      0      0     # 1",
-    "03": "table_open_partl    1      0      18    # public.test (i)",
+    "03": "table_open_partl    1      0      18    # test (i)",
     "04": "table_readi32       2      1      0     ",
     "05": "int                 3      -      0     # 1",
     "06": "equii               4      2      3     ",
@@ -495,7 +495,7 @@ explain select * from test where id = 1 and data = 1;
     "18": "free                1      0      0     ",
     "19": "ret                 0      0      -     "
   },
-  "access": [["public.test", "ro"]]
+  "access": [["test", "ro"]]
 }]
 select * from test where id = 1 and data = 1;
 [[1, 1]]
@@ -510,7 +510,7 @@ insert into test values (2, 0);
 explain select * from test where id > 1;
 [{
   "main": {
-    "00": "send_all            0      0      20    # public.test (select, closing)",
+    "00": "send_all            0      0      18    # test (select, closing)",
     "01": "union               1      0      0     ",
     "02": "recv                1      0      0     ",
     "03": "ret                 1      0      -     "
@@ -518,7 +518,7 @@ explain select * from test where id > 1;
   "pushdown": {
     "00": "set                 0      2      0     ",
     "01": "push_int            -      0      0     # 1",
-    "02": "table_open_part     1      0      13    # public.test (primary)",
+    "02": "table_open_part     1      0      13    # test (primary)",
     "03": "table_readi32       2      1      0     ",
     "04": "int                 3      -      0     # 1",
     "05": "gtii                4      2      3     ",
@@ -532,14 +532,14 @@ explain select * from test where id > 1;
     "13": "free                1      0      0     ",
     "14": "ret                 0      0      -     "
   },
-  "access": [["public.test", "ro"]]
+  "access": [["test", "ro"]]
 }]
 select * from test where id > 1;
 [[2, 0]]
 explain select * from test where data > 1;
 [{
   "main": {
-    "00": "send_all            0      0      14    # public.test (select, closing)",
+    "00": "send_all            0      0      12    # test (select, closing)",
     "01": "union               1      0      0     ",
     "02": "recv                1      0      0     ",
     "03": "ret                 1      0      -     "
@@ -547,7 +547,7 @@ explain select * from test where data > 1;
   "pushdown": {
     "00": "set                 0      2      0     ",
     "01": "push_int            -      0      0     # 1",
-    "02": "table_open_part     1      0      13    # public.test (i)",
+    "02": "table_open_part     1      0      13    # test (i)",
     "03": "table_readi32       2      1      1     ",
     "04": "int                 3      -      0     # 1",
     "05": "gtii                4      2      3     ",
@@ -561,7 +561,7 @@ explain select * from test where data > 1;
     "13": "free                1      0      0     ",
     "14": "ret                 0      0      -     "
   },
-  "access": [["public.test", "ro"]]
+  "access": [["test", "ro"]]
 }]
 select * from test where data > 1;
 [[0, 2]]
@@ -569,14 +569,14 @@ select * from test where data > 1;
 explain select * from test where data < 1;
 [{
   "main": {
-    "00": "send_all            0      0      14    # public.test (select, closing)",
+    "00": "send_all            0      0      12    # test (select, closing)",
     "01": "union               1      0      0     ",
     "02": "recv                1      0      0     ",
     "03": "ret                 1      0      -     "
   },
   "pushdown": {
     "00": "set                 0      2      0     ",
-    "01": "table_open_part     1      0      16    # public.test (i)",
+    "01": "table_open_part     1      0      16    # test (i)",
     "02": "table_readi32       2      1      1     ",
     "03": "int                 3      -      0     # 1",
     "04": "ltii                4      2      3     ",
@@ -594,21 +594,21 @@ explain select * from test where data < 1;
     "16": "free                1      0      0     ",
     "17": "ret                 0      0      -     "
   },
-  "access": [["public.test", "ro"]]
+  "access": [["test", "ro"]]
 }]
 select * from test where data < 1;
 [[2, 0]]
 explain select * from test where id < 1;
 [{
   "main": {
-    "00": "send_all            0      0      20    # public.test (select, closing)",
+    "00": "send_all            0      0      18    # test (select, closing)",
     "01": "union               1      0      0     ",
     "02": "recv                1      0      0     ",
     "03": "ret                 1      0      -     "
   },
   "pushdown": {
     "00": "set                 0      2      0     ",
-    "01": "table_open_part     1      0      16    # public.test (primary)",
+    "01": "table_open_part     1      0      16    # test (primary)",
     "02": "table_readi32       2      1      0     ",
     "03": "int                 3      -      0     # 1",
     "04": "ltii                4      2      3     ",
@@ -626,21 +626,21 @@ explain select * from test where id < 1;
     "16": "free                1      0      0     ",
     "17": "ret                 0      0      -     "
   },
-  "access": [["public.test", "ro"]]
+  "access": [["test", "ro"]]
 }]
 select * from test where id < 1;
 [[0, 2]]
 explain select * from test where id < 1 and data < 2;
 [{
   "main": {
-    "00": "send_all            0      0      20    # public.test (select, closing)",
+    "00": "send_all            0      0      18    # test (select, closing)",
     "01": "union               1      0      0     ",
     "02": "recv                1      0      0     ",
     "03": "ret                 1      0      -     "
   },
   "pushdown": {
     "00": "set                 0      2      0     ",
-    "01": "table_open_part     1      0      20    # public.test (primary)",
+    "01": "table_open_part     1      0      20    # test (primary)",
     "02": "table_readi32       2      1      0     ",
     "03": "int                 3      -      0     # 1",
     "04": "ltii                4      2      3     ",
@@ -662,7 +662,7 @@ explain select * from test where id < 1 and data < 2;
     "20": "free                1      0      0     ",
     "21": "ret                 0      0      -     "
   },
-  "access": [["public.test", "ro"]]
+  "access": [["test", "ro"]]
 }]
 select * from test where id < 1 and data < 2;
 []

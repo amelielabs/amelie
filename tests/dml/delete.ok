@@ -8,9 +8,9 @@ delete junk;
 delete 1;
 {"msg": "delete ❰1❱ ⟵ FROM expected"}
 delete from 1;
-{"msg": "delete from ❰1❱ ⟵ target name expected"}
+{"msg": "delete from ❰1❱ ⟵ name expected"}
 delete from "name";
-{"msg": "delete from ❰\"name\"❱ ⟵ target name expected"}
+{"msg": "delete from ❰\"name\"❱ ⟵ name expected"}
 delete from test junk;
 {"msg": "delete from ❰test❱ ⟵ relation not found"}
 delete from test where true limit;
@@ -26,17 +26,6 @@ delete from test;
 select * from test;
 []
 drop table test;
-# test: delete schema
-create schema test;
-create table test.test(id int primary key, data int);
-insert into test.test values (0, 3);
-insert into test.test values (1, 2);
-insert into test.test values (2, 1);
-delete from test.test;
-select * from test.test;
-[]
-drop table test.test;
-drop schema test;
 # test: delete point-lookup
 create table test(id int primary key);
 insert into test values (0);
@@ -45,12 +34,12 @@ insert into test values (2);
 explain delete from test where id = 3;
 [{
   "main": {
-    "00": "send_lookup         0      -      0     # public.test (delete, closing)",
+    "00": "send_lookup         0      -      0     # test (delete, closing)",
     "01": "ret                 -1     0      -     "
   },
   "pushdown": {
     "00": "push_int            -      0      0     # 3",
-    "01": "table_open_partl    0      0      7     # public.test (primary)",
+    "01": "table_open_partl    0      0      7     # test (primary)",
     "02": "table_readi32       1      0      0     ",
     "03": "int                 2      -      0     # 3",
     "04": "equii               3      1      2     ",
@@ -59,7 +48,7 @@ explain delete from test where id = 3;
     "07": "free                0      0      0     ",
     "08": "ret                 -1     0      -     "
   },
-  "access": [["public.test", "rw"]]
+  "access": [["test", "rw"]]
 }]
 delete from test where id = 3;
 select * from test;
@@ -96,12 +85,12 @@ select * from test;
 explain delete from test where id > 0 and id < 1;
 [{
   "main": {
-    "00": "send_all            0      0      20    # public.test (delete, closing)",
+    "00": "send_all            0      0      18    # test (delete, closing)",
     "01": "ret                 -1     0      -     "
   },
   "pushdown": {
     "00": "push_int            -      0      0     # 0",
-    "01": "table_open_part     0      0      16    # public.test (primary)",
+    "01": "table_open_part     0      0      16    # test (primary)",
     "02": "table_readi32       1      0      0     ",
     "03": "int                 2      -      0     # 1",
     "04": "ltii                3      1      2     ",
@@ -119,7 +108,7 @@ explain delete from test where id > 0 and id < 1;
     "16": "free                0      0      0     ",
     "17": "ret                 -1     0      -     "
   },
-  "access": [["public.test", "rw"]]
+  "access": [["test", "rw"]]
 }]
 delete from test where id > 0 and id < 1;
 select * from test;

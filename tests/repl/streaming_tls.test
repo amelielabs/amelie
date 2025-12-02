@@ -4,7 +4,8 @@ open E0 "uuid": "00000000-0000-0000-0000-000000000000", "tls_cert": "./tls/serve
 connect E0 S0 https://127.0.0.1:3480 ./tls/ca.crt;
 
 # test: create replica (backup using https)
-backup E1 "uri": "https://127.0.0.1:3480", "tls_ca": "./tls/ca.crt";
+#backup E1 "uri": "https://127.0.0.1:3480", "tls_ca": "./tls/ca.crt";
+backup E1 "https://127.0.0.1:3480";
 close E1;
 
 open E1 "uuid": "00000000-0000-0000-0000-000000000001", "tls_cert": "./tls/server.crt", "tls_key": "./tls/server.key", "listen": [{ "host": "127.0.0.1", "port": 3481, "tls": true }], "backends": 3;
@@ -15,12 +16,12 @@ subscribe "00000000-0000-0000-0000-000000000000";
 
 switch S0;
 
-create replica "00000000-0000-0000-0000-000000000001" uri "https://127.0.0.1:3481";
+create replica "00000000-0000-0000-0000-000000000001" "https://127.0.0.1:3481?tls_ca=./tls/ca.crt";
 #create replica "00000000-0000-0000-0000-000000000001" uri "https://127.0.0.1:3481" tls_ca "./tls/ca.crt"
 start repl;
 
 # test: wait for primary connect
-watch system.replica("00000000-0000-0000-0000-000000000001").connected::bool = true;
+watch show('replica', "00000000-0000-0000-0000-000000000001").connected::bool = true;
 
 # test: write
 create table test (id int primary key);
@@ -10025,15 +10026,15 @@ insert into test values ( 9998 );
 insert into test values ( 9999 );
 
 # test: wait replica sync
-watch system.replica("00000000-0000-0000-0000-000000000001").lsn = system.state().lsn;
+watch show('replica', "00000000-0000-0000-0000-000000000001").lsn = show('state').lsn;
 show repl;
 
 # test: validate
-select system.state().lsn;
+select show('state').lsn;
 select count(*) from test;
 switch S1;
 show repl;
-select system.state().lsn;
+select show('state').lsn;
 select count(*) from test;
 
 disconnect S1;

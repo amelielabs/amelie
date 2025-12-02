@@ -31,7 +31,7 @@ create function test (x int) 1;
 create function test () begin end;
 show functions extended;
 [{
-  "schema": "public",
+  "db": "main",
   "name": "test",
   "text": "begin end",
   "type": 0,
@@ -41,12 +41,12 @@ show functions extended;
 explain select test();
 [{
   "main": {
-    "00": "call_udf            0      -      -     # public.test()",
+    "00": "call_udf            0      -      -     # test()",
     "01": "ret                 0      0      -     "
   },
-  "access": [["public.test", "call"]],
+  "access": [["test", "call"]],
   "calls": [{
-    "function": "public.test",
+    "function": "test",
     "main": {
       "00": "ret                 -1     0      -     "
     },
@@ -57,7 +57,7 @@ select test();
 [null]
 explain execute test();
 [{
-  "function": "public.test",
+  "function": "test",
   "main": {
     "00": "ret                 -1     0      -     "
   },
@@ -72,12 +72,12 @@ end;
 explain select test();
 [{
   "main": {
-    "00": "call_udf            0      -      -     # public.test()",
+    "00": "call_udf            0      -      -     # test()",
     "01": "ret                 0      0      -     "
   },
-  "access": [["public.test", "call"]],
+  "access": [["test", "call"]],
   "calls": [{
-    "function": "public.test",
+    "function": "test",
     "main": {
       "00": "ret                 -1     0      -     "
     },
@@ -90,7 +90,7 @@ select test()::type;
 ["null"]
 explain execute test();
 [{
-  "function": "public.test",
+  "function": "test",
   "main": {
     "00": "ret                 -1     0      -     "
   },
@@ -108,12 +108,12 @@ end;
 explain select test();
 [{
   "main": {
-    "00": "call_udf            0      -      -     # public.test()",
+    "00": "call_udf            0      -      -     # test()",
     "01": "ret                 0      0      -     "
   },
-  "access": [["public.test", "call"]],
+  "access": [["test", "call"]],
   "calls": [{
-    "function": "public.test",
+    "function": "test",
     "main": {
       "00": "int                 0      -      0     # 123",
       "01": "ret                 0      0      -     "
@@ -125,7 +125,7 @@ select test();
 [123]
 explain execute test();
 [{
-  "function": "public.test",
+  "function": "test",
   "main": {
     "00": "int                 0      -      0     # 123",
     "01": "ret                 0      0      -     "
@@ -145,12 +145,12 @@ end;
 explain select test();
 [{
   "main": {
-    "00": "call_udf            0      -      -     # public.test()",
+    "00": "call_udf            0      -      -     # test()",
     "01": "ret                 0      0      -     "
   },
-  "access": [["public.test", "call"]],
+  "access": [["test", "call"]],
   "calls": [{
-    "function": "public.test",
+    "function": "test",
     "main": {
       "00": "int                 0      -      0     # 123",
       "01": "ret                 -1     0      -     "
@@ -162,7 +162,7 @@ select test();
 [null]
 explain execute test();
 [{
-  "function": "public.test",
+  "function": "test",
   "main": {
     "00": "int                 0      -      0     # 123",
     "01": "ret                 -1     0      -     "
@@ -181,12 +181,12 @@ end;
 explain select test();
 [{
   "main": {
-    "00": "call_udf            0      -      -     # public.test()",
+    "00": "call_udf            0      -      -     # test()",
     "01": "ret                 0      0      -     "
   },
-  "access": [["public.test", "call"]],
+  "access": [["test", "call"]],
   "calls": [{
-    "function": "public.test",
+    "function": "test",
     "main": {
       "00": "int                 0      -      0     # 123",
       "01": "ret                 0      0      -     "
@@ -198,7 +198,7 @@ select test();
 [123]
 explain execute test();
 [{
-  "function": "public.test",
+  "function": "test",
   "main": {
     "00": "int                 0      -      0     # 123",
     "01": "ret                 0      0      -     "
@@ -290,7 +290,7 @@ begin
 end;
 show functions extended;
 [{
-  "schema": "public",
+  "db": "main",
   "name": "test",
   "text": "begin\nend",
   "type": 13,
@@ -352,12 +352,12 @@ explain select test(123);
 [{
   "main": {
     "00": "push_int            -      0      0     # 123",
-    "01": "call_udf            0      -      -     # public.test()",
+    "01": "call_udf            0      -      -     # test()",
     "02": "ret                 0      0      -     "
   },
-  "access": [["public.test", "call"]],
+  "access": [["test", "call"]],
   "calls": [{
-    "function": "public.test",
+    "function": "test",
     "main": {
       "00": "var                 0      0      1     ",
       "01": "ret                 0      0      -     "
@@ -397,12 +397,12 @@ explain select test(10);
 [{
   "main": {
     "00": "push_int            -      0      0     # 10",
-    "01": "call_udf            0      -      -     # public.test()",
+    "01": "call_udf            0      -      -     # test()",
     "02": "ret                 0      0      -     "
   },
-  "access": [["public.test", "call"]],
+  "access": [["test", "call"]],
   "calls": [{
-    "function": "public.test",
+    "function": "test",
     "main": {
       "00": "push_nulls          2      0      0     ",
       "01": "int                 0      -      0     # 0",
@@ -432,7 +432,7 @@ select test(10);
 [45]
 explain execute test(10);
 [{
-  "function": "public.test",
+  "function": "test",
   "main": {
     "00": "push_nulls          2      0      0     ",
     "01": "int                 0      -      0     # 0",
@@ -470,12 +470,12 @@ explain select [1,2,3]::reverse;
 [{
   "main": {
     "00": "push_json           0      0      0     ",
-    "01": "call_udf            0      -      -     # public.reverse()",
+    "01": "call_udf            0      -      -     # reverse()",
     "02": "ret                 0      0      -     "
   },
-  "access": [["public.reverse", "call"]],
+  "access": [["reverse", "call"]],
   "calls": [{
-    "function": "public.reverse",
+    "function": "reverse",
     "main": {
       "00": "push_nulls          1      0      0     ",
       "01": "set                 0      1      1     ",
@@ -488,7 +488,7 @@ explain select [1,2,3]::reverse;
       "08": "push                5      0      0     ",
       "09": "json_read           5      3      0     ",
       "10": "push                5      0      0     ",
-      "11": "call                5      -      2     # public.push()",
+      "11": "call                5      -      2     # push()",
       "12": "push                5      0      0     ",
       "13": "set_agg             0      4      2     ",
       "14": "json_next           3      5      0     ",
@@ -521,7 +521,7 @@ select [1,2,3]::reverse::reverse;
 [[1, 2, 3]]
 explain execute reverse([1,2,3]);
 [{
-  "function": "public.reverse",
+  "function": "reverse",
   "main": {
     "00": "push_nulls          1      0      0     ",
     "01": "set                 0      1      1     ",
@@ -534,7 +534,7 @@ explain execute reverse([1,2,3]);
     "08": "push                5      0      0     ",
     "09": "json_read           5      3      0     ",
     "10": "push                5      0      0     ",
-    "11": "call                5      -      2     # public.push()",
+    "11": "call                5      -      2     # push()",
     "12": "push                5      0      0     ",
     "13": "set_agg             0      4      2     ",
     "14": "json_next           3      5      0     ",
@@ -573,7 +573,7 @@ begin
 end;
 show functions extended;
 [{
-  "schema": "public",
+  "db": "main",
   "name": "test",
   "text": "begin\n\tdeclare total int := 0;\n\tdeclare i int := 0;\n\twhile i < x do\n\t\ttotal := total + i;\n\t\ti := i + 1;\n\tend;\n\treturn total;\nend",
   "type": 2,
@@ -585,7 +585,7 @@ show functions extended;
   }],
   "returning": []
 }, {
-  "schema": "public",
+  "db": "main",
   "name": "reverse",
   "text": "begin\n\tdeclare rev json := [];\n\tfor it in (array) do\n\t\trev := rev::push(it);\n\tend;\n\treturn rev;\nend",
   "type": 5,
@@ -601,12 +601,12 @@ explain select [1,2,3]::reverse;
 [{
   "main": {
     "00": "push_json           0      0      0     ",
-    "01": "call_udf            0      -      -     # public.reverse()",
+    "01": "call_udf            0      -      -     # reverse()",
     "02": "ret                 0      0      -     "
   },
-  "access": [["public.reverse", "call"]],
+  "access": [["reverse", "call"]],
   "calls": [{
-    "function": "public.reverse",
+    "function": "reverse",
     "main": {
       "00": "push_nulls          1      0      0     ",
       "01": "json                0      0      0     ",
@@ -617,7 +617,7 @@ explain select [1,2,3]::reverse;
       "06": "push_var            0      0      0     ",
       "07": "json_read           2      1      0     ",
       "08": "push                2      0      0     ",
-      "09": "call                2      -      2     # public.push()",
+      "09": "call                2      -      2     # push()",
       "10": "var_set             0      0      2     ",
       "11": "free                2      0      0     ",
       "12": "json_next           1      6      0     ",
@@ -632,7 +632,7 @@ select [1,2,3]::reverse;
 [[3, 2, 1]]
 explain execute reverse([1,2,3]);
 [{
-  "function": "public.reverse",
+  "function": "reverse",
   "main": {
     "00": "push_nulls          1      0      0     ",
     "01": "json                0      0      0     ",
@@ -643,7 +643,7 @@ explain execute reverse([1,2,3]);
     "06": "push_var            0      0      0     ",
     "07": "json_read           2      1      0     ",
     "08": "push                2      0      0     ",
-    "09": "call                2      -      2     # public.push()",
+    "09": "call                2      -      2     # push()",
     "10": "var_set             0      0      2     ",
     "11": "free                2      0      0     ",
     "12": "json_next           1      6      0     ",
@@ -656,28 +656,6 @@ explain execute reverse([1,2,3]);
 execute reverse([1,2,3]);
 [[3, 2, 1]]
 drop function reverse;
-# test: create function (schema explicit)
-create function public.test() begin end;
-{"msg": "function 'test': already exists"}
-create schema test;
-create function test.test() begin end;
-show function test.test extended;
-[{
-  "schema": "test",
-  "name": "test",
-  "text": "begin end",
-  "type": 0,
-  "args": [],
-  "returning": []
-}]
-drop function test.test;
-drop schema test;
-# test: create function (schema system)
-create function system.test() begin end;
-{"msg": "system schema 'system' cannot be used to create objects"}
-# test: create function (schema does not exists)
-create function abc.test() begin end;
-{"msg": "schema 'abc': not exists"}
 drop function test;
 # test: create or replace function (not exists)
 create or replace function test() return int
@@ -686,7 +664,7 @@ begin
 end;
 show functions extended;
 [{
-  "schema": "public",
+  "db": "main",
   "name": "test",
   "text": "begin\n\treturn 123;\nend",
   "type": 2,
@@ -702,7 +680,7 @@ begin
 end;
 show functions extended;
 [{
-  "schema": "public",
+  "db": "main",
   "name": "test",
   "text": "begin\n\treturn 321;\nend",
   "type": 2,
@@ -751,26 +729,25 @@ drop function test;
 {"msg": "function 'test': not exists"}
 # test: drop function if exists
 drop function if exists test;
-drop function if exists public.test;
 # test: drop function with udf dep
 create function test_dep() begin end;
 create function test() begin select test_dep(); end;
 explain select test();
 [{
   "main": {
-    "00": "call_udf            0      -      -     # public.test()",
+    "00": "call_udf            0      -      -     # test()",
     "01": "ret                 0      0      -     "
   },
-  "access": [["public.test", "call"], ["public.test_dep", "call"]],
+  "access": [["test", "call"], ["test_dep", "call"]],
   "calls": [{
-    "function": "public.test",
+    "function": "test",
     "main": {
-      "00": "call_udf            0      -      -     # public.test_dep()",
+      "00": "call_udf            0      -      -     # test_dep()",
       "01": "ret                 -1     0      -     "
     },
-    "access": [["public.test_dep", "call"]]
+    "access": [["test_dep", "call"]]
   }, {
-    "function": "public.test_dep",
+    "function": "test_dep",
     "main": {
       "00": "ret                 -1     0      -     "
     },
@@ -778,13 +755,13 @@ explain select test();
   }]
 }]
 drop function test_dep;
-{"msg": "function 'public.test' depends on relation 'public.test_dep"}
+{"msg": "function 'test' depends on relation 'test_dep"}
 # test: drop function after dep drop
 drop function test;
 drop function test_dep;
 # test: alter function statement parsing
 alter;
-{"msg": "alter❰;❱ ⟵ USER|SCHEMA|TABLE|INDEX|FUNCTION expected"}
+{"msg": "alter❰;❱ ⟵ USER|DATABASE|TABLE|INDEX|FUNCTION expected"}
 alter function;
 {"msg": "alter function❰;❱ ⟵ name expected"}
 alter function 123;
@@ -801,7 +778,7 @@ alter function test rename to test2;
 alter function if exists test rename to test2;
 show functions;
 [{
-  "schema": "public",
+  "db": "main",
   "name": "test2"
 }]
 # test: alter function rename
@@ -812,37 +789,18 @@ alter function test rename to;
 alter function test rename to asf junk;
 {"msg": "alter function test rename to asf ❰junk❱ ⟵ ; expected"}
 alter function test2 rename to abc;
-select system.function('abc').name;
+select show('function', 'abc', true).name;
 ["abc"]
 # test: alter function rename function exists
 create function test() begin end;
 alter function abc rename to test;
 {"msg": "function 'test': already exists"}
-# test: alter function rename schema not exists
-alter function abc rename to test.test;
-{"msg": "schema 'test': not exists"}
-# test: alter function rename schema system
-alter function abc rename to system.test;
-{"msg": "system schema <system> cannot be used to create objects"}
-# test: alter function rename schema
 drop function test;
-alter function abc rename to public.test;
-select system.function('abc').name;
-[null]
-select system.function('test').name;
-["test"]
-create schema test;
-alter function public.test rename to test.test;
-alter function test.test rename to public.test;
-select system.function('test').name;
-["test"]
-drop function test;
-drop schema test;
 # test: alter function rename with udf dep
 create function test_dep() begin end;
 create function test() begin select test_dep(); end;
 alter function test_dep rename to test_dep2;
-{"msg": "function 'public.test' depends on relation 'public.test_dep"}
+{"msg": "function 'test' depends on relation 'test_dep"}
 # test: alter function rename after after dep drop
 drop function test;
 alter function test_dep rename to test_dep2;

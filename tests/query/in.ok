@@ -88,7 +88,7 @@ explain select 0 in (3,5, (select * from test), 0);
     "01": "push_int            -      0      0     # 3",
     "02": "push_int            -      0      0     # 5",
     "03": "set                 1      1      0     ",
-    "04": "table_open          2      0      9     # public.test (primary)",
+    "04": "table_open          2      0      9     # test (primary)",
     "05": "table_readi32       3      2      0     ",
     "06": "push                3      0      0     ",
     "07": "set_add             1      0      0     ",
@@ -99,7 +99,7 @@ explain select 0 in (3,5, (select * from test), 0);
     "12": "in                  1      0      4     ",
     "13": "ret                 1      0      -     "
   },
-  "access": [["public.test", "ro_exclusive"]]
+  "access": [["test", "ro_exclusive"]]
 }]
 select 0 in (3,5, (select * from test));
 [false]

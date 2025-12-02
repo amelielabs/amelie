@@ -4,7 +4,7 @@ open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "12
 connect E0 S0 127.0.0.1:3480;
 
 # test: create replica
-backup E1 "uri": "127.0.0.1:3480";
+backup E1 http://127.0.0.1:3480;
 close E1;
 
 open E1 "uuid": "00000000-0000-0000-0000-000000000001", "listen": [{ "host": "127.0.0.1", "port": 3481 }];
@@ -14,11 +14,11 @@ start repl;
 subscribe "00000000-0000-0000-0000-000000000000";
 
 switch S0;
-create replica "00000000-0000-0000-0000-000000000001" uri "127.0.0.1:3481";
+create replica "00000000-0000-0000-0000-000000000001" "127.0.0.1:3481";
 start repl;
 
 # test: wait for primary connect
-watch system.replica("00000000-0000-0000-0000-000000000001").connected::bool = true;
+watch show('replica', "00000000-0000-0000-0000-000000000001").connected::bool = true;
 
 # test: write
 create table test (id int primary key);
@@ -10023,14 +10023,14 @@ insert into test values ( 9998 );
 insert into test values ( 9999 );
 
 # test: wait replica sync
-watch system.replica("00000000-0000-0000-0000-000000000001").lsn = system.state().lsn;
+watch show('replica', "00000000-0000-0000-0000-000000000001").lsn = show('state').lsn;
 show repl;
 
 # test: validate
-select system.state().lsn;
+select show('state').lsn;
 select count(*) from test;
 switch S1;
-select system.state().lsn;
+select show('state').lsn;
 select count(*) from test;
 
 # test: ddl (create index)
@@ -10040,7 +10040,7 @@ select count(*) from test;
 select count(*) from test use index(i);
 
 # test: wait replica sync
-watch system.replica("00000000-0000-0000-0000-000000000001").lsn = system.state().lsn;
+watch show('replica', "00000000-0000-0000-0000-000000000001").lsn = show('state').lsn;
 show repl;
 
 switch S1;
@@ -10053,7 +10053,7 @@ alter table test add column data int default 1;
 select count(data) from test;
 
 # test: wait replica sync
-watch system.replica("00000000-0000-0000-0000-000000000001").lsn = system.state().lsn;
+watch show('replica', "00000000-0000-0000-0000-000000000001").lsn = show('state').lsn;
 show repl;
 
 switch S1;
@@ -10066,7 +10066,7 @@ select count(data) from test;
 select count(id) from test;
 
 # test: wait replica sync
-watch system.replica("00000000-0000-0000-0000-000000000001").lsn = system.state().lsn;
+watch show('replica', "00000000-0000-0000-0000-000000000001").lsn = show('state').lsn;
 show repl;
 
 switch S1;
@@ -10079,7 +10079,7 @@ alter table test rename column id to id2;
 select count(id2) from test;
 
 # test: wait replica sync
-watch system.replica("00000000-0000-0000-0000-000000000001").lsn = system.state().lsn;
+watch show('replica', "00000000-0000-0000-0000-000000000001").lsn = show('state').lsn;
 show repl;
 
 switch S1;
@@ -10087,10 +10087,10 @@ select count(id2) from test;
 
 # test: ddl (truncate)
 switch S0;
-truncate public.test;
+truncate test;
 
 # test: wait replica sync
-watch system.replica("00000000-0000-0000-0000-000000000001").lsn = system.state().lsn;
+watch show('replica', "00000000-0000-0000-0000-000000000001").lsn = show('state').lsn;
 show repl;
 
 switch S1;
@@ -10107,7 +10107,7 @@ insert into test values (7);
 insert into test values (8);
 insert into test values (9);
 insert into test values (10);
-watch system.replica("00000000-0000-0000-0000-000000000001").lsn = system.state().lsn;
+watch show('replica', "00000000-0000-0000-0000-000000000001").lsn = show('state').lsn;
 show repl;
 
 switch S1;
@@ -10117,25 +10117,25 @@ select count(id2) from test;
 switch S0;
 create table test2 (id serial primary key);
 insert into test2 () values (), (), (), ();
-select identity_of("public", "test2");
+select identity_of("test2");
 
 # test: wait replica sync
-watch system.replica("00000000-0000-0000-0000-000000000001").lsn = system.state().lsn;
+watch show('replica', "00000000-0000-0000-0000-000000000001").lsn = show('state').lsn;
 show repl;
 
 switch S1;
-select identity_of("public", "test2");
+select identity_of("test2");
 
 # test: create table (partitions extended)
 switch S0;
 create table test3 (id serial primary key) partitions 8;
 
 # test: wait replica sync
-watch system.replica("00000000-0000-0000-0000-000000000001").lsn = system.state().lsn;
+watch show('replica', "00000000-0000-0000-0000-000000000001").lsn = show('state').lsn;
 show repl;
 
 switch S1;
-select system.state().backends::int = 8;
+select show('state').backends::int = 8;
 
 disconnect S1;
 close E1;

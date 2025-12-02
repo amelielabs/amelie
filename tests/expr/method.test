@@ -5,8 +5,6 @@ connect E0 S0 127.0.0.1:3485;
 
 # test: method not exist
 select 1 :: name();
-select 1 :: schema.name();
-select 1 :: schema.name.name();
 
 # test: expr :: method()
 select 1::;
@@ -16,9 +14,9 @@ select 1::[]();
 select 1::length();
 select "hello"::length();
 
-explain select system.state().directory::length();
-select system.state().directory::length();
-select system.state().directory;
+explain select show('state').directory::length();
+select show('state').directory::length();
+select show('state').directory;
 
 select [null]::put(0, 123);
 select put([null], 0, 123);
@@ -28,15 +26,13 @@ select [1]::append(1)::append(2);
 select [1]::append(1)::append(2)::append(3);
 
 select {}::set("a", 1)::set("b", 2);
-select {}::public.set("a", 1)::public.set("b", 2);
+select {}::set("a", 1)::set("b", 2);
 
 # test: expr :: method
-select 1::schema.name;
-select 1::schema.name.name;
 
-explain select system.state().directory::length;
-select system.state().directory::length;
-select length(system.state().directory);
+explain select show('state').directory::length;
+select show('state').directory::length;
+select length(show('state').directory);
 
 disconnect S0;
 close E0;

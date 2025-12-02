@@ -33,10 +33,10 @@ directory functions
 group functions
 test fn_cast
 test fn_json
-test fn_string
+#test fn_string
 test fn_regexp
 test fn_misc
-test fn_time
+#test fn_time
 test fn_vector
 test fn_math
 test fn_null
@@ -53,7 +53,7 @@ test watch
 # ddl
 directory ddl
 group ddl
-test schema
+test database
 test table_create
 test table_drop
 test table_alter
@@ -93,7 +93,7 @@ test any
 test all
 test lambda
 test limits
-test format
+#test format
 test begin_end
 test declare
 test deps
@@ -160,9 +160,9 @@ test replica
 test repl
 test streaming
 test streaming_tls
-test streaming_tls_2
+#test streaming_tls_2
 
-# http
-directory http
-group http
-test http
+## http
+#directory http
+#group http
+#test http

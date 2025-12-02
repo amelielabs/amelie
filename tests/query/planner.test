@@ -94,7 +94,7 @@ select * from test where data > 1;
 explain select * from test where data = 1;
 select * from test where data = 1;
 
-select system.table('test').indexes;
+select show('table', 'test', true).indexes;
 explain select * from test where data = 1 and id = 1;
 select * from test where data = 1 and id = 1;
 

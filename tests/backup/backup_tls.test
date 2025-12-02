@@ -13,7 +13,7 @@ insert into test generate 500;
 #
 
 # the server certificate is trusted without verification
-backup E1 "uri": "https://127.0.0.1:3480";
+backup E1 https://127.0.0.1:3480;
 close E1;
 
 # test: shutdown previous server

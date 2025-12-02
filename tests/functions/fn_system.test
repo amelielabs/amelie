@@ -3,57 +3,56 @@
 open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "127.0.0.1", "port": 3485 }];
 connect E0 S0 127.0.0.1:3485;
 
-# test: config()
-select system.config();
+# test: config
+select show();
+select show('config');
+select show('all');
 
-# test: state()
-select system.state();
+# test: state
+select show('state');
 
-# test: users()
-select system.users();
+# test: users
+select show('users');
 
-# test: user()
-select system.user('test');
+# test: user
+select show('user', 'test');
 
-# test: replicas()
-select system.replicas();
+# test: replicas
+select show('replicas');
 
-# test: replica()
-select system.replica('00000000-0000-0000-0000-000000000000');
-select system.replica(uuid '00000000-0000-0000-0000-000000000000');
+# test: replica
+select show('replica', '00000000-0000-0000-0000-000000000000');
+select show('replica', uuid '00000000-0000-0000-0000-000000000000');
 
-# test: repl()
-select system.repl();
+# test: repl
+select show('repl');
 
-# test: replication()
-select system.replication();
+# test: replication
+select show('replication');
 
-# test: schemas()
-select system.schemas();
+# test: databases
+select show('databases');
 
-# test: schema()
-select system.schema('public');
-select system.schema('public').system;
+# test: database
+select show('database', 'main');
 
-# test: tables()
-select system.tables();
+# test: tables
+select show('tables');
 
-# test: table()
-select system.table('test');
-select system.table('test.a');
+# test: table
+select show('table', 'test');
 
-# test: functions()
-select system.functions();
+# test: functions
+select show('functions');
 
-# test: function()
-select system.function('test');
-select system.function('test.a');
+# test: function
+select show('function', 'test');
 
-# test: wal()
-select system.wal();
+# test: wal
+select show('wal');
 
-# test: metrics()
-select system.metrics()::size;
+# test: metrics
+select show('metrics')::size;
 
 disconnect S0;
 close E0;

@@ -19,7 +19,7 @@ create table test (id int primary key, data int as (1) stored;
 
 # test: insert (expr)
 create table test (id int primary key, data int as (1 + 1) stored);
-select system.table('test').columns[1];
+select show('table', 'test', true).columns[1];
 explain insert into test values (0, null);
 insert into test values (0, null);
 insert into test values (1, null), (2, 42), (3, 43);
