@@ -39,39 +39,41 @@
 #include <amelie_vm.h>
 #include <amelie_parser.h>
 
-#if 0
-static inline bool
-parse_endpoint_path(Str* self, Str* db, Str* name)
+typedef struct ParseEndpoint ParseEndpoint;
+
+enum
 {
-	// /v1/db/db_name/relation
-	if (unlikely(str_empty(self)))
-		return false;
+	ENDPOINT_TABLE,
+	ENDPOINT_UDF
+};
 
-	auto pos = self->pos;
-	auto end = self->end;
+struct ParseEndpoint
+{
+	Endpoint* endpoint;
+	Ast*      columns;
+	Ast*      columns_tail;
+	int       columns_count;
+	bool      columns_has;
+	Columns*  columns_target;
+	Str*      content;
+	int       target_type;
+	Relation* target;
+	Set*      values;
+};
 
-	// /v1/db/
-	if (unlikely(! str_is_prefix(self, "/v1/db/", 7)))
-		return false;
-	pos += 7;
-
-	// db
-	auto start = pos;
-	while (pos < end && *pos != '/')
-		pos++;
-	if (unlikely(pos == end))
-		return false;
-	str_set(db, start, pos - start);
-	if (unlikely(str_empty(db)))
-		return false;
-	pos++;
-
-	// name
-	str_set(name, pos, end - pos);
-	if (unlikely(str_empty(name)))
-		return false;
-
-	return true;
+static inline void
+parse_endpoint_init(ParseEndpoint* self, Endpoint* endpoint, Str* content)
+{
+	self->endpoint       = endpoint;
+	self->columns        = NULL;
+	self->columns_tail   = NULL;
+	self->columns_count  = 0;
+	self->columns_has    = false;
+	self->columns_target = NULL;
+	self->content        = content;
+	self->target_type    = -1;
+	self->target         = NULL;
+	self->values         = NULL;
 }
 
 static inline bool
@@ -88,114 +90,92 @@ parse_endpoint_column(char** pos, char* end, Str* name)
 	return !str_empty(name);
 }
 
-static void
-parse_endpoint_columns(Endpoint* endpoint, Str* value)
+static inline void
+parse_endpoint_set_columns(ParseEndpoint* self, Str* spec)
 {
-	endpoint->columns_list_has = true;
-	if (str_empty(value))
+	if (str_empty(spec))
 		return;
+	self->columns_has = true;
 
 	// name[, ...]
-	auto pos = value->pos;
-	auto end = value->end;
-
-	auto columns = endpoint->columns;
-	Ast* last = NULL;
+	auto pos = spec->pos;
+	auto end = spec->end;
 
 	Str name;
 	while (parse_endpoint_column(&pos, end, &name))
 	{
-		auto column = columns_find(columns, &name);
+		auto column = columns_find(self->columns_target, &name);
 		if (! column)
 			error("column '%.*s' does not exists", str_size(&name),
 			      str_of(&name));
 
+		auto last = self->columns_tail;
 		if (last && column->order <= last->column->order)
 			error("column list must be ordered");
 
-		Ast* ref = ast(0);
+		auto ref = ast(0);
 		ref->column = column;
-		if (endpoint->columns_list == NULL)
-			endpoint->columns_list = ref;
+		if (self->columns == NULL)
+			self->columns = ref;
 		else
 			last->next = ref;
-		last = ref;
-		endpoint->columns_list_count++;
+		self->columns_tail = ref;
+		self->columns_count++;
 	}
 }
 
-void
-parse_endpoint(Endpoint* endpoint)
+static inline void
+parse_endpoint_set(ParseEndpoint* self)
 {
-	// POST /v1/db/db_name/relation <?columns=...>
-	auto uri = endpoint->uri;
+	auto endpoint = self->endpoint;
 
-	// get target name
-	Str db;
-	Str name;
-	str_init(&db);
-	str_init(&name);
-	if (unlikely(! parse_endpoint_path(&uri->path, &db, &name)))
-		error("unsupported URI path");
-
-	// find udf
-	endpoint->udf = udf_mgr_find(&share()->storage->catalog.udf_mgr, &db, &name, false);
-	if (endpoint->udf)
+	// find relation
+	auto db       = &endpoint->db.string;
+	auto relation = &endpoint->relation.string;
+	auto table    = table_mgr_find(&share()->storage->catalog.table_mgr,
+	                               db, relation, false);
+	if (table)
 	{
-		endpoint->columns = &endpoint->udf->config->args;
-		endpoint->values  = NULL;
-
+		self->target_type    = ENDPOINT_TABLE;
+		self->target         = &table->rel;
+		self->columns_target = &table->config->columns;
 	} else
 	{
-		// find table
-		endpoint->table   = table_mgr_find(&share()->storage->catalog.table_mgr, &db, &name, true);
-		endpoint->columns = &endpoint->table->config->columns;
-		endpoint->values  = NULL;
+		auto udf = udf_mgr_find(&share()->storage->catalog.udf_mgr,
+		                        db, relation, false);
+		if (! udf)
+			error("relation '%.*s': not found", str_size(relation),
+			      str_of(relation));
+		self->target_type    = ENDPOINT_UDF;
+		self->target         = &udf->rel;
+		self->columns_target = &udf->config->args;
 	}
 
-	// validate arguments
-	list_foreach(&uri->args)
-	{
-		auto arg = list_at(UriArg, link);
-
-		// columns=
-		if (str_is(&arg->name, "columns", 7))
-		{
-			if (unlikely(endpoint->columns_list_has))
-				error("columns argument redefined");
-
-			parse_endpoint_columns(endpoint, &arg->value);
-			continue;
-		}
-
-		error("unsupported URI argument '%.*s'", str_size(&arg->name),
-		      str_of(&arg->name));
-	}
+	// set column list
+	parse_endpoint_set_columns(self, opt_string_of(&endpoint->columns));
 }
-#endif
 
-#if 0
 hot static inline void
-parse_import_row(Stmt* self, Endpoint* endpoint)
+import_row(Stmt* self, ParseEndpoint* pe)
 {
 	// prepare row
-	auto row = set_reserve(endpoint->values);
+	auto row = set_reserve(pe->values);
 
-	auto list = endpoint->columns_list;
-	list_foreach(&endpoint->columns->list)
+	auto list = pe->columns;
+	list_foreach(&pe->columns_target->list)
 	{
 		auto column = list_at(Column, link);
 		auto column_value = &row[column->order];
 		auto column_separator = true;
 
 		Ast* value = NULL;
-		if (endpoint->columns_list_has)
+		if (pe->columns_has)
 		{
 			if (list && list->column == column)
 			{
 				// parse column value
 				value = parse_value(self, NULL, column, column_value);
-				list = list->next;
+				list  = list->next;
 				column_separator = list != NULL;
 			} else
 			{
@@ -207,7 +187,7 @@ parse_import_row(Stmt* self, Endpoint* endpoint)
 		{
 			// parse column value
 			value = parse_value(self, NULL, column, column_value);
-			column_separator = !list_is_last(&endpoint->columns->list, &column->link);
+			column_separator = !list_is_last(&pe->columns_target->list, &column->link);
 		}
 
 		// ensure NOT NULL constraint and hash key
@@ -220,11 +200,11 @@ parse_import_row(Stmt* self, Endpoint* endpoint)
 }
 
 hot static inline void
-parse_import_obj(Stmt* self, Endpoint* endpoint)
+import_obj(Stmt* self, ParseEndpoint* pe)
 {
 	// prepare row
-	auto columns = endpoint->columns;
-	auto row = set_reserve(endpoint->values);
+	auto columns = pe->columns_target;
+	auto row = set_reserve(pe->values);
 
 	auto buf = buf_create();
 	defer_buf(buf);
@@ -284,57 +264,57 @@ parse_import_obj(Stmt* self, Endpoint* endpoint)
 }
 
 hot static inline void
-parse_import_json_row(Stmt* self, Endpoint* endpoint)
+import_json_row(Stmt* self, ParseEndpoint* pe)
 {
 	// {} or []
 	auto begin = stmt_if(self, '{');
 	if (begin)
 	{
-		if (endpoint->columns_list_has)
+		if (pe->columns_has)
 		{
-			if (unlikely(endpoint->columns_list_count > 1))
+			if (unlikely(pe->columns_count > 1))
 				stmt_error(self, begin, "JSON column list must have zero or one value");
 
 			// process {} as a value for column, if one column
-			if (endpoint->columns_list_count == 1)
+			if (pe->columns_count == 1)
 				stmt_push(self, begin);
 
-			parse_import_row(self, endpoint);
+			import_row(self, pe);
 		} else {
-			parse_import_obj(self, endpoint);
+			import_obj(self, pe);
 		}
-		if (! endpoint->columns_list_count)
+		if (! pe->columns_count)
 			stmt_expect(self, '}');
 		return;
 	}
 
 	if (! stmt_if(self, '['))
 		stmt_error(self, NULL, "json object or array expected");
-	parse_import_row(self, endpoint);
+	import_row(self, pe);
 	stmt_expect(self, ']');
 }
 
 hot static inline void
-parse_import_jsonl(Stmt* self, Endpoint* endpoint)
+import_jsonl(Stmt* self, ParseEndpoint* pe)
 {
 	for (;;)
 	{
 		// {} or []
-		parse_import_json_row(self, endpoint);
+		import_json_row(self, pe);
 		if (stmt_if(self, KEOF))
 			break;
 	}
 }
 
 hot static inline void
-parse_import_json(Stmt* self, Endpoint* endpoint)
+import_json(Stmt* self, ParseEndpoint* pe)
 {
 	// [ {} or [], ...]
 	stmt_expect(self, '[');
 	for (;;)
 	{
 		// {} or []
-		parse_import_json_row(self, endpoint);
+		import_json_row(self, pe);
 		// ,]
 		if (stmt_if(self, ','))
 			continue;
@@ -344,24 +324,24 @@ parse_import_json(Stmt* self, Endpoint* endpoint)
 }
 
 hot static inline void
-parse_import_csv(Stmt* self, Endpoint* endpoint)
+import_csv(Stmt* self, ParseEndpoint* pe)
 {
 	// ensure column list is not empty for CSV import
-	if (endpoint->columns_list_has &&
-	    endpoint->columns_list_count == 0)
+	if (pe->columns_has &&
+	    pe->columns_count == 0)
 		error("CSV import with empty column list is not supported");
 
 	// value, ...
 	for (;;)
 	{
-		parse_import_row(self, endpoint);
+		import_row(self, pe);
 		if (stmt_if(self, KEOF))
 			break;
 	}
 }
 
-hot void
-parse_import_table(Parser* self, Endpoint* endpoint)
+static void
+import_insert(Parser* self, ParseEndpoint* pe)
 {
 	// create main namespace and the main block
 	auto ns    = namespaces_add(&self->nss, NULL, NULL);
@@ -378,7 +358,7 @@ parse_import_table(Parser* self, Endpoint* endpoint)
 	auto insert  = ast_insert_of(stmt->ast);
 	stmt->ret = &insert->ret;
 
-	auto table   = endpoint->table;
+	auto table   = (Table*)pe->target;
 	auto columns = table_columns(table);
 	auto target  = target_allocate();
 	target->type        = TARGET_TABLE;
@@ -391,22 +371,22 @@ parse_import_table(Parser* self, Endpoint* endpoint)
 	access_add(&self->program->access, &table->rel, ACCESS_RW);
 
 	// prepare result set
-	insert->values   = set_cache_create(self->set_cache, &self->program->sets);
-	endpoint->values = insert->values;
+	insert->values = set_cache_create(self->set_cache, &self->program->sets);
+	pe->values = insert->values;
 	set_prepare(insert->values, columns->count, 0, NULL);
 
 	// parse rows according to the content type
-	switch (endpoint->type) {
-	case ENDPOINT_CSV:
-		parse_import_csv(stmt, endpoint);
-		break;
-	case ENDPOINT_JSONL:
-		parse_import_jsonl(stmt, endpoint);
-		break;
-	case ENDPOINT_JSON:
-		parse_import_json(stmt, endpoint);
-		break;
-	}
+	auto content_type = &pe->endpoint->content_type.string;
+	if (str_is(content_type, "text/csv", 8))
+		import_csv(stmt, pe);
+	else
+	if (str_is(content_type, "application/jsonl", 17))
+		import_jsonl(stmt, pe);
+	else
+	if (str_is(content_type, "application/json", 16))
+		import_json(stmt, pe);
+	else
+		stmt_error(stmt, NULL, "unsupported operation content type");
 
 	// ensure there are no data left
 	if (! stmt_if(stmt, KEOF))
@@ -422,8 +402,8 @@ parse_import_table(Parser* self, Endpoint* endpoint)
 		parse_resolved(stmt);
 }
 
-hot void
-parse_import_udf(Parser* self, Endpoint* endpoint)
+static void
+import_execute(Parser* self, ParseEndpoint* pe)
 {
 	// create main namespace and the main block
 	auto ns    = namespaces_add(&self->nss, NULL, NULL);
@@ -440,22 +420,22 @@ parse_import_udf(Parser* self, Endpoint* endpoint)
 	stmt->ret = &execute->ret;
 
 	// prepare arguments
-	auto udf = endpoint->udf;
+	auto udf = (Udf*)pe->target;
 	execute->udf  = udf;
 	execute->args = set_cache_create(self->set_cache, &self->program->sets);
-	endpoint->values = execute->args;
+	pe->values = execute->args;
 	set_prepare(execute->args, udf->config->args.count, 0, NULL);
 
 	// parse rows according to the content type
-	switch (endpoint->type) {
-	case ENDPOINT_CSV:
-		parse_import_row(stmt, endpoint);
-		break;
-	case ENDPOINT_JSONL:
-	case ENDPOINT_JSON:
-		parse_import_json_row(stmt, endpoint);
-		break;
-	}
+	auto content_type = &pe->endpoint->content_type.string;
+	if (str_is(content_type, "text/csv", 8))
+		import_csv(stmt, pe);
+	else
+	if (str_is(content_type, "application/jsonl", 17) ||
+	    str_is(content_type, "application/json", 16))
+		import_json_row(stmt, pe);
+	else
+		stmt_error(stmt, NULL, "unsupported operation content type");
 
 	// ensure there are no data left
 	if (! stmt_if(stmt, KEOF))
@@ -471,34 +451,24 @@ parse_import_udf(Parser* self, Endpoint* endpoint)
 	}
 }
 
-hot void
-parse_import(Parser* self, Program* program, Str* str, Str* uri,
-             EndpointType type)
-{
-	self->program = program;
-
-	// prepare parser
-	lex_start(&self->lex, str);
-
-	// parse uri and get the argument list
-	uri_set(&self->uri, uri, true);
-
-	// parse endpoint path and arguments
-	Endpoint endpoint;
-	endpoint_init(&endpoint, &self->uri, type);
-	parse_endpoint(&endpoint);
-	if (endpoint.table)
-		parse_import_table(self, &endpoint);
-	else
-		parse_import_udf(self, &endpoint);
-}
-#endif
-
 void
 parse_endpoint(Parser* self, Program* program, Endpoint* endpoint, Str* content)
 {
-	(void)self;
-	(void)program;
-	(void)endpoint;
-	(void)content;
+	self->program = program;
+	lex_start(&self->lex, content);
+
+	// find relation, set columns
+	ParseEndpoint pe;
+	parse_endpoint_init(&pe, endpoint, content);
+	parse_endpoint_set(&pe);
+	switch (pe.target_type) {
+	case ENDPOINT_TABLE:
+		import_insert(self, &pe);
+		break;
+	case ENDPOINT_UDF:
+		import_execute(self, &pe);
+		break;
+	default:
+		abort();
+	}
 }
