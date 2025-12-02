@@ -73,8 +73,8 @@ db_mgr_drop(DbMgr* self,
 			      str_of(name));
 		return false;
 	}
-	if (db->config->main)
-		error("db '%.*s': main db cannot be dropped", str_size(name),
+	if (db->config->system)
+		error("db '%.*s': system db cannot be dropped", str_size(name),
 		      str_of(name));
 
 	// drop db by object
@@ -123,8 +123,8 @@ db_mgr_rename(DbMgr* self,
 		return false;
 	}
 
-	if (db->config->main)
-		error("db '%.*s': main db cannot be renamed", str_size(name),
+	if (db->config->system)
+		error("db '%.*s': system db cannot be renamed", str_size(name),
 		       str_of(name));
 
 	// ensure new db does not exists
@@ -151,7 +151,7 @@ db_mgr_dump(DbMgr* self, Buf* buf)
 	list_foreach(&self->mgr.list)
 	{
 		auto db = db_of(list_at(Relation, link));
-		if (db->config->main)
+		if (db->config->system)
 			continue;
 		db_config_write(db->config, buf);
 	}

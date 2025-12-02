@@ -65,7 +65,7 @@ catalog_create_main_db(Catalog* self, const char* db)
 		auto config = db_config_allocate();
 		defer(db_config_free, config);
 		db_config_set_name(config, &name);
-		db_config_set_main(config, true);
+		db_config_set_system(config, true);
 		db_mgr_create(&self->db_mgr, &tr, config, false);
 
 		// commit

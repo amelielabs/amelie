@@ -71,8 +71,8 @@ cascade_db_drop(Catalog* self, Tr* tr, Str* name,
 		return false;
 	}
 
-	if (db->config->main)
-		error("db '%.*s': main db cannot be dropped", str_size(name),
+	if (db->config->system)
+		error("db '%.*s': system db cannot be dropped", str_size(name),
 		      str_of(name));
 
 	// validate or drop all objects matching the database
@@ -101,10 +101,9 @@ cascade_db_rename_execute(Catalog* self, Tr* tr, Str* db, Str* db_new)
 	{
 		auto udf = udf_of(list_at(Relation, link));
 		if (str_compare_case(&udf->config->db, db))
-			udf_mgr_rename(&self->udf_mgr, tr, &udf->config->db,
-			               &udf->config->name,
-			               db_new,
-			               &udf->config->name, false);
+			error("function '%.*s' is using database '%.*s",
+			      str_size(udf->rel.name), str_of(udf->rel.name),
+			      str_size(db), str_of(db));
 	}
 }
 
@@ -123,8 +122,8 @@ cascade_db_rename(Catalog* self, Tr* tr,
 		return false;
 	}
 
-	if (db->config->main)
-		error("db '%.*s': main db cannot be renamed", str_size(name),
+	if (db->config->system)
+		error("db '%.*s': system db cannot be renamed", str_size(name),
 		      str_of(name));
 
 	// rename all database objects

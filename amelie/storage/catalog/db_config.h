@@ -16,15 +16,15 @@ typedef struct DbConfig DbConfig;
 struct DbConfig
 {
 	Str  name;
-	bool main;
+	bool system;
 };
 
 static inline DbConfig*
-db_config_allocate(void)
+db_config_allocate()
 {
 	DbConfig* self;
 	self = am_malloc(sizeof(DbConfig));
-	self->main = false;
+	self->system = false;
 	str_init(&self->name);
 	return self;
 }
@@ -37,9 +37,9 @@ db_config_free(DbConfig* self)
 }
 
 static inline void
-db_config_set_main(DbConfig* self, bool value)
+db_config_set_system(DbConfig* self, bool system)
 {
-	self->main = value;
+	self->system = system;
 }
 
 static inline void
@@ -54,7 +54,7 @@ db_config_copy(DbConfig* self)
 {
 	auto copy = db_config_allocate();
 	db_config_set_name(copy, &self->name);
-	db_config_set_main(copy, self->main);
+	db_config_set_system(copy, self->system);
 	return copy;
 }
 
@@ -66,7 +66,6 @@ db_config_read(uint8_t** pos)
 	Decode obj[] =
 	{
 		{ DECODE_STRING, "name", &self->name },
-		{ DECODE_BOOL,   "main", &self->main },
 		{ 0,              NULL,   NULL       },
 	};
 	decode_obj(obj, "db", pos);
@@ -83,10 +82,6 @@ db_config_write(DbConfig* self, Buf* buf)
 	encode_raw(buf, "name", 4);
 	encode_string(buf, &self->name);
 
-	// main
-	encode_raw(buf, "main", 4);
-	encode_bool(buf, self->main);
-
 	encode_obj_end(buf);
 }
 
@@ -99,10 +94,6 @@ db_config_write_compact(DbConfig* self, Buf* buf)
 	// name
 	encode_raw(buf, "name", 4);
 	encode_string(buf, &self->name);
-
-	// main
-	encode_raw(buf, "main", 4);
-	encode_bool(buf, self->main);
 
 	encode_obj_end(buf);
 }
