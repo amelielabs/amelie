@@ -308,9 +308,8 @@ session_endpoint(Session*  self,
                  Str*      content,
                  Output*   output)
 {
-	// POST /v1/db/<db_name>
-	// POST /v1/db/<db_name>/tables/<name>
-	// POST /v1/db/<db_name>/functions/<name>
+	// POST /v1/db/<db>
+	// POST /v1/db/<db>/<relation>
 	auto db = &endpoint->db.string;
 	if (unlikely(str_empty(db)))
 		error("database is not specified");
@@ -318,8 +317,8 @@ session_endpoint(Session*  self,
 	// parse request
 	auto compiler = &self->compiler;
 	compiler_set(compiler, self->program);
-	if (str_empty(&endpoint->table.string) &&
-	    str_empty(&endpoint->function.string))
+
+	if (str_empty(&endpoint->relation.string))
 	{
 		// validate content-type
 		auto content_type = &endpoint->content_type.string;

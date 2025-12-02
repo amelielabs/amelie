@@ -276,8 +276,8 @@ http_begin_request(Http* self, Endpoint* endpoint, uint64_t size)
 	auto buf = &self->raw;
 	buf_reset(buf);
 
-	// POST /v1/db/<db_name>/<relation_name>
-	// POST /v1/db/<db_name>
+	// POST /v1/db/<db>
+	// POST /v1/db/<db>/<relation>
 	// POST /v1/<service>
 	auto service  = opt_string_of(&endpoint->service);
 	auto db       = opt_string_of(&endpoint->db);

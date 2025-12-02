@@ -93,9 +93,8 @@ frontend_endpoint(Client* client)
 	auto endpoint = client->endpoint;
 	endpoint_reset(endpoint);
 
-	// POST /v1/db/<db_name>/tables/<name>
-	// POST /v1/db/<db_name>/functions/<name>
-	// POST /v1/db/<db_name>
+	// POST /v1/db/<db>
+	// POST /v1/db/<db>/<relation>
 	// POST /v1/backup
 	// POST /v1/repl
 

@@ -370,8 +370,8 @@ uri_parse(Endpoint* endpoint, Str* spec)
 void
 uri_parse_endpoint(Endpoint* endpoint, Str* spec)
 {
-	// /v1/db/<db_name>/<name>
-	// /v1/db/<db_name>
+	// /v1/db/<db>
+	// /v1/db/<db>/<relation>
 	// /v1/backup
 	// /v1/repl
 
