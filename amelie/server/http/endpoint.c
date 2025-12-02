@@ -45,12 +45,11 @@ endpoint_init(Endpoint* self)
 		{ "uri",          OPT_STRING,  OPT_C, &self->uri,          NULL, 0    },
 		{ "content_type", OPT_STRING,  OPT_C, &self->content_type, NULL, 0    },
 		{ "accept",       OPT_STRING,  OPT_C, &self->accept,       NULL, 0    },
-		{ "service",      OPT_STRING,  OPT_C, &self->service,      NULL, 0    },
 		{ "db",           OPT_STRING,  OPT_C, &self->db,           NULL, 0    },
-		{ "table",        OPT_STRING,  OPT_C, &self->table,        NULL, 0    },
-		{ "function",     OPT_STRING,  OPT_C, &self->function,     NULL, 0    },
-		{ "columns",      OPT_STRING,  OPT_C, &self->columns,      NULL, 0    },
+		{ "relation",     OPT_STRING,  OPT_C, &self->relation,     NULL, 0    },
+		{ "service",      OPT_STRING,  OPT_C, &self->service,      NULL, 0    },
 		// args
+		{ "columns",      OPT_STRING,  OPT_C, &self->columns,      NULL, 0    },
 		{ "timezone",     OPT_STRING,  OPT_C, &self->timezone,     NULL, 0    },
 		{ "format",       OPT_STRING,  OPT_C, &self->format,       NULL, 0    },
 		// misc

@@ -43,12 +43,11 @@ struct Endpoint
 	Opt  uri;
 	Opt  content_type;
 	Opt  accept;
-	Opt  service;
 	Opt  db;
-	Opt  table;
-	Opt  function;
-	Opt  columns;
+	Opt  relation;
+	Opt  service;
 	// args
+	Opt  columns;
 	Opt  timezone;
 	Opt  format;
 	// misc

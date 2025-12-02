@@ -153,16 +153,48 @@ uri_parse_host(Uri* self)
 }
 
 static inline void
-uri_parse_db(Uri* self)
+uri_parse_path_next(Uri* self, Str* value)
 {
-	// /db
-	int  name_size = 0;
-	auto name = self->pos;
-	while (*self->pos && *self->pos != '?')
+	// value[/]
+	auto start = self->pos;
+	while (*self->pos && *self->pos != '/' && *self->pos != '?')
 		self->pos++;
-	name_size = self->pos - name;
-	if (name_size > 0)
-		opt_string_set_raw(&self->endpoint->db, name, name_size);
+	str_set(value, start, self->pos - start);
+}
+
+static inline void
+uri_parse_path(Uri* self)
+{
+	// db
+	Str name;
+	uri_parse_path_next(self, &name);
+	if (str_empty(&name))
+		return;
+	opt_string_set(&self->endpoint->db, &name);
+
+	// db?
+	if (!*self->pos || *self->pos == '?')
+		return;
+
+	// db/
+	self->pos++;
+
+	// db/?
+	if (!*self->pos || *self->pos == '?')
+		return;
+
+	// relation
+	uri_parse_path_next(self, &name);
+	if (str_empty(&name))
+		uri_error();
+	opt_string_set(&self->endpoint->relation, &name);
+
+	// relation?
+	if (!*self->pos || *self->pos == '?')
+		return;
+
+	// relation/
+	self->pos++;
 }
 
 static inline int
@@ -311,9 +343,6 @@ uri_parse_args(Uri* self)
 void
 uri_parse(Endpoint* endpoint, Str* spec)
 {
-	// http://[user:password@]host[:port]/db?arg=...&...
-	// amelie://[user:password@]db?arg=...&...
-
 	// set uri
 	opt_string_set(&endpoint->uri, spec);
 	Uri self = {
@@ -331,90 +360,18 @@ uri_parse(Endpoint* endpoint, Str* spec)
 	if (endpoint->proto.integer != PROTO_AMELIE)
 		uri_parse_host(&self);
 
-	// [db]
-	uri_parse_db(&self);
+	// [db [/relation]]
+	uri_parse_path(&self);
 
 	// ?name=value[& ...]
 	uri_parse_args(&self);
 }
 
-static inline void
-uri_next(Uri* self, Str* value)
-{
-	// value[/]
-	auto start = self->pos;
-	while (*self->pos && *self->pos != '/' && *self->pos !='?')
-		self->pos++;
-	str_set(value, start, self->pos - start);
-}
-
-static inline void
-uri_parse_endpoint_db(Uri* self)
-{
-	auto endpoint = self->endpoint;
-
-	// db_name
-	Str value;
-	uri_next(self, &value);
-	if (str_empty(&value))
-		goto error;
-	opt_string_set(&endpoint->db, &value);
-
-	// db_name?
-	if (!*self->pos || *self->pos == '?')
-		return;
-
-	// /
-	self->pos++;
-
-	// db_name/?
-	if (!*self->pos || *self->pos == '?')
-		return;
-
-	// db_name/tables/name[/]
-	// db_name/functions/name[/]
-	uri_next(self, &value);
-	if (str_empty(&value))
-		goto error;
-	auto is_table = false;
-	if (str_is(&value, "tables", 6))
-		is_table = true;
-	else
-	if (! str_is(&value, "functions", 9))
-		is_table = false;
-	else
-		goto error;
-	if (!*self->pos || *self->pos == '?')
-		goto error;
-	self->pos++;
-
-	// name
-	uri_next(self, &value);
-	if (str_empty(&value))
-		goto error;
-	if (is_table)
-		opt_string_set(&endpoint->table, &value);
-	else
-		opt_string_set(&endpoint->function, &value);
-
-	// name?
-	if (!*self->pos || *self->pos == '?')
-		return;
-
-	// name/
-	self->pos++;
-	return;
-
-error:
-	error("failed to parse uri endpoint");
-}
-
 void
 uri_parse_endpoint(Endpoint* endpoint, Str* spec)
 {
-	// /v1/db/<db_name>/tables/<name> [/?...]
-	// /v1/db/<db_name>/functions/<name> [/?...]
-	// /v1/db/<db_name> [/?...]
+	// /v1/db/<db_name>/<name>
+	// /v1/db/<db_name>
 	// /v1/backup
 	// /v1/repl
 
@@ -429,7 +386,7 @@ uri_parse_endpoint(Endpoint* endpoint, Str* spec)
 	if (likely(str_is_prefix(spec, "/v1/db/", 7)))
 	{
 		self.pos += 7;
-		uri_parse_endpoint_db(&self);
+		uri_parse_path(&self);
 	} else
 	if (str_is(spec, "/v1/backup", 10))
 	{
@@ -503,9 +460,18 @@ uri_export(Endpoint* self, Buf* buf)
 		buf_write(buf, "/", 1);
 	}
 
-	// db
+	// [db[/relation]]
 	if (! opt_string_empty(&self->db))
+	{
 		buf_write_str(buf, &self->db.string);
+
+		// relation
+		if (! opt_string_empty(&self->relation))
+		{
+			buf_write(buf, "/", 1);
+			buf_write_str(buf, &self->relation.string);
+		}
+	}
 
 	// arguments
 	bool first = true;
@@ -519,8 +485,6 @@ uri_export(Endpoint* self, Buf* buf)
 		uri_export_arg(&self->tls_key, buf, &first);
 		uri_export_arg(&self->tls_server, buf, &first);
 	}
-	uri_export_arg(&self->table, buf, &first);
-	uri_export_arg(&self->function, buf, &first);
 	uri_export_arg(&self->columns, buf, &first);
 	uri_export_arg(&self->timezone, buf, &first);
 	uri_export_arg(&self->format, buf, &first);
