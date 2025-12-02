@@ -160,7 +160,7 @@ test replica
 test repl
 test streaming
 test streaming_tls
-#test streaming_tls_2
+test streaming_tls_2
 
 ## http
 #directory http

@@ -87,7 +87,7 @@ uri_parse_user(Uri* self)
 static inline void
 uri_parse_host(Uri* self)
 {
-	// hostname[:port] [/]
+	// hostname[:port] [/ ?]
 
 	// hostname
 	auto name      = self->pos;
@@ -106,11 +106,12 @@ uri_parse_host(Uri* self)
 
 	} else
 	{
-		// name[:,/]
+		// name[:,/?]
 		while (*self->pos &&
 		       *self->pos != ':' &&
 		       *self->pos != ',' &&
-		       *self->pos != '/')
+		       *self->pos != '/' &&
+		       *self->pos != '?')
 			self->pos++;
 		name_size = self->pos - name;
 	}
@@ -139,6 +140,10 @@ uri_parse_host(Uri* self)
 		opt_int_set(&self->endpoint->port, port);
 	}
 
+	// ?
+	if (*self->pos == '?')
+		return;
+
 	// /
 	if (*self->pos == '/') {
 		self->pos++;
@@ -165,6 +170,9 @@ uri_parse_path_next(Uri* self, Str* value)
 static inline void
 uri_parse_path(Uri* self)
 {
+	if (!*self->pos || *self->pos == '?')
+		return;
+
 	// db
 	Str name;
 	uri_parse_path_next(self, &name);
@@ -356,7 +364,7 @@ uri_parse(Endpoint* endpoint, Str* spec)
 	// [user[:password]@]
 	uri_parse_user(&self);
 
-	// hostname[:port] [/]
+	// hostname[:port]
 	if (endpoint->proto.integer != PROTO_AMELIE)
 		uri_parse_host(&self);
 
