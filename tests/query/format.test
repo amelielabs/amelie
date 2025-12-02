@@ -9,20 +9,7 @@ show format;
 # test: minimal
 disconnect S0;
 close E0;
-open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "127.0.0.1", "port": 3485 }], "format": "minmal";
-connect E0 S0 127.0.0.1:3485;
-
-select 123;
-select [1,2,3];
-select {"id": 48};
-select [{"id": 48}, {"id": 49}, [1,2,3]];
-show all;
-show uuid;
-
-# test: full
-disconnect S0;
-close E0;
-open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "127.0.0.1", "port": 3485 }], "format": "full";
+open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "127.0.0.1", "port": 3485 }], "format": "minimal";
 connect E0 S0 127.0.0.1:3485;
 
 select 123;
@@ -41,6 +28,20 @@ connect E0 S0 127.0.0.1:3485;
 select 123;
 select [1,2,3];
 select {"id": 48};
+select [{"id": 48}, {"id": 49}, [1,2,3]];
+show all;
+show uuid;
+
+# test: full
+disconnect S0;
+close E0;
+open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "127.0.0.1", "port": 3485 }], "format": "full";
+connect E0 S0 127.0.0.1:3485;
+
+select 123;
+select 123 as id;
+select [1,2,3];
+select {"id": 48} as json;
 select [{"id": 48}, {"id": 49}, [1,2,3]];
 show all;
 show uuid;
@@ -65,63 +66,27 @@ close E0;
 open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "127.0.0.1", "port": 3485 }];
 connect E0 S0 127.0.0.1:3485;
 
-prefer return=json-pretty-obj;
-select 123;
-
-prefer;
-select 123;
-
-select 123 as id;
-prefer return=json-pretty-obj;
-select 123 as id;
-prefer;
-
-select [1,2,3];
-prefer return=json-pretty-obj;
-select [1,2,3];
-prefer;
-
-select {"id": 48} as json;
-prefer return=json-pretty-obj;
-select {"id": 48} as json;
-prefer;
-
-select [{"id": 48}, {"id": 49}, [1,2,3]];
-prefer return=json-pretty-obj;
-select [{"id": 48}, {"id": 49}, [1,2,3]];
-prefer;
-
 # test: select format (duplicate columns)
-prefer return=json-pretty-obj;
+option format full;
 select 1 as id, 2 as id;
 
-prefer return=json;
+option format minimal;
 select 1 as id, 2 as id;
-
-prefer return=json-obj;
-select 1 as id, 2 as id;
-prefer;
 
 # test: returning format
 create table test (id int primary key);
 
-prefer return=json-obj;
+option format full;
 insert into test values (1) returning *;
 
-prefer return=json-obj-pretty;
+option format full-pretty;
 insert into test values (2) returning id;
 
-prefer return=json;
+option format minimal;
 insert into test values (3) returning id;
 
 select * from test;
 drop table test;
-
-# test: invalid format
-prefer return=xyz-123;
-select 123 as x;
-prefer;
-select 123 as x;
 
 disconnect S0;
 close E0;

@@ -49,8 +49,13 @@ test_log(TestSuite* self, Str* data)
 }
 
 static inline void
-test_error(TestSuite* self, const char* msg)
+test_error(TestSuite* self, const char* fmt, ...)
 {
+	char msg[256];
+	va_list args;
+	va_start(args, fmt);
+	vsnprintf(msg, sizeof(msg), fmt, args);
+	va_end(args);
 	error("%s: %s\n", self->current_test_file, msg);
 }
 

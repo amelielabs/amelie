@@ -2,11 +2,11 @@ open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "12
 connect E0 S0 127.0.0.1:3485;
 # test: default format
 show format;
-["json-pretty"]
-# test: json
+["pretty-minimal"]
+# test: minimal
 disconnect S0;
 close E0;
-open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "127.0.0.1", "port": 3485 }], "format": "json";
+open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "127.0.0.1", "port": 3485 }], "format": "minimal";
 connect E0 S0 127.0.0.1:3485;
 select 123;
 [123]
@@ -17,30 +17,13 @@ select {"id": 48};
 select [{"id": 48}, {"id": 49}, [1,2,3]];
 [[{"id": 48}, {"id": 49}, [1, 2, 3]]]
 show all;
-[{"uuid": "00000000-0000-0000-0000-000000000000", "timezone": "UTC", "format": "json", "log_enable": true, "log_to_file": true, "log_to_stdout": false, "log_connections": true, "log_options": true, "tls_capath": "", "tls_ca": "", "tls_cert": "", "tls_key": "", "listen": [{"host": "127.0.0.1", "port": 3485}], "limit_send": 3145728, "limit_recv": 1048576, "limit_write": 0, "frontends": 1, "backends": 1, "cpu_affinity": true, "wal_worker": false, "wal_crc": true, "wal_sync_on_create": false, "wal_sync_on_close": false, "wal_sync_on_write": false, "wal_sync_interval": "1 sec", "wal_size": 67108864, "wal_truncate": 0, "repl_readahead": 262144, "repl_reconnect_ms": 3000, "checkpoint_interval": "5 min", "checkpoint_workers": 3, "checkpoint_crc": true, "checkpoint_compression": "zstd", "checkpoint_sync": false}]
+[{"uuid": "00000000-0000-0000-0000-000000000000", "timezone": "UTC", "format": "minimal", "log_enable": true, "log_to_file": true, "log_to_stdout": false, "log_connections": true, "log_options": true, "tls_capath": "", "tls_ca": "", "tls_cert": "", "tls_key": "", "listen": [{"host": "127.0.0.1", "port": 3485}], "limit_send": 3145728, "limit_recv": 1048576, "limit_write": 0, "frontends": 1, "backends": 1, "cpu_affinity": true, "wal_worker": false, "wal_crc": true, "wal_sync_on_create": false, "wal_sync_on_close": false, "wal_sync_on_write": false, "wal_sync_interval": "1 sec", "wal_size": 67108864, "wal_truncate": 0, "repl_readahead": 262144, "repl_reconnect_ms": 3000, "checkpoint_interval": "5 min", "checkpoint_workers": 3, "checkpoint_crc": true, "checkpoint_compression": "zstd", "checkpoint_sync": false}]
 show uuid;
 ["00000000-0000-0000-0000-000000000000"]
-# test: json-array
+# test: minimal-pretty
 disconnect S0;
 close E0;
-open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "127.0.0.1", "port": 3485 }], "format": "json-array";
-connect E0 S0 127.0.0.1:3485;
-select 123;
-[123]
-select [1,2,3];
-[[1, 2, 3]]
-select {"id": 48};
-[{"id": 48}]
-select [{"id": 48}, {"id": 49}, [1,2,3]];
-[[{"id": 48}, {"id": 49}, [1, 2, 3]]]
-show all;
-[{"uuid": "00000000-0000-0000-0000-000000000000", "timezone": "UTC", "format": "json-array", "log_enable": true, "log_to_file": true, "log_to_stdout": false, "log_connections": true, "log_options": true, "tls_capath": "", "tls_ca": "", "tls_cert": "", "tls_key": "", "listen": [{"host": "127.0.0.1", "port": 3485}], "limit_send": 3145728, "limit_recv": 1048576, "limit_write": 0, "frontends": 1, "backends": 1, "cpu_affinity": true, "wal_worker": false, "wal_crc": true, "wal_sync_on_create": false, "wal_sync_on_close": false, "wal_sync_on_write": false, "wal_sync_interval": "1 sec", "wal_size": 67108864, "wal_truncate": 0, "repl_readahead": 262144, "repl_reconnect_ms": 3000, "checkpoint_interval": "5 min", "checkpoint_workers": 3, "checkpoint_crc": true, "checkpoint_compression": "zstd", "checkpoint_sync": false}]
-show uuid;
-["00000000-0000-0000-0000-000000000000"]
-# test: json-array-pretty
-disconnect S0;
-close E0;
-open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "127.0.0.1", "port": 3485 }], "format": "json-array-pretty";
+open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "127.0.0.1", "port": 3485 }], "format": "minimal-pretty";
 connect E0 S0 127.0.0.1:3485;
 select 123;
 [123]
@@ -60,7 +43,7 @@ show all;
 [{
   "uuid": "00000000-0000-0000-0000-000000000000",
   "timezone": "UTC",
-  "format": "json-array-pretty",
+  "format": "minimal-pretty",
   "log_enable": true,
   "log_to_file": true,
   "log_to_stdout": false,
@@ -98,10 +81,10 @@ show all;
 }]
 show uuid;
 ["00000000-0000-0000-0000-000000000000"]
-# test: json-obj
+# test: full
 disconnect S0;
 close E0;
-open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "127.0.0.1", "port": 3485 }], "format": "json-obj";
+open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "127.0.0.1", "port": 3485 }], "format": "full";
 connect E0 S0 127.0.0.1:3485;
 select 123;
 [{"col1": 123}]
@@ -114,13 +97,13 @@ select {"id": 48} as json;
 select [{"id": 48}, {"id": 49}, [1,2,3]];
 [{"col1": [{"id": 48}, {"id": 49}, [1, 2, 3]]}]
 show all;
-[{"result": {"uuid": "00000000-0000-0000-0000-000000000000", "timezone": "UTC", "format": "json-obj", "log_enable": true, "log_to_file": true, "log_to_stdout": false, "log_connections": true, "log_options": true, "tls_capath": "", "tls_ca": "", "tls_cert": "", "tls_key": "", "listen": [{"host": "127.0.0.1", "port": 3485}], "limit_send": 3145728, "limit_recv": 1048576, "limit_write": 0, "frontends": 1, "backends": 1, "cpu_affinity": true, "wal_worker": false, "wal_crc": true, "wal_sync_on_create": false, "wal_sync_on_close": false, "wal_sync_on_write": false, "wal_sync_interval": "1 sec", "wal_size": 67108864, "wal_truncate": 0, "repl_readahead": 262144, "repl_reconnect_ms": 3000, "checkpoint_interval": "5 min", "checkpoint_workers": 3, "checkpoint_crc": true, "checkpoint_compression": "zstd", "checkpoint_sync": false}}]
+[{"result": {"uuid": "00000000-0000-0000-0000-000000000000", "timezone": "UTC", "format": "full", "log_enable": true, "log_to_file": true, "log_to_stdout": false, "log_connections": true, "log_options": true, "tls_capath": "", "tls_ca": "", "tls_cert": "", "tls_key": "", "listen": [{"host": "127.0.0.1", "port": 3485}], "limit_send": 3145728, "limit_recv": 1048576, "limit_write": 0, "frontends": 1, "backends": 1, "cpu_affinity": true, "wal_worker": false, "wal_crc": true, "wal_sync_on_create": false, "wal_sync_on_close": false, "wal_sync_on_write": false, "wal_sync_interval": "1 sec", "wal_size": 67108864, "wal_truncate": 0, "repl_readahead": 262144, "repl_reconnect_ms": 3000, "checkpoint_interval": "5 min", "checkpoint_workers": 3, "checkpoint_crc": true, "checkpoint_compression": "zstd", "checkpoint_sync": false}}]
 show uuid;
 [{"result": "00000000-0000-0000-0000-000000000000"}]
-# test: json-obj-pretty
+# test: full-pretty
 disconnect S0;
 close E0;
-open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "127.0.0.1", "port": 3485 }], "format": "json-obj-pretty";
+open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "127.0.0.1", "port": 3485 }], "format": "full-pretty";
 connect E0 S0 127.0.0.1:3485;
 select 123;
 [{
@@ -151,44 +134,44 @@ select [{"id": 48}, {"id": 49}, [1,2,3]];
 show all;
 [{
   "result": {
-    "uuid": "00000000-0000-0000-0000-000000000000",
-    "timezone": "UTC",
-    "format": "json-obj-pretty",
-    "log_enable": true,
-    "log_to_file": true,
-    "log_to_stdout": false,
-    "log_connections": true,
-    "log_options": true,
-    "tls_capath": "",
-    "tls_ca": "",
-    "tls_cert": "",
-    "tls_key": "",
-    "listen": [{
-      "host": "127.0.0.1",
-      "port": 3485
-    }],
-    "limit_send": 3145728,
-    "limit_recv": 1048576,
-    "limit_write": 0,
-    "frontends": 1,
-    "backends": 1,
-    "cpu_affinity": true,
-    "wal_worker": false,
-    "wal_crc": true,
-    "wal_sync_on_create": false,
-    "wal_sync_on_close": false,
-    "wal_sync_on_write": false,
-    "wal_sync_interval": "1 sec",
-    "wal_size": 67108864,
-    "wal_truncate": 0,
-    "repl_readahead": 262144,
-    "repl_reconnect_ms": 3000,
-    "checkpoint_interval": "5 min",
-    "checkpoint_workers": 3,
-    "checkpoint_crc": true,
-    "checkpoint_compression": "zstd",
-    "checkpoint_sync": false
-  }
+  "uuid": "00000000-0000-0000-0000-000000000000",
+  "timezone": "UTC",
+  "format": "full-pretty",
+  "log_enable": true,
+  "log_to_file": true,
+  "log_to_stdout": false,
+  "log_connections": true,
+  "log_options": true,
+  "tls_capath": "",
+  "tls_ca": "",
+  "tls_cert": "",
+  "tls_key": "",
+  "listen": [{
+    "host": "127.0.0.1",
+    "port": 3485
+  }],
+  "limit_send": 3145728,
+  "limit_recv": 1048576,
+  "limit_write": 0,
+  "frontends": 1,
+  "backends": 1,
+  "cpu_affinity": true,
+  "wal_worker": false,
+  "wal_crc": true,
+  "wal_sync_on_create": false,
+  "wal_sync_on_close": false,
+  "wal_sync_on_write": false,
+  "wal_sync_interval": "1 sec",
+  "wal_size": 67108864,
+  "wal_truncate": 0,
+  "repl_readahead": 262144,
+  "repl_reconnect_ms": 3000,
+  "checkpoint_interval": "5 min",
+  "checkpoint_workers": 3,
+  "checkpoint_crc": true,
+  "checkpoint_compression": "zstd",
+  "checkpoint_sync": false
+}
 }]
 show uuid;
 [{
@@ -197,96 +180,30 @@ show uuid;
 # test: select format
 disconnect S0;
 close E0;
-open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "127.0.0.1", "port": 3485 }], "format": "json-pretty";
+open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "127.0.0.1", "port": 3485 }];
 connect E0 S0 127.0.0.1:3485;
-prefer return=json-pretty-obj;
-select 123;
-[{
-  "col1": 123
-}]
-prefer;
-select 123;
-[123]
-select 123 as id;
-[123]
-prefer return=json-pretty-obj;
-select 123 as id;
-[{
-  "id": 123
-}]
-prefer;
-select [1,2,3];
-[[1, 2, 3]]
-prefer return=json-pretty-obj;
-select [1,2,3];
-[{
-  "col1": [1, 2, 3]
-}]
-prefer;
-select {"id": 48} as json;
-[{
-  "id": 48
-}]
-prefer return=json-pretty-obj;
-select {"id": 48} as json;
-[{
-  "json": {
-    "id": 48
-  }
-}]
-prefer;
-select [{"id": 48}, {"id": 49}, [1,2,3]];
-[[{
-  "id": 48
-}, {
-  "id": 49
-}, [1, 2, 3]]]
-prefer return=json-pretty-obj;
-select [{"id": 48}, {"id": 49}, [1,2,3]];
-[{
-  "col1": [{
-    "id": 48
-  }, {
-    "id": 49
-  }, [1, 2, 3]]
-}]
-prefer;
 # test: select format (duplicate columns)
-prefer return=json-pretty-obj;
-select 1 as id, 2 as id;
-[{
-  "id": 1,
-  "id": 2
-}]
-prefer return=json;
-select 1 as id, 2 as id;
-[[1, 2]]
-prefer return=json-obj;
+option format full;
 select 1 as id, 2 as id;
 [{"id": 1, "id": 2}]
-prefer;
+option format minimal;
+select 1 as id, 2 as id;
+[[1, 2]]
 # test: returning format
 create table test (id int primary key);
-prefer return=json-obj;
+option format full;
 insert into test values (1) returning *;
 [{"id": 1}]
-prefer return=json-obj-pretty;
+option format full-pretty;
 insert into test values (2) returning id;
 [{
   "id": 2
 }]
-prefer return=json;
+option format minimal;
 insert into test values (3) returning id;
 [3]
 select * from test;
 [1, 2, 3]
 drop table test;
-# test: invalid format
-prefer return=xyz-123;
-select 123 as x;
-{"msg": "unrecognized format flag '123'"}
-prefer;
-select 123 as x;
-[123]
 disconnect S0;
 close E0;

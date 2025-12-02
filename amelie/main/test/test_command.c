@@ -224,30 +224,27 @@ test_command_disconnect(TestSuite* self, Str* arg)
 		self->current_session = NULL;
 }
 
-/*
 static void
-test_command_prefer(TestSuite* self, Str* arg)
+test_command_option(TestSuite* self, Str* arg)
 {
+	// option <name> <value>
+	Str name;
+	Str value;
+	str_arg(arg, &name);
+	str_arg(arg, &value);
 	if (! self->current_session)
 		test_error(self, "session is not defined");
-	test_session_prefer(self->current_session, arg);
-}
+	if (str_empty(&name))
+		test_error(self, "option <name> <value> expected");
 
-static void
-test_command_post(TestSuite* self, Str* arg)
-{
-	// post <path> <content_type> <content>
-	Str path;
-	Str content_type;
-	str_arg(arg, &path);
-	str_arg(arg, &content_type);
-	if (str_empty(&path) || str_empty(&content_type))
-		test_error(self, "post <path> <content_type> <content> expected");
-
-	test_session_execute(self->current_session, &path, &content_type, arg,
-	                     &self->current_test_result);
+	auto session = self->current_session;
+	auto opts = &session->endpoint.opts;
+	auto opt = opts_find(opts, &name);
+	if (! opt)
+		test_error(self, "option '%.*s': not found", str_size(&name),
+		           str_of(&name));
+	opt_set(opt, &value);
 }
-*/
 
 static void
 test_command_switch(TestSuite* self, Str* arg)
@@ -274,6 +271,7 @@ test_commands[] =
 	{ "connect",    7,  test_command_connect     },
 	{ "disconnect", 10, test_command_disconnect  },
 	{ "switch",     6,  test_command_switch      },
+	{ "option",     6,  test_command_option      },
 	{  NULL,        0,  NULL                     }
 };
 
