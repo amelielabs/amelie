@@ -63,31 +63,24 @@ hot static inline bool
 frontend_auth(Frontend* self, Client* client)
 {
 	auto request = &client->request;
-	auto method = &request->options[HTTP_METHOD];
-	if (unlikely(! str_is(method, "POST", 4)))
-		goto forbidden;
-
 	auto auth_header = http_find(request, "Authorization", 13);
 	if (! auth_header)
 	{
 		// trusted by the server listen configuration
 		if (! client->auth)
-			return true;
+			return false;
 	} else
 	{
 		auto user = auth(&self->auth, &auth_header->value);
 		if (likely(user))
-			return true;
+			return false;
 	}
-
-forbidden:
-	// 403 Forbidden
-	client_403(client);
-	return false;
+	// error
+	return true;
 }
 
-hot static inline void
-frontend_endpoint(Client* client)
+hot static inline bool
+frontend_endpoint(Client* client, Output* output)
 {
 	auto request  = &client->request;
 	auto endpoint = client->endpoint;
@@ -97,21 +90,31 @@ frontend_endpoint(Client* client)
 	// POST /v1/db/<db>/<relation>
 	// POST /v1/backup
 	// POST /v1/repl
-
-	// parse uri endpoint
-	uri_parse_endpoint(endpoint, &request->options[HTTP_URL]);
+	auto method = &request->options[HTTP_METHOD];
+	if (unlikely(! str_is(method, "POST", 4)))
+		return true;
 
 	// set content-type
 	auto content_type = http_find(request, "Content-Type", 12);
-	if (content_type)
+	if (likely(content_type))
 		endpoint->content_type.string = content_type->value;
 
 	// set accept
 	auto accept = http_find(request, "Accept", 6);
-	if (accept)
+	if (likely(accept))
 		endpoint->accept.string = accept->value;
 	else
 		str_set(&endpoint->accept.string, "application/json", 16);
+
+	// parse uri endpoint
+	return error_catch
+	(
+		uri_parse_endpoint(endpoint, &request->options[HTTP_URL]);
+
+		// configure output mime (using Accept) and format
+		output_reset(output);
+		output_set(output, endpoint);
+	);
 }
 
 void
@@ -144,13 +147,22 @@ frontend_client(Frontend* self, Client* client)
 			break;
 
 		// authenticate
-		if (! frontend_auth(self, client))
-			break;
+		if (frontend_auth(self, client))
+		{
+			// 403 Forbidden
+			client_403(client);
+			continue;
+		}
 
 		// parse endpoint and prepare output
-		frontend_endpoint(client);
+		if (frontend_endpoint(client, &output))
+		{
+			// 400 Bad Request
+			client_400(client, NULL);
+			continue;
+		}
 
-		// handle backup or primary server connection
+		// handle service requests (backup or primary server connection)
 		if (! opt_string_empty(&endpoint.service))
 		{
 			auto service = &endpoint.service.string;
@@ -161,19 +173,6 @@ frontend_client(Frontend* self, Client* client)
 				frontend_client_primary(self, client, session);
 			break;
 		}
-
-		// ensure there are a content type and access headers
-		if (opt_string_empty(&endpoint.content_type) ||
-		    opt_string_empty(&endpoint.accept))
-		{
-			// 403 Forbidden
-			client_403(client);
-			continue;
-		}
-
-		// configure output mime (using Accept) and format
-		output_reset(&output);
-		output_set(&output, &endpoint);
 
 		// read content
 		auto limit = opt_int_of(&config()->limit_recv);
@@ -187,7 +186,6 @@ frontend_client(Frontend* self, Client* client)
 			client_413(client);
 			continue;
 		}
-
 		Str content;
 		buf_str(&request->content, &content);
 
