@@ -25,11 +25,7 @@ struct Import
 	List        clients_list;
 	MainClient* forward;
 	Reader      reader;
-	// table
-	Str         path;
-	Str         content_type;
 	// options
-	Opt         format;
 	Opt         batch;
 	Opt         clients;
 	Opts        opts;

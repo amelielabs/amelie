@@ -30,10 +30,9 @@ import_init(Import* self, Main* main)
 	opts_init(&self->opts);
 	OptsDef defs[] =
 	{
-		{ "format",  OPT_STRING, OPT_C, &self->format,  "auto", 0   },
-		{ "batch",   OPT_INT,    OPT_C, &self->batch,    NULL,  500 },
-		{ "clients", OPT_INT,    OPT_C, &self->clients,  NULL,  12  },
-		{  NULL,     0,          0,     NULL,            NULL,  0   }
+		{ "batch",   OPT_INT, OPT_C|OPT_Z, &self->batch,   NULL,  500 },
+		{ "clients", OPT_INT, OPT_C|OPT_Z, &self->clients, NULL,  12  },
+		{  NULL,     0,       0,            NULL,          NULL,  0   }
 	};
 	opts_define(&self->opts, defs);
 }
@@ -43,136 +42,6 @@ import_free(Import* self)
 {
 	reader_free(&self->reader);
 	opts_free(&self->opts);
-}
-
-static bool
-import_path_read(Str* target, Str* schema, Str* name)
-{
-	// [schema.]name
-	if (str_empty(target))
-		return false;
-
-	auto pos = target->pos;
-	auto end = target->end;
-
-	// [schema.] or name
-	auto start = pos;
-	while (pos < end && *pos != '.')
-	{
-		if (unlikely(!isalnum(*pos) && *pos != '_'))
-			return false;
-		pos++;
-	}
-
-	// set as name using public schema
-	if (pos == end)
-	{
-		str_set_cstr(schema, "public");
-		str_set(name, start, pos - start);
-		if (unlikely(str_empty(name)))
-			return false;
-		return true;
-	}
-
-	// schema
-	str_set(schema, start, pos - start);
-	if (unlikely(str_empty(schema)))
-		return false;
-
-	// .
-	pos++;
-
-	// name
-	start = pos;
-	while (pos < end)
-	{
-		if (unlikely(!isalnum(*pos) && *pos != '_'))
-			return false;
-		pos++;
-	}
-
-	str_set(name, start, pos - start);
-	if (unlikely(str_empty(name)))
-		return false;
-
-	return true;
-}
-
-static Buf*
-import_path_create(Import* self, char* target_path)
-{
-	Str target;
-	str_set_cstr(&target, target_path);
-
-	// [schema.]name
-	Str schema;
-	Str name;
-	str_init(&schema);
-	str_init(&name);
-	if (! import_path_read(&target, &schema, &name))
-		return NULL;
-
-	// /v1/db/schema/name
-	auto path = buf_create();
-	buf_write(path, "/v1/db/", 7);
-	buf_write_str(path, &schema);
-	buf_write(path, "/", 1);
-	buf_write_str(path, &name);
-	buf_str(path, &self->path);
-	return path;
-}
-
-static void
-import_set_format(Import* self, int argc, char** argv)
-{
-	// set format
-	auto format = opt_string_of(&self->format);
-	if (argc == 0)
-	{
-		// stdin
-		if (str_is_cstr(format, "auto"))
-			error("format argument is required");
-	} else
-	{
-		// guess format based on the file extensions
-		if (str_is_cstr(format, "auto"))
-		{
-			for (int i = 0; i < argc; i++)
-			{
-				Str guess;
-				str_init(&guess);
-
-				if (strstr(argv[i], ".jsonl"))
-					str_set_cstr(&guess, "jsonl");
-				else
-				if (strstr(argv[i], ".json"))
-					str_set_cstr(&guess, "json");
-				else
-				if (strstr(argv[i], ".csv"))
-					str_set_cstr(&guess, "csv");
-				else
-					error("format argument is required");
-
-				// ensure files have the same format
-				if (str_is_cstr(format, "auto")) {
-					opt_string_set(&self->format, &guess);
-				} else {
-					if (! str_compare(format, &guess))
-						error("imported files must share the same format");
-				}
-			}
-		}
-	}
-
-	// set content type
-	if (str_is_cstr(format, "jsonl"))
-		str_set_cstr(&self->content_type, "application/jsonl");
-	else
-	if (str_is_cstr(format, "csv"))
-		str_set_cstr(&self->content_type, "text/csv");
-	else
-		error("unknown import format '%.*s'", str_size(format),
-		      str_of(format));
 }
 
 static void
@@ -234,11 +103,10 @@ import_send(Import* self, Buf* buf)
 	// read reply from previous request
 	import_sync(self, next);
 
-	// POST /schema/table
+	// POST /v1/db/db_name/relation
 	Str content;
 	buf_str(buf, &content);
-
-	next->iface->send_import(next, &self->path, &self->content_type, &content);
+	next->iface->send(next, &content);
 
 	self->forward = next;
 }
@@ -339,20 +207,67 @@ import_file(Import* self, char* path)
 }
 
 static void
-import_main(Import* self, int argc, char** argv)
+import_set_content_type(Import* self)
 {
+	auto endpoint = &self->main->endpoint;
+	if (! opt_string_empty(&endpoint->content_type))
+		return;
+
+	auto argc = self->main->argc;
+	auto argv = self->main->argv;
+	if (! argc)
+		error("import: content-type is not set\n");
+
+	Str content_type;
+	str_init(&content_type);
+	for (auto i = 0; i < argc; i++)
+	{
+		Str file_type;
+		str_init(&file_type);
+		auto file = argv[i];
+		if (strstr(file, ".jsonl"))
+			str_set_cstr(&file_type, "application/jsonl");
+		else
+		if (strstr(file, ".json"))
+			str_set_cstr(&file_type, "application/json");
+		else
+		if (strstr(file, ".csv"))
+			str_set_cstr(&file_type, "text/csv");
+		else
+			error("import: unrecognized file '%s' content-type\n", file);
+
+		if (str_empty(&content_type))
+			content_type = file_type;
+		else
+		if (! str_compare(&content_type, &file_type))
+			error("import: file types must match\n", file);
+	}
+
+	opt_string_set(&endpoint->content_type, &content_type);
+}
+
+static void
+import_main(Import* self)
+{
+	// ensure relation is defined
+	if (opt_string_empty(&self->main->endpoint.relation))
+		error("import: target relation is not set\n");
+
+	// set endpoint content type
+	import_set_content_type(self);
+
 	// create clients and connect
 	import_connect(self);
-
 	self->report_time = time_us();
 
 	// import files or stdin
+	auto argc = self->main->argc;
+	auto argv = self->main->argv;
 	if (argc > 0)
 	{
 		while (argc > 0)
 		{
 			self->report_processed = 0;
-
 			import_file(self, argv[0]);
 			argc--;
 			argv++;
@@ -365,31 +280,9 @@ import_main(Import* self, int argc, char** argv)
 void
 import_run(Import* self)
 {
-	auto argc = self->main->argc;
-	auto argv = self->main->argv;
-
-	// validate clients and batch size
-	if (!opt_int_of(&self->clients) ||
-	    !opt_int_of(&self->batch))
-		error("clients and batch arguments cannot be set to zero");
-
-	// read table name and set path
-	if (argc == 0)
-		error("table name expected");
-	auto path = import_path_create(self, argv[0]);
-	if (! path)
-		error("failed to read table name");
-	defer_buf(path);
-	buf_str(path, &self->path);
-	argc--;
-	argv++;
-
-	// guess format and set content type
-	import_set_format(self, argc, argv);
-
 	//connect and import files
 	error_catch(
-		import_main(self, argc, argv);
+		import_main(self);
 	);
 
 	// disconnect clients

@@ -81,16 +81,16 @@ cmd_backup(Main* self)
 	restore(&self->endpoint, self->argv[0]);
 }
 
-/*
 static void
 cmd_import(Main* self)
 {
-	// amelie import <path, uri, bookmark> <target> files ...
+	// amelie import <path, uri, bookmark> files ...
 	Import import;
 	import_init(&import, self);
 	defer(import_free, &import);
 
-	main_open(self, MAIN_OPEN_REMOTE, &import.opts);
+	// do not pass options to the local instance
+	main_open(self, MAIN_OPEN_ANY_NOOPTS, &import.opts);
 	defer(main_close, self);
 
 	logger_set_cli(&runtime()->logger, true, false);
@@ -98,7 +98,6 @@ cmd_import(Main* self)
 	opt_int_set(&config()->log_connections, false);
 	import_run(&import);
 }
-*/
 
 static void
 cmd_bookmark(Main* self)
@@ -131,7 +130,7 @@ cmd_bookmark(Main* self)
 	opt_string_set(&ref->endpoint.name, &name);
 }
 
-/*extern void cmd_bench(Main*);*/
+extern void cmd_bench(Main*);
 extern void cmd_test(Main*);
 extern void cmd_test_slt(Main*);
 
@@ -142,9 +141,9 @@ main_commands[] =
 	{ cmd_start,    "start",    "Start database"                      },
 	{ cmd_stop,     "stop",     "Stop database"                       },
 	{ cmd_backup,   "backup",   "Create database backup"              },
-	/*{ cmd_import,   "import",   "Import data files into the database" },*/
+	{ cmd_import,   "import",   "Import data files into the database" },
 	{ cmd_bookmark, "bookmark", "Create, update or delete bookmark"   },
-	/*{ cmd_bench,    "bench",    "Run benchmarks"                      },*/
+	{ cmd_bench,    "bench",    "Run benchmarks"                      },
 	{ cmd_test,     "test",     "Run tests"                           },
 	{ cmd_test_slt, "test_slt", "Run slt tests"                       },
 	{ NULL,          NULL,       NULL                                 },
