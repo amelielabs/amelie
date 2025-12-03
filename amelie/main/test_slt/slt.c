@@ -74,7 +74,7 @@ slt_open(Slt* self, Str* dir)
 		error("amelie_open() failed");
 
 	// create session
-	self->session = amelie_connect(self->env, NULL);
+	self->session = amelie_connect(self->env, "amelie://");
 	if (! self->session)
 		error("amelie_connect() failed");
 }

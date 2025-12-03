@@ -133,7 +133,7 @@ cmd_bookmark(Main* self)
 
 /*extern void cmd_bench(Main*);*/
 extern void cmd_test(Main*);
-/*extern void cmd_test_slt(Main*);*/
+extern void cmd_test_slt(Main*);
 
 MainCmd
 main_commands[] =
@@ -146,6 +146,6 @@ main_commands[] =
 	{ cmd_bookmark, "bookmark", "Create, update or delete bookmark"   },
 	/*{ cmd_bench,    "bench",    "Run benchmarks"                      },*/
 	{ cmd_test,     "test",     "Run tests"                           },
-	/*{ cmd_test_slt, "test_slt", "Run slt tests"                       },*/
+	{ cmd_test_slt, "test_slt", "Run slt tests"                       },
 	{ NULL,          NULL,       NULL                                 },
 };

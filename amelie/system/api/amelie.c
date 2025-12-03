@@ -169,9 +169,8 @@ amelie_connect(amelie_t* self, const char* uri)
 	// ensure amelie_open() executed
 	if (unlikely(! runtime_started(&self->runtime)))
 		return NULL;
-
-	if (unlikely(! uri))
-		return NULL;
+	if (! uri)
+		uri = "amelie://";
 
 	auto session = (amelie_session_t*)am_malloc(sizeof(amelie_session_t));
 	session->type            = AMELIE_OBJ_SESSION;

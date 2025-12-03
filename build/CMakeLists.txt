@@ -342,11 +342,10 @@ set(AMELIE_SOURCES_MAIN
     ${AMELIE_ROOT}/main/test/test_suite.c
     ${AMELIE_ROOT}/main/test/test_command.c
     ${AMELIE_ROOT}/main/test/test_main.c
-    #${AMELIE_ROOT}/main/test_slt/slt_parser.c
-    #${AMELIE_ROOT}/main/test_slt/slt_result.c
-    #${AMELIE_ROOT}/main/test_slt/slt.c
-    #${AMELIE_ROOT}/main/test_slt/slt_main.c)
-   )
+    ${AMELIE_ROOT}/main/test_slt/slt_parser.c
+    ${AMELIE_ROOT}/main/test_slt/slt_result.c
+    ${AMELIE_ROOT}/main/test_slt/slt.c
+    ${AMELIE_ROOT}/main/test_slt/slt_main.c)
 
 set(AMELIE_SOURCES_UNIT
     ${CMAKE_SOURCE_DIR}/tests/unit/test_task.c
