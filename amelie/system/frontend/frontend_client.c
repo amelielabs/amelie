@@ -146,6 +146,19 @@ frontend_client(Frontend* self, Client* client)
 		if (unlikely(eof))
 			break;
 
+		// read content
+		auto limit = opt_int_of(&config()->limit_recv);
+		auto limit_reached =
+			http_read_content_limit(request, &client->readahead,
+			                        &request->content,
+			                        limit);
+		if (unlikely(limit_reached))
+		{
+			// 413 Payload Too Large
+			client_413(client);
+			break;
+		}
+
 		// authenticate
 		if (frontend_auth(self, client))
 		{
@@ -174,22 +187,9 @@ frontend_client(Frontend* self, Client* client)
 			break;
 		}
 
-		// read content
-		auto limit = opt_int_of(&config()->limit_recv);
-		auto limit_reached =
-			http_read_content_limit(request, &client->readahead,
-			                        &request->content,
-			                        limit);
-		if (unlikely(limit_reached))
-		{
-			// 413 Payload Too Large
-			client_413(client);
-			continue;
-		}
+		// execute request
 		Str content;
 		buf_str(&request->content, &content);
-
-		// execute request
 		auto on_error = ctl->session_execute(session, &endpoint, &content, &output);
 		if (unlikely(on_error))
 		{

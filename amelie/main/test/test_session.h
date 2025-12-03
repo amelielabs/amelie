@@ -95,3 +95,78 @@ test_session_execute(TestSession* self, Str* content, File* output)
 		file_write(output, "\n", 1);
 	}
 }
+
+static inline void
+test_session_post(TestSession* self,
+                  Str*         path,
+                  Str*         content_type,
+                  Str*         accept,
+                  Str*         content,
+                  File*        output)
+{
+	auto client  = self->client;
+	auto request = &client->request;
+	auto buf     = &request->raw;
+	buf_reset(buf);
+
+	// POST <path> HTTP/1.1
+	buf_write(buf, "POST ", 5);
+	buf_write_str(buf, path);
+	buf_write(buf, " HTTP/1.1\r\n", 11);
+
+	// content-type
+	if (! str_empty(content_type))
+	{
+		buf_write(buf, "Content-Type: ", 14);
+		buf_write_str(buf, content_type);
+		buf_write(buf, "\r\n", 2);
+	}
+
+	// content-length
+	if (! str_empty(content))
+	{
+		buf_write(buf, "Content-Length: ", 16);
+		buf_printf(buf, "%d", str_size(content));
+		buf_write(buf, "\r\n", 2);
+	}
+
+	// accept
+	if (! str_empty(accept))
+	{
+		buf_write(buf, "Accept: ", 8);
+		buf_write_str(buf, accept);
+		buf_write(buf, "\r\n", 2);
+	}
+	buf_write(buf, "\r\n", 2);
+
+	// send
+	if (! str_empty(content))
+		tcp_write_pair_str(&client->tcp, buf, content);
+	else
+		tcp_write_buf(&client->tcp, buf);
+
+	// recv
+	auto reply  = &client->reply;
+	client_recv(client, &reply->content);
+	if (buf_size(&reply->content))
+	{
+		file_write(output, reply->content.start, buf_size(&reply->content));
+		file_write(output, "\n", 1);
+	}
+
+	int64_t code;
+	str_toint(&reply->options[HTTP_CODE], &code);
+	if (code == 200 || code == 204)
+		return;
+
+	if (buf_empty(&reply->content))
+	{
+		auto code = &reply->options[HTTP_CODE];
+		auto msg  = &reply->options[HTTP_MSG];
+		char text[64];
+		auto text_size =
+			snprintf(text, sizeof(text), "%.*s %.*s\n", str_size(code), str_of(code),
+			         str_size(msg), str_of(msg));
+		file_write(output, text, text_size);
+	}
+}

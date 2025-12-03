@@ -95,7 +95,7 @@ include_directories("${AMELIE_ROOT}/repl/repl")
 include_directories("${AMELIE_ROOT}/vm")
 include_directories("${AMELIE_ROOT}/vm/value")
 include_directories("${AMELIE_ROOT}/vm/set")
-include_directories("${AMELIE_ROOT}/vm/content")
+include_directories("${AMELIE_ROOT}/vm/output")
 include_directories("${AMELIE_ROOT}/vm/executor")
 include_directories("${AMELIE_ROOT}/vm/func")
 include_directories("${AMELIE_ROOT}/vm/vm")
@@ -132,7 +132,6 @@ set(AMELIE_SOURCES_RUNTIME
     ${AMELIE_ROOT}/runtime/base/task.c
     ${AMELIE_ROOT}/runtime/os/os.c
     ${AMELIE_ROOT}/runtime/os/vfs.c
-    ${AMELIE_ROOT}/runtime/os/remote.c
     ${AMELIE_ROOT}/runtime/os/tls_lib.c
     ${AMELIE_ROOT}/runtime/os/tls_context.c
     ${AMELIE_ROOT}/runtime/os/tls.c
@@ -171,8 +170,9 @@ set(AMELIE_SOURCES_SERVER
     ${AMELIE_ROOT}/server/auth/jwt.c
     ${AMELIE_ROOT}/server/auth/auth_cache.c
     ${AMELIE_ROOT}/server/auth/auth.c
-    ${AMELIE_ROOT}/server/http/http.c
+    ${AMELIE_ROOT}/server/http/endpoint.c
     ${AMELIE_ROOT}/server/http/uri.c
+    ${AMELIE_ROOT}/server/http/http.c
     ${AMELIE_ROOT}/server/client/client.c
     ${AMELIE_ROOT}/server/server/server.c)
 
@@ -192,7 +192,7 @@ set(AMELIE_SOURCES_STORAGE
     ${AMELIE_ROOT}/storage/checkpoint/checkpoint_mgr.c
     ${AMELIE_ROOT}/storage/checkpoint/checkpoint.c
     ${AMELIE_ROOT}/storage/checkpoint/checkpointer.c
-    ${AMELIE_ROOT}/storage/catalog/schema_mgr.c
+    ${AMELIE_ROOT}/storage/catalog/db_mgr.c
     ${AMELIE_ROOT}/storage/catalog/table_mgr.c
     ${AMELIE_ROOT}/storage/catalog/table_mgr_alter.c
     ${AMELIE_ROOT}/storage/catalog/table_index.c
@@ -227,8 +227,8 @@ set(AMELIE_SOURCES_VM
     ${AMELIE_ROOT}/vm/set/any.c
     ${AMELIE_ROOT}/vm/set/all.c
     ${AMELIE_ROOT}/vm/set/in.c
-    ${AMELIE_ROOT}/vm/content/content.c
-    ${AMELIE_ROOT}/vm/content/content_json.c
+    ${AMELIE_ROOT}/vm/output/output.c
+    ${AMELIE_ROOT}/vm/output/output_json.c
     ${AMELIE_ROOT}/vm/executor/commit.c
     ${AMELIE_ROOT}/vm/func/function_mgr.c
     ${AMELIE_ROOT}/vm/func/fn.c
@@ -264,7 +264,7 @@ set(AMELIE_SOURCES_COMPILER
     ${AMELIE_ROOT}/compiler/parser/parse_replica.c
     ${AMELIE_ROOT}/compiler/parser/parse_repl.c
     ${AMELIE_ROOT}/compiler/parser/parse_watch.c
-    ${AMELIE_ROOT}/compiler/parser/parse_schema.c
+    ${AMELIE_ROOT}/compiler/parser/parse_db.c
     ${AMELIE_ROOT}/compiler/parser/parse_table.c
     ${AMELIE_ROOT}/compiler/parser/parse_index.c
     ${AMELIE_ROOT}/compiler/parser/parse_function.c
@@ -276,12 +276,11 @@ set(AMELIE_SOURCES_COMPILER
     ${AMELIE_ROOT}/compiler/parser/parse_update.c
     ${AMELIE_ROOT}/compiler/parser/parse_delete.c
     ${AMELIE_ROOT}/compiler/parser/parse_select.c
-    ${AMELIE_ROOT}/compiler/parser/parse_endpoint.c
-    ${AMELIE_ROOT}/compiler/parser/parse_import.c
     ${AMELIE_ROOT}/compiler/parser/parse_declare.c
     ${AMELIE_ROOT}/compiler/parser/parse_with.c
     ${AMELIE_ROOT}/compiler/parser/parse_execute.c
     ${AMELIE_ROOT}/compiler/parser/parse.c
+    ${AMELIE_ROOT}/compiler/parser/parse_endpoint.c
     ${AMELIE_ROOT}/compiler/parser/parser.c
     ${AMELIE_ROOT}/compiler/plan/path.c
     ${AMELIE_ROOT}/compiler/plan/path_prepare.c
@@ -298,18 +297,17 @@ set(AMELIE_SOURCES_COMPILER
     ${AMELIE_ROOT}/compiler/compiler/emit_delete.c
     ${AMELIE_ROOT}/compiler/compiler/emit_select.c
     ${AMELIE_ROOT}/compiler/compiler/emit_watch.c
-    ${AMELIE_ROOT}/compiler/compiler/emit_utility.c
-    ${AMELIE_ROOT}/compiler/compiler/query.c)
+    ${AMELIE_ROOT}/compiler/compiler/emit_utility.c)
 
 set(AMELIE_SOURCES_SYSTEM
     ${AMELIE_ROOT}/system/frontend/frontend.c
     ${AMELIE_ROOT}/system/frontend/frontend_client.c
     ${AMELIE_ROOT}/system/frontend/frontend_native.c
-    ${AMELIE_ROOT}/system/frontend/frontend_relay.c
     ${AMELIE_ROOT}/system/backend/backend.c
     ${AMELIE_ROOT}/system/backend/build.c
     ${AMELIE_ROOT}/system/backend/replay.c
     ${AMELIE_ROOT}/system/session/session.c
+    ${AMELIE_ROOT}/system/session/session_replay.c
     ${AMELIE_ROOT}/system/system/repo.c
     ${AMELIE_ROOT}/system/system/system.c
     ${AMELIE_ROOT}/system/system/system_metrics.c
@@ -331,23 +329,24 @@ set(AMELIE_SOURCES_MAIN
     ${AMELIE_ROOT}/main/main/main_client.c
     ${AMELIE_ROOT}/main/main/main_cli.c
     ${AMELIE_ROOT}/main/main/main_command.c
-    ${AMELIE_ROOT}/main/main/import.c
-    ${AMELIE_ROOT}/main/bench/bench.c
-    ${AMELIE_ROOT}/main/bench/bench_insert.c
-    ${AMELIE_ROOT}/main/bench/bench_upsert.c
-    ${AMELIE_ROOT}/main/bench/bench_resolved.c
-    ${AMELIE_ROOT}/main/bench/bench_tpcb.c
-    ${AMELIE_ROOT}/main/bench/bench_import.c
-    ${AMELIE_ROOT}/main/bench/bench_decre.c
-    ${AMELIE_ROOT}/main/bench/bench_main.c
+    #${AMELIE_ROOT}/main/main/import.c
+    #${AMELIE_ROOT}/main/bench/bench.c
+    #${AMELIE_ROOT}/main/bench/bench_insert.c
+    #${AMELIE_ROOT}/main/bench/bench_upsert.c
+    #${AMELIE_ROOT}/main/bench/bench_resolved.c
+    #${AMELIE_ROOT}/main/bench/bench_tpcb.c
+    #${AMELIE_ROOT}/main/bench/bench_import.c
+    #${AMELIE_ROOT}/main/bench/bench_decre.c
+    #${AMELIE_ROOT}/main/bench/bench_main.c
     ${AMELIE_ROOT}/main/test/test_plan.c
     ${AMELIE_ROOT}/main/test/test_suite.c
     ${AMELIE_ROOT}/main/test/test_command.c
     ${AMELIE_ROOT}/main/test/test_main.c
-    ${AMELIE_ROOT}/main/test_slt/slt_parser.c
-    ${AMELIE_ROOT}/main/test_slt/slt_result.c
-    ${AMELIE_ROOT}/main/test_slt/slt.c
-    ${AMELIE_ROOT}/main/test_slt/slt_main.c)
+    #${AMELIE_ROOT}/main/test_slt/slt_parser.c
+    #${AMELIE_ROOT}/main/test_slt/slt_result.c
+    #${AMELIE_ROOT}/main/test_slt/slt.c
+    #${AMELIE_ROOT}/main/test_slt/slt_main.c)
+   )
 
 set(AMELIE_SOURCES_UNIT
     ${CMAKE_SOURCE_DIR}/tests/unit/test_task.c

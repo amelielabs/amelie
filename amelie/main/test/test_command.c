@@ -247,6 +247,44 @@ test_command_option(TestSuite* self, Str* arg)
 }
 
 static void
+test_command_post(TestSuite* self, Str* arg)
+{
+	// post <endpoint> <content_type> <accept> <content>
+	Str endpoint;
+	Str content_type;
+	Str accept;
+	Str content;
+	str_arg(arg, &endpoint);
+	str_arg(arg, &content_type);
+	str_arg(arg, &accept);
+	content = *arg;
+	if (! self->current_session)
+		test_error(self, "session is not defined");
+
+	str_shrink(&endpoint);
+	str_shrink(&content_type);
+	str_shrink(&accept);
+	str_shrink(&content);
+
+	// reset on -
+	if (str_is(&endpoint, "-", 1))
+		str_init(&endpoint);
+	if (str_is(&content_type, "-", 1))
+		str_init(&content_type);
+	if (str_is(&accept, "-", 1))
+		str_init(&accept);
+	if (str_is(&content, "-", 1))
+		str_init(&content);
+
+	test_session_post(self->current_session,
+	                  &endpoint,
+	                  &content_type,
+	                  &accept,
+	                  &content,
+	                  &self->current_test_result);
+}
+
+static void
 test_command_switch(TestSuite* self, Str* arg)
 {
 	// switch <name>
@@ -261,6 +299,14 @@ test_command_switch(TestSuite* self, Str* arg)
 	self->current_session = session;
 }
 
+static void
+test_command_debug(TestSuite* self, Str* arg)
+{
+	unused(self);
+	unused(arg);
+	raise(SIGTRAP);
+}
+
 static TestCommand
 test_commands[] =
 {
@@ -272,6 +318,8 @@ test_commands[] =
 	{ "disconnect", 10, test_command_disconnect  },
 	{ "switch",     6,  test_command_switch      },
 	{ "option",     6,  test_command_option      },
+	{ "post",       4,  test_command_post        },
+	{ "debug",      5,  test_command_debug       },
 	{  NULL,        0,  NULL                     }
 };
 

@@ -69,9 +69,12 @@ client_400(Client* self, Buf* content)
 {
 	auto reply = &self->reply;
 	auto buf = http_begin_reply(reply, self->endpoint, "400 Bad Request", 15,
-	                            buf_size(content));
+	                            content? buf_size(content): 0);
 	http_end(buf);
-	tcp_write_pair(&self->tcp, buf, content);
+	if (content)
+		tcp_write_pair(&self->tcp, buf, content);
+	else
+		tcp_write_buf(&self->tcp, buf);
 }
 
 static inline void
