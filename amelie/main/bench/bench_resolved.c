@@ -21,16 +21,16 @@ bench_resolved_create(Bench* self, MainClient* client)
 	unused(self);
 	Str str;
 	str_set_cstr(&str,
-	             "create table __bench.test ("
+	             "create table test ("
 	             "    ts   timestamp as ( current_timestamp::date_bin('3 sec'::interval) ) stored,"
-	             "    id   int random (10000),"
+	             "    id   int as identity random (10000),"
 	             "    hits int default 0 as ( hits + 1 ) resolved,"
 	             "    primary key(ts, id) using hash"
 	             ")");
 	main_client_execute(client, &str, NULL);
 	if (opt_int_of(&self->unlogged))
 	{
-		str_set_cstr(&str, "alter table __bench.test set unlogged");
+		str_set_cstr(&str, "alter table test set unlogged");
 		main_client_execute(client, &str, NULL);
 	}
 }
@@ -42,7 +42,7 @@ bench_resolved_main(BenchWorker* self, MainClient* client)
 	auto batch = opt_int_of(&bench->batch);
 
 	char text[256];
-	snprintf(text, sizeof(text), "insert into __bench.test generate %" PRIu64, batch);
+	snprintf(text, sizeof(text), "insert into test generate %" PRIu64, batch);
 	Str cmd;
 	str_set_cstr(&cmd, text);
 

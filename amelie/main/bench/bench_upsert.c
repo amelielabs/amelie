@@ -20,11 +20,11 @@ bench_upsert_create(Bench* self, MainClient* client)
 {
 	unused(self);
 	Str str;
-	str_set_cstr(&str, "create table __bench.test (id int primary key as identity random (100000) using hash, data int default 0)");
+	str_set_cstr(&str, "create table test(id int primary key using hash as identity random (100000), data int default 0)");
 	main_client_execute(client, &str, NULL);
 	if (opt_int_of(&self->unlogged))
 	{
-		str_set_cstr(&str, "alter table __bench.test set unlogged");
+		str_set_cstr(&str, "alter table test set unlogged");
 		main_client_execute(client, &str, NULL);
 	}
 }
@@ -37,7 +37,7 @@ bench_upsert_main(BenchWorker* self, MainClient* client)
 
 	char text[256];
 	snprintf(text, sizeof(text),
-	         "insert into __bench.test "
+	         "insert into test "
 	         "generate %" PRIu64 " "
 	         "on conflict do update set data = data + 1",
 	         batch);

@@ -329,15 +329,15 @@ set(AMELIE_SOURCES_MAIN
     ${AMELIE_ROOT}/main/main/main_client.c
     ${AMELIE_ROOT}/main/main/main_cli.c
     ${AMELIE_ROOT}/main/main/main_command.c
-    #${AMELIE_ROOT}/main/main/import.c
-    #${AMELIE_ROOT}/main/bench/bench.c
-    #${AMELIE_ROOT}/main/bench/bench_insert.c
-    #${AMELIE_ROOT}/main/bench/bench_upsert.c
-    #${AMELIE_ROOT}/main/bench/bench_resolved.c
-    #${AMELIE_ROOT}/main/bench/bench_tpcb.c
-    #${AMELIE_ROOT}/main/bench/bench_import.c
-    #${AMELIE_ROOT}/main/bench/bench_decre.c
-    #${AMELIE_ROOT}/main/bench/bench_main.c
+    ${AMELIE_ROOT}/main/main/import.c
+    ${AMELIE_ROOT}/main/bench/bench.c
+    ${AMELIE_ROOT}/main/bench/bench_insert.c
+    ${AMELIE_ROOT}/main/bench/bench_upsert.c
+    ${AMELIE_ROOT}/main/bench/bench_resolved.c
+    ${AMELIE_ROOT}/main/bench/bench_tpcb.c
+    ${AMELIE_ROOT}/main/bench/bench_import.c
+    ${AMELIE_ROOT}/main/bench/bench_decre.c
+    ${AMELIE_ROOT}/main/bench/bench_main.c
     ${AMELIE_ROOT}/main/test/test_plan.c
     ${AMELIE_ROOT}/main/test/test_suite.c
     ${AMELIE_ROOT}/main/test/test_command.c

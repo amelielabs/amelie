@@ -22,7 +22,7 @@ bench_connection(void* arg)
 	auto client = main_client_create(self->bench->main);
 	defer(main_client_free, client);
 
-	// meassure histogram
+	// measure histogram
 	if (opt_int_of(&self->bench->histogram))
 		main_client_set(client, &self->histogram);
 
@@ -130,33 +130,40 @@ bench_free(Bench* self)
 }
 
 static void
-bench_service_execute(Bench* self, MainClient* client, bool create)
+bench_service_prepare(MainClient* client, bool create)
 {
-	// drop test schema if exists
+	// recreate bench database
 	Str str;
-	str_set_cstr(&str, "drop schema if exists __bench cascade");
+	str_set_cstr(&str, "drop database if exists bench cascade");
 	main_client_execute(client, &str, NULL);
-
 	if (create)
 	{
-		// create test schema and run benchmark
-		str_set_cstr(&str, "create schema __bench");
+		str_set_cstr(&str, "create database bench");
 		main_client_execute(client, &str, NULL);
-
-		self->iface->create(self, client);
 	}
 }
 
 static void
 bench_service(Bench* self, bool create)
 {
-	auto client = main_client_create(self->main);
-	defer(main_client_free, client);
+	auto client_init = main_client_create(self->main);
+	defer(main_client_free, client_init);
 	error_catch
 	(
-		main_client_connect(client);
-		bench_service_execute(self, client, create);
+		main_client_connect(client_init);
+		bench_service_prepare(client_init, create);
 	);
+	if (create)
+	{
+		// connect to the bench db for deploy
+		str_set_cstr(&self->main->endpoint.db.string, "bench");
+		auto client = main_client_create(self->main);
+		defer(main_client_free, client);
+		error_catch(
+			main_client_connect(client);
+			self->iface->create(self, client);
+		);
+	}
 }
 
 void
@@ -228,6 +235,11 @@ bench_run(Bench* self)
 			return;
 		}
 	}
+
+	// switch to using bench db
+	auto endpoint = &self->main->endpoint;
+	str_set_cstr(&endpoint->db.string, "bench");
+	opt_string_set_raw(&endpoint->content_type, "plain/text", 10);
 
 	// begin
 	list_foreach_safe(&self->list)

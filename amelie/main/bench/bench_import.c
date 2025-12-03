@@ -20,11 +20,11 @@ bench_import_create(Bench* self, MainClient* client)
 {
 	unused(self);
 	Str str;
-	str_set_cstr(&str, "create table __bench.test (id serial primary key)");
+	str_set_cstr(&str, "create table test (id serial primary key)");
 	main_client_execute(client, &str, NULL);
 	if (opt_int_of(&self->unlogged))
 	{
-		str_set_cstr(&str, "alter table __bench.test set unlogged");
+		str_set_cstr(&str, "alter table test set unlogged");
 		main_client_execute(client, &str, NULL);
 	}
 }
@@ -35,6 +35,8 @@ bench_import_main(BenchWorker* self, MainClient* client)
 	auto bench = self->bench;
 	auto batch = opt_int_of(&bench->batch);
 
+
+	/*
 	// path
 	Str path;
 	str_set_cstr(&path, "/v1/db/__bench/test?columns=");
@@ -42,6 +44,7 @@ bench_import_main(BenchWorker* self, MainClient* client)
 	// content type
 	Str content_type;
 	str_set_cstr(&content_type, "application/json");
+	*/
 
 	// content
 
@@ -62,7 +65,7 @@ bench_import_main(BenchWorker* self, MainClient* client)
 
 	while (! self->shutdown)
 	{
-		main_client_execute_import(client, &path, &content_type, &content);
+		main_client_execute(client, &content, NULL);
 		atomic_u64_add(&bench->transactions, 1);
 		atomic_u64_add(&bench->writes, batch);
 	}

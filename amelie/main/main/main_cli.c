@@ -134,6 +134,17 @@ main_cli(Main* self)
 	main_open(self, MAIN_OPEN_ANY, NULL);
 	defer(main_close, self);
 
+	// set default content_type
+	auto endpoint = &self->endpoint;
+	auto content_type = opt_string_of(&endpoint->content_type);
+	if (str_empty(content_type))
+		opt_string_set_raw(&endpoint->content_type, "plain/text", 10);
+
+	// set default accept
+	auto accept = opt_string_of(&endpoint->accept);
+	if (str_empty(accept))
+		opt_string_set_raw(&endpoint->accept, "application/json", 16);
+
 	// create client and connect
 	auto client = main_client_create(self);
 	defer(main_client_free, client);

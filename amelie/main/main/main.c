@@ -200,7 +200,15 @@ main_open(Main* self, MainOpen type, Opts* opts)
 		if (! self->env)
 			error("amelie_init() failed");
 		auto path = opt_string_of(&self->endpoint.path);
-		auto rc = amelie_open(self->env, str_of(path), self->argc, self->argv);
+
+		auto argc = self->argc;
+		auto argv = self->argv;
+		if (type == MAIN_OPEN_ANY_NOOPTS)
+		{
+			argc = 0;
+			argv = NULL;
+		}
+		auto rc = amelie_open(self->env, str_of(path), argc, argv);
 		if (rc == -1)
 			error("amelie_open() failed");
 	}

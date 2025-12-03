@@ -21,17 +21,17 @@ bench_decre_create(Bench* self, MainClient* client)
 	unused(self);
 
 	Str str;
-	str_set_cstr(&str, "create table __bench.test (id serial primary key using hash, money double default 100.0)");
+	str_set_cstr(&str, "create table test(id serial primary key using hash, money double default 100.0)");
 	main_client_execute(client, &str, NULL);
 
-	str_set_cstr(&str, "create table __bench.history (id serial primary key using hash, src int, dst int, amount double)");
+	str_set_cstr(&str, "create table history(id serial primary key using hash, src int, dst int, amount double)");
 	main_client_execute(client, &str, NULL);
 
 	if (opt_int_of(&self->unlogged))
 	{
-		str_set_cstr(&str, "alter table __bench.test set unlogged");
+		str_set_cstr(&str, "alter table test set unlogged");
 		main_client_execute(client, &str, NULL);
-		str_set_cstr(&str, "alter table __bench.history set unlogged");
+		str_set_cstr(&str, "alter table history set unlogged");
 		main_client_execute(client, &str, NULL);
 	}
 	Buf buf;
@@ -42,30 +42,30 @@ bench_decre_create(Bench* self, MainClient* client)
 	for (auto i = 0ul; i < n; i++)
 	{
 		buf_reset(&buf);
-		buf_printf(&buf, "insert into __bench.test generate 500");
+		buf_printf(&buf, "insert into test generate 500");
 		buf_str(&buf, &str);
 		main_client_execute(client, &str, NULL);
 	}
 
 	// create benchmark functions
 	char func[] =
-	"create function __bench.debit_credit(src int, dst int, amount double)"
+	"create function debit_credit(src int, dst int, amount double)"
 	"begin"
-	"	update __bench.test set money = money - amount"
+	"	update test set money = money - amount"
 	"	 where id = src;"
 	""
-	"	update __bench.test set money = money + amount"
+	"	update test set money = money + amount"
 	"	 where id = dst;"
 	""
-	"	insert into __bench.history (src, dst, amount)"
+	"	insert into history (src, dst, amount)"
 	"	values (src, dst, amount);"
 	"end;";
 
 	char func_batch[] =
-	"create function __bench.debit_credit_batch(batch int, total int)"
+	"create function debit_credit_batch(batch int, total int)"
 	"begin"
 	"	while batch > 0 do"
-	"		select __bench.debit_credit(random() \% total, random() \% total, 1.0);"
+	"		select debit_credit(random() \% total, random() \% total, 1.0);"
 	"		batch := batch - 1;"
 	"	end;"
 	"end;";
@@ -87,7 +87,7 @@ bench_decre_main(BenchWorker* self, MainClient* client)
 	Buf buf;
 	buf_init(&buf);
 	defer_buf(&buf);
-	buf_printf(&buf, "execute __bench.debit_credit_batch(%d, %d);", batch, total);
+	buf_printf(&buf, "execute debit_credit_batch(%d, %d);", batch, total);
 	Str cmd;
 	buf_str(&buf, &cmd);
 
