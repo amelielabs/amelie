@@ -105,11 +105,11 @@ checkpoint_part(Checkpoint* self, Part* part)
 {
 	// <base>/<lsn>.incomplete/<partition_id>
 	char path[PATH_MAX];
-	snprintf(path, sizeof(path),
-	         "%s/checkpoints/%" PRIu64 ".incomplete/%" PRIu64,
-	         state_directory(),
-	         self->lsn,
-	         part->config->id);
+	sfmt(path, sizeof(path),
+	     "%s/checkpoints/%" PRIu64 ".incomplete/%" PRIu64,
+	     state_directory(),
+	     self->lsn,
+	     part->config->id);
 	auto size = heap_file_write(&part->heap, path);
 	info(" %" PRIu64"/%05" PRIu64 " (%.2f MiB)",
 	     self->lsn,
@@ -182,9 +182,9 @@ checkpoint_create_catalog(Checkpoint* self)
 {
 	// create <base>/<lsn>.incomplete/catalog.json
 	char path[PATH_MAX];
-	snprintf(path, sizeof(path),
-	         "%s/checkpoints/%" PRIu64 ".incomplete/catalog.json",
-	         state_directory(), self->lsn);
+	sfmt(path, sizeof(path),
+	     "%s/checkpoints/%" PRIu64 ".incomplete/catalog.json",
+	     state_directory(), self->lsn);
 
 	// convert catalog to json
 	Buf text;
@@ -206,8 +206,8 @@ checkpoint_run(Checkpoint* self)
 {
 	// create <base>/<lsn>.incomplete
 	char path[PATH_MAX];
-	snprintf(path, sizeof(path), "%s/checkpoints/%" PRIu64 ".incomplete",
-	         state_directory(), self->lsn);
+	sfmt(path, sizeof(path), "%s/checkpoints/%" PRIu64 ".incomplete",
+	     state_directory(), self->lsn);
 
 	info("");
 	info("checkpoint: checkpoints/%" PRIu64 "/ (using %d workers)",
@@ -253,8 +253,8 @@ checkpoint_wait(Checkpoint* self)
 
 	// rename as completed
 	char path[PATH_MAX];
-	snprintf(path, sizeof(path), "%s/checkpoints/%" PRIu64 ".incomplete",
-	         state_directory(), self->lsn);
+	sfmt(path, sizeof(path), "%s/checkpoints/%" PRIu64 ".incomplete",
+	     state_directory(), self->lsn);
 	fs_rename(path, "%s/checkpoints/%" PRIu64, state_directory(), self->lsn);
 
 	// done

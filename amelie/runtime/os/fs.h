@@ -11,63 +11,63 @@
 // AGPL-3.0 Licensed.
 //
 
-static inline bool
+static inline bool format_validate(1, 2)
 fs_exists(const char* fmt, ...)
 {
 	va_list args;
 	va_start(args, fmt);
 	char path[PATH_MAX];
-	vsnprintf(path, sizeof(path), fmt, args);
+	vsfmt(path, sizeof(path), fmt, args);
 	va_end(args);
 	return vfs_size(path) >= 0;
 }
 
-static inline void
+static inline void format_validate(2, 3)
 fs_mkdir(int mode, const char* fmt, ...)
 {
 	va_list args;
 	va_start(args, fmt);
 	char path[PATH_MAX];
-	vsnprintf(path, sizeof(path), fmt, args);
+	vsfmt(path, sizeof(path), fmt, args);
 	va_end(args);
 	int rc = vfs_mkdir(path, mode);
 	if (unlikely(rc == -1))
 		error_system();
 }
 
-static inline void
+static inline void format_validate(1, 2)
 fs_unlink(const char* fmt, ...)
 {
 	va_list args;
 	va_start(args, fmt);
 	char path[PATH_MAX];
-	vsnprintf(path, sizeof(path), fmt, args);
+	vsfmt(path, sizeof(path), fmt, args);
 	va_end(args);
 	int rc = vfs_unlink(path);
 	if (unlikely(rc == -1))
 		error_system();
 }
 
-static inline void
+static inline void format_validate(2, 3)
 fs_rename(const char* old, const char* fmt, ...)
 {
 	va_list args;
 	va_start(args, fmt);
 	char path[PATH_MAX];
-	vsnprintf(path, sizeof(path), fmt, args);
+	vsfmt(path, sizeof(path), fmt, args);
 	va_end(args);
 	int rc = vfs_rename(old, path);
 	if (unlikely(rc == -1))
 		error_system();
 }
 
-static inline int64_t
+static inline int64_t format_validate(1, 2)
 fs_size(const char* fmt, ...)
 {
 	va_list args;
 	va_start(args, fmt);
 	char path[PATH_MAX];
-	vsnprintf(path, sizeof(path), fmt, args);
+	vsfmt(path, sizeof(path), fmt, args);
 	va_end(args);
 	return vfs_size(path);
 }
@@ -78,13 +78,13 @@ fs_opendir_defer(DIR* self)
 	closedir(self);
 }
 
-static inline void
+static inline void format_validate(1, 2)
 fs_rmdir(const char* fmt, ...)
 {
 	va_list args;
 	va_start(args, fmt);
 	char path[PATH_MAX];
-	vsnprintf(path, sizeof(path), fmt, args);
+	vsfmt(path, sizeof(path), fmt, args);
 	va_end(args);
 	DIR* dir = opendir(path);
 	if (unlikely(dir == NULL))

@@ -242,7 +242,7 @@ parse_returning_resolve_exprs(Returning* self, Stmt* stmt, From* from)
 			if (as->r == NULL)
 			{
 				auto name_sz = palloc(32);
-				snprintf(name_sz, 32, "col%d", self->count + 1);
+				sfmt(name_sz, 32, "col%d", self->count + 1);
 				as->r = ast(KNAME);
 				str_set_cstr(&as->r->string, name_sz);
 			}

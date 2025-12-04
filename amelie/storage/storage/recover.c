@@ -62,7 +62,7 @@ recover_cmd(Recover* self, RecordCmd* cmd, uint8_t** pos)
 		// find partition by id
 		auto part = part_mgr_find(&storage->part_mgr, cmd->partition);
 		if (! part)
-			error("recover: failed to find partition %" PRIu64, cmd->partition);
+			error("recover: failed to find partition %" PRIu32, cmd->partition);
 		auto end = *pos + cmd->size;
 		while (*pos < end)
 		{
@@ -77,7 +77,7 @@ recover_cmd(Recover* self, RecordCmd* cmd, uint8_t** pos)
 		// find partition by id
 		auto part = part_mgr_find(&storage->part_mgr, cmd->partition);
 		if (! part)
-			error("recover: failed to find partition %" PRIu64, cmd->partition);
+			error("recover: failed to find partition %" PRIu32, cmd->partition);
 		auto end = *pos + cmd->size;
 		while (*pos < end)
 		{

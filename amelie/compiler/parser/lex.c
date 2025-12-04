@@ -90,7 +90,7 @@ lex_error_expect(Lex* self, Ast* ast, int id)
 	char name[64];
 	if (id < 128)
 	{
-		snprintf(name, sizeof(name), "%c expected", id);
+		sfmt(name, sizeof(name), "%c expected", id);
 	} else
 	if (id > KKEYWORD)
 	{
@@ -98,8 +98,8 @@ lex_error_expect(Lex* self, Ast* ast, int id)
 		assert(keyword->name_size < (int)sizeof(name));
 		for (auto i = 0; i < keyword->name_size; i++)
 			name[i] = toupper(keyword->name[i]);
-		snprintf(name + keyword->name_size, sizeof(name) - keyword->name_size,
-		         " expected");
+		sfmt(name + keyword->name_size, sizeof(name) - keyword->name_size,
+		     " expected");
 	} else
 	{
 		char* ref = "<unknown>";
@@ -159,7 +159,7 @@ lex_error_expect(Lex* self, Ast* ast, int id)
 			ref = "<eof>";
 			break;
 		}
-		snprintf(name, sizeof(name), "%s expected", ref);
+		sfmt(name, sizeof(name), "%s expected", ref);
 	}
 	lex_error(self, ast, name);
 }

@@ -391,7 +391,7 @@ op_dump(Program* self, Code* code, Buf* buf)
 	{
 		// "pos": "op description"
 		char pos_sz[32];
-		int  pos_sz_len = snprintf(pos_sz, sizeof(pos_sz), "%02d", pos);
+		int  pos_sz_len = sfmt(pos_sz, sizeof(pos_sz), "%02d", pos);
 		encode_raw(buf, pos_sz, pos_sz_len);
 
 		buf_reset(output);

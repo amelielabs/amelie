@@ -67,11 +67,11 @@ test_command_open(TestSuite* self, Str* arg)
 	test_plan_add_env(&self->plan, env);
 
 	char path[PATH_MAX];
-	snprintf(path, sizeof(path), "%.*s/%.*s",
-	         str_size(&self->option_result_dir),
-	         str_of(&self->option_result_dir),
-	         str_size(&name),
-	         str_of(&name));
+	sfmt(path, sizeof(path), "%.*s/%.*s",
+	     str_size(&self->option_result_dir),
+	     str_of(&self->option_result_dir),
+	     str_size(&name),
+	     str_of(&name));
 
 	// start <name> [server options]
 	int   argc = 14;
@@ -97,8 +97,8 @@ test_command_open(TestSuite* self, Str* arg)
 	str_chomp(arg);
 	if (! str_empty(arg))
 	{
-		snprintf(options, sizeof(options), "--json={%.*s}",
-		         str_size(arg), str_of(arg));
+		sfmt(options, sizeof(options), "--json={%.*s}",
+		     str_size(arg), str_of(arg));
 		argv[argc] = options;
 		argc++;
 	}
@@ -148,22 +148,22 @@ test_command_backup(TestSuite* self, Str* arg)
 
 	// set client home
 	char path[PATH_MAX];
-	snprintf(path, sizeof(path), "%.*s/home", str_size(&self->option_result_dir),
-	         str_of(&self->option_result_dir));
+	sfmt(path, sizeof(path), "%.*s/home", str_size(&self->option_result_dir),
+	     str_of(&self->option_result_dir));
 	setenv("AMELIE_HOME", path, 1);
 
 	// set base dir
-	snprintf(path, sizeof(path), "%.*s/%.*s",
-	         str_size(&self->option_result_dir),
-	         str_of(&self->option_result_dir),
-	         str_size(&name),
-	         str_of(&name));
+	sfmt(path, sizeof(path), "%.*s/%.*s",
+	     str_size(&self->option_result_dir),
+	     str_of(&self->option_result_dir),
+	     str_size(&name),
+	     str_of(&name));
 
 	// backup <uri> <path>
 	char uri[1024];
 	str_chomp(arg);
 	str_shrink(arg);
-	snprintf(uri, sizeof(uri), "%.*s", str_size(arg), str_of(arg));
+	sfmt(uri, sizeof(uri), "%.*s", str_size(arg), str_of(arg));
 
 	int   argc = 5;
 	char* argv[5] =

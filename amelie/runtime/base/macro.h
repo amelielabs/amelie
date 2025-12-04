@@ -11,13 +11,15 @@
 // AGPL-3.0 Licensed.
 //
 
-#define likely(expr)      __builtin_expect(!! (expr), 1)
-#define unlikely(expr)    __builtin_expect(!! (expr), 0)
-#define hot               __attribute__((hot))
-#define always_inline     __attribute__((always_inline))
-#define packed            __attribute__((packed))
-#define no_return         __attribute__((noreturn))
-#define fallthrough       __attribute__((fallthrough));
+#define likely(expr)         __builtin_expect(!! (expr), 1)
+#define unlikely(expr)       __builtin_expect(!! (expr), 0)
+#define hot                  __attribute__((hot))
+#define always_inline        __attribute__((always_inline))
+#define packed               __attribute__((packed))
+#define no_return            __attribute__((noreturn))
+#define fallthrough          __attribute__((fallthrough));
+#define format_validate(a,b) __attribute__((format(printf, a, b)))
+
 #define auto              __auto_type
 #define unused(name)     (void)name
 
@@ -30,3 +32,4 @@
 
 #define align_of(ptr) \
 	(((~(uintptr_t)(ptr)) + 1) & (sizeof(void*) - 1))
+

@@ -105,15 +105,14 @@ server_listen(ServerListen* listen)
 		memset(&addr_un, 0, sizeof(addr_un));
 		addr_un.sun_family = AF_UNIX;
 		if (*str_of(path) == '/')
-			snprintf(addr_name, sizeof(addr_name), "%.*s",
-			         str_size(path), str_of(path));
+			sfmt(addr_name, sizeof(addr_name), "%.*s", str_size(path),
+			     str_of(path));
 		else
-			snprintf(addr_name, sizeof(addr_name), "%s/%.*s",
-			         state_directory(),
-			         str_size(path), str_of(path));
-		snprintf(addr_un.sun_path, sizeof(addr_un.sun_path), "%.*s",
-		         (int)sizeof(addr_un.sun_path) - 1,
-		         addr_name);
+			sfmt(addr_name, sizeof(addr_name), "%s/%.*s", state_directory(),
+			     str_size(path), str_of(path));
+		sfmt(addr_un.sun_path, sizeof(addr_un.sun_path), "%.*s",
+		     (int)sizeof(addr_un.sun_path) - 1,
+		     addr_name);
 		vfs_unlink(addr_name);
 		addr = (struct sockaddr*)&addr_un;
 	} else
@@ -228,8 +227,8 @@ server_set_path(Str* self, Str* path)
 	// relative to the directory
 	char relpath[PATH_MAX];
 	auto relpath_size =
-		snprintf(relpath, sizeof(relpath), "%s/%.*s", state_directory(),
-		         str_size(path), str_of(path));
+		sfmt(relpath, sizeof(relpath), "%s/%.*s", state_directory(),
+		     str_size(path), str_of(path));
 	str_dup(self, relpath, relpath_size);
 }
 

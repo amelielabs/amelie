@@ -35,6 +35,7 @@
 #include "base/arena.h"
 
 // string
+#include "base/fmt.h"
 #include "base/str.h"
 
 // buffer manager

@@ -18,8 +18,6 @@
 void
 json_export_as(Buf* data, Timezone* timezone, bool pretty, int deep, uint8_t** pos)
 {
-	char buf[256];
-	int  buf_len;
 	switch (**pos) {
 	case JSON_NULL:
 		json_read_null(pos);
@@ -41,16 +39,14 @@ json_export_as(Buf* data, Timezone* timezone, bool pretty, int deep, uint8_t** p
 	{
 		double value;
 		json_read_real(pos, &value);
-		buf_len = snprintf(buf, sizeof(buf), "%g", value);
-		buf_write(data, buf, buf_len);
+		buf_printf(data, "%g", value);
 		break;
 	}
 	case JSON_INTV0 ... JSON_INT64:
 	{
 		int64_t value;
 		json_read_integer(pos, &value);
-		buf_len = snprintf(buf, sizeof(buf), "%" PRIi64, value);
-		buf_write(data, buf, buf_len);
+		buf_printf(data, "%" PRIi64, value);
 		break;
 	}
 	case JSON_STRINGV0 ... JSON_STRING32:

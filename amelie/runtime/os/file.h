@@ -250,7 +250,7 @@ file_pread_buf(File* self, Buf* buf, int size, uint64_t offset)
 	buf_advance(buf, size);
 }
 
-static inline Buf*
+static inline Buf* format_validate(1, 2)
 file_import(const char* fmt, ...)
 {
 	auto buf = buf_create();
@@ -259,7 +259,7 @@ file_import(const char* fmt, ...)
 	va_list args;
 	va_start(args, fmt);
 	char path[PATH_MAX];
-	vsnprintf(path, sizeof(path), fmt, args);
+	vsfmt(path, sizeof(path), fmt, args);
 	va_end(args);
 
 	File file;
@@ -271,13 +271,13 @@ file_import(const char* fmt, ...)
 	return buf;
 }
 
-static inline void
+static inline void format_validate(2, 3)
 file_import_stream(Buf* buf, const char* fmt, ...)
 {
 	va_list args;
 	va_start(args, fmt);
 	char path[PATH_MAX];
-	vsnprintf(path, sizeof(path), fmt, args);
+	vsfmt(path, sizeof(path), fmt, args);
 	va_end(args);
 
 	File file;

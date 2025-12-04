@@ -58,7 +58,7 @@ replay_read(Dtr* dtr, Dispatch* dispatch, Record* record)
 		// map each write to route
 		auto part = part_mgr_find(&share()->storage->part_mgr, cmd->partition);
 		if (! part)
-			error("failed to find partition %" PRIu64, cmd->partition);
+			error("failed to find partition %" PRIu32, cmd->partition);
 		auto core = part->core;
 		auto req = map[core->order];
 		if (req == NULL)

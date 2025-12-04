@@ -73,26 +73,26 @@ test_suite_execute(TestSuite* self, Test* test)
 	char test_result_file[PATH_MAX];
 	char test_ok_file[PATH_MAX];
 
-	snprintf(test_file, sizeof(test_file),
-	         "%.*s/%.*s.test",
-	         str_size(&test->group->directory),
-	         str_of(&test->group->directory),
-	         str_size(&test->name),
-	         str_of(&test->name));
+	sfmt(test_file, sizeof(test_file),
+	     "%.*s/%.*s.test",
+	     str_size(&test->group->directory),
+	     str_of(&test->group->directory),
+	     str_size(&test->name),
+	     str_of(&test->name));
 
-	snprintf(test_result_file, sizeof(test_result_file),
-	         "%.*s/%.*s.result",
-	         str_size(&test->group->directory),
-	         str_of(&test->group->directory),
-	         str_size(&test->name),
-	         str_of(&test->name));
+	sfmt(test_result_file, sizeof(test_result_file),
+	     "%.*s/%.*s.result",
+	     str_size(&test->group->directory),
+	     str_of(&test->group->directory),
+	     str_size(&test->name),
+	     str_of(&test->name));
 
-	snprintf(test_ok_file, sizeof(test_ok_file),
-	         "%.*s/%.*s.ok",
-	         str_size(&test->group->directory),
-	         str_of(&test->group->directory),
-	         str_size(&test->name),
-	         str_of(&test->name));
+	sfmt(test_ok_file, sizeof(test_ok_file),
+	     "%.*s/%.*s.ok",
+	     str_size(&test->group->directory),
+	     str_of(&test->group->directory),
+	     str_size(&test->name),
+	     str_of(&test->name));
 
 	info("  \033[0;33m%.*s\033[0m\n", str_size(&test->name),
 	     str_of(&test->name));

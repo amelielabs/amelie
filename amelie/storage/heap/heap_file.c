@@ -96,20 +96,24 @@ heap_file_read(Heap* self, char* path)
 
 	// validate header magic
 	if (self->header->magic != HEAP_MAGIC)
-		error("heap: file '%s' has invalid header");
+		error("heap: file '%s' has invalid header",
+		      str_of(&file.path));
 
 	// validate header crc
 	uint32_t crc = runtime()->crc(0, &self->header->magic, size - sizeof(uint32_t));
 	if (crc != self->header->crc)
-		error("heap: file '%s' header crc mismatch");
+		error("heap: file '%s' header crc mismatch",
+		      str_of(&file.path));
 
 	// validate version
 	if (self->header->version != HEAP_VERSION)
-		error("heap: file '%s' has incompatible version");
+		error("heap: file '%s' has incompatible version",
+		      str_of(&file.path));
 
 	// validate compression type
 	if (self->header->compression > COMPRESSION_ZSTD)
-		error("heap: file '%s' has incompatible compression type");
+		error("heap: file '%s' has incompatible compression type",
+		      str_of(&file.path));
 
 	// prepare compession context
 	auto cp = compression_create(&compression_zstd);
@@ -135,7 +139,8 @@ heap_file_read(Heap* self, char* path)
 			{
 				crc = runtime()->crc(0, cp_buf->start, buf_size(cp_buf));
 				if (crc != page_header->crc)
-					error("heap: file '%s' page crc mismatch");
+					error("heap: file '%s' page crc mismatch",
+					      str_of(&file.path));
 			}
 
 			compression_decompress(cp, cp_buf, page->pointer + sizeof(PageHeader),
@@ -151,7 +156,8 @@ heap_file_read(Heap* self, char* path)
 			{
 				crc = runtime()->crc(0, page_data, page_size);
 				if (crc != page_header->crc)
-					error("heap: file '%s' page crc mismatch");
+					error("heap: file '%s' page crc mismatch",
+					      str_of(&file.path));
 			}
 		}
 	}

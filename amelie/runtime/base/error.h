@@ -68,7 +68,7 @@ error_setv(Error*      self,
 	buf_vprintf(&self->text, fmt, fmt_args);
 }
 
-static inline void
+static inline void format_validate(6, 7)
 error_set(Error*      self,
           const char* file,
           const char* function,

@@ -75,7 +75,7 @@ resolve(Resolver*         self,
         struct addrinfo** result)
 {
 	char service[16];
-	snprintf(service, sizeof(service), "%d", port);
+	sfmt(service, sizeof(service), "%d", port);
 
 	struct addrinfo  hints;
 	memset(&hints, 0, sizeof(hints));

@@ -336,11 +336,11 @@ timestamp_get(int64_t value, Timezone* timezone, char* str, int str_size)
 		int hr     =  offset / 3600;
 		int min    = (offset - (3600 * hr)) / 60;
 		if (min != 0)
-			snprintf(timezone_sz, sizeof(timezone_sz), "%c%02d:%02d",
-			         sign > 0 ? '+' : '-', hr, min);
+			sfmt(timezone_sz, sizeof(timezone_sz), "%c%02d:%02d",
+			     sign > 0 ? '+' : '-', hr, min);
 		else
-			snprintf(timezone_sz, sizeof(timezone_sz), "%c%02d",
-			         sign > 0 ? '+' : '-', hr);
+			sfmt(timezone_sz, sizeof(timezone_sz), "%c%02d",
+			     sign > 0 ? '+' : '-', hr);
 	}
 
 	// display in ms or us
@@ -349,20 +349,20 @@ timestamp_get(int64_t value, Timezone* timezone, char* str, int str_size)
 		fraction_sz[0] = 0;
 	} else
 	if ((ts.us % 1000) == 0)
-		snprintf(fraction_sz, sizeof(fraction_sz), ".%03d", ts.us / 1000);
+		sfmt(fraction_sz, sizeof(fraction_sz), ".%03d", ts.us / 1000);
 	else
-		snprintf(fraction_sz, sizeof(fraction_sz), ".%06d", ts.us);
+		sfmt(fraction_sz, sizeof(fraction_sz), ".%06d", ts.us);
 
 	int len;
-	len = snprintf(str, str_size, "%04d-%02d-%02d %02d:%02d:%02d%s%s",
-	               ts.time.tm_year + 1900,
-	               ts.time.tm_mon  + 1,
-	               ts.time.tm_mday,
-	               ts.time.tm_hour,
-	               ts.time.tm_min,
-	               ts.time.tm_sec,
-	               fraction_sz,
-	               timezone_sz);
+	len = sfmt(str, str_size, "%04d-%02d-%02d %02d:%02d:%02d%s%s",
+	           ts.time.tm_year + 1900,
+	           ts.time.tm_mon  + 1,
+	           ts.time.tm_mday,
+	           ts.time.tm_hour,
+	           ts.time.tm_min,
+	           ts.time.tm_sec,
+	           fraction_sz,
+	           timezone_sz);
 	return len;
 }
 

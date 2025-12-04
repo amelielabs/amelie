@@ -65,7 +65,7 @@ backend_replay(Tr* tr, Buf* arg)
 		// partition
 		auto part = part_mgr_find(&storage->part_mgr, cmd->partition);
 		if (! part)
-			error("failed to find partition %" PRIu64, cmd->partition);
+			error("failed to find partition %" PRIu32, cmd->partition);
 
 		// replay writes
 		auto end = data + cmd->size;

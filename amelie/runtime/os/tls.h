@@ -23,7 +23,6 @@ struct Tls
 
 void tls_init(Tls*);
 void tls_free(Tls*);
-void tls_error(Tls*, int, const char*, ...);
 bool tls_is_set(Tls*);
 void tls_set(Tls*, TlsContext*);
 void tls_create(Tls*, Fd*);
@@ -33,3 +32,6 @@ int  tls_read(Tls*, void*, int);
 int  tls_write(Tls*, void*, int);
 int  tls_writev(Tls*, struct iovec*, int);
 int  tls_explain(Tls*, char*, int);
+
+format_validate(3, 4)
+void tls_error(Tls*, int, const char*, ...);

@@ -36,7 +36,7 @@ bench_insert_main(BenchWorker* self, MainClient* client)
 	auto batch = opt_int_of(&bench->batch);
 
 	char text[256];
-	snprintf(text, sizeof(text), "insert into test generate %" PRIu64, batch);
+	sfmt(text, sizeof(text), "insert into test generate %" PRIu64, batch);
 	Str cmd;
 	str_set_cstr(&cmd, text);
 

@@ -81,8 +81,8 @@ hot static void
 bench_decre_main(BenchWorker* self, MainClient* client)
 {
 	auto bench = self->bench;
-	auto total = 100000ul;
-	auto batch = opt_int_of(&bench->batch);
+	auto total = 100000;
+	auto batch = (int)opt_int_of(&bench->batch);
 
 	Buf buf;
 	buf_init(&buf);

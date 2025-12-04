@@ -104,9 +104,9 @@ uuid_get(Uuid* self, char* string, int size)
 {
 	assert(size >= UUID_SZ);
 	auto bits = (uuid_bits_t*)self;
-	snprintf(string, size, "%08x-%04x-%04x-%04x-%04x%08x",
-	         bits->a, bits->b, bits->c,
-	         bits->d, bits->e, bits->f);
+	sfmt(string, size, "%08x-%04x-%04x-%04x-%04x%08x",
+	     bits->a, bits->b, bits->c,
+	     bits->d, bits->e, bits->f);
 }
 
 void
@@ -114,5 +114,5 @@ uuid_get_short(Uuid* self, char* string, int size)
 {
 	assert(size >= 9);
 	auto bits = (uuid_bits_t*)self;
-	snprintf(string, size, "%08x", bits->a);
+	sfmt(string, size, "%08x", bits->a);
 }

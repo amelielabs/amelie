@@ -94,9 +94,7 @@ date_get(int64_t julian_day, char* str, int str_size)
 	int month;
 	int day;
 	date_get_gregorian(julian_day, &year, &month, &day);
-	int len;
-	len = snprintf(str, str_size, "%04d-%02d-%02d", year, month, day);
-	return len;
+	return sfmt(str, str_size, "%04d-%02d-%02d", year, month, day);
 }
 
 int

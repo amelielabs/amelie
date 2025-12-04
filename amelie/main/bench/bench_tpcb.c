@@ -144,7 +144,7 @@ bench_tpcb_load(Bench* self, int scale, int batch, int clients)
 		info("%" PRIu64 " transactions/sec, %.2f millions writes/sec %" PRIu64 "%%",
 		     tx - prev_tx,
 		     (float)(wr - prev_wr) / 1000000.0,
-		     (wr * 100ull) / accounts);
+		     (wr * 100ul) / accounts);
 		prev_tx = tx;
 		prev_wr = wr;
 	}
@@ -247,12 +247,12 @@ bench_tpcb_create(Bench* self, MainClient* client)
 	buf_emplace(filler, 100);
 	memset(filler->start, ' ', 100);
 
-	auto batch = opt_int_of(&self->batch);
-	auto scale = opt_int_of(&self->scale);
+	auto batch = (int)opt_int_of(&self->batch);
+	auto scale = (int)opt_int_of(&self->scale);
 	auto buf = buf_create();
 	defer_buf(buf);
 
-	for (auto i = 0ul; i < tpcb_branches * scale; i++)
+	for (auto i = 0; i < tpcb_branches * scale; i++)
 	{
 		buf_reset(buf);
 		buf_printf(buf, "INSERT INTO bench_branches VALUES (%d, 0, \"%.*s\")",
@@ -262,7 +262,7 @@ bench_tpcb_create(Bench* self, MainClient* client)
 		main_client_execute(client, &str, NULL);
 	}
 
-	for (auto i = 0ul; i < tpcb_tellers * scale; i++)
+	for (auto i = 0; i < tpcb_tellers * scale; i++)
 	{
 		buf_reset(buf);
 		buf_printf(buf, "INSERT INTO bench_tellers VALUES (%d, %d, 0, \"%.*s\")",
@@ -274,7 +274,7 @@ bench_tpcb_create(Bench* self, MainClient* client)
 
 	if (scale == 1)
 	{
-		for (auto i = 0ul; i < tpcb_accounts * scale; i++)
+		for (auto i = 0; i < tpcb_accounts * scale; i++)
 		{
 			buf_reset(buf);
 			buf_printf(buf, "INSERT INTO bench_accounts VALUES (%d, %d, 0, \"%.*s\")",

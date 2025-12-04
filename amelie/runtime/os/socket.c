@@ -235,11 +235,11 @@ socket_getaddrname(struct sockaddr* sa, char* buf, int size,
 		struct sockaddr_in* sin = (struct sockaddr_in *)sa;
 		inet_ntop(sa->sa_family, &sin->sin_addr, addr, sizeof(addr));
 		if (with_addr && with_port)
-			snprintf(buf, size, "%s:%d", addr, ntohs(sin->sin_port));
+			sfmt(buf, size, "%s:%d", addr, ntohs(sin->sin_port));
 		else if (with_addr)
-			snprintf(buf, size, "%s", addr);
+			sfmt(buf, size, "%s", addr);
 		else if (with_port)
-			snprintf(buf, size, "%d", ntohs(sin->sin_port));
+			sfmt(buf, size, "%d", ntohs(sin->sin_port));
 		return;
 	}
 	if (sa->sa_family == AF_INET6)
@@ -247,17 +247,17 @@ socket_getaddrname(struct sockaddr* sa, char* buf, int size,
 		struct sockaddr_in6* sin = (struct sockaddr_in6 *)sa;
 		inet_ntop(sa->sa_family, &sin->sin6_addr, addr, sizeof(addr));
 		if (with_addr && with_port)
-			snprintf(buf, size, "[%s]:%d", addr, ntohs(sin->sin6_port));
+			sfmt(buf, size, "[%s]:%d", addr, ntohs(sin->sin6_port));
 		else if (with_addr)
-			snprintf(buf, size, "%s", addr);
+			sfmt(buf, size, "%s", addr);
 		else if (with_port)
-			snprintf(buf, size, "%d", ntohs(sin->sin6_port));
+			sfmt(buf, size, "%d", ntohs(sin->sin6_port));
 		return;
 	}
 	if (sa->sa_family == AF_UNIX)
 	{
-		snprintf(buf, size, "<unix socket>");
+		sfmt(buf, size, "<unix socket>");
 		return;
 	}
-	snprintf(buf, size, "%s", "");
+	sfmt(buf, size, "%s", "");
 }

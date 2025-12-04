@@ -52,8 +52,8 @@ task_coroutine_main(void* arg)
 		auto error = &coro->error;
 		if (error->code != CANCEL) {
 			report(error->file, error->function, error->line,
-			       "error: ",
-			       "unhandled exception: %s", error->text);
+			       "unhandled exception: %s",
+			       buf_cstr(&error->text));
 		}
 	}
 
@@ -246,7 +246,7 @@ task_create_nothrow(Task*        self,
 	self->main_arg_runtime = main_arg_runtime;
 	self->main_arg_share   = main_arg_share;
 	self->buf_mgr          = buf_mgr;
-	snprintf(self->name, sizeof(self->name), "%s", name);
+	sfmt(self->name, sizeof(self->name), "%s", name);
 
 	// set logger iface
 	task_log_set(&self->log, log_write, log_write_arg);

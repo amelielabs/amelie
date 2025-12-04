@@ -78,7 +78,7 @@ static inline void
 backup_list(Buf* self, char* name)
 {
 	char path[PATH_MAX];
-	snprintf(path, sizeof(path), "%s/%s", state_directory(), name);
+	sfmt(path, sizeof(path), "%s/%s", state_directory(), name);
 	auto dir = opendir(path);
 	if (unlikely(dir == NULL))
 		error_system();
@@ -92,7 +92,7 @@ backup_list(Buf* self, char* name)
 			continue;
 		if (! strcmp(entry->d_name, ".."))
 			continue;
-		snprintf(path, sizeof(path), "%s/%s", name, entry->d_name);
+		sfmt(path, sizeof(path), "%s/%s", name, entry->d_name);
 		backup_add(self, path);
 	}
 }
@@ -184,8 +184,8 @@ static void
 backup_send_file(Backup* self, Str* name, int64_t size, Buf* data)
 {
 	char path[PATH_MAX];
-	snprintf(path, sizeof(path), "%s/%.*s", state_directory(),
-	         str_size(name), str_of(name));
+	sfmt(path, sizeof(path), "%s/%.*s", state_directory(),
+	     str_size(name), str_of(name));
 
 	// prepare and send header
 	auto client = self->client;

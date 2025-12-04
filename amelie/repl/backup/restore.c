@@ -212,9 +212,9 @@ restore_next(Restore* self)
 
 	// create and transfer file
 	char path[PATH_MAX];
-	snprintf(path, sizeof(path), "%s/%.*s", state_directory(),
-	         str_size(&am_file->value),
-	         str_of(&am_file->value));
+	sfmt(path, sizeof(path), "%s/%.*s", state_directory(),
+	     str_size(&am_file->value),
+	     str_of(&am_file->value));
 	File file;
 	file_init(&file);
 	defer(file_close, &file);

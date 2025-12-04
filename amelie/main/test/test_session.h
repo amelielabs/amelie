@@ -165,8 +165,8 @@ test_session_post(TestSession* self,
 		auto msg  = &reply->options[HTTP_MSG];
 		char text[64];
 		auto text_size =
-			snprintf(text, sizeof(text), "%.*s %.*s\n", str_size(code), str_of(code),
-			         str_size(msg), str_of(msg));
+			sfmt(text, sizeof(text), "%.*s %.*s\n", str_size(code), str_of(code),
+			     str_size(msg), str_of(msg));
 		file_write(output, text, text_size);
 	}
 }

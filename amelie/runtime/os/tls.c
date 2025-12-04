@@ -41,7 +41,7 @@ tls_free(Tls* self)
 	buf_free(&self->write_buf);
 }
 
-void
+void format_validate(3, 4)
 tls_error(Tls* self, int ssl_rc, const char* fmt, ...)
 {
 	int ssl_error;
@@ -49,7 +49,7 @@ tls_error(Tls* self, int ssl_rc, const char* fmt, ...)
 	va_list args;
 	va_start(args, fmt);
 	char msg[256];
-	vsnprintf(msg, sizeof(msg), fmt, args);
+	vsfmt(msg, sizeof(msg), fmt, args);
 	va_end(args);
 	tls_lib_error(ssl_error, msg);
 }
@@ -329,5 +329,5 @@ tls_explain(Tls* self, char* buf, int size)
 		return 0;
 	auto version = SSL_get_version(self->ssl);
 	auto cipher  = SSL_get_cipher_name(self->ssl);
-	return snprintf(buf, size, "%s, %s", version, cipher);
+	return sfmt(buf, size, "%s, %s", version, cipher);
 }

@@ -240,7 +240,7 @@ import_set_content_type(Import* self)
 			content_type = file_type;
 		else
 		if (! str_compare(&content_type, &file_type))
-			error("import: file types must match\n", file);
+			error("import: file types must match\n");
 	}
 
 	opt_string_set(&endpoint->content_type, &content_type);

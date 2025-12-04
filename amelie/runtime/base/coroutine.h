@@ -65,12 +65,12 @@ coroutine_free(Coroutine* self)
 	am_free(self);
 }
 
-static inline void
+static inline void format_validate(2, 3)
 coroutine_set_name(Coroutine* self, const char* fmt, ...)
 {
 	va_list args;
 	va_start(args, fmt);
-	vsnprintf(self->name, sizeof(self->name), fmt, args);
+	vsfmt(self->name, sizeof(self->name), fmt, args);
 	va_end(args);
 }
 

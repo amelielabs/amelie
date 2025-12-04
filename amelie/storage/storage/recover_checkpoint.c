@@ -32,11 +32,11 @@ recover_partition(Part* self)
 
 	// <base>/checkpoints/<lsn>/<partition>
 	char path[PATH_MAX];
-	snprintf(path, sizeof(path),
-	         "%s/checkpoints/%" PRIu64 "/%" PRIu64,
-	         state_directory(),
-	         checkpoint,
-	         self->config->id);
+	sfmt(path, sizeof(path),
+	     "%s/checkpoints/%" PRIu64 "/%" PRIu64,
+	     state_directory(),
+	     checkpoint,
+	     self->config->id);
 
 	// read heap file
 	auto size = heap_file_read(&self->heap, path);

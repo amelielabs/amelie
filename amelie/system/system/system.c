@@ -50,7 +50,7 @@ system_save_state(void* arg)
 {
 	unused(arg);
 	char path[PATH_MAX];
-	snprintf(path, sizeof(path), "%s/state.json", state_directory());
+	sfmt(path, sizeof(path), "%s/state.json", state_directory());
 	state_save(state(), path);
 }
 

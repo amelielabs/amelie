@@ -26,8 +26,8 @@ test_api_open(void* arg)
 	TestSuite* suite = arg;
 
 	char path[PATH_MAX];
-	snprintf(path, sizeof(path), "%.*s/__api0", str_size(&suite->option_result_dir),
-	         str_of(&suite->option_result_dir));
+	sfmt(path, sizeof(path), "%.*s/__api0", str_size(&suite->option_result_dir),
+	     str_of(&suite->option_result_dir));
 
 	int   argc   = 9;
 	char* argv[] =
@@ -54,8 +54,8 @@ test_api_connect(void* arg)
 	TestSuite* suite = arg;
 
 	char path[PATH_MAX];
-	snprintf(path, sizeof(path), "%.*s/__api1", str_size(&suite->option_result_dir),
-	         str_of(&suite->option_result_dir));
+	sfmt(path, sizeof(path), "%.*s/__api1", str_size(&suite->option_result_dir),
+	     str_of(&suite->option_result_dir));
 
 	int   argc   = 9;
 	char* argv[] =
@@ -91,8 +91,8 @@ test_api_execute(void* arg)
 	TestSuite* suite = arg;
 
 	char path[PATH_MAX];
-	snprintf(path, sizeof(path), "%.*s/__api2", str_size(&suite->option_result_dir),
-	         str_of(&suite->option_result_dir));
+	sfmt(path, sizeof(path), "%.*s/__api2", str_size(&suite->option_result_dir),
+	     str_of(&suite->option_result_dir));
 
 	int   argc   = 9;
 	char* argv[] =
@@ -163,8 +163,8 @@ test_api_execute_error(void* arg)
 	TestSuite* suite = arg;
 
 	char path[PATH_MAX];
-	snprintf(path, sizeof(path), "%.*s/__api3", str_size(&suite->option_result_dir),
-	         str_of(&suite->option_result_dir));
+	sfmt(path, sizeof(path), "%.*s/__api3", str_size(&suite->option_result_dir),
+	     str_of(&suite->option_result_dir));
 
 	int   argc   = 9;
 	char* argv[] =

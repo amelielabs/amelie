@@ -254,7 +254,8 @@ uri_parse_args_set(Uri* self, Buf* buf, int name_size, int value_size)
 	// find and set endpoint option
 	auto opt = opts_find(&self->endpoint->opts, &name);
 	if (! opt)
-		error("unknown uri argument '%.*s'", name_size, name);
+		error("unknown uri argument '%.*s'", str_size(&name),
+		      str_of(&name));
 
 	switch (opt->type) {
 	case OPT_BOOL:
@@ -268,8 +269,8 @@ uri_parse_args_set(Uri* self, Buf* buf, int name_size, int value_size)
 			if (str_is_case(&value, "false", 5))
 				to = false;
 			else
-				error("bool value expected for uri argument '%.*s'",
-				      name_size, name);
+				error("bool value expected for uri argument '%.*s'", str_size(&name),
+				      str_of(&name));
 		}
 		opt_int_set(opt, to);
 		break;
@@ -279,7 +280,7 @@ uri_parse_args_set(Uri* self, Buf* buf, int name_size, int value_size)
 		int64_t to = 0;
 		if (str_empty(&value) || str_toint(&value, &to) == -1)
 			error("integer value expected for uri argument '%.*s'",
-			      name_size, name);
+			      str_size(&name), str_of(&name));
 		opt_int_set(opt, to);
 		break;
 	}
@@ -463,7 +464,7 @@ uri_export(Endpoint* self, Buf* buf)
 		{
 			buf_write_str(buf, &self->host.string);
 			buf_write(buf, ":", 1);
-			buf_printf(buf, "%d", self->port.integer);
+			buf_printf(buf, "%d", (int)self->port.integer);
 		}
 		buf_write(buf, "/", 1);
 	}

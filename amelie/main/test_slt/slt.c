@@ -21,7 +21,7 @@ slt_sh(const char* fmt, ...)
 	va_list args;
 	va_start(args, fmt);
 	char cmd[PATH_MAX];
-	vsnprintf(cmd, sizeof(cmd), fmt, args);
+	vsfmt(cmd, sizeof(cmd), fmt, args);
 	int rc = system(cmd);
 	va_end(args);
 	return rc;
@@ -44,8 +44,8 @@ slt_open(Slt* self, Str* dir)
 {
 	self->dir = dir;
 	char path[PATH_MAX];
-	snprintf(path, sizeof(path), "%.*s", str_size(dir),
-	         str_of(dir));
+	sfmt(path, sizeof(path), "%.*s", str_size(dir),
+	     str_of(dir));
 
 	// recreate result directory
 	if (fs_exists("%s", path))

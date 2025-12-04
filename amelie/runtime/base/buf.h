@@ -228,7 +228,7 @@ buf_vprintf(Buf* self, const char* fmt, va_list args)
 	va_end(args_copy);
 }
 
-static inline void
+static inline void format_validate(2, 3)
 buf_printf(Buf* self, const char* fmt, ...)
 {
 	va_list args;

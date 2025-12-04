@@ -85,14 +85,14 @@ main_console(Main* self, MainClient* client)
 		prompt_text = uri;
 
 	char prompt_str[128];
-	snprintf(prompt_str, sizeof(prompt_str), "%.*s> ", str_size(prompt_text),
-	         str_of(prompt_text));
+	sfmt(prompt_str, sizeof(prompt_str), "%.*s> ", str_size(prompt_text),
+	     str_of(prompt_text));
 	Str prompt;
 	str_set_cstr(&prompt, prompt_str);
 
 	char prompt_str_pending[128];
-	snprintf(prompt_str_pending, sizeof(prompt_str_pending), "%.*s- ",
-	         str_size(prompt_text), str_of(prompt_text));
+	sfmt(prompt_str_pending, sizeof(prompt_str_pending), "%.*s- ",
+	     str_size(prompt_text), str_of(prompt_text));
 	Str prompt_pending;
 	str_set_cstr(&prompt_pending, prompt_str_pending);
 

@@ -54,7 +54,7 @@ test_error(TestSuite* self, const char* fmt, ...)
 	char msg[256];
 	va_list args;
 	va_start(args, fmt);
-	vsnprintf(msg, sizeof(msg), fmt, args);
+	vsfmt(msg, sizeof(msg), fmt, args);
 	va_end(args);
 	error("%s: %s\n", self->current_test_file, msg);
 }
@@ -66,7 +66,7 @@ test_sh(TestSuite* self, const char* fmt, ...)
 	va_list args;
 	va_start(args, fmt);
 	char cmd[PATH_MAX];
-	vsnprintf(cmd, sizeof(cmd), fmt, args);
+	vsfmt(cmd, sizeof(cmd), fmt, args);
 	int rc = system(cmd);
 	va_end(args);
 	return rc;

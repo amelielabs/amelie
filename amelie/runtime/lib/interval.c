@@ -222,13 +222,13 @@ interval_get(Interval* self, char* str, int str_size)
 		if (y != 0)
 		{
 			span = abs(y) != 1? "years": "year";
-			size += snprintf(str + size, str_size - size, "%d %s ", y, span);
+			size += sfmt(str + size, str_size - size, "%d %s ", y, span);
 			m = m % 12;
 		}
 		if (m != 0)
 		{
 			span = abs(m) != 1? "months": "month";
-			size += snprintf(str + size, str_size - size, "%d %s ", m, span);
+			size += sfmt(str + size, str_size - size, "%d %s ", m, span);
 		}
 	}
 
@@ -237,7 +237,7 @@ interval_get(Interval* self, char* str, int str_size)
 	{
 		int d = self->d;
 		span = abs(d) != 1? "days": "day";
-		size += snprintf(str + size, str_size - size, "%d %s ", d, span);
+		size += sfmt(str + size, str_size - size, "%d %s ", d, span);
 	}
 
 	// hours
@@ -246,7 +246,7 @@ interval_get(Interval* self, char* str, int str_size)
 	if (hours != 0)
 	{
 		span = llabs(hours) != 1? "hours": "hour";
-		size += snprintf(str + size, str_size - size, "%" PRIi64 " %s ", hours, span);
+		size += sfmt(str + size, str_size - size, "%" PRIi64 " %s ", hours, span);
 		us = us % (60LL * 60 * 1000 * 1000);
 	}
 
@@ -255,7 +255,7 @@ interval_get(Interval* self, char* str, int str_size)
 	if (minutes != 0)
 	{
 		span = llabs(minutes) != 1? "minutes": "minute";
-		size += snprintf(str + size, str_size - size, "%" PRIi64 " %s ", minutes, span);
+		size += sfmt(str + size, str_size - size, "%" PRIi64 " %s ", minutes, span);
 		us = us % (60LL * 1000 * 1000);
 	}
 
@@ -264,7 +264,7 @@ interval_get(Interval* self, char* str, int str_size)
 	if (seconds != 0)
 	{
 		span = llabs(seconds) != 1? "seconds": "second";
-		size += snprintf(str + size, str_size - size, "%" PRIi64 " %s ", seconds, span);
+		size += sfmt(str + size, str_size - size, "%" PRIi64 " %s ", seconds, span);
 		us = us % (1000LL * 1000);
 	}
 
@@ -272,13 +272,13 @@ interval_get(Interval* self, char* str, int str_size)
 	int64_t ms = us / 1000;
 	if (ms != 0)
 	{
-		size += snprintf(str + size, str_size - size, "%" PRIi64 " ms ", ms);
+		size += sfmt(str + size, str_size - size, "%" PRIi64 " ms ", ms);
 		us = us % 1000;
 	}
 
 	// microseconds
 	if (us != 0)
-		size += snprintf(str + size, str_size - size, "%" PRIi64 " us ", us);
+		size += sfmt(str + size, str_size - size, "%" PRIi64 " us ", us);
 
 	// remove last space
 	if (size > 0)

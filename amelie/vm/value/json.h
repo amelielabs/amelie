@@ -210,12 +210,8 @@ value_export(Value* self, Timezone* tz, bool pretty, Buf* buf)
 	{
 		buf_write(buf, "[", 1);
 		for (uint32_t i = 0; i < self->vector->size; i++)
-		{
-			char val[32];
-			auto val_len = snprintf(val, sizeof(val), "%g%s", self->vector->value[i],
-			                        i != self->vector->size - 1 ? ", ": "");
-			buf_write(buf, val, val_len);
-		}
+			buf_printf(buf, "%g%s", self->vector->value[i],
+			           i != self->vector->size - 1 ? ", ": "");
 		buf_write(buf, "]", 1);
 		break;
 	}

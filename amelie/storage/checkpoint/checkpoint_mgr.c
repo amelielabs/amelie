@@ -62,7 +62,7 @@ checkpoint_mgr_open_dir(CheckpointMgr* self)
 {
 	// create directory
 	char path[PATH_MAX];
-	snprintf(path, sizeof(path), "%s/checkpoints", state_directory());
+	sfmt(path, sizeof(path), "%s/checkpoints", state_directory());
 	if (! fs_exists("%s", path))
 		fs_mkdir(0755, "%s", path);
 
@@ -184,8 +184,8 @@ checkpoint_mgr_list(CheckpointMgr* self, uint64_t checkpoint, Buf* buf)
 {
 	unused(self);
 	char path[PATH_MAX];
-	snprintf(path, sizeof(path), "%s/checkpoints/%" PRIu64,
-	         state_directory(), checkpoint);
+	sfmt(path, sizeof(path), "%s/checkpoints/%" PRIu64,
+	     state_directory(), checkpoint);
 
 	auto dir = opendir(path);
 	if (unlikely(dir == NULL))
@@ -217,8 +217,8 @@ checkpoint_mgr_list(CheckpointMgr* self, uint64_t checkpoint, Buf* buf)
 		auto id = buf_u64(&list.list)[i];
 		encode_array(buf);
 		// path
-		snprintf(path, sizeof(path), "checkpoints/%" PRIu64 "/%" PRIu64,
-		         checkpoint, id);
+		sfmt(path, sizeof(path), "checkpoints/%" PRIu64 "/%" PRIu64,
+		     checkpoint, id);
 		encode_cstr(buf, path);
 		// size
 		auto size = fs_size("%s/checkpoints/%" PRIu64 "/%" PRIu64, state_directory(),
@@ -232,7 +232,7 @@ checkpoint_mgr_list(CheckpointMgr* self, uint64_t checkpoint, Buf* buf)
 	// add catalog.json file last
 	encode_array(buf);
 	// path
-	snprintf(path, sizeof(path), "checkpoints/%" PRIu64 "/catalog.json", checkpoint);
+	sfmt(path, sizeof(path), "checkpoints/%" PRIu64 "/catalog.json", checkpoint);
 	encode_cstr(buf, path);
 	// size
 	auto size = fs_size("%s/checkpoints/%" PRIu64 "/catalog.json",

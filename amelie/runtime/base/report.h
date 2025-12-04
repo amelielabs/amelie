@@ -11,18 +11,18 @@
 // AGPL-3.0 Licensed.
 //
 
-void
+void format_validate(4, 5)
 report(const char* file,
        const char* function, int line,
        const char* fmt, ...);
 
-void no_return
+void no_return format_validate(5, 6)
 report_error(const char* file,
              const char* function, int line,
              int         code,
              const char* fmt, ...);
 
-void no_return
+void no_return format_validate(4, 5)
 report_panic(const char* file,
              const char* function, int line,
              const char* fmt, ...);

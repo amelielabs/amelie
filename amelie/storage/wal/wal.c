@@ -124,9 +124,9 @@ wal_gc(Wal* self, uint64_t min)
 		for (int i = 0; i < list_count; i++)
 		{
 			char path[PATH_MAX];
-			snprintf(path, sizeof(path), "%s/wals/%" PRIu64,
-			         state_directory(),
-			         id_list[i]);
+			sfmt(path, sizeof(path), "%s/wals/%" PRIu64,
+			     state_directory(),
+			     id_list[i]);
 			size += fs_size("%s", path);
 			fs_unlink("%s", path);
 		}
@@ -155,7 +155,7 @@ wal_open_directory(Wal* self)
 {
 	// create directory
 	char path[PATH_MAX];
-	snprintf(path, sizeof(path), "%s/wals", state_directory());
+	sfmt(path, sizeof(path), "%s/wals", state_directory());
 	if (! fs_exists("%s", path))
 		fs_mkdir(0755, "%s", path);
 
@@ -243,8 +243,8 @@ wal_truncate(Wal* self, uint64_t lsn)
 		if (id == UINT64_MAX)
 			break;
 		char path[PATH_MAX];
-		snprintf(path, sizeof(path), "%s/wals/%" PRIu64,
-		         state_directory(), id);
+		sfmt(path, sizeof(path), "%s/wals/%" PRIu64,
+		     state_directory(), id);
 		fs_unlink("%s", path);
 		info(" %" PRIu64 " (file removed)", id);
 	}
@@ -443,7 +443,7 @@ wal_snapshot(Wal* self, WalSlot* slot, Buf* buf)
 
 		// path
 		char path[PATH_MAX];
-		snprintf(path, sizeof(path), "wals/%" PRIu64, id);
+		sfmt(path, sizeof(path), "wals/%" PRIu64, id);
 		encode_cstr(buf, path);
 
 		// size
