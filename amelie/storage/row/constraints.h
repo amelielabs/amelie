@@ -23,7 +23,6 @@ enum
 struct Constraints
 {
 	bool    not_null;
-	bool    out;
 	int64_t as_identity;
 	int64_t as_identity_modulo;
 	Str     as_stored;
@@ -35,7 +34,6 @@ static inline void
 constraints_init(Constraints* self)
 {
 	self->not_null           = false;
-	self->out                = false;
 	self->as_identity        = IDENTITY_NONE;
 	self->as_identity_modulo = INT64_MAX;
 	str_init(&self->as_stored);
@@ -55,12 +53,6 @@ static inline void
 constraints_set_not_null(Constraints* self, bool value)
 {
 	self->not_null = value;
-}
-
-static inline void
-constraints_set_out(Constraints* self, bool value)
-{
-	self->out = value;
 }
 
 static inline void
@@ -107,7 +99,6 @@ static inline void
 constraints_copy(Constraints* self, Constraints* copy)
 {
 	constraints_set_not_null(copy, self->not_null);
-	constraints_set_out(copy, self->out);
 	constraints_set_as_identity(copy, self->as_identity);
 	constraints_set_as_identity_modulo(copy, self->as_identity_modulo);
 	constraints_set_as_stored(copy, &self->as_stored);
@@ -130,9 +121,6 @@ constraints_read(Constraints* self, uint8_t** pos)
 
 		if (str_is_case(&name, "not_null", 8))
 			json_read_bool(pos, &self->not_null);
-		else
-		if (str_is_case(&name, "out", 3))
-			json_read_bool(pos, &self->out);
 		else
 		if (str_is_case(&name, "as_identity", 11))
 			json_read_integer(pos, &self->as_identity);
@@ -171,15 +159,6 @@ constraints_write(Constraints* self, Buf* buf)
 		encode_array(buf);
 		encode_raw(buf, "not_null", 8);
 		encode_bool(buf, self->not_null);
-		encode_array_end(buf);
-	}
-
-	// out
-	if (self->out)
-	{
-		encode_array(buf);
-		encode_raw(buf, "out", 3);
-		encode_bool(buf, self->out);
 		encode_array_end(buf);
 	}
 

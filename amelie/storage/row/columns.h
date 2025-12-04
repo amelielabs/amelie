@@ -19,7 +19,6 @@ struct Columns
 	int     count;
 	int     count_stored;
 	int     count_resolved;
-	int     count_out;
 	Column* identity;
 };
 
@@ -29,7 +28,6 @@ columns_init(Columns* self)
 	self->count          = 0;
 	self->count_stored   = 0;
 	self->count_resolved = 0;
-	self->count_out      = 0;
 	self->identity       = NULL;
 	list_init(&self->list);
 }
@@ -57,8 +55,6 @@ columns_add(Columns* self, Column* column)
 		self->count_stored++;
 	if (! str_empty(&cons->as_resolved))
 		self->count_resolved++;
-	if (cons->out)
-		self->count_out++;
 
 	// save order of the first identity column
 	if (column->constraints.as_identity && !self->identity)
@@ -77,8 +73,6 @@ columns_del(Columns* self, Column* column)
 		self->count_stored--;
 	if (! str_empty(&cons->as_resolved))
 		self->count_resolved--;
-	if (cons->out)
-		self->count_out--;
 
 	if (self->identity == column)
 		self->identity = NULL;
@@ -100,7 +94,6 @@ columns_sync(Columns* self)
 	// sync generated columns count
 	self->count_stored   = 0;
 	self->count_resolved = 0;
-	self->count_out      = 0;
 	self->identity       = NULL;
 	list_foreach_safe(&self->list)
 	{
@@ -110,8 +103,6 @@ columns_sync(Columns* self)
 			self->count_stored++;
 		if (! str_empty(&cons->as_resolved))
 			self->count_resolved++;
-		if (cons->out)
-			self->count_out++;
 		if (cons->as_identity && !self->identity)
 			self->identity = column;
 	}
