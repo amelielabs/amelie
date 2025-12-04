@@ -30,6 +30,7 @@ struct OutputType
 static OutputType output_types[] =
 {
 	{ "application/json", 16, &output_json },
+	{ "plain/text",       10, &output_text },
 	{  NULL,              0,   NULL        },
 };
 

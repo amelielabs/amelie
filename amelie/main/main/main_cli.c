@@ -39,7 +39,7 @@ main_execute(MainClient* client, Str* request)
 			info("error: %d", code);
 			break;
 		}
-		info("error: %.*s", str_size(&reply), str_of(&reply));
+		info("%.*s", str_size(&reply), str_of(&reply));
 
 #if 0
 		// read error message
@@ -142,7 +142,7 @@ main_cli(Main* self)
 	// set default accept
 	auto accept = opt_string_of(&endpoint->accept);
 	if (str_empty(accept))
-		opt_string_set_raw(&endpoint->accept, "application/json", 16);
+		opt_string_set_raw(&endpoint->accept, "plain/text", 10);
 
 	// create client and connect
 	auto client = main_client_create(self);

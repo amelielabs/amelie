@@ -192,7 +192,8 @@ output_json_write_error(Output* self, Error* error)
 		// msg (truncate large error msg)
 		encode_string32(buf, 4 + text_max);
 		buf_reserve(buf, 4 + text_max);
-		buf_write(buf, "...\n", 4);
+		char cut[] = "…\n";
+		buf_write(buf, cut, sizeof(cut) - 1);
 		buf_write(buf, text.end - text_max, text_max);
 	} else
 	{
