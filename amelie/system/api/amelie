@@ -1,0 +1,21 @@
+#pragma once
+
+//
+// amelie.
+//
+// Real-Time SQL OLTP Database.
+//
+// Copyright (c) 2024 Dmitry Simonenko.
+// Copyright (c) 2024 Amelie Labs.
+//
+// AGPL-3.0 Licensed.
+//
+
+#include <amelie_runtime>
+#include <amelie_server>
+#include <amelie_storage>
+#include <amelie_repl>
+#include <amelie_vm>
+#include <amelie_compiler>
+#include <amelie_system>
+#include <amelie.h>

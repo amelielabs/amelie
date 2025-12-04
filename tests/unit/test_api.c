@@ -10,7 +10,7 @@
 // AGPL-3.0 Licensed.
 //
 
-#include <amelie_test.h>
+#include <amelie_test>
 
 void
 test_api_init(void* arg)
