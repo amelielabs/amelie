@@ -38,7 +38,7 @@ struct PageMgr
 static inline void
 page_mgr_init(PageMgr* self)
 {
-	self->page_size  = 2 * 1024 * 1024;
+	self->page_size  = 512 * 1024;
 	self->list_count = 0;
 	buf_init(&self->list);
 }

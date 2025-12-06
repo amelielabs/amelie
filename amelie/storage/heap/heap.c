@@ -22,12 +22,19 @@ heap_init(Heap* self)
 	self->page_header = NULL;
 	self->last        = NULL;
 	self->header      = NULL;
+	self->shadow      = NULL;
 	page_mgr_init(&self->page_mgr);
 }
 
 void
 heap_free(Heap* self)
 {
+	if (self->shadow)
+	{
+		heap_free(self->shadow);
+		am_free(self->shadow);
+		self->shadow = NULL;
+	}
 	if (self->header)
 		am_free(self->header);
 	page_mgr_free(&self->page_mgr);
@@ -160,6 +167,14 @@ heap_bucket_of(Heap* self, int size)
 hot void*
 heap_allocate(Heap* self, int size)
 {
+	// switch to the shadow heap for allocations during snapshot
+	int flags = CHUNK_MAIN;
+	if (self->shadow)
+	{
+		self  = self->shadow;
+		flags = CHUNK_SHADOW;
+	}
+
 	// match bucket by size
 	auto bucket = heap_bucket_of(self, sizeof(Chunk) + size);
 
@@ -204,7 +219,7 @@ heap_allocate(Heap* self, int size)
 		chunk->size        = bucket->size;
 		chunk->bucket      = bucket->id;
 		chunk->last        = true;
-		chunk->unused      = 0;
+		chunk->flags       = flags;
 		if (likely(self->last))
 		{
 			chunk->bucket_left = self->last->bucket;
@@ -226,6 +241,20 @@ hot void
 heap_release(Heap* self, void* pointer)
 {
 	auto chunk = chunk_of(pointer);
+	if (self->shadow)
+	{
+		self = self->shadow;
+
+		// during snapshot, save pointer to the main heap in
+		// the shadow heap
+		if (chunk->flags == CHUNK_MAIN)
+		{
+			auto ptr = heap_allocate(self, sizeof(void*));
+			memcpy(ptr, &pointer, sizeof(void*));
+			chunk_of(ptr)->flags = CHUNK_SHADOW_DELETE;
+			return;
+		}
+	}
 	assert(chunk == page_mgr_pointer_of(&self->page_mgr, chunk->next, chunk->next_offset));
 	assert(! chunk->free);
 
@@ -243,4 +272,53 @@ heap_release(Heap* self, void* pointer)
 	// if not last,  merge right if right->free
 
 	// todo: bitmap
+}
+
+void
+heap_snapshot(Heap* self)
+{
+	// create and set new shadow heap
+	assert(! self->shadow);
+	auto shadow = am_malloc(sizeof(Heap));
+	heap_init(shadow);
+	heap_create(shadow);
+	self->shadow = shadow;
+}
+
+void
+heap_snapshot_complete(Heap* self)
+{
+	// unset shadow heap and apply all updates
+	auto shadow = self->shadow;
+	assert(shadow);
+	self->shadow = NULL;
+
+	HeapCursor cursor;
+	heap_cursor_init(&cursor);
+	heap_cursor_open(&cursor, shadow);
+	while (heap_cursor_has(&cursor))
+	{
+		auto chunk = heap_cursor_at(&cursor);
+		switch (chunk->flags) {
+		case CHUNK_SHADOW:
+		{
+			// note: this is using bucket size instead of the actual
+			// data size for copy
+			auto data = heap_allocate(self, chunk->size);
+			memcpy(data, chunk->data, chunk->size);
+			break;
+		}
+		case CHUNK_SHADOW_DELETE:
+		{
+			auto ptr = *(void**)chunk->data;
+			heap_release(self, ptr);
+			break;
+		}
+		default:
+			abort();
+		}
+	}
+
+	heap_free(shadow);
+	am_free(shadow);
 }

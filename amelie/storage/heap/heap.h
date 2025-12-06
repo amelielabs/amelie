@@ -17,6 +17,13 @@ typedef struct HeapHeader HeapHeader;
 typedef struct HeapGroup  HeapGroup;
 typedef struct Heap       Heap;
 
+enum
+{
+	CHUNK_MAIN,
+	CHUNK_SHADOW_DELETE,
+	CHUNK_SHADOW
+};
+
 struct Chunk
 {
 	// 16 bytes
@@ -29,7 +36,7 @@ struct Chunk
 	uint64_t bucket: 9;
 	uint64_t free: 1;
 	uint64_t last: 1;
-	uint64_t unused: 8;
+	uint64_t flags: 8;
 	uint8_t  data[];
 } packed;
 
@@ -71,13 +78,8 @@ struct Heap
 	Chunk*      last;
 	HeapHeader* header;
 	PageMgr     page_mgr;
+	Heap*       shadow;
 };
-
-void  heap_init(Heap*);
-void  heap_free(Heap*);
-void  heap_create(Heap*);
-void* heap_allocate(Heap*, int);
-void  heap_release(Heap*, void*);
 
 always_inline static inline Chunk*
 chunk_of(void* pointer)
@@ -92,3 +94,11 @@ heap_first(Heap* self)
 		return NULL;
 	return (Chunk*)((uintptr_t)self->page_header + sizeof(PageHeader));
 }
+
+void  heap_init(Heap*);
+void  heap_free(Heap*);
+void  heap_create(Heap*);
+void* heap_allocate(Heap*, int);
+void  heap_release(Heap*, void*);
+void  heap_snapshot(Heap*);
+void  heap_snapshot_complete(Heap*);
