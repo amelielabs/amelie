@@ -16,12 +16,14 @@ typedef struct Consensus Consensus;
 struct Consensus
 {
 	uint64_t commit;
+	uint64_t commit_lsn;
 	uint64_t abort;
 };
 
 static inline void
 consensus_init(Consensus* self)
 {
-	self->commit = 0;
-	self->abort  = 0;
+	self->commit     = 0;
+	self->commit_lsn = 0;
+	self->abort      = 0;
 }

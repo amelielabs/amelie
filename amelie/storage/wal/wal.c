@@ -338,11 +338,10 @@ wal_write(Wal* self, WriteList* list)
 	defer(mutex_unlock, &self->lock);
 
 	// do atomical write of a list of wal records
-	uint64_t lsn;
 	auto current = self->current;
 	auto current_offset = current->file.size;
 	auto on_error = error_catch(
-		lsn = wal_write_list(self, list)
+		list->lsn = wal_write_list(self, list)
 	);
 	if (unlikely(on_error)) {
 		if (error_catch(wal_file_truncate(current, current_offset)))
@@ -351,13 +350,13 @@ wal_write(Wal* self, WriteList* list)
 	}
 
 	// update lsn globally
-	state_lsn_set(lsn);
+	state_lsn_set(list->lsn);
 
 	// notify pending slots
 	list_foreach(&self->slots)
 	{
 		auto slot = list_at(WalSlot, link);
-		wal_slot_signal(slot, lsn);
+		wal_slot_signal(slot, list->lsn);
 	}
 
 	return self->current->file.size >= opt_int_of(&config()->wal_size);

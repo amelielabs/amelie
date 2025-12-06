@@ -189,8 +189,9 @@ backend_main(void* arg)
 		id = consensus->commit;
 		if (id > id_commit)
 		{
-			// commit all transaction <= commit id
-			tr_commit_list(&core->prepared, &core->cache, id);
+			// commit all transaction <= commit id and set lsn to heaps
+			tr_commit_list(&core->prepared, &core->cache, id,
+			                consensus->commit_lsn);
 			id_commit = id;
 		}
 

@@ -69,6 +69,7 @@ heap_create(Heap* self)
 	header->version     = 0;
 	header->compression = 0;
 	header->lsn         = 0;
+	header->lsn_file    = 0;
 	header->count       = 0;
 	self->header        = header;
 	self->buckets       = header->buckets;
@@ -107,6 +108,12 @@ heap_create(Heap* self)
 	heap_prepare(self, 384, 385, 1048576, 0);     // max
 }
 
+typedef struct
+{
+	int bucket;
+	int step;
+} HeapGroup;
+
 static HeapGroup heap_log_to_bucket[20] =
 {
 	{ 0,   16    }, // 1
@@ -142,7 +149,7 @@ heap_bucket_of(Heap* self, int size)
 	assert(log2 <= 20);
 
 	// match log group
-	auto group  = &heap_log_to_bucket[log2 - 1];
+	auto group = &heap_log_to_bucket[log2 - 1];
 
 	// match bucket by calculating the step align
 	HeapBucket* bucket;
@@ -318,6 +325,10 @@ heap_snapshot_complete(Heap* self)
 			abort();
 		}
 	}
+
+	// propagate lsn
+	if (shadow->header->lsn > self->header->lsn)
+		self->header->lsn = shadow->header->lsn;
 
 	heap_free(shadow);
 	am_free(shadow);

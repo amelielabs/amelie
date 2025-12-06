@@ -79,6 +79,12 @@ tr_set_limit(Tr* self, Limit* limit)
 	self->limit = limit;
 }
 
+static inline void
+tr_set_lsn(Tr* self, uint64_t lsn)
+{
+	log_set_lsn(&self->log, lsn);
+}
+
 static inline bool
 tr_active(Tr* self)
 {

@@ -14,7 +14,6 @@
 typedef struct Chunk      Chunk;
 typedef struct HeapBucket HeapBucket;
 typedef struct HeapHeader HeapHeader;
-typedef struct HeapGroup  HeapGroup;
 typedef struct Heap       Heap;
 
 enum
@@ -61,15 +60,10 @@ struct HeapHeader
 	uint32_t   version;
 	uint8_t    compression;
 	uint64_t   lsn;
+	uint64_t   lsn_file;
 	uint32_t   count;
 	HeapBucket buckets[];
 } packed;
-
-struct HeapGroup
-{
-	int bucket;
-	int step;
-};
 
 struct Heap
 {

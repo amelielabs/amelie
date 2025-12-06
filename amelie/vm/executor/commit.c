@@ -21,8 +21,9 @@
 static void
 commit_complete(Commit* self, bool abort)
 {
+	auto prepare  = &self->prepare;
 	auto core_mgr = self->core_mgr;
-	auto cores = (Core**)self->prepare.cores.start;
+	auto cores    = (Core**)prepare->cores.start;
 
 	// schedule commit/abort for all involved cores
 	if (unlikely(abort))
@@ -33,8 +34,13 @@ commit_complete(Commit* self, bool abort)
 	} else
 	{
 		for (auto order = 0; order < core_mgr->cores_count; order++)
-			if (cores[order])
-				cores[order]->consensus.commit = self->prepare.id_max;
+		{
+			if (! cores[order])
+				continue;
+			auto consensus = &cores[order]->consensus;
+			consensus->commit     = prepare->id_max;
+			consensus->commit_lsn = prepare->write.lsn;
+		}
 	}
 
 	// remove transactions from executor and handle abort

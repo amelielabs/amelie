@@ -33,12 +33,16 @@ log_if_rollback(Log* self, LogOp* op)
 hot static void
 log_if_commit(Log* self, LogOp* op)
 {
+	auto index = (Index*)op->iface_arg;
+
+	// advance heap lsn on commit
+	auto heap = index->heap->header;
+	assert(heap->lsn <= self->lsn);
+	heap->lsn = self->lsn;
+
 	auto ref = log_row_of(self, op);
 	if (ref->row_prev)
-	{
-		auto index = (Index*)op->iface_arg;
 		row_free(index->heap, ref->row_prev);
-	}
 }
 
 static void

@@ -39,6 +39,7 @@ heap_file_write(Heap* self, char* path)
 
 	// write header with buckets
 	auto size = sizeof(HeapHeader) + sizeof(HeapBucket) * 385;
+	self->header->lsn_file = self->header->lsn;
 	self->header->compression = compression;
 	self->header->crc =
 		runtime()->crc(0, &self->header->magic, size - sizeof(uint32_t));

@@ -15,14 +15,16 @@ typedef struct WriteList WriteList;
 
 struct WriteList
 {
-	List list;
-	int  list_count;
+	List     list;
+	int      list_count;
+	uint64_t lsn;
 };
 
 static inline void
 write_list_init(WriteList* self)
 {
 	self->list_count = 0;
+	self->lsn        = 0;
 	list_init(&self->list);
 }
 
