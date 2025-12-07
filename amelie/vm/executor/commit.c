@@ -21,33 +21,17 @@
 static void
 commit_complete(Commit* self, bool abort)
 {
-	auto prepare  = &self->prepare;
-	auto core_mgr = self->core_mgr;
-	auto cores    = (Core**)prepare->cores.start;
+	auto prepare = &self->prepare;
 
-	// schedule commit/abort for all involved cores
-	if (unlikely(abort))
-	{
-		for (auto order = 0; order < core_mgr->cores_count; order++)
-			if (cores[order])
-				cores[order]->consensus.abort++;
-	} else
-	{
-		for (auto order = 0; order < core_mgr->cores_count; order++)
-		{
-			if (! cores[order])
-				continue;
-			auto consensus = &cores[order]->consensus;
-			consensus->commit     = prepare->id_max;
-			consensus->commit_lsn = prepare->write.lsn;
-		}
-	}
-
+	// do group completion
+	//
+	// update commit/abort metrics and
 	// remove transactions from executor and handle abort
-	executor_detach(self->executor, self->prepare.list, abort);
+	//
+	executor_detach(self->executor, prepare, abort);
 
 	// signal completion
-	auto dtr = self->prepare.list;
+	auto dtr = prepare->list;
 	while (dtr)
 	{
 		auto next = dtr->link_queue;
@@ -63,13 +47,13 @@ commit_process(Commit* self, DtrQueue* queue)
 	// a list of last executed transactions per core
 	auto wal = &self->storage->wal_mgr;
 	auto prepare = &self->prepare;
-	prepare_reset(prepare, self->core_mgr);
 	for (;;)
 	{
-		// get next transaction (in sync and ordered by id)
 		auto dtr = dtr_queue_next(queue);
 		if (! dtr)
 			break;
+
+		prepare_reset(prepare);
 		prepare_add(prepare, dtr);
 
 		bool abort;
@@ -80,8 +64,6 @@ commit_process(Commit* self, DtrQueue* queue)
 			abort = false;
 			while ((dtr = dtr_queue_peek(queue)))
 			{
-				// transactions with error will remain in the queue
-				// for the next iteration
 				if (dtr->abort)
 					break;
 				dtr_queue_pop(queue);
@@ -93,18 +75,17 @@ commit_process(Commit* self, DtrQueue* queue)
 				abort = error_catch( wal_mgr_write(wal, &prepare->write) );
 		} else
 		{
-			// GROUP ABORT
+			// GROUP ABORT (cascading)
 			//
-			// transaction error or forced abort
-			//
-			// aborted transactions are always first in the queue
+			// transaction error or forced abort, abort all
+			// subsequent transactions in the queue.
 			//
 			abort = true;
 			while ((dtr = dtr_queue_next(queue)))
 				prepare_add(prepare, dtr);
 		}
 
-		// commit/abort
+		// commit/abort the batch
 		commit_complete(self, abort);
 	}
 }
@@ -187,7 +168,7 @@ commit_init(Commit* self, Storage* storage, CoreMgr* core_mgr, Executor* executo
 	self->storage  = storage;
 	self->core_mgr = core_mgr;
 	self->executor = executor;
-	prepare_init(&self->prepare);
+	prepare_init(&self->prepare, core_mgr);
 	task_init(&self->task);
 }
 

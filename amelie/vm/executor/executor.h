@@ -83,13 +83,35 @@ executor_attach(Executor* self, Dtr* dtr)
 }
 
 hot static inline void
-executor_detach(Executor* self, Dtr* list, bool abort)
+executor_detach(Executor* self, Prepare* prepare, bool abort)
 {
+	// group completion
+
 	// called by Commit
 	spinlock_lock(&self->lock);
 
+	// schedule commit/abort for all involved cores
+	auto cores_count = prepare->core_mgr->cores_count;
+	auto cores       = (Core**)prepare->cores.start;
+	if (unlikely(abort))
+	{
+		for (auto order = 0; order < cores_count; order++)
+			if (cores[order])
+				cores[order]->consensus.abort++;
+	} else
+	{
+		for (auto order = 0; order < cores_count; order++)
+		{
+			if (! cores[order])
+				continue;
+			auto consensus = &cores[order]->consensus;
+			consensus->commit     = prepare->id_max;
+			consensus->commit_lsn = prepare->write.lsn;
+		}
+	}
+
 	// remove transactions from the list
-	for (auto dtr = list; dtr; dtr = dtr->link_queue)
+	for (auto dtr = prepare->list; dtr; dtr = dtr->link_queue)
 	{
 		dtr->abort = abort;
 		list_unlink(&dtr->link);

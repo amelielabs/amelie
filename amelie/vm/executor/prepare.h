@@ -20,16 +20,18 @@ struct Prepare
 	Dtr*      list_tail;
 	int       list_count;
 	Buf       cores;
+	CoreMgr*  core_mgr;
 	WriteList write;
 };
 
 static inline void
-prepare_init(Prepare* self)
+prepare_init(Prepare* self, CoreMgr* core_mgr)
 {
 	self->id_max     = 0;
 	self->list       = NULL;
 	self->list_tail  = NULL;
 	self->list_count = 0;
+	self->core_mgr   = core_mgr;
 	buf_init(&self->cores);
 	write_list_init(&self->write);
 }
@@ -41,10 +43,10 @@ prepare_free(Prepare* self)
 }
 
 static inline void
-prepare_reset(Prepare* self, CoreMgr* core_mgr)
+prepare_reset(Prepare* self)
 {
 	buf_reset(&self->cores);
-	auto size = sizeof(Core*) * core_mgr->cores_count;
+	auto size = sizeof(Core*) * self->core_mgr->cores_count;
 	buf_emplace(&self->cores, size);
 	memset(self->cores.start, 0, size);
 
