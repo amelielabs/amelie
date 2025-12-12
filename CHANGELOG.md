@@ -1,5 +1,73 @@
 # Amelie Changelog.
 
+## 0.8.0 (12-12-2025)
+
+This release introduces a switch to separate databases, greatly improved HTTP/endpoints support, a
+second test suite dedicated to sqllogictest, and a redefined CLI to support
+embedded database instances.
+
+**CREATE/DROP/ALTER DATABASE.**
+
+In this release, Amelie radically switched entirely from dedicated schemas to dedicated, completely isolated databases.
+
+Unlike most of the classical relational databases, Amelie has no separate sessions (HTTP requests are stateless).
+This design choice greatly simplifies external connections and the need for connection pooling. Usually, connection
+poolers need to account for which user/database connection is for.
+
+One of the main intentions is to make multi-tenant support easier (user-per-database) with proper resource separation.
+Additionally, this greatly simplifies many things.
+
+It is possible to DROP DATABASE within the same connection, which should simplify role management.
+Databases are implemented at the logical level, separating things in the catalog and sharing system resources.
+Databases are currently strictly isolated.
+
+This change affects both SQL semantics and HTTP endpoints, as well as the CLI and embeddable connections. It is now necessary
+to specify the working database (unless it is a default one).
+
+**IMPROVED PLANNER.**
+
+This release introduces reworked dedicated planner logic, which unifies local and distributed processing
+into a dynamic set of rules.
+
+**IMPROVED HTTP ENDPOINTS AND CONNECTION STRINGS.**
+
+HTTP API now includes two main calls:
+
+```
+# execute sql
+POST /v1/db/<db_name>
+
+# insert data into a table or call a function
+POST /v1/db/<db_name>/<relation_name>
+```
+
+All HTTP requests properly understand the `Content-Type` and `Accept` headers and act accordingly. For each call, you can
+also pass arguments, set the timezone, specify an additional return format, columns, etc.
+
+There are two types of supported connection strings: one for the `http://` protocol and one for the `amelie://` protocol.
+The Amelie protocol URI is used for embeddable databases, allowing the specification of the database and
+desired MIME:  `amelie://db_name/table?content-type=application/json`.
+
+**UNIFIED CLI TO ALL DATABASES / PLAIN-TEXT RESULTS.**
+
+Amelie CLI can now run embedded databases like SQLite/DuckDB by default, without the necessity to init
+and start the server first (which is still possible).
+
+Depending on how the database is accessed, cli can start the database and run the console (as an embeddable database),
+connect to an existing database process via a Unix socket, or connect remotely via the HTTP API.
+
+Everything works transparently and is simple to use.
+
+By default, the HTTP API now sets and supports plain/text output, dedicated for console usage.
+
+**DEDICATED TEST SUITE FOR SQLite TESTS.**
+
+This release introduces an additional test suite - sqllogictests (SQLite tests). The tests themselves are huge, totaling 1.1 GB of
+data containing ~6.5 million tests. Most essential tests have passed; others will be included at a later time.
+Amelie will support a separate repository for them.
+
+Test suite implemented as an Amelie CLI command `amelie test-slt`.
+
 ## 0.7.0 (04-11-2025)
 
 This major release introduces full-featured support for User-Defined Functions (UDF), similar in

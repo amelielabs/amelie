@@ -35,7 +35,7 @@ state_prepare(State* self)
 	OptsDef defs[] =
 	{
 		// system
-		{ "version",       OPT_STRING, OPT_E, &self->version,      "0.8.0", 0     },
+		{ "version",       OPT_STRING, OPT_E, &self->version,      "0.9.0", 0     },
 		{ "directory",     OPT_STRING, OPT_E, &self->directory,     NULL,   0     },
 		{ "checkpoint",    OPT_INT,    OPT_E, &self->checkpoint,    NULL,   0     },
 		{ "lsn",           OPT_INT,    OPT_E, &self->lsn,           NULL,   0     },
