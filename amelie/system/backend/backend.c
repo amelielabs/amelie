@@ -161,38 +161,6 @@ backend_process(Backend* self, Ctr* ctr)
 	ctr_complete(ctr);
 }
 
-static void
-backend_rpc(Rpc* rpc, void* arg)
-{
-	auto self = (Backend*)arg;
-	assert(! self->core.prepared.list_count);
-	switch (rpc->msg.id) {
-	case MSG_SNAPSHOT:
-	{
-		auto request = (PartSnapshot*)rpc_arg_ptr(rpc, 0);
-		auto heap = &request->part->heap;
-		request->part_lsn = heap->lsn;
-		if (heap->header->lsn == heap->header->lsn_file)
-		{
-			request->active = false;
-			return;
-		}
-		heap_snapshot(heap);
-		request->active = true;
-		break;
-	}
-	case MSG_SNAPSHOT_END:
-	{
-		auto request = (PartSnapshot*)rpc_arg_ptr(rpc, 0);
-		auto heap = &request->part->heap;
-		heap_snapshot_complete(heap);
-		break;
-	}
-	default:
-		abort();
-	}
-}
-
 hot static void
 backend_main(void* arg)
 {
@@ -204,18 +172,8 @@ backend_main(void* arg)
 	for (;;)
 	{
 		auto msg = task_recv();
-		switch (msg->id) {
-		case MSG_CTR:
+		if (msg->id == MSG_STOP)
 			break;
-		case MSG_SNAPSHOT:
-		case MSG_SNAPSHOT_END:
-			rpc_execute(rpc_of(msg), backend_rpc, self);
-			continue;
-		case MSG_STOP:
-			return;
-		default:
-			abort();
-		}
 
 		// accept and process incoming core transaction
 		auto ctr = (Ctr*)msg;
@@ -232,8 +190,7 @@ backend_main(void* arg)
 		if (id > id_commit)
 		{
 			// commit all transaction <= commit id and set lsn to heaps
-			tr_commit_list(&core->prepared, &core->cache, id,
-			               consensus->commit_lsn);
+			tr_commit_list(&core->prepared, &core->cache, id);
 			id_commit = id;
 		}
 		backend_process(self, (Ctr*)msg);

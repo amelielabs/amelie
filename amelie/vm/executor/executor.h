@@ -101,13 +101,8 @@ executor_detach(Executor* self, Prepare* prepare, bool abort)
 	} else
 	{
 		for (auto order = 0; order < cores_count; order++)
-		{
-			if (! cores[order])
-				continue;
-			auto consensus = &cores[order]->consensus;
-			consensus->commit     = prepare->id_max;
-			consensus->commit_lsn = prepare->write.lsn;
-		}
+			if (cores[order])
+				cores[order]->consensus.commit = prepare->id_max;
 	}
 
 	// remove transactions from the list

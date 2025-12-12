@@ -13,6 +13,6 @@
 
 void tr_begin(Tr*);
 void tr_commit(Tr*);
-void tr_commit_list(TrList*, TrCache*, uint64_t, uint64_t);
+void tr_commit_list(TrList*, TrCache*, uint64_t);
 void tr_abort(Tr*);
 void tr_abort_list(TrList*, TrCache*);

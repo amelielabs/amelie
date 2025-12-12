@@ -16,13 +16,6 @@ typedef struct HeapBucket HeapBucket;
 typedef struct HeapHeader HeapHeader;
 typedef struct Heap       Heap;
 
-enum
-{
-	CHUNK_MAIN,
-	CHUNK_SHADOW_DELETE,
-	CHUNK_SHADOW
-};
-
 struct Chunk
 {
 	// 16 bytes
@@ -35,7 +28,7 @@ struct Chunk
 	uint64_t bucket: 9;
 	uint64_t free: 1;
 	uint64_t last: 1;
-	uint64_t flags: 8;
+	uint64_t unused: 8;
 	uint8_t  data[];
 } packed;
 
@@ -59,8 +52,6 @@ struct HeapHeader
 	uint32_t   magic;
 	uint32_t   version;
 	uint8_t    compression;
-	uint64_t   lsn;
-	uint64_t   lsn_file;
 	uint32_t   count;
 	HeapBucket buckets[];
 } packed;
@@ -72,7 +63,6 @@ struct Heap
 	Chunk*      last;
 	HeapHeader* header;
 	PageMgr     page_mgr;
-	Heap*       shadow;
 };
 
 always_inline static inline Chunk*
@@ -94,5 +84,3 @@ void  heap_free(Heap*);
 void  heap_create(Heap*);
 void* heap_allocate(Heap*, int);
 void  heap_release(Heap*, void*);
-void  heap_snapshot(Heap*);
-void  heap_snapshot_complete(Heap*);

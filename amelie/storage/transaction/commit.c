@@ -69,7 +69,7 @@ tr_abort(Tr* self)
 }
 
 hot void
-tr_commit_list(TrList* self, TrCache* cache, uint64_t id, uint64_t lsn)
+tr_commit_list(TrList* self, TrCache* cache, uint64_t id)
 {
 	// commit all transactions <= id
 	list_foreach_safe(&self->list)
@@ -79,7 +79,6 @@ tr_commit_list(TrList* self, TrCache* cache, uint64_t id, uint64_t lsn)
 			break;
 		list_unlink(&tr->link);
 		self->list_count--;
-		tr_set_lsn(tr, lsn);
 		tr_commit(tr);
 		tr_cache_push(cache, tr);
 	}

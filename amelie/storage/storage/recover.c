@@ -48,7 +48,7 @@ recover_reset_stats(Recover* self)
 }
 
 hot static void
-recover_cmd(Recover* self, Record* record, RecordCmd* cmd, uint8_t** pos)
+recover_cmd(Recover* self, RecordCmd* cmd, uint8_t** pos)
 {
 	auto storage = self->storage;
 	auto tr = &self->tr;
@@ -60,11 +60,6 @@ recover_cmd(Recover* self, Record* record, RecordCmd* cmd, uint8_t** pos)
 		if (! part)
 			error("recover: failed to find partition %" PRIu32, cmd->partition);
 		auto end = *pos + cmd->size;
-		if (part->heap.header->lsn >= record->lsn)
-		{
-			*pos = end;
-			break;
-		}
 		while (*pos < end)
 		{
 			auto row = row_copy(&part->heap, (Row*)*pos);
@@ -80,11 +75,6 @@ recover_cmd(Recover* self, Record* record, RecordCmd* cmd, uint8_t** pos)
 		if (! part)
 			error("recover: failed to find partition %" PRIu32, cmd->partition);
 		auto end = *pos + cmd->size;
-		if (part->heap.header->lsn >= record->lsn)
-		{
-			*pos = end;
-			break;
-		}
 		while (*pos < end)
 		{
 			auto row = (Row*)(*pos);
@@ -117,7 +107,7 @@ recover_next_record(Recover* self, Record* record)
 		if (opt_int_of(&config()->wal_crc))
 			if (unlikely(! record_validate_cmd(cmd, pos)))
 				error("recover: record command mismatch");
-		recover_cmd(self, record, cmd, &pos);
+		recover_cmd(self, cmd, &pos);
 		cmd++;
 	}
 	self->ops  += record->ops;
