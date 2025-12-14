@@ -16,7 +16,9 @@ typedef struct Row Row;
 struct Row
 {
 	uint8_t size_factor: 2;
-	uint8_t unused: 6;
+	uint8_t is_deleted: 1;
+	uint8_t is_heap: 1;
+	uint8_t unused: 4;
 	uint8_t data[];
 } packed;
 
@@ -24,6 +26,8 @@ always_inline hot static inline void
 row_init(Row* self, int size_factor, int size)
 {
 	self->size_factor = size_factor;
+	self->is_deleted  = 0;
+	self->is_heap     = 0;
 	self->unused      = 0;
 	if (size_factor == 0)
 		*self->data = size;

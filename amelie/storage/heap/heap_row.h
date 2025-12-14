@@ -46,5 +46,27 @@ row_copy(Heap* heap, Row* self)
 	return row;
 }
 
+always_inline hot static inline uint64_t
+row_tsn(Row* self)
+{
+	if (self->is_heap)
+		return chunk_of(self)->tsn;
+	return 0;
+}
+
+always_inline hot static inline Row*
+row_prev(Heap* heap, Row* row)
+{
+	if (row->is_heap)
+	{
+		auto chunk = chunk_of(row);
+		if (! chunk->prev_offset)
+			return NULL;
+		chunk = page_mgr_pointer_of(&heap->page_mgr, chunk->prev, chunk->prev_offset);
+		return (Row*)chunk->data;
+	}
+	return NULL;
+}
+
 Row* row_alter_add(Heap*, Row*, Columns*);
 Row* row_alter_drop(Heap*, Row*, Columns*, Column*);
