@@ -73,6 +73,31 @@ state_lsn_follow(uint64_t value)
 	return opt_int_follow(&state()->lsn, value);
 }
 
+// tsn
+static inline uint64_t
+state_tsn(void)
+{
+	return opt_int_of(&state()->tsn);
+}
+
+static inline void
+state_tsn_set(uint64_t value)
+{
+	return opt_int_set(&state()->tsn, value);
+}
+
+static inline uint64_t
+state_tsn_next(void)
+{
+	return opt_int_set_next(&state()->tsn);
+}
+
+static inline void
+state_tsn_follow(uint64_t value)
+{
+	return opt_int_follow(&state()->tsn, value);
+}
+
 // psn
 static inline uint64_t
 state_psn(void)
