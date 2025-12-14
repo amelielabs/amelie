@@ -29,7 +29,7 @@ heap_cursor_next_chunk(HeapCursor* self)
 		return;
 	if (likely(! self->current->last))
 	{
-		auto next = (uintptr_t)self->current + self->current->size;
+		auto next = (uintptr_t)self->current + self->heap->buckets[self->current->bucket].size;
 		self->current = (Chunk*)next;
 		return;
 	}
