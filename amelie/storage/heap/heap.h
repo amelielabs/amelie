@@ -60,6 +60,7 @@ struct HeapHeader
 	uint32_t   version;
 	uint8_t    compression;
 	uint32_t   count;
+	uint64_t   tsn_max;
 	HeapBucket buckets[];
 } packed;
 

@@ -62,6 +62,7 @@ heap_create(Heap* self)
 	header->version     = 0;
 	header->compression = 0;
 	header->count       = 0;
+	header->tsn_max     = 0;
 	self->header        = header;
 	self->buckets       = header->buckets;
 
