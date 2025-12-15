@@ -94,7 +94,7 @@ hot void
 part_insert(Part* self, Tr* tr, bool replace, Row* row)
 {
 	// set row and heap tsn
-	row_follow_tsn(row, &self->heap, tr->tsn);
+	row_tsn_follow(row, &self->heap, tr->tsn);
 
 	// add log record
 	auto primary = part_primary(self);
@@ -142,7 +142,7 @@ hot bool
 part_upsert(Part* self, Tr* tr, Iterator* it, Row* row)
 {
 	// set row and heap tsn
-	row_follow_tsn(row, &self->heap, tr->tsn);
+	row_tsn_follow(row, &self->heap, tr->tsn);
 
 	// insert or get (iterator is openned in both cases)
 	auto primary = part_primary(self);
@@ -202,7 +202,7 @@ part_update(Part* self, Tr* tr, Iterator* it, Row* row)
 	assert(! iterator_at(it)->is_deleted);
 
 	// set row and heap tsn
-	row_follow_tsn(row, &self->heap, tr->tsn);
+	row_tsn_follow(row, &self->heap, tr->tsn);
 
 	// add log record
 	auto primary = part_primary(self);
@@ -271,7 +271,7 @@ part_delete(Part* self, Tr* tr, Iterator* it)
 
 	// set row and heap tsn
 	row_write(tr, row);
-	heap_follow_tsn(&self->heap, tr->tsn);
+	heap_tsn_follow(&self->heap, tr->tsn);
 
 	// mark row as deleted
 	row->is_deleted = true;

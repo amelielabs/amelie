@@ -94,7 +94,7 @@ heap_first(Heap* self)
 }
 
 static inline void
-heap_follow_tsn(Heap* self, uint64_t tsn)
+heap_tsn_follow(Heap* self, uint64_t tsn)
 {
 	auto header = self->header;
 	if (tsn > header->tsn_max)

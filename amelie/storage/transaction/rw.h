@@ -27,7 +27,7 @@ row_write(Tr* tr, Row* row)
 		error("serialization error");
 
 	// mark row accessed by this transaction id
-	row_set_tsn(row, tr->tsn);
+	row_tsn_set(row, tr->tsn);
 }
 
 hot static inline Row*

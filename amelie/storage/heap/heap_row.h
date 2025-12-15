@@ -58,17 +58,17 @@ row_tsn(Row* self)
 }
 
 always_inline hot static inline void
-row_set_tsn(Row* self, uint64_t tsn)
+row_tsn_set(Row* self, uint64_t tsn)
 {
 	assert(self->is_heap);
 	chunk_of(self)->tsn = tsn;
 }
 
 always_inline hot static inline void
-row_follow_tsn(Row* self, Heap* heap, uint64_t tsn)
+row_tsn_follow(Row* self, Heap* heap, uint64_t tsn)
 {
-	row_set_tsn(self, tsn);
-	heap_follow_tsn(heap, tsn);
+	row_tsn_set(self, tsn);
+	heap_tsn_follow(heap, tsn);
 }
 
 Row* row_alter_add(Heap*, Row*, Columns*);

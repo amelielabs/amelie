@@ -23,7 +23,7 @@ row_alter_add(Heap* heap, Row* row, Columns* columns)
 
 	// track tsn
 	auto tsn = row_tsn(row);
-	row_follow_tsn(self, heap, tsn);
+	row_tsn_follow(self, heap, tsn);
 
 	// copy original columns
 	uint8_t* pos = row_data(self, columns_count);
@@ -95,7 +95,7 @@ row_alter_drop(Heap* heap, Row* row, Columns* columns, Column* ref)
 
 	// track tsn
 	auto tsn = row_tsn(row);
-	row_follow_tsn(self, heap, tsn);
+	row_tsn_follow(self, heap, tsn);
 
 	// copy original columns
 	uint8_t* pos = row_data(self, columns->count - 1);
