@@ -13,22 +13,34 @@
 
 typedef struct Tr Tr;
 
+typedef enum
+{
+	ISOLATION_SS,
+	ISOLATION_SI
+} Isolation;
+
 struct Tr
 {
-	uint64_t id;
-	bool     active;
-	bool     aborted;
-	bool     allocated;
-	Log      log;
-	Limit*   limit;
-	void*    arg;
-	List     link;
+	uint64_t  tsn;
+	uint64_t  tsn_max;
+	uint64_t  snapshot;
+	Isolation isolation;
+	bool      active;
+	bool      aborted;
+	bool      allocated;
+	Log       log;
+	Limit*    limit;
+	void*     arg;
+	List      link;
 };
 
 static inline void
 tr_init(Tr* self)
 {
-	self->id        = 0;
+	self->tsn       = 0;
+	self->tsn_max   = 0;
+	self->snapshot  = UINT64_MAX;
+	self->isolation = ISOLATION_SS;
 	self->active    = false;
 	self->aborted   = false;
 	self->allocated = false;
@@ -41,11 +53,14 @@ tr_init(Tr* self)
 static inline void
 tr_reset(Tr* self)
 {
-	self->id      = 0;
-	self->active  = false;
-	self->aborted = false;
-	self->limit   = NULL;
-	self->arg     = NULL;
+	self->tsn       = 0;
+	self->tsn_max   = 0;
+	self->snapshot  = UINT64_MAX;
+	self->isolation = ISOLATION_SS;
+	self->active    = false;
+	self->aborted   = false;
+	self->limit     = NULL;
+	self->arg       = NULL;
 	log_reset(&self->log);
 	list_init(&self->link);
 }
@@ -68,9 +83,21 @@ tr_free(Tr* self)
 }
 
 static inline void
-tr_set_id(Tr* self, uint64_t id)
+tr_set_isolation(Tr* self, Isolation isolation)
 {
-	self->id = id;
+	self->isolation = isolation;
+}
+
+static inline void
+tr_set_tsn(Tr* self, uint64_t value)
+{
+	self->tsn = value;
+}
+
+static inline void
+tr_set_snapshot(Tr* self, uint64_t value)
+{
+	self->snapshot = value;
 }
 
 static inline void

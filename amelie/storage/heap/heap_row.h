@@ -54,6 +54,13 @@ row_tsn(Row* self)
 	return 0;
 }
 
+always_inline hot static inline void
+row_tsn_set(Row* self, uint64_t tsn)
+{
+	assert(self->is_heap);
+	chunk_of(self)->tsn = tsn;
+}
+
 always_inline hot static inline Row*
 row_prev(Heap* heap, Row* row)
 {
