@@ -229,8 +229,8 @@ hot void
 heap_release(Heap* self, void* pointer)
 {
 	auto chunk  = chunk_of(pointer);
+	auto page   = page_of(chunk);
 	auto bucket = &self->buckets[chunk->bucket];
-	auto page   = (PageHeader*)((uintptr_t)chunk - (chunk->offset + sizeof(PageHeader)));
 	assert(! chunk->free);
 	chunk->tsn          = 0;
 	chunk->prev         = bucket->list;

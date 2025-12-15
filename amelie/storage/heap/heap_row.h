@@ -18,6 +18,7 @@ row_allocate(Heap* heap, int columns, int data_size)
 	auto size = row_measure(columns, data_size, &size_factor);
 	auto self = (Row*)heap_allocate(heap, size);
 	row_init(self, size_factor, size);
+	self->is_heap = true;
 	return self;
 }
 
@@ -34,6 +35,7 @@ row_allocate_buf(Buf* buf, int columns, int data_size)
 always_inline static inline void
 row_free(Heap* heap, Row* row)
 {
+	assert(row->is_heap);
 	heap_release(heap, row);
 }
 
@@ -41,8 +43,9 @@ hot static inline Row*
 row_copy(Heap* heap, Row* self)
 {
 	auto size = row_size(self);
-	auto row  = heap_allocate(heap, size);
+	auto row  = (Row*)heap_allocate(heap, size);
 	memcpy(row, self, size);
+	row->is_heap = true;
 	return row;
 }
 
@@ -55,24 +58,17 @@ row_tsn(Row* self)
 }
 
 always_inline hot static inline void
-row_tsn_set(Row* self, uint64_t tsn)
+row_set_tsn(Row* self, uint64_t tsn)
 {
 	assert(self->is_heap);
 	chunk_of(self)->tsn = tsn;
 }
 
-always_inline hot static inline Row*
-row_prev(Heap* heap, Row* row)
+always_inline hot static inline void
+row_follow_tsn(Row* self, Heap* heap, uint64_t tsn)
 {
-	if (row->is_heap)
-	{
-		auto chunk = chunk_of(row);
-		if (! chunk->prev_offset)
-			return NULL;
-		chunk = page_mgr_pointer_of(&heap->page_mgr, chunk->prev, chunk->prev_offset);
-		return (Row*)chunk->data;
-	}
-	return NULL;
+	row_set_tsn(self, tsn);
+	heap_follow_tsn(heap, tsn);
 }
 
 Row* row_alter_add(Heap*, Row*, Columns*);

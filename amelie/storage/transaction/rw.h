@@ -26,16 +26,12 @@ row_write(Tr* tr, Row* row)
 	if (unlikely(tsn > tr->tsn))
 		error("serialization error");
 
-	// keep track of highest accessed transaction id
-	if (tsn > tr->tsn_max)
-		tr->tsn_max = tsn;
-
 	// mark row accessed by this transaction id
-	row_tsn_set(row, tr->tsn);
+	row_set_tsn(row, tr->tsn);
 }
 
 hot static inline Row*
-row_read(Tr* tr, Heap* heap, Row* row)
+row_read(Tr* tr, Row* row)
 {
 	if (! row->is_heap)
 		return row;
@@ -47,22 +43,6 @@ row_read(Tr* tr, Heap* heap, Row* row)
 	//
 	// head row is always correct.
 	//
-	if (tr->isolation == ISOLATION_SS)
-	{
-		row_write(tr, row);
-		return row;
-	}
-
-	// snapshot isolation.
-	//
-	// find last transaction update or first visible
-	// version by snapshot.
-	//
-	for (; row; row = row_prev(heap, row))
-	{
-		auto tsn = row_tsn(row);
-		if (tsn == tr->tsn || tsn <= tr->snapshot)
-			break;
-	}
+	row_write(tr, row);
 	return row;
 }

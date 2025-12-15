@@ -21,6 +21,10 @@ row_alter_add(Heap* heap, Row* row, Columns* columns)
 	auto columns_count = columns->count + 1;
 	auto self = row_allocate(heap, columns_count, row_data_size(row, columns->count));
 
+	// track tsn
+	auto tsn = row_tsn(row);
+	row_follow_tsn(self, heap, tsn);
+
 	// copy original columns
 	uint8_t* pos = row_data(self, columns_count);
 	list_foreach(&columns->list)
@@ -88,6 +92,10 @@ row_alter_drop(Heap* heap, Row* row, Columns* columns, Column* ref)
 
 	// allocate new row
 	auto self = row_allocate(heap, columns->count - 1, size);
+
+	// track tsn
+	auto tsn = row_tsn(row);
+	row_follow_tsn(self, heap, tsn);
 
 	// copy original columns
 	uint8_t* pos = row_data(self, columns->count - 1);

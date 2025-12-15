@@ -79,12 +79,26 @@ chunk_of(void* pointer)
 	return (Chunk*)((uintptr_t)pointer - sizeof(Chunk));
 }
 
+static inline PageHeader*
+page_of(Chunk* self)
+{
+	return (PageHeader*)((uintptr_t)self - (self->offset + sizeof(PageHeader)));
+}
+
 static inline Chunk*
 heap_first(Heap* self)
 {
 	if (unlikely(! self->last))
 		return NULL;
 	return (Chunk*)((uintptr_t)self->page_header + sizeof(PageHeader));
+}
+
+static inline void
+heap_follow_tsn(Heap* self, uint64_t tsn)
+{
+	auto header = self->header;
+	if (tsn > header->tsn_max)
+		header->tsn_max =  tsn;
 }
 
 void  heap_init(Heap*);

@@ -21,4 +21,3 @@
 #include "partition/part_op.h"
 #include "partition/part_list.h"
 #include "partition/part_mgr.h"
-#include "partition/part_snapshot.h"
