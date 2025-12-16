@@ -16,6 +16,7 @@ typedef struct Tr Tr;
 struct Tr
 {
 	uint64_t tsn;
+	uint64_t tsn_max;
 	bool     active;
 	bool     aborted;
 	bool     allocated;
@@ -29,6 +30,7 @@ static inline void
 tr_init(Tr* self)
 {
 	self->tsn       = 0;
+	self->tsn_max   = 0;
 	self->active    = false;
 	self->aborted   = false;
 	self->allocated = false;
@@ -42,6 +44,7 @@ static inline void
 tr_reset(Tr* self)
 {
 	self->tsn     = 0;
+	self->tsn_max = 0;
 	self->active  = false;
 	self->aborted = false;
 	self->limit   = NULL;

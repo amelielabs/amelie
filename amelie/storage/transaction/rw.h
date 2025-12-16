@@ -26,6 +26,10 @@ row_write(Tr* tr, Row* row)
 	if (unlikely(tsn > tr->tsn))
 		error("serialization error");
 
+	// keep the maximum access transaction id (for aborts)
+	if (tsn > tr->tsn_max)
+		tr->tsn_max = tsn;
+
 	// mark row accessed by this transaction id
 	row_tsn_set(row, tr->tsn);
 }
