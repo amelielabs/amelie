@@ -15,7 +15,8 @@ typedef struct Commit Commit;
 
 struct Commit
 {
-	Prepare   prepare;
+	Batch     batch;
+	DtrQueue  queue;
 	Executor* executor;
 	CoreMgr*  core_mgr;
 	Storage*  storage;

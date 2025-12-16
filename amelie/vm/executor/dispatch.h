@@ -15,13 +15,12 @@ typedef struct Dispatch Dispatch;
 
 struct Dispatch
 {
-	int       order;
-	List      list; 
-	int       list_count;
-	Complete  complete;
-	bool      close;
-	bool      returning;
-	List      link;
+	int      order;
+	List     list;
+	int      list_count;
+	Complete complete;
+	bool     returning;
+	List     link;
 };
 
 static inline Dispatch*
@@ -31,7 +30,6 @@ dispatch_allocate(void)
 	self->order      = 0;
 	self->list_count = 0;
 	self->returning  = false;
-	self->close      = false;
 	list_init(&self->list);
 	list_init(&self->link);
 	complete_init(&self->complete);
@@ -56,7 +54,6 @@ dispatch_reset(Dispatch* self, ReqCache* cache)
 	list_init(&self->list);
 	self->list_count = 0;
 	self->returning  = false;
-	self->close      = false;
 	complete_reset(&self->complete);
 }
 
@@ -64,12 +61,6 @@ static inline void
 dispatch_set_returning(Dispatch* self)
 {
 	self->returning = true;
-}
-
-static inline void
-dispatch_set_close(Dispatch* self)
-{
-	self->close = true;
 }
 
 static inline void

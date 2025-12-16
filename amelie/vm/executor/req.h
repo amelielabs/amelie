@@ -15,12 +15,14 @@ typedef struct Req      Req;
 typedef struct ReqCache ReqCache;
 typedef struct Core     Core;
 typedef struct Dispatch Dispatch;
+typedef struct Ctr      Ctr;
 
 enum
 {
 	REQ_EXECUTE,
 	REQ_REPLAY,
-	REQ_BUILD
+	REQ_BUILD,
+	REQ_SYNC
 };
 
 struct Req
@@ -37,6 +39,7 @@ struct Req
 	bool      result_pending;
 	Buf*      error;
 	Dispatch* dispatch;
+	Ctr*      ctr;
 	Core*     core;
 	List      link;
 };
@@ -50,9 +53,10 @@ req_allocate(void)
 	self->code           = NULL;
 	self->code_data      = NULL;
 	self->error          = NULL;
-	self->core           = NULL;
 	self->refs_count     = 0;
 	self->result_pending = false;
+	self->ctr            = NULL;
+	self->core           = NULL;
 	self->dispatch       = NULL;
 	msg_init(&self->msg, MSG_REQ);
 	buf_init(&self->arg);
@@ -99,9 +103,10 @@ req_reset(Req* self)
 	self->start          = 0;
 	self->code           = NULL;
 	self->code_data      = NULL;
-	self->core           = NULL;
 	self->refs_count     = 0;
 	self->result_pending = false;
+	self->ctr            = NULL;
+	self->core           = NULL;
 	self->dispatch       = NULL;
 	buf_reset(&self->arg);
 }

@@ -19,10 +19,8 @@
 #include "executor/program.h"
 
 // core transaction (per backend)
-#include "executor/complete.h"
 #include "executor/req.h"
 #include "executor/req_cache.h"
-#include "executor/consensus.h"
 #include "executor/ctr.h"
 
 // core
@@ -30,16 +28,18 @@
 #include "executor/core_mgr.h"
 
 // dispatch
+#include "executor/complete.h"
 #include "executor/dispatch.h"
 #include "executor/dispatch_cache.h"
 #include "executor/dispatch_mgr.h"
 
 // distributed transaction
+#include "executor/consensus.h"
 #include "executor/dtr.h"
 #include "executor/dtr_queue.h"
 
 // executor
-#include "executor/prepare.h"
+#include "executor/batch.h"
 #include "executor/executor.h"
 
 // commit
