@@ -93,7 +93,6 @@ build_run(Build* self)
 	auto dtr = &self->dtr;
 	auto dispatch_mgr = &dtr->dispatch_mgr;
 	auto dispatch = dispatch_create(&dispatch_mgr->cache);
-	dispatch_set_returning(dispatch);
 
 	// ask each backend to build related partition
 	for (auto i = 0; i < backend_mgr->workers_count; i++)

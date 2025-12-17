@@ -170,6 +170,7 @@ backend_main(void* arg)
 			break;
 
 		// process incoming request
+		assert(msg->id == MSG_REQ);
 		auto req = (Req*)msg;
 
 		// abort and commit previously prepared transactions

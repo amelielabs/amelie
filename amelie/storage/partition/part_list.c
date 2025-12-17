@@ -137,16 +137,20 @@ part_list_match(PartList* self, Core* core)
 }
 
 Iterator*
-part_list_iterator(PartList* self, Part* part, IndexConfig* config,
-                   bool      point_lookup,
-                   Row*      key)
+part_list_iterator(PartList*    self, Tr* tr,
+                   Part*        part,
+                   IndexConfig* config,
+                   bool         point_lookup,
+                   Row*         key)
 {
 	// single partition iteration
 	if (part)
 	{
+		heap_tsn_follow(&part->heap, tr->tsn);
 		auto index = part_find(part, &config->name, true);
 		auto it = index_iterator(index);
 		iterator_open(it, key);
+		row_read_iterator(tr, it);
 		return it;
 	}
 
@@ -154,9 +158,11 @@ part_list_iterator(PartList* self, Part* part, IndexConfig* config,
 	if (point_lookup)
 	{
 		part = part_map_get(&self->map, row_hash(key, &config->keys));
+		heap_tsn_follow(&part->heap, tr->tsn);
 		auto index = part_find(part, &config->name, true);
 		auto it = index_iterator(index);
 		iterator_open(it, key);
+		row_read_iterator(tr, it);
 		return it;
 	}
 
@@ -167,9 +173,11 @@ part_list_iterator(PartList* self, Part* part, IndexConfig* config,
 	list_foreach(&self->list)
 	{
 		auto part = list_at(Part, link);
+		heap_tsn_follow(&part->heap, tr->tsn);
 		auto index = part_find(part, &config->name, true);
 		it = index_iterator_merge(index, it);
 	}
 	iterator_open(it, key);
+	row_read_iterator(tr, it);
 	return it;
 }

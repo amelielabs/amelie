@@ -108,6 +108,10 @@ storage_state(Storage* self)
 	encode_raw(buf, "lsn", 3);
 	encode_integer(buf, state_lsn());
 
+	// tsn
+	encode_raw(buf, "tsn", 3);
+	encode_integer(buf, state_tsn());
+
 	// psn
 	encode_raw(buf, "psn", 3);
 	encode_integer(buf, state_psn());

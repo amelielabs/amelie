@@ -20,16 +20,14 @@
 #define fallthrough          __attribute__((fallthrough));
 #define format_validate(a,b) __attribute__((format(printf, a, b)))
 
-#define auto              __auto_type
-#define unused(name)     (void)name
+#define auto                 __auto_type
+#define unused(name)         (void)name
 
-#define source_file       __FILE__
-#define source_function   __func__
-#define source_line       __LINE__
+#define source_file          __FILE__
+#define source_function      __func__
+#define source_line          __LINE__
+
+#define misalign_of(ptr)     ((uintptr_t)(ptr) & 7)
 
 #define container_of(ptr, type, field) \
 	((type*)((char*)(ptr) - __builtin_offsetof(type, field)))
-
-#define align_of(ptr) \
-	(((~(uintptr_t)(ptr)) + 1) & (sizeof(void*) - 1))
-

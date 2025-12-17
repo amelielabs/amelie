@@ -29,7 +29,21 @@ commit_execute(Commit* self)
 	for (auto it = queue->list_count - 1; it >= 0; it--)
 	{
 		auto dtr = dtr_queue_at(queue, it);
-		if (dtr->abort || dtr->tsn_max >= batch->abort_tsn)
+		if (dtr->abort)
+		{
+			batch_add_abort(batch, dtr);
+			continue;
+		}
+
+		// transaction has not accessed rows
+		if (! dtr->tsn_max)
+			continue;
+
+		// no dependable aborts
+		if (! batch->abort_tsn)
+			continue;
+
+		if (dtr->tsn_max >= batch->abort_tsn)
 		{
 			dtr_set_abort(dtr);
 			batch_add_abort(batch, dtr);

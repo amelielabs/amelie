@@ -196,6 +196,7 @@ heap_allocate(Heap* self, int size)
 			page_header->size_compressed = 0;
 			page_header->order           = self->page_mgr.list_count - 1;
 			page_header->last            = 0;
+			page_header->padding         = 0;
 			self->page_header = page_header;
 			self->last = NULL;
 			self->header->count++;
@@ -221,7 +222,7 @@ heap_allocate(Heap* self, int size)
 	chunk->prev_offset = 0;
 	chunk->free        = false;
 
-	assert(align_of(chunk->data) == 0);
+	assert(misalign_of(chunk->data) == 0);
 	return chunk->data;
 }
 

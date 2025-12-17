@@ -55,6 +55,7 @@ static inline void
 dtr_queue_add(DtrQueue* self, Dtr* dtr)
 {
 	buf_write(&self->list, &dtr, sizeof(Dtr**));
+	self->list_count++;
 }
 
 static inline int

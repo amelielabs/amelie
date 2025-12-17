@@ -445,12 +445,11 @@ ctable_open(Vm* self, Op* op, bool point_lookup, bool open_part)
 		cursor->part = part_list_match(&table->part_list, self->core);
 	else
 		cursor->part = NULL;
-	cursor->cursor = part_list_iterator(&table->part_list, cursor->part, index, point_lookup, key_ref);
+	cursor->cursor =
+		part_list_iterator(&table->part_list, self->tr, cursor->part,
+		                   index, point_lookup, key_ref);
 	cursor->table  = table;
 	cursor->type   = TYPE_CURSOR;
-
-	// validate access and skip deletes
-	row_read_iterator(self->tr, cursor->cursor);
 
 	// jmp to next op if has data
 	if (likely(iterator_has(cursor->cursor)))

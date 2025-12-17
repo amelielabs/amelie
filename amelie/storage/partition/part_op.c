@@ -270,8 +270,8 @@ part_delete(Part* self, Tr* tr, Iterator* it)
 	assert(! row->is_deleted);
 
 	// set row and heap tsn
-	row_write(tr, row);
 	heap_tsn_follow(&self->heap, tr->tsn);
+	row_write(tr, row);
 
 	// mark row as deleted
 	row->is_deleted = true;

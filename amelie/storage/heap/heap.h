@@ -82,7 +82,7 @@ chunk_of(void* pointer)
 static inline PageHeader*
 page_of(Chunk* self)
 {
-	return (PageHeader*)((uintptr_t)self - (self->offset + sizeof(PageHeader)));
+	return (PageHeader*)((uintptr_t)self - self->offset);
 }
 
 static inline Chunk*
@@ -98,7 +98,7 @@ heap_tsn_follow(Heap* self, uint64_t tsn)
 {
 	auto header = self->header;
 	if (tsn > header->tsn_max)
-		header->tsn_max =  tsn;
+		header->tsn_max = tsn;
 }
 
 void  heap_init(Heap*);

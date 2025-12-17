@@ -31,4 +31,4 @@ void  part_list_index_create(PartList*, IndexConfig*);
 void  part_list_index_drop(PartList*, IndexConfig*);
 Part* part_list_match(PartList*, Core*);
 Iterator*
-part_list_iterator(PartList*, Part*, IndexConfig*, bool, Row*);
+part_list_iterator(PartList*, Tr*, Part*, IndexConfig*, bool, Row*);
