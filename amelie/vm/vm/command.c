@@ -36,10 +36,6 @@ csend_shard(Vm* self, Op* op)
 	if (send->has_result)
 		dispatch_set_returning(dispatch);
 
-	if (self->allow_close &&
-	    self->program->send_last == code_posof(self->code, op))
-		dispatch_set_close(dispatch);
-
 	// redistribute rows between backends
 	Req* map[dtr->dispatch_mgr.ctrs_count];
 	memset(map, 0, sizeof(map));
@@ -126,10 +122,6 @@ csend_lookup(Vm* self, Op* op)
 	if (send->has_result)
 		dispatch_set_returning(dispatch);
 
-	if (self->allow_close &&
-	    self->program->send_last == code_posof(self->code, op))
-		dispatch_set_close(dispatch);
-
 	// shard by precomputed hash
 	auto part = part_map_get(&table->part_list.map, op->b);
 	auto req  = dispatch_add(dispatch, &dispatch_mgr->cache_req,
@@ -165,10 +157,6 @@ csend_lookup_by(Vm* self, Op* op)
 	auto dispatch = dispatch_create(&dispatch_mgr->cache);
 	if (send->has_result)
 		dispatch_set_returning(dispatch);
-
-	if (self->allow_close &&
-	    self->program->send_last == code_posof(self->code, op))
-		dispatch_set_close(dispatch);
 
 	// compute hash using key values
 	uint32_t hash = 0;
@@ -214,10 +202,6 @@ csend_all(Vm* self, Op* op)
 	if (send->has_result)
 		dispatch_set_returning(dispatch);
 
-	if (self->allow_close &&
-	    self->program->send_last == code_posof(self->code, op))
-		dispatch_set_close(dispatch);
-
 	// send to all table backends
 	list_foreach(&table->part_list.list)
 	{
@@ -245,8 +229,7 @@ void
 cclose(Vm* self, Op* op)
 {
 	unused(op);
-	if (self->allow_close)
-		dispatch_mgr_close(&self->dtr->dispatch_mgr);
+	unused(self);
 }
 
 void
@@ -466,37 +449,8 @@ ctable_open(Vm* self, Op* op, bool point_lookup, bool open_part)
 	cursor->table  = table;
 	cursor->type   = TYPE_CURSOR;
 
-	// jmp to next op if has data
-	if (likely(iterator_has(cursor->cursor)))
-		return ++op;
-
-	// jmp on eof
-	return code_at(self->code, op->c);
-}
-
-hot Op*
-ctable_open_heap(Vm* self, Op* op)
-{
-	// [cursor, name_offset, _eof]
-
-	// read names
-	uint8_t* pos = code_data_at(self->code_data, op->b);
-	Str name_db;
-	Str name_table;
-	json_read_string(&pos, &name_db);
-	json_read_string(&pos, &name_table);
-
-	// find table and partition
-	auto table = table_mgr_find(&share()->storage->catalog.table_mgr, &name_db, &name_table, true);
-	auto part  = part_list_match(&table->part_list, self->core);
-
-	// open cursor
-	auto cursor = reg_at(&self->r, op->a);
-	cursor->table  = table;
-	cursor->part   = part;
-	cursor->cursor = heap_iterator_allocate(&part->heap);
-	iterator_open(cursor->cursor, NULL);
-	cursor->type   = TYPE_CURSOR;
+	// validate access and skip deletes
+	row_read_iterator(self->tr, cursor->cursor);
 
 	// jmp to next op if has data
 	if (likely(iterator_has(cursor->cursor)))

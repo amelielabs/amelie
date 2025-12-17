@@ -50,3 +50,20 @@ row_read(Tr* tr, Row* row)
 	row_write(tr, row);
 	return row;
 }
+
+hot static inline Row*
+row_read_iterator(Tr* tr, Iterator* it)
+{
+	// handle read and skip deletes
+	for (;;)
+	{
+		auto row = iterator_at(it);
+		if (! row)
+			break;
+		row = row_read(tr, row);
+		if (row && !row->is_deleted)
+			return row;
+		iterator_next(it);
+	}
+	return NULL;
+}

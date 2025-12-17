@@ -232,7 +232,6 @@ OpDesc ops[] =
 	{ CTABLE_OPENL, "table_openl" },
 	{ CTABLE_OPEN_PART, "table_open_part" },
 	{ CTABLE_OPEN_PARTL, "table_open_partl" },
-	{ CTABLE_OPEN_HEAP, "table_open_heap" },
 	{ CTABLE_PREPARE, "table_prepare" },
 	{ CTABLE_NEXT, "table_next" },
 	{ CTABLE_READB, "table_readb" },
@@ -470,18 +469,6 @@ op_dump(Program* self, Code* code, Buf* buf)
 			         str_of(&name_table),
 			         str_size(&name_index),
 			         str_of(&name_index));
-			break;
-		}
-		case CTABLE_OPEN_HEAP:
-		{
-			Str name_db;
-			Str name_table;
-			uint8_t* ref = code_data_at(data, op->b);
-			json_read_string(&ref, &name_db);
-			json_read_string(&ref, &name_table);
-			op_write(output, op, true, true, true,
-			         "%.*s", str_size(&name_table),
-			         str_of(&name_table));
 			break;
 		}
 		case CTABLE_PREPARE:

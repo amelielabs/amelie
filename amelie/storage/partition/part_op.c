@@ -84,9 +84,9 @@ part_sync_sequence(Part* self, Row* row, Columns* columns)
 		return;
 	int64_t value;
 	if (columns->identity->type_size == 4)
-		value = *(int32_t*)row_at(row, columns->identity->order);
+		value = *(int32_t*)row_column(row, columns->identity->order);
 	else
-		value = *(int64_t*)row_at(row, columns->identity->order);
+		value = *(int64_t*)row_column(row, columns->identity->order);
 	sequence_sync(self->seq, value);
 }
 
