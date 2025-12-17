@@ -198,58 +198,6 @@ scan_table(Scan* self, Target* target)
 }
 
 static inline void
-scan_table_heap(Scan* self, Target* target)
-{
-	auto cp    = self->compiler;
-	auto table = target->from_table;
-
-	// set target origin
-	target_set_origin(target, cp->origin);
-
-	// save db, table (no index)
-	auto name_offset = code_data_offset(cp->code_data);
-	auto data = &cp->code_data->data;
-	encode_string(data, &table->config->db);
-	encode_string(data, &table->config->name);
-
-	// ensure target does not require full table access
-	if (unlikely(target->from_access == ACCESS_RO_EXCLUSIVE))
-		error("heap only scan for subqueries and inner join targets are not supported");
-
-	// table_open
-	int _open = op_pos(cp);
-	target->rcursor = op4pin(cp, CTABLE_OPEN_HEAP, TYPE_CURSOR,
-	                         name_offset, 0 /* _eof */, 0);
-
-	// _where:
-	int _where = op_pos(cp);
-	if (target->next)
-		scan_target(self, target->next);
-	else
-		scan_on_match(self);
-
-	// table_next
-	int _next = op_pos(cp);
-	op2(cp, CTABLE_NEXT, target->rcursor, _where);
-
-	// _eof:
-	int _eof = op_pos(cp);
-
-	// set table_open to _eof
-	code_at(cp->code, _open)->c = _eof;
-
-	// resolve outer target break/continue
-	if (! target->prev)
-	{
-		op_set_jmp_list(cp, &self->breaks, _eof);
-		op_set_jmp_list(cp, &self->continues, _next);
-	}
-
-	// close cursor
-	target->rcursor = emit_free(cp, target->rcursor);
-}
-
-static inline void
 scan_expr(Scan* self, Target* target)
 {
 	auto cp = self->compiler;
@@ -376,14 +324,9 @@ static inline void
 scan_target(Scan* self, Target* target)
 {
 	if (target_is_table(target))
-	{
-		if (target->from_heap)
-			scan_table_heap(self, target);
-		else
-			scan_table(self, target);
-	} else {
+		scan_table(self, target);
+	else
 		scan_expr(self, target);
-	}
 }
 
 void

@@ -53,7 +53,6 @@ struct Target
 			AccessType   from_access;
 			Table*       from_table;
 			IndexConfig* from_index;
-			bool         from_heap;
 		};
 		AstList* from_group_by;
 		Stmt*    from_stmt;

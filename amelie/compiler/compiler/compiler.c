@@ -123,6 +123,7 @@ compiler_parse_endpoint(Compiler* self, Endpoint* endpoint, Str* text)
 	compiler_parse_complete(self);
 }
 
+#if 0
 static void
 emit_close(Compiler* self, Stmt* stmt)
 {
@@ -131,6 +132,7 @@ emit_close(Compiler* self, Stmt* stmt)
 	if (stmt->block == block && block->stmts.last_send == stmt)
 		op0(self, CCLOSE);
 }
+#endif
 
 static void
 emit_send(Compiler* self, Target* target, int type, int start)
@@ -221,10 +223,12 @@ emit_send(Compiler* self, Target* target, int type, int start)
 	else
 		runpin(self, rdispatch);
 
+#if 0
 	// mark last sending operation in the main block
 	auto block = compiler_main(self);
 	if (stmt->block == block && block->stmts.last_send == stmt)
 		program->send_last = op_pos(self) - 1;
+#endif
 }
 
 hot static void
@@ -475,9 +479,11 @@ emit_stmt(Compiler* self, Stmt* stmt)
 		if (stmt->ret && stmt->ret->count_into > 0)
 			emit_into(self, stmt);
 
+#if 0
 		// emit close for last distributed SELECT udf()
 		if (stmt->udfs_sending)
 			emit_close(self, stmt);
+#endif
 	}
 
 	// set previous stmt
@@ -550,8 +556,10 @@ emit_if(Compiler* self, Stmt* stmt)
 	for (auto i = 0; i < jntr_stop_count; i++)
 		op_set_jmp(self, jntr_stop[i], _stop);
 
+#if 0
 	// mark last sending operation in the main block
 	emit_close(self, stmt);
+#endif
 
 	// set previous stmt
 	self->current = stmt_prev;
@@ -584,12 +592,10 @@ emit_for(Compiler* self, Stmt* stmt)
 	     emit_for_on_match,
 	     fora);
 
-	// set snapshot if loop is using send command
-	if (fora->block->stmts.last_send)
-		self->program->snapshot = true;
-
+#if 0
 	// mark last sending operation in the main block
 	emit_close(self, stmt);
+#endif
 
 	// set previous stmt
 	self->current = stmt_prev;
@@ -638,12 +644,10 @@ emit_while(Compiler* self, Stmt* stmt)
 	op_set_jmp_list(self, &whilea->breaks, _stop);
 	op_set_jmp_list(self, &whilea->continues, _start);
 
-	// set snapshot if loop is using send command
-	if (whilea->block->stmts.last_send)
-		self->program->snapshot = true;
-
+#if 0
 	// mark last sending operation in the main block
 	emit_close(self, stmt);
+#endif
 
 	// set previous stmt
 	self->current = stmt_prev;
@@ -889,9 +893,4 @@ compiler_emit(Compiler* self)
 	auto program = self->program;
 	code_set_regs(&program->code, self->map.count);
 	code_set_regs(&program->code_backend, self->map.count);
-
-	// set snapshot if the program access tables more than once,
-	// this includes nested udf calls
-	if (program->access.tables > 1)
-		program->snapshot = true;
 }

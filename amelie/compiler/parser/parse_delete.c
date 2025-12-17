@@ -44,10 +44,6 @@ parse_delete(Stmt* self)
 		if (table_primary(stmt->table) != target->from_index)
 			stmt_error(self, from, "DELETE supports only primary index");
 
-	// prevent from using heap
-	if (target->from_heap)
-		stmt_error(self, from, "DELETE supports only primary index");
-
 	// [WHERE]
 	if (stmt_if(self, KWHERE))
 	{
