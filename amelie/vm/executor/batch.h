@@ -124,12 +124,12 @@ batch_add_abort_all(Batch* self)
 hot static inline void
 batch_wakeup(Batch* self)
 {
-	list_foreach(&self->commit)
+	list_foreach_safe(&self->commit)
 	{
 		auto dtr = list_at(Dtr, link_batch);
 		event_signal(&dtr->on_commit);
 	}
-	list_foreach(&self->abort)
+	list_foreach_safe(&self->abort)
 	{
 		auto dtr = list_at(Dtr, link_batch);
 		event_signal(&dtr->on_commit);

@@ -106,14 +106,14 @@ part_insert(Part* self, Tr* tr, bool replace, Row* row)
 	op->row_prev = index_replace_by(primary, row);
 	if (op->row_prev)
 	{
+		// validate serial order, update prev row tsn
+		row_write(tr, op->row_prev);
+
 		// insert on non deleted row
 		if (!replace && !op->row_prev->is_deleted)
 			error("index '%.*s': unique key constraint violation",
 			      str_size(&primary->config->name),
 			      str_of(&primary->config->name));
-
-		// validate serial order, update prev row tsn
-		row_write(tr, op->row_prev);
 	}
 
 	// update secondary indexes
@@ -240,7 +240,7 @@ hot static void
 log_if_delete_commit(Log* self, LogOp* op)
 {
 	auto index = (Index*)op->iface_arg;
-	auto row   = log_row_of(self, op)->row_prev;
+	auto row   = log_row_of(self, op)->row;
 
 	// already updated by next transaction
 	auto tsn = row_tsn(row);
@@ -253,7 +253,7 @@ log_if_delete_commit(Log* self, LogOp* op)
 static void
 log_if_delete_abort(Log* self, LogOp* op)
 {
-	auto row = log_row_of(self, op)->row_prev;
+	auto row = log_row_of(self, op)->row;
 	row->is_deleted = false;
 }
 

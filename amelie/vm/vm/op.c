@@ -350,13 +350,13 @@ static void
 op_dump_send(Program* self, Code* code, Op* op, Buf* buf, Send* send,
              bool a, bool b, bool c)
 {
-	auto is_last = self->send_last == code_posof(code, op);
+	unused(self);
+	unused(code);
 	auto config = send->table->config;
 	op_write(buf, op, a, b, c,
-	         "%.*s (%s%s)",
+	         "%.*s (%s)",
 	         str_size(&config->name), str_of(&config->name),
-	         send_of(send),
-	         is_last ? ", closing" : "");
+	         send_of(send));
 }
 
 void
