@@ -274,6 +274,9 @@ system_recover(System* self)
 	defer(build_free, &build);
 	build_run(&build);
 
+	// todo: sync catalog
+	// todo: prepare executor
+
 	// replay wals
 	info("");
 	info("recover: wals/");

@@ -15,11 +15,12 @@ typedef struct Core Core;
 
 struct Core
 {
-	int     order;
-	TrList  prepared;
-	TrCache cache;
-	Msg     msg_stop;
-	Task*   task;
+	int       order;
+	TrList    prepared;
+	TrCache   cache;
+	Consensus consensus;
+	Msg       msg_stop;
+	Task*     task;
 };
 
 static inline void
@@ -30,6 +31,7 @@ core_init(Core* self, Task* task, int order)
 	msg_init(&self->msg_stop, MSG_STOP);
 	tr_list_init(&self->prepared);
 	tr_cache_init(&self->cache);
+	consensus_init(&self->consensus);
 }
 
 static inline void

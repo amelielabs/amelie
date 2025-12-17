@@ -58,7 +58,7 @@ replay(Dtr* dtr, Record* record)
 {
 	auto dispatch_mgr = &dtr->dispatch_mgr;
 	auto dispatch = dispatch_create(&dispatch_mgr->cache);
-	dispatch_set_close(dispatch);
+	dispatch_set_returning(dispatch);
 
 	auto on_error = error_catch (
 		replay_read(dtr, dispatch, record);

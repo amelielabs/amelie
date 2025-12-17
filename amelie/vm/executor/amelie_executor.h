@@ -24,6 +24,7 @@
 #include "executor/ctr.h"
 
 // core
+#include "executor/consensus.h"
 #include "executor/core.h"
 #include "executor/core_mgr.h"
 
@@ -34,7 +35,6 @@
 #include "executor/dispatch_mgr.h"
 
 // distributed transaction
-#include "executor/consensus.h"
 #include "executor/dtr.h"
 #include "executor/dtr_queue.h"
 

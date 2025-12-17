@@ -64,7 +64,7 @@ backend_replay(Tr* tr, Buf* arg)
 }
 
 hot static void
-backend_run(Backend* self, Ctr* ctr, Req* req)
+backend_execute(Backend* self, Ctr* ctr, Req* req)
 {
 	auto dtr = ctr->dtr;
 	switch (req->type) {
@@ -75,7 +75,7 @@ backend_run(Backend* self, Ctr* ctr, Req* req)
 		{
 			auto tr = tr_create(&self->core.cache);
 			tr_begin(tr);
-			tr_set_id(tr, dtr->id);
+			tr_set_tsn(tr, dtr->tsn);
 			tr_set_limit(tr, &dtr->limit);
 			tr_list_add(&self->core.prepared, tr);
 			ctr->tr = tr;
@@ -111,7 +111,7 @@ backend_run(Backend* self, Ctr* ctr, Req* req)
 		{
 			auto tr = tr_create(&self->core.cache);
 			tr_begin(tr);
-			tr_set_id(tr, dtr->id);
+			tr_set_tsn(tr, dtr->tsn);
 			tr_set_limit(tr, &dtr->limit);
 			tr_list_add(&self->core.prepared, tr);
 			ctr->tr = tr;
@@ -127,73 +127,65 @@ backend_run(Backend* self, Ctr* ctr, Req* req)
 		build_execute(build, &self->core);
 		break;
 	}
+	case REQ_SYNC:
+	{
+		// do nothing
+		break;
+	}
 	}
 }
 
 hot static void
-backend_process(Backend* self, Ctr* ctr)
+backend_commit(Backend* self, Req* req)
 {
-	auto queue  = &ctr->queue;
-	auto active = true;
-	while (active)
+	auto core           = &self->core;
+	auto core_consensus = &core->consensus;
+	auto consensus      = &req->ctr->dtr->consensus;
+
+	// abort all transactions tsn_max of which >= abort
+	auto id = consensus->abort;
+	if (unlikely(id > core_consensus->abort))
 	{
-		Msg* msg = ring_read(queue);
-		if (! msg) {
-			// backoff
-			__asm__("pause");
-			continue;
-		}
-		if (msg->id == MSG_STOP)
-		{
-			active = false;
-			continue;
-		}
-		auto req = (Req*)msg;
-		if (error_catch(backend_run(self, ctr, req)))
-		{
-			req->error = error_create(&am_self()->error);
-			if (! ctr->error)
-				ctr->error = req->error;
-		}
-		active = !req->dispatch->close;
-		dispatch_complete(req->dispatch);
+		tr_abort_list(&core->prepared, &core->cache, id);
+		core_consensus->abort = id;
 	}
-	ctr_complete(ctr);
+
+	// commit all transactions <= commit
+	id = consensus->commit;
+	if (id > core_consensus->commit)
+	{
+		tr_commit_list(&core->prepared, &core->cache, id);
+		core_consensus->commit = id;
+	}
 }
 
 hot static void
 backend_main(void* arg)
 {
 	Backend* self = arg;
-	auto core = &self->core;
-
-	uint64_t id_commit = 0;
-	uint64_t id_abort  = 0;
 	for (;;)
 	{
 		auto msg = task_recv();
 		if (msg->id == MSG_STOP)
 			break;
 
-		// accept and process incoming core transaction
-		auto ctr = (Ctr*)msg;
-		auto consensus = &ctr->consensus;
-		auto id = consensus->abort;
-		if (unlikely(id > id_abort))
+		// process incoming request
+		auto req = (Req*)msg;
+
+		// abort and commit previously prepared transactions
+		backend_commit(self, req);
+
+		// execute request
+		auto ctr = req->ctr;
+		if (error_catch(backend_execute(self, ctr, req)))
 		{
-			// abort all prepared transactions
-			tr_abort_list(&core->prepared, &core->cache);
-			id_abort = id;
+			req->error = error_create(&am_self()->error);
+			if (! ctr->error)
+				ctr->error = req->error;
 		}
 
-		id = consensus->commit;
-		if (id > id_commit)
-		{
-			// commit all transaction <= commit id and set lsn to heaps
-			tr_commit_list(&core->prepared, &core->cache, id);
-			id_commit = id;
-		}
-		backend_process(self, (Ctr*)msg);
+		// group completion
+		dispatch_complete(req->dispatch);
 	}
 }
 
