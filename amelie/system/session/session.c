@@ -258,7 +258,7 @@ session_execute_utility(Session* self, Output* output)
 		Write write;
 		write_init(&write);
 		defer(write_free, &write);
-		write_begin(&write);
+		write_begin(&write, 0);
 		write_add(&write, &tr.log.write_log);
 
 		WriteList write_list;

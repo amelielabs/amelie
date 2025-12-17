@@ -274,8 +274,11 @@ system_recover(System* self)
 	defer(build_free, &build);
 	build_run(&build);
 
-	// todo: sync catalog
-	// todo: prepare executor
+	// restore tsn from heaps
+	catalog_sync(&self->storage.catalog);
+
+	// set executor global tsn
+	executor_prepare(&self->executor);
 
 	// replay wals
 	info("");
