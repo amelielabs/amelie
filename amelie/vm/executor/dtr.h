@@ -96,6 +96,12 @@ dtr_create(Dtr* self, Program* program)
 		event_attach(&self->on_commit);
 }
 
+static inline bool
+dtr_active(Dtr* self)
+{
+	return self->tsn != 0;
+}
+
 static inline void
 dtr_set_abort(Dtr* self)
 {
@@ -109,8 +115,18 @@ dtr_set_error(Dtr* self, Buf* buf)
 	self->error = buf;
 }
 
-static inline bool
-dtr_active(Dtr* self)
+static inline void
+dtr_set_tsn_max_cascade(Dtr* self, uint64_t tsn)
 {
-	return self->tsn != 0;
+	// force set observed tsn_max for dtr and all related ctrs
+	// (used for abort dtr)
+	self->tsn_max = tsn;
+	auto mgr = &self->dispatch_mgr;
+	for (auto i = 0; i < mgr->ctrs_count; i++)
+	{
+		auto ctr = dispatch_mgr_ctr(mgr, i);
+		if (! ctr->tr)
+			continue;
+		ctr->tr->tsn_max = tsn;
+	}
 }

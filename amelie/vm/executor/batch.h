@@ -99,6 +99,15 @@ batch_add_abort(Batch* self, Dtr* dtr)
 	list_append(&self->abort, &dtr->link_batch);
 	self->abort_count++;
 
+	// If aborted transaction has no observed tsn_max
+	// forcing it to abort self by setting tsn_max = tsn
+	//
+	// this can happen if transaction did not read any row
+	// (like batch insert)
+	//
+	if (dtr->tsn_max == 0)
+		dtr_set_tsn_max_cascade(dtr, dtr->tsn);
+
 	// track max tsn_max across aborted transactions
 	if (dtr->tsn_max > self->abort_tsn)
 		self->abort_tsn = dtr->tsn_max;

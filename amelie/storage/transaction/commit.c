@@ -101,6 +101,4 @@ tr_abort_list(TrList* self, TrCache* cache, uint64_t tsn)
 			tr_cache_push(cache, tr);
 		}
 	}
-
-	tr_list_init(self);
 }
