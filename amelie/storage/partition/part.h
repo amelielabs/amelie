@@ -12,13 +12,13 @@
 //
 
 typedef struct Part Part;
-typedef struct Core Core;
+typedef struct Slot Slot;
 
 struct Part
 {
 	List          indexes;
 	int           indexes_count;
-	Core*         core;
+	Slot*         slot;
 	Sequence*     seq;
 	bool          unlogged;
 	Heap          heap;

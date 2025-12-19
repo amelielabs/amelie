@@ -21,7 +21,7 @@ Part*
 part_allocate(PartConfig* config, Sequence* seq, bool unlogged)
 {
 	auto self = (Part*)am_malloc(sizeof(Part));
-	self->core          = NULL;
+	self->slot          = NULL;
 	self->config        = part_config_copy(config);
 	self->indexes_count = 0;
 	self->seq           = seq;

@@ -124,22 +124,12 @@ part_list_index_drop(PartList* self, IndexConfig* config)
 	}
 }
 
-hot Part*
-part_list_match(PartList* self, Core* core)
-{
-	list_foreach(&self->list)
-	{
-		auto part = list_at(Part, link);
-		if (part->core == core)
-			return part;
-	}
-	return NULL;
-}
-
 Iterator*
-part_list_iterator(PartList* self, Part* part, IndexConfig* config,
-                   bool      point_lookup,
-                   Row*      key)
+part_list_iterator(PartList*    self,
+                   Part*        part,
+                   IndexConfig* config,
+                   bool         point_lookup,
+                   Row*         key)
 {
 	// single partition iteration
 	if (part)
