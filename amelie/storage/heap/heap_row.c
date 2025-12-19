@@ -27,7 +27,7 @@ row_alter_add(Heap* heap, Row* row, Columns* columns)
 	{
 		auto column = list_at(Column, link);
 		// null
-		uint8_t* data = row_at(row, column->order);
+		uint8_t* data = row_column(row, column->order);
 		if (! data)
 		{
 			row_set_null(self, column->order);
@@ -65,7 +65,7 @@ row_alter_drop(Heap* heap, Row* row, Columns* columns, Column* ref)
 {
 	// calculate row data size without the column data
 	auto size = row_data_size(row, columns->count);
-	uint8_t* data = row_at(row, ref->order);
+	uint8_t* data = row_column(row, ref->order);
 	if (data)
 	{
 		switch (ref->type) {
@@ -99,7 +99,7 @@ row_alter_drop(Heap* heap, Row* row, Columns* columns, Column* ref)
 			continue;
 
 		// null
-		uint8_t* data = row_at(row, column->order);
+		uint8_t* data = row_column(row, column->order);
 		if (! data)
 		{
 			row_set_null(self, order);

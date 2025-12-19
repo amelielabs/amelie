@@ -21,25 +21,25 @@ compare(Keys* self, Row* a, Row* b)
 		if (column->type_size == 4)
 		{
 			// int
-			rc = compare_int32(*(int32_t*)row_at(a, column->order),
-			                   *(int32_t*)row_at(b, column->order));
+			rc = compare_int32(*(int32_t*)row_column(a, column->order),
+			                   *(int32_t*)row_column(b, column->order));
 		} else
 		if (column->type_size == 8)
 		{
 			// int64, timestamp
-			rc = compare_int64(*(int64_t*)row_at(a, column->order),
-			                   *(int64_t*)row_at(b, column->order));
+			rc = compare_int64(*(int64_t*)row_column(a, column->order),
+			                   *(int64_t*)row_column(b, column->order));
 		} else
 		if (column->type_size == sizeof(Uuid))
 		{
 			// uuid
-			rc = uuid_compare(row_at(a, column->order),
-			                  row_at(b, column->order));
+			rc = uuid_compare(row_column(a, column->order),
+			                  row_column(b, column->order));
 		} else
 		{
 			// string
-			rc = json_compare_string(row_at(a, column->order),
-			                         row_at(b, column->order));
+			rc = json_compare_string(row_column(a, column->order),
+			                         row_column(b, column->order));
 		}
 		if (rc != 0)
 			return rc;

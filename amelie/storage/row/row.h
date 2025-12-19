@@ -45,7 +45,7 @@ row_size(Row* self)
 }
 
 always_inline hot static inline void*
-row_at(Row* self, int column)
+row_column(Row* self, int column)
 {
 	register uint32_t offset;
 	if (self->size_factor == 0)
@@ -99,10 +99,10 @@ row_hash(Row* self, Keys* keys)
 	{
 		auto column = list_at(Key, link)->column;
 		// fixed or variable type
+		uint8_t* pos = row_column(self, column->order);
 		if (column->type_size > 0) {
-			hash = hash_murmur3_32(row_at(self, column->order), column->type_size, hash);
+			hash = hash_murmur3_32(pos, column->type_size, hash);
 		} else {
-			uint8_t* pos = row_at(self, column->order);
 			Str str;
 			json_read_string(&pos, &str);
 			hash = hash_murmur3_32(str_u8(&str), str_size(&str), hash);

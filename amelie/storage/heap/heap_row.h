@@ -41,7 +41,7 @@ hot static inline Row*
 row_copy(Heap* heap, Row* self)
 {
 	auto size = row_size(self);
-	auto row  = heap_allocate(heap, size);
+	auto row  = (Row*)heap_allocate(heap, size);
 	memcpy(row, self, size);
 	return row;
 }

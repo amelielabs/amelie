@@ -62,6 +62,7 @@ heap_create(Heap* self)
 	header->version     = 0;
 	header->compression = 0;
 	header->count       = 0;
+	header->tsn_max     = 0;
 	self->header        = header;
 	self->buckets       = header->buckets;
 
@@ -177,12 +178,9 @@ heap_allocate(Heap* self, int size)
 		chunk = page_mgr_pointer_of(&self->page_mgr, page, page_offset);
 		assert(chunk->bucket == bucket->id);
 		assert(chunk->free);
-		bucket->list        = chunk->next;
-		bucket->list_offset = chunk->next_offset;
+		bucket->list        = chunk->prev;
+		bucket->list_offset = chunk->prev_offset;
 		bucket->list_count--;
-		// set the next to self
-		chunk->next        = page;
-		chunk->next_offset = page_offset;
 	} else
 	{
 		// use current or create new page
@@ -193,23 +191,22 @@ heap_allocate(Heap* self, int size)
 		{
 			auto page = page_mgr_allocate(&self->page_mgr);
 			page_header = (PageHeader*)page->pointer;
-			page_header->crc  = 0;
-			page_header->size = sizeof(PageHeader);
+			page_header->crc             = 0;
+			page_header->size            = sizeof(PageHeader);
 			page_header->size_compressed = 0;
-			page_header->last = 0;
+			page_header->order           = self->page_mgr.list_count - 1;
+			page_header->last            = 0;
+			page_header->padding         = 0;
 			self->page_header = page_header;
 			self->last = NULL;
 			self->header->count++;
 		}
 		chunk = (Chunk*)((uintptr_t)page_header + page_header->size);
-		chunk->next        = self->page_mgr.list_count - 1;
-		chunk->next_offset = page_header->size;
-		chunk->prev        = 0;
-		chunk->prev_offset = 0;
-		chunk->size        = bucket->size;
-		chunk->bucket      = bucket->id;
-		chunk->last        = true;
-		chunk->unused      = 0;
+		chunk->tsn     = 0;
+		chunk->offset  = page_header->size;
+		chunk->bucket  = bucket->id;
+		chunk->last    = true;
+		chunk->padding = 0;
 		if (likely(self->last))
 		{
 			chunk->bucket_left = self->last->bucket;
@@ -221,27 +218,27 @@ heap_allocate(Heap* self, int size)
 		page_header->last = page_header->size;
 		page_header->size += bucket->size;
 	}
-	chunk->free = false;
+	chunk->prev        = 0;
+	chunk->prev_offset = 0;
+	chunk->free        = false;
 
-	assert(align_of(chunk->data) == 0);
+	assert(misalign_of(chunk->data) == 0);
 	return chunk->data;
 }
 
 hot void
 heap_release(Heap* self, void* pointer)
 {
-	auto chunk = chunk_of(pointer);
-	assert(chunk == page_mgr_pointer_of(&self->page_mgr, chunk->next, chunk->next_offset));
+	auto chunk  = chunk_of(pointer);
+	auto page   = page_of(chunk);
+	auto bucket = &self->buckets[chunk->bucket];
 	assert(! chunk->free);
-
-	auto bucket      = &self->buckets[chunk->bucket];
-	auto head        = (int)chunk->next;
-	auto head_offset = (int)chunk->next_offset;
-	chunk->next         = bucket->list;
-	chunk->next_offset  = bucket->list_offset;
+	chunk->tsn          = 0;
+	chunk->prev         = bucket->list;
+	chunk->prev_offset  = bucket->list_offset;
 	chunk->free         = true;
-	bucket->list        = head;
-	bucket->list_offset = head_offset;
+	bucket->list        = page->order;
+	bucket->list_offset = chunk->offset;
 	bucket->list_count++;
 
 	// if not first, merge left  if left->free (use chunk->bucket_left to match)
