@@ -69,33 +69,36 @@ tr_abort(Tr* self)
 }
 
 hot void
-tr_commit_list(TrList* self, TrCache* cache, uint64_t id)
+tr_commit_list(TrList* self, TrCache* cache, uint64_t tsn)
 {
 	// commit all transactions <= id
 	list_foreach_safe(&self->list)
 	{
 		auto tr = list_at(Tr, link);
-		if (tr->id > id)
-			break;
-		list_unlink(&tr->link);
-		self->list_count--;
-		tr_commit(tr);
-		tr_cache_push(cache, tr);
+		if (tr->tsn <= tsn)
+		{
+			list_unlink(&tr->link);
+			self->list_count--;
+			tr_commit(tr);
+			tr_cache_push(cache, tr);
+		}
 	}
 }
 
 void
-tr_abort_list(TrList* self, TrCache* cache)
+tr_abort_list(TrList* self, TrCache* cache, uint64_t tsn)
 {
-	// abort all transaction
+	// abort all transaction which accessed transaction
+	// rows >= tsn
 	list_foreach_reverse_safe(&self->list)
 	{
 		auto tr = list_at(Tr, link);
-		list_unlink(&tr->link);
-		self->list_count--;
-		tr_abort(tr);
-		tr_cache_push(cache, tr);
+		if (tr->tsn_max >= tsn)
+		{
+			list_unlink(&tr->link);
+			self->list_count--;
+			tr_abort(tr);
+			tr_cache_push(cache, tr);
+		}
 	}
-
-	tr_list_init(self);
 }
