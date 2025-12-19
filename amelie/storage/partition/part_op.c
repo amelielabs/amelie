@@ -84,30 +84,23 @@ part_sync_sequence(Part* self, Row* row, Columns* columns)
 		return;
 	int64_t value;
 	if (columns->identity->type_size == 4)
-		value = *(int32_t*)row_at(row, columns->identity->order);
+		value = *(int32_t*)row_column(row, columns->identity->order);
 	else
-		value = *(int64_t*)row_at(row, columns->identity->order);
+		value = *(int64_t*)row_column(row, columns->identity->order);
 	sequence_sync(self->seq, value);
 }
 
 hot void
-part_insert(Part* self, Tr* tr, bool recover, Row* row)
+part_insert(Part* self, Tr* tr, bool replace, Row* row)
 {
-	auto primary = part_primary(self);
-	auto replace = recover;
+	// update heap tsn
+	heap_tsn_follow(&self->heap, tr->tsn);
 
 	// add log record
+	auto primary = part_primary(self);
 	auto op = log_row(&tr->log, CMD_REPLACE, &log_if, primary, row, NULL);
 	if (! self->unlogged)
 		log_persist(&tr->log, self->config->id);
-
-	// ensure transaction log limit
-	if (tr->limit)
-		limit_ensure(tr->limit, row);
-
-	// sync last identity column value during recover
-	if (recover)
-		part_sync_sequence(self, row, index_keys(primary)->columns);
 
 	// update primary index
 	op->row_prev = index_replace_by(primary, row);
@@ -120,7 +113,8 @@ part_insert(Part* self, Tr* tr, bool recover, Row* row)
 	list_foreach_after(&self->indexes, &primary->link)
 	{
 		auto index = list_at(Index, link);
-		// add log record
+
+		// add log record (not persisted)
 		op = log_row(&tr->log, CMD_REPLACE, &log_if_secondary, index, row, NULL);
 		op->row_prev = index_replace_by(index, row);
 		if (unlikely(op->row_prev && !replace))
@@ -128,21 +122,69 @@ part_insert(Part* self, Tr* tr, bool recover, Row* row)
 			      str_size(&index->config->name),
 			      str_of(&index->config->name));
 	}
+
+	// sync last identity column value during recover
+	if (replace)
+		part_sync_sequence(self, row, index_keys(primary)->columns);
+
+	// ensure transaction log limit
+	if (tr->limit)
+		limit_ensure(tr->limit, row);
 }
 
-hot void
-part_update(Part* self, Tr* tr, Iterator* it, Row* row)
+hot bool
+part_upsert(Part* self, Tr* tr, Iterator* it, Row* row)
 {
+	// update heap tsn
+	heap_tsn_follow(&self->heap, tr->tsn);
+
+	// get if exists (iterator is openned in both cases)
 	auto primary = part_primary(self);
+	if (index_upsert(primary, row, it))
+	{
+		row_free(&self->heap, row);
+		return true;
+	}
+
+	// insert
 
 	// add log record
 	auto op = log_row(&tr->log, CMD_REPLACE, &log_if, primary, row, NULL);
 	if (! self->unlogged)
 		log_persist(&tr->log, self->config->id);
 
+	// update secondary indexes
+	list_foreach_after(&self->indexes, &primary->link)
+	{
+		auto index = list_at(Index, link);
+
+		// add log record (not persisted)
+		op = log_row(&tr->log, CMD_REPLACE, &log_if_secondary, index, row, NULL);
+		op->row_prev = index_replace_by(index, row);
+		if (unlikely(op->row_prev))
+			error("index '%.*s': unique key constraint violation",
+			      str_size(&index->config->name),
+			      str_of(&index->config->name));
+	}
+
 	// ensure transaction log limit
 	if (tr->limit)
 		limit_ensure(tr->limit, row);
+
+	return false;
+}
+
+hot void
+part_update(Part* self, Tr* tr, Iterator* it, Row* row)
+{
+	// update heap tsn
+	heap_tsn_follow(&self->heap, tr->tsn);
+
+	// add log record
+	auto primary = part_primary(self);
+	auto op = log_row(&tr->log, CMD_REPLACE, &log_if, primary, row, NULL);
+	if (! self->unlogged)
+		log_persist(&tr->log, self->config->id);
 
 	// update primary index
 	op->row_prev = index_replace(primary, row, it);
@@ -152,7 +194,7 @@ part_update(Part* self, Tr* tr, Iterator* it, Row* row)
 	{
 		auto index = list_at(Index, link);
 
-		// add log record
+		// add log record (not persisted)
 		op = log_row(&tr->log, CMD_REPLACE, &log_if_secondary, index, row, NULL);
 
 		// find and replace existing secondary row (keys are not updated)
@@ -161,15 +203,21 @@ part_update(Part* self, Tr* tr, Iterator* it, Row* row)
 		iterator_open(index_it, row);
 		op->row_prev = index_replace(index, row, index_it);
 	}
+
+	// ensure transaction log limit
+	if (tr->limit)
+		limit_ensure(tr->limit, row);
 }
 
 hot void
 part_delete(Part* self, Tr* tr, Iterator* it)
 {
-	auto primary = part_primary(self);
-	auto row = iterator_at(it);
+	// update heap tsn
+	heap_tsn_follow(&self->heap, tr->tsn);
 
 	// add log record
+	auto primary = part_primary(self);
+	auto row = iterator_at(it);
 	auto op = log_row(&tr->log, CMD_DELETE, &log_if, primary, row, NULL);
 
 	// update primary index
@@ -177,21 +225,21 @@ part_delete(Part* self, Tr* tr, Iterator* it)
 	if (! self->unlogged)
 		log_persist(&tr->log, self->config->id);
 
-	// ensure transaction log limit
-	if (tr->limit)
-		limit_ensure(tr->limit, row);
-
 	// secondary indexes
 	list_foreach_after(&self->indexes, &primary->link)
 	{
 		auto index = list_at(Index, link);
 
-		// add log record
+		// add log record (not persisted)
 		op = log_row(&tr->log, CMD_DELETE, &log_if_secondary, index, row, NULL);
 
 		// delete by key
 		op->row_prev = index_delete_by(index, row);
 	}
+
+	// ensure transaction log limit
+	if (tr->limit)
+		limit_ensure(tr->limit, row);
 }
 
 hot void
@@ -205,48 +253,6 @@ part_delete_by(Part* self, Tr* tr, Row* row)
 	if (unlikely(! iterator_open(it, row)))
 		error("delete by key does not match");
 	part_delete(self, tr, it);
-}
-
-hot bool
-part_upsert(Part* self, Tr* tr, Iterator* it, Row* row)
-{
-	auto primary = part_primary(self);
-
-	// add log record
-	auto op = log_row(&tr->log, CMD_REPLACE, &log_if, primary, row, NULL);
-
-	// ensure transaction log limit
-	if (tr->limit)
-		limit_ensure(tr->limit, row);
-
-	// insert or get (iterator is openned in both cases)
-	auto exists = index_upsert(primary, row, it);
-	if (exists)
-	{
-		row_free(&self->heap, row);
-		log_truncate(&tr->log);
-		return true;
-	}
-
-	// insert
-	if (! self->unlogged)
-		log_persist(&tr->log, self->config->id);
-
-	// update secondary indexes
-	list_foreach_after(&self->indexes, &primary->link)
-	{
-		auto index = list_at(Index, link);
-
-		// add log record
-		op = log_row(&tr->log, CMD_REPLACE, &log_if_secondary, index, row, NULL);
-		op->row_prev = index_replace_by(index, row);
-		if (unlikely(op->row_prev))
-			error("index '%.*s': unique key constraint violation",
-			      str_size(&index->config->name),
-			      str_of(&index->config->name));
-	}
-
-	return false;
 }
 
 hot void

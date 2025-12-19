@@ -12,9 +12,9 @@
 //
 
 void part_insert(Part*, Tr*, bool, Row*);
+bool part_upsert(Part*, Tr*, Iterator*, Row*);
 void part_update(Part*, Tr*, Iterator*, Row*);
 void part_delete(Part*, Tr*, Iterator*);
 void part_delete_by(Part*, Tr*, Row*);
-bool part_upsert(Part*, Tr*, Iterator*, Row*);
 void part_ingest_secondary(Part*, Row*);
 void part_ingest(Part*, Row*);
