@@ -16,5 +16,5 @@
 #include "storage/storage_checkpoint.h"
 
 // recover
-#include "storage/recover_checkpoint.h"
+#include "storage/recover_part.h"
 #include "storage/recover.h"

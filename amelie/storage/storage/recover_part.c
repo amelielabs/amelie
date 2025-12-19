@@ -21,8 +21,8 @@
 #include <amelie_wal.h>
 #include <amelie_storage.h>
 
-hot static void
-recover_partition(Part* self)
+hot void
+recover_part(Part* self)
 {
 	auto checkpoint = state_checkpoint();
 
@@ -54,19 +54,4 @@ recover_partition(Part* self)
 	info(" %" PRIu64"/%05" PRIu64 " (%.2f MiB, %" PRIu64 " rows)",
 	     checkpoint,
 	     self->config->id, total, count);
-}
-
-hot void
-recover_checkpoint(Storage* self, Core* core)
-{
-	list_foreach(&self->catalog.table_mgr.mgr.list)
-	{
-		auto table = table_of(list_at(Relation, link));
-		list_foreach(&table->part_list.list)
-		{
-			auto part = list_at(Part, link);
-			if (part->core == core)
-				recover_partition(part);
-		}
-	}
 }

@@ -11,4 +11,4 @@
 // AGPL-3.0 Licensed.
 //
 
-void recover_checkpoint(Storage*, Core*);
+void recover_part(Part*);
