@@ -37,5 +37,6 @@ void catalog_init(Catalog*, PartMgr*, CatalogIf*, void*);
 void catalog_free(Catalog*);
 void catalog_open(Catalog*);
 void catalog_close(Catalog*);
+void catalog_sync(Catalog*);
 bool catalog_execute(Catalog*, Tr*, uint8_t*, int);
 Buf* catalog_status(Catalog*);
