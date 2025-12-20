@@ -24,7 +24,7 @@ struct Vm
 	bool      allow_close;
 	Value*    refs;
 	Value*    args;
-	Core*     core;
+	Part*     part;
 	Dtr*      dtr;
 	Program*  program;
 	Tr*       tr;
@@ -32,7 +32,7 @@ struct Vm
 	FnMgr     fn_mgr;
 };
 
-void vm_init(Vm*, Core*, Dtr*);
+void vm_init(Vm*, Part*, Dtr*);
 void vm_free(Vm*);
 void vm_reset(Vm*);
 void vm_run(Vm*, Local*, Tr*, Program*, Code*, CodeData*, Buf*,

@@ -40,10 +40,7 @@ csend_shard(Vm* self, Op* op)
 	    self->program->send_last == code_posof(self->code, op))
 		dispatch_set_close(dispatch);
 
-	// redistribute rows between backends
-	Req* map[dtr->dispatch_mgr.ctrs_count];
-	memset(map, 0, sizeof(map));
-
+	// redistribute rows between partitions
 	auto refs  = stack_at(&self->stack, op->c);
 	auto store = reg_at(&self->r, op->b)->store;
 	if (store->type == STORE_SET)
@@ -56,20 +53,18 @@ csend_shard(Vm* self, Op* op)
 			auto hash     = row_value_hash(keys, refs, row, identity);
 			auto part     = part_map_get(&table->part_list.map, hash);
 
-			auto req = map[part->core->order];
-			if (req == NULL)
+			auto req = dispatch_find(dispatch, part);
+			if (! req)
 			{
 				req = dispatch_add(dispatch, &dispatch_mgr->cache_req,
 				                   REQ_EXECUTE,
 				                   send->start,
 				                   &self->program->code_backend,
 				                   &self->program->code_data,
-				                   part->core);
+				                   part);
 				if (op->c > 0)
 					req_copy_refs(req, refs, op->c);
-				map[part->core->order] = req;
 			}
-
 			buf_write(&req->arg, &row, sizeof(Value*));
 			buf_write(&req->arg, &identity, sizeof(int64_t));
 		}
@@ -84,18 +79,17 @@ csend_shard(Vm* self, Op* op)
 			auto hash     = row_value_hash(keys, refs, row, identity);
 			auto part     = part_map_get(&table->part_list.map, hash);
 
-			auto req  = map[part->core->order];
-			if (req == NULL)
+			auto req = dispatch_find(dispatch, part);
+			if (! req)
 			{
 				req = dispatch_add(dispatch, &dispatch_mgr->cache_req,
 				                   REQ_EXECUTE,
 				                   send->start,
 				                   &self->program->code_backend,
 				                   &self->program->code_data,
-				                   part->core);
+				                   part);
 				if (op->c > 0)
 					req_copy_refs(req, refs, op->c);
-				map[part->core->order] = req;
 			}
 			buf_write(&req->arg, &row, sizeof(Value*));
 			buf_write(&req->arg, &identity, sizeof(int64_t));
@@ -111,6 +105,7 @@ csend_shard(Vm* self, Op* op)
 	// return dispatch order
 	value_set_int(reg_at(&self->r, op->a), dispatch->order);
 }
+
 
 hot void
 csend_lookup(Vm* self, Op* op)
@@ -137,7 +132,7 @@ csend_lookup(Vm* self, Op* op)
 	                         send->start,
 	                         &self->program->code_backend,
 	                         &self->program->code_data,
-	                         part->core);
+	                         part);
 	if (op->c > 0)
 	{
 		req_copy_refs(req, stack_at(&self->stack, op->c), op->c);
@@ -186,7 +181,7 @@ csend_lookup_by(Vm* self, Op* op)
 	                         send->start,
 	                         &self->program->code_backend,
 	                         &self->program->code_data,
-	                         part->core);
+	                         part);
 	if (op->b > 0)
 	{
 		req_copy_refs(req, stack_at(&self->stack, op->b), op->b);
@@ -227,7 +222,7 @@ csend_all(Vm* self, Op* op)
 		                        send->start,
 		                        &self->program->code_backend,
 		                        &self->program->code_data,
-		                        part->core);
+		                        part);
 		if (op->b > 0)
 			req_copy_refs(req, stack_at(&self->stack, op->b), op->b);
 	}
@@ -459,43 +454,11 @@ ctable_open(Vm* self, Op* op, bool point_lookup, bool open_part)
 	// open cursor
 	auto cursor = reg_at(&self->r, op->a);
 	if (open_part)
-		cursor->part = part_list_match(&table->part_list, self->core);
+		cursor->part = self->part;
 	else
 		cursor->part = NULL;
 	cursor->cursor = part_list_iterator(&table->part_list, cursor->part, index, point_lookup, key_ref);
 	cursor->table  = table;
-	cursor->type   = TYPE_CURSOR;
-
-	// jmp to next op if has data
-	if (likely(iterator_has(cursor->cursor)))
-		return ++op;
-
-	// jmp on eof
-	return code_at(self->code, op->c);
-}
-
-hot Op*
-ctable_open_heap(Vm* self, Op* op)
-{
-	// [cursor, name_offset, _eof]
-
-	// read names
-	uint8_t* pos = code_data_at(self->code_data, op->b);
-	Str name_db;
-	Str name_table;
-	json_read_string(&pos, &name_db);
-	json_read_string(&pos, &name_table);
-
-	// find table and partition
-	auto table = table_mgr_find(&share()->storage->catalog.table_mgr, &name_db, &name_table, true);
-	auto part  = part_list_match(&table->part_list, self->core);
-
-	// open cursor
-	auto cursor = reg_at(&self->r, op->a);
-	cursor->table  = table;
-	cursor->part   = part;
-	cursor->cursor = heap_iterator_allocate(&part->heap);
-	iterator_open(cursor->cursor, NULL);
 	cursor->type   = TYPE_CURSOR;
 
 	// jmp to next op if has data
@@ -517,7 +480,7 @@ ctable_prepare(Vm* self, Op* op)
 	// prepare cursor and primary index iterator for related partition
 	auto cursor = reg_at(&self->r, op->a);
 	cursor->table  = table;
-	cursor->part   = part_list_match(&table->part_list, self->core);
+	cursor->part   = self->part;
 	cursor->cursor = index_iterator(part_primary(cursor->part));
 	cursor->type   = TYPE_CURSOR;
 
@@ -532,7 +495,7 @@ cinsert(Vm* self, Op* op)
 
 	// find related table partition
 	auto table   = (Table*)op->a;
-	auto part    = part_list_match(&table->part_list, self->core);
+	auto part    = self->part;
 	auto columns = table_columns(table);
 
 	// insert
@@ -643,7 +606,7 @@ ccall_udf(Vm* self, Op* op)
 
 	// execute udf
 	Vm vm;
-	vm_init(&vm, self->core, self->dtr);
+	vm_init(&vm, self->part, self->dtr);
 	defer(vm_free, &vm);
 	reg_prepare(&vm.r, program->code.regs);
 

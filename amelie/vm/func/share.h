@@ -17,7 +17,6 @@ struct Share
 {
 	Executor*    executor;
 	Commit*      commit;
-	CoreMgr*     core_mgr;
 	Repl*        repl;
 	FunctionMgr* function_mgr;
 	UserMgr*     user_mgr;
