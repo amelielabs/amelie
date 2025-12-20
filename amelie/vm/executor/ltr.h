@@ -11,10 +11,10 @@
 // AGPL-3.0 Licensed.
 //
 
-typedef struct Ptr Ptr;
+typedef struct Ltr Ltr;
 typedef struct Dtr Dtr;
 
-struct Ptr
+struct Ltr
 {
 	Msg       msg;
 	Dtr*      dtr;
@@ -28,10 +28,10 @@ struct Ptr
 	List      link;
 };
 
-static inline Ptr*
-ptr_allocate(Dtr* dtr, Complete* complete)
+static inline Ltr*
+ltr_allocate(Dtr* dtr, Complete* complete)
 {
-	auto self = (Ptr*)am_malloc(sizeof(Ptr));
+	auto self = (Ltr*)am_malloc(sizeof(Ltr));
 	self->dtr      = dtr;
 	self->tr       = NULL;
 	self->error    = NULL;
@@ -46,13 +46,13 @@ ptr_allocate(Dtr* dtr, Complete* complete)
 }
 
 static inline void
-ptr_free(Ptr* self)
+ltr_free(Ltr* self)
 {
 	am_free(self);
 }
 
 static inline void
-ptr_reset(Ptr* self)
+ltr_reset(Ltr* self)
 {
 	self->tr     = NULL;
 	self->error  = NULL;
@@ -60,14 +60,14 @@ ptr_reset(Ptr* self)
 }
 
 static inline void
-ptr_complete(Ptr* self)
-{
-	complete_signal(self->complete);
-}
-
-static inline void
-ptr_send(Ptr* self, Msg* msg)
+ltr_add(Ltr* self, Msg* msg)
 {
 	mailbox_append(&self->queue, msg);
 	event_signal(&self->queue.event);
+}
+
+static inline void
+ltr_complete(Ltr* self)
+{
+	complete_signal(self->complete);
 }

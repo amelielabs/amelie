@@ -69,11 +69,11 @@ batch_add_commit(Batch* self, Dtr* dtr)
 	auto write = &dtr->write;
 	write_reset(write);
 	write_begin(write, dtr->tsn);
-	list_foreach_safe(&mgr->ptrs)
+	list_foreach_safe(&mgr->ltrs)
 	{
-		auto ptr = list_at(Ptr, link);
-		if (ptr->tr && !tr_read_only(ptr->tr))
-			write_add(write, &ptr->tr->log.write_log);
+		auto ltr = list_at(Ltr, link);
+		if (ltr->tr && !tr_read_only(ltr->tr))
+			write_add(write, &ltr->tr->log.write_log);
 	}
 	if (write->header.count > 0)
 		write_list_add(&self->write, write);
@@ -85,7 +85,7 @@ batch_add_abort(Batch* self, Dtr* dtr)
 	list_append(&self->abort, &dtr->link_batch);
 	self->abort_count++;
 
-	// If aborted transaction has no observed tsn_max
+	// if aborted transaction has no observed tsn_max
 	// forcing it to abort self by setting tsn_max = tsn
 	//
 	if (dtr->tsn_max == 0)

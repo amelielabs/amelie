@@ -18,12 +18,12 @@ struct DispatchMgr
 {
 	Buf           list;
 	int           list_count;
-	List          ptrs;
-	int           ptrs_count;
+	List          ltrs;
+	int           ltrs_count;
 	Complete      complete;
 	Dtr*          dtr;
 	ReqCache      cache_req;
-	PtrCache      cache_ptr;
+	LtrCache      cache_ltr;
 	DispatchCache cache;
 };
 
@@ -44,12 +44,12 @@ static inline void
 dispatch_mgr_init(DispatchMgr* self, Dtr* dtr)
 {
 	self->list_count = 0;
-	self->ptrs_count = 0;
+	self->ltrs_count = 0;
 	self->dtr        = dtr;
 	buf_init(&self->list);
-	list_init(&self->ptrs);
+	list_init(&self->ltrs);
 	req_cache_init(&self->cache_req);
-	ptr_cache_init(&self->cache_ptr);
+	ltr_cache_init(&self->cache_ltr);
 	dispatch_cache_init(&self->cache);
 	complete_init(&self->complete);
 }
@@ -65,13 +65,13 @@ dispatch_mgr_reset(DispatchMgr* self)
 	buf_reset(&self->list);
 	self->list_count = 0;
 
-	list_foreach_safe(&self->ptrs)
+	list_foreach_safe(&self->ltrs)
 	{
-		auto ptr = list_at(Ptr, link);
-		ptr_cache_push(&self->cache_ptr, ptr);
+		auto ltr = list_at(Ltr, link);
+		ltr_cache_push(&self->cache_ltr, ltr);
 	}
-	list_init(&self->ptrs);
-	self->ptrs_count = 0;
+	list_init(&self->ltrs);
+	self->ltrs_count = 0;
 
 	complete_reset(&self->complete);
 }
@@ -82,7 +82,7 @@ dispatch_mgr_free(DispatchMgr* self)
 	dispatch_mgr_reset(self);
 	buf_free(&self->list);
 	dispatch_cache_free(&self->cache);
-	ptr_cache_free(&self->cache_ptr);
+	ltr_cache_free(&self->cache_ltr);
 	req_cache_free(&self->cache_req);
 }
 
@@ -90,26 +90,26 @@ hot static inline int
 dispatch_mgr_close(DispatchMgr* self)
 {
 	int active = 0;
-	list_foreach(&self->ptrs)
+	list_foreach(&self->ltrs)
 	{
-		auto ptr = list_at(Ptr, link);
-		if (ptr->closed)
+		auto ltr = list_at(Ltr, link);
+		if (ltr->closed)
 			continue;
-		pod_send_backend(ptr->part->pod, &ptr->queue_close);
-		ptr->closed = true;
+		pipeline_send(&ltr->part->pipeline, &ltr->queue_close);
+		ltr->closed = true;
 		active++;
 	}
 	return active;
 }
 
-hot static inline Ptr*
+hot static inline Ltr*
 dispatch_mgr_find(DispatchMgr* self, Part* part)
 {
-	list_foreach(&self->ptrs)
+	list_foreach(&self->ltrs)
 	{
-		auto ptr = list_at(Ptr, link);
-		if (ptr->part == part)
-			return ptr;
+		auto ltr = list_at(Ltr, link);
+		if (ltr->part == part)
+			return ltr;
 	}
 	return NULL;
 }
@@ -117,7 +117,7 @@ dispatch_mgr_find(DispatchMgr* self, Part* part)
 hot static inline void
 dispatch_mgr_snapshot(DispatchMgr* self, Access* access)
 {
-	// create ptr for each partition from access
+	// create ltr for each partition from access
 	for (auto i = 0; i < access->list_count; i++)
 	{
 		auto ac = access_at(access, i);
@@ -127,9 +127,9 @@ dispatch_mgr_snapshot(DispatchMgr* self, Access* access)
 		list_foreach(&table->part_list.list)
 		{
 			auto part = list_at(Part, link);
-			auto ptr = ptr_create(&self->cache_ptr, part, self->dtr, &self->complete);
-			list_append(&self->ptrs, &ptr->link);
-			self->ptrs_count++;
+			auto ltr = ltr_create(&self->cache_ltr, part, self->dtr, &self->complete);
+			list_append(&self->ltrs, &ltr->link);
+			self->ltrs_count++;
 		}
 	}
 }
@@ -137,14 +137,14 @@ dispatch_mgr_snapshot(DispatchMgr* self, Access* access)
 hot static inline void
 dispatch_mgr_send(DispatchMgr* self, Dispatch* dispatch)
 {
-	// handle snapshot by starting execution of all prepared ptrs
+	// handle snapshot by starting execution of all prepared ltrs
 	// on first send
-	if (dispatch_mgr_is_first(self) && self->ptrs_count > 0)
+	if (dispatch_mgr_is_first(self) && self->ltrs_count > 0)
 	{
-		list_foreach(&self->ptrs)
+		list_foreach(&self->ltrs)
 		{
-			auto ptr = list_at(Ptr, link);
-			pod_send_backend(ptr->part->pod, &ptr->msg);
+			auto ltr = list_at(Ltr, link);
+			pipeline_send(&ltr->part->pipeline, &ltr->msg);
 		}
 	}
 
@@ -158,17 +158,16 @@ dispatch_mgr_send(DispatchMgr* self, Dispatch* dispatch)
 	list_foreach(&dispatch->list)
 	{
 		auto req = list_at(Req, link);
-
-		// find or create pod transaction
-		auto ptr = dispatch_mgr_find(self, req->part);
-		if (! ptr)
+		// find or create transaction
+		auto ltr = dispatch_mgr_find(self, req->part);
+		if (! ltr)
 		{
-			ptr = ptr_create(&self->cache_ptr, req->part, self->dtr, &self->complete);
-			list_append(&self->ptrs, &ptr->link);
-			self->ptrs_count++;
+			ltr = ltr_create(&self->cache_ltr, req->part, self->dtr, &self->complete);
+			list_append(&self->ltrs, &ltr->link);
+			self->ltrs_count++;
 		}
-		ptr->closed = dispatch->close;
-		pod_send_backend(ptr->part->pod, &req->msg);
+		ltr->closed = dispatch->close;
+		pipeline_send(&ltr->part->pipeline, &req->msg);
 	}
 
 	// send early close requests
@@ -192,12 +191,12 @@ dispatch_mgr_complete(DispatchMgr* self, Buf** error, bool* write, uint64_t* tsn
 	complete_wait(&self->complete);
 
 	// sync metrics
-	list_foreach(&self->ptrs)
+	list_foreach(&self->ltrs)
 	{
-		auto ptr = list_at(Ptr, link);
-		if (ptr->error && !*error)
-			*error = ptr->error;
-		auto tr = ptr->tr;
+		auto ltr = list_at(Ltr, link);
+		if (ltr->error && !*error)
+			*error = ltr->error;
+		auto tr = ltr->tr;
 		if (! tr)
 			continue;
 

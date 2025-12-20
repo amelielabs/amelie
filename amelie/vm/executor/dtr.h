@@ -115,14 +115,14 @@ dtr_set_error(Dtr* self, Buf* buf)
 static inline void
 dtr_sync_tsn_max(Dtr* self, uint64_t tsn)
 {
-	// force set observed tsn_max for dtr and all related ptrs
+	// force set observed tsn_max for dtr and all related ltrs
 	// (used for abort)
 	self->tsn_max = tsn;
-	list_foreach(&self->dispatch_mgr.ptrs)
+	list_foreach(&self->dispatch_mgr.ltrs)
 	{
-		auto ptr = list_at(Ptr, link);
-		if (! ptr->tr)
+		auto ltr = list_at(Ltr, link);
+		if (! ltr->tr)
 			continue;
-		ptr->tr->tsn_max = tsn;
+		ltr->tr->tsn_max = tsn;
 	}
 }

@@ -87,18 +87,18 @@ executor_send(Executor* self, Dtr* dtr, Dispatch* dispatch)
 
 	if (first)
 	{
-		// handle snapshot by creating ptr for every used partition
+		// handle snapshot by creating transaction for every used partition
 		// to handle multi-statement access, otherwise use
 		// partitions from dispatch
-		int ptrs_count;
+		int ltrs_count;
 		if (dtr->program->snapshot)
 		{
 			dispatch_mgr_snapshot(mgr, &dtr->program->access);
-			ptrs_count = mgr->ptrs_count;
+			ltrs_count = mgr->ltrs_count;
 		} else {
-			ptrs_count = dispatch->list_count;
+			ltrs_count = dispatch->list_count;
 		}
-		complete_prepare(&mgr->complete, ptrs_count);
+		complete_prepare(&mgr->complete, ltrs_count);
 
 		// register transaction and begin execution
 		executor_attach(self, dtr, dispatch);

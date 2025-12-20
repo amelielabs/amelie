@@ -18,16 +18,12 @@
 #include "executor/access.h"
 #include "executor/program.h"
 
-// pod transaction (per partition)
+// local transaction (per partition)
 #include "executor/complete.h"
 #include "executor/req.h"
 #include "executor/req_cache.h"
-#include "executor/ptr.h"
-#include "executor/ptr_cache.h"
-
-// pod (partition worker)
-#include "executor/consensus.h"
-#include "executor/pod.h"
+#include "executor/ltr.h"
+#include "executor/ltr_cache.h"
 
 // dispatch
 #include "executor/dispatch.h"
