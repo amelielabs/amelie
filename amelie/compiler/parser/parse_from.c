@@ -186,24 +186,16 @@ parse_from_target(Stmt* self, From* from, AccessType access, bool subquery)
 
 		access_add(&self->parser->program->access, &table->rel, access);
 
-		// [USE INDEX (name) | HEAP]
+		// [USE INDEX (name)]
 		if (stmt_if(self, KUSE))
 		{
-			if (stmt_if(self, KINDEX))
-			{
-				stmt_expect(self, '(');
-				auto name_index = stmt_next_shadow(self);
-				if (name_index->id != KNAME)
-					stmt_error(self, name_index, "<index name> expected");
-				stmt_expect(self, ')');
-				target->from_index = table_find_index(target->from_table, &name_index->string, true);
-			} else
-			if (stmt_if(self, KHEAP))
-			{
-				target->from_heap = true;
-			} else {
-				stmt_error(self, NULL, "USE INDEX or HEAP expected");
-			}
+			stmt_expect(self, KINDEX);
+			stmt_expect(self, '(');
+			auto name_index = stmt_next_shadow(self);
+			if (name_index->id != KNAME)
+				stmt_error(self, name_index, "<index name> expected");
+			stmt_expect(self, ')');
+			target->from_index = table_find_index(target->from_table, &name_index->string, true);
 		}
 		return target;
 	}

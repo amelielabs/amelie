@@ -89,7 +89,6 @@ Keyword keywords[] =
 
 	// h
 	{ KHAVING,                "having",                6  },
-	{ KHEAP,                  "heap",                  4  },
 
 	// i
 	{ KIS,                    "is",                    2  },

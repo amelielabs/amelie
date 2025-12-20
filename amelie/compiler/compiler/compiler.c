@@ -435,7 +435,7 @@ emit_stmt(Compiler* self, Stmt* stmt)
 		auto select = ast_select_of(stmt->ast);
 		target = select->pushdown;
 
-		// table scan or join
+		// table scan
 		//
 		// execute on one or more backends, process the result on frontend
 		//
@@ -445,6 +445,7 @@ emit_stmt(Compiler* self, Stmt* stmt)
 			break;
 		}
 
+		// select join
 		// select (select from table)
 		// select expr
 		//
