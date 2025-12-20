@@ -21,11 +21,11 @@ Part*
 part_allocate(PartConfig* config, Sequence* seq, bool unlogged)
 {
 	auto self = (Part*)am_malloc(sizeof(Part));
-	self->pod           = NULL;
 	self->config        = part_config_copy(config);
 	self->indexes_count = 0;
 	self->seq           = seq;
 	self->unlogged      = unlogged;
+	pipeline_init(&self->pipeline);
 	heap_init(&self->heap);
 	heap_create(&self->heap);
 	list_init(&self->indexes);
@@ -38,6 +38,7 @@ part_allocate(PartConfig* config, Sequence* seq, bool unlogged)
 void
 part_free(Part* self)
 {
+	pipeline_free(&self->pipeline);
 	list_foreach_safe(&self->indexes)
 	{
 		auto index = list_at(Index, link);

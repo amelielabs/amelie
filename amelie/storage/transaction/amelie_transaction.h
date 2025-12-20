@@ -30,3 +30,7 @@
 
 // commit
 #include "transaction/commit.h"
+
+// pipeline
+#include "transaction/consensus.h"
+#include "transaction/pipeline.h"

@@ -12,13 +12,12 @@
 //
 
 typedef struct Part Part;
-typedef struct Pod  Pod;
 
 struct Part
 {
 	List          indexes;
 	int           indexes_count;
-	Pod*          pod;
+	Pipeline      pipeline;
 	Sequence*     seq;
 	bool          unlogged;
 	Heap          heap;

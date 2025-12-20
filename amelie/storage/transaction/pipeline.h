@@ -11,9 +11,9 @@
 // AGPL-3.0 Licensed.
 //
 
-typedef struct Pod Pod;
+typedef struct Pipeline Pipeline;
 
-struct Pod
+struct Pipeline
 {
 	Mailbox   queue;
 	Consensus consensus;
@@ -23,9 +23,9 @@ struct Pod
 };
 
 static inline void
-pod_init(Pod* self, Task* task)
+pipeline_init(Pipeline* self)
 {
-	self->task = task;
+	self->task = NULL;
 	mailbox_init(&self->queue);
 	tr_list_init(&self->prepared);
 	tr_cache_init(&self->cache);
@@ -33,21 +33,27 @@ pod_init(Pod* self, Task* task)
 }
 
 static inline void
-pod_free(Pod* self)
+pipeline_free(Pipeline* self)
 {
 	assert(list_empty(&self->queue.list));
 	tr_cache_free(&self->cache);
 }
 
 static inline void
-pod_send_backend(Pod* self, Msg* msg)
+pipeline_set_task(Pipeline* self, Task* task)
 {
-	task_send(self->task, msg);
+	self->task = task;
 }
 
 static inline void
-pod_send(Pod* self, Msg* msg)
+pipeline_add(Pipeline* self, Msg* msg)
 {
 	mailbox_append(&self->queue, msg);
 	event_signal(&self->queue.event);
+}
+
+static inline void
+pipeline_send(Pipeline* self, Msg* msg)
+{
+	task_send(self->task, msg);
 }
