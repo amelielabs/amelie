@@ -28,9 +28,5 @@
 #include "transaction/tr_cache.h"
 #include "transaction/tr_list.h"
 
-// relation
-#include "transaction/relation.h"
-#include "transaction/relation_mgr.h"
-
 // commit
 #include "transaction/commit.h"

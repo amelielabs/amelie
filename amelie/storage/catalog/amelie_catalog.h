@@ -11,6 +11,10 @@
 // AGPL-3.0 Licensed.
 //
 
+// relation
+#include "catalog/relation.h"
+#include "catalog/relation_mgr.h"
+
 // ddl
 #include "catalog/ddl.h"
 
