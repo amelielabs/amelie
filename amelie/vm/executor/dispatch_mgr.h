@@ -18,15 +18,13 @@ struct DispatchMgr
 {
 	Buf           list;
 	int           list_count;
-	DispatchCache cache;
-	ReqCache      cache_req;
-	Buf           ctrs;
-	int           ctrs_count;
-	CoreMgr*      core_mgr;
+	List          ptrs;
+	int           ptrs_count;
 	Complete      complete;
-	bool          is_write;
-	Msg           close;
 	Dtr*          dtr;
+	ReqCache      cache_req;
+	PtrCache      cache_ptr;
+	DispatchCache cache;
 };
 
 hot always_inline static inline Dispatch*
@@ -36,13 +34,6 @@ dispatch_mgr_at(DispatchMgr* self, int order)
 	return ((Dispatch**)self->list.start)[order];
 }
 
-hot always_inline static inline Ctr*
-dispatch_mgr_ctr(DispatchMgr* self, int order)
-{
-	assert(order < self->ctrs_count);
-	return &((Ctr*)self->ctrs.start)[order];
-}
-
 static inline bool
 dispatch_mgr_is_first(DispatchMgr* self)
 {
@@ -50,18 +41,16 @@ dispatch_mgr_is_first(DispatchMgr* self)
 }
 
 static inline void
-dispatch_mgr_init(DispatchMgr* self, CoreMgr* core_mgr, Dtr* dtr)
+dispatch_mgr_init(DispatchMgr* self, Dtr* dtr)
 {
 	self->list_count = 0;
-	self->ctrs_count = 0;
-	self->core_mgr   = core_mgr;
+	self->ptrs_count = 0;
 	self->dtr        = dtr;
-	self->is_write   = false;
-	dispatch_cache_init(&self->cache);
-	req_cache_init(&self->cache_req);
 	buf_init(&self->list);
-	buf_init(&self->ctrs);
-	msg_init(&self->close, MSG_STOP);
+	list_init(&self->ptrs);
+	req_cache_init(&self->cache_req);
+	ptr_cache_init(&self->cache_ptr);
+	dispatch_cache_init(&self->cache);
 	complete_init(&self->complete);
 }
 
@@ -76,138 +65,148 @@ dispatch_mgr_reset(DispatchMgr* self)
 	buf_reset(&self->list);
 	self->list_count = 0;
 
-	for (auto i = 0; i < self->ctrs_count; i++)
+	list_foreach_safe(&self->ptrs)
 	{
-		auto ctr = dispatch_mgr_ctr(self, i);
-		ctr_reset(ctr);
+		auto ptr = list_at(Ptr, link);
+		ptr_cache_push(&self->cache_ptr, ptr);
 	}
-	self->is_write = false;
-	complete_reset(&self->complete);
-}
+	list_init(&self->ptrs);
+	self->ptrs_count = 0;
 
-static inline void
-dispatch_mgr_free_ctrs(DispatchMgr* self)
-{
-	for (auto i = 0; i < self->ctrs_count; i++)
-	{
-		auto ctr = dispatch_mgr_ctr(self, i);
-		ctr_free(ctr);
-	}
-	self->ctrs_count = 0;
-	buf_reset(&self->ctrs);
+	complete_reset(&self->complete);
 }
 
 static inline void
 dispatch_mgr_free(DispatchMgr* self)
 {
 	dispatch_mgr_reset(self);
-	dispatch_mgr_free_ctrs(self);
 	buf_free(&self->list);
-	buf_free(&self->ctrs);
 	dispatch_cache_free(&self->cache);
+	ptr_cache_free(&self->cache_ptr);
 	req_cache_free(&self->cache_req);
-}
-
-static inline void
-dispatch_mgr_prepare(DispatchMgr* self)
-{
-	// prepare a list of core transactions on first call
-	auto cores_count = self->core_mgr->cores_count;
-	if (likely(self->ctrs_count == cores_count))
-		return;
-	dispatch_mgr_free_ctrs(self);
-	buf_reserve(&self->ctrs, sizeof(Ctr) * self->core_mgr->cores_count);
-	self->ctrs_count = cores_count;
-	for (auto i = 0; i < self->ctrs_count; i++)
-	{
-		auto ctr = dispatch_mgr_ctr(self, i);
-		ctr_init(ctr, self->dtr, self->core_mgr->cores[i], &self->complete);
-	}
-}
-
-hot static inline void
-dispatch_mgr_snapshot(DispatchMgr* self)
-{
-	// start transactions on each core
-	for (auto i = 0; i < self->ctrs_count; i++)
-	{
-		auto ctr = dispatch_mgr_ctr(self, i);
-		ctr->state = CTR_ACTIVE;
-	}
 }
 
 hot static inline int
 dispatch_mgr_close(DispatchMgr* self)
 {
 	int active = 0;
-	for (auto i = 0; i < self->ctrs_count; i++)
+	list_foreach(&self->ptrs)
 	{
-		auto ctr = dispatch_mgr_ctr(self, i);
-		if (ctr->state == CTR_NONE)
+		auto ptr = list_at(Ptr, link);
+		if (ptr->closed)
 			continue;
+		pod_send_backend(ptr->part->pod, &ptr->queue_close);
+		ptr->closed = true;
 		active++;
-		if (ctr->queue_close)
-			continue;
-		ring_write(&ctr->queue, &self->close);
-		ctr->queue_close = true;
 	}
 	return active;
+}
+
+hot static inline Ptr*
+dispatch_mgr_find(DispatchMgr* self, Part* part)
+{
+	list_foreach(&self->ptrs)
+	{
+		auto ptr = list_at(Ptr, link);
+		if (ptr->part == part)
+			return ptr;
+	}
+	return NULL;
+}
+
+hot static inline void
+dispatch_mgr_snapshot(DispatchMgr* self, Access* access)
+{
+	// create ptr for each partition from access
+	for (auto i = 0; i < access->list_count; i++)
+	{
+		auto ac = access_at(access, i);
+		if (ac->type == ACCESS_CALL)
+			continue;
+		auto table = table_of(ac->rel);
+		list_foreach(&table->part_list.list)
+		{
+			auto part = list_at(Part, link);
+			auto ptr = ptr_create(&self->cache_ptr, part, self->dtr, &self->complete);
+			list_append(&self->ptrs, &ptr->link);
+			self->ptrs_count++;
+		}
+	}
 }
 
 hot static inline void
 dispatch_mgr_send(DispatchMgr* self, Dispatch* dispatch)
 {
+	// handle snapshot by starting execution of all prepared ptrs
+	// on first send
+	if (dispatch_mgr_is_first(self) && self->ptrs_count > 0)
+	{
+		list_foreach(&self->ptrs)
+		{
+			auto ptr = list_at(Ptr, link);
+			pod_send_backend(ptr->part->pod, &ptr->msg);
+		}
+	}
+
 	// add dispatch
 	dispatch->order = self->list_count;
 
 	buf_write(&self->list, &dispatch, sizeof(Dispatch**));
 	self->list_count++;
 
-	// send requests
+	// send dispatch requests
 	list_foreach(&dispatch->list)
 	{
 		auto req = list_at(Req, link);
 
-		// activate transaction for the core
-		auto ctr = dispatch_mgr_ctr(self, req->core->order);
-		if (ctr->state == CTR_NONE)
-			ctr->state = CTR_ACTIVE;
-
-		// add request to the core transaction queue
-		ctr->queue_close = dispatch->close;
-		ring_write(&ctr->queue, &req->msg);
+		// find or create pod transaction
+		auto ptr = dispatch_mgr_find(self, req->part);
+		if (! ptr)
+		{
+			ptr = ptr_create(&self->cache_ptr, req->part, self->dtr, &self->complete);
+			list_append(&self->ptrs, &ptr->link);
+			self->ptrs_count++;
+		}
+		ptr->closed = dispatch->close;
+		pod_send_backend(ptr->part->pod, &req->msg);
 	}
 
-	// finilize still active transactions on the last send
+	// send early close requests
 	if (dispatch->close)
 		dispatch_mgr_close(self);
 }
 
-hot static inline Buf*
-dispatch_mgr_shutdown(DispatchMgr* self)
+hot static inline void
+dispatch_mgr_complete(DispatchMgr* self, Buf** error, bool* write, uint64_t* tsn)
 {
+	*error = NULL;
+	*write = false;
+	*tsn   = 0;
+
 	// make sure all transactions complete execution
 	auto active = dispatch_mgr_close(self);
 	if (! active)
-		return NULL;
+		return;
 
 	// wait for group completion
 	complete_wait(&self->complete);
 
-	// collect errors
-	Buf* error = NULL;
-	bool is_write = false;
-	for (auto i = 0; i < self->ctrs_count; i++)
+	// sync metrics
+	list_foreach(&self->ptrs)
 	{
-		auto ctr = dispatch_mgr_ctr(self, i);
-		if (ctr->state == CTR_NONE)
+		auto ptr = list_at(Ptr, link);
+		if (ptr->error && !*error)
+			*error = ptr->error;
+		auto tr = ptr->tr;
+		if (! tr)
 			continue;
-		if (ctr->error && !error)
-			error = ctr->error;
-		if (ctr->tr && !tr_read_only(ctr->tr))
-			is_write = true;
-		ctr->state = CTR_COMPLETE;
+
+		// is writing transaction
+		if (! tr_read_only(tr))
+			*write = true;
+
+		// sync max tsn across commited transactions
+		if (tr->tsn_max > *tsn)
+			*tsn = tr->tsn_max;
 	}
-	self->is_write = is_write;
-	return error;
 }

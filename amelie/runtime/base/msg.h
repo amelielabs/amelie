@@ -11,8 +11,7 @@
 // AGPL-3.0 Licensed.
 //
 
-typedef struct Msg     Msg;
-typedef struct Channel Channel;
+typedef struct Msg Msg;
 
 typedef enum
 {
@@ -24,7 +23,8 @@ typedef enum
 
 	// executor
 	MSG_DTR,
-	MSG_CTR,
+	MSG_PTR,
+	MSG_PTR_STOP,
 	MSG_REQ,
 
 	// frontend

@@ -13,7 +13,6 @@
 
 typedef struct Req      Req;
 typedef struct ReqCache ReqCache;
-typedef struct Core     Core;
 typedef struct Dispatch Dispatch;
 
 enum
@@ -37,7 +36,7 @@ struct Req
 	bool      result_pending;
 	Buf*      error;
 	Dispatch* dispatch;
-	Core*     core;
+	Part*     part;
 	List      link;
 };
 
@@ -50,7 +49,7 @@ req_allocate(void)
 	self->code           = NULL;
 	self->code_data      = NULL;
 	self->error          = NULL;
-	self->core           = NULL;
+	self->part           = NULL;
 	self->refs_count     = 0;
 	self->result_pending = false;
 	self->dispatch       = NULL;
@@ -99,7 +98,7 @@ req_reset(Req* self)
 	self->start          = 0;
 	self->code           = NULL;
 	self->code_data      = NULL;
-	self->core           = NULL;
+	self->part           = NULL;
 	self->refs_count     = 0;
 	self->result_pending = false;
 	self->dispatch       = NULL;

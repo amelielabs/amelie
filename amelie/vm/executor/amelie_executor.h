@@ -18,16 +18,16 @@
 #include "executor/access.h"
 #include "executor/program.h"
 
-// core transaction (per backend)
+// pod transaction (per partition)
 #include "executor/complete.h"
 #include "executor/req.h"
 #include "executor/req_cache.h"
-#include "executor/consensus.h"
-#include "executor/ctr.h"
+#include "executor/ptr.h"
+#include "executor/ptr_cache.h"
 
-// core
-#include "executor/core.h"
-#include "executor/core_mgr.h"
+// pod (partition worker)
+#include "executor/consensus.h"
+#include "executor/pod.h"
 
 // dispatch
 #include "executor/dispatch.h"
@@ -39,8 +39,8 @@
 #include "executor/dtr_queue.h"
 
 // executor
-#include "executor/prepare.h"
+#include "executor/batch.h"
 #include "executor/executor.h"
 
-// commit
+// group commit
 #include "executor/commit.h"

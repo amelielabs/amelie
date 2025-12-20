@@ -15,14 +15,14 @@ typedef struct Commit Commit;
 
 struct Commit
 {
-	Prepare   prepare;
+	Batch     batch;
+	DtrQueue  queue;
 	Executor* executor;
-	CoreMgr*  core_mgr;
 	Storage*  storage;
 	Task      task;
 };
 
-void commit_init(Commit*, Storage*, CoreMgr*, Executor*);
+void commit_init(Commit*, Storage*, Executor*);
 void commit_free(Commit*);
 void commit_start(Commit*);
 void commit_stop(Commit*);

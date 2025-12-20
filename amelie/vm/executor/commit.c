@@ -18,102 +18,88 @@
 #include <amelie_output.h>
 #include <amelie_executor.h>
 
-static void
-commit_complete(Commit* self, bool abort)
+hot static void
+commit_execute(Commit* self)
 {
-	auto prepare = &self->prepare;
+	auto queue = &self->queue;
+	auto batch = &self->batch;
+	batch_reset(batch);
+
+	// process aborts (from newest to oldest)
+	for (auto it = queue->list_count - 1; it >= 0; it--)
+	{
+		auto dtr = dtr_queue_at(queue, it);
+		if (dtr->abort)
+		{
+			batch_add_abort(batch, dtr);
+			continue;
+		}
+
+		// transaction has not accessed rows
+		if (! dtr->tsn_max)
+			continue;
+
+		// no dependable aborts
+		if (! batch->abort_tsn)
+			continue;
+
+		if (dtr->tsn_max >= batch->abort_tsn)
+		{
+			dtr_set_abort(dtr);
+			batch_add_abort(batch, dtr);
+		}
+	}
+
+	// collect and prepare transactions for commit
+	for (auto it = 0; it < queue->list_count; it++)
+	{
+		auto dtr = dtr_queue_at(queue, it);
+		if (! dtr->abort)
+			batch_add_commit(batch, dtr);
+	}
+
+	// wal write
+	//
+	// in case of an error abort all prepared transactions
+	//
+	if (batch->write.list_count)
+	{
+		auto wal = &self->storage->wal_mgr;
+		if (error_catch( wal_mgr_write(wal, &batch->write) ))
+			batch_add_abort_all(batch);
+	}
 
 	// do group completion
 	//
-	// update commit/abort metrics and
-	// remove transactions from executor and handle abort
+	// update global commit/abort metrics and detach
+	// transactions
 	//
-	executor_detach(self->executor, prepare, abort);
+	executor_detach(self->executor, batch);
 
-	// signal completion
-	auto dtr = prepare->list;
-	while (dtr)
-	{
-		auto next = dtr->link_queue;
-		event_signal(&dtr->on_commit);
-		dtr = next;
-	}
-}
-
-static void
-commit_process(Commit* self, DtrQueue* queue)
-{
-	// get a list of completed distributed transactions (one or more) and
-	// a list of last executed transactions per core
-	auto wal = &self->storage->wal_mgr;
-	auto prepare = &self->prepare;
-	for (;;)
-	{
-		auto dtr = dtr_queue_next(queue);
-		if (! dtr)
-			break;
-
-		prepare_reset(prepare);
-		prepare_add(prepare, dtr);
-
-		bool abort;
-		if (likely(! dtr->abort))
-		{
-			// GROUP COMMIT
-			//
-			abort = false;
-			while ((dtr = dtr_queue_peek(queue)))
-			{
-				if (dtr->abort)
-					break;
-				dtr_queue_pop(queue);
-				prepare_add(prepare, dtr);
-			}
-
-			// wal write
-			if (prepare->write.list_count)
-				abort = error_catch( wal_mgr_write(wal, &prepare->write) );
-		} else
-		{
-			// GROUP ABORT (cascading)
-			//
-			// transaction error or forced abort, abort all
-			// subsequent transactions in the queue.
-			//
-			abort = true;
-			while ((dtr = dtr_queue_next(queue)))
-				prepare_add(prepare, dtr);
-		}
-
-		// commit/abort the batch
-		commit_complete(self, abort);
-	}
+	// complete
+	batch_wakeup(batch);
 }
 
 static void
 commit_main(void* arg)
 {
 	Commit* self = arg;
-
-	DtrQueue queue;
-	dtr_queue_init(&queue);
+	auto queue = &self->queue;
 	for (;;)
 	{
 		auto msg = task_recv();
 		if (unlikely(msg->id == MSG_STOP))
 			break;
 
-		// order incoming transactions by id
-		dtr_queue_add(&queue, (Dtr*)msg);
+		// collect and sort all pending transactions
+		dtr_queue_reset(queue);
+		dtr_queue_add(queue, (Dtr*)msg);
 		while ((msg = task_recv_try()))
-		{
-			assert(msg->id == MSG_DTR);
-			dtr_queue_add(&queue, (Dtr*)msg);
-		}
+			dtr_queue_add(queue, (Dtr*)msg);
+		dtr_queue_sort(queue);
 
-		// if queue has ready transactions
-		if (dtr_queue_peek(&queue))
-			commit_process(self, &queue);
+		// process group operation
+		commit_execute(self);
 	}
 }
 
@@ -122,8 +108,11 @@ commit(Commit* self, Dtr* dtr, Buf* error)
 {
 	cancel_pause();
 
-	// finilize core transactions and handle errors
-	auto error_pending = dispatch_mgr_shutdown(&dtr->dispatch_mgr);
+	// finilize transaction and handle errors
+	Buf*     error_pending;
+	bool     write;
+	uint64_t tsn_max;
+	dispatch_mgr_complete(&dtr->dispatch_mgr, &error_pending, &write, &tsn_max);
 	if (! error)
 	{
 		// unless transaction is used for replication writer, respect
@@ -133,7 +122,7 @@ commit(Commit* self, Dtr* dtr, Buf* error)
 			error = buf_create();
 			buf_write_buf(error, error_pending);
 		} else
-		if (unlikely(dtr->dispatch_mgr.is_write && dtr->program->repl == false &&
+		if (unlikely(write && dtr->program->repl == false &&
 		             opt_int_of(&state()->read_only)))
 			error = error_create_cstr("system is in read-only mode");
 	}
@@ -142,6 +131,7 @@ commit(Commit* self, Dtr* dtr, Buf* error)
 		dtr_set_abort(dtr);
 		dtr_set_error(dtr, error);
 	}
+	dtr->tsn_max = tsn_max;
 
 	// process transaction commit/abort, only if the transaction
 	// was registered in executor
@@ -163,19 +153,20 @@ commit(Commit* self, Dtr* dtr, Buf* error)
 }
 
 void
-commit_init(Commit* self, Storage* storage, CoreMgr* core_mgr, Executor* executor)
+commit_init(Commit* self, Storage* storage, Executor* executor)
 {
 	self->storage  = storage;
-	self->core_mgr = core_mgr;
 	self->executor = executor;
-	prepare_init(&self->prepare, core_mgr);
+	batch_init(&self->batch);
+	dtr_queue_init(&self->queue);
 	task_init(&self->task);
 }
 
 void
 commit_free(Commit* self)
 {
-	prepare_free(&self->prepare);
+	batch_free(&self->batch);
+	dtr_queue_free(&self->queue);
 	task_free(&self->task);
 }
 

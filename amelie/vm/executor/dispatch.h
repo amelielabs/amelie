@@ -15,13 +15,13 @@ typedef struct Dispatch Dispatch;
 
 struct Dispatch
 {
-	int       order;
-	List      list; 
-	int       list_count;
-	Complete  complete;
-	bool      close;
-	bool      returning;
-	List      link;
+	int      order;
+	List     list;
+	int      list_count;
+	Complete complete;
+	bool     close;
+	bool     returning;
+	List     link;
 };
 
 static inline Dispatch*
@@ -84,18 +84,30 @@ dispatch_add(Dispatch* self, ReqCache* cache, int type,
              int       start,
              Code*     code,
              CodeData* code_data,
-             Core*     core)
+             Part*     part)
 {
 	auto req = req_create(cache);
 	req->type      = type;
 	req->start     = start;
 	req->code      = code;
 	req->code_data = code_data;
-	req->core      = core;
+	req->part      = part;
 	req->dispatch  = self;
 	list_append(&self->list, &req->link);
 	self->list_count++;
 	return req;
+}
+
+static inline Req*
+dispatch_find(Dispatch* self, Part* part)
+{
+	list_foreach(&self->list)
+	{
+		auto req = list_at(Req, link);
+		if (req->part == part)
+			return req;
+	}
+	return NULL;
 }
 
 static inline void
