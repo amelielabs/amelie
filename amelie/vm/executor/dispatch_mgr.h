@@ -167,6 +167,7 @@ dispatch_mgr_send(DispatchMgr* self, Dispatch* dispatch)
 			self->ltrs_count++;
 		}
 		ltr->closed = dispatch->close;
+		req->ltr = ltr;
 		pipeline_send(&ltr->part->pipeline, &req->msg);
 	}
 
