@@ -23,8 +23,8 @@ typedef enum
 
 	// executor
 	MSG_DTR,
-	MSG_PTR,
-	MSG_PTR_STOP,
+	MSG_LTR,
+	MSG_LTR_STOP,
 	MSG_REQ,
 
 	// frontend

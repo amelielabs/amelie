@@ -11,6 +11,10 @@
 // AGPL-3.0 Licensed.
 //
 
+// pod
+#include "backend/pod.h"
+#include "backend/pod_mgr.h"
+
 // backend
 #include "backend/backend.h"
 #include "backend/backend_mgr.h"

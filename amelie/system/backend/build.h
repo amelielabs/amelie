@@ -38,4 +38,4 @@ void build_init(Build*, BuildType, BackendMgr*, Table*, Table*,
                 Column*, IndexConfig*);
 void build_free(Build*);
 void build_run(Build*);
-void build_execute(Build*, Core*);
+void build_execute(Build*, Part*);

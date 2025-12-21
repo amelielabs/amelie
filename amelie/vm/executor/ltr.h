@@ -39,8 +39,8 @@ ltr_allocate(Dtr* dtr, Complete* complete)
 	self->part     = NULL;
 	self->complete = complete;
 	mailbox_init(&self->queue);
-	msg_init(&self->queue_close, MSG_PTR_STOP);
-	msg_init(&self->msg, MSG_PTR);
+	msg_init(&self->queue_close, MSG_LTR_STOP);
+	msg_init(&self->msg, MSG_LTR);
 	list_init(&self->link);
 	return self;
 }

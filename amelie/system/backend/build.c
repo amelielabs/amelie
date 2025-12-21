@@ -34,7 +34,7 @@ build_init(Build*       self,
 	self->index       = index;
 	self->backend_mgr = backend_mgr;
 	local_init(&self->local);
-	dtr_init(&self->dtr, &self->local, &self->backend_mgr->core_mgr);
+	dtr_init(&self->dtr, &self->local);
 }
 
 void
@@ -43,6 +43,7 @@ build_free(Build* self)
 	dtr_free(&self->dtr);
 }
 
+#if 0
 void
 build_run(Build* self)
 {
@@ -123,20 +124,17 @@ build_run(Build* self)
 	    self->type != BUILD_NONE)
 		info(" ");
 }
+#endif
 
 void
-build_execute(Build* self, Core* worker)
+build_execute(Build* self, Part* part)
 {
 	switch (self->type) {
 	case BUILD_RECOVER:
-		// restore last checkpoint partitions related to the worker
-		recover_checkpoint(share()->storage, worker);
+		recover_part(part);
 		break;
 	case BUILD_INDEX:
 	{
-		auto part = part_list_match(&self->table->part_list, worker);
-		if (! part)
-			break;
 		// build new index content for current worker
 		auto config = self->table->config;
 		PartBuild pb;
@@ -147,10 +145,11 @@ build_execute(Build* self, Core* worker)
 		break;
 	}
 	case BUILD_COLUMN_ADD:
+	case BUILD_COLUMN_DROP:
+		break;
+#if 0
+	case BUILD_COLUMN_ADD:
 	{
-		auto part = part_list_match(&self->table->part_list, worker);
-		if (! part)
-			break;
 		auto part_dest = part_list_match(&self->table_new->part_list, worker);
 		assert(part_dest);
 		// build new table with new column for current worker
@@ -164,9 +163,6 @@ build_execute(Build* self, Core* worker)
 	}
 	case BUILD_COLUMN_DROP:
 	{
-		auto part = part_list_match(&self->table->part_list, worker);
-		if (! part)
-			break;
 		auto part_dest = part_list_match(&self->table_new->part_list, worker);
 		assert(part_dest);
 		// build new table without column for current worker
@@ -178,6 +174,7 @@ build_execute(Build* self, Core* worker)
 		part_build(&pb);
 		break;
 	}
+#endif
 	case BUILD_NONE:
 		// do nothing, used for sync
 		break;

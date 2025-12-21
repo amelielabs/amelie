@@ -21,9 +21,8 @@
 static void
 replay_read(Dtr* dtr, Dispatch* dispatch, Record* record)
 {
-	// redistribute rows between backends
-	Req* map[dtr->core_mgr->cores_count];
-	memset(map, 0, sizeof(map));
+	// redistribute rows between partitions
+	Req* last = NULL;
 
 	// replay transaction log record
 	auto cmd = record_cmd(record);
@@ -34,15 +33,20 @@ replay_read(Dtr* dtr, Dispatch* dispatch, Record* record)
 		auto part = part_mgr_find(&share()->storage->part_mgr, cmd->partition);
 		if (! part)
 			error("failed to find partition %" PRIu32, cmd->partition);
-		auto core = part->core;
-		auto req = map[core->order];
-		if (req == NULL)
+
+		// prepare request
+		Req* req = NULL;
+		if (last && last->part == part)
+			req = last;
+		else
 		{
-			req = dispatch_add(dispatch, &dtr->dispatch_mgr.cache_req,
-			                   REQ_REPLAY, -1, NULL, NULL,
-			                   core);
-			map[core->order] = req;
+			req = dispatch_find(dispatch, part);
+			if (! req)
+				req = dispatch_add(dispatch, &dtr->dispatch_mgr.cache_req,
+				                   REQ_REPLAY, -1, NULL, NULL,
+				                   part);
 		}
+		last = req;
 
 		// [cmd, pos]
 		buf_write(&req->arg, (uint8_t*)&cmd, sizeof(uint8_t**));

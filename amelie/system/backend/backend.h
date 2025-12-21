@@ -15,14 +15,13 @@ typedef struct Backend Backend;
 
 struct Backend
 {
-	Vm   vm;
-	Core core;
-	Task task;
-	List link;
+	PodMgr pod_mgr;
+	Task   task;
+	List   link;
 };
 
 Backend*
-backend_allocate(int);
+backend_allocate(void);
 void backend_free(Backend*);
 void backend_start(Backend*);
 void backend_stop(Backend*);
