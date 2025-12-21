@@ -25,10 +25,10 @@ void
 storage_init(Storage*   self,
              CatalogIf* iface,
              void*      iface_arg,
-             PartAttach attach,
-             void*      attach_arg)
+             PartMgrIf* iface_part,
+             void*      iface_part_arg)
 {
-	part_mgr_init(&self->part_mgr, attach, attach_arg);
+	part_mgr_init(&self->part_mgr, iface_part, iface_part_arg);
 	catalog_init(&self->catalog, &self->part_mgr, iface, iface_arg);
 	checkpoint_mgr_init(&self->checkpoint_mgr, &storage_checkpoint_if, self);
 	checkpointer_init(&self->checkpointer, &self->checkpoint_mgr);

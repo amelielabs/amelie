@@ -22,7 +22,7 @@ struct Storage
 	Checkpointer  checkpointer;
 };
 
-void storage_init(Storage*, CatalogIf*, void*, PartAttach, void*);
+void storage_init(Storage*, CatalogIf*, void*, PartMgrIf*, void*);
 void storage_free(Storage*);
 void storage_open(Storage*);
 void storage_close(Storage*);

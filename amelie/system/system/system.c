@@ -22,29 +22,36 @@
 #include <amelie_system.h>
 
 static void
-system_save_state(void* arg)
-{
-	unused(arg);
-	char path[PATH_MAX];
-	sfmt(path, sizeof(path), "%s/state.json", state_directory());
-	state_save(state(), path);
-}
-
-static void
 catalog_if_index(Catalog* self, Table* table, IndexConfig* index)
 {
-	// do parallel indexation per worker
-	System* system = self->iface_arg;
-	BackendMgr* backend_mgr = &system->backend_mgr;
+	unused(self);
+
+	// do parallel index creation for each partition
+	BuildConfig config =
+	{
+		.type      = BUILD_INDEX,
+		.table     = table,
+		.table_new = NULL,
+		.column    = NULL,
+		.index     = index
+	};
 	Build build;
-	build_init(&build, BUILD_INDEX, backend_mgr, table, NULL, NULL, index);
+	build_init(&build);
 	defer(build_free, &build);
+	build_prepare(&build, &config);
+	list_foreach(&table->part_list.list)
+		build_add(&build, list_at(Part, link));
 	build_run(&build);
 }
 
 static void
 catalog_if_column_add(Catalog* self, Table* table, Table* table_new, Column* column)
 {
+	(void)self;
+	(void)table;
+	(void)table_new;
+	(void)column;
+#if 0
 	// rebuild new table with new column in parallel per worker
 	System* system = self->iface_arg;
 	BackendMgr* backend_mgr = &system->backend_mgr;
@@ -52,11 +59,17 @@ catalog_if_column_add(Catalog* self, Table* table, Table* table_new, Column* col
 	build_init(&build, BUILD_COLUMN_ADD, backend_mgr, table, table_new, column, NULL);
 	defer(build_free, &build);
 	build_run(&build);
+#endif
 }
 
 static void
 catalog_if_column_drop(Catalog* self, Table* table, Table* table_new, Column* column)
 {
+	(void)self;
+	(void)table;
+	(void)table_new;
+	(void)column;
+#if 0
 	// rebuild new table without column in parallel per worker
 	System* system = self->iface_arg;
 	BackendMgr* backend_mgr = &system->backend_mgr;
@@ -64,6 +77,7 @@ catalog_if_column_drop(Catalog* self, Table* table, Table* table_new, Column* co
 	build_init(&build, BUILD_COLUMN_DROP, backend_mgr, table, table_new, column, NULL);
 	defer(build_free, &build);
 	build_run(&build);
+#endif
 }
 
 static void
@@ -174,22 +188,44 @@ static FrontendIf frontend_if =
 };
 
 static void
-system_attach(PartList* list, void* arg)
+system_on_server_connect(Server* server, Client* client)
 {
-	// redistribute partitions across backends
-	System* self = arg;
-	auto backend_mgr = &self->backend_mgr;
+	System* self = server->on_connect_arg;
+	frontend_mgr_forward(&self->frontend_mgr, &client->msg);
+}
+
+static void
+part_mgr_if_attach(PartMgr* self, PartList* list)
+{
+	System* system = self->iface_arg;
 	if (list->list_count > PARTITION_MAX)
 		error("exceeded the maximum number of partitions per table");
-	// extend backend pool
-	backend_mgr_ensure(backend_mgr, list->list_count);
-	auto order = 0;
-	list_foreach(&list->list)
-	{
-		auto part = list_at(Part, link);
-		part->core = &backend_mgr->workers[order]->core;
-		order++;
-	}
+
+	// create pods on backends
+	backend_mgr_deploy(&system->backend_mgr, list);
+}
+
+static void
+part_mgr_if_detach(PartMgr* self, PartList* list)
+{
+	// drop pods on backends
+	System* system = self->iface_arg;
+	backend_mgr_undeploy(&system->backend_mgr, list);
+}
+
+static PartMgrIf part_mgr_if =
+{
+	.attach = part_mgr_if_attach,
+	.detach = part_mgr_if_detach
+};
+
+static void
+system_save_state(void* arg)
+{
+	unused(arg);
+	char path[PATH_MAX];
+	sfmt(path, sizeof(path), "%s/state.json", state_directory());
+	state_save(state(), path);
 }
 
 System*
@@ -208,7 +244,6 @@ system_create(void)
 	auto share = &self->share;
 	share->executor     = &self->executor;
 	share->commit       = &self->commit;
-	share->core_mgr     = &self->backend_mgr.core_mgr;
 	share->repl         = &self->repl;
 	share->function_mgr = &self->function_mgr;
 	share->user_mgr     = &self->user_mgr;
@@ -225,15 +260,14 @@ system_create(void)
 	frontend_mgr_init(&self->frontend_mgr);
 	backend_mgr_init(&self->backend_mgr);
 	executor_init(&self->executor);
-	commit_init(&self->commit, &self->storage, &self->backend_mgr.core_mgr,
-	            &self->executor);
+	commit_init(&self->commit, &self->storage, &self->executor);
 	rpc_queue_init(&self->lock_queue);
 
 	// vm
 	function_mgr_init(&self->function_mgr);
 
 	// storage
-	storage_init(&self->storage, &catalog_if, self, system_attach, self);
+	storage_init(&self->storage, &catalog_if, self, &part_mgr_if, self);
 
 	// replication
 	repl_init(&self->repl, &self->storage);
@@ -254,25 +288,33 @@ system_free(System* self)
 }
 
 static void
-system_on_server_connect(Server* server, Client* client)
-{
-	System* self = server->on_connect_arg;
-	frontend_mgr_forward(&self->frontend_mgr, &client->msg);
-}
-
-static void
 system_recover(System* self)
 {
-	// ask each backend to recover last checkpoint partitions in parallel
+	auto storage = &self->storage;
+
+	// recover partitions
 	int workers = opt_int_of(&config()->backends);
 	info("");
 	info("recover: checkpoints/%" PRIu64 "/ (using %d backends)",
 	     state_checkpoint(), workers);
 
+	BuildConfig config =
+	{
+		.type      = BUILD_RECOVER,
+		.table     = NULL,
+		.table_new = NULL,
+		.column    = NULL,
+		.index     = NULL,
+	};
 	Build build;
-	build_init(&build, BUILD_RECOVER, &self->backend_mgr, NULL, NULL, NULL, NULL);
+	build_init(&build);
 	defer(build_free, &build);
+	build_prepare(&build, &config);
+	build_add_all(&build, storage);
 	build_run(&build);
+
+	// sync tsn
+	catalog_sync(&storage->catalog);
 
 	// replay wals
 	info("");
@@ -319,7 +361,7 @@ system_start(System* self, bool bootstrap)
 		info("client-only mode.");
 
 		// start frontends to handle relay clients
-		int workers = opt_int_of(&config()->frontends);
+		auto workers = opt_int_of(&config()->frontends);
 		frontend_mgr_start(&self->frontend_mgr,
 		                   &frontend_if,
 		                   self,
@@ -333,10 +375,14 @@ system_start(System* self, bool bootstrap)
 	// open user manager
 	user_mgr_open(&self->user_mgr);
 
+	// start backend workers
+	auto workers = opt_int_of(&config()->backends);
+	backend_mgr_start(&self->backend_mgr, workers);
+
 	// start commit worker
 	commit_start(&self->commit);
 
-	// create system object and objects from last snapshot (including backends)
+	// create system object and objects from last snapshot
 	storage_open(&self->storage);
 
 	// do parallel recover of snapshots and wal
@@ -353,7 +399,7 @@ system_start(System* self, bool bootstrap)
 	wal_periodic_start(&self->storage.wal_mgr.wal_periodic);
 
 	// start frontends
-	int workers = opt_int_of(&config()->frontends);
+	workers = opt_int_of(&config()->frontends);
 	frontend_mgr_start(&self->frontend_mgr,
 	                   &frontend_if,
 	                   self,
@@ -434,13 +480,23 @@ system_lock(System* self, Rpc* rpc)
 		// request exclusive lock for each frontend worker
 		frontend_mgr_lock(&self->frontend_mgr);
 
-		// sync to make last operation completed on backends
+		// sync to make last operation completed on every partition
 		//
 		// even with exclusive lock, there is a chance that
 		// last abort did not not finished yet
+		BuildConfig config =
+		{
+			.type      = BUILD_NONE,
+			.table     = NULL,
+			.table_new = NULL,
+			.column    = NULL,
+			.index     = NULL,
+		};
 		Build build;
-		build_init(&build, BUILD_NONE, &self->backend_mgr, NULL, NULL, NULL, NULL);
+		build_init(&build);
 		defer(build_free, &build);
+		build_prepare(&build, &config);
+		build_add_all(&build, &self->storage);
 		build_run(&build);
 
 		rpc_done(rpc);

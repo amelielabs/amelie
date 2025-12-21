@@ -23,6 +23,20 @@ backend_rpc(Rpc* rpc, void* arg)
 {
 	Backend* self = arg;
 	switch (rpc->msg.id) {
+	case MSG_DEPLOY:
+	{
+		// create and start new pod
+		Part* part = rpc_arg_ptr(rpc, 0);
+		pod_mgr_create(&self->pod_mgr, part);
+		break;
+	}
+	case MSG_UNDEPLOY:
+	{
+		// stop and drop pod
+		Part* part = rpc_arg_ptr(rpc, 0);
+		pod_mgr_drop_by(&self->pod_mgr, part);
+		break;
+	}
 	case MSG_STOP:
 	{
 		// shutdown pods
@@ -30,6 +44,7 @@ backend_rpc(Rpc* rpc, void* arg)
 		break;
 	}
 	default:
+		abort();
 		break;
 	}
 }

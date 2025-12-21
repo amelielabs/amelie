@@ -34,7 +34,7 @@ session_create(Frontend* frontend)
 	compiler_init(&self->compiler, &self->local, &self->set_cache);
 	vm_init(&self->vm, NULL, &self->dtr);
 	profile_init(&self->profile);
-	dtr_init(&self->dtr, &self->local, share()->core_mgr);
+	dtr_init(&self->dtr, &self->local);
 	return self;
 }
 
@@ -258,7 +258,7 @@ session_execute_utility(Session* self, Output* output)
 		Write write;
 		write_init(&write);
 		defer(write_free, &write);
-		write_begin(&write);
+		write_begin(&write, 0);
 		write_add(&write, &tr.log.write_log);
 
 		WriteList write_list;

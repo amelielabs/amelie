@@ -19,20 +19,10 @@
 #include <amelie_backend.h>
 
 void
-build_init(Build*       self,
-           BuildType    type,
-           BackendMgr*  backend_mgr,
-           Table*       table,
-           Table*       table_new,
-           Column*      column,
-           IndexConfig* index)
+build_init(Build* self)
 {
-	self->type        = type;
-	self->table       = table;
-	self->table_new   = table_new;
-	self->column      = column;
-	self->index       = index;
-	self->backend_mgr = backend_mgr;
+	self->config   = NULL;
+	self->dispatch = NULL;
 	local_init(&self->local);
 	dtr_init(&self->dtr, &self->local);
 }
@@ -43,42 +33,92 @@ build_free(Build* self)
 	dtr_free(&self->dtr);
 }
 
-#if 0
+void
+build_reset(Build* self)
+{
+	self->config   = NULL;
+	self->dispatch = NULL;
+	dtr_reset(&self->dtr);
+}
+
+void
+build_prepare(Build* self, BuildConfig* config)
+{
+	// set config
+	self->config = config;
+
+	// prepare distributed transaction
+	auto dtr = &self->dtr;
+	dtr_create(&self->dtr, NULL);
+
+	// prepare dispatch
+	auto dispatch_mgr = &dtr->dispatch_mgr;
+	auto dispatch = dispatch_create(&dispatch_mgr->cache);
+	dispatch_set_close(dispatch);
+	self->dispatch = dispatch;
+}
+
+void
+build_add(Build* self, Part* part)
+{
+	auto dispatch_mgr = &self->dtr.dispatch_mgr;
+	auto req = dispatch_add(self->dispatch, &dispatch_mgr->cache_req,
+	                        REQ_BUILD, -1, NULL, NULL,
+	                        part);
+	buf_write(&req->arg, &self, sizeof(Build*));
+}
+
+void
+build_add_all(Build* self, Storage* storage)
+{
+	// add all partitions
+	list_foreach(&storage->catalog.table_mgr.mgr.list)
+	{
+		auto table = table_of(list_at(Relation, link));
+		list_foreach(&table->part_list.list)
+		{
+			auto part = list_at(Part, link);
+			build_add(self, part);
+		}
+	}
+}
+
 void
 build_run(Build* self)
 {
-	switch (self->type) {
+	auto config = self->config;
+	switch (config->type) {
 	case BUILD_INDEX:
 	{
-		auto config = self->table->config;
+		auto table_config = config->table->config;
 		info("");
 		info("alter: create index %.*s on %.*s",
-		     str_size(&self->index->name),
-		     str_of(&self->index->name),
-		     str_size(&config->name),
-		     str_of(&config->name));
+		     str_size(&config->index->name),
+		     str_of(&config->index->name),
+		     str_size(&table_config->name),
+		     str_of(&table_config->name));
 		break;
 	}
 	case BUILD_COLUMN_ADD:
 	{
-		auto config = self->table->config;
+		auto table_config = config->table->config;
 		info("");
 		info("alter: alter table %.*s add column %.*s",
-		     str_size(&config->name),
-		     str_of(&config->name),
-		     str_size(&self->column->name),
-		     str_of(&self->column->name));
+		     str_size(&table_config->name),
+		     str_of(&table_config->name),
+		     str_size(&config->column->name),
+		     str_of(&config->column->name));
 		break;
 	}
 	case BUILD_COLUMN_DROP:
 	{
-		auto config = self->table->config;
+		auto table_config = config->table->config;
 		info("");
 		info("alter: alter table %.*s drop column %.*s",
-		     str_size(&config->name),
-		     str_of(&config->name),
-		     str_size(&self->column->name),
-		     str_of(&self->column->name));
+		     str_size(&table_config->name),
+		     str_of(&table_config->name),
+		     str_size(&config->column->name),
+		     str_of(&config->column->name));
 		break;
 	}
 	// BUILD_RECOVER
@@ -87,31 +127,9 @@ build_run(Build* self)
 		break;
 	}
 
-	auto backend_mgr = self->backend_mgr;
-	if (! backend_mgr->workers_count)
-		return;
-
+	// execute
 	auto dtr = &self->dtr;
-	auto dispatch_mgr = &dtr->dispatch_mgr;
-	auto dispatch = dispatch_create(&dispatch_mgr->cache);
-	dispatch_set_close(dispatch);
-
-	// ask each backend to build related partition
-	for (auto i = 0; i < backend_mgr->workers_count; i++)
-	{
-		auto backend = backend_mgr->workers[i];
-		auto req = dispatch_add(dispatch, &dispatch_mgr->cache_req,
-		                        REQ_BUILD, -1, NULL, NULL,
-		                        &backend->core);
-		buf_write(&req->arg, &self, sizeof(Build*));
-	}
-
-	// process distributed transaction
-	auto program = program_allocate();
-	defer(program_free, program);
-
-	dtr_reset(dtr);
-	dtr_create(dtr, program);
+	auto dispatch = self->dispatch;
 	auto on_error = error_catch(
 		executor_send(share()->executor, dtr, dispatch);
 	);
@@ -120,27 +138,27 @@ build_run(Build* self)
 		error = error_create(&am_self()->error);
 	commit(share()->commit, dtr, error);
 
-	if (self->type != BUILD_RECOVER &&
-	    self->type != BUILD_NONE)
+	if (config->type != BUILD_RECOVER &&
+	    config->type != BUILD_NONE)
 		info(" ");
 }
-#endif
 
 void
 build_execute(Build* self, Part* part)
 {
-	switch (self->type) {
+	auto config = self->config;
+	switch (config->type) {
 	case BUILD_RECOVER:
 		recover_part(part);
 		break;
 	case BUILD_INDEX:
 	{
 		// build new index content for current worker
-		auto config = self->table->config;
+		auto table_config = config->table->config;
 		PartBuild pb;
 		part_build_init(&pb, PART_BUILD_INDEX, part, NULL, NULL,
-		                self->index,
-		                &config->db, &config->name);
+		                config->index,
+		                &table_config->db, &table_config->name);
 		part_build(&pb);
 		break;
 	}
@@ -150,12 +168,12 @@ build_execute(Build* self, Part* part)
 #if 0
 	case BUILD_COLUMN_ADD:
 	{
-		auto part_dest = part_list_match(&self->table_new->part_list, worker);
+		auto part_dest = part_list_match(&arg->table_new->part_list, worker);
 		assert(part_dest);
 		// build new table with new column for current worker
-		auto config = self->table->config;
+		auto config = arg->table->config;
 		PartBuild pb;
-		part_build_init(&pb, PART_BUILD_COLUMN_ADD, part, part_dest, self->column,
+		part_build_init(&pb, PART_BUILD_COLUMN_ADD, part, part_dest, arg->column,
 		                NULL,
 		                &config->db, &config->name);
 		part_build(&pb);
@@ -163,12 +181,12 @@ build_execute(Build* self, Part* part)
 	}
 	case BUILD_COLUMN_DROP:
 	{
-		auto part_dest = part_list_match(&self->table_new->part_list, worker);
+		auto part_dest = part_list_match(&arg->table_new->part_list, worker);
 		assert(part_dest);
 		// build new table without column for current worker
-		auto config = self->table->config;
+		auto config = arg->table->config;
 		PartBuild pb;
-		part_build_init(&pb, PART_BUILD_COLUMN_DROP, part, part_dest, self->column,
+		part_build_init(&pb, PART_BUILD_COLUMN_DROP, part, part_dest, arg->column,
 		                NULL,
 		                &config->db, &config->name);
 		part_build(&pb);

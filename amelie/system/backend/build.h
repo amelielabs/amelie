@@ -11,7 +11,8 @@
 // AGPL-3.0 Licensed.
 //
 
-typedef struct Build Build;
+typedef struct BuildConfig BuildConfig;
+typedef struct Build       Build;
 
 typedef enum
 {
@@ -22,20 +23,28 @@ typedef enum
 	BUILD_INDEX
 } BuildType;
 
-struct Build
+struct BuildConfig
 {
 	BuildType    type;
-	Dtr          dtr;
-	Local        local;
 	Table*       table;
 	Table*       table_new;
 	Column*      column;
 	IndexConfig* index;
-	BackendMgr*  backend_mgr;
 };
 
-void build_init(Build*, BuildType, BackendMgr*, Table*, Table*,
-                Column*, IndexConfig*);
+struct Build
+{
+	BuildConfig* config;
+	Dispatch*    dispatch;
+	Dtr          dtr;
+	Local        local;
+};
+
+void build_init(Build*);
 void build_free(Build*);
+void build_reset(Build*);
+void build_prepare(Build*, BuildConfig*);
+void build_add(Build*, Part*);
+void build_add_all(Build*, Storage*);
 void build_run(Build*);
 void build_execute(Build*, Part*);

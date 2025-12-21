@@ -89,3 +89,47 @@ backend_mgr_stop(BackendMgr* self)
 	am_free(self->workers);
 	self->workers = NULL;
 }
+
+static inline Backend*
+backend_mgr_find(BackendMgr* self, Task* task)
+{
+	for (int i = 0; i < self->workers_count; i++)
+	{
+		auto backend = self->workers[i];
+		if (&backend->task == task)
+			return backend;
+	}
+	return NULL;
+}
+
+static inline void
+backend_mgr_deploy(BackendMgr* self, PartList* list)
+{
+	// evenly redistribute backends and create pods
+	// for each partition
+	auto order = 0;
+	list_foreach(&list->list)
+	{
+		auto part = list_at(Part, link);
+		if (order == self->workers_count)
+			order = 0;
+		auto backend = self->workers[order];
+		rpc(&backend->task, MSG_DEPLOY, 1, part);
+		order++;
+	}
+}
+
+static inline void
+backend_mgr_undeploy(BackendMgr* self, PartList* list)
+{
+	// drop pods associated with partitions
+	list_foreach(&list->list)
+	{
+		auto part = list_at(Part, link);
+		if (! part->pipeline.task)
+			continue;
+		auto backend = backend_mgr_find(self, part->pipeline.task);
+		assert(backend);
+		rpc(&backend->task, MSG_UNDEPLOY, 1, part);
+	}
+}

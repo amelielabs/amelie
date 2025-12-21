@@ -11,22 +11,27 @@
 // AGPL-3.0 Licensed.
 //
 
-typedef struct PartMgr PartMgr;
+typedef struct PartMgrIf PartMgrIf;
+typedef struct PartMgr   PartMgr;
 
-typedef void (*PartAttach)(PartList*, void*);
+struct PartMgrIf
+{
+	void (*attach)(PartMgr*, PartList*);
+	void (*detach)(PartMgr*, PartList*);
+};
 
 struct PartMgr
 {
 	Hashtable  ht;
-	PartAttach attach;
-	void*      attach_arg;
+	PartMgrIf* iface;
+	void*      iface_arg;
 };
 
 static inline void
-part_mgr_init(PartMgr* self, PartAttach attach, void* attach_arg)
+part_mgr_init(PartMgr* self, PartMgrIf* iface, void* iface_arg)
 {
-	self->attach     = attach;
-	self->attach_arg = attach_arg;
+	self->iface     = iface;
+	self->iface_arg = iface_arg;
 	hashtable_init(&self->ht);
 }
 
@@ -53,8 +58,8 @@ part_mgr_attach(PartMgr* self, PartList* list)
 		hashtable_set(&self->ht, &part->link_ht);
 	}
 
-	// assign backends to partitions
-	self->attach(list, self->attach_arg);
+	// create pods
+	self->iface->attach(self, list);
 }
 
 static inline void
@@ -65,6 +70,9 @@ part_mgr_detach(PartMgr* self, PartList* list)
 		auto part = list_at(Part, link);
 		hashtable_delete(&self->ht, &part->link_ht);
 	}
+
+	// drop pods
+	self->iface->detach(self, list);
 }
 
 hot static inline bool

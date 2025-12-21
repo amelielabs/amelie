@@ -31,6 +31,10 @@ typedef enum
 	MSG_CLIENT,
 	MSG_NATIVE,
 
+	// backend
+	MSG_DEPLOY,
+	MSG_UNDEPLOY,
+
 	// system
 	MSG_LOCK,
 	MSG_UNLOCK,
