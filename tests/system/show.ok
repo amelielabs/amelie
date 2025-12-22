@@ -125,7 +125,7 @@ show wal;
   "slots": 0,
   "slots_min": -1,
   "writes": 4,
-  "writes_bytes": 537,
+  "writes_bytes": 569,
   "ops": 4,
   "checkpoint": 1
 }]
@@ -149,6 +149,7 @@ show state;
   "backends": 1,
   "checkpoint": 1,
   "lsn": 5,
+  "tsn": 1,
   "psn": 1,
   "read_only": false
 }]
@@ -161,6 +162,7 @@ select show('state');
   "backends": 1,
   "checkpoint": 1,
   "lsn": 5,
+  "tsn": 1,
   "psn": 1,
   "read_only": false
 }]

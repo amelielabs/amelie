@@ -27,25 +27,6 @@ select * from test use index (i);
 drop index i on test;
 drop table test;
 
-# test: from use heap
-create table test (id int primary key, data int);
-insert into test values (0, 2);
-insert into test values (1, 1);
-insert into test values (2, 0);
-explain select * from test;
-explain select * from test use heap;
-select * from test use heap;
-drop table test;
-
-# test: from use heap (subquery)
-create table test (id int primary key, data int);
-insert into test values (0, 2);
-insert into test values (1, 1);
-insert into test values (2, 0);
-explain select (select id from test use heap);
-select (select id from test use heap);
-drop table test;
-
 # test: hash/hash
 create table test (id int, data int, primary key (id, data) using hash) partitions 1;
 create index i on test (data) using hash;

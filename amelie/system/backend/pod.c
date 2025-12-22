@@ -136,7 +136,7 @@ pod_run(Pod* self, Ltr* ltr)
 	while (active)
 	{
 		auto msg = mailbox_pop(queue, am_self());
-		if (msg->id == MSG_STOP)
+		if (msg->id == MSG_LTR_STOP)
 		{
 			active = false;
 			continue;

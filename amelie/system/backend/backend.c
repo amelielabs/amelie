@@ -68,7 +68,7 @@ backend_main(void* arg)
 		case MSG_LTR_STOP:
 		{
 			auto ltr = container_of(msg, Ltr, queue_close);
-			pipeline_add(&ltr->part->pipeline, msg);
+			ltr_add(ltr, msg);
 			break;
 		}
 		case MSG_REQ:

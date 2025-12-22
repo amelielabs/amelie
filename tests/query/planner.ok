@@ -31,9 +31,9 @@ explain select * from test;
 select * from test;
 [[0, 2], [1, 1], [2, 0]]
 select * from test use;
-{"msg": "select * from test use❰;❱ ⟵ USE INDEX or HEAP expected"}
+{"msg": "select * from test use❰;❱ ⟵ INDEX expected"}
 select * from test use 1;
-{"msg": "select * from test use ❰1❱ ⟵ USE INDEX or HEAP expected"}
+{"msg": "select * from test use ❰1❱ ⟵ INDEX expected"}
 select * from test use index;
 {"msg": "select * from test use index❰;❱ ⟵ ( expected"}
 select * from test use index 1;
@@ -67,68 +67,6 @@ explain select * from test use index (i);
 select * from test use index (i);
 [[2, 0], [1, 1], [0, 2]]
 drop index i on test;
-drop table test;
-# test: from use heap
-create table test (id int primary key, data int);
-insert into test values (0, 2);
-insert into test values (1, 1);
-insert into test values (2, 0);
-explain select * from test;
-[{
-  "main": {
-    "00": "send_all            0      0      18    # test (select, closing)",
-    "01": "union               1      0      0     ",
-    "02": "recv                1      0      0     ",
-    "03": "ret                 1      0      -     "
-  },
-  "pushdown": {
-    "00": "set                 0      2      0     ",
-    "01": "table_open_part     1      0      8     # test (primary)",
-    "02": "table_readi32       2      1      0     ",
-    "03": "push                2      0      0     ",
-    "04": "table_readi32       2      1      1     ",
-    "05": "push                2      0      0     ",
-    "06": "set_add             0      0      0     ",
-    "07": "table_next          1      2      0     ",
-    "08": "free                1      0      0     ",
-    "09": "ret                 0      0      -     "
-  },
-  "access": [["test", "ro"]]
-}]
-explain select * from test use heap;
-[{
-  "main": {
-    "00": "send_all            0      0      10    # test (select, closing)",
-    "01": "union               1      0      0     ",
-    "02": "recv                1      0      0     ",
-    "03": "ret                 1      0      -     "
-  },
-  "pushdown": {
-    "00": "set                 0      2      0     ",
-    "01": "table_open_heap     1      0      8     # test",
-    "02": "table_readi32       2      1      0     ",
-    "03": "push                2      0      0     ",
-    "04": "table_readi32       2      1      1     ",
-    "05": "push                2      0      0     ",
-    "06": "set_add             0      0      0     ",
-    "07": "table_next          1      2      0     ",
-    "08": "free                1      0      0     ",
-    "09": "ret                 0      0      -     "
-  },
-  "access": [["test", "ro"]]
-}]
-select * from test use heap;
-[[0, 2], [1, 1], [2, 0]]
-drop table test;
-# test: from use heap (subquery)
-create table test (id int primary key, data int);
-insert into test values (0, 2);
-insert into test values (1, 1);
-insert into test values (2, 0);
-explain select (select id from test use heap);
-{"msg": "heap only scan for subqueries and inner join targets are not supported"}
-select (select id from test use heap);
-{"msg": "heap only scan for subqueries and inner join targets are not supported"}
 drop table test;
 # test: hash/hash
 create table test (id int, data int, primary key (id, data) using hash) partitions 1;

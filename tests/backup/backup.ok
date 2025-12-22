@@ -77,7 +77,7 @@ show wal;
   "slots": 0,
   "slots_min": -1,
   "writes": 1,
-  "writes_bytes": 44,
+  "writes_bytes": 52,
   "ops": 1,
   "checkpoint": 1
 }]

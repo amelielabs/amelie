@@ -35,7 +35,7 @@ show all;
   "limit_recv": 1048576,
   "limit_write": 0,
   "frontends": 1,
-  "backends": 3,
+  "backends": 1,
   "cpu_affinity": true,
   "wal_worker": false,
   "wal_crc": true,
@@ -59,9 +59,10 @@ show state;
   "directory": "_output/E1",
   "uuid": "00000000-0000-0000-0000-000000000000",
   "frontends": 1,
-  "backends": 3,
+  "backends": 1,
   "checkpoint": 1,
   "lsn": 3,
+  "tsn": 1,
   "psn": 3,
   "read_only": false
 }]
