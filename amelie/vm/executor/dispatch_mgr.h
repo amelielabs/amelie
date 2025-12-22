@@ -86,10 +86,9 @@ dispatch_mgr_free(DispatchMgr* self)
 	req_cache_free(&self->cache_req);
 }
 
-hot static inline int
+hot static inline void
 dispatch_mgr_close(DispatchMgr* self)
 {
-	int active = 0;
 	list_foreach(&self->ltrs)
 	{
 		auto ltr = list_at(Ltr, link);
@@ -97,9 +96,7 @@ dispatch_mgr_close(DispatchMgr* self)
 			continue;
 		pipeline_send(&ltr->part->pipeline, &ltr->queue_close);
 		ltr->closed = true;
-		active++;
 	}
-	return active;
 }
 
 hot static inline Ltr*
@@ -184,10 +181,11 @@ dispatch_mgr_complete(DispatchMgr* self, Buf** error, bool* write, uint64_t* tsn
 	*write = false;
 	*tsn   = 0;
 
-	// make sure all transactions complete execution
-	auto active = dispatch_mgr_close(self);
-	if (! active)
+	if (! self->ltrs_count)
 		return;
+
+	// make sure all transactions complete execution
+	dispatch_mgr_close(self);
 
 	// wait for group completion
 	complete_wait(&self->complete);

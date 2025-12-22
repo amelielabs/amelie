@@ -37,7 +37,7 @@ value_encode(Value* self, Timezone* tz, Buf* buf)
 	{
 		auto offset = buf_size(buf);
 		encode_string32(buf, 0);
-		buf_reserve(buf, 32);
+		buf_reserve(buf, 128);
 		int size = date_get(self->integer, (char*)buf->position, 128);
 		buf_advance(buf, size);
 		uint8_t* pos = buf->start + offset;
