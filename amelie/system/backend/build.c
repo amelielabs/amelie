@@ -86,6 +86,15 @@ build_add_all(Build* self, Storage* storage)
 void
 build_run(Build* self)
 {
+	assert(self->dispatch);
+	if (! self->dispatch->list_count)
+	{
+		auto dispatch_mgr = &self->dtr.dispatch_mgr;
+		dispatch_cache_push(&dispatch_mgr->cache, self->dispatch, &dispatch_mgr->cache_req);
+		self->dispatch = NULL;
+		return;
+	}
+
 	auto config = self->config;
 	switch (config->type) {
 	case BUILD_INDEX:

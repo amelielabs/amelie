@@ -180,7 +180,6 @@ set(AMELIE_SOURCES_STORAGE
     ${AMELIE_ROOT}/storage/heap/heap.c
     ${AMELIE_ROOT}/storage/heap/heap_row.c
     ${AMELIE_ROOT}/storage/heap/heap_file.c
-    ${AMELIE_ROOT}/storage/transaction/relation_mgr.c
     ${AMELIE_ROOT}/storage/transaction/commit.c
     ${AMELIE_ROOT}/storage/index/tree.c
     ${AMELIE_ROOT}/storage/index/index_tree.c
@@ -192,6 +191,7 @@ set(AMELIE_SOURCES_STORAGE
     ${AMELIE_ROOT}/storage/checkpoint/checkpoint_mgr.c
     ${AMELIE_ROOT}/storage/checkpoint/checkpoint.c
     ${AMELIE_ROOT}/storage/checkpoint/checkpointer.c
+    ${AMELIE_ROOT}/storage/catalog/relation_mgr.c
     ${AMELIE_ROOT}/storage/catalog/db_mgr.c
     ${AMELIE_ROOT}/storage/catalog/table_mgr.c
     ${AMELIE_ROOT}/storage/catalog/table_mgr_alter.c
@@ -206,7 +206,7 @@ set(AMELIE_SOURCES_STORAGE
     ${AMELIE_ROOT}/storage/wal/wal_mgr.c
     ${AMELIE_ROOT}/storage/storage/storage.c
     ${AMELIE_ROOT}/storage/storage/storage_checkpoint.c
-    ${AMELIE_ROOT}/storage/storage/recover_checkpoint.c
+    ${AMELIE_ROOT}/storage/storage/recover_part.c
     ${AMELIE_ROOT}/storage/storage/recover.c)
 
 set(AMELIE_SOURCES_REPL
@@ -304,6 +304,7 @@ set(AMELIE_SOURCES_SYSTEM
     ${AMELIE_ROOT}/system/frontend/frontend.c
     ${AMELIE_ROOT}/system/frontend/frontend_client.c
     ${AMELIE_ROOT}/system/frontend/frontend_native.c
+    ${AMELIE_ROOT}/system/backend/pod.c
     ${AMELIE_ROOT}/system/backend/backend.c
     ${AMELIE_ROOT}/system/backend/build.c
     ${AMELIE_ROOT}/system/backend/replay.c
