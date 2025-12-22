@@ -37,6 +37,7 @@ struct Build
 	BuildConfig* config;
 	Dispatch*    dispatch;
 	Dtr          dtr;
+	Program*     program;
 	Local        local;
 };
 

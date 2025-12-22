@@ -165,6 +165,7 @@ dispatch_mgr_send(DispatchMgr* self, Dispatch* dispatch)
 			ltr = ltr_create(&self->cache_ltr, req->part, self->dtr, &self->complete);
 			list_append(&self->ltrs, &ltr->link);
 			self->ltrs_count++;
+			pipeline_send(&ltr->part->pipeline, &ltr->msg);
 		}
 		ltr->closed = dispatch->close;
 		req->ltr = ltr;

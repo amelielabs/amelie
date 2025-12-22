@@ -23,6 +23,7 @@ build_init(Build* self)
 {
 	self->config   = NULL;
 	self->dispatch = NULL;
+	self->program  = program_allocate();
 	local_init(&self->local);
 	dtr_init(&self->dtr, &self->local);
 }
@@ -31,6 +32,7 @@ void
 build_free(Build* self)
 {
 	dtr_free(&self->dtr);
+	program_free(self->program);
 }
 
 void
@@ -49,7 +51,7 @@ build_prepare(Build* self, BuildConfig* config)
 
 	// prepare distributed transaction
 	auto dtr = &self->dtr;
-	dtr_create(&self->dtr, NULL);
+	dtr_create(&self->dtr, self->program);
 
 	// prepare dispatch
 	auto dispatch_mgr = &dtr->dispatch_mgr;
