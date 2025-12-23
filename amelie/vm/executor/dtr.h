@@ -16,9 +16,7 @@ typedef struct Dtr Dtr;
 struct Dtr
 {
 	Msg         msg;
-	uint64_t    tsn;
-	uint64_t    tsn_max;
-	Consensus   consensus;
+	uint64_t    id;
 	DispatchMgr dispatch_mgr;
 	Program*    program;
 	Buf*        error;
@@ -36,13 +34,11 @@ struct Dtr
 static inline void
 dtr_init(Dtr* self, Local* local)
 {
-	self->tsn     = 0;
-	self->tsn_max = 0;
+	self->id      = 0;
 	self->program = NULL;
 	self->error   = NULL;
 	self->abort   = false;
 	self->local   = local;
-	consensus_init(&self->consensus);
 	dispatch_mgr_init(&self->dispatch_mgr, self);
 	event_init(&self->on_access);
 	event_init(&self->on_commit);
@@ -57,8 +53,7 @@ dtr_init(Dtr* self, Local* local)
 static inline void
 dtr_reset(Dtr* self)
 {
-	self->tsn     = 0;
-	self->tsn_max = 0;
+	self->id      = 0;
 	self->program = NULL;
 	self->abort   = false;
 	if (self->error)
@@ -66,7 +61,6 @@ dtr_reset(Dtr* self)
 		buf_free(self->error);
 		self->error = NULL;
 	}
-	consensus_init(&self->consensus);
 	dispatch_mgr_reset(&self->dispatch_mgr);
 	limit_reset(&self->limit, opt_int_of(&config()->limit_write));
 	write_reset(&self->write);
@@ -96,7 +90,7 @@ dtr_create(Dtr* self, Program* program)
 static inline bool
 dtr_active(Dtr* self)
 {
-	return self->tsn != 0;
+	return self->id != 0;
 }
 
 static inline void
@@ -110,19 +104,4 @@ dtr_set_error(Dtr* self, Buf* buf)
 {
 	assert(! self->error);
 	self->error = buf;
-}
-
-static inline void
-dtr_sync_tsn_max(Dtr* self, uint64_t tsn)
-{
-	// force set observed tsn_max for dtr and all related ltrs
-	// (used for abort)
-	self->tsn_max = tsn;
-	list_foreach(&self->dispatch_mgr.ltrs)
-	{
-		auto ltr = list_at(Ltr, link);
-		if (! ltr->tr)
-			continue;
-		ltr->tr->tsn_max = tsn;
-	}
 }

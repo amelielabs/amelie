@@ -15,19 +15,19 @@ typedef struct Executor Executor;
 
 struct Executor
 {
-	Spinlock  lock;
-	List      list;
-	List      list_wait;
-	Consensus consensus;
+	Spinlock lock;
+	uint64_t id;
+	List     list;
+	List     list_wait;
 };
 
 static inline void
 executor_init(Executor* self)
 {
+	self->id = 1;
 	list_init(&self->list);
 	list_init(&self->list_wait);
 	spinlock_init(&self->lock);
-	consensus_init(&self->consensus);
 }
 
 static inline void
@@ -67,8 +67,7 @@ executor_attach(Executor* self, Dtr* dtr, Dispatch* dispatch)
 	executor_attach_lock(self, dtr);
 
 	// register transaction and set global metrics
-	dtr->tsn = state_tsn_next();
-	dtr->consensus = self->consensus;
+	dtr->id = self->id++;
 	list_append(&self->list, &dtr->link);
 
 	// begin execution
@@ -113,27 +112,25 @@ hot static inline void
 executor_detach(Executor* self, Batch* batch)
 {
 	// group completion (called from Commit)
-	auto global = &self->consensus;
 
 	// called by Commit
 	spinlock_lock(&self->lock);
 
-	// apply global commit/abort metrics
-	if (batch->commit_tsn > global->commit)
-		global->commit = batch->commit_tsn;
-	if (batch->abort_tsn > global->abort)
-		global->abort  = batch->abort_tsn;
-
-	// remove transactions from the executor list
-	list_foreach_safe(&batch->commit)
+	// apply pending partitions metrics
+	auto ref = batch->pending;
+	while (ref)
 	{
-		auto dtr = list_at(Dtr, link_batch);
-		list_unlink(&dtr->link);
+		auto next = ref->pending_link;
+		ref->consensus    = ref->pending_consensus;
+		ref->pending      = false;
+		ref->pending_link = NULL;
+		ref = next;
 	}
 
-	list_foreach_safe(&batch->abort)
+	// remove transactions from the executor list
+	for (auto it = 0; it < batch->list_count; it++)
 	{
-		auto dtr = list_at(Dtr, link_batch);
+		auto dtr = batch_at(batch, it);
 		list_unlink(&dtr->link);
 	}
 

@@ -15,115 +15,176 @@ typedef struct Batch Batch;
 
 struct Batch
 {
-	uint64_t  commit_tsn;
-	List      commit;
-	int       commit_count;
-	uint64_t  abort_tsn;
-	List      abort;
-	int       abort_count;
+	Buf       list;
+	int       list_count;
+	Pipeline* pending;
 	WriteList write;
 };
+
+static inline Dtr*
+batch_at(Batch* self, int order)
+{
+	return ((Dtr**)self->list.start)[order];
+}
 
 static inline void
 batch_init(Batch* self)
 {
-	self->commit_tsn   = 0;
-	self->commit_count = 0;
-	self->abort_tsn    = 0;
-	self->abort_count  = 0;
-	list_init(&self->commit);
-	list_init(&self->abort);
+	self->pending    = NULL;
+	self->list_count = 0;
+	buf_init(&self->list);
 	write_list_init(&self->write);
 }
 
 static inline void
 batch_free(Batch* self)
 {
-	unused(self);
+	buf_free(&self->list);
 }
 
 static inline void
 batch_reset(Batch* self)
 {
-	self->commit_tsn   = 0;
-	self->commit_count = 0;
-	self->abort_tsn    = 0;
-	self->abort_count  = 0;
-	list_init(&self->commit);
-	list_init(&self->abort);
+	self->pending    = NULL;
+	self->list_count = 0;
+	buf_reset(&self->list);
 	write_list_reset(&self->write);
 }
 
-hot static inline void
-batch_add_commit(Batch* self, Dtr* dtr)
+static inline bool
+batch_empty(Batch* self)
 {
-	list_append(&self->commit, &dtr->link_batch);
-	self->commit_count++;
+	return !self->list_count;
+}
 
-	// sync max tsn across commited transactions
-	if (dtr->tsn > self->commit_tsn)
-		self->commit_tsn = dtr->tsn;
+static inline void
+batch_add(Batch* self, Dtr* dtr)
+{
+	buf_write(&self->list, &dtr, sizeof(Dtr**));
+	self->list_count++;
+}
 
-	// prepare wal write list
-	auto mgr   = &dtr->dispatch_mgr;
-	auto write = &dtr->write;
-	write_reset(write);
-	write_begin(write, dtr->tsn);
-	list_foreach_safe(&mgr->ltrs)
+static inline int
+batch_sort_cb(const void* a, const void* b)
+{
+	return compare_uint64( (*(Dtr**)a)->id, (*(Dtr**)b)->id );
+}
+
+static inline void
+batch_sort(Batch* self)
+{
+	// order dtrs by id
+	if (self->list_count <= 1)
+		return;
+	qsort(self->list.start, self->list_count, sizeof(Dtr*),
+	      batch_sort_cb);
+}
+
+hot static inline void
+batch_add_partition(Batch* self, Ltr* ltr)
+{
+	// create a unique list of partitions
+	auto pipeline = &ltr->part->pipeline;
+	if (pipeline->pending)
+		return;
+	pipeline->pending = true;
+	pipeline->pending_link = self->pending;
+	self->pending = pipeline;
+}
+
+hot static inline void
+batch_process(Batch* self)
+{
+	// process transaction
+	for (auto it = 0; it < self->list_count; it++)
 	{
-		auto ltr = list_at(Ltr, link);
-		if (ltr->tr && !tr_read_only(ltr->tr))
-			write_add(write, &ltr->tr->log.write_log);
+		// handle aborts per partition
+		auto dtr = batch_at(self, it);
+		list_foreach(&dtr->dispatch_mgr.ltrs)
+		{
+			auto ltr = list_at(Ltr, link);
+			auto tr  = ltr->tr;
+			if (! tr)
+				continue;
+
+			// collect unique partitions across batch
+			batch_add_partition(self, ltr);
+
+			// abort transaction if its partition transaction id lower then
+			// the partition abort id
+			auto pipeline = &ltr->part->pipeline;
+			auto pending  = &pipeline->pending_consensus;
+			auto last     = &pipeline->consensus;
+			if (pending->abort >= tr->id || last->abort >= tr->id)
+				dtr_set_abort(dtr);
+		}
+
+		// sync metrics and prepare dtr for wal write
+		auto write = &dtr->write;
+		write_reset(write);
+		write_begin(write);
+		list_foreach(&dtr->dispatch_mgr.ltrs)
+		{
+			auto ltr = list_at(Ltr, link);
+			auto tr  = ltr->tr;
+			if (! tr)
+				continue;
+
+			// sync metrics
+			auto pending = &ltr->part->pipeline.pending_consensus;
+			if (dtr->abort)
+			{
+				// sync abort id
+				if (tr->id > pending->abort)
+					pending->abort = tr->id;
+			} else
+			{
+				// sync commit id
+				if (tr->id > pending->commit)
+					pending->commit = tr->id;
+
+				// add to the wal write list
+				if (! tr_read_only(tr))
+					write_add(write, &tr->log.write_log);
+			}
+		}
+		if (write->header.count > 0)
+			write_list_add(&self->write, write);
 	}
-	if (write->header.count > 0)
-		write_list_add(&self->write, write);
 }
 
 hot static inline void
-batch_add_abort(Batch* self, Dtr* dtr)
+batch_abort(Batch* self)
 {
-	list_append(&self->abort, &dtr->link_batch);
-	self->abort_count++;
-
-	// if aborted transaction has no observed tsn_max
-	// forcing it to abort self by setting tsn_max = tsn
-	//
-	if (dtr->tsn_max == 0)
-		dtr_sync_tsn_max(dtr, dtr->tsn);
-
-	// track max tsn_max across aborted transactions
-	if (dtr->tsn_max > self->abort_tsn)
-		self->abort_tsn = dtr->tsn_max;
-}
-
-hot static inline void
-batch_add_abort_all(Batch* self)
-{
-	// move commit list to abort
-	list_foreach_safe(&self->commit)
+	// abort all prepared transactions
+	for (auto it = 0; it < self->list_count; it++)
 	{
-		auto dtr = list_at(Dtr, link_batch);
+		auto dtr = batch_at(self, it);
+		if (dtr->abort)
+			continue;
 		dtr_set_abort(dtr);
-		list_init(&dtr->link_batch);
-		batch_add_abort(self, dtr);
+
+		// sync abort id
+		list_foreach(&dtr->dispatch_mgr.ltrs)
+		{
+			auto ltr = list_at(Ltr, link);
+			auto tr  = ltr->tr;
+			if (! tr)
+				continue;
+			auto pending = &ltr->part->pipeline.pending_consensus;
+			if (tr->id > pending->abort)
+				pending->abort = tr->id;
+		}
 	}
-	self->commit_tsn   = 0;
-	self->commit_count = 0;
-	list_init(&self->commit);
 	write_list_reset(&self->write);
 }
 
 hot static inline void
 batch_wakeup(Batch* self)
 {
-	list_foreach_safe(&self->commit)
+	for (auto it = 0; it < self->list_count; it++)
 	{
-		auto dtr = list_at(Dtr, link_batch);
-		event_signal(&dtr->on_commit);
-	}
-	list_foreach_safe(&self->abort)
-	{
-		auto dtr = list_at(Dtr, link_batch);
+		auto dtr = batch_at(self, it);
 		event_signal(&dtr->on_commit);
 	}
 }

@@ -21,9 +21,10 @@ struct Ltr
 	Tr*       tr;
 	Mailbox   queue;
 	Msg       queue_close;
-	bool      closed;
+	Consensus consensus;
 	Buf*      error;
 	Part*     part;
+	bool      closed;
 	Complete* complete;
 	List      link;
 };
@@ -35,12 +36,13 @@ ltr_allocate(Dtr* dtr, Complete* complete)
 	self->dtr      = dtr;
 	self->tr       = NULL;
 	self->error    = NULL;
-	self->closed   = false;
 	self->part     = NULL;
+	self->closed   = false;
 	self->complete = complete;
 	mailbox_init(&self->queue);
 	msg_init(&self->queue_close, MSG_LTR_STOP);
 	msg_init(&self->msg, MSG_LTR);
+	consensus_init(&self->consensus);
 	list_init(&self->link);
 	return self;
 }
@@ -56,7 +58,9 @@ ltr_reset(Ltr* self)
 {
 	self->tr     = NULL;
 	self->error  = NULL;
+	self->part   = NULL;
 	self->closed = false;
+	list_init(&self->link);
 }
 
 static inline void

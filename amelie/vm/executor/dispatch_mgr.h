@@ -94,7 +94,8 @@ dispatch_mgr_close(DispatchMgr* self)
 		auto ltr = list_at(Ltr, link);
 		if (ltr->closed)
 			continue;
-		pipeline_send(&ltr->part->pipeline, &ltr->queue_close);
+		auto pipeline = &ltr->part->pipeline;
+		pipeline_send(pipeline, &ltr->queue_close);
 		ltr->closed = true;
 	}
 }
@@ -141,7 +142,9 @@ dispatch_mgr_send(DispatchMgr* self, Dispatch* dispatch)
 		list_foreach(&self->ltrs)
 		{
 			auto ltr = list_at(Ltr, link);
-			pipeline_send(&ltr->part->pipeline, &ltr->msg);
+			auto pipeline = &ltr->part->pipeline;
+			ltr->consensus = pipeline->consensus;
+			pipeline_send(pipeline, &ltr->msg);
 		}
 	}
 
@@ -159,7 +162,11 @@ dispatch_mgr_send(DispatchMgr* self, Dispatch* dispatch)
 		auto ltr = dispatch_mgr_find(self, req->part);
 		if (! ltr)
 		{
+			assert(self->list_count == 1);
+
+			auto pipeline = &req->part->pipeline;
 			ltr = ltr_create(&self->cache_ltr, req->part, self->dtr, &self->complete);
+			ltr->consensus = pipeline->consensus;
 			list_append(&self->ltrs, &ltr->link);
 			self->ltrs_count++;
 			pipeline_send(&ltr->part->pipeline, &ltr->msg);
@@ -174,15 +181,12 @@ dispatch_mgr_send(DispatchMgr* self, Dispatch* dispatch)
 		dispatch_mgr_close(self);
 }
 
-hot static inline void
-dispatch_mgr_complete(DispatchMgr* self, Buf** error, bool* write, uint64_t* tsn)
+hot static inline Buf*
+dispatch_mgr_complete(DispatchMgr* self, bool* write)
 {
-	*error = NULL;
 	*write = false;
-	*tsn   = 0;
-
 	if (! self->ltrs_count)
-		return;
+		return NULL;
 
 	// make sure all transactions complete execution
 	dispatch_mgr_close(self);
@@ -191,11 +195,12 @@ dispatch_mgr_complete(DispatchMgr* self, Buf** error, bool* write, uint64_t* tsn
 	complete_wait(&self->complete);
 
 	// sync metrics
+	Buf* error = NULL;
 	list_foreach(&self->ltrs)
 	{
 		auto ltr = list_at(Ltr, link);
-		if (ltr->error && !*error)
-			*error = ltr->error;
+		if (ltr->error && !error)
+			error = ltr->error;
 		auto tr = ltr->tr;
 		if (! tr)
 			continue;
@@ -203,9 +208,6 @@ dispatch_mgr_complete(DispatchMgr* self, Buf** error, bool* write, uint64_t* tsn
 		// is writing transaction
 		if (! tr_read_only(tr))
 			*write = true;
-
-		// sync max tsn across commited transactions
-		if (tr->tsn_max > *tsn)
-			*tsn = tr->tsn_max;
 	}
+	return error;
 }
