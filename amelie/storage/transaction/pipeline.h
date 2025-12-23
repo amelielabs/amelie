@@ -16,20 +16,28 @@ typedef struct Pipeline Pipeline;
 struct Pipeline
 {
 	Mailbox   queue;
-	Consensus consensus;
 	TrList    prepared;
 	TrCache   cache;
+	Consensus consensus;
+	Consensus consensus_pod;
+	bool      pending;
+	Consensus pending_consensus;
+	Pipeline* pending_link;
 	Task*     task;
 };
 
 static inline void
 pipeline_init(Pipeline* self)
 {
-	self->task = NULL;
+	self->pending      = false;
+	self->pending_link = NULL;
+	self->task         = NULL;
 	mailbox_init(&self->queue);
 	tr_list_init(&self->prepared);
 	tr_cache_init(&self->cache);
+	consensus_init(&self->pending_consensus);
 	consensus_init(&self->consensus);
+	consensus_init(&self->consensus_pod);
 }
 
 static inline void

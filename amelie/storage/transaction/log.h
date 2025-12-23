@@ -50,7 +50,6 @@ struct Log
 	int      count;
 	int      count_relation;
 	WriteLog write_log;
-	uint64_t tsn;
 	List     link;
 };
 
@@ -83,7 +82,6 @@ log_init(Log* self)
 {
 	self->count          = 0;
 	self->count_relation = 0;
-	self->tsn            = 0;
 	buf_init(&self->op);
 	buf_init(&self->data);
 	write_log_init(&self->write_log);
@@ -103,17 +101,10 @@ log_reset(Log* self)
 {
 	self->count          = 0;
 	self->count_relation = 0;
-	self->tsn            = 0;
 	buf_reset(&self->op);
 	buf_reset(&self->data);
 	write_log_reset(&self->write_log);
 	list_init(&self->link);
-}
-
-static inline void
-log_set_tsn(Log* self, uint64_t tsn)
-{
-	self->tsn = tsn;
 }
 
 static inline void

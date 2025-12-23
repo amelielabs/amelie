@@ -42,18 +42,18 @@ static inline void
 write_reset(Write* self)
 {
 	memset(&self->header, 0, sizeof(self->header));
+	iov_reset(&self->iov);
 	self->list_count = 0;
 	list_init(&self->list);
-	iov_reset(&self->iov);
+	list_init(&self->link);
 }
 
 static inline void
-write_begin(Write* self, uint64_t tsn)
+write_begin(Write* self)
 {
 	auto header = &self->header;
 	header->crc   = 0;
 	header->lsn   = 0;
-	header->tsn   = tsn;
 	header->size  = sizeof(self->header);
 	header->count = 0;
 	header->ops   = 0;

@@ -15,8 +15,7 @@ typedef struct Tr Tr;
 
 struct Tr
 {
-	uint64_t tsn;
-	uint64_t tsn_max;
+	uint64_t id;
 	bool     active;
 	bool     aborted;
 	bool     allocated;
@@ -29,8 +28,7 @@ struct Tr
 static inline void
 tr_init(Tr* self)
 {
-	self->tsn       = 0;
-	self->tsn_max   = 0;
+	self->id        = 0;
 	self->active    = false;
 	self->aborted   = false;
 	self->allocated = false;
@@ -43,8 +41,7 @@ tr_init(Tr* self)
 static inline void
 tr_reset(Tr* self)
 {
-	self->tsn     = 0;
-	self->tsn_max = 0;
+	self->id      = 0;
 	self->active  = false;
 	self->aborted = false;
 	self->limit   = NULL;
@@ -71,10 +68,9 @@ tr_free(Tr* self)
 }
 
 static inline void
-tr_set_tsn(Tr* self, uint64_t value)
+tr_set_id(Tr* self, uint64_t value)
 {
-	self->tsn = value;
-	log_set_tsn(&self->log, value);
+	self->id = value;
 }
 
 static inline void

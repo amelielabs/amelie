@@ -20,7 +20,6 @@ struct State
 	Opt  directory;
 	Opt  checkpoint;
 	Opt  lsn;
-	Opt  tsn;
 	Opt  psn;
 	Opt  read_only;
 	// persistent

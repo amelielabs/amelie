@@ -93,9 +93,6 @@ part_sync_sequence(Part* self, Row* row, Columns* columns)
 hot void
 part_insert(Part* self, Tr* tr, bool replace, Row* row)
 {
-	// update heap tsn
-	heap_tsn_follow(&self->heap, tr->tsn);
-
 	// add log record
 	auto primary = part_primary(self);
 	auto op = log_row(&tr->log, CMD_REPLACE, &log_if, primary, row, NULL);
@@ -135,9 +132,6 @@ part_insert(Part* self, Tr* tr, bool replace, Row* row)
 hot bool
 part_upsert(Part* self, Tr* tr, Iterator* it, Row* row)
 {
-	// update heap tsn
-	heap_tsn_follow(&self->heap, tr->tsn);
-
 	// get if exists (iterator is openned in both cases)
 	auto primary = part_primary(self);
 	if (index_upsert(primary, row, it))
@@ -177,9 +171,6 @@ part_upsert(Part* self, Tr* tr, Iterator* it, Row* row)
 hot void
 part_update(Part* self, Tr* tr, Iterator* it, Row* row)
 {
-	// update heap tsn
-	heap_tsn_follow(&self->heap, tr->tsn);
-
 	// add log record
 	auto primary = part_primary(self);
 	auto op = log_row(&tr->log, CMD_REPLACE, &log_if, primary, row, NULL);
@@ -212,9 +203,6 @@ part_update(Part* self, Tr* tr, Iterator* it, Row* row)
 hot void
 part_delete(Part* self, Tr* tr, Iterator* it)
 {
-	// update heap tsn
-	heap_tsn_follow(&self->heap, tr->tsn);
-
 	// add log record
 	auto primary = part_primary(self);
 	auto row = iterator_at(it);

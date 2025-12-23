@@ -87,20 +87,6 @@ catalog_close(Catalog* self)
 	catalog_free(self);
 }
 
-void
-catalog_sync(Catalog* self)
-{
-	list_foreach(&self->table_mgr.mgr.list)
-	{
-		auto table = table_of(list_at(Relation, link));
-		list_foreach(&table->part_list.list)
-		{
-			auto part = list_at(Part, link);
-			state_tsn_follow(part->heap.header->tsn_max);
-		}
-	}
-}
-
 Buf*
 catalog_status(Catalog* self)
 {

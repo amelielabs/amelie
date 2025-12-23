@@ -119,7 +119,7 @@ recover_next_record(Recover* self, Record* record)
 		auto write = &self->write;
 		auto write_list = &self->write_list;
 		write_reset(write);
-		write_begin(write, record->tsn);
+		write_begin(write);
 		write_add(write, &self->tr.log.write_log);
 		write_list_reset(write_list);
 		write_list_add(write_list, write);
@@ -127,7 +127,6 @@ recover_next_record(Recover* self, Record* record)
 	} else
 	{
 		state_lsn_follow(record->lsn);
-		state_tsn_follow(record->tsn);
 	}
 }
 

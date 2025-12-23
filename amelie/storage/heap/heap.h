@@ -60,7 +60,6 @@ struct HeapHeader
 	uint32_t   version;
 	uint8_t    compression;
 	uint32_t   count;
-	uint64_t   tsn_max;
 	HeapBucket buckets[];
 } packed;
 
@@ -91,14 +90,6 @@ heap_first(Heap* self)
 	if (unlikely(! self->last))
 		return NULL;
 	return (Chunk*)((uintptr_t)self->page_header + sizeof(PageHeader));
-}
-
-static inline void
-heap_tsn_follow(Heap* self, uint64_t tsn)
-{
-	auto header = self->header;
-	if (tsn > header->tsn_max)
-		header->tsn_max = tsn;
 }
 
 void  heap_init(Heap*);

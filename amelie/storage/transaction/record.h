@@ -27,7 +27,6 @@ struct Record
 {
 	uint32_t crc;
 	uint64_t lsn;
-	uint64_t tsn;
 	uint32_t size;
 	uint32_t count;
 	uint32_t ops;

@@ -69,13 +69,13 @@ tr_abort(Tr* self)
 }
 
 hot void
-tr_commit_list(TrList* self, TrCache* cache, uint64_t tsn)
+tr_commit_list(TrList* self, TrCache* cache, uint64_t id)
 {
 	// commit all transactions <= id
 	list_foreach_safe(&self->list)
 	{
 		auto tr = list_at(Tr, link);
-		if (tr->tsn <= tsn)
+		if (tr->id <= id)
 		{
 			list_unlink(&tr->link);
 			self->list_count--;
@@ -86,14 +86,13 @@ tr_commit_list(TrList* self, TrCache* cache, uint64_t tsn)
 }
 
 void
-tr_abort_list(TrList* self, TrCache* cache, uint64_t tsn)
+tr_abort_list(TrList* self, TrCache* cache, uint64_t id)
 {
-	// abort all transaction which accessed transaction
-	// rows >= tsn
+	// abort all transactions <= id
 	list_foreach_reverse_safe(&self->list)
 	{
 		auto tr = list_at(Tr, link);
-		if (tr->tsn_max >= tsn)
+		if (tr->id <= id)
 		{
 			list_unlink(&tr->link);
 			self->list_count--;
