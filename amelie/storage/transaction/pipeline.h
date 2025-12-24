@@ -24,7 +24,7 @@ struct Pipeline
 	bool      pending;
 	Consensus pending_consensus;
 	Pipeline* pending_link;
-	Task*     task;
+	Task*     backend;
 };
 
 static inline void
@@ -33,7 +33,7 @@ pipeline_init(Pipeline* self)
 	self->seq          = 1;
 	self->pending      = false;
 	self->pending_link = NULL;
-	self->task         = NULL;
+	self->backend      = NULL;
 	mailbox_init(&self->queue);
 	tr_list_init(&self->prepared);
 	tr_cache_init(&self->cache);
@@ -50,9 +50,9 @@ pipeline_free(Pipeline* self)
 }
 
 static inline void
-pipeline_set_task(Pipeline* self, Task* task)
+pipeline_set_backend(Pipeline* self, Task* task)
 {
-	self->task = task;
+	self->backend = task;
 }
 
 static inline void
@@ -65,5 +65,5 @@ pipeline_add(Pipeline* self, Msg* msg)
 static inline void
 pipeline_send(Pipeline* self, Msg* msg)
 {
-	task_send(self->task, msg);
+	task_send(self->backend, msg);
 }

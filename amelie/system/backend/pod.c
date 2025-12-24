@@ -224,7 +224,7 @@ pod_start(Pod* self, Task* task)
 {
 	if (self->worker_id != -1)
 		return;
-	self->pipeline->task = task;
+	pipeline_set_backend(self->pipeline, task);
 	self->worker_id = coroutine_create(pod_main, self);
 }
 
@@ -239,6 +239,6 @@ pod_stop(Pod* self)
 	msg_init(&stop, MSG_STOP);
 	pipeline_add(self->pipeline, &stop);
 	wait_event(&worker->on_exit, am_self());
-	self->pipeline->task = NULL;
+	pipeline_set_backend(self->pipeline, NULL);
 	self->worker_id = -1;
 }
