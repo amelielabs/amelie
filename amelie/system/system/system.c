@@ -47,37 +47,47 @@ catalog_if_index(Catalog* self, Table* table, IndexConfig* index)
 static void
 catalog_if_column_add(Catalog* self, Table* table, Table* table_new, Column* column)
 {
-	(void)self;
-	(void)table;
-	(void)table_new;
-	(void)column;
-#if 0
-	// rebuild new table with new column in parallel per worker
-	System* system = self->iface_arg;
-	BackendMgr* backend_mgr = &system->backend_mgr;
+	unused(self);
+
+	// build new table with new column
+	BuildConfig config =
+	{
+		.type      = BUILD_COLUMN_ADD,
+		.table     = table,
+		.table_new = table_new,
+		.column    = column,
+		.index     = NULL,
+	};
 	Build build;
-	build_init(&build, BUILD_COLUMN_ADD, backend_mgr, table, table_new, column, NULL);
+	build_init(&build);
 	defer(build_free, &build);
+	build_prepare(&build, &config);
+	list_foreach(&table->part_list.list)
+		build_add(&build, list_at(Part, link));
 	build_run(&build);
-#endif
 }
 
 static void
 catalog_if_column_drop(Catalog* self, Table* table, Table* table_new, Column* column)
 {
-	(void)self;
-	(void)table;
-	(void)table_new;
-	(void)column;
-#if 0
-	// rebuild new table without column in parallel per worker
-	System* system = self->iface_arg;
-	BackendMgr* backend_mgr = &system->backend_mgr;
+	unused(self);
+
+	// build new table without column
+	BuildConfig config =
+	{
+		.type      = BUILD_COLUMN_DROP,
+		.table     = table,
+		.table_new = table_new,
+		.column    = column,
+		.index     = NULL,
+	};
 	Build build;
-	build_init(&build, BUILD_COLUMN_DROP, backend_mgr, table, table_new, column, NULL);
+	build_init(&build);
 	defer(build_free, &build);
+	build_prepare(&build, &config);
+	list_foreach(&table->part_list.list)
+		build_add(&build, list_at(Part, link));
 	build_run(&build);
-#endif
 }
 
 static void

@@ -174,36 +174,33 @@ build_execute(Build* self, Part* part)
 		break;
 	}
 	case BUILD_COLUMN_ADD:
-	case BUILD_COLUMN_DROP:
-		break;
-#if 0
-	case BUILD_COLUMN_ADD:
 	{
-		auto part_dest = part_list_match(&arg->table_new->part_list, worker);
+		auto part_dest = part_list_find(&config->table_new->part_list, part->config->id);
 		assert(part_dest);
+
 		// build new table with new column for current worker
-		auto config = arg->table->config;
+		auto table_config = config->table->config;
 		PartBuild pb;
-		part_build_init(&pb, PART_BUILD_COLUMN_ADD, part, part_dest, arg->column,
-		                NULL,
-		                &config->db, &config->name);
+		part_build_init(&pb, PART_BUILD_COLUMN_ADD, part, part_dest,
+		                config->column, NULL,
+		                &table_config->db, &table_config->name);
 		part_build(&pb);
 		break;
 	}
 	case BUILD_COLUMN_DROP:
 	{
-		auto part_dest = part_list_match(&arg->table_new->part_list, worker);
+		auto part_dest = part_list_find(&config->table_new->part_list, part->config->id);
 		assert(part_dest);
+
 		// build new table without column for current worker
-		auto config = arg->table->config;
+		auto table_config = config->table->config;
 		PartBuild pb;
-		part_build_init(&pb, PART_BUILD_COLUMN_DROP, part, part_dest, arg->column,
-		                NULL,
-		                &config->db, &config->name);
+		part_build_init(&pb, PART_BUILD_COLUMN_DROP, part, part_dest,
+		                config->column, NULL,
+		                &table_config->db, &table_config->name);
 		part_build(&pb);
 		break;
 	}
-#endif
 	case BUILD_NONE:
 		// do nothing, used for sync
 		break;

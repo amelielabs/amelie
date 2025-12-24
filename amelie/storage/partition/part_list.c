@@ -124,6 +124,18 @@ part_list_index_drop(PartList* self, IndexConfig* config)
 	}
 }
 
+Part*
+part_list_find(PartList* self, uint64_t id)
+{
+	list_foreach(&self->list)
+	{
+		auto part = list_at(Part, link);
+		if (part->config->id == (int64_t)id)
+			return part;
+	}
+	return NULL;
+}
+
 Iterator*
 part_list_iterator(PartList*    self,
                    Part*        part,

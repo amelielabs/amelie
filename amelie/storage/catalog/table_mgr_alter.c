@@ -267,17 +267,14 @@ column_add_if_commit(Log* self, LogOp* op)
 	TableMgr* mgr = op->iface_arg;
 	auto relation = log_relation_of(self, op);
 	auto table  = table_of(relation->relation);
-	auto prev   = table_mgr_find(mgr, &table->config->db,
-	                             &table->config->name,
-	                              true);
+	auto prev   = table_mgr_find(mgr, &table->config->db, &table->config->name, true);
 	relation_mgr_replace(&mgr->mgr, &prev->rel, &table->rel);
 
 	// free previous table and unmap partitions
 	table_free(prev);
 
-	// remap new table partitions (partitions has same ids)
+	// map new table partitions (partitions has same ids)
 	part_list_map(&table->part_list);
-	part_mgr_attach(table->part_mgr, &table->part_list);
 }
 
 static void

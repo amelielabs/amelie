@@ -10212,27 +10212,6 @@ show repl;
 switch S1;
 select identity_of("test2");
 [4]
-# test: create table (partitions extended)
-switch S0;
-create table test3 (id serial primary key) partitions 8;
-# test: wait replica sync
-watch show('replica', "00000000-0000-0000-0000-000000000001").lsn = show('state').lsn;
-show repl;
-[{
-  "active": true,
-  "role": "primary",
-  "primary": null,
-  "replicas": [{
-    "id": "00000000-0000-0000-0000-000000000001",
-    "uri": "http://127.0.0.1:3481/",
-    "connected": true,
-    "lsn": 10019,
-    "lag": 0
-  }]
-}]
-switch S1;
-select show('state').backends::int = 8;
-[true]
 disconnect S1;
 close E1;
 disconnect S0;

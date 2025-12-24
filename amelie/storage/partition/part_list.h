@@ -29,5 +29,6 @@ void  part_list_set_unlogged(PartList*, bool);
 void  part_list_truncate(PartList*);
 void  part_list_index_create(PartList*, IndexConfig*);
 void  part_list_index_drop(PartList*, IndexConfig*);
+Part* part_list_find(PartList*, uint64_t);
 Iterator*
 part_list_iterator(PartList*, Part*, IndexConfig*, bool, Row*);

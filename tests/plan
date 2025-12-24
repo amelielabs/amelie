@@ -56,7 +56,7 @@ group ddl
 test database
 test table_create
 test table_drop
-#test table_alter
+test table_alter
 test index
 test function
 
@@ -139,7 +139,7 @@ test indexate
 directory recovery
 group recovery
 test wal_dml
-#test wal_ddl
+test wal_ddl
 test checkpoint
 
 # tls
@@ -158,7 +158,7 @@ directory repl
 group repl
 test replica
 test repl
-#test streaming
+test streaming
 test streaming_tls
 test streaming_tls_2
 
