@@ -43,6 +43,12 @@ write_log_reset(WriteLog* self)
 	list_init(&self->link);
 }
 
+static inline bool
+write_log_empty(WriteLog* self)
+{
+	return buf_empty(&self->meta);
+}
+
 hot static inline void
 write_log_add(WriteLog* self, int cmd, uint64_t partition, Row* row)
 {

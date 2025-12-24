@@ -130,7 +130,7 @@ batch_process(Batch* self)
 					pending->commit = tr->id;
 
 				// add to the wal write list
-				if (! tr_read_only(tr))
+				if (tr_persists(tr))
 					write_add(write, &tr->log.write_log);
 			}
 		}

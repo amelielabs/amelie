@@ -96,3 +96,9 @@ tr_read_only(Tr* self)
 {
 	return self->log.count == 0;
 }
+
+static inline bool
+tr_persists(Tr* self)
+{
+	return self->log.count > 0 && !write_log_empty(&self->log.write_log);
+}
