@@ -13,7 +13,6 @@ show state;
   "backends": 1,
   "checkpoint": 1,
   "lsn": 1,
-  "tsn": 0,
   "psn": 0,
   "read_only": false
 }]

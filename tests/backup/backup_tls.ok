@@ -62,7 +62,6 @@ show state;
   "backends": 1,
   "checkpoint": 1,
   "lsn": 3,
-  "tsn": 1,
   "psn": 3,
   "read_only": false
 }]

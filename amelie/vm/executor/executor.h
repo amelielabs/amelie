@@ -66,8 +66,35 @@ executor_attach(Executor* self, Dtr* dtr, Dispatch* dispatch)
 	// process exclusive transaction locking
 	executor_attach_lock(self, dtr);
 
-	// register transaction and set global metrics
-	dtr->id = self->id++;
+	// match overlapping transaction group
+	auto is_snapshot = dtr->program->snapshot;
+	list_foreach_reverse(&self->list)
+	{
+		auto ref = list_at(Dtr, link);
+		// find overlapping partitions
+		bool overlaps;
+		if (is_snapshot)
+			overlaps = dispatch_mgr_overlaps(&ref->dispatch_mgr, &dtr->dispatch_mgr);
+		else
+			overlaps = dispatch_mgr_overlaps_dispatch(&ref->dispatch_mgr, dispatch);
+
+		// derive transaction group on overlap
+		if (overlaps)
+		{
+			dtr->group = ref->group;
+			dtr->group_order = ref->group_order + 1;
+			break;
+		}
+	}
+
+	// start new transaction group
+	if (! dtr->group)
+	{
+		dtr->group = self->id++;
+		dtr->group_order = 0;
+	}
+
+	// register transaction
 	list_append(&self->list, &dtr->link);
 
 	// begin execution
@@ -108,7 +135,7 @@ executor_send(Executor* self, Dtr* dtr, Dispatch* dispatch)
 	dispatch_mgr_send(mgr, dispatch);
 }
 
-hot static inline void
+hot static inline uint64_t
 executor_detach(Executor* self, Batch* batch)
 {
 	// group completion (called from Commit)
@@ -141,5 +168,11 @@ executor_detach(Executor* self, Batch* batch)
 		event_signal(&dtr->on_access);
 	}
 
+	// get min group as oldest transaction group id
+	uint64_t group_min = UINT64_MAX;
+	if (! list_empty(&self->list))
+		group_min = container_of(list_first(&self->list), Dtr, link)->group;
+
 	spinlock_unlock(&self->lock);
+	return group_min;
 }

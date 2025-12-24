@@ -32,6 +32,8 @@
 
 // distributed transaction
 #include "executor/dtr.h"
+#include "executor/dtr_group.h"
+#include "executor/dtr_queue.h"
 
 // executor
 #include "executor/batch.h"

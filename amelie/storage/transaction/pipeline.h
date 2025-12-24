@@ -16,6 +16,7 @@ typedef struct Pipeline Pipeline;
 struct Pipeline
 {
 	Mailbox   queue;
+	uint64_t  seq;
 	TrList    prepared;
 	TrCache   cache;
 	Consensus consensus;
@@ -29,6 +30,7 @@ struct Pipeline
 static inline void
 pipeline_init(Pipeline* self)
 {
+	self->seq          = 1;
 	self->pending      = false;
 	self->pending_link = NULL;
 	self->task         = NULL;

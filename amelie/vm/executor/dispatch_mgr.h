@@ -112,6 +112,30 @@ dispatch_mgr_find(DispatchMgr* self, Part* part)
 	return NULL;
 }
 
+hot static inline bool
+dispatch_mgr_overlaps(DispatchMgr* self, DispatchMgr* with)
+{
+	list_foreach(&self->ltrs)
+	{
+		auto ltr = list_at(Ltr, link);
+		if (dispatch_mgr_find(with, ltr->part))
+			return true;
+	}
+	return false;
+}
+
+hot static inline bool
+dispatch_mgr_overlaps_dispatch(DispatchMgr* self, Dispatch* with)
+{
+	list_foreach(&self->ltrs)
+	{
+		auto ltr = list_at(Ltr, link);
+		if (dispatch_find(with, ltr->part))
+			return true;
+	}
+	return false;
+}
+
 hot static inline void
 dispatch_mgr_snapshot(DispatchMgr* self, Access* access)
 {

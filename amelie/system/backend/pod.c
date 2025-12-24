@@ -70,11 +70,12 @@ pod_request(Pod* self, Ltr* ltr, Req* req)
 		// create and add transaction to the prepared list (even on error)
 		if (ltr->tr == NULL)
 		{
-			auto tr = tr_create(&self->pipeline->cache);
+			auto pipeline = self->pipeline;
+			auto tr = tr_create(&pipeline->cache);
 			tr_begin(tr);
-			tr_set_tsn(tr, dtr->tsn);
+			tr_set_id(tr, pipeline->seq++);
 			tr_set_limit(tr, &dtr->limit);
-			tr_list_add(&self->pipeline->prepared, tr);
+			tr_list_add(&pipeline->prepared, tr);
 			ltr->tr = tr;
 		}
 
@@ -106,11 +107,12 @@ pod_request(Pod* self, Ltr* ltr, Req* req)
 		// create and add transaction to the prepared list (even on error)
 		if (ltr->tr == NULL)
 		{
-			auto tr = tr_create(&self->pipeline->cache);
+			auto pipeline = self->pipeline;
+			auto tr = tr_create(&pipeline->cache);
 			tr_begin(tr);
-			tr_set_tsn(tr, dtr->tsn);
+			tr_set_id(tr, pipeline->seq++);
 			tr_set_limit(tr, &dtr->limit);
-			tr_list_add(&self->pipeline->prepared, tr);
+			tr_list_add(&pipeline->prepared, tr);
 			ltr->tr = tr;
 		}
 
@@ -157,24 +159,24 @@ pod_run(Pod* self, Ltr* ltr)
 static void
 pod_sync(Pod* self, Ltr* ltr)
 {
-	auto pipeline           = self->pipeline;
-	auto pipeline_consensus = &pipeline->consensus;
-	auto consensus          = &ltr->dtr->consensus;
+	auto pipeline      = self->pipeline;
+	auto consensus_pod = &pipeline->consensus_pod;
+	auto consensus     = &ltr->consensus;
 
-	// abort all transactions tsn_max of which >= abort
+	// commit all transactions <= abort
 	auto id = consensus->abort;
-	if (unlikely(id > pipeline_consensus->abort))
+	if (unlikely(id > consensus_pod->abort))
 	{
 		tr_abort_list(&pipeline->prepared, &pipeline->cache, id);
-		pipeline_consensus->abort = id;
+		consensus_pod->abort = id;
 	}
 
 	// commit all transactions <= commit
 	id = consensus->commit;
-	if (id > pipeline_consensus->commit)
+	if (id > consensus_pod->commit)
 	{
 		tr_commit_list(&pipeline->prepared, &pipeline->cache, id);
-		pipeline_consensus->commit = id;
+		consensus_pod->commit = id;
 	}
 }
 

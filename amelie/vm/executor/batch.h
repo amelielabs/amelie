@@ -64,22 +64,6 @@ batch_add(Batch* self, Dtr* dtr)
 	self->list_count++;
 }
 
-static inline int
-batch_sort_cb(const void* a, const void* b)
-{
-	return compare_uint64( (*(Dtr**)a)->id, (*(Dtr**)b)->id );
-}
-
-static inline void
-batch_sort(Batch* self)
-{
-	// order dtrs by id
-	if (self->list_count <= 1)
-		return;
-	qsort(self->list.start, self->list_count, sizeof(Dtr*),
-	      batch_sort_cb);
-}
-
 hot static inline void
 batch_add_partition(Batch* self, Ltr* ltr)
 {
@@ -106,6 +90,7 @@ batch_process(Batch* self)
 			auto tr  = ltr->tr;
 			if (! tr)
 				continue;
+			assert(tr->active);
 
 			// collect unique partitions across batch
 			batch_add_partition(self, ltr);
@@ -129,6 +114,7 @@ batch_process(Batch* self)
 			auto tr  = ltr->tr;
 			if (! tr)
 				continue;
+			assert(tr->active);
 
 			// sync metrics
 			auto pending = &ltr->part->pipeline.pending_consensus;

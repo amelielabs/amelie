@@ -18,36 +18,55 @@
 #include <amelie_output.h>
 #include <amelie_executor.h>
 
+hot static inline void
+commit_add(DtrQueue* queue, Batch* batch, Dtr* dtr)
+{
+	auto group = dtr_queue_add(queue, dtr);
+	while (dtr_group_pending(group))
+	{
+		auto dtr = dtr_group_pop(group);
+		batch_add(batch, dtr);
+	}
+}
+
 static void
 commit_main(void* arg)
 {
 	Commit* self = arg;
-	auto batch = &self->batch;
+
+	DtrQueue queue;
+	dtr_queue_init(&queue);
+	defer(dtr_queue_free, &queue);
+
+	Batch batch;
+	batch_init(&batch);
+	defer(batch_free, &batch);
 	for (;;)
 	{
 		auto msg = task_recv();
 		if (unlikely(msg->id == MSG_STOP))
 			break;
 
-		// collect and sort all pending transactions
-		batch_reset(batch);
-		batch_add(batch, (Dtr*)msg);
+		// collect prepared transactions
+		batch_reset(&batch);
+		commit_add(&queue, &batch, (Dtr*)msg);
 		while ((msg = task_recv_try()))
-			batch_add(batch, (Dtr*)msg);
-		batch_sort(batch);
+			commit_add(&queue, &batch, (Dtr*)msg);
+		if (batch_empty(&batch))
+			continue;
 
 		// prepare transactions for commit and handle aborts
-		batch_process(batch);
+		batch_process(&batch);
 
 		// wal write
 		//
 		// in case of an error abort all prepared transactions
 		//
-		if (batch->write.list_count)
+		if (batch.write.list_count)
 		{
 			auto wal = &self->storage->wal_mgr;
-			if (error_catch( wal_mgr_write(wal, &batch->write) ))
-				batch_abort(batch);
+			if (error_catch( wal_mgr_write(wal, &batch.write) ))
+				batch_abort(&batch);
 		}
 
 		// do group completion
@@ -55,10 +74,13 @@ commit_main(void* arg)
 		// update global commit/abort metrics and detach
 		// transactions
 		//
-		executor_detach(self->executor, batch);
+		auto group_min = executor_detach(self->executor, &batch);
 
 		// wakeup prepared transaction
-		batch_wakeup(batch);
+		batch_wakeup(&batch);
+
+		// remove all groups < group_min
+		dtr_queue_gc(&queue, group_min);
 	}
 }
 
@@ -113,14 +135,12 @@ commit_init(Commit* self, Storage* storage, Executor* executor)
 {
 	self->storage  = storage;
 	self->executor = executor;
-	batch_init(&self->batch);
 	task_init(&self->task);
 }
 
 void
 commit_free(Commit* self)
 {
-	batch_free(&self->batch);
 	task_free(&self->task);
 }
 

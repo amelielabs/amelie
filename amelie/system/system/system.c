@@ -313,9 +313,6 @@ system_recover(System* self)
 	build_add_all(&build, storage);
 	build_run(&build);
 
-	// sync tsn
-	catalog_sync(&storage->catalog);
-
 	// replay wals
 	info("");
 	info("recover: wals/");

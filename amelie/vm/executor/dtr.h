@@ -16,7 +16,8 @@ typedef struct Dtr Dtr;
 struct Dtr
 {
 	Msg         msg;
-	uint64_t    id;
+	uint64_t    group;
+	uint64_t    group_order;
 	DispatchMgr dispatch_mgr;
 	Program*    program;
 	Buf*        error;
@@ -27,6 +28,7 @@ struct Dtr
 	Limit       limit;
 	Local*      local;
 	List        link_access;
+	Dtr*        link_group;
 	List        link_batch;
 	List        link;
 };
@@ -34,11 +36,13 @@ struct Dtr
 static inline void
 dtr_init(Dtr* self, Local* local)
 {
-	self->id      = 0;
-	self->program = NULL;
-	self->error   = NULL;
-	self->abort   = false;
-	self->local   = local;
+	self->group       = 0;
+	self->group_order = 0;
+	self->program     = NULL;
+	self->error       = NULL;
+	self->abort       = false;
+	self->local       = local;
+	self->link_group  = NULL;
 	dispatch_mgr_init(&self->dispatch_mgr, self);
 	event_init(&self->on_access);
 	event_init(&self->on_commit);
@@ -53,9 +57,11 @@ dtr_init(Dtr* self, Local* local)
 static inline void
 dtr_reset(Dtr* self)
 {
-	self->id      = 0;
-	self->program = NULL;
-	self->abort   = false;
+	self->group       = 0;
+	self->group_order = 0;
+	self->program     = NULL;
+	self->abort       = false;
+	self->link_group  = NULL;
 	if (self->error)
 	{
 		buf_free(self->error);
@@ -90,7 +96,7 @@ dtr_create(Dtr* self, Program* program)
 static inline bool
 dtr_active(Dtr* self)
 {
-	return self->id != 0;
+	return self->group != 0;
 }
 
 static inline void
