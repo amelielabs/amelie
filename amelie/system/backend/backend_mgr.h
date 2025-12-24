@@ -126,9 +126,9 @@ backend_mgr_undeploy(BackendMgr* self, PartList* list)
 	list_foreach(&list->list)
 	{
 		auto part = list_at(Part, link);
-		if (! part->pipeline.backend)
+		if (! part->track.backend)
 			continue;
-		auto backend = backend_mgr_find(self, part->pipeline.backend);
+		auto backend = backend_mgr_find(self, part->track.backend);
 		assert(backend);
 		rpc(&backend->task, MSG_UNDEPLOY, 1, part);
 	}

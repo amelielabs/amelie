@@ -17,7 +17,7 @@ struct Batch
 {
 	Buf       list;
 	int       list_count;
-	Pipeline* pending;
+	Track*    pending;
 	WriteList write;
 };
 
@@ -68,12 +68,12 @@ hot static inline void
 batch_add_partition(Batch* self, Ltr* ltr)
 {
 	// create a unique list of partitions
-	auto pipeline = &ltr->part->pipeline;
-	if (pipeline->pending)
+	auto track = &ltr->part->track;
+	if (track->pending)
 		return;
-	pipeline->pending = true;
-	pipeline->pending_link = self->pending;
-	self->pending = pipeline;
+	track->pending = true;
+	track->pending_link = self->pending;
+	self->pending = track;
 }
 
 hot static inline void
@@ -97,9 +97,9 @@ batch_process(Batch* self)
 
 			// abort transaction if its partition transaction id lower then
 			// the partition abort id
-			auto pipeline = &ltr->part->pipeline;
-			auto pending  = &pipeline->pending_consensus;
-			auto last     = &pipeline->consensus;
+			auto track   = &ltr->part->track;
+			auto pending = &track->pending_consensus;
+			auto last    = &track->consensus;
 			if (pending->abort >= tr->id || last->abort >= tr->id)
 				dtr_set_abort(dtr);
 		}
@@ -117,7 +117,7 @@ batch_process(Batch* self)
 			assert(tr->active);
 
 			// sync metrics
-			auto pending = &ltr->part->pipeline.pending_consensus;
+			auto pending = &ltr->part->track.pending_consensus;
 			if (dtr->abort)
 			{
 				// sync abort id
@@ -157,7 +157,7 @@ batch_abort(Batch* self)
 			auto tr  = ltr->tr;
 			if (! tr)
 				continue;
-			auto pending = &ltr->part->pipeline.pending_consensus;
+			auto pending = &ltr->part->track.pending_consensus;
 			if (tr->id > pending->abort)
 				pending->abort = tr->id;
 		}

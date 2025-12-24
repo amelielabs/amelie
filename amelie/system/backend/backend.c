@@ -62,19 +62,19 @@ backend_main(void* arg)
 		case MSG_LTR:
 		{
 			auto ltr = (Ltr*)msg;
-			pipeline_add(&ltr->part->pipeline, msg);
+			track_write(&ltr->part->track, msg);
 			break;
 		}
 		case MSG_LTR_STOP:
 		{
 			auto ltr = container_of(msg, Ltr, queue_close);
-			ltr_add(ltr, msg);
+			ltr_write(ltr, msg);
 			break;
 		}
 		case MSG_REQ:
 		{
 			auto req = (Req*)msg;
-			ltr_add(req->ltr, msg);
+			ltr_write(req->ltr, msg);
 			break;
 		}
 		default:

@@ -31,6 +31,6 @@
 // commit
 #include "transaction/commit.h"
 
-// pipeline
+// track
 #include "transaction/consensus.h"
-#include "transaction/pipeline.h"
+#include "transaction/track.h"

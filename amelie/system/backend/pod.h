@@ -15,11 +15,11 @@ typedef struct Pod Pod;
 
 struct Pod
 {
-	Vm         vm;
-	Pipeline*  pipeline;
-	Part*      part;
-	int64_t    worker_id;
-	List       link;
+	Vm      vm;
+	Track*  track;
+	Part*   part;
+	int64_t worker_id;
+	List    link;
 };
 
 Pod* pod_allocate(Part*);

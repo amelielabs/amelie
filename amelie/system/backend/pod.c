@@ -70,12 +70,12 @@ pod_request(Pod* self, Ltr* ltr, Req* req)
 		// create and add transaction to the prepared list (even on error)
 		if (ltr->tr == NULL)
 		{
-			auto pipeline = self->pipeline;
-			auto tr = tr_create(&pipeline->cache);
+			auto track = self->track;
+			auto tr = tr_create(&track->cache);
 			tr_begin(tr);
-			tr_set_id(tr, pipeline->seq++);
+			tr_set_id(tr, track->seq++);
 			tr_set_limit(tr, &dtr->limit);
-			tr_list_add(&pipeline->prepared, tr);
+			tr_list_add(&track->prepared, tr);
 			ltr->tr = tr;
 		}
 
@@ -107,12 +107,12 @@ pod_request(Pod* self, Ltr* ltr, Req* req)
 		// create and add transaction to the prepared list (even on error)
 		if (ltr->tr == NULL)
 		{
-			auto pipeline = self->pipeline;
-			auto tr = tr_create(&pipeline->cache);
+			auto track = self->track;
+			auto tr = tr_create(&track->cache);
 			tr_begin(tr);
-			tr_set_id(tr, pipeline->seq++);
+			tr_set_id(tr, track->seq++);
 			tr_set_limit(tr, &dtr->limit);
-			tr_list_add(&pipeline->prepared, tr);
+			tr_list_add(&track->prepared, tr);
 			ltr->tr = tr;
 		}
 
@@ -133,11 +133,10 @@ hot static void
 pod_run(Pod* self, Ltr* ltr)
 {
 	// execute incoming requests till close
-	auto queue  = &ltr->queue;
 	auto active = true;
 	while (active)
 	{
-		auto msg = mailbox_pop(queue, am_self());
+		auto msg = ltr_read(ltr);
 		if (msg->id == MSG_LTR_STOP)
 		{
 			active = false;
@@ -156,18 +155,18 @@ pod_run(Pod* self, Ltr* ltr)
 	ltr_complete(ltr);
 }
 
-static void
+hot static void
 pod_sync(Pod* self, Ltr* ltr)
 {
-	auto pipeline      = self->pipeline;
-	auto consensus_pod = &pipeline->consensus_pod;
+	auto track         = self->track;
+	auto consensus_pod = &track->consensus_pod;
 	auto consensus     = &ltr->consensus;
 
 	// commit all transactions <= abort
 	auto id = consensus->abort;
 	if (unlikely(id > consensus_pod->abort))
 	{
-		tr_abort_list(&pipeline->prepared, &pipeline->cache, id);
+		tr_abort_list(&track->prepared, &track->cache, id);
 		consensus_pod->abort = id;
 	}
 
@@ -175,7 +174,7 @@ pod_sync(Pod* self, Ltr* ltr)
 	id = consensus->commit;
 	if (id > consensus_pod->commit)
 	{
-		tr_commit_list(&pipeline->prepared, &pipeline->cache, id);
+		tr_commit_list(&track->prepared, &track->cache, id);
 		consensus_pod->commit = id;
 	}
 }
@@ -184,10 +183,10 @@ static void
 pod_main(void* arg)
 {
 	Pod* self = arg;
-	auto pipeline = self->pipeline;
+	auto track = self->track;
 	for (;;)
 	{
-		auto msg = mailbox_pop(&pipeline->queue, am_self());
+		auto msg = track_read(track);
 		if (msg->id == MSG_STOP)
 			break;
 		auto ltr = (Ltr*)msg;
@@ -205,7 +204,7 @@ pod_allocate(Part* part)
 {
 	auto self = (Pod*)am_malloc(sizeof(Pod));
 	self->part      =  part;
-	self->pipeline  = &part->pipeline;
+	self->track     = &part->track;
 	self->worker_id = -1;
 	vm_init(&self->vm, part, NULL);
 	list_init(&self->link);
@@ -224,7 +223,7 @@ pod_start(Pod* self, Task* task)
 {
 	if (self->worker_id != -1)
 		return;
-	pipeline_set_backend(self->pipeline, task);
+	track_set_backend(self->track, task);
 	self->worker_id = coroutine_create(pod_main, self);
 }
 
@@ -237,8 +236,8 @@ pod_stop(Pod* self)
 	assert(worker);
 	Msg stop;
 	msg_init(&stop, MSG_STOP);
-	pipeline_add(self->pipeline, &stop);
+	track_write(self->track, &stop);
 	wait_event(&worker->on_exit, am_self());
-	pipeline_set_backend(self->pipeline, NULL);
+	track_set_backend(self->track, NULL);
 	self->worker_id = -1;
 }

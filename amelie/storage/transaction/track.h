@@ -11,24 +11,24 @@
 // AGPL-3.0 Licensed.
 //
 
-typedef struct Pipeline Pipeline;
+typedef struct Track Track;
 
-struct Pipeline
+struct Track
 {
 	Mailbox   queue;
 	uint64_t  seq;
 	TrList    prepared;
 	TrCache   cache;
-	Consensus consensus;
 	Consensus consensus_pod;
+	Consensus consensus;
 	bool      pending;
 	Consensus pending_consensus;
-	Pipeline* pending_link;
+	Track*    pending_link;
 	Task*     backend;
 };
 
 static inline void
-pipeline_init(Pipeline* self)
+track_init(Track* self)
 {
 	self->seq          = 1;
 	self->pending      = false;
@@ -38,32 +38,38 @@ pipeline_init(Pipeline* self)
 	tr_list_init(&self->prepared);
 	tr_cache_init(&self->cache);
 	consensus_init(&self->pending_consensus);
-	consensus_init(&self->consensus);
 	consensus_init(&self->consensus_pod);
+	consensus_init(&self->consensus);
 }
 
 static inline void
-pipeline_free(Pipeline* self)
+track_free(Track* self)
 {
 	assert(list_empty(&self->queue.list));
 	tr_cache_free(&self->cache);
 }
 
 static inline void
-pipeline_set_backend(Pipeline* self, Task* task)
+track_set_backend(Track* self, Task* task)
 {
 	self->backend = task;
 }
 
+static inline Msg*
+track_read(Track* self)
+{
+	return mailbox_pop(&self->queue, am_self());
+}
+
 static inline void
-pipeline_add(Pipeline* self, Msg* msg)
+track_write(Track* self, Msg* msg)
 {
 	mailbox_append(&self->queue, msg);
 	event_signal(&self->queue.event);
 }
 
 static inline void
-pipeline_send(Pipeline* self, Msg* msg)
+track_send(Track* self, Msg* msg)
 {
 	task_send(self->backend, msg);
 }

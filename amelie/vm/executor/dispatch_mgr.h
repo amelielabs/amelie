@@ -94,8 +94,7 @@ dispatch_mgr_close(DispatchMgr* self)
 		auto ltr = list_at(Ltr, link);
 		if (ltr->closed)
 			continue;
-		auto pipeline = &ltr->part->pipeline;
-		pipeline_send(pipeline, &ltr->queue_close);
+		track_send(&ltr->part->track, &ltr->queue_close);
 		ltr->closed = true;
 	}
 }
@@ -165,10 +164,10 @@ dispatch_mgr_send(DispatchMgr* self, Dispatch* dispatch)
 	{
 		list_foreach(&self->ltrs)
 		{
-			auto ltr = list_at(Ltr, link);
-			auto pipeline = &ltr->part->pipeline;
-			ltr->consensus = pipeline->consensus;
-			pipeline_send(pipeline, &ltr->msg);
+			auto ltr   = list_at(Ltr, link);
+			auto track = &ltr->part->track;
+			ltr->consensus = track->consensus;
+			track_send(track, &ltr->msg);
 		}
 	}
 
@@ -181,23 +180,22 @@ dispatch_mgr_send(DispatchMgr* self, Dispatch* dispatch)
 	// send dispatch requests
 	list_foreach(&dispatch->list)
 	{
-		auto req = list_at(Req, link);
+		auto req   = list_at(Req, link);
+		auto track = &req->part->track;
 		// find or create transaction
 		auto ltr = dispatch_mgr_find(self, req->part);
 		if (! ltr)
 		{
 			assert(self->list_count == 1);
-
-			auto pipeline = &req->part->pipeline;
 			ltr = ltr_create(&self->cache_ltr, req->part, self->dtr, &self->complete);
-			ltr->consensus = pipeline->consensus;
+			ltr->consensus = track->consensus;
 			list_append(&self->ltrs, &ltr->link);
 			self->ltrs_count++;
-			pipeline_send(&ltr->part->pipeline, &ltr->msg);
+			track_send(track, &ltr->msg);
 		}
 		ltr->closed = dispatch->close;
 		req->ltr = ltr;
-		pipeline_send(&ltr->part->pipeline, &req->msg);
+		track_send(track, &req->msg);
 	}
 
 	// send early close requests

@@ -63,8 +63,14 @@ ltr_reset(Ltr* self)
 	list_init(&self->link);
 }
 
+static inline Msg*
+ltr_read(Ltr* self)
+{
+	return mailbox_pop(&self->queue, am_self());
+}
+
 static inline void
-ltr_add(Ltr* self, Msg* msg)
+ltr_write(Ltr* self, Msg* msg)
 {
 	mailbox_append(&self->queue, msg);
 	event_signal(&self->queue.event);

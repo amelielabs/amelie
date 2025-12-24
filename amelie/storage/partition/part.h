@@ -17,7 +17,7 @@ struct Part
 {
 	List          indexes;
 	int           indexes_count;
-	Pipeline      pipeline;
+	Track         track;
 	Sequence*     seq;
 	bool          unlogged;
 	Heap          heap;
