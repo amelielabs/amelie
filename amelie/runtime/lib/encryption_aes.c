@@ -82,10 +82,10 @@ encryption_aes_encrypt_begin(Encryption* ptr,
 }
 
 hot static void
-encryption_aes_encrypt_next(Encryption* ptr,
-                            Buf*        buf,
-                            uint8_t*    data,
-                            int         data_size)
+encryption_aes_encrypt_add(Encryption* ptr,
+                           Buf*        buf,
+                           uint8_t*    data,
+                           int         data_size)
 
 {
 	auto self = (EncryptionAes*)ptr;
@@ -155,7 +155,7 @@ EncryptionIf encryption_aes =
 	.create        = encryption_aes_create,
 	.free          = encryption_aes_free,
 	.encrypt_begin = encryption_aes_encrypt_begin,
-	.encrypt_next  = encryption_aes_encrypt_next,
+	.encrypt_add   = encryption_aes_encrypt_add,
 	.encrypt_end   = encryption_aes_encrypt_end,
 	.decrypt       = encryption_aes_decrypt
 };

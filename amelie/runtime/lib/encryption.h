@@ -26,7 +26,7 @@ struct EncryptionIf
 	Encryption* (*create)(EncryptionIf*);
 	void        (*free)(Encryption*);
 	void        (*encrypt_begin)(Encryption*, Random*, Str*, Buf*);
-	void        (*encrypt_next)(Encryption*, Buf*, uint8_t*, int);
+	void        (*encrypt_add)(Encryption*, Buf*, uint8_t*, int);
 	void        (*encrypt_end)(Encryption*, Buf*);
 	void        (*decrypt)(Encryption*, Str*, Buf*, uint8_t*, int);
 };
@@ -55,9 +55,15 @@ encryption_begin(Encryption* self, Random* random, Str* key, Buf* buf)
 }
 
 static inline void
-encryption_next(Encryption* self, Buf* buf, uint8_t* data, int data_size)
+encryption_add(Encryption* self, Buf* buf, uint8_t* data, int data_size)
 {
-	self->iface->encrypt_next(self, buf, data, data_size);
+	self->iface->encrypt_add(self, buf, data, data_size);
+}
+
+static inline void
+encryption_add_buf(Encryption* self, Buf* buf, Buf* data)
+{
+	self->iface->encrypt_add(self, buf, data->start, buf_size(data));
 }
 
 static inline void

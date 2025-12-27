@@ -15,3 +15,10 @@
 #include "io/source.h"
 #include "io/id.h"
 
+// merge iterator
+#include "io/merge_iterator.h"
+
+// region
+#include "io/region.h"
+#include "io/region_iterator.h"
+#include "io/region_writer.h"

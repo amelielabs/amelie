@@ -56,9 +56,9 @@ compression_zstd_compress_begin(Compression* ptr, int level)
 }
 
 hot static void
-compression_zstd_compress_next(Compression* ptr, Buf* buf,
-                               uint8_t*     data,
-                               int          data_size)
+compression_zstd_compress_add(Compression* ptr, Buf* buf,
+                              uint8_t*     data,
+                              int          data_size)
 {
 	auto self = (CompressionZstd*)ptr;
 	buf_reserve(buf, data_size);
@@ -116,7 +116,7 @@ CompressionIf compression_zstd =
 	.create         = compression_zstd_create,
 	.free           = compression_zstd_free,
 	.compress_begin = compression_zstd_compress_begin,
-	.compress_next  = compression_zstd_compress_next,
+	.compress_add   = compression_zstd_compress_add,
 	.compress_end   = compression_zstd_compress_end,
 	.decompress     = compression_zstd_decompress
 };
