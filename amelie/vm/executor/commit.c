@@ -12,6 +12,7 @@
 
 #include <amelie_runtime>
 #include <amelie_server>
+#include <amelie_engine>
 #include <amelie_storage>
 #include <amelie_value.h>
 #include <amelie_set.h>
