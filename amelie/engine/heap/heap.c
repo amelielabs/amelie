@@ -57,13 +57,9 @@ heap_create(Heap* self)
 	// header + buckets[]
 	auto size = sizeof(HeapHeader) + sizeof(HeapBucket) * 385;
 	auto header = (HeapHeader*)am_malloc(size);
-	header->crc         = 0;
-	header->magic       = HEAP_MAGIC;
-	header->version     = 0;
-	header->compression = 0;
-	header->count       = 0;
-	self->header        = header;
-	self->buckets       = header->buckets;
+	header->count = 0;
+	self->header  = header;
+	self->buckets = header->buckets;
 
 	// prepare buckets
 
@@ -190,12 +186,10 @@ heap_allocate(Heap* self, int size)
 		{
 			auto page = page_mgr_allocate(&self->page_mgr);
 			page_header = (PageHeader*)page->pointer;
-			page_header->crc             = 0;
-			page_header->size            = sizeof(PageHeader);
-			page_header->size_compressed = 0;
-			page_header->order           = self->page_mgr.list_count - 1;
-			page_header->last            = 0;
-			page_header->padding         = 0;
+			page_header->size    = sizeof(PageHeader);
+			page_header->order   = self->page_mgr.list_count - 1;
+			page_header->last    = 0;
+			page_header->padding = 0;
 			self->page_header = page_header;
 			self->last = NULL;
 			self->header->count++;

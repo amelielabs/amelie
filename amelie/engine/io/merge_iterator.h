@@ -127,12 +127,13 @@ merge_iterator_reset(MergeIterator* self)
 static inline void
 merge_iterator_init(MergeIterator* self)
 {
-	self->it.has     = (IteratorHas)merge_iterator_has;
-	self->it.at      = (IteratorAt)merge_iterator_at;
-	self->it.next    = (IteratorNext)merge_iterator_next;
-	self->it.close   = (IteratorClose)merge_iterator_free;
 	self->current    = NULL;
 	self->keys       = NULL;
 	self->list_count = 0;
 	buf_init(&self->list);
+	auto it = &self->it;
+	it->has   = (IteratorHas)merge_iterator_has;
+	it->at    = (IteratorAt)merge_iterator_at;
+	it->next  = (IteratorNext)merge_iterator_next;
+	it->close = (IteratorClose)merge_iterator_free;
 }

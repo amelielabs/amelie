@@ -55,10 +55,6 @@ struct HeapBucket
 
 struct HeapHeader
 {
-	uint32_t   crc;
-	uint32_t   magic;
-	uint32_t   version;
-	uint8_t    compression;
 	uint32_t   count;
 	HeapBucket buckets[];
 } packed;

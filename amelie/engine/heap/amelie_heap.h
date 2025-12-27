@@ -16,4 +16,3 @@
 #include "heap/heap_cursor.h"
 #include "heap/heap_iterator.h"
 #include "heap/heap_row.h"
-#include "heap/heap_file.h"
