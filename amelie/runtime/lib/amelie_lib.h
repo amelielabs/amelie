@@ -47,6 +47,10 @@
 #include "lib/compression.h"
 #include "lib/compression_zstd.h"
 
+// encryption
+#include "lib/encryption.h"
+#include "lib/encryption_aes.h"
+
 // logger
 #include "lib/logger.h"
 

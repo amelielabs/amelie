@@ -67,8 +67,7 @@ compression_end(Compression* self, Buf* buf)
 }
 
 static inline void
-compression_decompress(Compression* self,
-                       Buf*         buf,
+compression_decompress(Compression* self, Buf* buf,
                        uint8_t*     data,
                        int          data_size)
 {
