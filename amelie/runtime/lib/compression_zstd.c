@@ -46,16 +46,21 @@ compression_zstd_free(Compression* ptr)
 	am_free(self);
 }
 
-hot static void
-compression_zstd_compress(Compression* ptr, Buf* buf, int level,
-                          uint8_t*     data,
-                          int          data_size)
+static void
+compression_zstd_compress_begin(Compression* ptr, int level)
 {
 	auto self = (CompressionZstd*)ptr;
 	ZSTD_CCtx_reset(self->ctx, ZSTD_reset_session_only);
 	if (level > 0)
 		ZSTD_CCtx_setParameter(self->ctx, ZSTD_c_compressionLevel, level);
+}
 
+hot static void
+compression_zstd_compress_next(Compression* ptr, Buf* buf,
+                               uint8_t*     data,
+                               int          data_size)
+{
+	auto self = (CompressionZstd*)ptr;
 	buf_reserve(buf, data_size);
 
 	ZSTD_outBuffer out;
@@ -68,27 +73,38 @@ compression_zstd_compress(Compression* ptr, Buf* buf, int level,
 	in.size  = data_size;
 	in.pos   = 0;
 
-	ssize_t rc;
-	rc = ZSTD_compressStream2(self->ctx, &out, &in, ZSTD_e_continue);
+	auto rc = ZSTD_compressStream2(self->ctx, &out, &in, ZSTD_e_continue);
 	assert(rc == 0);
-	unused(rc);
-
-	memset(&in, 0, sizeof(in));
-	rc = ZSTD_compressStream2(self->ctx, &out, &in, ZSTD_e_end);
 	unused(rc);
 
 	buf_advance(buf, out.pos);
 }
 
 hot static void
-compression_zstd_decompress(Compression* ptr,
-                            Buf*         buf,
+compression_zstd_compress_end(Compression* ptr, Buf* buf)
+{
+	auto self = (CompressionZstd*)ptr;
+
+	ZSTD_outBuffer out;
+	out.dst  = buf->position;
+	out.size = buf_size_unused(buf);
+	out.pos  = 0;
+
+	ZSTD_inBuffer in;
+	memset(&in, 0, sizeof(in));
+	auto rc = ZSTD_compressStream2(self->ctx, &out, &in, ZSTD_e_end);
+	unused(rc);
+
+	buf_advance(buf, out.pos);
+}
+
+hot static void
+compression_zstd_decompress(Compression* ptr, Buf* buf,
                             uint8_t*     data,
                             int          data_size)
 {
 	unused(ptr);
-	ssize_t rc;
-	rc = ZSTD_decompress(data, data_size, buf->start, buf_size(buf));
+	int rc = ZSTD_decompress(data, data_size, buf->start, buf_size(buf));
 	if (unlikely(ZSTD_isError(rc)))
 		error("zstd: decompression failed");
 	assert(rc == data_size);
@@ -96,9 +112,11 @@ compression_zstd_decompress(Compression* ptr,
 
 CompressionIf compression_zstd =
 {
-	.id         = COMPRESSION_ZSTD,
-	.create     = compression_zstd_create,
-	.free       = compression_zstd_free,
-	.compress   = compression_zstd_compress,
-	.decompress = compression_zstd_decompress
+	.id             = COMPRESSION_ZSTD,
+	.create         = compression_zstd_create,
+	.free           = compression_zstd_free,
+	.compress_begin = compression_zstd_compress_begin,
+	.compress_next  = compression_zstd_compress_next,
+	.compress_end   = compression_zstd_compress_end,
+	.decompress     = compression_zstd_decompress
 };

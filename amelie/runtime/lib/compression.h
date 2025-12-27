@@ -25,7 +25,9 @@ struct CompressionIf
 	int           id;
 	Compression* (*create)(CompressionIf*);
 	void         (*free)(Compression*);
-	void         (*compress)(Compression*, Buf*, int, uint8_t*, int);
+	void         (*compress_begin)(Compression*, int);
+	void         (*compress_next)(Compression*, Buf*, uint8_t*, int);
+	void         (*compress_end)(Compression*, Buf*);
 	void         (*decompress)(Compression*, Buf*, uint8_t*, int);
 };
 
@@ -47,11 +49,21 @@ compression_free(Compression* self)
 }
 
 static inline void
-compression_compress(Compression* self, Buf* buf, int level,
-                     uint8_t*     data,
-                     int          data_size)
+compression_begin(Compression* self, int level)
 {
-	self->iface->compress(self, buf, level, data, data_size);
+	self->iface->compress_begin(self, level);
+}
+
+static inline void
+compression_next(Compression* self, Buf* buf, uint8_t* data, int data_size)
+{
+	self->iface->compress_next(self, buf, data, data_size);
+}
+
+static inline void
+compression_end(Compression* self, Buf* buf)
+{
+	self->iface->compress_end(self, buf);
 }
 
 static inline void
