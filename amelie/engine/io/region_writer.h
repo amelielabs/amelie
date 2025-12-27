@@ -146,7 +146,7 @@ region_writer_add(RegionWriter* self, Row* row)
 
 	// update header
 	auto header = region_writer_header(self);
-	header->count++;
+	header->rows++;
 }
 
 static inline Row*
@@ -159,15 +159,15 @@ static inline Row*
 region_writer_max(RegionWriter* self)
 {
 	auto header = region_writer_header(self);
-	assert(header->count > 0);
+	assert(header->rows > 0);
 	auto offset = (uint32_t*)(self->meta.start + sizeof(Region));
-	return (Row*)(self->data.start + offset[header->count - 1]);
+	return (Row*)(self->data.start + offset[header->rows - 1]);
 }
 
 static inline Row*
 region_writer_last(RegionWriter* self)
 {
-	if (region_writer_header(self)->count == 0)
+	if (region_writer_header(self)->rows == 0)
 		return NULL;
 	return region_writer_max(self);
 }

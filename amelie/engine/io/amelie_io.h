@@ -22,3 +22,14 @@
 #include "io/region.h"
 #include "io/region_iterator.h"
 #include "io/region_writer.h"
+
+// span (region index)
+#include "io/span.h"
+#include "io/span_iterator.h"
+#include "io/span_writer.h"
+#include "io/span_op.h"
+
+/*
+// writer
+#include "io/writer.h"
+*/

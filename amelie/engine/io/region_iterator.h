@@ -25,7 +25,7 @@ struct RegionIterator
 hot static inline void
 region_iterator_set_pos(RegionIterator* self, int pos)
 {
-	if (unlikely(pos < 0 || pos >= (int)self->region->count))
+	if (unlikely(pos < 0 || pos >= (int)self->region->rows))
 	{
 		self->current = NULL;
 		self->pos = 0;
@@ -47,7 +47,7 @@ region_iterator_search(RegionIterator* self, Row* row, bool* match)
 {
 	int min = 0;
 	int mid = 0;
-	int max = self->region->count - 1;
+	int max = self->region->rows - 1;
 	while (max >= min)
 	{
 		mid = min + (max - min) / 2;
@@ -75,7 +75,7 @@ region_iterator_open(RegionIterator* self,
 	self->pos     = 0;
 	self->current = NULL;
 	self->keys    = keys;
-	if (unlikely(self->region->count == 0))
+	if (unlikely(self->region->rows == 0))
 		return false;
 	bool match = false;
 	int pos;
