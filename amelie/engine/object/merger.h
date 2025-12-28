@@ -16,7 +16,7 @@ typedef struct Merger    Merger;
 
 struct MergerReq
 {
-	Chunk*  origin;
+	Object* origin;
 	Heap*   heap;
 	Keys*   keys;
 	Source* source;
@@ -24,11 +24,11 @@ struct MergerReq
 
 struct Merger
 {
-	Chunk*        chunk;
-	ChunkIterator chunk_iterator;
-	HeapIterator  heap_iterator;
-	MergeIterator merge_iterator;
-	Writer        writer;
+	Object*        object;
+	ObjectIterator object_iterator;
+	HeapIterator   heap_iterator;
+	MergeIterator  merge_iterator;
+	Writer         writer;
 };
 
 void merger_init(Merger*);

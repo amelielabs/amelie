@@ -11,21 +11,21 @@
 // AGPL-3.0 Licensed.
 //
 
-typedef struct ChunkIterator ChunkIterator;
+typedef struct ObjectIterator ObjectIterator;
 
-struct ChunkIterator
+struct ObjectIterator
 {
 	Iterator       it;
 	RegionIterator region_iterator;
 	SpanIterator   span_iterator;
 	SpanRegion*    current;
-	Chunk*         chunk;
+	Object*        object;
 	Keys*          keys;
 	Reader         reader;
 };
 
 hot static inline bool
-chunk_iterator_open_region(ChunkIterator* self, Row* row)
+object_iterator_open_region(ObjectIterator* self, Row* row)
 {
 	// read region from file
 	auto region = reader_execute(&self->reader, self->current);
@@ -38,39 +38,39 @@ chunk_iterator_open_region(ChunkIterator* self, Row* row)
 }
 
 hot static inline bool
-chunk_iterator_open(ChunkIterator* self, Keys* keys, Chunk* chunk, Row* row)
+object_iterator_open(ObjectIterator* self, Keys* keys, Object* object, Row* row)
 {
-	self->chunk   = chunk;
+	self->object  = object;
 	self->keys    = keys;
 	self->current = NULL;
 
 	region_iterator_init(&self->region_iterator);
 	span_iterator_init(&self->span_iterator);
-	span_iterator_open(&self->span_iterator, &chunk->span, &chunk->span_data,
+	span_iterator_open(&self->span_iterator, &object->index, &object->index_data,
 	                    keys, row);
 
 	self->current = span_iterator_at(&self->span_iterator);
 	if (self->current == NULL)
 		return false;
 
-	reader_open(&self->reader, chunk);
-	return chunk_iterator_open_region(self, row);
+	reader_open(&self->reader, object);
+	return object_iterator_open_region(self, row);
 }
 
 hot static inline bool
-chunk_iterator_has(ChunkIterator* self)
+object_iterator_has(ObjectIterator* self)
 {
 	return region_iterator_has(&self->region_iterator);
 }
 
 hot static inline Row*
-chunk_iterator_at(ChunkIterator* self)
+object_iterator_at(ObjectIterator* self)
 {
 	return region_iterator_at(&self->region_iterator);
 }
 
 hot static inline void
-chunk_iterator_next(ChunkIterator* self)
+object_iterator_next(ObjectIterator* self)
 {
 	if (unlikely(self->current == NULL))
 		return;
@@ -89,35 +89,35 @@ chunk_iterator_next(ChunkIterator* self)
 		if (unlikely(self->current == NULL))
 			break;
 
-		chunk_iterator_open_region(self, NULL);
+		object_iterator_open_region(self, NULL);
 	}
 }
 
 static inline void
-chunk_iterator_free(ChunkIterator* self)
+object_iterator_free(ObjectIterator* self)
 {
 	reader_reset(&self->reader);
 	reader_free(&self->reader);
 }
 
 static inline void
-chunk_iterator_reset(ChunkIterator* self)
+object_iterator_reset(ObjectIterator* self)
 {
 	reader_reset(&self->reader);
 	region_iterator_reset(&self->region_iterator);
 }
 
 static inline void
-chunk_iterator_init(ChunkIterator* self)
+object_iterator_init(ObjectIterator* self)
 {
-	self->chunk   = NULL;
+	self->object  = NULL;
 	self->current = NULL;
 	reader_init(&self->reader);
 	span_iterator_init(&self->span_iterator);
 	region_iterator_init(&self->region_iterator);
 	auto it = &self->it;
-	it->has   = (IteratorHas)chunk_iterator_has;
-	it->at    = (IteratorAt)chunk_iterator_at;
-	it->next  = (IteratorNext)chunk_iterator_next;
-	it->close = (IteratorClose)chunk_iterator_free;
+	it->has   = (IteratorHas)object_iterator_has;
+	it->at    = (IteratorAt)object_iterator_at;
+	it->next  = (IteratorNext)object_iterator_next;
+	it->close = (IteratorClose)object_iterator_free;
 }

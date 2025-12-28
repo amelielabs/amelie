@@ -13,7 +13,7 @@
 #include <amelie_runtime>
 #include <amelie_row.h>
 #include <amelie_heap.h>
-#include <amelie_chunk.h>
+#include <amelie_object.h>
 
 void
 writer_init(Writer* self)

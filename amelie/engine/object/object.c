@@ -13,42 +13,42 @@
 #include <amelie_runtime>
 #include <amelie_row.h>
 #include <amelie_heap.h>
-#include <amelie_chunk.h>
+#include <amelie_object.h>
 
-Chunk*
-chunk_allocate(Source* source, Id* id)
+Object*
+object_allocate(Source* source, Id* id)
 {
-	auto self = (Chunk*)am_malloc(sizeof(Chunk));
+	auto self = (Object*)am_malloc(sizeof(Object));
 	self->id      = *id;
 	self->state   = ID_NONE;
-	self->refresh = false;
+	self->pending = false;
 	self->source  = source;
-	span_init(&self->span);
-	buf_init(&self->span_data);
+	span_init(&self->index);
+	buf_init(&self->index_data);
 	file_init(&self->file);
 	return self;
 }
 
 void
-chunk_free(Chunk* self)
+object_free(Object* self)
 {
 	file_close(&self->file);
-	buf_free(&self->span_data);
+	buf_free(&self->index_data);
 	am_free(self);
 }
 
 void
-chunk_open(Chunk* self, int state, bool read_index)
+object_open(Object* self, int state, bool read_index)
 {
 	switch (state) {
 	// <source_path>/<uuid>/<id>
 	case ID:
 	{
-		// open and validate file
-		span_open(&self->file, self->source, &self->id, state, &self->span);
+		// open and validate object file
+		span_open(&self->file, self->source, &self->id, state, &self->index);
 		if (read_index)
-			span_read(&self->file, self->source, &self->span,
-			          &self->span_data, false);
+			span_read(&self->file, self->source, &self->index,
+			          &self->index_data, false);
 		break;
 	}
 	default:
@@ -58,7 +58,7 @@ chunk_open(Chunk* self, int state, bool read_index)
 }
 
 void
-chunk_create(Chunk* self, int state)
+object_create(Object* self, int state)
 {
 	// <source_path>/<uuid>/<id>.incomplete
 	char path[PATH_MAX];
@@ -76,7 +76,7 @@ chunk_create(Chunk* self, int state)
 }
 
 void
-chunk_delete(Chunk* self, int state)
+object_delete(Object* self, int state)
 {
 	// <source_path>/<uuid>/<id>
 	// <source_path>/<uuid>/<id>.incomplete
@@ -88,7 +88,7 @@ chunk_delete(Chunk* self, int state)
 }
 
 void
-chunk_rename(Chunk* self, int from, int to)
+object_rename(Object* self, int from, int to)
 {
 	// rename file from one state to another
 	char path_from[PATH_MAX];

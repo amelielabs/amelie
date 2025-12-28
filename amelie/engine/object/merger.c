@@ -13,13 +13,13 @@
 #include <amelie_runtime>
 #include <amelie_row.h>
 #include <amelie_heap.h>
-#include <amelie_chunk.h>
+#include <amelie_object.h>
 
 void
 merger_init(Merger* self)
 {
-	self->chunk = NULL;
-	chunk_iterator_init(&self->chunk_iterator);
+	self->object = NULL;
+	object_iterator_init(&self->object_iterator);
 	heap_iterator_init(&self->heap_iterator);
 	merge_iterator_init(&self->merge_iterator);
 	writer_init(&self->writer);
@@ -29,7 +29,7 @@ void
 merger_free(Merger* self)
 {
 	merger_reset(self);
-	chunk_iterator_free(&self->chunk_iterator);
+	object_iterator_free(&self->object_iterator);
 	merge_iterator_free(&self->merge_iterator);
 	writer_free(&self->writer);
 }
@@ -37,12 +37,12 @@ merger_free(Merger* self)
 void
 merger_reset(Merger* self)
 {
-	if (self->chunk)
+	if (self->object)
 	{
-		chunk_free(self->chunk);
-		self->chunk = NULL;
+		object_free(self->object);
+		self->object = NULL;
 	}
-	chunk_iterator_reset(&self->chunk_iterator);
+	object_iterator_reset(&self->object_iterator);
 	heap_iterator_reset(&self->heap_iterator);
 	merge_iterator_reset(&self->merge_iterator);
 	writer_reset(&self->writer);
@@ -53,11 +53,11 @@ merger_write(Merger* self, MergerReq* req)
 {
 	auto writer = &self->writer;
 	auto it     = &self->merge_iterator;
-	auto chunk  = self->chunk;
+	auto object = self->object;
 	auto origin = req->origin;
 	auto heap   = req->heap;
 
-	writer_start(writer, req->source, &chunk->file);
+	writer_start(writer, req->source, &object->file);
 	for (;;)
 	{
 		auto row = merge_iterator_at(it);
@@ -76,19 +76,19 @@ merger_write(Merger* self, MergerReq* req)
 	uint64_t lsn = heap->lsn_max;
 	if (origin->state != ID_NONE)
 	{
-		refreshes += origin->span.refreshes;
-		if (origin->span.lsn > lsn)
-			lsn = origin->span.lsn;
+		refreshes += origin->index.refreshes;
+		if (origin->index.lsn > lsn)
+			lsn = origin->index.lsn;
 	}
 
-	auto id = &chunk->id;
+	auto id = &object->id;
 	writer_stop(writer, id, refreshes, 0, 0, lsn,
 	            req->source->sync);
 
 	// copy index
 	span_writer_copy(&self->writer.span_writer,
-	                 &chunk->span,
-	                 &chunk->span_data);
+	                 &object->index,
+	                 &object->index_data);
 }
 
 hot void
@@ -99,22 +99,22 @@ merger_execute(Merger* self, MergerReq* req)
 	// prepare heap iterator
 	heap_iterator_open(&self->heap_iterator, req->heap, NULL);
 
-	// prepare chunk iterator
-	chunk_iterator_reset(&self->chunk_iterator);
-	chunk_iterator_open(&self->chunk_iterator, req->keys, origin, NULL);
+	// prepare object iterator
+	object_iterator_reset(&self->object_iterator);
+	object_iterator_open(&self->object_iterator, req->keys, origin, NULL);
 
 	// prepare merge iterator
 	auto it = &self->merge_iterator;
 	merge_iterator_reset(it);
 	merge_iterator_add(it, &self->heap_iterator.it);
-	merge_iterator_add(it, &self->chunk_iterator.it);
+	merge_iterator_add(it, &self->object_iterator.it);
 	merge_iterator_open(it, req->keys);
 
-	// allocate and create incomplete chunkition file
+	// allocate and create incomplete objectition file
 	Id id = origin->id;
-	self->chunk = chunk_allocate(req->source, &id);
-	chunk_create(self->chunk, ID_INCOMPLETE);
-	chunk_set(self->chunk, ID_INCOMPLETE);
+	self->object = object_allocate(req->source, &id);
+	object_create(self->object, ID_INCOMPLETE);
+	object_set(self->object, ID_INCOMPLETE);
 
 	// write file
 	merger_write(self, req);

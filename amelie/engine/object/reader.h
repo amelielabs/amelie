@@ -15,18 +15,18 @@ typedef struct Reader Reader;
 
 struct Reader
 {
-	Chunk* chunk;
-	Codec* compression;
-	Codec* encryption;
-	Buf    buf;
-	Buf    buf_decrypted;
-	Buf    buf_decompressed;
+	Object* object;
+	Buf     buf;
+	Buf     buf_decrypted;
+	Buf     buf_decompressed;
+	Codec*  compression;
+	Codec*  encryption;
 };
 
 static inline void
 reader_init(Reader* self)
 {
-	self->chunk       = NULL;
+	self->object      = NULL;
 	self->compression = NULL;
 	self->encryption  = NULL;
 	buf_init(&self->buf);
@@ -61,44 +61,43 @@ reader_free(Reader* self)
 }
 
 static inline void
-reader_open(Reader* self, Chunk* chunk)
+reader_open(Reader* self, Object* object)
 {
-	self->chunk = chunk;
+	self->object = object;
 
 	// get compression context
-	auto id = chunk->span.compression;
+	auto id = object->index.compression;
 	if (id != COMPRESSION_NONE)
 	{
 		self->compression = compression_create(&runtime()->cache_compression, id, 0);
 		if (! self->compression)
-			error("invalid compression id '%d'", id);
+			error("object: invalid compression id '%d'", id);
 	}
 
 	// get encryption context
-	id = chunk->span.encryption;
+	id = object->index.encryption;
 	if (id != CIPHER_NONE)
 	{
 		self->encryption = cipher_create(&runtime()->cache_cipher, id,
 		                                 &runtime()->random,
-		                                 &chunk->source->encryption_key);
+		                                 &object->source->encryption_key);
 		if (! self->encryption)
-			error("invalid encryption id '%d'", id);
+			error("object: invalid encryption id '%d'", id);
 	}
 }
 
 hot static inline Region*
 reader_execute(Reader* self, SpanRegion* span_region)
 {
-	auto chunk = self->chunk;
-
+	auto object = self->object;
 	buf_reset(&self->buf);
 	buf_reset(&self->buf_decrypted);
 	buf_reset(&self->buf_decompressed);
 
-	if (chunk_has(chunk, ID))
+	if (object_has(object, ID))
 	{
 		// read region data from file
-		file_pread_buf(&chunk->file, &self->buf, span_region->size,
+		file_pread_buf(&object->file, &self->buf, span_region->size,
 		               span_region->offset);
 	} else {
 		abort();
@@ -126,7 +125,7 @@ reader_execute(Reader* self, SpanRegion* span_region)
 	auto region = (Region*)origin->start;
 	if (region->size != span_region->size_origin ||
 	    region->rows != span_region->rows)
-		error("read: region meta data mismatch");
+		error("object: region meta data mismatch");
 
 	return region;
 }
