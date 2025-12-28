@@ -92,3 +92,6 @@ span_max(Span* self, Buf* data)
 {
 	return span_region_max(self, data, self->regions - 1);
 }
+
+void span_open(File*, Source*, Id*, int, Span*);
+void span_read(File*, Source*, Span*, Buf*, bool);
