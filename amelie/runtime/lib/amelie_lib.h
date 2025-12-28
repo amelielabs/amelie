@@ -56,7 +56,7 @@
 
 // cli
 #include "lib/arg.h"
-#include "lib/reader.h"
+#include "lib/load.h"
 #include "lib/separator.h"
 #include "lib/console.h"
 #include "lib/histogram.h"

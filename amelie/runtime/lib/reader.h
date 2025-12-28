@@ -11,31 +11,31 @@
 // AGPL-3.0 Licensed.
 //
 
-typedef struct Reader Reader;
+typedef struct Load Load;
 
-typedef void (*ReaderFunction)(Reader*, Str*, Str*);
+typedef void (*LoadFunction)(Load*, Str*, Str*);
 
 typedef enum
 {
-	READER_LINE
-} ReaderType;
+	LOAD_LINE
+} LoadType;
 
-struct Reader
+struct Load
 {
-	ReaderType     type;
-	ReaderFunction read;
-	Buf            readahead;
-	int            readahead_size;
-	int            offset;
-	uint64_t       offset_file;
-	int            limit;
-	int            limit_size;
-	File           file;
+	LoadType     type;
+	LoadFunction read;
+	Buf          readahead;
+	int          readahead_size;
+	int          offset;
+	uint64_t     offset_file;
+	int          limit;
+	int          limit_size;
+	File         file;
 };
 
-void reader_init(Reader*);
-void reader_reset(Reader*);
-void reader_free(Reader*);
-void reader_open(Reader*, ReaderType, char*, int, int);
-void reader_close(Reader*);
-Buf* reader_read(Reader*, int*);
+void load_init(Load*);
+void load_reset(Load*);
+void load_free(Load*);
+void load_open(Load*, LoadType, char*, int, int);
+void load_close(Load*);
+Buf* load_read(Load*, int*);

@@ -15,7 +15,7 @@
 #include <amelie_lib.h>
 
 void
-reader_init(Reader* self)
+load_init(Load* self)
 {
 	self->read           = NULL;
 	self->readahead_size = 256 * 1024;
@@ -28,7 +28,7 @@ reader_init(Reader* self)
 }
 
 void
-reader_reset(Reader* self)
+load_reset(Load* self)
 {
 	self->read        = NULL;
 	self->offset      = 0;
@@ -40,14 +40,14 @@ reader_reset(Reader* self)
 }
 
 void
-reader_free(Reader* self)
+load_free(Load* self)
 {
-	reader_reset(self);
+	load_reset(self);
 	buf_free(&self->readahead);
 }
 
 hot static void
-reader_read_line(Reader* self, Str* in, Str* out)
+load_read_line(Load* self, Str* in, Str* out)
 {
 	unused(self);
 	auto pos = in->pos;
@@ -61,15 +61,15 @@ reader_read_line(Reader* self, Str* in, Str* out)
 }
 
 void
-reader_open(Reader* self, ReaderType type, char* path,
-            int     limit,
-            int     limit_size)
+load_open(Load* self, LoadType type, char* path,
+          int   limit,
+          int   limit_size)
 {
 	self->type = type;
 	switch (type) {
-	case READER_LINE:
+	case LOAD_LINE:
 		// read rows separated by \n
-		self->read = reader_read_line;
+		self->read = load_read_line;
 		break;
 	}
 	self->limit      = limit;
@@ -81,13 +81,13 @@ reader_open(Reader* self, ReaderType type, char* path,
 }
 
 void
-reader_close(Reader* self)
+load_close(Load* self)
 {
-	reader_reset(self);
+	load_reset(self);
 }
 
 hot Buf*
-reader_read(Reader* self, int* count)
+load_read(Load* self, int* count)
 {
 	auto readahead = &self->readahead;
 	auto buf = buf_create();
@@ -154,7 +154,7 @@ reader_read(Reader* self, int* count)
 		}
 
 		// data left in the readahead
-		if (self->type == READER_LINE)
+		if (self->type == LOAD_LINE)
 		{
 			buf_write(buf, readahead->start, buf_size(readahead));
 			self->offset += buf_size(readahead);
