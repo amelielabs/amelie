@@ -25,7 +25,7 @@ import_init(Import* self, Main* main)
 	self->forward          = NULL;
 	list_init(&self->clients_list);
 
-	reader_init(&self->reader);
+	load_init(&self->load);
 	opts_init(&self->opts);
 	OptsDef defs[] =
 	{
@@ -39,7 +39,7 @@ import_init(Import* self, Main* main)
 void
 import_free(Import* self)
 {
-	reader_free(&self->reader);
+	load_free(&self->load);
 	opts_free(&self->opts);
 }
 
@@ -113,12 +113,12 @@ import_send(Import* self, Buf* buf)
 hot static inline void
 import_report(Import* self, char* path)
 {
-	auto reader = &self->reader;
+	auto load = &self->load;
 	timer_mgr_reset(&am_task->timer_mgr);
 
 	auto     time           = time_us();
 	double   time_diff      = (time - self->report_time) / 1000.0 / 1000.0;
-	uint64_t processed_diff = reader->offset_file - self->report_processed;
+	uint64_t processed_diff = load->offset_file - self->report_processed;
 	uint64_t rows_diff      = self->rows - self->report_rows;
 	int      processed_sec  = 0;
 	int      rows_sec       = 0;
@@ -130,8 +130,8 @@ import_report(Import* self, char* path)
 
 	if (path)
 	{
-		auto total_mib = reader->file.size / 1024 / 1024;
-		auto done_mib  = reader->offset_file / 1024 / 1024;
+		auto total_mib = load->file.size / 1024 / 1024;
+		auto done_mib  = load->offset_file / 1024 / 1024;
 		int  percent   = 0;
 		if (total_mib > 0)
 			percent = (done_mib * 100ull) / total_mib;
@@ -140,15 +140,15 @@ import_report(Import* self, char* path)
 			percent = 100;
 
 		info("%.*s %d%% (%d MiB / %d MiB) %d MiB/sec, %d rows/sec, %" PRIu64 " errors\r",
-		     str_size(&reader->file.path),
-		     str_of(&reader->file.path),
+		     str_size(&load->file.path),
+		     str_of(&load->file.path),
 		     (int)percent, (int)done_mib, (int)total_mib,
 		     processed_sec,
 		     rows_sec,
 		     self->errors);
 	} else
 	{
-		auto done_mib = reader->offset_file / 1024 / 1024;
+		auto done_mib = load->offset_file / 1024 / 1024;
 		info("pipe (%d MiB) %d MiB/sec, %d rows/sec, %" PRIu64 " errors\r",
 		     (int)done_mib,
 		     processed_sec,
@@ -157,7 +157,7 @@ import_report(Import* self, char* path)
 	}
 
 	self->report_time      = time;
-	self->report_processed = reader->offset_file;
+	self->report_processed = load->offset_file;
 	self->report_rows      = self->rows;
 
 	fflush(stdout);
@@ -169,17 +169,17 @@ import_file(Import* self, char* path)
 	int limit = opt_int_of(&self->batch);
 	int limit_size = 256 * 1024;
 
-	auto reader = &self->reader;
-	reader_reset(reader);
-	reader_open(reader, READER_LINE, path, limit, limit_size);
+	auto load = &self->load;
+	load_reset(load);
+	load_open(load, LOAD_LINE, path, limit, limit_size);
 
 	// report
-	auto done = reader->offset_file;
+	auto done = load->offset_file;
 	import_report(self, path);
 	for (;;)
 	{
 		int  rows = 0;
-		auto buf = reader_read(reader, &rows);
+		auto buf = load_read(load, &rows);
 		if (! buf)
 			break;
 		defer_buf(buf);
@@ -188,10 +188,10 @@ import_file(Import* self, char* path)
 		self->rows += rows;
 
 		// report
-		if ((reader->offset_file - done) >= 100 * 1024 * 1024)
+		if ((load->offset_file - done) >= 100 * 1024 * 1024)
 		{
 			import_report(self, path);
-			done = reader->offset_file;
+			done = load->offset_file;
 		}
 	}
 
@@ -202,7 +202,7 @@ import_file(Import* self, char* path)
 	import_report(self, path);
 	info("\n");
 
-	reader_close(reader);
+	load_close(load);
 }
 
 static void
