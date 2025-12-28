@@ -31,3 +31,6 @@
 
 // writer
 #include "io/writer.h"
+
+// partition
+#include "io/part.h"

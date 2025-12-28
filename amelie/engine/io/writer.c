@@ -131,7 +131,8 @@ writer_stop(Writer*  self, Id* id, uint32_t refreshes,
 		writer_stop_region(self);
 
 	span_writer_stop(&self->span_writer, id, refreshes,
-	                 time_create, time_refresh,
+	                 time_create,
+	                 time_refresh,
 	                 lsn);
 
 	// write span
