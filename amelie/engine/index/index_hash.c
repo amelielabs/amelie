@@ -91,10 +91,10 @@ index_hash_free(Index* arg)
 }
 
 Index*
-index_hash_allocate(IndexConfig* config, Heap* heap)
+index_hash_allocate(IndexConfig* config)
 {
 	auto self = (IndexHash*)am_malloc(sizeof(IndexHash));
-	index_init(&self->index, config, heap);
+	index_init(&self->index, config);
 	hash_init(&self->hash);
 
 	auto iface = &self->index.iface;
