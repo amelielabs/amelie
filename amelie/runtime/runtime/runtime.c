@@ -27,6 +27,8 @@ runtime_init(Runtime* self)
 	state_init(&self->state);
 	timezone_mgr_init(&self->timezone_mgr);
 	random_init(&self->random);
+	codec_cache_init(&self->cache_compression);
+	codec_cache_init(&self->cache_cipher);
 	resolver_init(&self->resolver);
 	logger_init(&self->logger);
 	task_init(&self->task);
@@ -40,6 +42,8 @@ runtime_free(Runtime* self)
 	config_free(&self->config);
 	state_free(&self->state);
 	timezone_mgr_free(&self->timezone_mgr);
+	codec_cache_free(&self->cache_compression);
+	codec_cache_free(&self->cache_cipher);
 	buf_mgr_free(&self->buf_mgr);
 	logger_close(&self->logger);
 	tls_lib_free();

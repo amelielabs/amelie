@@ -39,6 +39,8 @@ struct Runtime
 	TimezoneMgr timezone_mgr;
 	CrcFunction crc;
 	Random      random;
+	CodecCache  cache_compression;
+	CodecCache  cache_cipher;
 	Resolver    resolver;
 	Logger      logger;
 	Task        task;

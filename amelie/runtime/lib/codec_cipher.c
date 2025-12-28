@@ -17,20 +17,23 @@
 #include <openssl/crypto.h>
 #include <openssl/evp.h>
 
-typedef struct EncryptionAes EncryptionAes;
+typedef struct CodecAes CodecAes;
 
-struct EncryptionAes
+struct CodecAes
 {
-	Encryption      id;
+	Codec           codec;
 	EVP_CIPHER_CTX* ctx;
+	Str*            key;
 };
 
-static Encryption*
-encryption_aes_create(EncryptionIf* iface)
+static Codec*
+codec_aes_allocate(CodecIf* iface)
 {
-	EncryptionAes* self = am_malloc(sizeof(EncryptionAes));
-	self->id.iface = iface;
-	self->ctx      = EVP_CIPHER_CTX_new();
+	CodecAes* self = am_malloc(sizeof(CodecAes));
+	self->codec.iface = iface;
+	list_init(&self->codec.link);
+
+	self->ctx = EVP_CIPHER_CTX_new();
 	if (self->ctx == NULL)
 	{
 		am_free(self);
@@ -42,29 +45,28 @@ encryption_aes_create(EncryptionIf* iface)
 		am_free(self);
 		error("aes: EVP_CipherInit_ex2() failed");
 	}
-	return &self->id;
+	self->key = NULL;
+	return &self->codec;
 }
 
 static void
-encryption_aes_free(Encryption* ptr)
+codec_aes_free(Codec* codec)
 {
-	auto self = (EncryptionAes*)ptr;
+	auto self = (CodecAes*)codec;
 	if (self->ctx)
 		EVP_CIPHER_CTX_free(self->ctx);
 	am_free(self);
 }
 
 hot static void
-encryption_aes_encrypt_begin(Encryption* ptr,
-                             Random*     random,
-                             Str*        key,
-                             Buf*        buf)
+codec_aes_prepare(Codec* codec, Random* random, Str* key, Buf* buf)
 {
-	auto self = (EncryptionAes*)ptr;
+	auto self = (CodecAes*)codec;
 	if (unlikely(str_size(key) != 32))
-		error("aes: encryption key must be 256bit");
+		error("aes: codec key must be 256bit");
+	self->key = key;
 
-	// [iv, tag, encrypted data]
+	// [iv, tag, encodeed data]
 
 	// calculate total size
 	size_t size = 32 + EVP_MAX_BLOCK_LENGTH;
@@ -82,13 +84,13 @@ encryption_aes_encrypt_begin(Encryption* ptr,
 }
 
 hot static void
-encryption_aes_encrypt_add(Encryption* ptr,
-                           Buf*        buf,
-                           uint8_t*    data,
-                           int         data_size)
+codec_aes_encode(Codec*   codec,
+                 Buf*     buf,
+                 uint8_t* data,
+                 int      data_size)
 
 {
-	auto self = (EncryptionAes*)ptr;
+	auto self = (CodecAes*)codec;
 	buf_reserve(buf, data_size);
 	int outlen = 0;
 	if (! EVP_CipherUpdate(self->ctx, buf->position, &outlen, data, data_size))
@@ -97,9 +99,9 @@ encryption_aes_encrypt_add(Encryption* ptr,
 }
 
 hot static void
-encryption_aes_encrypt_end(Encryption* ptr, Buf* buf)
+codec_aes_encode_end(Codec* codec, Buf* buf)
 {
-	auto self = (EncryptionAes*)ptr;
+	auto self = (CodecAes*)codec;
 
 	// finilize
 	int outlen = 0;
@@ -112,32 +114,31 @@ encryption_aes_encrypt_end(Encryption* ptr, Buf* buf)
 }
 
 hot static void
-encryption_aes_decrypt(Encryption* ptr,
-                       Str*        key,
-                       Buf*        buf,
-                       uint8_t*    data,
-                       int         data_size)
+codec_aes_decode(Codec*   codec,
+                 Buf*     buf,
+                 uint8_t* data,
+                 int      data_size)
 {
-	auto self = (EncryptionAes*)ptr;
-	if (unlikely(str_size(key) != 32))
-		error("aes: encryption key must be 256bit");
+	auto self = (CodecAes*)codec;
+	if (unlikely(str_size(self->key) != 32))
+		error("aes: codec key must be 256bit");
 
 	buf_reserve(buf, data_size);
 
-	// [iv, tag, encrypted data]
+	// [iv, tag, encodeed data]
 	uint8_t* iv  = data;
 	uint8_t* tag = data + 16;
 	data += 32;
 	data_size -= 32;
 
 	// prepare cipher
-	if (! EVP_CipherInit_ex2(self->ctx, NULL, str_u8(key), iv, false, NULL))
+	if (! EVP_CipherInit_ex2(self->ctx, NULL, str_u8(self->key), iv, false, NULL))
 		error("aes: EVP_CipherInit_ex2() failed");
 
 	// set tag
 	EVP_CIPHER_CTX_ctrl(self->ctx, EVP_CTRL_GCM_SET_TAG, 16, tag);
 
-	// decrypt
+	// decode
 	int outlen = 0;
 	if (! EVP_CipherUpdate(self->ctx, buf->position, &outlen, data, data_size))
 		error("aes: EVP_CipherUpdate() failed");
@@ -145,17 +146,42 @@ encryption_aes_decrypt(Encryption* ptr,
 
 	// finilize
 	if (! EVP_CipherFinal_ex(self->ctx, buf->position, &outlen))
-		error("aes: decryption failed");
+		error("aes: decodeion failed");
 	buf_advance(buf, outlen);
 }
 
-EncryptionIf encryption_aes =
+static CodecIf codec_aes =
 {
-	.id            = ENCRYPTION_AES,
-	.create        = encryption_aes_create,
-	.free          = encryption_aes_free,
-	.encrypt_begin = encryption_aes_encrypt_begin,
-	.encrypt_add   = encryption_aes_encrypt_add,
-	.encrypt_end   = encryption_aes_encrypt_end,
-	.decrypt       = encryption_aes_decrypt
+	.id         = CIPHER_AES,
+	.allocate   = codec_aes_allocate,
+	.free       = codec_aes_free,
+	.encode     = codec_aes_encode,
+	.encode_end = codec_aes_encode_end,
+	.decode     = codec_aes_decode
 };
+
+Codec*
+cipher_create(CodecCache* cache, int id, Random* random, Str* key, Buf* buf)
+{
+	// get codec iface
+	CodecIf* iface = NULL;
+	void   (*iface_prepare)(Codec*, Random*, Str*, Buf*) = NULL;
+	switch (id) {
+	case CIPHER_AES:
+		iface = &codec_aes;
+		iface_prepare = codec_aes_prepare;
+		break;
+	case CIPHER_NONE:
+		return NULL;
+	default:
+		error("unknown compression id '%d'", id);
+		break;
+	}
+
+	// get codec
+	auto codec = codec_cache_pop(cache, id);
+	if (! codec)
+		codec = codec_allocate(iface);
+	iface_prepare(codec, random, key, buf);
+	return codec;
+}

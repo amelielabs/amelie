@@ -11,4 +11,10 @@
 // AGPL-3.0 Licensed.
 //
 
-extern EncryptionIf encryption_aes;
+enum
+{
+	CIPHER_NONE,
+	CIPHER_AES
+};
+
+Codec* cipher_create(CodecCache*, int, Random*, Str*, Buf*);

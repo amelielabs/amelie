@@ -43,13 +43,11 @@
 #include "lib/avg.h"
 #include "lib/vector.h"
 
-// compression
-#include "lib/compression.h"
-#include "lib/compression_zstd.h"
-
-// encryption
-#include "lib/encryption.h"
-#include "lib/encryption_aes.h"
+// codec
+#include "lib/codec.h"
+#include "lib/codec_cache.h"
+#include "lib/codec_compression.h"
+#include "lib/codec_cipher.h"
 
 // logger
 #include "lib/logger.h"

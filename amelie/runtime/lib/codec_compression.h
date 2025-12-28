@@ -11,4 +11,10 @@
 // AGPL-3.0 Licensed.
 //
 
-extern CompressionIf compression_zstd;
+enum
+{
+	COMPRESSION_NONE,
+	COMPRESSION_ZSTD
+};
+
+Codec* compression_create(CodecCache*, int, int);
