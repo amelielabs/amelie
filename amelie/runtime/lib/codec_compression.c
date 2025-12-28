@@ -21,6 +21,7 @@ struct CodecZstd
 {
 	Codec      codec;
 	ZSTD_CCtx* ctx;
+	int        level;
 };
 
 static Codec*
@@ -52,9 +53,17 @@ static inline void
 codec_zstd_prepare(Codec* codec, int level)
 {
 	auto self = (CodecZstd*)codec;
+	self->level = level;
+}
+
+static inline void
+codec_zstd_encode_begin(Codec* codec, Buf* buf)
+{
+	unused(buf);
+	auto self = (CodecZstd*)codec;
 	ZSTD_CCtx_reset(self->ctx, ZSTD_reset_session_only);
-	if (level > 0)
-		ZSTD_CCtx_setParameter(self->ctx, ZSTD_c_compressionLevel, level);
+	if (self->level > 0)
+		ZSTD_CCtx_setParameter(self->ctx, ZSTD_c_compressionLevel, self->level);
 }
 
 hot static void
@@ -113,12 +122,13 @@ codec_zstd_decode(Codec*   codec, Buf* buf,
 
 static CodecIf codec_zstd =
 {
-	.id         = COMPRESSION_ZSTD,
-	.allocate   = codec_zstd_allocate,
-	.free       = codec_zstd_free,
-	.encode     = codec_zstd_encode,
-	.encode_end = codec_zstd_encode_end,
-	.decode     = codec_zstd_decode
+	.id           = COMPRESSION_ZSTD,
+	.allocate     = codec_zstd_allocate,
+	.free         = codec_zstd_free,
+	.encode_begin = codec_zstd_encode_begin,
+	.encode       = codec_zstd_encode,
+	.encode_end   = codec_zstd_encode_end,
+	.decode       = codec_zstd_decode
 };
 
 Codec*

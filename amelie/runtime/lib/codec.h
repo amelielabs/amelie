@@ -19,6 +19,7 @@ struct CodecIf
 	int     id;
 	Codec* (*allocate)(CodecIf*);
 	void   (*free)(Codec*);
+	void   (*encode_begin)(Codec*, Buf*);
 	void   (*encode)(Codec*, Buf*, uint8_t*, int);
 	void   (*encode_end)(Codec*, Buf*);
 	void   (*decode)(Codec*, Buf*, uint8_t*, int);
@@ -40,6 +41,12 @@ static inline void
 codec_free(Codec* self)
 {
 	self->iface->free(self);
+}
+
+static inline void
+codec_encode_begin(Codec* self, Buf* buf)
+{
+	self->iface->encode_begin(self, buf);
 }
 
 static inline void

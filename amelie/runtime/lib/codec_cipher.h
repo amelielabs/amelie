@@ -17,4 +17,4 @@ enum
 	CIPHER_AES
 };
 
-Codec* cipher_create(CodecCache*, int, Random*, Str*, Buf*);
+Codec* cipher_create(CodecCache*, int, Random*, Str*);

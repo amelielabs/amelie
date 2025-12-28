@@ -24,6 +24,7 @@ struct CodecAes
 	Codec           codec;
 	EVP_CIPHER_CTX* ctx;
 	Str*            key;
+	Random*         random;
 };
 
 static Codec*
@@ -59,12 +60,19 @@ codec_aes_free(Codec* codec)
 }
 
 hot static void
-codec_aes_prepare(Codec* codec, Random* random, Str* key, Buf* buf)
+codec_aes_prepare(Codec* codec, Random* random, Str* key)
 {
 	auto self = (CodecAes*)codec;
 	if (unlikely(str_size(key) != 32))
 		error("aes: codec key must be 256bit");
-	self->key = key;
+	self->key    = key;
+	self->random = random;
+}
+
+hot static void
+codec_aes_encode_begin(Codec* codec, Buf* buf)
+{
+	auto self = (CodecAes*)codec;
 
 	// [iv, tag, encodeed data]
 
@@ -75,11 +83,11 @@ codec_aes_prepare(Codec* codec, Random* random, Str* key, Buf* buf)
 
 	// generate IV
 	auto iv = (uint64_t*)buf->start;
-	iv[0] = random_generate(random);
-	iv[1] = random_generate(random);
+	iv[0] = random_generate(self->random);
+	iv[1] = random_generate(self->random);
 
 	// prepare cipher
-	if (! EVP_CipherInit_ex2(self->ctx, NULL, str_u8(key), (uint8_t*)iv, true, NULL))
+	if (! EVP_CipherInit_ex2(self->ctx, NULL, str_u8(self->key), (uint8_t*)iv, true, NULL))
 		error("aes: EVP_CipherInit_ex2() failed");
 }
 
@@ -152,20 +160,21 @@ codec_aes_decode(Codec*   codec,
 
 static CodecIf codec_aes =
 {
-	.id         = CIPHER_AES,
-	.allocate   = codec_aes_allocate,
-	.free       = codec_aes_free,
-	.encode     = codec_aes_encode,
-	.encode_end = codec_aes_encode_end,
-	.decode     = codec_aes_decode
+	.id           = CIPHER_AES,
+	.allocate     = codec_aes_allocate,
+	.free         = codec_aes_free,
+	.encode_begin = codec_aes_encode_begin,
+	.encode       = codec_aes_encode,
+	.encode_end   = codec_aes_encode_end,
+	.decode       = codec_aes_decode
 };
 
 Codec*
-cipher_create(CodecCache* cache, int id, Random* random, Str* key, Buf* buf)
+cipher_create(CodecCache* cache, int id, Random* random, Str* key)
 {
 	// get codec iface
 	CodecIf* iface = NULL;
-	void   (*iface_prepare)(Codec*, Random*, Str*, Buf*) = NULL;
+	void   (*iface_prepare)(Codec*, Random*, Str*) = NULL;
 	switch (id) {
 	case CIPHER_AES:
 		iface = &codec_aes;
@@ -182,6 +191,6 @@ cipher_create(CodecCache* cache, int id, Random* random, Str* key, Buf* buf)
 	auto codec = codec_cache_pop(cache, id);
 	if (! codec)
 		codec = codec_allocate(iface);
-	iface_prepare(codec, random, key, buf);
+	iface_prepare(codec, random, key);
 	return codec;
 }
