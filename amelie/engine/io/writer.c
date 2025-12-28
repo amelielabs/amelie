@@ -43,12 +43,12 @@ writer_reset(Writer* self)
 {
 	if (self->compression)
 	{
-		compression_free(self->compression);
+		codec_cache_push(&runtime()->cache_compression, self->compression);
 		self->compression = NULL;
 	}
 	if (self->encryption)
 	{
-		encryption_free(self->encryption);
+		codec_cache_push(&runtime()->cache_cipher, self->encryption);
 		self->encryption = NULL;
 	}
 	self->source = NULL;
@@ -70,9 +70,7 @@ writer_start_region(Writer* self)
 {
 	region_writer_reset(&self->region_writer);
 	region_writer_start(&self->region_writer, self->compression,
-	                    self->source->compression_level,
-	                    self->encryption,
-	                    &self->source->encryption_key);
+	                    self->encryption);
 }
 
 hot static inline void
@@ -100,20 +98,30 @@ writer_start(Writer* self, Source* source, File* file)
 	self->source = source;
 	self->file   = file;
 
-	// create compression context
-	if (str_is(&source->compression, "zstd", 4))
-		self->compression = compression_create(&compression_zstd);
+	// get compression context
+	auto id = compression_idof(&source->compression);
+	if (id == -1)
+		error("invalid compression '%.*s'", str_size(&source->compression),
+		      str_of(&source->compression));
+	if (id != COMPRESSION_NONE)
+		self->compression =
+			compression_create(&runtime()->cache_compression, id,
+			                   source->compression_level);
 
-	// create encryption context
-	if (str_is(&source->compression, "aes", 3))
-		self->encryption = encryption_create(&encryption_aes);
+	// get encryption context
+	id = cipher_idof(&source->encryption);
+	if (id == -1)
+		error("invalid encryption '%.*s'", str_size(&source->encryption),
+		      str_of(&source->encryption));
+	if (id != CIPHER_NONE)
+		self->encryption =
+			cipher_create(&runtime()->cache_cipher, id,
+			              &runtime()->random, &source->encryption_key);
 
 	// start new span
 	span_writer_reset(&self->span_writer);
 	span_writer_start(&self->span_writer, self->compression,
-	                  source->compression_level,
 	                  self->encryption,
-	                  &source->encryption_key,
 	                  source->crc);
 }
 
@@ -139,23 +147,23 @@ writer_stop(Writer*  self, Id* id, uint32_t refreshes,
 	iov_reset(&self->iov);
 	span_writer_add_to_iov(&self->span_writer, &self->iov);
 	file_writev(self->file, iov_pointer(&self->iov), self->iov.iov_count);
-	
-	// sync
-	if (sync)
-		file_sync(self->file);
 
 	// cleanup
 	if (self->compression)
 	{
-		compression_free(self->compression);
+		codec_cache_push(&runtime()->cache_compression, self->compression);
 		self->compression = NULL;
 	}
 
 	if (self->encryption)
 	{
-		encryption_free(self->encryption);
+		codec_cache_push(&runtime()->cache_cipher, self->encryption);
 		self->encryption = NULL;
 	}
+
+	// sync
+	if (sync)
+		file_sync(self->file);
 }
 
 void

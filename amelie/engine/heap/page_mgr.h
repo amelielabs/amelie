@@ -62,6 +62,12 @@ page_mgr_free(PageMgr* self)
 	buf_free(&self->list);
 }
 
+static inline size_t
+page_mgr_used(PageMgr* self)
+{
+	return self->list_count * self->page_size;
+}
+
 static inline Page*
 page_mgr_allocate(PageMgr* self)
 {

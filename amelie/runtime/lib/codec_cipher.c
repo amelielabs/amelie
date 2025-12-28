@@ -180,11 +180,8 @@ cipher_create(CodecCache* cache, int id, Random* random, Str* key)
 		iface = &codec_aes;
 		iface_prepare = codec_aes_prepare;
 		break;
-	case CIPHER_NONE:
-		return NULL;
 	default:
-		error("unknown compression id '%d'", id);
-		break;
+		return NULL;
 	}
 
 	// get codec
@@ -193,4 +190,14 @@ cipher_create(CodecCache* cache, int id, Random* random, Str* key)
 		codec = codec_allocate(iface);
 	iface_prepare(codec, random, key);
 	return codec;
+}
+
+int
+cipher_idof(Str* str)
+{
+	if (str_empty(str) || str_is(str, "none", 4))
+		return CIPHER_NONE;
+	if (str_is(str, "aes", 3))
+		return CIPHER_AES;
+	return -1;
 }

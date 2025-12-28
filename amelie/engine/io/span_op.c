@@ -65,6 +65,18 @@ span_open(File*   self,
 		      str_of(&self->path));
 }
 
+static inline void
+push_cipher(Codec* self)
+{
+	codec_cache_push(&runtime()->cache_cipher, self);
+}
+
+static inline void
+push_compression(Codec* self)
+{
+	codec_cache_push(&runtime()->cache_compression, self);
+}
+
 static Buf*
 span_decrypt(File*   self,
              Source* source,
@@ -72,23 +84,20 @@ span_decrypt(File*   self,
              Buf*    origin,
              Buf*    buf)
 {
-	if (span->encryption == ENCRYPTION_NONE)
+	if (span->encryption == CIPHER_NONE)
 		return origin;
 
-	if (span->encryption != ENCRYPTION_AES)
-		error("partition: file '%s' unknown encryption: %d",
+	// get cipher
+	auto codec = cipher_create(&runtime()->cache_cipher, span->encryption,
+	                           &runtime()->random,
+	                           &source->encryption_key);
+	if (! codec)
+		error("partition: file '%s' unknown encryption id: %d",
 		      str_of(&self->path), span->encryption);
-
-	// create encryption context
-	auto context = encryption_create(&encryption_aes);
-	defer(encryption_free, context);
+	defer(push_cipher, codec);
 
 	// decrypt
-	encryption_decrypt(context,
-	                   &source->encryption_key,
-	                   buf,
-	                   origin->start,
-	                   buf_size(origin));
+	codec_decode(codec, buf, origin->start, buf_size(origin));
 	return buf;
 }
 
@@ -103,18 +112,17 @@ span_decompress(File*   self,
 	if (span->compression == COMPRESSION_NONE)
 		return origin;
 
-	if (span->compression != COMPRESSION_ZSTD)
+	// get compression
+	auto codec = compression_create(&runtime()->cache_compression,
+	                                span->compression, 0);
+	if (! codec)
 		error("partition: file '%s' unknown compression id: %d",
 		      str_of(&self->path), span->compression);
-
-	// create compression context
-	auto context = compression_create(&compression_zstd);
-	defer(compression_free, context);
+	defer(push_compression, codec);
 
 	// decompress
 	buf_reserve(buf, span->size_origin);
-	compression_decompress(context, buf, origin->start,
-	                       buf_size(origin));
+	codec_decode(codec, buf, origin->start, buf_size(origin));
 	return buf;
 }
 
@@ -148,16 +156,16 @@ span_read(File*   self,
 	auto origin = span_data;
 
 	// decrypt
-	Buf buf_decrypted;
-	buf_init(&buf_decrypted);
-	defer_buf(&buf_decrypted);
-	origin = span_decrypt(self, source, span, origin, &buf_decrypted);
+	Buf decrypted;
+	buf_init(&decrypted);
+	defer_buf(&decrypted);
+	origin = span_decrypt(self, source, span, origin, &decrypted);
 
 	// decompress
-	Buf buf_decompressed;
-	buf_init(&buf_decompressed);
-	defer_buf(&buf_decompressed);
-	origin = span_decompress(self, source, span, origin, &buf_decompressed);
+	Buf decompressed;
+	buf_init(&decompressed);
+	defer_buf(&decompressed);
+	origin = span_decompress(self, source, span, origin, &decompressed);
 
 	// return
 	if (origin != span_data)

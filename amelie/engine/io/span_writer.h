@@ -15,27 +15,23 @@ typedef struct SpanWriter SpanWriter;
 
 struct SpanWriter
 {
-	bool         active;
-	Buf          data;
-	Buf          compressed;
-	Compression* compression;
-	int          compression_level;
-	Buf          encrypted;
-	Encryption*  encryption;
-	Str*         encryption_key;
-	bool         crc;
-	Span         span;
+	bool   active;
+	Buf    data;
+	Buf    compressed;
+	Codec* compression;
+	Buf    encrypted;
+	Codec* encryption;
+	bool   crc;
+	Span   span;
 };
 
 static inline void
 span_writer_init(SpanWriter* self)
 {
-	self->active            = false;
-	self->compression       = NULL;
-	self->compression_level = 0;
-	self->encryption        = NULL;
-	self->encryption_key    = NULL;
-	self->crc               = false;
+	self->active      = false;
+	self->compression = NULL;
+	self->encryption  = NULL;
+	self->crc         = false;
 	buf_init(&self->data);
 	buf_init(&self->compressed);
 	buf_init(&self->encrypted);
@@ -53,12 +49,10 @@ span_writer_free(SpanWriter* self)
 static inline void
 span_writer_reset(SpanWriter* self)
 {
-	self->active            = false;
-	self->compression       = NULL;
-	self->compression_level = 0;
-	self->encryption        = NULL;
-	self->encryption_key    = NULL;
-	self->crc               = false;
+	self->active      = false;
+	self->compression = NULL;
+	self->encryption  = NULL;
+	self->crc         = false;
 	buf_reset(&self->data);
 	buf_reset(&self->compressed);
 	buf_reset(&self->encrypted);
@@ -72,19 +66,15 @@ span_writer_started(SpanWriter* self)
 }
 
 static inline void
-span_writer_start(SpanWriter*  self,
-                  Compression* compression,
-                  int          compression_level,
-                  Encryption*  encryption,
-                  Str*         encryption_key,
-                  bool         crc)
+span_writer_start(SpanWriter* self,
+                  Codec*      compression,
+                  Codec*      encryption,
+                  bool        crc)
 {
-	self->compression       = compression;
-	self->compression_level = compression_level;
-	self->encryption        = encryption;
-	self->encryption_key    = encryption_key;
-	self->crc               = crc;
-	self->active            = true;
+	self->compression = compression;
+	self->encryption  = encryption;
+	self->crc         = crc;
+	self->active      = true;
 }
 
 static inline void
@@ -103,11 +93,11 @@ span_writer_stop(SpanWriter* self,
 	int      compression_id;
 	if (self->compression)
 	{
-		auto cp  = self->compression;
+		auto codec = self->compression;
 		auto buf = &self->compressed;
-		compression_begin(cp, self->compression_level);
-		compression_add_buf(cp, buf, &self->data);
-		compression_end(cp, buf);
+		codec_encode_begin(codec, buf);
+		codec_encode_buf(codec, buf, &self->data);
+		codec_encode_end(codec, buf);
 
 		size = buf_size(&self->compressed);
 		compression_id = self->compression->iface->id;
@@ -119,20 +109,20 @@ span_writer_stop(SpanWriter* self,
 	int encryption_id;
 	if (self->encryption)
 	{
-		auto ec  = self->encryption;
+		auto codec = self->encryption;
 		auto buf = &self->encrypted;
-		encryption_begin(ec, &runtime()->random, self->encryption_key, buf);
+		codec_encode_begin(codec, buf);
 		if (self->compression)
-			encryption_add_buf(ec, buf, &self->compressed);
+			codec_encode_buf(codec, buf, &self->compressed);
 		else
-			encryption_add_buf(ec, buf, &self->data);
-		encryption_end(ec, buf);
+			codec_encode_buf(codec, buf, &self->data);
+		codec_encode_end(codec, buf);
 
 		size = buf_size(&self->encrypted);
 		encryption_id = self->encryption->iface->id;
 	} else
 	{
-		encryption_id = ENCRYPTION_NONE;
+		encryption_id = CIPHER_NONE;
 	}
 
 	// prepare span

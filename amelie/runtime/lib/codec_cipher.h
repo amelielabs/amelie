@@ -18,3 +18,4 @@ enum
 };
 
 Codec* cipher_create(CodecCache*, int, Random*, Str*);
+int    cipher_idof(Str*);

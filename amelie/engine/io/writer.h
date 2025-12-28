@@ -19,8 +19,8 @@ struct Writer
 	Iov          iov;
 	RegionWriter region_writer;
 	SpanWriter   span_writer;
-	Compression* compression;
-	Encryption*  encryption;
+	Codec*       compression;
+	Codec*       encryption;
 	Source*      source;
 };
 

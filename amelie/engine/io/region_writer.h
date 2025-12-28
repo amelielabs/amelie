@@ -15,23 +15,19 @@ typedef struct RegionWriter RegionWriter;
 
 struct RegionWriter
 {
-	Buf          meta;
-	Buf          data;
-	Buf          compressed;
-	Buf          encrypted;
-	Compression* compression;
-	int          compression_level;
-	Encryption*  encryption;
-	Str*         encryption_key;
+	Buf    meta;
+	Buf    data;
+	Buf    compressed;
+	Buf    encrypted;
+	Codec* compression;
+	Codec* encryption;
 };
 
 static inline void
 region_writer_init(RegionWriter* self)
 {
-	self->compression       = NULL;
-	self->compression_level = 0;
-	self->encryption        = NULL;
-	self->encryption_key    = NULL;
+	self->compression = NULL;
+	self->encryption  = NULL;
 	buf_init(&self->meta);
 	buf_init(&self->data);
 	buf_init(&self->compressed);
@@ -50,10 +46,8 @@ region_writer_free(RegionWriter* self)
 static inline void
 region_writer_reset(RegionWriter* self)
 {
-	self->compression       = NULL;
-	self->compression_level = 0;
-	self->encryption        = NULL;
-	self->encryption_key    = NULL;
+	self->compression = NULL;
+	self->encryption  = NULL;
 	buf_reset(&self->meta);
 	buf_reset(&self->data);
 	buf_reset(&self->compressed);
@@ -81,15 +75,11 @@ region_writer_size(RegionWriter* self)
 
 static inline void
 region_writer_start(RegionWriter* self,
-                    Compression*  compression,
-                    int           compression_level,
-                    Encryption*   encryption,
-                    Str*          encryption_key)
+                    Codec*        compression,
+                    Codec*        encryption)
 {
-	self->compression       = compression;
-	self->compression_level = compression_level;
-	self->encryption        = encryption;
-	self->encryption_key    = encryption_key;
+	self->compression = compression;
+	self->encryption  = encryption;
 
 	// region header
 	buf_reserve(&self->meta, sizeof(Region));
@@ -107,29 +97,29 @@ region_writer_stop(RegionWriter* self)
 	// compress region
 	if (self->compression)
 	{
-		auto cp  = self->compression;
+		auto codec = self->compression;
 		auto buf = &self->compressed;
-		compression_begin(cp, self->compression_level);
-		compression_add_buf(cp, buf, &self->meta);
-		compression_add_buf(cp, buf, &self->data);
-		compression_end(cp, buf);
+		codec_encode_begin(codec, buf);
+		codec_encode_buf(codec, buf, &self->meta);
+		codec_encode_buf(codec, buf, &self->data);
+		codec_encode_end(codec, buf);
 	}
 
 	// encrypt region using compressed or raw data
 	if (self->encryption)
 	{
-		auto ec  = self->encryption;
+		auto codec = self->encryption;
 		auto buf = &self->encrypted;
-		encryption_begin(ec, &runtime()->random, self->encryption_key, buf);
+		codec_encode_begin(codec, buf);
 		if (self->compression)
 		{
-			encryption_add_buf(ec, buf, &self->compressed);
+			codec_encode_buf(codec, buf, &self->compressed);
 		} else
 		{
-			encryption_add_buf(ec, buf, &self->meta);
-			encryption_add_buf(ec, buf, &self->data);
+			codec_encode_buf(codec, buf, &self->meta);
+			codec_encode_buf(codec, buf, &self->data);
 		}
-		encryption_end(ec, buf);
+		codec_encode_end(codec, buf);
 	}
 }
 

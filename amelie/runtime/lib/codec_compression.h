@@ -18,3 +18,4 @@ enum
 };
 
 Codec* compression_create(CodecCache*, int, int);
+int    compression_idof(Str*);

@@ -142,11 +142,8 @@ compression_create(CodecCache* cache, int id, int level)
 		iface = &codec_zstd;
 		iface_prepare = codec_zstd_prepare;
 		break;
-	case COMPRESSION_NONE:
-		return NULL;
 	default:
-		error("unknown compression id '%d'", id);
-		break;
+		return NULL;
 	}
 
 	// get codec
@@ -155,4 +152,14 @@ compression_create(CodecCache* cache, int id, int level)
 		codec = codec_allocate(iface);
 	iface_prepare(codec, level);
 	return codec;
+}
+
+int
+compression_idof(Str* str)
+{
+	if (str_empty(str) || str_is(str, "none", 4))
+		return COMPRESSION_NONE;
+	if (str_is(str, "zstd", 4))
+		return COMPRESSION_ZSTD;
+	return -1;
 }
