@@ -11,12 +11,12 @@
 // AGPL-3.0 Licensed.
 //
 
-typedef struct Chunk      Chunk;
+typedef struct HeapChunk  HeapChunk;
 typedef struct HeapBucket HeapBucket;
 typedef struct HeapHeader HeapHeader;
 typedef struct Heap       Heap;
 
-struct Chunk
+struct HeapChunk
 {
 	// 24 bytes
 
@@ -63,29 +63,29 @@ struct Heap
 {
 	HeapBucket* buckets;
 	PageHeader* page_header;
-	Chunk*      last;
+	HeapChunk*  last;
 	HeapHeader* header;
 	PageMgr     page_mgr;
 };
 
-always_inline static inline Chunk*
-chunk_of(void* pointer)
+always_inline static inline HeapChunk*
+heap_chunk_of(void* pointer)
 {
-	return (Chunk*)((uintptr_t)pointer - sizeof(Chunk));
+	return (HeapChunk*)((uintptr_t)pointer - sizeof(HeapChunk));
 }
 
 static inline PageHeader*
-page_of(Chunk* self)
+heap_page_of(HeapChunk* self)
 {
 	return (PageHeader*)((uintptr_t)self - self->offset);
 }
 
-static inline Chunk*
+static inline HeapChunk*
 heap_first(Heap* self)
 {
 	if (unlikely(! self->last))
 		return NULL;
-	return (Chunk*)((uintptr_t)self->page_header + sizeof(PageHeader));
+	return (HeapChunk*)((uintptr_t)self->page_header + sizeof(PageHeader));
 }
 
 void  heap_init(Heap*);

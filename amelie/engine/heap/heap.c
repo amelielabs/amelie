@@ -162,10 +162,10 @@ hot void*
 heap_allocate(Heap* self, int size)
 {
 	// match bucket by size
-	auto bucket = heap_bucket_of(self, sizeof(Chunk) + size);
+	auto bucket = heap_bucket_of(self, sizeof(HeapChunk) + size);
 
 	// get chunk from the free list
-	Chunk* chunk;
+	HeapChunk* chunk;
 	if (likely(bucket->list_count > 0))
 	{
 		auto page = (int)bucket->list;
@@ -194,7 +194,7 @@ heap_allocate(Heap* self, int size)
 			self->last = NULL;
 			self->header->count++;
 		}
-		chunk = (Chunk*)((uintptr_t)page_header + page_header->size);
+		chunk = (HeapChunk*)((uintptr_t)page_header + page_header->size);
 		chunk->tsn     = 0;
 		chunk->offset  = page_header->size;
 		chunk->bucket  = bucket->id;
@@ -222,8 +222,8 @@ heap_allocate(Heap* self, int size)
 hot void
 heap_release(Heap* self, void* pointer)
 {
-	auto chunk  = chunk_of(pointer);
-	auto page   = page_of(chunk);
+	auto chunk  = heap_chunk_of(pointer);
+	auto page   = heap_page_of(chunk);
 	auto bucket = &self->buckets[chunk->bucket];
 	assert(! chunk->free);
 	chunk->tsn          = 0;

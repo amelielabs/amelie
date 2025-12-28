@@ -15,12 +15,12 @@ typedef struct HeapIterator HeapIterator;
 
 struct HeapIterator
 {
-	Iterator it;
-	Chunk*   current;
-	Page*    page;
-	int      page_order;
-	PageMgr* page_mgr;
-	Heap*    heap;
+	Iterator   it;
+	HeapChunk* current;
+	Page*      page;
+	int        page_order;
+	PageMgr*   page_mgr;
+	Heap*      heap;
 };
 
 hot static inline void
@@ -31,7 +31,7 @@ heap_iterator_next_chunk(HeapIterator* self)
 	if (likely(! self->current->last))
 	{
 		auto next = (uintptr_t)self->current + self->heap->buckets[self->current->bucket].size;
-		self->current = (Chunk*)next;
+		self->current = (HeapChunk*)next;
 		return;
 	}
 	self->current = NULL;
@@ -39,7 +39,7 @@ heap_iterator_next_chunk(HeapIterator* self)
 	if (unlikely(self->page_order >= self->page_mgr->list_count))
 		return;
 	self->page = page_mgr_at(self->page_mgr, self->page_order);
-	self->current = (Chunk*)(self->page->pointer + sizeof(PageHeader));
+	self->current = (HeapChunk*)(self->page->pointer + sizeof(PageHeader));
 }
 
 hot static inline void
@@ -96,4 +96,14 @@ heap_iterator_init(HeapIterator* self)
 	it->at    = (IteratorAt)heap_iterator_at;
 	it->next  = (IteratorNext)heap_iterator_next;
 	it->close = NULL;
+}
+
+static inline void
+heap_iterator_reset(HeapIterator* self)
+{
+	self->current    = NULL;
+	self->page       = NULL;
+	self->page_order = 0;
+	self->page_mgr   = NULL;
+	self->heap       = NULL;
 }
