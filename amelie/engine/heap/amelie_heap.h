@@ -13,6 +13,5 @@
 
 #include "heap/page_mgr.h"
 #include "heap/heap.h"
-#include "heap/heap_cursor.h"
 #include "heap/heap_iterator.h"
 #include "heap/heap_row.h"
