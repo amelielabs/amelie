@@ -26,7 +26,7 @@ span_open(File*   self,
 {
 	// open partition file and read span footer
 
-	// <source_path>/<uuid>/<psn>
+	// <source_path>/<uuid>/<id>
 	char path[PATH_MAX];
 	id_path(id, source, type, path);
 	file_open(self, path);

@@ -64,6 +64,7 @@ struct Heap
 	HeapBucket* buckets;
 	PageHeader* page_header;
 	HeapChunk*  last;
+	uint64_t    lsn_max;
 	HeapHeader* header;
 	PageMgr     page_mgr;
 };

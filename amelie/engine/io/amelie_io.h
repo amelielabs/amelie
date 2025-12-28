@@ -32,14 +32,12 @@
 // writer
 #include "io/writer.h"
 
-// partition
-#include "io/part.h"
+// chunk
+#include "io/chunk.h"
 
-// reader
+// chunk iterator
 #include "io/reader.h"
-
-// partition iterator
-#include "io/part_iterator.h"
+#include "io/chunk_iterator.h"
 
 // merger
-/*#include "io/merger.h"*/
+#include "io/merger.h"

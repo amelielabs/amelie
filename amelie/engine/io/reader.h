@@ -15,7 +15,7 @@ typedef struct Reader Reader;
 
 struct Reader
 {
-	Part*  part;
+	Chunk* chunk;
 	Codec* compression;
 	Codec* encryption;
 	Buf    buf;
@@ -26,7 +26,7 @@ struct Reader
 static inline void
 reader_init(Reader* self)
 {
-	self->part        = NULL;
+	self->chunk       = NULL;
 	self->compression = NULL;
 	self->encryption  = NULL;
 	buf_init(&self->buf);
@@ -61,12 +61,12 @@ reader_free(Reader* self)
 }
 
 static inline void
-reader_open(Reader* self, Part* part)
+reader_open(Reader* self, Chunk* chunk)
 {
-	self->part = part;
+	self->chunk = chunk;
 
 	// get compression context
-	auto id = part->span.compression;
+	auto id = chunk->span.compression;
 	if (id != COMPRESSION_NONE)
 	{
 		self->compression = compression_create(&runtime()->cache_compression, id, 0);
@@ -75,12 +75,12 @@ reader_open(Reader* self, Part* part)
 	}
 
 	// get encryption context
-	id = part->span.encryption;
+	id = chunk->span.encryption;
 	if (id != CIPHER_NONE)
 	{
 		self->encryption = cipher_create(&runtime()->cache_cipher, id,
 		                                 &runtime()->random,
-		                                 &part->source->encryption_key);
+		                                 &chunk->source->encryption_key);
 		if (! self->encryption)
 			error("invalid encryption id '%d'", id);
 	}
@@ -89,16 +89,16 @@ reader_open(Reader* self, Part* part)
 hot static inline Region*
 reader_execute(Reader* self, SpanRegion* span_region)
 {
-	auto part = self->part;
+	auto chunk = self->chunk;
 
 	buf_reset(&self->buf);
 	buf_reset(&self->buf_decrypted);
 	buf_reset(&self->buf_decompressed);
 
-	if (part_has(part, ID))
+	if (chunk_has(chunk, ID))
 	{
 		// read region data from file
-		file_pread_buf(&part->file, &self->buf, span_region->size,
+		file_pread_buf(&chunk->file, &self->buf, span_region->size,
 		               span_region->offset);
 	} else {
 		abort();

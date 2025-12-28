@@ -34,17 +34,17 @@ id_path(Id* self, Source* source, int state, char* path)
 	uuid_get(&self->uuid, uuid, sizeof(uuid));
 	switch (state) {
 	case ID:
-		// <source_path>/<uuid>/<psn>
+		// <source_path>/<uuid>/<id>
 		source_fmt(source, path, "%s/%020" PRIu64,
 		           uuid, self->id);
 		break;
 	case ID_INCOMPLETE:
-		// <source_path>/<uuid>/<psn>.incomplete
+		// <source_path>/<uuid>/<id>.incomplete
 		source_fmt(source, path, "%s/%020" PRIu64 ".incomplete",
 		           uuid, self->id);
 		break;
 	case ID_COMPLETE:
-		// <source_path>/<uuid>/<psn>.complete
+		// <source_path>/<uuid>/<id>.complete
 		source_fmt(source, path, "%s/%020" PRIu64 ".complete",
 		           uuid, self->id);
 		break;

@@ -21,6 +21,7 @@ heap_init(Heap* self)
 	self->buckets     = NULL;
 	self->page_header = NULL;
 	self->last        = NULL;
+	self->lsn_max     = 0;
 	self->header      = NULL;
 	page_mgr_init(&self->page_mgr);
 }
