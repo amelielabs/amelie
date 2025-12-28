@@ -53,12 +53,14 @@ span_iterator_search(SpanIterator* self, Row* row)
 
 hot static inline void
 span_iterator_open(SpanIterator* self,
-                     Span*       span,
-                     Buf*        span_data,
-                     Row*        row)
+                   Span*         span,
+                   Buf*          span_data,
+                   Keys*         keys,
+                   Row*          row)
 {
 	self->span      = span;
 	self->span_data = span_data;
+	self->keys      = keys;
 	self->current   = NULL;
 	self->pos       = 0;
 	if (unlikely(span == NULL || span->regions == 0))

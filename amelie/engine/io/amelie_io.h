@@ -38,14 +38,8 @@
 // reader
 #include "io/reader.h"
 
-#if 0
 // partition iterator
 #include "io/part_iterator.h"
-#include "io/part_cursor.h"
-
-// mapping
-#include "io/mapping.h"
 
 // merger
-#include "io/merger.h"
-#endif
+/*#include "io/merger.h"*/
