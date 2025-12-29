@@ -15,25 +15,26 @@ typedef struct Part Part;
 
 struct Part
 {
-	Track         track;
 	List          indexes;
 	int           indexes_count;
+	Track         track;
 	Heap*         heap;
 	Heap          heap_a;
 	Heap          heap_b;
-	Object*       object;
+	PartConfig*   config;
+	Sequence*     seq;
+	bool          unlogged;
 	Source*       source;
 	List          link;
 	HashtableNode link_mgr;
 };
 
-Part*  part_allocate(Source*);
+Part*  part_allocate(PartConfig*, Source*, Sequence*, bool);
 void   part_free(Part*);
 void   part_truncate(Part*);
 void   part_index_add(Part*, IndexConfig*);
 void   part_index_drop(Part*, Str*);
 Index* part_index_find(Part*, Str*, bool);
-bool   part_ready(Part*);
 
 static inline Index*
 part_primary(Part* self)

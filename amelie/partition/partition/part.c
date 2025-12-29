@@ -19,13 +19,17 @@
 #include <amelie_partition.h>
 
 Part*
-part_allocate(Source* source)
+part_allocate(PartConfig* config, Source* source,
+              Sequence*   seq,
+              bool        unlogged)
 {
 	auto self = (Part*)am_malloc(sizeof(Part));
 	self->indexes_count = 0;
 	self->heap          = &self->heap_a;
-	self->object        = NULL;
+	self->config        = part_config_copy(config);
 	self->source        = source;
+	self->seq           = seq;
+	self->unlogged      = unlogged;
 	track_init(&self->track);
 	list_init(&self->indexes);
 	heap_init(&self->heap_a);
@@ -39,8 +43,6 @@ part_allocate(Source* source)
 void
 part_free(Part* self)
 {
-	if (self->object)
-		object_free(self->object);
 	track_free(&self->track);
 	list_foreach_safe(&self->indexes)
 	{
@@ -49,6 +51,7 @@ part_free(Part* self)
 	}
 	heap_free(&self->heap_a);
 	heap_free(&self->heap_b);
+	part_config_free(self->config);
 	am_free(self);
 }
 
@@ -67,10 +70,10 @@ part_index_add(Part* self, IndexConfig* config)
 {
 	Index* index;
 	if (config->type == INDEX_TREE)
-		index = index_tree_allocate(config);
+		index = index_tree_allocate(config, self);
 	else
 	if (config->type == INDEX_HASH)
-		index = index_hash_allocate(config);
+		index = index_hash_allocate(config, self);
 	else
 		error("unrecognized index type");
 	list_append(&self->indexes, &index->link);
@@ -99,14 +102,4 @@ part_index_find(Part* self, Str* name, bool error_if_not_exists)
 		error("index '%.*s': not exists", str_size(name),
 		       str_of(name));
 	return NULL;
-}
-
-bool
-part_ready(Part* self)
-{
-	if (self->object && self->object->pending)
-		return false;
-	if (! self->source->refresh_wm)
-		return false;
-	return page_mgr_used(&self->heap->page_mgr) > (size_t)self->source->refresh_wm;
 }
