@@ -11,14 +11,14 @@
 //
 
 #include <amelie_runtime>
-#include <amelie_engine>
+#include <amelie_partition>
 #include <amelie_catalog.h>
 
 static void
 table_index_delete(Table* table, IndexConfig* index)
 {
 	// remove index from partitions
-	part_list_index_drop(&table->part_list, index);
+	part_mgr_index_drop(&table->part_mgr, &index->name);
 
 	// remove index from table config
 	table_config_del_index(table->config, index);
@@ -76,7 +76,7 @@ table_index_create(Table*       self,
 	log_relation(&tr->log, &create_if, index, &self->rel);
 
 	// create index for each partition
-	part_list_index_create(&self->part_list, index);
+	part_mgr_index_create(&self->part_mgr, index);
 	return true;
 }
 

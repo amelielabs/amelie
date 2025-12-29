@@ -16,10 +16,10 @@ typedef struct TableMgr TableMgr;
 struct TableMgr
 {
 	RelationMgr mgr;
-	PartMgr*    part_mgr;
+	Vault*      vault;
 };
 
-void   table_mgr_init(TableMgr*, PartMgr*);
+void   table_mgr_init(TableMgr*, Vault*);
 void   table_mgr_free(TableMgr*);
 bool   table_mgr_create(TableMgr*, Tr*, TableConfig*, bool);
 bool   table_mgr_drop(TableMgr*, Tr*, Str*, Str*, bool);

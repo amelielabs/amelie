@@ -11,18 +11,18 @@
 //
 
 #include <amelie_runtime>
-#include <amelie_engine>
+#include <amelie_partition>
 #include <amelie_catalog.h>
 
 void
-catalog_init(Catalog*   self, PartMgr* part_mgr,
+catalog_init(Catalog*   self, Vault* vault,
              CatalogIf* iface,
              void*      iface_arg)
 {
 	self->iface = iface;
 	self->iface_arg = iface_arg;
 	db_mgr_init(&self->db_mgr);
-	table_mgr_init(&self->table_mgr, part_mgr);
+	table_mgr_init(&self->table_mgr, vault);
 	udf_mgr_init(&self->udf_mgr, iface->udf_free, iface_arg);
 }
 
