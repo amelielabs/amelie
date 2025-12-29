@@ -11,9 +11,6 @@
 // AGPL-3.0 Licensed.
 //
 
-#include <amelie_row.h>
-#include <amelie_heap.h>
-#include <amelie_object.h>
-#include <amelie_transaction.h>
-#include <amelie_index.h>
-#include <amelie_partition.h>
+// partition
+#include "partition/part.h"
+#include "partition/part_op.h"

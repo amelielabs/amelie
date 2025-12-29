@@ -1,4 +1,3 @@
-#pragma once
 
 //
 // amelie.
@@ -11,6 +10,7 @@
 // AGPL-3.0 Licensed.
 //
 
+#include <amelie_runtime>
 #include <amelie_row.h>
 #include <amelie_heap.h>
 #include <amelie_object.h>
