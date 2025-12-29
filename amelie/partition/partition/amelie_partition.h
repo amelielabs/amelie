@@ -21,3 +21,6 @@
 
 // partition manager (per table)
 #include "partition/part_mgr.h"
+
+// vault (partitions registry)
+#include "partition/vault.h"

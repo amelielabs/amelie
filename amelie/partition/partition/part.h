@@ -26,7 +26,7 @@ struct Part
 	bool          unlogged;
 	Source*       source;
 	List          link;
-	HashtableNode link_mgr;
+	HashtableNode link_vault;
 };
 
 Part*  part_allocate(PartConfig*, Source*, Sequence*, bool);
