@@ -24,7 +24,7 @@ writer_init(Writer* self)
 	self->source      = NULL;
 	iov_init(&self->iov);
 	region_writer_init(&self->region_writer);
-	span_writer_init(&self->span_writer);
+	meta_writer_init(&self->meta_writer);
 }
 
 void
@@ -33,7 +33,7 @@ writer_free(Writer* self)
 	writer_reset(self);
 	iov_free(&self->iov);
 	region_writer_free(&self->region_writer);
-	span_writer_free(&self->span_writer);
+	meta_writer_free(&self->meta_writer);
 }
 
 void
@@ -52,7 +52,7 @@ writer_reset(Writer* self)
 	self->source = NULL;
 	iov_reset(&self->iov);
 	region_writer_reset(&self->region_writer);
-	span_writer_reset(&self->span_writer);
+	meta_writer_reset(&self->meta_writer);
 }
 
 hot static inline bool
@@ -80,9 +80,8 @@ writer_stop_region(Writer* self)
 	// complete region
 	region_writer_stop(&self->region_writer);
 
-	// add region to the span
-	span_writer_add(&self->span_writer, &self->region_writer,
-	                 self->file->size);
+	// add region to the meta data
+	meta_writer_add(&self->meta_writer, &self->region_writer, self->file->size);
 
 	// write region
 	iov_reset(&self->iov);
@@ -116,11 +115,10 @@ writer_start(Writer* self, Source* source, File* file)
 			cipher_create(&runtime()->cache_cipher, id,
 			              &runtime()->random, &source->encryption_key);
 
-	// start new span
-	span_writer_reset(&self->span_writer);
-	span_writer_start(&self->span_writer, self->compression,
-	                  self->encryption,
-	                  source->crc);
+	// start new meta data
+	meta_writer_reset(&self->meta_writer);
+	meta_writer_start(&self->meta_writer, self->compression,
+	                  self->encryption, source->crc);
 }
 
 void
@@ -130,21 +128,26 @@ writer_stop(Writer*  self, Id* id, uint32_t refreshes,
             uint64_t lsn,
             bool     sync)
 {
-	if (! span_writer_started(&self->span_writer))
+	if (! meta_writer_started(&self->meta_writer))
 		return;
 
+	// complete last region and meta data
 	if (region_writer_started(&self->region_writer))
 		writer_stop_region(self);
 
-	span_writer_stop(&self->span_writer, id, refreshes,
+	meta_writer_stop(&self->meta_writer, id, refreshes,
 	                 time_create,
 	                 time_refresh,
 	                 lsn);
 
-	// write span
+	// write meta data
 	iov_reset(&self->iov);
-	span_writer_add_to_iov(&self->span_writer, &self->iov);
+	meta_writer_add_to_iov(&self->meta_writer, &self->iov);
 	file_writev(self->file, iov_pointer(&self->iov), self->iov.iov_count);
+
+	// sync
+	if (sync)
+		file_sync(self->file);
 
 	// cleanup
 	if (self->compression)
@@ -158,10 +161,6 @@ writer_stop(Writer*  self, Id* id, uint32_t refreshes,
 		codec_cache_push(&runtime()->cache_cipher, self->encryption);
 		self->encryption = NULL;
 	}
-
-	// sync
-	if (sync)
-		file_sync(self->file);
 }
 
 void

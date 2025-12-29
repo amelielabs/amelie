@@ -18,8 +18,8 @@ struct Object
 	Id      id;
 	int     state;
 	bool    pending;
-	Span    index;
-	Buf     index_data;
+	Meta    meta;
+	Buf     meta_data;
 	File    file;
 	Source* source;
 };

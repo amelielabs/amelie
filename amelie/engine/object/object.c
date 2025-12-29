@@ -23,8 +23,8 @@ object_allocate(Source* source, Id* id)
 	self->state   = ID_NONE;
 	self->pending = false;
 	self->source  = source;
-	span_init(&self->index);
-	buf_init(&self->index_data);
+	meta_init(&self->meta);
+	buf_init(&self->meta_data);
 	file_init(&self->file);
 	return self;
 }
@@ -33,7 +33,7 @@ void
 object_free(Object* self)
 {
 	file_close(&self->file);
-	buf_free(&self->index_data);
+	buf_free(&self->meta_data);
 	am_free(self);
 }
 
@@ -44,11 +44,11 @@ object_open(Object* self, int state, bool read_index)
 	// <source_path>/<uuid>/<id>
 	case ID:
 	{
-		// open and validate object file
-		span_open(&self->file, self->source, &self->id, state, &self->index);
+		object_file_open(&self->file, self->source, &self->id, state, &self->meta);
 		if (read_index)
-			span_read(&self->file, self->source, &self->index,
-			          &self->index_data, false);
+			object_file_read(&self->file, self->source,
+			                 &self->meta,
+			                 &self->meta_data, false);
 		break;
 	}
 	default:

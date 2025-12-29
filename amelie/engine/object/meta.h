@@ -11,13 +11,13 @@
 // AGPL-3.0 Licensed.
 //
 
-typedef struct SpanRegion SpanRegion;
-typedef struct Span       Span;
+typedef struct MetaRegion MetaRegion;
+typedef struct Meta       Meta;
 
-#define SPAN_MAGIC   0x20849615
-#define SPAN_VERSION 0
+#define META_MAGIC   0x20849615
+#define META_VERSION 0
 
-struct SpanRegion
+struct MetaRegion
 {
 	uint32_t offset;
 	uint32_t crc;
@@ -30,7 +30,7 @@ struct SpanRegion
 	uint8_t  data[];
 } packed;
 
-struct Span
+struct Meta
 {
 	uint32_t crc;
 	uint32_t crc_data;
@@ -55,43 +55,39 @@ struct Span
 } packed;
 
 static inline void
-span_init(Span* self)
+meta_init(Meta* self)
 {
 	memset(self, 0, sizeof(*self));
 }
 
-static inline SpanRegion*
-span_region(Span* self, Buf* data, int pos)
+static inline MetaRegion*
+meta_region(Meta* self, Buf* data, int pos)
 {
 	unused(self);
 	assert(pos < (int)self->regions);
-	return &((SpanRegion*)data->start)[pos];
+	return &((MetaRegion*)data->start)[pos];
+}
+
+static inline MetaRegion*
+meta_min(Meta* self, Buf* data)
+{
+	return meta_region(self, data, 0);
+}
+
+static inline MetaRegion*
+meta_max(Meta* self, Buf* data)
+{
+	return meta_region(self, data, self->regions - 1);
 }
 
 static inline Row*
-span_region_min(Span* self, Buf* data, int pos)
+meta_region_min(MetaRegion* self)
 {
-	return (Row*)span_region(self, data, pos)->data;
+	return (Row*)self->data;
 }
 
 static inline Row*
-span_region_max(Span* self, Buf* data, int pos)
+meta_region_max(MetaRegion* self)
 {
-	auto region = span_region(self, data, pos);
-	return (Row*)(region->data + region->size_min);
+	return (Row*)(self->data + self->size_min);
 }
-
-static inline Row*
-span_min(Span* self, Buf* data)
-{
-	return span_region_min(self, data, 0);
-}
-
-static inline Row*
-span_max(Span* self, Buf* data)
-{
-	return span_region_max(self, data, self->regions - 1);
-}
-
-void span_open(File*, Source*, Id*, int, Span*);
-void span_read(File*, Source*, Span*, Buf*, bool);

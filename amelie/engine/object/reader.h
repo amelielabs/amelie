@@ -66,7 +66,7 @@ reader_open(Reader* self, Object* object)
 	self->object = object;
 
 	// get compression context
-	auto id = object->index.compression;
+	auto id = object->meta.compression;
 	if (id != COMPRESSION_NONE)
 	{
 		self->compression = compression_create(&runtime()->cache_compression, id, 0);
@@ -75,7 +75,7 @@ reader_open(Reader* self, Object* object)
 	}
 
 	// get encryption context
-	id = object->index.encryption;
+	id = object->meta.encryption;
 	if (id != CIPHER_NONE)
 	{
 		self->encryption = cipher_create(&runtime()->cache_cipher, id,
@@ -87,7 +87,7 @@ reader_open(Reader* self, Object* object)
 }
 
 hot static inline Region*
-reader_execute(Reader* self, SpanRegion* span_region)
+reader_execute(Reader* self, MetaRegion* meta_region)
 {
 	auto object = self->object;
 	buf_reset(&self->buf);
@@ -97,8 +97,8 @@ reader_execute(Reader* self, SpanRegion* span_region)
 	if (object_has(object, ID))
 	{
 		// read region data from file
-		file_pread_buf(&object->file, &self->buf, span_region->size,
-		               span_region->offset);
+		file_pread_buf(&object->file, &self->buf, meta_region->size,
+		               meta_region->offset);
 	} else {
 		abort();
 	}
@@ -115,7 +115,7 @@ reader_execute(Reader* self, SpanRegion* span_region)
 	// decompress region
 	if (self->compression)
 	{
-		buf_reserve(&self->buf_decompressed, span_region->size_origin);
+		buf_reserve(&self->buf_decompressed, meta_region->size_origin);
 		codec_decode(self->encryption, &self->buf_decompressed,
 		             origin->start, buf_size(origin));
 		origin = &self->buf_decompressed;
@@ -123,8 +123,8 @@ reader_execute(Reader* self, SpanRegion* span_region)
 
 	// consistency check
 	auto region = (Region*)origin->start;
-	if (region->size != span_region->size_origin ||
-	    region->rows != span_region->rows)
+	if (region->size != meta_region->size_origin ||
+	    region->rows != meta_region->rows)
 		error("object: region meta data mismatch");
 
 	return region;

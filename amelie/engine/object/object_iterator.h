@@ -17,8 +17,8 @@ struct ObjectIterator
 {
 	Iterator       it;
 	RegionIterator region_iterator;
-	SpanIterator   span_iterator;
-	SpanRegion*    current;
+	MetaIterator   meta_iterator;
+	MetaRegion*    current;
 	Object*        object;
 	Keys*          keys;
 	Reader         reader;
@@ -45,11 +45,11 @@ object_iterator_open(ObjectIterator* self, Keys* keys, Object* object, Row* row)
 	self->current = NULL;
 
 	region_iterator_init(&self->region_iterator);
-	span_iterator_init(&self->span_iterator);
-	span_iterator_open(&self->span_iterator, &object->index, &object->index_data,
+	meta_iterator_init(&self->meta_iterator);
+	meta_iterator_open(&self->meta_iterator, &object->meta, &object->meta_data,
 	                    keys, row);
 
-	self->current = span_iterator_at(&self->span_iterator);
+	self->current = meta_iterator_at(&self->meta_iterator);
 	if (self->current == NULL)
 		return false;
 
@@ -84,8 +84,8 @@ object_iterator_next(ObjectIterator* self)
 			break;
 
 		// read next region
-		span_iterator_next(&self->span_iterator);
-		self->current = span_iterator_at(&self->span_iterator);
+		meta_iterator_next(&self->meta_iterator);
+		self->current = meta_iterator_at(&self->meta_iterator);
 		if (unlikely(self->current == NULL))
 			break;
 
@@ -113,7 +113,7 @@ object_iterator_init(ObjectIterator* self)
 	self->object  = NULL;
 	self->current = NULL;
 	reader_init(&self->reader);
-	span_iterator_init(&self->span_iterator);
+	meta_iterator_init(&self->meta_iterator);
 	region_iterator_init(&self->region_iterator);
 	auto it = &self->it;
 	it->has   = (IteratorHas)object_iterator_has;

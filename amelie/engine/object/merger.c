@@ -76,19 +76,19 @@ merger_write(Merger* self, MergerReq* req)
 	uint64_t lsn = heap->lsn_max;
 	if (origin->state != ID_NONE)
 	{
-		refreshes += origin->index.refreshes;
-		if (origin->index.lsn > lsn)
-			lsn = origin->index.lsn;
+		refreshes += origin->meta.refreshes;
+		if (origin->meta.lsn > lsn)
+			lsn = origin->meta.lsn;
 	}
 
 	auto id = &object->id;
 	writer_stop(writer, id, refreshes, 0, 0, lsn,
 	            req->source->sync);
 
-	// copy index
-	span_writer_copy(&self->writer.span_writer,
-	                 &object->index,
-	                 &object->index_data);
+	// copy and set meta data
+	meta_writer_copy(&self->writer.meta_writer,
+	                 &object->meta,
+	                 &object->meta_data);
 }
 
 hot void
@@ -110,7 +110,7 @@ merger_execute(Merger* self, MergerReq* req)
 	merge_iterator_add(it, &self->object_iterator.it);
 	merge_iterator_open(it, req->keys);
 
-	// allocate and create incomplete objectition file
+	// allocate and create incomplete object file
 	Id id = origin->id;
 	self->object = object_allocate(req->source, &id);
 	object_create(self->object, ID_INCOMPLETE);

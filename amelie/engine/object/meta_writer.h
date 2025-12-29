@@ -11,9 +11,9 @@
 // AGPL-3.0 Licensed.
 //
 
-typedef struct SpanWriter SpanWriter;
+typedef struct MetaWriter MetaWriter;
 
-struct SpanWriter
+struct MetaWriter
 {
 	bool   active;
 	Buf    data;
@@ -22,11 +22,11 @@ struct SpanWriter
 	Buf    encrypted;
 	Codec* encryption;
 	bool   crc;
-	Span   span;
+	Meta   meta;
 };
 
 static inline void
-span_writer_init(SpanWriter* self)
+meta_writer_init(MetaWriter* self)
 {
 	self->active      = false;
 	self->compression = NULL;
@@ -35,11 +35,11 @@ span_writer_init(SpanWriter* self)
 	buf_init(&self->data);
 	buf_init(&self->compressed);
 	buf_init(&self->encrypted);
-	memset(&self->span, 0, sizeof(self->span));
+	meta_init(&self->meta);
 }
 
 static inline void
-span_writer_free(SpanWriter* self)
+meta_writer_free(MetaWriter* self)
 {
 	buf_free(&self->data);
 	buf_free(&self->compressed);
@@ -47,7 +47,7 @@ span_writer_free(SpanWriter* self)
 }
 
 static inline void
-span_writer_reset(SpanWriter* self)
+meta_writer_reset(MetaWriter* self)
 {
 	self->active      = false;
 	self->compression = NULL;
@@ -56,17 +56,17 @@ span_writer_reset(SpanWriter* self)
 	buf_reset(&self->data);
 	buf_reset(&self->compressed);
 	buf_reset(&self->encrypted);
-	memset(&self->span, 0, sizeof(self->span));
+	meta_init(&self->meta);
 }
 
 static inline bool
-span_writer_started(SpanWriter* self)
+meta_writer_started(MetaWriter* self)
 {
 	return self->active;
 }
 
 static inline void
-span_writer_start(SpanWriter* self,
+meta_writer_start(MetaWriter* self,
                   Codec*      compression,
                   Codec*      encryption,
                   bool        crc)
@@ -78,17 +78,17 @@ span_writer_start(SpanWriter* self,
 }
 
 static inline void
-span_writer_stop(SpanWriter* self,
-                  Id*        id,
-                  uint32_t   refreshes,
-                  uint64_t   time_create,
-                  uint64_t   time_refresh,
-                  uint64_t   lsn)
+meta_writer_stop(MetaWriter* self,
+                 Id*         id,
+                 uint32_t    refreshes,
+                 uint64_t    time_create,
+                 uint64_t    time_refresh,
+                 uint64_t    lsn)
 {
-	auto span = &self->span;
+	auto meta = &self->meta;
 
-	// compress span data (without span header)
-	uint32_t size_origin = span->size;
+	// compress meta data (without header)
+	uint32_t size_origin = meta->size;
 	uint32_t size = size_origin;
 	int      compression_id;
 	if (self->compression)
@@ -105,7 +105,7 @@ span_writer_stop(SpanWriter* self,
 		compression_id = COMPRESSION_NONE;
 	}
 
-	// encrypt span data
+	// encrypt meta data
 	int encryption_id;
 	if (self->encryption)
 	{
@@ -125,26 +125,26 @@ span_writer_stop(SpanWriter* self,
 		encryption_id = CIPHER_NONE;
 	}
 
-	// prepare span
-	span->crc               = 0;
-	span->crc_data          = 0;
-	span->magic             = SPAN_MAGIC;
-	span->version           = SPAN_VERSION;
-	span->id                = *id;
-	span->size              = size;
-	span->size_origin       = size_origin;
-	span->size_total        =
-		span->size_regions + span->size + sizeof(Span);
-	span->size_total_origin =
-		span->size_regions_origin + span->size_origin + sizeof(Span);
-	span->time_create       = time_create;
-	span->time_refresh      = time_refresh;
-	span->refreshes         = refreshes;
-	span->lsn               = lsn;
-	span->compression       = compression_id;
-	span->encryption        = encryption_id;
+	// prepare header
+	meta->crc               = 0;
+	meta->crc_data          = 0;
+	meta->magic             = META_MAGIC;
+	meta->version           = META_VERSION;
+	meta->id                = *id;
+	meta->size              = size;
+	meta->size_origin       = size_origin;
+	meta->size_total        =
+		meta->size_regions + meta->size + sizeof(Meta);
+	meta->size_total_origin =
+		meta->size_regions_origin + meta->size_origin + sizeof(Meta);
+	meta->time_create       = time_create;
+	meta->time_refresh      = time_refresh;
+	meta->refreshes         = refreshes;
+	meta->lsn               = lsn;
+	meta->compression       = compression_id;
+	meta->encryption        = encryption_id;
 
-	// calculate span data crc
+	// calculate data crc
 	uint32_t crc = 0;
 	if (self->encryption)
 		crc = runtime()->crc(crc, self->encrypted.start, buf_size(&self->encrypted));
@@ -153,14 +153,14 @@ span_writer_stop(SpanWriter* self,
 		crc = runtime()->crc(crc, self->compressed.start, buf_size(&self->compressed));
 	else
 		crc = runtime()->crc(crc, self->data.start, buf_size(&self->data));
-	span->crc_data = crc;
+	meta->crc_data = crc;
 
-	// calculate span crc
-	span->crc = runtime()->crc(0, span, sizeof(Span));
+	// calculate header crc
+	meta->crc = runtime()->crc(0, meta, sizeof(Meta));
 }
 
 static inline void
-span_writer_add(SpanWriter*   self,
+meta_writer_add(MetaWriter*   self,
                 RegionWriter* region_writer,
                 uint64_t      region_offset)
 {
@@ -180,14 +180,14 @@ span_writer_add(SpanWriter*   self,
 	if (self->crc)
 		crc = region_writer_crc(region_writer);
 
-	// prepare meta region reference
-	buf_reserve(&self->data, sizeof(SpanRegion));
+	// prepare region reference
+	buf_reserve(&self->data, sizeof(MetaRegion));
 	auto min      = region_writer_min(region_writer);
 	auto min_size = row_size(min);
 	auto max      = region_writer_max(region_writer);
 	auto max_size = row_size(max);
 
-	auto ref = (SpanRegion*)self->data.position;
+	auto ref = (MetaRegion*)self->data.position;
 	ref->offset      = region_offset;
 	ref->crc         = crc;
 	ref->size        = size;
@@ -198,26 +198,26 @@ span_writer_add(SpanWriter*   self,
 	memset(ref->reserved, 0, sizeof(ref->reserved));
 	buf_write(&self->data, min, min_size);
 	buf_write(&self->data, max, max_size);
-	buf_advance(&self->data, sizeof(SpanRegion));
+	buf_advance(&self->data, sizeof(MetaRegion));
 
 	// update header
-	auto span = &self->span;
-	span->regions++;
-	span->rows += region->rows;
-	span->size += sizeof(SpanRegion);
-	span->size_regions += size;
-	span->size_regions_origin += region->size;
+	auto meta = &self->meta;
+	meta->regions++;
+	meta->rows += region->rows;
+	meta->size += sizeof(MetaRegion);
+	meta->size_regions += size;
+	meta->size_regions_origin += region->size;
 }
 
 static inline void
-span_writer_copy(SpanWriter* self, Span* span, Buf* buf)
+meta_writer_copy(MetaWriter* self, Meta* meta, Buf* data)
 {
-	*span = self->span;
-	buf_write(buf, self->data.start, buf_size(&self->data));
+	*meta = self->meta;
+	buf_write(data, self->data.start, buf_size(&self->data));
 }
 
 static inline void
-span_writer_add_to_iov(SpanWriter* self, Iov* iov)
+meta_writer_add_to_iov(MetaWriter* self, Iov* iov)
 {
 	if (self->encryption)
 		iov_add_buf(iov, &self->encrypted);
@@ -226,5 +226,5 @@ span_writer_add_to_iov(SpanWriter* self, Iov* iov)
 		iov_add_buf(iov, &self->compressed);
 	else
 		iov_add_buf(iov, &self->data);
-	iov_add(iov, &self->span, sizeof(self->span));
+	iov_add(iov, &self->meta, sizeof(self->meta));
 }

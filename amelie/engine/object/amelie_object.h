@@ -23,15 +23,16 @@
 #include "object/region_iterator.h"
 #include "object/region_writer.h"
 
-// span (region index)
-#include "object/span.h"
-#include "object/span_iterator.h"
-#include "object/span_writer.h"
+// metadata (object index)
+#include "object/meta.h"
+#include "object/meta_iterator.h"
+#include "object/meta_writer.h"
 
 // writer
 #include "object/writer.h"
 
 // object
+#include "object/object_file.h"
 #include "object/object.h"
 
 // object iterator

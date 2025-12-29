@@ -11,5 +11,5 @@
 // AGPL-3.0 Licensed.
 //
 
-void span_open(File*, Source*, Id*, int, Span*);
-void span_read(File*, Source*, Span*, Buf*, bool);
+void object_file_open(File*, Source*, Id*, int, Meta*);
+void object_file_read(File*, Source*, Meta*, Buf*, bool);
