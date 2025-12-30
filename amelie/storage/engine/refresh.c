@@ -14,17 +14,3 @@
 #include <amelie_partition>
 #include <amelie_wal.h>
 #include <amelie_engine.h>
-
-void
-engine_init(Engine* self, WalMgr* wal_mgr, Vault* vault)
-{
-	self->vault   = vault;
-	self->wal_mgr = wal_mgr;
-	service_init(&self->service);
-}
-
-void
-engine_free(Engine* self)
-{
-	service_free(&self->service);
-}

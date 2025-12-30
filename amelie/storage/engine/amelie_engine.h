@@ -11,3 +11,13 @@
 // AGPL-3.0 Licensed.
 //
 
+// service
+#include "engine/service_req.h"
+#include "engine/service.h"
+
+// engine
+#include "engine/engine.h"
+#include "engine/refresh.h"
+
+// engine operations
+#include "engine/op.h"
