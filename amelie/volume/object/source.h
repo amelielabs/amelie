@@ -26,6 +26,7 @@ struct Source
 	int64_t compression_level;
 	Str     encryption;
 	Str     encryption_key;
+	bool    system;
 };
 
 static inline Source*
@@ -37,6 +38,7 @@ source_allocate(void)
 	self->compression_level = 0;
 	self->region_size       = 128 * 1024;
 	self->refresh_wm        = 40 * 1024 * 1024;
+	self->system            = false;
 	uuid_init(&self->id);
 	str_init(&self->name);
 	str_init(&self->path);
@@ -128,6 +130,12 @@ source_set_encryption_key(Source* self, Str* value)
 	str_copy(&self->encryption_key, value);
 }
 
+static inline void
+source_set_system(Source* self, bool value)
+{
+	self->system = value;
+}
+
 static inline Source*
 source_copy(Source* self)
 {
@@ -143,6 +151,7 @@ source_copy(Source* self)
 	source_set_compression_level(copy, self->compression_level);
 	source_set_encryption(copy, &self->encryption);
 	source_set_encryption_key(copy, &self->encryption_key);
+	source_set_system(copy, self->system);
 	return copy;
 }
 

@@ -11,7 +11,8 @@
 // AGPL-3.0 Licensed.
 //
 
-typedef struct Part Part;
+typedef struct Space Space;
+typedef struct Part  Part;
 
 struct Part
 {
@@ -25,8 +26,10 @@ struct Part
 	Sequence*     seq;
 	bool          unlogged;
 	Source*       source;
+	Space*        space;
 	List          link;
-	HashtableNode link_vault;
+	List          link_space;
+	HashtableNode link_mgr;
 };
 
 Part*  part_allocate(PartConfig*, Source*, Sequence*, bool);

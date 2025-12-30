@@ -11,8 +11,9 @@
 //
 
 #include <amelie_runtime>
-#include <amelie_partition>
-#include <amelie_catalog.h>
+#include <amelie_row.h>
+#include <amelie_heap.h>
+#include <amelie_transaction.h>
 
 void
 relation_mgr_init(RelationMgr* self)

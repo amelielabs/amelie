@@ -34,3 +34,7 @@
 // track
 #include "transaction/consensus.h"
 #include "transaction/track.h"
+
+// relation
+#include "transaction/relation.h"
+#include "transaction/relation_mgr.h"

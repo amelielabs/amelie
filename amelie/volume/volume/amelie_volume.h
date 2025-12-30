@@ -11,3 +11,6 @@
 // AGPL-3.0 Licensed.
 //
 
+// tier
+#include "volume/tier.h"
+#include "volume/tier_mgr.h"
