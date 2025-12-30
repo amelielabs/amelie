@@ -11,8 +11,8 @@
 // AGPL-3.0 Licensed.
 //
 
-typedef struct Space Space;
-typedef struct Part  Part;
+typedef struct Volume Volume;
+typedef struct Part   Part;
 
 struct Part
 {
@@ -26,10 +26,10 @@ struct Part
 	Sequence*     seq;
 	bool          unlogged;
 	Source*       source;
-	Space*        space;
+	Volume*       volume;
 	List          link;
-	List          link_space;
-	HashtableNode link_mgr;
+	List          link_volume;
+	HashtableNode link_hash;
 };
 
 Part*  part_allocate(PartConfig*, Source*, Sequence*, bool);
@@ -38,6 +38,12 @@ void   part_truncate(Part*);
 void   part_index_add(Part*, IndexConfig*);
 void   part_index_drop(Part*, Str*);
 Index* part_index_find(Part*, Str*, bool);
+
+static inline void
+part_set_volume(Part* self, Volume* volume)
+{
+	self->volume = volume;
+}
 
 static inline Index*
 part_primary(Part* self)

@@ -28,7 +28,7 @@ part_allocate(PartConfig* config, Source* source,
 	self->heap          = &self->heap_a;
 	self->config        = part_config_copy(config);
 	self->source        = source;
-	self->space         = NULL;
+	self->volume        = NULL;
 	self->seq           = seq;
 	self->unlogged      = unlogged;
 	track_init(&self->track);
@@ -36,9 +36,9 @@ part_allocate(PartConfig* config, Source* source,
 	heap_init(&self->heap_a);
 	heap_init(&self->heap_b);
 	heap_create(&self->heap_a);
-	list_init(&self->link_space);
+	list_init(&self->link_volume);
 	list_init(&self->link);
-	hashtable_node_init(&self->link_mgr);
+	hashtable_node_init(&self->link_hash);
 	return self;
 }
 

@@ -42,6 +42,19 @@ tier_allocate(Source* config)
 	return self;
 }
 
+static inline void
+tier_ref(Tier* self)
+{
+	self->refs++;
+}
+
+static inline void
+tier_unref(Tier* self)
+{
+	self->refs--;
+	assert(self->refs >= 0);
+}
+
 static inline Tier*
 tier_of(Relation* self)
 {

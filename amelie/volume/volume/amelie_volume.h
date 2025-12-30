@@ -14,3 +14,11 @@
 // tier
 #include "volume/tier.h"
 #include "volume/tier_mgr.h"
+
+// volume
+#include "volume/volume_config.h"
+#include "volume/volume.h"
+#include "volume/volume_mgr.h"
+
+// world (all partitions)
+#include "volume/world.h"

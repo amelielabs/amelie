@@ -11,25 +11,50 @@
 // AGPL-3.0 Licensed.
 //
 
-typedef struct PartMgr PartMgr;
+typedef struct Volume Volume;
 
-struct PartMgr
+struct Volume
 {
-	PartMap   map;
-	List      list;
-	int       list_count;
-	Sequence* seq;
-	bool      unlogged;
+	List          list;
+	int           list_count;
+	VolumeConfig* config;
+	Tier*         tier;
+	List          link;
 };
 
-void  part_mgr_init(PartMgr*);
-void  part_mgr_free(PartMgr*);
-void  part_mgr_create(PartMgr*, Source*, Sequence*, bool, List*, List*);
-void  part_mgr_map(PartMgr*);
-void  part_mgr_set_unlogged(PartMgr*, bool);
-void  part_mgr_truncate(PartMgr*);
-void  part_mgr_index_create(PartMgr*, IndexConfig*);
-void  part_mgr_index_drop(PartMgr*, Str*);
-Part* part_mgr_find(PartMgr*, uint64_t);
-Iterator*
-part_mgr_iterator(PartMgr*, Part*, IndexConfig*, bool, Row*);
+static inline void
+volume_free(Volume* self)
+{
+	if (self->config)
+		volume_config_free(self->config);
+	am_free(self);
+}
+
+static inline Volume*
+volume_allocate(VolumeConfig* config, Tier* tier)
+{
+	auto self = (Volume*)am_malloc(sizeof(Volume));
+	self->config     = volume_config_copy(config);
+	self->tier       = tier;
+	self->list_count = 0;
+	list_init(&self->list);
+	return self;
+}
+
+static inline void
+volume_add(Volume* self, Part* part)
+{
+	list_append(&self->list, &part->link_volume);
+	self->list_count++;
+	part_set_volume(part, self);
+}
+
+static inline void
+volume_remove(Volume* self, Part* part)
+{
+	assert(part->volume == self);
+	assert(part->source == self->tier->config);
+	list_unlink(&part->link_volume);
+	self->list_count--;
+	part_set_volume(part, NULL);
+}
