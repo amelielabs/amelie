@@ -41,7 +41,7 @@ void
 object_open(Object* self, int state, bool read_index)
 {
 	switch (state) {
-	// <source_path>/<uuid>/<id>
+	// <source_path>/<table_uuid>/<id>
 	case ID:
 	{
 		object_file_open(&self->file, self->source, &self->id, state, &self->meta);
@@ -60,7 +60,7 @@ object_open(Object* self, int state, bool read_index)
 void
 object_create(Object* self, int state)
 {
-	// <source_path>/<uuid>/<id>.incomplete
+	// <source_path>/<table_uuid>/<id>.incomplete
 	char path[PATH_MAX];
 	switch (state) {
 	case ID_INCOMPLETE:
@@ -78,9 +78,9 @@ object_create(Object* self, int state)
 void
 object_delete(Object* self, int state)
 {
-	// <source_path>/<uuid>/<id>
-	// <source_path>/<uuid>/<id>.incomplete
-	// <source_path>/<uuid>/<id>.complete
+	// <source_path>/<table_uuid>/<id>
+	// <source_path>/<table_uuid>/<id>.incomplete
+	// <source_path>/<table_uuid>/<id>.complete
 	char path[PATH_MAX];
 	id_path(&self->id, self->source, state, path);
 	if (fs_exists("%s", path))

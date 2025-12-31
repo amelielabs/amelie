@@ -11,7 +11,7 @@
 //
 
 #include <amelie_runtime>
-#include <amelie_partition>
+#include <amelie_volume>
 #include <amelie_catalog.h>
 
 static void

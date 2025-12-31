@@ -11,7 +11,7 @@
 //
 
 #include <amelie_runtime>
-#include <amelie_partition>
+#include <amelie_volume>
 #include <amelie_catalog.h>
 
 static void
@@ -269,7 +269,7 @@ column_add_if_commit(Log* self, LogOp* op)
 	table_free(prev);
 
 	// map new table partitions (partitions has same ids)
-	part_mgr_map(&table->part_mgr);
+	volume_mgr_map(&table->volume_mgr);
 }
 
 static void
@@ -323,7 +323,7 @@ table_mgr_column_add(TableMgr* self,
 	// physical column require a new table
 
 	// allocate new table
-	auto table_new = table_allocate(table->config, self->vault);
+	auto table_new = table_allocate(table->config, self->tier_mgr, self->world);
 
 	// add new column
 	auto column_new = column_copy(column);
@@ -376,7 +376,7 @@ table_mgr_column_drop(TableMgr* self,
 	// physical column require new table rebuild
 
 	// allocate new table
-	auto table_new = table_allocate(table->config, self->vault);
+	auto table_new = table_allocate(table->config, self->tier_mgr, self->world);
 
 	// delete and reorder columns and update keys
 	auto column_new = columns_find(&table_new->config->columns, &column->name);

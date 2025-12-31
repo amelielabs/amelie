@@ -13,6 +13,11 @@
 
 enum
 {
+	// tier
+	DDL_TIER_CREATE,
+	DDL_TIER_DROP,
+	DDL_TIER_RENAME,
+
 	// database
 	DDL_DB_CREATE,
 	DDL_DB_DROP,

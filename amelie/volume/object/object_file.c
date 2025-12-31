@@ -24,7 +24,7 @@ object_file_open(File*   self,
 {
 	// open partition file and read meta data footer
 
-	// <source_path>/<uuid>/<id>
+	// <source_path>/<table_uuid>/<id>
 	char path[PATH_MAX];
 	id_path(id, source, type, path);
 	file_open(self, path);

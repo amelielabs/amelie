@@ -11,12 +11,11 @@
 // AGPL-3.0 Licensed.
 //
 
-// relation
-#include "catalog/relation.h"
-#include "catalog/relation_mgr.h"
-
 // ddl
 #include "catalog/ddl.h"
+
+// tier
+#include "catalog/tier_op.h"
 
 // db
 #include "catalog/db_config.h"

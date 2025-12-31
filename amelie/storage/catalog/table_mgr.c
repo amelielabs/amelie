@@ -11,13 +11,14 @@
 //
 
 #include <amelie_runtime>
-#include <amelie_partition>
+#include <amelie_volume>
 #include <amelie_catalog.h>
 
 void
-table_mgr_init(TableMgr* self, Vault* vault)
+table_mgr_init(TableMgr* self, TierMgr* tier_mgr, World* world)
 {
-	self->vault = vault;
+	self->tier_mgr = tier_mgr;
+	self->world    = world;
 	relation_mgr_init(&self->mgr);
 }
 
@@ -44,7 +45,7 @@ table_mgr_create(TableMgr*    self,
 	}
 
 	// allocate table
-	auto table = table_allocate(config, self->vault);
+	auto table = table_allocate(config, self->tier_mgr, self->world);
 
 	// update tables
 	relation_mgr_create(&self->mgr, tr, &table->rel);
@@ -53,7 +54,7 @@ table_mgr_create(TableMgr*    self,
 	table_open(table);
 
 	// map partitions
-	part_mgr_map(&table->part_mgr);
+	volume_mgr_map(&table->volume_mgr);
 	return true;
 }
 
@@ -86,7 +87,7 @@ truncate_if_commit(Log* self, LogOp* op)
 	auto relation = log_relation_of(self, op);
 	auto table = table_of(relation->relation);
 	// truncate all partitions
-	part_mgr_truncate(&table->part_mgr);
+	volume_mgr_truncate(&table->volume_mgr);
 }
 
 static void

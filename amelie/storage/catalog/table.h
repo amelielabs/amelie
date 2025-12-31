@@ -16,8 +16,8 @@ typedef struct Table Table;
 struct Table
 {
 	Relation     rel;
-	PartMgr      part_mgr;
-	Vault*       vault;
+	VolumeMgr    volume_mgr;
+	World*       world;
 	Sequence     seq;
 	TableConfig* config;
 };
@@ -25,8 +25,8 @@ struct Table
 static inline void
 table_free(Table* self)
 {
-	vault_detach(self->vault, &self->part_mgr);
-	part_mgr_free(&self->part_mgr);
+	world_detach(self->world, &self->volume_mgr);
+	volume_mgr_free(&self->volume_mgr);
 	if (self->config)
 		table_config_free(self->config);
 	sequence_free(&self->seq);
@@ -34,13 +34,13 @@ table_free(Table* self)
 }
 
 static inline Table*
-table_allocate(TableConfig* config, Vault* vault)
+table_allocate(TableConfig* config, TierMgr* tier_mgr, World* world)
 {
 	Table* self = am_malloc(sizeof(Table));
-	self->vault  = vault;
+	self->world  = world;
 	self->config = table_config_copy(config);
 	sequence_init(&self->seq);
-	part_mgr_init(&self->part_mgr);
+	volume_mgr_init(&self->volume_mgr, tier_mgr, &self->seq, self->config->unlogged);
 	relation_init(&self->rel);
 	relation_set_db(&self->rel, &self->config->db);
 	relation_set_name(&self->rel, &self->config->name);
@@ -51,20 +51,19 @@ table_allocate(TableConfig* config, Vault* vault)
 static inline void
 table_open(Table* self)
 {
-	part_mgr_create(&self->part_mgr, NULL,
-	                &self->seq,
-	                self->config->unlogged,
-	                &self->config->partitions,
-	                &self->config->indexes);
+	volume_mgr_create(&self->volume_mgr,
+	                  &self->config->volumes,
+	                  &self->config->parts,
+	                  &self->config->indexes);
 
-	vault_attach(self->vault, &self->part_mgr);
+	world_attach(self->world, &self->volume_mgr);
 }
 
 static inline void
 table_set_unlogged(Table* self, bool value)
 {
 	table_config_set_unlogged(self->config, value);
-	part_mgr_set_unlogged(&self->part_mgr, value);
+	volume_mgr_set_unlogged(&self->volume_mgr, value);
 }
 
 static inline Table*

@@ -11,18 +11,19 @@
 //
 
 #include <amelie_runtime>
-#include <amelie_partition>
+#include <amelie_volume>
 #include <amelie_catalog.h>
 
 void
-catalog_init(Catalog*   self, Vault* vault,
+catalog_init(Catalog*   self, World* world,
              CatalogIf* iface,
              void*      iface_arg)
 {
 	self->iface = iface;
 	self->iface_arg = iface_arg;
+	tier_mgr_init(&self->tier_mgr);
 	db_mgr_init(&self->db_mgr);
-	table_mgr_init(&self->table_mgr, vault);
+	table_mgr_init(&self->table_mgr, &self->tier_mgr, world);
 	udf_mgr_init(&self->udf_mgr, iface->udf_free, iface_arg);
 }
 
@@ -32,10 +33,11 @@ catalog_free(Catalog* self)
 	udf_mgr_free(&self->udf_mgr);
 	table_mgr_free(&self->table_mgr);
 	db_mgr_free(&self->db_mgr);
+	tier_mgr_free(&self->tier_mgr);
 }
 
 static void
-catalog_create_main_db(Catalog* self, const char* db)
+catalog_prepare(Catalog* self)
 {
 	Buf buf;
 	buf_init(&buf);
@@ -49,15 +51,24 @@ catalog_create_main_db(Catalog* self, const char* db)
 		// begin
 		tr_begin(&tr);
 
-		// create db
 		Str name;
 		str_init(&name);
-		str_set_cstr(&name, db);
-		auto config = db_config_allocate();
-		defer(db_config_free, config);
-		db_config_set_name(config, &name);
-		db_config_set_system(config, true);
-		db_mgr_create(&self->db_mgr, &tr, config, false);
+		str_set_cstr(&name, "main");
+
+		// create main tier
+		auto tier_config = source_allocate();
+		defer(source_free, tier_config);
+		source_set_name(tier_config, &name);
+		source_set_path(tier_config, &name);
+		source_set_system(tier_config, true);
+		tier_mgr_create(&self->tier_mgr, &tr, tier_config, false);
+
+		// create main db
+		auto db_config = db_config_allocate();
+		defer(db_config_free, db_config);
+		db_config_set_name(db_config, &name);
+		db_config_set_system(db_config, true);
+		db_mgr_create(&self->db_mgr, &tr, db_config, false);
 
 		// commit
 		tr_commit(&tr);
@@ -72,8 +83,8 @@ catalog_create_main_db(Catalog* self, const char* db)
 void
 catalog_open(Catalog* self)
 {
-	// prepare main db
-	catalog_create_main_db(self, "main");
+	// prepare main tier and db
+	catalog_prepare(self);
 }
 
 void
@@ -97,6 +108,10 @@ catalog_status(Catalog* self)
 		tables++;
 		tables_secondary_indexes += (table->config->indexes_count - 1);
 	}
+
+	// tiers
+	encode_raw(buf, "tiers", 5);
+	encode_integer(buf, self->tier_mgr.mgr.list_count);
 
 	// databases
 	encode_raw(buf, "databases", 9);
@@ -135,6 +150,34 @@ catalog_execute(Catalog* self, Tr* tr, uint8_t* op, int flags)
 	auto cmd = ddl_of(op);
 	bool write = false;
 	switch (cmd) {
+	case DDL_TIER_CREATE:
+	{
+		auto config = tier_op_create_read(op);
+		defer(source_free, config);
+
+		auto if_not_exists = ddl_if_not_exists(flags);
+		write = tier_mgr_create(&self->tier_mgr, tr, config, if_not_exists);
+		break;
+	}
+	case DDL_TIER_DROP:
+	{
+		Str  name;
+		tier_op_drop_read(op, &name);
+
+		auto if_exists = ddl_if_exists(flags);
+		write = tier_mgr_drop(&self->tier_mgr, tr, &name, if_exists);
+		break;
+	}
+	case DDL_TIER_RENAME:
+	{
+		Str name;
+		Str name_new;
+		tier_op_rename_read(op, &name, &name_new);
+
+		auto if_exists = ddl_if_exists(flags);
+		write = tier_mgr_rename(&self->tier_mgr, tr, &name, &name_new, if_exists);
+		break;
+	}
 	case DDL_DB_CREATE:
 	{
 		auto config = db_op_create_read(op);

@@ -24,29 +24,27 @@ enum
 struct Id
 {
 	uint64_t id;
-	Uuid     uuid;
+	Uuid     id_table;
 } packed;
 
 static inline void
 id_path(Id* self, Source* source, int state, char* path)
 {
-	char uuid[UUID_SZ];
-	uuid_get(&self->uuid, uuid, sizeof(uuid));
 	switch (state) {
 	case ID:
-		// <source_path>/<uuid>/<id>
-		source_fmt(source, path, "%s/%020" PRIu64,
-		           uuid, self->id);
+		// <source_path>/<table_uuid>/<id>
+		source_path(source, path, &self->id_table,
+		            "%020" PRIu64, self->id);
 		break;
 	case ID_INCOMPLETE:
-		// <source_path>/<uuid>/<id>.incomplete
-		source_fmt(source, path, "%s/%020" PRIu64 ".incomplete",
-		           uuid, self->id);
+		// <source_path>/<table_uuid>/<id>.incomplete
+		source_path(source, path, &self->id_table,
+		            "%020" PRIu64 ".incomplete", self->id);
 		break;
 	case ID_COMPLETE:
-		// <source_path>/<uuid>/<id>.complete
-		source_fmt(source, path, "%s/%020" PRIu64 ".complete",
-		           uuid, self->id);
+		// <source_path>/<table_uuid>/<id>.complete
+		source_path(source, path, &self->id_table,
+		            "%020" PRIu64 ".complete", self->id);
 		break;
 	default:
 		abort();

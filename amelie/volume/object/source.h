@@ -15,7 +15,6 @@ typedef struct Source Source;
 
 struct Source
 {
-	Uuid    id;
 	Str     name;
 	Str     path;
 	bool    sync;
@@ -39,7 +38,6 @@ source_allocate(void)
 	self->region_size       = 128 * 1024;
 	self->refresh_wm        = 40 * 1024 * 1024;
 	self->system            = false;
-	uuid_init(&self->id);
 	str_init(&self->name);
 	str_init(&self->path);
 	str_init(&self->compression);
@@ -57,12 +55,6 @@ source_free(Source* self)
 	str_free(&self->encryption);
 	str_free(&self->encryption_key);
 	am_free(self);
-}
-
-static inline void
-source_set_id(Source* self, Uuid* value)
-{
-	self->id = *value;
 }
 
 static inline void
@@ -140,7 +132,6 @@ static inline Source*
 source_copy(Source* self)
 {
 	auto copy = source_allocate();
-	source_set_id(copy, &self->id);
 	source_set_name(copy, &self->name);
 	source_set_path(copy, &self->path);
 	source_set_sync(copy, self->sync);
@@ -162,7 +153,6 @@ source_read(uint8_t** pos)
 	errdefer(source_free, self);
 	Decode obj[] =
 	{
-		{ DECODE_UUID,   "id",                &self->id                },
 		{ DECODE_STRING, "name",              &self->name              },
 		{ DECODE_STRING, "path",              &self->path              },
 		{ DECODE_BOOL,   "sync",              &self->sync              },
@@ -184,12 +174,6 @@ source_write(Source* self, Buf* buf, bool safe)
 {
 	// map
 	encode_obj(buf);
-
-	// uuid
-	encode_raw(buf, "uuid", 4);
-	char uuid[UUID_SZ];
-	uuid_get(&self->id, uuid, sizeof(uuid));
-	encode_raw(buf, uuid, sizeof(uuid) - 1);
 
 	// name
 	encode_raw(buf, "name", 4);
@@ -237,8 +221,8 @@ source_write(Source* self, Buf* buf, bool safe)
 	encode_obj_end(buf);
 }
 
-static inline void format_validate(3, 4)
-source_fmt(Source* self, char* path, char* fmt, ...)
+static inline void format_validate(4, 5)
+source_path(Source* self, char* path, Uuid* id, char* fmt, ...)
 {
 	// set relative path
 	char relative[512];
@@ -248,23 +232,23 @@ source_fmt(Source* self, char* path, char* fmt, ...)
 	va_end(args);
 
 	char uuid[UUID_SZ];
-	uuid_get(&self->id, uuid, sizeof(uuid));
+	uuid_get(id, uuid, sizeof(uuid));
 
 	// set full storage path
 	if (str_empty(&self->path))
 	{
-		// <base>/<uuid>/...
+		// <base>/<table_uuid>/...
 		sfmt(path, PATH_MAX, "%s/%s/%s", state_directory(), uuid, relative);
 	} else
 	{
 		if (*str_of(&self->path) == '/')
 		{
-			// <absolute_path>/<uuid>/...
+			// <absolute_path>/<table_uuid>/...
 			sfmt(path, PATH_MAX, "%.*s/%s/%s", str_size(&self->path),
 			     str_of(&self->path), uuid, relative);
 		} else
 		{
-			// <base>/<path>/<uuid>/...
+			// <base>/<table_uuid>/...
 			sfmt(path, PATH_MAX, "%s/%.*s/%s/%s", state_directory(),
 			     str_size(&self->path),
 			     str_of(&self->path), uuid, relative);
