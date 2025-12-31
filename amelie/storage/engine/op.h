@@ -11,4 +11,4 @@
 // AGPL-3.0 Licensed.
 //
 
-
+bool engine_service(Engine*, Refresh*, bool);

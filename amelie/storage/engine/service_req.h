@@ -17,10 +17,8 @@ typedef struct ServiceReq ServiceReq;
 typedef enum
 {
 	ACTION_NONE,
-	ACTION_ROTATE,
-	ACTION_GC,
-	ACTION_SYNC,
 	ACTION_REFRESH,
+	ACTION_WAL_GC
 } ActionType;
 
 struct Action

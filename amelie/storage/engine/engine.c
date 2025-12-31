@@ -11,14 +11,14 @@
 //
 
 #include <amelie_runtime>
-#include <amelie_partition>
+#include <amelie_volume>
 #include <amelie_wal.h>
 #include <amelie_engine.h>
 
 void
-engine_init(Engine* self, WalMgr* wal_mgr, Vault* vault)
+engine_init(Engine* self, WalMgr* wal_mgr, World* world)
 {
-	self->vault   = vault;
+	self->world   = world;
 	self->wal_mgr = wal_mgr;
 	service_init(&self->service);
 }

@@ -16,9 +16,9 @@ typedef struct Engine Engine;
 struct Engine
 {
 	Service service;
-	Vault*  vault;
+	World*  world;
 	WalMgr* wal_mgr;
 };
 
-void engine_init(Engine*, WalMgr*, Vault*);
+void engine_init(Engine*, WalMgr*, World*);
 void engine_free(Engine*);

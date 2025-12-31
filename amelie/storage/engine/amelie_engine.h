@@ -21,3 +21,7 @@
 
 // engine operations
 #include "engine/op.h"
+
+// workers
+#include "engine/compaction.h"
+#include "engine/compaction_mgr.h"

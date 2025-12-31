@@ -11,6 +11,6 @@
 //
 
 #include <amelie_runtime>
-#include <amelie_partition>
+#include <amelie_volume>
 #include <amelie_wal.h>
 #include <amelie_engine.h>
