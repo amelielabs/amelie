@@ -15,15 +15,14 @@ typedef struct Id Id;
 
 enum
 {
-	ID_NONE       = 0,
-	ID            = 1 << 0,
-	ID_INCOMPLETE = 1 << 1,
-	ID_COMPLETE   = 1 << 2
+	ID_NONE = 0,
+	ID      = 1 << 0
 };
 
 struct Id
 {
 	uint64_t id;
+	uint64_t id_parent;
 	Uuid     id_table;
 } packed;
 
@@ -32,19 +31,11 @@ id_path(Id* self, Source* source, int state, char* path)
 {
 	switch (state) {
 	case ID:
-		// <source_path>/<table_uuid>/<id>
+		// <source_path>/<table_uuid>/<id_parent>.<id>
 		source_path(source, path, &self->id_table,
-		            "%020" PRIu64, self->id);
-		break;
-	case ID_INCOMPLETE:
-		// <source_path>/<table_uuid>/<id>.incomplete
-		source_path(source, path, &self->id_table,
-		            "%020" PRIu64 ".incomplete", self->id);
-		break;
-	case ID_COMPLETE:
-		// <source_path>/<table_uuid>/<id>.complete
-		source_path(source, path, &self->id_table,
-		            "%020" PRIu64 ".complete", self->id);
+		            "%020" PRIu64 ".%020" PRIu64,
+		            self->id_parent,
+		            self->id);
 		break;
 	default:
 		abort();

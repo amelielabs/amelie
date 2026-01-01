@@ -21,6 +21,7 @@ struct Source
 	bool    crc;
 	int64_t refresh_wm;
 	int64_t region_size;
+	int64_t part_size;
 	Str     compression;
 	int64_t compression_level;
 	Str     encryption;
@@ -35,7 +36,8 @@ source_allocate(void)
 	self->sync              = true;
 	self->crc               = false;
 	self->compression_level = 0;
-	self->region_size       = 128 * 1024;
+	self->region_size       = 64 * 1024;
+	self->part_size         = 64 * 1024 * 1024;
 	self->refresh_wm        = 40 * 1024 * 1024;
 	self->system            = false;
 	str_init(&self->name);
@@ -237,18 +239,18 @@ source_path(Source* self, char* path, Uuid* id, char* fmt, ...)
 	// set full storage path
 	if (str_empty(&self->path))
 	{
-		// <base>/<table_uuid>/...
+		// <base>/<table_uuid>/*
 		sfmt(path, PATH_MAX, "%s/%s/%s", state_directory(), uuid, relative);
 	} else
 	{
 		if (*str_of(&self->path) == '/')
 		{
-			// <absolute_path>/<table_uuid>/...
+			// <absolute_path>/<table_uuid>/*
 			sfmt(path, PATH_MAX, "%.*s/%s/%s", str_size(&self->path),
 			     str_of(&self->path), uuid, relative);
 		} else
 		{
-			// <base>/<table_uuid>/...
+			// <base>/<table_uuid>/*
 			sfmt(path, PATH_MAX, "%s/%.*s/%s/%s", state_directory(),
 			     str_size(&self->path),
 			     str_of(&self->path), uuid, relative);

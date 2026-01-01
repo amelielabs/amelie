@@ -11,27 +11,36 @@
 // AGPL-3.0 Licensed.
 //
 
-typedef struct MergerReq MergerReq;
-typedef struct Merger    Merger;
+typedef struct MergerConfig MergerConfig;
+typedef struct Merger       Merger;
 
-struct MergerReq
+typedef enum
 {
-	Object* origin;
-	Heap*   heap;
-	Keys*   keys;
-	Source* source;
+	MERGER_SNAPSHOT,
+	MERGER_MERGE
+} MergerType;
+
+struct MergerConfig
+{
+	MergerType type;
+	Object*    origin;
+	Heap*      heap;
+	uint64_t*  id_seq;
+	Keys*      keys;
+	Source*    source;
 };
 
 struct Merger
 {
-	Object*        object;
 	ObjectIterator object_iterator;
 	HeapIterator   heap_iterator;
 	MergeIterator  merge_iterator;
+	Object*        a;
+	Object*        b;
 	Writer         writer;
 };
 
 void merger_init(Merger*);
 void merger_free(Merger*);
 void merger_reset(Merger*);
-void merger_execute(Merger*, MergerReq*);
+void merger_execute(Merger*, MergerConfig*);

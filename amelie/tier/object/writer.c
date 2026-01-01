@@ -122,9 +122,8 @@ writer_start(Writer* self, Source* source, File* file)
 }
 
 void
-writer_stop(Writer*  self, Id* id, uint32_t refreshes,
+writer_stop(Writer*  self, Id* id,
             uint64_t time_create,
-            uint64_t time_refresh,
             uint64_t lsn,
             bool     sync)
 {
@@ -135,10 +134,7 @@ writer_stop(Writer*  self, Id* id, uint32_t refreshes,
 	if (region_writer_started(&self->region_writer))
 		writer_stop_region(self);
 
-	meta_writer_stop(&self->meta_writer, id, refreshes,
-	                 time_create,
-	                 time_refresh,
-	                 lsn);
+	meta_writer_stop(&self->meta_writer, id, time_create, lsn);
 
 	// write meta data
 	iov_reset(&self->iov);

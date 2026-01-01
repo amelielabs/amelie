@@ -46,8 +46,6 @@ struct Meta
 	uint32_t regions;
 	uint64_t rows;
 	uint64_t time_create;
-	uint64_t time_refresh;
-	uint32_t refreshes;
 	uint64_t lsn;
 	uint8_t  compression;
 	uint8_t  encryption;

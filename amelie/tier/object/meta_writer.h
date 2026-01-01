@@ -80,9 +80,7 @@ meta_writer_start(MetaWriter* self,
 static inline void
 meta_writer_stop(MetaWriter* self,
                  Id*         id,
-                 uint32_t    refreshes,
                  uint64_t    time_create,
-                 uint64_t    time_refresh,
                  uint64_t    lsn)
 {
 	auto meta = &self->meta;
@@ -138,8 +136,6 @@ meta_writer_stop(MetaWriter* self,
 	meta->size_total_origin =
 		meta->size_regions_origin + meta->size_origin + sizeof(Meta);
 	meta->time_create       = time_create;
-	meta->time_refresh      = time_refresh;
-	meta->refreshes         = refreshes;
 	meta->lsn               = lsn;
 	meta->compression       = compression_id;
 	meta->encryption        = encryption_id;
@@ -227,4 +223,14 @@ meta_writer_add_to_iov(MetaWriter* self, Iov* iov)
 	else
 		iov_add_buf(iov, &self->data);
 	iov_add(iov, &self->meta, sizeof(self->meta));
+}
+
+hot static inline uint64_t
+meta_writer_total(MetaWriter* self)
+{
+	if (unlikely(! meta_writer_started(self)))
+		return 0;
+	// size_total_origin
+	auto meta = &self->meta;
+	return meta->size_regions_origin + meta->size_origin + sizeof(Meta);
 }

@@ -17,12 +17,19 @@ struct Object
 {
 	Id      id;
 	int     state;
-	bool    pending;
 	Meta    meta;
 	Buf     meta_data;
 	File    file;
 	Source* source;
 };
+
+Object*
+object_allocate(Source*, Id*);
+void object_free(Object*);
+void object_open(Object*, int, bool);
+void object_create(Object*, int);
+void object_delete(Object*, int);
+void object_rename(Object*, int, int);
 
 static inline void
 object_set(Object* self, int state)
@@ -41,11 +48,3 @@ object_has(Object* self, int state)
 {
 	return (self->state & state) > 0;
 }
-
-Object*
-object_allocate(Source*, Id*);
-void object_free(Object*);
-void object_open(Object*, int, bool);
-void object_create(Object*, int);
-void object_delete(Object*, int);
-void object_rename(Object*, int, int);

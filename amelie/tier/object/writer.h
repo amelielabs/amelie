@@ -28,5 +28,11 @@ void writer_init(Writer*);
 void writer_free(Writer*);
 void writer_reset(Writer*);
 void writer_start(Writer*, Source*, File*);
-void writer_stop(Writer*, Id*, uint32_t, uint64_t, uint64_t, uint64_t, bool);
+void writer_stop(Writer*, Id*, uint64_t, uint64_t, bool);
 void writer_add(Writer*, Row*);
+
+static inline bool
+writer_is_limit(Writer* self, uint64_t limit)
+{
+	return meta_writer_total(&self->meta_writer) >= limit;
+}
