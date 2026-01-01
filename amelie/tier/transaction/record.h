@@ -37,7 +37,7 @@ struct RecordCmd
 	uint8_t  cmd;
 	uint32_t size;
 	uint32_t crc;
-	uint32_t partition;
+	Uuid     id;
 } packed;
 
 static inline RecordCmd*

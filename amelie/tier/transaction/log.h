@@ -140,12 +140,12 @@ log_row(Log*   self,
 }
 
 hot static inline void
-log_persist(Log* self, uint64_t partition)
+log_persist(Log* self, Uuid* id)
 {
 	auto op = log_of(self, self->count - 1);
-	// [cmd, partition, row]
+	// [cmd, id, row]
 	auto ref = log_row_of(self, op);
-	write_log_add(&self->write_log, op->cmd, partition, ref->row);
+	write_log_add(&self->write_log, op->cmd, id, ref->row);
 }
 
 static inline LogRelation*

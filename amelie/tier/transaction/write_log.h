@@ -50,23 +50,23 @@ write_log_empty(WriteLog* self)
 }
 
 hot static inline void
-write_log_add(WriteLog* self, int cmd, uint64_t partition, Row* row)
+write_log_add(WriteLog* self, int cmd, Uuid* id, Row* row)
 {
 	// prepare and reuse last command header
 	RecordCmd* hdr = NULL;
 	if (likely(! buf_empty(&self->meta)))
 	{
 		hdr = (RecordCmd*)(self->meta.position - sizeof(*hdr));
-		if (hdr->cmd != cmd || hdr->partition != partition)
+		if (hdr->cmd != cmd || !uuid_is(&hdr->id, id))
 			hdr = NULL;
 	}
 	if (unlikely(! hdr))
 	{
 		hdr = buf_emplace(&self->meta, sizeof(*hdr));
-		hdr->cmd       = cmd;
-		hdr->size      = 0;
-		hdr->crc       = 0;
-		hdr->partition = partition;
+		hdr->cmd  = cmd;
+		hdr->size = 0;
+		hdr->crc  = 0;
+		hdr->id   = *id;
 	}
 
 	// add row
@@ -83,10 +83,10 @@ write_log_add_op(WriteLog* self, int cmd, uint8_t* op)
 {
 	// prepare command header
 	auto hdr = (RecordCmd*)buf_emplace(&self->meta, sizeof(RecordCmd));
-	hdr->cmd       = cmd;
-	hdr->size      = json_sizeof(op);
-	hdr->crc       = 0;
-	hdr->partition = 0;
+	hdr->cmd  = cmd;
+	hdr->size = json_sizeof(op);
+	hdr->crc  = 0;
+	uuid_init(&hdr->id);
 
 	// op
 	iov_add(&self->iov, op, hdr->size);
