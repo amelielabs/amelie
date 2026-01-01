@@ -19,15 +19,16 @@
 #include <amelie_partition.h>
 
 Part*
-part_allocate(PartConfig* config, Source* source,
-              Sequence*   seq,
-              bool        unlogged)
+part_allocate(Source*   source,
+              Id*       id,
+              Sequence* seq,
+              bool      unlogged)
 {
 	auto self = (Part*)am_malloc(sizeof(Part));
+	self->id            = *id;
+	self->source        = source;
 	self->indexes_count = 0;
 	self->heap          = &self->heap_a;
-	self->config        = part_config_copy(config);
-	self->source        = source;
 	self->volume        = NULL;
 	self->seq           = seq;
 	self->unlogged      = unlogged;
@@ -53,7 +54,6 @@ part_free(Part* self)
 	}
 	heap_free(&self->heap_a);
 	heap_free(&self->heap_b);
-	part_config_free(self->config);
 	am_free(self);
 }
 

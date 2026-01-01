@@ -15,10 +15,27 @@ typedef struct Engine Engine;
 
 struct Engine
 {
-	Service service;
-	World*  world;
-	WalMgr* wal_mgr;
+	Uuid      id;
+	PartMap   map;
+	List      parts;
+	int       parts_count;
+	List      volumes;
+	int       volumes_count;
+	Sequence* seq;
+	bool      unlogged;
+	TierMgr*  tier_mgr;
 };
 
-void engine_init(Engine*, WalMgr*, World*);
-void engine_free(Engine*);
+void    engine_init(Engine*, Uuid*, TierMgr*, Sequence*, bool);
+void    engine_free(Engine*);
+void    engine_open(Engine*, List*, List*);
+void    engine_prepare(Engine*, List*);
+void    engine_truncate(Engine*);
+void    engine_index_add(Engine*, IndexConfig*);
+void    engine_index_drop(Engine*, Str*);
+void    engine_set_unlogged(Engine*, bool);
+Part*   engine_find(Engine*, uint64_t);
+Volume* engine_find_volume(Engine*, Str*);
+
+Iterator*
+engine_iterator(Engine*, Part*, IndexConfig*, bool, Row*);

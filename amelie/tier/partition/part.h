@@ -16,23 +16,23 @@ typedef struct Part   Part;
 
 struct Part
 {
+	Id            id;
+	Source*       source;
 	List          indexes;
 	int           indexes_count;
 	Track         track;
 	Heap*         heap;
 	Heap          heap_a;
 	Heap          heap_b;
-	PartConfig*   config;
 	Sequence*     seq;
 	bool          unlogged;
-	Source*       source;
 	Volume*       volume;
 	List          link;
 	List          link_volume;
 	HashtableNode link_hash;
 };
 
-Part*  part_allocate(PartConfig*, Source*, Sequence*, bool);
+Part*  part_allocate(Source*, Id*, Sequence*, bool);
 void   part_free(Part*);
 void   part_truncate(Part*);
 void   part_index_add(Part*, IndexConfig*);

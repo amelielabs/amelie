@@ -15,6 +15,5 @@
 #include "partition/part_map.h"
 
 // partition
-#include "partition/part_config.h"
 #include "partition/part.h"
 #include "partition/part_op.h"

@@ -102,7 +102,7 @@ part_insert(Part* self, Tr* tr, bool replace, Row* row)
 	auto primary = part_primary(self);
 	auto op = log_row(&tr->log, CMD_REPLACE, &log_if, primary, row, NULL);
 	if (! self->unlogged)
-		log_persist(&tr->log, self->config->id);
+		log_persist(&tr->log, &self->id.id_table);
 
 	// update primary index
 	op->row_prev = index_replace_by(primary, row);
@@ -150,7 +150,7 @@ part_upsert(Part* self, Tr* tr, Iterator* it, Row* row)
 	// add log record
 	auto op = log_row(&tr->log, CMD_REPLACE, &log_if, primary, row, NULL);
 	if (! self->unlogged)
-		log_persist(&tr->log, self->config->id);
+		log_persist(&tr->log, &self->id.id_table);
 
 	// update secondary indexes
 	list_foreach_after(&self->indexes, &primary->link)
@@ -180,7 +180,7 @@ part_update(Part* self, Tr* tr, Iterator* it, Row* row)
 	auto primary = part_primary(self);
 	auto op = log_row(&tr->log, CMD_REPLACE, &log_if, primary, row, NULL);
 	if (! self->unlogged)
-		log_persist(&tr->log, self->config->id);
+		log_persist(&tr->log, &self->id.id_table);
 
 	// update primary index
 	op->row_prev = index_replace(primary, row, it);
@@ -216,7 +216,7 @@ part_delete(Part* self, Tr* tr, Iterator* it)
 	// update primary index
 	op->row_prev = index_delete(primary, it);
 	if (! self->unlogged)
-		log_persist(&tr->log, self->config->id);
+		log_persist(&tr->log, &self->id.id_table);
 
 	// secondary indexes
 	list_foreach_after(&self->indexes, &primary->link)
