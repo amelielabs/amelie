@@ -17,7 +17,7 @@
 #include <amelie_transaction.h>
 #include <amelie_index.h>
 #include <amelie_partition.h>
-#include <amelie_volume.h>
+#include <amelie_tier.h>
 
 void
 tier_mgr_init(TierMgr* self)
