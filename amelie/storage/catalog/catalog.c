@@ -11,19 +11,20 @@
 //
 
 #include <amelie_runtime>
-#include <amelie_volume>
+#include <amelie_tier>
 #include <amelie_catalog.h>
 
 void
-catalog_init(Catalog*   self, World* world,
+catalog_init(Catalog*   self,
              CatalogIf* iface,
-             void*      iface_arg)
+             void*      iface_arg,
+             Deploy*    deploy)
 {
 	self->iface = iface;
 	self->iface_arg = iface_arg;
 	tier_mgr_init(&self->tier_mgr);
 	db_mgr_init(&self->db_mgr);
-	table_mgr_init(&self->table_mgr, &self->tier_mgr, world);
+	table_mgr_init(&self->table_mgr, &self->tier_mgr, deploy);
 	udf_mgr_init(&self->udf_mgr, iface->udf_free, iface_arg);
 }
 

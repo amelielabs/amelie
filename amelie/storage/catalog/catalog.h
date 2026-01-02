@@ -34,7 +34,7 @@ struct Catalog
 	void*      iface_arg;
 };
 
-void catalog_init(Catalog*, World*, CatalogIf*, void*);
+void catalog_init(Catalog*, CatalogIf*, void*, Deploy*);
 void catalog_free(Catalog*);
 void catalog_open(Catalog*);
 void catalog_close(Catalog*);

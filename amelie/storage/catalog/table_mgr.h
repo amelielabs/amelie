@@ -17,10 +17,10 @@ struct TableMgr
 {
 	RelationMgr mgr;
 	TierMgr*    tier_mgr;
-	World*      world;
+	Deploy*     deploy;
 };
 
-void   table_mgr_init(TableMgr*, TierMgr*, World*);
+void   table_mgr_init(TableMgr*, TierMgr*, Deploy*);
 void   table_mgr_free(TableMgr*);
 bool   table_mgr_create(TableMgr*, Tr*, TableConfig*, bool);
 bool   table_mgr_drop(TableMgr*, Tr*, Str*, Str*, bool);

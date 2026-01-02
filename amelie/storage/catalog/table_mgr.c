@@ -11,14 +11,14 @@
 //
 
 #include <amelie_runtime>
-#include <amelie_volume>
+#include <amelie_tier>
 #include <amelie_catalog.h>
 
 void
-table_mgr_init(TableMgr* self, TierMgr* tier_mgr, World* world)
+table_mgr_init(TableMgr* self, TierMgr* tier_mgr, Deploy* deploy)
 {
 	self->tier_mgr = tier_mgr;
-	self->world    = world;
+	self->deploy   = deploy;
 	relation_mgr_init(&self->mgr);
 }
 
@@ -45,16 +45,13 @@ table_mgr_create(TableMgr*    self,
 	}
 
 	// allocate table
-	auto table = table_allocate(config, self->tier_mgr, self->world);
+	auto table = table_allocate(config, self->tier_mgr, self->deploy);
 
 	// update tables
 	relation_mgr_create(&self->mgr, tr, &table->rel);
 
 	// prepare partitions
 	table_open(table);
-
-	// map partitions
-	volume_mgr_map(&table->volume_mgr);
 	return true;
 }
 

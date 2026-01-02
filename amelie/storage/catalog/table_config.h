@@ -22,8 +22,6 @@ struct TableConfig
 	Columns columns;
 	List    volumes;
 	int     volumes_count;
-	List    parts;
-	int     parts_count;
 	List    indexes;
 	int     indexes_count;
 };
@@ -35,14 +33,12 @@ table_config_allocate(void)
 	self = am_malloc(sizeof(TableConfig));
 	self->unlogged      = false;
 	self->volumes_count = 0;
-	self->parts_count   = 0;
 	self->indexes_count = 0;
 	str_init(&self->db);
 	str_init(&self->name);
 	uuid_init(&self->uuid);
 	columns_init(&self->columns);
 	list_init(&self->volumes);
-	list_init(&self->parts);
 	list_init(&self->indexes);
 	return self;
 }
@@ -57,12 +53,6 @@ table_config_free(TableConfig* self)
 	{
 		auto config = list_at(IndexConfig, link);
 		index_config_free(config);
-	}
-
-	list_foreach_safe(&self->parts)
-	{
-		auto config = list_at(PartConfig, link);
-		part_config_free(config);
 	}
 
 	list_foreach_safe(&self->volumes)
@@ -109,13 +99,6 @@ table_config_add_volume(TableConfig* self, VolumeConfig* config)
 }
 
 static inline void
-table_config_add_partition(TableConfig* self, PartConfig* config)
-{
-	list_append(&self->parts, &config->link);
-	self->parts_count++;
-}
-
-static inline void
 table_config_add_index(TableConfig* self, IndexConfig* config)
 {
 	list_append(&self->indexes, &config->link);
@@ -146,13 +129,6 @@ table_config_copy(TableConfig* self)
 		table_config_add_volume(copy, config_copy);
 	}
 
-	list_foreach(&self->parts)
-	{
-		auto config = list_at(PartConfig, link);
-		auto config_copy = part_config_copy(config);
-		table_config_add_partition(copy, config_copy);
-	}
-
 	Keys* primary_keys = NULL;
 	list_foreach(&self->indexes)
 	{
@@ -172,21 +148,19 @@ table_config_read(uint8_t** pos)
 	auto self = table_config_allocate();
 	errdefer(table_config_free, self);
 
-	uint8_t* pos_columns    = NULL;
-	uint8_t* pos_indexes    = NULL;
-	uint8_t* pos_volumes    = NULL;
-	uint8_t* pos_partitions = NULL;
+	uint8_t* pos_columns = NULL;
+	uint8_t* pos_indexes = NULL;
+	uint8_t* pos_volumes = NULL;
 	Decode obj[] =
 	{
-		{ DECODE_STRING, "db",         &self->db       },
-		{ DECODE_STRING, "name",       &self->name     },
-		{ DECODE_UUID,   "uuid",       &self->uuid     },
-		{ DECODE_ARRAY,  "columns",    &pos_columns    },
-		{ DECODE_BOOL,   "unlogged",   &self->unlogged },
-		{ DECODE_ARRAY,  "indexes",    &pos_indexes    },
-		{ DECODE_ARRAY,  "volumes",    &pos_volumes    },
-		{ DECODE_ARRAY,  "partitions", &pos_partitions },
-		{ 0,              NULL,        NULL            },
+		{ DECODE_STRING, "db",       &self->db       },
+		{ DECODE_STRING, "name",     &self->name     },
+		{ DECODE_UUID,   "uuid",     &self->uuid     },
+		{ DECODE_ARRAY,  "columns",  &pos_columns    },
+		{ DECODE_BOOL,   "unlogged", &self->unlogged },
+		{ DECODE_ARRAY,  "indexes",  &pos_indexes    },
+		{ DECODE_ARRAY,  "volumes",  &pos_volumes    },
+		{ 0,              NULL,       NULL           },
 	};
 	decode_obj(obj, "table", pos);
 
@@ -207,14 +181,6 @@ table_config_read(uint8_t** pos)
 	{
 		auto config = volume_config_read(&pos_volumes);
 		table_config_add_volume(self, config);
-	}
-
-	// partitions
-	json_read_array(&pos_partitions);
-	while (! json_read_array_end(&pos_partitions))
-	{
-		auto config = part_config_read(&pos_partitions);
-		table_config_add_partition(self, config);
 	}
 
 	return self;
@@ -263,16 +229,6 @@ table_config_write(TableConfig* self, Buf* buf)
 	{
 		auto config = list_at(VolumeConfig, link);
 		volume_config_write(config, buf);
-	}
-	encode_array_end(buf);
-
-	// partitions
-	encode_raw(buf, "partitions", 10);
-	encode_array(buf);
-	list_foreach(&self->parts)
-	{
-		auto config = list_at(PartConfig, link);
-		part_config_write(config, buf);
 	}
 	encode_array_end(buf);
 	encode_obj_end(buf);

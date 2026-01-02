@@ -17,7 +17,7 @@ struct Table
 {
 	Relation     rel;
 	VolumeMgr    volume_mgr;
-	World*       world;
+	Deploy*      deploy;
 	Sequence     seq;
 	TableConfig* config;
 };
@@ -25,7 +25,7 @@ struct Table
 static inline void
 table_free(Table* self)
 {
-	world_detach(self->world, &self->volume_mgr);
+	deploy_detach(self->deploy, &self->volume_mgr);
 	volume_mgr_free(&self->volume_mgr);
 	if (self->config)
 		table_config_free(self->config);
@@ -34,13 +34,15 @@ table_free(Table* self)
 }
 
 static inline Table*
-table_allocate(TableConfig* config, TierMgr* tier_mgr, World* world)
+table_allocate(TableConfig* config, TierMgr* tier_mgr, Deploy* deploy)
 {
 	Table* self = am_malloc(sizeof(Table));
-	self->world  = world;
 	self->config = table_config_copy(config);
+	self->deploy = deploy;
 	sequence_init(&self->seq);
-	volume_mgr_init(&self->volume_mgr, tier_mgr, &self->seq, self->config->unlogged);
+	volume_mgr_init(&self->volume_mgr, &config->uuid, tier_mgr,
+	                &self->seq,
+	                 self->config->unlogged);
 	relation_init(&self->rel);
 	relation_set_db(&self->rel, &self->config->db);
 	relation_set_name(&self->rel, &self->config->name);
@@ -51,12 +53,10 @@ table_allocate(TableConfig* config, TierMgr* tier_mgr, World* world)
 static inline void
 table_open(Table* self)
 {
-	volume_mgr_create(&self->volume_mgr,
-	                  &self->config->volumes,
-	                  &self->config->parts,
-	                  &self->config->indexes);
+	volume_mgr_open(&self->volume_mgr, &self->config->volumes,
+	                &self->config->indexes);
 
-	world_attach(self->world, &self->volume_mgr);
+	deploy_attach(self->deploy, &self->volume_mgr);
 }
 
 static inline void
