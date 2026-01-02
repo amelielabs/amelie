@@ -11,34 +11,36 @@
 //
 
 #include <amelie_runtime>
-#include <amelie_volume>
+#include <amelie_tier>
+#include <amelie_catalog.h>
 #include <amelie_wal.h>
-#include <amelie_engine.h>
+#include <amelie_storage.h>
 
 hot static void
 compaction_main(void* arg)
 {
 	Compaction* self = arg;
+	Refresh refresh;
+	refresh_init(&refresh, self->storage);
+	defer(refresh_free, &refresh);
 	for (;;)
 	{
-		if (engine_service(self->engine, &self->refresh, true))
+		if (storage_service(self->storage, &refresh, true))
 			break;
 	}
 }
 
 Compaction*
-compaction_allocate(Engine* engine)
+compaction_allocate(Storage* storage)
 {
 	auto self = (Compaction*)am_malloc(sizeof(Compaction));
-	self->engine = engine;
-	refresh_init(&self->refresh, engine);
+	self->storage = storage;
 	return self;
 }
 
 void
 compaction_free(Compaction* self)
 {
-	refresh_free(&self->refresh);
 	task_free(&self->task);
 	am_free(self);
 }

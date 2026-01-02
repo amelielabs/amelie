@@ -27,7 +27,7 @@ compaction_mgr_init(CompactionMgr* self)
 }
 
 static inline void
-compaction_mgr_start(CompactionMgr* self, Engine* engine, int count)
+compaction_mgr_start(CompactionMgr* self, Storage* storage, int count)
 {
 	if (count == 0)
 		return;
@@ -35,7 +35,7 @@ compaction_mgr_start(CompactionMgr* self, Engine* engine, int count)
 	self->workers = am_malloc(sizeof(Compaction) * count);
 	int i = 0;
 	for (; i < count; i++)
-		self->workers[i] = compaction_allocate(engine);
+		self->workers[i] = compaction_allocate(storage);
 	for (i = 0; i < count; i++)
 		compaction_start(self->workers[i]);
 }

@@ -15,14 +15,14 @@ typedef struct Storage Storage;
 
 struct Storage
 {
+	Service       service;
+	Deploy        deploy;
 	Catalog       catalog;
-	PartMgr       part_mgr;
+	CompactionMgr compaction_mgr;
 	WalMgr        wal_mgr;
-	CheckpointMgr checkpoint_mgr;
-	Checkpointer  checkpointer;
 };
 
-void storage_init(Storage*, CatalogIf*, void*, PartMgrIf*, void*);
+void storage_init(Storage*, CatalogIf*, void*, DeployIf*, void*);
 void storage_free(Storage*);
 void storage_open(Storage*);
 void storage_close(Storage*);

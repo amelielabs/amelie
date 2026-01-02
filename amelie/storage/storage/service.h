@@ -64,7 +64,7 @@ service_schedule(Service* self, ServiceReq* req)
 }
 
 static inline void
-service_add(Service* self, uint64_t id, int count, ...)
+service_add(Service* self, Id* id, int count, ...)
 {
 	// allocate request
 	assert(count > 0);
@@ -81,14 +81,14 @@ service_add(Service* self, uint64_t id, int count, ...)
 static inline void
 service_wal_gc(Service* self)
 {
-	service_add(self, UINT64_MAX, 1,
+	service_add(self, NULL, 1,
 	            ACTION_WAL_GC);
 }
 
 static inline void
 service_refresh(Service* self, Part* part)
 {
-	service_add(self, part->config->id, 3,
+	service_add(self, &part->id, 3,
 	            ACTION_REFRESH,
 	            ACTION_WAL_GC);
 }

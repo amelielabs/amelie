@@ -27,6 +27,12 @@ struct Id
 } packed;
 
 static inline void
+id_init(Id* self)
+{
+	memset(self, 0, sizeof(*self));
+}
+
+static inline void
 id_path(Id* self, Source* source, int state, char* path)
 {
 	switch (state) {

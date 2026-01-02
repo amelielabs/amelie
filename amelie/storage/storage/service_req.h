@@ -28,19 +28,22 @@ struct Action
 
 struct ServiceReq
 {
-	uint64_t id;
-	List     link;
-	int      current;
-	int      actions_count;
-	Action   actions[];
+	Id     id;
+	List   link;
+	int    current;
+	int    actions_count;
+	Action actions[];
 };
 
 static inline ServiceReq*
-service_req_allocate(uint64_t id, int count, va_list args)
+service_req_allocate(Id* id, int count, va_list args)
 {
 	auto self = (ServiceReq*)am_malloc(sizeof(ServiceReq) + sizeof(Action) * count);
-	self->id = id;
-	self->current = 0;
+	if (id)
+		self->id = *id;
+	else
+		id_init(&self->id);
+	self->current       = 0;
 	self->actions_count = count;
 	list_init(&self->link);
 	for (int i = 0; i < count; i++)

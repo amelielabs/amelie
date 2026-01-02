@@ -11,7 +11,7 @@
 //
 
 #include <amelie_runtime>
-#include <amelie_engine>
+#include <amelie_tier>
 #include <amelie_catalog.h>
 #include <amelie_wal.h>
 #include <amelie_storage.h>
@@ -20,22 +20,22 @@ void
 storage_init(Storage*   self,
              CatalogIf* iface,
              void*      iface_arg,
-             PartMgrIf* iface_part,
-             void*      iface_part_arg)
+             DeployIf*  iface_deploy,
+             void*      iface_deploy_arg)
 {
-	part_mgr_init(&self->part_mgr, iface_part, iface_part_arg);
-	catalog_init(&self->catalog, &self->part_mgr, iface, iface_arg);
-	checkpoint_mgr_init(&self->checkpoint_mgr, &storage_checkpoint_if, self);
-	checkpointer_init(&self->checkpointer, &self->checkpoint_mgr);
+	service_init(&self->service);
+	deploy_init(&self->deploy, iface_deploy, iface_deploy_arg);
+	catalog_init(&self->catalog, iface, iface_arg, &self->deploy);
 	wal_mgr_init(&self->wal_mgr);
+	compaction_mgr_init(&self->compaction_mgr);
 }
 
 void
 storage_free(Storage* self)
 {
 	catalog_free(&self->catalog);
-	part_mgr_free(&self->part_mgr);
-	checkpoint_mgr_free(&self->checkpoint_mgr);
+	deploy_free(&self->deploy);
+	service_free(&self->service);
 	wal_mgr_free(&self->wal_mgr);
 }
 
@@ -45,22 +45,18 @@ storage_open(Storage* self)
 	// prepare system catalog
 	catalog_open(&self->catalog);
 
-	// read directory and restore last checkpoint catalog
-	// (databases, tables)
-	checkpoint_mgr_open(&self->checkpoint_mgr);
+	// todo: restore last checkpoint
 }
 
 void
 storage_close(Storage* self)
 {
-	// stop checkpointer service
-	checkpointer_stop(&self->checkpointer);
+	// shutdown service and compaction
+	service_shutdown(&self->service);
+	compaction_mgr_stop(&self->compaction_mgr);
 
 	// close catalog
 	catalog_close(&self->catalog);
-
-	// free partition mgr
-	part_mgr_free(&self->part_mgr);
 
 	// stop wal mgr
 	wal_mgr_stop(&self->wal_mgr);
@@ -102,10 +98,6 @@ storage_state(Storage* self)
 	// lsn
 	encode_raw(buf, "lsn", 3);
 	encode_integer(buf, state_lsn());
-
-	// psn
-	encode_raw(buf, "psn", 3);
-	encode_integer(buf, state_psn());
 
 	// read_only
 	encode_raw(buf, "read_only", 9);

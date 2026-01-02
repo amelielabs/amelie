@@ -11,17 +11,17 @@
 // AGPL-3.0 Licensed.
 //
 
+typedef struct Storage    Storage;
 typedef struct Compaction Compaction;
 
 struct Compaction
 {
-	Refresh refresh;
-	Engine* engine;
-	Task    task;
+	Storage* storage;
+	Task     task;
 };
 
 Compaction*
-compaction_allocate(Engine*);
+compaction_allocate(Storage*);
 void compaction_free(Compaction*);
 void compaction_start(Compaction*);
 void compaction_stop(Compaction*);
