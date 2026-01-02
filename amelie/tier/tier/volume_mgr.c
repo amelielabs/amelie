@@ -11,11 +11,20 @@
 //
 
 #include <amelie_runtime>
-#include <amelie_tier>
-#include <amelie_engine.h>
+#include <amelie_row.h>
+#include <amelie_heap.h>
+#include <amelie_object.h>
+#include <amelie_transaction.h>
+#include <amelie_index.h>
+#include <amelie_partition.h>
+#include <amelie_tier.h>
 
 void
-engine_init(Engine* self, Uuid* id, TierMgr* tier_mgr, Sequence* seq, bool unlogged)
+volume_mgr_init(VolumeMgr* self,
+                Uuid*      id,
+                TierMgr*   tier_mgr,
+                Sequence*  seq,
+                bool       unlogged)
 {
 	self->id            = *id;
 	self->parts_count   = 0;
@@ -29,7 +38,7 @@ engine_init(Engine* self, Uuid* id, TierMgr* tier_mgr, Sequence* seq, bool unlog
 }
 
 void
-engine_free(Engine* self)
+volume_mgr_free(VolumeMgr* self)
 {
 	part_map_free(&self->map);
 	list_foreach_safe(&self->parts)
@@ -50,7 +59,7 @@ engine_free(Engine* self)
 }
 
 void
-engine_open(Engine* self, List* volumes, List* indexes)
+volume_mgr_open(VolumeMgr* self, List* volumes, List* indexes)
 {
 	// prepare volumes
 	list_foreach(volumes)
@@ -71,7 +80,7 @@ engine_open(Engine* self, List* volumes, List* indexes)
 }
 
 void
-engine_prepare(Engine* self, List* indexes)
+volume_mgr_prepare(VolumeMgr* self, List* indexes)
 {
 	// todo: create initial partitions on bootstrap
 	(void)self;
@@ -81,7 +90,7 @@ engine_prepare(Engine* self, List* indexes)
 	// find main volume
 	Str main_name;
 	str_set(&main_name, "main", 4);
-	auto main = engine_find_volume(self, &main_name);
+	auto main = volume_mgr_find_volume(self, &main_name);
 	(void)main;
 	(void)indexes;
 	*/
@@ -106,7 +115,7 @@ engine_prepare(Engine* self, List* indexes)
 	list_foreach(indexes)
 	{
 		auto config = list_at(IndexConfig, link);
-		engine_index_add(self, config);
+		volume_mgr_index_add(self, config);
 	}
 	*/
 
@@ -126,7 +135,7 @@ engine_prepare(Engine* self, List* indexes)
 }
 
 void
-engine_set_unlogged(Engine* self, bool value)
+volume_mgr_set_unlogged(VolumeMgr* self, bool value)
 {
 	self->unlogged = value;
 	list_foreach(&self->parts)
@@ -137,7 +146,7 @@ engine_set_unlogged(Engine* self, bool value)
 }
 
 void
-engine_truncate(Engine* self)
+volume_mgr_truncate(VolumeMgr* self)
 {
 	list_foreach(&self->parts)
 	{
@@ -147,7 +156,7 @@ engine_truncate(Engine* self)
 }
 
 void
-engine_index_create(Engine* self, IndexConfig* config)
+volume_mgr_index_create(VolumeMgr* self, IndexConfig* config)
 {
 	list_foreach(&self->parts)
 	{
@@ -157,7 +166,7 @@ engine_index_create(Engine* self, IndexConfig* config)
 }
 
 void
-engine_index_drop(Engine* self, Str* name)
+volume_mgr_index_drop(VolumeMgr* self, Str* name)
 {
 	list_foreach(&self->parts)
 	{
@@ -167,7 +176,7 @@ engine_index_drop(Engine* self, Str* name)
 }
 
 Volume*
-engine_find_volume(Engine* self, Str* name)
+volume_mgr_find_volume(VolumeMgr* self, Str* name)
 {
 	list_foreach(&self->volumes)
 	{
@@ -179,7 +188,7 @@ engine_find_volume(Engine* self, Str* name)
 }
 
 Part*
-engine_find(Engine* self, uint64_t id)
+volume_mgr_find(VolumeMgr* self, uint64_t id)
 {
 	list_foreach(&self->parts)
 	{
@@ -191,11 +200,11 @@ engine_find(Engine* self, uint64_t id)
 }
 
 Iterator*
-engine_iterator(Engine*      self,
-                Part*        part,
-                IndexConfig* config,
-                bool         point_lookup,
-                Row*         key)
+volume_mgr_iterator(VolumeMgr*   self,
+                    Part*        part,
+                    IndexConfig* config,
+                    bool         point_lookup,
+                    Row*         key)
 {
 	// single partition iteration
 	if (part)

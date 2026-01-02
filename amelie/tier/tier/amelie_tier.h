@@ -18,3 +18,7 @@
 // volume
 #include "tier/volume_config.h"
 #include "tier/volume.h"
+#include "tier/volume_mgr.h"
+
+// deploy
+#include "tier/deploy.h"
