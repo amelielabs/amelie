@@ -234,7 +234,7 @@ meta_writer_total(MetaWriter* self)
 {
 	if (unlikely(! meta_writer_started(self)))
 		return 0;
-	// size_total_origin
+	// total compressed size (actual file size)
 	auto meta = &self->meta;
-	return meta->size_regions_origin + meta->size_origin + sizeof(Meta);
+	return meta->size_regions + meta->size + sizeof(Meta);
 }

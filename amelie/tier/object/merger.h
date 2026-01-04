@@ -17,12 +17,14 @@ typedef struct Merger       Merger;
 typedef enum
 {
 	MERGER_SNAPSHOT,
-	MERGER_MERGE
+	MERGER_REFRESH,
+	MERGER_SPLIT
 } MergerType;
 
 struct MergerConfig
 {
 	MergerType type;
+	bool       origin_hash;
 	Object*    origin;
 	Heap*      heap;
 	uint64_t*  id_seq;
@@ -32,12 +34,13 @@ struct MergerConfig
 
 struct Merger
 {
+	List           objects;
+	int            objects_count;
+	List           writers;
+	List           writers_cache;
 	ObjectIterator object_iterator;
 	HeapIterator   heap_iterator;
 	MergeIterator  merge_iterator;
-	Object*        a;
-	Object*        b;
-	Writer         writer;
 };
 
 void merger_init(Merger*);

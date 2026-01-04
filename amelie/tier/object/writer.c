@@ -136,8 +136,7 @@ void
 writer_stop(Writer*  self,
             Id*      id,
             uint64_t time_create,
-            uint64_t lsn,
-            bool     sync)
+            uint64_t lsn)
 {
 	if (! meta_writer_started(&self->meta_writer))
 		return;
@@ -161,10 +160,6 @@ writer_stop(Writer*  self,
 	iov_reset(&self->iov);
 	meta_writer_add_to_iov(&self->meta_writer, &self->iov);
 	file_writev(self->file, iov_pointer(&self->iov), self->iov.iov_count);
-
-	// sync
-	if (sync)
-		file_sync(self->file);
 
 	// cleanup
 	if (self->compression)

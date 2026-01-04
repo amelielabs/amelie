@@ -18,54 +18,127 @@
 void
 merger_init(Merger* self)
 {
-	self->a = NULL;
-	self->b = NULL;
+	self->objects_count = 0;
+	list_init(&self->objects);
+	list_init(&self->writers);
+	list_init(&self->writers_cache);
 	object_iterator_init(&self->object_iterator);
 	heap_iterator_init(&self->heap_iterator);
 	merge_iterator_init(&self->merge_iterator);
-	writer_init(&self->writer);
 }
 
 void
 merger_free(Merger* self)
 {
 	merger_reset(self);
+	list_foreach_safe(&self->writers_cache)
+	{
+		auto writer = list_at(Writer, link);
+		writer_free(writer);
+	}
 	object_iterator_free(&self->object_iterator);
 	merge_iterator_free(&self->merge_iterator);
-	writer_free(&self->writer);
 }
 
 void
 merger_reset(Merger* self)
 {
-	if (self->a)
+	self->objects_count = 0;
+	list_foreach_safe(&self->objects)
 	{
-		object_free(self->a);
-		self->a = NULL;
+		auto object = list_at(Object, link);
+		object_free(object);
 	}
-	if (self->b)
+	list_init(&self->objects);
+
+	list_foreach_safe(&self->writers)
 	{
-		object_free(self->b);
-		self->b = NULL;
+		auto writer = list_at(Writer, link);
+		writer_reset(writer);
+		list_init(&writer->link);
+		list_append(&self->writers_cache, &writer->link);
 	}
+	list_init(&self->writers);
+
 	object_iterator_reset(&self->object_iterator);
 	heap_iterator_reset(&self->heap_iterator);
 	merge_iterator_reset(&self->merge_iterator);
-	writer_reset(&self->writer);
+}
+
+static inline Writer*
+merger_create_writer(Merger* self)
+{
+	Writer* writer;
+	if (! list_empty(&self->writers_cache))
+	{
+		auto first = list_pop(&self->writers_cache);
+		writer = container_of(first, Writer, link);
+	} else
+	{
+		writer = writer_allocate();
+	}
+	list_init(&writer->link);
+	list_append(&self->writers, &writer->link);
+	return writer;
+}
+
+static inline Writer*
+merger_first_writer(Merger* self)
+{
+	return container_of(list_first(&self->writers), Writer, link);
+}
+
+static inline Object*
+merger_first(Merger* self)
+{
+	if (! self->objects_count)
+		return NULL;
+	return container_of(list_first(&self->objects), Object, link);
+}
+
+static inline Object*
+merger_create(Merger* self, MergerConfig* config)
+{
+	// create object
+	auto meta = &config->origin->meta;
+	Id id =
+	{
+		.id        = (*config->id_seq)++,
+		.id_parent = meta->id.id,
+		.id_table  = meta->id.id_table
+	};
+	auto object = object_allocate(config->source, &id);
+	list_append(&self->objects, &object->link);
+	self->objects_count++;
+
+	// create object file
+	object_create(object, ID);
+	object_set(object, ID);
+	return object;
+}
+
+static inline void
+merger_drop(Merger* self, Object* object)
+{
+	list_unlink(&object->link);
+	self->objects_count--;
+	defer(object_free, object);
+	object_delete(object, ID);
 }
 
 hot static inline void
-merger_write(Merger*   self, MergerConfig* config,
-             Iterator* it,
-             Object*   object,
-             uint64_t  limit)
+merger_write(Writer*       writer,
+             MergerConfig* config,
+             Iterator*     it,
+             Object*       object,
+             uint64_t      object_limit)
 {
 	auto origin = config->origin;
 	auto heap   = config->heap;
-	auto writer = &self->writer;
 
 	writer_reset(writer);
-	writer_start(writer, config->source, &object->file);
+	writer_start(writer, config->source, &object->file, config->keys,
+	             config->origin_hash);
 	for (;;)
 	{
 		auto row = iterator_at(it);
@@ -77,39 +150,51 @@ merger_write(Merger*   self, MergerConfig* config,
 			continue;
 		}
 		writer_add(writer, row);
-		if (writer_is_limit(writer, limit))
+		if (writer_is_limit(writer, object_limit))
 			break;
 		iterator_next(it);
 	}
-
 	uint64_t lsn = heap->lsn_max;
 	if (origin->meta.lsn > lsn)
 		lsn = origin->meta.lsn;
 
-	writer_stop(writer, &object->id, 0, lsn, config->source->sync);
+	writer_stop(writer, &object->id, 0, lsn);
 
 	// copy and set meta data
-	meta_writer_copy(&self->writer.meta_writer,
-	                 &object->meta,
+	meta_writer_copy(&writer->meta_writer, &object->meta,
 	                 &object->meta_data);
 }
 
-hot void
-merger_merge(Merger* self, MergerConfig* config)
+hot static void
+merger_snapshot(Merger* self, MergerConfig* config)
 {
-	auto origin = config->origin;
+	// prepare heap iterator
+	auto it = &self->heap_iterator;
+	heap_iterator_open(it, config->heap, NULL);
 
-	// create zero, one or two objects by merging original object
-	// with heap index
+	// create object
+	auto object = merger_create(self, config);
 
-	// todo: use heap index
+	// write object
+	auto writer = merger_create_writer(self);
+	merger_write(writer, config, &it->it, object, UINT64_MAX);
+
+	// delete the result object if it is empty
+	if (! object->meta.rows)
+		merger_drop(self, object);
+}
+
+hot void
+merger_refresh(Merger* self, MergerConfig* config)
+{
+	// todo: create heap index
 
 	// prepare heap iterator
 	heap_iterator_open(&self->heap_iterator, config->heap, NULL);
 
 	// prepare object iterator
 	object_iterator_reset(&self->object_iterator);
-	object_iterator_open(&self->object_iterator, config->keys, origin, NULL);
+	object_iterator_open(&self->object_iterator, config->keys, config->origin, NULL);
 
 	// prepare merge iterator
 	auto it = &self->merge_iterator;
@@ -118,81 +203,89 @@ merger_merge(Merger* self, MergerConfig* config)
 	merge_iterator_add(it, &self->object_iterator.it);
 	merge_iterator_open(it, config->keys);
 
-	// approximate stream size
-	auto size = origin->meta.size_total_origin;
-	size += page_mgr_used(&config->heap->page_mgr);
+	// create object
+	auto object = merger_create(self, config);
 
-	uint64_t limit = config->source->part_size;
-	if (size > limit)
-		limit /= 2;
+	// write object
+	auto writer = merger_create_writer(self);
+	merger_write(writer, config, &it->it, object, UINT64_MAX);
 
-	// prepare id
-	Id id =
-	{
-		.id        = 0,
-		.id_parent = origin->id.id,
-		.id_table  = origin->id.id_table
-	};
-
-	// create zero, one or two objects
-
-	// left
-	id.id = (*config->id_seq)++;
-	auto left = object_allocate(config->source, &id);
-	self->a = left;
-	object_create(left, ID);
-	object_set(left, ID);
-	merger_write(self, config, &it->it, left, limit);
-	if (! merge_iterator_has(it))
-	{
-		self->a = NULL;
-		object_delete(left, ID);
-		object_free(left);
-		return;
-	}
-
-	// right
-	id.id = (*config->id_seq)++;
-	auto right = object_allocate(config->source, &id);
-	self->b = right;
-	object_create(right, ID);
-	object_set(right, ID);
-	merger_write(self, config, &it->it, right, UINT64_MAX);
+	// delete the result object if it is empty
+	if (! object->meta.rows)
+		merger_drop(self, object);
 }
 
 hot static void
-merger_snapshot(Merger* self, MergerConfig* config)
+merger_split_by_range(Merger* self, MergerConfig* config)
 {
-	auto origin = config->origin;
+	// post refresh partition split by range
+	auto first = merger_first(self);
 
-	// prepare heap iterator
-	auto it = &self->heap_iterator;
-	heap_iterator_open(it, config->heap, NULL);
+	// prepare object iterator
+	auto it = &self->object_iterator;
+	object_iterator_reset(it);
+	object_iterator_open(it, config->keys, first, NULL);
 
-	// create and write objects
-	Id id;
-	id.id        = (*config->id_seq)++;
-	id.id_parent = origin->id.id;
-	id.id_table  = origin->id.id_table;
+	// set partition file size limit
+	auto limit = config->source->part_size / 2;
 
-	auto object = object_allocate(config->source, &id);
-	self->a = object;
-	object_create(object, ID);
-	object_set(object, ID);
+	// get writer
+	auto writer = merger_first_writer(self);
+	while (object_iterator_has(it))
+	{
+		// create object
+		auto object = merger_create(self, config);
 
-	// write file
-	merger_write(self, config, &it->it, object, UINT64_MAX);
+		// write object
+		writer_reset(writer);
+		merger_write(writer, config, &it->it, object, limit);
+	}
+}
+
+hot static void
+merger_split_by_hash(Merger* self, MergerConfig* config)
+{
+	(void)self;
+	(void)config;
+
+	// group first writer hash writer partition into N
+	// partitions of part_size / 2 each
+
+	// todo: assign N partitions hash_min/max
+	// todo: reset first writer
+	// todo: get N writers for each partition
+
 }
 
 hot void
 merger_execute(Merger* self, MergerConfig* config)
 {
-	switch (config->type) {
-	case MERGER_SNAPSHOT:
+	if (config->type == MERGER_SNAPSHOT)
+	{
 		merger_snapshot(self, config);
-		break;
-	case MERGER_MERGE:
-		merger_merge(self, config);
-		break;
+		return;
 	}
+
+	// always refresh partition first
+	merger_refresh(self, config);
+	if (config->type == MERGER_REFRESH)
+		return;
+
+	// delete after merge
+	auto object = merger_first(self);
+	if (! object)
+		return;
+
+	// created object fits partition size limit
+	if (object->meta.size_total <= (uint64_t)config->source->part_size)
+		return;
+
+	// split object file into N objects
+	if (! config->origin_hash)
+		merger_split_by_range(self, config);
+	else
+		merger_split_by_hash(self, config);
+
+	// drop first object (created by refresh)
+	merger_drop(self, object);
 }
