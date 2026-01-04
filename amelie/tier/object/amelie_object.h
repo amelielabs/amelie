@@ -29,6 +29,7 @@
 #include "object/meta_writer.h"
 
 // writer
+#include "object/hash_writer.h"
 #include "object/writer.h"
 
 // object

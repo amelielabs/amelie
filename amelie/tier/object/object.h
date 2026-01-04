@@ -21,6 +21,7 @@ struct Object
 	Buf     meta_data;
 	File    file;
 	Source* source;
+	List    link;
 };
 
 Object*

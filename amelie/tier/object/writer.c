@@ -15,9 +15,10 @@
 #include <amelie_heap.h>
 #include <amelie_object.h>
 
-void
-writer_init(Writer* self)
+Writer*
+writer_allocate(void)
 {
+	auto self = (Writer*)am_malloc(sizeof(Writer));
 	self->file        = NULL;
 	self->compression = NULL;
 	self->encryption  = NULL;
@@ -25,6 +26,9 @@ writer_init(Writer* self)
 	iov_init(&self->iov);
 	region_writer_init(&self->region_writer);
 	meta_writer_init(&self->meta_writer);
+	hash_writer_init(&self->hash_writer);
+	list_init(&self->link);
+	return self;
 }
 
 void
@@ -34,6 +38,8 @@ writer_free(Writer* self)
 	iov_free(&self->iov);
 	region_writer_free(&self->region_writer);
 	meta_writer_free(&self->meta_writer);
+	hash_writer_free(&self->hash_writer);
+	am_free(self);
 }
 
 void
@@ -53,6 +59,8 @@ writer_reset(Writer* self)
 	iov_reset(&self->iov);
 	region_writer_reset(&self->region_writer);
 	meta_writer_reset(&self->meta_writer);
+	hash_writer_reset(&self->hash_writer);
+	list_init(&self->link);
 }
 
 hot static inline bool
@@ -90,7 +98,7 @@ writer_stop_region(Writer* self)
 }
 
 void
-writer_start(Writer* self, Source* source, File* file)
+writer_start(Writer* self, Source* source, File* file, Keys* keys, bool hash_partition)
 {
 	self->source = source;
 	self->file   = file;
@@ -119,10 +127,14 @@ writer_start(Writer* self, Source* source, File* file)
 	meta_writer_reset(&self->meta_writer);
 	meta_writer_start(&self->meta_writer, self->compression,
 	                  self->encryption, source->crc);
+
+	// prepare hash writer
+	hash_writer_prepare(&self->hash_writer, keys, hash_partition);
 }
 
 void
-writer_stop(Writer*  self, Id* id,
+writer_stop(Writer*  self,
+            Id*      id,
             uint64_t time_create,
             uint64_t lsn,
             bool     sync)
@@ -134,7 +146,16 @@ writer_stop(Writer*  self, Id* id,
 	if (region_writer_started(&self->region_writer))
 		writer_stop_region(self);
 
-	meta_writer_stop(&self->meta_writer, id, time_create, lsn);
+	// use hash partitions min/max
+	uint32_t hash_min = 0;
+	uint32_t hash_max = 0;
+	if (self->hash_writer.active)
+	{
+		hash_min = self->hash_writer.hash_min;
+		hash_max = self->hash_writer.hash_max;
+	}
+	meta_writer_stop(&self->meta_writer, id, hash_min, hash_max,
+	                 time_create, lsn);
 
 	// write meta data
 	iov_reset(&self->iov);
@@ -173,4 +194,7 @@ writer_add(Writer* self, Row* row)
 
 	// add row to the region
 	region_writer_add(&self->region_writer, row);
+
+	// calculate row hash and track hash partitions
+	hash_writer_add(&self->hash_writer, row);
 }

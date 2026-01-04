@@ -25,6 +25,7 @@ object_allocate(Source* source, Id* id)
 	meta_init(&self->meta);
 	buf_init(&self->meta_data);
 	file_init(&self->file);
+	list_init(&self->link);
 	return self;
 }
 

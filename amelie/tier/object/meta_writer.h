@@ -80,6 +80,8 @@ meta_writer_start(MetaWriter* self,
 static inline void
 meta_writer_stop(MetaWriter* self,
                  Id*         id,
+                 uint32_t    hash_min,
+                 uint32_t    hash_max,
                  uint64_t    time_create,
                  uint64_t    lsn)
 {
@@ -129,6 +131,8 @@ meta_writer_stop(MetaWriter* self,
 	meta->magic             = META_MAGIC;
 	meta->version           = META_VERSION;
 	meta->id                = *id;
+	meta->hash_min          = hash_min;
+	meta->hash_max          = hash_max;
 	meta->size              = size;
 	meta->size_origin       = size_origin;
 	meta->size_total        =
