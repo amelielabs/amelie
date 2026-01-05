@@ -19,7 +19,7 @@ struct Writer
 	Iov          iov;
 	RegionWriter region_writer;
 	MetaWriter   meta_writer;
-	HashWriter   hash_writer;
+	Hasher*      hasher;
 	Codec*       compression;
 	Codec*       encryption;
 	Source*      source;
@@ -30,7 +30,7 @@ Writer*
 writer_allocate(void);
 void writer_free(Writer*);
 void writer_reset(Writer*);
-void writer_start(Writer*, Source*, File*, Keys*, bool);
+void writer_start(Writer*, Source*, File*, Keys*, Hasher*);
 void writer_stop(Writer*, Id*, uint64_t, uint64_t);
 void writer_add(Writer*, Row*);
 

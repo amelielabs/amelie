@@ -20,13 +20,13 @@ writer_allocate(void)
 {
 	auto self = (Writer*)am_malloc(sizeof(Writer));
 	self->file        = NULL;
+	self->hasher      = NULL;
 	self->compression = NULL;
 	self->encryption  = NULL;
 	self->source      = NULL;
 	iov_init(&self->iov);
 	region_writer_init(&self->region_writer);
 	meta_writer_init(&self->meta_writer);
-	hash_writer_init(&self->hash_writer);
 	list_init(&self->link);
 	return self;
 }
@@ -38,7 +38,6 @@ writer_free(Writer* self)
 	iov_free(&self->iov);
 	region_writer_free(&self->region_writer);
 	meta_writer_free(&self->meta_writer);
-	hash_writer_free(&self->hash_writer);
 	am_free(self);
 }
 
@@ -55,11 +54,11 @@ writer_reset(Writer* self)
 		codec_cache_push(&runtime()->cache_cipher, self->encryption);
 		self->encryption = NULL;
 	}
+	self->hasher = NULL;
 	self->source = NULL;
 	iov_reset(&self->iov);
 	region_writer_reset(&self->region_writer);
 	meta_writer_reset(&self->meta_writer);
-	hash_writer_reset(&self->hash_writer);
 	list_init(&self->link);
 }
 
@@ -98,8 +97,9 @@ writer_stop_region(Writer* self)
 }
 
 void
-writer_start(Writer* self, Source* source, File* file, Keys* keys, bool hash_partition)
+writer_start(Writer* self, Source* source, File* file, Keys* keys, Hasher* hasher)
 {
+	self->hasher = hasher;
 	self->source = source;
 	self->file   = file;
 
@@ -129,7 +129,8 @@ writer_start(Writer* self, Source* source, File* file, Keys* keys, bool hash_par
 	                  self->encryption, source->crc);
 
 	// prepare hash writer
-	hash_writer_prepare(&self->hash_writer, keys, hash_partition);
+	if (hasher)
+		hasher_prepare(hasher, keys);
 }
 
 void
@@ -148,10 +149,10 @@ writer_stop(Writer*  self,
 	// use hash partitions min/max
 	uint32_t hash_min = 0;
 	uint32_t hash_max = 0;
-	if (self->hash_writer.active)
+	if (self->hasher)
 	{
-		hash_min = self->hash_writer.hash_min;
-		hash_max = self->hash_writer.hash_max;
+		hash_min = self->hasher->hash_min;
+		hash_max = self->hasher->hash_max;
 	}
 	meta_writer_stop(&self->meta_writer, id, hash_min, hash_max,
 	                 time_create, lsn);
@@ -191,5 +192,6 @@ writer_add(Writer* self, Row* row)
 	region_writer_add(&self->region_writer, row);
 
 	// calculate row hash and track hash partitions
-	hash_writer_add(&self->hash_writer, row);
+	if (self->hasher)
+		hasher_add(self->hasher, row);
 }
