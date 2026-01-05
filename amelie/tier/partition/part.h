@@ -24,11 +24,13 @@ struct Part
 	Heap*         heap;
 	Heap          heap_a;
 	Heap          heap_b;
+	Object*       object;
+	Volume*       volume;
 	Sequence*     seq;
 	bool          unlogged;
-	Volume*       volume;
 	List          link;
 	List          link_volume;
+	RbtreeNode    link_mapping;
 	HashtableNode link_hash;
 };
 

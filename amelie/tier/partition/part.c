@@ -30,6 +30,7 @@ part_allocate(Source*   source,
 	self->indexes_count = 0;
 	self->heap          = &self->heap_a;
 	self->volume        = NULL;
+	self->object        = NULL;
 	self->seq           = seq;
 	self->unlogged      = unlogged;
 	track_init(&self->track);
@@ -39,6 +40,7 @@ part_allocate(Source*   source,
 	heap_create(&self->heap_a);
 	list_init(&self->link_volume);
 	list_init(&self->link);
+	rbtree_init_node(&self->link_mapping);
 	hashtable_node_init(&self->link_hash);
 	return self;
 }

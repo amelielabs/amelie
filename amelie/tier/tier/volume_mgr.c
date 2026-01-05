@@ -20,11 +20,13 @@
 #include <amelie_tier.h>
 
 void
-volume_mgr_init(VolumeMgr* self,
-                Uuid*      id,
-                TierMgr*   tier_mgr,
-                Sequence*  seq,
-                bool       unlogged)
+volume_mgr_init(VolumeMgr*     self,
+                TierMgr*       tier_mgr,
+                Sequence*      seq,
+                bool           unlogged,
+                Uuid*          id,
+                MappingConfig* config,
+                Keys*          keys)
 {
 	self->id            = *id;
 	self->parts_count   = 0;
@@ -32,7 +34,7 @@ volume_mgr_init(VolumeMgr* self,
 	self->seq           = seq;
 	self->unlogged      = unlogged;
 	self->tier_mgr      = tier_mgr;
-	part_map_init(&self->map);
+	mapping_init(&self->mapping, config, keys);
 	list_init(&self->parts);
 	list_init(&self->volumes);
 }
@@ -40,7 +42,7 @@ volume_mgr_init(VolumeMgr* self,
 void
 volume_mgr_free(VolumeMgr* self)
 {
-	part_map_free(&self->map);
+	mapping_free(&self->mapping);
 	list_foreach_safe(&self->parts)
 	{
 		auto part = list_at(Part, link);
@@ -77,11 +79,8 @@ volume_mgr_open(VolumeMgr* self, List* volumes, List* indexes)
 
 	// todo: recover volumes
 	(void)indexes;
-}
 
-void
-volume_mgr_prepare(VolumeMgr* self, List* indexes)
-{
+#if 0
 	// todo: create initial partitions on bootstrap
 	(void)self;
 	(void)indexes;
@@ -132,6 +131,7 @@ volume_mgr_prepare(VolumeMgr* self, List* indexes)
 			part_map_set(&self->map, i, part);
 	}
 	*/
+#endif
 }
 
 void
@@ -218,7 +218,7 @@ volume_mgr_iterator(VolumeMgr*   self,
 	// point lookup (tree or hash index)
 	if (point_lookup)
 	{
-		part = part_map_get(&self->map, row_hash(key, &config->keys));
+		part = mapping_map(&self->mapping, key);
 		auto index = part_index_find(part, &config->name, true);
 		auto it = index_iterator(index);
 		iterator_open(it, key);

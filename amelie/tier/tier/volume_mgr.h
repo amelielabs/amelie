@@ -16,7 +16,7 @@ typedef struct VolumeMgr VolumeMgr;
 struct VolumeMgr
 {
 	Uuid      id;
-	PartMap   map;
+	Mapping   mapping;
 	List      parts;
 	int       parts_count;
 	List      volumes;
@@ -26,10 +26,10 @@ struct VolumeMgr
 	TierMgr*  tier_mgr;
 };
 
-void    volume_mgr_init(VolumeMgr*, Uuid*, TierMgr*, Sequence*, bool);
+void    volume_mgr_init(VolumeMgr*, TierMgr*, Sequence*, bool, Uuid*,
+                        MappingConfig*, Keys*);
 void    volume_mgr_free(VolumeMgr*);
 void    volume_mgr_open(VolumeMgr*, List*, List*);
-void    volume_mgr_prepare(VolumeMgr*, List*);
 void    volume_mgr_truncate(VolumeMgr*);
 void    volume_mgr_index_add(VolumeMgr*, IndexConfig*);
 void    volume_mgr_index_drop(VolumeMgr*, Str*);
