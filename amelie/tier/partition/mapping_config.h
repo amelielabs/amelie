@@ -15,7 +15,6 @@ typedef struct MappingConfig MappingConfig;
 
 enum
 {
-	MAPPING_NONE,
 	MAPPING_RANGE,
 	MAPPING_HASH
 };
@@ -30,7 +29,7 @@ static inline MappingConfig*
 mapping_config_allocate(void)
 {
 	auto self = (MappingConfig*)am_malloc(sizeof(MappingConfig));
-	self->type  = MAPPING_NONE;
+	self->type  = -1;
 	self->count = -1;
 	return self;
 }

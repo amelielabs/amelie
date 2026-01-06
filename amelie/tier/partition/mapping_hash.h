@@ -60,3 +60,21 @@ mapping_hash_map(MappingHash* self, Row* key)
 	auto hash_partition = row_hash(key, self->keys) % UINT16_MAX;
 	return self->map[hash_partition];
 }
+
+static inline void
+mapping_hash_add(MappingHash* self, Part* part)
+{
+	auto pos     = part->object->meta.hash_min;
+	auto pos_max = part->object->meta.hash_max;
+	for (; pos <= pos_max; pos++)
+		mapping_hash_set(self, pos, part);
+}
+
+static inline void
+mapping_hash_remove(MappingHash* self, Part* part)
+{
+	auto pos     = part->object->meta.hash_min;
+	auto pos_max = part->object->meta.hash_max;
+	for (; pos <= pos_max; pos++)
+		mapping_hash_set(self, pos, NULL);
+}

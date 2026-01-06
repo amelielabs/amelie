@@ -29,6 +29,7 @@ volume_mgr_init(VolumeMgr*     self,
                 Keys*          keys)
 {
 	self->id            = *id;
+	self->id_seq        = 0;
 	self->parts_count   = 0;
 	self->volumes_count = 0;
 	self->seq           = seq;
@@ -63,75 +64,8 @@ volume_mgr_free(VolumeMgr* self)
 void
 volume_mgr_open(VolumeMgr* self, List* volumes, List* indexes)
 {
-	// prepare volumes
-	list_foreach(volumes)
-	{
-		auto config = list_at(VolumeConfig, link);
-
-		// match tier
-		auto tier = tier_mgr_find(self->tier_mgr, &config->tier, true);
-
-		// add volume
-		auto volume = volume_allocate(config, tier);
-		list_append(&self->volumes, &volume->link);
-		self->volumes_count++;
-	}
-
-	// todo: recover volumes
-	(void)indexes;
-
-#if 0
-	// todo: create initial partitions on bootstrap
-	(void)self;
-	(void)indexes;
-
-	/*
-	// find main volume
-	Str main_name;
-	str_set(&main_name, "main", 4);
-	auto main = volume_mgr_find_volume(self, &main_name);
-	(void)main;
-	(void)indexes;
-	*/
-
-	/*
-	// prepare partitions
-	list_foreach(parts)
-	{
-		auto config = list_at(PartConfig, link);
-		state_psn_follow(config->id);
-
-		// add partition
-		auto part = part_allocate(config, main->tier->config, self->seq, self->unlogged);
-		list_append(&self->list_parts, &part->link);
-		self->list_parts_count++;
-
-		// add partition to the volume
-		volume_add(main, part);
-	}
-
-	// recreate indexes
-	list_foreach(indexes)
-	{
-		auto config = list_at(IndexConfig, link);
-		volume_mgr_index_add(self, config);
-	}
-	*/
-
-	/*
-	// create mapping
-	list_foreach(&self->list_parts)
-	{
-		auto part = list_at(Part, link);
-		if (! part_map_created(&self->map))
-			part_map_create(&self->map);
-
-		auto i = part->config->min;
-		for (; i < part->config->max; i++)
-			part_map_set(&self->map, i, part);
-	}
-	*/
-#endif
+	// read and validate partitions
+	volume_mgr_recover(self, volumes, indexes);
 }
 
 void
@@ -156,7 +90,26 @@ volume_mgr_truncate(VolumeMgr* self)
 }
 
 void
-volume_mgr_index_create(VolumeMgr* self, IndexConfig* config)
+volume_mgr_add(VolumeMgr* self, Volume* volume, Part* part)
+{
+	list_init(&part->link);
+	list_append(&self->parts, &part->link);
+	self->parts_count++;
+
+	volume_add(volume, part);
+}
+
+void
+volume_mgr_remove(VolumeMgr* self, Part* part)
+{
+	volume_remove(part->volume, part);
+
+	list_unlink(&part->link);
+	self->parts_count--;
+}
+
+void
+volume_mgr_index_add(VolumeMgr* self, IndexConfig* config)
 {
 	list_foreach(&self->parts)
 	{
@@ -166,7 +119,7 @@ volume_mgr_index_create(VolumeMgr* self, IndexConfig* config)
 }
 
 void
-volume_mgr_index_drop(VolumeMgr* self, Str* name)
+volume_mgr_index_remove(VolumeMgr* self, Str* name)
 {
 	list_foreach(&self->parts)
 	{

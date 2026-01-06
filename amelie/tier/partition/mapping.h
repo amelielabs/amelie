@@ -43,6 +43,28 @@ mapping_create(Mapping* self)
 		mapping_hash_create(&self->hash);
 }
 
+hot static inline void
+mapping_add(Mapping* self, Part* part)
+{
+	if (self->config->type == MAPPING_HASH)
+	{
+		mapping_hash_add(&self->hash, part);
+		return;
+	}
+	mapping_range_add(&self->range, part);
+}
+
+hot static inline void
+mapping_remove(Mapping* self, Part* part)
+{
+	if (self->config->type == MAPPING_HASH)
+	{
+		mapping_hash_remove(&self->hash, part);
+		return;
+	}
+	mapping_range_remove(&self->range, part);
+}
+
 hot static inline Part*
 mapping_map(Mapping* self, Row* row)
 {
