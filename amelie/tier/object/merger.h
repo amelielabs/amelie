@@ -27,7 +27,6 @@ struct MergerConfig
 	bool       origin_hash;
 	Object*    origin;
 	Heap*      heap;
-	uint64_t*  id_seq;
 	Keys*      keys;
 	Source*    source;
 };

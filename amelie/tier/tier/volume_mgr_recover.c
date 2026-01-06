@@ -96,11 +96,9 @@ volume_mgr_recover_volume(VolumeMgr* self, Volume* volume)
 			continue;
 		}
 
-		// restore partition id sequence
-		if (id.id > self->id_seq)
-			self->id_seq = id.id;
-		if (id.id_parent > self->id_seq)
-			self->id_seq = id.id_parent;
+		// restore partition sequence number
+		state_psn_follow(id.id);
+		state_psn_follow(id.id_parent);
 
 		// ensure partition id is unique
 		auto part = volume_mgr_find(self, id.id);
@@ -160,7 +158,7 @@ volume_mgr_create_hash(VolumeMgr* self, Volume* volume)
 		Id id =
 		{
 			.id_parent = 0,
-			.id        = self->id_seq++,
+			.id        = state_psn_next(),
 			.id_table  = self->id
 		};
 		object_file_create(&file, source, &id, ID);

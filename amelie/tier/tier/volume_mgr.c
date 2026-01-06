@@ -30,7 +30,6 @@ volume_mgr_init(VolumeMgr*  self,
                 Keys*       keys)
 {
 	self->id            = *id;
-	self->id_seq        = 0;
 	self->parts_count   = 0;
 	self->volumes_count = 0;
 	self->seq           = seq;

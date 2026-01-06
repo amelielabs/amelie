@@ -44,8 +44,6 @@ storage_open(Storage* self)
 {
 	// prepare system catalog
 	catalog_open(&self->catalog);
-
-	// todo: restore last checkpoint
 }
 
 void

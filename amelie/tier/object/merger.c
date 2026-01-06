@@ -106,7 +106,7 @@ merger_create(Merger* self, MergerConfig* config)
 	auto meta = &config->origin->meta;
 	Id id =
 	{
-		.id        = (*config->id_seq)++,
+		.id        = state_psn_next(),
 		.id_parent = meta->id.id,
 		.id_table  = meta->id.id_table
 	};

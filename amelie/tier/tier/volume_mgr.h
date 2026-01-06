@@ -16,7 +16,6 @@ typedef struct VolumeMgr VolumeMgr;
 struct VolumeMgr
 {
 	Uuid      id;
-	uint64_t  id_seq;
 	Mapping   mapping;
 	int       mapping_seed;
 	List      parts;
