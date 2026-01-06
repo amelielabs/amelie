@@ -19,14 +19,14 @@ void
 object_file_open(File*   self,
                  Source* source,
                  Id*     id,
-                 int     type,
+                 int     state,
                  Meta*   meta)
 {
 	// open partition file and read meta data footer
 
-	// <source_path>/<table_uuid>/<id>
+	// <source_path>/<table_uuid>/<id_parent>.<id>
 	char path[PATH_MAX];
-	id_path(id, source, type, path);
+	id_path(id, source, state, path);
 	file_open(self, path);
 
 	if (unlikely(self->size < sizeof(Meta)))
@@ -171,4 +171,44 @@ object_file_read(File*   self,
 		buf_reset(meta_data);
 		buf_write(meta_data, origin->start, buf_size(origin));
 	}
+}
+
+void
+object_file_create(File* self, Source* source, Id* id, int state)
+{
+	char path[PATH_MAX];
+	switch (state) {
+	// <source_path>/<table_uuid>/<id_parent>.<id>
+	case ID:
+	{
+		id_path(id, source, state, path);
+		file_create(self, path);
+		break;
+	}
+	default:
+		abort();
+		break;
+	}
+}
+
+void
+object_file_delete(Source* source, Id* id, int state)
+{
+	// <source_path>/<table_uuid>/<id_parent>.<id>
+	char path[PATH_MAX];
+	id_path(id, source, state, path);
+	if (fs_exists("%s", path))
+		fs_unlink("%s", path);
+}
+
+void
+object_file_rename(Source* source, Id* id, int from, int to)
+{
+	// rename file from one state to another
+	char path_from[PATH_MAX];
+	char path_to[PATH_MAX];
+	id_path(id, source, from, path_from);
+	id_path(id, source, to, path_to);
+	if (fs_exists("%s", path_from))
+		fs_rename(path_from, "%s", path_to);
 }

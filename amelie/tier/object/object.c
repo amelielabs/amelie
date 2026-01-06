@@ -60,39 +60,17 @@ object_open(Object* self, int state, bool read_index)
 void
 object_create(Object* self, int state)
 {
-	char path[PATH_MAX];
-	switch (state) {
-	// <source_path>/<table_uuid>/<id_parent>.<id>
-	case ID:
-	{
-		id_path(&self->id, self->source, state, path);
-		file_create(&self->file, path);
-		break;
-	}
-	default:
-		abort();
-		break;
-	}
+	object_file_create(&self->file, self->source, &self->id, state);
 }
 
 void
 object_delete(Object* self, int state)
 {
-	// <source_path>/<table_uuid>/<id_parent>.<id>
-	char path[PATH_MAX];
-	id_path(&self->id, self->source, state, path);
-	if (fs_exists("%s", path))
-		fs_unlink("%s", path);
+	object_file_delete(self->source, &self->id, state);
 }
 
 void
 object_rename(Object* self, int from, int to)
 {
-	// rename file from one state to another
-	char path_from[PATH_MAX];
-	char path_to[PATH_MAX];
-	id_path(&self->id, self->source, from, path_from);
-	id_path(&self->id, self->source, to, path_to);
-	if (fs_exists("%s", path_from))
-		fs_rename(path_from, "%s", path_to);
+	object_file_rename(self->source, &self->id, from, to);
 }

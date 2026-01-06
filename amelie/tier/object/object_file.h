@@ -13,3 +13,6 @@
 
 void object_file_open(File*, Source*, Id*, int, Meta*);
 void object_file_read(File*, Source*, Meta*, Buf*, bool);
+void object_file_create(File*, Source*, Id*, int);
+void object_file_delete(Source*, Id*, int);
+void object_file_rename(Source*, Id*, int, int);
