@@ -18,6 +18,7 @@ struct VolumeMgr
 	Uuid      id;
 	uint64_t  id_seq;
 	Mapping   mapping;
+	int       mapping_seed;
 	List      parts;
 	int       parts_count;
 	List      volumes;
@@ -28,7 +29,7 @@ struct VolumeMgr
 };
 
 void    volume_mgr_init(VolumeMgr*, TierMgr*, Sequence*, bool, Uuid*,
-                        MappingConfig*, Keys*);
+                        MappingType, int, Keys*);
 void    volume_mgr_free(VolumeMgr*);
 void    volume_mgr_open(VolumeMgr*, List*, List*);
 void    volume_mgr_truncate(VolumeMgr*);

@@ -20,13 +20,14 @@
 #include <amelie_tier.h>
 
 void
-volume_mgr_init(VolumeMgr*     self,
-                TierMgr*       tier_mgr,
-                Sequence*      seq,
-                bool           unlogged,
-                Uuid*          id,
-                MappingConfig* config,
-                Keys*          keys)
+volume_mgr_init(VolumeMgr*  self,
+                TierMgr*    tier_mgr,
+                Sequence*   seq,
+                bool        unlogged,
+                Uuid*       id,
+                MappingType mapping_type,
+                int         mapping_seed,
+                Keys*       keys)
 {
 	self->id            = *id;
 	self->id_seq        = 0;
@@ -35,7 +36,8 @@ volume_mgr_init(VolumeMgr*     self,
 	self->seq           = seq;
 	self->unlogged      = unlogged;
 	self->tier_mgr      = tier_mgr;
-	mapping_init(&self->mapping, config, keys);
+	self->mapping_seed  = mapping_seed;
+	mapping_init(&self->mapping, mapping_type, keys);
 	list_init(&self->parts);
 	list_init(&self->volumes);
 }

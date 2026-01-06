@@ -13,19 +13,25 @@
 
 typedef struct Mapping Mapping;
 
+typedef enum
+{
+	MAPPING_RANGE,
+	MAPPING_HASH
+} MappingType;
+
 struct Mapping
 {
-	MappingHash    hash;
-	MappingRange   range;
-	MappingConfig* config;
-	Keys*          keys;
+	MappingType  type;
+	MappingHash  hash;
+	MappingRange range;
+	Keys*        keys;
 };
 
 static inline void
-mapping_init(Mapping* self, MappingConfig* config, Keys* keys)
+mapping_init(Mapping* self, MappingType type, Keys* keys)
 {
-	self->keys   = keys;
-	self->config = mapping_config_copy(config);
+	self->type = type;
+	self->keys = keys;
 	mapping_hash_init(&self->hash, keys);
 	mapping_range_init(&self->range, keys);
 }
@@ -39,14 +45,14 @@ mapping_free(Mapping* self)
 static inline void
 mapping_create(Mapping* self)
 {
-	if (self->config->type == MAPPING_HASH)
+	if (self->type == MAPPING_HASH)
 		mapping_hash_create(&self->hash);
 }
 
 hot static inline void
 mapping_add(Mapping* self, Part* part)
 {
-	if (self->config->type == MAPPING_HASH)
+	if (self->type == MAPPING_HASH)
 	{
 		mapping_hash_add(&self->hash, part);
 		return;
@@ -57,7 +63,7 @@ mapping_add(Mapping* self, Part* part)
 hot static inline void
 mapping_remove(Mapping* self, Part* part)
 {
-	if (self->config->type == MAPPING_HASH)
+	if (self->type == MAPPING_HASH)
 	{
 		mapping_hash_remove(&self->hash, part);
 		return;
@@ -68,7 +74,7 @@ mapping_remove(Mapping* self, Part* part)
 hot static inline Part*
 mapping_map(Mapping* self, Row* row)
 {
-	if (self->config->type == MAPPING_HASH)
+	if (self->type == MAPPING_HASH)
 		return mapping_hash_map(&self->hash, row);
 	return mapping_range_map(&self->range, row);
 }

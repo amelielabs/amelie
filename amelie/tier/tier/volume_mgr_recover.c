@@ -125,7 +125,7 @@ volume_mgr_create_hash(VolumeMgr* self, Volume* volume)
 	auto mapping = &self->mapping;
 
 	// create initial hash partitions
-	auto n = mapping->config->count;
+	auto n = self->mapping_seed;
 	if (n < 1 || n > UINT16_MAX)
 		error("table has invalid partitions number");
 
@@ -208,7 +208,7 @@ volume_mgr_recover(VolumeMgr* self, List* volumes, List* indexes)
 	{
 		auto main = container_of(list_first(volumes), Volume, link);
 		auto mapping = &self->mapping;
-		switch (mapping->config->type) {
+		switch (mapping->type) {
 		case MAPPING_RANGE:
 			// todo:
 			abort();

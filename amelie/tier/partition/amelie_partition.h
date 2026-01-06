@@ -16,7 +16,6 @@
 #include "partition/part_op.h"
 
 // partition mapping
-#include "partition/mapping_config.h"
 #include "partition/mapping_hash.h"
 #include "partition/mapping_range.h"
 #include "partition/mapping.h"
