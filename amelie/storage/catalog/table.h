@@ -22,6 +22,24 @@ struct Table
 	TableConfig* config;
 };
 
+static inline IndexConfig*
+table_primary(Table* self)
+{
+	return container_of(self->config->indexes.next, IndexConfig, link);
+}
+
+static inline Columns*
+table_columns(Table* self)
+{
+	return &self->config->columns;
+}
+
+static inline Keys*
+table_keys(Table* self)
+{
+	return &table_primary(self)->keys;
+}
+
 static inline void
 table_free(Table* self)
 {
@@ -40,9 +58,11 @@ table_allocate(TableConfig* config, TierMgr* tier_mgr, Deploy* deploy)
 	self->config = table_config_copy(config);
 	self->deploy = deploy;
 	sequence_init(&self->seq);
-	volume_mgr_init(&self->volume_mgr, &config->uuid, tier_mgr,
-	                &self->seq,
-	                 self->config->unlogged);
+	auto primary = table_primary(self);
+	volume_mgr_init(&self->volume_mgr, tier_mgr, &self->seq,
+	                 config->unlogged,
+	                &config->id, config->mapping, config->mapping_seed,
+	                &primary->keys);
 	relation_init(&self->rel);
 	relation_set_db(&self->rel, &self->config->db);
 	relation_set_name(&self->rel, &self->config->name);
@@ -85,22 +105,4 @@ table_find_index(Table* self, Str* name, bool error_if_not_exists)
 		error("index '%.*s': not exists", str_size(name),
 		       str_of(name));
 	return NULL;
-}
-
-static inline IndexConfig*
-table_primary(Table* self)
-{
-	return container_of(self->config->indexes.next, IndexConfig, link);
-}
-
-static inline Columns*
-table_columns(Table* self)
-{
-	return &self->config->columns;
-}
-
-static inline Keys*
-table_keys(Table* self)
-{
-	return &table_primary(self)->keys;
 }

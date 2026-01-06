@@ -17,9 +17,11 @@ struct TableConfig
 {
 	Str     db;
 	Str     name;
-	Uuid    uuid;
+	Uuid    id;
 	bool    unlogged;
 	Columns columns;
+	int64_t mapping;
+	int64_t mapping_seed;
 	List    volumes;
 	int     volumes_count;
 	List    indexes;
@@ -31,12 +33,14 @@ table_config_allocate(void)
 {
 	TableConfig* self;
 	self = am_malloc(sizeof(TableConfig));
-	self->unlogged      = false;
-	self->volumes_count = 0;
-	self->indexes_count = 0;
+	self->unlogged       = false;
+	self->mapping        = -1;
+	self->mapping_seed   = 0;
+	self->volumes_count  = 0;
+	self->indexes_count  = 0;
 	str_init(&self->db);
 	str_init(&self->name);
-	uuid_init(&self->uuid);
+	uuid_init(&self->id);
 	columns_init(&self->columns);
 	list_init(&self->volumes);
 	list_init(&self->indexes);
@@ -80,9 +84,9 @@ table_config_set_name(TableConfig* self, Str* name)
 }
 
 static inline void
-table_config_set_uuid(TableConfig* self, Uuid* uuid)
+table_config_set_id(TableConfig* self, Uuid* id)
 {
-	self->uuid = *uuid;
+	self->id = *id;
 }
 
 static inline void
@@ -92,21 +96,28 @@ table_config_set_unlogged(TableConfig* self, bool value)
 }
 
 static inline void
-table_config_add_volume(TableConfig* self, VolumeConfig* config)
+table_config_set_mapping(TableConfig* self, MappingType type, int seed)
+{
+	self->mapping      = type;
+	self->mapping_seed = seed;
+}
+
+static inline void
+table_config_volume_add(TableConfig* self, VolumeConfig* config)
 {
 	list_append(&self->volumes, &config->link);
 	self->volumes_count++;
 }
 
 static inline void
-table_config_add_index(TableConfig* self, IndexConfig* config)
+table_config_index_add(TableConfig* self, IndexConfig* config)
 {
 	list_append(&self->indexes, &config->link);
 	self->indexes_count++;
 }
 
 static inline void
-table_config_del_index(TableConfig* self, IndexConfig* config)
+table_config_index_remove(TableConfig* self, IndexConfig* config)
 {
 	list_unlink(&config->link);
 	self->indexes_count--;
@@ -118,15 +129,16 @@ table_config_copy(TableConfig* self)
 	auto copy = table_config_allocate();
 	table_config_set_db(copy, &self->db);
 	table_config_set_name(copy, &self->name);
-	table_config_set_uuid(copy, &self->uuid);
+	table_config_set_id(copy, &self->id);
 	table_config_set_unlogged(copy, self->unlogged);
+	table_config_set_mapping(copy, self->mapping, self->mapping_seed);
 	columns_copy(&copy->columns, &self->columns);
 
 	list_foreach(&self->volumes)
 	{
 		auto config = list_at(VolumeConfig, link);
 		auto config_copy = volume_config_copy(config);
-		table_config_add_volume(copy, config_copy);
+		table_config_volume_add(copy, config_copy);
 	}
 
 	Keys* primary_keys = NULL;
@@ -134,7 +146,7 @@ table_config_copy(TableConfig* self)
 	{
 		auto config = list_at(IndexConfig, link);
 		auto config_copy = index_config_copy(config, &copy->columns);
-		table_config_add_index(copy, config_copy);
+		table_config_index_add(copy, config_copy);
 		keys_set_primary(&config_copy->keys, !primary_keys);
 		if (primary_keys == NULL)
 			primary_keys = &config_copy->keys;
@@ -153,14 +165,16 @@ table_config_read(uint8_t** pos)
 	uint8_t* pos_volumes = NULL;
 	Decode obj[] =
 	{
-		{ DECODE_STRING, "db",       &self->db       },
-		{ DECODE_STRING, "name",     &self->name     },
-		{ DECODE_UUID,   "uuid",     &self->uuid     },
-		{ DECODE_ARRAY,  "columns",  &pos_columns    },
-		{ DECODE_BOOL,   "unlogged", &self->unlogged },
-		{ DECODE_ARRAY,  "indexes",  &pos_indexes    },
-		{ DECODE_ARRAY,  "volumes",  &pos_volumes    },
-		{ 0,              NULL,       NULL           },
+		{ DECODE_STRING, "db",           &self->db           },
+		{ DECODE_STRING, "name",         &self->name         },
+		{ DECODE_UUID,   "id",           &self->id           },
+		{ DECODE_INT,    "mapping",      &self->mapping      },
+		{ DECODE_INT,    "mapping_seed", &self->mapping_seed },
+		{ DECODE_ARRAY,  "columns",      &pos_columns        },
+		{ DECODE_BOOL,   "unlogged",     &self->unlogged     },
+		{ DECODE_ARRAY,  "indexes",      &pos_indexes        },
+		{ DECODE_ARRAY,  "volumes",      &pos_volumes        },
+		{ 0,              NULL,           NULL               },
 	};
 	decode_obj(obj, "table", pos);
 
@@ -172,7 +186,7 @@ table_config_read(uint8_t** pos)
 	while (! json_read_array_end(&pos_indexes))
 	{
 		auto config = index_config_read(&self->columns, &pos_indexes);
-		table_config_add_index(self, config);
+		table_config_index_add(self, config);
 	}
 
 	// volumes
@@ -180,7 +194,7 @@ table_config_read(uint8_t** pos)
 	while (! json_read_array_end(&pos_volumes))
 	{
 		auto config = volume_config_read(&pos_volumes);
-		table_config_add_volume(self, config);
+		table_config_volume_add(self, config);
 	}
 
 	return self;
@@ -200,13 +214,21 @@ table_config_write(TableConfig* self, Buf* buf)
 	encode_raw(buf, "name", 4);
 	encode_string(buf, &self->name);
 
-	// uuid
-	encode_raw(buf, "uuid", 4);
-	encode_uuid(buf, &self->uuid);
+	// id
+	encode_raw(buf, "id", 2);
+	encode_uuid(buf, &self->id);
 
 	// unlogged
 	encode_raw(buf, "unlogged", 8);
 	encode_bool(buf, self->unlogged);
+
+	// mapping
+	encode_raw(buf, "mapping", 7);
+	encode_integer(buf, self->mapping);
+
+	// mapping_seed
+	encode_raw(buf, "mapping_seed", 12);
+	encode_integer(buf, self->mapping_seed);
 
 	// columns
 	encode_raw(buf, "columns", 7);

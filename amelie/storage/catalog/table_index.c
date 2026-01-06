@@ -18,10 +18,10 @@ static void
 table_index_delete(Table* table, IndexConfig* index)
 {
 	// remove index from partitions
-	volume_mgr_index_drop(&table->volume_mgr, &index->name);
+	volume_mgr_index_remove(&table->volume_mgr, &index->name);
 
 	// remove index from table config
-	table_config_del_index(table->config, index);
+	table_config_index_remove(table->config, index);
 
 	// free
 	index_config_free(index);
@@ -70,7 +70,7 @@ table_index_create(Table*       self,
 	// save index config copy to table config
 	index = index_config_copy(config, &self->config->columns);
 	keys_set_primary(&index->keys, false);
-	table_config_add_index(self->config, index);
+	table_config_index_add(self->config, index);
 
 	// update table
 	log_relation(&tr->log, &create_if, index, &self->rel);
