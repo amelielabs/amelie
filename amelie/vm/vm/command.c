@@ -28,7 +28,6 @@ csend_shard(Vm* self, Op* op)
 	// [rdispatch, store, refs, offset]
 	auto send  = send_at(self->code_data, op->d);
 	auto table = send->table;
-	auto keys  = table_keys(table);
 
 	// create dispatch
 	auto dtr = self->dtr;
@@ -51,8 +50,7 @@ csend_shard(Vm* self, Op* op)
 		{
 			auto row      = set_row(set, order);
 			auto identity = row_get_identity(table, refs, row);
-			auto hash     = row_value_hash(keys, refs, row, identity);
-			auto part     = part_map_get(&table->part_list.map, hash);
+			auto part     = row_map(table, refs, row, identity);
 
 			auto req = dispatch_find(dispatch, part);
 			if (! req)
@@ -77,8 +75,7 @@ csend_shard(Vm* self, Op* op)
 		for (; (row = store_iterator_at(it)); store_iterator_next(it))
 		{
 			auto identity = row_get_identity(table, refs, row);
-			auto hash     = row_value_hash(keys, refs, row, identity);
-			auto part     = part_map_get(&table->part_list.map, hash);
+			auto part     = row_map(table, refs, row, identity);
 
 			auto req = dispatch_find(dispatch, part);
 			if (! req)
@@ -107,48 +104,8 @@ csend_shard(Vm* self, Op* op)
 	value_set_int(reg_at(&self->r, op->a), dispatch->order);
 }
 
-#if 0
 hot void
 csend_lookup(Vm* self, Op* op)
-{
-	// [rdispatch, hash, refs, offset]
-	auto send  = send_at(self->code_data, op->d);
-	auto table = send->table;
-
-	// create dispatch
-	auto dtr = self->dtr;
-	auto dispatch_mgr = &dtr->dispatch_mgr;
-	auto dispatch = dispatch_create(&dispatch_mgr->cache);
-	if (send->has_result)
-		dispatch_set_returning(dispatch);
-
-	if (self->allow_close &&
-	    self->program->send_last == code_posof(self->code, op))
-		dispatch_set_close(dispatch);
-
-	// shard by precomputed hash
-	auto part = part_map_get(&table->part_list.map, op->b);
-	auto req  = dispatch_add(dispatch, &dispatch_mgr->cache_req,
-	                         REQ_EXECUTE,
-	                         send->start,
-	                         &self->program->code_backend,
-	                         &self->program->code_data,
-	                         part);
-	if (op->c > 0)
-	{
-		req_copy_refs(req, stack_at(&self->stack, op->c), op->c);
-		stack_popn(&self->stack, op->c);
-	}
-
-	// execute
-	executor_send(share()->executor, dtr, dispatch);
-
-	// return dispatch order
-	value_set_int(reg_at(&self->r, op->a), dispatch->order);
-}
-
-hot void
-csend_lookup_by(Vm* self, Op* op)
 {
 	// [rdispatch, refs, offset]
 	auto send  = send_at(self->code_data, op->c);
@@ -166,17 +123,10 @@ csend_lookup_by(Vm* self, Op* op)
 	    self->program->send_last == code_posof(self->code, op))
 		dispatch_set_close(dispatch);
 
-	// compute hash using key values
-	uint32_t hash = 0;
-	list_foreach(&index->keys.list)
-	{
-		auto key = list_at(Key, link);
-		auto value = stack_at(&self->stack, index->keys.list_count - key->order);
-		hash = value_hash(value, key->column->type_size, hash);
-	}
+	// map partition using keys
+	auto part = row_map_key(table, stack_at(&self->stack, index->keys.list_count));
 	stack_popn(&self->stack, index->keys.list_count);
 
-	auto part = part_map_get(&table->part_list.map, hash);
 	auto req  = dispatch_add(dispatch, &dispatch_mgr->cache_req,
 	                         REQ_EXECUTE,
 	                         send->start,
@@ -215,7 +165,7 @@ csend_all(Vm* self, Op* op)
 		dispatch_set_close(dispatch);
 
 	// send to all table backends
-	list_foreach(&table->part_list.list)
+	list_foreach(&table->volume_mgr.parts)
 	{
 		auto part = list_at(Part, link);
 		auto req = dispatch_add(dispatch, &dispatch_mgr->cache_req,
@@ -458,7 +408,7 @@ ctable_open(Vm* self, Op* op, bool point_lookup, bool open_part)
 		cursor->part = self->part;
 	else
 		cursor->part = NULL;
-	cursor->cursor = part_list_iterator(&table->part_list, cursor->part, index, point_lookup, key_ref);
+	cursor->cursor = volume_mgr_iterator(&table->volume_mgr, cursor->part, index, point_lookup, key_ref);
 	cursor->table  = table;
 	cursor->type   = TYPE_CURSOR;
 
@@ -508,7 +458,7 @@ cinsert(Vm* self, Op* op)
 		auto identity = *(int64_t*)(pos + sizeof(Value*));
 		pos += sizeof(Value*) + sizeof(int64_t);
 
-		auto row = row_create(&part->heap, columns, value, self->refs, identity);
+		auto row = row_create(part->heap, columns, value, self->refs, identity);
 		part_insert(part, self->tr, false, row);
 	}
 }
@@ -529,7 +479,7 @@ cupsert(Vm* self, Op* op)
 		auto identity = *(int64_t*)(self->upsert + sizeof(Value*));
 		self->upsert += sizeof(Value*) + sizeof(int64_t);
 
-		auto row = row_create(&cursor->part->heap, columns, value, self->refs, identity);
+		auto row = row_create(cursor->part->heap, columns, value, self->refs, identity);
 
 		// insert or get (open iterator in both cases)
 		auto exists = part_upsert(cursor->part, self->tr, cursor->cursor, row);
@@ -569,7 +519,7 @@ cupdate(Vm* self, Op* op)
 	assert(cursor->type == TYPE_CURSOR);
 	auto row_src = iterator_at(cursor->cursor);
 	auto row_values = stack_at(&self->stack, op->b * 2);
-	auto row = row_update(&cursor->part->heap, row_src, table_columns(cursor->table),
+	auto row = row_update(cursor->part->heap, row_src, table_columns(cursor->table),
 	                      row_values, op->b);
 	part_update(cursor->part, self->tr, cursor->cursor, row);
 	stack_popn(&self->stack, op->b * 2);
@@ -624,4 +574,3 @@ ccall_udf(Vm* self, Op* op)
 
 	stack_popn(&self->stack, argc);
 }
-#endif

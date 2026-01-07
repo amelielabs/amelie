@@ -290,7 +290,6 @@ enum
 	// result
 	CSEND_SHARD,
 	CSEND_LOOKUP,
-	CSEND_LOOKUP_BY,
 	CSEND_ALL,
 	CCLOSE,
 

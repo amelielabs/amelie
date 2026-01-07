@@ -298,7 +298,6 @@ OpDesc ops[] =
 	// result
 	{ CSEND_SHARD, "send_shard" },
 	{ CSEND_LOOKUP, "send_lookup" },
-	{ CSEND_LOOKUP_BY, "send_lookup_by" },
 	{ CSEND_ALL, "send_all" },
 	{ CCLOSE, "close" },
 
@@ -439,7 +438,6 @@ op_dump(Program* self, Code* code, Buf* buf)
 			op_dump_send(self, code, op, output, send_at(data, op->d),
 			             true, false, true);
 			break;
-		case CSEND_LOOKUP_BY:
 		case CSEND_ALL:
 			op_dump_send(self, code, op, output, send_at(data, op->c),
 			             true, true, true);

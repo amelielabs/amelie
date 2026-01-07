@@ -514,3 +514,54 @@ row_update(Heap* heap, Row* self, Columns* columns, Value* values, int count)
 
 	return row;
 }
+
+static inline uint32_t
+row_map_hash(Keys* keys, Value* refs, Value* row, int64_t identity)
+{
+	uint32_t hash = 0;
+	list_foreach(&keys->list)
+	{
+		auto column = list_at(Key, link)->column;
+		auto value = row + column->order;
+		if (value->type == TYPE_REF)
+			value = &refs[value->integer];
+		if (column->constraints.as_identity && value->type == TYPE_NULL)
+		{
+			hash = hash_murmur3_32((uint8_t*)&identity, sizeof(identity), hash);
+			continue;
+		}
+		assert(value->type != TYPE_NULL);
+		hash = value_hash(value, column->type_size, hash);
+	}
+	return hash;
+}
+
+Part*
+row_map(Table* table, Value* refs, Value* row, int64_t identity)
+{
+	auto mapping = &table->volume_mgr.mapping;
+	assert(mapping->type == MAPPING_HASH);
+	auto hash_partition = row_map_hash(mapping->keys, refs, row, identity) % UINT16_MAX;
+	// todo: MAPPING_HASH_RANGE
+	return mapping->map[hash_partition];
+}
+
+Part*
+row_map_key(Table* table, Value* keys)
+{
+	// compute hash using key values
+	uint32_t hash = 0;
+
+	auto index = table_primary(table);
+	list_foreach(&index->keys.list)
+	{
+		auto key = list_at(Key, link);
+		hash = value_hash(&keys[key->order], key->column->type_size, hash);
+	}
+
+	auto mapping = &table->volume_mgr.mapping;
+	assert(mapping->type == MAPPING_HASH);
+	// todo: MAPPING_HASH_RANGE
+	auto hash_partition = hash % UINT16_MAX;
+	return mapping->map[hash_partition];
+}

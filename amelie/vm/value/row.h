@@ -11,30 +11,11 @@
 // AGPL-3.0 Licensed.
 //
 
-Row* row_create(Heap*, Columns*, Value*, Value*, int64_t);
-Row* row_create_key(Buf*, Keys*, Value*, int);
-Row* row_update(Heap*, Row*, Columns*, Value*, int);
-
-static inline uint32_t
-row_value_hash(Keys* keys, Value* refs, Value* row, int64_t identity)
-{
-	uint32_t hash = 0;
-	list_foreach(&keys->list)
-	{
-		auto column = list_at(Key, link)->column;
-		auto value = row + column->order;
-		if (value->type == TYPE_REF)
-			value = &refs[value->integer];
-		if (column->constraints.as_identity && value->type == TYPE_NULL)
-		{
-			hash = hash_murmur3_32((uint8_t*)&identity, sizeof(identity), hash);
-			continue;
-		}
-		assert(value->type != TYPE_NULL);
-		hash = value_hash(value, column->type_size, hash);
-	}
-	return hash;
-}
+Row*  row_create(Heap*, Columns*, Value*, Value*, int64_t);
+Row*  row_create_key(Buf*, Keys*, Value*, int);
+Row*  row_update(Heap*, Row*, Columns*, Value*, int);
+Part* row_map(Table*, Value*, Value*, int64_t);
+Part* row_map_key(Table*, Value*);
 
 static inline int64_t
 row_get_identity(Table* table, Value* refs, Value* row)
