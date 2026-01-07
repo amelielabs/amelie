@@ -24,7 +24,6 @@ typedef enum
 struct MergerConfig
 {
 	MergerType type;
-	bool       origin_hash;
 	Object*    origin;
 	Heap*      heap;
 	Keys*      keys;
@@ -37,7 +36,6 @@ struct Merger
 	int            objects_count;
 	List           writers;
 	List           writers_cache;
-	Hasher         hasher;
 	ObjectIterator object_iterator;
 	HeapIterator   heap_iterator;
 	MergeIterator  merge_iterator;

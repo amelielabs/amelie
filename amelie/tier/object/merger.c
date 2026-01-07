@@ -22,7 +22,6 @@ merger_init(Merger* self)
 	list_init(&self->objects);
 	list_init(&self->writers);
 	list_init(&self->writers_cache);
-	hasher_init(&self->hasher);
 	object_iterator_init(&self->object_iterator);
 	heap_iterator_init(&self->heap_iterator);
 	merge_iterator_init(&self->merge_iterator);
@@ -37,7 +36,6 @@ merger_free(Merger* self)
 		auto writer = list_at(Writer, link);
 		writer_free(writer);
 	}
-	hasher_free(&self->hasher);
 	object_iterator_free(&self->object_iterator);
 	merge_iterator_free(&self->merge_iterator);
 }
@@ -62,7 +60,6 @@ merger_reset(Merger* self)
 	}
 	list_init(&self->writers);
 
-	hasher_reset(&self->hasher);
 	object_iterator_reset(&self->object_iterator);
 	heap_iterator_reset(&self->heap_iterator);
 	merge_iterator_reset(&self->merge_iterator);
@@ -131,18 +128,18 @@ merger_drop(Merger* self, Object* object)
 
 hot static inline void
 merger_write(Writer*       writer,
-             Hasher*       hasher,
              MergerConfig* config,
              Iterator*     it,
              Object*       object,
-             uint64_t      object_limit)
+             uint64_t      object_limit,
+             uint32_t      hash_min,
+             uint32_t      hash_max)
 {
 	auto origin = config->origin;
 	auto heap   = config->heap;
 
 	writer_reset(writer);
-	writer_start(writer, config->source, &object->file, config->keys,
-	             hasher);
+	writer_start(writer, config->source, &object->file);
 	for (;;)
 	{
 		auto row = iterator_at(it);
@@ -162,7 +159,7 @@ merger_write(Writer*       writer,
 	if (origin->meta.lsn > lsn)
 		lsn = origin->meta.lsn;
 
-	writer_stop(writer, &object->id, 0, lsn);
+	writer_stop(writer, &object->id, hash_min, hash_max, 0, lsn);
 
 	// copy and set meta data
 	meta_writer_copy(&writer->meta_writer, &object->meta,
@@ -172,6 +169,8 @@ merger_write(Writer*       writer,
 hot static void
 merger_snapshot(Merger* self, MergerConfig* config)
 {
+	auto meta = &config->origin->meta;
+
 	// prepare heap iterator
 	auto it = &self->heap_iterator;
 	heap_iterator_open(it, config->heap, NULL);
@@ -179,14 +178,11 @@ merger_snapshot(Merger* self, MergerConfig* config)
 	// create object
 	auto object = merger_create(self, config);
 
-	// prepare hasher
-	auto hasher = &self->hasher;
-	if (! config->origin_hash)
-		hasher = NULL;
-
 	// write object
 	auto writer = merger_create_writer(self);
-	merger_write(writer, hasher, config, &it->it, object, UINT64_MAX);
+	merger_write(writer, config, &it->it, object, UINT64_MAX,
+	             meta->hash_min,
+	             meta->hash_max);
 
 	// delete the result object if it is empty
 	if (! object->meta.rows)
@@ -197,6 +193,7 @@ hot void
 merger_refresh(Merger* self, MergerConfig* config)
 {
 	// todo: create heap index
+	auto meta = &config->origin->meta;
 
 	// prepare heap iterator
 	heap_iterator_open(&self->heap_iterator, config->heap, NULL);
@@ -215,14 +212,11 @@ merger_refresh(Merger* self, MergerConfig* config)
 	// create object
 	auto object = merger_create(self, config);
 
-	// prepare hasher
-	auto hasher = &self->hasher;
-	if (! config->origin_hash)
-		hasher = NULL;
-
 	// write object
 	auto writer = merger_create_writer(self);
-	merger_write(writer, hasher, config, &it->it, object, UINT64_MAX);
+	merger_write(writer, config, &it->it, object, UINT64_MAX,
+	             meta->hash_min,
+	             meta->hash_max);
 
 	// delete the result object if it is empty
 	if (! object->meta.rows)
@@ -230,8 +224,10 @@ merger_refresh(Merger* self, MergerConfig* config)
 }
 
 hot static void
-merger_split_by_range(Merger* self, MergerConfig* config)
+merger_split(Merger* self, MergerConfig* config)
 {
+	auto meta = &config->origin->meta;
+
 	// post refresh partition split by range
 	auto first = merger_first(self);
 
@@ -252,60 +248,9 @@ merger_split_by_range(Merger* self, MergerConfig* config)
 
 		// write object
 		writer_reset(writer);
-		merger_write(writer, NULL, config, &it->it, object, limit);
-	}
-}
-
-hot static void
-merger_split_by_hash(Merger* self, MergerConfig* config)
-{
-	// post refresh partition split by matching hash partitions
-	auto first = merger_first(self);
-
-	// prepare object iterator
-	auto it = &self->object_iterator;
-	object_iterator_reset(it);
-	object_iterator_open(it, config->keys, first, NULL);
-
-	// set partition file size limit
-	auto limit = config->source->part_size / 2;
-
-	// group hash partitions by size
-	auto hasher = &self->hasher;
-	hasher_group_by(hasher, limit);
-
-	// prepare objects and writers
-	auto n = hasher->groups_count;
-	assert(n > 1);
-	Object* objects[n];
-	Writer* writers[n];
-
-	objects[0] = merger_create(self, config);
-	writers[0] = merger_first_writer(self);
-	writer_reset(writers[0]);
-	writer_start(writers[0], config->source, &objects[0]->file, config->keys, NULL);
-	for (auto i = 1; i < n; i++)
-	{
-		objects[i] = merger_create(self, config);
-		writers[i] = merger_create_writer(self);
-		writer_start(writers[i], config->source, &objects[i]->file, config->keys, NULL);
-	}
-
-	// redistribute rows between writers
-	while (object_iterator_has(it))
-	{
-		auto row   = object_iterator_at(it);
-		auto group = hasher_match(hasher, row);
-		assert(group);
-		writer_add(writers[group->pos], row);
-	}
-
-	// copy and set meta data
-	for (auto i = 0; i < n; i++)
-	{
-		writer_stop(writers[i], &objects[i]->id, 0, first->meta.lsn);
-		meta_writer_copy(&writers[i]->meta_writer, &objects[i]->meta,
-		                 &objects[i]->meta_data);
+		merger_write(writer, config, &it->it, object, limit,
+		             meta->hash_min,
+		             meta->hash_max);
 	}
 }
 
@@ -333,10 +278,7 @@ merger_execute(Merger* self, MergerConfig* config)
 		return;
 
 	// split object file into N objects
-	if (! config->origin_hash)
-		merger_split_by_range(self, config);
-	else
-		merger_split_by_hash(self, config);
+	merger_split(self, config);
 
 	// drop first object (created by refresh)
 	merger_drop(self, object);

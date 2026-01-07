@@ -20,7 +20,6 @@ writer_allocate(void)
 {
 	auto self = (Writer*)am_malloc(sizeof(Writer));
 	self->file        = NULL;
-	self->hasher      = NULL;
 	self->compression = NULL;
 	self->encryption  = NULL;
 	self->source      = NULL;
@@ -54,7 +53,6 @@ writer_reset(Writer* self)
 		codec_cache_push(&runtime()->cache_cipher, self->encryption);
 		self->encryption = NULL;
 	}
-	self->hasher = NULL;
 	self->source = NULL;
 	iov_reset(&self->iov);
 	region_writer_reset(&self->region_writer);
@@ -97,9 +95,8 @@ writer_stop_region(Writer* self)
 }
 
 void
-writer_start(Writer* self, Source* source, File* file, Keys* keys, Hasher* hasher)
+writer_start(Writer* self, Source* source, File* file)
 {
-	self->hasher = hasher;
 	self->source = source;
 	self->file   = file;
 
@@ -127,15 +124,13 @@ writer_start(Writer* self, Source* source, File* file, Keys* keys, Hasher* hashe
 	meta_writer_reset(&self->meta_writer);
 	meta_writer_start(&self->meta_writer, self->compression,
 	                  self->encryption, source->crc);
-
-	// prepare hash writer
-	if (hasher)
-		hasher_prepare(hasher, keys);
 }
 
 void
 writer_stop(Writer*  self,
             Id*      id,
+            uint32_t hash_min,
+            uint32_t hash_max,
             uint64_t time_create,
             uint64_t lsn)
 {
@@ -146,14 +141,6 @@ writer_stop(Writer*  self,
 	if (region_writer_started(&self->region_writer))
 		writer_stop_region(self);
 
-	// use hash partitions min/max
-	uint32_t hash_min = 0;
-	uint32_t hash_max = 0;
-	if (self->hasher)
-	{
-		hash_min = self->hasher->hash_min;
-		hash_max = self->hasher->hash_max;
-	}
 	meta_writer_stop(&self->meta_writer, id, hash_min, hash_max,
 	                 time_create, lsn);
 
@@ -190,8 +177,4 @@ writer_add(Writer* self, Row* row)
 
 	// add row to the region
 	region_writer_add(&self->region_writer, row);
-
-	// calculate row hash and track hash partitions
-	if (self->hasher)
-		hasher_add(self->hasher, row);
 }
