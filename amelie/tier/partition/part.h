@@ -30,7 +30,7 @@ struct Part
 	bool          unlogged;
 	List          link;
 	List          link_volume;
-	RbtreeNode    link_mapping;
+	RbtreeNode    link_range;
 	HashtableNode link_hash;
 };
 

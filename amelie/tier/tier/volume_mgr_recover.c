@@ -117,19 +117,14 @@ volume_mgr_recover_volume(VolumeMgr* self, Volume* volume)
 }
 
 static void
-volume_mgr_create_hash(VolumeMgr* self, Volume* volume)
+volume_mgr_create(VolumeMgr* self, Volume* volume)
 {
-	auto source  = volume->tier->config;
-	auto mapping = &self->mapping;
+	auto source = volume->tier->config;
 
 	// create initial hash partitions
-	auto n = self->mapping_seed;
+	auto n = self->mapping_hash;
 	if (n < 1 || n > UINT16_MAX)
 		error("table has invalid partitions number");
-
-	Hasher hasher;
-	hasher_init(&hasher);
-	defer(hasher_free, &hasher);
 
 	auto writer = writer_allocate();
 	defer(writer_free, writer);
@@ -138,13 +133,13 @@ volume_mgr_create_hash(VolumeMgr* self, Volume* volume)
 	file_init(&file);
 	defer(file_close, &file);
 
-	// partition_max / partitions
+	// hash partition_max / hash partitions
 	int range_max      = UINT16_MAX;
 	int range_interval = range_max / n;
 	int range_start    = 0;
 	for (auto order = 0; order < n; order++)
 	{
-		// set partition range
+		// set hash range
 		int range_step;
 		auto is_last = (order == n - 1);
 		if (is_last)
@@ -153,6 +148,8 @@ volume_mgr_create_hash(VolumeMgr* self, Volume* volume)
 			range_step = range_interval;
 		if ((range_start + range_step) > range_max)
 			range_step = range_max - range_start;
+		auto hash_min = range_start;
+		auto hash_max = range_start + range_step;
 
 		// create object file
 		Id id =
@@ -163,10 +160,8 @@ volume_mgr_create_hash(VolumeMgr* self, Volume* volume)
 		};
 		object_file_create(&file, source, &id, ID);
 		writer_reset(writer);
-		writer_start(writer, volume->tier->config, &file, mapping->keys, &hasher);
-		hasher.hash_min = range_start;
-		hasher.hash_max = range_start + range_step;
-		writer_stop(writer, &id, 0, 0);
+		writer_start(writer, volume->tier->config, &file);
+		writer_stop(writer, &id, hash_min, hash_max, 0, 0);
 		file_close(&file);
 
 		// create and register partition
@@ -205,16 +200,7 @@ volume_mgr_recover(VolumeMgr* self, List* volumes, List* indexes)
 	if (create)
 	{
 		auto main = container_of(list_first(volumes), Volume, link);
-		auto mapping = &self->mapping;
-		switch (mapping->type) {
-		case MAPPING_RANGE:
-			// todo:
-			abort();
-			break;
-		case MAPPING_HASH:
-			volume_mgr_create_hash(self, main);
-			break;
-		}
+		volume_mgr_create(self, main);
 	}
 
 	// validate and open partitions

@@ -17,7 +17,7 @@ struct VolumeMgr
 {
 	Uuid      id;
 	Mapping   mapping;
-	int       mapping_seed;
+	int       mapping_hash;
 	List      parts;
 	int       parts_count;
 	List      volumes;

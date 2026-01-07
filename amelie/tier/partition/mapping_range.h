@@ -41,7 +41,7 @@ mapping_range_free(MappingRange* self)
 always_inline static inline Part*
 mapping_range_part(RbtreeNode* node)
 {
-	return container_of(node, Part, link_mapping);
+	return container_of(node, Part, link_range);
 }
 
 static inline Part*
@@ -80,14 +80,14 @@ mapping_range_add(MappingRange* self, Part* part)
 	rc = mapping_range_find(&self->tree, NULL, key, &node);
 	if (rc == 0 && node)
 		assert(0);
-	rbtree_set(&self->tree, node, rc, &part->link_mapping);
+	rbtree_set(&self->tree, node, rc, &part->link_range);
 	self->tree_count++;
 }
 
 static inline void
 mapping_range_remove(MappingRange* self, Part* part)
 {
-	rbtree_remove(&self->tree, &part->link_mapping);
+	rbtree_remove(&self->tree, &part->link_range);
 	self->tree_count--;
 	assert(self->tree_count >= 0);
 }
@@ -95,13 +95,13 @@ mapping_range_remove(MappingRange* self, Part* part)
 static inline void
 mapping_range_replace(MappingRange* self, Part* a, Part* b)
 {
-	rbtree_replace(&self->tree, &a->link_mapping, &b->link_mapping);
+	rbtree_replace(&self->tree, &a->link_range, &b->link_range);
 }
 
 static inline Part*
 mapping_range_next(MappingRange* self, Part* part)
 {
-	auto node = rbtree_next(&self->tree, &part->link_mapping);
+	auto node = rbtree_next(&self->tree, &part->link_range);
 	if (! node)
 		return NULL;
 	return mapping_range_part(node);
@@ -110,7 +110,7 @@ mapping_range_next(MappingRange* self, Part* part)
 static inline Part*
 mapping_range_prev(MappingRange* self, Part* part)
 {
-	auto node = rbtree_prev(&self->tree, &part->link_mapping);
+	auto node = rbtree_prev(&self->tree, &part->link_range);
 	if (! node)
 		return NULL;
 	return mapping_range_part(node);

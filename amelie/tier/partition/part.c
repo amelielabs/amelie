@@ -40,7 +40,7 @@ part_allocate(Source*   source,
 	heap_create(&self->heap_a);
 	list_init(&self->link_volume);
 	list_init(&self->link);
-	rbtree_init_node(&self->link_mapping);
+	rbtree_init_node(&self->link_range);
 	hashtable_node_init(&self->link_hash);
 	return self;
 }
