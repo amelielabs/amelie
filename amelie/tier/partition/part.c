@@ -60,6 +60,43 @@ part_free(Part* self)
 }
 
 void
+part_load(Part* self)
+{
+	// open partition object file
+	auto object = object_allocate(self->source, &self->id);
+	defer(object_free, object);
+	object_open(object, ID, true);
+
+	// iterate object file
+	ObjectIterator it;
+	object_iterator_init(&it);
+	defer(object_iterator_free, &it);
+
+	// read into heap
+	auto count = 0ul;
+	auto keys  = index_keys(part_primary(self));
+	object_iterator_open(&it, keys, object, NULL);
+	while (object_iterator_has(&it))
+	{
+		auto ref = object_iterator_at(&it);
+		auto row = row_copy(self->heap, ref);
+		part_ingest(self, row);
+		count++;
+		object_iterator_next(&it);
+	}
+
+	char uuid[UUID_SZ];
+	uuid_get(&self->id.id_table, uuid, sizeof(uuid));
+
+	auto total = (double)object->file.size / 1024 / 1024;
+	info(" %s/%05" PRIu64 ".%05" PRIu64 " (%.2f MiB, %" PRIu64 " rows)",
+	     uuid,
+	     self->id.id_parent,
+	     self->id.id,
+	     total, count);
+}
+
+void
 part_truncate(Part* self)
 {
 	list_foreach(&self->indexes)

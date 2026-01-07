@@ -52,7 +52,7 @@ deploy_attach(Deploy* self, VolumeMgr* mgr)
 	{
 		auto part = list_at(Part, link);
 		hashtable_reserve(&self->ht);
-		part->link_hash.hash = hash_murmur3_32((uint8_t*)&part->id, sizeof(part->id), 0);
+		part->link_hash.hash = hash_murmur3_32((uint8_t*)&part->id.id, sizeof(part->id.id), 0);
 		hashtable_set(&self->ht, &part->link_hash);
 	}
 
@@ -77,14 +77,14 @@ hot static inline bool
 deploy_cmp(HashtableNode* node, void* ptr)
 {
 	auto part = container_of(node, Part, link_hash);
-	return !memcmp(&part->id, (Id*)ptr, sizeof(Id));
+	return !memcmp(&part->id.id, ptr, sizeof(uint64_t));
 }
 
 hot static inline Part*
-deploy_find(Deploy* self, Id* id)
+deploy_find(Deploy* self, uint64_t psn)
 {
-	auto hash = hash_murmur3_32((uint8_t*)id, sizeof(*id), 0);
-	auto node = hashtable_get(&self->ht, hash, deploy_cmp, id);
+	auto hash = hash_murmur3_32((uint8_t*)&psn, sizeof(psn), 0);
+	auto node = hashtable_get(&self->ht, hash, deploy_cmp, &psn);
 	if (likely(node))
 		return container_of(node, Part, link_hash);
 	return NULL;

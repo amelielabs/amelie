@@ -137,8 +137,7 @@ table_mgr_dump(TableMgr* self, Buf* buf)
 }
 
 Table*
-table_mgr_find(TableMgr* self, Str* db, Str* name,
-               bool error_if_not_exists)
+table_mgr_find(TableMgr* self, Str* db, Str* name, bool error_if_not_exists)
 {
 	auto relation = relation_mgr_get(&self->mgr, db, name);
 	if (! relation)
@@ -149,6 +148,24 @@ table_mgr_find(TableMgr* self, Str* db, Str* name,
 		return NULL;
 	}
 	return table_of(relation);
+}
+
+Table*
+table_mgr_find_by(TableMgr* self, Uuid* id, bool error_if_not_exists)
+{
+	list_foreach(&self->mgr.list)
+	{
+		auto table = table_of(list_at(Relation, link));
+		if (uuid_is(&table->config->id, id))
+			return table;
+	}
+	if (error_if_not_exists)
+	{
+		char uuid[UUID_SZ];
+		uuid_get(id, uuid, sizeof(uuid));
+		error("table with uuid '%s' not found", uuid);
+	}
+	return NULL;
 }
 
 Buf*

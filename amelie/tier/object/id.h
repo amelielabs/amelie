@@ -39,7 +39,7 @@ id_path(Id* self, Source* source, int state, char* path)
 	case ID:
 		// <source_path>/<table_uuid>/<id_parent>.<id>
 		source_path(source, path, &self->id_table,
-		            "%020" PRIu64 ".%020" PRIu64,
+		            "%05" PRIu64 ".%05" PRIu64,
 		            self->id_parent,
 		            self->id);
 		break;

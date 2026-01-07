@@ -11,7 +11,7 @@
 //
 
 #include <amelie_runtime>
-#include <amelie_engine>
+#include <amelie_tier>
 #include <amelie_catalog.h>
 #include <amelie_wal.h>
 #include <amelie_storage.h>
@@ -42,22 +42,41 @@ recover_reset_stats(Recover* self)
 	self->size = 0;
 }
 
+static inline Part*
+recover_map(Recover* self, Record* record, RecordCmd* cmd, Row* row)
+{
+	// find table by id and map partition
+	auto storage = self->storage;
+	auto table = table_mgr_find_by(&storage->catalog.table_mgr, &cmd->id, true);
+	auto part = mapping_map(&table->volume_mgr.mapping, row);
+	if (! part)
+		error("recover: partition mapping failed");
+
+	// skip partition if it is already includes the command lsn
+	if (part->object->meta.lsn >= record->lsn)
+		part = NULL;
+	return part;
+}
+
 hot static void
-recover_cmd(Recover* self, RecordCmd* cmd, uint8_t** pos)
+recover_cmd(Recover* self, Record* record, RecordCmd* cmd, uint8_t** pos)
 {
 	auto storage = self->storage;
 	auto tr = &self->tr;
 	switch (cmd->cmd) {
 	case CMD_REPLACE:
 	{
-		// find partition by id
-		auto part = part_mgr_find(&storage->part_mgr, cmd->partition);
+		// map partition
+		auto part = recover_map(self, record, cmd, (Row*)*pos);
 		if (! part)
-			error("recover: failed to find partition %" PRIu32, cmd->partition);
+		{
+			record_cmd_skip(cmd, pos);
+			break;
+		}
 		auto end = *pos + cmd->size;
 		while (*pos < end)
 		{
-			auto row = row_copy(&part->heap, (Row*)*pos);
+			auto row = row_copy(part->heap, (Row*)*pos);
 			part_insert(part, tr, true, row);
 			*pos += row_size(row);
 		}
@@ -65,10 +84,13 @@ recover_cmd(Recover* self, RecordCmd* cmd, uint8_t** pos)
 	}
 	case CMD_DELETE:
 	{
-		// find partition by id
-		auto part = part_mgr_find(&storage->part_mgr, cmd->partition);
+		// map partition
+		auto part = recover_map(self, record, cmd, (Row*)*pos);
 		if (! part)
-			error("recover: failed to find partition %" PRIu32, cmd->partition);
+		{
+			record_cmd_skip(cmd, pos);
+			break;
+		}
 		auto end = *pos + cmd->size;
 		while (*pos < end)
 		{
@@ -102,7 +124,7 @@ recover_next_record(Recover* self, Record* record)
 		if (opt_int_of(&config()->wal_crc))
 			if (unlikely(! record_validate_cmd(cmd, pos)))
 				error("recover: record command mismatch");
-		recover_cmd(self, cmd, &pos);
+		recover_cmd(self, record, cmd, &pos);
 		cmd++;
 	}
 	self->ops  += record->ops;

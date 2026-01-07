@@ -52,6 +52,14 @@ record_data(Record* self)
 	return (uint8_t*)self + sizeof(*self) + (self->count * sizeof(RecordCmd));
 }
 
+static inline void
+record_cmd_skip(RecordCmd* self, uint8_t** pos)
+{
+	auto end = *pos + self->size;
+	while (*pos < end)
+		*pos += row_size((Row*)*pos);
+}
+
 static inline bool
 record_cmd_is_dml(RecordCmd* self)
 {
