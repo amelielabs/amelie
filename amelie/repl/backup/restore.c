@@ -12,10 +12,11 @@
 
 #include <amelie_runtime>
 #include <amelie_server>
-#include <amelie_engine>
+#include <amelie_tier>
 #include <amelie_storage>
 #include <amelie_backup.h>
 
+#if 0
 typedef struct Restore Restore;
 
 struct Restore
@@ -231,4 +232,12 @@ restore(Endpoint* endpoint, char* directory)
 	restore_start(&restore);
 	for (; restore.step < restore.step_total; restore.step++)
 		restore_next(&restore);
+}
+#endif
+
+void
+restore(Endpoint* endpoint, char* directory)
+{
+	(void)endpoint;
+	(void)directory;
 }

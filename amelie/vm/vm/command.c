@@ -12,7 +12,7 @@
 
 #include <amelie_runtime>
 #include <amelie_server>
-#include <amelie_engine>
+#include <amelie_tier>
 #include <amelie_storage>
 #include <amelie_repl>
 #include <amelie_value.h>
@@ -107,7 +107,7 @@ csend_shard(Vm* self, Op* op)
 	value_set_int(reg_at(&self->r, op->a), dispatch->order);
 }
 
-
+#if 0
 hot void
 csend_lookup(Vm* self, Op* op)
 {
@@ -624,3 +624,4 @@ ccall_udf(Vm* self, Op* op)
 
 	stack_popn(&self->stack, argc);
 }
+#endif

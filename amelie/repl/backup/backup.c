@@ -12,10 +12,11 @@
 
 #include <amelie_runtime>
 #include <amelie_server>
-#include <amelie_engine>
+#include <amelie_tier>
 #include <amelie_storage>
 #include <amelie_backup.h>
 
+#if  0
 void
 backup_init(Backup* self, Storage* storage)
 {
@@ -324,4 +325,12 @@ backup(Storage* storage, Client* client)
 		backup_run(&backup, client);
 	);
 	backup_free(&backup);
+}
+#endif
+
+void
+backup(Storage* storage, Client* client)
+{
+	(void)storage;
+	(void)client;
 }
