@@ -18,14 +18,24 @@ struct MappingRange
 	Rbtree tree;
 	int    tree_count;
 	Keys*  keys;
+	List   link;
 };
 
-static inline void
-mapping_range_init(MappingRange* self, Keys* keys)
+static inline MappingRange*
+mapping_range_allocate(Keys* keys)
 {
+	auto self = (MappingRange*)am_malloc(sizeof(MappingRange));
+	self->keys       = keys;
 	self->tree_count = 0;
-	self->keys       = keys;;
 	rbtree_init(&self->tree);
+	list_init(&self->link);
+	return self;
+}
+
+static inline void
+mapping_range_free(MappingRange* self)
+{
+	am_free(self);
 }
 
 always_inline static inline Part*
