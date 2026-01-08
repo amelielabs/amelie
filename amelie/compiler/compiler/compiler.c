@@ -192,22 +192,12 @@ emit_send(Compiler* self, Target* target, int type, int start)
 		auto path = target->path_primary;
 		if (path->type == PATH_LOOKUP)
 		{
-			if (path->match_start_exprs == path->match_start)
-			{
-				// match exact partition using the point lookup const key hash
-				uint32_t hash = path_create_hash(path);
+			// push keys for point lookup to match the exact partition
+			for (auto i = 0; i < path->match_start; i++)
+				emit_push(self, target->from, path->keys[i].start);
 
-				// CSEND_LOOKUP
-				op4(self, CSEND_LOOKUP, rdispatch, hash, refs_count, send_offset);
-			} else
-			{
-				// push keys for point lookup to match the exact partition
-				for (auto i = 0; i < path->match_start; i++)
-					emit_push(self, target->from, path->keys[i].start);
-
-				// CSEND_LOOKUP_BY
-				op3(self, CSEND_LOOKUP_BY, rdispatch, refs_count, send_offset);
-			}
+			// CSEND_LOOKUP
+			op3(self, CSEND_LOOKUP, rdispatch, refs_count, send_offset);
 		} else
 		{
 			// send to all table partitions (one or more)

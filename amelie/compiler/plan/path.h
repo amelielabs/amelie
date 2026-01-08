@@ -43,5 +43,4 @@ struct Path
 	PathKey  keys[];
 };
 
-Path*    path_create(Target*, Block* block, Keys*, PathOps*);
-uint32_t path_create_hash(Path*);
+Path* path_create(Target*, Block* block, Keys*, PathOps*);

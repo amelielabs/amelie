@@ -387,42 +387,6 @@ parse_columns(Stmt* self, Columns* columns, Keys* keys)
 	}
 }
 
-static void
-parse_table_finilize(AstTableCreate* self)
-{
-	// create partition for each backend
-	if (self->partitions < 1 || self->partitions >= PARTITION_MAX)
-		error("table has invalid partitions number");
-
-	// partition_max / table partitions
-	int range_max      = PARTITION_MAX;
-	int range_interval = range_max / self->partitions;
-	int range_start    = 0;
-	for (auto order = 0; order < self->partitions; order++)
-	{
-		// set partition range
-		int range_step;
-		auto is_last = (order == self->partitions - 1);
-		if (is_last)
-			range_step = range_max - range_start;
-		else
-			range_step = range_interval;
-		if ((range_start + range_step) > range_max)
-			range_step = range_max - range_start;
-
-		// create partition config
-		auto config = part_config_allocate();
-		auto psn = state_psn_next();
-		part_config_set_id(config, psn);
-		part_config_set_range(config, range_start, range_start + range_step);
-		table_config_add_partition(self->config, config);
-		if (is_last)
-			break;
-
-		range_start += range_step;
-	}
-}
-
 void
 parse_table_create(Stmt* self, bool unlogged)
 {
@@ -444,10 +408,18 @@ parse_table_create(Stmt* self, bool unlogged)
 	table_config_set_db(config, self->parser->db);
 	table_config_set_name(config, &name->string);
 
+	// create main volume config
+	auto config_volume = volume_config_allocate();
+	stmt->config_volume = config_volume;
+	table_config_volume_add(config, config_volume);
+	Str volume_tier;
+	str_set_cstr(&volume_tier, "name");
+	volume_config_set_tier(config_volume, &volume_tier);
+
 	// create primary index config
 	auto config_index = index_config_allocate(&config->columns);
 	stmt->config_index = config_index;
-	table_config_add_index(config, config_index);
+	table_config_index_add(config, config_index);
 
 	Str index_name;
 	str_set_cstr(&index_name, "primary");
@@ -459,17 +431,19 @@ parse_table_create(Stmt* self, bool unlogged)
 	// (columns)
 	parse_columns(self, &config->columns, &config_index->keys);
 
+	// configure partitions mapping
+
 	// [PARTITIONS]
+	auto hash_partitions = opt_int_of(&config()->backends);
 	if (stmt_if(self, KPARTITIONS))
 	{
 		auto n = stmt_expect(self, KINT);
-		stmt->partitions = n->integer;
-	} else {
-		stmt->partitions = opt_int_of(&config()->backends);
+		hash_partitions = n->integer;
 	}
+	if (hash_partitions < 1 || hash_partitions >= UINT16_MAX)
+		stmt_error(self, NULL, "table has invalid hash partitions number");
 
-	// define partitions
-	parse_table_finilize(stmt);
+	table_config_set_mapping(config, MAPPING_HASH, hash_partitions);
 }
 
 void
