@@ -12,7 +12,7 @@
 
 #include <amelie_runtime>
 #include <amelie_server>
-#include <amelie_engine>
+#include <amelie_tier>
 #include <amelie_storage>
 #include <amelie_repl>
 #include <amelie_vm>
@@ -22,6 +22,8 @@
 static void
 replay_read(Dtr* dtr, Dispatch* dispatch, Record* record)
 {
+	auto storage = share()->storage;
+
 	// redistribute rows between partitions
 	Req* last = NULL;
 
@@ -30,10 +32,11 @@ replay_read(Dtr* dtr, Dispatch* dispatch, Record* record)
 	auto pos = record_data(record);
 	for (auto i = record->count; i > 0; i--)
 	{
-		// map each write to route
-		auto part = part_mgr_find(&share()->storage->part_mgr, cmd->partition);
+		// match partition
+		auto table = table_mgr_find_by(&storage->catalog.table_mgr, &cmd->id, true);
+		auto part  = mapping_map(&table->volume_mgr.mapping, (Row*)pos);
 		if (! part)
-			error("failed to find partition %" PRIu32, cmd->partition);
+			error("replay: failed to find partition");
 
 		// prepare request
 		Req* req = NULL;

@@ -12,7 +12,7 @@
 
 #include <amelie_runtime>
 #include <amelie_server>
-#include <amelie_engine>
+#include <amelie_tier>
 #include <amelie_storage>
 #include <amelie_repl>
 #include <amelie_vm>
@@ -78,7 +78,7 @@ build_add_all(Build* self, Storage* storage)
 	list_foreach(&storage->catalog.table_mgr.mgr.list)
 	{
 		auto table = table_of(list_at(Relation, link));
-		list_foreach(&table->part_list.list)
+		list_foreach(&table->volume_mgr.parts)
 		{
 			auto part = list_at(Part, link);
 			build_add(self, part);
@@ -100,6 +100,7 @@ build_run(Build* self)
 
 	auto config = self->config;
 	switch (config->type) {
+#if 0
 	case BUILD_INDEX:
 	{
 		auto table_config = config->table->config;
@@ -133,6 +134,7 @@ build_run(Build* self)
 		     str_of(&config->column->name));
 		break;
 	}
+#endif
 	// BUILD_RECOVER
 	// BUILD_NONE
 	default:
@@ -161,8 +163,9 @@ build_execute(Build* self, Part* part)
 	auto config = self->config;
 	switch (config->type) {
 	case BUILD_RECOVER:
-		recover_part(part);
+		part_load(part);
 		break;
+#if 0
 	case BUILD_INDEX:
 	{
 		// build new index content for current worker
@@ -202,7 +205,9 @@ build_execute(Build* self, Part* part)
 		part_build(&pb);
 		break;
 	}
-	case BUILD_NONE:
+#endif
+	// BUILD_NONE
+	default:
 		// do nothing, used for sync
 		break;
 	}

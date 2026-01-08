@@ -12,7 +12,7 @@
 
 #include <amelie_runtime>
 #include <amelie_server>
-#include <amelie_engine>
+#include <amelie_tier>
 #include <amelie_storage>
 #include <amelie_repl>
 #include <amelie_vm>
@@ -40,7 +40,7 @@ catalog_if_index(Catalog* self, Table* table, IndexConfig* index)
 	build_init(&build);
 	defer(build_free, &build);
 	build_prepare(&build, &config);
-	list_foreach(&table->part_list.list)
+	list_foreach(&table->volume_mgr.parts)
 		build_add(&build, list_at(Part, link));
 	build_run(&build);
 }
@@ -63,7 +63,7 @@ catalog_if_column_add(Catalog* self, Table* table, Table* table_new, Column* col
 	build_init(&build);
 	defer(build_free, &build);
 	build_prepare(&build, &config);
-	list_foreach(&table->part_list.list)
+	list_foreach(&table->volume_mgr.parts)
 		build_add(&build, list_at(Part, link));
 	build_run(&build);
 }
@@ -86,7 +86,7 @@ catalog_if_column_drop(Catalog* self, Table* table, Table* table_new, Column* co
 	build_init(&build);
 	defer(build_free, &build);
 	build_prepare(&build, &config);
-	list_foreach(&table->part_list.list)
+	list_foreach(&table->volume_mgr.parts)
 		build_add(&build, list_at(Part, link));
 	build_run(&build);
 }
@@ -206,28 +206,28 @@ system_on_server_connect(Server* server, Client* client)
 }
 
 static void
-part_mgr_if_attach(PartMgr* self, PartList* list)
+deploy_if_attach(Deploy* self, VolumeMgr* volume_mgr)
 {
 	System* system = self->iface_arg;
-	if (list->list_count > PARTITION_MAX)
-		error("exceeded the maximum number of partitions per table");
+	if (volume_mgr->parts_count > UINT16_MAX)
+		error("exceeded the maximum number of hash partitions per table");
 
 	// create pods on backends
-	backend_mgr_deploy(&system->backend_mgr, list);
+	backend_mgr_deploy(&system->backend_mgr, volume_mgr);
 }
 
 static void
-part_mgr_if_detach(PartMgr* self, PartList* list)
+deploy_if_detach(Deploy* self, VolumeMgr* volume_mgr)
 {
 	// drop pods on backends
 	System* system = self->iface_arg;
-	backend_mgr_undeploy(&system->backend_mgr, list);
+	backend_mgr_undeploy(&system->backend_mgr, volume_mgr);
 }
 
-static PartMgrIf part_mgr_if =
+static DeployIf deploy_if =
 {
-	.attach = part_mgr_if_attach,
-	.detach = part_mgr_if_detach
+	.attach = deploy_if_attach,
+	.detach = deploy_if_detach
 };
 
 static void
@@ -278,7 +278,7 @@ system_create(void)
 	function_mgr_init(&self->function_mgr);
 
 	// storage
-	storage_init(&self->storage, &catalog_if, self, &part_mgr_if, self);
+	storage_init(&self->storage, &catalog_if, self, &deploy_if, self);
 
 	// replication
 	repl_init(&self->repl, &self->storage);
@@ -303,6 +303,7 @@ system_recover(System* self)
 {
 	auto storage = &self->storage;
 
+#if 0
 	// recover partitions
 	int workers = opt_int_of(&config()->backends);
 	info("");
@@ -323,6 +324,8 @@ system_recover(System* self)
 	build_prepare(&build, &config);
 	build_add_all(&build, storage);
 	build_run(&build);
+#endif
+	(void)storage;
 
 	// replay wals
 	info("");
@@ -340,6 +343,7 @@ system_bootstrap(System* self)
 {
 	state_lsn_set(1);
 
+#if 0
 	// create initial checkpoint
 	Checkpoint cp;
 	checkpoint_init(&cp, &self->storage.checkpoint_mgr);
@@ -347,6 +351,8 @@ system_bootstrap(System* self)
 	checkpoint_begin(&cp, 1, 1);
 	checkpoint_run(&cp);
 	checkpoint_wait(&cp);
+#endif
+	(void)self;
 }
 
 void
@@ -401,7 +407,7 @@ system_start(System* self, bool bootstrap)
 		system_bootstrap(self);
 
 	// start checkpointer service
-	checkpointer_start(&self->storage.checkpointer);
+	// checkpointer_start(&self->storage.checkpointer);
 
 	// start periodic async wal fsync
 	wal_periodic_start(&self->storage.wal_mgr.wal_periodic);
@@ -553,7 +559,7 @@ system_main(System* self)
 			system_unlock(self, rpc);
 			break;
 		case MSG_CHECKPOINT:
-			checkpointer_request(&self->storage.checkpointer, rpc);
+			// checkpointer_request(&self->storage.checkpointer, rpc);
 			break;
 		default:
 			rpc_execute(rpc, system_rpc, self);

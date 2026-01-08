@@ -103,12 +103,12 @@ backend_mgr_find(BackendMgr* self, Task* task)
 }
 
 static inline void
-backend_mgr_deploy(BackendMgr* self, PartList* list)
+backend_mgr_deploy(BackendMgr* self, VolumeMgr* volume_mgr)
 {
 	// evenly redistribute backends and create pods
 	// for each partition
 	auto order = 0;
-	list_foreach(&list->list)
+	list_foreach(&volume_mgr->parts)
 	{
 		auto part = list_at(Part, link);
 		if (order == self->workers_count)
@@ -120,10 +120,10 @@ backend_mgr_deploy(BackendMgr* self, PartList* list)
 }
 
 static inline void
-backend_mgr_undeploy(BackendMgr* self, PartList* list)
+backend_mgr_undeploy(BackendMgr* self, VolumeMgr* volume_mgr)
 {
 	// drop pods associated with partitions
-	list_foreach(&list->list)
+	list_foreach(&volume_mgr->parts)
 	{
 		auto part = list_at(Part, link);
 		if (! part->track.backend)

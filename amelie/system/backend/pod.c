@@ -12,7 +12,7 @@
 
 #include <amelie_runtime>
 #include <amelie_server>
-#include <amelie_engine>
+#include <amelie_tier>
 #include <amelie_storage>
 #include <amelie_repl>
 #include <amelie_vm>
@@ -38,7 +38,7 @@ pod_replay(Pod* self, Tr* tr, Buf* arg)
 			if (unlikely(! record_validate_cmd(cmd, data)))
 				error("replay: record command crc mismatch");
 
-		assert(self->part->config->id == cmd->partition);
+		assert(uuid_is(&self->part->id.id_table, &cmd->id));
 
 		// replay writes
 		auto end = data + cmd->size;
@@ -46,7 +46,7 @@ pod_replay(Pod* self, Tr* tr, Buf* arg)
 		{
 			while (data < end)
 			{
-				auto row = row_copy(&self->part->heap, (Row*)data);
+				auto row = row_copy(self->part->heap, (Row*)data);
 				part_insert(self->part, tr, true, row);
 				data += row_size(row);
 			}
