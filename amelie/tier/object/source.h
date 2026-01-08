@@ -223,6 +223,31 @@ source_write(Source* self, Buf* buf, bool safe)
 	encode_obj_end(buf);
 }
 
+static inline void
+source_basepath(Source* self, char* path)
+{
+	// set full e path
+	if (str_empty(&self->path))
+	{
+		// <base>
+		sfmt(path, PATH_MAX, "%s", state_directory());
+	} else
+	{
+		if (*str_of(&self->path) == '/')
+		{
+			// /<path>
+			sfmt(path, PATH_MAX, "%.*s", str_size(&self->path),
+			     str_of(&self->path));
+		} else
+		{
+			// <base>/<path>
+			sfmt(path, PATH_MAX, "%s/%.*s", state_directory(),
+			     str_size(&self->path),
+			     str_of(&self->path));
+		}
+	}
+}
+
 static inline void format_validate(4, 5)
 source_path(Source* self, char* path, Uuid* id, char* fmt, ...)
 {

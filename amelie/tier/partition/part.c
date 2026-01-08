@@ -49,6 +49,8 @@ void
 part_free(Part* self)
 {
 	track_free(&self->track);
+	if (self->object)
+		object_free(self->object);
 	list_foreach_safe(&self->indexes)
 	{
 		auto index = list_at(Index, link);

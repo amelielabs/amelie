@@ -407,13 +407,17 @@ parse_table_create(Stmt* self, bool unlogged)
 	table_config_set_unlogged(config, unlogged);
 	table_config_set_db(config, self->parser->db);
 	table_config_set_name(config, &name->string);
+	Uuid id;
+	uuid_init(&id);
+	uuid_generate(&id, &runtime()->random);
+	table_config_set_id(config, &id);
 
 	// create main volume config
 	auto config_volume = volume_config_allocate();
 	stmt->config_volume = config_volume;
 	table_config_volume_add(config, config_volume);
 	Str volume_tier;
-	str_set_cstr(&volume_tier, "name");
+	str_set_cstr(&volume_tier, "main");
 	volume_config_set_tier(config_volume, &volume_tier);
 
 	// create primary index config

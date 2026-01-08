@@ -37,19 +37,19 @@ static inline int
 recover_id(char* path, Id* id)
 {
 	// <id_parent>.<id>
-	uint64_t id_self = 0;
 	uint64_t id_parent = 0;
-	path = recover_idof(path, &id_self);
+	uint64_t id_self = 0;
+	path = recover_idof(path, &id_parent);
 	if (!path || *path != '.')
 		return -1;
 	// .
 	path++;
 	// id
-	path = recover_idof(path, &id_parent);
+	path = recover_idof(path, &id_self);
 	if (!path || *path)
 		return -1;
-	id->id        = id_self;
 	id->id_parent = id_parent;
+	id->id        = id_self;
 	return 0;
 }
 
@@ -87,8 +87,12 @@ volume_mgr_recover_volume(VolumeMgr* self, Volume* volume)
 			continue;
 
 		// <id_parent>.<id>
-		Id id;
-		id_init(&id);
+		Id id =
+		{
+			.id_parent = 0,
+			.id        = 0,
+			.id_table   = self->id
+		};
 		if (recover_id(entry->d_name, &id) == -1)
 		{
 			info("volume: skipping unknown file: '%s%s'",
@@ -199,7 +203,7 @@ volume_mgr_recover(VolumeMgr* self, List* volumes, List* indexes)
 	// maybe create initial partitions
 	if (create)
 	{
-		auto main = container_of(list_first(volumes), Volume, link);
+		auto main = container_of(list_first(&self->volumes), Volume, link);
 		volume_mgr_create(self, main);
 	}
 

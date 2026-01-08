@@ -62,6 +62,9 @@ mapping_create(Mapping* self)
 hot static inline void
 mapping_add(Mapping* self, Part* part)
 {
+	if (! self->map)
+		mapping_create(self);
+
 	// [hash][mapping_range]
 	auto pos     = part->object->meta.hash_min;
 	auto pos_max = part->object->meta.hash_max;
@@ -80,7 +83,7 @@ mapping_add(Mapping* self, Part* part)
 	} else {
 		ref = part;
 	}
-	for (; pos <= pos_max; pos++)
+	for (; pos < pos_max; pos++)
 		self->map[pos] = ref;
 }
 
@@ -104,7 +107,7 @@ mapping_remove(Mapping* self, Part* part)
 		self->ranges_count--;
 		mapping_range_free(range);
 	}
-	for (; pos <= pos_max; pos++)
+	for (; pos < pos_max; pos++)
 		self->map[pos] = NULL;
 }
 

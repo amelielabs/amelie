@@ -47,6 +47,12 @@ tier_mgr_create(TierMgr* self,
 		return false;
 	}
 
+	// create tier directory, if not exists
+	char path[PATH_MAX];
+	source_basepath(config, path);
+	if (! fs_exists("%s", path))
+		fs_mkdir(0755, "%s", path);
+
 	// allocate tier and init
 	auto tier = tier_allocate(config);
 

@@ -42,12 +42,15 @@ deploy_free(Deploy* self)
 }
 
 static inline void
+deploy_prepare(Deploy* self)
+{
+	hashtable_create(&self->ht, 256);
+}
+
+static inline void
 deploy_attach(Deploy* self, VolumeMgr* mgr)
 {
 	// register partitions by id
-	if (unlikely(! hashtable_created(&self->ht)))
-		hashtable_create(&self->ht, 256);
-
 	list_foreach(&mgr->parts)
 	{
 		auto part = list_at(Part, link);

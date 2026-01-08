@@ -42,6 +42,9 @@ storage_free(Storage* self)
 void
 storage_open(Storage* self)
 {
+	// prepare deploy hash
+	deploy_prepare(&self->deploy);
+
 	// prepare system catalog
 	catalog_open(&self->catalog);
 }

@@ -435,7 +435,7 @@ op_dump(Program* self, Code* code, Buf* buf)
 			             true, true, true);
 			break;
 		case CSEND_LOOKUP:
-			op_dump_send(self, code, op, output, send_at(data, op->d),
+			op_dump_send(self, code, op, output, send_at(data, op->c),
 			             true, false, true);
 			break;
 		case CSEND_ALL:

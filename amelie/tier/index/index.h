@@ -38,9 +38,9 @@ struct Index
 static inline void
 index_init(Index* self, IndexConfig* config, void* arg)
 {
+	memset(self, 0, sizeof(*self));
 	self->config = config;
 	self->iface_arg = arg;
-	memset(&self->iface, 0, sizeof(*self));
 	list_init(&self->link);
 }
 
