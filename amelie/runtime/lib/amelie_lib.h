@@ -58,8 +58,3 @@
 #include "lib/separator.h"
 #include "lib/console.h"
 #include "lib/histogram.h"
-
-// locking
-#include "lib/lock.h"
-#include "lib/resource.h"
-#include "lib/lock_mgr.h"

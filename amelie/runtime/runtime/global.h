@@ -17,18 +17,6 @@
 
 // control
 static inline void
-control_lock(void)
-{
-	rpc(&runtime()->task, MSG_LOCK, 0);
-}
-
-static inline void
-control_unlock(void)
-{
-	rpc(&runtime()->task, MSG_UNLOCK, 0);
-}
-
-static inline void
 control_save_state(void)
 {
 	runtime()->iface->save_state(runtime()->iface->arg);

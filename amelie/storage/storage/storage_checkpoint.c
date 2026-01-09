@@ -11,8 +11,9 @@
 //
 
 #include <amelie_runtime>
-#include <amelie_engine>
+#include <amelie_tier>
 #include <amelie_catalog.h>
+#include <amelie_lock.h>
 #include <amelie_wal.h>
 #include <amelie_storage.h>
 

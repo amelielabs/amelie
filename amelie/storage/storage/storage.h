@@ -15,9 +15,10 @@ typedef struct Storage Storage;
 
 struct Storage
 {
-	Service       service;
-	Deploy        deploy;
+	LockMgr       lock_mgr;
 	Catalog       catalog;
+	Deploy        deploy;
+	Service       service;
 	CompactionMgr compaction_mgr;
 	WalMgr        wal_mgr;
 };

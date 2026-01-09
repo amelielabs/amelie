@@ -17,10 +17,15 @@ typedef struct Access       Access;
 typedef enum
 {
 	ACCESS_UNDEF,
+	// relations
 	ACCESS_RO,
 	ACCESS_RW,
 	ACCESS_RO_EXCLUSIVE,
-	ACCESS_CALL
+	ACCESS_EXCLUSIVE,
+	ACCESS_CALL,
+	// catalog
+	ACCESS_CATALOG,
+	ACCESS_CATALOG_EXCLUSIVE
 } AccessType;
 
 struct AccessRecord
@@ -68,10 +73,13 @@ hot static inline void
 access_add(Access* self, Relation* rel, AccessType type)
 {
 	// keep the total non unique number of accesses to tables
-	if (type != ACCESS_CALL)
+	if (rel && type != ACCESS_CALL)
 		self->tables++;
 
-	// find and upgrade access to the relation
+	// find and upgrade access to the relation or catalog
+	//
+	// catalog relation is null
+	//
 	for (auto i = 0; i < self->list_count; i++)
 	{
 		auto record = access_at(self, i);
@@ -99,37 +107,50 @@ access_merge(Access* self, Access* with)
 }
 
 hot static inline bool
-access_try(Access* self, Access* with)
+access_try(Access* self, Access* access)
 {
 	for (auto i = 0; i < self->list_count; i++)
 	{
-		auto record = access_at(self, i);
-		for (auto j = 0; j < with->list_count; j++)
+		auto current = access_at(self, i);
+		for (auto j = 0; j < access->list_count; j++)
 		{
-			auto record_with = access_at(self, j);
-			if (record->rel != record_with->rel)
+			auto attempt = access_at(self, j);
+			// catalog relation is null
+			if (current->rel != attempt->rel)
 				continue;
-			switch (record->type) {
+			switch (current->type) {
 			case ACCESS_RO:
-				// pass all
+				if (attempt->type == ACCESS_EXCLUSIVE)
+					return false;
 				break;
 			case ACCESS_RW:
-				// rw block only ro_exclusive
-				if (record_with->type == ACCESS_RO_EXCLUSIVE)
+				if (attempt->type == ACCESS_RO_EXCLUSIVE ||
+				    attempt->type == ACCESS_EXCLUSIVE)
 					return false;
 				break;
 			case ACCESS_RO_EXCLUSIVE:
-				// rw block only ro_exclusive
-				if (record_with->type == ACCESS_RW)
+				if (attempt->type == ACCESS_RW ||
+				    attempt->type == ACCESS_EXCLUSIVE)
 					return false;
 				break;
+			case ACCESS_EXCLUSIVE:
+				return false;
 			case ACCESS_CALL:
+				if (attempt->type == ACCESS_EXCLUSIVE)
+					return false;
 				break;
+			case ACCESS_CATALOG:
+				if (attempt->type == ACCESS_CATALOG_EXCLUSIVE)
+					return false;
+				break;
+			case ACCESS_CATALOG_EXCLUSIVE:
+				return false;
 			default:
 				abort();
 			}
 		}
 	}
+	// pass
 	return true;
 }
 
@@ -139,6 +160,8 @@ access_find_db(Access* self, Str* db)
 	for (auto i = 0; i < self->list_count; i++)
 	{
 		auto record = access_at(self, i);
+		if (! record->rel)
+			continue;
 		if (str_compare(record->rel->db, db))
 			return record;
 	}
@@ -151,6 +174,8 @@ access_find(Access* self, Str* db, Str* name)
 	for (auto i = 0; i < self->list_count; i++)
 	{
 		auto record = access_at(self, i);
+		if (! record->rel)
+			continue;
 		if (str_compare(record->rel->db, db) &&
 		    str_compare(record->rel->name, name))
 			return record;
@@ -164,6 +189,8 @@ access_has_targets(Access* self)
 	for (auto i = 0; i < self->list_count; i++)
 	{
 		auto record = access_at(self, i);
+		if (! record->rel)
+			continue;
 		if (record->type == ACCESS_CALL)
 			continue;
 		return true;
@@ -191,9 +218,18 @@ access_encode(Access* self, Buf* buf)
 		case ACCESS_RO_EXCLUSIVE:
 			encode_raw(buf, "ro_exclusive", 12);
 			break;
+		case ACCESS_EXCLUSIVE:
+			encode_raw(buf, "exclusive", 9);
+			break;
 		case ACCESS_CALL:
 			encode_raw(buf, "call", 4);
 			has_call = true;
+			break;
+		case ACCESS_CATALOG:
+			encode_raw(buf, "catalog", 7);
+			break;
+		case ACCESS_CATALOG_EXCLUSIVE:
+			encode_raw(buf, "catalog_exclusive", 17);
 			break;
 		default:
 			abort();

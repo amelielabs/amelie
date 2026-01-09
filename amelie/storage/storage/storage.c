@@ -13,6 +13,7 @@
 #include <amelie_runtime>
 #include <amelie_tier>
 #include <amelie_catalog.h>
+#include <amelie_lock.h>
 #include <amelie_wal.h>
 #include <amelie_storage.h>
 
@@ -23,9 +24,10 @@ storage_init(Storage*   self,
              DeployIf*  iface_deploy,
              void*      iface_deploy_arg)
 {
-	service_init(&self->service);
+	lock_mgr_init(&self->lock_mgr);
 	deploy_init(&self->deploy, iface_deploy, iface_deploy_arg);
 	catalog_init(&self->catalog, iface, iface_arg, &self->deploy);
+	service_init(&self->service);
 	wal_mgr_init(&self->wal_mgr);
 	compaction_mgr_init(&self->compaction_mgr);
 }
@@ -37,6 +39,7 @@ storage_free(Storage* self)
 	deploy_free(&self->deploy);
 	service_free(&self->service);
 	wal_mgr_free(&self->wal_mgr);
+	lock_mgr_free(&self->lock_mgr);
 }
 
 void
