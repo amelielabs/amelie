@@ -27,8 +27,12 @@ ccheckpoint(Vm* self, Op* op)
 {
 	// [workers]
 	unused(self);
+	unused(op);
+	// todo:
+	/*
 	int workers = op->a;
 	rpc(&runtime()->task, MSG_CHECKPOINT, 1, workers);
+	*/
 }
 
 void

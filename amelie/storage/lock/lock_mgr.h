@@ -44,6 +44,8 @@ static inline void
 lock_set(Lock* self, Access* access)
 {
 	self->access = access;
+	if (! event_attached(&self->event))
+		event_attach(&self->event);
 }
 
 static inline void
@@ -69,9 +71,6 @@ lock_mgr_lock(LockMgr* self, Lock* lock)
 		lock->refs++;
 		return;
 	}
-
-	if (! event_attached(&lock->event))
-		event_attach(&lock->event);
 
 	spinlock_lock(&self->lock);
 retry:

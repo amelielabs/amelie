@@ -77,8 +77,8 @@ commit_main(void* arg)
 		//
 		auto group_min = executor_detach(self->executor, &batch);
 
-		// wakeup prepared transaction
-		batch_wakeup(&batch);
+		// wakeup and unlock prepared transaction
+		batch_complete(&batch, &self->storage->lock_mgr);
 
 		// remove all groups < group_min
 		dtr_queue_gc(&queue, group_min);

@@ -18,7 +18,6 @@ struct Executor
 	Spinlock lock;
 	uint64_t id;
 	List     list;
-	List     list_wait;
 };
 
 static inline void
@@ -26,7 +25,6 @@ executor_init(Executor* self)
 {
 	self->id = 1;
 	list_init(&self->list);
-	list_init(&self->list_wait);
 	spinlock_init(&self->lock);
 }
 
@@ -37,34 +35,9 @@ executor_free(Executor* self)
 }
 
 hot static inline void
-executor_attach_lock(Executor* self, Dtr* dtr)
-{
-restart:
-	list_foreach(&self->list)
-	{
-		auto ref = list_at(Dtr, link);
-		if (access_try(&ref->program->access, &dtr->program->access))
-			continue;
-
-		// wait for conflicting transaction completion
-		list_append(&self->list_wait, &dtr->link_access);
-		spinlock_unlock(&self->lock);
-
-		event_wait(&dtr->on_access, -1);
-
-		spinlock_lock(&self->lock);
-		list_unlink(&dtr->link_access);
-		goto restart;
-	}
-}
-
-hot static inline void
 executor_attach(Executor* self, Dtr* dtr, Dispatch* dispatch)
 {
 	spinlock_lock(&self->lock);
-
-	// process exclusive transaction locking
-	executor_attach_lock(self, dtr);
 
 	// match overlapping transaction group
 	auto is_snapshot = dtr->program->snapshot;
@@ -159,13 +132,6 @@ executor_detach(Executor* self, Batch* batch)
 	{
 		auto dtr = batch_at(batch, it);
 		list_unlink(&dtr->link);
-	}
-
-	// wakeup access waiters
-	list_foreach(&self->list_wait)
-	{
-		auto dtr = list_at(Dtr, link_access);
-		event_signal(&dtr->on_access);
 	}
 
 	// get min group as oldest transaction group id

@@ -21,7 +21,6 @@ struct Program
 	Access   access;
 	Buf      explain;
 	SetList  sets;
-	int      lock;
 	int      send_last;
 	bool     snapshot;
 	bool     repl;
@@ -32,7 +31,6 @@ static inline Program*
 program_allocate(void)
 {
 	auto self = (Program*)am_malloc(sizeof(Program));
-	self->lock      = LOCK_SHARED;
 	self->send_last = -1;
 	self->snapshot  = false;
 	self->repl      = false;
@@ -62,7 +60,6 @@ program_free(Program* self)
 static inline void
 program_reset(Program* self, SetCache* cache)
 {
-	self->lock      = LOCK_SHARED;
 	self->send_last = -1;
 	self->snapshot  = false;
 	self->repl      = false;

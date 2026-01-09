@@ -166,11 +166,12 @@ batch_abort(Batch* self)
 }
 
 hot static inline void
-batch_wakeup(Batch* self)
+batch_complete(Batch* self, LockMgr* lock_mgr)
 {
 	for (auto it = 0; it < self->list_count; it++)
 	{
 		auto dtr = batch_at(self, it);
+		lock_mgr_unlock(lock_mgr, &dtr->lock);
 		event_signal(&dtr->on_commit);
 	}
 }
