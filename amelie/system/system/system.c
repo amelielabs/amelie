@@ -165,8 +165,9 @@ static CatalogIf catalog_if =
 static void*
 frontend_if_session_create(Frontend* self, void* arg)
 {
+	unused(self);
 	unused(arg);
-	return session_create(self);
+	return session_create();
 }
 
 static void
@@ -243,7 +244,6 @@ System*
 system_create(void)
 {
 	System* self = am_malloc(sizeof(System));
-	self->lock = false;
 
 	// set runtime control
 	auto control = &self->runtime_if;
@@ -272,7 +272,6 @@ system_create(void)
 	backend_mgr_init(&self->backend_mgr);
 	executor_init(&self->executor);
 	commit_init(&self->commit, &self->storage, &self->executor);
-	rpc_queue_init(&self->lock_queue);
 
 	// vm
 	function_mgr_init(&self->function_mgr);
@@ -483,57 +482,35 @@ system_rpc(Rpc* rpc, void* arg)
 	}
 }
 
+#if 0
 static void
 system_lock(System* self, Rpc* rpc)
 {
-	if (self->lock)
+	// request exclusive lock for each frontend worker
+	frontend_mgr_lock(&self->frontend_mgr);
+
+	// sync to make last operation completed on every partition
+	//
+	// even with exclusive lock, there is a chance that
+	// last abort did not not finished yet
+	BuildConfig config =
 	{
-		rpc_queue_add(&self->lock_queue, rpc);
-	} else
-	{
-		// request exclusive lock for each frontend worker
-		frontend_mgr_lock(&self->frontend_mgr);
+		.type      = BUILD_NONE,
+		.table     = NULL,
+		.table_new = NULL,
+		.column    = NULL,
+		.index     = NULL,
+	};
+	Build build;
+	build_init(&build);
+	defer(build_free, &build);
+	build_prepare(&build, &config);
+	build_add_all(&build, &self->storage);
+	build_run(&build);
 
-		// sync to make last operation completed on every partition
-		//
-		// even with exclusive lock, there is a chance that
-		// last abort did not not finished yet
-		BuildConfig config =
-		{
-			.type      = BUILD_NONE,
-			.table     = NULL,
-			.table_new = NULL,
-			.column    = NULL,
-			.index     = NULL,
-		};
-		Build build;
-		build_init(&build);
-		defer(build_free, &build);
-		build_prepare(&build, &config);
-		build_add_all(&build, &self->storage);
-		build_run(&build);
-
-		rpc_done(rpc);
-		self->lock = true;
-	}
-}
-
-static void
-system_unlock(System* self, Rpc* rpc)
-{
-	assert(self->lock);
-	frontend_mgr_unlock(&self->frontend_mgr);
-
-	auto pending = rpc_queue_pop(&self->lock_queue);
-	if (pending)
-	{
-		frontend_mgr_lock(&self->frontend_mgr);
-		rpc_done(pending);
-	} else {
-		self->lock = false;
-	}
 	rpc_done(rpc);
 }
+#endif
 
 void
 system_main(System* self)
@@ -551,19 +528,6 @@ system_main(System* self)
 		}
 		// rpc
 		auto rpc = rpc_of(msg);
-		switch (msg->id) {
-		case MSG_LOCK:
-			system_lock(self, rpc);
-			break;
-		case MSG_UNLOCK:
-			system_unlock(self, rpc);
-			break;
-		case MSG_CHECKPOINT:
-			// checkpointer_request(&self->storage.checkpointer, rpc);
-			break;
-		default:
-			rpc_execute(rpc, system_rpc, self);
-			break;
-		}
+		rpc_execute(rpc, system_rpc, self);
 	}
 }

@@ -87,6 +87,7 @@ include_directories("${AMELIE_ROOT}/tier/tier")
 # storage
 include_directories("${AMELIE_ROOT}/storage")
 include_directories("${AMELIE_ROOT}/storage/catalog")
+include_directories("${AMELIE_ROOT}/storage/lock")
 include_directories("${AMELIE_ROOT}/storage/wal")
 include_directories("${AMELIE_ROOT}/storage/storage")
 
@@ -370,7 +371,6 @@ set(AMELIE_SOURCES_UNIT
     ${CMAKE_SOURCE_DIR}/tests/unit/test_ipc.c
     ${CMAKE_SOURCE_DIR}/tests/unit/test_rpc.c
     ${CMAKE_SOURCE_DIR}/tests/unit/test_cancel.c
-    ${CMAKE_SOURCE_DIR}/tests/unit/test_lock.c
     ${CMAKE_SOURCE_DIR}/tests/unit/test_sleep.c
     ${CMAKE_SOURCE_DIR}/tests/unit/test_benchmark.c
     ${CMAKE_SOURCE_DIR}/tests/unit/test_heap.c

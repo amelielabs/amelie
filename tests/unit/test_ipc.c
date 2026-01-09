@@ -73,7 +73,7 @@ test_ipc_producer(void* arg)
 	for (int i = 0; i < 100; i++)
 	{
 		auto msg = &events[i];
-		msg_init(&msg->msg, MSG_LOCK);
+		msg_init(&msg->msg, 123);
 		msg->value = i;
 		task_send(consumer, &msg->msg);
 	}

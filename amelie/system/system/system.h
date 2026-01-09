@@ -25,8 +25,6 @@ struct System
 	Commit      commit;
 	FrontendMgr frontend_mgr;
 	BackendMgr  backend_mgr;
-	bool        lock;
-	RpcQueue    lock_queue;
 	// storage
 	Storage     storage;
 	// server
