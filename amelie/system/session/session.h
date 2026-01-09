@@ -15,21 +15,19 @@ typedef struct Session Session;
 
 struct Session
 {
-	Compiler  compiler;
-	Vm        vm;
-	Program*  program;
-	SetCache  set_cache;
-	Dtr       dtr;
-	Profile   profile;
-	int       lock_type;
-	Lock*     lock;
-	Lock*     lock_ref;
-	Local     local;
-	Frontend* frontend;
+	Compiler compiler;
+	Vm       vm;
+	Program* program;
+	SetCache set_cache;
+	Dtr      dtr;
+	Profile  profile;
+	Access   lock_catalog;
+	Access   lock_catalog_exclusive;
+	Lock     lock;
+	Local    local;
 };
 
-Session* session_create(Frontend*);
-void     session_free(Session*);
-void     session_lock(Session*, int);
-void     session_unlock(Session*);
-bool     session_execute(Session*, Endpoint*, Str*, Output*);
+Session*
+session_create(void);
+void session_free(Session*);
+bool session_execute(Session*, Endpoint*, Str*, Output*);

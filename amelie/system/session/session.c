@@ -22,14 +22,18 @@
 #include <amelie_session.h>
 
 Session*
-session_create(Frontend* frontend)
+session_create(void)
 {
 	auto self = (Session*)am_malloc(sizeof(Session));
-	self->program   = program_allocate();
-	self->lock_type = LOCK_NONE;
-	self->lock      = NULL;
-	self->lock_ref  = NULL;
-	self->frontend  = frontend;
+	self->program = program_allocate();
+
+	access_init(&self->lock_catalog);
+	access_add(&self->lock_catalog, NULL, ACCESS_CATALOG);
+	access_init(&self->lock_catalog_exclusive);
+	access_add(&self->lock_catalog_exclusive, NULL, ACCESS_CATALOG_EXCLUSIVE);
+	lock_init(&self->lock);
+	lock_set(&self->lock, &self->lock_catalog);
+
 	local_init(&self->local);
 	set_cache_init(&self->set_cache);
 	compiler_init(&self->compiler, &self->local, &self->set_cache);
@@ -54,12 +58,13 @@ session_reset(Session* self)
 	dtr_reset(&self->dtr);
 	profile_reset(&self->profile);
 	local_reset(&self->local);
+	lock_set(&self->lock, &self->lock_catalog);
 }
 
 void
 session_free(Session *self)
 {
-	assert(self->lock_type == LOCK_NONE);
+	assert(! self->lock.refs);
 	session_reset_query(self);
 	session_reset(self);
 	compiler_free(&self->compiler);
@@ -67,6 +72,8 @@ session_free(Session *self)
 	program_free(self->program);
 	set_cache_free(&self->set_cache);
 	dtr_free(&self->dtr);
+	access_free(&self->lock_catalog);
+	access_free(&self->lock_catalog_exclusive);
 	local_free(&self->local);
 	am_free(self);
 }
@@ -89,47 +96,6 @@ session_set(Session* self, Endpoint* endpoint, Output* output)
 	db_mgr_find(&share()->storage->catalog.db_mgr, &local->db, true);
 }
 
-void
-session_lock(Session* self, int type)
-{
-	if (self->lock_type == type)
-		return;
-
-	// downgrade or upgrade lock request
-	if (self->lock_type != LOCK_NONE)
-		session_unlock(self);
-
-	switch (type) {
-	case LOCK_SHARED:
-		// take shared frontend lock
-		self->lock = lock_mgr_lock(&self->frontend->lock_mgr, type);
-		break;
-	case LOCK_EXCLUSIVE:
-		control_lock();
-		break;
-	case LOCK_NONE:
-		break;
-	}
-
-	self->lock_type = type;
-}
-
-void
-session_unlock(Session* self)
-{
-	switch (self->lock_type) {
-	case LOCK_SHARED:
-		lock_mgr_unlock(&self->frontend->lock_mgr, self->lock_type, self->lock);
-		break;
-	case LOCK_EXCLUSIVE:
-		control_unlock();
-		break;
-	case LOCK_NONE:
-		break;
-	}
-	self->lock_type = LOCK_NONE;
-}
-
 hot static inline void
 session_execute_distributed(Session* self, Output* output)
 {
@@ -142,6 +108,9 @@ session_execute_distributed(Session* self, Output* output)
 
 	// prepare distributed transaction
 	dtr_create(dtr, program);
+
+	// take transaction locks
+	lock_mgr_lock(&share()->storage->lock_mgr, &dtr->lock);
 
 	// [PROFILE]
 	if (compiler->program_profile)
@@ -175,7 +144,7 @@ session_execute_distributed(Session* self, Output* output)
 		profile_start(&profile->time_commit_us);
 	}
 
-	// coordinate wal write and group commit, handle group abort
+	// do group commit and wal write, handle group abort
 	commit(share()->commit, dtr, error);
 
 	// write result
@@ -197,6 +166,12 @@ session_execute_utility(Session* self, Output* output)
 	auto compiler = &self->compiler;
 	auto program  = compiler->program;
 	reg_prepare(&self->vm.r, program->code.regs);
+
+	// switch session lock to use program utility lock
+	auto lock_mgr = &share()->storage->lock_mgr;
+	lock_mgr_unlock(lock_mgr, &self->lock);
+	lock_set(&self->lock, &program->access);
+	lock_mgr_lock(lock_mgr, &self->lock);
 
 	// [PROFILE]
 	auto profile = &self->profile;
@@ -330,9 +305,6 @@ session_endpoint(Session*  self,
 		return;
 	}
 
-	// take the required program lock
-	session_lock(self, program->lock);
-
 	// execute utility, DDL, DML or Query
 	if (program->utility)
 		session_execute_utility(self, output);
@@ -349,13 +321,14 @@ session_execute(Session*  self,
 	cancel_pause();
 
 	// execute request based on the content-type
+	auto lock_mgr = &share()->storage->lock_mgr;
 	auto on_error = error_catch
 	(
 		// reset session session state
 		session_reset(self);
 
-		// take shared session lock (for catalog access)
-		session_lock(self, LOCK_SHARED);
+		// take shared catalog lock
+		lock_mgr_lock(lock_mgr, &self->lock);
 
 		// set local settings
 		session_set(self, endpoint, output);
@@ -364,7 +337,7 @@ session_execute(Session*  self,
 		session_endpoint(self, endpoint, content, output);
 
 		// done
-		session_unlock(self);
+		lock_mgr_unlock(lock_mgr, &self->lock);
 	);
 
 	session_reset_query(self);
@@ -373,7 +346,7 @@ session_execute(Session*  self,
 	{
 		buf_reset(output->buf);
 		output_write_error(output, &am_self()->error);
-		session_unlock(self);
+		lock_mgr_unlock(lock_mgr, &self->lock);
 	}
 
 	// cancellation point

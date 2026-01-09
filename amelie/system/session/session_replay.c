@@ -21,12 +21,17 @@
 #include <amelie_backend.h>
 #include <amelie_session.h>
 
+static void
+session_execute_unlock(Session* self)
+{
+	lock_mgr_unlock(&share()->storage->lock_mgr, &self->lock);
+}
+
 void
 session_execute_replay(Session* self, Primary* primary, Buf* data)
 {
-	// take shared lock
-	session_lock(self, LOCK_SHARED);
-	defer(session_unlock, self);
+	auto lock = &self->lock;
+	defer(session_execute_unlock, self);
 
 	// validate request fields and check current replication state
 
@@ -53,14 +58,25 @@ session_execute_replay(Session* self, Primary* primary, Buf* data)
 
 		if (likely(record_cmd_is_dml(record_cmd(record))))
 		{
+			// take shared lock
+			if (! lock_active(lock))
+			{
+				lock_set(lock, &self->lock_catalog);
+				lock_mgr_lock(&share()->storage->lock_mgr, lock);
+			}
+
 			// execute DML
 			dtr_reset(dtr);
 			dtr_create(dtr, program);
 			replay(dtr, record);
 		} else
 		{
-			// upgrade to exclusive lock
-			session_lock(self, LOCK_EXCLUSIVE);
+			// take exclusive lock
+			if (! lock_active(lock))
+			{
+				lock_set(lock, &self->lock_catalog_exclusive);
+				lock_mgr_lock(&share()->storage->lock_mgr, lock);
+			}
 
 			// execute DDL
 			recover_next(primary->recover, record);

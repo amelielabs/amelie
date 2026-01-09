@@ -95,26 +95,6 @@ frontend_mgr_forward(FrontendMgr* self, Msg* msg)
 }
 
 static inline void
-frontend_mgr_lock(FrontendMgr* self)
-{
-	for (int i = 0; i < self->workers_count; i++)
-	{
-		auto fe = &self->workers[i];
-		rpc(&fe->task, MSG_LOCK, 0);
-	}
-}
-
-static inline void
-frontend_mgr_unlock(FrontendMgr* self)
-{
-	for (int i = 0; i < self->workers_count; i++)
-	{
-		auto fe = &self->workers[i];
-		rpc(&fe->task, MSG_UNLOCK, 0);
-	}
-}
-
-static inline void
 frontend_mgr_sync_users(FrontendMgr* self, UserCache* user_cache)
 {
 	for (int i = 0; i < self->workers_count; i++)

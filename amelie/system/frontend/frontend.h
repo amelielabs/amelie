@@ -24,7 +24,6 @@ struct FrontendIf
 
 struct Frontend
 {
-	LockMgr     lock_mgr;
 	ClientMgr   client_mgr;
 	Auth        auth;
 	FrontendIf* iface;

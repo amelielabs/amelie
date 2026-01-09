@@ -48,6 +48,12 @@ lock_set(Lock* self, Access* access)
 		event_attach(&self->event);
 }
 
+static inline bool
+lock_active(Lock* self)
+{
+	return self->refs > 0;
+}
+
 static inline void
 lock_mgr_init(LockMgr* self)
 {

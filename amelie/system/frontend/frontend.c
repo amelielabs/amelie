@@ -63,14 +63,6 @@ frontend_rpc(Rpc* rpc, void* arg)
 		auth_sync(&self->auth, with);
 		break;
 	}
-	case MSG_LOCK:
-		// exclusive lock
-		lock_mgr_lock(&self->lock_mgr, LOCK_EXCLUSIVE);
-		break;
-	case MSG_UNLOCK:
-		// exclusive unlock
-		lock_mgr_unlock(&self->lock_mgr, LOCK_EXCLUSIVE, NULL);
-		break;
 	case MSG_STOP:
 	{
 		// disconnect clients
@@ -126,7 +118,6 @@ frontend_init(Frontend*   self,
 {
 	self->iface     = iface;
 	self->iface_arg = iface_arg;
-	lock_mgr_init(&self->lock_mgr);
 	client_mgr_init(&self->client_mgr);
 	auth_init(&self->auth);
 	task_init(&self->task);
@@ -136,7 +127,6 @@ void
 frontend_free(Frontend* self)
 {
 	client_mgr_free(&self->client_mgr);
-	lock_mgr_free(&self->lock_mgr);
 	auth_free(&self->auth);
 	task_free(&self->task);
 }
