@@ -140,7 +140,7 @@ parse_select(Stmt* self, From* outer, bool subquery)
 	if (stmt_if(self, KFROM))
 	{
 		parse_from(self, &select->from,
-		           subquery ? ACCESS_RO_EXCLUSIVE : ACCESS_RO,
+		           subquery ? LOCK_EXCLUSIVE_RO : LOCK_SHARED,
 		           subquery);
 	}
 

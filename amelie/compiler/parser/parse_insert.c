@@ -212,7 +212,7 @@ parse_insert(Stmt* self)
 	auto into = stmt_expect(self, KINTO);
 
 	// table
-	parse_from(self, &stmt->from, ACCESS_RW, false);
+	parse_from(self, &stmt->from, LOCK_SHARED_RW, false);
 	if (from_empty(&stmt->from) || from_is_join(&stmt->from))
 		stmt_error(self, into, "table name expected");
 	auto target = from_first(&stmt->from);

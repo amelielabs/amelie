@@ -25,16 +25,18 @@ struct Program
 	bool     snapshot;
 	bool     repl;
 	bool     utility;
+	LockId   utility_lock;
 };
 
 static inline Program*
 program_allocate(void)
 {
 	auto self = (Program*)am_malloc(sizeof(Program));
-	self->send_last = -1;
-	self->snapshot  = false;
-	self->repl      = false;
-	self->utility   = false;
+	self->send_last    = -1;
+	self->snapshot     = false;
+	self->repl         = false;
+	self->utility      = false;
+	self->utility_lock = LOCK_SHARED;
 	code_init(&self->code);
 	code_init(&self->code_backend);
 	code_data_init(&self->code_data);
@@ -60,10 +62,11 @@ program_free(Program* self)
 static inline void
 program_reset(Program* self, SetCache* cache)
 {
-	self->send_last = -1;
-	self->snapshot  = false;
-	self->repl      = false;
-	self->utility   = false;
+	self->send_last    = -1;
+	self->snapshot     = false;
+	self->repl         = false;
+	self->utility      = false;
+	self->utility_lock = LOCK_SHARED;
 	code_reset(&self->code);
 	code_reset(&self->code_backend);
 	code_data_reset(&self->code_data);

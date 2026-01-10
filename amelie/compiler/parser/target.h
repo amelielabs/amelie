@@ -50,7 +50,7 @@ struct Target
 	// target src
 	union {
 		struct {
-			AccessType   from_access;
+			LockId       from_lock;
 			Table*       from_table;
 			IndexConfig* from_index;
 		};
@@ -80,13 +80,13 @@ target_allocate(void)
 {
 	Target* self = palloc(sizeof(Target));
 	memset(self, 0, sizeof(Target));
-	self->type        = TARGET_NONE;
-	self->origin      = ORIGIN_FRONTEND;
-	self->from_access = ACCESS_UNDEF;
-	self->columns     = NULL;
-	self->r           = -1;
-	self->rcursor     = -1;
-	self->join        = JOIN_NONE;
+	self->type      = TARGET_NONE;
+	self->origin    = ORIGIN_FRONTEND;
+	self->from_lock = LOCK_SHARED;
+	self->columns   = NULL;
+	self->r         = -1;
+	self->rcursor   = -1;
+	self->join      = JOIN_NONE;
 	str_init(&self->name);
 	return self;
 }

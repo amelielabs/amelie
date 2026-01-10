@@ -20,7 +20,6 @@ struct Dtr
 	uint64_t    group_order;
 	DispatchMgr dispatch_mgr;
 	Program*    program;
-	Lock        lock;
 	Buf*        error;
 	bool        abort;
 	Write       write;
@@ -43,7 +42,6 @@ dtr_init(Dtr* self, Local* local)
 	self->local       = local;
 	self->link_group  = NULL;
 	dispatch_mgr_init(&self->dispatch_mgr, self);
-	lock_init(&self->lock);
 	event_init(&self->on_commit);
 	limit_init(&self->limit, opt_int_of(&config()->limit_write));
 	write_init(&self->write);
@@ -86,7 +84,6 @@ dtr_create(Dtr* self, Program* program)
 	self->program = program;
 	if (! event_attached(&self->on_commit))
 		event_attach(&self->on_commit);
-	lock_set(&self->lock, &program->access);
 }
 
 static inline bool

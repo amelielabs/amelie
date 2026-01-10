@@ -11,5 +11,5 @@
 // AGPL-3.0 Licensed.
 //
 
-Target* parse_from_add(Stmt*, From*, AccessType, Str*, bool);
-void    parse_from(Stmt*, From*, AccessType, bool);
+Target* parse_from_add(Stmt*, From*, LockId, Str*, bool);
+void    parse_from(Stmt*, From*, LockId, bool);

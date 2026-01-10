@@ -137,7 +137,7 @@ scan_table(Scan* self, Target* target)
 	// table_open (open a single partition or do table scan)
 	int _open = op_pos(cp);
 	int  open_op;
-	if (target->from_access == ACCESS_RO_EXCLUSIVE)
+	if (target->from_lock == LOCK_EXCLUSIVE_RO)
 	{
 		// subquery or inner join target
 		if (point_lookup)

@@ -340,14 +340,14 @@ import_insert(Parser* self, ParseEndpoint* pe)
 	auto table   = (Table*)pe->target;
 	auto columns = table_columns(table);
 	auto target  = target_allocate();
-	target->type        = TARGET_TABLE;
-	target->ast         = stmt->ast;
-	target->from_access = ACCESS_RW;
-	target->from_table  = table;
-	target->columns     = columns;
+	target->type       = TARGET_TABLE;
+	target->ast        = stmt->ast;
+	target->from_lock  = LOCK_SHARED_RW;
+	target->from_table = table;
+	target->columns    = columns;
 	str_set_str(&target->name, &table->config->name);
 	from_add(&insert->from, target);
-	access_add(&self->program->access, &table->rel, ACCESS_RW);
+	access_add(&self->program->access, &table->rel, LOCK_SHARED_RW);
 
 	// prepare result set
 	insert->values = set_cache_create(self->set_cache, &self->program->sets);

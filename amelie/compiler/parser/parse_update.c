@@ -156,7 +156,7 @@ parse_update(Stmt* self)
 	self->ret = &stmt->ret;
 
 	// table
-	parse_from(self, &stmt->from, ACCESS_RW, false);
+	parse_from(self, &stmt->from, LOCK_SHARED_RW, false);
 	if (from_empty(&stmt->from) || from_is_join(&stmt->from))
 		stmt_error(self, NULL, "table name expected");
 	auto target = from_first(&stmt->from);

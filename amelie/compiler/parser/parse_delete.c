@@ -32,7 +32,7 @@ parse_delete(Stmt* self)
 	auto from = stmt_expect(self, KFROM);
 
 	// table
-	parse_from(self, &stmt->from, ACCESS_RW, false);
+	parse_from(self, &stmt->from, LOCK_SHARED_RW, false);
 	if (from_empty(&stmt->from) || from_is_join(&stmt->from))
 		stmt_error(self, from, "table name expected");
 	auto target = from_first(&stmt->from);

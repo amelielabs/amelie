@@ -278,7 +278,7 @@ emit_utility(Compiler* self)
 	// explicily set program to have exclusive lock for majority of
 	// the utility/ddl commands with some exceptions below
 	program->utility = true;
-	auto lock = ACCESS_CATALOG_EXCLUSIVE;
+	auto lock = LOCK_EXCLUSIVE;
 
 	int r = -1;
 	switch (stmt->id) {
@@ -288,7 +288,7 @@ emit_utility(Compiler* self)
 		r = emit_show(self);
 
 		// shared lock
-		lock = ACCESS_CATALOG;
+		lock = LOCK_SHARED;
 		break;
 	}
 	case STMT_CHECKPOINT:
@@ -305,7 +305,7 @@ emit_utility(Compiler* self)
 		op1(self, CCHECKPOINT, workers);
 
 		// shared lock
-		lock = ACCESS_CATALOG;
+		lock = LOCK_SHARED;
 		break;
 	}
 
@@ -324,7 +324,7 @@ emit_utility(Compiler* self)
 		r = op2pin(self, CUSER_CREATE_TOKEN, TYPE_JSON, offset);
 
 		// shared lock
-		lock = ACCESS_CATALOG;
+		lock = LOCK_SHARED;
 		break;
 	}
 	case STMT_CREATE_USER:
@@ -407,7 +407,6 @@ emit_utility(Compiler* self)
 	if (r != -1)
 		runpin(self, r);
 
-	// add catalog lock
-	if (lock != ACCESS_UNDEF)
-		access_add(&program->access, NULL, lock);
+	// set catalog lock
+	program->utility_lock = lock;
 }

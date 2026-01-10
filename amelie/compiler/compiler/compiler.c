@@ -884,6 +884,6 @@ compiler_emit(Compiler* self)
 
 	// set snapshot if the program access tables more than once,
 	// this includes nested udf calls
-	if (program->access.tables > 1)
+	if (access_tables(&program->access) > 1)
 		program->snapshot = true;
 }

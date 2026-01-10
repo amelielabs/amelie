@@ -351,7 +351,7 @@ expr_func(Stmt* self, Expr* expr, Ast* name, bool with_args)
 
 		// track udf access
 		auto access = &self->parser->program->access;
-		access_add(access, &func->udf->rel, ACCESS_CALL);
+		access_add(access, &func->udf->rel, LOCK_CALL);
 
 		// import access from the udf
 		auto access_udf = &((Program*)func->udf->data)->access;
@@ -360,7 +360,7 @@ expr_func(Stmt* self, Expr* expr, Ast* name, bool with_args)
 		// mark stmt as having udf call and if the udf access other relations
 		// (requiring close)
 		self->udfs = true;
-		if (access_has_targets(access_udf))
+		if (access_tables(access_udf))
 			self->udfs_sending = true;
 	}
 

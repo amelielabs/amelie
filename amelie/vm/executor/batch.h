@@ -171,7 +171,7 @@ batch_complete(Batch* self, LockMgr* lock_mgr)
 	for (auto it = 0; it < self->list_count; it++)
 	{
 		auto dtr = batch_at(self, it);
-		lock_mgr_unlock(lock_mgr, &dtr->lock);
+		unlock_access(lock_mgr, &dtr->program->access);
 		event_signal(&dtr->on_commit);
 	}
 }

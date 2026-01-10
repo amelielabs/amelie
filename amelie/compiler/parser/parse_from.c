@@ -19,7 +19,7 @@
 #include <amelie_parser.h>
 
 static Target*
-parse_from_target(Stmt* self, From* from, AccessType access, bool subquery)
+parse_from_target(Stmt* self, From* from, LockId lock, bool subquery)
 {
 	auto target = target_allocate();
 
@@ -157,13 +157,13 @@ parse_from_target(Stmt* self, From* from, AccessType access, bool subquery)
 	                            &name->string, false);
 	if (table)
 	{
-		target->type        = TARGET_TABLE;
-		target->from_access = access;
-		target->from_table  = table;
-		target->columns     = &table->config->columns;
+		target->type       = TARGET_TABLE;
+		target->from_lock  = lock;
+		target->from_table = table;
+		target->columns    = &table->config->columns;
 		str_set_str(&target->name, &table->config->name);
 
-		access_add(&self->parser->program->access, &table->rel, access);
+		access_add(&self->parser->program->access, &table->rel, lock);
 
 		// [USE INDEX (name)]
 		if (stmt_if(self, KUSE))
@@ -184,12 +184,12 @@ parse_from_target(Stmt* self, From* from, AccessType access, bool subquery)
 }
 
 Target*
-parse_from_add(Stmt* self, From* from, AccessType access,
+parse_from_add(Stmt* self, From* from, LockId lock,
                Str*  as,
                bool  subquery)
 {
 	// FROM name | (SELECT) [AS] [alias] [USE INDEX (name)]
-	auto target = parse_from_target(self, from, access, subquery);
+	auto target = parse_from_target(self, from, lock, subquery);
 
 	// [AS] [alias]
 	if (as)
@@ -241,13 +241,13 @@ parse_from_add(Stmt* self, From* from, AccessType access,
 }
 
 void
-parse_from(Stmt* self, From* from, AccessType access, bool subquery)
+parse_from(Stmt* self, From* from, LockId lock, bool subquery)
 {
 	// FROM <name | (SELECT)> [AS] [alias]> [, ...]
 	// FROM <name | (SELECT)> [AS] [alias]> [JOIN <..> ON (expr) ...]
 
 	// FROM name | expr
-	parse_from_add(self, from, access, NULL, subquery);
+	parse_from_add(self, from, lock, NULL, subquery);
 
 	Ast* join_on = NULL;
 	for (;;)
@@ -256,7 +256,7 @@ parse_from(Stmt* self, From* from, AccessType access, bool subquery)
 		if (stmt_if(self, ','))
 		{
 			// name | expr
-			parse_from_add(self, from, ACCESS_RO_EXCLUSIVE, NULL, subquery);
+			parse_from_add(self, from, LOCK_EXCLUSIVE_RO, NULL, subquery);
 			continue;
 		}
 
@@ -296,7 +296,7 @@ parse_from(Stmt* self, From* from, AccessType access, bool subquery)
 			stmt_error(self, NULL, "outer joins currently are not supported");
 
 		// JOIN target
-		auto target = parse_from_add(self, from, ACCESS_RO_EXCLUSIVE, NULL, subquery);
+		auto target = parse_from_add(self, from, LOCK_EXCLUSIVE_RO, NULL, subquery);
 
 		// save the names count for AND before processing the next expression
 		auto names_count = from->list_names.count;

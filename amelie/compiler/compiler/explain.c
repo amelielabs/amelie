@@ -59,7 +59,7 @@ explain(Compiler* self, Str* function)
 		for (auto i = 0; i < access->list_count; i++)
 		{
 			auto record = access_at(access, i);
-			if (record->type == ACCESS_CALL)
+			if (record->lock == LOCK_CALL)
 			{
 				auto udf = udf_of(record->rel);
 				auto udf_program = (Program*)udf->data;

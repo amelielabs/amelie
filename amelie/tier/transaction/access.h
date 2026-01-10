@@ -107,17 +107,18 @@ access_find(Access* self, Str* db, Str* name)
 	return NULL;
 }
 
-hot static inline bool
-access_has_tables(Access* self)
+hot static inline int
+access_tables(Access* self)
 {
+	auto count = 0;
 	for (auto i = 0; i < self->list_count; i++)
 	{
 		auto record = access_at(self, i);
 		if (record->lock == LOCK_CALL)
 			continue;
-		return true;
+		count++;
 	}
-	return false;
+	return count;
 }
 
 static inline bool
