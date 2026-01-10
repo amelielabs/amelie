@@ -19,6 +19,7 @@ struct Relation
 {
 	Str*         db;
 	Str*         name;
+	int          lock[LOCK_MAX];
 	RelationFree free_function;
 	List         link;
 };
@@ -29,6 +30,7 @@ relation_init(Relation* self)
 	self->db            = NULL;
 	self->name          = NULL;
 	self->free_function = NULL;
+	memset(self->lock, 0, sizeof(self->lock));
 	list_init(&self->link);
 }
 
