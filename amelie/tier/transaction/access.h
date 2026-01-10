@@ -52,6 +52,12 @@ access_reset(Access* self)
 	buf_reset(&self->list);
 }
 
+static inline bool
+access_empty(Access* self)
+{
+	return !self->list_count;
+}
+
 hot static inline void
 access_add(Access* self, Relation* rel, LockId lock)
 {

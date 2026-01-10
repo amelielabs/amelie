@@ -84,6 +84,10 @@ lock_resolve(Relation* rel, LockId lock)
 hot static inline void
 lock_access(LockMgr* self, Access* access)
 {
+	// do nothing if the access list is empty
+	if (access_empty(access))
+		return;
+
 	// prepare lock
 	Lock lock;
 	lock_init(&lock);
@@ -133,6 +137,10 @@ lock_access(LockMgr* self, Access* access)
 hot static inline void
 unlock_access(LockMgr* self, Access* access)
 {
+	// do nothing if the access list is empty
+	if (access_empty(access))
+		return;
+
 	spinlock_lock(&self->lock);
 
 	// unlock relations

@@ -55,5 +55,6 @@ relation_set_free_function(Relation* self, RelationFree func)
 static inline void
 relation_free(Relation* self)
 {
-	self->free_function(self);
+	if (self->free_function)
+		self->free_function(self);
 }
