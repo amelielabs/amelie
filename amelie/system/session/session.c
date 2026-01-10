@@ -26,14 +26,8 @@ session_create(void)
 {
 	auto self = (Session*)am_malloc(sizeof(Session));
 	self->program = program_allocate();
-
-	access_init(&self->lock_catalog);
-	access_add(&self->lock_catalog, NULL, ACCESS_CATALOG);
-	access_init(&self->lock_catalog_exclusive);
-	access_add(&self->lock_catalog_exclusive, NULL, ACCESS_CATALOG_EXCLUSIVE);
-	lock_init(&self->lock);
-	lock_set(&self->lock, &self->lock_catalog);
-
+	self->lock = LOCK_NONE;
+	self->lock_access = NULL;
 	local_init(&self->local);
 	set_cache_init(&self->set_cache);
 	compiler_init(&self->compiler, &self->local, &self->set_cache);
@@ -53,18 +47,18 @@ session_reset_query(Session* self)
 static inline void
 session_reset(Session* self)
 {
+	self->lock_access = NULL;
 	vm_reset(&self->vm);
 	program_reset(self->program, &self->set_cache);
 	dtr_reset(&self->dtr);
 	profile_reset(&self->profile);
 	local_reset(&self->local);
-	lock_set(&self->lock, &self->lock_catalog);
 }
 
 void
 session_free(Session *self)
 {
-	assert(! self->lock.refs);
+	assert(self->lock == LOCK_NONE);
 	session_reset_query(self);
 	session_reset(self);
 	compiler_free(&self->compiler);
@@ -72,10 +66,40 @@ session_free(Session *self)
 	program_free(self->program);
 	set_cache_free(&self->set_cache);
 	dtr_free(&self->dtr);
-	access_free(&self->lock_catalog);
-	access_free(&self->lock_catalog_exclusive);
 	local_free(&self->local);
 	am_free(self);
+}
+
+void
+session_lock(Session* self, LockId lock)
+{
+	if (self->lock == lock)
+		return;
+
+	// downgrade or upgrade lock request
+	auto lock_mgr = &share()->storage->lock_mgr;
+	if (self->lock != LOCK_NONE)
+		unlock_catalog(lock_mgr, self->lock);
+
+	lock_catalog(lock_mgr, lock);
+	self->lock = lock;
+}
+
+void
+session_unlock(Session* self)
+{
+	if (self->lock == LOCK_NONE)
+		return;
+
+	auto lock_mgr = &share()->storage->lock_mgr;
+	if (self->lock_access)
+	{
+		unlock_access(lock_mgr, self->lock_access);
+		self->lock_access = NULL;
+	}
+
+	unlock_catalog(lock_mgr, self->lock);
+	self->lock = LOCK_NONE;
 }
 
 static void
@@ -110,7 +134,8 @@ session_execute_distributed(Session* self, Output* output)
 	dtr_create(dtr, program);
 
 	// take transaction locks
-	lock_mgr_lock(&share()->storage->lock_mgr, &dtr->lock);
+	lock_access(&share()->storage->lock_mgr, &program->access);
+	self->lock_access = &program->access;
 
 	// [PROFILE]
 	if (compiler->program_profile)
@@ -168,10 +193,7 @@ session_execute_utility(Session* self, Output* output)
 	reg_prepare(&self->vm.r, program->code.regs);
 
 	// switch session lock to use program utility lock
-	auto lock_mgr = &share()->storage->lock_mgr;
-	lock_mgr_unlock(lock_mgr, &self->lock);
-	lock_set(&self->lock, &program->access);
-	lock_mgr_lock(lock_mgr, &self->lock);
+	session_lock(self, program->utility_lock);
 
 	// [PROFILE]
 	auto profile = &self->profile;
@@ -321,14 +343,13 @@ session_execute(Session*  self,
 	cancel_pause();
 
 	// execute request based on the content-type
-	auto lock_mgr = &share()->storage->lock_mgr;
 	auto on_error = error_catch
 	(
 		// reset session session state
 		session_reset(self);
 
 		// take shared catalog lock
-		lock_mgr_lock(lock_mgr, &self->lock);
+		session_lock(self, LOCK_SHARED);
 
 		// set local settings
 		session_set(self, endpoint, output);
@@ -337,7 +358,7 @@ session_execute(Session*  self,
 		session_endpoint(self, endpoint, content, output);
 
 		// done
-		lock_mgr_unlock(lock_mgr, &self->lock);
+		session_unlock(self);
 	);
 
 	session_reset_query(self);
@@ -346,7 +367,7 @@ session_execute(Session*  self,
 	{
 		buf_reset(output->buf);
 		output_write_error(output, &am_self()->error);
-		lock_mgr_unlock(lock_mgr, &self->lock);
+		session_unlock(self);
 	}
 
 	// cancellation point

@@ -14,6 +14,12 @@
 typedef struct Lock    Lock;
 typedef struct LockMgr LockMgr;
 
+enum
+{
+	RELATION_CATALOG,
+	RELATION_MAX
+};
+
 struct Lock
 {
 	Event event;
@@ -24,6 +30,7 @@ struct LockMgr
 {
 	Spinlock lock;
 	List     list_wait;
+	Relation rels[RELATION_MAX];
 };
 
 static inline void
@@ -38,12 +45,14 @@ lock_mgr_init(LockMgr* self)
 {
 	spinlock_init(&self->lock);
 	list_init(&self->list_wait);
+	relation_init(&self->rels[RELATION_CATALOG]);
 }
 
 static inline void
 lock_mgr_free(LockMgr* self)
 {
 	spinlock_free(&self->lock);
+	relation_free(&self->rels[RELATION_CATALOG]);
 }
 
 hot static inline bool
@@ -194,4 +203,16 @@ unlock(LockMgr* self, Relation* rel, LockId type)
 	}
 
 	spinlock_unlock(&self->lock);
+}
+
+hot static inline void
+lock_catalog(LockMgr* self, LockId type)
+{
+	lock(self, &self->rels[RELATION_CATALOG], type);
+}
+
+hot static inline void
+unlock_catalog(LockMgr* self, LockId type)
+{
+	unlock(self, &self->rels[RELATION_CATALOG], type);
 }

@@ -13,6 +13,7 @@
 
 typedef enum
 {
+	LOCK_NONE,
 	LOCK_SHARED,
 	LOCK_SHARED_RW,
 	LOCK_EXCLUSIVE_RO,
@@ -25,6 +26,9 @@ static inline void
 lock_id_encode(Buf* buf, LockId id)
 {
 	switch (id) {
+	case LOCK_NONE:
+		encode_raw(buf, "none", 4);
+		break;
 	case LOCK_SHARED:
 		encode_raw(buf, "shared", 6);
 		break;
