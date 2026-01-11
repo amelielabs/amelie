@@ -15,15 +15,18 @@ typedef struct Refresh Refresh;
 
 struct Refresh
 {
-	Part*    origin;
-	Part*    part;
-	Heap*    heap;
-	Volume*  volume;
-	Merger   merger;
-	Storage* storage;
+	ServiceLock lock;
+	Part*       origin;
+	Heap*       origin_heap;
+	Table*      table;
+	List        parts;
+	int         parts_count;
+	Volume*     volume;
+	Merger      merger;
+	Storage*    storage;
 };
 
 void refresh_init(Refresh*, Storage*);
 void refresh_free(Refresh*);
 void refresh_reset(Refresh*);
-void refresh_run(Refresh*, Id*, Str*, bool);
+void refresh_run(Refresh*, Id*, Str*);

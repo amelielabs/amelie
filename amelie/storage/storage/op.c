@@ -25,7 +25,7 @@ storage_execute(Storage* self, Refresh* refresh, ServiceReq* req)
 		switch (action->type) {
 		case ACTION_REFRESH:
 			refresh_reset(refresh);
-			refresh_run(refresh, &req->id, NULL, true);
+			refresh_run(refresh, &req->id, NULL);
 			break;
 		case ACTION_WAL_GC:
 			// todo:

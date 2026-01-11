@@ -73,3 +73,25 @@ track_send(Track* self, Msg* msg)
 {
 	task_send(self->backend, msg);
 }
+
+hot static inline void
+track_sync(Track* self, Consensus* consensus)
+{
+	auto consensus_pod = &self->consensus_pod;
+
+	// commit all transactions <= abort
+	auto id = consensus->abort;
+	if (unlikely(id > consensus_pod->abort))
+	{
+		tr_abort_list(&self->prepared, &self->cache, id);
+		consensus_pod->abort = id;
+	}
+
+	// commit all transactions <= commit
+	id = consensus->commit;
+	if (id > consensus_pod->commit)
+	{
+		tr_commit_list(&self->prepared, &self->cache, id);
+		consensus_pod->commit = id;
+	}
+}

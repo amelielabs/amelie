@@ -17,17 +17,17 @@ struct Storage
 {
 	LockMgr       lock_mgr;
 	Catalog       catalog;
-	Deploy        deploy;
 	Service       service;
 	ServiceMgr    service_mgr;
+	Deploy        deploy;
 	CompactionMgr compaction_mgr;
 	WalMgr        wal_mgr;
 };
 
-void      storage_init(Storage*, CatalogIf*, void*, DeployIf*, void*);
-void      storage_free(Storage*);
-void      storage_open(Storage*);
-void      storage_close(Storage*);
-Buf*      storage_state(Storage*);
-Relation* storage_lock(Storage*, ServiceLock*, Id*);
-void      storage_unlock(Storage*, ServiceLock*);
+void storage_init(Storage*, CatalogIf*, void*, DeployIf*, void*);
+void storage_free(Storage*);
+void storage_open(Storage*);
+void storage_close(Storage*);
+Buf* storage_state(Storage*);
+void storage_lock(Storage*, ServiceLock*, Id*);
+void storage_unlock(Storage*, ServiceLock*);

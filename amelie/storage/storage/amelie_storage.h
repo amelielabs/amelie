@@ -25,9 +25,5 @@
 #include "storage/refresh.h"
 #include "storage/op.h"
 
-#if 0
-#include "storage/storage_checkpoint.h"
-#endif
-
 // recover
 #include "storage/recover.h"

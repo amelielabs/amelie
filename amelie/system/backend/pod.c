@@ -156,30 +156,6 @@ pod_run(Pod* self, Ltr* ltr)
 	ltr_complete(ltr);
 }
 
-hot static void
-pod_sync(Pod* self, Ltr* ltr)
-{
-	auto track         = self->track;
-	auto consensus_pod = &track->consensus_pod;
-	auto consensus     = &ltr->consensus;
-
-	// commit all transactions <= abort
-	auto id = consensus->abort;
-	if (unlikely(id > consensus_pod->abort))
-	{
-		tr_abort_list(&track->prepared, &track->cache, id);
-		consensus_pod->abort = id;
-	}
-
-	// commit all transactions <= commit
-	id = consensus->commit;
-	if (id > consensus_pod->commit)
-	{
-		tr_commit_list(&track->prepared, &track->cache, id);
-		consensus_pod->commit = id;
-	}
-}
-
 static void
 pod_main(void* arg)
 {
@@ -193,7 +169,7 @@ pod_main(void* arg)
 		auto ltr = (Ltr*)msg;
 
 		// abort and commit previously prepared transactions
-		pod_sync(self, ltr);
+		track_sync(self->track, &ltr->consensus);
 
 		// execute transaction
 		pod_run(self, ltr);
