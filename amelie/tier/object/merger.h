@@ -45,3 +45,11 @@ void merger_init(Merger*);
 void merger_free(Merger*);
 void merger_reset(Merger*);
 void merger_execute(Merger*, MergerConfig*);
+
+static inline Object*
+merger_first(Merger* self)
+{
+	if (! self->objects_count)
+		return NULL;
+	return container_of(list_first(&self->objects), Object, link);
+}

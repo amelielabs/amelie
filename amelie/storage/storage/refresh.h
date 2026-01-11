@@ -18,9 +18,8 @@ struct Refresh
 	ServiceLock lock;
 	Part*       origin;
 	Heap*       origin_heap;
+	Object*     origin_object;
 	Table*      table;
-	List        parts;
-	int         parts_count;
 	Volume*     volume;
 	Merger      merger;
 	Storage*    storage;

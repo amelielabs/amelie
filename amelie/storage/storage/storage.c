@@ -37,7 +37,6 @@ storage_free(Storage* self)
 {
 	catalog_free(&self->catalog);
 	service_free(&self->service);
-	deploy_free(&self->deploy);
 	wal_mgr_free(&self->wal_mgr);
 	lock_mgr_free(&self->lock_mgr);
 }
@@ -45,9 +44,6 @@ storage_free(Storage* self)
 void
 storage_open(Storage* self)
 {
-	// prepare deploy hash
-	deploy_prepare(&self->deploy);
-
 	// prepare system catalog
 	catalog_open(&self->catalog);
 }

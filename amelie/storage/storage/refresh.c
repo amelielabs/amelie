@@ -20,13 +20,12 @@ void
 refresh_init(Refresh* self, Storage* storage)
 {
 	service_lock_init(&self->lock);
-	self->origin      = NULL;
-	self->origin_heap = NULL;
-	self->table       = NULL;
-	self->parts_count = 0;
-	self->volume      = NULL;
-	self->storage     = storage;
-	list_init(&self->parts);
+	self->origin        = NULL;
+	self->origin_heap   = NULL;
+	self->origin_object = NULL;
+	self->table         = NULL;
+	self->volume        = NULL;
+	self->storage       = storage;
 	merger_init(&self->merger);
 }
 
@@ -40,12 +39,11 @@ void
 refresh_reset(Refresh* self)
 {
 	service_lock_init(&self->lock);
-	self->origin      = NULL;
-	self->origin_heap = NULL;
-	self->table       = NULL;
-	self->parts_count = 0;
-	self->volume      = NULL;
-	list_init(&self->parts);
+	self->origin        = NULL;
+	self->origin_heap   = NULL;
+	self->origin_object = NULL;
+	self->table         = NULL;
+	self->volume        = NULL;
 	merger_reset(&self->merger);
 }
 
@@ -69,13 +67,14 @@ refresh_begin(Refresh* self, Id* id, Str* tier)
 	lock(&storage->lock_mgr, &table->rel, LOCK_EXCLUSIVE);
 
 	// find partition by id
-	auto origin = deploy_find(&storage->deploy, self->lock.id->id);
-	if (! self->origin)
+	auto origin = volume_mgr_find(&table->volume_mgr, self->lock.id->id);
+	if (! origin)
 	{
 		unlock(&storage->lock_mgr, &table->rel, LOCK_EXCLUSIVE);
 		return false;
 	}
 	self->origin = origin;
+	self->origin_object = origin->object;
 
 	// force commit prepared transactions
 	track_sync(&origin->track, &origin->track.consensus);
@@ -103,24 +102,10 @@ refresh_merge(Refresh* self)
 		.source = self->volume->tier->config
 	};
 	merger_execute(merger, &config);
-
-	// create partitions
-	list_foreach_safe(&merger->objects)
-	{
-		auto object = list_at(Object, link);
-		list_unlink(&object->link);
-		auto part = part_allocate(object->source, &object->id,
-		                          self->origin->seq,
-		                          self->origin->unlogged);
-		part->object = object;
-		list_append(&self->parts, &part->link);
-		self->parts_count++;
-	}
-	merger->objects_count = 0;
 }
 
 static void
-refresh_apply(Refresh* self)
+refresh_apply_replace(Refresh* self)
 {
 	auto storage = self->storage;
 	auto table   = self->table;
@@ -132,55 +117,65 @@ refresh_apply(Refresh* self)
 	// force commit prepared transactions
 	track_sync(&origin->track, &origin->track.consensus);
 
-	// update volume mgr
-		// remove origin
-		// attach new partitions
+	// update partition object
+	auto object = merger_first(&self->merger);
+	origin->id     = object->id;
+	origin->source = object->source;
+	origin->object = object;
 
-	// update deploy hash
-		// remove origin
-		// add new partitions
+	// update volume
+	if (origin->volume != self->volume)
+	{
+		volume_remove(origin->volume, origin);
+		volume_add(self->volume, origin);
+	}
 
-	// handle delete
-
-	// foreach partition
-		// deploy send (without wait)
+	// todo: redistribute
 
 	unlock(&storage->lock_mgr, &table->rel, LOCK_EXCLUSIVE);
+}
 
-	// foreach partition
-		// deploy recv
+static void
+refresh_apply(Refresh* self)
+{
+	if (self->merger.objects_count == 1)
+		refresh_apply_replace(self);
 }
 
 static void
 refresh_end(Refresh* self)
 {
-	(void)self;
-	// sync
-	// undeploy directly (hash is updated)
+	// todo: sync
+
 	// remove origin object
-	// free
+	if (self->origin_object)
+	{
+		object_delete(self->origin_object, ID);
+		object_free(self->origin_object);
+		self->origin_object = NULL;
+	}
 }
 
 void
 refresh_run(Refresh* self, Id* id, Str* tier)
 {
-	// get catalog shared lock and partition lock
+	// get catalog shared lock and partition service lock
 	storage_lock(self->storage, &self->lock, id);
 
 	// find and rotate partition
 	refresh_begin(self, id, tier);
 
-	error_catch
+	// merge, apply, and cleanup
+	auto on_error = error_catch
 	(
-		// merge
 		refresh_merge(self);
-
-		// apply
 		refresh_apply(self);
-
-		// gc
 		refresh_end(self);
 	);
 
+	// unlock
 	storage_unlock(self->storage, &self->lock);
+
+	if (on_error)
+		rethrow();
 }

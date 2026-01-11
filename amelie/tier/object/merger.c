@@ -89,14 +89,6 @@ merger_first_writer(Merger* self)
 }
 
 static inline Object*
-merger_first(Merger* self)
-{
-	if (! self->objects_count)
-		return NULL;
-	return container_of(list_first(&self->objects), Object, link);
-}
-
-static inline Object*
 merger_create(Merger* self, MergerConfig* config)
 {
 	// create object
@@ -183,10 +175,6 @@ merger_snapshot(Merger* self, MergerConfig* config)
 	merger_write(writer, config, &it->it, object, UINT64_MAX,
 	             meta->hash_min,
 	             meta->hash_max);
-
-	// delete the result object if it is empty
-	if (! object->meta.rows)
-		merger_drop(self, object);
 }
 
 hot void
@@ -217,10 +205,6 @@ merger_refresh(Merger* self, MergerConfig* config)
 	merger_write(writer, config, &it->it, object, UINT64_MAX,
 	             meta->hash_min,
 	             meta->hash_max);
-
-	// delete the result object if it is empty
-	if (! object->meta.rows)
-		merger_drop(self, object);
 }
 
 hot static void
