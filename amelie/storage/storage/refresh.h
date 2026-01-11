@@ -18,7 +18,6 @@ struct Refresh
 	Part*    origin;
 	Part*    part;
 	Heap*    heap;
-	Volume*  volume_origin;
 	Volume*  volume;
 	Merger   merger;
 	Storage* storage;

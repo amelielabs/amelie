@@ -19,12 +19,11 @@
 void
 refresh_init(Refresh* self, Storage* storage)
 {
-	self->origin        = NULL;
-	self->part          = NULL;
-	self->heap          = NULL;
-	self->volume_origin = NULL;
-	self->volume        = NULL;
-	self->storage       = storage;
+	self->origin  = NULL;
+	self->part    = NULL;
+	self->heap    = NULL;
+	self->volume  = NULL;
+	self->storage = storage;
 	merger_init(&self->merger);
 }
 
@@ -37,11 +36,10 @@ refresh_free(Refresh* self)
 void
 refresh_reset(Refresh* self)
 {
-	self->origin        = NULL;
-	self->part          = NULL;
-	self->heap          = NULL;
-	self->volume_origin = NULL;
-	self->volume        = NULL;
+	self->origin = NULL;
+	self->part   = NULL;
+	self->heap   = NULL;
+	self->volume = NULL;
 	merger_reset(&self->merger);
 }
 

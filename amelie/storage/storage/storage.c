@@ -27,6 +27,7 @@ storage_init(Storage*   self,
 	deploy_init(&self->deploy, iface_deploy, iface_deploy_arg);
 	catalog_init(&self->catalog, iface, iface_arg, &self->deploy);
 	service_init(&self->service);
+	service_mgr_init(&self->service_mgr);
 	wal_mgr_init(&self->wal_mgr);
 	compaction_mgr_init(&self->compaction_mgr);
 }
@@ -108,4 +109,34 @@ storage_state(Storage* self)
 
 	encode_obj_end(buf);
 	return buf;
+}
+
+Relation*
+storage_lock(Storage* self, ServiceLock* lock, Id* id)
+{
+	lock_catalog(&self->lock_mgr, LOCK_SHARED);
+
+	// find table by uuid
+	auto table = table_mgr_find_by(&self->catalog.table_mgr, &id->id_table, false);
+	if (! table)
+	{
+		unlock_catalog(&self->lock_mgr, LOCK_SHARED);
+		return NULL;
+	}
+
+	// get the service lock for partition id
+	service_mgr_lock(&self->service_mgr, lock, id);
+
+	// (catalog lock will be held till unlock)
+	return &table->rel;
+}
+
+void
+storage_unlock(Storage* self, ServiceLock* lock)
+{
+	// unlock partition
+	service_mgr_unlock(&self->service_mgr, lock);
+
+	// unlock catalog
+	unlock_catalog(&self->lock_mgr, LOCK_SHARED);
 }

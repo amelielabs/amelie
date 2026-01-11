@@ -14,6 +14,7 @@
 // service
 #include "storage/service_req.h"
 #include "storage/service.h"
+#include "storage/service_mgr.h"
 
 // compaction
 #include "storage/compaction.h"

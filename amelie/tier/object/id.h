@@ -48,3 +48,9 @@ id_path(Id* self, Source* source, int state, char* path)
 		break;
 	}
 }
+
+static inline bool
+id_compare(Id* self, Id* id)
+{
+	return !memcmp(self, id, sizeof(Id));
+}
