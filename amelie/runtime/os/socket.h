@@ -29,6 +29,6 @@ int  socket_writev(int, struct iovec*, int);
 int  socket_read(int, void*, int);
 int  socket_getsockname(int, struct sockaddr*, socklen_t*);
 int  socket_getpeername(int, struct sockaddr*, socklen_t*);
-int  socket_getaddrinfo(const char*, const char*, struct addrinfo*, struct addrinfo**);
 void socket_getaddrname(struct sockaddr*, char*, int, bool, bool);
-
+int  socket_getaddrinfo(const char*, const char*, struct addrinfo*, struct addrinfo**);
+void socket_getaddrinfo_job(int, intptr_t*);

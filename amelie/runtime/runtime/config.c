@@ -53,9 +53,10 @@ config_prepare(Config* self)
 		{ "limit_send",              OPT_INT,    OPT_C,                   &self->limit_send,              NULL,             3 * 1024 * 1024     },
 		{ "limit_recv",              OPT_INT,    OPT_C,                   &self->limit_recv,              NULL,             1 * 1024 * 1024     },
 		{ "limit_write",             OPT_INT,    OPT_C,                   &self->limit_write,             NULL,             0                   },
-		// io and compute
+		// workers
 		{ "frontends",               OPT_INT,    OPT_C|OPT_Z,             &self->frontends,               NULL,             4                   },
 		{ "backends",                OPT_INT,    OPT_C|OPT_Z,             &self->backends,                NULL,             6                   },
+		{ "jobs",                    OPT_INT,    OPT_C|OPT_Z,             &self->jobs,                    NULL,             3                   },
 		{ "cpu_affinity",            OPT_BOOL,   OPT_C,                   &self->cpu_affinity,            NULL,             true                },
 		// wal
 		{ "wal_worker",              OPT_BOOL,   OPT_C,                   &self->wal_worker,              NULL,             true                },
@@ -66,15 +67,11 @@ config_prepare(Config* self)
 		{ "wal_sync_interval",       OPT_STRING, OPT_C,                   &self->wal_sync_interval,       "1 sec",          0                   },
 		{ "wal_size",                OPT_INT,    OPT_C,                   &self->wal_size,                NULL,             67108864            },
 		{ "wal_truncate",            OPT_INT,    OPT_C,                   &self->wal_truncate,            NULL,             0                   },
+		// storage
+		{ "checkpoint_interval",     OPT_STRING, OPT_C,                   &self->checkpoint_interval,     "5 min",          0                   },
 		// replication
 		{ "repl_readahead",          OPT_INT,    OPT_C|OPT_Z,             &self->repl_readahead,          NULL,             256 * 1024          },
 		{ "repl_reconnect_ms",       OPT_INT,    OPT_C,                   &self->repl_reconnect_ms,       NULL,             3000                },
-		// checkpoint
-		{ "checkpoint_interval",     OPT_STRING, OPT_C,                   &self->checkpoint_interval,     "5 min",          0                   },
-		{ "checkpoint_workers",      OPT_INT,    OPT_C,                   &self->checkpoint_workers,      NULL,             3                   },
-		{ "checkpoint_crc",          OPT_BOOL,   OPT_C,                   &self->checkpoint_crc,          NULL,             true                },
-		{ "checkpoint_compression",  OPT_STRING, OPT_C,                   &self->checkpoint_compression,  "zstd",           0                   },
-		{ "checkpoint_sync",         OPT_BOOL,   OPT_C,                   &self->checkpoint_sync,         NULL,             true                },
 		{  NULL,                     0,          0,                       NULL,                           NULL,             0                   },
 	};
 	opts_define(&self->opts, defs);

@@ -35,9 +35,10 @@ struct Config
 	Opt  limit_send;
 	Opt  limit_recv;
 	Opt  limit_write;
-	// io and compute
+	// workers
 	Opt  frontends;
 	Opt  backends;
+	Opt  jobs;
 	Opt  cpu_affinity;
 	// wal
 	Opt  wal_worker;
@@ -48,15 +49,11 @@ struct Config
 	Opt  wal_sync_interval;
 	Opt  wal_size;
 	Opt  wal_truncate;
+	// storage
+	Opt  checkpoint_interval;
 	// replication
 	Opt  repl_readahead;
 	Opt  repl_reconnect_ms;
-	// checkpoint
-	Opt  checkpoint_interval;
-	Opt  checkpoint_workers;
-	Opt  checkpoint_crc;
-	Opt  checkpoint_compression;
-	Opt  checkpoint_sync;
 	Opts opts;
 };
 

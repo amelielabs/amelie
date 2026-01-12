@@ -213,17 +213,6 @@ socket_getpeername(int fd, struct sockaddr* sa, socklen_t* salen)
 	return rc;
 }
 
-int
-socket_getaddrinfo(const char*       node,
-                   const char*       service,
-                   struct addrinfo*  hints,
-                   struct addrinfo** res)
-{
-	int rc;
-	rc = getaddrinfo(node, service, hints, res);
-	return rc;
-}
-
 void
 socket_getaddrname(struct sockaddr* sa, char* buf, int size,
                    bool with_addr,
@@ -260,4 +249,36 @@ socket_getaddrname(struct sockaddr* sa, char* buf, int size,
 		return;
 	}
 	sfmt(buf, size, "%s", "");
+}
+
+int
+socket_getaddrinfo(const char*       node,
+                   const char*       service,
+                   struct addrinfo*  hints,
+                   struct addrinfo** res)
+{
+	int rc;
+	rc = getaddrinfo(node, service, hints, res);
+	return rc;
+}
+
+void
+socket_getaddrinfo_job(int argc, intptr_t* argv)
+{
+	assert(argc == 3);
+	auto addr   = (char*)argv[0];
+	auto port   = (int)argv[1];
+	auto result = (struct addrinfo**)argv[2];
+
+	char service[16];
+	sfmt(service, sizeof(service), "%d", port);
+	struct addrinfo  hints;
+	memset(&hints, 0, sizeof(hints));
+	hints.ai_family   = AF_UNSPEC;
+	hints.ai_socktype = SOCK_STREAM;
+	hints.ai_flags    = AI_PASSIVE;
+	hints.ai_protocol = IPPROTO_TCP;
+	auto rc = socket_getaddrinfo(addr, service, &hints, result);
+	if (rc == -1 || *result == NULL)
+		error("failed to resolve %s:%d", addr, port);
 }

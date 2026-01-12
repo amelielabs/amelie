@@ -136,7 +136,7 @@ client_connect_to(Client* self, Str* host, int port)
 {
 	// resolve host address
 	struct addrinfo* addr = NULL;
-	resolve(&runtime()->resolver, str_of(host), port, &addr);
+	resolve(str_of(host), port, &addr);
 	defer(freeaddrinfo, addr);
 
 	// prepare for https connection

@@ -41,7 +41,7 @@ struct Runtime
 	Random      random;
 	CodecCache  cache_compression;
 	CodecCache  cache_cipher;
-	Resolver    resolver;
+	JobMgr      job_mgr;
 	Logger      logger;
 	Task        task;
 };

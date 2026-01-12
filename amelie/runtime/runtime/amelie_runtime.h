@@ -11,6 +11,11 @@
 // AGPL-3.0 Licensed.
 //
 
+// background jobs
+#include "runtime/job.h"
+#include "runtime/job_worker.h"
+#include "runtime/job_mgr.h"
+
 // config
 #include "runtime/opt.h"
 #include "runtime/opts.h"

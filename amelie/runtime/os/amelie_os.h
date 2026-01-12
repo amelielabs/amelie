@@ -31,6 +31,3 @@
 #include "os/tcp.h"
 #include "os/readahead.h"
 #include "os/listen.h"
-
-// resolver
-#include "os/resolver.h"

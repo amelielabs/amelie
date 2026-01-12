@@ -160,7 +160,7 @@ server_add(Server* self, ServerConfig* config)
 		host = NULL;
 
 	// resolve
-	resolve(&runtime()->resolver, host, config->host_port, &config->host_addr);
+	resolve(host, config->host_port, &config->host_addr);
 
 	// foreach resolved address
 	struct addrinfo* ai = config->host_addr;

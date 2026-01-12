@@ -29,7 +29,7 @@ runtime_init(Runtime* self)
 	random_init(&self->random);
 	codec_cache_init(&self->cache_compression);
 	codec_cache_init(&self->cache_cipher);
-	resolver_init(&self->resolver);
+	job_mgr_init(&self->job_mgr);
 	logger_init(&self->logger);
 	task_init(&self->task);
 }
@@ -38,7 +38,7 @@ void
 runtime_free(Runtime* self)
 {
 	task_free(&self->task);
-	resolver_free(&self->resolver);
+	job_mgr_free(&self->job_mgr);
 	config_free(&self->config);
 	state_free(&self->state);
 	timezone_mgr_free(&self->timezone_mgr);
@@ -82,8 +82,8 @@ runtime_prepare(Runtime* self)
 	// init uuid manager
 	random_open(&self->random);
 
-	// start resolver
-	resolver_start(&self->resolver);
+	// start background job manager
+	job_mgr_start(&self->job_mgr, 1);
 
 	// prepare default configuration
 	config_prepare(&self->config);
@@ -95,8 +95,8 @@ runtime_prepare(Runtime* self)
 static void
 runtime_shutdown(Runtime* self)
 {
-	// stop resolver
-	resolver_stop(&self->resolver);
+	// stop background job manager
+	job_mgr_stop(&self->job_mgr);
 }
 
 static void
