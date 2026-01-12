@@ -15,6 +15,9 @@
 #include "partition/part.h"
 #include "partition/part_op.h"
 
+// partition locking
+#include "partition/part_lock_mgr.h"
+
 // partition mapping
 #include "partition/mapping_range.h"
 #include "partition/mapping.h"

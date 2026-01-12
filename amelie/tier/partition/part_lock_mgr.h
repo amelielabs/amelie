@@ -11,25 +11,25 @@
 // AGPL-3.0 Licensed.
 //
 
-typedef struct ServiceLock ServiceLock;
-typedef struct ServiceMgr  ServiceMgr;
+typedef struct PartLock    PartLock;
+typedef struct PartLockMgr PartLockMgr;
 
-struct ServiceLock
+struct PartLock
 {
-	Id*          id;
-	Event        event;
-	ServiceLock* waiter;
-	List         link;
+	Id*       id;
+	Event     event;
+	PartLock* waiter;
+	List      link;
 };
 
-struct ServiceMgr
+struct PartLockMgr
 {
 	Spinlock lock;
 	List     list_locks;
 };
 
 static inline void
-service_lock_init(ServiceLock* self)
+part_lock_init(PartLock* self)
 {
 	self->id     = NULL;
 	self->waiter = NULL;
@@ -38,18 +38,18 @@ service_lock_init(ServiceLock* self)
 }
 
 static inline void
-service_mgr_init(ServiceMgr* self)
+part_lock_mgr_init(PartLockMgr* self)
 {
 	spinlock_init(&self->lock);
 	list_init(&self->list_locks);
 }
 
-static inline ServiceLock*
-service_mgr_find(ServiceMgr* self, uint64_t psn)
+static inline PartLock*
+part_lock_mgr_find(PartLockMgr* self, uint64_t psn)
 {
 	list_foreach(&self->list_locks)
 	{
-		auto lock = list_at(ServiceLock, link);
+		auto lock = list_at(PartLock, link);
 		if (lock->id->id == psn)
 			return lock;
 	}
@@ -57,7 +57,7 @@ service_mgr_find(ServiceMgr* self, uint64_t psn)
 }
 
 hot static inline void
-service_mgr_lock(ServiceMgr* self, ServiceLock* lock, Id* id)
+part_lock_mgr_lock(PartLockMgr* self, PartLock* lock, Id* id)
 {
 	lock->id = id;
 	event_attach(&lock->event);
@@ -65,7 +65,7 @@ service_mgr_lock(ServiceMgr* self, ServiceLock* lock, Id* id)
 	spinlock_lock(&self->lock);
 
 	// find existing lock
-	auto last = service_mgr_find(self, lock->id->id);
+	auto last = part_lock_mgr_find(self, lock->id->id);
 	if (! last)
 	{
 		list_append(&self->list_locks, &lock->link);
@@ -85,7 +85,7 @@ service_mgr_lock(ServiceMgr* self, ServiceLock* lock, Id* id)
 }
 
 hot static inline void
-service_mgr_unlock(ServiceMgr* self, ServiceLock* lock)
+part_lock_mgr_unlock(PartLockMgr* self, PartLock* lock)
 {
 	spinlock_lock(&self->lock);
 
@@ -103,5 +103,5 @@ service_mgr_unlock(ServiceMgr* self, ServiceLock* lock)
 	if (waiter)
 		event_signal(&waiter->event);
 
-	service_lock_init(lock);
+	part_lock_init(lock);
 }

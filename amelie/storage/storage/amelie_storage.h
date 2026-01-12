@@ -11,15 +11,6 @@
 // AGPL-3.0 Licensed.
 //
 
-// service
-#include "storage/service_req.h"
-#include "storage/service.h"
-#include "storage/service_mgr.h"
-
-// compaction
-#include "storage/compaction.h"
-#include "storage/compaction_mgr.h"
-
 // storage
 #include "storage/storage.h"
 #include "storage/refresh.h"

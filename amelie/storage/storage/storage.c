@@ -24,19 +24,16 @@ storage_init(Storage*   self,
              void*      iface_deploy_arg)
 {
 	lock_mgr_init(&self->lock_mgr);
+	part_lock_mgr_init(&self->lock_mgr_part);
 	catalog_init(&self->catalog, iface, iface_arg, &self->deploy);
-	service_init(&self->service);
-	service_mgr_init(&self->service_mgr);
 	deploy_init(&self->deploy, iface_deploy, iface_deploy_arg);
 	wal_mgr_init(&self->wal_mgr);
-	compaction_mgr_init(&self->compaction_mgr);
 }
 
 void
 storage_free(Storage* self)
 {
 	catalog_free(&self->catalog);
-	service_free(&self->service);
 	wal_mgr_free(&self->wal_mgr);
 	lock_mgr_free(&self->lock_mgr);
 }
@@ -51,10 +48,6 @@ storage_open(Storage* self)
 void
 storage_close(Storage* self)
 {
-	// shutdown service and compaction
-	service_shutdown(&self->service);
-	compaction_mgr_stop(&self->compaction_mgr);
-
 	// close catalog
 	catalog_close(&self->catalog);
 
@@ -108,20 +101,20 @@ storage_state(Storage* self)
 }
 
 void
-storage_lock(Storage* self, ServiceLock* lock, Id* id)
+storage_lock(Storage* self, PartLock* lock, Id* id)
 {
 	// get shared catalog lock and hold till unlock
 	lock_catalog(&self->lock_mgr, LOCK_SHARED);
 
 	// get service lock for partition id
-	service_mgr_lock(&self->service_mgr, lock, id);
+	part_lock_mgr_lock(&self->lock_mgr_part, lock, id);
 }
 
 void
-storage_unlock(Storage* self, ServiceLock* lock)
+storage_unlock(Storage* self, PartLock* lock)
 {
 	// unlock partition
-	service_mgr_unlock(&self->service_mgr, lock);
+	part_lock_mgr_unlock(&self->lock_mgr_part, lock);
 
 	// unlock catalog
 	unlock_catalog(&self->lock_mgr, LOCK_SHARED);

@@ -19,7 +19,7 @@
 void
 refresh_init(Refresh* self, Storage* storage)
 {
-	service_lock_init(&self->lock);
+	part_lock_init(&self->lock);
 	self->origin        = NULL;
 	self->origin_heap   = NULL;
 	self->origin_object = NULL;
@@ -38,7 +38,7 @@ refresh_free(Refresh* self)
 void
 refresh_reset(Refresh* self)
 {
-	service_lock_init(&self->lock);
+	part_lock_init(&self->lock);
 	self->origin        = NULL;
 	self->origin_heap   = NULL;
 	self->origin_object = NULL;

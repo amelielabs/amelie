@@ -11,4 +11,3 @@
 // AGPL-3.0 Licensed.
 //
 
-bool storage_service(Storage*, Refresh*, bool);
