@@ -89,9 +89,10 @@ refresh_begin(Refresh* self, Id* id, Str* tier)
 }
 
 static void
-refresh_merge(Refresh* self)
+refresh_merge_job(intptr_t* argv)
 {
 	// merge heap with existing partition
+	auto self = (Refresh*)argv[0];
 	auto merger = &self->merger;
 	MergerConfig config =
 	{
@@ -102,6 +103,13 @@ refresh_merge(Refresh* self)
 		.source = self->volume->tier->config
 	};
 	merger_execute(merger, &config);
+}
+
+static void
+refresh_merge(Refresh* self)
+{
+	// run merge in background
+	run(refresh_merge_job, 1, self);
 }
 
 static void
@@ -145,7 +153,7 @@ refresh_apply(Refresh* self)
 static void
 refresh_end(Refresh* self)
 {
-	// todo: sync
+	// todo: sync job
 
 	// remove origin object
 	if (self->origin_object)

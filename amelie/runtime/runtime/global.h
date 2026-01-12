@@ -105,7 +105,7 @@ run(JobFunction main, int argc, ...)
 
 	// add job and wait for completion
 	Job job;
-	job_init(&job, error, main, argc, argv);
+	job_init(&job, error, main, argv);
 	event_attach(&job.on_complete);
 	job_mgr_add(&runtime()->job_mgr, &job);
 

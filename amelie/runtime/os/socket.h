@@ -31,4 +31,4 @@ int  socket_getsockname(int, struct sockaddr*, socklen_t*);
 int  socket_getpeername(int, struct sockaddr*, socklen_t*);
 void socket_getaddrname(struct sockaddr*, char*, int, bool, bool);
 int  socket_getaddrinfo(const char*, const char*, struct addrinfo*, struct addrinfo**);
-void socket_getaddrinfo_job(int, intptr_t*);
+void socket_getaddrinfo_job(intptr_t*);

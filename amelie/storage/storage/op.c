@@ -15,3 +15,10 @@
 #include <amelie_catalog.h>
 #include <amelie_wal.h>
 #include <amelie_storage.h>
+
+void
+storage_refresh(Storage* self, Refresh* refresh, Id* id, Str* tier)
+{
+	unused(self);
+	refresh_run(refresh, id, tier);
+}

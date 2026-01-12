@@ -263,9 +263,8 @@ socket_getaddrinfo(const char*       node,
 }
 
 void
-socket_getaddrinfo_job(int argc, intptr_t* argv)
+socket_getaddrinfo_job(intptr_t* argv)
 {
-	assert(argc == 3);
 	auto addr   = (char*)argv[0];
 	auto port   = (int)argv[1];
 	auto result = (struct addrinfo**)argv[2];

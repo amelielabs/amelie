@@ -11,3 +11,4 @@
 // AGPL-3.0 Licensed.
 //
 
+void storage_refresh(Storage*, Refresh*, Id*, Str*);
