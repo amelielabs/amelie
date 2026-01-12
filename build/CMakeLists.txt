@@ -87,7 +87,6 @@ include_directories("${AMELIE_ROOT}/tier/tier")
 # storage
 include_directories("${AMELIE_ROOT}/storage")
 include_directories("${AMELIE_ROOT}/storage/catalog")
-include_directories("${AMELIE_ROOT}/storage/lock")
 include_directories("${AMELIE_ROOT}/storage/wal")
 include_directories("${AMELIE_ROOT}/storage/storage")
 
@@ -143,7 +142,6 @@ set(AMELIE_SOURCES_RUNTIME
     ${AMELIE_ROOT}/runtime/os/socket.c
     ${AMELIE_ROOT}/runtime/os/tcp.c
     ${AMELIE_ROOT}/runtime/os/listen.c
-    ${AMELIE_ROOT}/runtime/os/resolver.c
     ${AMELIE_ROOT}/runtime/lib/rbtree.c
     ${AMELIE_ROOT}/runtime/lib/random.c
     ${AMELIE_ROOT}/runtime/lib/uuid.c
@@ -164,6 +162,8 @@ set(AMELIE_SOURCES_RUNTIME
     ${AMELIE_ROOT}/runtime/lib/histogram.c
     ${AMELIE_ROOT}/runtime/json/json_parser.c
     ${AMELIE_ROOT}/runtime/json/json_export.c
+    ${AMELIE_ROOT}/runtime/runtime/job_worker.c
+    ${AMELIE_ROOT}/runtime/runtime/job_mgr.c
     ${AMELIE_ROOT}/runtime/runtime/opts.c
     ${AMELIE_ROOT}/runtime/runtime/config.c
     ${AMELIE_ROOT}/runtime/runtime/state.c
@@ -214,7 +214,6 @@ set(AMELIE_SOURCES_STORAGE
     ${AMELIE_ROOT}/storage/wal/wal_periodic.c
     ${AMELIE_ROOT}/storage/wal/wal_mgr.c
     ${AMELIE_ROOT}/storage/storage/storage.c
-    ${AMELIE_ROOT}/storage/storage/compaction.c
     ${AMELIE_ROOT}/storage/storage/refresh.c
     ${AMELIE_ROOT}/storage/storage/op.c
     ${AMELIE_ROOT}/storage/storage/recover.c)

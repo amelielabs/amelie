@@ -59,9 +59,12 @@ refresh_begin(Refresh* self, Id* id, Str* tier)
 	self->table = table;
 
 	// find volume by tier name
-	self->volume = volume_mgr_find_volume(&table->volume_mgr, tier);
-	if (! self->volume)
-		return false;
+	if (tier)
+	{
+		self->volume = volume_mgr_find_volume(&table->volume_mgr, tier);
+		if (! self->volume)
+			return false;
+	}
 
 	// take table exclusive lock
 	lock(&storage->lock_mgr, &table->rel, LOCK_EXCLUSIVE);
@@ -75,6 +78,8 @@ refresh_begin(Refresh* self, Id* id, Str* tier)
 	}
 	self->origin = origin;
 	self->origin_object = origin->object;
+	if (! self->volume)
+		self->volume = origin->volume;
 
 	// force commit prepared transactions
 	track_sync(&origin->track, &origin->track.consensus);
@@ -140,6 +145,11 @@ refresh_apply_replace(Refresh* self)
 
 	// todo: redistribute
 
+	// unrotate
+	assert(origin->heap == &origin->heap_b);
+	origin->heap      = &origin->heap_a;
+	self->origin_heap = NULL;
+
 	unlock(&storage->lock_mgr, &table->rel, LOCK_EXCLUSIVE);
 }
 
@@ -162,11 +172,18 @@ refresh_end(Refresh* self)
 		object_free(self->origin_object);
 		self->origin_object = NULL;
 	}
+
+	// todo: free heap_b
+
+	self->merger.objects_count = 0;
+	list_init(&self->merger.objects);
 }
 
 void
 refresh_run(Refresh* self, Id* id, Str* tier)
 {
+	refresh_reset(self);
+
 	// get catalog shared lock and partition service lock
 	storage_lock(self->storage, &self->lock, id);
 

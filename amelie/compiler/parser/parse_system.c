@@ -21,15 +21,7 @@
 void
 parse_checkpoint(Stmt* self)
 {
-	// CHECKPOINT [WORKERS n]
+	// CHECKPOINT
 	auto stmt = ast_checkpoint_allocate();
 	self->ast = &stmt->ast;
-
-	// [WORKERS]
-	if (stmt_if(self, KWORKERS))
-	{
-		stmt->workers = stmt_expect(self, KINT);
-		if (stmt->workers->integer <= 0)
-			stmt_error(self, stmt->workers, "WORKERS number must be positive");
-	}
 }

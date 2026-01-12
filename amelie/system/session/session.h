@@ -22,7 +22,6 @@ struct Session
 	Dtr      dtr;
 	Profile  profile;
 	LockId   lock;
-	Access*  lock_access;
 	Local    local;
 };
 

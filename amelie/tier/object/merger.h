@@ -34,8 +34,8 @@ struct Merger
 {
 	List           objects;
 	int            objects_count;
-	List           writers;
-	List           writers_cache;
+	Writer*        writers;
+	Writer*        writers_cache;
 	ObjectIterator object_iterator;
 	HeapIterator   heap_iterator;
 	MergeIterator  merge_iterator;

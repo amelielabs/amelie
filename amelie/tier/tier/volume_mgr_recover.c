@@ -218,6 +218,7 @@ volume_mgr_recover(VolumeMgr* self, List* volumes, List* indexes)
 			volume_mgr_remove(self, part);
 			object_file_delete(part->source, &part->id, ID);
 			part_free(part);
+			continue;
 		}
 
 		// open partition

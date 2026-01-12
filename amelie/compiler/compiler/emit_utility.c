@@ -294,15 +294,8 @@ emit_utility(Compiler* self)
 	case STMT_CHECKPOINT:
 	{
 		auto arg = ast_checkpoint_of(stmt->ast);
-		int workers;
-		if (arg->workers) {
-			workers = arg->workers->integer;
-		} else {
-			workers = opt_int_of(&config()->checkpoint_workers);
-			if (workers == 0)
-				workers = 1;
-		}
-		op1(self, CCHECKPOINT, workers);
+		unused(arg);
+		op0(self, CCHECKPOINT);
 
 		// shared lock
 		lock = LOCK_SHARED;

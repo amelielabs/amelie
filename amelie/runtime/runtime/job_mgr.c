@@ -38,6 +38,7 @@ job_mgr_free(JobMgr* self)
 void
 job_mgr_start(JobMgr* self, int count)
 {
+	self->shutdown = false;
 	for (auto i = count; i > 0; i--)
 	{
 		auto worker = job_worker_allocate(self);
@@ -88,15 +89,16 @@ job_mgr_next(JobMgr* self)
 	Job* job = NULL;
 	for (;;)
 	{
-		if (unlikely(self->shutdown))
-			break;
-
 		if (self->jobs_count > 0)
 		{
 			job = container_of(list_pop(&self->jobs), Job, link);
 			self->jobs_count--;
 			break;
 		}
+
+		if (unlikely(self->shutdown))
+			break;
+
 		cond_var_wait(&self->cond_var, &self->lock);
 	}
 

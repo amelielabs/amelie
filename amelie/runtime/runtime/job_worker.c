@@ -19,10 +19,10 @@
 static void
 job_worker_main(void* arg)
 {
-	auto job_mgr = (JobMgr*)arg;
+	auto self = (JobWorker*)arg;
 	for (;;)
 	{
-		auto job = job_mgr_next(job_mgr);
+		auto job = job_mgr_next(self->job_mgr);
 		if (! job)
 			break;
 		job_run(job);
@@ -43,6 +43,7 @@ void
 job_worker_free(JobWorker* self)
 {
 	task_free(&self->task);
+	am_free(self);
 }
 
 void

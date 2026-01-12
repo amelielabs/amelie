@@ -27,7 +27,6 @@ session_create(void)
 	auto self = (Session*)am_malloc(sizeof(Session));
 	self->program = program_allocate();
 	self->lock = LOCK_NONE;
-	self->lock_access = NULL;
 	local_init(&self->local);
 	set_cache_init(&self->set_cache);
 	compiler_init(&self->compiler, &self->local, &self->set_cache);
@@ -47,7 +46,6 @@ session_reset_query(Session* self)
 static inline void
 session_reset(Session* self)
 {
-	self->lock_access = NULL;
 	vm_reset(&self->vm);
 	program_reset(self->program, &self->set_cache);
 	dtr_reset(&self->dtr);
@@ -91,14 +89,12 @@ session_unlock(Session* self)
 	if (self->lock == LOCK_NONE)
 		return;
 
-	auto lock_mgr = &share()->storage->lock_mgr;
-	if (self->lock_access)
-	{
-		unlock_access(lock_mgr, self->lock_access);
-		self->lock_access = NULL;
-	}
+	// main dtr unlock happens on the executor commit
+	auto storage = share()->storage;
+	if (self->dtr.locked)
+		dtr_unlock(&self->dtr, storage);
 
-	unlock_catalog(lock_mgr, self->lock);
+	unlock_catalog(&storage->lock_mgr, self->lock);
 	self->lock = LOCK_NONE;
 }
 
@@ -134,8 +130,7 @@ session_execute_distributed(Session* self, Output* output)
 	dtr_create(dtr, program);
 
 	// take transaction locks
-	lock_access(&share()->storage->lock_mgr, &program->access);
-	self->lock_access = &program->access;
+	dtr_lock(dtr, share()->storage);
 
 	// [PROFILE]
 	if (compiler->program_profile)

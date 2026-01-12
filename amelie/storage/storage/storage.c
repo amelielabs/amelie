@@ -92,6 +92,10 @@ storage_state(Storage* self)
 	encode_raw(buf, "lsn", 3);
 	encode_integer(buf, state_lsn());
 
+	// psn
+	encode_raw(buf, "psn", 3);
+	encode_integer(buf, state_psn());
+
 	// read_only
 	encode_raw(buf, "read_only", 9);
 	encode_bool(buf, opt_int_of(&state()->read_only));

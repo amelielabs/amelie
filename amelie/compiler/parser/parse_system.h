@@ -15,8 +15,7 @@ typedef struct AstCheckpoint AstCheckpoint;
 
 struct AstCheckpoint
 {
-	Ast  ast;
-	Ast* workers;
+	Ast ast;
 };
 
 static inline AstCheckpoint*
@@ -29,7 +28,6 @@ static inline AstCheckpoint*
 ast_checkpoint_allocate(void)
 {
 	AstCheckpoint* self = ast_allocate(0, sizeof(AstCheckpoint));
-	self->workers = NULL;
 	return self;
 }
 

@@ -12,3 +12,4 @@
 //
 
 void storage_refresh(Storage*, Refresh*, Id*, Str*);
+void storage_checkpoint(Storage*);

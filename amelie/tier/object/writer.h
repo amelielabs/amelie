@@ -22,7 +22,7 @@ struct Writer
 	Codec*       compression;
 	Codec*       encryption;
 	Source*      source;
-	List         link;
+	Writer*      next;
 };
 
 Writer*

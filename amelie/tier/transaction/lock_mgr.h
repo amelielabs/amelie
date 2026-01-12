@@ -17,6 +17,7 @@ typedef struct LockMgr LockMgr;
 enum
 {
 	RELATION_CATALOG,
+	RELATION_CHECKPOINT,
 	RELATION_MAX
 };
 
@@ -45,14 +46,14 @@ lock_mgr_init(LockMgr* self)
 {
 	spinlock_init(&self->lock);
 	list_init(&self->list_wait);
-	relation_init(&self->rels[RELATION_CATALOG]);
+	for (auto i = 0; i < RELATION_MAX; i++)
+		relation_init(&self->rels[i]);
 }
 
 static inline void
 lock_mgr_free(LockMgr* self)
 {
 	spinlock_free(&self->lock);
-	relation_free(&self->rels[RELATION_CATALOG]);
 }
 
 hot static inline bool
@@ -148,6 +149,7 @@ unlock_access(LockMgr* self, Access* access)
 	{
 		auto record = access_at(access, i);
 		record->rel->lock[record->lock]--;
+		assert(record->rel->lock[record->lock] >= 0);
 	}
 
 	// wakeup waiters
@@ -202,6 +204,7 @@ unlock(LockMgr* self, Relation* rel, LockId type)
 
 	// unlock relation
 	rel->lock[type]--;
+	assert(rel->lock[type] >= 0);
 
 	// wakeup waiters
 	list_foreach(&self->list_wait)
@@ -223,4 +226,16 @@ hot static inline void
 unlock_catalog(LockMgr* self, LockId type)
 {
 	unlock(self, &self->rels[RELATION_CATALOG], type);
+}
+
+hot static inline void
+lock_checkpoint(LockMgr* self, LockId type)
+{
+	lock(self, &self->rels[RELATION_CHECKPOINT], type);
+}
+
+hot static inline void
+unlock_checkpoint(LockMgr* self, LockId type)
+{
+	unlock(self, &self->rels[RELATION_CHECKPOINT], type);
 }

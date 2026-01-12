@@ -181,13 +181,12 @@ meta_writer_add(MetaWriter*   self,
 		crc = region_writer_crc(region_writer);
 
 	// prepare region reference
-	buf_reserve(&self->data, sizeof(MetaRegion));
 	auto min      = region_writer_min(region_writer);
 	auto min_size = row_size(min);
 	auto max      = region_writer_max(region_writer);
 	auto max_size = row_size(max);
 
-	auto ref = (MetaRegion*)self->data.position;
+	auto ref = (MetaRegion*)buf_emplace(&self->data, sizeof(MetaRegion));
 	ref->offset      = region_offset;
 	ref->crc         = crc;
 	ref->size        = size;
@@ -198,13 +197,12 @@ meta_writer_add(MetaWriter*   self,
 	memset(ref->reserved, 0, sizeof(ref->reserved));
 	buf_write(&self->data, min, min_size);
 	buf_write(&self->data, max, max_size);
-	buf_advance(&self->data, sizeof(MetaRegion));
 
 	// update header
 	auto meta = &self->meta;
 	meta->regions++;
 	meta->rows += region->rows;
-	meta->size += sizeof(MetaRegion);
+	meta->size += sizeof(MetaRegion) + min_size + max_size;
 	meta->size_regions += size;
 	meta->size_regions_origin += region->size;
 }

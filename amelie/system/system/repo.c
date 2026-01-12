@@ -318,11 +318,14 @@ repo_open(Repo* self, char* directory, int argc, char** argv)
 	if (! opt_int_of(&config->log_to_file))
 		logger_close(logger);
 
-	// validate compression type
-	auto cp = &config()->checkpoint_compression.string;
-	if (!str_is(cp, "zstd", 4) && !str_is(cp, "none", 4))
-		error("invalid checkpoint_compression type %.*s",
-		      str_size(cp), str_of(cp));
+	// reconfigure jobs manager
+	auto job_mgr = &runtime()->job_mgr;
+	auto jobs = (int)opt_int_of(&config->jobs);
+	if (jobs != job_mgr->workers_count)
+	{
+		job_mgr_stop(job_mgr);
+		job_mgr_start(job_mgr, jobs);
+	}
 }
 
 void

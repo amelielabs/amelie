@@ -18,10 +18,10 @@
 void
 merger_init(Merger* self)
 {
+	self->writers       = NULL;
+	self->writers_cache = NULL;
 	self->objects_count = 0;
 	list_init(&self->objects);
-	list_init(&self->writers);
-	list_init(&self->writers_cache);
 	object_iterator_init(&self->object_iterator);
 	heap_iterator_init(&self->heap_iterator);
 	merge_iterator_init(&self->merge_iterator);
@@ -31,11 +31,15 @@ void
 merger_free(Merger* self)
 {
 	merger_reset(self);
-	list_foreach_safe(&self->writers_cache)
+	auto writer = self->writers_cache;
+	while (writer)
 	{
-		auto writer = list_at(Writer, link);
+		auto next = writer->next;
 		writer_free(writer);
+		writer = next;
 	}
+	self->writers_cache = NULL;
+
 	object_iterator_free(&self->object_iterator);
 	merge_iterator_free(&self->merge_iterator);
 }
@@ -51,14 +55,15 @@ merger_reset(Merger* self)
 	}
 	list_init(&self->objects);
 
-	list_foreach_safe(&self->writers)
+	auto writer = self->writers;
+	while (writer)
 	{
-		auto writer = list_at(Writer, link);
-		writer_reset(writer);
-		list_init(&writer->link);
-		list_append(&self->writers_cache, &writer->link);
+		auto next = writer->next;
+		writer->next = self->writers_cache;
+		self->writers_cache = writer;
+		writer = next;
 	}
-	list_init(&self->writers);
+	self->writers = NULL;
 
 	object_iterator_reset(&self->object_iterator);
 	heap_iterator_reset(&self->heap_iterator);
@@ -69,23 +74,18 @@ static inline Writer*
 merger_create_writer(Merger* self)
 {
 	Writer* writer;
-	if (! list_empty(&self->writers_cache))
+	if (self->writers_cache)
 	{
-		auto first = list_pop(&self->writers_cache);
-		writer = container_of(first, Writer, link);
+		writer = self->writers_cache;
+		self->writers_cache = writer->next;
+		writer->next = NULL;
 	} else
 	{
 		writer = writer_allocate();
 	}
-	list_init(&writer->link);
-	list_append(&self->writers, &writer->link);
+	writer->next = self->writers;
+	self->writers = writer;
 	return writer;
-}
-
-static inline Writer*
-merger_first_writer(Merger* self)
-{
-	return container_of(list_first(&self->writers), Writer, link);
 }
 
 static inline Object*
@@ -132,7 +132,7 @@ merger_write(Writer*       writer,
 
 	writer_reset(writer);
 	writer_start(writer, config->source, &object->file);
-	for (;;)
+	while (iterator_has(it))
 	{
 		auto row = iterator_at(it);
 		if (unlikely(row == NULL))
@@ -224,7 +224,7 @@ merger_split(Merger* self, MergerConfig* config)
 	auto limit = config->source->part_size / 2;
 
 	// get writer
-	auto writer = merger_first_writer(self);
+	auto writer = self->writers;
 	while (object_iterator_has(it))
 	{
 		// create object

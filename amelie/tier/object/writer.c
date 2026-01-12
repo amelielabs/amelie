@@ -23,10 +23,10 @@ writer_allocate(void)
 	self->compression = NULL;
 	self->encryption  = NULL;
 	self->source      = NULL;
+	self->next        = NULL;
 	iov_init(&self->iov);
 	region_writer_init(&self->region_writer);
 	meta_writer_init(&self->meta_writer);
-	list_init(&self->link);
 	return self;
 }
 
@@ -54,10 +54,10 @@ writer_reset(Writer* self)
 		self->encryption = NULL;
 	}
 	self->source = NULL;
+	self->next   = NULL;
 	iov_reset(&self->iov);
 	region_writer_reset(&self->region_writer);
 	meta_writer_reset(&self->meta_writer);
-	list_init(&self->link);
 }
 
 hot static inline bool

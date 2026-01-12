@@ -166,12 +166,12 @@ batch_abort(Batch* self)
 }
 
 hot static inline void
-batch_complete(Batch* self, LockMgr* lock_mgr)
+batch_complete(Batch* self, Storage* storage)
 {
 	for (auto it = 0; it < self->list_count; it++)
 	{
 		auto dtr = batch_at(self, it);
-		unlock_access(lock_mgr, &dtr->program->access);
+		dtr_unlock(dtr, storage);
 		event_signal(&dtr->on_commit);
 	}
 }
