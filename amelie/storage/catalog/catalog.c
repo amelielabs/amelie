@@ -82,10 +82,16 @@ catalog_prepare(Catalog* self)
 }
 
 void
-catalog_open(Catalog* self)
+catalog_open(Catalog* self, bool bootstrap)
 {
 	// prepare main tier and db
 	catalog_prepare(self);
+
+	// read catalog file and restore objects
+	if (bootstrap)
+		catalog_write(self);
+	else
+		catalog_read(self);
 }
 
 void

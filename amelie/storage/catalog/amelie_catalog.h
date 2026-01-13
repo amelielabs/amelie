@@ -39,4 +39,7 @@
 
 // catalog
 #include "catalog/catalog.h"
+#include "catalog/catalog_file.h"
+
+// cascade operations
 #include "catalog/cascade.h"

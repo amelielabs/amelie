@@ -506,10 +506,6 @@ wal_status(Wal* self)
 	encode_raw(buf, "ops", 3);
 	encode_integer(buf, opt_int_of(&state()->ops));
 
-	// checkpoint
-	encode_raw(buf, "checkpoint", 10);
-	encode_integer(buf, state_checkpoint());
-
 	encode_obj_end(buf);
 	return buf;
 }

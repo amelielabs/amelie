@@ -258,6 +258,9 @@ session_execute_utility(Session* self, Output* output)
 		write_list_init(&write_list);
 		write_list_add(&write_list, &write);
 		wal_mgr_write(&share()->storage->wal_mgr, &write_list);
+
+		// update catalog pending lsn
+		opt_int_set(&state()->catalog_pending, write.header.lsn);
 	}
 
 	// commit

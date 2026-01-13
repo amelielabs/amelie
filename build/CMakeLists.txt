@@ -207,6 +207,7 @@ set(AMELIE_SOURCES_STORAGE
     ${AMELIE_ROOT}/storage/catalog/table_index.c
     ${AMELIE_ROOT}/storage/catalog/udf_mgr.c
     ${AMELIE_ROOT}/storage/catalog/catalog.c
+    ${AMELIE_ROOT}/storage/catalog/catalog_file.c
     ${AMELIE_ROOT}/storage/catalog/cascade.c
     ${AMELIE_ROOT}/storage/wal/wal.c
     ${AMELIE_ROOT}/storage/wal/wal_cursor.c
@@ -315,7 +316,6 @@ set(AMELIE_SOURCES_SYSTEM
     ${AMELIE_ROOT}/system/frontend/frontend_native.c
     ${AMELIE_ROOT}/system/backend/pod.c
     ${AMELIE_ROOT}/system/backend/backend.c
-    ${AMELIE_ROOT}/system/backend/build.c
     ${AMELIE_ROOT}/system/backend/replay.c
     ${AMELIE_ROOT}/system/session/session.c
     ${AMELIE_ROOT}/system/session/session_replay.c

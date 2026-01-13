@@ -251,23 +251,6 @@ system_recover(System* self)
 	info("");
 }
 
-static void
-system_bootstrap(System* self)
-{
-	state_lsn_set(1);
-
-#if 0
-	// create initial checkpoint
-	Checkpoint cp;
-	checkpoint_init(&cp, &self->storage.checkpoint_mgr);
-	defer(checkpoint_free, &cp);
-	checkpoint_begin(&cp, 1, 1);
-	checkpoint_run(&cp);
-	checkpoint_wait(&cp);
-#endif
-	(void)self;
-}
-
 void
 system_start(System* self, bool bootstrap)
 {
@@ -310,14 +293,10 @@ system_start(System* self, bool bootstrap)
 	commit_start(&self->commit);
 
 	// create system object and objects from last snapshot
-	storage_open(&self->storage);
+	storage_open(&self->storage, bootstrap);
 
 	// do parallel recover of snapshots and wal
 	system_recover(self);
-
-	// do initial deploy
-	if (bootstrap)
-		system_bootstrap(self);
 
 	// start checkpointer service
 	// checkpointer_start(&self->storage.checkpointer);

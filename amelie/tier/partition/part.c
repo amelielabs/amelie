@@ -68,6 +68,7 @@ part_load(Part* self)
 	auto object = object_allocate(self->source, &self->id);
 	defer(object_free, object);
 	object_open(object, ID, true);
+	object_set(object, ID);
 
 	// iterate object file
 	ObjectIterator it;

@@ -18,9 +18,10 @@ struct State
 	// system
 	Opt  version;
 	Opt  directory;
-	Opt  checkpoint;
 	Opt  lsn;
 	Opt  psn;
+	Opt  catalog;
+	Opt  catalog_pending;
 	Opt  read_only;
 	// persistent
 	Opt  repl;

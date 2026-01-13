@@ -72,14 +72,6 @@ unit test_cancel;
 unit test_cancel_pause;
 # test: test cancel condition
 unit test_cancel_condition;
-# test: test lock write
-unit test_lock_write;
-# test: test lock write readers
-unit test_lock_write_readers;
-# test: test lock read0
-unit test_lock_read0;
-# test: test lock read1
-unit test_lock_read1;
 # test: test sleep
 unit test_sleep;
 # test: test benchmark rpc

@@ -47,13 +47,15 @@ recover_map(Recover* self, Record* record, RecordCmd* cmd, Row* row)
 {
 	// find table by id and map partition
 	auto storage = self->storage;
-	auto table = table_mgr_find_by(&storage->catalog.table_mgr, &cmd->id, true);
+	auto table = table_mgr_find_by(&storage->catalog.table_mgr, &cmd->id, false);
+	if  (! table)
+		return NULL;
 	auto part = mapping_map(&table->volume_mgr.mapping, row);
 	if (! part)
 		error("recover: partition mapping failed");
 
 	// skip partition if it is already includes the command lsn
-	if (part->object->meta.lsn >= record->lsn)
+	if (record->lsn <= part->object->meta.lsn)
 		part = NULL;
 	return part;
 }
@@ -102,9 +104,19 @@ recover_cmd(Recover* self, Record* record, RecordCmd* cmd, uint8_t** pos)
 	}
 	case CMD_DDL:
 	{
+		// skip ddl commands before the last catalog lsn
+		if (record->lsn <= state_catalog())
+		{
+			record_cmd_skip(cmd, pos);
+			break;
+		}
+
 		// replay ddl command
 		catalog_execute(&storage->catalog, tr, *pos, 0);
 		json_skip(pos);
+
+		// update catalog pending lsn
+		opt_int_set(&state()->catalog_pending, record->lsn);
 		break;
 	}
 	default:
@@ -178,8 +190,8 @@ recover_wal_main(Recover* self)
 	auto wal_mgr = &self->storage->wal_mgr;
 	wal_mgr_start(wal_mgr);
 
-	// replay wals starting from the last checkpoint
-	auto id = state_checkpoint() + 1;
+	// replay all wals
+	uint64_t id = 0;
 	for (;;)
 	{
 		recover_reset_stats(self);
@@ -200,7 +212,7 @@ recover_wal_main(Recover* self)
 		if (! wal_cursor_active(&cursor))
 			break;
 
-		info(" wals/%" PRIu64 " (%.2f MiB, %" PRIu64 " rows)", id,
+		info(" wals/%" PRIu64 " (%.2f MiB, %" PRIu64 " rows)", cursor.file->id,
 		     (double)self->size / 1024 / 1024,
 		     self->ops);
 

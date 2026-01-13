@@ -29,11 +29,17 @@ state_directory(void)
 	return str_of(opt_string_of(&state()->directory));
 }
 
-// checkpoint
+// catalog
 static inline uint64_t
-state_checkpoint(void)
+state_catalog(void)
 {
-	return opt_int_of(&state()->checkpoint);
+	return opt_int_of(&state()->catalog);
+}
+
+static inline uint64_t
+state_catalog_pending(void)
+{
+	return opt_int_of(&state()->catalog_pending);
 }
 
 // lsn

@@ -26,16 +26,11 @@ storage_refresh(Storage* self, Refresh* refresh, Id* id, Str* tier)
 static Buf*
 storage_pending(Storage* self)
 {
+	auto lock_mgr = &self->lock_mgr;
+
 	// create a list of all pending partitions
 	auto list = buf_create();
 	errdefer_buf(list);
-
-	// todo: get lsn and create checkpoint file
-
-	auto lock_mgr = &self->lock_mgr;
-	lock_checkpoint(lock_mgr, LOCK_EXCLUSIVE);
-	lock_catalog(lock_mgr, LOCK_SHARED);
-
 	list_foreach(&self->catalog.table_mgr.mgr.list)
 	{
 		auto table = table_of(list_at(Relation, link));
@@ -50,26 +45,51 @@ storage_pending(Storage* self)
 
 		unlock(lock_mgr, &table->rel, LOCK_SHARED);
 	}
-
-	unlock_catalog(lock_mgr, LOCK_SHARED);
-	unlock_checkpoint(lock_mgr, LOCK_EXCLUSIVE);
 	return list;
 }
 
 void
 storage_checkpoint(Storage* self)
 {
-	// create a list of all pending partitions
-	auto list = storage_pending(self);
+	auto lock_mgr = &self->lock_mgr;
+	lock_checkpoint(lock_mgr, LOCK_EXCLUSIVE);
+	lock_catalog(lock_mgr, LOCK_SHARED);
+
+	Buf* list = NULL;
+	auto on_error = error_catch
+	(
+		// update catalog file if there are pending ddls
+		if (state_catalog() < state_catalog_pending())
+			catalog_write(&self->catalog);
+
+		// create a list of all pending partitions
+		list = storage_pending(self);
+	);
+	unlock_catalog(lock_mgr, LOCK_SHARED);
+	unlock_checkpoint(lock_mgr, LOCK_EXCLUSIVE);
+
+	if (on_error)
+		rethrow();
+
 	defer_buf(list);
 
 	// refresh partitions
 	Refresh refresh;
 	refresh_init(&refresh, self);
 	defer(refresh_free, &refresh);
-
 	auto end = (Id*)list->position;
 	auto it  = (Id*)list->start;
 	for (; it < end; it++)
 		storage_refresh(self, &refresh, it, NULL);
+
+	// wal gc
+	storage_gc(self);
+}
+
+void
+storage_gc(Storage* self)
+{
+	(void)self;
+	// todo: wal gc
+	// todo: min between catalog lsn and heaps
 }

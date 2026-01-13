@@ -39,10 +39,10 @@ storage_free(Storage* self)
 }
 
 void
-storage_open(Storage* self)
+storage_open(Storage* self, bool bootstrap)
 {
 	// prepare system catalog
-	catalog_open(&self->catalog);
+	catalog_open(&self->catalog, bootstrap);
 }
 
 void
@@ -84,10 +84,6 @@ storage_state(Storage* self)
 	encode_raw(buf, "backends", 8);
 	encode_integer(buf, opt_int_of(&config()->backends));
 
-	// checkpoint
-	encode_raw(buf, "checkpoint", 10);
-	encode_integer(buf, state_checkpoint());
-
 	// lsn
 	encode_raw(buf, "lsn", 3);
 	encode_integer(buf, state_lsn());
@@ -95,6 +91,14 @@ storage_state(Storage* self)
 	// psn
 	encode_raw(buf, "psn", 3);
 	encode_integer(buf, state_psn());
+
+	// catalog
+	encode_raw(buf, "catalog", 7);
+	encode_integer(buf, state_catalog());
+
+	// catalog_pending
+	encode_raw(buf, "catalog_pending", 15);
+	encode_integer(buf, opt_int_of(&state()->catalog_pending));
 
 	// read_only
 	encode_raw(buf, "read_only", 9);

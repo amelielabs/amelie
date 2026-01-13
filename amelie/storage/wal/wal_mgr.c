@@ -67,7 +67,8 @@ wal_mgr_stop(WalMgr* self)
 void
 wal_mgr_gc(WalMgr* self)
 {
-	wal_gc(&self->wal, state_checkpoint());
+	(void)self;
+	// todo:
 }
 
 void

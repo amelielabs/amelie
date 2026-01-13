@@ -33,7 +33,7 @@ struct Catalog
 
 void catalog_init(Catalog*, CatalogIf*, void*, Deploy*);
 void catalog_free(Catalog*);
-void catalog_open(Catalog*);
+void catalog_open(Catalog*, bool);
 void catalog_close(Catalog*);
 bool catalog_execute(Catalog*, Tr*, uint8_t*, int);
 Buf* catalog_status(Catalog*);
