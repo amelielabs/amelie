@@ -298,10 +298,6 @@ catalog_execute(Catalog* self, Tr* tr, uint8_t* op, int flags)
 		                                      if_column_not_exists);
 		if (! table_new)
 			break;
-
-		// build new table with new column
-		auto table = table_mgr_find(&self->table_mgr, &db, &name, true);
-		self->iface->build_column_add(self, table, table_new, column);
 		write = true;
 		break;
 	}
@@ -323,12 +319,6 @@ catalog_execute(Catalog* self, Tr* tr, uint8_t* op, int flags)
 
 		// ensure no other udfs depend on the table
 		catalog_validate_udfs(self, &name);
-
-		// build new table with new column
-		auto table = table_mgr_find(&self->table_mgr, &db, &name, true);
-		auto column = columns_find(&table->config->columns, &name_column);
-		assert(column);
-		self->iface->build_column_drop(self, table, table_new, column);
 		write = true;
 		break;
 	}
@@ -382,10 +372,8 @@ catalog_execute(Catalog* self, Tr* tr, uint8_t* op, int flags)
 
 		auto if_not_exists = ddl_if_not_exists(flags);
 		write = table_index_create(table, tr, config, if_not_exists);
-		if (write)
-		{
-			auto index = table_find_index(table, &config->name, true);
-			self->iface->build_index(self, table, index);
+		if (write) {
+			// todo:
 		}
 		break;
 	}

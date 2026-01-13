@@ -121,12 +121,6 @@ pod_request(Pod* self, Ltr* ltr, Req* req)
 		pod_replay(self, ltr->tr, &req->arg);
 		break;
 	}
-	case REQ_BUILD:
-	{
-		auto build = *(Build**)req->arg.start;
-		build_execute(build, self->part);
-		break;
-	}
 	}
 }
 

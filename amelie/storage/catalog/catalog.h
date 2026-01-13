@@ -16,9 +16,6 @@ typedef struct Catalog   Catalog;
 
 struct CatalogIf
 {
-	void (*build_index)(Catalog*, Table*, IndexConfig*);
-	void (*build_column_add)(Catalog*, Table*, Table*, Column*);
-	void (*build_column_drop)(Catalog*, Table*, Table*, Column*);
 	void (*udf_compile)(Catalog*, Udf*);
 	void (*udf_free)(Udf*);
 	bool (*udf_depends)(Udf*, Str*);

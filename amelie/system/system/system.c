@@ -23,75 +23,6 @@
 #include <amelie_system.h>
 
 static void
-catalog_if_index(Catalog* self, Table* table, IndexConfig* index)
-{
-	unused(self);
-
-	// do parallel index creation for each partition
-	BuildConfig config =
-	{
-		.type      = BUILD_INDEX,
-		.table     = table,
-		.table_new = NULL,
-		.column    = NULL,
-		.index     = index
-	};
-	Build build;
-	build_init(&build);
-	defer(build_free, &build);
-	build_prepare(&build, &config);
-	list_foreach(&table->volume_mgr.parts)
-		build_add(&build, list_at(Part, link));
-	build_run(&build);
-}
-
-static void
-catalog_if_column_add(Catalog* self, Table* table, Table* table_new, Column* column)
-{
-	unused(self);
-
-	// build new table with new column
-	BuildConfig config =
-	{
-		.type      = BUILD_COLUMN_ADD,
-		.table     = table,
-		.table_new = table_new,
-		.column    = column,
-		.index     = NULL,
-	};
-	Build build;
-	build_init(&build);
-	defer(build_free, &build);
-	build_prepare(&build, &config);
-	list_foreach(&table->volume_mgr.parts)
-		build_add(&build, list_at(Part, link));
-	build_run(&build);
-}
-
-static void
-catalog_if_column_drop(Catalog* self, Table* table, Table* table_new, Column* column)
-{
-	unused(self);
-
-	// build new table without column
-	BuildConfig config =
-	{
-		.type      = BUILD_COLUMN_DROP,
-		.table     = table,
-		.table_new = table_new,
-		.column    = column,
-		.index     = NULL,
-	};
-	Build build;
-	build_init(&build);
-	defer(build_free, &build);
-	build_prepare(&build, &config);
-	list_foreach(&table->volume_mgr.parts)
-		build_add(&build, list_at(Part, link));
-	build_run(&build);
-}
-
-static void
 catalog_if_udf_compile(Catalog* self, Udf* udf)
 {
 	unused(self);
@@ -154,12 +85,9 @@ catalog_if_udf_depends(Udf* udf, Str* name)
 
 static CatalogIf catalog_if =
 {
-	.build_index       = catalog_if_index,
-	.build_column_add  = catalog_if_column_add,
-	.build_column_drop = catalog_if_column_drop,
-	.udf_compile       = catalog_if_udf_compile,
-	.udf_free          = catalog_if_udf_free,
-	.udf_depends       = catalog_if_udf_depends
+	.udf_compile = catalog_if_udf_compile,
+	.udf_free    = catalog_if_udf_free,
+	.udf_depends = catalog_if_udf_depends
 };
 
 static void*
@@ -302,27 +230,13 @@ system_recover(System* self)
 {
 	auto storage = &self->storage;
 
+	// todo: recover catalog/checkpoint
 #if 0
 	// recover partitions
 	int workers = opt_int_of(&config()->backends);
 	info("");
 	info("recover: checkpoints/%" PRIu64 "/ (using %d backends)",
 	     state_checkpoint(), workers);
-
-	BuildConfig config =
-	{
-		.type      = BUILD_RECOVER,
-		.table     = NULL,
-		.table_new = NULL,
-		.column    = NULL,
-		.index     = NULL,
-	};
-	Build build;
-	build_init(&build);
-	defer(build_free, &build);
-	build_prepare(&build, &config);
-	build_add_all(&build, storage);
-	build_run(&build);
 #endif
 	(void)storage;
 
@@ -481,36 +395,6 @@ system_rpc(Rpc* rpc, void* arg)
 		break;
 	}
 }
-
-#if 0
-static void
-system_lock(System* self, Rpc* rpc)
-{
-	// request exclusive lock for each frontend worker
-	frontend_mgr_lock(&self->frontend_mgr);
-
-	// sync to make last operation completed on every partition
-	//
-	// even with exclusive lock, there is a chance that
-	// last abort did not not finished yet
-	BuildConfig config =
-	{
-		.type      = BUILD_NONE,
-		.table     = NULL,
-		.table_new = NULL,
-		.column    = NULL,
-		.index     = NULL,
-	};
-	Build build;
-	build_init(&build);
-	defer(build_free, &build);
-	build_prepare(&build, &config);
-	build_add_all(&build, &self->storage);
-	build_run(&build);
-
-	rpc_done(rpc);
-}
-#endif
 
 void
 system_main(System* self)
