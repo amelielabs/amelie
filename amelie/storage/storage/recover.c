@@ -82,6 +82,7 @@ recover_cmd(Recover* self, Record* record, RecordCmd* cmd, uint8_t** pos)
 			part_insert(part, tr, true, row);
 			*pos += row_size(row);
 		}
+		track_set_lsn(&part->track, record->lsn);
 		break;
 	}
 	case CMD_DELETE:
@@ -100,6 +101,7 @@ recover_cmd(Recover* self, Record* record, RecordCmd* cmd, uint8_t** pos)
 			part_delete_by(part, tr, row);
 			*pos += row_size(row);
 		}
+		track_set_lsn(&part->track, record->lsn);
 		break;
 	}
 	case CMD_DDL:

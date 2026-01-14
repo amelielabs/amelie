@@ -53,3 +53,9 @@ part_primary(Part* self)
 {
 	return container_of(self->indexes.next, Index, link);
 }
+
+static inline bool
+part_has_updates(Part* self)
+{
+	return track_lsn(&self->track) > self->object->meta.lsn;
+}

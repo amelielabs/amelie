@@ -15,17 +15,17 @@ typedef struct Track Track;
 
 struct Track
 {
-	Mailbox   queue;
-	uint64_t  seq;
-	TrList    prepared;
-	TrCache   cache;
-	Consensus consensus_pod;
-	Consensus consensus;
-	uint64_t  lsn;
-	bool      pending;
-	Consensus pending_consensus;
-	Track*    pending_link;
-	Task*     backend;
+	Mailbox    queue;
+	uint64_t   seq;
+	TrList     prepared;
+	TrCache    cache;
+	Consensus  consensus_pod;
+	Consensus  consensus;
+	atomic_u64 lsn;
+	bool       pending;
+	Consensus  pending_consensus;
+	Track*     pending_link;
+	Task*      backend;
 };
 
 static inline void
@@ -60,7 +60,13 @@ track_set_backend(Track* self, Task* task)
 static inline void
 track_set_lsn(Track* self, uint64_t lsn)
 {
-	self->lsn = lsn;
+	atomic_u64_set(&self->lsn, lsn);
+}
+
+static inline uint64_t
+track_lsn(Track* self)
+{
+	return atomic_u64_of(&self->lsn);
 }
 
 static inline Msg*

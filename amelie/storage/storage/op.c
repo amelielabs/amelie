@@ -39,8 +39,8 @@ storage_pending(Storage* self)
 		list_foreach(&table->volume_mgr.parts)
 		{
 			auto part = list_at(Part, link);
-			// todo: only if has updates
-			buf_write(list, &part->id, sizeof(part->id));
+			if (part_has_updates(part))
+				buf_write(list, &part->id, sizeof(part->id));
 		}
 
 		unlock(lock_mgr, &table->rel, LOCK_SHARED);
@@ -89,7 +89,44 @@ storage_checkpoint(Storage* self)
 void
 storage_gc(Storage* self)
 {
-	(void)self;
-	// todo: wal gc
-	// todo: min between catalog lsn and heaps
+	// taking exclusive checkpoint lock to prevent
+	// the catalog lsn change
+	auto lock_mgr = &self->lock_mgr;
+	lock_checkpoint(lock_mgr, LOCK_EXCLUSIVE);
+	lock_catalog(lock_mgr, LOCK_SHARED);
+
+	// include catalog lsn if there are any pending catalog
+	// operations in the wal
+	//
+	// since pending catalog sets to max ddl lsn, we are using
+	// catalog lsn as min
+	//
+	auto lsn             = UINT64_MAX;
+	auto catalog         = state_catalog();
+	auto catalog_pending = state_catalog_pending();
+	if (catalog_pending > catalog)
+		lsn = catalog;
+
+	// calculate min lsn accross partitions files (merged)
+	list_foreach(&self->catalog.table_mgr.mgr.list)
+	{
+		auto table = table_of(list_at(Relation, link));
+		lock(lock_mgr, &table->rel, LOCK_SHARED);
+
+		list_foreach(&table->volume_mgr.parts)
+		{
+			auto part = list_at(Part, link);
+			auto object_lsn = part->object->meta.lsn;
+			if (object_lsn < lsn)
+				lsn = object_lsn;
+		}
+
+		unlock(lock_mgr, &table->rel, LOCK_SHARED);
+	}
+
+	unlock_catalog(lock_mgr, LOCK_SHARED);
+	unlock_checkpoint(lock_mgr, LOCK_EXCLUSIVE);
+
+	// remove wal files < lsn
+	wal_gc(&self->wal_mgr.wal, lsn);
 }
