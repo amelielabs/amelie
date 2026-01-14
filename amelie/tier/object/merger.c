@@ -127,9 +127,6 @@ merger_write(Writer*       writer,
              uint32_t      hash_min,
              uint32_t      hash_max)
 {
-	auto origin = config->origin;
-	auto heap   = config->heap;
-
 	writer_reset(writer);
 	writer_start(writer, config->source, &object->file);
 	while (iterator_has(it))
@@ -147,11 +144,8 @@ merger_write(Writer*       writer,
 			break;
 		iterator_next(it);
 	}
-	uint64_t lsn = heap->lsn_max;
-	if (origin->meta.lsn > lsn)
-		lsn = origin->meta.lsn;
-
-	writer_stop(writer, &object->id, hash_min, hash_max, 0, lsn);
+	writer_stop(writer, &object->id, hash_min, hash_max, 0,
+	            config->lsn);
 
 	// copy and set meta data
 	meta_writer_copy(&writer->meta_writer, &object->meta,

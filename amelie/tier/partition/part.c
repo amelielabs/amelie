@@ -64,21 +64,17 @@ part_free(Part* self)
 void
 part_load(Part* self)
 {
-	// open partition object file
-	auto object = object_allocate(self->source, &self->id);
-	defer(object_free, object);
-	object_open(object, ID, true);
-	object_set(object, ID);
+	auto object = self->object;
+	auto keys = index_keys(part_primary(self));
 
 	// iterate object file
 	ObjectIterator it;
 	object_iterator_init(&it);
 	defer(object_iterator_free, &it);
+	object_iterator_open(&it, keys, object, NULL);
 
 	// read into heap
 	auto count = 0ul;
-	auto keys  = index_keys(part_primary(self));
-	object_iterator_open(&it, keys, object, NULL);
 	while (object_iterator_has(&it))
 	{
 		auto ref = object_iterator_at(&it);

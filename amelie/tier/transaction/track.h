@@ -21,6 +21,7 @@ struct Track
 	TrCache   cache;
 	Consensus consensus_pod;
 	Consensus consensus;
+	uint64_t  lsn;
 	bool      pending;
 	Consensus pending_consensus;
 	Track*    pending_link;
@@ -31,6 +32,7 @@ static inline void
 track_init(Track* self)
 {
 	self->seq          = 1;
+	self->lsn          = 0;
 	self->pending      = false;
 	self->pending_link = NULL;
 	self->backend      = NULL;
@@ -53,6 +55,12 @@ static inline void
 track_set_backend(Track* self, Task* task)
 {
 	self->backend = task;
+}
+
+static inline void
+track_set_lsn(Track* self, uint64_t lsn)
+{
+	self->lsn = lsn;
 }
 
 static inline Msg*

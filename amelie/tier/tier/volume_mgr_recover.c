@@ -224,6 +224,10 @@ volume_mgr_recover(VolumeMgr* self, List* volumes, List* indexes)
 		// open partition
 		part->object = object_allocate(part->source, &part->id);
 		object_open(part->object, ID, true);
+		object_set(part->object, ID);
+
+		// set object metrics
+		track_set_lsn(&part->track, part->object->meta.lsn);
 
 		// add indexes
 		list_foreach(indexes)

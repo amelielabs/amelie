@@ -112,6 +112,7 @@ hot static inline uint64_t
 executor_detach(Executor* self, Batch* batch)
 {
 	// group completion (called from Commit)
+	auto lsn = batch->write.lsn;
 
 	// called by Commit
 	spinlock_lock(&self->lock);
@@ -121,6 +122,8 @@ executor_detach(Executor* self, Batch* batch)
 	while (ref)
 	{
 		auto next = ref->pending_link;
+		if (ref->lsn < lsn)
+			ref->lsn = lsn;
 		ref->consensus    = ref->pending_consensus;
 		ref->pending      = false;
 		ref->pending_link = NULL;

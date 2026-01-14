@@ -24,6 +24,7 @@ typedef enum
 struct MergerConfig
 {
 	MergerType type;
+	uint64_t   lsn;
 	Object*    origin;
 	Heap*      heap;
 	Keys*      keys;

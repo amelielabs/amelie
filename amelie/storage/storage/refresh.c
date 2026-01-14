@@ -23,6 +23,7 @@ refresh_init(Refresh* self, Storage* storage)
 	self->origin        = NULL;
 	self->origin_heap   = NULL;
 	self->origin_object = NULL;
+	self->lsn           = 0;
 	self->table         = NULL;
 	self->volume        = NULL;
 	self->storage       = storage;
@@ -42,6 +43,7 @@ refresh_reset(Refresh* self)
 	self->origin        = NULL;
 	self->origin_heap   = NULL;
 	self->origin_object = NULL;
+	self->lsn           = 0;
 	self->table         = NULL;
 	self->volume        = NULL;
 	merger_reset(&self->merger);
@@ -82,7 +84,9 @@ refresh_begin(Refresh* self, Id* id, Str* tier)
 		self->volume = origin->volume;
 
 	// force commit prepared transactions
-	track_sync(&origin->track, &origin->track.consensus);
+	auto consensus = &origin->track.consensus;
+	track_sync(&origin->track, consensus);
+	self->lsn = origin->track.lsn;
 
 	// rotate partition heap
 	assert(origin->heap == &origin->heap_a);
@@ -102,6 +106,7 @@ refresh_merge_job(intptr_t* argv)
 	MergerConfig config =
 	{
 		.type   = MERGER_SNAPSHOT,
+		.lsn    = self->lsn,
 		.origin = self->origin->object,
 		.heap   = self->origin_heap,
 		.keys   = self->table->volume_mgr.mapping.keys,
