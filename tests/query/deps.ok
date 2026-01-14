@@ -128,7 +128,7 @@ end;
     "06": "free                1      0      0     ",
     "07": "ret                 0      0      -     "
   },
-  "access": [["test", "ro"]]
+  "access": [["test", "shared"]]
 }]
 begin
 	declare x int;
@@ -161,7 +161,7 @@ end;
     "06": "free                1      0      0     ",
     "07": "ret                 0      0      -     "
   },
-  "access": [["test", "ro"]]
+  "access": [["test", "shared"]]
 }]
 begin
 	declare x int;
@@ -198,7 +198,7 @@ end;
     "06": "free                1      0      0     ",
     "07": "ret                 0      0      -     "
   },
-  "access": [["test", "ro"]]
+  "access": [["test", "shared"]]
 }]
 begin
 	declare x int;
@@ -244,7 +244,7 @@ end;
     "14": "free                2      0      0     ",
     "15": "ret                 1      0      -     "
   },
-  "access": [["test", "ro"]]
+  "access": [["test", "shared"]]
 }]
 begin
 	declare x int;
@@ -293,7 +293,7 @@ end;
     "06": "free                1      0      0     ",
     "07": "ret                 0      0      -     "
   },
-  "access": [["test", "ro"]]
+  "access": [["test", "shared"]]
 }]
 begin
 	declare x int;
@@ -340,7 +340,7 @@ end;
     "13": "free                1      0      0     ",
     "14": "ret                 0      0      -     "
   },
-  "access": [["test", "ro"]]
+  "access": [["test", "shared"]]
 }]
 begin
 	declare x int;
@@ -387,7 +387,7 @@ end;
     "13": "free                1      0      0     ",
     "14": "ret                 0      0      -     "
   },
-  "access": [["test", "ro"]]
+  "access": [["test", "shared"]]
 }]
 begin
 	declare x int;
@@ -424,7 +424,7 @@ end;
     "06": "free                1      0      0     ",
     "07": "ret                 0      0      -     "
   },
-  "access": [["test", "ro"]]
+  "access": [["test", "shared"]]
 }]
 begin
 	declare x int;
@@ -461,7 +461,7 @@ end;
     "06": "free                1      0      0     ",
     "07": "ret                 0      0      -     "
   },
-  "access": [["test", "ro"]]
+  "access": [["test", "shared"]]
 }]
 begin
 	declare x int;
@@ -500,7 +500,7 @@ end;
     "06": "free                1      0      0     ",
     "07": "ret                 0      0      -     "
   },
-  "access": [["test", "ro"]]
+  "access": [["test", "shared"]]
 }]
 begin
 	declare x int;
@@ -539,7 +539,7 @@ end;
     "06": "free                1      0      0     ",
     "07": "ret                 0      0      -     "
   },
-  "access": [["test", "ro"]]
+  "access": [["test", "shared"]]
 }]
 begin
 	declare x int;
@@ -581,7 +581,7 @@ end;
     "06": "free                1      0      0     ",
     "07": "ret                 0      0      -     "
   },
-  "access": [["test", "ro"]]
+  "access": [["test", "shared"]]
 }]
 begin
 	declare x int;
@@ -626,7 +626,7 @@ end;
     "06": "free                1      0      0     ",
     "07": "ret                 0      0      -     "
   },
-  "access": [["test", "ro"]]
+  "access": [["test", "shared"]]
 }]
 begin
 	declare x int;
@@ -675,7 +675,7 @@ end;
     "06": "free                1      0      0     ",
     "07": "ret                 0      0      -     "
   },
-  "access": [["test", "ro"]]
+  "access": [["test", "shared"]]
 }]
 begin
 	declare x int;
@@ -719,7 +719,7 @@ end;
     "06": "free                1      0      0     ",
     "07": "ret                 0      0      -     "
   },
-  "access": [["test", "ro"]]
+  "access": [["test", "shared"]]
 }]
 begin
 	declare x int;
@@ -760,7 +760,7 @@ end;
     "06": "free                1      0      0     ",
     "07": "ret                 0      0      -     "
   },
-  "access": [["test", "ro"]]
+  "access": [["test", "shared"]]
 }]
 begin
 	declare x int;
@@ -802,7 +802,7 @@ end;
     "06": "free                1      0      0     ",
     "07": "ret                 0      0      -     "
   },
-  "access": [["test", "ro"]]
+  "access": [["test", "shared"]]
 }]
 begin
 	declare x int;
@@ -844,7 +844,7 @@ end;
     "06": "free                1      0      0     ",
     "07": "ret                 0      0      -     "
   },
-  "access": [["test", "ro"]]
+  "access": [["test", "shared"]]
 }]
 begin
 	declare x int;
@@ -890,7 +890,7 @@ end;
     "06": "free                1      0      0     ",
     "07": "ret                 0      0      -     "
   },
-  "access": [["test", "ro"]]
+  "access": [["test", "shared"]]
 }]
 begin
 	declare x int;
@@ -937,7 +937,7 @@ end;
     "06": "free                1      0      0     ",
     "07": "ret                 0      0      -     "
   },
-  "access": [["test", "ro"]]
+  "access": [["test", "shared"]]
 }]
 begin
 	declare x int;
@@ -979,7 +979,7 @@ end;
     "06": "free                1      0      0     ",
     "07": "ret                 0      0      -     "
   },
-  "access": [["test", "ro"]]
+  "access": [["test", "shared"]]
 }]
 begin
 	declare x int;
@@ -1025,7 +1025,7 @@ end;
     "06": "free                1      0      0     ",
     "07": "ret                 0      0      -     "
   },
-  "access": [["test", "ro"]]
+  "access": [["test", "shared"]]
 }]
 begin
 	declare x int;
@@ -1076,7 +1076,7 @@ end;
     "06": "free                1      0      0     ",
     "07": "ret                 0      0      -     "
   },
-  "access": [["test", "ro"]]
+  "access": [["test", "shared"]]
 }]
 begin
 	declare x int;
@@ -1131,7 +1131,7 @@ end;
     "06": "free                1      0      0     ",
     "07": "ret                 0      0      -     "
   },
-  "access": [["test", "ro"]]
+  "access": [["test", "shared"]]
 }]
 begin declare x int;
 	declare y int;
@@ -1177,7 +1177,7 @@ end;
     "06": "free                1      0      0     ",
     "07": "ret                 0      0      -     "
   },
-  "access": [["test", "ro"]]
+  "access": [["test", "shared"]]
 }]
 begin
 	declare x int;
@@ -1237,7 +1237,7 @@ end;
     "16": "free                1      0      0     ",
     "17": "ret                 0      0      -     "
   },
-  "access": [["test", "ro"]]
+  "access": [["test", "shared"]]
 }]
 begin
 	declare x int;
@@ -1298,7 +1298,7 @@ end;
     "16": "free                1      0      0     ",
     "17": "ret                 0      0      -     "
   },
-  "access": [["test", "ro"]]
+  "access": [["test", "shared"]]
 }]
 begin
 	declare x int;
@@ -1376,7 +1376,7 @@ end;
     "26": "free                1      0      0     ",
     "27": "ret                 0      0      -     "
   },
-  "access": [["test", "ro"]]
+  "access": [["test", "shared"]]
 }]
 begin
 	declare x int;
@@ -1454,7 +1454,7 @@ end;
     "26": "free                1      0      0     ",
     "27": "ret                 0      0      -     "
   },
-  "access": [["test", "ro"]]
+  "access": [["test", "shared"]]
 }]
 begin
 	declare x int;
@@ -1501,7 +1501,7 @@ end;
     "06": "free                1      0      0     ",
     "07": "ret                 0      0      -     "
   },
-  "access": [["test", "ro"]]
+  "access": [["test", "shared"]]
 }]
 begin
 	declare x int;
@@ -1541,7 +1541,7 @@ end;
     "06": "free                1      0      0     ",
     "07": "ret                 0      0      -     "
   },
-  "access": [["test", "ro"]]
+  "access": [["test", "shared"]]
 }]
 begin
 	declare x int;
@@ -1588,7 +1588,7 @@ end;
     "06": "free                1      0      0     ",
     "07": "ret                 0      0      -     "
   },
-  "access": [["test", "ro"]]
+  "access": [["test", "shared"]]
 }]
 begin
 	declare x int;
@@ -1642,7 +1642,7 @@ end;
     "06": "free                1      0      0     ",
     "07": "ret                 0      0      -     "
   },
-  "access": [["test", "ro"]]
+  "access": [["test", "shared"]]
 }]
 begin
 	declare x int;
@@ -1690,7 +1690,7 @@ end;
     "06": "free                1      0      0     ",
     "07": "ret                 0      0      -     "
   },
-  "access": [["test", "ro"]]
+  "access": [["test", "shared"]]
 }]
 begin
 	declare x int;
@@ -1735,7 +1735,7 @@ end;
     "06": "free                1      0      0     ",
     "07": "ret                 0      0      -     "
   },
-  "access": [["test", "ro"]]
+  "access": [["test", "shared"]]
 }]
 begin
 	declare x int;
@@ -1779,7 +1779,7 @@ end;
     "06": "free                1      0      0     ",
     "07": "ret                 0      0      -     "
   },
-  "access": [["test", "ro"]]
+  "access": [["test", "shared"]]
 }]
 begin
 	declare x int;
@@ -1835,7 +1835,7 @@ end;
     "06": "free                1      0      0     ",
     "07": "ret                 0      0      -     "
   },
-  "access": [["test", "ro"]]
+  "access": [["test", "shared"]]
 }]
 begin
 	declare x int;
@@ -1977,7 +1977,7 @@ end;
     "06": "free                1      0      0     ",
     "07": "ret                 0      0      -     "
   },
-  "access": [["test", "ro"]]
+  "access": [["test", "shared"]]
 }]
 begin
 	declare x int;
@@ -2028,7 +2028,7 @@ end;
     "06": "free                1      0      0     ",
     "07": "ret                 0      0      -     "
   },
-  "access": [["test", "ro"]]
+  "access": [["test", "shared"]]
 }]
 begin
 	declare x int;
@@ -2083,7 +2083,7 @@ end;
     "06": "free                1      0      0     ",
     "07": "ret                 0      0      -     "
   },
-  "access": [["test", "ro"]]
+  "access": [["test", "shared"]]
 }]
 begin
 	declare x int;
@@ -2128,7 +2128,7 @@ end;
     "00": "insert              -      0      0     # test",
     "01": "ret                 -1     0      -     "
   },
-  "access": [["test", "rw"]]
+  "access": [["test", "shared_rw"]]
 }]
 begin
 	declare x int := 4;
@@ -2179,7 +2179,7 @@ end;
     "08": "free                1      0      0     ",
     "09": "ret                 0      0      -     "
   },
-  "access": [["test", "rw"]]
+  "access": [["test", "shared_rw"]]
 }]
 begin
 	declare x int := 8;
@@ -2224,7 +2224,7 @@ end;
     "06": "free                1      0      0     ",
     "07": "ret                 0      0      -     "
   },
-  "access": [["test", "ro"]]
+  "access": [["test", "shared"]]
 }]
 begin
 	declare x int;
@@ -2273,7 +2273,7 @@ end;
     "06": "free                1      0      0     ",
     "07": "ret                 0      0      -     "
   },
-  "access": [["test", "ro"]]
+  "access": [["test", "shared"]]
 }]
 begin
 	declare x int;
@@ -2324,7 +2324,7 @@ end;
     "06": "free                1      0      0     ",
     "07": "ret                 0      0      -     "
   },
-  "access": [["test", "ro"]]
+  "access": [["test", "shared"]]
 }]
 begin
 	declare x int;
@@ -2378,7 +2378,7 @@ end;
     "06": "free                1      0      0     ",
     "07": "ret                 0      0      -     "
   },
-  "access": [["test", "ro"]]
+  "access": [["test", "shared"]]
 }]
 begin
 	declare x int;
@@ -2438,7 +2438,7 @@ end;
     "06": "free                1      0      0     ",
     "07": "ret                 0      0      -     "
   },
-  "access": [["test", "ro"]]
+  "access": [["test", "shared"]]
 }]
 begin
 	declare x int;
@@ -2520,7 +2520,7 @@ end;
     "06": "free                1      0      0     ",
     "07": "ret                 0      0      -     "
   },
-  "access": [["test", "ro"]]
+  "access": [["test", "shared"]]
 }]
 begin
 	declare i int := 0;
@@ -2577,7 +2577,7 @@ end;
     "06": "free                1      0      0     ",
     "07": "ret                 0      0      -     "
   },
-  "access": [["test", "ro"]]
+  "access": [["test", "shared"]]
 }]
 begin
 	declare x int;
@@ -2627,7 +2627,7 @@ end;
     "06": "free                1      0      0     ",
     "07": "ret                 0      0      -     "
   },
-  "access": [["test", "ro"]]
+  "access": [["test", "shared"]]
 }]
 begin
 	declare x int;
@@ -2676,7 +2676,7 @@ end;
     "06": "free                3      0      0     ",
     "07": "ret                 2      0      -     "
   },
-  "access": [["test", "ro"]]
+  "access": [["test", "shared"]]
 }]
 begin
 	declare x int;
@@ -2734,7 +2734,7 @@ end;
     "06": "free                3      0      0     ",
     "07": "ret                 2      0      -     "
   },
-  "access": [["test", "ro"]]
+  "access": [["test", "shared"]]
 }]
 begin
 	declare p int;
@@ -2796,7 +2796,7 @@ end;
     "06": "free                3      0      0     ",
     "07": "ret                 2      0      -     "
   },
-  "access": [["test", "ro"]]
+  "access": [["test", "shared"]]
 }]
 begin
 	declare p int;
@@ -2872,7 +2872,7 @@ end;
     "22": "free                1      0      0     ",
     "23": "ret                 0      0      -     "
   },
-  "access": [["test", "rw"]]
+  "access": [["test", "shared_rw"]]
 }]
 begin
 	declare id int;

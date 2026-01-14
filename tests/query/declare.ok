@@ -289,7 +289,7 @@ end;
     "10": "free                1      0      0     ",
     "11": "ret                 0      0      -     "
   },
-  "access": [["test", "ro"]]
+  "access": [["test", "shared"]]
 }]
 begin
 	declare id int;
@@ -309,7 +309,7 @@ end;
     "02": "var_set             0      0      0     ",
     "03": "push_var            0      0      0     ",
     "04": "push_var            0      0      0     ",
-    "05": "send_lookup_by      0      1      18    # test (select, closing)",
+    "05": "send_lookup         0      -      18    # test (select, closing)",
     "06": "union               1      0      0     ",
     "07": "recv                1      0      0     ",
     "08": "ret                 1      0      -     "
@@ -329,7 +329,7 @@ end;
     "11": "free                1      0      0     ",
     "12": "ret                 0      0      -     "
   },
-  "access": [["test", "ro"]]
+  "access": [["test", "shared"]]
 }]
 begin
 	declare id int; id := 1;
@@ -359,7 +359,7 @@ end;
     "02": "var_set             0      0      0     ",
     "03": "push_var            0      0      0     ",
     "04": "push_var            0      0      0     ",
-    "05": "send_lookup_by      0      1      18    # test (select, closing)",
+    "05": "send_lookup         0      -      18    # test (select, closing)",
     "06": "union               1      0      0     ",
     "07": "recv                1      0      0     ",
     "08": "ret                 1      0      -     "
@@ -379,7 +379,7 @@ end;
     "11": "free                1      0      0     ",
     "12": "ret                 0      0      -     "
   },
-  "access": [["test", "ro"]]
+  "access": [["test", "shared"]]
 }]
 # test: := with cte
 begin
@@ -655,7 +655,7 @@ end;
     "08": "free                1      0      0     ",
     "09": "ret                 0      0      -     "
   },
-  "access": [["test", "ro"]]
+  "access": [["test", "shared"]]
 }]
 begin
 	declare x table (a int, b int);

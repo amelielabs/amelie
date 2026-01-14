@@ -379,7 +379,7 @@ end;
     "02": "insert              -      0      0     # test",
     "03": "ret                 -1     0      -     "
   },
-  "access": [["test", "rw"]]
+  "access": [["test", "shared_rw"]]
 }]
 begin
 	if true then
@@ -428,7 +428,7 @@ end;
     "10": "free                1      0      0     ",
     "11": "ret                 0      0      -     "
   },
-  "access": [["test", "rw"]]
+  "access": [["test", "shared_rw"]]
 }]
 begin
 	if true then
@@ -490,7 +490,7 @@ end;
     "10": "free                1      0      0     ",
     "11": "ret                 0      0      -     "
   },
-  "access": [["test", "rw"]]
+  "access": [["test", "shared_rw"]]
 }]
 begin
 	if true then
@@ -566,7 +566,7 @@ end;
     "12": "free                1      0      0     ",
     "13": "ret                 0      0      -     "
   },
-  "access": [["test", "rw"]]
+  "access": [["test", "shared_rw"]]
 }]
 begin
 	declare x int := 0;
@@ -645,7 +645,7 @@ end;
     "10": "free                1      0      0     ",
     "11": "ret                 0      0      -     "
   },
-  "access": [["test", "rw"]]
+  "access": [["test", "shared_rw"]]
 }]
 begin
 	declare x int := 0;
@@ -692,7 +692,7 @@ end;
     "08": "free                1      0      0     ",
     "09": "ret                 0      0      -     "
   },
-  "access": [["test", "rw"]]
+  "access": [["test", "shared_rw"]]
 }]
 begin
 	declare x int := 0;
@@ -739,7 +739,7 @@ end;
     "06": "free                1      0      0     ",
     "07": "ret                 0      0      -     "
   },
-  "access": [["test", "ro"]]
+  "access": [["test", "shared"]]
 }]
 begin
 	declare x int := 0;
@@ -794,7 +794,7 @@ end;
     "11": "set_agg             0      1      18    ",
     "12": "ret                 0      0      -     "
   },
-  "access": [["test", "ro"]]
+  "access": [["test", "shared"]]
 }]
 begin
 	declare x int := 0;
@@ -851,7 +851,7 @@ end;
     "11": "set_agg             0      1      18    ",
     "12": "ret                 0      0      -     "
   },
-  "access": [["test", "ro"]]
+  "access": [["test", "shared"]]
 }]
 begin
 	declare x int := 0;
@@ -911,7 +911,7 @@ end;
     "11": "set_agg             0      1      18    ",
     "12": "ret                 0      0      -     "
   },
-  "access": [["test", "ro"]]
+  "access": [["test", "shared"]]
 }]
 begin
 	declare x int := 0;
@@ -979,7 +979,7 @@ end;
     "19": "free                1      0      0     ",
     "20": "ret                 0      0      -     "
   },
-  "access": [["test", "ro"]]
+  "access": [["test", "shared"]]
 }]
 begin
 	declare x int := 0;
@@ -1028,7 +1028,7 @@ end;
     "06": "free                1      0      0     ",
     "07": "ret                 0      0      -     "
   },
-  "access": [["test", "ro"]]
+  "access": [["test", "shared"]]
 }]
 begin
 	declare x int := 0;

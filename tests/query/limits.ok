@@ -24,6 +24,7 @@ select show();
   "limit_write": 0,
   "frontends": 1,
   "backends": 1,
+  "jobs": 3,
   "cpu_affinity": true,
   "wal_worker": false,
   "wal_crc": true,
@@ -33,13 +34,9 @@ select show();
   "wal_sync_interval": "1 sec",
   "wal_size": 67108864,
   "wal_truncate": 0,
-  "repl_readahead": 262144,
-  "repl_reconnect_ms": 3000,
   "checkpoint_interval": "5 min",
-  "checkpoint_workers": 3,
-  "checkpoint_crc": true,
-  "checkpoint_compression": "zstd",
-  "checkpoint_sync": false
+  "repl_readahead": 262144,
+  "repl_reconnect_ms": 3000
 }]
 # test: limit_write
 create table test (id int primary key);
@@ -88,6 +85,7 @@ select show();
   "limit_write": 0,
   "frontends": 1,
   "backends": 1,
+  "jobs": 3,
   "cpu_affinity": true,
   "wal_worker": false,
   "wal_crc": true,
@@ -97,13 +95,9 @@ select show();
   "wal_sync_interval": "1 sec",
   "wal_size": 67108864,
   "wal_truncate": 0,
-  "repl_readahead": 262144,
-  "repl_reconnect_ms": 3000,
   "checkpoint_interval": "5 min",
-  "checkpoint_workers": 3,
-  "checkpoint_crc": true,
-  "checkpoint_compression": "zstd",
-  "checkpoint_sync": false
+  "repl_readahead": 262144,
+  "repl_reconnect_ms": 3000
 }]
 # test: limit_recv
 disconnect S0;

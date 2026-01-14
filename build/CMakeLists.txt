@@ -74,18 +74,15 @@ include_directories("${AMELIE_ROOT}/server/http")
 include_directories("${AMELIE_ROOT}/server/client")
 include_directories("${AMELIE_ROOT}/server/server")
 
-# tier
-include_directories("${AMELIE_ROOT}/tier")
-include_directories("${AMELIE_ROOT}/tier/row")
-include_directories("${AMELIE_ROOT}/tier/heap")
-include_directories("${AMELIE_ROOT}/tier/object")
-include_directories("${AMELIE_ROOT}/tier/transaction")
-include_directories("${AMELIE_ROOT}/tier/index")
-include_directories("${AMELIE_ROOT}/tier/partition")
-include_directories("${AMELIE_ROOT}/tier/tier")
-
 # storage
 include_directories("${AMELIE_ROOT}/storage")
+include_directories("${AMELIE_ROOT}/storage/row")
+include_directories("${AMELIE_ROOT}/storage/heap")
+include_directories("${AMELIE_ROOT}/storage/transaction")
+include_directories("${AMELIE_ROOT}/storage/index")
+include_directories("${AMELIE_ROOT}/storage/object")
+include_directories("${AMELIE_ROOT}/storage/partition")
+include_directories("${AMELIE_ROOT}/storage/tier")
 include_directories("${AMELIE_ROOT}/storage/catalog")
 include_directories("${AMELIE_ROOT}/storage/wal")
 include_directories("${AMELIE_ROOT}/storage/storage")
@@ -182,25 +179,23 @@ set(AMELIE_SOURCES_SERVER
     ${AMELIE_ROOT}/server/client/client.c
     ${AMELIE_ROOT}/server/server/server.c)
 
-set(AMELIE_SOURCES_TIER
-    ${AMELIE_ROOT}/tier/heap/heap.c
-    ${AMELIE_ROOT}/tier/heap/heap_row.c
-    ${AMELIE_ROOT}/tier/object/writer.c
-    ${AMELIE_ROOT}/tier/object/object_file.c
-    ${AMELIE_ROOT}/tier/object/object.c
-    ${AMELIE_ROOT}/tier/object/merger.c
-    ${AMELIE_ROOT}/tier/transaction/commit.c
-    ${AMELIE_ROOT}/tier/transaction/relation_mgr.c
-    ${AMELIE_ROOT}/tier/index/tree.c
-    ${AMELIE_ROOT}/tier/index/index_tree.c
-    ${AMELIE_ROOT}/tier/index/index_hash.c
-    ${AMELIE_ROOT}/tier/partition/part.c
-    ${AMELIE_ROOT}/tier/partition/part_op.c
-    ${AMELIE_ROOT}/tier/tier/tier_mgr.c
-    ${AMELIE_ROOT}/tier/tier/volume_mgr.c
-    ${AMELIE_ROOT}/tier/tier/volume_mgr_recover.c)
-
 set(AMELIE_SOURCES_STORAGE
+    ${AMELIE_ROOT}/storage/heap/heap.c
+    ${AMELIE_ROOT}/storage/heap/heap_row.c
+    ${AMELIE_ROOT}/storage/transaction/commit.c
+    ${AMELIE_ROOT}/storage/transaction/relation_mgr.c
+    ${AMELIE_ROOT}/storage/index/tree.c
+    ${AMELIE_ROOT}/storage/index/index_tree.c
+    ${AMELIE_ROOT}/storage/index/index_hash.c
+    ${AMELIE_ROOT}/storage/object/writer.c
+    ${AMELIE_ROOT}/storage/object/object_file.c
+    ${AMELIE_ROOT}/storage/object/object.c
+    ${AMELIE_ROOT}/storage/object/merger.c
+    ${AMELIE_ROOT}/storage/partition/part.c
+    ${AMELIE_ROOT}/storage/partition/part_op.c
+    ${AMELIE_ROOT}/storage/tier/tier_mgr.c
+    ${AMELIE_ROOT}/storage/tier/volume_mgr.c
+    ${AMELIE_ROOT}/storage/tier/volume_mgr_recover.c
     ${AMELIE_ROOT}/storage/catalog/db_mgr.c
     ${AMELIE_ROOT}/storage/catalog/table_mgr.c
     ${AMELIE_ROOT}/storage/catalog/table_mgr_alter.c
@@ -327,7 +322,6 @@ set(AMELIE_SOURCES_SYSTEM
 set(AMELIE_SOURCES
     ${AMELIE_SOURCES_RUNTIME}
     ${AMELIE_SOURCES_SERVER}
-    ${AMELIE_SOURCES_TIER}
     ${AMELIE_SOURCES_STORAGE}
     ${AMELIE_SOURCES_REPL}
     ${AMELIE_SOURCES_VM}

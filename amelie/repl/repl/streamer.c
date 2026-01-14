@@ -12,7 +12,6 @@
 
 #include <amelie_runtime>
 #include <amelie_server>
-#include <amelie_tier>
 #include <amelie_storage>
 #include <amelie_backup.h>
 #include <amelie_repl.h>
