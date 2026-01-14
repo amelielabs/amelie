@@ -16,13 +16,14 @@ typedef struct MetaWriter MetaWriter;
 struct MetaWriter
 {
 	bool   active;
+	Buf    offsets;
 	Buf    data;
+	Meta   meta;
 	Buf    compressed;
 	Codec* compression;
 	Buf    encrypted;
 	Codec* encryption;
 	bool   crc;
-	Meta   meta;
 };
 
 static inline void
@@ -32,6 +33,7 @@ meta_writer_init(MetaWriter* self)
 	self->compression = NULL;
 	self->encryption  = NULL;
 	self->crc         = false;
+	buf_init(&self->offsets);
 	buf_init(&self->data);
 	buf_init(&self->compressed);
 	buf_init(&self->encrypted);
@@ -41,6 +43,7 @@ meta_writer_init(MetaWriter* self)
 static inline void
 meta_writer_free(MetaWriter* self)
 {
+	buf_free(&self->offsets);
 	buf_free(&self->data);
 	buf_free(&self->compressed);
 	buf_free(&self->encrypted);
@@ -53,6 +56,7 @@ meta_writer_reset(MetaWriter* self)
 	self->compression = NULL;
 	self->encryption  = NULL;
 	self->crc         = false;
+	buf_reset(&self->offsets);
 	buf_reset(&self->data);
 	buf_reset(&self->compressed);
 	buf_reset(&self->encrypted);
@@ -85,6 +89,7 @@ meta_writer_stop(MetaWriter* self,
                  uint64_t    time_create,
                  uint64_t    lsn)
 {
+	// [[offsets][meta_regions]] [meta]
 	auto meta = &self->meta;
 
 	// compress meta data (without header)
@@ -96,6 +101,7 @@ meta_writer_stop(MetaWriter* self,
 		auto codec = self->compression;
 		auto buf = &self->compressed;
 		codec_encode_begin(codec, buf);
+		codec_encode_buf(codec, buf, &self->offsets);
 		codec_encode_buf(codec, buf, &self->data);
 		codec_encode_end(codec, buf);
 
@@ -112,10 +118,13 @@ meta_writer_stop(MetaWriter* self,
 		auto codec = self->encryption;
 		auto buf = &self->encrypted;
 		codec_encode_begin(codec, buf);
-		if (self->compression)
+		if (self->compression) {
 			codec_encode_buf(codec, buf, &self->compressed);
-		else
+		} else
+		{
+			codec_encode_buf(codec, buf, &self->offsets);
 			codec_encode_buf(codec, buf, &self->data);
+		}
 		codec_encode_end(codec, buf);
 
 		size = buf_size(&self->encrypted);
@@ -146,13 +155,16 @@ meta_writer_stop(MetaWriter* self,
 
 	// calculate data crc
 	uint32_t crc = 0;
-	if (self->encryption)
+	if (self->encryption) {
 		crc = runtime()->crc(crc, self->encrypted.start, buf_size(&self->encrypted));
-	else
-	if (self->compression)
+	} else
+	if (self->compression) {
 		crc = runtime()->crc(crc, self->compressed.start, buf_size(&self->compressed));
-	else
+	} else
+	{
+		crc = runtime()->crc(crc, self->offsets.start, buf_size(&self->offsets));
 		crc = runtime()->crc(crc, self->data.start, buf_size(&self->data));
+	}
 	meta->crc_data = crc;
 
 	// calculate header crc
@@ -167,6 +179,7 @@ meta_writer_add(MetaWriter*   self,
 	auto region = region_writer_header(region_writer);
 	assert(region->rows > 0);
 
+	// get region size
 	uint32_t size;
 	if (self->encryption)
 		size = buf_size(&region_writer->encrypted);
@@ -176,11 +189,16 @@ meta_writer_add(MetaWriter*   self,
 	else
 		size = region->size;
 
+	// calculate region crc
 	uint32_t crc = 0;
 	if (self->crc)
 		crc = region_writer_crc(region_writer);
 
-	// prepare region reference
+	// add region reference offset
+	uint32_t offset = buf_size(&self->data);
+	buf_write(&self->offsets, &offset, sizeof(offset));
+
+	// add region reference
 	auto min      = region_writer_min(region_writer);
 	auto min_size = row_size(min);
 	auto max      = region_writer_max(region_writer);
@@ -202,7 +220,7 @@ meta_writer_add(MetaWriter*   self,
 	auto meta = &self->meta;
 	meta->regions++;
 	meta->rows += region->rows;
-	meta->size += sizeof(MetaRegion) + min_size + max_size;
+	meta->size += sizeof(uint32_t) + sizeof(MetaRegion) + min_size + max_size;
 	meta->size_regions += size;
 	meta->size_regions_origin += region->size;
 }
@@ -211,19 +229,22 @@ static inline void
 meta_writer_copy(MetaWriter* self, Meta* meta, Buf* data)
 {
 	*meta = self->meta;
-	buf_write(data, self->data.start, buf_size(&self->data));
+	buf_write_buf(data, &self->offsets);
+	buf_write_buf(data, &self->data);
 }
 
 static inline void
 meta_writer_add_to_iov(MetaWriter* self, Iov* iov)
 {
-	if (self->encryption)
+	if (self->encryption) {
 		iov_add_buf(iov, &self->encrypted);
-	else
-	if (self->compression)
+	} else
+	if (self->compression) {
 		iov_add_buf(iov, &self->compressed);
-	else
+	} else {
+		iov_add_buf(iov, &self->offsets);
 		iov_add_buf(iov, &self->data);
+	}
 	iov_add(iov, &self->meta, sizeof(self->meta));
 }
 

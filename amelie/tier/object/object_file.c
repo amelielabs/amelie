@@ -33,7 +33,7 @@ object_file_open(File*   self,
 		error("partition: file '%s' has incorrect size",
 		      str_of(&self->path));
 
-	// [regions][meta_data][meta]
+	// [regions] [[offsets][meta_regions]] [meta]
 	
 	// read meta
 	int64_t offset = self->size - sizeof(Meta);

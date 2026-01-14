@@ -63,9 +63,11 @@ meta_init(Meta* self)
 static inline MetaRegion*
 meta_region(Meta* self, Buf* data, int pos)
 {
-	unused(self);
+	// [offsets][meta_regions]
 	assert(pos < (int)self->regions);
-	return &((MetaRegion*)data->start)[pos];
+	auto offset = (uint32_t*)data->start;
+	return (MetaRegion*)(data->start + (sizeof(uint32_t) * self->regions) +
+	                     offset[pos]);
 }
 
 static inline MetaRegion*
