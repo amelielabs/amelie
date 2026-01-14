@@ -224,8 +224,10 @@ catalog_write(Catalog* self)
 	defer(file_close, &file);
 	file_open_as(&file, path, O_CREAT|O_RDWR, 0600);
 	file_write_buf(&file, &text);
+
 	// todo: sync dir
-	// todo: sync
+	if (opt_int_of(&config()->catalog_sync))
+		file_sync(&file);
 
 	// remove catalog.json file, if exsists
 	sfmt(path, sizeof(path), "%s/catalog.json",

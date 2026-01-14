@@ -50,6 +50,7 @@ struct Config
 	Opt  wal_size;
 	Opt  wal_truncate;
 	// storage
+	Opt  catalog_sync;
 	Opt  checkpoint_interval;
 	// replication
 	Opt  repl_readahead;

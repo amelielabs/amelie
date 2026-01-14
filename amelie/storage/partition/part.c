@@ -41,7 +41,6 @@ part_allocate(Source*   source,
 	list_init(&self->link_volume);
 	list_init(&self->link);
 	rbtree_init_node(&self->link_range);
-	hashtable_node_init(&self->link_hash);
 	return self;
 }
 

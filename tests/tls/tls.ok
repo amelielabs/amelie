@@ -35,6 +35,7 @@ show all;
   "wal_sync_interval": "1 sec",
   "wal_size": 67108864,
   "wal_truncate": 0,
+  "catalog_sync": false,
   "checkpoint_interval": "5 min",
   "repl_readahead": 262144,
   "repl_reconnect_ms": 3000

@@ -68,6 +68,7 @@ config_prepare(Config* self)
 		{ "wal_size",                OPT_INT,    OPT_C,                   &self->wal_size,                NULL,             67108864            },
 		{ "wal_truncate",            OPT_INT,    OPT_C,                   &self->wal_truncate,            NULL,             0                   },
 		// storage
+		{ "catalog_sync",            OPT_BOOL,   OPT_C,                   &self->catalog_sync,            NULL,             true                },
 		{ "checkpoint_interval",     OPT_STRING, OPT_C,                   &self->checkpoint_interval,     "5 min",          0                   },
 		// replication
 		{ "repl_readahead",          OPT_INT,    OPT_C|OPT_Z,             &self->repl_readahead,          NULL,             256 * 1024          },

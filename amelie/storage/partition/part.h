@@ -16,22 +16,21 @@ typedef struct Part   Part;
 
 struct Part
 {
-	Id            id;
-	Source*       source;
-	List          indexes;
-	int           indexes_count;
-	Track         track;
-	Heap*         heap;
-	Heap          heap_a;
-	Heap          heap_b;
-	Object*       object;
-	Volume*       volume;
-	Sequence*     seq;
-	bool          unlogged;
-	List          link;
-	List          link_volume;
-	RbtreeNode    link_range;
-	HashtableNode link_hash;
+	Id         id;
+	Source*    source;
+	List       indexes;
+	int        indexes_count;
+	Track      track;
+	Heap*      heap;
+	Heap       heap_a;
+	Heap       heap_b;
+	Object*    object;
+	Volume*    volume;
+	Sequence*  seq;
+	bool       unlogged;
+	List       link;
+	List       link_volume;
+	RbtreeNode link_range;
 };
 
 Part*  part_allocate(Source*, Id*, Sequence*, bool);
