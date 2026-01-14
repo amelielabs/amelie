@@ -85,7 +85,7 @@ explain select * from test;
     "06": "free                1      0      0     ",
     "07": "ret                 0      0      -     "
   },
-  "access": [["test", "ro"]]
+  "access": [["test", "shared"]]
 }]
 select * from test;
 [0, 1, 2]
@@ -127,7 +127,7 @@ explain select id, data from test;
     "08": "free                1      0      0     ",
     "09": "ret                 0      0      -     "
   },
-  "access": [["test", "ro"]]
+  "access": [["test", "shared"]]
 }]
 select id, data from test;
 [[0, 0], [1, 0], [2, 0]]
@@ -167,7 +167,7 @@ explain select data.data from test;
     "08": "free                1      0      0     ",
     "09": "ret                 0      0      -     "
   },
-  "access": [["test", "ro"]]
+  "access": [["test", "shared"]]
 }]
 select data.data from test;
 [123, 123, 123]
@@ -211,7 +211,7 @@ explain select data.data.data from test;
     "08": "free                1      0      0     ",
     "09": "ret                 0      0      -     "
   },
-  "access": [["test", "ro"]]
+  "access": [["test", "shared"]]
 }]
 select data.data.data from test;
 [123, 123, 123]
@@ -241,7 +241,7 @@ explain select test.id, test.data from test;
     "08": "free                1      0      0     ",
     "09": "ret                 0      0      -     "
   },
-  "access": [["test", "ro"]]
+  "access": [["test", "shared"]]
 }]
 select test.id, test.data from test;
 [[0, 0], [1, 0], [2, 0]]
@@ -271,7 +271,7 @@ explain select test.data.data from test;
     "08": "free                1      0      0     ",
     "09": "ret                 0      0      -     "
   },
-  "access": [["test", "ro"]]
+  "access": [["test", "shared"]]
 }]
 select test.data.data from test;
 [123, 123, 123]
@@ -325,7 +325,7 @@ explain select alias.id, alias.data from test alias;
     "08": "free                1      0      0     ",
     "09": "ret                 0      0      -     "
   },
-  "access": [["test", "ro"]]
+  "access": [["test", "shared"]]
 }]
 select alias.id, alias.data from test alias;
 [[0, 0], [1, 0], [2, 0]]
@@ -355,7 +355,7 @@ explain select alias.data.data from test alias;
     "08": "free                1      0      0     ",
     "09": "ret                 0      0      -     "
   },
-  "access": [["test", "ro"]]
+  "access": [["test", "shared"]]
 }]
 select alias.data.data from test alias;
 [123, 123, 123]
@@ -389,7 +389,7 @@ explain select alias.id, alias.data from test alias;
     "08": "free                1      0      0     ",
     "09": "ret                 0      0      -     "
   },
-  "access": [["test", "ro"]]
+  "access": [["test", "shared"]]
 }]
 select alias.id, alias.* from test alias;
 [[0, 0, 0], [1, 1, 0], [2, 2, 0]]

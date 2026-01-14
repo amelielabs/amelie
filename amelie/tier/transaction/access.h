@@ -24,6 +24,7 @@ struct Access
 {
 	Buf list;
 	int list_count;
+	int count;
 };
 
 static inline AccessRecord*
@@ -36,6 +37,7 @@ static inline void
 access_init(Access* self)
 {
 	self->list_count = 0;
+	self->count      = 0;
 	buf_init(&self->list);
 }
 
@@ -61,6 +63,10 @@ access_empty(Access* self)
 hot static inline void
 access_add(Access* self, Relation* rel, LockId lock)
 {
+	// count total number of accesses, exclusive calls
+	if (lock != LOCK_CALL)
+		self->count++;
+
 	// find and upgrade access to the relation or catalog
 	for (auto i = 0; i < self->list_count; i++)
 	{

@@ -57,7 +57,7 @@ explain insert into test values (0, null);
     "00": "insert              -      0      0     # test",
     "01": "ret                 -1     0      -     "
   },
-  "access": [["test", "rw"]]
+  "access": [["test", "shared_rw"]]
 }]
 insert into test values (0, null);
 insert into test values (1, null), (2, 42), (3, 43);
@@ -152,7 +152,7 @@ explain insert into test (id) values (0) on conflict do update set data = data +
     "10": "free                0      0      0     ",
     "11": "ret                 -1     0      -     "
   },
-  "access": [["test", "rw"]]
+  "access": [["test", "shared_rw"]]
 }]
 insert into test (id) values (0) on conflict do update set data = data + 1;
 select * from test;
@@ -223,7 +223,7 @@ explain insert into test select * from src;
     "10": "insert              -      0      0     # test",
     "11": "ret                 -1     0      -     "
   },
-  "access": [["test", "rw"], ["src", "ro"]]
+  "access": [["test", "shared_rw"], ["src", "shared"]]
 }]
 insert into test select * from src returning *;
 [[1, 2], [2, 2]]

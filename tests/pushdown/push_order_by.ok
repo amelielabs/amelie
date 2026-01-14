@@ -4,7 +4,7 @@ connect E0 S0 127.0.0.1:3485;
 create table test (id serial primary key);
 insert into test generate 20;
 select * from test;
-[0, 1, 6, 7, 8, 14, 15, 17, 2, 9, 10, 12, 18, 19, 3, 4, 5, 11, 13, 16]
+[7, 8, 9, 10, 11, 12, 0, 2, 13, 15, 16, 1, 3, 4, 5, 6, 14, 17, 18, 19]
 explain select * from test order by id;
 [{
   "main": {
@@ -25,7 +25,7 @@ explain select * from test order by id;
     "08": "free                1      0      0     ",
     "09": "ret                 0      0      -     "
   },
-  "access": [["test", "ro"]]
+  "access": [["test", "shared"]]
 }]
 select * from test order by id;
 [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19]
@@ -50,7 +50,7 @@ explain select * from test order by id asc;
     "08": "free                1      0      0     ",
     "09": "ret                 0      0      -     "
   },
-  "access": [["test", "ro"]]
+  "access": [["test", "shared"]]
 }]
 select * from test order by id asc;
 [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19]
@@ -76,7 +76,7 @@ explain select * from test order by id desc;
     "09": "set_sort            0      0      0     ",
     "10": "ret                 0      0      -     "
   },
-  "access": [["test", "ro"]]
+  "access": [["test", "shared"]]
 }]
 select * from test order by id desc;
 [19, 18, 17, 16, 15, 14, 13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1, 0]
@@ -105,7 +105,7 @@ explain select * from test order by id limit 1;
     "10": "free                2      0      0     ",
     "11": "ret                 0      0      -     "
   },
-  "access": [["test", "ro"]]
+  "access": [["test", "shared"]]
 }]
 select * from test order by id limit 1;
 [0]
@@ -144,7 +144,7 @@ explain select * from test order by id limit 0;
     "10": "free                2      0      0     ",
     "11": "ret                 0      0      -     "
   },
-  "access": [["test", "ro"]]
+  "access": [["test", "shared"]]
 }]
 select * from test order by id limit 0;
 []
@@ -174,7 +174,7 @@ explain select * from test order by id desc limit 1;
     "09": "set_sort            0      0      0     ",
     "10": "ret                 0      0      -     "
   },
-  "access": [["test", "ro"]]
+  "access": [["test", "shared"]]
 }]
 select * from test order by id desc limit 1;
 [19]
@@ -217,7 +217,7 @@ explain select * from test order by id limit 1 offset 0;
     "12": "free                1      0      0     ",
     "13": "ret                 0      0      -     "
   },
-  "access": [["test", "ro"]]
+  "access": [["test", "shared"]]
 }]
 select * from test order by id limit 1 offset 0;
 [0]
@@ -250,7 +250,7 @@ explain select * from test order by id limit 1 offset 1;
     "12": "free                1      0      0     ",
     "13": "ret                 0      0      -     "
   },
-  "access": [["test", "ro"]]
+  "access": [["test", "shared"]]
 }]
 select * from test order by id limit 1 offset 1;
 [1]
@@ -286,7 +286,7 @@ explain select * from test order by id desc limit 1 offset 1;
     "09": "set_sort            0      0      0     ",
     "10": "ret                 0      0      -     "
   },
-  "access": [["test", "ro"]]
+  "access": [["test", "shared"]]
 }]
 select * from test order by id desc limit 1 offset 1;
 [18]
@@ -319,7 +319,7 @@ explain select * from test order by id offset 1;
     "08": "free                1      0      0     ",
     "09": "ret                 0      0      -     "
   },
-  "access": [["test", "ro"]]
+  "access": [["test", "shared"]]
 }]
 select * from test order by id offset 1;
 [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19]
@@ -357,7 +357,7 @@ explain select * from test order by id desc offset 1;
     "09": "set_sort            0      0      0     ",
     "10": "ret                 0      0      -     "
   },
-  "access": [["test", "ro"]]
+  "access": [["test", "shared"]]
 }]
 select * from test order by id desc offset 1;
 [18, 17, 16, 15, 14, 13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1, 0]

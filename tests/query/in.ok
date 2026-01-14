@@ -99,7 +99,7 @@ explain select 0 in (3,5, (select * from test), 0);
     "12": "in                  1      0      4     ",
     "13": "ret                 1      0      -     "
   },
-  "access": [["test", "ro_exclusive"]]
+  "access": [["test", "exclusive_ro"]]
 }]
 select 0 in (3,5, (select * from test));
 [false]

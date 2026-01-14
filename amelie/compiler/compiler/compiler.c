@@ -882,8 +882,8 @@ compiler_emit(Compiler* self)
 	code_set_regs(&program->code, self->map.count);
 	code_set_regs(&program->code_backend, self->map.count);
 
-	// set snapshot if the program access tables more than once,
+	// set snapshot if the program access relations more than once,
 	// this includes nested udf calls
-	if (access_tables(&program->access) > 1)
+	if (program->access.count > 1)
 		program->snapshot = true;
 }

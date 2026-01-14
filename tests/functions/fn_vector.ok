@@ -67,7 +67,7 @@ explain select id, embedding::cos_distance(vector [1,3,1,2,0]) from test order b
     "17": "set_sort            0      0      0     ",
     "18": "ret                 0      0      -     "
   },
-  "access": [["test", "ro"]]
+  "access": [["test", "shared"]]
 }]
 select id from test order by embedding::cos_distance(vector [1,3,1,2,0]) desc limit 1;
 [0]
@@ -97,7 +97,7 @@ explain select id from test order by embedding::cos_distance(vector [1,3,1,2,0])
     "12": "set_sort            0      0      0     ",
     "13": "ret                 0      0      -     "
   },
-  "access": [["test", "ro"]]
+  "access": [["test", "shared"]]
 }]
 disconnect S0;
 close E0;

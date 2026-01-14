@@ -33,7 +33,7 @@ explain select * from test where id >= 0;
     "13": "free                1      0      0     ",
     "14": "ret                 0      0      -     "
   },
-  "access": [["test", "ro"]]
+  "access": [["test", "shared"]]
 }]
 select * from test where id >= 0;
 [[0, 0], [1, 0], [2, 0]]
@@ -81,7 +81,7 @@ explain select * from test where data.data::int >= 0;
     "16": "free                1      0      0     ",
     "17": "ret                 0      0      -     "
   },
-  "access": [["test", "ro"]]
+  "access": [["test", "shared"]]
 }]
 select * from test where data.data::int >= 0;
 [[0, {
@@ -139,7 +139,7 @@ explain select * from test where data.data.data::int >= 0;
     "16": "free                1      0      0     ",
     "17": "ret                 0      0      -     "
   },
-  "access": [["test", "ro"]]
+  "access": [["test", "shared"]]
 }]
 select * from test where data.data.data::int >= 0;
 [[0, {
@@ -186,7 +186,7 @@ explain select * from test where test.id >= 0;
     "13": "free                1      0      0     ",
     "14": "ret                 0      0      -     "
   },
-  "access": [["test", "ro"]]
+  "access": [["test", "shared"]]
 }]
 select * from test where test.id >= 0;
 [[0, 0], [1, 0], [2, 0]]
@@ -224,7 +224,7 @@ explain select * from test where test.data.data::int >= 0;
     "16": "free                1      0      0     ",
     "17": "ret                 0      0      -     "
   },
-  "access": [["test", "ro"]]
+  "access": [["test", "shared"]]
 }]
 select * from test where test.data.data::int >= 0;
 [[0, {
@@ -265,7 +265,7 @@ explain select * from test alias where alias.id >= 0;
     "13": "free                1      0      0     ",
     "14": "ret                 0      0      -     "
   },
-  "access": [["test", "ro"]]
+  "access": [["test", "shared"]]
 }]
 select * from test alias where alias.id >= 0;
 [[0, 0], [1, 0], [2, 0]]
@@ -303,7 +303,7 @@ explain select * from test alias where alias.data.data::int >= 0;
     "16": "free                1      0      0     ",
     "17": "ret                 0      0      -     "
   },
-  "access": [["test", "ro"]]
+  "access": [["test", "shared"]]
 }]
 select * from test alias where alias.data.data::int >= 0;
 [[0, {
@@ -345,7 +345,7 @@ explain select * from test where true;
     "08": "free                1      0      0     ",
     "09": "ret                 0      0      -     "
   },
-  "access": [["test", "ro"]]
+  "access": [["test", "shared"]]
 }]
 select * from test where true;
 [1, 2, 3]
@@ -378,7 +378,7 @@ explain select * from test where id >= 0;
     "11": "free                1      0      0     ",
     "12": "ret                 0      0      -     "
   },
-  "access": [["test", "ro"]]
+  "access": [["test", "shared"]]
 }]
 select * from test where id >= 0;
 [1, 2, 3]
@@ -428,7 +428,7 @@ explain select * from test where id <= 0;
     "14": "free                1      0      0     ",
     "15": "ret                 0      0      -     "
   },
-  "access": [["test", "ro"]]
+  "access": [["test", "shared"]]
 }]
 select * from test where id <= 0;
 []
@@ -467,7 +467,7 @@ explain select * from test where id < 0;
     "14": "free                1      0      0     ",
     "15": "ret                 0      0      -     "
   },
-  "access": [["test", "ro"]]
+  "access": [["test", "shared"]]
 }]
 select * from test where id < 0;
 []
@@ -486,10 +486,11 @@ insert into test values (1), (2), (3);
 explain select * from test where id = 2;
 [{
   "main": {
-    "00": "send_lookup         0      -      0     # test (select, closing)",
-    "01": "union               1      0      0     ",
-    "02": "recv                1      0      0     ",
-    "03": "ret                 1      0      -     "
+    "00": "push_int            -      0      0     # 2",
+    "01": "send_lookup         0      -      18    # test (select, closing)",
+    "02": "union               1      0      0     ",
+    "03": "recv                1      0      0     ",
+    "04": "ret                 1      0      -     "
   },
   "pushdown": {
     "00": "set                 0      1      0     ",
@@ -505,7 +506,7 @@ explain select * from test where id = 2;
     "10": "free                1      0      0     ",
     "11": "ret                 0      0      -     "
   },
-  "access": [["test", "ro"]]
+  "access": [["test", "shared"]]
 }]
 select * from test where id = 2;
 [2]

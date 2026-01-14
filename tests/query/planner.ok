@@ -26,7 +26,7 @@ explain select * from test;
     "08": "free                1      0      0     ",
     "09": "ret                 0      0      -     "
   },
-  "access": [["test", "ro"]]
+  "access": [["test", "shared"]]
 }]
 select * from test;
 [[0, 2], [1, 1], [2, 0]]
@@ -62,7 +62,7 @@ explain select * from test use index (i);
     "08": "free                1      0      0     ",
     "09": "ret                 0      0      -     "
   },
-  "access": [["test", "ro"]]
+  "access": [["test", "shared"]]
 }]
 select * from test use index (i);
 [[2, 0], [1, 1], [0, 2]]
@@ -95,7 +95,7 @@ explain select * from test;
     "08": "free                1      0      0     ",
     "09": "ret                 0      0      -     "
   },
-  "access": [["test", "ro"]]
+  "access": [["test", "shared"]]
 }]
 select * from test;
 [[1, 1], [0, 2], [2, 0]]
@@ -125,10 +125,10 @@ explain select * from test where data = 2;
     "12": "free                1      0      0     ",
     "13": "ret                 0      0      -     "
   },
-  "access": [["test", "ro"]]
+  "access": [["test", "shared"]]
 }]
 select * from test where data = 2;
-[[0, 2]]
+[]
 explain select * from test where id = 1;
 [{
   "main": {
@@ -154,17 +154,19 @@ explain select * from test where id = 1;
     "13": "free                1      0      0     ",
     "14": "ret                 0      0      -     "
   },
-  "access": [["test", "ro"]]
+  "access": [["test", "shared"]]
 }]
 select * from test where id = 1;
 [[1, 1]]
 explain select * from test where id = 1 and data = 1;
 [{
   "main": {
-    "00": "send_lookup         0      -      0     # test (select, closing)",
-    "01": "union               1      0      0     ",
-    "02": "recv                1      0      0     ",
-    "03": "ret                 1      0      -     "
+    "00": "push_int            -      0      0     # 1",
+    "01": "push_int            -      0      0     # 1",
+    "02": "send_lookup         0      -      18    # test (select, closing)",
+    "03": "union               1      0      0     ",
+    "04": "recv                1      0      0     ",
+    "05": "ret                 1      0      -     "
   },
   "pushdown": {
     "00": "set                 0      2      0     ",
@@ -187,17 +189,19 @@ explain select * from test where id = 1 and data = 1;
     "17": "free                1      0      0     ",
     "18": "ret                 0      0      -     "
   },
-  "access": [["test", "ro"]]
+  "access": [["test", "shared"]]
 }]
 select * from test where id = 1 and data = 1;
 [[1, 1]]
 explain select * from test where data = 1 and id = 1;
 [{
   "main": {
-    "00": "send_lookup         0      -      0     # test (select, closing)",
-    "01": "union               1      0      0     ",
-    "02": "recv                1      0      0     ",
-    "03": "ret                 1      0      -     "
+    "00": "push_int            -      0      0     # 1",
+    "01": "push_int            -      0      0     # 1",
+    "02": "send_lookup         0      -      18    # test (select, closing)",
+    "03": "union               1      0      0     ",
+    "04": "recv                1      0      0     ",
+    "05": "ret                 1      0      -     "
   },
   "pushdown": {
     "00": "set                 0      2      0     ",
@@ -220,7 +224,7 @@ explain select * from test where data = 1 and id = 1;
     "17": "free                1      0      0     ",
     "18": "ret                 0      0      -     "
   },
-  "access": [["test", "ro"]]
+  "access": [["test", "shared"]]
 }]
 select * from test where data = 1 and id = 1;
 [[1, 1]]
@@ -234,10 +238,11 @@ insert into test values (2, 0);
 explain select * from test where id = 1;
 [{
   "main": {
-    "00": "send_lookup         0      -      0     # test (select, closing)",
-    "01": "union               1      0      0     ",
-    "02": "recv                1      0      0     ",
-    "03": "ret                 1      0      -     "
+    "00": "push_int            -      0      0     # 1",
+    "01": "send_lookup         0      -      18    # test (select, closing)",
+    "02": "union               1      0      0     ",
+    "03": "recv                1      0      0     ",
+    "04": "ret                 1      0      -     "
   },
   "pushdown": {
     "00": "set                 0      2      0     ",
@@ -255,7 +260,7 @@ explain select * from test where id = 1;
     "12": "free                1      0      0     ",
     "13": "ret                 0      0      -     "
   },
-  "access": [["test", "ro"]]
+  "access": [["test", "shared"]]
 }]
 select * from test where id = 1;
 [[1, 1]]
@@ -284,7 +289,7 @@ explain select * from test where id > 1;
     "13": "free                1      0      0     ",
     "14": "ret                 0      0      -     "
   },
-  "access": [["test", "ro"]]
+  "access": [["test", "shared"]]
 }]
 select * from test where id > 1;
 [[2, 0]]
@@ -312,7 +317,7 @@ explain select * from test where data > 1;
     "12": "free                1      0      0     ",
     "13": "ret                 0      0      -     "
   },
-  "access": [["test", "ro"]]
+  "access": [["test", "shared"]]
 }]
 select * from test where data > 1;
 [[0, 2]]
@@ -341,7 +346,7 @@ explain select * from test where data = 1;
     "12": "free                1      0      0     ",
     "13": "ret                 0      0      -     "
   },
-  "access": [["test", "ro"]]
+  "access": [["test", "shared"]]
 }]
 select * from test where data = 1;
 [[1, 1]]
@@ -371,10 +376,11 @@ select show('table', 'test', true).indexes;
 explain select * from test where data = 1 and id = 1;
 [{
   "main": {
-    "00": "send_lookup         0      -      0     # test (select, closing)",
-    "01": "union               1      0      0     ",
-    "02": "recv                1      0      0     ",
-    "03": "ret                 1      0      -     "
+    "00": "push_int            -      0      0     # 1",
+    "01": "send_lookup         0      -      12    # test (select, closing)",
+    "02": "union               1      0      0     ",
+    "03": "recv                1      0      0     ",
+    "04": "ret                 1      0      -     "
   },
   "pushdown": {
     "00": "set                 0      2      0     ",
@@ -398,7 +404,7 @@ explain select * from test where data = 1 and id = 1;
     "18": "free                1      0      0     ",
     "19": "ret                 0      0      -     "
   },
-  "access": [["test", "ro"]]
+  "access": [["test", "shared"]]
 }]
 select * from test where data = 1 and id = 1;
 [[1, 1]]
@@ -406,10 +412,11 @@ select * from test where data = 1 and id = 1;
 explain select * from test where id = 1 and data = 1;
 [{
   "main": {
-    "00": "send_lookup         0      -      0     # test (select, closing)",
-    "01": "union               1      0      0     ",
-    "02": "recv                1      0      0     ",
-    "03": "ret                 1      0      -     "
+    "00": "push_int            -      0      0     # 1",
+    "01": "send_lookup         0      -      12    # test (select, closing)",
+    "02": "union               1      0      0     ",
+    "03": "recv                1      0      0     ",
+    "04": "ret                 1      0      -     "
   },
   "pushdown": {
     "00": "set                 0      2      0     ",
@@ -433,7 +440,7 @@ explain select * from test where id = 1 and data = 1;
     "18": "free                1      0      0     ",
     "19": "ret                 0      0      -     "
   },
-  "access": [["test", "ro"]]
+  "access": [["test", "shared"]]
 }]
 select * from test where id = 1 and data = 1;
 [[1, 1]]
@@ -470,7 +477,7 @@ explain select * from test where id > 1;
     "13": "free                1      0      0     ",
     "14": "ret                 0      0      -     "
   },
-  "access": [["test", "ro"]]
+  "access": [["test", "shared"]]
 }]
 select * from test where id > 1;
 [[2, 0]]
@@ -499,7 +506,7 @@ explain select * from test where data > 1;
     "13": "free                1      0      0     ",
     "14": "ret                 0      0      -     "
   },
-  "access": [["test", "ro"]]
+  "access": [["test", "shared"]]
 }]
 select * from test where data > 1;
 [[0, 2]]
@@ -532,7 +539,7 @@ explain select * from test where data < 1;
     "16": "free                1      0      0     ",
     "17": "ret                 0      0      -     "
   },
-  "access": [["test", "ro"]]
+  "access": [["test", "shared"]]
 }]
 select * from test where data < 1;
 [[2, 0]]
@@ -564,7 +571,7 @@ explain select * from test where id < 1;
     "16": "free                1      0      0     ",
     "17": "ret                 0      0      -     "
   },
-  "access": [["test", "ro"]]
+  "access": [["test", "shared"]]
 }]
 select * from test where id < 1;
 [[0, 2]]
@@ -600,7 +607,7 @@ explain select * from test where id < 1 and data < 2;
     "20": "free                1      0      0     ",
     "21": "ret                 0      0      -     "
   },
-  "access": [["test", "ro"]]
+  "access": [["test", "shared"]]
 }]
 select * from test where id < 1 and data < 2;
 []

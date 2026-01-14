@@ -46,7 +46,7 @@ explain insert into test values(1, 0), (2, 0), (1, 0) on conflict do nothing;
     "03": "free                0      0      0     ",
     "04": "ret                 -1     0      -     "
   },
-  "access": [["test", "rw"]]
+  "access": [["test", "shared_rw"]]
 }]
 insert into test values(1, 0), (2, 0), (1, 0) on conflict do nothing;
 select * from test;
@@ -74,7 +74,7 @@ explain insert into test values(1, 0) on conflict do nothing;
     "03": "free                0      0      0     ",
     "04": "ret                 -1     0      -     "
   },
-  "access": [["test", "rw"]]
+  "access": [["test", "shared_rw"]]
 }]
 explain insert into test values(1, 0) on conflict do resolve;
 [{
@@ -93,7 +93,7 @@ explain insert into test values(1, 0) on conflict do resolve;
     "06": "free                0      0      0     ",
     "07": "ret                 -1     0      -     "
   },
-  "access": [["test", "rw"]]
+  "access": [["test", "shared_rw"]]
 }]
 insert into test values(1, 0) on conflict do resolve;
 insert into test values(1, 0) on conflict do resolve;
@@ -124,7 +124,7 @@ explain insert into test values(1, 0) on conflict do update set data = data + 1;
     "10": "free                0      0      0     ",
     "11": "ret                 -1     0      -     "
   },
-  "access": [["test", "rw"]]
+  "access": [["test", "shared_rw"]]
 }]
 insert into test values(1, 0) on conflict do update set data = data + 1;
 select * from test;
@@ -165,7 +165,7 @@ explain insert into test values (1, 0), (1, 0), (1, 0) on conflict do update set
     "10": "free                0      0      0     ",
     "11": "ret                 -1     0      -     "
   },
-  "access": [["test", "rw"]]
+  "access": [["test", "shared_rw"]]
 }]
 insert into test values (1, 0), (1, 0), (1, 0) on conflict do update set data = data + 1;
 insert into test values (1, 0), (1, 0), (1, 0) on conflict do update set data = data + 1;
@@ -203,7 +203,7 @@ explain insert into test values (1, 0) on conflict do update set data = data + 1
     "12": "free                0      0      0     ",
     "13": "ret                 -1     0      -     "
   },
-  "access": [["test", "rw"]]
+  "access": [["test", "shared_rw"]]
 }]
 insert into test values (1, 0) on conflict do update set data = data + 1 where true;
 select * from test;
@@ -240,7 +240,7 @@ explain insert into test values (1, 123) on conflict do update set data = data +
     "10": "free                0      0      0     ",
     "11": "ret                 -1     0      -     "
   },
-  "access": [["test", "rw"]]
+  "access": [["test", "shared_rw"]]
 }]
 select * from test;
 [[1, 123]]
@@ -274,7 +274,7 @@ explain insert into test values (1, null, {"id": 48}) on conflict do update set 
     "14": "free                0      0      0     ",
     "15": "ret                 -1     0      -     "
   },
-  "access": [["test", "rw"]]
+  "access": [["test", "shared_rw"]]
 }]
 select * from test;
 [[1, 48, null]]
@@ -366,7 +366,7 @@ explain insert into test values(1, 0) on conflict do update set data = data + 1 
     "16": "free                1      0      0     ",
     "17": "ret                 0      0      -     "
   },
-  "access": [["test", "rw"]]
+  "access": [["test", "shared_rw"]]
 }]
 insert into test values(1, 0) on conflict do update set data = data + 1 returning *;
 [[1, 1]]
@@ -402,7 +402,7 @@ explain insert into test values(1, 0) on conflict do nothing returning *;
     "09": "free                1      0      0     ",
     "10": "ret                 0      0      -     "
   },
-  "access": [["test", "rw"]]
+  "access": [["test", "shared_rw"]]
 }]
 insert into test values(1, 0) on conflict do nothing returning *;
 [[1, 0]]
@@ -444,7 +444,7 @@ explain insert into test values(1, 0) on conflict do update set data = data + 1 
     "16": "free                1      0      0     ",
     "17": "ret                 0      0      -     "
   },
-  "access": [["test", "rw"]]
+  "access": [["test", "shared_rw"]]
 }]
 insert into test values(1, 0) on conflict do update set data = data + 1 returning *;
 [[1, 0]]
@@ -479,7 +479,7 @@ explain insert into test values(1, 0) on conflict do nothing returning *;
     "09": "free                1      0      0     ",
     "10": "ret                 0      0      -     "
   },
-  "access": [["test", "rw"]]
+  "access": [["test", "shared_rw"]]
 }]
 insert into test values(1, 0) on conflict do nothing returning *;
 [[1, 0]]
@@ -595,7 +595,7 @@ explain insert into test select * from src on conflict do update set data = data
     "26": "free                2      0      0     ",
     "27": "ret                 0      0      -     "
   },
-  "access": [["test", "rw"], ["src", "ro"]]
+  "access": [["test", "shared_rw"], ["src", "shared"]]
 }]
 insert into test select * from src on conflict do update set data = data + 1 returning *;
 [[0, 6], [1, 0]]

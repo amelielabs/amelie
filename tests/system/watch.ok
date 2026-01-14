@@ -11,9 +11,10 @@ show state;
   "uuid": "00000000-0000-0000-0000-000000000000",
   "frontends": 1,
   "backends": 1,
-  "checkpoint": 1,
   "lsn": 1,
   "psn": 0,
+  "catalog": 0,
+  "catalog_pending": 0,
   "read_only": false
 }]
 explain watch show('state').lsn::int = 1;

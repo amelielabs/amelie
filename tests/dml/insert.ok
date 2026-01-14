@@ -275,7 +275,7 @@ explain insert into test values (1),(2),(3) returning *;
     "10": "free                1      0      0     ",
     "11": "ret                 0      0      -     "
   },
-  "access": [["test", "rw"]]
+  "access": [["test", "shared_rw"]]
 }]
 insert into test values (1),(2),(3) returning *;
 [1, 2, 3]
@@ -307,7 +307,7 @@ explain insert into test () values (), (), () returning *;
     "10": "free                1      0      0     ",
     "11": "ret                 0      0      -     "
   },
-  "access": [["test", "rw"]]
+  "access": [["test", "shared_rw"]]
 }]
 insert into test () values (), (), () returning *;
 [0, 1, 2]
@@ -426,7 +426,7 @@ explain select * from test where ts > "1970-01-01 01:12:59.909090"::timestamp;
     "12": "free                1      0      0     ",
     "13": "ret                 0      0      -     "
   },
-  "access": [["test", "ro"]]
+  "access": [["test", "shared"]]
 }]
 select * from test where ts > timestamp "1970-01-01 01:12:59.909090";
 [[1, "1970-01-01 01:13:00+00"], [2, "1970-01-01 01:13:01+00"], [3, "1970-01-01 01:13:01+00"]]
@@ -454,7 +454,7 @@ explain select * from test where ts > timestamp "1970-01-01 01:12:59.909090";
     "12": "free                1      0      0     ",
     "13": "ret                 0      0      -     "
   },
-  "access": [["test", "ro"]]
+  "access": [["test", "shared"]]
 }]
 select * from test where ts = "1970-01-01 01:13:01"::timestamp;
 [[2, "1970-01-01 01:13:01+00"], [3, "1970-01-01 01:13:01+00"]]
@@ -497,7 +497,7 @@ explain select * from test;
     "06": "free                1      0      0     ",
     "07": "ret                 0      0      -     "
   },
-  "access": [["test", "ro"]]
+  "access": [["test", "shared"]]
 }]
 select * from test;
 ["1970-01-01 00:00:01.000001+00", "1970-01-01 00:00:01.000002+00", "1970-01-01 00:00:01.000003+00", "1970-01-01 00:00:02+00", "1970-01-01 00:00:03+00", "1970-01-01 00:00:04+00"]
@@ -528,7 +528,7 @@ explain select * from test where id > timestamp '1970-01-01 00:00:01.000002';
     "11": "free                1      0      0     ",
     "12": "ret                 0      0      -     "
   },
-  "access": [["test", "ro"]]
+  "access": [["test", "shared"]]
 }]
 select * from test where id >= timestamp '1970-01-01 00:00:01.000002';
 ["1970-01-01 00:00:01.000002+00", "1970-01-01 00:00:01.000003+00", "1970-01-01 00:00:02+00", "1970-01-01 00:00:03+00", "1970-01-01 00:00:04+00"]
@@ -555,7 +555,7 @@ explain select * from test where id >= timestamp '1970-01-01 00:00:01.000002';
     "11": "free                1      0      0     ",
     "12": "ret                 0      0      -     "
   },
-  "access": [["test", "ro"]]
+  "access": [["test", "shared"]]
 }]
 select * from test where id < timestamp '1970-01-01 00:00:01.000003';
 ["1970-01-01 00:00:01.000001+00", "1970-01-01 00:00:01.000002+00"]
@@ -585,17 +585,18 @@ explain select * from test where id < timestamp '1970-01-01 00:00:01.000003';
     "14": "free                1      0      0     ",
     "15": "ret                 0      0      -     "
   },
-  "access": [["test", "ro"]]
+  "access": [["test", "shared"]]
 }]
 select * from test where id = timestamp '1970-01-01 00:00:01.000003';
 ["1970-01-01 00:00:01.000003+00"]
 explain select * from test where id = timestamp '1970-01-01 00:00:01.000003';
 [{
   "main": {
-    "00": "send_lookup         0      -      0     # test (select, closing)",
-    "01": "union               1      0      0     ",
-    "02": "recv                1      0      0     ",
-    "03": "ret                 1      0      -     "
+    "00": "push_timestamp      -      0      0     # 1000003",
+    "01": "send_lookup         0      -      18    # test (select, closing)",
+    "02": "union               1      0      0     ",
+    "03": "recv                1      0      0     ",
+    "04": "ret                 1      0      -     "
   },
   "pushdown": {
     "00": "set                 0      1      0     ",
@@ -611,7 +612,7 @@ explain select * from test where id = timestamp '1970-01-01 00:00:01.000003';
     "10": "free                1      0      0     ",
     "11": "ret                 0      0      -     "
   },
-  "access": [["test", "ro"]]
+  "access": [["test", "shared"]]
 }]
 drop table test;
 # test: insert column (interval)
@@ -647,7 +648,7 @@ explain select * from test where i > "1 year 1 day 10 hour"::interval;
     "12": "free                1      0      0     ",
     "13": "ret                 0      0      -     "
   },
-  "access": [["test", "ro"]]
+  "access": [["test", "shared"]]
 }]
 select * from test where i = "1 year 1 day 12 hours 500 us"::interval;
 [[2, "1 year 1 day 12 hours 500 us"]]
@@ -698,7 +699,7 @@ explain select * from test where d >= date '1970-01-01';
     "12": "free                1      0      0     ",
     "13": "ret                 0      0      -     "
   },
-  "access": [["test", "ro"]]
+  "access": [["test", "shared"]]
 }]
 drop table test;
 # test: insert column (date auto cast)
@@ -773,10 +774,11 @@ select id from test where id = uuid "00000000-0000-0000-0000-000000000002";
 explain select id from test where id = uuid "00000000-0000-0000-0000-000000000002";
 [{
   "main": {
-    "00": "send_lookup         0      -      0     # test (select, closing)",
-    "01": "union               1      0      0     ",
-    "02": "recv                1      0      0     ",
-    "03": "ret                 1      0      -     "
+    "00": "push_uuid           74     0      0     ",
+    "01": "send_lookup         0      -      50    # test (select, closing)",
+    "02": "union               1      0      0     ",
+    "03": "recv                1      0      0     ",
+    "04": "ret                 1      0      -     "
   },
   "pushdown": {
     "00": "set                 0      1      0     ",
@@ -792,7 +794,7 @@ explain select id from test where id = uuid "00000000-0000-0000-0000-00000000000
     "10": "free                1      0      0     ",
     "11": "ret                 0      0      -     "
   },
-  "access": [["test", "ro"]]
+  "access": [["test", "shared"]]
 }]
 drop table test;
 # test: insert var
@@ -864,7 +866,7 @@ explain select * from test;
     "08": "free                1      0      0     ",
     "09": "ret                 0      0      -     "
   },
-  "access": [["test", "ro"]]
+  "access": [["test", "shared"]]
 }]
 select * from test;
 [[0, 2], [1, 1], [2, 0], [3, 0], [4, 0]]
@@ -888,7 +890,7 @@ explain select * from test use index (i);
     "08": "free                1      0      0     ",
     "09": "ret                 0      0      -     "
   },
-  "access": [["test", "ro"]]
+  "access": [["test", "shared"]]
 }]
 select * from test use index (i);
 [[2, 0], [3, 0], [4, 0], [1, 1], [0, 2]]
@@ -935,7 +937,7 @@ explain insert into test select 1, 0;
     "00": "insert              -      0      0     # test",
     "01": "ret                 -1     0      -     "
   },
-  "access": [["test", "rw"]]
+  "access": [["test", "shared_rw"]]
 }]
 insert into test select 1, 0;
 select * from test;
@@ -969,7 +971,7 @@ explain insert into test select * from (select 2, 0) t;
     "00": "insert              -      0      0     # test",
     "01": "ret                 -1     0      -     "
   },
-  "access": [["test", "rw"]]
+  "access": [["test", "shared_rw"]]
 }]
 insert into test select * from (select 2, 0) t;
 select * from test;
@@ -1001,7 +1003,7 @@ explain insert into test select * from src;
     "10": "insert              -      0      0     # test",
     "11": "ret                 -1     0      -     "
   },
-  "access": [["test", "rw"], ["src", "ro"]]
+  "access": [["test", "shared_rw"], ["src", "shared"]]
 }]
 insert into test select * from src returning *;
 [[3, 0], [4, 0], [5, 0]]

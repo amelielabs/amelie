@@ -42,13 +42,13 @@ explain select count(*) from test_empty;
     "11": "set_agg             0      1      24    ",
     "12": "ret                 0      0      -     "
   },
-  "access": [["test_empty", "ro"]]
+  "access": [["test_empty", "shared"]]
 }]
 select count(*) from test_empty;
 [0]
 # test: select count(*) from table
 select * from test;
-[[0, 0, 0], [1, 0, 0], [3, 1, 1], [4, 2, 2], [5, null, null], [6, 3, 3.1], [2, 1, 1]]
+[[0, 0, 0], [1, 0, 0], [3, 1, 1], [4, 2, 2], [2, 1, 1], [5, null, null], [6, 3, 3.1]]
 explain select count(*) from test;
 [{
   "main": {
@@ -79,7 +79,7 @@ explain select count(*) from test;
     "11": "set_agg             0      1      18    ",
     "12": "ret                 0      0      -     "
   },
-  "access": [["test", "ro"]]
+  "access": [["test", "shared"]]
 }]
 select count(*) from test;
 [7]
@@ -115,7 +115,7 @@ explain select count(id) from test;
     "12": "set_agg             0      1      18    ",
     "13": "ret                 0      0      -     "
   },
-  "access": [["test", "ro"]]
+  "access": [["test", "shared"]]
 }]
 select count(id) from test;
 [7]
@@ -151,7 +151,7 @@ explain select count(data) from test;
     "12": "set_agg             0      1      18    ",
     "13": "ret                 0      0      -     "
   },
-  "access": [["test", "ro"]]
+  "access": [["test", "shared"]]
 }]
 select count(data) from test;
 [6]
@@ -186,7 +186,7 @@ explain select count(data) from test_null;
     "12": "set_agg             0      1      23    ",
     "13": "ret                 0      0      -     "
   },
-  "access": [["test_null", "ro"]]
+  "access": [["test_null", "shared"]]
 }]
 select count(data) from test_null;
 [0]
@@ -231,7 +231,7 @@ explain select count(distinct id) from test;
     "13": "set_agg             0      1      18    ",
     "14": "ret                 0      0      -     "
   },
-  "access": [["test", "ro"]]
+  "access": [["test", "shared"]]
 }]
 select count(distinct id) from test;
 [7]
@@ -277,7 +277,7 @@ explain select sum(id) from test_empty;
     "12": "set_agg             0      1      24    ",
     "13": "ret                 0      0      -     "
   },
-  "access": [["test_empty", "ro"]]
+  "access": [["test_empty", "shared"]]
 }]
 select sum(id) from test_empty;
 [null]
@@ -313,7 +313,7 @@ explain select sum(id) from test;
     "12": "set_agg             0      1      18    ",
     "13": "ret                 0      0      -     "
   },
-  "access": [["test", "ro"]]
+  "access": [["test", "shared"]]
 }]
 select sum(id) from test;
 [21]
@@ -351,7 +351,7 @@ explain select sum(data2) from test_empty;
     "12": "set_agg             0      1      24    ",
     "13": "ret                 0      0      -     "
   },
-  "access": [["test_empty", "ro"]]
+  "access": [["test_empty", "shared"]]
 }]
 select sum(data2) from test_empty;
 [null]
@@ -387,7 +387,7 @@ explain select sum(data2) from test;
     "12": "set_agg             0      1      18    ",
     "13": "ret                 0      0      -     "
   },
-  "access": [["test", "ro"]]
+  "access": [["test", "shared"]]
 }]
 select sum(data2) from test_empty;
 [null]
@@ -428,7 +428,7 @@ explain select sum(data) from test_null;
     "12": "set_agg             0      1      23    ",
     "13": "ret                 0      0      -     "
   },
-  "access": [["test_null", "ro"]]
+  "access": [["test_null", "shared"]]
 }]
 select sum(data) from test_null;
 [null]
@@ -467,7 +467,7 @@ explain select avg(id) from test;
     "12": "set_agg             0      1      18    ",
     "13": "ret                 0      0      -     "
   },
-  "access": [["test", "ro"]]
+  "access": [["test", "shared"]]
 }]
 select avg(id) from test;
 [3]
@@ -516,7 +516,7 @@ explain select avg(data2) from test_null;
     "12": "set_agg             0      1      23    ",
     "13": "ret                 0      0      -     "
   },
-  "access": [["test_null", "ro"]]
+  "access": [["test_null", "shared"]]
 }]
 select avg(data2) from test_null;
 [null]
@@ -566,7 +566,7 @@ explain select min(data2) from test_null;
     "12": "set_agg             0      1      23    ",
     "13": "ret                 0      0      -     "
   },
-  "access": [["test_null", "ro"]]
+  "access": [["test_null", "shared"]]
 }]
 select min(data2) from test_null;
 [null]
@@ -616,7 +616,7 @@ explain select max(data2) from test_null;
     "12": "set_agg             0      1      23    ",
     "13": "ret                 0      0      -     "
   },
-  "access": [["test_null", "ro"]]
+  "access": [["test_null", "shared"]]
 }]
 select max(data2) from test_null;
 [null]
@@ -655,14 +655,14 @@ explain select id, count(*) from test group by id;
     "08": "free                1      0      0     ",
     "09": "ret                 0      0      -     "
   },
-  "access": [["test", "ro"]]
+  "access": [["test", "shared"]]
 }]
 select id, count(*) from test group by id;
-[[0, 1], [1, 1], [3, 1], [6, 1], [4, 1], [5, 1], [2, 1]]
+[[0, 1], [1, 1], [3, 1], [4, 1], [2, 1], [6, 1], [5, 1]]
 select data, count(*) from test group by data;
-[[0, 2], [1, 2], [null, 1], [2, 1], [3, 1]]
+[[0, 2], [1, 2], [2, 1], [null, 1], [3, 1]]
 select data2, count(*) from test group by data2;
-[[0, 2], [1, 2], [null, 1], [2, 1], [3.1, 1]]
+[[0, 2], [1, 2], [2, 1], [null, 1], [3.1, 1]]
 select data, count(*) from test_empty group by data;
 []
 select data, count(*) from test_null group by data;
@@ -697,14 +697,14 @@ explain select id, count(*) from test group by 1;
     "08": "free                1      0      0     ",
     "09": "ret                 0      0      -     "
   },
-  "access": [["test", "ro"]]
+  "access": [["test", "shared"]]
 }]
 select id, count(*) from test group by 1;
-[[0, 1], [1, 1], [3, 1], [6, 1], [4, 1], [5, 1], [2, 1]]
+[[0, 1], [1, 1], [3, 1], [4, 1], [2, 1], [6, 1], [5, 1]]
 select data, count(*) from test group by 1;
-[[0, 2], [1, 2], [null, 1], [2, 1], [3, 1]]
+[[0, 2], [1, 2], [2, 1], [null, 1], [3, 1]]
 select data2, count(*) from test group by 1;
-[[0, 2], [1, 2], [null, 1], [2, 1], [3.1, 1]]
+[[0, 2], [1, 2], [2, 1], [null, 1], [3.1, 1]]
 select data, count(*) from test_empty group by 1;
 []
 select data, count(*) from test_null group by 1;
@@ -749,7 +749,7 @@ explain select * from (select count(*) from test) t;
     "11": "set_agg             0      1      18    ",
     "12": "ret                 0      0      -     "
   },
-  "access": [["test", "ro"]]
+  "access": [["test", "shared"]]
 }]
 select * from (select count(*) from test) t;
 [7]
@@ -794,12 +794,12 @@ explain select * from (select id, count(*) from test group by id) t;
     "08": "free                1      0      0     ",
     "09": "ret                 0      0      -     "
   },
-  "access": [["test", "ro"]]
+  "access": [["test", "shared"]]
 }]
 select * from (select id, count(*) from test group by id) t;
-[[0, 1], [1, 1], [3, 1], [6, 1], [4, 1], [5, 1], [2, 1]]
+[[0, 1], [1, 1], [3, 1], [4, 1], [2, 1], [6, 1], [5, 1]]
 select * from (select data, count(*) from test group by data) t;
-[[0, 2], [1, 2], [null, 1], [2, 1], [3, 1]]
+[[0, 2], [1, 2], [2, 1], [null, 1], [3, 1]]
 select * from (select data, count(*) from test_empty group by data) t;
 []
 select * from (select data, count(*) from test_null group by data) t;
@@ -850,7 +850,7 @@ explain select id, count(*) from test group by id order by id;
     "08": "free                1      0      0     ",
     "09": "ret                 0      0      -     "
   },
-  "access": [["test", "ro"]]
+  "access": [["test", "shared"]]
 }]
 select id, count(*) from test group by id order by id;
 [[0, 1], [1, 1], [2, 1], [3, 1], [4, 1], [5, 1], [6, 1]]
@@ -889,7 +889,7 @@ explain select id, count(*) from test group by 1 order by 1;
     "08": "free                1      0      0     ",
     "09": "ret                 0      0      -     "
   },
-  "access": [["test", "ro"]]
+  "access": [["test", "shared"]]
 }]
 select id, count(*) from test group by 1 order by 1;
 [[0, 1], [1, 1], [2, 1], [3, 1], [4, 1], [5, 1], [6, 1]]
@@ -910,7 +910,7 @@ select 1 from test having count(id) > 0;
 {"msg": "select 1 from test ❰having❱ ⟵ ; expected"}
 # test: select from table group by having
 select id, count(*) from test group by 1;
-[[0, 1], [1, 1], [3, 1], [6, 1], [4, 1], [5, 1], [2, 1]]
+[[0, 1], [1, 1], [3, 1], [4, 1], [2, 1], [6, 1], [5, 1]]
 select id, count(*) from test group by 1 having id > 5;
 [[6, 1]]
 select id, count(*) from test group by id having id > 5;
@@ -948,7 +948,7 @@ explain select id, count(*) from test group by 1 having id > 5;
     "08": "free                1      0      0     ",
     "09": "ret                 0      0      -     "
   },
-  "access": [["test", "ro"]]
+  "access": [["test", "shared"]]
 }]
 # test: select from table group by order by having
 select id, count(*) from test group by 1 order by 1;
@@ -995,14 +995,14 @@ explain select id from test group by id having count(id) > 0;
     "09": "free                1      0      0     ",
     "10": "ret                 0      0      -     "
   },
-  "access": [["test", "ro"]]
+  "access": [["test", "shared"]]
 }]
 select id from test group by id having count(id) > 0;
-[0, 1, 3, 6, 4, 5, 2]
+[0, 1, 3, 4, 2, 6, 5]
 select data from test group by data;
-[0, 1, null, 2, 3]
+[0, 1, 2, null, 3]
 select data from test;
-[0, 0, 1, 2, null, 3, 1]
+[0, 0, 1, 2, 1, null, 3]
 select data from test group by data having count(data) > 1;
 [0, 1]
 # test: select from table group by having count(*)
@@ -1037,10 +1037,10 @@ explain select id from test group by id having count(*) > 0;
     "08": "free                1      0      0     ",
     "09": "ret                 0      0      -     "
   },
-  "access": [["test", "ro"]]
+  "access": [["test", "shared"]]
 }]
 select id from test group by id having count(*) > 0;
-[0, 1, 3, 6, 4, 5, 2]
+[0, 1, 3, 4, 2, 6, 5]
 explain select id, count(*) from test group by id having count(*) > 0;
 [{
   "main": {
@@ -1075,10 +1075,10 @@ explain select id, count(*) from test group by id having count(*) > 0;
     "09": "free                1      0      0     ",
     "10": "ret                 0      0      -     "
   },
-  "access": [["test", "ro"]]
+  "access": [["test", "shared"]]
 }]
 select id, count(*) from test group by id having count(*) > 0;
-[[0, 1], [1, 1], [3, 1], [6, 1], [4, 1], [5, 1], [2, 1]]
+[[0, 1], [1, 1], [3, 1], [4, 1], [2, 1], [6, 1], [5, 1]]
 explain select id, count(*) from test group by 1 having count(*) > 0;
 [{
   "main": {
@@ -1113,7 +1113,7 @@ explain select id, count(*) from test group by 1 having count(*) > 0;
     "09": "free                1      0      0     ",
     "10": "ret                 0      0      -     "
   },
-  "access": [["test", "ro"]]
+  "access": [["test", "shared"]]
 }]
 explain select data, count(*) from test group by data having count(*) > 0;
 [{
@@ -1149,10 +1149,10 @@ explain select data, count(*) from test group by data having count(*) > 0;
     "09": "free                1      0      0     ",
     "10": "ret                 0      0      -     "
   },
-  "access": [["test", "ro"]]
+  "access": [["test", "shared"]]
 }]
 select data, count(*) from test group by data having count(*) > 0;
-[[0, 2], [1, 2], [null, 1], [2, 1], [3, 1]]
+[[0, 2], [1, 2], [2, 1], [null, 1], [3, 1]]
 explain select data, count(*) from test group by 1 having count(*) > 0;
 [{
   "main": {
@@ -1187,7 +1187,7 @@ explain select data, count(*) from test group by 1 having count(*) > 0;
     "09": "free                1      0      0     ",
     "10": "ret                 0      0      -     "
   },
-  "access": [["test", "ro"]]
+  "access": [["test", "shared"]]
 }]
 explain select data, count(*) from test group by data having count(*) > 1;
 [{
@@ -1223,7 +1223,7 @@ explain select data, count(*) from test group by data having count(*) > 1;
     "09": "free                1      0      0     ",
     "10": "ret                 0      0      -     "
   },
-  "access": [["test", "ro"]]
+  "access": [["test", "shared"]]
 }]
 select data, count(*) from test group by data having count(*) > 1;
 [[0, 2], [1, 2]]
@@ -1261,7 +1261,7 @@ explain select data, count(*) from test group by 1  having count(*) > 1;
     "09": "free                1      0      0     ",
     "10": "ret                 0      0      -     "
   },
-  "access": [["test", "ro"]]
+  "access": [["test", "shared"]]
 }]
 # test: select as from table group by having alias (unsupported)
 select data, count(*) as c from test group by data having c > 1;
@@ -1299,7 +1299,7 @@ explain select data, count(*) from test group by data order by data;
     "08": "free                1      0      0     ",
     "09": "ret                 0      0      -     "
   },
-  "access": [["test", "ro"]]
+  "access": [["test", "shared"]]
 }]
 select data, count(*) from test group by data order by data;
 [[null, 1], [0, 2], [1, 2], [2, 1], [3, 1]]
@@ -1333,7 +1333,7 @@ explain select count(*) from test group by data order by data;
     "08": "free                1      0      0     ",
     "09": "ret                 0      0      -     "
   },
-  "access": [["test", "ro"]]
+  "access": [["test", "shared"]]
 }]
 select count(*) from test group by data order by data;
 [1, 2, 2, 1, 1]
@@ -1353,11 +1353,11 @@ select distinct on (count(data)) data from test group by data;
 {"msg": "select distinct on (❰count❱ ⟵ unexpected aggregate function usage"}
 # test: select count(distinct) from table group by
 select id, count(distinct data), count(distinct data2) from test group by id;
-[[0, 1, 1], [1, 1, 1], [3, 1, 1], [6, 1, 1], [4, 1, 1], [5, 0, 0], [2, 1, 1]]
+[[0, 1, 1], [1, 1, 1], [3, 1, 1], [4, 1, 1], [2, 1, 1], [6, 1, 1], [5, 0, 0]]
 select count(data) from test group by data;
-[2, 2, 0, 1, 1]
+[2, 2, 1, 0, 1]
 select count(distinct data) from test group by data;
-[1, 1, 0, 1, 1]
+[1, 1, 1, 0, 1]
 select count(distinct data), count(distinct data2) from test group by true;
 [[4, 4]]
 # test: select (select count(distinct) from table group by)
@@ -1387,7 +1387,7 @@ explain select (select count(distinct data) from test group by id);
     "20": "first               0      1      0     ",
     "21": "ret                 0      0      -     "
   },
-  "access": [["test", "ro_exclusive"]]
+  "access": [["test", "exclusive_ro"]]
 }]
 select (select count(distinct data) from test group by id);
 [1]

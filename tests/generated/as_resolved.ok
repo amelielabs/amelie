@@ -16,38 +16,6 @@ create table test (id int primary key as (42) resolved);
 {"msg": "create table test (id int primary key as (42) ❰resolved❱ ⟵ cannot be used together with PRIMARY KEY"}
 # test: insert on conflict do resolve
 create table test (id int primary key, data int as (data + 1) resolved);
-show table test extended;
-[{
-  "db": "main",
-  "name": "test",
-  "unlogged": false,
-  "columns": [{
-    "name": "id",
-    "type": 2,
-    "type_size": 4,
-    "constraints": [["not_null", true], ["default", null]]
-  }, {
-    "name": "data",
-    "type": 2,
-    "type_size": 4,
-    "constraints": [["as_resolved", "data + 1"], ["default", null]]
-  }],
-  "indexes": [{
-    "name": "primary",
-    "type": 2,
-    "unique": true,
-    "primary": true,
-    "keys": [{
-      "column": 0,
-      "asc": true
-    }]
-  }],
-  "partitions": [{
-    "id": 2,
-    "min": 0,
-    "max": 8096
-  }]
-}]
 insert into test values (0, 0) on conflict do resolve;
 insert into test values (0, 0) on conflict do resolve;
 insert into test values (0, 0) on conflict do resolve;

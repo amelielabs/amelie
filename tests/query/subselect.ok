@@ -76,7 +76,7 @@ explain select (select test.*) from test;
     "06": "free                1      0      0     ",
     "07": "ret                 0      0      -     "
   },
-  "access": [["test", "ro"]]
+  "access": [["test", "shared"]]
 }]
 select (select test.*) from test;
 [1, 2, 3]
@@ -106,7 +106,7 @@ explain select (select test.id) from test;
     "06": "free                1      0      0     ",
     "07": "ret                 0      0      -     "
   },
-  "access": [["test", "ro"]]
+  "access": [["test", "shared"]]
 }]
 select (select test.id) from test;
 [1, 2, 3]
@@ -131,7 +131,7 @@ explain select (select t.id) from test t;
     "06": "free                1      0      0     ",
     "07": "ret                 0      0      -     "
   },
-  "access": [["test", "ro"]]
+  "access": [["test", "shared"]]
 }]
 select (select t.id) from test;
 {"msg": "select (select ❰t.id❱ ⟵ target not found"}
@@ -242,7 +242,7 @@ explain select * from (select * from test) t;
     "06": "free                1      0      0     ",
     "07": "ret                 0      0      -     "
   },
-  "access": [["test", "ro"]]
+  "access": [["test", "shared"]]
 }]
 # test: select target.* from (select from table)
 select test.* from (select * from test);
@@ -357,7 +357,7 @@ explain select (select * from test);
     "07": "first               1      0      0     ",
     "08": "ret                 1      0      -     "
   },
-  "access": [["test", "ro_exclusive"]]
+  "access": [["test", "exclusive_ro"]]
 }]
 select (select * from test);
 [1]
@@ -390,7 +390,7 @@ explain select (select * from test) from test;
     "13": "free                1      0      0     ",
     "14": "ret                 0      0      -     "
   },
-  "access": [["test", "ro_exclusive"]]
+  "access": [["test", "exclusive_ro"]]
 }]
 select (select * from test) from test;
 [1, 1, 1]
@@ -426,7 +426,7 @@ explain select (select i.* from test i limit 1) from test;
     "15": "free                1      0      0     ",
     "16": "ret                 0      0      -     "
   },
-  "access": [["test", "ro_exclusive"]]
+  "access": [["test", "exclusive_ro"]]
 }]
 # test: select (select from table) from table #2
 explain select (select i.* from test i where test.id = i.id) from test;
@@ -459,7 +459,7 @@ explain select (select i.* from test i where test.id = i.id) from test;
     "18": "free                1      0      0     ",
     "19": "ret                 0      0      -     "
   },
-  "access": [["test", "ro_exclusive"]]
+  "access": [["test", "exclusive_ro"]]
 }]
 select (select i.* from test i where test.id = i.id) from test;
 [1, 2, 3]
@@ -512,7 +512,7 @@ explain select * from a where (select true from b where a.id = b.id);
     "21": "free                1      0      0     ",
     "22": "ret                 0      0      -     "
   },
-  "access": [["a", "ro"], ["b", "ro_exclusive"]]
+  "access": [["a", "shared"], ["b", "exclusive_ro"]]
 }]
 select * from a where (select true from b where a.id = b.id);
 [[0, 0], [1, 0], [2, 0]]
@@ -555,7 +555,7 @@ explain select t.x from (select z.id as x from (select id from test) z) t;
     "06": "free                1      0      0     ",
     "07": "ret                 0      0      -     "
   },
-  "access": [["test", "ro"]]
+  "access": [["test", "shared"]]
 }]
 # test: select from (select from), (select from)
 select * from (select * from a) a, (select * from a) b;

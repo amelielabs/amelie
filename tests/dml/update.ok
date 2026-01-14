@@ -53,7 +53,7 @@ explain update test set data = data + 1;
     "09": "free                0      0      0     ",
     "10": "ret                 -1     0      -     "
   },
-  "access": [["test", "rw"]]
+  "access": [["test", "shared_rw"]]
 }]
 update test set data = data + 1;
 select * from test;
@@ -107,7 +107,7 @@ explain update test set a = a + 1, b = b - 1;
     "15": "free                0      0      0     ",
     "16": "ret                 -1     0      -     "
   },
-  "access": [["test", "rw"]]
+  "access": [["test", "shared_rw"]]
 }]
 update test set a = a + 1, b = b - 1;
 select * from test;
@@ -155,7 +155,7 @@ explain update test set data = {"id": data.id::int + 1};
     "16": "free                0      0      0     ",
     "17": "ret                 -1     0      -     "
   },
-  "access": [["test", "rw"]]
+  "access": [["test", "shared_rw"]]
 }]
 select * from test;
 [[0, {
@@ -225,7 +225,7 @@ explain update test set data.id = data.id::int + 1;
     "18": "free                0      0      0     ",
     "19": "ret                 -1     0      -     "
   },
-  "access": [["test", "rw"]]
+  "access": [["test", "shared_rw"]]
 }]
 update test set data.id = data.id::int + 1;
 select * from test;
@@ -307,8 +307,9 @@ insert into test values (2, 1);
 explain update test set data = data + 1 where id = 0;
 [{
   "main": {
-    "00": "send_lookup         0      -      0     # test (update, closing)",
-    "01": "ret                 -1     0      -     "
+    "00": "push_int            -      0      0     # 0",
+    "01": "send_lookup         0      -      18    # test (update, closing)",
+    "02": "ret                 -1     0      -     "
   },
   "pushdown": {
     "00": "push_int            -      0      0     # 0",
@@ -327,7 +328,7 @@ explain update test set data = data + 1 where id = 0;
     "13": "free                0      0      0     ",
     "14": "ret                 -1     0      -     "
   },
-  "access": [["test", "rw"]]
+  "access": [["test", "shared_rw"]]
 }]
 update test set data = data + 1 where id = 0;
 update test set data = data + 1 where id = 1;
@@ -364,7 +365,7 @@ explain update test set data = data + 1 where id >= 1;
     "14": "free                0      0      0     ",
     "15": "ret                 -1     0      -     "
   },
-  "access": [["test", "rw"]]
+  "access": [["test", "shared_rw"]]
 }]
 update test set data = data + 1 where id > 2;
 select * from test;
@@ -441,7 +442,7 @@ explain update test set data = data + 1 returning *;
     "15": "free                1      0      0     ",
     "16": "ret                 0      0      -     "
   },
-  "access": [["test", "rw"]]
+  "access": [["test", "shared_rw"]]
 }]
 update test set data = data + 1 returning *;
 [[0, 1], [1, 1], [2, 1]]

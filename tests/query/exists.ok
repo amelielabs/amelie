@@ -34,7 +34,7 @@ explain select exists (select true from test limit 1);
     "08": "exists              1      0      0     ",
     "09": "ret                 1      0      -     "
   },
-  "access": [["test", "ro_exclusive"]]
+  "access": [["test", "exclusive_ro"]]
 }]
 select exists (select true from test limit 1);
 [true]
@@ -60,7 +60,7 @@ explain select exists (select true from test where false);
     "08": "exists              1      0      0     ",
     "09": "ret                 1      0      -     "
   },
-  "access": [["test", "ro_exclusive"]]
+  "access": [["test", "exclusive_ro"]]
 }]
 # test: exists (select) (more then one column)
 select exists (select * from test);

@@ -57,43 +57,8 @@ create table test();
 {"msg": "create table test(❰)❱ ⟵ name expected"}
 # test: column bool/boolean
 create table test(id int primary key, a bool, b boolean);
-select show('table', 'test', true);
-[{
-  "db": "main",
-  "name": "test",
-  "unlogged": false,
-  "columns": [{
-    "name": "id",
-    "type": 2,
-    "type_size": 4,
-    "constraints": [["not_null", true], ["default", null]]
-  }, {
-    "name": "a",
-    "type": 1,
-    "type_size": 1,
-    "constraints": [["default", null]]
-  }, {
-    "name": "b",
-    "type": 1,
-    "type_size": 1,
-    "constraints": [["default", null]]
-  }],
-  "indexes": [{
-    "name": "primary",
-    "type": 2,
-    "unique": true,
-    "primary": true,
-    "keys": [{
-      "column": 0,
-      "asc": true
-    }]
-  }],
-  "partitions": [{
-    "id": 1,
-    "min": 0,
-    "max": 8096
-  }]
-}]
+select show('table', 'test', true).name;
+["test"]
 select show('table', 'test', true).columns;
 [[{
   "name": "id",

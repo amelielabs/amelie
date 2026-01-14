@@ -61,7 +61,7 @@ explain select 0 -> id, 0 -> data from test;
     "17": "set_agg             0      3      18    ",
     "18": "ret                 0      0      -     "
   },
-  "access": [["test", "ro"]]
+  "access": [["test", "shared"]]
 }]
 # test: select self
 select self;
@@ -105,7 +105,7 @@ explain select 0 -> self + 1 from test;
     "15": "set_agg             0      2      18    ",
     "16": "ret                 0      0      -     "
   },
-  "access": [["test", "ro"]]
+  "access": [["test", "shared"]]
 }]
 select 0 -> (self + 1) + self from test;
 [31]
@@ -166,6 +166,7 @@ insert into test values (1, 1);
 insert into test values (2, 2);
 insert into test values (3, 1);
 insert into test values (4, 3);
+insert into test values (5, 3);
 explain select 0 -> self + 1 from test;
 [{
   "main": {
@@ -200,7 +201,7 @@ explain select 0 -> self + 1 from test;
     "15": "set_agg             0      2      18    ",
     "16": "ret                 0      0      -     "
   },
-  "access": [["test", "ro"]]
+  "access": [["test", "shared"]]
 }]
 select 0 -> self + 1 from test;
 {"msg": "distributed operation on lambda is not supported"}

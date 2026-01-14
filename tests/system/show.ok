@@ -125,9 +125,8 @@ show wal;
   "slots": 0,
   "slots_min": -1,
   "writes": 4,
-  "writes_bytes": 537,
-  "ops": 4,
-  "checkpoint": 1
+  "writes_bytes": 706,
+  "ops": 4
 }]
 # test: show replicas
 show replicas;
@@ -147,9 +146,10 @@ show state;
   "uuid": "00000000-0000-0000-0000-000000000000",
   "frontends": 1,
   "backends": 1,
-  "checkpoint": 1,
   "lsn": 5,
   "psn": 1,
+  "catalog": 0,
+  "catalog_pending": 5,
   "read_only": false
 }]
 select show('state');
@@ -159,9 +159,10 @@ select show('state');
   "uuid": "00000000-0000-0000-0000-000000000000",
   "frontends": 1,
   "backends": 1,
-  "checkpoint": 1,
   "lsn": 5,
   "psn": 1,
+  "catalog": 0,
+  "catalog_pending": 5,
   "read_only": false
 }]
 select show('state').directory;
@@ -190,6 +191,7 @@ show config;
   "limit_write": 0,
   "frontends": 1,
   "backends": 1,
+  "jobs": 3,
   "cpu_affinity": true,
   "wal_worker": false,
   "wal_crc": true,
@@ -199,13 +201,9 @@ show config;
   "wal_sync_interval": "1 sec",
   "wal_size": 67108864,
   "wal_truncate": 0,
-  "repl_readahead": 262144,
-  "repl_reconnect_ms": 3000,
   "checkpoint_interval": "5 min",
-  "checkpoint_workers": 3,
-  "checkpoint_crc": true,
-  "checkpoint_compression": "zstd",
-  "checkpoint_sync": false
+  "repl_readahead": 262144,
+  "repl_reconnect_ms": 3000
 }]
 # test: show all
 show all;
@@ -231,6 +229,7 @@ show all;
   "limit_write": 0,
   "frontends": 1,
   "backends": 1,
+  "jobs": 3,
   "cpu_affinity": true,
   "wal_worker": false,
   "wal_crc": true,
@@ -240,13 +239,9 @@ show all;
   "wal_sync_interval": "1 sec",
   "wal_size": 67108864,
   "wal_truncate": 0,
-  "repl_readahead": 262144,
-  "repl_reconnect_ms": 3000,
   "checkpoint_interval": "5 min",
-  "checkpoint_workers": 3,
-  "checkpoint_crc": true,
-  "checkpoint_compression": "zstd",
-  "checkpoint_sync": false
+  "repl_readahead": 262144,
+  "repl_reconnect_ms": 3000
 }]
 select show('config').uuid;
 ["00000000-0000-0000-0000-000000000000"]
@@ -274,7 +269,7 @@ explain show log_enable;
 disconnect S0;
 connect E0 S0 127.0.0.1:3485/main?timezone=Asia/Tokyo&format=full;
 show all;
-[{"result": {"uuid": "00000000-0000-0000-0000-000000000000", "timezone": "Asia/Tokyo", "format": "full", "log_enable": true, "log_to_file": true, "log_to_stdout": false, "log_connections": true, "log_options": true, "tls_capath": "", "tls_ca": "", "tls_cert": "", "tls_key": "", "listen": [{"host": "127.0.0.1", "port": 3485}], "limit_send": 3145728, "limit_recv": 1048576, "limit_write": 0, "frontends": 1, "backends": 1, "cpu_affinity": true, "wal_worker": false, "wal_crc": true, "wal_sync_on_create": false, "wal_sync_on_close": false, "wal_sync_on_write": false, "wal_sync_interval": "1 sec", "wal_size": 67108864, "wal_truncate": 0, "repl_readahead": 262144, "repl_reconnect_ms": 3000, "checkpoint_interval": "5 min", "checkpoint_workers": 3, "checkpoint_crc": true, "checkpoint_compression": "zstd", "checkpoint_sync": false}}]
+[{"result": {"uuid": "00000000-0000-0000-0000-000000000000", "timezone": "Asia/Tokyo", "format": "full", "log_enable": true, "log_to_file": true, "log_to_stdout": false, "log_connections": true, "log_options": true, "tls_capath": "", "tls_ca": "", "tls_cert": "", "tls_key": "", "listen": [{"host": "127.0.0.1", "port": 3485}], "limit_send": 3145728, "limit_recv": 1048576, "limit_write": 0, "frontends": 1, "backends": 1, "jobs": 3, "cpu_affinity": true, "wal_worker": false, "wal_crc": true, "wal_sync_on_create": false, "wal_sync_on_close": false, "wal_sync_on_write": false, "wal_sync_interval": "1 sec", "wal_size": 67108864, "wal_truncate": 0, "checkpoint_interval": "5 min", "repl_readahead": 262144, "repl_reconnect_ms": 3000}}]
 show timezone;
 [{"result": "Asia/Tokyo"}]
 disconnect S0;

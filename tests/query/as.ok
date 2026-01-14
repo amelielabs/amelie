@@ -58,7 +58,7 @@ explain select t.x from (select z.id as x from (select id from test) z) t;
     "06": "free                1      0      0     ",
     "07": "ret                 0      0      -     "
   },
-  "access": [["test", "ro"]]
+  "access": [["test", "shared"]]
 }]
 drop table test;
 disconnect S0;

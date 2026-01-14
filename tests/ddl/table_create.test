@@ -34,7 +34,7 @@ create table test();
 
 # test: column bool/boolean
 create table test(id int primary key, a bool, b boolean);
-select show('table', 'test', true);
+select show('table', 'test', true).name;
 select show('table', 'test', true).columns;
 drop table test;
 

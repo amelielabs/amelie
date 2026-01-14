@@ -45,7 +45,7 @@ end;
     "03": "free                0      0      0     ",
     "04": "ret                 -1     0      -     "
   },
-  "access": [["test", "rw"]]
+  "access": [["test", "shared_rw"]]
 }]
 begin
 	delete from test;
@@ -77,7 +77,7 @@ end;
     "07": "free                0      0      0     ",
     "08": "ret                 -1     0      -     "
   },
-  "access": [["test", "rw"]]
+  "access": [["test", "shared_rw"]]
 }]
 begin
 	update test set data = id;
@@ -111,7 +111,7 @@ end;
     "08": "free                0      0      0     ",
     "09": "ret                 -1     0      -     "
   },
-  "access": [["test", "rw"]]
+  "access": [["test", "shared_rw"]]
 }]
 begin
 	insert into test values(1, 0) on conflict do update set data = id;
@@ -143,7 +143,7 @@ explain insert into b (id) values (10), (20), (30);
     "00": "insert              -      0      0     # b",
     "01": "ret                 -1     0      -     "
   },
-  "access": [["b", "rw"]]
+  "access": [["b", "shared_rw"]]
 }]
 insert into b (id) values (10), (20), (30);
 select * from a;
@@ -209,7 +209,7 @@ end;
     "36": "free                2      0      0     ",
     "37": "ret                 1      0      -     "
   },
-  "access": [["a", "rw"], ["b", "rw"]]
+  "access": [["a", "shared_rw"], ["b", "shared_rw"]]
 }]
 begin
 	update a set data = id;
@@ -273,7 +273,7 @@ end;
     "29": "free                1      0      0     ",
     "30": "ret                 0      0      -     "
   },
-  "access": [["a", "rw"], ["b", "rw"]]
+  "access": [["a", "shared_rw"], ["b", "shared_rw"]]
 }]
 begin
 	insert into a values (1, 0), (3, 0) on conflict do update set data = id;

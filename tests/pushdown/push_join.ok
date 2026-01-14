@@ -32,7 +32,7 @@ explain select test.*, ref.* from test, ref;
     "15": "free                1      0      0     ",
     "16": "ret                 0      0      -     "
   },
-  "access": [["test", "ro"], ["ref", "ro_exclusive"]]
+  "access": [["test", "shared"], ["ref", "exclusive_ro"]]
 }]
 select test.*, ref.* from test, ref;
 [[1, 0, 1, 0], [1, 0, 2, 0], [1, 0, 3, 0], [3, 0, 1, 0], [3, 0, 2, 0], [3, 0, 3, 0], [2, 0, 1, 0], [2, 0, 2, 0], [2, 0, 3, 0]]
@@ -64,7 +64,7 @@ explain select test.*, ref.* from ref, test;
     "15": "free                1      0      0     ",
     "16": "ret                 0      0      -     "
   },
-  "access": [["ref", "ro"], ["test", "ro_exclusive"]]
+  "access": [["ref", "shared"], ["test", "exclusive_ro"]]
 }]
 select test.*, ref.* from ref, test;
 [[1, 0, 1, 0], [2, 0, 1, 0], [3, 0, 1, 0], [1, 0, 3, 0], [2, 0, 3, 0], [3, 0, 3, 0], [1, 0, 2, 0], [2, 0, 2, 0], [3, 0, 2, 0]]
@@ -92,7 +92,7 @@ explain select t.* from test, test t;
     "11": "free                1      0      0     ",
     "12": "ret                 0      0      -     "
   },
-  "access": [["test", "ro_exclusive"]]
+  "access": [["test", "exclusive_ro"]]
 }]
 select t.* from test, test t;
 [[1, 0], [2, 0], [3, 0], [1, 0], [2, 0], [3, 0], [1, 0], [2, 0], [3, 0]]
@@ -122,7 +122,7 @@ explain select test.id, ref.id from test join ref on true;
     "13": "free                1      0      0     ",
     "14": "ret                 0      0      -     "
   },
-  "access": [["test", "ro"], ["ref", "ro_exclusive"]]
+  "access": [["test", "shared"], ["ref", "exclusive_ro"]]
 }]
 select test.id, ref.id from test join ref on true;
 [[1, 1], [1, 2], [1, 3], [3, 1], [3, 2], [3, 3], [2, 1], [2, 2], [2, 3]]
@@ -155,7 +155,7 @@ explain select test.id, ref.id from test join ref on test.id = ref.id;
     "16": "free                1      0      0     ",
     "17": "ret                 0      0      -     "
   },
-  "access": [["test", "ro"], ["ref", "ro_exclusive"]]
+  "access": [["test", "shared"], ["ref", "exclusive_ro"]]
 }]
 select test.id, ref.id from test join ref on test.id = ref.id;
 [[1, 1], [3, 3], [2, 2]]
@@ -196,7 +196,7 @@ explain select test.id, ref.id from test join ref on test.id = ref.id join ref r
     "24": "free                1      0      0     ",
     "25": "ret                 0      0      -     "
   },
-  "access": [["test", "ro"], ["ref", "ro_exclusive"]]
+  "access": [["test", "shared"], ["ref", "exclusive_ro"]]
 }]
 select test.id, ref.id from test join ref on test.id = ref.id join ref ref2 on test.id = ref2.id;
 [[1, 1], [3, 3], [2, 2]]
@@ -242,7 +242,7 @@ explain select test.id, ref.id from test join ref on test.id = ref.id join ref r
     "29": "free                1      0      0     ",
     "30": "ret                 0      0      -     "
   },
-  "access": [["test", "ro"], ["ref", "ro_exclusive"]]
+  "access": [["test", "shared"], ["ref", "exclusive_ro"]]
 }]
 select test.id, ref.id from test join ref on test.id = ref.id join ref ref2 on test.id = ref2.id where test.id > 0;
 [[1, 1], [3, 3], [2, 2]]
@@ -275,7 +275,7 @@ explain select test.id, ref.id from test, ref where test.id = ref.id;
     "16": "free                1      0      0     ",
     "17": "ret                 0      0      -     "
   },
-  "access": [["test", "ro"], ["ref", "ro_exclusive"]]
+  "access": [["test", "shared"], ["ref", "exclusive_ro"]]
 }]
 select test.id, ref.id from test, ref where test.id = ref.id;
 [[1, 1], [3, 3], [2, 2]]
@@ -307,7 +307,7 @@ explain select test.id, ref.id from test, ref where ref.id = test.id;
     "16": "free                1      0      0     ",
     "17": "ret                 0      0      -     "
   },
-  "access": [["test", "ro"], ["ref", "ro_exclusive"]]
+  "access": [["test", "shared"], ["ref", "exclusive_ro"]]
 }]
 select test.id, ref.id from test, ref where ref.id = test.id;
 [[1, 1], [3, 3], [2, 2]]
@@ -338,17 +338,18 @@ explain select test.id, ref.id from test, ref where ref.id = 1;
     "15": "free                1      0      0     ",
     "16": "ret                 0      0      -     "
   },
-  "access": [["test", "ro"], ["ref", "ro_exclusive"]]
+  "access": [["test", "shared"], ["ref", "exclusive_ro"]]
 }]
 select test.id, ref.id from test, ref where ref.id = 1;
 [[1, 1], [3, 1], [2, 1]]
 explain select test.id, ref.id from test, ref where ref.id = 1 and test.id = 1;
 [{
   "main": {
-    "00": "send_lookup         0      -      0     # test (select, closing)",
-    "01": "union               1      0      0     ",
-    "02": "recv                1      0      0     ",
-    "03": "ret                 1      0      -     "
+    "00": "push_int            -      0      0     # 1",
+    "01": "send_lookup         0      -      35    # test (select, closing)",
+    "02": "union               1      0      0     ",
+    "03": "recv                1      0      0     ",
+    "04": "ret                 1      0      -     "
   },
   "pushdown": {
     "00": "set                 0      2      0     ",
@@ -373,7 +374,7 @@ explain select test.id, ref.id from test, ref where ref.id = 1 and test.id = 1;
     "19": "free                1      0      0     ",
     "20": "ret                 0      0      -     "
   },
-  "access": [["test", "ro"], ["ref", "ro_exclusive"]]
+  "access": [["test", "shared"], ["ref", "exclusive_ro"]]
 }]
 select test.id, ref.id from test, ref where ref.id = 1 and test.id = 1;
 [[1, 1]]
@@ -406,7 +407,7 @@ explain select test.id, ref.id from test, ref where ref.id >= test.id;
     "17": "free                1      0      0     ",
     "18": "ret                 0      0      -     "
   },
-  "access": [["test", "ro"], ["ref", "ro_exclusive"]]
+  "access": [["test", "shared"], ["ref", "exclusive_ro"]]
 }]
 select test.id, ref.id from test, ref where ref.id >= test.id;
 [[1, 1], [1, 2], [1, 3], [3, 3], [2, 2], [2, 3]]
@@ -447,7 +448,7 @@ explain select test.id, ref.id from test join ref using(id);
     "16": "free                1      0      0     ",
     "17": "ret                 0      0      -     "
   },
-  "access": [["test", "ro"], ["ref", "ro_exclusive"]]
+  "access": [["test", "shared"], ["ref", "exclusive_ro"]]
 }]
 select test.id, ref.id from test join ref using(id);
 [[1, 1], [3, 3], [2, 2]]
@@ -496,7 +497,7 @@ explain select test.id, ref.id from test join ref using (id) join ref ref2 using
     "29": "free                1      0      0     ",
     "30": "ret                 0      0      -     "
   },
-  "access": [["test", "ro"], ["ref", "ro_exclusive"]]
+  "access": [["test", "shared"], ["ref", "exclusive_ro"]]
 }]
 select test.id, ref.id from test join ref using (id) join ref ref2 using (id) where test.id > 0;
 [[1, 1], [3, 3], [2, 2]]
@@ -550,7 +551,7 @@ explain with a as (select * from test) select * from test, a where test.id = a.i
     "31": "free                2      0      0     ",
     "32": "ret                 0      0      -     "
   },
-  "access": [["test", "ro"]]
+  "access": [["test", "shared"]]
 }]
 with a as (select * from test) select * from test, a where test.id = a.id;
 [[1, 0, 1, 0], [3, 0, 3, 0], [2, 0, 2, 0]]
@@ -562,10 +563,11 @@ explain with a as (select * from test) select * from test, a where test.id = 1;
     "01": "union               1      0      0     ",
     "02": "recv                1      0      0     ",
     "03": "push_ref            1      1      0     ",
-    "04": "send_lookup         0      -      1     # test (select, closing)",
-    "05": "union               2      0      0     ",
-    "06": "recv                2      0      0     ",
-    "07": "ret                 2      0      -     "
+    "04": "push_int            -      0      0     # 1",
+    "05": "send_lookup         0      -      60    # test (select, closing)",
+    "06": "union               2      0      0     ",
+    "07": "recv                2      0      0     ",
+    "08": "ret                 2      0      -     "
   },
   "pushdown": {
     "00": "set                 0      2      0     ",
@@ -602,7 +604,7 @@ explain with a as (select * from test) select * from test, a where test.id = 1;
     "31": "free                2      0      0     ",
     "32": "ret                 0      0      -     "
   },
-  "access": [["test", "ro"]]
+  "access": [["test", "shared"]]
 }]
 with a as (select * from test) select * from test, a where test.id = 1;
 [[1, 0, 1, 0], [1, 0, 3, 0], [1, 0, 2, 0]]
@@ -650,7 +652,7 @@ explain with a as (select * from test) select * from a, test where test.id = a.i
     "08": "free                1      0      0     ",
     "09": "ret                 0      0      -     "
   },
-  "access": [["test", "ro_exclusive"]]
+  "access": [["test", "exclusive_ro"]]
 }]
 with a as (select * from test) select * from a, test where test.id = a.id;
 [[1, 0, 1, 0], [3, 0, 3, 0], [2, 0, 2, 0]]
@@ -697,7 +699,7 @@ explain with a as (select * from test) select * from a, test where test.id = 1;
     "08": "free                1      0      0     ",
     "09": "ret                 0      0      -     "
   },
-  "access": [["test", "ro_exclusive"]]
+  "access": [["test", "exclusive_ro"]]
 }]
 with a as (select * from test) select * from a, test where test.id = 1;
 [[1, 0, 1, 0], [3, 0, 1, 0], [2, 0, 1, 0]]
@@ -745,7 +747,7 @@ explain select ref.id from test join ref on (test.id = ref.id) group by ref.id;
     "14": "free                1      0      0     ",
     "15": "ret                 0      0      -     "
   },
-  "access": [["test", "ro"], ["ref", "ro_exclusive"]]
+  "access": [["test", "shared"], ["ref", "exclusive_ro"]]
 }]
 select ref.id from test join ref on (test.id = ref.id) group by ref.id;
 [1, 3, 2]

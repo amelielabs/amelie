@@ -41,6 +41,9 @@ storage_free(Storage* self)
 void
 storage_open(Storage* self, bool bootstrap)
 {
+	if (bootstrap)
+		state_lsn_set(1);
+
 	// prepare system catalog
 	catalog_open(&self->catalog, bootstrap);
 }
