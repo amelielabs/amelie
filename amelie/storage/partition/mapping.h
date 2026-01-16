@@ -13,25 +13,19 @@
 
 typedef struct Mapping Mapping;
 
-typedef enum
-{
-	MAPPING_HASH,
-	MAPPING_HASH_RANGE
-} MappingType;
+#define MAPPING_MAX 1024
 
 struct Mapping
 {
-	MappingType type;
-	void**      map;
-	List        ranges;
-	int         ranges_count;
-	Keys*       keys;
+	MappingRange** map;
+	List           ranges;
+	int            ranges_count;
+	Keys*          keys;
 };
 
 static inline void
-mapping_init(Mapping* self, MappingType type, Keys* keys)
+mapping_init(Mapping* self, Keys* keys)
 {
-	self->type         = type;
 	self->keys         = keys;
 	self->map          = NULL;
 	self->ranges_count = 0;
@@ -54,7 +48,7 @@ static inline void
 mapping_create(Mapping* self)
 {
 	assert(! self->map);
-	auto size = sizeof(void*) * UINT16_MAX;
+	auto size = sizeof(MappingRange*) * MAPPING_MAX;
 	self->map = am_malloc(size);
 	memset(self->map, 0, size);
 }
@@ -62,29 +56,24 @@ mapping_create(Mapping* self)
 hot static inline void
 mapping_add(Mapping* self, Part* part)
 {
-	if (! self->map)
+	if (unlikely(! self->map))
 		mapping_create(self);
 
 	// [hash][mapping_range]
 	auto pos     = part->object->meta.hash_min;
 	auto pos_max = part->object->meta.hash_max;
-	auto ref     = NULL;
-	if (self->type == MAPPING_HASH_RANGE)
+
+	auto range = (MappingRange*)self->map[pos];
+	if (! range)
 	{
-		auto range = (MappingRange*)self->map[pos];
-		if (! range)
-		{
-			range = mapping_range_allocate(self->keys);
-			list_append(&self->ranges, &range->link);
-			self->ranges_count++;
-		}
-		mapping_range_add(range, part);
-		ref = range;
-	} else {
-		ref = part;
+		range = mapping_range_allocate(self->keys);
+		list_append(&self->ranges, &range->link);
+		self->ranges_count++;
 	}
+	mapping_range_add(range, part);
+
 	for (; pos < pos_max; pos++)
-		self->map[pos] = ref;
+		self->map[pos] = range;
 }
 
 hot static inline void
@@ -92,21 +81,20 @@ mapping_remove(Mapping* self, Part* part)
 {
 	auto pos     = part->object->meta.hash_min;
 	auto pos_max = part->object->meta.hash_max;
-	if (self->type == MAPPING_HASH_RANGE)
-	{
-		// last partition free range
-		auto range = (MappingRange*)self->map[pos];
-		if (! range)
-			return;
-		mapping_range_remove(range, part);
-		if (range->tree_count > 0)
-			return;
 
-		// free range
-		list_unlink(&range->link);
-		self->ranges_count--;
-		mapping_range_free(range);
-	}
+	// last partition free range
+	auto range = (MappingRange*)self->map[pos];
+	if (! range)
+		return;
+	mapping_range_remove(range, part);
+	if (range->tree_count > 0)
+		return;
+
+	// free range
+	list_unlink(&range->link);
+	self->ranges_count--;
+	mapping_range_free(range);
+
 	for (; pos < pos_max; pos++)
 		self->map[pos] = NULL;
 }
@@ -114,11 +102,8 @@ mapping_remove(Mapping* self, Part* part)
 hot static inline Part*
 mapping_map(Mapping* self, Row* key)
 {
-	auto hash_partition = row_hash(key, self->keys) % UINT16_MAX;
+	auto hash_partition = row_hash(key, self->keys) % MAPPING_MAX;
 	auto ref = self->map[hash_partition];
-	if (self->type == MAPPING_HASH)
-		return ref;
-	if (! ref)
-		return NULL;
+	assert(ref);
 	return mapping_range_map(ref, key);
 }

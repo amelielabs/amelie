@@ -28,7 +28,7 @@ struct VolumeMgr
 };
 
 void    volume_mgr_init(VolumeMgr*, TierMgr*, Sequence*, bool, Uuid*,
-                        MappingType, int, Keys*);
+                        int, Keys*);
 void    volume_mgr_free(VolumeMgr*);
 void    volume_mgr_open(VolumeMgr*, List*, List*);
 void    volume_mgr_truncate(VolumeMgr*);

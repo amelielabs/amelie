@@ -137,7 +137,7 @@ static void
 deploy_if_attach(Deploy* self, VolumeMgr* volume_mgr)
 {
 	System* system = self->iface_arg;
-	if (volume_mgr->parts_count > UINT16_MAX)
+	if (volume_mgr->parts_count > MAPPING_MAX)
 		error("exceeded the maximum number of hash partitions per table");
 
 	// create pods on backends

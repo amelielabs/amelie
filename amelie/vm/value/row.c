@@ -540,7 +540,7 @@ row_map(Table* table, Value* refs, Value* row, int64_t identity)
 {
 	auto mapping = &table->volume_mgr.mapping;
 	assert(mapping->type == MAPPING_HASH);
-	auto hash_partition = row_map_hash(mapping->keys, refs, row, identity) % UINT16_MAX;
+	auto hash_partition = row_map_hash(mapping->keys, refs, row, identity) % MAPPING_MAX;
 	// todo: MAPPING_HASH_RANGE
 	return mapping->map[hash_partition];
 }
@@ -561,6 +561,6 @@ row_map_key(Table* table, Value* keys)
 	auto mapping = &table->volume_mgr.mapping;
 	assert(mapping->type == MAPPING_HASH);
 	// todo: MAPPING_HASH_RANGE
-	auto hash_partition = hash % UINT16_MAX;
+	auto hash_partition = hash % MAPPING_MAX;
 	return mapping->map[hash_partition];
 }

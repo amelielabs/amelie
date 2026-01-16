@@ -25,7 +25,6 @@ volume_mgr_init(VolumeMgr*  self,
                 Sequence*   seq,
                 bool        unlogged,
                 Uuid*       id,
-                MappingType mapping_type,
                 int         mapping_hash,
                 Keys*       keys)
 {
@@ -36,7 +35,7 @@ volume_mgr_init(VolumeMgr*  self,
 	self->unlogged      = unlogged;
 	self->tier_mgr      = tier_mgr;
 	self->mapping_hash  = mapping_hash;
-	mapping_init(&self->mapping, mapping_type, keys);
+	mapping_init(&self->mapping, keys);
 	list_init(&self->parts);
 	list_init(&self->volumes);
 }

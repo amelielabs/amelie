@@ -20,8 +20,7 @@ struct TableConfig
 	Uuid    id;
 	bool    unlogged;
 	Columns columns;
-	int64_t mapping;
-	int64_t mapping_seed;
+	int64_t mapping_hash;
 	List    volumes;
 	int     volumes_count;
 	List    indexes;
@@ -33,11 +32,10 @@ table_config_allocate(void)
 {
 	TableConfig* self;
 	self = am_malloc(sizeof(TableConfig));
-	self->unlogged       = false;
-	self->mapping        = -1;
-	self->mapping_seed   = 0;
-	self->volumes_count  = 0;
-	self->indexes_count  = 0;
+	self->unlogged      = false;
+	self->mapping_hash  = 0;
+	self->volumes_count = 0;
+	self->indexes_count = 0;
 	str_init(&self->db);
 	str_init(&self->name);
 	uuid_init(&self->id);
@@ -96,10 +94,9 @@ table_config_set_unlogged(TableConfig* self, bool value)
 }
 
 static inline void
-table_config_set_mapping(TableConfig* self, MappingType type, int seed)
+table_config_set_mapping_hash(TableConfig* self, int hash)
 {
-	self->mapping      = type;
-	self->mapping_seed = seed;
+	self->mapping_hash = hash;
 }
 
 static inline void
@@ -131,7 +128,7 @@ table_config_copy(TableConfig* self)
 	table_config_set_name(copy, &self->name);
 	table_config_set_id(copy, &self->id);
 	table_config_set_unlogged(copy, self->unlogged);
-	table_config_set_mapping(copy, self->mapping, self->mapping_seed);
+	table_config_set_mapping_hash(copy, self->mapping_hash);
 	columns_copy(&copy->columns, &self->columns);
 
 	list_foreach(&self->volumes)
@@ -168,8 +165,7 @@ table_config_read(uint8_t** pos)
 		{ DECODE_STRING, "db",           &self->db           },
 		{ DECODE_STRING, "name",         &self->name         },
 		{ DECODE_UUID,   "id",           &self->id           },
-		{ DECODE_INT,    "mapping",      &self->mapping      },
-		{ DECODE_INT,    "mapping_seed", &self->mapping_seed },
+		{ DECODE_INT,    "mapping_hash", &self->mapping_hash },
 		{ DECODE_ARRAY,  "columns",      &pos_columns        },
 		{ DECODE_BOOL,   "unlogged",     &self->unlogged     },
 		{ DECODE_ARRAY,  "indexes",      &pos_indexes        },
@@ -222,13 +218,9 @@ table_config_write(TableConfig* self, Buf* buf)
 	encode_raw(buf, "unlogged", 8);
 	encode_bool(buf, self->unlogged);
 
-	// mapping
-	encode_raw(buf, "mapping", 7);
-	encode_integer(buf, self->mapping);
-
-	// mapping_seed
-	encode_raw(buf, "mapping_seed", 12);
-	encode_integer(buf, self->mapping_seed);
+	// mapping_hash
+	encode_raw(buf, "mapping_hash", 12);
+	encode_integer(buf, self->mapping_hash);
 
 	// columns
 	encode_raw(buf, "columns", 7);

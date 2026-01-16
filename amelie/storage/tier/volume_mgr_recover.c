@@ -127,7 +127,7 @@ volume_mgr_create(VolumeMgr* self, Volume* volume)
 
 	// create initial hash partitions
 	auto n = self->mapping_hash;
-	if (n < 1 || n > UINT16_MAX)
+	if (n < 1 || n > MAPPING_MAX)
 		error("table has invalid partitions number");
 
 	auto writer = writer_allocate();
@@ -138,7 +138,7 @@ volume_mgr_create(VolumeMgr* self, Volume* volume)
 	defer(file_close, &file);
 
 	// hash partition_max / hash partitions
-	int range_max      = UINT16_MAX;
+	int range_max      = MAPPING_MAX;
 	int range_interval = range_max / n;
 	int range_start    = 0;
 	for (auto order = 0; order < n; order++)

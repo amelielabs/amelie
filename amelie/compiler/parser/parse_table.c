@@ -443,7 +443,7 @@ parse_table_create(Stmt* self, bool unlogged)
 		auto n = stmt_expect(self, KINT);
 		hash_partitions = n->integer;
 	}
-	if (hash_partitions < 1 || hash_partitions >= UINT16_MAX)
+	if (hash_partitions < 1 || hash_partitions >= MAPPING_MAX)
 		stmt_error(self, NULL, "table has invalid hash partitions number");
 
 	table_config_set_mapping(config, MAPPING_HASH, hash_partitions);

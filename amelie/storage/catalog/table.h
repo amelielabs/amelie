@@ -61,7 +61,7 @@ table_allocate(TableConfig* config, TierMgr* tier_mgr, Deploy* deploy)
 	auto primary = table_primary(self);
 	volume_mgr_init(&self->volume_mgr, tier_mgr, &self->seq,
 	                 self->config->unlogged,
-	                &self->config->id, self->config->mapping, self->config->mapping_seed,
+	                &self->config->id, self->config->mapping_hash,
 	                &primary->keys);
 	relation_init(&self->rel);
 	relation_set_db(&self->rel, &self->config->db);
