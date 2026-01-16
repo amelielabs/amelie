@@ -236,6 +236,10 @@ volume_mgr_recover(VolumeMgr* self, List* volumes, List* indexes)
 			part_index_add(part, config);
 		}
 
+		// load partition in memory, if necessary
+		if (part->source->in_memory)
+			part_load(part);
+
 		// add partition mapping
 		mapping_add(&self->mapping, part);
 	}

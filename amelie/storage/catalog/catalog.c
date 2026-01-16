@@ -67,6 +67,7 @@ catalog_prepare(Catalog* self)
 		defer(source_free, tier_config);
 		source_set_name(tier_config, &name);
 		source_set_path(tier_config, &name);
+		source_set_in_memory(tier_config, true);
 		source_set_system(tier_config, true);
 		tier_mgr_create(&self->tier_mgr, &tr, tier_config, false);
 

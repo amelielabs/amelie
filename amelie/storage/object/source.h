@@ -17,6 +17,7 @@ struct Source
 {
 	Str     name;
 	Str     path;
+	bool    in_memory;
 	bool    sync;
 	bool    crc;
 	int64_t refresh_wm;
@@ -33,6 +34,7 @@ static inline Source*
 source_allocate(void)
 {
 	auto self = (Source*)am_malloc(sizeof(Source));
+	self->in_memory         = false;
 	self->sync              = true;
 	self->crc               = false;
 	self->compression_level = 0;
@@ -71,6 +73,12 @@ source_set_path(Source* self, Str* value)
 {
 	str_free(&self->path);
 	str_copy(&self->path, value);
+}
+
+static inline void
+source_set_in_memory(Source* self, bool value)
+{
+	self->in_memory = value;
 }
 
 static inline void
@@ -136,6 +144,7 @@ source_copy(Source* self)
 	auto copy = source_allocate();
 	source_set_name(copy, &self->name);
 	source_set_path(copy, &self->path);
+	source_set_in_memory(copy, self->sync);
 	source_set_sync(copy, self->sync);
 	source_set_crc(copy, self->crc);
 	source_set_refresh_wm(copy, self->refresh_wm);
@@ -157,6 +166,7 @@ source_read(uint8_t** pos)
 	{
 		{ DECODE_STRING, "name",              &self->name              },
 		{ DECODE_STRING, "path",              &self->path              },
+		{ DECODE_BOOL,   "in_memory",         &self->in_memory         },
 		{ DECODE_BOOL,   "sync",              &self->sync              },
 		{ DECODE_BOOL,   "crc",               &self->crc               },
 		{ DECODE_INT,    "refresh_wm",        &self->refresh_wm        },
@@ -184,6 +194,10 @@ source_write(Source* self, Buf* buf, bool safe)
 	// path
 	encode_raw(buf, "path", 4);
 	encode_string(buf, &self->path);
+
+	// in_memory
+	encode_raw(buf, "in_memory", 9);
+	encode_bool(buf, self->in_memory);
 
 	// sync
 	encode_raw(buf, "sync", 4);

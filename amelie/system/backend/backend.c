@@ -27,7 +27,6 @@ backend_rpc(Rpc* rpc, void* arg)
 	{
 		// create and start new pod
 		Part* part = rpc_arg_ptr(rpc, 0);
-		part_load(part);
 		pod_mgr_create(&self->pod_mgr, part);
 		break;
 	}
