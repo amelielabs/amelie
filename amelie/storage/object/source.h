@@ -18,6 +18,7 @@ struct Source
 	Str     name;
 	Str     path;
 	bool    in_memory;
+	bool    auto_partitioning;
 	bool    sync;
 	bool    crc;
 	int64_t refresh_wm;
@@ -35,6 +36,7 @@ source_allocate(void)
 {
 	auto self = (Source*)am_malloc(sizeof(Source));
 	self->in_memory         = false;
+	self->auto_partitioning = true;
 	self->sync              = true;
 	self->crc               = false;
 	self->compression_level = 0;
@@ -79,6 +81,12 @@ static inline void
 source_set_in_memory(Source* self, bool value)
 {
 	self->in_memory = value;
+}
+
+static inline void
+source_set_auto_partitioning(Source* self, bool value)
+{
+	self->auto_partitioning = value;
 }
 
 static inline void
@@ -145,6 +153,7 @@ source_copy(Source* self)
 	source_set_name(copy, &self->name);
 	source_set_path(copy, &self->path);
 	source_set_in_memory(copy, self->sync);
+	source_set_auto_partitioning(copy, self->auto_partitioning);
 	source_set_sync(copy, self->sync);
 	source_set_crc(copy, self->crc);
 	source_set_refresh_wm(copy, self->refresh_wm);
@@ -167,6 +176,7 @@ source_read(uint8_t** pos)
 		{ DECODE_STRING, "name",              &self->name              },
 		{ DECODE_STRING, "path",              &self->path              },
 		{ DECODE_BOOL,   "in_memory",         &self->in_memory         },
+		{ DECODE_BOOL,   "auto_partitioning", &self->auto_partitioning },
 		{ DECODE_BOOL,   "sync",              &self->sync              },
 		{ DECODE_BOOL,   "crc",               &self->crc               },
 		{ DECODE_INT,    "refresh_wm",        &self->refresh_wm        },
@@ -198,6 +208,10 @@ source_write(Source* self, Buf* buf, bool safe)
 	// in_memory
 	encode_raw(buf, "in_memory", 9);
 	encode_bool(buf, self->in_memory);
+
+	// auto_partitioning
+	encode_raw(buf, "auto_partitioning", 17);
+	encode_bool(buf, self->auto_partitioning);
 
 	// sync
 	encode_raw(buf, "sync", 4);

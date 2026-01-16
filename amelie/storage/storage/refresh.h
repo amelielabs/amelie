@@ -17,7 +17,6 @@ struct Refresh
 {
 	PartLock lock;
 	Part*    origin;
-	Heap*    origin_heap;
 	Object*  origin_object;
 	uint64_t lsn;
 	Table*   table;

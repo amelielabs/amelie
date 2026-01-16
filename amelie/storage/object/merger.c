@@ -235,15 +235,17 @@ merger_split(Merger* self, MergerConfig* config)
 hot void
 merger_execute(Merger* self, MergerConfig* config)
 {
-	if (config->type == MERGER_SNAPSHOT)
-	{
-		merger_snapshot(self, config);
-		return;
-	}
+	auto source = config->source;
 
 	// always refresh partition first
-	merger_refresh(self, config);
-	if (config->type == MERGER_REFRESH)
+	//
+	// if partition is currently in memory do full snapshot
+	if (config->origin->source->in_memory)
+		merger_snapshot(self, config);
+	else
+		merger_refresh(self, config);
+
+	if (! source->auto_partitioning)
 		return;
 
 	// delete after merge
@@ -251,8 +253,10 @@ merger_execute(Merger* self, MergerConfig* config)
 	if (! object)
 		return;
 
+	// split partition if it exceeds partition size threshold
+
 	// created object fits partition size limit
-	if (object->meta.size_total <= (uint64_t)config->source->part_size)
+	if (object->meta.size_total <= (uint64_t)source->part_size)
 		return;
 
 	// split object file into N objects

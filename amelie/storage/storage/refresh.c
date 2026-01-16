@@ -27,7 +27,6 @@ refresh_init(Refresh* self, Storage* storage)
 {
 	part_lock_init(&self->lock);
 	self->origin        = NULL;
-	self->origin_heap   = NULL;
 	self->origin_object = NULL;
 	self->lsn           = 0;
 	self->table         = NULL;
@@ -47,7 +46,6 @@ refresh_reset(Refresh* self)
 {
 	part_lock_init(&self->lock);
 	self->origin        = NULL;
-	self->origin_heap   = NULL;
 	self->origin_object = NULL;
 	self->lsn           = 0;
 	self->table         = NULL;
@@ -94,10 +92,9 @@ refresh_begin(Refresh* self, Id* id, Str* tier)
 	track_sync(&origin->track, consensus);
 	self->lsn = origin->track.lsn;
 
-	// rotate partition heap
+	// switch to heap_b
 	assert(origin->heap == &origin->heap_a);
-	origin->heap      = &origin->heap_b;
-	self->origin_heap = &origin->heap_a;
+	origin->heap = &origin->heap_b;
 
 	unlock(&storage->lock_mgr, &table->rel, LOCK_EXCLUSIVE);
 	return true;
@@ -106,19 +103,26 @@ refresh_begin(Refresh* self, Id* id, Str* tier)
 static void
 refresh_merge_job(intptr_t* argv)
 {
+	// todo: sort heap
+
 	// merge heap with existing partition
 	auto self = (Refresh*)argv[0];
 	auto merger = &self->merger;
 	MergerConfig config =
 	{
-		.type   = MERGER_SNAPSHOT,
 		.lsn    = self->lsn,
 		.origin = self->origin->object,
-		.heap   = self->origin_heap,
+		.heap   = &self->origin->heap_a,
 		.keys   = self->table->volume_mgr.mapping.keys,
 		.source = self->volume->tier->config
 	};
 	merger_execute(merger, &config);
+
+	if (merger->objects_count > 1)
+	{
+		// todo: create partitions, create indexes
+		// todo: load partitions in memory
+	}
 }
 
 static void
@@ -129,11 +133,12 @@ refresh_merge(Refresh* self)
 }
 
 static void
-refresh_apply_replace(Refresh* self)
+refresh_apply_origin(Refresh* self)
 {
 	auto storage = self->storage;
 	auto table   = self->table;
 	auto origin  = self->origin;
+	auto source  = self->volume->tier->config;
 
 	// take table exclusive lock
 	lock(&storage->lock_mgr, &table->rel, LOCK_EXCLUSIVE);
@@ -154,27 +159,72 @@ refresh_apply_replace(Refresh* self)
 		volume_add(self->volume, origin);
 	}
 
-	// todo: redistribute
-
-	// unrotate
+	// switch back to heap_a
 	assert(origin->heap == &origin->heap_b);
-	origin->heap      = &origin->heap_a;
-	self->origin_heap = NULL;
+	origin->heap = &origin->heap_a;
+
+	if (source->in_memory)
+	{
+		// todo: 
+			// iterate heap_b
+			// 	apply changes to heap_a, apply deletes
+			//		keep deletes in heap_a, if not in-memory
+			//  update indexes
+
+		// (free heap_b on end)
+	} else
+	{
+		// reuse heap_b as heap_a
+		// (free previous heap_a on end)
+	}
 
 	unlock(&storage->lock_mgr, &table->rel, LOCK_EXCLUSIVE);
+
+	// (free/remove origin object on end)
 }
 
 static void
-refresh_apply(Refresh* self)
+refresh_apply_split(Refresh* self)
 {
-	if (self->merger.objects_count == 1)
-		refresh_apply_replace(self);
+	auto storage = self->storage;
+	auto table   = self->table;
+	auto origin  = self->origin;
+
+	// take table exclusive lock
+	lock(&storage->lock_mgr, &table->rel, LOCK_EXCLUSIVE);
+
+	// force commit prepared transactions
+	track_sync(&origin->track, &origin->track.consensus);
+
+	// todo:
+		// iterate heap_b
+		//  distribute between partitions
+		//		keep deletes in heap_a, if not in-memory
+		//  update indexes
+
+	// remove old partition
+		// send undeploy
+
+	// add all partitions to mapping
+		// update volume
+		// send deploy
+
+	unlock(&storage->lock_mgr, &table->rel, LOCK_EXCLUSIVE);
+
+	// wait for undeploy (origin) + deploy all parts
+
+	// (free heap_b on end)
+	// (free origin partition and free/remove origin object on end)
 }
 
 static void
 refresh_end(Refresh* self)
 {
-	// todo: sync job
+	// todo: sync new partitions
+	(void)self;
+
+#if 0
+	// todo: free heap
 
 	// remove origin object
 	if (self->origin_object)
@@ -184,7 +234,8 @@ refresh_end(Refresh* self)
 		self->origin_object = NULL;
 	}
 
-	// todo: free heap_b
+	// todo: free origin partition, if not update
+#endif
 
 	self->merger.objects_count = 0;
 	list_init(&self->merger.objects);
@@ -205,7 +256,13 @@ refresh_run(Refresh* self, Id* id, Str* tier)
 	auto on_error = error_catch
 	(
 		refresh_merge(self);
-		refresh_apply(self);
+
+		// update existing partition object
+		if (self->merger.objects_count == 1)
+			refresh_apply_origin(self);
+		else
+			refresh_apply_split(self);
+
 		refresh_end(self);
 	);
 

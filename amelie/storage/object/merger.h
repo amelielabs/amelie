@@ -14,21 +14,13 @@
 typedef struct MergerConfig MergerConfig;
 typedef struct Merger       Merger;
 
-typedef enum
-{
-	MERGER_SNAPSHOT,
-	MERGER_REFRESH,
-	MERGER_SPLIT
-} MergerType;
-
 struct MergerConfig
 {
-	MergerType type;
-	uint64_t   lsn;
-	Object*    origin;
-	Heap*      heap;
-	Keys*      keys;
-	Source*    source;
+	uint64_t lsn;
+	Object*  origin;
+	Heap*    heap;
+	Keys*    keys;
+	Source*  source;
 };
 
 struct Merger
