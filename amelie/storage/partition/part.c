@@ -27,17 +27,16 @@ part_allocate(Source*   source,
 	auto self = (Part*)am_malloc(sizeof(Part));
 	self->id            = *id;
 	self->source        = source;
+	self->indexes       = NULL;
 	self->indexes_count = 0;
-	self->heap          = &self->heap_a;
+	self->heap          = heap_allocate();
+	self->heap_shadow   = heap_allocate();
 	self->volume        = NULL;
 	self->object        = NULL;
 	self->seq           = seq;
 	self->unlogged      = unlogged;
+	heap_create(self->heap);
 	track_init(&self->track);
-	list_init(&self->indexes);
-	heap_init(&self->heap_a);
-	heap_init(&self->heap_b);
-	heap_create(&self->heap_a);
 	list_init(&self->link_volume);
 	list_init(&self->link);
 	rbtree_init_node(&self->link_range);
@@ -48,15 +47,17 @@ void
 part_free(Part* self)
 {
 	track_free(&self->track);
+	auto index = self->indexes;
+	while (index)
+	{
+		auto next = index->next;
+		index_free(index);
+		index = next;
+	}
+	heap_free(self->heap);
+	heap_free(self->heap_shadow);
 	if (self->object)
 		object_free(self->object);
-	list_foreach_safe(&self->indexes)
-	{
-		auto index = list_at(Index, link);
-		index_free(index);
-	}
-	heap_free(&self->heap_a);
-	heap_free(&self->heap_b);
 	am_free(self);
 }
 
@@ -97,11 +98,8 @@ part_load(Part* self)
 void
 part_truncate(Part* self)
 {
-	list_foreach(&self->indexes)
-	{
-		auto index = list_at(Index, link);
+	for (auto index = self->indexes; index; index = index->next)
 		index_truncate(index);
-	}
 }
 
 void
@@ -115,15 +113,38 @@ part_index_add(Part* self, IndexConfig* config)
 		index = index_hash_allocate(config, self);
 	else
 		error("unrecognized index type");
-	list_append(&self->indexes, &index->link);
+
+	// link index
+	auto tail = self->indexes;
+	while (tail && tail->next)
+		tail = tail->next;
+	if (tail)
+		tail->next = index;
+	else
+		self->indexes = index;
 	self->indexes_count++;
 }
 
 void
 part_index_drop(Part* self, Str* name)
 {
-	auto index = part_index_find(self, name, true);
-	list_unlink(&index->link);
+	auto index = self->indexes;
+	auto tail  = (Index*)NULL;
+	for (; index; index = index->next)
+	{
+		if (str_compare_case(&index->config->name, name))
+			break;
+		tail = index;
+	}
+	if (! index)
+		error("index '%.*s': not exists", str_size(name),
+		       str_of(name));
+
+	// unlink index
+	if (tail)
+		tail->next = index->next;
+	else
+		self->indexes = index->next;
 	self->indexes_count--;
 	index_free(index);
 }
@@ -131,9 +152,8 @@ part_index_drop(Part* self, Str* name)
 Index*
 part_index_find(Part* self, Str* name, bool error_if_not_exists)
 {
-	list_foreach(&self->indexes)
+	for (auto index = self->indexes; index; index = index->next)
 	{
-		auto index = list_at(Index, link);
 		if (str_compare_case(&index->config->name, name))
 			return index;
 	}

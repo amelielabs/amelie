@@ -18,12 +18,11 @@ struct Part
 {
 	Id         id;
 	Source*    source;
-	List       indexes;
+	Index*     indexes;
 	int        indexes_count;
 	Track      track;
 	Heap*      heap;
-	Heap       heap_a;
-	Heap       heap_b;
+	Heap*      heap_shadow;
 	Object*    object;
 	Volume*    volume;
 	Sequence*  seq;
@@ -50,7 +49,7 @@ part_set_volume(Part* self, Volume* volume)
 static inline Index*
 part_primary(Part* self)
 {
-	return container_of(self->indexes.next, Index, link);
+	return self->indexes;
 }
 
 static inline bool

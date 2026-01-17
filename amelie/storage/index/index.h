@@ -32,16 +32,16 @@ struct Index
 	IndexIf      iface;
 	void*        iface_arg;
 	IndexConfig* config;
-	List         link;
+	Index*       next;
 };
 
 static inline void
 index_init(Index* self, IndexConfig* config, void* arg)
 {
 	memset(self, 0, sizeof(*self));
-	self->config = config;
+	self->config    = config;
 	self->iface_arg = arg;
-	list_init(&self->link);
+	self->next      = NULL;
 }
 
 static inline void

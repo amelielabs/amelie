@@ -112,10 +112,8 @@ part_insert(Part* self, Tr* tr, bool replace, Row* row)
 		      str_of(&primary->config->name));
 
 	// update secondary indexes
-	list_foreach_after(&self->indexes, &primary->link)
+	for (auto index = primary->next; index; index = index->next)
 	{
-		auto index = list_at(Index, link);
-
 		// add log record (not persisted)
 		op = log_row(&tr->log, CMD_REPLACE, &log_if_secondary, index, row, NULL);
 		op->row_prev = index_replace_by(index, row);
@@ -153,10 +151,8 @@ part_upsert(Part* self, Tr* tr, Iterator* it, Row* row)
 		log_persist(&tr->log, &self->id.id_table);
 
 	// update secondary indexes
-	list_foreach_after(&self->indexes, &primary->link)
+	for (auto index = primary->next; index; index = index->next)
 	{
-		auto index = list_at(Index, link);
-
 		// add log record (not persisted)
 		op = log_row(&tr->log, CMD_REPLACE, &log_if_secondary, index, row, NULL);
 		op->row_prev = index_replace_by(index, row);
@@ -186,10 +182,8 @@ part_update(Part* self, Tr* tr, Iterator* it, Row* row)
 	op->row_prev = index_replace(primary, row, it);
 
 	// update secondary indexes
-	list_foreach_after(&self->indexes, &primary->link)
+	for (auto index = primary->next; index; index = index->next)
 	{
-		auto index = list_at(Index, link);
-
 		// add log record (not persisted)
 		op = log_row(&tr->log, CMD_REPLACE, &log_if_secondary, index, row, NULL);
 
@@ -219,10 +213,8 @@ part_delete(Part* self, Tr* tr, Iterator* it)
 		log_persist(&tr->log, &self->id.id_table);
 
 	// secondary indexes
-	list_foreach_after(&self->indexes, &primary->link)
+	for (auto index = primary->next; index; index = index->next)
 	{
-		auto index = list_at(Index, link);
-
 		// add log record (not persisted)
 		op = log_row(&tr->log, CMD_DELETE, &log_if_secondary, index, row, NULL);
 
@@ -253,11 +245,8 @@ part_ingest_secondary(Part* self, Row* row)
 {
 	// update secondary indexes
 	auto primary = part_primary(self);
-	list_foreach_after(&self->indexes, &primary->link)
-	{
-		auto index = list_at(Index, link);
+	for (auto index = primary->next; index; index = index->next)
 		index_replace_by(index, row);
-	}
 }
 
 hot void
