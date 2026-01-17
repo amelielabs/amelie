@@ -22,6 +22,7 @@ heap_init(Heap* self)
 	self->page_header = NULL;
 	self->last        = NULL;
 	self->header      = NULL;
+	self->shadow      = NULL;
 	page_mgr_init(&self->page_mgr);
 }
 
@@ -161,8 +162,15 @@ heap_bucket_of(Heap* self, int size)
 hot void*
 heap_allocate(Heap* self, int size)
 {
+	// use shadow heap during snapshot
+	Heap* heap;
+	if (self->shadow)
+		heap = self->shadow;
+	else
+		heap = self;
+
 	// match bucket by size
-	auto bucket = heap_bucket_of(self, sizeof(HeapChunk) + size);
+	auto bucket = heap_bucket_of(heap, sizeof(HeapChunk) + size);
 
 	// get chunk from the free list
 	HeapChunk* chunk;
@@ -170,50 +178,52 @@ heap_allocate(Heap* self, int size)
 	{
 		auto page = (int)bucket->list;
 		auto page_offset = (int)bucket->list_offset;
-		chunk = page_mgr_pointer_of(&self->page_mgr, page, page_offset);
+		chunk = page_mgr_pointer_of(&heap->page_mgr, page, page_offset);
 		assert(chunk->bucket == bucket->id);
-		assert(chunk->free);
+		assert(chunk->is_free);
 		bucket->list        = chunk->prev;
 		bucket->list_offset = chunk->prev_offset;
 		bucket->list_count--;
 	} else
 	{
 		// use current or create new page
-		auto page_header = self->page_header;
-		if (unlikely(!self->last ||
-		             (uint32_t)(self->page_mgr.page_size - page_header->size) <
+		auto page_header = heap->page_header;
+		if (unlikely(!heap->last ||
+		             (uint32_t)(heap->page_mgr.page_size - page_header->size) <
 		                        bucket->size))
 		{
-			auto page = page_mgr_allocate(&self->page_mgr);
+			auto page = page_mgr_allocate(&heap->page_mgr);
 			page_header = (PageHeader*)page->pointer;
 			page_header->size    = sizeof(PageHeader);
-			page_header->order   = self->page_mgr.list_count - 1;
+			page_header->order   = heap->page_mgr.list_count - 1;
 			page_header->last    = 0;
 			page_header->padding = 0;
-			self->page_header = page_header;
-			self->last = NULL;
-			self->header->count++;
+			heap->page_header = page_header;
+			heap->last = NULL;
+			heap->header->count++;
 		}
 		chunk = (HeapChunk*)((uintptr_t)page_header + page_header->size);
 		chunk->tsn     = 0;
 		chunk->offset  = page_header->size;
 		chunk->bucket  = bucket->id;
-		chunk->last    = true;
+		chunk->is_last = true;
 		chunk->padding = 0;
-		if (likely(self->last))
+		if (likely(heap->last))
 		{
-			chunk->bucket_left = self->last->bucket;
-			self->last->last   = false;
+			chunk->bucket_left  = heap->last->bucket;
+			heap->last->is_last = false;
 		} else {
 			chunk->bucket_left = 0;
 		}
-		self->last = chunk;
+		heap->last = chunk;
 		page_header->last = page_header->size;
 		page_header->size += bucket->size;
 	}
-	chunk->prev        = 0;
-	chunk->prev_offset = 0;
-	chunk->free        = false;
+	chunk->prev             = 0;
+	chunk->prev_offset      = 0;
+	chunk->is_free          = false;
+	chunk->is_shadow        = self->shadow != NULL;
+	chunk->is_shadow_delete = false;
 
 	assert(misalign_of(chunk->data) == 0);
 	return chunk->data;
@@ -222,15 +232,29 @@ heap_allocate(Heap* self, int size)
 hot void
 heap_release(Heap* self, void* pointer)
 {
-	auto chunk  = heap_chunk_of(pointer);
-	auto page   = heap_page_of(chunk);
+	auto chunk = heap_chunk_of(pointer);
+	assert(! chunk->is_free);
+
+	// snapshot
+	//
+	// collect all deletes of main heap into shadow heap
+	//
+	if (self->shadow && !chunk->is_shadow)
+	{
+		auto ptr = heap_allocate(self->shadow, sizeof(void*));
+		memcpy(ptr, &pointer, sizeof(void*));
+		heap_chunk_of(ptr)->is_shadow = true;
+		heap_chunk_of(ptr)->is_shadow_delete = true;
+		return;
+	}
+
+	// add chunk to the free list
 	auto bucket = &self->buckets[chunk->bucket];
-	assert(! chunk->free);
 	chunk->tsn          = 0;
 	chunk->prev         = bucket->list;
 	chunk->prev_offset  = bucket->list_offset;
-	chunk->free         = true;
-	bucket->list        = page->order;
+	chunk->is_free      = true;
+	bucket->list        = heap_page_of(chunk)->order;
 	bucket->list_offset = chunk->offset;
 	bucket->list_count++;
 
@@ -238,4 +262,11 @@ heap_release(Heap* self, void* pointer)
 	// if not last,  merge right if right->free
 
 	// todo: bitmap
+}
+
+void
+heap_snapshot(Heap* self, Heap* shadow)
+{
+	assert(! self->shadow);
+	self->shadow = shadow;
 }

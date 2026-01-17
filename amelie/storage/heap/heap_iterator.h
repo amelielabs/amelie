@@ -28,7 +28,7 @@ heap_iterator_next_chunk(HeapIterator* self)
 {
 	if (unlikely(! self->current))
 		return;
-	if (likely(! self->current->last))
+	if (likely(! self->current->is_last))
 	{
 		auto next = (uintptr_t)self->current + self->heap->buckets[self->current->bucket].size;
 		self->current = (HeapChunk*)next;
@@ -45,7 +45,7 @@ heap_iterator_next_chunk(HeapIterator* self)
 hot static inline void
 heap_iterator_next_allocated(HeapIterator* self)
 {
-	while (self->current && self->current->free)
+	while (self->current && self->current->is_free)
 		heap_iterator_next_chunk(self);
 }
 

@@ -31,9 +31,11 @@ struct HeapChunk
 	uint64_t offset: 21;
 	uint64_t bucket: 9;
 	uint64_t bucket_left: 9;
-	uint64_t free: 1;
-	uint64_t last: 1;
-	uint64_t padding: 47;
+	uint64_t is_free: 1;
+	uint64_t is_last: 1;
+	uint64_t is_shadow: 1;
+	uint64_t is_shadow_delete: 1;
+	uint64_t padding: 45;
 
 	// row data
 	uint8_t  data[];
@@ -65,6 +67,7 @@ struct Heap
 	PageHeader* page_header;
 	HeapChunk*  last;
 	HeapHeader* header;
+	Heap*       shadow;
 	PageMgr     page_mgr;
 };
 
@@ -93,3 +96,4 @@ void  heap_free(Heap*);
 void  heap_create(Heap*);
 void* heap_allocate(Heap*, int);
 void  heap_release(Heap*, void*);
+void  heap_snapshot(Heap*, Heap*);
