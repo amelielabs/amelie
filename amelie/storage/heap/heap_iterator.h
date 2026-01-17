@@ -70,6 +70,12 @@ heap_iterator_has(HeapIterator* self)
 	return self->current != NULL;
 }
 
+static inline HeapChunk*
+heap_iterator_at_chunk(HeapIterator* self)
+{
+	return self->current;
+}
+
 static inline Row*
 heap_iterator_at(HeapIterator* self)
 {

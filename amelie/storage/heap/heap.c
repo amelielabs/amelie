@@ -15,15 +15,18 @@
 #include <amelie_heap.h>
 #include <valgrind/valgrind.h>
 
-void
-heap_init(Heap* self)
+Heap*
+heap_allocate(void)
 {
+	auto self = (Heap*)am_malloc(sizeof(Heap));
 	self->buckets     = NULL;
 	self->page_header = NULL;
 	self->last        = NULL;
 	self->header      = NULL;
 	self->shadow      = NULL;
+	self->shadow_free = false;
 	page_mgr_init(&self->page_mgr);
+	return self;
 }
 
 void
@@ -32,6 +35,7 @@ heap_free(Heap* self)
 	if (self->header)
 		am_free(self->header);
 	page_mgr_free(&self->page_mgr);
+	am_free(self);
 }
 
 static inline void
@@ -53,6 +57,9 @@ heap_prepare(Heap* self, int id, int id_end, int size, int step)
 void
 heap_create(Heap* self)
 {
+	if (self->header)
+		return;
+
 	// prepare heap header
 
 	// header + buckets[]
@@ -160,7 +167,7 @@ heap_bucket_of(Heap* self, int size)
 }
 
 hot void*
-heap_allocate(Heap* self, int size)
+heap_add(Heap* self, int size)
 {
 	// use shadow heap during snapshot
 	Heap* heap;
@@ -219,32 +226,29 @@ heap_allocate(Heap* self, int size)
 		page_header->last = page_header->size;
 		page_header->size += bucket->size;
 	}
-	chunk->prev             = 0;
-	chunk->prev_offset      = 0;
-	chunk->is_free          = false;
-	chunk->is_shadow        = self->shadow != NULL;
-	chunk->is_shadow_delete = false;
+	chunk->prev           = 0;
+	chunk->prev_offset    = 0;
+	chunk->is_free        = false;
+	chunk->is_shadow      = self->shadow != NULL;
+	chunk->is_shadow_free = false;
 
 	assert(misalign_of(chunk->data) == 0);
 	return chunk->data;
 }
 
 hot void
-heap_release(Heap* self, void* pointer)
+heap_remove(Heap* self, void* pointer)
 {
 	auto chunk = heap_chunk_of(pointer);
 	assert(! chunk->is_free);
 
-	// snapshot
-	//
-	// collect all deletes of main heap into shadow heap
-	//
-	if (self->shadow && !chunk->is_shadow)
+	// collect all frees of main heap into shadow heap
+	if (self->shadow_free && !chunk->is_shadow)
 	{
-		auto ptr = heap_allocate(self->shadow, sizeof(void*));
+		auto ptr = heap_add(self->shadow, sizeof(void*));
 		memcpy(ptr, &pointer, sizeof(void*));
 		heap_chunk_of(ptr)->is_shadow = true;
-		heap_chunk_of(ptr)->is_shadow_delete = true;
+		heap_chunk_of(ptr)->is_shadow_free = true;
 		return;
 	}
 
@@ -265,8 +269,9 @@ heap_release(Heap* self, void* pointer)
 }
 
 void
-heap_snapshot(Heap* self, Heap* shadow)
+heap_snapshot(Heap* self, Heap* shadow, bool shadow_free)
 {
 	assert(! self->shadow);
 	self->shadow = shadow;
+	self->shadow_free = shadow_free;
 }

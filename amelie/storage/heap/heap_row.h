@@ -16,7 +16,7 @@ row_allocate(Heap* heap, int columns, int data_size)
 {
 	int  size_factor;
 	auto size = row_measure(columns, data_size, &size_factor);
-	auto self = (Row*)heap_allocate(heap, size);
+	auto self = (Row*)heap_add(heap, size);
 	row_init(self, size_factor, size);
 	return self;
 }
@@ -34,17 +34,14 @@ row_allocate_buf(Buf* buf, int columns, int data_size)
 always_inline static inline void
 row_free(Heap* heap, Row* row)
 {
-	heap_release(heap, row);
+	heap_remove(heap, row);
 }
 
 hot static inline Row*
 row_copy(Heap* heap, Row* self)
 {
 	auto size = row_size(self);
-	auto row  = (Row*)heap_allocate(heap, size);
+	auto row  = (Row*)heap_add(heap, size);
 	memcpy(row, self, size);
 	return row;
 }
-
-Row* row_alter_add(Heap*, Row*, Columns*);
-Row* row_alter_drop(Heap*, Row*, Columns*, Column*);
