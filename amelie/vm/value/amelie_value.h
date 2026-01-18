@@ -17,6 +17,7 @@
 
 // value
 #include "value/value.h"
+#include "value/value_hash.h"
 
 // value objects
 #include "value/reg.h"
@@ -30,6 +31,7 @@
 
 // row
 #include "value/row.h"
+#include "value/row_map.h"
 
 // operations
 #include "value/like.h"

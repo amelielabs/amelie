@@ -11,11 +11,9 @@
 // AGPL-3.0 Licensed.
 //
 
-Row*  row_create(Heap*, Columns*, Value*, Value*, int64_t);
-Row*  row_create_key(Buf*, Keys*, Value*, int);
-Row*  row_update(Heap*, Row*, Columns*, Value*, int);
-Part* row_map(Table*, Value*, Value*, int64_t);
-Part* row_map_key(Table*, Value*);
+Row* row_create(Heap*, Columns*, Value*, Value*, int64_t);
+Row* row_create_key(Buf*, Keys*, Value*, int);
+Row* row_update(Heap*, Row*, Columns*, Value*, int);
 
 static inline int64_t
 row_get_identity(Table* table, Value* refs, Value* row)

@@ -129,6 +129,26 @@ value_compare_row(Keys* keys, Row* row, Value* values)
 }
 
 hot always_inline static inline int
+value_compare_row_refs(Keys* keys, Row* row, Value* refs, Value* values, int64_t identity)
+{
+	list_foreach(&keys->list)
+	{
+		const auto column = list_at(Key, link)->column;
+		auto value = values + column->order;
+		if (value->type == TYPE_REF)
+			value = &refs[value->integer];
+		int rc;
+		if (column->constraints.as_identity && value->type == TYPE_NULL)
+			rc = compare_int64(*(int64_t*)row_column(row, column->order), identity);
+		else
+			rc = value_compare_row_key(column, row, value);
+		if (rc != 0)
+			return rc;
+	}
+	return 0;
+}
+
+hot always_inline static inline int
 value_compare_keys(Keys* keys, Row* row, Value* values)
 {
 	list_foreach(&keys->list)

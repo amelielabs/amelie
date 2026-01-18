@@ -44,10 +44,10 @@ value_hash(Value* self, int type_size, uint32_t hash)
 }
 
 hot static inline uint32_t
-value_hash_ref(Value*   self, Value* refs,
-               Column*  column,
-               int64_t  identity,
-               uint32_t hash)
+value_hash_refs(Value*   self, Value* refs,
+                Column*  column,
+                int64_t  identity,
+                uint32_t hash)
 {
 	if (self->type == TYPE_REF)
 		self = &refs[self->integer];
@@ -68,7 +68,7 @@ value_hash_row(Keys*   keys, Value* refs,
 	{
 		auto column = list_at(Key, link)->column;
 		auto value = values + column->order;
-		hash = value_hash_ref(value, refs, column, identity, hash);
+		hash = value_hash_refs(value, refs, column, identity, hash);
 	}
 	return hash;
 }
@@ -84,7 +84,7 @@ value_hash_keys(Keys*   keys, Value* refs,
 	{
 		auto key = list_at(Key, link);
 		auto value = values + key->order;
-		hash = value_hash_ref(value, refs, key->column, identity, hash);
+		hash = value_hash_refs(value, refs, key->column, identity, hash);
 	}
 	return hash;
 }
