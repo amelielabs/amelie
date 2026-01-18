@@ -98,3 +98,9 @@ void  heap_create(Heap*);
 void* heap_add(Heap*, int);
 void  heap_remove(Heap*, void*);
 void  heap_snapshot(Heap*, Heap*, bool);
+
+static inline bool
+heap_has_snapshot(Heap* self)
+{
+	return self->shadow != NULL;
+}

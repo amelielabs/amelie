@@ -17,10 +17,10 @@ struct Refresh
 {
 	PartLock lock;
 	Part*    origin;
-	Object*  origin_object;
-	uint64_t lsn;
-	Table*   table;
+	uint64_t origin_lsn;
+	Buf      split;
 	Volume*  volume;
+	Table*   table;
 	Merger   merger;
 	Storage* storage;
 };

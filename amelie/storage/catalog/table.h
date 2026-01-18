@@ -43,7 +43,7 @@ table_keys(Table* self)
 static inline void
 table_free(Table* self)
 {
-	deploy_detach(self->deploy, &self->volume_mgr);
+	deploy_detach_volume(self->deploy, &self->volume_mgr);
 	volume_mgr_free(&self->volume_mgr);
 	if (self->config)
 		table_config_free(self->config);
@@ -76,7 +76,7 @@ table_open(Table* self)
 	volume_mgr_open(&self->volume_mgr, &self->config->volumes,
 	                &self->config->indexes);
 
-	deploy_attach(self->deploy, &self->volume_mgr);
+	deploy_attach_volume(self->deploy, &self->volume_mgr);
 }
 
 static inline void

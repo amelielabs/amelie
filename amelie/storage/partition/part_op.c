@@ -202,6 +202,17 @@ part_update(Part* self, Tr* tr, Iterator* it, Row* row)
 hot void
 part_delete(Part* self, Tr* tr, Iterator* it)
 {
+	// handle deletes as updates for non in-memory partitions and
+	// during compaction
+	if (heap_has_snapshot(self->heap) || !self->source->in_memory)
+	{
+		auto row = iterator_at(it);
+		auto row_delete = row_copy(self->heap, row);
+		row_delete->is_delete = true;
+		part_update(self, tr, it, row_delete);
+		return;
+	}
+
 	// add log record
 	auto primary = part_primary(self);
 	auto row = iterator_at(it);
@@ -241,16 +252,7 @@ part_delete_by(Part* self, Tr* tr, Row* row)
 }
 
 hot void
-part_ingest_secondary(Part* self, Row* row)
-{
-	// update secondary indexes
-	auto primary = part_primary(self);
-	for (auto index = primary->next; index; index = index->next)
-		index_replace_by(index, row);
-}
-
-hot void
-part_ingest(Part* self, Row* row)
+part_apply(Part* self, Row* row, bool delete)
 {
 	auto primary = part_primary(self);
 
@@ -258,8 +260,17 @@ part_ingest(Part* self, Row* row)
 	part_sync_sequence(self, row, index_keys(primary)->columns);
 
 	// update primary index
-	index_replace_by(primary, row);
+	if (delete)
+		index_delete_by(primary, row);
+	else
+		index_replace_by(primary, row);
 
-	// secondary indexes
-	part_ingest_secondary(self, row);
+	// update secondary indexes
+	for (auto index = primary->next; index; index = index->next)
+	{
+		if (delete)
+			index_delete_by(index, row);
+		else
+			index_replace_by(index, row);
+	}
 }

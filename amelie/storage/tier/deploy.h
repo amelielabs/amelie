@@ -16,8 +16,10 @@ typedef struct Deploy   Deploy;
 
 struct DeployIf
 {
-	void (*attach)(Deploy*, VolumeMgr*);
-	void (*detach)(Deploy*, VolumeMgr*);
+	void (*attach_volume)(Deploy*, VolumeMgr*);
+	void (*attach)(Deploy*, Part*);
+	void (*detach_volume)(Deploy*, VolumeMgr*);
+	void (*detach)(Deploy*, Part*);
 };
 
 struct Deploy
@@ -34,13 +36,25 @@ deploy_init(Deploy* self, DeployIf* iface, void* iface_arg)
 }
 
 static inline void
-deploy_attach(Deploy* self, VolumeMgr* mgr)
+deploy_attach_volume(Deploy* self, VolumeMgr* mgr)
 {
-	self->iface->attach(self, mgr);
+	self->iface->attach_volume(self, mgr);
 }
 
 static inline void
-deploy_detach(Deploy* self, VolumeMgr* mgr)
+deploy_attach(Deploy* self, Part* part)
 {
-	self->iface->detach(self, mgr);
+	self->iface->attach(self, part);
+}
+
+static inline void
+deploy_detach_volume(Deploy* self, VolumeMgr* mgr)
+{
+	self->iface->detach_volume(self, mgr);
+}
+
+static inline void
+deploy_detach(Deploy* self, Part* part)
+{
+	self->iface->detach(self, part);
 }

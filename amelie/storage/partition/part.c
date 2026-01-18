@@ -30,7 +30,7 @@ part_allocate(Source*   source,
 	self->indexes       = NULL;
 	self->indexes_count = 0;
 	self->heap          = heap_allocate();
-	self->heap_shadow   = heap_allocate();
+	self->heap_shadow   = NULL;
 	self->volume        = NULL;
 	self->object        = NULL;
 	self->seq           = seq;
@@ -54,8 +54,10 @@ part_free(Part* self)
 		index_free(index);
 		index = next;
 	}
-	heap_free(self->heap);
-	heap_free(self->heap_shadow);
+	if (self->heap)
+		heap_free(self->heap);
+	if (self->heap_shadow)
+		heap_free(self->heap_shadow);
 	if (self->object)
 		object_free(self->object);
 	am_free(self);
@@ -79,7 +81,7 @@ part_load(Part* self)
 	{
 		auto ref = object_iterator_at(&it);
 		auto row = row_copy(self->heap, ref);
-		part_ingest(self, row);
+		part_apply(self, row, false);
 		count++;
 		object_iterator_next(&it);
 	}
