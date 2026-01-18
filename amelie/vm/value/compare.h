@@ -11,6 +11,38 @@
 // AGPL-3.0 Licensed.
 //
 
+always_inline hot static inline bool
+value_is_true(Value* a)
+{
+	switch (a->type) {
+	case TYPE_NULL:
+		return false;
+	case TYPE_INT:
+	case TYPE_BOOL:
+	case TYPE_DATE:
+	case TYPE_TIMESTAMP:
+		return a->integer > 0;
+	case TYPE_DOUBLE:
+		return a->dbl > 0.0;
+	case TYPE_STRING:
+		return !str_empty(&a->string);
+	case TYPE_JSON:
+		break;
+	case TYPE_INTERVAL:
+	case TYPE_VECTOR:
+		return a->vector->size > 0;
+	// TYPE_AVG
+	// TYPE_REF
+	// TYPE_STORE
+	// TYPE_CURSOR
+	// TYPE_CURSOR_STORE
+	// TYPE_CURSOR_JSON
+	default:
+		break;
+	}
+	return true;
+}
+
 always_inline hot static inline int
 value_compare(Value* a, Value* b)
 {
@@ -51,36 +83,62 @@ value_compare(Value* a, Value* b)
 	return -1;
 }
 
-always_inline hot static inline bool
-value_is_true(Value* a)
+hot always_inline static inline int
+value_compare_row_key(Column* column, Row* row, Value* value)
 {
-	switch (a->type) {
-	case TYPE_NULL:
-		return false;
-	case TYPE_INT:
-	case TYPE_BOOL:
-	case TYPE_DATE:
-	case TYPE_TIMESTAMP:
-		return a->integer > 0;
-	case TYPE_DOUBLE:
-		return a->dbl > 0.0;
-	case TYPE_STRING:
-		return !str_empty(&a->string);
-	case TYPE_JSON:
-		break;
-	case TYPE_INTERVAL:
-	case TYPE_VECTOR:
-		return a->vector->size > 0;
-	// TYPE_AVG
-	// TYPE_REF
-	// TYPE_STORE
-	// TYPE_CURSOR
-	// TYPE_CURSOR_STORE
-	// TYPE_CURSOR_JSON
-	default:
-		break;
+	int64_t rc;
+	if (column->type_size == 4)
+	{
+		// int
+		rc = compare_int64(*(int32_t*)row_column(row, column->order),
+		                   value->integer);
+	} else
+	if (column->type_size == 8)
+	{
+		// int64, timestamp
+		rc = compare_int64(*(int64_t*)row_column(row, column->order),
+		                   value->integer);
+	} else
+	if (column->type_size == sizeof(Uuid))
+	{
+		// uuid
+		rc = uuid_compare(row_column(row, column->order),
+		                  &value->uuid);
+	} else
+	{
+		// string
+		Str row_value;
+		uint8_t* pos = row_column(row, column->order);
+		json_read_string(&pos, &row_value);
+		rc = str_compare_fn(&row_value, &value->string);
 	}
-	return true;
+	return rc;
+}
+
+hot always_inline static inline int
+value_compare_row(Keys* keys, Row* row, Value* values)
+{
+	list_foreach(&keys->list)
+	{
+		const auto column = list_at(Key, link)->column;
+		auto rc = value_compare_row_key(column, row, &values[column->order]);
+		if (rc != 0)
+			return rc;
+	}
+	return 0;
+}
+
+hot always_inline static inline int
+value_compare_keys(Keys* keys, Row* row, Value* values)
+{
+	list_foreach(&keys->list)
+	{
+		const auto key = list_at(Key, link);
+		auto rc = value_compare_row_key(key->column, row, &values[key->order]);
+		if (rc != 0)
+			return rc;
+	}
+	return 0;
 }
 
 hot static inline int

@@ -288,35 +288,3 @@ value_copy(Value* self, Value* src)
 		break;
 	}
 }
-
-hot static inline uint32_t
-value_hash(Value* self, int type_size, uint32_t hash)
-{
-	void*   data;
-	int     data_size;
-	int32_t integer_32;
-	if (self->type == TYPE_INT || self->type == TYPE_TIMESTAMP)
-	{
-		if (type_size == 4)
-		{
-			integer_32 = self->integer;
-			data = &integer_32;
-			data_size = sizeof(integer_32);
-		} else
-		{
-			data = &self->integer;
-			data_size = sizeof(self->integer);
-		}
-	} else
-	if (self->type == TYPE_UUID)
-	{
-		data = &self->uuid;
-		data_size = sizeof(self->uuid);
-	} else
-	{
-		assert(self->type == TYPE_STRING);
-		data = str_u8(&self->string);
-		data_size = str_size(&self->string);
-	}
-	return hash_murmur3_32(data, data_size, hash);
-}
