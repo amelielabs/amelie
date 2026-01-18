@@ -446,7 +446,7 @@ parse_table_create(Stmt* self, bool unlogged)
 	if (hash_partitions < 1 || hash_partitions >= MAPPING_MAX)
 		stmt_error(self, NULL, "table has invalid hash partitions number");
 
-	table_config_set_mapping(config, MAPPING_HASH, hash_partitions);
+	table_config_set_mapping_hash(config, hash_partitions);
 }
 
 void

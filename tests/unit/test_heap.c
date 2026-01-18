@@ -18,16 +18,15 @@ test_heap(void* arg)
 {
 	unused(arg);
 
-	Heap heap;
-	heap_init(&heap);
-	defer(heap_free, &heap);
-	heap_create(&heap);
+	auto heap = heap_allocate();
+	defer(heap_free, heap);
+	heap_create(heap);
 
-	auto ptr = heap_allocate(&heap, 903);
+	auto ptr = heap_add(heap, 903);
 	memset(ptr, 'X', 903);
-	heap_release(&heap, ptr);
+	heap_remove(heap, ptr);
 
-	ptr = heap_allocate(&heap, 1432);
+	ptr = heap_add(heap, 1432);
 	memset(ptr, 'X', 1432);
-	heap_release(&heap, ptr);
+	heap_remove(heap, ptr);
 }

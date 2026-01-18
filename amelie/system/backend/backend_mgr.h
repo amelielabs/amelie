@@ -17,6 +17,7 @@ struct BackendMgr
 {
 	Backend** workers;
 	int       workers_count;
+	int       rr;
 };
 
 static inline void
@@ -24,6 +25,7 @@ backend_mgr_init(BackendMgr* self)
 {
 	self->workers       = NULL;
 	self->workers_count = 0;
+	self->rr            = 0;
 }
 
 static inline void
@@ -103,33 +105,44 @@ backend_mgr_find(BackendMgr* self, Task* task)
 }
 
 static inline void
-backend_mgr_deploy(BackendMgr* self, VolumeMgr* volume_mgr)
+backend_mgr_deploy(BackendMgr* self, Part* part)
+{
+	if (self->rr == self->workers_count)
+		self->rr = 0;
+	auto order = self->rr++;
+	auto backend = self->workers[order];
+	rpc(&backend->task, MSG_DEPLOY, 1, part);
+}
+
+static inline void
+backend_mgr_deploy_volume(BackendMgr* self, VolumeMgr* volume_mgr)
 {
 	// evenly redistribute backends and create pods
 	// for each partition
-	auto order = 0;
 	list_foreach(&volume_mgr->parts)
 	{
 		auto part = list_at(Part, link);
-		if (order == self->workers_count)
-			order = 0;
-		auto backend = self->workers[order];
-		rpc(&backend->task, MSG_DEPLOY, 1, part);
-		order++;
+		backend_mgr_deploy(self, part);
 	}
 }
 
 static inline void
-backend_mgr_undeploy(BackendMgr* self, VolumeMgr* volume_mgr)
+backend_mgr_undeploy(BackendMgr* self, Part* part)
+{
+	if (! part->track.backend)
+		return;
+	auto backend = backend_mgr_find(self, part->track.backend);
+	assert(backend);
+	rpc(&backend->task, MSG_UNDEPLOY, 1, part);
+}
+
+static inline void
+backend_mgr_undeploy_volume(BackendMgr* self, VolumeMgr* volume_mgr)
 {
 	// drop pods associated with partitions
 	list_foreach(&volume_mgr->parts)
 	{
 		auto part = list_at(Part, link);
-		if (! part->track.backend)
-			continue;
-		auto backend = backend_mgr_find(self, part->track.backend);
-		assert(backend);
-		rpc(&backend->task, MSG_UNDEPLOY, 1, part);
+		backend_mgr_undeploy(self, part);
 	}
 }

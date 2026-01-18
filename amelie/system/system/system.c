@@ -134,28 +134,44 @@ system_on_server_connect(Server* server, Client* client)
 }
 
 static void
-deploy_if_attach(Deploy* self, VolumeMgr* volume_mgr)
+deploy_if_attach_volume(Deploy* self, VolumeMgr* volume_mgr)
 {
 	System* system = self->iface_arg;
 	if (volume_mgr->parts_count > MAPPING_MAX)
 		error("exceeded the maximum number of hash partitions per table");
 
 	// create pods on backends
-	backend_mgr_deploy(&system->backend_mgr, volume_mgr);
+	backend_mgr_deploy_volume(&system->backend_mgr, volume_mgr);
 }
 
 static void
-deploy_if_detach(Deploy* self, VolumeMgr* volume_mgr)
+deploy_if_attach(Deploy* self, Part* part)
+{
+	System* system = self->iface_arg;
+	backend_mgr_deploy(&system->backend_mgr, part);
+}
+
+static void
+deploy_if_detach_volume(Deploy* self, VolumeMgr* volume_mgr)
 {
 	// drop pods on backends
 	System* system = self->iface_arg;
-	backend_mgr_undeploy(&system->backend_mgr, volume_mgr);
+	backend_mgr_undeploy_volume(&system->backend_mgr, volume_mgr);
+}
+
+static void
+deploy_if_detach(Deploy* self, Part* part)
+{
+	System* system = self->iface_arg;
+	backend_mgr_undeploy(&system->backend_mgr, part);
 }
 
 static DeployIf deploy_if =
 {
-	.attach = deploy_if_attach,
-	.detach = deploy_if_detach
+	.attach_volume = deploy_if_attach_volume,
+	.attach        = deploy_if_attach,
+	.detach_volume = deploy_if_detach_volume,
+	.detach        = deploy_if_detach
 };
 
 static void
