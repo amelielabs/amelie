@@ -14,4 +14,6 @@
 #include "heap/page_mgr.h"
 #include "heap/heap.h"
 #include "heap/heap_iterator.h"
+#include "heap/heap_index.h"
+#include "heap/heap_index_iterator.h"
 #include "heap/heap_row.h"

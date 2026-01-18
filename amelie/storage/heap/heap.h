@@ -100,7 +100,7 @@ void  heap_remove(Heap*, void*);
 void  heap_snapshot(Heap*, Heap*, bool);
 
 static inline bool
-heap_has_snapshot(Heap* self)
+heap_snapshot_has(Heap* self)
 {
 	return self->shadow != NULL;
 }

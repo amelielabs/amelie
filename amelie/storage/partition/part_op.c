@@ -204,7 +204,7 @@ part_delete(Part* self, Tr* tr, Iterator* it)
 {
 	// handle deletes as updates for non in-memory partitions and
 	// during compaction
-	if (heap_has_snapshot(self->heap) || !self->source->in_memory)
+	if (heap_snapshot_has(self->heap) || !self->source->in_memory)
 	{
 		auto row = iterator_at(it);
 		auto row_delete = row_copy(self->heap, row);

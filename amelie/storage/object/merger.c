@@ -22,8 +22,8 @@ merger_init(Merger* self)
 	self->writers_cache = NULL;
 	self->objects_count = 0;
 	list_init(&self->objects);
+	buf_init(&self->heap_index);
 	object_iterator_init(&self->object_iterator);
-	heap_iterator_init(&self->heap_iterator);
 	merge_iterator_init(&self->merge_iterator);
 }
 
@@ -40,6 +40,7 @@ merger_free(Merger* self)
 	}
 	self->writers_cache = NULL;
 
+	buf_free(&self->heap_index);
 	object_iterator_free(&self->object_iterator);
 	merge_iterator_free(&self->merge_iterator);
 }
@@ -65,8 +66,8 @@ merger_reset(Merger* self)
 	}
 	self->writers = NULL;
 
+	buf_reset(&self->heap_index);
 	object_iterator_reset(&self->object_iterator);
-	heap_iterator_reset(&self->heap_iterator);
 	merge_iterator_reset(&self->merge_iterator);
 }
 
@@ -157,16 +158,20 @@ merger_snapshot(Merger* self, MergerConfig* config)
 {
 	auto meta = &config->origin->meta;
 
-	// prepare heap iterator
-	auto it = &self->heap_iterator;
-	heap_iterator_open(it, config->heap, NULL);
+	// create heap index
+	heap_index(config->heap, config->keys, &self->heap_index);
+
+	// prepare heap index iterator
+	HeapIndexIterator it;
+	heap_index_iterator_init(&it);
+	heap_index_iterator_open(&it, &self->heap_index, NULL);
 
 	// create object
 	auto object = merger_create(self, config);
 
 	// write object
 	auto writer = merger_create_writer(self);
-	merger_write(writer, config, &it->it, object, UINT64_MAX,
+	merger_write(writer, config, &it.it, object, UINT64_MAX,
 	             meta->hash_min,
 	             meta->hash_max);
 }
@@ -174,11 +179,15 @@ merger_snapshot(Merger* self, MergerConfig* config)
 hot void
 merger_refresh(Merger* self, MergerConfig* config)
 {
-	// todo: create heap index
 	auto meta = &config->origin->meta;
 
-	// prepare heap iterator
-	heap_iterator_open(&self->heap_iterator, config->heap, NULL);
+	// create heap index
+	heap_index(config->heap, config->keys, &self->heap_index);
+
+	// prepare heap index iterator
+	HeapIndexIterator heap_it;
+	heap_index_iterator_init(&heap_it);
+	heap_index_iterator_open(&heap_it, &self->heap_index, NULL);
 
 	// prepare object iterator
 	object_iterator_reset(&self->object_iterator);
@@ -187,7 +196,7 @@ merger_refresh(Merger* self, MergerConfig* config)
 	// prepare merge iterator
 	auto it = &self->merge_iterator;
 	merge_iterator_reset(it);
-	merge_iterator_add(it, &self->heap_iterator.it);
+	merge_iterator_add(it, &heap_it.it);
 	merge_iterator_add(it, &self->object_iterator.it);
 	merge_iterator_open(it, config->keys);
 

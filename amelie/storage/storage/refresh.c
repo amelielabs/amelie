@@ -78,9 +78,8 @@ static void
 refresh_merge_job(intptr_t* argv)
 {
 	auto self = (Refresh*)argv[0];
-	// todo: sort heap
 
-	// merge heap with existing object and create 1-N new objects
+	// sort and merge heap with existing object, create new objects
 	auto source = self->volume->tier->config;
 	auto origin = self->origin;
 	auto merger = &self->merger;

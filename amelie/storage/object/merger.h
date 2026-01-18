@@ -29,8 +29,8 @@ struct Merger
 	int            objects_count;
 	Writer*        writers;
 	Writer*        writers_cache;
+	Buf            heap_index;
 	ObjectIterator object_iterator;
-	HeapIterator   heap_iterator;
 	MergeIterator  merge_iterator;
 };
 
