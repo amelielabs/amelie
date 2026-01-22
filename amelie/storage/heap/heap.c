@@ -271,7 +271,6 @@ heap_remove(Heap* self, void* pointer)
 void
 heap_snapshot(Heap* self, Heap* shadow, bool shadow_free)
 {
-	assert(! self->shadow);
 	self->shadow = shadow;
 	self->shadow_free = shadow_free;
 }

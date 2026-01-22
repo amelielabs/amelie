@@ -53,11 +53,15 @@ object_has(Object* self, int state)
 hot always_inline static inline Row*
 object_min(Object* self)
 {
+	if (unlikely(! self->meta.regions))
+		return NULL;
 	return meta_region_min(meta_min(&self->meta, &self->meta_data));
 }
 
 hot always_inline static inline Row*
 object_max(Object* self)
 {
+	if (unlikely(! self->meta.regions))
+		return NULL;
 	return meta_region_max(meta_max(&self->meta, &self->meta_data));
 }

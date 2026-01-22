@@ -65,6 +65,8 @@ mapping_range_max(MappingRange* self)
 hot always_inline static inline int
 mapping_range_compare(MappingRange* self, Part* part, Row* key)
 {
+	if (self->tree_count == 1)
+		return 0;
 	return compare(self->keys, object_min(part->object), key);
 }
 

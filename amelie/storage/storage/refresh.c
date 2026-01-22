@@ -116,7 +116,6 @@ refresh_merge_job(intptr_t* argv)
 		if (part->source->in_memory)
 			part_load(part);
 	}
-	list_init(&merger->objects);
 }
 
 static void
@@ -438,6 +437,8 @@ refresh_apply(Refresh* self)
 		apply = refresh_apply_split;
 	}
 	apply(self);
+
+	list_init(&self->merger.objects);
 }
 
 void

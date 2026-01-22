@@ -26,6 +26,8 @@ typedef struct
 hot always_inline static inline int
 row_map_compare(MappingRange* self, Part* part, RowValues* key)
 {
+	if (self->tree_count == 1)
+		return 0;
 	return value_compare_row_refs(self->keys, object_min(part->object),
 	                              key->values,
 	                              key->refs,
@@ -55,7 +57,7 @@ row_map(Table* table, Value* refs, Value* values, int64_t identity)
 
 	// range partitioning
 	RbtreeNode* node = NULL;
-	int rc = row_map_find(&range->tree, &self, &self, &node);
+	int rc = row_map_find(&range->tree, range, &self, &node);
 	assert(node != NULL);
 	if (rc > 0) {
 		auto prev = rbtree_prev(&range->tree, node);
@@ -68,6 +70,8 @@ row_map(Table* table, Value* refs, Value* values, int64_t identity)
 hot always_inline static inline int
 row_map_keys_compare(MappingRange* self, Part* part, RowValues* key)
 {
+	if (self->tree_count == 1)
+		return 0;
 	return value_compare_keys(self->keys, object_min(part->object),
 	                          key->values);
 }
@@ -95,7 +99,7 @@ row_map_keys(Table* table, Value* values)
 
 	// range partitioning
 	RbtreeNode* node = NULL;
-	int rc = row_map_keys_find(&range->tree, &self, &self, &node);
+	int rc = row_map_keys_find(&range->tree, range, &self, &node);
 	assert(node != NULL);
 	if (rc > 0) {
 		auto prev = rbtree_prev(&range->tree, node);

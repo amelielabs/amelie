@@ -50,9 +50,8 @@ heap_index_iterator_next(HeapIndexIterator* self)
 {
 	if (unlikely(! self->current))
 		return;
-	if (likely(self->current < self->end))
-		self->current++;
-	else
+	self->current++;
+	if (unlikely(self->current >= self->end))
 		self->current = NULL;
 }
 
