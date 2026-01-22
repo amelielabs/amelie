@@ -1,0 +1,205 @@
+#pragma once
+
+//
+// amelie.
+//
+// Real-Time SQL OLTP Database.
+//
+// Copyright (c) 2024 Dmitry Simonenko.
+// Copyright (c) 2024 Amelie Labs.
+//
+// AGPL-3.0 Licensed.
+//
+
+typedef struct Encoder Encoder;
+
+struct Encoder
+{
+	Iov       iov;
+	Codec*    compression;
+	Buf       compression_buf;
+	Codec*    encryption;
+	Buf       encryption_buf;
+	Encoding* encoding;
+};
+
+static inline void
+encoder_init(Encoder* self)
+{
+	self->compression = NULL;
+	self->encryption  = NULL;
+	self->encoding    = NULL;
+	iov_init(&self->iov);
+	buf_init(&self->compression_buf);
+	buf_init(&self->encryption_buf);
+}
+
+static inline void
+encoder_reset(Encoder* self)
+{
+	self->encoding = NULL;
+	if (self->compression)
+	{
+		codec_cache_push(&runtime()->cache_compression, self->compression);
+		self->compression = NULL;
+	}
+	if (self->encryption)
+	{
+		codec_cache_push(&runtime()->cache_cipher, self->encryption);
+		self->encryption = NULL;
+	}
+	iov_reset(&self->iov);
+	buf_reset(&self->compression_buf);
+	buf_reset(&self->encryption_buf);
+}
+
+static inline void
+encoder_free(Encoder* self)
+{
+	encoder_reset(self);
+	iov_free(&self->iov);
+	buf_free(&self->compression_buf);
+	buf_free(&self->encryption_buf);
+}
+
+static inline void
+encoder_open(Encoder* self, Encoding* encoding)
+{
+	self->encoding = encoding;
+
+	// set compression context
+	if (encoding->compression)
+	{
+		auto id = compression_idof(encoding->compression);
+		if (id == -1)
+			error("invalid compression '%.*s'", str_size(encoding->compression),
+			      str_of(encoding->compression));
+		if (id != COMPRESSION_NONE)
+			self->compression =
+				compression_create(&runtime()->cache_compression, id,
+				                   encoding->compression_level);
+	}
+
+	// set encryption context
+	if (encoding->encryption)
+	{
+		auto id = cipher_idof(encoding->encryption);
+		if (id == -1)
+			error("invalid encryption '%.*s'", str_size(encoding->encryption),
+			      str_of(encoding->encryption));
+		if (id != CIPHER_NONE)
+			self->encryption =
+				cipher_create(&runtime()->cache_cipher, id,
+							  &runtime()->random,
+				              encoding->encryption_key);
+	}
+}
+
+static inline void
+encoder_set_compression(Encoder* self, int id)
+{
+	if (self->compression)
+	{
+		codec_cache_push(&runtime()->cache_compression, self->compression);
+		self->compression = NULL;
+	}
+
+	// set compression context
+	if (id == COMPRESSION_NONE)
+		return;
+	self->compression = compression_create(&runtime()->cache_compression, id, 0);
+	if (! self->compression)
+		error("object: invalid compression id '%d'", id);
+}
+
+static inline void
+encoder_set_encryption(Encoder* self, int id)
+{
+	if (self->encryption)
+	{
+		codec_cache_push(&runtime()->cache_cipher, self->encryption);
+		self->encryption = NULL;
+	}
+
+	// set encryption context
+	if (id == CIPHER_NONE)
+		return;
+	self->encryption = cipher_create(&runtime()->cache_cipher, id,
+	                                 &runtime()->random,
+	                                  self->encoding->encryption_key);
+	if (! self->encryption)
+		error("object: invalid encryption id '%d'", id);
+}
+
+static inline void
+encoder_encode_add(Encoder* self, uint8_t* pointer, int size)
+{
+	iov_add(&self->iov, pointer, size);
+}
+
+static inline void
+encoder_encode(Encoder* self)
+{
+	auto iov = (struct iovec*)(self->iov.iov.start);
+
+	// compress
+	if (self->compression)
+	{
+		auto codec = self->compression;
+		auto buf   = &self->compression_buf;
+		codec_encode_begin(codec, buf);
+		for (auto i = 0; i < self->iov.iov_count; i++)
+			codec_encode(codec, buf, iov[i].iov_base, iov[i].iov_len);
+		codec_encode_end(codec, buf);
+
+		iov_reset(&self->iov);
+		iov_add_buf(&self->iov, buf);
+	}
+
+	// encrypt
+	if (self->encryption)
+	{
+		auto codec = self->encryption;
+		auto buf   = &self->encryption_buf;
+		codec_encode_begin(codec, buf);
+		for (auto i = 0; i < self->iov.iov_count; i++)
+			codec_encode(codec, buf, iov[i].iov_base, iov[i].iov_len);
+		codec_encode_end(codec, buf);
+
+		iov_reset(&self->iov);
+		iov_add_buf(&self->iov, buf);
+	}
+}
+
+static inline void
+encoder_decode(Encoder* self, Buf* src, Buf* dst)
+{
+	// note: dst must be allocated to fit decoded data
+
+	// decompress
+	Codec* codec = NULL;
+	if (self->compression && self->encryption)
+	{
+		// decrypt src (using internal buffer)
+		auto buf = &self->encryption_buf;
+		buf_reserve(buf, buf_size(src));
+		codec_decode(self->encryption, buf, src->start, buf_size(src));
+		src = buf;
+
+		// decompress
+		codec = self->compression;
+	} else
+	if (self->compression)
+	{
+		codec = self->compression;
+	} else
+	if (self->encryption)
+	{
+		codec = self->encryption;
+	} else {
+		assert(0);
+	}
+
+	// decode to dst
+	codec_decode(codec, dst, src->start, buf_size(src));
+}

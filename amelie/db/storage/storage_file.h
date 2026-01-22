@@ -50,6 +50,14 @@ storage_create(Storage* self, File* file, Id* id, int state)
 }
 
 void
+storage_open(Storage* self, File* file, Id* id, int state)
+{
+	char path[PATH_MAX];
+	storage_path(self, path, id, state);
+	file_open(file, path);
+}
+
+void
 storage_delete(Storage* self, Id* id, int state)
 {
 	// <source_path>/<table_uuid>/<id_parent>.<id>

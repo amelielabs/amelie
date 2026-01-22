@@ -19,3 +19,7 @@
 #include "storage/storage.h"
 #include "storage/storage_file.h"
 #include "storage/storage_mgr.h"
+
+// encoding
+#include "storage/encoding.h"
+#include "storage/encoder.h"
