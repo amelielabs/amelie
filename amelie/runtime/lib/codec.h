@@ -22,7 +22,7 @@ struct CodecIf
 	void   (*encode_begin)(Codec*, Buf*);
 	void   (*encode)(Codec*, Buf*, uint8_t*, int);
 	void   (*encode_end)(Codec*, Buf*);
-	void   (*decode)(Codec*, Buf*, uint8_t*, int);
+	void   (*decode)(Codec*, uint8_t*, int, uint8_t*, int);
 };
 
 struct Codec
@@ -68,7 +68,7 @@ codec_encode_end(Codec* self, Buf* buf)
 }
 
 static inline void
-codec_decode(Codec* self, Buf* buf, uint8_t* data, int data_size)
+codec_decode(Codec* self, uint8_t* dst, int dst_size, uint8_t* src, int src_size)
 {
-	self->iface->decode(self, buf, data, data_size);
+	self->iface->decode(self, dst, dst_size, src, src_size);
 }

@@ -100,6 +100,8 @@ encoder_set_compression(Encoder* self, int id)
 {
 	if (self->compression)
 	{
+		if (self->compression->iface->id == id)
+			return;
 		codec_cache_push(&runtime()->cache_compression, self->compression);
 		self->compression = NULL;
 	}
@@ -117,6 +119,8 @@ encoder_set_encryption(Encoder* self, int id)
 {
 	if (self->encryption)
 	{
+		if (self->encryption->iface->id == id)
+			return;
 		codec_cache_push(&runtime()->cache_cipher, self->encryption);
 		self->encryption = NULL;
 	}
@@ -131,8 +135,26 @@ encoder_set_encryption(Encoder* self, int id)
 		error("object: invalid encryption id '%d'", id);
 }
 
+static inline bool
+encoder_active(Encoder* self)
+{
+	return self->encryption || self->compression;
+}
+
+static inline struct iovec*
+encoder_iov(Encoder* self)
+{
+	return (struct iovec*)(self->iov.iov.start);
+}
+
 static inline void
-encoder_encode_add(Encoder* self, uint8_t* pointer, int size)
+encoder_begin(Encoder* self)
+{
+	iov_reset(&self->iov);
+}
+
+static inline void
+encoder_add(Encoder* self, uint8_t* pointer, int size)
 {
 	iov_add(&self->iov, pointer, size);
 }
@@ -140,7 +162,7 @@ encoder_encode_add(Encoder* self, uint8_t* pointer, int size)
 static inline void
 encoder_encode(Encoder* self)
 {
-	auto iov = (struct iovec*)(self->iov.iov.start);
+	auto iov = encoder_iov(self);
 
 	// compress
 	if (self->compression)
@@ -172,19 +194,25 @@ encoder_encode(Encoder* self)
 }
 
 static inline void
-encoder_decode(Encoder* self, Buf* src, Buf* dst)
+encoder_decode(Encoder* self,
+               uint8_t* dst,
+               int      dst_size,
+               uint8_t* src,
+               int      src_size)
 {
 	// note: dst must be allocated to fit decoded data
 
 	// decompress
-	Codec* codec = NULL;
+	Codec* codec;
 	if (self->compression && self->encryption)
 	{
 		// decrypt src (using internal buffer)
 		auto buf = &self->encryption_buf;
-		buf_reserve(buf, buf_size(src));
-		codec_decode(self->encryption, buf, src->start, buf_size(src));
-		src = buf;
+		assert(dst_size >= src_size);
+		buf_reset(buf);
+		buf_reserve(buf, src_size);
+		codec_decode(self->encryption, buf->start, buf_size(buf), src, src_size);
+		src = buf->start;
 
 		// decompress
 		codec = self->compression;
@@ -201,5 +229,5 @@ encoder_decode(Encoder* self, Buf* src, Buf* dst)
 	}
 
 	// decode to dst
-	codec_decode(codec, dst, src->start, buf_size(src));
+	codec_decode(codec, dst, dst_size, src, src_size);
 }

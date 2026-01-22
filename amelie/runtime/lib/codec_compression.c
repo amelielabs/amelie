@@ -109,15 +109,17 @@ codec_zstd_encode_end(Codec* codec, Buf* buf)
 }
 
 hot static void
-codec_zstd_decode(Codec*   codec, Buf* buf,
-                  uint8_t* data,
-                  int      data_size)
+codec_zstd_decode(Codec*   codec,
+                  uint8_t* dst,
+                  int      dst_size,
+                  uint8_t* src,
+                  int      src_size)
 {
 	unused(codec);
-	int rc = ZSTD_decompress(data, data_size, buf->start, buf_size(buf));
+	int rc = ZSTD_decompress(dst, dst_size, src, src_size);
 	if (unlikely(ZSTD_isError(rc)))
 		error("zstd: decodec failed");
-	assert(rc == data_size);
+	assert(rc == dst_size);
 }
 
 static CodecIf codec_zstd =

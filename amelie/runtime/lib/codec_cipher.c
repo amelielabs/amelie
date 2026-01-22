@@ -123,21 +123,22 @@ codec_aes_encode_end(Codec* codec, Buf* buf)
 
 hot static void
 codec_aes_decode(Codec*   codec,
-                 Buf*     buf,
-                 uint8_t* data,
-                 int      data_size)
+                 uint8_t* dst,
+                 int      dst_size,
+                 uint8_t* src,
+                 int      src_size)
 {
 	auto self = (CodecAes*)codec;
 	if (unlikely(str_size(self->key) != 32))
 		error("aes: codec key must be 256bit");
 
-	buf_reserve(buf, data_size);
-
-	// [iv, tag, encodeed data]
-	uint8_t* iv  = data;
-	uint8_t* tag = data + 16;
-	data += 32;
-	data_size -= 32;
+	// [iv, tag, encoded data]
+	assert(dst_size >= src_size);
+	uint8_t* iv  = src;
+	uint8_t* tag = src + 16;
+	src += 32;
+	src_size -= 32;
+	assert(src_size >= 0);
 
 	// prepare cipher
 	if (! EVP_CipherInit_ex2(self->ctx, NULL, str_u8(self->key), iv, false, NULL))
@@ -148,14 +149,12 @@ codec_aes_decode(Codec*   codec,
 
 	// decode
 	int outlen = 0;
-	if (! EVP_CipherUpdate(self->ctx, buf->position, &outlen, data, data_size))
+	if (! EVP_CipherUpdate(self->ctx, dst, &outlen, src, src_size))
 		error("aes: EVP_CipherUpdate() failed");
-	buf_advance(buf, outlen);
 
 	// finilize
-	if (! EVP_CipherFinal_ex(self->ctx, buf->position, &outlen))
+	if (! EVP_CipherFinal_ex(self->ctx, dst + outlen, &outlen))
 		error("aes: decodeion failed");
-	buf_advance(buf, outlen);
 }
 
 static CodecIf codec_aes =
