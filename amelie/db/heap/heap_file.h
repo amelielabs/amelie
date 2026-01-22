@@ -11,8 +11,5 @@
 // AGPL-3.0 Licensed.
 //
 
-#include "heap/page_mgr.h"
-#include "heap/heap.h"
-#include "heap/heap_iterator.h"
-#include "heap/heap_file.h"
-#include "heap/heap_row.h"
+void heap_create(Heap*, File*, Storage*, Id*, int, Encoding*);
+void heap_open(Heap*, Storage*, Id*, int, Encoding*);

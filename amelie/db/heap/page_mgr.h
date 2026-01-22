@@ -17,8 +17,10 @@ typedef struct PageMgr    PageMgr;
 
 struct PageHeader
 {
-	// 16 bytes (aligned by pointer)
+	// 24 bytes (aligned by pointer)
+	uint32_t crc;
 	uint32_t size;
+	uint32_t size_compressed;
 	uint32_t order;
 	uint32_t last;
 	uint32_t padding;

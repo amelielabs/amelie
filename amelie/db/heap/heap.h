@@ -57,6 +57,13 @@ struct HeapBucket
 
 struct HeapHeader
 {
+	uint32_t   crc;
+	uint32_t   magic;
+	uint32_t   version;
+	uint32_t   hash_min;
+	uint32_t   hash_max;
+	uint8_t    compression;
+	uint8_t    encryption;
 	uint32_t   count;
 	HeapBucket buckets[];
 } packed;
@@ -94,7 +101,6 @@ heap_first(Heap* self)
 
 Heap* heap_allocate(void);
 void  heap_free(Heap*);
-void  heap_create(Heap*);
 void* heap_add(Heap*, int);
 void  heap_remove(Heap*, void*);
 void  heap_snapshot(Heap*, Heap*, bool);

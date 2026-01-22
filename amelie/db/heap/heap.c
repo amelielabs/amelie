@@ -12,34 +12,13 @@
 
 #include <amelie_runtime>
 #include <amelie_row.h>
+#include <amelie_transaction.h>
+#include <amelie_storage.h>
 #include <amelie_heap.h>
 #include <valgrind/valgrind.h>
 
-Heap*
-heap_allocate(void)
-{
-	auto self = (Heap*)am_malloc(sizeof(Heap));
-	self->buckets     = NULL;
-	self->page_header = NULL;
-	self->last        = NULL;
-	self->header      = NULL;
-	self->shadow      = NULL;
-	self->shadow_free = false;
-	page_mgr_init(&self->page_mgr);
-	return self;
-}
-
-void
-heap_free(Heap* self)
-{
-	if (self->header)
-		am_free(self->header);
-	page_mgr_free(&self->page_mgr);
-	am_free(self);
-}
-
 static inline void
-heap_prepare(Heap* self, int id, int id_end, int size, int step)
+heap_set(Heap* self, int id, int id_end, int size, int step)
 {
 	for (; id < id_end; id++)
 	{
@@ -54,8 +33,8 @@ heap_prepare(Heap* self, int id, int id_end, int size, int step)
 	}
 }
 
-void
-heap_create(Heap* self)
+static void
+heap_prepare(Heap* self)
 {
 	if (self->header)
 		return;
@@ -65,7 +44,15 @@ heap_create(Heap* self)
 	// header + buckets[]
 	auto size = sizeof(HeapHeader) + sizeof(HeapBucket) * 385;
 	auto header = (HeapHeader*)am_malloc(size);
-	header->count = 0;
+	header->crc         = 0;
+	header->magic       = HEAP_MAGIC;
+	header->version     = 0;
+	header->hash_min    = 0;
+	header->hash_max    = 0;
+	header->compression = COMPRESSION_NONE;
+	header->encryption  = CIPHER_NONE;
+	header->count       = 0;
+
 	self->header  = header;
 	self->buckets = header->buckets;
 
@@ -89,18 +76,42 @@ heap_create(Heap* self)
 	//
 	// /32 buckets per each log group (except 1-9)
 	//
-	heap_prepare(self, 0,   64,  0,       16);    // 64 buckets
-	heap_prepare(self, 64,  96,  1024,    32);    // 32
-	heap_prepare(self, 96,  128, 2048,    64);
-	heap_prepare(self, 128, 160, 4096,    128);
-	heap_prepare(self, 160, 192, 8192,    256);
-	heap_prepare(self, 192, 224, 16384,   512);
-	heap_prepare(self, 224, 256, 32768,   1024);
-	heap_prepare(self, 256, 288, 65536,   2048);
-	heap_prepare(self, 288, 320, 131072,  4096);
-	heap_prepare(self, 320, 352, 262144,  8192);
-	heap_prepare(self, 352, 384, 524288,  16384);
-	heap_prepare(self, 384, 385, 1048576, 0);     // max
+	heap_set(self, 0,   64,  0,       16);    // 64 buckets
+	heap_set(self, 64,  96,  1024,    32);    // 32
+	heap_set(self, 96,  128, 2048,    64);
+	heap_set(self, 128, 160, 4096,    128);
+	heap_set(self, 160, 192, 8192,    256);
+	heap_set(self, 192, 224, 16384,   512);
+	heap_set(self, 224, 256, 32768,   1024);
+	heap_set(self, 256, 288, 65536,   2048);
+	heap_set(self, 288, 320, 131072,  4096);
+	heap_set(self, 320, 352, 262144,  8192);
+	heap_set(self, 352, 384, 524288,  16384);
+	heap_set(self, 384, 385, 1048576, 0);     // max
+}
+
+Heap*
+heap_allocate(void)
+{
+	auto self = (Heap*)am_malloc(sizeof(Heap));
+	self->buckets     = NULL;
+	self->page_header = NULL;
+	self->last        = NULL;
+	self->header      = NULL;
+	self->shadow      = NULL;
+	self->shadow_free = false;
+	page_mgr_init(&self->page_mgr);
+	heap_prepare(self);
+	return self;
+}
+
+void
+heap_free(Heap* self)
+{
+	if (self->header)
+		am_free(self->header);
+	page_mgr_free(&self->page_mgr);
+	am_free(self);
 }
 
 typedef struct
@@ -201,10 +212,12 @@ heap_add(Heap* self, int size)
 		{
 			auto page = page_mgr_allocate(&heap->page_mgr);
 			page_header = (PageHeader*)page->pointer;
-			page_header->size    = sizeof(PageHeader);
-			page_header->order   = heap->page_mgr.list_count - 1;
-			page_header->last    = 0;
-			page_header->padding = 0;
+			page_header->crc             = 0;
+			page_header->size            = sizeof(PageHeader);
+			page_header->size_compressed = 0;
+			page_header->order           = heap->page_mgr.list_count - 1;
+			page_header->last            = 0;
+			page_header->padding         = 0;
 			heap->page_header = page_header;
 			heap->last = NULL;
 			heap->header->count++;
