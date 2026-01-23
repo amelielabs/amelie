@@ -34,5 +34,8 @@
 #include "object/reader.h"
 #include "object/object_iterator.h"
 
+// mapping
+#include "object/mapping.h"
+
 // merger
 #include "object/merger.h"

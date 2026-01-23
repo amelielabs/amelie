@@ -28,6 +28,7 @@ object_allocate(Storage* storage, Id* id, Encoding* encoding)
 	meta_init(&self->meta);
 	buf_init(&self->meta_data);
 	file_init(&self->file);
+	rbtree_init_node(&self->link_mapping);
 	list_init(&self->link);
 	return self;
 }

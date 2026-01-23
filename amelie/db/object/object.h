@@ -15,14 +15,15 @@ typedef struct Object Object;
 
 struct Object
 {
-	Id        id;
-	int       state;
-	Meta      meta;
-	Buf       meta_data;
-	File      file;
-	Encoding* encoding;
-	Storage*  storage;
-	List      link;
+	Id         id;
+	int        state;
+	Meta       meta;
+	Buf        meta_data;
+	File       file;
+	Encoding*  encoding;
+	Storage*   storage;
+	RbtreeNode link_mapping;
+	List       link;
 };
 
 Object*
