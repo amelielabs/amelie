@@ -37,8 +37,6 @@ struct Meta
 	uint32_t magic;
 	uint32_t version;
 	Id       id;
-	uint32_t hash_min;
-	uint32_t hash_max;
 	uint32_t size;
 	uint32_t size_origin;
 	uint64_t size_regions;
@@ -47,8 +45,6 @@ struct Meta
 	uint64_t size_total_origin;
 	uint32_t regions;
 	uint64_t rows;
-	uint64_t time_create;
-	uint64_t lsn;
 	uint8_t  compression;
 	uint8_t  encryption;
 	uint32_t reserved[4];

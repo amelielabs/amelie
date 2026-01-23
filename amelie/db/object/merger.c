@@ -12,9 +12,12 @@
 
 #include <amelie_runtime>
 #include <amelie_row.h>
+#include <amelie_transaction.h>
+#include <amelie_storage.h>
 #include <amelie_heap.h>
 #include <amelie_object.h>
 
+#if 0
 void
 merger_init(Merger* self)
 {
@@ -274,3 +277,4 @@ merger_execute(Merger* self, MergerConfig* config)
 	// drop first object (created by refresh)
 	merger_drop(self, object);
 }
+#endif

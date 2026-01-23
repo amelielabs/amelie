@@ -11,10 +11,6 @@
 // AGPL-3.0 Licensed.
 //
 
-// source
-#include "object/source.h"
-#include "object/id.h"
-
 // merge iterator
 #include "object/merge_iterator.h"
 
@@ -32,7 +28,6 @@
 #include "object/writer.h"
 
 // object
-#include "object/object_file.h"
 #include "object/object.h"
 
 // object iterator

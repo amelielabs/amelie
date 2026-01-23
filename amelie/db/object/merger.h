@@ -16,11 +16,12 @@ typedef struct Merger       Merger;
 
 struct MergerConfig
 {
-	uint64_t lsn;
-	Object*  origin;
-	Heap*    heap;
-	Keys*    keys;
-	Source*  source;
+	uint64_t  lsn;
+	Object*   origin;
+	Heap*     heap;
+	Keys*     keys;
+	Encoding* encoding;
+	Storage*  storage;
 };
 
 struct Merger

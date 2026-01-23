@@ -15,17 +15,18 @@ typedef struct Object Object;
 
 struct Object
 {
-	Id      id;
-	int     state;
-	Meta    meta;
-	Buf     meta_data;
-	File    file;
-	Source* source;
-	List    link;
+	Id        id;
+	int       state;
+	Meta      meta;
+	Buf       meta_data;
+	File      file;
+	Encoding* encoding;
+	Storage*  storage;
+	List      link;
 };
 
 Object*
-object_allocate(Source*, Id*);
+object_allocate(Storage*, Id*, Encoding*);
 void object_free(Object*);
 void object_open(Object*, int, bool);
 void object_create(Object*, int);

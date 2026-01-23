@@ -16,12 +16,11 @@ typedef struct Writer Writer;
 struct Writer
 {
 	File*        file;
-	Iov          iov;
+	int          region_size;
 	RegionWriter region_writer;
 	MetaWriter   meta_writer;
-	Codec*       compression;
-	Codec*       encryption;
-	Source*      source;
+	Encoding*    encoding;
+	Storage*     storage;
 	Writer*      next;
 };
 
@@ -29,8 +28,8 @@ Writer*
 writer_allocate(void);
 void writer_free(Writer*);
 void writer_reset(Writer*);
-void writer_start(Writer*, Source*, File*);
-void writer_stop(Writer*, Id*, uint32_t, uint32_t, uint64_t, uint64_t);
+void writer_start(Writer*, File*, Storage*, Encoding*, int);
+void writer_stop(Writer*, Id*);
 void writer_add(Writer*, Row*);
 
 static inline bool

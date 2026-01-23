@@ -23,6 +23,12 @@ struct Encoder
 	Encoding* encoding;
 };
 
+static inline bool
+encoder_active(Encoder* self)
+{
+	return self->encryption || self->compression;
+}
+
 static inline void
 encoder_init(Encoder* self)
 {
@@ -37,6 +43,14 @@ encoder_init(Encoder* self)
 static inline void
 encoder_reset(Encoder* self)
 {
+	iov_reset(&self->iov);
+	buf_reset(&self->compression_buf);
+	buf_reset(&self->encryption_buf);
+}
+
+static inline void
+encoder_free(Encoder* self)
+{
 	self->encoding = NULL;
 	if (self->compression)
 	{
@@ -48,51 +62,25 @@ encoder_reset(Encoder* self)
 		codec_cache_push(&runtime()->cache_cipher, self->encryption);
 		self->encryption = NULL;
 	}
-	iov_reset(&self->iov);
-	buf_reset(&self->compression_buf);
-	buf_reset(&self->encryption_buf);
-}
-
-static inline void
-encoder_free(Encoder* self)
-{
-	encoder_reset(self);
 	iov_free(&self->iov);
 	buf_free(&self->compression_buf);
 	buf_free(&self->encryption_buf);
 }
 
-static inline void
-encoder_open(Encoder* self, Encoding* encoding)
+static inline int
+encoder_compression(Encoder* self)
 {
-	self->encoding = encoding;
+	if (self->compression)
+		return self->compression->iface->id;
+	return COMPRESSION_NONE;
+}
 
-	// set compression context
-	if (encoding->compression)
-	{
-		auto id = compression_idof(encoding->compression);
-		if (id == -1)
-			error("invalid compression '%.*s'", str_size(encoding->compression),
-			      str_of(encoding->compression));
-		if (id != COMPRESSION_NONE)
-			self->compression =
-				compression_create(&runtime()->cache_compression, id,
-				                   encoding->compression_level);
-	}
-
-	// set encryption context
-	if (encoding->encryption)
-	{
-		auto id = cipher_idof(encoding->encryption);
-		if (id == -1)
-			error("invalid encryption '%.*s'", str_size(encoding->encryption),
-			      str_of(encoding->encryption));
-		if (id != CIPHER_NONE)
-			self->encryption =
-				cipher_create(&runtime()->cache_cipher, id,
-							  &runtime()->random,
-				              encoding->encryption_key);
-	}
+static inline int
+encoder_encryption(Encoder* self)
+{
+	if (self->encryption)
+		return self->encryption->iface->id;
+	return CIPHER_NONE;
 }
 
 static inline void
@@ -128,35 +116,77 @@ encoder_set_encryption(Encoder* self, int id)
 	// set encryption context
 	if (id == CIPHER_NONE)
 		return;
-	self->encryption = cipher_create(&runtime()->cache_cipher, id,
-	                                 &runtime()->random,
+	self->encryption = cipher_create(&runtime()->cache_cipher, id, &runtime()->random,
 	                                  self->encoding->encryption_key);
 	if (! self->encryption)
 		error("object: invalid encryption id '%d'", id);
 }
 
-static inline bool
-encoder_active(Encoder* self)
+static inline void
+encoder_open(Encoder* self, Encoding* encoding)
 {
-	return self->encryption || self->compression;
+	self->encoding = encoding;
+
+	// set compression context
+	int id;
+	if (encoding->compression)
+	{
+		id = compression_idof(encoding->compression);
+		if (id == -1)
+			error("invalid compression '%.*s'", str_size(encoding->compression),
+			      str_of(encoding->compression));
+	} else {
+		id = COMPRESSION_NONE;
+	}
+	encoder_set_compression(self, id);
+
+	// set encryption context
+	if (encoding->encryption)
+	{
+		auto id = cipher_idof(encoding->encryption);
+		if (id == -1)
+			error("invalid encryption '%.*s'", str_size(encoding->encryption),
+			      str_of(encoding->encryption));
+	} else {
+		id = CIPHER_NONE;
+	}
+	encoder_set_encryption(self, id);
 }
 
 static inline struct iovec*
 encoder_iov(Encoder* self)
 {
-	return (struct iovec*)(self->iov.iov.start);
+	return iov_pointer(&self->iov);
 }
 
-static inline void
-encoder_begin(Encoder* self)
+static inline int
+encoder_iov_count(Encoder* self)
 {
-	iov_reset(&self->iov);
+	return self->iov.iov_count;
+}
+
+static inline uint32_t
+encoder_iov_crc(Encoder* self)
+{
+	// calculate encoded iov crc
+	auto iov = encoder_iov(self);
+	uint32_t crc = 0;
+	for (auto i = 0; i < self->iov.iov_count; i++)
+		crc = runtime()->crc(crc, iov[i].iov_base, iov[i].iov_len);
+	return crc;
 }
 
 static inline void
 encoder_add(Encoder* self, uint8_t* pointer, int size)
 {
+	// add to encode
 	iov_add(&self->iov, pointer, size);
+}
+
+static inline void
+encoder_add_buf(Encoder* self, Buf* buf)
+{
+	iov_add_buf(&self->iov, buf);
 }
 
 static inline void

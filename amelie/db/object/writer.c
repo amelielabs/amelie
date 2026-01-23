@@ -12,6 +12,8 @@
 
 #include <amelie_runtime>
 #include <amelie_row.h>
+#include <amelie_transaction.h>
+#include <amelie_storage.h>
 #include <amelie_heap.h>
 #include <amelie_object.h>
 
@@ -20,11 +22,10 @@ writer_allocate(void)
 {
 	auto self = (Writer*)am_malloc(sizeof(Writer));
 	self->file        = NULL;
-	self->compression = NULL;
-	self->encryption  = NULL;
-	self->source      = NULL;
+	self->region_size = 0;
+	self->encoding    = NULL;
+	self->storage     = NULL;
 	self->next        = NULL;
-	iov_init(&self->iov);
 	region_writer_init(&self->region_writer);
 	meta_writer_init(&self->meta_writer);
 	return self;
@@ -34,7 +35,6 @@ void
 writer_free(Writer* self)
 {
 	writer_reset(self);
-	iov_free(&self->iov);
 	region_writer_free(&self->region_writer);
 	meta_writer_free(&self->meta_writer);
 	am_free(self);
@@ -43,19 +43,11 @@ writer_free(Writer* self)
 void
 writer_reset(Writer* self)
 {
-	if (self->compression)
-	{
-		codec_cache_push(&runtime()->cache_compression, self->compression);
-		self->compression = NULL;
-	}
-	if (self->encryption)
-	{
-		codec_cache_push(&runtime()->cache_cipher, self->encryption);
-		self->encryption = NULL;
-	}
-	self->source = NULL;
-	self->next   = NULL;
-	iov_reset(&self->iov);
+	self->file        = NULL;
+	self->region_size = 0;
+	self->encoding    = NULL;
+	self->storage     = NULL;
+	self->next        = NULL;
 	region_writer_reset(&self->region_writer);
 	meta_writer_reset(&self->meta_writer);
 }
@@ -65,15 +57,14 @@ writer_is_region_limit(Writer* self)
 {
 	if (unlikely(! region_writer_started(&self->region_writer)))
 		return true;
-	return region_writer_size(&self->region_writer) >= (uint32_t)self->source->region_size;
+	return (int)region_writer_size(&self->region_writer) >= self->region_size;
 }
 
 static inline void
 writer_start_region(Writer* self)
 {
 	region_writer_reset(&self->region_writer);
-	region_writer_start(&self->region_writer, self->compression,
-	                    self->encryption);
+	region_writer_start(&self->region_writer);
 }
 
 hot static inline void
@@ -89,50 +80,32 @@ writer_stop_region(Writer* self)
 	meta_writer_add(&self->meta_writer, &self->region_writer, self->file->size);
 
 	// write region
-	iov_reset(&self->iov);
-	region_writer_add_to_iov(&self->region_writer, &self->iov);
-	file_writev(self->file, iov_pointer(&self->iov), self->iov.iov_count);
+	auto encoder = &self->region_writer.encoder;
+	auto iov = encoder_iov(encoder);
+	auto iov_count = encoder_iov_count(encoder);
+	file_writev(self->file, iov, iov_count);
 }
 
 void
-writer_start(Writer* self, Source* source, File* file)
+writer_start(Writer*   self, File* file,
+             Storage*  storage,
+             Encoding* encoding, int region_size)
 {
-	self->source = source;
-	self->file   = file;
+	self->file        = file;
+	self->storage     = storage;
+	self->region_size = region_size;
 
-	// get compression context
-	auto id = compression_idof(&source->compression);
-	if (id == -1)
-		error("invalid compression '%.*s'", str_size(&source->compression),
-		      str_of(&source->compression));
-	if (id != COMPRESSION_NONE)
-		self->compression =
-			compression_create(&runtime()->cache_compression, id,
-			                   source->compression_level);
-
-	// get encryption context
-	id = cipher_idof(&source->encryption);
-	if (id == -1)
-		error("invalid encryption '%.*s'", str_size(&source->encryption),
-		      str_of(&source->encryption));
-	if (id != CIPHER_NONE)
-		self->encryption =
-			cipher_create(&runtime()->cache_cipher, id,
-			              &runtime()->random, &source->encryption_key);
+	// set compression and encryption encoding
+	meta_writer_open(&self->meta_writer, encoding);
+	region_writer_open(&self->region_writer, encoding);
 
 	// start new meta data
 	meta_writer_reset(&self->meta_writer);
-	meta_writer_start(&self->meta_writer, self->compression,
-	                  self->encryption, source->crc);
+	meta_writer_start(&self->meta_writer, storage->config->crc);
 }
 
 void
-writer_stop(Writer*  self,
-            Id*      id,
-            uint32_t hash_min,
-            uint32_t hash_max,
-            uint64_t time_create,
-            uint64_t lsn)
+writer_stop(Writer* self, Id* id)
 {
 	if (! meta_writer_started(&self->meta_writer))
 		return;
@@ -140,27 +113,13 @@ writer_stop(Writer*  self,
 	// complete last region and meta data
 	if (region_writer_started(&self->region_writer))
 		writer_stop_region(self);
+	meta_writer_stop(&self->meta_writer, id);
 
-	meta_writer_stop(&self->meta_writer, id, hash_min, hash_max,
-	                 time_create, lsn);
-
-	// write meta data
-	iov_reset(&self->iov);
-	meta_writer_add_to_iov(&self->meta_writer, &self->iov);
-	file_writev(self->file, iov_pointer(&self->iov), self->iov.iov_count);
-
-	// cleanup
-	if (self->compression)
-	{
-		codec_cache_push(&runtime()->cache_compression, self->compression);
-		self->compression = NULL;
-	}
-
-	if (self->encryption)
-	{
-		codec_cache_push(&runtime()->cache_cipher, self->encryption);
-		self->encryption = NULL;
-	}
+	// write region
+	auto encoder = &self->meta_writer.encoder;
+	auto iov = encoder_iov(encoder);
+	auto iov_count = encoder_iov_count(encoder);
+	file_writev(self->file, iov, iov_count);
 }
 
 void

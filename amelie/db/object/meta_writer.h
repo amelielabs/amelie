@@ -15,29 +15,23 @@ typedef struct MetaWriter MetaWriter;
 
 struct MetaWriter
 {
-	bool   active;
-	Buf    offsets;
-	Buf    data;
-	Meta   meta;
-	Buf    compressed;
-	Codec* compression;
-	Buf    encrypted;
-	Codec* encryption;
-	bool   crc;
+	Buf     offsets;
+	Buf     data;
+	Meta    meta;
+	bool    active;
+	bool    crc;
+	Encoder encoder;
 };
 
 static inline void
 meta_writer_init(MetaWriter* self)
 {
-	self->active      = false;
-	self->compression = NULL;
-	self->encryption  = NULL;
-	self->crc         = false;
+	self->active  = false;
+	self->crc     = false;
 	buf_init(&self->offsets);
 	buf_init(&self->data);
-	buf_init(&self->compressed);
-	buf_init(&self->encrypted);
 	meta_init(&self->meta);
+	encoder_init(&self->encoder);
 }
 
 static inline void
@@ -45,22 +39,18 @@ meta_writer_free(MetaWriter* self)
 {
 	buf_free(&self->offsets);
 	buf_free(&self->data);
-	buf_free(&self->compressed);
-	buf_free(&self->encrypted);
+	encoder_free(&self->encoder);
 }
 
 static inline void
 meta_writer_reset(MetaWriter* self)
 {
-	self->active      = false;
-	self->compression = NULL;
-	self->encryption  = NULL;
-	self->crc         = false;
+	self->active  = false;
+	self->crc     = false;
 	buf_reset(&self->offsets);
 	buf_reset(&self->data);
-	buf_reset(&self->compressed);
-	buf_reset(&self->encrypted);
 	meta_init(&self->meta);
+	encoder_reset(&self->encoder);
 }
 
 static inline bool
@@ -70,69 +60,29 @@ meta_writer_started(MetaWriter* self)
 }
 
 static inline void
-meta_writer_start(MetaWriter* self,
-                  Codec*      compression,
-                  Codec*      encryption,
-                  bool        crc)
+meta_writer_open(MetaWriter* self, Encoding* encoding)
 {
-	self->compression = compression;
-	self->encryption  = encryption;
-	self->crc         = crc;
-	self->active      = true;
+	encoder_open(&self->encoder, encoding);
 }
 
 static inline void
-meta_writer_stop(MetaWriter* self,
-                 Id*         id,
-                 uint32_t    hash_min,
-                 uint32_t    hash_max,
-                 uint64_t    time_create,
-                 uint64_t    lsn)
+meta_writer_start(MetaWriter* self, bool crc)
+{
+	self->active = true;
+	self->crc    = crc;
+}
+
+static inline void
+meta_writer_stop(MetaWriter* self, Id* id)
 {
 	// [[offsets][meta_regions]] [meta]
 	auto meta = &self->meta;
 
-	// compress meta data (without header)
-	uint32_t size_origin = meta->size;
-	uint32_t size = size_origin;
-	int      compression_id;
-	if (self->compression)
-	{
-		auto codec = self->compression;
-		auto buf = &self->compressed;
-		codec_encode_begin(codec, buf);
-		codec_encode_buf(codec, buf, &self->offsets);
-		codec_encode_buf(codec, buf, &self->data);
-		codec_encode_end(codec, buf);
-
-		size = buf_size(&self->compressed);
-		compression_id = self->compression->iface->id;
-	} else {
-		compression_id = COMPRESSION_NONE;
-	}
-
-	// encrypt meta data
-	int encryption_id;
-	if (self->encryption)
-	{
-		auto codec = self->encryption;
-		auto buf = &self->encrypted;
-		codec_encode_begin(codec, buf);
-		if (self->compression) {
-			codec_encode_buf(codec, buf, &self->compressed);
-		} else
-		{
-			codec_encode_buf(codec, buf, &self->offsets);
-			codec_encode_buf(codec, buf, &self->data);
-		}
-		codec_encode_end(codec, buf);
-
-		size = buf_size(&self->encrypted);
-		encryption_id = self->encryption->iface->id;
-	} else
-	{
-		encryption_id = CIPHER_NONE;
-	}
+	// compress and encrypt meta data (without header)
+	auto encoder = &self->encoder;
+	encoder_add_buf(encoder, &self->offsets);
+	encoder_add_buf(encoder, &self->data);
+	encoder_encode(encoder);
 
 	// prepare header
 	meta->crc               = 0;
@@ -140,35 +90,16 @@ meta_writer_stop(MetaWriter* self,
 	meta->magic             = META_MAGIC;
 	meta->version           = META_VERSION;
 	meta->id                = *id;
-	meta->hash_min          = hash_min;
-	meta->hash_max          = hash_max;
-	meta->size              = size;
-	meta->size_origin       = size_origin;
+	meta->size_origin       = meta->size;
+	meta->size              = encoder_iov(encoder)->iov_len;
 	meta->size_total        =
 		meta->size_regions + meta->size + sizeof(Meta);
 	meta->size_total_origin =
 		meta->size_regions_origin + meta->size_origin + sizeof(Meta);
-	meta->time_create       = time_create;
-	meta->lsn               = lsn;
-	meta->compression       = compression_id;
-	meta->encryption        = encryption_id;
-
-	// calculate data crc
-	uint32_t crc = 0;
-	if (self->encryption) {
-		crc = runtime()->crc(crc, self->encrypted.start, buf_size(&self->encrypted));
-	} else
-	if (self->compression) {
-		crc = runtime()->crc(crc, self->compressed.start, buf_size(&self->compressed));
-	} else
-	{
-		crc = runtime()->crc(crc, self->offsets.start, buf_size(&self->offsets));
-		crc = runtime()->crc(crc, self->data.start, buf_size(&self->data));
-	}
-	meta->crc_data = crc;
-
-	// calculate header crc
-	meta->crc = runtime()->crc(0, meta, sizeof(Meta));
+	meta->compression       = encoder_compression(encoder);
+	meta->encryption        = encoder_encryption(encoder);
+	meta->crc_data          = encoder_iov_crc(encoder);
+	meta->crc               = runtime()->crc(0, meta, sizeof(Meta));
 }
 
 static inline void
@@ -180,14 +111,7 @@ meta_writer_add(MetaWriter*   self,
 	assert(region->rows > 0);
 
 	// get region size
-	uint32_t size;
-	if (self->encryption)
-		size = buf_size(&region_writer->encrypted);
-	else
-	if (self->compression)
-		size = buf_size(&region_writer->compressed);
-	else
-		size = region->size;
+	uint32_t size = encoder_iov(&region_writer->encoder)->iov_len;
 
 	// calculate region crc
 	uint32_t crc = 0;
@@ -231,21 +155,6 @@ meta_writer_copy(MetaWriter* self, Meta* meta, Buf* data)
 	*meta = self->meta;
 	buf_write_buf(data, &self->offsets);
 	buf_write_buf(data, &self->data);
-}
-
-static inline void
-meta_writer_add_to_iov(MetaWriter* self, Iov* iov)
-{
-	if (self->encryption) {
-		iov_add_buf(iov, &self->encrypted);
-	} else
-	if (self->compression) {
-		iov_add_buf(iov, &self->compressed);
-	} else {
-		iov_add_buf(iov, &self->offsets);
-		iov_add_buf(iov, &self->data);
-	}
-	iov_add(iov, &self->meta, sizeof(self->meta));
 }
 
 hot static inline uint64_t

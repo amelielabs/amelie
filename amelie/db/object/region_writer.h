@@ -15,23 +15,17 @@ typedef struct RegionWriter RegionWriter;
 
 struct RegionWriter
 {
-	Buf    meta;
-	Buf    data;
-	Buf    compressed;
-	Buf    encrypted;
-	Codec* compression;
-	Codec* encryption;
+	Buf     meta;
+	Buf     data;
+	Encoder encoder;
 };
 
 static inline void
 region_writer_init(RegionWriter* self)
 {
-	self->compression = NULL;
-	self->encryption  = NULL;
 	buf_init(&self->meta);
 	buf_init(&self->data);
-	buf_init(&self->compressed);
-	buf_init(&self->encrypted);
+	encoder_init(&self->encoder);
 }
 
 static inline void
@@ -39,19 +33,15 @@ region_writer_free(RegionWriter* self)
 {
 	buf_free(&self->meta);
 	buf_free(&self->data);
-	buf_free(&self->compressed);
-	buf_free(&self->encrypted);
+	encoder_free(&self->encoder);
 }
 
 static inline void
 region_writer_reset(RegionWriter* self)
 {
-	self->compression = NULL;
-	self->encryption  = NULL;
 	buf_reset(&self->meta);
 	buf_reset(&self->data);
-	buf_reset(&self->compressed);
-	buf_reset(&self->encrypted);
+	encoder_reset(&self->encoder);
 }
 
 static inline Region*
@@ -74,13 +64,14 @@ region_writer_size(RegionWriter* self)
 }
 
 static inline void
-region_writer_start(RegionWriter* self,
-                    Codec*        compression,
-                    Codec*        encryption)
+region_writer_open(RegionWriter* self, Encoding* encoding)
 {
-	self->compression = compression;
-	self->encryption  = encryption;
+	encoder_open(&self->encoder, encoding);
+}
 
+static inline void
+region_writer_start(RegionWriter* self)
+{
 	// region header
 	buf_reserve(&self->meta, sizeof(Region));
 	auto header = region_writer_header(self);
@@ -94,33 +85,11 @@ region_writer_stop(RegionWriter* self)
 	auto header = region_writer_header(self);
 	header->size = region_writer_size(self);
 
-	// compress region
-	if (self->compression)
-	{
-		auto codec = self->compression;
-		auto buf = &self->compressed;
-		codec_encode_begin(codec, buf);
-		codec_encode_buf(codec, buf, &self->meta);
-		codec_encode_buf(codec, buf, &self->data);
-		codec_encode_end(codec, buf);
-	}
-
-	// encrypt region using compressed or raw data
-	if (self->encryption)
-	{
-		auto codec = self->encryption;
-		auto buf = &self->encrypted;
-		codec_encode_begin(codec, buf);
-		if (self->compression)
-		{
-			codec_encode_buf(codec, buf, &self->compressed);
-		} else
-		{
-			codec_encode_buf(codec, buf, &self->meta);
-			codec_encode_buf(codec, buf, &self->data);
-		}
-		codec_encode_end(codec, buf);
-	}
+	// compress and encrypt
+	auto encoder = &self->encoder;
+	encoder_add_buf(encoder, &self->meta);
+	encoder_add_buf(encoder, &self->data);
+	encoder_encode(encoder);
 }
 
 static inline void
@@ -162,38 +131,8 @@ region_writer_last(RegionWriter* self)
 	return region_writer_max(self);
 }
 
-static inline void
-region_writer_add_to_iov(RegionWriter* self, Iov* iov)
-{
-	if (self->encryption)
-	{
-		iov_add_buf(iov, &self->encrypted);
-	} else
-	if (self->compression)
-	{
-		iov_add_buf(iov, &self->compressed);
-	} else
-	{
-		iov_add_buf(iov, &self->meta);
-		iov_add_buf(iov, &self->data);
-	}
-}
-
 static inline uint32_t
 region_writer_crc(RegionWriter* self)
 {
-	uint32_t crc = 0;
-	if (self->encryption)
-	{
-		crc = runtime()->crc(crc, self->encrypted.start, buf_size(&self->encrypted));
-	} else
-	if (self->compression)
-	{
-		crc = runtime()->crc(crc, self->compressed.start, buf_size(&self->compressed));
-	} else
-	{
-		crc = runtime()->crc(crc, self->meta.start, buf_size(&self->meta));
-		crc = runtime()->crc(crc, self->data.start, buf_size(&self->data));
-	}
-	return crc;
+	return encoder_iov_crc(&self->encoder);
 }

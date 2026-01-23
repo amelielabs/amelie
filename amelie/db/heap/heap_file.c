@@ -33,14 +33,8 @@ heap_create(Heap*     self,
 	// prepare header (including buckets)
 	auto size = sizeof(HeapHeader) + sizeof(HeapBucket) * 385;
 	auto header = self->header;
-	if (encoder.compression)
-		header->compression = encoder.compression->iface->id;
-	else
-		header->compression = COMPRESSION_NONE;
-	if (encoder.encryption)
-		header->encryption = encoder.encryption->iface->id;
-	else
-		header->encryption = CIPHER_NONE;
+	header->compression = encoder_compression(&encoder);
+	header->encryption  = encoder_encryption(&encoder);
 	header->crc = runtime()->crc(0, &header->magic, size - sizeof(uint32_t));
 
 	// create heap file
@@ -59,17 +53,18 @@ heap_create(Heap*     self,
 		auto page_size = page_header->size - sizeof(PageHeader);
 
 		// compress and encrypt
-		encoder_begin(&encoder);
+		encoder_reset(&encoder);
 		encoder_add(&encoder, page_data, page_size);
 		encoder_encode(&encoder);
-		page_data = encoder_iov(&encoder)->iov_base;
-		page_size = encoder_iov(&encoder)->iov_len;
-		page_header->size_compressed = page_size;
+		auto iov = encoder_iov(&encoder);
+		page_header->size_compressed = iov->iov_len;
 
 		// calculate page crc
 		if (storage->config->crc)
-			page_header->crc = runtime()->crc(0, page_data, page_size);
+			page_header->crc = encoder_iov_crc(&encoder);
 
+		page_data = iov->iov_base;
+		page_size = iov->iov_len;
 		file_write(file, page_header, sizeof(PageHeader));
 		file_write(file, page_data, page_size);
 	}
