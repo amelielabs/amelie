@@ -36,6 +36,3 @@
 
 // mapping
 #include "object/mapping.h"
-
-// merger
-#include "object/merger.h"

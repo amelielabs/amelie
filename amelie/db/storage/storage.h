@@ -93,21 +93,15 @@ storage_path(Storage* self, char* buf, Id* id, int state)
 	uuid_get(&id->id_tier, id_tier, sizeof(id_tier));
 
 	switch (state) {
-	case ID:
-		// <storage_path>/<id_tier>/<id_part>/<id>
-		storage_fmt(self, buf,
-		            "%s/%05" PRIu64 "/%05" PRIu64,
-		            id_tier,
-		            id->id_part,
-		            id->id);
+	case ID_HEAP:
+		// <storage_path>/<id_tier>/<id>.heap
+		storage_fmt(self, buf, "%s/%05" PRIu64,
+		            id_tier, id->id);
 		break;
-	case ID_INCOMPLETE:
-		// <storage_path>/<id_tier>/<id_part>/<id>.incomplete
-		storage_fmt(self, buf,
-		            "%s/%05" PRIu64 "/%05" PRIu64 ".incomplete",
-		            id_tier,
-		            id->id_part,
-		            id->id);
+	case ID_HEAP_INCOMPLETE:
+		// <storage_path>/<id_tier>/<id>.heap.incomplete
+		storage_fmt(self, buf, "%s/%05" PRIu64 ".heap.incomplete",
+		            id_tier, id->id);
 		break;
 	default:
 		abort();

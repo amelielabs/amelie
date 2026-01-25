@@ -15,17 +15,14 @@ typedef struct Id Id;
 
 enum
 {
-	ID_NONE        = 0,
-	ID             = 1 << 0,
-	ID_INCOMPLETE  = 1 << 1
+	ID_NONE            = 0,
+	ID_HEAP            = 1 << 0,
+	ID_HEAP_INCOMPLETE = 1 << 1
 };
 
 struct Id
 {
 	uint64_t id;
-	uint64_t id_parent_begin;
-	uint64_t id_parent_end;
-	uint64_t id_part;
 	Uuid     id_tier;
 } packed;
 
@@ -39,4 +36,28 @@ static inline bool
 id_compare(Id* self, Id* id)
 {
 	return !memcmp(self, id, sizeof(Id));
+}
+
+static inline int
+id_of(const char* name, int64_t* id)
+{
+	// <id>.heap
+	// <id>.heap.incomplete
+	*id = 0;
+	while (*name && *name != '.')
+	{
+		if (unlikely(! isdigit(*name)))
+			return -1;
+		if (unlikely(int64_mul_add_overflow(id, *id, 10, *name - '0')))
+			return -1;
+		name++;
+	}
+
+	int state = -1;
+	if (! strcmp(name, ".heap.incomplete"))
+		state = ID_HEAP_INCOMPLETE;
+	else
+	if (! strcmp(name, ".heap"))
+		state = ID_HEAP;
+	return state;
 }

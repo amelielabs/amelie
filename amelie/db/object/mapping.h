@@ -20,20 +20,12 @@ struct Mapping
 	Keys*  keys;
 };
 
-static inline Mapping*
-mapping_allocate(Keys* keys)
+static inline void
+mapping_init(Mapping* self, Keys* keys)
 {
-	auto self = (Mapping*)am_malloc(sizeof(Mapping));
 	self->keys       = keys;
 	self->tree_count = 0;
 	rbtree_init(&self->tree);
-	return self;
-}
-
-static inline void
-mapping_free(Mapping* self)
-{
-	am_free(self);
 }
 
 always_inline static inline Object*

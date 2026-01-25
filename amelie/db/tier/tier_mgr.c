@@ -12,197 +12,121 @@
 
 #include <amelie_runtime>
 #include <amelie_row.h>
-#include <amelie_heap.h>
 #include <amelie_transaction.h>
-#include <amelie_index.h>
+#include <amelie_storage.h>
+#include <amelie_heap.h>
 #include <amelie_object.h>
-#include <amelie_partition.h>
 #include <amelie_tier.h>
+
+static void
+closedir_defer(DIR* self)
+{
+	closedir(self);
+}
+
+static void
+tier_open_storage(Tier* self, TierStorage* storage)
+{
+	char id[UUID_SZ];
+	uuid_get(&self->config->id, id, sizeof(id));
+
+	// <storage_path>/<tier>
+	char path[PATH_MAX];
+	storage_fmt(storage->storage, path, "%s", id);
+
+	// create tier directory, if not exists
+	if (! fs_exists("%s", path))
+	{
+		fs_mkdir(0755, "%s", path);
+		return;
+	}
+
+	// read directory
+	auto dir = opendir(path);
+	if (unlikely(dir == NULL))
+		error("tier: directory '%s' open error", path);
+	defer(closedir_defer, dir);
+	for (;;)
+	{
+		auto entry = readdir(dir);
+		if (entry == NULL)
+			break;
+		if (entry->d_name[0] == '.')
+			continue;
+
+		// <id>.type [.incomplete]
+		int64_t psn;
+		auto rc = id_of(entry->d_name, &psn);
+		if (rc == -1)
+		{
+			info("tier: skipping unknown file: '%s%s'", path,
+			     entry->d_name);
+			continue;
+		}
+		state_psn_follow(psn);
+
+		// add object to the tier
+		Id id =
+		{
+			.id      = psn,
+			.id_tier = self->config->id
+		};
+		auto object = object_allocate(storage->storage, &id, &self->ec);
+		tier_add(self, object);
+	}
+}
+
+static void
+tier_open(Tier* self)
+{
+	list_foreach(&self->config->storages)
+	{
+		auto storage = list_at(TierStorage, link);
+		tier_open_storage(self, storage);
+	}
+}
 
 void
 tier_mgr_init(TierMgr* self)
 {
-	relation_mgr_init(&self->mgr);
+	self->tiers = NULL;
+	self->tiers_count = 0;
 }
 
 void
 tier_mgr_free(TierMgr* self)
 {
-	relation_mgr_free(&self->mgr);
-}
-
-bool
-tier_mgr_create(TierMgr* self,
-                Tr*      tr,
-                Source*  config,
-                bool     if_not_exists)
-{
-	// make sure tier does not exists
-	auto current = tier_mgr_find(self, &config->name, false);
-	if (current)
+	auto tier = self->tiers;
+	while (tier)
 	{
-		if (! if_not_exists)
-			error("tier '%.*s': already exists", str_size(&config->name),
-			      str_of(&config->name));
-		return false;
+		auto next = tier->next;
+		tier_free(tier);
+		tier = next;
 	}
-
-	// create tier directory, if not exists
-	char path[PATH_MAX];
-	source_basepath(config, path);
-	if (! fs_exists("%s", path))
-		fs_mkdir(0755, "%s", path);
-
-	// allocate tier and init
-	auto tier = tier_allocate(config);
-
-	// register tier
-	relation_mgr_create(&self->mgr, tr, &tier->rel);
-	return true;
-}
-
-bool
-tier_mgr_drop(TierMgr* self,
-              Tr*      tr,
-              Str*     name,
-              bool     if_exists)
-{
-	auto tier = tier_mgr_find(self, name, false);
-	if (! tier)
-	{
-		if (! if_exists)
-			error("tier '%.*s': not exists", str_size(name),
-			      str_of(name));
-		return false;
-	}
-	if (tier->refs > 0)
-		error("tier '%.*s': is being used", str_size(name),
-		      str_of(name));
-
-	if (tier->config->system)
-		error("tier '%.*s': system tier cannot be dropped", str_size(name),
-		      str_of(name));
-
-	// drop tier by object
-	relation_mgr_drop(&self->mgr, tr, &tier->rel);
-	return true;
-}
-
-static void
-rename_if_commit(Log* self, LogOp* op)
-{
-	unused(self);
-	unused(op);
-}
-
-static void
-rename_if_abort(Log* self, LogOp* op)
-{
-	auto relation = log_relation_of(self, op);
-	auto mgr = tier_of(relation->relation);
-	// set previous name
-	uint8_t* pos = relation->data;
-	Str name;
-	json_read_string(&pos, &name);
-	source_set_name(mgr->config, &name);
-}
-
-static LogIf rename_if =
-{
-	.commit = rename_if_commit,
-	.abort  = rename_if_abort
-};
-
-bool
-tier_mgr_rename(TierMgr* self,
-                Tr*      tr,
-                Str*     name,
-                Str*     name_new,
-                bool     if_exists)
-{
-	auto tier = tier_mgr_find(self, name, false);
-	if (! tier)
-	{
-		if (! if_exists)
-			error("tier '%.*s': not exists", str_size(name),
-			      str_of(name));
-		return false;
-	}
-
-	if (tier->refs > 0)
-		error("tier '%.*s': is being used", str_size(name),
-		      str_of(name));
-
-	if (tier->config->system)
-		error("tier '%.*s': system tier cannot be renamed", str_size(name),
-		       str_of(name));
-
-	// ensure new tier does not exists
-	if (tier_mgr_find(self, name_new, false))
-		error("tier '%.*s': already exists", str_size(name_new),
-		      str_of(name_new));
-
-	// update tier
-	log_relation(&tr->log, &rename_if, NULL, &tier->rel);
-
-	// save name for rollback
-	encode_string(&tr->log.data, name);
-
-	// set new name
-	source_set_name(tier->config, name_new);
-	return true;
+	self->tiers = NULL;
+	self->tiers_count = 0;
 }
 
 void
-tier_mgr_dump(TierMgr* self, Buf* buf)
+tier_mgr_open(TierMgr* self, StorageMgr* storage_mgr, List* tiers)
 {
-	// array
-	encode_array(buf);
-	list_foreach(&self->mgr.list)
+	Tier* last = NULL;
+	list_foreach(tiers)
 	{
-		auto tier = tier_of(list_at(Relation, link));
-		if (tier->config->system)
-			continue;
-		source_write(tier->config, buf, false);
-	}
-	encode_array_end(buf);
-}
-
-Tier*
-tier_mgr_find(TierMgr* self, Str* name, bool error_if_not_exists)
-{
-	auto relation = relation_mgr_get(&self->mgr, NULL, name);
-	if (! relation)
-	{
-		if (error_if_not_exists)
-			error("tier '%.*s': not exists", str_size(name),
-			      str_of(name));
-		return NULL;
-	}
-	return tier_of(relation);
-}
-
-Buf*
-tier_mgr_list(TierMgr* self, Str* name, bool extended)
-{
-	unused(extended);
-	auto buf = buf_create();
-	if (name)
-	{
-		auto tier = tier_mgr_find(self, name, false);
-		if (tier)
-			source_write(tier->config, buf, true);
+		// create tier
+		auto config = list_at(TierConfig, link);
+		auto tier = tier_allocate(config, NULL);
+		if (last)
+			last->next = tier;
 		else
-			encode_null(buf);
-	} else
-	{
-		encode_array(buf);
-		list_foreach(&self->mgr.list)
-		{
-			auto tier = tier_of(list_at(Relation, link));
-			source_write(tier->config, buf, true);
-		}
-		encode_array_end(buf);
+			self->tiers = tier;
+		last = tier;
+		self->tiers_count++;
+
+		// resolve storages
+		tier_resolve(tier, storage_mgr);
+
+		// read objects
+		tier_open(tier);
 	}
-	return buf;
 }

@@ -25,16 +25,16 @@ heap_create(Heap*     self,
             Encoding* encoding)
 {
 	// prepare encoder
-	Encoder encoder;
-	encoder_init(&encoder);
-	defer(encoder_free, &encoder);
-	encoder_open(&encoder, encoding);
+	Encoder ec;
+	encoder_init(&ec);
+	defer(encoder_free, &ec);
+	encoder_open(&ec, encoding);
 
 	// prepare header (including buckets)
 	auto size = sizeof(HeapHeader) + sizeof(HeapBucket) * 385;
 	auto header = self->header;
-	header->compression = encoder_compression(&encoder);
-	header->encryption  = encoder_encryption(&encoder);
+	header->compression = encoder_compression(&ec);
+	header->encryption  = encoder_encryption(&ec);
 	header->crc = runtime()->crc(0, &header->magic, size - sizeof(uint32_t));
 
 	// create heap file
@@ -53,15 +53,15 @@ heap_create(Heap*     self,
 		auto page_size = page_header->size - sizeof(PageHeader);
 
 		// compress and encrypt
-		encoder_reset(&encoder);
-		encoder_add(&encoder, page_data, page_size);
-		encoder_encode(&encoder);
-		auto iov = encoder_iov(&encoder);
+		encoder_reset(&ec);
+		encoder_add(&ec, page_data, page_size);
+		encoder_encode(&ec);
+		auto iov = encoder_iov(&ec);
 		page_header->size_compressed = iov->iov_len;
 
 		// calculate page crc
 		if (storage->config->crc)
-			page_header->crc = encoder_iov_crc(&encoder);
+			page_header->crc = encoder_iov_crc(&ec);
 
 		page_data = iov->iov_base;
 		page_size = iov->iov_len;
@@ -105,12 +105,12 @@ heap_open(Heap*     self,
 		      str_of(&file.path));
 
 	// prepare encoder
-	Encoder encoder;
-	encoder_init(&encoder);
-	defer(encoder_free, &encoder);
-	encoder_open(&encoder, encoding);
-	encoder_set_encryption(&encoder, header->encryption);
-	encoder_set_compression(&encoder, header->compression);
+	Encoder ec;
+	encoder_init(&ec);
+	defer(encoder_free, &ec);
+	encoder_open(&ec, encoding);
+	encoder_set_encryption(&ec, header->encryption);
+	encoder_set_compression(&ec, header->compression);
 
 	// read pages
 	auto page_mgr = &self->page_mgr;
@@ -121,7 +121,7 @@ heap_open(Heap*     self,
 		auto page_header = (PageHeader*)page->pointer;
 
 		// decode page or read page as is
-		if (encoder_active(&encoder))
+		if (encoder_active(&ec))
 		{
 			// read into buffer
 			auto buf = buf_create();
@@ -137,7 +137,7 @@ heap_open(Heap*     self,
 					      str_of(&file.path));
 			}
 
-			encoder_decode(&encoder, page->pointer + sizeof(PageHeader),
+			encoder_decode(&ec, page->pointer + sizeof(PageHeader),
 			               page_header->size - sizeof(PageHeader),
 			               buf->start,
 			               buf_size(buf));

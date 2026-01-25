@@ -12,6 +12,7 @@
 //
 
 typedef struct Object Object;
+typedef struct Tier   Tier;
 
 struct Object
 {
@@ -22,6 +23,7 @@ struct Object
 	File       file;
 	Encoding*  encoding;
 	Storage*   storage;
+	Tier*      tier;
 	RbtreeNode link_mapping;
 	List       link;
 };
@@ -33,6 +35,12 @@ void object_open(Object*, int, bool);
 void object_create(Object*, int);
 void object_delete(Object*, int);
 void object_rename(Object*, int, int);
+
+static inline void
+object_set_tier(Object* self, Tier* tier)
+{
+	self->tier = tier;
+}
 
 static inline void
 object_set(Object* self, int state)

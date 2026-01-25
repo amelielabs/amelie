@@ -11,15 +11,7 @@
 // AGPL-3.0 Licensed.
 //
 
-// tier
+#include "tier/tier_storage.h"
+#include "tier/tier_config.h"
 #include "tier/tier.h"
 #include "tier/tier_mgr.h"
-
-// volume
-#include "tier/volume_config.h"
-#include "tier/volume.h"
-#include "tier/volume_mgr.h"
-#include "tier/volume_mgr_recover.h"
-
-// deploy
-#include "tier/deploy.h"

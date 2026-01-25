@@ -15,48 +15,69 @@ typedef struct Tier Tier;
 
 struct Tier
 {
-	Relation rel;
-	Source*  config;
-	int      refs;
-	List     link;
+	Mapping     mapping;
+	List        list;
+	int         list_count;
+	TierConfig* config;
+	Encoding    ec;
+	Tier*       next;
 };
 
-static inline void
-tier_free(Tier* self)
-{
-	source_free(self->config);
-	am_free(self);
-}
-
 static inline Tier*
-tier_allocate(Source* config)
+tier_allocate(TierConfig* config, Keys* keys)
 {
 	auto self = (Tier*)am_malloc(sizeof(Tier));
-	self->config = source_copy(config);
-	self->refs   = 0;
-	list_init(&self->link);
-	relation_init(&self->rel);
-	relation_set_db(&self->rel, NULL);
-	relation_set_name(&self->rel, &self->config->name);
-	relation_set_free_function(&self->rel, (RelationFree)tier_free);
+	self->list_count = 0;
+	self->config     = tier_config_copy(config);
+	self->next       = NULL;
+	mapping_init(&self->mapping, keys);
+	list_init(&self->list);
+	encoding_init(&self->ec);
+
+	// set encoding
+	auto ec = &self->ec;
+	ec->compression       = &self->config->compression;
+	ec->compression_level = self->config->compression_level;
+	ec->encryption        = &self->config->encryption;
+	ec->encryption_key    = &self->config->encryption_key;
 	return self;
 }
 
 static inline void
-tier_ref(Tier* self)
+tier_free(Tier* self)
 {
-	self->refs++;
+	list_foreach_safe(&self->list)
+	{
+		auto object = list_at(Object, link);
+		object_free(object);
+	}
+	tier_config_free(self->config);
+	am_free(self);
 }
 
 static inline void
-tier_unref(Tier* self)
+tier_add(Tier* self, Object* object)
 {
-	self->refs--;
-	assert(self->refs >= 0);
+	list_append(&self->list, &object->link);
+	self->list_count++;
+	object_set_tier(object, self);
 }
 
-static inline Tier*
-tier_of(Relation* self)
+static inline void
+tier_remove(Tier* self, Object* object)
 {
-	return (Tier*)self;
+	assert(object->tier == self);
+	list_unlink(&object->link);
+	self->list_count--;
+	object_set_tier(object, NULL);
+}
+
+static inline void
+tier_resolve(Tier* self, StorageMgr* storage_mgr)
+{
+	list_foreach(&self->config->storages)
+	{
+		auto ref = list_at(TierStorage, link);
+		ref->storage = storage_mgr_find(storage_mgr, &ref->name, true);
+	}
 }

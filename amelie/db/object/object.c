@@ -25,6 +25,7 @@ object_allocate(Storage* storage, Id* id, Encoding* encoding)
 	self->state    = ID_NONE;
 	self->encoding = encoding;
 	self->storage  = storage;
+	self->tier     = NULL;
 	meta_init(&self->meta);
 	buf_init(&self->meta_data);
 	file_init(&self->file);

@@ -15,14 +15,10 @@ typedef struct TierMgr TierMgr;
 
 struct TierMgr
 {
-	RelationMgr mgr;
+	Tier* tiers;
+	int   tiers_count;
 };
 
-void  tier_mgr_init(TierMgr*);
-void  tier_mgr_free(TierMgr*);
-bool  tier_mgr_create(TierMgr*, Tr*, Source*, bool);
-bool  tier_mgr_drop(TierMgr*, Tr*, Str*, bool);
-bool  tier_mgr_rename(TierMgr*, Tr*, Str*, Str*, bool);
-void  tier_mgr_dump(TierMgr*, Buf*);
-Buf*  tier_mgr_list(TierMgr*, Str*, bool);
-Tier* tier_mgr_find(TierMgr*, Str*, bool);
+void tier_mgr_init(TierMgr*);
+void tier_mgr_free(TierMgr*);
+void tier_mgr_open(TierMgr*, StorageMgr*, List*);

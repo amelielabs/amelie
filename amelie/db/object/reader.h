@@ -60,14 +60,9 @@ reader_execute(Reader* self, MetaRegion* meta_region)
 	auto encoder = &self->encoder;
 	encoder_reset(encoder);
 
-	if (object_has(object, ID))
-	{
-		// read region data from file
-		file_pread_buf(&object->file, &self->buf_read, meta_region->size,
-		               meta_region->offset);
-	} else {
-		abort();
-	}
+	// read region data from file
+	file_pread_buf(&object->file, &self->buf_read, meta_region->size,
+	               meta_region->offset);
 
 	// decrypt/decompress or read raw
 	Region* region = NULL;

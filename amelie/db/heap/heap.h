@@ -60,8 +60,8 @@ struct HeapHeader
 	uint32_t   crc;
 	uint32_t   magic;
 	uint32_t   version;
-	uint32_t   hash_min;
-	uint32_t   hash_max;
+	uint16_t   hash_min;
+	uint16_t   hash_max;
 	uint8_t    compression;
 	uint8_t    encryption;
 	uint32_t   count;
