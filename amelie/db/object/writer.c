@@ -105,7 +105,7 @@ writer_start(Writer*   self, File* file,
 }
 
 void
-writer_stop(Writer* self, Id* id)
+writer_stop(Writer* self)
 {
 	if (! meta_writer_started(&self->meta_writer))
 		return;
@@ -113,7 +113,7 @@ writer_stop(Writer* self, Id* id)
 	// complete last region and meta data
 	if (region_writer_started(&self->region_writer))
 		writer_stop_region(self);
-	meta_writer_stop(&self->meta_writer, id);
+	meta_writer_stop(&self->meta_writer);
 
 	// write region
 	auto encoder = &self->meta_writer.encoder;

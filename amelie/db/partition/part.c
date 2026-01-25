@@ -12,34 +12,31 @@
 
 #include <amelie_runtime>
 #include <amelie_row.h>
-#include <amelie_heap.h>
 #include <amelie_transaction.h>
+#include <amelie_storage.h>
+#include <amelie_heap.h>
 #include <amelie_index.h>
 #include <amelie_object.h>
+#include <amelie_tier.h>
 #include <amelie_partition.h>
 
 Part*
-part_allocate(Source*   source,
+part_allocate(TierMgr*  tier_mgr,
               Id*       id,
               Sequence* seq,
               bool      unlogged)
 {
 	auto self = (Part*)am_malloc(sizeof(Part));
 	self->id            = *id;
-	self->source        = source;
 	self->indexes       = NULL;
 	self->indexes_count = 0;
 	self->heap          = heap_allocate();
 	self->heap_shadow   = NULL;
-	self->volume        = NULL;
-	self->object        = NULL;
+	self->tier_mgr      = tier_mgr;
 	self->seq           = seq;
 	self->unlogged      = unlogged;
-	heap_create(self->heap);
 	track_init(&self->track);
-	list_init(&self->link_volume);
 	list_init(&self->link);
-	rbtree_init_node(&self->link_range);
 	return self;
 }
 
@@ -58,43 +55,34 @@ part_free(Part* self)
 		heap_free(self->heap);
 	if (self->heap_shadow)
 		heap_free(self->heap_shadow);
-	if (self->object)
-		object_free(self->object);
 	am_free(self);
 }
 
 void
-part_load(Part* self)
+part_open(Part* self)
 {
-	auto object = self->object;
-	auto keys = index_keys(part_primary(self));
+	// read heap file
+	heap_open(self->heap, &self->id, ID_HEAP);
 
-	// iterate object file
-	ObjectIterator it;
-	object_iterator_init(&it);
-	defer(object_iterator_free, &it);
-	object_iterator_open(&it, keys, object, NULL);
-
-	// read into heap
-	auto count = 0ul;
-	while (object_iterator_has(&it))
+	// rebuild indexes
+	HeapIterator it;
+	heap_iterator_init(&it);
+	heap_iterator_open(&it, self->heap, NULL);
+	uint64_t count = 0;
+	while (heap_iterator_has(&it))
 	{
-		auto ref = object_iterator_at(&it);
-		auto row = row_copy(self->heap, ref);
+		auto row = heap_iterator_at(&it);
 		part_apply(self, row, false);
 		count++;
-		object_iterator_next(&it);
+		heap_iterator_next(&it);
 	}
 
-	char uuid[UUID_SZ];
-	uuid_get(&self->id.id_table, uuid, sizeof(uuid));
+	char id[UUID_SZ];
+	uuid_get(&self->id.id_table, id, sizeof(id));
 
-	auto total = (double)object->file.size / 1024 / 1024;
-	info(" %s/%05" PRIu64 ".%05" PRIu64 " (%.2f MiB, %" PRIu64 " rows)",
-	     uuid,
-	     self->id.id_parent,
-	     self->id.id,
-	     total, count);
+	auto total = (double)page_mgr_used(&self->heap->page_mgr) / 1024 / 1024;
+	info(" %s/%05" PRIu64 ".heap (%.2f MiB, %" PRIu64 " rows)",
+	     id, self->id.id, total, count);
 }
 
 void

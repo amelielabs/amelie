@@ -11,40 +11,29 @@
 // AGPL-3.0 Licensed.
 //
 
-typedef struct Volume Volume;
-typedef struct Part   Part;
+typedef struct Part Part;
 
 struct Part
 {
-	Id         id;
-	Source*    source;
-	Index*     indexes;
-	int        indexes_count;
-	Track      track;
-	Heap*      heap;
-	Heap*      heap_shadow;
-	Object*    object;
-	Volume*    volume;
-	Sequence*  seq;
-	bool       unlogged;
-	List       link;
-	List       link_volume;
-	RbtreeNode link_range;
+	Id        id;
+	Index*    indexes;
+	int       indexes_count;
+	Track     track;
+	Heap*     heap;
+	Heap*     heap_shadow;
+	TierMgr*  tier_mgr;
+	Sequence* seq;
+	bool      unlogged;
+	List      link;
 };
 
-Part*  part_allocate(Source*, Id*, Sequence*, bool);
+Part*  part_allocate(TierMgr*, Id*, Sequence*, bool);
 void   part_free(Part*);
-void   part_load(Part*);
+void   part_open(Part*);
 void   part_truncate(Part*);
 void   part_index_add(Part*, IndexConfig*);
 void   part_index_drop(Part*, Str*);
 Index* part_index_find(Part*, Str*, bool);
-
-static inline void
-part_set_volume(Part* self, Volume* volume)
-{
-	self->volume = volume;
-}
 
 static inline Index*
 part_primary(Part* self)
@@ -55,5 +44,5 @@ part_primary(Part* self)
 static inline bool
 part_has_updates(Part* self)
 {
-	return track_lsn(&self->track) > self->object->meta.lsn;
+	return track_lsn(&self->track) > self->heap->header->lsn;
 }

@@ -47,6 +47,7 @@ heap_prepare(Heap* self)
 	header->crc         = 0;
 	header->magic       = HEAP_MAGIC;
 	header->version     = 0;
+	header->lsn         = 0;
 	header->hash_min    = 0;
 	header->hash_max    = 0;
 	header->compression = COMPRESSION_NONE;

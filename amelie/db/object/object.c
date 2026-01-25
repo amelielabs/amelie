@@ -18,14 +18,10 @@
 #include <amelie_object.h>
 
 Object*
-object_allocate(Storage* storage, Id* id, Encoding* encoding)
+object_allocate(Id* id)
 {
 	auto self = (Object*)am_malloc(sizeof(Object));
-	self->id       = *id;
-	self->state    = ID_NONE;
-	self->encoding = encoding;
-	self->storage  = storage;
-	self->tier     = NULL;
+	self->id = *id;
 	meta_init(&self->meta);
 	buf_init(&self->meta_data);
 	file_init(&self->file);
@@ -105,7 +101,7 @@ object_read_index(Object* self)
 	Encoder encoder;
 	encoder_init(&encoder);
 	defer(encoder_free, &encoder);
-	encoder_open(&encoder, self->encoding);
+	encoder_open(&encoder, self->id.encoding);
 	encoder_set_encryption(&encoder, meta->encryption);
 	encoder_set_compression(&encoder, meta->compression);
 
@@ -132,11 +128,8 @@ object_read_index(Object* self)
 void
 object_open(Object* self, int state, bool read_index)
 {
-	// <storage_path>/<id_tier>/<id_part>/<id>.lru
-	// <storage_path>/<id_tier>/<id_part>/<id>.<parent_first>.<parent_last>
-
 	// open object file
-	storage_open(self->storage, &self->file, &self->id, state);
+	id_open(&self->id, &self->file, state);
 
 	// read meta data footer
 	object_read(self);
@@ -149,17 +142,17 @@ object_open(Object* self, int state, bool read_index)
 void
 object_create(Object* self, int state)
 {
-	storage_create(self->storage, &self->file, &self->id, state);
+	id_create(&self->id, &self->file, state);
 }
 
 void
 object_delete(Object* self, int state)
 {
-	storage_delete(self->storage, &self->id, state);
+	id_delete(&self->id, state);
 }
 
 void
 object_rename(Object* self, int from, int to)
 {
-	storage_rename(self->storage, &self->id, from, to);
+	id_rename(&self->id, from, to);
 }

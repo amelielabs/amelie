@@ -11,4 +11,5 @@
 // AGPL-3.0 Licensed.
 //
 
-void volume_mgr_recover(VolumeMgr*, List*, List*);
+void part_mgr_recover(PartMgr*, List*);
+void part_mgr_deploy(PartMgr*, int);

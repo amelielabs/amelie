@@ -19,7 +19,7 @@ struct Tier
 	List        list;
 	int         list_count;
 	TierConfig* config;
-	Encoding    ec;
+	Encoding    encoding;
 	Tier*       next;
 };
 
@@ -32,10 +32,10 @@ tier_allocate(TierConfig* config, Keys* keys)
 	self->next       = NULL;
 	mapping_init(&self->mapping, keys);
 	list_init(&self->list);
-	encoding_init(&self->ec);
+	encoding_init(&self->encoding);
 
 	// set encoding
-	auto ec = &self->ec;
+	auto ec = &self->encoding;
 	ec->compression       = &self->config->compression;
 	ec->compression_level = self->config->compression_level;
 	ec->encryption        = &self->config->encryption;
@@ -60,16 +60,20 @@ tier_add(Tier* self, Object* object)
 {
 	list_append(&self->list, &object->link);
 	self->list_count++;
-	object_set_tier(object, self);
 }
 
 static inline void
 tier_remove(Tier* self, Object* object)
 {
-	assert(object->tier == self);
+	assert(object->id.tier == self);
 	list_unlink(&object->link);
 	self->list_count--;
-	object_set_tier(object, NULL);
+}
+
+static inline Storage*
+tier_storage(Tier* self)
+{
+	return container_of(self->config->storages.next, TierStorage, link)->storage;
 }
 
 static inline void

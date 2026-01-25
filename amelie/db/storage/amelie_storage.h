@@ -11,14 +11,14 @@
 // AGPL-3.0 Licensed.
 //
 
-// storage object id
-#include "storage/id.h"
+// encoding
+#include "storage/encoding.h"
+#include "storage/encoder.h"
 
 // storage
 #include "storage/storage_config.h"
 #include "storage/storage.h"
 #include "storage/storage_mgr.h"
 
-// encoding
-#include "storage/encoding.h"
-#include "storage/encoder.h"
+// storage file id
+#include "storage/id.h"

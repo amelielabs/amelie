@@ -62,7 +62,7 @@ storage_of(Relation* self)
 }
 
 static inline void
-storage_fmt(Storage* self, char* buf, char* fmt, ...)
+storage_pathfmt(Storage* self, char* buf, char* fmt, ...)
 {
 	// set relative path
 	char relative[512];
@@ -83,66 +83,4 @@ storage_fmt(Storage* self, char* buf, char* fmt, ...)
 		sfmt(buf, PATH_MAX, "%s/%.*s/%s", state_directory(),
 		     str_size(path), str_of(path), relative);
 	}
-}
-
-static inline void
-storage_path(Storage* self, char* buf, Id* id, int state)
-{
-	// tier id (uuid)
-	char id_tier[UUID_SZ];
-	uuid_get(&id->id_tier, id_tier, sizeof(id_tier));
-
-	switch (state) {
-	case ID_HEAP:
-		// <storage_path>/<id_tier>/<id>.heap
-		storage_fmt(self, buf, "%s/%05" PRIu64,
-		            id_tier, id->id);
-		break;
-	case ID_HEAP_INCOMPLETE:
-		// <storage_path>/<id_tier>/<id>.heap.incomplete
-		storage_fmt(self, buf, "%s/%05" PRIu64 ".heap.incomplete",
-		            id_tier, id->id);
-		break;
-	default:
-		abort();
-		break;
-	}
-}
-
-static inline void
-storage_create(Storage* self, File* file, Id* id, int state)
-{
-	char path[PATH_MAX];
-	storage_path(self, path, id, state);
-	file_create(file, path);
-}
-
-static inline void
-storage_open(Storage* self, File* file, Id* id, int state)
-{
-	char path[PATH_MAX];
-	storage_path(self, path, id, state);
-	file_open(file, path);
-}
-
-static inline void
-storage_delete(Storage* self, Id* id, int state)
-{
-	// <source_path>/<table_uuid>/<id_parent>.<id>
-	char path[PATH_MAX];
-	storage_path(self, path, id, state);
-	if (fs_exists("%s", path))
-		fs_unlink("%s", path);
-}
-
-static inline void
-storage_rename(Storage* self, Id* id, int from, int to)
-{
-	// rename file from one state to another
-	char path_from[PATH_MAX];
-	char path_to[PATH_MAX];
-	storage_path(self, path_from, id, from);
-	storage_path(self, path_to, id, to);
-	if (fs_exists("%s", path_from))
-		fs_rename(path_from, "%s", path_to);
 }

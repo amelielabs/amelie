@@ -15,9 +15,13 @@
 #include "partition/part.h"
 #include "partition/part_op.h"
 
-// partition locking
-#include "partition/part_lock_mgr.h"
+// partition manager
+#include "partition/part_mapping.h"
+#include "partition/part_mgr.h"
+#include "partition/part_mgr_recover.h"
 
-// partition mapping
-#include "partition/mapping_range.h"
-#include "partition/mapping.h"
+// deploy
+#include "partition/deploy.h"
+
+// global partition locking
+#include "partition/part_lock_mgr.h"

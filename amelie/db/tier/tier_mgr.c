@@ -25,14 +25,14 @@ closedir_defer(DIR* self)
 }
 
 static void
-tier_open_storage(Tier* self, TierStorage* storage)
+tier_open_storage(TierMgr* self, Tier* tier, TierStorage* storage)
 {
 	char id[UUID_SZ];
-	uuid_get(&self->config->id, id, sizeof(id));
+	uuid_get(&tier->config->id, id, sizeof(id));
 
 	// <storage_path>/<tier>
 	char path[PATH_MAX];
-	storage_fmt(storage->storage, path, "%s", id);
+	storage_pathfmt(storage->storage, path, "%s", id);
 
 	// create tier directory, if not exists
 	if (! fs_exists("%s", path))
@@ -56,8 +56,8 @@ tier_open_storage(Tier* self, TierStorage* storage)
 
 		// <id>.type [.incomplete]
 		int64_t psn;
-		auto rc = id_of(entry->d_name, &psn);
-		if (rc == -1)
+		auto state = id_of(entry->d_name, &psn);
+		if (state == -1)
 		{
 			info("tier: skipping unknown file: '%s%s'", path,
 			     entry->d_name);
@@ -68,29 +68,35 @@ tier_open_storage(Tier* self, TierStorage* storage)
 		// add object to the tier
 		Id id =
 		{
-			.id      = psn,
-			.id_tier = self->config->id
+			.id       = psn,
+			.id_tier  = tier->config->id,
+			.id_table = self->id_table,
+			.state    = state,
+			.storage  = storage->storage,
+			.tier     = tier,
+			.encoding = &tier->encoding
 		};
-		auto object = object_allocate(storage->storage, &id, &self->ec);
-		tier_add(self, object);
+		auto object = object_allocate(&id);
+		tier_add(tier, object);
 	}
 }
 
 static void
-tier_open(Tier* self)
+tier_open(TierMgr* self, Tier* tier)
 {
-	list_foreach(&self->config->storages)
+	list_foreach(&tier->config->storages)
 	{
 		auto storage = list_at(TierStorage, link);
-		tier_open_storage(self, storage);
+		tier_open_storage(self, tier, storage);
 	}
 }
 
 void
-tier_mgr_init(TierMgr* self)
+tier_mgr_init(TierMgr* self, Uuid* id_table)
 {
-	self->tiers = NULL;
+	self->tiers       = NULL;
 	self->tiers_count = 0;
+	self->id_table    = *id_table;
 }
 
 void
@@ -127,6 +133,6 @@ tier_mgr_open(TierMgr* self, StorageMgr* storage_mgr, List* tiers)
 		tier_resolve(tier, storage_mgr);
 
 		// read objects
-		tier_open(tier);
+		tier_open(self, tier);
 	}
 }

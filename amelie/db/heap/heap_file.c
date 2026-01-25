@@ -17,18 +17,13 @@
 #include <amelie_heap.h>
 
 void
-heap_create(Heap*     self,
-            File*     file,
-            Storage*  storage,
-            Id*       id,
-            int       state,
-            Encoding* encoding)
+heap_create(Heap* self, File* file, Id* id, int state)
 {
 	// prepare encoder
 	Encoder ec;
 	encoder_init(&ec);
 	defer(encoder_free, &ec);
-	encoder_open(&ec, encoding);
+	encoder_open(&ec, id->encoding);
 
 	// prepare header (including buckets)
 	auto size = sizeof(HeapHeader) + sizeof(HeapBucket) * 385;
@@ -38,7 +33,7 @@ heap_create(Heap*     self,
 	header->crc = runtime()->crc(0, &header->magic, size - sizeof(uint32_t));
 
 	// create heap file
-	storage_create(storage, file, id, state);
+	id_create(id, file, state);
 
 	// write header
 	file_write(file, header, size);
@@ -60,7 +55,7 @@ heap_create(Heap*     self,
 		page_header->size_compressed = iov->iov_len;
 
 		// calculate page crc
-		if (storage->config->crc)
+		if (id->storage->config->crc)
 			page_header->crc = encoder_iov_crc(&ec);
 
 		page_data = iov->iov_base;
@@ -71,17 +66,13 @@ heap_create(Heap*     self,
 }
 
 void
-heap_open(Heap*     self,
-          Storage*  storage,
-          Id*       id,
-          int       state,
-          Encoding* encoding)
+heap_open(Heap* self, Id* id, int state)
 {
 	// open heap file
 	File file;
 	file_init(&file);
 	defer(file_close, &file);
-	storage_open(storage, &file, id, state);
+	id_open(id, &file, state);
 
 	// read header
 	auto header = self->header;
@@ -108,7 +99,7 @@ heap_open(Heap*     self,
 	Encoder ec;
 	encoder_init(&ec);
 	defer(encoder_free, &ec);
-	encoder_open(&ec, encoding);
+	encoder_open(&ec, id->encoding);
 	encoder_set_encryption(&ec, header->encryption);
 	encoder_set_compression(&ec, header->compression);
 
@@ -129,7 +120,7 @@ heap_open(Heap*     self,
 			file_read_buf(&file, buf, page_header->size_compressed);
 
 			// validate crc
-			if (storage->config->crc)
+			if (id->storage->config->crc)
 			{
 				crc = runtime()->crc(0, buf->start, buf_size(buf));
 				if (crc != page_header->crc)
@@ -149,7 +140,7 @@ heap_open(Heap*     self,
 			file_read(&file, page_data, page_size);
 
 			// validate crc
-			if (storage->config->crc)
+			if (id->storage->config->crc)
 			{
 				crc = runtime()->crc(0, page_data, page_size);
 				if (crc != page_header->crc)

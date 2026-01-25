@@ -73,7 +73,7 @@ meta_writer_start(MetaWriter* self, bool crc)
 }
 
 static inline void
-meta_writer_stop(MetaWriter* self, Id* id)
+meta_writer_stop(MetaWriter* self)
 {
 	// [[offsets][meta_regions]] [meta]
 	auto meta = &self->meta;
@@ -89,7 +89,6 @@ meta_writer_stop(MetaWriter* self, Id* id)
 	meta->crc_data          = 0;
 	meta->magic             = META_MAGIC;
 	meta->version           = META_VERSION;
-	meta->id                = *id;
 	meta->size_origin       = meta->size;
 	meta->size              = encoder_iov(encoder)->iov_len;
 	meta->size_total        =

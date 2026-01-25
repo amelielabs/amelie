@@ -17,48 +17,19 @@ typedef struct Tier   Tier;
 struct Object
 {
 	Id         id;
-	int        state;
 	Meta       meta;
 	Buf        meta_data;
 	File       file;
-	Encoding*  encoding;
-	Storage*   storage;
-	Tier*      tier;
 	RbtreeNode link_mapping;
 	List       link;
 };
 
-Object*
-object_allocate(Storage*, Id*, Encoding*);
-void object_free(Object*);
-void object_open(Object*, int, bool);
-void object_create(Object*, int);
-void object_delete(Object*, int);
-void object_rename(Object*, int, int);
-
-static inline void
-object_set_tier(Object* self, Tier* tier)
-{
-	self->tier = tier;
-}
-
-static inline void
-object_set(Object* self, int state)
-{
-	self->state |= state;
-}
-
-static inline void
-object_unset(Object* self, int state)
-{
-	self->state &= ~state;
-}
-
-static inline bool
-object_has(Object* self, int state)
-{
-	return (self->state & state) > 0;
-}
+Object* object_allocate(Id*);
+void    object_free(Object*);
+void    object_open(Object*, int, bool);
+void    object_create(Object*, int);
+void    object_delete(Object*, int);
+void    object_rename(Object*, int, int);
 
 hot always_inline static inline Row*
 object_min(Object* self)

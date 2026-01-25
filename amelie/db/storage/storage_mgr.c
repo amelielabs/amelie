@@ -51,7 +51,7 @@ storage_mgr_create(StorageMgr*    self,
 
 	// create storage directory, if not exists
 	char path[PATH_MAX];
-	storage_fmt(storage, path, "", NULL);
+	storage_pathfmt(storage, path, "", NULL);
 	if (! fs_exists("%s", path))
 		fs_mkdir(0755, "%s", path);
 
