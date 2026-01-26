@@ -12,16 +12,18 @@
 
 #include <amelie_runtime>
 #include <amelie_row.h>
-#include <amelie_heap.h>
 #include <amelie_transaction.h>
+#include <amelie_storage.h>
+#include <amelie_heap.h>
 #include <amelie_index.h>
 #include <amelie_object.h>
-#include <amelie_partition.h>
 #include <amelie_tier.h>
+#include <amelie_partition.h>
 #include <amelie_catalog.h>
 
 enum
 {
+	RESTORE_STORAGE,
 	RESTORE_DB,
 	RESTORE_TABLE,
 	RESTORE_UDF
@@ -31,6 +33,16 @@ static void
 catalog_restore_relation(Catalog* self, Tr* tr, int type, uint8_t** pos)
 {
 	switch (type) {
+	case RESTORE_STORAGE:
+	{
+		// read storage config
+		auto config = storage_config_read(pos);
+		defer(storage_config_free, config);
+
+		// create storage
+		storage_mgr_create(&self->storage_mgr, tr, config, false);
+		break;
+	}
 	case RESTORE_DB:
 	{
 		// read db config
@@ -91,20 +103,27 @@ catalog_restore_object(Catalog* self, int type, uint8_t** pos)
 static void
 catalog_restore(Catalog* self, uint8_t** pos)
 {
-	// { lsn, databases, tables, udfs }
+	// { lsn, storages, databases, tables, udfs }
 	int64_t  lsn           = 0;
+	uint8_t* pos_storages  = NULL;
 	uint8_t* pos_databases = NULL;
 	uint8_t* pos_tables    = NULL;
 	uint8_t* pos_udfs      = NULL;
 	Decode obj[] =
 	{
 		{ DECODE_INT,   "lsn",       &lsn           },
+		{ DECODE_ARRAY, "storages",  &pos_storages  },
 		{ DECODE_ARRAY, "databases", &pos_databases },
 		{ DECODE_ARRAY, "tables",    &pos_tables    },
 		{ DECODE_ARRAY, "udfs",      &pos_udfs      },
 		{ 0,             NULL,        NULL          },
 	};
 	decode_obj(obj, "catalog", pos);
+
+	// storages
+	json_read_array(&pos_databases);
+	while (! json_read_array_end(&pos_storages))
+		catalog_restore_object(self, RESTORE_STORAGE, &pos_storages);
 
 	// databases
 	json_read_array(&pos_databases);
@@ -169,13 +188,17 @@ catalog_read(Catalog* self)
 static Buf*
 catalog_write_prepare(Catalog* self, uint64_t lsn)
 {
-	// { lsn, databases, tables, udfs }
+	// { lsn, storages, databases, tables, udfs }
 	auto buf = buf_create();
 	encode_obj(buf);
 
 	// lsn
 	encode_raw(buf, "lsn", 3);
 	encode_integer(buf, lsn);
+
+	// storages
+	encode_raw(buf, "storages", 8);
+	storage_mgr_dump(&self->storage_mgr, buf);
 
 	// databases
 	encode_raw(buf, "databases", 9);

@@ -12,19 +12,20 @@
 
 #include <amelie_runtime>
 #include <amelie_row.h>
-#include <amelie_heap.h>
 #include <amelie_transaction.h>
+#include <amelie_storage.h>
+#include <amelie_heap.h>
 #include <amelie_index.h>
 #include <amelie_object.h>
-#include <amelie_partition.h>
 #include <amelie_tier.h>
+#include <amelie_partition.h>
 #include <amelie_catalog.h>
 
 void
-table_mgr_init(TableMgr* self, TierMgr* tier_mgr, Deploy* deploy)
+table_mgr_init(TableMgr* self, StorageMgr* storage_mgr, Deploy* deploy)
 {
-	self->tier_mgr = tier_mgr;
-	self->deploy   = deploy;
+	self->storage_mgr = storage_mgr;
+	self->deploy      = deploy;
 	relation_mgr_init(&self->mgr);
 }
 
@@ -51,7 +52,7 @@ table_mgr_create(TableMgr*    self,
 	}
 
 	// allocate table
-	auto table = table_allocate(config, self->tier_mgr, self->deploy);
+	auto table = table_allocate(config, self->storage_mgr, self->deploy);
 
 	// update tables
 	relation_mgr_create(&self->mgr, tr, &table->rel);
@@ -90,7 +91,7 @@ truncate_if_commit(Log* self, LogOp* op)
 	auto relation = log_relation_of(self, op);
 	auto table = table_of(relation->relation);
 	// truncate all partitions
-	volume_mgr_truncate(&table->volume_mgr);
+	part_mgr_truncate(&table->part_mgr);
 }
 
 static void

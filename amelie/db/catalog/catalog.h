@@ -23,7 +23,7 @@ struct CatalogIf
 
 struct Catalog
 {
-	TierMgr    tier_mgr;
+	StorageMgr storage_mgr;
 	DbMgr      db_mgr;
 	TableMgr   table_mgr;
 	UdfMgr     udf_mgr;

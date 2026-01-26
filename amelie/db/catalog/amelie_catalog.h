@@ -14,8 +14,8 @@
 // ddl
 #include "catalog/ddl.h"
 
-// tier
-#include "catalog/tier_op.h"
+// storage
+#include "catalog/storage_op.h"
 
 // db
 #include "catalog/db_config.h"

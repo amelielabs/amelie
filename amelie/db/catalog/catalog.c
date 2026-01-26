@@ -12,12 +12,13 @@
 
 #include <amelie_runtime>
 #include <amelie_row.h>
-#include <amelie_heap.h>
 #include <amelie_transaction.h>
+#include <amelie_storage.h>
+#include <amelie_heap.h>
 #include <amelie_index.h>
 #include <amelie_object.h>
-#include <amelie_partition.h>
 #include <amelie_tier.h>
+#include <amelie_partition.h>
 #include <amelie_catalog.h>
 
 void
@@ -28,9 +29,9 @@ catalog_init(Catalog*   self,
 {
 	self->iface = iface;
 	self->iface_arg = iface_arg;
-	tier_mgr_init(&self->tier_mgr);
+	storage_mgr_init(&self->storage_mgr);
 	db_mgr_init(&self->db_mgr);
-	table_mgr_init(&self->table_mgr, &self->tier_mgr, deploy);
+	table_mgr_init(&self->table_mgr, &self->storage_mgr, deploy);
 	udf_mgr_init(&self->udf_mgr, iface->udf_free, iface_arg);
 }
 
@@ -40,7 +41,7 @@ catalog_free(Catalog* self)
 	udf_mgr_free(&self->udf_mgr);
 	table_mgr_free(&self->table_mgr);
 	db_mgr_free(&self->db_mgr);
-	tier_mgr_free(&self->tier_mgr);
+	storage_mgr_free(&self->storage_mgr);
 }
 
 static void
@@ -62,15 +63,13 @@ catalog_prepare(Catalog* self)
 		str_init(&name);
 		str_set_cstr(&name, "main");
 
-		// create main tier
-		auto tier_config = source_allocate();
-		defer(source_free, tier_config);
-		source_set_name(tier_config, &name);
-		source_set_path(tier_config, &name);
-		source_set_in_memory(tier_config, true);
-		source_set_auto_partitioning(tier_config, true);
-		source_set_system(tier_config, true);
-		tier_mgr_create(&self->tier_mgr, &tr, tier_config, false);
+		// create main storage
+		auto storage_config = storage_config_allocate();
+		defer(storage_free, storage_config_free);
+		storage_config_set_name(storage_config, &name);
+		storage_config_set_path(storage_config, &name);
+		storage_config_set_system(storage_config, true);
+		storage_mgr_create(&self->storage_mgr, &tr, storage_config, false);
 
 		// create main db
 		auto db_config = db_config_allocate();
@@ -124,9 +123,9 @@ catalog_status(Catalog* self)
 		tables_secondary_indexes += (table->config->indexes_count - 1);
 	}
 
-	// tiers
-	encode_raw(buf, "tiers", 5);
-	encode_integer(buf, self->tier_mgr.mgr.list_count);
+	// storages
+	encode_raw(buf, "storages", 8);
+	encode_integer(buf, self->storage_mgr.mgr.list_count);
 
 	// databases
 	encode_raw(buf, "databases", 9);
@@ -165,32 +164,32 @@ catalog_execute(Catalog* self, Tr* tr, uint8_t* op, int flags)
 	auto cmd = ddl_of(op);
 	bool write = false;
 	switch (cmd) {
-	case DDL_TIER_CREATE:
+	case DDL_STORAGE_CREATE:
 	{
-		auto config = tier_op_create_read(op);
-		defer(source_free, config);
+		auto config = storage_op_create_read(op);
+		defer(storage_config_free, config);
 
 		auto if_not_exists = ddl_if_not_exists(flags);
-		write = tier_mgr_create(&self->tier_mgr, tr, config, if_not_exists);
+		write = storage_mgr_create(&self->storage_mgr, tr, config, if_not_exists);
 		break;
 	}
-	case DDL_TIER_DROP:
+	case DDL_STORAGE_DROP:
 	{
 		Str  name;
-		tier_op_drop_read(op, &name);
+		storage_op_drop_read(op, &name);
 
 		auto if_exists = ddl_if_exists(flags);
-		write = tier_mgr_drop(&self->tier_mgr, tr, &name, if_exists);
+		write = storage_mgr_drop(&self->storage_mgr, tr, &name, if_exists);
 		break;
 	}
-	case DDL_TIER_RENAME:
+	case DDL_STORAGE_RENAME:
 	{
 		Str name;
 		Str name_new;
-		tier_op_rename_read(op, &name, &name_new);
+		storage_op_rename_read(op, &name, &name_new);
 
 		auto if_exists = ddl_if_exists(flags);
-		write = tier_mgr_rename(&self->tier_mgr, tr, &name, &name_new, if_exists);
+		write = storage_mgr_rename(&self->storage_mgr, tr, &name, &name_new, if_exists);
 		break;
 	}
 	case DDL_DB_CREATE:

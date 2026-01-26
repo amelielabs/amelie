@@ -92,11 +92,12 @@ tier_open(TierMgr* self, Tier* tier)
 }
 
 void
-tier_mgr_init(TierMgr* self, Uuid* id_table)
+tier_mgr_init(TierMgr* self, StorageMgr* storage_mgr, Uuid* id_table)
 {
 	self->tiers       = NULL;
 	self->tiers_count = 0;
 	self->id_table    = *id_table;
+	self->storage_mgr = storage_mgr;
 }
 
 void
@@ -114,7 +115,7 @@ tier_mgr_free(TierMgr* self)
 }
 
 void
-tier_mgr_open(TierMgr* self, StorageMgr* storage_mgr, List* tiers)
+tier_mgr_open(TierMgr* self, List* tiers)
 {
 	Tier* last = NULL;
 	list_foreach(tiers)
@@ -130,7 +131,7 @@ tier_mgr_open(TierMgr* self, StorageMgr* storage_mgr, List* tiers)
 		self->tiers_count++;
 
 		// resolve storages
-		tier_resolve(tier, storage_mgr);
+		tier_resolve(tier, self->storage_mgr);
 
 		// read objects
 		tier_open(self, tier);

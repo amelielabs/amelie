@@ -12,12 +12,13 @@
 
 #include <amelie_runtime>
 #include <amelie_row.h>
-#include <amelie_heap.h>
 #include <amelie_transaction.h>
+#include <amelie_storage.h>
+#include <amelie_heap.h>
 #include <amelie_index.h>
 #include <amelie_object.h>
-#include <amelie_partition.h>
 #include <amelie_tier.h>
+#include <amelie_partition.h>
 #include <amelie_catalog.h>
 
 static void
@@ -326,7 +327,7 @@ table_mgr_column_add(TableMgr* self,
 	// physical column require a new table
 
 	// allocate new table
-	auto table_new = table_allocate(table->config, self->tier_mgr, self->deploy);
+	auto table_new = table_allocate(table->config, self->storage_mgr, self->deploy);
 
 	// add new column
 	auto column_new = column_copy(column);
@@ -379,7 +380,7 @@ table_mgr_column_drop(TableMgr* self,
 	// physical column require new table rebuild
 
 	// allocate new table
-	auto table_new = table_allocate(table->config, self->tier_mgr, self->deploy);
+	auto table_new = table_allocate(table->config, self->storage_mgr, self->deploy);
 
 	// delete and reorder columns and update keys
 	auto column_new = columns_find(&table_new->config->columns, &column->name);

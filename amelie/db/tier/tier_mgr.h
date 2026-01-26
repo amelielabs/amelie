@@ -15,14 +15,15 @@ typedef struct TierMgr TierMgr;
 
 struct TierMgr
 {
-	Tier* tiers;
-	int   tiers_count;
-	Uuid  id_table;
+	Tier*       tiers;
+	int         tiers_count;
+	Uuid        id_table;
+	StorageMgr* storage_mgr;
 };
 
-void tier_mgr_init(TierMgr*, Uuid*);
+void tier_mgr_init(TierMgr*, StorageMgr*, Uuid*);
 void tier_mgr_free(TierMgr*);
-void tier_mgr_open(TierMgr*, StorageMgr*, List*);
+void tier_mgr_open(TierMgr*, List*);
 
 static inline Tier*
 tier_mgr_main(TierMgr* self)

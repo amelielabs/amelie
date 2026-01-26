@@ -19,12 +19,12 @@ struct TableConfig
 	Str     name;
 	Uuid    id;
 	bool    unlogged;
+	int64_t partitions;
 	Columns columns;
-	int64_t mapping_hash;
-	List    volumes;
-	int     volumes_count;
 	List    indexes;
 	int     indexes_count;
+	List    tiers;
+	int     tiers_count;
 };
 
 static inline TableConfig*
@@ -33,15 +33,15 @@ table_config_allocate(void)
 	TableConfig* self;
 	self = am_malloc(sizeof(TableConfig));
 	self->unlogged      = false;
-	self->mapping_hash  = 0;
-	self->volumes_count = 0;
+	self->partitions    = 0;
 	self->indexes_count = 0;
+	self->tiers_count   = 0;
 	str_init(&self->db);
 	str_init(&self->name);
 	uuid_init(&self->id);
 	columns_init(&self->columns);
-	list_init(&self->volumes);
 	list_init(&self->indexes);
+	list_init(&self->tiers);
 	return self;
 }
 
@@ -57,10 +57,10 @@ table_config_free(TableConfig* self)
 		index_config_free(config);
 	}
 
-	list_foreach_safe(&self->volumes)
+	list_foreach_safe(&self->tiers)
 	{
-		auto config = list_at(VolumeConfig, link);
-		volume_config_free(config);
+		auto config = list_at(TierConfig, link);
+		tier_config_free(config);
 	}
 
 	columns_free(&self->columns);
@@ -94,16 +94,9 @@ table_config_set_unlogged(TableConfig* self, bool value)
 }
 
 static inline void
-table_config_set_mapping_hash(TableConfig* self, int hash)
+table_config_set_partitions(TableConfig* self, int value)
 {
-	self->mapping_hash = hash;
-}
-
-static inline void
-table_config_volume_add(TableConfig* self, VolumeConfig* config)
-{
-	list_append(&self->volumes, &config->link);
-	self->volumes_count++;
+	self->partitions = value;
 }
 
 static inline void
@@ -120,6 +113,13 @@ table_config_index_remove(TableConfig* self, IndexConfig* config)
 	self->indexes_count--;
 }
 
+static inline void
+table_config_tier_add(TableConfig* self, TierConfig* config)
+{
+	list_append(&self->tiers, &config->link);
+	self->tiers_count++;
+}
+
 static inline TableConfig*
 table_config_copy(TableConfig* self)
 {
@@ -128,15 +128,8 @@ table_config_copy(TableConfig* self)
 	table_config_set_name(copy, &self->name);
 	table_config_set_id(copy, &self->id);
 	table_config_set_unlogged(copy, self->unlogged);
-	table_config_set_mapping_hash(copy, self->mapping_hash);
+	table_config_set_partitions(copy, self->partitions);
 	columns_copy(&copy->columns, &self->columns);
-
-	list_foreach(&self->volumes)
-	{
-		auto config = list_at(VolumeConfig, link);
-		auto config_copy = volume_config_copy(config);
-		table_config_volume_add(copy, config_copy);
-	}
 
 	Keys* primary_keys = NULL;
 	list_foreach(&self->indexes)
@@ -147,6 +140,13 @@ table_config_copy(TableConfig* self)
 		keys_set_primary(&config_copy->keys, !primary_keys);
 		if (primary_keys == NULL)
 			primary_keys = &config_copy->keys;
+	}
+
+	list_foreach(&self->tiers)
+	{
+		auto config = list_at(TierConfig, link);
+		auto config_copy = tier_config_copy(config);
+		table_config_tier_add(copy, config_copy);
 	}
 	return copy;
 }
@@ -159,18 +159,18 @@ table_config_read(uint8_t** pos)
 
 	uint8_t* pos_columns = NULL;
 	uint8_t* pos_indexes = NULL;
-	uint8_t* pos_volumes = NULL;
+	uint8_t* pos_tiers   = NULL;
 	Decode obj[] =
 	{
-		{ DECODE_STRING, "db",           &self->db           },
-		{ DECODE_STRING, "name",         &self->name         },
-		{ DECODE_UUID,   "id",           &self->id           },
-		{ DECODE_INT,    "mapping_hash", &self->mapping_hash },
-		{ DECODE_ARRAY,  "columns",      &pos_columns        },
-		{ DECODE_BOOL,   "unlogged",     &self->unlogged     },
-		{ DECODE_ARRAY,  "indexes",      &pos_indexes        },
-		{ DECODE_ARRAY,  "volumes",      &pos_volumes        },
-		{ 0,              NULL,           NULL               },
+		{ DECODE_STRING, "db",         &self->db         },
+		{ DECODE_STRING, "name",       &self->name       },
+		{ DECODE_UUID,   "id",         &self->id         },
+		{ DECODE_ARRAY,  "columns",    &pos_columns      },
+		{ DECODE_BOOL,   "unlogged",   &self->unlogged   },
+		{ DECODE_INT,    "partitions", &self->partitions },
+		{ DECODE_ARRAY,  "indexes",    &pos_indexes      },
+		{ DECODE_ARRAY,  "tiers",      &pos_tiers        },
+		{ 0,              NULL,         NULL             },
 	};
 	decode_obj(obj, "table", pos);
 
@@ -185,14 +185,13 @@ table_config_read(uint8_t** pos)
 		table_config_index_add(self, config);
 	}
 
-	// volumes
-	json_read_array(&pos_volumes);
-	while (! json_read_array_end(&pos_volumes))
+	// tiers
+	json_read_array(&pos_tiers);
+	while (! json_read_array_end(&pos_tiers))
 	{
-		auto config = volume_config_read(&pos_volumes);
-		table_config_volume_add(self, config);
+		auto config = tier_config_read(&pos_tiers);
+		table_config_tier_add(self, config);
 	}
-
 	return self;
 }
 
@@ -218,9 +217,9 @@ table_config_write(TableConfig* self, Buf* buf)
 	encode_raw(buf, "unlogged", 8);
 	encode_bool(buf, self->unlogged);
 
-	// mapping_hash
-	encode_raw(buf, "mapping_hash", 12);
-	encode_integer(buf, self->mapping_hash);
+	// partitions
+	encode_raw(buf, "partitions", 10);
+	encode_integer(buf, self->partitions);
 
 	// columns
 	encode_raw(buf, "columns", 7);
@@ -236,13 +235,13 @@ table_config_write(TableConfig* self, Buf* buf)
 	}
 	encode_array_end(buf);
 
-	// volumes
-	encode_raw(buf, "volumes", 7);
+	// tiers
+	encode_raw(buf, "tiers", 5);
 	encode_array(buf);
-	list_foreach(&self->volumes)
+	list_foreach(&self->tiers)
 	{
-		auto config = list_at(VolumeConfig, link);
-		volume_config_write(config, buf);
+		auto config = list_at(TierConfig, link);
+		tier_config_write(config, buf, false);
 	}
 	encode_array_end(buf);
 	encode_obj_end(buf);

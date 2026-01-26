@@ -12,19 +12,20 @@
 
 #include <amelie_runtime>
 #include <amelie_row.h>
-#include <amelie_heap.h>
 #include <amelie_transaction.h>
+#include <amelie_storage.h>
+#include <amelie_heap.h>
 #include <amelie_index.h>
 #include <amelie_object.h>
-#include <amelie_partition.h>
 #include <amelie_tier.h>
+#include <amelie_partition.h>
 #include <amelie_catalog.h>
 
 static void
 table_index_delete(Table* table, IndexConfig* index)
 {
 	// remove index from partitions
-	volume_mgr_index_remove(&table->volume_mgr, &index->name);
+	part_mgr_index_remove(&table->part_mgr, &index->name);
 
 	// remove index from table config
 	table_config_index_remove(table->config, index);
@@ -82,7 +83,7 @@ table_index_create(Table*       self,
 	log_relation(&tr->log, &create_if, index, &self->rel);
 
 	// create index for each partition
-	volume_mgr_index_add(&self->volume_mgr, index);
+	part_mgr_index_add(&self->part_mgr, index);
 	return true;
 }
 
