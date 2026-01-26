@@ -12,7 +12,7 @@
 
 #include <amelie_runtime>
 #include <amelie_server>
-#include <amelie_storage>
+#include <amelie_db>
 #include <amelie_repl>
 #include <amelie_vm>
 #include <amelie_compiler>
@@ -152,11 +152,11 @@ system_metrics(System* self)
 	encode_raw(buf, "backends", 8);
 	encode_integer(buf, opt_int_of(&config()->backends));
 
-	// storage
-	encode_raw(buf, "storage", 7);
-	auto storage = catalog_status(&self->storage.catalog);
-	defer_buf(storage);
-	buf_write(buf, storage->start, buf_size(storage));
+	// db
+	encode_raw(buf, "db", 2);
+	auto db = catalog_status(&self->db.catalog);
+	defer_buf(db);
+	buf_write(buf, db->start, buf_size(db));
 
 	// process
 	encode_raw(buf, "process", 7);
@@ -168,7 +168,7 @@ system_metrics(System* self)
 
 	// wal
 	encode_raw(buf, "wal", 3);
-	auto wal = wal_status(&self->storage.wal_mgr.wal);
+	auto wal = wal_status(&self->db.wal_mgr.wal);
 	defer_buf(wal);
 	buf_write(buf, wal->start, buf_size(wal));
 

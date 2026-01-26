@@ -12,7 +12,7 @@
 
 #include <amelie_runtime>
 #include <amelie_server>
-#include <amelie_storage>
+#include <amelie_db>
 #include <amelie_repl>
 #include <amelie_vm>
 #include <amelie_frontend.h>
@@ -21,7 +21,7 @@
 static void
 replay_read(Dtr* dtr, Dispatch* dispatch, Record* record)
 {
-	auto storage = share()->storage;
+	auto db = share()->db;
 
 	// redistribute rows between partitions
 	Req* last = NULL;
@@ -32,8 +32,8 @@ replay_read(Dtr* dtr, Dispatch* dispatch, Record* record)
 	for (auto i = record->count; i > 0; i--)
 	{
 		// match partition
-		auto table = table_mgr_find_by(&storage->catalog.table_mgr, &cmd->id, true);
-		auto part  = mapping_map(&table->volume_mgr.mapping, (Row*)pos);
+		auto table = table_mgr_find_by(&db->catalog.table_mgr, &cmd->id, true);
+		auto part  = part_mapping_map(&table->part_mgr.mapping, (Row*)pos);
 		if (! part)
 			error("replay: failed to find partition");
 

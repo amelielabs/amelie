@@ -115,11 +115,11 @@ backend_mgr_deploy(BackendMgr* self, Part* part)
 }
 
 static inline void
-backend_mgr_deploy_volume(BackendMgr* self, VolumeMgr* volume_mgr)
+backend_mgr_deploy_all(BackendMgr* self, PartMgr* part_mgr)
 {
 	// evenly redistribute backends and create pods
 	// for each partition
-	list_foreach(&volume_mgr->parts)
+	list_foreach(&part_mgr->parts)
 	{
 		auto part = list_at(Part, link);
 		backend_mgr_deploy(self, part);
@@ -137,10 +137,10 @@ backend_mgr_undeploy(BackendMgr* self, Part* part)
 }
 
 static inline void
-backend_mgr_undeploy_volume(BackendMgr* self, VolumeMgr* volume_mgr)
+backend_mgr_undeploy_all(BackendMgr* self, PartMgr* part_mgr)
 {
 	// drop pods associated with partitions
-	list_foreach(&volume_mgr->parts)
+	list_foreach(&part_mgr->parts)
 	{
 		auto part = list_at(Part, link);
 		backend_mgr_undeploy(self, part);

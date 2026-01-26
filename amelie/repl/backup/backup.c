@@ -328,8 +328,8 @@ backup(Storage* storage, Client* client)
 #endif
 
 void
-backup(Storage* storage, Client* client)
+backup(Db* db, Client* client)
 {
-	(void)storage;
+	(void)db;
 	(void)client;
 }

@@ -20,7 +20,6 @@ test_heap(void* arg)
 
 	auto heap = heap_allocate();
 	defer(heap_free, heap);
-	heap_create(heap);
 
 	auto ptr = heap_add(heap, 903);
 	memset(ptr, 'X', 903);

@@ -12,7 +12,7 @@
 
 #include <amelie_runtime>
 #include <amelie_server>
-#include <amelie_storage>
+#include <amelie_db>
 #include <amelie_repl>
 #include <amelie_vm>
 #include <amelie_compiler>
@@ -134,14 +134,14 @@ system_on_server_connect(Server* server, Client* client)
 }
 
 static void
-deploy_if_attach_volume(Deploy* self, VolumeMgr* volume_mgr)
+deploy_if_attach_all(Deploy* self, PartMgr* part_mgr)
 {
 	System* system = self->iface_arg;
-	if (volume_mgr->parts_count > MAPPING_MAX)
+	if (part_mgr->parts_count > PART_MAPPING_MAX)
 		error("exceeded the maximum number of hash partitions per table");
 
 	// create pods on backends
-	backend_mgr_deploy_volume(&system->backend_mgr, volume_mgr);
+	backend_mgr_deploy_all(&system->backend_mgr, part_mgr);
 }
 
 static void
@@ -152,11 +152,11 @@ deploy_if_attach(Deploy* self, Part* part)
 }
 
 static void
-deploy_if_detach_volume(Deploy* self, VolumeMgr* volume_mgr)
+deploy_if_detach_all(Deploy* self, PartMgr* part_mgr)
 {
 	// drop pods on backends
 	System* system = self->iface_arg;
-	backend_mgr_undeploy_volume(&system->backend_mgr, volume_mgr);
+	backend_mgr_undeploy_all(&system->backend_mgr, part_mgr);
 }
 
 static void
@@ -168,10 +168,10 @@ deploy_if_detach(Deploy* self, Part* part)
 
 static DeployIf deploy_if =
 {
-	.attach_volume = deploy_if_attach_volume,
-	.attach        = deploy_if_attach,
-	.detach_volume = deploy_if_detach_volume,
-	.detach        = deploy_if_detach
+	.attach_all = deploy_if_attach_all,
+	.attach     = deploy_if_attach,
+	.detach_all = deploy_if_detach_all,
+	.detach     = deploy_if_detach
 };
 
 static void
@@ -201,7 +201,7 @@ system_create(void)
 	share->repl         = &self->repl;
 	share->function_mgr = &self->function_mgr;
 	share->user_mgr     = &self->user_mgr;
-	share->storage      = &self->storage;
+	share->db           = &self->db;
 
 	// share shared context globally
 	am_share = share;
@@ -214,16 +214,16 @@ system_create(void)
 	frontend_mgr_init(&self->frontend_mgr);
 	backend_mgr_init(&self->backend_mgr);
 	executor_init(&self->executor);
-	commit_init(&self->commit, &self->storage, &self->executor);
+	commit_init(&self->commit, &self->db, &self->executor);
 
 	// vm
 	function_mgr_init(&self->function_mgr);
 
-	// storage
-	storage_init(&self->storage, &catalog_if, self, &deploy_if, self);
+	// db
+	db_init(&self->db, &catalog_if, self, &deploy_if, self);
 
 	// replication
-	repl_init(&self->repl, &self->storage);
+	repl_init(&self->repl, &self->db);
 	return self;
 }
 
@@ -233,7 +233,7 @@ system_free(System* self)
 	repl_free(&self->repl);
 	commit_free(&self->commit);
 	executor_free(&self->executor);
-	storage_free(&self->storage);
+	db_free(&self->db);
 	function_mgr_free(&self->function_mgr);
 	server_free(&self->server);
 	user_mgr_free(&self->user_mgr);
@@ -243,7 +243,7 @@ system_free(System* self)
 static void
 system_recover(System* self)
 {
-	auto storage = &self->storage;
+	auto db = &self->db;
 
 	// todo: recover catalog/checkpoint
 #if 0
@@ -253,14 +253,14 @@ system_recover(System* self)
 	info("recover: checkpoints/%" PRIu64 "/ (using %d backends)",
 	     state_checkpoint(), workers);
 #endif
-	(void)storage;
+	(void)db;
 
 	// replay wals
 	info("");
 	info("recover: wals/");
 
 	Recover recover;
-	recover_init(&recover, &self->storage, false);
+	recover_init(&recover, db, false);
 	defer(recover_free, &recover);
 	recover_wal(&recover);
 	info("");
@@ -307,8 +307,8 @@ system_start(System* self, bool bootstrap)
 	// start commit worker
 	commit_start(&self->commit);
 
-	// create system object and objects from last snapshot
-	storage_open(&self->storage, bootstrap);
+	// restore catalog
+	db_open(&self->db, bootstrap);
 
 	// do parallel recover of snapshots and wal
 	system_recover(self);
@@ -317,7 +317,7 @@ system_start(System* self, bool bootstrap)
 	// checkpointer_start(&self->storage.checkpointer);
 
 	// start periodic async wal fsync
-	wal_periodic_start(&self->storage.wal_mgr.wal_periodic);
+	wal_periodic_start(&self->db.wal_mgr.wal_periodic);
 
 	// start frontends
 	workers = opt_int_of(&config()->frontends);
@@ -364,8 +364,8 @@ system_stop(System* self)
 	// stop backends
 	backend_mgr_stop(&self->backend_mgr);
 
-	// stop storage
-	storage_close(&self->storage);
+	// stop db
+	db_close(&self->db);
 }
 
 static void

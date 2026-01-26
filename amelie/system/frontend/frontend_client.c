@@ -12,7 +12,7 @@
 
 #include <amelie_runtime>
 #include <amelie_server>
-#include <amelie_storage>
+#include <amelie_db>
 #include <amelie_repl>
 #include <amelie_vm>
 #include <amelie_frontend.h>
@@ -28,7 +28,7 @@ static void
 frontend_client_primary(Frontend* self, Client* client, void* session)
 {
 	Recover recover;
-	recover_init(&recover, share()->storage, true);
+	recover_init(&recover, share()->db, true);
 	defer(recover_free, &recover);
 
 	void* args[] = {self, session};
@@ -158,7 +158,7 @@ frontend_client(Frontend* self, Client* client)
 		{
 			auto service = &endpoint.service.string;
 			if (str_is(service, "backup", 6))
-				backup(share()->storage, client);
+				backup(share()->db, client);
 			else
 			if (str_is(service, "repl", 4))
 				frontend_client_primary(self, client, session);

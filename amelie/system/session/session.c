@@ -12,7 +12,7 @@
 
 #include <amelie_runtime>
 #include <amelie_server>
-#include <amelie_storage>
+#include <amelie_db>
 #include <amelie_repl>
 #include <amelie_vm>
 #include <amelie_compiler>
@@ -74,7 +74,7 @@ session_lock(Session* self, LockId lock)
 		return;
 
 	// downgrade or upgrade lock request
-	auto lock_mgr = &share()->storage->lock_mgr;
+	auto lock_mgr = &share()->db->lock_mgr;
 	if (self->lock != LOCK_NONE)
 		unlock_catalog(lock_mgr, self->lock);
 
@@ -89,11 +89,11 @@ session_unlock(Session* self)
 		return;
 
 	// main dtr unlock happens on the executor commit
-	auto storage = share()->storage;
+	auto db = share()->db;
 	if (self->dtr.locked)
-		dtr_unlock(&self->dtr, storage);
+		dtr_unlock(&self->dtr, db);
 
-	unlock_catalog(&storage->lock_mgr, self->lock);
+	unlock_catalog(&db->lock_mgr, self->lock);
 	self->lock = LOCK_NONE;
 }
 
@@ -112,7 +112,7 @@ session_set(Session* self, Endpoint* endpoint, Output* output)
 	// validate database
 	if (str_empty(&local->db))
 		error("database is not defined");
-	db_mgr_find(&share()->storage->catalog.db_mgr, &local->db, true);
+	database_mgr_find(&share()->db->catalog.db_mgr, &local->db, true);
 }
 
 hot static inline void
@@ -129,7 +129,7 @@ session_execute_distributed(Session* self, Output* output)
 	dtr_create(dtr, program);
 
 	// take transaction locks
-	dtr_lock(dtr, share()->storage);
+	dtr_lock(dtr, share()->db);
 
 	// [PROFILE]
 	if (compiler->program_profile)
@@ -256,7 +256,7 @@ session_execute_utility(Session* self, Output* output)
 		WriteList write_list;
 		write_list_init(&write_list);
 		write_list_add(&write_list, &write);
-		wal_mgr_write(&share()->storage->wal_mgr, &write_list);
+		wal_mgr_write(&share()->db->wal_mgr, &write_list);
 
 		// update catalog pending lsn
 		opt_int_set(&state()->catalog_pending, write.header.lsn);

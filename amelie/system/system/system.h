@@ -25,8 +25,8 @@ struct System
 	Commit      commit;
 	FrontendMgr frontend_mgr;
 	BackendMgr  backend_mgr;
-	// storage
-	Storage     storage;
+	// db
+	Db          db;
 	// server
 	Server      server;
 	UserMgr     user_mgr;
