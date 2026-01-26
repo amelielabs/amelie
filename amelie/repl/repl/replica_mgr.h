@@ -15,12 +15,12 @@ typedef struct ReplicaMgr ReplicaMgr;
 
 struct ReplicaMgr
 {
-	int      list_count;
-	List     list;
-	Storage* storage;
+	int  list_count;
+	List list;
+	Db*  db;
 };
 
-void replica_mgr_init(ReplicaMgr*, Storage*);
+void replica_mgr_init(ReplicaMgr*, Db*);
 void replica_mgr_free(ReplicaMgr*);
 void replica_mgr_open(ReplicaMgr*);
 void replica_mgr_start(ReplicaMgr*);

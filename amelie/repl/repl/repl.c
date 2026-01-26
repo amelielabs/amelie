@@ -12,7 +12,7 @@
 
 #include <amelie_runtime>
 #include <amelie_server>
-#include <amelie_storage>
+#include <amelie_db>
 #include <amelie_backup.h>
 #include <amelie_repl.h>
 
@@ -27,10 +27,10 @@ repl_role_of(ReplRole role)
 }
 
 void
-repl_init(Repl* self, Storage* storage)
+repl_init(Repl* self, Db* db)
 {
 	self->role = REPL_PRIMARY;
-	replica_mgr_init(&self->replica_mgr, storage);
+	replica_mgr_init(&self->replica_mgr, db);
 }
 
 void

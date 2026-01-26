@@ -12,14 +12,14 @@
 
 #include <amelie_runtime>
 #include <amelie_server>
-#include <amelie_storage>
+#include <amelie_db>
 #include <amelie_backup.h>
 #include <amelie_repl.h>
 
 void
-replica_mgr_init(ReplicaMgr* self, Storage* storage)
+replica_mgr_init(ReplicaMgr* self, Db* db)
 {
-	self->storage    = storage;
+	self->db         = db;
 	self->list_count = 0;
 	list_init(&self->list);
 }
@@ -30,7 +30,7 @@ replica_mgr_free(ReplicaMgr* self)
 	list_foreach_safe(&self->list)
 	{
 		auto replica = list_at(Replica, link);
-		wal_del(&self->storage->wal_mgr.wal, &replica->wal_slot);
+		wal_del(&self->db->wal_mgr.wal, &replica->wal_slot);
 		replica_free(replica);
 	}
 }
@@ -70,12 +70,12 @@ replica_mgr_open(ReplicaMgr* self)
 		auto config = replica_config_read(&pos);
 		defer(replica_config_free, config);
 
-		auto replica = replica_allocate(config, &self->storage->wal_mgr.wal);
+		auto replica = replica_allocate(config, &self->db->wal_mgr.wal);
 		list_append(&self->list, &replica->link);
 		self->list_count++;
 
 		// register wal slot
-		wal_add(&self->storage->wal_mgr.wal, &replica->wal_slot);
+		wal_add(&self->db->wal_mgr.wal, &replica->wal_slot);
 	}
 }
 
@@ -113,13 +113,13 @@ replica_mgr_create(ReplicaMgr* self, ReplicaConfig* config, bool if_not_exists)
 		}
 		return;
 	}
-	replica = replica_allocate(config, &self->storage->wal_mgr.wal);
+	replica = replica_allocate(config, &self->db->wal_mgr.wal);
 	list_append(&self->list, &replica->link);
 	self->list_count++;
 	replica_mgr_save(self);
 
 	// register wal slot
-	wal_add(&self->storage->wal_mgr.wal, &replica->wal_slot);
+	wal_add(&self->db->wal_mgr.wal, &replica->wal_slot);
 
 	// start streamer
 	if (opt_int_of(&state()->repl))
@@ -149,7 +149,7 @@ replica_mgr_drop(ReplicaMgr* self, Uuid* id, bool if_exists)
 		replica_stop(replica);
 
 	// unregister wal slot
-	wal_del(&self->storage->wal_mgr.wal, &replica->wal_slot);
+	wal_del(&self->db->wal_mgr.wal, &replica->wal_slot);
 	replica_free(replica);
 }
 
