@@ -16,11 +16,11 @@ typedef struct Commit Commit;
 struct Commit
 {
 	Executor* executor;
-	Storage*  storage;
+	Db*       db;
 	Task      task;
 };
 
-void commit_init(Commit*, Storage*, Executor*);
+void commit_init(Commit*, Db*, Executor*);
 void commit_free(Commit*);
 void commit_start(Commit*);
 void commit_stop(Commit*);

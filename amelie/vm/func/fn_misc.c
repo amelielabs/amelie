@@ -12,7 +12,7 @@
 
 #include <amelie_runtime>
 #include <amelie_server>
-#include <amelie_storage>
+#include <amelie_db>
 #include <amelie_repl>
 #include <amelie_value.h>
 #include <amelie_set.h>
@@ -182,7 +182,7 @@ fn_identity_of(Fn* self)
 	auto argv = self->argv;
 	fn_expect(self, 1);
 	fn_expect_arg(self, 0, TYPE_STRING);
-	auto table = table_mgr_find(&share()->storage->catalog.table_mgr,
+	auto table = table_mgr_find(&share()->db->catalog.table_mgr,
 	                            &self->local->db,
 	                            &argv[0].string, true);
 	value_set_int(self->result, sequence_get(&table->seq));

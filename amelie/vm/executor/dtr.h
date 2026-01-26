@@ -90,18 +90,18 @@ dtr_create(Dtr* self, Program* program)
 }
 
 static inline void
-dtr_lock(Dtr* self, Storage* storage)
+dtr_lock(Dtr* self, Db* db)
 {
 	assert(! self->locked);
-	lock_access(&storage->lock_mgr, &self->program->access);
+	lock_access(&db->lock_mgr, &self->program->access);
 	self->locked = true;
 }
 
 static inline void
-dtr_unlock(Dtr* self, Storage* storage)
+dtr_unlock(Dtr* self, Db* db)
 {
 	assert(self->locked);
-	unlock_access(&storage->lock_mgr, &self->program->access);
+	unlock_access(&db->lock_mgr, &self->program->access);
 	self->locked = false;
 }
 

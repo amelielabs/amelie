@@ -145,7 +145,7 @@ dispatch_mgr_snapshot(DispatchMgr* self, Access* access)
 		if (ac->lock == LOCK_CALL)
 			continue;
 		auto table = table_of(ac->rel);
-		list_foreach(&table->volume_mgr.parts)
+		list_foreach(&table->part_mgr.parts)
 		{
 			auto part = list_at(Part, link);
 			auto ltr = ltr_create(&self->cache_ltr, part, self->dtr, &self->complete);

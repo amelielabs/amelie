@@ -36,3 +36,23 @@ row_get_identity(Table* table, Value* refs, Value* row)
 
 	return random_generate(&runtime()->random) % cons->as_identity_modulo;
 }
+
+hot static inline Part*
+row_map(Table* table, Value* refs, Value* values, int64_t identity)
+{
+	// values are row columns
+	auto mapping = &table->part_mgr.mapping;
+	auto hash_partition = value_hash_row(mapping->keys, refs, values, identity);
+	hash_partition %= PART_MAPPING_MAX;
+	return mapping->map[hash_partition];
+}
+
+hot static inline Part*
+row_map_keys(Table* table, Value* values)
+{
+	// values are row keys
+	auto mapping = &table->part_mgr.mapping;
+	auto hash_partition = value_hash_keys(mapping->keys, NULL, values, 0);
+	hash_partition %= PART_MAPPING_MAX;
+	return mapping->map[hash_partition];
+}

@@ -12,7 +12,7 @@
 
 #include <amelie_runtime>
 #include <amelie_server>
-#include <amelie_storage>
+#include <amelie_db>
 #include <amelie_repl>
 #include <amelie_value.h>
 #include <amelie_set.h>
@@ -163,7 +163,7 @@ fn_show(Fn* self)
 			fn_error_noargs(self, "unexpected name argument");
 	}
 
-	auto catalog = &share()->storage->catalog;
+	auto catalog = &share()->db->catalog;
 	switch (cmd->id) {
 	case SHOW_USERS:
 	{
@@ -194,7 +194,7 @@ fn_show(Fn* self)
 	}
 	case SHOW_WAL:
 	{
-		buf = wal_status(&share()->storage->wal_mgr.wal);
+		buf = wal_status(&share()->db->wal_mgr.wal);
 		break;
 	}
 	case SHOW_METRICS:
@@ -204,12 +204,12 @@ fn_show(Fn* self)
 	}
 	case SHOW_DATABASES:
 	{
-		buf = db_mgr_list(&catalog->db_mgr, NULL, extended);
+		buf = database_mgr_list(&catalog->db_mgr, NULL, extended);
 		break;
 	}
 	case SHOW_DATABASE:
 	{
-		buf = db_mgr_list(&catalog->db_mgr, name, extended);
+		buf = database_mgr_list(&catalog->db_mgr, name, extended);
 		break;
 	}
 	case SHOW_TABLES:
@@ -234,7 +234,7 @@ fn_show(Fn* self)
 	}
 	case SHOW_STATE:
 	{
-		buf = storage_state(share()->storage);
+		buf = db_state(share()->db);
 		break;
 	}
 	case SHOW_ALL:

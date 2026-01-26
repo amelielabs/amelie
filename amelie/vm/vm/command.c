@@ -12,7 +12,7 @@
 
 #include <amelie_runtime>
 #include <amelie_server>
-#include <amelie_storage>
+#include <amelie_db>
 #include <amelie_repl>
 #include <amelie_value.h>
 #include <amelie_set.h>
@@ -164,7 +164,7 @@ csend_all(Vm* self, Op* op)
 		dispatch_set_close(dispatch);
 
 	// send to all table backends
-	list_foreach(&table->volume_mgr.parts)
+	list_foreach(&table->part_mgr.parts)
 	{
 		auto part = list_at(Part, link);
 		auto req = dispatch_add(dispatch, &dispatch_mgr->cache_req,
@@ -385,7 +385,7 @@ ctable_open(Vm* self, Op* op, bool point_lookup, bool open_part)
 	json_read_string(&pos, &name_index);
 
 	// find table, partition and index
-	auto table = table_mgr_find(&share()->storage->catalog.table_mgr, &name_db, &name_table, true);
+	auto table = table_mgr_find(&share()->db->catalog.table_mgr, &name_db, &name_table, true);
 	auto index = table_find_index(table, &name_index, true);
 	auto keys  = &index->keys;
 	auto keys_count = op->d;
@@ -407,7 +407,7 @@ ctable_open(Vm* self, Op* op, bool point_lookup, bool open_part)
 		cursor->part = self->part;
 	else
 		cursor->part = NULL;
-	cursor->cursor = volume_mgr_iterator(&table->volume_mgr, cursor->part, index, point_lookup, key_ref);
+	cursor->cursor = part_mgr_iterator(&table->part_mgr, cursor->part, index, point_lookup, key_ref);
 	cursor->table  = table;
 	cursor->type   = TYPE_CURSOR;
 

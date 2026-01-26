@@ -20,7 +20,7 @@ struct Share
 	Repl*        repl;
 	FunctionMgr* function_mgr;
 	UserMgr*     user_mgr;
-	Storage*     storage;
+	Db*          db;
 };
 
 #define share() ((Share*)am_share)

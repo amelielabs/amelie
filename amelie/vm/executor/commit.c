@@ -12,7 +12,7 @@
 
 #include <amelie_runtime>
 #include <amelie_server>
-#include <amelie_storage>
+#include <amelie_db>
 #include <amelie_value.h>
 #include <amelie_set.h>
 #include <amelie_output.h>
@@ -64,7 +64,7 @@ commit_main(void* arg)
 		//
 		if (batch.write.list_count)
 		{
-			auto wal = &self->storage->wal_mgr;
+			auto wal = &self->db->wal_mgr;
 			if (error_catch( wal_mgr_write(wal, &batch.write) ))
 				batch_abort(&batch);
 		}
@@ -77,7 +77,7 @@ commit_main(void* arg)
 		auto group_min = executor_detach(self->executor, &batch);
 
 		// wakeup and unlock prepared transaction
-		batch_complete(&batch, self->storage);
+		batch_complete(&batch, self->db);
 
 		// remove all groups < group_min
 		dtr_queue_gc(&queue, group_min);
@@ -131,9 +131,9 @@ commit(Commit* self, Dtr* dtr, Buf* error)
 }
 
 void
-commit_init(Commit* self, Storage* storage, Executor* executor)
+commit_init(Commit* self, Db* db, Executor* executor)
 {
-	self->storage  = storage;
+	self->db       = db;
 	self->executor = executor;
 	task_init(&self->task);
 }

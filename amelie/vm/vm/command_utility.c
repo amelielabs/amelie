@@ -12,7 +12,7 @@
 
 #include <amelie_runtime>
 #include <amelie_server>
-#include <amelie_storage>
+#include <amelie_db>
 #include <amelie_repl>
 #include <amelie_value.h>
 #include <amelie_set.h>
@@ -26,7 +26,7 @@ ccheckpoint(Vm* self, Op* op)
 {
 	unused(self);
 	unused(op);
-	storage_checkpoint(share()->storage);
+	db_checkpoint(share()->db);
 }
 
 void
@@ -184,5 +184,5 @@ cddl(Vm* self, Op* op)
 	unused(self);
 	auto pos = code_data_at(self->code_data, op->a);
 	auto flags = op->b;
-	catalog_execute(&share()->storage->catalog, self->tr, pos, flags);
+	catalog_execute(&share()->db->catalog, self->tr, pos, flags);
 }
