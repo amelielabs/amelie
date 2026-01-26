@@ -12,23 +12,24 @@
 
 #include <amelie_runtime>
 #include <amelie_row.h>
-#include <amelie_heap.h>
 #include <amelie_transaction.h>
+#include <amelie_storage.h>
+#include <amelie_heap.h>
 #include <amelie_index.h>
 #include <amelie_object.h>
-#include <amelie_partition.h>
 #include <amelie_tier.h>
+#include <amelie_partition.h>
 #include <amelie_catalog.h>
 #include <amelie_wal.h>
-#include <amelie_storage.h>
+#include <amelie_db.h>
 
 void
-recover_init(Recover* self, Storage* storage, bool write_wal)
+recover_init(Recover* self, Db* db, bool write_wal)
 {
 	self->ops       = 0;
 	self->size      = 0;
 	self->write_wal = write_wal;
-	self->storage   = storage;
+	self->db        = db;
 	tr_init(&self->tr);
 	write_init(&self->write);
 	write_list_init(&self->write_list);
@@ -52,16 +53,16 @@ static inline Part*
 recover_map(Recover* self, Record* record, RecordCmd* cmd, Row* row)
 {
 	// find table by id and map partition
-	auto storage = self->storage;
-	auto table = table_mgr_find_by(&storage->catalog.table_mgr, &cmd->id, false);
+	auto db = self->db;
+	auto table = table_mgr_find_by(&db->catalog.table_mgr, &cmd->id, false);
 	if  (! table)
 		return NULL;
-	auto part = mapping_map(&table->volume_mgr.mapping, row);
+	auto part = part_mapping_map(&table->part_mgr.mapping, row);
 	if (! part)
 		error("recover: partition mapping failed");
 
-	// skip partition if it is already includes the command lsn
-	if (record->lsn <= part->object->meta.lsn)
+	// skip partition if it is already includes lsn
+	if (record->lsn <= part->heap->header->lsn)
 		part = NULL;
 	return part;
 }
@@ -69,7 +70,7 @@ recover_map(Recover* self, Record* record, RecordCmd* cmd, Row* row)
 hot static void
 recover_cmd(Recover* self, Record* record, RecordCmd* cmd, uint8_t** pos)
 {
-	auto storage = self->storage;
+	auto db = self->db;
 	auto tr = &self->tr;
 	switch (cmd->cmd) {
 	case CMD_REPLACE:
@@ -120,7 +121,7 @@ recover_cmd(Recover* self, Record* record, RecordCmd* cmd, uint8_t** pos)
 		}
 
 		// replay ddl command
-		catalog_execute(&storage->catalog, tr, *pos, 0);
+		catalog_execute(&db->catalog, tr, *pos, 0);
 		json_skip(pos);
 
 		// update catalog pending lsn
@@ -160,7 +161,7 @@ recover_next_record(Recover* self, Record* record)
 		write_add(write, &self->tr.log.write_log);
 		write_list_reset(write_list);
 		write_list_add(write_list, write);
-		wal_mgr_write(&self->storage->wal_mgr, write_list);
+		wal_mgr_write(&self->db->wal_mgr, write_list);
 	} else
 	{
 		state_lsn_follow(record->lsn);
@@ -195,7 +196,7 @@ recover_wal_main(Recover* self)
 {
 	// open wal files and maybe truncate wal files according
 	// to the wal_truncate option
-	auto wal_mgr = &self->storage->wal_mgr;
+	auto wal_mgr = &self->db->wal_mgr;
 	wal_mgr_start(wal_mgr);
 
 	// replay all wals

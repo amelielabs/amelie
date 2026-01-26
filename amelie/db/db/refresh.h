@@ -18,14 +18,12 @@ struct Refresh
 	PartLock lock;
 	Part*    origin;
 	uint64_t origin_lsn;
-	Buf      split;
-	Volume*  volume;
+	File     file;
 	Table*   table;
-	Merger   merger;
-	Storage* storage;
+	Db*      db;
 };
 
-void refresh_init(Refresh*, Storage*);
+void refresh_init(Refresh*, Db*);
 void refresh_free(Refresh*);
 void refresh_reset(Refresh*);
-void refresh_run(Refresh*, Id*, Str*);
+void refresh_run(Refresh*, Uuid*, uint64_t);

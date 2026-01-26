@@ -12,25 +12,19 @@
 
 #include <amelie_runtime>
 #include <amelie_row.h>
-#include <amelie_heap.h>
 #include <amelie_transaction.h>
+#include <amelie_storage.h>
+#include <amelie_heap.h>
 #include <amelie_index.h>
 #include <amelie_object.h>
-#include <amelie_partition.h>
 #include <amelie_tier.h>
+#include <amelie_partition.h>
 #include <amelie_catalog.h>
 #include <amelie_wal.h>
-#include <amelie_storage.h>
-
-void
-storage_refresh(Storage* self, Refresh* refresh, Id* id, Str* tier)
-{
-	unused(self);
-	refresh_run(refresh, id, tier);
-}
+#include <amelie_db.h>
 
 static Buf*
-storage_pending(Storage* self)
+db_pending(Db* self)
 {
 	auto lock_mgr = &self->lock_mgr;
 
@@ -42,7 +36,7 @@ storage_pending(Storage* self)
 		auto table = table_of(list_at(Relation, link));
 		lock(lock_mgr, &table->rel, LOCK_SHARED);
 
-		list_foreach(&table->volume_mgr.parts)
+		list_foreach(&table->part_mgr.parts)
 		{
 			auto part = list_at(Part, link);
 			if (part_has_updates(part))
@@ -55,7 +49,7 @@ storage_pending(Storage* self)
 }
 
 void
-storage_checkpoint(Storage* self)
+db_checkpoint(Db* self)
 {
 	auto lock_mgr = &self->lock_mgr;
 	lock_checkpoint(lock_mgr, LOCK_EXCLUSIVE);
@@ -69,7 +63,7 @@ storage_checkpoint(Storage* self)
 			catalog_write(&self->catalog);
 
 		// create a list of all pending partitions
-		list = storage_pending(self);
+		list = db_pending(self);
 	);
 	unlock_catalog(lock_mgr, LOCK_SHARED);
 	unlock_checkpoint(lock_mgr, LOCK_EXCLUSIVE);
@@ -86,14 +80,14 @@ storage_checkpoint(Storage* self)
 	auto end = (Id*)list->position;
 	auto it  = (Id*)list->start;
 	for (; it < end; it++)
-		storage_refresh(self, &refresh, it, NULL);
+		refresh_run(&refresh, &it->id_table, it->id);
 
 	// wal gc
-	storage_gc(self);
+	db_gc(self);
 }
 
 void
-storage_gc(Storage* self)
+db_gc(Db* self)
 {
 	// taking exclusive checkpoint lock to prevent
 	// the catalog lsn change
@@ -119,10 +113,10 @@ storage_gc(Storage* self)
 		auto table = table_of(list_at(Relation, link));
 		lock(lock_mgr, &table->rel, LOCK_SHARED);
 
-		list_foreach(&table->volume_mgr.parts)
+		list_foreach(&table->part_mgr.parts)
 		{
 			auto part = list_at(Part, link);
-			auto object_lsn = part->object->meta.lsn;
+			auto object_lsn = part->heap->header->lsn;
 			if (object_lsn < lsn)
 				lsn = object_lsn;
 		}

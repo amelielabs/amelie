@@ -12,22 +12,23 @@
 
 #include <amelie_runtime>
 #include <amelie_row.h>
-#include <amelie_heap.h>
 #include <amelie_transaction.h>
+#include <amelie_storage.h>
+#include <amelie_heap.h>
 #include <amelie_index.h>
 #include <amelie_object.h>
-#include <amelie_partition.h>
 #include <amelie_tier.h>
+#include <amelie_partition.h>
 #include <amelie_catalog.h>
 #include <amelie_wal.h>
-#include <amelie_storage.h>
+#include <amelie_db.h>
 
 void
-storage_init(Storage*   self,
-             CatalogIf* iface,
-             void*      iface_arg,
-             DeployIf*  iface_deploy,
-             void*      iface_deploy_arg)
+db_init(Db*        self,
+        CatalogIf* iface,
+        void*      iface_arg,
+        DeployIf*  iface_deploy,
+        void*      iface_deploy_arg)
 {
 	lock_mgr_init(&self->lock_mgr);
 	part_lock_mgr_init(&self->lock_mgr_part);
@@ -37,7 +38,7 @@ storage_init(Storage*   self,
 }
 
 void
-storage_free(Storage* self)
+db_free(Db* self)
 {
 	catalog_free(&self->catalog);
 	wal_mgr_free(&self->wal_mgr);
@@ -45,7 +46,7 @@ storage_free(Storage* self)
 }
 
 void
-storage_open(Storage* self, bool bootstrap)
+db_open(Db* self, bool bootstrap)
 {
 	if (bootstrap)
 		state_lsn_set(1);
@@ -55,7 +56,7 @@ storage_open(Storage* self, bool bootstrap)
 }
 
 void
-storage_close(Storage* self)
+db_close(Db* self)
 {
 	// close catalog
 	catalog_close(&self->catalog);
@@ -65,7 +66,7 @@ storage_close(Storage* self)
 }
 
 Buf*
-storage_state(Storage* self)
+db_state(Db* self)
 {
 	unused(self);
 
@@ -118,7 +119,7 @@ storage_state(Storage* self)
 }
 
 void
-storage_lock(Storage* self, PartLock* lock, Id* id)
+db_lock(Db* self, PartLock* lock, uint64_t id)
 {
 	// get shared catalog lock and hold till unlock
 	lock_catalog(&self->lock_mgr, LOCK_SHARED);
@@ -128,7 +129,7 @@ storage_lock(Storage* self, PartLock* lock, Id* id)
 }
 
 void
-storage_unlock(Storage* self, PartLock* lock)
+db_unlock(Db* self, PartLock* lock)
 {
 	// unlock partition
 	part_lock_mgr_unlock(&self->lock_mgr_part, lock);

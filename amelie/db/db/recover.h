@@ -21,10 +21,10 @@ struct Recover
 	bool      write_wal;
 	uint64_t  ops;
 	uint64_t  size;
-	Storage*  storage;
+	Db*       db;
 };
 
-void recover_init(Recover*, Storage*, bool);
+void recover_init(Recover*, Db*, bool);
 void recover_free(Recover*);
 void recover_next(Recover*, Record*);
 void recover_wal(Recover*);

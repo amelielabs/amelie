@@ -11,10 +11,10 @@
 // AGPL-3.0 Licensed.
 //
 
-// storage
-#include "storage/storage.h"
-#include "storage/refresh.h"
-#include "storage/op.h"
+// db
+#include "db/db.h"
+#include "db/refresh.h"
+#include "db/op.h"
 
 // recover
-#include "storage/recover.h"
+#include "db/recover.h"

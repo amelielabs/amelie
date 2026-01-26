@@ -11,6 +11,5 @@
 // AGPL-3.0 Licensed.
 //
 
-void storage_refresh(Storage*, Refresh*, Id*, Str*);
-void storage_checkpoint(Storage*);
-void storage_gc(Storage*);
+void db_checkpoint(Db*);
+void db_gc(Db*);

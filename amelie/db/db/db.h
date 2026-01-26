@@ -11,9 +11,9 @@
 // AGPL-3.0 Licensed.
 //
 
-typedef struct Storage Storage;
+typedef struct Db Db;
 
-struct Storage
+struct Db
 {
 	LockMgr     lock_mgr;
 	PartLockMgr lock_mgr_part;
@@ -22,10 +22,10 @@ struct Storage
 	WalMgr      wal_mgr;
 };
 
-void storage_init(Storage*, CatalogIf*, void*, DeployIf*, void*);
-void storage_free(Storage*);
-void storage_open(Storage*, bool);
-void storage_close(Storage*);
-Buf* storage_state(Storage*);
-void storage_lock(Storage*, PartLock*, Id*);
-void storage_unlock(Storage*, PartLock*);
+void db_init(Db*, CatalogIf*, void*, DeployIf*, void*);
+void db_free(Db*);
+void db_open(Db*, bool);
+void db_close(Db*);
+Buf* db_state(Db*);
+void db_lock(Db*, PartLock*, uint64_t);
+void db_unlock(Db*, PartLock*);

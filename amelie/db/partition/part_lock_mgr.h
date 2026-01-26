@@ -16,7 +16,7 @@ typedef struct PartLockMgr PartLockMgr;
 
 struct PartLock
 {
-	Id*       id;
+	uint64_t  id;
 	Event     event;
 	PartLock* waiter;
 	List      link;
@@ -31,7 +31,7 @@ struct PartLockMgr
 static inline void
 part_lock_init(PartLock* self)
 {
-	self->id     = NULL;
+	self->id     = 0;
 	self->waiter = NULL;
 	event_init(&self->event);
 	list_init(&self->link);
@@ -45,19 +45,19 @@ part_lock_mgr_init(PartLockMgr* self)
 }
 
 static inline PartLock*
-part_lock_mgr_find(PartLockMgr* self, uint64_t psn)
+part_lock_mgr_find(PartLockMgr* self, uint64_t id)
 {
 	list_foreach(&self->list_locks)
 	{
 		auto lock = list_at(PartLock, link);
-		if (lock->id->id == psn)
+		if (lock->id == id)
 			return lock;
 	}
 	return NULL;
 }
 
 hot static inline void
-part_lock_mgr_lock(PartLockMgr* self, PartLock* lock, Id* id)
+part_lock_mgr_lock(PartLockMgr* self, PartLock* lock, uint64_t id)
 {
 	lock->id = id;
 	event_attach(&lock->event);
@@ -65,7 +65,7 @@ part_lock_mgr_lock(PartLockMgr* self, PartLock* lock, Id* id)
 	spinlock_lock(&self->lock);
 
 	// find existing lock
-	auto last = part_lock_mgr_find(self, lock->id->id);
+	auto last = part_lock_mgr_find(self, id);
 	if (! last)
 	{
 		list_append(&self->list_locks, &lock->link);
