@@ -418,6 +418,9 @@ parse_table_create(Stmt* self, bool unlogged)
 	Str tier_name;
 	str_set_cstr(&tier_name, "main");
 	tier_config_set_name(config_tier, &tier_name);
+	uuid_init(&id);
+	uuid_generate(&id, &runtime()->random);
+	tier_config_set_id(config_tier, &id);
 
 	// create main tier storage (use main storage)
 	auto tier_storage = tier_storage_allocate();

@@ -24,7 +24,7 @@ closedir_defer(DIR* self)
 	closedir(self);
 }
 
-static void
+static bool
 tier_open_storage(TierMgr* self, Tier* tier, TierStorage* storage)
 {
 	char id[UUID_SZ];
@@ -38,7 +38,7 @@ tier_open_storage(TierMgr* self, Tier* tier, TierStorage* storage)
 	if (! fs_exists("%s", path))
 	{
 		fs_mkdir(0755, "%s", path);
-		return;
+		return true;
 	}
 
 	// read directory
@@ -79,16 +79,20 @@ tier_open_storage(TierMgr* self, Tier* tier, TierStorage* storage)
 		auto object = object_allocate(&id);
 		tier_add(tier, object);
 	}
+	return false;
 }
 
-static void
+static bool
 tier_open(TierMgr* self, Tier* tier)
 {
+	auto bootstrap = false;
 	list_foreach(&tier->config->storages)
 	{
 		auto storage = list_at(TierStorage, link);
-		tier_open_storage(self, tier, storage);
+		if (tier_open_storage(self, tier, storage))
+			bootstrap = true;
 	}
+	return bootstrap;
 }
 
 void
@@ -114,9 +118,10 @@ tier_mgr_free(TierMgr* self)
 	self->tiers_count = 0;
 }
 
-void
+bool
 tier_mgr_open(TierMgr* self, List* tiers)
 {
+	auto  bootstrap = false;
 	Tier* last = NULL;
 	list_foreach(tiers)
 	{
@@ -134,6 +139,19 @@ tier_mgr_open(TierMgr* self, List* tiers)
 		tier_resolve(tier, self->storage_mgr);
 
 		// read objects
-		tier_open(self, tier);
+		if (tier_open(self, tier))
+			bootstrap = true;
 	}
+
+	// ensure no objects for bootstrap
+	if (bootstrap)
+	{
+		auto tier = self->tiers;
+		for (; tier; tier = tier->next)
+		{
+			if (tier->list_count > 0)
+				bootstrap = false;
+		}
+	}
+	return bootstrap;
 }

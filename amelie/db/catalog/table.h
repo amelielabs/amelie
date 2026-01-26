@@ -76,11 +76,15 @@ table_allocate(TableConfig* config, StorageMgr* storage_mgr, Deploy* deploy)
 static inline void
 table_open(Table* self)
 {
+	// recover tiers and objects
+	auto bootstrap = tier_mgr_open(&self->tier_mgr, &self->config->tiers);
+
+	// create partitions on bootstrap
+	if (bootstrap)
+		part_mgr_deploy(&self->part_mgr, self->config->partitions);
+
 	// recover hash partitions
 	part_mgr_open(&self->part_mgr, &self->config->indexes);
-
-	// recover tiers and objects
-	tier_mgr_open(&self->tier_mgr, &self->config->tiers);
 
 	// create pods
 	deploy_attach_all(self->deploy, &self->part_mgr);

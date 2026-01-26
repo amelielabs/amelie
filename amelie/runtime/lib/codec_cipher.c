@@ -133,6 +133,7 @@ codec_aes_decode(Codec*   codec,
 		error("aes: codec key must be 256bit");
 
 	// [iv, tag, encoded data]
+	unused(dst_size);
 	assert(dst_size >= src_size);
 	uint8_t* iv  = src;
 	uint8_t* tag = src + 16;

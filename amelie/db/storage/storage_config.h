@@ -29,6 +29,8 @@ storage_config_allocate(void)
 	self->sync   = true;
 	self->crc    = false;
 	self->system = false;
+	str_init(&self->name);
+	str_init(&self->path);
 	return self;
 }
 

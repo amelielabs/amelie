@@ -121,7 +121,7 @@ catalog_restore(Catalog* self, uint8_t** pos)
 	decode_obj(obj, "catalog", pos);
 
 	// storages
-	json_read_array(&pos_databases);
+	json_read_array(&pos_storages);
 	while (! json_read_array_end(&pos_storages))
 		catalog_restore_object(self, RESTORE_STORAGE, &pos_storages);
 

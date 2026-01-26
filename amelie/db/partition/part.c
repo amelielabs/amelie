@@ -78,7 +78,7 @@ part_open(Part* self)
 	}
 
 	char id[UUID_SZ];
-	uuid_get(&self->id.id_table, id, sizeof(id));
+	uuid_get(&self->id.id_tier, id, sizeof(id));
 
 	auto total = (double)page_mgr_used(&self->heap->page_mgr) / 1024 / 1024;
 	info(" %s/%05" PRIu64 ".heap (%.2f MiB, %" PRIu64 " rows)",

@@ -65,7 +65,7 @@ catalog_prepare(Catalog* self)
 
 		// create main storage
 		auto storage_config = storage_config_allocate();
-		defer(storage_free, storage_config_free);
+		defer(storage_config_free, storage_config);
 		storage_config_set_name(storage_config, &name);
 		storage_config_set_path(storage_config, &name);
 		storage_config_set_system(storage_config, true);

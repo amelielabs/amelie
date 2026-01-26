@@ -89,7 +89,7 @@ id_path(Id* self, char* path, int state)
 	switch (state) {
 	case ID_HEAP:
 		// <storage_path>/<id_tier>/<id>.heap
-		storage_pathfmt(self->storage, path, "%s/%05" PRIu64,
+		storage_pathfmt(self->storage, path, "%s/%05" PRIu64 ".heap",
 		                id_tier, self->id);
 		break;
 	case ID_HEAP_INCOMPLETE:

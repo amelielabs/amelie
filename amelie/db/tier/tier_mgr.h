@@ -23,7 +23,7 @@ struct TierMgr
 
 void tier_mgr_init(TierMgr*, StorageMgr*, Uuid*);
 void tier_mgr_free(TierMgr*);
-void tier_mgr_open(TierMgr*, List*);
+bool tier_mgr_open(TierMgr*, List*);
 
 static inline Tier*
 tier_mgr_main(TierMgr* self)

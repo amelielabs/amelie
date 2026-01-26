@@ -73,6 +73,13 @@ refresh_snapshot_job(intptr_t* argv)
 	auto heap   = origin->heap;
 	heap->header->lsn = self->origin_lsn;
 	heap_create(heap, &self->file, &origin->id, ID_HEAP_INCOMPLETE);
+
+	char id[UUID_SZ];
+	uuid_get(&origin->id.tier->config->id, id, sizeof(id));
+
+	auto total = (double)page_mgr_used(&heap->page_mgr) / 1024 / 1024;
+	info(" %s/%05" PRIu64 ".heap (%.2f MiB)",
+	     id, origin->id.id, total);
 }
 
 static void
@@ -87,7 +94,8 @@ refresh_complete_job(intptr_t* argv)
 	heap_free(shadow);
 
 	// sync incomplete heap file
-	file_sync(&self->file);
+	if (origin->id.storage->config->sync)
+		file_sync(&self->file);
 
 	// unlink origin heap file
 	id_delete(&origin->id, ID_HEAP);

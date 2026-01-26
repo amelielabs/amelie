@@ -255,7 +255,7 @@ encoder_decode(Encoder* self,
 	{
 		codec = self->encryption;
 	} else {
-		assert(0);
+		abort();
 	}
 
 	// decode to dst
