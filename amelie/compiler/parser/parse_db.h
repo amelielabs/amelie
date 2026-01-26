@@ -17,9 +17,9 @@ typedef struct AstDbAlter  AstDbAlter;
 
 struct AstDbCreate
 {
-	Ast       ast;
-	bool      if_not_exists;
-	DbConfig* config;
+	Ast             ast;
+	bool            if_not_exists;
+	DatabaseConfig* config;
 };
 
 struct AstDbDrop

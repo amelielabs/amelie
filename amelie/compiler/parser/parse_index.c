@@ -12,7 +12,7 @@
 
 #include <amelie_runtime>
 #include <amelie_server>
-#include <amelie_storage>
+#include <amelie_db>
 #include <amelie_repl>
 #include <amelie_vm>
 #include <amelie_parser.h>
@@ -59,7 +59,7 @@ parse_index_create(Stmt* self, bool unique)
 	stmt->table_name = target->string;
 
 	// find table
-	auto table = table_mgr_find(&share()->storage->catalog.table_mgr,
+	auto table = table_mgr_find(&share()->db->catalog.table_mgr,
 	                            self->parser->db,
 	                            &stmt->table_name,
 	                            false);
@@ -67,7 +67,7 @@ parse_index_create(Stmt* self, bool unique)
 		stmt_error(self, target, "table not found");
 
 	// todo: unique indexes can be created only with 1 partition table
-	if (unique && table->volume_mgr.parts_count != 1)
+	if (unique && table->part_mgr.parts_count != 1)
 		stmt_error(self, target, "secondary UNIQUE INDEX allowed only for tables with one partition");
 
 	// create index config

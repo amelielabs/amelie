@@ -12,7 +12,7 @@
 
 #include <amelie_runtime>
 #include <amelie_server>
-#include <amelie_storage>
+#include <amelie_db>
 #include <amelie_repl>
 #include <amelie_vm>
 #include <amelie_parser.h>
@@ -128,21 +128,21 @@ emit_ddl(Compiler* self)
 	case STMT_CREATE_DB:
 	{
 		auto arg = ast_db_create_of(stmt->ast);
-		offset = db_op_create(data, arg->config);
+		offset = database_op_create(data, arg->config);
 		flags = arg->if_not_exists ? DDL_IF_NOT_EXISTS : 0;
 		break;
 	}
 	case STMT_DROP_DB:
 	{
 		auto arg = ast_db_drop_of(stmt->ast);
-		offset = db_op_drop(data, &arg->name->string, arg->cascade);
+		offset = database_op_drop(data, &arg->name->string, arg->cascade);
 		flags = arg->if_exists ? DDL_IF_EXISTS : 0;
 		break;
 	}
 	case STMT_ALTER_DB:
 	{
 		auto arg = ast_db_alter_of(stmt->ast);
-		offset = db_op_rename(data, &arg->name->string, &arg->name_new->string);
+		offset = database_op_rename(data, &arg->name->string, &arg->name_new->string);
 		flags = arg->if_exists ? DDL_IF_EXISTS : 0;
 		break;
 	}

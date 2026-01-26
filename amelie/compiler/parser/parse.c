@@ -12,7 +12,7 @@
 
 #include <amelie_runtime>
 #include <amelie_server>
-#include <amelie_storage>
+#include <amelie_db>
 #include <amelie_repl>
 #include <amelie_vm>
 #include <amelie_parser.h>
@@ -46,7 +46,7 @@ parse_stmt_free(Stmt* stmt)
 	{
 		auto ast = ast_db_create_of(stmt->ast);
 		if (ast->config)
-			db_config_free(ast->config);
+			database_config_free(ast->config);
 		break;
 	}
 	case STMT_CREATE_TABLE:

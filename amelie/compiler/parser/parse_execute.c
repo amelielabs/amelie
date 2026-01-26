@@ -12,7 +12,7 @@
 
 #include <amelie_runtime>
 #include <amelie_server>
-#include <amelie_storage>
+#include <amelie_db>
 #include <amelie_repl>
 #include <amelie_vm>
 #include <amelie_parser.h>
@@ -61,7 +61,7 @@ parse_execute(Stmt* self)
 	auto name = stmt_expect(self, KNAME);
 
 	// find function
-	stmt->udf = udf_mgr_find(&share()->storage->catalog.udf_mgr,
+	stmt->udf = udf_mgr_find(&share()->db->catalog.udf_mgr,
 	                         self->parser->db,
 	                         &name->string, false);
 	if (! stmt->udf)

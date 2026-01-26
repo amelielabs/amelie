@@ -12,7 +12,7 @@
 
 #include <amelie_runtime>
 #include <amelie_server>
-#include <amelie_storage>
+#include <amelie_db>
 #include <amelie_repl>
 #include <amelie_vm>
 #include <amelie_parser.h>
@@ -337,7 +337,7 @@ expr_func(Stmt* self, Expr* expr, Ast* name, bool with_args)
 	if (! func->fn)
 	{
 		// find udf
-		func->udf = udf_mgr_find(&share()->storage->catalog.udf_mgr,
+		func->udf = udf_mgr_find(&share()->db->catalog.udf_mgr,
 		                         self->parser->db,
 		                         &name->string,
 		                         false);

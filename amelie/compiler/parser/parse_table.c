@@ -12,7 +12,7 @@
 
 #include <amelie_runtime>
 #include <amelie_server>
-#include <amelie_storage>
+#include <amelie_db>
 #include <amelie_repl>
 #include <amelie_vm>
 #include <amelie_parser.h>
@@ -411,13 +411,18 @@ parse_table_create(Stmt* self, bool unlogged)
 	uuid_generate(&id, &runtime()->random);
 	table_config_set_id(config, &id);
 
-	// create main volume config
-	auto config_volume = volume_config_allocate();
-	stmt->config_volume = config_volume;
-	table_config_volume_add(config, config_volume);
-	Str volume_tier;
-	str_set_cstr(&volume_tier, "main");
-	volume_config_set_tier(config_volume, &volume_tier);
+	// create main tier config
+	auto config_tier = tier_config_allocate();
+	stmt->config_tier = config_tier;
+	table_config_tier_add(config, config_tier);
+	Str tier_name;
+	str_set_cstr(&tier_name, "main");
+	tier_config_set_name(config_tier, &tier_name);
+
+	// create main tier storage (use main storage)
+	auto tier_storage = tier_storage_allocate();
+	tier_storage_set_name(tier_storage, &tier_name);
+	tier_config_storage_add(config_tier, tier_storage);
 
 	// create primary index config
 	auto config_index = index_config_allocate(&config->columns);
@@ -443,10 +448,10 @@ parse_table_create(Stmt* self, bool unlogged)
 		auto n = stmt_expect(self, KINT);
 		hash_partitions = n->integer;
 	}
-	if (hash_partitions < 1 || hash_partitions >= MAPPING_MAX)
+	if (hash_partitions < 1 || hash_partitions >= PART_MAPPING_MAX)
 		stmt_error(self, NULL, "table has invalid hash partitions number");
 
-	table_config_set_mapping_hash(config, hash_partitions);
+	table_config_set_partitions(config, hash_partitions);
 }
 
 void
@@ -631,7 +636,7 @@ parse_table_alter(Stmt* self)
 			if (stmt_if(self, KDEFAULT))
 			{
 				// find table and column
-				auto table  = table_mgr_find(&share()->storage->catalog.table_mgr,
+				auto table  = table_mgr_find(&share()->db->catalog.table_mgr,
 				                             self->parser->db,
 				                             &stmt->name, false);
 				if (! table)

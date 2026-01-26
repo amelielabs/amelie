@@ -12,7 +12,7 @@
 
 #include <amelie_runtime>
 #include <amelie_server>
-#include <amelie_storage>
+#include <amelie_db>
 #include <amelie_repl>
 #include <amelie_vm>
 #include <amelie_parser.h>
@@ -110,7 +110,7 @@ parse_endpoint_set(ParseEndpoint* self)
 	// find relation
 	auto db       = &endpoint->db.string;
 	auto relation = &endpoint->relation.string;
-	auto table    = table_mgr_find(&share()->storage->catalog.table_mgr,
+	auto table    = table_mgr_find(&share()->db->catalog.table_mgr,
 	                               db, relation, false);
 	if (table)
 	{
@@ -119,7 +119,7 @@ parse_endpoint_set(ParseEndpoint* self)
 		self->columns_target = &table->config->columns;
 	} else
 	{
-		auto udf = udf_mgr_find(&share()->storage->catalog.udf_mgr,
+		auto udf = udf_mgr_find(&share()->db->catalog.udf_mgr,
 		                        db, relation, false);
 		if (! udf)
 			error("relation '%.*s': not found", str_size(relation),

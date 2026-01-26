@@ -12,7 +12,7 @@
 
 #include <amelie_runtime>
 #include <amelie_server>
-#include <amelie_storage>
+#include <amelie_db>
 #include <amelie_repl>
 #include <amelie_vm>
 #include <amelie_parser.h>
@@ -28,11 +28,11 @@ parse_db_create(Stmt* self)
 	stmt->if_not_exists = parse_if_not_exists(self);
 
 	// create db config
-	stmt->config = db_config_allocate();
+	stmt->config = database_config_allocate();
 
 	// name
 	auto name = stmt_expect(self, KNAME);
-	db_config_set_name(stmt->config, &name->string);
+	database_config_set_name(stmt->config, &name->string);
 }
 
 void
