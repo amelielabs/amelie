@@ -17,11 +17,11 @@
 // storage
 #include "catalog/storage_op.h"
 
-// db
-#include "catalog/db_config.h"
-#include "catalog/db.h"
-#include "catalog/db_op.h"
-#include "catalog/db_mgr.h"
+// database
+#include "catalog/database_config.h"
+#include "catalog/database.h"
+#include "catalog/database_op.h"
+#include "catalog/database_mgr.h"
 
 // table
 #include "catalog/table_config.h"

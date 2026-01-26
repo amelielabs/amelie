@@ -30,7 +30,7 @@ catalog_init(Catalog*   self,
 	self->iface = iface;
 	self->iface_arg = iface_arg;
 	storage_mgr_init(&self->storage_mgr);
-	db_mgr_init(&self->db_mgr);
+	database_mgr_init(&self->db_mgr);
 	table_mgr_init(&self->table_mgr, &self->storage_mgr, deploy);
 	udf_mgr_init(&self->udf_mgr, iface->udf_free, iface_arg);
 }
@@ -40,7 +40,7 @@ catalog_free(Catalog* self)
 {
 	udf_mgr_free(&self->udf_mgr);
 	table_mgr_free(&self->table_mgr);
-	db_mgr_free(&self->db_mgr);
+	database_mgr_free(&self->db_mgr);
 	storage_mgr_free(&self->storage_mgr);
 }
 
@@ -71,12 +71,12 @@ catalog_prepare(Catalog* self)
 		storage_config_set_system(storage_config, true);
 		storage_mgr_create(&self->storage_mgr, &tr, storage_config, false);
 
-		// create main db
-		auto db_config = db_config_allocate();
-		defer(db_config_free, db_config);
-		db_config_set_name(db_config, &name);
-		db_config_set_system(db_config, true);
-		db_mgr_create(&self->db_mgr, &tr, db_config, false);
+		// create main database
+		auto db_config = database_config_allocate();
+		defer(database_config_free, db_config);
+		database_config_set_name(db_config, &name);
+		database_config_set_system(db_config, true);
+		database_mgr_create(&self->db_mgr, &tr, db_config, false);
 
 		// commit
 		tr_commit(&tr);
@@ -192,30 +192,30 @@ catalog_execute(Catalog* self, Tr* tr, uint8_t* op, int flags)
 		write = storage_mgr_rename(&self->storage_mgr, tr, &name, &name_new, if_exists);
 		break;
 	}
-	case DDL_DB_CREATE:
+	case DDL_DATABASE_CREATE:
 	{
-		auto config = db_op_create_read(op);
-		defer(db_config_free, config);
+		auto config = database_op_create_read(op);
+		defer(database_config_free, config);
 
 		auto if_not_exists = ddl_if_not_exists(flags);
-		write = db_mgr_create(&self->db_mgr, tr, config, if_not_exists);
+		write = database_mgr_create(&self->db_mgr, tr, config, if_not_exists);
 		break;
 	}
-	case DDL_DB_DROP:
+	case DDL_DATABASE_DROP:
 	{
 		Str  name;
 		bool cascade;
-		db_op_drop_read(op, &name, &cascade);
+		database_op_drop_read(op, &name, &cascade);
 
 		auto if_exists = ddl_if_exists(flags);
 		write = cascade_db_drop(self, tr, &name, cascade, if_exists);
 		break;
 	}
-	case DDL_DB_RENAME:
+	case DDL_DATABASE_RENAME:
 	{
 		Str name;
 		Str name_new;
-		db_op_rename_read(op, &name, &name_new);
+		database_op_rename_read(op, &name, &name_new);
 
 		auto if_exists = ddl_if_exists(flags);
 		write = cascade_db_rename(self, tr, &name, &name_new, if_exists);
@@ -252,7 +252,7 @@ catalog_execute(Catalog* self, Tr* tr, uint8_t* op, int flags)
 		table_op_rename_read(op, &db, &name, &db_new, &name_new);
 
 		// ensure db exists
-		db_mgr_find(&self->db_mgr, &db_new, true);
+		database_mgr_find(&self->db_mgr, &db_new, true);
 
 		// ensure no other udfs depend on the table
 		catalog_validate_udfs(self, &name);
@@ -495,7 +495,7 @@ catalog_execute(Catalog* self, Tr* tr, uint8_t* op, int flags)
 		udf_op_rename_read(op, &db, &name, &db_new, &name_new);
 
 		// ensure db exists and not system
-		db_mgr_find(&self->db_mgr, &db_new, true);
+		database_mgr_find(&self->db_mgr, &db_new, true);
 
 		// ensure no other udfs depend on it
 		catalog_validate_udfs(self, &name);

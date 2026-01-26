@@ -60,23 +60,23 @@ cascade_db_drop(Catalog* self, Tr* tr, Str* name,
                 bool     cascade,
                 bool     if_exists)
 {
-	auto db = db_mgr_find(&self->db_mgr, name, false);
+	auto db = database_mgr_find(&self->db_mgr, name, false);
 	if (! db)
 	{
 		if (! if_exists)
-			error("db '%.*s': not exists", str_size(name),
+			error("database '%.*s': not exists", str_size(name),
 			      str_of(name));
 		return false;
 	}
 
 	if (db->config->system)
-		error("db '%.*s': system db cannot be dropped", str_size(name),
+		error("database '%.*s': system db cannot be dropped", str_size(name),
 		      str_of(name));
 
 	// validate or drop all objects matching the database
 	cascade_db_drop_execute(self, tr, name, cascade);
 
-	db_mgr_drop(&self->db_mgr, tr, name, false);
+	database_mgr_drop(&self->db_mgr, tr, name, false);
 	return true;
 }
 
@@ -111,23 +111,23 @@ cascade_db_rename(Catalog* self, Tr* tr,
                   Str*     name_new,
                   bool     if_exists)
 {
-	auto db = db_mgr_find(&self->db_mgr, name, false);
+	auto db = database_mgr_find(&self->db_mgr, name, false);
 	if (! db)
 	{
 		if (! if_exists)
-			error("db '%.*s': not exists", str_size(name),
+			error("database '%.*s': not exists", str_size(name),
 			      str_of(name));
 		return false;
 	}
 
 	if (db->config->system)
-		error("db '%.*s': system db cannot be renamed", str_size(name),
+		error("database '%.*s': system db cannot be renamed", str_size(name),
 		      str_of(name));
 
 	// rename all database objects
 	cascade_db_rename_execute(self, tr, name, name_new);
 
 	// rename db
-	db_mgr_rename(&self->db_mgr, tr, name, name_new, false);
+	database_mgr_rename(&self->db_mgr, tr, name, name_new, false);
 	return true;
 }

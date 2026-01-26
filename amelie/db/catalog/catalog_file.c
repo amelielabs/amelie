@@ -24,7 +24,7 @@
 enum
 {
 	RESTORE_STORAGE,
-	RESTORE_DB,
+	RESTORE_DATABASE,
 	RESTORE_TABLE,
 	RESTORE_UDF
 };
@@ -43,14 +43,14 @@ catalog_restore_relation(Catalog* self, Tr* tr, int type, uint8_t** pos)
 		storage_mgr_create(&self->storage_mgr, tr, config, false);
 		break;
 	}
-	case RESTORE_DB:
+	case RESTORE_DATABASE:
 	{
 		// read db config
-		auto config = db_config_read(pos);
-		defer(db_config_free, config);
+		auto config = database_config_read(pos);
+		defer(database_config_free, config);
 
 		// create db
-		db_mgr_create(&self->db_mgr, tr, config, false);
+		database_mgr_create(&self->db_mgr, tr, config, false);
 		break;
 	}
 	case RESTORE_TABLE:
@@ -128,7 +128,7 @@ catalog_restore(Catalog* self, uint8_t** pos)
 	// databases
 	json_read_array(&pos_databases);
 	while (! json_read_array_end(&pos_databases))
-		catalog_restore_object(self, RESTORE_DB, &pos_databases);
+		catalog_restore_object(self, RESTORE_DATABASE, &pos_databases);
 
 	// tables
 	json_read_array(&pos_tables);
@@ -202,7 +202,7 @@ catalog_write_prepare(Catalog* self, uint64_t lsn)
 
 	// databases
 	encode_raw(buf, "databases", 9);
-	db_mgr_dump(&self->db_mgr, buf);
+	database_mgr_dump(&self->db_mgr, buf);
 
 	// tables
 	encode_raw(buf, "tables", 6);

@@ -11,58 +11,58 @@
 // AGPL-3.0 Licensed.
 //
 
-typedef struct DbConfig DbConfig;
+typedef struct DatabaseConfig DatabaseConfig;
 
-struct DbConfig
+struct DatabaseConfig
 {
 	Str  name;
 	bool system;
 };
 
-static inline DbConfig*
-db_config_allocate()
+static inline DatabaseConfig*
+database_config_allocate()
 {
-	DbConfig* self;
-	self = am_malloc(sizeof(DbConfig));
+	DatabaseConfig* self;
+	self = am_malloc(sizeof(DatabaseConfig));
 	self->system = false;
 	str_init(&self->name);
 	return self;
 }
 
 static inline void
-db_config_free(DbConfig* self)
+database_config_free(DatabaseConfig* self)
 {
 	str_free(&self->name);
 	am_free(self);
 }
 
 static inline void
-db_config_set_system(DbConfig* self, bool system)
+database_config_set_system(DatabaseConfig* self, bool system)
 {
 	self->system = system;
 }
 
 static inline void
-db_config_set_name(DbConfig* self, Str* name)
+database_config_set_name(DatabaseConfig* self, Str* name)
 {
 	str_free(&self->name);
 	str_copy(&self->name, name);
 }
 
-static inline DbConfig*
-db_config_copy(DbConfig* self)
+static inline DatabaseConfig*
+database_config_copy(DatabaseConfig* self)
 {
-	auto copy = db_config_allocate();
-	db_config_set_name(copy, &self->name);
-	db_config_set_system(copy, self->system);
+	auto copy = database_config_allocate();
+	database_config_set_name(copy, &self->name);
+	database_config_set_system(copy, self->system);
 	return copy;
 }
 
-static inline DbConfig*
-db_config_read(uint8_t** pos)
+static inline DatabaseConfig*
+database_config_read(uint8_t** pos)
 {
-	auto self = db_config_allocate();
-	errdefer(db_config_free, self);
+	auto self = database_config_allocate();
+	errdefer(database_config_free, self);
 	Decode obj[] =
 	{
 		{ DECODE_STRING, "name", &self->name },
@@ -73,7 +73,7 @@ db_config_read(uint8_t** pos)
 }
 
 static inline void
-db_config_write(DbConfig* self, Buf* buf)
+database_config_write(DatabaseConfig* self, Buf* buf)
 {
 	// obj
 	encode_obj(buf);
@@ -86,7 +86,7 @@ db_config_write(DbConfig* self, Buf* buf)
 }
 
 static inline void
-db_config_write_compact(DbConfig* self, Buf* buf)
+database_config_write_compact(DatabaseConfig* self, Buf* buf)
 {
 	// obj
 	encode_obj(buf);

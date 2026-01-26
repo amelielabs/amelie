@@ -22,35 +22,35 @@
 #include <amelie_catalog.h>
 
 void
-db_mgr_init(DbMgr* self)
+database_mgr_init(DatabaseMgr* self)
 {
 	relation_mgr_init(&self->mgr);
 }
 
 void
-db_mgr_free(DbMgr* self)
+database_mgr_free(DatabaseMgr* self)
 {
 	relation_mgr_free(&self->mgr);
 }
 
 bool
-db_mgr_create(DbMgr*    self,
-              Tr*       tr,
-              DbConfig* config,
-              bool      if_not_exists)
+database_mgr_create(DatabaseMgr*    self,
+                    Tr*             tr,
+                    DatabaseConfig* config,
+                    bool            if_not_exists)
 {
 	// make sure db does not exists
-	auto current = db_mgr_find(self, &config->name, false);
+	auto current = database_mgr_find(self, &config->name, false);
 	if (current)
 	{
 		if (! if_not_exists)
-			error("db '%.*s': already exists", str_size(&config->name),
+			error("database '%.*s': already exists", str_size(&config->name),
 			      str_of(&config->name));
 		return false;
 	}
 
 	// allocate db and init
-	auto db = db_allocate(config);
+	auto db = database_allocate(config);
 
 	// register db
 	relation_mgr_create(&self->mgr, tr, &db->rel);
@@ -58,21 +58,21 @@ db_mgr_create(DbMgr*    self,
 }
 
 bool
-db_mgr_drop(DbMgr* self,
-            Tr*    tr,
-            Str*   name,
-            bool   if_exists)
+database_mgr_drop(DatabaseMgr* self,
+                  Tr*          tr,
+                  Str*         name,
+                  bool         if_exists)
 {
-	auto db = db_mgr_find(self, name, false);
+	auto db = database_mgr_find(self, name, false);
 	if (! db)
 	{
 		if (! if_exists)
-			error("db '%.*s': not exists", str_size(name),
+			error("database '%.*s': not exists", str_size(name),
 			      str_of(name));
 		return false;
 	}
 	if (db->config->system)
-		error("db '%.*s': system db cannot be dropped", str_size(name),
+		error("database '%.*s': system db cannot be dropped", str_size(name),
 		      str_of(name));
 
 	// drop db by object
@@ -91,12 +91,12 @@ static void
 rename_if_abort(Log* self, LogOp* op)
 {
 	auto relation = log_relation_of(self, op);
-	auto mgr = db_of(relation->relation);
+	auto mgr = database_of(relation->relation);
 	// set previous name
 	uint8_t* pos = relation->data;
 	Str name;
 	json_read_string(&pos, &name);
-	db_config_set_name(mgr->config, &name);
+	database_config_set_name(mgr->config, &name);
 }
 
 static LogIf rename_if =
@@ -106,28 +106,28 @@ static LogIf rename_if =
 };
 
 bool
-db_mgr_rename(DbMgr* self,
-              Tr*    tr,
-              Str*   name,
-              Str*   name_new,
-              bool   if_exists)
+database_mgr_rename(DatabaseMgr* self,
+                    Tr*          tr,
+                    Str*         name,
+                    Str*         name_new,
+                    bool         if_exists)
 {
-	auto db = db_mgr_find(self, name, false);
+	auto db = database_mgr_find(self, name, false);
 	if (! db)
 	{
 		if (! if_exists)
-			error("db '%.*s': not exists", str_size(name),
+			error("database '%.*s': not exists", str_size(name),
 			      str_of(name));
 		return false;
 	}
 
 	if (db->config->system)
-		error("db '%.*s': system db cannot be renamed", str_size(name),
+		error("database '%.*s': system db cannot be renamed", str_size(name),
 		       str_of(name));
 
 	// ensure new db does not exists
-	if (db_mgr_find(self, name_new, false))
-		error("db '%.*s': already exists", str_size(name_new),
+	if (database_mgr_find(self, name_new, false))
+		error("database '%.*s': already exists", str_size(name_new),
 		      str_of(name_new));
 
 	// update db
@@ -137,52 +137,52 @@ db_mgr_rename(DbMgr* self,
 	encode_string(&tr->log.data, name);
 
 	// set new name
-	db_config_set_name(db->config, name_new);
+	database_config_set_name(db->config, name_new);
 	return true;
 }
 
 void
-db_mgr_dump(DbMgr* self, Buf* buf)
+database_mgr_dump(DatabaseMgr* self, Buf* buf)
 {
 	// array
 	encode_array(buf);
 	list_foreach(&self->mgr.list)
 	{
-		auto db = db_of(list_at(Relation, link));
+		auto db = database_of(list_at(Relation, link));
 		if (db->config->system)
 			continue;
-		db_config_write(db->config, buf);
+		database_config_write(db->config, buf);
 	}
 	encode_array_end(buf);
 }
 
-Db*
-db_mgr_find(DbMgr* self, Str* name, bool error_if_not_exists)
+Database*
+database_mgr_find(DatabaseMgr* self, Str* name, bool error_if_not_exists)
 {
 	auto relation = relation_mgr_get(&self->mgr, NULL, name);
 	if (! relation)
 	{
 		if (error_if_not_exists)
-			error("db '%.*s': not exists", str_size(name),
+			error("database '%.*s': not exists", str_size(name),
 			      str_of(name));
 		return NULL;
 	}
-	return db_of(relation);
+	return database_of(relation);
 }
 
 Buf*
-db_mgr_list(DbMgr* self, Str* name, bool extended)
+database_mgr_list(DatabaseMgr* self, Str* name, bool extended)
 {
 	auto buf = buf_create();
 	if (name)
 	{
-		auto db = db_mgr_find(self, name, false);
+		auto db = database_mgr_find(self, name, false);
 		if (db)
 		{
 			if (extended)
-				db_config_write(db->config, buf);
+				database_config_write(db->config, buf);
 			else
-				db_config_write_compact(db->config, buf);
+				database_config_write_compact(db->config, buf);
 		} else
 		{
 			encode_null(buf);
@@ -192,11 +192,11 @@ db_mgr_list(DbMgr* self, Str* name, bool extended)
 		encode_array(buf);
 		list_foreach(&self->mgr.list)
 		{
-			auto db = db_of(list_at(Relation, link));
+			auto db = database_of(list_at(Relation, link));
 			if (extended)
-				db_config_write(db->config, buf);
+				database_config_write(db->config, buf);
 			else
-				db_config_write_compact(db->config, buf);
+				database_config_write_compact(db->config, buf);
 		}
 		encode_array_end(buf);
 	}
