@@ -20,7 +20,7 @@ post /v1/db - - -;
 post /v1/db/ - - -;
 {"msg": "database is not defined"}
 post /v1/db/z - - -;
-{"msg": "db 'z': not exists"}
+{"msg": "database 'z': not exists"}
 # test: POST /v1/db/main (invalid content type)
 post /v1/db/main - - -;
 {"msg": "unsupported operation content-type"}

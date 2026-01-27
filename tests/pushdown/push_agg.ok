@@ -48,7 +48,7 @@ select count(*) from test_empty;
 [0]
 # test: select count(*) from table
 select * from test;
-[[0, 0, 0], [1, 0, 0], [3, 1, 1], [4, 2, 2], [2, 1, 1], [5, null, null], [6, 3, 3.1]]
+[[0, 0, 0], [1, 0, 0], [3, 1, 1], [2, 1, 1], [4, 2, 2], [5, null, null], [6, 3, 3.1]]
 explain select count(*) from test;
 [{
   "main": {
@@ -658,11 +658,11 @@ explain select id, count(*) from test group by id;
   "access": [["test", "shared"]]
 }]
 select id, count(*) from test group by id;
-[[0, 1], [1, 1], [3, 1], [4, 1], [2, 1], [6, 1], [5, 1]]
+[[0, 1], [1, 1], [3, 1], [2, 1], [6, 1], [4, 1], [5, 1]]
 select data, count(*) from test group by data;
-[[0, 2], [1, 2], [2, 1], [null, 1], [3, 1]]
+[[0, 2], [1, 2], [null, 1], [2, 1], [3, 1]]
 select data2, count(*) from test group by data2;
-[[0, 2], [1, 2], [2, 1], [null, 1], [3.1, 1]]
+[[0, 2], [1, 2], [null, 1], [2, 1], [3.1, 1]]
 select data, count(*) from test_empty group by data;
 []
 select data, count(*) from test_null group by data;
@@ -700,11 +700,11 @@ explain select id, count(*) from test group by 1;
   "access": [["test", "shared"]]
 }]
 select id, count(*) from test group by 1;
-[[0, 1], [1, 1], [3, 1], [4, 1], [2, 1], [6, 1], [5, 1]]
+[[0, 1], [1, 1], [3, 1], [2, 1], [6, 1], [4, 1], [5, 1]]
 select data, count(*) from test group by 1;
-[[0, 2], [1, 2], [2, 1], [null, 1], [3, 1]]
+[[0, 2], [1, 2], [null, 1], [2, 1], [3, 1]]
 select data2, count(*) from test group by 1;
-[[0, 2], [1, 2], [2, 1], [null, 1], [3.1, 1]]
+[[0, 2], [1, 2], [null, 1], [2, 1], [3.1, 1]]
 select data, count(*) from test_empty group by 1;
 []
 select data, count(*) from test_null group by 1;
@@ -797,9 +797,9 @@ explain select * from (select id, count(*) from test group by id) t;
   "access": [["test", "shared"]]
 }]
 select * from (select id, count(*) from test group by id) t;
-[[0, 1], [1, 1], [3, 1], [4, 1], [2, 1], [6, 1], [5, 1]]
+[[0, 1], [1, 1], [3, 1], [2, 1], [6, 1], [4, 1], [5, 1]]
 select * from (select data, count(*) from test group by data) t;
-[[0, 2], [1, 2], [2, 1], [null, 1], [3, 1]]
+[[0, 2], [1, 2], [null, 1], [2, 1], [3, 1]]
 select * from (select data, count(*) from test_empty group by data) t;
 []
 select * from (select data, count(*) from test_null group by data) t;
@@ -910,7 +910,7 @@ select 1 from test having count(id) > 0;
 {"msg": "select 1 from test ❰having❱ ⟵ ; expected"}
 # test: select from table group by having
 select id, count(*) from test group by 1;
-[[0, 1], [1, 1], [3, 1], [4, 1], [2, 1], [6, 1], [5, 1]]
+[[0, 1], [1, 1], [3, 1], [2, 1], [6, 1], [4, 1], [5, 1]]
 select id, count(*) from test group by 1 having id > 5;
 [[6, 1]]
 select id, count(*) from test group by id having id > 5;
@@ -998,11 +998,11 @@ explain select id from test group by id having count(id) > 0;
   "access": [["test", "shared"]]
 }]
 select id from test group by id having count(id) > 0;
-[0, 1, 3, 4, 2, 6, 5]
+[0, 1, 3, 2, 6, 4, 5]
 select data from test group by data;
-[0, 1, 2, null, 3]
+[0, 1, null, 2, 3]
 select data from test;
-[0, 0, 1, 2, 1, null, 3]
+[0, 0, 1, 1, 2, null, 3]
 select data from test group by data having count(data) > 1;
 [0, 1]
 # test: select from table group by having count(*)
@@ -1040,7 +1040,7 @@ explain select id from test group by id having count(*) > 0;
   "access": [["test", "shared"]]
 }]
 select id from test group by id having count(*) > 0;
-[0, 1, 3, 4, 2, 6, 5]
+[0, 1, 3, 2, 6, 4, 5]
 explain select id, count(*) from test group by id having count(*) > 0;
 [{
   "main": {
@@ -1078,7 +1078,7 @@ explain select id, count(*) from test group by id having count(*) > 0;
   "access": [["test", "shared"]]
 }]
 select id, count(*) from test group by id having count(*) > 0;
-[[0, 1], [1, 1], [3, 1], [4, 1], [2, 1], [6, 1], [5, 1]]
+[[0, 1], [1, 1], [3, 1], [2, 1], [6, 1], [4, 1], [5, 1]]
 explain select id, count(*) from test group by 1 having count(*) > 0;
 [{
   "main": {
@@ -1152,7 +1152,7 @@ explain select data, count(*) from test group by data having count(*) > 0;
   "access": [["test", "shared"]]
 }]
 select data, count(*) from test group by data having count(*) > 0;
-[[0, 2], [1, 2], [2, 1], [null, 1], [3, 1]]
+[[0, 2], [1, 2], [null, 1], [2, 1], [3, 1]]
 explain select data, count(*) from test group by 1 having count(*) > 0;
 [{
   "main": {
@@ -1353,11 +1353,11 @@ select distinct on (count(data)) data from test group by data;
 {"msg": "select distinct on (❰count❱ ⟵ unexpected aggregate function usage"}
 # test: select count(distinct) from table group by
 select id, count(distinct data), count(distinct data2) from test group by id;
-[[0, 1, 1], [1, 1, 1], [3, 1, 1], [4, 1, 1], [2, 1, 1], [6, 1, 1], [5, 0, 0]]
+[[0, 1, 1], [1, 1, 1], [3, 1, 1], [2, 1, 1], [6, 1, 1], [4, 1, 1], [5, 0, 0]]
 select count(data) from test group by data;
-[2, 2, 1, 0, 1]
+[2, 2, 0, 1, 1]
 select count(distinct data) from test group by data;
-[1, 1, 1, 0, 1]
+[1, 1, 0, 1, 1]
 select count(distinct data), count(distinct data2) from test group by true;
 [[4, 4]]
 # test: select (select count(distinct) from table group by)

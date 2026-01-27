@@ -38,7 +38,7 @@ select show('databases');
 }]]
 # test: create database if not exists
 create database test;
-{"msg": "db 'test': already exists"}
+{"msg": "database 'test': already exists"}
 create database if not exists test;
 show databases;
 [{
@@ -65,7 +65,7 @@ show databases;
 }]
 # test: drop database if exists
 drop database test;
-{"msg": "db 'test': not exists"}
+{"msg": "database 'test': not exists"}
 drop database if exists test;
 show databases;
 [{
@@ -73,7 +73,7 @@ show databases;
 }]
 # test: drop main database
 drop database main;
-{"msg": "db 'main': system db cannot be dropped"}
+{"msg": "database 'main': system db cannot be dropped"}
 show databases;
 [{
   "name": "main"
@@ -97,7 +97,7 @@ connect E0 S1 127.0.0.1:3485/test;
 switch S1;
 drop database test;
 select 1;
-{"msg": "db 'test': not exists"}
+{"msg": "database 'test': not exists"}
 disconnect S1;
 switch S0;
 # test: drop database cascade (with relations)
@@ -111,7 +111,7 @@ drop database test;
 {"msg": "table 'a' depends on db 'test"}
 drop database test cascade;
 select 1;
-{"msg": "db 'test': not exists"}
+{"msg": "database 'test': not exists"}
 disconnect S1;
 switch S0;
 show tables;
@@ -153,7 +153,7 @@ show databases;
 drop database test2;
 # test: alter database main
 alter database main rename to _public;
-{"msg": "db 'main': system db cannot be renamed"}
+{"msg": "database 'main': system db cannot be renamed"}
 # test: alter database rename cascade (udf dep)
 create database test;
 connect E0 S1 127.0.0.1:3485/test;
@@ -175,7 +175,7 @@ drop function fn;
 # test: alter database rename cascade
 alter database test rename to test2;
 select 1;
-{"msg": "db 'test': not exists"}
+{"msg": "database 'test': not exists"}
 disconnect S1;
 connect E0 S1 127.0.0.1:3485/test2;
 switch S1;

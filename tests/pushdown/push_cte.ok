@@ -118,7 +118,7 @@ explain with a as (select * from test) select * from a;
   "access": [["test", "shared"]]
 }]
 with a as (select * from test) select * from a;
-[1, 3, 2]
+[2, 1, 3]
 drop table test;
 # test: with(select * from table), select column from cte
 create table test (id int primary key);
@@ -188,7 +188,7 @@ explain with a as (select * from test) select a.id from a;
   "access": [["test", "shared"]]
 }]
 with a as (select * from test) select a.id from a;
-[1, 3, 2]
+[2, 1, 3]
 drop table test;
 # test: with(select column from table), select column from cte
 create table test (id int primary key);
@@ -260,7 +260,7 @@ explain with a as (select id as x from test) select x from a;
   "access": [["test", "shared"]]
 }]
 with a as (select id as x from test) select x from a;
-[1, 3, 2]
+[2, 1, 3]
 drop table test;
 # test: with(select column, column from table), select * from cte (conflict)
 create table test (id int primary key);
@@ -268,7 +268,7 @@ insert into test values (1),(2),(3);
 with a as (select id, id from test) select * from a;
 {"msg": "with a as (select id, id from test) select ❰*❱ ⟵ column name a.id is ambiguous"}
 with a as (select id, id as x from test) select * from a;
-[[1, 1], [3, 3], [2, 2]]
+[[2, 2], [1, 1], [3, 3]]
 drop table test;
 # test: with(select * from table), select * from cte
 create table test (id int primary key);
@@ -488,7 +488,7 @@ explain with a as (select * from test) select test.* from test join a on test.id
   "access": [["test", "shared"]]
 }]
 with a as (select * from test) select test.* from test join a on test.id = a.id;
-[1, 3, 2]
+[2, 1, 3]
 drop table test;
 # test: with(select string from table), select from table join
 create table test (id int primary key, data string);
@@ -537,7 +537,7 @@ explain with a as (select data from test) select test.* from test join a on test
   "access": [["test", "shared"]]
 }]
 with a as (select data from test) select test.* from test join a on test.data = a.data;
-[[1, "1"], [3, "3"], [2, "2"]]
+[[2, "2"], [1, "1"], [3, "3"]]
 drop table test;
 # test: with (columns) as (select expr), select * from cte
 explain with z (a,b,c) as (select 4,5,6) select * from z;
@@ -629,7 +629,7 @@ drop table test;
 create table test (id int primary key);
 insert into test values (1),(2),(3);
 with a as (select * from test), b as (select [1,2,3]), c as (select * from a) select * from c;
-[1, 3, 2]
+[2, 1, 3]
 explain with a as (select * from test), b as (select [1,2,3]), c as (select * from a) select * from c;
 [{
   "main": {
@@ -674,7 +674,7 @@ drop table test;
 create table test (id int primary key);
 insert into test values (1),(2),(3);
 with a as (select * from test), b as (select [1,2,3]), c as (select * from test) select * from c;
-[1, 3, 2]
+[2, 1, 3]
 explain with a as (select * from test), b as (select [1,2,3]), c as (select * from test) select * from c;
 [{
   "main": {
@@ -761,7 +761,7 @@ drop table test;
 create table test (id int primary key);
 insert into test values (1),(2),(3);
 with a as (select * from test), b as (select * from test), c as (select [1,2,3]), d as (select * from test) select * from d;
-[1, 3, 2]
+[2, 1, 3]
 explain with a as (select * from test), b as (select * from test), c as (select [1,2,3]), d as (select * from test) select * from d;
 [{
   "main": {
@@ -957,7 +957,7 @@ drop table test;
 create table test (id int primary key);
 insert into test values (1),(2),(3);
 with a as (select * from test), b as (select * from a), c as (select * from test) select * from c;
-[1, 3, 2]
+[2, 1, 3]
 explain with a as (select * from test), b as (select * from a), c as (select * from test) select * from c;
 [{
   "main": {
@@ -1012,7 +1012,7 @@ drop table test;
 create table test (id int primary key);
 insert into test values (1),(2),(3);
 begin with a as (select [1,2,3]) select * from a; with b as (select * from test) select b.*, a.* from b,a; end;
-[[1, 1], [1, 2], [1, 3], [3, 1], [3, 2], [3, 3], [2, 1], [2, 2], [2, 3]]
+[[2, 1], [2, 2], [2, 3], [1, 1], [1, 2], [1, 3], [3, 1], [3, 2], [3, 3]]
 drop table test;
 # test: a(expr), a(expr) (cte redefined)
 create table test (id int primary key);

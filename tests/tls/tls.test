@@ -10016,7 +10016,7 @@ insert into test values ( 9996 );
 insert into test values ( 9997 );
 insert into test values ( 9998 );
 insert into test values ( 9999 );
-select * from test;
+select * from test order by id;
 
 disconnect S0;
 close E0;

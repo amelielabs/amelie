@@ -130,7 +130,7 @@ begin
 	insert into a (id) values (0), (1), (2), (3);
 	select * from a;
 end;
-[[0, 0], [1, 0], [3, 0], [2, 0]]
+[[2, 0], [0, 0], [1, 0], [3, 0]]
 # test: insert b
 explain insert into b (id) values (10), (20), (30);
 [{
@@ -147,9 +147,9 @@ explain insert into b (id) values (10), (20), (30);
 }]
 insert into b (id) values (10), (20), (30);
 select * from a;
-[[0, 0], [1, 0], [3, 0], [2, 0]]
+[[2, 0], [0, 0], [1, 0], [3, 0]]
 select * from b;
-[[10, 0], [30, 0], [20, 0]]
+[[20, 0], [10, 0], [30, 0]]
 # test: update a update b abort
 update a set data = 0;
 explain begin
@@ -220,9 +220,9 @@ begin
 end;
 {"msg": "abort"}
 select * from a;
-[[0, 0], [1, 0], [3, 0], [2, 0]]
+[[2, 0], [0, 0], [1, 0], [3, 0]]
 select * from b;
-[[10, 0], [30, 0], [20, 0]]
+[[20, 0], [10, 0], [30, 0]]
 # test: upsert a update b abort
 explain begin
 	insert into a values (1, 0), (3, 0) on conflict do update set data = id;
@@ -283,9 +283,9 @@ begin
 end;
 {"msg": "abort"}
 select * from a;
-[[0, 0], [1, 0], [3, 0], [2, 0]]
+[[2, 0], [0, 0], [1, 0], [3, 0]]
 select * from b;
-[[10, 0], [30, 0], [20, 0]]
+[[20, 0], [10, 0], [30, 0]]
 drop table a;
 drop table b;
 drop table ref;

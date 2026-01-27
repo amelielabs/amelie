@@ -51,6 +51,7 @@ static inline void
 access_reset(Access* self)
 {
 	self->list_count = 0;
+	self->count      = 0;
 	buf_reset(&self->list);
 }
 

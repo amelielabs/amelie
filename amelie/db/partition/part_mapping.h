@@ -13,7 +13,7 @@
 
 typedef struct PartMapping PartMapping;
 
-#define PART_MAPPING_MAX 1024
+#define PART_MAPPING_MAX 8096
 
 struct PartMapping
 {

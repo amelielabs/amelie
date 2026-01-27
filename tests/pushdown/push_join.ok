@@ -35,7 +35,7 @@ explain select test.*, ref.* from test, ref;
   "access": [["test", "shared"], ["ref", "exclusive_ro"]]
 }]
 select test.*, ref.* from test, ref;
-[[1, 0, 1, 0], [1, 0, 2, 0], [1, 0, 3, 0], [3, 0, 1, 0], [3, 0, 2, 0], [3, 0, 3, 0], [2, 0, 1, 0], [2, 0, 2, 0], [2, 0, 3, 0]]
+[[2, 0, 1, 0], [2, 0, 2, 0], [2, 0, 3, 0], [1, 0, 1, 0], [1, 0, 2, 0], [1, 0, 3, 0], [3, 0, 1, 0], [3, 0, 2, 0], [3, 0, 3, 0]]
 # test: select from ref, table
 explain select test.*, ref.* from ref, test;
 [{
@@ -125,7 +125,7 @@ explain select test.id, ref.id from test join ref on true;
   "access": [["test", "shared"], ["ref", "exclusive_ro"]]
 }]
 select test.id, ref.id from test join ref on true;
-[[1, 1], [1, 2], [1, 3], [3, 1], [3, 2], [3, 3], [2, 1], [2, 2], [2, 3]]
+[[2, 1], [2, 2], [2, 3], [1, 1], [1, 2], [1, 3], [3, 1], [3, 2], [3, 3]]
 # test: select from table join table on
 explain select test.id, ref.id from test join ref on test.id = ref.id;
 [{
@@ -158,7 +158,7 @@ explain select test.id, ref.id from test join ref on test.id = ref.id;
   "access": [["test", "shared"], ["ref", "exclusive_ro"]]
 }]
 select test.id, ref.id from test join ref on test.id = ref.id;
-[[1, 1], [3, 3], [2, 2]]
+[[2, 2], [1, 1], [3, 3]]
 # test: select from table join table on #2
 explain select test.id, ref.id from test join ref on test.id = ref.id join ref ref2 on test.id = ref2.id;
 [{
@@ -199,7 +199,7 @@ explain select test.id, ref.id from test join ref on test.id = ref.id join ref r
   "access": [["test", "shared"], ["ref", "exclusive_ro"]]
 }]
 select test.id, ref.id from test join ref on test.id = ref.id join ref ref2 on test.id = ref2.id;
-[[1, 1], [3, 3], [2, 2]]
+[[2, 2], [1, 1], [3, 3]]
 # test: select from table join table on #3
 explain select test.id, ref.id from test join ref on test.id = ref.id join ref ref2 on test.id = ref2.id where test.id > 0;
 [{
@@ -245,7 +245,7 @@ explain select test.id, ref.id from test join ref on test.id = ref.id join ref r
   "access": [["test", "shared"], ["ref", "exclusive_ro"]]
 }]
 select test.id, ref.id from test join ref on test.id = ref.id join ref ref2 on test.id = ref2.id where test.id > 0;
-[[1, 1], [3, 3], [2, 2]]
+[[2, 2], [1, 1], [3, 3]]
 # test: select from table join table on #4
 explain select test.id, ref.id from test, ref where test.id = ref.id;
 [{
@@ -278,7 +278,7 @@ explain select test.id, ref.id from test, ref where test.id = ref.id;
   "access": [["test", "shared"], ["ref", "exclusive_ro"]]
 }]
 select test.id, ref.id from test, ref where test.id = ref.id;
-[[1, 1], [3, 3], [2, 2]]
+[[2, 2], [1, 1], [3, 3]]
 explain select test.id, ref.id from test, ref where ref.id = test.id;
 [{
   "main": {
@@ -310,7 +310,7 @@ explain select test.id, ref.id from test, ref where ref.id = test.id;
   "access": [["test", "shared"], ["ref", "exclusive_ro"]]
 }]
 select test.id, ref.id from test, ref where ref.id = test.id;
-[[1, 1], [3, 3], [2, 2]]
+[[2, 2], [1, 1], [3, 3]]
 explain select test.id, ref.id from test, ref where ref.id = 1;
 [{
   "main": {
@@ -341,7 +341,7 @@ explain select test.id, ref.id from test, ref where ref.id = 1;
   "access": [["test", "shared"], ["ref", "exclusive_ro"]]
 }]
 select test.id, ref.id from test, ref where ref.id = 1;
-[[1, 1], [3, 1], [2, 1]]
+[[2, 1], [1, 1], [3, 1]]
 explain select test.id, ref.id from test, ref where ref.id = 1 and test.id = 1;
 [{
   "main": {
@@ -410,7 +410,7 @@ explain select test.id, ref.id from test, ref where ref.id >= test.id;
   "access": [["test", "shared"], ["ref", "exclusive_ro"]]
 }]
 select test.id, ref.id from test, ref where ref.id >= test.id;
-[[1, 1], [1, 2], [1, 3], [3, 3], [2, 2], [2, 3]]
+[[2, 2], [2, 3], [1, 1], [1, 2], [1, 3], [3, 3]]
 # test: select from table join using
 explain select test.id, ref.id from test join ref using;
 {"msg": "explain select test.id, ref.id from test join ref using❰;❱ ⟵ ( expected"}
@@ -451,7 +451,7 @@ explain select test.id, ref.id from test join ref using(id);
   "access": [["test", "shared"], ["ref", "exclusive_ro"]]
 }]
 select test.id, ref.id from test join ref using(id);
-[[1, 1], [3, 3], [2, 2]]
+[[2, 2], [1, 1], [3, 3]]
 # test: select from table join using (not found)
 select test.id, ref.id from test join ref using(unknown);
 {"msg": "select test.id, ref.id from test join ref using(❰unknown❱ ⟵ column test.unknown not found"}
@@ -500,7 +500,7 @@ explain select test.id, ref.id from test join ref using (id) join ref ref2 using
   "access": [["test", "shared"], ["ref", "exclusive_ro"]]
 }]
 select test.id, ref.id from test join ref using (id) join ref ref2 using (id) where test.id > 0;
-[[1, 1], [3, 3], [2, 2]]
+[[2, 2], [1, 1], [3, 3]]
 select test.id, ref.id from test join ref using (id) join ref ref2 using (id2) where test.id > 0;
 {"msg": "select test.id, ref.id from test join ref using (id) join ref ref2 using (❰id2❱ ⟵ column ref.id2 not found"}
 # test: with (select from table) select from table, cte
@@ -554,7 +554,7 @@ explain with a as (select * from test) select * from test, a where test.id = a.i
   "access": [["test", "shared"]]
 }]
 with a as (select * from test) select * from test, a where test.id = a.id;
-[[1, 0, 1, 0], [3, 0, 3, 0], [2, 0, 2, 0]]
+[[2, 0, 2, 0], [1, 0, 1, 0], [3, 0, 3, 0]]
 # test: with (select from table) select from table, cte (point lookup)
 explain with a as (select * from test) select * from test, a where test.id = 1;
 [{
@@ -607,7 +607,7 @@ explain with a as (select * from test) select * from test, a where test.id = 1;
   "access": [["test", "shared"]]
 }]
 with a as (select * from test) select * from test, a where test.id = 1;
-[[1, 0, 1, 0], [1, 0, 3, 0], [1, 0, 2, 0]]
+[[1, 0, 2, 0], [1, 0, 1, 0], [1, 0, 3, 0]]
 # test: with (select from table) select from cte, table
 explain with a as (select * from test) select * from a, test where test.id = a.id;
 [{
@@ -655,7 +655,7 @@ explain with a as (select * from test) select * from a, test where test.id = a.i
   "access": [["test", "exclusive_ro"]]
 }]
 with a as (select * from test) select * from a, test where test.id = a.id;
-[[1, 0, 1, 0], [3, 0, 3, 0], [2, 0, 2, 0]]
+[[2, 0, 2, 0], [1, 0, 1, 0], [3, 0, 3, 0]]
 # test: with (select from table) select from cte, table (point lookup)
 explain with a as (select * from test) select * from a, test where test.id = 1;
 [{
@@ -702,12 +702,12 @@ explain with a as (select * from test) select * from a, test where test.id = 1;
   "access": [["test", "exclusive_ro"]]
 }]
 with a as (select * from test) select * from a, test where test.id = 1;
-[[1, 0, 1, 0], [3, 0, 1, 0], [2, 0, 1, 0]]
+[[2, 0, 1, 0], [1, 0, 1, 0], [3, 0, 1, 0]]
 # test: select from table join group by
 select test.id from test, ref group by test.id;
-[1, 3, 2]
+[2, 1, 3]
 select test.id from test join ref on (test.id = ref.id) group by test.id;
-[1, 3, 2]
+[2, 1, 3]
 select test.id from test join ref on (test.id = ref.id) group by ref.id;
 {"msg": "select ❰test.id❱ ⟵ column test.id must appear in the GROUP BY clause or be used by an aggregate function"}
 select id from test join ref on (test.id = ref.id) group by ref.id;
@@ -750,28 +750,28 @@ explain select ref.id from test join ref on (test.id = ref.id) group by ref.id;
   "access": [["test", "shared"], ["ref", "exclusive_ro"]]
 }]
 select ref.id from test join ref on (test.id = ref.id) group by ref.id;
-[1, 3, 2]
+[2, 1, 3]
 select ref.id, count(*) from test join ref on (test.id = ref.id) group by ref.id;
-[[1, 1], [3, 1], [2, 1]]
+[[2, 1], [1, 1], [3, 1]]
 select ref.id, count(test.id) + count(ref.id) from test join ref on (test.id = ref.id) group by ref.id;
-[[1, 2], [3, 2], [2, 2]]
+[[2, 2], [1, 2], [3, 2]]
 # test: select from table join group by path
 create table ref2 (id int primary key, data json);
 insert into ref2 values (1, {"id": 1}), (2, {"id": 2}), (3, {"id": 3});
 select ref2.data from test join ref2 on (test.id = ref2.id) group by ref2.id;
 {"msg": "select ❰ref2.data❱ ⟵ column ref2.data must appear in the GROUP BY clause or be used by an aggregate function"}
 select ref2.data.id, ref2.data.id::type from test join ref2 on (test.id = ref2.id) group by ref2.data.id;
-[[1, "json"], [3, "json"], [2, "json"]]
+[[2, "json"], [3, "json"], [1, "json"]]
 select ref2.data.id, ref2.data.id::type from test join ref2 on (test.id = ref2.id) group by 1;
-[[1, "json"], [3, "json"], [2, "json"]]
+[[2, "json"], [3, "json"], [1, "json"]]
 select ref2.data, ref2.data.id from test join ref2 on (test.id = ref2.id) group by ref2.data;
 [[{
+  "id": 2
+}, 2], [{
   "id": 1
 }, 1], [{
   "id": 3
-}, 3], [{
-  "id": 2
-}, 2]]
+}, 3]]
 drop table ref;
 drop table ref2;
 drop table test;
