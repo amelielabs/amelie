@@ -82,4 +82,3 @@
 
 // rpc
 #include "base/rpc.h"
-#include "base/rpc_queue.h"

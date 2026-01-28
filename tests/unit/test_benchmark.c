@@ -22,7 +22,7 @@ test_benchmark_rpc_main(void* arg)
 		auto msg = task_recv();
 		auto rpc = rpc_of(msg);
 		stop = msg->id == 0;
-		rpc_done(rpc);
+		rpc_signal(rpc);
 	}
 }
 

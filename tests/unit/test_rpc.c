@@ -18,11 +18,11 @@ test_rpc_main(void* arg)
 	unused(arg);
 	auto msg = task_recv();
 	auto rpc = rpc_of(msg);
+	test(rpc->argc == 2);
 
-	test(rpc->argc == 1);
-	test(! memcmp(rpc_arg_ptr(rpc, 0), "hello", 5));
-	rpc->rc = 123;
-	rpc_done(rpc);
+	*(int*)rpc_arg_ptr(rpc, 0) = 123;
+	test(! memcmp(rpc_arg_ptr(rpc, 1), "hello", 5));
+	rpc_signal(rpc);
 }
 
 void
@@ -33,8 +33,8 @@ test_rpc(void* arg)
 	task_init(&task);
 	task_create(&task, "test", test_rpc_main, NULL);
 
-	int rc;
-	rc = rpc(&task, 0, 1, "hello");
+	int rc = 0;
+	rpc(&task, 0, 2, &rc, "hello");
 	test(rc == 123);
 
 	task_wait(&task);
@@ -45,9 +45,10 @@ static void
 test_rpc_execute_cb(Rpc* self, void* arg)
 {
 	unused(arg);
-	test(self->argc == 1);
-	test(! memcmp(rpc_arg_ptr(self, 0), "hello", 5));
-	self->rc = 123;
+	test(self->argc == 2);
+
+	*((int*)rpc_arg_ptr(self, 0)) = 123;
+	test(! memcmp(rpc_arg_ptr(self, 1), "hello", 5));
 }
 
 static void
@@ -66,8 +67,8 @@ test_rpc_execute(void* arg)
 	task_init(&task);
 	task_create(&task, "test", test_rpc_execute_main, NULL);
 
-	int rc;
-	rc = rpc(&task, 0, 1, "hello");
+	int rc = 0;
+	rpc(&task, 0, 2, &rc, "hello");
 	test(rc == 123);
 
 	task_wait(&task);
