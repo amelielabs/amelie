@@ -122,7 +122,7 @@ wal_gc(Wal* self, uint64_t min)
 		for (int i = 0; i < list_count; i++)
 		{
 			char path[PATH_MAX];
-			sfmt(path, sizeof(path), "%s/wals/%" PRIu64,
+			sfmt(path, sizeof(path), "%s/wal/%" PRIu64,
 			     state_directory(),
 			     id_list[i]);
 			size += fs_size("%s", path);
@@ -153,7 +153,7 @@ wal_open_directory(Wal* self)
 {
 	// create directory
 	char path[PATH_MAX];
-	sfmt(path, sizeof(path), "%s/wals", state_directory());
+	sfmt(path, sizeof(path), "%s/wal", state_directory());
 	if (! fs_exists("%s", path))
 		fs_mkdir(0755, "%s", path);
 
@@ -193,7 +193,7 @@ wal_truncate(Wal* self, uint64_t lsn)
 	if (id == UINT64_MAX)
 		id = id_mgr_min(&self->list);
 
-	info("wal: truncate wals (%" PRIu64 " lsn)", lsn);
+	info("wal: truncate wal (%" PRIu64 " lsn)", lsn);
 
 	auto file = wal_file_allocate(id);
 	defer(wal_file_close, file);
@@ -217,7 +217,7 @@ wal_truncate(Wal* self, uint64_t lsn)
 		if (crc)
 		{
 			if (unlikely(! record_validate(record)))
-				error("wals/%" PRIu64 " (record crc mismatch)", id);
+				error("wal/%" PRIu64 " (record crc mismatch)", id);
 		}
 		if (record->lsn > lsn)
 			break;
@@ -241,7 +241,7 @@ wal_truncate(Wal* self, uint64_t lsn)
 		if (id == UINT64_MAX)
 			break;
 		char path[PATH_MAX];
-		sfmt(path, sizeof(path), "%s/wals/%" PRIu64,
+		sfmt(path, sizeof(path), "%s/wal/%" PRIu64,
 		     state_directory(), id);
 		fs_unlink("%s", path);
 		info(" %" PRIu64 " (file removed)", id);
@@ -440,7 +440,7 @@ wal_snapshot(Wal* self, WalSlot* slot, Buf* buf)
 
 		// path
 		char path[PATH_MAX];
-		sfmt(path, sizeof(path), "wals/%" PRIu64, id);
+		sfmt(path, sizeof(path), "wal/%" PRIu64, id);
 		encode_cstr(buf, path);
 
 		// size
@@ -449,7 +449,7 @@ wal_snapshot(Wal* self, WalSlot* slot, Buf* buf)
 			size = self->current->file.size;
 		} else
 		{
-			size = fs_size("%s/wals/%" PRIu64, state_directory(), id);
+			size = fs_size("%s/wal/%" PRIu64, state_directory(), id);
 			if (size == -1)
 				error_system();
 		}

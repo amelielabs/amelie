@@ -70,16 +70,18 @@ refresh_snapshot_job(intptr_t* argv)
 	// create <id>.heap.incomplete file
 	auto self   = (Refresh*)argv[0];
 	auto origin = self->origin;
-	auto heap   = origin->heap;
-	heap->header->lsn = self->origin_lsn;
-	heap_create(heap, &self->file, &origin->id, ID_HEAP_INCOMPLETE);
+	auto id     = &origin->id;
 
-	char id[UUID_SZ];
-	uuid_get(&origin->id.tier->config->id, id, sizeof(id));
+	auto heap = origin->heap;
+	heap->header->lsn = self->origin_lsn;
+	heap_create(heap, &self->file, id, ID_HEAP_INCOMPLETE);
 
 	auto total = (double)page_mgr_used(&heap->page_mgr) / 1024 / 1024;
-	info(" %s/%05" PRIu64 ".heap (%.2f MiB)",
-	     id, origin->id.id, total);
+	info("checkpoint: %s/%s/%05" PRIu64 ".heap (%.2f MiB)",
+	     id->storage->config->name.pos,
+	     id->tier->config->name.pos,
+	     id->id,
+	     total);
 }
 
 static void

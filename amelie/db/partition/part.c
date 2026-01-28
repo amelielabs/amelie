@@ -77,12 +77,13 @@ part_open(Part* self)
 		heap_iterator_next(&it);
 	}
 
-	char id[UUID_SZ];
-	uuid_get(&self->id.id_tier, id, sizeof(id));
-
 	auto total = (double)page_mgr_used(&self->heap->page_mgr) / 1024 / 1024;
-	info(" %s/%05" PRIu64 ".heap (%.2f MiB, %" PRIu64 " rows)",
-	     id, self->id.id, total, count);
+	auto id = &self->id;
+	info("recover: %s/%s/%05" PRIu64 ".heap (%.2f MiB, %" PRIu64 " rows)",
+	     id->storage->config->name.pos,
+	     id->tier->config->name.pos,
+	     id->id,
+	     total, count);
 }
 
 void

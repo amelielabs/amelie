@@ -122,8 +122,7 @@ executor_detach(Executor* self, Batch* batch)
 	while (ref)
 	{
 		auto next = ref->pending_link;
-		if (track_lsn(ref) < lsn)
-			track_set_lsn(ref, lsn);
+		track_lsn_follow(ref, lsn);
 		ref->consensus    = ref->pending_consensus;
 		ref->pending      = false;
 		ref->pending_link = NULL;

@@ -28,6 +28,7 @@ void  part_mgr_free(PartMgr*);
 void  part_mgr_open(PartMgr*, List*);
 void  part_mgr_add(PartMgr*, Part*);
 void  part_mgr_remove(PartMgr*, Part*);
+void  part_mgr_map(PartMgr*);
 void  part_mgr_truncate(PartMgr*);
 void  part_mgr_index_add(PartMgr*, IndexConfig*);
 void  part_mgr_index_remove(PartMgr*, Str*);

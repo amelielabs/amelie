@@ -241,26 +241,16 @@ system_free(System* self)
 }
 
 static void
-system_recover(System* self)
+system_recover(System* self, bool bootstrap)
 {
-	auto db = &self->db;
-
-	// todo: recover catalog/checkpoint
-#if 0
-	// recover partitions
-	int workers = opt_int_of(&config()->backends);
 	info("");
-	info("recover: checkpoints/%" PRIu64 "/ (using %d backends)",
-	     state_checkpoint(), workers);
-#endif
-	(void)db;
+
+	// restore catalog
+	db_open(&self->db, bootstrap);
 
 	// replay wals
-	info("");
-	info("recover: wals/");
-
 	Recover recover;
-	recover_init(&recover, db, false);
+	recover_init(&recover, &self->db, false);
 	defer(recover_free, &recover);
 	recover_wal(&recover);
 	info("");
@@ -307,11 +297,8 @@ system_start(System* self, bool bootstrap)
 	// start commit worker
 	commit_start(&self->commit);
 
-	// restore catalog
-	db_open(&self->db, bootstrap);
-
-	// do parallel recover of snapshots and wal
-	system_recover(self);
+	// do parallel recover of catalog and wal
+	system_recover(self, bootstrap);
 
 	// start checkpointer service
 	// checkpointer_start(&self->storage.checkpointer);

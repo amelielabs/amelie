@@ -61,6 +61,9 @@ recover_map(Recover* self, Record* record, RecordCmd* cmd, Row* row)
 	if (! part)
 		error("recover: partition mapping failed");
 
+	// update track lsn
+	track_lsn_follow(&part->track, record->lsn);
+
 	// skip partition if it is already includes lsn
 	if (record->lsn <= part->heap->header->lsn)
 		part = NULL;
@@ -89,7 +92,6 @@ recover_cmd(Recover* self, Record* record, RecordCmd* cmd, uint8_t** pos)
 			part_insert(part, tr, true, row);
 			*pos += row_size(row);
 		}
-		track_set_lsn(&part->track, record->lsn);
 		break;
 	}
 	case CMD_DELETE:
@@ -108,7 +110,6 @@ recover_cmd(Recover* self, Record* record, RecordCmd* cmd, uint8_t** pos)
 			part_delete_by(part, tr, row);
 			*pos += row_size(row);
 		}
-		track_set_lsn(&part->track, record->lsn);
 		break;
 	}
 	case CMD_DDL:
@@ -221,7 +222,7 @@ recover_wal_main(Recover* self)
 		if (! wal_cursor_active(&cursor))
 			break;
 
-		info(" wals/%" PRIu64 " (%.2f MiB, %" PRIu64 " rows)", cursor.file->id,
+		info("recover: wal/%" PRIu64 " (%.2f MiB, %" PRIu64 " rows)", cursor.file->id,
 		     (double)self->size / 1024 / 1024,
 		     self->ops);
 

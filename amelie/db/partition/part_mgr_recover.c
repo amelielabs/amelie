@@ -137,15 +137,6 @@ part_mgr_recover(PartMgr* self, List* indexes)
 			auto config = list_at(IndexConfig, link);
 			part_index_add(part, config);
 		}
-
-		// load partition heap
-		part_open(part);
-
-		// add partition mapping
-		part_mapping_add(&self->mapping, part);
-
-		// set object metrics
-		track_set_lsn(&part->track, part->heap->header->lsn);
 	}
 }
 

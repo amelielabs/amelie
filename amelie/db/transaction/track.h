@@ -57,16 +57,23 @@ track_set_backend(Track* self, Task* task)
 	self->backend = task;
 }
 
-static inline void
-track_set_lsn(Track* self, uint64_t lsn)
-{
-	atomic_u64_set(&self->lsn, lsn);
-}
-
 static inline uint64_t
 track_lsn(Track* self)
 {
 	return atomic_u64_of(&self->lsn);
+}
+
+static inline void
+track_lsn_set(Track* self, uint64_t lsn)
+{
+	atomic_u64_set(&self->lsn, lsn);
+}
+
+static inline void
+track_lsn_follow(Track* self, uint64_t lsn)
+{
+	if (atomic_u64_of(&self->lsn) < lsn)
+		atomic_u64_set(&self->lsn, lsn);
 }
 
 static inline Msg*

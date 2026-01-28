@@ -86,8 +86,11 @@ table_open(Table* self)
 	// recover hash partitions
 	part_mgr_open(&self->part_mgr, &self->config->indexes);
 
-	// create pods
+	// create pods and load heaps
 	deploy_attach_all(self->deploy, &self->part_mgr);
+
+	// map hash partitions
+	part_mgr_map(&self->part_mgr);
 }
 
 static inline void

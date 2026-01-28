@@ -71,6 +71,20 @@ part_mgr_remove(PartMgr* self, Part* part)
 }
 
 void
+part_mgr_map(PartMgr* self)
+{
+	// add partition mapping
+	list_foreach(&self->parts)
+	{
+		auto part = list_at(Part, link);
+		part_mapping_add(&self->mapping, part);
+
+		// set object metrics
+		track_lsn_set(&part->track, part->heap->header->lsn);
+	}
+}
+
+void
 part_mgr_truncate(PartMgr* self)
 {
 	list_foreach(&self->parts)

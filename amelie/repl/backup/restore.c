@@ -76,8 +76,8 @@ restore_create(char* directory)
 	// <base>/checkpoints
 	fs_mkdir(0755, "%s/checkpoints", state_directory());
 
-	// <base>/wals
-	fs_mkdir(0755, "%s/wals", state_directory());
+	// <base>/wal
+	fs_mkdir(0755, "%s/wal", state_directory());
 }
 
 static void
