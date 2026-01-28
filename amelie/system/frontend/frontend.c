@@ -58,7 +58,7 @@ frontend_rpc(Rpc* rpc, void* arg)
 	case MSG_SYNC_USERS:
 	{
 		// sync user caches
-		UserCache* with = rpc_arg_ptr(rpc, 0);
+		UserCache* with = rpc->arg;
 		auth_sync(&self->auth, with);
 		break;
 	}

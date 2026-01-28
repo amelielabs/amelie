@@ -26,14 +26,14 @@ backend_rpc(Rpc* rpc, void* arg)
 	case MSG_DEPLOY:
 	{
 		// create and start new pod
-		Part* part = rpc_arg_ptr(rpc, 0);
+		Part* part = rpc->arg;
 		pod_mgr_create(&self->pod_mgr, part);
 		break;
 	}
 	case MSG_UNDEPLOY:
 	{
 		// stop and drop pod
-		Part* part = rpc_arg_ptr(rpc, 0);
+		Part* part = rpc->arg;
 		pod_mgr_drop_by(&self->pod_mgr, part);
 		break;
 	}
@@ -116,7 +116,7 @@ backend_stop(Backend* self)
 	// send stop request
 	if (task_active(&self->task))
 	{
-		rpc(&self->task, MSG_STOP, 0);
+		rpc(&self->task, MSG_STOP, NULL);
 		task_wait(&self->task);
 	}
 }

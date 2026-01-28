@@ -361,11 +361,11 @@ system_stop(System* self)
 	// stop commit worker
 	commit_stop(&self->commit);
 
-	// stop backends
-	backend_mgr_stop(&self->backend_mgr);
-
 	// stop db
 	db_close(&self->db);
+
+	// stop backends
+	backend_mgr_stop(&self->backend_mgr);
 }
 
 static void
@@ -375,13 +375,13 @@ system_rpc(Rpc* rpc, void* arg)
 	switch (rpc->msg.id) {
 	case MSG_SHOW_METRICS:
 	{
-		Buf** buf = rpc_arg_ptr(rpc, 0);
+		Buf** buf = rpc->arg;
 		*buf = system_metrics(self);
 		break;
 	}
 	case MSG_SYNC_USERS:
 	{
-		UserCache* cache = rpc_arg_ptr(rpc, 0);
+		UserCache* cache = rpc->arg;
 		frontend_mgr_sync_users(&self->frontend_mgr, cache);
 		break;
 	}

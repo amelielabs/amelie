@@ -15,11 +15,10 @@ typedef struct Rpc Rpc;
 
 struct Rpc
 {
-	Msg       msg;
-	int       argc;
-	intptr_t* argv;
-	Error     error;
-	Event     on_complete;
+	Msg   msg;
+	void* arg;
+	Error error;
+	Event on_complete;
 };
 
 static inline Rpc*
@@ -29,32 +28,18 @@ rpc_of(Msg* msg)
 }
 
 static inline void
-rpc_init(Rpc* self, MsgId id, int argc, intptr_t* argv)
+rpc_init(Rpc* self, MsgId id, void* arg)
 {
-	self->argc = argc;
-	self->argv = argv;
+	self->arg = arg;
 	msg_init(&self->msg, id);
 	error_init(&self->error);
 	event_init(&self->on_complete);
-	event_attach(&self->on_complete);
 }
 
 static inline void
 rpc_free(Rpc* self)
 {
 	error_free(&self->error);
-}
-
-static inline intptr_t
-rpc_arg(Rpc* rpc, int pos)
-{
-	return rpc->argv[pos];
-}
-
-static inline void*
-rpc_arg_ptr(Rpc* rpc, int pos)
-{
-	return (void*)rpc->argv[pos];
 }
 
 static inline void
@@ -66,6 +51,7 @@ rpc_signal(Rpc* rpc)
 static inline void
 rpc_send(Rpc* self, Task* task)
 {
+	event_attach(&self->on_complete);
 	task_send(task, &self->msg);
 }
 
@@ -78,20 +64,11 @@ rpc_recv(Rpc* self)
 }
 
 static inline void
-rpc(Task* task, MsgId id, int argc, ...)
+rpc(Task* task, MsgId id, void* arg)
 {
-	// prepare arguments
-	intptr_t argv[argc];
-	va_list args;
-	va_start(args, argc);
-	int i = 0;
-	for (; i < argc; i++)
-		argv[i] = va_arg(args, intptr_t);
-	va_end(args);
-
-	// do the call and wait for completion
+	// do rpc and wait for completion
 	Rpc rpc;
-	rpc_init(&rpc, id, argc, argv);
+	rpc_init(&rpc, id, arg);
 	defer(rpc_free, &rpc);
 	rpc_send(&rpc, task);
 	rpc_recv(&rpc);

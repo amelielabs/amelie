@@ -100,6 +100,6 @@ frontend_mgr_sync_users(FrontendMgr* self, UserCache* user_cache)
 	for (int i = 0; i < self->workers_count; i++)
 	{
 		auto fe = &self->workers[i];
-		rpc(&fe->task, MSG_SYNC_USERS, 1, user_cache);
+		rpc(&fe->task, MSG_SYNC_USERS, user_cache);
 	}
 }

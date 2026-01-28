@@ -82,3 +82,4 @@
 
 // rpc
 #include "base/rpc.h"
+#include "base/rpc_set.h"

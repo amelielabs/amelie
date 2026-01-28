@@ -199,7 +199,7 @@ fn_show(Fn* self)
 	}
 	case SHOW_METRICS:
 	{
-		rpc(&runtime()->task, MSG_SHOW_METRICS, 1, &buf);
+		rpc(&runtime()->task, MSG_SHOW_METRICS, &buf);
 		break;
 	}
 	case SHOW_DATABASES:
