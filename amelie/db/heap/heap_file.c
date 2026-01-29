@@ -55,7 +55,7 @@ heap_create(Heap* self, File* file, Id* id, int state)
 		page_header->size_compressed = iov->iov_len;
 
 		// calculate page crc
-		if (id->storage->config->crc)
+		if (opt_int_of(&config()->storage_crc))
 			page_header->crc = encoder_iov_crc(&ec);
 
 		page_data = iov->iov_base;
@@ -120,7 +120,7 @@ heap_open(Heap* self, Id* id, int state)
 			file_read_buf(&file, buf, page_header->size_compressed);
 
 			// validate crc
-			if (id->storage->config->crc)
+			if (opt_int_of(&config()->storage_crc))
 			{
 				crc = runtime()->crc(0, buf->start, buf_size(buf));
 				if (crc != page_header->crc)
@@ -140,7 +140,7 @@ heap_open(Heap* self, Id* id, int state)
 			file_read(&file, page_data, page_size);
 
 			// validate crc
-			if (id->storage->config->crc)
+			if (opt_int_of(&config()->storage_crc))
 			{
 				crc = runtime()->crc(0, page_data, page_size);
 				if (crc != page_header->crc)

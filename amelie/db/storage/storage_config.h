@@ -18,7 +18,6 @@ struct StorageConfig
 	Str  name;
 	Str  path;
 	bool sync;
-	bool crc;
 	bool system;
 };
 
@@ -27,7 +26,6 @@ storage_config_allocate(void)
 {
 	auto self = (StorageConfig*)am_malloc(sizeof(StorageConfig));
 	self->sync   = true;
-	self->crc    = false;
 	self->system = false;
 	str_init(&self->name);
 	str_init(&self->path);
@@ -63,12 +61,6 @@ storage_config_set_sync(StorageConfig* self, bool value)
 }
 
 static inline void
-storage_config_set_crc(StorageConfig* self, bool value)
-{
-	self->crc = value;
-}
-
-static inline void
 storage_config_set_system(StorageConfig* self, bool value)
 {
 	self->system = value;
@@ -81,7 +73,6 @@ storage_config_copy(StorageConfig* self)
 	storage_config_set_name(copy, &self->name);
 	storage_config_set_path(copy, &self->path);
 	storage_config_set_sync(copy, self->sync);
-	storage_config_set_crc(copy, self->crc);
 	storage_config_set_system(copy, self->system);
 	return copy;
 }
@@ -96,7 +87,6 @@ storage_config_read(uint8_t** pos)
 		{ DECODE_STRING, "name", &self->name },
 		{ DECODE_STRING, "path", &self->path },
 		{ DECODE_BOOL,   "sync", &self->sync },
-		{ DECODE_BOOL,   "crc",  &self->crc  },
 		{ 0,              NULL,   NULL       },
 	};
 	decode_obj(obj, "storage_config", pos);
@@ -120,10 +110,6 @@ storage_config_write(StorageConfig* self, Buf* buf)
 	// sync
 	encode_raw(buf, "sync", 4);
 	encode_bool(buf, self->sync);
-
-	// crc
-	encode_raw(buf, "crc", 3);
-	encode_bool(buf, self->crc);
 
 	encode_obj_end(buf);
 }

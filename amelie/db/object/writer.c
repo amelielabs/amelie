@@ -101,7 +101,7 @@ writer_start(Writer*   self, File* file,
 
 	// start new meta data
 	meta_writer_reset(&self->meta_writer);
-	meta_writer_start(&self->meta_writer, storage->config->crc);
+	meta_writer_start(&self->meta_writer, opt_int_of(&config()->storage_crc));
 }
 
 void
