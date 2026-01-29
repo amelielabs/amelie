@@ -64,16 +64,19 @@ select show('table', 'test', true).columns;
   "name": "id",
   "type": 2,
   "type_size": 4,
+  "deleted": false,
   "constraints": [["not_null", true], ["default", null]]
 }, {
   "name": "a",
   "type": 1,
   "type_size": 1,
+  "deleted": false,
   "constraints": [["default", null]]
 }, {
   "name": "b",
   "type": 1,
   "type_size": 1,
+  "deleted": false,
   "constraints": [["default", null]]
 }]]
 drop table test;
@@ -84,16 +87,19 @@ select show('table', 'test', true).columns;
   "name": "id",
   "type": 2,
   "type_size": 4,
+  "deleted": false,
   "constraints": [["not_null", true], ["default", null]]
 }, {
   "name": "id2",
   "type": 2,
   "type_size": 1,
+  "deleted": false,
   "constraints": [["default", null]]
 }, {
   "name": "id3",
   "type": 2,
   "type_size": 1,
+  "deleted": false,
   "constraints": [["default", null]]
 }]]
 drop table test;
@@ -104,16 +110,19 @@ select show('table', 'test', true).columns;
   "name": "id",
   "type": 2,
   "type_size": 4,
+  "deleted": false,
   "constraints": [["not_null", true], ["default", null]]
 }, {
   "name": "id2",
   "type": 2,
   "type_size": 2,
+  "deleted": false,
   "constraints": [["default", null]]
 }, {
   "name": "id3",
   "type": 2,
   "type_size": 2,
+  "deleted": false,
   "constraints": [["default", null]]
 }]]
 drop table test;
@@ -124,21 +133,25 @@ select show('table', 'test', true).columns;
   "name": "id",
   "type": 2,
   "type_size": 4,
+  "deleted": false,
   "constraints": [["not_null", true], ["default", null]]
 }, {
   "name": "id2",
   "type": 2,
   "type_size": 4,
+  "deleted": false,
   "constraints": [["default", null]]
 }, {
   "name": "id3",
   "type": 2,
   "type_size": 4,
+  "deleted": false,
   "constraints": [["default", null]]
 }, {
   "name": "id4",
   "type": 2,
   "type_size": 4,
+  "deleted": false,
   "constraints": [["default", null]]
 }]]
 drop table test;
@@ -149,11 +162,13 @@ select show('table', 'test', true).columns;
   "name": "id",
   "type": 2,
   "type_size": 8,
+  "deleted": false,
   "constraints": [["not_null", true], ["default", null]]
 }, {
   "name": "id2",
   "type": 2,
   "type_size": 8,
+  "deleted": false,
   "constraints": [["default", null]]
 }]]
 drop table test;
@@ -164,16 +179,19 @@ select show('table', 'test', true).columns;
   "name": "id",
   "type": 2,
   "type_size": 4,
+  "deleted": false,
   "constraints": [["not_null", true], ["default", null]]
 }, {
   "name": "a",
   "type": 3,
   "type_size": 4,
+  "deleted": false,
   "constraints": [["default", null]]
 }, {
   "name": "b",
   "type": 3,
   "type_size": 4,
+  "deleted": false,
   "constraints": [["default", null]]
 }]]
 drop table test;
@@ -184,16 +202,19 @@ select show('table', 'test', true).columns;
   "name": "id",
   "type": 2,
   "type_size": 4,
+  "deleted": false,
   "constraints": [["not_null", true], ["default", null]]
 }, {
   "name": "a",
   "type": 3,
   "type_size": 8,
+  "deleted": false,
   "constraints": [["default", null]]
 }, {
   "name": "b",
   "type": 3,
   "type_size": 8,
+  "deleted": false,
   "constraints": [["default", null]]
 }]]
 drop table test;
@@ -204,16 +225,19 @@ select show('table', 'test', true).columns;
   "name": "id",
   "type": 2,
   "type_size": 4,
+  "deleted": false,
   "constraints": [["not_null", true], ["default", null]]
 }, {
   "name": "a",
   "type": 4,
   "type_size": 0,
+  "deleted": false,
   "constraints": [["default", null]]
 }, {
   "name": "b",
   "type": 4,
   "type_size": 0,
+  "deleted": false,
   "constraints": [["default", null]]
 }]]
 drop table test;
@@ -224,26 +248,31 @@ select show('table', 'test', true).columns;
   "name": "id",
   "type": 2,
   "type_size": 4,
+  "deleted": false,
   "constraints": [["not_null", true], ["default", null]]
 }, {
   "name": "a",
   "type": 4,
   "type_size": 0,
+  "deleted": false,
   "constraints": [["default", null]]
 }, {
   "name": "b",
   "type": 4,
   "type_size": 0,
+  "deleted": false,
   "constraints": [["default", null]]
 }, {
   "name": "c",
   "type": 4,
   "type_size": 0,
+  "deleted": false,
   "constraints": [["default", null]]
 }, {
   "name": "d",
   "type": 4,
   "type_size": 0,
+  "deleted": false,
   "constraints": [["default", null]]
 }]]
 drop table test;
@@ -254,16 +283,19 @@ select show('table', 'test', true).columns;
   "name": "id",
   "type": 2,
   "type_size": 4,
+  "deleted": false,
   "constraints": [["not_null", true], ["default", null]]
 }, {
   "name": "a",
   "type": 5,
   "type_size": 0,
+  "deleted": false,
   "constraints": [["default", null]]
 }, {
   "name": "b",
   "type": 5,
   "type_size": 0,
+  "deleted": false,
   "constraints": [["default", null]]
 }]]
 drop table test;
@@ -274,11 +306,13 @@ select show('table', 'test', true).columns;
   "name": "id",
   "type": 2,
   "type_size": 4,
+  "deleted": false,
   "constraints": [["not_null", true], ["default", null]]
 }, {
   "name": "a",
   "type": 7,
   "type_size": 8,
+  "deleted": false,
   "constraints": [["default", null]]
 }]]
 drop table test;
@@ -289,11 +323,13 @@ select show('table', 'test', true).columns;
   "name": "id",
   "type": 2,
   "type_size": 4,
+  "deleted": false,
   "constraints": [["not_null", true], ["default", null]]
 }, {
   "name": "a",
   "type": 8,
   "type_size": 16,
+  "deleted": false,
   "constraints": [["default", null]]
 }]]
 drop table test;
@@ -304,11 +340,13 @@ select show('table', 'test', true).columns;
   "name": "id",
   "type": 2,
   "type_size": 4,
+  "deleted": false,
   "constraints": [["not_null", true], ["default", null]]
 }, {
   "name": "a",
   "type": 6,
   "type_size": 4,
+  "deleted": false,
   "constraints": [["default", null]]
 }]]
 drop table test;
@@ -319,11 +357,13 @@ select show('table', 'test', true).columns;
   "name": "id",
   "type": 2,
   "type_size": 4,
+  "deleted": false,
   "constraints": [["not_null", true], ["default", null]]
 }, {
   "name": "a",
   "type": 9,
   "type_size": 0,
+  "deleted": false,
   "constraints": [["default", null]]
 }]]
 drop table test;
@@ -334,11 +374,13 @@ select show('table', 'test', true).columns;
   "name": "id",
   "type": 2,
   "type_size": 4,
+  "deleted": false,
   "constraints": [["not_null", true], ["default", null]]
 }, {
   "name": "a",
   "type": 10,
   "type_size": 16,
+  "deleted": false,
   "constraints": [["default", null]]
 }]]
 drop table test;
@@ -378,6 +420,7 @@ select show('table', 'test', true).columns;
   "name": "id",
   "type": 2,
   "type_size": 4,
+  "deleted": false,
   "constraints": [["not_null", true], ["default", null]]
 }]]
 drop table test;
@@ -401,6 +444,7 @@ select show('table', 'test', true).columns;
   "name": "id",
   "type": 2,
   "type_size": 4,
+  "deleted": false,
   "constraints": [["not_null", true], ["default", null]]
 }]]
 drop table test;
@@ -418,11 +462,13 @@ select show('table', 'test', true).columns;
   "name": "id",
   "type": 2,
   "type_size": 4,
+  "deleted": false,
   "constraints": [["not_null", true], ["default", null]]
 }, {
   "name": "data",
   "type": 2,
   "type_size": 4,
+  "deleted": false,
   "constraints": [["default", 1]]
 }]]
 drop table test;
@@ -433,6 +479,7 @@ select show('table', 'test', true).columns;
   "name": "id",
   "type": 2,
   "type_size": 4,
+  "deleted": false,
   "constraints": [["not_null", true], ["default", 1]]
 }]]
 drop table test;
@@ -443,6 +490,7 @@ select show('table', 'test', true).columns;
   "name": "id",
   "type": 2,
   "type_size": 4,
+  "deleted": false,
   "constraints": [["not_null", true], ["default", 1]]
 }]]
 drop table test;
@@ -477,6 +525,7 @@ select show('table', 'test', true).columns;
   "name": "id",
   "type": 2,
   "type_size": 4,
+  "deleted": false,
   "constraints": [["not_null", true], ["default", null]]
 }]]
 drop table test;
@@ -487,11 +536,13 @@ select show('table', 'test', true).columns;
   "name": "id",
   "type": 2,
   "type_size": 4,
+  "deleted": false,
   "constraints": [["not_null", true], ["default", null]]
 }, {
   "name": "data",
   "type": 2,
   "type_size": 4,
+  "deleted": false,
   "constraints": [["default", null]]
 }]]
 drop table test;
@@ -502,11 +553,13 @@ select show('table', 'test', true).columns;
   "name": "id",
   "type": 2,
   "type_size": 4,
+  "deleted": false,
   "constraints": [["not_null", true], ["default", null]]
 }, {
   "name": "data",
   "type": 2,
   "type_size": 4,
+  "deleted": false,
   "constraints": [["default", null]]
 }]]
 drop table test;
@@ -519,11 +572,13 @@ select show('table', 'test', true).columns;
   "name": "id",
   "type": 2,
   "type_size": 4,
+  "deleted": false,
   "constraints": [["not_null", true], ["default", null]]
 }, {
   "name": "data",
   "type": 2,
   "type_size": 4,
+  "deleted": false,
   "constraints": [["not_null", true], ["default", null]]
 }]]
 insert into test values(1, 1);
@@ -539,11 +594,13 @@ select show('table', 'test', true).columns;
   "name": "id",
   "type": 2,
   "type_size": 4,
+  "deleted": false,
   "constraints": [["not_null", true], ["default", null]]
 }, {
   "name": "data",
   "type": 2,
   "type_size": 4,
+  "deleted": false,
   "constraints": [["not_null", true], ["default", 123]]
 }]]
 insert into test values(1, 1);
@@ -584,6 +641,7 @@ select show('table', 'test', true).columns;
   "name": "id",
   "type": 2,
   "type_size": 8,
+  "deleted": false,
   "constraints": [["not_null", true], ["as_identity", 1], ["default", null]]
 }]]
 drop table test;

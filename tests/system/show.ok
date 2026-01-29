@@ -90,6 +90,7 @@ show functions extended;
     "name": "id",
     "type": 2,
     "type_size": 4,
+    "deleted": false,
     "constraints": [["default", null]]
   }],
   "returning": []
@@ -112,6 +113,7 @@ show function test_fn extended;
     "name": "id",
     "type": 2,
     "type_size": 4,
+    "deleted": false,
     "constraints": [["default", null]]
   }],
   "returning": []
@@ -125,7 +127,7 @@ show wal;
   "slots": 0,
   "slots_min": -1,
   "writes": 4,
-  "writes_bytes": 778,
+  "writes_bytes": 796,
   "ops": 4
 }]
 # test: show replicas

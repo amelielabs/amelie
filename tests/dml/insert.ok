@@ -46,11 +46,13 @@ select show('table', 'test', true).columns;
   "name": "id",
   "type": 2,
   "type_size": 4,
+  "deleted": false,
   "constraints": [["not_null", true], ["default", null]]
 }, {
   "name": "id2",
   "type": 2,
   "type_size": 4,
+  "deleted": false,
   "constraints": [["not_null", true], ["default", null]]
 }]]
 insert into test values (123);

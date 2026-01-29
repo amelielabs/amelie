@@ -299,16 +299,19 @@ show functions extended;
     "name": "a",
     "type": 2,
     "type_size": 4,
+    "deleted": false,
     "constraints": [["default", null]]
   }, {
     "name": "b",
     "type": 2,
     "type_size": 4,
+    "deleted": false,
     "constraints": [["default", null]]
   }, {
     "name": "c",
     "type": 2,
     "type_size": 4,
+    "deleted": false,
     "constraints": [["default", null]]
   }]
 }]
@@ -581,6 +584,7 @@ show functions extended;
     "name": "x",
     "type": 2,
     "type_size": 4,
+    "deleted": false,
     "constraints": [["default", null]]
   }],
   "returning": []
@@ -593,6 +597,7 @@ show functions extended;
     "name": "array",
     "type": 5,
     "type_size": 0,
+    "deleted": false,
     "constraints": [["default", null]]
   }],
   "returning": []
