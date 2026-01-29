@@ -17,7 +17,7 @@ explain insert into test (id) values (1), (2), (3);
 }]
 insert into test (id) values (1), (2), (3);
 select * from test;
-[[1, 0], [3, 0], [2, 0]]
+[[2, 0], [1, 0], [3, 0]]
 # test: table delete
 explain delete from test;
 [{
@@ -60,7 +60,7 @@ explain update test set data = id;
 }]
 update test set data = id;
 select * from test;
-[[1, 1], [3, 3], [2, 2]]
+[[2, 2], [1, 1], [3, 3]]
 # test: table upsert
 explain insert into test (id) values (1), (2), (3) on conflict do update set data = data + 1;
 [{
@@ -87,7 +87,7 @@ explain insert into test (id) values (1), (2), (3) on conflict do update set dat
 }]
 insert into test (id) values (1), (2), (3) on conflict do update set data = data + 1;
 select * from test;
-[[1, 2], [3, 4], [2, 3]]
+[[2, 3], [1, 2], [3, 4]]
 drop table test;
 # test: table insert (unlogged)
 create unlogged table test (id int primary key, data int default 0);

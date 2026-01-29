@@ -26,7 +26,7 @@ explain select * from test;
   "access": [["test", "shared"]]
 }]
 select * from test;
-[[1, 0], [3, 0], [2, 0]]
+[[2, 0], [1, 0], [3, 0]]
 # test: select from table where
 explain select * from test where id > 1;
 [{
@@ -56,7 +56,7 @@ explain select * from test where id > 1;
   "access": [["test", "shared"]]
 }]
 select * from test where id > 1;
-[[3, 0], [2, 0]]
+[[2, 0], [3, 0]]
 select * from test where id > 2;
 [[3, 0]]
 select * from test where id > 3;
@@ -101,7 +101,7 @@ select * from test where id = 0;
 []
 # test: select (select expr) from table
 select (select test.id) from test;
-[1, 3, 2]
+[2, 1, 3]
 # test: select (select (select expr)) from table
 explain select (select (select (test.id))) from test;
 [{
@@ -124,7 +124,7 @@ explain select (select (select (test.id))) from test;
   "access": [["test", "shared"]]
 }]
 select (select (select (test.id))) from test;
-[1, 3, 2]
+[2, 1, 3]
 explain select (select (select test.id)) from test;
 [{
   "main": {
@@ -146,7 +146,7 @@ explain select (select (select test.id)) from test;
   "access": [["test", "shared"]]
 }]
 select (select (select test.id)) from test;
-[1, 3, 2]
+[2, 1, 3]
 # test: select (select (select from table)) from table
 explain select (select (select id from test t)) from test;
 [{
@@ -274,7 +274,7 @@ explain select * from test where (select id from ref);
   "access": [["test", "shared"], ["ref", "exclusive_ro"]]
 }]
 select * from test where (select id from ref);
-[[1, 0], [3, 0], [2, 0]]
+[[2, 0], [1, 0], [3, 0]]
 # test: select from table where exists (select from table)
 explain select * from test where exists (select 1 from ref where test.id = ref.id);
 [{
@@ -312,7 +312,7 @@ explain select * from test where exists (select 1 from ref where test.id = ref.i
   "access": [["test", "shared"], ["ref", "exclusive_ro"]]
 }]
 select * from test where exists (select 1 from ref where test.id = ref.id);
-[[1, 0], [3, 0], [2, 0]]
+[[2, 0], [1, 0], [3, 0]]
 drop table ref;
 drop table test;
 disconnect S0;

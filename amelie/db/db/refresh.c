@@ -67,17 +67,17 @@ refresh_begin(Refresh* self, Uuid* id_table, uint64_t id)
 static void
 refresh_snapshot_job(intptr_t* argv)
 {
-	// create <id>.heap.incomplete file
+	// create <id>.ram.incomplete file
 	auto self   = (Refresh*)argv[0];
 	auto origin = self->origin;
 	auto id     = &origin->id;
 
 	auto heap = origin->heap;
 	heap->header->lsn = self->origin_lsn;
-	heap_create(heap, &self->file, id, ID_HEAP_INCOMPLETE);
+	heap_create(heap, &self->file, id, ID_RAM_INCOMPLETE);
 
 	auto total = (double)page_mgr_used(&heap->page_mgr) / 1024 / 1024;
-	info("checkpoint: %s/%s/%05" PRIu64 ".heap (%.2f MiB)",
+	info("checkpoint: %s/%s/%05" PRIu64 ".ram (%.2f MiB)",
 	     id->storage->config->name.pos,
 	     id->tier->config->name.pos,
 	     id->id,
@@ -100,10 +100,10 @@ refresh_complete_job(intptr_t* argv)
 		file_sync(&self->file);
 
 	// unlink origin heap file
-	id_delete(&origin->id, ID_HEAP);
+	id_delete(&origin->id, ID_RAM);
 
 	// rename
-	id_rename(&origin->id, ID_HEAP_INCOMPLETE, ID_HEAP);
+	id_rename(&origin->id, ID_RAM_INCOMPLETE, ID_RAM);
 }
 
 static void

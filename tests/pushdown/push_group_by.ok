@@ -49,7 +49,7 @@ insert into test values (2, 1);
 insert into test values (3, 1);
 insert into test values (4, 2);
 select * from test;
-[[0, 0], [1, 0], [3, 1], [2, 1], [4, 2]]
+[[0, 0], [1, 0], [3, 1], [4, 2], [2, 1]]
 explain select id from test group by id;
 [{
   "main": {
@@ -78,7 +78,7 @@ explain select id from test group by id;
   "access": [["test", "shared"]]
 }]
 select id from test group by id;
-[0, 1, 3, 2, 4]
+[0, 1, 3, 4, 2]
 select data from test group by data;
 [0, 1, 2]
 # test: select from table group by keys only
@@ -86,12 +86,12 @@ select data from test group by id;
 {"msg": "select ❰data❱ ⟵ column data must appear in the GROUP BY clause or be used by an aggregate function"}
 # test: select from table group by column, column
 select id, data from test group by id, data;
-[[0, 0], [1, 0], [3, 1], [2, 1], [4, 2]]
+[[0, 0], [1, 0], [3, 1], [4, 2], [2, 1]]
 select id, data from test group by data, id;
-[[0, 0], [1, 0], [3, 1], [2, 1], [4, 2]]
+[[0, 0], [1, 0], [3, 1], [4, 2], [2, 1]]
 # test: select expr from table group by
 select id, 100 + id from test group by id;
-[[0, 100], [1, 101], [3, 103], [2, 102], [4, 104]]
+[[0, 100], [1, 101], [3, 103], [4, 104], [2, 102]]
 # test: select from (select from table group by)
 explain select * from (select id from test group by id) t;
 [{
@@ -130,9 +130,9 @@ explain select * from (select id from test group by id) t;
   "access": [["test", "shared"]]
 }]
 select * from (select id from test group by id) t;
-[0, 1, 3, 2, 4]
+[0, 1, 3, 4, 2]
 select x from (select id, 100 + id as x from test group by id) t;
-[100, 101, 103, 102, 104]
+[100, 101, 103, 104, 102]
 # test: select from table group by limit
 explain select id from test group by id limit 1;
 [{
@@ -168,7 +168,7 @@ select id from test group by id limit 2;
 select id from test group by id limit 3;
 [0, 1, 3]
 select id from test group by id limit 4;
-[0, 1, 3, 2]
+[0, 1, 3, 4]
 # test: select from table group by limit/offset
 explain select id from test group by id limit 1 offset 1;
 [{
@@ -206,9 +206,9 @@ select id from test group by id limit 1 offset 1;
 select id from test group by id limit 1 offset 2;
 [3]
 select id from test group by id limit 1 offset 3;
-[2]
-select id from test group by id limit 1 offset 4;
 [4]
+select id from test group by id limit 1 offset 4;
+[2]
 # test: select from table group by offset
 explain select id from test group by id offset 1;
 [{
@@ -240,13 +240,13 @@ explain select id from test group by id offset 1;
   "access": [["test", "shared"]]
 }]
 select id from test group by id offset 1;
-[1, 3, 2, 4]
+[1, 3, 4, 2]
 select id from test group by id offset 2;
-[3, 2, 4]
+[3, 4, 2]
 select id from test group by id offset 3;
-[2, 4]
+[4, 2]
 select id from test group by id offset 4;
-[4]
+[2]
 # test: select from (select from table group by limit)
 explain select * from (select id from test group by id limit 1) t;
 [{
@@ -293,7 +293,7 @@ select * from (select id from test group by id limit 2) t;
 select * from (select id from test group by id limit 3) t;
 [0, 1, 3]
 select * from (select id from test group by id limit 4) t;
-[0, 1, 3, 2]
+[0, 1, 3, 4]
 # test: select from (select from table group by limit/offset)
 explain select * from (select id from test group by id limit 1 offset 1) t;
 [{
@@ -340,9 +340,9 @@ select * from (select id from test group by id limit 1 offset 1) t;
 select * from (select id from test group by id limit 1 offset 2) t;
 [3]
 select * from (select id from test group by id limit 1 offset 3) t;
-[2]
-select * from (select id from test group by id limit 1 offset 4) t;
 [4]
+select * from (select id from test group by id limit 1 offset 4) t;
+[2]
 # test: select from (select from table group by offset)
 explain select * from (select id from test group by id offset 1) t;
 [{
@@ -383,13 +383,13 @@ explain select * from (select id from test group by id offset 1) t;
   "access": [["test", "shared"]]
 }]
 select * from (select id from test group by id offset 1) t;
-[1, 3, 2, 4]
+[1, 3, 4, 2]
 select * from (select id from test group by id offset 2) t;
-[3, 2, 4]
+[3, 4, 2]
 select * from (select id from test group by id offset 3) t;
-[2, 4]
+[4, 2]
 select * from (select id from test group by id offset 4) t;
-[4]
+[2]
 # test: select from table group by having
 explain select id from test group by id having id >= 3;
 [{
@@ -515,9 +515,9 @@ explain select id from test group by id having id >= 1 limit 1 offset 1;
 select id from test group by id having id >= 1 limit 1 offset 1;
 [3]
 select id from test group by id having id >= 1 limit 1 offset 2;
-[2]
-select id from test group by id having id >= 1 limit 1 offset 3;
 [4]
+select id from test group by id having id >= 1 limit 1 offset 3;
+[2]
 # test: select from table group by having offset
 explain select id from test group by id having id >= 1 offset 1;
 [{
@@ -553,11 +553,11 @@ explain select id from test group by id having id >= 1 offset 1;
   "access": [["test", "shared"]]
 }]
 select id from test group by id having id >= 1 offset 1;
-[3, 2, 4]
+[3, 4, 2]
 select id from test group by id having id >= 1 offset 2;
-[2, 4]
+[4, 2]
 select id from test group by id having id >= 1 offset 3;
-[4]
+[2]
 # test: select from (select from table group by having)
 explain select * from (select id from test group by id having id >= 3) t;
 [{
@@ -696,9 +696,9 @@ explain select * from (select id from test group by id having id >= 1 limit 1 of
 select * from (select id from test group by id having id >= 1 limit 1 offset 1) t;
 [3]
 select * from (select id from test group by id having id >= 1 limit 1 offset 2) t;
-[2]
-select * from (select id from test group by id having id >= 1 limit 1 offset 3) t;
 [4]
+select * from (select id from test group by id having id >= 1 limit 1 offset 3) t;
+[2]
 # test: select from (select from table group by having offset)
 explain select * from (select id from test group by id having id >= 1 offset 1) t;
 [{
@@ -743,11 +743,11 @@ explain select * from (select id from test group by id having id >= 1 offset 1) 
   "access": [["test", "shared"]]
 }]
 select * from (select id from test group by id having id >= 1 offset 1) t;
-[3, 2, 4]
+[3, 4, 2]
 select * from (select id from test group by id having id >= 1 offset 2) t;
-[2, 4]
+[4, 2]
 select * from (select id from test group by id having id >= 1 offset 3) t;
-[4]
+[2]
 # test: select from table group by order by
 explain select id from test group by id order by id;
 [{

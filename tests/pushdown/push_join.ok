@@ -67,7 +67,7 @@ explain select test.*, ref.* from ref, test;
   "access": [["ref", "shared"], ["test", "exclusive_ro"]]
 }]
 select test.*, ref.* from ref, test;
-[[1, 0, 1, 0], [2, 0, 1, 0], [3, 0, 1, 0], [1, 0, 3, 0], [2, 0, 3, 0], [3, 0, 3, 0], [1, 0, 2, 0], [2, 0, 2, 0], [3, 0, 2, 0]]
+[[1, 0, 2, 0], [2, 0, 2, 0], [3, 0, 2, 0], [1, 0, 1, 0], [2, 0, 1, 0], [3, 0, 1, 0], [1, 0, 3, 0], [2, 0, 3, 0], [3, 0, 3, 0]]
 # test: select from table, table
 explain select t.* from test, test t;
 [{

@@ -16,9 +16,9 @@ typedef struct Tier Tier;
 
 enum
 {
-	ID_NONE            = 0,
-	ID_HEAP            = 1 << 0,
-	ID_HEAP_INCOMPLETE = 1 << 1
+	ID_NONE           = 0,
+	ID_RAM            = 1 << 0,
+	ID_RAM_INCOMPLETE = 1 << 1
 };
 
 struct Id
@@ -59,8 +59,8 @@ id_has(Id* self, int state)
 static inline int
 id_of(const char* name, int64_t* id)
 {
-	// <id>.heap
-	// <id>.heap.incomplete
+	// <id>.ram
+	// <id>.ram.incomplete
 	*id = 0;
 	while (*name && *name != '.')
 	{
@@ -71,11 +71,11 @@ id_of(const char* name, int64_t* id)
 		name++;
 	}
 	int state = -1;
-	if (! strcmp(name, ".heap.incomplete"))
-		state = ID_HEAP_INCOMPLETE;
+	if (! strcmp(name, ".ram.incomplete"))
+		state = ID_RAM_INCOMPLETE;
 	else
-	if (! strcmp(name, ".heap"))
-		state = ID_HEAP;
+	if (! strcmp(name, ".ram"))
+		state = ID_RAM;
 	return state;
 }
 
@@ -87,14 +87,14 @@ id_path(Id* self, char* path, int state)
 	uuid_get(&self->id_tier, id_tier, sizeof(id_tier));
 
 	switch (state) {
-	case ID_HEAP:
-		// <storage_path>/<id_tier>/<id>.heap
-		storage_pathfmt(self->storage, path, "%s/%05" PRIu64 ".heap",
+	case ID_RAM:
+		// <storage_path>/<id_tier>/<id>.ram
+		storage_pathfmt(self->storage, path, "%s/%05" PRIu64 ".ram",
 		                id_tier, self->id);
 		break;
-	case ID_HEAP_INCOMPLETE:
-		// <storage_path>/<id_tier>/<id>.heap.incomplete
-		storage_pathfmt(self->storage, path, "%s/%05" PRIu64 ".heap.incomplete",
+	case ID_RAM_INCOMPLETE:
+		// <storage_path>/<id_tier>/<id>.ram.incomplete
+		storage_pathfmt(self->storage, path, "%s/%05" PRIu64 ".ram.incomplete",
 		                id_tier, self->id);
 		break;
 	default:

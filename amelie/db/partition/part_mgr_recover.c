@@ -49,13 +49,13 @@ part_mgr_recover_storage(PartMgr* self, Tier* tier, TierStorage* storage)
 		if (entry->d_name[0] == '.')
 			continue;
 
-		// <id>.heap
-		// <id>.heap.incomplete
+		// <id>.ram
+		// <id>.ram.incomplete
 		int64_t psn;
 		auto state = id_of(entry->d_name, &psn);
 		switch (state) {
-		case ID_HEAP:
-		case ID_HEAP_INCOMPLETE:
+		case ID_RAM:
+		case ID_RAM_INCOMPLETE:
 			break;
 		default:
 			continue;
@@ -106,22 +106,22 @@ part_mgr_recover(PartMgr* self, List* indexes)
 		// crash recovery
 		auto id = &part->id;
 		switch (id->state) {
-		case ID_HEAP|ID_HEAP_INCOMPLETE:
+		case ID_RAM|ID_RAM_INCOMPLETE:
 		{
 			// crash before completion
-			id_delete(&part->id, ID_HEAP_INCOMPLETE);
-			id_unset(id, ID_HEAP_INCOMPLETE);
+			id_delete(&part->id, ID_RAM_INCOMPLETE);
+			id_unset(id, ID_RAM_INCOMPLETE);
 			break;
 		}
-		case ID_HEAP_INCOMPLETE:
+		case ID_RAM_INCOMPLETE:
 		{
 			// crash after sync/unlink
-			id_rename(&part->id, ID_HEAP_INCOMPLETE, ID_HEAP);
-			id_unset(id, ID_HEAP_INCOMPLETE);
-			id_set(id, ID_HEAP);
+			id_rename(&part->id, ID_RAM_INCOMPLETE, ID_RAM);
+			id_unset(id, ID_RAM_INCOMPLETE);
+			id_set(id, ID_RAM);
 			break;
 		}
-		case ID_HEAP:
+		case ID_RAM:
 		{
 			// correct state
 			break;
@@ -178,7 +178,7 @@ part_mgr_deploy(PartMgr* self, int count)
 		heap->header->hash_min = hash_min;
 		heap->header->hash_max = hash_max;
 
-		// create <id>.heap.incomplete file
+		// create <id>.ram.incomplete file
 		File file;
 		file_init(&file);
 		defer(file_close, &file);
@@ -193,13 +193,13 @@ part_mgr_deploy(PartMgr* self, int count)
 			.tier     = main,
 			.encoding = &main->encoding
 		};
-		heap_create(heap, &file, &id, ID_HEAP_INCOMPLETE);
+		heap_create(heap, &file, &id, ID_RAM_INCOMPLETE);
 
 		// sync
 		if (main_storage->config->sync)
 			file_sync(&file);
 
 		// rename
-		id_rename(&id, ID_HEAP_INCOMPLETE, ID_HEAP);
+		id_rename(&id, ID_RAM_INCOMPLETE, ID_RAM);
 	}
 }

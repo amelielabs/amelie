@@ -62,7 +62,7 @@ void
 part_open(Part* self)
 {
 	// read heap file
-	heap_open(self->heap, &self->id, ID_HEAP);
+	heap_open(self->heap, &self->id, ID_RAM);
 
 	// rebuild indexes
 	HeapIterator it;
@@ -79,7 +79,7 @@ part_open(Part* self)
 
 	auto total = (double)page_mgr_used(&self->heap->page_mgr) / 1024 / 1024;
 	auto id = &self->id;
-	info("recover: %s/%s/%05" PRIu64 ".heap (%.2f MiB, %" PRIu64 " rows)",
+	info("recover: %s/%s/%05" PRIu64 ".ram (%.2f MiB, %" PRIu64 " rows)",
 	     id->storage->config->name.pos,
 	     id->tier->config->name.pos,
 	     id->id,
