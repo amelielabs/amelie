@@ -35,6 +35,8 @@ enum
 	SHOW_DATABASE,
 	SHOW_TABLES,
 	SHOW_TABLE,
+	SHOW_PARTITIONS,
+	SHOW_PARTITION,
 	SHOW_FUNCTIONS,
 	SHOW_FUNCTION,
 	SHOW_STATE,
@@ -55,26 +57,28 @@ struct ShowCmd
 
 static ShowCmd show_cmds[] =
 {
-	{ SHOW_USERS,     "users",       5,  false, false },
-	{ SHOW_USER,      "user",        4,  true,  false },
-	{ SHOW_REPLICAS,  "replicas",    8,  false, false },
-	{ SHOW_REPLICA,   "replica",     7,  true,  false },
-	{ SHOW_REPL,      "repl",        4,  false, false },
-	{ SHOW_REPL,      "replication", 11, false, false },
-	{ SHOW_WAL,       "wal",         3,  false, false },
-	{ SHOW_METRICS,   "metrics",     7,  false, false },
-	{ SHOW_STORAGES,  "storages",    8,  false, false },
-	{ SHOW_STORAGE,   "storage",     7,  true,  false },
-	{ SHOW_DATABASES, "databases",   9,  false, false },
-	{ SHOW_DATABASE,  "database",    8,  true,  false },
-	{ SHOW_TABLES,    "tables",      6,  false, false },
-	{ SHOW_TABLE,     "table",       5,  true,  false },
-	{ SHOW_FUNCTIONS, "functions",   9,  false, false },
-	{ SHOW_FUNCTION,  "function",    8,  true,  false },
-	{ SHOW_STATE,     "state",       5,  false, false },
-	{ SHOW_ALL,       "all",         3,  false, false },
-	{ SHOW_CONFIG,    "config",      6,  false, false },
-	{ 0,               NULL,         0,  false, false }
+	{ SHOW_USERS,      "users",       5,  false, false },
+	{ SHOW_USER,       "user",        4,  true,  false },
+	{ SHOW_REPLICAS,   "replicas",    8,  false, false },
+	{ SHOW_REPLICA,    "replica",     7,  true,  false },
+	{ SHOW_REPL,       "repl",        4,  false, false },
+	{ SHOW_REPL,       "replication", 11, false, false },
+	{ SHOW_WAL,        "wal",         3,  false, false },
+	{ SHOW_METRICS,    "metrics",     7,  false, false },
+	{ SHOW_STORAGES,   "storages",    8,  false, false },
+	{ SHOW_STORAGE,    "storage",     7,  true,  false },
+	{ SHOW_DATABASES,  "databases",   9,  false, false },
+	{ SHOW_DATABASE,   "database",    8,  true,  false },
+	{ SHOW_TABLES,     "tables",      6,  false, false },
+	{ SHOW_TABLE,      "table",       5,  true,  false },
+	{ SHOW_PARTITIONS, "partitions",  10, false, true  },
+	{ SHOW_PARTITION,  "partition",   9,  true,  true  },
+	{ SHOW_FUNCTIONS,  "functions",   9,  false, false },
+	{ SHOW_FUNCTION,   "function",    8,  true,  false },
+	{ SHOW_STATE,      "state",       5,  false, false },
+	{ SHOW_ALL,        "all",         3,  false, false },
+	{ SHOW_CONFIG,     "config",      6,  false, false },
+	{ 0,                NULL,         0,  false, false }
 };
 
 static inline ShowCmd*
@@ -262,6 +266,18 @@ fn_show(Fn* self)
 	case SHOW_TABLE:
 	{
 		buf = table_mgr_list(&catalog->table_mgr, db, name, extended);
+		break;
+	}
+	case SHOW_PARTITIONS:
+	{
+		auto table = table_mgr_find(&catalog->table_mgr, db, on, true);
+		buf = part_mgr_status(&table->part_mgr, NULL, extended);
+		break;
+	}
+	case SHOW_PARTITION:
+	{
+		auto table = table_mgr_find(&catalog->table_mgr, db, on, true);
+		buf = part_mgr_status(&table->part_mgr, name, extended);
 		break;
 	}
 	case SHOW_FUNCTIONS:

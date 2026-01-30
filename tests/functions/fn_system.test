@@ -42,11 +42,19 @@ select show('databases');
 # test: database
 select show('database', 'main');
 
+create table test (id int primary key);
+
 # test: tables
 select show('tables');
 
 # test: table
 select show('table', 'test');
+
+# test: partitions
+select show('partitions', '', 'test', false);
+
+# test: partition
+select show('partition', '0', 'test', false);
 
 # test: functions
 select show('functions');

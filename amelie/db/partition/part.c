@@ -153,3 +153,53 @@ part_index_find(Part* self, Str* name, bool error_if_not_exists)
 		       str_of(name));
 	return NULL;
 }
+
+void
+part_status(Part* self, Buf* buf, bool extended)
+{
+	unused(extended);
+	encode_obj(buf);
+
+	// id
+	encode_raw(buf, "id", 2);
+	encode_integer(buf, self->id.id);
+
+	// tier
+	encode_raw(buf, "tier", 4);
+	encode_string(buf, &self->id.tier->config->name);
+
+	// tier
+	encode_raw(buf, "storage", 7);
+	encode_string(buf, &self->id.storage->config->name);
+
+	// ram
+	encode_raw(buf, "ram", 3);
+	encode_bool(buf, true);
+
+	// min
+	auto heap = self->heap->header;
+	encode_raw(buf, "min", 3);
+	encode_integer(buf, heap->hash_min);
+
+	// max
+	encode_raw(buf, "max", 3);
+	encode_integer(buf, heap->hash_max);
+
+	// lsn
+	encode_raw(buf, "lsn", 3);
+	encode_integer(buf, heap->lsn);
+
+	// size
+	encode_raw(buf, "size", 4);
+	encode_integer(buf, page_mgr_used(&self->heap->page_mgr));
+
+	// compression
+	encode_raw(buf, "compression", 11);
+	encode_integer(buf, heap->compression);
+
+	// encryption
+	encode_raw(buf, "encryption", 10);
+	encode_integer(buf, heap->encryption);
+
+	encode_obj_end(buf);
+}

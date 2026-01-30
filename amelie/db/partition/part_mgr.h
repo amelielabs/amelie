@@ -34,5 +34,6 @@ void  part_mgr_index_add(PartMgr*, IndexConfig*);
 void  part_mgr_index_remove(PartMgr*, Str*);
 void  part_mgr_set_unlogged(PartMgr*, bool);
 Part* part_mgr_find(PartMgr*, uint64_t);
+Buf*  part_mgr_status(PartMgr*, Str*, bool);
 Iterator*
 part_mgr_iterator(PartMgr*, Part*, IndexConfig*, bool, Row*);

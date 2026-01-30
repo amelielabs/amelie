@@ -34,6 +34,7 @@ void   part_truncate(Part*);
 void   part_index_add(Part*, IndexConfig*);
 void   part_index_drop(Part*, Str*);
 Index* part_index_find(Part*, Str*, bool);
+void   part_status(Part*, Buf*, bool);
 
 static inline Index*
 part_primary(Part* self)

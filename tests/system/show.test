@@ -43,6 +43,14 @@ show tables;
 show table;
 show table test;
 
+# test: show partitions
+show partitions on test;
+select show('partitions', '', 'test', false);
+
+# test: show partition
+show partition '1' on test;
+select show('partition', '1', 'test', false);
+
 # test: show functions
 create function test_fn (id int) return json
 begin

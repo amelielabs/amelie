@@ -137,6 +137,38 @@ part_mgr_find(PartMgr* self, uint64_t id)
 	return NULL;
 }
 
+Buf*
+part_mgr_status(PartMgr* self, Str* ref, bool extended)
+{
+	auto buf = buf_create();
+	errdefer_buf(buf);
+
+	// show partition id on table
+	if (ref)
+	{
+		int64_t id;
+		if (str_toint(ref, &id) == -1)
+			error("invalid partition id");
+
+		auto part = part_mgr_find(self, id);
+		if (! part)
+			encode_null(buf);
+		else
+			part_status(part, buf, extended);
+		return buf;
+	}
+
+	// show partitions on table
+	encode_array(buf);
+	list_foreach(&self->parts)
+	{
+		auto part = list_at(Part, link);
+		part_status(part, buf, extended);
+	}
+	encode_array_end(buf);
+	return buf;
+}
+
 Iterator*
 part_mgr_iterator(PartMgr*     self,
                   Part*        part,
