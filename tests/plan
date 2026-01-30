@@ -53,6 +53,7 @@ test watch
 # ddl
 directory ddl
 group ddl
+test storage
 test database
 test table_create
 test table_drop

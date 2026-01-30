@@ -30,6 +30,12 @@ select show('repl');
 # test: replication
 select show('replication');
 
+# test: storages
+select show('storages');
+
+# test: storage
+select show('storage', 'main');
+
 # test: databases
 select show('databases');
 

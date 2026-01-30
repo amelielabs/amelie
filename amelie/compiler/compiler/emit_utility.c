@@ -124,6 +124,29 @@ emit_ddl(Compiler* self)
 	auto offset = 0;
 	auto flags  = 0;
 	switch (stmt->id) {
+	// storage
+	case STMT_CREATE_STORAGE:
+	{
+		auto arg = ast_storage_create_of(stmt->ast);
+		offset = storage_op_create(data, arg->config);
+		flags = arg->if_not_exists ? DDL_IF_NOT_EXISTS : 0;
+		break;
+	}
+	case STMT_DROP_STORAGE:
+	{
+		auto arg = ast_storage_drop_of(stmt->ast);
+		offset = storage_op_drop(data, &arg->name->string);
+		flags = arg->if_exists ? DDL_IF_EXISTS : 0;
+		break;
+	}
+	case STMT_ALTER_STORAGE:
+	{
+		auto arg = ast_storage_alter_of(stmt->ast);
+		offset = storage_op_rename(data, &arg->name->string, &arg->name_new->string);
+		flags = arg->if_exists ? DDL_IF_EXISTS : 0;
+		break;
+	}
+
 	// database
 	case STMT_CREATE_DB:
 	{

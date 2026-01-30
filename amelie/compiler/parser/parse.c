@@ -42,6 +42,13 @@ parse_stmt_free(Stmt* stmt)
 			replica_config_free(ast->config);
 		break;
 	}
+	case STMT_CREATE_STORAGE:
+	{
+		auto ast = ast_storage_create_of(stmt->ast);
+		if (ast->config)
+			storage_config_free(ast->config);
+		break;
+	}
 	case STMT_CREATE_DB:
 	{
 		auto ast = ast_db_create_of(stmt->ast);
@@ -257,7 +264,7 @@ parse_stmt(Stmt* self)
 			stmt_push(self, next);
 		}
 
-		// CREATE USER | TOKEN | REPLICA | DATABASE | TABLE | INDEX | FUNCTION
+		// CREATE USER | TOKEN | REPLICA | STORAGE | DATABASE | TABLE | INDEX | FUNCTION
 		if (stmt_if(self, KUSER))
 		{
 			self->id = STMT_CREATE_USER;
@@ -272,6 +279,11 @@ parse_stmt(Stmt* self)
 		{
 			self->id = STMT_CREATE_REPLICA;
 			parse_replica_create(self);
+		} else
+		if (stmt_if(self, KSTORAGE))
+		{
+			self->id = STMT_CREATE_STORAGE;
+			parse_storage_create(self);
 		} else
 		if (stmt_if(self, KDATABASE))
 		{
@@ -294,14 +306,14 @@ parse_stmt(Stmt* self)
 			parse_function_create(self, or_replace);
 		} else
 		{
-			stmt_error(self, NULL, "USER|REPLICA|DATABASE|TABLE|INDEX|FUNCTION expected");
+			stmt_error(self, NULL, "USER|REPLICA|STORAGE|DATABASE|TABLE|INDEX|FUNCTION expected");
 		}
 		break;
 	}
 
 	case KDROP:
 	{
-		// DROP USER | REPLICA | DATABASE | TABLE | INDEX | FUNCTION
+		// DROP USER | REPLICA | STORAGE | DATABASE | TABLE | INDEX | FUNCTION
 		if (stmt_if(self, KUSER))
 		{
 			self->id = STMT_DROP_USER;
@@ -311,6 +323,11 @@ parse_stmt(Stmt* self)
 		{
 			self->id = STMT_DROP_REPLICA;
 			parse_replica_drop(self);
+		} else
+		if (stmt_if(self, KSTORAGE))
+		{
+			self->id = STMT_DROP_STORAGE;
+			parse_storage_drop(self);
 		} else
 		if (stmt_if(self, KDATABASE))
 		{
@@ -332,18 +349,23 @@ parse_stmt(Stmt* self)
 			self->id = STMT_DROP_FUNCTION;
 			parse_function_drop(self);
 		} else {
-			stmt_error(self, NULL, "USER|REPLICA|DATABASE|TABLE|INDEX|FUNCTION expected");
+			stmt_error(self, NULL, "USER|REPLICA|STORAGE|DATABASE|TABLE|INDEX|FUNCTION expected");
 		}
 		break;
 	}
 
 	case KALTER:
 	{
-		// ALTER USER | DATABASE | TABLE | INDEX | FUNCTION
+		// ALTER USER | STORAGE | DATABASE | TABLE | INDEX | FUNCTION
 		if (stmt_if(self, KUSER))
 		{
 			self->id = STMT_ALTER_USER;
 			parse_user_alter(self);
+		} else
+		if (stmt_if(self, KSTORAGE))
+		{
+			self->id = STMT_ALTER_STORAGE;
+			parse_storage_alter(self);
 		} else
 		if (stmt_if(self, KDATABASE))
 		{
@@ -365,7 +387,7 @@ parse_stmt(Stmt* self)
 			self->id = STMT_ALTER_FUNCTION;
 			parse_function_alter(self);
 		} else {
-			stmt_error(self, NULL, "USER|DATABASE|TABLE|INDEX|FUNCTION expected");
+			stmt_error(self, NULL, "USER|STORAGE|DATABASE|TABLE|INDEX|FUNCTION expected");
 		}
 		break;
 	}

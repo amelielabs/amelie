@@ -270,6 +270,7 @@ set(AMELIE_SOURCES_COMPILER
     ${AMELIE_ROOT}/compiler/parser/parse_replica.c
     ${AMELIE_ROOT}/compiler/parser/parse_repl.c
     ${AMELIE_ROOT}/compiler/parser/parse_watch.c
+    ${AMELIE_ROOT}/compiler/parser/parse_storage.c
     ${AMELIE_ROOT}/compiler/parser/parse_db.c
     ${AMELIE_ROOT}/compiler/parser/parse_table.c
     ${AMELIE_ROOT}/compiler/parser/parse_index.c

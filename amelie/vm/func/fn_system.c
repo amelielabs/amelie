@@ -29,6 +29,8 @@ enum
 	SHOW_REPL,
 	SHOW_WAL,
 	SHOW_METRICS,
+	SHOW_STORAGES,
+	SHOW_STORAGE,
 	SHOW_DATABASES,
 	SHOW_DATABASE,
 	SHOW_TABLES,
@@ -60,6 +62,8 @@ static ShowCmd show_cmds[] =
 	{ SHOW_REPL,      "replication", 11, false  },
 	{ SHOW_WAL,       "wal",         3,  false  },
 	{ SHOW_METRICS,   "metrics",     7,  false  },
+	{ SHOW_STORAGES,  "storages",    8,  false  },
+	{ SHOW_STORAGE,   "storage",     7,  true   },
 	{ SHOW_DATABASES, "databases",   9,  false  },
 	{ SHOW_DATABASE,  "database",    8,  true   },
 	{ SHOW_TABLES,    "tables",      6,  false  },
@@ -200,6 +204,16 @@ fn_show(Fn* self)
 	case SHOW_METRICS:
 	{
 		rpc(&runtime()->task, MSG_SHOW_METRICS, &buf);
+		break;
+	}
+	case SHOW_STORAGES:
+	{
+		buf = storage_mgr_list(&catalog->storage_mgr, NULL, extended);
+		break;
+	}
+	case SHOW_STORAGE:
+	{
+		buf = storage_mgr_list(&catalog->storage_mgr, name, extended);
 		break;
 	}
 	case SHOW_DATABASES:

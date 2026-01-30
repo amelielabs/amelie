@@ -1,0 +1,94 @@
+#
+
+open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "127.0.0.1", "port": 3485 }];
+connect E0 S0 127.0.0.1:3485;
+
+# test: ensure main storage exists
+select show('storage', 'main');
+show storage main;
+show storages;
+
+# test: create storage statement parsing
+create;
+create storage;
+create storage 123;
+create storage if;
+create storage if not;
+create storage if not 123;
+create storage if not exists;
+create storage test abc;
+create storage test (;
+
+# test: create storage
+create storage test;
+show storages;
+select show('storages');
+
+# test: create storage if not exists
+create storage test;
+create storage if not exists test;
+show storages;
+
+# test: create storage ()
+create storage test2 ();
+drop storage test2;
+
+# test: create storage (options)
+create storage test2 (sync;
+create storage test2 (sync 1;
+create storage test2 (sync true;
+create storage test2 (sync false;
+
+create storage test2 (sync false);
+show storages;
+
+drop storage test2;
+create storage test2 (sync false, sync true);
+show storages;
+drop storage test2;
+
+create storage test2 (path '_test_', sync true);
+show storage test2;
+drop storage test2;
+
+# test: drop storage statement parsing
+drop storage;
+drop storage 123;
+drop storage if;
+drop storage if exists;
+drop storage test abc;
+
+# test: drop storage
+drop storage test;
+show storages;
+
+# test: drop storage if exists
+drop storage test;
+drop storage if exists test;
+show storages;
+
+# test: drop main storage
+drop storage main;
+show storages;
+
+# test: alter storage statment parsing
+alter storage;
+alter storage 123;
+alter storage test;
+alter storage test rename;
+alter storage test rename to;
+alter storage test rename "hello";
+
+# test: alter storage rename
+create storage test;
+show storages;
+
+alter storage test rename to test2;
+show storages;
+drop storage test2;
+
+# test: alter storage main
+alter storage main rename to _public;
+
+disconnect S0;
+close E0;

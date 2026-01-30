@@ -201,6 +201,7 @@ enum
 	KSWITCH,
 	KSECRET,
 	KSTORED,
+	KSTORAGE,
 
 	// t
 	KTRUE,

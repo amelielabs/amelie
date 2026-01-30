@@ -19,9 +19,19 @@ show user unknown;
 show user test;
 show user test;
 
+# test: show storages
+show storages;
+
+# test: show storage
+show storage;
+show storage main;
+show storage main extended;
+
 # test: show databases
 create database test;
 show databases;
+
+# test: show database
 show database test;
 drop database test;
 

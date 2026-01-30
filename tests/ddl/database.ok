@@ -7,7 +7,7 @@ show databases;
 }]
 # test: create database statement parsing
 create;
-{"msg": "create❰;❱ ⟵ USER|REPLICA|DATABASE|TABLE|INDEX|FUNCTION expected"}
+{"msg": "create❰;❱ ⟵ USER|REPLICA|STORAGE|DATABASE|TABLE|INDEX|FUNCTION expected"}
 create database;
 {"msg": "create database❰;❱ ⟵ name expected"}
 create database 123;

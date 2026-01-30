@@ -34,6 +34,7 @@ select show();
   "wal_sync_interval": "1 sec",
   "wal_size": 67108864,
   "wal_truncate": 0,
+  "storage_crc": true,
   "catalog_sync": false,
   "checkpoint_interval": "5 min",
   "repl_readahead": 262144,
@@ -72,6 +73,7 @@ select show('config');
   "wal_sync_interval": "1 sec",
   "wal_size": 67108864,
   "wal_truncate": 0,
+  "storage_crc": true,
   "catalog_sync": false,
   "checkpoint_interval": "5 min",
   "repl_readahead": 262144,
@@ -110,6 +112,7 @@ select show('all');
   "wal_sync_interval": "1 sec",
   "wal_size": 67108864,
   "wal_truncate": 0,
+  "storage_crc": true,
   "catalog_sync": false,
   "checkpoint_interval": "5 min",
   "repl_readahead": 262144,
@@ -158,6 +161,20 @@ select show('replication');
   "role": "primary",
   "primary": null,
   "replicas": []
+}]
+# test: storages
+select show('storages');
+[[{
+  "name": "main",
+  "path": "main",
+  "sync": false
+}]]
+# test: storage
+select show('storage', 'main');
+[{
+  "name": "main",
+  "path": "main",
+  "sync": false
 }]
 # test: databases
 select show('databases');
