@@ -51,6 +51,7 @@ struct Config
 	Opt  wal_truncate;
 	// storage
 	Opt  storage_crc;
+	Opt  storage_sync;
 	Opt  catalog_sync;
 	Opt  checkpoint_interval;
 	// replication

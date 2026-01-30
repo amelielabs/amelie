@@ -34,20 +34,16 @@ create storage test2 ();
 drop storage test2;
 
 # test: create storage (options)
-create storage test2 (sync;
-create storage test2 (sync 1;
-create storage test2 (sync true;
-create storage test2 (sync false;
+create storage test2 (path;
+create storage test2 (path 1;
+create storage test2 (path true;
+create storage test2 (path '';
 
-create storage test2 (sync false);
-show storages;
-
-drop storage test2;
-create storage test2 (sync false, sync true);
-show storages;
+create storage test2 (path 'test_');
+show storage test2;
 drop storage test2;
 
-create storage test2 (path '_test_', sync true);
+create storage test2 (path 'test_', path '_test');
 show storage test2;
 drop storage test2;
 

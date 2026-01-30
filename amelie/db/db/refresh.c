@@ -96,7 +96,7 @@ refresh_complete_job(intptr_t* argv)
 	heap_free(shadow);
 
 	// sync incomplete heap file
-	if (origin->id.storage->config->sync)
+	if (opt_int_of(&config()->storage_sync))
 		file_sync(&self->file);
 
 	// unlink origin heap file

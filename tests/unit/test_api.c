@@ -29,7 +29,7 @@ test_api_open(void* arg)
 	sfmt(path, sizeof(path), "%.*s/__api0", str_size(&suite->option_result_dir),
 	     str_of(&suite->option_result_dir));
 
-	int   argc   = 9;
+	int   argc   = 10;
 	char* argv[] =
 	{
 		"--log_to_stdout=false",
@@ -37,6 +37,7 @@ test_api_open(void* arg)
 		"--wal_sync_on_create=false",
 		"--wal_sync_on_close=false",
 		"--wal_sync_on_write=false",
+		"--storage_sync=false",
 		"--catalog_sync=false",
 		"--frontends=1",
 		"--backends=1",
@@ -57,7 +58,7 @@ test_api_connect(void* arg)
 	sfmt(path, sizeof(path), "%.*s/__api1", str_size(&suite->option_result_dir),
 	     str_of(&suite->option_result_dir));
 
-	int   argc   = 9;
+	int   argc   = 10;
 	char* argv[] =
 	{
 		"--log_to_stdout=false",
@@ -65,6 +66,7 @@ test_api_connect(void* arg)
 		"--wal_sync_on_create=false",
 		"--wal_sync_on_close=false",
 		"--wal_sync_on_write=false",
+		"--storage_sync=false",
 		"--catalog_sync=false",
 		"--frontends=1",
 		"--backends=1",
@@ -94,7 +96,7 @@ test_api_execute(void* arg)
 	sfmt(path, sizeof(path), "%.*s/__api2", str_size(&suite->option_result_dir),
 	     str_of(&suite->option_result_dir));
 
-	int   argc   = 9;
+	int   argc   = 10;
 	char* argv[] =
 	{
 		"--log_to_stdout=false",
@@ -102,6 +104,7 @@ test_api_execute(void* arg)
 		"--wal_sync_on_create=false",
 		"--wal_sync_on_close=false",
 		"--wal_sync_on_write=false",
+		"--storage_sync=false",
 		"--catalog_sync=false",
 		"--frontends=1",
 		"--backends=1",
@@ -166,7 +169,7 @@ test_api_execute_error(void* arg)
 	sfmt(path, sizeof(path), "%.*s/__api3", str_size(&suite->option_result_dir),
 	     str_of(&suite->option_result_dir));
 
-	int   argc   = 9;
+	int   argc   = 10;
 	char* argv[] =
 	{
 		"--log_to_stdout=false",
@@ -174,6 +177,7 @@ test_api_execute_error(void* arg)
 		"--wal_sync_on_create=false",
 		"--wal_sync_on_close=false",
 		"--wal_sync_on_write=false",
+		"--storage_sync=false",
 		"--catalog_sync=false",
 		"--frontends=1",
 		"--backends=1",

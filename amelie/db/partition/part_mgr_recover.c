@@ -196,7 +196,7 @@ part_mgr_deploy(PartMgr* self, int count)
 		heap_create(heap, &file, &id, ID_RAM_INCOMPLETE);
 
 		// sync
-		if (main_storage->config->sync)
+		if (opt_int_of(&config()->storage_sync))
 			file_sync(&file);
 
 		// rename

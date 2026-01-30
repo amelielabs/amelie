@@ -68,7 +68,6 @@ catalog_prepare(Catalog* self)
 		defer(storage_config_free, storage_config);
 		storage_config_set_name(storage_config, &name);
 		storage_config_set_path(storage_config, &name);
-		storage_config_set_sync(storage_config, false);
 		storage_config_set_system(storage_config, true);
 		storage_mgr_create(&self->storage_mgr, &tr, storage_config, false);
 

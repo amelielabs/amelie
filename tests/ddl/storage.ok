@@ -4,20 +4,17 @@ connect E0 S0 127.0.0.1:3485;
 select show('storage', 'main');
 [{
   "name": "main",
-  "path": "main",
-  "sync": false
+  "path": "main"
 }]
 show storage main;
 [{
   "name": "main",
-  "path": "main",
-  "sync": false
+  "path": "main"
 }]
 show storages;
 [{
   "name": "main",
-  "path": "main",
-  "sync": false
+  "path": "main"
 }]
 # test: create storage statement parsing
 create;
@@ -43,22 +40,18 @@ create storage test;
 show storages;
 [{
   "name": "main",
-  "path": "main",
-  "sync": false
+  "path": "main"
 }, {
   "name": "test",
-  "path": "test",
-  "sync": true
+  "path": "test"
 }]
 select show('storages');
 [[{
   "name": "main",
-  "path": "main",
-  "sync": false
+  "path": "main"
 }, {
   "name": "test",
-  "path": "test",
-  "sync": true
+  "path": "test"
 }]]
 # test: create storage if not exists
 create storage test;
@@ -67,63 +60,35 @@ create storage if not exists test;
 show storages;
 [{
   "name": "main",
-  "path": "main",
-  "sync": false
+  "path": "main"
 }, {
   "name": "test",
-  "path": "test",
-  "sync": true
+  "path": "test"
 }]
 # test: create storage ()
 create storage test2 ();
 drop storage test2;
 # test: create storage (options)
-create storage test2 (sync;
-{"msg": "create storage test2 (sync❰;❱ ⟵ bool value expected"}
-create storage test2 (sync 1;
-{"msg": "create storage test2 (sync ❰1❱ ⟵ bool value expected"}
-create storage test2 (sync true;
-{"msg": "create storage test2 (sync true❰;❱ ⟵ , expected"}
-create storage test2 (sync false;
-{"msg": "create storage test2 (sync false❰;❱ ⟵ , expected"}
-create storage test2 (sync false);
-show storages;
-[{
-  "name": "main",
-  "path": "main",
-  "sync": false
-}, {
-  "name": "test",
-  "path": "test",
-  "sync": true
-}, {
-  "name": "test2",
-  "path": "test2",
-  "sync": false
-}]
-drop storage test2;
-create storage test2 (sync false, sync true);
-show storages;
-[{
-  "name": "main",
-  "path": "main",
-  "sync": false
-}, {
-  "name": "test",
-  "path": "test",
-  "sync": true
-}, {
-  "name": "test2",
-  "path": "test2",
-  "sync": true
-}]
-drop storage test2;
-create storage test2 (path '_test_', sync true);
+create storage test2 (path;
+{"msg": "create storage test2 (path❰;❱ ⟵ string expected"}
+create storage test2 (path 1;
+{"msg": "create storage test2 (path ❰1❱ ⟵ string expected"}
+create storage test2 (path true;
+{"msg": "create storage test2 (path ❰true❱ ⟵ string expected"}
+create storage test2 (path '';
+{"msg": "create storage test2 (path ''❰;❱ ⟵ , expected"}
+create storage test2 (path 'test_');
 show storage test2;
 [{
   "name": "test2",
-  "path": "_test_",
-  "sync": true
+  "path": "test_"
+}]
+drop storage test2;
+create storage test2 (path 'test_', path '_test');
+show storage test2;
+[{
+  "name": "test2",
+  "path": "_test"
 }]
 drop storage test2;
 # test: drop storage statement parsing
@@ -142,8 +107,7 @@ drop storage test;
 show storages;
 [{
   "name": "main",
-  "path": "main",
-  "sync": false
+  "path": "main"
 }]
 # test: drop storage if exists
 drop storage test;
@@ -152,8 +116,7 @@ drop storage if exists test;
 show storages;
 [{
   "name": "main",
-  "path": "main",
-  "sync": false
+  "path": "main"
 }]
 # test: drop main storage
 drop storage main;
@@ -161,8 +124,7 @@ drop storage main;
 show storages;
 [{
   "name": "main",
-  "path": "main",
-  "sync": false
+  "path": "main"
 }]
 # test: alter storage statment parsing
 alter storage;
@@ -182,23 +144,19 @@ create storage test;
 show storages;
 [{
   "name": "main",
-  "path": "main",
-  "sync": false
+  "path": "main"
 }, {
   "name": "test",
-  "path": "test",
-  "sync": true
+  "path": "test"
 }]
 alter storage test rename to test2;
 show storages;
 [{
   "name": "main",
-  "path": "main",
-  "sync": false
+  "path": "main"
 }, {
   "name": "test2",
-  "path": "test",
-  "sync": true
+  "path": "test"
 }]
 drop storage test2;
 # test: alter storage main

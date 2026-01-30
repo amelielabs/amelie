@@ -43,18 +43,6 @@ parse_storage_create(Stmt* self)
 	{
 		// name value
 		auto name = stmt_expect(self, KNAME);
-		if (str_is(&name->string, "sync", 4))
-		{
-			// sync bool
-			auto value = stmt_next(self);
-			if (value->id == KTRUE)
-				storage_config_set_sync(stmt->config, true);
-			else
-			if (value->id == KFALSE)
-				storage_config_set_sync(stmt->config, false);
-			else
-				stmt_error(self, value, "bool value expected");
-		} else
 		if (str_is(&name->string, "path", 4))
 		{
 			// path string
