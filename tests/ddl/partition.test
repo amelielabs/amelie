@@ -1,0 +1,23 @@
+#
+
+open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "127.0.0.1", "port": 3485 }];
+connect E0 S0 127.0.0.1:3485;
+
+# test: alter partition statement parsing
+alter partition;
+alter partition xyz;
+alter partition 1;
+alter partition 1 on;
+alter partition 1 on xyz;
+alter partition 1 on xyz qwerty;
+
+# test: alter partition refresh
+create table test (id int primary key) partitions 1;
+show partitions on test;
+insert into test values (123);
+alter partition 1 on test refresh;
+show partitions on test;
+drop table test;
+
+disconnect S0;
+close E0;

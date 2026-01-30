@@ -1,0 +1,48 @@
+open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "127.0.0.1", "port": 3485 }];
+connect E0 S0 127.0.0.1:3485;
+# test: alter partition statement parsing
+alter partition;
+{"msg": "alter partition❰;❱ ⟵ int expected"}
+alter partition xyz;
+{"msg": "alter partition ❰xyz❱ ⟵ int expected"}
+alter partition 1;
+{"msg": "alter partition 1❰;❱ ⟵ ON expected"}
+alter partition 1 on;
+{"msg": "alter partition 1 on❰;❱ ⟵ name expected"}
+alter partition 1 on xyz;
+{"msg": "alter partition 1 on xyz❰;❱ ⟵ command expected"}
+alter partition 1 on xyz qwerty;
+{"msg": "alter partition 1 on xyz ❰qwerty❱ ⟵ unknown command"}
+# test: alter partition refresh
+create table test (id int primary key) partitions 1;
+show partitions on test;
+[{
+  "id": 1,
+  "tier": "main",
+  "storage": "main",
+  "ram": true,
+  "min": 0,
+  "max": 8096,
+  "lsn": 0,
+  "size": 0,
+  "compression": 0,
+  "encryption": 0
+}]
+insert into test values (123);
+alter partition 1 on test refresh;
+show partitions on test;
+[{
+  "id": 1,
+  "tier": "main",
+  "storage": "main",
+  "ram": true,
+  "min": 0,
+  "max": 8096,
+  "lsn": 3,
+  "size": 524288,
+  "compression": 0,
+  "encryption": 0
+}]
+drop table test;
+disconnect S0;
+close E0;

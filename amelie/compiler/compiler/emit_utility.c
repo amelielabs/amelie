@@ -412,6 +412,18 @@ emit_utility(Compiler* self)
 		break;
 	}
 
+	// partition control
+	case STMT_ALTER_PARTITION:
+	{
+		auto arg = ast_part_alter_of(stmt->ast);
+		lock = LOCK_SHARED;
+		auto table = table_mgr_find(&share()->db->catalog.table_mgr,
+		                            self->parser.db,
+		                            &arg->table->string, true);
+		op2(self, CREFRESH, (intptr_t)table, arg->id);
+		break;
+	}
+
 	// ddl
 	default:	
 	{

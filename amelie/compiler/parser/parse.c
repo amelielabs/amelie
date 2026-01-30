@@ -356,7 +356,7 @@ parse_stmt(Stmt* self)
 
 	case KALTER:
 	{
-		// ALTER USER | STORAGE | DATABASE | TABLE | INDEX | FUNCTION
+		// ALTER USER | STORAGE | DATABASE | TABLE | INDEX | PARTITION | FUNCTION
 		if (stmt_if(self, KUSER))
 		{
 			self->id = STMT_ALTER_USER;
@@ -381,6 +381,11 @@ parse_stmt(Stmt* self)
 		{
 			self->id = STMT_ALTER_INDEX;
 			parse_index_alter(self);
+		} else
+		if (stmt_if(self, KPARTITION))
+		{
+			self->id = STMT_ALTER_PARTITION;
+			parse_part_alter(self);
 		} else
 		if (stmt_if(self, KFUNCTION))
 		{

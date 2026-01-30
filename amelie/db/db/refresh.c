@@ -99,6 +99,8 @@ refresh_complete_job(intptr_t* argv)
 	if (opt_int_of(&config()->storage_sync))
 		file_sync(&self->file);
 
+	file_close(&self->file);
+
 	// unlink origin heap file
 	id_delete(&origin->id, ID_RAM);
 

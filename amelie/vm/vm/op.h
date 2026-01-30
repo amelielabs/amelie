@@ -286,6 +286,7 @@ enum
 
 	// ddl
 	CDDL,
+	CREFRESH,
 
 	// result
 	CSEND_SHARD,

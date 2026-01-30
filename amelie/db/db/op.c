@@ -23,6 +23,15 @@
 #include <amelie_wal.h>
 #include <amelie_db.h>
 
+void
+db_refresh(Db* self, Uuid* id_table, uint64_t id)
+{
+	Refresh refresh;
+	refresh_init(&refresh, self);
+	defer(refresh_free, &refresh);
+	refresh_run(&refresh, id_table, id);
+}
+
 static Buf*
 db_pending(Db* self)
 {

@@ -293,6 +293,7 @@ OpDesc ops[] =
 
 	// ddl
 	{ CDDL, "ddl" },
+	{ CREFRESH, "refresh" },
 
 	// result
 	{ CSEND_SHARD, "send_shard" },

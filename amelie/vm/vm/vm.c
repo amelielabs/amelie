@@ -368,6 +368,7 @@ vm_run(Vm*       self,
 
 		// ddl
 		&&cddl,
+		&&crefresh,
 
 		// executor
 		&&csend_shard,
@@ -1909,6 +1910,11 @@ crepl_unsubscribe:
 
 cddl:
 	cddl(self, op);
+	op_next;
+
+crefresh:
+	// [table*, id]
+	db_refresh(share()->db, &((Table*)op->a)->config->id, op->b);
 	op_next;
 
 csend_shard:
