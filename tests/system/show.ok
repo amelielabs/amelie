@@ -17,7 +17,7 @@ show users;
 }]
 # test: show user
 show user;
-{"msg": "show() ⟵ name is missing for 'user'"}
+{"msg": "show() ⟵ name argument is missing for 'user'"}
 show user unknown;
 [null]
 show user test;
@@ -36,7 +36,7 @@ show storages;
 }]
 # test: show storage
 show storage;
-{"msg": "show() ⟵ name is missing for 'storage'"}
+{"msg": "show() ⟵ name argument is missing for 'storage'"}
 show storage main;
 [{
   "name": "main",
@@ -71,7 +71,7 @@ show tables;
 }]
 # test: show table
 show table;
-{"msg": "show() ⟵ name is missing for 'table'"}
+{"msg": "show() ⟵ name argument is missing for 'table'"}
 show table test;
 [{
   "db": "main",
@@ -117,7 +117,7 @@ show functions extended;
 }]
 # test: show function;
 show function;
-{"msg": "show() ⟵ name is missing for 'function'"}
+{"msg": "show() ⟵ name argument is missing for 'function'"}
 show function test_fn;
 [{
   "db": "main",
@@ -289,8 +289,14 @@ explain show log_enable;
   "main": {
     "00": "string              0      0      0     # log_enable",
     "01": "push                0      0      0     ",
-    "02": "call                0      -      1     # show()",
-    "03": "ret                 0      0      -     "
+    "02": "string              0      11     0     # ",
+    "03": "push                0      0      0     ",
+    "04": "string              0      12     0     # ",
+    "05": "push                0      0      0     ",
+    "06": "bool                0      0      0     ",
+    "07": "push                0      0      0     ",
+    "08": "call                0      -      4     # show()",
+    "09": "ret                 0      0      -     "
   },
   "access": []
 }]

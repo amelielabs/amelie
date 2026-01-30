@@ -267,26 +267,29 @@ emit_show(Compiler* self)
 	auto fn = function_mgr_find(share()->function_mgr, &name);
 	assert(fn);
 
-	// show(section[, name, extended])
-	auto argc = 1;
+	// show(section, name, on, extended)
+
+	// section
 	auto r = emit_string(self, &arg->section, false);
 	op1(self, CPUSH, r);
 	runpin(self, r);
-	if (! str_empty(&arg->name))
-	{
-		r = emit_string(self, &arg->name, false);
-		op1(self, CPUSH, r);
-		runpin(self, r);
-		argc++;
-	}
-	if (arg->extended)
-	{
-		r = op2pin(self, CBOOL, TYPE_BOOL, arg->extended);
-		op1(self, CPUSH, r);
-		runpin(self, r);
-		argc++;
-	}
-	r = op4pin(self, CCALL, fn->type, (intptr_t)fn, argc, -1);
+
+	// name
+	r = emit_string(self, &arg->name, false);
+	op1(self, CPUSH, r);
+	runpin(self, r);
+
+	// on
+	r = emit_string(self, &arg->on, false);
+	op1(self, CPUSH, r);
+	runpin(self, r);
+
+	// extended
+	r = op2pin(self, CBOOL, TYPE_BOOL, arg->extended);
+	op1(self, CPUSH, r);
+	runpin(self, r);
+
+	r = op4pin(self, CCALL, fn->type, (intptr_t)fn, 4, -1);
 	return r;
 }
 

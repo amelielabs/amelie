@@ -47,42 +47,43 @@ typedef struct ShowCmd ShowCmd;
 struct ShowCmd
 {
 	int         id;
-	const char* name;
-	int         name_size;
-	bool        has_arg;
+	const char* section;
+	int         section_size;
+	bool        has_name;
+	bool        has_on;
 };
 
 static ShowCmd show_cmds[] =
 {
-	{ SHOW_USERS,     "users",       5,  false  },
-	{ SHOW_USER,      "user",        4,  true   },
-	{ SHOW_REPLICAS,  "replicas",    8,  false  },
-	{ SHOW_REPLICA,   "replica",     7,  true   },
-	{ SHOW_REPL,      "repl",        4,  false  },
-	{ SHOW_REPL,      "replication", 11, false  },
-	{ SHOW_WAL,       "wal",         3,  false  },
-	{ SHOW_METRICS,   "metrics",     7,  false  },
-	{ SHOW_STORAGES,  "storages",    8,  false  },
-	{ SHOW_STORAGE,   "storage",     7,  true   },
-	{ SHOW_DATABASES, "databases",   9,  false  },
-	{ SHOW_DATABASE,  "database",    8,  true   },
-	{ SHOW_TABLES,    "tables",      6,  false  },
-	{ SHOW_TABLE,     "table",       5,  true   },
-	{ SHOW_FUNCTIONS, "functions",   9,  false  },
-	{ SHOW_FUNCTION,  "function",    8,  true   },
-	{ SHOW_STATE,     "state",       5,  false  },
-	{ SHOW_ALL,       "all",         3,  false  },
-	{ SHOW_CONFIG,    "config",      6,  false  },
-	{ 0,               NULL,         0,  false  }
+	{ SHOW_USERS,     "users",       5,  false, false },
+	{ SHOW_USER,      "user",        4,  true,  false },
+	{ SHOW_REPLICAS,  "replicas",    8,  false, false },
+	{ SHOW_REPLICA,   "replica",     7,  true,  false },
+	{ SHOW_REPL,      "repl",        4,  false, false },
+	{ SHOW_REPL,      "replication", 11, false, false },
+	{ SHOW_WAL,       "wal",         3,  false, false },
+	{ SHOW_METRICS,   "metrics",     7,  false, false },
+	{ SHOW_STORAGES,  "storages",    8,  false, false },
+	{ SHOW_STORAGE,   "storage",     7,  true,  false },
+	{ SHOW_DATABASES, "databases",   9,  false, false },
+	{ SHOW_DATABASE,  "database",    8,  true,  false },
+	{ SHOW_TABLES,    "tables",      6,  false, false },
+	{ SHOW_TABLE,     "table",       5,  true,  false },
+	{ SHOW_FUNCTIONS, "functions",   9,  false, false },
+	{ SHOW_FUNCTION,  "function",    8,  true,  false },
+	{ SHOW_STATE,     "state",       5,  false, false },
+	{ SHOW_ALL,       "all",         3,  false, false },
+	{ SHOW_CONFIG,    "config",      6,  false, false },
+	{ 0,               NULL,         0,  false, false }
 };
 
 static inline ShowCmd*
-show_cmd_find(Str* name)
+show_cmd_find(Str* section)
 {
-	for (auto i = 0; show_cmds[i].name; i++)
+	for (auto i = 0; show_cmds[i].section; i++)
 	{
 		auto cmd = &show_cmds[i];
-		if (str_is(name, cmd->name, cmd->name_size))
+		if (str_is(section, cmd->section, cmd->section_size))
 			return cmd;
 	}
 	return NULL;
@@ -92,11 +93,14 @@ static void
 fn_show(Fn* self)
 {
 	auto db = &self->local->db;
-	// [section, name, extended]
+
+	// [section, name, on, extended]
 	Str  section_none;
 	Str* section  = NULL;
 	Str* name     = NULL;
+	Str* on       = NULL;
 	bool extended = false;
+
 	switch (self->argc) {
 	case 0:
 		section = &section_none;
@@ -125,7 +129,18 @@ fn_show(Fn* self)
 		fn_expect_arg(self, 2, TYPE_BOOL);
 		section  = &self->argv[0].string;
 		name     = &self->argv[1].string;
-		extended = self->argv[2].integer;
+		extended =  self->argv[2].integer;
+		break;
+	case 4:
+		// [section, name, on, bool]
+		fn_expect_arg(self, 0, TYPE_STRING);
+		fn_expect_arg(self, 1, TYPE_STRING);
+		fn_expect_arg(self, 2, TYPE_STRING);
+		fn_expect_arg(self, 3, TYPE_BOOL);
+		section  = &self->argv[0].string;
+		name     = &self->argv[1].string;
+		on       = &self->argv[2].string;
+		extended =  self->argv[3].integer;
 		break;
 	default:
 		fn_error_noargs(self, "invalid number of arguments");
@@ -156,15 +171,28 @@ fn_show(Fn* self)
 		return;
 	}
 
-	// ensure argument is set
-	if (cmd->has_arg) {
+	// validate arguments
+
+	// name
+	if (cmd->has_name) {
 		if (!name || str_empty(name))
-			fn_error_noargs(self, "name is missing for '%.*s'",
+			fn_error_noargs(self, "name argument is missing for '%.*s'",
 			                str_size(section),
 			                str_of(section));
 	} else {
 		if (name && !str_empty(name))
 			fn_error_noargs(self, "unexpected name argument");
+	}
+
+	// on
+	if (cmd->has_on) {
+		if (!on || str_empty(on))
+			fn_error_noargs(self, "on argument is missing for '%.*s'",
+			                str_size(section),
+			                str_of(section));
+	} else {
+		if (on && !str_empty(on))
+			fn_error_noargs(self, "unexpected on argument");
 	}
 
 	auto catalog = &share()->db->catalog;

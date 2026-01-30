@@ -20,7 +20,7 @@
 void
 parse_show(Stmt* self)
 {
-	// SHOW <SECTION> [name] [IN|FROM db] [extended]
+	// SHOW <section> [name] [ON name] [extended]
 	auto stmt = ast_show_allocate();
 	self->ast = &stmt->ast;
 	self->ret = &stmt->ret;
@@ -33,23 +33,18 @@ parse_show(Stmt* self)
 
 	// [name]
 	name = stmt_next(self);
-	if (name->id == KNAME || name->id == KSTRING) {
+	if (name->id == KNAME || name->id == KSTRING)
 		stmt->name = name->string;
-	} else
-	if (name->id == KNAME_COMPOUND)
-	{
-		stmt->name = name->string;
-		str_split(&stmt->name, &stmt->db, '.');
-		str_advance(&stmt->name, str_size(&stmt->db) + 1);
-	} else {
+	else
 		stmt_push(self, name);
-	}
 
-	// [IN | FROM db]
-	if (stmt_if(self, KIN) || stmt_if(self, KFROM))
+	// [ON name]
+	if (stmt_if(self, KON))
 	{
-		auto db = stmt_expect(self, KNAME);
-		stmt->db = db->string;
+		name = stmt_next_shadow(self);
+		if (name->id != KNAME && name->id != KSTRING)
+			stmt_error(self, name, "name expected");
+		stmt->on = name->string;
 	}
 
 	// [EXTENDED]
