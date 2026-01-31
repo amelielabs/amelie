@@ -35,6 +35,8 @@ enum
 	SHOW_DATABASE,
 	SHOW_TABLES,
 	SHOW_TABLE,
+	SHOW_INDEXES,
+	SHOW_INDEX,
 	SHOW_TIERS,
 	SHOW_TIER,
 	SHOW_PARTITIONS,
@@ -73,6 +75,8 @@ static ShowCmd show_cmds[] =
 	{ SHOW_DATABASE,   "database",    8,  true,  false },
 	{ SHOW_TABLES,     "tables",      6,  false, false },
 	{ SHOW_TABLE,      "table",       5,  true,  false },
+	{ SHOW_INDEXES,    "indexes",     7,  false, true  },
+	{ SHOW_INDEX,      "index",       5,  true,  true  },
 	{ SHOW_TIERS,      "tiers",       5,  false, true  },
 	{ SHOW_TIER,       "tier",        4,  true,  true  },
 	{ SHOW_PARTITIONS, "partitions",  10, false, true  },
@@ -270,6 +274,18 @@ fn_show(Fn* self)
 	case SHOW_TABLE:
 	{
 		buf = table_mgr_list(&catalog->table_mgr, db, name, extended);
+		break;
+	}
+	case SHOW_INDEXES:
+	{
+		auto table = table_mgr_find(&catalog->table_mgr, db, on, true);
+		buf = table_index_list(table, NULL, extended);
+		break;
+	}
+	case SHOW_INDEX:
+	{
+		auto table = table_mgr_find(&catalog->table_mgr, db, on, true);
+		buf = table_index_list(table, name, extended);
 		break;
 	}
 	case SHOW_TIERS:

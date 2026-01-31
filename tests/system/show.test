@@ -43,6 +43,15 @@ show tables;
 show table;
 show table test;
 
+# test: show indexes
+show indexes on test;
+select show('indexes', '', 'test', false);
+
+# test: show index
+show index primary on test;
+select show('index', 'primary', 'test', false);
+show index xyz on test;
+
 # test: show tiers
 select show('tiers', '', 'test', false)[0].name;
 

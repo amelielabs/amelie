@@ -202,10 +202,34 @@ select show('table', 'test');
   "name": "test",
   "unlogged": false
 }]
-# test: show tiers
+# test: indexes
+select show('indexes', '', 'test', false);
+[[{
+  "name": "primary",
+  "type": 2,
+  "unique": true,
+  "primary": true,
+  "keys": [{
+    "column": 0,
+    "asc": true
+  }]
+}]]
+# test: index
+select show('index', 'primary', 'test', false);
+[{
+  "name": "primary",
+  "type": 2,
+  "unique": true,
+  "primary": true,
+  "keys": [{
+    "column": 0,
+    "asc": true
+  }]
+}]
+# test: tiers
 select show('tiers', '', 'test', false)[0].name;
 ["main"]
-# test: show tier
+# test: tier
 select show('tier', 'main', 'test', false).name;
 ["main"]
 # test: partitions

@@ -33,7 +33,7 @@ parse_show(Stmt* self)
 
 	// [name]
 	name = stmt_next(self);
-	if (name->id == KNAME || name->id == KSTRING)
+	if (name->id == KNAME || name->id == KSTRING || name->id == KPRIMARY)
 		stmt->name = name->string;
 	else
 		stmt_push(self, name);

@@ -190,3 +190,33 @@ table_index_rename(Table* self,
 	index_config_set_name(index, name_new);
 	return true;
 }
+
+Buf*
+table_index_list(Table* self, Str* ref, bool extended)
+{
+	unused(extended);
+
+	auto buf = buf_create();
+	errdefer_buf(buf);
+
+	// show index name on table
+	if (ref)
+	{
+		auto index = table_find_index(self, ref, false);
+		if (! index)
+			encode_null(buf);
+		else
+			index_config_write(index, buf);
+		return buf;
+	}
+
+	// show indexes on table
+	encode_array(buf);
+	list_foreach(&self->config->indexes)
+	{
+		auto index = list_at(IndexConfig, link);
+		index_config_write(index, buf);
+	}
+	encode_array_end(buf);
+	return buf;
+}
