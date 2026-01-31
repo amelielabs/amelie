@@ -207,7 +207,7 @@ tier_config_write(TierConfig* self, Buf* buf, bool safe)
 	encode_raw(buf, "encryption", 10);
 	encode_string(buf, &self->encryption);
 
-	if (! safe)
+	if (safe)
 	{
 		// encryption_key
 		encode_raw(buf, "encryption_key", 14);

@@ -18,7 +18,7 @@ table_op_create(Buf* self, TableConfig* config)
 	auto offset = buf_size(self);
 	encode_array(self);
 	encode_integer(self, DDL_TABLE_CREATE);
-	table_config_write(config, self);
+	table_config_write(config, self, true);
 	encode_array_end(self);
 	return offset;
 }

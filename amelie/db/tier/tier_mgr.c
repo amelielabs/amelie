@@ -155,3 +155,41 @@ tier_mgr_open(TierMgr* self, List* tiers)
 	}
 	return bootstrap;
 }
+
+Buf*
+tier_mgr_status(TierMgr* self, Str* ref, bool extended)
+{
+	auto buf = buf_create();
+	errdefer_buf(buf);
+
+	// show tier name on table
+	if (ref)
+	{
+		auto tier = tier_mgr_find(self, ref);
+		if (! tier)
+			encode_null(buf);
+		else
+			tier_status(tier, buf, extended);
+		return buf;
+	}
+
+	// show tiers on table
+	encode_array(buf);
+	auto tier = self->tiers;
+	for (; tier; tier = tier->next)
+		tier_status(tier, buf, extended);
+	encode_array_end(buf);
+	return buf;
+}
+
+Tier*
+tier_mgr_find(TierMgr* self, Str* name)
+{
+	auto tier = self->tiers;
+	for (; tier; tier = tier->next)
+	{
+		if (str_compare(&tier->config->name, name))
+			return tier;
+	}
+	return NULL;
+}

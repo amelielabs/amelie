@@ -138,7 +138,7 @@ table_mgr_dump(TableMgr* self, Buf* buf)
 	list_foreach(&self->mgr.list)
 	{
 		auto table = table_of(list_at(Relation, link));
-		table_config_write(table->config, buf);
+		table_config_write(table->config, buf, true);
 	}
 	encode_array_end(buf);
 }
@@ -185,7 +185,7 @@ table_mgr_list(TableMgr* self, Str* db, Str* name, bool extended)
 		auto table = table_mgr_find(self, db, name, false);
 		if (table) {
 			if (extended)
-				table_config_write(table->config, buf);
+				table_config_write(table->config, buf, false);
 			else
 				table_config_write_compact(table->config, buf);
 		} else {
@@ -202,7 +202,7 @@ table_mgr_list(TableMgr* self, Str* db, Str* name, bool extended)
 		if (db && !str_compare_case(&table->config->db, db))
 			continue;
 		if (extended)
-			table_config_write(table->config, buf);
+			table_config_write(table->config, buf, false);
 		else
 			table_config_write_compact(table->config, buf);
 	}

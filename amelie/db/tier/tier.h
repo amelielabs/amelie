@@ -85,3 +85,10 @@ tier_resolve(Tier* self, StorageMgr* storage_mgr)
 		ref->storage = storage_mgr_find(storage_mgr, &ref->name, true);
 	}
 }
+
+static inline void
+tier_status(Tier* self, Buf* buf, bool extended)
+{
+	unused(extended);
+	tier_config_write(self->config, buf, false);
+}

@@ -196,7 +196,7 @@ table_config_read(uint8_t** pos)
 }
 
 static inline void
-table_config_write(TableConfig* self, Buf* buf)
+table_config_write(TableConfig* self, Buf* buf, bool safe)
 {
 	// obj
 	encode_obj(buf);
@@ -241,7 +241,7 @@ table_config_write(TableConfig* self, Buf* buf)
 	list_foreach(&self->tiers)
 	{
 		auto config = list_at(TierConfig, link);
-		tier_config_write(config, buf, false);
+		tier_config_write(config, buf, safe);
 	}
 	encode_array_end(buf);
 	encode_obj_end(buf);

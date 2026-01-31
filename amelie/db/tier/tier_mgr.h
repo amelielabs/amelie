@@ -21,9 +21,11 @@ struct TierMgr
 	StorageMgr* storage_mgr;
 };
 
-void tier_mgr_init(TierMgr*, StorageMgr*, Uuid*);
-void tier_mgr_free(TierMgr*);
-bool tier_mgr_open(TierMgr*, List*);
+void  tier_mgr_init(TierMgr*, StorageMgr*, Uuid*);
+void  tier_mgr_free(TierMgr*);
+bool  tier_mgr_open(TierMgr*, List*);
+Buf*  tier_mgr_status(TierMgr*, Str*, bool);
+Tier* tier_mgr_find(TierMgr*, Str*);
 
 static inline Tier*
 tier_mgr_main(TierMgr* self)

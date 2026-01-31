@@ -78,6 +78,12 @@ show table test;
   "name": "test",
   "unlogged": false
 }]
+# test: show tiers
+select show('tiers', '', 'test', false)[0].name;
+["main"]
+# test: show tier
+select show('tier', 'main', 'test', false).name;
+["main"]
 # test: show partitions
 show partitions on test;
 [{
