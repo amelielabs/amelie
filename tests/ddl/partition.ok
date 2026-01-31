@@ -32,7 +32,7 @@ insert into test values (123);
 alter partition 1 on test refresh;
 show partitions on test;
 [{
-  "id": 1,
+  "id": 2,
   "tier": "main",
   "storage": "main",
   "ram": true,

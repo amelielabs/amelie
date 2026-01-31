@@ -50,6 +50,11 @@ refresh_begin(Refresh* self, Uuid* id_table, uint64_t id)
 	}
 	self->origin = origin;
 
+	// set id
+	self->id_origin = origin->id;
+	self->id = origin->id;
+	self->id.id = state_psn_next();
+
 	// commit pending prepared transactions
 	auto consensus = &origin->track.consensus;
 	track_sync(&origin->track, consensus);
@@ -70,9 +75,9 @@ refresh_snapshot_job(intptr_t* argv)
 	// create <id>.ram.incomplete file
 	auto self   = (Refresh*)argv[0];
 	auto origin = self->origin;
-	auto id     = &origin->id;
+	auto heap   = origin->heap;
 
-	auto heap = origin->heap;
+	auto id = &self->id;
 	heap->header->lsn = self->origin_lsn;
 	heap_create(heap, &self->file, id, ID_RAM_INCOMPLETE);
 
@@ -102,10 +107,10 @@ refresh_complete_job(intptr_t* argv)
 	file_close(&self->file);
 
 	// unlink origin heap file
-	id_delete(&origin->id, ID_RAM);
+	id_delete(&self->id_origin, ID_RAM);
 
 	// rename
-	id_rename(&origin->id, ID_RAM_INCOMPLETE, ID_RAM);
+	id_rename(&self->id, ID_RAM_INCOMPLETE, ID_RAM);
 }
 
 static void
@@ -146,6 +151,9 @@ refresh_apply(Refresh* self)
 		part_apply(origin, row, false);
 	}
 
+	// update partition id
+	origin->id = self->id;
+
 	unlock(lock_mgr, &table->rel, LOCK_EXCLUSIVE);
 }
 
@@ -157,6 +165,8 @@ refresh_init(Refresh* self, Db* db)
 	self->origin_lsn = 0;
 	self->table      = NULL;
 	self->db         = db;
+	id_init(&self->id_origin);
+	id_init(&self->id);
 	file_init(&self->file);
 }
 
@@ -173,6 +183,8 @@ refresh_reset(Refresh* self)
 	self->origin     = NULL;
 	self->origin_lsn = 0;
 	self->table      = NULL;
+	id_init(&self->id_origin);
+	id_init(&self->id);
 	file_close(&self->file);
 	file_init(&self->file);
 }
@@ -186,7 +198,11 @@ refresh_run(Refresh* self, Uuid* id_table, uint64_t id)
 	db_lock(self->db, &self->lock, id);
 
 	// find and rotate partition
-	refresh_begin(self, id_table, id);
+	if (! refresh_begin(self, id_table, id))
+	{
+		db_unlock(self->db, &self->lock);
+		error("partition not found");
+	}
 
 	// create heap snapshot
 	auto on_error = error_catch

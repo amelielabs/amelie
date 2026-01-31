@@ -18,6 +18,8 @@ struct Refresh
 	PartLock lock;
 	Part*    origin;
 	uint64_t origin_lsn;
+	Id       id_origin;
+	Id       id;
 	File     file;
 	Table*   table;
 	Db*      db;
