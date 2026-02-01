@@ -21,6 +21,8 @@ struct Refresh
 	Id       id_origin;
 	Id       id;
 	File     file;
+	File     file_service;
+	Service* service;
 	Table*   table;
 	Db*      db;
 };

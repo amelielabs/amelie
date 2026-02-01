@@ -80,7 +80,7 @@ service_add_output(Service* self, uint64_t id)
 }
 
 static inline void
-service_create(Service* self, File* file, Id* id, int state)
+service_create(Service* self, File* file, int state)
 {
 	// prepare file data
 	auto buf = buf_create();
@@ -106,18 +106,18 @@ service_create(Service* self, File* file, Id* id, int state)
 	json_export_pretty(&text, NULL, &pos);
 
 	// create <id>.service.incomplete
-	id_create(id, file, state);
+	id_create(&self->id, file, state);
 	file_write_buf(file, &text);
 }
 
 static inline void
-service_open(Service* self, Id* id, int state)
+service_open(Service* self, int state)
 {
 	// open <id>.service file
 	File file;
 	file_init(&file);
 	defer(file_close, &file);
-	id_open(id, &file, state);
+	id_open(&self->id, &file, state);
 
 	// read text
 	auto buf = buf_create();

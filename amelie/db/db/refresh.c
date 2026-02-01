@@ -71,11 +71,11 @@ refresh_begin(Refresh* self, Uuid* id_table, uint64_t id)
 static void
 refresh_snapshot_job(intptr_t* argv)
 {
-	// create <id>.ram.incomplete file
 	auto self   = (Refresh*)argv[0];
 	auto origin = self->origin;
 	auto heap   = origin->heap;
 
+	// create <id>.ram.incomplete file
 	auto id = &self->id;
 	heap->header->lsn = self->origin_lsn;
 	heap_create(heap, &self->file, id, ID_RAM_INCOMPLETE);
@@ -86,6 +86,15 @@ refresh_snapshot_job(intptr_t* argv)
 	     id->tier->name.pos,
 	     id->id,
 	     total);
+
+	// create <id>.service.incomplete file
+	auto service = self->service;
+	service_set_id(service, id);
+	service_begin(service);
+	service_add_input(service, self->id_origin.id);
+	service_add_output(service, self->id.id);
+	service_end(service);
+	service_create(service, &self->file_service, ID_SERVICE_INCOMPLETE);
 }
 
 static void
@@ -99,6 +108,15 @@ refresh_complete_job(intptr_t* argv)
 	origin->heap_shadow = NULL;
 	heap_free(shadow);
 
+	// sync incomplete service file
+	if (opt_int_of(&config()->storage_sync))
+		file_sync(&self->file_service);
+
+	file_close(&self->file_service);
+
+	// rename
+	id_rename(&self->id, ID_SERVICE_INCOMPLETE, ID_SERVICE);
+
 	// sync incomplete heap file
 	if (opt_int_of(&config()->storage_sync))
 		file_sync(&self->file);
@@ -110,6 +128,9 @@ refresh_complete_job(intptr_t* argv)
 
 	// rename
 	id_rename(&self->id, ID_RAM_INCOMPLETE, ID_RAM);
+
+	// remove service files (complete)
+	id_delete(&self->id, ID_SERVICE);
 }
 
 static void
@@ -163,16 +184,18 @@ refresh_init(Refresh* self, Db* db)
 	self->origin     = NULL;
 	self->origin_lsn = 0;
 	self->table      = NULL;
+	self->service    = service_allocate();
 	self->db         = db;
 	id_init(&self->id_origin);
 	id_init(&self->id);
 	file_init(&self->file);
+	file_init(&self->file_service);
 }
 
 void
 refresh_free(Refresh* self)
 {
-	unused(self);
+	service_free(self->service);
 }
 
 void
@@ -182,10 +205,13 @@ refresh_reset(Refresh* self)
 	self->origin     = NULL;
 	self->origin_lsn = 0;
 	self->table      = NULL;
+	service_reset(self->service);
 	id_init(&self->id_origin);
 	id_init(&self->id);
 	file_close(&self->file);
+	file_close(&self->file_service);
 	file_init(&self->file);
+	file_init(&self->file_service);
 }
 
 void
