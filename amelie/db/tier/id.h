@@ -26,34 +26,14 @@ struct Id
 	uint64_t  id;
 	Uuid      id_tier;
 	Uuid      id_table;
-	int       state;
 	Storage*  storage;
 	Tier*     tier;
-	Encoding* encoding;
-} packed;
+};
 
 static inline void
 id_init(Id* self)
 {
 	memset(self, 0, sizeof(*self));
-}
-
-static inline void
-id_set(Id* self, int state)
-{
-	self->state |= state;
-}
-
-static inline void
-id_unset(Id* self, int state)
-{
-	self->state &= ~state;
-}
-
-static inline bool
-id_has(Id* self, int state)
-{
-	return (self->state & state) > 0;
 }
 
 static inline int

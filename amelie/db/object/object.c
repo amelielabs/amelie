@@ -13,7 +13,7 @@
 #include <amelie_runtime>
 #include <amelie_row.h>
 #include <amelie_transaction.h>
-#include <amelie_storage.h>
+#include <amelie_tier.h>
 #include <amelie_heap.h>
 #include <amelie_object.h>
 
@@ -101,7 +101,7 @@ object_read_index(Object* self)
 	Encoder encoder;
 	encoder_init(&encoder);
 	defer(encoder_free, &encoder);
-	encoder_open(&encoder, self->id.encoding);
+	encoder_open(&encoder, self->id.tier);
 	encoder_set_encryption(&encoder, meta->encryption);
 	encoder_set_compression(&encoder, meta->compression);
 

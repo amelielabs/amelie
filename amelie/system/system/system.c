@@ -134,14 +134,14 @@ system_on_server_connect(Server* server, Client* client)
 }
 
 static void
-deploy_if_attach_all(Deploy* self, PartMgr* part_mgr)
+deploy_if_attach_all(Deploy* self, Level* level)
 {
 	System* system = self->iface_arg;
-	if (part_mgr->parts_count > PART_MAPPING_MAX)
+	if (level->list_count > PART_MAPPING_MAX)
 		error("exceeded the maximum number of hash partitions per table");
 
 	// create pods on backends
-	backend_mgr_deploy_all(&system->backend_mgr, part_mgr);
+	backend_mgr_deploy_all(&system->backend_mgr, level);
 }
 
 static void
@@ -152,11 +152,11 @@ deploy_if_attach(Deploy* self, Part* part)
 }
 
 static void
-deploy_if_detach_all(Deploy* self, PartMgr* part_mgr)
+deploy_if_detach_all(Deploy* self, Level* level)
 {
 	// drop pods on backends
 	System* system = self->iface_arg;
-	backend_mgr_undeploy_all(&system->backend_mgr, part_mgr);
+	backend_mgr_undeploy_all(&system->backend_mgr, level);
 }
 
 static void

@@ -13,16 +13,14 @@
 #include <amelie_runtime>
 #include <amelie_row.h>
 #include <amelie_transaction.h>
-#include <amelie_storage.h>
+#include <amelie_tier.h>
 #include <amelie_heap.h>
 #include <amelie_index.h>
 #include <amelie_object.h>
-#include <amelie_tier.h>
-#include <amelie_partition.h>
+#include <amelie_engine.h>
 
 Part*
-part_allocate(TierMgr*  tier_mgr,
-              Id*       id,
+part_allocate(Id*       id,
               Sequence* seq,
               bool      unlogged)
 {
@@ -32,7 +30,6 @@ part_allocate(TierMgr*  tier_mgr,
 	self->indexes_count = 0;
 	self->heap          = heap_allocate();
 	self->heap_shadow   = NULL;
-	self->tier_mgr      = tier_mgr;
 	self->seq           = seq;
 	self->unlogged      = unlogged;
 	track_init(&self->track);
@@ -81,7 +78,7 @@ part_open(Part* self)
 	auto id = &self->id;
 	info("recover: %s/%s/%05" PRIu64 ".ram (%.2f MiB, %" PRIu64 " rows)",
 	     id->storage->config->name.pos,
-	     id->tier->config->name.pos,
+	     id->tier->name.pos,
 	     id->id,
 	     total, count);
 }
@@ -166,7 +163,7 @@ part_status(Part* self, Buf* buf, bool extended)
 
 	// tier
 	encode_raw(buf, "tier", 4);
-	encode_string(buf, &self->id.tier->config->name);
+	encode_string(buf, &self->id.tier->name);
 
 	// tier
 	encode_raw(buf, "storage", 7);

@@ -60,9 +60,9 @@ meta_writer_started(MetaWriter* self)
 }
 
 static inline void
-meta_writer_open(MetaWriter* self, Encoding* encoding)
+meta_writer_open(MetaWriter* self, Tier* tier)
 {
-	encoder_open(&self->encoder, encoding);
+	encoder_open(&self->encoder, tier);
 }
 
 static inline void

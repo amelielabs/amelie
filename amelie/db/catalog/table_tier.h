@@ -11,5 +11,4 @@
 // AGPL-3.0 Licensed.
 //
 
-void part_mgr_recover(PartMgr*, List*);
-void part_mgr_deploy(PartMgr*, int);
+Buf* table_tier_list(Table*, Str*, bool);

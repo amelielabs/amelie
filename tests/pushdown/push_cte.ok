@@ -118,7 +118,7 @@ explain with a as (select * from test) select * from a;
   "access": [["test", "shared"]]
 }]
 with a as (select * from test) select * from a;
-[2, 1, 3]
+[1, 3, 2]
 drop table test;
 # test: with(select * from table), select column from cte
 create table test (id int primary key);
@@ -188,7 +188,7 @@ explain with a as (select * from test) select a.id from a;
   "access": [["test", "shared"]]
 }]
 with a as (select * from test) select a.id from a;
-[2, 1, 3]
+[1, 3, 2]
 drop table test;
 # test: with(select column from table), select column from cte
 create table test (id int primary key);
@@ -260,7 +260,7 @@ explain with a as (select id as x from test) select x from a;
   "access": [["test", "shared"]]
 }]
 with a as (select id as x from test) select x from a;
-[2, 1, 3]
+[1, 3, 2]
 drop table test;
 # test: with(select column, column from table), select * from cte (conflict)
 create table test (id int primary key);
@@ -268,13 +268,13 @@ insert into test values (1),(2),(3);
 with a as (select id, id from test) select * from a;
 {"msg": "with a as (select id, id from test) select ❰*❱ ⟵ column name a.id is ambiguous"}
 with a as (select id, id as x from test) select * from a;
-[[2, 2], [1, 1], [3, 3]]
+[[1, 1], [3, 3], [2, 2]]
 drop table test;
 # test: with(select * from table), select * from cte
 create table test (id int primary key);
 insert into test values (1),(2),(3);
 with a as (select * from test) select * from a;
-[2, 1, 3]
+[1, 3, 2]
 explain with a as (select * from test) select * from a;
 [{
   "main": {
@@ -344,7 +344,7 @@ drop table test;
 create table test (id int primary key);
 insert into test values (1),(2),(3);
 with a as (select * from test) select * from test;
-[2, 1, 3]
+[1, 3, 2]
 explain with a as (select * from test) select * from test;
 [{
   "main": {
@@ -441,7 +441,7 @@ explain with a as (select [4,5,6]) select test.*, a.* from test, a;
   "access": [["test", "shared"]]
 }]
 with a as (select [4,5,6]) select test.*, a.* from test, a;
-[[2, 4], [2, 5], [2, 6], [1, 4], [1, 5], [1, 6], [3, 4], [3, 5], [3, 6]]
+[[1, 4], [1, 5], [1, 6], [3, 4], [3, 5], [3, 6], [2, 4], [2, 5], [2, 6]]
 drop table test;
 # test: with(select * from table), select from table join
 create table test (id int primary key);
@@ -488,7 +488,7 @@ explain with a as (select * from test) select test.* from test join a on test.id
   "access": [["test", "shared"]]
 }]
 with a as (select * from test) select test.* from test join a on test.id = a.id;
-[2, 1, 3]
+[1, 3, 2]
 drop table test;
 # test: with(select string from table), select from table join
 create table test (id int primary key, data string);
@@ -629,7 +629,7 @@ drop table test;
 create table test (id int primary key);
 insert into test values (1),(2),(3);
 with a as (select * from test), b as (select [1,2,3]), c as (select * from a) select * from c;
-[2, 1, 3]
+[1, 3, 2]
 explain with a as (select * from test), b as (select [1,2,3]), c as (select * from a) select * from c;
 [{
   "main": {
@@ -761,7 +761,7 @@ drop table test;
 create table test (id int primary key);
 insert into test values (1),(2),(3);
 with a as (select * from test), b as (select * from test), c as (select [1,2,3]), d as (select * from test) select * from d;
-[2, 1, 3]
+[1, 3, 2]
 explain with a as (select * from test), b as (select * from test), c as (select [1,2,3]), d as (select * from test) select * from d;
 [{
   "main": {
@@ -815,7 +815,7 @@ drop table test;
 create table test (id int primary key);
 insert into test values (1),(2),(3);
 with a as (select [1,2,3]), b as (select * from test), c as (select [1,2,3]) select b.*, c.* from b,c;
-[[2, 1], [2, 2], [2, 3], [1, 1], [1, 2], [1, 3], [3, 1], [3, 2], [3, 3]]
+[[1, 1], [1, 2], [1, 3], [3, 1], [3, 2], [3, 3], [2, 1], [2, 2], [2, 3]]
 explain with a as (select [1,2,3]), b as (select * from test), c as (select [1,2,3]) select b.*, c.* from b,c;
 [{
   "main": {
@@ -858,7 +858,7 @@ drop table test;
 create table test (id int primary key);
 insert into test values (1),(2),(3);
 with a as (select [1,2,3]), b as (select * from test), c as (select * from test) select * from c;
-[2, 1, 3]
+[1, 3, 2]
 explain with a as (select [1,2,3]), b as (select * from test), c as (select * from test) select * from c;
 [{
   "main": {
@@ -957,7 +957,7 @@ drop table test;
 create table test (id int primary key);
 insert into test values (1),(2),(3);
 with a as (select * from test), b as (select * from a), c as (select * from test) select * from c;
-[2, 1, 3]
+[1, 3, 2]
 explain with a as (select * from test), b as (select * from a), c as (select * from test) select * from c;
 [{
   "main": {
@@ -1069,7 +1069,7 @@ insert into test values (0, 0);
 insert into test values (1, 0);
 insert into test values (2, 0);
 with a as (update test set data = data + 1 returning *) select * from a;
-[[2, 1], [0, 1], [1, 1]]
+[[0, 1], [1, 1], [2, 1]]
 explain with a as (update test set data = data + 1 returning *) select * from a;
 [{
   "main": {

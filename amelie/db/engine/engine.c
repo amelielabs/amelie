@@ -13,81 +13,94 @@
 #include <amelie_runtime>
 #include <amelie_row.h>
 #include <amelie_transaction.h>
-#include <amelie_storage.h>
+#include <amelie_tier.h>
 #include <amelie_heap.h>
 #include <amelie_index.h>
 #include <amelie_object.h>
-#include <amelie_tier.h>
-#include <amelie_partition.h>
+#include <amelie_engine.h>
 
 void
-part_mgr_init(PartMgr*  self,
-              TierMgr*  tier_mgr,
-              Sequence* seq,
-              bool      unlogged,
-              Keys*     keys)
+engine_init(Engine*     self,
+            StorageMgr* storage_mgr,
+            Uuid*       id_table,
+            Sequence*   seq,
+            bool        unlogged,
+            Keys*       keys)
 {
-	self->parts_count = 0;
-	self->seq         = seq;
-	self->unlogged    = unlogged;
-	self->tier_mgr    = tier_mgr;
+	self->storage_mgr  = storage_mgr;
+	self->levels       = NULL;
+	self->levels_count = 0;
+	self->id_table     = id_table;
+	self->seq          = seq;
+	self->unlogged     = unlogged;
 	part_mapping_init(&self->mapping, keys);
-	list_init(&self->parts);
 }
 
 void
-part_mgr_free(PartMgr* self)
+engine_free(Engine* self)
 {
-	list_foreach_safe(&self->parts)
+	auto level = self->levels;
+	while (level)
 	{
-		auto part = list_at(Part, link);
-		part_free(part);
+		auto next = level->next;
+		level_free(level);
+		level = next;
 	}
-	self->parts_count = 0;
-	list_init(&self->parts);
 	part_mapping_free(&self->mapping);
 }
 
 void
-part_mgr_open(PartMgr* self, List* indexes)
+engine_open(Engine* self, List* tiers, List* indexes, int count)
 {
-	// read partitions
-	part_mgr_recover(self, indexes);
-}
+	// create levels
+	Level* last = NULL;
+	list_foreach(tiers)
+	{
+		auto tier = list_at(Tier, link);
+		auto level = level_allocate(tier, self->mapping.keys);
+		if (last)
+			last->next = level;
+		else
+			self->levels = level;
+		last = level;
+		self->levels_count++;
+	}
 
-void
-part_mgr_add(PartMgr* self, Part* part)
-{
-	list_init(&part->link);
-	list_append(&self->parts, &part->link);
-	self->parts_count++;
-}
+	// recover files
+	engine_recover(self, count);
 
-void
-part_mgr_remove(PartMgr* self, Part* part)
-{
-	list_unlink(&part->link);
-	self->parts_count--;
-}
-
-void
-part_mgr_map(PartMgr* self)
-{
-	// add partition mapping
-	list_foreach(&self->parts)
+	// create indexes
+	list_foreach(&self->levels->list)
 	{
 		auto part = list_at(Part, link);
+		list_foreach(indexes)
+		{
+			auto config = list_at(IndexConfig, link);
+			part_index_add(part, config);
+		}
+	}
+}
+
+void
+engine_map(Engine* self)
+{
+	// map hash partitions
+	list_foreach(&self->levels->list)
+	{
+		auto part = list_at(Part, link);
+
+		// map hash partitions
 		part_mapping_add(&self->mapping, part);
 
-		// set object metrics
+		// update metrics
 		track_lsn_set(&part->track, part->heap->header->lsn);
 	}
 }
 
 void
-part_mgr_truncate(PartMgr* self)
+engine_truncate(Engine* self)
 {
-	list_foreach(&self->parts)
+	list_foreach(&self->levels->list)
 	{
 		auto part = list_at(Part, link);
 		part_truncate(part);
@@ -95,9 +108,9 @@ part_mgr_truncate(PartMgr* self)
 }
 
 void
-part_mgr_index_add(PartMgr* self, IndexConfig* config)
+engine_index_add(Engine* self, IndexConfig* config)
 {
-	list_foreach(&self->parts)
+	list_foreach(&self->levels->list)
 	{
 		auto part = list_at(Part, link);
 		part_index_add(part, config);
@@ -105,9 +118,9 @@ part_mgr_index_add(PartMgr* self, IndexConfig* config)
 }
 
 void
-part_mgr_index_remove(PartMgr* self, Str* name)
+engine_index_remove(Engine* self, Str* name)
 {
-	list_foreach(&self->parts)
+	list_foreach(&self->levels->list)
 	{
 		auto part = list_at(Part, link);
 		part_index_drop(part, name);
@@ -115,10 +128,10 @@ part_mgr_index_remove(PartMgr* self, Str* name)
 }
 
 void
-part_mgr_set_unlogged(PartMgr* self, bool value)
+engine_set_unlogged(Engine* self, bool value)
 {
 	self->unlogged = value;
-	list_foreach(&self->parts)
+	list_foreach(&self->levels->list)
 	{
 		auto part = list_at(Part, link);
 		part->unlogged = value;
@@ -126,9 +139,9 @@ part_mgr_set_unlogged(PartMgr* self, bool value)
 }
 
 Part*
-part_mgr_find(PartMgr* self, uint64_t id)
+engine_find(Engine* self, uint64_t id)
 {
-	list_foreach(&self->parts)
+	list_foreach(&self->levels->list)
 	{
 		auto part = list_at(Part, link);
 		if (part->id.id == id)
@@ -138,7 +151,7 @@ part_mgr_find(PartMgr* self, uint64_t id)
 }
 
 Buf*
-part_mgr_status(PartMgr* self, Str* ref, bool extended)
+engine_status(Engine* self, Str* ref, bool extended)
 {
 	auto buf = buf_create();
 	errdefer_buf(buf);
@@ -150,7 +163,7 @@ part_mgr_status(PartMgr* self, Str* ref, bool extended)
 		if (str_toint(ref, &id) == -1)
 			error("invalid partition id");
 
-		auto part = part_mgr_find(self, id);
+		auto part = engine_find(self, id);
 		if (! part)
 			encode_null(buf);
 		else
@@ -160,7 +173,7 @@ part_mgr_status(PartMgr* self, Str* ref, bool extended)
 
 	// show partitions on table
 	encode_array(buf);
-	list_foreach(&self->parts)
+	list_foreach(&self->levels->list)
 	{
 		auto part = list_at(Part, link);
 		part_status(part, buf, extended);
@@ -170,11 +183,11 @@ part_mgr_status(PartMgr* self, Str* ref, bool extended)
 }
 
 Iterator*
-part_mgr_iterator(PartMgr*     self,
-                  Part*        part,
-                  IndexConfig* config,
-                  bool         point_lookup,
-                  Row*         key)
+engine_iterator(Engine*      self,
+                Part*        part,
+                IndexConfig* config,
+                bool         point_lookup,
+                Row*         key)
 {
 	// single partition iteration
 	if (part)
@@ -199,7 +212,7 @@ part_mgr_iterator(PartMgr*     self,
 	// merge all tree partitions (without key, ordered)
 	// merge all tree partitions (with key, ordered)
 	Iterator* it = NULL;
-	list_foreach(&self->parts)
+	list_foreach(&self->levels->list)
 	{
 		auto part = list_at(Part, link);
 		auto index = part_index_find(part, &config->name, true);

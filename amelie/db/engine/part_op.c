@@ -13,12 +13,11 @@
 #include <amelie_runtime>
 #include <amelie_row.h>
 #include <amelie_transaction.h>
-#include <amelie_storage.h>
+#include <amelie_tier.h>
 #include <amelie_heap.h>
 #include <amelie_index.h>
 #include <amelie_object.h>
-#include <amelie_tier.h>
-#include <amelie_partition.h>
+#include <amelie_engine.h>
 
 static Row*
 log_if_rollback(Log* self, LogOp* op)
@@ -206,7 +205,7 @@ part_delete(Part* self, Tr* tr, Iterator* it)
 {
 	// handle deletes as updates for non in-memory partitions and
 	// during compaction
-	if (heap_snapshot_has(self->heap) || self->tier_mgr->tiers_count > 1)
+	if (heap_snapshot_has(self->heap))
 	{
 		auto row = iterator_at(it);
 		auto row_delete = row_copy(self->heap, row);

@@ -11,8 +11,17 @@
 // AGPL-3.0 Licensed.
 //
 
+// storage
+#include "tier/storage_config.h"
+#include "tier/storage.h"
+#include "tier/storage_mgr.h"
+
+// file id
+#include "tier/id.h"
+
 // tier
 #include "tier/tier_storage.h"
-#include "tier/tier_config.h"
 #include "tier/tier.h"
-#include "tier/tier_mgr.h"
+
+// encoding
+#include "tier/encoder.h"

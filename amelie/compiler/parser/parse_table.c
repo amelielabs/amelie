@@ -412,20 +412,20 @@ parse_table_create(Stmt* self, bool unlogged)
 	table_config_set_id(config, &id);
 
 	// create main tier config
-	auto config_tier = tier_config_allocate();
-	stmt->config_tier = config_tier;
-	table_config_tier_add(config, config_tier);
+	auto tier = tier_allocate();
+	stmt->tier = tier;
+	table_config_tier_add(config, tier);
 	Str tier_name;
 	str_set_cstr(&tier_name, "main");
-	tier_config_set_name(config_tier, &tier_name);
+	tier_set_name(tier, &tier_name);
 	uuid_init(&id);
 	uuid_generate(&id, &runtime()->random);
-	tier_config_set_id(config_tier, &id);
+	tier_set_id(tier, &id);
 
 	// create main tier storage (use main storage)
 	auto tier_storage = tier_storage_allocate();
 	tier_storage_set_name(tier_storage, &tier_name);
-	tier_config_storage_add(config_tier, tier_storage);
+	tier_storage_add(tier, tier_storage);
 
 	// create primary index config
 	auto config_index = index_config_allocate(&config->columns);

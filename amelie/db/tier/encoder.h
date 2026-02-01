@@ -15,12 +15,12 @@ typedef struct Encoder Encoder;
 
 struct Encoder
 {
-	Iov       iov;
-	Codec*    compression;
-	Buf       compression_buf;
-	Codec*    encryption;
-	Buf       encryption_buf;
-	Encoding* encoding;
+	Iov    iov;
+	Codec* compression;
+	Buf    compression_buf;
+	Codec* encryption;
+	Buf    encryption_buf;
+	Tier*  tier;
 };
 
 static inline bool
@@ -34,7 +34,7 @@ encoder_init(Encoder* self)
 {
 	self->compression = NULL;
 	self->encryption  = NULL;
-	self->encoding    = NULL;
+	self->tier        = NULL;
 	iov_init(&self->iov);
 	buf_init(&self->compression_buf);
 	buf_init(&self->encryption_buf);
@@ -51,7 +51,7 @@ encoder_reset(Encoder* self)
 static inline void
 encoder_free(Encoder* self)
 {
-	self->encoding = NULL;
+	self->tier = NULL;
 	if (self->compression)
 	{
 		codec_cache_push(&runtime()->cache_compression, self->compression);
@@ -117,36 +117,36 @@ encoder_set_encryption(Encoder* self, int id)
 	if (id == CIPHER_NONE)
 		return;
 	self->encryption = cipher_create(&runtime()->cache_cipher, id, &runtime()->random,
-	                                  self->encoding->encryption_key);
+	                                 &self->tier->encryption_key);
 	if (! self->encryption)
 		error("object: invalid encryption id '%d'", id);
 }
 
 static inline void
-encoder_open(Encoder* self, Encoding* encoding)
+encoder_open(Encoder* self, Tier* tier)
 {
-	self->encoding = encoding;
+	self->tier = tier;
 
 	// set compression context
 	int id;
-	if (encoding->compression)
+	if (! str_empty(&tier->compression))
 	{
-		id = compression_idof(encoding->compression);
+		auto name = &tier->compression;
+		id = compression_idof(name);
 		if (id == -1)
-			error("invalid compression '%.*s'", str_size(encoding->compression),
-			      str_of(encoding->compression));
+			error("invalid compression '%.*s'", str_size(name), str_of(name));
 	} else {
 		id = COMPRESSION_NONE;
 	}
 	encoder_set_compression(self, id);
 
 	// set encryption context
-	if (encoding->encryption)
+	if (! str_empty(&tier->encryption))
 	{
-		auto id = cipher_idof(encoding->encryption);
+		auto name = &tier->compression;
+		auto id = cipher_idof(name);
 		if (id == -1)
-			error("invalid encryption '%.*s'", str_size(encoding->encryption),
-			      str_of(encoding->encryption));
+			error("invalid encryption '%.*s'", str_size(name), str_of(name));
 	} else {
 		id = CIPHER_NONE;
 	}

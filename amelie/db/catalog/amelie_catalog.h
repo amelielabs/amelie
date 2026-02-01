@@ -30,6 +30,7 @@
 #include "catalog/table_mgr.h"
 #include "catalog/table_mgr_alter.h"
 #include "catalog/table_index.h"
+#include "catalog/table_tier.h"
 
 // udf
 #include "catalog/udf_config.h"

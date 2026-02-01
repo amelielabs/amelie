@@ -21,13 +21,12 @@ struct Part
 	Track     track;
 	Heap*     heap;
 	Heap*     heap_shadow;
-	TierMgr*  tier_mgr;
 	Sequence* seq;
 	bool      unlogged;
 	List      link;
 };
 
-Part*  part_allocate(TierMgr*, Id*, Sequence*, bool);
+Part*  part_allocate(Id*, Sequence*, bool);
 void   part_free(Part*);
 void   part_open(Part*);
 void   part_truncate(Part*);

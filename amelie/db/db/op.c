@@ -13,12 +13,11 @@
 #include <amelie_runtime>
 #include <amelie_row.h>
 #include <amelie_transaction.h>
-#include <amelie_storage.h>
+#include <amelie_tier.h>
 #include <amelie_heap.h>
 #include <amelie_index.h>
 #include <amelie_object.h>
-#include <amelie_tier.h>
-#include <amelie_partition.h>
+#include <amelie_engine.h>
 #include <amelie_catalog.h>
 #include <amelie_wal.h>
 #include <amelie_db.h>
@@ -45,7 +44,7 @@ db_pending(Db* self)
 		auto table = table_of(list_at(Relation, link));
 		lock(lock_mgr, &table->rel, LOCK_SHARED);
 
-		list_foreach(&table->part_mgr.parts)
+		list_foreach(&table->engine.levels->list)
 		{
 			auto part = list_at(Part, link);
 			if (part_has_updates(part))
@@ -122,7 +121,7 @@ db_gc(Db* self)
 		auto table = table_of(list_at(Relation, link));
 		lock(lock_mgr, &table->rel, LOCK_SHARED);
 
-		list_foreach(&table->part_mgr.parts)
+		list_foreach(&table->engine.levels->list)
 		{
 			auto part = list_at(Part, link);
 			auto object_lsn = part->heap->header->lsn;

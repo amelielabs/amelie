@@ -16,9 +16,9 @@ typedef struct Deploy   Deploy;
 
 struct DeployIf
 {
-	void (*attach_all)(Deploy*, PartMgr*);
+	void (*attach_all)(Deploy*, Level*);
 	void (*attach)(Deploy*, Part*);
-	void (*detach_all)(Deploy*, PartMgr*);
+	void (*detach_all)(Deploy*, Level*);
 	void (*detach)(Deploy*, Part*);
 };
 
@@ -36,9 +36,9 @@ deploy_init(Deploy* self, DeployIf* iface, void* iface_arg)
 }
 
 static inline void
-deploy_attach_all(Deploy* self, PartMgr* mgr)
+deploy_attach_all(Deploy* self, Level* level)
 {
-	self->iface->attach_all(self, mgr);
+	self->iface->attach_all(self, level);
 }
 
 static inline void
@@ -48,9 +48,9 @@ deploy_attach(Deploy* self, Part* part)
 }
 
 static inline void
-deploy_detach_all(Deploy* self, PartMgr* mgr)
+deploy_detach_all(Deploy* self, Level* level)
 {
-	self->iface->detach_all(self, mgr);
+	self->iface->detach_all(self, level);
 }
 
 static inline void

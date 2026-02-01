@@ -164,7 +164,7 @@ csend_all(Vm* self, Op* op)
 		dispatch_set_close(dispatch);
 
 	// send to all table backends
-	list_foreach(&table->part_mgr.parts)
+	list_foreach(&table->engine.levels->list)
 	{
 		auto part = list_at(Part, link);
 		auto req = dispatch_add(dispatch, &dispatch_mgr->cache_req,
@@ -407,7 +407,7 @@ ctable_open(Vm* self, Op* op, bool point_lookup, bool open_part)
 		cursor->part = self->part;
 	else
 		cursor->part = NULL;
-	cursor->cursor = part_mgr_iterator(&table->part_mgr, cursor->part, index, point_lookup, key_ref);
+	cursor->cursor = engine_iterator(&table->engine, cursor->part, index, point_lookup, key_ref);
 	cursor->table  = table;
 	cursor->type   = TYPE_CURSOR;
 

@@ -291,25 +291,25 @@ fn_show(Fn* self)
 	case SHOW_TIERS:
 	{
 		auto table = table_mgr_find(&catalog->table_mgr, db, on, true);
-		buf = tier_mgr_status(&table->tier_mgr, NULL, extended);
+		buf = table_tier_list(table, NULL, extended);
 		break;
 	}
 	case SHOW_TIER:
 	{
 		auto table = table_mgr_find(&catalog->table_mgr, db, on, true);
-		buf = tier_mgr_status(&table->tier_mgr, name, extended);
+		buf = table_tier_list(table, name, extended);
 		break;
 	}
 	case SHOW_PARTITIONS:
 	{
 		auto table = table_mgr_find(&catalog->table_mgr, db, on, true);
-		buf = part_mgr_status(&table->part_mgr, NULL, extended);
+		buf = engine_status(&table->engine, NULL, extended);
 		break;
 	}
 	case SHOW_PARTITION:
 	{
 		auto table = table_mgr_find(&catalog->table_mgr, db, on, true);
-		buf = part_mgr_status(&table->part_mgr, name, extended);
+		buf = engine_status(&table->engine, name, extended);
 		break;
 	}
 	case SHOW_FUNCTIONS:

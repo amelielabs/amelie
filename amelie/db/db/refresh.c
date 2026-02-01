@@ -13,12 +13,11 @@
 #include <amelie_runtime>
 #include <amelie_row.h>
 #include <amelie_transaction.h>
-#include <amelie_storage.h>
+#include <amelie_tier.h>
 #include <amelie_heap.h>
 #include <amelie_index.h>
 #include <amelie_object.h>
-#include <amelie_tier.h>
-#include <amelie_partition.h>
+#include <amelie_engine.h>
 #include <amelie_catalog.h>
 #include <amelie_wal.h>
 #include <amelie_db.h>
@@ -41,7 +40,7 @@ refresh_begin(Refresh* self, Uuid* id_table, uint64_t id)
 	lock(&db->lock_mgr, &table->rel, LOCK_EXCLUSIVE);
 
 	// find partition by id
-	auto origin = part_mgr_find(&table->part_mgr, id);
+	auto origin = engine_find(&table->engine, id);
 	if (! origin)
 	{
 		unlock(&db->lock_mgr, &table->rel, LOCK_EXCLUSIVE);
@@ -84,7 +83,7 @@ refresh_snapshot_job(intptr_t* argv)
 	auto total = (double)page_mgr_used(&heap->page_mgr) / 1024 / 1024;
 	info("checkpoint: %s/%s/%05" PRIu64 ".ram (%.2f MiB)",
 	     id->storage->config->name.pos,
-	     id->tier->config->name.pos,
+	     id->tier->name.pos,
 	     id->id,
 	     total);
 }

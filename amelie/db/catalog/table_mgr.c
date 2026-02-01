@@ -13,12 +13,11 @@
 #include <amelie_runtime>
 #include <amelie_row.h>
 #include <amelie_transaction.h>
-#include <amelie_storage.h>
+#include <amelie_tier.h>
 #include <amelie_heap.h>
 #include <amelie_index.h>
 #include <amelie_object.h>
-#include <amelie_tier.h>
-#include <amelie_partition.h>
+#include <amelie_engine.h>
 #include <amelie_catalog.h>
 
 void
@@ -91,7 +90,7 @@ truncate_if_commit(Log* self, LogOp* op)
 	auto relation = log_relation_of(self, op);
 	auto table = table_of(relation->relation);
 	// truncate all partitions
-	part_mgr_truncate(&table->part_mgr);
+	engine_truncate(&table->engine);
 }
 
 static void

@@ -215,7 +215,7 @@ insert into test values (0, [1,2,3]);
 insert into test values (1, [4,5,6]);
 insert into test values (2, [7,8,9]);
 select id, (select 0 -> self + value::int from (test.data) value) from test;
-[[2, 24], [0, 6], [1, 15]]
+[[0, 6], [1, 15], [2, 24]]
 drop table test;
 disconnect S0;
 close E0;

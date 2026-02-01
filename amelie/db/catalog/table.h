@@ -16,8 +16,7 @@ typedef struct Table Table;
 struct Table
 {
 	Relation     rel;
-	PartMgr      part_mgr;
-	TierMgr      tier_mgr;
+	Engine       engine;
 	Deploy*      deploy;
 	Sequence     seq;
 	TableConfig* config;
@@ -44,9 +43,8 @@ table_keys(Table* self)
 static inline void
 table_free(Table* self)
 {
-	deploy_detach_all(self->deploy, &self->part_mgr);
-	part_mgr_free(&self->part_mgr);
-	tier_mgr_free(&self->tier_mgr);
+	deploy_detach_all(self->deploy, self->engine.levels);
+	engine_free(&self->engine);
 	sequence_free(&self->seq);
 	if (self->config)
 		table_config_free(self->config);
@@ -61,10 +59,9 @@ table_allocate(TableConfig* config, StorageMgr* storage_mgr, Deploy* deploy)
 	self->deploy = deploy;
 	sequence_init(&self->seq);
 	auto primary = table_primary(self);
-	tier_mgr_init(&self->tier_mgr, storage_mgr, &self->config->id);
-	part_mgr_init(&self->part_mgr, &self->tier_mgr, &self->seq,
-	              self->config->unlogged,
-	              &primary->keys);
+	engine_init(&self->engine, storage_mgr, &self->config->id,
+	            &self->seq, self->config->unlogged,
+	            &primary->keys);
 
 	relation_init(&self->rel);
 	relation_set_db(&self->rel, &self->config->db);
@@ -76,28 +73,30 @@ table_allocate(TableConfig* config, StorageMgr* storage_mgr, Deploy* deploy)
 static inline void
 table_open(Table* self)
 {
-	// recover tiers and objects
-	auto bootstrap = tier_mgr_open(&self->tier_mgr, &self->config->tiers);
+	// resolve tiers storages
+	list_foreach(&self->config->tiers)
+	{
+		auto tier = list_at(Tier, link);
+		tier_resolve(tier, self->engine.storage_mgr);
+	}
 
-	// create partitions on bootstrap
-	if (bootstrap)
-		part_mgr_deploy(&self->part_mgr, self->config->partitions);
-
-	// recover hash partitions
-	part_mgr_open(&self->part_mgr, &self->config->indexes);
+	// recover partitions
+	auto config = self->config;
+	engine_open(&self->engine, &config->tiers, &config->indexes,
+	            config->partitions);
 
 	// create pods and load heaps
-	deploy_attach_all(self->deploy, &self->part_mgr);
+	deploy_attach_all(self->deploy, self->engine.levels);
 
 	// map hash partitions
-	part_mgr_map(&self->part_mgr);
+	engine_map(&self->engine);
 }
 
 static inline void
 table_set_unlogged(Table* self, bool value)
 {
 	table_config_set_unlogged(self->config, value);
-	part_mgr_set_unlogged(&self->part_mgr, value);
+	engine_set_unlogged(&self->engine, value);
 }
 
 static inline Table*

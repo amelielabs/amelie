@@ -13,7 +13,7 @@
 #include <amelie_runtime>
 #include <amelie_row.h>
 #include <amelie_transaction.h>
-#include <amelie_storage.h>
+#include <amelie_tier.h>
 #include <amelie_heap.h>
 
 void
@@ -23,7 +23,7 @@ heap_create(Heap* self, File* file, Id* id, int state)
 	Encoder ec;
 	encoder_init(&ec);
 	defer(encoder_free, &ec);
-	encoder_open(&ec, id->encoding);
+	encoder_open(&ec, id->tier);
 
 	// prepare header (including buckets)
 	auto size = sizeof(HeapHeader) + sizeof(HeapBucket) * 385;
@@ -99,7 +99,7 @@ heap_open(Heap* self, Id* id, int state)
 	Encoder ec;
 	encoder_init(&ec);
 	defer(encoder_free, &ec);
-	encoder_open(&ec, id->encoding);
+	encoder_open(&ec, id->tier);
 	encoder_set_encryption(&ec, header->encryption);
 	encoder_set_compression(&ec, header->compression);
 

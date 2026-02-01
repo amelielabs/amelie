@@ -59,8 +59,8 @@ table_config_free(TableConfig* self)
 
 	list_foreach_safe(&self->tiers)
 	{
-		auto config = list_at(TierConfig, link);
-		tier_config_free(config);
+		auto tier = list_at(Tier, link);
+		tier_free(tier);
 	}
 
 	columns_free(&self->columns);
@@ -114,9 +114,9 @@ table_config_index_remove(TableConfig* self, IndexConfig* config)
 }
 
 static inline void
-table_config_tier_add(TableConfig* self, TierConfig* config)
+table_config_tier_add(TableConfig* self, Tier* tier)
 {
-	list_append(&self->tiers, &config->link);
+	list_append(&self->tiers, &tier->link);
 	self->tiers_count++;
 }
 
@@ -144,9 +144,9 @@ table_config_copy(TableConfig* self)
 
 	list_foreach(&self->tiers)
 	{
-		auto config = list_at(TierConfig, link);
-		auto config_copy = tier_config_copy(config);
-		table_config_tier_add(copy, config_copy);
+		auto tier = list_at(Tier, link);
+		auto tier_dup = tier_copy(tier);
+		table_config_tier_add(copy, tier_dup);
 	}
 	return copy;
 }
@@ -189,8 +189,8 @@ table_config_read(uint8_t** pos)
 	json_read_array(&pos_tiers);
 	while (! json_read_array_end(&pos_tiers))
 	{
-		auto config = tier_config_read(&pos_tiers);
-		table_config_tier_add(self, config);
+		auto tier = tier_read(&pos_tiers);
+		table_config_tier_add(self, tier);
 	}
 	return self;
 }
@@ -240,8 +240,8 @@ table_config_write(TableConfig* self, Buf* buf, bool safe)
 	encode_array(buf);
 	list_foreach(&self->tiers)
 	{
-		auto config = list_at(TierConfig, link);
-		tier_config_write(config, buf, safe);
+		auto tier = list_at(Tier, link);
+		tier_write(tier, buf, safe);
 	}
 	encode_array_end(buf);
 	encode_obj_end(buf);

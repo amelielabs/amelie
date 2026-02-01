@@ -33,7 +33,7 @@ replay_read(Dtr* dtr, Dispatch* dispatch, Record* record)
 	{
 		// match partition
 		auto table = table_mgr_find_by(&db->catalog.table_mgr, &cmd->id, true);
-		auto part  = part_mapping_map(&table->part_mgr.mapping, (Row*)pos);
+		auto part  = part_mapping_map(&table->engine.mapping, (Row*)pos);
 		if (! part)
 			error("replay: failed to find partition");
 

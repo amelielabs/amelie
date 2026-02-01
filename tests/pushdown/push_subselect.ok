@@ -127,7 +127,7 @@ explain select * from (select * from test) t;
   "access": [["test", "shared"]]
 }]
 select * from (select * from test) t;
-[[2, 0], [1, 0], [3, 0]]
+[[1, 0], [3, 0], [2, 0]]
 # test: select from (select (select from table) from table)
 create table test2 (id int primary key);
 insert into test2 (id) values (1), (2), (3);
@@ -213,7 +213,7 @@ select * from (select (select id from test t) from test) g;
 select (select t.*) from (select * from test) t;
 {"msg": "select (❰select❱ ⟵ subquery must return only one column"}
 select (select t.id) from (select * from test) t;
-[2, 1, 3]
+[1, 3, 2]
 # test: select (select from table) from (select from table)
 create table test2 (id int primary key);
 insert into test2 (id) values (1), (2), (3);
@@ -256,7 +256,7 @@ explain select (select t.id from test2) from (select * from test) t;
   "access": [["test2", "exclusive_ro"], ["test", "shared"]]
 }]
 select (select t.id from test2) from (select * from test) t;
-[2, 1, 3]
+[1, 3, 2]
 drop table test2;
 # test: select (select from table) from (select from table)
 explain select (select t.id from test z) from (select * from test) t;
@@ -298,10 +298,10 @@ explain select (select t.id from test z) from (select * from test) t;
   "access": [["test", "exclusive_ro"]]
 }]
 select (select t.id from test z) from (select * from test) t;
-[2, 1, 3]
+[1, 3, 2]
 # test: select from (select from table), (select from table)
 select * from (select id from test) a, (select * from test) b;
-[[2, 2, 0], [2, 1, 0], [2, 3, 0], [1, 2, 0], [1, 1, 0], [1, 3, 0], [3, 2, 0], [3, 1, 0], [3, 3, 0]]
+[[1, 1, 0], [1, 3, 0], [1, 2, 0], [3, 1, 0], [3, 3, 0], [3, 2, 0], [2, 1, 0], [2, 3, 0], [2, 2, 0]]
 explain select * from (select * from test) a, (select * from test) b;
 [{
   "main": {

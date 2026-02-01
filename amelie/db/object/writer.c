@@ -13,7 +13,7 @@
 #include <amelie_runtime>
 #include <amelie_row.h>
 #include <amelie_transaction.h>
-#include <amelie_storage.h>
+#include <amelie_tier.h>
 #include <amelie_heap.h>
 #include <amelie_object.h>
 
@@ -23,7 +23,7 @@ writer_allocate(void)
 	auto self = (Writer*)am_malloc(sizeof(Writer));
 	self->file        = NULL;
 	self->region_size = 0;
-	self->encoding    = NULL;
+	self->tier        = NULL;
 	self->storage     = NULL;
 	self->next        = NULL;
 	region_writer_init(&self->region_writer);
@@ -45,7 +45,7 @@ writer_reset(Writer* self)
 {
 	self->file        = NULL;
 	self->region_size = 0;
-	self->encoding    = NULL;
+	self->tier        = NULL;
 	self->storage     = NULL;
 	self->next        = NULL;
 	region_writer_reset(&self->region_writer);
@@ -89,15 +89,15 @@ writer_stop_region(Writer* self)
 void
 writer_start(Writer*   self, File* file,
              Storage*  storage,
-             Encoding* encoding, int region_size)
+             Tier*     tier, int region_size)
 {
 	self->file        = file;
 	self->storage     = storage;
 	self->region_size = region_size;
 
 	// set compression and encryption encoding
-	meta_writer_open(&self->meta_writer, encoding);
-	region_writer_open(&self->region_writer, encoding);
+	meta_writer_open(&self->meta_writer, tier);
+	region_writer_open(&self->region_writer, tier);
 
 	// start new meta data
 	meta_writer_reset(&self->meta_writer);

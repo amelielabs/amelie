@@ -19,7 +19,7 @@ struct Writer
 	int          region_size;
 	RegionWriter region_writer;
 	MetaWriter   meta_writer;
-	Encoding*    encoding;
+	Tier*        tier;
 	Storage*     storage;
 	Writer*      next;
 };
@@ -28,7 +28,7 @@ Writer*
 writer_allocate(void);
 void writer_free(Writer*);
 void writer_reset(Writer*);
-void writer_start(Writer*, File*, Storage*, Encoding*, int);
+void writer_start(Writer*, File*, Storage*, Tier*, int);
 void writer_stop(Writer*);
 void writer_add(Writer*, Row*);
 
