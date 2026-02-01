@@ -176,11 +176,61 @@ engine_create(Engine* self, int count)
 }
 
 static void
+engine_recover_gc(Engine* self, uint8_t* pos)
+{
+	// remove all existing partitions and their files
+	auto main = self->levels;
+	json_read_array(&pos);
+	while (! json_read_array_end(&pos))
+	{
+		int64_t id;
+		json_read_integer(&pos, &id);
+		auto part = engine_find(self, id);
+		if (! part)
+			continue;
+		id_delete(&part->id, ID_RAM);
+		level_remove(main, part);
+		part_free(part);
+	}
+}
+
+static void
 engine_recover_service(Engine* self, Service* service)
 {
-	(void)self;
-	(void)service;
-	// todo:
+	// read service file
+	service_open(service, ID_SERVICE);
+
+	// if any of the output files are missing (removed as incomplete before),
+	// then remove the rest of them
+	//
+	// case: crash after service file sync/rename
+	//
+	auto pos = service->output.start;
+	json_read_array(&pos);
+	while (! json_read_array_end(&pos))
+	{
+		int64_t id;
+		json_read_integer(&pos, &id);
+		auto part = engine_find(self, id);
+		if (part)
+			continue;
+		engine_recover_gc(self, service->output.start);
+		goto done;
+	}
+
+	// output files considered valid, remove all remaining
+	// input files
+	//
+	// case: crash after output files synced and renamed
+	//
+	engine_recover_gc(self, service->input.start);
+
+done:
+	// remove service file
+	id_delete(&service->id, ID_SERVICE);
+
+	// done
+	service_free(service);
 }
 
 void
@@ -197,9 +247,12 @@ engine_recover(Engine* self, int count)
 		engine_create(self, count);
 
 	// recover service files
-	list_foreach(&self->levels->list_service)
+	auto main = self->levels;
+	list_foreach_safe(&main->list_service)
 	{
 		auto service = list_at(Service, link);
 		engine_recover_service(self, service);
 	}
+	main->list_service_count = 0;
+	list_init(&main->list_service);
 }
