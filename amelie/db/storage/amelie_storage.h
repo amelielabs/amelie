@@ -12,16 +12,16 @@
 //
 
 // storage
-#include "tier/storage_config.h"
-#include "tier/storage.h"
-#include "tier/storage_mgr.h"
+#include "storage/storage_config.h"
+#include "storage/storage.h"
+#include "storage/storage_mgr.h"
 
 // file id
-#include "tier/id.h"
+#include "storage/id.h"
 
 // tier
-#include "tier/tier_storage.h"
-#include "tier/tier.h"
+#include "storage/tier_storage.h"
+#include "storage/tier.h"
 
 // encoding
-#include "tier/encoder.h"
+#include "storage/encoder.h"

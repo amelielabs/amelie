@@ -78,7 +78,7 @@ include_directories("${AMELIE_ROOT}/server/server")
 include_directories("${AMELIE_ROOT}/db")
 include_directories("${AMELIE_ROOT}/db/row")
 include_directories("${AMELIE_ROOT}/db/transaction")
-include_directories("${AMELIE_ROOT}/db/tier")
+include_directories("${AMELIE_ROOT}/db/storage")
 include_directories("${AMELIE_ROOT}/db/heap")
 include_directories("${AMELIE_ROOT}/db/index")
 include_directories("${AMELIE_ROOT}/db/object")
@@ -182,7 +182,7 @@ set(AMELIE_SOURCES_SERVER
 set(AMELIE_SOURCES_DB
     ${AMELIE_ROOT}/db/transaction/commit.c
     ${AMELIE_ROOT}/db/transaction/relation_mgr.c
-    ${AMELIE_ROOT}/db/tier/storage_mgr.c
+    ${AMELIE_ROOT}/db/storage/storage_mgr.c
     ${AMELIE_ROOT}/db/heap/heap.c
     ${AMELIE_ROOT}/db/heap/heap_file.c
     ${AMELIE_ROOT}/db/index/tree.c
