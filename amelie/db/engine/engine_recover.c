@@ -55,7 +55,7 @@ engine_recover_storage(Engine* self, Level* level, TierStorage* storage)
 		if (entry->d_name[0] == '.')
 			continue;
 
-		// <id>.type [.incomplete]
+		// <id>.type[.incomplete]
 		int64_t psn;
 		auto state = id_of(entry->d_name, &psn);
 		if (state == -1)
@@ -75,6 +75,19 @@ engine_recover_storage(Engine* self, Level* level, TierStorage* storage)
 			.tier     = level->tier
 		};
 		switch (state) {
+		case ID_SERVICE:
+		{
+			auto service = service_allocate();
+			service_set_id(service, &id);
+			level_add_service(level, service);
+			break;
+		}
+		case ID_SERVICE_INCOMPLETE:
+		{
+			// remove incomplete file
+			id_delete(&id, state);
+			break;
+		}
 		case ID_RAM:
 		{
 			auto part = part_allocate(&id, self->seq, self->unlogged);
@@ -162,13 +175,31 @@ engine_create(Engine* self, int count)
 	}
 }
 
+static void
+engine_recover_service(Engine* self, Service* service)
+{
+	(void)self;
+	(void)service;
+	// todo:
+}
+
 void
 engine_recover(Engine* self, int count)
 {
+	// read files
 	auto bootstrap = false;
 	for (auto level = self->levels; level; level = level->next)
 		if (engine_recover_level(self, level))
 			bootstrap = true;
+
+	// create initial partitions
 	if (bootstrap)
 		engine_create(self, count);
+
+	// recover service files
+	list_foreach(&self->levels->list_service)
+	{
+		auto service = list_at(Service, link);
+		engine_recover_service(self, service);
+	}
 }

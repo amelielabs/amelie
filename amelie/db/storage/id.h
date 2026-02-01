@@ -16,18 +16,20 @@ typedef struct Tier Tier;
 
 enum
 {
-	ID_NONE           = 0,
-	ID_RAM            = 1 << 0,
-	ID_RAM_INCOMPLETE = 1 << 1
+	ID_NONE,
+	ID_SERVICE,
+	ID_SERVICE_INCOMPLETE,
+	ID_RAM,
+	ID_RAM_INCOMPLETE
 };
 
 struct Id
 {
-	uint64_t  id;
-	Uuid      id_tier;
-	Uuid      id_table;
-	Storage*  storage;
-	Tier*     tier;
+	uint64_t id;
+	Uuid     id_tier;
+	Uuid     id_table;
+	Storage* storage;
+	Tier*    tier;
 };
 
 static inline void
@@ -39,6 +41,8 @@ id_init(Id* self)
 static inline int
 id_of(const char* name, int64_t* id)
 {
+	// <id>.service
+	// <id>.service.incomplete
 	// <id>.ram
 	// <id>.ram.incomplete
 	*id = 0;
@@ -50,12 +54,20 @@ id_of(const char* name, int64_t* id)
 			return -1;
 		name++;
 	}
-	int state = -1;
+	int state;
+	if (! strcmp(name, ".service.incomplete"))
+		state = ID_SERVICE_INCOMPLETE;
+	else
+	if (! strcmp(name, ".service"))
+		state = ID_SERVICE;
+	else
 	if (! strcmp(name, ".ram.incomplete"))
 		state = ID_RAM_INCOMPLETE;
 	else
 	if (! strcmp(name, ".ram"))
 		state = ID_RAM;
+	else
+		state = -1;
 	return state;
 }
 
@@ -67,6 +79,16 @@ id_path(Id* self, char* path, int state)
 	uuid_get(&self->id_tier, id_tier, sizeof(id_tier));
 
 	switch (state) {
+	case ID_SERVICE:
+		// <storage_path>/<id_tier>/<id>.service
+		storage_pathfmt(self->storage, path, "%s/%05" PRIu64 ".service",
+		                id_tier, self->id);
+		break;
+	case ID_SERVICE_INCOMPLETE:
+		// <storage_path>/<id_tier>/<id>.service.incomplete
+		storage_pathfmt(self->storage, path, "%s/%05" PRIu64 ".service.incomplete",
+		                id_tier, self->id);
+		break;
 	case ID_RAM:
 		// <storage_path>/<id_tier>/<id>.ram
 		storage_pathfmt(self->storage, path, "%s/%05" PRIu64 ".ram",
