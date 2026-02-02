@@ -21,7 +21,7 @@ struct Level
 	List    list_service;
 	int     list_service_count;
 	Tier*   tier;
-	Level*  next;
+	List    link;
 };
 
 static inline Level*
@@ -31,10 +31,10 @@ level_allocate(Tier* tier, Keys* keys)
 	self->tier               = tier;
 	self->list_count         = 0;
 	self->list_service_count = 0;
-	self->next               = NULL;
 	mapping_init(&self->mapping, keys);
 	list_init(&self->list);
 	list_init(&self->list_service);
+	list_init(&self->link);
 	return self;
 }
 

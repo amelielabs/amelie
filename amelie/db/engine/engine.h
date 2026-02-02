@@ -23,7 +23,7 @@ struct EngineIf
 struct Engine
 {
 	PartMapping mapping;
-	Level*      levels;
+	List        levels;
 	int         levels_count;
 	Uuid*       id_table;
 	Sequence*   seq;
@@ -32,6 +32,12 @@ struct Engine
 	void*       iface_arg;
 	StorageMgr* storage_mgr;
 };
+
+static inline Level*
+engine_main(Engine* self)
+{
+	return container_of(list_first(&self->levels), Level, link);
+}
 
 void  engine_init(Engine*, EngineIf*, void*, StorageMgr*, Uuid*, Sequence*, bool, Keys*);
 void  engine_free(Engine*);

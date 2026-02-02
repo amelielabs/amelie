@@ -32,23 +32,21 @@ engine_init(Engine*     self,
 	self->iface        = iface;
 	self->iface_arg    = iface_arg;
 	self->storage_mgr  = storage_mgr;
-	self->levels       = NULL;
 	self->levels_count = 0;
 	self->id_table     = id_table;
 	self->seq          = seq;
 	self->unlogged     = unlogged;
+	list_init(&self->levels);
 	part_mapping_init(&self->mapping, keys);
 }
 
 void
 engine_free(Engine* self)
 {
-	auto level = self->levels;
-	while (level)
+	list_foreach_safe(&self->levels)
 	{
-		auto next = level->next;
+		auto level = list_at(Level, link);
 		level_free(level);
-		level = next;
 	}
 	part_mapping_free(&self->mapping);
 }
@@ -57,24 +55,17 @@ void
 engine_open(Engine* self, List* tiers, List* indexes, int count)
 {
 	// create levels
-	Level* last = NULL;
 	list_foreach(tiers)
 	{
 		auto tier = list_at(Tier, link);
-		auto level = level_allocate(tier, self->mapping.keys);
-		if (last)
-			last->next = level;
-		else
-			self->levels = level;
-		last = level;
-		self->levels_count++;
+		engine_tier_add(self, tier);
 	}
 
 	// recover files
 	engine_recover(self, count);
 
 	// create indexes
-	auto main = self->levels;
+	auto main = engine_main(self);
 	list_foreach(&main->list)
 	{
 		auto part = list_at(Part, link);
@@ -102,14 +93,14 @@ engine_open(Engine* self, List* tiers, List* indexes, int count)
 void
 engine_close(Engine* self)
 {
-	auto main = self->levels;
+	auto main = engine_main(self);
 	self->iface->detach(self, main);
 }
 
 Part*
 engine_find(Engine* self, uint64_t id)
 {
-	list_foreach(&self->levels->list)
+	list_foreach(&engine_main(self)->list)
 	{
 		auto part = list_at(Part, link);
 		if (part->id.id == id)
@@ -141,7 +132,7 @@ engine_status(Engine* self, Str* ref, bool extended)
 
 	// show partitions on table
 	encode_array(buf);
-	list_foreach(&self->levels->list)
+	list_foreach(&engine_main(self)->list)
 	{
 		auto part = list_at(Part, link);
 		part_status(part, buf, extended);
@@ -180,7 +171,7 @@ engine_iterator(Engine*      self,
 	// merge all tree partitions (without key, ordered)
 	// merge all tree partitions (with key, ordered)
 	Iterator* it = NULL;
-	list_foreach(&self->levels->list)
+	list_foreach(&engine_main(self)->list)
 	{
 		auto part = list_at(Part, link);
 		auto index = part_index_find(part, &config->name, true);

@@ -23,7 +23,7 @@ void
 engine_set_unlogged(Engine* self, bool value)
 {
 	self->unlogged = value;
-	list_foreach(&self->levels->list)
+	list_foreach(&engine_main(self)->list)
 	{
 		auto part = list_at(Part, link);
 		part->unlogged = value;
@@ -33,7 +33,7 @@ engine_set_unlogged(Engine* self, bool value)
 void
 engine_truncate(Engine* self)
 {
-	list_foreach(&self->levels->list)
+	list_foreach(&engine_main(self)->list)
 	{
 		auto part = list_at(Part, link);
 		part_truncate(part);
@@ -43,7 +43,7 @@ engine_truncate(Engine* self)
 void
 engine_index_add(Engine* self, IndexConfig* config)
 {
-	list_foreach(&self->levels->list)
+	list_foreach(&engine_main(self)->list)
 	{
 		auto part = list_at(Part, link);
 		part_index_add(part, config);
@@ -53,9 +53,38 @@ engine_index_add(Engine* self, IndexConfig* config)
 void
 engine_index_remove(Engine* self, Str* name)
 {
-	list_foreach(&self->levels->list)
+	list_foreach(&engine_main(self)->list)
 	{
 		auto part = list_at(Part, link);
 		part_index_drop(part, name);
 	}
+}
+
+static inline Level*
+engine_tier_find(Engine* self, Str* name)
+{
+	list_foreach(&self->levels)
+	{
+		auto level = list_at(Level, link);
+		if (str_compare(&level->tier->name, name))
+			return level;
+	}
+	return NULL;
+}
+
+void
+engine_tier_add(Engine* self, Tier* tier)
+{
+	auto level = level_allocate(tier, self->mapping.keys);
+	list_append(&self->levels, &level->link);
+	self->levels_count++;
+}
+
+void
+engine_tier_remove(Engine* self, Str* name)
+{
+	auto level = engine_tier_find(self, name);
+	assert(level);
+	list_unlink(&level->link);
+	self->levels_count--;
 }

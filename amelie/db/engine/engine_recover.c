@@ -125,7 +125,7 @@ engine_create(Engine* self, int count)
 	if (count < 1 || count > PART_MAPPING_MAX)
 		error("table has invalid partitions number");
 
-	auto main = self->levels;
+	auto main = engine_main(self);
 	auto main_storage = tier_storage(main->tier);
 
 	// hash partition_max / hash partitions
@@ -179,7 +179,7 @@ static void
 engine_recover_gc(Engine* self, uint8_t* pos)
 {
 	// remove all existing partitions and their files
-	auto main = self->levels;
+	auto main = engine_main(self);
 	json_read_array(&pos);
 	while (! json_read_array_end(&pos))
 	{
@@ -238,16 +238,19 @@ engine_recover(Engine* self, int count)
 {
 	// read files
 	auto bootstrap = false;
-	for (auto level = self->levels; level; level = level->next)
+	list_foreach(&self->levels)
+	{
+		auto level = list_at(Level, link);
 		if (engine_recover_level(self, level))
 			bootstrap = true;
+	}
 
 	// create initial partitions
 	if (bootstrap)
 		engine_create(self, count);
 
 	// recover service files
-	auto main = self->levels;
+	auto main = engine_main(self);
 	list_foreach_safe(&main->list_service)
 	{
 		auto service = list_at(Service, link);

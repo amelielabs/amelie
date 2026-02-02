@@ -44,7 +44,7 @@ db_pending(Db* self)
 		auto table = table_of(list_at(Relation, link));
 		lock(lock_mgr, &table->rel, LOCK_SHARED);
 
-		list_foreach(&table->engine.levels->list)
+		list_foreach(&engine_main(&table->engine)->list)
 		{
 			auto part = list_at(Part, link);
 			if (part_has_updates(part))
@@ -121,7 +121,7 @@ db_gc(Db* self)
 		auto table = table_of(list_at(Relation, link));
 		lock(lock_mgr, &table->rel, LOCK_SHARED);
 
-		list_foreach(&table->engine.levels->list)
+		list_foreach(&engine_main(&table->engine)->list)
 		{
 			auto part = list_at(Part, link);
 			auto object_lsn = part->heap->header->lsn;
