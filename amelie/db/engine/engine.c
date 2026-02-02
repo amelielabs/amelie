@@ -21,15 +21,17 @@
 
 void
 engine_init(Engine*     self,
+            EngineIf*   iface,
+            void*       iface_arg,
             StorageMgr* storage_mgr,
-            Deploy*     deploy,
             Uuid*       id_table,
             Sequence*   seq,
             bool        unlogged,
             Keys*       keys)
 {
+	self->iface        = iface;
+	self->iface_arg    = iface_arg;
 	self->storage_mgr  = storage_mgr;
-	self->deploy       = deploy;
 	self->levels       = NULL;
 	self->levels_count = 0;
 	self->id_table     = id_table;
@@ -84,7 +86,7 @@ engine_open(Engine* self, List* tiers, List* indexes, int count)
 	}
 
 	// create pods and load heaps
-	deploy_attach_all(self->deploy, main);
+	self->iface->attach(self, main);
 
 	// map hash partitions
 	list_foreach(&main->list)
@@ -100,7 +102,8 @@ engine_open(Engine* self, List* tiers, List* indexes, int count)
 void
 engine_close(Engine* self)
 {
-	deploy_detach_all(self->deploy, self->levels);
+	auto main = self->levels;
+	self->iface->detach(self, main);
 }
 
 Part*

@@ -326,7 +326,9 @@ table_mgr_column_add(TableMgr* self,
 	// physical column require a new table
 
 	// allocate new table
-	auto table_new = table_allocate(table->config, self->storage_mgr, self->deploy);
+	auto table_new = table_allocate(table->config, self->storage_mgr,
+	                                self->iface,
+	                                self->iface_arg);
 
 	// add new column
 	auto column_new = column_copy(column);
@@ -379,7 +381,9 @@ table_mgr_column_drop(TableMgr* self,
 	// physical column require new table rebuild
 
 	// allocate new table
-	auto table_new = table_allocate(table->config, self->storage_mgr, self->deploy);
+	auto table_new = table_allocate(table->config, self->storage_mgr,
+	                                self->iface,
+	                                self->iface_arg);
 
 	// delete and reorder columns and update keys
 	auto column_new = columns_find(&table_new->config->columns, &column->name);

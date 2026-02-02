@@ -21,10 +21,13 @@
 #include <amelie_catalog.h>
 
 void
-table_mgr_init(TableMgr* self, StorageMgr* storage_mgr, Deploy* deploy)
+table_mgr_init(TableMgr* self, StorageMgr* storage_mgr,
+               EngineIf* iface,
+               void*     iface_arg)
 {
 	self->storage_mgr = storage_mgr;
-	self->deploy      = deploy;
+	self->iface       = iface;
+	self->iface_arg   = iface_arg;
 	relation_mgr_init(&self->mgr);
 }
 
@@ -51,7 +54,9 @@ table_mgr_create(TableMgr*    self,
 	}
 
 	// allocate table
-	auto table = table_allocate(config, self->storage_mgr, self->deploy);
+	auto table = table_allocate(config, self->storage_mgr,
+	                            self->iface,
+	                            self->iface_arg);
 
 	// update tables
 	relation_mgr_create(&self->mgr, tr, &table->rel);

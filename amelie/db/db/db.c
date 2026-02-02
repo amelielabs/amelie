@@ -26,13 +26,14 @@ void
 db_init(Db*        self,
         CatalogIf* iface,
         void*      iface_arg,
-        DeployIf*  iface_deploy,
-        void*      iface_deploy_arg)
+        EngineIf*  iface_engine,
+        void*      iface_engine_arg)
 {
 	lock_mgr_init(&self->lock_mgr);
 	part_lock_mgr_init(&self->lock_mgr_part);
-	catalog_init(&self->catalog, iface, iface_arg, &self->deploy);
-	deploy_init(&self->deploy, iface_deploy, iface_deploy_arg);
+	catalog_init(&self->catalog, iface, iface_arg,
+	             iface_engine,
+	             iface_engine_arg);
 	wal_mgr_init(&self->wal_mgr);
 }
 

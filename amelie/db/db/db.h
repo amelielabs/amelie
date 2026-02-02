@@ -18,11 +18,10 @@ struct Db
 	LockMgr     lock_mgr;
 	PartLockMgr lock_mgr_part;
 	Catalog     catalog;
-	Deploy      deploy;
 	WalMgr      wal_mgr;
 };
 
-void db_init(Db*, CatalogIf*, void*, DeployIf*, void*);
+void db_init(Db*, CatalogIf*, void*, EngineIf*, void*);
 void db_free(Db*);
 void db_open(Db*, bool);
 void db_close(Db*);

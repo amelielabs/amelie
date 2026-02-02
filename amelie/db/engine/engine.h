@@ -11,7 +11,14 @@
 // AGPL-3.0 Licensed.
 //
 
-typedef struct Engine Engine;
+typedef struct EngineIf EngineIf;
+typedef struct Engine   Engine;
+
+struct EngineIf
+{
+	void (*attach)(Engine*, Level*);
+	void (*detach)(Engine*, Level*);
+};
 
 struct Engine
 {
@@ -21,11 +28,12 @@ struct Engine
 	Uuid*       id_table;
 	Sequence*   seq;
 	bool        unlogged;
-	Deploy*     deploy;
+	EngineIf*   iface;
+	void*       iface_arg;
 	StorageMgr* storage_mgr;
 };
 
-void  engine_init(Engine*, StorageMgr*, Deploy*, Uuid*, Sequence*, bool, Keys*);
+void  engine_init(Engine*, EngineIf*, void*, StorageMgr*, Uuid*, Sequence*, bool, Keys*);
 void  engine_free(Engine*);
 void  engine_open(Engine*, List*, List*, int);
 void  engine_close(Engine*);

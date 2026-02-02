@@ -134,7 +134,7 @@ system_on_server_connect(Server* server, Client* client)
 }
 
 static void
-deploy_if_attach_all(Deploy* self, Level* level)
+engine_if_attach(Engine* self, Level* level)
 {
 	System* system = self->iface_arg;
 	if (level->list_count > PART_MAPPING_MAX)
@@ -145,33 +145,17 @@ deploy_if_attach_all(Deploy* self, Level* level)
 }
 
 static void
-deploy_if_attach(Deploy* self, Part* part)
-{
-	System* system = self->iface_arg;
-	backend_mgr_deploy(&system->backend_mgr, part);
-}
-
-static void
-deploy_if_detach_all(Deploy* self, Level* level)
+engine_if_detach(Engine* self, Level* level)
 {
 	// drop pods on backends
 	System* system = self->iface_arg;
 	backend_mgr_undeploy_all(&system->backend_mgr, level);
 }
 
-static void
-deploy_if_detach(Deploy* self, Part* part)
+static EngineIf engine_if =
 {
-	System* system = self->iface_arg;
-	backend_mgr_undeploy(&system->backend_mgr, part);
-}
-
-static DeployIf deploy_if =
-{
-	.attach_all = deploy_if_attach_all,
-	.attach     = deploy_if_attach,
-	.detach_all = deploy_if_detach_all,
-	.detach     = deploy_if_detach
+	.attach = engine_if_attach,
+	.detach = engine_if_detach
 };
 
 static void
@@ -220,7 +204,7 @@ system_create(void)
 	function_mgr_init(&self->function_mgr);
 
 	// db
-	db_init(&self->db, &catalog_if, self, &deploy_if, self);
+	db_init(&self->db, &catalog_if, self, &engine_if, self);
 
 	// replication
 	repl_init(&self->repl, &self->db);

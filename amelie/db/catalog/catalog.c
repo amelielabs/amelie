@@ -24,13 +24,16 @@ void
 catalog_init(Catalog*   self,
              CatalogIf* iface,
              void*      iface_arg,
-             Deploy*    deploy)
+             EngineIf*  iface_engine,
+             void*      iface_engine_arg)
 {
 	self->iface = iface;
 	self->iface_arg = iface_arg;
 	storage_mgr_init(&self->storage_mgr);
 	database_mgr_init(&self->db_mgr);
-	table_mgr_init(&self->table_mgr, &self->storage_mgr, deploy);
+	table_mgr_init(&self->table_mgr, &self->storage_mgr,
+	               iface_engine,
+	               iface_engine_arg);
 	udf_mgr_init(&self->udf_mgr, iface->udf_free, iface_arg);
 }
 

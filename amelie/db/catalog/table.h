@@ -51,13 +51,16 @@ table_free(Table* self)
 }
 
 static inline Table*
-table_allocate(TableConfig* config, StorageMgr* storage_mgr, Deploy* deploy)
+table_allocate(TableConfig* config, StorageMgr* storage_mgr,
+               EngineIf*    iface,
+               void*        iface_arg)
 {
 	Table* self = am_malloc(sizeof(Table));
 	self->config = table_config_copy(config);
 	sequence_init(&self->seq);
 	auto primary = table_primary(self);
-	engine_init(&self->engine, storage_mgr, deploy, &self->config->id,
+	engine_init(&self->engine, iface, iface_arg, storage_mgr,
+	            &self->config->id,
 	            &self->seq, self->config->unlogged,
 	            &primary->keys);
 
