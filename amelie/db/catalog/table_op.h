@@ -372,3 +372,91 @@ table_op_index_rename_read(uint8_t* op, Str* db, Str* name,
 	json_read_string(&op, name_index_new);
 	json_read_array_end(&op);
 }
+
+static inline int
+table_op_tier_create(Buf* self, Str* db, Str* name, Tier* tier)
+{
+	// [op, db, name, config]
+	auto offset = buf_size(self);
+	encode_array(self);
+	encode_integer(self, DDL_TIER_CREATE);
+	encode_string(self, db);
+	encode_string(self, name);
+	tier_write(tier, self, true);
+	encode_array_end(self);
+	return offset;
+}
+
+static inline uint8_t*
+table_op_tier_create_read(uint8_t* op, Str* db, Str* name)
+{
+	int64_t cmd;
+	json_read_array(&op);
+	json_read_integer(&op, &cmd);
+	assert(cmd == DDL_TIER_CREATE);
+	json_read_string(&op, db);
+	json_read_string(&op, name);
+	auto config_pos = op;
+	json_read_array_end(&op);
+	return config_pos;
+}
+
+static inline int
+table_op_tier_drop(Buf* self, Str* db, Str* name, Str* name_tier)
+{
+	// [op, db, name, name_tier]
+	auto offset = buf_size(self);
+	encode_array(self);
+	encode_integer(self, DDL_TIER_DROP);
+	encode_string(self, db);
+	encode_string(self, name);
+	encode_string(self, name_tier);
+	encode_array_end(self);
+	return offset;
+}
+
+static inline void
+table_op_tier_drop_read(uint8_t* op, Str* db, Str* name, Str* name_tier)
+{
+	int64_t cmd;
+	json_read_array(&op);
+	json_read_integer(&op, &cmd);
+	assert(cmd == DDL_TIER_DROP);
+	json_read_string(&op, db);
+	json_read_string(&op, name);
+	json_read_string(&op, name_tier);
+	json_read_array_end(&op);
+}
+
+static inline int
+table_op_tier_rename(Buf* self, Str* db, Str* name,
+                     Str* name_tier,
+                     Str* name_tier_new)
+{
+	// [op, db, name, name_tier, name_tier_new]
+	auto offset = buf_size(self);
+	encode_array(self);
+	encode_integer(self, DDL_TIER_RENAME);
+	encode_string(self, db);
+	encode_string(self, name);
+	encode_string(self, name_tier);
+	encode_string(self, name_tier_new);
+	encode_array_end(self);
+	return offset;
+}
+
+static inline void
+table_op_tier_rename_read(uint8_t* op, Str* db, Str* name,
+                          Str*     name_tier,
+                          Str*     name_tier_new)
+{
+	int64_t cmd;
+	json_read_array(&op);
+	json_read_integer(&op, &cmd);
+	assert(cmd == DDL_TIER_RENAME);
+	json_read_string(&op, db);
+	json_read_string(&op, name);
+	json_read_string(&op, name_tier);
+	json_read_string(&op, name_tier_new);
+	json_read_array_end(&op);
+}

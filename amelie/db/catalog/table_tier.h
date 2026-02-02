@@ -11,4 +11,8 @@
 // AGPL-3.0 Licensed.
 //
 
-Buf* table_tier_list(Table*, Str*, bool);
+bool  table_tier_create(Table*, Tr*, Tier*, bool);
+bool  table_tier_drop(Table*, Tr*, Str*, bool);
+bool  table_tier_rename(Table*, Tr*, Str*, Str*, bool);
+Buf*  table_tier_list(Table*, Str*, bool);
+Tier* table_tier_find(Table*, Str*, bool);

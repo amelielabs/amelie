@@ -185,6 +185,9 @@ table_index_rename(Table* self,
 	// update table
 	log_relation(&tr->log, &rename_if, index, &self->rel);
 
+	// save previous name
+	encode_string(&tr->log.data, &index->name);
+
 	// rename index
 	index_config_set_name(index, name_new);
 	return true;

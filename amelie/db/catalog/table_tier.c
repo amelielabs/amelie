@@ -20,19 +20,186 @@
 #include <amelie_engine.h>
 #include <amelie_catalog.h>
 
-hot static inline Tier*
-table_tier_find(Table* self, Str* name, bool error_if_not_exists)
+static void
+table_tier_delete(Table* table, Tier* tier)
 {
-	list_foreach(&self->config->tiers)
+	// remove tier from engine
+	engine_tier_remove(&table->engine, &tier->name);
+
+	// remove tier from the table config
+	table_config_tier_remove(table->config, tier);
+
+	// free
+	tier_free(tier);
+}
+
+static void
+create_if_commit(Log* self, LogOp* op)
+{
+	unused(self);
+	unused(op);
+}
+
+static void
+create_if_abort(Log* self, LogOp* op)
+{
+	auto relation = log_relation_of(self, op);
+	auto table = table_of(relation->relation);
+	Tier* tier = op->iface_arg;
+	table_tier_delete(table, tier);
+}
+
+static LogIf create_if =
+{
+	.commit = create_if_commit,
+	.abort  = create_if_abort
+};
+
+bool
+table_tier_create(Table* self,
+                  Tr*    tr,
+                  Tier*  config,
+                  bool   if_not_exists)
+{
+	auto tier = table_tier_find(self, &config->name, false);
+	if (tier)
 	{
-		auto tier = list_at(Tier, link);
-		if (str_compare_case(&tier->name, name))
-			return tier;
+		if (! if_not_exists)
+			error("table '%.*s' tier '%.*s': already exists",
+			      str_size(&self->config->name),
+			      str_of(&self->config->name),
+			      str_size(&tier->name),
+			      str_of(&tier->name));
+		return false;
 	}
-	if (error_if_not_exists)
-		error("tier '%.*s': not exists", str_size(name),
-		       str_of(name));
-	return NULL;
+
+	// save tier copy to the table config
+	tier = tier_copy(config);
+	table_config_tier_add(self->config, tier);
+
+	// update table
+	log_relation(&tr->log, &create_if, tier, &self->rel);
+
+	// update engine
+	engine_tier_add(&self->engine, tier);
+	return true;
+}
+
+static void
+drop_if_commit(Log* self, LogOp* op)
+{
+	auto relation = log_relation_of(self, op);
+	auto table = table_of(relation->relation);
+	Tier* tier = op->iface_arg;
+	table_tier_delete(table, tier);
+}
+
+static void
+drop_if_abort(Log* self, LogOp* op)
+{
+	unused(self);
+	unused(op);
+}
+
+static LogIf drop_if =
+{
+	.commit = drop_if_commit,
+	.abort  = drop_if_abort
+};
+
+bool
+table_tier_drop(Table* self,
+                Tr*    tr,
+                Str*   name,
+                bool   if_exists)
+{
+	auto tier = table_tier_find(self, name, false);
+	if (! tier)
+	{
+		if (! if_exists)
+			error("table '%.*s' tier '%.*s': not exists",
+			      str_size(&self->config->name),
+			      str_of(&self->config->name),
+			      str_size(name),
+			      str_of(name));
+		return false;
+	}
+
+	// validate engine tiers
+	auto level = engine_tier_find(&self->engine, name);
+	assert(level);
+	if (level->list_count > 0)
+		error("table '%.*s' tier '%.*s': is not empty",
+		      str_size(&self->config->name),
+		      str_of(&self->config->name),
+		      str_size(name),
+		      str_of(name));
+
+	// update table
+	log_relation(&tr->log, &drop_if, tier, &self->rel);
+	return true;
+}
+
+static void
+rename_if_commit(Log* self, LogOp* op)
+{
+	unused(self);
+	unused(op);
+}
+
+static void
+rename_if_abort(Log* self, LogOp* op)
+{
+	Tier* tier = op->iface_arg;
+	auto relation = log_relation_of(self, op);
+	uint8_t* pos = relation->data;
+	Str tier_name;
+	json_read_string(&pos, &tier_name);
+	tier_set_name(tier, &tier_name);
+}
+
+static LogIf rename_if =
+{
+	.commit = rename_if_commit,
+	.abort  = rename_if_abort
+};
+
+bool
+table_tier_rename(Table* self,
+                  Tr*    tr,
+                  Str*   name,
+                  Str*   name_new,
+                  bool   if_exists)
+{
+	auto tier = table_tier_find(self, name, false);
+	if (! tier)
+	{
+		if (! if_exists)
+			error("table '%.*s' tier '%.*s': not exists",
+			      str_size(&self->config->name),
+			      str_of(&self->config->name),
+			      str_size(name),
+			      str_of(name));
+		return false;
+	}
+
+	// ensure new tier not exists
+	if (table_tier_find(self, name_new, false))
+		error("table '%.*s' tier '%.*s': already exists",
+		      str_size(&self->config->name),
+		      str_of(&self->config->name),
+		      str_size(name_new),
+		      str_of(name_new));
+
+	// update table
+	log_relation(&tr->log, &rename_if, tier, &self->rel);
+
+	// save previous name
+	encode_string(&tr->log.data, &tier->name);
+
+	// rename tier
+	tier_set_name(tier, name_new);
+	return true;
 }
 
 Buf*
@@ -62,4 +229,19 @@ table_tier_list(Table* self, Str* ref, bool extended)
 	}
 	encode_array_end(buf);
 	return buf;
+}
+
+Tier*
+table_tier_find(Table* self, Str* name, bool error_if_not_exists)
+{
+	list_foreach(&self->config->tiers)
+	{
+		auto tier = list_at(Tier, link);
+		if (str_compare_case(&tier->name, name))
+			return tier;
+	}
+	if (error_if_not_exists)
+		error("tier '%.*s': not exists", str_size(name),
+		       str_of(name));
+	return NULL;
 }

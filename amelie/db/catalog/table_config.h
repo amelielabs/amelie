@@ -120,6 +120,13 @@ table_config_tier_add(TableConfig* self, Tier* tier)
 	self->tiers_count++;
 }
 
+static inline void
+table_config_tier_remove(TableConfig* self, Tier* tier)
+{
+	list_unlink(&tier->link);
+	self->tiers_count--;
+}
+
 static inline TableConfig*
 table_config_copy(TableConfig* self)
 {

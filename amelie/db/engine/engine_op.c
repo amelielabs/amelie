@@ -60,7 +60,7 @@ engine_index_remove(Engine* self, Str* name)
 	}
 }
 
-static inline Level*
+Level*
 engine_tier_find(Engine* self, Str* name)
 {
 	list_foreach(&self->levels)
