@@ -1,0 +1,223 @@
+open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "127.0.0.1", "port": 3485 }];
+connect E0 S0 127.0.0.1:3485;
+create table test (id int primary key, a int, b int);
+# test: create tier parsing
+create tier;
+{"msg": "create tier❰;❱ ⟵ name expected"}
+create tier 1;
+{"msg": "create tier ❰1❱ ⟵ name expected"}
+create tier i;
+{"msg": "create tier i❰;❱ ⟵ ON expected"}
+create tier i 1;
+{"msg": "create tier i ❰1❱ ⟵ ON expected"}
+create tier i on;
+{"msg": "create tier i on❰;❱ ⟵ name expected"}
+create tier i on test 1;
+{"msg": "create tier i on test ❰1❱ ⟵ ; expected"}
+create tier i on test (;
+{"msg": "create tier i on test (❰;❱ ⟵ name expected"}
+create tier i on test (,;
+{"msg": "create tier i on test (❰,❱ ⟵ name expected"}
+# test: create tier
+create tier t on test (id "00000000-0000-0000-0000-000000000000");
+show tier t on test;
+[{
+  "name": "t",
+  "id": "00000000-0000-0000-0000-000000000000",
+  "compression": "",
+  "compression_level": 0,
+  "encryption": "",
+  "region_size": 65536,
+  "object_size": 67108864,
+  "storages": ["main"]
+}]
+# test: create tier if not exists
+create tier t on test ();
+{"msg": "table 'test' tier 't': already exists"}
+create tier if not exists t on test;
+show tier t on test;
+[{
+  "name": "t",
+  "id": "00000000-0000-0000-0000-000000000000",
+  "compression": "",
+  "compression_level": 0,
+  "encryption": "",
+  "region_size": 65536,
+  "object_size": 67108864,
+  "storages": ["main"]
+}]
+drop tier t on test;
+# test: create tier using main
+create tier t on test using;
+{"msg": "create tier t on test using❰;❱ ⟵ name expected"}
+create tier t on test using x;
+{"msg": "storage 'x': not exists"}
+show tier t on test;
+[null]
+create tier t on test (id "00000000-0000-0000-0000-000000000000") using main;
+show tier t on test;
+[{
+  "name": "t",
+  "id": "00000000-0000-0000-0000-000000000000",
+  "compression": "",
+  "compression_level": 0,
+  "encryption": "",
+  "region_size": 65536,
+  "object_size": 67108864,
+  "storages": ["main"]
+}]
+drop tier t on test;
+# test: create tier using main dup
+create tier t on test (id "00000000-0000-0000-0000-000000000000") using main, main;
+{"msg": "create tier t on test (id \"00000000-0000-0000-0000-000000000000\") using main, ❰main❱ ⟵ storage used twice"}
+# test: create tier using storage
+create storage test;
+create tier t on test (id "00000000-0000-0000-0000-000000000000") using test, main;
+show tier t on test;
+[{
+  "name": "t",
+  "id": "00000000-0000-0000-0000-000000000000",
+  "compression": "",
+  "compression_level": 0,
+  "encryption": "",
+  "region_size": 65536,
+  "object_size": 67108864,
+  "storages": ["test", "main"]
+}]
+drop tier t on test;
+drop storage test;
+# test: drop tier parsing
+drop tier;
+{"msg": "drop tier❰;❱ ⟵ name expected"}
+drop tier 1;
+{"msg": "drop tier ❰1❱ ⟵ name expected"}
+drop tier '1';
+{"msg": "drop tier ❰'1'❱ ⟵ name expected"}
+drop tier i;
+{"msg": "drop tier i❰;❱ ⟵ ON expected"}
+drop tier i 1;
+{"msg": "drop tier i ❰1❱ ⟵ ON expected"}
+drop tier i on;
+{"msg": "drop tier i on❰;❱ ⟵ name expected"}
+drop tier i on 1;
+{"msg": "drop tier i on ❰1❱ ⟵ name expected"}
+# test: drop tier
+create tier t on test (id "00000000-0000-0000-0000-000000000000");
+drop tier t on test;
+show tier t on test;
+[null]
+# test: drop tier if exists
+show tier t on test;
+[null]
+show tier if exists t on test;
+{"msg": "show tier ❰if❱ ⟵ ; expected"}
+# test: drop tier storage
+create storage test;
+create tier t on test (id "00000000-0000-0000-0000-000000000000") using test, main;
+show tier t on test;
+[{
+  "name": "t",
+  "id": "00000000-0000-0000-0000-000000000000",
+  "compression": "",
+  "compression_level": 0,
+  "encryption": "",
+  "region_size": 65536,
+  "object_size": 67108864,
+  "storages": ["test", "main"]
+}]
+drop storage test;
+{"msg": "storage 'test': is being used"}
+drop tier t on test;
+drop storage test;
+# test: alter tier parsing
+alter;
+{"msg": "alter❰;❱ ⟵ USER|STORAGE|DATABASE|TABLE|INDEX|TIER|FUNCTION expected"}
+alter tier;
+{"msg": "alter tier❰;❱ ⟵ name expected"}
+alter tier 1;
+{"msg": "alter tier ❰1❱ ⟵ name expected"}
+alter tier if;
+{"msg": "alter tier if❰;❱ ⟵ EXISTS expected"}
+alter tier if not;
+{"msg": "alter tier if ❰not❱ ⟵ EXISTS expected"}
+alter tier if exists;
+{"msg": "alter tier if exists❰;❱ ⟵ name expected"}
+alter tier i;
+{"msg": "alter tier i❰;❱ ⟵ ON expected"}
+alter tier i 1;
+{"msg": "alter tier i ❰1❱ ⟵ ON expected"}
+alter tier i on;
+{"msg": "alter tier i on❰;❱ ⟵ name expected"}
+alter tier i on test;
+{"msg": "alter tier i on test❰;❱ ⟵ RENAME expected"}
+alter tier i on test 1;
+{"msg": "alter tier i on test ❰1❱ ⟵ RENAME expected"}
+alter tier i on test rename;
+{"msg": "alter tier i on test rename❰;❱ ⟵ TO expected"}
+alter tier i on test rename 1;
+{"msg": "alter tier i on test rename ❰1❱ ⟵ TO expected"}
+alter tier i on test rename to;
+{"msg": "alter tier i on test rename to❰;❱ ⟵ name expected"}
+alter tier i on test rename to 1;
+{"msg": "alter tier i on test rename to ❰1❱ ⟵ name expected"}
+alter tier i on test rename to;
+{"msg": "alter tier i on test rename to❰;❱ ⟵ name expected"}
+# test: alter tier rename
+create tier t on test (id "00000000-0000-0000-0000-000000000000");
+show tier t on test;
+[{
+  "name": "t",
+  "id": "00000000-0000-0000-0000-000000000000",
+  "compression": "",
+  "compression_level": 0,
+  "encryption": "",
+  "region_size": 65536,
+  "object_size": 67108864,
+  "storages": ["main"]
+}]
+alter tier t on test rename to z;
+show tier t on test;
+[null]
+show tier z on test;
+[{
+  "name": "z",
+  "id": "00000000-0000-0000-0000-000000000000",
+  "compression": "",
+  "compression_level": 0,
+  "encryption": "",
+  "region_size": 65536,
+  "object_size": 67108864,
+  "storages": ["main"]
+}]
+# test: alter tier rename if exists
+alter tier if exists t on test rename to z;
+show tier t on test;
+[null]
+show tier z on test;
+[{
+  "name": "z",
+  "id": "00000000-0000-0000-0000-000000000000",
+  "compression": "",
+  "compression_level": 0,
+  "encryption": "",
+  "region_size": 65536,
+  "object_size": 67108864,
+  "storages": ["main"]
+}]
+# test: alter tier rename (conflict)
+alter tier z on test rename to z;
+{"msg": "table 'test' tier 'z': already exists"}
+show tier z on test;
+[{
+  "name": "z",
+  "id": "00000000-0000-0000-0000-000000000000",
+  "compression": "",
+  "compression_level": 0,
+  "encryption": "",
+  "region_size": 65536,
+  "object_size": 67108864,
+  "storages": ["main"]
+}]
+drop table test;
+disconnect S0;
+close E0;

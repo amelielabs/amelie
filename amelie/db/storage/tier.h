@@ -235,13 +235,40 @@ tier_write(Tier* self, Buf* buf, bool safe)
 }
 
 static inline void
-tier_resolve(Tier* self, StorageMgr* storage_mgr)
+tier_ref(Tier* self, StorageMgr* storage_mgr)
 {
 	list_foreach(&self->storages)
 	{
 		auto ref = list_at(TierStorage, link);
 		ref->storage = storage_mgr_find(storage_mgr, &ref->name, true);
+		storage_ref(ref->storage);
 	}
+}
+
+static inline void
+tier_unref(Tier* self)
+{
+	list_foreach(&self->storages)
+	{
+		auto ref = list_at(TierStorage, link);
+		if (ref->storage)
+		{
+			storage_unref(ref->storage);
+			ref->storage = NULL;
+		}
+	}
+}
+
+static inline TierStorage*
+tier_storage_find(Tier* self, Str* name)
+{
+	list_foreach(&self->storages)
+	{
+		auto ref = list_at(TierStorage, link);
+		if (str_compare(&ref->name, name))
+			return ref;
+	}
+	return NULL;
 }
 
 static inline TierStorage*

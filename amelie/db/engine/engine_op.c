@@ -84,7 +84,9 @@ void
 engine_tier_remove(Engine* self, Str* name)
 {
 	auto level = engine_tier_find(self, name);
-	assert(level);
+	if (! level)
+		return;
 	list_unlink(&level->link);
 	self->levels_count--;
+	level_free(level);
 }

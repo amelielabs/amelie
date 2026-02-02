@@ -766,7 +766,7 @@ drop function test;
 drop function test_dep;
 # test: alter function statement parsing
 alter;
-{"msg": "alter❰;❱ ⟵ USER|STORAGE|DATABASE|TABLE|INDEX|FUNCTION expected"}
+{"msg": "alter❰;❱ ⟵ USER|STORAGE|DATABASE|TABLE|INDEX|TIER|FUNCTION expected"}
 alter function;
 {"msg": "alter function❰;❱ ⟵ name expected"}
 alter function 123;

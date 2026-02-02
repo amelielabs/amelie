@@ -213,6 +213,7 @@ enum
 	KTABLE,
 	KTRUNCATE,
 	KTOKEN,
+	KTIER,
 
 	// u
 	KUPDATE,

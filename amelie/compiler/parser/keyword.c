@@ -176,6 +176,7 @@ Keyword keywords[] =
 	{ KTABLE,                 "table",                 5  },
 	{ KTRUNCATE,              "truncate",              8  },
 	{ KTOKEN,                 "token",                 5  },
+	{ KTIER,                  "tier",                  4  },
 
 	// u
 	{ KUPDATE,                "update",                6  },

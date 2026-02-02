@@ -42,6 +42,12 @@ table_keys(Table* self)
 static inline void
 table_free(Table* self)
 {
+	// unref storages
+	list_foreach(&self->config->tiers)
+	{
+		auto tier = list_at(Tier, link);
+		tier_unref(tier);
+	}
 	engine_close(&self->engine);
 	engine_free(&self->engine);
 	sequence_free(&self->seq);
@@ -78,7 +84,7 @@ table_open(Table* self)
 	list_foreach(&self->config->tiers)
 	{
 		auto tier = list_at(Tier, link);
-		tier_resolve(tier, self->engine.storage_mgr);
+		tier_ref(tier, self->engine.storage_mgr);
 	}
 
 	// recover, map and deploy partitions

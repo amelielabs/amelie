@@ -222,6 +222,30 @@ emit_ddl(Compiler* self)
 		break;
 	}
 
+	// tier
+	case STMT_CREATE_TIER:
+	{
+		auto arg = ast_tier_create_of(stmt->ast);
+		offset = table_op_tier_create(data, db, &arg->table_name, arg->tier);
+		flags = arg->if_not_exists ? DDL_IF_NOT_EXISTS : 0;
+		break;
+	}
+	case STMT_DROP_TIER:
+	{
+		auto arg = ast_tier_drop_of(stmt->ast);
+		offset = table_op_tier_drop(data, db, &arg->table_name, &arg->name);
+		flags = arg->if_exists ? DDL_IF_EXISTS : 0;
+		break;
+	}
+	case STMT_ALTER_TIER:
+	{
+		auto arg = ast_tier_alter_of(stmt->ast);
+		offset = table_op_tier_rename(data, db, &arg->table_name, &arg->name,
+		                              &arg->name_new);
+		flags = arg->if_exists ? DDL_IF_EXISTS : 0;
+		break;
+	}
+
 	// function
 	case STMT_CREATE_FUNCTION:
 	{

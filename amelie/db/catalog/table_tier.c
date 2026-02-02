@@ -21,8 +21,29 @@
 #include <amelie_catalog.h>
 
 static void
+table_tier_rmdir(Tier* tier)
+{
+	char path[PATH_MAX];
+	char id[UUID_SZ];
+	uuid_get(&tier->id, id, sizeof(id));
+	list_foreach(&tier->storages)
+	{
+		// <storage_path>/<id_tier>
+		auto storage = list_at(TierStorage, link);
+		if (! storage->storage)
+			continue;
+		storage_pathfmt(storage->storage, path, "%s", id);
+		if (fs_exists("%s", path))
+			fs_rmdir("%s", path);
+	}
+}
+
+static void
 table_tier_delete(Table* table, Tier* tier)
 {
+	// unref storages
+	tier_unref(tier);
+
 	// remove tier from engine
 	engine_tier_remove(&table->engine, &tier->name);
 
@@ -46,6 +67,7 @@ create_if_abort(Log* self, LogOp* op)
 	auto relation = log_relation_of(self, op);
 	auto table = table_of(relation->relation);
 	Tier* tier = op->iface_arg;
+	table_tier_rmdir(tier);
 	table_tier_delete(table, tier);
 }
 
@@ -80,6 +102,22 @@ table_tier_create(Table* self,
 	// update table
 	log_relation(&tr->log, &create_if, tier, &self->rel);
 
+	// resolve tier storages
+	tier_ref(tier, self->engine.storage_mgr);
+
+	// create directories
+	char path[PATH_MAX];
+	char id[UUID_SZ];
+	uuid_get(&tier->id, id, sizeof(id));
+	list_foreach(&tier->storages)
+	{
+		// <storage_path>/<id_tier>
+		auto storage = list_at(TierStorage, link);
+		storage_pathfmt(storage->storage, path, "%s", id);
+		if (! fs_exists("%s", path))
+			fs_mkdir(0755, "%s", path);
+	}
+
 	// update engine
 	engine_tier_add(&self->engine, tier);
 	return true;
@@ -91,6 +129,7 @@ drop_if_commit(Log* self, LogOp* op)
 	auto relation = log_relation_of(self, op);
 	auto table = table_of(relation->relation);
 	Tier* tier = op->iface_arg;
+	table_tier_rmdir(tier);
 	table_tier_delete(table, tier);
 }
 
