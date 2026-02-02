@@ -386,7 +386,7 @@ ctable_open(Vm* self, Op* op, bool point_lookup, bool open_part)
 
 	// find table, partition and index
 	auto table = table_mgr_find(&share()->db->catalog.table_mgr, &name_db, &name_table, true);
-	auto index = table_find_index(table, &name_index, true);
+	auto index = table_index_find(table, &name_index, true);
 	auto keys  = &index->keys;
 	auto keys_count = op->d;
 

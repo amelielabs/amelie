@@ -21,17 +21,14 @@ struct Engine
 	Uuid*       id_table;
 	Sequence*   seq;
 	bool        unlogged;
+	Deploy*     deploy;
 	StorageMgr* storage_mgr;
 };
 
-void  engine_init(Engine*, StorageMgr*, Uuid*, Sequence*, bool, Keys*);
+void  engine_init(Engine*, StorageMgr*, Deploy*, Uuid*, Sequence*, bool, Keys*);
 void  engine_free(Engine*);
 void  engine_open(Engine*, List*, List*, int);
-void  engine_map(Engine*);
-void  engine_truncate(Engine*);
-void  engine_index_add(Engine*, IndexConfig*);
-void  engine_index_remove(Engine*, Str*);
-void  engine_set_unlogged(Engine*, bool);
+void  engine_close(Engine*);
 Part* engine_find(Engine*, uint64_t);
 Buf*  engine_status(Engine*, Str*, bool);
 Iterator*

@@ -17,7 +17,6 @@ struct Table
 {
 	Relation     rel;
 	Engine       engine;
-	Deploy*      deploy;
 	Sequence     seq;
 	TableConfig* config;
 };
@@ -43,7 +42,7 @@ table_keys(Table* self)
 static inline void
 table_free(Table* self)
 {
-	deploy_detach_all(self->deploy, self->engine.levels);
+	engine_close(&self->engine);
 	engine_free(&self->engine);
 	sequence_free(&self->seq);
 	if (self->config)
@@ -56,10 +55,9 @@ table_allocate(TableConfig* config, StorageMgr* storage_mgr, Deploy* deploy)
 {
 	Table* self = am_malloc(sizeof(Table));
 	self->config = table_config_copy(config);
-	self->deploy = deploy;
 	sequence_init(&self->seq);
 	auto primary = table_primary(self);
-	engine_init(&self->engine, storage_mgr, &self->config->id,
+	engine_init(&self->engine, storage_mgr, deploy, &self->config->id,
 	            &self->seq, self->config->unlogged,
 	            &primary->keys);
 
@@ -73,23 +71,17 @@ table_allocate(TableConfig* config, StorageMgr* storage_mgr, Deploy* deploy)
 static inline void
 table_open(Table* self)
 {
-	// resolve tiers storages
+	// resolve storages on the tiers
 	list_foreach(&self->config->tiers)
 	{
 		auto tier = list_at(Tier, link);
 		tier_resolve(tier, self->engine.storage_mgr);
 	}
 
-	// recover partitions
+	// recover, map and deploy partitions
 	auto config = self->config;
 	engine_open(&self->engine, &config->tiers, &config->indexes,
 	            config->partitions);
-
-	// create pods and load heaps
-	deploy_attach_all(self->deploy, self->engine.levels);
-
-	// map hash partitions
-	engine_map(&self->engine);
 }
 
 static inline void
@@ -103,19 +95,4 @@ static inline Table*
 table_of(Relation* self)
 {
 	return (Table*)self;
-}
-
-hot static inline IndexConfig*
-table_find_index(Table* self, Str* name, bool error_if_not_exists)
-{
-	list_foreach(&self->config->indexes)
-	{
-		auto config = list_at(IndexConfig, link);
-		if (str_compare_case(&config->name, name))
-			return config;
-	}
-	if (error_if_not_exists)
-		error("index '%.*s': not exists", str_size(name),
-		       str_of(name));
-	return NULL;
 }

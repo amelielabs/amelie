@@ -194,6 +194,7 @@ set(AMELIE_SOURCES_DB
     ${AMELIE_ROOT}/db/engine/part_op.c
     ${AMELIE_ROOT}/db/engine/engine.c
     ${AMELIE_ROOT}/db/engine/engine_recover.c
+    ${AMELIE_ROOT}/db/engine/engine_op.c
     ${AMELIE_ROOT}/db/catalog/database_mgr.c
     ${AMELIE_ROOT}/db/catalog/table_mgr.c
     ${AMELIE_ROOT}/db/catalog/table_mgr_alter.c

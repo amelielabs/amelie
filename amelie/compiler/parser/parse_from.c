@@ -173,7 +173,7 @@ parse_from_target(Stmt* self, From* from, LockId lock, bool subquery)
 			if (name_index->id != KNAME)
 				stmt_error(self, name_index, "<index name> expected");
 			stmt_expect(self, ')');
-			target->from_index = table_find_index(target->from_table, &name_index->string, true);
+			target->from_index = table_index_find(target->from_table, &name_index->string, true);
 		}
 		return target;
 	}

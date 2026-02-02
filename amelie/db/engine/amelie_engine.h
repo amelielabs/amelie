@@ -17,12 +17,13 @@
 #include "engine/part_mapping.h"
 #include "engine/level.h"
 
+// deploy
+#include "engine/deploy.h"
+
 // engine
 #include "engine/engine.h"
 #include "engine/engine_recover.h"
+#include "engine/engine_op.h"
 
 // global engine locking
 #include "engine/part_lock_mgr.h"
-
-// deploy
-#include "engine/deploy.h"

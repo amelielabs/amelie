@@ -61,7 +61,7 @@ table_index_create(Table*       self,
                    IndexConfig* config,
                    bool         if_not_exists)
 {
-	auto index = table_find_index(self, &config->name, false);
+	auto index = table_index_find(self, &config->name, false);
 	if (index)
 	{
 		if (! if_not_exists)
@@ -114,7 +114,7 @@ table_index_drop(Table* self,
                  Str*   name,
                  bool   if_exists)
 {
-	auto index = table_find_index(self, name, false);
+	auto index = table_index_find(self, name, false);
 	if (! index)
 	{
 		if (! if_exists)
@@ -162,7 +162,7 @@ table_index_rename(Table* self,
                    Str*   name_new,
                    bool   if_exists)
 {
-	auto index = table_find_index(self, name, false);
+	auto index = table_index_find(self, name, false);
 	if (! index)
 	{
 		if (! if_exists)
@@ -175,7 +175,7 @@ table_index_rename(Table* self,
 	}
 
 	// ensure new index not exists
-	if (table_find_index(self, name_new, false))
+	if (table_index_find(self, name_new, false))
 		error("table '%.*s' index '%.*s': already exists",
 		      str_size(&self->config->name),
 		      str_of(&self->config->name),
@@ -201,7 +201,7 @@ table_index_list(Table* self, Str* ref, bool extended)
 	// show index name on table
 	if (ref)
 	{
-		auto index = table_find_index(self, ref, false);
+		auto index = table_index_find(self, ref, false);
 		if (! index)
 			encode_null(buf);
 		else
@@ -218,4 +218,19 @@ table_index_list(Table* self, Str* ref, bool extended)
 	}
 	encode_array_end(buf);
 	return buf;
+}
+
+hot IndexConfig*
+table_index_find(Table* self, Str* name, bool error_if_not_exists)
+{
+	list_foreach(&self->config->indexes)
+	{
+		auto config = list_at(IndexConfig, link);
+		if (str_compare_case(&config->name, name))
+			return config;
+	}
+	if (error_if_not_exists)
+		error("index '%.*s': not exists", str_size(name),
+		       str_of(name));
+	return NULL;
 }

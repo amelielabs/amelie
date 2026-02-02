@@ -22,12 +22,14 @@
 void
 engine_init(Engine*     self,
             StorageMgr* storage_mgr,
+            Deploy*     deploy,
             Uuid*       id_table,
             Sequence*   seq,
             bool        unlogged,
             Keys*       keys)
 {
 	self->storage_mgr  = storage_mgr;
+	self->deploy       = deploy;
 	self->levels       = NULL;
 	self->levels_count = 0;
 	self->id_table     = id_table;
@@ -70,7 +72,8 @@ engine_open(Engine* self, List* tiers, List* indexes, int count)
 	engine_recover(self, count);
 
 	// create indexes
-	list_foreach(&self->levels->list)
+	auto main = self->levels;
+	list_foreach(&main->list)
 	{
 		auto part = list_at(Part, link);
 		list_foreach(indexes)
@@ -79,17 +82,14 @@ engine_open(Engine* self, List* tiers, List* indexes, int count)
 			part_index_add(part, config);
 		}
 	}
-}
 
-void
-engine_map(Engine* self)
-{
+	// create pods and load heaps
+	deploy_attach_all(self->deploy, main);
+
 	// map hash partitions
-	list_foreach(&self->levels->list)
+	list_foreach(&main->list)
 	{
 		auto part = list_at(Part, link);
-
-		// map hash partitions
 		part_mapping_add(&self->mapping, part);
 
 		// update metrics
@@ -98,44 +98,9 @@ engine_map(Engine* self)
 }
 
 void
-engine_truncate(Engine* self)
+engine_close(Engine* self)
 {
-	list_foreach(&self->levels->list)
-	{
-		auto part = list_at(Part, link);
-		part_truncate(part);
-	}
-}
-
-void
-engine_index_add(Engine* self, IndexConfig* config)
-{
-	list_foreach(&self->levels->list)
-	{
-		auto part = list_at(Part, link);
-		part_index_add(part, config);
-	}
-}
-
-void
-engine_index_remove(Engine* self, Str* name)
-{
-	list_foreach(&self->levels->list)
-	{
-		auto part = list_at(Part, link);
-		part_index_drop(part, name);
-	}
-}
-
-void
-engine_set_unlogged(Engine* self, bool value)
-{
-	self->unlogged = value;
-	list_foreach(&self->levels->list)
-	{
-		auto part = list_at(Part, link);
-		part->unlogged = value;
-	}
+	deploy_detach_all(self->deploy, self->levels);
 }
 
 Part*
