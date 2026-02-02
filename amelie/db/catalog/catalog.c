@@ -478,6 +478,38 @@ catalog_execute(Catalog* self, Tr* tr, uint8_t* op, int flags)
 		}
 		break;
 	}
+	case DDL_TIER_STORAGE_ADD:
+	{
+		Str db;
+		Str name;
+		Str name_tier;
+		Str name_storage;
+		table_op_tier_storage_add_read(op, &db, &name, &name_tier, &name_storage);
+
+		auto table = table_mgr_find(&self->table_mgr, &db, &name, true);
+		auto if_exists = ddl_if_exists(flags);
+		auto if_not_exists_storage = ddl_if_storage_not_exists(flags);
+		write = table_tier_storage_add(table, tr, &name_tier, &name_storage,
+		                               if_exists,
+		                               if_not_exists_storage);
+		break;
+	}
+	case DDL_TIER_STORAGE_DROP:
+	{
+		Str db;
+		Str name;
+		Str name_tier;
+		Str name_storage;
+		table_op_tier_storage_drop_read(op, &db, &name, &name_tier, &name_storage);
+
+		auto table = table_mgr_find(&self->table_mgr, &db, &name, true);
+		auto if_exists = ddl_if_exists(flags);
+		auto if_exists_storage = ddl_if_storage_exists(flags);
+		write = table_tier_storage_drop(table, tr, &name_tier, &name_storage,
+		                                if_exists,
+		                                if_exists_storage);
+		break;
+	}
 	case DDL_UDF_REPLACE:
 	{
 		auto config = udf_op_replace_read(op);

@@ -50,11 +50,7 @@ storage_mgr_create(StorageMgr*    self,
 	relation_mgr_create(&self->mgr, tr, &storage->rel);
 
 	// create storage directory, if not exists
-	char path[PATH_MAX];
-	storage_pathfmt(storage, path, "", NULL);
-	if (! fs_exists("%s", path))
-		fs_mkdir(0755, "%s", path);
-
+	storage_mkdir(storage);
 	return true;
 }
 

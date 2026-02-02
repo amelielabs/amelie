@@ -164,10 +164,12 @@ void
 parse_tier_alter(Stmt* self)
 {
 	// ALTER TIER [IF EXISTS] name ON table_name RENAME TO name
+	// ALTER TIER [IF EXISTS] name ON table_name ADD STORAGE [IF EXISTS] name
+	// ALTER TIER [IF EXISTS] name ON table_name DROP STORAGE [IF EXISTS] name
 	auto stmt = ast_tier_alter_allocate();
 	self->ast = &stmt->ast;
 
-	// if exists
+	// [IF EXISTS]
 	stmt->if_exists = parse_if_exists(self);
 
 	// name
@@ -181,13 +183,47 @@ parse_tier_alter(Stmt* self)
 	auto name_table  = stmt_expect(self, KNAME);
 	stmt->table_name = name_table->string;
 
-	// RENAME
-	stmt_expect(self, KRENAME);
+	// RENAME | ADD | DROP
+	if (stmt_if(self, KRENAME))
+	{
+		stmt->type = TIER_ALTER_RENAME;
 
-	// TO
-	stmt_expect(self, KTO);
+		// TO
+		stmt_expect(self, KTO);
 
-	// name
-	name = stmt_expect(self, KNAME);
-	stmt->name_new = name->string;
+		// name
+		name = stmt_expect(self, KNAME);
+		stmt->name_new = name->string;
+	} else
+	if (stmt_if(self, KADD))
+	{
+		stmt->type = TIER_ALTER_STORAGE_ADD;
+
+		// STORAGE
+		stmt_expect(self, KSTORAGE);
+
+		// [IF NOT EXISTS]
+		stmt->if_not_exists_storage = parse_if_not_exists(self);
+
+		// name
+		auto name = stmt_expect(self, KNAME);
+		stmt->name_storage = name->string;
+	} else
+	if (stmt_if(self, KDROP))
+	{
+		stmt->type = TIER_ALTER_STORAGE_DROP;
+
+		// STORAGE
+		stmt_expect(self, KSTORAGE);
+
+		// [IF EXISTS]
+		stmt->if_exists_storage = parse_if_exists(self);
+
+		// name
+		auto name = stmt_expect(self, KNAME);
+		stmt->name_storage = name->string;
+	} else
+	{
+		stmt_error(self, NULL, "RENAME | ADD | DROP expected");
+	}
 }

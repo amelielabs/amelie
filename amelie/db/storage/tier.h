@@ -128,6 +128,13 @@ tier_storage_add(Tier* self, TierStorage* storage)
 	self->storages_count++;
 }
 
+static inline void
+tier_storage_remove(Tier* self, TierStorage* storage)
+{
+	list_unlink(&storage->link);
+	self->storages_count--;
+}
+
 static inline Tier*
 tier_copy(Tier* self)
 {
@@ -275,4 +282,56 @@ static inline TierStorage*
 tier_storage(Tier* self)
 {
 	return container_of(list_first(&self->storages), TierStorage, link);
+}
+
+static inline void
+tier_storage_mkdir(Tier* self, TierStorage* storage)
+{
+	if (! storage->storage)
+		return;
+
+	// <storage_path>/<id_tier>
+	char id[UUID_SZ];
+	uuid_get(&self->id, id, sizeof(id));
+
+	char path[PATH_MAX];
+	storage_pathfmt(storage->storage, path, "%s", id);
+	if (! fs_exists("%s", path))
+		fs_mkdir(0755, "%s", path);
+}
+
+static inline void
+tier_storage_rmdir(Tier* self, TierStorage* storage)
+{
+	if (! storage->storage)
+		return;
+
+	// <storage_path>/<id_tier>
+	char id[UUID_SZ];
+	uuid_get(&self->id, id, sizeof(id));
+
+	char path[PATH_MAX];
+	storage_pathfmt(storage->storage, path, "%s", id);
+	if (! fs_exists("%s", path))
+		fs_rmdir("%s", path);
+}
+
+static inline void
+tier_mkdir(Tier* self)
+{
+	list_foreach(&self->storages)
+	{
+		auto storage = list_at(TierStorage, link);
+		tier_storage_mkdir(self, storage);
+	}
+}
+
+static inline void
+tier_rmdir(Tier* self)
+{
+	list_foreach(&self->storages)
+	{
+		auto storage = list_at(TierStorage, link);
+		tier_storage_rmdir(self, storage);
+	}
 }

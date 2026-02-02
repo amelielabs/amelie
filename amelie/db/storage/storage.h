@@ -84,3 +84,13 @@ storage_pathfmt(Storage* self, char* buf, char* fmt, ...)
 		     str_size(path), str_of(path), relative);
 	}
 }
+
+static inline void
+storage_mkdir(Storage* self)
+{
+	// create storage directory, if not exists
+	char path[PATH_MAX];
+	storage_pathfmt(self, path, "", NULL);
+	if (! fs_exists("%s", path))
+		fs_mkdir(0755, "%s", path);
+}

@@ -105,6 +105,38 @@ show tier z on test;
 # test: alter tier rename (conflict)
 alter tier z on test rename to z;
 show tier z on test;
+drop tier z on test;
+
+# test: alter tier storage add
+create storage test;
+create tier t on test (id "00000000-0000-0000-0000-000000000000");
+show tier t on test;
+
+alter tier t on test add;
+alter tier t on test add storage;
+alter tier t on test add storage x;
+alter tier t on test add storage test;
+show tier t on test;
+
+# test: alter tier storage add if not exists
+alter tier t on test add storage test;
+alter tier t on test add storage if not exists test;
+show tier t on test;
+
+# test: alter tier storage drop
+drop storage test;
+
+alter tier t on test drop;
+alter tier t on test drop storage;
+alter tier t on test drop storage x;
+alter tier t on test drop storage test;
+show tier t on test;
+
+# test: alter tier storage drop if exists
+alter tier t on test drop storage test;
+alter tier t on test drop storage if exists test;
+show tier t on test;
+drop storage test;
 
 drop table test;
 

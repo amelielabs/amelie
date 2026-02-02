@@ -31,13 +31,24 @@ struct AstTierDrop
 	Str  name;
 };
 
+enum
+{
+	TIER_ALTER_RENAME,
+	TIER_ALTER_STORAGE_ADD,
+	TIER_ALTER_STORAGE_DROP
+};
+
 struct AstTierAlter
 {
 	Ast  ast;
 	bool if_exists;
+	bool if_exists_storage;
+	bool if_not_exists_storage;
+	int  type;
 	Str  table_name;
 	Str  name;
 	Str  name_new;
+	Str  name_storage;
 };
 
 static inline AstTierCreate*
@@ -85,10 +96,14 @@ ast_tier_alter_allocate(void)
 {
 	AstTierAlter* self;
 	self = ast_allocate(0, sizeof(AstTierAlter));
-	self->if_exists = false;
+	self->if_exists             = false;
+	self->if_exists_storage     = false;
+	self->if_not_exists_storage = false;
+	self->type                  = -1;
 	str_init(&self->table_name);
 	str_init(&self->name);
 	str_init(&self->name_new);
+	str_init(&self->name_storage);
 	return self;
 }
 

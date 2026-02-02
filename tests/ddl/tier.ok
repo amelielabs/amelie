@@ -149,9 +149,9 @@ alter tier i 1;
 alter tier i on;
 {"msg": "alter tier i on❰;❱ ⟵ name expected"}
 alter tier i on test;
-{"msg": "alter tier i on test❰;❱ ⟵ RENAME expected"}
+{"msg": "alter tier i on test❰;❱ ⟵ RENAME | ADD | DROP expected"}
 alter tier i on test 1;
-{"msg": "alter tier i on test ❰1❱ ⟵ RENAME expected"}
+{"msg": "alter tier i on test ❰1❱ ⟵ RENAME | ADD | DROP expected"}
 alter tier i on test rename;
 {"msg": "alter tier i on test rename❰;❱ ⟵ TO expected"}
 alter tier i on test rename 1;
@@ -218,6 +218,91 @@ show tier z on test;
   "object_size": 67108864,
   "storages": ["main"]
 }]
+drop tier z on test;
+# test: alter tier storage add
+create storage test;
+create tier t on test (id "00000000-0000-0000-0000-000000000000");
+show tier t on test;
+[{
+  "name": "t",
+  "id": "00000000-0000-0000-0000-000000000000",
+  "compression": "",
+  "compression_level": 0,
+  "encryption": "",
+  "region_size": 65536,
+  "object_size": 67108864,
+  "storages": ["main"]
+}]
+alter tier t on test add;
+{"msg": "alter tier t on test add❰;❱ ⟵ STORAGE expected"}
+alter tier t on test add storage;
+{"msg": "alter tier t on test add storage❰;❱ ⟵ name expected"}
+alter tier t on test add storage x;
+{"msg": "storage 'x': not exists"}
+alter tier t on test add storage test;
+show tier t on test;
+[{
+  "name": "t",
+  "id": "00000000-0000-0000-0000-000000000000",
+  "compression": "",
+  "compression_level": 0,
+  "encryption": "",
+  "region_size": 65536,
+  "object_size": 67108864,
+  "storages": ["main", "test"]
+}]
+# test: alter tier storage add if not exists
+alter tier t on test add storage test;
+{"msg": "table 'test' tier 't' storage 'test': already exists"}
+alter tier t on test add storage if not exists test;
+show tier t on test;
+[{
+  "name": "t",
+  "id": "00000000-0000-0000-0000-000000000000",
+  "compression": "",
+  "compression_level": 0,
+  "encryption": "",
+  "region_size": 65536,
+  "object_size": 67108864,
+  "storages": ["main", "test"]
+}]
+# test: alter tier storage drop
+drop storage test;
+{"msg": "storage 'test': is being used"}
+alter tier t on test drop;
+{"msg": "alter tier t on test drop❰;❱ ⟵ STORAGE expected"}
+alter tier t on test drop storage;
+{"msg": "alter tier t on test drop storage❰;❱ ⟵ name expected"}
+alter tier t on test drop storage x;
+{"msg": "table 'test' tier 't' storage 'x': not found"}
+alter tier t on test drop storage test;
+show tier t on test;
+[{
+  "name": "t",
+  "id": "00000000-0000-0000-0000-000000000000",
+  "compression": "",
+  "compression_level": 0,
+  "encryption": "",
+  "region_size": 65536,
+  "object_size": 67108864,
+  "storages": ["main"]
+}]
+# test: alter tier storage drop if exists
+alter tier t on test drop storage test;
+{"msg": "table 'test' tier 't' storage 'test': not found"}
+alter tier t on test drop storage if exists test;
+show tier t on test;
+[{
+  "name": "t",
+  "id": "00000000-0000-0000-0000-000000000000",
+  "compression": "",
+  "compression_level": 0,
+  "encryption": "",
+  "region_size": 65536,
+  "object_size": 67108864,
+  "storages": ["main"]
+}]
+drop storage test;
 drop table test;
 disconnect S0;
 close E0;

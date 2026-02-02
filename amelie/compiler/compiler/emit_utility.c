@@ -240,9 +240,27 @@ emit_ddl(Compiler* self)
 	case STMT_ALTER_TIER:
 	{
 		auto arg = ast_tier_alter_of(stmt->ast);
-		offset = table_op_tier_rename(data, db, &arg->table_name, &arg->name,
-		                              &arg->name_new);
+		if (arg->type == TIER_ALTER_RENAME)
+			offset = table_op_tier_rename(data, db, &arg->table_name,
+			                              &arg->name,
+			                              &arg->name_new);
+		else
+		if (arg->type == TIER_ALTER_STORAGE_ADD)
+			offset = table_op_tier_storage_add(data, db, &arg->table_name,
+			                                   &arg->name,
+			                                   &arg->name_storage);
+		else
+		if (arg->type == TIER_ALTER_STORAGE_DROP)
+			offset = table_op_tier_storage_drop(data, db, &arg->table_name,
+			                                    &arg->name,
+			                                    &arg->name_storage);
+		else
+			abort();
 		flags = arg->if_exists ? DDL_IF_EXISTS : 0;
+		if (arg->if_exists_storage)
+			flags |= DDL_IF_STORAGE_EXISTS;
+		if (arg->if_not_exists_storage)
+			flags |= DDL_IF_STORAGE_NOT_EXISTS;
 		break;
 	}
 

@@ -460,3 +460,61 @@ table_op_tier_rename_read(uint8_t* op, Str* db, Str* name,
 	json_read_string(&op, name_tier_new);
 	json_read_array_end(&op);
 }
+
+static inline int
+table_op_tier_storage_add(Buf* self, Str* db, Str* table, Str* tier, Str* storage)
+{
+	// [op, db, table, storage]
+	auto offset = buf_size(self);
+	encode_array(self);
+	encode_integer(self, DDL_TIER_STORAGE_ADD);
+	encode_string(self, db);
+	encode_string(self, table);
+	encode_string(self, tier);
+	encode_string(self, storage);
+	encode_array_end(self);
+	return offset;
+}
+
+static inline void
+table_op_tier_storage_add_read(uint8_t* op, Str* db, Str* table, Str* tier, Str* storage)
+{
+	int64_t cmd;
+	json_read_array(&op);
+	json_read_integer(&op, &cmd);
+	assert(cmd == DDL_TIER_STORAGE_ADD);
+	json_read_string(&op, db);
+	json_read_string(&op, table);
+	json_read_string(&op, tier);
+	json_read_string(&op, storage);
+	json_read_array_end(&op);
+}
+
+static inline int
+table_op_tier_storage_drop(Buf* self, Str* db, Str* table, Str* tier, Str* storage)
+{
+	// [op, db, table, storage]
+	auto offset = buf_size(self);
+	encode_array(self);
+	encode_integer(self, DDL_TIER_STORAGE_DROP);
+	encode_string(self, db);
+	encode_string(self, table);
+	encode_string(self, tier);
+	encode_string(self, storage);
+	encode_array_end(self);
+	return offset;
+}
+
+static inline void
+table_op_tier_storage_drop_read(uint8_t* op, Str* db, Str* table, Str* tier, Str* storage)
+{
+	int64_t cmd;
+	json_read_array(&op);
+	json_read_integer(&op, &cmd);
+	assert(cmd == DDL_TIER_STORAGE_DROP);
+	json_read_string(&op, db);
+	json_read_string(&op, table);
+	json_read_string(&op, tier);
+	json_read_string(&op, storage);
+	json_read_array_end(&op);
+}
