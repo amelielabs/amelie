@@ -454,7 +454,7 @@ table_tier_set(Table* self,
 	tier_write(tier, &tr->log.data, true);
 
 	// apply settings
-	tier_alter(tier, config, mask);
+	tier_set(tier, config, mask);
 	return true;
 }
 

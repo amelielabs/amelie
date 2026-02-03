@@ -165,7 +165,7 @@ tier_copy(Tier* self)
 }
 
 static inline void
-tier_alter(Tier* self, Tier* alter, int mask)
+tier_set(Tier* self, Tier* alter, int mask)
 {
 	if ((mask & TIER_COMPRESSION) > 0)
 		tier_set_compression(self, &alter->compression);
@@ -177,7 +177,7 @@ tier_alter(Tier* self, Tier* alter, int mask)
 		tier_set_region_size(self, alter->region_size);
 
 	if ((mask & TIER_OBJECT_SIZE) > 0)
-		tier_set_region_size(self, alter->object_size);
+		tier_set_object_size(self, alter->object_size);
 }
 
 static inline Tier*
