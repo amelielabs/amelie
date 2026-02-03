@@ -95,7 +95,7 @@ writer_start(Writer*   self, File* file,
 	self->storage     = storage;
 	self->region_size = region_size;
 
-	// set compression and encryption encoding
+	// set compression
 	meta_writer_open(&self->meta_writer, tier);
 	region_writer_open(&self->region_writer, tier);
 

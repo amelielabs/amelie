@@ -47,7 +47,6 @@
 #include "lib/codec.h"
 #include "lib/codec_cache.h"
 #include "lib/codec_compression.h"
-#include "lib/codec_cipher.h"
 
 // logger
 #include "lib/logger.h"

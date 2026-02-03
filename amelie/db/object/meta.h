@@ -45,7 +45,6 @@ struct Meta
 	uint32_t regions;
 	uint64_t rows;
 	uint8_t  compression;
-	uint8_t  encryption;
 	uint32_t reserved[4];
 } packed;
 

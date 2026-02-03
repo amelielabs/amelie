@@ -85,7 +85,7 @@ region_writer_stop(RegionWriter* self)
 	auto header = region_writer_header(self);
 	header->size = region_writer_size(self);
 
-	// compress and encrypt
+	// compress
 	auto encoder = &self->encoder;
 	encoder_add_buf(encoder, &self->meta);
 	encoder_add_buf(encoder, &self->data);

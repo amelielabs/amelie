@@ -102,10 +102,9 @@ object_read_index(Object* self)
 	encoder_init(&encoder);
 	defer(encoder_free, &encoder);
 	encoder_open(&encoder, self->id.tier);
-	encoder_set_encryption(&encoder, meta->encryption);
 	encoder_set_compression(&encoder, meta->compression);
 
-	// no compression or encryption
+	// no compression
 	if (! encoder_active(&encoder))
 	{
 		file_pread_buf(file, meta_data, meta->size, offset);
@@ -119,7 +118,7 @@ object_read_index(Object* self)
 	file_pread_buf(file, buf, meta->size, offset);
 	object_read_index_validate(self, buf);
 
-	// decrypt and decompress index
+	// decompress index
 	buf_emplace(meta_data, meta->size_origin);
 	encoder_decode(&encoder, meta_data->start, buf_size(meta_data),
 	               buf->start, buf_size(buf));

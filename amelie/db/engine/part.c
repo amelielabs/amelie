@@ -194,9 +194,5 @@ part_status(Part* self, Buf* buf, bool extended)
 	encode_raw(buf, "compression", 11);
 	encode_integer(buf, heap->compression);
 
-	// encryption
-	encode_raw(buf, "encryption", 10);
-	encode_integer(buf, heap->encryption);
-
 	encode_obj_end(buf);
 }

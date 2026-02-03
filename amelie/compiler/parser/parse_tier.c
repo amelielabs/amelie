@@ -75,16 +75,6 @@ parse_tier_create(Stmt* self)
 				auto value = stmt_expect(self, KINT);
 				tier_set_compression_level(stmt->tier, value->integer);
 			} else
-			if (str_is(&name->string, "encryption", 10))
-			{
-				auto value = stmt_expect(self, KSTRING);
-				tier_set_encryption(stmt->tier, &value->string);
-			} else
-			if (str_is(&name->string, "encryption_key", 14))
-			{
-				auto value = stmt_expect(self, KSTRING);
-				tier_set_encryption_key(stmt->tier, &value->string);
-			} else
 			if (str_is(&name->string, "region_size", 11))
 			{
 				auto value = stmt_expect(self, KINT);
@@ -164,7 +154,7 @@ void
 parse_tier_alter(Stmt* self)
 {
 	// ALTER TIER [IF EXISTS] name ON table_name RENAME TO name
-	// ALTER TIER [IF EXISTS] name ON table_name ADD STORAGE [IF EXISTS] name
+	// ALTER TIER [IF EXISTS] name ON table_name ADD STORAGE [IF NOT EXISTS] name
 	// ALTER TIER [IF EXISTS] name ON table_name DROP STORAGE [IF EXISTS] name
 	auto stmt = ast_tier_alter_allocate();
 	self->ast = &stmt->ast;

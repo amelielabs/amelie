@@ -64,7 +64,6 @@ struct HeapHeader
 	uint16_t   hash_min;
 	uint16_t   hash_max;
 	uint8_t    compression;
-	uint8_t    encryption;
 	uint32_t   count;
 	HeapBucket buckets[];
 } packed;

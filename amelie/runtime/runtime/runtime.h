@@ -40,7 +40,6 @@ struct Runtime
 	CrcFunction crc;
 	Random      random;
 	CodecCache  cache_compression;
-	CodecCache  cache_cipher;
 	JobMgr      job_mgr;
 	Logger      logger;
 	Task        task;

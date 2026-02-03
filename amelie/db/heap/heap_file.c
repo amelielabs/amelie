@@ -29,7 +29,6 @@ heap_create(Heap* self, File* file, Id* id, int state)
 	auto size = sizeof(HeapHeader) + sizeof(HeapBucket) * 385;
 	auto header = self->header;
 	header->compression = encoder_compression(&ec);
-	header->encryption  = encoder_encryption(&ec);
 	header->crc = runtime()->crc(0, &header->magic, size - sizeof(uint32_t));
 
 	// create heap file
@@ -47,7 +46,7 @@ heap_create(Heap* self, File* file, Id* id, int state)
 		auto page_data = page->pointer + sizeof(PageHeader);
 		auto page_size = page_header->size - sizeof(PageHeader);
 
-		// compress and encrypt
+		// compress
 		encoder_reset(&ec);
 		encoder_add(&ec, page_data, page_size);
 		encoder_encode(&ec);
@@ -100,7 +99,6 @@ heap_open(Heap* self, Id* id, int state)
 	encoder_init(&ec);
 	defer(encoder_free, &ec);
 	encoder_open(&ec, id->tier);
-	encoder_set_encryption(&ec, header->encryption);
 	encoder_set_compression(&ec, header->compression);
 
 	// read pages

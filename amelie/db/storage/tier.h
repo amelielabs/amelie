@@ -19,8 +19,6 @@ struct Tier
 	Uuid    id;
 	Str     compression;
 	int64_t compression_level;
-	Str     encryption;
-	Str     encryption_key;
 	int64_t region_size;
 	int64_t object_size;
 	List    storages;
@@ -41,8 +39,6 @@ tier_allocate(void)
 	str_init(&self->name);
 	uuid_init(&self->id);
 	str_init(&self->compression);
-	str_init(&self->encryption);
-	str_init(&self->encryption_key);
 	list_init(&self->storages);
 	list_init(&self->link);
 	return self;
@@ -53,8 +49,6 @@ tier_free(Tier* self)
 {
 	str_free(&self->name);
 	str_free(&self->compression);
-	str_free(&self->encryption);
-	str_free(&self->encryption_key);
 	list_foreach_safe(&self->storages)
 	{
 		auto storage = list_at(TierStorage, link);
@@ -87,20 +81,6 @@ static inline void
 tier_set_compression_level(Tier* self, int value)
 {
 	self->compression_level = value;
-}
-
-static inline void
-tier_set_encryption(Tier* self, Str* value)
-{
-	str_free(&self->encryption);
-	str_copy(&self->encryption, value);
-}
-
-static inline void
-tier_set_encryption_key(Tier* self, Str* value)
-{
-	str_free(&self->encryption_key);
-	str_copy(&self->encryption_key, value);
 }
 
 static inline void
@@ -143,8 +123,6 @@ tier_copy(Tier* self)
 	tier_set_id(copy, &self->id);
 	tier_set_compression(copy, &self->compression);
 	tier_set_compression_level(copy, self->compression_level);
-	tier_set_encryption(copy, &self->encryption);
-	tier_set_encryption_key(copy, &self->encryption_key);
 	tier_set_region_size(copy, self->region_size);
 	tier_set_object_size(copy, self->object_size);
 	tier_set_system(copy, self->system);
@@ -170,8 +148,6 @@ tier_read(uint8_t** pos)
 		{ DECODE_UUID,   "id",                &self->id                },
 		{ DECODE_STRING, "compression",       &self->compression       },
 		{ DECODE_INT,    "compression_level", &self->compression_level },
-		{ DECODE_STRING, "encryption",        &self->encryption        },
-		{ DECODE_STRING, "encryption_key",    &self->encryption_key    },
 		{ DECODE_INT,    "region_size",       &self->region_size       },
 		{ DECODE_INT,    "object_size",       &self->object_size       },
 		{ DECODE_ARRAY,  "storages",          &pos_storages            },
@@ -192,6 +168,7 @@ tier_read(uint8_t** pos)
 static inline void
 tier_write(Tier* self, Buf* buf, bool safe)
 {
+	unused(safe);
 	encode_obj(buf);
 
 	// name
@@ -209,17 +186,6 @@ tier_write(Tier* self, Buf* buf, bool safe)
 	// compression_level
 	encode_raw(buf, "compression_level", 17);
 	encode_integer(buf, self->compression_level);
-
-	// encryption
-	encode_raw(buf, "encryption", 10);
-	encode_string(buf, &self->encryption);
-
-	if (safe)
-	{
-		// encryption_key
-		encode_raw(buf, "encryption_key", 14);
-		encode_string(buf, &self->encryption_key);
-	}
 
 	// region_size
 	encode_raw(buf, "region_size", 11);

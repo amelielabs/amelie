@@ -143,8 +143,7 @@ show partitions on test;
   "max": 8096,
   "lsn": 0,
   "size": 0,
-  "compression": 0,
-  "encryption": 0
+  "compression": 0
 }]
 select show('partitions', '', 'test', false);
 [[{
@@ -156,8 +155,7 @@ select show('partitions', '', 'test', false);
   "max": 8096,
   "lsn": 0,
   "size": 0,
-  "compression": 0,
-  "encryption": 0
+  "compression": 0
 }]]
 # test: show partition
 show partition '1' on test;
@@ -170,8 +168,7 @@ show partition '1' on test;
   "max": 8096,
   "lsn": 0,
   "size": 0,
-  "compression": 0,
-  "encryption": 0
+  "compression": 0
 }]
 select show('partition', '1', 'test', false);
 [{
@@ -183,8 +180,7 @@ select show('partition', '1', 'test', false);
   "max": 8096,
   "lsn": 0,
   "size": 0,
-  "compression": 0,
-  "encryption": 0
+  "compression": 0
 }]
 # test: show functions
 create function test_fn (id int) return json
@@ -255,7 +251,7 @@ show wal;
   "slots": 0,
   "slots_min": -1,
   "writes": 4,
-  "writes_bytes": 796,
+  "writes_bytes": 768,
   "ops": 4
 }]
 # test: show replicas

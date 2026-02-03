@@ -18,26 +18,22 @@ struct Encoder
 	Iov    iov;
 	Codec* compression;
 	Buf    compression_buf;
-	Codec* encryption;
-	Buf    encryption_buf;
 	Tier*  tier;
 };
 
 static inline bool
 encoder_active(Encoder* self)
 {
-	return self->encryption || self->compression;
+	return self->compression;
 }
 
 static inline void
 encoder_init(Encoder* self)
 {
 	self->compression = NULL;
-	self->encryption  = NULL;
 	self->tier        = NULL;
 	iov_init(&self->iov);
 	buf_init(&self->compression_buf);
-	buf_init(&self->encryption_buf);
 }
 
 static inline void
@@ -45,7 +41,6 @@ encoder_reset(Encoder* self)
 {
 	iov_reset(&self->iov);
 	buf_reset(&self->compression_buf);
-	buf_reset(&self->encryption_buf);
 }
 
 static inline void
@@ -57,14 +52,8 @@ encoder_free(Encoder* self)
 		codec_cache_push(&runtime()->cache_compression, self->compression);
 		self->compression = NULL;
 	}
-	if (self->encryption)
-	{
-		codec_cache_push(&runtime()->cache_cipher, self->encryption);
-		self->encryption = NULL;
-	}
 	iov_free(&self->iov);
 	buf_free(&self->compression_buf);
-	buf_free(&self->encryption_buf);
 }
 
 static inline int
@@ -73,14 +62,6 @@ encoder_compression(Encoder* self)
 	if (self->compression)
 		return self->compression->iface->id;
 	return COMPRESSION_NONE;
-}
-
-static inline int
-encoder_encryption(Encoder* self)
-{
-	if (self->encryption)
-		return self->encryption->iface->id;
-	return CIPHER_NONE;
 }
 
 static inline void
@@ -103,26 +84,6 @@ encoder_set_compression(Encoder* self, int id)
 }
 
 static inline void
-encoder_set_encryption(Encoder* self, int id)
-{
-	if (self->encryption)
-	{
-		if (self->encryption->iface->id == id)
-			return;
-		codec_cache_push(&runtime()->cache_cipher, self->encryption);
-		self->encryption = NULL;
-	}
-
-	// set encryption context
-	if (id == CIPHER_NONE)
-		return;
-	self->encryption = cipher_create(&runtime()->cache_cipher, id, &runtime()->random,
-	                                 &self->tier->encryption_key);
-	if (! self->encryption)
-		error("object: invalid encryption id '%d'", id);
-}
-
-static inline void
 encoder_open(Encoder* self, Tier* tier)
 {
 	self->tier = tier;
@@ -139,18 +100,6 @@ encoder_open(Encoder* self, Tier* tier)
 		id = COMPRESSION_NONE;
 	}
 	encoder_set_compression(self, id);
-
-	// set encryption context
-	if (! str_empty(&tier->encryption))
-	{
-		auto name = &tier->compression;
-		auto id = cipher_idof(name);
-		if (id == -1)
-			error("invalid encryption '%.*s'", str_size(name), str_of(name));
-	} else {
-		id = CIPHER_NONE;
-	}
-	encoder_set_encryption(self, id);
 }
 
 static inline struct iovec*
@@ -207,20 +156,6 @@ encoder_encode(Encoder* self)
 		iov_reset(&self->iov);
 		iov_add_buf(&self->iov, buf);
 	}
-
-	// encrypt
-	if (self->encryption)
-	{
-		auto codec = self->encryption;
-		auto buf   = &self->encryption_buf;
-		codec_encode_begin(codec, buf);
-		for (auto i = 0; i < self->iov.iov_count; i++)
-			codec_encode(codec, buf, iov[i].iov_base, iov[i].iov_len);
-		codec_encode_end(codec, buf);
-
-		iov_reset(&self->iov);
-		iov_add_buf(&self->iov, buf);
-	}
 }
 
 static inline void
@@ -234,26 +169,9 @@ encoder_decode(Encoder* self,
 
 	// decompress
 	Codec* codec;
-	if (self->compression && self->encryption)
-	{
-		// decrypt src (using internal buffer)
-		auto buf = &self->encryption_buf;
-		assert(dst_size >= src_size);
-		buf_reset(buf);
-		buf_reserve(buf, src_size);
-		codec_decode(self->encryption, buf->start, buf_size(buf), src, src_size);
-		src = buf->start;
-
-		// decompress
-		codec = self->compression;
-	} else
 	if (self->compression)
 	{
 		codec = self->compression;
-	} else
-	if (self->encryption)
-	{
-		codec = self->encryption;
 	} else {
 		abort();
 	}

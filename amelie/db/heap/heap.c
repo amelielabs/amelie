@@ -51,7 +51,6 @@ heap_prepare(Heap* self)
 	header->hash_min    = 0;
 	header->hash_max    = 0;
 	header->compression = COMPRESSION_NONE;
-	header->encryption  = CIPHER_NONE;
 	header->count       = 0;
 
 	self->header  = header;

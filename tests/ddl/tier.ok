@@ -26,7 +26,6 @@ show tier t on test;
   "id": "00000000-0000-0000-0000-000000000000",
   "compression": "",
   "compression_level": 0,
-  "encryption": "",
   "region_size": 65536,
   "object_size": 67108864,
   "storages": ["main"]
@@ -41,7 +40,6 @@ show tier t on test;
   "id": "00000000-0000-0000-0000-000000000000",
   "compression": "",
   "compression_level": 0,
-  "encryption": "",
   "region_size": 65536,
   "object_size": 67108864,
   "storages": ["main"]
@@ -61,7 +59,6 @@ show tier t on test;
   "id": "00000000-0000-0000-0000-000000000000",
   "compression": "",
   "compression_level": 0,
-  "encryption": "",
   "region_size": 65536,
   "object_size": 67108864,
   "storages": ["main"]
@@ -79,7 +76,6 @@ show tier t on test;
   "id": "00000000-0000-0000-0000-000000000000",
   "compression": "",
   "compression_level": 0,
-  "encryption": "",
   "region_size": 65536,
   "object_size": 67108864,
   "storages": ["test", "main"]
@@ -120,7 +116,6 @@ show tier t on test;
   "id": "00000000-0000-0000-0000-000000000000",
   "compression": "",
   "compression_level": 0,
-  "encryption": "",
   "region_size": 65536,
   "object_size": 67108864,
   "storages": ["test", "main"]
@@ -170,7 +165,6 @@ show tier t on test;
   "id": "00000000-0000-0000-0000-000000000000",
   "compression": "",
   "compression_level": 0,
-  "encryption": "",
   "region_size": 65536,
   "object_size": 67108864,
   "storages": ["main"]
@@ -184,7 +178,6 @@ show tier z on test;
   "id": "00000000-0000-0000-0000-000000000000",
   "compression": "",
   "compression_level": 0,
-  "encryption": "",
   "region_size": 65536,
   "object_size": 67108864,
   "storages": ["main"]
@@ -199,7 +192,6 @@ show tier z on test;
   "id": "00000000-0000-0000-0000-000000000000",
   "compression": "",
   "compression_level": 0,
-  "encryption": "",
   "region_size": 65536,
   "object_size": 67108864,
   "storages": ["main"]
@@ -213,7 +205,6 @@ show tier z on test;
   "id": "00000000-0000-0000-0000-000000000000",
   "compression": "",
   "compression_level": 0,
-  "encryption": "",
   "region_size": 65536,
   "object_size": 67108864,
   "storages": ["main"]
@@ -228,7 +219,6 @@ show tier t on test;
   "id": "00000000-0000-0000-0000-000000000000",
   "compression": "",
   "compression_level": 0,
-  "encryption": "",
   "region_size": 65536,
   "object_size": 67108864,
   "storages": ["main"]
@@ -246,7 +236,6 @@ show tier t on test;
   "id": "00000000-0000-0000-0000-000000000000",
   "compression": "",
   "compression_level": 0,
-  "encryption": "",
   "region_size": 65536,
   "object_size": 67108864,
   "storages": ["main", "test"]
@@ -261,7 +250,6 @@ show tier t on test;
   "id": "00000000-0000-0000-0000-000000000000",
   "compression": "",
   "compression_level": 0,
-  "encryption": "",
   "region_size": 65536,
   "object_size": 67108864,
   "storages": ["main", "test"]
@@ -282,7 +270,6 @@ show tier t on test;
   "id": "00000000-0000-0000-0000-000000000000",
   "compression": "",
   "compression_level": 0,
-  "encryption": "",
   "region_size": 65536,
   "object_size": 67108864,
   "storages": ["main"]
@@ -297,7 +284,6 @@ show tier t on test;
   "id": "00000000-0000-0000-0000-000000000000",
   "compression": "",
   "compression_level": 0,
-  "encryption": "",
   "region_size": 65536,
   "object_size": 67108864,
   "storages": ["main"]

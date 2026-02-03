@@ -78,7 +78,7 @@ meta_writer_stop(MetaWriter* self)
 	// [[offsets][meta_regions]] [meta]
 	auto meta = &self->meta;
 
-	// compress and encrypt meta data (without header)
+	// compress meta data (without header)
 	auto encoder = &self->encoder;
 	encoder_add_buf(encoder, &self->offsets);
 	encoder_add_buf(encoder, &self->data);
@@ -96,7 +96,6 @@ meta_writer_stop(MetaWriter* self)
 	meta->size_total_origin =
 		meta->size_regions_origin + meta->size_origin + sizeof(Meta);
 	meta->compression       = encoder_compression(encoder);
-	meta->encryption        = encoder_encryption(encoder);
 	meta->crc_data          = encoder_iov_crc(encoder);
 	meta->crc               = runtime()->crc(0, meta, sizeof(Meta));
 }
