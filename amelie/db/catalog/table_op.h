@@ -309,6 +309,7 @@ table_op_index_create_read(uint8_t* op, Str* db, Str* name)
 	json_read_string(&op, db);
 	json_read_string(&op, name);
 	auto config_pos = op;
+	json_skip(&op);
 	json_read_array_end(&op);
 	return config_pos;
 }
@@ -397,6 +398,7 @@ table_op_tier_create_read(uint8_t* op, Str* db, Str* name)
 	json_read_string(&op, db);
 	json_read_string(&op, name);
 	auto config_pos = op;
+	json_skip(&op);
 	json_read_array_end(&op);
 	return config_pos;
 }
@@ -517,4 +519,35 @@ table_op_tier_storage_drop_read(uint8_t* op, Str* db, Str* table, Str* tier, Str
 	json_read_string(&op, tier);
 	json_read_string(&op, storage);
 	json_read_array_end(&op);
+}
+
+static inline int
+table_op_tier_set(Buf* self, Str* db, Str* name, Tier* tier, int mask)
+{
+	// [op, db, name, config, mask]
+	auto offset = buf_size(self);
+	encode_array(self);
+	encode_integer(self, DDL_TIER_SET);
+	encode_string(self, db);
+	encode_string(self, name);
+	tier_write(tier, self, true);
+	encode_integer(self, mask);
+	encode_array_end(self);
+	return offset;
+}
+
+static inline uint8_t*
+table_op_tier_set_read(uint8_t* op, Str* db, Str* name, int64_t* mask)
+{
+	int64_t cmd;
+	json_read_array(&op);
+	json_read_integer(&op, &cmd);
+	assert(cmd == DDL_TIER_SET);
+	json_read_string(&op, db);
+	json_read_string(&op, name);
+	auto config_pos = op;
+	json_skip(&op);
+	json_read_integer(&op, mask);
+	json_read_array_end(&op);
+	return config_pos;
 }

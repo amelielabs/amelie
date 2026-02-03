@@ -13,6 +13,15 @@
 
 typedef struct Tier  Tier;
 
+enum
+{
+	TIER_ID                = 1 << 0,
+	TIER_COMPRESSION       = 1 << 1,
+	TIER_COMPRESSION_LEVEL = 1 << 2,
+	TIER_REGION_SIZE       = 1 << 3,
+	TIER_OBJECT_SIZE       = 1 << 4
+};
+
 struct Tier
 {
 	Str     name;
@@ -27,10 +36,9 @@ struct Tier
 	List    link;
 };
 
-static inline Tier*
-tier_allocate(void)
+static inline void
+tier_init(Tier* self)
 {
-	auto self = (Tier*)am_malloc(sizeof(Tier));
 	self->compression_level = 0;
 	self->region_size       = 64 * 1024;
 	self->object_size       = 64 * 1024 * 1024;
@@ -41,11 +49,18 @@ tier_allocate(void)
 	str_init(&self->compression);
 	list_init(&self->storages);
 	list_init(&self->link);
+}
+
+static inline Tier*
+tier_allocate(void)
+{
+	auto self = (Tier*)am_malloc(sizeof(Tier));
+	tier_init(self);
 	return self;
 }
 
 static inline void
-tier_free(Tier* self)
+tier_free_data(Tier* self)
 {
 	str_free(&self->name);
 	str_free(&self->compression);
@@ -54,6 +69,14 @@ tier_free(Tier* self)
 		auto storage = list_at(TierStorage, link);
 		tier_storage_free(storage);
 	}
+	list_init(&self->storages);
+	self->storages_count = 0;
+}
+
+static inline void
+tier_free(Tier* self)
+{
+	tier_free_data(self);
 	am_free(self);
 }
 
@@ -115,10 +138,9 @@ tier_storage_remove(Tier* self, TierStorage* storage)
 	self->storages_count--;
 }
 
-static inline Tier*
-tier_copy(Tier* self)
+static inline void
+tier_copy_to(Tier* self, Tier* copy)
 {
-	auto copy = tier_allocate();
 	tier_set_name(copy, &self->name);
 	tier_set_id(copy, &self->id);
 	tier_set_compression(copy, &self->compression);
@@ -132,7 +154,30 @@ tier_copy(Tier* self)
 		auto storage_copy = tier_storage_copy(storage);
 		tier_storage_add(copy, storage_copy);
 	}
+}
+
+static inline Tier*
+tier_copy(Tier* self)
+{
+	auto copy = tier_allocate();
+	tier_copy_to(self, copy);
 	return copy;
+}
+
+static inline void
+tier_alter(Tier* self, Tier* alter, int mask)
+{
+	if ((mask & TIER_COMPRESSION) > 0)
+		tier_set_compression(self, &alter->compression);
+
+	if ((mask & TIER_COMPRESSION_LEVEL) > 0)
+		tier_set_compression_level(self, alter->compression_level);
+
+	if ((mask & TIER_REGION_SIZE) > 0)
+		tier_set_region_size(self, alter->region_size);
+
+	if ((mask & TIER_OBJECT_SIZE) > 0)
+		tier_set_region_size(self, alter->object_size);
 }
 
 static inline Tier*

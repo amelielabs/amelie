@@ -255,6 +255,11 @@ emit_ddl(Compiler* self)
 			                                    &arg->name,
 			                                    &arg->name_storage);
 		else
+		if (arg->type == TIER_ALTER_SET)
+			offset = table_op_tier_set(data, db, &arg->table_name,
+			                           arg->set,
+			                           arg->set_mask);
+		else
 			abort();
 		flags = arg->if_exists ? DDL_IF_EXISTS : 0;
 		if (arg->if_exists_storage)

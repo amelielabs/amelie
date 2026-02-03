@@ -17,6 +17,63 @@
 #include <amelie_vm>
 #include <amelie_parser.h>
 
+static int
+parse_tier_options(Stmt* self, Tier* tier)
+{
+	int mask = 0;
+	for (;;)
+	{
+		// name value
+		auto name = stmt_expect(self, KNAME);
+
+		if (str_is(&name->string, "id", 2))
+		{
+			auto value = stmt_expect(self, KSTRING);
+			Uuid id;
+			uuid_init(&id);
+			if (uuid_set_nothrow(&id, &value->string) == -1)
+				stmt_error(self, value, "failed to parse uuid");
+			tier_set_id(tier, &id);
+			mask |= TIER_ID;
+		} else
+		if (str_is(&name->string, "compression", 11))
+		{
+			auto value = stmt_expect(self, KSTRING);
+			tier_set_compression(tier, &value->string);
+			mask |= TIER_COMPRESSION;
+		} else
+		if (str_is(&name->string, "compression_level", 17))
+		{
+			auto value = stmt_expect(self, KINT);
+			tier_set_compression_level(tier, value->integer);
+			mask |= TIER_COMPRESSION_LEVEL;
+		} else
+		if (str_is(&name->string, "region_size", 11))
+		{
+			auto value = stmt_expect(self, KINT);
+			tier_set_region_size(tier, value->integer);
+			mask |= TIER_REGION_SIZE;
+		} else
+		if (str_is(&name->string, "object_size", 11))
+		{
+			auto value = stmt_expect(self, KINT);
+			tier_set_object_size(tier, value->integer);
+			mask |= TIER_OBJECT_SIZE;
+		} else
+		{
+			stmt_error(self, name, "unknown option");
+		}
+
+		// )
+		if (stmt_if(self, ')'))
+			break;
+
+		// ,
+		stmt_expect(self, ',');
+	}
+	return mask;
+}
+
 Tier*
 parse_tier(Stmt* self, Str* name)
 {
@@ -39,52 +96,7 @@ parse_tier(Stmt* self, Str* name)
 
 	// [(options)]
 	if (stmt_if(self, '(') && !stmt_if(self, ')'))
-	{
-		for (;;)
-		{
-			// name value
-			auto name = stmt_expect(self, KNAME);
-
-			if (str_is(&name->string, "id", 2))
-			{
-				auto value = stmt_expect(self, KSTRING);
-				uuid_init(&id);
-				if (uuid_set_nothrow(&id, &value->string) == -1)
-					stmt_error(self, value, "failed to parse uuid");
-				tier_set_id(tier, &id);
-			} else
-			if (str_is(&name->string, "compression", 11))
-			{
-				auto value = stmt_expect(self, KSTRING);
-				tier_set_compression(tier, &value->string);
-			} else
-			if (str_is(&name->string, "compression_level", 17))
-			{
-				auto value = stmt_expect(self, KINT);
-				tier_set_compression_level(tier, value->integer);
-			} else
-			if (str_is(&name->string, "region_size", 11))
-			{
-				auto value = stmt_expect(self, KINT);
-				tier_set_region_size(tier, value->integer);
-			} else
-			if (str_is(&name->string, "object_size", 11))
-			{
-				auto value = stmt_expect(self, KINT);
-				tier_set_object_size(tier, value->integer);
-			} else
-			{
-				stmt_error(self, name, "unknown option");
-			}
-
-			// )
-			if (stmt_if(self, ')'))
-				break;
-
-			// ,
-			stmt_expect(self, ',');
-		}
-	}
+		parse_tier_options(self, tier);
 
 	// [USING storage, ...]
 	if (stmt_if(self, KUSING))
@@ -171,6 +183,7 @@ parse_tier_alter(Stmt* self)
 	// ALTER TIER [IF EXISTS] name ON table_name RENAME TO name
 	// ALTER TIER [IF EXISTS] name ON table_name ADD STORAGE [IF NOT EXISTS] name
 	// ALTER TIER [IF EXISTS] name ON table_name DROP STORAGE [IF EXISTS] name
+	// ALTER TIER [IF EXISTS] name ON table_name SET (options)
 	auto stmt = ast_tier_alter_allocate();
 	self->ast = &stmt->ast;
 
@@ -228,7 +241,22 @@ parse_tier_alter(Stmt* self)
 		auto name = stmt_expect(self, KNAME);
 		stmt->name_storage = name->string;
 	} else
+	if (stmt_if(self, KSET))
 	{
-		stmt_error(self, NULL, "RENAME | ADD | DROP expected");
+		stmt->type = TIER_ALTER_SET;
+
+		// allocate tier
+		stmt->set = tier_allocate();
+		tier_set_name(stmt->set, &name->string);
+
+		// (options)
+		stmt_expect(self, '(');
+		stmt->set_mask = parse_tier_options(self, stmt->set);
+
+		if ((stmt->set_mask & TIER_ID) > 0)
+			stmt_error(self, name, "tier id cannot be changed");
+	} else
+	{
+		stmt_error(self, NULL, "RENAME | ADD | DROP | SET expected");
 	}
 }

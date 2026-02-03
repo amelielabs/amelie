@@ -462,22 +462,6 @@ catalog_execute(Catalog* self, Tr* tr, uint8_t* op, int flags)
 		write = table_tier_rename(table, tr, &name_tier, &name_tier_new, if_exists);
 		break;
 	}
-	case DDL_UDF_CREATE:
-	{
-		auto config = udf_op_create_read(op);
-		defer(udf_config_free, config);
-
-		// create or replace
-		write = udf_mgr_create(&self->udf_mgr, tr, config, false);
-
-		// compile on creation
-		if (write)
-		{
-			auto udf = udf_mgr_find(&self->udf_mgr, &config->db, &config->name, true);
-			self->iface->udf_compile(self, udf);
-		}
-		break;
-	}
 	case DDL_TIER_STORAGE_ADD:
 	{
 		Str db;
@@ -494,6 +478,21 @@ catalog_execute(Catalog* self, Tr* tr, uint8_t* op, int flags)
 		                               if_not_exists_storage);
 		break;
 	}
+	case DDL_TIER_SET:
+	{
+		Str     db;
+		Str     name;
+		int64_t mask;
+		auto    config_pos = table_op_tier_set_read(op, &db, &name, &mask);
+
+		// create tier
+		auto table = table_mgr_find(&self->table_mgr, &db, &name, true);
+		auto tier = tier_read(&config_pos);
+		defer(tier_free, tier);
+		auto if_not_exists = ddl_if_not_exists(flags);
+		write = table_tier_set(table, tr, tier, mask, if_not_exists);
+		break;
+	}
 	case DDL_TIER_STORAGE_DROP:
 	{
 		Str db;
@@ -508,6 +507,22 @@ catalog_execute(Catalog* self, Tr* tr, uint8_t* op, int flags)
 		write = table_tier_storage_drop(table, tr, &name_tier, &name_storage,
 		                                if_exists,
 		                                if_exists_storage);
+		break;
+	}
+	case DDL_UDF_CREATE:
+	{
+		auto config = udf_op_create_read(op);
+		defer(udf_config_free, config);
+
+		// create or replace
+		write = udf_mgr_create(&self->udf_mgr, tr, config, false);
+
+		// compile on creation
+		if (write)
+		{
+			auto udf = udf_mgr_find(&self->udf_mgr, &config->db, &config->name, true);
+			self->iface->udf_compile(self, udf);
+		}
 		break;
 	}
 	case DDL_UDF_REPLACE:

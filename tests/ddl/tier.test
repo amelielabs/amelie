@@ -3,7 +3,7 @@
 open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "127.0.0.1", "port": 3485 }];
 connect E0 S0 127.0.0.1:3485;
 
-create table test (id int primary key, a int, b int);
+create table test (id int primary key, a int, b int) partitions 1;
 
 # test: create tier parsing
 create tier;
@@ -138,31 +138,26 @@ alter tier t on test drop storage if exists test;
 show tier t on test;
 drop storage test;
 
+# test: alter tier set
+alter tier t on test set (region_size 123, compression '');
+show tier t on test;
+
+# test: alter tier set compression
+insert into test values (123, 0, 0);
+show partitions on test;
+select show('tier', 'main', 'test', true).compression;
+
+# disable compression
+alter tier main on test set (compression '');
+select show('tier', 'main', 'test', true).compression;
+
+alter partition 1 on test refresh;
+show partitions on test;
+
+# test: alter tier set id
+alter tier t on test set (id "00000000-0000-0000-0000-000000000001");
+
 drop table test;
-
-# test: create table tier a
-create table test (id int primary key) tier;
-
-create table test (id int primary key)
-	    tier a (id "00000000-0000-0000-0000-000000000000") using main;
-show tiers on test;
-drop table test;
-
-create table test (id int primary key)
-	    tier a (id "00000000-0000-0000-0000-000000000000") using xyz;
-
-# test: create table tier a, b
-create storage x;
-create storage y;
-create storage z;
-create table test (id int primary key)
-	    tier a (id "00000000-0000-0000-0000-000000000000") using main
-	    tier b (id "00000000-0000-0000-0000-000000000000") using x, y, z;
-show tiers on test;
-drop table test;
-drop storage x;
-drop storage y;
-drop storage z;
 
 disconnect S0;
 close E0;

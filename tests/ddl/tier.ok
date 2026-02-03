@@ -1,6 +1,6 @@
 open E0 "uuid": "00000000-0000-0000-0000-000000000000", "listen": [{ "host": "127.0.0.1", "port": 3485 }];
 connect E0 S0 127.0.0.1:3485;
-create table test (id int primary key, a int, b int);
+create table test (id int primary key, a int, b int) partitions 1;
 # test: create tier parsing
 create tier;
 {"msg": "create tier❰;❱ ⟵ name expected"}
@@ -144,9 +144,9 @@ alter tier i 1;
 alter tier i on;
 {"msg": "alter tier i on❰;❱ ⟵ name expected"}
 alter tier i on test;
-{"msg": "alter tier i on test❰;❱ ⟵ RENAME | ADD | DROP expected"}
+{"msg": "alter tier i on test❰;❱ ⟵ RENAME | ADD | DROP | SET expected"}
 alter tier i on test 1;
-{"msg": "alter tier i on test ❰1❱ ⟵ RENAME | ADD | DROP expected"}
+{"msg": "alter tier i on test ❰1❱ ⟵ RENAME | ADD | DROP | SET expected"}
 alter tier i on test rename;
 {"msg": "alter tier i on test rename❰;❱ ⟵ TO expected"}
 alter tier i on test rename 1;
@@ -289,54 +289,53 @@ show tier t on test;
   "storages": ["main"]
 }]
 drop storage test;
-drop table test;
-# test: create table tier a
-create table test (id int primary key) tier;
-{"msg": "create table test (id int primary key) tier❰;❱ ⟵ name expected"}
-create table test (id int primary key)
-	    tier a (id "00000000-0000-0000-0000-000000000000") using main;
-show tiers on test;
+# test: alter tier set
+alter tier t on test set (region_size 123, compression '');
+show tier t on test;
 [{
-  "name": "a",
+  "name": "t",
   "id": "00000000-0000-0000-0000-000000000000",
-  "compression": "zstd",
+  "compression": "",
   "compression_level": 0,
-  "region_size": 65536,
+  "region_size": 123,
   "object_size": 67108864,
   "storages": ["main"]
 }]
-drop table test;
-create table test (id int primary key)
-	    tier a (id "00000000-0000-0000-0000-000000000000") using xyz;
-{"msg": "storage 'xyz': not exists"}
-# test: create table tier a, b
-create storage x;
-create storage y;
-create storage z;
-create table test (id int primary key)
-	    tier a (id "00000000-0000-0000-0000-000000000000") using main
-	    tier b (id "00000000-0000-0000-0000-000000000000") using x, y, z;
-show tiers on test;
+# test: alter tier set compression
+insert into test values (123, 0, 0);
+show partitions on test;
 [{
-  "name": "a",
-  "id": "00000000-0000-0000-0000-000000000000",
-  "compression": "zstd",
-  "compression_level": 0,
-  "region_size": 65536,
-  "object_size": 67108864,
-  "storages": ["main"]
-}, {
-  "name": "b",
-  "id": "00000000-0000-0000-0000-000000000000",
-  "compression": "zstd",
-  "compression_level": 0,
-  "region_size": 65536,
-  "object_size": 67108864,
-  "storages": ["x", "y", "z"]
+  "id": 1,
+  "tier": "main",
+  "storage": "main",
+  "ram": true,
+  "min": 0,
+  "max": 8096,
+  "lsn": 0,
+  "size": 524288,
+  "compression": 1
 }]
+select show('tier', 'main', 'test', true).compression;
+["zstd"]
+alter tier main on test set (compression '');
+select show('tier', 'main', 'test', true).compression;
+[""]
+alter partition 1 on test refresh;
+show partitions on test;
+[{
+  "id": 2,
+  "tier": "main",
+  "storage": "main",
+  "ram": true,
+  "min": 0,
+  "max": 8096,
+  "lsn": 26,
+  "size": 524288,
+  "compression": 0
+}]
+# test: alter tier set id
+alter tier t on test set (id "00000000-0000-0000-0000-000000000001");
+{"msg": "alter tier ❰t❱ ⟵ tier id cannot be changed"}
 drop table test;
-drop storage x;
-drop storage y;
-drop storage z;
 disconnect S0;
 close E0;

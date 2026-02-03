@@ -401,6 +401,63 @@ table_tier_storage_drop(Table* self,
 	return true;
 }
 
+static void
+set_if_commit(Log* self, LogOp* op)
+{
+	unused(self);
+	unused(op);
+}
+
+static void
+set_if_abort(Log* self, LogOp* op)
+{
+	auto relation = log_relation_of(self, op);
+	// restore tier settings
+	Tier* tier = op->iface_arg;
+	tier_free_data(tier);
+	uint8_t* pos = relation->data;
+	auto tier_copy = tier_read(&pos);
+	defer(tier_free, tier_copy);
+	tier_copy_to(tier_copy, tier);
+}
+
+static LogIf set_if =
+{
+	.commit = set_if_commit,
+	.abort  = set_if_abort
+};
+
+bool
+table_tier_set(Table* self,
+               Tr*    tr,
+               Tier*  config,
+               int    mask,
+               bool   if_exists)
+{
+	// find tier
+	auto tier = table_tier_find(self, &config->name, false);
+	if (! tier)
+	{
+		if (! if_exists)
+			error("table '%.*s' tier '%.*s': not exists",
+			      str_size(&self->config->name),
+			      str_of(&self->config->name),
+			      str_size(&config->name),
+			      str_of(&config->name));
+		return false;
+	}
+
+	// update table
+	log_relation(&tr->log, &set_if, tier, &self->rel);
+
+	// save current tier settings
+	tier_write(tier, &tr->log.data, true);
+
+	// apply settings
+	tier_alter(tier, config, mask);
+	return true;
+}
+
 Buf*
 table_tier_list(Table* self, Str* ref, bool extended)
 {
