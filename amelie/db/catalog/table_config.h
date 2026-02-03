@@ -285,3 +285,15 @@ table_config_find(TableConfig* self, Str* name)
 	}
 	return NULL;
 }
+
+static inline Tier*
+table_config_find_tier(TableConfig* self, Str* name)
+{
+	list_foreach(&self->tiers)
+	{
+		auto tier = list_at(Tier, link);
+		if (str_compare_case(&tier->name, name))
+			return tier;
+	}
+	return NULL;
+}

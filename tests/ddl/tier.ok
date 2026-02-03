@@ -24,7 +24,7 @@ show tier t on test;
 [{
   "name": "t",
   "id": "00000000-0000-0000-0000-000000000000",
-  "compression": "",
+  "compression": "zstd",
   "compression_level": 0,
   "region_size": 65536,
   "object_size": 67108864,
@@ -38,7 +38,7 @@ show tier t on test;
 [{
   "name": "t",
   "id": "00000000-0000-0000-0000-000000000000",
-  "compression": "",
+  "compression": "zstd",
   "compression_level": 0,
   "region_size": 65536,
   "object_size": 67108864,
@@ -57,7 +57,7 @@ show tier t on test;
 [{
   "name": "t",
   "id": "00000000-0000-0000-0000-000000000000",
-  "compression": "",
+  "compression": "zstd",
   "compression_level": 0,
   "region_size": 65536,
   "object_size": 67108864,
@@ -74,7 +74,7 @@ show tier t on test;
 [{
   "name": "t",
   "id": "00000000-0000-0000-0000-000000000000",
-  "compression": "",
+  "compression": "zstd",
   "compression_level": 0,
   "region_size": 65536,
   "object_size": 67108864,
@@ -114,7 +114,7 @@ show tier t on test;
 [{
   "name": "t",
   "id": "00000000-0000-0000-0000-000000000000",
-  "compression": "",
+  "compression": "zstd",
   "compression_level": 0,
   "region_size": 65536,
   "object_size": 67108864,
@@ -163,7 +163,7 @@ show tier t on test;
 [{
   "name": "t",
   "id": "00000000-0000-0000-0000-000000000000",
-  "compression": "",
+  "compression": "zstd",
   "compression_level": 0,
   "region_size": 65536,
   "object_size": 67108864,
@@ -176,7 +176,7 @@ show tier z on test;
 [{
   "name": "z",
   "id": "00000000-0000-0000-0000-000000000000",
-  "compression": "",
+  "compression": "zstd",
   "compression_level": 0,
   "region_size": 65536,
   "object_size": 67108864,
@@ -190,7 +190,7 @@ show tier z on test;
 [{
   "name": "z",
   "id": "00000000-0000-0000-0000-000000000000",
-  "compression": "",
+  "compression": "zstd",
   "compression_level": 0,
   "region_size": 65536,
   "object_size": 67108864,
@@ -203,7 +203,7 @@ show tier z on test;
 [{
   "name": "z",
   "id": "00000000-0000-0000-0000-000000000000",
-  "compression": "",
+  "compression": "zstd",
   "compression_level": 0,
   "region_size": 65536,
   "object_size": 67108864,
@@ -217,7 +217,7 @@ show tier t on test;
 [{
   "name": "t",
   "id": "00000000-0000-0000-0000-000000000000",
-  "compression": "",
+  "compression": "zstd",
   "compression_level": 0,
   "region_size": 65536,
   "object_size": 67108864,
@@ -234,7 +234,7 @@ show tier t on test;
 [{
   "name": "t",
   "id": "00000000-0000-0000-0000-000000000000",
-  "compression": "",
+  "compression": "zstd",
   "compression_level": 0,
   "region_size": 65536,
   "object_size": 67108864,
@@ -248,7 +248,7 @@ show tier t on test;
 [{
   "name": "t",
   "id": "00000000-0000-0000-0000-000000000000",
-  "compression": "",
+  "compression": "zstd",
   "compression_level": 0,
   "region_size": 65536,
   "object_size": 67108864,
@@ -268,7 +268,7 @@ show tier t on test;
 [{
   "name": "t",
   "id": "00000000-0000-0000-0000-000000000000",
-  "compression": "",
+  "compression": "zstd",
   "compression_level": 0,
   "region_size": 65536,
   "object_size": 67108864,
@@ -282,7 +282,7 @@ show tier t on test;
 [{
   "name": "t",
   "id": "00000000-0000-0000-0000-000000000000",
-  "compression": "",
+  "compression": "zstd",
   "compression_level": 0,
   "region_size": 65536,
   "object_size": 67108864,
@@ -290,5 +290,53 @@ show tier t on test;
 }]
 drop storage test;
 drop table test;
+# test: create table tier a
+create table test (id int primary key) tier;
+{"msg": "create table test (id int primary key) tier❰;❱ ⟵ name expected"}
+create table test (id int primary key)
+	    tier a (id "00000000-0000-0000-0000-000000000000") using main;
+show tiers on test;
+[{
+  "name": "a",
+  "id": "00000000-0000-0000-0000-000000000000",
+  "compression": "zstd",
+  "compression_level": 0,
+  "region_size": 65536,
+  "object_size": 67108864,
+  "storages": ["main"]
+}]
+drop table test;
+create table test (id int primary key)
+	    tier a (id "00000000-0000-0000-0000-000000000000") using xyz;
+{"msg": "storage 'xyz': not exists"}
+# test: create table tier a, b
+create storage x;
+create storage y;
+create storage z;
+create table test (id int primary key)
+	    tier a (id "00000000-0000-0000-0000-000000000000") using main
+	    tier b (id "00000000-0000-0000-0000-000000000000") using x, y, z;
+show tiers on test;
+[{
+  "name": "a",
+  "id": "00000000-0000-0000-0000-000000000000",
+  "compression": "zstd",
+  "compression_level": 0,
+  "region_size": 65536,
+  "object_size": 67108864,
+  "storages": ["main"]
+}, {
+  "name": "b",
+  "id": "00000000-0000-0000-0000-000000000000",
+  "compression": "zstd",
+  "compression_level": 0,
+  "region_size": 65536,
+  "object_size": 67108864,
+  "storages": ["x", "y", "z"]
+}]
+drop table test;
+drop storage x;
+drop storage y;
+drop storage z;
 disconnect S0;
 close E0;

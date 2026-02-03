@@ -93,6 +93,8 @@ engine_open(Engine* self, List* tiers, List* indexes, int count)
 void
 engine_close(Engine* self)
 {
+	if (! self->levels_count)
+		return;
 	auto main = engine_main(self);
 	self->iface->detach(self, main);
 }

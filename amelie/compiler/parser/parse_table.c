@@ -391,6 +391,7 @@ parse_table_create(Stmt* self, bool unlogged)
 {
 	// CREATE [UNLOGGED] TABLE [IF NOT EXISTS] name (key)
 	// [PARTITIONS n]
+	// [TIER ...]
 	auto stmt = ast_table_create_allocate();
 	self->ast = &stmt->ast;
 
@@ -410,22 +411,6 @@ parse_table_create(Stmt* self, bool unlogged)
 	uuid_init(&id);
 	uuid_generate(&id, &runtime()->random);
 	table_config_set_id(config, &id);
-
-	// create main tier config
-	auto tier = tier_allocate();
-	stmt->tier = tier;
-	table_config_tier_add(config, tier);
-	Str tier_name;
-	str_set_cstr(&tier_name, "main");
-	tier_set_name(tier, &tier_name);
-	uuid_init(&id);
-	uuid_generate(&id, &runtime()->random);
-	tier_set_id(tier, &id);
-
-	// create main tier storage (use main storage)
-	auto tier_storage = tier_storage_allocate();
-	tier_storage_set_name(tier_storage, &tier_name);
-	tier_storage_add(tier, tier_storage);
 
 	// create primary index config
 	auto config_index = index_config_allocate(&config->columns);
@@ -455,6 +440,57 @@ parse_table_create(Stmt* self, bool unlogged)
 		stmt_error(self, NULL, "table has invalid hash partitions number");
 
 	table_config_set_partitions(config, hash_partitions);
+
+	// [TIER]
+	if (stmt_if(self, KTIER))
+	{
+		for (;;)
+		{
+			// name
+			auto name = stmt_expect(self, KNAME);
+
+			// ensure tier is not redefined
+			auto tier = table_config_find_tier(config, &name->string);
+			if (tier)
+				stmt_error(self, name, "tier is redefined");
+
+			// [(options)] [USING storage, ...]
+			tier = parse_tier(self, &name->string);
+			table_config_tier_add(config, tier);
+
+			// next tier
+			if (stmt_if(self, KTIER))
+				continue;
+			break;
+		}
+	} else
+	{
+		// create main tier config
+		auto tier = tier_allocate();
+		stmt->tier = tier;
+		table_config_tier_add(config, tier);
+
+		// tier name
+		Str tier_name;
+		str_set_cstr(&tier_name, "main");
+		tier_set_name(tier, &tier_name);
+
+		// tier id
+		uuid_init(&id);
+		uuid_generate(&id, &runtime()->random);
+		tier_set_id(tier, &id);
+
+		// tier compression (enable by default)
+		Str tier_compression;
+		str_set(&tier_compression, "zstd", 4);
+		tier_set_compression(tier, &tier_compression);
+		tier_set_compression_level(tier, 0);
+
+		// create main tier storage (use main storage)
+		auto tier_storage = tier_storage_allocate();
+		tier_storage_set_name(tier_storage, &tier_name);
+		tier_storage_add(tier, tier_storage);
+	}
 }
 
 void

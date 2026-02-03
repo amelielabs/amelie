@@ -107,6 +107,7 @@ ast_tier_alter_allocate(void)
 	return self;
 }
 
-void parse_tier_create(Stmt*);
-void parse_tier_drop(Stmt*);
-void parse_tier_alter(Stmt*);
+void  parse_tier_create(Stmt*);
+void  parse_tier_drop(Stmt*);
+void  parse_tier_alter(Stmt*);
+Tier* parse_tier(Stmt*, Str*);

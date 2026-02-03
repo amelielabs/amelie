@@ -25,7 +25,7 @@ show partitions on test;
   "max": 8096,
   "lsn": 0,
   "size": 0,
-  "compression": 0
+  "compression": 1
 }]
 insert into test values (123);
 alter partition 1 on test refresh;
@@ -39,7 +39,7 @@ show partitions on test;
   "max": 8096,
   "lsn": 3,
   "size": 524288,
-  "compression": 0
+  "compression": 1
 }]
 drop table test;
 disconnect S0;

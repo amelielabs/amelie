@@ -58,7 +58,7 @@ codec_cache_pop(CodecCache* self, int id)
 			if (ref->iface->id == id)
 			{
 				list_unlink(&ref->link);
-				codec = container_of(ref, Codec, link);
+				codec = ref;
 				break;
 			}
 		}

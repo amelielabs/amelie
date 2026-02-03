@@ -17,37 +17,25 @@
 #include <amelie_vm>
 #include <amelie_parser.h>
 
-void
-parse_tier_create(Stmt* self)
+Tier*
+parse_tier(Stmt* self, Str* name)
 {
-	// CREATE TIER [IF NOT EXISTS] name ON table_name [(options)]
-	// [USING storage, ...]
-	auto stmt = ast_tier_create_allocate();
-	self->ast = &stmt->ast;
-
-	// if not exists
-	stmt->if_not_exists = parse_if_not_exists(self);
-
-	// name
-	auto name = stmt_expect(self, KNAME);
-
-	// ON
-	stmt_expect(self, KON);
-
-	// table_name
-	auto target = stmt_expect(self, KNAME);
-	stmt->table_name = target->string;
-
-	// create tier
+	// allocate tier
 	auto tier = tier_allocate();
-	stmt->tier = tier;
-	tier_set_name(tier, &name->string);
+	tier_set_name(tier, name);
+	errdefer(tier_free, tier);
 
 	// generate id
 	Uuid id;
 	uuid_init(&id);
 	uuid_generate(&id, &runtime()->random);
 	tier_set_id(tier, &id);
+
+	// set compression by default
+	Str compression;
+	str_set(&compression, "zstd", 4);
+	tier_set_compression(tier, &compression);
+	tier_set_compression_level(tier, 0);
 
 	// [(options)]
 	if (stmt_if(self, '(') && !stmt_if(self, ')'))
@@ -63,27 +51,27 @@ parse_tier_create(Stmt* self)
 				uuid_init(&id);
 				if (uuid_set_nothrow(&id, &value->string) == -1)
 					stmt_error(self, value, "failed to parse uuid");
-				tier_set_id(stmt->tier, &id);
+				tier_set_id(tier, &id);
 			} else
 			if (str_is(&name->string, "compression", 11))
 			{
 				auto value = stmt_expect(self, KSTRING);
-				tier_set_compression(stmt->tier, &value->string);
+				tier_set_compression(tier, &value->string);
 			} else
 			if (str_is(&name->string, "compression_level", 17))
 			{
 				auto value = stmt_expect(self, KINT);
-				tier_set_compression_level(stmt->tier, value->integer);
+				tier_set_compression_level(tier, value->integer);
 			} else
 			if (str_is(&name->string, "region_size", 11))
 			{
 				auto value = stmt_expect(self, KINT);
-				tier_set_region_size(stmt->tier, value->integer);
+				tier_set_region_size(tier, value->integer);
 			} else
 			if (str_is(&name->string, "object_size", 11))
 			{
 				auto value = stmt_expect(self, KINT);
-				tier_set_object_size(stmt->tier, value->integer);
+				tier_set_object_size(tier, value->integer);
 			} else
 			{
 				stmt_error(self, name, "unknown option");
@@ -126,6 +114,33 @@ parse_tier_create(Stmt* self)
 		tier_storage_set_name(storage, &main);
 		tier_storage_add(tier, storage);
 	}
+
+	return tier;
+}
+
+void
+parse_tier_create(Stmt* self)
+{
+	// CREATE TIER [IF NOT EXISTS] name ON table_name [(options)]
+	// [USING storage, ...]
+	auto stmt = ast_tier_create_allocate();
+	self->ast = &stmt->ast;
+
+	// if not exists
+	stmt->if_not_exists = parse_if_not_exists(self);
+
+	// name
+	auto name = stmt_expect(self, KNAME);
+
+	// ON
+	stmt_expect(self, KON);
+
+	// table_name
+	auto target = stmt_expect(self, KNAME);
+	stmt->table_name = target->string;
+
+	// allocate and parse tier
+	stmt->tier = parse_tier(self, &name->string);
 }
 
 void
